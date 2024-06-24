@@ -313,6 +313,9 @@ static void QT_FASTCALL convertToRGB32(uint *buffer, int count, const QList<QRgb
 
 #if defined(__SSE2__) && !defined(__SSSE3__) && QT_COMPILER_SUPPORTS_SSSE3
 extern const uint * QT_FASTCALL fetchPixelsBPP24_ssse3(uint *dest, const uchar*src, int index, int count);
+#elif defined QT_COMPILER_SUPPORTS_LSX
+// from qdrawhelper_lsx.cpp
+extern const uint * QT_FASTCALL fetchPixelsBPP24_lsx(uint *dest, const uchar *src, int index, int count);
 #endif
 
 template<QImage::Format Format>
@@ -325,6 +328,12 @@ static const uint *QT_FASTCALL fetchRGBToRGB32(uint *buffer, const uchar *src, i
         // With SSE2 can convertToRGB32 be vectorized, but it takes SSSE3
         // to vectorize the deforested version below.
         fetchPixelsBPP24_ssse3(buffer, src, index, count);
+        convertToRGB32<Format>(buffer, count, nullptr);
+        return buffer;
+    }
+#elif defined QT_COMPILER_SUPPORTS_LSX
+    if (BPP == QPixelLayout::BPP24 && qCpuHasFeature(LSX)) {
+        fetchPixelsBPP24_lsx(buffer, src, index, count);
         convertToRGB32<Format>(buffer, count, nullptr);
         return buffer;
     }
@@ -431,6 +440,12 @@ static const uint *QT_FASTCALL fetchARGBPMToARGB32PM(uint *buffer, const uchar *
         // With SSE2 can convertToRGB32 be vectorized, but it takes SSSE3
         // to vectorize the deforested version below.
         fetchPixelsBPP24_ssse3(buffer, src, index, count);
+        convertARGBPMToARGB32PM<Format>(buffer, count, nullptr);
+        return buffer;
+    }
+#elif defined QT_COMPILER_SUPPORTS_LSX
+    if (BPP == QPixelLayout::BPP24 && qCpuHasFeature(LSX)) {
+        fetchPixelsBPP24_lsx(buffer, src, index, count);
         convertARGBPMToARGB32PM<Format>(buffer, count, nullptr);
         return buffer;
     }

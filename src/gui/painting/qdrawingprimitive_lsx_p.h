@@ -224,6 +224,92 @@ static __m128 __lsx_vreplfr2vr_s(float val)
     return (__m128)__lsx_vreplgr2vr_w(fi_tmpval.i);
 }
 
+Q_ALWAYS_INLINE __m128 Q_DECL_VECTORCALL reciprocal_mul_ps(const __m128 a, float mul)
+{
+    __m128 ia = __lsx_vfrecip_s(a); // Approximate 1/a
+    // Improve precision of ia using Newton-Raphson
+    ia = __lsx_vfsub_s(__lsx_vfadd_s(ia, ia), __lsx_vfmul_s(ia, __lsx_vfmul_s(ia, a)));
+    ia = __lsx_vfmul_s(ia, __lsx_vreplfr2vr_s(mul));
+    return ia;
+}
+
+inline QRgb qUnpremultiply_lsx(QRgb p)
+{
+    const uint alpha = qAlpha(p);
+    if (alpha == 255)
+        return p;
+    if (alpha == 0)
+        return 0;
+    const __m128 va = __lsx_vffint_s_w(__lsx_vreplgr2vr_w(alpha));
+    __m128 via = reciprocal_mul_ps(va, 255.0f); // Approximate 1/a
+    const __m128i shuffleMask = (__m128i)(v16i8){0,16,16,16,1,16,16,16,2,16,16,16,3,16,16,16};
+    __m128i vl = __lsx_vshuf_b(__lsx_vldi(0), __lsx_vreplgr2vr_w(p), shuffleMask);
+    vl = __lsx_vftintrne_w_s(__lsx_vfmul_s(__lsx_vffint_s_w(vl), via));
+    vl = __lsx_vmaxi_w(vl, 0);
+    vl = __lsx_vpickev_h(__lsx_vsat_wu(vl, 15), __lsx_vsat_wu(vl, 15));
+    vl = __lsx_vinsgr2vr_h(vl, alpha, 3);
+    vl = __lsx_vpickev_b(__lsx_vsat_hu(vl, 7), __lsx_vsat_hu(vl, 7));
+    return __lsx_vpickve2gr_w(vl, 0);
+}
+
+template<enum QtPixelOrder PixelOrder>
+inline uint qConvertArgb32ToA2rgb30_lsx(QRgb p)
+{
+    const uint alpha = qAlpha(p);
+    if (alpha == 255)
+        return qConvertRgb32ToRgb30<PixelOrder>(p);
+    if (alpha == 0)
+        return 0;
+    Q_CONSTEXPR float mult = 1023.0f / (255 >> 6);
+    const uint newalpha = (alpha >> 6);
+    const __m128 va = __lsx_vffint_s_w(__lsx_vreplgr2vr_w(alpha));
+    __m128 via = reciprocal_mul_ps(va, mult * newalpha);
+    const __m128i shuffleMask = (__m128i)(v16i8){0,16,16,16,1,16,16,16,2,16,16,16,3,16,16,16};
+    __m128i vl = __lsx_vshuf_b(__lsx_vldi(0), __lsx_vreplgr2vr_w(p), shuffleMask);
+    vl = __lsx_vftintrne_w_s(__lsx_vfmul_s(__lsx_vffint_s_w(vl), via));
+    vl = __lsx_vmaxi_w(vl, 0);
+    vl = __lsx_vpickev_h(__lsx_vsat_wu(vl, 15), __lsx_vsat_wu(vl, 15));
+    uint rgb30 = (newalpha << 30);
+    rgb30 |= ((uint)__lsx_vpickve2gr_h(vl, 1)) << 10;
+    if (PixelOrder == PixelOrderRGB) {
+        rgb30 |= ((uint)__lsx_vpickve2gr_h(vl, 2)) << 20;
+        rgb30 |= ((uint)__lsx_vpickve2gr_h(vl, 0));
+    } else {
+        rgb30 |= ((uint)__lsx_vpickve2gr_h(vl, 0)) << 20;
+        rgb30 |= ((uint)__lsx_vpickve2gr_h(vl, 2));
+    }
+    return rgb30;
+}
+
+template<enum QtPixelOrder PixelOrder>
+inline uint qConvertRgba64ToRgb32_lsx(QRgba64 p)
+{
+    if (p.isTransparent())
+        return 0;
+    __m128i vl = __lsx_vilvl_d(__lsx_vldi(0), __lsx_vldrepl_d(&p, 0));
+    if (!p.isOpaque()) {
+        const __m128 va = __lsx_vffint_s_w(__lsx_vreplgr2vr_w(p.alpha()));
+        __m128 via = reciprocal_mul_ps(va, 65535.0f);
+        vl = __lsx_vilvl_h(__lsx_vldi(0), vl);
+        vl = __lsx_vftintrne_w_s(__lsx_vfmul_s(__lsx_vffint_s_w(vl) , via));
+        vl = __lsx_vmaxi_w(vl, 0);
+        vl = __lsx_vpickev_h(__lsx_vsat_wu(vl, 15), __lsx_vsat_wu(vl, 15));
+        vl = __lsx_vinsgr2vr_h(vl, p.alpha(), 3);
+    }
+    if (PixelOrder == PixelOrderBGR){
+        const __m128i shuffleMask = (__m128i)(v8i16){2, 1, 0, 3, 4, 5, 6, 7};
+        vl = __lsx_vshuf_h(shuffleMask, __lsx_vldi(0), vl);
+    }
+    vl = __lsx_vilvl_h(__lsx_vldi(0), vl);
+    vl = __lsx_vadd_w(vl, __lsx_vreplgr2vr_w(128));
+    vl = __lsx_vsub_w(vl, __lsx_vsrli_w(vl, 8));
+    vl = __lsx_vsrli_w(vl, 8);
+    vl = __lsx_vpickev_h(__lsx_vsat_w(vl, 15), __lsx_vsat_w(vl, 15));
+    __m128i tmp = __lsx_vmaxi_h(vl, 0);
+    vl = __lsx_vpickev_b(__lsx_vsat_hu(tmp, 7), __lsx_vsat_hu(tmp, 7));
+    return __lsx_vpickve2gr_w(vl, 0);
+}
+
 QT_END_NAMESPACE
 
 #endif // __loongarch_sx

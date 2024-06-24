@@ -6386,6 +6386,10 @@ void qt_memfill24(quint24 *dest, quint24 color, qsizetype count)
     extern void qt_memfill24_ssse3(quint24 *, quint24, qsizetype);
     if (qCpuHasFeature(SSSE3))
         return qt_memfill24_ssse3(dest, color, count);
+#  elif defined QT_COMPILER_SUPPORTS_LSX
+    extern void qt_memfill24_lsx(quint24 *, quint24, qsizetype);
+    if (qCpuHasFeature(LSX))
+        return qt_memfill24_lsx(dest, color, count);
 #  endif
 
     const quint32 v = color;
@@ -6449,6 +6453,8 @@ void qt_memfill32(quint32 *dest, quint32 color, qsizetype count)
 
 #ifdef QT_COMPILER_SUPPORTS_SSE4_1
 template<QtPixelOrder> void QT_FASTCALL storeA2RGB30PMFromARGB32PM_sse4(uchar *dest, const uint *src, int index, int count, const QList<QRgb> *, QDitherInfo *);
+#elif defined(QT_COMPILER_SUPPORTS_LSX)
+template<QtPixelOrder> void QT_FASTCALL storeA2RGB30PMFromARGB32PM_lsx(uchar *dest, const uint *src, int index, int count, const QList<QRgb> *, QDitherInfo *);
 #endif
 
 extern void qInitBlendFunctions();
@@ -6773,6 +6779,73 @@ static void qInitDrawhelperFunctions()
         qt_functionForMode_C[QPainter::CompositionMode_Source] = comp_func_Source_lsx;
         qt_functionForModeSolid_C[QPainter::CompositionMode_Source] = comp_func_solid_Source_lsx;
         qt_functionForMode_C[QPainter::CompositionMode_Plus] = comp_func_Plus_lsx;
+
+        extern const uint * QT_FASTCALL qt_fetchUntransformed_888_lsx(uint *buffer, const Operator *, const QSpanData *data,
+                                                                      int y, int x, int length);
+        sourceFetchUntransformed[QImage::Format_RGB888] = qt_fetchUntransformed_888_lsx;
+        extern void QT_FASTCALL rbSwap_888_lsx(uchar *dst, const uchar *src, int count);
+        qPixelLayouts[QImage::Format_RGB888].rbSwap = rbSwap_888_lsx;
+        qPixelLayouts[QImage::Format_BGR888].rbSwap = rbSwap_888_lsx;
+
+        extern void QT_FASTCALL convertARGB32ToARGB32PM_lsx(uint *buffer, int count, const QList<QRgb> *);
+        extern void QT_FASTCALL convertRGBA8888ToARGB32PM_lsx(uint *buffer, int count, const QList<QRgb> *);
+        extern const uint *QT_FASTCALL fetchARGB32ToARGB32PM_lsx(uint *buffer, const uchar *src, int index, int count,
+                                                                 const QList<QRgb> *, QDitherInfo *);
+        extern const uint *QT_FASTCALL fetchRGBA8888ToARGB32PM_lsx(uint *buffer, const uchar *src, int index, int count,
+                                                                   const QList<QRgb> *, QDitherInfo *);
+        extern const QRgba64 * QT_FASTCALL convertARGB32ToRGBA64PM_lsx(QRgba64 *buffer, const uint *src, int count,
+                                                                       const QList<QRgb> *, QDitherInfo *);
+        extern const QRgba64 * QT_FASTCALL convertRGBA8888ToRGBA64PM_lsx(QRgba64 *buffer, const uint *src, int count,
+                                                                         const QList<QRgb> *, QDitherInfo *);
+        extern const QRgba64 *QT_FASTCALL fetchARGB32ToRGBA64PM_lsx(QRgba64 *buffer, const uchar *src, int index, int count,
+                                                                    const QList<QRgb> *, QDitherInfo *);
+        extern const QRgba64 *QT_FASTCALL fetchRGBA8888ToRGBA64PM_lsx(QRgba64 *buffer, const uchar *src, int index, int count,
+                                                                      const QList<QRgb> *, QDitherInfo *);
+        extern void QT_FASTCALL storeARGB32FromARGB32PM_lsx(uchar *dest, const uint *src, int index, int count,
+                                                            const QList<QRgb> *, QDitherInfo *);
+        extern void QT_FASTCALL storeRGBA8888FromARGB32PM_lsx(uchar *dest, const uint *src, int index, int count,
+                                                              const QList<QRgb> *, QDitherInfo *);
+        extern void QT_FASTCALL storeRGBXFromARGB32PM_lsx(uchar *dest, const uint *src, int index, int count,
+                                                          const QList<QRgb> *, QDitherInfo *);
+        extern void QT_FASTCALL storeARGB32FromRGBA64PM_lsx(uchar *dest, const QRgba64 *src, int index, int count,
+                                                            const QList<QRgb> *, QDitherInfo *);
+        extern void QT_FASTCALL storeRGBA8888FromRGBA64PM_lsx(uchar *dest, const QRgba64 *src, int index, int count,
+                                                              const QList<QRgb> *, QDitherInfo *);
+        extern void QT_FASTCALL destStore64ARGB32_lsx(QRasterBuffer *rasterBuffer, int x, int y, const QRgba64 *buffer, int length);
+        extern void QT_FASTCALL destStore64RGBA8888_lsx(QRasterBuffer *rasterBuffer, int x, int y, const QRgba64 *buffer, int length);
+        extern void QT_FASTCALL storeRGBA64FromRGBA64PM_lsx(uchar *, const QRgba64 *, int, int, const QList<QRgb> *, QDitherInfo *);
+        extern void QT_FASTCALL storeRGBx64FromRGBA64PM_lsx(uchar *, const QRgba64 *, int, int, const QList<QRgb> *, QDitherInfo *);
+        qPixelLayouts[QImage::Format_ARGB32].fetchToARGB32PM = fetchARGB32ToARGB32PM_lsx;
+        qPixelLayouts[QImage::Format_ARGB32].convertToARGB32PM = convertARGB32ToARGB32PM_lsx;
+        qPixelLayouts[QImage::Format_RGBA8888].fetchToARGB32PM = fetchRGBA8888ToARGB32PM_lsx;
+        qPixelLayouts[QImage::Format_RGBA8888].convertToARGB32PM = convertRGBA8888ToARGB32PM_lsx;
+        qPixelLayouts[QImage::Format_ARGB32].fetchToRGBA64PM = fetchARGB32ToRGBA64PM_lsx;
+        qPixelLayouts[QImage::Format_ARGB32].convertToRGBA64PM = convertARGB32ToRGBA64PM_lsx;
+        qPixelLayouts[QImage::Format_RGBA8888].fetchToRGBA64PM = fetchRGBA8888ToRGBA64PM_lsx;
+        qPixelLayouts[QImage::Format_RGBA8888].convertToRGBA64PM = convertRGBA8888ToRGBA64PM_lsx;
+        qPixelLayouts[QImage::Format_RGBX8888].fetchToRGBA64PM = fetchRGBA8888ToRGBA64PM_lsx;
+        qPixelLayouts[QImage::Format_RGBX8888].convertToRGBA64PM = convertRGBA8888ToRGBA64PM_lsx;
+        qPixelLayouts[QImage::Format_ARGB32].storeFromARGB32PM = storeARGB32FromARGB32PM_lsx;
+        qPixelLayouts[QImage::Format_RGBA8888].storeFromARGB32PM = storeRGBA8888FromARGB32PM_lsx;
+        qPixelLayouts[QImage::Format_RGBX8888].storeFromARGB32PM = storeRGBXFromARGB32PM_lsx;
+        qPixelLayouts[QImage::Format_A2BGR30_Premultiplied].storeFromARGB32PM = storeA2RGB30PMFromARGB32PM_lsx<PixelOrderBGR>;
+        qPixelLayouts[QImage::Format_A2RGB30_Premultiplied].storeFromARGB32PM = storeA2RGB30PMFromARGB32PM_lsx<PixelOrderRGB>;
+        qStoreFromRGBA64PM[QImage::Format_ARGB32] = storeARGB32FromRGBA64PM_lsx;
+        qStoreFromRGBA64PM[QImage::Format_RGBA8888] = storeRGBA8888FromRGBA64PM_lsx;
+        qStoreFromRGBA64PM[QImage::Format_RGBX64] = storeRGBx64FromRGBA64PM_lsx;
+        qStoreFromRGBA64PM[QImage::Format_RGBA64] = storeRGBA64FromRGBA64PM_lsx;
+#if QT_CONFIG(raster_64bit)
+        destStoreProc64[QImage::Format_ARGB32] = destStore64ARGB32_lsx;
+        destStoreProc64[QImage::Format_RGBA8888] = destStore64RGBA8888_lsx;
+#endif
+#if QT_CONFIG(raster_fp)
+        extern const QRgbaFloat32 *QT_FASTCALL fetchRGBA32FToRGBA32F_lsx(QRgbaFloat32 *buffer, const uchar *src, int index, int count, const QList<QRgb> *, QDitherInfo *);
+        extern void QT_FASTCALL storeRGBX32FFromRGBA32F_lsx(uchar *dest, const QRgbaFloat32 *src, int index, int count, const QList<QRgb> *, QDitherInfo *);
+        extern void QT_FASTCALL storeRGBA32FFromRGBA32F_lsx(uchar *dest, const QRgbaFloat32 *src, int index, int count, const QList<QRgb> *, QDitherInfo *);
+        qFetchToRGBA32F[QImage::Format_RGBA32FPx4] = fetchRGBA32FToRGBA32F_lsx;
+        qStoreFromRGBA32F[QImage::Format_RGBX32FPx4] = storeRGBX32FFromRGBA32F_lsx;
+        qStoreFromRGBA32F[QImage::Format_RGBA32FPx4] = storeRGBA32FFromRGBA32F_lsx;
+#endif // QT_CONFIG(raster_fp)
     }
 #endif //QT_COMPILER_SUPPORTS_LSX
 

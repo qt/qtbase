@@ -588,6 +588,688 @@ void qt_scale_image_argb32_on_argb32_lsx(uchar *destPixels, int dbpl,
     }
 }
 
+const uint *QT_FASTCALL fetchPixelsBPP24_lsx(uint *buffer, const uchar *src, int index, int count)
+{
+    const quint24 *s = reinterpret_cast<const quint24 *>(src);
+    for (int i = 0; i < count; ++i)
+        buffer[i] = s[index + i];
+    return buffer;
+}
+
+const uint * QT_FASTCALL qt_fetchUntransformed_888_lsx(uint *buffer, const Operator *,
+                                                       const QSpanData *data,
+                                                       int y, int x, int length)
+{
+    const uchar *line = data->texture.scanLine(y) + x * 3;
+    // from image/qimage_lsx.cpp
+    extern void QT_FASTCALL qt_convert_rgb888_to_rgb32_lsx(quint32 *dst, const uchar *src, int len);
+    qt_convert_rgb888_to_rgb32_lsx(buffer, line, length);
+    return buffer;
+}
+
+void qt_memfill24_lsx(quint24 *dest, quint24 color, qsizetype count)
+{
+    // LCM of 12 and 16 bytes is 48 bytes (16 px)
+    quint32 v = color;
+    __m128i m = __lsx_vinsgr2vr_w(__lsx_vldi(0), v, 0);
+    quint24 *end = dest + count;
+
+    constexpr uchar x = 2, y = 1, z = 0;
+    alignas(__m128i) static const uchar
+    shuffleMask[16 + 1] = { x, y, z, x,  y, z, x, y,  z, x, y, z,  x, y, z, x,  y };
+    __m128i indexMask = (__m128i)(v16i8){2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17};
+
+    __m128i mval1 = __lsx_vshuf_b(m, m, __lsx_vld(reinterpret_cast<const __m128i *>(shuffleMask), 0));
+    __m128i mval2 = __lsx_vshuf_b(m, m, __lsx_vld(reinterpret_cast<const __m128i *>(shuffleMask + 1), 0));
+    __m128i mval3 = __lsx_vshuf_b(mval2, mval1, indexMask);
+
+    for ( ; dest + 16 <= end; dest += 16) {
+        __lsx_vst(mval1, reinterpret_cast<__m128i *>(dest) + 0, 0);
+        __lsx_vst(mval2, reinterpret_cast<__m128i *>(dest) + 1, 0);
+        __lsx_vst(mval3, reinterpret_cast<__m128i *>(dest) + 2, 0);
+    }
+
+    if (count < 3) {
+        if (count > 1)
+            end[-2] = v;
+        if (count)
+            end[-1] = v;
+        return;
+    }
+
+    // less than 16px/48B left
+    uchar *ptr = reinterpret_cast<uchar *>(dest);
+    uchar *ptr_end = reinterpret_cast<uchar *>(end);
+    qptrdiff left = ptr_end - ptr;
+    if (left >= 24) {
+        // 8px/24B or more left
+        __lsx_vst(mval1, reinterpret_cast<__m128i *>(ptr) + 0, 0);
+        __lsx_vstelm_d(mval2, reinterpret_cast<__m128i *>(ptr) + 1, 0, 0);
+        ptr += 24;
+        left -= 24;
+    }
+
+    // less than 8px/24B left
+
+    if (left >= 16) {
+        // but more than 5px/15B left
+        __lsx_vst(mval1, reinterpret_cast<__m128i *>(ptr) , 0);
+    } else if (left >= 8) {
+        // but more than 2px/6B left
+        __lsx_vstelm_d(mval1, reinterpret_cast<__m128i *>(ptr), 0, 0);
+    }
+
+    if (left) {
+        // 1 or 2px left
+        // store 8 bytes ending with the right values (will overwrite a bit)
+        __lsx_vstelm_d(mval2, reinterpret_cast<__m128i *>(ptr_end - 8), 0, 0);
+    }
+}
+
+void QT_FASTCALL rbSwap_888_lsx(uchar *dst, const uchar *src, int count)
+{
+    int i = 0;
+    const static __m128i shuffleMask1 = (__m128i)(v16i8){2, 1, 0, 5, 4, 3, 8, 7, 6, 11, 10, 9, 14, 13, 12, 15};
+    const static __m128i shuffleMask2 = (__m128i)(v16i8){0, 1, 4, 3, 2, 7, 6, 5, 10, 9, 8, 13, 12, 11, 14, 15};
+    const static __m128i shuffleMask3 = (__m128i)(v16i8){0, 3, 2, 1, 6, 5, 4, 9, 8, 7, 12, 11, 10, 15, 14, 13};
+
+    for (; i + 15 < count; i += 16) {
+        __m128i s1 = __lsx_vld(src, 0);
+        __m128i s2 = __lsx_vld((src + 16), 0);
+        __m128i s3 = __lsx_vld((src + 32), 0);
+        s1 = __lsx_vshuf_b(s1, s1, shuffleMask1);
+        s2 = __lsx_vshuf_b(s2, s2, shuffleMask2);
+        s3 = __lsx_vshuf_b(s3, s3, shuffleMask3);
+        __lsx_vst(s1, dst, 0);
+        __lsx_vst(s2, (dst + 16), 0);
+        __lsx_vst(s3, (dst + 32), 0);
+
+        // Now fix the last four misplaced values
+        std::swap(dst[15], dst[17]);
+        std::swap(dst[30], dst[32]);
+
+        src += 48;
+        dst += 48;
+    }
+
+    if (src != dst) {
+        SIMD_EPILOGUE(i, count, 15) {
+            dst[0] = src[2];
+            dst[1] = src[1];
+            dst[2] = src[0];
+            dst += 3;
+            src += 3;
+        }
+    } else {
+        SIMD_EPILOGUE(i, count, 15) {
+            std::swap(dst[0], dst[2]);
+            dst += 3;
+        }
+    }
+}
+
+template<bool RGBA>
+static void convertARGBToARGB32PM_lsx(uint *buffer, const uint *src, int count)
+{
+    int i = 0;
+    const __m128i alphaMask = __lsx_vreplgr2vr_w(0xff000000);
+    const __m128i rgbaMask = (__m128i)(v16i8){2, 1, 0, 3, 6, 5, 4, 7, 10, 9, 8, 11, 14, 13, 12, 15};
+    const __m128i shuffleMask = (__m128i)(v16i8){6, 7, 6, 7, 6, 7, 6, 7, 14, 15, 14, 15, 14, 15, 14, 15};
+    const __m128i half = __lsx_vreplgr2vr_h(0x0080);
+    const __m128i zero = __lsx_vldi(0);
+
+    for (; i < count - 3; i += 4) {
+        __m128i srcVector = __lsx_vld(&src[i], 0);
+        const v4i32 testz = (v4i32)__lsx_vmsknz_b(__lsx_vand_v(srcVector, alphaMask));
+        if (testz[0]!=0) {
+            const v4i32 testc = (v4i32)__lsx_vmsknz_b(__lsx_vandn_v(srcVector, alphaMask));
+            if (testc[0]!=0) {
+                if (RGBA)
+                    srcVector = __lsx_vshuf_b(zero, srcVector, rgbaMask);
+                __m128i src1 = __lsx_vilvl_b(zero, srcVector);
+                __m128i src2 = __lsx_vilvh_b(zero, srcVector);
+                __m128i alpha1 = __lsx_vshuf_b(zero, src1, shuffleMask);
+                __m128i alpha2 = __lsx_vshuf_b(zero, src2, shuffleMask);
+                src1 = __lsx_vmul_h(src1, alpha1);
+                src2 = __lsx_vmul_h(src2, alpha2);
+                src1 = __lsx_vadd_h(src1, __lsx_vsrli_h(src1, 8));
+                src2 = __lsx_vadd_h(src2, __lsx_vsrli_h(src2, 8));
+                src1 = __lsx_vadd_h(src1, half);
+                src2 = __lsx_vadd_h(src2, half);
+                src1 = __lsx_vsrli_h(src1, 8);
+                src2 = __lsx_vsrli_h(src2, 8);
+                __m128i blendMask = (__m128i)(v8i16){0, 1, 2, 11, 4, 5, 6, 15};
+                src1 = __lsx_vshuf_h(blendMask, alpha1, src1);
+                src2 = __lsx_vshuf_h(blendMask, alpha2, src2);
+                src1 = __lsx_vmaxi_h(src1, 0);
+                src2 = __lsx_vmaxi_h(src2, 0);
+                srcVector = __lsx_vpickev_b(__lsx_vsat_hu(src2, 7), __lsx_vsat_hu(src1, 7));
+                __lsx_vst(srcVector, &buffer[i], 0);
+            } else {
+                if (RGBA)
+                    __lsx_vst(__lsx_vshuf_b(zero, srcVector, rgbaMask), &buffer[i], 0);
+                else if (buffer != src)
+                    __lsx_vst(srcVector, &buffer[i], 0);
+            }
+        } else {
+            __lsx_vst(zero, &buffer[i], 0);
+        }
+    }
+
+    SIMD_EPILOGUE(i, count, 3) {
+        uint v = qPremultiply(src[i]);
+        buffer[i] = RGBA ? RGBA2ARGB(v) : v;
+    }
+}
+
+template<bool RGBA>
+static void convertARGBToRGBA64PM_lsx(QRgba64 *buffer, const uint *src, int count)
+{
+    int i = 0;
+    const __m128i alphaMask = __lsx_vreplgr2vr_w(0xff000000);
+    const __m128i rgbaMask = (__m128i)(v16i8){2, 1, 0, 3, 6, 5, 4, 7, 10, 9, 8, 11, 14, 13, 12, 15};
+    const __m128i shuffleMask = (__m128i)(v16i8){6, 7, 6, 7, 6, 7, 6, 7, 14, 15, 14, 15, 14, 15, 14, 15};
+    const __m128i zero = __lsx_vldi(0);
+
+    for (; i < count - 3; i += 4) {
+        __m128i srcVector = __lsx_vld(&src[i], 0);
+        const v4i32 testz = (v4i32)__lsx_vmsknz_b(__lsx_vand_v(srcVector, alphaMask));
+        if (testz[0]!=0) {
+            const v4i32 testc = (v4i32)__lsx_vmsknz_b(__lsx_vandn_v(srcVector, alphaMask));
+            if (!RGBA)
+                srcVector = __lsx_vshuf_b(zero, srcVector, rgbaMask);
+            const __m128i src1 = __lsx_vilvl_b(srcVector, srcVector);
+            const __m128i src2 = __lsx_vilvh_b(srcVector, srcVector);
+            if (testc[0]!=0) {
+                __m128i alpha1 = __lsx_vshuf_b(zero, src1, shuffleMask);
+                __m128i alpha2 = __lsx_vshuf_b(zero, src2, shuffleMask);
+                __m128i dst1 = __lsx_vmuh_hu(src1, alpha1);
+                __m128i dst2 = __lsx_vmuh_hu(src2, alpha2);
+                // Map 0->0xfffe to 0->0xffff
+                dst1 = __lsx_vadd_h(dst1, __lsx_vsrli_h(dst1, 15));
+                dst2 = __lsx_vadd_h(dst2, __lsx_vsrli_h(dst2, 15));
+                // correct alpha value:
+                const __m128i blendMask = (__m128i)(v8i16){0, 1, 2, 11, 4, 5, 6, 15};
+                dst1 = __lsx_vshuf_h(blendMask, src1, dst1);
+                dst2 = __lsx_vshuf_h(blendMask, src2, dst2);
+                __lsx_vst(dst1, &buffer[i], 0);
+                __lsx_vst(dst2, &buffer[i + 2], 0);
+            } else {
+                __lsx_vst(src1, &buffer[i], 0);
+                __lsx_vst(src2, &buffer[i + 2], 0);
+            }
+        } else {
+            __lsx_vst(zero, &buffer[i], 0);
+            __lsx_vst(zero, &buffer[i + 2], 0);
+        }
+    }
+
+    SIMD_EPILOGUE(i, count, 3) {
+        const uint s = RGBA ? RGBA2ARGB(src[i]) : src[i];
+        buffer[i] = QRgba64::fromArgb32(s).premultiplied();
+    }
+}
+
+template<bool RGBA, bool RGBx>
+static inline void convertARGBFromARGB32PM_lsx(uint *buffer, const uint *src, int count)
+{
+    int i = 0;
+    const __m128i alphaMask = __lsx_vreplgr2vr_w(0xff000000);
+    const __m128i rgbaMask = (__m128i)(v16i8){2, 1, 0, 3, 6, 5, 4, 7, 10, 9, 8, 11, 14, 13, 12, 15};
+    const __m128i zero = __lsx_vldi(0);
+
+    for (; i < count - 3; i += 4) {
+        __m128i srcVector = __lsx_vld(&src[i], 0);
+        const v4i32 testz = (v4i32)__lsx_vmsknz_b(__lsx_vand_v(srcVector, alphaMask));
+        if (testz[0]!=0) {
+            const v4i32 testc = (v4i32)__lsx_vmsknz_b(__lsx_vandn_v(srcVector, alphaMask));
+            if (testc[0]!=0) {
+                __m128i srcVectorAlpha = __lsx_vsrli_w(srcVector, 24);
+                if (RGBA)
+                    srcVector = __lsx_vshuf_b(zero, srcVector, rgbaMask);
+                const __m128 a = __lsx_vffint_s_w(srcVectorAlpha);
+                const __m128 ia = reciprocal_mul_ps(a, 255.0f);
+                __m128i src1 = __lsx_vilvl_b(zero, srcVector);
+                __m128i src3 = __lsx_vilvh_b(zero, srcVector);
+                __m128i src2 = __lsx_vilvh_h(zero, src1);
+                __m128i src4 = __lsx_vilvh_h(zero, src3);
+                src1 = __lsx_vilvl_h(zero, src1);
+                src3 = __lsx_vilvl_h(zero, src3);
+                __m128 ia1 = (__m128)__lsx_vreplvei_w(ia, 0);
+                __m128 ia2 = (__m128)__lsx_vreplvei_w(ia, 1);
+                __m128 ia3 = (__m128)__lsx_vreplvei_w(ia, 2);
+                __m128 ia4 = (__m128)__lsx_vreplvei_w(ia, 3);
+                src1 = __lsx_vftintrne_w_s(__lsx_vfmul_s(__lsx_vffint_s_w(src1), ia1));
+                src2 = __lsx_vftintrne_w_s(__lsx_vfmul_s(__lsx_vffint_s_w(src2), ia2));
+                src3 = __lsx_vftintrne_w_s(__lsx_vfmul_s(__lsx_vffint_s_w(src3), ia3));
+                src4 = __lsx_vftintrne_w_s(__lsx_vfmul_s(__lsx_vffint_s_w(src4), ia4));
+                src1 = __lsx_vpickev_h(__lsx_vsat_wu(src2, 15), __lsx_vsat_wu(src1, 15));
+                src3 = __lsx_vpickev_h(__lsx_vsat_wu(src4, 15), __lsx_vsat_wu(src3, 15));
+                src1 = __lsx_vmaxi_h(src1, 0);
+                src3 = __lsx_vmaxi_h(src3, 0);
+                src1 = __lsx_vpickev_b(__lsx_vsat_hu(src3, 7), __lsx_vsat_hu(src1, 7));
+                // Handle potential alpha == 0 values:
+                __m128i srcVectorAlphaMask = __lsx_vseq_w(srcVectorAlpha, zero);
+                src1 = __lsx_vandn_v(srcVectorAlphaMask, src1);
+                // Fixup alpha values:
+                if (RGBx)
+                    srcVector = __lsx_vor_v(src1, alphaMask);
+                else
+                    srcVector = __lsx_vbitsel_v(src1, srcVector, __lsx_vslti_b(alphaMask, 0));
+                __lsx_vst(srcVector, &buffer[i], 0);
+            } else {
+                if (RGBA)
+                    __lsx_vst(__lsx_vshuf_b(zero, srcVector, rgbaMask), &buffer[i], 0);
+                else if (buffer != src)
+                    __lsx_vst(srcVector, &buffer[i], 0);
+            }
+        } else {
+            if (RGBx)
+                __lsx_vst(alphaMask, &buffer[i], 0);
+            else
+                __lsx_vst(zero, &buffer[i], 0);
+        }
+    }
+
+    SIMD_EPILOGUE(i, count, 3) {
+        uint v = qUnpremultiply_lsx(src[i]);
+        if (RGBx)
+            v = 0xff000000 | v;
+        if (RGBA)
+            v = ARGB2RGBA(v);
+        buffer[i] = v;
+    }
+}
+
+template<bool RGBA>
+static inline void convertARGBFromRGBA64PM_lsx(uint *buffer, const QRgba64 *src, int count)
+{
+    int i = 0;
+    const __m128i alphaMask = __lsx_vreplgr2vr_d(qint64(Q_UINT64_C(0xffff) << 48));
+    const __m128i alphaMask32 = __lsx_vreplgr2vr_w(0xff000000);
+    const __m128i rgbaMask = (__m128i)(v16i8){2, 1, 0, 3, 6, 5, 4, 7, 10, 9, 8, 11, 14, 13, 12, 15};
+    const __m128i zero = __lsx_vldi(0);
+
+    for (; i < count - 3; i += 4) {
+        __m128i srcVector1 = __lsx_vld(&src[i], 0);
+        __m128i srcVector2 = __lsx_vld(&src[i + 2], 0);
+        const v4i32 testz1 = (v4i32)__lsx_vmsknz_b(__lsx_vand_v(srcVector1, alphaMask));
+        bool transparent1 = testz1[0]==0;
+        const v4i32 testc1 = (v4i32)__lsx_vmsknz_b(__lsx_vandn_v(srcVector1, alphaMask));
+        bool opaque1 = testc1[0]==0;
+        const v4i32 testz2 = (v4i32)__lsx_vmsknz_b(__lsx_vand_v(srcVector2, alphaMask));
+        bool transparent2 = testz2[0]==0;
+        const v4i32 testc2 = (v4i32)__lsx_vmsknz_b(__lsx_vandn_v(srcVector2, alphaMask));
+        bool opaque2 = testc2[0]==0;
+
+        if (!(transparent1 && transparent2)) {
+            if (!(opaque1 && opaque2)) {
+                __m128i srcVector1Alpha = __lsx_vsrli_d(srcVector1, 48);
+                __m128i srcVector2Alpha = __lsx_vsrli_d(srcVector2, 48);
+                __m128i srcVectorAlpha = __lsx_vpickev_h(__lsx_vsat_wu(srcVector2Alpha, 15),
+                                                         __lsx_vsat_wu(srcVector1Alpha, 15));
+                const __m128 a = __lsx_vffint_s_w(srcVectorAlpha);
+                // Convert srcVectorAlpha to final 8-bit alpha channel
+                srcVectorAlpha = __lsx_vadd_w(srcVectorAlpha, __lsx_vreplgr2vr_w(128));
+                srcVectorAlpha = __lsx_vsub_w(srcVectorAlpha, __lsx_vsrli_w(srcVectorAlpha, 8));
+                srcVectorAlpha = __lsx_vsrli_w(srcVectorAlpha, 8);
+                srcVectorAlpha = __lsx_vslli_w(srcVectorAlpha, 24);
+                const __m128 ia = reciprocal_mul_ps(a, 255.0f);
+                __m128i src1 = __lsx_vilvl_h(zero, srcVector1);
+                __m128i src2 = __lsx_vilvh_h(zero, srcVector1);
+                __m128i src3 = __lsx_vilvl_h(zero, srcVector2);
+                __m128i src4 = __lsx_vilvh_h(zero, srcVector2);
+                __m128 ia1 = (__m128)__lsx_vreplvei_w(ia, 0);
+                __m128 ia2 = (__m128)__lsx_vreplvei_w(ia, 1);
+                __m128 ia3 = (__m128)__lsx_vreplvei_w(ia, 2);
+                __m128 ia4 = (__m128)__lsx_vreplvei_w(ia, 3);
+                src1 = __lsx_vftintrne_w_s(__lsx_vfmul_s(__lsx_vffint_s_w(src1), ia1));
+                src2 = __lsx_vftintrne_w_s(__lsx_vfmul_s(__lsx_vffint_s_w(src2), ia2));
+                src3 = __lsx_vftintrne_w_s(__lsx_vfmul_s(__lsx_vffint_s_w(src3), ia3));
+                src4 = __lsx_vftintrne_w_s(__lsx_vfmul_s(__lsx_vffint_s_w(src4), ia4));
+                src1 = __lsx_vpickev_h(__lsx_vsat_wu(src2, 15), __lsx_vsat_wu(src1, 15));
+                src3 = __lsx_vpickev_h(__lsx_vsat_wu(src4, 15), __lsx_vsat_wu(src3, 15));
+                // Handle potential alpha == 0 values:
+                __m128i srcVector1AlphaMask = __lsx_vseq_d(srcVector1Alpha, zero);
+                __m128i srcVector2AlphaMask = __lsx_vseq_d(srcVector2Alpha, zero);
+                src1 = __lsx_vandn_v(srcVector1AlphaMask, src1);
+                src3 = __lsx_vandn_v(srcVector2AlphaMask, src3);
+                src1 = __lsx_vmaxi_h(src1, 0);
+                src3 = __lsx_vmaxi_h(src3, 0);
+                src1 = __lsx_vpickev_b(__lsx_vsat_hu(src3, 7), __lsx_vsat_hu(src1, 7));
+                // Fixup alpha values:
+                src1 = __lsx_vbitsel_v(src1, srcVectorAlpha, __lsx_vslti_b(alphaMask32, 0));
+                // Fix RGB order
+                if (!RGBA){
+                    src1 = __lsx_vshuf_b(zero, src1, rgbaMask);}
+                __lsx_vst(src1, (__m128i *)&buffer[i], 0);
+            } else {
+                __m128i src1 = __lsx_vilvl_h(zero, srcVector1);
+                __m128i src2 = __lsx_vilvh_h(zero, srcVector1);
+                __m128i src3 = __lsx_vilvl_h(zero, srcVector2);
+                __m128i src4 = __lsx_vilvh_h(zero, srcVector2);
+                src1 = __lsx_vadd_w(src1, __lsx_vreplgr2vr_w(128));
+                src2 = __lsx_vadd_w(src2, __lsx_vreplgr2vr_w(128));
+                src3 = __lsx_vadd_w(src3, __lsx_vreplgr2vr_w(128));
+                src4 = __lsx_vadd_w(src4, __lsx_vreplgr2vr_w(128));
+                src1 = __lsx_vsub_w(src1, __lsx_vsrli_w(src1, 8));
+                src2 = __lsx_vsub_w(src2, __lsx_vsrli_w(src2, 8));
+                src3 = __lsx_vsub_w(src3, __lsx_vsrli_w(src3, 8));
+                src4 = __lsx_vsub_w(src4, __lsx_vsrli_w(src4, 8));
+                src1 = __lsx_vsrli_w(src1, 8);
+                src2 = __lsx_vsrli_w(src2, 8);
+                src3 = __lsx_vsrli_w(src3, 8);
+                src4 = __lsx_vsrli_w(src4, 8);
+                src1 = __lsx_vpickev_h(__lsx_vsat_wu(src2, 15), __lsx_vsat_wu(src1, 15));
+                src3 = __lsx_vpickev_h(__lsx_vsat_wu(src4, 15), __lsx_vsat_wu(src3, 15));
+                src1 = __lsx_vmaxi_h(src1, 0);
+                src3 = __lsx_vmaxi_h(src3, 0);
+                src1 = __lsx_vpickev_b(__lsx_vsat_hu(src3, 7), __lsx_vsat_hu(src1, 15));
+                if (!RGBA){
+                    src1 = __lsx_vshuf_b(zero, src1, rgbaMask);}
+                __lsx_vst(src1, &buffer[i], 0);
+            }
+        } else {
+            __lsx_vst(zero, &buffer[i], 0);
+        }
+    }
+
+    SIMD_EPILOGUE(i, count, 3) {
+        buffer[i] = qConvertRgba64ToRgb32_lsx<RGBA ? PixelOrderRGB : PixelOrderBGR>(src[i]);
+    }
+}
+
+template<bool mask>
+static inline void convertRGBA64FromRGBA64PM_lsx(QRgba64 *buffer, const QRgba64 *src, int count)
+{
+    int i = 0;
+    const __m128i alphaMask = __lsx_vreplgr2vr_d(qint64(Q_UINT64_C(0xffff) << 48));
+    const __m128i zero = __lsx_vldi(0);
+
+    for (; i < count - 3; i += 4) {
+        __m128i srcVector1 = __lsx_vld(&src[i + 0], 0);
+        __m128i srcVector2 = __lsx_vld(&src[i + 2], 0);
+        const v4i32 testz1 = (v4i32)__lsx_vmsknz_b(__lsx_vand_v(srcVector1, alphaMask));
+        bool transparent1 = testz1[0]==0;
+        const v4i32 testc1 = (v4i32)__lsx_vmsknz_b(__lsx_vandn_v(srcVector1, alphaMask));
+        bool opaque1 = testc1[0]==0;
+        const v4i32 testz2 = (v4i32)__lsx_vmsknz_b(__lsx_vand_v(srcVector2, alphaMask));
+        bool transparent2 = testz2[0]==0;
+        const v4i32 testc2 = (v4i32)__lsx_vmsknz_b(__lsx_vandn_v(srcVector2, alphaMask));
+        bool opaque2 = testc2[0]==0;
+
+        if (!(transparent1 && transparent2)) {
+            if (!(opaque1 && opaque2)) {
+                __m128i srcVector1Alpha = __lsx_vsrli_d(srcVector1, 48);
+                __m128i srcVector2Alpha = __lsx_vsrli_d(srcVector2, 48);
+                __m128i srcVectorAlpha = __lsx_vpickev_h(__lsx_vsat_wu(srcVector2Alpha, 15),
+                                                         __lsx_vsat_wu(srcVector1Alpha, 15));
+                const __m128 a = __lsx_vffint_s_w(srcVectorAlpha);
+                const __m128 ia = reciprocal_mul_ps(a, 65535.0f);
+                __m128i src1 = __lsx_vilvl_h(zero, srcVector1);
+                __m128i src2 = __lsx_vilvh_h(zero, srcVector1);
+                __m128i src3 = __lsx_vilvl_h(zero, srcVector2);
+                __m128i src4 = __lsx_vilvh_h(zero, srcVector2);
+                __m128 ia1 = (__m128)__lsx_vreplvei_w(ia, 0);
+                __m128 ia2 = (__m128)__lsx_vreplvei_w(ia, 1);
+                __m128 ia3 = (__m128)__lsx_vreplvei_w(ia, 2);
+                __m128 ia4 = (__m128)__lsx_vreplvei_w(ia, 3);
+                src1 = __lsx_vftintrne_w_s(__lsx_vfmul_s(__lsx_vffint_s_w(src1), ia1));
+                src2 = __lsx_vftintrne_w_s(__lsx_vfmul_s(__lsx_vffint_s_w(src2), ia2));
+                src3 = __lsx_vftintrne_w_s(__lsx_vfmul_s(__lsx_vffint_s_w(src3), ia3));
+                src4 = __lsx_vftintrne_w_s(__lsx_vfmul_s(__lsx_vffint_s_w(src4), ia4));
+                src1 = __lsx_vpickev_h(__lsx_vsat_wu(src2, 15), __lsx_vsat_wu(src1, 15));
+                src3 = __lsx_vpickev_h(__lsx_vsat_wu(src4, 15), __lsx_vsat_wu(src3, 15));
+                // Handle potential alpha == 0 values:
+                __m128i srcVector1AlphaMask = __lsx_vseq_d(srcVector1Alpha, zero);
+                __m128i srcVector2AlphaMask = __lsx_vseq_d(srcVector2Alpha, zero);
+                src1 = __lsx_vandn_v(srcVector1AlphaMask, src1);
+                src3 = __lsx_vandn_v(srcVector2AlphaMask, src3);
+                // Fixup alpha values:
+                if (mask) {
+                    src1 = __lsx_vor_v(src1, alphaMask);
+                    src3 = __lsx_vor_v(src3, alphaMask);
+                } else {
+                    src1 = __lsx_vbitsel_v(src1, srcVector1, __lsx_vslti_b(alphaMask, 0));
+                    src3 = __lsx_vbitsel_v(src3, srcVector2, __lsx_vslti_b(alphaMask, 0));
+                }
+                __lsx_vst(src1, &buffer[i + 0], 0);
+                __lsx_vst(src3, &buffer[i + 2], 0);
+            } else {
+                if (mask) {
+                    srcVector1 = __lsx_vor_v(srcVector1, alphaMask);
+                    srcVector2 = __lsx_vor_v(srcVector2, alphaMask);
+                }
+                if (mask || src != buffer) {
+                    __lsx_vst(srcVector1, &buffer[i + 0], 0);
+                    __lsx_vst(srcVector2, &buffer[i + 2], 0);
+                }
+            }
+        } else {
+            __lsx_vst(zero, &buffer[i + 0], 0);
+            __lsx_vst(zero, &buffer[i + 2], 0);
+        }
+    }
+
+    SIMD_EPILOGUE(i, count, 3) {
+        QRgba64 v = src[i].unpremultiplied();
+        if (mask)
+            v.setAlpha(65535);
+        buffer[i] = v;
+    }
+}
+
+void QT_FASTCALL convertARGB32ToARGB32PM_lsx(uint *buffer, int count, const QList<QRgb> *)
+{
+    convertARGBToARGB32PM_lsx<false>(buffer, buffer, count);
+}
+
+void QT_FASTCALL convertRGBA8888ToARGB32PM_lsx(uint *buffer, int count, const QList<QRgb> *)
+{
+    convertARGBToARGB32PM_lsx<true>(buffer, buffer, count);
+}
+
+const QRgba64 * QT_FASTCALL convertARGB32ToRGBA64PM_lsx(QRgba64 *buffer, const uint *src, int count,
+                                                        const QList<QRgb> *, QDitherInfo *)
+{
+    convertARGBToRGBA64PM_lsx<false>(buffer, src, count);
+    return buffer;
+}
+
+const QRgba64 * QT_FASTCALL convertRGBA8888ToRGBA64PM_lsx(QRgba64 *buffer, const uint *src, int count,
+                                                          const QList<QRgb> *, QDitherInfo *)
+{
+    convertARGBToRGBA64PM_lsx<true>(buffer, src, count);
+    return buffer;
+}
+
+const uint *QT_FASTCALL fetchARGB32ToARGB32PM_lsx(uint *buffer, const uchar *src, int index, int count,
+                                                  const QList<QRgb> *, QDitherInfo *)
+{
+    convertARGBToARGB32PM_lsx<false>(buffer, reinterpret_cast<const uint *>(src) + index, count);
+    return buffer;
+}
+
+const uint *QT_FASTCALL fetchRGBA8888ToARGB32PM_lsx(uint *buffer, const uchar *src, int index, int count,
+                                                    const QList<QRgb> *, QDitherInfo *)
+{
+    convertARGBToARGB32PM_lsx<true>(buffer, reinterpret_cast<const uint *>(src) + index, count);
+    return buffer;
+}
+
+const QRgba64 *QT_FASTCALL fetchARGB32ToRGBA64PM_lsx(QRgba64 *buffer, const uchar *src, int index, int count,
+                                                     const QList<QRgb> *, QDitherInfo *)
+{
+    convertARGBToRGBA64PM_lsx<false>(buffer, reinterpret_cast<const uint *>(src) + index, count);
+    return buffer;
+}
+
+const QRgba64 *QT_FASTCALL fetchRGBA8888ToRGBA64PM_lsx(QRgba64 *buffer, const uchar *src, int index, int count,
+                                                        const QList<QRgb> *, QDitherInfo *)
+{
+    convertARGBToRGBA64PM_lsx<true>(buffer, reinterpret_cast<const uint *>(src) + index, count);
+    return buffer;
+}
+
+void QT_FASTCALL storeRGB32FromARGB32PM_lsx(uchar *dest, const uint *src, int index, int count,
+                                            const QList<QRgb> *, QDitherInfo *)
+{
+    uint *d = reinterpret_cast<uint *>(dest) + index;
+    convertARGBFromARGB32PM_lsx<false,true>(d, src, count);
+}
+
+void QT_FASTCALL storeARGB32FromARGB32PM_lsx(uchar *dest, const uint *src, int index, int count,
+                                             const QList<QRgb> *, QDitherInfo *)
+{
+    uint *d = reinterpret_cast<uint *>(dest) + index;
+    convertARGBFromARGB32PM_lsx<false,false>(d, src, count);
+}
+
+void QT_FASTCALL storeRGBA8888FromARGB32PM_lsx(uchar *dest, const uint *src, int index, int count,
+                                               const QList<QRgb> *, QDitherInfo *)
+{
+    uint *d = reinterpret_cast<uint *>(dest) + index;
+    convertARGBFromARGB32PM_lsx<true,false>(d, src, count);
+}
+
+void QT_FASTCALL storeRGBXFromARGB32PM_lsx(uchar *dest, const uint *src, int index, int count,
+                                           const QList<QRgb> *, QDitherInfo *)
+{
+    uint *d = reinterpret_cast<uint *>(dest) + index;
+    convertARGBFromARGB32PM_lsx<true,true>(d, src, count);
+}
+
+template<QtPixelOrder PixelOrder>
+void QT_FASTCALL storeA2RGB30PMFromARGB32PM_lsx(uchar *dest, const uint *src, int index, int count,
+                                                const QList<QRgb> *, QDitherInfo *)
+{
+    uint *d = reinterpret_cast<uint *>(dest) + index;
+    for (int i = 0; i < count; ++i)
+        d[i] = qConvertArgb32ToA2rgb30_lsx<PixelOrder>(src[i]);
+}
+
+#if QT_CONFIG(raster_64bit)
+void QT_FASTCALL destStore64ARGB32_lsx(QRasterBuffer *rasterBuffer, int x,
+                                       int y, const QRgba64 *buffer, int length)
+{
+    uint *dest = (uint*)rasterBuffer->scanLine(y) + x;
+    convertARGBFromRGBA64PM_lsx<false>(dest, buffer, length);
+}
+
+void QT_FASTCALL destStore64RGBA8888_lsx(QRasterBuffer *rasterBuffer, int x,
+                                         int y, const QRgba64 *buffer, int length)
+{
+    uint *dest = (uint*)rasterBuffer->scanLine(y) + x;
+    convertARGBFromRGBA64PM_lsx<true>(dest, buffer, length);
+}
+#endif
+
+void QT_FASTCALL storeARGB32FromRGBA64PM_lsx(uchar *dest, const QRgba64 *src, int index, int count,
+                                             const QList<QRgb> *, QDitherInfo *)
+{
+    uint *d = (uint*)dest + index;
+    convertARGBFromRGBA64PM_lsx<false>(d, src, count);
+}
+
+void QT_FASTCALL storeRGBA8888FromRGBA64PM_lsx(uchar *dest, const QRgba64 *src, int index, int count,
+                                               const QList<QRgb> *, QDitherInfo *)
+{
+    uint *d = (uint*)dest + index;
+    convertARGBFromRGBA64PM_lsx<true>(d, src, count);
+}
+
+template
+void QT_FASTCALL storeA2RGB30PMFromARGB32PM_lsx<PixelOrderBGR>(uchar *dest, const uint *src, int index, int count,
+                                                               const QList<QRgb> *, QDitherInfo *);
+template
+void QT_FASTCALL storeA2RGB30PMFromARGB32PM_lsx<PixelOrderRGB>(uchar *dest, const uint *src, int index, int count,
+                                                               const QList<QRgb> *, QDitherInfo *);
+
+void QT_FASTCALL storeRGBA64FromRGBA64PM_lsx(uchar *dest, const QRgba64 *src, int index, int count,
+                                             const QList<QRgb> *, QDitherInfo *)
+{
+    QRgba64 *d = (QRgba64 *)dest + index;
+    convertRGBA64FromRGBA64PM_lsx<false>(d, src, count);
+}
+
+void QT_FASTCALL storeRGBx64FromRGBA64PM_lsx(uchar *dest, const QRgba64 *src, int index, int count,
+                                             const QList<QRgb> *, QDitherInfo *)
+{
+    QRgba64 *d = (QRgba64 *)dest + index;
+    convertRGBA64FromRGBA64PM_lsx<true>(d, src, count);
+}
+
+#if QT_CONFIG(raster_fp)
+const QRgbaFloat32 *QT_FASTCALL fetchRGBA32FToRGBA32F_lsx(QRgbaFloat32 *buffer, const uchar *src,
+                                                          int index, int count,
+                                                          const QList<QRgb> *, QDitherInfo *)
+{
+    const QRgbaFloat32 *s = reinterpret_cast<const QRgbaFloat32 *>(src) + index;
+    for (int i = 0; i < count; ++i) {
+        __m128 vsf = (__m128)__lsx_vld(reinterpret_cast<const float *>(s + i), 0);
+        __m128 vsa = (__m128)__lsx_vreplvei_w(vsf, 3);
+        vsf = __lsx_vfmul_s(vsf, vsa);
+        vsf = (__m128)__lsx_vextrins_w(vsf, vsa, 0x30);
+        __lsx_vst(vsf, reinterpret_cast<float *>(buffer + i), 0);
+    }
+    return buffer;
+}
+
+void QT_FASTCALL storeRGBX32FFromRGBA32F_lsx(uchar *dest, const QRgbaFloat32 *src,
+                                             int index, int count,
+                                             const QList<QRgb> *, QDitherInfo *)
+{
+    QRgbaFloat32 *d = reinterpret_cast<QRgbaFloat32 *>(dest) + index;
+    const __m128 zero = (__m128)(v4f32){0.0f, 0.0f, 0.0f, 1.0f};
+    for (int i = 0; i < count; ++i) {
+        __m128 vsf = (__m128)__lsx_vld(reinterpret_cast<const float *>(src + i), 0);
+        const __m128 vsa = (__m128)__lsx_vreplvei_w(vsf, 3);
+        FloatInt a;
+        a.i = __lsx_vpickve2gr_w(vsa, 0);
+        if (a.f == 1.0f)
+        { }
+        else if (a.f == 0.0f)
+            vsf = zero;
+        else {
+            __m128 vsr = __lsx_vfrecip_s(vsa);
+            vsr = __lsx_vfsub_s(__lsx_vfadd_s(vsr, vsr),
+                                __lsx_vfmul_s(vsr, __lsx_vfmul_s(vsr, vsa)));
+            vsf = __lsx_vfmul_s(vsf, vsr);
+            FloatInt b = {.f = 1.0f};
+            vsf = (__m128)__lsx_vinsgr2vr_w(vsf, b.i, 3);
+        }
+        __lsx_vst(vsf, reinterpret_cast<float *>(d + i), 0);
+    }
+}
+
+void QT_FASTCALL storeRGBA32FFromRGBA32F_lsx(uchar *dest, const QRgbaFloat32 *src,
+                                             int index, int count,
+                                             const QList<QRgb> *, QDitherInfo *)
+{
+    QRgbaFloat32 *d = reinterpret_cast<QRgbaFloat32 *>(dest) + index;
+    const __m128 zero = (__m128)__lsx_vldi(0);
+    for (int i = 0; i < count; ++i) {
+        __m128 vsf = (__m128)__lsx_vld(reinterpret_cast<const float *>(src + i), 0);
+        const __m128 vsa = (__m128)__lsx_vreplvei_w(vsf, 3);
+        FloatInt a;
+        a.i = __lsx_vpickve2gr_w(vsa, 0);
+        if (a.f == 1.0f)
+        { }
+        else if (a.f == 0.0f)
+            vsf = zero;
+        else {
+            __m128 vsr = __lsx_vfrecip_s(vsa);
+            vsr = __lsx_vfsub_s(__lsx_vfadd_s(vsr, vsr),
+                                __lsx_vfmul_s(vsr, __lsx_vfmul_s(vsr, vsa)));
+            FloatInt b = {.f = 1.0f};
+            vsr = (__m128)__lsx_vinsgr2vr_w(vsr, b.i, 3);
+            vsf = __lsx_vfmul_s(vsf, vsr);
+        }
+        __lsx_vst(vsf, reinterpret_cast<float *>(d + i), 0);
+    }
+}
+#endif
+
 QT_END_NAMESPACE
 
 #endif // QT_COMPILER_SUPPORTS_LSX
