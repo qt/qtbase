@@ -474,6 +474,11 @@ static void makeDistanceField(QDistanceFieldData *data, const QPainterPath &path
     QDataBuffer<quint32> pathIndices(0);
     QDataBuffer<QPoint> pathVertices(0);
     qSimplifyPath(path, pathVertices, pathIndices, transform);
+    if (pathVertices.isEmpty()) {
+        qCWarning(lcDistanceField) << "Unexpected glyph path structure, bailing out";
+        memset(data->data, 0, data->nbytes);
+        return;
+    }
 
     const qint32 interiorColor = -0x7f80; // 8:8 signed format, -127.5
     const qint32 exteriorColor = 0x7f80; // 8:8 signed format, 127.5
