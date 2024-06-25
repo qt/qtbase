@@ -792,6 +792,18 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
             }
         }
         break;
+    case PE_IndicatorHeaderArrow:
+        if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(option)) {
+            painter->setPen(header->palette.text().color());
+            painter->setFont(assetFont);
+            QRectF rect = option->rect;
+            if (header->sortIndicator & QStyleOptionHeader::SortUp) {
+                painter->drawText(rect,Qt::AlignCenter,"\uE96D");
+            } else if (header->sortIndicator & QStyleOptionHeader::SortDown) {
+                painter->drawText(rect,Qt::AlignCenter,"\uE96E");
+            }
+        }
+        break;
     case PE_IndicatorCheckBox:
         {
             QNumberStyleAnimation* animation = qobject_cast<QNumberStyleAnimation*>(d->animation(option->styleObject));
@@ -1775,6 +1787,10 @@ QRect QWindows11Style::subElementRect(QStyle::SubElement element, const QStyleOp
         } else {
             ret = QWindowsVistaStyle::subElementRect(element, option, widget);
         }
+        break;
+    case QStyle::SE_HeaderLabel:
+    case QStyle::SE_HeaderArrow:
+        ret = QCommonStyle::subElementRect(element, option, widget);
         break;
     default:
         ret = QWindowsVistaStyle::subElementRect(element, option, widget);
