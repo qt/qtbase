@@ -671,6 +671,9 @@ void recursiveCopyAndDeploy(const QString &appBundlePath, const QList<QString> &
         if (file.endsWith("_debug.dylib"))
             continue; // Skip debug versions
 
+        if (file.endsWith(".qrc"))
+            continue;
+
         const QString fileSourcePath = sourcePath + u'/' + file;
 
         if (file.endsWith(QStringLiteral(".dylib"))) {
