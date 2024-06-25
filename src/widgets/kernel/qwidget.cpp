@@ -11601,11 +11601,19 @@ void QWidgetPrivate::setWindowModified_helper()
 
   \sa QToolTip, statusTip, whatsThis
 */
-void QWidget::setToolTip(const QString &s)
+void QWidget::setToolTip(const QString& s)
 {
     Q_D(QWidget);
-    d->toolTip = s;
 
+    // We must convert plain strings to richtext, so that they wrap correctly
+    QString result = s;
+    if (!Qt::mightBeRichText(result))
+    {   
+        // Escape the current message as HTML and replace \n with <br>
+        // Envelop the string with <qt></qt> so it is detected as richtext
+        result = "<qt>" + result.toHtmlEscaped() + "</qt>";
+    }
+    d->toolTip = result;
     QEvent event(QEvent::ToolTipChange);
     QCoreApplication::sendEvent(this, &event);
 }

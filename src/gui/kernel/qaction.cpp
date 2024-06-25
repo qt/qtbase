@@ -14,6 +14,7 @@
 #endif
 #include <private/qguiapplication_p.h>
 #include <private/qdebug_p.h>
+#include <text/qtextdocument.h>
 
 #define QAPP_CHECK(functionName) \
     if (Q_UNLIKELY(!QCoreApplication::instance())) { \
@@ -682,10 +683,19 @@ QString QAction::iconText() const
 void QAction::setToolTip(const QString &tooltip)
 {
     Q_D(QAction);
-    if (d->tooltip == tooltip)
-        return;
 
-    d->tooltip = tooltip;
+    // Escape the current message as HTML and replace \n with <br>
+    QString result = tooltip;
+    if (!Qt::mightBeRichText(result))
+    {
+        // Escape the current message as HTML and replace \n with <br>
+        // Envelop the string with <qt></qt> so it is detected as richtext
+        result = "<qt>" + result.toHtmlEscaped() + "</qt>";
+    }
+
+    if (d->tooltip == result)
+        return;
+    d->tooltip = result;
     d->sendDataChanged();
 }
 

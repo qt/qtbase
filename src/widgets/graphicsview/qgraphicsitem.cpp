@@ -2217,6 +2217,7 @@ QString QGraphicsItem::toolTip() const
 void QGraphicsItem::setToolTip(const QString &toolTip)
 {
     const QVariant toolTipVariant(itemChange(ItemToolTipChange, toolTip));
+
     d_ptr->setExtra(QGraphicsItemPrivate::ExtraToolTip, toolTipVariant.toString());
     itemChange(ItemToolTipHasChanged, toolTipVariant);
 }
