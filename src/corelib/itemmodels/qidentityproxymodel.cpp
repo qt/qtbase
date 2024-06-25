@@ -376,7 +376,7 @@ void QIdentityProxyModel::setHandleSourceLayoutChanges(bool b)
     Returns \c true if this proxy model handles the source model layout
     changes, otherwise returns \c false.
 */
-bool QIdentityProxyModel::isHandleSourceLayoutChanges() const
+bool QIdentityProxyModel::handleSourceLayoutChanges() const
 {
     return d_func()->m_handleLayoutChanges;
 }
