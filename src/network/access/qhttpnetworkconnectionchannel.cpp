@@ -255,6 +255,10 @@ void QHttpNetworkConnectionChannel::abort()
 bool QHttpNetworkConnectionChannel::sendRequest()
 {
     Q_ASSERT(!protocolHandler.isNull());
+    if (waitingForPotentialAbort) {
+        needInvokeSendRequest = true;
+        return false; // this return value is unused
+    }
     return protocolHandler->sendRequest();
 }
 
@@ -267,21 +271,28 @@ bool QHttpNetworkConnectionChannel::sendRequest()
 void QHttpNetworkConnectionChannel::sendRequestDelayed()
 {
     QMetaObject::invokeMethod(this, [this] {
-        Q_ASSERT(!protocolHandler.isNull());
         if (reply)
-            protocolHandler->sendRequest();
+            sendRequest();
     }, Qt::ConnectionType::QueuedConnection);
 }
 
 void QHttpNetworkConnectionChannel::_q_receiveReply()
 {
     Q_ASSERT(!protocolHandler.isNull());
+    if (waitingForPotentialAbort) {
+        needInvokeReceiveReply = true;
+        return;
+    }
     protocolHandler->_q_receiveReply();
 }
 
 void QHttpNetworkConnectionChannel::_q_readyRead()
 {
     Q_ASSERT(!protocolHandler.isNull());
+    if (waitingForPotentialAbort) {
+        needInvokeReadyRead = true;
+        return;
+    }
     protocolHandler->_q_readyRead();
 }
 
@@ -1289,7 +1300,18 @@ void QHttpNetworkConnectionChannel::_q_encrypted()
             // Similar to HTTP/1.1 counterpart below:
             const auto &pairs = spdyRequestsToSend.values(); // (request, reply)
             const auto &pair = pairs.first();
+            waitingForPotentialAbort = true;
             emit pair.second->encrypted();
+
+            // We don't send or handle any received data until any effects from
+            // emitting encrypted() have been processed. This is necessary
+            // because the user may have called abort(). We may also abort the
+            // whole connection if the request has been aborted and there is
+            // no more requests to send.
+            QMetaObject::invokeMethod(this,
+                                      &QHttpNetworkConnectionChannel::checkAndResumeCommunication,
+                                      Qt::QueuedConnection);
+
             // In case our peer has sent us its settings (window size, max concurrent streams etc.)
             // let's give _q_receiveReply a chance to read them first ('invokeMethod', QueuedConnection).
             QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
@@ -1305,6 +1327,26 @@ void QHttpNetworkConnectionChannel::_q_encrypted()
         if (reply)
             sendRequestDelayed();
     }
+}
+
+void QHttpNetworkConnectionChannel::checkAndResumeCommunication()
+{
+    Q_ASSERT(connection->connectionType() > QHttpNetworkConnection::ConnectionTypeHTTP);
+
+    // Because HTTP/2 requires that we send a SETTINGS frame as the first thing we do, and respond
+    // to a SETTINGS frame with an ACK, we need to delay any handling until we can ensure that any
+    // effects from emitting encrypted() have been processed.
+    // This function is called after encrypted() was emitted, so check for changes.
+
+    if (!reply && spdyRequestsToSend.isEmpty())
+        abort();
+    waitingForPotentialAbort = false;
+    if (needInvokeReadyRead)
+        _q_readyRead();
+    if (needInvokeReceiveReply)
+        _q_receiveReply();
+    if (needInvokeSendRequest)
+        sendRequest();
 }
 
 void QHttpNetworkConnectionChannel::requeueSpdyRequests()
