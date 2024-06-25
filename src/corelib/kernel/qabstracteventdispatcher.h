@@ -54,6 +54,7 @@ public:
     // old, integer-based API
     virtual void registerTimer(int timerId, qint64 interval, Qt::TimerType timerType, QObject *object) = 0;
     virtual bool unregisterTimer(int timerId) = 0;
+    virtual bool unregisterTimers(QObject *object) = 0;
     virtual QList<TimerInfo> registeredTimers(QObject *object) const = 0;
     virtual int remainingTime(int timerId) = 0;
 
@@ -64,10 +65,10 @@ public:
 #else
     virtual void registerTimer(Qt::TimerId timerId, Duration interval, Qt::TimerType timerType, QObject *object) = 0;
     virtual bool unregisterTimer(Qt::TimerId timerId) = 0;
+    virtual bool unregisterTimers(QObject *object) = 0;
     virtual QList<TimerInfoV2> timersForObject(QObject *object) const = 0;
     virtual Duration remainingTime(Qt::TimerId timerId) const = 0;
 #endif
-    virtual bool unregisterTimers(QObject *object) = 0;
 
     virtual void wakeUp() = 0;
     virtual void interrupt() = 0;
