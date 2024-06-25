@@ -45,10 +45,13 @@ Window::Window()
     container->addWidget(zSlider);
 
     mainLayout->addWidget(w);
+    dockBtn = nullptr;
+
+#ifndef Q_OS_WASM
     dockBtn = new QPushButton(tr("Undock"), this);
     connect(dockBtn, &QPushButton::clicked, this, &Window::dockUndock);
     mainLayout->addWidget(dockBtn);
-
+#endif
     xSlider->setValue(15 * 16);
     ySlider->setValue(345 * 16);
     zSlider->setValue(0 * 16);

@@ -42,6 +42,7 @@ int main(int argc, char *argv[])
 
     MainWindow mainWindow;
 
+    // Note: Transparency does not work for wasm
     GLWidget::setTransparent(parser.isSet(transparentOption));
     if (GLWidget::isTransparent()) {
         mainWindow.setAttribute(Qt::WA_TranslucentBackground);

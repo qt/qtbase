@@ -7,6 +7,7 @@
 #include <QCoreApplication>
 #include <math.h>
 
+// Set from main
 bool GLWidget::m_transparent = false;
 
 GLWidget::GLWidget(QWidget *parent)
@@ -209,9 +210,11 @@ void GLWidget::setupVertexAttribs()
 
 void GLWidget::paintGL()
 {
+    glClearColor(0, 0, 0, m_transparent ? 0 : 1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
+    setupVertexAttribs();
 
     m_world.setToIdentity();
     m_world.rotate(180.0f - (m_xRot / 16.0f), 1, 0, 0);

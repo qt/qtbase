@@ -11,12 +11,13 @@
 
 MainWindow::MainWindow()
 {
+#ifndef Q_OS_WASM
     QMenu *menuWindow = menuBar()->addMenu(tr("&Window"));
     menuWindow->addAction(tr("Add new"), QKeySequence(Qt::CTRL | Qt::Key_N),
                           this, &MainWindow::onAddNew);
     menuWindow->addAction(tr("Quit"), QKeySequence(Qt::CTRL | Qt::Key_Q),
                           qApp, QApplication::closeAllWindows);
-
+#endif
     onAddNew();
 }
 
