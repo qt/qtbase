@@ -231,8 +231,10 @@ constexpr inline bool HasQHashSingleArgOverload<T, std::enable_if_t<
 >> = true;
 }
 
-template <typename T, std::enable_if_t<QHashPrivate::HasQHashSingleArgOverload<T> && !std::is_enum_v<T>, bool> = true>
-size_t qHash(const T &t, size_t seed) noexcept(noexcept(qHash(t)))
+// Add Args... to make this overload consistently a worse match than
+// original 2-arg qHash overloads (QTBUG-126659)
+template <typename T, typename...Args, std::enable_if_t<QHashPrivate::HasQHashSingleArgOverload<T> && sizeof...(Args) == 0 && !std::is_enum_v<T>, bool> = true>
+size_t qHash(const T &t, size_t seed, Args&&...) noexcept(noexcept(qHash(t)))
 { return qHash(t) ^ seed; }
 #endif // < Qt 7
 
