@@ -3210,6 +3210,8 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const QMetaMetho
 
     \endlist
 
+    \include includes/qobject.qdocinc disconnect-mismatch
+
     \nullptr may be used as a wildcard, meaning "any signal", "any receiving
     object", or "any slot in the receiving object", respectively.
 
@@ -3362,6 +3364,8 @@ bool QObject::disconnect(const QObject *sender, const char *signal,
 
     \endlist
 
+    \include includes/qobject.qdocinc disconnect-mismatch
+
     QMetaMethod() may be used as wildcard in the meaning "any signal" or "any slot in receiving object".
     In the same way \nullptr can be used for \a receiver in the meaning "any receiving object".
     In this case method should also be QMetaMethod(). \a sender parameter should be never \nullptr.
@@ -3435,6 +3439,8 @@ bool QObject::disconnect(const QObject *sender, const QMetaMethod &signal,
 
     Disconnects \a signal from \a method of \a receiver.
 
+    \include includes/qobject.qdocinc disconnect-mismatch
+
     A signal-slot connection is removed when either of the objects
     involved are destroyed.
 
@@ -3447,6 +3453,8 @@ bool QObject::disconnect(const QObject *sender, const QMetaMethod &signal,
 
     Disconnects all signals in this object from \a receiver's \a
     method.
+
+    \include includes/qobject.qdocinc disconnect-mismatch
 
     A signal-slot connection is removed when either of the objects
     involved are destroyed.
@@ -5384,7 +5392,12 @@ bool QObject::disconnect(const QMetaObject::Connection &connection)
     \note It is not possible to use this overload to disconnect signals
     connected to functors or lambda expressions. That is because it is not
     possible to compare them. Instead, use the overload that takes a
-    QMetaObject::Connection
+    QMetaObject::Connection.
+
+    \note Unless \a method is \nullptr, this function will also not break
+    connections that were made using the string-based version of connect(). To
+    break such connections, use the corresponding string-based overload of
+    disconnect().
 
     \sa connect()
 */

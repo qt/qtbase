@@ -8,3 +8,12 @@ affect classes that rely on this signal for cleaning up resources. It is
 recommended to disconnect only the specific signals that were connected by
 application code.
 //! [disconnect-all]
+
+//! [disconnect-mismatch]
+\note Use the the same syntax, pointer-to-member-function or string-based using
+the \c SIGNAL and \c SLOT macros, in connect() and corresponding disconnect()
+calls.
+
+To avoid mismatches, store the connection handle returned by connect(), and use
+it in the call to \l{disconnect(const QMetaObject::Connection &connection)}{disconnect()}.
+//! [disconnect-mismatch]
