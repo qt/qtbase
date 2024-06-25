@@ -386,7 +386,7 @@ public:
         SHA3Context sha3Context;
 
         enum class Sha3Variant { Sha3, Keccak };
-        void sha3Finish(HashResult &result, int bitCount, Sha3Variant sha3Variant);
+        static void sha3Finish(SHA3Context &ctx, HashResult &result, int bitCount, Sha3Variant sha3Variant);
         blake2b_state blake2bContext;
         blake2s_state blake2sContext;
 #endif
@@ -399,8 +399,8 @@ public:
 };
 
 #ifndef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
-void QCryptographicHashPrivate::State::sha3Finish(HashResult &result, int bitCount,
-                                                  Sha3Variant sha3Variant)
+void QCryptographicHashPrivate::State::sha3Finish(SHA3Context &ctx, HashResult &result,
+                                                  int bitCount, Sha3Variant sha3Variant)
 {
     /*
         FIPS 202 §6.1 defines SHA-3 in terms of calculating the Keccak function
@@ -426,17 +426,15 @@ void QCryptographicHashPrivate::State::sha3Finish(HashResult &result, int bitCou
 
     result.resizeForOverwrite(bitCount / 8);
 
-    SHA3Context copy = sha3Context;
-
     switch (sha3Variant) {
     case Sha3Variant::Sha3:
-        sha3Update(&copy, reinterpret_cast<const BitSequence *>(&sha3FinalSuffix), 2);
+        sha3Update(&ctx, reinterpret_cast<const BitSequence *>(&sha3FinalSuffix), 2);
         break;
     case Sha3Variant::Keccak:
         break;
     }
 
-    sha3Final(&copy, result.data());
+    sha3Final(&ctx, result.data());
 }
 #endif
 
@@ -1034,7 +1032,8 @@ void QCryptographicHashPrivate::State::finalizeUnchecked(QCryptographicHash::Alg
         method == QCryptographicHash::Keccak_256 ||
         method == QCryptographicHash::Keccak_384 ||
         method == QCryptographicHash::Keccak_512) {
-        sha3Finish(result, 8 * hashLengthInternal(method), Sha3Variant::Keccak);
+        SHA3Context copy = sha3Context;
+        sha3Finish(copy, result, 8 * hashLengthInternal(method), Sha3Variant::Keccak);
     } else if (method == QCryptographicHash::Blake2b_160 ||
                method == QCryptographicHash::Blake2b_256 ||
                method == QCryptographicHash::Blake2b_384) {
@@ -1123,14 +1122,16 @@ void QCryptographicHashPrivate::State::finalizeUnchecked(QCryptographicHash::Alg
     case QCryptographicHash::RealSha3_256:
     case QCryptographicHash::RealSha3_384:
     case QCryptographicHash::RealSha3_512: {
-        sha3Finish(result, 8 * hashLengthInternal(method), Sha3Variant::Sha3);
+        SHA3Context copy = sha3Context;
+        sha3Finish(copy, result, 8 * hashLengthInternal(method), Sha3Variant::Sha3);
         break;
     }
     case QCryptographicHash::Keccak_224:
     case QCryptographicHash::Keccak_256:
     case QCryptographicHash::Keccak_384:
     case QCryptographicHash::Keccak_512: {
-        sha3Finish(result, 8 * hashLengthInternal(method), Sha3Variant::Keccak);
+        SHA3Context copy = sha3Context;
+        sha3Finish(copy, result, 8 * hashLengthInternal(method), Sha3Variant::Keccak);
         break;
     }
     case QCryptographicHash::Blake2b_160:
