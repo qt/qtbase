@@ -12684,7 +12684,6 @@ QPoint QWidget::mapFromGlobal(const QPoint &pos) const
    return mapFromGlobal(QPointF(pos)).toPoint();
 }
 
-QWidget *qt_pressGrab = nullptr;
 QWidget *qt_mouseGrb = nullptr;
 static bool mouseGrabWithCursor = false;
 static QWidget *keyboardGrb = nullptr;
@@ -12719,7 +12718,6 @@ static void grabMouseForWidget(QWidget *widget)
     }
 
     qt_mouseGrb = widget;
-    qt_pressGrab = nullptr;
 }
 
 static void releaseMouseGrabOfWidget(QWidget *widget)
@@ -12880,9 +12878,7 @@ void QWidget::releaseKeyboard()
 */
 QWidget *QWidget::mouseGrabber()
 {
-    if (qt_mouseGrb)
-        return qt_mouseGrb;
-    return qt_pressGrab;
+    return qt_mouseGrb;
 }
 
 /*!
