@@ -807,6 +807,8 @@ void tst_QFileSystemModel::setData()
         QCOMPARE(model->data(idx, QFileSystemModel::FileNameRole).toString(), newFileName);
         QCOMPARE(model->data(idx, QFileSystemModel::FileInfoRole).value<QFileInfo>().fileName(), newFileName);
         QCOMPARE(model->fileInfo(idx).filePath(), tmp + '/' + newFileName);
+        QCOMPARE(model->fileName(idx), newFileName);
+        QCOMPARE(model->fileName(idx.siblingAtColumn(1)), newFileName);
         QCOMPARE(model->index(arguments.at(0).toString()), model->index(tmp));
         QCOMPARE(arguments.at(1).toString(), oldFileName);
         QCOMPARE(arguments.at(2).toString(), newFileName);
