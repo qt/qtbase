@@ -27,20 +27,6 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace
-{
-
-class ProtocolHandlerDeleter : public QObject
-{
-public:
-    explicit ProtocolHandlerDeleter(QAbstractProtocolHandler *h) : handler(h) {}
-    ~ProtocolHandlerDeleter() { delete handler; }
-private:
-    QAbstractProtocolHandler *handler = nullptr;
-};
-
-}
-
 // TODO: Put channel specific stuff here so it does not pollute qhttpnetworkconnection.cpp
 
 // Because in-flight when sending a request, the server might close our connection (because the persistent HTTP
@@ -475,18 +461,12 @@ void QHttpNetworkConnectionChannel::allDone()
 
             // As allDone() gets called from the protocol handler, it's not yet
             // safe to delete it. There is no 'deleteLater', since
-            // QAbstractProtocolHandler is not a QObject. Instead we do this
-            // trick with ProtocolHandlerDeleter, a QObject-derived class.
-            // These dances below just make it somewhat exception-safe.
-            // 1. Create a new owner:
-            QAbstractProtocolHandler *oldHandler = protocolHandler.get();
-            auto deleter = std::make_unique<ProtocolHandlerDeleter>(oldHandler);
-            // 2. Retire the old one:
-            Q_UNUSED(protocolHandler.release());
-            // 3. Call 'deleteLater':
-            deleter->deleteLater();
-            // 3. Give up the ownerthip:
-            Q_UNUSED(deleter.release());
+            // QAbstractProtocolHandler is not a QObject. Instead delete it in
+            // a queued emission.
+
+            QMetaObject::invokeMethod(this, [oldHandler = std::move(protocolHandler)]() mutable {
+                oldHandler.reset();
+            }, Qt::QueuedConnection);
 
             connection->fillHttp2Queue();
             protocolHandler.reset(new QHttp2ProtocolHandler(this));
