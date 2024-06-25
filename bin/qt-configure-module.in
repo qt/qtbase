@@ -2,7 +2,7 @@
 set -eu
 
 script_dir_path=`dirname $0`
-script_dir_path=`(cd "$script_dir_path"; /bin/pwd)`
+script_dir_path=`(cd "$script_dir_path"; pwd)`
 
 printUsage()
 {

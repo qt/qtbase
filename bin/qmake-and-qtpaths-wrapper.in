@@ -2,6 +2,6 @@
 
 # The directory of this script is the expanded absolute path of the "$qt_prefix/bin" directory.
 script_dir_path=`dirname $0`
-script_dir_path=`(cd "$script_dir_path"; /bin/pwd)`
+script_dir_path=`(cd "$script_dir_path"; pwd)`
 
 @host_qt_bindir@/@tool_name@@tool_version@ -qtconf "$script_dir_path/target_qt.conf" $*
