@@ -62,7 +62,7 @@ size_t calculateHash(const T &t, size_t seed = 0)
         Q_UNUSED(seed);
         return std::hash<T>()(t);
     } else {
-        static_assert(sizeof(T) == 0, "The key type must have a qHash overload or a std::hash specialization");
+        static_assert(QtPrivate::type_dependent_false<T>(), "The key type must have a qHash overload or a std::hash specialization");
         return 0;
     }
 }
