@@ -30,6 +30,7 @@ QT_BEGIN_NAMESPACE
 class QSslContext
 {
 public:
+    Q_DISABLE_COPY_MOVE(QSslContext)
 
     ~QSslContext();
 
