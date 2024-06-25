@@ -351,7 +351,7 @@ void QIdentityProxyModel::setSourceModel(QAbstractItemModel* newSourceModel)
 }
 
 /*!
-    \since 6.7
+    \since 6.8
 
     If \a b is \c true, this proxy model will handle the source model layout
     changes (by connecting to \c QAbstractItemModel::layoutAboutToBeChanged
@@ -371,7 +371,7 @@ void QIdentityProxyModel::setHandleSourceLayoutChanges(bool b)
 }
 
 /*!
-    \since 6.7
+    \since 6.8
 
     Returns \c true if this proxy model handles the source model layout
     changes, otherwise returns \c false.
