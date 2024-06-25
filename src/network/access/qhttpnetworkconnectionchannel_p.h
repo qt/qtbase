@@ -74,6 +74,10 @@ public:
     QAbstractSocket *socket;
     bool ssl;
     bool isInitialized;
+    bool waitingForPotentialAbort = false;
+    bool needInvokeReceiveReply = false;
+    bool needInvokeReadyRead = false;
+    bool needInvokeSendRequest = false;
     ChannelState state;
     QHttpNetworkRequest request; // current request, only used for HTTP
     QHttpNetworkReply *reply; // current reply for this request, only used for HTTP
@@ -145,6 +149,8 @@ public:
     void handleUnexpectedEOF();
     void closeAndResendCurrentRequest();
     void resendCurrentRequest();
+
+    void checkAndResumeCommunication();
 
     bool isSocketBusy() const;
     bool isSocketWriting() const;

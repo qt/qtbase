@@ -303,11 +303,11 @@ bool QHttp2ProtocolHandler::sendRequest()
         }
     }
 
-    if (!prefaceSent && !sendClientPreface())
-        return false;
-
     if (!requests.size())
         return true;
+
+    if (!prefaceSent && !sendClientPreface())
+        return false;
 
     m_channel->state = QHttpNetworkConnectionChannel::WritingState;
     // Check what was promised/pushed, maybe we do not have to send a request
