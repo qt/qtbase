@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QTest>
+
+#include <QtCore/qmap.h>
 #include <QVarLengthArray>
 
 #include <qhash.h>
@@ -44,6 +46,7 @@ private Q_SLOTS:
     void qhash_of_empty_and_null_qstring();
     void qhash_of_empty_and_null_qbytearray();
     void qhash_of_zero_floating_points();
+    void qmap();
     void qthash_data();
     void qthash();
     void range();
@@ -437,6 +440,14 @@ void tst_QHashFunctions::qhash_of_zero_floating_points()
     QCOMPARE(qHash(-0.0f, seed), qHash(0.0f, seed));
     QCOMPARE(qHash(-0.0 , seed), qHash(0.0 , seed));
     QCOMPARE(qHash(-0.0L, seed), qHash(0.0L, seed));
+}
+
+void tst_QHashFunctions::qmap()
+{
+    // QTBUG-126659
+    QMap<int, int> map;
+    size_t s = seed;
+    QCOMPARE(qHash(map, s), seed);
 }
 
 void tst_QHashFunctions::qthash_data()
