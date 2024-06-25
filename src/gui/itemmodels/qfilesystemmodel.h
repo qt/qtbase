@@ -145,7 +145,9 @@ private:
 };
 
 inline QString QFileSystemModel::fileName(const QModelIndex &aindex) const
-{ return aindex.data(Qt::DisplayRole).toString(); }
+{
+    return aindex.data(FileNameRole).toString();
+}
 inline QIcon QFileSystemModel::fileIcon(const QModelIndex &aindex) const
 { return qvariant_cast<QIcon>(aindex.data(Qt::DecorationRole)); }
 
