@@ -385,8 +385,16 @@ macro(qt_build_repo_end)
             string(TOLOWER "${PROJECT_NAME}" repo_name)
             qt_install(
                 FILES
-                    "${CMAKE_BINARY_DIR}/config_${repo_name}.opt"
-                    "${CMAKE_BINARY_DIR}/config_${repo_name}.summary"
+                    "${CMAKE_BINARY_DIR}/config.opt"
+                RENAME
+                    "config_${repo_name}.opt"
+                DESTINATION ${INSTALL_DATADIR}
+            )
+            qt_install(
+                FILES
+                    "${CMAKE_BINARY_DIR}/config.summary"
+                RENAME
+                    "config_${repo_name}.summary"
                 DESTINATION ${INSTALL_DATADIR}
             )
         endif()
