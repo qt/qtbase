@@ -31,6 +31,7 @@ public slots:
     void init();
 
 private Q_SLOTS:
+    void boolIntegerConsistency();
     void unsignedIntegerConsistency_data();
     void unsignedIntegerConsistency();
     void signedIntegerConsistency_data();
@@ -88,6 +89,19 @@ void tst_QHashFunctions::init()
 {
     QFETCH_GLOBAL(quint64, seedValue);
     seed = size_t(seedValue);
+}
+
+void tst_QHashFunctions::boolIntegerConsistency()
+{
+    if (seed) QEXPECT_FAIL("", "QTBUG-126674", Continue);
+    QCOMPARE(qHash(0, seed), qHash(false, seed));
+    if (seed) QEXPECT_FAIL("", "QTBUG-126674", Continue);
+    QCOMPARE(qHash(1, seed), qHash(true, seed));
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+    // check consistency with pre-6.9 incidental implementation:
+    QCOMPARE(qHash(true,  seed), qHash(int(true)) ^ seed);
+    QCOMPARE(qHash(false, seed), qHash(int(false)) ^ seed);
+#endif
 }
 
 template <typename T> static void addPositiveCommonRows()
