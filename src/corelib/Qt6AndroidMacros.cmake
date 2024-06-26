@@ -1369,6 +1369,11 @@ function(_qt_internal_configure_android_multiabi_target target)
             "-DCMAKE_CXX_COMPILER_LAUNCHER=${compiler_launcher}")
     endif()
 
+    if(DEFINED QT_USE_TARGET_ANDROID_BUILD_DIR)
+        list(APPEND extra_cmake_args
+            "-DQT_USE_TARGET_ANDROID_BUILD_DIR=${QT_USE_TARGET_ANDROID_BUILD_DIR}")
+    endif()
+
     unset(user_cmake_args)
     foreach(var IN LISTS QT_ANDROID_MULTI_ABI_FORWARD_VARS)
         string(REPLACE ";" "$<SEMICOLON>" var_value "${${var}}")
