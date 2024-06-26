@@ -1,0 +1,8 @@
+[toLongLong_QByteArray:many-0 max dec]
+vxworks
+[toULongLong_QByteArray:many-0 max dec]
+vxworks
+[toLongLong_QByteArrayView:many-0 max dec]
+vxworks
+[toULongLong_QByteArrayView:many-0 max dec]
+vxworks
