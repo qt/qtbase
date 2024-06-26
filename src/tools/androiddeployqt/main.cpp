@@ -3705,6 +3705,14 @@ int generateJavaQmlComponents(const Options &options)
         const QString moduleClassname = moduleInfo.moduleName[0].toUpper()
                 + moduleInfo.moduleName.last(moduleInfo.moduleName.size() - 1);
 
+        if (moduleInfo.moduleName == libName) {
+            fprintf(stderr,
+                    "A QML module name (%s) cannot be the same as the target name when building "
+                    "with QT_ANDROID_GENERATE_JAVA_QML_COMPONENTS flag.\n",
+                    qPrintable(moduleInfo.moduleName));
+            return false;
+        }
+
         int indentBase = 4;
         if (leafEqualsLibname) {
             indentBase = 0;
