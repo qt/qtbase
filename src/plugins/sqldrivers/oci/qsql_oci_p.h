@@ -26,12 +26,12 @@
 
 typedef struct OCIEnv OCIEnv;
 typedef struct OCISvcCtx OCISvcCtx;
-struct QOCIResultPrivate;
 
 QT_BEGIN_NAMESPACE
 
 class QSqlResult;
 class QOCIDriverPrivate;
+class QOCIResultPrivate;
 
 class Q_EXPORT_SQLDRIVER_OCI QOCIDriver : public QSqlDriver
 {
@@ -71,29 +71,32 @@ protected:
 class Q_EXPORT_SQLDRIVER_OCI QOCIResult : public QSqlCachedResult
 {
     friend class QOCIDriver;
-    friend struct QOCIResultPrivate;
+    friend class QOCIResultPrivate;
     friend class QOCICols;
 public:
-    QOCIResult(const QOCIDriver * db, const QOCIDriverPrivate* p);
-    ~QOCIResult();
-    bool prepare(const QString& query);
-    bool exec();
-    QVariant handle() const;
+    explicit QOCIResult(const QOCIDriver * db);
+    ~QOCIResult() override;
+    bool prepare(const QString& query) override;
+    bool exec() override;
+    QVariant handle() const override;
 
 protected:
-    bool gotoNext(ValueCache &values, int index);
-    bool reset (const QString& query);
-    int size();
-    int numRowsAffected();
-    QSqlRecord record() const;
-    QVariant lastInsertId() const;
-    bool execBatch(bool arrayBind = false);
-    void virtual_hook(int id, void *data);
     bool isCursor;
+
+    bool gotoNext(ValueCache &values, int index) override;
+    bool reset(const QString& query) override;
+    int size() override;
+    int numRowsAffected() override;
+    QSqlRecord record() const override;
+    QVariant lastInsertId() const override;
+    bool execBatch(bool arrayBind = false) override;
+    void virtual_hook(int id, void *data) override;
+    bool fetchNext() override;
     bool internal_prepare();
 
 private:
-    QOCIResultPrivate *d;
+    QOCIResultPrivate *d_ptr;
+    Q_DECLARE_PRIVATE(QOCIResult)
 };
 
 QT_END_NAMESPACE

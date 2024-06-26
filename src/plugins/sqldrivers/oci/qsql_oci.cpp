@@ -418,7 +418,7 @@ int QOCIResultPrivate::bindValue(OCIStmt *sql, OCIBind **hbnd, OCIError *err, in
                 if (res->internal_prepare()) {
                     r = OCIBindByPos(sql, hbnd, err,
                                     pos + 1,
-                                    const_cast<OCIStmt **>(&res->d->sql),
+                                    const_cast<OCIStmt **>(&res->d_ptr->sql),
                                     (sb4)0,
                                     SQLT_RSET, indPtr, 0, 0, 0, 0, OCI_DEFAULT);
 
@@ -1913,7 +1913,7 @@ int QOCIResult::numRowsAffected()
     return rowCount;
 }
 
-+bool QOCIResult::internal_prepare()
+bool QOCIResult::internal_prepare()
 {
     Q_D(QOCIResult);
     int r = 0;
@@ -1958,6 +1958,7 @@ bool QOCIResult::prepare(const QString& query)
     int r;
     const OraText *txt = reinterpret_cast<const OraText *>(query.utf16());
     const int len = query.length() * sizeof(QChar);
+    Q_D(QOCIResult);
     r = OCIStmtPrepare(d->sql,
                        d->err,
                        txt,
@@ -2016,7 +2017,7 @@ bool QOCIResult::exec()
         return false;
     }
 
-    if (!isCursor()) {
+    if (!isCursor) {
         // execute
         r = OCIStmtExecute(d->svc,
                            d->sql,
