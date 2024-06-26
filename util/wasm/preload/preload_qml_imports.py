@@ -19,10 +19,6 @@ qt_qml_path = "$QTDIR/qml"
 qt_deploy_qml_path = "/qt/qml"
 
 
-def eprint(*args, **kwargs):
-    print(*args, file=sys.stderr, **kwargs)
-
-
 def preload_file(source, destination):
     preload_files.append({"source": source, "destination": destination})
 
@@ -55,24 +51,23 @@ def extract_preload_files_from_imports(imports):
             )
             preload_file(qmldir_source_path, qmldir_destination_path)
         except Exception as e:
-            eprint(e)
             continue
     return libraries
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 4:
-        print("Usage: python preload_qml_imports.py <qml-source-path> <qt-host-path> <qt-wasm-path>")
+    if len(sys.argv) != 5:
+        print("Usage: python preload_qml_imports.py <qml-source-path> <qt-host-path> <qt-wasm-path> <output-dir>")
         sys.exit(1)
 
     qml_source_path = sys.argv[1]
     qt_host_path = sys.argv[2]
     qt_wasm_path = sys.argv[3]
+    output_dir = sys.argv[4]
 
     qml_import_path = os.path.join(qt_wasm_path, "qml")
     qmlimportsscanner_path = os.path.join(qt_host_path, "libexec/qmlimportscanner")
 
-    eprint("runing qmlimportsscanner")
     command = [qmlimportsscanner_path, "-rootPath", qml_source_path, "-importPath", qml_import_path]
     result = subprocess.run(command, stdout=subprocess.PIPE)
     imports = json.loads(result.stdout)
@@ -98,4 +93,6 @@ if __name__ == "__main__":
         destination = os.path.join("/", library)
         preload_file(source, destination)
 
-    print(json.dumps(preload_files, indent=2))
+    with open(f"{output_dir}/qt_qml_imports.json", "w") as f:
+        f.write(json.dumps(preload_files, indent=2))
+

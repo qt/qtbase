@@ -27,11 +27,12 @@ def find_so_files(directory):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python make_qt_symlinks.py <qt-wasm-path>")
+    if len(sys.argv) != 3:
+        print("Usage: python preload_qt_plugins.py <qt-wasm-path> <output-dir>")
         sys.exit(1)
 
     qt_wasm_path = sys.argv[1]
+    output_dir = sys.argv[2]
 
     # preload all plugins
     plugins = find_so_files(os.path.join(qt_wasm_path, "plugins"))
@@ -47,8 +48,10 @@ if __name__ == "__main__":
     # and QML imports in /qt/plugins and /qt/qml. The qt.conf file is
     # written to the current directory.
     qtconf = "[Paths]\nPrefix = /qt\n"
-    with open("qt.conf", "w") as f:
+    with open(f"{output_dir}/qt.conf", "w") as f:
         f.write(qtconf)
     preload.append({"source": "qt.conf", "destination": "/qt.conf"})
 
-    print(json.dumps(preload, indent=2))
+    with open(f"{output_dir}/qt_plugins.json", "w") as f:
+        f.write(json.dumps(preload, indent=2))
+

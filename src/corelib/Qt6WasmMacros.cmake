@@ -91,6 +91,49 @@ function(_qt_internal_wasm_add_target_helpers target)
                         ${_target_directory}/qtloader.js COPYONLY)
                     configure_file("${WASM_BUILD_DIR}/plugins/platforms/qtlogo.svg"
                         ${_target_directory}/qtlogo.svg COPYONLY)
+
+                    if(QT_FEATURE_shared)
+                        configure_file("${WASM_BUILD_DIR}/libexec/preload_qml_imports.py"
+                            ${_target_directory}/preload_qml_imports.py COPYONLY)
+                        configure_file("${WASM_BUILD_DIR}/libexec/preload_qt_plugins.py"
+                            ${_target_directory}/preload_qt_plugins.py COPYONLY)
+                    endif()
+
+                    if(CMAKE_STAGING_PREFIX)
+                        install(FILES
+                            ${_target_directory}/qtloader.js
+                            ${_target_directory}/qtlogo.svg
+                            ${_target_directory}/${_target_output_name}.html
+                            ${_target_directory}/${_target_output_name}.wasm
+                            ${_target_directory}/${_target_output_name}.js
+                                    DESTINATION ${CMAKE_STAGING_PREFIX})
+                        if(QT_FEATURE_thread)
+                            install(FILES
+                                ${_target_directory}/${_target_output_name}.worker.js
+                                    DESTINATION ${CMAKE_STAGING_PREFIX})
+                        endif()
+
+                        if(QT_FEATURE_shared)
+                            find_package(Python3 COMPONENTS Interpreter)
+                            if(Python3_Interpreter_FOUND)
+                                install(FILES
+                                    ${_target_directory}/preload_qml_imports.py
+                                    ${_target_directory}/preload_qt_plugins.py
+                                        DESTINATION ${CMAKE_STAGING_PREFIX})
+                                install(CODE "execute_process(COMMAND ${Python3_EXECUTABLE} \
+                                    ${_target_directory}/preload_qml_imports.py \
+                                    ${CMAKE_CURRENT_SOURCE_DIR} ${QT_HOST_PATH} \
+                                    ${QT6_INSTALL_PREFIX} \
+                                    ${CMAKE_STAGING_PREFIX})")
+                                install(CODE "execute_process(COMMAND ${Python3_EXECUTABLE} \
+                                    ${_target_directory}/preload_qt_plugins.py \
+                                    ${QT6_INSTALL_PREFIX} \
+                                    ${CMAKE_STAGING_PREFIX})")
+                            else()
+                                message(WARNING "Python 3 not found. Generating preload list for dynamic linking is disabled.")
+                            endif()
+                        endif()
+                    endif()
                 endif()
             endif()
         endif()

@@ -378,8 +378,16 @@ if(APPLE)
 elseif(WASM)
     configure_file("${CMAKE_CURRENT_SOURCE_DIR}/util/wasm/wasmtestrunner/qt-wasmtestrunner.py"
         "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/qt-wasmtestrunner.py" @ONLY)
+    configure_file("${CMAKE_CURRENT_SOURCE_DIR}/util/wasm/preload/preload_qml_imports.py"
+        "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/preload_qml_imports.py" COPYONLY)
+    configure_file("${CMAKE_CURRENT_SOURCE_DIR}/util/wasm/preload/preload_qt_plugins.py"
+        "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/preload_qt_plugins.py" COPYONLY)
 
     qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/qt-wasmtestrunner.py"
+        DESTINATION "${INSTALL_LIBEXECDIR}")
+    qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/preload_qml_imports.py"
+        DESTINATION "${INSTALL_LIBEXECDIR}")
+    qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/preload_qt_plugins.py"
         DESTINATION "${INSTALL_LIBEXECDIR}")
 endif()
 
