@@ -879,6 +879,7 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
             painter->drawEllipse(center,innerRadius, innerRadius);
         }
         break;
+    case PE_PanelButtonTool:
     case PE_PanelButtonBevel:{
             QRectF rect = option->rect.marginsRemoved(QMargins(2,2,2,2));
             rect.adjust(-0.5,-0.5,0.5,0.5);
