@@ -1246,6 +1246,20 @@ uint qt_hash(QStringView key, uint chained) noexcept
     \sa qHashRange(), qHashRangeCommutative()
 */
 
+/*!
+    \fn template <typname T, std::enable_if_t<std::is_same_v<T, bool>, bool> = true> size_t qHash(T key, size_t seed)
+    \relates QHash
+    \since 6.9
+
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
+
+    \note This is qHash(bool), constrained to accept only arguments of type bool,
+    not arguments of types that merely convert to bool.
+
+    \note In Qt versions prior to 6.9, this overload was unintendedly provided by
+    an undocumented 1-to-2-arg qHash adapter template function, with identical behavior.
+*/
+
 /*! \fn size_t qHash(char key, size_t seed = 0)
     \relates QHash
     \since 5.0

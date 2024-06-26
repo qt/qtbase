@@ -97,9 +97,9 @@ void tst_QHashFunctions::init()
 
 void tst_QHashFunctions::boolIntegerConsistency()
 {
-    if (seed) QEXPECT_FAIL("", "QTBUG-126674", Continue);
+    QT6_ONLY(if (seed) QEXPECT_FAIL("", "QTBUG-126674", Continue));
     QCOMPARE(qHash(0, seed), qHash(false, seed));
-    if (seed) QEXPECT_FAIL("", "QTBUG-126674", Continue);
+    QT6_ONLY(if (seed) QEXPECT_FAIL("", "QTBUG-126674", Continue));
     QCOMPARE(qHash(1, seed), qHash(true, seed));
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
     // check consistency with pre-6.9 incidental implementation:

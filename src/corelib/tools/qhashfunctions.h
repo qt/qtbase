@@ -98,6 +98,13 @@ template <typename T1, typename T2> inline size_t qHash(const std::pair<T1, T2> 
     noexcept(QHashPrivate::noexceptPairHash<T1, T2>());
 
 // C++ builtin types
+#define QT_MK_QHASH_COMPAT(X) \
+    template <typename T, std::enable_if_t<std::is_same_v<T, X>, bool> = true> \
+    constexpr size_t qHash(T key, size_t seed = 0) noexcept \
+    /* QHashPrivate::hash() xors before mixing, while 1-to-2-arg adapter xors after */ \
+    { return QHashPrivate::hash(size_t(key), 0 QT7_ONLY(+ seed)) QT6_ONLY(^ seed); } \
+    /* end */
+QT_MK_QHASH_COMPAT(bool) // QTBUG-126674
 Q_DECL_CONST_FUNCTION constexpr inline size_t qHash(char key, size_t seed = 0) noexcept
 { return QHashPrivate::hash(size_t(key), seed); }
 Q_DECL_CONST_FUNCTION constexpr inline size_t qHash(uchar key, size_t seed = 0) noexcept
@@ -116,6 +123,7 @@ Q_DECL_CONST_FUNCTION constexpr inline size_t qHash(ulong key, size_t seed = 0) 
 { return QHashPrivate::hash(size_t(key), seed); }
 Q_DECL_CONST_FUNCTION constexpr inline size_t qHash(long key, size_t seed = 0) noexcept
 { return QHashPrivate::hash(size_t(key), seed); }
+#undef QT_MK_QHASH_COMPAT
 Q_DECL_CONST_FUNCTION constexpr inline size_t qHash(quint64 key, size_t seed = 0) noexcept
 {
     if constexpr (sizeof(quint64) > sizeof(size_t))
