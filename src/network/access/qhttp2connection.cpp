@@ -842,7 +842,7 @@ QHttp2Stream *QHttp2Connection::createStreamInternal_impl(quint32 streamID)
 qsizetype QHttp2Connection::numActiveStreamsImpl(quint32 mask) const noexcept
 {
     const auto shouldCount = [mask](const QPointer<QHttp2Stream> &stream) -> bool {
-        return stream && (stream->streamID() & 1) == mask;
+        return stream && (stream->streamID() & 1) == mask && stream->isActive();
     };
     return std::count_if(m_streams.cbegin(), m_streams.cend(), shouldCount);
 }
