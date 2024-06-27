@@ -223,14 +223,14 @@ void QHttpNetworkConnectionChannel::abort()
 }
 
 
-bool QHttpNetworkConnectionChannel::sendRequest()
+void QHttpNetworkConnectionChannel::sendRequest()
 {
     Q_ASSERT(protocolHandler);
     if (waitingForPotentialAbort) {
         needInvokeSendRequest = true;
-        return false; // this return value is unused
+        return;
     }
-    return protocolHandler->sendRequest();
+    protocolHandler->sendRequest();
 }
 
 /*

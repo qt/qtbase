@@ -140,7 +140,7 @@ public:
     void close();
     void abort();
 
-    bool sendRequest();
+    void sendRequest();
     void sendRequestDelayed();
 
     bool ensureConnection();
