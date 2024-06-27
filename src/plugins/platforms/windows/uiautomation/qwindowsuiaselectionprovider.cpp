@@ -65,9 +65,9 @@ HRESULT STDMETHODCALLTYPE QWindowsUiaSelectionProvider::GetSelection(SAFEARRAY *
 
     if ((*pRetVal = SafeArrayCreateVector(VT_UNKNOWN, 0, selectedList.size()))) {
         for (LONG i = 0; i < selectedList.size(); ++i) {
-            if (QWindowsUiaMainProvider *childProvider = QWindowsUiaMainProvider::providerForAccessible(selectedList.at(i))) {
-                SafeArrayPutElement(*pRetVal, &i, static_cast<IRawElementProviderSimple *>(childProvider));
-                childProvider->Release();
+            if (ComPtr<IRawElementProviderSimple> provider =
+                        QWindowsUiaMainProvider::providerForAccessible(selectedList.at(i))) {
+                SafeArrayPutElement(*pRetVal, &i, provider.Get());
             }
         }
     }
@@ -161,9 +161,9 @@ HRESULT STDMETHODCALLTYPE QWindowsUiaSelectionProvider::get_FirstSelectedItem(__
     if (!firstSelectedChild)
         return UIA_E_ELEMENTNOTAVAILABLE;
 
-    if (QWindowsUiaMainProvider *childProvider = QWindowsUiaMainProvider::providerForAccessible(firstSelectedChild))
-    {
-        *pRetVal = static_cast<IRawElementProviderSimple *>(childProvider); // Detach
+    if (ComPtr<IRawElementProviderSimple> childProvider =
+                QWindowsUiaMainProvider::providerForAccessible(firstSelectedChild)) {
+        *pRetVal = childProvider.Detach();
         return S_OK;
     }
 
@@ -206,9 +206,9 @@ HRESULT STDMETHODCALLTYPE QWindowsUiaSelectionProvider::get_LastSelectedItem(__R
     if (!lastSelectedChild)
         return UIA_E_ELEMENTNOTAVAILABLE;
 
-    if (QWindowsUiaMainProvider *childProvider = QWindowsUiaMainProvider::providerForAccessible(lastSelectedChild))
-    {
-        *pRetVal = static_cast<IRawElementProviderSimple *>(childProvider); // Detach
+    if (ComPtr<IRawElementProviderSimple> childProvider =
+                QWindowsUiaMainProvider::providerForAccessible(lastSelectedChild)) {
+        *pRetVal = childProvider.Detach();
         return S_OK;
     }
 

@@ -46,9 +46,8 @@ bool QWindowsUiaAccessibility::handleWmGetObject(HWND hwnd, WPARAM wParam, LPARA
 
     if (QWindow *window = QWindowsContext::instance()->findWindow(hwnd)) {
         if (QAccessibleInterface *accessible = window->accessibleRoot()) {
-            QWindowsUiaMainProvider *provider = QWindowsUiaMainProvider::providerForAccessible(accessible);
-            *lResult = UiaReturnRawElementProvider(hwnd, wParam, lParam, provider);
-            provider->Release();
+            auto provider = QWindowsUiaMainProvider::providerForAccessible(accessible);
+            *lResult = UiaReturnRawElementProvider(hwnd, wParam, lParam, provider.Get());
             return true;
         }
     }

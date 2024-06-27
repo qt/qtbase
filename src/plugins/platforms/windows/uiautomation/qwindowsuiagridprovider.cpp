@@ -45,9 +45,8 @@ HRESULT STDMETHODCALLTYPE QWindowsUiaGridProvider::GetItem(int row, int column, 
         return UIA_E_ELEMENTNOTAVAILABLE;
 
     if ((row >= 0) && (row < tableInterface->rowCount()) && (column >= 0) && (column < tableInterface->columnCount())) {
-        if (QAccessibleInterface *cell = tableInterface->cellAt(row, column)) {
-            *pRetVal = QWindowsUiaMainProvider::providerForAccessible(cell); // Detach
-        }
+        if (QAccessibleInterface *cell = tableInterface->cellAt(row, column))
+            *pRetVal = QWindowsUiaMainProvider::providerForAccessible(cell).Detach();
     }
     return S_OK;
 }
