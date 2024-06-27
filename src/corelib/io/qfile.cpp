@@ -269,10 +269,10 @@ QFile::~QFile()
 }
 
 /*!
-    Returns the name set by setFileName() or to the QFile
-    constructors.
+    Returns the name of the file as set by setFileName(), rename(), or
+    by the QFile constructors.
 
-    \sa setFileName(), QFileInfo::fileName()
+    \sa setFileName(), rename(), QFileInfo::fileName()
 */
 QString QFile::fileName() const
 {
