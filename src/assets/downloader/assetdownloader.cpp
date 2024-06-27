@@ -377,7 +377,7 @@ void AssetDownloader::start()
         }
         storage->tempDir = d->m_temporaryDir->path();
         d->setLocalDownloadDir(baseLocalDir(d->m_preferredLocalDownloadDir));
-        precheckLocalFile(d->m_offlineAssetsFilePath);
+        precheckLocalFile(resolvedUrl(d->m_offlineAssetsFilePath));
         return SetupResult::Continue;
     };
 
@@ -397,7 +397,7 @@ void AssetDownloader::start()
             return DoneResult::Error;
         }
 
-        QFile file(pathFromUrl(d->m_offlineAssetsFilePath));
+        QFile file(pathFromUrl(resolvedUrl(d->m_offlineAssetsFilePath)));
         if (!file.open(QIODevice::ReadOnly)) {
             qWarning() << "Also failed to open" << d->m_offlineAssetsFilePath;
             return DoneResult::Error;
@@ -550,6 +550,11 @@ void AssetDownloader::start()
     };
     d->m_taskTreeRunner.start(recipe, [this](TaskTree *) { emit started(); },
             [this](DoneWith result) { emit finished(result == DoneWith::Success); });
+}
+
+QUrl AssetDownloader::resolvedUrl(const QUrl &url) const
+{
+    return url;
 }
 
 } // namespace Assets::Downloader

@@ -89,6 +89,9 @@ public:
 public Q_SLOTS:
     void start();
 
+protected:
+    virtual QUrl resolvedUrl(const QUrl &url) const;
+
 Q_SIGNALS:
     void started();
     void finished(bool success);
