@@ -154,7 +154,7 @@ const QJsonDocument QGtk3Json::save(const QGtk3Storage::PaletteMap &map)
              ++brushIterator) {
             const QPalette::ColorRole role = brushIterator.key().colorRole;
             if (brushMaps.contains(role)) {
-                brushMaps.value(role).insert(brushIterator.key(), brushIterator.value());
+                brushMaps[role].insert(brushIterator.key(), brushIterator.value());
             } else {
                 QGtk3Storage::BrushMap newMap;
                 newMap.insert(brushIterator.key(), brushIterator.value());
