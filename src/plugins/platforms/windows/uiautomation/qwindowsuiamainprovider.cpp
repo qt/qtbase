@@ -213,17 +213,15 @@ void QWindowsUiaMainProvider::raiseNotification(QAccessibleAnnouncementEvent *ev
 {
     if (QAccessibleInterface *accessible = event->accessibleInterface()) {
         if (auto provider = providerForAccessible(accessible)) {
-            BSTR message = bStrFromQString(event->message());
+            QBStr message{ event->message() };
             QAccessible::AnnouncementPoliteness prio = event->politeness();
             NotificationProcessing processing = (prio == QAccessible::AnnouncementPoliteness::Assertive)
                     ? NotificationProcessing_ImportantAll
                     : NotificationProcessing_All;
-            BSTR activityId = bStrFromQString(QString::fromLatin1(""));
-            UiaRaiseNotificationEvent(provider.Get(), NotificationKind_Other, processing, message,
-                                      activityId);
+            QBStr activityId{ QString::fromLatin1("") };
+            UiaRaiseNotificationEvent(provider.Get(), NotificationKind_Other, processing, message.bstr(),
+                                      activityId.bstr());
 
-            ::SysFreeString(message);
-            ::SysFreeString(activityId);
         }
     }
 }

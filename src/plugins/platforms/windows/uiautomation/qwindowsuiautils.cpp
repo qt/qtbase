@@ -81,15 +81,10 @@ void setVariantDouble(double value, VARIANT *variant)
     variant->dblVal = value;
 }
 
-BSTR bStrFromQString(const QString &value)
-{
-    return SysAllocString(reinterpret_cast<const wchar_t *>(value.utf16()));
-}
-
 void setVariantString(const QString &value, VARIANT *variant)
 {
     variant->vt = VT_BSTR;
-    variant->bstrVal = bStrFromQString(value);
+    variant->bstrVal = QBStr(value).release();
 }
 
 // Scales a rect to native coordinates, according to high dpi settings.

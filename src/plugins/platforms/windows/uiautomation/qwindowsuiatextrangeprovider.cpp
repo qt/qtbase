@@ -293,7 +293,7 @@ HRESULT QWindowsUiaTextRangeProvider::GetText(int maxLength, BSTR *pRetVal)
 
     if ((maxLength > -1) && (rangeText.size() > maxLength))
         rangeText.truncate(maxLength);
-    *pRetVal = bStrFromQString(rangeText);
+    *pRetVal = QBStr(rangeText).release();
     return S_OK;
 }
 
