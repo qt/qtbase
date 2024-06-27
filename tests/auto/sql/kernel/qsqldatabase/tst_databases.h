@@ -359,6 +359,8 @@ public:
             return QLatin1String("timestamp(0)");
         if (dbType == QSqlDriver::Interbase || dbType == QSqlDriver::MimerSQL)
             return QLatin1String("timestamp");
+        if (dbType == QSqlDriver::MSSqlServer)
+            return QLatin1String("Datetime2");
         return QLatin1String("datetime");
     }
 

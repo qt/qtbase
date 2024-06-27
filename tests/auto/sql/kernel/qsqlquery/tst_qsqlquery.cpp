@@ -389,19 +389,18 @@ void tst_QSqlQuery::createTestTables(QSqlDatabase db)
 
 void tst_QSqlQuery::populateTestTables(QSqlDatabase db)
 {
+    QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
     QSqlQuery q(db);
     const QString qtest_null(qTableName("qtest_null", __FILE__, db));
     q.exec("delete from " + qtest);
-    QVERIFY_SQL(q, exec(QLatin1String("insert into %1 values (1, 'VarChar1', 'Char1')")
-                        .arg(qtest)));
-    QVERIFY_SQL(q, exec(QLatin1String("insert into %1 values (2, 'VarChar2', 'Char2')")
-                        .arg(qtest)));
-    QVERIFY_SQL(q, exec(QLatin1String("insert into %1 values (3, 'VarChar3', 'Char3')")
-                        .arg(qtest)));
-    QVERIFY_SQL(q, exec(QLatin1String("insert into %1 values (4, 'VarChar4', 'Char4')")
-                        .arg(qtest)));
-    QVERIFY_SQL(q, exec(QLatin1String("insert into %1 values (5, 'VarChar5', 'Char5')")
-                        .arg(qtest)));
+    if (dbType == QSqlDriver::MSSqlServer)
+        q.exec("SET IDENTITY_INSERT " + qtest + " ON"); // do not reset, also needed for tests later on
+    for (int i = 1; i <= 5; ++i) {
+        const QString stmt =
+                QString("insert into %1 (id, t_varchar, t_char) values (%2, 'VarChar%2', 'Char%2')")
+                        .arg(qtest).arg(i);
+        QVERIFY_SQL(q, exec(stmt));
+    }
 
     q.exec("delete from " + qtest_null);
     QVERIFY_SQL(q, exec(QLatin1String("insert into %1 values (0, NULL)").arg(qtest_null)));
@@ -1123,11 +1122,11 @@ void tst_QSqlQuery::isActive()
         QVERIFY(!q.next());
     QVERIFY(q.isActive());
 
-    QVERIFY_SQL(q, exec(QLatin1String("insert into %1 values (41, 'VarChar41', 'Char41')")
+    QVERIFY_SQL(q, exec(QLatin1String("insert into %1 (id, t_varchar, t_char) values (41, 'VarChar41', 'Char41')")
                         .arg(qtest)));
     QVERIFY(q.isActive());
 
-    QVERIFY_SQL(q, exec(QLatin1String("update %1 set id = 42 where id = 41").arg(qtest)));
+    QVERIFY_SQL(q, exec(QLatin1String("update %1 set t_varchar = 'VarChar42' where id = 41").arg(qtest)));
     QVERIFY(q.isActive());
 
     QVERIFY_SQL(q, exec(QLatin1String("delete from %1 where id = 42").arg(qtest)));
@@ -1225,7 +1224,7 @@ void tst_QSqlQuery::size()
 
     q2.clear();
 
-    QVERIFY_SQL(q, exec(QLatin1String("update %1 set id = 100 where id = 1").arg(qtest)));
+    QVERIFY_SQL(q, exec(QLatin1String("update %1 set t_varchar = 'VarChar42' where id = 1").arg(qtest)));
     QCOMPARE(q.size(), -1);
     QCOMPARE(q.size(), -1); // yes, twice
 }
@@ -1240,7 +1239,7 @@ void tst_QSqlQuery::isSelect()
     QVERIFY_SQL(q, exec("select * from " + qtest));
     QVERIFY(q.isSelect());
 
-    QVERIFY_SQL(q, exec(QLatin1String("update %1 set id = 1 where id = 1").arg(qtest)));
+    QVERIFY_SQL(q, exec(QLatin1String("update %1 set t_varchar = 'VarChar42' where id = 1").arg(qtest)));
     QVERIFY(!q.isSelect());
 }
 
@@ -2781,6 +2780,7 @@ void tst_QSqlQuery::lastInsertId()
         QSKIP("Database doesn't support lastInsertId");
 
     QSqlQuery q(db);
+    q.exec("SET IDENTITY_INSERT " + qtest + " ON"); // do not reset, also needed for tests later on
 
     // PostgreSQL >= 8.1 relies on lastval() which does not work if a value is
     // manually inserted to the serial field, so we create a table specifically
@@ -2792,7 +2792,7 @@ void tst_QSqlQuery::lastInsertId()
         QVERIFY_SQL(q, exec(QLatin1String("insert into %1 (t_varchar, t_char) values "
                                           "('VarChar41', 'Char41')").arg(ts.tableName())));
     } else {
-        QVERIFY_SQL(q, exec(QLatin1String("insert into %1 values (41, 'VarChar41', 'Char41')")
+        QVERIFY_SQL(q, exec(QLatin1String("insert into %1 (id, t_varchar, t_char) values (41, 'VarChar41', 'Char41')")
                             .arg(qtest)));
     }
     QVERIFY(q.lastInsertId().isValid());
@@ -3678,7 +3678,7 @@ void tst_QSqlQuery::QTBUG_18435()
 
     QVERIFY_SQL(q, exec(stmt));
     QVERIFY_SQL(q, prepare(QLatin1String("{CALL %1(?)}").arg(ps.name())));
-    const QString testStr = "0123";
+    const QString testStr = "01234";
     q.bindValue(0, testStr, QSql::Out);
     QVERIFY_SQL(q, exec());
     QCOMPARE(q.boundValue(0).toString(), QLatin1String("TEST"));
