@@ -271,31 +271,31 @@ HRESULT QWindowsUiaMainProvider::GetPatternProvider(PATTERNID idPattern, IUnknow
     switch (idPattern) {
     case UIA_WindowPatternId:
         if (accessible->parent() && (accessible->parent()->role() == QAccessible::Application)) {
-            *pRetVal = new QWindowsUiaWindowProvider(id());
+            *pRetVal = makeComObject<QWindowsUiaWindowProvider>(id()).Detach();
         }
         break;
     case UIA_TextPatternId:
     case UIA_TextPattern2Id:
         // All text controls.
         if (accessible->textInterface()) {
-            *pRetVal = new QWindowsUiaTextProvider(id());
+            *pRetVal = makeComObject<QWindowsUiaTextProvider>(id()).Detach();
         }
         break;
     case UIA_ValuePatternId:
         // All non-static controls support the Value pattern.
         if (accessible->role() != QAccessible::StaticText)
-            *pRetVal = new QWindowsUiaValueProvider(id());
+            *pRetVal = makeComObject<QWindowsUiaValueProvider>(id()).Detach();
         break;
     case UIA_RangeValuePatternId:
         // Controls providing a numeric value within a range (e.g., sliders, scroll bars, dials).
         if (accessible->valueInterface()) {
-            *pRetVal = new QWindowsUiaRangeValueProvider(id());
+            *pRetVal = makeComObject<QWindowsUiaRangeValueProvider>(id()).Detach();
         }
         break;
     case UIA_TogglePatternId:
         // Checkboxes and other checkable controls.
         if (accessible->state().checkable)
-            *pRetVal = new QWindowsUiaToggleProvider(id());
+            *pRetVal = makeComObject<QWindowsUiaToggleProvider>(id()).Detach();
         break;
     case UIA_SelectionPatternId:
     case UIA_SelectionPattern2Id:
@@ -303,7 +303,7 @@ HRESULT QWindowsUiaMainProvider::GetPatternProvider(PATTERNID idPattern, IUnknow
         if (accessible->selectionInterface()
                 || accessible->role() == QAccessible::List
                 || accessible->role() == QAccessible::PageTabList) {
-            *pRetVal = new QWindowsUiaSelectionProvider(id());
+            *pRetVal = makeComObject<QWindowsUiaSelectionProvider>(id()).Detach();
         }
         break;
     case UIA_SelectionItemPatternId:
@@ -312,41 +312,41 @@ HRESULT QWindowsUiaMainProvider::GetPatternProvider(PATTERNID idPattern, IUnknow
                 || (accessible->role() == QAccessible::RadioButton)
                 || (accessible->role() == QAccessible::ListItem)
                 || (accessible->role() == QAccessible::PageTab)) {
-            *pRetVal = new QWindowsUiaSelectionItemProvider(id());
+            *pRetVal = makeComObject<QWindowsUiaSelectionItemProvider>(id()).Detach();
         }
         break;
     case UIA_TablePatternId:
         // Table/tree.
         if (accessible->tableInterface()
                 && ((accessible->role() == QAccessible::Table) || (accessible->role() == QAccessible::Tree))) {
-            *pRetVal = new QWindowsUiaTableProvider(id());
+            *pRetVal = makeComObject<QWindowsUiaTableProvider>(id()).Detach();
         }
         break;
     case UIA_TableItemPatternId:
         // Item within a table/tree.
         if (accessible->tableCellInterface()
                 && ((accessible->role() == QAccessible::Cell) || (accessible->role() == QAccessible::TreeItem))) {
-            *pRetVal = new QWindowsUiaTableItemProvider(id());
+            *pRetVal = makeComObject<QWindowsUiaTableItemProvider>(id()).Detach();
         }
         break;
     case UIA_GridPatternId:
         // Table/tree.
         if (accessible->tableInterface()
                 && ((accessible->role() == QAccessible::Table) || (accessible->role() == QAccessible::Tree))) {
-            *pRetVal = new QWindowsUiaGridProvider(id());
+            *pRetVal = makeComObject<QWindowsUiaGridProvider>(id()).Detach();
         }
         break;
     case UIA_GridItemPatternId:
         // Item within a table/tree.
         if (accessible->tableCellInterface()
                 && ((accessible->role() == QAccessible::Cell) || (accessible->role() == QAccessible::TreeItem))) {
-            *pRetVal = new QWindowsUiaGridItemProvider(id());
+            *pRetVal = makeComObject<QWindowsUiaGridItemProvider>(id()).Detach();
         }
         break;
     case UIA_InvokePatternId:
         // Things that have an invokable action (e.g., simple buttons).
         if (accessible->actionInterface()) {
-            *pRetVal = new QWindowsUiaInvokeProvider(id());
+            *pRetVal = makeComObject<QWindowsUiaInvokeProvider>(id()).Detach();
         }
         break;
     case UIA_ExpandCollapsePatternId:
@@ -356,7 +356,7 @@ HRESULT QWindowsUiaMainProvider::GetPatternProvider(PATTERNID idPattern, IUnknow
                 && accessible->child(0)->role() == QAccessible::PopupMenu)
             || accessible->role() == QAccessible::ComboBox
             || (accessible->role() == QAccessible::TreeItem && accessible->state().expandable)) {
-            *pRetVal = new QWindowsUiaExpandCollapseProvider(id());
+            *pRetVal = makeComObject<QWindowsUiaExpandCollapseProvider>(id()).Detach();
         }
         break;
     default:

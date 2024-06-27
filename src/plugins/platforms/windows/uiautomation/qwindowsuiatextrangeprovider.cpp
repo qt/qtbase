@@ -45,7 +45,7 @@ HRESULT QWindowsUiaTextRangeProvider::Clone(ITextRangeProvider **pRetVal)
     if (!pRetVal)
         return E_INVALIDARG;
 
-    *pRetVal = new QWindowsUiaTextRangeProvider(id(), m_startOffset, m_endOffset);
+    *pRetVal = makeComObject<QWindowsUiaTextRangeProvider>(id(), m_startOffset, m_endOffset).Detach();
     return S_OK;
 }
 
