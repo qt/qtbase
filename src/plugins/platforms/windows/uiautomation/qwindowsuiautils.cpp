@@ -63,30 +63,6 @@ void clearVariant(VARIANT *variant)
     variant->punkVal = nullptr;
 }
 
-void setVariantI4(int value, VARIANT *variant)
-{
-    variant->vt = VT_I4;
-    variant->lVal = value;
-}
-
-void setVariantBool(bool value, VARIANT *variant)
-{
-    variant->vt = VT_BOOL;
-    variant->boolVal = value ? -1 : 0;
-}
-
-void setVariantDouble(double value, VARIANT *variant)
-{
-    variant->vt = VT_R8;
-    variant->dblVal = value;
-}
-
-void setVariantString(const QString &value, VARIANT *variant)
-{
-    variant->vt = VT_BSTR;
-    variant->bstrVal = QBStr(value).release();
-}
-
 // Scales a rect to native coordinates, according to high dpi settings.
 void rectToNativeUiaRect(const QRect &rect, const QWindow *w, UiaRect *uiaRect)
 {
