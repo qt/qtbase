@@ -179,7 +179,7 @@ public:
 
     qint64 size() const                     { return size_; }
 
-    QFile::Permissions permissions() const;
+    inline QFile::Permissions permissions() const;
 
     QDateTime accessTime() const;
     QDateTime birthTime() const;
