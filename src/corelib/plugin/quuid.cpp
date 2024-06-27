@@ -910,50 +910,17 @@ QUuid::Version QUuid::version() const noexcept
 
 /*!
     \fn bool QUuid::operator<(const QUuid &lhs, const QUuid &rhs)
-
-    Returns \c true if \a lhs QUuid has the same \l{Variant field}
-    {variant field} as the \a rhs QUuid and is lexicographically
-    \e{before} the \a rhs QUuid. If the \a rhs QUuid has a
-    different variant field, the return value is determined by
-    comparing the two \l{QUuid::Variant} {variants}.
-
-    \sa variant()
-*/
-
-/*!
     \fn bool QUuid::operator>(const QUuid &lhs, const QUuid &rhs)
-
-    Returns \c true if \a lhs QUuid has the same \l{Variant field}
-    {variant field} as the \a rhs QUuid and is lexicographically
-    \e{after} the \a rhs QUuid. If the \a rhs QUuid has a
-    different variant field, the return value is determined by
-    comparing the two \l{QUuid::Variant} {variants}.
-
-    \sa variant()
-*/
-
-/*!
     \fn bool QUuid::operator<=(const QUuid &lhs, const QUuid &rhs)
-    \since 5.5
-
-    Returns \c true if \a lhs has the same \l{Variant field}
-    {variant field} as \a rhs and is lexicographically
-    \e{not after} \a rhs. If \a rhs has a
-    different variant field, the return value is determined by
-    comparing the two \l{QUuid::Variant} {variants}.
-
-    \sa {QUuid::}{variant()}
-*/
-
-/*!
     \fn bool QUuid::operator>=(const QUuid &lhs, const QUuid &rhs)
     \since 5.5
 
-    Returns \c true if \a lhs has the same \l{Variant field}
-    {variant field} as \a rhs and is lexicographically
-    \e{not before} \a rhs. If \a rhs has a
-    different variant field, the return value is determined by
-    comparing the two \l{QUuid::Variant} {variants}.
+    Performs a comparison of \a lhs against \a rhs and returns \c true if the
+    relative sorting of \a lhs and \a rhs is correct for the operation in
+    question, \c false otherwise. Note that the sorting performed by this
+    functions may not be equal to the sorting of the strings created by
+    toString(), nor the integers toId128(), or the byte array returned by
+    toBytes() and toRfc4122().
 
     \sa {QUuid::}{variant()}
 */

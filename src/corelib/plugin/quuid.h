@@ -126,29 +126,45 @@ QT_WARNING_POP
 private:
     friend constexpr bool comparesEqual(const QUuid &lhs, const QUuid &rhs) noexcept
     {
-        if (lhs.data1 != rhs.data1 || lhs.data2 != rhs.data2 || lhs.data3 != rhs.data3)
-            return false;
-
-        for (uint i = 0; i < 8; i++) {
-            if (lhs.data4[i] != rhs.data4[i])
-                return false;
-        }
-
-        return true;
+        return is_eq(compareThreeWay_helper(lhs, rhs));
     }
-    friend Qt::strong_ordering compareThreeWay(const QUuid &lhs, const QUuid &rhs) noexcept
+    static constexpr Qt::strong_ordering
+    compareThreeWay_helper(const QUuid &lhs, const QUuid &rhs) noexcept
     {
-        if (const auto c = Qt::compareThreeWay(lhs.variant(), rhs.variant()); !is_eq(c))
-            return c;
-        if (const auto c = Qt::compareThreeWay(lhs.data1, rhs.data1); !is_eq(c))
-            return c;
-        if (const auto c = Qt::compareThreeWay(lhs.data2, rhs.data2); !is_eq(c))
-            return c;
-        if (const auto c = Qt::compareThreeWay(lhs.data3, rhs.data3); !is_eq(c))
+#if defined(__cpp_lib_bit_cast) && defined(QT_SUPPORTS_INT128)
+        quint128 lu = qFromBigEndian(std::bit_cast<quint128>(lhs));
+        quint128 ru = qFromBigEndian(std::bit_cast<quint128>(rhs));
+        return Qt::compareThreeWay(lu, ru);
+#else
+        auto make_int = [](const QUuid &u) {
+            quint64 result = quint64(u.data3) << 48;
+            result |= quint64(u.data2) << 32;
+            return qFromBigEndian(result | u.data1);
+        };
+        if (const auto c = Qt::compareThreeWay(make_int(lhs), make_int(rhs)); !is_eq(c))
             return c;
 
-        int c = std::memcmp(lhs.data4, rhs.data4, sizeof(lhs.data4));
-        return Qt::compareThreeWay(c, 0);
+        for (unsigned i = 0; i < sizeof(lhs.data4); ++i) {
+            if (const auto c = Qt::compareThreeWay(lhs.data4[i], rhs.data4[i]); !is_eq(c))
+                return c;
+        }
+        return Qt::strong_ordering::equal;
+#endif
+    }
+    friend constexpr Qt::strong_ordering compareThreeWay(const QUuid &lhs, const QUuid &rhs) noexcept
+    {
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
+        // Keep the old sorting order from before Qt 6.8, which sorted first on
+        // variant(). We don't need the exact algorithm to achieve same results.
+        auto fastVariant = [](const QUuid &uuid) {
+            quint8 v = uuid.data4[0];
+            // i.e.: return v >= Microsoft ? v : v >= DCE ? DCE : NCS;
+            return v >= 0xC0 ? v & 0xE0 : v >= 0x80 ? 0x80 : 0;
+        };
+        if (const auto c = Qt::compareThreeWay(fastVariant(lhs), fastVariant(rhs)); !is_eq(c))
+            return c;
+#endif
+        return compareThreeWay_helper(lhs, rhs);
     }
 
 public:
@@ -168,15 +184,8 @@ public:
     bool operator<(const QUuid &other) const noexcept;
     bool operator>(const QUuid &other) const noexcept;
 #else
-private:
-#if defined(__cpp_lib_three_way_comparison) && !defined(Q_QDOC)
-    QT_DECLARE_3WAY_HELPER_STRONG(QUuid, QUuid, /* non-constexpr */, /* no attributes */)
-#else
-    QT_DECLARE_ORDERING_HELPER_STRONG(QUuid, QUuid, /* non-constexpr */, /* no attributes */)
-#endif // defined(__cpp_lib_three_way_comparison) && !defined(Q_QDOC)
-    Q_DECLARE_EQUALITY_COMPARABLE_LITERAL_TYPE(QUuid)
+    Q_DECLARE_STRONGLY_ORDERED_LITERAL_TYPE(QUuid)
 #endif // QT_CORE_REMOVED_SINCE(6, 8)
-public:
 #if defined(Q_OS_WIN) || defined(Q_QDOC)
     // On Windows we have a type GUID that is used by the platform API, so we
     // provide convenience operators to cast from and to this type.
