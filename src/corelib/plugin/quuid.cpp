@@ -823,15 +823,11 @@ QDataStream &operator>>(QDataStream &s, QUuid &id)
 #endif // QT_NO_DATASTREAM
 
 /*!
+    \fn bool QUuid::isNull() const
+
     Returns \c true if this is the null UUID
     {00000000-0000-0000-0000-000000000000}; otherwise returns \c false.
 */
-bool QUuid::isNull() const noexcept
-{
-    return data4[0] == 0 && data4[1] == 0 && data4[2] == 0 && data4[3] == 0 &&
-           data4[4] == 0 && data4[5] == 0 && data4[6] == 0 && data4[7] == 0 &&
-           data1 == 0 && data2 == 0 && data3 == 0;
-}
 
 /*!
     \enum QUuid::Variant
@@ -875,17 +871,6 @@ bool QUuid::isNull() const noexcept
 
     \sa version()
 */
-QUuid::Variant QUuid::variant() const noexcept
-{
-    if (isNull())
-        return VarUnknown;
-    // Check the 3 MSB of data4[0]
-    if ((data4[0] & 0x80) == 0x00) return NCS;
-    else if ((data4[0] & 0xC0) == 0x80) return DCE;
-    else if ((data4[0] & 0xE0) == 0xC0) return Microsoft;
-    else if ((data4[0] & 0xE0) == 0xE0) return Reserved;
-    return VarUnknown;
-}
 
 /*!
     \fn QUuid::Version QUuid::version() const
@@ -896,17 +881,6 @@ QUuid::Variant QUuid::variant() const noexcept
 
     \sa variant()
 */
-QUuid::Version QUuid::version() const noexcept
-{
-    // Check the 4 MSB of data3
-    Version ver = (Version)(data3>>12);
-    if (isNull()
-         || (variant() != DCE)
-         || ver < Time
-         || ver > Sha1)
-        return VerUnknown;
-    return ver;
-}
 
 /*!
     \fn bool QUuid::operator<(const QUuid &lhs, const QUuid &rhs)

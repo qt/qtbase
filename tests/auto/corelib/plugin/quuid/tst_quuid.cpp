@@ -349,6 +349,12 @@ void tst_QUuid::check_QDataStream()
 
 void tst_QUuid::isNull()
 {
+    constexpr QUuid null;
+    static_assert(null.isNull());
+
+    constexpr QUuid nonNull{1, 2, 3, 4, 0, 1, 2, 3, 4, 5, 6};
+    static_assert(!nonNull.isNull());
+
     QVERIFY( !uuidA.isNull() );
 
     QUuid should_be_null_uuid;
@@ -561,6 +567,12 @@ void tst_QUuid::variants_data()
     QTest::newRow("uuidA") << uuidA << QUuid::DCE;
     QTest::newRow("uuidB") << uuidB << QUuid::DCE;
     QTest::newRow("NCS") << QUuid("{3a2f883c-4000-000d-0000-00fb40000000}") << QUuid::NCS;
+
+    // compile-time checks
+    constexpr QUuid defaultConstructed;
+    static_assert(defaultConstructed.variant() == QUuid::Variant::VarUnknown);
+    constexpr QUuid minDCE = make_minimal(QUuid::Variant::DCE);
+    static_assert(minDCE.variant() == QUuid::Variant::DCE);
 }
 
 void tst_QUuid::variants()
@@ -607,6 +619,12 @@ void tst_QUuid::versions_data()
             << QUuid::VerUnknown;
     QTest::newRow("uuidA") << uuidA << QUuid::Random;
     QTest::newRow("uuidB") << uuidB << QUuid::Random;
+
+    // compile-time checks
+    constexpr QUuid defaultConstructed;
+    static_assert(defaultConstructed.version() == QUuid::Version::VerUnknown);
+    constexpr QUuid timeVer = {0, 0, 0x1000, 0b1000'0000, 0, 0, 0, 0, 0, 0, 0};
+    static_assert(timeVer.version() == QUuid::Version::Time);
 }
 
 void tst_QUuid::versions()

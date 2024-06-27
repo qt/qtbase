@@ -1240,6 +1240,22 @@ QUuid QUuid::createUuidV5(const QUuid &ns, const QByteArray &baseData) noexcept
 
 #if QT_CORE_REMOVED_SINCE(6, 9)
 
+#include "quuid.h"
+
+bool QUuid::isNull() const noexcept
+{
+    return isNull(QT6_CALL_NEW_OVERLOAD);
+}
+
+QUuid::Variant QUuid::variant() const noexcept
+{
+    return variant(QT6_CALL_NEW_OVERLOAD);
+}
+
+QUuid::Version QUuid::version() const noexcept
+{
+    return version(QT6_CALL_NEW_OVERLOAD);
+}
 
 // #include "qotherheader.h"
 // // implement removed functions from qotherheader.h

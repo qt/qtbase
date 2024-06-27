@@ -117,7 +117,25 @@ QT_WARNING_POP
 #endif
     static QUuid fromRfc4122(QByteArrayView) noexcept;
 
+#if QT_CORE_REMOVED_SINCE(6, 9)
     bool isNull() const noexcept;
+#endif
+    constexpr bool isNull(QT6_DECL_NEW_OVERLOAD) const noexcept
+    {
+#if defined(__cpp_lib_bit_cast) && defined(QT_SUPPORTS_INT128)
+        return std::bit_cast<quint128>(*this) == 0;
+#else
+        // QNX fails to compile
+        // data4[0] == 0 && data4[1] == 0 && ...
+        // in constexpr context, so rewrite it using a loop. This way we have
+        // only single data4[i] != 0 check at each iteration
+        for (size_t i = 0; i < 8; ++i) {
+            if (data4[i] != 0)
+                return false;
+        }
+        return data1 == 0 && data2 == 0 && data3 == 0;
+#endif
+    }
 
 #ifdef QT_SUPPORTS_INT128
     static constexpr QUuid fromUInt128(quint128 uuid, QSysInfo::Endian order = QSysInfo::BigEndian) noexcept;
@@ -253,8 +271,29 @@ public:
         return QUuid::createUuidV5(ns, qToByteArrayViewIgnoringNull(baseData.toUtf8()));
     }
 
+#if QT_CORE_REMOVED_SINCE(6, 9)
     QUuid::Variant variant() const noexcept;
     QUuid::Version version() const noexcept;
+#endif
+    constexpr Variant variant(QT6_DECL_NEW_OVERLOAD) const noexcept
+    {
+        // Check the 3 MSB of data4[0]
+        const quint8 var = data4[0] & 0xE0;
+        if (var < 0x80)
+            return isNull(QT6_CALL_NEW_OVERLOAD) ? VarUnknown : NCS;
+        if (var < 0xC0)
+            return DCE;
+        return Variant(var >> 5); // Microsoft or Reserved
+    }
+    constexpr Version version(QT6_DECL_NEW_OVERLOAD) const noexcept
+    {
+        // Check the 4 MSB of data3
+        const Version ver = Version(data3 >> 12);
+        // Check that variant() == DCE and version is in a valid range
+        if (ver >= Time && ver <= Sha1 && (data4[0] & 0xC0) == 0x80)
+            return ver;
+        return VerUnknown;
+    }
 
 #if defined(Q_OS_DARWIN) || defined(Q_QDOC)
     static QUuid fromCFUUID(CFUUIDRef uuid);
