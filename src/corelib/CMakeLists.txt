@@ -562,6 +562,7 @@ qt_internal_extend_target(Core CONDITION WIN32
         thread/qthread_win.cpp
         platform/windows/qcomobject_p.h
         platform/windows/qcomptr_p.h
+        platform/windows/qbstr_p.h
     LIBRARIES
         advapi32
         authz

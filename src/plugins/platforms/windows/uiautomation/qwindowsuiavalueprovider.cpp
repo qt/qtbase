@@ -86,7 +86,7 @@ HRESULT STDMETHODCALLTYPE QWindowsUiaValueProvider::get_Value(BSTR *pRetVal)
     if (!accessible)
         return UIA_E_ELEMENTNOTAVAILABLE;
 
-    *pRetVal = bStrFromQString(accessible->text(QAccessible::Value));
+    *pRetVal = QBStr(accessible->text(QAccessible::Value)).release();
     return S_OK;
 }
 
