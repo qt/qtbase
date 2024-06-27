@@ -1,0 +1,54 @@
+// Copyright (C) 2024 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+\group cmake-target-properties-qttest
+\title CMake Target Properties in Qt6 Test
+\brief Lists CMake target properties known to Qt6::Test.
+
+\l{Qt Test} module knows about the following CMake target properties:
+
+\sa{CMake Property Reference}
+*/
+
+/*!
+\page cmake-target-property-qt-skip-default-testcase-dirs.html
+\ingroup cmake-properties-qttest
+\ingroup cmake-target-properties-qttest
+
+\title QT_SKIP_DEFAULT_TESTCASE_DIRS
+\target cmake-target-property-QT_SKIP_DEFAULT_TESTCASE_DIRS
+
+\cmakepropertysince 6.9
+\preliminarycmakeproperty
+
+\brief Disables the test case directory definitions for targets that link
+       to the Test library.
+
+The property disables the following compile-time definitions for the target:
+\list
+\li QT_TESTCASE_SOURCEDIR
+\li QT_TESTCASE_BUILDDIR
+\endlist
+
+By default, these definitions point to the source and build directories
+of the target. Since they are only defined for this target, they preclude
+sharing precompiled headers with the compilation of other targets. If
+\c QT_SKIP_DEFAULT_TESTCASE_DIRS is set to \c TRUE these definitions are
+omitted, avoiding this limitation.
+
+\badcode
+qt_add_executable(mytest main.cpp)
+set_property(TARGET mytest PROPERTY QT_SKIP_DEFAULT_TESTCASE_DIRS TRUE)
+target_link_libraries(mytest PRIVATE Qt6::Test)
+\endcode
+The \c QT_TESTCASE_SOURCEDIR and \c QT_TESTCASE_BUILDDIR macros will remain
+undefined when compiling \c mytest.
+
+The value of the property defaults to the value of the
+\l {cmake-variable-QT_SKIP_DEFAULT_TESTCASE_DIRS}{QT_SKIP_DEFAULT_TESTCASE_DIRS}
+variable.
+
+\sa QFINDTESTDATA,
+    {cmake-variable-QT_SKIP_DEFAULT_TESTCASE_DIRS}{QT_SKIP_DEFAULT_TESTCASE_DIRS}
+*/

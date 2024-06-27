@@ -1,0 +1,51 @@
+// Copyright (C) 2024 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+\group cmake-variables-qttest
+\title CMake Variables in Qt6 Test
+\brief Lists CMake variables defined in Qt6::Test.
+
+The following CMake variables are defined when Qt6::Test is loaded, for instance
+with
+
+\badcode
+find_package(Qt6 REQUIRED COMPONENTS Test)
+\endcode
+
+\sa{CMake Variable Reference}
+*/
+
+/*!
+\page cmake-variable-qt-skip-default-testcase-dirs.html
+\ingroup cmake-variables-qttest
+
+\title QT_SKIP_DEFAULT_TESTCASE_DIRS
+\target cmake-variable-QT_SKIP_DEFAULT_TESTCASE_DIRS
+
+\cmakevariablesince 6.9
+\preliminarycmakevariable
+
+\summary {Disables the test case directory definitions for the Qt Test targets.}
+
+Controls the default value of the
+\l {cmake-target-property-QT_SKIP_DEFAULT_TESTCASE_DIRS}{QT_SKIP_DEFAULT_TESTCASE_DIRS}
+target property.
+\note Supported by CMake versions >= 3.23.
+
+\badcode
+set(QT_SKIP_DEFAULT_TESTCASE_DIRS TRUE)
+...
+qt_add_executable(mytest1 main1.cpp)
+target_link_libraries(mytest1 PRIVATE Qt6::Test)
+...
+qt_add_executable(mytest2 main2.cpp)
+target_link_libraries(mytest2 PRIVATE Qt6::Test)
+\endcode
+
+The \c QT_TESTCASE_SOURCEDIR and \c QT_TESTCASE_BUILDDIR macros will remain
+undefined when compiling \c mytest1 and \c mytest2.
+
+\sa QFINDTESTDATA,
+    {cmake-target-property-QT_SKIP_DEFAULT_TESTCASE_DIRS}{QT_SKIP_DEFAULT_TESTCASE_DIRS}
+*/
