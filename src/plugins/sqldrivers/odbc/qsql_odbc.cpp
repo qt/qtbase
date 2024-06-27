@@ -736,7 +736,7 @@ bool QODBCDriverPrivate::setConnectionOptions(const QString &connOpts)
 {
     // Set any connection attributes
     SQLRETURN r = SQL_SUCCESS;
-    for (const auto connOpt : QStringTokenizer{connOpts, u';'}) {
+    for (const auto connOpt : QStringTokenizer{connOpts, u';', Qt::SkipEmptyParts}) {
         int idx;
         if ((idx = connOpt.indexOf(u'=')) == -1) {
             qSqlWarning(("QODBCDriver::open: Illegal connect option value '%1'"_L1)
