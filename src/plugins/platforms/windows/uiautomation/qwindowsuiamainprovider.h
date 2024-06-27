@@ -14,6 +14,7 @@
 #include <QtCore/qmutex.h>
 #include <QtCore/qt_windows.h>
 #include <QtGui/qaccessible.h>
+#include <QtCore/private/qcomptr_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -25,7 +26,7 @@ class QWindowsUiaMainProvider :
     Q_OBJECT
     Q_DISABLE_COPY_MOVE(QWindowsUiaMainProvider)
 public:
-    static QWindowsUiaMainProvider *providerForAccessible(QAccessibleInterface *accessible);
+    static ComPtr<QWindowsUiaMainProvider> providerForAccessible(QAccessibleInterface *accessible);
     explicit QWindowsUiaMainProvider(QAccessibleInterface *a);
     virtual ~QWindowsUiaMainProvider();
     static void notifyFocusChange(QAccessibleEvent *event);

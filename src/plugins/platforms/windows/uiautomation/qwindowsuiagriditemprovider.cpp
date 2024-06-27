@@ -129,7 +129,7 @@ HRESULT STDMETHODCALLTYPE QWindowsUiaGridItemProvider::get_ContainingGrid(IRawEl
         return UIA_E_ELEMENTNOTAVAILABLE;
 
     if (QAccessibleInterface *table = tableCellInterface->table()) {
-        *pRetVal = QWindowsUiaMainProvider::providerForAccessible(table); // Detach
+        *pRetVal = QWindowsUiaMainProvider::providerForAccessible(table).Detach();
     }
     return S_OK;
 }

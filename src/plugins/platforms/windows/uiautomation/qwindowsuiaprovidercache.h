@@ -12,6 +12,7 @@
 #include <QtCore/qhash.h>
 #include <QtCore/qmutex.h>
 #include <QtGui/qaccessible.h>
+#include <QtCore/private/qcomptr_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -22,7 +23,7 @@ class QWindowsUiaProviderCache : public QObject
     Q_OBJECT
 public:
     static QWindowsUiaProviderCache *instance();
-    QWindowsUiaMainProvider *providerForId(QAccessible::Id id) const;
+    ComPtr<QWindowsUiaMainProvider> providerForId(QAccessible::Id id) const;
     void insert(QAccessible::Id id, QWindowsUiaMainProvider *provider);
 
 private Q_SLOTS:

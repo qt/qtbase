@@ -26,12 +26,13 @@ QWindowsUiaProviderCache *QWindowsUiaProviderCache::instance()
 }
 
 // Returns the provider instance associated with the ID, or nullptr.
-QWindowsUiaMainProvider *QWindowsUiaProviderCache::providerForId(QAccessible::Id id) const
+ComPtr<QWindowsUiaMainProvider> QWindowsUiaProviderCache::providerForId(QAccessible::Id id) const
 {
     QMutexLocker guard{ &m_tableMutex };
-    QWindowsUiaMainProvider *provider = m_providerTable.value(id);
-    if (provider)
-        provider->AddRef(); // Make sure lifetime is extended while holding the mutex
+
+    // Make sure lifetime is extended while holding the mutex
+    ComPtr<QWindowsUiaMainProvider> provider = m_providerTable.value(id);
+
     return provider;
 }
 

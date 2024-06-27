@@ -55,9 +55,9 @@ HRESULT STDMETHODCALLTYPE QWindowsUiaTableProvider::GetRowHeaders(SAFEARRAY **pR
     }
     if ((*pRetVal = SafeArrayCreateVector(VT_UNKNOWN, 0, headers.size()))) {
         for (LONG i = 0; i < headers.size(); ++i) {
-            if (QWindowsUiaMainProvider *headerProvider = QWindowsUiaMainProvider::providerForAccessible(headers.at(i))) {
-                SafeArrayPutElement(*pRetVal, &i, static_cast<IRawElementProviderSimple *>(headerProvider));
-                headerProvider->Release();
+            if (ComPtr<IRawElementProviderSimple> provider =
+                        QWindowsUiaMainProvider::providerForAccessible(headers.at(i))) {
+                SafeArrayPutElement(*pRetVal, &i, provider.Get());
             }
         }
     }
@@ -92,9 +92,9 @@ HRESULT STDMETHODCALLTYPE QWindowsUiaTableProvider::GetColumnHeaders(SAFEARRAY *
     }
     if ((*pRetVal = SafeArrayCreateVector(VT_UNKNOWN, 0, headers.size()))) {
         for (LONG i = 0; i < headers.size(); ++i) {
-            if (QWindowsUiaMainProvider *headerProvider = QWindowsUiaMainProvider::providerForAccessible(headers.at(i))) {
-                SafeArrayPutElement(*pRetVal, &i, static_cast<IRawElementProviderSimple *>(headerProvider));
-                headerProvider->Release();
+            if (ComPtr<IRawElementProviderSimple> provider =
+                        QWindowsUiaMainProvider::providerForAccessible(headers.at(i))) {
+                SafeArrayPutElement(*pRetVal, &i, provider.Get());
             }
         }
     }
