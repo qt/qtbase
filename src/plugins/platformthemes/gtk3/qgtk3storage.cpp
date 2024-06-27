@@ -72,6 +72,31 @@ QBrush QGtk3Storage::brush(const Source &source, const BrushMap &map) const
         return b;
     }
 
+    case SourceType::Mixed: {
+        // check the mixing source to be valid and be a Gtk source
+        constexpr auto check_source = [](const Source &source) -> bool
+        {
+            return source.isValid() && (source.sourceType == SourceType::Gtk);
+        };
+
+        const Source source1 = brush(TargetBrush(source.mix.sourceGroup,
+                                                 source.mix.colorRole1), map);
+        if (!check_source(source1))
+            return QBrush();
+
+        const Source source2 = brush(TargetBrush(source.mix.sourceGroup,
+                                                 source.mix.colorRole2), map);
+        if (!check_source(source2))
+            return QBrush();
+
+        const QBrush brush2 = brush(source2, map);
+        // the output brush is a copy of the brush from the first source
+        QBrush brush1 = brush(source1, map);
+        // only color is mixed
+        brush1.setColor(MixSources::mixColors(brush1.color(), brush2.color()));
+        return brush1;
+    }
+
     case SourceType::Fixed:
         return source.fix.fixedBrush;
 
@@ -400,6 +425,7 @@ const QGtk3Storage::PaletteMap QGtk3Storage::savePalettes() const
                 break;
             case SourceType::Fixed:
             case SourceType::Modified:
+            case SourceType::Mixed:
             case SourceType::Invalid:
                 break;
             }
@@ -541,10 +567,22 @@ void QGtk3Storage::createMapping()
 
         GTK(button, Foreground, ACTIVE);
         ADD(Inactive, WindowText);
-        LIGHTER(Normal, WindowText, 50);
-        ADD(Disabled, Text);
-        ADD(Disabled, WindowText);
-        ADD(Disabled, ButtonText);
+
+        auto ADD_MIX = [&map](QPalette::ColorGroup targetGroup,
+                              QPalette::ColorRole targetRole,
+                              QPalette::ColorGroup sourceGroup,
+                              QPalette::ColorRole role1,
+                              QPalette::ColorRole role2)
+        {
+            const Source source{sourceGroup, role1, role2};
+            map.insert(TargetBrush(targetGroup, targetRole), source);
+        };
+        ADD_MIX(QPalette::Disabled, QPalette::Text,
+                QPalette::Normal, QPalette::Base, QPalette::Text);
+        ADD_MIX(QPalette::Disabled, QPalette::WindowText,
+                QPalette::Normal, QPalette::Window, QPalette::WindowText);
+        ADD_MIX(QPalette::Disabled, QPalette::ButtonText,
+                QPalette::Normal, QPalette::Button, QPalette::ButtonText);
 
         GTK(button, Text, NORMAL);
         ADD(Inactive, ButtonText);
