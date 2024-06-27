@@ -13,6 +13,7 @@
 #include <QtCore/qloggingcategory.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qvarlengtharray.h>
+#include <QtCore/private/qcomvariant_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -157,15 +158,15 @@ HRESULT STDMETHODCALLTYPE QWindowsUiaTextRangeProvider::GetAttributeValue(TEXTAT
 
     switch (attributeId) {
     case UIA_IsReadOnlyAttributeId:
-        setVariantBool(accessible->state().readOnly, pRetVal);
+        *pRetVal = QComVariant{ accessible->state().readOnly ? true : false }.release();
         break;
     case UIA_CaretPositionAttributeId:
         if (textInterface->cursorPosition() == 0)
-            setVariantI4(CaretPosition_BeginningOfLine, pRetVal);
+            *pRetVal = QComVariant{ static_cast<long>(CaretPosition_BeginningOfLine) }.release();
         else if (textInterface->cursorPosition() == textInterface->characterCount())
-            setVariantI4(CaretPosition_EndOfLine, pRetVal);
+            *pRetVal = QComVariant{ static_cast<long>(CaretPosition_EndOfLine) }.release();
         else
-            setVariantI4(CaretPosition_Unknown, pRetVal);
+            *pRetVal = QComVariant{ static_cast<long>(CaretPosition_Unknown) }.release();
         break;
     case UIA_StrikethroughStyleAttributeId:
     {
@@ -173,7 +174,7 @@ HRESULT STDMETHODCALLTYPE QWindowsUiaTextRangeProvider::GetAttributeValue(TEXTAT
         if (value.isEmpty())
             break;
         const TextDecorationLineStyle uiaLineStyle = uiaLineStyleForIA2LineStyle(value);
-        setVariantI4(uiaLineStyle, pRetVal);
+        *pRetVal = QComVariant{ static_cast<long>(uiaLineStyle) }.release();
         break;
     }
     default:

@@ -33,14 +33,6 @@ bool isTextUnitSeparator(TextUnit unit, const QChar &ch);
 
 void clearVariant(VARIANT *variant);
 
-void setVariantI4(int value, VARIANT *variant);
-
-void setVariantBool(bool value, VARIANT *variant);
-
-void setVariantDouble(double value, VARIANT *variant);
-
-void setVariantString(const QString &value, VARIANT *variant);
-
 } // namespace QWindowsUiAutomation
 
 QT_END_NAMESPACE
