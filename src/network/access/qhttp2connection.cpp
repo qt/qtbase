@@ -1136,8 +1136,8 @@ bool QHttp2Connection::readClientPreface()
 void QHttp2Connection::handleConnectionClosure()
 {
     const auto errorString = QCoreApplication::translate("QHttp", "Connection closed");
-    for (auto it = m_streams.begin(), end = m_streams.end(); it != end; ++it) {
-        auto stream = it.value();
+    for (auto it = m_streams.cbegin(), end = m_streams.cend(); it != end; ++it) {
+        const QPointer<QHttp2Stream> &stream = it.value();
         if (stream && stream->isActive())
             stream->finishWithError(PROTOCOL_ERROR, errorString);
     }
@@ -1703,7 +1703,7 @@ void QHttp2Connection::handleWINDOW_UPDATE()
         if (!valid || qAddOverflow(sessionSendWindowSize, qint32(delta), &sum))
             return connectionError(PROTOCOL_ERROR, "WINDOW_UPDATE invalid delta");
         sessionSendWindowSize = sum;
-        for (auto &stream : m_streams) {
+        for (const auto &stream : std::as_const(m_streams)) {
             if (!stream || !stream->isActive())
                 continue;
             // Stream may have been unblocked, so maybe try to write again
