@@ -4,12 +4,9 @@
 
 #include <QtCore/private/qsingleshottimer_p.h>
 
-#include "qabstracteventdispatcher.h"
 #include "qcoreapplication.h"
 #include "qmetaobject_p.h"
 #include "private/qnumeric_p.h"
-
-#include <chrono>
 
 QT_BEGIN_NAMESPACE
 

@@ -16,11 +16,15 @@
 // We mean it.
 //
 
-#include "qabstracteventdispatcher.h"
-#include "qcoreapplication.h"
-#include "qmetaobject_p.h"
+#include <QtCore/qobject.h>
+#include <QtCore/qabstracteventdispatcher.h>
+#include <QtCore/qnamespace.h>
 
 QT_BEGIN_NAMESPACE
+
+namespace QtPrivate {
+class QSlotObjectBase;
+}
 
 class QSingleShotTimer : public QObject
 {
