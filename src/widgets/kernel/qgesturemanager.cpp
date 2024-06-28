@@ -610,8 +610,7 @@ void QGestureManager::deliverEvents(const QSet<QGesture *> &gestures,
                     QWidget *child = topLevel->childAt(topLevel->mapFromGlobal(pt));
                     target = child ? child : topLevel;
                 }
-            }
-            if (!target) {
+            } else {
                 // or use the context of the gesture
                 QObject *context = m_gestureOwners.value(gesture, 0);
                 if (context->isWidgetType())
