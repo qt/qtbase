@@ -5007,7 +5007,7 @@ void QRhiGles2::registerUniformIfActive(const QShaderDescription::BlockVariable 
                                         int binding,
                                         int baseOffset,
                                         GLuint program,
-                                        QDuplicateTracker<int, 256> *activeUniformLocations,
+                                        ActiveUniformLocationTracker *activeUniformLocations,
                                         QGles2UniformDescriptionVector *dst)
 {
     if (var.type == QShaderDescription::Struct) {
@@ -5040,7 +5040,7 @@ void QRhiGles2::registerUniformIfActive(const QShaderDescription::BlockVariable 
 
 void QRhiGles2::gatherUniforms(GLuint program,
                                const QShaderDescription::UniformBlock &ub,
-                               QDuplicateTracker<int, 256> *activeUniformLocations,
+                               ActiveUniformLocationTracker *activeUniformLocations,
                                QGles2UniformDescriptionVector *dst)
 {
     QByteArray prefix = ub.structName + '.';
@@ -6395,7 +6395,7 @@ bool QGles2GraphicsPipeline::create()
     // Use the same work area for the vertex & fragment stages, thus ensuring
     // that we will not do superfluous glUniform calls for uniforms that are
     // present in both shaders.
-    QDuplicateTracker<int, 256> activeUniformLocations;
+    QRhiGles2::ActiveUniformLocationTracker activeUniformLocations;
 
     for (const QRhiShaderStage &shaderStage : std::as_const(m_shaderStages)) {
         if (isGraphicsStage(shaderStage)) {
@@ -6512,7 +6512,7 @@ bool QGles2ComputePipeline::create()
         }
     }
 
-    QDuplicateTracker<int, 256> activeUniformLocations;
+    QRhiGles2::ActiveUniformLocationTracker activeUniformLocations;
     for (const QShaderDescription::UniformBlock &ub : csDesc.uniformBlocks())
         rhiD->gatherUniforms(program, ub, &activeUniformLocations, &uniforms);
     for (const QShaderDescription::InOutVariable &v : csDesc.combinedImageSamplers())
