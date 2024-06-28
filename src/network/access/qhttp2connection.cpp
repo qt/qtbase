@@ -41,7 +41,23 @@ QHttp2Stream::QHttp2Stream(QHttp2Connection *connection, quint32 streamID) noexc
     qCDebug(qHttp2ConnectionLog, "[%p] new stream %u", connection, streamID);
 }
 
-QHttp2Stream::~QHttp2Stream() noexcept = default;
+QHttp2Stream::~QHttp2Stream() noexcept {
+    if (auto *connection = getConnection()) {
+        if (m_state == State::Open || m_state == State::HalfClosedRemote) {
+            qCDebug(qHttp2ConnectionLog, "[%p] stream %u, destroyed while still open", connection,
+                    m_streamID);
+            // Check if we can still send data, then send RST_STREAM:
+            if (connection->getSocket()) {
+                if (isUploadingDATA())
+                    sendRST_STREAM(CANCEL);
+                else
+                    sendRST_STREAM(HTTP2_NO_ERROR);
+            }
+        }
+
+        connection->m_streams.remove(streamID());
+    }
+}
 
 /*!
     \fn quint32 QHttp2Stream::streamID() const noexcept
@@ -866,6 +882,8 @@ QHttp2Connection::createStreamInternal()
 
 QHttp2Stream *QHttp2Connection::createStreamInternal_impl(quint32 streamID)
 {
+    Q_ASSERT(streamID > m_lastIncomingStreamID || streamID >= m_nextStreamID);
+
     qsizetype numStreams = m_streams.size();
     QPointer<QHttp2Stream> &stream = m_streams[streamID];
     if (numStreams == m_streams.size()) // stream already existed
