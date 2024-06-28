@@ -31,19 +31,18 @@ class QSingleShotTimer : public QObject
 
     Qt::TimerId timerId = Qt::TimerId::Invalid;
 
-#define inline
 public:
     // use the same duration type
     using Duration = QAbstractEventDispatcher::Duration;
 
-    inline ~QSingleShotTimer();
-    inline QSingleShotTimer(Duration interval, Qt::TimerType timerType,
-                            const QObject *r, const char *member);
-    inline QSingleShotTimer(Duration interval, Qt::TimerType timerType,
-                            const QObject *r, QtPrivate::QSlotObjectBase *slotObj);
+    explicit QSingleShotTimer(Duration interval, Qt::TimerType timerType,
+                              const QObject *r, const char *member);
+    explicit QSingleShotTimer(Duration interval, Qt::TimerType timerType,
+                              const QObject *r, QtPrivate::QSlotObjectBase *slotObj);
+    ~QSingleShotTimer() override;
 
-    inline void startTimerForReceiver(Duration interval, Qt::TimerType timerType,
-                                      const QObject *receiver);
+    void startTimerForReceiver(Duration interval, Qt::TimerType timerType,
+                               const QObject *receiver);
 
     static Duration fromMsecs(std::chrono::milliseconds ms)
     {
@@ -63,8 +62,7 @@ Q_SIGNALS:
     void timeout();
 
 private:
-    inline void timerEvent(QTimerEvent *) override;
-#undef inline
+    void timerEvent(QTimerEvent *) override;
 };
 
 QT_END_NAMESPACE
