@@ -370,6 +370,36 @@ qt_config_compile_test_x86simd(avx512vbmi2 "AVX512VBMI2")
 # x86: vaes
 qt_config_compile_test_x86simd(vaes "VAES")
 
+# localtime_r
+qt_config_compile_test(localtime_r
+    LABEL "localtime_r()"
+    CODE
+"#include <time.h>
+
+int main(void)
+{
+    /* BEGIN TEST: */
+(void) localtime_r(nullptr, nullptr);
+    /* END TEST: */
+    return 0;
+}
+")
+
+# localtime_s
+qt_config_compile_test(localtime_s
+    LABEL "localtime_s()"
+    CODE
+"#include <time.h>
+
+int main(void)
+{
+    /* BEGIN TEST: */
+(void) localtime_s(nullptr, nullptr);
+    /* END TEST: */
+    return 0;
+}
+")
+
 # posix_fallocate
 qt_config_compile_test(posix_fallocate
     LABEL "POSIX fallocate()"
@@ -954,6 +984,14 @@ qt_feature("wasm-exceptions" PUBLIC
 qt_feature_definition("wasm-exceptions" "QT_WASM_EXCEPTIONS" VALUE "1")
 qt_feature_config("wasm-exceptions" QMAKE_PRIVATE_CONFIG)
 
+qt_feature("localtime_r" PRIVATE
+    LABEL "localtime_r()"
+    CONDITION TEST_localtime_r
+)
+qt_feature("localtime_s" PRIVATE
+    LABEL "localtime_s()"
+    CONDITION TEST_localtime_s
+)
 qt_feature("posix_fallocate" PRIVATE
     LABEL "POSIX fallocate()"
     CONDITION TEST_posix_fallocate

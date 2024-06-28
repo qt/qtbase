@@ -74,6 +74,16 @@ qt_internal_extend_target(QSQLiteDriverPlugin CONDITION NOT QT_FEATURE_largefile
         SQLITE_DISABLE_LFS
 )
 
+qt_internal_extend_target(QSQLiteDriverPlugin CONDITION QT_FEATURE_localtime_r
+    DEFINES
+        HAVE_LOCALTIME_R=1
+)
+
+qt_internal_extend_target(QSQLiteDriverPlugin CONDITION QT_FEATURE_localtime_s
+    DEFINES
+        HAVE_LOCALTIME_S=1
+)
+
 qt_internal_extend_target(QSQLiteDriverPlugin CONDITION QT_FEATURE_posix_fallocate AND NOT QT_FEATURE_system_sqlite
     DEFINES
         HAVE_POSIX_FALLOCATE=1
