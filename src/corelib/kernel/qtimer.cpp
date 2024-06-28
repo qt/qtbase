@@ -288,6 +288,23 @@ void QTimer::timerEvent(QTimerEvent *e)
     }
 }
 
+static QAbstractEventDispatcher::Duration from_msecs(std::chrono::milliseconds ms)
+{
+    using Duration = QAbstractEventDispatcher::Duration;
+
+    using namespace std::chrono;
+    using ratio = std::ratio_divide<std::milli, Duration::period>;
+    static_assert(ratio::den == 1);
+
+    Duration::rep r;
+    if (qMulOverflow<ratio::num>(ms.count(), &r)) {
+        qWarning("QTimer::singleShot(std::chrono::milliseconds, ...): "
+                 "interval argument overflowed when converted to nanoseconds.");
+        return Duration::max();
+    }
+    return Duration{r};
+}
+
 /*!
     \internal
 
@@ -332,7 +349,7 @@ void QTimer::singleShotImpl(std::chrono::milliseconds msec, Qt::TimerType timerT
         return;
     }
 
-    new QSingleShotTimer(QSingleShotTimer::fromMsecs(msec), timerType, receiver, slotObj);
+    new QSingleShotTimer(from_msecs(msec), timerType, receiver, slotObj);
 }
 
 /*!
@@ -396,7 +413,7 @@ void QTimer::singleShot(std::chrono::milliseconds msec, Qt::TimerType timerType,
                                       Qt::QueuedConnection);
             return;
         }
-        (void) new QSingleShotTimer(QSingleShotTimer::fromMsecs(msec), timerType, receiver, member);
+        (void) new QSingleShotTimer(from_msecs(msec), timerType, receiver, member);
     }
 }
 
