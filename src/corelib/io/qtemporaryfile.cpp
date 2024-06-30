@@ -657,9 +657,12 @@ QTemporaryFile::QTemporaryFile()
 */
 
 /*!
-    Constructs a QTemporaryFile with a template filename of \a
-    templateName. Upon opening the temporary file this will be used to create
+    Constructs a QTemporaryFile with \a templateName as the file name template.
+
+//! [file-created-on-open]
+    Upon opening the temporary file, \a templateName will be used to create
     a unique filename.
+//! [file-created-on-open]
 
 //! [dynamic-part-of-filename]
     If \a templateName doesn't contain \c {"XXXXXX"}, it will be added
@@ -694,10 +697,10 @@ QTemporaryFile::QTemporaryFile(QObject *parent)
 }
 
 /*!
-    Constructs a QTemporaryFile with a template filename of \a
-    templateName and the specified \a parent.
-    Upon opening the temporary file this will be used to
-    create a unique filename.
+    Constructs a QTemporaryFile with the specified \a parent, and
+    \a templateName as the file name template.
+
+    \include qtemporaryfile.cpp file-created-on-open
 
     \include qtemporaryfile.cpp dynamic-part-of-filename
 
