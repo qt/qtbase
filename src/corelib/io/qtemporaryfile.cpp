@@ -654,9 +654,12 @@ QTemporaryFile::QTemporaryFile()
 */
 
 /*!
-    Constructs a QTemporaryFile with a template filename of \a
-    templateName. Upon opening the temporary file this will be used to create
+    Constructs a QTemporaryFile with \a templateName as the file name template.
+
+//! [file-created-on-open]
+    Upon opening the temporary file, \a templateName will be used to create
     a unique filename.
+//! [file-created-on-open]
 
     If the \a templateName does not contain XXXXXX it will automatically be
     appended and used as the dynamic portion of the filename.
@@ -689,10 +692,10 @@ QTemporaryFile::QTemporaryFile(QObject *parent)
 }
 
 /*!
-    Constructs a QTemporaryFile with a template filename of \a
-    templateName and the specified \a parent.
-    Upon opening the temporary file this will be used to
-    create a unique filename.
+    Constructs a QTemporaryFile with the specified \a parent, and
+    \a templateName as the file name template.
+
+    \include qtemporaryfile.cpp file-created-on-open
 
     If the \a templateName does not contain XXXXXX it will automatically be
     appended and used as the dynamic portion of the filename.
