@@ -1,14 +1,19 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Given "/usr/lib/x86_64-linux-gnu/libcups.so"
-# Returns "cups" or an empty string if the file is not an absolute library path.
-# Aka it strips the "lib" prefix, the .so extension and the base path.
+# Given "/usr/lib/x86_64-linux-gnu/libcups.so", returns "cups".
+# Given "libavcodec.a", returns "avcodec".
+# Given "ws2_32", returns "ws2_32".
+# Returns an empty string if not given a linkable library (most likely a linker flag).
 function(qt_get_library_name_without_prefix_and_suffix out_var file_path)
     set(out_value "")
-    if(IS_ABSOLUTE "${file_path}")
+    if(NOT file_path MATCHES "^-") # not a linker flag
         get_filename_component(basename "${file_path}" NAME_WE)
         get_filename_component(ext "${file_path}" EXT)
+        if(NOT ext) # seems like a library name without prefix and suffix
+            set(${out_var} "${file_path}" PARENT_SCOPE)
+            return()
+        endif()
         string(TOLOWER "${ext}" ext_lower)
         foreach(libsuffix ${LIBRARY_SUFFIXES})
             # Handle weird prefix extensions like in the case of
@@ -45,8 +50,10 @@ function(qt_get_library_name_without_prefix_and_suffix out_var file_path)
     set(${out_var} "${out_value}" PARENT_SCOPE)
 endfunction()
 
-# Given "/usr/lib/x86_64-linux-gnu/libcups.so"
-# Returns "-lcups" or an empty string if the file is not an absolute library path.
+# Given "/usr/lib/x86_64-linux-gnu/libcups.so", returns "-lcups".
+# Given "libavcodec.a", returns "-lavcodec".
+# Given "ws2_32", returns "-lws2_32".
+# Returns an empty string if not given a linkable library (most likely a linker flag).
 function(qt_get_library_with_link_flag out_var file_path)
     qt_get_library_name_without_prefix_and_suffix(lib_name "${file_path}")
 
@@ -70,11 +77,14 @@ function(qt_transform_absolute_library_paths_to_link_flags out_var library_path_
         if(lib_name_with_link_flag)
             string(TOLOWER "${IMPLICIT_LINK_DIRECTORIES}" IMPLICIT_LINK_DIRECTORIES_LOWER)
             get_filename_component(dir "${library_path}" DIRECTORY)
-            string(TOLOWER "${dir}" dir_lower)
-            # If library_path isn't in default link directories, we should add it to link flags.
-            list(FIND IMPLICIT_LINK_DIRECTORIES_LOWER "${dir_lower}" index)
-            if(${index} EQUAL -1)
-                list(APPEND out_list "-L\"${dir}\"")
+            if(dir)
+                string(TOLOWER "${dir}" dir_lower)
+                # If library_path isn't in default link directories, we should add it to link flags.
+                # But we shouldn't add it duplicately.
+                list(FIND IMPLICIT_LINK_DIRECTORIES_LOWER "${dir_lower}" index)
+                if(index EQUAL -1 AND NOT "-L\"${dir}\"" IN_LIST out_list)
+                    list(APPEND out_list "-L\"${dir}\"")
+                endif()
             endif()
             list(APPEND out_list "${lib_name_with_link_flag}")
         else()
