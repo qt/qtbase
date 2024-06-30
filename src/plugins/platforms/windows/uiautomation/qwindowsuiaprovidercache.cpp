@@ -26,41 +26,45 @@ QWindowsUiaProviderCache *QWindowsUiaProviderCache::instance()
 }
 
 // Returns the provider instance associated with the ID, or nullptr.
-QWindowsUiaBaseProvider *QWindowsUiaProviderCache::providerForId(QAccessible::Id id) const
+QWindowsUiaMainProvider *QWindowsUiaProviderCache::providerForId(QAccessible::Id id) const
 {
-    return m_providerTable.value(id);
+    QMutexLocker guard{ &m_tableMutex };
+    QWindowsUiaMainProvider *provider = m_providerTable.value(id);
+    if (provider)
+        provider->AddRef(); // Make sure lifetime is extended while holding the mutex
+    return provider;
 }
 
 // Inserts a provider in the cache and associates it with an accessibility ID.
-void QWindowsUiaProviderCache::insert(QAccessible::Id id, QWindowsUiaBaseProvider *provider)
+void QWindowsUiaProviderCache::insert(QAccessible::Id id, QWindowsUiaMainProvider *provider)
 {
-    remove(id);
+    QMutexLocker guard{ &m_tableMutex };
+    // Remove id if it already exists
+    m_inverseTable.remove(m_providerTable.value(id));
+    m_providerTable.remove(id);
+
+    // Add new provider
     if (provider) {
         m_providerTable[id] = provider;
         m_inverseTable[provider] = id;
+        guard.unlock();
         // Connects the destroyed signal to our slot, to remove deleted objects from the cache.
-        QObject::connect(provider, &QObject::destroyed, this, &QWindowsUiaProviderCache::objectDestroyed, Qt::DirectConnection);
+        QObject::connect(provider, &QObject::destroyed, this, &QWindowsUiaProviderCache::remove, Qt::DirectConnection);
     }
 }
 
 // Removes deleted provider objects from the cache.
-void QWindowsUiaProviderCache::objectDestroyed(QObject *obj)
+void QWindowsUiaProviderCache::remove(QObject *obj)
 {
     // We have to use the inverse table to map the object address back to its ID,
     // since at this point (called from QObject destructor), it has already been
     // partially destroyed and we cannot treat it as a provider.
+    QMutexLocker guard{ &m_tableMutex };
     auto it = m_inverseTable.find(obj);
     if (it != m_inverseTable.end()) {
         m_providerTable.remove(*it);
         m_inverseTable.remove(obj);
     }
-}
-
-// Removes a provider with a given id from the cache.
-void QWindowsUiaProviderCache::remove(QAccessible::Id id)
-{
-    m_inverseTable.remove(m_providerTable.value(id));
-    m_providerTable.remove(id);
 }
 
 QT_END_NAMESPACE

@@ -38,7 +38,6 @@ public:
 
     // IUnknown
     HRESULT STDMETHODCALLTYPE QueryInterface(REFIID id, LPVOID *iface) override;
-    ULONG STDMETHODCALLTYPE Release() override;
 
     // IRawElementProviderSimple methods
     HRESULT STDMETHODCALLTYPE get_ProviderOptions(ProviderOptions *pRetVal) override;
@@ -64,7 +63,6 @@ private:
     static void setStyle(QAccessibleInterface *accessible, VARIANT *pRetVal);
     /** Returns the UIA style ID for a heading level from 1 to 9. */
     static int styleIdForHeadingLevel(int headingLevel);
-    static QMutex m_mutex;
 };
 
 QT_END_NAMESPACE
