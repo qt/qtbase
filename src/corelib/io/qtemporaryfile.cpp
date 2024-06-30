@@ -629,12 +629,17 @@ QTemporaryFile::QTemporaryFile(const QString &templateName)
 
 #else
 /*!
-    Constructs a QTemporaryFile using as file template
-    the application name returned by QCoreApplication::applicationName()
-    (otherwise \c qt_temp) followed by ".XXXXXX".
-    The file is stored in the system's temporary directory, QDir::tempPath().
+    Constructs a QTemporaryFile.
 
-    \sa setFileTemplate(), QDir::tempPath()
+//! [default-file-name-template]
+    \keyword Default File Name Template
+    The default file name template is determined from the application name as
+    returned by QCoreApplication::applicationName() (or \c {"qt_temp"} if the
+    application name is empty), followed by \c {".XXXXXX"}. The file is stored
+    in the system's temporary directory, as returned by QDir::tempPath().
+//! [default-file-name-template]
+
+    \sa setFileTemplate(), fileTemplate(), fileName(), QDir::tempPath()
 */
 QTemporaryFile::QTemporaryFile()
     : QTemporaryFile(nullptr)
@@ -676,10 +681,9 @@ QTemporaryFile::QTemporaryFile(const QString &templateName)
 }
 
 /*!
-    Constructs a QTemporaryFile (with the given \a parent)
-    using as file template the application name returned by QCoreApplication::applicationName()
-    (otherwise \c qt_temp) followed by ".XXXXXX".
-    The file is stored in the system's temporary directory, QDir::tempPath().
+    Constructs a QTemporaryFile with the given \a parent.
+
+    \include qtemporaryfile.cpp default-file-name-template
 
     \sa setFileTemplate()
 */
@@ -799,10 +803,9 @@ QString QTemporaryFile::fileName() const
 }
 
 /*!
-  Returns the set file template. The default file template will be
-  called qcoreappname.XXXXXX and be placed in QDir::tempPath().
+    Returns the file name template.
 
-  \sa setFileTemplate()
+    \sa setFileTemplate(), fileName(), {Default File Name Template}
 */
 QString QTemporaryFile::fileTemplate() const
 {
