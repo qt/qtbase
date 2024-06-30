@@ -27,6 +27,7 @@
 # IMPLICIT_LINK_DIRECTORIES: list of implicit linker search paths
 
 cmake_policy(SET CMP0007 NEW)
+cmake_policy(SET CMP0057 NEW)
 include("${CMAKE_CURRENT_LIST_DIR}/QtGenerateLibHelpers.cmake")
 
 file(STRINGS "${IN_FILE}" lines)
@@ -50,10 +51,14 @@ foreach(line ${lines})
                 qt_internal_path_is_relative_to_qt_lib_path(
                     "${lib}" "${QT_LIB_DIRS}" lib_is_a_qt_module relative_lib)
                 if(NOT lib_is_a_qt_module)
-                    # It's not a Qt module, extract the library name and prepend an -l to make
-                    # it relocatable.
+                    # It's not a Qt module, extract linker flags from the library path.
                     qt_transform_absolute_library_paths_to_link_flags(lib_with_link_flag "${lib}")
-                    list(APPEND adjusted_libs "${lib_with_link_flag}")
+                    foreach(flag ${lib_with_link_flag})
+                        # Linker flags started with "-L" shouldn't be added duplicately.
+                        if(NOT flag MATCHES "^-L" OR NOT flag IN_LIST adjusted_libs)
+                            list(APPEND adjusted_libs "${flag}")
+                        endif()
+                    endforeach()
                 else()
                     # Is a Qt module.
                     # Transform Qt framework paths into -framework flags.
