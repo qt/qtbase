@@ -272,7 +272,7 @@ void QWindowsOleDropSource::createCursors()
         hotSpotScaleFactor = QHighDpiScaling::factor(platformScreen);
         pixmapScaleFactor = hotSpotScaleFactor / pixmap.devicePixelRatio();
     }
-    QPixmap scaledPixmap = qFuzzyCompare(pixmapScaleFactor, 1.0)
+    QPixmap scaledPixmap = (hasPixmap && qFuzzyCompare(pixmapScaleFactor, 1.0))
         ? pixmap
         :  pixmap.scaled((QSizeF(pixmap.size()) * pixmapScaleFactor).toSize(),
                          Qt::KeepAspectRatio, Qt::SmoothTransformation);
