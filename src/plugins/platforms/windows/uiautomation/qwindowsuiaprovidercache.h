@@ -7,9 +7,10 @@
 #include <QtGui/qtguiglobal.h>
 #if QT_CONFIG(accessibility)
 
-#include "qwindowsuiabaseprovider.h"
+#include "qwindowsuiamainprovider.h"
 
 #include <QtCore/qhash.h>
+#include <QtCore/qmutex.h>
 #include <QtGui/qaccessible.h>
 
 QT_BEGIN_NAMESPACE
@@ -21,15 +22,15 @@ class QWindowsUiaProviderCache : public QObject
     Q_OBJECT
 public:
     static QWindowsUiaProviderCache *instance();
-    QWindowsUiaBaseProvider *providerForId(QAccessible::Id id) const;
-    void insert(QAccessible::Id id, QWindowsUiaBaseProvider *provider);
-    void remove(QAccessible::Id id);
+    QWindowsUiaMainProvider *providerForId(QAccessible::Id id) const;
+    void insert(QAccessible::Id id, QWindowsUiaMainProvider *provider);
 
 private Q_SLOTS:
-    void objectDestroyed(QObject *obj);
+    void remove(QObject *obj);
 
 private:
-    QHash<QAccessible::Id, QWindowsUiaBaseProvider *> m_providerTable;
+    mutable QMutex m_tableMutex; // TODO: Can tables be accessed concurrently?
+    QHash<QAccessible::Id, QWindowsUiaMainProvider *> m_providerTable;
     QHash<QObject *, QAccessible::Id> m_inverseTable;
 };
 

@@ -39,23 +39,17 @@ QT_BEGIN_NAMESPACE
 
 using namespace QWindowsUiAutomation;
 
-QMutex QWindowsUiaMainProvider::m_mutex;
-
 // Returns a cached instance of the provider for a specific accessible interface.
 QWindowsUiaMainProvider *QWindowsUiaMainProvider::providerForAccessible(QAccessibleInterface *accessible)
 {
-    QMutexLocker locker(&m_mutex);
-
     if (!accessible)
         return nullptr;
 
     QAccessible::Id id = QAccessible::uniqueId(accessible);
     QWindowsUiaProviderCache *providerCache = QWindowsUiaProviderCache::instance();
-    auto *provider = qobject_cast<QWindowsUiaMainProvider *>(providerCache->providerForId(id));
+    QWindowsUiaMainProvider *provider = providerCache->providerForId(id);
 
-    if (provider) {
-        provider->AddRef();
-    } else {
+    if (!provider) {
         provider = new QWindowsUiaMainProvider(accessible);
         providerCache->insert(id, provider);
     }
@@ -255,13 +249,6 @@ HRESULT STDMETHODCALLTYPE QWindowsUiaMainProvider::QueryInterface(REFIID iid, LP
     }
 
     return result;
-}
-
-ULONG STDMETHODCALLTYPE QWindowsUiaMainProvider::Release()
-{
-    QMutexLocker locker(&m_mutex);
-
-    return QComObject::Release();
 }
 
 HRESULT QWindowsUiaMainProvider::get_ProviderOptions(ProviderOptions *pRetVal)
