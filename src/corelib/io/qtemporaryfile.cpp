@@ -652,8 +652,13 @@ QTemporaryFile::QTemporaryFile()
     a unique filename.
 //! [file-created-on-open]
 
-    If the \a templateName does not contain XXXXXX it will automatically be
-    appended and used as the dynamic portion of the filename.
+//! [dynamic-part-of-filename]
+    If \a templateName doesn't contain \c {"XXXXXX"}, it will be added
+    automatically.
+
+    \c {"XXXXXX"} will be replaced with the dynamic part of the file name,
+    which is calculated to be unique.
+//! [dynamic-part-of-filename]
 
     If \a templateName is a relative path, the path will be relative to the
     current working directory. You can use QDir::tempPath() to construct \a
@@ -689,8 +694,7 @@ QTemporaryFile::QTemporaryFile(QObject *parent)
 
     \include qtemporaryfile.cpp file-created-on-open
 
-    If the \a templateName does not contain XXXXXX it will automatically be
-    appended and used as the dynamic portion of the filename.
+    \include qtemporaryfile.cpp dynamic-part-of-filename
 
     If \a templateName is a relative path, the path will be relative to the
     current working directory. You can use QDir::tempPath() to construct \a
@@ -815,10 +819,11 @@ QString QTemporaryFile::fileTemplate() const
 */
 
 /*!
-   Sets the static portion of the file name to \a name. If the file
-   template contains XXXXXX that will automatically be replaced with
-   the unique part of the filename, otherwise a filename will be
-   determined automatically based on the static portion specified.
+    \fn void QTemporaryFile::setFileTemplate(const QString &templateName)
+
+    Sets the file name template to \a templateName.
+
+    \include qtemporaryfile.cpp dynamic-part-of-filename
 
     If \a name contains a relative file path, the path will be relative to the
     current working directory. You can use QDir::tempPath() to construct \a
