@@ -628,19 +628,31 @@ function(_qt_internal_set_apple_localizations target)
         COMMANDS "print CFBundleLocalizations"
         OUTPUT_VARIABLE existing_localizations
     )
-    if(existing_localizations)
-        return()
+    if(NOT existing_localizations)
+        list(TRANSFORM supported_languages PREPEND
+            "Add CFBundleLocalizations: string ")
+
+        _qt_internal_plist_buddy("${plist_file}"
+            COMMANDS
+                "Add CFBundleLocalizations array"
+                ${supported_languages}
+                "Delete CFBundleAllowMixedLocalizations"
+        )
     endif()
 
-    list(TRANSFORM supported_languages PREPEND
-        "Add CFBundleLocalizations: string ")
-
-    _qt_internal_plist_buddy("${plist_file}"
-        COMMANDS
-            "Add CFBundleLocalizations array"
-            ${supported_languages}
-            "Delete CFBundleAllowMixedLocalizations"
-    )
+    if(NOT "${QT_I18N_SOURCE_LANGUAGE}" STREQUAL "")
+        _qt_internal_plist_buddy("${plist_file}"
+            COMMANDS "print CFBundleDevelopmentRegion"
+            OUTPUT_VARIABLE existing_dev_region
+        )
+        if(NOT existing_dev_region)
+            _qt_internal_plist_buddy("${plist_file}"
+                COMMANDS
+                    "Add CFBundleDevelopmentRegion string"
+                    "Set CFBundleDevelopmentRegion ${QT_I18N_SOURCE_LANGUAGE}"
+            )
+        endif()
+    endif()
 endfunction()
 
 function(_qt_internal_set_ios_simulator_arch target)
