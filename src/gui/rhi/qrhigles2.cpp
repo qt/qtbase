@@ -4055,26 +4055,12 @@ void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
     QGles2ShaderResourceBindings *srbD = QRHI_RES(QGles2ShaderResourceBindings, srb);
     int texUnit = 1; // start from unit 1, keep 0 for resource mgmt stuff to avoid clashes
     bool activeTexUnitAltered = false;
-    union data32_t {
-        float f;
-        qint32 i;
-    };
-    QVarLengthArray<data32_t, 256> packedArray;
     QGles2UniformDescriptionVector &uniforms(maybeGraphicsPs ? QRHI_RES(QGles2GraphicsPipeline, maybeGraphicsPs)->uniforms
                                                              : QRHI_RES(QGles2ComputePipeline, maybeComputePs)->uniforms);
     QGles2UniformState *uniformState = maybeGraphicsPs ? QRHI_RES(QGles2GraphicsPipeline, maybeGraphicsPs)->uniformState
                                                        : QRHI_RES(QGles2ComputePipeline, maybeComputePs)->uniformState;
-    struct SeparateTexture {
-        QGles2Texture *texture;
-        int binding;
-        int elem;
-    };
-    QVarLengthArray<SeparateTexture, 8> separateTextureBindings;
-    struct SeparateSampler {
-        QGles2Sampler *sampler;
-        int binding;
-    };
-    QVarLengthArray<SeparateSampler, 4> separateSamplerBindings;
+    m_scratch.separateTextureBindings.clear();
+    m_scratch.separateSamplerBindings.clear();
 
     for (int i = 0, ie = srbD->m_bindings.size(); i != ie; ++i) {
         const QRhiShaderResourceBinding::Data *b = shaderResourceBindingData(srbD->m_bindings.at(i));
@@ -4142,9 +4128,9 @@ void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
                             }
                         } else {
                             // input is 16 bytes per element as per std140, have to convert to packed
-                            packedArray.resize(elemCount);
-                            qrhi_std140_to_packed(&packedArray.data()->f, 1, elemCount, src);
-                            f->glUniform1fv(uniform.glslLocation, elemCount, &packedArray.constData()->f);
+                            m_scratch.packedArray.resize(elemCount);
+                            qrhi_std140_to_packed(&m_scratch.packedArray.data()->f, 1, elemCount, src);
+                            f->glUniform1fv(uniform.glslLocation, elemCount, &m_scratch.packedArray.constData()->f);
                         }
                     }
                         break;
@@ -4168,9 +4154,9 @@ void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
                                 f->glUniform2fv(uniform.glslLocation, 1, v);
                             }
                         } else {
-                            packedArray.resize(elemCount * 2);
-                            qrhi_std140_to_packed(&packedArray.data()->f, 2, elemCount, src);
-                            f->glUniform2fv(uniform.glslLocation, elemCount, &packedArray.constData()->f);
+                            m_scratch.packedArray.resize(elemCount * 2);
+                            qrhi_std140_to_packed(&m_scratch.packedArray.data()->f, 2, elemCount, src);
+                            f->glUniform2fv(uniform.glslLocation, elemCount, &m_scratch.packedArray.constData()->f);
                         }
                     }
                         break;
@@ -4196,9 +4182,9 @@ void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
                                 f->glUniform3fv(uniform.glslLocation, 1, v);
                             }
                         } else {
-                            packedArray.resize(elemCount * 3);
-                            qrhi_std140_to_packed(&packedArray.data()->f, 3, elemCount, src);
-                            f->glUniform3fv(uniform.glslLocation, elemCount, &packedArray.constData()->f);
+                            m_scratch.packedArray.resize(elemCount * 3);
+                            qrhi_std140_to_packed(&m_scratch.packedArray.data()->f, 3, elemCount, src);
+                            f->glUniform3fv(uniform.glslLocation, elemCount, &m_scratch.packedArray.constData()->f);
                         }
                     }
                         break;
@@ -4245,9 +4231,9 @@ void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
                             memcpy(mat + 6, srcMat + 8, 3 * sizeof(float));
                             f->glUniformMatrix3fv(uniform.glslLocation, 1, GL_FALSE, mat);
                         } else {
-                            packedArray.resize(elemCount * 9);
-                            qrhi_std140_to_packed(&packedArray.data()->f, 3, elemCount * 3, src);
-                            f->glUniformMatrix3fv(uniform.glslLocation, elemCount, GL_FALSE, &packedArray.constData()->f);
+                            m_scratch.packedArray.resize(elemCount * 9);
+                            qrhi_std140_to_packed(&m_scratch.packedArray.data()->f, 3, elemCount * 3, src);
+                            f->glUniformMatrix3fv(uniform.glslLocation, elemCount, GL_FALSE, &m_scratch.packedArray.constData()->f);
                         }
                     }
                         break;
@@ -4260,9 +4246,9 @@ void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
                         if (elemCount < 1) {
                             f->glUniform1i(uniform.glslLocation, *reinterpret_cast<const qint32 *>(src));
                         } else {
-                            packedArray.resize(elemCount);
-                            qrhi_std140_to_packed(&packedArray.data()->i, 1, elemCount, src);
-                            f->glUniform1iv(uniform.glslLocation, elemCount, &packedArray.constData()->i);
+                            m_scratch.packedArray.resize(elemCount);
+                            qrhi_std140_to_packed(&m_scratch.packedArray.data()->i, 1, elemCount, src);
+                            f->glUniform1iv(uniform.glslLocation, elemCount, &m_scratch.packedArray.constData()->i);
                         }
                     }
                         break;
@@ -4272,9 +4258,9 @@ void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
                         if (elemCount < 1) {
                             f->glUniform2iv(uniform.glslLocation, 1, reinterpret_cast<const qint32 *>(src));
                         } else {
-                            packedArray.resize(elemCount * 2);
-                            qrhi_std140_to_packed(&packedArray.data()->i, 2, elemCount, src);
-                            f->glUniform2iv(uniform.glslLocation, elemCount, &packedArray.constData()->i);
+                            m_scratch.packedArray.resize(elemCount * 2);
+                            qrhi_std140_to_packed(&m_scratch.packedArray.data()->i, 2, elemCount, src);
+                            f->glUniform2iv(uniform.glslLocation, elemCount, &m_scratch.packedArray.constData()->i);
                         }
                     }
                         break;
@@ -4284,9 +4270,9 @@ void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
                         if (elemCount < 1) {
                             f->glUniform3iv(uniform.glslLocation, 1, reinterpret_cast<const qint32 *>(src));
                         } else {
-                            packedArray.resize(elemCount * 3);
-                            qrhi_std140_to_packed(&packedArray.data()->i, 3, elemCount, src);
-                            f->glUniform3iv(uniform.glslLocation, elemCount, &packedArray.constData()->i);
+                            m_scratch.packedArray.resize(elemCount * 3);
+                            qrhi_std140_to_packed(&m_scratch.packedArray.data()->i, 3, elemCount, src);
+                            f->glUniform3iv(uniform.glslLocation, elemCount, &m_scratch.packedArray.constData()->i);
                         }
                     }
                         break;
@@ -4355,13 +4341,13 @@ void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
         case QRhiShaderResourceBinding::Texture:
             for (int elem = 0; elem < b->u.stex.count; ++elem) {
                 QGles2Texture *texD = QRHI_RES(QGles2Texture, b->u.stex.texSamplers[elem].tex);
-                separateTextureBindings.append({ texD, b->binding, elem });
+                m_scratch.separateTextureBindings.append({ texD, b->binding, elem });
             }
             break;
         case QRhiShaderResourceBinding::Sampler:
         {
             QGles2Sampler *samplerD = QRHI_RES(QGles2Sampler, b->u.stex.texSamplers[0].sampler);
-            separateSamplerBindings.append({ samplerD, b->binding });
+            m_scratch.separateSamplerBindings.append({ samplerD, b->binding });
         }
             break;
         case QRhiShaderResourceBinding::ImageLoad:
@@ -4400,7 +4386,7 @@ void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
         }
     }
 
-    if (!separateTextureBindings.isEmpty() || !separateSamplerBindings.isEmpty()) {
+    if (!m_scratch.separateTextureBindings.isEmpty() || !m_scratch.separateSamplerBindings.isEmpty()) {
         const QGles2SamplerDescriptionVector &samplers(maybeGraphicsPs ? QRHI_RES(QGles2GraphicsPipeline, maybeGraphicsPs)->samplers
                                                                        : QRHI_RES(QGles2ComputePipeline, maybeComputePs)->samplers);
         void *ps;
@@ -4415,10 +4401,10 @@ void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
         for (const QGles2SamplerDescription &shaderSampler : samplers) {
             if (shaderSampler.combinedBinding >= 0)
                 continue;
-            for (const SeparateSampler &sepSampler : separateSamplerBindings) {
+            for (const Scratch::SeparateSampler &sepSampler : std::as_const(m_scratch.separateSamplerBindings)) {
                 if (sepSampler.binding != shaderSampler.sbinding)
                     continue;
-                for (const SeparateTexture &sepTex : separateTextureBindings) {
+                for (const Scratch::SeparateTexture &sepTex : std::as_const(m_scratch.separateTextureBindings)) {
                     if (sepTex.binding != shaderSampler.tbinding)
                         continue;
                     const int loc = shaderSampler.glslLocation + sepTex.elem;
