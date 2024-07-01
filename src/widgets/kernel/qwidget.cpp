@@ -151,6 +151,7 @@ QWidgetPrivate::QWidgetPrivate(int version)
       , usesRhiFlush(0)
       , childrenHiddenByWState(0)
       , childrenShownByExpose(0)
+      , dontSetExplicitShowHide(0)
 #if defined(Q_OS_WIN)
       , noPaintOnScreen(0)
 #endif
@@ -8367,8 +8368,12 @@ void QWidget::setVisible(bool visible)
     if (testAttribute(Qt::WA_WState_ExplicitShowHide) && testAttribute(Qt::WA_WState_Hidden) == !visible)
         return;
 
-    // Remember that setVisible was called explicitly
-    setAttribute(Qt::WA_WState_ExplicitShowHide);
+    if (d->dontSetExplicitShowHide) {
+        d->dontSetExplicitShowHide = false;
+    } else {
+        // Remember that setVisible was called explicitly
+        setAttribute(Qt::WA_WState_ExplicitShowHide);
+    }
 
     d->setVisible(visible);
 }
@@ -8522,10 +8527,17 @@ void QWidgetPrivate::showChildren(bool spontaneous)
             QShowEvent e;
             QApplication::sendSpontaneousEvent(widget, &e);
         } else {
-            if (widget->testAttribute(Qt::WA_WState_ExplicitShowHide))
+            if (widget->testAttribute(Qt::WA_WState_ExplicitShowHide)) {
                 widget->d_func()->show_recursive();
-            else
-                widget->d_func()->setVisible(true);
+            } else {
+                // Call QWidget::setVisible() here, so that subclasses
+                // that (wrongly) override setVisible to do initialization
+                // will still be notified that they are made visible, but
+                // do so without triggering ExplicitShowHide.
+                widget->d_func()->dontSetExplicitShowHide = true;
+                widget->setVisible(true);
+                widget->d_func()->dontSetExplicitShowHide = false;
+            }
         }
     }
 }

@@ -732,6 +732,7 @@ public:
     uint usesRhiFlush : 1;
     uint childrenHiddenByWState : 1;
     uint childrenShownByExpose : 1;
+    uint dontSetExplicitShowHide : 1;
 
     // *************************** Platform specific ************************************
 #if defined(Q_OS_WIN)
