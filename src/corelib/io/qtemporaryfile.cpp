@@ -668,9 +668,12 @@ QTemporaryFile::QTemporaryFile()
     which is calculated to be unique.
 //! [dynamic-part-of-filename]
 
+//! [filename-relative-or-absolute-path]
     If \a templateName is a relative path, the path will be relative to the
     current working directory. You can use QDir::tempPath() to construct \a
     templateName if you want use the system's temporary directory.
+//! [filename-relative-or-absolute-path]
+
     \include qtemporaryfile.cpp note-about-rename-method
 
     \sa open(), fileTemplate()
@@ -700,9 +703,7 @@ QTemporaryFile::QTemporaryFile(QObject *parent)
 
     \include qtemporaryfile.cpp dynamic-part-of-filename
 
-    If \a templateName is a relative path, the path will be relative to the
-    current working directory. You can use QDir::tempPath() to construct \a
-    templateName if you want use the system's temporary directory.
+    \include qtemporaryfile.cpp filename-relative-or-absolute-path
     \include qtemporaryfile.cpp note-about-rename-method
 
     \sa open(), fileTemplate()
@@ -787,6 +788,10 @@ void QTemporaryFile::setAutoRemove(bool b)
    afterwards it will contain the fileTemplate() plus
    additional characters to make it unique.
 
+   The file name returned by this method is relative or absolute depending on
+   the file name template used to construct this object (or passed to
+   setFileTemplate()) being relative or absolute, respectively.
+
    \sa fileTemplate()
 */
 
@@ -804,6 +809,10 @@ QString QTemporaryFile::fileName() const
 
 /*!
     Returns the file name template.
+
+    The file name template returned by this method, will be relative or
+    absolute depending on the file name template used to construct this object
+    (or passed to setFileTemplate()) being relative or absolute, respectively.
 
     \sa setFileTemplate(), fileName(), {Default File Name Template}
 */
@@ -826,12 +835,10 @@ QString QTemporaryFile::fileTemplate() const
 
     \include qtemporaryfile.cpp dynamic-part-of-filename
 
-    If \a name contains a relative file path, the path will be relative to the
-    current working directory. You can use QDir::tempPath() to construct \a
-    name if you want use the system's temporary directory.
+    \include qtemporaryfile.cpp filename-relative-or-absolute-path
     \include qtemporaryfile.cpp note-about-rename-method
 
-   \sa fileTemplate()
+   \sa fileTemplate(), fileName()
 */
 void QTemporaryFile::setFileTemplate(const QString &name)
 {
