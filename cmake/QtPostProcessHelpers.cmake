@@ -400,10 +400,22 @@ function(qt_internal_create_qt6_dependencies_file)
     unset(depends)
     unset(optional_public_depends)
 
+    set(third_party_deps "")
+    set(third_party_deps_seen "")
+    set(third_party_deps_package_components_ids "")
+
     # We need to collect third party deps that are set on the public Platform target,
     # like Threads::Threads.
     # This mimics find_package part of the CONFIG += thread assignment in mkspecs/features/qt.prf.
     qt_collect_third_party_deps(${actual_target})
+    qt_internal_collect_third_party_dep_packages_info("${INSTALL_CMAKE_NAMESPACE}"
+        "${third_party_deps_package_components_ids}"
+        packages_info)
+
+    set(third_party_deps_extra_info "")
+    if(packages_info)
+        string(APPEND third_party_deps_extra_info "${packages_info}")
+    endif()
 
     # For Threads we also need to write an extra variable assignment.
     set(third_party_extra "")
