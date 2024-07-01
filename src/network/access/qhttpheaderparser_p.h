@@ -53,7 +53,8 @@ public:
     bool parseHeaders(QByteArrayView headers);
     bool parseStatus(QByteArrayView status);
 
-    const QHttpHeaders& headers() const;
+    const QHttpHeaders& headers() const &;
+    QHttpHeaders headers() &&;
     void setStatusCode(int code);
     int getStatusCode() const;
     int getMajorVersion() const;
