@@ -71,6 +71,10 @@ macro(qt_internal_include_qt_platform_android)
     endif()
 endmacro()
 
+macro(qt_internal_include_qt_properties)
+    include(QtProperties)
+endmacro()
+
 macro(qt_internal_set_compiler_optimization_flags)
     include(QtCompilerOptimization)
 endmacro()
@@ -188,6 +192,7 @@ function(qt_internal_get_qt_build_private_helpers out_var)
         QtPrecompiledHeadersHelpers
         QtPriHelpers
         QtPrlHelpers
+        QtProperties
         QtQmakeHelpers
         QtResourceHelpers
         QtRpathHelpers
@@ -422,6 +427,8 @@ macro(qt_internal_setup_build_and_global_variables)
     qt_internal_set_qt_host_path()
 
     qt_internal_include_qt_platform_android()
+
+    qt_internal_include_qt_properties()
 
     # Depends on qt_internal_setup_default_install_prefix
     qt_internal_setup_paths_and_prefixes()
