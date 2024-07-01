@@ -387,6 +387,10 @@ endfunction()
 # It assigns the known properties from the versioned targets to the versionless created in this
 # function. This allows versionless targets mimic the versioned.
 function(_qt_internal_create_versionless_targets targets install_namespace)
+    set(known_imported_properties
+        IMPORTED_LINK_DEPENDENT_LIBRARIES
+    )
+
     set(known_interface_properties
         QT_MAJOR_VERSION
         AUTOMOC_MACRO_NAMES
@@ -479,6 +483,15 @@ function(_qt_internal_create_versionless_targets targets install_namespace)
                 endif()
                 set_property(TARGET Qt::${target} PROPERTY
                     IMPORTED_LOCATION${config} "${target_imported_location}")
+
+                foreach(property IN LISTS known_imported_properties)
+                    get_target_property(exported_property_value
+                        ${install_namespace}::${target} ${property}${config})
+                    if(exported_property_value)
+                        set_property(TARGET Qt::${target} APPEND PROPERTY
+                            ${property} "${exported_property_value}")
+                    endif()
+                endforeach()
             endforeach()
 
             foreach(property IN LISTS known_qt_exported_properties)
