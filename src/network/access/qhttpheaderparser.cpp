@@ -128,9 +128,14 @@ bool QHttpHeaderParser::parseStatus(QByteArrayView status)
     return ok && uint(majorVersion) <= 9 && uint(minorVersion) <= 9;
 }
 
-const QHttpHeaders& QHttpHeaderParser::headers() const
+const QHttpHeaders& QHttpHeaderParser::headers() const &
 {
     return fields;
+}
+
+QHttpHeaders QHttpHeaderParser::headers() &&
+{
+    return std::move(fields);
 }
 
 QByteArray QHttpHeaderParser::firstHeaderField(QByteArrayView name,
