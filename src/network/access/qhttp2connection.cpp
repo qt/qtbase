@@ -1556,6 +1556,9 @@ void QHttp2Connection::handleCONTINUATION()
     if (continuedFrames.empty())
         return connectionError(PROTOCOL_ERROR,
                                "CONTINUATION without a preceding HEADERS or PUSH_PROMISE");
+    if (!continuationExpected)
+        return connectionError(PROTOCOL_ERROR,
+                               "CONTINUATION after a frame with the END_HEADERS flag set");
 
     if (inboundFrame.streamID() != continuedFrames.front().streamID())
         return connectionError(PROTOCOL_ERROR, "CONTINUATION on invalid stream");
