@@ -139,7 +139,7 @@ static Platform platformFromMkSpec(const QString &xSpec)
             return WindowsDesktopClangMsvc;
         if (xSpec.contains("arm"_L1))
             return WindowsDesktopMsvcArm;
-        if (xSpec.contains("G++"_L1))
+        if (xSpec.contains("g++"_L1))
             return WindowsDesktopMinGW;
 
         return WindowsDesktopMsvc;
