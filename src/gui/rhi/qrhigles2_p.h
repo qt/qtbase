@@ -1112,6 +1112,25 @@ public:
         QByteArray data;
     };
     QHash<QByteArray, PipelineCacheData> m_pipelineCache;
+
+    struct Scratch {
+        union data32_t {
+            float f;
+            qint32 i;
+        };
+        QVarLengthArray<data32_t, 128> packedArray;
+        struct SeparateTexture {
+            QGles2Texture *texture;
+            int binding;
+            int elem;
+        };
+        QVarLengthArray<SeparateTexture, 8> separateTextureBindings;
+        struct SeparateSampler {
+            QGles2Sampler *sampler;
+            int binding;
+        };
+        QVarLengthArray<SeparateSampler, 4> separateSamplerBindings;
+    } m_scratch;
 };
 
 Q_DECLARE_TYPEINFO(QRhiGles2::DeferredReleaseEntry, Q_RELOCATABLE_TYPE);
