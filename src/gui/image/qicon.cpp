@@ -625,11 +625,26 @@ QFactoryLoader *qt_iconEngineFactoryLoader()
   Icons from an application-provided theme take precedence over the
   native icon library.
 
-  In addition, it is possible to provide custom \l {QIconEngine}
-  {icon engines}. This allows applications to customize every aspect
-  of generated icons. With QIconEnginePlugin it is possible to register
-  different icon engines for different file suffixes, making it possible
-  for third parties to provide additional icon engines to those included
+  \section1 Icon Engines
+
+  Internally, QIcon instantiates an \l {QIconEngine} {icon engine}
+  backend to handle and render the icon images. The type of icon
+  engine is determined by the first file or pixmap or theme added to a
+  QIcon object. Additional files or pixmaps will then be handled by
+  the same engine.
+
+  Icon engines differ in the way they handle and render icons. The
+  default pixmap-based engine only deals with fixed images, while the
+  QtSvg module provides an icon engine that can re-render the provided
+  vector graphics files at the requested size for better quality. The
+  theme icon engines will typically only provide images from native
+  platform icon library, and ignore any added files or pixmaps.
+
+  In addition, it is possible to provide custom icon engines. This
+  allows applications to customize every aspect of generated
+  icons. With QIconEnginePlugin it is possible to register different
+  icon engines for different file suffixes, making it possible for
+  third parties to provide additional icon engines to those included
   with Qt.
 
   \section1 Making Classes that Use QIcon
