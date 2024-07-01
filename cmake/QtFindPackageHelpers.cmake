@@ -209,15 +209,8 @@ macro(qt_find_package)
                     )
                 endif()
 
-                get_property(is_global TARGET ${qt_find_package_target_name} PROPERTY
-                                                                             IMPORTED_GLOBAL)
-                _qt_internal_should_not_promote_package_target_to_global(
-                    "${qt_find_package_target_name}" should_not_promote)
-                if(NOT is_global AND NOT should_not_promote)
-                    __qt_internal_promote_target_to_global(${qt_find_package_target_name})
-                    _qt_find_package_promote_targets_to_global_scope(
-                        "${qt_find_package_target_name}")
-                endif()
+                _qt_internal_promote_3rd_party_provided_target_and_3rd_party_deps_to_global(
+                    "${qt_find_package_target_name}")
 
                 set(_qt_find_package_sbom_args "")
 

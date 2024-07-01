@@ -11,7 +11,6 @@ macro(qt_internal_project_setup)
     # Check for the minimum CMake version.
     qt_internal_require_suitable_cmake_version()
     qt_internal_upgrade_cmake_policies()
-    qt_internal_promote_platform_targets_to_global()
 endmacro()
 
 macro(qt_build_internals_set_up_private_api)

@@ -74,7 +74,7 @@ endfunction()
 # operation: a string to tell the function what additional behaviors to execute.
 #            'collect_libs' (default) operation is to collect linker file paths and flags.
 #                           Used for prl file generation.
-#            'promote_global' promotes walked imported targets to global scope.
+#            'promote_3rd_party_global' promotes walked 3rd party imported targets to global scope.
 #            'collect_targets' collects all target names (discards framework or link flags)
 #            'direct_targets' collects only the direct target names (discards framework or link
 #                             flags)
@@ -238,7 +238,7 @@ function(__qt_internal_walk_libs
                         __qt_internal_merge_libs(rcc_objects ${lib_rcc_objects_${target}})
                     endif()
                 endif()
-                if(operation STREQUAL "promote_global")
+                if(operation STREQUAL "promote_3rd_party_global")
                     set(lib_target_unaliased "${lib_target}")
                     get_target_property(aliased_target ${lib_target} ALIASED_TARGET)
                     if(aliased_target)
@@ -252,7 +252,8 @@ function(__qt_internal_walk_libs
                     _qt_internal_should_not_promote_package_target_to_global(
                         "${lib_target_unaliased}" should_not_promote)
                     if(is_imported AND NOT should_not_promote)
-                        __qt_internal_promote_target_to_global(${lib_target_unaliased})
+                        _qt_internal_promote_3rd_party_target_to_global(
+                            ${lib_target_unaliased})
                     endif()
                 endif()
             elseif("${lib_target}" MATCHES "^(Qt|${QT_CMAKE_EXPORT_NAMESPACE})::(.*)")

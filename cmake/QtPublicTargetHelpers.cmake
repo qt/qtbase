@@ -260,25 +260,93 @@ function(_qt_internal_should_not_promote_package_target_to_global target out_var
 endfunction()
 
 # This function recursively walks transitive link libraries of the given target
-# and promotes those targets to be IMPORTED_GLOBAL if they are not.
+# and promotes encountered 3rd party targets to be IMPORTED_GLOBAL if they are not.
 #
 # This is required for .prl file generation in top-level builds, to make sure that imported 3rd
 # party library targets in any repo are made global, so there are no scoping issues.
 #
-# Only works if called from qt_find_package(), because the promotion needs to happen in the same
-# directory scope where the imported target is first created.
+# The promotion needs to happen in the same directory scope where the imported target is
+# first created.
 #
 # Uses __qt_internal_walk_libs.
-function(_qt_find_package_promote_targets_to_global_scope target)
+function(_qt_internal_promote_3rd_party_link_targets_to_global target)
     __qt_internal_walk_libs("${target}" _discarded_out_var _discarded_out_var_2
-                            "qt_find_package_targets_dict" "promote_global")
+                            "qt_find_package_targets_dict" "promote_3rd_party_global")
 endfunction()
 
+# Check if a target is an internal target (one added by qt_internal_* API, executables, libraries,
+# etc).
+function(_qt_internal_is_internal_target target out_var)
+    get_target_property(is_internal ${target} _qt_is_internal_target)
+    if(is_internal)
+        set(value TRUE)
+    else()
+        set(value FALSE)
+    endif()
+    set(${out_var} "${value}" PARENT_SCOPE)
+endfunction()
+
+# Check if a target should never be promoted to global.
+# Some targets like the Platform target is public, and can't have _qt_is_internal_target set.
+# But we still want to avoid promoting it to global. Setting this property achieves that.
+function(_qt_internal_should_skip_3rd_party_global_promotion target out_var)
+    get_target_property(should_skip ${target} _qt_should_skip_3rd_party_global_promotion)
+    if(should_skip)
+        set(value TRUE)
+    else()
+        set(value FALSE)
+    endif()
+    set(${out_var} "${value}" PARENT_SCOPE)
+endfunction()
+
+# Tries to promote any non-global imported target to global scope.
 function(__qt_internal_promote_target_to_global target)
     get_property(is_global TARGET ${target} PROPERTY IMPORTED_GLOBAL)
     if(NOT is_global)
         message(DEBUG "Promoting target to global: '${target}'")
         set_property(TARGET ${target} PROPERTY IMPORTED_GLOBAL TRUE)
+    endif()
+endfunction()
+
+# Promotes a 3rd party provided target to global, which was found by qt_find_package or
+# _qt_internal_find_third_party_dependencies.
+# Only does it when building Qt, but not when building user projects.
+function(_qt_internal_promote_3rd_party_provided_target_and_3rd_party_deps_to_global target)
+    # Return early if building a user project, and not Qt.
+    # QT_BUILDING_QT is set when building a qt repo, but we also check for QT_REPO_MODULE_VERSION,
+    # which is set in .cmake.conf, because _qt_internal_find_third_party_dependencies is called
+    # before QT_BUILDING_QT is set.
+    if(NOT (QT_BUILDING_QT OR QT_REPO_MODULE_VERSION))
+        return()
+    endif()
+
+    # Return early if the provided target does not exist, which can happen in the case of zstd,
+    # where we list multiple possible target names, but only some will be available.
+    if(NOT TARGET "${target}")
+        return()
+    endif()
+
+    get_property(is_global TARGET "${target}" PROPERTY IMPORTED_GLOBAL)
+    _qt_internal_should_not_promote_package_target_to_global("${target}" should_not_promote)
+    if(NOT is_global AND NOT should_not_promote)
+        _qt_internal_promote_3rd_party_target_to_global(${target})
+        _qt_internal_promote_3rd_party_link_targets_to_global("${target}")
+    endif()
+endfunction()
+
+# Tries to promote a non-global imported 3rd party target to global scope.
+# 3rd party targets are usually system library targets.
+# - targets that were not created by qt_internal_add_foo commands
+# - targets that don't have the should_skip_global_promotion property
+function(_qt_internal_promote_3rd_party_target_to_global target)
+    get_property(is_global TARGET ${target} PROPERTY IMPORTED_GLOBAL)
+
+    if(NOT is_global)
+        _qt_internal_is_internal_target("${target}" is_internal)
+        _qt_internal_should_skip_3rd_party_global_promotion("${target}" should_skip)
+        if(NOT is_internal AND NOT should_skip)
+            __qt_internal_promote_target_to_global("${target}")
+        endif()
     endif()
 endfunction()
 
