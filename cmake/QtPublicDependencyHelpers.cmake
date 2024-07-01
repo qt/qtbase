@@ -52,19 +52,20 @@ macro(_qt_internal_find_third_party_dependencies target target_dep_list)
                 )
             endif()
 
-            # Work around: QTBUG-125371
-            if(NOT "${ARGV0}" STREQUAL "Qt6")
-                foreach(__qt_${target}_provided_target
-                        IN LISTS
-                        __qt_${target}_third_party_package_${__qt_${target}_package_components_id}_provided_targets)
-                    _qt_internal_sbom_record_system_library_usage(
-                        "${__qt_${target}_provided_target}"
-                        TYPE SYSTEM_LIBRARY
-                        FRIENDLY_PACKAGE_NAME "${__qt_${target}_pkg}"
-                        ${__qt_${target}_sbom_args}
-                    )
-                endforeach()
-            endif()
+            foreach(__qt_${target}_provided_target
+                    IN LISTS
+                    __qt_${target}_third_party_package_${__qt_${target}_package_components_id}_provided_targets)
+
+                _qt_internal_promote_3rd_party_provided_target_and_3rd_party_deps_to_global(
+                    "${__qt_${target}_provided_target}")
+
+                _qt_internal_sbom_record_system_library_usage(
+                    "${__qt_${target}_provided_target}"
+                    TYPE SYSTEM_LIBRARY
+                    FRIENDLY_PACKAGE_NAME "${__qt_${target}_pkg}"
+                    ${__qt_${target}_sbom_args}
+                )
+            endforeach()
         endif()
     endforeach()
 endmacro()
