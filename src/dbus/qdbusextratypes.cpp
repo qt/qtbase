@@ -34,6 +34,10 @@ void QDBusObjectPath::doCheck()
     }
 }
 
+QDBusSignature::QDBusSignature() noexcept
+    : m_signature(QLatin1StringView("")) // mark non-null (empty signatures are valid)
+{}
+
 void QDBusSignature::doCheck()
 {
     if (!QDBusUtil::isValidSignature(m_signature)) {
