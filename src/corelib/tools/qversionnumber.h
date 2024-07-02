@@ -360,7 +360,7 @@ private:
     [[nodiscard]] friend bool comparesEqual(const QVersionNumber &lhs,
                                             const QVersionNumber &rhs) noexcept
     {
-        return compare(lhs, rhs) == 0;
+        return lhs.segmentCount() == rhs.segmentCount() && compare(lhs, rhs) == 0;
     }
     [[nodiscard]] friend Qt::strong_ordering compareThreeWay(const QVersionNumber &lhs,
                                                              const QVersionNumber &rhs) noexcept
