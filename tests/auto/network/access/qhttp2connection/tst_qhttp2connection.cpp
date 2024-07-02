@@ -23,6 +23,7 @@ private slots:
     void testPING();
     void connectToServer();
     void WINDOW_UPDATE();
+    void testCONTINUATIONFrame();
 
 private:
     enum PeerType { Client, Server };
@@ -384,6 +385,168 @@ void tst_QHttp2Connection::WINDOW_UPDATE()
 
     QCOMPARE(clientStream->state(), QHttp2Stream::State::Closed);
     QCOMPARE(serverStream->state(), QHttp2Stream::State::Closed);
+}
+
+namespace {
+
+void sendHEADERSFrame(HPack::Encoder &encoder,
+                      Http2::FrameWriter &frameWriter,
+                      quint32 streamId,
+                      const HPack::HttpHeader &headers,
+                      Http2::FrameFlags flags,
+                      QIODevice &socket)
+{
+    frameWriter.start(Http2::FrameType::HEADERS,
+                      flags,
+                      streamId);
+    frameWriter.append(quint32());
+    frameWriter.append(QHttp2Stream::DefaultPriority);
+
+    HPack::BitOStream outputStream(frameWriter.outboundFrame().buffer);
+    QVERIFY(encoder.encodeRequest(outputStream, headers));
+    frameWriter.setPayloadSize(frameWriter.outboundFrame().buffer.size()
+                               - Http2::Http2PredefinedParameters::frameHeaderSize);
+    frameWriter.write(socket);
+}
+
+void sendDATAFrame(Http2::FrameWriter &frameWriter,
+                   quint32 streamId,
+                   Http2::FrameFlags flags,
+                   QIODevice &socket)
+{
+    frameWriter.start(Http2::FrameType::DATA,
+                      flags,
+                      streamId);
+    frameWriter.write(socket);
+}
+
+void sendCONTINUATIONFrame(HPack::Encoder &encoder,
+                           Http2::FrameWriter &frameWriter,
+                           quint32 streamId,
+                           const HPack::HttpHeader &headers,
+                           Http2::FrameFlags flags,
+                           QIODevice &socket)
+{
+    frameWriter.start(Http2::FrameType::CONTINUATION,
+                      flags,
+                      streamId);
+
+    HPack::BitOStream outputStream(frameWriter.outboundFrame().buffer);
+    QVERIFY(encoder.encodeRequest(outputStream, headers));
+    frameWriter.setPayloadSize(frameWriter.outboundFrame().buffer.size()
+                               - Http2::Http2PredefinedParameters::frameHeaderSize);
+    frameWriter.write(socket);
+}
+
+}
+
+void tst_QHttp2Connection::testCONTINUATIONFrame()
+{
+    static const HPack::HttpHeader headers = HPack::HttpHeader {
+        { ":authority", "example.com" },
+        { ":method", "GET" },
+        { ":path", "/" },
+        { ":scheme", "https" },
+        { "n1", "v1" },
+        { "n2", "v2" },
+        { "n3", "v3" }
+    };
+
+    #define CREATE_CONNECTION() \
+    auto [client, server] = makeFakeConnectedSockets(); \
+    auto clientConnection = makeHttp2Connection(client.get(), {}, Client); \
+    auto serverConnection = makeHttp2Connection(server.get(), {}, Server); \
+    QVERIFY(waitForSettingsExchange(clientConnection, serverConnection)); \
+    \
+    HPack::Encoder encoder = HPack::Encoder(HPack::FieldLookupTable::DefaultSize, true); \
+    Http2::FrameWriter frameWriter; \
+    \
+    QSignalSpy serverIncomingStreamSpy{ serverConnection, &QHttp2Connection::newIncomingStream }; \
+    QSignalSpy receivedGOAWAYSpy{ clientConnection, &QHttp2Connection::receivedGOAWAY }; \
+    \
+    QHttp2Stream *clientStream = clientConnection->createStream().unwrap(); \
+    QVERIFY(clientStream);
+
+    // Send multiple CONTINUATION frames
+    {
+        CREATE_CONNECTION();
+
+        frameWriter.start(Http2::FrameType::HEADERS,
+                          Http2::FrameFlag::PRIORITY,
+                          clientStream->streamID());
+        frameWriter.append(quint32());
+        frameWriter.append(QHttp2Stream::DefaultPriority);
+        HPack::BitOStream outputStream(frameWriter.outboundFrame().buffer);
+        QVERIFY(encoder.encodeRequest(outputStream, headers));
+
+        // split headers into multiple CONTINUATION frames
+        const size_t sizeLimit = frameWriter.outboundFrame().buffer.size() / 5;
+        frameWriter.writeHEADERS(*client, sizeLimit);
+
+        QVERIFY(serverIncomingStreamSpy.wait());
+        auto *serverStream = serverIncomingStreamSpy.front().front().value<QHttp2Stream *>();
+        QVERIFY(serverStream);
+        // correct behavior accepted and handled sensibly
+        QCOMPARE(serverStream->receivedHeaders(), headers);
+    }
+
+    // A DATA frame between a HEADERS frame and a CONTINUATION frame.
+    {
+        CREATE_CONNECTION();
+
+        sendHEADERSFrame(encoder, frameWriter, clientStream->streamID(),
+                         headers, Http2::FrameFlag::PRIORITY, *client);
+        QVERIFY(serverIncomingStreamSpy.wait());
+
+        sendDATAFrame(frameWriter, clientStream->streamID(), Http2::FrameFlag::EMPTY, *client);
+        // the client correctly rejected our malformed stream contents by telling us to GO AWAY
+        QVERIFY(receivedGOAWAYSpy.wait());
+    }
+
+    // A CONTINUATION frame after a frame with the END_HEADERS set.
+    {
+        CREATE_CONNECTION();
+
+        sendHEADERSFrame(encoder, frameWriter, clientStream->streamID(), headers,
+                         Http2::FrameFlag::PRIORITY | Http2::FrameFlag::END_HEADERS, *client);
+        QVERIFY(serverIncomingStreamSpy.wait());
+
+        sendCONTINUATIONFrame(encoder, frameWriter, clientStream->streamID(),
+                              headers, Http2::FrameFlag::EMPTY, *client);
+        // the client correctly rejected our malformed stream contents by telling us to GO AWAY
+        QVERIFY(receivedGOAWAYSpy.wait());
+    }
+
+    // A CONTINUATION frame with the stream id 0x00.
+    {
+        CREATE_CONNECTION();
+
+        sendHEADERSFrame(encoder, frameWriter, clientStream->streamID(),
+                         headers, Http2::FrameFlag::PRIORITY, *client);
+        QVERIFY(serverIncomingStreamSpy.wait());
+
+        sendCONTINUATIONFrame(encoder, frameWriter, 0,
+                              headers, Http2::FrameFlag::EMPTY, *client);
+        // the client correctly rejected our malformed stream contents by telling us to GO AWAY
+        QVERIFY(receivedGOAWAYSpy.wait());
+    }
+
+    // A CONTINUATION frame with a different stream id then the previous frame.
+    {
+        CREATE_CONNECTION();
+
+        sendHEADERSFrame(encoder, frameWriter, clientStream->streamID(),
+                         headers, Http2::FrameFlag::PRIORITY, *client);
+        QVERIFY(serverIncomingStreamSpy.wait());
+
+        QHttp2Stream *newClientStream = clientConnection->createStream().unwrap();
+        QVERIFY(newClientStream);
+
+        sendCONTINUATIONFrame(encoder, frameWriter, newClientStream->streamID(),
+                              headers, Http2::FrameFlag::EMPTY, *client);
+        // the client correctly rejected our malformed stream contents by telling us to GO AWAY
+        QVERIFY(receivedGOAWAYSpy.wait());
+    }
 }
 
 QTEST_MAIN(tst_QHttp2Connection)
