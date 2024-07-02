@@ -45,7 +45,7 @@ CONFIG(debug, debug|release) {
             equals(build, debug): \
                 suffix = _debug
         } else {
-            contains(QT_CONFIG, debug): \
+            !qtConfig(framework):contains(QT_CONFIG, debug): \
                 suffix = _debug
         }
 

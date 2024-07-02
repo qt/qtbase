@@ -19,8 +19,13 @@ defineReplace(qtPlatformTargetSuffix) {
     }
     darwin {
         contains($$config_variable, debug, debug|release) {
-            !debug_and_release|build_pass: \
-                return($${suffix}_debug)
+            debug_and_release {
+                build_pass: \
+                    return($${suffix}_debug)
+            } else {
+                !qtConfig(framework): \
+                    return($${suffix}_debug)
+            }
         }
     }
     return($$suffix)
