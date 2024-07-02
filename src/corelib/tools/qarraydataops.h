@@ -969,15 +969,14 @@ public:
         Q_ASSERT(newSize > this->size);
         Q_ASSERT(newSize - this->size <= this->freeSpaceAtEnd());
 
-        T *const b = this->begin();
-        do {
-            auto ptr = b + this->size;
 
-            if constexpr (std::is_constructible_v<T, Qt::Initialization>)
-                new (ptr) T(Qt::Uninitialized);
-            else
-                new (ptr) T; // not T() -- default-construct
-        } while (++this->size != newSize);
+        T *const b = this->begin() + this->size;
+        T *const e = this->begin() + newSize;
+        if constexpr (std::is_constructible_v<T, Qt::Initialization>)
+            std::uninitialized_fill(b, e, Qt::Uninitialized);
+        else
+            std::uninitialized_default_construct(b, e);
+        this->size = newSize;
     }
 };
 
