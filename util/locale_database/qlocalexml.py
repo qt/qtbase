@@ -224,8 +224,8 @@ class QLocaleXmlReader (object):
 
     # Likely subtag management:
     def __likelySubtagsMap(self):
-        def triplet(element, keys=('language', 'script', 'territory'), kid = self.__firstChildText):
-            return tuple(int(kid(element, key)) for key in keys)
+        def triplet(element, keys=('language', 'script', 'territory')):
+            return tuple(int(element.attributes[key].nodeValue) for key in keys)
 
         kid = self.__firstChildElt
         for elt in self.__eachEltInGroup(self.root, 'likelySubtags', 'likelySubtag'):
@@ -341,9 +341,10 @@ class Spacer (object):
             indent = self.current = indent[:-len(self.__each)]
         elif line.startswith('<') and line[1:2] not in '!?':
             cut = line.find('>')
-            tag = (line[1:] if cut < 0 else line[1 : cut]).strip().split()[0]
-            if f'</{tag}>' not in line:
-                self.current += self.__each
+            if cut < 1 or line[cut - 1] != '/':
+                tag = (line[1:] if cut < 0 else line[1 : cut]).strip().split()[0]
+                if f'</{tag}>' not in line:
+                    self.current += self.__each
         return indent + line + '\n'
 
     def __call__(self, line):
@@ -475,6 +476,12 @@ class QLocaleXmlWriter (object):
             head = tag
         self.__write(f'<{head}>{text}</{tag}>')
 
+    def asTag(self, tag, **attrs):
+        """Similar to inTag(), but with no content for the element."""
+        assert attrs, tag # No point to this otherwise
+        tail = ' '.join(f'{k}="{v}"' for k, v in attrs.items())
+        self.__write(f'<{tag} {tail} />')
+
     def close(self, grumble):
         """Finish writing and grumble about any issues discovered."""
         if self.__rawOutput != self.__complain:
@@ -521,12 +528,8 @@ class QLocaleXmlWriter (object):
         self.__closeTag(f'{tag}List')
 
     def __likelySubTag(self, tag, likely):
-        self.__openTag(tag)
-        self.inTag('language', likely[0])
-        self.inTag('script', likely[1])
-        self.inTag('territory', likely[2])
-        # self.inTag('variant', likely[3])
-        self.__closeTag(tag)
+        self.asTag(tag, language = likely[0], script = likely[1],
+                   territory = likely[2]) # variant = likely[3]
 
     def __writeLocale(self, locale, calendars):
         locale.toXml(self.inTag, calendars)
