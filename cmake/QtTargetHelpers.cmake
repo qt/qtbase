@@ -1425,6 +1425,7 @@ endfunction()
 # Needed to allow selectively applying certain flags via PlatformXInternal targets.
 function(qt_internal_mark_as_internal_library target)
     set_target_properties(${target} PROPERTIES _qt_is_internal_library TRUE)
+    set_property(TARGET "${target}" APPEND PROPERTY EXPORT_PROPERTIES "_qt_is_internal_library")
     qt_internal_mark_as_internal_target(${target})
 endfunction()
 
@@ -1434,6 +1435,7 @@ endfunction()
 # Needed to allow selectively applying certain flags via PlatformXInternal targets.
 function(qt_internal_mark_as_internal_target target)
     set_target_properties(${target} PROPERTIES _qt_is_internal_target TRUE)
+    set_property(TARGET "${target}" APPEND PROPERTY EXPORT_PROPERTIES "_qt_is_internal_target")
 endfunction()
 
 # Marks a target with a property to skip it adding it as a dependency when building examples as
