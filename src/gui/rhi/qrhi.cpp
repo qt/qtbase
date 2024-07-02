@@ -3817,7 +3817,7 @@ QRhiResource::Type QRhiBuffer::resourceType() const
  */
 QRhiBuffer::NativeBuffer QRhiBuffer::nativeBuffer()
 {
-    return {};
+    return { {}, 0 };
 }
 
 /*!
