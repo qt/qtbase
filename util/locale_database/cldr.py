@@ -57,14 +57,14 @@ class CldrReader (object):
                 else:
                     self.grumble(f'Skipping likelySubtag "{got}" -> "{use}" ({e})\n')
                 continue
-            if all(code.startswith('Any') and code[3].isupper() for code in have[:-1]):
+            if not any(have):
                 continue
 
             give = (give[0],
                     # Substitute according to http://www.unicode.org/reports/tr35/#Likely_Subtags
-                    have[1] if give[1] == 'AnyScript' else give[1],
-                    have[2] if give[2] == 'AnyTerritory' else give[2],
-                    give[3]) # AnyVariant similarly ?
+                    give[1] or have[1],
+                    give[2] or have[2],
+                    give[3] or have[3])
 
             yield have, give
 
@@ -205,7 +205,7 @@ class CldrReader (object):
             script, territory, variant = tags
         except ValueError:
             pass
-        return tuple(p[1] for p in self.root.codesToIdName(language, script, territory, variant))
+        return tuple(p[0] for p in self.root.codesToIdName(language, script, territory, variant))
 
     def __splitLocale(self, name):
         """Generate (language, script, territory, variant) from a locale name

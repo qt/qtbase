@@ -34,9 +34,9 @@ LikelySubtag = element likelySubtag {
 }
 
 LocaleTriplet = (
-  element language { text },
-  element script { text },
-  element territory { text }
+  element language { xsd:nonNegativeInteger },
+  element script { xsd:nonNegativeInteger },
+  element territory { xsd:nonNegativeInteger }
 )
 
 # TODO: xsd patterns for IANA IDs and space-joined lists of them

@@ -53,7 +53,7 @@ class QLocaleXmlReader (object):
         languages = tuple(self.__loadMap('language', language_map))
         scripts = tuple(self.__loadMap('script', script_map))
         territories = tuple(self.__loadMap('territory', territory_map))
-        self.__likely = tuple(self.__likelySubtagsMap()) # in enum name form
+        self.__likely = tuple(self.__likelySubtagsMap()) # as enum numeric values
 
         # Mappings {ID: (enum name, code, en.xml name)}
         self.languages = {v[0]: v[1:] for v in languages}
@@ -75,6 +75,13 @@ class QLocaleXmlReader (object):
         )
 
     def loadLocaleMap(self, calendars, grumble = lambda text: None):
+        """Yields id-triplet and locale object for each locale read.
+
+        The id-triplet gives the (language, script, territory) numeric
+        values for the QLocale enum members describing the
+        locale. Where the relevant enum value is zero (an Any* member
+        of the enum), likely subtag rules are used to fill in the
+        script or territory, if missing, in this triplet."""
         kid = self.__firstChildText
         likely = dict(self.__likely)
         for elt in self.__eachEltInGroup(self.root, 'localeList', 'locale'):
@@ -92,14 +99,14 @@ class QLocaleXmlReader (object):
                     # http://www.unicode.org/reports/tr35/#Likely_Subtags
                     try:
                         try:
-                            to = likely[(locale.language, 'AnyScript', locale.territory)]
+                            to = likely[(language, 0, territory)]
                         except KeyError:
-                            to = likely[(locale.language, 'AnyScript', 'AnyTerritory')]
+                            to = likely[(language, 0, 0)]
                     except KeyError:
                         pass
                     else:
-                        locale.script = to[1]
-                        script = self.__textByName[locale.script][0]
+                        script = to[1]
+                        locale.script = self.scripts[script][0]
 
             yield (language, script, territory), locale
 
@@ -146,12 +153,16 @@ class QLocaleXmlReader (object):
             return kl(tuple(x[0] for x in pair[0]))
 
         # Sort self.__likely to enable binary search in C++ code.
-        for have, give in sorted(((self.__fromNames(has),
-                                   self.__fromNames(got))
+        for have, give in sorted(((self.__fromIds(has),
+                                   self.__fromIds(got))
                                   for has, got in self.__likely),
                                  key = keyLikely):
-            yield ('_'.join(tag(have)), ids(have),
-                   '_'.join(tag(give)), ids(give))
+            try:
+                yield ('_'.join(tag(have)), ids(have),
+                       '_'.join(tag(give)), ids(give))
+            except TypeError as what:
+                what.args += (have, give)
+                raise
 
     def defaultMap(self):
         """Map language and script to their default territory by ID.
@@ -160,11 +171,9 @@ class QLocaleXmlReader (object):
         sub-tags mapping says language's default locale uses the given
         script and territory."""
         for have, give in self.__likely:
-            if have[1:] == ('AnyScript', 'AnyTerritory') and give[2] != 'AnyTerritory':
+            if have[1:] == (0, 0) and give[2]:
                 assert have[0] == give[0], (have, give)
-                yield ((self.__langByName[give[0]][0],
-                        self.__textByName[give[1]][0]),
-                       self.__landByName[give[2]][0])
+                yield (give[:2], give[2])
 
     def enumify(self, name, suffix):
         """Stick together the parts of an enumdata.py name.
@@ -207,14 +216,16 @@ class QLocaleXmlReader (object):
             key = int(key)
             yield key, enum[key][0], code, name
 
-    def __fromNames(self, names):
+    def __fromIds(self, ids):
         # Three (ID, code) pairs:
-        return self.__langByName[names[0]], self.__textByName[names[1]], self.__landByName[names[2]]
+        return ((ids[0], self.languages[ids[0]][1]),
+                (ids[1], self.scripts[ids[1]][1]),
+                (ids[2], self.territories[ids[2]][1]))
 
     # Likely subtag management:
     def __likelySubtagsMap(self):
         def triplet(element, keys=('language', 'script', 'territory'), kid = self.__firstChildText):
-            return tuple(kid(element, key) for key in keys)
+            return tuple(int(kid(element, key)) for key in keys)
 
         kid = self.__firstChildElt
         for elt in self.__eachEltInGroup(self.root, 'likelySubtags', 'likelySubtag'):
