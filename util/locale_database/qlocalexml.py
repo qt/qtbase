@@ -119,12 +119,13 @@ class QLocaleXmlReader (object):
     def msToIana(self):
         kid = self.__firstChildText
         for elt in self.__eachEltInGroup(self.root, 'windowsZone', 'msZoneIana'):
-            yield kid(elt, 'msid'), kid(elt, 'iana')
+            yield kid(elt, 'msid'), elt.attributes['iana'].nodeValue
 
     def msLandIanas(self):
         kid = self.__firstChildText
         for elt in self.__eachEltInGroup(self.root, 'windowsZone', 'msLandZones'):
-            yield kid(elt, 'msid'), kid(elt, 'territorycode'), kid(elt, 'ianaids')
+            land = elt.attributes['territory'].nodeValue
+            yield kid(elt, 'msid'), land, kid(elt, 'ianaids')
 
     def languageIndices(self, locales):
         index = 0
@@ -428,16 +429,14 @@ class QLocaleXmlWriter (object):
         self.__openTag('windowsZone')
         for (msid, code), ids in windowsIds.items():
             # ianaids is a space-joined sequence of IANA IDs
-            self.__openTag('msLandZones')
+            self.__openTag('msLandZones', territory = code)
             self.inTag('msid', msid)
-            self.inTag('territorycode', code)
             self.inTag('ianaids', ids)
             self.__closeTag('msLandZones')
 
         for winid, iana in defaults.items():
-            self.__openTag('msZoneIana')
+            self.__openTag('msZoneIana', iana=iana)
             self.inTag('msid', winid)
-            self.inTag('iana', iana)
             self.__closeTag('msZoneIana')
         self.__closeTag('windowsZone')
 

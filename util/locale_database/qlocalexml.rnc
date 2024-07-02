@@ -46,14 +46,14 @@ ZoneAlias = element zoneAlias {
 }
 
 MsLandZones = element msLandZones {
+  attribute territory { text },
   element msid { text },
-  element territorycode { text },
   element ianaids { text }
 }
 
 MsZoneIana = element msZoneIana {
-  element msid { text },
-  element iana { text }
+  attribute iana { text },
+  element msid { text }
 }
 
 WeekDay = ("sun" | "mon" | "tue" | "wed" | "thu" | "fri" | "sat")
