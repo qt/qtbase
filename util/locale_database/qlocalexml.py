@@ -111,9 +111,10 @@ class QLocaleXmlReader (object):
             yield (language, script, territory), locale
 
     def aliasToIana(self):
-        kid = self.__firstChildText
+        def attr(elt, key):
+            return elt.attributes[key].nodeValue
         for elt in self.__eachEltInGroup(self.root, 'zoneAliases', 'zoneAlias'):
-            yield kid(elt, 'alias'), kid(elt, 'iana')
+            yield attr(elt, 'alias'), attr(elt, 'iana')
 
     def msToIana(self):
         kid = self.__firstChildText
@@ -421,10 +422,7 @@ class QLocaleXmlWriter (object):
         for name, iana in sorted(alias.items()):
             if name == iana:
                 continue
-            self.__openTag('zoneAlias')
-            self.inTag('alias', name)
-            self.inTag('iana', iana)
-            self.__closeTag('zoneAlias')
+            self.asTag('zoneAlias', alias = name, iana = iana)
         self.__closeTag('zoneAliases')
 
         self.__openTag('windowsZone')

@@ -41,8 +41,8 @@ LocaleTriplet = (
 
 # TODO: xsd patterns for IANA IDs and space-joined lists of them
 ZoneAlias = element zoneAlias {
-  element alias { text },
-  element iana { text }
+  attribute alias { text },
+  attribute iana { text }
 }
 
 MsLandZones = element msLandZones {
