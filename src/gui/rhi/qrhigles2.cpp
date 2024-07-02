@@ -5372,6 +5372,7 @@ void QGles2Buffer::endFullDynamicBufferUpdateForCurrentFrame()
 {
     if (!m_usage.testFlag(UniformBuffer)) {
         QRHI_RES_RHI(QRhiGles2);
+        rhiD->f->glBindBuffer(targetForDataOps, buffer);
         if (rhiD->caps.properMapBuffer)
             rhiD->f->glUnmapBuffer(targetForDataOps);
         else
