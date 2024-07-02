@@ -188,14 +188,6 @@ public:
 
 QOpenGLWindowPrivate::~QOpenGLWindowPrivate()
 {
-    Q_Q(QOpenGLWindow);
-    if (q->isValid()) {
-        q->makeCurrent(); // this works even when the platformwindow is destroyed
-        paintDevice.reset(nullptr);
-        fbo.reset(nullptr);
-        blitter.destroy();
-        q->doneCurrent();
-    }
 }
 
 void QOpenGLWindowPrivate::initialize()
@@ -367,7 +359,15 @@ QOpenGLWindow::QOpenGLWindow(QOpenGLContext *shareContext, UpdateBehavior update
 */
 QOpenGLWindow::~QOpenGLWindow()
 {
-    makeCurrent();
+    Q_D(QOpenGLWindow);
+
+    makeCurrent(); // this works even when the platformwindow is destroyed
+    if (isValid()) {
+        d->paintDevice.reset(nullptr);
+        d->fbo.reset(nullptr);
+        d->blitter.destroy();
+    }
+    doneCurrent();
 }
 
 /*!
