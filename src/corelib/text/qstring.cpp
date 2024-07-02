@@ -3786,9 +3786,6 @@ static void replace_helper(QString &str, QSpan<size_t> indices, qsizetype blen, 
   but \a position + \a n goes outside the strings range,
   then \a n will be adjusted to stop at the end of the string.
 
-  \note If you use an empty \a before argument, the \a after argument will be
-  inserted \e {before and after} each character of the string.
-
   Example:
 
   \snippet qstring/main.cpp 40
@@ -3847,6 +3844,12 @@ QString &QString::replace(qsizetype pos, qsizetype len, QChar after)
   Example:
 
   \snippet qstring/main.cpp 86
+
+//! [empty-before-arg-in-replace]
+  \note If you use an empty \a before argument, the \a after argument will be
+  inserted \e {before and after} each character of the string.
+//! [empty-before-arg-in-replace]
+
 */
 QString &QString::replace(const QString &before, const QString &after, Qt::CaseSensitivity cs)
 {
@@ -3862,6 +3865,10 @@ QString &QString::replace(const QString &before, const QString &after, Qt::CaseS
   after and returns a reference to this string.
 
   \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
+
+  \note If \a before points to an \e empty string (that is, \a blen == 0),
+  the string pointed to by \a after will be inserted \e {before and after}
+  each character in this string.
 */
 QString &QString::replace(const QChar *before, qsizetype blen,
                           const QChar *after, qsizetype alen,
@@ -3997,6 +4004,8 @@ QString& QString::replace(QChar before, QChar after, Qt::CaseSensitivity cs)
   \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
   \note The text is not rescanned after a replacement.
+
+  \include qstring.cpp empty-before-arg-in-replace
 */
 QString &QString::replace(QLatin1StringView before, QLatin1StringView after, Qt::CaseSensitivity cs)
 {
@@ -4021,6 +4030,8 @@ QString &QString::replace(QLatin1StringView before, QLatin1StringView after, Qt:
   \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
   \note The text is not rescanned after a replacement.
+
+  \include qstring.cpp empty-before-arg-in-replace
 */
 QString &QString::replace(QLatin1StringView before, const QString &after, Qt::CaseSensitivity cs)
 {
@@ -4042,6 +4053,8 @@ QString &QString::replace(QLatin1StringView before, const QString &after, Qt::Ca
   \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
   \note The text is not rescanned after a replacement.
+
+  \include qstring.cpp empty-before-arg-in-replace
 */
 QString &QString::replace(const QString &before, QLatin1StringView after, Qt::CaseSensitivity cs)
 {
