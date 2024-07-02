@@ -31,6 +31,8 @@ class QSslCertificate;
 Q_NETWORK_EXPORT size_t qHash(const QSslCertificate &key, size_t seed = 0) noexcept;
 
 class QSslCertificatePrivate;
+QT_DECLARE_QESDP_SPECIALIZATION_DTOR(QSslCertificatePrivate)
+
 class Q_NETWORK_EXPORT QSslCertificate
 {
 public:
@@ -56,6 +58,7 @@ public:
     explicit QSslCertificate(QIODevice *device, QSsl::EncodingFormat format = QSsl::Pem);
     explicit QSslCertificate(const QByteArray &data = QByteArray(), QSsl::EncodingFormat format = QSsl::Pem);
     QSslCertificate(const QSslCertificate &other);
+    QSslCertificate(QSslCertificate &&other) noexcept = default;
     ~QSslCertificate();
     QSslCertificate &operator=(QSslCertificate &&other) noexcept { swap(other); return *this; }
     QSslCertificate &operator=(const QSslCertificate &other);
