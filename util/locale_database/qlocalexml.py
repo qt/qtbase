@@ -612,6 +612,8 @@ class Locale (object):
 
         return cls(data)
 
+    # NOTE: any change to the XML must be reflected in qlocalexml.rnc
+
     def toXml(self, write, calendars=('gregorian',)):
         """Writes its data as QLocale XML.
 
@@ -623,11 +625,8 @@ class Locale (object):
         form used by CLDR; its default is ('gregorian',).
         """
         get = lambda k: getattr(self, k)
-        for key in ('language', 'script', 'territory'):
-            write(key, get(key))
-            write(f'{key}code', get(f'{key}_code'))
-
-        for key in ('decimal', 'group', 'zero', 'list',
+        for key in ('language', 'script', 'territory',
+                    'decimal', 'group', 'zero', 'list',
                     'percent', 'minus', 'plus', 'exp'):
             write(key, get(key))
 

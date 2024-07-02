@@ -63,11 +63,8 @@ GroupSizes = xsd:string { pattern = "\d;\d;\d" }
 
 Locale = element locale {
   element language { text },
-  element languagecode { text },
   element script { text },
-  element scriptcode { text },
   element territory { text },
-  element territorycode { text },
   element decimal { Punctuation },
   element group { text },
   element zero { Digit },
