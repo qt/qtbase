@@ -45,11 +45,7 @@ int QBenchmarkEvent::adjustMedianCount(int suggestion)
 }
 
 // This could be done in a much better way, this is just the beginning.
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 bool QBenchmarkEvent::nativeEventFilter(const QByteArray &eventType, void *message, qintptr *result)
-#else
-bool QBenchmarkEvent::nativeEventFilter(const QByteArray &eventType, void *message, long *result)
-#endif
 {
     Q_UNUSED(eventType);
     Q_UNUSED(message);
