@@ -88,7 +88,9 @@ QThreadData *QThreadData::current(bool createIfNecessary)
         threadData->threadId.storeRelaxed(reinterpret_cast<Qt::HANDLE>(quintptr(GetCurrentThreadId())));
 
         if (!QCoreApplicationPrivate::theMainThreadId) {
-            QCoreApplicationPrivate::theMainThread.storeRelease(threadData->thread.loadRelaxed());
+            auto *mainThread = threadData->thread.loadRelaxed();
+            mainThread->setObjectName("Qt mainThread");
+            QCoreApplicationPrivate::theMainThread.storeRelease(mainThread);
             QCoreApplicationPrivate::theMainThreadId.storeRelaxed(threadData->threadId.loadRelaxed());
         } else {
             HANDLE realHandle = INVALID_HANDLE_VALUE;

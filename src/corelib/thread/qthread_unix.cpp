@@ -189,7 +189,9 @@ QThreadData *QThreadData::current(bool createIfNecessary)
         data->isAdopted = true;
         data->threadId.storeRelaxed(to_HANDLE(pthread_self()));
         if (!QCoreApplicationPrivate::theMainThreadId.loadAcquire()) {
-            QCoreApplicationPrivate::theMainThread.storeRelease(data->thread.loadRelaxed());
+            auto *mainThread = data->thread.loadRelaxed();
+            mainThread->setObjectName("Qt mainThread");
+            QCoreApplicationPrivate::theMainThread.storeRelease(mainThread);
             QCoreApplicationPrivate::theMainThreadId.storeRelaxed(data->threadId.loadRelaxed());
         }
     }
