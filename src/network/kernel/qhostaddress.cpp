@@ -34,6 +34,8 @@ QHostAddressPrivate::QHostAddressPrivate()
     memset(&a6, 0, sizeof(a6));
 }
 
+QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QHostAddressPrivate)
+
 void QHostAddressPrivate::setAddress(quint32 a_)
 {
     a = a_;
@@ -448,6 +450,18 @@ QHostAddress::QHostAddress(const QHostAddress &address)
     : d(address.d)
 {
 }
+
+/*!
+    \fn QHostAddress::QHostAddress(QHostAddress &&other)
+
+    \since 6.8
+
+    Move-constructs a new QHostAddress from \a other.
+
+    \note The moved-from object \a other is placed in a partially-formed state,
+    in which the only valid operations are destruction and assignment of a new
+    value.
+*/
 
 /*!
     Constructs a QHostAddress object for \a address.
