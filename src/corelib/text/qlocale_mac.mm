@@ -25,7 +25,7 @@ using namespace Qt::StringLiterals;
 ** Wrappers for Mac locale system functions
 */
 
-Q_LOGGING_CATEGORY(lcLocale, "qt.core.locale")
+Q_STATIC_LOGGING_CATEGORY(lcLocale, "qt.core.locale")
 
 static void printLocalizationInformation()
 {

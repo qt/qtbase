@@ -18,7 +18,9 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(lcQpaKeyMapperKeys, "qt.qpa.keymapper.keys");
+#ifdef Q_OS_MACOS
+Q_STATIC_LOGGING_CATEGORY(lcQpaKeyMapperKeys, "qt.qpa.keymapper.keys");
+#endif
 
 static Qt::KeyboardModifiers swapModifiersIfNeeded(const Qt::KeyboardModifiers modifiers)
 {

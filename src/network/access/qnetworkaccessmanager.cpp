@@ -70,7 +70,9 @@ QT_BEGIN_NAMESPACE
 using namespace Qt::StringLiterals;
 using namespace std::chrono_literals;
 
-Q_LOGGING_CATEGORY(lcQnam, "qt.network.access.manager")
+#if defined(Q_OS_MACOS)
+Q_STATIC_LOGGING_CATEGORY(lcQnam, "qt.network.access.manager")
+#endif
 
 Q_APPLICATION_STATIC(QNetworkAccessFileBackendFactory, fileBackend)
 
