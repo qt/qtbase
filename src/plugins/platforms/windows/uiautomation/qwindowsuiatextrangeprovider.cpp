@@ -111,7 +111,7 @@ HRESULT QWindowsUiaTextRangeProvider::ExpandToEnclosingUnit(TextUnit unit)
             const int start = m_startOffset >= 0 && m_startOffset < len
                               ? m_startOffset : len - 1;
             for (int t = start; t >= 0; --t) {
-                if (!isTextUnitSeparator(unit, text[t]) && ((t == 0) || isTextUnitSeparator(unit, text[t - 1]))) {
+                if (!text.isEmpty() && !isTextUnitSeparator(unit, text[t]) && ((t == 0) || isTextUnitSeparator(unit, text[t - 1]))) {
                     m_startOffset = t;
                     break;
                 }
@@ -412,7 +412,7 @@ HRESULT QWindowsUiaTextRangeProvider::MoveEndpointByUnit(TextPatternRangeEndpoin
         if (endpoint == TextPatternRangeEndpoint_Start) {
             if (count > 0) {
                 for (int t = m_startOffset; (t < len - 1) && (moved < count); ++t) {
-                    if (isTextUnitSeparator(unit, text[t]) && !isTextUnitSeparator(unit, text[t + 1])) {
+                    if (!text.isEmpty() && isTextUnitSeparator(unit, text[t]) && !isTextUnitSeparator(unit, text[t + 1])) {
                         m_startOffset = t + 1;
                         ++moved;
                     }
@@ -422,7 +422,7 @@ HRESULT QWindowsUiaTextRangeProvider::MoveEndpointByUnit(TextPatternRangeEndpoin
                 const int start = m_startOffset >= 0 && m_startOffset <= len
                                   ? m_startOffset : len;
                 for (int t = start - 1; (t >= 0) && (moved > count); --t) {
-                    if (!isTextUnitSeparator(unit, text[t]) && ((t == 0) || isTextUnitSeparator(unit, text[t - 1]))) {
+                    if (!text.isEmpty() &&!isTextUnitSeparator(unit, text[t]) && ((t == 0) || isTextUnitSeparator(unit, text[t - 1]))) {
                         m_startOffset = t;
                         --moved;
                     }
