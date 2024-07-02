@@ -19,6 +19,7 @@ QT_BEGIN_NAMESPACE
 
 
 class QHostAddressPrivate;
+QT_DECLARE_QESDP_SPECIALIZATION_DTOR(QHostAddressPrivate)
 
 class QT6_ONLY(Q_NETWORK_EXPORT) QIPv6Address
 {
@@ -81,6 +82,7 @@ public:
     explicit QHostAddress(const sockaddr *address);
     explicit QHostAddress(const QString &address);
     QHostAddress(const QHostAddress &copy);
+    QHostAddress(QHostAddress &&other) noexcept = default;
     QHostAddress(SpecialAddress address);
     ~QHostAddress();
 
