@@ -88,7 +88,7 @@ namespace {
 struct NetlinkSocket
 {
     int sock;
-    NetlinkSocket(int bufferSize)
+    Q_NODISCARD_CTOR explicit NetlinkSocket(int bufferSize)
     {
         sock = qt_safe_socket(AF_NETLINK, SOCK_DGRAM, NETLINK_ROUTE);
         if (Q_UNLIKELY(sock == -1))
