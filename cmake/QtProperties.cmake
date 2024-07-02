@@ -63,15 +63,6 @@ define_property(TARGET
         for instance, which QPA should be linked."
 )
 
-define_property(GLOBAL
-    PROPERTY
-        QT_KNOWN_PLUGINS
-    BRIEF_DOCS
-        ""
-    FULL_DOCS
-        ""
-)
-
 define_property(TARGET
     PROPERTY
         QT_QML_MODULE_TARGET_PATH
