@@ -1730,6 +1730,27 @@ function(qt_internal_export_genex_properties)
     )
 endfunction()
 
+# A small wrapper for adding the Platform target, and a building block for the PlatformXInternal
+# and GlobalConfig INTERFACE targets to apply common options.
+function(qt_internal_add_platform_target target)
+    _qt_internal_add_library("${target}" INTERFACE)
+    qt_internal_add_target_aliases("${target}")
+endfunction()
+
+# A small wrapper for adding the PlatformXInternal and GlobalConfig INTERFACE targets to apply
+# common options.
+# They can't be added via qt_internal_add_module, because it automatically links to the
+# PlatformInternal targets creating a cyclic dependency.
+function(qt_internal_add_platform_internal_target target)
+    qt_internal_add_platform_target("${target}")
+    qt_internal_mark_as_internal_library("${target}")
+
+    qt_internal_add_sbom("${target}"
+        TYPE QT_MODULE
+        IMMEDIATE_FINALIZATION
+    )
+endfunction()
+
 # The macro promotes the Qt platform targets and their dependencies to global. The macro shouldn't
 # be called explicitly in regular cases. It's called right after the first find_package(Qt ...)
 # call in the qt_internal_project_setup macro.

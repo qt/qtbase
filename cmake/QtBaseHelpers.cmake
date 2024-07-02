@@ -166,6 +166,22 @@ macro(qt_internal_qtbase_build_repo)
         ## Build System tests:
         include(QtBaseCMakeTesting)
 
+        ## Include CoreMacros() for qt6_generate_meta_types()
+        ## Also needed for the QtBaseGlobalTargets creation.
+        set(QT_DEFAULT_MAJOR_VERSION 6)
+        include(src/corelib/Qt6CoreMacros.cmake)
+
+        # Needed when building qtbase for android.
+        if(ANDROID)
+            include(src/corelib/Qt6AndroidMacros.cmake)
+        endif()
+
+        # Needed when building for WebAssembly.
+        if(WASM)
+            include(cmake/QtWasmHelpers.cmake)
+            include(src/corelib/Qt6WasmMacros.cmake)
+        endif()
+
         ## Targets for global features, etc.:
         include(QtBaseGlobalTargets)
 
@@ -173,20 +189,11 @@ macro(qt_internal_qtbase_build_repo)
         ## feature variables are available.
         qt_set_language_standards()
 
-        #include CoreMacros() for qt6_generate_meta_types()
-        set(QT_DEFAULT_MAJOR_VERSION 6)
-        include(src/corelib/Qt6CoreMacros.cmake)
-
-        # Needed when building qtbase for android.
         if(ANDROID)
-            include(src/corelib/Qt6AndroidMacros.cmake)
             _qt_internal_create_global_android_targets()
         endif()
 
         if(WASM)
-            # Needed when building for WebAssembly.
-            include(cmake/QtWasmHelpers.cmake)
-            include(src/corelib/Qt6WasmMacros.cmake)
             qt_internal_setup_wasm_target_properties(Platform)
         endif()
 

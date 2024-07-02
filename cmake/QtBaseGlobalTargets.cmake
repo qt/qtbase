@@ -68,7 +68,7 @@ qt_internal_create_toolchain_file()
 ## Library to hold global features:
 ## These features are stored and accessed via Qt::GlobalConfig, but the
 ## files always lived in Qt::Core, so we keep it that way
-add_library(GlobalConfig INTERFACE)
+qt_internal_add_platform_internal_target(GlobalConfig)
 target_include_directories(GlobalConfig INTERFACE
     $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
     $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include/QtCore>
@@ -121,21 +121,14 @@ qt_generate_qmake_and_qtpaths_wrapper_for_target()
 # Depends on the global features being evaluated.
 qt_internal_create_wrapper_scripts()
 
-add_library(Qt::GlobalConfig ALIAS GlobalConfig)
 
-add_library(GlobalConfigPrivate INTERFACE)
+qt_internal_add_platform_internal_target(GlobalConfigPrivate)
 target_link_libraries(GlobalConfigPrivate INTERFACE GlobalConfig)
 target_include_directories(GlobalConfigPrivate INTERFACE
     $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include/QtCore/${PROJECT_VERSION}>
     $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include/QtCore/${PROJECT_VERSION}/QtCore>
     $<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}/QtCore/${PROJECT_VERSION}>
     $<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}/QtCore/${PROJECT_VERSION}/QtCore>
-)
-add_library(Qt::GlobalConfigPrivate ALIAS GlobalConfigPrivate)
-add_library(${QT_CMAKE_EXPORT_NAMESPACE}::GlobalConfigPrivate ALIAS GlobalConfigPrivate)
-qt_internal_add_sbom(GlobalConfigPrivate
-    TYPE QT_MODULE
-    IMMEDIATE_FINALIZATION
 )
 
 qt_internal_setup_public_platform_target()
