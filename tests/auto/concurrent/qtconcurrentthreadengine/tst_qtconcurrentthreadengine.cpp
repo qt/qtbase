@@ -103,7 +103,7 @@ public:
     {
         return 0;
     }
-    bool done;
+    bool done = false;
 };
 
 void tst_QtConcurrentThreadEngine::runThroughStarter()
