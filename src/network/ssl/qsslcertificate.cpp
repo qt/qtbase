@@ -134,6 +134,8 @@ QSslCertificatePrivate::QSslCertificatePrivate()
 
 QSslCertificatePrivate::~QSslCertificatePrivate() = default;
 
+QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QSslCertificatePrivate)
+
 /*!
     Constructs a QSslCertificate by reading \a format encoded data
     from \a device and using the first certificate found. You can
@@ -197,6 +199,18 @@ QSslCertificate::QSslCertificate(const QByteArray &data, QSsl::EncodingFormat fo
 QSslCertificate::QSslCertificate(const QSslCertificate &other) : d(other.d)
 {
 }
+
+/*!
+    \fn QSslCertificate::QSslCertificate(QSslCertificate &&other)
+
+    \since 6.8
+
+    Move-constructs a new QSslCertificate from \a other.
+
+    \note The moved-from object \a other is placed in a partially-formed state,
+    in which the only valid operations are destructions and assignment of a new
+    value.
+*/
 
 /*!
     Destroys the QSslCertificate.
