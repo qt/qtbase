@@ -20,7 +20,7 @@ include_directories(
     ${Qt6Test_INCLUDE_DIRS}
 )
 
-add_definitions(
+add_compile_definitions(
     ${Qt6Gui_DEFINITIONS}
     ${Qt6Test_DEFINITIONS}
 )

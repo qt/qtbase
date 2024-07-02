@@ -120,7 +120,7 @@ if(TARGET Qt::Gui)
 endif()
 
 # Ensure uniform location info between release and debug builds
-add_definitions(-DQT_MESSAGELOGCONTEXT)
+add_compile_definitions(QT_MESSAGELOGCONTEXT)
 
 foreach(subprogram IN LISTS subprograms)
     add_subdirectory(${subprogram})
