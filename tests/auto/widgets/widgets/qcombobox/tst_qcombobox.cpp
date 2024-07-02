@@ -818,7 +818,6 @@ void tst_QComboBox::virtualAutocompletion()
     QApplication::sendEvent(testWidget, &kp1);
     QApplication::sendEvent(testWidget, &kr1);
 
-    qApp->processEvents(); // Process events to trigger autocompletion
     QTRY_COMPARE(testWidget->currentIndex(), 1);
 
     QKeyEvent kp2(QEvent::KeyPress, Qt::Key_O, {}, "o");
@@ -827,12 +826,10 @@ void tst_QComboBox::virtualAutocompletion()
     QApplication::sendEvent(testWidget, &kp2);
     QApplication::sendEvent(testWidget, &kr2);
 
-    qApp->processEvents(); // Process events to trigger autocompletion
     QTRY_COMPARE(testWidget->currentIndex(), 2);
 
     QApplication::sendEvent(testWidget, &kp2);
     QApplication::sendEvent(testWidget, &kr2);
-    qApp->processEvents(); // Process events to trigger autocompletion
     QTRY_COMPARE(testWidget->currentIndex(), 3);
 #if defined(Q_PROCESSOR_ARM) || defined(Q_PROCESSOR_MIPS)
     QApplication::setKeyboardInputInterval(oldInterval);
@@ -870,75 +867,68 @@ void tst_QComboBox::autoCompletionCaseSensitivity()
     testWidget->clearEditText();
     QSignalSpy spyReturn(testWidget, SIGNAL(activated(int)));
     testWidget->completer()->setCaseSensitivity(Qt::CaseInsensitive);
-    QCOMPARE(testWidget->completer()->caseSensitivity(), Qt::CaseInsensitive);
+    QTRY_COMPARE(testWidget->completer()->caseSensitivity(), Qt::CaseInsensitive);
 
     QTest::keyClick(testWidget->lineEdit(), Qt::Key_A);
-    qApp->processEvents();
-    QCOMPARE(testWidget->currentText(), QString("aww"));
+    QTRY_COMPARE(testWidget->currentText(), QString("aww"));
     QCOMPARE(spyReturn.size(), 0);
 
     QTest::keyClick(testWidget->lineEdit(), Qt::Key_B);
-    qApp->processEvents();
     // autocompletions preserve userkey-case from 4.2
-    QCOMPARE(testWidget->currentText(), QString("abCDEF"));
+    QTRY_COMPARE(testWidget->currentText(), QString("abCDEF"));
     QCOMPARE(spyReturn.size(), 0);
 
     QTest::keyClick(testWidget->lineEdit(), Qt::Key_Enter);
-    qApp->processEvents();
-    QCOMPARE(testWidget->currentText(), QString("aBCDEF")); // case restored to item's case
+    QTRY_COMPARE(testWidget->currentText(), QString("aBCDEF")); // case restored to item's case
     QCOMPARE(spyReturn.size(), 1);
 
     testWidget->clearEditText();
     QTest::keyClick(testWidget->lineEdit(), 'c');
-    QCOMPARE(testWidget->currentText(), QString("cow"));
+    QTRY_COMPARE(testWidget->currentText(), QString("cow"));
     QTest::keyClick(testWidget->lineEdit(), Qt::Key_Enter);
-    QCOMPARE(testWidget->currentText(), QString("Cow")); // case restored to item's case
+    QTRY_COMPARE(testWidget->currentText(), QString("Cow")); // case restored to item's case
 
     testWidget->clearEditText();
     QTest::keyClick(testWidget->lineEdit(), 'a');
     QTest::keyClick(testWidget->lineEdit(), '*');
-    QCOMPARE(testWidget->currentText(), QString("a*"));
+    QTRY_COMPARE(testWidget->currentText(), QString("a*"));
     QTest::keyClick(testWidget->lineEdit(), Qt::Key_Enter);
-    QCOMPARE(testWidget->currentText(), QString("A*"));
+    QTRY_COMPARE(testWidget->currentText(), QString("A*"));
 
     // case sensitive
     testWidget->clearEditText();
     testWidget->completer()->setCaseSensitivity(Qt::CaseSensitive);
-    QCOMPARE(testWidget->completer()->caseSensitivity(), Qt::CaseSensitive);
+    QTRY_COMPARE(testWidget->completer()->caseSensitivity(), Qt::CaseSensitive);
     QTest::keyClick(testWidget->lineEdit(), Qt::Key_A);
-    qApp->processEvents();
-    QCOMPARE(testWidget->currentText(), QString("aww"));
+    QTRY_COMPARE(testWidget->currentText(), QString("aww"));
     QTest::keyClick(testWidget->lineEdit(), Qt::Key_B);
-    qApp->processEvents();
-    QCOMPARE(testWidget->currentText(), QString("abcdef"));
+    QTRY_COMPARE(testWidget->currentText(), QString("abcdef"));
 
     testWidget->setCurrentIndex(0); // to reset the completion's "start"
     testWidget->clearEditText();
     QTest::keyClick(testWidget->lineEdit(), 'a');
     QTest::keyClick(testWidget->lineEdit(), 'b');
-    QCOMPARE(testWidget->currentText(), QString("abcdef"));
+    QTRY_COMPARE(testWidget->currentText(), QString("abcdef"));
     QTest::keyClick(testWidget->lineEdit(), 'C');
-    qApp->processEvents();
-    QCOMPARE(testWidget->currentText(), QString("abCdef"));
+    QTRY_COMPARE(testWidget->currentText(), QString("abCdef"));
     QTest::keyClick(testWidget->lineEdit(), Qt::Key_Enter);
-    qApp->processEvents();
-    QCOMPARE(testWidget->currentText(), QString("abCdef")); // case restored to item's case
+    QTRY_COMPARE(testWidget->currentText(), QString("abCdef")); // case restored to item's case
 
     testWidget->clearEditText();
     QTest::keyClick(testWidget->lineEdit(), 'c');
-    QCOMPARE(testWidget->currentText(), QString("c"));
+    QTRY_COMPARE(testWidget->currentText(), QString("c"));
     QTest::keyClick(testWidget->lineEdit(), Qt::Key_Backspace);
     QTest::keyClick(testWidget->lineEdit(), 'C');
-    QCOMPARE(testWidget->currentText(), QString("Cow"));
+    QTRY_COMPARE(testWidget->currentText(), QString("Cow"));
     QTest::keyClick(testWidget->lineEdit(), Qt::Key_Enter);
-    QCOMPARE(testWidget->currentText(), QString("Cow"));
+    QTRY_COMPARE(testWidget->currentText(), QString("Cow"));
 
     testWidget->clearEditText();
     QTest::keyClick(testWidget->lineEdit(), 'a');
     QTest::keyClick(testWidget->lineEdit(), '*');
-    QCOMPARE(testWidget->currentText(), QString("a*"));
+    QTRY_COMPARE(testWidget->currentText(), QString("a*"));
     QTest::keyClick(testWidget->lineEdit(), Qt::Key_Enter);
-    QCOMPARE(testWidget->currentText(), QString("a*")); // A* not matched
+    QTRY_COMPARE(testWidget->currentText(), QString("a*")); // A* not matched
 }
 
 void tst_QComboBox::hide()
