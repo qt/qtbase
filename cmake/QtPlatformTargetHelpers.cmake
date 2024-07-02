@@ -10,9 +10,7 @@ function(qt_internal_setup_public_platform_target)
     )
 
     ## QtPlatform Target:
-    add_library(Platform INTERFACE)
-    add_library(Qt::Platform ALIAS Platform)
-    add_library(${INSTALL_CMAKE_NAMESPACE}::Platform ALIAS Platform)
+    qt_internal_add_platform_target(Platform)
     target_include_directories(Platform
         INTERFACE
         $<BUILD_INTERFACE:${build_interface_definition_dir}>
