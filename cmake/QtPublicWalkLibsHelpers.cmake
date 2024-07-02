@@ -256,8 +256,15 @@ function(__qt_internal_walk_libs
                     endif()
                 endif()
             elseif("${lib_target}" MATCHES "^(Qt|${QT_CMAKE_EXPORT_NAMESPACE})::(.*)")
-                message(FATAL_ERROR "The ${CMAKE_MATCH_2} target is mentioned as a dependency for \
-${target}, but not declared.")
+                if(QT_BUILDING_QT OR QT_BUILD_STANDALONE_TESTS)
+                    set(message_type FATAL_ERROR)
+                    set(message_addition "")
+                else()
+                    set(message_type WARNING)
+                    set(message_addition " The linking might be incomplete.")
+                endif()
+                message(${message_type} "The ${CMAKE_MATCH_2} target is mentioned as a dependency"
+                        " for ${target}, but not declared.${message_addition}")
             else()
                 if(NOT operation MATCHES "^(collect|direct)_targets$")
                     set(final_lib_name_to_merge "${lib_target}")
