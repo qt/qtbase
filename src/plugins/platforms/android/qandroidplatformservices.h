@@ -26,6 +26,15 @@ public:
     bool handleNewIntent(JNIEnv *env, jobject intent) override;
 
 private:
+    bool openURL(const QUrl &url) const;
+    bool openUrlWithFileProvider(const QUrl &url);
+    bool openUrlWithAuthority(const QUrl &url, const QString &authority);
+
+    QString getMimeOfUrl(const QUrl &url) const;
+    QStringList getFileProviderAuthorities(const QJniObject &context) const;
+    QString getAdequateFileproviderAuthority(const QStringList &authorities) const;
+
+private:
     QUrl m_handlingUrl;
     QString m_actionView;
 };

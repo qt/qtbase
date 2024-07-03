@@ -14,7 +14,11 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace QtJniTypes;
 using namespace Qt::StringLiterals;
+
+static constexpr auto s_defaultScheme = "file"_L1;
+static constexpr auto s_defaultProvider = "qtprovider"_L1;
 
 QAndroidPlatformServices::QAndroidPlatformServices()
 {
@@ -24,72 +28,128 @@ QAndroidPlatformServices::QAndroidPlatformServices()
 
     QtAndroidPrivate::registerNewIntentListener(this);
 
-    QMetaObject::invokeMethod(
-            this,
-            [this] {
-                QJniObject context = QJniObject(QtAndroidPrivate::context());
-                QJniObject intent =
-                        context.callObjectMethod("getIntent", "()Landroid/content/Intent;");
-                handleNewIntent(nullptr, intent.object());
-            },
-            Qt::QueuedConnection);
+    // Qt applications without Activity contexts cannot retrieve intents from the Activity.
+    if (QNativeInterface::QAndroidApplication::isActivityContext()) {
+        QMetaObject::invokeMethod(
+                this,
+                [this] {
+                    QJniObject context = QJniObject(QtAndroidPrivate::context());
+                    QJniObject intent =
+                            context.callObjectMethod("getIntent", "()Landroid/content/Intent;");
+                    handleNewIntent(nullptr, intent.object());
+                },
+                Qt::QueuedConnection);
+    }
 }
 
-Q_DECLARE_JNI_CLASS(UriType, "android/net/Uri")
-Q_DECLARE_JNI_CLASS(FileType, "java/io/File")
-Q_DECLARE_JNI_CLASS(File, "java/io/File")
 Q_DECLARE_JNI_CLASS(FileProvider, "androidx/core/content/FileProvider");
+Q_DECLARE_JNI_CLASS(PackageManager, "android/content/pm/PackageManager");
+Q_DECLARE_JNI_CLASS(PackageInfo, "android/content/pm/PackageInfo");
+Q_DECLARE_JNI_CLASS(ProviderInfo, "android/content/pm/ProviderInfo");
+Q_DECLARE_JNI_CLASS(File, "java/io/File")
+Q_DECLARE_JNI_CLASS(Uri, "android/net/Uri")
 
 bool QAndroidPlatformServices::openUrl(const QUrl &theUrl)
 {
-    QString mime;
     QUrl url(theUrl);
 
     // avoid recursing back into self
     if (url == m_handlingUrl)
         return false;
 
-    // if the file is local, we need to pass the MIME type, otherwise Android
-    // does not start an Intent to view this file
-    const auto fileScheme = "file"_L1;
-
     // a real URL including the scheme is needed, else the Intent can not be started
     if (url.scheme().isEmpty())
-        url.setScheme(fileScheme);
+        url.setScheme(s_defaultScheme);
 
-    if (url.scheme() == fileScheme)
+    const int sdkVersion = QNativeInterface::QAndroidApplication::sdkVersion();
+    if (url.scheme() != s_defaultScheme || sdkVersion < 24 )
+        return openURL(url);
+    return openUrlWithFileProvider(url);
+}
+
+QString QAndroidPlatformServices::getMimeOfUrl(const QUrl &url) const
+{
+    QString mime;
+    if (url.scheme() == s_defaultScheme)
         mime = QMimeDatabase().mimeTypeForUrl(url).name();
+    return mime;
+}
 
-    const QJniObject mimeString = QJniObject::fromString(mime);
+bool QAndroidPlatformServices::openURL(const QUrl &url) const
+{
+    return  QJniObject::callStaticMethod<jboolean>(
+            QtAndroid::applicationClass(), "openURL",
+            QNativeInterface::QAndroidApplication::context(),
+            QJniObject::fromString(url.toString()).object<jstring>(),
+            QJniObject::fromString(getMimeOfUrl(url)).object<jstring>());
+}
 
-    using namespace QNativeInterface;
+bool QAndroidPlatformServices::openUrlWithFileProvider(const QUrl &url)
+{
+    const QJniObject context = QNativeInterface::QAndroidApplication::context();
+    auto authorities = getFileProviderAuthorities(context);
+    if (authorities.isEmpty())
+        return false;
+    return openUrlWithAuthority(url, getAdequateFileproviderAuthority(authorities));
+}
 
-    auto openUrl = [mimeString](const QJniObject &url) {
-        return QJniObject::callStaticMethod<jboolean>(QtAndroid::applicationClass(), "openURL",
-            QAndroidApplication::context(), url.object<jstring>(), mimeString.object<jstring>());
-    };
 
-    if (url.scheme() != fileScheme || QNativeInterface::QAndroidApplication::sdkVersion() < 24)
-        return openUrl(QJniObject::fromString(url.toString()));
+QString QAndroidPlatformServices::getAdequateFileproviderAuthority(const QStringList &authorities) const
+{
+    if (authorities.size() == 1)
+        return authorities[0];
 
-    // Use FileProvider for file scheme with sdk >= 24
-    const QJniObject context = QAndroidApplication::context();
-    const auto appId = context.callMethod<jstring>("getPackageName").toString();
-    const auto providerName = QJniObject::fromString(appId + ".qtprovider"_L1);
+    QString nonQtAuthority;
+    for (const auto &authority : authorities) {
+        if (!authority.endsWith(s_defaultProvider, Qt::CaseSensitive)) {
+            nonQtAuthority = authority;
+            break;
+        }
+    }
+    return nonQtAuthority;
+}
 
+bool QAndroidPlatformServices::openUrlWithAuthority(const QUrl &url, const QString &authority)
+{
     const auto urlPath = QJniObject::fromString(url.path());
-    const auto urlFile = QJniObject(QtJniTypes::Traits<QtJniTypes::File>::className(),
+    const auto urlFile = QJniObject(Traits<File>::className(),
                                     urlPath.object<jstring>());
-
-    const auto fileProviderUri = QJniObject::callStaticMethod<QtJniTypes::UriType>(
-            QtJniTypes::Traits<QtJniTypes::FileProvider>::className(), "getUriForFile",
-            QAndroidApplication::context(), providerName.object<jstring>(),
-            urlFile.object<QtJniTypes::FileType>());
-
+    const auto fileProviderUri = QJniObject::callStaticMethod<Uri>(
+            Traits<FileProvider>::className(), "getUriForFile",
+            QNativeInterface::QAndroidApplication::context(),
+            QJniObject::fromString(authority).object<jstring>(),
+            urlFile.object<File>());
     if (fileProviderUri.isValid())
-        return openUrl(fileProviderUri.callMethod<jstring>("toString"));
-
+        return openURL(url);
     return false;
+}
+
+QStringList QAndroidPlatformServices::getFileProviderAuthorities(const QJniObject &context) const
+{
+    QStringList authorityList;
+
+    const auto packageManager = context.callMethod<PackageManager>("getPackageManager");
+    const auto packageName = context.callMethod<QString>("getPackageName");
+    const auto packageInfo = packageManager.callMethod<PackageInfo>("getPackageInfo",
+                                                                    packageName,
+                                                                    8 /* PackageManager.GET_PROVIDERS */);
+    const auto providersArray = packageInfo.getField<ProviderInfo[]>("providers");
+
+    if (providersArray.isValid()) {
+        const auto className = Traits<FileProvider>::className();
+        for (const auto &fileProvider : providersArray) {
+            auto providerName = fileProvider.getField<QString>("name");
+            if (providerName.replace(".", "/").contains(className.data())) {
+                const auto authority = fileProvider.getField<QString>("authority");
+                if (!authority.isEmpty())
+                    authorityList << authority;
+            }
+        }
+    }
+    if (authorityList.isEmpty())
+        qWarning() << "No file provider found in the AndroidManifest.xml.";
+
+    return authorityList;
 }
 
 bool QAndroidPlatformServices::openDocument(const QUrl &url)
