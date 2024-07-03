@@ -2009,17 +2009,6 @@ QMacStyle::QMacStyle()
             for (const auto &o : QMacStylePrivate::scrollBars)
                 QCoreApplication::sendEvent(o, &event);
     });
-
-    Q_D(QMacStyle);
-    // FIXME: Tie this logic into theme change, or even polish/unpolish
-    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSMojave) {
-        d->appearanceObserver = QMacKeyValueObserver(NSApp, @"effectiveAppearance", [this] {
-            Q_D(QMacStyle);
-            for (NSView *b : d->cocoaControls)
-                [b release];
-            d->cocoaControls.clear();
-        });
-    }
 }
 
 QMacStyle::~QMacStyle()
@@ -2028,6 +2017,10 @@ QMacStyle::~QMacStyle()
 
 void QMacStyle::polish(QPalette &)
 {
+    Q_D(QMacStyle);
+    for (NSView *b : d->cocoaControls)
+        [b release];
+    d->cocoaControls.clear();
 }
 
 void QMacStyle::polish(QApplication *)

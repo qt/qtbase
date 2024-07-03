@@ -263,7 +263,6 @@ public:
 
     std::optional<QFont> smallSystemFont;
 
-    QMacKeyValueObserver appearanceObserver;
 };
 
 QT_END_NAMESPACE
