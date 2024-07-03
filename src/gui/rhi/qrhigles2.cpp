@@ -356,6 +356,10 @@ QT_BEGIN_NAMESPACE
 #define GL_MAP_WRITE_BIT                  0x0002
 #endif
 
+#ifndef GL_MAP_INVALIDATE_BUFFER_BIT
+#define GL_MAP_INVALIDATE_BUFFER_BIT      0x0008
+#endif
+
 #ifndef GL_TEXTURE_2D_MULTISAMPLE
 #define GL_TEXTURE_2D_MULTISAMPLE         0x9100
 #endif
@@ -5094,7 +5098,7 @@ char *QGles2Buffer::beginFullDynamicBufferUpdateForCurrentFrame()
         rhiD->f->glBindBuffer(targetForDataOps, buffer);
         if (rhiD->caps.properMapBuffer) {
             return static_cast<char *>(rhiD->f->glMapBufferRange(targetForDataOps, 0, nonZeroSize,
-                                                                 GL_MAP_READ_BIT | GL_MAP_WRITE_BIT));
+                                                                 GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT));
         } else {
             // Need some storage for the data, use the otherwise unused 'data' member.
             if (data.isEmpty())
