@@ -226,6 +226,16 @@ NSWindow<QNSWindowProtocol> *qnswindow_cast(NSWindow *window)
     m_platformWindow->setWindowFilePath(window->filePath()); // Also sets window icon
     m_platformWindow->setWindowState(window->windowState());
     m_platformWindow->setOpacity(window->opacity());
+
+    // At the time of creation the QNSWindow is given a geometry based
+    // on the client geometry of the QWindow. But at that point we don't
+    // know anything about the size of the NSWindow frame, which means
+    // that the logic in QCocoaWindow::setGeometry for adjusting the
+    // client geometry based on the QWindow's positionPolicy is a noop.
+    // Now that we have a NSWindow to read the frame from we re-apply
+    // the QWindow geometry, which will move the NSWindow if needed.
+    m_platformWindow->setGeometry(window->geometry());
+
     m_platformWindow->setVisible(window->isVisible());
 }
 
