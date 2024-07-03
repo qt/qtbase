@@ -42,6 +42,27 @@ static_assert(!q_is_adl_swappable_v<NotQDeclareShared>);
 MAKE_CLASS(Terry); // R.I.P.
 Q_DECLARE_SHARED(Terry)
 
+namespace Discworld {
+MAKE_CLASS(Librarian);
+Q_DECLARE_SHARED_NS(Discworld, Librarian)
+MAKE_CLASS(Baggage);
+namespace AnkhMorpork {
+MAKE_CLASS(Vetinari);
+// Q_DECLARE_SHARED_NS only work on a single nesting level
+namespace CityWatch {
+MAKE_CLASS(Vimes);
+} // namespace CityWatch
+} // namespace AnkhMorpork
+} // namespace Discworld
+Q_DECLARE_SHARED_NS_EXT(Discworld, Baggage)
+Q_DECLARE_SHARED_NS_EXT(Discworld::AnkhMorpork, Vetinari)
+Q_DECLARE_SHARED_NS_EXT(Discworld::AnkhMorpork::CityWatch, Vimes)
+// but Q_DECLARE_SHARED_NS works if all namespaces are opened in one statement:
+namespace Discworld::AnkhMorpork {
+MAKE_CLASS(Leonardo);
+Q_DECLARE_SHARED_NS(Discworld::AnkhMorpork, Leonardo)
+} // namespace Discworld::AnkhMorpork
+
 #undef MAKE_CLASS
 
 QT_END_NAMESPACE
@@ -432,12 +453,22 @@ void tst_QGlobal::qDeclareSharedMarksTheTypeRelocatable()
 {
     static_assert(!QTypeInfo<QT_PREPEND_NAMESPACE(NotQDeclareShared)>::isRelocatable);
     static_assert( QTypeInfo<QT_PREPEND_NAMESPACE(Terry)>::isRelocatable);
+    static_assert( QTypeInfo<QT_PREPEND_NAMESPACE(Discworld::Librarian)>::isRelocatable);
+    static_assert( QTypeInfo<QT_PREPEND_NAMESPACE(Discworld::Baggage)>::isRelocatable);
+    static_assert( QTypeInfo<QT_PREPEND_NAMESPACE(Discworld::AnkhMorpork::Vetinari)>::isRelocatable);
+    static_assert( QTypeInfo<QT_PREPEND_NAMESPACE(Discworld::AnkhMorpork::Leonardo)>::isRelocatable);
+    static_assert( QTypeInfo<QT_PREPEND_NAMESPACE(Discworld::AnkhMorpork::CityWatch::Vimes)>::isRelocatable);
 }
 
 void tst_QGlobal::qDeclareSharedMakesTheTypeAdlSwappable()
 {
     static_assert(!q_is_adl_swappable_v<QT_PREPEND_NAMESPACE(NotQDeclareShared)>);
     static_assert( q_is_adl_swappable_v<QT_PREPEND_NAMESPACE(Terry)>);
+    static_assert( q_is_adl_swappable_v<QT_PREPEND_NAMESPACE(Discworld::Librarian)>);
+    static_assert( q_is_adl_swappable_v<QT_PREPEND_NAMESPACE(Discworld::Baggage)>);
+    static_assert( q_is_adl_swappable_v<QT_PREPEND_NAMESPACE(Discworld::AnkhMorpork::Vetinari)>);
+    static_assert( q_is_adl_swappable_v<QT_PREPEND_NAMESPACE(Discworld::AnkhMorpork::Leonardo)>);
+    static_assert( q_is_adl_swappable_v<QT_PREPEND_NAMESPACE(Discworld::AnkhMorpork::CityWatch::Vimes)>);
 
     #define CHECK(Class) do { \
         using C = QT_PREPEND_NAMESPACE(Class); \
@@ -451,6 +482,11 @@ void tst_QGlobal::qDeclareSharedMakesTheTypeAdlSwappable()
         QCOMPARE_EQ(rhs.s, "lhs"); \
     } while (false)
     CHECK(Terry);
+    CHECK(Discworld::Librarian);
+    CHECK(Discworld::Baggage);
+    CHECK(Discworld::AnkhMorpork::Vetinari);
+    CHECK(Discworld::AnkhMorpork::Leonardo);
+    CHECK(Discworld::AnkhMorpork::CityWatch::Vimes);
     #undef CHECK
 }
 

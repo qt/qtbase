@@ -141,10 +141,55 @@ namespace QtPrivate {
    where 'type' is the name of the type to specialize.  NOTE: shared
    types must define a member-swap, and be defined in the same
    namespace as Qt for this to work.
+
+   For types defined in a namespace within QT_NAMESPACE, use
+   Q_DECLARE_SHARED_NS/_EXT instead. The _NS macro needs to be placed
+   inside the nested namespace:
+
+     namespace ns {
+     // ~~~ type defined here ~~~
+     Q_DECLARE_SHARED_NS(ns, type)
+     }
+
+   while the _NS_EXT macro goes into the QT_NAMESPACE, outside any
+   nested namespaces:
+
+     namespace ns {
+     // ~~~ type defined here ~~~
+     }
+     Q_DECLARE_SHARED_NS_EXT(ns, type)
+
+   The latter then also works for more deeply-nested namespaces:
+
+     Q_DECLARE_SHARED_NS_EXT(ns1::ns2, type)
+
+   Q_DECLARE_SHARED_NS does, too, if all namespaces were opened in one statement:
+
+     namespace ns1::ns2 {
+     Q_DECLARE_SHARED_NS(ns1::ns2, type);
+     }
 */
 
 #define Q_DECLARE_SHARED(TYPE) \
+QT_DECLARE_ADL_SWAP(TYPE) \
 Q_DECLARE_TYPEINFO(TYPE, Q_RELOCATABLE_TYPE); \
+/* end */
+
+#define Q_DECLARE_SHARED_NS(NS, TYPE) \
+QT_DECLARE_ADL_SWAP(TYPE) \
+} /* namespace NS */ \
+Q_DECLARE_TYPEINFO(NS :: TYPE, Q_RELOCATABLE_TYPE); \
+namespace NS { \
+/* end */
+
+#define Q_DECLARE_SHARED_NS_EXT(NS, TYPE) \
+namespace NS { \
+QT_DECLARE_ADL_SWAP(TYPE) \
+} /* namespace NS */ \
+Q_DECLARE_TYPEINFO(NS :: TYPE, Q_RELOCATABLE_TYPE); \
+/* end */
+
+#define QT_DECLARE_ADL_SWAP(TYPE) \
 inline void swap(TYPE &value1, TYPE &value2) \
     noexcept(noexcept(value1.swap(value2))) \
 { value1.swap(value2); }
