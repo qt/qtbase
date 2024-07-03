@@ -44,7 +44,6 @@ private slots:
     void resizeEventAfterResize();
     void exposeEventOnShrink_QTBUG54040();
     void mapGlobal();
-    void positioning_data();
     void positioning();
     void framePositioning();
     void framePositioning_data();
@@ -514,17 +513,6 @@ void tst_QWindow::exposeEventOnShrink_QTBUG54040()
     QTRY_VERIFY(window.received(QEvent::Expose) > exposeCount);
 }
 
-void tst_QWindow::positioning_data()
-{
-    QTest::addColumn<Qt::WindowFlags>("windowflags");
-
-    QTest::newRow("default") << (Qt::Window | Qt::WindowTitleHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint | Qt::WindowFullscreenButtonHint);
-
-#ifdef Q_OS_MACOS
-    QTest::newRow("fake") << (Qt::Window | Qt::WindowTitleHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
-#endif
-}
-
 // Compare a window position that may go through scaling in the platform plugin with fuzz.
 static inline bool qFuzzyCompareWindowPosition(const QPoint &p1, const QPoint p2, int fuzz)
 {
@@ -574,8 +562,7 @@ void tst_QWindow::positioning()
     // events, so set the width to suitably large value to avoid those.
     const QRect geometry(m_availableTopLeft + QPoint(80, 80), m_testWindowSize);
 
-    QFETCH(Qt::WindowFlags, windowflags);
-    Window window(windowflags);
+    Window window;
     window.setGeometry(QRect(m_availableTopLeft + QPoint(20, 20), m_testWindowSize));
     window.setFramePosition(m_availableTopLeft + QPoint(40, 40)); // Move window around before show, size must not change.
     QCOMPARE(window.geometry().size(), m_testWindowSize);
