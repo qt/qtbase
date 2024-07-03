@@ -890,7 +890,12 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
             QRectF rect = option->rect.marginsRemoved(QMargins(2,2,2,2));
             rect.adjust(-0.5,-0.5,0.5,0.5);
             painter->setBrush(Qt::NoBrush);
-            painter->setPen(QPen(WINUI3Colors[colorSchemeIndex][controlStrokePrimary]));
+            if (element == PE_PanelButtonTool
+                && ((!(state & QStyle::State_MouseOver) && !(state & QStyle::State_Raised))
+                    || !(state & QStyle::State_Enabled)))
+                painter->setPen(Qt::NoPen);
+            else
+                painter->setPen(QPen(WINUI3Colors[colorSchemeIndex][controlStrokePrimary]));
             painter->drawRoundedRect(rect, secondLevelRoundingRadius, secondLevelRoundingRadius);
 
             rect = option->rect.marginsRemoved(QMargins(2,2,2,2));
