@@ -25,6 +25,13 @@ QAndroidPlatformWindow::QAndroidPlatformWindow(QWindow *window)
       m_surfaceContainerType(SurfaceContainer::TextureView), m_nativeParentQtWindow(nullptr),
       m_androidSurfaceObject(nullptr)
 {
+    // Please add any initialization in the function below
+}
+
+void QAndroidPlatformWindow::initialize()
+{
+    QWindow *window = QPlatformWindow::window();
+
     m_windowFlags = Qt::Widget;
     m_windowState = Qt::WindowNoState;
     // the surfaceType is overwritten in QAndroidPlatformOpenGLWindow ctor so let's save

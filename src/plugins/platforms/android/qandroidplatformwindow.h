@@ -32,6 +32,8 @@ public:
     };
 
     explicit QAndroidPlatformWindow(QWindow *window);
+    void initialize() override;
+
     ~QAndroidPlatformWindow();
     void lower() override;
     void raise() override;
