@@ -264,9 +264,9 @@ class QLocaleXmlReader (object):
     def __eltWords(elt):
         child = elt.firstChild
         while child:
-            if child.nodeType == elt.TEXT_NODE:
+            if child.nodeType in (elt.TEXT_NODE, elt.CDATA_SECTION_NODE):
                 # Note: do not strip(), as some group separators are
-                # non-breaking spaces, that strip() will discard.
+                # (non-breaking) spaces, that strip() will discard.
                 yield child.nodeValue
             child = child.nextSibling
 
@@ -464,20 +464,22 @@ class QLocaleXmlWriter (object):
         """Writes an XML element with the given content.
 
         First parameter, tag, is the element type; second, text, is the content
-        of its body. Any keyword parameters passed specify attributes to
+        of its body, which must be XML-safe (see safeInTag() for when that's
+        not assured). Any keyword parameters passed specify attributes to
         include in the opening tag."""
-        if attrs:
-            head = ' '.join(f'{k}="{v}"' for k, v in attrs.items())
-            head = f'{tag} {head}'
-        else:
-            head = tag
-        self.__write(f'<{head}>{text}</{tag}>')
+        self.__write(f'<{self.__attrJoin(tag, attrs)}>{text}</{tag}>')
 
     def asTag(self, tag, **attrs):
         """Similar to inTag(), but with no content for the element."""
         assert attrs, tag # No point to this otherwise
-        tail = ' '.join(f'{k}="{v}"' for k, v in attrs.items())
-        self.__write(f'<{tag} {tail} />')
+        self.__write(f'<{self.__attrJoin(tag, attrs)} />')
+
+    def safeInTag(self, tag, text, **attrs):
+        """Similar to inTag(), when text isn't known to be XML-safe."""
+        if text.isascii():
+            self.inTag(tag, self.__xmlSafe(text), **attrs)
+        else:
+            self.__cdataInTag(tag, text, **attrs)
 
     def close(self, grumble):
         """Finish writing and grumble about any issues discovered."""
@@ -507,8 +509,19 @@ class QLocaleXmlWriter (object):
         raise Error('Attempted to write data after closing :-(')
 
     @staticmethod
+    def __attrJoin(tag, attrs):
+        # Content of open-tag with given tag and attributes
+        if not attrs:
+            return tag
+        tail = ' '.join(f'{k}="{v}"' for k, v in attrs.items())
+        return f'{tag} {tail}'
+
+    @staticmethod
     def __xmlSafe(text):
         return text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+
+    def __cdataInTag(self, tag, text, **attrs):
+        self.__write(f'<{self.__attrJoin(tag, attrs)}><![CDATA[{text}]]></{tag}>')
 
     def __enumTable(self, tag, table, code2name):
         """Writes a table of QLocale-enum-related data.
@@ -519,9 +532,9 @@ class QLocaleXmlWriter (object):
         type. Last is the englishNaming method of the CldrAccess being used to
         read CLDR data; it is used to map ISO codes to en.xml names."""
         self.__openTag(f'{tag}List')
-        enname, safe = code2name(tag), self.__xmlSafe
+        enname = code2name(tag)
         for key, (name, code) in table.items():
-            self.inTag('naming', safe(enname(code, name)), id = key, code = code)
+            self.safeInTag('naming', enname(code, name), id = key, code = code)
         self.__closeTag(f'{tag}List')
 
     def __likelySubTag(self, tag, likely):
