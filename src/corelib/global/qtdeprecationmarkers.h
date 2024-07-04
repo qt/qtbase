@@ -5,6 +5,7 @@
 #define QTDEPRECATIONMARKERS_H
 
 #include <QtCore/qtconfigmacros.h>
+#include <QtCore/qtclasshelpermacros.h>
 #include <QtCore/qtdeprecationdefinitions.h>
 #include <QtCore/qtversionchecks.h>
 #include <QtCore/qcompilerdetection.h> // for Q_DECL_DEPRECATED
@@ -309,8 +310,7 @@ QT_BEGIN_NAMESPACE
 #ifdef __cplusplus
 // A tag to help mark stuff deprecated (cf. QStringViewLiteral)
 namespace QtPrivate {
-enum class Deprecated_t {};
-constexpr inline Deprecated_t Deprecated = {};
+inline QT_DEFINE_TAG(Deprecated);
 }
 #endif
 

@@ -11,6 +11,7 @@
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qcompare.h>
+#include <QtCore/qtclasshelpermacros.h>
 #include <QtCore/qtmetamacros.h>
 
 #if defined(__OBJC__) && !defined(__cplusplus)
@@ -1596,10 +1597,7 @@ namespace Qt {
     };
     inline constexpr Initialization Uninitialized = Initialization::Uninitialized;
 
-    struct Disambiguated_t {
-        explicit Disambiguated_t() = default;
-    };
-    inline constexpr Disambiguated_t Disambiguated{};
+    inline QT_DEFINE_TAG(Disambiguated);
 
     enum CoordinateSystem {
         DeviceCoordinates,

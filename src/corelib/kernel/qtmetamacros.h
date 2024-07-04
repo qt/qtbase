@@ -6,6 +6,7 @@
 #define QTMETAMACROS_H
 
 #include <QtCore/qglobal.h>
+#include <QtCore/qtclasshelpermacros.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -129,7 +130,7 @@ private: \
     Q_OBJECT_NO_ATTRIBUTES_WARNING \
     Q_DECL_HIDDEN_STATIC_METACALL static void qt_static_metacall(QObject *, QMetaObject::Call, int, void **); \
     QT_WARNING_POP \
-    struct QPrivateSignal { explicit QPrivateSignal() = default; }; \
+    QT_DEFINE_TAG_STRUCT(QPrivateSignal); \
     QT_ANNOTATE_CLASS(qt_qobject, "")
 
 /* qmake ignore Q_OBJECT */

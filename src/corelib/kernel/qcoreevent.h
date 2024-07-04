@@ -319,11 +319,11 @@ public:
     virtual QEvent *clone() const;
 
 protected:
-    struct InputEventTag { explicit InputEventTag() = default; };
+    QT_DEFINE_TAG_STRUCT(InputEventTag);
     QEvent(Type type, InputEventTag) : QEvent(type) { m_inputEvent = true; }
-    struct PointerEventTag { explicit PointerEventTag() = default; };
+    QT_DEFINE_TAG_STRUCT(PointerEventTag);
     QEvent(Type type, PointerEventTag) : QEvent(type, InputEventTag{}) { m_pointerEvent = true; }
-    struct SinglePointEventTag { explicit SinglePointEventTag() = default; };
+    QT_DEFINE_TAG_STRUCT(SinglePointEventTag);
     QEvent(Type type, SinglePointEventTag) : QEvent(type, PointerEventTag{}) { m_singlePointEvent = true; }
     quint16 t;
 

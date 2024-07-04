@@ -74,6 +74,30 @@ QT_BEGIN_NAMESPACE
         return *this; \
     }
 
+/*
+    These macros can be used to define tag structs in the preferred way (ie.
+    with explicit default ctor).
+
+    The _STRUCT version only defines the tag type, no variable, while the
+    normal macro defines also a variable (and appends _t to the type name to
+    distinguish the two).
+
+    E.g. if we were std, we could use
+
+       QT_DEFINE_TAG(nullopt); // nullopt of type nullopt_t
+
+    The variable will be constexpr by default. If you want to make it static,
+    or inline, or both, prepend those keywords:
+
+      static QT_DEFINE_TAG(MyTag); // static constexpr
+      static inline QT_DEFINE_TAG(MyTag); // static inline constexpr
+*/
+#define QT_DEFINE_TAG_STRUCT(TAG) \
+    struct TAG { explicit TAG () = default; }
+#define QT_DEFINE_TAG(TAG) \
+    constexpr QT_DEFINE_TAG_STRUCT(TAG ## _t) TAG{}
+
+
 template <typename T> inline T *qGetPtrHelper(T *ptr) noexcept { return ptr; }
 template <typename Ptr> inline auto qGetPtrHelper(Ptr &ptr) noexcept -> decltype(ptr.get())
 { static_assert(noexcept(ptr.get()), "Smart d pointers for Q_DECLARE_PRIVATE must have noexcept get()"); return ptr.get(); }

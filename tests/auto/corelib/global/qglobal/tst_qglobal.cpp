@@ -75,6 +75,7 @@ private slots:
     void PRImacros();
     void testqToUnderlying();
     void nodiscard();
+    void tagStructDefinitions();
 };
 
 extern "C" {        // functions in qglobal.c
@@ -939,6 +940,23 @@ void tst_QGlobal::nodiscard()
     QCOMPARE(t.get(), 42);
     Test t2{42.0f};
     QCOMPARE(t2.get(), 42);
+}
+
+void tst_QGlobal::tagStructDefinitions()
+{
+    {
+        // predefined:
+        static_assert(std::is_same_v<decltype(QtPrivate::Deprecated), const QtPrivate::Deprecated_t>);
+        [[maybe_unused]] constexpr auto tag = QtPrivate::Deprecated;
+        static_assert(std::is_same_v<decltype(tag), const QtPrivate::Deprecated_t>);
+    }
+    {
+        // self-defined:
+        QT_DEFINE_TAG(MyTag);
+        static_assert(std::is_same_v<decltype(MyTag), const MyTag_t>);
+        [[maybe_unused]] constexpr auto tag = MyTag;
+        static_assert(std::is_same_v<decltype(tag), const MyTag_t>);
+    }
 }
 
 QT_BEGIN_NAMESPACE
