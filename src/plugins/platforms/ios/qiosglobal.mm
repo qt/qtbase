@@ -108,9 +108,11 @@ UIWindow *presentationWindow(QWindow *window)
     return uiWindow;
 }
 
-UIView *rootViewForScreen(QScreen *screen)
+UIView *rootViewForScreen(const QPlatformScreen *screen)
 {
-    const auto *iosScreen = static_cast<QIOSScreen *>(screen->handle());
+    Q_ASSERT(screen);
+
+    const auto *iosScreen = static_cast<const QIOSScreen *>(screen);
     for (UIScene *scene in [qt_apple_sharedApplication().connectedScenes allObjects]) {
         if (![scene isKindOfClass:UIWindowScene.class])
             continue;

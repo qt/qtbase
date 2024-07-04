@@ -298,7 +298,7 @@ void QIOSWindow::setParent(const QPlatformWindow *parentWindow)
     if (parentWindow)
         superview = reinterpret_cast<UIView *>(parentWindow->winId());
     else if (isQtApplication() && !isForeignWindow())
-        superview = rootViewForScreen(window()->screen());
+        superview = rootViewForScreen(window()->screen()->handle());
 
     if (superview)
         [superview addSubview:m_view];
