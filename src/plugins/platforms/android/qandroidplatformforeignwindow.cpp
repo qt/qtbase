@@ -91,11 +91,7 @@ void QAndroidPlatformForeignWindow::addViewToWindow()
     if (isEmbeddingContainer())
         return;
 
-    jint x = 0, y = 0, w = -1, h = -1;
-    if (!geometry().isNull())
-        geometry().getRect(&x, &y, &w, &h);
-
-    m_nativeQtWindow.callMethod<void>("setNativeView", m_view, x, y, qMax(w, 1), qMax(h, 1));
+    m_nativeQtWindow.callMethod<void>("setNativeView", m_view);
     m_nativeViewInserted = true;
 }
 

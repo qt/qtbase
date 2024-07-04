@@ -284,19 +284,10 @@ void QAndroidPlatformWindow::applicationStateChanged(Qt::ApplicationState)
 
 void QAndroidPlatformWindow::createSurface()
 {
-    const QRect rect = geometry();
-    jint x = 0, y = 0, w = -1, h = -1;
-    if (!rect.isNull()) {
-        x = rect.x();
-        y = rect.y();
-        w = std::max(rect.width(), 1);
-        h = std::max(rect.height(), 1);
-    }
-
     const bool windowStaysOnTop = bool(window()->flags() & Qt::WindowStaysOnTopHint);
     const bool isOpaque = !format().hasAlpha() && qFuzzyCompare(window()->opacity(), 1.0);
 
-    m_nativeQtWindow.callMethod<void>("createSurface", windowStaysOnTop, x, y, w, h, 32, isOpaque,
+    m_nativeQtWindow.callMethod<void>("createSurface", windowStaysOnTop, 32, isOpaque,
                                       m_surfaceContainerType);
     m_surfaceCreated = true;
 }
