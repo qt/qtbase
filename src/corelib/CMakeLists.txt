@@ -596,6 +596,11 @@ qt_internal_extend_target(Core CONDITION WIN32
         tools/qhash.cpp # Q_DECL_INIT_PRIORITY
 )
 
+qt_internal_extend_target(Core CONDITION GCC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "13"
+    NO_UNITY_BUILD_SOURCES
+        io/qresource.cpp io/qresource.h io/qresource_p.h # -Werror=subobject-linkage
+)
+
 if(NOT WIN32)
     ### Qt7: remove
     # Make qwineventnotifier.h available on non-Windows platforms too for code bases that include
