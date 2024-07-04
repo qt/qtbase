@@ -24,17 +24,22 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
     private static native void setSurface(int windowId, Surface surface);
     static native void windowFocusChanged(boolean hasFocus, int id);
 
-    QtWindow(Context context, QtWindow parentWindow,
+    QtWindow(Context context, boolean isForeignWindow, QtWindow parentWindow,
                     QtInputConnection.QtInputConnectionListener listener)
     {
         super(context);
         setId(View.generateViewId());
-        m_editText = new QtEditText(context, listener);
         m_inputConnectionListener = listener;
         setParent(parentWindow);
         setFocusableInTouchMode(true);
-        addView(m_editText, new QtLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+
+        if (!isForeignWindow) {
+            m_editText = new QtEditText(context, listener);
+            addView(m_editText, new QtLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                                                       ViewGroup.LayoutParams.MATCH_PARENT));
+        } else {
+            m_editText = null;
+        }
 
         QtNative.runAction(() -> {
             m_gestureDetector =

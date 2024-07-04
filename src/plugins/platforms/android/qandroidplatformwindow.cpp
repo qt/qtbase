@@ -72,7 +72,8 @@ void QAndroidPlatformWindow::initialize()
                     "getInputConnectionListener");
 
     m_nativeQtWindow = QJniObject::construct<QtJniTypes::QtWindow>(
-            QNativeInterface::QAndroidApplication::context(), m_nativeParentQtWindow, listener);
+            QNativeInterface::QAndroidApplication::context(),
+            isForeignWindow(), m_nativeParentQtWindow, listener);
     m_nativeViewId = m_nativeQtWindow.callMethod<jint>("getId");
 
     if (window->isTopLevel())
