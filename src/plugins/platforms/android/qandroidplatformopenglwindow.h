@@ -39,7 +39,6 @@ private:
     EGLNativeWindowType m_nativeWindow = nullptr;
 
     QSurfaceFormat m_format;
-    QRect m_oldGeometry;
 };
 
 QT_END_NAMESPACE
