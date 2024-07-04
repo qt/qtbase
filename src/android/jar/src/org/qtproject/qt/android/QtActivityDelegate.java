@@ -355,10 +355,6 @@ class QtActivityDelegate extends QtActivityDelegateBase
                 }
             }
 
-            window.setLayoutParams(new ViewGroup.LayoutParams(
-                                            ViewGroup.LayoutParams.MATCH_PARENT,
-                                            ViewGroup.LayoutParams.MATCH_PARENT));
-
             m_layout.addView(window, m_topLevelWindows.size());
             m_topLevelWindows.put(window.getId(), window);
             if (!m_splashScreenSticky)
