@@ -159,9 +159,6 @@ class QSpanBase : protected QSpanCommon<T>
     static_assert(E < size_t{(std::numeric_limits<qsizetype>::max)()},
                   "QSpan only supports extents that fit into the signed size type (qsizetype).");
 
-    struct Enabled_t { explicit Enabled_t() = default; };
-    static inline constexpr Enabled_t Enable{};
-
     template <typename S, std::size_t N>
     using if_compatible_array = std::enable_if_t<
             N == E && is_qualification_conversion_v<S, T>
