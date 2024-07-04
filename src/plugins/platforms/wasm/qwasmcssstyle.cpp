@@ -64,7 +64,7 @@ const char *Style = R"css(
 
 .qt-window.no-resize > .resize-outline { display: none; }
 
-.qt-window.has-border:not(.maximized):not(.no-resize) .resize-outline {
+.qt-window.has-border:not(.maximized):not(.no-resize) > .resize-outline {
     display: block;
 }
 
