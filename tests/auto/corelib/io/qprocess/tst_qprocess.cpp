@@ -2783,7 +2783,7 @@ void tst_QProcess::discardUnwantedOutput()
 void tst_QProcess::setWorkingDirectory()
 {
     QProcess process;
-    process.setWorkingDirectory("test");
+    process.setWorkingDirectory(m_temporaryDir.path());
 
     // use absolute path because on Windows, the executable is relative to the parent's CWD
     // while on Unix with fork it's relative to the child's (with posix_spawn, it could be either).
@@ -2794,7 +2794,7 @@ void tst_QProcess::setWorkingDirectory()
     QCOMPARE(process.exitCode(), 0);
 
     QByteArray workingDir = process.readAllStandardOutput();
-    QCOMPARE(QDir("test").canonicalPath(), QDir(workingDir.constData()).canonicalPath());
+    QCOMPARE(QDir(m_temporaryDir.path()).canonicalPath(), QDir(workingDir.constData()).canonicalPath());
 }
 
 void tst_QProcess::setNonExistentWorkingDirectory()
