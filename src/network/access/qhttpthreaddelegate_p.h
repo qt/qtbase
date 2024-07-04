@@ -79,14 +79,13 @@ public:
     QString incomingReasonPhrase;
     bool isPipeliningUsed;
     bool isHttp2Used;
+    bool isCompressed = false;
     qint64 incomingContentLength;
     qint64 removedContentLength;
     QNetworkReply::NetworkError incomingErrorCode;
     QString incomingErrorDetail;
     QHttp1Configuration http1Parameters;
     QHttp2Configuration http2Parameters;
-
-    bool isCompressed;
 
 protected:
     // The zerocopy download buffer, if used:
