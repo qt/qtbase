@@ -11,9 +11,16 @@
 QT_BEGIN_NAMESPACE
 
 QAndroidPlatformForeignWindow::QAndroidPlatformForeignWindow(QWindow *window, WId nativeHandle)
-    : QAndroidPlatformWindow(window), m_view(nullptr), m_nativeViewInserted(false)
+    : QAndroidPlatformWindow(window)
+    , m_view(reinterpret_cast<jobject>(nativeHandle))
+    , m_nativeViewInserted(false)
 {
-    m_view = reinterpret_cast<jobject>(nativeHandle);
+}
+
+void QAndroidPlatformForeignWindow::initialize()
+{
+    QAndroidPlatformWindow::initialize();
+
     if (isEmbeddingContainer()) {
         m_nativeViewId = m_view.callMethod<jint>("getId");
         return;
