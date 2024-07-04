@@ -104,7 +104,6 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
 
     @UsedFromNativeCode
     void createSurface(final boolean onTop,
-                              final int x, final int y, final int w, final int h,
                               final int imageDepth, final boolean isOpaque,
                               final int surfaceContainerType) // TODO constant for type
     {
@@ -112,7 +111,6 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
             if (m_surfaceContainer != null)
                 removeView(m_surfaceContainer);
 
-            setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
             if (surfaceContainerType == 0) {
                 m_surfaceContainer = new QtSurface(getContext(), QtWindow.this,
                                                    onTop, imageDepth);
@@ -165,15 +163,13 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
     }
 
     @UsedFromNativeCode
-    void setNativeView(final View view,
-                              final int x, final int y, final int w, final int h)
+    void setNativeView(final View view)
     {
         QtNative.runAction(()-> {
             if (m_nativeView != null)
                 removeView(m_nativeView);
 
             m_nativeView = view;
-            QtWindow.this.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
             m_nativeView.setLayoutParams(new QtLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                                                                    ViewGroup.LayoutParams.MATCH_PARENT));
             addView(m_nativeView);
