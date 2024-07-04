@@ -601,11 +601,12 @@ QString QTemporaryFilePrivate::defaultTemplateName()
     as the temporary file itself was created on.
 //! [note-about-rename-method]
 
-    Specified filenames can contain the following template \c XXXXXX
-    (six upper case "X" characters), which will be replaced by the
-    auto-generated portion of the filename. Note that the template is
-    case sensitive. If the template is not present in the filename,
-    QTemporaryFile appends the generated part to the filename given.
+    The file name (the part after the last directory path separator in the
+    specified file template) can contain the special sequence \c {"XXXXXX"}
+    (at least six upper case \c "X" characters), which will be replaced with
+    the auto-generated portion of the file name. If the file name doesn't
+    contain \c {"XXXXXX"}, QTemporaryFile will append the generated part to the
+    file name. Only the first occurrence of \c {"XXXXXX"} will be considered.
 
     \note On Linux, QTemporaryFile will attempt to create unnamed temporary
     files. If that succeeds, open() will return true but exists() will be
@@ -661,7 +662,8 @@ QTemporaryFile::QTemporaryFile()
 //! [file-created-on-open]
 
 //! [dynamic-part-of-filename]
-    If \a templateName doesn't contain \c {"XXXXXX"}, it will be added
+    If the file name (the part after the last directory path separator in
+    \a templateName) doesn't contain \c {"XXXXXX"}, it will be added
     automatically.
 
     \c {"XXXXXX"} will be replaced with the dynamic part of the file name,
