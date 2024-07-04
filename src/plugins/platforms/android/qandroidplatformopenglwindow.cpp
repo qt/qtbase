@@ -39,9 +39,6 @@ QAndroidPlatformOpenGLWindow::~QAndroidPlatformOpenGLWindow()
 
 void QAndroidPlatformOpenGLWindow::setGeometry(const QRect &rect)
 {
-    if (rect == geometry())
-        return;
-
     QAndroidPlatformWindow::setGeometry(rect);
 
     QRect availableGeometry = screen()->availableGeometry();
