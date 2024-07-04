@@ -757,11 +757,11 @@ QNetworkReply *QRestAccessManager::customWithDataImpl(const QNetworkRequest &req
 
 QNetworkReply *QRestAccessManagerPrivate::createActiveRequest(QNetworkReply *reply,
                                                     const QObject *contextObject,
-                                                    QtPrivate::QSlotObjectBase *slot)
+                                                    QtPrivate::SlotObjUniquePtr slot)
 {
     Q_Q(QRestAccessManager);
     Q_ASSERT(reply);
-    QtPrivate::SlotObjSharedPtr slotPtr(QtPrivate::SlotObjUniquePtr{slot}); // adopts
+    QtPrivate::SlotObjSharedPtr slotPtr(std::move(slot)); // adopts
     activeRequests.insert(reply, CallerInfo{contextObject, slotPtr});
     // The signal connections below are made to 'q' to avoid stray signal
     // handling upon its destruction while requests were still in progress

@@ -36,18 +36,19 @@ public:
     ~QRestAccessManagerPrivate() override;
 
     QNetworkReply* createActiveRequest(QNetworkReply *reply, const QObject *contextObject,
-                                       QtPrivate::QSlotObjectBase *slot);
+                                       QtPrivate::SlotObjUniquePtr slot);
     void handleReplyFinished(QNetworkReply *reply);
 
     using ReqOpRef = qxp::function_ref<QNetworkReply*(QNetworkAccessManager*) const>;
     QNetworkReply *executeRequest(ReqOpRef requestOperation,
-                               const QObject *context, QtPrivate::QSlotObjectBase *slot)
+                                  const QObject *context, QtPrivate::QSlotObjectBase *rawSlot)
     {
+        QtPrivate::SlotObjUniquePtr slot(rawSlot);
         if (!qnam)
             return warnNoAccessManager();
         verifyThreadAffinity(context);
         QNetworkReply *reply = requestOperation(qnam);
-        return createActiveRequest(reply, context, slot);
+        return createActiveRequest(reply, context, std::move(slot));
     }
 
     using ReqOpRefJson = qxp::function_ref<QNetworkReply*(QNetworkAccessManager*,
@@ -55,8 +56,9 @@ public:
                                                           const QByteArray &) const>;
     QNetworkReply *executeRequest(ReqOpRefJson requestOperation, const QJsonDocument &jsonDoc,
                                const QNetworkRequest &request,
-                               const QObject *context, QtPrivate::QSlotObjectBase *slot)
+                               const QObject *context, QtPrivate::QSlotObjectBase *rawSlot)
     {
+        QtPrivate::SlotObjUniquePtr slot(rawSlot);
         if (!qnam)
             return warnNoAccessManager();
         verifyThreadAffinity(context);
@@ -66,7 +68,7 @@ public:
                           QLatin1StringView{"application/json"});
         }
         QNetworkReply *reply = requestOperation(qnam, req, jsonDoc.toJson(QJsonDocument::Compact));
-        return createActiveRequest(reply, context, slot);
+        return createActiveRequest(reply, context, std::move(slot));
     }
 
     void verifyThreadAffinity(const QObject *contextObject);
