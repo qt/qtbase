@@ -37,7 +37,6 @@ private:
 
     ANativeWindow *m_nativeWindow;
     QSurfaceFormat m_format;
-    QRect m_oldGeometry;
     VkSurfaceKHR m_vkSurface;
     PFN_vkCreateAndroidSurfaceKHR m_createVkSurface;
     PFN_vkDestroySurfaceKHR m_destroyVkSurface;

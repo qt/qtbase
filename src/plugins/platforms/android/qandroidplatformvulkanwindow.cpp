@@ -36,8 +36,6 @@ void QAndroidPlatformVulkanWindow::setGeometry(const QRect &rect)
     if (rect == geometry())
         return;
 
-    m_oldGeometry = geometry();
-
     QAndroidPlatformWindow::setGeometry(rect);
 
     QRect availableGeometry = screen()->availableGeometry();
