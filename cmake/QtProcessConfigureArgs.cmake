@@ -167,7 +167,7 @@ while(NOT "${configure_args}" STREQUAL "")
         list(APPEND cmake_args "${configure_args}")
         break()
     else()
-        set_property(GLOBAL APPEND PROPERTY UNHANDLED_ARGS "${arg}")
+        set_property(GLOBAL APPEND PROPERTY UNHANDLED_ARGS "${raw_arg}")
     endif()
 endwhile()
 
