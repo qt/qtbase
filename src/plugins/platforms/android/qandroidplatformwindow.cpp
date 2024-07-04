@@ -295,8 +295,7 @@ void QAndroidPlatformWindow::destroySurface()
 
 void QAndroidPlatformWindow::setNativeGeometry(const QRect &geometry)
 {
-    if (!m_surfaceCreated)
-        return;
+    Q_ASSERT(m_nativeQtWindow.isValid());
 
     jint x = 0;
     jint y = 0;
