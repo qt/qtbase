@@ -73,7 +73,6 @@ protected:
     void unlockSurface() { m_surfaceMutex.unlock(); }
     void createSurface();
     void destroySurface();
-    void setNativeGeometry(const QRect &geometry);
     void sendExpose() const;
     bool blockedByModal() const;
     bool isEmbeddingContainer() const;
