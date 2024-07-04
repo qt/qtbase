@@ -42,17 +42,6 @@ QAndroidPlatformForeignWindow::~QAndroidPlatformForeignWindow()
 
 }
 
-void QAndroidPlatformForeignWindow::setGeometry(const QRect &rect)
-{
-    QAndroidPlatformWindow::setGeometry(rect);
-
-    if (isEmbeddingContainer())
-        return;
-
-    if (m_nativeViewInserted)
-        setNativeGeometry(rect);
-}
-
 void QAndroidPlatformForeignWindow::setVisible(bool visible)
 {
     if (isEmbeddingContainer()) {

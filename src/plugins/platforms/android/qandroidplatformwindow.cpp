@@ -136,6 +136,23 @@ QMargins QAndroidPlatformWindow::safeAreaMargins() const
 void QAndroidPlatformWindow::setGeometry(const QRect &rect)
 {
     QPlatformWindow::setGeometry(rect);
+
+    if (!isEmbeddingContainer()) {
+        Q_ASSERT(m_nativeQtWindow.isValid());
+
+        jint x = 0;
+        jint y = 0;
+        jint w = -1;
+        jint h = -1;
+        if (!rect.isNull()) {
+            x = rect.x();
+            y = rect.y();
+            w = rect.width();
+            h = rect.height();
+        }
+        m_nativeQtWindow.callMethod<void>("setGeometry", x, y, w, h);
+    }
+
     QWindowSystemInterface::handleGeometryChange(window(), rect);
 }
 
@@ -291,23 +308,6 @@ void QAndroidPlatformWindow::destroySurface()
         m_nativeQtWindow.callMethod<void>("destroySurface");
         m_surfaceCreated = false;
     }
-}
-
-void QAndroidPlatformWindow::setNativeGeometry(const QRect &geometry)
-{
-    Q_ASSERT(m_nativeQtWindow.isValid());
-
-    jint x = 0;
-    jint y = 0;
-    jint w = -1;
-    jint h = -1;
-    if (!geometry.isNull()) {
-        x = geometry.x();
-        y = geometry.y();
-        w = geometry.width();
-        h = geometry.height();
-    }
-    m_nativeQtWindow.callMethod<void>("setGeometry", x, y, w, h);
 }
 
 void QAndroidPlatformWindow::onSurfaceChanged(QtJniTypes::Surface surface)
