@@ -108,12 +108,12 @@ public:
         pointer operator->() const { return &dirEntry; }
         Q_CORE_EXPORT const_iterator &operator++();
         const_iterator operator++(int) { auto tmp = *this; operator++(); return tmp; };
-        friend bool operator==(const const_iterator &lhs, const const_iterator &rhs)
+        friend bool operator==(const const_iterator &lhs, const const_iterator &rhs) noexcept
         {
             // This is only used for the sentinel end iterator
             return lhs.dirListPtr == nullptr && rhs.dirListPtr == nullptr;
         }
-        friend bool operator!=(const const_iterator &lhs, const const_iterator &rhs)
+        friend bool operator!=(const const_iterator &lhs, const const_iterator &rhs) noexcept
         { return !(lhs == rhs); }
     };
 
