@@ -3982,6 +3982,18 @@ void QRhiBuffer::endFullDynamicBufferUpdateForCurrentFrame()
 }
 
 /*!
+    \internal
+ */
+void QRhiBuffer::fullDynamicBufferUpdateForCurrentFrame(const void *data)
+{
+    char *p = beginFullDynamicBufferUpdateForCurrentFrame();
+    if (p) {
+        memcpy(p, data, m_size);
+        endFullDynamicBufferUpdateForCurrentFrame();
+    }
+}
+
+/*!
     \class QRhiRenderBuffer
     \inmodule QtGui
     \since 6.6

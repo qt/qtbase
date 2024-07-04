@@ -5370,6 +5370,17 @@ void QGles2Buffer::endFullDynamicBufferUpdateForCurrentFrame()
     }
 }
 
+void QGles2Buffer::fullDynamicBufferUpdateForCurrentFrame(const void *bufferData)
+{
+    if (!m_usage.testFlag(UniformBuffer)) {
+        QRHI_RES_RHI(QRhiGles2);
+        rhiD->f->glBindBuffer(targetForDataOps, buffer);
+        rhiD->f->glBufferSubData(targetForDataOps, 0, m_size, bufferData);
+    } else {
+        memcpy(data.data(), bufferData, m_size);
+    }
+}
+
 QGles2RenderBuffer::QGles2RenderBuffer(QRhiImplementation *rhi, Type type, const QSize &pixelSize,
                                        int sampleCount, QRhiRenderBuffer::Flags flags,
                                        QRhiTexture::Format backingFormatHint)
