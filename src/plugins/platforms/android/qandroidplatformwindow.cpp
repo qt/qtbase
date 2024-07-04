@@ -30,7 +30,26 @@ QAndroidPlatformWindow::QAndroidPlatformWindow(QWindow *window)
 
 void QAndroidPlatformWindow::initialize()
 {
+    if (isEmbeddingContainer())
+        return;
+
     QWindow *window = QPlatformWindow::window();
+
+    if (parent()) {
+        QAndroidPlatformWindow *androidParent = static_cast<QAndroidPlatformWindow*>(parent());
+        if (!androidParent->isEmbeddingContainer())
+            m_nativeParentQtWindow = androidParent->nativeWindow();
+    }
+
+    AndroidBackendRegister *reg = QtAndroid::backendRegister();
+    QtJniTypes::QtInputConnectionListener listener =
+            reg->callInterface<QtJniTypes::QtInputInterface, QtJniTypes::QtInputConnectionListener>(
+                    "getInputConnectionListener");
+
+    m_nativeQtWindow = QJniObject::construct<QtJniTypes::QtWindow>(
+            QNativeInterface::QAndroidApplication::context(),
+            isForeignWindow(), m_nativeParentQtWindow, listener);
+    m_nativeViewId = m_nativeQtWindow.callMethod<jint>("getId");
 
     m_windowFlags = Qt::Widget;
     m_windowState = Qt::WindowNoState;
@@ -56,25 +75,6 @@ void QAndroidPlatformWindow::initialize()
         if (requestedNativeGeometry != finalNativeGeometry)
             setGeometry(finalNativeGeometry);
     }
-
-    if (isEmbeddingContainer())
-        return;
-
-    if (parent()) {
-        QAndroidPlatformWindow *androidParent = static_cast<QAndroidPlatformWindow*>(parent());
-        if (!androidParent->isEmbeddingContainer())
-            m_nativeParentQtWindow = androidParent->nativeWindow();
-    }
-
-    AndroidBackendRegister *reg = QtAndroid::backendRegister();
-    QtJniTypes::QtInputConnectionListener listener =
-            reg->callInterface<QtJniTypes::QtInputInterface, QtJniTypes::QtInputConnectionListener>(
-                    "getInputConnectionListener");
-
-    m_nativeQtWindow = QJniObject::construct<QtJniTypes::QtWindow>(
-            QNativeInterface::QAndroidApplication::context(),
-            isForeignWindow(), m_nativeParentQtWindow, listener);
-    m_nativeViewId = m_nativeQtWindow.callMethod<jint>("getId");
 
     if (window->isTopLevel())
         platformScreen()->addWindow(this);
