@@ -42,7 +42,9 @@ private slots:
     void generate();
     void less();
     void more();
+    void variants_data();
     void variants();
+    void versions_data();
     void versions();
 
     void threadUniqueness();
@@ -530,27 +532,73 @@ void tst_QUuid::more()
     QVERIFY(uuidA >= uuidA);
 }
 
+void tst_QUuid::variants_data()
+{
+    QTest::addColumn<QUuid>("uuid");
+    QTest::addColumn<QUuid::Variant>("variant");
+
+    QTest::newRow("default-constructed") << QUuid() << QUuid::VarUnknown;
+    QTest::newRow("minimal-NCS") << make_minimal(QUuid::NCS) << QUuid::NCS;
+    QTest::newRow("minimal-DCE") << make_minimal(QUuid::DCE) << QUuid::DCE;
+    QTest::newRow("minimal-Microsoft") << make_minimal(QUuid::Microsoft) << QUuid::Microsoft;
+    QTest::newRow("minimal-Reserved") << make_minimal(QUuid::Reserved) << QUuid::Reserved;
+    QTest::newRow("uuidA") << uuidA << QUuid::DCE;
+    QTest::newRow("uuidB") << uuidB << QUuid::DCE;
+    QTest::newRow("NCS") << QUuid("{3a2f883c-4000-000d-0000-00fb40000000}") << QUuid::NCS;
+}
 
 void tst_QUuid::variants()
 {
-    QVERIFY( uuidA.variant() == QUuid::DCE );
-    QVERIFY( uuidB.variant() == QUuid::DCE );
+    QFETCH(const QUuid, uuid);
+    QFETCH(const QUuid::Variant, variant);
 
-    QUuid NCS("{3a2f883c-4000-000d-0000-00fb40000000}");
-    QVERIFY( NCS.variant() == QUuid::NCS );
+    QCOMPARE_EQ(uuid.variant(), variant);
 }
 
+void tst_QUuid::versions_data()
+{
+    QTest::addColumn<QUuid>("uuid");
+    QTest::addColumn<QUuid::Version>("version");
+
+    QTest::newRow("default-constructed") << QUuid() << QUuid::VerUnknown;
+    QTest::newRow("DCE-time") << QUuid("{406c45a0-3b7e-11d0-80a3-0000c08810a7}") << QUuid::Time;
+    QTest::newRow("DCE-EmbPosix")
+            << QUuid(0, 0, 0b0010'0010'1000'0010, 0b1010'0000, 0, 0, 0, 0, 0, 0, 0)
+            << QUuid::EmbeddedPOSIX;
+    QTest::newRow("DCE-Md5")
+            << QUuid(0, 0, 0b0011'0001'0100'1001, 0b1011'0000, 0, 0, 0, 0, 0, 0, 0)
+            << QUuid::Md5;
+    QTest::newRow("DCE-Random")
+            << QUuid(0, 0, 0b0100'0101'0001'1101, 0b1000'0000, 0, 0, 0, 0, 0, 0, 0)
+            << QUuid::Random;
+    QTest::newRow("DCE-Sha1")
+            << QUuid(0, 0, 0b0101'1101'0101'1011, 0b1001'0000, 0, 0, 0, 0, 0, 0, 0)
+            << QUuid::Sha1;
+    QTest::newRow("DCE-inv-less-than-Time->unknown")
+            << QUuid(0, 0, 0b0000'1101'0101'1011, 0b1000'0000, 0, 0, 0, 0, 0, 0, 0)
+            << QUuid::VerUnknown;
+    QTest::newRow("DCE-inv-greater-than-Sha1->unknown")
+            << QUuid(0, 0, 0b0111'1101'0101'1011, 0b1000'0000, 0, 0, 0, 0, 0, 0, 0)
+            << QUuid::VerUnknown;
+    QTest::newRow("NCS-Time->unknown")
+            << QUuid(0, 0, 0b0001'0000'0000'0000, 0b0100'0000, 0, 0, 0, 0, 0, 0, 0)
+            << QUuid::VerUnknown;
+    QTest::newRow("MS-Sha1->unknown")
+            << QUuid(0, 0, 0b0101'0000'0000'0000, 0b1100'0000, 0, 0, 0, 0, 0, 0, 0)
+            << QUuid::VerUnknown;
+    QTest::newRow("Reserved-Random->unknown")
+            << QUuid(0, 0, 0b0100'0000'0000'0000, 0b1110'0000, 0, 0, 0, 0, 0, 0, 0)
+            << QUuid::VerUnknown;
+    QTest::newRow("uuidA") << uuidA << QUuid::Random;
+    QTest::newRow("uuidB") << uuidB << QUuid::Random;
+}
 
 void tst_QUuid::versions()
 {
-    QVERIFY( uuidA.version() == QUuid::Random );
-    QVERIFY( uuidB.version() == QUuid::Random );
+    QFETCH(const QUuid, uuid);
+    QFETCH(const QUuid::Version, version);
 
-    QUuid DCE_time("{406c45a0-3b7e-11d0-80a3-0000c08810a7}");
-    QVERIFY( DCE_time.version() == QUuid::Time );
-
-    QUuid NCS("{3a2f883c-4000-000d-0000-00fb40000000}");
-    QVERIFY( NCS.version() == QUuid::VerUnknown );
+    QCOMPARE_EQ(uuid.version(), version);
 }
 
 class UuidThread : public QThread
