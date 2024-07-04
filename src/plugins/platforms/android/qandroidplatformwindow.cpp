@@ -72,8 +72,7 @@ void QAndroidPlatformWindow::initialize()
         const QRect finalNativeGeometry = QPlatformWindow::initialGeometry(
                 window, requestedNativeGeometry, availableDeviceIndependentGeometry.width(),
                 availableDeviceIndependentGeometry.height());
-        if (requestedNativeGeometry != finalNativeGeometry)
-            setGeometry(finalNativeGeometry);
+        setGeometry(finalNativeGeometry);
     }
 
     if (window->isTopLevel())
