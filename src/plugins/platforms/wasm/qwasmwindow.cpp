@@ -761,6 +761,10 @@ void QWasmWindow::setMask(const QRegion &region)
 
 void QWasmWindow::setParent(const QPlatformWindow *)
 {
+    // The window flags depend on whether we are a
+    // child window or not, so update them here.
+    setWindowFlags(window()->flags());
+
     commitParent(parentNode());
 }
 
