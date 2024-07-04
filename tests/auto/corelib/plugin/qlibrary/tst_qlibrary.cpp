@@ -124,7 +124,7 @@ void tst_QLibrary::initTestCase()
     directory = paths.first();
 #else
     // chdir to our testdata directory, and use relative paths in some tests.
-    QString testdatadir = QFileInfo(QFINDTESTDATA("library_path")).absolutePath();
+    QString testdatadir = QFileInfo(QFINDTESTDATA("lib")).absolutePath();
     QVERIFY2(QDir::setCurrent(testdatadir), qPrintable("Could not chdir to " + testdatadir));
     directory = QCoreApplication::applicationDirPath();
 #endif
