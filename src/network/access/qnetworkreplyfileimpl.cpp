@@ -87,7 +87,7 @@ QNetworkReplyFileImpl::QNetworkReplyFileImpl(QNetworkAccessManager *manager, con
         auto realFile = new QNetworkFile(fileName);
         connect(realFile, &QNetworkFile::headerRead, this, &QNetworkReplyFileImpl::setHeader,
                 Qt::QueuedConnection);
-        connect(realFile, &QNetworkFile::error, this, &QNetworkReplyFileImpl::setError,
+        connect(realFile, &QNetworkFile::networkError, this, &QNetworkReplyFileImpl::setError,
                 Qt::QueuedConnection);
         connect(realFile, SIGNAL(finished(bool)), SLOT(fileOpenFinished(bool)),
                 Qt::QueuedConnection);
