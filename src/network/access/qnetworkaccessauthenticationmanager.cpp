@@ -22,9 +22,8 @@ class QNetworkAuthenticationCache : private QList<QNetworkAuthenticationCredenti
 {
 public:
     QNetworkAuthenticationCache()
+    : CacheableObject(Option::Shareable)
     {
-        setExpires(false);
-        setShareable(true);
         reserve(1);
     }
 
