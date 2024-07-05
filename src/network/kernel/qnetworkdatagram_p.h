@@ -25,6 +25,7 @@ class QIpPacketHeader
 public:
     QIpPacketHeader(const QHostAddress &dstAddr = QHostAddress(), quint16 port = 0)
         : destinationAddress(dstAddr), ifindex(0), hopLimit(-1), streamNumber(-1),
+          senderPort(0),
           destinationPort(port), endOfRecord(false)
     {}
 
