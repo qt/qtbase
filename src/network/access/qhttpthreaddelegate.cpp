@@ -149,9 +149,9 @@ public:
     QNetworkAccessCachedHttpConnection(quint16 connectionCount, const QString &hostName, quint16 port, bool encrypt,
                                        QHttpNetworkConnection::ConnectionType connectionType)
         : QHttpNetworkConnection(connectionCount, hostName, port, encrypt, /*parent=*/nullptr, connectionType)
+        ,CacheableObject(Option::Expires | Option::Shareable)
     {
-        setExpires(true);
-        setShareable(true);
+
     }
 
     virtual void dispose() override
