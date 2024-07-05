@@ -4618,15 +4618,16 @@ void tst_QDateTime::macTypes()
     tst_QDateTime_macTypes();
 #endif
 }
-
-#if __cpp_lib_chrono >= 201907L
+// INTEGRITY incident-85878 (timezone and clock_cast are not supported)
+#if __cpp_lib_chrono >= 201907L && !defined(Q_OS_INTEGRITY)
 using StdSysMillis = std::chrono::sys_time<std::chrono::milliseconds>;
 Q_DECLARE_METATYPE(StdSysMillis);
 #endif
 
 void tst_QDateTime::stdCompatibilitySysTime_data()
 {
-#if __cpp_lib_chrono >= 201907L
+// INTEGRITY incident-85878 (timezone and clock_cast are not supported)
+#if __cpp_lib_chrono >= 201907L && !defined(Q_OS_INTEGRITY)
     QTest::addColumn<StdSysMillis>("sysTime");
     QTest::addColumn<QDateTime>("expected");
 
@@ -4676,7 +4677,8 @@ void tst_QDateTime::stdCompatibilitySysTime_data()
 
 void tst_QDateTime::stdCompatibilitySysTime()
 {
-#if __cpp_lib_chrono >= 201907L
+// INTEGRITY incident-85878 (timezone and clock_cast are not supported)
+#if __cpp_lib_chrono >= 201907L && !defined(Q_OS_INTEGRITY)
     QFETCH(StdSysMillis, sysTime);
     QFETCH(QDateTime, expected);
 
@@ -4715,15 +4717,16 @@ void tst_QDateTime::stdCompatibilitySysTime()
     QSKIP("This test requires C++20's <chrono>.");
 #endif
 }
-
-#if __cpp_lib_chrono >= 201907L
+// INTEGRITY incident-85878 (timezone and clock_cast are not supported)
+#if __cpp_lib_chrono >= 201907L && !defined(Q_OS_INTEGRITY)
 using StdLocalMillis = std::chrono::local_time<std::chrono::milliseconds>;
 Q_DECLARE_METATYPE(StdLocalMillis);
 #endif
 
 void tst_QDateTime::stdCompatibilityLocalTime_data()
 {
-#if __cpp_lib_chrono >= 201907L
+// INTEGRITY incident-85878 (timezone and clock_cast are not supported)
+#if __cpp_lib_chrono >= 201907L && !defined(Q_OS_INTEGRITY)
     QTest::addColumn<StdLocalMillis>("localTime");
     QTest::addColumn<QDateTime>("expected");
 
@@ -4762,7 +4765,8 @@ void tst_QDateTime::stdCompatibilityLocalTime_data()
 
 void tst_QDateTime::stdCompatibilityLocalTime()
 {
-#if __cpp_lib_chrono >= 201907L
+// INTEGRITY incident-85878 (timezone and clock_cast are not supported)
+#if __cpp_lib_chrono >= 201907L && !defined(Q_OS_INTEGRITY)
     QFETCH(StdLocalMillis, localTime);
     QFETCH(QDateTime, expected);
 

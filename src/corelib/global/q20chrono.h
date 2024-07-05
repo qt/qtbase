@@ -38,7 +38,8 @@ using IntRep = int64_t;
 using IntRep = int;
 #endif
 
-#if __cpp_lib_chrono >= 201907L
+// INTEGRITY incident-85878 (timezone and clock_cast are not supported)
+#if __cpp_lib_chrono >= 201907L && !defined(Q_OS_INTEGRITY)
 using std::chrono::days;
 using std::chrono::weeks;
 using std::chrono::years;

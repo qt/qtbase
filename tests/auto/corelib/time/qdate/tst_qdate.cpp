@@ -192,7 +192,8 @@ void tst_QDate::isValid_data()
     QTest::newRow("jd latest formula")   << 1400000 << 12 << 31 << qint64(513060925) << true;
 }
 
-#if __cpp_lib_chrono >= 201907L
+// INTEGRITY incident-85878 (timezone and clock_cast are not supported)
+#if __cpp_lib_chrono >= 201907L && !defined(Q_OS_INTEGRITY)
 // QDate has a bigger range than year_month_date. The tests use this bigger
 // range. However building a year_month_time with "out of range" data has
 // unspecified results, so don't do that. See [time.cal.year],
@@ -237,7 +238,8 @@ void tst_QDate::isValid()
         QCOMPARE(d.year(), year);
         QCOMPARE(d.month(), month);
         QCOMPARE(d.day(), day);
-#if __cpp_lib_chrono >= 201907L
+// INTEGRITY incident-85878 (timezone and clock_cast are not supported)
+#if __cpp_lib_chrono >= 201907L && !defined(Q_OS_INTEGRITY)
         std::optional<std::chrono::year_month_day> ymd = convertToStdYearMonthDay(year, month, day);
         if (ymd) {
             QDate d = *ymd;
@@ -820,8 +822,8 @@ void tst_QDate::addDays()
     QCOMPARE( dt2.year(), expectedYear );
     QCOMPARE( dt2.month(), expectedMonth );
     QCOMPARE( dt2.day(), expectedDay );
-
-#if __cpp_lib_chrono >= 201907L
+// INTEGRITY incident-85878 (timezone and clock_cast are not supported)
+#if __cpp_lib_chrono >= 201907L && !defined(Q_OS_INTEGRITY)
     QDate dt3 = dt.addDuration( std::chrono::days( amountToAdd ) );
 
     QCOMPARE( dt3.year(), expectedYear );
@@ -997,7 +999,8 @@ void tst_QDate::daysTo()
 void tst_QDate::orderingCompiles()
 {
     QTestPrivate::testAllComparisonOperatorsCompile<QDate>();
-#if __cpp_lib_chrono >= 201907L
+// INTEGRITY incident-85878 (timezone and clock_cast are not supported)
+#if __cpp_lib_chrono >= 201907L && !defined(Q_OS_INTEGRITY)
     QTestPrivate::testAllComparisonOperatorsCompile<QDate, std::chrono::year_month_day>();
     QTestPrivate::testAllComparisonOperatorsCompile<QDate, std::chrono::year_month_day_last>();
     QTestPrivate::testAllComparisonOperatorsCompile<QDate, std::chrono::year_month_weekday>();
@@ -1080,7 +1083,8 @@ void tst_QDate::ordering()
 
 void tst_QDate::ordering_chrono_types()
 {
-#if __cpp_lib_chrono >= 201907L
+// INTEGRITY incident-85878 (timezone and clock_cast are not supported)
+#if __cpp_lib_chrono >= 201907L && !defined(Q_OS_INTEGRITY)
     using namespace std::chrono;
     QDate friday(2001, 11, 30); // the 5th Friday of November 2001
     // std::chrono::year_month_day
@@ -1713,8 +1717,8 @@ void tst_QDate::roundtrip() const
         QCOMPARE(loopDate.toJulianDay(), testDate.toJulianDay());
         loopDate = loopDate.addDays(1);
     }
-
-#if __cpp_lib_chrono >= 201907L
+// INTEGRITY incident-85878 (timezone and clock_cast are not supported)
+#if __cpp_lib_chrono >= 201907L && !defined(Q_OS_INTEGRITY)
     // Test roundtrip for from/to std::chrono conversions.
     // Compile-time test, to verify it's all constexpr.
     using namespace std::chrono;
