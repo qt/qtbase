@@ -30,7 +30,7 @@ void QNetworkFile::open()
     if (fi.isDir()) {
         QString msg = QCoreApplication::translate("QNetworkAccessFileBackend",
             "Cannot open %1: Path is a directory").arg(fileName());
-        emit error(QNetworkReply::ContentOperationNotPermittedError, msg);
+        emit networkError(QNetworkReply::ContentOperationNotPermittedError, msg);
     } else {
         emit headerRead(QHttpHeaders::WellKnownHeader::LastModified,
                         QNetworkHeadersPrivate::toHttpDate(fi.lastModified()));
@@ -41,9 +41,9 @@ void QNetworkFile::open()
             QString msg = QCoreApplication::translate("QNetworkAccessFileBackend",
                 "Error opening %1: %2").arg(fileName(), errorString());
             if (exists())
-                emit error(QNetworkReply::ContentAccessDenied, msg);
+                emit networkError(QNetworkReply::ContentAccessDenied, msg);
             else
-                emit error(QNetworkReply::ContentNotFoundError, msg);
+                emit networkError(QNetworkReply::ContentNotFoundError, msg);
         }
     }
     emit finished(opened);
