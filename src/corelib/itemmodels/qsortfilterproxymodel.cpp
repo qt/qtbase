@@ -1943,6 +1943,11 @@ void QSortFilterProxyModelPrivate::_q_sourceColumnsMoved(
     QSortFilterProxyModel can be sorted by column -1, in which case it returns
     to the sort order of the underlying source model.
 
+    \note \l sortColumn() returns the most recently used sort column.
+    The default value is -1, which means that this proxy model does not sort.
+    Also, note that \l sort() sets the \l sortColumn() to the most recently
+    used sort column.
+
     \section1 Filtering
 
     In addition to sorting, QSortFilterProxyModel can be used to hide items
@@ -2496,6 +2501,8 @@ QSize QSortFilterProxyModel::span(const QModelIndex &index) const
     Sorts the model by \a column in the given \a order.
     If the sort \a column is less than zero, the model will be sorted by source model row
     in the given \a order.
+
+    \sa sortColumn()
 */
 void QSortFilterProxyModel::sort(int column, Qt::SortOrder order)
 {
