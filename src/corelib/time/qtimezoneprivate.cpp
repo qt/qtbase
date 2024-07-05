@@ -287,6 +287,7 @@ QDateTimePrivate::ZoneState QTimeZonePrivate::stateAtZoneTime(
             tran = nextTran;
             nextTran = newTran;
         }
+        const qint64 nextStart = nextTran.atMSecsSinceEpoch;
 
         // Check we do *really* have transitions for this zone:
         if (tran.atMSecsSinceEpoch != invalidMSecs()) {
@@ -295,11 +296,18 @@ QDateTimePrivate::ZoneState QTimeZonePrivate::stateAtZoneTime(
                      || forLocalMSecs - tran.offsetFromUtc * 1000 > tran.atMSecsSinceEpoch);
             // Work out the UTC value it would make sense to return if using tran:
             tran.atMSecsSinceEpoch = forLocalMSecs - tran.offsetFromUtc * 1000;
-            // If we know of no transition after it, the answer is easy:
-            const qint64 nextStart = nextTran.atMSecsSinceEpoch;
-            if (nextStart == invalidMSecs())
-                return dataToState(tran); // Last valid transition.
 
+            // If there are no transition after it, the answer is easy - or
+            // should be - but Darwin's handling of the distant future (in macOS
+            // 15, QTBUG-126391) runs out of transitions in 506'712 CE, despite
+            // knowing about offset changes long after that. So only trust the
+            // easy answer if offsets match; otherwise, fall through to the
+            // transitions-unknown code.
+            if (nextStart == invalidMSecs() && tran.offsetFromUtc == future.offsetFromUtc)
+                return dataToState(tran); // Last valid transition.
+        }
+
+        if (tran.atMSecsSinceEpoch != invalidMSecs() && nextStart != invalidMSecs()) {
             /*
               ... and nextTran is either after or only slightly before. We're
               going to interpret one as standard time, the other as DST
