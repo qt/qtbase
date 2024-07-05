@@ -36,7 +36,7 @@ public Q_SLOTS:
 Q_SIGNALS:
     void finished(bool ok);
     void headerRead(QNetworkRequest::KnownHeaders header, const QVariant &value);
-    void error(QNetworkReply::NetworkError error, const QString &message);
+    void networkError(QNetworkReply::NetworkError error, const QString &message);
 };
 
 QT_END_NAMESPACE
