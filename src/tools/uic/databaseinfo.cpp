@@ -28,7 +28,7 @@ void DatabaseInfo::acceptWidget(DomWidget *node)
     QHash<QString, DomProperty*> properties = propertyMap(node->elementProperty());
 
     DomProperty *frameworkCode = properties.value("frameworkCode"_L1);
-    if (frameworkCode && toBool(frameworkCode->elementBool()) == false)
+    if (frameworkCode && !toBool(frameworkCode->elementBool()))
         return;
 
     DomProperty *db = properties.value("database"_L1);

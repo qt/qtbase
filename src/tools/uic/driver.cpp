@@ -17,9 +17,9 @@ QT_BEGIN_NAMESPACE
 using namespace Qt::StringLiterals;
 
 Driver::Driver()
-    : m_stdout(stdout, QFile::WriteOnly | QFile::Text)
+    : m_stdout(stdout, QFile::WriteOnly | QFile::Text),
+    m_output(&m_stdout)
 {
-    m_output = &m_stdout;
 }
 
 Driver::~Driver() = default;
@@ -94,7 +94,7 @@ QString Driver::findOrInsertLayoutItem(const DomLayoutItem *ui_layoutItem)
 
     Q_ASSERT( 0 );
 
-    return QString();
+    return {};
 }
 
 QString Driver::findOrInsertActionGroup(const DomActionGroup *ui_group)
@@ -170,7 +170,7 @@ QString Driver::qtify(const QString &name)
     if (qname.at(0) == u'Q' || qname.at(0) == u'K')
         qname.remove(0, 1);
 
-    for (int i = 0, size = qname.size(); i < size && qname.at(i).isUpper(); ++i)
+    for (qsizetype i = 0, size = qname.size(); i < size && qname.at(i).isUpper(); ++i)
         qname[i] = qname.at(i).toLower();
 
     return qname;
@@ -203,7 +203,7 @@ QString Driver::headerFileName(const QString &fileName)
     // Transform into a valid C++ identifier
     if (!baseName.isEmpty() && baseName.at(0).isDigit())
         baseName.prepend(u'_');
-    for (int i = 0; i < baseName.size(); ++i) {
+    for (qsizetype i = 0; i < baseName.size(); ++i) {
         QChar c = baseName.at(i);
         if (!isAnsiCCharacter(c)) {
             // Replace character by its unicode value

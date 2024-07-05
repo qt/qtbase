@@ -68,13 +68,12 @@ private:
     // copyright header
     void writeCopyrightHeaderCpp(const DomUI *ui) const;
     void writeCopyrightHeaderPython(const DomUI *ui) const;
-    DomUI *parseUiFile(QXmlStreamReader &reader);
+    static DomUI *parseUiFile(QXmlStreamReader &reader);
 
     // header protection
     void writeHeaderProtectionStart();
     void writeHeaderProtectionEnd();
 
-private:
     Driver *drv;
     QTextStream &out;
     Option &opt;

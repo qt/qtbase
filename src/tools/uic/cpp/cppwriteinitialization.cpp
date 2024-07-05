@@ -17,8 +17,6 @@
 
 #include <algorithm>
 
-#include <ctype.h>
-
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
@@ -416,7 +414,7 @@ int SizePolicyHandle::compare(const SizePolicyHandle &rhs) const
 
 WriteInitialization::LayoutDefaultHandler::LayoutDefaultHandler()
 {
-    std::fill_n(m_state, int(NumProperties), 0u);
+    std::fill_n(m_state, int(NumProperties), 0U);
     std::fill_n(m_defaultValues, int(NumProperties), 0);
 }
 
@@ -499,7 +497,6 @@ void WriteInitialization::LayoutDefaultHandler::writeProperty(int p, const QStri
             writeSetter(indent, objectName, setter, m_defaultValues[p], str);
         }
     }
-    return;
 }
 
 
@@ -547,7 +544,7 @@ void WriteInitialization::acceptUI(DomUI *node)
     if (node->hasAttributeConnectslotsbyname())
         m_connectSlotsByName = node->attributeConnectslotsbyname();
 
-    if (auto customSlots = node->elementSlots()) {
+    if (auto *customSlots = node->elementSlots()) {
         m_customSlots = customSlots->elementSlot();
         m_customSignals = customSlots->elementSignal();
     }
@@ -683,7 +680,8 @@ void WriteInitialization::acceptWidget(DomWidget *node)
     const QString className = node->attributeClass();
     const QString varName = m_driver->findOrInsertWidget(node);
 
-    QString parentWidget, parentClass;
+    QString parentWidget;
+    QString parentClass;
     if (m_widgetChain.top()) {
         parentWidget = m_driver->findOrInsertWidget(m_widgetChain.top());
         parentClass = m_widgetChain.top()->attributeClass();
@@ -698,7 +696,7 @@ void WriteInitialization::acceptWidget(DomWidget *node)
 
     if (m_widgetChain.size() != 1) {
         m_output << m_indent << varName << " = " << language::operatorNew
-            << language::fixClassName(cwi->realClassName(className))
+            << language::fixClassName(CustomWidgetsInfo::realClassName(className))
             << '(' << parentWidget << ')' << language::eol;
     }
 
@@ -932,7 +930,7 @@ void WriteInitialization::addButtonGroup(const DomWidget *buttonNode, const QStr
     // was present before the actual Designer support (4.5)
     const bool createGroupOnTheFly = group == nullptr;
     if (createGroupOnTheFly) {
-        DomButtonGroup *newGroup = new DomButtonGroup;
+        auto *newGroup = new DomButtonGroup;
         newGroup->setAttributeName(attributeName);
         group = newGroup;
         fprintf(stderr, "%s: Warning: Creating button group `%s'\n",
@@ -984,8 +982,10 @@ void WriteInitialization::acceptLayout(DomLayout *node)
     DomPropertyList propList = node->elementProperty();
     DomPropertyList newPropList;
     if (m_layoutWidget) {
-        bool left, top, right, bottom;
-        left = top = right = bottom = false;
+        bool left = false;
+        bool top = false;
+        bool right = false;
+        bool bottom = false;
         for (const DomProperty *p : propList) {
             const QString propertyName = p->attributeName();
             if (propertyName == "leftMargin"_L1 && p->kind() == DomProperty::Number)
@@ -998,25 +998,25 @@ void WriteInitialization::acceptLayout(DomLayout *node)
                 bottom = true;
         }
         if (!left) {
-            DomProperty *p = new DomProperty();
+            auto *p = new DomProperty();
             p->setAttributeName("leftMargin"_L1);
             p->setElementNumber(0);
             newPropList.append(p);
         }
         if (!top) {
-            DomProperty *p = new DomProperty();
+            auto *p = new DomProperty();
             p->setAttributeName("topMargin"_L1);
             p->setElementNumber(0);
             newPropList.append(p);
         }
         if (!right) {
-            DomProperty *p = new DomProperty();
+            auto *p = new DomProperty();
             p->setAttributeName("rightMargin"_L1);
             p->setElementNumber(0);
             newPropList.append(p);
         }
         if (!bottom) {
-            DomProperty *p = new DomProperty();
+            auto *p = new DomProperty();
             p->setAttributeName("bottomMargin"_L1);
             p->setElementNumber(0);
             newPropList.append(p);
@@ -1054,9 +1054,8 @@ void WriteInitialization::writePropertyList(const QString &varName,
 {
     if (value.isEmpty())
         return;
-    const QStringList list = value.split(u',');
-    const int count =  list.size();
-    for (int i = 0; i < count; i++) {
+    const auto list = QStringView{value}.split(u',');
+    for (qsizetype i = 0, count = list.size(); i < count; i++) {
         if (list.at(i) != defaultValue) {
             m_output << m_indent << varName << language::derefPointer << setFunction
                 << '(' << i << ", " << list.at(i) << ')' << language::eol;
@@ -1250,7 +1249,7 @@ static QString configKeyForProperty(const QString &propertyName)
         return shortcutConfigKey();
     if (propertyName == "accessibleName"_L1 || propertyName == "accessibleDescription"_L1)
         return accessibilityConfigKey();
-    return QString();
+    return {};
 }
 
 void WriteInitialization::writeProperties(const QString &varName,
@@ -1290,8 +1289,10 @@ void WriteInitialization::writeProperties(const QString &varName,
             << language::charliteral(objectName, m_dindent) << ')' << language::eol;
     }
 
-    int leftMargin, topMargin, rightMargin, bottomMargin;
-    leftMargin = topMargin = rightMargin = bottomMargin = -1;
+    int leftMargin = -1;
+    int topMargin = -1;
+    int rightMargin = -1;
+    int bottomMargin = -1;
     bool frameShadowEncountered = false;
 
     for (const DomProperty *p : lst) {
@@ -2006,8 +2007,8 @@ QString WriteInitialization::domColor2QString(const DomColor *c)
 static inline QVersionNumber colorRoleVersionAdded(const QString &roleName)
 {
     if (roleName == "PlaceholderText"_L1)
-        return QVersionNumber(5, 12, 0);
-    return QVersionNumber();
+        return {5, 12, 0};
+    return {};
 }
 
 void WriteInitialization::writeColorGroup(DomColorGroup *colorGroup, const QString &group, const QString &paletteName)
@@ -2308,8 +2309,9 @@ void WriteInitialization::enableSorting(DomWidget *w, const QString &varName, co
         the initializer is omitted.
     See above for other parameters.
 */
-void WriteInitialization::addInitializer(Item *item,
-        const QString &name, int column, const QString &value, const QString &directive, bool translatable) const
+void WriteInitialization::addInitializer(Item *item, const QString &name,
+                                         int column, const QString &value,
+                                         const QString &directive, bool translatable)
 {
     if (!value.isEmpty()) {
         QString setter;
@@ -2360,8 +2362,8 @@ void WriteInitialization::addBrushInitializer(Item *item,
     Create inititializer for a flag value in the Qt namespace.
     If the named property is not in the map, the initializer is omitted.
 */
-void WriteInitialization::addQtFlagsInitializer(Item *item,
-        const DomPropertyMap &properties, const QString &name, int column) const
+void WriteInitialization::addQtFlagsInitializer(Item *item, const DomPropertyMap &properties,
+                                                const QString &name, int column)
 {
     if (const DomProperty *p = properties.value(name)) {
         const QString orOperator = u'|' + language::qtQualifier;
@@ -2500,10 +2502,10 @@ WriteInitialization::Items WriteInitialization::initializeTreeWidgetItems(const 
 {
     // items
     Items items;
-    const int numDomItems = domItems.size();
+    const qsizetype numDomItems = domItems.size();
     items.reserve(numDomItems);
 
-    for (int i = 0; i < numDomItems; ++i) {
+    for (qsizetype i = 0; i < numDomItems; ++i) {
         const DomItem *domItem = domItems.at(i);
 
         Item *item = new Item("QTreeWidgetItem"_L1, m_indent, m_output, m_refreshOut, m_driver);
@@ -2687,7 +2689,7 @@ QString WriteInitialization::noTrCall(DomString *str, const QString &defaultStri
 {
     QString value = defaultString;
     if (!str && defaultString.isEmpty())
-        return QString();
+        return {};
     if (str)
         value = str->text();
     QString ret;
@@ -2815,7 +2817,7 @@ static void generateMultiDirectiveBegin(QTextStream &outputStream, const QSet<QS
     std::sort(list.begin(), list.end());
 
     outputStream << "#if " << language::qtConfig(list.constFirst());
-    for (int i = 1, size = list.size(); i < size; ++i)
+    for (qsizetype i = 1, size = list.size(); i < size; ++i)
         outputStream << " || " << language::qtConfig(list.at(i));
     outputStream << Qt::endl;
 }
@@ -2847,14 +2849,14 @@ WriteInitialization::Item::~Item()
 QString WriteInitialization::Item::writeSetupUi(const QString &parent, Item::EmptyItemPolicy emptyItemPolicy)
 {
     if (emptyItemPolicy == Item::DontConstruct && m_setupUiData.policy == ItemData::DontGenerate)
-        return QString();
+        return {};
 
     bool generateMultiDirective = false;
     if (emptyItemPolicy == Item::ConstructItemOnly && m_children.isEmpty()) {
         if (m_setupUiData.policy == ItemData::DontGenerate) {
             m_setupUiStream << m_indent << language::operatorNew << m_itemClassName
                 << '(' << parent << ')' << language::eol;
-            return QString();
+            return {};
         }
         if (m_setupUiData.policy == ItemData::GenerateWithMultiDirective)
             generateMultiDirective = true;

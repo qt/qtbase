@@ -108,10 +108,10 @@ static inline bool isCppCommentChar(QChar c)
     return  c == u'/' || c == u'*';
 }
 
-static int leadingCppCommentCharCount(QStringView s)
+static qsizetype leadingCppCommentCharCount(QStringView s)
 {
-    int i = 0;
-    for (const int size = s.size(); i < size && isCppCommentChar(s.at(i)); ++i) {
+    qsizetype i = 0;
+    for (const qsizetype size = s.size(); i < size && isCppCommentChar(s.at(i)); ++i) {
     }
     return i;
 }
@@ -122,7 +122,7 @@ void Uic::writeCopyrightHeaderPython(const DomUI *ui) const
     if (!comment.isEmpty()) {
         const auto lines = QStringView{comment}.split(u'\n');
         for (const auto &line : lines) {
-            if (const int leadingCommentChars = leadingCppCommentCharCount(line)) {
+            if (const auto leadingCommentChars = leadingCppCommentCharCount(line)) {
                  out << language::repeat(leadingCommentChars, '#')
                      << line.right(line.size() - leadingCommentChars);
             } else {
