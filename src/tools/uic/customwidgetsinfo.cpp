@@ -163,7 +163,7 @@ bool CustomWidgetsInfo::isAmbiguousSlot(const QString &className,
     return isAmbiguous(className, signalSignature, QMetaMethod::Slot);
 }
 
-QString CustomWidgetsInfo::realClassName(const QString &className) const
+QString CustomWidgetsInfo::realClassName(const QString &className)
 {
     if (className == "Line"_L1)
         return u"QFrame"_s;
@@ -175,7 +175,7 @@ QString CustomWidgetsInfo::customWidgetAddPageMethod(const QString &name) const
 {
     if (DomCustomWidget *dcw = m_customWidgets.value(name, nullptr))
         return dcw->elementAddPageMethod();
-    return QString();
+    return {};
 }
 
 // add page methods for simple containers taking only the widget parameter
@@ -195,7 +195,7 @@ QString CustomWidgetsInfo::simpleContainerAddPageMethod(const QString &name) con
         if (extends(name, m.first))
             return m.second;
     }
-    return QString();
+    return {};
 }
 
 QT_END_NAMESPACE

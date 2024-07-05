@@ -11,7 +11,7 @@
 #include <qfileinfo.h>
 #include <qtextstream.h>
 
-#include <stdio.h>
+#include <cstdio>
 
 QT_BEGIN_NAMESPACE
 
@@ -41,7 +41,7 @@ WriteIncludes::WriteIncludes(Uic *uic) : WriteIncludesBase(uic),
     for (const auto &e : classInfoEntries()) {
         const QString klass = QLatin1StringView(e.klass);
         const QString module = QLatin1StringView(e.module);
-        QLatin1StringView header = QLatin1StringView(e.header);
+        QLatin1StringView header(e.header);
         if (klass.contains(namespaceDelimiter)) {
             m_classToHeader.insert(klass, moduleHeader(module, header));
         } else {
@@ -73,7 +73,7 @@ void WriteIncludes::acceptUI(DomUI *node)
 void WriteIncludes::insertIncludeForClass(const QString &className, QString header, bool global)
 {
     if (debugWriteIncludes)
-        fprintf(stderr, "%s %s '%s' %d\n", Q_FUNC_INFO, qPrintable(className), qPrintable(header), global);
+        std::fprintf(stderr, "%s %s '%s' %d\n", Q_FUNC_INFO, qPrintable(className), qPrintable(header), global);
 
     do {
         if (!header.isEmpty())
@@ -91,7 +91,7 @@ void WriteIncludes::insertIncludeForClass(const QString &className, QString head
         // Remove namespaces
         QString lowerClassName = className.toLower();
         static const auto namespaceSeparator = "::"_L1;
-        const int namespaceIndex = lowerClassName.lastIndexOf(namespaceSeparator);
+        const auto namespaceIndex = lowerClassName.lastIndexOf(namespaceSeparator);
         if (namespaceIndex != -1)
             lowerClassName.remove(0, namespaceIndex + namespaceSeparator.size());
         if (m_includeBaseNames.contains(lowerClassName)) {

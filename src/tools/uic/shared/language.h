@@ -6,7 +6,6 @@
 
 #include <QtCore/qstring.h>
 #include <QtCore/qstringview.h>
-#include <QtCore/qstring.h>
 
 QT_FORWARD_DECLARE_CLASS(QTextStream)
 

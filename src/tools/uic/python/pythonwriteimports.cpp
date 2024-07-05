@@ -124,9 +124,9 @@ void WriteImports::acceptUI(DomUI *node)
             output << "import " << w << '\n';
     }
 
-    if (auto resources = node->elementResources()) {
-        const auto includes = resources->elementInclude();
-        for (auto include : includes) {
+    if (auto *resources = node->elementResources()) {
+        const auto &includes = resources->elementInclude();
+        for (auto *include : includes) {
             if (include->hasAttributeLocation())
                 writeResourceImport(include->attributeLocation());
         }

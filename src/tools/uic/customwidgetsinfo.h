@@ -30,7 +30,7 @@ public:
     QString customWidgetAddPageMethod(const QString &name) const;
     QString simpleContainerAddPageMethod(const QString &name) const;
 
-    QString realClassName(const QString &className) const;
+    static QString realClassName(const QString &className);
 
     bool extends(const QString &className, QAnyStringView baseClassName) const;
     bool extendsOneOf(const QString &className, const QStringList &baseClassNames) const;

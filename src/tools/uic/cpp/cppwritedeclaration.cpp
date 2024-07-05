@@ -55,7 +55,7 @@ void WriteDeclaration::acceptUI(DomUI *node)
         exportMacro.append(u' ');
 
     QStringList namespaceList = qualifiedClassName.split("::"_L1);
-    if (namespaceList.size()) {
+    if (!namespaceList.isEmpty()) {
         className = namespaceList.last();
         namespaceList.removeLast();
     }
@@ -66,14 +66,14 @@ void WriteDeclaration::acceptUI(DomUI *node)
     // In this case the generated Ui helper classes will also end up in
     // the Qt namespace (which is harmless, but not "pretty")
     const bool needsMacro = m_option.qtNamespace &&
-            (namespaceList.size() == 0 || namespaceList[0] == "qdesigner_internal"_L1);
+            (namespaceList.isEmpty() || namespaceList.at(0) == "qdesigner_internal"_L1);
 
     if (needsMacro)
         m_output << "QT_BEGIN_NAMESPACE\n\n";
 
     openNameSpaces(namespaceList, m_output);
 
-    if (namespaceList.size())
+    if (!namespaceList.isEmpty())
         m_output << "\n";
 
     m_output << "class " << exportMacro << m_option.prefix << className << "\n"
@@ -98,7 +98,7 @@ void WriteDeclaration::acceptUI(DomUI *node)
 
     closeNameSpaces(namespaceList, m_output);
 
-    if (namespaceList.size())
+    if (!namespaceList.isEmpty())
         m_output << "\n";
 
     if (m_option.generateNamespace && !m_option.prefix.isEmpty()) {
@@ -110,7 +110,7 @@ void WriteDeclaration::acceptUI(DomUI *node)
 
         closeNameSpaces(namespaceList, m_output);
 
-        if (namespaceList.size())
+        if (!namespaceList.isEmpty())
             m_output << "\n";
     }
 
@@ -124,7 +124,7 @@ void WriteDeclaration::acceptWidget(DomWidget *node)
     if (node->hasAttributeClass())
         className = node->attributeClass();
 
-    m_output << m_option.indent << m_uic->customWidgetsInfo()->realClassName(className) << " *" << m_driver->findOrInsertWidget(node) << ";\n";
+    m_output << m_option.indent << CustomWidgetsInfo::realClassName(className) << " *" << m_driver->findOrInsertWidget(node) << ";\n";
 
     TreeWalker::acceptWidget(node);
 }
