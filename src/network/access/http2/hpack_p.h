@@ -32,7 +32,7 @@ namespace HPack
 
 using HttpHeader = std::vector<HeaderField>;
 HeaderSize header_size(const HttpHeader &header);
-
+struct BitPattern;
 class Q_AUTOTEST_EXPORT Encoder
 {
 public:
@@ -66,13 +66,13 @@ private:
 
 
     bool encodeLiteralField(BitOStream &outputStream,
-                            const struct BitPattern &fieldType,
+                            BitPattern fieldType,
                             quint32 nameIndex,
                             const QByteArray &value,
                             bool withCompression);
 
     bool encodeLiteralField(BitOStream &outputStream,
-                            const BitPattern &fieldType,
+                            BitPattern fieldType,
                             const QByteArray &name,
                             const QByteArray &value,
                             bool withCompression);
@@ -101,10 +101,10 @@ private:
 
     bool decodeIndexedField(BitIStream &inputStream);
     bool decodeSizeUpdate(BitIStream &inputStream);
-    bool decodeLiteralField(const BitPattern &fieldType,
+    bool decodeLiteralField(BitPattern fieldType,
                             BitIStream &inputStream);
 
-    bool processDecodedField(const BitPattern &fieldType,
+    bool processDecodedField(BitPattern fieldType,
                              const QByteArray &name,
                              const QByteArray &value);
 
