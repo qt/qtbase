@@ -221,15 +221,21 @@ bool IoUtils::touchFile(const QString &targetFileName, const QString &referenceF
         *errorString = fL1S("Cannot stat() reference file %1: %2.").arg(referenceFileName, fL1S(strerror(errno)));
         return false;
     }
-#    if defined(_POSIX_VERSION) && _POSIX_VERSION >= 200809L
-    const struct timespec times[2] = { { 0, UTIME_NOW }, st.st_mtim };
+#    if (defined(_POSIX_VERSION) && _POSIX_VERSION >= 200809L) || defined(Q_OS_DARWIN)
+    const struct timespec times[2] = { { 0, UTIME_NOW },
+#      if defined(_POSIX_VERSION) && _POSIX_VERSION >= 200809L
+        st.st_mtim // POSIX.1-2008
+#      else
+        st.st_mtimespec // Darwin
+#      endif
+    };
     const bool utimeError = utimensat(AT_FDCWD, targetFileName.toLocal8Bit().constData(), times, 0) < 0;
 #    else
     struct utimbuf utb;
     utb.actime = time(0);
     utb.modtime = st.st_mtime;
     const bool utimeError= utime(targetFileName.toLocal8Bit().constData(), &utb) < 0;
-#    endif
+#    endif // (defined(_POSIX_VERSION) && _POSIX_VERSION >= 200809L) || defined(Q_OS_DARWIN)
     if (utimeError) {
         *errorString = fL1S("Cannot touch %1: %2.").arg(targetFileName, fL1S(strerror(errno)));
         return false;
@@ -256,7 +262,7 @@ bool IoUtils::touchFile(const QString &targetFileName, const QString &referenceF
     }
     SetFileTime(wHand, NULL, NULL, &ft);
     CloseHandle(wHand);
-#  endif
+#  endif // Q_OS_UNIX
     return true;
 }
 
