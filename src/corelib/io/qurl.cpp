@@ -1529,6 +1529,12 @@ inline QString QUrlPrivate::mergePaths(const QString &relativePath) const
 
     Removes unnecessary ../ and ./ from the path. Used for normalizing
     the URL.
+
+    This code has a Qt-specific extension to handle empty path segments (a.k.a.
+    multiple slashes like "a//b"). We try to keep them wherever possible
+    because with some protocols they are meaningful, but we still consider them
+    to be a single directory transition for "." or ".." (e.g., "a/b//c" +
+    "../" is "a/"). See tst_QUrl::resolved() for the expected behavior.
 */
 static void removeDotsFromPath(QString *path)
 {
@@ -1539,71 +1545,87 @@ static void removeDotsFromPath(QString *path)
     const QChar *in = out;
     const QChar *end = out + path->size();
 
-    // If the input buffer consists only of
-    // "." or "..", then remove that from the input
-    // buffer;
-    if (path->size() == 1 && in[0].unicode() == '.')
-        ++in;
-    else if (path->size() == 2 && in[0].unicode() == '.' && in[1].unicode() == '.')
-        in += 2;
-    // While the input buffer is not empty, loop:
+    // We implement a modified algorithm compared to RFC 3986, for efficiency.
     while (in < end) {
+#if 0   // to see in the debugger
+        QStringView output(path->constBegin(), out);
+        QStringView input(in, end);
+#endif
+        // First, copy any preceding slashes, so we can look at the segment's
+        // content.
+        while (in < end && in[0] == u'/') {
+            *out++ = *in++;
 
-        // otherwise, if the input buffer begins with a prefix of "../" or "./",
-        // then remove that prefix from the input buffer;
-        if (path->size() >= 2 && in[0].unicode() == '.' && in[1].unicode() == '/')
-            in += 2;
-        else if (path->size() >= 3 && in[0].unicode() == '.'
-                 && in[1].unicode() == '.' && in[2].unicode() == '/')
-            in += 3;
-
-        // otherwise, if the input buffer begins with a prefix of
-        // "/./" or "/.", where "." is a complete path segment,
-        // then replace that prefix with "/" in the input buffer;
-        if (in <= end - 3 && in[0].unicode() == '/' && in[1].unicode() == '.'
-                && in[2].unicode() == '/') {
-            in += 2;
-            continue;
-        } else if (in == end - 2 && in[0].unicode() == '/' && in[1].unicode() == '.') {
-            *out++ = u'/';
-            in += 2;
-            break;
+            // Note: we may exit this loop with in == end, in which case we
+            // *shouldn't* dereference *in. But since we are pointing to a
+            // detached, non-empty QString, we know there's a u'\0' at the end.
         }
 
-        // otherwise, if the input buffer begins with a prefix
-        // of "/../" or "/..", where ".." is a complete path
-        // segment, then replace that prefix with "/" in the
-        // input buffer and remove the last //segment and its
-        // preceding "/" (if any) from the output buffer;
-        if (in <= end - 4 && in[0].unicode() == '/' && in[1].unicode() == '.'
-                && in[2].unicode() == '.' && in[3].unicode() == '/') {
-            while (out > path->constData() && (--out)->unicode() != '/')
+        // Is this path segment either "." or ".."?
+        enum { Nothing, Dot, DotDot } type = Nothing;
+        if (in[0] == u'.') {
+            if (in + 1 == end || in[1] == u'/')
+                type = Dot;
+            else if (in[1] == u'.' && (in + 2 == end || in[2] == u'/'))
+                type = DotDot;
+        }
+        if (type != Nothing) {
+            // If it is either, we skip it and remove any preceding slashes (if
+            // any) from the output. If it is "..", we remove the segment
+            // before that and its preceding slashes (if any) too.
+            const QChar *start = path->constBegin();
+            if (type == DotDot) {
+                while (out > start && *--out != u'/')
+                    ;
+                while (out > start && *--out == u'/')
+                    ;
+                ++in;   // the first dot
+            }
+
+            in += 2;    // one dot and either one slash or the terminating null
+            while (out > start && *--out != u'/')
                 ;
-            if (out == path->constData() && out->unicode() != '/')
-                ++in;
-            in += 3;
-            continue;
-        } else if (in == end - 3 && in[0].unicode() == '/' && in[1].unicode() == '.'
-                   && in[2].unicode() == '.') {
-            while (out > path->constData() && (--out)->unicode() != '/')
-                ;
-            if (out->unicode() == '/')
+
+            // And then replace the segment with "/", unless it would make a
+            // relative path become absolute.
+            if (out != start) {
+                // Replacing with a slash won't make the path absolute.
+                *out++ = u'/';
+            } else if (*start == u'/') {
+                // The path is already absolute.
                 ++out;
-            in += 3;
-            break;
+            } else {
+                // The path is relative, so we must skip any follow-on slashes
+                // to make sure the next iteration of the loop won't copy them,
+                // which would make the path become absolute.
+                while (in < end && *in == u'/')
+                    ++in;
+            }
+            continue;
         }
 
-        // otherwise move the first path segment in
-        // the input buffer to the end of the output
-        // buffer, including the initial "/" character
-        // (if any) and any subsequent characters up
-        // to, but not including, the next "/"
-        // character or the end of the input buffer.
-        *out++ = *in++;
+        // If it is neither, then we copy this segment.
         while (in < end && in->unicode() != '/')
             *out++ = *in++;
     }
-    path->truncate(out - path->constData());
+    path->truncate(out - path->constBegin());
+}
+
+// Authority-less URLs cannot have paths starting with double slashes (see
+// QUrlPrivate::validityError). We refuse to turn a valid URL into invalid by
+// way of QUrl::resolved().
+static void fixupNonAuthorityPath(QString *path)
+{
+    if (path->isEmpty() || path->at(0) != u'/')
+        return;
+
+    // Find the first non-slash character, because its position is equal to the
+    // number of slashes. We'll remove all but one of them.
+    qsizetype i = 0;
+    while (i + 1 < path->size() && path->at(i + 1) == u'/')
+        ++i;
+    if (i)
+        path->remove(0, i);
 }
 
 inline QUrlPrivate::ErrorCode QUrlPrivate::validityError(QString *source, qsizetype *position) const
@@ -2778,6 +2800,8 @@ QUrl QUrl::resolved(const QUrl &relative) const
         t.d->sectionIsPresent &= ~QUrlPrivate::Fragment;
 
     removeDotsFromPath(&t.d->path);
+    if (!t.d->hasAuthority())
+        fixupNonAuthorityPath(&t.d->path);
 
 #if defined(QURL_DEBUG)
     qDebug("QUrl(\"%ls\").resolved(\"%ls\") = \"%ls\"",
