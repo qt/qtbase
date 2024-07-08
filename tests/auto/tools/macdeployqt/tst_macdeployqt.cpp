@@ -162,7 +162,7 @@ bool deploy(const QString &name, const QStringList &options, QString *errorMessa
     QString bundle = name + ".app";
     QString path = buildPath(name);
     QStringList args = QStringList() << bundle << options;
-#if defined(QT_DEBUG)
+#if defined(QT_DEBUG) && QT_CONFIG(debug_and_release)
     args << "-use-debug-libs";
 #endif
     if (lcTests().isDebugEnabled())
