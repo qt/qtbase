@@ -7,17 +7,17 @@
 # file with the same information
 
 set(corelib_mimetypes_resource_file
-    "${CMAKE_CURRENT_LIST_DIR}/mime/packages/freedesktop.org.xml"
+    "${CMAKE_CURRENT_LIST_DIR}/3rdparty/tika-mimetypes.xml"
 )
 
 function(corelib_add_mimetypes_resources target)
     set(source_file "${corelib_mimetypes_resource_file}")
     set_source_files_properties("${source_file}"
-        PROPERTIES QT_RESOURCE_ALIAS "freedesktop.org.xml"
+        PROPERTIES QT_RESOURCE_ALIAS "tika-mimetypes.xml"
     )
     qt_internal_add_resource(${target} "mimetypes"
         PREFIX
-            "/qt-project.org/qmime/packages"
+            "/qt-project.org/qmime/tika/packages"
         FILES
             "${source_file}"
     )
