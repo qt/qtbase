@@ -1,21 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# This function recursively walks transitive link libraries of the given target
-# and promotes those targets to be IMPORTED_GLOBAL if they are not.
-#
-# This is required for .prl file generation in top-level builds, to make sure that imported 3rd
-# party library targets in any repo are made global, so there are no scoping issues.
-#
-# Only works if called from qt_find_package(), because the promotion needs to happen in the same
-# directory scope where the imported target is first created.
-#
-# Uses __qt_internal_walk_libs.
-function(qt_find_package_promote_targets_to_global_scope target)
-    __qt_internal_walk_libs("${target}" _discarded_out_var _discarded_out_var_2
-                            "qt_find_package_targets_dict" "promote_global")
-endfunction()
-
 # As an optimization when using -developer-build, qt_find_package records which
 # packages were found during the initial configuration. Then on subsequent
 # reconfigurations it skips looking for packages that were not found on the
@@ -226,11 +211,11 @@ macro(qt_find_package)
 
                 get_property(is_global TARGET ${qt_find_package_target_name} PROPERTY
                                                                              IMPORTED_GLOBAL)
-                qt_internal_should_not_promote_package_target_to_global(
+                _qt_internal_should_not_promote_package_target_to_global(
                     "${qt_find_package_target_name}" should_not_promote)
                 if(NOT is_global AND NOT should_not_promote)
                     __qt_internal_promote_target_to_global(${qt_find_package_target_name})
-                    qt_find_package_promote_targets_to_global_scope(
+                    _qt_find_package_promote_targets_to_global_scope(
                         "${qt_find_package_target_name}")
                 endif()
 
@@ -657,10 +642,4 @@ function(qt_register_target_dependencies target public_libs private_libs)
     endif()
 
     set_target_properties("${target}" PROPERTIES _qt_target_deps "${target_deps}")
-endfunction()
-
-# Sets out_var to to TRUE if the target was marked to not be promoted to global scope.
-function(qt_internal_should_not_promote_package_target_to_global target out_var)
-    get_property(should_not_promote TARGET "${target}" PROPERTY _qt_no_promote_global)
-    set("${out_var}" "${should_not_promote}" PARENT_SCOPE)
 endfunction()
