@@ -345,6 +345,13 @@ void QThreadPrivate::finish(void *arg)
         QThread *thr = reinterpret_cast<QThread *>(arg);
         QThreadPrivate *d = thr->d_func();
 
+        // Disable cancellation; we're already in the finishing touches of this
+        // thread, and we don't want cleanup to be disturbed by
+        // abi::__forced_unwind being thrown from all kinds of functions.
+#ifdef PTHREAD_CANCEL_DISABLE
+        pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, nullptr);
+#endif
+
         QMutexLocker locker(&d->mutex);
 
         d->isInFinish = true;

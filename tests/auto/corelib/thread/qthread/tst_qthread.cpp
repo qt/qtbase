@@ -1951,7 +1951,6 @@ void tst_QThread::terminateSelfStressTest()
     struct Thread : QThread {
         void run() override {
             terminate();
-            while (true) sleep(1ns); // QTBUG-127008
         }
     };
 
