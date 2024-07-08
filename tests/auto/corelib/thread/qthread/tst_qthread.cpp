@@ -100,6 +100,7 @@ private slots:
 
     void terminateAndPrematureDestruction();
     void terminateAndDoubleDestruction();
+    void terminateSelfStressTest();
 
     void bindingListCleanupAfterDelete();
 };
@@ -1881,6 +1882,53 @@ void tst_QThread::terminateAndDoubleDestruction()
     };
 
     TestObject obj;
+}
+
+void tst_QThread::terminateSelfStressTest()
+{
+    // This simply tests that QThread::terminate() doesn't crash or causes
+    // sanitizer reports when a thread cancels itself.
+#ifdef Q_OS_ANDROID
+    QSKIP("Android cannot cancel threads");
+#endif
+
+#ifdef Q_OS_WIN
+    QSKIP("QTBUG-127050");
+#endif
+
+    struct Thread : QThread {
+        void run() override {
+            terminate();
+            while (true) sleep(1ns); // QTBUG-127008
+        }
+    };
+
+    {
+        // first, try with one:
+        Thread t;
+        t.start();
+        QVERIFY(t.wait(10s));
+    }
+
+    constexpr QThread::Priority priorities[] = {
+        QThread::IdlePriority,
+        QThread::LowestPriority,
+        QThread::LowPriority,
+        QThread::NormalPriority,
+        QThread::HighPriority,
+        QThread::HighestPriority,
+        QThread::TimeCriticalPriority,
+        QThread::InheritPriority,
+    };
+
+    QVarLengthArray<Thread, 1024> threads(3 * QThread::idealThreadCount());
+
+    size_t i = 0;
+    for (Thread &t : threads)
+        t.start(priorities[i++ % std::size(priorities)]);
+
+    for (Thread &t : threads)
+        QVERIFY2(t.wait(60s), QByteArray::number(&t - threads.data()).constData());
 }
 
 void tst_QThread::bindingListCleanupAfterDelete()
