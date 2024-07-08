@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/tst_qmimedatabase/qmime">
+        <file alias="freedesktop.org.xml">3rdparty/freedesktop.org.xml</file>
+    </qresource>
+</RCC>

@@ -27,10 +27,6 @@
 ****************************************************************************/
 
 #include "../tst_qmimedatabase.h"
-#include <QDir>
-#include <QFile>
-#include <QtTest/QtTest>
-#include <qstandardpaths.h>
 
 #include "../tst_qmimedatabase.cpp"
 
@@ -43,4 +39,14 @@ void tst_QMimeDatabase::initTestCaseInternal()
     runUpdateMimeDatabase(mimeDirName);
     QVERIFY(QFile::exists(mimeDirName + QStringLiteral("/mime.cache")));
 #endif
+}
+
+bool tst_QMimeDatabase::useCacheProvider() const
+{
+    return true;
+}
+
+bool tst_QMimeDatabase::useFreeDesktopOrgXml() const
+{
+    return false;
 }

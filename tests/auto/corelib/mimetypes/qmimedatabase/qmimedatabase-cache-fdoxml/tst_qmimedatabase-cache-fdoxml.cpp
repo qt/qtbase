@@ -28,9 +28,25 @@
 
 #include "../tst_qmimedatabase.h"
 
+#include "../tst_qmimedatabase.cpp"
+
 void tst_QMimeDatabase::initTestCaseInternal()
 {
-    qputenv("QT_NO_MIME_CACHE", "1");
+#if !QT_CONFIG(process)
+    QSKIP("No qprocess support", SkipAll);
+#else
+    const QString mimeDirName = m_globalXdgDir + QStringLiteral("/mime");
+    runUpdateMimeDatabase(mimeDirName);
+    QVERIFY(QFile::exists(mimeDirName + QStringLiteral("/mime.cache")));
+#endif
 }
 
-#include "../tst_qmimedatabase.cpp"
+bool tst_QMimeDatabase::useCacheProvider() const
+{
+    return true;
+}
+
+bool tst_QMimeDatabase::useFreeDesktopOrgXml() const
+{
+    return true;
+}

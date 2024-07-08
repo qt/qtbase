@@ -1,5 +1,5 @@
 <RCC>
-    <qresource prefix="/qt-project.org/qmime">
+    <qresource prefix="/tst_qmimedatabase/qmime">
         <file alias="yast2-metapackage-handler-mimetypes.xml">yast2-metapackage-handler-mimetypes.xml</file>
         <file alias="qml-again.xml">qml-again.xml</file>
         <file alias="text-x-objcsrc.xml">text-x-objcsrc.xml</file>
