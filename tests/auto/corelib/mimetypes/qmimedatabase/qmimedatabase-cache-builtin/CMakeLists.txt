@@ -12,23 +12,21 @@ if(NOT QT_FEATURE_private_tests)
 endif()
 
 #####################################################################
-## tst_qmimedatabase-xml Test:
+## tst_qmimedatabase-cache-builtin Test:
 #####################################################################
 
-qt_internal_add_test(tst_qmimedatabase-xml
+qt_internal_add_test(tst_qmimedatabase-cache-builtin
+    RUN_SERIAL
     SOURCES
         ../tst_qmimedatabase.h
-        tst_qmimedatabase-xml.cpp
+        tst_qmimedatabase-cache-builtin.cpp
     LIBRARIES
-        Qt::Concurrent
         Qt::CorePrivate
+        Qt::Concurrent
 )
 
 # Resources:
-# the freedesktop resources are handled manually below via mimetypes_resources.cmake
-#set(mimetypes_resource_files
-    #"mime/packages/freedesktop.org.xml"
-#)
+# the builtin mimetype xml is handled manually below via mimetypes_resources.cmake
 set(testdata_resource_files
     "../add-extension.xml"
     "../circular-inheritance.xml"
@@ -46,16 +44,16 @@ set(testdata_resource_files
     "../yast2-metapackage-handler-mimetypes.xml"
 )
 
-qt_internal_add_resource(tst_qmimedatabase-xml "testdata"
+qt_internal_add_resource(tst_qmimedatabase-cache-builtin "testdata"
     PREFIX
-        "/qt-project.org/qmime"
+        "/tst_qmimedatabase/qmime"
     BASE
         ".."
     FILES
         ${testdata_resource_files}
 )
 
-qt_internal_add_resource(tst_qmimedatabase-xml "testfiles"
+qt_internal_add_resource(tst_qmimedatabase-cache-builtin "testfiles"
     PREFIX
         "/files"
     FILES
@@ -65,12 +63,12 @@ qt_internal_add_resource(tst_qmimedatabase-xml "testfiles"
 
 set(corelib_source_dir ../../../../../../src/corelib)
 include(${corelib_source_dir}/mimetypes/mimetypes_resources.cmake)
-corelib_add_mimetypes_resources(tst_qmimedatabase-xml)
+corelib_add_mimetypes_resources(tst_qmimedatabase-cache-builtin)
 
 ## Scopes:
 #####################################################################
 
-qt_internal_extend_target(tst_qmimedatabase-xml CONDITION GCC
+qt_internal_extend_target(tst_qmimedatabase-cache-builtin CONDITION GCC
     COMPILE_OPTIONS
         -W
         -Wall
@@ -80,7 +78,7 @@ qt_internal_extend_target(tst_qmimedatabase-xml CONDITION GCC
         -Wshadow
 )
 
-qt_internal_extend_target(tst_qmimedatabase-xml CONDITION UNIX AND NOT APPLE AND NOT QNX
+qt_internal_extend_target(tst_qmimedatabase-cache-builtin CONDITION UNIX AND NOT APPLE AND NOT QNX
     DEFINES
         USE_XDG_DATA_DIRS
 )
