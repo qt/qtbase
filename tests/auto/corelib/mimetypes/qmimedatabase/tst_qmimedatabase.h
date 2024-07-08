@@ -69,6 +69,8 @@ private slots:
 
 private:
     void initTestCaseInternal(); // test-specific
+    bool useCacheProvider() const; // test-specific
+    bool useFreeDesktopOrgXml() const; // test-specific
 
     QString m_globalXdgDir;
     QString m_localMimeDir;
@@ -77,6 +79,7 @@ private:
     QTemporaryDir m_temporaryDir;
     QString m_testSuite;
     bool m_isUsingCacheProvider;
+    bool m_hasFreedesktopOrg = false;
 };
 
 #endif   // TST_QMIMEDATABASE_H
