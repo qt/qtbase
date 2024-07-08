@@ -610,12 +610,12 @@ static inline bool runSysAppTest(const QString &binary,
         return false;
 
     if (output.isEmpty()) {
-        *errorMessage = QLatin1String("Empty output received for requested '") + requestedLocale
+        *errorMessage += QLatin1String("Empty output received for requested '") + requestedLocale
             + QLatin1String("' (expected '") + expectedOutput + QLatin1String("')");
         return false;
     }
     if (output != expectedOutput) {
-        *errorMessage = QLatin1String("Output mismatch for requested '") + requestedLocale
+        *errorMessage += QLatin1String("Output mismatch for requested '") + requestedLocale
             + QLatin1String("': Expected '") + expectedOutput + QLatin1String("', got '")
             + output + QLatin1String("'");
         return false;
