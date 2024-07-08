@@ -13,3 +13,13 @@ void tst_QMimeDatabase::initTestCaseInternal()
     QVERIFY(QFile::exists(mimeDirName + QStringLiteral("/mime.cache")));
 #endif
 }
+
+bool tst_QMimeDatabase::useCacheProvider() const
+{
+    return true;
+}
+
+bool tst_QMimeDatabase::useFreeDesktopOrgXml() const
+{
+    return false;
+}

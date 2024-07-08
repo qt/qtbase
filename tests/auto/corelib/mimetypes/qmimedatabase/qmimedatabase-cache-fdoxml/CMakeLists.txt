@@ -12,23 +12,23 @@ if(NOT QT_FEATURE_private_tests)
 endif()
 
 #####################################################################
-## tst_qmimedatabase-cache Test:
+## tst_qmimedatabase-cache-fdoxml Test:
 #####################################################################
 
-qt_internal_add_test(tst_qmimedatabase-cache
+qt_internal_add_test(tst_qmimedatabase-cache-fdoxml
+    RUN_SERIAL
     SOURCES
         ../tst_qmimedatabase.h
-        tst_qmimedatabase-cache.cpp
+        tst_qmimedatabase-cache-fdoxml.cpp
     LIBRARIES
         Qt::CorePrivate
         Qt::Concurrent
 )
 
 # Resources:
-# the freedesktop resources are handled manually below via mimetypes_resources.cmake
-#set(mimetypes_resource_files
-    #"mime/packages/freedesktop.org.xml"
-#)
+set(mimetypes_resource_files
+    "../3rdparty/freedesktop.org.xml"
+)
 set(testdata_resource_files
     "../add-extension.xml"
     "../circular-inheritance.xml"
@@ -46,16 +46,25 @@ set(testdata_resource_files
     "../yast2-metapackage-handler-mimetypes.xml"
 )
 
-qt_internal_add_resource(tst_qmimedatabase-cache "testdata"
+qt_internal_add_resource(tst_qmimedatabase-cache-fdoxml "testdata"
     PREFIX
-        "/qt-project.org/qmime"
+        "/tst_qmimedatabase/qmime"
     BASE
         ".."
     FILES
         ${testdata_resource_files}
 )
 
-qt_internal_add_resource(tst_qmimedatabase-cache "testfiles"
+qt_internal_add_resource(tst_qmimedatabase-cache-fdoxml "testdata-fdoxml"
+    PREFIX
+        "/tst_qmimedatabase/qmime"
+    BASE
+        "../3rdparty"
+    FILES
+        ${mimetypes_resource_files}
+)
+
+qt_internal_add_resource(tst_qmimedatabase-cache-fdoxml "testfiles"
     PREFIX
         "/files"
     FILES
@@ -65,12 +74,12 @@ qt_internal_add_resource(tst_qmimedatabase-cache "testfiles"
 
 set(corelib_source_dir ../../../../../../src/corelib)
 include(${corelib_source_dir}/mimetypes/mimetypes_resources.cmake)
-corelib_add_mimetypes_resources(tst_qmimedatabase-cache)
+corelib_add_mimetypes_resources(tst_qmimedatabase-cache-fdoxml)
 
 ## Scopes:
 #####################################################################
 
-qt_internal_extend_target(tst_qmimedatabase-cache CONDITION GCC
+qt_internal_extend_target(tst_qmimedatabase-cache-fdoxml CONDITION GCC
     COMPILE_OPTIONS
         -W
         -Wall
@@ -80,7 +89,7 @@ qt_internal_extend_target(tst_qmimedatabase-cache CONDITION GCC
         -Wshadow
 )
 
-qt_internal_extend_target(tst_qmimedatabase-cache CONDITION UNIX AND NOT APPLE AND NOT QNX
+qt_internal_extend_target(tst_qmimedatabase-cache-fdoxml CONDITION UNIX AND NOT APPLE AND NOT QNX
     DEFINES
         USE_XDG_DATA_DIRS
 )
