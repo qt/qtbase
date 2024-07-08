@@ -253,6 +253,27 @@ function(__qt_internal_collect_object_libraries_recursively out_var target initi
     set(${out_var} "${object_libraries}" PARENT_SCOPE)
 endfunction()
 
+# Sets out_var to to TRUE if the target was marked to not be promoted to global scope.
+function(_qt_internal_should_not_promote_package_target_to_global target out_var)
+    get_property(should_not_promote TARGET "${target}" PROPERTY _qt_no_promote_global)
+    set("${out_var}" "${should_not_promote}" PARENT_SCOPE)
+endfunction()
+
+# This function recursively walks transitive link libraries of the given target
+# and promotes those targets to be IMPORTED_GLOBAL if they are not.
+#
+# This is required for .prl file generation in top-level builds, to make sure that imported 3rd
+# party library targets in any repo are made global, so there are no scoping issues.
+#
+# Only works if called from qt_find_package(), because the promotion needs to happen in the same
+# directory scope where the imported target is first created.
+#
+# Uses __qt_internal_walk_libs.
+function(_qt_find_package_promote_targets_to_global_scope target)
+    __qt_internal_walk_libs("${target}" _discarded_out_var _discarded_out_var_2
+                            "qt_find_package_targets_dict" "promote_global")
+endfunction()
+
 function(__qt_internal_promote_target_to_global target)
     get_property(is_global TARGET ${target} PROPERTY IMPORTED_GLOBAL)
     if(NOT is_global)

@@ -249,7 +249,7 @@ function(__qt_internal_walk_libs
 
                     # Allow opting out of promotion. This is useful in certain corner cases
                     # like with WrapLibClang and Threads in qttools.
-                    qt_internal_should_not_promote_package_target_to_global(
+                    _qt_internal_should_not_promote_package_target_to_global(
                         "${lib_target_unaliased}" should_not_promote)
                     if(is_imported AND NOT should_not_promote)
                         __qt_internal_promote_target_to_global(${lib_target_unaliased})
