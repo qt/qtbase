@@ -33,6 +33,8 @@
 #include <QtCore/qresource.h>
 #include <QtCore/qscopeguard.h>
 #include <QtCore/qthread.h>
+#include <QtCore/private/qandroiditemmodelproxy_p.h>
+#include <QtCore/private/qandroidmodelindexproxy_p.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
 
@@ -881,7 +883,10 @@ Q_DECL_EXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void */*reserved*/)
             || !QAndroidPlatformClipboard::registerNatives(env)
             || !QAndroidPlatformWindow::registerNatives(env)
             || !QtAndroidWindowEmbedding::registerNatives(env)
-            || !AndroidBackendRegister::registerNatives()) {
+            || !AndroidBackendRegister::registerNatives()
+            || !QAndroidModelIndexProxy::registerNatives(env)
+            || !QAndroidItemModelProxy::registerAbstractNatives(env)
+            || !QAndroidItemModelProxy::registerProxyNatives(env)) {
         __android_log_print(ANDROID_LOG_FATAL, "Qt", "registerNatives failed");
         return -1;
     }
