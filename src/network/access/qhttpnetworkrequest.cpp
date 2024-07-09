@@ -262,6 +262,7 @@ void QHttpNetworkRequest::clearHeaders()
 
 QHttpNetworkRequest &QHttpNetworkRequest::operator=(const QHttpNetworkRequest &other)
 {
+    QHttpNetworkHeader::operator=(other);
     d = other.d;
     return *this;
 }
