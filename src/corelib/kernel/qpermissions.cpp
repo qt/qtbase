@@ -137,8 +137,8 @@ Q_LOGGING_CATEGORY(lcPermissions, "qt.permissions", QtWarningMsg);
         \li Request the minimal set of permissions needed. For example, if you only
         need access to the microphone, do \e not request camera permission just in case.
         Use the properties of individual permission types to limit the permission scope
-        even further, for example QContactsPermission::setReadOnly() to request read
-        only access.
+        even further, for example \l{QContactsPermission::setAccessMode()}
+        to request read only access.
 
         \li Request permissions in response to specific actions by the user. For example,
         defer requesting microphone permission until the user presses the button to record
