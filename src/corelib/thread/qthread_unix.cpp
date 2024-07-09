@@ -647,6 +647,7 @@ void QThread::start(Priority priority)
     d->returnCode = 0;
     d->exited = false;
     d->interruptionRequested.store(false, std::memory_order_relaxed);
+    d->terminated = false;
 
     pthread_attr_t attr;
     pthread_attr_init(&attr);
@@ -758,8 +759,14 @@ void QThread::terminate()
     if (!d->data->threadId.loadRelaxed())
         return;
 
+    if (d->terminated) // don't try again, avoids killing the wrong thread on threadId reuse (ABA)
+        return;
+
+    d->terminated = true;
+
     int code = pthread_cancel(from_HANDLE<pthread_t>(d->data->threadId.loadRelaxed()));
     if (code) {
+        d->terminated = false; // allow to try again
         qErrnoWarning(code, "QThread::start: Thread termination error");
     }
 #endif
