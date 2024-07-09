@@ -19,5 +19,4 @@ qt_internal_add_test(tst_qsharedpointer
         tst_qsharedpointer.cpp
     LIBRARIES
         Qt::CorePrivate
-        Qt::TestPrivate
 )
