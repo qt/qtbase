@@ -5,6 +5,7 @@
     \since 4.3
     \class QDirIterator
     \inmodule QtCore
+    \ingroup io
     \brief The QDirIterator class provides an iterator for directory entrylists.
 
     You can use QDirIterator to navigate entries of a directory one at a time.

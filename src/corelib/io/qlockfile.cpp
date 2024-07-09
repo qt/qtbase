@@ -42,6 +42,7 @@ static QString machineName()
 /*!
     \class QLockFile
     \inmodule QtCore
+    \ingroup io
     \brief The QLockFile class provides locking between processes using a file.
     \since 5.1
 
