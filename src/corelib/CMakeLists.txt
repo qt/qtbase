@@ -1062,6 +1062,8 @@ qt_internal_extend_target(Core CONDITION ANDROID
         kernel/qjnihelpers.cpp kernel/qjnihelpers_p.h
         platform/android/qandroidextras_p.h platform/android/qandroidextras.cpp
         platform/android/qandroidnativeinterface.cpp
+        platform/android/qandroidtypes_p.h
+        platform/android/qandroidtypeconverter_p.h
     NO_UNITY_BUILD_SOURCES
         platform/android/qandroidextras.cpp
         # qtNativeClassName conflicts with similar symbols in android headers
