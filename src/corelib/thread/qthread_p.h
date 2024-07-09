@@ -195,6 +195,9 @@ public:
     State threadState = NotStarted;
     bool exited = false;
     std::atomic<bool> interruptionRequested = false;
+#ifdef Q_OS_UNIX
+    bool terminated = false; // when (the first) terminate has been called
+#endif
 
     int returnCode = -1;
 
