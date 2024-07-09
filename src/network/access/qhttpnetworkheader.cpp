@@ -7,6 +7,9 @@
 
 QT_BEGIN_NAMESPACE
 
+QHttpNetworkHeader::~QHttpNetworkHeader()
+    = default;
+
 QHttpNetworkHeaderPrivate::QHttpNetworkHeaderPrivate(const QUrl &newUrl)
     :url(newUrl)
 {

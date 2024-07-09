@@ -60,7 +60,7 @@ class Q_NETWORK_EXPORT QHttpNetworkReply : public QObject, public QHttpNetworkHe
 public:
 
     explicit QHttpNetworkReply(const QUrl &url = QUrl(), QObject *parent = nullptr);
-    virtual ~QHttpNetworkReply();
+    ~QHttpNetworkReply() override;
 
     QUrl url() const override;
     void setUrl(const QUrl &url) override;
