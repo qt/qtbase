@@ -14,8 +14,8 @@
 //
 // We mean it.
 
-#include <QtQuick/private/qandroidtypes_p.h>
-#include <QtQuick/private/qandroiditemmodelproxy_p.h>
+#include <QtCore/private/qandroidtypes_p.h>
+#include <QtCore/private/qandroiditemmodelproxy_p.h>
 
 #include <QtCore/qjniobject.h>
 #include <QtCore/qjnienvironment.h>
