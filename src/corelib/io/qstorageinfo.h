@@ -59,7 +59,8 @@ public:
 private:
     explicit QStorageInfo(QStorageInfoPrivate &dd);
     friend class QStorageInfoPrivate;
-    friend Q_CORE_EXPORT bool comparesEqual(const QStorageInfo &lhs, const QStorageInfo &rhs);
+    friend Q_CORE_EXPORT bool
+    comparesEqual(const QStorageInfo &lhs, const QStorageInfo &rhs) noexcept;
     Q_DECLARE_EQUALITY_COMPARABLE(QStorageInfo)
 
     friend Q_CORE_EXPORT QDebug operator<<(QDebug, const QStorageInfo &);

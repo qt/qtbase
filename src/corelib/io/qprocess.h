@@ -68,7 +68,7 @@ public:
 private:
     friend Q_CORE_EXPORT bool comparesEqual(const QProcessEnvironment &lhs,
                                             const QProcessEnvironment &rhs);
-    Q_DECLARE_EQUALITY_COMPARABLE(QProcessEnvironment)
+    Q_DECLARE_EQUALITY_COMPARABLE_NON_NOEXCEPT(QProcessEnvironment)
     friend class QProcessPrivate;
     friend class QProcessEnvironmentPrivate;
     QSharedDataPointer<QProcessEnvironmentPrivate> d;

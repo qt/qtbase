@@ -92,7 +92,7 @@ private:
     }
 
     // Some of the helper functions are intentionally NOT marked as noexcept
-    // to test the conditional noexcept in the macros.
+    // to test various helper macros
     template <typename T>
     friend bool comparesEqual(const StringWrapper<T> &lhs, const StringWrapper<T> &rhs) noexcept
     { return StringWrapper<T>::equalsHelper(lhs.m_val, rhs.m_val); }
@@ -108,7 +108,7 @@ private:
     { return StringWrapper<T>::compareHelper(lhs.m_val, rhs); }
 
     Q_DECLARE_WEAKLY_ORDERED(StringWrapper)
-    Q_DECLARE_WEAKLY_ORDERED(StringWrapper, QAnyStringView)
+    Q_DECLARE_WEAKLY_ORDERED_NON_NOEXCEPT(StringWrapper, QAnyStringView)
 
     String m_val;
 };

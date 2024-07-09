@@ -96,7 +96,7 @@ private:
     friend bool comparesEqual(const QPointer &lhs, const QPointer<X> &rhs) noexcept
     { return lhs.data() == rhs.data(); }
     QT_DECLARE_EQUALITY_OPERATORS_HELPER(QPointer, QPointer<X>, /* non-constexpr */,
-                                         template <typename X>)
+                                         noexcept(true), template <typename X>)
 
     template <typename X>
     friend bool comparesEqual(const QPointer &lhs, X *rhs) noexcept

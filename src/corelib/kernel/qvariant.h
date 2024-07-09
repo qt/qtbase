@@ -618,7 +618,7 @@ private:
 
     friend bool comparesEqual(const QVariant &a, const QVariant &b)
     { return a.equals(b); }
-    Q_DECLARE_EQUALITY_COMPARABLE(QVariant)
+    Q_DECLARE_EQUALITY_COMPARABLE_NON_NOEXCEPT(QVariant)
 
 #ifndef QT_NO_DEBUG_STREAM
     template <typename T>

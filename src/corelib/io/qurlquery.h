@@ -71,7 +71,7 @@ public:
 
 private:
     friend Q_CORE_EXPORT bool comparesEqual(const QUrlQuery &lhs, const QUrlQuery &rhs);
-    Q_DECLARE_EQUALITY_COMPARABLE(QUrlQuery)
+    Q_DECLARE_EQUALITY_COMPARABLE_NON_NOEXCEPT(QUrlQuery)
     friend class QUrl;
     friend Q_CORE_EXPORT size_t qHash(const QUrlQuery &key, size_t seed) noexcept;
     QSharedDataPointer<QUrlQueryPrivate> d;

@@ -755,7 +755,7 @@ private:
     { return comparesEqual(lhs, StringWrapper(QString::number(rhs))); }
     friend Qt::weak_ordering compareThreeWay(const StringWrapper &lhs, int rhs)
     { return compareHelper(lhs.m_val, QString::number(rhs)); }
-    Q_DECLARE_WEAKLY_ORDERED(StringWrapper, int)
+    Q_DECLARE_WEAKLY_ORDERED_NON_NOEXCEPT(StringWrapper, int)
 
     QString m_val;
 };

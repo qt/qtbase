@@ -110,13 +110,13 @@ struct QJniArrayIterator
 
 private:
     friend constexpr bool comparesEqual(const QJniArrayIterator &lhs,
-                                        const QJniArrayIterator &rhs)
+                                        const QJniArrayIterator &rhs) noexcept
     {
         Q_ASSERT(lhs.m_array == rhs.m_array);
         return lhs.m_index == rhs.m_index;
     }
     friend constexpr Qt::strong_ordering compareThreeWay(const QJniArrayIterator &lhs,
-                                                         const QJniArrayIterator &rhs)
+                                                         const QJniArrayIterator &rhs) noexcept
     {
         Q_ASSERT(lhs.m_array == rhs.m_array);
         return Qt::compareThreeWay(lhs.m_index, rhs.m_index);

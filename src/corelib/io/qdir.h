@@ -242,7 +242,7 @@ protected:
 
 private:
     friend Q_CORE_EXPORT bool comparesEqual(const QDir &lhs, const QDir &rhs);
-    Q_DECLARE_EQUALITY_COMPARABLE(QDir)
+    Q_DECLARE_EQUALITY_COMPARABLE_NON_NOEXCEPT(QDir)
     friend class QDirIterator;
     friend class QDirListing;
     friend class QDirListingPrivate;

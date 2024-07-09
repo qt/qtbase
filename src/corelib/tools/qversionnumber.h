@@ -201,9 +201,9 @@ class QVersionNumber
         friend class QVersionNumber;
         explicit constexpr It(const QVersionNumber *vn, qsizetype idx) noexcept : v(vn), i(idx) {}
 
-        friend constexpr bool comparesEqual(const It &lhs, const It &rhs)
+        friend constexpr bool comparesEqual(const It &lhs, const It &rhs) noexcept
         { Q_ASSERT(lhs.v == rhs.v); return lhs.i == rhs.i; }
-        friend constexpr Qt::strong_ordering compareThreeWay(const It &lhs, const It &rhs)
+        friend constexpr Qt::strong_ordering compareThreeWay(const It &lhs, const It &rhs) noexcept
         { Q_ASSERT(lhs.v == rhs.v); return Qt::compareThreeWay(lhs.i, rhs.i); }
         Q_DECLARE_STRONGLY_ORDERED_LITERAL_TYPE(It)
 

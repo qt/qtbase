@@ -3,7 +3,7 @@
 
 #include "tst_qcomparehelpers.h"
 
-#define DECLARE_TYPE(Name, Type, RetType, Constexpr, Suffix) \
+#define DECLARE_TYPE(Name, Type, RetType, Constexpr, Noex, Suffix) \
 class Templated ## Name \
 { \
 public: \
@@ -12,26 +12,29 @@ public: \
 private: \
     template <typename X> \
     friend Constexpr bool \
-    comparesEqual(const Templated ## Name &lhs, X rhs) noexcept; \
+    comparesEqual(const Templated ## Name &lhs, X rhs) noexcept(Noex); \
     template <typename X> \
     friend Constexpr RetType \
-    compareThreeWay(const Templated ## Name &lhs, X rhs) noexcept; \
+    compareThreeWay(const Templated ## Name &lhs, X rhs) noexcept(Noex); \
     Q_DECLARE_ ## Type ## _ORDERED ## Suffix (Templated ## Name, X, template <typename X>) \
 }; \
 \
 template <typename X> \
-Constexpr bool comparesEqual(const Templated ## Name &lhs, X rhs) noexcept \
+Constexpr bool comparesEqual(const Templated ## Name &lhs, X rhs) noexcept(Noex) \
 { Q_UNUSED(lhs); Q_UNUSED(rhs); return true; } \
 template <typename X> \
-Constexpr RetType compareThreeWay(const Templated ## Name &lhs, X rhs) noexcept \
+Constexpr RetType compareThreeWay(const Templated ## Name &lhs, X rhs) noexcept(Noex) \
 { Q_UNUSED(lhs); Q_UNUSED(rhs); return RetType::equivalent; }
 
-DECLARE_TYPE(PartialConst, PARTIALLY, Qt::partial_ordering, constexpr, _LITERAL_TYPE)
-DECLARE_TYPE(Partial, PARTIALLY, Qt::partial_ordering, , )
-DECLARE_TYPE(WeakConst, WEAKLY, Qt::weak_ordering, constexpr, _LITERAL_TYPE)
-DECLARE_TYPE(Weak, WEAKLY, Qt::weak_ordering, , )
-DECLARE_TYPE(StrongConst, STRONGLY, Qt::strong_ordering, constexpr, _LITERAL_TYPE)
-DECLARE_TYPE(Strong, STRONGLY, Qt::strong_ordering, , )
+DECLARE_TYPE(PartialConst, PARTIALLY, Qt::partial_ordering, constexpr, true, _LITERAL_TYPE)
+DECLARE_TYPE(Partial, PARTIALLY, Qt::partial_ordering, , true, )
+DECLARE_TYPE(PartialNonNoex, PARTIALLY, Qt::partial_ordering, , false, _NON_NOEXCEPT)
+DECLARE_TYPE(WeakConst, WEAKLY, Qt::weak_ordering, constexpr, true, _LITERAL_TYPE)
+DECLARE_TYPE(Weak, WEAKLY, Qt::weak_ordering, , true, )
+DECLARE_TYPE(WeakNonNoex, WEAKLY, Qt::weak_ordering, , false, _NON_NOEXCEPT)
+DECLARE_TYPE(StrongConst, STRONGLY, Qt::strong_ordering, constexpr, true, _LITERAL_TYPE)
+DECLARE_TYPE(Strong, STRONGLY, Qt::strong_ordering, , true, )
+DECLARE_TYPE(StrongNonNoex, STRONGLY, Qt::strong_ordering, , false, _NON_NOEXCEPT)
 
 #undef DECLARE_TYPE
 
@@ -47,10 +50,13 @@ void tst_QCompareHelpers::compareWithAttributes()
 
     COMPARE(TemplatedPartialConst);
     COMPARE(TemplatedPartial);
+    COMPARE(TemplatedPartialNonNoex);
     COMPARE(TemplatedWeakConst);
     COMPARE(TemplatedWeak);
+    COMPARE(TemplatedWeakNonNoex);
     COMPARE(TemplatedStrongConst);
     COMPARE(TemplatedStrong);
+    COMPARE(TemplatedStrongNonNoex);
 
 #undef COMPARE
 }
