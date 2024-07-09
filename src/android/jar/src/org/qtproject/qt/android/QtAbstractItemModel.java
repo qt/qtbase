@@ -196,6 +196,7 @@ public abstract class QtAbstractItemModel
      *
      * @return The role names map.
      */
+    @SuppressWarnings("unchecked")
     public HashMap<Integer, String> roleNames()
     {
         return (HashMap<Integer, String>)jni_roleNames();
