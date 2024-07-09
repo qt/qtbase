@@ -39,6 +39,7 @@ using namespace Qt::StringLiterals;
 
     \ingroup tools
     \ingroup shared
+    \ingroup string-processing
 
     \keyword regular expression
 
@@ -446,6 +447,7 @@ using namespace Qt::StringLiterals;
 
     \ingroup tools
     \ingroup shared
+    \ingroup string-processing
 
     \keyword regular expression match
 
@@ -498,6 +500,7 @@ using namespace Qt::StringLiterals;
 
     \ingroup tools
     \ingroup shared
+    \ingroup string-processing
 
     \keyword regular expression iterator
 
