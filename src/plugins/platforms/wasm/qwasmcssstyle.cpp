@@ -224,8 +224,8 @@ const char *Style = R"css(
     visibility: visible;
     clip: rect(1px, 1px, 1px, 1px);
     clip-path: inset(50%);
-    height: 1px;
-    width: 1px;
+    height: 100%;
+    width: 100%;
     margin: -1px;
     overflow: hidden;
     padding: 0;
