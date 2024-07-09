@@ -349,10 +349,6 @@ Q_DECLARE_TYPEINFO(QLatin1StringView, Q_RELOCATABLE_TYPE);
 Q_DECLARE_TYPEINFO(QLatin1String, Q_RELOCATABLE_TYPE);
 #endif
 
-constexpr QByteArrayView::QByteArrayView(QLatin1StringView v) noexcept
-    : QByteArrayView(v.data(), v.size())
-{}
-
 namespace Qt {
 inline namespace Literals {
 inline namespace StringLiterals {

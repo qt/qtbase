@@ -176,10 +176,6 @@ public:
     constexpr QByteArrayView(const char (&data)[Size]) noexcept
         : QByteArrayView(data, lengthHelperCharArray(data, Size)) {}
 
-    constexpr QByteArrayView(QLatin1StringView v) noexcept; // defined in qlatin1stringview.h
-    template <bool UseChar8T>
-    constexpr QByteArrayView(QBasicUtf8StringView<UseChar8T> v) noexcept; // defined in qutf8stringview.h
-
 #ifdef Q_QDOC
     template <typename Byte, size_t Size>
 #else
