@@ -52,7 +52,7 @@ public:
 
     explicit QHttpNetworkRequest(const QUrl &url = QUrl(), Operation operation = Get, Priority priority = NormalPriority);
     QHttpNetworkRequest(const QHttpNetworkRequest &other);
-    virtual ~QHttpNetworkRequest();
+    ~QHttpNetworkRequest() override;
     QHttpNetworkRequest &operator=(const QHttpNetworkRequest &other);
     bool operator==(const QHttpNetworkRequest &other) const;
 
