@@ -404,7 +404,7 @@ QStorageInfo QStorageInfo::root()
     volume than the QStorageInfo object \a rhs; otherwise returns \c false.
 */
 
-bool comparesEqual(const QStorageInfo &lhs, const QStorageInfo &rhs)
+bool comparesEqual(const QStorageInfo &lhs, const QStorageInfo &rhs) noexcept
 {
     if (lhs.d == rhs.d)
         return true;

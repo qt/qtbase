@@ -174,7 +174,7 @@ public:
         zr = zr * ref.z;
         return QColorVector(xr, yr, zr);
     }
-    friend inline bool comparesEqual(const QColorVector &lhs, const QColorVector &rhs);
+    friend inline bool comparesEqual(const QColorVector &lhs, const QColorVector &rhs) noexcept;
     Q_DECLARE_EQUALITY_COMPARABLE(QColorVector);
 
 private:
@@ -191,7 +191,7 @@ private:
     }
 };
 
-inline bool comparesEqual(const QColorVector &v1, const QColorVector &v2)
+inline bool comparesEqual(const QColorVector &v1, const QColorVector &v2) noexcept
 {
     return (std::abs(v1.x - v2.x) < (1.0f / 2048.0f))
         && (std::abs(v1.y - v2.y) < (1.0f / 2048.0f))
@@ -342,11 +342,11 @@ public:
                               { 0.165665f, 0.675339f,  0.0299835f  },
                               { 0.125092f, 0.0456238f, 0.797134f   } };
     }
-    friend inline bool comparesEqual(const QColorMatrix &lhs, const QColorMatrix &rhs);
+    friend inline bool comparesEqual(const QColorMatrix &lhs, const QColorMatrix &rhs) noexcept;
     Q_DECLARE_EQUALITY_COMPARABLE(QColorMatrix);
 };
 
-inline bool comparesEqual(const QColorMatrix &m1, const QColorMatrix &m2)
+inline bool comparesEqual(const QColorMatrix &m1, const QColorMatrix &m2) noexcept
 {
     return (m1.r == m2.r) && (m1.g == m2.g) && (m1.b == m2.b);
 }

@@ -912,6 +912,13 @@ CHECK(strong, equivalent);
         // inline implementation which uses comparesEqual()
     }
     \endcode
+
+//! [noexcept-requirement-desc]
+    These macros generate \c {noexcept} relational operators, and so they check
+    that the helper functions are \c {noexcept}.
+    Use the \c {_NON_NOEXCEPT} versions of the macros if the relational
+    operators of your class cannot be \c {noexcept}.
+//! [noexcept-requirement-desc]
 */
 
 /*!
@@ -1068,6 +1075,8 @@ CHECK(strong, equivalent);
     }
     \endcode
 
+    \include qcompare.cpp noexcept-requirement-desc
+
     \sa Q_DECLARE_EQUALITY_COMPARABLE, Q_DECLARE_WEAKLY_ORDERED,
         Q_DECLARE_STRONGLY_ORDERED
 */
@@ -1096,6 +1105,8 @@ CHECK(strong, equivalent);
     The \c {*_LITERAL_TYPE} overloads are used to generate \c constexpr
     operators. This means that the helper \c {comparesEqual()} and
     \c {compareThreeWay()} functions must also be \c constexpr.
+
+    \include qcompare.cpp noexcept-requirement-desc
 
     See \l {Q_DECLARE_PARTIALLY_ORDERED} for usage examples.
 
@@ -1128,6 +1139,8 @@ CHECK(strong, equivalent);
     operators. This means that the helper \c {comparesEqual()} and
     \c {compareThreeWay()} functions must also be \c constexpr.
 
+    \include qcompare.cpp noexcept-requirement-desc
+
     See \l {Q_DECLARE_PARTIALLY_ORDERED} for usage examples.
 
     \sa Q_DECLARE_PARTIALLY_ORDERED, Q_DECLARE_WEAKLY_ORDERED,
@@ -1155,6 +1168,30 @@ CHECK(strong, equivalent);
     the \c QT_ASCII_CAST_WARN marco (whose expansion can mark the function as
     deprecated) when implementing comparison of encoding-aware string types
     with C-style strings or byte arrays.
+
+    \include qcompare.cpp noexcept-requirement-desc
+*/
+
+/*!
+    \internal
+    \macro Q_DECLARE_EQUALITY_COMPARABLE_NON_NOEXCEPT(Type)
+    \macro Q_DECLARE_EQUALITY_COMPARABLE_NON_NOEXCEPT(LeftType, RightType)
+    \macro Q_DECLARE_EQUALITY_COMPARABLE_NON_NOEXCEPT(LeftType, RightType, Attributes)
+    \macro Q_DECLARE_PARTIALLY_ORDERED_NON_NOEXCEPT(Type)
+    \macro Q_DECLARE_PARTIALLY_ORDERED_NON_NOEXCEPT(LeftType, RightType)
+    \macro Q_DECLARE_PARTIALLY_ORDERED_NON_NOEXCEPT(LeftType, RightType, Attributes)
+    \macro Q_DECLARE_WEAKLY_ORDERED_NON_NOEXCEPT(Type)
+    \macro Q_DECLARE_WEAKLY_ORDERED_NON_NOEXCEPT(LeftType, RightType)
+    \macro Q_DECLARE_WEAKLY_ORDERED_NON_NOEXCEPT(LeftType, RightType, Attributes)
+    \macro Q_DECLARE_STRONGLY_ORDERED_NON_NOEXCEPT(Type)
+    \macro Q_DECLARE_STRONGLY_ORDERED_NON_NOEXCEPT(LeftType, RightType)
+    \macro Q_DECLARE_STRONGLY_ORDERED_NON_NOEXCEPT(LeftType, RightType, Attributes)
+    \since 6.8
+    \relates <QtCompare>
+
+    These macros behave like their versions without the \c {_NON_NOEXCEPT}
+    suffix, but should be used when the relational operators cannot be
+    \c {noexcept}.
 */
 
 /*!

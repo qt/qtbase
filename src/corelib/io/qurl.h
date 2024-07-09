@@ -274,7 +274,7 @@ private:
     friend Q_CORE_EXPORT bool comparesEqual(const QUrl &lhs, const QUrl &rhs);
     friend Q_CORE_EXPORT Qt::weak_ordering
     compareThreeWay(const QUrl &lhs, const QUrl &rhs);
-    Q_DECLARE_WEAKLY_ORDERED(QUrl)
+    Q_DECLARE_WEAKLY_ORDERED_NON_NOEXCEPT(QUrl)
 
     QUrlPrivate *d;
     friend class QUrlQuery;

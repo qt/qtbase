@@ -636,7 +636,7 @@ private:
     { return lhs.equals(rhs); }
     friend Q_CORE_EXPORT Qt::weak_ordering
     compareThreeWay(const QDateTime &lhs, const QDateTime &rhs);
-    Q_DECLARE_WEAKLY_ORDERED(QDateTime)
+    Q_DECLARE_WEAKLY_ORDERED_NON_NOEXCEPT(QDateTime)
 
 #ifndef QT_NO_DATASTREAM
     friend Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QDateTime &);

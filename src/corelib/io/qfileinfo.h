@@ -176,7 +176,7 @@ protected:
 
 private:
     friend Q_CORE_EXPORT bool comparesEqual(const QFileInfo &lhs, const QFileInfo &rhs);
-    Q_DECLARE_EQUALITY_COMPARABLE(QFileInfo)
+    Q_DECLARE_EQUALITY_COMPARABLE_NON_NOEXCEPT(QFileInfo)
     QFileInfoPrivate* d_func();
     inline const QFileInfoPrivate* d_func() const
     {
