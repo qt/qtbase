@@ -23,9 +23,6 @@ public:
     bool usePlatformNativeDialog(DialogType type) const override;
     QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const override;
 
-    QPlatformMenu* createPlatformMenu() const override;
-    QPlatformMenuItem* createPlatformMenuItem() const override;
-
     const QPalette *palette(Palette type = SystemPalette) const override;
     const QFont *font(Font type = SystemFont) const override;
     QPixmap standardPixmap(StandardPixmap sp, const QSizeF &size) const override;
