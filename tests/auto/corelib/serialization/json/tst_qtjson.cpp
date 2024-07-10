@@ -503,6 +503,9 @@ void tst_QtJson::testNumberComparisons()
     QJsonValue llMinPlus1(Q_INT64_C(-9223372036854775806));
     QCOMPARE(llMin == llMinPlus1, Q_INT64_C(-9223372036854775807) == Q_INT64_C(-9223372036854775806)); // false
 
+QT_WARNING_PUSH
+// Android clang complains about implicit conversion from 'long long' to 'double'
+QT_WARNING_DISABLE_CLANG("-Wimplicit-const-int-float-conversion")
     // The different storage formats should be able to compare as their C++ versions (all true)
     QCOMPARE(llMin == llMinDbl, Q_INT64_C(-9223372036854775807) == -9223372036854775807.0);
     QCOMPARE(llMinDbl == llMin, -9223372036854775807.0 == Q_INT64_C(-9223372036854775807));
@@ -510,6 +513,7 @@ void tst_QtJson::testNumberComparisons()
     QCOMPARE(llMinPlus1Dbl == llMinPlus1, -9223372036854775806.0 == Q_INT64_C(-9223372036854775806));
     QCOMPARE(llMinPlus1 == llMinDbl, Q_INT64_C(-9223372036854775806) == -9223372036854775807.0);
     QCOMPARE(llMinPlus1Dbl == llMin, -9223372036854775806.0 == Q_INT64_C(-9223372036854775807));
+QT_WARNING_POP
 }
 
 void tst_QtJson::testObjectSimple()
