@@ -139,7 +139,6 @@ void tst_QMimeDatabase::initTestCase()
     // Create a temporary "global" XDG data dir. It's used
     // 1) to install new global mimetypes later on
     // 2) to run update-mime-database right away when testing the cache provider
-    // 3) to host a copy of freedesktop.org.xml in tst_qmimedatabase-xml-fdoxml
     QVERIFY2(m_temporaryDir.isValid(),
              ("Could not create temporary subdir: " + m_temporaryDir.errorString()).toUtf8());
     const QDir here = QDir(m_temporaryDir.path());
@@ -150,7 +149,7 @@ void tst_QMimeDatabase::initTestCase()
     qputenv("XDG_DATA_DIRS", QFile::encodeName(m_globalXdgDir));
     qDebug() << "\nGlobal XDG_DATA_DIRS: " << m_globalXdgDir;
 
-    if (m_isUsingCacheProvider || m_hasFreedesktopOrg) {
+    if (m_isUsingCacheProvider) {
         const QString xmlFileName = m_hasFreedesktopOrg
                 ? (s_additionalFilesResourcePrefix + "/freedesktop.org.xml"_L1)
                 : (s_resourcePrefix + "/tika/packages/tika-mimetypes.xml"_L1);

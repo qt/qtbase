@@ -57,7 +57,7 @@ qt_internal_add_resource(tst_qmimedatabase-xml-fdoxml "testdata"
 
 qt_internal_add_resource(tst_qmimedatabase-xml-fdoxml "testdata-fdoxml"
     PREFIX
-        "/tst_qmimedatabase/qmime"
+        "/qt-project.org/qmime/packages"
     BASE
         "../3rdparty"
     FILES
