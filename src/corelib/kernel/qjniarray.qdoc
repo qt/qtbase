@@ -59,6 +59,12 @@
 */
 
 /*!
+    \fn void QJniArrayBase::swap(QJniArrayBase &other)
+
+    Swaps this array object with \a other. This function is very fast and never fails.
+*/
+
+/*!
     \fn template <typename T> T QJniArrayBase::object() const
 
     \return the object held by the QJniArray as type T, which can be one of the

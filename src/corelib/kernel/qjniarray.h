@@ -237,6 +237,8 @@ protected:
     template <typename List>
     static auto makeObjectArray(List &&list);
 
+    void swap(QJniArrayBase &other) noexcept { m_object.swap(other.m_object); }
+
 private:
     QJniObject m_object;
 };
