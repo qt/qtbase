@@ -167,6 +167,19 @@ macro(qt_find_package)
                     set(qt_find_package_target_name ${aliased_target})
                 endif()
 
+                if("${qt_find_package_target_name}" MATCHES "${QT_CMAKE_EXPORT_NAMESPACE}::"
+                    AND QT_FEATURE_developer_build
+                )
+                    message(AUTHOR_WARNING
+                        "qt_find_package() should NOT be used to look up Qt packages. "
+                        "It should only be used to look up 3rd party packages. "
+                        "Please remove the "
+                        "qt_find_package(${ARGV0} PROVIDED_TARGETS "
+                        "${qt_find_package_target_name}) call and contact the build tools team "
+                        "in case the removal is causing issues."
+                    )
+                endif()
+
                 set_target_properties(${qt_find_package_target_name} PROPERTIES
                     INTERFACE_QT_PACKAGE_NAME ${ARGV0}
                     INTERFACE_QT_PACKAGE_IS_OPTIONAL ${arg_MARK_OPTIONAL})
