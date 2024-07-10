@@ -1652,12 +1652,16 @@ void tst_QString::asprintfS()
     // Check utf8 conversion for %s
     QCOMPARE(QString::asprintf("%s", "\303\266\303\244\303\274\303\226\303\204\303\234\303\270\303\246\303\245\303\230\303\206\303\205"), QString::fromLatin1("\366\344\374\326\304\334\370\346\345\330\306\305"));
 
+QT_WARNING_PUSH
+// Android clang emits warning: '%n' specifier not supported on this platform
+QT_WARNING_DISABLE_CLANG("-Wformat")
     int n1;
     QCOMPARE(QString::asprintf("%s%n%s", "hello", &n1, "goodbye"), u"hellogoodbye");
     QCOMPARE(n1, 5);
     qlonglong n2;
     QCOMPARE(QString::asprintf("%s%s%lln%s", "foo", "bar", &n2, "whiz"), u"foobarwhiz");
     QCOMPARE((int)n2, 6);
+QT_WARNING_POP
 
     { // %ls
 
@@ -1681,7 +1685,11 @@ void tst_QString::asprintfS()
                  QLatin1String("\366\344\374\326\304\334\370\346\345\330\306\305"));
 
         int n;
+QT_WARNING_PUSH
+// Android clang emits warning: '%n' specifier not supported on this platform
+QT_WARNING_DISABLE_CLANG("-Wformat")
         QCOMPARE(QString::asprintf("%ls%n%s", qUtf16Printable(u"hello"_s), &n, "goodbye"), "hellogoodbye"_L1);
+QT_WARNING_POP
         QCOMPARE(n, 5);
     }
 }

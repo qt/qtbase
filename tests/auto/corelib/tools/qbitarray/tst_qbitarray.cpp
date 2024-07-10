@@ -409,6 +409,9 @@ void tst_QBitArray::operator_andeq()
     result &= detached(input1);
     COMPARE_BITARRAY_EQ(result, res);
 
+QT_WARNING_PUSH
+// Android clang emits warning: explicitly assigning value of variable of type 'QBitArray' to itself
+QT_WARNING_DISABLE_CLANG("-Wself-assign-overloaded")
     // operation is idempotent
     result &= result;
     COMPARE_BITARRAY_EQ(result, res);
@@ -416,6 +419,7 @@ void tst_QBitArray::operator_andeq()
     COMPARE_BITARRAY_EQ(result, res);
     result &= detached(result);
     COMPARE_BITARRAY_EQ(result, res);
+QT_WARNING_POP
 }
 
 void tst_QBitArray::operator_and()
@@ -515,6 +519,9 @@ void tst_QBitArray::operator_oreq()
     result |= detached(input1);
     COMPARE_BITARRAY_EQ(result, res);
 
+QT_WARNING_PUSH
+// Android clang emits warning: explicitly assigning value of variable of type 'QBitArray' to itself
+QT_WARNING_DISABLE_CLANG("-Wself-assign-overloaded")
     // operation is idempotent
     result |= result;
     COMPARE_BITARRAY_EQ(result, res);
@@ -522,6 +529,7 @@ void tst_QBitArray::operator_oreq()
     COMPARE_BITARRAY_EQ(result, res);
     result |= detached(result);
     COMPARE_BITARRAY_EQ(result, res);
+QT_WARNING_POP
 }
 
 void tst_QBitArray::operator_or()
