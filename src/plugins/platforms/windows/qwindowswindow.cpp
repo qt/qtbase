@@ -2150,12 +2150,8 @@ void QWindowsWindow::setGeometry(const QRect &rectIn)
         const QMargins margins = frameMargins();
         rect.moveTopLeft(rect.topLeft() + QPoint(margins.left(), margins.top()));
     }
-
     if (m_windowState & Qt::WindowMinimized)
         m_data.geometry = rect; // Otherwise set by handleGeometryChange() triggered by event.
-    else
-        setWindowState(Qt::WindowNoState);// Update window state to WindowNoState unless minimized
-
     if (m_data.hwnd) {
         // A ResizeEvent with resulting geometry will be sent. If we cannot
         // achieve that size (for example, window title minimal constraint),
