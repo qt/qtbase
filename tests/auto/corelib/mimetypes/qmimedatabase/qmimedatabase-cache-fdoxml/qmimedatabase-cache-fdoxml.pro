@@ -11,7 +11,7 @@ HEADERS += ../tst_qmimedatabase.h
 
 RESOURCES += $$QT_SOURCE_TREE/src/corelib/mimetypes/mimetypes.qrc
 RESOURCES += ../testdata.qrc
-RESOURCES += ../testdata-fdoxml.qrc
+RESOURCES += ../testdata-cache-fdoxml.qrc
 
 *-g++*:QMAKE_CXXFLAGS += -W -Wall -Wextra -Wshadow -Wno-long-long -Wnon-virtual-dtor
 

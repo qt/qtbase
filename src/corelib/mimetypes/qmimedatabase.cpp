@@ -91,6 +91,15 @@ bool QMimeDatabasePrivate::shouldCheck()
     return true;
 }
 
+static QStringList locateMimeDirectories()
+{
+    QStringList dirs =
+            QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, QStringLiteral("mime"),
+                                      QStandardPaths::LocateDirectory);
+    dirs.append(QStringLiteral(":/qt-project.org/qmime"));
+    return dirs;
+}
+
 #if defined(Q_OS_UNIX) && !defined(Q_OS_INTEGRITY)
 #define QT_USE_MMAP
 #endif
@@ -98,7 +107,7 @@ bool QMimeDatabasePrivate::shouldCheck()
 void QMimeDatabasePrivate::loadProviders()
 {
     // We use QStandardPaths every time to check if new files appeared
-    const QStringList mimeDirs = QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, QLatin1String("mime"), QStandardPaths::LocateDirectory);
+    const QStringList mimeDirs = locateMimeDirectories();
     const auto fdoIterator = std::find_if(mimeDirs.constBegin(), mimeDirs.constEnd(), [](const QString &mimeDir) -> bool {
         return QFileInfo::exists(mimeDir + QStringLiteral("/packages/freedesktop.org.xml")); }
     );
