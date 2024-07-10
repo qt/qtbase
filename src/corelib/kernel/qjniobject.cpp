@@ -736,6 +736,14 @@ QJniObject::QJniObject(jobject object)
 QJniObject::~QJniObject()
 {}
 
+/*!
+    \fn void QJniObject::swap(QJniObject &other)
+    \since 6.8
+
+    Swaps this object with \a other. This function is very fast and never fails.
+*/
+
+
 namespace {
 QByteArray getClassNameHelper(JNIEnv *env, const QJniObjectPrivate *d)
 {
@@ -1385,7 +1393,7 @@ bool QJniObject::isClassAvailable(const char *className)
 */
 bool QJniObject::isValid() const
 {
-    return d->m_jobject;
+    return d && d->m_jobject;
 }
 
 /*!
@@ -1411,6 +1419,8 @@ QJniObject QJniObject::fromLocalRef(jobject lref)
 
 bool QJniObject::isSameObject(jobject obj) const
 {
+    if (!d)
+        return obj == nullptr;
     if (d->m_jobject == obj)
         return true;
     if (!d->m_jobject || !obj)
@@ -1420,6 +1430,8 @@ bool QJniObject::isSameObject(jobject obj) const
 
 bool QJniObject::isSameObject(const QJniObject &other) const
 {
+    if (!other.isValid())
+        return !isValid();
     return isSameObject(other.d->m_jobject);
 }
 
