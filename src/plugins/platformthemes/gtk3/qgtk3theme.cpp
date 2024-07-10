@@ -3,7 +3,6 @@
 
 #include "qgtk3theme.h"
 #include "qgtk3dialoghelpers.h"
-#include "qgtk3menu.h"
 #include <QVariant>
 #include <QGuiApplication>
 #include <qpa/qwindowsysteminterface.h>
@@ -194,16 +193,6 @@ QPlatformDialogHelper *QGtk3Theme::createPlatformDialogHelper(DialogType type) c
     default:
         return nullptr;
     }
-}
-
-QPlatformMenu* QGtk3Theme::createPlatformMenu() const
-{
-    return new QGtk3Menu;
-}
-
-QPlatformMenuItem* QGtk3Theme::createPlatformMenuItem() const
-{
-    return new QGtk3MenuItem;
 }
 
 bool QGtk3Theme::useNativeFileDialog()
