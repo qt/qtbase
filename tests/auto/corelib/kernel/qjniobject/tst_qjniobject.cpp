@@ -328,6 +328,11 @@ void tst_QJniObject::compareOperatorTests()
     QVERIFY(jstrobj != stringObject);
     QVERIFY(stringObject != jstrobj);
     QVERIFY(!invalidStringObject.isValid());
+
+    QJniObject movedTo(std::move(stringObject3));
+    QVERIFY(!stringObject3.isValid());
+    QCOMPARE_NE(movedTo, stringObject3);
+    QCOMPARE(invalidStringObject, stringObject3);
 }
 
 void tst_QJniObject::className()

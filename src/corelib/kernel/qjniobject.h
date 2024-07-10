@@ -102,6 +102,8 @@ public:
 
     ~QJniObject();
 
+    void swap(QJniObject &other) noexcept { d.swap(other.d); }
+
     template<typename Class, typename ...Args>
     static inline QJniObject construct(Args &&...args)
     {
