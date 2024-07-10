@@ -359,7 +359,7 @@ qt_internal_add_module(Core
         QTP0003
     ATTRIBUTION_FILE_DIR_PATHS
         text
-        tools
+        ../3rdparty/siphash
         ../3rdparty/blake2
         ../3rdparty/md4
         ../3rdparty/md5
