@@ -2115,8 +2115,17 @@ endfunction()
 function(_qt_internal_expose_source_file_to_ide target file)
     get_target_property(target_expects_finalization ${target} _qt_expects_finalization)
     if(target_expects_finalization AND CMAKE_VERSION VERSION_GREATER_EQUAL "3.19")
+        # The target is not yet finalized. The target finalizer will call the exposure function.
         set_property(TARGET ${target} APPEND PROPERTY _qt_deferred_files ${file})
         return()
+    else()
+        get_target_property(is_finalized "${target}" _qt_is_finalized)
+        if(is_finalized)
+            # The target already has been finalized. Run the exposure function immediately.
+            set_property(TARGET ${target} APPEND PROPERTY _qt_deferred_files ${file})
+            _qt_internal_expose_deferred_files_to_ide(${target})
+            return()
+        endif()
     endif()
 
     # Fallback for targets that are not finalized: Create fake target under which the file is added.
