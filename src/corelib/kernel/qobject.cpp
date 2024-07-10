@@ -1811,7 +1811,7 @@ void QObjectPrivate::setThreadData_helper(QThreadData *currentData, QThreadData 
     startTimer(std::chrono::milliseconds{interval}, timerType);
     \endcode
 
-    \sa timerEvent(), killTimer(), QChronoTimer::singleShot()
+    \sa timerEvent(), killTimer(), QChronoTimer, QBasicTimer
 */
 
 int QObject::startTimer(int interval, Qt::TimerType timerType)
@@ -1858,8 +1858,6 @@ int QObject::startTimer(int interval, Qt::TimerType timerType)
     events. There is also a QBasicTimer class that is more lightweight than
     QChronoTimer but less clumsy than using timer IDs directly.
 
-    \sa timerEvent(), killTimer(), QChronoTimer::singleShot()
-
     \note Starting from Qt 6.8 the type of \a interval
     is \c std::chrono::nanoseconds, prior to that it was \c
     std::chrono::milliseconds. This change is backwards compatible with
@@ -1871,6 +1869,7 @@ int QObject::startTimer(int interval, Qt::TimerType timerType)
     this method, for example:
     \snippet code/src_corelib_kernel_qobject.cpp invalid-timer-id
 
+    \sa timerEvent(), killTimer(), QChronoTimer, QBasicTimer
 */
 int QObject::startTimer(std::chrono::nanoseconds interval, Qt::TimerType timerType)
 {
