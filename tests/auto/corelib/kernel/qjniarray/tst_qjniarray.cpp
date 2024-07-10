@@ -17,6 +17,7 @@ public:
 
 private slots:
     void construct();
+    void copyAndMove();
     void invalidArraysAreEmpty();
     void size();
     void operators();
@@ -181,6 +182,63 @@ void tst_QJniArray::construct()
         QJniArray<jint> list{QList<int>{1, 2, 3}};
         QCOMPARE(list.size(), 3);
     }
+}
+
+// Verify that we can convert QJniArrays into each other as long as element types
+// are convertible without narrowing.
+template <typename From, typename To>
+using CanConstructDetector = decltype(QJniArray<To>(std::declval<QJniArray<From>>()));
+template <typename From, typename To>
+using CanAssignDetector = decltype(std::declval<QJniArray<To>>().operator=(std::declval<QJniArray<From>>()));
+
+template <typename From, typename To>
+static constexpr bool canConstruct = qxp::is_detected_v<CanConstructDetector, From, To>;
+template <typename From, typename To>
+static constexpr bool canAssign = qxp::is_detected_v<CanAssignDetector, From, To>;
+
+static_assert(canConstruct<jshort, jint> && canAssign<jshort, jint>);
+static_assert(!canConstruct<jint, jshort> && !canAssign<jint, jshort>);
+static_assert(canConstruct<jstring, jobject> && canAssign<jstring, jobject>);
+static_assert(!canConstruct<jobject, jstring> && !canAssign<jobject, jstring>);
+
+// exercise the QJniArray(QJniArray<Other> &&other) constructor
+void tst_QJniArray::copyAndMove()
+{
+    QJniArray<jshort> tempShortArray({1, 2, 3});
+
+    // copy - both arrays remain valid and reference the same object
+    {
+        QJniArray<jshort> shortArrayCopy(tempShortArray);
+        QVERIFY(tempShortArray.isValid());
+        QVERIFY(shortArrayCopy.isValid());
+        QCOMPARE(tempShortArray, shortArrayCopy);
+    }
+
+    // moving QJniArray<T> to QJniArray<T> leaves the moved-from object invalid
+    QJniArray<jshort> shortArray(std::move(tempShortArray));
+    QVERIFY(!tempShortArray.isValid());
+    QVERIFY(shortArray.isValid());
+
+    tempShortArray = shortArray;
+
+    // copying QJniArray<short> to QJniArray<int> works
+    QJniArray<jint> intArray(shortArray);
+    QVERIFY(shortArray.isValid());
+    QVERIFY(intArray.isValid());
+    QCOMPARE(intArray, shortArray);
+
+    // moving QJniArray<short> to QJniArray<int> leaves the moved-from array invalid
+    QJniArray<jlong> longArray(std::move(shortArray));
+    QVERIFY(!shortArray.isValid());
+    QVERIFY(longArray.isValid());
+    QCOMPARE(longArray, intArray);
+    QCOMPARE_NE(longArray, shortArray); // we can compare a moved-from object
+
+    longArray = intArray;
+
+    // not possible due to narrowing conversion, covered by static_asserts above
+    // QJniArray<jshort> shortArray2(longArray);
+    // intArray = longArray;
 }
 
 void tst_QJniArray::invalidArraysAreEmpty()

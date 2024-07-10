@@ -159,6 +159,13 @@ class QJniArrayBase
                                                      >
                                       > : std::true_type {};
 
+protected:
+    // these are used in QJniArray
+    template <typename From, typename To>
+    using if_convertible = std::enable_if_t<QtPrivate::AreArgumentsConvertibleWithoutNarrowingBase<From, To>::value, bool>;
+    template <typename From, typename To>
+    using unless_convertible = std::enable_if_t<!QtPrivate::AreArgumentsConvertibleWithoutNarrowingBase<From, To>::value, bool>;
+
 public:
     using size_type = jsize;
     using difference_type = size_type;
@@ -196,7 +203,7 @@ public:
                                                 std::is_same<ElementType, QString>,
                                                 std::is_base_of<QtJniTypes::JObjectBase, ElementType>
                              >) {
-            return QJniArray<ElementType>(makeObjectArray(std::forward<Container>(container)));
+            return QJniArray<ElementType>(makeObjectArray(std::forward<Container>(container)).arrayObject());
         } else if constexpr (QtJniTypes::sameTypeForJni<ElementType, jfloat>) {
             return makeArray<jfloat>(std::forward<Container>(container), &JNIEnv::NewFloatArray,
                                                              &JNIEnv::SetFloatArrayRegion);
@@ -233,6 +240,11 @@ protected:
     QJniArrayBase() = default;
     ~QJniArrayBase() = default;
 
+    explicit QJniArrayBase(const QJniArrayBase &other) = default;
+    explicit QJniArrayBase(QJniArrayBase &&other) noexcept = default;
+    QJniArrayBase &operator=(const QJniArrayBase &other) = default;
+    QJniArrayBase &operator=(QJniArrayBase &&other) noexcept = default;
+
     explicit QJniArrayBase(jarray array)
         : m_object(static_cast<jobject>(array))
     {
@@ -243,6 +255,16 @@ protected:
     explicit QJniArrayBase(QJniObject &&object) noexcept
         : m_object(std::move(object))
     {}
+    QJniArrayBase &operator=(const QJniObject &object)
+    {
+        m_object = object;
+        return *this;
+    }
+    QJniArrayBase &operator=(QJniObject &&object) noexcept
+    {
+        m_object = std::move(object);
+        return *this;
+    }
 
     JNIEnv *jniEnv() const noexcept { return QJniEnvironment::getJniEnv(); }
 
@@ -286,11 +308,34 @@ public:
     explicit QJniArray(const QJniObject &object) : QJniArrayBase(object) {}
     explicit QJniArray(QJniObject &&object) noexcept : QJniArrayBase(std::move(object)) {}
 
-    // base class destructor is protected, so need to provide all SMFs
-    QJniArray(const QJniArray &other) = default;
-    QJniArray(QJniArray &&other) noexcept = default;
-    QJniArray &operator=(const QJniArray &other) = default;
-    QJniArray &operator=(QJniArray &&other) noexcept = default;
+    template <typename Other, if_convertible<Other, T> = true>
+    QJniArray(const QJniArray<Other> &other)
+        : QJniArrayBase(other)
+    {
+    }
+    template <typename Other, if_convertible<Other, T> = true>
+    QJniArray(QJniArray<Other> &&other) noexcept
+        : QJniArrayBase(std::move(other))
+    {
+    }
+    template <typename Other, if_convertible<Other, T> = true>
+    QJniArray &operator=(const QJniArray<Other> &other)
+    {
+        QJniArrayBase::operator=(QJniObject(other));
+        return *this;
+    }
+    template <typename Other, if_convertible<Other, T> = true>
+    QJniArray &operator=(QJniArray<Other> &&other) noexcept
+    {
+        QJniArray moved(std::move(other));
+        swap(moved);
+        return *this;
+    }
+    // explicitly delete to disable detour via operator QJniObject()
+    template <typename Other, unless_convertible<Other, T> = true>
+    QJniArray(const QJniArray<Other> &other) = delete;
+    template <typename Other, unless_convertible<Other, T> = true>
+    QJniArray(QJniArray<Other> &&other) noexcept = delete;
 
     template <typename Container, if_contiguous_container<Container> = true>
     explicit QJniArray(Container &&container)
@@ -303,14 +348,6 @@ public:
     {
     }
 
-    template <typename Other>
-    using if_convertible = std::enable_if_t<std::is_convertible_v<Other, T>, bool>;
-
-    template <typename Other, if_convertible<Other> = true>
-    QJniArray(QJniArray<Other> &&other)
-        : QJniArrayBase(std::forward<QJniArray<Other>>(other))
-    {
-    }
     ~QJniArray() = default;
 
     auto arrayObject() const
