@@ -1852,7 +1852,7 @@ int QPdfEnginePrivate::writeXmpDocumentMetaData(const QDateTime &date)
         w.writeStartElement(rdfNS, "Description");
         w.writeAttribute(rdfNS, "about", "");
         w.writeAttribute(pdfNS, "Producer", producer);
-        w.writeAttribute(pdfNS, "Trapped", "false");
+        w.writeAttribute(pdfNS, "Trapped", "False");
         w.writeEndElement();
 
         // XMP
