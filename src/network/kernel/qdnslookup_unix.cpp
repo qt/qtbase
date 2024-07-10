@@ -250,14 +250,15 @@ void QDnsLookupRunnable::query(QDnsLookupReply *reply)
         return reply->makeResolverSystemError();
 
     // Perform DNS query.
+    QSpan query(qbuffer.data(), queryLength);
     ReplyBuffer buffer(ReplyBufferSize);
     int responseLength = -1;
     switch (protocol) {
     case QDnsLookup::Standard:
-        responseLength = sendStandardDns(reply, &state, qbuffer, buffer, nameserver, port);
+        responseLength = sendStandardDns(reply, &state, query, buffer, nameserver, port);
         break;
     case QDnsLookup::DnsOverTls:
-        if (!sendDnsOverTls(reply, qbuffer, buffer))
+        if (!sendDnsOverTls(reply, query, buffer))
             return;
         responseLength = buffer.size();
         break;
