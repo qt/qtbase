@@ -1816,6 +1816,8 @@ void tst_QTextLayout::testTabDPIScale()
                 return 72;
             case QPaintDevice::PdmDevicePixelRatio:
             case QPaintDevice::PdmDevicePixelRatioScaled:
+            case QPaintDevice::PdmDevicePixelRatioF_EncodedA:
+            case QPaintDevice::PdmDevicePixelRatioF_EncodedB:
                 ; // fall through
             }
             return 0;
