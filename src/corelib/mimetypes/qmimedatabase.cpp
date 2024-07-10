@@ -71,7 +71,11 @@ bool QMimeDatabasePrivate::shouldCheck()
 
 static QStringList locateMimeDirectories()
 {
-    return QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, QStringLiteral("mime"), QStandardPaths::LocateDirectory);
+    QStringList dirs =
+            QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, QStringLiteral("mime"),
+                                      QStandardPaths::LocateDirectory);
+    dirs.append(u":/qt-project.org/qmime"_s);
+    return dirs;
 }
 
 #if defined(Q_OS_UNIX) && !defined(Q_OS_INTEGRITY)
