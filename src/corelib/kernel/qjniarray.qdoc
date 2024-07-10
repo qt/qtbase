@@ -235,7 +235,7 @@
 */
 
 /*!
-    \fn template <typename T> template <typename Other, if_convertible<Other>> QJniArray<T>::QJniArray(const QJniArray<Other> &other)
+    \fn template <typename T> template <typename Other, if_convertible<Other>> QJniArray<T>::QJniArray(QJniArray<Other> &&other)
 
     Constructs a QJniArray that is a copy of \a other, with both objects referencing
     the same Java array object.
@@ -399,8 +399,7 @@
 */
 
 /*!
-    \fn template <typename T> template <typename Container>
-        Container QJniArray<T>::toContainer(Container &&container) const
+    \fn template <typename T> template <typename Container> Container QJniArray<T>::toContainer(Container &&container) const
 
     \return a container populated with the data in the wrapped Java array.
 
