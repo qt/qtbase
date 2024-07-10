@@ -209,7 +209,8 @@ namespace QtAndroidInput
         const int dw = availableWidthPixels();
         const int dh = availableHeightPixels();
         QWindowSystemInterface::TouchPoint touchPoint;
-        touchPoint.id = id;
+        // Start numbering touch points from 1
+        touchPoint.id = id + 1;
         touchPoint.pressure = pressure;
         touchPoint.rotation = qRadiansToDegrees(rotation);
         touchPoint.normalPosition = QPointF(double(x / dw), double(y / dh));
