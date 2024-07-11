@@ -300,6 +300,23 @@
 
     Use this macro to declare a destructor that can be computed at
     compile-time in C++20 or later.
+
+    \sa Q_CONSTEXPR_DTOR
+*/
+
+/*!
+    \macro Q_CONSTEXPR_DTOR
+    \relates <QtCompilerDetection>
+    \since 6.9
+
+    Expands to \c{constexpr} on compilers that support C++20, where
+    \c{__cpp_constexpr} has a value greater than or equal to \c{201907L}.
+    Otherwise, it expands to \c{const}.
+
+    Use this macro to declare a variable that can be constructed at compile-time
+    in C++20 or later.
+
+    \sa Q_DECL_CONSTEXPR_DTOR
 */
 
 /*!

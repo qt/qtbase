@@ -1004,10 +1004,9 @@ private:
     int *m_arr;
 };
 
-[[maybe_unused]] Q_DECL_CONSTEXPR_DTOR DestructorTest dt(nullptr);
-
 void tst_QGlobal::CXX20_constexpr_dtor()
 {
+    [[maybe_unused]] Q_CONSTEXPR_DTOR DestructorTest tmp0(nullptr);
 #if __cpp_constexpr >= 201907L
     [[maybe_unused]] constexpr DestructorTest tmp(nullptr);
 #endif
