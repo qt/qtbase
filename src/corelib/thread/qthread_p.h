@@ -194,7 +194,7 @@ public:
 
     State threadState = NotStarted;
     bool exited = false;
-    std::atomic<bool> interruptionRequested;
+    std::atomic<bool> interruptionRequested = false;
 
     int returnCode = -1;
 
