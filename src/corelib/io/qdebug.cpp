@@ -511,6 +511,46 @@ void QDebug::putUInt128([[maybe_unused]] const void *p)
     stream->ts << int128Warning();
 }
 
+/*!
+    \since 6.9
+    \internal
+    Helper to the <Std/Qt>::<>_ordering debug output.
+    It generates the string in following format:
+    <Qt/Std>::<weak/partial/strong>_ordering::<less/equal/greater/unordered>
+ */
+void QDebug::putQtOrdering(QtOrderingPrivate::QtOrderingTypeFlag flags, Qt::partial_ordering order)
+{
+    using QtOrderingPrivate::QtOrderingType;
+    std::string result;
+    if ((flags & QtOrderingType::StdOrder) == QtOrderingType::StdOrder)
+        result += "std";
+    else if ((flags & QtOrderingType::QtOrder) == QtOrderingType::QtOrder)
+        result += "Qt";
+
+    result += "::";
+    const bool isStrong = ((flags & QtOrderingType::Strong) == QtOrderingType::Strong);
+    if (isStrong)
+        result += "strong";
+    else if ((flags & QtOrderingType::Weak) == QtOrderingType::Weak)
+        result += "weak";
+    else if ((flags & QtOrderingType::Partial) == QtOrderingType::Partial)
+        result += "partial";
+    result += "_ordering::";
+
+    if (order == Qt::partial_ordering::equivalent) {
+        if (isStrong)
+            result += "equal";
+        else
+            result += "equivalent";
+    } else if (order == Qt::partial_ordering::greater) {
+        result += "greater";
+    } else if (order == Qt::partial_ordering::less) {
+        result += "less";
+    } else {
+        result += "unordered";
+    }
+    stream->ts << result.data();
+}
 
 /*!
     \fn QDebug::swap(QDebug &other)
@@ -946,6 +986,15 @@ QDebug &QDebug::resetFormat()
 /*!
     \fn QDebug &QDebug::operator<<(QTextStreamManipulator m)
     \internal
+*/
+
+/*!
+    \fn template <typename T, QDebug::if_ordering_type<T>> QDebug::operator<<(QDebug debug, T t)
+    \since 6.9
+    Prints the Qt or std ordering value \a t to the \a debug object.
+
+    \note This function only participates in overload resolution if \c T
+    is one of <Qt/Std>::<weak/partial/strong>_ordering.
 */
 
 /*!

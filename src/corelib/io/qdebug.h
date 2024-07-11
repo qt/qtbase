@@ -9,6 +9,7 @@
 #pragma qt_class(QtDebug)
 #endif
 
+#include <QtCore/qcompare.h>
 #include <QtCore/qcontainerfwd.h>
 #include <QtCore/qtextstream.h>
 #include <QtCore/qttypetraits.h>
@@ -79,6 +80,8 @@ class QT6_ONLY(Q_CORE_EXPORT) QDebug : public QIODeviceBase
     QT7_ONLY(Q_CORE_EXPORT) void putTimeUnit(qint64 num, qint64 den);
     QT7_ONLY(Q_CORE_EXPORT) void putInt128(const void *i);
     QT7_ONLY(Q_CORE_EXPORT) void putUInt128(const void *i);
+    QT7_ONLY(Q_CORE_EXPORT) void putQtOrdering(QtOrderingPrivate::QtOrderingTypeFlag flags,
+                                               Qt::partial_ordering order);
 public:
     explicit QDebug(QIODevice *device) : stream(new Stream(device)) {}
     explicit QDebug(QString *string) : stream(new Stream(string)) {}
@@ -249,6 +252,17 @@ public:
     static QByteArray toBytes(const T &object)
     {
         return toBytesImpl(&streamTypeErased<T>, std::addressof(object));
+    }
+
+private:
+    template <typename T>
+    using if_ordering_type = std::enable_if_t<QtOrderingPrivate::is_ordering_type_v<T>, bool>;
+
+    template <typename T, if_ordering_type<T> = true>
+    friend QDebug operator<<(QDebug debug, T t)
+    {
+        debug.putQtOrdering(QtOrderingPrivate::orderingFlagsFor(t), Qt::partial_ordering(t));
+        return debug;
     }
 };
 

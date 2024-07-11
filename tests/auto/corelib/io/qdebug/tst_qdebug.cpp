@@ -4,6 +4,7 @@
 
 
 #include <QtCore/QCoreApplication>
+#include <QtCore/QtCompare>
 #include <QtCore/QtDebug>
 
 #include <QTest>
@@ -90,6 +91,7 @@ private slots:
     void qDebugStdChrono_data() const;
     void qDebugStdChrono() const;
     void qDebugStdOptional() const;
+    void qDebugStdOrdering() const;
     void textStreamModifiers() const;
     void resetFormat() const;
     void defaultMessagehandler() const;
@@ -1237,6 +1239,36 @@ void tst_QDebug::qDebugStdOptional() const
     QCOMPARE(QString::fromLatin1(s_file), file);
     QCOMPARE(s_line, line);
     QCOMPARE(QString::fromLatin1(s_function), function);
+}
+
+void tst_QDebug::qDebugStdOrdering() const
+{
+    QLatin1StringView file, function;
+    MessageHandlerSetter mhs(myMessageHandler);
+    {
+        QDebug d = qDebug();
+        d << Qt::partial_ordering::less
+          << Qt::partial_ordering::unordered
+          << Qt::weak_ordering::greater
+          << Qt::strong_ordering::equal;
+    }
+#ifndef QT_NO_MESSAGELOGCONTEXT
+    file = QLatin1StringView(__FILE__);
+    function = QLatin1StringView(Q_FUNC_INFO);
+#endif
+    const auto cmpStr = "Qt::partial_ordering::lessQt::partial_ordering::unorderedQt::weak_ordering::greaterQt::strong_ordering::equal"_L1;
+    QCOMPARE(s_msgType, QtDebugMsg);
+    QCOMPARE(s_msg, cmpStr);
+#ifdef __cpp_lib_three_way_comparison
+    qDebug() << std::partial_ordering::less
+             << std::partial_ordering::unordered
+             << std::weak_ordering::greater
+             << std::strong_ordering::equal;
+    const auto stdStr = "std::partial_ordering::lessstd::partial_ordering::unorderedstd::weak_ordering::greaterstd::strong_ordering::equal"_L1;
+    QCOMPARE(s_msg, stdStr);
+#endif
+    QCOMPARE(QLatin1StringView(s_file), file);
+    QCOMPARE(QLatin1StringView(s_function), function);
 }
 
 void tst_QDebug::textStreamModifiers() const

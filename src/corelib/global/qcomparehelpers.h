@@ -14,6 +14,7 @@
 #pragma qt_sync_stop_processing
 #endif
 
+#include <QtCore/qflags.h>
 #include <QtCore/qoverload.h>
 #include <QtCore/qttypetraits.h>
 #include <QtCore/qtypeinfo.h>
@@ -31,16 +32,34 @@ QT_BEGIN_NAMESPACE
 class QPartialOrdering;
 
 namespace QtOrderingPrivate {
-#ifdef __cpp_lib_three_way_comparison
+template <typename T> struct is_std_ordering_type : std::false_type {};
+template <typename T> struct is_qt_ordering_type : std::false_type {};
+
+template <typename T> constexpr bool is_std_ordering_type_v = is_std_ordering_type<T>::value;
+template <typename T> constexpr bool is_qt_ordering_type_v = is_qt_ordering_type<T>::value;
+
+enum class QtOrderingType {
+    QtOrder =  0x00,
+    StdOrder = 0x01,
+    Partial = 0x00,
+    Weak = 0x20,
+    Strong = 0x40,
+    StrengthMask = Weak|Strong,
+};
+Q_DECLARE_FLAGS(QtOrderingTypeFlag, QtOrderingType)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QtOrderingPrivate::QtOrderingTypeFlag)
 
 template <typename QtOrdering> struct StdOrdering;
 template <typename StdOrdering> struct QtOrdering;
 
+#ifdef __cpp_lib_three_way_comparison
 #define QT_STD_MAP(x) \
     template <> struct StdOrdering< Qt::x##_ordering> : q20::type_identity<std::x##_ordering> {};\
     template <> struct StdOrdering<std::x##_ordering> : q20::type_identity<std::x##_ordering> {};\
     template <> struct  QtOrdering<std::x##_ordering> : q20::type_identity< Qt::x##_ordering> {};\
     template <> struct  QtOrdering< Qt::x##_ordering> : q20::type_identity< Qt::x##_ordering> {};\
+    template <> struct is_std_ordering_type<std::x##_ordering> : std::true_type {};\
+    template <> struct is_qt_ordering_type< Qt::x##_ordering> : std::true_type {};\
     /* end */
 QT_STD_MAP(partial)
 QT_STD_MAP(weak)
@@ -49,6 +68,11 @@ QT_STD_MAP(strong)
 
 template <> struct StdOrdering<QPartialOrdering> : q20::type_identity<std::partial_ordering> {};
 template <> struct  QtOrdering<QPartialOrdering> : q20::type_identity< Qt::partial_ordering> {};
+#else
+template <> struct is_qt_ordering_type< Qt::partial_ordering> : std::true_type {};
+template <> struct is_qt_ordering_type< Qt::weak_ordering> : std::true_type {};
+template <> struct is_qt_ordering_type< Qt::strong_ordering> : std::true_type {};
+#endif // __cpp_lib_three_way_comparison
 
 template <typename In> constexpr auto to_std(In in) noexcept
     -> typename QtOrderingPrivate::StdOrdering<In>::type
@@ -58,7 +82,33 @@ template <typename In> constexpr auto to_Qt(In in) noexcept
     -> typename QtOrderingPrivate::QtOrdering<In>::type
 { return in; }
 
-#endif // __cpp_lib_three_way_comparison
+template <typename T>
+constexpr bool is_ordering_type_v
+        = std::disjunction_v<is_qt_ordering_type<T>, is_std_ordering_type<T>>;
+
+template <typename T>
+constexpr std::enable_if_t<is_qt_ordering_type_v<T>, QtOrderingTypeFlag>
+orderingFlagsFor(T t) noexcept
+{
+    QtOrderingTypeFlag flags = QtOrderingType::QtOrder;
+    Qt::partial_ordering convertedOrder(t);
+    if constexpr (std::is_same_v<T, Qt::strong_ordering>)
+        flags = flags | QtOrderingType::Strong;
+    else if constexpr (std::is_same_v<T, Qt::partial_ordering>)
+        flags = flags | QtOrderingType::Partial;
+    else if constexpr (std::is_same_v<T, Qt::weak_ordering>)
+        flags = flags | QtOrderingType::Weak;
+    return flags;
+}
+
+template <typename T>
+constexpr std::enable_if_t<is_std_ordering_type_v<T>, QtOrderingTypeFlag>
+orderingFlagsFor(T t) noexcept
+{
+    QtOrderingPrivate::QtOrderingTypeFlag flags = QtOrderingPrivate::QtOrderingType::StdOrder;
+    return QtOrderingTypeFlag(flags
+                              | QtOrderingPrivate::orderingFlagsFor(QtOrderingPrivate::to_Qt(t)));
+}
 } // namespace QtOrderingPrivate
 
 /*
