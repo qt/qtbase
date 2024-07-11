@@ -7,6 +7,8 @@
 
 #include <qpa/qplatforminputcontext.h>
 #include <private/qstdweb_p.h>
+#include <QtCore/qloggingcategory.h>
+
 #include <emscripten/bind.h>
 #include <emscripten/html5.h>
 #include <emscripten/emscripten.h>
