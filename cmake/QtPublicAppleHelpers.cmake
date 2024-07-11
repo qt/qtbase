@@ -535,6 +535,19 @@ function(_qt_internal_set_xcode_generate_debugging_symbols target)
     endif()
 endfunction()
 
+# CMake generates a project where this setting is set to an absolute path build dir.
+# Provide an opt-in to work around an Xcode issue where archiving does not find the project dSYMs
+# unless the configuration build dir starts with $(BUILD_DIR) or is set to $(inherited).
+# It is an opt-in, because it breaks certain CMake behavior like $<TARGET_FILE:${target}> genex
+# evaluation as well as ignoring the value of CMAKE_RUNTIME_OUTPUT_DIRECTORY.
+# So projects have to do it at their own risk.
+function(_qt_internal_set_xcode_configuration_build_dir target)
+    if(QT_USE_RISKY_DSYM_ARCHIVING_WORKAROUND)
+        set_target_properties("${target}" PROPERTIES
+            XCODE_ATTRIBUTE_CONFIGURATION_BUILD_DIR "$(inherited)")
+    endif()
+endfunction()
+
 function(_qt_internal_set_xcode_bundle_display_name target)
     # We want the value of CFBundleDisplayName to be ${PRODUCT_NAME}, but we can't put that
     # into the Info.plist.in template file directly, because the implicit configure_file(Info.plist)
