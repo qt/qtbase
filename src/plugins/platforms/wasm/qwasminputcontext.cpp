@@ -10,6 +10,7 @@
 #include <qpa/qplatforminputcontext.h>
 #include <qpa/qwindowsysteminterface.h>
 #include <QClipboard>
+#include <QtGui/qtextobject.h>
 
 QT_BEGIN_NAMESPACE
 
