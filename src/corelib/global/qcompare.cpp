@@ -1149,14 +1149,14 @@ CHECK(strong, equivalent);
 
 /*!
     \internal
-    \macro Q_DECLARE_EQUALITY_COMPARABLE(LeftType, RightType, Attributes)
-    \macro Q_DECLARE_EQUALITY_COMPARABLE_LITERAL_TYPE(LeftType, RightType, Attributes)
-    \macro Q_DECLARE_PARTIALLY_ORDERED(LeftType, RightType, Attributes)
-    \macro Q_DECLARE_PARTIALLY_ORDERED_LITERAL_TYPE(LeftType, RightType, Attributes)
-    \macro Q_DECLARE_WEAKLY_ORDERED(LeftType, RightType, Attributes)
-    \macro Q_DECLARE_WEAKLY_ORDERED_LITERAL_TYPE(LeftType, RightType, Attributes)
-    \macro Q_DECLARE_STRONGLY_ORDERED(LeftType, RightType, Attributes)
-    \macro Q_DECLARE_STRONGLY_ORDERED_LITERAL_TYPE(LeftType, RightType, Attributes)
+    \macro Q_DECLARE_EQUALITY_COMPARABLE(LeftType, RightType, Attributes...)
+    \macro Q_DECLARE_EQUALITY_COMPARABLE_LITERAL_TYPE(LeftType, RightType, Attributes...)
+    \macro Q_DECLARE_PARTIALLY_ORDERED(LeftType, RightType, Attributes...)
+    \macro Q_DECLARE_PARTIALLY_ORDERED_LITERAL_TYPE(LeftType, RightType, Attributes...)
+    \macro Q_DECLARE_WEAKLY_ORDERED(LeftType, RightType, Attributes...)
+    \macro Q_DECLARE_WEAKLY_ORDERED_LITERAL_TYPE(LeftType, RightType, Attributes...)
+    \macro Q_DECLARE_STRONGLY_ORDERED(LeftType, RightType, Attributes...)
+    \macro Q_DECLARE_STRONGLY_ORDERED_LITERAL_TYPE(LeftType, RightType, Attributes...)
     \since 6.8
     \relates <QtCompare>
 
@@ -1169,6 +1169,35 @@ CHECK(strong, equivalent);
     deprecated) when implementing comparison of encoding-aware string types
     with C-style strings or byte arrays.
 
+    Starting from Qt 6.9, \c Attributes becomes a variable argument, meaning
+    that you can now specify more complex templates and constraints using
+    these macros.
+
+    For example, equality-comparison of a custom type with any integral type
+    can be implemented in the following way:
+
+    \code
+    class MyClass {
+    public:
+        ...
+    private:
+        template <typename T, std::enable_if_t<std::is_integral_v<T>, bool> = true>
+        friend constexpr bool comparesEqual(const MyClass &lhs, T rhs) noexcept
+        { ... }
+        Q_DECLARE_EQUALITY_COMPARABLE(MyClass, T,
+                                      template <typename T,
+                                                std::enable_if_t<std::is_integral_v<T>,
+                                                                 bool> = true>)
+    };
+    \endcode
+
+    \note Bear in mind that a macro treats each comma (unless within
+    parentheses) as starting a new argument; for example, the invocation above
+    has five arguments. Due to implementation details, the macros cannot have
+    more than nine arguments. If the constraint is too complicated, use an alias
+    template to give it a self-explanatory name, and use this alias as an
+    argument of the macro.
+
     \include qcompare.cpp noexcept-requirement-desc
 */
 
@@ -1176,22 +1205,24 @@ CHECK(strong, equivalent);
     \internal
     \macro Q_DECLARE_EQUALITY_COMPARABLE_NON_NOEXCEPT(Type)
     \macro Q_DECLARE_EQUALITY_COMPARABLE_NON_NOEXCEPT(LeftType, RightType)
-    \macro Q_DECLARE_EQUALITY_COMPARABLE_NON_NOEXCEPT(LeftType, RightType, Attributes)
+    \macro Q_DECLARE_EQUALITY_COMPARABLE_NON_NOEXCEPT(LeftType, RightType, Attributes...)
     \macro Q_DECLARE_PARTIALLY_ORDERED_NON_NOEXCEPT(Type)
     \macro Q_DECLARE_PARTIALLY_ORDERED_NON_NOEXCEPT(LeftType, RightType)
-    \macro Q_DECLARE_PARTIALLY_ORDERED_NON_NOEXCEPT(LeftType, RightType, Attributes)
+    \macro Q_DECLARE_PARTIALLY_ORDERED_NON_NOEXCEPT(LeftType, RightType, Attributes...)
     \macro Q_DECLARE_WEAKLY_ORDERED_NON_NOEXCEPT(Type)
     \macro Q_DECLARE_WEAKLY_ORDERED_NON_NOEXCEPT(LeftType, RightType)
-    \macro Q_DECLARE_WEAKLY_ORDERED_NON_NOEXCEPT(LeftType, RightType, Attributes)
+    \macro Q_DECLARE_WEAKLY_ORDERED_NON_NOEXCEPT(LeftType, RightType, Attributes...)
     \macro Q_DECLARE_STRONGLY_ORDERED_NON_NOEXCEPT(Type)
     \macro Q_DECLARE_STRONGLY_ORDERED_NON_NOEXCEPT(LeftType, RightType)
-    \macro Q_DECLARE_STRONGLY_ORDERED_NON_NOEXCEPT(LeftType, RightType, Attributes)
+    \macro Q_DECLARE_STRONGLY_ORDERED_NON_NOEXCEPT(LeftType, RightType, Attributes...)
     \since 6.8
     \relates <QtCompare>
 
     These macros behave like their versions without the \c {_NON_NOEXCEPT}
     suffix, but should be used when the relational operators cannot be
     \c {noexcept}.
+
+    Starting from Qt 6.9, \c Attributes becomes a variable argument.
 */
 
 /*!
