@@ -212,6 +212,26 @@ void QPdfWriter::setDocumentId(const QUuid &documentId)
 }
 
 /*!
+  \since 6.9
+  Returns the author of the document.
+  */
+QString QPdfWriter::author() const
+{
+    Q_D(const QPdfWriter);
+    return d->engine->d_func()->author;
+}
+
+/*!
+  \since 6.9
+  Sets the author of the document to \a author.
+  */
+void QPdfWriter::setAuthor(const QString &author)
+{
+    Q_D(QPdfWriter);
+    d->engine->d_func()->author = author;
+}
+
+/*!
   \reimp
   */
 QPaintEngine *QPdfWriter::paintEngine() const

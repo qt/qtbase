@@ -1742,6 +1742,8 @@ void QPdfEnginePrivate::writeInfo(const QDateTime &date)
     printString(title);
     write("\n/Creator ");
     printString(creator);
+    write("\n/Author ");
+    printString(author);
     write("\n/Producer ");
     printString(QString::fromLatin1("Qt " QT_VERSION_STR));
 
@@ -1844,6 +1846,13 @@ int QPdfEnginePrivate::writeXmpDocumentMetaData(const QDateTime &date)
                     w.writeStartElement(rdfNS, "li");
                     w.writeAttribute(xmlNS, "lang", "x-default");
                         w.writeCharacters(title);
+                    w.writeEndElement();
+                w.writeEndElement();
+            w.writeEndElement();
+            w.writeStartElement(dcNS, "creator");
+                w.writeStartElement(rdfNS, "Seq");
+                    w.writeStartElement(rdfNS, "li");
+                        w.writeCharacters(author);
                     w.writeEndElement();
                 w.writeEndElement();
             w.writeEndElement();

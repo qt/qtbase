@@ -265,6 +265,7 @@ public:
     QString outputFileName;
     QString title;
     QString creator;
+    QString author;
     QUuid documentId = QUuid::createUuid();
     bool embedFonts;
     int resolution;

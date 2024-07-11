@@ -39,6 +39,9 @@ public:
     QUuid documentId() const;
     void setDocumentId(const QUuid &documentId);
 
+    QString author() const;
+    void setAuthor(const QString &author);
+
     bool newPage() override;
 
     void setResolution(int resolution);
