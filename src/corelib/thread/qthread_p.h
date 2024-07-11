@@ -187,7 +187,7 @@ public:
     bool running;
     bool finished;
     bool isInFinish; //when in QThreadPrivate::finish
-    std::atomic<bool> interruptionRequested;
+    std::atomic<bool> interruptionRequested = false;
 
     bool exited;
     int returnCode;
