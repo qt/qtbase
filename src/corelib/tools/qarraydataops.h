@@ -38,20 +38,6 @@ public:
 
     using QArrayDataPointer<T>::QArrayDataPointer;
 
-    void appendInitialize(qsizetype newSize) noexcept
-    {
-        Q_ASSERT(this->isMutable());
-        Q_ASSERT(!this->isShared());
-        Q_ASSERT(newSize > this->size);
-        Q_ASSERT(newSize - this->size <= this->freeSpaceAtEnd());
-
-        T *where = this->end();
-        this->size = newSize;
-        const T *e = this->end();
-        while (where != e)
-            *where++ = T();
-    }
-
     void copyAppend(const T *b, const T *e) noexcept
     {
         Q_ASSERT(this->isMutable() || b == e);
@@ -292,19 +278,6 @@ protected:
 
 public:
     typedef typename QArrayDataPointer<T>::parameter_type parameter_type;
-
-    void appendInitialize(qsizetype newSize)
-    {
-        Q_ASSERT(this->isMutable());
-        Q_ASSERT(!this->isShared());
-        Q_ASSERT(newSize > this->size);
-        Q_ASSERT(newSize - this->size <= this->freeSpaceAtEnd());
-
-        T *const b = this->begin();
-        do {
-            new (b + this->size) T;
-        } while (++this->size != newSize);
-    }
 
     void copyAppend(const T *b, const T *e)
     {
