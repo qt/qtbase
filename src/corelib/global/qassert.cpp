@@ -42,12 +42,12 @@ Q_NORETURN void qAbort()
 
     // Fallback
     TerminateProcess(GetCurrentProcess(), STATUS_FATAL_APP_EXIT);
-
-    // Tell the compiler the application has stopped.
-    Q_UNREACHABLE_IMPL();
 #else // !Q_OS_WIN
     std::abort();
 #endif
+
+    // Tell the compiler the application has stopped.
+    Q_UNREACHABLE_IMPL();
 }
 
 /*!
