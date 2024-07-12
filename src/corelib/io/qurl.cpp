@@ -1541,12 +1541,33 @@ static void removeDotsFromPath(QString *path)
     // The input buffer is initialized with the now-appended path
     // components and the output buffer is initialized to the empty
     // string.
+    const QChar *in = path->constBegin();
+
+    // Scan the input for a "." or ".." segment. If there isn't any, then we
+    // don't need to modify this path at all.
+    qsizetype modidx = [&] {
+        bool lastWasSlash = true;
+        for (qsizetype i = 0, n = path->size(); i < n; ++i) {
+            if (lastWasSlash && in[i] == u'.') {
+                if (i + 1 == n || in[i + 1] == u'/')
+                    return i;
+                if (in[i + 1] == u'.' && (i + 2 == n || in[i + 2] == u'/'))
+                    return i;
+            }
+            lastWasSlash = in[i] == u'/';
+        }
+        return qsizetype(-1);
+    }();
+    if (modidx < 0)
+        return;
+
     QChar *out = path->data();
-    const QChar *in = out;
     const QChar *end = out + path->size();
+    out += modidx;
+    in = out;
 
     // We implement a modified algorithm compared to RFC 3986, for efficiency.
-    while (in < end) {
+    do {
 #if 0   // to see in the debugger
         QStringView output(path->constBegin(), out);
         QStringView input(in, end);
@@ -1607,7 +1628,7 @@ static void removeDotsFromPath(QString *path)
         // If it is neither, then we copy this segment.
         while (in < end && in->unicode() != '/')
             *out++ = *in++;
-    }
+    } while (in < end);
     path->truncate(out - path->constBegin());
 }
 
