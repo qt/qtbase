@@ -7102,6 +7102,13 @@ void qt_format_text(const QFont &fnt, const QRectF &_r,
 
     Q_ASSERT( !((tf & ~Qt::TextDontPrint)!=0 && option!=nullptr) ); // we either have an option or flags
 
+    if (_r.isEmpty()) {
+        if (!brect)
+            return;
+        else
+            tf |= Qt::TextDontPrint;
+    }
+
     if (option) {
         tf |= option->alignment();
         if (option->wrapMode() != QTextOption::NoWrap)
