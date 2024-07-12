@@ -21,7 +21,7 @@
 
 QT_BEGIN_NAMESPACE
 
-void qAbort()
+Q_NORETURN void qAbort()
 {
 #ifdef Q_OS_WIN
     // std::abort() in the MSVC runtime will call _exit(3) if the abort
