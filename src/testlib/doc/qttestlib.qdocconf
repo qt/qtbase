@@ -16,7 +16,11 @@ qhp.QtTestLib.virtualFolder       = qttest
 qhp.QtTestLib.indexTitle          = Qt Test
 qhp.QtTestLib.indexRoot           =
 
-qhp.QtTestLib.subprojects         = classes
+qhp.QtTestLib.subprojects = manual classes
+qhp.QtTestLib.subprojects.manual.title = Qt Test
+qhp.QtTestLib.subprojects.manual.indexTitle = Qt Test module topics
+qhp.QtTestLib.subprojects.manual.type = manual
+
 qhp.QtTestLib.subprojects.classes.title = C++ Classes
 qhp.QtTestLib.subprojects.classes.indexTitle = Qt Test C++ Classes
 qhp.QtTestLib.subprojects.classes.selectors = class fake:headerfile
@@ -55,6 +59,9 @@ manifestmeta.thumbnail.names = "QtTestLib/Chapter *"
 
 navigation.landingpage = "Qt Test"
 navigation.cppclassespage = "Qt Test C++ Classes"
+# Auto-generate navigation linking based on "Qt Test module topics":
+navigation.toctitles = "Qt Test module topics"
+navigation.toctitles.inclusive = false
 
 # Enforce zero documentation warnings
 warninglimit = 0

@@ -15,11 +15,17 @@ qhp.QtConcurrent.virtualFolder       = qtconcurrent
 qhp.QtConcurrent.indexTitle          = Qt Concurrent
 qhp.QtConcurrent.indexRoot           =
 
-qhp.QtConcurrent.subprojects         = classes examples
+qhp.QtConcurrent.subprojects = manual examples classes
+
+qhp.QtConcurrent.subprojects.manual.title = Qt Concurrent
+qhp.QtConcurrent.subprojects.manual.indexTitle = Qt Concurrent module topics
+qhp.QtConcurrent.subprojects.manual.type = manual
+
 qhp.QtConcurrent.subprojects.classes.title = C++ Classes
 qhp.QtConcurrent.subprojects.classes.indexTitle = Qt Concurrent C++ Classes
 qhp.QtConcurrent.subprojects.classes.selectors = class fake:headerfile
 qhp.QtConcurrent.subprojects.classes.sortPages = true
+
 qhp.QtConcurrent.subprojects.examples.title = Qt Concurrent Examples
 qhp.QtConcurrent.subprojects.examples.indexTitle = Qt Concurrent Examples
 qhp.QtConcurrent.subprojects.examples.selectors = fake:example
@@ -42,6 +48,9 @@ imagedirs   += images
 
 navigation.landingpage = "Qt Concurrent"
 navigation.cppclassespage = "Qt Concurrent C++ Classes"
+# Auto-generate navigation linking based on "Qt Concurrent module topics":
+navigation.toctitles = "Qt Concurrent module topics"
+navigation.toctitles.inclusive = false
 
 # Enforce zero documentation warnings
 warninglimit = 0

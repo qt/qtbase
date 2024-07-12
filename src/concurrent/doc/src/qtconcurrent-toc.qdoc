@@ -1,0 +1,19 @@
+// Copyright (C) 2024 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page qtconcurrent-toc.html
+    \title Qt Concurrent module topics
+
+    The following list has links to all the individual topics (HTML files)
+    in the Qt Concurrent module.
+
+    \list
+    \li \l {Concurrent Map and Map-Reduce}
+    \li \l {Concurrent Filter and Filter-Reduce}
+    \li \l {Concurrent Run}
+    \li \l {Concurrent Task}
+    \li \l {Changes to Qt Concurrent}{Upgrading from Qt 5}
+    \endlist
+
+*/

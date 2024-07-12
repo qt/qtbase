@@ -18,7 +18,11 @@ qhp.QtCore.virtualFolder       = qtcore
 qhp.QtCore.indexTitle          = Qt Core
 qhp.QtCore.indexRoot           =
 
-qhp.QtCore.subprojects         = classes
+qhp.QtCore.subprojects = manual classes
+qhp.QtCore.subprojects.manual.title = Qt Core
+qhp.QtCore.subprojects.manual.indexTitle = Qt Core module topics
+qhp.QtCore.subprojects.manual.type = manual
+
 qhp.QtCore.subprojects.classes.title = C++ Classes
 qhp.QtCore.subprojects.classes.indexTitle = Qt Core C++ Classes
 qhp.QtCore.subprojects.classes.selectors = class fake:headerfile
@@ -59,6 +63,9 @@ excludefiles += ../kernel/qtestsupport_core.cpp
 
 navigation.landingpage = "Qt Core"
 navigation.cppclassespage = "Qt Core C++ Classes"
+# Auto-generate navigation linking based on "Qt Core module topics":
+navigation.toctitles = "Qt Core module topics"
+navigation.toctitles.inclusive = false
 
 # Highlighted examples in Data Processing & IO category
 manifestmeta.highlighted.names = \

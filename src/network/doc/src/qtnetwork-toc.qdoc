@@ -1,0 +1,20 @@
+// Copyright (C) 2024 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page qtnetwork-toc.html
+    \title Qt Network module topics
+
+    The following list has links to all the individual topics (HTML files)
+    in the Qt Network module.
+
+    \list
+    \li \l {Network Programming with Qt}
+        \list
+            \li \l{Network Programming API}
+        \endlist
+    \li \l {Secure Sockets Layer (SSL) Classes}
+    \li \l {Changes to Qt Network}{Upgrading from Qt 5}
+    \endlist
+
+*/

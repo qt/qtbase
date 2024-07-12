@@ -1,0 +1,28 @@
+// Copyright (C) 2024 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page qttest-toc.html
+    \title Qt Test module topics
+
+    The following list has links to all the individual topics (HTML files)
+    in the Qt Test module.
+
+    \list
+    \li \l {Qt Test Overview}
+    \li \l {Qt Test Best Practices}{Best Practices}
+    \li \l {Qt Test Tutorial}
+        \list
+            \li \l {Chapter 1: Writing a Unit Test}
+            \li \l {Chapter 2: Data Driven Testing}
+            \li \l {Chapter 3: Simulating GUI Events}
+            \li \l {Chapter 4: Replaying GUI Events}
+            \li \l {Chapter 5: Writing a Benchmark}
+            \li \l {Chapter 6: Skipping Tests with QSKIP}
+        \endlist
+    \li \l {CMake Target Properties in Qt6 Test}{CMake Target Properties}
+    \li \l {CMake Variables in Qt6 Test}{CMake Variables}
+    \li \l {Changes to Qt Test}{Upgrading from Qt 5}
+    \endlist
+
+*/

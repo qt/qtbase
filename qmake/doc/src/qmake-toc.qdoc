@@ -1,0 +1,30 @@
+// Copyright (C) 2024 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page qmake-toc.html
+    \title QMake module topics
+
+    The following list has links to all the individual topics (HTML files)
+    in the qmake module.
+
+        \list
+        \li \l{Overview}
+        \li \l{Getting Started with qmake}
+        \li \l{Creating Project Files}
+        \li \l{Building Common Project Types}
+        \li \l{Running qmake}
+        \li \l{Platform Notes}
+        \li \l{qmake Language}
+        \li \l{Advanced Usage}
+        \li \l{Using Precompiled Headers}
+        \li \l{Configuring qmake}
+        \li \l{Reference}
+        \list
+            \li \l{Variables}
+            \li \l{Replace Functions}
+            \li \l{Test Functions}
+        \endlist
+    \endlist
+
+*/

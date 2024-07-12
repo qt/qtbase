@@ -11,13 +11,13 @@ qhp.qmake.namespace           = org.qt-project.qmake.$QT_VERSION_TAG
 qhp.qmake.virtualFolder       = qmake
 qhp.qmake.indexTitle          = QMake Manual
 qhp.qmake.subprojects         = manual
-qhp.qmake.subprojects.manual.title = Manual
-qhp.qmake.subprojects.manual.indexTitle = qmake Manual
-qhp.qmake.subprojects.manual.selectors = fake:page
+qhp.qmake.subprojects.manual.title = QMake Manual
+qhp.qmake.subprojects.manual.indexTitle = QMake module topics
+qhp.qmake.subprojects.manual.type = manual
 
 language                = Cpp
 
-sources                 = src/qmake-manual.qdoc
+sourcedirs                 += src
 
 imagedirs               = images
 exampledirs             = snippets
@@ -59,3 +59,6 @@ depends += \
     qtxml
 
 navigation.landingpage = "qmake Manual"
+# Auto-generate navigation linking based on "QMake module topics":
+navigation.toctitles = "QMake module topics"
+navigation.toctitles.inclusive = false

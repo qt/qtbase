@@ -1,0 +1,21 @@
+// Copyright (C) 2024 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page qtxml-toc.html
+    \title Qt XML module topics
+
+    The following list has links to all the individual topics (HTML files)
+    in the Qt XML module.
+
+    \list
+    \li \l {XML Processing}
+    \li \l {An Introduction to Namespaces}
+    \li \l {XML Streaming}
+    \li \l {Working with the DOM Tree}
+    \li \l {XML Classes}
+    \li \l {Changes to Qt XML}{Upgrading from Qt 5}
+    \li \l {DOM Bookmarks Application}{Example}
+    \endlist
+
+*/

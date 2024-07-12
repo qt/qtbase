@@ -18,7 +18,12 @@ qhp.QtGui.virtualFolder       = qtgui
 qhp.QtGui.indexTitle          = Qt GUI
 qhp.QtGui.indexRoot           =
 
-qhp.QtGui.subprojects         = classes
+qhp.QtGui.subprojects = manual classes
+
+qhp.QtGui.subprojects.manual.title = Qt GUI
+qhp.QtGui.subprojects.manual.indexTitle = Qt GUI module topics
+qhp.QtGui.subprojects.manual.type = manual
+
 qhp.QtGui.subprojects.classes.title = C++ Classes
 qhp.QtGui.subprojects.classes.indexTitle = Qt GUI C++ Classes
 qhp.QtGui.subprojects.classes.selectors = class fake:headerfile
@@ -67,6 +72,9 @@ manifestmeta.highlighted.names = "QtGui/Hello Vulkan Cubes Example"
 
 navigation.landingpage = "Qt GUI"
 navigation.cppclassespage = "Qt GUI C++ Classes"
+# Auto-generate navigation linking based on "Qt GUI module topics":
+navigation.toctitles = "Qt GUI module topics"
+navigation.toctitles.inclusive = false
 
 # Ignore warnings about undocumented enum values for the QGradient presets
 spurious += "Undocumented enum item '.*' in QGradient::Preset"

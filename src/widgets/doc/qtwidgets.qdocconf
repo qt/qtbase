@@ -18,11 +18,14 @@ qhp.QtWidgets.virtualFolder       = qtwidgets
 qhp.QtWidgets.indexTitle          = Qt Widgets
 qhp.QtWidgets.indexRoot           =
 
-qhp.QtWidgets.subprojects         = classes
+qhp.QtWidgets.subprojects = manual classes
 qhp.QtWidgets.subprojects.classes.title = C++ Classes
 qhp.QtWidgets.subprojects.classes.indexTitle = Qt Widgets C++ Classes
 qhp.QtWidgets.subprojects.classes.selectors = class fake:headerfile
 qhp.QtWidgets.subprojects.classes.sortPages = true
+qhp.QtWidgets.subprojects.manual.title = Qt Widgets
+qhp.QtWidgets.subprojects.manual.indexTitle = Qt Widgets module topics
+qhp.QtWidgets.subprojects.manual.type = manual
 
 tagfile                 = ../../../doc/qtwidgets/qtwidgets.tags
 
@@ -74,6 +77,9 @@ imagedirs   += images \
 
 navigation.landingpage = "Qt Widgets"
 navigation.cppclassespage = "Qt Widgets C++ Classes"
+# Auto-generate navigation linking based on "Qt Widgets module topics":
+navigation.toctitles = "Qt Widgets module topics"
+navigation.toctitles.inclusive = false
 
 # Highlighted examples for User Interface Components category
 manifestmeta.highlighted.names = \

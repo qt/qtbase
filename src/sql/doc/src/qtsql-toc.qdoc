@@ -1,0 +1,25 @@
+// Copyright (C) 2024 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page qtsql-toc.html
+    \title Qt SQL module topics
+
+    The following list has links to all the individual topics (HTML files)
+    in the Qt SQL module.
+
+    \list
+    \li \l {SQL Database Drivers}
+    \li \l {Data Types for Qt-supported Database Systems}
+    \li \l {SQL Programming}
+        \list
+            \li \l{Connecting to Databases}
+            \li \l{Executing SQL Statements}
+            \li \l{Using the SQL Model Classes}
+            \li \l{Presenting Data in a Table View}
+            \li \l{Creating Data-Aware Forms}
+        \endlist
+    \li \l {Changes to Qt SQL}{Upgrading from Qt 5}
+    \endlist
+
+*/

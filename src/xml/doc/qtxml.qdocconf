@@ -15,11 +15,15 @@ qhp.QtXml.virtualFolder       = qtxml
 qhp.QtXml.indexTitle          = Qt XML
 qhp.QtXml.indexRoot           =
 
-qhp.QtXml.subprojects         = classes
+qhp.QtXml.subprojects = manual classes
 qhp.QtXml.subprojects.classes.title = C++ Classes
 qhp.QtXml.subprojects.classes.indexTitle = Qt XML C++ Classes
 qhp.QtXml.subprojects.classes.selectors = class fake:headerfile
 qhp.QtXml.subprojects.classes.sortPages = true
+
+qhp.QtXml.subprojects.manual.title = Qt XML
+qhp.QtXml.subprojects.manual.indexTitle = Qt XML module topics
+qhp.QtXml.subprojects.manual.type = manual
 
 tagfile                 = ../../../doc/qtxml/qtxml.tags
 
@@ -35,6 +39,9 @@ exampledirs += ../../../examples/xml \
 
 navigation.landingpage = "Qt XML"
 navigation.cppclassespage = "Qt XML C++ Classes"
+# Auto-generate navigation linking based on "Qt XML module topics":
+navigation.toctitles = "Qt XML module topics"
+navigation.toctitles.inclusive = false
 
 # Add a thumbnail for examples that do not have images
 manifestmeta.thumbnail.names = "QtXml/XML Stream Lint Example"

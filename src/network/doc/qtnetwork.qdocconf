@@ -15,7 +15,15 @@ qhp.QtNetwork.virtualFolder       = qtnetwork
 qhp.QtNetwork.indexTitle          = Qt Network
 qhp.QtNetwork.indexRoot           =
 
-qhp.QtNetwork.subprojects         = classes
+qhp.QtNetwork.subprojects = manual examples classes
+qhp.QtNetwork.subprojects.manual.title = Qt Network
+qhp.QtNetwork.subprojects.manual.indexTitle = Qt Network module topics
+qhp.QtNetwork.subprojects.manual.type = manual
+
+qhp.QtNetwork.subprojects.examples.title = Examples
+qhp.QtNetwork.subprojects.examples.indexTitle = Network Examples
+qhp.QtNetwork.subprojects.examples.selectors = example
+
 qhp.QtNetwork.subprojects.classes.title = C++ Classes
 qhp.QtNetwork.subprojects.classes.indexTitle = Qt Network C++ Classes
 qhp.QtNetwork.subprojects.classes.selectors = class fake:headerfile
@@ -39,6 +47,9 @@ imagedirs   += images \
 
 navigation.landingpage = "Qt Network"
 navigation.cppclassespage = "Qt Network C++ Classes"
+# Auto-generate navigation linking based on "Qt Network module topics":
+navigation.toctitles = "Qt Network module topics"
+navigation.toctitles.inclusive = false
 
 manifestmeta.highlighted.names = \
     "QtNetwork/Fortune Client" \
