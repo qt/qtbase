@@ -1135,7 +1135,14 @@ function(_qt_internal_sbom_handle_target_binary_files target)
     if(arg_TYPE STREQUAL "QT_TOOL"
             OR arg_TYPE STREQUAL "QT_APP"
             OR arg_TYPE STREQUAL "EXECUTABLE")
-        if(NOT target_type STREQUAL "EXECUTABLE")
+
+        set(valid_executable_types
+            "EXECUTABLE"
+        )
+        if(ANDROID)
+            list(APPEND valid_executable_types "MODULE_LIBRARY")
+        endif()
+        if(NOT target_type IN_LIST valid_executable_types)
             message(FATAL_ERROR "Unsupported target type: ${target_type}")
         endif()
 
