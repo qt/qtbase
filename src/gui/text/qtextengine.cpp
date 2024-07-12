@@ -1498,16 +1498,20 @@ void QTextEngine::shapeText(int item) const
         for (int i = 0; i < itemLength; ++i, ++glyph_pos) {
             log_clusters[i] = glyph_pos;
             initialGlyphs.attributes[glyph_pos].clusterStart = true;
+
+            bool is_print_char;
             if (QChar::isHighSurrogate(string[i])
                     && i + 1 < itemLength
                     && QChar::isLowSurrogate(string[i + 1])) {
-                initialGlyphs.attributes[glyph_pos].dontPrint = !QChar::isPrint(QChar::surrogateToUcs4(string[i], string[i + 1]));
+                is_print_char = QChar::isPrint(QChar::surrogateToUcs4(string[i], string[i + 1]));
                 ++i;
                 log_clusters[i] = glyph_pos;
 
             } else {
-                initialGlyphs.attributes[glyph_pos].dontPrint = !QChar::isPrint(string[i]);
+                is_print_char = QChar::isPrint(string[i]);
             }
+            initialGlyphs.attributes[glyph_pos].dontPrint =
+                    !is_print_char && !(option.flags() & QTextOption::ShowDefaultIgnorables);
 
             if (Q_UNLIKELY(!initialGlyphs.attributes[glyph_pos].dontPrint)) {
                 QFontEngine *actualFontEngine = fontEngine;
@@ -1638,7 +1642,7 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si,
         uint buffer_flags = HB_BUFFER_FLAG_DEFAULT;
         // Symbol encoding used to encode various crap in the 32..255 character code range,
         // and thus might override U+00AD [SHY]; avoid hiding default ignorables
-        if (Q_UNLIKELY(actualFontEngine->symbol))
+        if (Q_UNLIKELY(actualFontEngine->symbol || (option.flags() & QTextOption::ShowDefaultIgnorables)))
             buffer_flags |= HB_BUFFER_FLAG_PRESERVE_DEFAULT_IGNORABLES;
         hb_buffer_set_flags(buffer, hb_buffer_flags_t(buffer_flags));
 

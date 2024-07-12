@@ -37,6 +37,8 @@ private slots:
     void largeText_data();
     void largeText(); // QTBUG-123339
     void typoLineMetrics();
+    void defaultIgnorableHorizontalAdvance_data();
+    void defaultIgnorableHorizontalAdvance();
 };
 
 void tst_QFontMetrics::same()
@@ -452,6 +454,61 @@ void tst_QFontMetrics::typoLineMetrics()
         QCOMPARE(typoDescent, qRound(3000.0 / unitsPerEm * font.pixelSize()));
         QCOMPARE(typoLeading, qRound(1000.0 / unitsPerEm * font.pixelSize()));
     }
+}
+
+void tst_QFontMetrics::defaultIgnorableHorizontalAdvance_data()
+{
+    QTest::addColumn<bool>("withShaping");
+
+    QTest::newRow("With Text Shaping") << true;
+    QTest::newRow("Without Text Shaping") << false;
+}
+
+void tst_QFontMetrics::defaultIgnorableHorizontalAdvance()
+{
+    QFETCH(bool, withShaping);
+
+    // testfont_bidimarks.ttf is a version of testfont.ttf with additional
+    // glyphs for U+200E (LRM) and U+200F (RLM)
+    QString testFont = QFINDTESTDATA("fonts/testfont_bidimarks.ttf");
+    QVERIFY(!testFont.isEmpty());
+
+    int id = QFontDatabase::addApplicationFont(testFont);
+    QVERIFY(id >= 0);
+
+    auto cleanup = qScopeGuard([&id] {
+        if (id >= 0)
+            QFontDatabase::removeApplicationFont(id);
+    });
+
+    QFont withoutSupport;
+    QFont withSupport(QFontDatabase::applicationFontFamilies(id).at(0));
+
+    if (!withShaping) {
+        withoutSupport.setStyleStrategy(QFont::PreferNoShaping);
+        withSupport.setStyleStrategy(QFont::PreferNoShaping);
+    }
+
+    QFontMetrics withoutSupportMetrics(withoutSupport);
+    QFontMetrics withSupportMetrics(withSupport);
+
+    QTextOption opt;
+    opt.setFlags(QTextOption::ShowDefaultIgnorables);
+
+    const QChar LRM = (ushort)0x200e;
+    const QString str = QStringLiteral("[") + LRM + QStringLiteral("]");
+
+    int withoutSupportWithoutIgnorablesAdvance = withoutSupportMetrics.horizontalAdvance(str);
+    int withoutSupportWithIgnorablesAdvance = withoutSupportMetrics.horizontalAdvance(str, opt);
+
+    QCOMPARE_GT(withoutSupportWithoutIgnorablesAdvance, 0);
+    QCOMPARE_EQ(withoutSupportWithIgnorablesAdvance, withoutSupportWithoutIgnorablesAdvance);
+
+    int withSupportWithoutIgnorablesAdvance = withSupportMetrics.horizontalAdvance(str);
+    int withSupportWithIgnorablesAdvance = withSupportMetrics.horizontalAdvance(str, opt);
+
+    QCOMPARE_GT(withSupportWithoutIgnorablesAdvance, 0);
+    QCOMPARE_GT(withSupportWithIgnorablesAdvance, withSupportWithoutIgnorablesAdvance);
 }
 
 QTEST_MAIN(tst_QFontMetrics)

@@ -27,9 +27,13 @@ set_source_files_properties("../../../shared/resources/testfont.ttf"
 set_source_files_properties("../../../shared/resources/testfont_linemetrics.otf"
     PROPERTIES QT_RESOURCE_ALIAS "testfont_linemetrics.otf"
 )
+set_source_files_properties("../../../shared/resources/testfont_bidimarks.ttf"
+    PROPERTIES QT_RESOURCE_ALIAS "testfont_bidimarks.ttf"
+)
 set(testfont_resource_files
     "../../../shared/resources/testfont.ttf"
     "../../../shared/resources/testfont_linemetrics.otf"
+    "../../../shared/resources/testfont_bidimarks.ttf"
     "ucs4font.ttf"
 )
 
