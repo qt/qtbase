@@ -1925,6 +1925,7 @@ private:
 
 Q_DECLARE_TYPEINFO(QKeyCombination, Q_RELOCATABLE_TYPE);
 
+namespace Qt {
 constexpr QKeyCombination operator|(Qt::Modifier modifier, Qt::Key key) noexcept
 {
     return QKeyCombination(modifier, key);
@@ -2014,6 +2015,7 @@ constexpr QKeyCombination operator+(Qt::Key key, Qt::KeyboardModifiers modifiers
     return QKeyCombination(modifiers, key);
 }
 #endif
+}
 
 QT_END_NAMESPACE
 
