@@ -3412,10 +3412,10 @@
 */
 
 /*!
-  \fn QKeyCombination operator|(Qt::Modifier modifier, Qt::Key key) noexcept
-  \fn QKeyCombination operator|(Qt::KeyboardModifier modifier, Qt::Key key) noexcept
-  \fn QKeyCombination operator|(Qt::Key key, Qt::Modifier modifier) noexcept
-  \fn QKeyCombination operator|(Qt::Key key, Qt::KeyboardModifier modifier) noexcept
+  \fn QKeyCombination Qt::operator|(Qt::Modifier modifier, Qt::Key key) noexcept
+  \fn QKeyCombination Qt::operator|(Qt::KeyboardModifier modifier, Qt::Key key) noexcept
+  \fn QKeyCombination Qt::operator|(Qt::Key key, Qt::Modifier modifier) noexcept
+  \fn QKeyCombination Qt::operator|(Qt::Key key, Qt::KeyboardModifier modifier) noexcept
 
   \relates QKeyCombination
 
@@ -3424,10 +3424,10 @@
 */
 
 /*!
-  \fn QKeyCombination operator|(Qt::Modifiers modifiers, Qt::Key key) noexcept
-  \fn QKeyCombination operator|(Qt::KeyboardModifiers modifiers, Qt::Key key) noexcept
-  \fn QKeyCombination operator|(Qt::Key key, Qt::Modifiers modifiers) noexcept
-  \fn QKeyCombination operator|(Qt::Key key, Qt::KeyboardModifiers modifiers) noexcept
+  \fn QKeyCombination Qt::operator|(Qt::Modifiers modifiers, Qt::Key key) noexcept
+  \fn QKeyCombination Qt::operator|(Qt::KeyboardModifiers modifiers, Qt::Key key) noexcept
+  \fn QKeyCombination Qt::operator|(Qt::Key key, Qt::Modifiers modifiers) noexcept
+  \fn QKeyCombination Qt::operator|(Qt::Key key, Qt::KeyboardModifiers modifiers) noexcept
 
   \relates QKeyCombination
 
@@ -3436,10 +3436,10 @@
 */
 
 /*!
-  \fn QKeyCombination operator+(Qt::Modifier modifier, Qt::Key key) noexcept
-  \fn QKeyCombination operator+(Qt::KeyboardModifier modifier, Qt::Key key) noexcept
-  \fn QKeyCombination operator+(Qt::Key key, Qt::Modifier modifier) noexcept
-  \fn QKeyCombination operator+(Qt::Key key, Qt::KeyboardModifier modifier) noexcept
+  \fn QKeyCombination Qt::operator+(Qt::Modifier modifier, Qt::Key key) noexcept
+  \fn QKeyCombination Qt::operator+(Qt::KeyboardModifier modifier, Qt::Key key) noexcept
+  \fn QKeyCombination Qt::operator+(Qt::Key key, Qt::Modifier modifier) noexcept
+  \fn QKeyCombination Qt::operator+(Qt::Key key, Qt::KeyboardModifier modifier) noexcept
 
   \relates QKeyCombination
   \deprecated
@@ -3451,10 +3451,10 @@
 */
 
 /*!
-  \fn QKeyCombination operator+(Qt::Modifiers modifiers, Qt::Key key) noexcept
-  \fn QKeyCombination operator+(Qt::KeyboardModifiers modifiers, Qt::Key key) noexcept
-  \fn QKeyCombination operator+(Qt::Key key, Qt::Modifiers modifiers) noexcept
-  \fn QKeyCombination operator+(Qt::Key key, Qt::KeyboardModifiers modifiers) noexcept
+  \fn QKeyCombination Qt::operator+(Qt::Modifiers modifiers, Qt::Key key) noexcept
+  \fn QKeyCombination Qt::operator+(Qt::KeyboardModifiers modifiers, Qt::Key key) noexcept
+  \fn QKeyCombination Qt::operator+(Qt::Key key, Qt::Modifiers modifiers) noexcept
+  \fn QKeyCombination Qt::operator+(Qt::Key key, Qt::KeyboardModifiers modifiers) noexcept
 
   \relates QKeyCombination
   \deprecated
