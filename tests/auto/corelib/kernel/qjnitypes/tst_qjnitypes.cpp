@@ -35,15 +35,6 @@ struct QtJniTypes::Traits<QtJavaWrapper>
     }
 };
 
-template<>
-struct QtJniTypes::Traits<QJniObject>
-{
-    static constexpr auto signature()
-    {
-        return QtJniTypes::CTString("Ljava/lang/Object;");
-    }
-};
-
 struct QtCustomJniObject : QJniObject {};
 
 template<>
