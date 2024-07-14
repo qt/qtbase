@@ -367,6 +367,29 @@ void tst_QJniArray::ordering()
     QCOMPARE_GT(arrayEnd, arrayBegin);
 }
 
+template <typename T, typename C>
+using ToContainerTest = decltype(std::declval<QJniArray<T>>().toContainer(std::declval<C>()));
+
+template <typename T, typename C>
+static constexpr bool hasToContainer = qxp::is_detected_v<ToContainerTest, T, C>;
+
+static_assert(hasToContainer<jint, QList<jint>>);
+static_assert(hasToContainer<jint, QList<int>>);
+
+static_assert(hasToContainer<jbyte, QByteArray>);
+static_assert(hasToContainer<jstring, QStringList>);
+static_assert(hasToContainer<String, QStringList>);
+static_assert(hasToContainer<jchar, std::list<jchar>>);
+static_assert(hasToContainer<jbyte, std::vector<jbyte>>);
+// different types but doesn't narrow
+static_assert(hasToContainer<jshort, QList<int>>);
+static_assert(hasToContainer<jfloat, QList<jdouble>>);
+// would narrow
+static_assert(!hasToContainer<jlong, QList<short>>);
+static_assert(!hasToContainer<jdouble, QList<jfloat>>);
+// incompatible types
+static_assert(!hasToContainer<jstring, QByteArray>);
+
 void tst_QJniArray::toContainer()
 {
     std::vector<jchar> charVector{u'a', u'b', u'c'};
@@ -377,6 +400,10 @@ void tst_QJniArray::toContainer()
 
     QCOMPARE(vector, charVector);
     QCOMPARE(charArray.toContainer<std::vector<jchar>>(), charVector);
+
+    // non-contiguous container of primitive elements
+    std::list charList = charArray.toContainer<std::list<jchar>>();
+    QCOMPARE(charList.size(), charVector.size());
 }
 
 void tst_QJniArray::pointerToValue()
