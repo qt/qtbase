@@ -848,6 +848,16 @@ QT_END_NAMESPACE
 #include <QtCore/qjniarray.h>
 QT_BEGIN_NAMESPACE
 
+namespace QtJniTypes {
+namespace detail {
+template <typename C>
+using FromContainerTest = decltype(QJniArrayBase::fromContainer(std::declval<C>()));
+
+template <typename C>
+static constexpr bool isCompatibleSourceContainer = qxp::is_detected_v<FromContainerTest, C>;
+}
+}
+
 template <typename ...Args>
 template <typename T>
 auto QJniObject::LocalFrame<Args...>::convertToJni(T &&value)
@@ -857,7 +867,7 @@ auto QJniObject::LocalFrame<Args...>::convertToJni(T &&value)
         return newLocalRef<jstring>(QJniObject::fromString(value));
     } else if constexpr (QtJniTypes::IsJniArray<Type>::value) {
         return value.arrayObject();
-    } else if constexpr (QJniArrayBase::isContiguousContainer<T>) {
+    } else if constexpr (QtJniTypes::detail::isCompatibleSourceContainer<T>) {
         using QJniArrayType = decltype(QJniArrayBase::fromContainer(std::forward<T>(value)));
         using ArrayType = decltype(std::declval<QJniArrayType>().arrayObject());
         return newLocalRef<ArrayType>(QJniArrayBase::fromContainer(std::forward<T>(value)).template object<jobject>());
@@ -878,7 +888,7 @@ auto QJniObject::LocalFrame<Args...>::convertFromJni(QJniObject &&object)
         return object.toString();
     } else if constexpr (QtJniTypes::IsJniArray<Type>::value) {
         return T(std::move(object));
-    } else if constexpr (QJniArrayBase::isContiguousContainer<Type>) {
+    } else if constexpr (QtJniTypes::detail::isCompatibleSourceContainer<Type>) {
         // if we were to create a QJniArray from Type...
         using QJniArrayType = decltype(QJniArrayBase::fromContainer(std::declval<Type>()));
         // then that QJniArray would have elements of type
