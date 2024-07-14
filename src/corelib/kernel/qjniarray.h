@@ -181,6 +181,13 @@ class QJniArrayBase
                                                      >
                                       > : std::true_type {};
 
+    template <typename C, typename = void> struct HasEmplaceBackTest : std::false_type {};
+    template <typename C> struct HasEmplaceBackTest<C,
+        std::void_t<decltype(std::declval<C>().emplace_back(std::declval<typename C::value_type>()))>
+                                                        > : std::true_type
+    {};
+
+
 protected:
     // these are used in QJniArray
     template <typename C, typename = void>
@@ -204,6 +211,24 @@ protected:
     using if_convertible = std::enable_if_t<QtPrivate::AreArgumentsConvertibleWithoutNarrowingBase<From, To>::value, bool>;
     template <typename From, typename To>
     using unless_convertible = std::enable_if_t<!QtPrivate::AreArgumentsConvertibleWithoutNarrowingBase<From, To>::value, bool>;
+
+    // helpers for toContainer
+    template <typename E> struct ToContainerHelper { using type = QList<E>; };
+    template <> struct ToContainerHelper<jstring> { using type = QStringList; };
+    template <> struct ToContainerHelper<jbyte> { using type = QByteArray; };
+    template <> struct ToContainerHelper<char> { using type = QByteArray; };
+
+    template <typename E>
+    using ToContainerType = typename ToContainerHelper<E>::type;
+
+    template <typename E, typename CRef, typename C = q20::remove_cvref_t<CRef>>
+    static constexpr bool isCompatibleTargetContainer =
+        (QtPrivate::AreArgumentsConvertibleWithoutNarrowingBase<E, typename C::value_type>::value
+         || QtPrivate::AreArgumentsConvertibleWithoutNarrowingBase<typename ToContainerType<E>::value_type,
+                                                                   typename C::value_type>::value
+         || (std::is_base_of_v<QtJniTypes::JObjectBase, E> && std::is_same_v<typename C::value_type, QString>))
+        && (qxp::is_detected_v<HasEmplaceBackTest, C>
+            || (isContiguousContainer<C> && ElementTypeHelper<C>::isPrimitive));
 
 public:
     using size_type = jsize;
@@ -236,6 +261,8 @@ public:
 
     template <typename C>
     using if_compatible_source_container = std::enable_if_t<isCompatibleSourceContainer<C>, bool>;
+    template <typename T, typename C>
+    using if_compatible_target_container = std::enable_if_t<isCompatibleTargetContainer<T, C>, bool>;
 
     template <typename Container, if_compatible_source_container<Container> = true>
     static auto fromContainer(Container &&container)
@@ -332,13 +359,10 @@ class QJniArray : public QJniArrayBase
 {
     friend struct QJniArrayIterator<T>;
 
-    template <typename E> struct ToContainerHelper { using type = QList<E>; };
-    template <> struct ToContainerHelper<jstring> { using type = QStringList; };
-    template <> struct ToContainerHelper<jbyte> { using type = QByteArray; };
-    template <> struct ToContainerHelper<char> { using type = QByteArray; };
-
-    template <typename E>
-    using ToContainerType = typename ToContainerHelper<E>::type;
+    template <typename C>
+    using CanReserveTest = decltype(std::declval<C>().reserve(0));
+    template <typename C>
+    static constexpr bool canReserve = qxp::is_detected_v<CanReserveTest, C>;
 
 public:
     using Type = T;
@@ -480,7 +504,7 @@ public:
         }
     }
 
-    template <typename Container = ToContainerType<T>>
+    template <typename Container = ToContainerType<T>, if_compatible_target_container<T, Container> = true>
     Container toContainer(Container &&container = {}) const
     {
         const qsizetype sz = size();
@@ -490,7 +514,8 @@ public:
 
         using ContainerType = q20::remove_cvref_t<Container>;
 
-        container.reserve(sz);
+        if constexpr (canReserve<ContainerType>)
+            container.reserve(sz);
         if constexpr (std::is_same_v<typename ContainerType::value_type, QString>) {
             for (auto element : *this) {
                 if constexpr (std::is_same_v<decltype(element), QString>)
