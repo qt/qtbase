@@ -22,6 +22,7 @@ private slots:
     void operators();
     void ordering();
     void toContainer();
+    void pointerToValue();
 };
 
 using namespace QtJniTypes;
@@ -306,6 +307,15 @@ void tst_QJniArray::toContainer()
 
     QCOMPARE(vector, charVector);
     QCOMPARE(charArray.toContainer<std::vector<jchar>>(), charVector);
+}
+
+void tst_QJniArray::pointerToValue()
+{
+    const QJniArray stringArray{u"one"_s, u"two"_s, u"three"_s};
+    auto it = std::find(stringArray.begin(), stringArray.end(), u"two"_s);
+    QCOMPARE_NE(it, stringArray.end());
+    QCOMPARE(it->size(), 3);
+    QCOMPARE((++it)->size(), 5);
 }
 
 QTEST_MAIN(tst_QJniArray)

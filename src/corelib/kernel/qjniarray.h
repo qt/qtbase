@@ -25,6 +25,15 @@ template <typename T> class QJniArray;
 template <typename T>
 struct QJniArrayIterator
 {
+private:
+    // Since QJniArray doesn't hold values, we need a wrapper to be able to hand
+    // out a pointer to a value.
+    struct QJniArrayValueRef {
+        T ref;
+        const T *operator->() const { return &ref; }
+    };
+
+public:
     QJniArrayIterator() = default;
 
     constexpr QJniArrayIterator(const QJniArrayIterator &other) noexcept = default;
@@ -34,7 +43,7 @@ struct QJniArrayIterator
 
     using difference_type = jsize;
     using value_type = T;
-    using pointer = T *;
+    using pointer = QJniArrayValueRef;
     using reference = T; // difference to container requirements
     using const_reference = reference;
     using iterator_category = std::random_access_iterator_tag;
@@ -42,6 +51,11 @@ struct QJniArrayIterator
     const_reference operator*() const
     {
         return m_array->at(m_index);
+    }
+
+    QJniArrayValueRef operator->() const
+    {
+        return {m_array->at(m_index)};
     }
 
     const_reference operator[](difference_type n) const
