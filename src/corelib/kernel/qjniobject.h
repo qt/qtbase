@@ -825,6 +825,21 @@ template <typename T> struct Traits<JObject<T>> {
     static constexpr auto signature() { return Traits<T>::signature(); }
     static constexpr auto className() { return Traits<T>::className(); }
 };
+
+template<>
+struct Traits<QJniObject>
+{
+    static constexpr auto className()
+    {
+        return CTString("java/lang/Object");
+    }
+
+    static constexpr auto signature()
+    {
+        return CTString("Ljava/lang/Object;");
+    }
+};
+
 }
 
 // This cannot be included earlier as QJniArray is a QJniObject subclass, but it
