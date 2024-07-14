@@ -18,6 +18,7 @@
 #include <QtCore/qsharedpointer.h>
 
 // all these have already been included by various headers above, but don't rely on indirect includes:
+#include <array>
 #include <chrono>
 #include <list>
 #include <map>
@@ -334,6 +335,12 @@ inline QDebugIfHasDebugStream<T> operator<<(QDebug debug, const std::vector<T, A
     return QtPrivate::printSequentialContainer(std::move(debug), "std::vector", vec);
 }
 
+template <typename T, std::size_t N>
+inline QDebugIfHasDebugStream<T> operator<<(QDebug debug, const std::array<T, N> &array)
+{
+    return QtPrivate::printSequentialContainer(std::move(debug), "std::array", array);
+}
+
 template <typename T, typename Alloc>
 inline QDebugIfHasDebugStream<T> operator<<(QDebug debug, const std::list<T, Alloc> &vec)
 {
@@ -430,6 +437,9 @@ QDebug operator<<(QDebug debug, const QVarLengthArray<T, P> &array);
 
 template <typename T, typename Alloc>
 QDebug operator<<(QDebug debug, const std::vector<T, Alloc> &vec);
+
+template <typename T, std::size_t N>
+QDebug operator<<(QDebug debug, const std::array<T, N> &array);
 
 template <typename T, typename Alloc>
 QDebug operator<<(QDebug debug, const std::list<T, Alloc> &vec);
