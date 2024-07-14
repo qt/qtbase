@@ -151,6 +151,28 @@ private:
 class QJniArrayBase
 {
     // for SFINAE'ing out the fromContainer named constructor
+    template <typename C, typename = void> struct IsSequentialContainerHelper : std::false_type
+    {
+        static constexpr bool isForwardIterable = false;
+    };
+    template <typename C>
+    struct IsSequentialContainerHelper<C, std::void_t<typename std::iterator_traits<typename C::const_iterator>::iterator_category,
+                                                      typename C::value_type,
+                                                      decltype(std::size(std::declval<C>()))
+                                                     >
+                                      > : std::true_type
+    {
+        static constexpr bool isForwardIterable = std::is_convertible_v<
+            typename std::iterator_traits<typename C::const_iterator>::iterator_category,
+            std::forward_iterator_tag
+        >;
+    };
+    template <>
+    struct IsSequentialContainerHelper<QByteArray, void>
+    {
+        static constexpr bool isForwardIterable = true;
+    };
+
     template <typename C, typename = void> struct IsContiguousContainerHelper : std::false_type {};
     template <typename C>
     struct IsContiguousContainerHelper<C, std::void_t<decltype(std::data(std::declval<C>())),
@@ -161,6 +183,23 @@ class QJniArrayBase
 
 protected:
     // these are used in QJniArray
+    template <typename C, typename = void>
+    struct ElementTypeHelper
+    {
+        static constexpr bool isObject = false;
+        static constexpr bool isPrimitive = false;
+    };
+    template <typename C>
+    struct ElementTypeHelper<C, std::void_t<typename C::value_type>>
+    {
+        using E = typename C::value_type;
+        static constexpr bool isObject = QtJniTypes::isObjectType<E>();
+        static constexpr bool isPrimitive = QtJniTypes::isPrimitiveType<E>();
+    };
+
+    template <typename CRef, typename C = q20::remove_cvref_t<CRef>>
+    static constexpr bool isContiguousContainer = IsContiguousContainerHelper<C>::value;
+
     template <typename From, typename To>
     using if_convertible = std::enable_if_t<QtPrivate::AreArgumentsConvertibleWithoutNarrowingBase<From, To>::value, bool>;
     template <typename From, typename To>
@@ -184,12 +223,21 @@ public:
         return 0;
     }
 
-    template <typename C>
-    static constexpr bool isContiguousContainer = IsContiguousContainerHelper<q20::remove_cvref_t<C>>::value;
-    template <typename C>
-    using if_contiguous_container = std::enable_if_t<isContiguousContainer<C>, bool>;
+    // We can create an array from any forward-iterable container, and optimize
+    // for contiguous containers holding primitive elements. QJniArray is a
+    // forward-iterable container, so explicitly remove that from the overload
+    // set so that the copy constructors get used instead.
+    // Used also in the deduction guide, so must be public
+    template <typename CRef, typename C = q20::remove_cvref_t<CRef>>
+    static constexpr bool isCompatibleSourceContainer =
+        (IsSequentialContainerHelper<C>::isForwardIterable
+         || (isContiguousContainer<C> && ElementTypeHelper<C>::isPrimitive))
+        && !std::is_base_of_v<QJniArrayBase, C>;
 
-    template <typename Container, if_contiguous_container<Container> = true>
+    template <typename C>
+    using if_compatible_source_container = std::enable_if_t<isCompatibleSourceContainer<C>, bool>;
+
+    template <typename Container, if_compatible_source_container<Container> = true>
     static auto fromContainer(Container &&container)
     {
         Q_ASSERT_X(size_t(std::size(container)) <= size_t((std::numeric_limits<size_type>::max)()),
@@ -337,7 +385,7 @@ public:
     template <typename Other, unless_convertible<Other, T> = true>
     QJniArray(QJniArray<Other> &&other) noexcept = delete;
 
-    template <typename Container, if_contiguous_container<Container> = true>
+    template <typename Container, if_compatible_source_container<Container> = true>
     explicit QJniArray(Container &&container)
         : QJniArrayBase(QJniArrayBase::fromContainer(std::forward<Container>(container)))
     {
@@ -453,7 +501,7 @@ public:
         } else if constexpr (std::is_base_of_v<std::remove_pointer_t<jobject>, std::remove_pointer_t<T>>) {
             for (auto element : *this)
                 container.emplace_back(element);
-        } else if constexpr (QJniArrayBase::isContiguousContainer<ContainerType>) {
+        } else if constexpr (isContiguousContainer<ContainerType>) {
             container.resize(sz);
             if constexpr (QtJniTypes::sameTypeForJni<T, jbyte>) {
                 env->GetByteArrayRegion(object<jbyteArray>(),
@@ -496,7 +544,7 @@ public:
 // fromContainer() maps several C++ types to the same JNI type (e.g. both jboolean and
 // bool become QJniArray<jboolean>), we have to deduce to what fromContainer() would
 // give us.
-template <typename Container, QJniArrayBase::if_contiguous_container<Container> = true>
+template <typename Container, QJniArrayBase::if_compatible_source_container<Container> = true>
 QJniArray(Container) -> QJniArray<typename decltype(QJniArrayBase::fromContainer(std::declval<Container>()))::value_type>;
 
 template <typename ElementType, typename List, typename NewFn, typename SetFn>
@@ -508,10 +556,16 @@ auto QJniArrayBase::makeArray(List &&list, NewFn &&newArray, SetFn &&setRegion)
     if (QJniEnvironment::checkAndClearExceptions(env))
         return QJniArray<ElementType>();
 
-    // can't use static_cast here because we have signed/unsigned mismatches
     if (length) {
-        (env->*setRegion)(localArray, 0, length,
-                          reinterpret_cast<const ElementType *>(std::data(std::as_const(list))));
+        // can't use static_cast here because we have signed/unsigned mismatches
+        if constexpr (isContiguousContainer<List>) {
+            (env->*setRegion)(localArray, 0, length,
+                            reinterpret_cast<const ElementType *>(std::data(std::as_const(list))));
+        } else {
+            size_type i = 0;
+            for (const auto &e : std::as_const(list))
+                (env->*setRegion)(localArray, i++, 1, reinterpret_cast<const ElementType *>(&e));
+        }
     }
     return QJniArray<ElementType>(localArray);
 };

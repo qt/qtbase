@@ -16,15 +16,15 @@
 */
 
 /*!
-    \fn template <typename Container, QJniArrayBase::if_contiguous_container<Container>> auto QJniArrayBase::fromContainer(Container &&container)
+    \fn template <typename Container, QJniArrayBase::if_compatible_source_container<Container>> auto QJniArrayBase::fromContainer(Container &&container)
 
     Creates a Java array holding the data in \a container, and returns a
     QJniArray instance that wraps it.
 
-//! [contiguous-containers]
+//! [forward-iterable-containers]
     This function only participates in overload resolution if \c{Container}
-    is a contiguous container storing elements of a \l{JNI types}{JNI type}
-    or equivalent C++ type.
+    is a container that stores elements of a \l{JNI types}{JNI type} or equivalent
+    C++ type, and provides a forward iterator.
 
     The specialization of the constructed QJniArray depends on the value type
     of the \a container. For a \c{Container<T>} (such as e.g. \c{QList<T>}) it
@@ -47,7 +47,7 @@
     \li QJniObject
     \li QJniArray<jobject>
     \endtable
-//! [contiguous-containers]
+//! [forward-iterable-containers]
 
     \sa QJniArray::toContainer()
 */
@@ -278,13 +278,13 @@
 */
 
 /*!
-    \fn template <typename T> template <typename Container, QJniArrayBase::if_contiguous_container<Container>> QJniArray<T>::QJniArray(Container &&container)
+    \fn template <typename T> template <typename Container, QJniArrayBase::if_compatible_source_container<Container>> QJniArray<T>::QJniArray(Container &&container)
 
     Constructs a QJniArray that wraps a newly-created Java array for elements of
     type \c{Container::value_type}, and populates the Java array with the data from
     \a container.
 
-    \include qjniarray.qdoc contiguous-containers
+    \include qjniarray.qdoc forward-iterable-containers
 
     \sa QJniArrayBase::fromContainer(), toContainer()
 */

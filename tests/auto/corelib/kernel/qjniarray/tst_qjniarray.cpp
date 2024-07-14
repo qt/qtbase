@@ -182,6 +182,18 @@ void tst_QJniArray::construct()
         QJniArray<jint> list{QList<int>{1, 2, 3}};
         QCOMPARE(list.size(), 3);
     }
+
+    // non-contiguous container
+    {
+       std::list list({1, 2, 3});
+       QJniArray array(list);
+       QCOMPARE(array.size(), 3);
+    }
+    {
+        std::list list({QString(), QString(), QString()});
+        QJniArray array(list);
+        QCOMPARE(array.size(), 3);
+    }
 }
 
 // Verify that we can convert QJniArrays into each other as long as element types
