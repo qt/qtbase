@@ -166,6 +166,7 @@ class Q_WIDGETS_EXPORT QWidget : public QObject, public QPaintDevice
 #if QT_CONFIG(accessibility)
     Q_PROPERTY(QString accessibleName READ accessibleName WRITE setAccessibleName)
     Q_PROPERTY(QString accessibleDescription READ accessibleDescription WRITE setAccessibleDescription)
+    Q_PROPERTY(QString accessibleIdentifier READ accessibleIdentifier WRITE setAccessibleIdentifier)
 #endif
     Q_PROPERTY(Qt::LayoutDirection layoutDirection READ layoutDirection WRITE setLayoutDirection RESET unsetLayoutDirection)
     QDOC_PROPERTY(Qt::WindowFlags windowFlags READ windowFlags WRITE setWindowFlags)
@@ -406,6 +407,8 @@ public:
     void setAccessibleName(const QString &name);
     QString accessibleDescription() const;
     void setAccessibleDescription(const QString &description);
+    QString accessibleIdentifier() const;
+    void setAccessibleIdentifier(const QString &identifier);
 #endif
 
     void setLayoutDirection(Qt::LayoutDirection direction);

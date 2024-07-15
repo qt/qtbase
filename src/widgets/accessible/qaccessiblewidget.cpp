@@ -383,6 +383,9 @@ QString QAccessibleWidget::text(QAccessible::Text t) const
             str = widget()->toolTip();
 #endif
         break;
+    case QAccessible::Identifier:
+        str = widget()->accessibleIdentifier();
+        break;
     case QAccessible::Help:
 #if QT_CONFIG(whatsthis)
         str = widget()->whatsThis();

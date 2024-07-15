@@ -20,6 +20,7 @@
 #ifdef Q_OS_WIN
 #include <QtCore/private/qfunctions_win_p.h>
 #endif
+#include <QtGui/private/qaccessiblebridgeutils_p.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
 
@@ -221,6 +222,7 @@ private slots:
     void dockWidgetTest();
     void comboBoxTest();
     void accessibleName();
+    void accessibleIdentifier();
 #if QT_CONFIG(shortcut)
     void labelTest();
     void relationTest();
@@ -641,6 +643,33 @@ void tst_QAccessibility::accessibleName()
         child->setAccessibleDescription(desc);
         QCOMPARE(acc->text(QAccessible::Description), desc);
     }
+    QTestAccessibility::clearEvents();
+}
+
+void tst_QAccessibility::accessibleIdentifier()
+{
+    const QString objectName("button_objectname");
+    const QString id("mybutton");
+
+    QMainWindow mainWindow;
+    QPushButton button("a button", &mainWindow);
+    button.setObjectName(objectName);
+    mainWindow.show();
+
+    // verify that default implementation for platform bridges generates
+    // an accessible ID that's based on (i.e. somehow contains) the object name
+    QAccessibleInterface* accessible = QAccessible::queryAccessibleInterface(&button);
+    QVERIFY(QAccessibleBridgeUtils::accessibleId(accessible).contains(objectName));
+
+    // explicitly set an accessible ID, verify event and that the ID is set to
+    // that exact string (not only containing it) afterwards
+    QTestAccessibility::clearEvents();
+    button.setAccessibleIdentifier(id);
+    QAccessibleEvent event(&button, QAccessible::IdentifierChanged);
+    QVERIFY(QTestAccessibility::containsEvent(&event));
+    QCOMPARE(button.accessibleIdentifier(), id);
+    QCOMPARE(QAccessibleBridgeUtils::accessibleId(accessible), id);
+
     QTestAccessibility::clearEvents();
 }
 

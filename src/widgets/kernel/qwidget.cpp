@@ -11841,6 +11841,32 @@ QString QWidget::accessibleDescription() const
     Q_D(const QWidget);
     return d->accessibleDescription;
 }
+
+/*!
+  \property QWidget::accessibleIdentifier
+
+  \brief the widget's identifier as seen by assistive technologies
+
+  If set, the accessible identifier of a widget can be used by assistive
+  technologies in order to identify a specific widget, e.g. in automated
+  tests.
+
+  \since 6.9
+*/
+void QWidget::setAccessibleIdentifier(const QString &identifier)
+{
+    Q_D(QWidget);
+    d->accessibleIdentifier = identifier;
+    QAccessibleEvent event(this, QAccessible::IdentifierChanged);
+    QAccessible::updateAccessibility(&event);
+}
+
+QString QWidget::accessibleIdentifier() const
+{
+    Q_D(const QWidget);
+    return d->accessibleIdentifier;
+}
+
 #endif // QT_CONFIG(accessibility)
 
 #ifndef QT_NO_SHORTCUT

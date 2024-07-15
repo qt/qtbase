@@ -683,6 +683,7 @@ public:
 #if QT_CONFIG(accessibility)
     QString accessibleName;
     QString accessibleDescription;
+    QString accessibleIdentifier;
 #endif
 
     // Other variables.
