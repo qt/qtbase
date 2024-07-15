@@ -43,7 +43,7 @@ public:
         QByteArray key;
         bool expires;
         bool shareable;
-        qint64 expiryTimeoutSeconds;
+        qint64 expiryTimeoutSeconds = -1;
     public:
         CacheableObject();
         virtual ~CacheableObject();
