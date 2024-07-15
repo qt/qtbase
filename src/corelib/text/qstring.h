@@ -993,7 +993,7 @@ public:
     emscripten::val toEcmaString() const;
 #endif
 
-    inline bool isNull() const { return d->isNull(); }
+    inline bool isNull() const { return d.isNull(); }
 
     bool isRightToLeft() const;
     [[nodiscard]] bool isValidUtf16() const noexcept
@@ -1248,14 +1248,14 @@ QChar *QString::data()
 const QChar *QString::constData() const
 { return data(); }
 void QString::detach()
-{ if (d->needsDetach()) reallocData(d.size, QArrayData::KeepSize); }
+{ if (d.needsDetach()) reallocData(d.size, QArrayData::KeepSize); }
 bool QString::isDetached() const
-{ return !d->isShared(); }
+{ return !d.isShared(); }
 void QString::clear()
 { if (!isNull()) *this = QString(); }
 QString::QString(const QString &other) noexcept : d(other.d)
 { }
-qsizetype QString::capacity() const { return qsizetype(d->constAllocatedCapacity()); }
+qsizetype QString::capacity() const { return qsizetype(d.constAllocatedCapacity()); }
 QString &QString::setNum(short n, int base)
 { return setNum(qlonglong(n), base); }
 QString &QString::setNum(ushort n, int base)
@@ -1326,20 +1326,20 @@ QString::~QString() {}
 
 void QString::reserve(qsizetype asize)
 {
-    if (d->needsDetach() || asize >= capacity() - d.freeSpaceAtBegin())
+    if (d.needsDetach() || asize >= capacity() - d.freeSpaceAtBegin())
         reallocData(qMax(asize, size()), QArrayData::KeepSize);
-    if (d->constAllocatedCapacity())
-        d->setFlag(Data::CapacityReserved);
+    if (d.constAllocatedCapacity())
+        d.setFlag(Data::CapacityReserved);
 }
 
 void QString::squeeze()
 {
     if (!d.isMutable())
         return;
-    if (d->needsDetach() || size() < capacity())
+    if (d.needsDetach() || size() < capacity())
         reallocData(d.size, QArrayData::KeepSize);
-    if (d->constAllocatedCapacity())
-        d->clearFlag(Data::CapacityReserved);
+    if (d.constAllocatedCapacity())
+        d.clearFlag(Data::CapacityReserved);
 }
 
 QString &QString::setUtf16(const ushort *autf16, qsizetype asize)

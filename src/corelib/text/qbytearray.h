@@ -492,7 +492,7 @@ public:
     static QByteArray fromStdString(const std::string &s);
     std::string toStdString() const;
 
-    inline qsizetype size() const noexcept { return d->size; }
+    inline qsizetype size() const noexcept { return d.size; }
 #if QT_DEPRECATED_SINCE(6, 4)
     QT_DEPRECATED_VERSION_X_6_4("Use size() or length() instead.")
     inline qsizetype count() const noexcept { return size(); }
@@ -624,30 +624,30 @@ inline const char *QByteArray::data() const noexcept
 #endif
 }
 inline void QByteArray::detach()
-{ if (d->needsDetach()) reallocData(size(), QArrayData::KeepSize); }
+{ if (d.needsDetach()) reallocData(size(), QArrayData::KeepSize); }
 inline bool QByteArray::isDetached() const
-{ return !d->isShared(); }
+{ return !d.isShared(); }
 inline QByteArray::QByteArray(const QByteArray &a) noexcept : d(a.d)
 {}
 
-inline qsizetype QByteArray::capacity() const { return qsizetype(d->constAllocatedCapacity()); }
+inline qsizetype QByteArray::capacity() const { return qsizetype(d.constAllocatedCapacity()); }
 
 inline void QByteArray::reserve(qsizetype asize)
 {
-    if (d->needsDetach() || asize > capacity() - d->freeSpaceAtBegin())
+    if (d.needsDetach() || asize > capacity() - d.freeSpaceAtBegin())
         reallocData(qMax(size(), asize), QArrayData::KeepSize);
-    if (d->constAllocatedCapacity())
-        d->setFlag(Data::CapacityReserved);
+    if (d.constAllocatedCapacity())
+        d.setFlag(Data::CapacityReserved);
 }
 
 inline void QByteArray::squeeze()
 {
     if (!d.isMutable())
         return;
-    if (d->needsDetach() || size() < capacity())
+    if (d.needsDetach() || size() < capacity())
         reallocData(size(), QArrayData::KeepSize);
-    if (d->constAllocatedCapacity())
-        d->clearFlag(Data::CapacityReserved);
+    if (d.constAllocatedCapacity())
+        d.clearFlag(Data::CapacityReserved);
 }
 
 inline char &QByteArray::operator[](qsizetype i)
@@ -704,7 +704,7 @@ inline QByteArray &QByteArray::setNum(float n, char format, int precision)
 #if QT_CORE_INLINE_IMPL_SINCE(6, 4)
 bool QByteArray::isNull() const noexcept
 {
-    return d->isNull();
+    return d.isNull();
 }
 #endif
 #if QT_CORE_INLINE_IMPL_SINCE(6, 8)
