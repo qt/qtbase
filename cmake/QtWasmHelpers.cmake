@@ -72,6 +72,12 @@ function (qt_internal_setup_wasm_target_properties wasmTarget)
 
         target_link_options("${wasmTarget}" INTERFACE "SHELL:-s ASYNCIFY" "-Os")
         target_compile_definitions("${wasmTarget}" INTERFACE QT_HAVE_EMSCRIPTEN_ASYNCIFY)
+    elseif ("QT_EMSCRIPTEN_ASYNCIFY=2" IN_LIST QT_QMAKE_DEVICE_OPTIONS)
+        # Enable JSPI (also known as asyncify 2). Unlike asyncify 1 this
+        # is supported natively by the browsers, and does not require
+        # enabling optimizations.
+        target_link_options("${wasmTarget}" INTERFACE "SHELL:-s JSPI")
+        target_compile_definitions("${wasmTarget}" INTERFACE QT_HAVE_EMSCRIPTEN_ASYNCIFY)
     endif()
 
     #  Set ASYNCIFY_IMPORTS unconditionally in order to support enabling asyncify at link time.
