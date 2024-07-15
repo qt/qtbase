@@ -20,6 +20,7 @@
 #endif
 #include <QtWidgets/qtextedit.h>
 #include <QtWidgets/qtreeview.h>
+#include <QtWidgets/qdatetimeedit.h>
 
 #include "qdrawutil.h"
 #include <chrono>
@@ -272,7 +273,6 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
             }
             if (sub & SC_SpinBoxUp) {
                 QRect rect = proxy()->subControlRect(CC_SpinBox, option, SC_SpinBoxUp, widget).adjusted(0, 0, 0, 1);
-                float scale = rect.width() >= 16 ? 1.0 : rect.width()/16.0;
                 if (rect.contains(mousePos)) {
                     painter->setPen(Qt::NoPen);
                     painter->setBrush(QBrush(hoverColor));
@@ -280,7 +280,6 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                 }
                 painter->save();
                 painter->translate(rect.center());
-                painter->scale(scale,scale);
                 painter->translate(-rect.center());
                 painter->setFont(assetFont);
                 painter->setPen(sb->palette.buttonText().color());
@@ -290,7 +289,6 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
             }
             if (sub & SC_SpinBoxDown) {
                 QRect rect = proxy()->subControlRect(CC_SpinBox, option, SC_SpinBoxDown, widget);
-                float scale = rect.width() >= 16 ? 1.0 : rect.width()/16.0;
                 if (rect.contains(mousePos)) {
                     painter->setPen(Qt::NoPen);
                     painter->setBrush(QBrush(hoverColor));
@@ -298,7 +296,6 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                 }
                 painter->save();
                 painter->translate(rect.center());
-                painter->scale(scale,scale);
                 painter->translate(-rect.center());
                 painter->setFont(assetFont);
                 painter->setPen(sb->palette.buttonText().color());
@@ -1887,7 +1884,7 @@ QRect QWindows11Style::subControlRect(ComplexControl control, const QStyleOption
             QSize bs;
             int fw = spinbox->frame ? proxy()->pixelMetric(PM_SpinBoxFrameWidth, spinbox, widget) : 0;
             bs.setHeight(qMax(8, spinbox->rect.height() - fw));
-            bs.setWidth(qMin(24.0, spinbox->rect.width()*(1.0/4.0)));
+            bs.setWidth(16);
             int y = fw + spinbox->rect.y();
             int x, lx, rx;
             x = spinbox->rect.x() + spinbox->rect.width() - fw - 2 * bs.width();
@@ -2067,7 +2064,37 @@ QSize QWindows11Style::sizeFromContents(ContentsType type, const QStyleOption *o
         }
         break;
 #endif
+    case QStyle::CT_SpinBox: {
+        if (const auto *spinBoxOpt = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
+            if (qobject_cast<const QDateTimeEdit *>(widget))
+                break;
 
+            // Add button + frame widths
+            int width = 0;
+            if (const QSpinBox *spinBox = qobject_cast<const QSpinBox *>(widget)) {
+                const QSize textSizeMin = spinBoxOpt->fontMetrics.size(Qt::TextSingleLine, QString::number(spinBox->minimum()));
+                const QSize textSizeMax = spinBoxOpt->fontMetrics.size(Qt::TextSingleLine, QString::number(spinBox->maximum()));
+                width = qMax(textSizeMin.width(),textSizeMax.width());
+                width += spinBoxOpt->fontMetrics.size(Qt::TextSingleLine, spinBox->prefix()).width();
+                width += spinBoxOpt->fontMetrics.size(Qt::TextSingleLine, spinBox->suffix()).width();
+
+            } else if (const QDoubleSpinBox *spinBox = qobject_cast<const QDoubleSpinBox *>(widget)) {
+                const QSize textSizeMin = spinBoxOpt->fontMetrics.size(Qt::TextSingleLine, QString::number(spinBox->minimum()));
+                const QSize textSizeMax = spinBoxOpt->fontMetrics.size(Qt::TextSingleLine, QString::number(spinBox->maximum()));
+                width = qMax(textSizeMin.width(),textSizeMax.width());
+                width += spinBoxOpt->fontMetrics.size(Qt::TextSingleLine, spinBox->prefix()).width();
+                width += spinBoxOpt->fontMetrics.size(Qt::TextSingleLine, spinBox->suffix()).width();
+            }
+            const qreal dpi = QStyleHelper::dpi(option);
+            const bool hasButtons = (spinBoxOpt->buttonSymbols != QAbstractSpinBox::NoButtons);
+            const int buttonWidth = hasButtons ? 2 * qRound(QStyleHelper::dpiScaled(16, dpi)) : 0;
+            const int frameWidth = spinBoxOpt->frame ? proxy()->pixelMetric(PM_SpinBoxFrameWidth,
+                                                                            spinBoxOpt, widget) : 0;
+            contentSize.setWidth(2 * 12 + width);
+            contentSize += QSize(buttonWidth + 2 * frameWidth, 2 * frameWidth);
+        }
+        break;
+    }
     default:
         contentSize = QWindowsVistaStyle::sizeFromContents(type, option, size, widget);
         break;
