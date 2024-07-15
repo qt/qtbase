@@ -3144,7 +3144,16 @@ char *QTest::toString(const volatile QObject *vo)
     if (vo == nullptr)
         return qstrdup("<null>");
 
-    auto *o = const_cast<const QObject*>(vo);
+    return QTest::toString(const_cast<const QObject*>(vo));
+}
+
+/*! \internal
+*/
+char *QTest::toString(const QObject *o)
+{
+    if (o == nullptr)
+        return qstrdup("<null>");
+
     const QString &name = o->objectName();
     const char *className = o->metaObject()->className();
     char *msg = new char[256];
@@ -3154,6 +3163,7 @@ char *QTest::toString(const volatile QObject *vo)
         qsnprintf(msg, 256, "%s/\"%s\"", className, qPrintable(name));
     return msg;
 }
+
 
 /*! \fn char *QTest::toString(const QColor &color)
     \internal

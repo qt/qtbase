@@ -1423,7 +1423,7 @@
 */
 
 /*!
-    \fn template<typename T, QTest::Internal::is_suitable_type_v<T> = true> char *QTest::toString(const T &value)
+    \fn template <typename T> char *QTest::toString(const T &value)
 
     Returns a textual representation of \a value. This function is used by
     \l QCOMPARE() to output verbose information in case of a test failure.
