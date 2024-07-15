@@ -1276,6 +1276,13 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
             const qreal offset = (orientation == Qt::Horizontal && int(rect.height()) % 2 == 0)
                             || (orientation == Qt::Vertical && int(rect.width()) % 2 == 0) ? 0.5 : 0.0;
 
+            if (isIndeterminate) {
+                if (!d->animation(option->styleObject))
+                    d->startAnimation(new QProgressStyleAnimation(d->animationFps, option->styleObject));
+            } else {
+                d->stopAnimation(option->styleObject);
+            }
+
             if (!isIndeterminate) {
                 fillPercentage = ((float(progbaropt->progress) - float(progbaropt->minimum)) / (float(progbaropt->maximum) - float(progbaropt->minimum)));
                 if (orientation == Qt::Horizontal) {
@@ -1290,22 +1297,23 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                     rect.setHeight(oldHeight * fillPercentage);
                 }
             } else {
-                auto elapsedTime = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
-                fillPercentage = (elapsedTime.time_since_epoch().count() % 5000)/(5000.0f*0.75);
-                if (orientation == Qt::Horizontal) {
-                    float barBegin = qMin(qMax(fillPercentage-0.25,0.0) * rect.width(), float(rect.width()));
-                    float barEnd = qMin(fillPercentage * rect.width(), float(rect.width()));
-                    rect = QRect(QPoint(rect.left() + barBegin, rect.top()), QPoint(rect.left() + barEnd, rect.bottom()));
-                    rect.setHeight(progressBarThickness);
-                    rect.moveTop(center.y() - progressBarHalfThickness - offset);
-                } else {
-                    float barBegin = qMin(qMax(fillPercentage-0.25,0.0) * rect.height(), float(rect.height()));
-                    float barEnd = qMin(fillPercentage * rect.height(), float(rect.height()));
-                    rect = QRect(QPoint(rect.left(), rect.bottom() - barEnd), QPoint(rect.right(), rect.bottom() - barBegin));
-                    rect.setWidth(progressBarThickness);
-                    rect.moveLeft(center.x() - progressBarHalfThickness - offset);
+                if (qobject_cast<QProgressStyleAnimation *>(d->animation(option->styleObject))) {
+                    auto elapsedTime = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
+                    fillPercentage = (elapsedTime.time_since_epoch().count() % 5000)/(5000.0f*0.75);
+                    if (orientation == Qt::Horizontal) {
+                        float barBegin = qMin(qMax(fillPercentage-0.25,0.0) * rect.width(), float(rect.width()));
+                        float barEnd = qMin(fillPercentage * rect.width(), float(rect.width()));
+                        rect = QRect(QPoint(rect.left() + barBegin, rect.top()), QPoint(rect.left() + barEnd, rect.bottom()));
+                        rect.setHeight(progressBarThickness);
+                        rect.moveTop(center.y() - progressBarHalfThickness - offset);
+                    } else {
+                        float barBegin = qMin(qMax(fillPercentage-0.25,0.0) * rect.height(), float(rect.height()));
+                        float barEnd = qMin(fillPercentage * rect.height(), float(rect.height()));
+                        rect = QRect(QPoint(rect.left(), rect.bottom() - barEnd), QPoint(rect.right(), rect.bottom() - barBegin));
+                        rect.setWidth(progressBarThickness);
+                        rect.moveLeft(center.x() - progressBarHalfThickness - offset);
+                    }
                 }
-                const_cast<QWidget*>(widget)->update();
             }
             if (progbaropt->invertedAppearance && orientation == Qt::Horizontal)
                 rect.moveLeft(originalRect.width() * (1.0 - fillPercentage));
