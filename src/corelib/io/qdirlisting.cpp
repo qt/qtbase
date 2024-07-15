@@ -6,6 +6,7 @@
     \since 6.8
     \class QDirListing
     \inmodule QtCore
+    \ingroup  io
     \brief The QDirListing class provides an STL-style iterator for directory entries.
 
     You can use QDirListing to navigate entries of a directory one at a time.
@@ -717,6 +718,25 @@ QDirListing::const_iterator &QDirListing::const_iterator::operator++()
         *this = {}; // All done, make `this` the end() iterator
     return *this;
 }
+
+/*!
+    \class QDirListing::DirEntry
+    \inmodule QtCore
+    \ingroup  io
+
+    Dereferencing a valid QDirListing::const_iterator returns a DirEntry
+    object.
+
+    DirEntry offers a subset of QFileInfo's API (for example, fileName(),
+    filePath(), exists()). Internally, DirEntry only constructs a QFileInfo
+    object if needed, that is, if the info hasn't been already fetched
+    by other system functions. You can use DirEntry::fileInfo() to get a
+    QFileInfo. For example:
+
+    \snippet code/src_corelib_io_qdirlisting.cpp 3
+
+    \snippet code/src_corelib_io_qdirlisting.cpp 4
+*/
 
 /*!
     \fn QFileInfo QDirListing::DirEntry::fileInfo() const
