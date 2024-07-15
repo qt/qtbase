@@ -338,7 +338,7 @@ function(qt_internal_add_example_external_project subdir)
     list(TRANSFORM glob_prefixes APPEND "/${INSTALL_LIBDIR}/cmake/${QT_CMAKE_EXPORT_NAMESPACE}Qml")
 
     set(qml_plugin_cmake_config_file_glob_prefixes "")
-    foreach(glob_prefix IN LISTS glob_prefix)
+    foreach(glob_prefix IN LISTS glob_prefixes)
         if(EXISTS "${glob_prefix}")
             list(APPEND qml_plugin_cmake_config_file_glob_prefixes "${glob_prefix}")
         endif()
