@@ -106,8 +106,8 @@
     \ingroup frameworks-technologies
     \since 6.8
 
-    The QJniArray template makes it easy to work with arrays when interfacing
-    with Java methods that return or take a Java array.
+    The QJniArray template makes it easy to work with Java methods that return
+    or take a Java array.
 
     \note \l{Java arrays} can hold primitive types and objects. The array
     itself can be treated like a Java Object, and the JNI framework provides
@@ -121,13 +121,13 @@
 
     \code
     QList<int> intList;
-    QJniArray intArray = QJniArray(intList);
+    const QJniArray intArray = QJniArray(intList);
     \endcode
 
     or from an initializer list:
 
     \code
-    QJniArray intArray{1, 2, 3};
+    const QJniArray intArray{1, 2, 3};
     \endcode
 
     QJniArray will create a new Java array and copy the C++-side data into it.
@@ -137,24 +137,42 @@
     return type as a C array (\c{jchar[]} in the following):
 
     \code
-    auto charArray = stringObject.callMethod<jchar[]>("toCharArray");
+    const auto charArray = stringObject.callMethod<jchar[]>("toCharArray");
     \endcode
 
     The \c{charArray} variable will be of type \c{QJniArray<jchar>}, and hold
     a new global reference to the \c{jcharArray} JNI object.
 
-    Lastly, a QJniArray can be constructed from an existing \c{jarray} or
+    Note that the arrays in the code snippets above are all const. Accessing
+    elements in a const array is considerably more efficient than operating on
+    a mutable array.
+
+    A QJniArray can also be constructed from an existing \c{jarray} or
     QJniObject. However, note that no type checking is performed to verify that
     the \c{jarray} or QJniObject indeed represents an array holding elements of
     the specified type, and accessing a mismatching QJniArray results in
     undefined behavior.
 
     The data in a QJniArray can either be accessed element by element using
-    at() or \l{QJniArray::}{operator[]()}, iterated over, or copied into a
-    suitable C++ container via the toContainer() function.
+    at() or \l{QJniArray::}{operator[]()}, or iterated over.
 
     \code
-    QList<jchar> characters = charArray.toContainer();
+    for (const auto &value : array)
+        process(value);
+    \endcode
+
+    To copy the entire array into a C++ side Qt container, use the toContainer()
+    function.
+
+    \code
+    const auto bytes = object.callMethod<jbyte[]>("getBytes");
+    QByteArray data = bytes.toContainer();
+    \endcode
+
+    which happens implicitly in
+
+    \code
+    const auto data = object.callMethod<QByteArray>("getBytes");
     \endcode
 
     The return type of toContainer() depends on the type that QJniArray has
@@ -182,8 +200,27 @@
     \endtable
 //! [type-mapping]
 
-    The elements in the QJniArray cannot be modified through QJniArray APIs,
-    and there is no mutating iterator.
+    An array of a fixed size can also be created without any data, and can then
+    be populated element by element using
+    \l{QJniArray::operator[]()}{operator[]}:
+
+    \code
+    QJniArray<jint> intArray(size);
+    for (int i = 0; i < size; ++i)
+        intArray[i] = i;
+    \endcode
+
+    or a mutable iterator:
+
+    \code
+    QJniArray<QString> strings(size);
+    int i = 0;
+    for (auto string : strings) // note: not 'auto &string'
+        string = u"Row %1"_s.arg(i++);
+    \endcode
+
+    As in Java, the size of an array can not be changed, but the array variable
+    can be assigned to a different array.
 
     \note Java arrays are limited to 32 bits, and the \c{size_type} member type of
           QJniArray is \c{jsize}, which is a 32bit integer type. Trying to construct
@@ -299,6 +336,14 @@
 */
 
 /*!
+    \fn template <typename T> QJniArray<T>::QJniArray(size_type size)
+    \since 6.9
+
+    Constructs an empty QJniArray of size \a size. The elements in the array do
+    not get initialized.
+*/
+
+/*!
     \fn template <typename T> QJniArray<T>::~QJniArray()
 
     Destroys the QJniArray object and releases any references held to the
@@ -351,10 +396,11 @@
 
 /*!
     \fn template <typename T> const_iterator QJniArray<T>::begin() const
+    \fn template <typename T> iterator QJniArray<T>::begin()
     \fn template <typename T> const_iterator QJniArray<T>::constBegin() const
     \fn template <typename T> const_iterator QJniArray<T>::cbegin() const
 
-    Returns an \l{STL-style iterators}{STL-style iterator} pointing to the
+    Returns an \l{STL-style iterators}{STL-style const iterator} pointing to the
     first item in the array.
 
     If the array is \l{QJniArrayBase::isValid()}{invalid}, then this will return
@@ -365,6 +411,7 @@
 
 /*!
     \fn template <typename T> const_iterator QJniArray<T>::end() const
+    \fn template <typename T> iterator QJniArray<T>::end()
     \fn template <typename T> const_iterator QJniArray<T>::constEnd() const
     \fn template <typename T> const_iterator QJniArray<T>::cend() const
 
@@ -376,6 +423,7 @@
 
 /*!
     \fn template <typename T> const_reverse_iterator QJniArray<T>::rbegin() const
+    \fn template <typename T> reverse_iterator QJniArray<T>::rbegin()
     \fn template <typename T> const_reverse_iterator QJniArray<T>::crbegin() const
 
     Returns an \l{STL-style iterators}{STL-style reverse iterator} pointing to
@@ -389,6 +437,7 @@
 
 /*!
     \fn template <typename T> const_reverse_iterator QJniArray<T>::rend() const
+    \fn template <typename T> reverse_iterator QJniArray<T>::rend()
     \fn template <typename T> const_reverse_iterator QJniArray<T>::crend() const
 
     Returns an \l{STL-style iterators}{STL-style reverse iterator} pointing just
@@ -407,6 +456,37 @@
     0 <= \a i < size()).
 
     \sa size()
+*/
+
+/*!
+    \fn template <typename T> QJniArray<T>::reference QJniArray<T>::operator[](size_type i)
+    \since 6.9
+
+    Returns a reference object for value at position \a i in the wrapped Java
+    array.
+
+    \a i must be a valid index position in the list (i.e., 0 <= \a i < size()).
+
+    The returned reference object holds the value at position \a i, and in most
+    cases will convert implicitly to the value. Assigning to the returned
+    reference will overwrite the entry in the Java array. However, calling
+    mutating member functions on the object will not modify the entry in the
+    array. To call member function on the result of this operator, dereference
+    the reference object:
+
+    \code
+    QJniArray<QString> strings = object.callMethod<QString[]>("getStrings");
+    if (!strings.isEmpty()) {
+        if (!(*array[0]).isEmpty()) {
+            // ...
+        }
+    }
+    \endcode
+
+    However, if modifying the value in the array itself is not intended, make
+    the array const, or use \l{at()} instead.
+
+    \sa at(), size()
 */
 
 /*!

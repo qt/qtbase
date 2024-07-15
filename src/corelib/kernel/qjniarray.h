@@ -22,10 +22,16 @@ using jarray = jobject;
 QT_BEGIN_NAMESPACE
 
 template <typename T> class QJniArray;
+template <typename T> struct QJniArrayMutableIterator;
+
 template <typename T>
 struct QJniArrayIterator
 {
 private:
+    using VT = std::remove_const_t<T>;
+    friend class QJniArray<VT>;
+    friend struct QJniArrayMutableIterator<VT>;
+
     // Since QJniArray doesn't hold values, we need a wrapper to be able to hand
     // out a pointer to a value.
     struct QJniArrayValueRef {
@@ -35,6 +41,12 @@ private:
 
 public:
     QJniArrayIterator() = default;
+    constexpr QJniArrayIterator(const QJniArrayMutableIterator<VT> &other) noexcept
+        : m_index(other.m_index), m_array(other.m_array)
+    {}
+    constexpr QJniArrayIterator(QJniArrayMutableIterator<VT> &&other) noexcept
+        : m_index(std::exchange(other.m_index, -1)), m_array(std::exchange(other.m_array, nullptr))
+    {}
 
     constexpr QJniArrayIterator(const QJniArrayIterator &other) noexcept = default;
     constexpr QJniArrayIterator(QJniArrayIterator &&other) noexcept = default;
@@ -137,15 +149,209 @@ private:
     }
     Q_DECLARE_STRONGLY_ORDERED(QJniArrayIterator)
 
-    using VT = std::remove_const_t<T>;
-    friend class QJniArray<VT>;
-
     qsizetype m_index = 0;
     const QJniArray<VT> *m_array = nullptr;
 
     QJniArrayIterator(qsizetype index, const QJniArray<VT> *array)
         : m_index(index), m_array(array)
     {}
+};
+
+template <typename T> // need to specialize traits for it, so can't be nested
+struct QJniArrayMutableValueRef;
+
+template <typename T>
+struct QJniArrayMutableIterator
+{
+private:
+    friend struct QJniArrayIterator<const T>;
+    friend struct QJniArrayMutableValueRef<T>;
+
+public:
+    constexpr QJniArrayMutableIterator() noexcept = default;
+    constexpr QJniArrayMutableIterator(const QJniArrayIterator<const T> &other) noexcept
+        : m_index(other.m_index), m_array(other.m_array)
+    {}
+    constexpr QJniArrayMutableIterator(QJniArrayIterator<const T> &&other) noexcept
+        : m_index(std::exchange(other.m_index, -1)), m_array(std::exchange(other.m_array, nullptr))
+    {}
+
+    constexpr QJniArrayMutableIterator(const QJniArrayMutableIterator &other) noexcept = default;
+    constexpr QJniArrayMutableIterator(QJniArrayMutableIterator &&other) noexcept = default;
+    constexpr QJniArrayMutableIterator &operator=(const QJniArrayMutableIterator &other) noexcept = default;
+    constexpr QJniArrayMutableIterator &operator=(QJniArrayMutableIterator &&other) noexcept = default;
+
+    using difference_type = jsize;
+    using value_type = T;
+    using pointer = QJniArrayMutableValueRef<T>;
+    using reference = QJniArrayMutableValueRef<T>; // difference to container requirements
+    using const_reference = T;
+    using iterator_category = std::random_access_iterator_tag;
+
+    const_reference operator*() const
+    {
+        return m_array->at(m_index);
+    }
+
+    reference operator*()
+    {
+        return {m_array->at(m_index), *this};
+    }
+
+    const pointer operator->() const
+    {
+        return {m_array->at(m_index)};
+    }
+
+    pointer operator->()
+    {
+        return {m_array->at(m_index), *this};
+    }
+
+    const_reference operator[](difference_type n) const
+    {
+        return m_array->at(m_index + n);
+    }
+    reference operator[](difference_type n)
+    {
+        return {m_array->at(m_index + n), *this};
+    }
+
+    friend QJniArrayMutableIterator &operator++(QJniArrayMutableIterator &that) noexcept
+    {
+        ++that.m_index;
+        return that;
+    }
+    friend QJniArrayMutableIterator operator++(QJniArrayMutableIterator &that, difference_type) noexcept
+    {
+        auto copy = that;
+        ++that;
+        return copy;
+    }
+    friend QJniArrayMutableIterator operator+(const QJniArrayMutableIterator &that, difference_type n) noexcept
+    {
+        return {that.m_index + n, that.m_array};
+    }
+    friend QJniArrayMutableIterator operator+(difference_type n, const QJniArrayMutableIterator &that) noexcept
+    {
+        return that + n;
+    }
+    friend QJniArrayMutableIterator &operator+=(QJniArrayMutableIterator &that, difference_type n) noexcept
+    {
+        that.m_index += n;
+        return that;
+    }
+    friend QJniArrayMutableIterator &operator--(QJniArrayMutableIterator &that) noexcept
+    {
+        --that.m_index;
+        return that;
+    }
+    friend QJniArrayMutableIterator operator--(QJniArrayMutableIterator &that, difference_type) noexcept
+    {
+        auto copy = that;
+        --that;
+        return copy;
+    }
+    friend QJniArrayMutableIterator operator-(const QJniArrayMutableIterator &that, difference_type n) noexcept
+    {
+        return {that.m_index - n, that.m_array};
+    }
+    friend QJniArrayMutableIterator operator-(difference_type n, const QJniArrayMutableIterator &that) noexcept
+    {
+        return {n - that.m_index, that.m_array};
+    }
+    friend QJniArrayMutableIterator &operator-=(QJniArrayMutableIterator &that, difference_type n) noexcept
+    {
+        that.m_index -= n;
+        return that;
+    }
+    friend difference_type operator-(const QJniArrayMutableIterator &lhs,
+                                     const QJniArrayMutableIterator &rhs) noexcept
+    {
+        Q_ASSERT(lhs.m_array == rhs.m_array);
+        return lhs.m_index - rhs.m_index;
+    }
+    void swap(QJniArrayMutableIterator &other) noexcept
+    {
+        std::swap(m_index, other.m_index);
+        qt_ptr_swap(m_array, other.m_array);
+    }
+
+private:
+    friend constexpr bool comparesEqual(const QJniArrayMutableIterator &lhs,
+                                        const QJniArrayMutableIterator &rhs) noexcept
+    {
+        Q_ASSERT(lhs.m_array == rhs.m_array);
+        return lhs.m_index == rhs.m_index;
+    }
+    friend constexpr bool comparesEqual(const QJniArrayMutableIterator &lhs,
+                                        const QJniArrayIterator<const T> &rhs) noexcept
+    {
+        Q_ASSERT(lhs.m_array == rhs.m_array);
+        return lhs.m_index == rhs.m_index;
+    }
+    friend constexpr Qt::strong_ordering compareThreeWay(const QJniArrayMutableIterator &lhs,
+                                                         const QJniArrayMutableIterator &rhs) noexcept
+    {
+        Q_ASSERT(lhs.m_array == rhs.m_array);
+        return Qt::compareThreeWay(lhs.m_index, rhs.m_index);
+    }
+    friend constexpr Qt::strong_ordering compareThreeWay(const QJniArrayMutableIterator &lhs,
+                                                         const QJniArrayIterator<const T> &rhs) noexcept
+    {
+        Q_ASSERT(lhs.m_array == rhs.m_array);
+        return Qt::compareThreeWay(lhs.m_index, rhs.m_index);
+    }
+    Q_DECLARE_STRONGLY_ORDERED(QJniArrayMutableIterator)
+    Q_DECLARE_STRONGLY_ORDERED(QJniArrayMutableIterator, QJniArrayIterator<const T>)
+
+    using VT = std::remove_const_t<T>;
+    friend class QJniArray<VT>;
+
+    qsizetype m_index = 0;
+    QJniArray<VT> *m_array = nullptr;
+
+    QJniArrayMutableIterator(qsizetype index, QJniArray<VT> *array)
+        : m_index(index), m_array(array)
+    {}
+};
+
+template <typename T> // need to specialize traits for it, so can't be nested
+struct QJniArrayMutableValueRef {
+    using refwrapper = T;
+    T value;
+    QJniArrayMutableIterator<T> back = {-1, nullptr};
+
+    operator T() const { return value; }
+    const T &operator*() const { return value; }
+    T &operator*() { return value; }
+
+    const T *operator->() const { return &value; }
+    T *operator->() = delete; // no write-back, so delete explicitly
+
+    QJniArrayMutableValueRef &operator=(const QJniArrayMutableValueRef &other)
+    {
+        return *this = *other;
+    }
+    QJniArrayMutableValueRef &operator=(QJniArrayMutableValueRef &&other)
+    {
+        return *this = std::move(*other);
+    }
+
+    QJniArrayMutableValueRef &operator=(const T &v)
+    {
+        Q_ASSERT(back.m_array);
+        value = v;
+        back.m_array->setValue(back.m_index, value);
+        return *this;
+    }
+    QJniArrayMutableValueRef &operator=(T &&v)
+    {
+        Q_ASSERT(back.m_array);
+        value = std::move(v);
+        back.m_array->setValue(back.m_index, value);
+        return *this;
+    }
 };
 
 class QJniArrayBase
@@ -347,6 +553,48 @@ protected:
     static auto makeArray(List &&list, NewFn &&newArray, SetFn &&setRegion);
     template <typename List>
     static auto makeObjectArray(List &&list);
+    template <typename ElementType>
+    static auto makeEmptyArray(size_type size)
+    {
+        auto env = QJniEnvironment();
+        if constexpr (std::disjunction_v<std::is_base_of<std::remove_pointer_t<jobject>,
+                                                         std::remove_pointer_t<ElementType>>,
+                                        std::is_same<ElementType, QJniObject>,
+                                        std::is_same<ElementType, QString>,
+                                        std::is_base_of<QtJniTypes::JObjectBase, ElementType>
+                             >) {
+            using ResultType = decltype(std::declval<QJniObject::LocalFrame<void>>().convertToJni(
+                                            std::declval<ElementType>()));
+            const auto className = QtJniTypes::Traits<ResultType>::className();
+            jclass elementClass = env.findClass(className);
+            if (!elementClass) {
+                env.checkAndClearExceptions();
+                return jobjectArray(nullptr);
+            }
+            return env->NewObjectArray(size, elementClass, nullptr);
+        } else if constexpr (QtJniTypes::sameTypeForJni<ElementType, jfloat>) {
+            return env->NewFloatArray(size);
+        } else if constexpr (QtJniTypes::sameTypeForJni<ElementType, jdouble>) {
+            return env->NewDoubleArray(size);
+        } else if constexpr (QtJniTypes::sameTypeForJni<ElementType, jboolean>) {
+            return env->NewBooleanArray(size);
+        } else if constexpr (std::disjunction_v<std::is_same<ElementType, jbyte>,
+                                                std::is_same<ElementType, char>>) {
+            return env->NewByteArray(size);
+        } else if constexpr (std::disjunction_v<std::is_same<ElementType, jchar>,
+                                                std::is_same<ElementType, QChar>>) {
+            return env->NewCharArray(size);
+        } else if constexpr (QtJniTypes::sameTypeForJni<ElementType, jshort>) {
+            return env->NewShortArray(size);
+        } else if constexpr (QtJniTypes::sameTypeForJni<ElementType, jint>) {
+            return env->NewIntArray(size);
+        } else if constexpr (QtJniTypes::sameTypeForJni<ElementType, jlong>) {
+            return env->NewLongArray(size);
+        } else {
+            static_assert(QtPrivate::type_dependent_false<ElementType>(),
+                          "Don't know how to make QJniArray for this element type");
+        }
+    }
 
     void swap(QJniArrayBase &other) noexcept { m_object.swap(other.m_object); }
 
@@ -368,12 +616,13 @@ public:
     using Type = T;
 
     using value_type = T;
-    using reference = T;
-    using const_reference = const reference;
-
-    // read-only container, so no iterator typedef
+    using iterator = QJniArrayMutableIterator<T>;
+    using reverse_iterator = std::reverse_iterator<iterator>;
     using const_iterator = QJniArrayIterator<const T>;
     using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+
+    using reference = typename iterator::reference;
+    using const_reference = typename const_iterator::const_reference;
 
     QJniArray() = default;
     explicit QJniArray(jarray array) : QJniArrayBase(array) {}
@@ -420,6 +669,10 @@ public:
     {
     }
 
+    explicit QJniArray(size_type size)
+        : QJniArrayBase(makeEmptyArray<T>(size))
+    {}
+
     ~QJniArray() = default;
 
     auto arrayObject() const
@@ -455,12 +708,19 @@ public:
     const_iterator constEnd() const noexcept { return {end()}; }
     const_iterator cend() const noexcept { return {end()}; }
 
+    iterator begin() noexcept { return {0, this}; }
+    iterator end() noexcept { return {size(), this}; }
+
     const_reverse_iterator rbegin() const noexcept { return const_reverse_iterator(end()); }
     const_reverse_iterator rend() const noexcept { return const_reverse_iterator(begin()); }
     const_reverse_iterator crbegin() const noexcept { return const_reverse_iterator(end()); }
     const_reverse_iterator crend() const noexcept { return const_reverse_iterator(begin()); }
 
+    reverse_iterator rbegin() noexcept { return reverse_iterator(end());  }
+    reverse_iterator rend() noexcept { return reverse_iterator(begin());  }
+
     const_reference operator[](size_type i) const { return at(i); }
+    reference operator[](size_type i) { return reference{at(i), iterator{i, this}}; }
     const_reference at(size_type i) const
     {
         JNIEnv *env = jniEnv();
@@ -474,11 +734,15 @@ public:
                 return T{element};
         } else if constexpr (std::is_same_v<QString, T>) {
             jstring string = static_cast<jstring>(env->GetObjectArrayElement(arrayObject(), i));
-            const auto length = env->GetStringLength(string);
-            QString res(length, Qt::Uninitialized);
-            env->GetStringRegion(string, 0, length, reinterpret_cast<jchar *>(res.data()));
-            env->DeleteLocalRef(string);
-            return res;
+            if (string) {
+                const auto length = env->GetStringLength(string);
+                QString res(length, Qt::Uninitialized);
+                env->GetStringRegion(string, 0, length, reinterpret_cast<jchar *>(res.data()));
+                env->DeleteLocalRef(string);
+                return res;
+            } else {
+                return QString();
+            }
         } else if constexpr (std::is_base_of_v<std::remove_pointer_t<jobject>, std::remove_pointer_t<T>>) {
             // jstring, jclass etc
             return static_cast<T>(env->GetObjectArrayElement(object<jobjectArray>(), i));
@@ -501,6 +765,39 @@ public:
             else if constexpr (QtJniTypes::sameTypeForJni<T, jdouble>)
                 env->GetDoubleArrayRegion(object<jdoubleArray>(), i, 1, &res);
             return res;
+        }
+    }
+
+    void setValue(size_type i, const_reference &val)
+    {
+        JNIEnv *env = jniEnv();
+
+        if constexpr (std::disjunction_v<std::is_base_of<QtJniTypes::JObjectBase, T>,
+                                         std::is_same<QJniObject, T>>) {
+            env->SetObjectArrayElement(object<jobjectArray>(), i, val.object());
+        } else if constexpr (std::is_same_v<QString, T>) {
+            env->SetObjectArrayElement(object<jobjectArray>(), i,
+                                       QJniObject::fromString(val).template object<jstring>());
+        } else if constexpr (std::is_base_of_v<std::remove_pointer_t<jobject>, std::remove_pointer_t<T>>) {
+            // jstring, jclass etc
+            env->SetObjectArrayElement(object<jobjectArray>(), i, val);
+        } else { // primitive types
+            if constexpr (QtJniTypes::sameTypeForJni<T, jbyte>)
+                env->SetByteArrayRegion(object<jbyteArray>(), i, 1, &val);
+            else if constexpr (QtJniTypes::sameTypeForJni<T, jchar>)
+                env->SetCharArrayRegion(object<jcharArray>(), i, 1, &val);
+            else if constexpr (QtJniTypes::sameTypeForJni<T, jboolean>)
+                env->SetBooleanArrayRegion(object<jbooleanArray>(), i, 1, &val);
+            else if constexpr (QtJniTypes::sameTypeForJni<T, jshort>)
+                env->SetShortArrayRegion(object<jshortArray>(), i, 1, &val);
+            else if constexpr (QtJniTypes::sameTypeForJni<T, jint>)
+                env->SetIntArrayRegion(object<jintArray>(), i, 1, &val);
+            else if constexpr (QtJniTypes::sameTypeForJni<T, jlong>)
+                env->SetLongArrayRegion(object<jlongArray>(), i, 1, &val);
+            else if constexpr (QtJniTypes::sameTypeForJni<T, jfloat>)
+                env->SetFloatArrayRegion(object<jfloatArray>(), i, 1, &val);
+            else if constexpr (QtJniTypes::sameTypeForJni<T, jdouble>)
+                env->SetDoubleArrayRegion(object<jdoubleArray>(), i, 1, &val);
         }
     }
 
@@ -652,6 +949,16 @@ template <typename T> struct Traits<QJniArray<T>> {
     static constexpr auto signature()
     {
         return CTString("[") + Traits<T>::signature();
+    }
+};
+template <typename T> struct Traits<QJniArrayMutableValueRef<T>> {
+    static constexpr auto className()
+    {
+        return Traits<T>::className();
+    }
+    static constexpr auto signature()
+    {
+        return Traits<T>::signature();
     }
 };
 template <typename T> struct Traits<QList<T>> {

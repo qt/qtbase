@@ -855,6 +855,12 @@ using FromContainerTest = decltype(QJniArrayBase::fromContainer(std::declval<C>(
 
 template <typename C>
 static constexpr bool isCompatibleSourceContainer = qxp::is_detected_v<FromContainerTest, C>;
+
+template <typename It>
+using IsReferenceWrapperTest = typename It::refwrapper;
+
+template <typename It>
+static constexpr bool isReferenceWrapper = qxp::is_detected_v<IsReferenceWrapperTest, It>;
 }
 }
 
@@ -871,6 +877,8 @@ auto QJniObject::LocalFrame<Args...>::convertToJni(T &&value)
         using QJniArrayType = decltype(QJniArrayBase::fromContainer(std::forward<T>(value)));
         using ArrayType = decltype(std::declval<QJniArrayType>().arrayObject());
         return newLocalRef<ArrayType>(QJniArrayBase::fromContainer(std::forward<T>(value)).template object<jobject>());
+    } else if constexpr (QtJniTypes::detail::isReferenceWrapper<Type>) {
+        return convertToJni(*value);
     } else if constexpr (std::is_base_of_v<QJniObject, Type>
                       || std::is_base_of_v<QtJniTypes::JObjectBase, Type>) {
         return value.object();

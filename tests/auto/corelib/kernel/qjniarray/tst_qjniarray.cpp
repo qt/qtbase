@@ -24,6 +24,7 @@ private slots:
     void ordering();
     void toContainer();
     void pointerToValue();
+    void mutate();
 };
 
 using namespace QtJniTypes;
@@ -413,6 +414,84 @@ void tst_QJniArray::pointerToValue()
     QCOMPARE_NE(it, stringArray.end());
     QCOMPARE(it->size(), 3);
     QCOMPARE((++it)->size(), 5);
+}
+
+void tst_QJniArray::mutate()
+{
+    {
+        QJniArray array{1, 2, 3};
+        auto it = std::find(array.begin(), array.end(), 2);
+        QCOMPARE_NE(it, array.end());
+        *it = 4;
+        QCOMPARE(array.at(1), 4);
+
+        auto rit = array.rbegin();
+        QCOMPARE(*rit, 3);
+        *rit = 1;
+        QCOMPARE(array[2], 1);
+    }
+    {
+        QJniArray strings{u"one"_s, u"two"_s, u"three"_s};
+        strings[1] = u"TWO"_s;
+        QCOMPARE(strings.at(1), u"TWO"_s);
+
+        // not possible as we cannot overload operator.()
+        // strings[1].assign(u"two"_s)
+
+        // not allowed as the modification won't be written back
+        //strings[1]->assign(u"two"_s);
+    }
+    {
+        QJniArray objects{QJniObject::fromString(u"one"_s),
+                          QJniObject::fromString(u"two"_s),
+                          QJniObject::fromString(u"three"_s)};
+        objects[1] = QJniObject::fromString(u"TWO"_s);
+        QCOMPARE(objects.at(1).toString(), u"TWO"_s);
+    }
+    {
+        QJniArray<jint> emptyArray(5);
+        QCOMPARE(emptyArray.size(), 5);
+        QCOMPARE(emptyArray[0], 0);
+    }
+    {
+        QJniArray<QString> emptyArray(5);
+        QCOMPARE(emptyArray.size(), 5);
+        QCOMPARE(emptyArray[0], QString());
+
+        const QString null = u"null"_s;
+        emptyArray[0] = null;
+        QCOMPARE(emptyArray[0], null);
+
+        emptyArray[1] = emptyArray[0];
+        QCOMPARE(emptyArray[1], null);
+        emptyArray[2] = *emptyArray.cbegin();
+        QCOMPARE(emptyArray[2], null);
+
+        int i = 0;
+        for (auto str : emptyArray) {
+            String strCopy(str);
+            QCOMPARE(strCopy.toString(), str);
+            QCOMPARE(strCopy.toString(), emptyArray[i]);
+            ++i;
+        }
+
+        i = 0;
+        for (auto string : emptyArray)
+            string = u"Row %1"_s.arg(i++);
+        QCOMPARE(emptyArray.at(0), "Row 0");
+        QVERIFY(!(*emptyArray[1]).isEmpty());
+    }
+    {
+        const QJniArray<QString> source{"one", "two", "three"};
+        QJniArray<QString> target(3);
+
+        auto s = source.begin();
+        for (auto t : target) {
+            t = *s;
+            ++s;
+        }
+        QCOMPARE(source.toContainer(), target.toContainer());
+    }
 }
 
 QTEST_MAIN(tst_QJniArray)
