@@ -108,6 +108,7 @@ public:
     virtual bool unregisterTimer(Qt::TimerId timerId) = 0;
     virtual QList<TimerInfoV2> timersForObject(QObject *object) const = 0;
     virtual Duration remainingTime(Qt::TimerId timerId) const = 0;
+    virtual bool processEventsWithDeadline(QEventLoop::ProcessEventsFlags flags, QDeadlineTimer deadline); // reserved for 6.9
 
 protected:
     QAbstractEventDispatcherV2(QAbstractEventDispatcherPrivate &, QObject *parent);

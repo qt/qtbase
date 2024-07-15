@@ -702,6 +702,16 @@ int QAbstractEventDispatcherV2::remainingTime(int timerId)
     auto self = static_cast<QAbstractEventDispatcherV2 *>(this);
     return fromDuration<int>(self->remainingTime(Qt::TimerId(timerId)));
 }
+
+/*!
+    \internal
+    Temporary compatibility override.
+*/
+bool QAbstractEventDispatcherV2::processEventsWithDeadline(QEventLoop::ProcessEventsFlags flags, QDeadlineTimer deadline)
+{
+    Q_UNUSED(deadline);
+    return processEvents(flags);
+}
 #endif // ! Qt 7
 
 QT_END_NAMESPACE
