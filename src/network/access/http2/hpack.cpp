@@ -54,11 +54,11 @@ using StreamError = BitIStream::Error;
 
 // It's always 1 or 0 actually, but the number of bits to extract
 // from the input stream - differs.
-const BitPattern Indexed = {1, 1};
-const BitPattern LiteralIncrementalIndexing = {1, 2};
-const BitPattern LiteralNoIndexing = {0, 4};
-const BitPattern LiteralNeverIndexing = {1, 4};
-const BitPattern SizeUpdate = {1, 3};
+constexpr BitPattern Indexed = {1, 1};
+constexpr BitPattern LiteralIncrementalIndexing = {1, 2};
+constexpr BitPattern LiteralNoIndexing = {0, 4};
+constexpr BitPattern LiteralNeverIndexing = {1, 4};
+constexpr BitPattern SizeUpdate = {1, 3};
 
 bool is_literal_field(BitPattern pattern)
 {
