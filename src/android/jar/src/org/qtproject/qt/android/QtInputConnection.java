@@ -104,6 +104,7 @@ class QtInputConnection extends BaseInputConnection
         void onSetClosing(boolean closing);
         void onHideKeyboardRunnableDone(boolean visibility, long hideTimeStamp);
         void onSendKeyEventDefaultCase();
+        void onEditTextChanged(QtEditText editText);
     }
 
     private final QtEditText m_view;
