@@ -117,6 +117,7 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
                 return;
 
             m_currentEditText.setEditTextOptions(enterKeyType, inputHints);
+            m_currentEditText.requestFocus();
 
             m_currentEditText.postDelayed(() -> {
                 m_imm.showSoftInput(m_currentEditText, 0, new ResultReceiver(new Handler()) {
@@ -241,6 +242,11 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
     public void onSendKeyEventDefaultCase() {
         hideSoftwareKeyboard();
     }
+
+    @Override
+    public void onEditTextChanged(QtEditText editText) {
+        setFocusedView(editText);
+    }
     // QtInputConnectionListener methods
 
     boolean isKeyboardVisible()
@@ -283,7 +289,6 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
         // Hiding the keyboard clears the immersive mode, so we need to set it again.
         if (!visibility)
             m_keyboardVisibilityListener.onKeyboardVisibilityChange();
-
     }
 
     void setFocusedView(QtEditText currentEditText)
