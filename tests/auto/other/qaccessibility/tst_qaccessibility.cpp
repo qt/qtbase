@@ -669,6 +669,13 @@ void tst_QAccessibility::accessibleIdentifier()
     QVERIFY(QTestAccessibility::containsEvent(&event));
     QCOMPARE(button.accessibleIdentifier(), id);
     QCOMPARE(QAccessibleBridgeUtils::accessibleId(accessible), id);
+    QTestAccessibility::clearEvents();
+
+    // verify that no event gets triggered when setting the same ID again
+    button.setAccessibleIdentifier(id);
+    QVERIFY(QTestAccessibility::events().empty());
+    QCOMPARE(button.accessibleIdentifier(), id);
+    QCOMPARE(QAccessibleBridgeUtils::accessibleId(accessible), id);
 
     QTestAccessibility::clearEvents();
 }

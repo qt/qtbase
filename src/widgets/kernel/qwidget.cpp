@@ -11801,6 +11801,9 @@ QString QWidget::whatsThis() const
 void QWidget::setAccessibleName(const QString &name)
 {
     Q_D(QWidget);
+    if (d->accessibleName == name)
+        return;
+
     d->accessibleName = name;
     QAccessibleEvent event(this, QAccessible::NameChanged);
     QAccessible::updateAccessibility(&event);
@@ -11831,6 +11834,9 @@ QString QWidget::accessibleName() const
 void QWidget::setAccessibleDescription(const QString &description)
 {
     Q_D(QWidget);
+    if (d->accessibleDescription == description)
+        return;
+
     d->accessibleDescription = description;
     QAccessibleEvent event(this, QAccessible::DescriptionChanged);
     QAccessible::updateAccessibility(&event);
@@ -11856,6 +11862,9 @@ QString QWidget::accessibleDescription() const
 void QWidget::setAccessibleIdentifier(const QString &identifier)
 {
     Q_D(QWidget);
+    if (d->accessibleIdentifier == identifier)
+        return;
+
     d->accessibleIdentifier = identifier;
     QAccessibleEvent event(this, QAccessible::IdentifierChanged);
     QAccessible::updateAccessibility(&event);
