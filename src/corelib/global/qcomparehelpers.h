@@ -98,8 +98,11 @@ template <typename In> constexpr auto to_Qt(In in) noexcept
     This macro is needed to overcome such bugs and provide a noexcept check only
     on platforms that behave normally.
     It does nothing on the systems that have problems.
+
+    This hack is explicitly disabled for C++20 because we want the compilers
+    to fix the known issues before switching.
 */
-#if !defined(Q_OS_QNX) && !defined(Q_CC_GHS)
+#if defined(__cpp_lib_three_way_comparison) || !(defined(Q_OS_QNX) || defined(Q_CC_GHS))
 # define QT_COMPARISON_NOEXCEPT_CHECK(Noexcept, Func) \
     constexpr auto f = []() Noexcept {}; \
     static_assert(!noexcept(f()) || noexcept(Func(lhs, rhs)), \
