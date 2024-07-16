@@ -48,7 +48,7 @@ for (const auto &dirEntry : QDirListing(u"/etc"_s, ItFlag::Recursive)) {
     if (dirEntry.fileName().endsWith(u".conf")) { /* ... */ }
 
     // This works, but might be potentially slower, since it has to construct a
-    // QFileInfo, whereas (depending on the implemnetation) the fileName could
+    // QFileInfo, whereas (depending on the implementation) the fileName could
     // be known already
     if (dirEntry.fileInfo().fileName().endsWith(u".conf")) { /* ... */ }
 }
