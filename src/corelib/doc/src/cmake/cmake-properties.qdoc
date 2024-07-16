@@ -439,6 +439,29 @@ On targets that must provide their own entry point, set the property \c qt_no_en
 */
 
 /*!
+\page cmake-target-property-qt-no-utf8-source.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+
+\title QT_NO_UTF8_SOURCE
+\target cmake-target-property-QT_NO_UTF8_SOURCE
+
+\summary {Prevents forcing source files to be treated as UTF-8 for Windows.}
+
+\cmakepropertysince 6.0
+
+When building with some compilers for Windows, targets that link to a Qt library
+will use flags that force the compiler to treat its source files as UTF-8. This
+is currently implemented for Visual Studio and Intel compilers. You can disable
+this behavior on a per-target basis by setting the property to \c TRUE:
+\badcode
+set_property(TARGET target_name PROPERTY QT_NO_UTF8_SOURCE TRUE)
+\endcode
+
+\sa {qt6_disable_unicode_defines}{qt_disable_unicode_defines()}{qt6_allow_non_utf8_sources()}
+*/
+
+/*!
 \page cmake-target-property-qt-resource-prefix.html
 \ingroup cmake-properties-qtcore
 \ingroup cmake-target-properties-qtcore
