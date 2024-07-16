@@ -31,4 +31,5 @@ this behavior on a per-target basis by calling \c{qt_allow_non_utf8_sources()}
 and passing the target as the argument.
 
 \sa {qt6_disable_unicode_defines}{qt_disable_unicode_defines()}
+    {cmake-target-property-QT_NO_UTF8_SOURCE}
 */
