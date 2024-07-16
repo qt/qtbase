@@ -771,7 +771,7 @@ void tst_QHighDpi::mouseVelocity()
         {
             velocity = ev->points().first().velocity();
             if (ev->buttons())
-                qDebug(lcTests) << "velocity" << velocity << ev;
+                qCDebug(lcTests) << "velocity" << velocity << ev;
         }
     };
 

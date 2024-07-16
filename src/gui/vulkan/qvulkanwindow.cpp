@@ -378,7 +378,7 @@ QVulkanInfoVector<QVulkanExtension> QVulkanWindow::supportedDeviceExtensions()
                 exts.append(ext);
             }
             d->supportedDevExtensions.insert(physDev, exts);
-            qDebug(lcGuiVk) << "Supported device extensions:" << exts;
+            qCDebug(lcGuiVk) << "Supported device extensions:" << exts;
             return exts;
         }
     }

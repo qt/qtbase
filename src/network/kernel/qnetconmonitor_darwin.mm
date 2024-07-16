@@ -229,20 +229,20 @@ bool QNetworkConnectionMonitor::startMonitoring()
 
     auto queue = qt_reachability_queue();
     if (!queue) {
-        qWarning(lcNetMon, "Failed to create a dispatch queue to schedule a probe on");
+        qCWarning(lcNetMon, "Failed to create a dispatch queue to schedule a probe on");
         return false;
     }
 
     SCNetworkReachabilityContext context = {};
     context.info = d;
     if (!SCNetworkReachabilitySetCallback(d->probe, QNetworkConnectionMonitorPrivate::probeCallback, &context)) {
-        qWarning(lcNetMon, "Failed to set a reachability callback");
+        qCWarning(lcNetMon, "Failed to set a reachability callback");
         return false;
     }
 
 
     if (!SCNetworkReachabilitySetDispatchQueue(d->probe, queue)) {
-        qWarning(lcNetMon, "Failed to schedule a reachability callback on a queue");
+        qCWarning(lcNetMon, "Failed to schedule a reachability callback on a queue");
         return false;
     }
 
