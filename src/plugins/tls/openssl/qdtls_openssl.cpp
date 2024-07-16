@@ -353,7 +353,7 @@ extern "C" long q_dgram_ctrl(BIO *bio, int cmd, long num, void *ptr)
     //    command.
 
     if (!bio) {
-        qDebug(lcTlsBackend, "invalid 'bio' parameter (nullptr)");
+        qCDebug(lcTlsBackend, "invalid 'bio' parameter (nullptr)");
         return -1;
     }
 

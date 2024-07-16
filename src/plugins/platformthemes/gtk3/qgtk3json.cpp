@@ -249,7 +249,7 @@ bool QGtk3Json::load(QGtk3Storage::PaletteMap &map, const QString &fileName)
     QJsonParseError err;
     QJsonDocument doc = QJsonDocument::fromJson(file.readAll(), &err);
     if (err.error != QJsonParseError::NoError) {
-        qWarning(lcQGtk3Interface) << "Unable to parse Json document from" << fileName
+        qCWarning(lcQGtk3Interface) << "Unable to parse Json document from" << fileName
                                    << err.error << err.errorString();
         return false;
     }
@@ -417,7 +417,7 @@ bool QGtk3Json::load(QGtk3Storage::PaletteMap &map, const QJsonDocument &doc)
                     break;
 
                 case QGtk3Storage::SourceType::Invalid:
-                    qInfo(lcQGtk3Interface) << "Invalid source type for palette" << paletteName
+                    qCInfo(lcQGtk3Interface) << "Invalid source type for palette" << paletteName
                                               << "Brush." << colorRoleName;
                     return false;
                 }

@@ -2873,7 +2873,7 @@ void QCoreApplication::requestPermission(const QPermission &requestedPermission,
 {
     QtPrivate::SlotObjSharedPtr slotObj(QtPrivate::SlotObjUniquePtr{slotObjRaw}); // adopts
     if (QThread::currentThread() != QCoreApplicationPrivate::mainThread()) {
-        qWarning(lcPermissions, "Permissions can only be requested from the GUI (main) thread");
+        qCWarning(lcPermissions, "Permissions can only be requested from the GUI (main) thread");
         return;
     }
 

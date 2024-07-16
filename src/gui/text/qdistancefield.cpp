@@ -732,7 +732,7 @@ static void initialDistanceFieldFactor()
     }
     if (qEnvironmentVariableIsSet("QT_DISTANCEFIELD_DEFAULT_RADIUS")) {
         QT_DISTANCEFIELD_DEFAULT_RADIUS = qEnvironmentVariableIntValue("QT_DISTANCEFIELD_DEFAULT_RADIUS");
-        qDebug(lcDistanceField) << "set the QT_DISTANCEFIELD_DEFAULT_RADIUS:" << QT_DISTANCEFIELD_DEFAULT_RADIUS;
+        qCDebug(lcDistanceField) << "set the QT_DISTANCEFIELD_DEFAULT_RADIUS:" << QT_DISTANCEFIELD_DEFAULT_RADIUS;
     }
     if (qEnvironmentVariableIsSet("QT_DISTANCEFIELD_DEFAULT_HIGHGLYPHCOUNT")) {
         QT_DISTANCEFIELD_DEFAULT_HIGHGLYPHCOUNT = qEnvironmentVariableIntValue("QT_DISTANCEFIELD_DEFAULT_HIGHGLYPHCOUNT");
