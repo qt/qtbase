@@ -754,7 +754,7 @@ void QWindowsDirectWriteFontDatabase::populateFontDatabase()
                     fontFamily->AddRef();
 
                     if (defaultLocaleName == defaultFontName && defaultFontName != systemDefaultFontName) {
-                        qDebug(lcQpaFonts) << "Adding default font" << systemDefaultFontName << "as alternative to" << defaultLocaleName;
+                        qCDebug(lcQpaFonts) << "Adding default font" << systemDefaultFontName << "as alternative to" << defaultLocaleName;
 
                         m_populatedFonts.insert(systemDefaultFontName, *fontFamily);
                         fontFamily->AddRef();
@@ -767,7 +767,7 @@ void QWindowsDirectWriteFontDatabase::populateFontDatabase()
                     fontFamily->AddRef();
 
                     if (englishLocaleName == defaultFontName && defaultFontName != systemDefaultFontName) {
-                        qDebug(lcQpaFonts) << "Adding default font" << systemDefaultFontName << "as alternative to" << englishLocaleName;
+                        qCDebug(lcQpaFonts) << "Adding default font" << systemDefaultFontName << "as alternative to" << englishLocaleName;
 
                         m_populatedFonts.insert(systemDefaultFontName, *fontFamily);
                         fontFamily->AddRef();

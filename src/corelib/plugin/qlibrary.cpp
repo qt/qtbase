@@ -364,7 +364,7 @@ inline void QLibraryStore::cleanup()
     if (lcDebugLibrary().isDebugEnabled()) {
         for (auto &[_, lib] : data->libraryMap) {
             if (lib)
-                qDebug(lcDebugLibrary)
+                qCDebug(lcDebugLibrary)
                         << "On QtCore unload," << lib->fileName << "was leaked, with"
                         << lib->libraryRefCount.loadRelaxed() << "users";
         }
