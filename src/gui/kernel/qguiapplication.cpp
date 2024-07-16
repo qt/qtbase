@@ -3102,7 +3102,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
         }
         // If we somehow still don't have a window, we can't deliver this touchpoint.  (should never happen)
         if (Q_UNLIKELY(!window)) {
-            qCWarning(lcPtrDispatch) << "skipping" << &tempPt << ": no target window";
+            qCDebug(lcPtrDispatch) << "skipping" << &tempPt << ": no target window";
             continue;
         }
         QMutableEventPoint::update(tempPt, ep);
