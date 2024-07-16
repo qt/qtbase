@@ -123,7 +123,7 @@ class QNetworkReplyHttpImplPrivate: public QNetworkReplyPrivate
 {
 public:
 
-    static QHttpNetworkRequest::Priority convert(const QNetworkRequest::Priority& prio);
+    static QHttpNetworkRequest::Priority convert(QNetworkRequest::Priority prio);
 
     QNetworkReplyHttpImplPrivate();
     ~QNetworkReplyHttpImplPrivate();
