@@ -28,7 +28,7 @@ class QFutureWatcherBasePrivate;
 
 namespace QtPrivate {
 template<typename Function, typename ResultType, typename ParentResultType>
-class Continuation;
+class CompactContinuation;
 
 class ExceptionStore;
 
@@ -171,7 +171,7 @@ private:
     friend class QFutureWatcherBasePrivate;
 
     template<typename Function, typename ResultType, typename ParentResultType>
-    friend class QtPrivate::Continuation;
+    friend class QtPrivate::CompactContinuation;
 
     template<class Function, class ResultType>
     friend class QtPrivate::CanceledHandler;

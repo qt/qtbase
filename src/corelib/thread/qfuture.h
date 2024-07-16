@@ -280,7 +280,7 @@ private:
     friend class QFutureInterfaceBase;
 
     template<class Function, class ResultType, class ParentResultType>
-    friend class QtPrivate::Continuation;
+    friend class QtPrivate::CompactContinuation;
 
     template<class Function, class ResultType>
     friend class QtPrivate::CanceledHandler;
@@ -339,7 +339,7 @@ QFuture<typename QFuture<T>::template ResultType<Function>>
 QFuture<T>::then(QtFuture::Launch policy, Function &&function)
 {
     QFutureInterface<ResultType<Function>> promise(QFutureInterfaceBase::State::Pending);
-    QtPrivate::Continuation<std::decay_t<Function>, ResultType<Function>, T>::create(
+    QtPrivate::CompactContinuation<std::decay_t<Function>, ResultType<Function>, T>::create(
             std::forward<Function>(function), this, promise, policy);
     return promise.future();
 }
@@ -350,7 +350,7 @@ QFuture<typename QFuture<T>::template ResultType<Function>> QFuture<T>::then(QTh
                                                                              Function &&function)
 {
     QFutureInterface<ResultType<Function>> promise(QFutureInterfaceBase::State::Pending);
-    QtPrivate::Continuation<std::decay_t<Function>, ResultType<Function>, T>::create(
+    QtPrivate::CompactContinuation<std::decay_t<Function>, ResultType<Function>, T>::create(
             std::forward<Function>(function), this, promise, pool);
     return promise.future();
 }
@@ -361,7 +361,7 @@ QFuture<typename QFuture<T>::template ResultType<Function>> QFuture<T>::then(QOb
                                                                              Function &&function)
 {
     QFutureInterface<ResultType<Function>> promise(QFutureInterfaceBase::State::Pending);
-    QtPrivate::Continuation<std::decay_t<Function>, ResultType<Function>, T>::create(
+    QtPrivate::CompactContinuation<std::decay_t<Function>, ResultType<Function>, T>::create(
             std::forward<Function>(function), this, promise, context);
     return promise.future();
 }
