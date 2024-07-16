@@ -271,8 +271,8 @@ public:
     typedef const value_type &const_reference;
     typedef qptrdiff difference_type;
 
-    T *data() const noexcept { return value; }
-    T *get() const noexcept { return value; }
+    T *data() const noexcept { return value.get(); }
+    T *get() const noexcept { return value.get(); }
     bool isNull() const noexcept { return !data(); }
     explicit operator bool() const noexcept { return !isNull(); }
     bool operator !() const noexcept { return isNull(); }
@@ -302,7 +302,7 @@ public:
     { internalConstruct(static_cast<T *>(nullptr), deleter); }
 
     Q_NODISCARD_CTOR
-    QSharedPointer(const QSharedPointer &other) noexcept : value(other.value), d(other.d)
+    QSharedPointer(const QSharedPointer &other) noexcept : value(other.value.get()), d(other.d)
     { if (d) ref(); }
     QSharedPointer &operator=(const QSharedPointer &other) noexcept
     {
@@ -312,7 +312,7 @@ public:
     }
     Q_NODISCARD_CTOR
     QSharedPointer(QSharedPointer &&other) noexcept
-        : value(other.value), d(other.d)
+        : value(other.value.get()), d(other.d)
     {
         other.d = nullptr;
         other.value = nullptr;
@@ -322,7 +322,7 @@ public:
     template <class X, IfCompatible<X> = true>
     Q_NODISCARD_CTOR
     QSharedPointer(QSharedPointer<X> &&other) noexcept
-        : value(other.value), d(other.d)
+        : value(other.value.get()), d(other.d)
     {
         other.d = nullptr;
         other.value = nullptr;
@@ -338,7 +338,7 @@ public:
 
     template <class X, IfCompatible<X> = true>
     Q_NODISCARD_CTOR
-    QSharedPointer(const QSharedPointer<X> &other) noexcept : value(other.value), d(other.d)
+    QSharedPointer(const QSharedPointer<X> &other) noexcept : value(other.value.get()), d(other.d)
     { if (d) ref(); }
 
     template <class X, IfCompatible<X> = true>
@@ -414,37 +414,15 @@ public:
 
         // now initialize the data
         new (ptr) T(std::forward<Args>(arguments)...);
-        result.value = ptr;
+        result.value.reset(ptr);
         result.d->destroyer = destroy;
-        result.d->setQObjectShared(result.value, true);
+        result.d->setQObjectShared(result.value.get(), true);
 # ifdef QT_SHAREDPOINTER_TRACK_POINTERS
-        internalSafetyCheckAdd(result.d, result.value);
+        internalSafetyCheckAdd(result.d, result.value.get());
 # endif
         result.enableSharedFromThis(result.data());
         return result;
     }
-
-#define DECLARE_COMPARE_SET(T1, A1, T2, A2) \
-    friend bool operator==(T1, T2) noexcept \
-    { return A1 == A2; } \
-    friend bool operator!=(T1, T2) noexcept \
-    { return A1 != A2; }
-
-#define DECLARE_TEMPLATE_COMPARE_SET(T1, A1, T2, A2) \
-    template <typename X> \
-    friend bool operator==(T1, T2) noexcept \
-    { return A1 == A2; } \
-    template <typename X> \
-    friend bool operator!=(T1, T2) noexcept \
-    { return A1 != A2; }
-
-    DECLARE_TEMPLATE_COMPARE_SET(const QSharedPointer &p1, p1.data(), const QSharedPointer<X> &p2, p2.data())
-    DECLARE_TEMPLATE_COMPARE_SET(const QSharedPointer &p1, p1.data(), X *ptr, ptr)
-    DECLARE_TEMPLATE_COMPARE_SET(X *ptr, ptr, const QSharedPointer &p2, p2.data())
-    DECLARE_COMPARE_SET(const QSharedPointer &p1, p1.data(), std::nullptr_t, nullptr)
-    DECLARE_COMPARE_SET(std::nullptr_t, nullptr, const QSharedPointer &p2, p2.data())
-#undef DECLARE_TEMPLATE_COMPARE_SET
-#undef DECLARE_COMPARE_SET
 
     template <typename X>
     bool owner_before(const QSharedPointer<X> &other) const noexcept
@@ -464,6 +442,34 @@ public:
     { return std::hash<Data *>()(d); }
 
 private:
+    template <typename X>
+    friend bool comparesEqual(const QSharedPointer &lhs, const QSharedPointer<X> &rhs) noexcept
+    { return lhs.data() == rhs.data(); }
+    template <typename X>
+    friend Qt::strong_ordering
+    compareThreeWay(const QSharedPointer &lhs, const QSharedPointer<X> &rhs) noexcept
+    {
+        return Qt::compareThreeWay(lhs.value, rhs.data());
+    }
+    QT_DECLARE_ORDERING_OPERATORS_HELPER(STRONG, QSharedPointer<T>, QSharedPointer<X>,
+                                         /* non-constexpr */, noexcept(true),
+                                         template <typename X>)
+
+    template <typename X>
+    friend bool comparesEqual(const QSharedPointer &lhs, X *rhs) noexcept
+    { return lhs.data() == rhs; }
+    template <typename X>
+    friend Qt::strong_ordering compareThreeWay(const QSharedPointer &lhs, X *rhs) noexcept
+    { return Qt::compareThreeWay(lhs.value, rhs); }
+    Q_DECLARE_STRONGLY_ORDERED(QSharedPointer, X*, template <typename X>)
+
+    friend bool comparesEqual(const QSharedPointer &lhs, std::nullptr_t) noexcept
+    { return lhs.data() == nullptr; }
+    friend Qt::strong_ordering
+    compareThreeWay(const QSharedPointer &lhs, std::nullptr_t) noexcept
+    { return Qt::compareThreeWay(lhs.value, nullptr); }
+    Q_DECLARE_STRONGLY_ORDERED(QSharedPointer, std::nullptr_t)
+
     Q_NODISCARD_CTOR
     explicit QSharedPointer(Qt::Initialization) {}
 
@@ -535,7 +541,7 @@ private:
         }
 
         qt_ptr_swap(d, o);
-        qt_ptr_swap(this->value, actual);
+        this->value.reset(actual);
         if (!d || d->strongref.loadRelaxed() == 0)
             this->value = nullptr;
 
@@ -543,7 +549,7 @@ private:
         deref(o);
     }
 
-    Type *value;
+    Qt::totally_ordered_wrapper<Type *> value;
     Data *d;
 };
 
@@ -632,7 +638,7 @@ public:
     { if (d) d->weakref.ref();}
     inline QWeakPointer &operator=(const QSharedPointer<T> &o)
     {
-        internalSet(o.d, o.value);
+        internalSet(o.d, o.value.get());
         return *this;
     }
 
@@ -807,28 +813,6 @@ template <class T, class X>
 Q_INLINE_TEMPLATE typename QSharedPointer<X>::difference_type operator-(T *ptr1, const QSharedPointer<X> &ptr2)
 {
     return ptr1 - ptr2.data();
-}
-
-//
-// operator<
-//
-template <class T, class X>
-Q_INLINE_TEMPLATE bool operator<(const QSharedPointer<T> &ptr1, const QSharedPointer<X> &ptr2)
-{
-    using CT = typename std::common_type<T *, X *>::type;
-    return std::less<CT>()(ptr1.data(), ptr2.data());
-}
-template <class T, class X>
-Q_INLINE_TEMPLATE bool operator<(const QSharedPointer<T> &ptr1, X *ptr2)
-{
-    using CT = typename std::common_type<T *, X *>::type;
-    return std::less<CT>()(ptr1.data(), ptr2);
-}
-template <class T, class X>
-Q_INLINE_TEMPLATE bool operator<(T *ptr1, const QSharedPointer<X> &ptr2)
-{
-    using CT = typename std::common_type<T *, X *>::type;
-    return std::less<CT>()(ptr1, ptr2.data());
 }
 
 //

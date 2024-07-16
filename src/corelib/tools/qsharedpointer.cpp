@@ -16,6 +16,12 @@
 
     \reentrant
 
+    \compares strong
+    \compareswith strong QSharedPointer<X> X* std::nullptr_t
+    Where X and T are compatible types, which means that they are either the same or one
+    is a base type of the other.
+    \endcompareswith
+
     The QSharedPointer is an automatic, shared pointer in C++. It
     behaves exactly like a normal pointer for normal purposes,
     including respect for constness.
@@ -986,83 +992,66 @@
 */
 
 /*!
-    \fn template<class T, class X> bool operator==(const QSharedPointer<T> &ptr1, const QSharedPointer<X> &ptr2)
+    \fn template<class T, class X> bool operator==(const QSharedPointer<T> &lhs, const QSharedPointer<X> &rhs)
     \relates QSharedPointer
 
-    Returns \c true if \a ptr1 and \a ptr2 refer to the same pointer.
+    Returns \c true if \a lhs and \a rhs refer to the same pointer.
 
-    If \a ptr2's template parameter is different from \a ptr1's,
-    QSharedPointer will attempt to perform an automatic \tt static_cast
-    to ensure that the pointers being compared are equal. If \a ptr2's
-    template parameter is not a base or a derived type from
-    \a ptr1's, you will get a compiler error.
+//! [qsharedpointer-different-template-parameters]
+    If \a rhs's template parameter is different from \a lhs's,
+    QSharedPointer first needs to ensure that they are compatible types.
+    It will attempt to perform an automatic \tt static_cast to convert
+    the types \tt T and \tt X to their composite pointer type.
+    If \a rhs's template parameter is not a base or a derived type from
+    \a lhs's, you will get a compiler error.
+//! [qsharedpointer-different-template-parameters]
 */
 
 /*!
-    \fn template<class T, class X> bool operator!=(const QSharedPointer<T> &ptr1, const QSharedPointer<X> &ptr2)
+    \fn template<class T, class X> bool operator!=(const QSharedPointer<T> &lhs, const QSharedPointer<X> &rhs)
     \relates QSharedPointer
 
-    Returns \c true if \a ptr1 and \a ptr2 refer to distinct pointers.
+    Returns \c true if \a lhs and \a rhs refer to distinct pointers.
 
-    If \a ptr2's template parameter is different from \a ptr1's,
-    QSharedPointer will attempt to perform an automatic \tt static_cast
-    to ensure that the pointers being compared are equal. If \a ptr2's
-    template parameter is not a base or a derived type from
-    \a ptr1's, you will get a compiler error.
+    \include qsharedpointer.cpp qsharedpointer-different-template-parameters
 */
 
 /*!
-    \fn template<class T, class X> bool operator==(const QSharedPointer<T> &ptr1, const X *ptr2)
+    \fn template<class T, class X> bool operator==(const QSharedPointer<T> &lhs, const X *rhs)
     \relates QSharedPointer
 
-    Returns \c true if \a ptr1 and \a ptr2 refer to the same pointer.
+    Returns \c true if \a lhs and \a rhs refer to the same pointer.
 
-    If \a ptr2's type is different from \a ptr1's,
-    QSharedPointer will attempt to perform an automatic \tt static_cast
-    to ensure that the pointers being compared are equal. If \a ptr2's
-    type is not a base or a derived type from this
-    \a ptr1's, you will get a compiler error.
+    \include qsharedpointer.cpp qsharedpointer-different-template-parameters
 */
 
 /*!
-    \fn template<class T, class X> bool operator!=(const QSharedPointer<T> &ptr1, const X *ptr2)
+    \fn template<class T, class X> bool operator!=(const QSharedPointer<T> &lhs, const X *rhs)
     \relates QSharedPointer
 
-    Returns \c true if \a ptr1 and \a ptr2 refer to distinct pointers.
+    Returns \c true if \a lhs and \a rhs refer to distinct pointers.
 
-    If \a ptr2's type is different from \a ptr1's,
-    QSharedPointer will attempt to perform an automatic \tt static_cast
-    to ensure that the pointers being compared are equal. If \a ptr2's
-    type is not a base or a derived type from this
-    \a ptr1's, you will get a compiler error.
+    \include qsharedpointer.cpp qsharedpointer-different-template-parameters
 */
 
 /*!
-    \fn template<class T, class X> bool operator==(const T *ptr1, const QSharedPointer<X> &ptr2)
+    \fn template<class T, class X> bool operator==(const T *lhs, const QSharedPointer<X> &rhs)
     \relates QSharedPointer
 
-    Returns \c true if the pointer \a ptr1 is the
-    same pointer as that referenced by \a ptr2.
+    Returns \c true if the pointer \a lhs is the
+    same pointer as that referenced by \a rhs.
 
-    If \a ptr2's template parameter is different from \a ptr1's type,
-    QSharedPointer will attempt to perform an automatic \tt static_cast
-    to ensure that the pointers being compared are equal. If \a ptr2's
-    template parameter is not a base or a derived type from
-    \a ptr1's type, you will get a compiler error.
+    \include qsharedpointer.cpp qsharedpointer-different-template-parameters
 */
 
 /*!
-    \fn template<class T, class X> bool operator!=(const T *ptr1, const QSharedPointer<X> &ptr2)
+    \fn template<class T, class X> bool operator!=(const T *lhs, const QSharedPointer<X> &rhs)
     \relates QSharedPointer
 
-    Returns \c true if the pointer \a ptr1 is not the
-    same pointer as that referenced by \a ptr2.
+    Returns \c true if the pointer \a lhs is not the
+    same pointer as that referenced by \a rhs.
 
-    If \a ptr2's template parameter is different from \a ptr1's type,
-    QSharedPointer will attempt to perform an automatic \tt static_cast
-    to ensure that the pointers being compared are equal. If \a ptr2's
-    template parameter is not a base or a derived type from
-    \a ptr1's type, you will get a compiler error.
+    \include qsharedpointer.cpp qsharedpointer-different-template-parameters
 */
 
 /*!
