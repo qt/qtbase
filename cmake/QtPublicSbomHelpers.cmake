@@ -284,6 +284,7 @@ macro(_qt_internal_get_sbom_add_target_common_options opt_args single_args multi
         NO_DEFAULT_QT_COPYRIGHTS
         NO_DEFAULT_QT_PACKAGE_VERSION
         NO_DEFAULT_QT_SUPPLIER
+        SBOM_INCOMPLETE_3RD_PARTY_DEPENDENCIES
     )
     set(${single_args}
         PACKAGE_VERSION
@@ -294,6 +295,7 @@ macro(_qt_internal_get_sbom_add_target_common_options opt_args single_args multi
         QT_LICENSE_ID
         DOWNLOAD_LOCATION
         ATTRIBUTION_ENTRY_INDEX
+        SBOM_PACKAGE_COMMENT
     )
     set(${multi_args}
         COPYRIGHTS
@@ -368,6 +370,16 @@ function(_qt_internal_sbom_add_target target)
     endif()
 
     set(package_comment "")
+
+    if(arg_SBOM_INCOMPLETE_3RD_PARTY_DEPENDENCIES)
+        string(APPEND package_comment
+            "Note: This package was marked as not listing all of its consumed 3rd party "
+            "dependencies.\nThus the licensing and copyright information might be incomplete.\n")
+    endif()
+
+    if(arg_SBOM_PACKAGE_COMMENT)
+        string(APPEND package_comment "${arg_SBOM_PACKAGE_COMMENT}\n")
+    endif()
 
     # Record the target spdx id right now, so we can refer to it in later attribution targets
     # if needed.
