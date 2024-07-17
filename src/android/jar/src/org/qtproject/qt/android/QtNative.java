@@ -14,6 +14,7 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.system.Os;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Menu;
@@ -41,9 +42,8 @@ public class QtNative
 
     static final String QtTAG = "Qt JAVA";
 
-    // a list containing all actions which could not be performed (e.g. the main activity is destroyed, etc.)
-    private static final ArrayList<Runnable> m_lostActions = new ArrayList<>();
-
+    // a list of all actions which could not be performed (e.g. the main activity is destroyed, etc.)
+    private static final BackgroundActionsTracker m_backgroundActionsTracker = new BackgroundActionsTracker();
     private static final QtThread m_qtThread = new QtThread();
     private static ClassLoader m_classLoader = null;
 
@@ -232,17 +232,25 @@ public class QtNative
         m_stateDetails.nativePluginIntegrationReady = ready;
         notifyNativePluginIntegrationReadyChanged(ready);
         notifyAppStateDetailsChanged(m_stateDetails);
+
+        // Only set queue size when the plugin is fully loaded.
+        final String bufferSize = Os.getenv("QT_ANDROID_BACKGROUND_ACTIONS_QUEUE_SIZE");
+        if (bufferSize != null) {
+            try {
+                final int size = Integer.parseInt(bufferSize);
+                m_backgroundActionsTracker.setMaxAllowedActions(size);
+            } catch (NumberFormatException exception) {
+                Log.e(QtTAG, "Parsing failed, QT_ANDROID_BACKGROUND_ACTIONS_QUEUE_SIZE value is not an integer");
+            }
+        }
     }
 
     static void setApplicationState(int state)
     {
         synchronized (m_mainActivityMutex) {
             m_stateDetails.state = state;
-            if (state == ApplicationState.ApplicationActive) {
-                for (Runnable mLostAction : m_lostActions)
-                    runAction(mLostAction);
-                m_lostActions.clear();
-            }
+            if (state == ApplicationState.ApplicationActive)
+                m_backgroundActionsTracker.processActions();
         }
         updateApplicationState(state);
         notifyAppStateDetailsChanged(m_stateDetails);
@@ -294,7 +302,7 @@ public class QtNative
                         && (m_stateDetails.state != ApplicationState.ApplicationHidden);
                 final boolean active = (isActivityValid() && isStateVisible) || isServiceValid();
                 if (!active || !handler.post(action))
-                    m_lostActions.add(action);
+                    m_backgroundActionsTracker.enqueue(action);
             } else {
                 handler.post(action);
             }
