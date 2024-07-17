@@ -1508,7 +1508,8 @@ QSqlRecord QMYSQLDriver::record(const QString &tablename) const
         return r;
     // no binding of WHERE possible with MySQL
     // escaping on WHERE clause does not work, so use mysql_real_escape_string()
-    stmt = "SELECT column_name, column_default FROM information_schema.columns WHERE table_name = '%1'"_L1;
+    stmt = "SELECT column_name, column_default FROM information_schema.columns WHERE table_schema = '"_L1
+            + d->dbName + "' AND table_name = '%1'"_L1;
     const auto baTableName = tablename.toUtf8();
     QVarLengthArray<char> tableNameQuoted(baTableName.size() * 2 + 1);
 #if defined(MARIADB_VERSION_ID)
