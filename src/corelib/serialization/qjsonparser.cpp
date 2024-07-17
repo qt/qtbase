@@ -102,9 +102,9 @@ using namespace QtMiscUtils;
 /*!
     \variable QJsonParseError::offset
 
-    Contains the offset in the input string where the parse error occurred.
+    Contains the byte offset in the UTF-8 byte array where the parse error occurred.
 
-    \sa error, errorString()
+    \sa error, errorString(), QJsonDocument::fromJson()
 */
 
 /*!
