@@ -30,6 +30,11 @@ is currently implemented for Visual Studio and Intel compilers. You can disable
 this behavior on a per-target basis by calling \c{qt_allow_non_utf8_sources()}
 and passing the target as the argument.
 
+\note This does not change the runtime behavior of classes like
+\l QString (its constructor from \c{const char *} requires properly encoded
+UTF-8 input). Use the \l QT_NO_CAST_FROM_ASCII and
+\c QT_RESTRICTED_CAST_FROM_ASCII macros to help identify such code.
+
 \sa {qt6_disable_unicode_defines}{qt_disable_unicode_defines()}
     {cmake-target-property-QT_NO_UTF8_SOURCE}
 */
