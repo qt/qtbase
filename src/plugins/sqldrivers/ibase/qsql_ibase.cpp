@@ -1642,11 +1642,6 @@ bool QIBaseDriver::open(const QString &db,
     setOpenError(false);
 #if (FB_API_VER >= 40)
     std::call_once(initTZMappingFlag, [d](){ d->initTZMappingCache(); });
-    if (lastError().isValid())
-    {
-        setOpen(true);
-        return false;
-    }
 #endif
     return true;
 }
