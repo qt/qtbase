@@ -7,7 +7,7 @@
 
 #include <QtCore/qtconfigmacros.h>
 
-#include <type_traits>
+#include <QtCore/q20type_traits.h>
 
 //
 //  W A R N I N G
