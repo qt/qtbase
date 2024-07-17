@@ -256,6 +256,18 @@ function(_qt_internal_sbom_end_project)
         list(APPEND end_project_options GENERATE_JSON)
     endif()
 
+    if(QT_GENERATE_SOURCE_SBOM)
+        list(APPEND end_project_options GENERATE_SOURCE_SBOM)
+    endif()
+
+    if(QT_LINT_SOURCE_SBOM)
+        list(APPEND end_project_options LINT_SOURCE_SBOM)
+    endif()
+
+    if(QT_INTERNAL_LINT_SOURCE_SBOM_NO_ERROR)
+        list(APPEND end_project_options LINT_SOURCE_SBOM_NO_ERROR)
+    endif()
+
     _qt_internal_sbom_end_project_generate(
         ${end_project_options}
     )
