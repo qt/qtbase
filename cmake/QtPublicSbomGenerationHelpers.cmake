@@ -229,7 +229,10 @@ endfunction()
 function(_qt_internal_sbom_end_project_generate)
     set(opt_args
         GENERATE_JSON
+        GENERATE_SOURCE_SBOM
         VERIFY
+        LINT_SOURCE_SBOM
+        LINT_SOURCE_SBOM_NO_ERROR
         SHOW_TABLE
         AUDIT
         AUDIT_NO_ERROR
@@ -280,8 +283,27 @@ function(_qt_internal_sbom_end_project_generate)
         _qt_internal_sbom_audit(${audit_no_error_option})
     endif()
 
+    if(arg_GENERATE_SOURCE_SBOM AND NOT QT_INTERNAL_NO_SBOM_PYTHON_OPS)
+        _qt_internal_sbom_find_python_dependency_program(NAME reuse REQUIRED)
+        _qt_internal_sbom_generate_reuse_source_sbom()
+    endif()
+
+    if(arg_LINT_SOURCE_SBOM AND NOT QT_INTERNAL_NO_SBOM_PYTHON_OPS)
+        set(lint_no_error_option "")
+        if(arg_LINT_SOURCE_SBOM_NO_ERROR)
+            set(lint_no_error_option NO_ERROR)
+        endif()
+        _qt_internal_sbom_find_python_dependency_program(NAME reuse REQUIRED)
+        _qt_internal_sbom_run_reuse_lint(
+            ${lint_no_error_option}
+            BUILD_TIME_SCRIPT_PATH_OUT_VAR reuse_lint_script
+        )
+    endif()
+
     get_cmake_property(cmake_include_files _qt_sbom_cmake_include_files)
     get_cmake_property(cmake_end_include_files _qt_sbom_cmake_end_include_files)
+    get_cmake_property(cmake_post_generation_include_files
+        _qt_sbom_cmake_post_generation_include_files)
     get_cmake_property(cmake_verify_include_files _qt_sbom_cmake_verify_include_files)
 
     set(includes "")
@@ -298,6 +320,17 @@ function(_qt_internal_sbom_end_project_generate)
     endif()
 
     list(JOIN includes "\n" includes)
+
+    # Post generation includes are included for both build and install time sboms, after
+    # sbom generation has finished.
+    set(post_generation_includes "")
+    if(cmake_post_generation_include_files)
+        foreach(cmake_include_file IN LISTS cmake_post_generation_include_files)
+            list(APPEND post_generation_includes "include(\"${cmake_include_file}\")")
+        endforeach()
+    endif()
+
+    list(JOIN post_generation_includes "\n" post_generation_includes)
 
     # Verification only makes sense on installation, where the checksums are present.
     set(verify_includes "")
@@ -331,6 +364,7 @@ function(_qt_internal_sbom_end_project_generate)
         if(QT_SBOM_BUILD_TIME)
             message(STATUS \"Finalizing SBOM generation in build dir: \${QT_SBOM_OUTPUT_PATH}\")
             configure_file(\"${staging_area_spdx_file}\" \"\${QT_SBOM_OUTPUT_PATH}\")
+            ${post_generation_includes}
         endif()
 ")
     set(assemble_sbom "${sbom_dir}/assemble_sbom${multi_config_suffix}.cmake")
@@ -365,6 +399,22 @@ function(_qt_internal_sbom_end_project_generate)
     endif()
 
     add_dependencies(sbom ${repo_sbom_target})
+
+    # Add 'reuse lint' per-repo custom targets.
+    if(arg_LINT_SOURCE_SBOM AND NOT QT_INTERNAL_NO_SBOM_PYTHON_OPS)
+        if(NOT TARGET reuse_lint)
+            add_custom_target(reuse_lint)
+        endif()
+
+        set(comment "Running 'reuse lint' for '${repo_project_name_lowercase}'.")
+        add_custom_target(${repo_sbom_target}_reuse_lint
+            COMMAND "${CMAKE_COMMAND}" -P "${reuse_lint_script}"
+            COMMENT "${comment}"
+            VERBATIM
+            USES_TERMINAL # To avoid running multiple lints in parallel
+        )
+        add_dependencies(reuse_lint ${repo_sbom_target}_reuse_lint)
+    endif()
 
     set(extra_code_begin "")
     set(extra_code_inner_end "")
@@ -435,6 +485,7 @@ function(_qt_internal_sbom_end_project_generate)
             file(SHA1 \"${sbom_dir}/verification.txt\" QT_SBOM_VERIFICATION_CODE)
             message(STATUS \"Finalizing SBOM generation in install dir: \${QT_SBOM_OUTPUT_PATH}\")
             configure_file(\"${staging_area_spdx_file}\" \"\${QT_SBOM_OUTPUT_PATH}\")
+            ${post_generation_includes}
             ${verify_includes}
             ${extra_code_inner_end}
         else()
@@ -451,6 +502,7 @@ function(_qt_internal_sbom_end_project_generate)
     # Clean up properties, so that they are empty for possible next repo in a top-level build.
     set_property(GLOBAL PROPERTY _qt_sbom_cmake_include_files "")
     set_property(GLOBAL PROPERTY _qt_sbom_cmake_end_include_files "")
+    set_property(GLOBAL PROPERTY _qt_sbom_cmake_post_generation_include_files "")
     set_property(GLOBAL PROPERTY _qt_sbom_cmake_verify_include_files "")
 endfunction()
 
@@ -1175,4 +1227,126 @@ function(_qt_internal_sbom_audit)
     file(GENERATE OUTPUT "${verify_sbom}" CONTENT "${content}")
 
     set_property(GLOBAL APPEND PROPERTY _qt_sbom_cmake_verify_include_files "${verify_sbom}")
+endfunction()
+
+# Returns path to project's potential root source reuse.toml file.
+function(_qt_internal_sbom_get_project_reuse_toml_path out_var)
+    set(reuse_toml_path "${PROJECT_SOURCE_DIR}/REUSE.toml")
+    set(${out_var} "${reuse_toml_path}" PARENT_SCOPE)
+endfunction()
+
+# Helper to generate and install a source SBOM using reuse.
+function(_qt_internal_sbom_generate_reuse_source_sbom)
+    set(opt_args NO_ERROR)
+    set(single_args "")
+    set(multi_args "")
+    cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    _qt_internal_get_current_project_sbom_dir(sbom_dir)
+    set(file_op "${sbom_dir}/generate_reuse_source_sbom.cmake")
+
+    _qt_internal_sbom_get_project_reuse_toml_path(reuse_toml_path)
+    if(NOT EXISTS "${reuse_toml_path}" AND NOT QT_FORCE_SOURCE_SBOM_GENERATION)
+        set(skip_message
+            "Skipping source SBOM generation: No reuse.toml file found at '${reuse_toml_path}'.")
+        message(STATUS "${skip_message}")
+
+        set(content "
+            message(STATUS \"${skip_message}\")
+")
+
+        file(GENERATE OUTPUT "${file_op}" CONTENT "${content}")
+        set_property(GLOBAL APPEND PROPERTY _qt_sbom_cmake_post_generation_include_files
+            "${file_op}")
+        return()
+    endif()
+
+    set(handle_error "")
+    if(NOT arg_NO_ERROR)
+        set(handle_error "
+            if(NOT res EQUAL 0)
+                message(FATAL_ERROR \"Source SBOM generation using reuse tool failed: \${res}\")
+            endif()
+")
+    endif()
+
+    set(source_sbom_path "\${QT_SBOM_OUTPUT_PATH_WITHOUT_EXT}.source.spdx")
+
+    set(content "
+        message(STATUS \"Generating source SBOM using reuse tool: ${source_sbom_path}\")
+        execute_process(
+            COMMAND ${QT_SBOM_PROGRAM_REUSE} --root \"${PROJECT_SOURCE_DIR}\" spdx
+                    -o ${source_sbom_path}
+            RESULT_VARIABLE res
+        )
+        ${handle_error}
+")
+
+    file(GENERATE OUTPUT "${file_op}" CONTENT "${content}")
+
+    set_property(GLOBAL APPEND PROPERTY _qt_sbom_cmake_post_generation_include_files "${file_op}")
+endfunction()
+
+# Helper to run 'reuse lint' on the project source dir.
+function(_qt_internal_sbom_run_reuse_lint)
+    set(opt_args
+        NO_ERROR
+    )
+    set(single_args
+        BUILD_TIME_SCRIPT_PATH_OUT_VAR
+    )
+    set(multi_args "")
+    cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    # If no reuse.toml file exists, it means the repo is likely not reuse compliant yet,
+    # so we shouldn't error out during installation when running the lint.
+    _qt_internal_sbom_get_project_reuse_toml_path(reuse_toml_path)
+    if(NOT EXISTS "${reuse_toml_path}" AND NOT QT_FORCE_REUSE_LINT_ERROR)
+        set(arg_NO_ERROR TRUE)
+    endif()
+
+    set(handle_error "")
+    if(NOT arg_NO_ERROR)
+        set(handle_error "
+            if(NOT res EQUAL 0)
+                message(FATAL_ERROR \"Running 'reuse lint' failed: \${res}\")
+            endif()
+")
+    endif()
+
+    set(content "
+        message(STATUS \"Running 'reuse lint' in '${PROJECT_SOURCE_DIR}'.\")
+        execute_process(
+            COMMAND ${QT_SBOM_PROGRAM_REUSE} --root \"${PROJECT_SOURCE_DIR}\" lint
+            RESULT_VARIABLE res
+        )
+        ${handle_error}
+")
+
+    _qt_internal_get_current_project_sbom_dir(sbom_dir)
+    set(file_op_build "${sbom_dir}/run_reuse_lint_build.cmake")
+    file(GENERATE OUTPUT "${file_op_build}" CONTENT "${content}")
+
+    # Allow skipping running 'reuse lint' during installation. But still allow running it during
+    # build time. This is a fail safe opt-out in case some repo needs it.
+    if(QT_FORCE_SKIP_REUSE_LINT_ON_INSTALL)
+        set(skip_message "Skipping running 'reuse lint' in '${PROJECT_SOURCE_DIR}'.")
+
+        set(content "
+            message(STATUS \"${skip_message}\")
+")
+        set(file_op_install "${sbom_dir}/run_reuse_lint_install.cmake")
+        file(GENERATE OUTPUT "${file_op_install}" CONTENT "${content}")
+    else()
+        # Just reuse the already generated script for installation as well.
+        set(file_op_install "${file_op_build}")
+    endif()
+
+    set_property(GLOBAL APPEND PROPERTY _qt_sbom_cmake_verify_include_files "${file_op_install}")
+
+    if(arg_BUILD_TIME_SCRIPT_PATH_OUT_VAR)
+        set(${arg_BUILD_TIME_SCRIPT_PATH_OUT_VAR} "${file_op_build}" PARENT_SCOPE)
+    endif()
 endfunction()
