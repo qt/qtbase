@@ -162,9 +162,8 @@ Relationship: SPDXRef-DOCUMENT DESCRIBES ${project_spdx_id}
     # This is the file that will be incrementally assembled by having content appended to it.
     _qt_internal_get_staging_area_spdx_file_path(staging_area_spdx_file)
 
-    get_filename_component(computed_sbom_file_name "${arg_OUTPUT}" NAME_WLE)
-    get_filename_component(computed_sbom_file_name_ext "${arg_OUTPUT}" LAST_EXT)
-    get_filename_component(computed_sbom_relative_dir "${arg_OUTPUT_RELATIVE_PATH}" DIRECTORY)
+    get_filename_component(output_file_name_without_ext "${arg_OUTPUT}" NAME_WLE)
+    get_filename_component(output_file_ext "${arg_OUTPUT}" LAST_EXT)
 
     get_cmake_property(is_multi_config GENERATOR_IS_MULTI_CONFIG)
     if(is_multi_config)
@@ -173,8 +172,8 @@ Relationship: SPDXRef-DOCUMENT DESCRIBES ${project_spdx_id}
         set(multi_config_suffix "")
     endif()
 
-    set(computed_sbom_file_name
-        "${computed_sbom_file_name}${multi_config_suffix}${computed_sbom_file_name_ext}")
+    set(computed_sbom_file_name_without_ext "${output_file_name_without_ext}${multi_config_suffix}")
+    set(computed_sbom_file_name "${output_file_name_without_ext}${output_file_ext}")
 
     # In a super build, put all the build time sboms into the same dir in qtbase.
     if(QT_SUPERBUILD)
@@ -182,8 +181,18 @@ Relationship: SPDXRef-DOCUMENT DESCRIBES ${project_spdx_id}
     else()
         set(build_sbom_dir "${sbom_dir}")
     endif()
+
+    get_filename_component(output_relative_dir "${arg_OUTPUT_RELATIVE_PATH}" DIRECTORY)
+
     set(build_sbom_path
-        "${build_sbom_dir}/${computed_sbom_relative_dir}/${computed_sbom_file_name}")
+        "${build_sbom_dir}/${output_relative_dir}/${computed_sbom_file_name}")
+    set(build_sbom_path_without_ext
+        "${build_sbom_dir}/${output_relative_dir}/${computed_sbom_file_name_without_ext}")
+
+    set(install_sbom_path "${arg_OUTPUT}")
+
+    get_filename_component(install_sbom_dir "${install_sbom_path}" DIRECTORY)
+    set(install_sbom_path_without_ext "${install_sbom_dir}/${output_file_name_without_ext}")
 
     # Create cmake file to append the document intro spdx to the staging file.
     set(create_staging_file "${sbom_dir}/append_document_to_staging${multi_config_suffix}.cmake")
@@ -198,8 +207,14 @@ Relationship: SPDXRef-DOCUMENT DESCRIBES ${project_spdx_id}
     file(GENERATE OUTPUT "${create_staging_file}" CONTENT "${content}")
 
     set_property(GLOBAL PROPERTY _qt_sbom_project_name "${arg_PROJECT}")
+
     set_property(GLOBAL PROPERTY _qt_sbom_build_output_path "${build_sbom_path}")
-    set_property(GLOBAL PROPERTY _qt_sbom_install_output_path "${arg_OUTPUT}")
+    set_property(GLOBAL PROPERTY _qt_sbom_build_output_path_without_ext
+        "${build_sbom_path_without_ext}")
+
+    set_property(GLOBAL PROPERTY _qt_sbom_install_output_path "${install_sbom_path}")
+    set_property(GLOBAL PROPERTY _qt_sbom_install_output_path_without_ext
+        "${install_sbom_path_without_ext}")
 
     set_property(GLOBAL APPEND PROPERTY _qt_sbom_cmake_include_files "${create_staging_file}")
 
@@ -225,7 +240,12 @@ function(_qt_internal_sbom_end_project_generate)
     _qt_internal_validate_all_args_are_parsed(arg)
 
     get_property(sbom_build_output_path GLOBAL PROPERTY _qt_sbom_build_output_path)
+    get_property(sbom_build_output_path_without_ext GLOBAL PROPERTY
+        _qt_sbom_build_output_path_without_ext)
+
     get_property(sbom_install_output_path GLOBAL PROPERTY _qt_sbom_install_output_path)
+    get_property(sbom_install_output_path_without_ext GLOBAL PROPERTY
+        _qt_sbom_install_output_path_without_ext)
 
     if(NOT sbom_build_output_path)
         message(FATAL_ERROR "Call _qt_internal_sbom_begin_project() first")
@@ -304,6 +324,7 @@ function(_qt_internal_sbom_end_project_generate)
         endif()
         if(NOT QT_SBOM_OUTPUT_PATH)
             set(QT_SBOM_OUTPUT_PATH \"${sbom_build_output_path}\")
+            set(QT_SBOM_OUTPUT_PATH_WITHOUT_EXT \"${sbom_build_output_path_without_ext}\")
         endif()
         set(QT_SBOM_VERIFICATION_CODES \"\")
         ${includes}
@@ -406,6 +427,7 @@ function(_qt_internal_sbom_end_project_generate)
         if(QT_SBOM_INSTALLED_ALL_CONFIGS)
             set(QT_SBOM_BUILD_TIME FALSE)
             set(QT_SBOM_OUTPUT_PATH \"${sbom_install_output_path}\")
+            set(QT_SBOM_OUTPUT_PATH_WITHOUT_EXT \"${sbom_install_output_path_without_ext}\")
             include(\"${assemble_sbom}\")
             list(SORT QT_SBOM_VERIFICATION_CODES)
             string(REPLACE \";\" \"\" QT_SBOM_VERIFICATION_CODES \"\${QT_SBOM_VERIFICATION_CODES}\")
