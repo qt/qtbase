@@ -3870,7 +3870,7 @@ size_t qHash(long double key, size_t seed) noexcept
 /*! \typedef QMultiHash::const_key_value_iterator
     \inmodule QtCore
     \since 5.10
-    \brief The QMap::const_key_value_iterator typedef provides an STL-style const iterator for QMultiHash and QMultiHash.
+    \brief The QMultiHash::const_key_value_iterator typedef provides an STL-style const iterator for QMultiHash.
 
     QMultiHash::const_key_value_iterator is essentially the same as QMultiHash::const_iterator
     with the difference that operator*() returns a key/value pair instead of a
@@ -3882,7 +3882,7 @@ size_t qHash(long double key, size_t seed) noexcept
 /*! \typedef QMultiHash::key_value_iterator
     \inmodule QtCore
     \since 5.10
-    \brief The QMap::key_value_iterator typedef provides an STL-style iterator for QMultiHash and QMultiHash.
+    \brief The QMultiHash::key_value_iterator typedef provides an STL-style iterator for QMultiHash.
 
     QMultiHash::key_value_iterator is essentially the same as QMultiHash::iterator
     with the difference that operator*() returns a key/value pair instead of a
