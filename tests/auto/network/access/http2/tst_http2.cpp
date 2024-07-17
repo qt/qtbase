@@ -1481,7 +1481,8 @@ void tst_Http2::duplicateRequestsWithAborts()
     clearHTTP2State();
     serverPort = 0;
 
-    ServerPtr targetServer(newServer(defaultServerSettings, defaultConnectionType()));
+    H2Type connectionType = H2Type::h2Direct;
+    ServerPtr targetServer(newServer(defaultServerSettings, connectionType));
 
     QMetaObject::invokeMethod(targetServer.data(), "startServer", Qt::QueuedConnection);
     runEventLoop();
@@ -1491,10 +1492,9 @@ void tst_Http2::duplicateRequestsWithAborts()
     constexpr int ExpectedSuccessfulRequests = 1;
     nRequests = ExpectedSuccessfulRequests;
 
-    const auto url = requestUrl(defaultConnectionType());
+    const auto url = requestUrl(connectionType);
     QNetworkRequest request(url);
-    // H2C might be used on macOS where SecureTransport doesn't support server-side ALPN
-    request.setAttribute(QNetworkRequest::Http2CleartextAllowedAttribute, true);
+    request.setAttribute(QNetworkRequest::Http2DirectAttribute, true);
 
     qint32 finishedCount = 0;
     auto connectToSlots = [this, &finishedCount](QNetworkReply *reply){

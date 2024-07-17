@@ -1,3 +1,0 @@
-[duplicateRequestsWithAborts]
-qnx ci # QTBUG-119616
-macos arm # QTBUG-119616
