@@ -205,6 +205,10 @@ namespace QT_NAMESPACE {}
 #    define QT_USE_NODISCARD_FILE_OPEN
 #  endif
 #endif // 6.8.0
+
+#if QT_ENABLE_STRICT_MODE_UP_TO >= QT_VERSION_CHECK(6, 9, 0)
+#  define QT_NO_QSNPRINTF
+#endif // 6.9.0
 #endif // QT_ENABLE_STRICT_MODE_UP_TO
 
 #endif /* QTCONFIGMACROS_H */
