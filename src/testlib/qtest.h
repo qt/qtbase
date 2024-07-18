@@ -56,8 +56,9 @@ bool _q_compareSequence(ActualIterator actualIt, ActualIterator actualEnd,
 
     if (!isOk) {
         qsnprintf(msg, sizeof(msg), "Compared lists have different sizes.\n"
-                  "   Actual   (%s) size: %zd\n"
-                  "   Expected (%s) size: %zd", actual, actualSize,
+                      "   Actual   (%s) size: %lld\n"
+                      "   Expected (%s) size: %lld",
+                      actual, qlonglong(actualSize),
                   expected, expectedSize);
     }
 
@@ -67,9 +68,10 @@ bool _q_compareSequence(ActualIterator actualIt, ActualIterator actualEnd,
             char *val1 = toString(*actualIt);
             char *val2 = toString(*expectedIt);
 
-            qsnprintf(msg, sizeof(msg), "Compared lists differ at index %zd.\n"
+            qsnprintf(msg, sizeof(msg), "Compared lists differ at index %lld.\n"
                       "   Actual   (%s): %s\n"
-                      "   Expected (%s): %s", i, actual, val1 ? val1 : "<null>",
+                          "   Expected (%s): %s",
+                          qlonglong(i), actual, val1 ? val1 : "<null>",
                       expected, val2 ? val2 : "<null>");
             isOk = false;
 
