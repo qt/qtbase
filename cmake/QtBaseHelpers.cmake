@@ -212,7 +212,7 @@ macro(qt_internal_qtbase_build_repo)
     endif()
 
     if(NOT QT_INTERNAL_BUILD_STANDALONE_PARTS)
-        if(QT_WILL_BUILD_TOOLS AND QT_FEATURE_settings)
+        if(QT_FEATURE_settings)
             add_subdirectory(qmake)
         endif()
 
