@@ -8,47 +8,56 @@
 #####################################################################
 
 # The common object library, that should be available regardless of the presence of qmake.
-qt_add_library(QtLibraryInfo OBJECT
-    library/proitems.cpp library/proitems.h
-    library/qmake_global.h
-    property.cpp property.h
-    propertyprinter.cpp propertyprinter.h
-    qmakelibraryinfo.cpp qmakelibraryinfo.h
-)
-qt_internal_add_sbom(QtLibraryInfo
-    TYPE QT_MODULE
-    NO_INSTALL
-)
+if(QT_WILL_BUILD_TOOLS)
+    qt_add_library(QtLibraryInfo OBJECT
+        library/proitems.cpp library/proitems.h
+        library/qmake_global.h
+        property.cpp property.h
+        propertyprinter.cpp propertyprinter.h
+        qmakelibraryinfo.cpp qmakelibraryinfo.h
+    )
+    qt_internal_add_sbom(QtLibraryInfo
+        TYPE QT_MODULE
+        NO_INSTALL
+    )
 
-# Make sure we use same parameters when building QtLibraryInfo and other Qt libraries,
-# otherwise some compilers may have compilation errors, such as clang-cl.
-target_link_libraries(QtLibraryInfo PUBLIC PlatformCommonInternal)
+    # Make sure we use same parameters when building QtLibraryInfo and other Qt libraries,
+    # otherwise some compilers may have compilation errors, such as clang-cl.
+    target_link_libraries(QtLibraryInfo PUBLIC PlatformCommonInternal)
 
-target_link_libraries(QtLibraryInfo PUBLIC Qt::CorePrivate)
+    target_link_libraries(QtLibraryInfo PUBLIC Qt::CorePrivate)
 
-qt_internal_add_sync_header_dependencies(QtLibraryInfo Core)
+    qt_internal_add_sync_header_dependencies(QtLibraryInfo Core)
 
-target_include_directories(QtLibraryInfo PUBLIC
-    "${CMAKE_CURRENT_SOURCE_DIR}"
-    "${CMAKE_CURRENT_SOURCE_DIR}/library"
-)
+    target_include_directories(QtLibraryInfo PUBLIC
+        "${CMAKE_CURRENT_SOURCE_DIR}"
+        "${CMAKE_CURRENT_SOURCE_DIR}/library"
+    )
 
-# Chop off the "/mkspecs" part of INSTALL_MKSPECSDIR
-get_filename_component(hostdatadir "${INSTALL_MKSPECSDIR}" DIRECTORY)
-if("${hostdatadir}" STREQUAL "")
-    set(hostdatadir ".")
+    # Chop off the "/mkspecs" part of INSTALL_MKSPECSDIR
+    get_filename_component(hostdatadir "${INSTALL_MKSPECSDIR}" DIRECTORY)
+    if("${hostdatadir}" STREQUAL "")
+        set(hostdatadir ".")
+    endif()
+
+    target_compile_definitions(QtLibraryInfo PUBLIC
+        PROEVALUATOR_FULL
+        QT_BUILD_QMAKE
+        QT_USE_QSTRINGBUILDER
+        QT_HOST_MKSPEC="${QT_QMAKE_HOST_MKSPEC}"
+        QT_TARGET_MKSPEC="${QT_QMAKE_TARGET_MKSPEC}"
+        QT_HOST_DATADIR="${hostdatadir}"
+    )
+
+    qt_internal_set_exceptions_flags(QtLibraryInfo OFF)
+
+    # Add QMAKE_VERSION_STR only if qmake is part of the build.
+    if(QT_FEATURE_qmake)
+        target_compile_definitions(QtLibraryInfo PUBLIC
+                QMAKE_VERSION_STR="3.1"
+        )
+    endif()
 endif()
-
-target_compile_definitions(QtLibraryInfo PUBLIC
-    PROEVALUATOR_FULL
-    QT_BUILD_QMAKE
-    QT_USE_QSTRINGBUILDER
-    QT_HOST_MKSPEC="${QT_QMAKE_HOST_MKSPEC}"
-    QT_TARGET_MKSPEC="${QT_QMAKE_TARGET_MKSPEC}"
-    QT_HOST_DATADIR="${hostdatadir}"
-)
-
-qt_internal_set_exceptions_flags(QtLibraryInfo OFF)
 
 if(NOT QT_FEATURE_qmake)
     return()
@@ -117,11 +126,6 @@ qt_internal_add_docs(qmake
 )
 
 qt_internal_return_unless_building_tools()
-
-# Add QMAKE_VERSION_STR only if qmake is part of the build.
-target_compile_definitions(QtLibraryInfo PUBLIC
-        QMAKE_VERSION_STR="3.1"
-)
 
 #### Keys ignored in scope 1:.:.:qmake.pro:<TRUE>:
 # _OPTION = "host_build"
