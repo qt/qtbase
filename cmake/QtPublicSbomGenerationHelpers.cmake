@@ -18,59 +18,6 @@ function(qt_internal_sbom_set_default_option_value_and_error_if_empty option_nam
     endif()
 endfunction()
 
-# Computes the current platform CPE.
-# Mostly matches the OS and architecture.
-function(_qt_internal_sbom_get_platform_cpe out_var)
-    set(cpe "")
-
-    if(CMAKE_SYSTEM_PROCESSOR)
-        set(system_processor "${CMAKE_SYSTEM_PROCESSOR}")
-    else()
-        set(system_processor "*")
-    endif()
-
-    if(WIN32)
-        if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "AMD64")
-            set(arch "x64")
-        elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "IA64")
-            set(arch "x64")
-        elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "ARM64")
-            set(arch "arm64")
-        elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "X86")
-            set(arch "x86")
-        elseif(CMAKE_CXX_COMPILER MATCHES "64")
-            set(arch "x64")
-        elseif(CMAKE_CXX_COMPILER MATCHES "86")
-            set(arch "x86")
-        else()
-            set(arch "*")
-        endif()
-
-        if("${CMAKE_SYSTEM_VERSION}" STREQUAL "6.1")
-            set(cpe "cpe:2.3:o:microsoft:windows_7:-:*:*:*:*:*:${arch}:*")
-        elseif("${CMAKE_SYSTEM_VERSION}" STREQUAL "6.2")
-            set(cpe "cpe:2.3:o:microsoft:windows_8:-:*:*:*:*:*:${arch}:*")
-        elseif("${CMAKE_SYSTEM_VERSION}" STREQUAL "6.3")
-            set(cpe "cpe:2.3:o:microsoft:windows_8.1:-:*:*:*:*:*:${arch}:*")
-        elseif("${CMAKE_SYSTEM_VERSION}" GREATER_EQUAL 10)
-            set(cpe "cpe:2.3:o:microsoft:windows_10:-:*:*:*:*:*:${arch}:*")
-        else()
-            set(cpe "cpe:2.3:o:microsoft:windows:-:*:*:*:*:*:${arch}:*")
-        endif()
-    elseif(APPLE)
-        set(cpe "cpe:2.3:o:apple:mac_os:*:*:*:*:*:*:${system_processor}:*")
-    elseif(UNIX)
-        set(cpe "cpe:2.3:o:*:*:-:*:*:*:*:*:${system_processor}:*")
-    elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm")
-        set(cpe "cpe:2.3:o:arm:arm:-:*:*:*:*:*:*:*")
-    else()
-        message(DEBUG "Can't compute CPE for unsupported platform")
-        set(cpe "cpe:2.3:o:*:*:-:*:*:*:*:*:*:*")
-    endif()
-
-    set(${out_var} "${cpe}" PARENT_SCOPE)
-endfunction()
-
 # Helper that returns the directory where the intermediate sbom files will be generated.
 function(_qt_internal_get_current_project_sbom_dir out_var)
     set(sbom_dir "${PROJECT_BINARY_DIR}/qt_sbom")
@@ -135,8 +82,7 @@ function(_qt_internal_sbom_begin_project_generate)
     if(arg_CPE)
         set(QT_SBOM_CPE "${arg_CPE}")
     else()
-        _qt_internal_sbom_get_platform_cpe(platform_cpe)
-        set(QT_SBOM_CPE "${platform_cpe}")
+        set(QT_SBOM_CPE "")
     endif()
 
     string(REGEX REPLACE "[^A-Za-z0-9.]+" "-" arg_PROJECT_FOR_SPDX_ID "${arg_PROJECT_FOR_SPDX_ID}")
@@ -826,13 +772,6 @@ PrimaryPackagePurpose: OTHER"
     if(arg_COMMENT)
         set(fields "${fields}
 PackageComment: ${arg_COMMENT}"
-        )
-    endif()
-
-    _qt_internal_sbom_get_platform_cpe(platform_cpe)
-    if(NOT arg_CPE)
-        set(fields "${fields}
-ExternalRef: SECURITY cpe23Type ${platform_cpe}"
         )
     endif()
 
