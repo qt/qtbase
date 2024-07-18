@@ -164,7 +164,7 @@ static bool write_xbm_image(const QImage &sourceImage, QIODevice *device, const 
     int        h = image.height();
     int        i;
     const QByteArray s = fileName.toUtf8(); // get file base name
-    int        msize = s.size() + 100;
+    const auto msize = s.size() + 100;
     char *buf = new char[msize];
 
     qsnprintf(buf, msize, "#define %s_width %d\n", s.data(), w);
