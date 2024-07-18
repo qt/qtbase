@@ -122,7 +122,9 @@ template<> inline char *toString(const QChar &c)
 template<> inline char *toString(const QModelIndex &idx)
 {
     char msg[128];
-    qsnprintf(msg, sizeof(msg), "QModelIndex(%d,%d,%p,%p)", idx.row(), idx.column(), idx.internalPointer(), idx.model());
+    qsnprintf(msg, sizeof(msg), "QModelIndex(%d,%d,%p,%p)",
+              idx.row(), idx.column(), idx.internalPointer(),
+              static_cast<const void*>(idx.model()));
     return qstrdup(msg);
 }
 #endif
@@ -235,7 +237,8 @@ struct QCborValueFormatter
     {
         QScopedArrayPointer<char> hold(format(taggedValue));
         char *buf = new char[BufferLen];
-        qsnprintf(buf, BufferLen, "QCborValue(QCborTag(%llu), %s)", tag, hold.get());
+        qsnprintf(buf, BufferLen, "QCborValue(QCborTag(%llu), %s)",
+                  qToUnderlying(tag), hold.get());
         return buf;
     }
 
@@ -429,8 +432,9 @@ bool _q_compareSequence(ActualIterator actualIt, ActualIterator actualEnd,
 
     if (!isOk) {
         qsnprintf(msg, sizeof(msg), "Compared lists have different sizes.\n"
-                  "   Actual   (%s) size: %zd\n"
-                  "   Expected (%s) size: %zd", actual, actualSize,
+                      "   Actual   (%s) size: %lld\n"
+                      "   Expected (%s) size: %lld",
+                      actual, qlonglong(actualSize),
                   expected, expectedSize);
     }
 
@@ -440,9 +444,10 @@ bool _q_compareSequence(ActualIterator actualIt, ActualIterator actualEnd,
             char *val1 = toString(*actualIt);
             char *val2 = toString(*expectedIt);
 
-            qsnprintf(msg, sizeof(msg), "Compared lists differ at index %zd.\n"
+            qsnprintf(msg, sizeof(msg), "Compared lists differ at index %lld.\n"
                       "   Actual   (%s): %s\n"
-                      "   Expected (%s): %s", i, actual, val1 ? val1 : "<null>",
+                          "   Expected (%s): %s",
+                          qlonglong(i), actual, val1 ? val1 : "<null>",
                       expected, val2 ? val2 : "<null>");
             isOk = false;
 
