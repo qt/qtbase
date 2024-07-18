@@ -222,9 +222,19 @@ bool QRhiD3D11::create(QRhi::Flags flags)
     // there. (some features are not supported then, however)
     useLegacySwapchainModel = qEnvironmentVariableIntValue("QT_D3D_NO_FLIP");
 
-    qCDebug(QRHI_LOG_INFO, "FLIP_* swapchain supported = true, ALLOW_TEARING supported = %s, use legacy (non-FLIP) model = %s",
+    if (!useLegacySwapchainModel) {
+        if (qEnvironmentVariableIsSet("QT_D3D_MAX_FRAME_LATENCY"))
+            maxFrameLatency = UINT(qMax(0, qEnvironmentVariableIntValue("QT_D3D_MAX_FRAME_LATENCY")));
+    } else {
+        maxFrameLatency = 0;
+    }
+
+    qCDebug(QRHI_LOG_INFO, "FLIP_* swapchain supported = true, ALLOW_TEARING supported = %s, use legacy (non-FLIP) model = %s, max frame latency = %u",
             supportsAllowTearing ? "true" : "false",
-            useLegacySwapchainModel ? "true" : "false");
+            useLegacySwapchainModel ? "true" : "false",
+            maxFrameLatency);
+    if (maxFrameLatency == 0)
+        qCDebug(QRHI_LOG_INFO, "Disabling FRAME_LATENCY_WAITABLE_OBJECT usage");
 
     if (!importedDeviceAndContext) {
         IDXGIAdapter1 *adapter;
@@ -1339,6 +1349,10 @@ QRhi::FrameOpResult QRhiD3D11::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginF
     QD3D11SwapChain *swapChainD = QRHI_RES(QD3D11SwapChain, swapChain);
     contextState.currentSwapChain = swapChainD;
     const int currentFrameSlot = swapChainD->currentFrameSlot;
+
+    // if we have a waitable object, now is the time to wait on it
+    if (swapChainD->frameLatencyWaitableObject)
+        WaitForSingleObjectEx(swapChainD->frameLatencyWaitableObject, 1000, true);
 
     swapChainD->cb.resetState();
 
@@ -4949,6 +4963,11 @@ void QD3D11SwapChain::destroy()
         dcompTarget = nullptr;
     }
 
+    if (frameLatencyWaitableObject) {
+        CloseHandle(frameLatencyWaitableObject);
+        frameLatencyWaitableObject = nullptr;
+    }
+
     QRHI_RES_RHI(QRhiD3D11);
     if (rhiD) {
         rhiD->unregisterResource(this);
@@ -5132,6 +5151,17 @@ bool QD3D11SwapChain::createOrResize()
     if (swapInterval == 0 && rhiD->supportsAllowTearing)
         swapChainFlags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
 
+    // maxFrameLatency 0 means no waitable object usage.
+    // Ignore it also when NoVSync is on, and when using WARP.
+    const bool useFrameLatencyWaitableObject = rhiD->maxFrameLatency != 0
+                                               && swapInterval != 0
+                                               && rhiD->driverInfoStruct.deviceType != QRhiDriverInfo::CpuDevice;
+
+    if (useFrameLatencyWaitableObject) {
+        // the flag is not supported in real fullscreen on D3D11, but perhaps that's fine since we only do borderless
+        swapChainFlags |= DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT;
+    }
+
     if (!swapChain) {
         sampleDesc = rhiD->effectiveSampleDesc(m_sampleCount);
         colorFormat = DEFAULT_FORMAT;
@@ -5217,16 +5247,31 @@ bool QD3D11SwapChain::createOrResize()
 
         if (SUCCEEDED(hr)) {
             swapChain = sc1;
-            if (m_format != SDR) {
-                IDXGISwapChain3 *sc3 = nullptr;
-                if (SUCCEEDED(sc1->QueryInterface(__uuidof(IDXGISwapChain3), reinterpret_cast<void **>(&sc3)))) {
+            IDXGISwapChain3 *sc3 = nullptr;
+            if (SUCCEEDED(sc1->QueryInterface(__uuidof(IDXGISwapChain3), reinterpret_cast<void **>(&sc3)))) {
+                if (m_format != SDR) {
                     hr = sc3->SetColorSpace1(hdrColorSpace);
                     if (FAILED(hr))
                         qWarning("Failed to set color space on swapchain: %s",
-                            qPrintable(QSystemError::windowsComString(hr)));
-                    sc3->Release();
-                } else {
+                                 qPrintable(QSystemError::windowsComString(hr)));
+                }
+                if (useFrameLatencyWaitableObject) {
+                    sc3->SetMaximumFrameLatency(rhiD->maxFrameLatency);
+                    frameLatencyWaitableObject = sc3->GetFrameLatencyWaitableObject();
+                }
+                sc3->Release();
+            } else {
+                if (m_format != SDR)
                     qWarning("IDXGISwapChain3 not available, HDR swapchain will not work as expected");
+                if (useFrameLatencyWaitableObject) {
+                    IDXGISwapChain2 *sc2 = nullptr;
+                    if (SUCCEEDED(sc1->QueryInterface(__uuidof(IDXGISwapChain2), reinterpret_cast<void **>(&sc2)))) {
+                        sc2->SetMaximumFrameLatency(rhiD->maxFrameLatency);
+                        frameLatencyWaitableObject = sc2->GetFrameLatencyWaitableObject();
+                        sc2->Release();
+                    } else { // this cannot really happen since we require DXGIFactory2
+                        qWarning("IDXGISwapChain2 not available, FrameLatencyWaitableObject cannot be used");
+                    }
                 }
             }
             if (dcompVisual) {

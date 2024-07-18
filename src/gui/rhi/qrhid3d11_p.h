@@ -625,6 +625,7 @@ struct QD3D11SwapChain : public QRhiSwapChain
     IDCompositionVisual *dcompVisual = nullptr;
     QD3D11SwapChainTimestamps timestamps;
     int currentTimestampPairIndex = 0;
+    HANDLE frameLatencyWaitableObject = nullptr;
 };
 
 class QRhiD3D11 : public QRhiImplementation
@@ -760,6 +761,7 @@ public:
 
     QRhi::Flags rhiFlags;
     bool debugLayer = false;
+    UINT maxFrameLatency = 2; // 1-3, use 2 to keep CPU-GPU parallelism while reducing lag compared to tripple buffering
     bool importedDeviceAndContext = false;
     ID3D11Device *dev = nullptr;
     ID3D11DeviceContext1 *context = nullptr;
