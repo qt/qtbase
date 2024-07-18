@@ -138,11 +138,13 @@ Q_CORE_EXPORT int qstricmp(const char *, const char *);
 Q_CORE_EXPORT int qstrnicmp(const char *, const char *, size_t len);
 Q_CORE_EXPORT int qstrnicmp(const char *, qsizetype, const char *, qsizetype = -1);
 
+#ifndef QT_NO_QSNPRINTF // use std::(v)snprintf() from <cstdio> instead
 // implemented in qvsnprintf.cpp
 Q_CORE_EXPORT int qvsnprintf(char *str, size_t n, const char *fmt, va_list ap)
     Q_ATTRIBUTE_FORMAT_PRINTF(3, 0);
 Q_CORE_EXPORT int qsnprintf(char *str, size_t n, const char *fmt, ...)
     Q_ATTRIBUTE_FORMAT_PRINTF(3, 4);
+#endif // QT_NO_QSNPRINTF
 
 // qChecksum: Internet checksum
 Q_CORE_EXPORT quint16 qChecksum(QByteArrayView data, Qt::ChecksumType standard = Qt::ChecksumIso3309);

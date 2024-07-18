@@ -361,6 +361,7 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     \row \li 6.7.0 \li Overloads of QObject::connect that do not take a context object (see \l{QT_NO_CONTEXTLESS_CONNECT})
     \row \li 6.8.0 \li The qAsConst() function (see \l{QT_NO_QASCONST})
     \row \li 6.8.0 \li File-related I/O classes have their \c{open()} functions marked \c{[[nodiscard]]} (see \l{QT_USE_NODISCARD_FILE_OPEN})
+    \row\li  6.9.0 \li The qsnprintf() and qvnprintf() functions (see \l{QT_NO_QSNPRINTF}).
     \endtable
 
     Moreover, individual APIs may also get disabled as part of the

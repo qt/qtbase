@@ -14,6 +14,8 @@
 #include <private/qcoreapplication_p.h>
 #include <private/qcore_unix_p.h>
 
+#include <cstdio>
+
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -87,7 +89,7 @@ bool QThreadPipe::init()
 #if defined(Q_OS_WASM)
     // do nothing.
 #elif defined(Q_OS_VXWORKS)
-    qsnprintf(name, sizeof(name), "/pipe/qt_%08x", int(taskIdSelf()));
+    std::snprintf(name, sizeof(name), "/pipe/qt_%08x", int(taskIdSelf()));
 
     // make sure there is no pipe with this name
     pipeDevDelete(name, true);

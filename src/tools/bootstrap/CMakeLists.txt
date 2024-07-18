@@ -61,7 +61,6 @@ qt_internal_extend_target(Bootstrap
         ../../corelib/text/qstringbuilder.cpp
         ../../corelib/text/qstringconverter.cpp
         ../../corelib/text/qstringlist.cpp
-        ../../corelib/text/qvsnprintf.cpp
         ../../corelib/time/qcalendar.cpp
         ../../corelib/time/qdatetime.cpp
         ../../corelib/time/qgregoriancalendar.cpp

@@ -10,9 +10,22 @@
 
 QT_BEGIN_NAMESPACE
 
+/*!
+    \macro QT_NO_QSNPRINTF
+    \since 6.8
+    \relates QByteArray
+
+    Defining this macro removes the availability of the qsnprintf() and
+    qvsnprintf() functions. See the functions' documentation for why you may
+    want to disable them.
+
+    \sa qsnprintf(), qvsnprintf().
+*/
+
 #if !defined(QT_VSNPRINTF) || defined(Q_QDOC)
 
 /*!
+    \fn int qvsnprintf(char *str, size_t n, const char *fmt, va_list ap)
     \relates QByteArray
 
     \obsolete
@@ -40,6 +53,7 @@ QT_BEGIN_NAMESPACE
     \sa qsnprintf(), QString::asprintf()
 */
 
+Q_CORE_EXPORT // QT_NO_QSNPRINTF is in effect
 int qvsnprintf(char *str, size_t n, const char *fmt, va_list ap)
 {
     if (!str || !fmt)
@@ -62,6 +76,7 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #include <stdio.h>
 QT_END_INCLUDE_NAMESPACE
 
+Q_CORE_EXPORT // QT_NO_QSNPRINTF is in effect
 int qvsnprintf(char *str, size_t n, const char *fmt, va_list ap)
 {
     return QT_VSNPRINTF(str, n, fmt, ap);
@@ -70,6 +85,7 @@ int qvsnprintf(char *str, size_t n, const char *fmt, va_list ap)
 #endif
 
 /*!
+    \fn int qsnprintf(char *str, size_t n, const char *fmt, ...)
     \target bytearray-qsnprintf
     \relates QByteArray
 
@@ -89,6 +105,7 @@ int qvsnprintf(char *str, size_t n, const char *fmt, va_list ap)
     \sa qvsnprintf(), QString::asprintf()
 */
 
+Q_CORE_EXPORT // QT_NO_QSNPRINTF is in effect
 int qsnprintf(char *str, size_t n, const char *fmt, ...)
 {
     va_list ap;

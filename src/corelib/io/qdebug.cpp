@@ -11,6 +11,7 @@
 
 #include <array>
 #include <q20chrono.h>
+#include <cstdio>
 
 QT_BEGIN_NAMESPACE
 
@@ -406,9 +407,9 @@ static QByteArray timeUnit(qint64 num, qint64 den)
     };
     auto appendNumber = [&](qint64 value) {
         if (value >= 10'000 && (value % 1000) == 0)
-            len += qsnprintf(buf + len, sizeof(buf) - len, "%.6g", double(value));  // "1e+06"
+            len += std::snprintf(buf + len, sizeof(buf) - len, "%.6g", double(value));  // "1e+06"
         else
-            len += qsnprintf(buf + len, sizeof(buf) - len, "%lld", value);
+            len += std::snprintf(buf + len, sizeof(buf) - len, "%lld", value);
     };
     appendChar('[');
     appendNumber(num);
