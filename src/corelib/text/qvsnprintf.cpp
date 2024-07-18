@@ -30,7 +30,9 @@ QT_BEGIN_NAMESPACE
 
     \warning Since vsnprintf() shows different behavior on certain
     platforms, you should not rely on the return value or on the fact
-    that you will always get a 0 terminated string back.
+    that you will always get a 0 terminated string back. There are also
+    differences in how \c{%a} (hex floats) and \c{%ls} (wide strings) are
+    handled on WebAssembly and Android.
 
     Ideally, you should never call this function but use QString::asprintf()
     instead.
