@@ -224,13 +224,19 @@ public:
     QDebug &operator<<(T u128) { putUInt128(&u128); return maybeSpace(); }
 #endif // QT_SUPPORTS_INT128
 
+private:
+    template <typename T>
+    static void streamTypeErased(QDebug &d, const void *obj)
+    {
+        d << *static_cast<const T*>(obj);
+    }
+    using StreamTypeErased = void(*)(QDebug&, const void*);
+    QT7_ONLY(Q_CORE_EXPORT) static QString toStringImpl(StreamTypeErased s, const void *obj);
+public:
     template <typename T>
     static QString toString(const T &object)
     {
-        QString buffer;
-        QDebug stream(&buffer);
-        stream.nospace() << object;
-        return buffer;
+        return toStringImpl(&streamTypeErased<T>, &object);
     }
 };
 
