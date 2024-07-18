@@ -225,11 +225,11 @@ public:
 #endif // QT_SUPPORTS_INT128
 
     template <typename T>
-    static QString toString(T &&object)
+    static QString toString(const T &object)
     {
         QString buffer;
         QDebug stream(&buffer);
-        stream.nospace() << std::forward<T>(object);
+        stream.nospace() << object;
         return buffer;
     }
 };
