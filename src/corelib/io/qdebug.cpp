@@ -1002,6 +1002,17 @@ QDebug &QDebug::resetFormat()
     \include qdebug-toString.qdocinc
 */
 
+/*! \internal */
+QString QDebug::toStringImpl(StreamTypeErased s, const void *obj)
+{
+    QString result;
+    {
+        QDebug d(&result);
+        s(d.nospace(), obj);
+    }
+    return result;
+}
+
 /*!
     \fn template <class T> QDebug operator<<(QDebug debug, const QList<T> &list)
     \relates QDebug
