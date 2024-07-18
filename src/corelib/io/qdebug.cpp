@@ -996,7 +996,7 @@ QDebug &QDebug::resetFormat()
 */
 
 /*!
-    \fn template <class T> QString QDebug::toString(T &&object)
+    \fn template <class T> QString QDebug::toString(const T &object)
     \since 6.0
 
     \include qdebug-toString.qdocinc
