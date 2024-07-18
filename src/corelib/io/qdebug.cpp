@@ -1000,12 +1000,34 @@ QDebug &QDebug::resetFormat()
     \since 6.0
 
     \include qdebug-toString.qdocinc
+
+    \sa toBytes()
 */
 
 /*! \internal */
 QString QDebug::toStringImpl(StreamTypeErased s, const void *obj)
 {
     QString result;
+    {
+        QDebug d(&result);
+        s(d.nospace(), obj);
+    }
+    return result;
+}
+
+/*!
+    \fn template <class T> QByteArray QDebug::toBytes(const T &object)
+    \since 6.9
+
+    This is equivalent to \c{QDebug::toString(object).toUtf8()}, but more efficient.
+
+    \sa toString()
+*/
+
+/*! \internal */
+QByteArray QDebug::toBytesImpl(StreamTypeErased s, const void *obj)
+{
+    QByteArray result;
     {
         QDebug d(&result);
         s(d.nospace(), obj);

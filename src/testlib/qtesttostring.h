@@ -55,7 +55,7 @@ inline typename std::enable_if<!QtPrivate::IsQEnumHelper<T>::Value && !std::is_e
     char *result = nullptr;
 #ifndef QT_NO_DEBUG_STREAM
     if constexpr (QTypeTraits::has_ostream_operator_v<QDebug, T>) {
-        result = qstrdup(QDebug::toString(t).toUtf8().constData());
+        result = qstrdup(QDebug::toBytes(t).constData());
     } else {
         static_assert(!QMetaTypeId2<T>::IsBuiltIn,
                 "Built-in type must implement debug streaming operator "

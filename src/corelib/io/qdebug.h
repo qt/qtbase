@@ -51,6 +51,9 @@ class QT6_ONLY(Q_CORE_EXPORT) QDebug : public QIODeviceBase
         explicit Stream(QString *string)
             : ts(string, WriteOnly)
         {}
+        explicit Stream(QByteArray *ba)
+            : ts(ba, WriteOnly)
+        {}
         explicit Stream(QtMsgType t)
             : ts(&buffer, WriteOnly),
               type(t),
@@ -78,6 +81,7 @@ class QT6_ONLY(Q_CORE_EXPORT) QDebug : public QIODeviceBase
 public:
     explicit QDebug(QIODevice *device) : stream(new Stream(device)) {}
     explicit QDebug(QString *string) : stream(new Stream(string)) {}
+    explicit QDebug(QByteArray *bytes) : stream(new Stream(bytes)) {}
     explicit QDebug(QtMsgType t) : stream(new Stream(t)) {}
     QDebug(const QDebug &o) : stream(o.stream) { ++stream->ref; }
     QDebug(QDebug &&other) noexcept : stream{std::exchange(other.stream, nullptr)} {}
@@ -232,11 +236,18 @@ private:
     }
     using StreamTypeErased = void(*)(QDebug&, const void*);
     QT7_ONLY(Q_CORE_EXPORT) static QString toStringImpl(StreamTypeErased s, const void *obj);
+    QT7_ONLY(Q_CORE_EXPORT) static QByteArray toBytesImpl(StreamTypeErased s, const void *obj);
 public:
     template <typename T>
     static QString toString(const T &object)
     {
         return toStringImpl(&streamTypeErased<T>, &object);
+    }
+
+    template <typename T>
+    static QByteArray toBytes(const T &object)
+    {
+        return toBytesImpl(&streamTypeErased<T>, &object);
     }
 };
 
