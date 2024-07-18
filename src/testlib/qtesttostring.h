@@ -195,7 +195,7 @@ template<> inline char *toString(const QChar &c)
 {
     const ushort uc = c.unicode();
     if (uc < 128) {
-        char msg[32] = {'\0'};
+        char msg[32];
         qsnprintf(msg, sizeof(msg), "QChar: '%c' (0x%x)", char(uc), unsigned(uc));
         return qstrdup(msg);
     }
@@ -213,21 +213,21 @@ template<> inline char *toString(const QModelIndex &idx)
 
 template<> inline char *toString(const QPoint &p)
 {
-    char msg[128] = {'\0'};
+    char msg[128];
     qsnprintf(msg, sizeof(msg), "QPoint(%d,%d)", p.x(), p.y());
     return qstrdup(msg);
 }
 
 template<> inline char *toString(const QSize &s)
 {
-    char msg[128] = {'\0'};
+    char msg[128];
     qsnprintf(msg, sizeof(msg), "QSize(%dx%d)", s.width(), s.height());
     return qstrdup(msg);
 }
 
 template<> inline char *toString(const QRect &s)
 {
-    char msg[256] = {'\0'};
+    char msg[256];
     qsnprintf(msg, sizeof(msg), "QRect(%d,%d %dx%d) (bottomright %d,%d)",
               s.left(), s.top(), s.width(), s.height(), s.right(), s.bottom());
     return qstrdup(msg);
@@ -235,21 +235,21 @@ template<> inline char *toString(const QRect &s)
 
 template<> inline char *toString(const QPointF &p)
 {
-    char msg[64] = {'\0'};
+    char msg[64];
     qsnprintf(msg, sizeof(msg), "QPointF(%g,%g)", p.x(), p.y());
     return qstrdup(msg);
 }
 
 template<> inline char *toString(const QSizeF &s)
 {
-    char msg[64] = {'\0'};
+    char msg[64];
     qsnprintf(msg, sizeof(msg), "QSizeF(%gx%g)", s.width(), s.height());
     return qstrdup(msg);
 }
 
 template<> inline char *toString(const QRectF &s)
 {
-    char msg[256] = {'\0'};
+    char msg[256];
     qsnprintf(msg, sizeof(msg), "QRectF(%g,%g %gx%g) (bottomright %g,%g)",
               s.left(), s.top(), s.width(), s.height(), s.right(), s.bottom());
     return qstrdup(msg);
