@@ -103,6 +103,19 @@ qt_internal_add_tool(${target_name}
         generators/win32/msvc_objectmodel.cpp # xml symbols clash with generators/win32/msbuild_objectmodel.cpp
         library/qmakeparser.cpp               # struct statics clashes with qmakeevaluator_p.h
 )
+
+# When we don't build tools, we still want to be able to build the documentation.
+# Add a fake interface library to make sure the documentation target is created.
+# We use the direct name rather than ${target_name} to ensure the doc target keeps
+# the original name even when cross-building.
+if(NOT TARGET qmake)
+    add_library(qmake INTERFACE)
+endif()
+
+qt_internal_add_docs(qmake
+    doc/qmake.qdocconf
+)
+
 qt_internal_return_unless_building_tools()
 
 # Add QMAKE_VERSION_STR only if qmake is part of the build.
@@ -137,6 +150,3 @@ set_target_properties(${target_name} PROPERTIES
 qt_internal_apply_gc_binaries(${target_name} PRIVATE)
 qt_skip_warnings_are_errors(${target_name})
 
-qt_internal_add_docs(${target_name}
-    doc/qmake.qdocconf
-)
