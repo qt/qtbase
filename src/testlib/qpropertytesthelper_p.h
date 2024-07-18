@@ -45,7 +45,7 @@ namespace QTestPrivate {
 #define QPROPERTY_TEST_COMPARISON_HELPER(actual, expected, comparator, represent)                  \
     do {                                                                                           \
         const size_t maxMsgLen = 1024;                                                             \
-        char msg[maxMsgLen] = { '\0' };                                                            \
+        char msg[maxMsgLen];                                                                       \
         auto actualStr = represent(actual);                                                        \
         auto expectedStr = represent(expected);                                                    \
         const size_t len1 = mbstowcs(nullptr, #actual, maxMsgLen);                                 \
