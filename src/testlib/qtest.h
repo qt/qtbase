@@ -19,6 +19,7 @@
 #include <QtCore/qcoreapplication.h>
 #endif
 
+#include <cstdio>
 #include <initializer_list>
 #include <memory>
 
@@ -55,7 +56,7 @@ bool _q_compareSequence(ActualIterator actualIt, ActualIterator actualEnd,
     bool isOk = actualSize == expectedSize;
 
     if (!isOk) {
-        qsnprintf(msg, sizeof(msg), "Compared lists have different sizes.\n"
+        std::snprintf(msg, sizeof(msg), "Compared lists have different sizes.\n"
                       "   Actual   (%s) size: %lld\n"
                       "   Expected (%s) size: %lld",
                       actual, qlonglong(actualSize),
@@ -68,11 +69,11 @@ bool _q_compareSequence(ActualIterator actualIt, ActualIterator actualEnd,
             char *val1 = toString(*actualIt);
             char *val2 = toString(*expectedIt);
 
-            qsnprintf(msg, sizeof(msg), "Compared lists differ at index %lld.\n"
-                      "   Actual   (%s): %s\n"
+            std::snprintf(msg, sizeof(msg), "Compared lists differ at index %lld.\n"
+                          "   Actual   (%s): %s\n"
                           "   Expected (%s): %s",
                           qlonglong(i), actual, val1 ? val1 : "<null>",
-                      expected, val2 ? val2 : "<null>");
+                          expected, val2 ? val2 : "<null>");
             isOk = false;
 
             delete [] val1;

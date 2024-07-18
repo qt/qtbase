@@ -21,6 +21,8 @@
 #include <QTest>
 #include <private/qglobal_p.h>
 
+#include <cstdio>
+
 QT_BEGIN_NAMESPACE
 
 namespace QTestPrivate {

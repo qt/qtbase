@@ -31,6 +31,8 @@
 #include <QtCore/quuid.h>
 #include <QtCore/qvariant.h>
 
+#include <cstdio>
+
 QT_BEGIN_NAMESPACE
 
 namespace QTest {
@@ -77,7 +79,7 @@ inline typename std::enable_if<!QtPrivate::IsQEnumHelper<F>::Value, char*>::type
 {
     const size_t space = 3 + 2 * sizeof(unsigned); // 2 for 0x, two hex digits per byte, 1 for '\0'
     char *msg = new char[space];
-    qsnprintf(msg, space, "0x%x", unsigned(f.toInt()));
+    std::snprintf(msg, space, "0x%x", unsigned(f.toInt()));
     return msg;
 }
 
@@ -196,7 +198,7 @@ template<> inline char *toString(const QChar &c)
     const ushort uc = c.unicode();
     if (uc < 128) {
         char msg[32];
-        qsnprintf(msg, sizeof(msg), "QChar: '%c' (0x%x)", char(uc), unsigned(uc));
+        std::snprintf(msg, sizeof(msg), "QChar: '%c' (0x%x)", char(uc), unsigned(uc));
         return qstrdup(msg);
     }
     return qstrdup(qPrintable(QString::fromLatin1("QChar: '%1' (0x%2)").arg(c).arg(QString::number(static_cast<int>(c.unicode()), 16))));
@@ -206,7 +208,7 @@ template<> inline char *toString(const QChar &c)
 template<> inline char *toString(const QModelIndex &idx)
 {
     char msg[128];
-    qsnprintf(msg, sizeof(msg), "QModelIndex(%d,%d,%p,%p)",
+    std::snprintf(msg, sizeof(msg), "QModelIndex(%d,%d,%p,%p)",
                   idx.row(), idx.column(), idx.internalPointer(),
                   static_cast<const void*>(idx.model()));
     return qstrdup(msg);
@@ -216,21 +218,21 @@ template<> inline char *toString(const QModelIndex &idx)
 template<> inline char *toString(const QPoint &p)
 {
     char msg[128];
-    qsnprintf(msg, sizeof(msg), "QPoint(%d,%d)", p.x(), p.y());
+    std::snprintf(msg, sizeof(msg), "QPoint(%d,%d)", p.x(), p.y());
     return qstrdup(msg);
 }
 
 template<> inline char *toString(const QSize &s)
 {
     char msg[128];
-    qsnprintf(msg, sizeof(msg), "QSize(%dx%d)", s.width(), s.height());
+    std::snprintf(msg, sizeof(msg), "QSize(%dx%d)", s.width(), s.height());
     return qstrdup(msg);
 }
 
 template<> inline char *toString(const QRect &s)
 {
     char msg[256];
-    qsnprintf(msg, sizeof(msg), "QRect(%d,%d %dx%d) (bottomright %d,%d)",
+    std::snprintf(msg, sizeof(msg), "QRect(%d,%d %dx%d) (bottomright %d,%d)",
               s.left(), s.top(), s.width(), s.height(), s.right(), s.bottom());
     return qstrdup(msg);
 }
@@ -238,22 +240,22 @@ template<> inline char *toString(const QRect &s)
 template<> inline char *toString(const QPointF &p)
 {
     char msg[64];
-    qsnprintf(msg, sizeof(msg), "QPointF(%g,%g)", p.x(), p.y());
+    std::snprintf(msg, sizeof(msg), "QPointF(%g,%g)", p.x(), p.y());
     return qstrdup(msg);
 }
 
 template<> inline char *toString(const QSizeF &s)
 {
     char msg[64];
-    qsnprintf(msg, sizeof(msg), "QSizeF(%gx%g)", s.width(), s.height());
+    std::snprintf(msg, sizeof(msg), "QSizeF(%gx%g)", s.width(), s.height());
     return qstrdup(msg);
 }
 
 template<> inline char *toString(const QRectF &s)
 {
     char msg[256];
-    qsnprintf(msg, sizeof(msg), "QRectF(%g,%g %gx%g) (bottomright %g,%g)",
-              s.left(), s.top(), s.width(), s.height(), s.right(), s.bottom());
+    std::snprintf(msg, sizeof(msg), "QRectF(%g,%g %gx%g) (bottomright %g,%g)",
+                  s.left(), s.top(), s.width(), s.height(), s.right(), s.bottom());
     return qstrdup(msg);
 }
 
@@ -313,7 +315,7 @@ struct QCborValueFormatter
     static char *formatSimpleType(QCborSimpleType st)
     {
         char *buf = new char[BufferLen];
-        qsnprintf(buf, BufferLen, "QCborValue(QCborSimpleType(%d))", int(st));
+        std::snprintf(buf, BufferLen, "QCborValue(QCborSimpleType(%d))", int(st));
         return buf;
     }
 
@@ -321,7 +323,7 @@ struct QCborValueFormatter
     {
         QScopedArrayPointer<char> hold(format(taggedValue));
         char *buf = new char[BufferLen];
-        qsnprintf(buf, BufferLen, "QCborValue(QCborTag(%llu), %s)",
+        std::snprintf(buf, BufferLen, "QCborValue(QCborTag(%llu), %s)",
                       qToUnderlying(tag), hold.get());
         return buf;
     }
@@ -336,9 +338,9 @@ struct QCborValueFormatter
         char *buf = new char[BufferLen];
         const char *typeName = typeEnum.valueToKey(t);
         if (typeName)
-            qsnprintf(buf, BufferLen, "QCborValue(%s, %s)", typeName, str);
+            std::snprintf(buf, BufferLen, "QCborValue(%s, %s)", typeName, str);
         else
-            qsnprintf(buf, BufferLen, "QCborValue(<unknown type 0x%02x>)", t);
+            std::snprintf(buf, BufferLen, "QCborValue(<unknown type 0x%02x>)", t);
         return buf;
     }
 
