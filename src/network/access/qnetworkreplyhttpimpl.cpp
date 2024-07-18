@@ -610,9 +610,9 @@ QHttpNetworkRequest::Priority QNetworkReplyHttpImplPrivate::convert(QNetworkRequ
     case QNetworkRequest::HighPriority:
         return QHttpNetworkRequest::HighPriority;
     case QNetworkRequest::NormalPriority:
-    default:
         return QHttpNetworkRequest::NormalPriority;
     }
+    Q_UNREACHABLE_RETURN(QHttpNetworkRequest::NormalPriority);
 }
 
 void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpRequest)
