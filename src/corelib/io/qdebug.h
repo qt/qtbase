@@ -44,13 +44,13 @@ class QT6_ONLY(Q_CORE_EXPORT) QDebug : public QIODeviceBase
     struct Stream {
         enum { VerbosityShift = 29, VerbosityMask = 0x7 };
 
-        Stream(QIODevice *device)
+        explicit Stream(QIODevice *device)
             : ts(device)
         {}
-        Stream(QString *string)
+        explicit Stream(QString *string)
             : ts(string, WriteOnly)
         {}
-        Stream(QtMsgType t)
+        explicit Stream(QtMsgType t)
             : ts(&buffer, WriteOnly),
               type(t),
               message_output(true)
