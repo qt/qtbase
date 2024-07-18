@@ -38,6 +38,18 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \class QMetaContainer
+    \inmodule QtCore
+    \since 6.0
+    \brief The QMetaContainer class provides common functionality for sequential
+        and associative containers.
+
+    \ingroup objectmodel
+
+    \compares equality
+*/
+
+/*!
     Returns \c true if the underlying container provides at least an input
     iterator as defined by std::input_iterator_tag, otherwise returns
     \c false. Forward, Bi-directional, and random access iterators are
@@ -492,7 +504,7 @@ void QMetaContainer::copyIterator(void *target, const void *source) const
 }
 
 /*!
-    Advances the non-const \a iterator by \a step steps. If \a steps is negative
+    Advances the non-const \a iterator by \a step steps. If \a step is negative
     the \a iterator is moved backwards, towards the beginning of the container.
     The behavior is unspecified for negative values of \a step if
     \l hasBidirectionalIterator() returns false.
@@ -740,7 +752,7 @@ void QMetaContainer::copyConstIterator(void *target, const void *source) const
 }
 
 /*!
-    Advances the const \a iterator by \a step steps. If \a steps is negative
+    Advances the const \a iterator by \a step steps. If \a step is negative
     the \a iterator is moved backwards, towards the beginning of the container.
     The behavior is unspecified for negative values of \a step if
     \l hasBidirectionalIterator() returns false.
