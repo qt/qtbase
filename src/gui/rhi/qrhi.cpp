@@ -72,10 +72,10 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     builds on QOpenGLContext, QOpenGLFunctions, and the related cross-platform
     infrastructure of the Qt GUI module.
 
-    \li Direct3D 11.1 or newer, with Shader Model 5.0 or newer. When the D3D
-    runtime has no support for 11.1 features or Shader Model 5.0,
-    initialization using an accelerated graphics device will fail, but using
-    the
+    \li Direct3D 11.2 and newer (with DXGI 1.3 and newer), using Shader Model
+    5.0 or newer. When the D3D runtime has no support for 11.2 features or
+    Shader Model 5.0, initialization using an accelerated graphics device will
+    fail, but using the
     \l{https://learn.microsoft.com/en-us/windows/win32/direct3darticles/directx-warp}{software
     adapter} is still an option.
 
