@@ -19,6 +19,7 @@
 
 #include <QtCore/qobject.h>
 #include <QtCore/qhash.h>
+#include <QtCore/qset.h>
 #include <QtCore/qvarlengtharray.h>
 #include <QtCore/qxpfunctional.h>
 #include <QtNetwork/qhttp2configuration.h>
@@ -324,6 +325,7 @@ private:
 
     QHttp2Configuration m_config;
     QHash<quint32, QPointer<QHttp2Stream>> m_streams;
+    QSet<quint32> m_blockedStreams;
     QHash<QUrl, quint32> m_promisedStreams;
     QList<quint32> m_resetStreamIDs;
 
