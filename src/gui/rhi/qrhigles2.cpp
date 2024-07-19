@@ -1118,22 +1118,23 @@ void QRhiGles2::destroy()
     if (!f)
         return;
 
-    ensureContext();
-    executeDeferredReleases();
+    if (ensureContext()) {
+        executeDeferredReleases();
 
-    if (ofr.tsQueries[0]) {
-        f->glDeleteQueries(2, ofr.tsQueries);
-        ofr.tsQueries[0] = ofr.tsQueries[1] = 0;
+        if (ofr.tsQueries[0]) {
+            f->glDeleteQueries(2, ofr.tsQueries);
+            ofr.tsQueries[0] = ofr.tsQueries[1] = 0;
+        }
+
+        if (vao) {
+            f->glDeleteVertexArrays(1, &vao);
+            vao = 0;
+        }
+
+        for (uint shader : m_shaderCache)
+            f->glDeleteShader(shader);
+        m_shaderCache.clear();
     }
-
-    if (vao) {
-        f->glDeleteVertexArrays(1, &vao);
-        vao = 0;
-    }
-
-    for (uint shader : m_shaderCache)
-        f->glDeleteShader(shader);
-    m_shaderCache.clear();
 
     if (!importedContext) {
         delete ctx;
