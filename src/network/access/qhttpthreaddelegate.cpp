@@ -9,6 +9,7 @@
 #include <QAuthenticator>
 #include <QEventLoop>
 #include <QCryptographicHash>
+#include <QtCore/qscopedvaluerollback.h>
 
 #include "private/qhttpnetworkreply_p.h"
 #include "private/qnetworkaccesscache_p.h"
@@ -215,7 +216,7 @@ void QHttpThreadDelegate::startRequestSynchronously()
     synchronous = true;
 
     QEventLoop synchronousRequestLoop;
-    this->synchronousRequestLoop = &synchronousRequestLoop;
+    QScopedValueRollback<QEventLoop*> guard(this->synchronousRequestLoop, &synchronousRequestLoop);
 
     // Worst case timeout
     QTimer::singleShot(30*1000, this, SLOT(abortRequest()));
