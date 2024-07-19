@@ -22,7 +22,7 @@ public:
 
 QImageIOPlugin::Capabilities QJpegPlugin::capabilities(QIODevice *device, const QByteArray &format) const
 {
-    if (format == "jpeg" || format == "jpg")
+    if (format == "jpeg" || format == "jpg" || format == "jfif")
         return Capabilities(CanRead | CanWrite);
     if (!format.isEmpty())
         return { };
