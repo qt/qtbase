@@ -476,6 +476,8 @@ void QHttp2Stream::maybeResumeUpload()
             isUploadBlocked());
     if (isUploadingDATA() && !isUploadBlocked())
         internalSendDATA();
+    else
+        getConnection()->m_blockedStreams.insert(streamID());
 }
 
 /*!
@@ -891,6 +893,10 @@ QHttp2Stream *QHttp2Connection::createStreamInternal_impl(quint32 streamID)
     stream = new QHttp2Stream(this, streamID);
     stream->m_recvWindow = streamInitialReceiveWindowSize;
     stream->m_sendWindow = streamInitialSendWindowSize;
+
+    connect(stream, &QHttp2Stream::uploadBlocked, this, [this, stream] {
+        m_blockedStreams.insert(stream->streamID());
+    });
     return stream;
 }
 
@@ -1740,10 +1746,13 @@ void QHttp2Connection::handleWINDOW_UPDATE()
         if (!valid || qAddOverflow(sessionSendWindowSize, qint32(delta), &sum))
             return connectionError(PROTOCOL_ERROR, "WINDOW_UPDATE invalid delta");
         sessionSendWindowSize = sum;
-        for (const auto &stream : std::as_const(m_streams)) {
+
+        // Stream may have been unblocked, so maybe try to write again:
+        const auto blockedStreams = std::exchange(m_blockedStreams, {});
+        for (quint32 blockedStreamID : blockedStreams) {
+            const QPointer<QHttp2Stream> stream = m_streams.value(blockedStreamID);
             if (!stream || !stream->isActive())
                 continue;
-            // Stream may have been unblocked, so maybe try to write again
             if (stream->isUploadingDATA() && !stream->isUploadBlocked())
                 QMetaObject::invokeMethod(stream, &QHttp2Stream::maybeResumeUpload,
                                           Qt::QueuedConnection);
