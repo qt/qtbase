@@ -6,6 +6,7 @@
 #include <QDebug>
 #include <qtest.h>
 #include <QTest>
+#include <QtTest/qtesteventloop.h>
 #include <QtNetwork/qnetworkreply.h>
 #include <QtNetwork/qnetworkrequest.h>
 #include <QtNetwork/qnetworkaccessmanager.h>
@@ -14,11 +15,12 @@
 #include <QtNetwork/qauthenticator.h>
 #include <QtCore/QElapsedTimer>
 #include <QtCore/QJsonDocument>
+#include <QtCore/QJsonArray>
+#include <QtCore/QJsonObject>
 #include "../../auto/network-settings.h"
 
 #if defined(QT_BUILD_INTERNAL) && !defined(QT_NO_SSL)
 #include "private/qsslsocket_p.h"
-#include <QtNetwork/private/qsslsocket_openssl_p.h>
 #endif
 
 #define BANDWIDTH_LIMIT_BYTES (1024*100)
