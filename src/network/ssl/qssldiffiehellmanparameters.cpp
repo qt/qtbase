@@ -34,7 +34,7 @@
 QT_BEGIN_NAMESPACE
 
 // The 2048-bit MODP group from RFC 3526
-Q_AUTOTEST_EXPORT const char *qssl_dhparams_default_base64 =
+Q_AUTOTEST_EXPORT extern const char qssl_dhparams_default_base64[] =
     "MIIBCAKCAQEA///////////JD9qiIWjCNMTGYouA3BzRKQJOCIpnzHQCC76mOxObIlFKCHmO"
     "NATd75UZs806QxswKwpt8l8UN0/hNW1tUcJF5IW1dmJefsb0TELppjftawv/XLb0Brft7jhr"
     "+1qJn6WunyQRfEsf5kkoZlHs5Fs9wgB8uKFjvwWY2kg2HFXTmmkWP6j9JM9fg2VdI9yjrZYc"

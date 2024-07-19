@@ -11,7 +11,7 @@
 
 // Default DH parameters, exported by qssldiffiehellmanparameters.cpp.
 QT_BEGIN_NAMESPACE
-extern Q_AUTOTEST_EXPORT const char *qssl_dhparams_default_base64;
+extern Q_AUTOTEST_EXPORT const char qssl_dhparams_default_base64[];
 QT_END_NAMESPACE
 
 QT_USE_NAMESPACE
