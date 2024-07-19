@@ -4,6 +4,8 @@
 #ifndef QOCSP_P_H
 #define QOCSP_P_H
 
+#include <QtNetwork/private/qtnetworkglobal_p.h>
+
 //
 //  W A R N I N G
 //  -------------
