@@ -1,4 +1,4 @@
 {
-    "Keys": [ "jpg", "jpeg" ],
-    "MimeTypes": [ "image/jpeg", "image/jpeg" ]
+    "Keys": [ "jpg", "jpeg", "jfif" ],
+    "MimeTypes": [ "image/jpeg", "image/jpeg", "image/jpeg" ]
 }
