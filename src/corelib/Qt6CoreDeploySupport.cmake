@@ -205,6 +205,9 @@ function(_qt_internal_generic_deployqt)
     cmake_parse_arguments(PARSE_ARGV 0 arg
         "${no_value_options}" "${single_value_options}" "${multi_value_options}"
     )
+    if(arg_UNPARSED_ARGUMENTS)
+        message(FATAL_ERROR "Unparsed arguments: ${arg_UNPARSED_ARGUMENTS}")
+    endif()
 
     if(arg_VERBOSE OR __QT_DEPLOY_VERBOSE)
         set(verbose TRUE)
@@ -502,7 +505,6 @@ function(qt6_deploy_runtime_dependencies)
         endif()
 
         _qt_internal_generic_deployqt(
-            EXECUTABLE "${arg_EXECUTABLE}"
             LIB_DIR "${arg_LIB_DIR}"
             PLUGINS_DIR "${arg_PLUGINS_DIR}"
             ${tool_options}
