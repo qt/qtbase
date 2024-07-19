@@ -31,7 +31,11 @@ QNetworkInformation::Reachability reachabilityFromGNetworkConnectivity(GNetworkC
 }
 }
 
-static QString backendName = QStringLiteral("glib");
+static const QString &backendName()
+{
+    static auto name = u"glib"_s;
+    return name;
+}
 
 class QGlibNetworkInformationBackend : public QNetworkInformationBackend
 {
@@ -40,7 +44,7 @@ public:
     QGlibNetworkInformationBackend();
     ~QGlibNetworkInformationBackend();
 
-    QString name() const override { return backendName; }
+    QString name() const override { return backendName(); }
     QNetworkInformation::Features featuresSupported() const override
     {
         if (!isValid())
@@ -76,7 +80,7 @@ class QGlibNetworkInformationBackendFactory : public QNetworkInformationBackendF
 public:
     QGlibNetworkInformationBackendFactory() = default;
     ~QGlibNetworkInformationBackendFactory() = default;
-    QString name() const override { return backendName; }
+    QString name() const override { return backendName(); }
     QNetworkInformation::Features featuresSupported() const override
     {
         return QGlibNetworkInformationBackend::featuresSupportedStatic();
