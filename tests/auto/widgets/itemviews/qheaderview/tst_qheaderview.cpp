@@ -402,7 +402,7 @@ void tst_QHeaderView::getSetCheck()
     // void QHeaderView::setDefaultSectionSize(int)
     obj1.setMinimumSectionSize(0);
     obj1.setDefaultSectionSize(-1);
-    QVERIFY(obj1.defaultSectionSize() >= 0);
+    QCOMPARE_GE(obj1.defaultSectionSize(), 0);
     obj1.setDefaultSectionSize(0);
     QCOMPARE(0, obj1.defaultSectionSize());
     obj1.setDefaultSectionSize(99999);
@@ -411,13 +411,13 @@ void tst_QHeaderView::getSetCheck()
     // int QHeaderView::minimumSectionSize()
     // void QHeaderView::setMinimumSectionSize(int)
     obj1.setMinimumSectionSize(-1);
-    QVERIFY(obj1.minimumSectionSize() >= 0);
+    QCOMPARE_GE(obj1.minimumSectionSize(), 0);
     obj1.setMinimumSectionSize(0);
     QCOMPARE(0, obj1.minimumSectionSize());
     obj1.setMinimumSectionSize(99999);
     QCOMPARE(99999, obj1.minimumSectionSize());
     obj1.setMinimumSectionSize(-1);
-    QVERIFY(obj1.minimumSectionSize() < 100);
+    QCOMPARE_LT(obj1.minimumSectionSize(), 100);
 
     // int QHeaderView::offset()
     // void QHeaderView::setOffset(int)
@@ -664,7 +664,7 @@ void tst_QHeaderView::oneSectionSize()
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
-    QVERIFY(view.sectionSize(0) > 0);
+    QCOMPARE_GT(view.sectionSize(0), 0);
 }
 
 
@@ -828,7 +828,7 @@ void tst_QHeaderView::length()
     topLevel->show();
     QVERIFY(QTest::qWaitForWindowExposed(topLevel));
 
-    QVERIFY(length != view->length());
+    QCOMPARE_NE(length, view->length());
 
     // layoutChanged might mean rows have been removed
     QtTestModel model(10, 10);
@@ -836,7 +836,7 @@ void tst_QHeaderView::length()
     int oldLength = view->length();
     model.cleanup();
     QCOMPARE(model.rows, view->count());
-    QVERIFY(oldLength != view->length());
+    QCOMPARE_NE(oldLength, view->length());
 }
 
 void tst_QHeaderView::offset()
@@ -855,7 +855,7 @@ void tst_QHeaderView::sectionSizeHint()
 {
     QCOMPARE(view->sectionSizeHint(-1), -1);
     QCOMPARE(view->sectionSizeHint(99999), -1);
-    QVERIFY(view->sectionSizeHint(0) >= 0);
+    QCOMPARE_GE(view->sectionSizeHint(0), 0);
 }
 
 void tst_QHeaderView::logicalIndex()
@@ -1477,7 +1477,7 @@ void tst_QHeaderView::unhideSection()
     QCOMPARE(view->sectionSize(0), 0);
     view->setSectionResizeMode(QHeaderView::Interactive);
     view->setSectionHidden(0, false);
-    QVERIFY(view->sectionSize(0) > 0);
+    QCOMPARE_GT(view->sectionSize(0), 0);
 
     view->setSectionHidden(0, true);
     QCOMPARE(view->sectionSize(0), 0);
@@ -1485,7 +1485,7 @@ void tst_QHeaderView::unhideSection()
     QCOMPARE(view->sectionSize(0), 0);
     view->setSectionResizeMode(QHeaderView::Stretch);
     view->setSectionHidden(0, false);
-    QVERIFY(view->sectionSize(0) > 0);
+    QCOMPARE_GT(view->sectionSize(0), 0);
 
 }
 
@@ -1600,7 +1600,7 @@ void tst_QHeaderView::hiddenSectionCount()
     model->removeRows(0, 5);
     QCOMPARE(view->count(), 1);
     QCOMPARE(view->hiddenSectionCount(), 0);
-    QVERIFY(view->count() >=  view->hiddenSectionCount());
+    QCOMPARE_GE(view->count(), view->hiddenSectionCount());
 }
 
 void tst_QHeaderView::focusPolicy()
@@ -1900,9 +1900,9 @@ void tst_QHeaderView::defaultSectionSizeTest()
     hv->hideSection(2);
     hv->setDefaultSectionSize(defaultSize);
 
-    QVERIFY(hv->sectionSize(0) == defaultSize); // trivial case.
-    QVERIFY(hv->sectionSize(1) == defaultSize); // just sized 0. Now it should be 10
-    QVERIFY(hv->sectionSize(2) == 0); // section is hidden. It should not be resized.
+    QCOMPARE_EQ(hv->sectionSize(0), defaultSize); // trivial case.
+    QCOMPARE_EQ(hv->sectionSize(1), defaultSize); // just sized 0. Now it should be 10
+    QCOMPARE_EQ(hv->sectionSize(2), 0); // section is hidden. It should not be resized.
 }
 
 class TestHeaderViewStyle : public QProxyStyle
@@ -2227,7 +2227,7 @@ void tst_QHeaderView::noSectionsWithNegativeSize()
     QHeaderView h(Qt::Horizontal);
     h.setModel(&m);
     h.resizeSection(1, -5);
-    QVERIFY(h.sectionSize(1) >= 0); // Sections with negative sizes not well defined.
+    QCOMPARE_GE(h.sectionSize(1), 0); // Sections with negative sizes not well defined.
 }
 
 void tst_QHeaderView::emptySectionSpan()
@@ -2653,7 +2653,7 @@ void tst_QHeaderView::offsetConsistent()
     hv->showSection(sectionToHide);
     hv->setOffsetToSectionPosition(800);
     offset2 = hv->offset();
-    QVERIFY(offset2 > offset1);
+    QCOMPARE_GT(offset2, offset1);
 }
 
 void tst_QHeaderView::sectionsDontSortWhenNotClickingInThem()
@@ -3261,14 +3261,14 @@ void tst_QHeaderView::resizeToContentTest()
 
     QHeaderView *hh = m_tableview->horizontalHeader();
     hh->resizeSections(QHeaderView::ResizeToContents);
-    QVERIFY(hh->sectionSize(3) > hh->sectionSize(2));
+    QCOMPARE_GT(hh->sectionSize(3), hh->sectionSize(2));
 
     for (int u = 0; u < 10; ++u)
         view->resizeSection(u, 1);
 
     view->resizeSections(QHeaderView::ResizeToContents);
-    QVERIFY(view->sectionSize(1) > 1);
-    QVERIFY(view->sectionSize(2) > 1);
+    QCOMPARE_GT(view->sectionSize(1), 1);
+    QCOMPARE_GT(view->sectionSize(2), 1);
 
     // Check minimum section size
     hh->setMinimumSectionSize(150);
@@ -3394,35 +3394,35 @@ void tst_QHeaderView::stretchAndRestoreLastSection()
 
     // Default last section is larger
     QCOMPARE(header.sectionSize(8), defaultSectionSize);
-    QVERIFY(header.sectionSize(9) >= biggerSizeThanAnySection);
+    QCOMPARE_GE(header.sectionSize(9), biggerSizeThanAnySection);
 
     // Moving last section away (restore old last section 9 - and make 8 larger)
     header.swapSections(9, 8);
     QCOMPARE(header.sectionSize(9), someOtherSectionSize);
-    QVERIFY(header.sectionSize(8) >= biggerSizeThanAnySection);
+    QCOMPARE_GE(header.sectionSize(8), biggerSizeThanAnySection);
 
     // Make section 9 the large one again
     header.hideSection(8);
-    QVERIFY(header.sectionSize(9) >= biggerSizeThanAnySection);
+    QCOMPARE_GE(header.sectionSize(9), biggerSizeThanAnySection);
 
     // Show section 8 again - and make that one the last one.
     header.showSection(8);
-    QVERIFY(header.sectionSize(8) > biggerSizeThanAnySection);
+    QCOMPARE_GT(header.sectionSize(8), biggerSizeThanAnySection);
     QCOMPARE(header.sectionSize(9), someOtherSectionSize);
 
     // Swap the sections so the logical indexes are equal to visible indexes again.
     header.moveSection(9, 8);
     QCOMPARE(header.sectionSize(8), defaultSectionSize);
-    QVERIFY(header.sectionSize(9) >= biggerSizeThanAnySection);
+    QCOMPARE_GE(header.sectionSize(9), biggerSizeThanAnySection);
 
     // Append sections
     m.setColumnCount(15);
     QCOMPARE(header.sectionSize(9), someOtherSectionSize);
-    QVERIFY(header.sectionSize(14) >= biggerSizeThanAnySection);
+    QCOMPARE_GE(header.sectionSize(14), biggerSizeThanAnySection);
 
     // Truncate sections (remove sections with the last section)
     m.setColumnCount(10);
-    QVERIFY(header.sectionSize(9) >= biggerSizeThanAnySection);
+    QCOMPARE_GE(header.sectionSize(9), biggerSizeThanAnySection);
     for (int u = 0; u < 9; ++u)
         QCOMPARE(header.sectionSize(u), defaultSectionSize);
 
@@ -3430,46 +3430,46 @@ void tst_QHeaderView::stretchAndRestoreLastSection()
     m.insertColumns(2, 2);
     QCOMPARE(header.sectionSize(9), defaultSectionSize);
     QCOMPARE(header.sectionSize(10), defaultSectionSize);
-    QVERIFY(header.sectionSize(11) >= biggerSizeThanAnySection);
+    QCOMPARE_GE(header.sectionSize(11), biggerSizeThanAnySection);
 
     // Append an extra section and check restore
     m.setColumnCount(m.columnCount() + 1);
     QCOMPARE(header.sectionSize(11), someOtherSectionSize);
-    QVERIFY(header.sectionSize(12) >= biggerSizeThanAnySection);
+    QCOMPARE_GE(header.sectionSize(12), biggerSizeThanAnySection);
 
     // Remove some sections but not the last one.
     m.removeColumns(2, 2);
     QCOMPARE(header.sectionSize(9), someOtherSectionSize);
-    QVERIFY(header.sectionSize(10) >= biggerSizeThanAnySection);
+    QCOMPARE_GE(header.sectionSize(10), biggerSizeThanAnySection);
     for (int u = 0; u < 9; ++u)
         QCOMPARE(header.sectionSize(u), defaultSectionSize);
 
     // Empty the header and start over with some more tests
     m.setColumnCount(0);
     m.setColumnCount(10);
-    QVERIFY(header.sectionSize(9) >= biggerSizeThanAnySection);
+    QCOMPARE_GE(header.sectionSize(9), biggerSizeThanAnySection);
 
     // Check resize of the last section
     header.resizeSection(9, someOtherSectionSize);
-    QVERIFY(header.sectionSize(9) >= biggerSizeThanAnySection); // It should still be stretched
+    QCOMPARE_GE(header.sectionSize(9), biggerSizeThanAnySection); // It should still be stretched
     header.swapSections(9, 8);
     QCOMPARE(header.sectionSize(9), someOtherSectionSize);
 
     // Restore the order
     header.swapSections(9, 8);
-    QVERIFY(header.sectionSize(9) >= biggerSizeThanAnySection);
+    QCOMPARE_GE(header.sectionSize(9), biggerSizeThanAnySection);
 
     // Hide the last 3 sections and test stretch last section on swap/move
     // when hidden sections with a larger visual index exists.
     header.hideSection(7);
     header.hideSection(8);
     header.hideSection(9);
-    QVERIFY(header.sectionSize(6) >= biggerSizeThanAnySection);
+    QCOMPARE_GE(header.sectionSize(6), biggerSizeThanAnySection);
     header.moveSection(2, 7);
-    QVERIFY(header.sectionSize(2) >= biggerSizeThanAnySection);
+    QCOMPARE_GE(header.sectionSize(2), biggerSizeThanAnySection);
     header.swapSections(1, 8);
     QCOMPARE(header.sectionSize(2), defaultSectionSize);
-    QVERIFY(header.sectionSize(1) >= biggerSizeThanAnySection);
+    QCOMPARE_GE(header.sectionSize(1), biggerSizeThanAnySection);
 
     // Inserting sections 2
     m.setColumnCount(0);
@@ -3483,13 +3483,13 @@ void tst_QHeaderView::stretchAndRestoreLastSection()
     // Clear and re-add. This triggers a different code path than seColumnCount(0)
     m.clear();
     m.setColumnCount(3);
-    QVERIFY(header.sectionSize(2) >= biggerSizeThanAnySection);
+    QCOMPARE_GE(header.sectionSize(2), biggerSizeThanAnySection);
 
     // Test import/export of the original (not stretched) sectionSize.
     m.setColumnCount(0);
     m.setColumnCount(10);
     header.resizeSection(9, someOtherSectionSize);
-    QVERIFY(header.sectionSize(9) >= biggerSizeThanAnySection);
+    QCOMPARE_GE(header.sectionSize(9), biggerSizeThanAnySection);
     QByteArray b = header.saveState();
     m.setColumnCount(0);
     m.setColumnCount(10);
@@ -3577,7 +3577,7 @@ void tst_QHeaderView::testResetCachedSizeHint()
     model.setMultiLineHeader(false);
     QSize s3 = tv.horizontalHeader()->sizeHint();
     QCOMPARE(s1, s3);
-    QVERIFY(s1 != s2);
+    QCOMPARE_NE(s1, s2);
 }
 
 
