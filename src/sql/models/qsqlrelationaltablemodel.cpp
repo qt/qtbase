@@ -103,7 +103,8 @@ class QRelatedTableModel;
 struct QRelation
 {
     public:
-        QRelation(): model(nullptr), m_parent(nullptr), m_dictInitialized(false) {}
+        Q_DISABLE_COPY(QRelation)   // QRelatedTableModel stores a pointer to this class
+        QRelation() = default;
         void init(QSqlRelationalTableModel *parent, const QSqlRelation &relation);
 
         void populateModel();
@@ -116,18 +117,18 @@ struct QRelation
         bool isValid();
 
         QSqlRelation rel;
-        QRelatedTableModel *model;
+        QRelatedTableModel *model = nullptr;
         QHash<QString, QVariant> dictionary;//maps keys to display values
 
     private:
-        QSqlRelationalTableModel *m_parent;
-        bool m_dictInitialized;
+        QSqlRelationalTableModel *m_parent = nullptr;
+        bool m_dictInitialized = false;
 };
 
 class QRelatedTableModel : public QSqlTableModel
 {
 public:
-    QRelatedTableModel(QRelation *rel, QObject *parent = nullptr, const QSqlDatabase &db = QSqlDatabase());
+    QRelatedTableModel(QRelation *rel, QObject *parent, const QSqlDatabase &db);
     bool select() override;
 private:
     bool firstSelect;
@@ -241,7 +242,7 @@ public:
     QString fullyQualifiedFieldName(const QString &tableName, const QString &fieldName) const;
 
     int nameToIndex(const QString &name) const override;
-    mutable QList<QRelation> relations;
+    QList<QSharedPointer<QRelation>> relations;
     QSqlRecord baseRec; // the record without relations
     void clearChanges();
     void clearCache() override;
@@ -253,10 +254,8 @@ public:
 
 void QSqlRelationalTableModelPrivate::clearChanges()
 {
-    for (int i = 0; i < relations.size(); ++i) {
-        QRelation &rel = relations[i];
-        rel.clear();
-    }
+    for (auto &rel : relations)
+        rel->clear();
 }
 
 void QSqlRelationalTableModelPrivate::revertCachedRow(int row)
@@ -277,8 +276,8 @@ int QSqlRelationalTableModelPrivate::nameToIndex(const QString &name) const
 
 void QSqlRelationalTableModelPrivate::clearCache()
 {
-    for (int i = 0; i < relations.size(); ++i)
-        relations[i].clearDictionary();
+    for (auto &rel : relations)
+        rel->clearDictionary();
 
     QSqlTableModelPrivate::clearCache();
 }
@@ -396,10 +395,10 @@ QVariant QSqlRelationalTableModel::data(const QModelIndex &index, int role) cons
     Q_D(const QSqlRelationalTableModel);
 
     if (role == Qt::DisplayRole && index.column() >= 0 && index.column() < d->relations.size() &&
-            d->relations.value(index.column()).isValid()) {
-        QRelation &relation = d->relations[index.column()];
-        if (!relation.isDictionaryInitialized())
-            relation.populateDictionary();
+            d->relations.at(index.column())->isValid()) {
+        auto relation = d->relations.at(index.column());
+        if (!relation->isDictionaryInitialized())
+            relation->populateDictionary();
 
         //only perform a dictionary lookup for the display value
         //when the value at index has been changed or added.
@@ -411,7 +410,7 @@ QVariant QSqlRelationalTableModel::data(const QModelIndex &index, int role) cons
                 if (d->strategy == OnManualSubmit || row.op() != QSqlTableModelPrivate::Delete) {
                     QVariant v = row.rec().value(index.column());
                     if (v.isValid())
-                        return relation.dictionary[v.toString()];
+                        return relation->dictionary[v.toString()];
                 }
             }
         }
@@ -439,11 +438,11 @@ bool QSqlRelationalTableModel::setData(const QModelIndex &index, const QVariant 
 {
     Q_D(QSqlRelationalTableModel);
     if ( role == Qt::EditRole && index.column() > 0 && index.column() < d->relations.size()
-            && d->relations.value(index.column()).isValid()) {
-        QRelation &relation = d->relations[index.column()];
-        if (!relation.isDictionaryInitialized())
-            relation.populateDictionary();
-        if (!relation.dictionary.contains(value.toString()))
+            && d->relations.at(index.column())->isValid()) {
+        auto relation = d->relations.at(index.column());
+        if (!relation->isDictionaryInitialized())
+            relation->populateDictionary();
+        if (!relation->dictionary.contains(value.toString()))
             return false;
     }
     return QSqlTableModel::setData(index, value, role);
@@ -472,9 +471,13 @@ void QSqlRelationalTableModel::setRelation(int column, const QSqlRelation &relat
     Q_D(QSqlRelationalTableModel);
     if (column < 0)
         return;
-    if (d->relations.size() <= column)
+    if (d->relations.size() <= column) {
+        const auto oldSize = d->relations.size();
         d->relations.resize(column + 1);
-    d->relations[column].init(this, relation);
+        for (auto i = oldSize; i < d->relations.size(); ++i)
+            d->relations[i] = QSharedPointer<QRelation>::create();
+    }
+    d->relations.at(column)->init(this, relation);
 }
 
 /*!
@@ -486,7 +489,7 @@ void QSqlRelationalTableModel::setRelation(int column, const QSqlRelation &relat
 QSqlRelation QSqlRelationalTableModel::relation(int column) const
 {
     Q_D(const QSqlRelationalTableModel);
-    return d->relations.value(column).rel;
+    return d->relations.value(column) ? d->relations.at(column)->rel : QSqlRelation();
 }
 
 QString QSqlRelationalTableModelPrivate::fullyQualifiedFieldName(const QString &tableName,
@@ -515,7 +518,7 @@ QString QSqlRelationalTableModel::selectStatement() const
     QHash<QString, int> fieldNames;
     QStringList fieldList;
     for (int i = 0; i < d->baseRec.count(); ++i) {
-        QSqlRelation relation = d->relations.value(i).rel;
+        QSqlRelation relation = d->relations.value(i) ? d->relations.at(i)->rel : QSqlRelation();
         QString name;
         if (relation.isValid()) {
             // Count the display column name, not the original foreign key
@@ -542,7 +545,7 @@ QString QSqlRelationalTableModel::selectStatement() const
     QString conditions;
     QString from = SqlrTm::from(tableName());
     for (int i = 0; i < d->baseRec.count(); ++i) {
-        QSqlRelation relation = d->relations.value(i).rel;
+        QSqlRelation relation = d->relations.value(i) ? d->relations.at(i)->rel : QSqlRelation();
         const QString tableField = d->fullyQualifiedFieldName(tableName(), d->db.driver()->escapeIdentifier(d->baseRec.fieldName(i), QSqlDriver::FieldName));
         if (relation.isValid()) {
             const QString relTableAlias = SqlrTm::relTablePrefix(i);
@@ -607,13 +610,13 @@ QSqlTableModel *QSqlRelationalTableModel::relationModel(int column) const
     if (column < 0 || column >= d->relations.size())
         return nullptr;
 
-    QRelation &relation = const_cast<QSqlRelationalTableModelPrivate *>(d)->relations[column];
-    if (!relation.isValid())
+    auto relation = d->relations.at(column);
+    if (!relation || !relation->isValid())
         return nullptr;
 
-    if (!relation.model)
-        relation.populateModel();
-    return relation.model;
+    if (!relation->model)
+        relation->populateModel();
+    return relation->model;
 }
 
 /*!
@@ -686,7 +689,7 @@ void QSqlRelationalTableModel::setTable(const QString &table)
 void QSqlRelationalTableModelPrivate::translateFieldNames(QSqlRecord &values) const
 {
     for (int i = 0; i < values.count(); ++i) {
-        if (relations.value(i).isValid()) {
+        if (relations.value(i) && relations.at(i)->isValid()) {
             QVariant v = values.value(i);
             bool gen = values.isGenerated(i);
             values.replace(i, baseRec.field(i));
@@ -729,7 +732,7 @@ QString QSqlRelationalTableModel::orderByClause() const
 {
     Q_D(const QSqlRelationalTableModel);
 
-    const QSqlRelation rel = d->relations.value(d->sortColumn).rel;
+    const QSqlRelation rel = d->relations.value(d->sortColumn) ? d->relations.at(d->sortColumn)->rel : QSqlRelation();
     if (!rel.isValid())
         return QSqlTableModel::orderByClause();
 

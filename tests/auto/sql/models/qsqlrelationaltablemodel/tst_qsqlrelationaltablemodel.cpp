@@ -45,6 +45,7 @@ private slots:
     void selectAfterUpdate();
     void relationOnFirstColumn();
     void setRelation();
+    void setMultipleRelations();
 
 private:
     void fixupTableNamesForDb(const QSqlDatabase &db);
@@ -1538,6 +1539,25 @@ void tst_QSqlRelationalTableModel::setRelation()
     model.setRelation(2, QSqlRelation());
     QVERIFY_SQL(model, select());
     QCOMPARE(model.data(model.index(0, 2)), QVariant(1));
+}
+
+void tst_QSqlRelationalTableModel::setMultipleRelations()
+{
+    QFETCH_GLOBAL(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+    recreateTestTables(db);
+
+    QSqlRelationalTableModel model(0, db);
+    model.setTable(reltest1);
+    QVERIFY_SQL(model, select());
+    model.setRelation(2, QSqlRelation(reltest2, "id", "title"));
+    model.data(model.index(0, 2));  // initialize model for QSqlRelation above
+    // id must be big enough that the internal QList needs to be reallocated
+    model.setRelation(100, QSqlRelation(reltest2, "id", "title"));
+    QSqlTableModel *relationModel = model.relationModel(2);
+    QVERIFY(relationModel);
+    QVERIFY(relationModel->select());
 }
 
 QTEST_MAIN(tst_QSqlRelationalTableModel)
