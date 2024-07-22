@@ -12,6 +12,10 @@
 #include <QtTest/qtestassert.h>
 #include <QtTest/qtesteventloop.h>
 
+#include <algorithm>
+#include <climits>
+#include <cwchar>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -325,6 +329,18 @@ static const char *rightArgNameForOp(QTest::ComparisonOperation op)
     return op == QTest::ComparisonOperation::CustomCompare ? "Expected " : "Baseline ";
 }
 
+static int approx_wide_len(const char *s)
+{
+    std::mbstate_t state = {};
+    // QNX might stop at max when dst == nullptr, so pass INT_MAX,
+    // being the largest value this function will return:
+    constexpr size_t max = INT_MAX;
+    auto r = std::mbsrtowcs(nullptr, &s, max, &state);
+    if (r == size_t(-1)) // encoding error, fall back to strlen()
+        r = strlen(s); // `s` was not advanced since `dst == nullptr`
+    return int(std::clamp(r, size_t(0), max));
+}
+
 // Overload to format failures for "const char *" - no need to strdup().
 void formatFailMessage(char *msg, size_t maxMsgLen,
                        const char *failureMsg,
@@ -332,8 +348,8 @@ void formatFailMessage(char *msg, size_t maxMsgLen,
                        const char *actual, const char *expected,
                        QTest::ComparisonOperation op)
 {
-    size_t len1 = mbstowcs(nullptr, actual, maxMsgLen);    // Last parameter is not ignored on QNX
-    size_t len2 = mbstowcs(nullptr, expected, maxMsgLen);  // (result is never larger than this).
+    const auto len1 = approx_wide_len(actual);
+    const auto len2 = approx_wide_len(expected);
     const int written = qsnprintf(msg, maxMsgLen, "%s\n", failureMsg);
     msg += written;
     maxMsgLen -= written;
