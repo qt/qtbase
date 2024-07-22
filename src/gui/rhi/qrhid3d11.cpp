@@ -10,6 +10,8 @@
 #include <QtCore/private/qsystemerror_p.h>
 #include "qrhid3dhelpers_p.h"
 
+#include <cstdio>
+
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
@@ -4704,7 +4706,7 @@ bool QD3D11GraphicsPipeline::create()
             } else {
                 QByteArray sem;
                 sem.resize(16);
-                qsnprintf(sem.data(), sem.size(), "TEXCOORD%d_", it->location() - matrixSlice);
+                std::snprintf(sem.data(), sem.size(), "TEXCOORD%d_", it->location() - matrixSlice);
                 matrixSliceSemantics.append(sem);
                 desc.SemanticName = matrixSliceSemantics.last().constData();
                 desc.SemanticIndex = UINT(matrixSlice);

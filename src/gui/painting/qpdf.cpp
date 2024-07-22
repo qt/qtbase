@@ -24,6 +24,7 @@
 #include <quuid.h>
 #include <qxmlstream.h>
 
+#include <cstdio>
 #include <map>
 
 #ifndef QT_NO_COMPRESS
@@ -1750,30 +1751,30 @@ void QPdfEnginePrivate::writeInfo(const QDateTime &date)
     constexpr size_t formattedDateSize = 26;
     char formattedDate[formattedDateSize];
     const int year = qBound(0, d.year(), 9999); // ASN.1, max 4 digits
-    auto printedSize = qsnprintf(formattedDate,
-                                 formattedDateSize,
-                                 "(D:%04d%02d%02d%02d%02d%02d",
-                                 year,
-                                 d.month(),
-                                 d.day(),
-                                 t.hour(),
-                                 t.minute(),
-                                 t.second());
+    auto printedSize = std::snprintf(formattedDate,
+                                     formattedDateSize,
+                                     "(D:%04d%02d%02d%02d%02d%02d",
+                                     year,
+                                     d.month(),
+                                     d.day(),
+                                     t.hour(),
+                                     t.minute(),
+                                     t.second());
     const int offset = date.offsetFromUtc();
     const int hours  = (offset / 60) / 60;
     const int mins   = (offset / 60) % 60;
     if (offset < 0) {
-        qsnprintf(formattedDate + printedSize,
-                  formattedDateSize - printedSize,
-                  "-%02d'%02d')", -hours, -mins);
+        std::snprintf(formattedDate + printedSize,
+                      formattedDateSize - printedSize,
+                      "-%02d'%02d')", -hours, -mins);
     } else if (offset > 0) {
-        qsnprintf(formattedDate + printedSize,
-                  formattedDateSize - printedSize,
-                  "+%02d'%02d')", hours, mins);
+        std::snprintf(formattedDate + printedSize,
+                      formattedDateSize - printedSize,
+                      "+%02d'%02d')", hours, mins);
     } else {
-        qsnprintf(formattedDate + printedSize,
-                  formattedDateSize - printedSize,
-                  "Z)");
+        std::snprintf(formattedDate + printedSize,
+                      formattedDateSize - printedSize,
+                      "Z)");
     }
 
     write("\n/CreationDate ");
@@ -2472,7 +2473,7 @@ void QPdfEnginePrivate::xprintf(const char* fmt, ...)
 
     va_list args;
     va_start(args, fmt);
-    int bufsize = qvsnprintf(buf, msize, fmt, args);
+    int bufsize = std::vsnprintf(buf, msize, fmt, args);
     va_end(args);
 
     if (Q_LIKELY(bufsize < msize)) {
@@ -2481,7 +2482,7 @@ void QPdfEnginePrivate::xprintf(const char* fmt, ...)
         // Fallback for abnormal cases
         QScopedArrayPointer<char> tmpbuf(new char[bufsize + 1]);
         va_start(args, fmt);
-        bufsize = qvsnprintf(tmpbuf.data(), bufsize + 1, fmt, args);
+        bufsize = std::vsnprintf(tmpbuf.data(), bufsize + 1, fmt, args);
         va_end(args);
         stream->writeRawData(tmpbuf.data(), bufsize);
     }
