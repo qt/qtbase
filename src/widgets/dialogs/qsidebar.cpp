@@ -49,12 +49,19 @@ QUrlModel::~QUrlModel()
         disconnect(conn);
 }
 
+constexpr char uriListMimeType[] = "text/uri-list";
+
+static bool hasSupportedFormat(const QMimeData *data)
+{
+    return data->hasFormat(QLatin1StringView(uriListMimeType));
+}
+
 /*!
     \reimp
 */
 QStringList QUrlModel::mimeTypes() const
 {
-    return QStringList("text/uri-list"_L1);
+    return QStringList(QLatin1StringView(uriListMimeType));
 }
 
 /*!
@@ -99,7 +106,7 @@ QMimeData *QUrlModel::mimeData(const QModelIndexList &indexes) const
 */
 bool QUrlModel::canDrop(QDragEnterEvent *event)
 {
-    if (!event->mimeData()->formats().contains(mimeTypes().constFirst()))
+    if (!hasSupportedFormat(event->mimeData()))
         return false;
 
     const QList<QUrl> list = event->mimeData()->urls();
@@ -117,7 +124,7 @@ bool QUrlModel::canDrop(QDragEnterEvent *event)
 bool QUrlModel::dropMimeData(const QMimeData *data, Qt::DropAction action,
                                  int row, int column, const QModelIndex &parent)
 {
-    if (!data->formats().contains(mimeTypes().constFirst()))
+    if (!hasSupportedFormat(data))
         return false;
     Q_UNUSED(action);
     Q_UNUSED(column);
