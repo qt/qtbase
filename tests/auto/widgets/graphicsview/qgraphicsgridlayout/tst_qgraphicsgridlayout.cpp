@@ -8,6 +8,8 @@
 #include <qgraphicsscene.h>
 #include <qgraphicsview.h>
 
+#include <cstdio>
+
 class tst_QGraphicsGridLayout : public QObject
 {
     Q_OBJECT
@@ -410,8 +412,9 @@ void tst_QGraphicsGridLayout::addItem()
         QTest::ignoreMessage(QtWarningMsg, "QGraphicsGridLayout::addItem: invalid row/column: -1");
     } else if (rowSpan < 1 || columnSpan < 1) {
         char buf[1024];
-        ::qsnprintf(buf, sizeof(buf), "QGraphicsGridLayout::addItem: invalid row span/column span: %d",
-            rowSpan < 1 ? rowSpan : columnSpan);
+        std::snprintf(buf, sizeof(buf),
+                      "QGraphicsGridLayout::addItem: invalid row span/column span: %d",
+                      rowSpan < 1 ? rowSpan : columnSpan);
         QTest::ignoreMessage(QtWarningMsg, buf);
     }
     layout->addItem(wid, row, column, rowSpan, columnSpan, alignment);
