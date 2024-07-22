@@ -8,6 +8,7 @@
 #include <QAtomicScopedValueRollback>
 #include <qlist.h>
 
+#include <cstdio>
 
 #ifdef QT_COMPILER_HAS_LWG3346
 #  if __has_include(<concepts>)
@@ -985,7 +986,7 @@ namespace QTest {
 char *toString(const ConstructionCounted &cc)
 {
     char *str = new char[5];
-    qsnprintf(str, 4, "%d", cc.i);
+    std::snprintf(str, 4, "%d", cc.i);
     return str;
 }
 }
