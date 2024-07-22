@@ -322,10 +322,10 @@ The mentioned variables are used internally by \l{androiddeployqt}.
 \ingroup cmake-variables-qtcore
 \ingroup cmake-android-build-properties
 
-\title QT_ANDROID_GENERATE_JAVA_QML_COMPONENTS
-\target cmake-variable-QT_ANDROID_GENERATE_JAVA_QML_COMPONENTS
+\title QT_ANDROID_GENERATE_JAVA_QTQUICKVIEW_CONTENTS
+\target cmake-variable-QT_ANDROID_GENERATE_JAVA_QTQUICKVIEW_CONTENTS
 
-\summary {Enables the generation of QtQmlComponent-based classes.}
+\summary {Enables the generation of QtQuickViewContent-based classes.}
 \cmakevariablesince 6.8
 \preliminarycmakevariable
 \cmakevariableandroidonly
@@ -335,8 +335,8 @@ generated code will be included in the resulting package. The Java package name 
 classes will be the same as the Android app package. If the leaf part of the package name is
 not the same as the target executable, an extra static class with the same name as the
 capitalized target executable will surround all QML modules enclosing Java classes. Each QML
-module class, again in a capitalized form, will contain QtQmlComponent extension classes that
-represent QML components of that module.
+module class, again in a capitalized form, will contain QtQuickViewContent extension classes
+that represent QML components of that module.
 */
 
 \sa{androiddeployqt}

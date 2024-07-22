@@ -1302,13 +1302,13 @@ bool readInputFile(Options *options)
     }
 
     {
-        const QJsonValue genJavaQmlComponents = jsonObject.value("generate-java-qml-components"_L1);
+        const QJsonValue genJavaQmlComponents = jsonObject.value("generate-java-qtquickview-contents"_L1);
         if (!genJavaQmlComponents.isUndefined() && genJavaQmlComponents.isBool()) {
             options->generateJavaQmlComponents = genJavaQmlComponents.toBool(false);
             if (options->generateJavaQmlComponents && !options->buildAar) {
                 fprintf(stderr,
-                        "Warning: Skipping the generation of Java components from QML as it can be "
-                        "enabled only for an AAR target.\n");
+                        "Warning: Skipping the generation of Java QtQuickView contents from QML "
+                        "as it can be enabled only for an AAR target.\n");
                 options->generateJavaQmlComponents = false;
             }
         }
@@ -1321,7 +1321,7 @@ bool readInputFile(Options *options)
         } else if (options->generateJavaQmlComponents) {
             fprintf(stderr,
                     "No qmldom binary defined in json file which is required when "
-                    "building with QT_ANDROID_GENERATE_JAVA_QML_COMPONENTS flag.\n");
+                    "building with QT_ANDROID_GENERATE_JAVA_QTQUICKVIEW_CONTENTS flag.\n");
             return false;
         }
     }
@@ -3708,7 +3708,7 @@ int generateJavaQmlComponents(const Options &options)
         if (moduleInfo.moduleName == libName) {
             fprintf(stderr,
                     "A QML module name (%s) cannot be the same as the target name when building "
-                    "with QT_ANDROID_GENERATE_JAVA_QML_COMPONENTS flag.\n",
+                    "with QT_ANDROID_GENERATE_JAVA_QTQUICKVIEW_CONTENTS flag.\n",
                     qPrintable(moduleInfo.moduleName));
             return false;
         }
