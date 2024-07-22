@@ -223,6 +223,11 @@ bool QRhiD3D12::create(QRhi::Flags flags)
         }
     }
 
+    if (qEnvironmentVariableIsSet("QT_D3D_MAX_FRAME_LATENCY"))
+        maxFrameLatency = UINT(qMax(0, qEnvironmentVariableIntValue("QT_D3D_MAX_FRAME_LATENCY")));
+    if (maxFrameLatency != 0)
+        qCDebug(QRHI_LOG_INFO, "Using frame latency waitable object with max frame latency %u", maxFrameLatency);
+
     supportsAllowTearing = false;
     IDXGIFactory5 *factory5 = nullptr;
     if (SUCCEEDED(dxgiFactory->QueryInterface(__uuidof(IDXGIFactory5), reinterpret_cast<void **>(&factory5)))) {
@@ -1526,6 +1531,9 @@ QRhi::FrameOpResult QRhiD3D12::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginF
     // by design (one QRhi per window).
     for (QD3D12SwapChain *sc : std::as_const(swapchains))
         sc->waitCommandCompletionForFrameSlot(currentFrameSlot); // note: swapChainD->currentFrameSlot, not sc's
+
+    if (swapChainD->frameLatencyWaitableObject)
+        WaitForSingleObjectEx(swapChainD->frameLatencyWaitableObject, 1000, true);
 
     HRESULT hr = cmdAllocators[currentFrameSlot]->Reset();
     if (FAILED(hr)) {
@@ -6129,6 +6137,11 @@ void QD3D12SwapChain::destroy()
         dcompTarget = nullptr;
     }
 
+    if (frameLatencyWaitableObject) {
+        CloseHandle(frameLatencyWaitableObject);
+        frameLatencyWaitableObject = nullptr;
+    }
+
     QRHI_RES_RHI(QRhiD3D12);
     if (rhiD) {
         rhiD->swapchains.remove(this);
@@ -6345,6 +6358,14 @@ bool QD3D12SwapChain::createOrResize()
     if (swapInterval == 0 && rhiD->supportsAllowTearing)
         swapChainFlags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
 
+    // maxFrameLatency 0 means no waitable object usage.
+    // Ignore it also when NoVSync is on, and when using WARP.
+    const bool useFrameLatencyWaitableObject = rhiD->maxFrameLatency != 0
+                                               && swapInterval != 0
+                                               && rhiD->driverInfoStruct.deviceType != QRhiDriverInfo::CpuDevice;
+    if (useFrameLatencyWaitableObject)
+        swapChainFlags |= DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT;
+
     if (!swapChain) {
         chooseFormats();
 
@@ -6400,6 +6421,10 @@ bool QD3D12SwapChain::createOrResize()
                     qWarning("Failed to set color space on swapchain: %s",
                              qPrintable(QSystemError::windowsComString(hr)));
                 }
+            }
+            if (useFrameLatencyWaitableObject) {
+                swapChain->SetMaximumFrameLatency(rhiD->maxFrameLatency);
+                frameLatencyWaitableObject = swapChain->GetFrameLatencyWaitableObject();
             }
             if (dcompVisual) {
                 hr = dcompVisual->SetContent(swapChain);

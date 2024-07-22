@@ -1044,6 +1044,7 @@ struct QD3D12SwapChain : public QRhiSwapChain
     QD3D12SwapChainRenderTarget rtWrapper;
     QD3D12SwapChainRenderTarget rtWrapperRight;
     QD3D12CommandBuffer cbWrapper;
+    HANDLE frameLatencyWaitableObject = nullptr;
 
     struct FrameResources {
         ID3D12Fence *fence = nullptr;
@@ -1194,6 +1195,7 @@ public:
     void bindShaderVisibleHeaps(QD3D12CommandBuffer *cbD);
 
     bool debugLayer = false;
+    UINT maxFrameLatency = 2; // 1-3, use 2 to keep CPU-GPU parallelism while reducing lag compared to tripple buffering
     ID3D12Device2 *dev = nullptr;
     D3D_FEATURE_LEVEL minimumFeatureLevel = D3D_FEATURE_LEVEL(0);
     LUID adapterLuid = {};
