@@ -63,6 +63,17 @@ QList<QNetworkCookie> QNetworkCookie::parseCookies(const QByteArray &cookieStrin
 #endif
 #include "qnetworkrequest.h" // inlined API
 
+#include "qsslerror.h"
+
+#ifndef QT_NO_DEBUG_STREAM
+#if QT_CONFIG(ssl)
+QDebug operator<<(QDebug debug, const QSslError::SslError &error)
+{
+    return print(std::move(debug), error);
+}
+#endif
+#endif
+
 // #include "qotherheader.h"
 // // implement removed functions from qotherheader.h
 // order sections alphabetically
