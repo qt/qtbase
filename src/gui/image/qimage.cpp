@@ -5057,7 +5057,8 @@ void QImage::convertToColorSpace(const QColorSpace &colorSpace)
     }
     if (d->colorSpace == colorSpace)
         return;
-    if (!qt_compatibleColorModelTarget(pixelFormat().colorModel(), colorSpace.colorModel(), colorSpace.transformModel())) {
+    if (!qt_compatibleColorModelTarget(pixelFormat().colorModel(),
+                                       colorSpace.colorModel(), colorSpace.transformModel())) {
         *this = convertedToColorSpace(colorSpace);
         return;
     }
@@ -5088,7 +5089,8 @@ void QImage::convertToColorSpace(const QColorSpace &colorSpace, QImage::Format f
         qWarning() << "QImage::convertToColorSpace: Output colorspace is not valid";
         return;
     }
-    if (!qt_compatibleColorModelTarget(toPixelFormat(format).colorModel(), colorSpace.colorModel(), colorSpace.transformModel())) {
+    if (!qt_compatibleColorModelTarget(toPixelFormat(format).colorModel(),
+                                       colorSpace.colorModel(), colorSpace.transformModel())) {
         qWarning() << "QImage::convertToColorSpace: Color space is not compatible with format";
         return;
     }
@@ -5129,6 +5131,8 @@ QImage QImage::convertedToColorSpace(const QColorSpace &colorSpace) const
 }
 
 /*!
+    \fn QImage QImage::convertedToColorSpace(const QColorSpace &colorSpace, QImage::Format format, Qt::ImageConversionFlags flags) const &
+    \fn QImage QImage::convertedToColorSpace(const QColorSpace &colorSpace, QImage::Format format, Qt::ImageConversionFlags flags) &&
     \since 6.8
 
     Returns the image converted to \a colorSpace and \a format.
@@ -5140,7 +5144,7 @@ QImage QImage::convertedToColorSpace(const QColorSpace &colorSpace) const
 
     \sa colorTransformed()
 */
-QImage QImage::convertedToColorSpace(const QColorSpace &colorSpace, QImage::Format format, Qt::ImageConversionFlags flags) const
+QImage QImage::convertedToColorSpace(const QColorSpace &colorSpace, QImage::Format format, Qt::ImageConversionFlags flags) const &
 {
     if (!d || !d->colorSpace.isValid())
         return QImage();
@@ -5148,7 +5152,8 @@ QImage QImage::convertedToColorSpace(const QColorSpace &colorSpace, QImage::Form
         qWarning() << "QImage::convertedToColorSpace: Output colorspace is not valid";
         return QImage();
     }
-    if (!qt_compatibleColorModelTarget(toPixelFormat(format).colorModel(), colorSpace.colorModel(), colorSpace.transformModel())) {
+    if (!qt_compatibleColorModelTarget(toPixelFormat(format).colorModel(),
+                                       colorSpace.colorModel(), colorSpace.transformModel())) {
         qWarning() << "QImage::convertedToColorSpace: Color space is not compatible with format";
         return QImage();
     }
@@ -5157,6 +5162,25 @@ QImage QImage::convertedToColorSpace(const QColorSpace &colorSpace, QImage::Form
     QImage image = colorTransformed(d->colorSpace.transformationToColorSpace(colorSpace), format, flags);
     image.setColorSpace(colorSpace);
     return image;
+}
+
+QImage QImage::convertedToColorSpace(const QColorSpace &colorSpace, QImage::Format format, Qt::ImageConversionFlags flags) &&
+{
+    if (!d || !d->colorSpace.isValid())
+        return QImage();
+    if (!colorSpace.isValidTarget()) {
+        qWarning() << "QImage::convertedToColorSpace: Output colorspace is not valid";
+        return QImage();
+    }
+    if (!qt_compatibleColorModelTarget(toPixelFormat(format).colorModel(),
+                                       colorSpace.colorModel(), colorSpace.transformModel())) {
+        qWarning() << "QImage::convertedToColorSpace: Color space is not compatible with format";
+        return QImage();
+    }
+    if (d->colorSpace == colorSpace)
+        return convertedTo(format, flags);
+    applyColorTransform(d->colorSpace.transformationToColorSpace(colorSpace), format, flags);
+    return std::move(*this);
 }
 
 /*!

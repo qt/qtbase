@@ -232,7 +232,10 @@ public:
 
     QColorSpace colorSpace() const;
     [[nodiscard]] QImage convertedToColorSpace(const QColorSpace &colorSpace) const;
-    [[nodiscard]] QImage convertedToColorSpace(const QColorSpace &colorSpace, QImage::Format format, Qt::ImageConversionFlags flags = Qt::AutoColor) const;
+    [[nodiscard]] QImage convertedToColorSpace(const QColorSpace &colorSpace, QImage::Format format,
+                                               Qt::ImageConversionFlags flags = Qt::AutoColor) const &;
+    [[nodiscard]] QImage convertedToColorSpace(const QColorSpace &colorSpace, QImage::Format format,
+                                               Qt::ImageConversionFlags flags = Qt::AutoColor) &&;
     void convertToColorSpace(const QColorSpace &colorSpace);
     void convertToColorSpace(const QColorSpace &colorSpace, QImage::Format format, Qt::ImageConversionFlags flags = Qt::AutoColor);
     void setColorSpace(const QColorSpace &colorSpace);
