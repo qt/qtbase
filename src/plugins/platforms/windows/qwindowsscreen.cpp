@@ -139,7 +139,7 @@ struct DevInfoHandleTraits
     {
         return reinterpret_cast<HDEVINFO>(INVALID_HANDLE_VALUE);
     }
-    static bool close(Type handle) { return SetupDiDestroyDeviceInfoList(handle) == ERROR_SUCCESS; }
+    static bool close(Type handle) { return SetupDiDestroyDeviceInfoList(handle) == TRUE; }
 };
 
 using DevInfoHandle = QUniqueHandle<DevInfoHandleTraits>;
