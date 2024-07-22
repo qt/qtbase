@@ -316,6 +316,11 @@ namespace QTest
     Q_TESTLIB_EXPORT void maybeThrowOnSkip();
 
     Q_TESTLIB_EXPORT QString formatTryTimeoutDebugMessage(q_no_char8_t::QUtf8StringView expr, int timeout, int actual);
+    Q_TESTLIB_EXPORT
+    const char *formatPropertyTestHelperFailure(char *msg, size_t maxMsgLen,
+                                                const char *actual, const char *expected,
+                                                const char *actualExpr,
+                                                const char *expectedExpr);
 
     template <ComparisonOperation> struct Compare;
     template <> struct Compare<ComparisonOperation::Equal>
