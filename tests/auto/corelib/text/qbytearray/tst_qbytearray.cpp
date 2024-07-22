@@ -2,6 +2,10 @@
 // Copyright (C) 2016 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
+#ifdef QT_NO_QSNPRINTF
+# undef QT_NO_QSNPRINTF // test of the function
+#endif
+
 #include <QTest>
 
 #include <qbytearray.h>
