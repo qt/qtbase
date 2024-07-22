@@ -5,6 +5,8 @@
 #include "qtestresult_p.h"
 #include "qbenchmark_p.h"
 
+#include <cstdio>
+
 /*! \internal
     \class QCsvBenchmarkLogger
     \inmodule QtTest
@@ -61,10 +63,10 @@ void QCsvBenchmarkLogger::addBenchmarkResult(const QBenchmarkResult &result)
 
     char buf[1024];
     // "function","[globaltag:]tag","metric",value_per_iteration,total,iterations
-    qsnprintf(buf, sizeof(buf), "\"%s\",\"%s%s%s\",\"%s\",%.13g,%.13g,%u\n",
-              fn, gtag, filler, tag, metric,
-              result.measurement.value / result.iterations,
-              result.measurement.value, result.iterations);
+    std::snprintf(buf, sizeof(buf), "\"%s\",\"%s%s%s\",\"%s\",%.13g,%.13g,%u\n",
+                  fn, gtag, filler, tag, metric,
+                  result.measurement.value / result.iterations,
+                  result.measurement.value, result.iterations);
     outputString(buf);
 }
 

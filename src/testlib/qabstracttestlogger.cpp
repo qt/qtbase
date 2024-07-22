@@ -9,6 +9,8 @@
 #include <QtCore/qbytearray.h>
 #include <QtCore/qstring.h>
 
+#include <cstdio>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -405,7 +407,7 @@ int qt_asprintf(QTestCharBuffer *str, const char *format, ...)
 
     do {
         va_start(ap, format);
-        res = qvsnprintf(str->data(), size, format, ap);
+        res = std::vsnprintf(str->data(), size, format, ap);
         va_end(ap);
         // vsnprintf() reliably '\0'-terminates
         Q_ASSERT(res < 0 || str->data()[res < size ? res : size - 1] == '\0');

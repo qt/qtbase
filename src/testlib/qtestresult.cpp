@@ -307,14 +307,14 @@ bool QTestResult::verify(bool statement, const char *statementStr,
     msg[0] = '\0';
 
     if (QTestLog::verboseLevel() >= 2) {
-        qsnprintf(msg, maxMsgLen, "QVERIFY(%s)", statementStr);
+        std::snprintf(msg, maxMsgLen, "QVERIFY(%s)", statementStr);
         QTestLog::info(msg, file, line);
     }
 
     if (statement == !!QTest::expectFailMode) {
-        qsnprintf(msg, maxMsgLen,
-                  statement ? "'%s' returned TRUE unexpectedly. (%s)" : "'%s' returned FALSE. (%s)",
-                  statementStr, description ? description : "");
+        std::snprintf(msg, maxMsgLen,
+                      statement ? "'%s' returned TRUE unexpectedly. (%s)" : "'%s' returned FALSE. (%s)",
+                      statementStr, description ? description : "");
     }
 
     return checkStatement(statement, msg, file, line);
@@ -350,20 +350,22 @@ void formatFailMessage(char *msg, size_t maxMsgLen,
 {
     const auto len1 = approx_wide_len(actual);
     const auto len2 = approx_wide_len(expected);
-    const int written = qsnprintf(msg, maxMsgLen, "%s\n", failureMsg);
+    const int written = std::snprintf(msg, maxMsgLen, "%s\n", failureMsg);
     msg += written;
     maxMsgLen -= written;
 
+    const auto protect = [](const char *s) { return s ? s : "<null>"; };
+
     if (val1 || val2) {
-        qsnprintf(msg, maxMsgLen, "   %s(%s)%*s %s\n   %s(%s)%*s %s",
-                    leftArgNameForOp(op), actual, qMax(len1, len2) - len1 + 1, ":",
-                    val1 ? val1 : "<null>",
-                    rightArgNameForOp(op), expected, qMax(len1, len2) - len2 + 1, ":",
-                    val2 ? val2 : "<null>");
+        std::snprintf(msg, maxMsgLen, "   %s(%s)%*s %s\n   %s(%s)%*s %s",
+                      leftArgNameForOp(op), actual, qMax(len1, len2) - len1 + 1, ":",
+                      protect(val1),
+                      rightArgNameForOp(op), expected, qMax(len1, len2) - len2 + 1, ":",
+                      protect(val2));
     } else {
         // only print variable names if neither value can be represented as a string
-        qsnprintf(msg, maxMsgLen, "   %s: %s\n   %s: %s",
-                    leftArgNameForOp(op), actual, rightArgNameForOp(op), expected);
+        std::snprintf(msg, maxMsgLen, "   %s: %s\n   %s: %s",
+                      leftArgNameForOp(op), actual, rightArgNameForOp(op), expected);
     }
 }
 
@@ -409,7 +411,7 @@ static bool compareHelper(bool success, const char *failureMsg,
     QTEST_ASSERT(actual);
 
     if (QTestLog::verboseLevel() >= 2) {
-        qsnprintf(msg, maxMsgLen, "QCOMPARE(%s, %s)", actual, expected);
+        std::snprintf(msg, maxMsgLen, "QCOMPARE(%s, %s)", actual, expected);
         QTestLog::info(msg, file, line);
     }
 
@@ -418,15 +420,15 @@ static bool compareHelper(bool success, const char *failureMsg,
 
     if (success) {
         if (QTest::expectFailMode) {
-            qsnprintf(msg, maxMsgLen,
-                      "QCOMPARE(%s, %s) returned TRUE unexpectedly.", actual, expected);
+            std::snprintf(msg, maxMsgLen,
+                          "QCOMPARE(%s, %s) returned TRUE unexpectedly.", actual, expected);
         }
         return checkStatement(success, msg, file, line);
     }
 
 
     if (!hasValues) {
-        qsnprintf(msg, maxMsgLen, "%s", failureMsg);
+        std::snprintf(msg, maxMsgLen, "%s", failureMsg);
         return checkStatement(success, msg, file, line);
     }
 
@@ -453,14 +455,14 @@ static bool compareHelper(bool success, const char *failureMsg,
     QTEST_ASSERT(success || failureMsg);
 
     if (QTestLog::verboseLevel() >= 2) {
-        qsnprintf(msg, maxMsgLen, "QCOMPARE(%s, %s)", actual, expected);
+        std::snprintf(msg, maxMsgLen, "QCOMPARE(%s, %s)", actual, expected);
         QTestLog::info(msg, file, line);
     }
 
     if (success) {
         if (QTest::expectFailMode) {
-            qsnprintf(msg, maxMsgLen, "QCOMPARE(%s, %s) returned TRUE unexpectedly.",
-                      actual, expected);
+            std::snprintf(msg, maxMsgLen, "QCOMPARE(%s, %s) returned TRUE unexpectedly.",
+                          actual, expected);
         }
         return checkStatement(success, msg, file, line);
     }
@@ -669,14 +671,14 @@ bool QTestResult::reportResult(bool success, const void *lhs, const void *rhs,
     QTEST_ASSERT(rhsExpr);
 
     if (QTestLog::verboseLevel() >= 2) {
-        qsnprintf(msg, maxMsgLen, "%s(%s, %s)", macroNameForOp(op), lhsExpr, rhsExpr);
+        std::snprintf(msg, maxMsgLen, "%s(%s, %s)", macroNameForOp(op), lhsExpr, rhsExpr);
         QTestLog::info(msg, file, line);
     }
 
     if (success) {
         if (QTest::expectFailMode) {
-            qsnprintf(msg, maxMsgLen, "%s(%s, %s) returned TRUE unexpectedly.",
-                      macroNameForOp(op), lhsExpr, rhsExpr);
+            std::snprintf(msg, maxMsgLen, "%s(%s, %s) returned TRUE unexpectedly.",
+                          macroNameForOp(op), lhsExpr, rhsExpr);
         }
         return checkStatement(success, msg, file, line);
     }
