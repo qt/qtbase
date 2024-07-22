@@ -348,7 +348,8 @@ QDebug operator<<(QDebug debug, const QSslError &error)
     debug << error.errorString();
     return debug;
 }
-QDebug operator<<(QDebug debug, const QSslError::SslError &error)
+
+QDebug print(QDebug debug, QSslError::SslError error)
 {
     debug << QSslError(error).errorString();
     return debug;

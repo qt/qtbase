@@ -16,6 +16,10 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_SSL
 
+#ifndef QT_NO_DEBUG_STREAM
+class QDebug;
+#endif
+
 class QSslErrorPrivate;
 class Q_NETWORK_EXPORT QSslError
 {
@@ -88,15 +92,22 @@ public:
 private:
     // ### Qt 7: make QSslError implicitly shared
     std::unique_ptr<QSslErrorPrivate> d;
+#ifndef QT_NO_DEBUG_STREAM
+    Q_NETWORK_EXPORT friend QDebug print(QDebug debug, QSslError::SslError error);
+    friend QDebug operator<<(QDebug debug, SslError error)
+    { return print(std::move(debug), error); }
+#endif
 };
 Q_DECLARE_SHARED(QSslError)
 
 Q_NETWORK_EXPORT size_t qHash(const QSslError &key, size_t seed = 0) noexcept;
 
 #ifndef QT_NO_DEBUG_STREAM
-class QDebug;
+
 Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, const QSslError &error);
+#if QT_NETWORK_REMOVED_SINCE(6, 8)
 Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, const QSslError::SslError &error);
+#endif
 #endif
 #else
 class Q_NETWORK_EXPORT QSslError {}; // dummy class so that moc has a complete type
