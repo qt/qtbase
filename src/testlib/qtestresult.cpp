@@ -342,6 +342,7 @@ static int approx_wide_len(const char *s)
 }
 
 // Overload to format failures for "const char *" - no need to strdup().
+static Q_DECL_COLD_FUNCTION
 void formatFailMessage(char *msg, size_t maxMsgLen,
                        const char *failureMsg,
                        const char *val1, const char *val2,
@@ -382,6 +383,7 @@ QTest::Internal::formatPropertyTestHelperFailure(char *msg, size_t maxMsgLen,
 
 // Format failures using the toString() template
 template <class Actual, class Expected>
+static Q_DECL_COLD_FUNCTION
 void formatFailMessage(char *msg, size_t maxMsgLen,
                        const char *failureMsg,
                        const Actual &val1, const Expected &val2,
