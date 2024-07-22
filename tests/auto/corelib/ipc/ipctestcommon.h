@@ -1,5 +1,7 @@
 // Copyright (C) 2022 Intel Corporation.
 
+#pragma once
+
 #include <QtTest/QTest>
 #include <QtCore/QNativeIpcKey>
 
