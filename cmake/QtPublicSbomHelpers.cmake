@@ -271,6 +271,24 @@ function(_qt_internal_sbom_end_project)
     set_property(GLOBAL PROPERTY _qt_internal_sbom_repo_begin_called FALSE)
 endfunction()
 
+# Helper to get purl related options.
+macro(_qt_internal_get_sbom_purl_options opt_args single_args multi_args)
+    set(${opt_args}
+        NO_PURL
+        NO_DEFAULT_QT_PURL
+    )
+    set(${single_args}
+        PURL_TYPE
+        PURL_NAMESPACE
+        PURL_NAME
+        PURL_VERSION
+        PURL_SUBPATH
+    )
+    set(${multi_args}
+        PURL_QUALIFIERS
+    )
+endmacro()
+
 # Helper to get the options that _qt_internal_sbom_add_target understands, but that are also
 # a safe subset for qt_internal_add_module, qt_internal_extend_target, etc to understand.
 macro(_qt_internal_get_sbom_add_target_common_options opt_args single_args multi_args)
@@ -304,6 +322,15 @@ macro(_qt_internal_get_sbom_add_target_common_options opt_args single_args multi
         ATTRIBUTION_FILE_PATHS
         ATTRIBUTION_FILE_DIR_PATHS
     )
+
+    _qt_internal_get_sbom_purl_options(purl_opt_args purl_single_args purl_multi_args)
+    list(APPEND ${opt_args} ${purl_opt_args})
+    list(APPEND ${single_args} ${purl_single_args})
+    list(APPEND ${multi_args} ${purl_multi_args})
+
+    unset(purl_opt_args)
+    unset(purl_single_args)
+    unset(purl_multi_args)
 endmacro()
 
 # Helper to get the options that _qt_internal_sbom_add_target understands.
@@ -591,14 +618,55 @@ function(_qt_internal_sbom_add_target target)
             OR arg_TYPE STREQUAL "QT_THIRD_PARTY_MODULE"
             OR arg_TYPE STREQUAL "QT_THIRD_PARTY_SOURCES"
         )
-        _qt_internal_sbom_get_root_project_name_lower_case(repo_project_name_lowercase)
+        set(is_qt_purl_entity_type TRUE)
+    else()
+        set(is_qt_purl_entity_type FALSE)
+    endif()
 
-        set(purl_prefix "PACKAGE-MANAGER purl")
-        set(purl_suffix
-            "pkg:generic/${supplier}/${repo_project_name_lowercase}@${QT_SBOM_GIT_VERSION}")
-        set(package_manager_external_ref
-            "${purl_prefix} ${purl_suffix}")
-        list(APPEND project_package_options EXTREF "${package_manager_external_ref}")
+    if(arg_PURL_TYPE
+            OR arg_PURL_NAMESPACE
+            OR arg_PURL_NAME
+            OR arg_PURL_VERSION
+            OR arg_PURL_QUALIFIERS
+            OR arg_PURL_SUBPATH
+        )
+        set(purl_args_available TRUE)
+    endif()
+
+    if((is_qt_purl_entity_type OR purl_args_available)
+            AND NOT arg_NO_PURL)
+
+        _qt_internal_get_sbom_purl_options(purl_opt_args purl_single_args purl_multi_args)
+        set(purl_args "")
+        _qt_internal_forward_function_args(
+            FORWARD_APPEND
+            FORWARD_PREFIX arg
+            FORWARD_OUT_VAR purl_args
+            FORWARD_OPTIONS
+                ${purl_opt_args}
+            FORWARD_SINGLE
+                ${purl_single_args}
+            FORWARD_MULTI
+                ${purl_multi_args}
+        )
+
+        # Qt entity types get a default qt-specific purl.
+        if(is_qt_purl_entity_type AND NOT arg_NO_DEFAULT_QT_PURL)
+            _qt_internal_sbom_get_root_project_name_lower_case(repo_project_name_lowercase)
+            _qt_internal_sbom_get_qt_entity_purl(${target}
+                NAME "${repo_project_name_lowercase}-${target}"
+                SUPPLIER "${supplier}"
+                VERSION "${QT_SBOM_GIT_VERSION}"
+                ${purl_args}
+                OUT_VAR purl_args
+            )
+        endif()
+
+        _qt_internal_sbom_handle_purl(${target}
+            ${purl_args}
+            OUT_VAR package_manager_external_ref
+        )
+        list(APPEND project_package_options ${package_manager_external_ref})
     endif()
 
     if(arg_TYPE STREQUAL "QT_THIRD_PARTY_MODULE"
@@ -2610,6 +2678,135 @@ function(_qt_internal_sbom_compute_security_cpe_for_qt out_cpe_list)
     list(APPEND cpe_list "${qt_cpe}")
 
     set(${out_cpe_list} "${cpe_list}" PARENT_SCOPE)
+endfunction()
+
+# Gets a list of arguments to pass to _qt_internal_sbom_handle_purl when handling a Qt entity type.
+# The purl for Qt entity types have Qt-specific defaults, but can be overridden per purl component.
+# The arguments are saved in OUT_VAR.
+function(_qt_internal_sbom_get_qt_entity_purl target)
+    set(opt_args "")
+    set(single_args
+        NAME
+        SUPPLIER
+        VERSION
+        OUT_VAR
+    )
+    set(multi_args "")
+
+    _qt_internal_get_sbom_purl_options(purl_opt_args purl_single_args purl_multi_args)
+    list(APPEND opt_args ${purl_opt_args})
+    list(APPEND single_args ${purl_single_args})
+    list(APPEND multi_args ${purl_multi_args})
+
+    cmake_parse_arguments(PARSE_ARGV 1 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    if(arg_PURL_TYPE)
+        set(purl_type "${arg_PURL_TYPE}")
+    else()
+        set(purl_type "generic")
+    endif()
+
+    if(arg_PURL_NAMESPACE)
+        set(purl_namespace "${arg_PURL_NAMESPACE}")
+    else()
+        set(purl_namespace "${arg_SUPPLIER}")
+    endif()
+
+    if(arg_PURL_NAME)
+        set(purl_name "${arg_PURL_NAME}")
+    else()
+        set(purl_name "${arg_NAME}")
+    endif()
+
+    if(arg_PURL_VERSION)
+        set(purl_version "${arg_PURL_VERSION}")
+    else()
+        set(purl_version "${arg_VERSION}")
+    endif()
+
+    set(purl_args
+        PURL_TYPE "${purl_type}"
+        PURL_NAMESPACE "${purl_namespace}"
+        PURL_NAME "${purl_name}"
+        PURL_VERSION "${purl_version}"
+    )
+
+    if(arg_PURL_QUALIFIERS)
+        list(APPEND purl_args PURL_QUALIFIERS "${arg_PURL_QUALIFIERS}")
+    endif()
+
+    if(arg_PURL_SUBPATH)
+        list(APPEND purl_args PURL_SUBPATH "${arg_PURL_SUBPATH}")
+    endif()
+
+    set(${arg_OUT_VAR} "${purl_args}" PARENT_SCOPE)
+endfunction()
+
+# Assembls an external reference purl identifier.
+# PURL_TYPE and PURL_NAME are required.
+# Stores the result in the OUT_VAR.
+function(_qt_internal_sbom_handle_purl target)
+    set(opt_args "")
+    set(single_args
+        OUT_VAR
+    )
+    set(multi_args "")
+
+    _qt_internal_get_sbom_purl_options(purl_opt_args purl_single_args purl_multi_args)
+    list(APPEND opt_args ${purl_opt_args})
+    list(APPEND single_args ${purl_single_args})
+    list(APPEND multi_args ${purl_multi_args})
+
+    cmake_parse_arguments(PARSE_ARGV 1 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    set(purl_scheme "pkg")
+
+    if(NOT arg_PURL_TYPE)
+        message(FATAL_ERROR "PURL_TYPE must be set")
+    endif()
+
+    if(NOT arg_PURL_NAME)
+        message(FATAL_ERROR "PURL_NAME must be set")
+    endif()
+
+    if(NOT arg_OUT_VAR)
+        message(FATAL_ERROR "OUT_VAR must be set")
+    endif()
+
+    # SPDX SBOM External reference type.
+    set(ext_ref_prefix "PACKAGE-MANAGER purl")
+
+    # https://github.com/package-url/purl-spec
+    # Spec is 'scheme:type/namespace/name@version?qualifiers#subpath'
+    set(purl "${purl_scheme}:${arg_PURL_TYPE}")
+
+    if(arg_PURL_NAMESPACE)
+        string(APPEND purl "/${arg_PURL_NAMESPACE}")
+    endif()
+
+    string(APPEND purl "/${arg_PURL_NAME}")
+
+    if(arg_PURL_VERSION)
+        string(APPEND purl "@${arg_PURL_VERSION}")
+    endif()
+
+    if(arg_PURL_QUALIFIERS)
+        # TODO: Note that the qualifiers are expected to be URL encoded, which this implementation
+        # is not doing at the moment.
+        list(JOIN arg_PURL_QUALIFIERS "&" qualifiers)
+        string(APPEND purl "?${qualifiers}")
+    endif()
+
+    if(arg_PURL_SUBPATH)
+        string(APPEND purl "#${arg_PURL_SUBPATH}")
+    endif()
+
+    set(external_ref "${ext_ref_prefix} ${purl}")
+
+    set(result "EXTREF" "${external_ref}")
+    set(${arg_OUT_VAR} "${result}" PARENT_SCOPE)
 endfunction()
 
 # Collects app bundle related information and paths from an executable's target properties.
