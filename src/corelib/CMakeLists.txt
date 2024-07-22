@@ -332,7 +332,6 @@ qt_internal_add_module(Core
         QT_NO_CONTEXTLESS_CONNECT
         QT_NO_FOREACH
         QT_NO_QPAIR
-        QT_NO_QSNPRINTF
         QT_NO_USING_NAMESPACE
         QT_TYPESAFE_FLAGS
         QT_USE_NODISCARD_FILE_OPEN
