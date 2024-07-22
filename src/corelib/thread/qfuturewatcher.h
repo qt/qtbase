@@ -74,7 +74,7 @@ public Q_SLOTS:
     QT_DEPRECATED_VERSION_X_6_0("Use setSuspended() instead.")
     void setPaused(bool paused);
 
-    QT_DEPRECATED_VERSION_X_6_0("Use suspended() instead.")
+    QT_DEPRECATED_VERSION_X_6_0("Use suspend() instead.")
     void pause();
 
     QT_DEPRECATED_VERSION_X_6_0("Use toggleSuspended() instead.")
