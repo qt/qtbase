@@ -9,6 +9,8 @@
 #include <QTemporaryFile>
 #include "private/qemulationdetector_p.h"
 
+#include <cstdio>
+
 #include <stdarg.h>
 
 #ifdef Q_OS_WIN
@@ -71,7 +73,7 @@ static int qInfoPrinter(const char *format, ...)
 
     va_list ap;
     va_start(ap, format); // use variable arg list
-    int n = qvsnprintf(buf + bufuse, sizeof(buf) - bufuse, format, ap);
+    const int n = std::vsnprintf(buf + bufuse, sizeof(buf) - bufuse, format, ap);
     va_end(ap);
 
     bufuse += n;
