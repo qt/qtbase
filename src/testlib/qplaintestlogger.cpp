@@ -64,11 +64,11 @@ template <int N> struct FixedBufString
         buf[used] = '\0';
     }
 
-    template <typename... Args> void appendf(const char *format, Args &&... args)
+    template <typename... Args> void appendf(const char *format, Args... args)
     {
         // vsnprintf includes the terminating null
         used += qsnprintf(buf.data() + used, MaxSize - used + 1, format,
-                          std::forward<Args>(args)...);
+                              args...);
     }
 
     template <int Power = 1000> void appendScaled(qreal value, const char *unit)
