@@ -300,13 +300,13 @@ function(qt6_android_generate_deployment_settings target)
     string(APPEND file_contents
         "   \"zstdCompression\": ${is_zstd_enabled},\n")
 
-    if(QT_ANDROID_GENERATE_JAVA_QML_COMPONENTS)
-        set(is_generate_java_qml_components "true")
+    if(QT_ANDROID_GENERATE_JAVA_QTQUICKVIEW_CONTENTS)
+        set(is_generate_java_qtquickview_contents "true")
     else()
-        set(is_generate_java_qml_components "false")
+        set(is_generate_java_qtquickview_contents "false")
     endif()
     string(APPEND file_contents
-        "   \"generate-java-qml-components\": ${is_generate_java_qml_components},\n")
+        "   \"generate-java-qtquickview-contents\": ${is_generate_java_qtquickview_contents},\n")
     # Last item in json file
 
     # base location of stdlibc++, will be suffixed by androiddeploy qt
