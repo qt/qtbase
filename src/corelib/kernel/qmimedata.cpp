@@ -374,8 +374,9 @@ bool QMimeData::hasUrls() const
 
 
 /*!
-    Returns a plain text (MIME type \c text/plain) representation of
-    the data.
+    Returns the plain text (MIME type \c text/plain) representation of
+    the data if this object contains plain text. If it contains some other
+    content, this function makes a best effort to convert it to plain text.
 
     \sa hasText(), html(), data()
 */
@@ -541,7 +542,11 @@ bool QMimeData::hasColor() const
 
 /*!
     Returns the data stored in the object in the format described by
-    the MIME type specified by \a mimeType.
+    the MIME type specified by \a mimeType. If this object does not contain
+    data for the \a mimeType MIME type (see hasFormat()), this function may
+    perform a best effort conversion to it.
+
+    \sa hasFormat(), setData()
 */
 QByteArray QMimeData::data(const QString &mimeType) const
 {
