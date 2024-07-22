@@ -30,6 +30,8 @@
 #include <QtCore/QRegularExpression>
 #endif
 
+#include <cstdio>
+
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
@@ -194,8 +196,8 @@ namespace QTest {
 
             const size_t maxMsgLen = 1024;
             char msg[maxMsgLen] = {'\0'};
-            qsnprintf(msg, maxMsgLen, "Received a warning that resulted in a failure:\n%s",
-                      qPrintable(message));
+            std::snprintf(msg, maxMsgLen, "Received a warning that resulted in a failure:\n%s",
+                          qPrintable(message));
             QTestResult::addFailure(msg, context.file, context.line);
             return true;
         }

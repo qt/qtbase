@@ -11,6 +11,8 @@
 
 #include <QtCore/qlibraryinfo.h>
 
+#include <cstdio>
+
 #include <string.h>
 
 QT_BEGIN_NAMESPACE
@@ -93,16 +95,16 @@ void QJUnitTestLogger::stopLogging()
 {
     char buf[10];
 
-    qsnprintf(buf, sizeof(buf), "%i", testCounter);
+    std::snprintf(buf, sizeof(buf), "%i", testCounter);
     currentTestSuite->addAttribute(QTest::AI_Tests, buf);
 
-    qsnprintf(buf, sizeof(buf), "%i", failureCounter);
+    std::snprintf(buf, sizeof(buf), "%i", failureCounter);
     currentTestSuite->addAttribute(QTest::AI_Failures, buf);
 
-    qsnprintf(buf, sizeof(buf), "%i", errorCounter);
+    std::snprintf(buf, sizeof(buf), "%i", errorCounter);
     currentTestSuite->addAttribute(QTest::AI_Errors, buf);
 
-    qsnprintf(buf, sizeof(buf), "%i", QTestLog::skipCount());
+    std::snprintf(buf, sizeof(buf), "%i", QTestLog::skipCount());
     currentTestSuite->addAttribute(QTest::AI_Skipped, buf);
 
     currentTestSuite->addAttribute(QTest::AI_Time,

@@ -61,6 +61,7 @@
 #endif
 #include <chrono>
 #include <cmath>
+#include <cstdio>
 #include <limits>
 #include <memory>
 #include <mutex>
@@ -1349,7 +1350,7 @@ bool TestMethods::invokeTest(int index, QLatin1StringView tag, std::optional<Wat
             QTestResult::setCurrentGlobalTestData(gTable->testData(curGlobalDataIndex));
 
         if (curGlobalDataIndex == 0) {
-            qsnprintf(member, 512, "%s_data()", name.constData());
+            std::snprintf(member, 512, "%s_data()", name.constData());
             invokeTestMethodIfExists(member);
             if (QTestResult::skipCurrentTest())
                 break;
@@ -2587,9 +2588,10 @@ QTestData &QTest::newRow(const char *dataTag)
 
     Appends a new row to the current test data.
 
-    The function's arguments are passed to qsnprintf() for formatting according
-    to \a format. See the qvsnprintf() documentation for caveats and
-    limitations.
+    The function's arguments are passed to std::snprintf() for
+    formatting according to \a format. See the
+    \l{https://en.cppreference.com/w/cpp/io/c/fprintf}{std::snprintf()
+    documentation} for caveats and limitations.
 
     The test output will identify the test run with this test data using the
     name that results from this formatting.
@@ -2622,8 +2624,7 @@ QTestData &QTest::addRow(const char *format, ...)
     va_start(va, format);
     // we don't care about failures, we accept truncation, as well as trailing garbage.
     // Names with more than 1K characters are nonsense, anyway.
-    (void)qvsnprintf(buf, sizeof buf, format, va);
-    buf[sizeof buf - 1] = '\0';
+    std::vsnprintf(buf, sizeof buf, format, va);
     va_end(va);
 
     return *tbl->newData(buf);
@@ -2996,7 +2997,7 @@ bool QTest::qCompare(const QLatin1StringView &t1, QStringView t2, const char *ac
 template <> Q_TESTLIB_EXPORT char *QTest::toString<TYPE>(const TYPE &t) \
 { \
     char *msg = new char[128]; \
-    qsnprintf(msg, 128, #FORMAT, t); \
+    std::snprintf(msg, 128, #FORMAT, t); \
     return msg; \
 }
 
@@ -3053,7 +3054,7 @@ template <> Q_TESTLIB_EXPORT char *QTest::toString<TYPE>(const TYPE &t) \
         qstrncpy(msg, "nan", 128); \
         break; \
     default: \
-        qsnprintf(msg, 128, #FORMAT, double(t));    \
+        std::snprintf(msg, 128, #FORMAT, double(t));    \
         massageExponent(msg); \
         break; \
     } \
@@ -3104,9 +3105,9 @@ template <> Q_TESTLIB_EXPORT char *QTest::toString<char>(const char &t)
         break;
     default:
         if (c < 0x20 || c >= 0x7F)
-            qsnprintf(msg, 16, "'\\x%02x'", c);
+            std::snprintf(msg, 16, "'\\x%02x'", c);
         else
-            qsnprintf(msg, 16, "'%c'" , c);
+            std::snprintf(msg, 16, "'%c'" , c);
     }
     return msg;
 }
@@ -3129,7 +3130,7 @@ char *QTest::toString(const char *str)
 char *QTest::toString(const volatile void *p) // Use volatile to match compare_ptr_helper()
 {
     char *msg = new char[128];
-    qsnprintf(msg, 128, "%p", p);
+    std::snprintf(msg, 128, "%p", p);
     return msg;
 }
 
@@ -3154,9 +3155,9 @@ char *QTest::toString(const QObject *o)
     const char *className = o->metaObject()->className();
     char *msg = new char[256];
     if (name.isEmpty())
-        qsnprintf(msg, 256, "%s/%p", className, o);
+        std::snprintf(msg, 256, "%s/%p", className, o);
     else
-        qsnprintf(msg, 256, "%s/\"%s\"", className, qPrintable(name));
+        std::snprintf(msg, 256, "%s/\"%s\"", className, qPrintable(name));
     return msg;
 }
 
