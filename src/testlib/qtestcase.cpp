@@ -69,7 +69,6 @@
 #include <optional>
 
 #include <stdarg.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 #if defined(Q_OS_LINUX)
@@ -526,7 +525,7 @@ static bool qPrintTestSlots(FILE *stream, const char *filter = nullptr, const ch
         if (isValidSlot(sl)) {
             const QByteArray signature = sl.methodSignature();
             if (matches(signature)) {
-                fprintf(stream, "%s%s\n", preamble, signature.constData());
+                std::fprintf(stream, "%s%s\n", preamble, signature.constData());
                 preamble = "";
                 matched = true;
             }
@@ -568,12 +567,11 @@ static void qPrintDataTags(FILE *stream)
             if (gTable->dataCount() == 0) {
                 if (localTags.size() == 0) {
                     // No tags at all, so just print the test function:
-                    fprintf(stream, "%s %s\n", currTestMetaObj->className(), slot.data());
+                    std::fprintf(stream, "%s %s\n", currTestMetaObj->className(), slot.data());
                 } else {
                     // Only local tags, so print each of them:
                     for (int k = 0; k < localTags.size(); ++k)
-                        fprintf(
-                            stream, "%s %s %s\n",
+                        std::fprintf(stream, "%s %s %s\n",
                                      currTestMetaObj->className(),
                                      slot.data(),
                                      localTags.at(k).toLatin1().data());
@@ -582,8 +580,7 @@ static void qPrintDataTags(FILE *stream)
                 for (int j = 0; j < gTable->dataCount(); ++j) {
                     if (localTags.size() == 0) {
                         // Only global tags, so print the current one:
-                        fprintf(
-                            stream, "%s %s __global__ %s\n",
+                        std::fprintf(stream, "%s %s __global__ %s\n",
                                      currTestMetaObj->className(),
                                      slot.data(),
                                      gTable->testData(j)->dataTag());
@@ -591,11 +588,11 @@ static void qPrintDataTags(FILE *stream)
                         // Local and global tags, so print each of the local ones and
                         // the current global one:
                         for (int k = 0; k < localTags.size(); ++k)
-                            fprintf(
-                                stream, "%s %s %s __global__ %s\n",
+                            std::fprintf(stream, "%s %s %s __global__ %s\n",
                                          currTestMetaObj->className(),
                                          slot.data(),
-                                localTags.at(k).toLatin1().data(), gTable->testData(j)->dataTag());
+                                         localTags.at(k).toLatin1().data(),
+                                         gTable->testData(j)->dataTag());
                     }
                 }
             }
@@ -608,7 +605,7 @@ static int qToInt(const char *str)
     char *pEnd;
     int l = static_cast<int>(strtol(str, &pEnd, 10));
     if (*pEnd != 0) {
-        fprintf(stderr, "Invalid numeric parameter: '%s'\n", str);
+        std::fprintf(stderr, "Invalid numeric parameter: '%s'\n", str);
         exit(1);
     }
     return l;
@@ -713,23 +710,22 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
     for (int i = 1; i < argc; ++i) {
         if (strcmp(argv[i], "-help") == 0 || strcmp(argv[i], "--help") == 0
             || strcmp(argv[i], "/?") == 0) {
-            printf(" Usage: %s [options] [testfunction[:testdata]]...\n"
-                   "    By default, all testfunctions will be run.\n\n"
-                   "%s", argv[0], testOptions);
+            std::printf(" Usage: %s [options] [testfunction[:testdata]]...\n"
+                        "    By default, all testfunctions will be run.\n\n"
+                        "%s", argv[0], testOptions);
 
             if (qml) {
-                printf("\n"
-                       " QmlTest options:\n"
-                       " -import dir         : Specify an import directory.\n"
-                       " -plugins dir        : Specify a directory where to search for plugins.\n"
-                       " -input dir/file     : Specify the root directory for test cases or a single test case file.\n"
-                       " -translation file   : Specify the translation file.\n"
-                       " -file-selector dir  : Specify a file selector for the QML engine.\n"
-                       );
+                std::printf("\n"
+                            " QmlTest options:\n"
+                            " -import dir         : Specify an import directory.\n"
+                            " -plugins dir        : Specify a directory where to search for plugins.\n"
+                            " -input dir/file     : Specify the root directory for test cases or a single test case file.\n"
+                            " -translation file   : Specify the translation file.\n"
+                            " -file-selector dir  : Specify a file selector for the QML engine.\n");
             }
 
-            printf("\n"
-                   " -help               : This help\n");
+            std::printf("\n"
+                        " -help               : This help\n");
             exit(0);
         } else if (strcmp(argv[i], "-functions") == 0) {
             if (qml) {
@@ -750,7 +746,7 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
         } else if (strcmp(argv[i], "-junitxml") == 0)  {
             logFormat = QTestLog::JUnitXML;
         } else if (strcmp(argv[i], "-xunitxml") == 0)  {
-            fprintf(stderr, "WARNING: xunitxml is deprecated. Please use junitxml.\n");
+            std::fprintf(stderr, "WARNING: xunitxml is deprecated. Please use junitxml.\n");
             logFormat = QTestLog::JUnitXML;
         } else if (strcmp(argv[i], "-xml") == 0) {
             logFormat = QTestLog::XML;
@@ -770,14 +766,14 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
             QSignalDumper::setEnabled(true);
         } else if (strcmp(argv[i], "-o") == 0) {
             if (i + 1 >= argc) {
-                fprintf(stderr, "-o needs an extra parameter specifying the filename and optional format\n");
+                std::fprintf(stderr, "-o needs an extra parameter specifying the filename and optional format\n");
                 exit(1);
             }
             ++i;
             // Do we have the old or new style -o option?
             char *filename = new char[strlen(argv[i])+1];
             char *format = new char[strlen(argv[i])+1];
-            if (sscanf(argv[i], "%[^,],%s", filename, format) == 1) {
+            if (std::sscanf(argv[i], "%[^,],%s", filename, format) == 1) {
                 // Old-style
                 logFilename = argv[i];
             } else {
@@ -793,18 +789,18 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
                 else if (strcmp(format, "junitxml") == 0)
                     logFormat = QTestLog::JUnitXML;
                 else if (strcmp(format, "xunitxml") == 0) {
-                    fprintf(stderr, "WARNING: xunitxml is deprecated. Please use junitxml.\n");
+                    std::fprintf(stderr, "WARNING: xunitxml is deprecated. Please use junitxml.\n");
                     logFormat = QTestLog::JUnitXML;
                 } else if (strcmp(format, "teamcity") == 0)
                     logFormat = QTestLog::TeamCity;
                 else if (strcmp(format, "tap") == 0)
                     logFormat = QTestLog::TAP;
                 else {
-                    fprintf(stderr, "output format must be one of txt, csv, lightxml, xml, tap, teamcity or junitxml\n");
+                    std::fprintf(stderr, "output format must be one of txt, csv, lightxml, xml, tap, teamcity or junitxml\n");
                     exit(1);
                 }
                 if (strcmp(filename, "-") == 0 && QTestLog::loggerUsingStdout()) {
-                    fprintf(stderr, "only one logger can log to stdout\n");
+                    std::fprintf(stderr, "only one logger can log to stdout\n");
                     exit(1);
                 }
                 QTestLog::addLogger(QTestLog::LogMode(logFormat), filename);
@@ -813,35 +809,35 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
             delete [] format;
         } else if (strcmp(argv[i], "-eventdelay") == 0) {
             if (i + 1 >= argc) {
-                fprintf(stderr, "-eventdelay needs an extra parameter to indicate the delay(ms)\n");
+                std::fprintf(stderr, "-eventdelay needs an extra parameter to indicate the delay(ms)\n");
                 exit(1);
             } else {
                 QTest::eventDelay = qToInt(argv[++i]);
             }
         } else if (strcmp(argv[i], "-keydelay") == 0) {
             if (i + 1 >= argc) {
-                fprintf(stderr, "-keydelay needs an extra parameter to indicate the delay(ms)\n");
+                std::fprintf(stderr, "-keydelay needs an extra parameter to indicate the delay(ms)\n");
                 exit(1);
             } else {
                 QTest::keyDelay = qToInt(argv[++i]);
             }
         } else if (strcmp(argv[i], "-mousedelay") == 0) {
             if (i + 1 >= argc) {
-                fprintf(stderr, "-mousedelay needs an extra parameter to indicate the delay(ms)\n");
+                std::fprintf(stderr, "-mousedelay needs an extra parameter to indicate the delay(ms)\n");
                 exit(1);
             } else {
                 QTest::mouseDelay = qToInt(argv[++i]);
             }
         } else if (strcmp(argv[i], "-maxwarnings") == 0) {
             if (i + 1 >= argc) {
-                fprintf(stderr, "-maxwarnings needs an extra parameter with the amount of warnings\n");
+                std::fprintf(stderr, "-maxwarnings needs an extra parameter with the amount of warnings\n");
                 exit(1);
             } else {
                 QTestLog::setMaxWarnings(qToInt(argv[++i]));
             }
         } else if (strcmp(argv[i], "-repeat") == 0) {
             if (i + 1 >= argc) {
-                fprintf(stderr, "-repeat needs an extra parameter for the number of repetitions\n");
+                std::fprintf(stderr, "-repeat needs an extra parameter for the number of repetitions\n");
                 exit(1);
             } else {
                 repetitions = qToInt(argv[++i]);
@@ -862,17 +858,17 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
 #if QT_CONFIG(valgrind)
         } else if (strcmp(argv[i], "-callgrind") == 0) {
             if (!QBenchmarkValgrindUtils::haveValgrind()) {
-                fprintf(stderr,
-                        "WARNING: Valgrind not found or too old. "
-                        "Make sure it is installed and in your path. "
-                        "Using the walltime measurer.\n");
+                std::fprintf(stderr,
+                             "WARNING: Valgrind not found or too old. "
+                             "Make sure it is installed and in your path. "
+                             "Using the walltime measurer.\n");
             } else if (QFileInfo(QDir::currentPath()).isWritable()) {
                 QBenchmarkGlobalData::current->setMode(
                     QBenchmarkGlobalData::CallgrindParentProcess);
             } else {
-                fprintf(stderr,
-                        "WARNING: Current directory not writable. "
-                        "Using the walltime measurer.\n");
+                std::fprintf(stderr,
+                             "WARNING: Current directory not writable. "
+                             "Using the walltime measurer.\n");
             }
         } else if (strcmp(argv[i], "-callgrindchild") == 0) { // "private" option
             QBenchmarkGlobalData::current->setMode(QBenchmarkGlobalData::CallgrindChildProcess);
@@ -885,11 +881,11 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
                 // perf available
                 QBenchmarkGlobalData::current->setMode(QBenchmarkGlobalData::PerfCounter);
             } else {
-                fprintf(stderr, "WARNING: Linux perf events not available. Using the walltime measurer.\n");
+                std::fprintf(stderr, "WARNING: Linux perf events not available. Using the walltime measurer.\n");
             }
         } else if (strcmp(argv[i], "-perfcounter") == 0) {
             if (i + 1 >= argc) {
-                fprintf(stderr, "-perfcounter needs an extra parameter with the name of the counter\n");
+                std::fprintf(stderr, "-perfcounter needs an extra parameter with the name of the counter\n");
                 exit(1);
             } else {
                 QBenchmarkPerfEventsMeasurer::setCounter(argv[++i]);
@@ -906,28 +902,28 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
             QBenchmarkGlobalData::current->setMode(QBenchmarkGlobalData::EventCounter);
         } else if (strcmp(argv[i], "-minimumvalue") == 0) {
             if (i + 1 >= argc) {
-                fprintf(stderr, "-minimumvalue needs an extra parameter to indicate the minimum time(ms)\n");
+                std::fprintf(stderr, "-minimumvalue needs an extra parameter to indicate the minimum time(ms)\n");
                 exit(1);
             } else {
                 QBenchmarkGlobalData::current->walltimeMinimum = qToInt(argv[++i]);
             }
         } else if (strcmp(argv[i], "-minimumtotal") == 0) {
             if (i + 1 >= argc) {
-                fprintf(stderr, "-minimumtotal needs an extra parameter to indicate the minimum total measurement\n");
+                std::fprintf(stderr, "-minimumtotal needs an extra parameter to indicate the minimum total measurement\n");
                 exit(1);
             } else {
                 QBenchmarkGlobalData::current->minimumTotal = qToInt(argv[++i]);
             }
         } else if (strcmp(argv[i], "-iterations") == 0) {
             if (i + 1 >= argc) {
-                fprintf(stderr, "-iterations needs an extra parameter to indicate the number of iterations\n");
+                std::fprintf(stderr, "-iterations needs an extra parameter to indicate the number of iterations\n");
                 exit(1);
             } else {
                 QBenchmarkGlobalData::current->iterationCount = qToInt(argv[++i]);
             }
         } else if (strcmp(argv[i], "-median") == 0) {
             if (i + 1 >= argc) {
-                fprintf(stderr, "-median needs an extra parameter to indicate the number of median iterations\n");
+                std::fprintf(stderr, "-median needs an extra parameter to indicate the number of median iterations\n");
                 exit(1);
             } else {
                 QBenchmarkGlobalData::current->medianIterationCount = qToInt(argv[++i]);
@@ -946,17 +942,16 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
 # endif
 #endif
         } else if (argv[i][0] == '-') {
-            fprintf(stderr, "Unknown option: '%s'\n\n%s", argv[i], testOptions);
+            std::fprintf(stderr, "Unknown option: '%s'\n\n%s", argv[i], testOptions);
             if (qml) {
-                fprintf(stderr, "\nqmltest related options:\n"
-                                " -import    : Specify an import directory.\n"
-                                " -plugins   : Specify a directory where to search for plugins.\n"
-                                " -input     : Specify the root directory for test cases.\n"
-                       );
+                std::fprintf(stderr, "\nqmltest related options:\n"
+                                     " -import    : Specify an import directory.\n"
+                                     " -plugins   : Specify a directory where to search for plugins.\n"
+                                     " -input     : Specify the root directory for test cases.\n");
             }
 
-            fprintf(stderr, "\n"
-                            " -help      : This help\n");
+            std::fprintf(stderr, "\n"
+                                 " -help      : This help\n");
             exit(1);
         } else {
             // We can't check the availability of test functions until
@@ -1012,7 +1007,7 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
         QTestLog::addLogger(QTestLog::Plain, logFilename);
 
     if (repetitions != 1 && !QTestLog::isRepeatSupported()) {
-        fprintf(stderr, "-repeat is only supported with plain text logger\n");
+        std::fprintf(stderr, "-repeat is only supported with plain text logger\n");
         exit(1);
     }
 }
@@ -1254,7 +1249,7 @@ public:
             case TestFunctionStart:
             case TestFunctionEnd:
                 if (Q_UNLIKELY(!waitFor(locker, e))) {
-                    fflush(stderr);
+                    std::fflush(stderr);
                     CrashHandler::printTestRunTime();
                     CrashHandler::generateStackTrace();
                     qFatal("Test function timed out");
@@ -1284,21 +1279,21 @@ public:
 static void printUnknownDataTagError(QLatin1StringView name, QLatin1StringView tag,
                                      const QTestTable &lTable, const QTestTable &gTable)
 {
-    fprintf(stderr, "Unknown testdata for function %s(): '%s'\n", name.constData(), tag.data());
+    std::fprintf(stderr, "Unknown testdata for function %s(): '%s'\n", name.constData(), tag.data());
     const int localDataCount = lTable.dataCount();
     if (localDataCount) {
-        fputs("Available test-specific data tags:\n", stderr);
+        std::fputs("Available test-specific data tags:\n", stderr);
         for (int i = 0; i < localDataCount; ++i)
-            fprintf(stderr, "\t%s\n", lTable.testData(i)->dataTag());
+            std::fprintf(stderr, "\t%s\n", lTable.testData(i)->dataTag());
     }
     const int globalDataCount = gTable.dataCount();
     if (globalDataCount) {
-        fputs("Available global data tags:\n", stderr);
+        std::fputs("Available global data tags:\n", stderr);
         for (int i = 0; i < globalDataCount; ++i)
-            fprintf(stderr, "\t%s\n", gTable.testData(i)->dataTag());
+            std::fprintf(stderr, "\t%s\n", gTable.testData(i)->dataTag());
     }
     if (localDataCount == 0 && globalDataCount == 0)
-        fputs("Function has no data tags\n", stderr);
+        std::fputs("Function has no data tags\n", stderr);
 }
 
 /*!
@@ -1926,9 +1921,9 @@ int QTest::qRun()
             if (m.isValid() && isValidSlot(m)) {
                 commandLineMethods.push_back(m);
             } else {
-                fprintf(stderr, "Unknown test function: '%s'.", tfB.constData());
+                std::fprintf(stderr, "Unknown test function: '%s'.", tfB.constData());
                 if (!qPrintTestSlots(stderr, tfB.constData(), " Possible matches:\n"))
-                    fputc('\n', stderr);
+                    std::fputc('\n', stderr);
                 QTestResult::setCurrentTestFunction(tfB.constData());
                 QTestResult::addFailure(qPrintable("Function not found: %1"_L1.arg(tf)));
                 QTestResult::finishedCurrentTestFunction();
@@ -1939,8 +1934,8 @@ int QTest::qRun()
         }
         if (seenBad) {
             // Provide relevant help to do better next time:
-            fprintf(stderr, "\n%s -functions\nlists all available test functions.\n\n",
-                    QTestResult::currentAppName());
+            std::fprintf(stderr, "\n%s -functions\nlists all available test functions.\n\n",
+                                 QTestResult::currentAppName());
             if (commandLineMethods.empty()) // All requested functions missing.
                 return 1;
         }
