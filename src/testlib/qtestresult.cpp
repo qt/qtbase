@@ -367,6 +367,17 @@ void formatFailMessage(char *msg, size_t maxMsgLen,
     }
 }
 
+const char *
+QTest::Internal::formatPropertyTestHelperFailure(char *msg, size_t maxMsgLen,
+                                                 const char *actual, const char *expected,
+                                                 const char *actualExpr, const char *expectedExpr)
+{
+    formatFailMessage(msg, maxMsgLen, "\nComparison failed!", // ### why leading \n?
+                      actual, expected, actualExpr, expectedExpr,
+                      QTest::ComparisonOperation::CustomCompare);
+    return msg;
+}
+
 // Format failures using the toString() template
 template <class Actual, class Expected>
 void formatFailMessage(char *msg, size_t maxMsgLen,
