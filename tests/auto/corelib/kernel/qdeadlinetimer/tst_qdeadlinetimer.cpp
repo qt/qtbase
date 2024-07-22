@@ -9,6 +9,9 @@
 #include <QTimer>
 
 #include <chrono>
+#include <cmath>
+#include <cstdio>
+
 #include <inttypes.h>
 
 static const int minResolution = 400; // the minimum resolution for the tests
@@ -22,9 +25,10 @@ template<> char *toString(const QDeadlineTimer &dt)
 
     qint64 deadline = dt.deadlineNSecs();
     char *buf = new char[256];
-    qsnprintf(buf, 256, "%lld.%09d%s",
-              deadline / 1000 / 1000 / 1000, qAbs(deadline) % (1000 * 1000 * 1000),
-              dt.hasExpired() ? " (expired)" : "");
+    std::snprintf(buf, 256, "%lld.%09lld%s",
+                  deadline / 1000 / 1000 / 1000,
+                  std::abs(deadline) % (1000 * 1000 * 1000),
+                  dt.hasExpired() ? " (expired)" : "");
     return buf;
 }
 }
