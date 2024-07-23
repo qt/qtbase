@@ -1,8 +1,6 @@
-// Copyright (C) 2022 The Qt Company Ltd.
+// Copyright (C) 2024 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 #include "qtestblacklist_p.h"
-#include "qtestresult_p.h"
-
 #include <QtTest/qtestcase.h>
 #include <QtCore/qbytearray.h>
 #include <QtCore/qfile.h>
@@ -246,7 +244,7 @@ namespace QTestPrivate {
 
 void parseBlackList()
 {
-    QString filename = QTest::qFindTestData(QStringLiteral("BLACKLIST"));
+    const QString filename = QTest::qFindTestData(QStringLiteral("BLACKLIST"));
     if (filename.isEmpty())
         return;
     QFile ignored(filename);
@@ -267,7 +265,7 @@ void parseBlackList()
             function = line.mid(1, line.size() - 2);
             continue;
         }
-        bool condition = checkCondition(line);
+        const bool condition = checkCondition(line);
         if (condition) {
             if (!function.size()) {
                 ignoreAll = true;
