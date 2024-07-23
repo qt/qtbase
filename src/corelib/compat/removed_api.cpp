@@ -756,6 +756,7 @@ void QJniObject::callVoidMethodV(JNIEnv *env, jmethodID id, va_list args) const
 
 #include "qlocale.h"
 #include "qlist.h"
+#include "qstringlist.h"
 
 QStringList QLocale::uiLanguages() const
 {
