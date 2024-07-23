@@ -271,23 +271,8 @@ public:
 
     bool compare(const T *begin1, const T *begin2, size_t n) const
     {
-        // only use memcmp for fundamental types or pointers.
-        // Other types could have padding in the data structure or custom comparison
-        // operators that would break the comparison using memcmp
-        if constexpr (QArrayDataPointer<T>::pass_parameter_by_value) {
-            return ::memcmp(begin1, begin2, n * sizeof(T)) == 0;
-        } else {
-            const T *end1 = begin1 + n;
-            while (begin1 != end1) {
-                if (*begin1 == *begin2) {
-                    ++begin1;
-                    ++begin2;
-                } else {
-                    return false;
-                }
-            }
-            return true;
-        }
+        const T *end1 = begin1 + n;
+        return std::equal(begin1, end1, begin2);
     }
 
     void reallocate(qsizetype alloc, QArrayData::AllocationOption option)
@@ -664,15 +649,7 @@ public:
     bool compare(const T *begin1, const T *begin2, size_t n) const
     {
         const T *end1 = begin1 + n;
-        while (begin1 != end1) {
-            if (*begin1 == *begin2) {
-                ++begin1;
-                ++begin2;
-            } else {
-                return false;
-            }
-        }
-        return true;
+        return std::equal(begin1, end1, begin2);
     }
 };
 
