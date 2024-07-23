@@ -78,6 +78,11 @@
 
     To interact with running tasks using signals and slots, use QFutureWatcher.
 
+    \note Some APIs (see \l {QtConcurrent::run()} allow scheduling the computation
+    to a specific thread pool. However, QFuture implements a work-stealing
+    algorithm to prevent deadlocks and optimize thread usage. As a result, computations
+    can be executed directly in the thread which requests the QFuture's result.
+
     \sa QFutureWatcher, {Qt Concurrent}
 */
 

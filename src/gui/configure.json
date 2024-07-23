@@ -1096,6 +1096,33 @@
             "pkg-config-variable": "prefix",
             "value": "/usr",
             "log": "value"
+        },
+        "harfbuzz-ng": {
+            "label": "Harfbuzz NG",
+            "type": "compile",
+            "test": {
+                "head": [
+                    "#ifdef __APPLE__",
+                    "  #include <AvailabilityMacros.h>",
+                    "#endif",
+                    "#include <stdio.h>"
+                ],
+                "main": [
+                    "// Harfbuzz-NG disabled on certain platforms where newer versions do not",
+                    "// compile. This list is not exhaustive and only based on experimentation.",
+                    "#ifdef _MSC_VER",
+                    "  printf(\"        msc ver: %d       \", _MSC_VER);",
+                    "#endif",
+                    "#if defined(__QNX__) \\",
+                    "  || (defined(MAC_OS_X_VERSION_10_6) && !defined(MAC_OS_X_VERSION_10_15)) \\",
+                    "  || (defined(_MSC_VER) && _MSC_VER <= 1900) \\",
+                    "  || (defined(__INTEGRITY) && __INTEGRITY_MAJOR_VERSION <= 11) \\",
+                    "  || (defined(__ICC) && __ICC <= 1910) \\",
+                    "  || (defined(WINAPI_FAMILY_PHONE_APP) && WINAPI_FAMILY==WINAPI_FAMILY_PHONE_APP)",
+                    "#  error Harfbuzz-NG cannot be used on this platform",
+                    "#endif"
+                ]
+            }
         }
      },
 
@@ -1223,6 +1250,7 @@
         },
         "harfbuzz": {
             "label": "HarfBuzz",
+            "condition": "tests.harfbuzz-ng || (!config.darwin && !config.win32 && libs.harfbuzz) || (input.harfbuzz == 'system')",
             "output": [ "privateFeature", "feature" ]
         },
         "system-harfbuzz": {

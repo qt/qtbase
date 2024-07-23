@@ -181,7 +181,6 @@ bool QHostInfoResult::event(QEvent *event)
         // we didn't have a context object, or it's still alive
         if (!withContextObject || receiver)
             slotObj->call(const_cast<QObject*>(receiver.data()), args);
-        slotObj->destroyIfLastRef();
 
         deleteLater();
         return true;
@@ -801,6 +800,8 @@ int QHostInfoPrivate::lookupHostImpl(const QString &name,
 
     if (!QAbstractEventDispatcher::instance(QThread::currentThread())) {
         qWarning("QHostInfo::lookupHost() called with no event dispatcher");
+        if (slotObj)
+            slotObj->destroyIfLastRef();
         return -1;
     }
 
@@ -847,6 +848,8 @@ int QHostInfoPrivate::lookupHostImpl(const QString &name,
             QObject::connect(&runnable->resultEmitter, SIGNAL(resultsReady(QHostInfo)),
                                 receiver, member, Qt::QueuedConnection);
         manager->scheduleLookup(runnable);
+    } else if (slotObj) {
+        slotObj->destroyIfLastRef();
     }
     return id;
 }

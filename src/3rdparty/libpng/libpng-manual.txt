@@ -1,6 +1,6 @@
 libpng-manual.txt - A description on how to use and modify libpng
 
- Copyright (c) 2018-2022 Cosmin Truta
+ Copyright (c) 2018-2023 Cosmin Truta
  Copyright (c) 1998-2018 Glenn Randers-Pehrson
 
  This document is released under the libpng license.
@@ -9,9 +9,9 @@ libpng-manual.txt - A description on how to use and modify libpng
 
  Based on:
 
- libpng version 1.6.36, December 2018, through 1.6.39 - November 2022
+ libpng version 1.6.36, December 2018, through 1.6.40 - June 2023
  Updated and distributed by Cosmin Truta
- Copyright (c) 2018-2022 Cosmin Truta
+ Copyright (c) 2018-2023 Cosmin Truta
 
  libpng versions 0.97, January 1998, through 1.6.35 - July 2018
  Updated and distributed by Glenn Randers-Pehrson

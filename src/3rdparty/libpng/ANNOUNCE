@@ -1,5 +1,5 @@
-libpng 1.6.39 - November 20, 2022
-=================================
+libpng 1.6.40 - June 21, 2023
+=============================
 
 This is a public release of libpng, intended for use in production code.
 
@@ -9,13 +9,13 @@ Files available for download
 
 Source files with LF line endings (for Unix/Linux):
 
- * libpng-1.6.39.tar.xz (LZMA-compressed, recommended)
- * libpng-1.6.39.tar.gz
+ * libpng-1.6.40.tar.xz (LZMA-compressed, recommended)
+ * libpng-1.6.40.tar.gz
 
 Source files with CRLF line endings (for Windows):
 
- * lpng1639.7z (LZMA-compressed, recommended)
- * lpng1639.zip
+ * lpng1640.7z (LZMA-compressed, recommended)
+ * lpng1640.zip
 
 Other information:
 
@@ -25,19 +25,15 @@ Other information:
  * TRADEMARK.md
 
 
-Changes from version 1.6.38 to version 1.6.39
+Changes from version 1.6.39 to version 1.6.40
 ---------------------------------------------
 
- * Changed the error handler of oversized chunks (i.e. larger than
-   PNG_USER_CHUNK_MALLOC_MAX) from png_chunk_error to png_benign_error.
- * Fixed a buffer overflow error in contrib/tools/pngfix.
- * Fixed a memory leak (CVE-2019-6129) in contrib/tools/pngcp.
- * Disabled the ARM Neon optimizations by default in the CMake file,
-   following the default behavior of the configure script.
- * Allowed configure.ac to work with the trunk version of autoconf.
- * Removed the support for "install" targets from the legacy makefiles;
-   removed the obsolete makefile.cegcc.
- * Cleaned up the code and updated the internal documentation.
+ * Fixed the eXIf chunk multiplicity checks.
+ * Fixed a memory leak in pCAL processing.
+ * Corrected the validity report about tRNS inside png_get_valid().
+ * Fixed various build issues on *BSD, Mac and Windows.
+ * Updated the configurations and the scripts for continuous integration.
+ * Cleaned up the code, the build scripts, and the documentation.
 
 
 Send comments/corrections/commendations to png-mng-implement at lists.sf.net.

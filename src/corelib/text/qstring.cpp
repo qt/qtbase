@@ -5737,6 +5737,8 @@ QString QString::simplified_helper(const QString &str)
 
 QString QString::simplified_helper(QString &str)
 {
+    if (IS_RAW_DATA(str.d)) // Force a copy, even if not shared:
+        return QStringAlgorithms<const QString>::simplified_helper(str);
     return QStringAlgorithms<QString>::simplified_helper(str);
 }
 

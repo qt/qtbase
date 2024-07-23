@@ -55,7 +55,6 @@
 #include <qpa/qplatformcursor.h>
 #include <qpa/qplatformscreen.h>
 #include <QtGui/QMatrix4x4>
-#include <QtGui/QOpenGLFunctions>
 #include <QtGui/QOpenGLShaderProgram>
 #include <QtGui/private/qinputdevicemanager_p.h>
 
@@ -94,7 +93,6 @@ struct QEglFSCursorData {
 };
 
 class Q_EGLFS_EXPORT QEglFSCursor : public QPlatformCursor
-                                  , protected QOpenGLFunctions
 {
     Q_OBJECT
 public:

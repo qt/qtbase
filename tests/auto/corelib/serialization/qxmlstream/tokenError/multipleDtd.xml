@@ -1,0 +1,20 @@
+<!DOCTYPE TEST [
+   <!ELEMENT TESTATTRIBUTE (CASE+)>
+   <!ELEMENT CASE (CLASS, FUNCTION, DATASET, COMMENTS)>
+   <!ELEMENT CLASS (#PCDATA)>
+
+   <!-- adding random ENTITY statements, as this is typical DTD content -->
+   <!ENTITY iff "&hArr;">
+
+   <!ATTLIST CASE CLASS CDATA #REQUIRED>
+]>
+<!-- invalid second DTD follows -->
+<!DOCTYPE SECOND [
+   <!ELEMENT SECONDATTRIBUTE (#PCDATA)>
+   <!ENTITY on "&#8728;">
+]>
+<TEST>
+  <CASE>
+    <CLASS>tst_QXmlStream</CLASS>
+  </CASE>
+</TEST>

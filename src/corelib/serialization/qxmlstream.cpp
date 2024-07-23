@@ -160,7 +160,7 @@ enum { StreamEOF = ~0U };
     addData() or by waiting for it to arrive on the device().
 
     \value UnexpectedElementError The parser encountered an element
-    that was different to those it expected.
+    or token that was different to those it expected.
 
 */
 
@@ -295,13 +295,34 @@ QXmlStreamEntityResolver *QXmlStreamReader::entityResolver() const
 
   QXmlStreamReader is a well-formed XML 1.0 parser that does \e not
   include external parsed entities. As long as no error occurs, the
-  application code can thus be assured that the data provided by the
-  stream reader satisfies the W3C's criteria for well-formed XML. For
-  example, you can be certain that all tags are indeed nested and
-  closed properly, that references to internal entities have been
-  replaced with the correct replacement text, and that attributes have
-  been normalized or added according to the internal subset of the
-  DTD.
+  application code can thus be assured, that
+  \list
+  \li the data provided by the stream reader satisfies the W3C's
+      criteria for well-formed XML,
+  \li tokens are provided in a valid order.
+  \endlist
+
+  Unless QXmlStreamReader raises an error, it guarantees the following:
+  \list
+  \li All tags are nested and closed properly.
+  \li References to internal entities have been replaced with the
+      correct replacement text.
+  \li Attributes have been normalized or added according to the
+      internal subset of the \l DTD.
+  \li Tokens of type \l StartDocument happen before all others,
+      aside from comments and processing instructions.
+  \li At most one DOCTYPE element (a token of type \l DTD) is present.
+  \li If present, the DOCTYPE appears before all other elements,
+      aside from StartDocument, comments and processing instructions.
+  \endlist
+
+  In particular, once any token of type \l StartElement, \l EndElement,
+  \l Characters, \l EntityReference or \l EndDocument is seen, no
+  tokens of type StartDocument or DTD will be seen. If one is present in
+  the input stream, out of order, an error is raised.
+
+  \note The token types \l Comment and \l ProcessingInstruction may appear
+  anywhere in the stream.
 
   If an error occurs while parsing, atEnd() and hasError() return
   true, and error() returns the error that occurred. The functions
@@ -620,6 +641,7 @@ QXmlStreamReader::TokenType QXmlStreamReader::readNext()
         d->token = -1;
         return readNext();
     }
+    d->checkToken();
     return d->type;
 }
 
@@ -740,6 +762,14 @@ static const short QXmlStreamReader_tokenTypeString_indices[] = {
 };
 
 
+static const char QXmlStreamReader_XmlContextString[] =
+    "Prolog\0"
+    "Body\0";
+
+static const short QXmlStreamReader_XmlContextString_indices[] = {
+    0, 7
+};
+
 /*!
     \property  QXmlStreamReader::namespaceProcessing
     The namespace-processing flag of the stream reader
@@ -773,6 +803,16 @@ QString QXmlStreamReader::tokenString() const
     Q_D(const QXmlStreamReader);
     return QLatin1String(QXmlStreamReader_tokenTypeString_string +
                          QXmlStreamReader_tokenTypeString_indices[d->type]);
+}
+
+/*!
+   \internal
+   \return \param ctxt (Prolog/Body) as a string.
+ */
+QString contextString(QXmlStreamReaderPrivate::XmlContext ctxt)
+{
+    return QLatin1String(QXmlStreamReader_XmlContextString +
+                         QXmlStreamReader_XmlContextString_indices[static_cast<int>(ctxt)]);
 }
 
 #endif // QT_NO_XMLSTREAMREADER
@@ -866,6 +906,8 @@ void QXmlStreamReaderPrivate::init()
 
     type = QXmlStreamReader::NoToken;
     error = QXmlStreamReader::NoError;
+    currentContext = XmlContext::Prolog;
+    foundDTD = false;
 }
 
 /*
@@ -1302,15 +1344,18 @@ inline int QXmlStreamReaderPrivate::fastScanContentCharList()
     return n;
 }
 
-inline int QXmlStreamReaderPrivate::fastScanName(int *prefix)
+// Fast scan an XML attribute name (e.g. "xml:lang").
+inline QXmlStreamReaderPrivate::FastScanNameResult
+QXmlStreamReaderPrivate::fastScanName(Value *val)
 {
     int n = 0;
     uint c;
     while ((c = getChar()) != StreamEOF) {
         if (n >= 4096) {
             // This is too long to be a sensible name, and
-            // can exhaust memory
-            return 0;
+            // can exhaust memory, or the range of decltype(*prefix)
+            raiseNamePrefixTooLongError();
+            return {};
         }
         switch (c) {
         case '\n':
@@ -1339,23 +1384,23 @@ inline int QXmlStreamReaderPrivate::fastScanName(int *prefix)
         case '+':
         case '*':
             putChar(c);
-            if (prefix && *prefix == n+1) {
-                *prefix = 0;
+            if (val && val->prefix == n + 1) {
+                val->prefix = 0;
                 putChar(':');
                 --n;
             }
-            return n;
+            return FastScanNameResult(n);
         case ':':
-            if (prefix) {
-                if (*prefix == 0) {
-                    *prefix = n+2;
+            if (val) {
+                if (val->prefix == 0) {
+                    val->prefix = n + 2;
                 } else { // only one colon allowed according to the namespace spec.
                     putChar(c);
-                    return n;
+                    return FastScanNameResult(n);
                 }
             } else {
                 putChar(c);
-                return n;
+                return FastScanNameResult(n);
             }
             Q_FALLTHROUGH();
         default:
@@ -1364,12 +1409,12 @@ inline int QXmlStreamReaderPrivate::fastScanName(int *prefix)
         }
     }
 
-    if (prefix)
-        *prefix = 0;
+    if (val)
+        val->prefix = 0;
     int pos = textBuffer.size() - n;
     putString(textBuffer, pos);
     textBuffer.resize(pos);
-    return 0;
+    return FastScanNameResult(0);
 }
 
 enum NameChar { NameBeginning, NameNotBeginning, NotName };
@@ -1876,6 +1921,14 @@ void QXmlStreamReaderPrivate::raiseError(QXmlStreamReader::Error error, const QS
 void QXmlStreamReaderPrivate::raiseWellFormedError(const QString &message)
 {
     raiseError(QXmlStreamReader::NotWellFormedError, message);
+}
+
+void QXmlStreamReaderPrivate::raiseNamePrefixTooLongError()
+{
+    // TODO: add a ImplementationLimitsExceededError and use it instead
+    raiseError(QXmlStreamReader::NotWellFormedError,
+               QXmlStream::tr("Length of XML attribute name exceeds implementation limits (4KiB "
+                              "characters)."));
 }
 
 void QXmlStreamReaderPrivate::parseError()
@@ -4047,6 +4100,92 @@ void QXmlStreamWriter::writeCurrentToken(const QXmlStreamReader &reader)
         Q_ASSERT(reader.tokenType() != QXmlStreamReader::Invalid);
         qWarning("QXmlStreamWriter: writeCurrentToken() with invalid state.");
         break;
+    }
+}
+
+static bool isTokenAllowedInContext(QXmlStreamReader::TokenType type,
+                                               QXmlStreamReaderPrivate::XmlContext loc)
+{
+    switch (type) {
+    case QXmlStreamReader::StartDocument:
+    case QXmlStreamReader::DTD:
+        return loc == QXmlStreamReaderPrivate::XmlContext::Prolog;
+
+    case QXmlStreamReader::StartElement:
+    case QXmlStreamReader::EndElement:
+    case QXmlStreamReader::Characters:
+    case QXmlStreamReader::EntityReference:
+    case QXmlStreamReader::EndDocument:
+        return loc == QXmlStreamReaderPrivate::XmlContext::Body;
+
+    case QXmlStreamReader::Comment:
+    case QXmlStreamReader::ProcessingInstruction:
+        return true;
+
+    case QXmlStreamReader::NoToken:
+    case QXmlStreamReader::Invalid:
+        return false;
+    default:
+        return false;
+    }
+}
+
+/*!
+   \internal
+   \brief QXmlStreamReader::isValidToken
+   \return \c true if \param type is a valid token type.
+   \return \c false if \param type is an unexpected token,
+   which indicates a non-well-formed or invalid XML stream.
+ */
+bool QXmlStreamReaderPrivate::isValidToken(QXmlStreamReader::TokenType type)
+{
+    // Don't change currentContext, if Invalid or NoToken occur in the prolog
+    if (type == QXmlStreamReader::Invalid || type == QXmlStreamReader::NoToken)
+        return false;
+
+    // If a token type gets rejected in the body, there is no recovery
+    const bool result = isTokenAllowedInContext(type, currentContext);
+    if (result || currentContext == XmlContext::Body)
+        return result;
+
+    // First non-Prolog token observed => switch context to body and check again.
+    currentContext = XmlContext::Body;
+    return isTokenAllowedInContext(type, currentContext);
+}
+
+/*!
+   \internal
+   Checks token type and raises an error, if it is invalid
+   in the current context (prolog/body).
+ */
+void QXmlStreamReaderPrivate::checkToken()
+{
+    Q_Q(QXmlStreamReader);
+
+    // The token type must be consumed, to keep track if the body has been reached.
+    const XmlContext context = currentContext;
+    const bool ok = isValidToken(type);
+
+    // Do nothing if an error has been raised already (going along with an unexpected token)
+    if (error != QXmlStreamReader::Error::NoError)
+        return;
+
+    if (!ok) {
+        raiseError(QXmlStreamReader::UnexpectedElementError,
+                   QLatin1String("Unexpected token type %1 in %2.")
+                   .arg(q->tokenString(), contextString(context)));
+        return;
+    }
+
+    if (type != QXmlStreamReader::DTD)
+        return;
+
+    // Raise error on multiple DTD tokens
+    if (foundDTD) {
+        raiseError(QXmlStreamReader::UnexpectedElementError,
+                   QLatin1String("Found second DTD token in %1.").arg(contextString(context)));
+    } else {
+        foundDTD = true;
     }
 }
 

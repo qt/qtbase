@@ -22,6 +22,9 @@
 *
 */
 
+#ifndef QHARFBUZZ_CONFIG_H
+#define QHARFBUZZ_CONFIG_H
+
 #include <QtCore/qatomic.h>
 
 QT_USE_NAMESPACE
@@ -37,11 +40,19 @@ inline QAtomicPointer<T> *makeAtomicPointer(T * const &ptr)
     return reinterpret_cast<QAtomicPointer<T> *>(const_cast<T **>(&ptr));
 }
 
+static inline void _hb_memory_barrier ()
+{
+    QAtomicInt a;
+    a.ref(); // Ordered memory semantics, so imposes a memory barrier at this point
+}
+
 } // namespace
 
 typedef int hb_atomic_int_impl_t;
 #define HB_ATOMIC_INT_IMPL_INIT(V)             (V)
-#define hb_atomic_int_impl_add(AI, V)          reinterpret_cast<QAtomicInt &>(AI).fetchAndAddOrdered(V)
+#define hb_atomic_int_impl_add(AI, V)          reinterpret_cast<QAtomicInt *>(AI)->fetchAndAddOrdered(V)
 
 #define hb_atomic_ptr_impl_get(P)              makeAtomicPointer(*(P))->loadAcquire()
 #define hb_atomic_ptr_impl_cmpexch(P,O,N)      makeAtomicPointer(*(P))->testAndSetOrdered((O), (N))
+
+#endif // QHARFBUZZ_CONFIG_H

@@ -26,33 +26,54 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#include "hb-private.hh"
+#include "hb.hh"
+#include "hb-machinery.hh"
 
-#include "hb-mutex-private.hh"
-#include "hb-object-private.hh"
 
-#include <locale.h>
-#ifdef HAVE_XLOCALE_H
-#include <xlocale.h>
-#endif
+/**
+ * SECTION:hb-common
+ * @title: hb-common
+ * @short_description: Common data types
+ * @include: hb.h
+ *
+ * Common data types used across HarfBuzz are defined here.
+ **/
 
 
 /* hb_options_t */
 
-hb_options_union_t _hb_options;
+hb_atomic_int_t _hb_options;
 
 void
-_hb_options_init (void)
+_hb_options_init ()
 {
   hb_options_union_t u;
   u.i = 0;
-  u.opts.initialized = 1;
+  u.opts.initialized = true;
 
-  char *c = getenv ("HB_OPTIONS");
-  u.opts.uniscribe_bug_compatible = c && strstr (c, "uniscribe-bug-compatible");
+  const char *c = getenv ("HB_OPTIONS");
+  if (c)
+  {
+    while (*c)
+    {
+      const char *p = strchr (c, ':');
+      if (!p)
+	p = c + strlen (c);
+
+#define OPTION(name, symbol) \
+	if (0 == strncmp (c, name, p - c) && strlen (name) == static_cast<size_t>(p - c)) do { u.opts.symbol = true; } while (0)
+
+      OPTION ("uniscribe-bug-compatible", uniscribe_bug_compatible);
+
+#undef OPTION
+
+      c = *p ? p + 1 : p;
+    }
+
+  }
 
   /* This is idempotent and threadsafe. */
-  _hb_options = u;
+  _hb_options = u.i;
 }
 
 
@@ -60,12 +81,15 @@ _hb_options_init (void)
 
 /**
  * hb_tag_from_string:
- * @str: (array length=len) (element-type uint8_t): 
- * @len: 
+ * @str: (array length=len) (element-type uint8_t): String to convert
+ * @len: Length of @str, or -1 if it is `NULL`-terminated
  *
- * 
+ * Converts a string into an #hb_tag_t. Valid tags
+ * are four characters. Shorter input strings will be
+ * padded with spaces. Longer input strings will be
+ * truncated.
  *
- * Return value: 
+ * Return value: The #hb_tag_t corresponding to @str
  *
  * Since: 0.9.2
  **/
@@ -90,10 +114,11 @@ hb_tag_from_string (const char *str, int len)
 
 /**
  * hb_tag_to_string:
- * @tag: 
- * @buf: (out caller-allocates) (array fixed-size=4) (element-type uint8_t): 
+ * @tag: #hb_tag_t to convert
+ * @buf: (out caller-allocates) (array fixed-size=4) (element-type uint8_t): Converted string
  *
- * 
+ * Converts an #hb_tag_t to a string and returns it in @buf.
+ * Strings will be four characters long.
  *
  * Since: 0.9.5
  **/
@@ -109,7 +134,7 @@ hb_tag_to_string (hb_tag_t tag, char *buf)
 
 /* hb_direction_t */
 
-const char direction_strings[][4] = {
+static const char direction_strings[][4] = {
   "ltr",
   "rtl",
   "ttb",
@@ -118,12 +143,17 @@ const char direction_strings[][4] = {
 
 /**
  * hb_direction_from_string:
- * @str: (array length=len) (element-type uint8_t): 
- * @len: 
+ * @str: (array length=len) (element-type uint8_t): String to convert
+ * @len: Length of @str, or -1 if it is `NULL`-terminated
  *
- * 
+ * Converts a string to an #hb_direction_t.
  *
- * Return value: 
+ * Matching is loose and applies only to the first letter. For
+ * examples, "LTR" and "left-to-right" will both return #HB_DIRECTION_LTR.
+ *
+ * Unmatched strings will return #HB_DIRECTION_INVALID.
+ *
+ * Return value: The #hb_direction_t matching @str
  *
  * Since: 0.9.2
  **/
@@ -146,11 +176,11 @@ hb_direction_from_string (const char *str, int len)
 
 /**
  * hb_direction_to_string:
- * @direction: 
+ * @direction: The #hb_direction_t to convert
  *
- * 
+ * Converts an #hb_direction_t to a string.
  *
- * Return value: (transfer none): 
+ * Return value: (transfer none): The string corresponding to @direction
  *
  * Since: 0.9.2
  **/
@@ -176,7 +206,7 @@ static const char canon_map[256] = {
    0,   0,   0,   0,   0,   0,   0,   0,    0,   0,   0,   0,   0,   0,   0,   0,
    0,   0,   0,   0,   0,   0,   0,   0,    0,   0,   0,   0,   0,  '-',  0,   0,
   '0', '1', '2', '3', '4', '5', '6', '7',  '8', '9',  0,   0,   0,   0,   0,   0,
-  '-', 'a', 'b', 'c', 'd', 'e', 'f', 'g',  'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
+   0,  'a', 'b', 'c', 'd', 'e', 'f', 'g',  'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
   'p', 'q', 'r', 's', 't', 'u', 'v', 'w',  'x', 'y', 'z',  0,   0,   0,   0,  '-',
    0,  'a', 'b', 'c', 'd', 'e', 'f', 'g',  'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
   'p', 'q', 'r', 's', 't', 'u', 'v', 'w',  'x', 'y', 'z',  0,   0,   0,   0,   0
@@ -219,20 +249,17 @@ struct hb_language_item_t {
   struct hb_language_item_t *next;
   hb_language_t lang;
 
-  inline bool operator == (const char *s) const {
-    return lang_equal (lang, s);
-  }
+  bool operator == (const char *s) const
+  { return lang_equal (lang, s); }
 
-  inline hb_language_item_t & operator = (const char *s) {
-    /* If a custom allocated is used calling strdup() pairs
-    badly with a call to the custom free() in finish() below.
-    Therefore don't call strdup(), implement its behavior.
-    */
+  hb_language_item_t & operator = (const char *s)
+  {
+    /* We can't call strdup(), because we allow custom allocators. */
     size_t len = strlen(s) + 1;
-    lang = (hb_language_t) malloc(len);
+    lang = (hb_language_t) hb_malloc(len);
     if (likely (lang))
     {
-      memcpy((unsigned char *) lang, s, len);
+      hb_memcpy((unsigned char *) lang, s, len);
       for (unsigned char *p = (unsigned char *) lang; *p; p++)
 	*p = canon_map[*p];
     }
@@ -240,59 +267,61 @@ struct hb_language_item_t {
     return *this;
   }
 
-  void finish (void) { free ((void *) lang); }
+  void fini () { hb_free ((void *) lang); }
 };
 
 
-/* Thread-safe lock-free language list */
+/* Thread-safe lockfree language list */
 
-static hb_language_item_t *langs;
+static hb_atomic_ptr_t <hb_language_item_t> langs;
 
-#ifdef HB_USE_ATEXIT
-static void
-free_langs (void)
+static inline void
+free_langs ()
 {
-  while (langs) {
-    hb_language_item_t *next = langs->next;
-    langs->finish ();
-    free (langs);
-    langs = next;
+retry:
+  hb_language_item_t *first_lang = langs;
+  if (unlikely (!langs.cmpexch (first_lang, nullptr)))
+    goto retry;
+
+  while (first_lang) {
+    hb_language_item_t *next = first_lang->next;
+    first_lang->fini ();
+    hb_free (first_lang);
+    first_lang = next;
   }
 }
-#endif
 
 static hb_language_item_t *
 lang_find_or_insert (const char *key)
 {
 retry:
-  hb_language_item_t *first_lang = (hb_language_item_t *) hb_atomic_ptr_get (&langs);
+  hb_language_item_t *first_lang = langs;
 
   for (hb_language_item_t *lang = first_lang; lang; lang = lang->next)
     if (*lang == key)
       return lang;
 
   /* Not found; allocate one. */
-  hb_language_item_t *lang = (hb_language_item_t *) calloc (1, sizeof (hb_language_item_t));
+  hb_language_item_t *lang = (hb_language_item_t *) hb_calloc (1, sizeof (hb_language_item_t));
   if (unlikely (!lang))
     return nullptr;
   lang->next = first_lang;
   *lang = key;
   if (unlikely (!lang->lang))
   {
-    free (lang);
+    hb_free (lang);
     return nullptr;
   }
 
-  if (!hb_atomic_ptr_cmpexch (&langs, first_lang, lang)) {
-    lang->finish ();
-    free (lang);
+  if (unlikely (!langs.cmpexch (first_lang, lang)))
+  {
+    lang->fini ();
+    hb_free (lang);
     goto retry;
   }
 
-#ifdef HB_USE_ATEXIT
   if (!first_lang)
-    atexit (free_langs); /* First person registers atexit() callback. */
-#endif
+    hb_atexit (free_langs); /* First person registers atexit() callback. */
 
   return lang;
 }
@@ -301,14 +330,14 @@ retry:
 /**
  * hb_language_from_string:
  * @str: (array length=len) (element-type uint8_t): a string representing
- *       ISO 639 language code
- * @len: length of the @str, or -1 if it is %NULL-terminated.
+ *       a BCP 47 language tag
+ * @len: length of the @str, or -1 if it is `NULL`-terminated.
  *
- * Converts @str representing an ISO 639 language code to the corresponding
+ * Converts @str representing a BCP 47 language tag to the corresponding
  * #hb_language_t.
  *
  * Return value: (transfer none):
- * The #hb_language_t corresponding to the ISO 639 language code.
+ * The #hb_language_t corresponding to the BCP 47 language tag.
  *
  * Since: 0.9.2
  **/
@@ -323,8 +352,8 @@ hb_language_from_string (const char *str, int len)
   {
     /* NUL-terminate it. */
     char strbuf[64];
-    len = MIN (len, (int) sizeof (strbuf) - 1);
-    memcpy (strbuf, str, len);
+    len = hb_min (len, (int) sizeof (strbuf) - 1);
+    hb_memcpy (strbuf, str, len);
     strbuf[len] = '\0';
     item = lang_find_or_insert (strbuf);
   }
@@ -336,12 +365,12 @@ hb_language_from_string (const char *str, int len)
 
 /**
  * hb_language_to_string:
- * @language: an #hb_language_t to convert.
+ * @language: The #hb_language_t to convert
  *
- * See hb_language_from_string().
+ * Converts an #hb_language_t to a string.
  *
  * Return value: (transfer none):
- * A %NULL-terminated string representing the @language. Must not be freed by
+ * A `NULL`-terminated string representing the @language. Must not be freed by
  * the caller.
  *
  * Since: 0.9.2
@@ -349,31 +378,73 @@ hb_language_from_string (const char *str, int len)
 const char *
 hb_language_to_string (hb_language_t language)
 {
-  /* This is actually nullptr-safe! */
+  if (unlikely (!language)) return nullptr;
+
   return language->s;
 }
 
 /**
  * hb_language_get_default:
  *
- * 
+ * Fetch the default language from current locale.
  *
- * Return value: (transfer none):
+ * <note>Note that the first time this function is called, it calls
+ * "setlocale (LC_CTYPE, nullptr)" to fetch current locale.  The underlying
+ * setlocale function is, in many implementations, NOT threadsafe.  To avoid
+ * problems, call this function once before multiple threads can call it.
+ * This function is only used from hb_buffer_guess_segment_properties() by
+ * HarfBuzz itself.</note>
+ *
+ * Return value: (transfer none): The default language of the locale as
+ * an #hb_language_t
  *
  * Since: 0.9.2
  **/
 hb_language_t
-hb_language_get_default (void)
+hb_language_get_default ()
 {
-  static hb_language_t default_language = HB_LANGUAGE_INVALID;
+  static hb_atomic_ptr_t <hb_language_t> default_language;
 
-  hb_language_t language = (hb_language_t) hb_atomic_ptr_get (&default_language);
-  if (unlikely (language == HB_LANGUAGE_INVALID)) {
-    language = hb_language_from_string (setlocale (LC_CTYPE, nullptr), -1);
-    (void) hb_atomic_ptr_cmpexch (&default_language, HB_LANGUAGE_INVALID, language);
+  hb_language_t language = default_language;
+  if (unlikely (language == HB_LANGUAGE_INVALID))
+  {
+    language = hb_language_from_string (hb_setlocale (LC_CTYPE, nullptr), -1);
+    (void) default_language.cmpexch (HB_LANGUAGE_INVALID, language);
   }
 
-  return default_language;
+  return language;
+}
+
+/**
+ * hb_language_matches:
+ * @language: The #hb_language_t to work on
+ * @specific: Another #hb_language_t
+ *
+ * Check whether a second language tag is the same or a more
+ * specific version of the provided language tag.  For example,
+ * "fa_IR.utf8" is a more specific tag for "fa" or for "fa_IR".
+ *
+ * Return value: `true` if languages match, `false` otherwise.
+ *
+ * Since: 5.0.0
+ **/
+hb_bool_t
+hb_language_matches (hb_language_t language,
+		     hb_language_t specific)
+{
+  if (language == specific) return true;
+  if (!language || !specific) return false;
+
+  const char *l = language->s;
+  const char *s = specific->s;
+  unsigned ll = strlen (l);
+  unsigned sl = strlen (s);
+
+  if (ll > sl)
+    return false;
+
+  return strncmp (l, s, ll) == 0 &&
+	 (s[ll] == '\0' || s[ll] == '-');
 }
 
 
@@ -381,12 +452,12 @@ hb_language_get_default (void)
 
 /**
  * hb_script_from_iso15924_tag:
- * @tag: an #hb_tag_t representing an ISO 15924 tag.
+ * @tag: an #hb_tag_t representing an ISO 15924 tag.
  *
- * Converts an ISO 15924 script tag to a corresponding #hb_script_t.
+ * Converts an ISO 15924 script tag to a corresponding #hb_script_t.
  *
- * Return value: 
- * An #hb_script_t corresponding to the ISO 15924 tag.
+ * Return value:
+ * An #hb_script_t corresponding to the ISO 15924 tag.
  *
  * Since: 0.9.2
  **/
@@ -407,8 +478,13 @@ hb_script_from_iso15924_tag (hb_tag_t tag)
     case HB_TAG('Q','a','a','i'): return HB_SCRIPT_INHERITED;
     case HB_TAG('Q','a','a','c'): return HB_SCRIPT_COPTIC;
 
-    /* Script variants from http://unicode.org/iso15924/ */
+    /* Script variants from https://unicode.org/iso15924/ */
+    case HB_TAG('A','r','a','n'): return HB_SCRIPT_ARABIC;
     case HB_TAG('C','y','r','s'): return HB_SCRIPT_CYRILLIC;
+    case HB_TAG('G','e','o','k'): return HB_SCRIPT_GEORGIAN;
+    case HB_TAG('H','a','n','s'): return HB_SCRIPT_HAN;
+    case HB_TAG('H','a','n','t'): return HB_SCRIPT_HAN;
+    case HB_TAG('J','a','m','o'): return HB_SCRIPT_HANGUL;
     case HB_TAG('L','a','t','f'): return HB_SCRIPT_LATIN;
     case HB_TAG('L','a','t','g'): return HB_SCRIPT_LATIN;
     case HB_TAG('S','y','r','e'): return HB_SCRIPT_SYRIAC;
@@ -427,15 +503,15 @@ hb_script_from_iso15924_tag (hb_tag_t tag)
 /**
  * hb_script_from_string:
  * @str: (array length=len) (element-type uint8_t): a string representing an
- *       ISO 15924 tag.
- * @len: length of the @str, or -1 if it is %NULL-terminated.
+ *       ISO 15924 tag.
+ * @len: length of the @str, or -1 if it is `NULL`-terminated.
  *
- * Converts a string @str representing an ISO 15924 script tag to a
+ * Converts a string @str representing an ISO 15924 script tag to a
  * corresponding #hb_script_t. Shorthand for hb_tag_from_string() then
  * hb_script_from_iso15924_tag().
  *
- * Return value: 
- * An #hb_script_t corresponding to the ISO 15924 tag.
+ * Return value:
+ * An #hb_script_t corresponding to the ISO 15924 tag.
  *
  * Since: 0.9.2
  **/
@@ -447,12 +523,12 @@ hb_script_from_string (const char *str, int len)
 
 /**
  * hb_script_to_iso15924_tag:
- * @script: an #hb_script_ to convert.
+ * @script: an #hb_script_t to convert.
  *
- * See hb_script_from_iso15924_tag().
+ * Converts an #hb_script_t to a corresponding ISO 15924 script tag.
  *
  * Return value:
- * An #hb_tag_t representing an ISO 15924 script tag.
+ * An #hb_tag_t representing an ISO 15924 script tag.
  *
  * Since: 0.9.2
  **/
@@ -464,18 +540,23 @@ hb_script_to_iso15924_tag (hb_script_t script)
 
 /**
  * hb_script_get_horizontal_direction:
- * @script: 
+ * @script: The #hb_script_t to query
  *
- * 
+ * Fetches the #hb_direction_t of a script when it is
+ * set horizontally. All right-to-left scripts will return
+ * #HB_DIRECTION_RTL. All left-to-right scripts will return
+ * #HB_DIRECTION_LTR.  Scripts that can be written either
+ * horizontally or vertically will return #HB_DIRECTION_INVALID.
+ * Unknown scripts will return #HB_DIRECTION_LTR.
  *
- * Return value: 
+ * Return value: The horizontal #hb_direction_t of @script
  *
  * Since: 0.9.2
  **/
 hb_direction_t
 hb_script_get_horizontal_direction (hb_script_t script)
 {
-  /* http://goo.gl/x9ilM */
+  /* https://docs.google.com/spreadsheets/d/1Y90M0Ie3MUJ6UVCRDOypOtijlMDLNNyyLk36T6iMu0o */
   switch ((hb_tag_t) script)
   {
     /* Unicode-1.1 additions */
@@ -524,57 +605,62 @@ hb_script_get_horizontal_direction (hb_script_t script)
     case HB_SCRIPT_PSALTER_PAHLAVI:
 
     /* Unicode-8.0 additions */
-    case HB_SCRIPT_OLD_HUNGARIAN:
+    case HB_SCRIPT_HATRAN:
 
     /* Unicode-9.0 additions */
     case HB_SCRIPT_ADLAM:
 
+    /* Unicode-11.0 additions */
+    case HB_SCRIPT_HANIFI_ROHINGYA:
+    case HB_SCRIPT_OLD_SOGDIAN:
+    case HB_SCRIPT_SOGDIAN:
+
+    /* Unicode-12.0 additions */
+    case HB_SCRIPT_ELYMAIC:
+
+    /* Unicode-13.0 additions */
+    case HB_SCRIPT_CHORASMIAN:
+    case HB_SCRIPT_YEZIDI:
+
+    /* Unicode-14.0 additions */
+    case HB_SCRIPT_OLD_UYGHUR:
+
       return HB_DIRECTION_RTL;
+
+
+    /* https://github.com/harfbuzz/harfbuzz/issues/1000 */
+    case HB_SCRIPT_OLD_HUNGARIAN:
+    case HB_SCRIPT_OLD_ITALIC:
+    case HB_SCRIPT_RUNIC:
+    case HB_SCRIPT_TIFINAGH:
+
+      return HB_DIRECTION_INVALID;
   }
 
   return HB_DIRECTION_LTR;
 }
 
 
-/* hb_user_data_array_t */
-
-bool
-hb_user_data_array_t::set (hb_user_data_key_t *key,
-			   void *              data,
-			   hb_destroy_func_t   destroy,
-			   hb_bool_t           replace)
-{
-  if (!key)
-    return false;
-
-  if (replace) {
-    if (!data && !destroy) {
-      items.remove (key, lock);
-      return true;
-    }
-  }
-  hb_user_data_item_t item = {key, data, destroy};
-  bool ret = !!items.replace_or_insert (item, lock, (bool) replace);
-
-  return ret;
-}
-
-void *
-hb_user_data_array_t::get (hb_user_data_key_t *key)
-{
-  hb_user_data_item_t item = {nullptr, nullptr, nullptr};
-
-  return items.find (key, &item, lock) ? item.data : nullptr;
-}
-
-
 /* hb_version */
+
+
+/**
+ * SECTION:hb-version
+ * @title: hb-version
+ * @short_description: Information about the version of HarfBuzz in use
+ * @include: hb.h
+ *
+ * These functions and macros allow accessing version of the HarfBuzz
+ * library used at compile- as well as run-time, and to direct code
+ * conditionally based on those versions, again, at compile- or run-time.
+ **/
+
 
 /**
  * hb_version:
- * @major: (out): Library major version component.
- * @minor: (out): Library minor version component.
- * @micro: (out): Library micro version component.
+ * @major: (out): Library major version component
+ * @minor: (out): Library minor version component
+ * @micro: (out): Library micro version component
  *
  * Returns library version as three integer components.
  *
@@ -595,25 +681,27 @@ hb_version (unsigned int *major,
  *
  * Returns library version as a string with three components.
  *
- * Return value: library version string.
+ * Return value: Library version string
  *
  * Since: 0.9.2
  **/
 const char *
-hb_version_string (void)
+hb_version_string ()
 {
   return HB_VERSION_STRING;
 }
 
 /**
  * hb_version_atleast:
- * @major: 
- * @minor: 
- * @micro: 
+ * @major: Library major version component
+ * @minor: Library minor version component
+ * @micro: Library micro version component
  *
- * 
+ * Tests the library version against a minimum value,
+ * as three integer components.
  *
- * Return value: 
+ * Return value: `true` if the library is equal to or greater than
+ * the test value, `false` otherwise
  *
  * Since: 0.9.30
  **/
@@ -652,125 +740,24 @@ parse_char (const char **pp, const char *end, char c)
 static bool
 parse_uint (const char **pp, const char *end, unsigned int *pv)
 {
-  char buf[32];
-  unsigned int len = MIN (ARRAY_LENGTH (buf) - 1, (unsigned int) (end - *pp));
-  strncpy (buf, *pp, len);
-  buf[len] = '\0';
-
-  char *p = buf;
-  char *pend = p;
-  unsigned int v;
-
-  /* Intentionally use strtol instead of strtoul, such that
-   * -1 turns into "big number"... */
-  errno = 0;
-  v = strtol (p, &pend, 0);
-  if (errno || p == pend)
-    return false;
+  /* Intentionally use hb_parse_int inside instead of hb_parse_uint,
+   * such that -1 turns into "big number"... */
+  int v;
+  if (unlikely (!hb_parse_int (pp, end, &v))) return false;
 
   *pv = v;
-  *pp += pend - p;
   return true;
 }
 
 static bool
 parse_uint32 (const char **pp, const char *end, uint32_t *pv)
 {
-  char buf[32];
-  unsigned int len = MIN (ARRAY_LENGTH (buf) - 1, (unsigned int) (end - *pp));
-  strncpy (buf, *pp, len);
-  buf[len] = '\0';
-
-  char *p = buf;
-  char *pend = p;
-  unsigned int v;
-
-  /* Intentionally use strtol instead of strtoul, such that
-   * -1 turns into "big number"... */
-  errno = 0;
-  v = strtol (p, &pend, 0);
-  if (errno || p == pend)
-    return false;
+  /* Intentionally use hb_parse_int inside instead of hb_parse_uint,
+   * such that -1 turns into "big number"... */
+  int v;
+  if (unlikely (!hb_parse_int (pp, end, &v))) return false;
 
   *pv = v;
-  *pp += pend - p;
-  return true;
-}
-
-#if defined (HAVE_NEWLOCALE) && defined (HAVE_STRTOD_L)
-#define USE_XLOCALE 1
-#define HB_LOCALE_T locale_t
-#define HB_CREATE_LOCALE(locName) newlocale (LC_ALL_MASK, locName, nullptr)
-#define HB_FREE_LOCALE(loc) freelocale (loc)
-#elif defined(_MSC_VER)
-#define USE_XLOCALE 1
-#define HB_LOCALE_T _locale_t
-#define HB_CREATE_LOCALE(locName) _create_locale (LC_ALL, locName)
-#define HB_FREE_LOCALE(loc) _free_locale (loc)
-#define strtod_l(a, b, c) _strtod_l ((a), (b), (c))
-#endif
-
-#ifdef USE_XLOCALE
-
-static HB_LOCALE_T C_locale;
-
-#ifdef HB_USE_ATEXIT
-static void
-free_C_locale (void)
-{
-  if (C_locale)
-    HB_FREE_LOCALE (C_locale);
-}
-#endif
-
-static HB_LOCALE_T
-get_C_locale (void)
-{
-retry:
-  HB_LOCALE_T C = (HB_LOCALE_T) hb_atomic_ptr_get (&C_locale);
-
-  if (unlikely (!C))
-  {
-    C = HB_CREATE_LOCALE ("C");
-
-    if (!hb_atomic_ptr_cmpexch (&C_locale, nullptr, C))
-    {
-      HB_FREE_LOCALE (C_locale);
-      goto retry;
-    }
-
-#ifdef HB_USE_ATEXIT
-    atexit (free_C_locale); /* First person registers atexit() callback. */
-#endif
-  }
-
-  return C;
-}
-#endif
-
-static bool
-parse_float (const char **pp, const char *end, float *pv)
-{
-  char buf[32];
-  unsigned int len = MIN (ARRAY_LENGTH (buf) - 1, (unsigned int) (end - *pp));
-  strncpy (buf, *pp, len);
-  buf[len] = '\0';
-
-  char *p = buf;
-  char *pend = p;
-  float v;
-
-  errno = 0;
-#ifdef USE_XLOCALE
-  v = strtod_l (p, &pend, get_C_locale ());
-#else
-  v = strtod (p, &pend);
-#endif
-  if (errno || p == pend)
-    return false;
-
-  *pv = v;
-  *pp += pend - p;
   return true;
 }
 
@@ -784,9 +771,14 @@ parse_bool (const char **pp, const char *end, uint32_t *pv)
     (*pp)++;
 
   /* CSS allows on/off as aliases 1/0. */
-  if (*pp - p == 2 && 0 == strncmp (p, "on", 2))
+  if (*pp - p == 2
+      && TOLOWER (p[0]) == 'o'
+      && TOLOWER (p[1]) == 'n')
     *pv = 1;
-  else if (*pp - p == 3 && 0 == strncmp (p, "off", 3))
+  else if (*pp - p == 3
+	   && TOLOWER (p[0]) == 'o'
+	   && TOLOWER (p[1]) == 'f'
+	   && TOLOWER (p[2]) == 'f')
     *pv = 0;
   else
     return false;
@@ -823,7 +815,7 @@ parse_tag (const char **pp, const char *end, hb_tag_t *tag)
   }
 
   const char *p = *pp;
-  while (*pp < end && ISALNUM(**pp))
+  while (*pp < end && (ISALNUM(**pp) || **pp == '_'))
     (*pp)++;
 
   if (p == *pp || *pp - p > 4)
@@ -852,15 +844,15 @@ parse_feature_indices (const char **pp, const char *end, hb_feature_t *feature)
 
   bool has_start;
 
-  feature->start = 0;
-  feature->end = (unsigned int) -1;
+  feature->start = HB_FEATURE_GLOBAL_START;
+  feature->end = HB_FEATURE_GLOBAL_END;
 
   if (!parse_char (pp, end, '['))
     return true;
 
   has_start = parse_uint (pp, end, &feature->start);
 
-  if (parse_char (pp, end, ':')) {
+  if (parse_char (pp, end, ':') || parse_char (pp, end, ';')) {
     parse_uint (pp, end, &feature->end);
   } else {
     if (has_start)
@@ -875,10 +867,10 @@ parse_feature_value_postfix (const char **pp, const char *end, hb_feature_t *fea
 {
   bool had_equal = parse_char (pp, end, '=');
   bool had_value = parse_uint32 (pp, end, &feature->value) ||
-                   parse_bool (pp, end, &feature->value);
+		   parse_bool (pp, end, &feature->value);
   /* CSS doesn't use equal-sign between tag and value.
    * If there was an equal-sign, then there *must* be a value.
-   * A value without an eqaul-sign is ok, but not required. */
+   * A value without an equal-sign is ok, but not required. */
   return !had_equal || had_value;
 }
 
@@ -896,15 +888,49 @@ parse_one_feature (const char **pp, const char *end, hb_feature_t *feature)
 /**
  * hb_feature_from_string:
  * @str: (array length=len) (element-type uint8_t): a string to parse
- * @len: length of @str, or -1 if string is %NULL terminated
+ * @len: length of @str, or -1 if string is `NULL` terminated
  * @feature: (out): the #hb_feature_t to initialize with the parsed values
  *
  * Parses a string into a #hb_feature_t.
  *
- * TODO: document the syntax here.
+ * The format for specifying feature strings follows. All valid CSS
+ * font-feature-settings values other than 'normal' and the global values are
+ * also accepted, though not documented below. CSS string escapes are not
+ * supported.
+ *
+ * The range indices refer to the positions between Unicode characters. The
+ * position before the first character is always 0.
+ *
+ * The format is Python-esque.  Here is how it all works:
+ *
+ * <informaltable pgwide='1' align='left' frame='none'>
+ * <tgroup cols='5'>
+ * <thead>
+ * <row><entry>Syntax</entry>    <entry>Value</entry> <entry>Start</entry> <entry>End</entry></row>
+ * </thead>
+ * <tbody>
+ * <row><entry>Setting value:</entry></row>
+ * <row><entry>kern</entry>      <entry>1</entry>     <entry>0</entry>      <entry>∞</entry>   <entry>Turn feature on</entry></row>
+ * <row><entry>+kern</entry>     <entry>1</entry>     <entry>0</entry>      <entry>∞</entry>   <entry>Turn feature on</entry></row>
+ * <row><entry>-kern</entry>     <entry>0</entry>     <entry>0</entry>      <entry>∞</entry>   <entry>Turn feature off</entry></row>
+ * <row><entry>kern=0</entry>    <entry>0</entry>     <entry>0</entry>      <entry>∞</entry>   <entry>Turn feature off</entry></row>
+ * <row><entry>kern=1</entry>    <entry>1</entry>     <entry>0</entry>      <entry>∞</entry>   <entry>Turn feature on</entry></row>
+ * <row><entry>aalt=2</entry>    <entry>2</entry>     <entry>0</entry>      <entry>∞</entry>   <entry>Choose 2nd alternate</entry></row>
+ * <row><entry>Setting index:</entry></row>
+ * <row><entry>kern[]</entry>    <entry>1</entry>     <entry>0</entry>      <entry>∞</entry>   <entry>Turn feature on</entry></row>
+ * <row><entry>kern[:]</entry>   <entry>1</entry>     <entry>0</entry>      <entry>∞</entry>   <entry>Turn feature on</entry></row>
+ * <row><entry>kern[5:]</entry>  <entry>1</entry>     <entry>5</entry>      <entry>∞</entry>   <entry>Turn feature on, partial</entry></row>
+ * <row><entry>kern[:5]</entry>  <entry>1</entry>     <entry>0</entry>      <entry>5</entry>   <entry>Turn feature on, partial</entry></row>
+ * <row><entry>kern[3:5]</entry> <entry>1</entry>     <entry>3</entry>      <entry>5</entry>   <entry>Turn feature on, range</entry></row>
+ * <row><entry>kern[3]</entry>   <entry>1</entry>     <entry>3</entry>      <entry>3+1</entry> <entry>Turn feature on, single char</entry></row>
+ * <row><entry>Mixing it all:</entry></row>
+ * <row><entry>aalt[3:5]=2</entry> <entry>2</entry>   <entry>3</entry>      <entry>5</entry>   <entry>Turn 2nd alternate on for range</entry></row>
+ * </tbody>
+ * </tgroup>
+ * </informaltable>
  *
  * Return value:
- * %true if @str is successfully parsed, %false otherwise.
+ * `true` if @str is successfully parsed, `false` otherwise
  *
  * Since: 0.9.5
  **/
@@ -925,7 +951,7 @@ hb_feature_from_string (const char *str, int len,
   }
 
   if (feature)
-    memset (feature, 0, sizeof (*feature));
+    hb_memset (feature, 0, sizeof (*feature));
   return false;
 }
 
@@ -935,7 +961,7 @@ hb_feature_from_string (const char *str, int len,
  * @buf: (array length=size) (out): output string
  * @size: the allocated size of @buf
  *
- * Converts a #hb_feature_t into a %NULL-terminated string in the format
+ * Converts a #hb_feature_t into a `NULL`-terminated string in the format
  * understood by hb_feature_from_string(). The client in responsible for
  * allocating big enough size for @buf, 128 bytes is more than enough.
  *
@@ -955,26 +981,26 @@ hb_feature_to_string (hb_feature_t *feature,
   len += 4;
   while (len && s[len - 1] == ' ')
     len--;
-  if (feature->start != 0 || feature->end != (unsigned int) -1)
+  if (feature->start != HB_FEATURE_GLOBAL_START || feature->end != HB_FEATURE_GLOBAL_END)
   {
     s[len++] = '[';
     if (feature->start)
-      len += MAX (0, snprintf (s + len, ARRAY_LENGTH (s) - len, "%u", feature->start));
+      len += hb_max (0, snprintf (s + len, ARRAY_LENGTH (s) - len, "%u", feature->start));
     if (feature->end != feature->start + 1) {
       s[len++] = ':';
-      if (feature->end != (unsigned int) -1)
-	len += MAX (0, snprintf (s + len, ARRAY_LENGTH (s) - len, "%u", feature->end));
+      if (feature->end != HB_FEATURE_GLOBAL_END)
+	len += hb_max (0, snprintf (s + len, ARRAY_LENGTH (s) - len, "%u", feature->end));
     }
     s[len++] = ']';
   }
   if (feature->value > 1)
   {
     s[len++] = '=';
-    len += MAX (0, snprintf (s + len, ARRAY_LENGTH (s) - len, "%u", feature->value));
+    len += hb_max (0, snprintf (s + len, ARRAY_LENGTH (s) - len, "%u", feature->value));
   }
   assert (len < ARRAY_LENGTH (s));
-  len = MIN (len, size - 1);
-  memcpy (buf, s, len);
+  len = hb_min (len, size - 1);
+  hb_memcpy (buf, s, len);
   buf[len] = '\0';
 }
 
@@ -984,7 +1010,11 @@ static bool
 parse_variation_value (const char **pp, const char *end, hb_variation_t *variation)
 {
   parse_char (pp, end, '='); /* Optional. */
-  return parse_float (pp, end, &variation->value);
+  double v;
+  if (unlikely (!hb_parse_double (pp, end, &v))) return false;
+
+  variation->value = v;
+  return true;
 }
 
 static bool
@@ -998,6 +1028,21 @@ parse_one_variation (const char **pp, const char *end, hb_variation_t *variation
 
 /**
  * hb_variation_from_string:
+ * @str: (array length=len) (element-type uint8_t): a string to parse
+ * @len: length of @str, or -1 if string is `NULL` terminated
+ * @variation: (out): the #hb_variation_t to initialize with the parsed values
+ *
+ * Parses a string into a #hb_variation_t.
+ *
+ * The format for specifying variation settings follows. All valid CSS
+ * font-variation-settings values other than 'normal' and 'inherited' are also
+ * accepted, though, not documented below.
+ *
+ * The format is a tag, optionally followed by an equals sign, followed by a
+ * number. For example `wght=500`, or `slnt=-7.5`.
+ *
+ * Return value:
+ * `true` if @str is successfully parsed, `false` otherwise
  *
  * Since: 1.4.2
  */
@@ -1018,12 +1063,60 @@ hb_variation_from_string (const char *str, int len,
   }
 
   if (variation)
-    memset (variation, 0, sizeof (*variation));
+    hb_memset (variation, 0, sizeof (*variation));
   return false;
 }
 
+#ifndef HB_NO_SETLOCALE
+
+static inline void free_static_C_locale ();
+
+static struct hb_C_locale_lazy_loader_t : hb_lazy_loader_t<hb_remove_pointer<hb_locale_t>,
+							   hb_C_locale_lazy_loader_t>
+{
+  static hb_locale_t create ()
+  {
+    hb_locale_t l = newlocale (LC_ALL_MASK, "C", NULL);
+    if (!l)
+      return l;
+
+    hb_atexit (free_static_C_locale);
+
+    return l;
+  }
+  static void destroy (hb_locale_t l)
+  {
+    freelocale (l);
+  }
+  static hb_locale_t get_null ()
+  {
+    return (hb_locale_t) 0;
+  }
+} static_C_locale;
+
+static inline
+void free_static_C_locale ()
+{
+  static_C_locale.free_instance ();
+}
+
+static hb_locale_t
+get_C_locale ()
+{
+  return static_C_locale.get_unconst ();
+}
+
+#endif
+
 /**
  * hb_variation_to_string:
+ * @variation: an #hb_variation_t to convert
+ * @buf: (array length=size) (out caller-allocates): output string
+ * @size: the allocated size of @buf
+ *
+ * Converts an #hb_variation_t into a `NULL`-terminated string in the format
+ * understood by hb_variation_from_string(). The client in responsible for
+ * allocating big enough size for @buf, 128 bytes is more than enough.
  *
  * Since: 1.4.2
  */
@@ -1040,10 +1133,88 @@ hb_variation_to_string (hb_variation_t *variation,
   while (len && s[len - 1] == ' ')
     len--;
   s[len++] = '=';
-  len += MAX (0, snprintf (s + len, ARRAY_LENGTH (s) - len, "%g", variation->value));
+
+  hb_locale_t oldlocale HB_UNUSED;
+  oldlocale = hb_uselocale (get_C_locale ());
+  len += hb_max (0, snprintf (s + len, ARRAY_LENGTH (s) - len, "%g", (double) variation->value));
+  (void) hb_uselocale (oldlocale);
 
   assert (len < ARRAY_LENGTH (s));
-  len = MIN (len, size - 1);
-  memcpy (buf, s, len);
+  len = hb_min (len, size - 1);
+  hb_memcpy (buf, s, len);
   buf[len] = '\0';
 }
+
+/**
+ * hb_color_get_alpha:
+ * @color: an #hb_color_t we are interested in its channels.
+ *
+ * Fetches the alpha channel of the given @color.
+ *
+ * Return value: Alpha channel value
+ *
+ * Since: 2.1.0
+ */
+uint8_t
+(hb_color_get_alpha) (hb_color_t color)
+{
+  return hb_color_get_alpha (color);
+}
+
+/**
+ * hb_color_get_red:
+ * @color: an #hb_color_t we are interested in its channels.
+ *
+ * Fetches the red channel of the given @color.
+ *
+ * Return value: Red channel value
+ *
+ * Since: 2.1.0
+ */
+uint8_t
+(hb_color_get_red) (hb_color_t color)
+{
+  return hb_color_get_red (color);
+}
+
+/**
+ * hb_color_get_green:
+ * @color: an #hb_color_t we are interested in its channels.
+ *
+ * Fetches the green channel of the given @color.
+ *
+ * Return value: Green channel value
+ *
+ * Since: 2.1.0
+ */
+uint8_t
+(hb_color_get_green) (hb_color_t color)
+{
+  return hb_color_get_green (color);
+}
+
+/**
+ * hb_color_get_blue:
+ * @color: an #hb_color_t we are interested in its channels.
+ *
+ * Fetches the blue channel of the given @color.
+ *
+ * Return value: Blue channel value
+ *
+ * Since: 2.1.0
+ */
+uint8_t
+(hb_color_get_blue) (hb_color_t color)
+{
+  return hb_color_get_blue (color);
+}
+
+
+/* If there is no visibility control, then hb-static.cc will NOT
+ * define anything.  Instead, we get it to define one set in here
+ * only, so only libharfbuzz.so defines them, not other libs. */
+#ifdef HB_NO_VISIBILITY
+#undef HB_NO_VISIBILITY
+#include "hb-static.cc"
+#define HB_NO_VISIBILITY 1
+#endif

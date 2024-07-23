@@ -1887,6 +1887,21 @@
 
     \note Do not attempt to overwrite the value of this variable.
 
+    \target QMAKE_APPLE_DEVICE_ARCHS
+    \section1 QMAKE_APPLE_DEVICE_ARCHS
+
+    \note This variable is used on \macos only.
+
+    Specifies a list of architectures to build for. By default, a project is
+    built for the development machine's architecture. This variable allows to
+    override the default and build for a different architecture or to create
+    multi-architecture binaries.
+
+    This variable is usually specified on the command line or in the project
+    file.
+
+    See \l{Qt for macOS} for more information.
+
     \target QMAKE_AR_CMD
     \section1 QMAKE_AR_CMD
 

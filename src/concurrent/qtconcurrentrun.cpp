@@ -80,6 +80,10 @@
 
     \snippet code/src_concurrent_qtconcurrentrun.cpp 2
 
+    If you don't need the result (for example, because the function returns
+    \c{void}), using the QThreadPool::start() overload taking a function object
+    is more efficient.
+
     As documented above, passing arguments is done like this:
 
     \snippet code/src_concurrent_qtconcurrentrun.cpp 3
@@ -143,16 +147,15 @@
     canceling or pausing can be issued only if the computations behind the future
     has not been started.
 
-    \sa {Concurrent Run}
+    \sa {Concurrent Run}, QThreadPool::start()
 */
 
 /*!
     \since 5.4
     \fn QFuture<T> QtConcurrent::run(QThreadPool *pool, Function function, ...);
 
-    Runs \a function in a separate thread. The thread is taken from the
-    QThreadPool \a pool. Note that \a function may not run immediately; \a function
-    will only be run once a thread becomes available.
+    Schedules \a function on \a pool. Note that \a function may not run
+    immediately; \a function will only be run once a thread becomes available.
 
     T is the same type as the return value of \a function. Non-void return
     values can be accessed via the QFuture::result() function.
@@ -162,5 +165,5 @@
     canceling or pausing can be issued only if the computations behind the future
     has not been started.
 
-    \sa {Concurrent Run}
+    \sa {Concurrent Run}, QThreadPool::start()
 */

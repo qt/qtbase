@@ -27,7 +27,7 @@
 #ifndef HB_OT_LAYOUT_JSTF_TABLE_HH
 #define HB_OT_LAYOUT_JSTF_TABLE_HH
 
-#include "hb-open-type-private.hh"
+#include "hb-open-type.hh"
 #include "hb-ot-layout-gpos-table.hh"
 
 
@@ -45,7 +45,7 @@ typedef IndexArray JstfModList;
  * JstfMax -- Justification Maximum Table
  */
 
-typedef OffsetListOf<PosLookup> JstfMax;
+typedef List16OfOffset16To<PosLookup> JstfMax;
 
 
 /*
@@ -54,7 +54,7 @@ typedef OffsetListOf<PosLookup> JstfMax;
 
 struct JstfPriority
 {
-  inline bool sanitize (hb_sanitize_context_t *c) const
+  bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
@@ -71,43 +71,43 @@ struct JstfPriority
   }
 
   protected:
-  OffsetTo<JstfModList>
+  Offset16To<JstfModList>
 		shrinkageEnableGSUB;	/* Offset to Shrinkage Enable GSUB
 					 * JstfModList table--from beginning of
 					 * JstfPriority table--may be NULL */
-  OffsetTo<JstfModList>
+  Offset16To<JstfModList>
 		shrinkageDisableGSUB;	/* Offset to Shrinkage Disable GSUB
 					 * JstfModList table--from beginning of
 					 * JstfPriority table--may be NULL */
-  OffsetTo<JstfModList>
+  Offset16To<JstfModList>
 		shrinkageEnableGPOS;	/* Offset to Shrinkage Enable GPOS
 					 * JstfModList table--from beginning of
 					 * JstfPriority table--may be NULL */
-  OffsetTo<JstfModList>
+  Offset16To<JstfModList>
 		shrinkageDisableGPOS;	/* Offset to Shrinkage Disable GPOS
 					 * JstfModList table--from beginning of
 					 * JstfPriority table--may be NULL */
-  OffsetTo<JstfMax>
+  Offset16To<JstfMax>
 		shrinkageJstfMax;	/* Offset to Shrinkage JstfMax table--
 					 * from beginning of JstfPriority table
 					 * --may be NULL */
-  OffsetTo<JstfModList>
+  Offset16To<JstfModList>
 		extensionEnableGSUB;	/* Offset to Extension Enable GSUB
 					 * JstfModList table--from beginning of
 					 * JstfPriority table--may be NULL */
-  OffsetTo<JstfModList>
+  Offset16To<JstfModList>
 		extensionDisableGSUB;	/* Offset to Extension Disable GSUB
 					 * JstfModList table--from beginning of
 					 * JstfPriority table--may be NULL */
-  OffsetTo<JstfModList>
+  Offset16To<JstfModList>
 		extensionEnableGPOS;	/* Offset to Extension Enable GPOS
 					 * JstfModList table--from beginning of
 					 * JstfPriority table--may be NULL */
-  OffsetTo<JstfModList>
+  Offset16To<JstfModList>
 		extensionDisableGPOS;	/* Offset to Extension Disable GPOS
 					 * JstfModList table--from beginning of
 					 * JstfPriority table--may be NULL */
-  OffsetTo<JstfMax>
+  Offset16To<JstfMax>
 		extensionJstfMax;	/* Offset to Extension JstfMax table--
 					 * from beginning of JstfPriority table
 					 * --may be NULL */
@@ -121,13 +121,13 @@ struct JstfPriority
  * JstfLangSys -- Justification Language System Table
  */
 
-struct JstfLangSys : OffsetListOf<JstfPriority>
+struct JstfLangSys : List16OfOffset16To<JstfPriority>
 {
-  inline bool sanitize (hb_sanitize_context_t *c,
-			const Record<JstfLangSys>::sanitize_closure_t * = nullptr) const
+  bool sanitize (hb_sanitize_context_t *c,
+		 const Record_sanitize_closure_t * = nullptr) const
   {
     TRACE_SANITIZE (this);
-    return_trace (OffsetListOf<JstfPriority>::sanitize (c));
+    return_trace (List16OfOffset16To<JstfPriority>::sanitize (c));
   }
 };
 
@@ -136,7 +136,7 @@ struct JstfLangSys : OffsetListOf<JstfPriority>
  * ExtenderGlyphs -- Extender Glyph Table
  */
 
-typedef SortedArrayOf<GlyphID> ExtenderGlyphs;
+typedef SortedArray16Of<HBGlyphID16> ExtenderGlyphs;
 
 
 /*
@@ -145,27 +145,27 @@ typedef SortedArrayOf<GlyphID> ExtenderGlyphs;
 
 struct JstfScript
 {
-  inline unsigned int get_lang_sys_count (void) const
+  unsigned int get_lang_sys_count () const
   { return langSys.len; }
-  inline const Tag& get_lang_sys_tag (unsigned int i) const
+  const Tag& get_lang_sys_tag (unsigned int i) const
   { return langSys.get_tag (i); }
-  inline unsigned int get_lang_sys_tags (unsigned int start_offset,
-					 unsigned int *lang_sys_count /* IN/OUT */,
-					 hb_tag_t     *lang_sys_tags /* OUT */) const
+  unsigned int get_lang_sys_tags (unsigned int start_offset,
+				  unsigned int *lang_sys_count /* IN/OUT */,
+				  hb_tag_t     *lang_sys_tags /* OUT */) const
   { return langSys.get_tags (start_offset, lang_sys_count, lang_sys_tags); }
-  inline const JstfLangSys& get_lang_sys (unsigned int i) const
+  const JstfLangSys& get_lang_sys (unsigned int i) const
   {
     if (i == Index::NOT_FOUND_INDEX) return get_default_lang_sys ();
     return this+langSys[i].offset;
   }
-  inline bool find_lang_sys_index (hb_tag_t tag, unsigned int *index) const
+  bool find_lang_sys_index (hb_tag_t tag, unsigned int *index) const
   { return langSys.find_index (tag, index); }
 
-  inline bool has_default_lang_sys (void) const { return defaultLangSys != 0; }
-  inline const JstfLangSys& get_default_lang_sys (void) const { return this+defaultLangSys; }
+  bool has_default_lang_sys () const               { return defaultLangSys != 0; }
+  const JstfLangSys& get_default_lang_sys () const { return this+defaultLangSys; }
 
-  inline bool sanitize (hb_sanitize_context_t *c,
-			const Record<JstfScript>::sanitize_closure_t * = nullptr) const
+  bool sanitize (hb_sanitize_context_t *c,
+		 const Record_sanitize_closure_t * = nullptr) const
   {
     TRACE_SANITIZE (this);
     return_trace (extenderGlyphs.sanitize (c, this) &&
@@ -174,10 +174,10 @@ struct JstfScript
   }
 
   protected:
-  OffsetTo<ExtenderGlyphs>
+  Offset16To<ExtenderGlyphs>
 		extenderGlyphs;	/* Offset to ExtenderGlyph table--from beginning
 				 * of JstfScript table-may be NULL */
-  OffsetTo<JstfLangSys>
+  Offset16To<JstfLangSys>
 		defaultLangSys;	/* Offset to DefaultJstfLangSys table--from
 				 * beginning of JstfScript table--may be Null */
   RecordArrayOf<JstfLangSys>
@@ -189,27 +189,28 @@ struct JstfScript
 
 
 /*
- * JSTF -- The Justification Table
+ * JSTF -- Justification
+ * https://docs.microsoft.com/en-us/typography/opentype/spec/jstf
  */
 
 struct JSTF
 {
-  static const hb_tag_t tableTag	= HB_OT_TAG_JSTF;
+  static constexpr hb_tag_t tableTag = HB_OT_TAG_JSTF;
 
-  inline unsigned int get_script_count (void) const
+  unsigned int get_script_count () const
   { return scriptList.len; }
-  inline const Tag& get_script_tag (unsigned int i) const
+  const Tag& get_script_tag (unsigned int i) const
   { return scriptList.get_tag (i); }
-  inline unsigned int get_script_tags (unsigned int start_offset,
-				       unsigned int *script_count /* IN/OUT */,
-				       hb_tag_t     *script_tags /* OUT */) const
+  unsigned int get_script_tags (unsigned int start_offset,
+				unsigned int *script_count /* IN/OUT */,
+				hb_tag_t     *script_tags /* OUT */) const
   { return scriptList.get_tags (start_offset, script_count, script_tags); }
-  inline const JstfScript& get_script (unsigned int i) const
+  const JstfScript& get_script (unsigned int i) const
   { return this+scriptList[i].offset; }
-  inline bool find_script_index (hb_tag_t tag, unsigned int *index) const
+  bool find_script_index (hb_tag_t tag, unsigned int *index) const
   { return scriptList.find_index (tag, index); }
 
-  inline bool sanitize (hb_sanitize_context_t *c) const
+  bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
     return_trace (version.sanitize (c) &&
@@ -221,7 +222,7 @@ struct JSTF
   FixedVersion<>version;	/* Version of the JSTF table--initially set
 				 * to 0x00010000u */
   RecordArrayOf<JstfScript>
-		scriptList;  	/* Array of JstfScripts--listed
+		scriptList;	/* Array of JstfScripts--listed
 				 * alphabetically by ScriptTag */
   public:
   DEFINE_SIZE_ARRAY (6, scriptList);

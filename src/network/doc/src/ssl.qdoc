@@ -39,6 +39,8 @@
     From Qt version 5.15 onwards, the officially supported version for OpenSSL
     is 1.1.1 or later.
 
+    Qt version 5.15.1 onward is also compatible with OpenSSL 3.
+
     \annotatedlist ssl
 
 

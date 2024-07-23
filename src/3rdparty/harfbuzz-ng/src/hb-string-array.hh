@@ -29,7 +29,7 @@
 #define HB_STRING_ARRAY_HH
 #endif
 
-#include "hb-private.hh"
+#include "hb.hh"
 
 /* Based on Bruno Haible's code in Appendix B of Ulrich Drepper's dsohowto.pdf:
  * https://software.intel.com/sites/default/files/m/a/1/e/dsohowto.pdf */
@@ -37,18 +37,19 @@
 #define HB_STRING_ARRAY_TYPE_NAME	HB_PASTE(HB_STRING_ARRAY_NAME, _msgstr_t)
 #define HB_STRING_ARRAY_POOL_NAME	HB_PASTE(HB_STRING_ARRAY_NAME, _msgstr)
 #define HB_STRING_ARRAY_OFFS_NAME	HB_PASTE(HB_STRING_ARRAY_NAME, _msgidx)
+#define HB_STRING_ARRAY_LENG_NAME	HB_PASTE(HB_STRING_ARRAY_NAME, _length)
 
 static const union HB_STRING_ARRAY_TYPE_NAME {
   struct {
 /* I like to avoid storing the nul-termination byte since we don't need it,
  * but C++ does not allow that.
- * https://stackoverflow.com/questions/28433862/why-initializer-string-for-array-of-chars-is-too-long-compiles-fine-in-c-not
+ * https://stackoverflow.com/q/28433862
  */
 #define _S(s) char HB_PASTE (str, __LINE__)[sizeof (s)];
 #include HB_STRING_ARRAY_LIST
 #undef _S
   } st;
-  char str[VAR];
+  char str[HB_VAR_ARRAY];
 }
 HB_STRING_ARRAY_POOL_NAME =
 {
@@ -66,16 +67,19 @@ static const unsigned int HB_STRING_ARRAY_OFFS_NAME[] =
   sizeof (HB_STRING_ARRAY_TYPE_NAME)
 };
 
-static inline hb_string_t
+static const unsigned int HB_STRING_ARRAY_LENG_NAME = ARRAY_LENGTH_CONST (HB_STRING_ARRAY_OFFS_NAME) - 1;
+
+static inline hb_bytes_t
 HB_STRING_ARRAY_NAME (unsigned int i)
 {
   assert (i < ARRAY_LENGTH (HB_STRING_ARRAY_OFFS_NAME) - 1);
-  return hb_string_t (HB_STRING_ARRAY_POOL_NAME.str + HB_STRING_ARRAY_OFFS_NAME[i],
-		      HB_STRING_ARRAY_OFFS_NAME[i + 1] - HB_STRING_ARRAY_OFFS_NAME[i] - 1);
+  return hb_bytes_t (HB_STRING_ARRAY_POOL_NAME.str + HB_STRING_ARRAY_OFFS_NAME[i],
+		     HB_STRING_ARRAY_OFFS_NAME[i + 1] - HB_STRING_ARRAY_OFFS_NAME[i] - 1);
 }
 
 #undef HB_STRING_ARRAY_TYPE_NAME
 #undef HB_STRING_ARRAY_POOL_NAME
 #undef HB_STRING_ARRAY_OFFS_NAME
+#undef HB_STRING_ARRAY_LENG_NAME
 
 #endif /* HB_STRING_ARRAY_HH */

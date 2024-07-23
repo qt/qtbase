@@ -54,11 +54,7 @@ private Q_SLOTS:
 static QVector<QByteArray> enoughZones()
 {
 #ifdef EXHAUSTIVE
-    auto available = QTimeZone::availableTimeZoneIds();
-    QVector<QByteArray> result;
-    result.reserve(available.size() + 1);
-    for (conat auto &name : available)
-        result << name;
+    QVector<QByteArray> result = QTimeZone::availableTimeZoneIds();
 #else
     QVector<QByteArray> result{
         QByteArray("UTC"),

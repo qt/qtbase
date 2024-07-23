@@ -361,6 +361,10 @@ void tst_QFontMetrics::elidedMetrics()
 
 void tst_QFontMetrics::zeroWidthMetrics()
 {
+#if defined(QT_NO_HARFBUZZ)
+    QSKIP("Test unreliable without Harfbuzz-NG");
+#endif
+
     QString zwnj(QChar(0x200c));
     QString zwsp(QChar(0x200b));
 

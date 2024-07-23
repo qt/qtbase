@@ -167,3 +167,33 @@ save
   setFont "sansserif" 16 normal
   drawText 0 40 "e😃m😇o😍j😜i😸!"
 restore
+
+translate 0 75
+save
+    setPen black
+    setFont "sansserif" 12 normal normal default underline
+    drawText 0 20 "Underlined text drawing"
+restore
+
+translate 0 35
+save
+    setPen black
+    setFont "sansserif" 12 normal normal default normal strikeout
+    drawText 0 20 "Struck out text drawing"
+restore
+
+translate 0 35
+save
+    setPen black
+    setFont "sansserif" 12 normal normal default normal normal overline
+    drawText 0 20 "Overlined text drawing"
+restore
+
+translate 0 35
+save
+    setPen black
+    setFont "sansserif" 12 normal normal default underline strikeout overline
+    drawText 0 20 "All the effects text drawing"
+restore
+
+

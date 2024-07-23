@@ -9,4 +9,5 @@ Copyright (C) 2013-2014 MIPS Technologies, Inc.
 Copyright (C) 2009, 2012 Pierre Ossman for Cendio AB
 Copyright (C) 2009-2011 Nokia Corporation and/or its subsidiary(-ies)
 Copyright (C) 1999-2006 MIYASAKA Masaru
+Copyright (C) 1999 Ken Murchison
 Copyright (C) 1991-2020 Thomas G. Lane, Guido Vollbeding

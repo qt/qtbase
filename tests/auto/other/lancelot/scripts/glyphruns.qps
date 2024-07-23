@@ -1,0 +1,175 @@
+drawGlyphRun -5 5 "Text that is drawn outside the bounds..."
+
+translate 20 20
+begin_block text_drawing
+save
+  setFont "sansserif" 10 normal
+  drawGlyphRun 0 20 "sansserif 10pt, normal"
+
+  setFont "sansserif" 12 normal
+  drawGlyphRun 0 40 "sansserif 12pt, normal"
+
+  setFont "sansserif" 12 bold
+  drawGlyphRun 0 60 "sansserif 12pt, bold"
+
+  setFont "sansserif" 10 bold italic
+  drawGlyphRun 0 80 "sansserif 10pt, bold italic"
+
+
+  translate 0 100
+  setPen #7fff0000
+
+  setFont "sansserif" 10 normal
+  drawGlyphRun 0 20 "alpha sansserif 10pt, normal"
+
+  setFont "sansserif" 12 normal
+  drawGlyphRun 0 40 "alpha sansserif 12pt, normal"
+
+  setFont "sansserif" 12 bold
+  drawGlyphRun 0 60 "alpha sansserif 12pt, bold"
+
+  setFont "sansserif" 10 bold italic
+  drawGlyphRun 0 80 "alpha sansserif 10pt, bold italic"
+
+
+  translate 0 100
+  setPen black
+  save
+    scale 0.9 0.9
+
+    setFont "sansserif" 10 normal
+    drawGlyphRun 0 20 "scaled sansserif 10pt, normal"
+
+    setFont "sansserif" 12 normal
+    drawGlyphRun 0 40 "scaled sansserif 12pt, normal"
+
+    setFont "sansserif" 12 bold
+    drawGlyphRun 0 60 "scaled sansserif 12pt, bold"
+
+    setFont "sansserif" 10 bold italic
+    drawGlyphRun 0 80 "scaled sansserif 10pt, bold italic"
+  restore
+
+  translate 200 200
+  setPen black
+  save
+    scale -1 -1
+
+    setFont "sansserif" 10 normal
+    drawGlyphRun 0 20 "flipped sansserif 10pt, normal"
+
+    setFont "sansserif" 12 normal
+    drawGlyphRun 0 40 "flipped sansserif 12pt, normal"
+
+    setFont "sansserif" 12 bold
+    drawGlyphRun 0 60 "flipped sansserif 12pt, bold"
+
+    setFont "sansserif" 10 bold italic
+    drawGlyphRun 0 80 "flipped sansserif 10pt, bold italic"
+  restore
+
+  translate -200 20
+  setPen black
+  save
+    translate 200 90
+    rotate 185
+
+    setFont "sansserif" 10 normal
+    drawGlyphRun 0 20 "rotated sansserif 10pt, normal"
+
+    setFont "sansserif" 12 normal
+    drawGlyphRun 0 40 "rotated sansserif 12pt, normal"
+
+    setFont "sansserif" 12 bold
+    drawGlyphRun 0 60 "rotated sansserif 12pt, bold"
+
+    setFont "sansserif" 10 bold italic
+    drawGlyphRun 0 80 "rotated sansserif 10pt, bold italic"
+  restore
+
+  translate 0 100
+  gradient_appendStop 0 red
+  gradient_appendStop 0.5 #00ff00
+  gradient_appendStop 1 blue
+  gradient_setLinear 0 0 200 0
+  setPen brush
+
+  setFont "sansserif" 10 normal
+  drawGlyphRun 0 0 "gradient sansserif 10pt, normal"
+
+  setFont "sansserif" 12 normal
+  drawGlyphRun 0 20 "gradient sansserif 12pt, normal"
+
+  setFont "sansserif" 12 bold
+  drawGlyphRun 0 40 "gradient sansserif 12pt, bold"
+
+  setFont "sansserif" 10 bold italic
+  drawGlyphRun 0 60 "gradient sansserif 10pt, bold italic"
+restore
+end_block
+
+translate 250 0
+drawGlyphRun 25 640 "clipped to rectangle"
+save
+  setPen #3f000000
+  setBrush nobrush
+  drawRect 20 0 100 620
+  setClipRect 20 0 100 620
+  setPen black
+  repeat_block text_drawing
+restore
+
+translate 150 0
+drawGlyphRun 25 640 "clipped to path"
+save
+  path_moveTo clip 20 0
+  path_cubicTo clip 0 200  40 400  20 400
+  path_lineTo clip 30 620
+  path_lineTo clip 30 0
+  path_lineTo clip 40 0
+  path_lineTo clip 40 620
+  path_lineTo clip 120 620
+  path_lineTo clip 120 0
+  path_lineTo clip 20 0
+  setPen #3f000000
+  setBrush nobrush
+  drawPath clip
+  setClipPath clip
+  setPen black
+  repeat_block text_drawing
+restore
+
+translate 150 0
+save
+  setPen black
+  setFont "sansserif" 16 normal
+  drawGlyphRun 0 40 "e😃m😇o😍j😜i😸!"
+restore
+
+translate 0 55
+save
+    setPen black
+    setFont "sansserif" 12 normal normal default underline
+    drawGlyphRun 0 20 "Underlined text drawing"
+restore
+
+translate 0 35
+save
+    setPen black
+    setFont "sansserif" 12 normal normal default normal strikeout
+    drawGlyphRun 0 20 "Struck out text drawing"
+restore
+
+translate 0 35
+save
+    setPen black
+    setFont "sansserif" 12 normal normal default normal normal overline
+    drawGlyphRun 0 20 "Overlined text drawing"
+restore
+
+translate 0 35
+save
+    setPen black
+    setFont "sansserif" 12 normal normal default underline strikeout overline
+    drawGlyphRun 0 20 "All the effects text drawing"
+restore

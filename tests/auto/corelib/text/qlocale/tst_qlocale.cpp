@@ -2547,6 +2547,7 @@ void tst_QLocale::monthName()
     QCOMPARE(c.monthName(1, QLocale::LongFormat), QLatin1String("January"));
     QCOMPARE(c.monthName(1, QLocale::ShortFormat), QLatin1String("Jan"));
     QCOMPARE(c.monthName(1, QLocale::NarrowFormat), QLatin1String("1"));
+    QCOMPARE(c.monthName(3).simplified(), "March"); // QTBUG-113415 (crash)
 
     const QLocale de("de_DE");
     QCOMPARE(de.monthName(12, QLocale::LongFormat), QLatin1String("Dezember"));

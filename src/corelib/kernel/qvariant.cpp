@@ -258,20 +258,20 @@ static qlonglong qConvertToNumber(const QVariant::Private *d, bool *ok)
     return Q_INT64_C(0);
 }
 
-static qreal qConvertToRealNumber(const QVariant::Private *d, bool *ok)
+static double qConvertToRealNumber(const QVariant::Private *d, bool *ok)
 {
     *ok = true;
     switch (uint(d->type)) {
     case QMetaType::Double:
-        return qreal(d->data.d);
+        return double(d->data.d);
     case QMetaType::Float:
-        return qreal(d->data.f);
+        return double(d->data.f);
     case QMetaType::ULongLong:
     case QMetaType::UInt:
     case QMetaType::UChar:
     case QMetaType::UShort:
     case QMetaType::ULong:
-        return qreal(qMetaTypeUNumber(d));
+        return double(qMetaTypeUNumber(d));
 #ifndef QT_BOOTSTRAPPED
     case QMetaType::QCborValue:
         return v_cast<QCborValue>(d)->toDouble();
@@ -280,7 +280,7 @@ static qreal qConvertToRealNumber(const QVariant::Private *d, bool *ok)
 #endif
     default:
         // includes enum conversion as well as invalid types
-        return qreal(qConvertToNumber(d, ok));
+        return double(qConvertToNumber(d, ok));
     }
 }
 
@@ -1815,11 +1815,6 @@ void QVariant::create(int type, const void *copy)
     \fn QVariant::~QVariant()
 
     Destroys the QVariant and the contained object.
-
-    Note that subclasses that reimplement clear() should reimplement
-    the destructor to call clear(). This destructor calls clear(), but
-    because it is the destructor, QVariant::clear() is called rather
-    than a subclass's clear().
 */
 
 QVariant::~QVariant()
@@ -4013,11 +4008,11 @@ static int numericCompare(const QVariant::Private *d1, const QVariant::Private *
     if (promotedType != QMetaType::QReal)
         return integralCompare(promotedType, d1, d2);
 
-    // qreal comparisons
+    // floating point comparison
     bool ok;
-    qreal r1 = qConvertToRealNumber(d1, &ok);
+    const double r1 = qConvertToRealNumber(d1, &ok);
     Q_ASSERT(ok);
-    qreal r2 = qConvertToRealNumber(d2, &ok);
+    const double r2 = qConvertToRealNumber(d2, &ok);
     Q_ASSERT(ok);
     if (r1 == r2)
         return 0;

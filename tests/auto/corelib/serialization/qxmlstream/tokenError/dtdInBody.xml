@@ -1,0 +1,20 @@
+<!DOCTYPE TEST [
+   <!ELEMENT TESTATTRIBUTE (CASE+)>
+   <!ELEMENT CASE (CLASS, FUNCTION)>
+   <!ELEMENT CLASS (#PCDATA)>
+
+   <!-- adding random ENTITY statement, as this is typical DTD content -->
+   <!ENTITY unite "&#x222a;">
+
+   <!ATTLIST CASE CLASS CDATA #REQUIRED>
+]>
+<TEST>
+  <CASE>
+    <CLASS>tst_QXmlStream</CLASS>
+  </CASE>
+  <!-- invalid DTD in XML body follows -->
+  <!DOCTYPE DTDTEST [
+    <!ELEMENT RESULT (CASE+)>
+    <!ATTLIST RESULT OUTPUT CDATA #REQUIRED>
+  ]>
+</TEST>
