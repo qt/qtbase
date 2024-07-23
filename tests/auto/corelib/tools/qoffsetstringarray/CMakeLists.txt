@@ -17,6 +17,9 @@ qt_internal_add_test(tst_qoffsetstringarray
     LIBRARIES
         Qt::CorePrivate
 )
+if (NOT VXWORKS)
+    set_property(TARGET tst_qoffsetstringarray PROPERTY CXX_STANDARD 20)
+endif()
 
 if (CLANG)
     target_compile_options(tst_qoffsetstringarray

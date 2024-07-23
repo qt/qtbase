@@ -26,6 +26,10 @@
 #include <string_view>
 #include <tuple>
 
+#ifdef __cpp_concepts
+#  include <concepts>
+#endif
+
 class tst_QOffsetStringArray;
 
 QT_BEGIN_NAMESPACE
@@ -40,22 +44,39 @@ QT_WARNING_DISABLE_GCC("-Wstringop-overread")
 template <typename StaticString, typename OffsetList>
 class QOffsetStringArray
 {
+    static auto viewType_helper()
+    {
+        // returning std::type_identity here to avoid having to #include
+        if constexpr (sizeof(Char) == 2) {
+            return q20::type_identity<QStringView>();
+#ifdef __cpp_char8_t
+        } else if constexpr (std::is_same_v<Char, char8_t>) {
+            return q20::type_identity<QUtf8StringView>();
+#endif
+        } else {
+            return q20::type_identity<QByteArrayView>();
+        }
+    }
+
 public:
+    using Char = typename StaticString::value_type;
+    using View = typename decltype(viewType_helper())::type;
+
     constexpr QOffsetStringArray(const StaticString &string, const OffsetList &offsets)
         : m_string(string), m_offsets(offsets)
     {}
 
-    constexpr const char *operator[](const int index) const noexcept
+    constexpr const Char *operator[](const int index) const noexcept
     {
         return m_string.data() + m_offsets[qBound(int(0), index, count())];
     }
 
-    constexpr const char *at(const int index) const noexcept
+    constexpr const Char *at(const int index) const noexcept
     {
         return m_string.data() + m_offsets[index];
     }
 
-    constexpr QByteArrayView viewAt(qsizetype index) const noexcept
+    constexpr View viewAt(qsizetype index) const noexcept
     {
         return { m_string.data() + m_offsets[index],
                     qsizetype(m_offsets[index + 1]) - qsizetype(m_offsets[index]) - 1 };
@@ -63,7 +84,7 @@ public:
 
     constexpr int count() const { return int(m_offsets.size()) - 1; }
 
-    bool contains(QByteArrayView needle, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    bool contains(View needle, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     {
         for (qsizetype i = 0; i < count(); ++i) {
             if (viewAt(i).compare(needle, cs) == 0)
@@ -93,15 +114,15 @@ template <size_t Highest> constexpr auto minifyValue()
     }
 }
 
-template <size_t StringLength, typename Extractor, typename... T>
+template <typename Char, size_t StringLength, typename Extractor, typename... T>
 constexpr auto makeStaticString(Extractor extract, const T &... entries)
 {
     // append an extra null terminator
-    std::array<char, StringLength + 1> result = {};
+    std::array<Char, StringLength + 1> result = {};
     qptrdiff offset = 0;
 
-    const char *strings[] = { extract(entries).operator const char *()... };
-    size_t lengths[] = { sizeof(extract(T{}))... };
+    const Char *strings[] = { extract(entries).operator const Char *()... };
+    size_t lengths[] = { (sizeof(extract(T{})) / sizeof(Char))... };
     for (size_t i = 0; i < std::size(strings); ++i) {
         q20::copy_n(strings[i], lengths[i], result.begin() + offset);
         offset += lengths[i];
@@ -109,40 +130,46 @@ constexpr auto makeStaticString(Extractor extract, const T &... entries)
     return result;
 }
 
-template <size_t N> struct StaticString
+template <typename Char, size_t N> struct StaticString
 {
-    char value[N] = {};
+    Char value[N] = {};
     constexpr StaticString() = default;
-    constexpr StaticString(const char (&s)[N])  { q20::copy_n(s, N, value); }
-    constexpr operator const char *() const     { return value; }
+    constexpr StaticString(const Char (&s)[N])  { q20::copy_n(s, N, value); }
+    constexpr operator const Char *() const     { return value; }
 };
 
-template <typename StringExtractor, typename... T>
+template <typename Char, typename StringExtractor, typename... T>
 constexpr auto makeOffsetStringArray(StringExtractor extractString, const T &... entries)
 {
     constexpr size_t Count = sizeof...(T);
-    constexpr size_t StringLength = (sizeof(extractString(T{})) + ...);
+    constexpr size_t StringLength = (sizeof(extractString(T{})) + ...) / sizeof(Char);
     using MinifiedOffsetType = decltype(QtPrivate::minifyValue<StringLength>());
 
     size_t offset = 0;
-    std::array fullOffsetList = { offset += sizeof(extractString(T{}))... };
+    std::array fullOffsetList = { offset += (sizeof(extractString(T{})) / sizeof(Char))... };
 
-    // prepend zero
+    // prepend the first offset (zero) pointing to the *start* of the first element
     std::array<MinifiedOffsetType, Count + 1> minifiedOffsetList = {};
     q20::transform(fullOffsetList.begin(), fullOffsetList.end(),
                    minifiedOffsetList.begin() + 1,
                    [] (auto e) { return MinifiedOffsetType(e); });
 
-    std::array staticString = QtPrivate::makeStaticString<StringLength>(extractString, entries...);
+    std::array staticString = QtPrivate::makeStaticString<Char, StringLength>(extractString, entries...);
     return QOffsetStringArray(staticString, minifiedOffsetList);
 }
 } // namespace QtPrivate
 
-template<int ... Nx>
-constexpr auto qOffsetStringArray(const char (&...strings)[Nx]) noexcept
+template<typename Char, int ... Nx>
+#ifdef __cpp_concepts
+requires std::is_same_v<Char, char> || std::is_same_v<Char, char16_t>
+#  ifdef __cpp_char8_t
+    || std::is_same_v<Char, char8_t>
+#  endif
+#endif
+constexpr auto qOffsetStringArray(const Char (&...strings)[Nx]) noexcept
 {
     auto extractString = [](const auto &s) -> decltype(auto) { return s; };
-    return QtPrivate::makeOffsetStringArray(extractString, QtPrivate::StaticString(strings)...);
+    return QtPrivate::makeOffsetStringArray<Char>(extractString, QtPrivate::StaticString(strings)...);
 }
 
 QT_WARNING_POP
