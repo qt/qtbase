@@ -65,16 +65,16 @@ constexpr const auto messagesBigOffsets = qOffsetStringArray(
 
 void tst_QOffsetStringArray::init()
 {
-    static_assert(messages.m_string.size() == 50);
+    static_assert(messages.m_string.size() == 51);
     static_assert(messages.m_offsets.size() == 6);
     static_assert(std::is_same_v<decltype(messages.m_offsets)::value_type, quint8>);
 
     static_assert(messages257.m_offsets.size() == 258);
-    static_assert(messages257.m_string.size() == 260);
+    static_assert(messages257.m_string.size() == 261);
     static_assert(std::is_same_v<decltype(messages257.m_offsets)::value_type, quint16>);
 
     static_assert(messagesBigOffsets.m_offsets.size() == 5);
-    static_assert(messagesBigOffsets.m_string.size() == 364);
+    static_assert(messagesBigOffsets.m_string.size() == 365);
     static_assert(std::is_same_v<decltype(messagesBigOffsets.m_offsets)::value_type, quint16>);
 }
 
