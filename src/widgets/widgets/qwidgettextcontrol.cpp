@@ -58,6 +58,8 @@
 #include <QtGui/qaccessible.h>
 #include <QtCore/qmetaobject.h>
 
+#include <private/qoffsetstringarray_p.h>
+
 #if QT_CONFIG(shortcut)
 #include "private/qapplication_p.h"
 #include "private/qshortcutmap_p.h"
@@ -3456,19 +3458,50 @@ void QUnicodeControlCharacterMenu::menuActionTriggered()
 }
 #endif // QT_NO_CONTEXTMENU
 
+static constexpr auto supportedMimeTypes = qOffsetStringArray(
+    "text/plain",
+    "text/html",
+#if QT_CONFIG(textmarkdownwriter)
+    "text/markdown",
+#endif
+#if QT_CONFIG(textodfwriter)
+    "application/vnd.oasis.opendocument.text"
+#endif
+);
+
+/*! \internal
+    \reimp
+*/
 QStringList QTextEditMimeData::formats() const
 {
-    if (!fragment.isEmpty())
-        return QStringList() << u"text/plain"_s << u"text/html"_s
-#if QT_CONFIG(textmarkdownwriter)
-            << u"text/markdown"_s
-#endif
-#ifndef QT_NO_TEXTODFWRITER
-            << u"application/vnd.oasis.opendocument.text"_s
-#endif
-        ;
-    else
-        return QMimeData::formats();
+    if (!fragment.isEmpty()) {
+        constexpr auto size = supportedMimeTypes.count();
+        QStringList ret;
+        ret.reserve(size);
+        for (int i = 0; i < size; ++i)
+            ret.emplace_back(QLatin1StringView(supportedMimeTypes.at(i)));
+
+        return ret;
+    }
+
+    return QMimeData::formats();
+}
+
+/*! \internal
+    \reimp
+*/
+bool QTextEditMimeData::hasFormat(const QString &format) const
+{
+    if (!fragment.isEmpty()) {
+        constexpr auto size = supportedMimeTypes.count();
+        for (int i = 0; i < size; ++i) {
+            if (format == QLatin1StringView(supportedMimeTypes.at(i)))
+                return true;
+        }
+        return false;
+    }
+
+    return QMimeData::hasFormat(format);
 }
 
 QVariant QTextEditMimeData::retrieveData(const QString &mimeType, QMetaType type) const

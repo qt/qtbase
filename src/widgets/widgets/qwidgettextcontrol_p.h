@@ -268,6 +268,8 @@ public:
     inline QTextEditMimeData(const QTextDocumentFragment &aFragment) : fragment(aFragment) {}
 
     virtual QStringList formats() const override;
+    bool hasFormat(const QString &format) const override;
+
 protected:
     virtual QVariant retrieveData(const QString &mimeType, QMetaType type) const override;
 private:
