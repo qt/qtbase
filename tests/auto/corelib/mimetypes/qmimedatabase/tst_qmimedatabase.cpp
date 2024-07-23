@@ -65,18 +65,18 @@ void initializeLang()
 
 static inline QString testSuiteWarning()
 {
-
+    const auto smiVersion = "2.4"_L1;
     QString result;
     QTextStream str(&result);
     str << "\nCannot find the shared-mime-info test suite\nin the parent of: "
         << QDir::toNativeSeparators(QDir::currentPath()) << "\n"
            "cd " << QDir::toNativeSeparators(QStringLiteral("tests/auto/corelib/mimetypes/qmimedatabase")) << "\n"
-           "wget https://gitlab.freedesktop.org/xdg/shared-mime-info/-/archive/2.2/shared-mime-info-2.2.zip\n"
-           "unzip shared-mime-info-2.2.zip\n";
+           "wget https://gitlab.freedesktop.org/xdg/shared-mime-info/-/archive/%1/shared-mime-info-%1.zip\n"
+           "unzip shared-mime-info-%1.zip\n"_L1.arg(smiVersion);
 #ifdef Q_OS_WIN
-    str << "mkdir testfiles\nxcopy /s shared-mime-info-2.2 s-m-i\n";
+    str << "mkdir testfiles\nxcopy /s shared-mime-info-%1 s-m-i\n"_L1.arg(smiVersion);
 #else
-    str << "ln -s shared-mime-info-2.2 s-m-i\n";
+    str << "ln -s shared-mime-info-%1 s-m-i\n"_L1.arg(smiVersion);
 #endif
     return result;
 }
