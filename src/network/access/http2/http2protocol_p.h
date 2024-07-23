@@ -132,7 +132,7 @@ enum class FrameStatus
     goodFrame
 };
 
-enum Http2Error
+enum Http2Error : quint32
 {
     // Old-style enum to avoid excessive name
     // qualification ...
