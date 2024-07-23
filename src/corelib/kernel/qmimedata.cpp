@@ -590,6 +590,8 @@ void QMimeData::setData(const QString &mimeType, const QByteArray &data)
 */
 bool QMimeData::hasFormat(const QString &mimeType) const
 {
+    // formats() is virtual and could be reimplemented in sub-classes,
+    // so we have to use it here.
     return formats().contains(mimeType);
 }
 
