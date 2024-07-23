@@ -525,10 +525,10 @@ void QNetworkReplyWasmImplPrivate::downloadSucceeded(emscripten_fetch_t *fetch)
     } else if (fetchContext->state == FetchContext::State::SENT) {
         const auto reply = fetchContext->reply;
         if (reply->state != QNetworkReplyPrivate::Aborted) {
-            QByteArray buffer(fetch->data, fetch->numBytes);
-            reply->dataReceived(buffer);
             QByteArray statusText(fetch->statusText);
             reply->setStatusCode(fetch->status, statusText);
+            QByteArray buffer(fetch->data, fetch->numBytes);
+            reply->dataReceived(buffer);
             reply->setReplyFinished();
         }
         reply->m_fetch = nullptr;
@@ -601,10 +601,10 @@ void QNetworkReplyWasmImplPrivate::downloadFailed(emscripten_fetch_t *fetch)
                 reasonStr = QStringLiteral("Operation canceled");
             else
                 reasonStr = QString::fromUtf8(fetch->statusText);
-            QByteArray buffer(fetch->data, fetch->numBytes);
-            reply->dataReceived(buffer);
             QByteArray statusText(fetch->statusText);
             reply->setStatusCode(fetch->status, statusText);
+            QByteArray buffer(fetch->data, fetch->numBytes);
+            reply->dataReceived(buffer);
             reply->emitReplyError(reply->statusCodeFromHttp(fetch->status, reply->request.url()),
                                   reasonStr);
             reply->setReplyFinished();
