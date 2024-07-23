@@ -311,13 +311,8 @@ if (GCC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "9.2")
 endif()
 
 # Hardening options
-if(QT_FEATURE_intelcet)
-    if(MSVC)
-        qt_internal_platform_link_options(PlatformCommonInternal INTERFACE -CETCOMPAT)
-    else()
-        target_compile_options(PlatformCommonInternal INTERFACE -fcf-protection=full)
-    endif()
-endif()
+
+qt_internal_apply_intel_cet_harderning(PlatformCommonInternal)
 
 if(QT_FEATURE_glibc_fortify_source)
     set(is_optimized_build "$<OR:$<NOT:$<CONFIG:Debug>>,$<BOOL:${QT_FEATURE_optimize_debug}>>")
