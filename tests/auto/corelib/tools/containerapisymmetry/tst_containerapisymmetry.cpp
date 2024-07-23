@@ -429,6 +429,21 @@ private Q_SLOTS:
     void keyValueRange_QMultiMap() { keyValueRange_impl<QMultiMap<int, int>>(); }
     void keyValueRange_QHash() { keyValueRange_impl<QHash<int, int>>(); }
     void keyValueRange_QMultiHash() { keyValueRange_impl<QMultiHash<int, int>>(); }
+
+private:
+    template <typename Container>
+    void opEqNaN_impl() const;
+
+private Q_SLOTS:
+    void opEqNaN_QList_Float() { opEqNaN_impl<QList<float>>(); }
+    void opEqNaN_QList_Float16() { opEqNaN_impl<QList<qfloat16>>(); }
+    void opEqNaN_QList_Double() { opEqNaN_impl<QList<double>>(); }
+    void opEqNaN_QVarLengthArray_Float() { opEqNaN_impl<QVarLengthArray<float>>(); }
+    void opEqNaN_QVarLengthArray_Float16() { opEqNaN_impl<QVarLengthArray<qfloat16>>(); }
+    void opEqNaN_QVarLengthArray_Double() { opEqNaN_impl<QVarLengthArray<double>>(); }
+    void opEqNaN_QSet_Float() { opEqNaN_impl<QSet<float>>(); }
+    void opEqNaN_QSet_Float16() { opEqNaN_impl<QSet<qfloat16>>(); }
+    void opEqNaN_QSet_Double() { opEqNaN_impl<QSet<double>>(); }
 };
 
 void tst_ContainerApiSymmetry::init()
@@ -1261,6 +1276,17 @@ void tst_ContainerApiSymmetry::keyValueRange_impl() const
     }
     QVERIFY(verify(keys, COUNT));
     QVERIFY(verify(values, COUNT, 2));
+}
+
+template<typename Container>
+void tst_ContainerApiSymmetry::opEqNaN_impl() const
+{
+    using V = typename Container::value_type;
+    static_assert(std::is_floating_point_v<V> || std::is_same_v<V, qfloat16>);
+    const Container lhs {std::numeric_limits<V>::quiet_NaN()};
+    const Container rhs {std::numeric_limits<V>::quiet_NaN()};
+
+    QCOMPARE_NE(lhs, rhs);
 }
 
 QTEST_APPLESS_MAIN(tst_ContainerApiSymmetry)
