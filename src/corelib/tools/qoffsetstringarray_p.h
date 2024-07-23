@@ -116,16 +116,6 @@ template <size_t N> struct StaticString
     constexpr operator const char *() const     { return value; }
 };
 
-template <size_t KL, size_t VL> struct StaticMapEntry
-{
-    StaticString<KL> key = {};
-    StaticString<VL> value = {};
-    constexpr StaticMapEntry() = default;
-    constexpr StaticMapEntry(const char (&k)[KL], const char (&v)[VL])
-        : key(k), value(v)
-    {}
-};
-
 template <typename StringExtractor, typename... T>
 constexpr auto makeOffsetStringArray(StringExtractor extractString, const T &... entries)
 {
