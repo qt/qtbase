@@ -347,7 +347,7 @@ public:
             return true;
 
         // do element-by-element comparison
-        return d->compare(data(), other.data(), size());
+        return std::equal(begin(), end(), other.begin(), other.end());
     }
     template <typename U = T>
     QTypeTraits::compare_eq_result_container<QList, U> operator!=(const QList &other) const
