@@ -608,6 +608,9 @@ void tst_QWindow::framePositioning_data()
 
 void tst_QWindow::framePositioning()
 {
+    if (isPlatformWayland())
+        QSKIP("Wayland: This fails. See QTBUG-68660.");
+
     QFETCH(bool, showBeforePositioning);
 
     Window window;
