@@ -235,6 +235,7 @@ function(qt_internal_apply_gc_binaries target visibility)
     endif()
 endfunction()
 
+# Only applied to Bootstrap and BundledPCRE2.
 function(qt_internal_apply_intel_cet target visibility)
     if(NOT QT_FEATURE_intelcet)
         return()
@@ -254,8 +255,34 @@ function(qt_internal_apply_intel_cet target visibility)
             ">:-mshstk>")
     endif()
     if(flags)
+        set(opt_out_condition "$<NOT:$<BOOL:$<TARGET_PROPERTY:_qt_no_intel_cet_harderning>>>")
+        set(flags "$<${opt_out_condition}:${flags}>")
         target_compile_options("${target}" ${visibility} "${flags}")
     endif()
+endfunction()
+
+# Meant to be applied to PlatformCommonInternal.
+function(qt_internal_apply_intel_cet_harderning target)
+    if(NOT QT_FEATURE_intelcet)
+        return()
+    endif()
+
+    set(opt_out_condition "$<NOT:$<BOOL:$<TARGET_PROPERTY:_qt_no_intel_cet_harderning>>>")
+
+    if(MSVC)
+        set(intel_cet_flag "-CETCOMPAT")
+        set(condition "$<${opt_out_condition}:${intel_cet_flag}>")
+        qt_internal_platform_link_options("${target}" INTERFACE "${condition}")
+    else()
+        set(intel_cet_flag "-fcf-protection=full")
+        set(condition "$<${opt_out_condition}:${intel_cet_flag}>")
+        target_compile_options("${target}" INTERFACE "${condition}")
+    endif()
+endfunction()
+
+# Allow opting out of the Intel CET hardening on a per-target basis.
+function(qt_internal_skip_intel_cet_hardening target)
+    set_target_properties("${target}" PROPERTIES _qt_no_intel_cet_harderning TRUE)
 endfunction()
 
 # Sets the exceptions flags for the given target according to exceptions_on
