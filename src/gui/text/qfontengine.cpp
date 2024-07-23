@@ -1500,6 +1500,10 @@ QFixed QFontEngine::lastRightBearing(const QGlyphLayout &glyphs)
     return 0;
 }
 
+QList<QFontVariableAxis> QFontEngine::variableAxes() const
+{
+    return QList<QFontVariableAxis>{};
+}
 
 QFontEngine::GlyphCacheEntry::GlyphCacheEntry()
 {
@@ -2323,6 +2327,11 @@ QImage QFontEngineMulti::alphaRGBMapForGlyph(glyph_t glyph,
 {
     const int which = highByte(glyph);
     return engine(which)->alphaRGBMapForGlyph(stripped(glyph), subPixelPosition, t);
+}
+
+QList<QFontVariableAxis> QFontEngineMulti::variableAxes() const
+{
+    return engine(0)->variableAxes();
 }
 
 /*

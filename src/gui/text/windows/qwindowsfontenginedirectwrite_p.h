@@ -102,6 +102,8 @@ public:
     Properties properties() const override;
     void getUnscaledGlyph(glyph_t glyph, QPainterPath *path, glyph_metrics_t *metrics) override;
 
+    QList<QFontVariableAxis> variableAxes() const override;
+
 private:
     QImage imageForGlyph(glyph_t t,
                          const QFixedPoint &subPixelPosition,
@@ -133,6 +135,7 @@ private:
     QFixed m_maxAdvanceWidth;
     FaceId m_faceId;
     QString m_uniqueFamilyName;
+    QList<QFontVariableAxis> m_variableAxes;
 };
 
 QT_END_NAMESPACE

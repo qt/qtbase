@@ -82,6 +82,8 @@ public:
 
     QFontEngine::Properties properties() const override;
 
+    QList<QFontVariableAxis> variableAxes() const override;
+
     enum FontSmoothing { Disabled, Subpixel, Grayscale };
     Q_ENUM(FontSmoothing);
 
@@ -112,6 +114,7 @@ protected:
     QFixed underlinePos;
     QFontEngine::FaceId face_id;
     mutable bool kerningPairsLoaded;
+    QList<QFontVariableAxis> variableAxisList;
 };
 
 CGAffineTransform Q_GUI_EXPORT qt_transform_from_fontdef(const QFontDef &fontDef);

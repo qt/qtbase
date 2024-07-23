@@ -1,4 +1,4 @@
-// Copyright (C) 2019 The Qt Company Ltd.
+// Copyright (C) 2024 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qfont.h"
@@ -3326,7 +3326,20 @@ bool QFontInfo::exactMatch() const
     return d->request.exactMatch(engine->fontDef);
 }
 
+/*!
+    \since 6.9
 
+    If the font is a variable font, this function will return the
+    list of axes the font supports.
+
+    See \l{QFont::}{setVariableAxis()} for more details on variable axes.
+*/
+QList<QFontVariableAxis> QFontInfo::variableAxes() const
+{
+    QFontEngine *engine = d->engineForScript(QChar::Script_Common);
+    Q_ASSERT(engine != nullptr);
+    return engine->variableAxes();
+}
 
 
 // **********************************************************************

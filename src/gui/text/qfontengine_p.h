@@ -16,6 +16,7 @@
 //
 
 #include <QtGui/private/qtguiglobal_p.h>
+#include <QtGui/qfontvariableaxis.h>
 #include "QtCore/qatomic.h"
 #include <QtCore/qvarlengtharray.h>
 #include <QtCore/qhashfunctions.h>
@@ -228,6 +229,8 @@ public:
     virtual QFontEngine *cloneWithSize(qreal /*pixelSize*/) const { return nullptr; }
 
     virtual Qt::HANDLE handle() const;
+
+    virtual QList<QFontVariableAxis> variableAxes() const;
 
     void *harfbuzzFont() const;
     void *harfbuzzFace() const;
@@ -468,6 +471,8 @@ public:
     virtual qreal maxCharWidth() const override;
     virtual qreal minLeftBearing() const override;
     virtual qreal minRightBearing() const override;
+
+    virtual QList<QFontVariableAxis> variableAxes() const override;
 
     virtual bool canRender(const QChar *string, int len) const override;
 

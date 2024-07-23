@@ -12,9 +12,14 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
 endif()
 
 # Resources:
+set_source_files_properties("../../../shared/resources/testfont_variable.ttf"
+    PROPERTIES QT_RESOURCE_ALIAS "testfont_variable.ttf"
+)
+
 set(testfont_resource_files
     "datastream.515"
     "weirdfont.otf"
+    "../../../shared/resources/testfont_variable.ttf"
 )
 
 qt_internal_add_test(tst_qfont

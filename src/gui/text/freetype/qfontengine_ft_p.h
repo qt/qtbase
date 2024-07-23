@@ -83,6 +83,11 @@ public:
     static void addGlyphToPath(FT_Face face, FT_GlyphSlot g, const QFixedPoint &point, QPainterPath *path, FT_Fixed x_scale, FT_Fixed y_scale);
     static void addBitmapToPath(FT_GlyphSlot slot, const QFixedPoint &point, QPainterPath *path);
 
+    inline QList<QFontVariableAxis> variableAxes() const
+    {
+        return variableAxisList;
+    }
+
 private:
     friend class QFontEngineFT;
     friend class QtFreetypeData;
@@ -94,6 +99,7 @@ private:
     QByteArray fontData;
 
     QFontEngine::Holder hbFace;
+    QList<QFontVariableAxis> variableAxisList;
 };
 
 class Q_GUI_EXPORT QFontEngineFT : public QFontEngine
@@ -213,6 +219,8 @@ private:
     int glyphMargin(QFontEngine::GlyphFormat /* format */) override { return 0; }
 
     int glyphCount() const override;
+
+    QList<QFontVariableAxis> variableAxes() const override;
 
     enum Scaling {
         Scaled,

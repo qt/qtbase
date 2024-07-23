@@ -245,6 +245,7 @@ QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id,
         const auto deleter = [](QFreetypeFace *f) { delete f; };
         std::unique_ptr<QFreetypeFace, decltype(deleter)> newFreetype(new QFreetypeFace, deleter);
         FT_Face face;
+        FT_Face tmpFace;
         if (!face_id.filename.isEmpty()) {
             QString fileName = QFile::decodeName(face_id.filename);
             if (const char *prefix = ":qmemoryfonts/"; face_id.filename.startsWith(prefix)) {
@@ -265,12 +266,94 @@ QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id,
         } else {
             newFreetype->fontData = fontData;
         }
+
+        FT_Int major, minor, patch;
+        FT_Library_Version(qt_getFreetype(), &major, &minor, &patch);
+        const bool goodVersion = major > 2 || (major == 2 && minor > 13) || (major == 2 && minor == 13 && patch > 2);
+
         if (!newFreetype->fontData.isEmpty()) {
-            if (FT_New_Memory_Face(freetypeData->library, (const FT_Byte *)newFreetype->fontData.constData(), newFreetype->fontData.size(), face_id.index, &face)) {
+            if (FT_New_Memory_Face(freetypeData->library,
+                                   (const FT_Byte *)newFreetype->fontData.constData(),
+                                   newFreetype->fontData.size(),
+                                   face_id.index,
+                                   &face)) {
                 return nullptr;
             }
-        } else if (FT_New_Face(freetypeData->library, face_id.filename, face_id.index, &face)) {
-            return nullptr;
+
+            // On older Freetype versions, we create a temporary duplicate of the FT_Face to work
+            // around a bug, see further down.
+            if (goodVersion) {
+                tmpFace = face;
+                if (FT_Reference_Face(face))
+                    tmpFace = nullptr;
+            } else if (!FT_HAS_MULTIPLE_MASTERS(face)
+                    || FT_New_Memory_Face(freetypeData->library,
+                                           (const FT_Byte *)newFreetype->fontData.constData(),
+                                           newFreetype->fontData.size(),
+                                           face_id.index,
+                                           &tmpFace) != FT_Err_Ok) {
+                tmpFace = nullptr;
+            }
+        } else {
+            if (FT_New_Face(freetypeData->library, face_id.filename, face_id.index, &face))
+                return nullptr;
+
+            // On older Freetype versions, we create a temporary duplicate of the FT_Face to work
+            // around a bug, see further down.
+            if (goodVersion) {
+                tmpFace = face;
+                if (FT_Reference_Face(face))
+                    tmpFace = nullptr;
+            } else if (!FT_HAS_MULTIPLE_MASTERS(face)
+                    || FT_New_Face(freetypeData->library, face_id.filename, face_id.index, &tmpFace) != FT_Err_Ok) {
+                tmpFace = nullptr;
+            }
+        }
+
+        // Due to a bug in Freetype 2.13.2 and earlier causing just a call to FT_Get_MM_Var() on
+        // specific fonts to corrupt the FT_Face so that loading glyphs will later fail, we use a
+        // temporary FT_Face here which can be thrown away after. The bug has been fixed in
+        // Freetype 2.13.3.
+        if (tmpFace != nullptr) {
+            FT_MM_Var *var;
+            if (FT_Get_MM_Var(tmpFace, &var) == FT_Err_Ok) {
+                for (FT_UInt i = 0; i < var->num_axis; ++i) {
+                    FT_Var_Axis *axis = var->axis + i;
+
+                    QFontVariableAxis fontVariableAxis;
+                    if (const auto tag = QFont::Tag::fromValue(axis->tag)) {
+                        fontVariableAxis.setTag(*tag);
+                    } else {
+                        qWarning() << "QFreetypeFace::getFace: Invalid variable axis tag encountered"
+                                   << axis->tag;
+                    }
+
+                    fontVariableAxis.setMinimumValue(axis->minimum / 65536.0);
+                    fontVariableAxis.setMaximumValue(axis->maximum / 65536.0);
+                    fontVariableAxis.setDefaultValue(axis->def / 65536.0);
+                    fontVariableAxis.setName(QString::fromUtf8(axis->name));
+
+                    newFreetype->variableAxisList.append(fontVariableAxis);
+                }
+
+                if (!face_id.variableAxes.isEmpty()) {
+                    QVarLengthArray<FT_Fixed, 16> coords(var->num_axis);
+                    FT_Get_Var_Design_Coordinates(face, var->num_axis, coords.data());
+                    for (qsizetype i = 0; i < newFreetype->variableAxisList.size(); ++i) {
+                        const QFontVariableAxis &axis = newFreetype->variableAxisList.at(i);
+                        if (axis.tag().isValid()) {
+                            const auto it = face_id.variableAxes.constFind(axis.tag());
+                            if (it != face_id.variableAxes.constEnd())
+                                coords[i] = FT_Fixed(*it * 65536);
+                        }
+                    }
+                    FT_Set_Var_Design_Coordinates(face, var->num_axis, coords.data());
+                }
+
+                FT_Done_MM_Var(qt_getFreetype(), var);
+            }
+
+            FT_Done_Face(tmpFace);
         }
 
 #if (FREETYPE_MAJOR*10000 + FREETYPE_MINOR*100 + FREETYPE_PATCH) >= 20900
@@ -328,24 +411,6 @@ QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id,
 
         FT_Set_Charmap(newFreetype->face, newFreetype->unicode_map);
 
-        if (!face_id.variableAxes.isEmpty()) {
-            FT_MM_Var *var = nullptr;
-            FT_Get_MM_Var(newFreetype->face, &var);
-            if (var != nullptr) {
-                QVarLengthArray<FT_Fixed, 16> coords(var->num_axis);
-                FT_Get_Var_Design_Coordinates(face, var->num_axis, coords.data());
-                for (FT_UInt i = 0; i < var->num_axis; ++i) {
-                    if (const auto tag = QFont::Tag::fromValue(var->axis[i].tag)) {
-                        const auto it = face_id.variableAxes.constFind(*tag);
-                        if (it != face_id.variableAxes.constEnd())
-                            coords[i] = FT_Fixed(*it * 65536);
-                    }
-                }
-                FT_Set_Var_Design_Coordinates(face, var->num_axis, coords.data());
-                FT_Done_MM_Var(qt_getFreetype(), var);
-            }
-        }
-
         QT_TRY {
             freetypeData->faces.insert(face_id, newFreetype.get());
         } QT_CATCH(...) {
@@ -362,8 +427,8 @@ QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id,
 void QFreetypeFace::cleanup()
 {
     hbFace.reset();
-    if (mm_var && face && face->glyph)
-        FT_Done_MM_Var(face->glyph->library, mm_var);
+    if (mm_var)
+        FT_Done_MM_Var(qt_getFreetype(), mm_var);
     mm_var = nullptr;
     FT_Done_Face(face);
     face = nullptr;
@@ -2310,6 +2375,11 @@ QFontEngine *QFontEngineFT::cloneWithSize(qreal pixelSize) const
 Qt::HANDLE QFontEngineFT::handle() const
 {
     return non_locked_face();
+}
+
+QList<QFontVariableAxis> QFontEngineFT::variableAxes() const
+{
+    return freetype->variableAxes();
 }
 
 QT_END_NAMESPACE

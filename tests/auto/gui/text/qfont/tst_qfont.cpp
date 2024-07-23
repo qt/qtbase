@@ -22,6 +22,9 @@
 #include <qlist.h>
 #include <QtTest/private/qemulationdetector_p.h>
 #include <private/qcomparisontesthelper_p.h>
+#include <qpa/qplatformfontdatabase.h>
+#include <qpa/qplatformintegration.h>
+#include <QtGui/private/qguiapplication_p.h>
 
 using namespace Qt::StringLiterals;
 
@@ -30,6 +33,7 @@ class tst_QFont : public QObject
 Q_OBJECT
 
 private slots:
+    void initTestCase();
     void getSetCheck();
     void exactMatch();
     void compare();
@@ -62,7 +66,17 @@ private slots:
     void featureAccessors();
     void tagCompares_data();
     void tagCompares();
+
+    void variableAxes();
+
+private:
+    QString m_testFontVariable;
 };
+
+void tst_QFont::initTestCase()
+{
+    m_testFontVariable = QFINDTESTDATA("testfont_variable.ttf");
+}
 
 // Testing get/set functions
 void tst_QFont::getSetCheck()
@@ -925,6 +939,35 @@ void tst_QFont::tagCompares()
 
     QVERIFY(comparesEqual(lhs, lhs));
     QCOMPARE(compareThreeWay(lhs, rhs), expectedOrder);
+}
+
+void tst_QFont::variableAxes()
+{
+    {
+        QPlatformFontDatabase *pfdb = QGuiApplicationPrivate::platformIntegration()->fontDatabase();
+        if (!pfdb->supportsVariableApplicationFonts())
+            QSKIP("Variable application fonts not supported on this platform");
+    }
+
+    int id = QFontDatabase::addApplicationFont(m_testFontVariable);
+    if (id == -1)
+        QSKIP("Application fonts are not supported on this system");
+    auto cleanup = qScopeGuard([&id] {
+        QFontDatabase::removeApplicationFont(id);
+    });
+
+    QString family = QFontDatabase::applicationFontFamilies(id).first();
+    QFontInfo fontInfo(QFont(family, 12));
+
+    QList<QFontVariableAxis> variableAxes = fontInfo.variableAxes();
+    QCOMPARE(variableAxes.size(), 1);
+
+    const QFontVariableAxis &variableAxis = variableAxes.first();
+    QCOMPARE(variableAxis.name(), QStringLiteral("Weight"));
+    QCOMPARE(variableAxis.tag(), QFont::Tag::fromString("wght"));
+    QCOMPARE(variableAxis.defaultValue(), 400.0);
+    QCOMPARE(variableAxis.minimumValue(), 400.0);
+    QCOMPARE(variableAxis.maximumValue(), 900.0);
 }
 
 QTEST_MAIN(tst_QFont)

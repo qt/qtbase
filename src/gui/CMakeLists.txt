@@ -238,6 +238,7 @@ qt_internal_add_module(Gui
         text/qfontinfo.h
         text/qfontmetrics.cpp text/qfontmetrics.h
         text/qfontsubset.cpp text/qfontsubset_p.h
+        text/qfontvariableaxis.cpp text/qfontvariableaxis.h
         text/qfragmentmap.cpp text/qfragmentmap_p.h
         text/qglyphrun.cpp text/qglyphrun.h text/qglyphrun_p.h
         text/qinputcontrol.cpp text/qinputcontrol_p.h

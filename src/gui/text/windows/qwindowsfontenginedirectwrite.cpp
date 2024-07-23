@@ -369,6 +369,67 @@ void QWindowsFontEngineDirectWrite::collectMetrics()
     }
 
     loadKerningPairs(emSquareSize() / QFixed::fromReal(fontDef.pixelSize));
+
+#if QT_CONFIG(directwrite3)
+    IDWriteFontFace5 *face5;
+    if (SUCCEEDED(m_directWriteFontFace->QueryInterface(__uuidof(IDWriteFontFace5),
+                                       reinterpret_cast<void **>(&face5)))) {
+
+        IDWriteFontResource *fontResource;
+        if (SUCCEEDED(face5->GetFontResource(&fontResource))) {
+            const UINT32 fontAxisCount = fontResource->GetFontAxisCount();
+            if (fontAxisCount > 0) {
+                QVarLengthArray<DWRITE_FONT_AXIS_VALUE, 8> axisValues(fontAxisCount);
+                HRESULT hres = fontResource->GetDefaultFontAxisValues(axisValues.data(), fontAxisCount);
+
+                QVarLengthArray<DWRITE_FONT_AXIS_RANGE, 8> axisRanges(fontAxisCount);
+                if (SUCCEEDED(hres))
+                    hres = fontResource->GetFontAxisRanges(axisRanges.data(), fontAxisCount);
+
+                if (SUCCEEDED(hres)) {
+                    for (UINT32 i = 0; i < fontAxisCount; ++i) {
+                        const DWRITE_FONT_AXIS_VALUE &value = axisValues.at(i);
+                        const DWRITE_FONT_AXIS_RANGE &range = axisRanges.at(i);
+
+                        if (range.minValue < range.maxValue) {
+                            QFontVariableAxis axis;
+                            if (auto maybeTag = QFont::Tag::fromValue(qToBigEndian<UINT32>(value.axisTag))) {
+                                axis.setTag(*maybeTag);
+                            } else {
+                                qWarning() << "QWindowsFontEngineDirectWrite::collectMetrics: Invalid tag" << value.axisTag;
+                            }
+
+                            axis.setDefaultValue(value.value);
+                            axis.setMaximumValue(range.maxValue);
+                            axis.setMinimumValue(range.minValue);
+
+                            IDWriteLocalizedStrings *names;
+                            if (SUCCEEDED(fontResource->GetAxisNames(i, &names))) {
+                                wchar_t defaultLocale[LOCALE_NAME_MAX_LENGTH];
+                                bool hasDefaultLocale = GetUserDefaultLocaleName(defaultLocale, LOCALE_NAME_MAX_LENGTH) != 0;
+
+                                QString name = hasDefaultLocale
+                                                   ? QWindowsDirectWriteFontDatabase::localeString(names, defaultLocale)
+                                                   : QString();
+                                if (name.isEmpty()) {
+                                    wchar_t englishLocale[] = L"en-us";
+                                    name = QWindowsDirectWriteFontDatabase::localeString(names, englishLocale);
+                                }
+
+                                axis.setName(name);
+                                names->Release();
+                            }
+
+                            m_variableAxes.append(axis);
+                        }
+                    }
+                }
+            }
+            fontResource->Release();
+        }
+        face5->Release();
+    }
+#endif
 }
 
 QFixed QWindowsFontEngineDirectWrite::underlinePosition() const
@@ -1175,6 +1236,11 @@ QImage QWindowsFontEngineDirectWrite::bitmapForGlyph(glyph_t glyph,
                                                      const QColor &color)
 {
     return imageForGlyph(glyph, subPixelPosition, glyphMargin(QFontEngine::Format_ARGB), t, color);
+}
+
+QList<QFontVariableAxis> QWindowsFontEngineDirectWrite::variableAxes() const
+{
+    return m_variableAxes;
 }
 
 QT_END_NAMESPACE
