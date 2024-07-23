@@ -270,12 +270,6 @@ public:
             ::memcpy(static_cast<void *>(b++), static_cast<const void *>(&t), sizeof(T));
     }
 
-    bool compare(const T *begin1, const T *begin2, size_t n) const
-    {
-        const T *end1 = begin1 + n;
-        return std::equal(begin1, end1, begin2);
-    }
-
     void reallocate(qsizetype alloc, QArrayData::AllocationOption option)
     {
         auto pair = Data::reallocateUnaligned(this->d, this->ptr, alloc, option);
@@ -646,12 +640,6 @@ public:
         while (b != e)
             *b++ = t;
     }
-
-    bool compare(const T *begin1, const T *begin2, size_t n) const
-    {
-        const T *end1 = begin1 + n;
-        return std::equal(begin1, end1, begin2);
-    }
 };
 
 template <class T>
@@ -889,7 +877,6 @@ public:
     // using Base::truncate;
     // using Base::destroyAll;
     // using Base::assign;
-    // using Base::compare;
 
     template<typename It>
     void appendIteratorRange(It b, It e, QtPrivate::IfIsForwardIterator<It> = true)
