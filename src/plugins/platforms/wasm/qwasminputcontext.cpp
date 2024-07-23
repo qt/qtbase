@@ -252,6 +252,8 @@ QWasmInputContext::QWasmInputContext()
     m_inputElement.set("contenteditable","true");
 
     m_inputElement["style"].set("position", "absolute");
+    m_inputElement["style"].set("left", 0);
+    m_inputElement["style"].set("top", 0);
     m_inputElement["style"].set("opacity", 0);
     m_inputElement["style"].set("display", "");
     m_inputElement["style"].set("z-index", -2);
