@@ -635,7 +635,7 @@ qt_feature_config("plugin-manifests" QMAKE_PUBLIC_CONFIG
 qt_feature("c++20" PUBLIC
     LABEL "C++20"
     AUTODETECT OFF
-    CONDITION TEST_cxx20
+    CONDITION TEST_cxx20 AND NOT VXWORKS
 )
 qt_feature_config("c++20" QMAKE_PUBLIC_QT_CONFIG)
 qt_feature("c++2a" PUBLIC
