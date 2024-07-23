@@ -118,7 +118,7 @@ public:
 Q_SIGNALS:
     void headersReceived(const HPack::HttpHeader &headers, bool endStream);
     void headersUpdated();
-    void errorOccurred(quint32 errorCode, const QString &errorString);
+    void errorOccurred(Http2::Http2Error errorCode, const QString &errorString);
     void stateChanged(QHttp2Stream::State newState);
     void promisedStreamReceived(quint32 newStreamID);
     void uploadBlocked();
@@ -129,7 +129,7 @@ Q_SIGNALS:
     void uploadFinished();
 
 public Q_SLOTS:
-    bool sendRST_STREAM(quint32 errorCode);
+    bool sendRST_STREAM(Http2::Http2Error errorCode);
     bool sendHEADERS(const HPack::HttpHeader &headers, bool endStream,
                      quint8 priority = DefaultPriority);
     void sendDATA(QIODevice *device, bool endStream);
@@ -167,8 +167,8 @@ private:
     void handleRST_STREAM(const Http2::Frame &inboundFrame);
     void handleWINDOW_UPDATE(const Http2::Frame &inboundFrame);
 
-    void finishWithError(quint32 errorCode, const QString &message);
-    void finishWithError(quint32 errorCode);
+    void finishWithError(Http2::Http2Error errorCode, const QString &message);
+    void finishWithError(Http2::Http2Error errorCode);
 
     // Keep it const since it never changes after creation
     const quint32 m_streamID = 0;
@@ -235,7 +235,7 @@ Q_SIGNALS:
     void connectionClosed();
     void settingsFrameReceived();
     void errorOccurred(Http2::Http2Error errorCode, const QString &errorString);
-    void receivedGOAWAY(quint32 errorCode, quint32 lastStreamID);
+    void receivedGOAWAY(Http2::Http2Error errorCode, quint32 lastStreamID);
 public Q_SLOTS:
     void handleReadyRead();
     void handleConnectionClosure();
@@ -263,7 +263,7 @@ private:
     bool sendServerPreface();
     bool serverCheckClientPreface();
     bool sendWINDOW_UPDATE(quint32 streamID, quint32 delta);
-    bool sendGOAWAY(quint32 errorCode);
+    bool sendGOAWAY(Http2::Http2Error errorCode);
     bool sendSETTINGS_ACK();
 
     void handleDATA();

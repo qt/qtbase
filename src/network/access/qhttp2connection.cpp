@@ -31,7 +31,7 @@ QHttp2Stream::QHttp2Stream(QHttp2Connection *connection, quint32 streamID) noexc
 
 QHttp2Stream::~QHttp2Stream() noexcept = default;
 
-void QHttp2Stream::finishWithError(quint32 errorCode, const QString &message)
+void QHttp2Stream::finishWithError(Http2::Http2Error errorCode, const QString &message)
 {
     qCDebug(qHttp2ConnectionLog, "[%p] stream %u finished with error: %ls (error code: %u)",
             getConnection(), m_streamID, qUtf16Printable(message), errorCode);
@@ -39,12 +39,12 @@ void QHttp2Stream::finishWithError(quint32 errorCode, const QString &message)
     emit errorOccurred(errorCode, message);
 }
 
-void QHttp2Stream::finishWithError(quint32 errorCode)
+void QHttp2Stream::finishWithError(Http2::Http2Error errorCode)
 {
-    QNetworkReply::NetworkError error = QNetworkReply::NoError;
+    QNetworkReply::NetworkError ignored = QNetworkReply::NoError;
     QString message;
-    qt_error(errorCode, error, message);
-    finishWithError(error, message);
+    qt_error(errorCode, ignored, message);
+    finishWithError(errorCode, message);
 }
 
 /*!
@@ -55,7 +55,7 @@ void QHttp2Stream::finishWithError(quint32 errorCode)
     Returns \c false if the stream is closed or idle, also if it fails to send
     the RST_STREAM frame. Otherwise, returns \c true.
 */
-bool QHttp2Stream::sendRST_STREAM(quint32 errorCode)
+bool QHttp2Stream::sendRST_STREAM(Http2::Http2Error errorCode)
 {
     if (m_state == State::Closed || m_state == State::Idle)
         return false;
@@ -66,7 +66,7 @@ bool QHttp2Stream::sendRST_STREAM(quint32 errorCode)
     QHttp2Connection *connection = getConnection();
     FrameWriter &frameWriter = connection->frameWriter;
     frameWriter.start(FrameType::RST_STREAM, FrameFlag::EMPTY, m_streamID);
-    frameWriter.append(errorCode);
+    frameWriter.append(quint32(errorCode));
     return frameWriter.write(*connection->getSocket());
 }
 
@@ -196,7 +196,7 @@ void QHttp2Stream::internalSendDATA()
         if (!frameWriter.write(*socket)) {
             qCDebug(qHttp2ConnectionLog, "[%p] stream %u, failed to write to socket", connection,
                     m_streamID);
-            finishWithError(QNetworkReply::ProtocolFailure, "failed to write to socket"_L1);
+            finishWithError(INTERNAL_ERROR, "failed to write to socket"_L1);
             return;
         }
 
@@ -397,7 +397,7 @@ void QHttp2Stream::handleDATA(const Frame &inboundFrame)
                 "[%p] stream %u, received DATA frame with payload size %u, "
                 "but recvWindow is %d, sending FLOW_CONTROL_ERROR",
                 connection, m_streamID, inboundFrame.payloadSize(), m_recvWindow);
-        finishWithError(QNetworkReply::ProtocolFailure, "flow control error"_L1);
+        finishWithError(FLOW_CONTROL_ERROR, "flow control error"_L1);
         sendRST_STREAM(FLOW_CONTROL_ERROR);
         return;
     }
@@ -442,7 +442,7 @@ void QHttp2Stream::handleRST_STREAM(const Frame &inboundFrame)
         m_uploadDevice = nullptr;
         m_uploadByteDevice = nullptr;
     }
-    finishWithError(*m_RST_STREAM_code, ""_L1);
+    finishWithError(Http2Error(*m_RST_STREAM_code));
 }
 
 void QHttp2Stream::handleWINDOW_UPDATE(const Frame &inboundFrame)
@@ -455,7 +455,7 @@ void QHttp2Stream::handleWINDOW_UPDATE(const Frame &inboundFrame)
                 "[%p] stream %u, received WINDOW_UPDATE frame with invalid delta %u, sending "
                 "PROTOCOL_ERROR",
                 getConnection(), m_streamID, delta);
-        finishWithError(QNetworkReply::ProtocolFailure, "invalid WINDOW_UPDATE delta"_L1);
+        finishWithError(PROTOCOL_ERROR, "invalid WINDOW_UPDATE delta"_L1);
         sendRST_STREAM(PROTOCOL_ERROR);
         return;
     }
@@ -635,7 +635,7 @@ bool QHttp2Connection::serverCheckClientPreface()
     qCDebug(qHttp2ConnectionLog, "[%p] Peer sent valid client preface", this);
     m_waitingForClientPreface = false;
     if (!sendServerPreface()) {
-        connectionError(Http2::INTERNAL_ERROR, "Failed to send server preface");
+        connectionError(INTERNAL_ERROR, "Failed to send server preface");
         return false;
     }
     return true;
@@ -740,7 +740,7 @@ void QHttp2Connection::handleConnectionClosure()
     for (auto it = m_streams.begin(), end = m_streams.end(); it != end; ++it) {
         auto stream = it.value();
         if (stream && stream->isActive())
-            stream->finishWithError(QNetworkReply::RemoteHostClosedError, errorString);
+            stream->finishWithError(PROTOCOL_ERROR, errorString);
     }
 }
 
@@ -766,12 +766,11 @@ void QHttp2Connection::connectionError(Http2Error errorCode, const char *message
 
     m_goingAway = true;
     sendGOAWAY(errorCode);
-    const auto error = qt_error(errorCode);
     auto messageView = QLatin1StringView(message);
 
     for (QHttp2Stream *stream : std::as_const(m_streams)) {
         if (stream && stream->isActive())
-            stream->finishWithError(error, messageView);
+            stream->finishWithError(errorCode, messageView);
     }
 
     closeSession();
@@ -851,12 +850,12 @@ bool QHttp2Connection::sendWINDOW_UPDATE(quint32 streamID, quint32 delta)
     return frameWriter.write(*getSocket());
 }
 
-bool QHttp2Connection::sendGOAWAY(quint32 errorCode)
+bool QHttp2Connection::sendGOAWAY(Http2::Http2Error errorCode)
 {
     frameWriter.start(FrameType::GOAWAY, FrameFlag::EMPTY,
                       Http2PredefinedParameters::connectionStreamID);
     frameWriter.append(quint32(m_lastIncomingStreamID));
-    frameWriter.append(errorCode);
+    frameWriter.append(quint32(errorCode));
     return frameWriter.write(*getSocket());
 }
 
@@ -1134,7 +1133,7 @@ void QHttp2Connection::handleGOAWAY()
 
     const uchar *const src = inboundFrame.dataBegin();
     quint32 lastStreamID = qFromBigEndian<quint32>(src);
-    const quint32 errorCode = qFromBigEndian<quint32>(src + 4);
+    const Http2Error errorCode = Http2Error(qFromBigEndian<quint32>(src + 4));
 
     if (!lastStreamID) {
         // "The last stream identifier can be set to 0 if no
@@ -1245,7 +1244,7 @@ void QHttp2Connection::handleContinuedHEADERS()
                 // We can receive HEADERS on streams initiated by our requests
                 // (these streams are in halfClosedLocal or open state) or
                 // remote-reserved streams from a server's PUSH_PROMISE.
-                stream->finishWithError(QNetworkReply::ProtocolFailure,
+                stream->finishWithError(PROTOCOL_ERROR,
                                         "HEADERS on invalid stream"_L1);
                 stream->sendRST_STREAM(CANCEL);
                 return;
@@ -1344,7 +1343,7 @@ bool QHttp2Connection::acceptSetting(Http2::Settings identifier, quint32 newValu
             qint32 sum = 0;
             if (qAddOverflow(stream->m_sendWindow, delta, &sum)) {
                 stream->sendRST_STREAM(PROTOCOL_ERROR);
-                stream->finishWithError(QNetworkReply::ProtocolFailure,
+                stream->finishWithError(PROTOCOL_ERROR,
                                         "SETTINGS window overflow"_L1);
                 continue;
             }
