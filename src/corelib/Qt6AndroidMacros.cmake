@@ -1266,7 +1266,11 @@ function(_qt_internal_add_android_abi_step project abi step)
         endif()
     endif()
 
-    list(PREPEND known_steps ${project}_${step})
+    if(known_steps)
+        list(PREPEND known_steps ${project}_${step})
+    else()
+        set(known_steps ${project}_${step})
+    endif()
     set_target_properties(${project} PROPERTIES _qt_android_abi_steps "${known_steps}")
 endfunction()
 
@@ -1416,6 +1420,10 @@ function(_qt_internal_configure_android_multiabi_target target)
             )
             set_property(GLOBAL APPEND PROPERTY
                 _qt_internal_abi_external_projects "qt_internal_android_${abi}")
+            if(NOT CMAKE_GENERATOR MATCHES "^Ninja")
+                add_dependencies(qt_internal_android_${abi}_configure
+                    ${previous_copy_apk_dependencies_target})
+            endif()
         endif()
 
         get_target_property(android_abi_build_dir qt_internal_android_${abi}
