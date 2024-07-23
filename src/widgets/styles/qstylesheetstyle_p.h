@@ -6,9 +6,11 @@
 #define QSTYLESHEETSTYLE_P_H
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
+
+#if QT_CONFIG(style_windows)
 #include "private/qwindowsstyle_p.h"
 
-#ifndef QT_NO_STYLE_STYLESHEET
+#if QT_CONFIG(style_stylesheet)
 
 #include "QtWidgets/qapplication.h"
 #include "QtWidgets/qstyleoption.h"
@@ -192,4 +194,5 @@ inline QStyleSheetStyle* qt_styleSheet(QStyle *style)
 
 QT_END_NAMESPACE
 #endif // QT_NO_STYLE_STYLESHEET
+#endif
 #endif // QSTYLESHEETSTYLE_P_H
