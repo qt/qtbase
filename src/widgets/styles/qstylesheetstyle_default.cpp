@@ -17,7 +17,7 @@
 #include "private/qcssparser_p.h"
 #endif
 
-#ifndef QT_NO_STYLE_STYLESHEET
+#if QT_CONFIG(style_stylesheet)
 
 QT_BEGIN_NAMESPACE
 
