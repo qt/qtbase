@@ -76,6 +76,7 @@ function(_qt_internal_sbom_begin_project)
         set(QT_SBOM_GIT_VERSION "${arg_VERSION}")
         set(QT_SBOM_GIT_VERSION_PATH "${arg_VERSION}")
         set(QT_SBOM_GIT_HASH "") # empty on purpose, no source of info
+        set(QT_SBOM_GIT_HASH_SHORT "") # empty on purpose, no source of info
         set(non_git_version "${arg_VERSION}")
     else()
         # Query git version info.
@@ -87,6 +88,7 @@ function(_qt_internal_sbom_begin_project)
         set(QT_SBOM_GIT_VERSION "${__sbom_git_version}")
         set(QT_SBOM_GIT_VERSION_PATH "${__sbom_git_version_path}")
         set(QT_SBOM_GIT_HASH "${__sbom_git_hash}")
+        set(QT_SBOM_GIT_HASH_SHORT "${__sbom_git_hash_short}")
 
         # Git version might not be available.
         set(non_git_version "${QT_REPO_MODULE_VERSION}")
@@ -103,6 +105,7 @@ function(_qt_internal_sbom_begin_project)
     set(QT_SBOM_GIT_VERSION "${QT_SBOM_GIT_VERSION}" PARENT_SCOPE)
     set(QT_SBOM_GIT_VERSION_PATH "${QT_SBOM_GIT_VERSION_PATH}" PARENT_SCOPE)
     set(QT_SBOM_GIT_HASH "${QT_SBOM_GIT_HASH}" PARENT_SCOPE)
+    set(QT_SBOM_GIT_HASH_SHORT "${QT_SBOM_GIT_HASH_SHORT}" PARENT_SCOPE)
 
     if(arg_DOCUMENT_NAMESPACE)
         set(repo_spdx_namespace "${arg_DOCUMENT_NAMESPACE}")
