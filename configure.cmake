@@ -487,10 +487,13 @@ if(NOT CLANG) # https://gitlab.kitware.com/cmake/cmake/-/issues/21998
 endif()
 
 # trivial_auto_var_init_pattern
-qt_config_compiler_supports_flag_test(trivial_auto_var_init_pattern
-    LABEL "-ftrivial-auto-var-init=pattern support"
-    FLAG "-ftrivial-auto-var-init=pattern"
-)
+if(NOT GCC OR CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "14.2.0")
+    # Causes broken codegen on GCC https://gcc.gnu.org/bugzilla/show_bug.cgi?id=115527
+    qt_config_compiler_supports_flag_test(trivial_auto_var_init_pattern
+        LABEL "-ftrivial-auto-var-init=pattern support"
+        FLAG "-ftrivial-auto-var-init=pattern"
+    )
+endif()
 
 # intelcet
 if(MSVC)
