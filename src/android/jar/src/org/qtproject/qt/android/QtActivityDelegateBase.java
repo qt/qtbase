@@ -132,9 +132,8 @@ abstract class QtActivityDelegateBase
             int id = -1;
             if (oldFocus instanceof QtEditText) {
                 final QtWindow oldWindow = (QtWindow) oldFocus.getParent();
-                id = oldWindow.getId();
+                QtWindow.windowFocusChanged(false, oldWindow.getId());
             }
-            QtWindow.windowFocusChanged(false, id);
         }
     }
 
