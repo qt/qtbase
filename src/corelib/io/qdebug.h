@@ -248,7 +248,7 @@ public:
     template <typename T>
     static QByteArray toBytes(const T &object)
     {
-        return toBytesImpl(&streamTypeErased<T>, &object);
+        return toBytesImpl(&streamTypeErased<T>, std::addressof(object));
     }
 };
 

@@ -95,6 +95,7 @@ private slots:
     void defaultMessagehandler() const;
     void threadSafety() const;
     void toString() const;
+    void toBytes() const;
     void noQVariantEndlessRecursion() const;
 #if defined(Q_OS_DARWIN)
     void objcInCppMode_data() const;
@@ -1355,6 +1356,41 @@ void tst_QDebug::toString() const
         TypeWithAddressOf object;
         QString expectedString {"\"test\""};
         QCOMPARE(QDebug::toString(object), expectedString);
+    }
+}
+
+void tst_QDebug::toBytes() const
+{
+    // By reference.
+    {
+        MyPoint point(3, 4);
+        QString expected;
+        QDebug stream(&expected);
+        stream.nospace() << point;
+        QCOMPARE(QDebug::toBytes(point), expected);
+    }
+
+    // By pointer.
+    {
+        QObject qobject;
+        qobject.setObjectName("test");
+        QString expected;
+        QDebug stream(&expected);
+        stream.nospace() << &qobject;
+        QCOMPARE(QDebug::toBytes(&qobject), expected);
+    }
+
+    // Overloaded operator&
+    {
+        struct TypeWithAddressOf
+        {
+            int *operator&() const { return nullptr; }
+            operator QByteArray() const { return "test"; }
+        };
+
+        TypeWithAddressOf object;
+        QString expected{ "\"test\"" };
+        QCOMPARE(QDebug::toBytes(object), expected);
     }
 }
 
