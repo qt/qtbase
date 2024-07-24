@@ -21,6 +21,7 @@
 #include <chrono>
 #include <list>
 #include <map>
+#include <memory>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -235,7 +236,7 @@ public:
     template <typename T>
     static QString toString(const T &object)
     {
-        return toStringImpl(&streamTypeErased<T>, &object);
+        return toStringImpl(&streamTypeErased<T>, std::addressof(object));
     }
 };
 
