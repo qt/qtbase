@@ -74,6 +74,9 @@ instructions:
     variableName: DESTDIR
     variableValue: "{{.InstallRoot}}"
   - !include "{{qt/qtbase}}/call_host_install.yaml"
+  - type: EnvironmentVariable
+    variableName: DESTDIR
+    variableValue: ""
   - type: SignPackage
     enable_if:
       condition: and
