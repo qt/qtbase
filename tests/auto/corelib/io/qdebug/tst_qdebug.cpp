@@ -1343,6 +1343,19 @@ void tst_QDebug::toString() const
         stream.nospace() << &qobject;
         QCOMPARE(QDebug::toString(&qobject), expectedString);
     }
+
+    // Overloaded operator&
+    {
+        struct TypeWithAddressOf
+        {
+            int* operator&() const { return nullptr; }
+            operator QByteArray() const { return "test"; }
+        };
+
+        TypeWithAddressOf object;
+        QString expectedString {"\"test\""};
+        QCOMPARE(QDebug::toString(object), expectedString);
+    }
 }
 
 void tst_QDebug::noQVariantEndlessRecursion() const
