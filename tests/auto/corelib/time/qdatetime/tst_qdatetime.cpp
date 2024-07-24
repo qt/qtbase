@@ -3685,31 +3685,21 @@ void tst_QDateTime::timeZoneAbbreviation()
         QDateTime dt4 = QDate(2013, 1, 1).startOfDay();
         /* Note that MET is functionally an alias for CET (their zoneinfo files
            differ only in the first letter of the abbreviations), unlike the
-           various zones that give CET as their abbreviation.
+           various zones that give CET as their abbreviation. The GMT+[12] names
+           show up as fall-back if the system locale doesn't have a standard
+           abbreviation for Central European Time.
         */
         {
-            const auto abbrev = dt4.timeZoneAbbreviation();
-            auto reporter = qScopeGuard([abbrev]() {
-                qDebug() << "Unexpected abbreviation" << abbrev;
-            });
-#ifdef Q_OS_WIN
-            QEXPECT_FAIL("", "Windows only reports long name (QTBUG-32759)", Continue);
-#endif
-            QVERIFY(abbrev == u"CET"_s || abbrev == u"MET"_s);
-            reporter.dismiss();
+            const QString abbrev = dt4.timeZoneAbbreviation();
+            QVERIFY2(abbrev == u"CET"_s || abbrev == u"MET"_s || abbrev == u"GMT+1"_s,
+                     qPrintable(abbrev));
         }
         // Time definitely in Daylight Time
         QDateTime dt5 = QDate(2013, 6, 1).startOfDay();
         {
-            const auto abbrev = dt5.timeZoneAbbreviation();
-            auto reporter = qScopeGuard([abbrev]() {
-                qDebug() << "Unexpected abbreviation" << abbrev;
-            });
-#ifdef Q_OS_WIN
-            QEXPECT_FAIL("", "Windows only reports long name (QTBUG-32759)", Continue);
-#endif
-            QVERIFY(abbrev == u"CEST"_s || abbrev == u"MEST"_s);
-            reporter.dismiss();
+            const QString abbrev = dt5.timeZoneAbbreviation();
+            QVERIFY2(abbrev == u"CEST"_s || abbrev == u"MEST"_s || abbrev == u"GMT+2"_s,
+                     qPrintable(abbrev));
         }
     } else {
         qDebug("(Skipped some CET-only tests)");

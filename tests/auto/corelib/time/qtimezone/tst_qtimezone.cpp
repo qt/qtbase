@@ -1686,8 +1686,8 @@ void tst_QTimeZone::winTest()
         ZONE_DNAME_CHECK(GenericTime, OffsetName, "UTC+01:00");
 
         // Test Abbreviations
-        QCOMPARE(tzp.abbreviation(std), QString("W. Europe Standard Time"));
-        QCOMPARE(tzp.abbreviation(dst), QString("W. Europe Daylight Time"));
+        QCOMPARE(tzp.abbreviation(std), QString("CET"));
+        QCOMPARE(tzp.abbreviation(dst), QString("CEST"));
     }
 
     testCetPrivate(tzp);
@@ -1701,9 +1701,6 @@ void tst_QTimeZone::winTest()
 
 void tst_QTimeZone::localeSpecificDisplayName_data()
 {
-#ifdef USING_WIN_TZ
-    QSKIP("MS backend does not use locale parameter");
-#endif
     QTest::addColumn<QByteArray>("zoneName");
     QTest::addColumn<QLocale>("locale");
     QTest::addColumn<QTimeZone::TimeType>("timeType");
@@ -1745,8 +1742,6 @@ void tst_QTimeZone::localeSpecificDisplayName()
     QVERIFY(zone.isValid());
 
     const QString localeName = zone.displayName(timeType, QTimeZone::LongName, locale);
-    if (localeName.isEmpty()) // Backend doesn't know how to localize this zone's name
-        QEXPECT_FAIL("", "QTBUG-115158 zone name localization unknown", Continue);
     QCOMPARE(localeName, expectedName);
 }
 

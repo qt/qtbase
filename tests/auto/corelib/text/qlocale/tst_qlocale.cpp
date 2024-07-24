@@ -2126,22 +2126,18 @@ void tst_QLocale::formatTimeZone()
         // Time definitely in Standard Time
         const QStringList knownCETus = {
             u"GMT+1"_s, // ICU
-            u"Central Europe Standard Time"_s, // MS (lacks abbreviations)
-            u"Central European Standard Time"_s,
             u"CET"_s // Standard abbreviation
         };
         const QString cet = enUS.toString(QDate(2013, 1, 1).startOfDay(), u"t");
-        QVERIFY2(knownCETus.contains(cet), qPrintable(cet));
+        QVERIFY2(knownCETus.contains(cet), cet.isEmpty() ? "[empty]" : qPrintable(cet));
 
         // Time definitely in Daylight Time
         const QStringList knownCESTus = {
             u"GMT+2"_s, // ICU
-            u"Central Europe Summer Time"_s, // MS (lacks abbreviations)
-            u"Central European Summer Time"_s,
             u"CEST"_s // Standard abbreviation
         };
         const QString cest = enUS.toString(QDate(2013, 6, 1).startOfDay(), u"t");
-        QVERIFY2(knownCESTus.contains(cest), qPrintable(cest));
+        QVERIFY2(knownCESTus.contains(cest), cest.isEmpty() ? "[empty]" : qPrintable(cest));
     } else {
         qDebug("(Skipped some CET-only tests)");
     }

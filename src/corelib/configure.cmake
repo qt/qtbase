@@ -903,10 +903,10 @@ qt_feature("timezone" PUBLIC
 )
 qt_feature("timezone_locale" PRIVATE
     SECTION "Utilities"
-    LABEL "QTimeZone"
+    LABEL "QTimeZoneLocale"
     PURPOSE "Provides support for localized time-zone display names."
     CONDITION
-        QT_FEATURE_timezone AND ( ( UNIX AND NOT APPLE AND NOT ANDROID ) OR QT_FEATURE_icu )
+        QT_FEATURE_timezone AND NOT APPLE AND NOT ANDROID
 )
 qt_feature("datetimeparser" PRIVATE
     SECTION "Utilities"

@@ -13,6 +13,8 @@
 
 #include <private/qwinregistry_p.h>
 
+QT_REQUIRE_CONFIG(timezone_locale);
+
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
@@ -596,27 +598,19 @@ QString QWinTimeZonePrivate::displayName(QTimeZone::TimeType timeType,
                                          QTimeZone::NameType nameType,
                                          const QLocale &locale) const
 {
-    // TODO Registry holds MUI keys, should be able to look up translations?
-    Q_UNUSED(locale);
-
-    if (nameType == QTimeZone::OffsetName) {
-        const QWinTransitionRule &rule =
-            m_tranRules.at(ruleIndexForYear(m_tranRules, QDate::currentDate().year()));
-        int offset = rule.standardTimeBias;
-        if (timeType == QTimeZone::DaylightTime)
-            offset += rule.daylightTimeBias;
-        return isoOffsetFormat(offset * -60);
+    // Registry gave us long names for the system locale:
+    if (nameType == QTimeZone::LongName && locale == QLocale::system()) {
+        switch (timeType) {
+        case  QTimeZone::DaylightTime :
+            return m_daylightName;
+        case  QTimeZone::GenericTime :
+            return m_displayName;
+        case  QTimeZone::StandardTime :
+            return m_standardName;
+        }
     }
-
-    switch (timeType) {
-    case  QTimeZone::DaylightTime :
-        return m_daylightName;
-    case  QTimeZone::GenericTime :
-        return m_displayName;
-    case  QTimeZone::StandardTime :
-        return m_standardName;
-    }
-    return m_standardName;
+    // Fall back to base class for everything else.
+    return QTimeZonePrivate::displayName(timeType, nameType, locale);;
 }
 
 QString QWinTimeZonePrivate::abbreviation(qint64 atMSecsSinceEpoch) const
@@ -871,18 +865,17 @@ QTimeZonePrivate::Data QWinTimeZonePrivate::ruleToData(const QWinTransitionRule 
     tran.standardTimeOffset = rule.standardTimeBias * -60;
     if (fakeDst) {
         tran.daylightTimeOffset = 0;
-        tran.abbreviation = m_standardName;
         // Rule may claim we're in DST when it's actually a standard time change:
         if (type == QTimeZone::DaylightTime)
             tran.standardTimeOffset += rule.daylightTimeBias * -60;
     } else if (type == QTimeZone::DaylightTime) {
         tran.daylightTimeOffset = rule.daylightTimeBias * -60;
-        tran.abbreviation = m_daylightName;
     } else {
         tran.daylightTimeOffset = 0;
-        tran.abbreviation = m_standardName;
     }
     tran.offsetFromUtc = tran.standardTimeOffset + tran.daylightTimeOffset;
+    tran.abbreviation = localeName(atMSecsSinceEpoch, tran.offsetFromUtc,
+                                   type, QTimeZone::ShortName, QLocale::system());
     return tran;
 }
 
