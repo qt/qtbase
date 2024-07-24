@@ -2458,8 +2458,8 @@ void tst_QWidget::tabOrderWithProxyDisabled()
     container.show();
     container.activateWindow();
 
-    if (!QTest::qWaitForWindowActive(&container))
-        QSKIP("Window failed to activate, skipping test");
+    if (!QTest::qWaitForWindowFocused(&container))
+        QSKIP("Window failed to activate and be focused, skipping test");
 
     QVERIFY2(lineEdit1.hasFocus(),
              qPrintable(focusWidgetName()));
@@ -2629,8 +2629,8 @@ void tst_QWidget::tabOrderWithProxyOutOfOrder()
 
     container.show();
     container.activateWindow();
-    if (!QTest::qWaitForWindowActive(&container))
-        QSKIP("Window failed to activate, skipping test");
+    if (!QTest::qWaitForWindowFocused(&container))
+        QSKIP("Window failed to activate and be focused, skipping test");
 
     QCOMPARE(QApplication::focusWidget(), &outsideButton);
     container.tab();
@@ -2786,8 +2786,8 @@ void tst_QWidget::tabOrderWithCompoundWidgetsNoFocusPolicy()
     container.show();
     container.activateWindow();
 
-    if (!QTest::qWaitForWindowActive(&container))
-        QSKIP("Window failed to activate, skipping test");
+    if (!QTest::qWaitForWindowFocused(&container))
+        QSKIP("Window failed to activate and be focused, skipping test");
 
     QVERIFY2(spinbox1.hasFocus(),
              qPrintable(focusWidgetName()));
