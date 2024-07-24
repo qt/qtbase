@@ -348,6 +348,23 @@ macro(_qt_internal_get_sbom_add_target_common_options opt_args single_args multi
     unset(purl_multi_args)
 endmacro()
 
+# Helper to get all known SBOM specific options, without the ones that qt_internal_add_module
+# and similar functions understand, like LIBRARIES, INCLUDES, etc.
+macro(_qt_internal_get_sbom_specific_options opt_args single_args multi_args)
+    set(${opt_args} "")
+    set(${single_args} "")
+    set(${multi_args} "")
+
+    _qt_internal_get_sbom_add_target_common_options(
+        common_opt_args common_single_args common_multi_args)
+    list(APPEND ${opt_args} ${common_opt_args})
+    list(APPEND ${single_args} ${common_single_args})
+    list(APPEND ${multi_args} ${common_multi_args})
+
+    _qt_internal_sbom_get_multi_config_single_args(multi_config_single_args)
+    list(APPEND ${single_args} ${multi_config_single_args})
+endmacro()
+
 # Helper to get the options that _qt_internal_sbom_add_target understands.
 # Also used in qt_find_package_extend_sbom.
 macro(_qt_internal_get_sbom_add_target_options opt_args single_args multi_args)
@@ -362,14 +379,11 @@ macro(_qt_internal_get_sbom_add_target_options opt_args single_args multi_args)
         PUBLIC_LIBRARIES
     )
 
-    _qt_internal_get_sbom_add_target_common_options(
-        common_opt_args common_single_args common_multi_args)
-    list(APPEND opt_args ${common_opt_args})
-    list(APPEND single_args ${common_single_args})
-    list(APPEND multi_args ${common_multi_args})
-
-    _qt_internal_sbom_get_multi_config_single_args(multi_config_single_args)
-    list(APPEND single_args ${multi_config_single_args})
+    _qt_internal_get_sbom_specific_options(
+        specific_opt_args specific_single_args specific_multi_args)
+    list(APPEND ${opt_args} ${specific_opt_args})
+    list(APPEND ${single_args} ${specific_single_args})
+    list(APPEND ${multi_args} ${specific_multi_args})
 endmacro()
 
 # Generate sbom information for a given target.
@@ -439,15 +453,20 @@ function(_qt_internal_sbom_add_target target)
         list(APPEND attribution_args CREATE_SBOM_FOR_EACH_ATTRIBUTION)
     endif()
 
+    # Forward the sbom specific options when handling attribution files because those might
+    # create other sbom targets that need to inherit the parent ones.
+    _qt_internal_get_sbom_specific_options(sbom_opt_args sbom_single_args sbom_multi_args)
+
     _qt_internal_forward_function_args(
         FORWARD_APPEND
         FORWARD_PREFIX arg
         FORWARD_OUT_VAR attribution_args
+        FORWARD_OPTIONS
+            ${sbom_opt_args}
         FORWARD_SINGLE
-            ATTRIBUTION_ENTRY_INDEX
+            ${sbom_single_args}
         FORWARD_MULTI
-            ATTRIBUTION_FILE_PATHS
-            ATTRIBUTION_FILE_DIR_PATHS
+            ${sbom_multi_args}
     )
 
     if(NOT arg_NO_CURRENT_DIR_ATTRIBUTION
@@ -1905,12 +1924,14 @@ function(_qt_internal_sbom_handle_qt_attribution_files out_prefix_outer)
     )
     set(single_args
         PARENT_TARGET
-        ATTRIBUTION_ENTRY_INDEX
     )
-    set(multi_args
-        ATTRIBUTION_FILE_PATHS
-        ATTRIBUTION_FILE_DIR_PATHS
-    )
+    set(multi_args "")
+
+    _qt_internal_get_sbom_specific_options(sbom_opt_args sbom_single_args sbom_multi_args)
+    list(APPEND opt_args ${sbom_opt_args})
+    list(APPEND single_args ${sbom_single_args})
+    list(APPEND multi_args ${sbom_multi_args})
+
     cmake_parse_arguments(PARSE_ARGV 1 arg "${opt_args}" "${single_args}" "${multi_args}")
     _qt_internal_validate_all_args_are_parsed(arg)
 
@@ -1930,7 +1951,13 @@ function(_qt_internal_sbom_handle_qt_attribution_files out_prefix_outer)
         math(EXPR attribution_file_count "${attribution_file_count} + 1")
     endforeach()
 
+    # If CREATE_SBOM_FOR_EACH_ATTRIBUTION is set, that means the parent target was a qt entity,
+    # and not a 3rd party library.
+    # In which case we don't want to proagate options like CPE to the child attribution targets,
+    # because the CPE is meant for the parent target.
+    set(propagate_sbom_options_to_new_attribution_targets TRUE)
     if(arg_CREATE_SBOM_FOR_EACH_ATTRIBUTION)
+        set(propagate_sbom_options_to_new_attribution_targets FALSE)
         if(NOT arg_PARENT_TARGET)
             message(FATAL_ERROR "PARENT_TARGET must be set")
         endif()
@@ -2026,6 +2053,33 @@ function(_qt_internal_sbom_handle_qt_attribution_files out_prefix_outer)
                     string(APPEND attribution_target "${${out_prefix}_attribution_id}")
                 endif()
 
+                set(sbom_args "")
+
+                if(propagate_sbom_options_to_new_attribution_targets)
+                    # Filter out the attributtion options, they will be passed mnaually
+                    # depending on which file and index is currently being processed.
+                    _qt_internal_get_sbom_specific_options(
+                        sbom_opt_args sbom_single_args sbom_multi_args)
+                    list(REMOVE_ITEM sbom_opt_args NO_CURRENT_DIR_ATTRIBUTION)
+                    list(REMOVE_ITEM sbom_single_args ATTRIBUTION_ENTRY_INDEX)
+                    list(REMOVE_ITEM sbom_multi_args
+                        ATTRIBUTION_FILE_PATHS
+                        ATTRIBUTION_FILE_DIR_PATHS
+                    )
+
+                    _qt_internal_forward_function_args(
+                        FORWARD_APPEND
+                        FORWARD_PREFIX arg
+                        FORWARD_OUT_VAR sbom_args
+                        FORWARD_OPTIONS
+                            ${sbom_opt_args}
+                        FORWARD_SINGLE
+                            ${sbom_single_args}
+                        FORWARD_MULTI
+                            ${sbom_multi_args}
+                    )
+                endif()
+
                 # Create another sbom target with the id as a hint for the target name,
                 # the attribution file passed, and make the new target a dependency of the
                 # parent one.
@@ -2035,6 +2089,7 @@ function(_qt_internal_sbom_handle_qt_attribution_files out_prefix_outer)
                     ATTRIBUTION_FILE_PATHS "${attribution_file_path}"
                     ATTRIBUTION_ENTRY_INDEX "${entry_index}"
                     NO_CURRENT_DIR_ATTRIBUTION
+                    ${sbom_args}
                 )
 
                 _qt_internal_extend_sbom_dependencies(${arg_PARENT_TARGET}
