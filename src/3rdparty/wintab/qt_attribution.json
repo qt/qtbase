@@ -5,7 +5,7 @@
     "QtUsage": "Used in the Qt platform plugin for Windows. Configure with -no-feature-tabletevent to avoid.",
 
     "Description": "Wintab is a de facto API for pointing devices on Windows.",
-    "PackageComment": "Upstream http://www.pointing.com/Wintab.html no longer offers updates; treat as final",
+    "PackageComment": "Upstream http://www.pointing.com/Wintab.html no longer offers updates; treat as final, no relevant CPE and PURL found",
     "License": "LCS-Telegraphics License",
     "LicenseFile": "LICENSE.txt",
     "LicenseId": "urn:dje:license:lcs-telegraphics",

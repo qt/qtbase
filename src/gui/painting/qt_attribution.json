@@ -8,10 +8,12 @@
 
         "Description": "FreeType is a freely available software library to render fonts.",
         "Homepage": "http://www.freetype.org",
+        "PURL": "pkg:generic/freetype-grayraster?download_url=https://www.freetype.org/",
         "License": "Freetype Project License or GNU General Public License v2.0 only",
         "LicenseId": "FTL OR GPL-2.0-only",
         "LicenseFile": "../../3rdparty/freetype/LICENSE.txt",
-        "Copyright": "Copyright 2000-2016 by David Turner, Robert Wilhelm, and Werner Lemberg."
+        "Copyright": "Copyright 2000-2016 by David Turner, Robert Wilhelm, and Werner Lemberg.",
+        "Comment": "no relevant CPE found"
     },
     {
         "Id": "smooth-scaling-algorithm",
@@ -26,7 +28,8 @@
         "LicenseFile": "QIMAGETRANSFORM_LICENSE.txt",
         "Copyright": ["Copyright (C) 2004, 2005 Daniel M. Duley.",
         "(C) Carsten Haitzler and various contributors.",
-        "(C) Willem Monsuwe <willem@stack.nl>"]
+        "(C) Willem Monsuwe <willem@stack.nl>"],
+        "Comment": "no relevant CPE or PURL found"
     },
     {
         "Id": "xserverhelper",
@@ -37,10 +40,12 @@
 
         "Description": "Code from X11's region.h, Region.c, poly.h, and PolyReg.c",
         "Homepage": "https://www.x.org/",
+        "PURL": "pkg:generic/xserverhelper?download_url=https://www.x.org/",
         "License": "X11 License and Historical Permission Notice and Disclaimer",
         "LicenseId": "X11 AND HPND",
         "LicenseFile": "XCONSORTIUM_LICENSE.txt",
         "Copyright": ["Copyright (c) 1987, 1988 X Consortium",
-        "Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts."]
+        "Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts."],
+        "Comment": "no relevant CPE found"
     }
 ]
