@@ -114,15 +114,15 @@ template <size_t Highest> constexpr auto minifyValue()
     }
 }
 
-template <typename Char, size_t StringLength, typename Extractor, typename... T>
-constexpr auto makeStaticString(Extractor extract, const T &... entries)
+template <size_t StringLength, typename Char, int... Nx>
+constexpr auto makeStaticString(const Char (&...entries)[Nx])
 {
     // append an extra null terminator
     std::array<Char, StringLength + 1> result = {};
     qptrdiff offset = 0;
 
-    const Char *strings[] = { extract(entries).operator const Char *()... };
-    size_t lengths[] = { (sizeof(extract(T{})) / sizeof(Char))... };
+    const Char *strings[] = { entries... };
+    size_t lengths[] = { (sizeof(entries) / sizeof(Char))... };
     for (size_t i = 0; i < std::size(strings); ++i) {
         q20::copy_n(strings[i], lengths[i], result.begin() + offset);
         offset += lengths[i];
@@ -130,28 +130,20 @@ constexpr auto makeStaticString(Extractor extract, const T &... entries)
     return result;
 }
 
-template <typename Char, size_t N> struct StaticString
+template <typename Char, int... Nx>
+constexpr auto makeOffsetStringArray(const Char (&...entries)[Nx])
 {
-    Char value[N] = {};
-    constexpr StaticString() = default;
-    constexpr StaticString(const Char (&s)[N])  { q20::copy_n(s, N, value); }
-    constexpr operator const Char *() const     { return value; }
-};
-
-template <typename Char, typename StringExtractor, typename... T>
-constexpr auto makeOffsetStringArray(StringExtractor extractString, const T &... entries)
-{
-    constexpr size_t StringLength = (sizeof(extractString(T{})) + ...) / sizeof(Char);
+    constexpr size_t StringLength = (Nx + ...);
     using OffsetType = decltype(QtPrivate::minifyValue<StringLength>());
 
     // prepend the first offset (zero) pointing to the *start* of the first element
     size_t offset = 0;
     std::array offsetList = {
         OffsetType(0),
-        OffsetType(offset += sizeof(extractString(T{})) / sizeof(Char))...
+        OffsetType(offset += Nx)...
     };
 
-    std::array staticString = QtPrivate::makeStaticString<Char, StringLength>(extractString, entries...);
+    std::array staticString = QtPrivate::makeStaticString<StringLength>(entries...);
     return QOffsetStringArray(staticString, offsetList);
 }
 } // namespace QtPrivate
@@ -165,8 +157,7 @@ requires std::is_same_v<Char, char> || std::is_same_v<Char, char16_t>
 #endif
 constexpr auto qOffsetStringArray(const Char (&...strings)[Nx]) noexcept
 {
-    auto extractString = [](const auto &s) -> decltype(auto) { return s; };
-    return QtPrivate::makeOffsetStringArray<Char>(extractString, QtPrivate::StaticString(strings)...);
+    return QtPrivate::makeOffsetStringArray<Char>(strings...);
 }
 
 QT_WARNING_POP
