@@ -14,7 +14,7 @@ interface QtInputInterface {
     void resetSoftwareKeyboard();
     void hideSoftwareKeyboard();
     boolean isSoftwareKeyboardVisible();
-    int getSelectHandleWidth();
+    int getSelectionHandleWidth();
     void updateHandles(Activity activity, QtLayout layout, int mode, int editX, int editY,
                        int editButtons, int x1, int y1, int x2, int y2, boolean rtl);
     QtInputConnection.QtInputConnectionListener getInputConnectionListener();

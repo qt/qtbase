@@ -49,23 +49,10 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
     private int m_portraitKeyboardHeight = 0;
     private int m_landscapeKeyboardHeight = 0;
     private int m_probeKeyboardHeightDelayMs = 50;
-    private CursorHandle m_cursorHandle;
-    private CursorHandle m_leftSelectionHandle;
-    private CursorHandle m_rightSelectionHandle;
+
     private EditPopupMenu m_editPopupMenu;
 
     private int m_softInputMode = 0;
-
-    // Values coming from QAndroidInputContext::CursorHandleShowMode
-    private static final int CursorHandleNotShown       = 0;
-    private static final int CursorHandleShowNormal     = 1;
-    private static final int CursorHandleShowSelection  = 2;
-    private static final int CursorHandleShowEdit       = 0x100;
-
-    // Handle IDs
-    static final int IdCursorHandle = 1;
-    static final int IdLeftHandle = 2;
-    static final int IdRightHandle = 3;
 
     private static Boolean m_tabletEventSupported = null;
 
@@ -150,15 +137,9 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
     }
 
     @Override
-    public int getSelectHandleWidth()
+    public int getSelectionHandleWidth()
     {
-        int width = 0;
-        if (m_leftSelectionHandle != null && m_rightSelectionHandle != null) {
-            width = Math.max(m_leftSelectionHandle.width(), m_rightSelectionHandle.width());
-        } else if (m_cursorHandle != null) {
-            width = m_cursorHandle.width();
-        }
-        return width;
+        return m_currentEditText == null ? 0 : m_currentEditText.getSelectionHandleWidth();
     }
 
     /* called from the C++ code when the position of the cursor or selection handles needs to
@@ -369,55 +350,17 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
                                int editX, int editY, int editButtons,
                                int x1, int y1, int x2, int y2, boolean rtl)
     {
+        if (m_currentEditText != null)
+            m_currentEditText.updateHandles(mode, editX, editY, editButtons, x1, y1, x2, y2, rtl);
+
         switch (mode & 0xff)
         {
-            case CursorHandleNotShown:
-                if (m_cursorHandle != null) {
-                    m_cursorHandle.hide();
-                    m_cursorHandle = null;
-                }
-                if (m_rightSelectionHandle != null) {
-                    m_rightSelectionHandle.hide();
-                    m_leftSelectionHandle.hide();
-                    m_rightSelectionHandle = null;
-                    m_leftSelectionHandle = null;
-                }
+            case QtEditText.CursorHandleNotShown:
                 if (m_editPopupMenu != null)
                     m_editPopupMenu.hide();
                 break;
-
-            case CursorHandleShowNormal:
-                if (m_cursorHandle == null) {
-                    m_cursorHandle = new CursorHandle(activity, layout, IdCursorHandle,
-                            android.R.attr.textSelectHandle, false);
-                }
-                m_cursorHandle.setPosition(x1, y1);
-                if (m_rightSelectionHandle != null) {
-                    m_rightSelectionHandle.hide();
-                    m_leftSelectionHandle.hide();
-                    m_rightSelectionHandle = null;
-                    m_leftSelectionHandle = null;
-                }
-                break;
-
-            case CursorHandleShowSelection:
-                if (m_rightSelectionHandle == null) {
-                    m_leftSelectionHandle = new CursorHandle(activity, layout, IdLeftHandle,
-                            !rtl ? android.R.attr.textSelectHandleLeft :
-                                    android.R.attr.textSelectHandleRight,
-                            rtl);
-                    m_rightSelectionHandle = new CursorHandle(activity, layout, IdRightHandle,
-                            !rtl ? android.R.attr.textSelectHandleRight :
-                                    android.R.attr.textSelectHandleLeft,
-                            rtl);
-                }
-                m_leftSelectionHandle.setPosition(x1,y1);
-                m_rightSelectionHandle.setPosition(x2,y2);
-                if (m_cursorHandle != null) {
-                    m_cursorHandle.hide();
-                    m_cursorHandle = null;
-                }
-                mode |= CursorHandleShowEdit;
+            case QtEditText.CursorHandleShowSelection:
+                mode |= QtEditText.CursorHandleShowEdit;
                 break;
         }
 
@@ -425,9 +368,9 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
             editButtons &= ~EditContextView.PASTE_BUTTON;
 
         if (m_editPopupMenu != null) {
-            if ((mode & CursorHandleShowEdit) == CursorHandleShowEdit && editButtons != 0) {
-                m_editPopupMenu.setPosition(editX, editY, editButtons,
-                        m_cursorHandle, m_leftSelectionHandle, m_rightSelectionHandle);
+            if ((mode & QtEditText.CursorHandleShowEdit) == QtEditText.CursorHandleShowEdit &&
+                 editButtons != 0) {
+                m_editPopupMenu.setPosition(editX, editY, editButtons, m_currentEditText);
             } else {
                 m_editPopupMenu.hide();
             }

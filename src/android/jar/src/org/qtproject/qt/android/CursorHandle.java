@@ -69,6 +69,12 @@ class CursorView extends ImageView
 class CursorHandle implements ViewTreeObserver.OnPreDrawListener
 {
     private static final String QtTag = "QtCursorHandle";
+
+    // Handle IDs
+    static final int IdCursorHandle = 1;
+    static final int IdLeftHandle = 2;
+    static final int IdRightHandle = 3;
+
     private final View m_layout;
     private CursorView m_cursorView = null;
     private PopupWindow m_popup = null;
@@ -138,9 +144,9 @@ class CursorHandle implements ViewTreeObserver.OnPreDrawListener
         int x2 = x + layoutLocation[0] - activityLocation[0];
         int y2 = y + layoutLocation[1] + m_yShift + (activityLocationInWindow[1] - activityLocation[1]);
 
-        if (m_id == QtInputDelegate.IdCursorHandle) {
+        if (m_id == IdCursorHandle) {
             x2 -= m_popup.getWidth() / 2 ;
-        } else if ((m_id == QtInputDelegate.IdLeftHandle && !m_rtl) || (m_id == QtInputDelegate.IdRightHandle && m_rtl)) {
+        } else if ((m_id == IdLeftHandle && !m_rtl) || (m_id == IdRightHandle && m_rtl)) {
             x2 -= m_popup.getWidth() * 3 / 4;
         } else {
             x2 -= m_popup.getWidth() / 4;
