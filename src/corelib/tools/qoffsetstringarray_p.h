@@ -114,22 +114,6 @@ template <size_t Highest> constexpr auto minifyValue()
     }
 }
 
-template <size_t StringLength, typename Char, int... Nx>
-constexpr auto makeStaticString(const Char (&...entries)[Nx])
-{
-    // append an extra null terminator
-    std::array<Char, StringLength + 1> result = {};
-    qptrdiff offset = 0;
-
-    const Char *strings[] = { entries... };
-    size_t lengths[] = { (sizeof(entries) / sizeof(Char))... };
-    for (size_t i = 0; i < std::size(strings); ++i) {
-        q20::copy_n(strings[i], lengths[i], result.begin() + offset);
-        offset += lengths[i];
-    }
-    return result;
-}
-
 template <typename Char, int... Nx>
 constexpr auto makeOffsetStringArray(const Char (&...entries)[Nx])
 {
@@ -143,7 +127,14 @@ constexpr auto makeOffsetStringArray(const Char (&...entries)[Nx])
         OffsetType(offset += Nx)...
     };
 
-    std::array staticString = QtPrivate::makeStaticString<StringLength>(entries...);
+    // append an extra null terminator
+    std::array<Char, StringLength + 1> staticString = {};
+    const Char *strings[] = { entries... };
+    for (size_t i = 0; i < std::size(strings); ++i) {
+        size_t length = offsetList[i + 1] - offsetList[i];
+        q20::copy_n(strings[i], length, staticString.begin() + offsetList[i]);
+    }
+
     return QOffsetStringArray(staticString, offsetList);
 }
 } // namespace QtPrivate
