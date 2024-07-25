@@ -99,8 +99,7 @@ namespace QtAndroidInput
     {
         AndroidBackendRegister *reg = QtAndroid::backendRegister();
         reg->callInterface<QtJniTypes::QtInputInterface, void>(
-                "updateHandles", QtAndroidPrivate::activity(),
-                qtLayout().object<QtJniTypes::QtLayout>(), mode, editMenuPos.x(), editMenuPos.y(),
+                "updateHandles", mode, editMenuPos.x(), editMenuPos.y(),
                 editButtons, cursor.x(), cursor.y(), anchor.x(), anchor.y(), rtl);
     }
 
