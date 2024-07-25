@@ -14,6 +14,7 @@
 #ifndef QT_NO_DEBUG
 #include "qdebug.h"
 #endif
+#include <QtCore/q20utility.h>
 
 #include <limits.h>
 #include <algorithm>
@@ -2234,7 +2235,7 @@ int QStyle::sliderPositionFromValue(int min, int max, int logicalValue, int span
     if (range > (uint)INT_MAX/4096) {
         double dpos = (double(p))/(double(range)/span);
         return int(dpos);
-    } else if (range > (uint)span) {
+    } else if (q20::cmp_greater(range, span)) {
         return (2 * p * span + range) / (2*range);
     } else {
         uint div = span / range;
@@ -2273,7 +2274,7 @@ int QStyle::sliderValueFromPosition(int min, int max, int pos, int span, bool up
 
     const qint64 range = qint64(max) - min;
 
-    if ((uint)span > range) {
+    if (q20::cmp_greater(span, range)) {
         const int tmp = (2 * range * pos + span) / (qint64(2) * span);
         return upsideDown ? max - tmp : tmp + min;
     } else {

@@ -24,6 +24,8 @@
 #endif
 #endif
 
+#include <QtCore/q20utility.h>
+
 QT_BEGIN_NAMESPACE
 
 struct QDefaultColorTables
@@ -1773,7 +1775,7 @@ void dither_to_Mono(QImageData *dst, const QImageData *src,
                     }
                 } else {
                     while (p < end) {
-                        if ((uint)qGray(*p++) < qt_bayer_matrix[j++&15][i&15])
+                        if (q20::cmp_less(qGray(*p++), qt_bayer_matrix[j++&15][i&15]))
                             *m |= 1 << bit;
                         if (bit == 0) {
                             m++;

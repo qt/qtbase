@@ -6,6 +6,7 @@
 #include <QtFbSupport/private/qfbwindow_p.h>
 #include <QtCore/QFile>
 #include <QtCore/QRegularExpression>
+#include <QtCore/q20utility.h>
 #include <QtGui/QPainter>
 
 #include <private/qcore_unix_p.h> // overrides QT_OPEN
@@ -69,16 +70,16 @@ static QRect determineGeometry(const fb_var_screeninfo &vinfo, const QRect &user
     if (userGeometry.isValid()) {
         w = userGeometry.width();
         h = userGeometry.height();
-        if ((uint)w > vinfo.xres)
+        if (q20::cmp_greater(w, vinfo.xres))
             w = vinfo.xres;
-        if ((uint)h > vinfo.yres)
+        if (q20::cmp_greater(h, vinfo.yres))
             h = vinfo.yres;
 
         int xxoff = userGeometry.x(), yyoff = userGeometry.y();
         if (xxoff != 0 || yyoff != 0) {
-            if (xxoff < 0 || xxoff + w > (int)(vinfo.xres))
+            if (xxoff < 0 || q20::cmp_greater(xxoff + w, vinfo.xres))
                 xxoff = vinfo.xres - w;
-            if (yyoff < 0 || yyoff + h > (int)(vinfo.yres))
+            if (yyoff < 0 || q20::cmp_greater(yyoff + h, vinfo.yres))
                 yyoff = vinfo.yres - h;
             xoff += xxoff;
             yoff += yyoff;

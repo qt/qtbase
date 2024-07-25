@@ -2840,7 +2840,7 @@ void QTreeView::expandToDepth(int depth)
     d->interruptDelayedItemsLayout();
     d->layout(-1);
     for (int i = 0; i < d->viewItems.size(); ++i) {
-        if (d->viewItems.at(i).level <= (uint)depth) {
+        if (q20::cmp_less_equal(d->viewItems.at(i).level, depth)) {
             d->viewItems[i].expanded = true;
             d->layout(i);
             d->storeExpanded(d->viewItems.at(i).index);
@@ -3463,7 +3463,7 @@ void QTreeViewPrivate::layout(int i, bool recursiveExpanding, bool afterIsUninit
         }
         viewItems.resize(count);
         afterIsUninitialized = true;
-    } else if (viewItems[i].total != (uint)count) {
+    } else if (q20::cmp_not_equal(viewItems[i].total, count)) {
         if (!afterIsUninitialized)
             insertViewItems(i + 1, count, QTreeViewItem()); // expand
         else if (count > 0)
