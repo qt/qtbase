@@ -84,7 +84,7 @@ namespace QtAndroidInput
     int getSelectHandleWidth()
     {
         AndroidBackendRegister *reg = QtAndroid::backendRegister();
-        return reg->callInterface<QtJniTypes::QtInputInterface, jint>("getSelectHandleWidth");
+        return reg->callInterface<QtJniTypes::QtInputInterface, jint>("getSelectionHandleWidth");
     }
 
     void updateHandles(int mode, QPoint editMenuPos, uint32_t editButtons, QPoint cursor, QPoint anchor, bool rtl)
