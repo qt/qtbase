@@ -107,10 +107,16 @@ abstract class QtLoader {
         setEnvironmentVariable("QT_ANDROID_FONTS_SERIF", "Droid Serif");
         setEnvironmentVariable("HOME", m_context.getFilesDir().getAbsolutePath());
         setEnvironmentVariable("TMPDIR", m_context.getCacheDir().getAbsolutePath());
-        String backgroundRunning = getMetaData("android.app.background_running");
-        setEnvironmentVariable("QT_BLOCK_EVENT_LOOPS_WHEN_SUSPENDED", backgroundRunning);
+        setEnvironmentVariable("QT_BLOCK_EVENT_LOOPS_WHEN_SUSPENDED", isBackgroundRunningBlocked());
         setEnvironmentVariable("QTRACE_LOCATION", getMetaData("android.app.trace_location"));
         appendApplicationParameters(getMetaData("android.app.arguments"));
+    }
+
+    private String isBackgroundRunningBlocked() {
+        final String backgroundRunning = getMetaData("android.app.background_running");
+        if (backgroundRunning.compareTo("true") == 0)
+            return "0";
+        return "1";
     }
 
     private ArrayList<String> preferredAbiLibs(String[] libs) {
