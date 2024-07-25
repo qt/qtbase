@@ -69,6 +69,13 @@
     in the first place. In those cases, using QStringLiteral may be
     the better option.
 
+    \note Only US-ASCII literals can be used in QLatin1StringView if the source
+    code file is encoded in UTF-8, as \l{unicode}{Qt requires}. Non-US-ASCII
+    literals like \c{QLatin1StringView("é")} will not be represented correctly.
+    You can use octal or hex notation instead:
+    \c{QLatin1StringView("\351")} or \c{QLatin1StringView("\xe9")},
+    respectively.
+
     \sa QString, QLatin1Char, {QStringLiteral()}{QStringLiteral},
     QT_NO_CAST_FROM_ASCII
 */
