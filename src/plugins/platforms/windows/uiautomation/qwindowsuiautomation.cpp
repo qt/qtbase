@@ -15,6 +15,7 @@ struct winapi_func
     const func_t func;
     const T error_value;
 #ifdef __GNUC__
+#   pragma GCC diagnostic push
 #   pragma GCC diagnostic ignored "-Wcast-function-type"
 #endif
     winapi_func(const char *lib_name, const char *func_name, func_t func_proto,

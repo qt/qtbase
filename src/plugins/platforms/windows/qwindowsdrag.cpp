@@ -183,8 +183,8 @@ public:
     void createCursors();
 
     // IDropSource methods
-    STDMETHOD(QueryContinueDrag)(BOOL fEscapePressed, DWORD grfKeyState) override;
-    STDMETHOD(GiveFeedback)(DWORD dwEffect) override;
+    STDMETHOD(QueryContinueDrag)(BOOL fEscapePressed, DWORD grfKeyState) noexcept override;
+    STDMETHOD(GiveFeedback)(DWORD dwEffect) noexcept override;
 
 private:
     struct CursorEntry {
@@ -336,7 +336,7 @@ void QWindowsOleDropSource::createCursors()
 */
 
 QT_ENSURE_STACK_ALIGNED_FOR_SSE STDMETHODIMP
-QWindowsOleDropSource::QueryContinueDrag(BOOL fEscapePressed, DWORD grfKeyState)
+QWindowsOleDropSource::QueryContinueDrag(BOOL fEscapePressed, DWORD grfKeyState) noexcept
 {
     // In some rare cases, when a mouse button is released but the mouse is static,
     // grfKeyState will not be updated with these released buttons until the mouse
@@ -390,7 +390,7 @@ QWindowsOleDropSource::QueryContinueDrag(BOOL fEscapePressed, DWORD grfKeyState)
 */
 
 QT_ENSURE_STACK_ALIGNED_FOR_SSE STDMETHODIMP
-QWindowsOleDropSource::GiveFeedback(DWORD dwEffect)
+QWindowsOleDropSource::GiveFeedback(DWORD dwEffect) noexcept
 {
     const Qt::DropAction action = translateToQDragDropAction(dwEffect);
     m_drag->updateAction(action);
@@ -484,7 +484,7 @@ void QWindowsOleDropTarget::handleDrag(QWindow *window, DWORD grfKeyState,
 
 QT_ENSURE_STACK_ALIGNED_FOR_SSE STDMETHODIMP
 QWindowsOleDropTarget::DragEnter(LPDATAOBJECT pDataObj, DWORD grfKeyState,
-                                 POINTL pt, LPDWORD pdwEffect)
+                                 POINTL pt, LPDWORD pdwEffect) noexcept
 {
     if (IDropTargetHelper* dh = QWindowsDrag::instance()->dropHelper())
         dh->DragEnter(reinterpret_cast<HWND>(m_window->winId()), pDataObj, reinterpret_cast<POINT*>(&pt), *pdwEffect);
@@ -500,7 +500,7 @@ QWindowsOleDropTarget::DragEnter(LPDATAOBJECT pDataObj, DWORD grfKeyState,
 }
 
 QT_ENSURE_STACK_ALIGNED_FOR_SSE STDMETHODIMP
-QWindowsOleDropTarget::DragOver(DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect)
+QWindowsOleDropTarget::DragOver(DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect) noexcept
 {
     if (IDropTargetHelper* dh = QWindowsDrag::instance()->dropHelper())
         dh->DragOver(reinterpret_cast<POINT*>(&pt), *pdwEffect);
@@ -521,7 +521,7 @@ QWindowsOleDropTarget::DragOver(DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect)
 }
 
 QT_ENSURE_STACK_ALIGNED_FOR_SSE STDMETHODIMP
-QWindowsOleDropTarget::DragLeave()
+QWindowsOleDropTarget::DragLeave() noexcept
 {
     if (IDropTargetHelper* dh = QWindowsDrag::instance()->dropHelper())
         dh->DragLeave();
@@ -546,7 +546,7 @@ QWindowsOleDropTarget::DragLeave()
 
 QT_ENSURE_STACK_ALIGNED_FOR_SSE STDMETHODIMP
 QWindowsOleDropTarget::Drop(LPDATAOBJECT pDataObj, DWORD grfKeyState,
-                            POINTL pt, LPDWORD pdwEffect)
+                            POINTL pt, LPDWORD pdwEffect) noexcept
 {
     if (IDropTargetHelper* dh = QWindowsDrag::instance()->dropHelper())
         dh->Drop(pDataObj, reinterpret_cast<POINT*>(&pt), *pdwEffect);

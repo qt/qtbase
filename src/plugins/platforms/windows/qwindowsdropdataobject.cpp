@@ -30,7 +30,7 @@ QWindowsDropDataObject::QWindowsDropDataObject(QMimeData *mimeData) :
 QWindowsDropDataObject::~QWindowsDropDataObject() = default;
 
 STDMETHODIMP
-QWindowsDropDataObject::GetData(LPFORMATETC pformatetc, LPSTGMEDIUM pmedium)
+QWindowsDropDataObject::GetData(LPFORMATETC pformatetc, LPSTGMEDIUM pmedium) noexcept
 {
     if (shouldIgnore(pformatetc))
         return ResultFromScode(DATA_E_FORMATETC);
@@ -39,7 +39,7 @@ QWindowsDropDataObject::GetData(LPFORMATETC pformatetc, LPSTGMEDIUM pmedium)
 }
 
 STDMETHODIMP
-QWindowsDropDataObject::QueryGetData(LPFORMATETC pformatetc)
+QWindowsDropDataObject::QueryGetData(LPFORMATETC pformatetc) noexcept
 {
     if (shouldIgnore(pformatetc))
         return ResultFromScode(DATA_E_FORMATETC);
