@@ -52,8 +52,6 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
     private int m_landscapeKeyboardHeight = 0;
     private int m_probeKeyboardHeightDelayMs = 50;
 
-    private EditPopupMenu m_editPopupMenu;
-
     private int m_softInputMode = 0;
 
     private static Boolean m_tabletEventSupported = null;
@@ -149,12 +147,13 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
        mode is one of QAndroidInputContext::CursorHandleShowMode
     */
     @Override
-    public void updateHandles(Activity activity, QtLayout layout, int mode,
-                              int editX, int editY, int editButtons,
+    public void updateHandles(int mode, int editX, int editY, int editButtons,
                               int x1, int y1, int x2, int y2, boolean rtl)
     {
-        QtNative.runAction(() -> updateHandleImpl(activity, layout, mode, editX, editY, editButtons,
-                x1, y1, x2, y2, rtl));
+        QtNative.runAction(() -> {
+            if (m_currentEditText != null)
+                m_currentEditText.updateHandles(mode, editX, editY, editButtons, x1, y1, x2, y2, rtl);
+        });
     }
 
     @Override
@@ -245,11 +244,6 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
     QtEditText getCurrentQtEditText()
     {
         return m_currentEditText;
-    }
-
-    void setEditPopupMenu(EditPopupMenu editPopupMenu)
-    {
-        m_editPopupMenu = editPopupMenu;
     }
 
     private void keyboardVisibilityUpdated(boolean visibility)
@@ -350,37 +344,6 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
                     m_probeKeyboardHeightDelayMs *= 2;
             }
         }, m_probeKeyboardHeightDelayMs);
-    }
-
-    private void updateHandleImpl(Activity activity, QtLayout layout, int mode,
-                               int editX, int editY, int editButtons,
-                               int x1, int y1, int x2, int y2, boolean rtl)
-    {
-        if (m_currentEditText != null)
-            m_currentEditText.updateHandles(mode, editX, editY, editButtons, x1, y1, x2, y2, rtl);
-
-        switch (mode & 0xff)
-        {
-            case QtEditText.CursorHandleNotShown:
-                if (m_editPopupMenu != null)
-                    m_editPopupMenu.hide();
-                break;
-            case QtEditText.CursorHandleShowSelection:
-                mode |= QtEditText.CursorHandleShowEdit;
-                break;
-        }
-
-        if (!QtClipboardManager.hasClipboardText(activity))
-            editButtons &= ~EditContextView.PASTE_BUTTON;
-
-        if (m_editPopupMenu != null) {
-            if ((mode & QtEditText.CursorHandleShowEdit) == QtEditText.CursorHandleShowEdit &&
-                 editButtons != 0) {
-                m_editPopupMenu.setPosition(editX, editY, editButtons, m_currentEditText);
-            } else {
-                m_editPopupMenu.hide();
-            }
-        }
     }
 
     boolean onKeyDown(int keyCode, KeyEvent event)

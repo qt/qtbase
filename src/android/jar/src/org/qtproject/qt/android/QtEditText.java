@@ -61,12 +61,15 @@ class QtEditText extends View
     private CursorHandle m_leftSelectionHandle;
     private CursorHandle m_rightSelectionHandle;
 
+    final private EditPopupMenu m_editPopupMenu;
+
     QtEditText(Context context, QtInputConnectionListener listener)
     {
         super(context);
         setFocusable(true);
         setFocusableInTouchMode(true);
         m_qtInputConnectionListener = listener;
+        m_editPopupMenu = new EditPopupMenu(this);
     }
 
     private void setImeOptions(int imeOptions)
@@ -299,8 +302,19 @@ class QtEditText extends View
                 m_cursorHandle.hide();
                 m_cursorHandle = null;
             }
+            mode |= CursorHandleShowEdit;
             break;
         }
+
+        if (!QtClipboardManager.hasClipboardText(getContext()))
+            editButtons &= ~EditContextView.PASTE_BUTTON;
+
+        final boolean setEditPopupPosition = (mode & QtEditText.CursorHandleShowEdit) ==
+                                             QtEditText.CursorHandleShowEdit && editButtons != 0;
+        if (setEditPopupPosition)
+            m_editPopupMenu.setPosition(editX, editY, editButtons);
+        else
+            m_editPopupMenu.hide();
     }
 
     private boolean isDisablePredictiveTextWorkaround(int inputHints)
