@@ -341,6 +341,12 @@ QDateTimePrivate::ZoneState QTimeZonePrivate::stateAtZoneTime(
     Q_ASSERT(recent < imminent && seventeenHoursInMSecs < imminent - recent + 1);
 
     const Data past = data(recent), future = data(imminent);
+    if (future.atMSecsSinceEpoch == invalidMSecs()
+        && past.atMSecsSinceEpoch == invalidMSecs()) {
+        // Failed to get any useful data near this time: apparently out of range
+        // for the backend.
+        return { forLocalMSecs };
+    }
     // > 99% of the time, past and future will agree:
     if (Q_LIKELY(past.offsetFromUtc == future.offsetFromUtc
                  && past.standardTimeOffset == future.standardTimeOffset

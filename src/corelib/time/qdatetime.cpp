@@ -2824,11 +2824,13 @@ QDateTimePrivate::ZoneState QDateTimePrivate::expressUtcAsLocal(qint64 utcMSecs)
 #if QT_CONFIG(timezone) // Use the system time-zone.
     if (const auto sys = QTimeZone::systemTimeZone(); sys.isValid()) {
         result.offset = sys.d->offsetFromUtc(utcMSecs);
-        if (qAddOverflow(utcMSecs, result.offset * MSECS_PER_SEC, &result.when))
+        if (result.offset != QTimeZonePrivate::invalidSeconds()) {
+            if (qAddOverflow(utcMSecs, result.offset * MSECS_PER_SEC, &result.when))
+                return result;
+            result.dst = sys.d->isDaylightTime(utcMSecs) ? DaylightTime : StandardTime;
+            result.valid = true;
             return result;
-        result.dst = sys.d->isDaylightTime(utcMSecs) ? DaylightTime : StandardTime;
-        result.valid = true;
-        return result;
+        }
     }
 #endif // timezone
 
