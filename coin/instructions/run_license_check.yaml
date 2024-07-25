@@ -1,0 +1,23 @@
+type: Group
+instructions:
+    - type: ChangeDirectory
+      directory: "{{.AgentWorkingDir}}"
+    - type: InstallSourceArchive
+      maxTimeInSeconds: 600
+      maxTimeBetweenOutput: 600
+      project: qt/qtqa
+      ref: dev
+      directory: qt/qtqa-latest
+      userMessageOnFailure: >
+              Could not install qtqa source archive. Please investigate why.
+    - type: EnvironmentVariable
+      variableName: QT_MODULE_TO_TEST
+      variableValue: "{{.SourceDir}}"
+      userMessageOnFailure: >
+              Failed to set QT_MODULE_TO_TEST environment variable. This should not happen.
+    - type: ExecuteCommand
+      command: perl qt/qtqa-latest/tests/prebuild/license/tst_licenses.pl
+      maxTimeInSeconds: 7200
+      maxTimeBetweenOutput: 120
+      userMessageOnFailure: >
+           Failed to run license check script.

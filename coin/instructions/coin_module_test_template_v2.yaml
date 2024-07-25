@@ -2,6 +2,13 @@ type: Group
 instructions:
   - type: Group
     instructions:
+    - !include "{{qt/qtbase}}/run_license_check.yaml"
+    enable_if:
+      condition: property
+      property: features
+      contains_value: LicenseCheckV2
+  - type: Group
+    instructions:
       - !include "{{qt/qtbase}}/coin_module_test_template_common.yaml"
       - type: Group
         instructions:
@@ -19,6 +26,11 @@ instructions:
               property: target.osVersion
               in_values: [QEMU, QNX_710]
     disable_if:
-      condition: property
-      property: features
-      contains_value: DisableTests
+      condition: or
+      conditions:
+        - condition: property
+          property: features
+          contains_value: DisableTests
+        - condition: property
+          property: features
+          contains_value: LicenseCheckV2
