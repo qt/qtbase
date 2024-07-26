@@ -10,6 +10,7 @@
 # REDO_FILE: A file containing extra commands to be joined with IN_FILE.
 # OUT_FILE: The output file. One argument per line.
 # SKIP_ARGS: Number of arguments to skip from the front of the arguments list.
+# SKIP_REDO_FILE_ARGS: Number of arguments to skip from the front of the redo file arguments list.
 # IGNORE_ARGS: List of arguments to be ignored, i.e. that are not written.
 #
 # If the REDO_FILE is given, its parameters will be merged with IN_FILE parameters
@@ -31,6 +32,11 @@ string(REPLACE "[[;]]" "\;" args "${args}")
 if(DEFINED REDO_FILE)
     file(READ "${REDO_FILE}" raw_redo_args)
     separate_arguments(redo_args NATIVE_COMMAND "${raw_redo_args}")
+    if(DEFINED SKIP_REDO_FILE_ARGS)
+        foreach(i RANGE 1 ${SKIP_REDO_FILE_ARGS})
+            list(POP_FRONT redo_args)
+        endforeach()
+    endif()
 
     if(args)
         list(FIND args "--" args_ddash_loc)

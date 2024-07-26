@@ -264,6 +264,8 @@ function(qt_internal_get_qt_build_private_files_to_install out_var)
         QtWriteArgsFile.cmake
         modulecppexports.h.in
         qbatchedtestrunner.in.cpp
+        qt-internal-config.redo.in
+        qt-internal-config.redo.bat.in
         PARENT_SCOPE
     )
 endfunction()

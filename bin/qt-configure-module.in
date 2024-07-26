@@ -4,6 +4,39 @@ set -eu
 script_dir_path=`dirname $0`
 script_dir_path=`(cd "$script_dir_path"; pwd)`
 
+# the current directory is the "build tree" or "object tree"
+outpath=`pwd`
+outpathPrefix=$outpath
+
+SAVED_IFS=$IFS
+IFS='
+'
+
+optfile=""
+determineOptFilePath()
+{
+> "${outpathPrefix}/config.redo.in"
+set -f  # suppress globbing in for loop
+for i in "$@"; do
+    if [ x"$i" = x"-top-level" ]; then
+        continue
+    fi
+    case $i in
+        -redo|--redo)
+            optfile=${outpathPrefix}/config.opt
+            if ! test -f "$optfile"; then
+                echo >&2 "No config.opt present - cannot redo configuration."
+                exit 1
+            fi
+            ;;
+        *)
+            # If redo-ing, write the rest of parameters into the config.redo.in file
+            echo \"$i\" >> "${outpathPrefix}/config.redo.in"
+            ;;
+    esac
+done
+}
+
 printUsage()
 {
     cat <<EOF
@@ -19,6 +52,7 @@ if [ "$#" -lt 1 ]; then
     exit 1
 fi
 module_root=$1
+# This ensures the repo path does not end up in the config.opt file.
 shift
 
 if [ ! -f "$module_root/CMakeLists.txt" ]; then
@@ -27,12 +61,40 @@ if [ ! -f "$module_root/CMakeLists.txt" ]; then
     exit 1
 fi
 
-optfile=config.opt
-echo > "$optfile"
-for arg in "$@"; do
-echo "$arg" >> "$optfile"
-done
+determineOptFilePath "$@"
+
+optfilepath=${outpathPrefix}/config.opt
+opttmpfilepath=${outpathPrefix}/config.opt.in
+
+redofilepath=${outpathPrefix}/config.redo.last
+redotmpfilepath=${outpathPrefix}/config.redo.in
+
+qt_cmake_private_path="$script_dir_path/../libexec"
+
+fresh_requested_arg=
+if [ -z "$optfile" ]; then   # only write optfile if not currently redoing
+    > "$opttmpfilepath"
+    > "$redotmpfilepath"
+
+    for arg in "$@"; do echo \"$arg\" >> "$opttmpfilepath"; done
+
+    "$qt_cmake_private_path/qt-cmake-private" -DIN_FILE="${opttmpfilepath}" \
+        -DOUT_FILE="${optfilepath}" \
+        -P "$script_dir_path/@__relative_path_to_cmake_scripts_dir@/QtWriteArgsFile.cmake"
+else
+    # Rewriting config.opt into config.opt.in anyway. Allows for direct manipulation of config.opt
+    > "$opttmpfilepath"
+    for arg in `cat $optfile`; do echo \"$arg\" >> "$opttmpfilepath"; done
+
+    "$qt_cmake_private_path/qt-cmake-private" -DIN_FILE="${opttmpfilepath}" \
+        -DREDO_FILE="${redotmpfilepath}" -DOUT_FILE="${redofilepath}" \
+        -P "$script_dir_path/@__relative_path_to_cmake_scripts_dir@/QtWriteArgsFile.cmake"
+    optfilepath=${redofilepath}
+    fresh_requested_arg=-DFRESH_REQUESTED=TRUE
+fi
 
 cmake_script_path="$script_dir_path/@__relative_path_to_cmake_scripts_dir@/QtProcessConfigureArgs.cmake"
-qt_cmake_private_path="$script_dir_path/../libexec"
-"$qt_cmake_private_path/qt-cmake-private" -DOPTFILE=$optfile -DMODULE_ROOT="$module_root" -DCMAKE_COMMAND="$qt_cmake_private_path/qt-cmake-private" -P "$cmake_script_path"
+"$qt_cmake_private_path/qt-cmake-private" -DOPTFILE=$optfilepath -DMODULE_ROOT="$module_root" \
+    -DCMAKE_COMMAND="$qt_cmake_private_path/qt-cmake-private" -P "$cmake_script_path"
+
+IFS=$SAVED_IFS

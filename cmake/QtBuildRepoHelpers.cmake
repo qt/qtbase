@@ -197,6 +197,7 @@ macro(qt_build_repo_begin)
     qt_enable_cmake_languages()
 
     qt_internal_generate_binary_strip_wrapper()
+    qt_internal_create_qt_configure_redo_script()
 
     # Add global docs targets that will work both for per-repo builds, and super builds.
     if(NOT TARGET docs)
