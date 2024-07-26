@@ -11,6 +11,8 @@
 #include <QtCore/QUrl>
 #include <QtCore/QVariant>
 
+#include <QtCore/q26numeric.h>
+
 QT_BEGIN_NAMESPACE
 
 class QSslConfiguration;
@@ -194,7 +196,7 @@ Q_DECLARE_SHARED(QNetworkRequest)
 #if QT_CONFIG(http) || defined (Q_OS_WASM)
 int QNetworkRequest::transferTimeout() const
 {
-    return int(transferTimeoutAsDuration().count());
+    return q26::saturate_cast<int>(transferTimeoutAsDuration().count());
 }
 
 void QNetworkRequest::setTransferTimeout(int timeout)
