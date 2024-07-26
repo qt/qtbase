@@ -175,10 +175,27 @@ if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
     endfunction()
 endif()
 
+function(qt6_wrap_cpp)
+    # check if the first argument is a target
+    if(TARGET ${ARGV0})
+        _qt_internal_wrap_cpp(dummy TARGET ${ARGV})
+    else()
+        if(NOT QT_NO_SHOW_OLD_QT_WRAP_CPP_WARNING)
+            message(WARNING "You are using the output-variable signature of "
+                            "qt6_wrap_cpp(), which is deprecated. Instead, use "
+                            "the newer signature that takes the target as the "
+                            "first argument. To silence this warning pass "
+                            "-DQT_NO_SHOW_OLD_QT_WRAP_CPP_WARNING=ON")
+        endif()
+        set(output_parameter ${ARGV0})
+        _qt_internal_wrap_cpp(${ARGV})
+        set(${output_parameter} "${${output_parameter}}" PARENT_SCOPE)
+    endif()
+endfunction()
 
-# qt6_wrap_cpp(outfiles inputfile ... )
+# _qt_internal_wrap_cpp(outfiles inputfile ... )
 
-function(qt6_wrap_cpp outfiles )
+function(_qt_internal_wrap_cpp outfiles)
     # get include dirs
     _qt_internal_get_moc_flags(moc_flags)
 

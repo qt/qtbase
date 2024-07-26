@@ -30,7 +30,7 @@ target_compile_definitions(myapp PRIVATE "$<$<CONFIG:Debug>:MY_OPTION_FOR_DEBUG>
 
 #! [qt_wrap_cpp_4]
 qt_add_executable(myapp myapp.cpp main.cpp)
-qt_wrap_cpp("" myapp.cpp TARGET myapp)
+qt_wrap_cpp(myapp myapp.cpp)
 #! [qt_wrap_cpp_4]
 
 #! [qt_add_resources]

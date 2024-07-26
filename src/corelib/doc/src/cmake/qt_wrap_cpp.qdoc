@@ -16,6 +16,18 @@
 
 \section1 Synopsis
 
+\c{qt_wrap_cpp} supports two signatures. The first signature was added in Qt 6.8
+and has the following form:
+
+\badcode
+qt_wrap_cpp(<TARGET> src_file1 [src_file2 ...]
+            [OPTIONS ...]
+            [DEPENDS ...])
+\endcode
+
+\note The signature above is recommended over the older signature, which is
+deprecated since Qt 6.8.
+
 \badcode
 qt_wrap_cpp(<VAR> src_file1 [src_file2 ...]
             [TARGET target]
@@ -64,6 +76,18 @@ Q_PLUGIN_METADATA() macro.
 
 \section1 Examples
 
+Since Qt 6.8:
+
+\snippet cmake-macros/examples.cmake qt_wrap_cpp_4
+\br
+\snippet cmake-macros/examples.cpp qt_wrap_cpp_4
+
+In the above file, \c{myapp.moc} is included in \c{myapp.cpp}.
+To generate the \c{myapp.moc} file, the \c{qt_wrap_cpp} macro is used with the
+\c{TARGET} parameter. The \c{.moc} file and its path will be added to the
+target's sources and include directories by the \c{qt_wrap_cpp} macro.
+
+The old version:
 \snippet cmake-macros/examples.cmake qt_wrap_cpp_1
 
 In the following example, the generator expressions passed to \c{OPTIONS}
@@ -75,16 +99,6 @@ avoid syntax errors in the generator expressions.
 The following example uses \l{https://cmake.org/cmake/help/latest/command/target_compile_definitions.html}{target_compile_definitions}
 to set \l{https://cmake.org/cmake/help/latest/prop_tgt/COMPILE_DEFINITIONS.html}{COMPILE_DEFINITIONS} which will be added to
 \c{OPTIONS}.
+\snippet cmake-macros/examples.cmake qt_wrap_cpp_3
 
-\snippet cmake-macros/examples.cmake qt_wrap_cpp_4
-
-\snippet cmake-macros/examples.cpp qt_wrap_cpp_4
-
-In the above file, \c{myapp.moc} is included in \c{myapp.cpp}.
-To generate the \c{myapp.moc} file, the \c{qt_wrap_cpp} macro is used with the
-\c{TARGET} parameter. The first parameter is empty because the \c{.moc} file
-and its path will be added to the target's sources and include directories by
-the \c{qt_wrap_cpp} macro.
-
-\snippet cmake-macros/examples.cmake qt_wrap_cpp_4
 */
