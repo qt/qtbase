@@ -4658,6 +4658,12 @@ void tst_QAccessibility::messageBoxTest()
     QFETCH(bool, textInteractive);
 
     QMessageBox box(icon, title, text, buttons);
+    // avoid native dialogs, they don't emit accessibility events on start/end
+    box.setOption(QMessageBox::Option::DontUseNativeDialog);
+
+    box.show();
+    QAccessibleEvent showEvent(&box, QAccessible::DialogStart);
+    QVERIFY(QTestAccessibility::containsEvent(&showEvent));
 
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(&box);
     QVERIFY(iface);
@@ -4690,19 +4696,9 @@ void tst_QAccessibility::messageBoxTest()
 
     QTestAccessibility::clearEvents();
 
-    QDialogPrivate *boxPrivate = static_cast<QDialogPrivate *>(QDialogPrivate::get(&box));
-    if (!boxPrivate->canBeNativeDialog()) {
-        // platforms that use a native message box will not emit accessibility events
-        box.show();
-
-        QAccessibleEvent showEvent(&box, QAccessible::DialogStart);
-        QVERIFY(QTestAccessibility::containsEvent(&showEvent));
-
-        box.hide();
-
-        QAccessibleEvent hideEvent(&box, QAccessible::DialogEnd);
-        QVERIFY(QTestAccessibility::containsEvent(&hideEvent));
-    }
+    box.hide();
+    QAccessibleEvent hideEvent(&box, QAccessible::DialogEnd);
+    QVERIFY(QTestAccessibility::containsEvent(&hideEvent));
 
     QTestAccessibility::clearEvents();
 }

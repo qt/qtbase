@@ -303,9 +303,28 @@ void QPlatformWindow::setParent(const QPlatformWindow *parent)
   The implementation might want to append the application display name to
   the window title, like Windows and Linux do.
 
+  \l QPlatformWindow::windowTitle() can be used to retrieve the
+  actual window title.
+
   \sa QGuiApplication::applicationDisplayName()
+  \sa QPlatformWindow::windowTitle()
 */
 void QPlatformWindow::setWindowTitle(const QString &title) { Q_UNUSED(title); }
+
+/*!
+  Reimplement to return the actual window title used in the underlying
+  windowing system unless the title set for the QWindow which
+  belongs to this QPlatformWindow (i.e. the window returned by
+  \l QPlatformWindow::window) is always used without modification.
+
+  \sa QPlatformWindow::setWindowTitle()
+
+  \since 6.9
+*/
+QString QPlatformWindow::windowTitle() const
+{
+    return window()->title();
+}
 
 /*!
   Reimplement to set the window file path to \a filePath

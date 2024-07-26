@@ -1332,6 +1332,11 @@ void QXcbWindow::setWindowTitle(const QString &title)
     setWindowTitle(connection(), m_window, title);
 }
 
+QString QXcbWindow::windowTitle() const
+{
+    return windowTitle(connection(), m_window);
+}
+
 void QXcbWindow::setWindowIconText(const QString &title)
 {
     const QByteArray ba = title.toUtf8();

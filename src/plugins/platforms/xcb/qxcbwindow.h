@@ -67,6 +67,7 @@ public:
     QPoint mapFromGlobal(const QPoint &pos) const override;
 
     void setWindowTitle(const QString &title) override;
+    QString windowTitle() const override;
     void setWindowIconText(const QString &title) override;
     void setWindowIcon(const QIcon &icon) override;
     void raise() override;

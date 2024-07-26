@@ -66,6 +66,7 @@ public:
     virtual void setParent(const QPlatformWindow *window);
 
     virtual void setWindowTitle(const QString &title);
+    virtual QString windowTitle() const;
     virtual void setWindowFilePath(const QString &title);
     virtual void setWindowIcon(const QIcon &icon);
     virtual bool close();
