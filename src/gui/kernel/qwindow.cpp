@@ -304,6 +304,8 @@ void QWindowPrivate::init(QWindow *parent, QScreen *targetScreen)
     the platform.
     When reading the visibility property you will always get the actual state,
     never AutomaticVisibility.
+
+    The default value is Hidden.
 */
 QWindow::Visibility QWindow::visibility() const
 {
