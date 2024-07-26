@@ -11,6 +11,7 @@ import android.os.Handler;
 import android.os.ResultReceiver;
 import android.text.method.MetaKeyKeyListener;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.InputDevice;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
@@ -24,6 +25,7 @@ import org.qtproject.qt.android.QtInputConnection.QtInputConnectionListener;
 class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, QtInputInterface
 {
 
+    private static final String TAG = "QtInputDelegate";
     // keyboard methods
     static native void keyDown(int key, int unicode, int modifier, boolean autoRepeat);
     static native void keyUp(int key, int unicode, int modifier, boolean autoRepeat);
@@ -90,7 +92,7 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
     }
 
     @Override
-    public void showSoftwareKeyboard(Activity activity, QtLayout layout,
+    public void showSoftwareKeyboard(Activity activity,
                                      final int x, final int y, final int width, final int height,
                                      final int inputHints, final int enterKeyType)
     {
@@ -115,7 +117,7 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
                             case InputMethodManager.RESULT_UNCHANGED_SHOWN:
                                 setKeyboardVisibility(true, System.nanoTime());
                                 if (m_softInputMode == 0) {
-                                    probeForKeyboardHeight(layout, activity,
+                                    probeForKeyboardHeight(activity,
                                             x, y, width, height, inputHints, enterKeyType);
                                 }
                                 break;
@@ -307,10 +309,14 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
         return false;
     }
 
-    private void probeForKeyboardHeight(QtLayout layout, Activity activity, int x, int y,
+    private void probeForKeyboardHeight(Activity activity, int x, int y,
                                         int width, int height, int inputHints, int enterKeyType)
     {
-        layout.postDelayed(() -> {
+        if (m_currentEditText == null) {
+            Log.w(TAG, "probeForKeyboardHeight: null QtEditText");
+            return;
+        }
+        m_currentEditText.postDelayed(() -> {
             if (!m_keyboardIsVisible)
                 return;
             DisplayMetrics metrics = new DisplayMetrics();
@@ -321,13 +327,13 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
                 if (metrics.widthPixels > metrics.heightPixels) { // landscape
                     if (m_landscapeKeyboardHeight != r.bottom) {
                         m_landscapeKeyboardHeight = r.bottom;
-                        showSoftwareKeyboard(activity, layout, x, y, width, height,
+                        showSoftwareKeyboard(activity, x, y, width, height,
                                 inputHints, enterKeyType);
                     }
                 } else {
                     if (m_portraitKeyboardHeight != r.bottom) {
                         m_portraitKeyboardHeight = r.bottom;
-                        showSoftwareKeyboard(activity, layout, x, y, width, height,
+                        showSoftwareKeyboard(activity, x, y, width, height,
                                 inputHints, enterKeyType);
                     }
                 }

@@ -44,7 +44,6 @@ set(java_sources
     src/org/qtproject/qt/android/QtWindowInterface.java
     src/org/qtproject/qt/android/QtAccessibilityInterface.java
     src/org/qtproject/qt/android/QtMenuInterface.java
-    src/org/qtproject/qt/android/QtLayoutInterface.java
     src/org/qtproject/qt/android/QtInputInterface.java
     src/org/qtproject/qt/android/QtAbstractItemModel.java
     src/org/qtproject/qt/android/QtAbstractItemModelProxy.java

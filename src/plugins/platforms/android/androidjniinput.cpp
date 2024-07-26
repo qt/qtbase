@@ -23,8 +23,6 @@ Q_LOGGING_CATEGORY(lcQpaInputMethods, "qt.qpa.input.methods");
 
 using namespace QtAndroid;
 
-Q_DECLARE_JNI_CLASS(QtLayout, "org/qtproject/qt/android/QtLayout")
-Q_DECLARE_JNI_CLASS(QtLayoutInterface, "org/qtproject/qt/android/QtLayoutInterface")
 Q_DECLARE_JNI_CLASS(QtInputInterface, "org/qtproject/qt/android/QtInputInterface")
 
 namespace QtAndroidInput
@@ -38,12 +36,6 @@ namespace QtAndroidInput
 
     static QPointer<QWindow> m_mouseGrabber;
 
-    QJniObject qtLayout()
-    {
-        AndroidBackendRegister *reg = QtAndroid::backendRegister();
-        return reg->callInterface<QtJniTypes::QtLayoutInterface, QtJniTypes::QtLayout>(
-                "getQtLayout");
-    }
 
     void updateSelection(int selStart, int selEnd, int candidatesStart, int candidatesEnd)
     {
@@ -58,7 +50,7 @@ namespace QtAndroidInput
         AndroidBackendRegister *reg = QtAndroid::backendRegister();
         reg->callInterface<QtJniTypes::QtInputInterface, void>(
                 "showSoftwareKeyboard", QtAndroidPrivate::activity(),
-                qtLayout().object<QtJniTypes::QtLayout>(), left, top, width, height, inputHints,
+                left, top, width, height, inputHints,
                 enterKeyType);
         qCDebug(lcQpaInputMethods) << "@@@ SHOWSOFTWAREKEYBOARD" << left << top << width << height << inputHints << enterKeyType;
     }

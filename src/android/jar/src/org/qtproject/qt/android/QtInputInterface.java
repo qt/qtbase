@@ -8,7 +8,7 @@ import android.app.Activity;
 interface QtInputInterface {
     void updateSelection(final int selStart, final int selEnd, final int candidatesStart,
                          final int candidatesEnd);
-    void showSoftwareKeyboard(Activity activity, QtLayout layout, final int x, final int y,
+    void showSoftwareKeyboard(Activity activity, final int x, final int y,
                               final int width, final int height, final int inputHints,
                               final int enterKeyType);
     void resetSoftwareKeyboard();
