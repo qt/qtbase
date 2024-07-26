@@ -165,8 +165,6 @@ class QtEmbeddedDelegate extends QtActivityDelegateBase
     {
         m_view = view;
         updateInputDelegate();
-        if (m_view != null)
-            registerGlobalFocusChangeListener(m_view);
     }
     // QtEmbeddedViewInterface implementation end
 
