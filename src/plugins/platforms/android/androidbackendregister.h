@@ -43,8 +43,12 @@ public:
               ValidInterfaceType<Interface> = true>
     auto callInterface(const char *func, Args... args)
     {
-        if (const auto obj = getInterface<Interface>(); obj.isValid())
+        if (const auto obj = getInterface<Interface>(); obj.isValid()) {
             return obj.template callMethod<Ret, Args...>(func, std::forward<Args>(args)...);
+        } else {
+            qWarning() << "No interface with className"
+                       << QtJniTypes::Traits<Interface>::className() << "has been registered.";
+        }
 
         if constexpr (IsObjectType<Ret>::value)
             return Ret(QJniObject());
