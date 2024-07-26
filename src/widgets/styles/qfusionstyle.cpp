@@ -2448,7 +2448,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                 subtleEdge.setAlpha(40);
                 painter->setPen(subtleEdge);
                 painter->setBrush(Qt::NoBrush);
-                painter->drawRect(scrollBarGroove.adjusted(1, 0, -1, -1));
+                painter->drawRect(scrollBarGroove.adjusted(horizontal ? 0 : 1, horizontal ? 1 : 0, -1, -1));
                 painter->restore();
             }
 
@@ -2518,19 +2518,15 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                 else
                     painter->setBrush(gradient);
 
+                const QRect upRect = scrollBarSubLine.adjusted(0, 0, -1, -1);
                 painter->setPen(Qt::NoPen);
-                painter->drawRect(scrollBarSubLine.adjusted(horizontal ? 0 : 1, horizontal ? 1 : 0, 0, 0));
+                painter->drawRect(upRect.adjusted(horizontal ? 0 : 1, horizontal ? 1 : 0, 0, 0));
                 painter->setPen(QPen(alphaOutline));
-                if (option->state & State_Horizontal) {
-                    painter->drawRect(scrollBarSubLine.adjusted(horizontal ? 0 : 1, 0, horizontal ? 1 : 0, horizontal ? -1 : 0));
-                } else {
-                    painter->drawRect(scrollBarSubLine.adjusted(0, 0, horizontal ? 0 : -1, 0));
-                }
+                painter->drawRect(upRect);
 
-                QRect upRect = scrollBarSubLine.adjusted(horizontal ? 0 : 1, horizontal ? 1 : 0, horizontal ? -2 : -1, horizontal ? -1 : -2);
                 painter->setBrush(Qt::NoBrush);
                 painter->setPen(d->innerContrastLine());
-                painter->drawRect(upRect);
+                painter->drawRect(upRect.adjusted(1, 1, -1, -1));
 
                 // Arrows
                 Qt::ArrowType arrowType = Qt::UpArrow;
@@ -2548,19 +2544,15 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                 else
                     painter->setBrush(gradient);
 
+                const QRect downRect = scrollBarAddLine.adjusted(0, 0, -1, -1);
                 painter->setPen(Qt::NoPen);
-                painter->drawRect(scrollBarAddLine.adjusted(horizontal ? 0 : 1, horizontal ? 1 : 0, 0, 0));
-                painter->setPen(QPen(alphaOutline, 1));
-                if (option->state & State_Horizontal) {
-                    painter->drawRect(scrollBarAddLine.adjusted(horizontal ? -1 : 0, 0, horizontal ? -1 : 0, horizontal ? -1 : 0));
-                } else {
-                    painter->drawRect(scrollBarAddLine.adjusted(0, horizontal ? 0 : -1, horizontal ? 0 : -1, horizontal ? 0 : -1));
-                }
-
-                QRect downRect = scrollBarAddLine.adjusted(1, 1, -1, -1);
-                painter->setPen(d->innerContrastLine());
-                painter->setBrush(Qt::NoBrush);
+                painter->drawRect(downRect.adjusted(horizontal ? 0 : 1, horizontal ? 1 : 0, 0, 0));
+                painter->setPen(QPen(alphaOutline));
                 painter->drawRect(downRect);
+
+                painter->setBrush(Qt::NoBrush);
+                painter->setPen(d->innerContrastLine());
+                painter->drawRect(downRect.adjusted(1, 1, -1, -1));
 
                 Qt::ArrowType arrowType = Qt::DownArrow;
                 if (option->state & State_Horizontal)
