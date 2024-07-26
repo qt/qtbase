@@ -25,7 +25,7 @@ import java.util.HashMap;
 
 class QtEmbeddedDelegate extends QtActivityDelegateBase
         implements QtNative.AppStateDetailsListener, QtEmbeddedViewInterface, QtWindowInterface,
-                   QtMenuInterface, QtLayoutInterface
+                   QtMenuInterface
 {
     private static final String QtTAG = "QtEmbeddedDelegate";
     // TODO simplistic implementation with one QtView, expand to support multiple views QTBUG-117649
@@ -98,13 +98,11 @@ class QtEmbeddedDelegate extends QtActivityDelegateBase
                 m_backendsRegistered = true;
                 BackendRegister.registerBackend(QtWindowInterface.class, (QtWindowInterface)this);
                 BackendRegister.registerBackend(QtMenuInterface.class, (QtMenuInterface)this);
-                BackendRegister.registerBackend(QtLayoutInterface.class, (QtLayoutInterface)this);
                 BackendRegister.registerBackend(QtInputInterface.class, m_inputDelegate);
             } else if (!details.isStarted && m_backendsRegistered) {
                 m_backendsRegistered = false;
                 BackendRegister.unregisterBackend(QtWindowInterface.class);
                 BackendRegister.unregisterBackend(QtMenuInterface.class);
-                BackendRegister.unregisterBackend(QtLayoutInterface.class);
                 BackendRegister.unregisterBackend(QtInputInterface.class);
             }
             updateInputDelegate();
@@ -131,17 +129,6 @@ class QtEmbeddedDelegate extends QtActivityDelegateBase
     void startNativeApplicationImpl(String appParams, String mainLib)
     {
         QtNative.startApplication(appParams, mainLib);
-    }
-
-    @Override
-    public QtLayout getQtLayout()
-    {
-        // TODO verify if returning m_view here works, this is used by the androidjniinput
-        // when e.g. showing a keyboard, so depends on getting the keyboard focus working
-        // QTBUG-118873
-        if (m_view == null)
-            return null;
-        return m_view.getQtWindow();
     }
 
     // QtEmbeddedViewInterface implementation begin
@@ -200,14 +187,12 @@ class QtEmbeddedDelegate extends QtActivityDelegateBase
     @Override
     public void openContextMenu(final int x, final int y, final int w, final int h)
     {
-        QtLayout layout = getQtLayout();
-        layout.postDelayed(() -> {
+        m_view.postDelayed(() -> {
             final QtEditText focusedEditText = m_inputDelegate.getCurrentQtEditText();
             if (focusedEditText == null) {
                 Log.w(QtTAG, "No focused view when trying to open context menu");
                 return;
             }
-            layout.setLayoutParams(focusedEditText, new QtLayout.LayoutParams(w, h, x, y), false);
             PopupMenu popup = new PopupMenu(m_activity, focusedEditText);
             QtNative.fillContextMenu(popup.getMenu());
             popup.setOnMenuItemClickListener(menuItem ->
