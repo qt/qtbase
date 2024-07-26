@@ -16,7 +16,6 @@
 #include <QtCore/QList>
 #include <QtGui/QImage>
 #include <QtGui/QMouseEvent>
-#include <QtCore/QWeakPointer>
 #include <QtCore/QObject>
 #include <qpa/qplatformscreen.h>
 #include <QtGui/QCursor>

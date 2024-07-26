@@ -18,7 +18,6 @@
 #include <QtGui/private/qtguiglobal_p.h>
 #include <qinputmethod.h>
 #include <private/qobject_p.h>
-#include <QtCore/QWeakPointer>
 #include <QTransform>
 #include <qpa/qplatforminputcontext.h>
 #include <qpa/qplatformintegration.h>

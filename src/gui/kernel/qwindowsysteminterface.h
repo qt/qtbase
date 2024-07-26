@@ -19,7 +19,6 @@
 #include <QtCore/QAbstractEventDispatcher>
 #include <QtGui/QScreen>
 #include <QtGui/QWindow>
-#include <QtCore/QWeakPointer>
 #include <QtCore/QMutex>
 #include <QtGui/QTouchEvent>
 #include <QtCore/QEventLoop>
