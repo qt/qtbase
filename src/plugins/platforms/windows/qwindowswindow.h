@@ -237,6 +237,7 @@ public:
     void setParent(const QPlatformWindow *window) override;
 
     void setWindowTitle(const QString &title) override;
+    QString windowTitle() const override;
     void raise() override { raise_sys(); }
     void lower() override { lower_sys(); }
 
@@ -371,6 +372,7 @@ private:
     mutable unsigned m_flags = WithinCreate;
     HDC m_hdc = nullptr;
     Qt::WindowStates m_windowState = Qt::WindowNoState;
+    QString m_windowTitle;
     qreal m_opacity = 1;
 #ifndef QT_NO_CURSOR
     CursorHandlePtr m_cursor;

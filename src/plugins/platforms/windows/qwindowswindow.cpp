@@ -2388,7 +2388,13 @@ bool QWindowsWindow::handleWmPaint(HWND hwnd, UINT message,
 
 void QWindowsWindow::setWindowTitle(const QString &title)
 {
-    setWindowTitle_sys(QWindowsWindow::formatWindowTitle(title));
+    m_windowTitle = QWindowsWindow::formatWindowTitle(title);
+    setWindowTitle_sys(m_windowTitle);
+}
+
+QString QWindowsWindow::windowTitle() const
+{
+    return m_windowTitle;
 }
 
 void QWindowsWindow::setWindowFlags(Qt::WindowFlags flags)
