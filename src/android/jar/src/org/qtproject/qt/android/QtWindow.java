@@ -67,6 +67,7 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
     @Override
     public boolean onTouchEvent(MotionEvent event)
     {
+        windowFocusChanged(true, getId());
         if (m_editText != null && m_inputDelegate != null)
             m_inputDelegate.setFocusedView(m_editText);
 

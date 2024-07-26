@@ -126,7 +126,6 @@ public class QtActivityDelegate extends QtActivityDelegateBase
                                              r.width(), kbHeight);
             return true;
         });
-        registerGlobalFocusChangeListener(m_layout);
         m_inputDelegate.setEditPopupMenu(new EditPopupMenu(m_activity, m_layout));
     }
 
