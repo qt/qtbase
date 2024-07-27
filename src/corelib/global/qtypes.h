@@ -263,13 +263,12 @@ using NativeFloat16Type = std::float16_t;
 // disabled due to https://github.com/llvm/llvm-project/issues/56963
 #  define QFLOAT16_IS_NATIVE        1
 using NativeFloat16Type = decltype(__FLT16_MAX__);
-#elif defined(Q_CC_GNU_ONLY) && defined(__FLT16_MAX__)
+#elif defined(Q_CC_GNU_ONLY) && defined(__FLT16_MAX__) && defined(__ARM_FP16_FORMAT_IEEE)
 #  define QFLOAT16_IS_NATIVE        1
-#  ifdef __ARM_FP16_FORMAT_IEEE
 using NativeFloat16Type = __fp16;
-#  else
+#elif defined(Q_CC_GNU_ONLY) && defined(__FLT16_MAX__) && defined(__SSE2__)
+#  define QFLOAT16_IS_NATIVE        1
 using NativeFloat16Type = _Float16;
-#  endif
 #else
 #  define QFLOAT16_IS_NATIVE        0
 using NativeFloat16Type = void;
