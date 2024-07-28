@@ -3376,6 +3376,12 @@ void tst_QTreeView::styleOptionViewItem()
     view.setRowHidden(3, par1->index(), true);
 
     view.setColumnHidden(1, true);
+    view.header()->setMinimumSectionSize(10);
+    // make sure that all columns are drawn in the view by using a very small section size
+    for (int i = 0; i < view.header()->count(); ++i)
+        view.header()->resizeSection(i, 20);
+    view.setMinimumWidth(view.header()->count() * 20);
+
     const int visibleColumns = 4;
     const int modelColumns = 5;
 
