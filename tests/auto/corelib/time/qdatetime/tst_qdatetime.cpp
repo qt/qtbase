@@ -10,9 +10,13 @@
 #include <private/qtenvironmentvariables_p.h> // for qTzSet(), qTzName()
 #include <private/qcomparisontesthelper_p.h>
 
+#if defined(Q_OS_WIN) && !QT_CONFIG(icu)
+#  define USING_WIN_TZ
+#endif
+
 #ifdef Q_OS_WIN
 #  include <qt_windows.h>
-#  if !QT_CONFIG(icu)
+#  ifdef USING_WIN_TZ
 // The native MS back-end for time-zones lacks info about historic transitions:
 #    define INADEQUATE_TZ_DATA
 #  endif
@@ -3629,7 +3633,7 @@ void tst_QDateTime::zoneAtTime_data()
 # define NONANDROIDROW(name, zone, date, offset) ADDROW(name, zone, date, offset)
 #endif
 
-#ifndef Q_OS_WIN
+#ifndef USING_WIN_TZ
     // Bracket a few noteworthy transitions:
     ADDROW("before:ACWST", "Australia/Eucla", QDate(1974, 10, 26), 31500); // 8:45
     NONANDROIDROW("after:ACWST", "Australia/Eucla", QDate(1974, 10, 27), 35100); // 9:45
