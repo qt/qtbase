@@ -64,6 +64,8 @@ private Q_SLOTS:
     void compareWithAttributes();
 
     void totallyOrderedWrapperBasics();
+
+    void compareAutoReturnType();
 };
 
 #endif // TST_QCOMPAREHELPERS_H

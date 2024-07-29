@@ -22,6 +22,28 @@ private: \
 }; \
 /* END */
 
+#define DECLARE_AUTO_TYPE(Name, Type, Constexpr, Noex, Suffix, ...) \
+class TemplatedAuto ## Name \
+{ \
+public: \
+    Constexpr TemplatedAuto ## Name () {} \
+    Constexpr TemplatedAuto ## Name (Type v) : val(v) {} \
+\
+private: \
+    __VA_ARGS__ \
+    friend Constexpr bool \
+    comparesEqual(const TemplatedAuto ## Name &lhs, X rhs) noexcept(Noex) \
+    { return lhs.val == rhs; } \
+    __VA_ARGS__ \
+    friend Constexpr auto \
+    compareThreeWay(const TemplatedAuto ## Name &lhs, X rhs) noexcept(Noex) \
+    { using Qt::compareThreeWay; return compareThreeWay(lhs.val, rhs); } \
+    Q_DECLARE_ORDERED ## Suffix (TemplatedAuto ## Name, X, __VA_ARGS__) \
+\
+    Type val = {}; \
+}; \
+/* END */
+
 #define DECLARE_TYPES_FOR_N_ATTRS(N, ...) \
 DECLARE_TYPE(PartialConst ## N, PARTIALLY, Qt::partial_ordering, constexpr, \
              true, _LITERAL_TYPE, __VA_ARGS__) \
@@ -38,6 +60,9 @@ DECLARE_TYPE(StrongConst ## N, STRONGLY, Qt::strong_ordering, constexpr, true, \
 DECLARE_TYPE(Strong ## N, STRONGLY, Qt::strong_ordering, , true, , __VA_ARGS__) \
 DECLARE_TYPE(StrongNonNoex ## N, STRONGLY, Qt::strong_ordering, , false, \
              _NON_NOEXCEPT, __VA_ARGS__) \
+DECLARE_AUTO_TYPE(Def ## N, int, , true, , __VA_ARGS__) \
+DECLARE_AUTO_TYPE(Const ## N, int, constexpr, true, _LITERAL_TYPE, __VA_ARGS__) \
+DECLARE_AUTO_TYPE(NonNoex ## N, int, , false, _NON_NOEXCEPT, __VA_ARGS__) \
 /* END */
 
 template <typename T>
@@ -91,6 +116,9 @@ void tst_QCompareHelpers::compareWithAttributes()
     COMPARE(TemplatedStrongConst ## N); \
     COMPARE(TemplatedStrong ## N); \
     COMPARE(TemplatedStrongNonNoex ## N); \
+    COMPARE(TemplatedAutoDef ## N); \
+    COMPARE(TemplatedAutoConst ## N); \
+    COMPARE(TemplatedAutoNonNoex ## N); \
     /* END */
 
     COMPARE_SET(1)
@@ -121,4 +149,52 @@ void tst_QCompareHelpers::totallyOrderedWrapperBasics()
     *intWrp = 20;
     QCOMPARE_EQ(*intWrp, 20);
     QCOMPARE_EQ(val, 20);
+}
+
+template <typename T>
+class AutoComparisonTester
+{
+public:
+    AutoComparisonTester(const T &v) : val(v) {}
+
+private:
+    friend bool
+    comparesEqual(const AutoComparisonTester &lhs, const AutoComparisonTester &rhs) noexcept
+    { return lhs.val == rhs.val; }
+
+    friend auto
+    compareThreeWay(const AutoComparisonTester &lhs, const AutoComparisonTester &rhs) noexcept
+    { using Qt::compareThreeWay; return compareThreeWay(lhs.val, rhs.val); }
+
+    Q_DECLARE_ORDERED(AutoComparisonTester)
+
+    T val;
+};
+
+void tst_QCompareHelpers::compareAutoReturnType()
+{
+    // strong
+    {
+        using StrongT = AutoComparisonTester<int>;
+        static_assert(std::is_same_v<decltype(compareThreeWay(std::declval<const StrongT &>(),
+                                                              std::declval<const StrongT &>())),
+                                     Qt::strong_ordering>);
+        QTestPrivate::testAllComparisonOperatorsCompile<StrongT>();
+    }
+    // partial
+    {
+        using PartialT = AutoComparisonTester<float>;
+        static_assert(std::is_same_v<decltype(compareThreeWay(std::declval<const PartialT &>(),
+                                                              std::declval<const PartialT &>())),
+                                     Qt::partial_ordering>);
+        QTestPrivate::testAllComparisonOperatorsCompile<PartialT>();
+    }
+    // weak
+    {
+        using WeakT = AutoComparisonTester<QDateTime>;
+        static_assert(std::is_same_v<decltype(compareThreeWay(std::declval<const WeakT &>(),
+                                                              std::declval<const WeakT &>())),
+                                     Qt::weak_ordering>);
+        QTestPrivate::testAllComparisonOperatorsCompile<WeakT>();
+    }
 }

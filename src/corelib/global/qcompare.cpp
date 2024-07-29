@@ -1226,6 +1226,60 @@ CHECK(strong, equivalent);
 */
 
 /*!
+    \internal
+    \macro Q_DECLARE_ORDERED(Type)
+    \macro Q_DECLARE_ORDERED(LeftType, RightType)
+    \macro Q_DECLARE_ORDERED(LeftType, RightType, Attributes...)
+    \macro Q_DECLARE_ORDERED_LITERAL_TYPE(Type)
+    \macro Q_DECLARE_ORDERED_LITERAL_TYPE(LeftType, RightType)
+    \macro Q_DECLARE_ORDERED_LITERAL_TYPE(LeftType, RightType, Attributes...)
+    \macro Q_DECLARE_ORDERED_NON_NOEXCEPT(Type)
+    \macro Q_DECLARE_ORDERED_NON_NOEXCEPT(LeftType, RightType)
+    \macro Q_DECLARE_ORDERED_NON_NOEXCEPT(LeftType, RightType, Attributes...)
+    \since 6.9
+    \relates <QtCompare>
+
+    These macros behave similarly to the
+    \c {Q_DECLARE_(PARTIALLY,WEAKLY,STRONGLY)_ORDERED} overloads, but represent
+    any one of those three, using \c auto return type.
+
+    This is what you typically would use for template classes where
+    the strength of the ordering depends on the template arguments.
+    For example, if one of the template arguments is a floating-point
+    type, the ordering would be \l {Qt::partial_ordering}, if they all
+    are integral - \l {Qt::strong_ordering}.
+
+    \note It is better to use one of the explicit-strength macros in general, to
+    communicate intent. Use these macros only when the stength actually does vary
+    with template arguments.
+
+    The (in)equality operators are implemented in terms of a helper function
+    \c {comparesEqual()}. The other relational operators are implemented in
+    terms of a helper function \c {compareThreeWay()}.
+    The \c {compareThreeWay()} function \e must return an object of an ordering
+    type. It's the user's responsibility to declare and define both helper
+    functions.
+
+    The \c {*_LITERAL_TYPE} overloads are used to generate \c constexpr
+    operators. This means that the helper \c {comparesEqual()} and
+    \c {compareThreeWay()} functions must also be \c constexpr.
+
+    See \l {Q_DECLARE_PARTIALLY_ORDERED} for usage examples.
+
+    By default, the generated operators are \c {noexcept}.
+    Use the \c {*_NON_NOEXCEPT} overloads if the relational operators cannot be
+    \c {noexcept}.
+
+    The three-argument versions of the macros allow specification of C++
+    attributes to add before every generated relational operator.
+    See \l {Q_DECLARE_EQUALITY_COMPARABLE(LeftType, RightType, Attributes...)}
+    for more details and usage examples.
+
+    \sa Q_DECLARE_PARTIALLY_ORDERED, Q_DECLARE_WEAKLY_ORDERED,
+        Q_DECLARE_STRONGLY_ORDERED, Q_DECLARE_EQUALITY_COMPARABLE
+*/
+
+/*!
     \fn template <typename LeftInt, typename RightInt, Qt::if_integral<LeftInt> = true, Qt::if_integral<RightInt> = true> auto Qt::compareThreeWay(LeftInt lhs, RightInt rhs)
     \since 6.7
     \relates <QtCompare>
