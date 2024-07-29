@@ -23,6 +23,10 @@
 #include <limits>
 #include <type_traits>
 
+#ifdef __cpp_lib_saturation_arithmetic
+#  include <numeric>    // for saturate_cast
+#endif
+
 #ifndef __has_extension
 #  define __has_extension(X)    0
 #endif
@@ -441,6 +445,9 @@ template <auto V2, typename T> bool mul_overflow(T v1, T *r)
 template <typename To, typename From>
 static constexpr auto qt_saturate(From x)
 {
+#ifdef __cpp_lib_saturation_arithmetic
+    return std::saturate_cast<To>(x);
+#else
     static_assert(std::is_integral_v<To>);
     static_assert(std::is_integral_v<From>);
 
@@ -464,6 +471,7 @@ static constexpr auto qt_saturate(From x)
         using ToU = std::make_unsigned_t<To>;
         return FromU(x) > ToU(Hi) ? Hi : To(x); // assumes Hi >= 0
     }
+#endif // __cpp_lib_saturation_arithmetic
 }
 
 QT_END_NAMESPACE
