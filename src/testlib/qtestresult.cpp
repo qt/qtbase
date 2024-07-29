@@ -12,7 +12,8 @@
 #include <QtTest/qtestassert.h>
 #include <QtTest/qtesteventloop.h>
 
-#include <algorithm>
+#include <QtCore/private/qnumeric_p.h>
+
 #include <climits>
 #include <cwchar>
 
@@ -334,11 +335,10 @@ static int approx_wide_len(const char *s)
     std::mbstate_t state = {};
     // QNX might stop at max when dst == nullptr, so pass INT_MAX,
     // being the largest value this function will return:
-    constexpr size_t max = INT_MAX;
-    auto r = std::mbsrtowcs(nullptr, &s, max, &state);
+    auto r = std::mbsrtowcs(nullptr, &s, INT_MAX, &state);
     if (r == size_t(-1)) // encoding error, fall back to strlen()
         r = strlen(s); // `s` was not advanced since `dst == nullptr`
-    return int(std::clamp(r, size_t(0), max));
+    return qt_saturate<int>(r);
 }
 
 // Overload to format failures for "const char *" - no need to strdup().
