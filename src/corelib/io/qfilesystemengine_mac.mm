@@ -42,7 +42,7 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
 #else // watch, tv, iOS don't have a trash can
     Q_UNUSED(source);
     Q_UNUSED(newLocation);
-    Q_UNUSED(error);
+    error = QSystemError(ENOSYS, QSystemError::StandardLibraryError);
     return false;
 #endif
 }
