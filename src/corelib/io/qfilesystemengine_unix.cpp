@@ -1185,6 +1185,12 @@ bool QFileSystemEngine::createLink(const QFileSystemEntry &source, const QFileSy
 #elif defined(QT_BOOTSTRAPPED) || !defined(AT_FDCWD)
 // bootstrapped tools don't need this, and we don't want QStorageInfo
 //static
+bool QFileSystemEngine::supportsMoveFileToTrash()
+{
+    return false;
+}
+
+//static
 bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &, QFileSystemEntry &,
                                         QSystemError &error)
 {
@@ -1195,6 +1201,11 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &, QFileSystemEnt
 /*
     Implementing as per https://specifications.freedesktop.org/trash-spec/trashspec-1.0.html
 */
+//static
+bool QFileSystemEngine::supportsMoveFileToTrash()
+{
+    return true;
+}
 
 namespace {
 struct FreeDesktopTrashOperation

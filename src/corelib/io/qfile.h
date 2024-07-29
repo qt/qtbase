@@ -210,6 +210,7 @@ public:
     }
 #endif // QT_CONFIG(cxx17_filesystem)
 
+    static bool supportsMoveToTrash() Q_DECL_PURE_FUNCTION;
     bool moveToTrash();
     static bool moveToTrash(const QString &fileName, QString *pathInTrash = nullptr);
 #ifdef Q_QDOC

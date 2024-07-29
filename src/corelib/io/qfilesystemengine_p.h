@@ -127,6 +127,7 @@ public:
     static bool createLink(const QFileSystemEntry &source, const QFileSystemEntry &target, QSystemError &error);
 
     static bool copyFile(const QFileSystemEntry &source, const QFileSystemEntry &target, QSystemError &error);
+    static bool supportsMoveFileToTrash();
     static bool moveFileToTrash(const QFileSystemEntry &source, QFileSystemEntry &newLocation, QSystemError &error);
     static bool renameFile(const QFileSystemEntry &source, const QFileSystemEntry &target, QSystemError &error);
     static bool renameOverwriteFile(const QFileSystemEntry &source, const QFileSystemEntry &target, QSystemError &error);

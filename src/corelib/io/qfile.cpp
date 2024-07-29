@@ -453,6 +453,22 @@ QFile::remove(const QString &fileName)
 }
 
 /*!
+    \since 6.9
+
+    Returns \c true if Qt supports moving files to a trash (recycle bin) in the
+    current operating system using the moveToTrash() function, \c false
+    otherwise. Note that this function returning \c true does not imply
+    moveToTrash() will succeed. In particular, this function does not check if
+    the user has disabled the functionality in their settings.
+
+    \sa moveToTrash()
+*/
+bool QFile::supportsMoveToTrash()
+{
+    return QFileSystemEngine::supportsMoveFileToTrash();
+}
+
+/*!
     \since 5.15
 
     Moves the file specified by fileName() to the trash. Returns \c true if successful,
@@ -479,9 +495,12 @@ QFile::remove(const QString &fileName)
     themselves mount points).
 //! [move-to-trash-common]
 
-    \note On systems where the system API doesn't report the location of the file in the
-    trash, fileName() will be set to the null string once the file has been moved. On
-    systems that don't have a trash can, this function always returns false.
+    \note On systems where the system API doesn't report the location of the
+    file in the trash, fileName() will be set to the null string once the file
+    has been moved. On systems that don't have a trash can, this function
+    always returns \c false (see supportsMoveToTrash()).
+
+    \sa supportsMoveToTrash(), remove(), QDir::remove()
 */
 bool
 QFile::moveToTrash()

@@ -1772,6 +1772,12 @@ bool QFileSystemEngine::removeFile(const QFileSystemEntry &entry, QSystemError &
     return ret;
 }
 
+//static
+bool QFileSystemEngine::supportsMoveFileToTrash()
+{
+    return true;
+}
+
 /*
     If possible, we use the IFileOperation implementation, which allows us to determine
     the location of the object in the trash.

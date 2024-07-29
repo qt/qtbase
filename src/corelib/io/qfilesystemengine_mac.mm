@@ -21,6 +21,16 @@ QT_BEGIN_NAMESPACE
     such a core API; applications that want that can play the sound themselves.
 */
 //static
+bool QFileSystemEngine::supportsMoveFileToTrash()
+{
+#ifdef Q_OS_MACOS // desktop macOS has a trash can
+    return true;
+#else // watch, tv, iOS don't have a trash can
+    return false;
+#endif
+}
+
+//static
 bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
                                         QFileSystemEntry &newLocation, QSystemError &error)
 {

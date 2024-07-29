@@ -287,6 +287,7 @@ private slots:
 
     void reuseQFile();
 
+    void supportsMoveToTrash();
     void moveToTrash_data();
     void moveToTrash();
     void moveToTrashDuplicateName();
@@ -3969,6 +3970,27 @@ void tst_QFile::reuseQFile()
     }
 }
 
+void tst_QFile::supportsMoveToTrash()
+{
+    // enforce the result according to our current implementation details
+#if defined(Q_OS_WIN) || defined(Q_OS_MACOS)
+    // Windows and macOS: definitely supported
+    QVERIFY(QFile::supportsMoveToTrash());
+#elif defined(Q_OS_DARWIN)
+    // Other Darwin platforms: not supported
+    // (though Apple docs say trashItemAtURL is supported)
+    QVERIFY(!QFile::supportsMoveToTrash());
+#elif defined(Q_OS_ANDROID)
+    // Android: not supported (we get EACCES even for $HOME files)
+    QVERIFY(!QFile::supportsMoveToTrash());
+#elif !defined(AT_FDCWD)
+    // Unix platforms without the POSIX atfile support: not supported
+    QVERIFY(!QFile::supportsMoveToTrash());
+#else
+    QVERIFY(QFile::supportsMoveToTrash());
+#endif
+}
+
 void tst_QFile::moveToTrash_data()
 {
     QTest::addColumn<QString>("source");
@@ -4025,9 +4047,9 @@ void tst_QFile::moveToTrash_data()
 
 void tst_QFile::moveToTrash()
 {
-#if defined(Q_OS_ANDROID) or defined(Q_OS_WEBOS) or defined(Q_OS_VXWORKS)
-    QSKIP("This platform doesn't implement a trash bin");
-#endif
+    if (!QFile::supportsMoveToTrash())
+        QSKIP("This platform doesn't implement a trash bin");
+
     QFETCH(QString, source);
     QFETCH(bool, create);
     QFETCH(bool, result);
@@ -4127,9 +4149,9 @@ void tst_QFile::moveToTrash()
 
 void tst_QFile::moveToTrashDuplicateName()
 {
-#if defined(Q_OS_ANDROID) || defined(Q_OS_WEBOS) || defined(Q_OS_VXWORKS)
-    QSKIP("This platform doesn't implement a trash bin");
-#endif
+    if (!QFile::supportsMoveToTrash())
+        QSKIP("This platform doesn't implement a trash bin");
+
     QString origFileName = []() {
         QTemporaryFile temp(QDir::homePath() + "/tst_qfile.moveToTrashOpenFile.XXXXXX");
         temp.setAutoRemove(false);
@@ -4182,9 +4204,9 @@ void tst_QFile::moveToTrashOpenFile_data()
 
 void tst_QFile::moveToTrashOpenFile()
 {
-#if defined(Q_OS_ANDROID) || defined(Q_OS_WEBOS) || defined(Q_OS_VXWORKS)
-    QSKIP("This platform doesn't implement a trash bin");
-#endif
+    if (!QFile::supportsMoveToTrash())
+        QSKIP("This platform doesn't implement a trash bin");
+
     QFETCH(bool, useStatic);
     QFETCH(bool, success);
     const QByteArrayView contents = "Hello, World\n";
@@ -4242,9 +4264,9 @@ void tst_QFile::moveToTrashOpenFile()
 
 void tst_QFile::moveToTrashSymlinkToFile()
 {
-#if defined(Q_OS_ANDROID) || defined(Q_OS_WEBOS) || defined(Q_OS_VXWORKS)
-    QSKIP("This platform doesn't implement a trash bin");
-#endif
+    if (!QFile::supportsMoveToTrash())
+        QSKIP("This platform doesn't implement a trash bin");
+
     QTemporaryFile temp(QDir::homePath() + "/tst_qfile.moveToTrashSymlinkFile.XXXXXX");
     QVERIFY2(temp.open(), "Failed to create temporary file: " + temp.errorString().toLocal8Bit());
 
@@ -4281,9 +4303,9 @@ void tst_QFile::moveToTrashSymlinkToDirectory_data()
 
 void tst_QFile::moveToTrashSymlinkToDirectory()
 {
-#if defined(Q_OS_ANDROID) || defined(Q_OS_WEBOS) || defined(Q_OS_VXWORKS)
-    QSKIP("This platform doesn't implement a trash bin");
-#endif
+    if (!QFile::supportsMoveToTrash())
+        QSKIP("This platform doesn't implement a trash bin");
+
     QFETCH(bool, appendSlash);
     QTemporaryDir temp(QDir::homePath() + "/tst_qfile.moveToTrashSymlinkDir.XXXXXX");
     QVERIFY2(temp.isValid(), "Failed to create temporary dir: " + temp.errorString().toLocal8Bit());
@@ -4315,9 +4337,9 @@ void tst_QFile::moveToTrashSymlinkToDirectory()
 
 void tst_QFile::moveToTrashXdgSafety()
 {
-#if defined(Q_OS_VXWORKS)
-    QSKIP("This platform doesn't implement a trash bin");
-#endif
+    if (!QFile::supportsMoveToTrash())
+        QSKIP("This platform doesn't implement a trash bin");
+
 #if defined(Q_OS_WIN) || defined(Q_OS_DARWIN) || defined(Q_OS_ANDROID) || defined(Q_OS_WEBOS)
     QSKIP("This test is specific to XDG Unix systems");
 #else
