@@ -716,7 +716,11 @@ void tst_QByteArray::qvsnprintf()
 
 #ifndef Q_OS_WIN
     memset(buf, 42, sizeof(buf));
+    QT_WARNING_PUSH
+    QT_WARNING_DISABLE_GCC("-Wformat-zero-length")
+    QT_WARNING_DISABLE_CLANG("-Wformat-zero-length")
     QCOMPARE(::qsnprintf(buf, 10, ""), 0);
+    QT_WARNING_POP
 #endif
 }
 
