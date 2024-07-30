@@ -483,7 +483,8 @@ QWindowsTheme *QWindowsTheme::m_instance = nullptr;
 QWindowsTheme::QWindowsTheme()
 {
     m_instance = this;
-    s_colorScheme = QWindowsTheme::queryColorScheme();
+    s_colorScheme = Qt::ColorScheme::Unknown;
+    s_colorScheme = QWindowsTheme::effectiveColorScheme();
     std::fill(m_fonts, m_fonts + NFonts, nullptr);
     std::fill(m_palettes, m_palettes + NPalettes, nullptr);
     refresh();
@@ -578,12 +579,15 @@ Qt::ColorScheme QWindowsTheme::colorScheme() const
 
 Qt::ColorScheme QWindowsTheme::effectiveColorScheme()
 {
+    auto integration = QWindowsIntegration::instance();
     if (queryHighContrast())
         return Qt::ColorScheme::Unknown;
     if (s_colorSchemeOverride != Qt::ColorScheme::Unknown)
         return s_colorSchemeOverride;
     if (s_colorScheme != Qt::ColorScheme::Unknown)
         return s_colorScheme;
+    if (!integration->darkModeHandling().testFlag(QWindowsApplication::DarkModeStyle))
+        return Qt::ColorScheme::Light;
     return queryColorScheme();
 }
 
