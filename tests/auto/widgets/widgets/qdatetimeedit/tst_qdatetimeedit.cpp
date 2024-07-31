@@ -1347,8 +1347,7 @@ void tst_QDateTimeEdit::editingRanged()
     });
 
     edit->show();
-    if (!QTest::qWaitForWindowActive(edit.get()))
-        QSKIP("Failed to make window active, aborting");
+    QVERIFY(QTest::qWaitForWindowFocused(edit.get()));
     edit->setFocus();
 
     // with keyboard tracking, never get a signal with an out-of-range value

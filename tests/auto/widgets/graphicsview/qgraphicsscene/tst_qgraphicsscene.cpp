@@ -3041,7 +3041,7 @@ void tst_QGraphicsScene::tabFocus_emptyScene()
     widget.setWindowTitle(QTest::currentTestFunction());
     widget.show();
     widget.activateWindow();
-    QVERIFY(QTest::qWaitForWindowActive(&widget));
+    QVERIFY(QTest::qWaitForWindowFocused(&widget));
 
     dial1->setFocus();
     QVERIFY(dial1->hasFocus());
@@ -4807,7 +4807,7 @@ void tst_QGraphicsScene::focusOnTouch()
     rect->setFlag(QGraphicsItem::ItemIsFocusable, true);
 
     view.show();
-    QVERIFY(QTest::qWaitForWindowActive(&view));
+    QVERIFY(QTest::qWaitForWindowFocused(&view));
 
     QVERIFY(!rect->hasFocus());
 
@@ -4907,7 +4907,7 @@ void tst_QGraphicsScene::taskQTBUG_16401_focusItem()
     rect->setFlag(QGraphicsItem::ItemIsFocusable);
 
     view.show();
-    QVERIFY(QTest::qWaitForWindowActive(&view));
+    QVERIFY(QTest::qWaitForWindowFocused(&view));
 
     QVERIFY(!scene.focusItem());
 
