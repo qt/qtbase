@@ -3,6 +3,7 @@
         "classes": [
             {
                 "className": "BackslashNewlines",
+                "lineNumber": 16,
                 "object": true,
                 "qualifiedClassName": "BackslashNewlines",
                 "slots": [
@@ -27,6 +28,7 @@
         "classes": [
             {
                 "className": "IfdefedClass",
+                "lineNumber": 13,
                 "object": true,
                 "qualifiedClassName": "IfdefedClass",
                 "superClasses": [
@@ -65,6 +67,7 @@
                     }
                 ],
                 "gadget": true,
+                "lineNumber": 8,
                 "qualifiedClassName": "CStyleEnums"
             }
         ],
@@ -171,6 +174,7 @@
                     }
                 ],
                 "gadget": true,
+                "lineNumber": 8,
                 "qualifiedClassName": "CXX11Enums"
             },
             {
@@ -236,6 +240,7 @@
                     }
                 ],
                 "gadget": true,
+                "lineNumber": 36,
                 "qualifiedClassName": "CXX11Enums2"
             },
             {
@@ -288,6 +293,7 @@
                         ]
                     }
                 ],
+                "lineNumber": 50,
                 "object": true,
                 "qualifiedClassName": "CXX11Enums3",
                 "superClasses": [
@@ -305,6 +311,7 @@
         "classes": [
             {
                 "className": "ExplicitOverrideControlBase",
+                "lineNumber": 17,
                 "object": true,
                 "qualifiedClassName": "ExplicitOverrideControlBase",
                 "slots": [
@@ -338,6 +345,7 @@
             },
             {
                 "className": "ExplicitOverrideControlFinalQt",
+                "lineNumber": 39,
                 "object": true,
                 "qualifiedClassName": "ExplicitOverrideControlFinalQt",
                 "slots": [
@@ -371,6 +379,7 @@
             },
             {
                 "className": "ExplicitOverrideControlFinalCxx11",
+                "lineNumber": 61,
                 "object": true,
                 "qualifiedClassName": "ExplicitOverrideControlFinalCxx11",
                 "slots": [
@@ -404,6 +413,7 @@
             },
             {
                 "className": "ExplicitOverrideControlSealed",
+                "lineNumber": 83,
                 "object": true,
                 "qualifiedClassName": "ExplicitOverrideControlSealed",
                 "slots": [
@@ -437,6 +447,7 @@
             },
             {
                 "className": "ExplicitOverrideControlOverrideQt",
+                "lineNumber": 105,
                 "object": true,
                 "qualifiedClassName": "ExplicitOverrideControlOverrideQt",
                 "slots": [
@@ -470,6 +481,7 @@
             },
             {
                 "className": "ExplicitOverrideControlOverrideCxx11",
+                "lineNumber": 127,
                 "object": true,
                 "qualifiedClassName": "ExplicitOverrideControlOverrideCxx11",
                 "slots": [
@@ -503,6 +515,7 @@
             },
             {
                 "className": "ExplicitOverrideControlFinalQtOverrideQt",
+                "lineNumber": 149,
                 "object": true,
                 "qualifiedClassName": "ExplicitOverrideControlFinalQtOverrideQt",
                 "slots": [
@@ -536,6 +549,7 @@
             },
             {
                 "className": "ExplicitOverrideControlFinalCxx11OverrideCxx11",
+                "lineNumber": 171,
                 "object": true,
                 "qualifiedClassName": "ExplicitOverrideControlFinalCxx11OverrideCxx11",
                 "slots": [
@@ -569,6 +583,7 @@
             },
             {
                 "className": "ExplicitOverrideControlSealedOverride",
+                "lineNumber": 193,
                 "object": true,
                 "qualifiedClassName": "ExplicitOverrideControlSealedOverride",
                 "slots": [
@@ -608,6 +623,7 @@
         "classes": [
             {
                 "className": "FinalTestClassQt",
+                "lineNumber": 15,
                 "object": true,
                 "qualifiedClassName": "FinalTestClassQt",
                 "superClasses": [
@@ -619,6 +635,7 @@
             },
             {
                 "className": "ExportedFinalTestClassQt",
+                "lineNumber": 24,
                 "object": true,
                 "qualifiedClassName": "ExportedFinalTestClassQt",
                 "superClasses": [
@@ -630,6 +647,7 @@
             },
             {
                 "className": "ExportedFinalTestClassQtX",
+                "lineNumber": 32,
                 "object": true,
                 "qualifiedClassName": "ExportedFinalTestClassQtX",
                 "superClasses": [
@@ -641,6 +659,7 @@
             },
             {
                 "className": "FinalTestClassCpp11",
+                "lineNumber": 40,
                 "object": true,
                 "qualifiedClassName": "FinalTestClassCpp11",
                 "superClasses": [
@@ -652,6 +671,7 @@
             },
             {
                 "className": "ExportedFinalTestClassCpp11",
+                "lineNumber": 48,
                 "object": true,
                 "qualifiedClassName": "ExportedFinalTestClassCpp11",
                 "superClasses": [
@@ -663,6 +683,7 @@
             },
             {
                 "className": "ExportedFinalTestClassCpp11X",
+                "lineNumber": 56,
                 "object": true,
                 "qualifiedClassName": "ExportedFinalTestClassCpp11X",
                 "superClasses": [
@@ -674,6 +695,7 @@
             },
             {
                 "className": "SealedTestClass",
+                "lineNumber": 64,
                 "object": true,
                 "qualifiedClassName": "SealedTestClass",
                 "superClasses": [
@@ -685,6 +707,7 @@
             },
             {
                 "className": "ExportedSealedTestClass",
+                "lineNumber": 72,
                 "object": true,
                 "qualifiedClassName": "ExportedSealedTestClass",
                 "superClasses": [
@@ -696,6 +719,7 @@
             },
             {
                 "className": "ExportedSealedTestClassX",
+                "lineNumber": 80,
                 "object": true,
                 "qualifiedClassName": "ExportedSealedTestClassX",
                 "superClasses": [
@@ -713,6 +737,7 @@
         "classes": [
             {
                 "className": "CXX11TrailingReturn",
+                "lineNumber": 8,
                 "object": true,
                 "qualifiedClassName": "CXX11TrailingReturn",
                 "signals": [
@@ -797,6 +822,7 @@
                     }
                 ],
                 "gadget": true,
+                "lineNumber": 19,
                 "qualifiedClassName": "CXX17Namespace::A::B::C::D::ClassInNamespace"
             },
             {
@@ -811,6 +837,7 @@
                         ]
                     }
                 ],
+                "lineNumber": 10,
                 "namespace": true,
                 "qualifiedClassName": "CXX17Namespace::A::B::C::D"
             }
@@ -830,6 +857,7 @@
                         }
                     ]
                 ],
+                "lineNumber": 8,
                 "object": true,
                 "qualifiedClassName": "DirInIncludePath",
                 "superClasses": [
@@ -851,6 +879,7 @@
         "classes": [
             {
                 "className": "Foo",
+                "lineNumber": 8,
                 "object": true,
                 "qualifiedClassName": "Foo",
                 "superClasses": [
@@ -882,6 +911,7 @@
                     }
                 ],
                 "className": "StringLiterals",
+                "lineNumber": 8,
                 "object": true,
                 "qualifiedClassName": "StringLiterals",
                 "superClasses": [
@@ -899,6 +929,7 @@
         "classes": [
             {
                 "className": "ForwardDeclaredParamClass",
+                "lineNumber": 20,
                 "object": true,
                 "qualifiedClassName": "ForwardDeclaredParamClass",
                 "signals": [
@@ -1100,6 +1131,7 @@
         "classes": [
             {
                 "className": "FunctionWithAttributes",
+                "lineNumber": 22,
                 "object": true,
                 "qualifiedClassName": "FunctionWithAttributes",
                 "slots": [
@@ -1130,6 +1162,7 @@
             {
                 "className": "GadgetWithNoEnums",
                 "gadget": true,
+                "lineNumber": 8,
                 "qualifiedClassName": "GadgetWithNoEnums"
             },
             {
@@ -1145,6 +1178,7 @@
                     }
                 ],
                 "gadget": true,
+                "lineNumber": 17,
                 "qualifiedClassName": "DerivedGadgetWithEnums",
                 "superClasses": [
                     {
@@ -1162,11 +1196,13 @@
             {
                 "className": "BaseGadget",
                 "gadget": true,
+                "lineNumber": 11,
                 "qualifiedClassName": "GrandParentGadget::BaseGadget"
             },
             {
                 "className": "DerivedGadget",
                 "gadget": true,
+                "lineNumber": 13,
                 "qualifiedClassName": "GrandParentGadget::DerivedGadget",
                 "superClasses": [
                     {
@@ -1178,6 +1214,7 @@
             {
                 "className": "CRTPDerivedGadget",
                 "gadget": true,
+                "lineNumber": 15,
                 "qualifiedClassName": "GrandParentGadget::CRTPDerivedGadget",
                 "superClasses": [
                     {
@@ -1194,6 +1231,7 @@
         "classes": [
             {
                 "className": "TestFwdProperties",
+                "lineNumber": 20,
                 "object": true,
                 "properties": [
                     {
@@ -1249,6 +1287,7 @@
             },
             {
                 "className": "SomeRandomNamespace",
+                "lineNumber": 15,
                 "namespace": true,
                 "qualifiedClassName": "SomeRandomNamespace"
             }
@@ -1271,6 +1310,7 @@
                         ]
                     }
                 ],
+                "lineNumber": 12,
                 "namespace": true,
                 "qualifiedClassName": "FooNamespace"
             },
@@ -1296,6 +1336,7 @@
                         ]
                     }
                 ],
+                "lineNumber": 20,
                 "namespace": true,
                 "qualifiedClassName": "FooNamespace::FooNestedNamespace"
             },
@@ -1312,6 +1353,7 @@
                         ]
                     }
                 ],
+                "lineNumber": 41,
                 "namespace": true,
                 "qualifiedClassName": "FooNamespace::FooNestedNamespace::FooMoreNestedNamespace"
             }
@@ -1323,6 +1365,7 @@
         "classes": [
             {
                 "className": "Base",
+                "lineNumber": 10,
                 "object": true,
                 "qualifiedClassName": "QTBUG_101141::Base",
                 "superClasses": [
@@ -1334,6 +1377,7 @@
             },
             {
                 "className": "Derived",
+                "lineNumber": 14,
                 "object": true,
                 "qualifiedClassName": "QTBUG_101141::Derived",
                 "superClasses": [
@@ -1364,6 +1408,7 @@
                         ]
                     }
                 ],
+                "lineNumber": 9,
                 "object": true,
                 "properties": [
                     {
@@ -1391,6 +1436,7 @@
             },
             {
                 "className": "Baz",
+                "lineNumber": 27,
                 "object": true,
                 "properties": [
                     {
@@ -1438,6 +1484,7 @@
         "classes": [
             {
                 "className": "MyBooooooostishClass",
+                "lineNumber": 34,
                 "object": true,
                 "qualifiedClassName": "MyBooooooostishClass",
                 "signals": [
@@ -1470,6 +1517,7 @@
             {
                 "className": "Derived",
                 "gadget": true,
+                "lineNumber": 12,
                 "qualifiedClassName": "NonGadgetParent::Derived",
                 "superClasses": [
                     {
@@ -1486,6 +1534,7 @@
         "classes": [
             {
                 "className": "OldStyleCast",
+                "lineNumber": 8,
                 "object": true,
                 "qualifiedClassName": "OldStyleCast",
                 "slots": [
@@ -1559,6 +1608,7 @@
                     }
                 ],
                 "className": "ParseDefine",
+                "lineNumber": 53,
                 "object": true,
                 "qualifiedClassName": "PD::ParseDefine",
                 "signals": [
@@ -1745,6 +1795,7 @@
         "classes": [
             {
                 "className": "TestPluginMetaData",
+                "lineNumber": 9,
                 "object": true,
                 "qualifiedClassName": "TestPluginMetaData",
                 "superClasses": [
@@ -1762,6 +1813,7 @@
         "classes": [
             {
                 "className": "TestPointeeCanBeIncomplete",
+                "lineNumber": 14,
                 "object": true,
                 "qualifiedClassName": "TestPointeeCanBeIncomplete",
                 "slots": [
@@ -1851,6 +1903,7 @@
         "classes": [
             {
                 "className": "PureVirtualSignalsTest",
+                "lineNumber": 8,
                 "object": true,
                 "qualifiedClassName": "PureVirtualSignalsTest",
                 "signals": [
@@ -1885,6 +1938,7 @@
             },
             {
                 "className": "PureVirtualSignalsImpl",
+                "lineNumber": 18,
                 "object": true,
                 "qualifiedClassName": "PureVirtualSignalsImpl",
                 "signals": [
@@ -1920,6 +1974,7 @@
         "classes": [
             {
                 "className": "InvokableBeforeReturnType",
+                "lineNumber": 9,
                 "methods": [
                     {
                         "access": "public",
@@ -1938,6 +1993,7 @@
             },
             {
                 "className": "InvokableBeforeInline",
+                "lineNumber": 16,
                 "methods": [
                     {
                         "access": "public",
@@ -1967,6 +2023,7 @@
         "classes": [
             {
                 "className": "TestQPrivateSlots",
+                "lineNumber": 14,
                 "methods": [
                     {
                         "access": "private",
@@ -2009,6 +2066,7 @@
                     }
                 ],
                 "gadget": true,
+                "lineNumber": 10,
                 "qualifiedClassName": "QTBUG_35657::A"
             }
         ],
@@ -2019,6 +2077,7 @@
         "classes": [
             {
                 "className": "B",
+                "lineNumber": 11,
                 "object": true,
                 "properties": [
                     {
@@ -2061,6 +2120,7 @@
                         ]
                     }
                 ],
+                "lineNumber": 10,
                 "object": true,
                 "qualifiedClassName": "QTBUG_2151::A",
                 "superClasses": [
@@ -2072,6 +2132,7 @@
             },
             {
                 "className": "B",
+                "lineNumber": 17,
                 "object": true,
                 "properties": [
                     {
@@ -2115,6 +2176,7 @@
                     }
                 ],
                 "gadget": true,
+                "lineNumber": 48,
                 "qualifiedClassName": "Unsused::Gadget"
             },
             {
@@ -2129,6 +2191,7 @@
                         ]
                     }
                 ],
+                "lineNumber": 48,
                 "object": true,
                 "qualifiedClassName": "Unsused::Object",
                 "superClasses": [
@@ -2151,6 +2214,7 @@
                     }
                 ],
                 "gadget": true,
+                "lineNumber": 53,
                 "qualifiedClassName": "NS1::Nested::Gadget"
             },
             {
@@ -2165,6 +2229,7 @@
                         ]
                     }
                 ],
+                "lineNumber": 53,
                 "object": true,
                 "qualifiedClassName": "NS1::Nested::Object",
                 "superClasses": [
@@ -2187,6 +2252,7 @@
                     }
                 ],
                 "gadget": true,
+                "lineNumber": 57,
                 "qualifiedClassName": "NS1::NestedUnsused::Gadget"
             },
             {
@@ -2201,6 +2267,7 @@
                         ]
                     }
                 ],
+                "lineNumber": 57,
                 "object": true,
                 "qualifiedClassName": "NS1::NestedUnsused::Object",
                 "superClasses": [
@@ -2223,6 +2290,7 @@
                     }
                 ],
                 "gadget": true,
+                "lineNumber": 60,
                 "qualifiedClassName": "NS1::Gadget"
             },
             {
@@ -2237,6 +2305,7 @@
                         ]
                     }
                 ],
+                "lineNumber": 60,
                 "object": true,
                 "qualifiedClassName": "NS1::Object",
                 "superClasses": [
@@ -2248,6 +2317,7 @@
             },
             {
                 "className": "DependingObject",
+                "lineNumber": 61,
                 "object": true,
                 "properties": [
                     {
@@ -2287,6 +2357,7 @@
             },
             {
                 "className": "DependingNestedGadget",
+                "lineNumber": 61,
                 "object": true,
                 "properties": [
                     {
@@ -2313,6 +2384,7 @@
             },
             {
                 "className": "DependingNestedObject",
+                "lineNumber": 61,
                 "object": true,
                 "properties": [
                     {
@@ -2350,6 +2422,7 @@
                     }
                 ],
                 "gadget": true,
+                "lineNumber": 67,
                 "qualifiedClassName": "NS2::Nested::Gadget"
             },
             {
@@ -2364,6 +2437,7 @@
                         ]
                     }
                 ],
+                "lineNumber": 67,
                 "object": true,
                 "qualifiedClassName": "NS2::Nested::Object",
                 "superClasses": [
@@ -2386,6 +2460,7 @@
                     }
                 ],
                 "gadget": true,
+                "lineNumber": 71,
                 "qualifiedClassName": "NS2::NestedUnsused::Gadget"
             },
             {
@@ -2400,6 +2475,7 @@
                         ]
                     }
                 ],
+                "lineNumber": 71,
                 "object": true,
                 "qualifiedClassName": "NS2::NestedUnsused::Object",
                 "superClasses": [
@@ -2422,6 +2498,7 @@
                     }
                 ],
                 "gadget": true,
+                "lineNumber": 74,
                 "qualifiedClassName": "NS2::Gadget"
             },
             {
@@ -2436,6 +2513,7 @@
                         ]
                     }
                 ],
+                "lineNumber": 74,
                 "object": true,
                 "qualifiedClassName": "NS2::Object",
                 "superClasses": [
@@ -2447,6 +2525,7 @@
             },
             {
                 "className": "DependingObject",
+                "lineNumber": 75,
                 "object": true,
                 "properties": [
                     {
@@ -2486,6 +2565,7 @@
             },
             {
                 "className": "DependingNestedGadget",
+                "lineNumber": 75,
                 "object": true,
                 "properties": [
                     {
@@ -2512,6 +2592,7 @@
             },
             {
                 "className": "DependingNestedObject",
+                "lineNumber": 75,
                 "object": true,
                 "properties": [
                     {
@@ -2544,6 +2625,7 @@
         "classes": [
             {
                 "className": "SignalWithDefaultArg",
+                "lineNumber": 9,
                 "object": true,
                 "qualifiedClassName": "SignalWithDefaultArg",
                 "signals": [
@@ -2590,6 +2672,7 @@
                         ]
                     }
                 ],
+                "lineNumber": 9,
                 "object": true,
                 "qualifiedClassName": "KDAB",
                 "superClasses": [
@@ -2607,6 +2690,7 @@
         "classes": [
             {
                 "className": "SlotsWithVoidTemplateTest",
+                "lineNumber": 14,
                 "object": true,
                 "qualifiedClassName": "SlotsWithVoidTemplateTest",
                 "signals": [
@@ -2673,6 +2757,7 @@
         "classes": [
             {
                 "className": "Task192552",
+                "lineNumber": 13,
                 "object": true,
                 "qualifiedClassName": "Task192552",
                 "superClasses": [
@@ -2690,6 +2775,7 @@
         "classes": [
             {
                 "className": "TestObject",
+                "lineNumber": 16,
                 "object": true,
                 "qualifiedClassName": "NS_A::NS_B::TestObject",
                 "superClasses": [
@@ -2701,6 +2787,7 @@
             },
             {
                 "className": "TestMain",
+                "lineNumber": 30,
                 "object": true,
                 "qualifiedClassName": "NS_A::NS_Main::TestMain",
                 "superClasses": [
@@ -2718,6 +2805,7 @@
         "classes": [
             {
                 "className": "TypenameWithUnsigned",
+                "lineNumber": 13,
                 "object": true,
                 "qualifiedClassName": "TypenameWithUnsigned",
                 "slots": [
@@ -2868,6 +2956,7 @@
         "classes": [
             {
                 "className": "Task87883",
+                "lineNumber": 16,
                 "object": true,
                 "qualifiedClassName": "Task87883",
                 "superClasses": [
@@ -2885,6 +2974,7 @@
         "classes": [
             {
                 "className": "Foo",
+                "lineNumber": 14,
                 "object": true,
                 "qualifiedClassName": "BBB::Foo",
                 "signals": [

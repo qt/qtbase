@@ -78,6 +78,7 @@ bool Moc::parseClassHead(ClassDef *def)
         }
     }
     def->classname = name;
+    def->lineNumber = symbol().lineNum;
 
     if (test(IDENTIFIER)) {
         const QByteArray lex = lexem();
@@ -691,6 +692,7 @@ void Moc::parse()
                     } else if (!test(SEMIC)) {
                         NamespaceDef def;
                         def.classname = nsName;
+                        def.lineNumber = symbol().lineNum;
                         def.doGenerate = currentFilenames.size() <= 1;
 
                         next(LBRACE);
@@ -2003,6 +2005,7 @@ QJsonObject ClassDef::toJson() const
     QJsonObject cls;
     cls["className"_L1] = QString::fromUtf8(classname.constData());
     cls["qualifiedClassName"_L1] = QString::fromUtf8(qualified.constData());
+    cls["lineNumber"_L1] = lineNumber;
 
     QJsonArray classInfos;
     for (const auto &info: std::as_const(classInfoList)) {
