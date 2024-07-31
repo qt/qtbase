@@ -2095,6 +2095,7 @@ void QMdiSubWindowPrivate::setVisible(WindowStateAction action, bool visible)
                                        (controlContainer->controllerWidget())) {
         ctrlWidget->setControlVisible(action, visible);
     }
+    q->update();
 }
 
 #ifndef QT_NO_ACTION
@@ -2866,6 +2867,13 @@ bool QMdiSubWindow::event(QEvent *event)
     case QEvent::ToolTip:
         showToolTip(static_cast<QHelpEvent *>(event), this, d->titleBarOptions(),
                     QStyle::CC_TitleBar, d->hoveredSubControl);
+        break;
+#endif
+#ifndef QT_NO_ACTION
+    case QEvent::ActionAdded:
+    case QEvent::ActionChanged:
+    case QEvent::ActionRemoved:
+        update();
         break;
 #endif
     default:
