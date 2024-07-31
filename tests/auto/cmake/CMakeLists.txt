@@ -109,6 +109,9 @@ endif()
 if(NOT TARGET Qt::Widgets)
     set(NO_WIDGETS TRUE)
 endif()
+if(NOT TARGET Qt::OpenGL)
+    set(NO_OPENGL TRUE)
+endif()
 
 include("${_Qt6CTestMacros}")
 
@@ -282,8 +285,13 @@ endif()
 if (NOT NO_WIDGETS)
   list(APPEND qt_module_includes
     Widgets QWidget
-    OpenGL QOpenGLBuffer
     PrintSupport QPrinter
+  )
+endif()
+
+if (NOT NO_OPENGL)
+  list(APPEND qt_module_includes
+    OpenGL QOpenGLBuffer
   )
 endif()
 
@@ -298,7 +306,7 @@ _qt_internal_test_module_includes(
 )
 _qt_internal_test_expect_pass(test_concurrent_module)
 
-if(NOT NO_GUI)
+if(NOT NO_GUI AND NOT NO_OPENGL)
     _qt_internal_test_expect_pass(test_opengl_lib)
 endif()
 
