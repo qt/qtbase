@@ -204,7 +204,7 @@ Qt::TimerId QTimer::id() const
 
 //! [stop-restart-timer]
     If the timer is already running, it will be
-    \l{QTimer::stop()}{stopped} and restarted.
+    \l{QTimer::stop()}{stopped} and restarted. This will also change its id().
 //! [stop-restart-timer]
 
 //! [singleshot-activation]
@@ -591,7 +591,9 @@ QBindable<bool> QTimer::bindableSingleShot()
     interval of 0 will time out as soon as all the events in the window
     system's event queue have been processed.
 
-    Setting the interval of an active timer changes its timerId().
+    Setting the interval of an active timer will change the interval,
+    stop() and then start() the timer, and acquire a new id().
+    If the timer is not active, only the interval is changed.
 
     \sa singleShot
 */

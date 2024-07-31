@@ -183,7 +183,8 @@ Qt::TimerId QChronoTimer::id() const
 
 //! [stop-restart-timer]
     If the timer is already running, it will be
-    \l{QChronoTimer::stop()}{stopped} and restarted.
+    \l{QChronoTimer::stop()}{stopped} and restarted. This will also change its
+    id().
 //! [stop-restart-timer]
 
     If \l singleShot is true, the timer will be activated only once.
@@ -279,8 +280,9 @@ QBindable<bool> QChronoTimer::bindableSingleShot()
     A QChronoTimer with a timeout of \c 0ns will time out as soon as all
     the events in the window system's event queue have been processed.
 
-    Setting the interval of an active timer changes the interval and acquires
-    a new id(). If the timer is not active, only the interval is changed.
+    Setting the interval of an active timer will change the interval,
+    stop() and then start() the timer, and acquire a new id().
+    If the timer is not active, only the interval is changed.
 
     \sa singleShot
 */
