@@ -66,8 +66,8 @@ function(qt_internal_set_warnings_are_errors_flags target target_scope)
         endif()
     elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
         # Only enable for versions of MSVC that are known to work
-        # 1939 is Visual Studio 2022 version 17.0
-        if(MSVC_VERSION LESS_EQUAL 1939)
+        # 1941 is Visual Studio 2022 version 17.11
+        if(MSVC_VERSION LESS_EQUAL 1941)
             list(APPEND flags /WX)
         endif()
     endif()
