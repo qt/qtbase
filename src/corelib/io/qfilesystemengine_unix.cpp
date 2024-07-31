@@ -1182,7 +1182,7 @@ bool QFileSystemEngine::createLink(const QFileSystemEntry &source, const QFileSy
 
 #ifdef Q_OS_DARWIN
 // see qfilesystemengine_mac.mm
-#elif defined(QT_BOOTSTRAPPED) || !defined(AT_FDCWD)
+#elif defined(QT_BOOTSTRAPPED) || !defined(AT_FDCWD) || defined(Q_OS_ANDROID)
 // bootstrapped tools don't need this, and we don't want QStorageInfo
 //static
 bool QFileSystemEngine::supportsMoveFileToTrash()
