@@ -139,11 +139,21 @@ Q_CORE_EXPORT int qstrnicmp(const char *, const char *, size_t len);
 Q_CORE_EXPORT int qstrnicmp(const char *, qsizetype, const char *, qsizetype = -1);
 
 #ifndef QT_NO_QSNPRINTF // use std::(v)snprintf() from <cstdio> instead
+#if QT_DEPRECATED_SINCE(6, 9)
+#define QSNPF_DEPR(vsn) \
+    QT_DEPRECATED_VERSION_X_6_9("Use C++11 std::" #vsn "printf() instead, taking care to " \
+                                "ensure that you didn't rely on QString::asprintf() " \
+                                "ideosyncrasies that q" #vsn "printf might, but " \
+                                "std::" #vsn "printf() does not, support.")
 // implemented in qvsnprintf.cpp
+QSNPF_DEPR(vsn)
 Q_CORE_EXPORT int qvsnprintf(char *str, size_t n, const char *fmt, va_list ap)
     Q_ATTRIBUTE_FORMAT_PRINTF(3, 0);
+QSNPF_DEPR(sn)
 Q_CORE_EXPORT int qsnprintf(char *str, size_t n, const char *fmt, ...)
     Q_ATTRIBUTE_FORMAT_PRINTF(3, 4);
+#undef QSNPF_DEPR
+#endif // QT_DEPRECATED_SINCE(6, 9)
 #endif // QT_NO_QSNPRINTF
 
 // qChecksum: Internet checksum

@@ -40,7 +40,9 @@ private slots:
     void base64();
     void fromBase64_data();
     void fromBase64();
+#if QT_DEPRECATED_SINCE(6, 9)
     void qvsnprintf();
+#endif
     void qstrlen();
     void qstrnlen();
     void qstrcpy();
@@ -679,6 +681,9 @@ void tst_QByteArray::fromBase64()
     }
 }
 
+#if QT_DEPRECATED_SINCE(6, 9)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 void tst_QByteArray::qvsnprintf()
 {
     char buf[20];
@@ -723,6 +728,8 @@ void tst_QByteArray::qvsnprintf()
     QT_WARNING_POP
 #endif
 }
+QT_WARNING_POP
+#endif // QT_DEPRECATED_SINCE(6, 9)
 
 
 void tst_QByteArray::qstrlen()

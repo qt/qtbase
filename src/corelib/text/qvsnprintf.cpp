@@ -22,15 +22,15 @@ QT_BEGIN_NAMESPACE
     \sa qsnprintf(), qvsnprintf().
 */
 
+#if QT_DEPRECATED_SINCE(6, 9)
+
 #if !defined(QT_VSNPRINTF) || defined(Q_QDOC)
 
 /*!
     \fn int qvsnprintf(char *str, size_t n, const char *fmt, va_list ap)
     \relates QByteArray
 
-    \obsolete
-
-    Use C++11's \c{std::vsnprintf()} from \c{<cstdio>} instead.
+    \deprecated [6.9] Use C++11's \c{std::vsnprintf()} from \c{<cstdio>} instead.
 
     A portable \c vsnprintf() function. Will call \c ::vsnprintf(), \c
     ::_vsnprintf(), or \c ::vsnprintf_s depending on the system, or
@@ -89,9 +89,7 @@ int qvsnprintf(char *str, size_t n, const char *fmt, va_list ap)
     \target bytearray-qsnprintf
     \relates QByteArray
 
-    \obsolete
-
-    Use C++11's \c{std::snprintf()} from \c{<cstdio>} instead.
+    \deprecated [6.9] Use C++11's \c{std::snprintf()} from \c{<cstdio>} instead.
 
     A portable snprintf() function, calls qvsnprintf.
 
@@ -111,10 +109,14 @@ int qsnprintf(char *str, size_t n, const char *fmt, ...)
     va_list ap;
     va_start(ap, fmt);
 
+    QT_IGNORE_DEPRECATIONS(
     int ret = qvsnprintf(str, n, fmt, ap);
+    )
     va_end(ap);
 
     return ret;
 }
+
+#endif // QT_DEPRECATED_SINCE(6, 9)
 
 QT_END_NAMESPACE
