@@ -1613,7 +1613,7 @@ void tst_QMenu::transientParent()
     QVERIFY(topLevel);
 
     window.setFocus();
-    QVERIFY(QTest::qWaitForWindowActive(&window));
+    QVERIFY(QTest::qWaitForWindowFocused(&window));
     QVERIFY(window.hasFocus());
 
     QTest::keyPress(&window, Qt::Key_F, Qt::AltModifier);

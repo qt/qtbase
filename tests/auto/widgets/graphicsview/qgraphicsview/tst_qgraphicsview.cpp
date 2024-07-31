@@ -2159,7 +2159,7 @@ void tst_QGraphicsView::sendEvent()
     QGraphicsView view(&scene);
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
-    QVERIFY(QTest::qWaitForWindowActive(&view));
+    QVERIFY(QTest::qWaitForWindowFocused(&view));
     QCOMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
 
     item->setFocus();
@@ -2226,7 +2226,7 @@ void tst_QGraphicsView::wheelEvent()
     QGraphicsView view(&scene);
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
-    QVERIFY(QTest::qWaitForWindowActive(&view));
+    QVERIFY(QTest::qWaitForWindowFocused(&view));
     QCOMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
 
 
@@ -3191,7 +3191,7 @@ void tst_QGraphicsView::task172231_untransformableItems()
     view.scale(2, 1);
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
-    QVERIFY(QTest::qWaitForWindowActive(&view));
+    QVERIFY(QTest::qWaitForWindowFocused(&view));
     QCOMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
 
     QRectF origExposedRect = text->exposedRect;
@@ -4402,7 +4402,7 @@ void tst_QGraphicsView::inputMethodSensitivity()
     QGraphicsView view(&scene);
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
-    QVERIFY(QTest::qWaitForWindowActive(&view));
+    QVERIFY(QTest::qWaitForWindowFocused(&view));
     QCOMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
 
     FocusItem *item = new FocusItem;
@@ -4999,7 +4999,7 @@ void tst_QGraphicsView::QTBUG_53974_mismatched_hide_show_events()
 
     topLevel.show();
     topLevel.activateWindow();
-    QVERIFY(QTest::qWaitForWindowActive(&topLevel));
+    QVERIFY(QTest::qWaitForWindowFocused(&topLevel));
 
     // Starting point
     QCOMPARE_EQ(topLevel.currentIndex(), 0);

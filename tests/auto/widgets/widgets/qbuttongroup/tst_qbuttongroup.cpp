@@ -203,8 +203,7 @@ void tst_QButtonGroup::keyNavigationPushButtons()
     buttonGroup->addButton(pb3);
 
     dlg.show();
-    if (!QTest::qWaitForWindowActive(&dlg))
-        QSKIP("Window activation failed, skipping test");
+    QVERIFY(QTest::qWaitForWindowFocused(&dlg));
 
     QVERIFY2(le1->hasFocus(), qPrintable(qApp->focusWidget()->objectName()));
     QTest::keyClick(qApp->focusWidget(), Qt::Key_Tab);

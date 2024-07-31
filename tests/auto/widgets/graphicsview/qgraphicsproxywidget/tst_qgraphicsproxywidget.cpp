@@ -709,7 +709,7 @@ void tst_QGraphicsProxyWidget::focusNextPrevChild()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.show();
-    QVERIFY(QTest::qWaitForWindowActive(&view));
+    QVERIFY(QTest::qWaitForWindowFocused(&view));
     if (hasScene) {
         scene.addItem(proxyGuard.release());
         proxy->show();
@@ -984,7 +984,7 @@ void tst_QGraphicsProxyWidget::keyPressEvent()
     QGraphicsView view(&scene);
     view.show();
     view.viewport()->setFocus();
-    QVERIFY(QTest::qWaitForWindowActive(&view));
+    QVERIFY(QTest::qWaitForWindowFocused(&view));
     QCOMPARE(QApplication::activeWindow(), (QWidget*)&view);
 
     SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
@@ -1022,7 +1022,7 @@ void tst_QGraphicsProxyWidget::keyReleaseEvent()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.show();
-    QVERIFY(QTest::qWaitForWindowActive(&view));
+    QVERIFY(QTest::qWaitForWindowFocused(&view));
     QCOMPARE(QApplication::activeWindow(), (QWidget*)&view);
 
 
@@ -1067,7 +1067,7 @@ void tst_QGraphicsProxyWidget::mouseDoubleClickEvent()
     view.resize(100, 100);
     view.show();
 
-    QVERIFY(QTest::qWaitForWindowActive(&view));
+    QVERIFY(QTest::qWaitForWindowFocused(&view));
     QCOMPARE(QApplication::activeWindow(), (QWidget*)&view);
     // wait for scene to be updated before doing any coordinate mappings on it
     QTRY_VERIFY(sceneChangedSpy.size() > 0);
@@ -1152,7 +1152,7 @@ void tst_QGraphicsProxyWidget::paintEvent()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.show();
-    QVERIFY(QTest::qWaitForWindowActive(&view));
+    QVERIFY(QTest::qWaitForWindowFocused(&view));
     QVERIFY(view.isActiveWindow());
 
     SubQGraphicsProxyWidget proxy;
@@ -1539,7 +1539,7 @@ void tst_QGraphicsProxyWidget::tabFocus_simpleWidget()
 
     window.show();
     window.activateWindow();
-    QVERIFY(QTest::qWaitForWindowActive(&window));
+    QVERIFY(QTest::qWaitForWindowFocused(&window));
 
     leftDial->setFocus();
     QApplication::processEvents();
@@ -1622,7 +1622,7 @@ void tst_QGraphicsProxyWidget::tabFocus_simpleTwoWidgets()
 
     window.show();
     window.activateWindow();
-    QVERIFY(QTest::qWaitForWindowActive(&window));
+    QVERIFY(QTest::qWaitForWindowFocused(&window));
 
     leftDial->setFocus();
     QApplication::processEvents();
@@ -1754,7 +1754,7 @@ void tst_QGraphicsProxyWidget::tabFocus_complexWidget()
 
     window.show();
     window.activateWindow();
-    QVERIFY(QTest::qWaitForWindowActive(&window));
+    QVERIFY(QTest::qWaitForWindowFocused(&window));
 
     leftDial->setFocus();
     QApplication::processEvents();
@@ -1890,7 +1890,7 @@ void tst_QGraphicsProxyWidget::tabFocus_complexTwoWidgets()
 
     window.show();
     window.activateWindow();
-    QVERIFY(QTest::qWaitForWindowActive(&window));
+    QVERIFY(QTest::qWaitForWindowFocused(&window));
 
     leftDial->setFocus();
     QApplication::processEvents();
@@ -2063,7 +2063,7 @@ void tst_QGraphicsProxyWidget::setFocus_simpleWidget()
 
     window.show();
     window.activateWindow();
-    QVERIFY(QTest::qWaitForWindowActive(&window));
+    QVERIFY(QTest::qWaitForWindowFocused(&window));
     QCOMPARE(QApplication::activeWindow(), &window);
 
     leftDial->setFocus();
@@ -2134,7 +2134,7 @@ void tst_QGraphicsProxyWidget::setFocus_simpleTwoWidgets()
 
     window.show();
     window.activateWindow();
-    QVERIFY(QTest::qWaitForWindowActive(&window));
+    QVERIFY(QTest::qWaitForWindowFocused(&window));
     QCOMPARE(QApplication::activeWindow(), &window);
 
     leftDial->setFocus();
@@ -2212,7 +2212,7 @@ void tst_QGraphicsProxyWidget::setFocus_complexTwoWidgets()
 
     window.show();
     window.activateWindow();
-    QVERIFY(QTest::qWaitForWindowActive(&window));
+    QVERIFY(QTest::qWaitForWindowFocused(&window));
     QCOMPARE(QApplication::activeWindow(), &window);
 
     leftDial->setFocus();
@@ -3333,7 +3333,7 @@ void tst_QGraphicsProxyWidget::clickFocus()
         view.setFrameStyle(0);
         view.resize(300, 300);
         view.show();
-        QVERIFY(QTest::qWaitForWindowActive(&view));
+        QVERIFY(QTest::qWaitForWindowFocused(&view));
 
         QVERIFY(!proxy->hasFocus());
         QVERIFY(!proxy->widget()->hasFocus());

@@ -3382,7 +3382,7 @@ void tst_QHeaderView::stretchAndRestoreLastSection()
     const int someOtherSectionSize = 40;
     const int biggerSizeThanAnySection = 50;
 
-    QVERIFY(QTest::qWaitForWindowActive(&tv));
+    QVERIFY(QTest::qWaitForWindowFocused(&tv));
 
     QHeaderView &header = *tv.horizontalHeader();
     // set minimum size before resizeSections() is called
