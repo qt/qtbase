@@ -1406,9 +1406,9 @@ QT_WARNING_DISABLE_MSVC(4530) /* C++ exception handler used, but unwind semantic
 #endif
 
 #if defined(__cplusplus) && __cplusplus >= 202002L // P0846 doesn't have a feature macro :/
-# if !defined(Q_CC_MSVC_ONLY) || Q_CC_MSVC < 1939 // claims C++20 support but lacks P0846
-                                                  // 1939 is known to work
-                                                  // 1936 is known to fail
+# if !defined(Q_CC_MSVC_ONLY) || Q_CC_MSVC >= 1939 // claims C++20 support but lacks P0846
+                                                   // 1939 is known to work
+                                                   // 1936 is known to fail
 #  define QT_COMPILER_HAS_P0846
 # endif
 #endif
