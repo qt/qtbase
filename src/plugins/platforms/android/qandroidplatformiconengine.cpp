@@ -575,8 +575,10 @@ QPixmap QAndroidPlatformIconEngine::scaledPixmap(const QSize &size, QIcon::Mode 
         m_pixmap.fill(Qt::transparent);
         m_pixmap.setDevicePixelRatio(scale);
 
-        QPainter painter(&m_pixmap);
-        paint(&painter, QRect(QPoint(), size), mode, state);
+        if (!m_pixmap.isNull()) {
+            QPainter painter(&m_pixmap);
+            paint(&painter, QRect(QPoint(), size), mode, state);
+        }
 
         m_cacheKey = cacheKey;
     }

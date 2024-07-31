@@ -408,9 +408,11 @@ QPixmap QAppleIconEngine::scaledPixmap(const QSize &size, QIcon::Mode mode, QIco
         m_pixmap.setDevicePixelRatio(scale);
         m_pixmap.fill(Qt::transparent);
 
-        QPainter painter(&m_pixmap);
-        paint(&painter, QRect(paintOffset.width(), paintOffset.height(),
-                              paintSize.width(), paintSize.height()), mode, state);
+        if (!m_pixmap.isNull()) {
+            QPainter painter(&m_pixmap);
+            paint(&painter, QRect(paintOffset.width(), paintOffset.height(),
+                                paintSize.width(), paintSize.height()), mode, state);
+        }
 
         m_cacheKey = cacheKey;
     }
