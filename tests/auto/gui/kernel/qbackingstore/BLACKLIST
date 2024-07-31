@@ -1,0 +1,9 @@
+# QTBUG-127920
+[flush:single-buffer:maximized]
+wayland ubuntu-24.04
+[flush:single-buffer:fullscreen]
+wayland ubuntu-24.04
+[flush:double-buffer:maximized]
+wayland ubuntu-24.04
+[flush:double-buffer:fullscreen]
+wayland ubuntu-24.04

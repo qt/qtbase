@@ -31,6 +31,7 @@ private slots:
     void scrollRectInImage();
 
     void scroll();
+    void flush_data();
     void flush();
 
     void staticContents();
@@ -267,11 +268,22 @@ private:
     QBackingStore backingStore;
 };
 
+void tst_QBackingStore::flush_data()
+{
+    QTest::addColumn<Qt::WindowState>("windowState");
+
+    QTest::newRow("normal") << Qt::WindowNoState;
+    QTest::newRow("maximized") << Qt::WindowMaximized;
+    QTest::newRow("fullscreen") << Qt::WindowFullScreen;
+}
+
 void tst_QBackingStore::flush()
 {
+    QFETCH(Qt::WindowState, windowState);
     Window window;
     window.setGeometry(20, 20, 200, 200);
-    window.showMaximized();
+    window.setWindowState(windowState);
+    window.setVisible(true);
 
     QTRY_VERIFY(window.isExposed());
 }
