@@ -3449,7 +3449,7 @@ TO_STRING_IMPL(int, %d)
 TO_STRING_IMPL(uint, %u)
 TO_STRING_IMPL(long, %ld)
 TO_STRING_IMPL(ulong, %lu)
-#if defined(Q_OS_WIN)
+#if defined(Q_OS_WIN) && !defined(Q_CC_GNU) && QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 TO_STRING_IMPL(qint64, %I64d)
 TO_STRING_IMPL(quint64, %I64u)
 #else
