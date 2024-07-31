@@ -108,7 +108,7 @@ struct QTLWExtra {
     QRect frameStrut;
     QRect normalGeometry; // used by showMin/maximized/FullScreen
     Qt::WindowFlags savedFlags; // Save widget flags while showing fullscreen
-    QScreen *initialScreen; // Screen when passing a QDesktop[Screen]Widget as parent.
+    QPointer<QScreen> initialScreen; // Screen when passing a QDesktop[Screen]Widget as parent.
 
     std::vector<std::unique_ptr<QPlatformTextureList>> widgetTextures;
 
