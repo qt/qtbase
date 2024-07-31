@@ -400,6 +400,12 @@ constexpr QUuid make_minimal(QUuid::Variant variant)
     case V::Reserved:
         return {0, 0, 0, uchar(variant << 5), 0, 0, 0, 0, 0, 0, 0};
     }
+    // GCC 8.x does not treat __builtin_unreachable() as constexpr
+#if !defined(Q_CC_GNU_ONLY) || (Q_CC_GNU >= 900)
+    // NOLINTNEXTLINE(qt-use-unreachable-return): Triggers on Clang, breaking GCC 8
+    Q_UNREACHABLE();
+#endif
+    return {};
 }
 
 void tst_QUuid::ordering_data()
