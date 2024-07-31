@@ -3,6 +3,7 @@
         "classes": [
             {
                 "className": "MetaType",
+                "lineNumber": 7,
                 "object": true,
                 "qualifiedClassName": "MetaType",
                 "superClasses": [
