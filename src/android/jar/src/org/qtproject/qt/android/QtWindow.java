@@ -33,6 +33,7 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
         setParent(parentWindow);
         setFocusableInTouchMode(true);
         setDefaultFocusHighlightEnabled(false);
+        setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
 
         // Views are by default visible, but QWindows are not.
         // We should ideally pick up the actual QWindow state here,
@@ -45,6 +46,7 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
             m_editText = new QtEditText(context, listener);
             addView(m_editText, new QtLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                                                       ViewGroup.LayoutParams.MATCH_PARENT));
+            m_editText.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
         } else {
             m_editText = null;
         }
