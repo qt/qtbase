@@ -6,6 +6,7 @@
     \class QMap
     \inmodule QtCore
     \brief The QMap class is a template class that provides an associative array.
+    \compares equality
 
     \ingroup tools
     \ingroup shared

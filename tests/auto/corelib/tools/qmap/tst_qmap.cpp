@@ -7,6 +7,8 @@
 #include <QDebug>
 #include <QScopeGuard>
 
+#include <private/qcomparisontesthelper_p.h>
+
 using namespace Qt::StringLiterals;
 
 QT_WARNING_DISABLE_DEPRECATED
@@ -30,6 +32,7 @@ private slots:
 
     void swap();
 
+    void comparisonCompiles();
     void operator_eq();
 
     void empty();
@@ -632,6 +635,16 @@ void tst_QMap::swap()
     sanityCheckTree(m2, __LINE__);
 }
 
+void tst_QMap::comparisonCompiles()
+{
+    QTestPrivate::testEqualityOperatorsCompile<QMap<int, int>>();
+    QTestPrivate::testEqualityOperatorsCompile<QMap<QString, QString>>();
+    QTestPrivate::testEqualityOperatorsCompile<QMap<QString, int>>();
+    QTestPrivate::testEqualityOperatorsCompile<QMultiMap<int, int>>();
+    QTestPrivate::testEqualityOperatorsCompile<QMultiMap<QString, QString>>();
+    QTestPrivate::testEqualityOperatorsCompile<QMultiMap<QString, int>>();
+}
+
 void tst_QMap::operator_eq()
 {
     {
@@ -642,31 +655,37 @@ void tst_QMap::operator_eq()
         QVERIFY(a == b);
         QCOMPARE(qHash(a), qHash(b));
         QVERIFY(!(a != b));
+        QT_TEST_EQUALITY_OPS(a, b, true);
 
         a.insert(1,1);
         b.insert(1,1);
         QVERIFY(a == b);
         QCOMPARE(qHash(a), qHash(b));
         QVERIFY(!(a != b));
+        QT_TEST_EQUALITY_OPS(a, b, true);
 
         a.insert(0,1);
         b.insert(0,1);
         QVERIFY(a == b);
         QCOMPARE(qHash(a), qHash(b));
         QVERIFY(!(a != b));
+        QT_TEST_EQUALITY_OPS(a, b, true);
 
         // compare for inequality:
         a.insert(42,0);
         QVERIFY(a != b);
         QVERIFY(!(a == b));
+        QT_TEST_EQUALITY_OPS(a, b, false);
 
         a.insert(65, -1);
         QVERIFY(a != b);
         QVERIFY(!(a == b));
+        QT_TEST_EQUALITY_OPS(a, b, false);
 
         b.insert(-1, -1);
         QVERIFY(a != b);
         QVERIFY(!(a == b));
+        QT_TEST_EQUALITY_OPS(a, b, false);
     }
 
     {
@@ -677,19 +696,23 @@ void tst_QMap::operator_eq()
         QVERIFY(a == b);
         QCOMPARE(qHash(a), qHash(b));
         QVERIFY(!(a != b));
+        QT_TEST_EQUALITY_OPS(a, b, true);
 
         a.insert("Hello", "World");
         QVERIFY(a != b);
         QVERIFY(!(a == b));
+        QT_TEST_EQUALITY_OPS(a, b, false);
 
         b.insert("Hello", "World");
         QVERIFY(a == b);
         QCOMPARE(qHash(a), qHash(b));
         QVERIFY(!(a != b));
+        QT_TEST_EQUALITY_OPS(a, b, true);
 
         a.insert("Goodbye", "cruel world");
         QVERIFY(a != b);
         QVERIFY(!(a == b));
+        QT_TEST_EQUALITY_OPS(a, b, false);
 
         b.insert("Goodbye", "cruel world");
 
@@ -697,12 +720,14 @@ void tst_QMap::operator_eq()
         a.insert(QString(), QString());
         QVERIFY(a != b);
         QVERIFY(!(a == b));
+        QT_TEST_EQUALITY_OPS(a, b, false);
 
         // empty keys and null keys match:
         b.insert(QString(""), QString());
         QVERIFY(a == b);
         QCOMPARE(qHash(a), qHash(b));
         QVERIFY(!(a != b));
+        QT_TEST_EQUALITY_OPS(a, b, true);
     }
 
     {
@@ -713,6 +738,77 @@ void tst_QMap::operator_eq()
         b.insert("willy", 1);
         QVERIFY(a != b);
         QVERIFY(!(a == b));
+        QT_TEST_EQUALITY_OPS(a, b, false);
+    }
+
+    // multimap
+    {
+        QMultiMap<int, int> a;
+        QMultiMap<int, int> b;
+
+        QCOMPARE_EQ(a, b);
+        QT_TEST_EQUALITY_OPS(a, b, true);
+
+        a.insert(1, 1);
+        b.insert(1, 1);
+        QCOMPARE_EQ(a, b);
+        QT_TEST_EQUALITY_OPS(a, b, true);
+
+        a.insert(1, 2);
+        QCOMPARE_NE(a, b);
+        QT_TEST_EQUALITY_OPS(a, b, false);
+
+        b.insert(1, 2);
+        QCOMPARE_EQ(a, b);
+        QT_TEST_EQUALITY_OPS(a, b, true);
+
+        b.insert(2, 1);
+        QCOMPARE_NE(a, b);
+        QT_TEST_EQUALITY_OPS(a, b, false);
+
+        a.insert(2, 2);
+        QCOMPARE_NE(a, b);
+        QT_TEST_EQUALITY_OPS(a, b, false);
+
+        a.insert(2, 1);
+        b.insert(2, 2);
+        // The insertion order matters!
+        QCOMPARE_NE(a, b);
+        QT_TEST_EQUALITY_OPS(a, b, false);
+    }
+    {
+        QMultiMap<QString, int> a;
+        QMultiMap<QString, int> b;
+
+        QCOMPARE_EQ(a, b);
+        QT_TEST_EQUALITY_OPS(a, b, true);
+
+        a.insert("Hello", 1);
+        b.insert("Hello", 1);
+        QCOMPARE_EQ(a, b);
+        QT_TEST_EQUALITY_OPS(a, b, true);
+
+        a.insert("Hello", 2);
+        QCOMPARE_NE(a, b);
+        QT_TEST_EQUALITY_OPS(a, b, false);
+
+        b.insert("Hello", 2);
+        QCOMPARE_EQ(a, b);
+        QT_TEST_EQUALITY_OPS(a, b, true);
+
+        b.insert("World", 1);
+        QCOMPARE_NE(a, b);
+        QT_TEST_EQUALITY_OPS(a, b, false);
+
+        a.insert("World", 2);
+        QCOMPARE_NE(a, b);
+        QT_TEST_EQUALITY_OPS(a, b, false);
+
+        a.insert("World", 1);
+        b.insert("World", 2);
+        // The insertion order matters!
+        QCOMPARE_NE(a, b);
+        QT_TEST_EQUALITY_OPS(a, b, false);
     }
 }
 

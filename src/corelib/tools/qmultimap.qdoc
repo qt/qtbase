@@ -6,6 +6,7 @@
     \class QMultiMap
     \inmodule QtCore
     \brief The QMultiMap class is a template class that provides an associative array with multiple equivalent keys.
+    \compares equality
 
     \ingroup tools
     \ingroup shared
