@@ -900,29 +900,39 @@ public:
 #endif
     void swap(QHash &other) noexcept { qt_ptr_swap(d, other.d); }
 
+    class const_iterator;
+
 #ifndef Q_QDOC
-    template <typename AKey = Key, typename AT = T>
-    QTypeTraits::compare_eq_result_container<QHash, AKey, AT> operator==(const QHash &other) const noexcept
+private:
+    static bool compareIterators(const const_iterator &lhs, const const_iterator &rhs)
     {
-        if (d == other.d)
+        return lhs.i.node()->valuesEqual(rhs.i.node());
+    }
+
+    template <typename AKey = Key, typename AT = T,
+              QTypeTraits::compare_eq_result_container<QHash, AKey, AT> = true>
+    friend bool comparesEqual(const QHash &lhs, const QHash &rhs) noexcept
+    {
+        if (lhs.d == rhs.d)
             return true;
-        if (size() != other.size())
+        if (lhs.size() != rhs.size())
             return false;
 
-        for (const_iterator it = other.begin(); it != other.end(); ++it) {
-            const_iterator i = find(it.key());
-            if (i == end() || !i.i.node()->valuesEqual(it.i.node()))
+        for (const_iterator it = rhs.begin(); it != rhs.end(); ++it) {
+            const_iterator i = lhs.find(it.key());
+            if (i == lhs.end() || !compareIterators(i, it))
                 return false;
         }
         // all values must be the same as size is the same
         return true;
     }
-    template <typename AKey = Key, typename AT = T>
-    QTypeTraits::compare_eq_result_container<QHash, AKey, AT> operator!=(const QHash &other) const noexcept
-    { return !(*this == other); }
+    QT_DECLARE_EQUALITY_OPERATORS_HELPER(QHash, QHash, /* non-constexpr */, noexcept,
+                     template <typename AKey = Key, typename AT = T,
+                               QTypeTraits::compare_eq_result_container<QHash, AKey, AT> = true>)
+public:
 #else
-    bool operator==(const QHash &other) const;
-    bool operator!=(const QHash &other) const;
+    friend bool operator==(const QHash &lhs, const QHash &rhs) noexcept;
+    friend bool operator!=(const QHash &lhs, const QHash &rhs) noexcept;
 #endif // Q_QDOC
 
     inline qsizetype size() const noexcept { return d ? qsizetype(d->size) : 0; }
@@ -1097,8 +1107,6 @@ public:
         return res;
     }
     QList<T> values() const { return QList<T>(begin(), end()); }
-
-    class const_iterator;
 
     class iterator
     {
@@ -1523,22 +1531,24 @@ public:
     }
 
 #ifndef Q_QDOC
-    template <typename AKey = Key, typename AT = T>
-    QTypeTraits::compare_eq_result_container<QMultiHash, AKey, AT> operator==(const QMultiHash &other) const noexcept
+private:
+    template <typename AKey = Key, typename AT = T,
+              QTypeTraits::compare_eq_result_container<QMultiHash, AKey, AT> = true>
+    friend bool comparesEqual(const QMultiHash &lhs, const QMultiHash &rhs) noexcept
     {
-        if (d == other.d)
+        if (lhs.d == rhs.d)
             return true;
-        if (m_size != other.m_size)
+        if (lhs.m_size != rhs.m_size)
             return false;
-        if (m_size == 0)
+        if (lhs.m_size == 0)
             return true;
         // equal size, and both non-zero size => d pointers allocated for both
-        Q_ASSERT(d);
-        Q_ASSERT(other.d);
-        if (d->size != other.d->size)
+        Q_ASSERT(lhs.d);
+        Q_ASSERT(rhs.d);
+        if (lhs.d->size != rhs.d->size)
             return false;
-        for (auto it = other.d->begin(); it != other.d->end(); ++it) {
-            auto *n = d->findNode(it.node()->key);
+        for (auto it = rhs.d->begin(); it != rhs.d->end(); ++it) {
+            auto *n = lhs.d->findNode(it.node()->key);
             if (!n)
                 return false;
             Chain *e = it.node()->value;
@@ -1557,12 +1567,13 @@ public:
         // all values must be the same as size is the same
         return true;
     }
-    template <typename AKey = Key, typename AT = T>
-    QTypeTraits::compare_eq_result_container<QMultiHash, AKey, AT> operator!=(const QMultiHash &other) const noexcept
-    { return !(*this == other); }
+    QT_DECLARE_EQUALITY_OPERATORS_HELPER(QMultiHash, QMultiHash, /* non-constexpr */, noexcept,
+                 template <typename AKey = Key, typename AT = T,
+                           QTypeTraits::compare_eq_result_container<QMultiHash, AKey, AT> = true>)
+public:
 #else
-    bool operator==(const QMultiHash &other) const;
-    bool operator!=(const QMultiHash &other) const;
+    friend bool operator==(const QMultiHash &lhs, const QMultiHash &rhs) noexcept;
+    friend bool operator!=(const QMultiHash &lhs, const QMultiHash &rhs) noexcept;
 #endif // Q_QDOC
 
     inline qsizetype size() const noexcept { return m_size; }

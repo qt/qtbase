@@ -1510,6 +1510,7 @@ size_t qHash(long double key, size_t seed) noexcept
     \class QHash
     \inmodule QtCore
     \brief The QHash class is a template class that provides a hash-table-based dictionary.
+    \compares equality
 
     \ingroup tools
     \ingroup shared
@@ -1806,10 +1807,10 @@ size_t qHash(long double key, size_t seed) noexcept
     fast and never fails.
 */
 
-/*! \fn template <class Key, class T> bool QHash<Key, T>::operator==(const QHash &other) const
+/*! \fn template <class Key, class T> bool QHash<Key, T>::operator==(const QHash &lhs, const QHash &rhs)
 
-    Returns \c true if \a other is equal to this hash; otherwise returns
-    false.
+    Returns \c true if \a lhs hash is equal to \a rhs hash; otherwise returns
+    \c false.
 
     Two hashes are considered equal if they contain the same (key,
     value) pairs.
@@ -1819,9 +1820,9 @@ size_t qHash(long double key, size_t seed) noexcept
     \sa operator!=()
 */
 
-/*! \fn template <class Key, class T> bool QHash<Key, T>::operator!=(const QHash &other) const
+/*! \fn template <class Key, class T> bool QHash<Key, T>::operator!=(const QHash &lhs, const QHash &rhs)
 
-    Returns \c true if \a other is not equal to this hash; otherwise
+    Returns \c true if \a lhs hash is not equal to \a rhs hash; otherwise
     returns \c false.
 
     Two hashes are considered equal if they contain the same (key,
@@ -2901,6 +2902,7 @@ size_t qHash(long double key, size_t seed) noexcept
 /*! \class QMultiHash
     \inmodule QtCore
     \brief The QMultiHash class is a convenience QHash subclass that provides multi-valued hashes.
+    \compares equality
 
     \ingroup tools
     \ingroup shared
@@ -3123,6 +3125,34 @@ size_t qHash(long double key, size_t seed) noexcept
     \include qhash.cpp qhash-iterator-invalidation-func-desc
 
     \sa insert(), value()
+*/
+
+/*!
+    \fn template <class Key, class T> bool QMultiHash<Key, T>::operator==(const QMultiHash &lhs, const QMultiHash &rhs)
+
+    Returns \c true if \a lhs multihash equals to the \a rhs multihash;
+    otherwise returns \c false.
+
+    Two multihashes are considered equal if they contain the same (key, value)
+    pairs.
+
+    This function requires the value type to implement \c {operator==()}.
+
+    \sa operator!=()
+*/
+
+/*!
+    \fn template <class Key, class T> bool QMultiHash<Key, T>::operator!=(const QMultiHash &lhs, const QMultiHash &rhs)
+
+    Returns \c true if \a lhs multihash is not equal to the \a rhs multihash;
+    otherwise returns \c false.
+
+    Two multihashes are considered equal if they contain the same (key, value)
+    pairs.
+
+    This function requires the value type to implement \c {operator==()}.
+
+    \sa operator==()
 */
 
 /*! \fn template <class Key, class T> QMultiHash &QMultiHash<Key, T>::operator+=(const QMultiHash &other)

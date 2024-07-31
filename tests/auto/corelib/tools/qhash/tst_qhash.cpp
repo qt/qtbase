@@ -16,6 +16,8 @@
 
 #include <qsemaphore.h>
 
+#include <private/qcomparisontesthelper_p.h>
+
 using namespace Qt::StringLiterals;
 
 class tst_QHash : public QObject
@@ -37,6 +39,7 @@ private slots:
     void contains(); // copied from tst_QMap
     void qhash();
     void take(); // copied from tst_QMap
+    void comparisonCompiles();
     void operator_eq(); // slightly modified from tst_QMap
     void heterogeneousSearch();
     void heterogeneousSearchConstKey();
@@ -1025,6 +1028,16 @@ void tst_QHash::take()
     }
 }
 
+void tst_QHash::comparisonCompiles()
+{
+    QTestPrivate::testEqualityOperatorsCompile<QHash<int, int>>();
+    QTestPrivate::testEqualityOperatorsCompile<QHash<QString, QString>>();
+    QTestPrivate::testEqualityOperatorsCompile<QHash<QString, int>>();
+    QTestPrivate::testEqualityOperatorsCompile<QMultiHash<int, int>>();
+    QTestPrivate::testEqualityOperatorsCompile<QMultiHash<QString, QString>>();
+    QTestPrivate::testEqualityOperatorsCompile<QMultiHash<QString, int>>();
+}
+
 // slightly modified from tst_QMap
 void tst_QHash::operator_eq()
 {
@@ -1035,29 +1048,35 @@ void tst_QHash::operator_eq()
 
         QVERIFY(a == b);
         QVERIFY(!(a != b));
+        QT_TEST_EQUALITY_OPS(a, b, true);
 
         a.insert(1,1);
         b.insert(1,1);
         QVERIFY(a == b);
         QVERIFY(!(a != b));
+        QT_TEST_EQUALITY_OPS(a, b, true);
 
         a.insert(0,1);
         b.insert(0,1);
         QVERIFY(a == b);
         QVERIFY(!(a != b));
+        QT_TEST_EQUALITY_OPS(a, b, true);
 
         // compare for inequality:
         a.insert(42,0);
         QVERIFY(a != b);
         QVERIFY(!(a == b));
+        QT_TEST_EQUALITY_OPS(a, b, false);
 
         a.insert(65, -1);
         QVERIFY(a != b);
         QVERIFY(!(a == b));
+        QT_TEST_EQUALITY_OPS(a, b, false);
 
         b.insert(-1, -1);
         QVERIFY(a != b);
         QVERIFY(!(a == b));
+        QT_TEST_EQUALITY_OPS(a, b, false);
     }
 
     {
@@ -1067,18 +1086,22 @@ void tst_QHash::operator_eq()
 
         QVERIFY(a == b);
         QVERIFY(!(a != b));
+        QT_TEST_EQUALITY_OPS(a, b, true);
 
         a.insert("Hello", "World");
         QVERIFY(a != b);
         QVERIFY(!(a == b));
+        QT_TEST_EQUALITY_OPS(a, b, false);
 
         b.insert("Hello", "World");
         QVERIFY(a == b);
         QVERIFY(!(a != b));
+        QT_TEST_EQUALITY_OPS(a, b, true);
 
         a.insert("Goodbye", "cruel world");
         QVERIFY(a != b);
         QVERIFY(!(a == b));
+        QT_TEST_EQUALITY_OPS(a, b, false);
 
         b.insert("Goodbye", "cruel world");
 
@@ -1086,11 +1109,13 @@ void tst_QHash::operator_eq()
         a.insert(QString(), QString());
         QVERIFY(a != b);
         QVERIFY(!(a == b));
+        QT_TEST_EQUALITY_OPS(a, b, false);
 
         // empty keys and null keys match:
         b.insert(QString(""), QString());
         QVERIFY(a == b);
         QVERIFY(!(a != b));
+        QT_TEST_EQUALITY_OPS(a, b, true);
     }
 
     {
@@ -1101,6 +1126,7 @@ void tst_QHash::operator_eq()
         b.insert("willy", 1);
         QVERIFY(a != b);
         QVERIFY(!(a == b));
+        QT_TEST_EQUALITY_OPS(a, b, false);
     }
 
     // unlike multi-maps, multi-hashes should be equal iff their contents are equal,
@@ -1118,6 +1144,7 @@ void tst_QHash::operator_eq()
 
         QVERIFY(a == b);
         QVERIFY(!(a != b));
+        QT_TEST_EQUALITY_OPS(a, b, true);
     }
 
     {
@@ -1138,6 +1165,7 @@ void tst_QHash::operator_eq()
 
         QVERIFY(a == b);
         QVERIFY(!(a != b));
+        QT_TEST_EQUALITY_OPS(a, b, true);
     }
 
     {
@@ -1166,6 +1194,7 @@ void tst_QHash::operator_eq()
 
         QVERIFY(a == b);
         QVERIFY(!(a != b));
+        QT_TEST_EQUALITY_OPS(a, b, true);
     }
 }
 
