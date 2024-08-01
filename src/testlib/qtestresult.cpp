@@ -12,10 +12,9 @@
 #include <QtTest/qtestassert.h>
 #include <QtTest/qtesteventloop.h>
 
-#include <QtCore/private/qnumeric_p.h>
-
 #include <climits>
 #include <cwchar>
+#include <QtCore/q26numeric.h>
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -338,7 +337,7 @@ static int approx_wide_len(const char *s)
     auto r = std::mbsrtowcs(nullptr, &s, INT_MAX, &state);
     if (r == size_t(-1)) // encoding error, fall back to strlen()
         r = strlen(s); // `s` was not advanced since `dst == nullptr`
-    return qt_saturate<int>(r);
+    return q26::saturate_cast<int>(r);
 }
 
 // Overload to format failures for "const char *" - no need to strdup().

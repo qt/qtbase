@@ -9,7 +9,8 @@
 #include <private/qthread_p.h>
 #include <private/qcoreapplication_p.h>
 #include <private/qfreelist_p.h>
-#include <private/qnumeric_p.h>
+
+#include <QtCore/q26numeric.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -59,7 +60,7 @@ template <typename T> static T fromDuration(std::chrono::nanoseconds interval)
 {
     using namespace std::chrono;
     qint64 value = ceil<milliseconds>(interval).count();
-    return qt_saturate<T>(value);
+    return q26::saturate_cast<T>(value);
 }
 
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)

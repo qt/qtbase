@@ -4,13 +4,14 @@
 #include "qeventdispatcher_glib_p.h"
 #include "qeventdispatcher_unix_p.h"
 
-#include <private/qnumeric_p.h>
 #include <private/qthread_p.h>
 
 #include "qcoreapplication.h"
 #include "qsocketnotifier.h"
 
 #include <QtCore/qlist.h>
+
+#include <QtCore/q26numeric.h>
 
 #include <glib.h>
 
@@ -104,7 +105,7 @@ static gboolean timerSourcePrepareHelper(GTimerSource *src, gint *timeout)
     }
 
     auto remaining = src->timerList.timerWait().value_or(-1ms);
-    *timeout = qt_saturate<gint>(ceil<milliseconds>(remaining).count());
+    *timeout = q26::saturate_cast<gint>(ceil<milliseconds>(remaining).count());
 
     return (*timeout == 0);
 }

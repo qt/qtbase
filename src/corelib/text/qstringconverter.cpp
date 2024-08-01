@@ -25,7 +25,7 @@
 #ifndef QT_BOOTSTRAPPED
 #include <QtCore/qvarlengtharray.h>
 #include <QtCore/q20iterator.h>
-#include <QtCore/private/qnumeric_p.h>
+#include <QtCore/q26numeric.h>
 #endif // !QT_BOOTSTRAPPED
 #endif
 
@@ -1385,12 +1385,12 @@ QString QLocal8Bit::convertToUnicode_sys(QByteArrayView in, quint32 codePage,
 
     // Need it in this scope, since we try to decrease our window size if we
     // encounter an error
-    int nextIn = qt_saturate<int>(mblen);
+    int nextIn = q26::saturate_cast<int>(mblen);
     while (mblen > 0) {
         std::tie(out, outlen) = growOut(1); // Need space for at least one character
         if (!out)
             return {};
-        const int nextOut = qt_saturate<int>(outlen);
+        const int nextOut = q26::saturate_cast<int>(outlen);
         int len = MultiByteToWideChar(codePage, MB_ERR_INVALID_CHARS, mb, nextIn, out, nextOut);
         if (len) {
             mb += nextIn;
@@ -1450,7 +1450,7 @@ QString QLocal8Bit::convertToUnicode_sys(QByteArrayView in, quint32 codePage,
                 break;
             }
         }
-        nextIn = qt_saturate<int>(mblen);
+        nextIn = q26::saturate_cast<int>(mblen);
     }
 
     if (sp.isEmpty()) {
@@ -1572,7 +1572,7 @@ QByteArray QLocal8Bit::convertFromUnicode_sys(QStringView in, quint32 codePage,
     };
 
     const auto getNextWindowSize = [&]() {
-        int nextIn = qt_saturate<int>(uclen);
+        int nextIn = q26::saturate_cast<int>(uclen);
         // The Windows API has some issues if the current window ends in the
         // middle of a surrogate pair, so we avoid that:
         if (nextIn > 1 && QChar::isHighSurrogate(ch[nextIn - 1]))
@@ -1586,7 +1586,7 @@ QByteArray QLocal8Bit::convertFromUnicode_sys(QStringView in, quint32 codePage,
         std::tie(out, outlen) = growOut(1); // We need at least one byte
         if (!out)
             return {};
-        const int nextOut = qt_saturate<int>(outlen);
+        const int nextOut = q26::saturate_cast<int>(outlen);
         len = WideCharToMultiByte(codePage, 0, ch, nextIn, out, nextOut, nullptr, nullptr);
         if (len > 0) {
             ch += nextIn;
