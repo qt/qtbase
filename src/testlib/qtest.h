@@ -435,7 +435,7 @@ bool _q_compareSequence(ActualIterator actualIt, ActualIterator actualEnd,
                       "   Actual   (%s) size: %lld\n"
                       "   Expected (%s) size: %lld",
                       actual, qlonglong(actualSize),
-                  expected, expectedSize);
+                      expected, qlonglong(expectedSize));
     }
 
     for (auto expectedIt = expectedBegin; isOk && expectedIt < expectedEnd; ++actualIt, ++expectedIt) {
