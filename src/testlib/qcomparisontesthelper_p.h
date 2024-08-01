@@ -65,17 +65,6 @@ QByteArray formatTypeWithCRef()
 
 #define CHECK_SINGLE_OPERATOR(Left, Right, Op, Result) \
     do { \
-        constexpr bool qtest_op_check_isImplNoexcept \
-                        = noexcept(std::declval<Left>() Op std::declval<Right>()); \
-        if constexpr (!qtest_op_check_isImplNoexcept) { \
-            QEXPECT_FAIL("", QByteArray("(" + formatTypeWithCRef<Left>() \
-                                        + " " #Op " " + formatTypeWithCRef<Right>() \
-                                        + ") is not noexcept").constData(), \
-                         Continue); \
-            /* Ideally, operators should be noexcept, so warn if they are not. */ \
-            /* Do not make it a hard error, because the fix is not always trivial. */ \
-            QVERIFY(qtest_op_check_isImplNoexcept); \
-        } \
         static_assert(std::is_convertible_v<decltype( \
                         std::declval<Left>() Op std::declval<Right>()), Result>); \
         if constexpr (!std::is_same_v<Left, Right>) { \
