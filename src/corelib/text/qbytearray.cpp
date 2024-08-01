@@ -32,6 +32,7 @@
 #include <stdlib.h>
 
 #include <algorithm>
+#include <QtCore/q26numeric.h>
 
 #ifdef Q_OS_WIN
 #  if !defined(QT_BOOTSTRAPPED) && (defined(QT_NO_CAST_FROM_ASCII) || defined(QT_NO_CAST_FROM_BYTEARRAY))
@@ -728,7 +729,7 @@ QByteArray qCompress(const uchar* data, qsizetype nbytes, int compressionLevel)
     if (out.data() == nullptr) // allocation failed
       return tooMuchData(ZLibOp::Compression);
 
-    qToBigEndian(qt_saturate<CompressSizeHint_t>(nbytes), out.data());
+    qToBigEndian(q26::saturate_cast<CompressSizeHint_t>(nbytes), out.data());
     out.size = HeaderSize;
 
     return xxflate(ZLibOp::Compression, std::move(out), {data, nbytes},

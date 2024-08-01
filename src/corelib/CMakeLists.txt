@@ -100,6 +100,7 @@ qt_internal_add_module(Core
         global/q23functional.h
         global/q23utility.cpp # remove once we have a user that tests this
         global/q23utility.h
+        global/q26numeric.h
         global/qxpfunctional.h
         global/qxptype_traits.h
         global/qversiontagging.h

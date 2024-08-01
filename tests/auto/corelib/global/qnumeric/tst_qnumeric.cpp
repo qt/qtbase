@@ -10,6 +10,8 @@
 #include <math.h>
 #include <float.h>
 
+#include <QtCore/q26numeric.h>
+
 namespace {
     template <typename F> struct Fuzzy {};
     /* Data taken from qglobal.h's implementation of qFuzzyCompare:
@@ -749,6 +751,41 @@ void tst_QNumeric::signedOverflow()
     QCOMPARE(qMulOverflow(maxInt, int(2), &r), true);
     QCOMPARE(qMulOverflow(maxInt, maxInt, &r), true);
 }
+
+namespace SaturateCastTest {
+
+template <typename T> static constexpr T max = std::numeric_limits<T>::max();
+template <typename T> static constexpr T min = std::numeric_limits<T>::min();
+
+static_assert(q26::saturate_cast<short>(max<unsigned>) == max<short>);
+static_assert(q26::saturate_cast<int>(max<unsigned>) == max<int>);
+static_assert(q26::saturate_cast<qint64>(max<unsigned>) == qint64(max<unsigned>));
+
+static_assert(q26::saturate_cast<short>(max<int>) == max<short>);
+static_assert(q26::saturate_cast<unsigned>(max<int>) == unsigned(max<int>));
+static_assert(q26::saturate_cast<qint64>(max<int>) == qint64(max<int>));
+
+static_assert(q26::saturate_cast<short>(max<qint64>) == max<short>);
+static_assert(q26::saturate_cast<int>(max<qint64>) == max<int>);
+static_assert(q26::saturate_cast<unsigned>(max<qint64>) == max<unsigned>);
+static_assert(q26::saturate_cast<quint64>(max<qint64>) == quint64(max<qint64>));
+
+static_assert(q26::saturate_cast<short>(max<quint64>) == max<short>);
+static_assert(q26::saturate_cast<int>(max<quint64>) == max<int>);
+static_assert(q26::saturate_cast<unsigned>(max<quint64>) == max<unsigned>);
+static_assert(q26::saturate_cast<qint64>(max<quint64>) == max<qint64>);
+
+static_assert(q26::saturate_cast<short>(min<int>) == min<short>);
+static_assert(q26::saturate_cast<qint64>(min<int>) == qint64(min<int>));
+static_assert(q26::saturate_cast<unsigned>(min<int>) == 0);
+static_assert(q26::saturate_cast<quint64>(min<int>) == 0);
+
+static_assert(q26::saturate_cast<short>(min<qint64>) == min<short>);
+static_assert(q26::saturate_cast<int>(min<qint64>) == min<int>);
+static_assert(q26::saturate_cast<unsigned>(min<qint64>) == 0);
+static_assert(q26::saturate_cast<quint64>(min<qint64>) == 0);
+
+} // namespace SaturateCastTest
 
 QTEST_APPLESS_MAIN(tst_QNumeric)
 #include "tst_qnumeric.moc"
