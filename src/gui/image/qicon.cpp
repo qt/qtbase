@@ -1806,6 +1806,9 @@ QIcon QIcon::fromTheme(QIcon::ThemeIcon icon, const QIcon &fallback)
 */
 void QIcon::setIsMask(bool isMask)
 {
+    if (isMask == (d && d->is_mask))
+        return;
+
     detach();
     if (!d)
         d = new QIconPrivate(new QPixmapIconEngine);
