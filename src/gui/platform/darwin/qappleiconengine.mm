@@ -397,26 +397,26 @@ auto *configuredImage(const UIImage *image, const QColor &color)
 
 QPixmap QAppleIconEngine::scaledPixmap(const QSize &size, QIcon::Mode mode, QIcon::State state, qreal scale)
 {
-    const quint64 cacheKey = calculateCacheKey(mode, state);
-    if (cacheKey != m_cacheKey || m_pixmap.size() != size || m_pixmap.devicePixelRatio() != scale) {
+    const CacheKey key(mode, state, size, scale);
+    QPixmap pixmap = m_cache.value(key);
+    if (pixmap.isNull()) {
         const QSize paintSize = actualSize(size, mode, state);
         const QSize paintOffset = paintSize != size
                                 ? (QSizeF(size - paintSize) * 0.5).toSize()
                                 : QSize();
 
-        m_pixmap = QPixmap(size * scale);
-        m_pixmap.setDevicePixelRatio(scale);
-        m_pixmap.fill(Qt::transparent);
+        pixmap = QPixmap(size * scale);
+        pixmap.setDevicePixelRatio(scale);
+        pixmap.fill(Qt::transparent);
 
-        if (!m_pixmap.isNull()) {
-            QPainter painter(&m_pixmap);
+        if (!pixmap.isNull()) {
+            QPainter painter(&pixmap);
             paint(&painter, QRect(paintOffset.width(), paintOffset.height(),
-                                paintSize.width(), paintSize.height()), mode, state);
+                                  paintSize.width(), paintSize.height()), mode, state);
+            m_cache.insert(key, pixmap);
         }
-
-        m_cacheKey = cacheKey;
     }
-    return m_pixmap;
+    return pixmap;
 }
 
 void QAppleIconEngine::paint(QPainter *painter, const QRect &rect, QIcon::Mode mode, QIcon::State state)

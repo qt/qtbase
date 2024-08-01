@@ -17,6 +17,8 @@
 
 #include <QtGui/qiconengine.h>
 
+#include <QtCore/qhash.h>
+
 #include <QtCore/private/qcore_mac_p.h>
 
 Q_FORWARD_DECLARE_OBJC_CLASS(UIImage);
@@ -43,19 +45,31 @@ public:
     static QList<QSize> availableIconSizes(double aspectRatio = 1.0);
 
 private:
-    static constexpr quint64 calculateCacheKey(QIcon::Mode mode, QIcon::State state)
-    {
-        return (quint64(mode) << 32) | state;
-    }
-
     const QString m_iconName;
 #if defined(Q_OS_MACOS)
     const NSImage *m_image;
 #elif defined(Q_OS_IOS)
     const UIImage *m_image;
 #endif
-    mutable QPixmap m_pixmap;
-    mutable quint64 m_cacheKey = {};
+    struct CacheKey {
+        constexpr CacheKey(QIcon::Mode mode, QIcon::State state, QSize size, qreal scale) noexcept
+            : modeAndState((quint64(mode) << 32) | state), size(size), scale(scale)
+        {}
+
+        quint64 modeAndState;
+        QSize size;
+        qreal scale;
+
+        friend constexpr bool operator==(const CacheKey &lhs, const CacheKey &rhs) noexcept
+        {
+            return lhs.modeAndState == rhs.modeAndState
+                && lhs.size == rhs.size
+                && lhs.scale == rhs.scale;
+        }
+        friend constexpr size_t qHash(const CacheKey &key, size_t seed) noexcept
+        { return qHashMulti(seed, key.modeAndState, key.size, key.scale); }
+    };
+    mutable QHash<CacheKey, QPixmap> m_cache;
 };
 
 
