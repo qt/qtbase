@@ -235,7 +235,9 @@ void QWindowsMenuItem::updateBitmap()
     freeBitmap();
     if (!m_icon.isNull()) {
         const int size = m_iconSize ? m_iconSize : GetSystemMetrics(SM_CYMENUCHECK);
-        m_hbitmap = qt_pixmapToWinHBITMAP(m_icon.pixmap(QSize(size, size)), 1);
+        // native Win32 menus don't support high-DPI versions of icons, so always
+        // use the pixmap for a 1.0 scale factor.
+        m_hbitmap = qt_pixmapToWinHBITMAP(m_icon.pixmap(QSize(size, size), 1.0), 1);
     }
     MENUITEMINFO itemInfo;
     menuItemInfoInit(itemInfo);
