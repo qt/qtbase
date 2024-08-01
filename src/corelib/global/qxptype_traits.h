@@ -64,6 +64,10 @@ constexpr inline bool is_detected_v = is_detected<Op, Args...>::value;
 // * ignores cv-qualifications;
 // * B may be inaccessibile.
 
+#ifdef __cpp_lib_is_virtual_base_of
+using std::is_virtual_base_of;
+using std::is_virtual_base_of_v;
+#else
 namespace _detail {
     // Check that From* can be converted to To*, ignoring accessibility.
     // This can be done using a C cast (see [expr.cast]/4).
@@ -112,6 +116,7 @@ using is_virtual_base_of = _detail::is_virtual_base_of<std::remove_cv_t<Base>, s
 
 template <typename Base, typename Derived>
 constexpr inline bool is_virtual_base_of_v = is_virtual_base_of<Base, Derived>::value;
+#endif // __cpp_lib_is_virtual_base_of
 
 } // namespace qxp
 
