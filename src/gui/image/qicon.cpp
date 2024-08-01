@@ -1365,6 +1365,9 @@ bool QIcon::hasThemeIcon(const QString &name)
 */
 void QIcon::setIsMask(bool isMask)
 {
+    if (isMask == (d && d->is_mask))
+        return;
+
     detach();
     if (!d)
         d = new QIconPrivate(new QPixmapIconEngine);
