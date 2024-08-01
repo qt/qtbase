@@ -71,7 +71,7 @@
     If you are wondering why a particular plugin is not included automatically,
     you can run androiddeployqt with the \c{--verbose} option to get the list of
     missing dependencies for each excluded plugin. You can achieve the same in
-    Qt Creator by ticking the \uicontrol {Verbose output} check box in the
+    \QC by ticking the \uicontrol {Verbose output} check box in the
     \uicontrol {Projects} > \uicontrol {Build Steps} > \uicontrol {Build Android APK} >
     \uicontrol {Advanced Actions}.
 
@@ -84,11 +84,11 @@
     To remedy that, you can add a dummy QML file that imports such QML modules that
     are referenced at runtime.
 
-    \section1 Deployment in Qt Creator
+    \section1 Deployment in \QC
 
-    Qt Creator uses \c androiddeployqt under the hood, and provides easy
+    \QC uses \c androiddeployqt under the hood, and provides easy
     and intuitive user interfaces to specify various options. For more information,
-    see \l{Qt Creator: Deploying Applications to Android Devices}.
+    see \l{\QC: Android Deploy Configuration}.
 
     For more information about customizing and deploying a Qt for Android app,
     see \l {Deploying an Application on Android}.

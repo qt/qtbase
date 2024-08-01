@@ -19,13 +19,13 @@
 
     \section1 Creating the Notepad Project
 
-    Setting up a new project in Qt Creator is aided by a wizard that
+    Setting up a new project in \QC is aided by a wizard that
     guides you step-by-step through the project creation process. The
     wizard prompts you to enter the settings needed for that particular
     type of project and creates the project for you.
 
-    \note The UI text in Qt Creator and the contents of the generated files
-    depend on the Qt Creator version that you use.
+    \note The UI text in \QC and the contents of the generated files
+    depend on the \QC version that you use.
 
     \image notepad2.png "Qt Creator New Project dialog"
 
@@ -63,11 +63,11 @@
             \li About
             \li Here
         \row
-            \li Using Qt Creator
-            \li \l{Qt Creator Manual}{Qt Creator}
+            \li Using \QC
+            \li \l{\QC Documentation}{\QC}
         \row
-            \li Creating other kind of applications with Qt Creator
-            \li \l{Qt Creator: Tutorials}{Qt Creator Tutorials}
+            \li Creating other kind of applications with \QC
+            \li \l{\QC: Tutorials}{\QC Tutorials}
     \endtable
 
 
@@ -142,10 +142,10 @@
     \section1 Designing a UI
 
     The wizard generates a user interface definition in XML format: notepad.ui.
-    When you open the notepad.ui file in Qt Creator, it automatically
+    When you open the notepad.ui file in \QC, it automatically
     opens in the integrated \QD.
 
-    When you build the application, Qt Creator launches the Qt
+    When you build the application, \QC launches the Qt
     \l{User Interface Compiler (uic)} that reads the .ui file and creates
     a corresponding C++ header file, ui_notepad.h.
 
@@ -159,7 +159,7 @@
     To add widgets in \QD:
 
     \list 1
-        \li In the Qt Creator \uicontrol Edit mode, double-click the notepad.ui
+        \li In the \QC \uicontrol Edit mode, double-click the notepad.ui
             file in the \uicontrol Projects view to launch the file in the integrated
             \QD.
         \li Drag and drop widgets Text Edit (QTextEdit) to the form.
