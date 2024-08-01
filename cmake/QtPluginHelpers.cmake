@@ -319,8 +319,11 @@ function(qt_internal_add_plugin target)
 
     qt_internal_add_repo_local_defines("${target}")
 
-    qt_internal_set_exceptions_flags("${target}" ${arg_EXCEPTIONS})
-
+    if(NOT DEFINED arg_EXCEPTIONS)
+        qt_internal_set_exceptions_flags("${target}" "DEFAULT")
+    else()
+        qt_internal_set_exceptions_flags("${target}" "${arg_EXCEPTIONS}")
+    endif()
 
     set(qt_libs_private "")
     qt_internal_get_qt_all_known_modules(known_modules)

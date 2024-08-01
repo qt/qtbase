@@ -673,6 +673,12 @@ qt_feature("force_asserts" PUBLIC
     LABEL "Force assertions"
     AUTODETECT OFF
 )
+
+qt_feature("exceptions"
+    LABEL "Enable exceptions"
+    AUTODETECT OFF
+)
+
 qt_feature("framework" PUBLIC
     LABEL "Build Apple Frameworks"
     AUTODETECT ON

@@ -228,10 +228,10 @@ function(qt_internal_add_3rdparty_library target)
         qt_autogen_tools_initial_setup(${target})
     endif()
 
-    if(NOT arg_EXCEPTIONS AND NOT arg_INTERFACE)
-        qt_internal_set_exceptions_flags("${target}" FALSE)
-    elseif(arg_EXCEPTIONS)
-        qt_internal_set_exceptions_flags("${target}" TRUE)
+    if(NOT DEFINED arg_EXCEPTIONS)
+        qt_internal_set_exceptions_flags("${target}" "DEFAULT")
+    else()
+        qt_internal_set_exceptions_flags("${target}" "${arg_EXCEPTIONS}")
     endif()
 
     qt_internal_extend_target("${target}"

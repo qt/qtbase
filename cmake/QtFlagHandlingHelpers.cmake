@@ -235,7 +235,6 @@ function(qt_internal_apply_gc_binaries target visibility)
     endif()
 endfunction()
 
-# Only applied to Bootstrap and BundledPCRE2.
 function(qt_internal_apply_intel_cet target visibility)
     if(NOT QT_FEATURE_intelcet)
         return()
@@ -285,34 +284,15 @@ function(qt_internal_skip_intel_cet_hardening target)
     set_target_properties("${target}" PROPERTIES _qt_no_intel_cet_harderning TRUE)
 endfunction()
 
-# Sets the exceptions flags for the given target according to exceptions_on
-function(qt_internal_set_exceptions_flags target exceptions_on)
-    set(_defs "")
-    set(_flag "")
-    if(exceptions_on)
-        if(MSVC)
-            set(_flag "/EHsc")
-            if((MSVC_VERSION GREATER_EQUAL 1929) AND NOT CLANG)
-                # Use the undocumented compiler flag to make our binary smaller on x64.
-                # https://devblogs.microsoft.com/cppblog/making-cpp-exception-handling-smaller-x64/
-                # NOTE: It seems we'll use this new exception handling model unconditionally without
-                # this hack since some unknown MSVC version.
-                set(_flag ${_flag} "/d2FH4")
-            endif()
-        else()
-            set(_flag "-fexceptions")
-        endif()
-    else()
-        set(_defs "QT_NO_EXCEPTIONS")
-        if(MSVC)
-            set(_flag "/EHs-c-" "/wd4530" "/wd4577")
-        else()
-            set(_flag "-fno-exceptions")
-        endif()
+# Sets the exceptions flags for the given target according to value.
+# If the value is not defined, set it to the exceptions feature value.
+function(qt_internal_set_exceptions_flags target value)
+    #INTERFACE libraries compile nothing
+    get_target_property(target_type ${target} TYPE)
+    if(target_type STREQUAL "INTERFACE_LIBRARY")
+        return()
     endif()
-
-    target_compile_definitions("${target}" PRIVATE ${_defs})
-    target_compile_options("${target}" PRIVATE ${_flag})
+    set_target_properties(${target} PROPERTIES _qt_internal_use_exceptions ${value})
 endfunction()
 
 function(qt_skip_warnings_are_errors target)

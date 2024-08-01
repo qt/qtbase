@@ -375,6 +375,73 @@ if(DEFINED QT_EXTRA_FRAMEWORKPATHS AND APPLE)
     unset(__qt_fw_flags)
 endif()
 
+function(qt_internal_add_exceptions_flags)
+    set(enable_defs "")
+    if(MSVC)
+        set(enable_flag "/EHsc")
+        if((MSVC_VERSION GREATER_EQUAL 1929) AND NOT CLANG)
+            # Use the undocumented compiler flag to make our binary smaller on x64.
+            # https://devblogs.microsoft.com/cppblog/making-cpp-exception-handling-smaller-x64/
+            # NOTE: It seems we'll use this new exception handling model unconditionally without
+            # this hack since some unknown MSVC version.
+            set(enable_flag "${enable_flag}" "/d2FH4")
+        endif()
+    else()
+        set(enable_flag "-fexceptions")
+    endif()
+
+    set(disable_defs "QT_NO_EXCEPTIONS")
+    if(MSVC)
+        set(disable_flag "/EHs-c-" "/wd4530" "/wd4577")
+    else()
+        set(disable_flag "-fno-exceptions")
+    endif()
+
+    if(QT_FEATURE_exceptions)
+        set(default_flag "${enable_flag}")
+        set(default_defs "${enable_defs}")
+    else()
+        set(default_flag "${disable_flag}")
+        set(default_defs "${disable_defs}")
+    endif()
+
+    string(JOIN "" check_default_genex
+        "$<OR:"
+            "$<STREQUAL:$<TARGET_PROPERTY:_qt_internal_use_exceptions>,DEFAULT>,"
+            "$<STREQUAL:$<TARGET_PROPERTY:_qt_internal_use_exceptions>,>"
+        ">"
+    )
+
+    string(JOIN "" flag_genex
+        "$<IF:"
+            "${check_default_genex},"
+            "${default_flag},"
+            "$<IF:"
+                "$<BOOL:$<TARGET_PROPERTY:_qt_internal_use_exceptions>>,"
+                "${enable_flag},"
+                "${disable_flag}"
+            ">"
+        ">"
+    )
+
+    string(JOIN "" defs_genex
+        "$<IF:"
+            "${check_default_genex},"
+            "${default_defs},"
+            "$<IF:"
+                "$<BOOL:$<TARGET_PROPERTY:_qt_internal_use_exceptions>>,"
+                "${enable_defs},"
+                "${disable_defs}"
+            ">"
+        ">"
+    )
+
+    target_compile_definitions(PlatformCommonInternal INTERFACE ${defs_genex})
+    target_compile_options(PlatformCommonInternal INTERFACE ${flag_genex})
+endfunction()
+
+qt_internal_add_exceptions_flags()
+
 qt_internal_get_active_linker_flags(__qt_internal_active_linker_flags)
 if(__qt_internal_active_linker_flags)
     qt_internal_platform_link_options(PlatformCommonInternal INTERFACE
