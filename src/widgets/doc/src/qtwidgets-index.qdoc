@@ -106,7 +106,7 @@ interfaces
     \list
         \li \l{Widgets Tutorial}
         \li \l{Getting Started Programming with Qt Widgets}
-        \li \l{Creating a Qt Widget Based Application}
+        \li \l{\QC: Tutorial: Qt Widgets application}
         \li \l{Model/View Tutorial}
     \endlist
 

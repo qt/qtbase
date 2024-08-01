@@ -1774,7 +1774,7 @@
 
     \section1 QML_IMPORT_PATH
 
-    This variable is only used by \l{Qt Creator Manual}{Qt Creator}. If you have
+    This variable is only used by \l{\QC Documentation}{Qt Creator}. If you have
     an extra module that is kept outside of your Qt installation, you can
     specify its path here.
 
