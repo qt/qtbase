@@ -107,7 +107,7 @@ In the following snippet, the \c{mainwindow.cpp} file includes
 \snippet cmake-macros/examples.cpp qt6_add_ui_1
 
 \c{CMakeLists.txt} is implemented as follows and it calls
-\l{qt6_add_ui}{qt_add_ui} to add \c{ui_mainwindow.h} to the \c{myapp} target.
+\c{qt_add_ui} to add \c{ui_mainwindow.h} to the \c{myapp} target.
 
 \snippet cmake-macros/examples.cmake qt6_add_ui_1
 
@@ -146,29 +146,30 @@ Both \c{ui_widget1.h} and \c{ui_widget2.h} are included with the same prefix
 In this case, the \c{INCLUDE_PREFIX} argument can be specified as \c{src/files}
 for both files in the above snippet.
 
-\section1 When to prefer \l{qt6_add_ui}{qt_add_ui} over \c{AUTOUIC}?
+\section1 When to prefer \c{qt_add_ui} over \c{AUTOUIC}?
 
-\l{qt6_add_ui}{qt_add_ui} has some advantages over \c{AUTOUIC}:
+\c{qt_add_ui} has some advantages over \l{CMake AUTOUIC Documentation}{AUTOUIC}:
 
 \list
-\li \l{qt6_add_ui}{qt_add_ui} ensures that the \c{.ui} files are generated
+\li \c{qt_add_ui} ensures that the \c{.ui} files are generated
 correctly during the first build, for the \c{Ninja} and \c{Ninja Multi-Config}
 generators.
 
-\li \l{qt6_add_ui}{qt_add_ui} guarantees that the generated \c{.h} files are
+\li \c{qt_add_ui} guarantees that the generated \c{.h} files are
 not leaked outside the build directory.
 
-\li Since \l{qt6_add_ui}{qt_add_ui} does not scan source files, it provides a
-faster build than \c{AUTOUIC}.
+\li Since \c{qt_add_ui} does not scan source files, it provides a faster build
+than \c{AUTOUIC}.
 
 \endlist
 
-\section1 When to prefer \l{qt6_add_ui}{qt_add_ui} over \c{qt_wrap_ui}?
+\section1 When to prefer \c{qt_add_ui} over \c{qt_wrap_ui}?
 
-\l{qt6_add_ui}{qt_add_ui} has the \c{INCLUDE_PREFIX} argument, which can be used to
+\c{qt_add_ui} has the \c{INCLUDE_PREFIX} argument, which can be used to
 specify the include prefix for the generated header files.
 
-\note It is not recommended to use both \l{qt6_add_ui}{qt_add_ui} and
-\c{AUTOUIC} for the same target.
+\note It is not recommended to use both \c{qt_add_ui} and
+\l{CMake AUTOUIC Documentation}{AUTOUIC} for the same target.
 
+\sa {qt_wrap_ui}
 */
