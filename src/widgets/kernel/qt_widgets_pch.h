@@ -15,9 +15,13 @@
 #include <qtwidgetsexports.h>
 #include <qtwidgetsglobal.h>
 #include <qapplication.h>
-#include <qabstractbutton.h>
+#if QT_CONFIG(abstractbutton)
+#  include <qabstractbutton.h>
+#endif
 #include <qabstractscrollarea.h>
-#include <qabstractslider.h>
+#if QT_CONFIG(abstractslider)
+#  include <qabstractslider.h>
+#endif
 #if QT_CONFIG(action)
 #  include <qaction.h>
 #endif
