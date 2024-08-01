@@ -372,7 +372,7 @@ QTest::Internal::formatPropertyTestHelperFailure(char *msg, size_t maxMsgLen,
                                                  const char *actual, const char *expected,
                                                  const char *actualExpr, const char *expectedExpr)
 {
-    formatFailMessage(msg, maxMsgLen, "\nComparison failed!", // ### why leading \n?
+    formatFailMessage(msg, maxMsgLen, "Comparison failed!",
                       actual, expected, actualExpr, expectedExpr,
                       QTest::ComparisonOperation::CustomCompare);
     return msg;
