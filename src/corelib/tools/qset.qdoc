@@ -5,6 +5,7 @@
     \class QSet
     \inmodule QtCore
     \brief The QSet class is a template class that provides a hash-table-based set.
+    \compares equality
 
     \ingroup tools
     \ingroup shared
@@ -105,9 +106,9 @@
 */
 
 /*!
-    \fn template <class T> bool QSet<T>::operator==(const QSet<T> &other) const
+    \fn template <class T> bool QSet<T>::operator==(const QSet<T> lhs, const QSet<T> &rhs)
 
-    Returns \c true if the \a other set is equal to this set; otherwise
+    Returns \c true if the \a lhs set is equal to the \a rhs set; otherwise
     returns \c false.
 
     Two sets are considered equal if they contain the same elements.
@@ -118,9 +119,9 @@
 */
 
 /*!
-    \fn template <class T> bool QSet<T>::operator!=(const QSet<T> &other) const
+    \fn template <class T> bool QSet<T>::operator!=(const QSet<T> lhs, const QSet<T> &rhs)
 
-    Returns \c true if the \a other set is not equal to this set; otherwise
+    Returns \c true if the \a lhs set is not equal to the \a rhs set; otherwise
     returns \c false.
 
     Two sets are considered equal if they contain the same elements.

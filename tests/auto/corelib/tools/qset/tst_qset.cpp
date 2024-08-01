@@ -5,6 +5,8 @@
 #include <qset.h>
 #include <qdebug.h>
 
+#include <private/qcomparisontesthelper_p.h>
+
 int toNumber(const QString &str)
 {
     int res = 0;
@@ -18,6 +20,7 @@ class tst_QSet : public QObject
     Q_OBJECT
 
 private slots:
+    void comparisonCompiles();
     void operator_eq();
     void swap();
     void size();
@@ -56,50 +59,66 @@ struct IdentityTracker {
 inline size_t qHash(IdentityTracker key) { return qHash(key.value); }
 inline bool operator==(IdentityTracker lhs, IdentityTracker rhs) { return lhs.value == rhs.value; }
 
+void tst_QSet::comparisonCompiles()
+{
+    QTestPrivate::testEqualityOperatorsCompile<QSet<int>>();
+    QTestPrivate::testEqualityOperatorsCompile<QSet<QString>>();
+}
+
 void tst_QSet::operator_eq()
 {
     {
         QSet<int> set1, set2;
         QVERIFY(set1 == set2);
         QVERIFY(!(set1 != set2));
+        QT_TEST_EQUALITY_OPS(set1, set2, true);
 
         set1.insert(1);
         QVERIFY(set1 != set2);
         QVERIFY(!(set1 == set2));
+        QT_TEST_EQUALITY_OPS(set1, set2, false);
 
         set2.insert(1);
         QVERIFY(set1 == set2);
         QVERIFY(!(set1 != set2));
+        QT_TEST_EQUALITY_OPS(set1, set2, true);
 
         set2.insert(1);
         QVERIFY(set1 == set2);
         QVERIFY(!(set1 != set2));
+        QT_TEST_EQUALITY_OPS(set1, set2, true);
 
         set1.insert(2);
         QVERIFY(set1 != set2);
         QVERIFY(!(set1 == set2));
+        QT_TEST_EQUALITY_OPS(set1, set2, false);
     }
 
     {
         QSet<QString> set1, set2;
         QVERIFY(set1 == set2);
         QVERIFY(!(set1 != set2));
+        QT_TEST_EQUALITY_OPS(set1, set2, true);
 
         set1.insert("one");
         QVERIFY(set1 != set2);
         QVERIFY(!(set1 == set2));
+        QT_TEST_EQUALITY_OPS(set1, set2, false);
 
         set2.insert("one");
         QVERIFY(set1 == set2);
         QVERIFY(!(set1 != set2));
+        QT_TEST_EQUALITY_OPS(set1, set2, true);
 
         set2.insert("one");
         QVERIFY(set1 == set2);
         QVERIFY(!(set1 != set2));
+        QT_TEST_EQUALITY_OPS(set1, set2, true);
 
         set1.insert("two");
         QVERIFY(set1 != set2);
         QVERIFY(!(set1 == set2));
+        QT_TEST_EQUALITY_OPS(set1, set2, false);
     }
 
     {
@@ -111,6 +130,7 @@ void tst_QSet::operator_eq()
 
         QVERIFY(a != b);
         QVERIFY(!(a == b));
+        QT_TEST_EQUALITY_OPS(a, b, false);
     }
 
     {
@@ -118,9 +138,11 @@ void tst_QSet::operator_eq()
         s1.reserve(100);
         s2.reserve(4);
         QVERIFY(s1 == s2);
+        QT_TEST_EQUALITY_OPS(s1, s2, true);
         s1 << 100 << 200 << 300 << 400;
         s2 << 400 << 300 << 200 << 100;
         QVERIFY(s1 == s2);
+        QT_TEST_EQUALITY_OPS(s1, s2, true);
     }
 }
 
