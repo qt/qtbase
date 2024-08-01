@@ -1341,6 +1341,9 @@ static void doDebug() // called in each thread
 
 void tst_QDebug::threadSafety() const
 {
+#ifdef Q_OS_WASM
+    QSKIP("threadSafety does not run on wasm");
+#else
     MessageHandlerSetter mhs(threadSafeMessageHandler);
     const int numThreads = 10;
     QThreadPool::globalInstance()->setMaxThreadCount(numThreads);
@@ -1355,6 +1358,7 @@ void tst_QDebug::threadSafety() const
     for (int i = 0; i < numThreads; ++i) {
         QCOMPARE(s_messages.at(i), QStringLiteral("doDebug"));
     }
+#endif
 }
 
 void tst_QDebug::toString() const
