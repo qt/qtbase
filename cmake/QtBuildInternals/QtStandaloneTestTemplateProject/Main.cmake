@@ -3,7 +3,16 @@
 
 # Includes QtSetup and friends for private CMake API.
 set(QT_INTERNAL_IS_STANDALONE_TEST TRUE)
+
+# Checks minimum CMake version and upgrades policies.
 qt_internal_project_setup()
+
+# Look for the Qt6 package before trying to call qt_build_internals_set_up_private_api,
+# otherwise it will fail when using a cross-compiled Qt, because QT_HOST_PATH will not be set.
+# QT_HOST_PATH is set by Qt6Dependencies.cmake.
+find_package(Qt6 REQUIRED)
+
+# Includes QtSetup.cmake.
 qt_build_internals_set_up_private_api()
 
 # Find all StandaloneTestsConfig.cmake files, and include them
