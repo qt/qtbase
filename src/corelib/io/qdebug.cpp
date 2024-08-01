@@ -1019,7 +1019,8 @@ QString QDebug::toStringImpl(StreamTypeErased s, const void *obj)
     \fn template <class T> QByteArray QDebug::toBytes(const T &object)
     \since 6.9
 
-    This is equivalent to \c{QDebug::toString(object).toUtf8()}, but more efficient.
+    This is equivalent to passing \a object to
+    \c{QDebug::toString(object).toUtf8()}, but more efficient.
 
     \sa toString()
 */
