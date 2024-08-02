@@ -11003,10 +11003,19 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
         QWidget *parentWithWindow = closestParentWidgetWithWindowHandle();
         // But if the widget is about to be destroyed we must skip the
         // widget itself, and only reparent children.
-        if (destroyWindow)
+        if (destroyWindow) {
             reparentWidgetWindowChildren(parentWithWindow);
-        else
+        } else {
+            // During reparentWidgetWindows() we need to know whether the reparented
+            // QWindow should be a top level (with a transient parent) or not. This
+            // widget has not updated its window flags yet, so we can't ask the widget
+            // directly at that point. Nor can we use the QWindow flags, as unlike QWidgets
+            // the QWindow flags always reflect Qt::Window, even for child windows. And
+            // we can't use QWindow::isTopLevel() either, as that depends on the parent,
+            // which we are in the process of updating. So we propagate the
+            // new flags of the reparented window here.
             reparentWidgetWindows(parentWithWindow, f);
+        }
     }
 
     bool explicitlyHidden = isExplicitlyHidden();
@@ -11063,13 +11072,6 @@ void QWidgetPrivate::reparentWidgetWindows(QWidget *parentWithWindow, Qt::Window
     if (QWindow *window = windowHandle()) {
         // Reparent this QWindow, and all QWindow children will follow
         if (parentWithWindow) {
-            // The reparented widget has not updated its window flags yet,
-            // so we can't ask the widget directly. And we can't use the
-            // QWindow flags, as unlike QWidgets the QWindow flags always
-            // reflect Qt::Window, even for child windows. And we can't use
-            // QWindow::isTopLevel() either, as that depends on the parent,
-            // which we are in the process of updating. So we propagate the
-            // new flags of the reparented window from setParent_sys().
             if (windowFlags & Qt::Window) {
                 // Top level windows can only have transient parents,
                 // and the transient parent must be another top level.
@@ -11100,7 +11102,9 @@ void QWidgetPrivate::reparentWidgetWindowChildren(QWidget *parentWithWindow)
     for (auto *child : std::as_const(children)) {
         if (auto *childWidget = qobject_cast<QWidget*>(child)) {
             auto *childPrivate = QWidgetPrivate::get(childWidget);
-            childPrivate->reparentWidgetWindows(parentWithWindow);
+            // Child widgets with QWindows should always continue to be child
+            // windows, so we pass on the child's current window flags here.
+            childPrivate->reparentWidgetWindows(parentWithWindow, childWidget->windowFlags());
         }
     }
 }
