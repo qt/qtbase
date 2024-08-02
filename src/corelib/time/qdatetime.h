@@ -192,12 +192,12 @@ private:
         return unixEpochJd() + epochDays;
     }
 
-#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+#if QT_VERSION_MAJOR < 7 && !defined(QT_BOOTSTRAPPED)
     static constexpr qint64 stdSysDaysToJulianDay(const std::chrono::sys_days &days) noexcept
     {
         return stdSysDaysToJulianDay(days QT6_CALL_NEW_OVERLOAD_TAIL);
     }
-#endif // QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+#endif // Qt < 7 and not bootstrapped
 #endif // __cpp_lib_chrono >= 201907L
 
     qint64 jd;
