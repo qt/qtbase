@@ -11,6 +11,7 @@
 #include <QtCore/qbytearray.h>
 #include <QtCore/qcompare.h>
 #include <QtCore/qdatastream.h>
+#include <QtCore/qflags.h>
 #include <QtCore/qfloat16.h>
 #include <QtCore/qhashfunctions.h>
 #include <QtCore/qiterable.h>
@@ -328,12 +329,6 @@ To convertImplicit(const From& from)
     struct IsMetaTypePair;
     template<typename, typename>
     struct MetaTypeSmartPointerHelper;
-
-    template<typename T>
-    struct IsQFlags : std::false_type {};
-
-    template<typename Enum>
-    struct IsQFlags<QFlags<Enum>> : std::true_type {};
 
     template<typename T>
     struct IsEnumOrFlags : std::disjunction<std::is_enum<T>, IsQFlags<T>> {};

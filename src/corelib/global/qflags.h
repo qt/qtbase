@@ -12,6 +12,7 @@
 QT_BEGIN_NAMESPACE
 
 class QDataStream;
+template<typename Enum> class QFlags;
 
 class QFlag
 {
@@ -47,6 +48,10 @@ Q_DECLARE_TYPEINFO(QIncompatibleFlag, Q_PRIMITIVE_TYPE);
 
 constexpr inline QIncompatibleFlag::QIncompatibleFlag(int value) noexcept : i(value) {}
 
+namespace QtPrivate {
+template <typename T> struct IsQFlags : std::false_type {};
+template <typename E> struct IsQFlags<QFlags<E>> : std::true_type {};
+} // namespace QtPrivate
 
 template<typename Enum>
 class QFlags
