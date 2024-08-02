@@ -551,9 +551,8 @@ public:
             return QVariant();
         QMetaType mt = QMetaType::fromType<Type>();
         mt.registerType(); // we want the type stored in QVariant to always be registered
-        // T is a forwarding reference, so if T satifies the enable-ifery,
-        // we get this overload even if T is an lvalue reference and thus must check here
-        // Moreover, we only try to move if the type is actually moveable and not if T is const
+
+        // We only try to move if the type is actually moveable and not if T is const
         // as in const int i; QVariant::fromValue(std::move(i));
         if constexpr (std::conjunction_v<std::is_move_constructible<Type>, std::negation<std::is_const<T>>>)
             return moveConstruct(QMetaType::fromType<Type>(), std::addressof(value));
