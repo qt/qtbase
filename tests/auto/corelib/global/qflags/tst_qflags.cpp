@@ -5,6 +5,7 @@
 # ifdef QT_TYPESAFE_FLAGS
 #  undef QT_TYPESAFE_FLAGS
 # endif
+# define tst_QFlags tst_QFlagsNotTypesafe
 #else
 # ifndef QT_TYPESAFE_FLAGS
 #  define QT_TYPESAFE_FLAGS
@@ -33,13 +34,43 @@ private slots:
     void adl();
 };
 
+// untyped enum: even though we expect this to be signed, it's possible the
+// compiler implements it as unsigned
+enum SignedFlag {
+    NoSignedFlag        = 0x00000000,
+    LeftSignedFlag      = 0x00000001,
+    RightSignedFlag     = 0x00000002,
+    MiddleSignedFlag    = 0x00000004,
+    SignedFlagMask      = -1
+};
+Q_DECLARE_FLAGS(SignedFlags, SignedFlag)
+Q_DECLARE_OPERATORS_FOR_FLAGS(SignedFlags)
+
+// typed enum: this one we expect to be unsigned (but MSVC says it isn't)
+enum UnsignedFlag : unsigned {
+    UnsignedFlag01 = 0x0001,
+    UnsignedFlag02 = 0x0002,
+    UnsignedFlag04 = 0x0004,
+
+    UnsignedFlag10 = 0x0010,
+    UnsignedFlag20 = 0x0020,
+    UnsignedFlag30 = UnsignedFlag10 | UnsignedFlag20
+};
+Q_DECLARE_FLAGS(UnsignedFlags, UnsignedFlag)
+Q_DECLARE_OPERATORS_FOR_FLAGS(UnsignedFlags)
+
+enum MixingFlag {
+    MixingFlag100 = 0x0100,
+};
+Q_DECLARE_MIXED_ENUM_OPERATORS_SYMMETRIC(int, UnsignedFlag, MixingFlag)
+
 void tst_QFlags::boolCasts() const
 {
     // This tests that the operator overloading is sufficient so that common
     // idioms involving flags -> bool casts work as expected:
 
-    const Qt::Alignment nonNull = Qt::AlignCenter;
-    const Qt::Alignment null = {};
+    const UnsignedFlags nonNull = UnsignedFlag30;
+    const UnsignedFlags null = {};
 
     // basic premiss:
     QVERIFY(bool(nonNull));
@@ -88,12 +119,12 @@ void tst_QFlags::operators() const
         QCOMPARE((QFlags(LHS) op ## = QFlags(RHS)), (RES)); \
     } while (false)
 
-    CHECK(|, Qt::AlignHCenter, Qt::AlignVCenter, Qt::AlignCenter);
-    CHECK(|, Qt::AlignHCenter, Qt::AlignHCenter, Qt::AlignHCenter);
-    CHECK(&, Qt::AlignHCenter, Qt::AlignVCenter, Qt::Alignment());
-    CHECK(&, Qt::AlignHCenter, Qt::AlignHCenter, Qt::AlignHCenter);
-    CHECK(^, Qt::AlignHCenter, Qt::AlignVCenter, Qt::AlignCenter);
-    CHECK(^, Qt::AlignHCenter, Qt::AlignHCenter, Qt::Alignment());
+    CHECK(|, UnsignedFlag20, UnsignedFlag10, UnsignedFlag30);
+    CHECK(|, UnsignedFlag20, UnsignedFlag20, UnsignedFlag20);
+    CHECK(&, UnsignedFlag20, UnsignedFlag10, UnsignedFlags());
+    CHECK(&, UnsignedFlag20, UnsignedFlag20, UnsignedFlag20);
+    CHECK(^, UnsignedFlag20, UnsignedFlag10, UnsignedFlag30);
+    CHECK(^, UnsignedFlag20, UnsignedFlag20, UnsignedFlags());
 #undef CHECK
 }
 
@@ -110,17 +141,17 @@ void tst_QFlags::mixingDifferentEnums() const
 
     // AlignmentFlags <-> TextFlags
     {
-        CHECK(|, Qt::AlignCenter, Qt::TextSingleLine, 0x0184);
-        CHECK(&, Qt::AlignCenter, Qt::TextSingleLine, 0x0000);
-        CHECK(^, Qt::AlignCenter, Qt::TextSingleLine, 0x0184);
+        CHECK(|, UnsignedFlag30, MixingFlag100, 0x0130);
+        CHECK(&, UnsignedFlag30, MixingFlag100, 0x0000);
+        CHECK(^, UnsignedFlag30, MixingFlag100, 0x0130);
     }
     // QFlags<AlignmentFlags> <-> TextFlags
     {
 #ifndef QT_TYPESAFE_FLAGS // QTBUG-101344
-        Qt::Alignment MyAlignCenter = Qt::AlignCenter; // convert enum to QFlags
-        CHECK(|, MyAlignCenter, Qt::TextSingleLine, 0x0184U); // yes, unsigned!
-        CHECK(&, MyAlignCenter, Qt::TextSingleLine, 0x0000U); // yes, unsigned!
-        CHECK(^, MyAlignCenter, Qt::TextSingleLine, 0x0184U); // yes, unsigned!
+        UnsignedFlags flag30 = UnsignedFlag30; // convert enum to QFlags
+        CHECK(|, flag30, MixingFlag100, 0x0130U); // yes, unsigned!
+        CHECK(&, flag30, MixingFlag100, 0x0000U); // yes, unsigned!
+        CHECK(^, flag30, MixingFlag100, 0x0130U); // yes, unsigned!
 #endif
     }
     // TextElideMode <-> TextFlags
@@ -134,32 +165,32 @@ void tst_QFlags::mixingDifferentEnums() const
 
 void tst_QFlags::testFlag() const
 {
-    Qt::MouseButtons btn = Qt::LeftButton | Qt::RightButton;
+    SignedFlags btn = LeftSignedFlag | RightSignedFlag;
 
-    QVERIFY(btn.testFlag(Qt::LeftButton));
-    QVERIFY(!btn.testFlag(Qt::MiddleButton));
+    QVERIFY(btn.testFlag(LeftSignedFlag));
+    QVERIFY(!btn.testFlag(MiddleSignedFlag));
 
     btn = { };
-    QVERIFY(!btn.testFlag(Qt::LeftButton));
+    QVERIFY(!btn.testFlag(LeftSignedFlag));
 }
 
 void tst_QFlags::testFlagZeroFlag() const
 {
     {
-        Qt::MouseButtons btn = Qt::LeftButton | Qt::RightButton;
-        /* Qt::NoButton has the value 0. */
+        SignedFlags btn = LeftSignedFlag | RightSignedFlag;
+        /* NoSignedFlag has the value 0. */
 
-        QVERIFY(!btn.testFlag(Qt::NoButton));
+        QVERIFY(!btn.testFlag(NoSignedFlag));
     }
 
     {
         /* A zero enum set should test true with zero. */
-        QVERIFY(Qt::MouseButtons().testFlag(Qt::NoButton));
+        QVERIFY(SignedFlags().testFlag(NoSignedFlag));
     }
 
     {
-        Qt::MouseButtons btn = Qt::NoButton;
-        QVERIFY(btn.testFlag(Qt::NoButton));
+        SignedFlags btn = NoSignedFlag;
+        QVERIFY(btn.testFlag(NoSignedFlag));
     }
 }
 
@@ -235,46 +266,41 @@ void tst_QFlags::testAnyFlag()
     QVERIFY(flags.testAnyFlag(Qt::TextBrowserInteraction));
 }
 
-template <unsigned int N, typename T> bool verifyConstExpr(T n) { return n == N; }
-template <unsigned int N, typename T> bool verifyConstExpr(QFlags<T> n) { return n.toInt() == N; }
-
-constexpr Qt::MouseButtons testRelaxedConstExpr()
+constexpr SignedFlags testRelaxedConstExpr()
 {
-    Qt::MouseButtons value;
-    value = Qt::LeftButton | Qt::RightButton;
-    value |= Qt::MiddleButton;
-    value &= ~Qt::LeftButton;
-    value ^= Qt::RightButton;
+    SignedFlags value;
+    value = LeftSignedFlag | RightSignedFlag;
+    value |= MiddleSignedFlag;
+    value &= ~LeftSignedFlag;
+    value ^= RightSignedFlag;
     return value;
 }
 
 void tst_QFlags::constExpr()
 {
-    Qt::MouseButtons btn = Qt::LeftButton | Qt::RightButton;
+    SignedFlags btn = LeftSignedFlag | RightSignedFlag;
     switch (btn.toInt()) {
-    case Qt::LeftButton: QVERIFY(false); break;
-    case Qt::RightButton: QVERIFY(false); break;
-    case (Qt::LeftButton | Qt::RightButton).toInt(): QVERIFY(true); break;
-    default: QFAIL(qPrintable(QStringLiteral("Unexpected button: %1").arg(btn.toInt())));
+    case LeftSignedFlag: QVERIFY(false); break;
+    case RightSignedFlag: QVERIFY(false); break;
+    case (LeftSignedFlag | RightSignedFlag).toInt(): QVERIFY(true); break;
+    default: QFAIL(qPrintable(QStringLiteral("Unexpected SignedFlag: %1").arg(btn.toInt())));
     }
 
 #define VERIFY_CONSTEXPR(expression, expected) \
-    QVERIFY(verifyConstExpr<(expression).toInt()>(expected))
+    do { constexpr auto result = (expression); QCOMPARE(result, expected); } while (0)
 
-    VERIFY_CONSTEXPR((Qt::LeftButton | Qt::RightButton) & Qt::LeftButton, Qt::LeftButton);
-    VERIFY_CONSTEXPR((Qt::LeftButton | Qt::RightButton) & Qt::MiddleButton, 0);
-    VERIFY_CONSTEXPR((Qt::LeftButton | Qt::RightButton) | Qt::MiddleButton, Qt::LeftButton | Qt::RightButton | Qt::MiddleButton);
-    VERIFY_CONSTEXPR(~(Qt::LeftButton | Qt::RightButton), ~(Qt::LeftButton | Qt::RightButton));
-    VERIFY_CONSTEXPR(Qt::MouseButtons(Qt::LeftButton) ^ Qt::RightButton, Qt::LeftButton ^ Qt::RightButton);
-    VERIFY_CONSTEXPR(Qt::MouseButtons(0), 0);
+    VERIFY_CONSTEXPR((LeftSignedFlag | RightSignedFlag) & LeftSignedFlag, LeftSignedFlag);
+    VERIFY_CONSTEXPR((LeftSignedFlag | RightSignedFlag) & MiddleSignedFlag, 0);
+    VERIFY_CONSTEXPR((LeftSignedFlag | RightSignedFlag) | MiddleSignedFlag, LeftSignedFlag | RightSignedFlag | MiddleSignedFlag);
+    VERIFY_CONSTEXPR(~(LeftSignedFlag | RightSignedFlag), ~(LeftSignedFlag | RightSignedFlag));
+    VERIFY_CONSTEXPR(SignedFlags(LeftSignedFlag) ^ RightSignedFlag, LeftSignedFlag ^ RightSignedFlag);
+    VERIFY_CONSTEXPR(SignedFlags(0), 0);
 #ifndef QT_TYPESAFE_FLAGS
-    QVERIFY(verifyConstExpr<(Qt::MouseButtons(Qt::RightButton) & 0xff)>(Qt::RightButton));
-    QVERIFY(verifyConstExpr<(Qt::MouseButtons(Qt::RightButton) | 0xff)>(0xff));
+    VERIFY_CONSTEXPR(SignedFlags(RightSignedFlag) & 0xff, RightSignedFlag);
+    VERIFY_CONSTEXPR(SignedFlags(RightSignedFlag) | 0xff, 0xff);
 #endif
 
-    QVERIFY(!verifyConstExpr<Qt::RightButton>(~Qt::MouseButtons(Qt::LeftButton)));
-
-    VERIFY_CONSTEXPR(testRelaxedConstExpr(), Qt::MiddleButton);
+    VERIFY_CONSTEXPR(testRelaxedConstExpr(), MiddleSignedFlag);
 
 #undef VERIFY_CONSTEXPR
 }
@@ -285,11 +311,13 @@ void tst_QFlags::signedness()
     // underlying type is implementation-defined, we need to allow for
     // a different signedness, so we only check that the relative
     // signedness of the types matches:
-    static_assert((std::is_unsigned<typename std::underlying_type<Qt::MouseButton>::type>::value ==
-                     std::is_unsigned<Qt::MouseButtons::Int>::value));
+    static_assert(std::is_unsigned_v<SignedFlags::Int> ==
+            std::is_unsigned_v<std::underlying_type_t<SignedFlag>>);
 
-    static_assert((std::is_signed<typename std::underlying_type<Qt::AlignmentFlag>::type>::value ==
-                     std::is_signed<Qt::Alignment::Int>::value));
+#ifndef Q_CC_MSVC
+    static_assert(std::is_unsigned_v<UnsignedFlags::Int> ==
+            std::is_unsigned_v<std::underlying_type_t<UnsignedFlag>>);
+#endif
 }
 
 enum class MyStrictEnum { StrictZero, StrictOne, StrictTwo, StrictFour=4 };
@@ -411,10 +439,10 @@ void tst_QFlags::classEnum()
 
 void tst_QFlags::initializerLists()
 {
-    Qt::MouseButtons bts = { Qt::LeftButton, Qt::RightButton };
-    QVERIFY(bts.testFlag(Qt::LeftButton));
-    QVERIFY(bts.testFlag(Qt::RightButton));
-    QVERIFY(!bts.testFlag(Qt::MiddleButton));
+    SignedFlags bts = { LeftSignedFlag, RightSignedFlag };
+    QVERIFY(bts.testFlag(LeftSignedFlag));
+    QVERIFY(bts.testFlag(RightSignedFlag));
+    QVERIFY(!bts.testFlag(MiddleSignedFlag));
 
     MyStrictNoOpFlags flags = { MyStrictNoOpEnum::StrictOne, MyStrictNoOpEnum::StrictFour };
     QVERIFY(flags.testFlag(MyStrictNoOpEnum::StrictOne));
@@ -424,15 +452,15 @@ void tst_QFlags::initializerLists()
 
 void tst_QFlags::testSetFlags()
 {
-    Qt::MouseButtons btn = Qt::NoButton;
+    SignedFlags btn = NoSignedFlag;
 
-    btn.setFlag(Qt::LeftButton);
-    QVERIFY(btn.testFlag(Qt::LeftButton));
-    QVERIFY(!btn.testFlag(Qt::MiddleButton));
+    btn.setFlag(LeftSignedFlag);
+    QVERIFY(btn.testFlag(LeftSignedFlag));
+    QVERIFY(!btn.testFlag(MiddleSignedFlag));
 
-    btn.setFlag(Qt::LeftButton, false);
-    QVERIFY(!btn.testFlag(Qt::LeftButton));
-    QVERIFY(!btn.testFlag(Qt::MiddleButton));
+    btn.setFlag(LeftSignedFlag, false);
+    QVERIFY(!btn.testFlag(LeftSignedFlag));
+    QVERIFY(!btn.testFlag(MiddleSignedFlag));
 
     MyStrictFlags flags;
     flags.setFlag(MyStrictEnum::StrictOne);
@@ -453,10 +481,10 @@ enum Foo { Foo_A = 1 << 0, Foo_B = 1 << 1, Foo_C = 1 << 2 };
 Q_DECLARE_FLAGS(Foos, Foo)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Foos);
 
-Qt::Alignment alignment()
+UnsignedFlags unsignedFlags()
 {
     // Checks that the operator| works, despite there is another operator| in this namespace.
-    return Qt::AlignLeft | Qt::AlignTop;
+    return UnsignedFlag01 | UnsignedFlag04;
 }
 }
 
@@ -465,7 +493,7 @@ void tst_QFlags::adl()
     SomeNS::Foos fl = SomeNS::Foo_B | SomeNS::Foo_C;
     QVERIFY(fl & SomeNS::Foo_B);
     QVERIFY(!(fl & SomeNS::Foo_A));
-    QCOMPARE(SomeNS::alignment(), Qt::AlignLeft | Qt::AlignTop);
+    QCOMPARE(SomeNS::unsignedFlags(), UnsignedFlag01 | UnsignedFlag04);
 }
 
 // (statically) check QTypeInfo for QFlags instantiations:
