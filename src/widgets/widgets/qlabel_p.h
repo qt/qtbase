@@ -35,6 +35,7 @@
 #include <QtCore/qpointer.h>
 
 #include <array>
+#include <optional>
 
 QT_BEGIN_NAMESPACE
 
@@ -84,10 +85,10 @@ public:
     mutable QSize sh;
     mutable QSize msh;
     QString text;
-    QPixmap pixmap;
-    QPixmap scaledpixmap;
+    std::optional<QPixmap> pixmap;
+    std::optional<QPixmap> scaledpixmap;
 #ifndef QT_NO_PICTURE
-    QPicture picture;
+    std::optional<QPicture> picture;
 #endif
 #if QT_CONFIG(movie)
     QPointer<QMovie> movie;
