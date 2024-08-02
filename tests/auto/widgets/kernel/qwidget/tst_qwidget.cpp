@@ -13857,6 +13857,7 @@ void tst_QWidget::reparentWindowHandles_data()
     QTest::addRow("top level to child") << 2;
     QTest::addRow("transient parent") << 3;
     QTest::addRow("window container") << 4;
+    QTest::addRow("popup") << 5;
 }
 
 void tst_QWidget::reparentWindowHandles()
@@ -13992,6 +13993,31 @@ void tst_QWidget::reparentWindowHandles()
 
         child->setParent(&anotherTopLevel);
         QCOMPARE(window->parent(), anotherTopLevel.windowHandle());
+    }
+    case 5: {
+        // Popup window that's a child of a widget that is
+        // reparented should keep being a (top level) popup.
+
+        QWidget topLevel;
+        topLevel.setAttribute(Qt::WA_NativeWindow);
+        QVERIFY(topLevel.windowHandle());
+
+        QPointer<QWidget> child = new QWidget(&topLevel);
+        QVERIFY(!child->windowHandle());
+
+        QPointer<QWidget> leaf = new QWidget(child, Qt::Popup);
+        leaf->setAttribute(Qt::WA_DontCreateNativeAncestors);
+        leaf->setAttribute(Qt::WA_NativeWindow);
+        QVERIFY(leaf->windowHandle());
+
+        QWidget anotherTopLevel;
+        anotherTopLevel.setAttribute(Qt::WA_NativeWindow);
+        QVERIFY(anotherTopLevel.windowHandle());
+
+        child->setParent(&anotherTopLevel);
+        QCOMPARE(leaf->windowHandle()->parent(), nullptr);
+        QCOMPARE(leaf->windowHandle()->transientParent(),
+            anotherTopLevel.windowHandle());
     }
         break;
     default:
