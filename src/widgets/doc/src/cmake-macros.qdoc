@@ -104,24 +104,24 @@ You can find possible options in the \l{uic}{uic documentation}.
 In the following snippet, the \c{mainwindow.cpp} file includes
 \c{ui_mainwindow.h} and \c{mainwindow.h}.
 
-\snippet cmake-macros/examples.cpp qt6_add_ui_1
+\snippet cmake-macros/examples.cpp qt_add_ui_1
 
 \c{CMakeLists.txt} is implemented as follows and it calls
 \c{qt_add_ui} to add \c{ui_mainwindow.h} to the \c{myapp} target.
 
-\snippet cmake-macros/examples.cmake qt6_add_ui_1
+\snippet cmake-macros/examples.cmake qt_add_ui_1
 
 In the above example, \c{ui_mainwindow.h} is included without a prefix. So the
 \c{INCLUDE_PREFIX} argument is not specified.
 
 \section2 With INCLUDE_PREFIX
 
-\snippet cmake-macros/examples.cpp qt6_add_ui_2
+\snippet cmake-macros/examples.cpp qt_add_ui_2
 
 In the above snippet, \c{mainwindow.cpp} includes \c{ui_mainwindow.h} with a
 prefix.
 
-\snippet cmake-macros/examples.cmake qt6_add_ui_2
+\snippet cmake-macros/examples.cmake qt_add_ui_2
 
 Since \c{ui_mainwindow.h} is included with a prefix, the \c{INCLUDE_PREFIX}
 argument is specified as \c{src/files} in the above example.
@@ -133,15 +133,15 @@ In the following snippets, both \c{widget1.cpp} and \c{widget2.cpp} include
 
 \c{widget1.cpp}:
 
-\snippet cmake-macros/examples.cpp qt6_add_ui_3_1
+\snippet cmake-macros/examples.cpp qt_add_ui_3_1
 
 \c{widget2.cpp}:
 
-\snippet cmake-macros/examples.cpp qt6_add_ui_3_2
+\snippet cmake-macros/examples.cpp qt_add_ui_3_2
 
 Both \c{ui_widget1.h} and \c{ui_widget2.h} are included with the same prefix
 
-\snippet cmake-macros/examples.cmake qt6_add_ui_3
+\snippet cmake-macros/examples.cmake qt_add_ui_3
 
 In this case, the \c{INCLUDE_PREFIX} argument can be specified as \c{src/files}
 for both files in the above snippet.
