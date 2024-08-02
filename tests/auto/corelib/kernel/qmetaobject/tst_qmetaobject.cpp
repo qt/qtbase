@@ -2883,32 +2883,34 @@ void tst_QMetaObject::enumDebugStream_data()
     QTest::newRow("verbosity=1") << 1
         << "hello MyEnum::MyEnum2 world"
         << "hello MyScopedEnum::Enum3 scoped world"
-        << "WindowType::WindowTitleHint WindowType::Window WindowType::Desktop WindowType::WindowSystemMenuHint"
+        << "WindowType(WindowTitleHint) WindowType(Window) WindowType(Desktop) WindowType(WindowSystemMenuHint)"
         << "hello MyFlag(MyFlag1) world"
         << "MyFlag(MyFlag1) MyFlag(MyFlag2|MyFlag3)"
         << "MyScopedFlag(MyFlag2)"
         << "MyScopedFlag(MyFlag2|MyFlag3)"
-        << "MyFlag::MyFlag1";
+        << "MyFlag(MyFlag1)";
 
     QTest::newRow("verbosity=2") << 2
         << "hello MyNamespace::MyClass::MyEnum2 world"
         << "hello MyNamespace::MyClass::MyScopedEnum::Enum3 scoped world"
-        << "Qt::WindowTitleHint Qt::Window Qt::Desktop Qt::WindowSystemMenuHint"
+        << "QFlags<Qt::WindowType>(WindowTitleHint) QFlags<Qt::WindowType>(Window) "
+           "QFlags<Qt::WindowType>(Desktop) QFlags<Qt::WindowType>(WindowSystemMenuHint)"
         << "hello QFlags<MyNamespace::MyClass::MyFlag>(MyFlag1) world"
         << "QFlags<MyNamespace::MyClass::MyFlag>(MyFlag1) QFlags<MyNamespace::MyClass::MyFlag>(MyFlag2|MyFlag3)"
         << "QFlags<MyNamespace::MyClass::MyScopedFlag>(MyFlag2)"
         << "QFlags<MyNamespace::MyClass::MyScopedFlag>(MyFlag2|MyFlag3)"
-        << "MyNamespace::MyClass::MyFlag1";
+        << "QFlags<MyNamespace::MyClass::MyFlag>(MyFlag1)";
 
     QTest::newRow("verbosity=3") << 3
         << "hello MyNamespace::MyClass::MyEnum::MyEnum2 world"
         << "hello MyNamespace::MyClass::MyScopedEnum::Enum3 scoped world"
-        << "Qt::WindowType::WindowTitleHint Qt::WindowType::Window Qt::WindowType::Desktop Qt::WindowType::WindowSystemMenuHint"
+        << "QFlags<Qt::WindowType>(WindowTitleHint) QFlags<Qt::WindowType>(Window) "
+           "QFlags<Qt::WindowType>(Desktop) QFlags<Qt::WindowType>(WindowSystemMenuHint)"
         << "hello QFlags<MyNamespace::MyClass::MyFlag>(MyFlag1) world"
         << "QFlags<MyNamespace::MyClass::MyFlag>(MyFlag1) QFlags<MyNamespace::MyClass::MyFlag>(MyFlag2|MyFlag3)"
         << "QFlags<MyNamespace::MyClass::MyScopedFlag>(MyFlag2)"
         << "QFlags<MyNamespace::MyClass::MyScopedFlag>(MyFlag2|MyFlag3)"
-        << "MyNamespace::MyClass::MyFlag::MyFlag1";
+        << "QFlags<MyNamespace::MyClass::MyFlag>(MyFlag1)";
 }
 
 void tst_QMetaObject::enumDebugStream()

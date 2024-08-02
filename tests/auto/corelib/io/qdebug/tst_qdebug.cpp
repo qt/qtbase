@@ -1508,4 +1508,5 @@ TestClassA& operator<< (TestClassA& s, T&) { return s; };
 template<> TestClassA& operator<< <TestClassB>(TestClassA& s, TestClassB& l);
 
 QTEST_MAIN(tst_QDebug);
+
 #include "tst_qdebug.moc"

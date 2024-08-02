@@ -523,6 +523,8 @@ inline QDebug operator<<(QDebug debug, const QTaggedPointer<T, Tag> &ptr)
     return debug;
 }
 
+Q_CORE_EXPORT QDebug qt_QMetaEnum_debugOperator(QDebug&, qint64 value, const QMetaObject *meta, const char *name);
+Q_CORE_EXPORT QDebug qt_QMetaEnum_flagDebugOperator(QDebug &dbg, quint64 value, const QMetaObject *meta, const char *name);
 Q_CORE_EXPORT void qt_QMetaEnum_flagDebugOperator(QDebug &debug, size_t sizeofT, uint value);
 
 template <typename Int>
@@ -546,66 +548,62 @@ void qt_QMetaEnum_flagDebugOperator(QDebug &debug, size_t sizeofT, Int value)
     debug << ')';
 }
 
+template <class Flags,
+          typename = std::enable_if_t<QtPrivate::IsQFlags<Flags>::value, void>,
+          typename T = typename Flags::enum_type>
+inline QDebug operator<<(QDebug debug, Flags flags)
+{
+    using UInt = typename QIntegerForSizeof<T>::Unsigned;
+#if !defined(QT_NO_QOBJECT)
+    if constexpr (QtPrivate::IsQEnumHelper<T>::Value || QtPrivate::IsQEnumHelper<Flags>::Value) {
+        const QMetaObject *obj = qt_getEnumMetaObject(T());
+        const char *name = qt_getEnumName(T());
+        return qt_QMetaEnum_flagDebugOperator(debug, UInt(flags.toInt()), obj, name);
+    } else
+#endif
+    {
+        qt_QMetaEnum_flagDebugOperator(debug, sizeof(T), UInt(flags.toInt()));
+        return debug;
+    }
+}
+
 #if !defined(QT_NO_QOBJECT) && !defined(Q_QDOC)
-Q_CORE_EXPORT QDebug qt_QMetaEnum_debugOperator(QDebug&, qint64 value, const QMetaObject *meta, const char *name);
-Q_CORE_EXPORT QDebug qt_QMetaEnum_flagDebugOperator(QDebug &dbg, quint64 value, const QMetaObject *meta, const char *name);
+// Debugging of plain enums. There are three cases:
+//  1) the enum is part of a Q_DECLARE_FLAGS and there's a Q_FLAG for that
+//     -> debugs as that QFlags (even if a Q_ENUM is present)
+//  2) the enum is declared a Q_ENUM but is not part of a Q_DECLARE_FLAGS
+//     -> debugs via qt_QMetaEnum_debugOperator()
+//  3) the enum is not associated with a QMetaObject
+//     -> no streaming
+// To avoid ambiguity in overload resolution, the template conditions are
+// mutually exclusive.
+
+namespace QtPrivate {
+template <typename T, bool IsEnum = std::is_enum_v<T>, bool SizedForQFlags = sizeof(T) <= 4>
+struct EnumHasQFlag { static constexpr bool Value = false; };
+template <typename T> struct EnumHasQFlag<T, true, true> : QtPrivate::IsQEnumHelper<QFlags<T>> {};
+
+template <typename T, bool IsEnum = std::is_enum_v<T>, bool HasQFlag = EnumHasQFlag<T>::Value>
+struct EnumHasQEnum { static constexpr bool Value = false; };
+template <typename T> struct EnumHasQEnum<T, true, false> : QtPrivate::IsQEnumHelper<T> {};
+}
+
+template <typename T>
+std::enable_if_t<QtPrivate::EnumHasQFlag<T>::Value, QDebug> // case 1
+operator<<(QDebug debug, T flag)
+{
+    return debug << QFlags(flag);
+}
 
 template<typename T>
-typename std::enable_if<QtPrivate::IsQEnumHelper<T>::Value, QDebug>::type
+std::enable_if_t<QtPrivate::EnumHasQEnum<T>::Value, QDebug> // case 2
 operator<<(QDebug dbg, T value)
 {
     const QMetaObject *obj = qt_getEnumMetaObject(value);
     const char *name = qt_getEnumName(value);
     return qt_QMetaEnum_debugOperator(dbg, static_cast<typename std::underlying_type<T>::type>(value), obj, name);
 }
-
-template<typename T,
-         typename A = typename std::enable_if<std::is_enum<T>::value, void>::type,
-         typename B = typename std::enable_if<sizeof(T) <= sizeof(int), void>::type,
-         typename C = typename std::enable_if<!QtPrivate::IsQEnumHelper<T>::Value, void>::type,
-         typename D = typename std::enable_if<QtPrivate::IsQEnumHelper<QFlags<T>>::Value, void>::type>
-inline QDebug operator<<(QDebug dbg, T value)
-{
-    typedef QFlags<T> FlagsT;
-    const QMetaObject *obj = qt_getEnumMetaObject(FlagsT());
-    const char *name = qt_getEnumName(FlagsT());
-    return qt_QMetaEnum_debugOperator(dbg, typename FlagsT::Int(value), obj, name);
-}
-
-template <class T>
-inline typename std::enable_if<
-    QtPrivate::IsQEnumHelper<T>::Value || QtPrivate::IsQEnumHelper<QFlags<T> >::Value,
-    QDebug>::type
-qt_QMetaEnum_flagDebugOperator_helper(QDebug debug, const QFlags<T> &flags)
-{
-    using UInt = typename QIntegerForSizeof<T>::Unsigned;
-    const QMetaObject *obj = qt_getEnumMetaObject(T());
-    const char *name = qt_getEnumName(T());
-    return qt_QMetaEnum_flagDebugOperator(debug, UInt(flags.toInt()), obj, name);
-}
-
-template <class T>
-inline typename std::enable_if<
-    !QtPrivate::IsQEnumHelper<T>::Value && !QtPrivate::IsQEnumHelper<QFlags<T> >::Value,
-    QDebug>::type
-qt_QMetaEnum_flagDebugOperator_helper(QDebug debug, const QFlags<T> &flags)
-#else // !QT_NO_QOBJECT && !Q_QDOC
-template <class T>
-inline QDebug qt_QMetaEnum_flagDebugOperator_helper(QDebug debug, const QFlags<T> &flags)
-#endif
-{
-    using UInt = typename QIntegerForSizeof<T>::Unsigned;
-    qt_QMetaEnum_flagDebugOperator(debug, sizeof(T), UInt(flags.toInt()));
-    return debug;
-}
-
-template<typename T>
-inline QDebug operator<<(QDebug debug, const QFlags<T> &flags)
-{
-    // We have to use an indirection otherwise specialisation of some other overload of the
-    // operator<< the compiler would try to instantiate QFlags<T> for the std::enable_if
-    return qt_QMetaEnum_flagDebugOperator_helper(debug, flags);
-}
+#endif // !QT_NO_QOBJECT && !Q_QDOC
 
 inline QDebug operator<<(QDebug debug, QKeyCombination combination)
 {
