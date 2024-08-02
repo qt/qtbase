@@ -918,7 +918,13 @@ set(QT_ALLOW_MISSING_TOOLS_PACKAGES TRUE)")
 
     if(QT_GENERATE_SBOM)
         set(sbom_args "")
-        list(APPEND sbom_args TYPE QT_MODULE)
+
+        # 3rd party header modules should not be treated as Qt modules.
+        if(arg_IS_QT_3RD_PARTY_HEADER_MODULE)
+            list(APPEND sbom_args TYPE QT_THIRD_PARTY_MODULE)
+        else()
+            list(APPEND sbom_args TYPE QT_MODULE)
+        endif()
 
         qt_get_cmake_configurations(configs)
         foreach(config IN LISTS configs)
