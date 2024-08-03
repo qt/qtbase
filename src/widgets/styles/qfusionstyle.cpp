@@ -145,7 +145,7 @@ static void qt_fusion_draw_arrow(Qt::ArrowType type, QPainter *painter, const QS
         return;
 
     const qreal dpi = QStyleHelper::dpi(option);
-    const qreal dpr = painter->device()->devicePixelRatio();
+    const qreal dpr = QStyleHelper::getDpr(painter);
     const int arrowWidth = int(QStyleHelper::dpiScaled(14, dpi));
     const int arrowHeight = int(QStyleHelper::dpiScaled(8, dpi));
 
@@ -890,7 +890,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
             if (!cb->currentIcon.isNull()) {
                 QIcon::Mode mode = cb->state & State_Enabled ? QIcon::Normal
                                                              : QIcon::Disabled;
-                QPixmap pixmap = cb->currentIcon.pixmap(cb->iconSize, painter->device()->devicePixelRatio(), mode);
+                QPixmap pixmap = cb->currentIcon.pixmap(cb->iconSize, QStyleHelper::getDpr(painter), mode);
                 QRect iconRect(editRect);
                 iconRect.setWidth(cb->iconSize.width() + 4);
                 iconRect = alignedRect(cb->direction,
@@ -1138,7 +1138,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(option)) {
             const QStyleOptionHeaderV2 *headerV2 = qstyleoption_cast<const QStyleOptionHeaderV2 *>(option);
             const bool isSectionDragTarget = headerV2 ? headerV2->isSectionDragTarget : false;
-            const qreal dpr = painter->device()->devicePixelRatio();
+            const qreal dpr = QStyleHelper::getDpr(painter);
             const QString pixmapName = QStyleHelper::uniqueName("headersection-"_L1
                                                                     % HexString(header->position)
                                                                     % HexString(header->orientation)
@@ -1528,9 +1528,9 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
                     iconSize = combo->iconSize();
 #endif
                 if (checked)
-                    pixmap = menuItem->icon.pixmap(iconSize, painter->device()->devicePixelRatio(), mode, QIcon::On);
+                    pixmap = menuItem->icon.pixmap(iconSize, QStyleHelper::getDpr(painter), mode, QIcon::On);
                 else
-                    pixmap = menuItem->icon.pixmap(iconSize, painter->device()->devicePixelRatio(), mode);
+                    pixmap = menuItem->icon.pixmap(iconSize, QStyleHelper::getDpr(painter), mode);
 
                 QRect pmr(QPoint(0, 0), pixmap.deviceIndependentSize().toSize());
                 pmr.moveCenter(vCheckRect.center());
@@ -1881,7 +1881,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
 #if QT_CONFIG(spinbox)
     case CC_SpinBox:
         if (const QStyleOptionSpinBox *spinBox = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
-            const qreal dpr = painter->device()->devicePixelRatio();
+            const qreal dpr = QStyleHelper::getDpr(painter);
             QPixmap cache;
             QString pixmapName = QStyleHelper::uniqueName("spinbox"_L1, spinBox, spinBox->rect.size(), dpr);
             if (!QPixmapCache::find(pixmapName, &cache)) {
@@ -2578,7 +2578,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
             bool hasFocus = option->state & State_HasFocus && option->state & State_KeyboardFocusChange;
             bool sunken = comboBox->state & State_On; // play dead, if combobox has no items
             bool isEnabled = (comboBox->state & State_Enabled);
-            const qreal dpr = painter->device()->devicePixelRatio();
+            const qreal dpr = QStyleHelper::getDpr(painter);
             QPixmap cache;
             const QString pixmapName = QStyleHelper::uniqueName("combobox"_L1
                                                                     % QLatin1StringView(sunken ? "-sunken" : "")
@@ -2675,7 +2675,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
 #if QT_CONFIG(slider)
     case CC_Slider:
         if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(option)) {
-            const qreal dpr = painter->device()->devicePixelRatio();
+            const qreal dpr = QStyleHelper::getDpr(painter);
             QRect groove = proxy()->subControlRect(CC_Slider, option, SC_SliderGroove, widget);
             QRect handle = proxy()->subControlRect(CC_Slider, option, SC_SliderHandle, widget);
 
@@ -3714,13 +3714,9 @@ QIcon QFusionStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
 QPixmap QFusionStyle::standardPixmap(StandardPixmap standardPixmap, const QStyleOption *opt,
                                      const QWidget *widget) const
 {
-    auto getDevicePixelRatio = [](const QWidget *widget)
-    {
-        return widget ? widget->devicePixelRatio() : qApp->devicePixelRatio();
-    };
     const auto icon = iconFromTheme(standardPixmap);
     if (!icon.availableSizes().isEmpty())
-        return icon.pixmap(QSize(16, 16), getDevicePixelRatio(widget));
+        return icon.pixmap(QSize(16, 16), QStyleHelper::getDpr(widget));
     return QCommonStyle::standardPixmap(standardPixmap, opt, widget);
 }
 

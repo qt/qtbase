@@ -8,6 +8,8 @@
 #include <QtGui/qpolygon.h>
 #include <QtCore/qstringbuilder.h>
 #include <QtGui/qaccessible.h>
+#include <QtGui/qpainter.h>
+#include <QtWidgets/qwidget.h>
 
 #ifndef QSTYLEHELPER_P_H
 #define QSTYLEHELPER_P_H
@@ -29,12 +31,10 @@ QT_BEGIN_NAMESPACE
 
 class QColor;
 class QObject;
-class QPainter;
 class QPalette;
 class QPixmap;
 class QStyleOptionSlider;
 class QStyleOption;
-class QWidget;
 class QWindow;
 
 namespace QStyleHelper
@@ -65,6 +65,21 @@ namespace QStyleHelper
     enum WidgetSizePolicy { SizeLarge = 0, SizeSmall = 1, SizeMini = 2, SizeDefault = -1 };
 
     Q_WIDGETS_EXPORT WidgetSizePolicy widgetSizePolicy(const QWidget *w, const QStyleOption *opt = nullptr);
+
+    // returns the device pixel ratio of the widget or the global one
+    // if widget is a nullptr
+    static inline qreal getDpr(const QWidget *widget)
+    {
+        return widget ? widget->devicePixelRatio()
+                      : qApp->devicePixelRatio();
+    }
+
+    // returns the device pixel ratio of the painters underlying paint device
+    static inline qreal getDpr(const QPainter *painter)
+    {
+        Q_ASSERT(painter && painter->device());
+        return painter->device()->devicePixelRatio();
+    }
 }
 
 

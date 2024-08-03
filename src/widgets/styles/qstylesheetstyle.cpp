@@ -82,6 +82,7 @@
 #include <QLabel>
 #endif
 #include "qdrawutil.h"
+#include "qstylehelper_p.h"
 
 #include <limits.h>
 #if QT_CONFIG(toolbar)
@@ -3539,7 +3540,7 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
                 break;
             subRule.drawRule(p, opt->rect);
             QHash<QStyle::SubControl, QRect> layout = titleBarLayout(w, tb);
-            const auto paintDeviceDpr = p->device()->devicePixelRatio();
+            const auto paintDeviceDpr = QStyleHelper::getDpr(p);
 
             QRect ir;
             ir = layout[SC_TitleBarLabel];
@@ -3620,7 +3621,7 @@ void QStyleSheetStyle::renderMenuItemIcon(const QStyleOptionMenuItem *mi, QPaint
     const bool checked = mi->checkType != QStyleOptionMenuItem::NotCheckable && mi->checked;
     const auto iconSize = pixelMetric(PM_SmallIconSize, mi, w);
     const QSize sz(iconSize, iconSize);
-    const QPixmap pixmap(mi->icon.pixmap(sz, p->device()->devicePixelRatio(), mode,
+    const QPixmap pixmap(mi->icon.pixmap(sz, QStyleHelper::getDpr(p), mode,
                         checked ? QIcon::On : QIcon::Off));
     const int pixw = pixmap.width() / pixmap.devicePixelRatio();
     const int pixh = pixmap.height() / pixmap.devicePixelRatio();
@@ -3755,7 +3756,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                     if (button->state & State_On)
                         state = QIcon::On;
 
-                    const auto paintDeviceDpr = p->device()->devicePixelRatio();
+                    const auto paintDeviceDpr = QStyleHelper::getDpr(p);
                     QPixmap pixmap = icon.pixmap(button->iconSize, paintDeviceDpr, mode, state);
                     int pixmapWidth = pixmap.width() / pixmap.devicePixelRatio();
                     int pixmapHeight = pixmap.height() / pixmap.devicePixelRatio();
@@ -4058,7 +4059,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                 if (spacing == -1)
                     spacing = 6;
                 QIcon::Mode mode = cb->state & State_Enabled ? QIcon::Normal : QIcon::Disabled;
-                const auto paintDeviceDpr = p->device()->devicePixelRatio();
+                const auto paintDeviceDpr = QStyleHelper::getDpr(p);
                 QPixmap pixmap = cb->currentIcon.pixmap(cb->iconSize, paintDeviceDpr, mode);
                 QRect iconRect(editRect);
                 iconRect.setWidth(cb->iconSize.width());
@@ -5648,8 +5649,7 @@ QPixmap QStyleSheetStyle::standardPixmap(StandardPixmap standardPixmap, const QS
         QRenderRule rule = renderRule(w, opt);
         if (rule.hasStyleHint(s)) {
             QIcon icon = qvariant_cast<QIcon>(rule.styleHint(s));
-            const auto dpr = w ? w->devicePixelRatio() : qApp->devicePixelRatio();
-            return icon.pixmap(QSize(16, 16), dpr);
+            return icon.pixmap(QSize(16, 16), QStyleHelper::getDpr(w));
         }
     }
     return baseStyle()->standardPixmap(standardPixmap, opt, w);

@@ -6,6 +6,7 @@
 #include "qpixmapcache.h"
 #include "qpainter.h"
 #include "qpalette.h"
+#include "qstylehelper_p.h"
 #include <private/qpaintengineex_p.h>
 #include <qvarlengtharray.h>
 #include <qmath.h>
@@ -92,7 +93,7 @@ void qDrawShadeLine(QPainter *p, int x1, int y1, int x2, int y2,
         return;
     }
     PainterStateGuard painterGuard(p);
-    const qreal devicePixelRatio = p->device()->devicePixelRatio();
+    const qreal devicePixelRatio = QStyleHelper::getDpr(p);
     if (!qFuzzyCompare(devicePixelRatio, qreal(1))) {
         painterGuard.save();
         const qreal inverseScale = qreal(1) / devicePixelRatio;
@@ -223,7 +224,7 @@ void qDrawShadeRect(QPainter *p, int x, int y, int w, int h,
     }
 
     PainterStateGuard painterGuard(p);
-    const qreal devicePixelRatio = p->device()->devicePixelRatio();
+    const qreal devicePixelRatio = QStyleHelper::getDpr(p);
     if (!qFuzzyCompare(devicePixelRatio, qreal(1))) {
         painterGuard.save();
         const qreal inverseScale = qreal(1) / devicePixelRatio;
@@ -337,7 +338,7 @@ void qDrawShadePanel(QPainter *p, int x, int y, int w, int h,
     }
 
     PainterStateGuard painterGuard(p);
-    const qreal devicePixelRatio = p->device()->devicePixelRatio();
+    const qreal devicePixelRatio = QStyleHelper::getDpr(p);
     bool isTranslated = false;
     if (!qFuzzyCompare(devicePixelRatio, qreal(1))) {
         painterGuard.save();
@@ -433,7 +434,7 @@ static void qDrawWinShades(QPainter *p,
         return;
 
     PainterStateGuard painterGuard(p);
-    const qreal devicePixelRatio = p->device()->devicePixelRatio();
+    const qreal devicePixelRatio = QStyleHelper::getDpr(p);
     bool isTranslated = false;
     if (!qFuzzyCompare(devicePixelRatio, qreal(1))) {
         painterGuard.save();
@@ -581,7 +582,7 @@ void qDrawPlainRect(QPainter *p, int x, int y, int w, int h, const QColor &c,
     }
 
     PainterStateGuard painterGuard(p);
-    const qreal devicePixelRatio = p->device()->devicePixelRatio();
+    const qreal devicePixelRatio = QStyleHelper::getDpr(p);
     if (!qFuzzyCompare(devicePixelRatio, qreal(1))) {
         painterGuard.save();
         const qreal inverseScale = qreal(1) / devicePixelRatio;
@@ -648,7 +649,7 @@ void qDrawPlainRoundedRect(QPainter *p, int x, int y, int w, int h,
     }
 
     PainterStateGuard painterGuard(p);
-    const qreal devicePixelRatio = p->device()->devicePixelRatio();
+    const qreal devicePixelRatio = QStyleHelper::getDpr(p);
     if (!qFuzzyCompare(devicePixelRatio, qreal(1))) {
         painterGuard.save();
         const qreal inverseScale = qreal(1) / devicePixelRatio;
