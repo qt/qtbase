@@ -483,7 +483,6 @@ void QAbstractItemViewPrivate::disconnectAll()
 */
 
 /*!
-    \since 4.2
     \enum QAbstractItemView::ScrollMode
 
     Describes how the scrollbar should behave. When setting the scroll mode
@@ -912,8 +911,6 @@ QVariant QAbstractItemView::inputMethodQuery(Qt::InputMethodQuery query) const
 }
 
 /*!
-    \since 4.2
-
     Sets the given item \a delegate used by this view and model for the given
     \a row. All items on \a row will be drawn and managed by \a delegate
     instead of using the default delegate (i.e., itemDelegate()).
@@ -950,8 +947,6 @@ void QAbstractItemView::setItemDelegateForRow(int row, QAbstractItemDelegate *de
 }
 
 /*!
-   \since 4.2
-
    Returns the item delegate used by this view and model for the given \a row,
    or \nullptr if no delegate has been assigned. You can call itemDelegate()
    to get a pointer to the current delegate for a given index.
@@ -965,8 +960,6 @@ QAbstractItemDelegate *QAbstractItemView::itemDelegateForRow(int row) const
 }
 
 /*!
-    \since 4.2
-
     Sets the given item \a delegate used by this view and model for the given
     \a column. All items on \a column will be drawn and managed by \a delegate
     instead of using the default delegate (i.e., itemDelegate()).
@@ -1002,8 +995,6 @@ void QAbstractItemView::setItemDelegateForColumn(int column, QAbstractItemDelega
 }
 
 /*!
-    \since 4.2
-
     Returns the item delegate used by this view and model for the given \a
     column.  You can call itemDelegate() to get a pointer to the current delegate
     for a given index.
@@ -1287,7 +1278,6 @@ QAbstractItemView::EditTriggers QAbstractItemView::editTriggers() const
 }
 
 /*!
-    \since 4.2
     \property QAbstractItemView::verticalScrollMode
     \brief how the view scrolls its contents in the vertical direction
 
@@ -1326,7 +1316,6 @@ void QAbstractItemView::resetVerticalScrollMode()
 }
 
 /*!
-    \since 4.2
     \property QAbstractItemView::horizontalScrollMode
     \brief how the view scrolls its contents in the horizontal direction
 
@@ -1364,7 +1353,6 @@ void QAbstractItemView::resetHorizontalScrollMode()
 
 #if QT_CONFIG(draganddrop)
 /*!
-    \since 4.2
     \property QAbstractItemView::dragDropOverwriteMode
     \brief the view's drag and drop behavior
 
@@ -1424,7 +1412,6 @@ bool QAbstractItemView::hasAutoScroll() const
 }
 
 /*!
-    \since 4.4
     \property QAbstractItemView::autoScrollMargin
     \brief the size of the area when auto scrolling is triggered
 
@@ -1509,7 +1496,6 @@ bool QAbstractItemView::dragEnabled() const
 }
 
 /*!
-    \since 4.2
     \enum QAbstractItemView::DragDropMode
 
     Describes the various drag and drop events the view can act upon.
@@ -1532,7 +1518,6 @@ bool QAbstractItemView::dragEnabled() const
     \property QAbstractItemView::dragDropMode
     \brief the drag and drop event the view will act upon
 
-    \since 4.2
     \sa showDropIndicator, dragDropOverwriteMode
 */
 void QAbstractItemView::setDragDropMode(DragDropMode behavior)
@@ -1573,7 +1558,6 @@ QAbstractItemView::DragDropMode QAbstractItemView::dragDropMode() const
     If the property is not set, the drop action is CopyAction when the supported
     actions support CopyAction.
 
-    \since 4.6
     \sa showDropIndicator, dragDropOverwriteMode
 */
 void QAbstractItemView::setDefaultDropAction(Qt::DropAction dropAction)
@@ -2701,8 +2685,6 @@ void QAbstractItemView::inputMethodEvent(QInputMethodEvent *event)
 
 
 /*!
-    \since 4.1
-
     Returns the position of the drop indicator in relation to the closest item.
 */
 QAbstractItemView::DropIndicatorPosition QAbstractItemView::dropIndicatorPosition() const
@@ -2867,8 +2849,6 @@ void QAbstractItemView::updateEditorGeometries()
 }
 
 /*!
-    \since 4.4
-
     Updates the geometry of the child widgets of the view.
 */
 void QAbstractItemView::updateGeometries()
@@ -3275,8 +3255,6 @@ bool QAbstractItemView::isPersistentEditorOpen(const QModelIndex &index) const
 }
 
 /*!
-    \since 4.1
-
     Sets the given \a widget on the item at the given \a index, passing the
     ownership of the widget to the viewport.
 
@@ -3328,8 +3306,6 @@ void QAbstractItemView::setIndexWidget(const QModelIndex &index, QWidget *widget
 }
 
 /*!
-    \since 4.1
-
     Returns the widget for the item at the given \a index.
 */
 QWidget* QAbstractItemView::indexWidget(const QModelIndex &index) const
@@ -3343,8 +3319,6 @@ QWidget* QAbstractItemView::indexWidget(const QModelIndex &index) const
 }
 
 /*!
-    \since 4.1
-
     Scrolls the view to the top.
 
     \sa scrollTo(), scrollToBottom()
@@ -3355,8 +3329,6 @@ void QAbstractItemView::scrollToTop()
 }
 
 /*!
-    \since 4.1
-
     Scrolls the view to the bottom.
 
     \sa scrollTo(), scrollToTop()
@@ -3372,8 +3344,6 @@ void QAbstractItemView::scrollToBottom()
 }
 
 /*!
-    \since 4.3
-
     Updates the area occupied by the given \a index.
 
 */
@@ -3965,8 +3935,6 @@ void QAbstractItemView::executeDelayedItemsLayout()
 }
 
 /*!
-    \since 4.1
-
     Marks the given \a region as dirty and schedules it to be updated.
     You only need to call this function if you are implementing
     your own view subclass.

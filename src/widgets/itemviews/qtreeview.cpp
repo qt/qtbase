@@ -306,7 +306,6 @@ void QTreeView::setHeader(QHeaderView *header)
 /*!
   \property QTreeView::autoExpandDelay
   \brief The delay time before items in a tree are opened during a drag and drop operation.
-  \since 4.3
 
   This property holds the amount of time in milliseconds that the user must wait over
   a node before that node will automatically open or close.  If the time is
@@ -442,7 +441,6 @@ void QTreeView::setItemsExpandable(bool enable)
 
 /*!
   \property QTreeView::expandsOnDoubleClick
-  \since 4.4
   \brief whether the items can be expanded by double-clicking.
 
   This property holds whether the user can expand and collapse items
@@ -483,8 +481,6 @@ int QTreeView::columnWidth(int column) const
 }
 
 /*!
-  \since 4.2
-
   Sets the width of the given \a column to the \a width specified.
 
   \sa columnWidth(), resizeColumnToContents()
@@ -532,7 +528,6 @@ void QTreeView::setColumnHidden(int column, bool hide)
 /*!
   \property QTreeView::headerHidden
   \brief whether the header is shown or not.
-  \since 4.4
 
   If this property is \c true, the header is not shown otherwise it is.
   The default value is false.
@@ -589,8 +584,6 @@ void QTreeView::setRowHidden(int row, const QModelIndex &parent, bool hide)
 }
 
 /*!
-  \since 4.3
-
   Returns \c true if the item in first column in the given \a row
   of the \a parent is spanning all the columns; otherwise returns \c false.
 
@@ -606,8 +599,6 @@ bool QTreeView::isFirstColumnSpanned(int row, const QModelIndex &parent) const
 }
 
 /*!
-  \since 4.3
-
   If \a span is true the item in the first column in the \a row
   with the given \a parent is set to span all columns, otherwise all items
   on the \a row are shown.
@@ -817,7 +808,6 @@ void QTreeView::setExpanded(const QModelIndex &index, bool expanded)
 }
 
 /*!
-    \since 4.2
     \property QTreeView::sortingEnabled
     \brief whether sorting is enabled
 
@@ -858,7 +848,6 @@ bool QTreeView::isSortingEnabled() const
 }
 
 /*!
-    \since 4.2
     \property QTreeView::animated
     \brief whether animations are enabled
 
@@ -883,7 +872,6 @@ bool QTreeView::isAnimated() const
 }
 
 /*!
-    \since 4.2
     \property QTreeView::allColumnsShowFocus
     \brief whether items should show keyboard focus using all columns
 
@@ -911,7 +899,6 @@ bool QTreeView::allColumnsShowFocus() const
 /*!
     \property QTreeView::wordWrap
     \brief the item text word-wrapping policy
-    \since 4.3
 
     If this property is \c true then the item text is wrapped where
     necessary at word-breaks; otherwise it is not wrapped at all.
@@ -1504,7 +1491,6 @@ void QTreeViewPrivate::adjustViewOptionsForIndex(QStyleOptionViewItem *option, c
 
 
 /*!
-  \since 4.2
   Draws the part of the tree intersecting the given \a region using the specified
   \a painter.
 
@@ -2611,8 +2597,6 @@ void QTreeView::rowsAboutToBeRemoved(const QModelIndex &parent, int start, int e
 }
 
 /*!
-    \since 4.1
-
     Informs the view that the rows from the \a start row to the \a end row
     inclusive have been removed from the given \a parent model item.
 */
@@ -2659,8 +2643,6 @@ void QTreeView::resizeColumnToContents(int column)
 }
 
 /*!
-  \since 4.2
-
   Sorts the model by the values in the given \a column and \a order.
 
   \a column may be -1, in which case no sort indicator will be shown
@@ -2728,7 +2710,6 @@ QSize QTreeView::viewportSizeHint() const
 }
 
 /*!
-  \since 4.2
   Expands all expandable items.
 
   \note This function will not try to \l{QAbstractItemModel::fetchMore}{fetch more}
@@ -2798,8 +2779,6 @@ void QTreeView::expandRecursively(const QModelIndex &index, int depth)
 }
 
 /*!
-  \since 4.2
-
   Collapses all expanded items.
 
   \sa expandAll(), expand(), collapse(), setExpanded()
@@ -2822,7 +2801,6 @@ void QTreeView::collapseAll()
 }
 
 /*!
-  \since 4.3
   Expands all expandable items to the given \a depth.
 
   \note This function will not try to \l{QAbstractItemModel::fetchMore}{fetch more}
@@ -3081,7 +3059,6 @@ int QTreeView::indexRowSizeHint(const QModelIndex &index) const
 }
 
 /*!
-    \since 4.3
     Returns the height of the row indicated by the given \a index.
     \sa indexRowSizeHint()
 */

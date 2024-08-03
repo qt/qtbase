@@ -18,7 +18,6 @@
 QT_BEGIN_NAMESPACE
 
 /*!
-    \since 4.3
     \class QColumnView
     \brief The QColumnView class provides a model/view implementation of a column view.
     \ingroup model-view
@@ -757,7 +756,6 @@ QAbstractItemView *QColumnView::createColumn(const QModelIndex &index)
     alternatingRowColors(). This can be useful when reimplementing
     createColumn().
 
-    \since 4.4
     \sa createColumn()
  */
 void QColumnView::initializeColumn(QAbstractItemView *column) const

@@ -216,7 +216,6 @@ void QDataWidgetMapperPrivate::modelDestroyed()
     \class QDataWidgetMapper
     \brief The QDataWidgetMapper class provides mapping between a section
     of a data model to widgets.
-    \since 4.2
     \ingroup model-view
     \ingroup advanced
     \inmodule QtWidgets
@@ -463,8 +462,6 @@ void QDataWidgetMapper::addMapping(QWidget *widget, int section)
 }
 
 /*!
-  \since 4.3
-
   Essentially the same as addMapping(), but adds the possibility to specify
   the property to use specifying \a propertyName.
 
@@ -515,7 +512,6 @@ int QDataWidgetMapper::mappedSection(QWidget *widget) const
 }
 
 /*!
-  \since 4.3
   Returns the name of the property that is used when mapping
   data to the given \a widget.
 

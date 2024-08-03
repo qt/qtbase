@@ -928,7 +928,6 @@ Qt::DropActions QTableModel::supportedDropActions() const
 */
 
 /*!
-    \since 4.1
     \fn int QTableWidgetSelectionRange::rowCount() const
 
     Returns the number of rows in the range.
@@ -939,7 +938,6 @@ Qt::DropActions QTableModel::supportedDropActions() const
 */
 
 /*!
-    \since 4.1
     \fn int QTableWidgetSelectionRange::columnCount() const
 
     Returns the number of columns in the range.
@@ -996,7 +994,6 @@ Qt::DropActions QTableModel::supportedDropActions() const
 
 /*!
   \fn int QTableWidgetItem::row() const
-  \since 4.2
 
   Returns the row of the item in the table.
   If the item is not in a table, this function will return -1.
@@ -1006,7 +1003,6 @@ Qt::DropActions QTableModel::supportedDropActions() const
 
 /*!
   \fn int QTableWidgetItem::column() const
-  \since 4.2
 
   Returns the column of the item in the table.
   If the item is not in a table, this function will return -1.
@@ -1016,14 +1012,12 @@ Qt::DropActions QTableModel::supportedDropActions() const
 
 /*!
   \fn QSize QTableWidgetItem::sizeHint() const
-  \since 4.1
 
   Returns the size hint set for the table item.
 */
 
 /*!
   \fn void QTableWidgetItem::setSizeHint(const QSize &size)
-  \since 4.1
 
   Sets the size hint for the table item to be \a size.
   If no size hint is set or \a size is invalid, the item
@@ -1052,7 +1046,6 @@ Qt::DropActions QTableModel::supportedDropActions() const
 
 /*!
   \fn bool QTableWidgetItem::isSelected() const
-  \since 4.2
 
   Returns \c true if the item is selected, otherwise returns \c false.
 
@@ -1071,7 +1064,6 @@ bool QTableWidgetItem::isSelected() const
 
 /*!
   \fn void QTableWidgetItem::setSelected(bool select)
-  \since 4.2
 
   Sets the selected state of the item to \a select.
 
@@ -1213,7 +1205,6 @@ void QTableWidgetItem::setFlags(Qt::ItemFlags aflags)
 
 /*!
     \fn QBrush QTableWidgetItem::background() const
-    \since 4.2
 
     Returns the brush used to render the item's background.
 
@@ -1222,7 +1213,6 @@ void QTableWidgetItem::setFlags(Qt::ItemFlags aflags)
 
 /*!
     \fn void QTableWidgetItem::setBackground(const QBrush &brush)
-    \since 4.2
 
     Sets the item's background brush to the specified \a brush.
     Setting a default-constructed brush will let the view use the
@@ -1233,7 +1223,6 @@ void QTableWidgetItem::setFlags(Qt::ItemFlags aflags)
 
 /*!
     \fn QBrush QTableWidgetItem::foreground() const
-    \since 4.2
 
     Returns the brush used to render the item's foreground (e.g. text).
 
@@ -1242,7 +1231,6 @@ void QTableWidgetItem::setFlags(Qt::ItemFlags aflags)
 
 /*!
     \fn void QTableWidgetItem::setForeground(const QBrush &brush)
-    \since 4.2
 
     Sets the item's foreground brush to the specified \a brush.
     Setting a default-constructed brush will let the view use the
@@ -1488,8 +1476,6 @@ QDataStream &operator<<(QDataStream &out, const QTableWidgetItem &item)
 #endif // QT_NO_DATASTREAM
 
 /*!
-    \since 4.1
-
     Constructs a copy of \a other. Note that type() and tableWidget()
     are not copied.
 
@@ -1766,7 +1752,6 @@ void QTableWidgetPrivate::dataChanged(const QModelIndex &topLeft,
 
 
 /*!
-  \since 4.1
   \fn void QTableWidget::cellPressed(int row, int column)
 
   This signal is emitted whenever a cell in the table is pressed.
@@ -1774,7 +1759,6 @@ void QTableWidgetPrivate::dataChanged(const QModelIndex &topLeft,
 */
 
 /*!
-  \since 4.1
   \fn void QTableWidget::cellClicked(int row, int column)
 
   This signal is emitted whenever a cell in the table is clicked.
@@ -1782,7 +1766,6 @@ void QTableWidgetPrivate::dataChanged(const QModelIndex &topLeft,
 */
 
 /*!
-  \since 4.1
   \fn void QTableWidget::cellDoubleClicked(int row, int column)
 
   This signal is emitted whenever a cell in the table is double
@@ -1791,7 +1774,6 @@ void QTableWidgetPrivate::dataChanged(const QModelIndex &topLeft,
 */
 
 /*!
-  \since 4.1
   \fn void QTableWidget::cellActivated(int row, int column)
 
   This signal is emitted when the cell specified  by \a row and \a column
@@ -1799,7 +1781,6 @@ void QTableWidgetPrivate::dataChanged(const QModelIndex &topLeft,
 */
 
 /*!
-  \since 4.1
   \fn void QTableWidget::cellEntered(int row, int column)
 
   This signal is emitted when the mouse cursor enters a cell. The
@@ -1810,7 +1791,6 @@ void QTableWidgetPrivate::dataChanged(const QModelIndex &topLeft,
 */
 
 /*!
-  \since 4.1
   \fn void QTableWidget::cellChanged(int row, int column)
 
   This signal is emitted whenever the data of the item in the cell
@@ -1818,7 +1798,6 @@ void QTableWidgetPrivate::dataChanged(const QModelIndex &topLeft,
 */
 
 /*!
-  \since 4.1
   \fn void QTableWidget::currentCellChanged(int currentRow, int currentColumn, int previousRow, int previousColumn)
 
   This signal is emitted whenever the current cell changes. The cell
@@ -1828,7 +1807,6 @@ void QTableWidgetPrivate::dataChanged(const QModelIndex &topLeft,
 */
 
 /*!
-  \since 4.3
   \fn void QTableWidget::removeCellWidget(int row, int column)
 
   Removes the widget set on the cell indicated by \a row and \a column.
@@ -2042,7 +2020,6 @@ void QTableWidget::setVerticalHeaderItem(int row, QTableWidgetItem *item)
 }
 
 /*!
-  \since 4.1
     Removes the vertical header item at \a row from the header without deleting it.
 */
 QTableWidgetItem *QTableWidget::takeVerticalHeaderItem(int row)
@@ -2081,7 +2058,6 @@ void QTableWidget::setHorizontalHeaderItem(int column, QTableWidgetItem *item)
 }
 
 /*!
-  \since 4.1
     Removes the horizontal header item at \a column from the header without deleting it.
 */
 QTableWidgetItem *QTableWidget::takeHorizontalHeaderItem(int column)
@@ -2175,8 +2151,6 @@ void QTableWidget::setCurrentItem(QTableWidgetItem *item)
 }
 
 /*!
-  \since 4.4
-
   Sets the current item to be \a item, using the given \a command.
 
   \sa currentItem(), setCurrentCell()
@@ -2188,8 +2162,6 @@ void QTableWidget::setCurrentItem(QTableWidgetItem *item, QItemSelectionModel::S
 }
 
 /*!
-    \since 4.1
-
     Sets the current cell to be the cell at position (\a row, \a
     column).
 
@@ -2204,8 +2176,6 @@ void QTableWidget::setCurrentCell(int row, int column)
 }
 
 /*!
-  \since 4.4
-
   Sets the current cell to be the cell at position (\a row, \a
   column), using the given \a command.
 
@@ -2298,8 +2268,6 @@ bool QTableWidget::isPersistentEditorOpen(QTableWidgetItem *item) const
 }
 
 /*!
-    \since 4.1
-
     Returns the widget displayed in the cell in the given \a row and \a column.
 
     \note The table takes ownership of the widget.
@@ -2313,8 +2281,6 @@ QWidget *QTableWidget::cellWidget(int row, int column) const
 }
 
 /*!
-    \since 4.1
-
     Sets the given \a widget to be displayed in the cell in the given \a row
     and \a column, passing the ownership of the widget to the table.
 
@@ -2556,8 +2522,6 @@ void QTableWidget::clear()
 }
 
 /*!
-    \since 4.2
-
     Removes all items not in the headers from the view.
     This will also remove all selections.
     The table dimensions stay the same.

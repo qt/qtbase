@@ -516,7 +516,6 @@ Qt::DropActions QListModel::supportedDropActions() const
 
 /*!
     \fn void QListWidgetItem::setHidden(bool hide)
-    \since 4.2
 
     Hides the item if \a hide is true; otherwise shows the item.
 
@@ -525,7 +524,6 @@ Qt::DropActions QListModel::supportedDropActions() const
 
 /*!
     \fn bool QListWidgetItem::isHidden() const
-    \since 4.2
 
     Returns \c true if the item is hidden; otherwise returns \c false.
 
@@ -727,8 +725,6 @@ void QListWidgetItem::write(QDataStream &out) const
 #endif // QT_NO_DATASTREAM
 
 /*!
-    \since 4.1
-
     Constructs a copy of \a other. Note that type() and listWidget() are not
     copied.
 
@@ -877,7 +873,6 @@ QDataStream &operator>>(QDataStream &in, QListWidgetItem &item)
 
 /*!
     \fn QBrush QListWidgetItem::background() const
-    \since 4.2
 
     Returns the brush used to display the list item's background.
 
@@ -886,7 +881,6 @@ QDataStream &operator>>(QDataStream &in, QListWidgetItem &item)
 
 /*!
     \fn QBrush QListWidgetItem::foreground() const
-    \since 4.2
 
     Returns the brush used to display the list item's foreground (e.g. text).
 
@@ -903,14 +897,12 @@ QDataStream &operator>>(QDataStream &in, QListWidgetItem &item)
 
 /*!
     \fn QSize QListWidgetItem::sizeHint() const
-    \since 4.1
 
     Returns the size hint set for the list item.
 */
 
 /*!
     \fn void QListWidgetItem::setSizeHint(const QSize &size)
-    \since 4.1
 
     Sets the size hint for the list item to be \a size.
     If no size hint is set or \a size is invalid, the item
@@ -919,7 +911,6 @@ QDataStream &operator>>(QDataStream &in, QListWidgetItem &item)
 
 /*!
     \fn void QListWidgetItem::setSelected(bool select)
-    \since 4.2
 
     Sets the selected state of the item to \a select.
 
@@ -946,7 +937,6 @@ void QListWidgetItem::setSelected(bool select)
 
 /*!
     \fn bool QListWidgetItem::isSelected() const
-    \since 4.2
 
     Returns \c true if the item is selected; otherwise returns \c false.
 
@@ -1050,7 +1040,6 @@ void QListWidgetItem::setFlags(Qt::ItemFlags aflags)
 
 /*!
     \fn void QListWidgetItem::setBackground(const QBrush &brush)
-    \since 4.2
 
     Sets the background brush of the list item to the given \a brush.
     Setting a default-constructed brush will let the view use the
@@ -1061,7 +1050,6 @@ void QListWidgetItem::setFlags(Qt::ItemFlags aflags)
 
 /*!
     \fn void QListWidgetItem::setForeground(const QBrush &brush)
-    \since 4.2
 
     Sets the foreground brush of the list item to the given \a brush.
     Setting a default-constructed brush will let the view use the
@@ -1349,8 +1337,6 @@ void QListWidgetPrivate::dataChanged(const QModelIndex &topLeft,
 */
 
 /*!
-    \since 4.3
-
     \fn void QListWidget::removeItemWidget(QListWidgetItem *item)
 
     Removes the widget set on the given \a item.
@@ -1523,7 +1509,6 @@ void QListWidget::setCurrentItem(QListWidgetItem *item)
 }
 
 /*!
-    \since 4.4
     Set the current item to \a item, using the given \a command.
 */
 void QListWidget::setCurrentItem(QListWidgetItem *item, QItemSelectionModel::SelectionFlags command)
@@ -1556,8 +1541,6 @@ void QListWidget::setCurrentRow(int row)
 }
 
 /*!
-    \since 4.4
-
     Sets the current row to be the given \a row, using the given \a command,
 */
 void QListWidget::setCurrentRow(int row, QItemSelectionModel::SelectionFlags command)
@@ -1610,7 +1593,6 @@ void QListWidget::sortItems(Qt::SortOrder order)
 }
 
 /*!
-    \since 4.2
     \property QListWidget::sortingEnabled
     \brief whether sorting is enabled
 
@@ -1690,8 +1672,6 @@ bool QListWidget::isPersistentEditorOpen(QListWidgetItem *item) const
 }
 
 /*!
-    \since 4.1
-
     Returns the widget displayed in the given \a item.
 
     \sa setItemWidget(), removeItemWidget()
@@ -1704,8 +1684,6 @@ QWidget *QListWidget::itemWidget(QListWidgetItem *item) const
 }
 
 /*!
-    \since 4.1
-
     Sets the \a widget to be displayed in the given \a item.
 
     This function should only be used to display static content in the place of

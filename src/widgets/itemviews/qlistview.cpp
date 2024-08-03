@@ -132,7 +132,6 @@ extern bool qt_sendSpontaneousEvent(QObject *receiver, QEvent *event);
 */
 
 /*!
-  \since 4.2
   \fn void QListView::indexesMoved(const QModelIndexList &indexes)
 
   This signal is emitted when the specified \a indexes are moved in the view.
@@ -355,8 +354,6 @@ int QListView::spacing() const
     set to \l Batched.
 
     The default value is 100.
-
-    \since 4.2
 */
 
 void QListView::setBatchSize(int batchSize)
@@ -1316,8 +1313,6 @@ QRect QListView::rectForIndex(const QModelIndex &index) const
 }
 
 /*!
-    \since 4.1
-
     Sets the contents position of the item at \a index in the model to the given
     \a position.
     If the list view's movement mode is Static or its view mode is ListView,
@@ -1644,7 +1639,6 @@ int QListView::modelColumn() const
 /*!
     \property QListView::uniformItemSizes
     \brief whether all items in the listview have the same size
-    \since 4.1
 
     This property should only be set to true if it is guaranteed that all items
     in the view have the same size. This enables the view to do some
@@ -1667,7 +1661,6 @@ bool QListView::uniformItemSizes() const
 /*!
     \property QListView::wordWrap
     \brief the item text word-wrapping policy
-    \since 4.2
 
     If this property is \c true then the item text is wrapped where
     necessary at word-breaks; otherwise it is not wrapped at all.
@@ -1696,7 +1689,6 @@ bool QListView::wordWrap() const
 /*!
     \property QListView::selectionRectVisible
     \brief if the selection rectangle should be visible
-    \since 4.3
 
     If this property is \c true then the selection rectangle is visible;
     otherwise it will be hidden.

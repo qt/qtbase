@@ -144,7 +144,6 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \fn void QAbstractItemDelegate::sizeHintChanged(const QModelIndex &index)
-    \since 4.4
 
     This signal must be emitted when the sizeHint() of \a index changed.
 
@@ -312,7 +311,6 @@ bool QAbstractItemDelegate::editorEvent(QEvent *,
 }
 
 /*!
-    \since 4.3
     Whenever a help event occurs, this function is called with the \a event
     \a view \a option and the \a index that corresponds to the item where the
     event occurs.

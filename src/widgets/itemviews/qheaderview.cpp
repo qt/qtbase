@@ -203,7 +203,6 @@ static const int maxSizeSection = 1048575; // since section size is in a bitfiel
 
 /*!
     \fn void QHeaderView::sectionEntered(int logicalIndex)
-    \since 4.3
 
     This signal is emitted when the cursor moves over the section and the left
     mouse button is pressed. The section's logical index is specified by
@@ -243,7 +242,6 @@ static const int maxSizeSection = 1048575; // since section size is in a bitfiel
 /*!
     \fn void QHeaderView::sortIndicatorChanged(int logicalIndex,
     Qt::SortOrder order)
-    \since 4.3
 
     This signal is emitted when the section containing the sort indicator or
     the order indicated is changed. The section's logical index is specified
@@ -254,7 +252,6 @@ static const int maxSizeSection = 1048575; // since section size is in a bitfiel
 
 /*!
     \fn void QHeaderView::geometriesChanged()
-    \since 4.2
 
     This signal is emitted when the header's geometries have changed.
 */
@@ -421,7 +418,6 @@ void QHeaderView::setOffset(int newOffset)
 }
 
 /*!
-    \since 4.2
     Sets the offset to the start of the section at the given \a visualSectionNumber.
     \a visualSectionNumber is the actual visible section when hiddenSections are
     not considered. That is not always the same as visualIndex().
@@ -438,7 +434,6 @@ void QHeaderView::setOffsetToSectionPosition(int visualSectionNumber)
 }
 
 /*!
-    \since 4.2
     Sets the offset to make the last section visible.
 
     \sa setOffset(), sectionPosition(), setOffsetToSectionPosition()
@@ -752,7 +747,6 @@ void QHeaderView::moveSection(int from, int to)
 }
 
 /*!
-    \since 4.2
     Swaps the section at visual index \a first with the section at visual
     index \a second.
 
@@ -940,8 +934,6 @@ bool QHeaderView::isSectionHidden(int logicalIndex) const
 }
 
 /*!
-    \since 4.1
-
     Returns the number of sections in the header that has been hidden.
 
     \sa setSectionHidden(), isSectionHidden()
@@ -1279,8 +1271,6 @@ int QHeaderView::resizeContentsPrecision() const
 }
 
 /*!
-    \since 4.1
-
     Returns the number of sections that are set to resize mode stretch. In
     views, this can be used to see if the headerview needs to resize the
     sections when the view's geometry changes.
@@ -1468,7 +1458,6 @@ void QHeaderView::setStretchLastSection(bool stretch)
 }
 
 /*!
-    \since 4.2
     \property QHeaderView::cascadingSectionResizes
     \brief whether interactive resizing will be cascaded to the following
     sections once the section being resized by the user has reached its
@@ -1531,7 +1520,6 @@ void QHeaderView::resetDefaultSectionSize()
 }
 
 /*!
-    \since 4.2
     \property QHeaderView::minimumSectionSize
     \brief the minimum size of the header sections.
 
@@ -1635,7 +1623,6 @@ void QHeaderView::setMaximumSectionSize(int size)
 
 
 /*!
-    \since 4.1
     \property QHeaderView::defaultAlignment
     \brief the default alignment of the text in each header section
 */
@@ -1678,8 +1665,6 @@ bool QHeaderView::sectionsMoved() const
 }
 
 /*!
-    \since 4.1
-
     Returns \c true if sections in the header has been hidden; otherwise returns
     false;
 
@@ -1693,8 +1678,6 @@ bool QHeaderView::sectionsHidden() const
 
 #ifndef QT_NO_DATASTREAM
 /*!
-    \since 4.3
-
     Saves the current state of this header view.
 
     To restore the saved state, pass the return value to restoreState().
@@ -1714,7 +1697,6 @@ QByteArray QHeaderView::saveState() const
 }
 
 /*!
-    \since 4.3
     Restores the \a state of this header view.
     This function returns \c true if the state was restored; otherwise returns
     false.
@@ -1803,7 +1785,6 @@ void QHeaderView::headerDataChanged(Qt::Orientation orientation, int logicalFirs
 
 /*!
     \internal
-    \since 4.2
 
     Updates the section specified by the given \a logicalIndex.
 */
