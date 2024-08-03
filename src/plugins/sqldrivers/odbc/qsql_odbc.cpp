@@ -429,16 +429,15 @@ static QVariant getStringDataImpl(SQLHANDLE hStmt, SQLUSMALLINT column, qsizetyp
             // if SQL_SUCCESS_WITH_INFO is returned, indicating that
             // more data can be fetched, the length indicator does NOT
             // contain the number of bytes returned - it contains the
-            // total number of bytes that CAN be fetched
+            // total number of bytes that were transferred to our buffer
             const qsizetype rSize = (r == SQL_SUCCESS_WITH_INFO)
                     ? buf.size()
                     : qsizetype(lengthIndicator / sizeof(CT));
             fieldVal += fromSQLTCHAR<QVarLengthArray<CT>, sizeof(CT)>(buf, rSize);
-            // lengthIndicator does not contain the termination character
-            if (lengthIndicator < SQLLEN((buf.size() - 1) * sizeof(CT))) {
-                // workaround for Drivermanagers that don't return SQL_NO_DATA
+            // when we got SQL_SUCCESS_WITH_INFO then there is more data to fetch,
+            // otherwise we are done
+            if (r == SQL_SUCCESS)
                 break;
-            }
         } else if (r == SQL_NO_DATA) {
             break;
         } else {
