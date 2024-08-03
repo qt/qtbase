@@ -181,8 +181,10 @@ Qt::TimerId QChronoTimer::id() const
 
     Starts or restarts the timer with the timeout specified in \l interval.
 
+//! [stop-restart-timer]
     If the timer is already running, it will be
     \l{QChronoTimer::stop()}{stopped} and restarted.
+//! [stop-restart-timer]
 
     If \l singleShot is true, the timer will be activated only once.
 */

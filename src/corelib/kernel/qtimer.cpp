@@ -202,10 +202,14 @@ Qt::TimerId QTimer::id() const
 
     Starts or restarts the timer with the timeout specified in \l interval.
 
+//! [stop-restart-timer]
     If the timer is already running, it will be
     \l{QTimer::stop()}{stopped} and restarted.
+//! [stop-restart-timer]
 
+//! [singleshot-activation]
     If \l singleShot is true, the timer will be activated only once.
+//! [singleshot-activation]
 */
 void QTimer::start()
 {
@@ -224,11 +228,10 @@ void QTimer::start()
     Starts or restarts the timer with a timeout interval of \a msec
     milliseconds.
 
-    If the timer is already running, it will be
-    \l{QTimer::stop()}{stopped} and restarted.
+    \include qtimer.cpp stop-restart-timer
 
-    If \l singleShot is true, the timer will be activated only once. This is
-    equivalent to:
+    \include qtimer.cpp singleshot-activation
+    This is equivalent to:
 
     \code
         timer.setInterval(msec);
@@ -521,11 +524,10 @@ void QTimer::singleShot(std::chrono::milliseconds msec, Qt::TimerType timerType,
 
     Starts or restarts the timer with a timeout of duration \a msec milliseconds.
 
-    If the timer is already running, it will be
-    \l{QTimer::stop()}{stopped} and restarted.
+    \include qtimer.cpp stop-restart-timer
 
-    If \l singleShot is true, the timer will be activated only once. This is
-    equivalent to:
+    \include qtimer.cpp singleshot-activation
+    This is equivalent to:
 
     \code
         timer.setInterval(msec);
