@@ -36,14 +36,19 @@ struct QIOSSwiftApplication: App {
 public struct QIOSLayerConfiguration: CompositorLayerConfiguration {
     public func makeConfiguration(capabilities: LayerRenderer.Capabilities,
                                   configuration: inout LayerRenderer.Configuration) {
-        // Use reflection to pull out underlying C handles
-        // FIXME: Use proper bridging APIs when available
-        let capabilitiesMirror = Mirror(reflecting: capabilities)
-        let configurationMirror = Mirror(reflecting: configuration)
-        QIOSIntegration.instance().configureCompositorLayer(
-            capabilitiesMirror.descendant("c_capabilities") as? cp_layer_renderer_capabilities_t,
-            configurationMirror.descendant("box", "value") as? cp_layer_renderer_configuration_t
-        )
+        if #available(visionOS 2, *) {
+            QIOSIntegration.instance().configureCompositorLayer(
+                capabilities as cp_layer_renderer_capabilities_t,
+                configuration as cp_layer_renderer_configuration_t)
+        } else {
+            // Use reflection to pull out underlying C handles
+            let capabilitiesMirror = Mirror(reflecting: capabilities)
+            let configurationMirror = Mirror(reflecting: configuration)
+            QIOSIntegration.instance().configureCompositorLayer(
+                capabilitiesMirror.descendant("c_capabilities") as? cp_layer_renderer_capabilities_t,
+                configurationMirror.descendant("box", "value") as? cp_layer_renderer_configuration_t
+            )
+        }
     }
 }
 
