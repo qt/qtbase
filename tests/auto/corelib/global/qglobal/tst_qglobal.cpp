@@ -16,6 +16,19 @@
 #include <limits>
 #include <QtCore/qxptype_traits.h>
 
+// Check that <type_traits> works for q(u)int128; if any of these trigger,
+// adjust the ifdef'ery in qtypes.h to exclude builds with broken lib support.
+#ifdef QT_SUPPORTS_INT128
+static_assert(std::is_signed_v<qint128>);
+static_assert(std::is_integral_v<qint128>);
+static_assert(std::is_integral_v<quint128>);
+static_assert(std::numeric_limits<qint128>::is_signed);
+static_assert(std::numeric_limits<qint128>::is_specialized);
+static_assert(std::numeric_limits<quint128>::is_specialized);
+static_assert((std::numeric_limits<qint128>::max)() == Q_INT128_MAX);
+static_assert((std::numeric_limits<quint128>::max)() == Q_UINT128_MAX);
+#endif // QT_SUPPORTS_INT128
+
 template <typename T>
 using AdlSwappableTest = decltype(swap(std::declval<T&>(), std::declval<T&>()));
 
