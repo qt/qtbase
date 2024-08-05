@@ -79,7 +79,7 @@ public:
 
     friend constexpr bool operator!=(partial_ordering lhs,
                                      QtPrivate::CompareAgainstLiteralZero) noexcept
-    { return lhs.isOrdered() && lhs.m_order != 0; }
+    { return !lhs.isOrdered() || lhs.m_order != 0; }
 
     friend constexpr bool operator< (partial_ordering lhs,
                                      QtPrivate::CompareAgainstLiteralZero) noexcept
@@ -104,7 +104,7 @@ public:
 
     friend constexpr bool operator!=(QtPrivate::CompareAgainstLiteralZero,
                                      partial_ordering rhs) noexcept
-    { return rhs.isOrdered() && 0 != rhs.m_order; }
+    { return !rhs.isOrdered() || 0 != rhs.m_order; }
 
     friend constexpr bool operator< (QtPrivate::CompareAgainstLiteralZero,
                                      partial_ordering rhs) noexcept
@@ -721,7 +721,7 @@ public:
 
     friend constexpr bool operator!=(QPartialOrdering lhs,
                                      QtPrivate::CompareAgainstLiteralZero) noexcept
-    { return lhs.isOrdered() && lhs.m_order != 0; }
+    { return !lhs.isOrdered() || lhs.m_order != 0; }
 
     friend constexpr bool operator< (QPartialOrdering lhs,
                                      QtPrivate::CompareAgainstLiteralZero) noexcept
@@ -746,7 +746,7 @@ public:
 
     friend constexpr bool operator!=(QtPrivate::CompareAgainstLiteralZero,
                                      QPartialOrdering rhs) noexcept
-    { return rhs.isOrdered() && 0 != rhs.m_order; }
+    { return !rhs.isOrdered() || 0 != rhs.m_order; }
 
     friend constexpr bool operator< (QtPrivate::CompareAgainstLiteralZero,
                                      QPartialOrdering rhs) noexcept
