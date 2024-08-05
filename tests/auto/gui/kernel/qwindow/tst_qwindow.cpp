@@ -608,6 +608,13 @@ void tst_QWindow::framePositioning_data()
 
 void tst_QWindow::framePositioning()
 {
+#ifdef Q_OS_ANDROID
+    QSKIP("Fails on Android. QTBUG-105201");
+#endif
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(
+                QPlatformIntegration::NonFullScreenWindows)) {
+        QSKIP("This platform does not support non-fullscreen windows");
+    }
     if (isPlatformWayland())
         QSKIP("Wayland: This fails. See QTBUG-68660.");
 
