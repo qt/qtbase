@@ -503,6 +503,13 @@ static_assert(sizeof(size_t) == sizeof(qsizetype)); // implied by the definition
 static_assert((std::is_same<qsizetype, qptrdiff>::value));
 static_assert(std::is_same_v<std::size_t, size_t>);
 
+#ifdef __SIZEOF_INT128__
+# ifndef QT_SUPPORTS_INT128
+#  error Qt needs to be compiled in a mode that enables INT128 \
+    if the compiler supports it in principle.
+# endif
+#endif
+
 // Check that our own typedefs are not broken.
 static_assert(sizeof(qint8) == 1, "Internal error, qint8 is misdefined");
 static_assert(sizeof(qint16)== 2, "Internal error, qint16 is misdefined");
