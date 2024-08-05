@@ -11,8 +11,8 @@
 # Variables:
 #   QT_ANDROID_JAR
 #       Location of the adroid sdk jar for java code
-#   QT_ANDROID_API_VERSION
-#       Android API version
+#   QT_ANDROID_API_USED_FOR_JAVA
+#       Android API version for building java code
 #
 
 if (NOT DEFINED ANDROID_SDK_ROOT)
@@ -24,19 +24,20 @@ if (NOT IS_DIRECTORY "${ANDROID_SDK_ROOT}")
 endif()
 
 # Get the Android SDK jar for an API version other than the one specified with
-# QT_ANDROID_API_VERSION.
+# QT_ANDROID_API_USED_FOR_JAVA.
 function(qt_get_android_sdk_jar_for_api api out_jar_location)
     set(jar_location "${ANDROID_SDK_ROOT}/platforms/${api}/android.jar")
     if (NOT EXISTS "${jar_location}")
-        message(WARNING "Could not locate Android SDK jar for api '${api}', defaulting to ${QT_ANDROID_API_VERSION}")
+        message(WARNING "Could not locate Android SDK jar for api '${api}', defaulting to ${QT_ANDROID_API_USED_FOR_JAVA}")
         set(${out_jar_location} ${QT_ANDROID_JAR} PARENT_SCOPE)
     else()
         set(${out_jar_location} ${jar_location} PARENT_SCOPE)
     endif()
 endfunction()
 
-# Minimum recommend android SDK api version
-set(QT_ANDROID_API_VERSION "android-34")
+# This variable specifies the API level used for building Java code, it can be the same as Qt for
+# Android's maximum supported Android version or higher.
+set(QT_ANDROID_API_USED_FOR_JAVA "android-34")
 
 function(qt_internal_sort_android_platforms out_var)
     if(CMAKE_VERSION GREATER_EQUAL 3.18)
@@ -83,22 +84,23 @@ if(android_platforms)
     qt_internal_get_android_platform_version(latest_platform_version
         "${android_platform_latest}")
     qt_internal_get_android_platform_version(required_platform_version
-        "${QT_ANDROID_API_VERSION}")
+        "${QT_ANDROID_API_USED_FOR_JAVA}")
 
     if("${latest_platform_version}" VERSION_GREATER "${required_platform_version}")
-        set(QT_ANDROID_API_VERSION ${android_platform_latest})
+        set(QT_ANDROID_API_USED_FOR_JAVA ${android_platform_latest})
     endif()
 endif()
 
-set(QT_ANDROID_JAR "${ANDROID_SDK_ROOT}/platforms/${QT_ANDROID_API_VERSION}/android.jar")
+set(QT_ANDROID_JAR "${ANDROID_SDK_ROOT}/platforms/${QT_ANDROID_API_USED_FOR_JAVA}/android.jar")
 if(NOT EXISTS "${QT_ANDROID_JAR}")
     message(FATAL_ERROR
         "No suitable Android SDK platform found in '${ANDROID_SDK_ROOT}/platforms'."
-        " Minimum version is ${QT_ANDROID_API_VERSION}"
+        " The minimum version required for building Java code is ${QT_ANDROID_API_USED_FOR_JAVA}"
     )
 endif()
 
-message(STATUS "Using Android SDK API ${QT_ANDROID_API_VERSION} from ${ANDROID_SDK_ROOT}/platforms")
+message(STATUS "Using Android SDK API ${QT_ANDROID_API_USED_FOR_JAVA} from "
+               "${ANDROID_SDK_ROOT}/platforms")
 
 # Locate Java
 include(UseJava)
