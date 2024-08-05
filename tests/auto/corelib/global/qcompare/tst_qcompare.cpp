@@ -53,21 +53,21 @@ void tst_QCompare::legacyPartialOrdering()
     static_assert(QPartialOrdering::Greater == QPartialOrdering::Greater);
 
     static_assert(!is_eq  (QPartialOrdering::Unordered));
-    static_assert(!is_neq (QPartialOrdering::Unordered));
+    static_assert( is_neq (QPartialOrdering::Unordered));
     static_assert(!is_lt  (QPartialOrdering::Unordered));
     static_assert(!is_lteq(QPartialOrdering::Unordered));
     static_assert(!is_gt  (QPartialOrdering::Unordered));
     static_assert(!is_gteq(QPartialOrdering::Unordered));
 
     static_assert(!(QPartialOrdering::Unordered == 0));
-    static_assert(!(QPartialOrdering::Unordered != 0));
+    static_assert( (QPartialOrdering::Unordered != 0));
     static_assert(!(QPartialOrdering::Unordered <  0));
     static_assert(!(QPartialOrdering::Unordered <= 0));
     static_assert(!(QPartialOrdering::Unordered >  0));
     static_assert(!(QPartialOrdering::Unordered >= 0));
 
     static_assert(!(0 == QPartialOrdering::Unordered));
-    static_assert(!(0 != QPartialOrdering::Unordered));
+    static_assert( (0 != QPartialOrdering::Unordered));
     static_assert(!(0 <  QPartialOrdering::Unordered));
     static_assert(!(0 <= QPartialOrdering::Unordered));
     static_assert(!(0 >  QPartialOrdering::Unordered));
@@ -225,21 +225,21 @@ void tst_QCompare::partialOrdering()
     static_assert(Qt::partial_ordering::greater == Qt::partial_ordering::greater);
 
     static_assert(!is_eq  (Qt::partial_ordering::unordered));
-    static_assert(!is_neq (Qt::partial_ordering::unordered));
+    static_assert( is_neq (Qt::partial_ordering::unordered));
     static_assert(!is_lt  (Qt::partial_ordering::unordered));
     static_assert(!is_lteq(Qt::partial_ordering::unordered));
     static_assert(!is_gt  (Qt::partial_ordering::unordered));
     static_assert(!is_gteq(Qt::partial_ordering::unordered));
 
     static_assert(!(Qt::partial_ordering::unordered == 0));
-    static_assert(!(Qt::partial_ordering::unordered != 0));
+    static_assert( (Qt::partial_ordering::unordered != 0));
     static_assert(!(Qt::partial_ordering::unordered <  0));
     static_assert(!(Qt::partial_ordering::unordered <= 0));
     static_assert(!(Qt::partial_ordering::unordered >  0));
     static_assert(!(Qt::partial_ordering::unordered >= 0));
 
     static_assert(!(0 == Qt::partial_ordering::unordered));
-    static_assert(!(0 != Qt::partial_ordering::unordered));
+    static_assert( (0 != Qt::partial_ordering::unordered));
     static_assert(!(0 <  Qt::partial_ordering::unordered));
     static_assert(!(0 <= Qt::partial_ordering::unordered));
     static_assert(!(0 >  Qt::partial_ordering::unordered));
@@ -849,32 +849,20 @@ void tst_QCompare::unorderedNeqLiteralZero()
     QVERIFY(0 != stdUnordered);
     QVERIFY(is_neq(stdUnordered));
 
-    QEXPECT_FAIL("", "QTBUG-127759", Continue);
     QCOMPARE_EQ(qtUnordered != 0, stdUnordered != 0);
-    QEXPECT_FAIL("", "QTBUG-127759", Continue);
     QCOMPARE_EQ(0 != qtUnordered, 0 != stdUnordered);
-    QEXPECT_FAIL("", "QTBUG-127759", Continue);
     QCOMPARE_EQ(is_neq(qtUnordered), is_neq(stdUnordered));
 
-    QEXPECT_FAIL("", "QTBUG-127759", Continue);
     QCOMPARE_EQ(qtLegacyUnordered != 0, stdUnordered != 0);
-    QEXPECT_FAIL("", "QTBUG-127759", Continue);
     QCOMPARE_EQ(0 != qtLegacyUnordered, 0 != stdUnordered);
-    QEXPECT_FAIL("", "QTBUG-127759", Continue);
     QCOMPARE_EQ(is_neq(qtLegacyUnordered), is_neq(stdUnordered));
 #endif
-    QEXPECT_FAIL("", "QTBUG-127759", Continue);
     QVERIFY(qtUnordered != 0);
-    QEXPECT_FAIL("", "QTBUG-127759", Continue);
     QVERIFY(0 != qtUnordered);
-    QEXPECT_FAIL("", "QTBUG-127759", Continue);
     QVERIFY(is_neq(qtUnordered));
 
-    QEXPECT_FAIL("", "QTBUG-127759", Continue);
     QVERIFY(qtLegacyUnordered != 0);
-    QEXPECT_FAIL("", "QTBUG-127759", Continue);
     QVERIFY(0 != qtLegacyUnordered);
-    QEXPECT_FAIL("", "QTBUG-127759", Continue);
     QVERIFY(is_neq(qtLegacyUnordered));
 }
 
