@@ -21,6 +21,12 @@
 
 QT_BEGIN_NAMESPACE
 
+#if defined(Q_CC_MSVC)
+#define Q_COMPARE_CAST_IMPLICIT explicit
+#else
+#define Q_COMPARE_CAST_IMPLICIT Q_IMPLICIT
+#endif // Q_CC_MSVC
+
 namespace QtPrivate {
 using CompareUnderlyingType = qint8;
 
@@ -370,6 +376,23 @@ public:
 #endif // __cpp_lib_bit_cast
     }
 
+    constexpr Q_COMPARE_CAST_IMPLICIT operator std::partial_ordering() const noexcept
+    {
+        static_assert(sizeof(*this) == sizeof(std::partial_ordering));
+#ifdef __cpp_lib_bit_cast
+        return std::bit_cast<std::partial_ordering>(*this);
+#else
+        using O = QtPrivate::Ordering;
+        using R = std::partial_ordering;
+        switch (m_order) {
+        case qToUnderlying(O::Less):       return R::less;
+        case qToUnderlying(O::Greater):    return R::greater;
+        case qToUnderlying(O::Equivalent): return R::equivalent;
+        }
+        Q_UNREACHABLE_RETURN(R::unordered);
+#endif // __cpp_lib_bit_cast
+    }
+
     friend constexpr bool operator==(weak_ordering lhs, std::weak_ordering rhs) noexcept
     { return static_cast<std::weak_ordering>(lhs) == rhs; }
 
@@ -564,6 +587,40 @@ public:
         case qToUnderlying(O::Equal):   return R::equal;
         }
         Q_UNREACHABLE_RETURN(R::equal);
+#endif // __cpp_lib_bit_cast
+    }
+
+    constexpr Q_COMPARE_CAST_IMPLICIT operator std::weak_ordering() const noexcept
+    {
+        static_assert(sizeof(*this) == sizeof(std::weak_ordering));
+#ifdef __cpp_lib_bit_cast
+        return std::bit_cast<std::weak_ordering>(*this);
+#else
+        using O = QtPrivate::Ordering;
+        using R = std::weak_ordering;
+        switch (m_order) {
+        case qToUnderlying(O::Less):    return R::less;
+        case qToUnderlying(O::Greater): return R::greater;
+        case qToUnderlying(O::Equal):   return R::equivalent;
+        }
+        Q_UNREACHABLE_RETURN(R::equivalent);
+#endif // __cpp_lib_bit_cast
+    }
+
+    constexpr Q_COMPARE_CAST_IMPLICIT operator std::partial_ordering() const noexcept
+    {
+        static_assert(sizeof(*this) == sizeof(std::partial_ordering));
+#ifdef __cpp_lib_bit_cast
+        return std::bit_cast<std::partial_ordering>(*this);
+#else
+        using O = QtPrivate::Ordering;
+        using R = std::partial_ordering;
+        switch (m_order) {
+        case qToUnderlying(O::Less):    return R::less;
+        case qToUnderlying(O::Greater): return R::greater;
+        case qToUnderlying(O::Equal):   return R::equivalent;
+        }
+        Q_UNREACHABLE_RETURN(R::unordered);
 #endif // __cpp_lib_bit_cast
     }
 
@@ -921,6 +978,8 @@ inline constexpr QPartialOrdering QPartialOrdering::less(QtPrivate::Ordering::Le
 inline constexpr QPartialOrdering QPartialOrdering::equivalent(QtPrivate::Ordering::Equivalent);
 inline constexpr QPartialOrdering QPartialOrdering::greater(QtPrivate::Ordering::Greater);
 inline constexpr QPartialOrdering QPartialOrdering::unordered(QtPrivate::LegacyUncomparable::Unordered);
+
+#undef Q_COMPARE_CAST_IMPLICIT
 
 QT_END_NAMESPACE
 
