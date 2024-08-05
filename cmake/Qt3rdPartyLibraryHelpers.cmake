@@ -197,7 +197,6 @@ function(qt_internal_add_3rdparty_library target)
 
     qt_internal_add_qt_repo_known_module(${target})
     qt_internal_add_target_aliases(${target})
-    _qt_internal_apply_strict_cpp(${target})
 
     qt_skip_warnings_are_errors_when_repo_unclean("${target}")
 
