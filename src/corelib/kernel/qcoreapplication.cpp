@@ -1724,9 +1724,8 @@ bool QCoreApplication::compressEvent(QEvent *event, QObject *receiver, QPostEven
     Q_ASSERT(receiver);
     Q_ASSERT(postedEvents);
 
-    int receiverPostedEvents = receiver->d_func()->postedEvents.loadRelaxed();
     // compress posted timers to this object.
-    if (event->type() == QEvent::Timer && receiverPostedEvents > 0) {
+    if (event->type() == QEvent::Timer) {
         const int timerId = static_cast<QTimerEvent *>(event)->timerId();
         auto it = postedEvents->cbegin();
         const auto end = postedEvents->cend();
@@ -1742,7 +1741,7 @@ bool QCoreApplication::compressEvent(QEvent *event, QObject *receiver, QPostEven
         return false;
     }
 
-    if (event->type() == QEvent::Quit && receiverPostedEvents > 0) {
+    if (event->type() == QEvent::Quit) {
         for (const QPostEvent &cur : std::as_const(*postedEvents)) {
             if (cur.receiver != receiver
                     || cur.event == nullptr
