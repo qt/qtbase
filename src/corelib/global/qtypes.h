@@ -16,6 +16,7 @@
 // P1467 implementation - https://wg21.link/p1467
 #    include <stdfloat>
 #  endif // defined(__STDCPP_FLOAT16_T__) && __has_include(<stdfloat>)
+#  include <type_traits>
 #else
 #  include <assert.h>
 #endif
@@ -67,6 +68,9 @@ typedef quint64 qulonglong;
 #  define QT_SUPPORTS_INT128 16
 #elif defined(__SIZEOF_INT128__) && !defined(QT_NO_INT128)
 #  define QT_SUPPORTS_INT128 __SIZEOF_INT128__
+#  if defined(__GLIBCXX__) && defined(__STRICT_ANSI__) // -ansi/-std=c++NN instead of gnu++NN
+#    undef QT_SUPPORTS_INT128                          // breaks <type_traits> on libstdc++
+#  endif
 #else
 #  undef QT_SUPPORTS_INT128
 #endif
@@ -74,6 +78,11 @@ typedef quint64 qulonglong;
 #if defined(QT_SUPPORTS_INT128)
 __extension__ typedef __int128_t qint128;
 __extension__ typedef __uint128_t quint128;
+
+#ifdef __cplusplus
+static_assert(std::is_signed_v<qint128>,
+              "Qt requires <type_traits> and <limits> to work for q(u)int128.");
+#endif
 
 // limits:
 #  ifdef __cplusplus /* need to avoid c-style-casts in C++ mode */
