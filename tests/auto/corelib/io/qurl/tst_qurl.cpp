@@ -2919,6 +2919,7 @@ void tst_QUrl::stripTrailingSlash_data()
     QTest::newRow("file root") << "file:///" << "file:///" << "file:///" << "file:///";
     QTest::newRow("file_root_manyslashes") << "file://///" << "file:///" << "file://///" << "file:///";
     QTest::newRow("no path") << "remote://" << "remote://" << "remote://" << "remote://";
+    QTest::newRow("no authority") << "/root/test/../foo/bar" << "/root/test/../foo/bar" << "/root/test/../foo/" << "/root/test/../foo";
 }
 
 void tst_QUrl::stripTrailingSlash()
@@ -4346,30 +4347,67 @@ void tst_QUrl::normalizeRemotePaths_data()
 {
     QTest::addColumn<QUrl>("url");
     QTest::addColumn<QString>("expected");
+    QTest::addColumn<QString>("expectedNoFilename");
 
-    QTest::newRow("dotdot-slashslash") << QUrl("http://qt-project.org/some/long/..//path") << "http://qt-project.org/some//path";
-    QTest::newRow("slashslash-dotdot") << QUrl("http://qt-project.org/some//../path") << "http://qt-project.org/some/path";
-    QTest::newRow("slashslash-dotdot2") << QUrl("http://qt-project.org/some//path/../") << "http://qt-project.org/some//";
-    QTest::newRow("dot-slash") << QUrl("http://qt-project.org/some/./path") << "http://qt-project.org/some/path";
-    QTest::newRow("slashslash-dot-slashslash") << QUrl("http://qt-project.org/some//.//path") << "http://qt-project.org/some///path";
-    QTest::newRow("dot-slashslash") << QUrl("http://qt-project.org/some/.//path") << "http://qt-project.org/some//path";
-    QTest::newRow("multiple-slashes") << QUrl("http://qt-project.org/some//path") << "http://qt-project.org/some//path";
-    QTest::newRow("multiple-slashes4") << QUrl("http://qt-project.org/some////path") << "http://qt-project.org/some////path";
-    QTest::newRow("slashes-at-end") << QUrl("http://qt-project.org/some//") << "http://qt-project.org/some//";
-    QTest::newRow("dot-dotdot") << QUrl("http://qt-project.org/path/./../") << "http://qt-project.org/";
-    QTest::newRow("slash-dot-slash-dot-slash") << QUrl("http://qt-project.org/path//.//.//") << "http://qt-project.org/path////";
-    QTest::newRow("dotdot") << QUrl("http://qt-project.org/../") << "http://qt-project.org/";
-    QTest::newRow("dotdot-dotdot") << QUrl("http://qt-project.org/path/../../") << "http://qt-project.org/";
-    QTest::newRow("dot-dotdot-tail") << QUrl("http://qt-project.org/stem/path/./../tail") << "http://qt-project.org/stem/tail";
-    QTest::newRow("slash-dotdot-slash-tail") << QUrl("http://qt-project.org/stem/path//..//tail") << "http://qt-project.org/stem/path//tail";
+    QTest::newRow("dotdot-slashslash") << QUrl("http://qt-project.org/some/long/..//path")
+                                       << "http://qt-project.org/some//path"
+                                       << "http://qt-project.org/some//";
+    QTest::newRow("slashslash-dotdot") << QUrl("http://qt-project.org/some//../path")
+                                       << "http://qt-project.org/some/path"
+                                       << "http://qt-project.org/some/";
+    QTest::newRow("slashslash-dotdot2") << QUrl("http://qt-project.org/some//path/../")
+                                        << "http://qt-project.org/some//"
+                                        << "http://qt-project.org/some//";
+    QTest::newRow("dot-slash") << QUrl("http://qt-project.org/some/./path")
+                               << "http://qt-project.org/some/path"
+                               << "http://qt-project.org/some/";
+    QTest::newRow("slashslash-dot-slashslash") << QUrl("http://qt-project.org/some//.//path")
+                                               << "http://qt-project.org/some///path"
+                                               << "http://qt-project.org/some///";
+    QTest::newRow("dot-slashslash") << QUrl("http://qt-project.org/some/.//path")
+                                    << "http://qt-project.org/some//path"
+                                    << "http://qt-project.org/some//";
+    QTest::newRow("multiple-slashes") << QUrl("http://qt-project.org/some//path")
+                                      << "http://qt-project.org/some//path"
+                                      << "http://qt-project.org/some//";
+    QTest::newRow("multiple-slashes4") << QUrl("http://qt-project.org/some////path")
+                                       << "http://qt-project.org/some////path"
+                                       << "http://qt-project.org/some////";
+    QTest::newRow("slashes-at-end") << QUrl("http://qt-project.org/some//")
+                                    << "http://qt-project.org/some//"
+                                    << "http://qt-project.org/some//";
+    QTest::newRow("dot-dotdot") << QUrl("http://qt-project.org/path/./../")
+                                << "http://qt-project.org/"
+                                << "http://qt-project.org/";
+    QTest::newRow("slash-dot-slash-dot-slash") << QUrl("http://qt-project.org/path//.//.//")
+                                               << "http://qt-project.org/path////"
+                                               << "http://qt-project.org/path////";
+    QTest::newRow("dotdot") << QUrl("http://qt-project.org/../")
+                            << "http://qt-project.org/"
+                            << "http://qt-project.org/";
+    QTest::newRow("dotdot-tail") << QUrl("http://qt-project.org/root/test/../foo/bar")
+                                 << "http://qt-project.org/root/foo/bar"
+                                 << "http://qt-project.org/root/foo/";
+    QTest::newRow("dotdot-dotdot") << QUrl("http://qt-project.org/path/../../")
+                                   << "http://qt-project.org/"
+                                   << "http://qt-project.org/";
+    QTest::newRow("dot-dotdot-tail") << QUrl("http://qt-project.org/stem/path/./../tail")
+                                     << "http://qt-project.org/stem/tail"
+                                     << "http://qt-project.org/stem/";
+    QTest::newRow("slash-dotdot-slash-tail") << QUrl("http://qt-project.org/stem/path//..//tail")
+                                             << "http://qt-project.org/stem/path//tail"
+                                             << "http://qt-project.org/stem/path//";
 }
 
 void tst_QUrl::normalizeRemotePaths()
 {
     QFETCH(QUrl, url);
     QFETCH(QString, expected);
+    QFETCH(QString, expectedNoFilename);
 
     QCOMPARE(url.adjusted(QUrl::NormalizePathSegments).toString(), expected);
+    QCOMPARE(url.adjusted(QUrl::NormalizePathSegments | QUrl::RemoveFilename).toString(),
+             expectedNoFilename);
 }
 
 QTEST_MAIN(tst_QUrl)

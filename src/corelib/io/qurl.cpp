@@ -914,10 +914,10 @@ inline void QUrlPrivate::appendPath(QString &appendTo, QUrl::FormattingOptions o
 
     QStringView thePathView(thePath);
     if (options & QUrl::RemoveFilename) {
-        const qsizetype slash = path.lastIndexOf(u'/');
+        const qsizetype slash = thePathView.lastIndexOf(u'/');
         if (slash == -1)
             return;
-        thePathView = QStringView{path}.left(slash + 1);
+        thePathView = thePathView.left(slash + 1);
     }
     // check if we need to remove trailing slashes
     if (options & QUrl::StripTrailingSlash) {
