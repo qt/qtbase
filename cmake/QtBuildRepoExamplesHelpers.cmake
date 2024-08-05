@@ -28,6 +28,8 @@ macro(qt_examples_build_begin)
         qt_internal_find_standalone_parts_config_files()
     endif()
 
+    string(TOLOWER ${PROJECT_NAME} project_name_lower)
+
     if(arg_EXTERNAL_BUILD AND QT_BUILD_EXAMPLES_AS_EXTERNAL)
         # Examples will be built using ExternalProject.
         # We depend on all plugins built as part of the current repo as well as current repo's
@@ -50,7 +52,6 @@ macro(qt_examples_build_begin)
 
         set(QT_IS_EXTERNAL_EXAMPLES_BUILD TRUE)
 
-        string(TOLOWER ${PROJECT_NAME} project_name_lower)
         if(NOT TARGET examples)
             if(QT_BUILD_EXAMPLES_BY_DEFAULT)
                 add_custom_target(examples ALL)
@@ -120,6 +121,28 @@ macro(qt_examples_build_begin)
 # files are installed into the original install prefix.
 set(_qt_internal_examples_cmake_install_prefix_backup \"\${CMAKE_INSTALL_PREFIX}\")
 ")
+
+    # Backup the DESTDIR and unset it, so that example installation is not affected by DESTDIR.
+    # This is activated by our CI when QT_INTERNAL_EXAMPLES_INSTALL_PREFIX is set.
+    if(QT_INTERNAL_EXAMPLES_INSTALL_PREFIX)
+        set(_qt_examples_should_unset_destdir TRUE)
+    else()
+        set(_qt_examples_should_unset_destdir FALSE)
+    endif()
+
+    set_property(GLOBAL PROPERTY
+        _qt_examples_should_unset_destdir_${project_name_lower}
+        "${_qt_examples_should_unset_destdir}")
+    if(_qt_examples_should_unset_destdir)
+        install(CODE "
+    # Temporarily unset DESTDIR while examples are being installed.
+    set(_qt_internal_examples_destdir_backup \"\$ENV{DESTDIR}\")
+    unset(ENV{DESTDIR})
+")
+    endif()
+
+    unset(_qt_examples_should_unset_destdir)
+    unset(project_name_lower)
 endmacro()
 
 macro(qt_examples_build_end)
@@ -145,6 +168,21 @@ set(CMAKE_INSTALL_PREFIX \"\${_qt_internal_examples_cmake_install_prefix_backup}
 ")
 
     set(CMAKE_UNITY_BUILD ${QT_UNITY_BUILD})
+
+    string(TOLOWER ${PROJECT_NAME} project_name_lower)
+    get_property(_qt_examples_should_unset_destdir
+        GLOBAL PROPERTY _qt_examples_should_unset_destdir_${project_name_lower})
+
+    if(_qt_examples_should_unset_destdir)
+        install(CODE "
+    # Restore the DESTDIR env var after examples have been installed.
+    set(ENV{DESTDIR} \"\${_qt_internal_examples_destdir_backup}\")
+    unset(_qt_internal_examples_destdir_backup)
+")
+    endif()
+
+    unset(_qt_examples_should_unset_destdir)
+    unset(project_name_lower)
 endmacro()
 
 # Allows building an example either as an ExternalProject or in-tree with the Qt build.
