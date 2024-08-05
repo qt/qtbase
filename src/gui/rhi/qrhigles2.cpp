@@ -4616,21 +4616,26 @@ void QRhiGles2::endPass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resource
                     qWarning("Resolve source (%dx%d) and target (%dx%d) size does not match",
                              rbD->pixelSize().width(), rbD->pixelSize().height(), size.width(), size.height());
                 }
-                QGles2CommandBuffer::Command &cmd(cbD->commands.get());
-                cmd.cmd = QGles2CommandBuffer::Command::BlitFromRenderbuffer;
-                cmd.args.blitFromRenderbuffer.renderbuffer = rbD->renderbuffer;
-                cmd.args.blitFromRenderbuffer.w = size.width();
-                cmd.args.blitFromRenderbuffer.h = size.height();
-                if (resolveTexD->m_flags.testFlag(QRhiTexture::CubeMap))
-                    cmd.args.blitFromRenderbuffer.target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + uint(colorAtt.resolveLayer());
-                else
-                    cmd.args.blitFromRenderbuffer.target = resolveTexD->target;
-                cmd.args.blitFromRenderbuffer.dstTexture = resolveTexD->texture;
-                cmd.args.blitFromRenderbuffer.dstLevel = colorAtt.resolveLevel();
-                const bool hasZ = resolveTexD->m_flags.testFlag(QRhiTexture::ThreeDimensional)
-                    || resolveTexD->m_flags.testFlag(QRhiTexture::TextureArray);
-                cmd.args.blitFromRenderbuffer.dstLayer = hasZ ? colorAtt.resolveLayer() : 0;
-                cmd.args.blitFromRenderbuffer.isDepthStencil = false;
+                if (caps.glesMultisampleRenderToTexture) {
+                    // colorAtt.renderBuffer() is not actually used for anything if OpenGL ES'
+                    // auto-resolving GL_EXT_multisampled_render_to_texture is used.
+                } else {
+                    QGles2CommandBuffer::Command &cmd(cbD->commands.get());
+                    cmd.cmd = QGles2CommandBuffer::Command::BlitFromRenderbuffer;
+                    cmd.args.blitFromRenderbuffer.renderbuffer = rbD->renderbuffer;
+                    cmd.args.blitFromRenderbuffer.w = size.width();
+                    cmd.args.blitFromRenderbuffer.h = size.height();
+                    if (resolveTexD->m_flags.testFlag(QRhiTexture::CubeMap))
+                        cmd.args.blitFromRenderbuffer.target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + uint(colorAtt.resolveLayer());
+                    else
+                        cmd.args.blitFromRenderbuffer.target = resolveTexD->target;
+                    cmd.args.blitFromRenderbuffer.dstTexture = resolveTexD->texture;
+                    cmd.args.blitFromRenderbuffer.dstLevel = colorAtt.resolveLevel();
+                    const bool hasZ = resolveTexD->m_flags.testFlag(QRhiTexture::ThreeDimensional)
+                        || resolveTexD->m_flags.testFlag(QRhiTexture::TextureArray);
+                    cmd.args.blitFromRenderbuffer.dstLayer = hasZ ? colorAtt.resolveLayer() : 0;
+                    cmd.args.blitFromRenderbuffer.isDepthStencil = false;
+                }
             } else if (caps.glesMultisampleRenderToTexture) {
                 // Nothing to do, resolving into colorAtt.resolveTexture() is automatic,
                 // colorAtt.texture() is in fact not used for anything.
@@ -6060,7 +6065,18 @@ bool QGles2TextureRenderTarget::create()
             }
         } else if (renderBuffer) {
             QGles2RenderBuffer *rbD = QRHI_RES(QGles2RenderBuffer, renderBuffer);
-            rhiD->f->glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + uint(attIndex), GL_RENDERBUFFER, rbD->renderbuffer);
+            if (rbD->sampleCount() > 1 && rhiD->caps.glesMultisampleRenderToTexture && colorAtt.resolveTexture()) {
+                // Special path for GLES and GL_EXT_multisampled_render_to_texture: ignore
+                // the (multisample) renderbuffer and give the resolve texture to GL. (so
+                // no explicit resolve; depending on GL implementation internals, this may
+                // play nicer with tiled architectures)
+                QGles2Texture *resolveTexD = QRHI_RES(QGles2Texture, colorAtt.resolveTexture());
+                const GLenum faceTargetBase = resolveTexD->flags().testFlag(QRhiTexture::CubeMap) ? GL_TEXTURE_CUBE_MAP_POSITIVE_X : resolveTexD->target;
+                rhiD->glFramebufferTexture2DMultisampleEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + uint(attIndex), faceTargetBase + uint(colorAtt.resolveLayer()),
+                                                           resolveTexD->texture, colorAtt.level(), rbD->sampleCount());
+            } else {
+                rhiD->f->glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + uint(attIndex), GL_RENDERBUFFER, rbD->renderbuffer);
+            }
             if (attIndex == 0) {
                 d.pixelSize = rbD->pixelSize();
                 d.sampleCount = rbD->samples;
