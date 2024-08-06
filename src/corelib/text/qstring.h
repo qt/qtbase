@@ -1004,12 +1004,14 @@ public:
 
 private:
 #if defined(QT_NO_CAST_FROM_ASCII)
-    QString &operator+=(const char *s);
-    QString &operator+=(const QByteArray &s);
-    QString(const char *ch);
-    QString(const QByteArray &a);
-    QString &operator=(const char  *ch);
-    QString &operator=(const QByteArray &a);
+#define QSTRING_DECL_DELETED_ASCII_OP Q_DECL_EQ_DELETE_X("This function is not available under QT_NO_CAST_FROM_ASCII")
+    QString &operator+=(const char *s) QSTRING_DECL_DELETED_ASCII_OP;
+    QString &operator+=(const QByteArray &s) QSTRING_DECL_DELETED_ASCII_OP;
+    QString(const char *ch) QSTRING_DECL_DELETED_ASCII_OP;
+    QString(const QByteArray &a) QSTRING_DECL_DELETED_ASCII_OP;
+    QString &operator=(const char  *ch) QSTRING_DECL_DELETED_ASCII_OP;
+    QString &operator=(const QByteArray &a) QSTRING_DECL_DELETED_ASCII_OP;
+#undef QSTRING_DECL_DELETED_ASCII_OP
 #endif
 
     DataPointer d;
