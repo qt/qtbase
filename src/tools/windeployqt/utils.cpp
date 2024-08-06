@@ -8,6 +8,7 @@
 #include <QtCore/QDir>
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
+#include <QtCore/QProcess>
 #include <QtCore/QTemporaryFile>
 #include <QtCore/QScopedPointer>
 #include <QtCore/QScopedArrayPointer>
@@ -17,16 +18,7 @@
 #  include <QtCore/private/qsystemerror_p.h>
 #  include <shlwapi.h>
 #  include <delayimp.h>
-#else // Q_OS_WIN
-#  include <sys/wait.h>
-#  include <sys/types.h>
-#  include <sys/stat.h>
-#  include <unistd.h>
-#  include <stdlib.h>
-#  include <string.h>
-#  include <errno.h>
-#  include <fcntl.h>
-#endif  // !Q_OS_WIN
+#endif  // Q_OS_WIN
 
 QT_BEGIN_NAMESPACE
 
@@ -117,8 +109,6 @@ QStringList findSharedLibraries(const QDir &directory, Platform platform,
     return result;
 }
 
-#ifdef Q_OS_WIN
-
 // Case-Normalize file name via GetShortPathNameW()/GetLongPathNameW()
 QString normalizeFileName(const QString &name)
 {
@@ -130,47 +120,6 @@ QString normalizeFileName(const QString &name)
     if (!GetLongPathNameW(shortBuffer, result, MAX_PATH))
         return name;
     return QDir::fromNativeSeparators(QString::fromWCharArray(result));
-}
-
-// Find a tool binary in the Windows SDK 8
-QString findSdkTool(const QString &tool)
-{
-    QStringList paths = QString::fromLocal8Bit(qgetenv("PATH")).split(u';');
-    const QByteArray sdkDir = qgetenv("WindowsSdkDir");
-    if (!sdkDir.isEmpty())
-        paths.prepend(QDir::cleanPath(QString::fromLocal8Bit(sdkDir)) + "/Tools/x64"_L1);
-    return QStandardPaths::findExecutable(tool, paths);
-}
-
-// runProcess helper: Create a temporary file for stdout/stderr redirection.
-static HANDLE createInheritableTemporaryFile()
-{
-    wchar_t path[MAX_PATH];
-    if (!GetTempPath(MAX_PATH, path))
-        return INVALID_HANDLE_VALUE;
-    wchar_t name[MAX_PATH];
-    if (!GetTempFileName(path, L"temp", 0, name)) // Creates file.
-        return INVALID_HANDLE_VALUE;
-    SECURITY_ATTRIBUTES securityAttributes;
-    ZeroMemory(&securityAttributes, sizeof(securityAttributes));
-    securityAttributes.nLength = sizeof(securityAttributes);
-    securityAttributes.bInheritHandle = TRUE;
-    return CreateFile(name, GENERIC_READ | GENERIC_WRITE,
-                      FILE_SHARE_READ | FILE_SHARE_WRITE, &securityAttributes,
-                      TRUNCATE_EXISTING,
-                      FILE_ATTRIBUTE_TEMPORARY | FILE_FLAG_DELETE_ON_CLOSE, NULL);
-}
-
-// runProcess helper: Rewind and read out a temporary file for stdout/stderr.
-static inline void readTemporaryProcessFile(HANDLE handle, QByteArray *result)
-{
-    if (SetFilePointer(handle, 0, 0, FILE_BEGIN) == 0xFFFFFFFF)
-        return;
-    char buf[1024];
-    DWORD bytesRead;
-    while (ReadFile(handle, buf, sizeof(buf), &bytesRead, NULL) && bytesRead)
-        result->append(buf, int(bytesRead));
-    CloseHandle(handle);
 }
 
 static inline void appendToCommandLine(const QString &argument, QString *commandLine)
@@ -185,8 +134,6 @@ static inline void appendToCommandLine(const QString &argument, QString *command
         commandLine->append(u'"');
 }
 
-// runProcess: Run a command line process (replacement for QProcess which
-// does not exist in the bootstrap library).
 bool runProcess(const QString &binary, const QStringList &args,
                 const QString &workingDirectory,
                 unsigned long *exitCode, QByteArray *stdOut, QByteArray *stdErr,
@@ -195,210 +142,34 @@ bool runProcess(const QString &binary, const QStringList &args,
     if (exitCode)
         *exitCode = 0;
 
-    STARTUPINFO si;
-    ZeroMemory(&si, sizeof(si));
-    si.cb = sizeof(si);
+    QProcess process;
+    process.setProgram(binary);
+    process.setArguments(args);
+    process.setWorkingDirectory(workingDirectory);
 
-    STARTUPINFO myInfo;
-    GetStartupInfo(&myInfo);
-    si.hStdInput = myInfo.hStdInput;
-    si.hStdOutput = myInfo.hStdOutput;
-    si.hStdError = myInfo.hStdError;
-
-    PROCESS_INFORMATION pi;
-    ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
-    const QChar backSlash = u'\\';
-    QString nativeWorkingDir = QDir::toNativeSeparators(workingDirectory.isEmpty() ?  QDir::currentPath() : workingDirectory);
-    if (!nativeWorkingDir.endsWith(backSlash))
-        nativeWorkingDir += backSlash;
-
-    if (stdOut) {
-        si.hStdOutput = createInheritableTemporaryFile();
-        if (si.hStdOutput == INVALID_HANDLE_VALUE) {
-            if (errorMessage)
-                *errorMessage = QStringLiteral("Error creating stdout temporary file");
-            return false;
-        }
-        si.dwFlags |= STARTF_USESTDHANDLES;
-    }
-
-    if (stdErr) {
-        si.hStdError = createInheritableTemporaryFile();
-        if (si.hStdError == INVALID_HANDLE_VALUE) {
-            if (errorMessage)
-                *errorMessage = QStringLiteral("Error creating stderr temporary file");
-            return false;
-        }
-        si.dwFlags |= STARTF_USESTDHANDLES;
-    }
-
-    // Create a copy of the command line which CreateProcessW can modify.
-    QString commandLine;
-    appendToCommandLine(binary, &commandLine);
-    for (const QString &a : args)
-        appendToCommandLine(a, &commandLine);
-    if (optVerboseLevel > 1)
+    // Output the command if requested.
+    if (optVerboseLevel > 1) {
+        QString commandLine;
+        appendToCommandLine(binary, &commandLine);
+        for (const QString &a : args)
+            appendToCommandLine(a, &commandLine);
         std::wcout << "Running: " << commandLine << '\n';
+    }
 
-    QScopedArrayPointer<wchar_t> commandLineW(new wchar_t[commandLine.size() + 1]);
-    commandLine.toWCharArray(commandLineW.data());
-    commandLineW[commandLine.size()] = 0;
-    if (!CreateProcessW(0, commandLineW.data(), 0, 0, /* InheritHandles */ TRUE, 0, 0,
-                        reinterpret_cast<LPCWSTR>(nativeWorkingDir.utf16()), &si, &pi)) {
-        if (stdOut)
-            CloseHandle(si.hStdOutput);
-        if (stdErr)
-            CloseHandle(si.hStdError);
-        if (errorMessage) {
-            *errorMessage = QStringLiteral("CreateProcessW failed: ")
-                + QSystemError::windowsString();
-        }
+    process.start();
+    if (!process.waitForStarted() || !process.waitForFinished()) {
+        if (errorMessage)
+            *errorMessage = process.errorString();
         return false;
     }
-
-    WaitForSingleObject(pi.hProcess, INFINITE);
-    CloseHandle(pi.hThread);
-    if (exitCode)
-        GetExitCodeProcess(pi.hProcess, exitCode);
-    CloseHandle(pi.hProcess);
 
     if (stdOut)
-        readTemporaryProcessFile(si.hStdOutput, stdOut);
+        *stdOut = process.readAllStandardOutput();
     if (stdErr)
-        readTemporaryProcessFile(si.hStdError, stdErr);
+        *stdErr = process.readAllStandardError();
+
     return true;
 }
-
-#else // Q_OS_WIN
-
-static inline char *encodeFileName(const QString &f)
-{
-    const QByteArray encoded = QFile::encodeName(f);
-    char *result = new char[encoded.size() + 1];
-    strcpy(result, encoded.constData());
-    return result;
-}
-
-static inline char *tempFilePattern()
-{
-    QString path = QDir::tempPath();
-    if (!path.endsWith(u'/'))
-        path += u'/';
-    path += QStringLiteral("tmpXXXXXX");
-    return encodeFileName(path);
-}
-
-static inline QByteArray readOutRedirectFile(int fd)
-{
-    enum { bufSize = 256 };
-
-    QByteArray result;
-    if (!lseek(fd, 0, 0)) {
-        char buf[bufSize];
-        while (true) {
-            const ssize_t rs = read(fd, buf, bufSize);
-            if (rs <= 0)
-                break;
-            result.append(buf, int(rs));
-        }
-    }
-    close(fd);
-    return result;
-}
-
-// runProcess: Run a command line process (replacement for QProcess which
-// does not exist in the bootstrap library).
-bool runProcess(const QString &binary, const QStringList &args,
-                const QString &workingDirectory,
-                unsigned long *exitCode, QByteArray *stdOut, QByteArray *stdErr,
-                QString *errorMessage)
-{
-    QScopedArrayPointer<char> stdOutFileName;
-    QScopedArrayPointer<char> stdErrFileName;
-
-    int stdOutFile = 0;
-    if (stdOut) {
-        stdOutFileName.reset(tempFilePattern());
-        stdOutFile = mkstemp(stdOutFileName.data());
-        if (stdOutFile < 0) {
-            *errorMessage = QStringLiteral("mkstemp() failed: ") + QString::fromLocal8Bit(strerror(errno));
-            return false;
-        }
-    }
-
-    int stdErrFile = 0;
-    if (stdErr) {
-        stdErrFileName.reset(tempFilePattern());
-        stdErrFile = mkstemp(stdErrFileName.data());
-        if (stdErrFile < 0) {
-            *errorMessage = QStringLiteral("mkstemp() failed: ") + QString::fromLocal8Bit(strerror(errno));
-            return false;
-        }
-    }
-
-    const pid_t pID = fork();
-
-    if (pID < 0) {
-        *errorMessage = QStringLiteral("Fork failed: ") + QString::fromLocal8Bit(strerror(errno));
-        return false;
-    }
-
-    if (!pID) { // Child
-        if (stdOut) {
-            dup2(stdOutFile, STDOUT_FILENO);
-            close(stdOutFile);
-        }
-        if (stdErr) {
-            dup2(stdErrFile, STDERR_FILENO);
-            close(stdErrFile);
-        }
-
-        if (!workingDirectory.isEmpty() && !QDir::setCurrent(workingDirectory)) {
-            std::wcerr << "Failed to change working directory to " << workingDirectory << ".\n";
-            ::_exit(-1);
-        }
-
-        char **argv  = new char *[args.size() + 2]; // Create argv.
-        char **ap = argv;
-        *ap++ = encodeFileName(binary);
-        for (const QString &a : std::as_const(args))
-            *ap++ = encodeFileName(a);
-        *ap = 0;
-
-        execvp(argv[0], argv);
-        ::_exit(-1);
-    }
-
-    int status;
-    pid_t waitResult;
-
-    do {
-        waitResult = waitpid(pID, &status, 0);
-    } while (waitResult == -1 && errno == EINTR);
-
-    if (stdOut) {
-        *stdOut = readOutRedirectFile(stdOutFile);
-        unlink(stdOutFileName.data());
-    }
-    if (stdErr) {
-        *stdErr = readOutRedirectFile(stdErrFile);
-        unlink(stdErrFileName.data());
-    }
-
-    if (waitResult < 0) {
-        *errorMessage = QStringLiteral("Wait failed: ") + QString::fromLocal8Bit(strerror(errno));
-        return false;
-    }
-    if (!WIFEXITED(status)) {
-        *errorMessage = binary + QStringLiteral(" did not exit cleanly.");
-        return false;
-    }
-    if (exitCode)
-        *exitCode = WEXITSTATUS(status);
-    return true;
-}
-
-#endif // !Q_OS_WIN
 
 // Find a file in the path using ShellAPI. This can be used to locate DLLs which
 // QStandardPaths cannot do.
