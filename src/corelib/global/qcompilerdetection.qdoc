@@ -303,6 +303,20 @@
 */
 
 /*!
+    \macro Q_DECL_EQ_DELETE_X(reason)
+    \relates <QtCompilerDetection>
+    \since 6.9
+
+    Expands to \c{= delete(reason)} on compilers that support C++26, where
+    \c{__cpp_deleted_function} has a value greater than or equal to \c{202403L}.
+    Otherwise, it expands to \c{= delete}.
+
+    Use this macro to declare a deleted function and also supply an error
+    message (the \a reason) to the user in case the function gets used
+    (explaining why the function was deleted).
+*/
+
+/*!
     \macro Q_DECL_NOTHROW
     \relates <QtCompilerDetection>
     \since 5.0

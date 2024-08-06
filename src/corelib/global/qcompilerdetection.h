@@ -516,6 +516,7 @@
  *  https://en.cppreference.com/w/cpp/feature_test
  * Exceptions:
  *  Q_DECL_CONSTEXPR_DTOR           constexpr in C++20 for explicit destructors __cpp_constexpr >= 201907L
+ *  Q_DECL_EQ_DELETE_X(message)     = delete("reason"), __cpp_deleted_function >= 202403L
  *
  * C++ extensions:
  *  Q_COMPILER_RESTRICTED_VLA       variable-length arrays, prior to __cpp_runtime_arrays
@@ -1010,6 +1011,14 @@
 #    define Q_DECL_CONSTEXPR_DTOR constexpr
 #  else
 #    define Q_DECL_CONSTEXPR_DTOR inline
+#  endif
+#endif
+
+#ifndef Q_DECL_EQ_DELETE_X
+#  if defined(__cpp_deleted_function) && __cpp_deleted_function >= 202403L
+#    define Q_DECL_EQ_DELETE_X(reason) = delete(reason)
+#  else
+#    define Q_DECL_EQ_DELETE_X(reason) = delete
 #  endif
 #endif
 
