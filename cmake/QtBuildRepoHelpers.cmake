@@ -709,6 +709,9 @@ macro(qt_internal_find_standalone_parts_config_files)
 endmacro()
 
 macro(qt_build_tests)
+    # Indicates that we are configuring tests now
+    set(QT_INTERNAL_CONFIGURING_TESTS TRUE)
+
     # Tests are not unity-ready.
     set(CMAKE_UNITY_BUILD OFF)
 
@@ -764,6 +767,7 @@ macro(qt_build_tests)
     endif()
 
     set(CMAKE_UNITY_BUILD ${QT_UNITY_BUILD})
+    unset(QT_INTERNAL_CONFIGURING_TESTS)
 endmacro()
 
 function(qt_compute_relative_path_from_cmake_config_dir_to_prefix)

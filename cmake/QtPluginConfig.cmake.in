@@ -12,6 +12,8 @@ if(DEFINED QT_REPO_DEPENDENCIES AND NOT QT_INTERNAL_BUILD_STANDALONE_PARTS)
     endif()
 endif()
 
+@skip_internal_test_plugin@
+
 @PACKAGE_INIT@
 
 cmake_minimum_required(VERSION @min_new_policy_version@...@max_new_policy_version@)

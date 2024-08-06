@@ -9,6 +9,7 @@ macro(qt_internal_get_internal_add_plugin_keywords option_args single_args multi
         ALLOW_UNDEFINED_SYMBOLS
         SKIP_INSTALL
         NO_UNITY_BUILD
+        TEST_PLUGIN
         ${__qt_internal_sbom_optional_args}
     )
     set(${single_args}
@@ -364,6 +365,25 @@ function(qt_internal_add_plugin target)
 
         qt_internal_get_min_new_policy_cmake_version(min_new_policy_version)
         qt_internal_get_max_new_policy_cmake_version(max_new_policy_version)
+
+        # For test plugins we need to make sure plugins are not loaded from the Qt installation
+        # when building standalone tests.
+        if(QT_INTERNAL_CONFIGURING_TESTS OR arg_TEST_PLUGIN)
+            if(NOT arg_TEST_PLUGIN)
+                message(WARNING "The installable test plugin ${target} is built as part of test"
+                    " suite, but is not marked as TEST_PLUGIN using the repsective argument."
+                    "\nThis warning will soon become an error."
+                )
+            endif()
+            set(skip_internal_test_plugin
+"if(QT_BUILD_STANDALONE_TESTS AND \"\${PROJECT_NAME}\" STREQUAL \"${PROJECT_NAME}\")
+    message(DEBUG \"Skipping loading ${target}Config.cmake during \"
+        \"standalone tests run of ${PROJECT_NAME}\")
+    return()
+endif()"
+            )
+        endif()
+
         configure_package_config_file(
             "${QT_CMAKE_DIR}/QtPluginConfig.cmake.in"
             "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}Config.cmake"
