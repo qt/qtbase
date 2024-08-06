@@ -43,7 +43,7 @@
     application would probably crash when you called a member function
     of \c{w}.
 
-    \sa Q_DISABLE_COPY_MOVE
+    \sa Q_DISABLE_COPY_MOVE, Q_DISABLE_COPY_X
 */
 
 /*!
@@ -54,6 +54,38 @@
     operators, move constructors and move assignment operators for the given
     \a Class.
 
-    \sa Q_DISABLE_COPY
+    \sa Q_DISABLE_COPY, Q_DISABLE_COPY_MOVE_X
     \since 5.13
+*/
+
+/*!
+    \macro Q_DISABLE_COPY_X(Class, reason)
+    \relates <QtClassHelperMacros>
+    \since 6.9
+
+    Like Q_DISABLE_COPY, this macro disables copy operations for the
+    class \a Class.
+
+    In addition, this documents the \a reason why this class does not support
+    copy operations. In C++26 this will cause the compiler to report that
+    reason in its error message against any code that attempts these
+    unsupported operations.
+
+    \sa Q_DISABLE_COPY, Q_DISABLE_COPY_MOVE_X, Q_DECL_EQ_DELETE_X
+*/
+
+/*!
+    \macro Q_DISABLE_COPY_MOVE_X(Class, reason)
+    \relates <QtClassHelperMacros>
+    \since 6.9
+
+    Like Q_DISABLE_COPY_MOVE, this macro disables copy and move operations for the
+    class \a Class.
+
+    In addition, this documents the \a reason why this class does not support
+    copy/move operations. In C++26 this will cause the compiler to report that
+    reason in its error message against any code that attempts these
+    unsupported operations.
+
+    \sa Q_DISABLE_COPY_X, Q_DECL_EQ_DELETE_X
 */
