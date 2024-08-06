@@ -22,6 +22,7 @@ private slots:
     void conversions();
     void is_eq_overloads();
     void compareThreeWay();
+    void unorderedNeqLiteralZero();
 };
 
 void tst_QCompare::legacyPartialOrdering()
@@ -844,6 +845,47 @@ QT_WARNING_POP
     const auto a1 = Qt::totally_ordered_wrapper(&arr[1]);
     QCOMPARE_EQ(qCompareThreeWay(a1, a0), Qt::strong_ordering::greater);
     QCOMPARE_EQ(qCompareThreeWay(arr.data(), a0), Qt::strong_ordering::equivalent);
+}
+
+void tst_QCompare::unorderedNeqLiteralZero()
+{
+    // This test is checking QTBUG-127759
+    constexpr auto qtUnordered = Qt::partial_ordering::unordered;
+    constexpr auto qtLegacyUnordered = QPartialOrdering::Unordered;
+#ifdef __cpp_lib_three_way_comparison
+    constexpr auto stdUnordered = std::partial_ordering::unordered;
+
+    QVERIFY(stdUnordered != 0);
+    QVERIFY(0 != stdUnordered);
+    QVERIFY(is_neq(stdUnordered));
+
+    QEXPECT_FAIL("", "QTBUG-127759", Continue);
+    QCOMPARE_EQ(qtUnordered != 0, stdUnordered != 0);
+    QEXPECT_FAIL("", "QTBUG-127759", Continue);
+    QCOMPARE_EQ(0 != qtUnordered, 0 != stdUnordered);
+    QEXPECT_FAIL("", "QTBUG-127759", Continue);
+    QCOMPARE_EQ(is_neq(qtUnordered), is_neq(stdUnordered));
+
+    QEXPECT_FAIL("", "QTBUG-127759", Continue);
+    QCOMPARE_EQ(qtLegacyUnordered != 0, stdUnordered != 0);
+    QEXPECT_FAIL("", "QTBUG-127759", Continue);
+    QCOMPARE_EQ(0 != qtLegacyUnordered, 0 != stdUnordered);
+    QEXPECT_FAIL("", "QTBUG-127759", Continue);
+    QCOMPARE_EQ(is_neq(qtLegacyUnordered), is_neq(stdUnordered));
+#endif
+    QEXPECT_FAIL("", "QTBUG-127759", Continue);
+    QVERIFY(qtUnordered != 0);
+    QEXPECT_FAIL("", "QTBUG-127759", Continue);
+    QVERIFY(0 != qtUnordered);
+    QEXPECT_FAIL("", "QTBUG-127759", Continue);
+    QVERIFY(is_neq(qtUnordered));
+
+    QEXPECT_FAIL("", "QTBUG-127759", Continue);
+    QVERIFY(qtLegacyUnordered != 0);
+    QEXPECT_FAIL("", "QTBUG-127759", Continue);
+    QVERIFY(0 != qtLegacyUnordered);
+    QEXPECT_FAIL("", "QTBUG-127759", Continue);
+    QVERIFY(is_neq(qtLegacyUnordered));
 }
 
 QTEST_MAIN(tst_QCompare)
