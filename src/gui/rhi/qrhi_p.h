@@ -254,9 +254,11 @@ private:
     QHash<const void *, QRhi::CleanupCallback> keyedCleanupCallbacks;
     QElapsedTimer pipelineCreationTimer;
     qint64 accumulatedPipelineCreationTime = 0;
+    static bool rubLogEnabled;
 
     friend class QRhi;
     friend class QRhiResourceUpdateBatchPrivate;
+    friend class QRhiBufferData;
 };
 
 enum QRhiTargetRectBoundMode
@@ -352,17 +354,23 @@ public:
     }
     const char *constData() const
     {
-        return d->size <= QRhiBufferDataPrivate::SMALL_DATA_SIZE ? d->data : d->largeData;
+        return d ? (d->size <= QRhiBufferDataPrivate::SMALL_DATA_SIZE ? d->data : d->largeData) : nullptr;
     }
     quint32 size() const
     {
-        return d->size;
+        return d ? d->size : 0;
+    }
+    quint32 largeAlloc() const
+    {
+        return d ? d->largeAlloc : 0;
     }
     void assign(const char *s, quint32 size)
     {
         if (!d) {
             d = new QRhiBufferDataPrivate;
         } else if (d->ref != 1) {
+            if (QRhiImplementation::rubLogEnabled)
+                qDebug("[rub] QRhiBufferData %p/%p new backing due to no-copy detach, ref was %d", this, d, d->ref);
             d->ref -= 1;
             d = new QRhiBufferDataPrivate;
         }
@@ -371,6 +379,8 @@ public:
             memcpy(d->data, s, size);
         } else {
             if (d->largeAlloc < size) {
+                if (QRhiImplementation::rubLogEnabled)
+                    qDebug("[rub] QRhiBufferData %p/%p new large data allocation %u -> %u", this, d, d->largeAlloc, size);
                 delete[] d->largeData;
                 d->largeAlloc = size;
                 d->largeData = new char[size];

@@ -25,6 +25,7 @@
 QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
+Q_LOGGING_CATEGORY(QRHI_LOG_RUB, "qt.rhi.rub")
 
 /*!
     \class QRhi
@@ -8455,6 +8456,8 @@ QRhi::~QRhi()
     delete d;
 }
 
+bool QRhiImplementation::rubLogEnabled = false;
+
 void QRhiImplementation::prepareForCreate(QRhi *rhi, QRhi::Implementation impl, QRhi::Flags flags)
 {
     q = rhi;
@@ -8466,6 +8469,8 @@ void QRhiImplementation::prepareForCreate(QRhi *rhi, QRhi::Implementation impl, 
         const_cast<QLoggingCategory &>(QRHI_LOG_INFO()).setEnabled(QtDebugMsg, true);
 
     debugMarkers = flags.testFlag(QRhi::EnableDebugMarkers);
+
+    rubLogEnabled = QRHI_LOG_RUB().isDebugEnabled();
 
     implType = impl;
     implThread = QThread::currentThread();
@@ -9265,20 +9270,25 @@ void QRhiResourceUpdateBatch::generateMips(QRhiTexture *tex)
  */
 QRhiResourceUpdateBatch *QRhi::nextResourceUpdateBatch()
 {
-    // By default we prefer spreading out the utilization of the 64 batches as
-    // much as possible, meaning we won't pick the first one even if it's free,
-    // but prefer picking one after the last picked one. Relevant due to how
-    // QVLA and QRhiBufferData allocations behind the bufferOps are reused; in
-    // typical Qt Quick scenes this leads to a form of (eventually) seeding all
-    // the 64 resource batches with buffer operation data allocations which are
-    // then reused in subsequent frames. This comes at the expense of using
-    // more memory, but has proven good results when (CPU) profiling typical
-    // Quick/Quick3D apps.
+    // By default we prefer spreading out the utilization of the worst case 64
+    // (but typically 4) batches as much as possible, meaning we won't pick the
+    // first one even if it's free, but prefer picking one after the last picked
+    // one. Relevant due to implicit sharing (the backend may hold on to the
+    // QRhiBufferData until frame no. current+FramesInFlight-1, but
+    // implementations may vary), combined with the desire to reuse container
+    // and QRhiBufferData allocations in bufferOps instead of flooding every
+    // frame with allocs. See free(). In typical Qt Quick scenes this leads to
+    // eventually seeding all 4 (or more) resource batches with buffer operation
+    // data allocations which may (*) then be reused in subsequent frames. This
+    // comes at the expense of using more memory, but has proven good results
+    // when (CPU) profiling typical Quick/Quick3D apps.
     //
-    // Prefering memory over performance means that we always pick the first
-    // free batch, and triggering the aggressive deallocating of all backing
-    // memory (see trimOpLists) before returning it.
-    static const bool preferMemoryOverPerformance = qEnvironmentVariableIntValue("QT_RHI_MINIMIZE_POOLS");
+    // (*) Due to implicit sharing(ish), the exact behavior is unpredictable. If
+    // a backend holds on to the QRhiBufferData for, e.g., a dynamic buffer
+    // update, and then there is a new assign() for that same QRhiBufferData
+    // while the refcount is still 2, it will "detach" (without contents) and
+    // there is no reuse of the alloc. This is mitigated by the 'choose the one
+    // afer the last picked one' logic when handing out batches.
 
     auto nextFreeBatch = [this]() -> QRhiResourceUpdateBatch * {
         auto isFree = [this](int i) -> QRhiResourceUpdateBatch * {
@@ -9287,8 +9297,7 @@ QRhiResourceUpdateBatch *QRhi::nextResourceUpdateBatch()
                 d->resUpdPoolMap |= mask;
                 QRhiResourceUpdateBatch *u = d->resUpdPool[i];
                 QRhiResourceUpdateBatchPrivate::get(u)->poolIndex = i;
-                if (!preferMemoryOverPerformance)
-                    d->lastResUpdIdx = i;
+                d->lastResUpdIdx = i;
                 return u;
             }
             return nullptr;
@@ -9308,6 +9317,7 @@ QRhiResourceUpdateBatch *QRhi::nextResourceUpdateBatch()
     QRhiResourceUpdateBatch *u = nextFreeBatch();
     if (!u) {
         const int oldSize = d->resUpdPool.size();
+        // 4, 8, 12, ..., up to 64
         const int newSize = oldSize + qMin(4, qMax(0, 64 - oldSize));
         d->resUpdPool.resize(newSize);
         for (int i = oldSize; i < newSize; ++i)
@@ -9317,15 +9327,28 @@ QRhiResourceUpdateBatch *QRhi::nextResourceUpdateBatch()
             qWarning("Resource update batch pool exhausted (max is 64)");
     }
 
-    if (preferMemoryOverPerformance && u)
-        u->d->trimOpLists();
-
     return u;
 }
 
 void QRhiResourceUpdateBatchPrivate::free()
 {
     Q_ASSERT(poolIndex >= 0 && rhi->resUpdPool[poolIndex] == q);
+
+    if (rhi->rubLogEnabled) {
+        quint32 bufferDataTotal = 0;
+        quint32 bufferLargeAllocTotal = 0;
+        for (const BufferOp &op : std::as_const(bufferOps)) {
+            bufferDataTotal += op.data.size();
+            bufferLargeAllocTotal += op.data.largeAlloc(); // alloc when > 1 KB
+        }
+        qDebug() << "[rub] release to pool upd.batch #" << poolIndex
+                << "/ bufferOps active" << activeBufferOpCount
+                << "of" << bufferOps.count()
+                << "data" << bufferDataTotal
+                << "largeAlloc" << bufferLargeAllocTotal
+                << "textureOps active" << activeTextureOpCount
+                << "of" << textureOps.count();
+    }
 
     activeBufferOpCount = 0;
     activeTextureOpCount = 0;
@@ -10761,6 +10784,9 @@ QRhi::FrameOpResult QRhi::beginFrame(QRhiSwapChain *swapChain, BeginFrameFlags f
     if (d->inFrame)
         qWarning("Attempted to call beginFrame() within a still active frame; ignored");
 
+    if (d->rubLogEnabled)
+        qDebug("[rub] new frame");
+
     QRhi::FrameOpResult r = !d->inFrame ? d->beginFrame(swapChain, flags) : FrameOpSuccess;
     if (r == FrameOpSuccess)
         d->inFrame = true;
@@ -10908,6 +10934,9 @@ QRhi::FrameOpResult QRhi::beginOffscreenFrame(QRhiCommandBuffer **cb, BeginFrame
 {
     if (d->inFrame)
         qWarning("Attempted to call beginOffscreenFrame() within a still active frame; ignored");
+
+    if (d->rubLogEnabled)
+        qDebug("[rub] new offscreen frame");
 
     QRhi::FrameOpResult r = !d->inFrame ? d->beginOffscreenFrame(cb, flags) : FrameOpSuccess;
     if (r == FrameOpSuccess)
