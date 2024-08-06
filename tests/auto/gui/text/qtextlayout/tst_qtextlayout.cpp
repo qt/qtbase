@@ -2563,6 +2563,7 @@ void tst_QTextLayout::softHyphens()
     QFont font;
     font.setPixelSize(fontSize);
     font.setHintingPreference(QFont::PreferNoHinting);
+    font.setKerning(false);
     const float xAdvance = QFontMetricsF(font).horizontalAdvance(QChar::fromLatin1('x'));
     float shyWidth = 0.0f;
     QTextLayout layout(text, font);
