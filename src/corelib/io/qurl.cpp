@@ -909,7 +909,7 @@ inline void QUrlPrivate::appendPath(QString &appendTo, QUrl::FormattingOptions o
 {
     QString thePath = path;
     if (options & QUrl::NormalizePathSegments) {
-        thePath = qt_normalizePathSegments(path, isLocalFile() ? QDirPrivate::DefaultNormalization : QDirPrivate::RemotePath);
+        qt_normalizePathSegments(&thePath, isLocalFile() ? QDirPrivate::DefaultNormalization : QDirPrivate::RemotePath);
     }
 
     QStringView thePathView(thePath);
@@ -1514,111 +1514,6 @@ inline QString QUrlPrivate::mergePaths(const QString &relativePath) const
         newPath = QStringView{path}.left(path.lastIndexOf(u'/') + 1) + relativePath;
 
     return newPath;
-}
-
-/*
-    From http://www.ietf.org/rfc/rfc3986.txt, 5.2.4: Remove dot segments
-
-    Removes unnecessary ../ and ./ from the path. Used for normalizing
-    the URL.
-
-    This code has a Qt-specific extension to handle empty path segments (a.k.a.
-    multiple slashes like "a//b"). We try to keep them wherever possible
-    because with some protocols they are meaningful, but we still consider them
-    to be a single directory transition for "." or ".." (e.g., "a/b//c" +
-    "../" is "a/"). See tst_QUrl::resolved() for the expected behavior.
-*/
-static void removeDotsFromPath(QString *path)
-{
-    // The input buffer is initialized with the now-appended path
-    // components and the output buffer is initialized to the empty
-    // string.
-    const QChar *in = path->constBegin();
-
-    // Scan the input for a "." or ".." segment. If there isn't any, then we
-    // don't need to modify this path at all.
-    qsizetype i = 0, n = path->size();
-    for (bool lastWasSlash = true; i < n; ++i) {
-        if (lastWasSlash && in[i] == u'.') {
-            if (i + 1 == n || in[i + 1] == u'/')
-                break;
-            if (in[i + 1] == u'.' && (i + 2 == n || in[i + 2] == u'/'))
-                break;
-        }
-        lastWasSlash = in[i] == u'/';
-    }
-    if (i == n)
-        return;
-
-    QChar *out = path->data();
-    const QChar *end = out + path->size();
-    out += i;
-    in = out;
-
-    // We implement a modified algorithm compared to RFC 3986, for efficiency.
-    do {
-#if 0   // to see in the debugger
-        QStringView output(path->constBegin(), out);
-        QStringView input(in, end);
-#endif
-        // First, copy any preceding slashes, so we can look at the segment's
-        // content.
-        while (in < end && in[0] == u'/') {
-            *out++ = *in++;
-
-            // Note: we may exit this loop with in == end, in which case we
-            // *shouldn't* dereference *in. But since we are pointing to a
-            // detached, non-empty QString, we know there's a u'\0' at the end.
-        }
-
-        // Is this path segment either "." or ".."?
-        enum { Nothing, Dot, DotDot } type = Nothing;
-        if (in[0] == u'.') {
-            if (in + 1 == end || in[1] == u'/')
-                type = Dot;
-            else if (in[1] == u'.' && (in + 2 == end || in[2] == u'/'))
-                type = DotDot;
-        }
-        if (type != Nothing) {
-            // If it is either, we skip it and remove any preceding slashes (if
-            // any) from the output. If it is "..", we remove the segment
-            // before that and its preceding slashes (if any) too.
-            const QChar *start = path->constBegin();
-            if (type == DotDot) {
-                while (out > start && *--out != u'/')
-                    ;
-                while (out > start && *--out == u'/')
-                    ;
-                ++in;   // the first dot
-            }
-
-            in += 2;    // one dot and either one slash or the terminating null
-            while (out > start && *--out != u'/')
-                ;
-
-            // And then replace the segment with "/", unless it would make a
-            // relative path become absolute.
-            if (out != start) {
-                // Replacing with a slash won't make the path absolute.
-                *out++ = u'/';
-            } else if (*start == u'/') {
-                // The path is already absolute.
-                ++out;
-            } else {
-                // The path is relative, so we must skip any follow-on slashes
-                // to make sure the next iteration of the loop won't copy them,
-                // which would make the path become absolute.
-                while (in < end && *in == u'/')
-                    ++in;
-            }
-            continue;
-        }
-
-        // If it is neither, then we copy this segment.
-        while (in < end && in->unicode() != '/')
-            *out++ = *in++;
-    } while (in < end);
-    path->truncate(out - path->constBegin());
 }
 
 // Authority-less URLs cannot have paths starting with double slashes (see
@@ -2814,7 +2709,7 @@ QUrl QUrl::resolved(const QUrl &relative) const
     else
         t.d->sectionIsPresent &= ~QUrlPrivate::Fragment;
 
-    removeDotsFromPath(&t.d->path);
+    qt_normalizePathSegments(&t.d->path, isLocalFile() ? QDirPrivate::DefaultNormalization : QDirPrivate::RemotePath);
     if (!t.d->hasAuthority())
         fixupNonAuthorityPath(&t.d->path);
 
