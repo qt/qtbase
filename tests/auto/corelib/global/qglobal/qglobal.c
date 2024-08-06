@@ -59,7 +59,7 @@ void tst_GlobalTypes()
 #endif /* QT_SUPPORTS_INT128 */
 }
 
-#if QT_SUPPORTS_INT128
+#ifdef QT_SUPPORTS_INT128
 qint128 tst_qint128_min() { return Q_INT128_MIN + 0; }
 qint128 tst_qint128_max() { return 0 + Q_INT128_MAX; }
 quint128 tst_quint128_max() { return Q_UINT128_MAX - 1 + 1; }

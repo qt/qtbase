@@ -139,7 +139,7 @@ Q_DECL_CONST_FUNCTION constexpr inline size_t qHash(qint64 key, size_t seed = 0)
     }
     return qHash(quint64(key), seed);
 }
-#if QT_SUPPORTS_INT128
+#ifdef QT_SUPPORTS_INT128
 constexpr size_t qHash(quint128 key, size_t seed = 0) noexcept
 {
     return qHash(quint64(key + (key >> 64)), seed);

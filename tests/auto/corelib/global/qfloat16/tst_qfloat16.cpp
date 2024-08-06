@@ -214,7 +214,7 @@ void tst_qfloat16::ordering()
         CHECK_INT(qint16);
         CHECK_INT(qint32);
         CHECK_INT(qint64);
-#if QT_SUPPORTS_INT128
+#ifdef QT_SUPPORTS_INT128
         CHECK_INT(qint128);
 #endif
         if (right >= 0) {
@@ -224,7 +224,7 @@ void tst_qfloat16::ordering()
             CHECK_INT(quint16);
             CHECK_INT(quint32);
             CHECK_INT(quint64);
-    #if QT_SUPPORTS_INT128
+    #ifdef QT_SUPPORTS_INT128
             CHECK_INT(quint128);
     #endif
         }
