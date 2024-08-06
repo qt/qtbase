@@ -695,8 +695,8 @@ void sendHEADERSFrame(HPack::Encoder &encoder,
 
     HPack::BitOStream outputStream(frameWriter.outboundFrame().buffer);
     QVERIFY(encoder.encodeRequest(outputStream, headers));
-    frameWriter.setPayloadSize(frameWriter.outboundFrame().buffer.size()
-                               - Http2::Http2PredefinedParameters::frameHeaderSize);
+    frameWriter.setPayloadSize(static_cast<quint32>(frameWriter.outboundFrame().buffer.size()
+                               - Http2::Http2PredefinedParameters::frameHeaderSize));
     frameWriter.write(socket);
 }
 
@@ -724,8 +724,8 @@ void sendCONTINUATIONFrame(HPack::Encoder &encoder,
 
     HPack::BitOStream outputStream(frameWriter.outboundFrame().buffer);
     QVERIFY(encoder.encodeRequest(outputStream, headers));
-    frameWriter.setPayloadSize(frameWriter.outboundFrame().buffer.size()
-                               - Http2::Http2PredefinedParameters::frameHeaderSize);
+    frameWriter.setPayloadSize(static_cast<quint32>(frameWriter.outboundFrame().buffer.size()
+                               - Http2::Http2PredefinedParameters::frameHeaderSize));
     frameWriter.write(socket);
 }
 
@@ -771,7 +771,7 @@ void tst_QHttp2Connection::testCONTINUATIONFrame()
         QVERIFY(encoder.encodeRequest(outputStream, headers));
 
         // split headers into multiple CONTINUATION frames
-        const size_t sizeLimit = frameWriter.outboundFrame().buffer.size() / 5;
+        const auto sizeLimit = static_cast<qint32>(frameWriter.outboundFrame().buffer.size() / 5);
         frameWriter.writeHEADERS(*client, sizeLimit);
 
         QVERIFY(serverIncomingStreamSpy.wait());
