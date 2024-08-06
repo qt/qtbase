@@ -145,6 +145,7 @@ public:
 
 private:
     inline TransformationType inline_type() const;
+    void do_map(qreal x, qreal y, qreal &nx, qreal &ny) const;
     qreal m_matrix[3][3];
 
     mutable uint m_type : 5;
