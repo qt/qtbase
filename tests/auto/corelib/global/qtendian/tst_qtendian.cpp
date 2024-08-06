@@ -7,7 +7,7 @@
 #include <QtCore/private/qendian_p.h>
 #include <QtCore/qsysinfo.h>
 
-#if QT_SUPPORTS_INT128
+#ifdef QT_SUPPORTS_INT128
 #define ONLY_INT128(...) __VA_ARGS__
 #else
 #define ONLY_INT128(...)
