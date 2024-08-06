@@ -1964,6 +1964,9 @@ QString QRegularExpression::wildcardToRegularExpression(QStringView pattern, Wil
         switch (c.unicode()) {
         case '*':
             rx += settings.starEscape;
+            // Coalesce sequences of *
+            while (i < wclen && wc[i] == u'*')
+                ++i;
             break;
         case '?':
             rx += settings.questionMarkEscape;

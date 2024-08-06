@@ -2486,6 +2486,30 @@ void tst_QRegularExpression::wildcard_data()
     addRow("foo*bar", "foo\nbar", true, true);
     addRow("foo*bar", "foo\r\nbar", true, true);
 
+    addRow("foo**********bar", "foo/fie/baz/bar", false, true);
+    addRow("foo**********bar", "foo bar bar test bar bar bar", true, true);
+    addRow("foo**********bar", "foo\tbar", true, true);
+    addRow("foo**********bar", "foo\nbar", true, true);
+    addRow("foo**********bar", "foo\r\nbar", true, true);
+
+    addRow("foo**********bar", "foo/fie/baz/baz", false, false);
+    addRow("foo**********bar", "foo bar bar test bar bar baz", false, false);
+    addRow("foo**********bar", "foo\tbaz", false, false);
+    addRow("foo**********bar", "foo\nbaz", false, false);
+    addRow("foo**********bar", "foo\r\nbaz", false, false);
+
+    addRow("foo*****x*****bar", "foo/fie/bax/bar", false, true);
+    addRow("foo*****x*****bar", "foo bar bax test bar bar bar", true, true);
+    addRow("foo*****x*****bar", "foo\tbar foo\tbax foo\tbar foo\tbar", true, true);
+    addRow("foo*****x*****bar", "foo\nx\nbar", true, true);
+    addRow("foo*****x*****bar", "foo\r\nxbar", true, true);
+
+    addRow("foo*****x*****bar", "foo/fie/baz/bar", false, false);
+    addRow("foo*****x*****bar", "foo bar baz test bar bar bar", false, false);
+    addRow("foo*****x*****bar", "foo\tbar foo\tbar foo\tbar foo\tbar", false, false);
+    addRow("foo*****x*****bar", "foo\nbar", false, false);
+    addRow("foo*****x*****bar", "foo\r\nbar", false, false);
+
     // different anchor modes
     addRow("foo", "afoob", false, false, true);
     addRow("foo", "afoob", true, true, false);
