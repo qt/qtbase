@@ -36,6 +36,11 @@
 # define _PATH_TMP          "/tmp"
 #endif
 
+#if __has_include(<sys/disk.h>)
+// BSDs (including Apple Darwin)
+# include <sys/disk.h>
+#endif
+
 #if defined(Q_OS_DARWIN)
 # include <QtCore/private/qcore_mac_p.h>
 # include <CoreFoundation/CFBundle.h>
@@ -362,6 +367,33 @@ inline void QFileSystemMetaData::fillFromStatxBuf(const struct statx &)
 //static
 bool QFileSystemEngine::fillMetaData(int fd, QFileSystemMetaData &data)
 {
+    auto getSizeForBlockDev = [&](mode_t st_mode) {
+#ifdef BLKGETSIZE64
+        // Linux
+        if (quint64 sz; (st_mode & S_IFMT) == S_IFBLK && ioctl(fd, BLKGETSIZE64, &sz) == 0)
+            data.size_ = sz;        // returns byte count
+#elif defined(BLKGETSIZE)
+        // older Linux
+        if (ulong sz; (st_mode & S_IFMT) == S_IFBLK && ioctl(fd, BLKGETSIZE, &sz) == 0)
+            data.size_ = sz * 512;  // returns 512-byte sector count
+#elif defined(DKIOCGETBLOCKCOUNT)
+        // Apple Darwin
+        qint32 blksz;
+        if (quint64 count; (st_mode & S_IFMT) == S_IFBLK
+                && ioctl(fd, DKIOCGETBLOCKCOUNT, &count) == 0
+                && ioctl(fd, DKIOCGETBLOCKSIZE, &blksz) == 0)
+            data.size_ = count * blksz;
+#elif defined(DIOCGMEDIASIZE)
+        // FreeBSD
+        // see Linux-compat implementation in
+        // http://fxr.watson.org/fxr/source/compat/linux/linux_ioctl.c?v=FREEBSD-13-STABLE#L282
+        // S_IFCHR is correct: FreeBSD doesn't have block devices any more
+        if (QT_OFF_T sz; (st_mode & S_IFMT) == S_IFCHR && ioctl(fd, DIOCGMEDIASIZE, &sz) == 0)
+            data.size_ = sz;        // returns byte count
+#else
+        Q_UNUSED(st_mode);
+#endif
+    };
     data.entryFlags &= ~QFileSystemMetaData::PosixStatFlags;
     data.knownFlagsMask |= QFileSystemMetaData::PosixStatFlags;
 
@@ -371,6 +403,7 @@ bool QFileSystemEngine::fillMetaData(int fd, QFileSystemMetaData &data)
     if (ret != -ENOSYS) {
         if (ret == 0) {
             data.fillFromStatxBuf(statxBuffer);
+            getSizeForBlockDev(statxBuffer.stx_mode);
             return true;
         }
         return false;
@@ -380,6 +413,7 @@ bool QFileSystemEngine::fillMetaData(int fd, QFileSystemMetaData &data)
 
     if (QT_FSTAT(fd, &statBuffer) == 0) {
         data.fillFromStatBuf(statBuffer);
+        getSizeForBlockDev(statBuffer.st_mode);
         return true;
     }
 
