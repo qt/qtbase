@@ -705,6 +705,9 @@ function(_qt_internal_sbom_add_target target)
     if(is_qt_entity_type)
         list(APPEND purl_args IS_QT_ENTITY_TYPE)
     endif()
+    if(qa_upstream_purl)
+        list(APPEND purl_args PURL_3RDPARTY_UPSTREAM_VALUE "${qa_upstream_purl}")
+    endif()
     list(APPEND purl_args OUT_VAR purl_package_options)
 
     _qt_internal_sbom_handle_purl_values(${target} ${purl_args})
@@ -2242,6 +2245,7 @@ function(_qt_internal_sbom_read_qt_attribution out_prefix)
         _qt_internal_sbom_get_attribution_key(DownloadLocation download_location "${out_prefix}")
         _qt_internal_sbom_get_attribution_key(Copyright copyrights "${out_prefix}")
         _qt_internal_sbom_get_attribution_key(CopyrightFile copyright_file "${out_prefix}")
+        _qt_internal_sbom_get_attribution_key(UpstreamPURL upstream_purl "${out_prefix}")
 
         # In some attribution files (like harfbuzz) Copyright contains an array of copyrights rather
         # than a single string. Extract all of them.
