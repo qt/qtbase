@@ -20,5 +20,10 @@ However, \l{qt_extract_metatypes} and \l{qt_add_qml_module} were updated to
 support \c{AUTOGEN_BETTER_GRAPH_MULTI_CONFIG} in Qt 6.8, so you will get build
 errors, unless you patch the older Qt version to support it.
 
+To set this property globally, use the following command:
+\snippet cmake-macros/examples.cmake AUTOGEN_BETTER_GRAPH_MULTI_CONFIG_1
+or set it on a target:
+\snippet cmake-macros/examples.cmake AUTOGEN_BETTER_GRAPH_MULTI_CONFIG_2
+
 See \l{https://cmake.org/cmake/help/latest/prop_tgt/AUTOGEN_BETTER_GRAPH_MULTI_CONFIG.html}{AUTOGEN_BETTER_GRAPH_MULTI_CONFIG} for more information.
 */
