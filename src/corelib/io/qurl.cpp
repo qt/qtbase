@@ -1545,25 +1545,22 @@ static void removeDotsFromPath(QString *path)
 
     // Scan the input for a "." or ".." segment. If there isn't any, then we
     // don't need to modify this path at all.
-    qsizetype modidx = [&] {
-        bool lastWasSlash = true;
-        for (qsizetype i = 0, n = path->size(); i < n; ++i) {
-            if (lastWasSlash && in[i] == u'.') {
-                if (i + 1 == n || in[i + 1] == u'/')
-                    return i;
-                if (in[i + 1] == u'.' && (i + 2 == n || in[i + 2] == u'/'))
-                    return i;
-            }
-            lastWasSlash = in[i] == u'/';
+    qsizetype i = 0, n = path->size();
+    for (bool lastWasSlash = true; i < n; ++i) {
+        if (lastWasSlash && in[i] == u'.') {
+            if (i + 1 == n || in[i + 1] == u'/')
+                break;
+            if (in[i + 1] == u'.' && (i + 2 == n || in[i + 2] == u'/'))
+                break;
         }
-        return qsizetype(-1);
-    }();
-    if (modidx < 0)
+        lastWasSlash = in[i] == u'/';
+    }
+    if (i == n)
         return;
 
     QChar *out = path->data();
     const QChar *end = out + path->size();
-    out += modidx;
+    out += i;
     in = out;
 
     // We implement a modified algorithm compared to RFC 3986, for efficiency.
