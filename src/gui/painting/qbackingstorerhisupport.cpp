@@ -265,7 +265,10 @@ bool QBackingStoreRhiSupport::checkForceRhi(QPlatformBackingStoreRhiConfig *outC
         checked = true;
 
         const bool alwaysRhi = qEnvironmentVariableIntValue("QT_WIDGETS_RHI");
-        if (alwaysRhi)
+        const bool highdpiDownscale = qEnvironmentVariableIntValue("QT_WIDGETS_HIGHDPI_DOWNSCALE");
+        if (highdpiDownscale)
+            qCDebug(lcQpaBackingStore) << "Enabling QT_WIDGETS_RHI due to QT_WIDGETS_HIGHDPI_DOWNSCALE";
+        if (alwaysRhi || highdpiDownscale)
             config.setEnabled(true);
 
         // if enabled, choose an api
