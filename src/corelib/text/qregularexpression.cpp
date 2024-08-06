@@ -1947,9 +1947,7 @@ QString QRegularExpression::wildcardToRegularExpression(QStringView pattern, Wil
 
     const GlobSettings settings = [options]() {
         if (options.testFlag(NonPathWildcardConversion)) {
-            // using [\d\D] to mean "match everything";
-            // dot doesn't match newlines, unless in /s mode
-            return GlobSettings{ u'\0', u"[\\d\\D]*", u"[\\d\\D]" };
+            return GlobSettings{ u'\0', u".*", u"." };
         } else {
 #ifdef Q_OS_WIN
             return GlobSettings{ u'\\', u"[^/\\\\]*", u"[^/\\\\]" };
@@ -1958,6 +1956,10 @@ QString QRegularExpression::wildcardToRegularExpression(QStringView pattern, Wil
 #endif
         }
     }();
+
+    // We want a dot to match everything (incl. newlines), so enable /s mode,
+    // limited to the pattern string we're producing.
+    rx += u"(?s:";
 
     while (i < wclen) {
         const QChar c = wc[i++];
@@ -2032,6 +2034,9 @@ QString QRegularExpression::wildcardToRegularExpression(QStringView pattern, Wil
             break;
         }
     }
+
+    // Closes the (?s: group opened above
+    rx += u")";
 
     if (!(options & UnanchoredWildcardConversion))
         rx = anchoredPattern(rx);
