@@ -598,3 +598,65 @@
 }
 
 @end
+
+@implementation QNSView (ServicesMenu)
+
+// Support for reading and writing from service menu pasteboards, which is also
+// how the writing tools interact with custom NSView. Note that we only support
+// plain text, which means that a rich text selection will lose all its styling
+// when fed through a service that changes the text. To support rich text we
+// need IM plumbing that operates on QMimeData.
+
+- (id)validRequestorForSendType:(NSPasteboardType)sendType returnType:(NSPasteboardType)returnType
+{
+    bool canWriteToPasteboard = [&]{
+        if (![sendType isEqualToString:NSPasteboardTypeString])
+            return false;
+        if (auto queryResult = queryInputMethod(self.focusObject, Qt::ImCurrentSelection)) {
+            auto selectedText = queryResult.value(Qt::ImCurrentSelection).toString();
+            if (!selectedText.isEmpty())
+                return true;
+        }
+        return false;
+    }();
+
+    bool canReadFromPastboard = [returnType isEqualToString:NSPasteboardTypeString];
+
+    if ((sendType && !canWriteToPasteboard) || (returnType && !canReadFromPastboard)) {
+        return [super validRequestorForSendType:sendType returnType:returnType];
+    } else {
+        qCDebug(lcQpaServices) << "Accepting service interaction for send" << sendType << "and receive" << returnType;
+        return self;
+    }
+}
+
+- (BOOL)writeSelectionToPasteboard:(NSPasteboard *)pasteboard types:(NSArray<NSPasteboardType> *)types
+{
+    if ([types containsObject:NSPasteboardTypeString]
+        // Check for the deprecated NSStringPboardType as well, as even if we
+        // claim to only support NSPasteboardTypeString, we get callbacks for
+        // the deprecated type.
+        || QT_IGNORE_DEPRECATIONS([types containsObject:NSStringPboardType])) {
+        if (auto queryResult = queryInputMethod(self.focusObject, Qt::ImCurrentSelection)) {
+            auto selectedText = queryResult.value(Qt::ImCurrentSelection).toString();
+            qCDebug(lcQpaServices) << "Writing" << selectedText << "to service pasteboard" << pasteboard.name;
+            return [pasteboard writeObjects:@[ selectedText.toNSString() ]];
+        }
+    }
+    return NO;
+}
+
+- (BOOL)readSelectionFromPasteboard:(NSPasteboard *)pasteboard
+{
+    NSString *insertedString = [pasteboard stringForType:NSPasteboardTypeString];
+    if (!insertedString)
+        return NO;
+
+    qCDebug(lcQpaServices) << "Reading" << insertedString << "from service pasteboard" << pasteboard.name;
+    [self insertText:insertedString replacementRange:{NSNotFound, 0}];
+    return YES;
+}
+
+@end
+
+
