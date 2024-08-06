@@ -3676,59 +3676,67 @@ static QString encodeText(const QString &str,
     const QTextCodec *const codec = s.codec();
     Q_ASSERT(codec);
 #endif
-    QString retval(str);
-    int len = retval.length();
-    int i = 0;
+    QString retval;
+    int start = 0;
+    auto appendToOutput = [&](int cur, QLatin1String replacement)
+    {
+        if (start < cur) {
+            retval.reserve(str.size() + replacement.size());
+            retval.append(QStringView(str).left(cur).mid(start));
+        }
+        // Skip over str[cur], replaced by replacement
+        start = cur + 1;
+        retval.append(replacement);
+    };
 
-    while (i < len) {
-        const QChar ati(retval.at(i));
-
-        if (ati == QLatin1Char('<')) {
-            retval.replace(i, 1, QLatin1String("&lt;"));
-            len += 3;
-            i += 4;
-        } else if (encodeQuotes && (ati == QLatin1Char('"'))) {
-            retval.replace(i, 1, QLatin1String("&quot;"));
-            len += 5;
-            i += 6;
-        } else if (ati == QLatin1Char('&')) {
-            retval.replace(i, 1, QLatin1String("&amp;"));
-            len += 4;
-            i += 5;
-        } else if (ati == QLatin1Char('>') && i >= 2 && retval[i - 1] == QLatin1Char(']') && retval[i - 2] == QLatin1Char(']')) {
-            retval.replace(i, 1, QLatin1String("&gt;"));
-            len += 3;
-            i += 4;
-        } else if (performAVN &&
-                   (ati == QChar(0xA) ||
-                    ati == QChar(0xD) ||
-                    ati == QChar(0x9))) {
-            const QString replacement(QLatin1String("&#x") + QString::number(ati.unicode(), 16) + QLatin1Char(';'));
-            retval.replace(i, 1, replacement);
-            i += replacement.length();
-            len += replacement.length() - 1;
-        } else if (encodeEOLs && ati == QChar(0xD)) {
-            retval.replace(i, 1, QLatin1String("&#xd;")); // Replace a single 0xD with a ref for 0xD
-            len += 4;
-            i += 5;
-        } else {
+    const int len = str.size();
+    for (int cur = 0; cur < len; ++cur) {
+        switch (const char16_t ati = str[cur].unicode()) {
+        case u'<':
+            appendToOutput(cur, QLatin1String("&lt;"));
+            break;
+        case u'"':
+            if (encodeQuotes)
+                appendToOutput(cur, QLatin1String("&quot;"));
+            break;
+        case u'&':
+            appendToOutput(cur, QLatin1String("&amp;"));
+            break;
+        case u'>':
+            if (cur >= 2 && str[cur - 1] == u']' && str[cur - 2] == u']')
+                appendToOutput(cur, QLatin1String("&gt;"));
+            break;
+        case u'\r':
+            if (performAVN || encodeEOLs)
+                appendToOutput(cur, QLatin1String("&#xd;"));    // \r == 0x0d
+            break;
+        case u'\n':
+            if (performAVN)
+                appendToOutput(cur, QLatin1String("&#xa;"));    // \n == 0x0a
+            break;
+        case u'\t':
+            if (performAVN)
+                appendToOutput(cur, QLatin1String("&#x9;"));    // \t == 0x09
+            break;
+        default:
 #if QT_CONFIG(textcodec)
             if(codec->canEncode(ati))
-                ++i;
+                ; // continue
             else
 #endif
             {
                 // We have to use a character reference to get it through.
-                const ushort codepoint(ati.unicode());
-                const QString replacement(QLatin1String("&#x") + QString::number(codepoint, 16) + QLatin1Char(';'));
-                retval.replace(i, 1, replacement);
-                i += replacement.length();
-                len += replacement.length() - 1;
+                const QByteArray replacement = "&#x" + QByteArray::number(uint{ati}, 16) + ';';
+                appendToOutput(cur, QLatin1String{replacement});
             }
+            break;
         }
     }
-
-    return retval;
+    if (start > 0) {
+        retval.append(QStringView(str).left(len).mid(start));
+        return retval;
+    }
+    return str;
 }
 
 void QDomAttrPrivate::save(QTextStream& s, int, int) const
