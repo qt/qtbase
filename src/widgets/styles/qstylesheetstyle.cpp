@@ -3923,10 +3923,16 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                 }
                 mi.palette.setBrush(QPalette::HighlightedText, mi.palette.brush(QPalette::ButtonText));
 
-                int textRectOffset = m->maxIconWidth;
+                bool drawCheckMark = mi.menuHasCheckableItems;
+#if QT_CONFIG(combobox)
+                if (qobject_cast<const QComboBox *>(w))
+                    drawCheckMark = false; // ignore the checkmarks provided by the QComboMenuDelegate
+#endif
+                int textRectOffset = 0;
                 if (!mi.icon.isNull()) {
                     renderMenuItemIcon(&mi, p, w, opt->rect, subRule);
-                } else if (mi.menuHasCheckableItems) {
+                    textRectOffset = m->maxIconWidth;
+                } else if (drawCheckMark) {
                     const bool checkable = mi.checkType != QStyleOptionMenuItem::NotCheckable;
                     const bool checked = checkable ? mi.checked : false;
 
@@ -3941,7 +3947,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                         newMi.rect = cmRect;
                         drawPrimitive(PE_IndicatorMenuCheckMark, &newMi, p, w);
                     }
-                    textRectOffset = std::max(textRectOffset, cmRect.width());
+                    textRectOffset = std::max(m->maxIconWidth, cmRect.width());
                 }
 
                 QRect textRect = subRule.contentsRect(opt->rect);
@@ -5421,6 +5427,11 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
                 return QSize(sz.width(), subRule.size().height());
             }
             if ((pe == PseudoElement_Item) && (subRule.hasBox() || subRule.hasBorder() || subRule.hasFont)) {
+                bool drawCheckMark = mi->menuHasCheckableItems;
+#if QT_CONFIG(combobox)
+                if (qobject_cast<const QComboBox *>(w))
+                    drawCheckMark = false; // ignore the checkmarks provided by the QComboMenuDelegate
+#endif
                 QSize sz(csz);
                 if (mi->text.contains(u'\t'))
                     sz.rwidth() += 12; //as in QCommonStyle
@@ -5428,7 +5439,7 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
                     const int pmSmall = pixelMetric(PM_SmallIconSize);
                     const QSize pmSize = mi->icon.actualSize(QSize(pmSmall, pmSmall));
                     sz.rwidth() += std::max(mi->maxIconWidth, pmSize.width()) + 4;
-                } else if (mi->menuHasCheckableItems) {
+                } else if (drawCheckMark) {
                     QRenderRule subSubRule = renderRule(w, opt, PseudoElement_MenuCheckMark);
                     QRect checkmarkRect = positionRect(w, subRule, subSubRule, PseudoElement_MenuCheckMark, opt->rect, opt->direction);
                     sz.rwidth() += std::max(mi->maxIconWidth, checkmarkRect.width()) + 4;
