@@ -104,7 +104,7 @@ extern "C" {        // functions in qglobal.c
 void tst_GlobalTypes();
 int tst_QtVersion();
 const char *tst_qVersion();
-#if QT_SUPPORTS_INT128
+#ifdef QT_SUPPORTS_INT128
 qint128 tst_qint128_min();
 qint128 tst_qint128_max();
 quint128 tst_quint128_max();

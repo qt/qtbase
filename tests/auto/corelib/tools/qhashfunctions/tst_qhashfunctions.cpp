@@ -169,7 +169,7 @@ static void unsignedIntegerConsistency(quint64 value, size_t seed)
     if (v32 == value)
         QCOMPARE(hu64, hu32);
 
-#if QT_SUPPORTS_INT128
+#ifdef QT_SUPPORTS_INT128
     const auto hu128 = qHash(quint128(value), seed);
     QCOMPARE(hu128, hu64);
 #endif
@@ -216,7 +216,7 @@ void tst_QHashFunctions::signedIntegerConsistency()
             QCOMPARE(hs64, hs32);
     }
 
-#if QT_SUPPORTS_INT128
+#ifdef QT_SUPPORTS_INT128
     const auto hs128 = qHash(qint128(value), seed);
     QCOMPARE(hs128, hs64);
 #endif
