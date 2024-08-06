@@ -82,6 +82,9 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSViewMouseMoveHelper);
 @property (readonly) QObject* focusObject;
 @end
 
+@interface QNSView (ServicesMenu) <NSServicesMenuRequestor>
+@end
+
 @interface QT_MANGLE_NAMESPACE(QNSViewMenuHelper) : NSObject
 - (instancetype)initWithView:(QNSView *)theView;
 @end
