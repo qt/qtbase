@@ -673,13 +673,18 @@ function(_qt_internal_sbom_add_target target)
 
     if(arg_CPE)
         list(APPEND project_package_options CPE "${arg_CPE}")
-    elseif(arg_CPE_VENDOR AND arg_CPE_PRODUCT)
+    endif()
+    if(arg_CPE_VENDOR AND arg_CPE_PRODUCT)
         _qt_internal_sbom_compute_security_cpe(custom_cpe
             VENDOR "${arg_CPE_VENDOR}"
             PRODUCT "${arg_CPE_PRODUCT}"
             VERSION "${package_version}")
         list(APPEND project_package_options CPE "${custom_cpe}")
-    elseif(is_qt_entity_type)
+    endif()
+    if(qa_cpe)
+        list(APPEND project_package_options CPE "${qa_cpe}")
+    endif()
+    if(is_qt_entity_type)
         _qt_internal_sbom_compute_security_cpe_for_qt(cpe_list)
         list(APPEND project_package_options CPE "${cpe_list}")
     endif()
@@ -2246,6 +2251,7 @@ function(_qt_internal_sbom_read_qt_attribution out_prefix)
         _qt_internal_sbom_get_attribution_key(Copyright copyrights "${out_prefix}")
         _qt_internal_sbom_get_attribution_key(CopyrightFile copyright_file "${out_prefix}")
         _qt_internal_sbom_get_attribution_key(UpstreamPURL upstream_purl "${out_prefix}")
+        _qt_internal_sbom_get_attribution_key(CPE cpe "${out_prefix}")
 
         # In some attribution files (like harfbuzz) Copyright contains an array of copyrights rather
         # than a single string. Extract all of them.
