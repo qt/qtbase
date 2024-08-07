@@ -4131,11 +4131,11 @@ void tst_Moc::optionsFileError()
 
 static void checkEnum(const QMetaEnum &enumerator, const QByteArray &name,
                       const QList<QPair<QByteArray, quint64>> &keys,
-                      const QMetaType underlyingType = QMetaType::fromType<int>())
+                      const QMetaType enumType)
 {
     QCOMPARE(enumerator.name(), QByteArrayView{name});
     QCOMPARE(enumerator.keyCount(), keys.size());
-    QCOMPARE(enumerator.metaType().underlyingType(), underlyingType);
+    QCOMPARE(enumerator.metaType(), enumType);
     for (int i = 0; i < enumerator.keyCount(); ++i) {
         QCOMPARE(QByteArray{enumerator.key(i)}, keys[i].first);
         QCOMPARE(enumerator.value(i), keys[i].second);
@@ -4157,7 +4157,8 @@ void tst_Moc::testNestedQNamespace()
 {
     QCOMPARE(TestSameEnumNamespace::staticMetaObject.enumeratorCount(), 1);
     checkEnum(TestSameEnumNamespace::staticMetaObject.enumerator(0), "TestSameEnumNamespace",
-                {{"Key1", 1}, {"Key2", 2}});
+              {{"Key1", 1}, {"Key2", 2}},
+              QMetaType::fromType<TestSameEnumNamespace::TestSameEnumNamespace>());
     QMetaEnum meta1 = QMetaEnum::fromType<TestSameEnumNamespace::TestSameEnumNamespace>();
     QVERIFY(meta1.isValid());
     QCOMPARE(meta1.name(), "TestSameEnumNamespace");
@@ -4167,7 +4168,8 @@ void tst_Moc::testNestedQNamespace()
     // QTBUG-112996
     QCOMPARE(TestNestedSameEnumNamespace::a::staticMetaObject.enumeratorCount(), 1);
     checkEnum(TestNestedSameEnumNamespace::a::staticMetaObject.enumerator(0), "a",
-              {{"Key11", 11}, {"Key12", 12}});
+              {{"Key11", 11}, {"Key12", 12}},
+              QMetaType::fromType<TestNestedSameEnumNamespace::a::a>());
     QMetaEnum meta2 = QMetaEnum::fromType<TestNestedSameEnumNamespace::a::a>();
     QVERIFY(meta2.isValid());
     QCOMPARE(meta2.name(), "a");
@@ -4179,31 +4181,42 @@ void tst_Moc::testQNamespace()
 {
     QCOMPARE(TestQNamespace::staticMetaObject.enumeratorCount(), 5);
     checkEnum(TestQNamespace::staticMetaObject.enumerator(0), "TestEnum1",
-                {{"Key1", 11}, {"Key2", 12}});
+              {{"Key1", 11}, {"Key2", 12}},
+              QMetaType::fromType<TestQNamespace::TestEnum1>());
     checkEnum(TestQNamespace::staticMetaObject.enumerator(1), "TestEnum2",
-                {{"Key1", 17}, {"Key2", 18}});
+              {{"Key1", 17}, {"Key2", 18}},
+              QMetaType::fromType<TestQNamespace::TestEnum2>());
     checkEnum(TestQNamespace::staticMetaObject.enumerator(2), "TestEnum3",
-                {{"Key1", 23}, {"Key2", 24}}, QMetaType::fromType<qint8>());
+              {{"Key1", 23}, {"Key2", 24}},
+              QMetaType::fromType<TestQNamespace::TestEnum3>());
     checkEnum(TestQNamespace::staticMetaObject.enumerator(3), "TestFlag1",
-                {{"None", 0}, {"Flag1", 1}, {"Flag2", 2}, {"Any", 1 | 2}});
+              {{"None", 0}, {"Flag1", 1}, {"Flag2", 2}, {"Any", 1 | 2}},
+              QMetaType::fromType<TestQNamespace::TestFlag1>());
     checkEnum(TestQNamespace::staticMetaObject.enumerator(4), "TestFlag2",
-                {{"None", 0}, {"Flag1", 4}, {"Flag2", 8}, {"Any", 4 | 8}});
+              {{"None", 0}, {"Flag1", 4}, {"Flag2", 8}, {"Any", 4 | 8}},
+              QMetaType::fromType<TestQNamespace::TestFlag2>());
 
     QCOMPARE(TestQNamespace::TestGadget::staticMetaObject.enumeratorCount(), 3);
     checkEnum(TestQNamespace::TestGadget::staticMetaObject.enumerator(0), "TestGEnum1",
-                {{"Key1", 13}, {"Key2", 14}});
+              {{"Key1", 13}, {"Key2", 14}},
+              QMetaType::fromType<TestQNamespace::TestGadget::TestGEnum1>());
     checkEnum(TestQNamespace::TestGadget::staticMetaObject.enumerator(1), "TestGEnum2",
-                {{"Key1", 23}, {"Key2", 24}});
+              {{"Key1", 23}, {"Key2", 24}},
+              QMetaType::fromType<TestQNamespace::TestGadget::TestGEnum2>());
     checkEnum(TestQNamespace::TestGadget::staticMetaObject.enumerator(2), "TestGEnum3",
-                {{"Key1", 33}, {"Key2", 34}}, QMetaType::fromType<qint16>());
+              {{"Key1", 33}, {"Key2", 34}},
+              QMetaType::fromType<TestQNamespace::TestGadget::TestGEnum3>());
 
     QCOMPARE(TestQNamespace::TestGadgetExport::staticMetaObject.enumeratorCount(), 3);
     checkEnum(TestQNamespace::TestGadgetExport::staticMetaObject.enumerator(0), "TestGeEnum1",
-                {{"Key1", 20}, {"Key2", 21}});
+              {{"Key1", 20}, {"Key2", 21}},
+              QMetaType::fromType<TestQNamespace::TestGadgetExport::TestGeEnum1>());
     checkEnum(TestQNamespace::TestGadgetExport::staticMetaObject.enumerator(1), "TestGeEnum2",
-                {{"Key1", 23}, {"Key2", 24}});
+              {{"Key1", 23}, {"Key2", 24}},
+              QMetaType::fromType<TestQNamespace::TestGadgetExport::TestGeEnum2>());
     checkEnum(TestQNamespace::TestGadgetExport::staticMetaObject.enumerator(2), "TestGeEnum3",
-                {{"Key1", 26}, {"Key2", 27}}, QMetaType::fromType<quint16>());
+              {{"Key1", 26}, {"Key2", 27}},
+              QMetaType::fromType<TestQNamespace::TestGadgetExport::TestGeEnum3>());
 
     QMetaEnum meta = QMetaEnum::fromType<TestQNamespace::TestEnum1>();
     QVERIFY(meta.isValid());
@@ -4213,7 +4226,7 @@ void tst_Moc::testQNamespace()
 
     QCOMPARE(TestExportNamespace::staticMetaObject.enumeratorCount(), 1);
     checkEnum(TestExportNamespace::staticMetaObject.enumerator(0), "MyEnum",
-        {{"Key1", 0}, {"Key2", 1}});
+        {{"Key1", 0}, {"Key2", 1}}, QMetaType::fromType<TestExportNamespace::MyEnum>());
 
     QCOMPARE(FooNamespace::staticMetaObject.enumeratorCount(), 1);
     QCOMPARE(FooNamespace::FooNestedNamespace::staticMetaObject.enumeratorCount(), 2);
@@ -4266,13 +4279,16 @@ QT_WARNING_POP
     QCOMPARE(TestQNamespaceDeprecated::staticMetaObject.enumeratorCount(), 2);
     checkEnum(TestQNamespaceDeprecated::staticMetaObject.enumerator(0), "TestEnum1",
                 {{"Key1", 11}, {"Key2", 12}, {"Key3", 13}, {"Key4", 14}, {"Key5", 15}, {"Key6", 16},
-                 {"Key7", 17}});
+                 {"Key7", 17}},
+              QMetaType::fromType<TestQNamespaceDeprecated::TestEnum1>());
     checkEnum(TestQNamespaceDeprecated::staticMetaObject.enumerator(1), "TestFlag1",
-                {{"None", 0}, {"Flag1", 1}, {"Flag2", 2}, {"Flag3", 3}, {"Any", 1 | 2 | 3}});
+              {{"None", 0}, {"Flag1", 1}, {"Flag2", 2}, {"Flag3", 3}, {"Any", 1 | 2 | 3}},
+              QMetaType::fromType<TestQNamespaceDeprecated::TestFlag1>());
 
     QCOMPARE(TestQNamespaceDeprecated::TestGadget::staticMetaObject.enumeratorCount(), 1);
     checkEnum(TestQNamespaceDeprecated::TestGadget::staticMetaObject.enumerator(0), "TestGEnum1",
-                {{"Key1", 13}, {"Key2", 14}, {"Key3", 15}});
+              {{"Key1", 13}, {"Key2", 14}, {"Key3", 15}},
+              QMetaType::fromType<TestQNamespaceDeprecated::TestGadget::TestGEnum1>());
 
     QMetaEnum meta = QMetaEnum::fromType<TestQNamespaceDeprecated::TestEnum1>();
     QVERIFY(meta.isValid());
