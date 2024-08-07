@@ -271,17 +271,25 @@ public:
 
     bool isFlag() const;
     bool isScoped() const;
+    bool is64Bit() const;
 
     int keyCount() const;
     const char *key(int index) const;
     int value(int index) const;
+    std::optional<quint64> value64(int index) const;
 
     const char *scope() const;
 
     int keyToValue(const char *key, bool *ok = nullptr) const;
-    const char *valueToKey(int value) const;
     int keysToValue(const char *keys, bool *ok = nullptr) const;
+    std::optional<quint64> keyToValue64(const char *key) const;
+    std::optional<quint64> keysToValue64(const char *keys) const;
+#if QT_CORE_REMOVED_SINCE(6, 8)
+    const char *valueToKey(int value) const;
     QByteArray valueToKeys(int value) const;
+#endif
+    const char *valueToKey(quint64 value) const;
+    QByteArray valueToKeys(quint64 value) const;
 
     inline const QMetaObject *enclosingMetaObject() const { return mobj; }
 
@@ -312,6 +320,7 @@ private:
     };
 
     QMetaEnum(const QMetaObject *mobj, int index);
+    template <typename... Args> quint64 value_helper(uint index, Args...) const noexcept;
 
     const QMetaObject *mobj;
     Data data;

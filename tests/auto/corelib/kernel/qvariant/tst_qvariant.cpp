@@ -5371,10 +5371,6 @@ template <typename Enum, auto Value> static void testVariantMetaEnum()
 
     QVariant strVar = string;
     QVERIFY(strVar.canConvert<Enum>());
-    // unary + to silence gcc warning
-    if ((+static_cast<qint64>(value) > INT_MAX) || (+static_cast<qint64>(value) < INT_MIN)) {
-        QEXPECT_FAIL("", "QMetaEnum api uses 'int' as return type  QTBUG-27451", Abort);
-    }
     QCOMPARE(strVar.value<Enum>(), value);
     strVar = string.toLatin1();
     QVERIFY(strVar.canConvert<Enum>());

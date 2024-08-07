@@ -1258,6 +1258,18 @@ bool QMetaType::isValid() const
 }
 
 
+#include "qmetaobject.h"
+
+const char *QMetaEnum::valueToKey(int value) const
+{
+    return valueToKey(quint64(uint(value)));
+}
+
+QByteArray QMetaEnum::valueToKeys(int value) const
+{
+    return valueToKeys(quint64(uint(value)));
+}
+
 #include "quuid.h"
 
 bool QUuid::isNull() const noexcept

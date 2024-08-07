@@ -38,6 +38,7 @@ set(JSON_HEADERS
         plugin_metadata.h
         pointery_to_incomplete.h
         pure-virtual-signals.h
+        qflags64object.h
         qinvokable.h
         qprivateslots.h
         qtbug-35657-gadget.h

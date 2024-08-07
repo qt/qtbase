@@ -1982,13 +1982,13 @@ static bool convertFromEnum(QMetaType fromType, const void *from, QMetaType toTy
     QMetaEnum en = metaEnumFromType(fromType);
     if (en.isValid()) {
         if (en.isFlag()) {
-            const QByteArray keys = en.valueToKeys(static_cast<int>(ll));
+            const QByteArray keys = en.valueToKeys(ll);
             if (toType.id() == QMetaType::QString)
                 *static_cast<QString *>(to) = QString::fromUtf8(keys);
             else
                 *static_cast<QByteArray *>(to) = keys;
         } else {
-            const char *key = en.valueToKey(static_cast<int>(ll));
+            const char *key = en.valueToKey(ll);
             if (toType.id() == QMetaType::QString)
                 *static_cast<QString *>(to) = QString::fromUtf8(key);
             else
@@ -2014,7 +2014,10 @@ static bool convertToEnum(QMetaType fromType, const void *from, QMetaType toType
             QByteArray keys = (fromTypeId == QMetaType::QString)
                     ? static_cast<const QString *>(from)->toUtf8()
                     : *static_cast<const QByteArray *>(from);
-            value = en.keysToValue(keys.constData(), &ok);
+            if (auto v = en.keysToValue64(keys.constData())) {
+                ok = true;
+                value = *v;
+            }
         }
     }
 #endif

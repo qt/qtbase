@@ -2074,6 +2074,75 @@
     {
         "classes": [
             {
+                "className": "QEnum64Object",
+                "enums": [
+                    {
+                        "isClass": false,
+                        "isFlag": false,
+                        "name": "LargeEnum",
+                        "type": "qint64",
+                        "values": [
+                            "Value0",
+                            "ValueMixed",
+                            "ValueMinus1"
+                        ]
+                    }
+                ],
+                "lineNumber": 8,
+                "object": true,
+                "qualifiedClassName": "QEnum64Object",
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            },
+            {
+                "className": "QFlags64Object",
+                "enums": [
+                    {
+                        "alias": "LargeFlag",
+                        "isClass": false,
+                        "isFlag": true,
+                        "name": "LargeFlags",
+                        "type": "qint64",
+                        "values": [
+                            "Value0",
+                            "ValueMixed",
+                            "ValueMinus1"
+                        ]
+                    },
+                    {
+                        "alias": "ScopedLargeFlag",
+                        "isClass": true,
+                        "isFlag": true,
+                        "name": "ScopedLargeFlags",
+                        "type": "quint64",
+                        "values": [
+                            "Value0",
+                            "ValueMixed",
+                            "ValueMinus1"
+                        ]
+                    }
+                ],
+                "lineNumber": 20,
+                "object": true,
+                "qualifiedClassName": "QFlags64Object",
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            }
+        ],
+        "inputFile": "qflags64object.h",
+        "outputRevision": 68
+    },
+    {
+        "classes": [
+            {
                 "className": "InvokableBeforeReturnType",
                 "lineNumber": 9,
                 "methods": [

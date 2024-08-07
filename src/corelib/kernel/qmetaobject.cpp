@@ -3158,15 +3158,91 @@ const char *QMetaEnum::key(int index) const
     Returns the value with the given \a index; or returns -1 if there
     is no such value.
 
-    \sa keyCount(), key(), keyToValue()
+    If this is an enumeration with a 64-bit underlying type (see is64Bit()),
+    this function returns the low 32-bit portion of the value. Use value64() to
+    obtain the full value instead.
+
+    \sa value64(), keyCount(), key(), keyToValue()
 */
 int QMetaEnum::value(int index) const
 {
+    return value64(index).value_or(-1);
+}
+
+enum EnumExtendMode {
+    SignExtend = -1,
+    ZeroExtend,
+    Use64Bit = 64
+};
+Q_DECL_PURE_FUNCTION static inline EnumExtendMode enumExtendMode(const QMetaEnum &e)
+{
+    if (e.is64Bit())
+        return Use64Bit;
+    if (e.isFlag())
+        return ZeroExtend;
+    if (e.metaType().flags() & QMetaType::IsUnsignedEnumeration)
+        return ZeroExtend;
+    return SignExtend;
+}
+
+static constexpr bool isEnumValueSuitable(quint64 value, EnumExtendMode mode)
+{
+    if (mode == Use64Bit)
+        return true;        // any value is suitable
+
+    // 32-bit QMetaEnum
+    if (mode == ZeroExtend)
+        return value == uint(value);
+    return value == quint64(int(value));
+}
+
+template <typename... Mode> inline
+quint64 QMetaEnum::value_helper(uint index, Mode... modes) const noexcept
+{
+    static_assert(sizeof...(Mode) < 2);
+    if constexpr (sizeof...(Mode) == 0) {
+        return value_helper(index, enumExtendMode(*this));
+    } else if constexpr (sizeof...(Mode) == 1) {
+        auto mode = (modes, ...);
+        quint64 value = mobj->d.data[data.data() + 2U * index + 1];
+        if (mode > 0)
+            value |= quint64(mobj->d.data[data.data() + 2U * data.keyCount() + index]) << 32;
+        else if (mode < 0)
+            value = int(value);     // sign extend to 64-bit
+        return value;
+    }
+}
+
+/*!
+    \since 6.9
+
+    Returns the value with the given \a index if it exists; or returns a
+    \c{std::nullopt} if it doesn't.
+
+//! [qmetaenum-32bit-signextend-64bit]
+    This function always sign-extends the value of 32-bit enumerations to 64
+    bits, if their underlying type is signed (e.g., \c int, \c short). In most
+    cases, this is the expected behavior.
+
+    A notable exception is for flag values that have bit 31 set, like
+    0x8000'0000, because some compilers (such as Microsoft Visual Studio), do
+    not automatically switch to an unsigned underlying type. To avoid this
+    problem, explicitly specify the underlying type in the \c enum declaration.
+
+    \note For QMetaObjects compiled prior to Qt 6.6, this function always
+    sign-extends.
+//! [qmetaenum-32bit-signextend-64bit]
+
+    \sa keyCount(), key(), keyToValue(), is64Bit()
+*/
+std::optional<quint64> QMetaEnum::value64(int index) const
+{
     if (!mobj)
-        return 0;
-    if (index >= 0 && index < int(data.keyCount()))
-        return mobj->d.data[data.data() + 2 * index + 1];
-    return -1;
+        return std::nullopt;
+    if (index < 0 || index >= int(data.keyCount()))
+        return std::nullopt;
+
+    return value_helper(index);
 }
 
 /*!
@@ -3196,6 +3272,20 @@ bool QMetaEnum::isScoped() const
     if (!mobj)
         return false;
     return data.flags() & EnumIsScoped;
+}
+
+/*!
+    \since 6.9
+
+    Returns \c true if the underlying type of this enumeration is 64 bits wide.
+
+    \sa value64()
+*/
+bool QMetaEnum::is64Bit() const
+{
+    if (!mobj)
+        return false;
+    return data.flags() & EnumIs64Bit;
 }
 
 /*!
@@ -3247,25 +3337,44 @@ static bool isScopeMatch(QByteArrayView scope, const QMetaEnum *e)
 
     For flag types, use keysToValue().
 
-    \sa valueToKey(), isFlag(), keysToValue()
+    If this is a 64-bit enumeration (see is64Bit()), this function returns the
+    low 32-bit portion of the value. Use keyToValue64() to obtain the full value
+    instead.
+
+    \sa keyToValue64, valueToKey(), isFlag(), keysToValue(), is64Bit()
 */
 int QMetaEnum::keyToValue(const char *key, bool *ok) const
 {
+    auto value = keyToValue64(key);
     if (ok != nullptr)
-        *ok = false;
-    if (!mobj || !key)
-        return -1;
+        *ok = value.has_value();
+    return int(value.value_or(-1));
+}
 
+/*!
+    \since 6.9
+
+    Returns the integer value of the given enumeration \a key, or \c
+    std::nullopt if \a key is not defined.
+
+    For flag types, use keysToValue64().
+
+    \include qmetaobject.cpp qmetaenum-32bit-signextend-64bit
+
+    \sa valueToKey(), isFlag(), keysToValue64()
+*/
+std::optional<quint64> QMetaEnum::keyToValue64(const char *key) const
+{
+    if (!mobj || !key)
+        return std::nullopt;
     const auto [scope, enumKey] = parse_scope(QLatin1StringView(key));
     for (int i = 0; i < int(data.keyCount()); ++i) {
         if ((!scope || isScopeMatch(*scope, this))
             && enumKey == stringDataView(mobj, mobj->d.data[data.data() + 2 * i])) {
-            if (ok != nullptr)
-                *ok = true;
-            return mobj->d.data[data.data() + 2 * i + 1];
+            return value_helper(i);
         }
     }
-    return -1;
+    return std::nullopt;
 }
 
 /*!
@@ -3276,13 +3385,19 @@ int QMetaEnum::keyToValue(const char *key, bool *ok) const
 
     \sa isFlag(), valueToKeys()
 */
-const char *QMetaEnum::valueToKey(int value) const
+const char *QMetaEnum::valueToKey(quint64 value) const
 {
     if (!mobj)
         return nullptr;
-    for (int i = 0; i < int(data.keyCount()); ++i)
-        if (value == (int)mobj->d.data[data.data() + 2 * i + 1])
+
+    EnumExtendMode mode = enumExtendMode(*this);
+    if (!isEnumValueSuitable(value, mode))
+        return nullptr;
+
+    for (int i = 0; i < int(data.keyCount()); ++i) {
+        if (value == value_helper(i, mode))
             return rawStringData(mobj, mobj->d.data[data.data() + 2 * i]);
+    }
     return nullptr;
 }
 
@@ -3339,39 +3454,57 @@ static bool parseEnumFlags(QByteArrayView v, QVarLengthArray<QByteArrayView, 10>
     If \a keys is not defined, *\a{ok} is set to false; otherwise
     *\a{ok} is set to true.
 
-    \sa isFlag(), valueToKey(), valueToKeys()
+    If this is a 64-bit enumeration (see is64Bit()), this function returns the
+    low 32-bit portion of the value. Use keyToValue64() to obtain the full value
+    instead.
+
+    \sa keysToValue64(), isFlag(), valueToKey(), valueToKeys(), is64Bit()
 */
 int QMetaEnum::keysToValue(const char *keys, bool *ok) const
 {
+    auto value = keysToValue64(keys);
     if (ok != nullptr)
-        *ok = false;
-    if (!mobj || !keys)
-        return -1;
+        *ok = value.has_value();
+    return int(value.value_or(-1));
+}
 
-    auto lookup = [&] (QByteArrayView key) -> std::optional<int> {
+/*!
+    Returns the value derived from combining together the values of the \a keys
+    using the OR operator, or \c std::nullopt if \a keys is not defined. Note
+    that the strings in \a keys must be '|'-separated.
+
+    \include qmetaobject.cpp qmetaenum-32bit-signextend-64bit
+
+    \sa isFlag(), valueToKey(), valueToKeys()
+*/
+std::optional<quint64> QMetaEnum::keysToValue64(const char *keys) const
+{
+    if (!mobj || !keys)
+        return std::nullopt;
+
+    EnumExtendMode mode = enumExtendMode(*this);
+    auto lookup = [&] (QByteArrayView key) -> std::optional<quint64> {
         for (int i = data.keyCount() - 1; i >= 0; --i) {
             if (key == stringDataView(mobj, mobj->d.data[data.data() + 2*i]))
-                return mobj->d.data[data.data() + 2*i + 1];
+                return value_helper(i, mode);
         }
         return std::nullopt;
     };
 
-    int value = 0;
+    quint64 value = 0;
     QVarLengthArray<QByteArrayView, 10> list;
     const bool r = parseEnumFlags(QByteArrayView{keys}, list);
     if (!r)
-        return -1;
+        return std::nullopt;
     for (const auto &untrimmed : list) {
         const auto parsed = parse_scope(untrimmed.trimmed());
         if (parsed.scope && !isScopeMatch(*parsed.scope, this))
-            return -1; // wrong type name in qualified name
+            return std::nullopt; // wrong type name in qualified name
         if (auto thisValue = lookup(parsed.key))
             value |= *thisValue;
         else
-            return -1; // no such enumerator
+            return std::nullopt; // no such enumerator
     }
-    if (ok != nullptr)
-        *ok = true;
     return value;
 }
 
@@ -3401,18 +3534,28 @@ void join_reversed(String &s, const Container &c, Separator sep)
     Returns a byte array of '|'-separated keys that represents the
     given \a value.
 
+    \note Passing a 64-bit \a value to an enumeration whose underlying type is
+    32-bit (that is, if is64Bit() returns \c false) results in an empty string
+    being returned.
+
     \sa isFlag(), valueToKey(), keysToValue()
 */
-QByteArray QMetaEnum::valueToKeys(int value) const
+QByteArray QMetaEnum::valueToKeys(quint64 value) const
 {
     QByteArray keys;
     if (!mobj)
         return keys;
+
+    EnumExtendMode mode = enumExtendMode(*this);
+    if (!isEnumValueSuitable(value, mode))
+        return keys;
+
     QVarLengthArray<QByteArrayView, sizeof(int) * CHAR_BIT> parts;
-    int v = value;
+    quint64 v = value;
+
     // reverse iterate to ensure values like Qt::Dialog=0x2|Qt::Window are processed first.
     for (int i = data.keyCount() - 1; i >= 0; --i) {
-        int k = mobj->d.data[data.data() + 2 * i + 1];
+        quint64 k = value_helper(i, mode);
         if ((k != 0 && (v & k) == k) || (k == value)) {
             v = v & ~k;
             parts.push_back(stringDataView(mobj, mobj->d.data[data.data() + 2 * i]));

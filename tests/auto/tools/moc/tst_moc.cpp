@@ -1,5 +1,6 @@
 // Copyright (C) 2020 The Qt Company Ltd.
 // Copyright (C) 2020 Olivier Goffart <ogoffart@woboq.com>
+// Copyright (C) 2024 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QTest>
@@ -49,6 +50,7 @@
 
 #include "non-gadget-parent-class.h"
 #include "grand-parent-gadget-class.h"
+#include "qflags64object.h"
 #include "namespace.h"
 #include "cxx17-namespaces.h"
 #include "cxx-attributes.h"
@@ -861,6 +863,7 @@ private slots:
     void gadgetHierarchy();
     void optionsFileError_data();
     void optionsFileError();
+    void enumAndFlags64();
     void testQNamespace();
     void testNestedQNamespace();
     void cxx17Namespaces();
@@ -4168,11 +4171,51 @@ static void checkEnum(const QMetaEnum &enumerator, const QByteArray &name,
     QCOMPARE(enumerator.metaType(), enumType);
     for (int i = 0; i < enumerator.keyCount(); ++i) {
         QCOMPARE(QByteArray{enumerator.key(i)}, keys[i].first);
-        QCOMPARE(enumerator.value(i), keys[i].second);
+        QCOMPARE(enumerator.value(i), int(keys[i].second));
+        QCOMPARE(*enumerator.value64(i), keys[i].second);
     }
     // out of range
     QVERIFY(!enumerator.key(keys.size()));
     QCOMPARE(enumerator.value(keys.size()), -1);
+    QVERIFY(!enumerator.value64(keys.size()));
+}
+
+void tst_Moc::enumAndFlags64()
+{
+    const QList<QPair<QByteArray, quint64>> values = {
+        { "Value0", 0 },
+        { "ValueMixed", Q_UINT64_C(0x1122'3344'5566'7788) },
+        { "ValueMinus1", quint64(-1) },
+    };
+    QCOMPARE(QEnum64Object::staticMetaObject.enumeratorCount(), 1);
+    QCOMPARE(QFlags64Object::staticMetaObject.enumeratorCount(), 2);
+
+    QMetaEnum me = QMetaEnum::fromType<QEnum64Object::LargeEnum>();
+    QVERIFY(!me.isFlag());
+    QVERIFY(me.is64Bit());
+    QVERIFY(!me.isScoped());
+    checkEnum(me, "LargeEnum", values,
+              QMetaType::fromType<QEnum64Object::LargeEnum>());
+
+    if (QTest::currentTestFailed()) return;
+
+    me = QMetaEnum::fromType<QFlags64Object::LargeFlags>();
+    QVERIFY(me.isFlag());
+    QVERIFY(me.is64Bit());
+    QVERIFY(!me.isScoped());
+    QCOMPARE(me.enumName(), "LargeFlag");
+    checkEnum(me, "LargeFlags", values,
+              QMetaType::fromType<QFlags64Object::LargeFlags>());
+
+    if (QTest::currentTestFailed()) return;
+
+    me = QMetaEnum::fromType<QFlags64Object::ScopedLargeFlags>();
+    QVERIFY(me.isFlag());
+    QVERIFY(me.is64Bit());
+    QVERIFY(me.isScoped());
+    QCOMPARE(me.enumName(), "ScopedLargeFlag");
+    checkEnum(me, "ScopedLargeFlags", values,
+              QMetaType::fromType<QFlags64Object::ScopedLargeFlags>());
 }
 
 class EnumFromNamespaceClass : public QObject
@@ -4277,6 +4320,7 @@ void tst_Moc::cxx17Namespaces()
     QCOMPARE(QMetaEnum::fromType<CXX17Namespace::A::B::C::D::NamEn>().name(), "NamEn");
     QCOMPARE(QMetaEnum::fromType<CXX17Namespace::A::B::C::D::NamEn>().keyCount(), 1);
     QCOMPARE(QMetaEnum::fromType<CXX17Namespace::A::B::C::D::NamEn>().value(0), 4);
+    QCOMPARE(*QMetaEnum::fromType<CXX17Namespace::A::B::C::D::NamEn>().value64(0), 4U);
 
     QCOMPARE(CXX17Namespace::A::B::C::D::ClassInNamespace::staticMetaObject.className(),
              "CXX17Namespace::A::B::C::D::ClassInNamespace");
@@ -4285,6 +4329,7 @@ void tst_Moc::cxx17Namespaces()
     QCOMPARE(QMetaEnum::fromType<CXX17Namespace::A::B::C::D::ClassInNamespace::GadEn>().name(), "GadEn");
     QCOMPARE(QMetaEnum::fromType<CXX17Namespace::A::B::C::D::ClassInNamespace::GadEn>().keyCount(), 1);
     QCOMPARE(QMetaEnum::fromType<CXX17Namespace::A::B::C::D::ClassInNamespace::GadEn>().value(0), 3);
+    QCOMPARE(*QMetaEnum::fromType<CXX17Namespace::A::B::C::D::ClassInNamespace::GadEn>().value64(0), 3U);
 }
 
 void tst_Moc::cxxAttributes()

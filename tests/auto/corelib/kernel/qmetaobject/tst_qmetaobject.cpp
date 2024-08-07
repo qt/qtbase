@@ -2371,16 +2371,22 @@ void tst_QMetaObject::keysToValue()
     QVERIFY(me.isValid());
     QVERIFY(!me.isFlag());
     QCOMPARE(QByteArray(me.scope()), QByteArray("MyNamespace::" + name));
+    QCOMPARE(me.keyToValue64("MyNamespace::" + name + "::MyEnum2"), 1U);
     QCOMPARE(me.keyToValue("MyNamespace::" + name + "::MyEnum2", &ok), 1);
     // Fully qualified unscoped enumerator
+    QCOMPARE(me.keyToValue64("MyNamespace::" + name + "::MyEnum::MyEnum2"), 1U);
     QCOMPARE(me.keyToValue("MyNamespace::" + name + "::MyEnum::MyEnum2", &ok), 1);
     QCOMPARE(ok, true);
+    QCOMPARE(me.keyToValue64(name + "::MyEnum2"), std::nullopt);
     QCOMPARE(me.keyToValue(name + "::MyEnum2", &ok), -1);
     QCOMPARE(ok, false);
+    QCOMPARE(me.keyToValue64("MyNamespace::MyEnum2"), std::nullopt);
     QCOMPARE(me.keyToValue("MyNamespace::MyEnum2", &ok), -1);
     QCOMPARE(ok, false);
+    QCOMPARE(me.keyToValue64("MyEnum2"), 1U);
     QCOMPARE(me.keyToValue("MyEnum2", &ok), 1);
     QCOMPARE(ok, true);
+    QCOMPARE(me.keyToValue64("MyEnum"), std::nullopt);
     QCOMPARE(me.keyToValue("MyEnum", &ok), -1);
     QCOMPARE(ok, false);
     QCOMPARE(QLatin1String(me.valueToKey(1)), QLatin1String("MyEnum2"));
@@ -2388,12 +2394,16 @@ void tst_QMetaObject::keysToValue()
     QMetaEnum me2 = mo->enumerator(mo->indexOfEnumerator("MyAnotherEnum"));
     QVERIFY(me2.isValid());
     QVERIFY(!me2.isFlag());
+    QCOMPARE(me2.keyToValue64("MyAnotherEnum1"), 1U);
     QCOMPARE(me2.keyToValue("MyAnotherEnum1", &ok), 1);
     QCOMPARE(ok, true);
+    QCOMPARE(me2.keyToValue64("MyAnotherEnum2"), 2U);
     QCOMPARE(me2.keyToValue("MyAnotherEnum2", &ok), 2);
     QCOMPARE(ok, true);
+    QCOMPARE(me2.keyToValue64("MyAnotherEnum3"), quint64(-1));
     QCOMPARE(me2.keyToValue("MyAnotherEnum3", &ok), -1);
     QCOMPARE(ok, true);
+    QCOMPARE(me2.keyToValue64("MyAnotherEnum"), std::nullopt);
     QCOMPARE(me2.keyToValue("MyAnotherEnum", &ok), -1);
     QCOMPARE(ok, false);
 
@@ -2401,40 +2411,55 @@ void tst_QMetaObject::keysToValue()
     QVERIFY(mf.isValid());
     QVERIFY(mf.isFlag());
     QCOMPARE(QByteArray(mf.scope()), QByteArray("MyNamespace::" + name));
+    QCOMPARE(mf.keysToValue64("MyNamespace::" + name + "::MyFlag2"), 2U);
     QCOMPARE(mf.keysToValue("MyNamespace::" + name + "::MyFlag2", &ok), 2);
     QCOMPARE(ok, true);
     // Fully qualified
+    QCOMPARE(mf.keysToValue64("MyNamespace::" + name + "::MyFlag::MyFlag2"), 2U);
     QCOMPARE(mf.keysToValue("MyNamespace::" + name + "::MyFlag::MyFlag2", &ok), 2);
     QCOMPARE(ok, true);
+    QCOMPARE(mf.keysToValue64(name + "::MyFlag2"), std::nullopt);
     QCOMPARE(mf.keysToValue(name + "::MyFlag2", &ok), -1);
     QCOMPARE(ok, false);
+    QCOMPARE(mf.keysToValue64("MyNamespace::MyFlag2"), std::nullopt);
     QCOMPARE(mf.keysToValue("MyNamespace::MyFlag2", &ok), -1);
     QCOMPARE(ok, false);
+    QCOMPARE(mf.keysToValue64("MyFlag2"), 2U);
     QCOMPARE(mf.keysToValue("MyFlag2", &ok), 2);
     QCOMPARE(ok, true);
+    QCOMPARE(mf.keysToValue64("MyFlag"), std::nullopt);
     QCOMPARE(mf.keysToValue("MyFlag", &ok), -1);
     QCOMPARE(ok, false);
     QCOMPARE(QLatin1String(mf.valueToKey(2)), QLatin1String("MyFlag2"));
 
     const QByteArray prefix = "MyNamespace::" + name;
+    QCOMPARE(mf.keysToValue64(prefix + "::MyFlag1|" + prefix + "::MyFlag2"), 3U);
     QCOMPARE(mf.keysToValue(prefix + "::MyFlag1|" + prefix + "::MyFlag2", &ok), 3);
     QCOMPARE(ok, true);
     // Fully qualified
+    QCOMPARE(mf.keysToValue64(prefix + "::MyFlag::MyFlag1|" + prefix + "::MyFlag::MyFlag2"), 3U);
     QCOMPARE(mf.keysToValue(prefix + "::MyFlag::MyFlag1|" + prefix + "::MyFlag::MyFlag2", &ok), 3);
     QCOMPARE(ok, true);
+    QCOMPARE(mf.keysToValue64(name + "::MyFlag1|" + name + "::MyFlag2"), std::nullopt);
     QCOMPARE(mf.keysToValue(name + "::MyFlag1|" + name + "::MyFlag2", &ok), -1);
     QCOMPARE(ok, false);
+    QCOMPARE(mf.keysToValue64("MyNamespace::MyFlag1|MyNamespace::MyFlag2"), std::nullopt);
     QCOMPARE(mf.keysToValue("MyNamespace::MyFlag1|MyNamespace::MyFlag2", &ok), -1);
     QCOMPARE(ok, false);
+    QCOMPARE(mf.keysToValue64("MyFlag1|MyFlag2"), 3U);
     QCOMPARE(mf.keysToValue("MyFlag1|MyFlag2", &ok), 3);
     QCOMPARE(ok, true);
+    QCOMPARE(mf.keysToValue64("MyFlag2|MyFlag2"), 2U);
     QCOMPARE(mf.keysToValue("MyFlag2|MyFlag2", &ok), 2);
     QCOMPARE(ok, true);
+    QCOMPARE(mf.keysToValue64("MyFlag1|MyNamespace::" + name + "::MyFlag2"), 3U);
     QCOMPARE(mf.keysToValue("MyFlag1|MyNamespace::" + name + "::MyFlag2", &ok), 3);
     QCOMPARE(ok, true);
+    QCOMPARE(mf.keysToValue64(prefix + "::MyFlag2|" + prefix + "::MyFlag2"), 2U);
     QCOMPARE(mf.keysToValue(prefix + "::MyFlag2|" + prefix + "::MyFlag2", &ok), 2);
     QCOMPARE(ok, true);
     // Fully qualified
+    QCOMPARE(mf.keysToValue64(prefix + "::MyFlag::MyFlag2|" + prefix + "::MyFlag::MyFlag2"), 2U);
     QCOMPARE(mf.keysToValue(prefix + "::MyFlag::MyFlag2|" + prefix + "::MyFlag::MyFlag2", &ok), 2);
     QCOMPARE(ok, true);
     QCOMPARE(QLatin1String(mf.valueToKeys(3)), QLatin1String("MyFlag1|MyFlag2"));
@@ -2442,9 +2467,15 @@ void tst_QMetaObject::keysToValue()
     // Test flags with extra '|'
     QTest::ignoreMessage(QtWarningMsg,
         QRegularExpression(u"QMetaEnum::keysToValue: malformed keys string, ends with '|'.+"_s));
+    QCOMPARE(mf.keysToValue64("MyFlag1|MyFlag2|"), std::nullopt);
+    QTest::ignoreMessage(QtWarningMsg,
+        QRegularExpression(u"QMetaEnum::keysToValue: malformed keys string, ends with '|'.+"_s));
     QCOMPARE(mf.keysToValue("MyFlag1|MyFlag2|", &ok), -1);
     QCOMPARE(ok, false);
 
+    QTest::ignoreMessage(QtWarningMsg,
+        QRegularExpression(u"QMetaEnum::keysToValue: malformed keys string, starts with '|'.+"_s));
+    QCOMPARE(mf.keysToValue64("|MyFlag1|MyFlag2|"), std::nullopt);
     QTest::ignoreMessage(QtWarningMsg,
         QRegularExpression(u"QMetaEnum::keysToValue: malformed keys string, starts with '|'.+"_s));
     QCOMPARE(mf.keysToValue("|MyFlag1|MyFlag2|", &ok), -1);
@@ -2453,10 +2484,16 @@ void tst_QMetaObject::keysToValue()
     QTest::ignoreMessage(QtWarningMsg,
         QRegularExpression(
             u"QMetaEnum::keysToValue: malformed keys string, has two consecutive '|'.+"_s));
+    QCOMPARE(mf.keysToValue64("MyFlag1||MyFlag2"), std::nullopt);
+    QTest::ignoreMessage(QtWarningMsg,
+        QRegularExpression(
+            u"QMetaEnum::keysToValue: malformed keys string, has two consecutive '|'.+"_s));
     QCOMPARE(mf.keysToValue("MyFlag1||MyFlag2", &ok), -1);
     QCOMPARE(ok, false);
 
     // Test empty string
+    QTest::ignoreMessage(QtWarningMsg, "QMetaEnum::keysToValue: empty keys string.");
+    QCOMPARE(mf.keysToValue64(""), std::nullopt);
     QTest::ignoreMessage(QtWarningMsg, "QMetaEnum::keysToValue: empty keys string.");
     QCOMPARE(mf.keysToValue("", &ok), -1);
     QCOMPARE(ok, false);
