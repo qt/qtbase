@@ -53,18 +53,8 @@ class qfloat16
         constexpr inline explicit Wrap(int value) : b16(quint16(value)) {}
     };
 
-#ifdef QT_SUPPORTS_INT128
     template <typename T>
-    using IsIntegral = std::disjunction<std::is_integral<T>,
-                                        std::is_same<std::remove_const_t<T>, qint128>,
-                                        std::is_same<std::remove_const_t<T>, quint128>>;
-#else
-    template <typename T>
-    using IsIntegral = std::is_integral<T>;
-#endif
-    template <typename T>
-    using if_type_is_integral = std::enable_if_t<IsIntegral<std::remove_reference_t<T>>::value,
-                                                 bool>;
+    using if_type_is_integral = std::enable_if_t<std::is_integral_v<std::remove_reference_t<T>>, bool>;
 
 public:
     using NativeType = QtPrivate::NativeFloat16Type;
