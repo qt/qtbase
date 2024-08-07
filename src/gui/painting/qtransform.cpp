@@ -320,10 +320,6 @@ QTransform QTransform::inverted(bool *invertible) const
             invert.m_matrix[2][1] = -m_matrix[2][1] * invert.m_matrix[1][1];
         }
         break;
-//    case TxRotate:
-//    case TxShear:
-//        invert.affine = affine.inverted(&inv);
-//        break;
     default:
         // general case
         qreal det = determinant();
