@@ -161,8 +161,7 @@ QTimer::~QTimer()
 /*!
     \fn bool QTimer::isActive() const
 
-    Returns \c true if the timer is running (pending); otherwise returns
-    false.
+    Returns \c true if the timer is running; otherwise returns \c false.
 */
 bool QTimer::isActive() const
 {
@@ -551,7 +550,7 @@ void QTimer::singleShot(std::chrono::milliseconds msec, Qt::TimerType timerType,
     Returns the time remaining in this timer object as a \c
     std::chrono::milliseconds object. If this timer is due or overdue, the
     returned value is \c std::chrono::milliseconds::zero(). If the remaining
-    time could not be found or the timer is not active, this function returns a
+    time could not be found or the timer is not running, this function returns a
     negative duration.
 
     \sa remainingTime()
@@ -591,9 +590,9 @@ QBindable<bool> QTimer::bindableSingleShot()
     interval of 0 will time out as soon as all the events in the window
     system's event queue have been processed.
 
-    Setting the interval of an active timer will change the interval,
+    Setting the interval of a running timer will change the interval,
     stop() and then start() the timer, and acquire a new id().
-    If the timer is not active, only the interval is changed.
+    If the timer is not running, only the interval is changed.
 
     \sa singleShot
 */

@@ -153,8 +153,7 @@ QChronoTimer::~QChronoTimer()
 */
 
 /*!
-    Returns \c true if the timer is running (pending); otherwise returns
-    false.
+    Returns \c true if the timer is running; otherwise returns \c false.
 */
 bool QChronoTimer::isActive() const
 {
@@ -280,9 +279,9 @@ QBindable<bool> QChronoTimer::bindableSingleShot()
     A QChronoTimer with a timeout of \c 0ns will time out as soon as all
     the events in the window system's event queue have been processed.
 
-    Setting the interval of an active timer will change the interval,
+    Setting the interval of a running timer will change the interval,
     stop() and then start() the timer, and acquire a new id().
-    If the timer is not active, only the interval is changed.
+    If the timer is not running, only the interval is changed.
 
     \sa singleShot
 */
