@@ -749,7 +749,11 @@ const char16_t *QtPrivate::qustrchr(QStringView str, char16_t c) noexcept
                                    [=](qsizetype i) { return n + i; });
 #  endif
 #elif defined(__ARM_NEON__)
+#ifdef _MSC_VER
+    const uint16x8_t vmask = { 0x0008000400020001ULL, 0x0080004000200010ULL };
+#else
     const uint16x8_t vmask = { 1, 1 << 1, 1 << 2, 1 << 3, 1 << 4, 1 << 5, 1 << 6, 1 << 7 };
+#endif
     const uint16x8_t ch_vec = vdupq_n_u16(c);
     for (const char16_t *next = n + 8; next <= e; n = next, next += 8) {
         uint16x8_t data = vld1q_u16(reinterpret_cast<const uint16_t *>(n));
@@ -1290,7 +1294,11 @@ static int ucstrncmp(const char16_t *a, const char16_t *b, size_t l)
 #  elif defined(__ARM_NEON__)
     if (l >= 8) {
         const char16_t *end = a + l;
+#ifdef _MSC_VER
+        const uint16x8_t mask = { 0x0008000400020001ULL, 0x0080004000200010ULL };
+#else
         const uint16x8_t mask = { 1, 1 << 1, 1 << 2, 1 << 3, 1 << 4, 1 << 5, 1 << 6, 1 << 7 };
+#endif
         while (end - a > 7) {
             uint16x8_t da = vld1q_u16(reinterpret_cast<const uint16_t *>(a));
             uint16x8_t db = vld1q_u16(reinterpret_cast<const uint16_t *>(b));

@@ -18,13 +18,14 @@
 #include <QtGui/private/qtguiglobal_p.h>
 #include <QtGui/qrgb.h>
 #include <QtGui/qrgba64.h>
+#include <QtCore/private/qsimd_p.h>
 
 #include <cmath>
 #include <memory>
 
 #if defined(__SSE2__)
 #include <emmintrin.h>
-#elif defined(__ARM_NEON__) || defined(__ARM_NEON)
+#elif defined(__ARM_NEON__)
 #include <arm_neon.h>
 #endif
 
@@ -75,7 +76,7 @@ public:
         QRgba64 rgba64;
         _mm_storel_epi64(reinterpret_cast<__m128i *>(&rgba64), v);
         return rgba64;
-#elif (defined(__ARM_NEON__) || defined(__ARM_NEON)) && Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+#elif defined(__ARM_NEON__) && Q_BYTE_ORDER == Q_LITTLE_ENDIAN
         uint8x8_t v8 = vreinterpret_u8_u32(vmov_n_u32(rgb32));
         uint16x4_t v16 = vget_low_u16(vmovl_u8(v8));
         const uint16x4_t vidx = vshl_n_u16(v16, ShiftUp);
@@ -145,7 +146,7 @@ public:
         v = _mm_srli_epi16(v, 8);
         v = _mm_packus_epi16(v, v);
         return _mm_cvtsi128_si32(v);
-#elif (defined(__ARM_NEON__) || defined(__ARM_NEON)) && Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+#elif defined(__ARM_NEON__) && Q_BYTE_ORDER == Q_LITTLE_ENDIAN
         uint16x4_t v = vreinterpret_u16_u64(vmov_n_u64(rgb64));
         v = vsub_u16(v, vshr_n_u16(v, 8));
         const uint16x4_t vidx = vshr_n_u16(v, ShiftDown);
@@ -236,7 +237,7 @@ private:
         QRgba64 rgba64;
         _mm_storel_epi64(reinterpret_cast<__m128i *>(&rgba64), v);
         return rgba64;
-#elif (defined(__ARM_NEON__) || defined(__ARM_NEON)) && Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+#elif defined(__ARM_NEON__) && Q_BYTE_ORDER == Q_LITTLE_ENDIAN
         uint16x4_t v = vreinterpret_u16_u64(vmov_n_u64(rgb64));
         v = vsub_u16(v, vshr_n_u16(v, 8));
         const uint16x4_t vidx = vshr_n_u16(v, ShiftDown);

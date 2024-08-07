@@ -151,7 +151,7 @@ static inline quint64 detectProcessorFeatures()
         features |= CpuFeatureAES;
     return features;
 #endif
-#if defined(__ARM_NEON__) || defined(__ARM_NEON)
+#if defined(__ARM_NEON__)
     features |= CpuFeatureNEON;
 #endif
 #if defined(__ARM_FEATURE_CRC32)

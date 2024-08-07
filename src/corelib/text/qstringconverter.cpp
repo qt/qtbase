@@ -351,7 +351,12 @@ static void simdCompareAscii(const qchar8_t *&src8, const qchar8_t *end8, const 
 static inline bool simdEncodeAscii(uchar *&dst, const char16_t *&nextAscii, const char16_t *&src, const char16_t *end)
 {
     uint16x8_t maxAscii = vdupq_n_u16(0x7f);
-    uint16x8_t mask1 = { 1,      1 << 2, 1 << 4, 1 << 6, 1 << 8, 1 << 10, 1 << 12, 1 << 14 };
+#ifdef _MSC_VER
+    uint16_t mask1t[8] = { 1, 1 << 2, 1 << 4, 1 << 6, 1 << 8, 1 << 10, 1 << 12, 1 << 14 };
+    uint16x8_t mask1 = vld1q_u16(mask1t);
+#else
+    uint16x8_t mask1 = { 1, 1 << 2, 1 << 4, 1 << 6, 1 << 8, 1 << 10, 1 << 12, 1 << 14 };
+#endif
     uint16x8_t mask2 = vshlq_n_u16(mask1, 1);
 
     // do sixteen characters at a time
@@ -389,7 +394,12 @@ static inline bool simdDecodeAscii(char16_t *&dst, const uchar *&nextAscii, cons
 {
     // do eight characters at a time
     uint8x8_t msb_mask = vdup_n_u8(0x80);
+#ifdef _MSC_VER
+    uint8_t add_maskt[8] = { 1, 1 << 1, 1 << 2, 1 << 3, 1 << 4, 1 << 5, 1 << 6, 1 << 7 };
+    uint8x8_t add_mask = vld1_u8(add_maskt);
+#else
     uint8x8_t add_mask = { 1, 1 << 1, 1 << 2, 1 << 3, 1 << 4, 1 << 5, 1 << 6, 1 << 7 };
+#endif
     for ( ; end - src >= 8; src += 8, dst += 8) {
         uint8x8_t c = vld1_u8(src);
         uint8_t n = vaddv_u8(vand_u8(vcge_u8(c, msb_mask), add_mask));
@@ -425,7 +435,12 @@ static inline const uchar *simdFindNonAscii(const uchar *src, const uchar *end, 
 
     // do eight characters at a time
     uint8x8_t msb_mask = vdup_n_u8(0x80);
+#ifdef _MSC_VER
+    uint8_t add_maskt[8] = { 1, 1 << 1, 1 << 2, 1 << 3, 1 << 4, 1 << 5, 1 << 6, 1 << 7 };
+    uint8x8_t add_mask = vld1_u8(add_maskt);
+#else
     uint8x8_t add_mask = { 1, 1 << 1, 1 << 2, 1 << 3, 1 << 4, 1 << 5, 1 << 6, 1 << 7 };
+#endif
     for ( ; end - src >= 8; src += 8) {
         uint8x8_t c = vld1_u8(src);
         uint8_t n = vaddv_u8(vand_u8(vcge_u8(c, msb_mask), add_mask));
