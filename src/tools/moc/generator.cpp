@@ -907,11 +907,7 @@ void Generator::generateEnums(int index)
     int i;
     for (i = 0; i < cdef->enumList.size(); ++i) {
         const EnumDef &e = cdef->enumList.at(i);
-        int flags = 0;
-        if (cdef->enumDeclarations.value(e.name))
-            flags |= EnumIsFlag;
-        if (e.isEnumClass)
-            flags |= EnumIsScoped;
+        uint flags = e.flags | cdef->enumDeclarations.value(e.name);
         fprintf(out, "    %4d, %4d, 0x%.1x, %4d, %4d,\n",
                  stridx(e.name),
                  e.enumName.isNull() ? stridx(e.name) : stridx(e.enumName),
@@ -923,13 +919,12 @@ void Generator::generateEnums(int index)
 
     fprintf(out, "\n // enum data: key, value\n");
     for (const EnumDef &e : std::as_const(cdef->enumList)) {
+        QByteArray prefix = cdef->qualified;
+        if (e.flags & EnumIsScoped)
+            prefix += "::" + (e.enumName.isNull() ? e.name : e.enumName);
         for (const QByteArray &val : e.values) {
-            QByteArray code = cdef->qualified.constData();
-            if (e.isEnumClass)
-                code += "::" + (e.enumName.isNull() ? e.name : e.enumName);
-            code += "::" + val;
-            fprintf(out, "    %4d, uint(%s),\n",
-                    stridx(val), code.constData());
+            fprintf(out, "    %4d, uint(%s::%s),\n",
+                    stridx(val), prefix.constData(), val.constData());
         }
     }
 }
@@ -1289,7 +1284,7 @@ void Generator::generateStaticMetacall()
                 else if (p.gspec == PropertyDef::ReferenceSpec)
                     fprintf(out, "        case %d: _a[0] = const_cast<void*>(reinterpret_cast<const void*>(&%s%s())); break;\n",
                             propindex, prefix.constData(), p.read.constData());
-                else if (cdef->enumDeclarations.value(p.type, false))
+                else if (auto eflags = cdef->enumDeclarations.value(p.type); eflags & EnumIsFlag)
                     fprintf(out, "        case %d: *reinterpret_cast<int*>(_v) = QFlag(%s%s()); break;\n",
                             propindex, prefix.constData(), p.read.constData());
                 else if (p.read == "default")
@@ -1325,7 +1320,7 @@ void Generator::generateStaticMetacall()
                 if (p.inPrivateClass.size()) {
                     prefix += p.inPrivateClass + "->";
                 }
-                if (cdef->enumDeclarations.value(p.type, false)) {
+                if (auto eflags = cdef->enumDeclarations.value(p.type); eflags & EnumIsFlag) {
                     fprintf(out, "        case %d: %s%s(QFlag(*reinterpret_cast<int*>(_v))); break;\n",
                             propindex, prefix.constData(), p.write.constData());
                 } else if (p.write == "default") {

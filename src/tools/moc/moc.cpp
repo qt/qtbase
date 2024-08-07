@@ -13,6 +13,7 @@
 #include <QtCore/qjsondocument.h>
 
 // for normalizeTypeInternal
+#include <private/qmetaobject_p.h>
 #include <private/qmetaobject_moc_p.h>
 #include <private/qduplicatetracker_p.h>
 
@@ -242,7 +243,7 @@ bool Moc::parseEnum(EnumDef *def)
     bool isTypdefEnum = false; // typedef enum { ... } Foo;
 
     if (test(CLASS) || test(STRUCT))
-        def->isEnumClass = true;
+        def->flags |= EnumIsScoped;
 
     if (test(IDENTIFIER)) {
         def->name = lexem();
@@ -741,14 +742,14 @@ void Moc::parse()
                                 break;
                             case Q_ENUMS_TOKEN:
                             case Q_ENUM_NS_TOKEN:
-                                parseEnumOrFlag(&def, false);
+                                parseEnumOrFlag(&def, {});
                                 break;
                             case Q_ENUM_TOKEN:
                                 error("Q_ENUM can't be used in a Q_NAMESPACE, use Q_ENUM_NS instead");
                                 break;
                             case Q_FLAGS_TOKEN:
                             case Q_FLAG_NS_TOKEN:
-                                parseEnumOrFlag(&def, true);
+                                parseEnumOrFlag(&def, EnumIsFlag);
                                 break;
                             case Q_FLAG_TOKEN:
                                 error("Q_FLAG can't be used in a Q_NAMESPACE, use Q_FLAG_NS instead");
@@ -936,14 +937,14 @@ void Moc::parse()
                     break;
                 case Q_ENUMS_TOKEN:
                 case Q_ENUM_TOKEN:
-                    parseEnumOrFlag(&def, false);
+                    parseEnumOrFlag(&def, {});
                     break;
                 case Q_ENUM_NS_TOKEN:
                     error("Q_ENUM_NS can't be used in a Q_OBJECT/Q_GADGET, use Q_ENUM instead");
                     break;
                 case Q_FLAGS_TOKEN:
                 case Q_FLAG_TOKEN:
-                    parseEnumOrFlag(&def, true);
+                    parseEnumOrFlag(&def, EnumIsFlag);
                     break;
                 case Q_FLAG_NS_TOKEN:
                     error("Q_FLAG_NS can't be used in a Q_OBJECT/Q_GADGET, use Q_FLAG instead");
@@ -1599,7 +1600,7 @@ void Moc::parsePrivateProperty(ClassDef *def, Moc::PropertyMode mode)
     def->propertyList += propDef;
 }
 
-void Moc::parseEnumOrFlag(BaseDef *def, bool isFlag)
+void Moc::parseEnumOrFlag(BaseDef *def, EnumFlags flags)
 {
     next(LPAREN);
     QByteArray identifier;
@@ -1609,7 +1610,7 @@ void Moc::parseEnumOrFlag(BaseDef *def, bool isFlag)
             identifier += "::";
             identifier += lexem();
         }
-        def->enumDeclarations[identifier] = isFlag;
+        def->enumDeclarations[identifier] = flags;
     }
     next(RPAREN);
 }
@@ -2177,13 +2178,14 @@ QJsonObject PropertyDef::toJson() const
 QJsonObject EnumDef::toJson(const ClassDef &cdef) const
 {
     QJsonObject def;
+    uint flags = this->flags | cdef.enumDeclarations.value(name);
     def["name"_L1] = QString::fromUtf8(name);
     if (!enumName.isEmpty())
         def["alias"_L1] = QString::fromUtf8(enumName);
     if (!type.isEmpty())
         def["type"_L1] = QString::fromUtf8(type);
-    def["isFlag"_L1] = cdef.enumDeclarations.value(name);
-    def["isClass"_L1] = isEnumClass;
+    def["isFlag"_L1] = (flags & EnumIsFlag) != 0;
+    def["isClass"_L1] = (flags & EnumIsScoped) != 0;
 
     QJsonArray valueArr;
     for (const QByteArray &value: values)

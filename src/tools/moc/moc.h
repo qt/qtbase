@@ -10,6 +10,7 @@
 #include <qjsondocument.h>
 #include <qjsonarray.h>
 #include <qjsonobject.h>
+#include <qtmocconstants.h>
 #include <qtyperevision.h>
 #include <stdio.h>
 
@@ -44,8 +45,7 @@ struct EnumDef
     QByteArray enumName;
     QByteArray type;
     QList<QByteArray> values;
-    bool isEnumClass; // c++11 enum class
-    EnumDef() : isEnumClass(false) {}
+    QFlags<QtMocConstants::EnumFlags> flags = {};
     QJsonObject toJson(const ClassDef &cdef) const;
     QByteArray qualifiedType(const ClassDef *cdef) const;
 };
@@ -148,7 +148,7 @@ struct BaseDef {
     QByteArray classname;
     QByteArray qualified;
     QList<ClassInfoDef> classInfoList;
-    QMap<QByteArray, bool> enumDeclarations;
+    QMap<QByteArray, QFlags<QtMocConstants::EnumFlags>> enumDeclarations;
     QList<EnumDef> enumList;
     QMap<QByteArray, QByteArray> flagAliases;
     qsizetype begin = 0;
@@ -261,7 +261,7 @@ public:
     void createPropertyDef(PropertyDef &def, int propertyIndex, PropertyMode mode);
 
     void parsePropertyAttributes(PropertyDef &propDef);
-    void parseEnumOrFlag(BaseDef *def, bool isFlag);
+    void parseEnumOrFlag(BaseDef *def, QtMocConstants::EnumFlags flags);
     void parseFlag(BaseDef *def);
     enum class EncounteredQmlMacro {Yes, No};
     EncounteredQmlMacro parseClassInfo(BaseDef *def);
