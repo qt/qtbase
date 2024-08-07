@@ -211,6 +211,7 @@ class EnumFlagsTester : public QObject
     Q_OBJECT
     Q_PROPERTY(TestEnum enumProperty READ enumProperty WRITE setEnumProperty)
     Q_PROPERTY(TestFlags flagProperty READ flagProperty WRITE setFlagProperty)
+    Q_PROPERTY(UnsignedTestFlags unsignedFlagProperty READ unsignedFlagProperty WRITE setUnsignedFlagProperty)
 
     Q_PROPERTY(FreeEnum freeEnumProperty READ freeEnumProperty WRITE setFreeEnumProperty)
     Q_PROPERTY(MySpace::NamespacedEnum namespacedEnumProperty READ namespacedEnumProperty WRITE setNamespacedEnumProperty)
@@ -226,6 +227,9 @@ public:
     enum TestFlag { flag1 = 0x1, flag2 = 0x2 };
     Q_DECLARE_FLAGS(TestFlags, TestFlag)
 
+    enum UnsignedTestFlag : uint { uflag1 = 0x1, uflag2 = 0x2 };
+    Q_DECLARE_FLAGS(UnsignedTestFlags, UnsignedTestFlag)
+
     using QObject::QObject;
 
     TestEnum enumProperty() const { return m_enum; }
@@ -233,6 +237,8 @@ public:
 
     TestFlags flagProperty() const { return m_flags; }
     void setFlagProperty(TestFlags f) { m_flags = f; }
+    UnsignedTestFlags unsignedFlagProperty() const { return m_uflags; }
+    void setUnsignedFlagProperty(UnsignedTestFlags f) { m_uflags = f; }
 
     FreeEnum freeEnumProperty() const { return m_freeEnum; }
     void setFreeEnumProperty(FreeEnum e) { m_freeEnum = e; }
@@ -255,6 +261,7 @@ public:
 private:
     TestEnum m_enum = e1;
     TestFlags m_flags;
+    UnsignedTestFlags m_uflags;
 
     FreeEnum m_freeEnum = FreeEnum::FreeEnumValue1;
     MySpace::NamespacedEnum m_namespacedEnum = MySpace::NamespacedEnumValue1;
@@ -354,8 +361,23 @@ void tst_QMetaProperty::enumsFlags()
     QVERIFY(flagsProperty.metaType().flags().testFlag(QMetaType::IsEnumeration));
     QVERIFY(flagsProperty.write(&t, QVariant(int(EnumFlagsTester::flag2))));
     QCOMPARE(t.flagProperty(), EnumFlagsTester::flag2);
+    QCOMPARE(flagsProperty.read(&t), QVariant(int(EnumFlagsTester::flag2)));
+    QVERIFY(flagsProperty.write(&t, QVariant(uint(EnumFlagsTester::flag1))));
+    QCOMPARE(t.flagProperty(), EnumFlagsTester::flag1);
+    QCOMPARE(flagsProperty.read(&t), QVariant(int(EnumFlagsTester::flag1)));
     QVERIFY(!flagsProperty.enumerator().isValid()); // Not using Q_FLAG
 
+    const int uflagsIndex = mo->indexOfProperty("unsignedFlagProperty");
+    QVERIFY(uflagsIndex >= 0);
+    auto uflagsProperty = mo->property(uflagsIndex);
+    QVERIFY(uflagsProperty.metaType().flags().testFlag(QMetaType::IsEnumeration));
+    QVERIFY(uflagsProperty.write(&t, QVariant(uint(EnumFlagsTester::uflag2))));
+    QCOMPARE(t.unsignedFlagProperty(), EnumFlagsTester::uflag2);
+    QCOMPARE(uflagsProperty.read(&t), QVariant(uint(EnumFlagsTester::uflag2)));
+    QVERIFY(uflagsProperty.write(&t, QVariant(int(EnumFlagsTester::uflag1))));
+    QCOMPARE(t.unsignedFlagProperty(), EnumFlagsTester::uflag1);
+    QCOMPARE(uflagsProperty.read(&t), QVariant(uint(EnumFlagsTester::flag1)));
+    QVERIFY(!uflagsProperty.enumerator().isValid()); // Not using Q_FLAG
     const int freeEnumIndex = mo->indexOfProperty("freeEnumProperty");
     QVERIFY(freeEnumIndex >= 0);
     auto freeEnumProperty = mo->property(freeEnumIndex);
