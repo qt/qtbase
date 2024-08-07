@@ -292,20 +292,24 @@ function(qt6_add_ui target)
                 "${CMAKE_CURRENT_BINARY_DIR}/${target}_autogen"
             COMMAND ${CMAKE_COMMAND} -E touch ${ui_property_check_dummy_file}
             COMMAND
-                "$<$<BOOL:$<TARGET_PROPERTY:${target},AUTOUIC>>:${CMAKE_COMMAND}\
-;-E;echo;${error_message_1}>"
+                "$<IF:$<BOOL:$<TARGET_PROPERTY:${target},AUTOUIC>>,\
+${CMAKE_COMMAND};-E;echo;${error_message_1},\
+${CMAKE_COMMAND};-E;true>"
             COMMAND
-                "$<$<BOOL:$<TARGET_PROPERTY:${target},AUTOUIC>>:${CMAKE_COMMAND}\
-;-E;echo;${error_message_2}>"
+                "$<IF:$<BOOL:$<TARGET_PROPERTY:${target},AUTOUIC>>,\
+${CMAKE_COMMAND};-E;echo;${error_message_2},\
+${CMAKE_COMMAND};-E;true>"
             # Remove the dummy file so that the error message is shown until
             # the AUTOUIC is disabled. Otherwise, the error message is shown
             # only once when the AUTOUIC is enabled with Visual Studio generator.
             COMMAND
-                "$<$<BOOL:$<TARGET_PROPERTY:${target},AUTOUIC>>:${CMAKE_COMMAND}\
-;-E;remove;${ui_property_check_dummy_file}>"
+                "$<IF:$<BOOL:$<TARGET_PROPERTY:${target},AUTOUIC>>,\
+${CMAKE_COMMAND};-E;remove;${ui_property_check_dummy_file},\
+${CMAKE_COMMAND};-E;true>"
             COMMAND
-                "$<$<BOOL:$<TARGET_PROPERTY:${target},AUTOUIC>>:${CMAKE_COMMAND}\
-;-E;false>"
+                "$<IF:$<BOOL:$<TARGET_PROPERTY:${target},AUTOUIC>>,\
+${CMAKE_COMMAND};-E;false,\
+${CMAKE_COMMAND};-E;true>"
             COMMAND_EXPAND_LISTS
             VERBATIM)
 
