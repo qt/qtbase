@@ -780,6 +780,9 @@ void loadUnpremultiplied(QColorVector *buffer, const T *src, const qsizetype len
 template<>
 void loadPremultiplied<QRgb>(QColorVector *buffer, const QRgb *src, const qsizetype len, const QColorTransformPrivate *d_ptr)
 {
+    const int rangeMaxR = d_ptr->colorSpaceIn->lut[0]->m_unclampedToLinear;
+    const int rangeMaxG = d_ptr->colorSpaceIn->lut[1]->m_unclampedToLinear;
+    const int rangeMaxB = d_ptr->colorSpaceIn->lut[2]->m_unclampedToLinear;
     for (qsizetype i = 0; i < len; ++i) {
         const uint p = src[i];
         const int a = qAlpha(p);
@@ -788,9 +791,16 @@ void loadPremultiplied<QRgb>(QColorVector *buffer, const QRgb *src, const qsizet
             const int ridx = int(qRed(p)   * ia + 0.5f);
             const int gidx = int(qGreen(p) * ia + 0.5f);
             const int bidx = int(qBlue(p)  * ia + 0.5f);
-            buffer[i].x = d_ptr->colorSpaceIn->lut[0]->m_toLinear[ridx] * (1.0f / (255 * 256));
-            buffer[i].y = d_ptr->colorSpaceIn->lut[1]->m_toLinear[gidx] * (1.0f / (255 * 256));
-            buffer[i].z = d_ptr->colorSpaceIn->lut[2]->m_toLinear[bidx] * (1.0f / (255 * 256));
+            if (ridx <= rangeMaxR && gidx <= rangeMaxG && bidx <= rangeMaxB) {
+                buffer[i].x = d_ptr->colorSpaceIn->lut[0]->m_toLinear[ridx] * (1.0f / (255 * 256));
+                buffer[i].y = d_ptr->colorSpaceIn->lut[1]->m_toLinear[gidx] * (1.0f / (255 * 256));
+                buffer[i].z = d_ptr->colorSpaceIn->lut[2]->m_toLinear[bidx] * (1.0f / (255 * 256));
+            } else {
+                constexpr float f = 1.f / QColorTrcLut::Resolution;
+                buffer[i].x = d_ptr->colorSpaceIn->trc[0].applyExtended(ridx * f);
+                buffer[i].y = d_ptr->colorSpaceIn->trc[1].applyExtended(gidx * f);
+                buffer[i].z = d_ptr->colorSpaceIn->trc[2].applyExtended(bidx * f);
+            }
         } else {
             buffer[i].x = buffer[i].y = buffer[i].z = 0.0f;
         }
@@ -800,6 +810,9 @@ void loadPremultiplied<QRgb>(QColorVector *buffer, const QRgb *src, const qsizet
 template<>
 void loadPremultiplied<QRgba64>(QColorVector *buffer, const QRgba64 *src, const qsizetype len, const QColorTransformPrivate *d_ptr)
 {
+    const int rangeMaxR = d_ptr->colorSpaceIn->lut[0]->m_unclampedToLinear;
+    const int rangeMaxG = d_ptr->colorSpaceIn->lut[1]->m_unclampedToLinear;
+    const int rangeMaxB = d_ptr->colorSpaceIn->lut[2]->m_unclampedToLinear;
     for (qsizetype i = 0; i < len; ++i) {
         const QRgba64 &p = src[i];
         const int a = p.alpha();
@@ -808,9 +821,16 @@ void loadPremultiplied<QRgba64>(QColorVector *buffer, const QRgba64 *src, const 
             const int ridx = int(p.red()   * ia + 0.5f);
             const int gidx = int(p.green() * ia + 0.5f);
             const int bidx = int(p.blue()  * ia + 0.5f);
-            buffer[i].x = d_ptr->colorSpaceIn->lut[0]->m_toLinear[ridx] * (1.0f / (255 * 256));
-            buffer[i].y = d_ptr->colorSpaceIn->lut[1]->m_toLinear[gidx] * (1.0f / (255 * 256));
-            buffer[i].z = d_ptr->colorSpaceIn->lut[2]->m_toLinear[bidx] * (1.0f / (255 * 256));
+            if (ridx <= rangeMaxR && gidx <= rangeMaxG && bidx <= rangeMaxB) {
+                buffer[i].x = d_ptr->colorSpaceIn->lut[0]->m_toLinear[ridx] * (1.0f / (255 * 256));
+                buffer[i].y = d_ptr->colorSpaceIn->lut[1]->m_toLinear[gidx] * (1.0f / (255 * 256));
+                buffer[i].z = d_ptr->colorSpaceIn->lut[2]->m_toLinear[bidx] * (1.0f / (255 * 256));
+            } else {
+                constexpr float f = 1.f / QColorTrcLut::Resolution;
+                buffer[i].x = d_ptr->colorSpaceIn->trc[0].applyExtended(ridx * f);
+                buffer[i].y = d_ptr->colorSpaceIn->trc[1].applyExtended(gidx * f);
+                buffer[i].z = d_ptr->colorSpaceIn->trc[2].applyExtended(bidx * f);
+            }
         } else {
             buffer[i].x = buffer[i].y = buffer[i].z = 0.0f;
         }
@@ -820,22 +840,54 @@ void loadPremultiplied<QRgba64>(QColorVector *buffer, const QRgba64 *src, const 
 template<>
 void loadUnpremultiplied<QRgb>(QColorVector *buffer, const QRgb *src, const qsizetype len, const QColorTransformPrivate *d_ptr)
 {
+    const int rangeMaxR = d_ptr->colorSpaceIn->lut[0]->m_unclampedToLinear;
+    const int rangeMaxG = d_ptr->colorSpaceIn->lut[1]->m_unclampedToLinear;
+    const int rangeMaxB = d_ptr->colorSpaceIn->lut[2]->m_unclampedToLinear;
     for (qsizetype i = 0; i < len; ++i) {
         const uint p = src[i];
-        buffer[i].x = d_ptr->colorSpaceIn->lut[0]->u8ToLinearF32(qRed(p));
-        buffer[i].y = d_ptr->colorSpaceIn->lut[1]->u8ToLinearF32(qGreen(p));
-        buffer[i].z = d_ptr->colorSpaceIn->lut[2]->u8ToLinearF32(qBlue(p));
+        const int ridx = qRed(p)   << QColorTrcLut::ShiftUp;
+        const int gidx = qGreen(p) << QColorTrcLut::ShiftUp;
+        const int bidx = qBlue(p)  << QColorTrcLut::ShiftUp;
+        if (ridx <= rangeMaxR && gidx <= rangeMaxG && bidx <= rangeMaxB) {
+            buffer[i].x = d_ptr->colorSpaceIn->lut[0]->m_toLinear[ridx] * (1.0f / (255 * 256));
+            buffer[i].y = d_ptr->colorSpaceIn->lut[1]->m_toLinear[gidx] * (1.0f / (255 * 256));
+            buffer[i].z = d_ptr->colorSpaceIn->lut[2]->m_toLinear[bidx] * (1.0f / (255 * 256));
+        } else {
+            constexpr float f = 1.f / QColorTrcLut::Resolution;
+            buffer[i].x = d_ptr->colorSpaceIn->trc[0].applyExtended(ridx * f);
+            buffer[i].y = d_ptr->colorSpaceIn->trc[1].applyExtended(gidx * f);
+            buffer[i].z = d_ptr->colorSpaceIn->trc[2].applyExtended(bidx * f);
+        }
     }
+}
+
+static int u16toidx(int c)
+{
+    c -= c >> 8;
+    return c >> QColorTrcLut::ShiftDown;
 }
 
 template<>
 void loadUnpremultiplied<QRgba64>(QColorVector *buffer, const QRgba64 *src, const qsizetype len, const QColorTransformPrivate *d_ptr)
 {
+    const int rangeMaxR = d_ptr->colorSpaceIn->lut[0]->m_unclampedToLinear;
+    const int rangeMaxG = d_ptr->colorSpaceIn->lut[1]->m_unclampedToLinear;
+    const int rangeMaxB = d_ptr->colorSpaceIn->lut[2]->m_unclampedToLinear;
     for (qsizetype i = 0; i < len; ++i) {
         const QRgba64 &p = src[i];
-        buffer[i].x = d_ptr->colorSpaceIn->lut[0]->u16ToLinearF32(p.red());
-        buffer[i].y = d_ptr->colorSpaceIn->lut[1]->u16ToLinearF32(p.green());
-        buffer[i].z = d_ptr->colorSpaceIn->lut[2]->u16ToLinearF32(p.blue());
+        const int ridx = u16toidx(p.red());
+        const int gidx = u16toidx(p.green());
+        const int bidx = u16toidx(p.blue());
+        if (ridx <= rangeMaxR && gidx <= rangeMaxG && bidx <= rangeMaxB) {
+            buffer[i].x = d_ptr->colorSpaceIn->lut[0]->m_toLinear[ridx] * (1.0f / (255 * 256));
+            buffer[i].y = d_ptr->colorSpaceIn->lut[1]->m_toLinear[gidx] * (1.0f / (255 * 256));
+            buffer[i].z = d_ptr->colorSpaceIn->lut[2]->m_toLinear[bidx] * (1.0f / (255 * 256));
+        } else {
+            constexpr float f = 1.f / QColorTrcLut::Resolution;
+            buffer[i].x = d_ptr->colorSpaceIn->trc[0].applyExtended(ridx * f);
+            buffer[i].y = d_ptr->colorSpaceIn->trc[1].applyExtended(gidx * f);
+            buffer[i].z = d_ptr->colorSpaceIn->trc[2].applyExtended(bidx * f);
+        }
     }
 }
 #endif
