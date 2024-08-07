@@ -164,6 +164,8 @@ function(qt6_add_ui target)
         set(prefix_info_file_cmake_exists false)
     endif()
 
+    target_sources(${target} PRIVATE ${sources})
+
     foreach(source_file ${sources})
         get_filename_component(outfile "${source_file}" NAME_WE)
         get_filename_component(infile "${source_file}" ABSOLUTE)

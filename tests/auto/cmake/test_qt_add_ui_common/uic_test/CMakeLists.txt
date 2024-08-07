@@ -63,3 +63,7 @@ if (CMAKE_AUTOUIC)
     set_property(TARGET example PROPERTY AUTOUIC ON)
 endif()
 
+
+if (TEST_WITH_QRC)
+    qt_add_resources(example "example.qrc" FILES "mainwindow.ui")
+endif()

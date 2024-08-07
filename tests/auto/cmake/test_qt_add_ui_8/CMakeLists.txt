@@ -34,7 +34,7 @@ foreach(generator IN ITEMS ${generators})
 
     # Test case: ui_mainwindow.h is included as
     # "sub1/sub2/sub3/../../../../../../../../../../../../../ui_mainwindow.h".
-    # Test case: mainwindow1.ui file is touched after the first build.
+    # Test case: mainwindow.ui file is touched after the first build.
     # Expect 1: Successful build without the double build issue.
     # Expect 2: No build folder leakage and generation of the
     # "_/_/_/_/_/_/_/_/_/_/sub1/sub2/sub3" folder in ${hash_folder}/include.
