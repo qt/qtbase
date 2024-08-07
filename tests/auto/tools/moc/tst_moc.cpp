@@ -4130,16 +4130,19 @@ void tst_Moc::optionsFileError()
 }
 
 static void checkEnum(const QMetaEnum &enumerator, const QByteArray &name,
-                      const QList<QPair<QByteArray, int>> &keys,
+                      const QList<QPair<QByteArray, quint64>> &keys,
                       const QMetaType underlyingType = QMetaType::fromType<int>())
 {
-    QCOMPARE(name, QByteArray{enumerator.name()});
-    QCOMPARE(keys.size(), enumerator.keyCount());
-    QCOMPARE(underlyingType, enumerator.metaType().underlyingType());
+    QCOMPARE(enumerator.name(), QByteArrayView{name});
+    QCOMPARE(enumerator.keyCount(), keys.size());
+    QCOMPARE(enumerator.metaType().underlyingType(), underlyingType);
     for (int i = 0; i < enumerator.keyCount(); ++i) {
-        QCOMPARE(keys[i].first, QByteArray{enumerator.key(i)});
-        QCOMPARE(keys[i].second, enumerator.value(i));
+        QCOMPARE(QByteArray{enumerator.key(i)}, keys[i].first);
+        QCOMPARE(enumerator.value(i), keys[i].second);
     }
+    // out of range
+    QVERIFY(!enumerator.key(keys.size()));
+    QCOMPARE(enumerator.value(keys.size()), -1);
 }
 
 class EnumFromNamespaceClass : public QObject
