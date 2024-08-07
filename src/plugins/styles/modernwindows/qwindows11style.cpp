@@ -363,7 +363,7 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                 int pos;
                 int bothOffset = (ticks & QSlider::TicksAbove && ticks & QSlider::TicksBelow) ? 1 : 0;
                 painter->setPen(slider->palette.text().color());
-                QVarLengthArray<QLine, 32> lines;
+                QVarLengthArray<QLineF, 32> lines;
                 int v = slider->minimum;
                 while (v <= slider->maximum + 1) {
                     if (v == slider->maximum + 1 && interval == 1)
@@ -374,23 +374,23 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                                                           v_, available) + fudge;
                     if (slider->orientation == Qt::Horizontal) {
                         if (ticks & QSlider::TicksAbove) {
-                            lines.append(QLine(pos, tickOffset - 1 - bothOffset,
-                                               pos, tickOffset - 1 - bothOffset - tickLength));
+                            lines.append(QLineF(pos, tickOffset - 1 - bothOffset + 0.5,
+                                               pos, tickOffset - 1 - bothOffset - tickLength - 0.5));
                         }
 
                         if (ticks & QSlider::TicksBelow) {
-                            lines.append(QLine(pos, tickOffset + thickness + bothOffset,
-                                               pos, tickOffset + thickness + bothOffset + tickLength));
+                            lines.append(QLineF(pos, tickOffset + thickness + bothOffset - 0.5,
+                                               pos, tickOffset + thickness + bothOffset + tickLength + 0.5));
                         }
                     } else {
                         if (ticks & QSlider::TicksAbove) {
-                            lines.append(QLine(tickOffset - 1 - bothOffset, pos,
-                                               tickOffset - 1 - bothOffset - tickLength, pos));
+                            lines.append(QLineF(tickOffset - 1 - bothOffset + 0.5, pos,
+                                               tickOffset - 1 - bothOffset - tickLength - 0.5, pos));
                         }
 
                         if (ticks & QSlider::TicksBelow) {
-                            lines.append(QLine(tickOffset + thickness + bothOffset, pos,
-                                               tickOffset + thickness + bothOffset + tickLength, pos));
+                            lines.append(QLineF(tickOffset + thickness + bothOffset - 0.5, pos,
+                                               tickOffset + thickness + bothOffset + tickLength + 0.5, pos));
                         }
                     }
                     // in the case where maximum is max int
