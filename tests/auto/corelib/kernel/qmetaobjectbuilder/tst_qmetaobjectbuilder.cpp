@@ -75,6 +75,8 @@ class SomethingOfEverything : public QObject
     Q_PROPERTY(QLocale::Language language READ language)
     Q_ENUMS(SomethingEnum)
     Q_FLAGS(SomethingFlag)
+    Q_ENUMS(SomethingEnum64)
+    Q_FLAGS(SomethingFlag64)
 public:
     Q_INVOKABLE SomethingOfEverything() {}
     ~SomethingOfEverything() {}
@@ -85,12 +87,25 @@ public:
         JKL = 10
     };
 
+    enum SomethingEnum64 : qint64
+    {
+        MNO = -1,
+        PQR = 0x1'2345'5678,
+    };
+
     enum SomethingFlagEnum
     {
         XYZ = 1,
         UVW = 8
     };
     Q_DECLARE_FLAGS(SomethingFlag, SomethingFlagEnum)
+
+    enum SomethingFlagEnum64 : quint64
+    {
+        RST = Q_UINT64_C(1) << 31,
+        OPQ = Q_UINT64_C(1) << 63,
+    };
+    Q_DECLARE_FLAGS(SomethingFlag64, SomethingFlagEnum64)
 
     Q_INVOKABLE Q_SCRIPTABLE void method1() {}
 
@@ -806,6 +821,7 @@ void tst_QMetaObjectBuilder::enumerator()
     QCOMPARE(enum1.name(), QByteArray("foo"));
     QVERIFY(!enum1.isFlag());
     QVERIFY(!enum1.isScoped());
+    QVERIFY(!enum1.is64Bit());
     QCOMPARE(enum1.keyCount(), 0);
     QCOMPARE(enum1.index(), 0);
     QCOMPARE(builder.enumeratorCount(), 1);
@@ -815,6 +831,7 @@ void tst_QMetaObjectBuilder::enumerator()
     QCOMPARE(enum2.name(), QByteArray("bar"));
     QVERIFY(!enum2.isFlag());
     QVERIFY(!enum2.isScoped());
+    QVERIFY(!enum2.is64Bit());
     QCOMPARE(enum2.keyCount(), 0);
     QCOMPARE(enum2.index(), 1);
     QCOMPARE(builder.enumeratorCount(), 2);
@@ -831,9 +848,12 @@ void tst_QMetaObjectBuilder::enumerator()
     enum1.setIsScoped(true);
     enum1.setEnumName(QByteArrayLiteral("fooFlag"));
     enum1.setMetaType(QMetaType(&fooFlagMetaType));
+    QVERIFY(enum1.is64Bit());
+    enum1.setIs64Bit(false);
+    QVERIFY(!enum1.is64Bit());
     QCOMPARE(enum1.addKey("ABC", 0), 0);
     QCOMPARE(enum1.addKey("DEF", 1), 1);
-    QCOMPARE(enum1.addKey("GHI", -1), 2);
+    QCOMPARE(enum1.addKey("GHI", -2), 2);
 
     // Check that enum1 is changed, but enum2 is not.
     QCOMPARE(enum1.name(), QByteArray("foo"));
@@ -849,7 +869,10 @@ void tst_QMetaObjectBuilder::enumerator()
     QCOMPARE(enum1.key(3), QByteArray());
     QCOMPARE(enum1.value(0), 0);
     QCOMPARE(enum1.value(1), 1);
-    QCOMPARE(enum1.value(2), -1);
+    QCOMPARE(enum1.value(2), -2);
+    QCOMPARE(enum1.value64(0), 0);
+    QCOMPARE(enum1.value64(1), 1);
+    QCOMPARE(enum1.value64(2), uint(-2));
     QCOMPARE(enum2.name(), QByteArray("bar"));
     QVERIFY(!enum2.isFlag());
     QVERIFY(!enum2.isScoped());
@@ -859,12 +882,14 @@ void tst_QMetaObjectBuilder::enumerator()
     // Modify the attributes on enum2.
     enum2.setIsFlag(true);
     QCOMPARE(enum2.addKey("XYZ", 10), 0);
-    QCOMPARE(enum2.addKey("UVW", 19), 1);
+    QCOMPARE(enum2.addKey("UVW", quint64(1) << 32), 1);
+    QVERIFY(enum2.is64Bit());
 
     // This time check that only method2 changed.
     QCOMPARE(enum1.name(), QByteArray("foo"));
     QVERIFY(enum1.isFlag());
     QVERIFY(enum1.isScoped());
+    QVERIFY(!enum1.is64Bit());
     QCOMPARE(enum1.keyCount(), 3);
     QCOMPARE(enum1.index(), 0);
     QCOMPARE(enum1.key(0), QByteArray("ABC"));
@@ -873,17 +898,35 @@ void tst_QMetaObjectBuilder::enumerator()
     QCOMPARE(enum1.key(3), QByteArray());
     QCOMPARE(enum1.value(0), 0);
     QCOMPARE(enum1.value(1), 1);
-    QCOMPARE(enum1.value(2), -1);
+    QCOMPARE(enum1.value(2), -2);
+    QCOMPARE(enum1.value64(0), 0);
+    QCOMPARE(enum1.value64(1), 1);
+    QCOMPARE(enum1.value64(2), uint(-2));
     QCOMPARE(enum2.name(), QByteArray("bar"));
     QVERIFY(enum2.isFlag());
     QVERIFY(!enum2.isScoped());
+    QVERIFY(enum2.is64Bit());
     QCOMPARE(enum2.keyCount(), 2);
     QCOMPARE(enum2.index(), 1);
     QCOMPARE(enum2.key(0), QByteArray("XYZ"));
     QCOMPARE(enum2.key(1), QByteArray("UVW"));
     QCOMPARE(enum2.key(2), QByteArray());
     QCOMPARE(enum2.value(0), 10);
-    QCOMPARE(enum2.value(1), 19);
+    QCOMPARE(enum2.value(1), 0);    // truncated!
+    QCOMPARE(enum2.value64(0), 10);
+    QCOMPARE(enum2.value64(1), quint64(1) << 32);
+
+    // Reset enum2 to 32 bits
+    enum2.setIs64Bit(false);
+    QCOMPARE(enum2.value(0), 10);
+    QCOMPARE(enum2.value(1), 0);
+    QCOMPARE(enum2.value64(0), 10);
+    QCOMPARE(enum2.value64(1), 0);
+
+    // Reset back restores it
+    enum2.setIs64Bit(true);
+    QCOMPARE(enum2.value64(0), 10);
+    QCOMPARE(enum2.value64(1), quint64(1) << 32);
 
     // Remove enum1 key
     enum1.removeKey(2);
@@ -898,6 +941,9 @@ void tst_QMetaObjectBuilder::enumerator()
     QCOMPARE(enum1.value(0), 0);
     QCOMPARE(enum1.value(1), 1);
     QCOMPARE(enum1.value(2), -1);
+    QCOMPARE(enum1.value64(0), 0);
+    QCOMPARE(enum1.value64(1), 1);
+    QCOMPARE(enum1.value64(2), std::nullopt);
     QCOMPARE(enum2.name(), QByteArray("bar"));
     QVERIFY(enum2.isFlag());
     QVERIFY(!enum2.isScoped());
@@ -907,7 +953,9 @@ void tst_QMetaObjectBuilder::enumerator()
     QCOMPARE(enum2.key(1), QByteArray("UVW"));
     QCOMPARE(enum2.key(2), QByteArray());
     QCOMPARE(enum2.value(0), 10);
-    QCOMPARE(enum2.value(1), 19);
+    QCOMPARE(enum2.value(1), 0);        // truncated!
+    QCOMPARE(enum2.value64(0), 10);
+    QCOMPARE(enum2.value64(1), quint64(1) << 32);
 
     // Remove enum1 and check that enum2 becomes index 0.
     builder.removeEnumerator(0);
@@ -922,7 +970,9 @@ void tst_QMetaObjectBuilder::enumerator()
     QCOMPARE(enum2.key(1), QByteArray("UVW"));
     QCOMPARE(enum2.key(2), QByteArray());
     QCOMPARE(enum2.value(0), 10);
-    QCOMPARE(enum2.value(1), 19);
+    QCOMPARE(enum2.value(1), 0);        // truncated!
+    QCOMPARE(enum2.value64(0), 10);
+    QCOMPARE(enum2.value64(1), quint64(1) << 32);
 
     // Perform index-based lookup again.
     QCOMPARE(builder.indexOfEnumerator("foo"), -1);
@@ -1185,11 +1235,17 @@ static bool sameEnumerator(const QMetaEnum& enum1, const QMetaEnum& enum2)
     for (int index = 0; index < enum1.keyCount(); ++index) {
         if (QByteArray(enum1.key(index)) != QByteArray(enum2.key(index)))
             return false;
-        if (enum1.value(index) != enum2.value(index))
+        if (enum1.value64(index) != enum2.value64(index))
             return false;
     }
 
     if (QByteArray(enum1.scope()) != QByteArray(enum2.scope()))
+        return false;
+
+    if (enum1.isScoped() != enum2.isScoped())
+        return false;
+
+    if (enum1.is64Bit() != enum2.is64Bit())
         return false;
 
     return true;

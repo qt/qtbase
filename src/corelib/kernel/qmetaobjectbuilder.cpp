@@ -153,17 +153,24 @@ class QMetaEnumBuilderPrivate
 {
 public:
     QMetaEnumBuilderPrivate(const QByteArray &_name)
-        : name(_name), enumName(_name), isFlag(false), isScoped(false)
+        : name(_name), enumName(_name)
     {
     }
 
     QByteArray name;
     QByteArray enumName;
     QMetaType metaType;
-    bool isFlag;
-    bool isScoped;
     QList<QByteArray> keys;
-    QList<int> values;
+    QList<quint64> values;
+    QFlags<EnumFlags> flags = {};
+
+    int addKey(const QByteArray &name, quint64 value)
+    {
+        int index = keys.size();
+        keys += name;
+        values += value;
+        return index;
+    }
 };
 Q_DECLARE_TYPEINFO(QMetaEnumBuilderPrivate, Q_RELOCATABLE_TYPE);
 
@@ -592,7 +599,9 @@ QMetaEnumBuilder QMetaObjectBuilder::addEnumerator(const QMetaEnum &prototype)
     en.setIsScoped(prototype.isScoped());
     int count = prototype.keyCount();
     for (int index = 0; index < count; ++index)
-        en.addKey(prototype.key(index), prototype.value(index));
+        en.addKey(prototype.key(index), prototype.value64(index).value_or(0));
+    // reset the is64Bit() flag if necessary
+    en.setIs64Bit(prototype.is64Bit());
     return en;
 }
 
@@ -1206,8 +1215,11 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
 
     // Allocate space for the enumerator key names and values.
     enumIndex = dataIndex;
-    for (const auto &enumerator : d->enumerators)
+    for (const auto &enumerator : d->enumerators) {
         dataIndex += 2 * enumerator.keys.size();
+        if (enumerator.flags & EnumIs64Bit)
+            dataIndex += enumerator.keys.size();
+    }
 
     // Zero terminator at the end of the data offset table.
     ++dataIndex;
@@ -1334,26 +1346,30 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     for (const auto &enumerator : d->enumerators) {
         [[maybe_unused]] int name = strings.enter(enumerator.name);
         [[maybe_unused]] int enumName = strings.enter(enumerator.enumName);
-        [[maybe_unused]] int isFlag = enumerator.isFlag ? EnumIsFlag : EnumFlags{};
-        [[maybe_unused]] int isScoped = enumerator.isScoped ? EnumIsScoped : EnumFlags{};
         int count = enumerator.keys.size();
-        int enumOffset = enumIndex;
         if constexpr (mode == Construct) {
             data[dataIndex]     = name;
             data[dataIndex + 1] = enumName;
-            data[dataIndex + 2] = isFlag | isScoped;
+            data[dataIndex + 2] = enumerator.flags.toInt();
             data[dataIndex + 3] = count;
-            data[dataIndex + 4] = enumOffset;
+            data[dataIndex + 4] = enumIndex;
         }
         for (int key = 0; key < count; ++key) {
             [[maybe_unused]] int keyIndex = strings.enter(enumerator.keys[key]);
             if constexpr (mode == Construct) {
-                data[enumOffset++] = keyIndex;
-                data[enumOffset++] = enumerator.values[key];
+                data[enumIndex + 0] = keyIndex;
+                data[enumIndex + 1] = uint(enumerator.values[key]);
             }
+            enumIndex += 2;
+        }
+        bool is64Bit = enumerator.flags.testAnyFlags(EnumIs64Bit);
+        for (int key = 0; is64Bit && key < count; ++key) {
+            if constexpr (mode == Construct) {
+                data[enumIndex] = uint(enumerator.values[key] >> 32);
+            }
+            ++enumIndex;
         }
         dataIndex += QMetaObjectPrivate::IntsPerEnum;
-        enumIndex += 2 * count;
     }
 
     // Output the constructors in the class.
@@ -2312,7 +2328,8 @@ QMetaType QMetaEnumBuilder::metaType() const
 }
 
 /*!
-    Sets this enumerator to have the given \c metaType.
+    Sets this enumerator to have the given \c metaType. The is64Bit() flag will
+    be set to match \a metaType's size.
 
     \since 6.6
     \sa metaType()
@@ -2320,8 +2337,10 @@ QMetaType QMetaEnumBuilder::metaType() const
 void QMetaEnumBuilder::setMetaType(QMetaType metaType)
 {
     QMetaEnumBuilderPrivate *d = d_func();
-    if (d)
+    if (d) {
         d->metaType = metaType;
+        setIs64Bit(metaType.sizeOf() > 4);
+    }
 }
 
 /*!
@@ -2334,7 +2353,7 @@ bool QMetaEnumBuilder::isFlag() const
 {
     QMetaEnumBuilderPrivate *d = d_func();
     if (d)
-        return d->isFlag;
+        return d->flags.toInt() & EnumIsFlag;
     else
         return false;
 }
@@ -2348,7 +2367,7 @@ void QMetaEnumBuilder::setIsFlag(bool value)
 {
     QMetaEnumBuilderPrivate *d = d_func();
     if (d)
-        d->isFlag = value;
+        d->flags.setFlag(EnumIsFlag, value);
 }
 
 /*!
@@ -2360,7 +2379,7 @@ bool QMetaEnumBuilder::isScoped() const
 {
     QMetaEnumBuilderPrivate *d = d_func();
     if (d)
-        return d->isScoped;
+        return d->flags.toInt() & EnumIsScoped;
     return false;
 }
 
@@ -2373,7 +2392,37 @@ void QMetaEnumBuilder::setIsScoped(bool value)
 {
     QMetaEnumBuilderPrivate *d = d_func();
     if (d)
-        d->isScoped = value;
+        d->flags.setFlag(EnumIsScoped, value);
+}
+
+/*!
+    Return \c true if this enumerations in this enumerator are 64-bit.
+
+    This flag is autoamtically enabled if a 64-bit value is added with addKey().
+
+    \sa setIs64Bit()
+*/
+bool QMetaEnumBuilder::is64Bit() const
+{
+    QMetaEnumBuilderPrivate *d = d_func();
+    if (d)
+        return d->flags.toInt() & EnumIs64Bit;
+    return false;
+}
+
+/*!
+    Sets this enumerator to be 64-bit wide if \a value is true. If \a value is
+    false, any stored 64-bit keys will be truncated to 32 bits.
+
+    This flag is autoamtically enabled if a 64-bit value is added with addKey().
+
+    \sa is64Bit()
+*/
+void QMetaEnumBuilder::setIs64Bit(bool value)
+{
+    QMetaEnumBuilderPrivate *d = d_func();
+    if (d)
+        d->flags.setFlag(EnumIs64Bit, value);
 }
 
 /*!
@@ -2409,15 +2458,38 @@ QByteArray QMetaEnumBuilder::key(int index) const
     Returns the value with the given \a index; or returns -1 if there
     is no such value.
 
-    \sa keyCount(), addKey(), key()
+    If this is a 64-bit enumeration (see is64Bit()), this function returns the
+    low 32-bit portion of the value. Use value64() to obtain the full value
+    instead.
+
+    \sa value64(), keyCount(), addKey(), key(), is64Bit()
 */
 int QMetaEnumBuilder::value(int index) const
 {
+    return value64(index).value_or(-1);
+}
+
+/*!
+    \since 6.9
+
+    Returns the value with the given \a index if it exists; or returns a
+    disengaged \c{std::optional} if it doesn't.
+
+    \include qmetaobject.cpp qmetaenum-32bit-zeroextend-64bit
+
+    \sa keyCount(), key(), addKey()
+*/
+std::optional<quint64> QMetaEnumBuilder::value64(int index) const
+{
     QMetaEnumBuilderPrivate *d = d_func();
-    if (d && index >= 0 && index < d->keys.size())
-        return d->values[index];
-    else
-        return -1;
+    if (d && index >= 0 && index < d->keys.size()) {
+        quint64 v = d->values[index];
+        if (d->flags & EnumIs64Bit)
+            return v;
+        return uint(v);     // return only the low 32 bits
+    } else {
+        return std::nullopt;
+    }
 }
 
 /*!
@@ -2430,13 +2502,31 @@ int QMetaEnumBuilder::addKey(const QByteArray &name, int value)
 {
     QMetaEnumBuilderPrivate *d = d_func();
     if (d) {
-        int index = d->keys.size();
-        d->keys += name;
-        d->values += value;
-        return index;
+        return d->addKey(name, uint(value));
     } else {
         return -1;
     }
+}
+
+/*!
+    \since 6.9
+
+    Adds a new key called \a name to this enumerator, associated
+    with \a value.  Returns the index of the new key.
+
+    Using the 64-bit version of this function automatically makes this
+    enumeration be stored as 64-bit.
+
+    \sa keyCount(), key(), value(), removeKey(), is64Bit()
+*/
+int QMetaEnumBuilder::addKey(const QByteArray &name, quint64 value)
+{
+    QMetaEnumBuilderPrivate *d = d_func();
+    if (d) {
+        setIs64Bit(true);
+        return d->addKey(name, value);
+    }
+    return -1;
 }
 
 /*!

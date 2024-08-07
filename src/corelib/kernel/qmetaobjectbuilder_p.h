@@ -267,11 +267,16 @@ public:
     bool isScoped() const;
     void setIsScoped(bool value);
 
+    bool is64Bit() const;
+    void setIs64Bit(bool value);
+
     int keyCount() const;
     QByteArray key(int index) const;
     int value(int index) const;
+    std::optional<quint64> value64(int index) const;
 
-    int addKey(const QByteArray& name, int value);
+    int addKey(const QByteArray &name, int value);
+    int addKey(const QByteArray &name, quint64 value);
     void removeKey(int index);
 
 private:
