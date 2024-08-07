@@ -44,15 +44,15 @@ void qYieldCpu(void)
 #elif defined(Q_PROCESSOR_X86) && defined(Q_CC_MSVC)
     _mm_pause();
 #elif defined(Q_PROCESSOR_X86)
-    asm("pause");           // hopefully asm() works in this compiler
+    __asm__("pause");           // hopefully asm() works in this compiler
 
 #elif __has_builtin(__builtin_arm_yield)
     __builtin_arm_yield();
 #elif defined(Q_PROCESSOR_ARM) && Q_PROCESSOR_ARM >= 7 && defined(Q_CC_GNU)
-    asm("yield");           // this works everywhere
+    __asm__("yield");           // this works everywhere
 
 #elif defined(Q_PROCESSOR_RISCV)
-    asm(".word 0x0100000f");        // a.k.a. "pause"
+    __asm__(".word 0x0100000f");        // a.k.a. "pause"
 
 #elif defined(_YIELD_PROCESSOR) && defined(Q_CC_GHS)
     _YIELD_PROCESSOR;       // Green Hills (INTEGRITY), but only on ARM
