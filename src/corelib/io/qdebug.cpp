@@ -1323,13 +1323,13 @@ QDebugStateSaver::~QDebugStateSaver()
     \internal
 
     Specialization of the primary template in qdebug.h to out-of-line
-    the common case of QFlags<T>::Int being int.
+    the common case of QFlags<T>::Int being 32-bit.
 
     Just call the generic version so the two don't get out of sync.
 */
-void qt_QMetaEnum_flagDebugOperator(QDebug &debug, size_t sizeofT, int value)
+void qt_QMetaEnum_flagDebugOperator(QDebug &debug, size_t sizeofT, uint value)
 {
-    qt_QMetaEnum_flagDebugOperator<int>(debug, sizeofT, value);
+    qt_QMetaEnum_flagDebugOperator<uint>(debug, sizeofT, value);
 }
 
 #ifndef QT_NO_QOBJECT
