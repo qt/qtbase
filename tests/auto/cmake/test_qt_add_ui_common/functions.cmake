@@ -96,7 +96,6 @@ function(incremental_build_test)
     cmake_parse_arguments(arg "${options}" "${oneValueArgs}" "${multiValueArgs}"
         ${ARGN})
 
-    string(REPLACE ";" " " arg_ADDITIONAL_ARGS "${arg_ADDITIONAL_ARGS}")
     if ("${arg_SOURCE_DIR}" STREQUAL "")
         message(FATAL_ERROR "FAIL: \"${arg_TEST_NAME}\" test failed because "
             "SOURCE_DIR is empty")

@@ -462,5 +462,6 @@ if(NOT QNX AND NOT WASM AND NOT (WIN32 AND QT_BUILD_MINIMAL_STATIC_TESTS)
     _qt_internal_test_expect_pass(test_qt_add_ui_8)
     _qt_internal_test_expect_pass(test_qt_add_ui_9)
     _qt_internal_test_expect_pass(test_qt_add_ui_10)
+    _qt_internal_test_expect_pass(test_qt_add_ui_11)
 endif()
 
