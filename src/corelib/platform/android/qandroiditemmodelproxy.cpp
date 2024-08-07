@@ -5,6 +5,8 @@
 #include <QtCore/private/qandroidmodelindexproxy_p.h>
 #include <QtCore/private/qandroidtypeconverter_p.h>
 
+#include <QtCore/qcoreapplication.h>
+
 QT_BEGIN_NAMESPACE
 
 using namespace QtJniTypes;
@@ -131,7 +133,12 @@ QAndroidItemModelProxy::createNativeProxy(QJniObject itemModel)
 {
     QAbstractItemModel *nativeProxy = nativeInstance(itemModel);
     if (!nativeProxy) {
+        Q_ASSERT(QCoreApplication::instance());
+
         nativeProxy = new QAndroidItemModelProxy(itemModel);
+        QThread *qtMainThread = QCoreApplication::instance()->thread();
+        if (nativeProxy->thread() != qtMainThread)
+            nativeProxy->moveToThread(qtMainThread);
 
         itemModel.callMethod<void>("setNativeReference", reinterpret_cast<jlong>(nativeProxy));
         connect(nativeProxy, &QAndroidItemModelProxy::destroyed, nativeProxy, [](QObject *obj) {
@@ -205,7 +212,8 @@ jobject QAndroidItemModelProxy::jni_createIndex(JNIEnv *env, jobject object, jin
 {
     QModelIndex (QAndroidItemModelProxy::*createIndexPtr)(int, int, quintptr) const =
             &QAndroidItemModelProxy::createIndex;
-    const QModelIndex index = invokeNativeProxyMethod(env, object, createIndexPtr, row, column, id);
+    const QModelIndex index =
+            invokeNativeProxyMethod(env, object, createIndexPtr, row, column, quintptr(id));
     return env->NewLocalRef(QAndroidModelIndexProxy::jInstance(index).object());
 }
 

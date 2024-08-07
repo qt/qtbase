@@ -21,6 +21,7 @@
 #include <QtCore/qjniobject.h>
 #include <QtCore/qjnienvironment.h>
 #include <QtCore/qjnitypes.h>
+#include <QtCore/qthread.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -58,34 +59,58 @@ public:
     static QJniObject createProxy(QAbstractItemModel *abstractClass);
 
     template <typename Func, typename... Args>
-    static auto invokeNativeProxyMethod(JNIEnv */*env*/, jobject jvmObject, Func func, Args &&...args)
+    static auto invokeNativeProxyMethod(JNIEnv * /*env*/, jobject jvmObject, Func &&func,
+                                        Args &&...args)
     {
         Q_ASSERT(jvmObject);
         auto model = qobject_cast<QAndroidItemModelProxy *>(nativeInstance(jvmObject));
         Q_ASSERT(model);
-        return std::invoke(func, model, std::forward<Args>(args)...);
+        return safeCall(model, std::forward<Func>(func), std::forward<Args>(args)...);
     }
 
     template <typename Func, typename... Args>
-    static auto invokeNativeMethod(JNIEnv */*env*/, jobject jvmObject, Func func, Args &&...args)
+    static auto invokeNativeMethod(JNIEnv * /*env*/, jobject jvmObject, Func &&func, Args &&...args)
     {
         Q_ASSERT(jvmObject);
         auto model = nativeInstance(jvmObject);
         Q_ASSERT(model);
-        return std::invoke(func, model, std::forward<Args>(args)...);
+        return safeCall(model, std::forward<Func>(func), std::forward<Args>(args)...);
     }
 
     template <typename Func1, typename Func2, typename... Args>
-    static auto invokeNativeImpl(JNIEnv */*env*/, jobject jvmObject, Func1 defaultFunc, Func2 func,
-                                 Args &&...args)
+    static auto invokeNativeImpl(JNIEnv * /*env*/, jobject jvmObject, Func1 &&defaultFunc,
+                                 Func2 &&func, Args &&...args)
     {
         Q_ASSERT(jvmObject);
         auto nativeModel = nativeInstance(jvmObject);
         auto nativeProxyModel = qobject_cast<QAndroidItemModelProxy *>(nativeModel);
         if (nativeProxyModel)
-            return std::invoke(defaultFunc, nativeProxyModel, std::forward<Args>(args)...);
+            return safeCall(nativeProxyModel, std::forward<Func1>(defaultFunc),
+                            std::forward<Args>(args)...);
         else
-            return std::invoke(func, nativeModel, std::forward<Args>(args)...);
+            return safeCall(nativeModel, std::forward<Func2>(func), std::forward<Args>(args)...);
+    }
+
+    template <typename Object, typename Func, typename... Args>
+    static auto safeCall(Object *object, Func &&func, Args &&...args)
+    {
+        using ReturnType = decltype(std::invoke(std::forward<Func>(func), object,
+                                                std::forward<Args>(args)...));
+
+        if constexpr (std::is_void_v<ReturnType>) {
+            QMetaObject::invokeMethod(object, std::forward<Func>(func), Qt::AutoConnection,
+                                      std::forward<Args>(args)...);
+        } else {
+            ReturnType returnValue;
+
+            const auto connectionType = object->thread() == QThread::currentThread()
+                    ? Qt::DirectConnection
+                    : Qt::BlockingQueuedConnection;
+
+            QMetaObject::invokeMethod(object, std::forward<Func>(func), connectionType,
+                                      qReturnArg(returnValue), std::forward<Args>(args)...);
+            return returnValue;
+        }
     }
 
     static jint jni_columnCount(JNIEnv *env, jobject object, JQtModelIndex parent);
