@@ -984,6 +984,13 @@ QDataStream &QDataStream::operator<<(bool i)
     return (*this << qint8(i));
 }
 
+#include "qdebug.h"
+
+Q_CORE_EXPORT void qt_QMetaEnum_flagDebugOperator(QDebug &debug, size_t sizeofT, int value)
+{
+    qt_QMetaEnum_flagDebugOperator(debug, sizeofT, uint(value));
+}
+
 #include "qdir.h" // inlined API
 
 bool QDir::operator==(const QDir &dir) const

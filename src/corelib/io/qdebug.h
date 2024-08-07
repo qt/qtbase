@@ -488,11 +488,13 @@ inline QDebug operator<<(QDebug debug, const QTaggedPointer<T, Tag> &ptr)
     return debug;
 }
 
-Q_CORE_EXPORT void qt_QMetaEnum_flagDebugOperator(QDebug &debug, size_t sizeofT, int value);
+Q_CORE_EXPORT void qt_QMetaEnum_flagDebugOperator(QDebug &debug, size_t sizeofT, uint value);
 
 template <typename Int>
 void qt_QMetaEnum_flagDebugOperator(QDebug &debug, size_t sizeofT, Int value)
 {
+    static_assert(std::is_unsigned_v<Int>,
+            "Cast value to an unsigned type before calling this function");
     const QDebugStateSaver saver(debug);
     debug.resetFormat();
     debug.nospace() << "QFlags(" << Qt::hex << Qt::showbase;
@@ -556,7 +558,8 @@ template <class T>
 inline QDebug qt_QMetaEnum_flagDebugOperator_helper(QDebug debug, const QFlags<T> &flags)
 #endif
 {
-    qt_QMetaEnum_flagDebugOperator(debug, sizeof(T), typename QFlags<T>::Int(flags));
+    using UInt = typename QIntegerForSizeof<T>::Unsigned;
+    qt_QMetaEnum_flagDebugOperator(debug, sizeof(T), UInt(flags.toInt()));
     return debug;
 }
 
