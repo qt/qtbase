@@ -6,7 +6,6 @@
 
 #include <QtCore/qtconfigmacros.h>
 #include <QtCore/qtdeprecationmarkers.h>
-#include <QtCore/qtypes.h>
 
 #include <optional>
 #include <tuple>
@@ -65,33 +64,20 @@ template <auto T> struct value_dependent_false : std::false_type {};
 
 // helper detects standard integer types and some of extended integer types,
 // see https://eel.is/c++draft/basic.fundamental#1
-template <typename T> struct is_standard_or_extended_integer_type_helper : std::false_type {};
-template <>
-struct is_standard_or_extended_integer_type_helper<signed char> : std::true_type {};
-template <>
-struct is_standard_or_extended_integer_type_helper<unsigned char> : std::true_type {};
-template <>
-struct is_standard_or_extended_integer_type_helper<signed short int> : std::true_type {};
-template <>
-struct is_standard_or_extended_integer_type_helper<unsigned short int> : std::true_type {};
-template <>
-struct is_standard_or_extended_integer_type_helper<signed int> : std::true_type {};
-template <>
-struct is_standard_or_extended_integer_type_helper<unsigned int> : std::true_type {};
-template <>
-struct is_standard_or_extended_integer_type_helper<signed long int> : std::true_type {};
-template <>
-struct is_standard_or_extended_integer_type_helper<unsigned long int> : std::true_type {};
-template <>
-struct is_standard_or_extended_integer_type_helper<signed long long int> : std::true_type {};
-template <>
-struct is_standard_or_extended_integer_type_helper<unsigned long long int> : std::true_type {};
-#ifdef QT_SUPPORTS_INT128
-template <>
-struct is_standard_or_extended_integer_type_helper<qint128> : std::true_type {};
-template <>
-struct is_standard_or_extended_integer_type_helper<quint128> : std::true_type {};
-#endif // QT_SUPPORTS_INT128
+template <typename T> struct is_standard_or_extended_integer_type_helper : std::is_integral<T> {};
+// these are integral, but not considered standard or extended integer types
+// https://eel.is/c++draft/basic.fundamental#11:
+#define QSEIT_EXCLUDE(X) \
+    template <> struct is_standard_or_extended_integer_type_helper<X> : std::false_type {}
+QSEIT_EXCLUDE(bool);
+QSEIT_EXCLUDE(char);
+#ifdef __cpp_char8_t
+QSEIT_EXCLUDE(char8_t);
+#endif
+QSEIT_EXCLUDE(char16_t);
+QSEIT_EXCLUDE(char32_t);
+QSEIT_EXCLUDE(wchar_t);
+#undef QSEIT_EXCLUDE
 template <typename T>
 struct is_standard_or_extended_integer_type : is_standard_or_extended_integer_type_helper<std::remove_cv_t<T>> {};
 template <typename T>

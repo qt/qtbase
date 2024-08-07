@@ -11,6 +11,7 @@
 #include <QLatin1String>
 #include <QString>
 #include <QtVersion>
+#include <QtCore/qttypetraits.h>
 
 #include <cmath>
 #include <limits>
@@ -22,6 +23,8 @@
 static_assert(std::is_signed_v<qint128>);
 static_assert(std::is_integral_v<qint128>);
 static_assert(std::is_integral_v<quint128>);
+static_assert(QtPrivate::is_standard_or_extended_integer_type_v<qint128>);
+static_assert(QtPrivate::is_standard_or_extended_integer_type_v<quint128>);
 static_assert(std::numeric_limits<qint128>::is_signed);
 static_assert(std::numeric_limits<qint128>::is_specialized);
 static_assert(std::numeric_limits<quint128>::is_specialized);
