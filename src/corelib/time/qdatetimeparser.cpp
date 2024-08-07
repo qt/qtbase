@@ -2161,7 +2161,10 @@ bool QDateTimeParser::skipToNextSection(int index, const QDateTime &current, QSt
     if (node.type != TimeZoneSection || current.timeSpec() == Qt::OffsetFromUTC) {
         const QDateTime maximum = getMaximum();
         const QDateTime minimum = getMinimum();
-        Q_ASSERT(current >= minimum && current <= maximum);
+        // Range from minimum to maximum might not contain current if an earlier
+        // field's value was full-width but out of range. In such a case the
+        // parse is already headed for Invalid, so it doesn't matter that we get
+        // the wrong range of values for the current field here.
 
         QDateTime tmp = current;
         if (!setDigit(tmp, index, min) || tmp < minimum)
