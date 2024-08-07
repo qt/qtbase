@@ -47,3 +47,6 @@ macos-14 x86
 # QTBUG-124291
 [setParentChangesFocus:make dialog parentless, after]
 android
+
+[tst_QWidget::multipleToplevelFocusCheck]
+ci

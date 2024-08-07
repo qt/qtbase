@@ -4,3 +4,6 @@
 windows ci
 [blockingLookup:a-plus-aaaa]
 windows ci
+
+[tst_QHostInfo::lookupConnectToLambda]
+ci

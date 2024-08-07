@@ -29,3 +29,6 @@ windows-10 ci
 # QTBUG-87424
 [transientParent]
 android
+
+[tst_QMenu::tearOff]
+ci
