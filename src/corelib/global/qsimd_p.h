@@ -417,7 +417,7 @@ static inline void qYieldCpu()
          https://stackoverflow.com/a/70076751/134841
          https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105416
     */
-    asm volatile("yield"); /* this works everywhere */
+    __asm__ volatile("yield"); /* this works everywhere */
 #  else
     __yield(); /* this is what should work everywhere */
 #  endif
