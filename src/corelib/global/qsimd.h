@@ -34,7 +34,7 @@
 
 #define QT_COMPILER_USES(feature) (1/QT_COMPILER_USES_##feature == 1)
 
-#if defined(Q_PROCESSOR_ARM) && defined(__ARM_NEON) || defined(__ARM_NEON__)
+#if defined(Q_PROCESSOR_ARM) && defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(_M_ARM64)
 #  include <arm_neon.h>
 #  define QT_COMPILER_USES_neon 1
 #else

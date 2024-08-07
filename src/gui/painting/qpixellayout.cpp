@@ -1087,7 +1087,9 @@ static inline void qConvertARGB32PMToRGBA64PM_neon(QRgba64 *buffer, const uint *
         return;
 
     const uint32x4_t amask = vdupq_n_u32(0xff000000);
-#if defined(Q_PROCESSOR_ARM_64)
+#if defined(Q_PROCESSOR_ARM_64) && defined(_MSC_VER)
+    const uint8x16_t rgbaMask  = { 0x0704050603000102ULL, 0x0F0C0D0E0B08090AULL };
+#elif defined(Q_PROCESSOR_ARM_64)
     const uint8x16_t rgbaMask  = { 2, 1, 0, 3, 6, 5, 4, 7, 10, 9, 8, 11, 14, 13, 12, 15};
 #else
     const uint8x8_t rgbaMask  = { 2, 1, 0, 3, 6, 5, 4, 7 };

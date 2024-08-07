@@ -257,7 +257,7 @@ static_assert(ARCH_SKX_MACROS, "Undeclared identifiers indicate which features a
 
 // NEON intrinsics
 // note: as of GCC 4.9, does not support function targets for ARM
-#if defined(__ARM_NEON) || defined(__ARM_NEON__)
+#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(_M_ARM64)
 #if defined(Q_CC_CLANG)
 #define QT_FUNCTION_TARGET_STRING_NEON      "neon"
 #else
