@@ -526,6 +526,7 @@ inline QDebug operator<<(QDebug debug, const QTaggedPointer<T, Tag> &ptr)
 Q_CORE_EXPORT QDebug qt_QMetaEnum_debugOperator(QDebug&, qint64 value, const QMetaObject *meta, const char *name);
 Q_CORE_EXPORT QDebug qt_QMetaEnum_flagDebugOperator(QDebug &dbg, quint64 value, const QMetaObject *meta, const char *name);
 Q_CORE_EXPORT void qt_QMetaEnum_flagDebugOperator(QDebug &debug, size_t sizeofT, uint value);
+Q_CORE_EXPORT void qt_QMetaEnum_flagDebugOperator(QDebug &debug, size_t sizeofT, quint64 value);
 
 template <typename Int>
 void qt_QMetaEnum_flagDebugOperator(QDebug &debug, size_t sizeofT, Int value)
@@ -556,9 +557,13 @@ inline QDebug operator<<(QDebug debug, Flags flags)
     using UInt = typename QIntegerForSizeof<T>::Unsigned;
 #if !defined(QT_NO_QOBJECT)
     if constexpr (QtPrivate::IsQEnumHelper<T>::Value || QtPrivate::IsQEnumHelper<Flags>::Value) {
+        // if QFlags<T> is a Q_FLAG, we always zero-extend; if not, we need to
+        // allow it to sign-extend if it is signed (see QMetaEnum::valueToKeys)
+        using Int = std::conditional_t<QtPrivate::IsQEnumHelper<Flags>::Value, UInt,
+                                       std::underlying_type_t<T>>;
         const QMetaObject *obj = qt_getEnumMetaObject(T());
         const char *name = qt_getEnumName(T());
-        return qt_QMetaEnum_flagDebugOperator(debug, UInt(flags.toInt()), obj, name);
+        return qt_QMetaEnum_flagDebugOperator(debug, Int(flags.toInt()), obj, name);
     } else
 #endif
     {

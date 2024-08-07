@@ -54,9 +54,14 @@ class tst_QDebug: public QObject
 public:
     enum EnumType { EnumValue1 = 1, EnumValue2 = INT_MIN };
     enum FlagType { EnumFlag1 = 1, EnumFlag2 = INT_MIN };
+    enum Enum64Type { Enum64Value1 = 1, Enum64Value2 = Q_UINT64_C(0x1'0000'0002) };
+    enum Flag64Type : qlonglong { Enum64Flag1 = 1, Enum64Flag2 = Q_UINT64_C(0x1'0000'0002) };
     Q_ENUM(EnumType)
+    Q_ENUM(Enum64Type)
     Q_DECLARE_FLAGS(Flags, FlagType)
     Q_FLAG(Flags)
+    Q_DECLARE_FLAGS(Flags64, Flag64Type)
+    Q_FLAG(Flags64)
 
 private slots:
     void assignment() const;
@@ -88,6 +93,7 @@ private slots:
     void qDebugQByteArray() const;
     void qDebugQByteArrayView() const;
     void qDebugQFlags() const;
+    void qDebugQFlags64() const;
     void qDebugStdChrono_data() const;
     void qDebugStdChrono() const;
     void qDebugStdOptional() const;
@@ -106,6 +112,8 @@ private slots:
     void objcInObjcMode() const;
 #endif
 };
+Q_DECLARE_OPERATORS_FOR_FLAGS(tst_QDebug::Flags)
+Q_DECLARE_OPERATORS_FOR_FLAGS(tst_QDebug::Flags64)
 
 void tst_QDebug::assignment() const
 {
@@ -1096,8 +1104,9 @@ void tst_QDebug::qDebugQFlags() const
     QString file, function;
     int line = 0;
     QFlags<TestEnum> flags(Flag1 | Flag2 | SignFlag);
-
     MessageHandlerSetter mhs(myMessageHandler);
+
+    // first, test QFlags on an enum where neither are Q_FLAG or Q_ENUM
     { qDebug() << flags; }
 #ifndef QT_NO_MESSAGELOGCONTEXT
     file = __FILE__; line = __LINE__ - 2; function = Q_FUNC_INFO;
@@ -1108,15 +1117,52 @@ void tst_QDebug::qDebugQFlags() const
     QCOMPARE(s_line, line);
     QCOMPARE(QString::fromLatin1(s_function), function);
 
-    // Test the output of QFlags with an enum not declared with Q_DECLARE_FLAGS and Q_FLAGS
+    // QFlags where the backing enum is a Q_ENUM but the QFlags isn't a QFLAG
     QFlags<EnumType> flags2(EnumValue2);
     qDebug() << flags2;
     QCOMPARE(s_msg, QString::fromLatin1("QFlags<tst_QDebug::EnumType>(EnumValue2)"));
 
-    // A now for one that was fully declared
+    // And now for one that was fully declared
     tst_QDebug::Flags flags3(EnumFlag1);
     qDebug() << flags3;
     QCOMPARE(s_msg, QString::fromLatin1("QFlags<tst_QDebug::FlagType>(EnumFlag1)"));
+}
+
+enum class TestEnum64 : qulonglong {
+    Flag1 = 0x1,
+    Flag2 = Q_UINT64_C(0x8000'0000'0000'0000)
+};
+
+Q_DECLARE_FLAGS(TestFlags64, TestEnum64)
+Q_DECLARE_OPERATORS_FOR_FLAGS(TestFlags64)
+
+void tst_QDebug::qDebugQFlags64() const
+{
+    QString file, function;
+    int line = 0;
+    QFlags<TestEnum64> flags(TestEnum64::Flag1 | TestEnum64::Flag2);
+    MessageHandlerSetter mhs(myMessageHandler);
+
+    // first, test QFlags on an enum where neither are Q_FLAG or Q_ENUM
+    qDebug() << flags;
+#ifndef QT_NO_MESSAGELOGCONTEXT
+    file = __FILE__; line = __LINE__ - 2; function = Q_FUNC_INFO;
+#endif
+    QCOMPARE(s_msgType, QtDebugMsg);
+    QCOMPARE(s_msg, "QFlags(0x1|0x8000000000000000)");
+    QCOMPARE(QString::fromLatin1(s_file), file);
+    QCOMPARE(s_line, line);
+    QCOMPARE(QString::fromLatin1(s_function), function);
+
+    // QFlags where the backing enum is a Q_ENUM but the QFlags isn't a QFLAG
+    QFlags<Enum64Type> flags2(Enum64Value2);
+    qDebug() << flags2;
+    QCOMPARE(s_msg, QString::fromLatin1("QFlags<tst_QDebug::Enum64Type>(Enum64Value2)"));
+
+    // And now for one that was fully declared
+    tst_QDebug::Flags64 flags3(Enum64Flag1|Enum64Flag2);
+    qDebug() << flags3;
+    QCOMPARE(s_msg, QString::fromLatin1("QFlags<tst_QDebug::Flag64Type>(Enum64Flag1|Enum64Flag2)"));
 }
 
 using ToStringFunction = std::function<QString()>;

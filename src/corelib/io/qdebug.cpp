@@ -1329,8 +1329,18 @@ QDebugStateSaver::~QDebugStateSaver()
 */
 void qt_QMetaEnum_flagDebugOperator(QDebug &debug, size_t sizeofT, uint value)
 {
-    qt_QMetaEnum_flagDebugOperator<uint>(debug, sizeofT, value);
+    qt_QMetaEnum_flagDebugOperator(debug, sizeofT, quint64(value));
 }
+
+/*!
+    \internal
+    Ditto, for 64-bit.
+*/
+void qt_QMetaEnum_flagDebugOperator(QDebug &debug, size_t sizeofT, quint64 value)
+{
+    qt_QMetaEnum_flagDebugOperator<quint64>(debug, sizeofT, value);
+}
+
 
 #ifndef QT_NO_QOBJECT
 /*!
@@ -1449,7 +1459,7 @@ QDebug qt_QMetaEnum_flagDebugOperator(QDebug &debug, quint64 value, const QMetaO
         debug << '(';
     }
 
-    debug << me.valueToKeys(static_cast<int>(value));
+    debug << me.valueToKeys(value);
 
     if (enumScope)
         debug << ')';
