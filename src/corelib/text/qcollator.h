@@ -13,7 +13,7 @@ QT_BEGIN_NAMESPACE
 
 class QCollatorPrivate;
 class QCollatorSortKeyPrivate;
-QT_DECLARE_QESDP_SPECIALIZATION_DTOR_WITH_EXPORT(QCollatorSortKeyPrivate, Q_CORE_EXPORT)
+QT_DECLARE_QESDP_SPECIALIZATION_DTOR(QCollatorSortKeyPrivate)
 
 class Q_CORE_EXPORT QCollatorSortKey
 {
