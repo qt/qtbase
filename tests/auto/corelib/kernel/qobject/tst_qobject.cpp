@@ -155,6 +155,7 @@ private slots:
     void emitToDestroyedClass();
     void declarativeData();
     void asyncCallbackHelper();
+    void disconnectQueuedConnection_pendingEventsAreDelivered();
 };
 
 struct QObjectCreatedOnShutdown
@@ -8947,6 +8948,22 @@ void tst_QObject::asyncCallbackHelper()
         });
         QCOMPARE(called, 3);
     }
+}
+
+void tst_QObject::disconnectQueuedConnection_pendingEventsAreDelivered()
+{
+    SenderObject sender;
+    ReceiverObject receiver;
+
+    receiver.count_slot1 = 0;
+    QObject::connect(&sender, &SenderObject::signal1, &receiver, &ReceiverObject::slot1,
+                     Qt::QueuedConnection);
+    sender.emitSignal1();
+    QCOMPARE(receiver.count_slot1, 0);
+
+    QObject::disconnect(&sender, &SenderObject::signal1, &receiver, &ReceiverObject::slot1);
+    QCOMPARE(receiver.count_slot1, 0);
+    QTRY_COMPARE(receiver.count_slot1, 1);
 }
 
 QTEST_MAIN(tst_QObject)

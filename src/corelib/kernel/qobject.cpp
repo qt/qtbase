@@ -3210,6 +3210,7 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const QMetaMetho
     \endlist
 
     \include includes/qobject.qdocinc disconnect-mismatch
+    \include includes/qobject.qdocinc disconnect-queued
 
     \nullptr may be used as a wildcard, meaning "any signal", "any receiving
     object", or "any slot in the receiving object", respectively.
@@ -3364,6 +3365,7 @@ bool QObject::disconnect(const QObject *sender, const char *signal,
     \endlist
 
     \include includes/qobject.qdocinc disconnect-mismatch
+    \include includes/qobject.qdocinc disconnect-queued
 
     QMetaMethod() may be used as wildcard in the meaning "any signal" or "any slot in receiving object".
     In the same way \nullptr can be used for \a receiver in the meaning "any receiving object".
@@ -3439,6 +3441,7 @@ bool QObject::disconnect(const QObject *sender, const QMetaMethod &signal,
     Disconnects \a signal from \a method of \a receiver.
 
     \include includes/qobject.qdocinc disconnect-mismatch
+    \include includes/qobject.qdocinc disconnect-queued
 
     A signal-slot connection is removed when either of the objects
     involved are destroyed.
@@ -3454,6 +3457,7 @@ bool QObject::disconnect(const QObject *sender, const QMetaMethod &signal,
     method.
 
     \include includes/qobject.qdocinc disconnect-mismatch
+    \include includes/qobject.qdocinc disconnect-queued
 
     A signal-slot connection is removed when either of the objects
     involved are destroyed.

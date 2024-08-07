@@ -17,3 +17,9 @@ calls.
 To avoid mismatches, store the connection handle returned by connect(), and use
 it in the call to \l{disconnect(const QMetaObject::Connection &connection)}{disconnect()}.
 //! [disconnect-mismatch]
+
+//! [disconnect-queued]
+\note If a \l{Qt::QueuedConnection}{queued connection} is disconnected,
+already scheduled events may still be delivered, causing the receiver to
+be called after the connection is disconnected.
+//! [disconnect-queued]
