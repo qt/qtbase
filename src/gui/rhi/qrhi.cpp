@@ -2764,10 +2764,10 @@ QRhiTextureRenderTargetDescription::QRhiTextureRenderTargetDescription(const QRh
     matching the texture set via setDepthTexture().
 
     \note Resolving depth (or depth-stencil) data is only functional when the
-    \l ResolveDepthStencil feature is reported as supported at run time. Support
-    for depth-stencil resolve is not universally available among the graphics
-    APIs. Designs assuming unconditional availability of depth-stencil resolve
-    are therefore non-portable, and should be avoided.
+    \l QRhi::ResolveDepthStencil feature is reported as supported at run time.
+    Support for depth-stencil resolve is not universally available among the
+    graphics APIs. Designs assuming unconditional availability of depth-stencil
+    resolve are therefore non-portable, and should be avoided.
 
     \note As an additional limitation for OpenGL ES in particular, setting a
     depth resolve texture may only be functional in combination with
@@ -4743,7 +4743,7 @@ void QRhiTexture::setNativeLayout(int layout)
     is used as the texture itself, and in most cases this function does not need
     to be called.
 
-    This setting is only taken into account when the \l TextureViewFormat
+    This setting is only taken into account when the \l QRhi::TextureViewFormat
     feature is reported as supported.
 
     \note This functionality is provided to allow "casting" between
@@ -4781,7 +4781,7 @@ void QRhiTexture::setNativeLayout(int layout)
     with a ViewFormat that has a format of QRhiTexture::RGBA8 and \c srgb set to
     \c false).
 
-    This setting is only taken into account when the \l TextureViewFormat
+    This setting is only taken into account when the \l QRhi::TextureViewFormat
     feature is reported as supported.
 
     \note This functionality is provided to allow "casting" between
