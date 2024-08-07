@@ -382,7 +382,7 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
             - methods.size(); // ditto
 
     QDBusMetaObjectPrivate *header = reinterpret_cast<QDBusMetaObjectPrivate *>(idata.data());
-    static_assert(QMetaObjectPrivate::OutputRevision == 12, "QtDBus meta-object generator should generate the same version as moc");
+    static_assert(QMetaObjectPrivate::OutputRevision == 13, "QtDBus meta-object generator should generate the same version as moc");
     header->revision = QMetaObjectPrivate::OutputRevision;
     header->className = 0;
     header->classInfoCount = 0;

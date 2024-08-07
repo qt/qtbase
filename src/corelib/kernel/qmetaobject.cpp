@@ -2331,13 +2331,19 @@ int QMetaMethod::revision() const
 {
     if (!mobj)
         return 0;
-    if (data.flags() & MethodRevisioned) {
+    if ((data.flags() & MethodRevisioned) == 0)
+        return 0;
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+    if (priv(mobj->d.data)->revision < 13) {
+        // revision number located elsewhere
         int offset = priv(mobj->d.data)->methodData
                      + priv(mobj->d.data)->methodCount * Data::Size
                      + QMetaMethodPrivate::get(this)->ownMethodIndex();
         return mobj->d.data[offset];
     }
-    return 0;
+#endif
+
+    return mobj->d.data[data.parameters() - 1];
 }
 
 /*!

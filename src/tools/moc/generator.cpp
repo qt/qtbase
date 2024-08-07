@@ -291,7 +291,7 @@ void Generator::generateCode()
     int index = MetaObjectPrivateFieldCount;
     fprintf(out, "Q_CONSTINIT static const uint qt_meta_data_%s[] = {\n", qualifiedClassNameIdentifier.constData());
     fprintf(out, "\n // content:\n");
-    fprintf(out, "    %4d,       // revision\n", int(QtMocConstants::OutputRevision));
+    fprintf(out, "    %4d,       // revision\n", 12);       // hardcoded to an earlier version
     fprintf(out, "    %4d,       // classname\n", stridx(cdef->qualified));
     fprintf(out, "    %4d, %4d, // classinfo\n", int(cdef->classInfoList.size()), int(cdef->classInfoList.size() ? index : 0));
     index += cdef->classInfoList.size() * 2;

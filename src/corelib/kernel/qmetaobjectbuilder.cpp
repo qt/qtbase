@@ -177,8 +177,6 @@ public:
         staticMetacallFunction = nullptr;
     }
 
-    bool hasRevisionedMethods() const;
-
     QByteArray className;
     const QMetaObject *superClass;
     QMetaObjectBuilder::StaticMetacallFunction staticMetacallFunction;
@@ -191,15 +189,6 @@ public:
     QList<const QMetaObject *> relatedMetaObjects;
     MetaObjectFlags flags;
 };
-
-bool QMetaObjectBuilderPrivate::hasRevisionedMethods() const
-{
-    for (const auto &method : methods) {
-        if (method.revision)
-            return true;
-    }
-    return false;
-}
 
 /*!
     Constructs a new QMetaObjectBuilder.
@@ -1118,14 +1107,24 @@ void QMetaStringTable::writeBlob(char *out) const
     }
 }
 
-// Returns the sum of all parameters (including return type) for the given
-// \a methods. This is needed for calculating the size of the methods'
-// parameter type/name meta-data.
+// Returns the number of integers needed to store these methods' parameter type
+// infos or type names, parameter names and, if present, the method revision.
+// This is needed for calculating the size of the methods' parameter type/name
+// meta-data.
 static int aggregateParameterCount(const std::vector<QMetaMethodBuilderPrivate> &methods)
 {
     int sum = 0;
-    for (const auto &method : methods)
-        sum += method.parameterCount() + 1; // +1 for return type
+    for (const auto &method : methods) {
+        if (method.revision)
+            ++sum;
+
+        // type infos or type names; +1 for return type (constructors don't
+        // have one, so this stores a link to an empty string)
+        sum += method.parameterCount() + 1;
+
+        // parameter names (return type doesn't get one)
+        sum += method.parameterCount();
+    }
     return sum;
 }
 
@@ -1147,7 +1146,6 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     int paramsIndex;
     int enumIndex;
     int index;
-    bool hasRevisionedMethods = d->hasRevisionedMethods();
 
     // Create the main QMetaObject structure at the start of the buffer.
     QMetaObject *meta = reinterpret_cast<QMetaObject *>(buf);
@@ -1166,13 +1164,10 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
                                     : nullptr;
     //int pmetaSize = size;
     dataIndex = MetaObjectPrivateFieldCount;
-    int methodParametersDataSize =
-            ((aggregateParameterCount(d->methods)
-             + aggregateParameterCount(d->constructors)) * 2) // types and parameter names
-            - int(d->methods.size())       // return "parameters" don't have names
-            - int(d->constructors.size()); // "this" parameters don't have names
+    int methodParametersDataSize = aggregateParameterCount(d->methods)
+             + aggregateParameterCount(d->constructors);
     if constexpr (mode == Construct) {
-        static_assert(QMetaObjectPrivate::OutputRevision == 12, "QMetaObjectBuilder should generate the same version as moc");
+        static_assert(QMetaObjectPrivate::OutputRevision == 13, "QMetaObjectBuilder should generate the same version as moc");
         pmeta->revision = QMetaObjectPrivate::OutputRevision;
         pmeta->flags = d->flags.toInt();
         pmeta->className = 0;   // Class name is always the first string.
@@ -1185,8 +1180,6 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
         pmeta->methodCount = int(d->methods.size());
         pmeta->methodData = dataIndex;
         dataIndex += QMetaObjectPrivate::IntsPerMethod * int(d->methods.size());
-        if (hasRevisionedMethods)
-            dataIndex += int(d->methods.size());
         paramsIndex = dataIndex;
         dataIndex += methodParametersDataSize;
 
@@ -1204,8 +1197,6 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     } else {
         dataIndex += 2 * int(d->classInfoNames.size());
         dataIndex += QMetaObjectPrivate::IntsPerMethod * int(d->methods.size());
-        if (hasRevisionedMethods)
-            dataIndex += int(d->methods.size());
         paramsIndex = dataIndex;
         dataIndex += methodParametersDataSize;
         dataIndex += QMetaObjectPrivate::IntsPerProperty * int(d->properties.size());
@@ -1257,6 +1248,8 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
         int argc = method.parameterCount();
         [[maybe_unused]] int tag = strings.enter(method.tag);
         [[maybe_unused]] int attrs = method.attributes;
+        if (method.revision)
+            ++paramsIndex;
         if constexpr (mode == Construct) {
             data[dataIndex]     = name;
             data[dataIndex + 1] = argc;
@@ -1271,20 +1264,18 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
         paramsIndex += 1 + argc * 2;
         parameterMetaTypesIndex += 1 + argc;
     }
-    if (hasRevisionedMethods) {
-        for (const auto &method : d->methods) {
-            if constexpr (mode == Construct)
-                data[dataIndex] = method.revision;
-            ++dataIndex;
-        }
-    }
 
     // Output the method parameters in the class.
-    Q_ASSERT(!buf || dataIndex == pmeta->methodData + int(d->methods.size()) * QMetaObjectPrivate::IntsPerMethod
-             + (hasRevisionedMethods ? int(d->methods.size()) : 0));
+    Q_ASSERT(!buf || dataIndex == pmeta->methodData + int(d->methods.size()) * QMetaObjectPrivate::IntsPerMethod);
     for (int x = 0; x < 2; ++x) {
         const std::vector<QMetaMethodBuilderPrivate> &methods = (x == 0) ? d->methods : d->constructors;
         for (const auto &method : methods) {
+            if (method.revision) {
+                if constexpr (mode == Construct)
+                    data[dataIndex] = method.revision;
+                ++dataIndex;
+            }
+
             const QList<QByteArray> paramTypeNames = method.parameterTypes();
             int paramCount = paramTypeNames.size();
             for (int i = -1; i < paramCount; ++i) {
@@ -1382,6 +1373,8 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
         }
         dataIndex += QMetaObjectPrivate::IntsPerMethod;
         paramsIndex += 1 + argc * 2;
+        if (ctor.revision)
+            ++paramsIndex;
         parameterMetaTypesIndex += argc;
     }
 
@@ -1461,8 +1454,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
 QMetaObject *QMetaObjectBuilder::toMetaObject() const
 {
     int size = buildMetaObject<Prepare>(d, nullptr, 0);
-    char *buf = reinterpret_cast<char *>(malloc(size));
-    memset(buf, 0, size);
+    char *buf = new (calloc(size, 1)) char[size];
     buildMetaObject<Construct>(d, buf, size);
     return reinterpret_cast<QMetaObject *>(buf);
 }
