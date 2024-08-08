@@ -191,6 +191,18 @@ function(qt6_wrap_cpp)
         _qt_internal_wrap_cpp(${ARGV})
         set(${output_parameter} "${${output_parameter}}" PARENT_SCOPE)
     endif()
+
+    # Forward further return values of _qt_internal_wrap_cpp to the caller.
+    set(no_value_options "")
+    set(single_value_options __QT_INTERNAL_OUTPUT_MOC_JSON_FILES)
+    set(multi_value_options "")
+    cmake_parse_arguments(arg
+        "${no_value_options}" "${single_value_options}" "${multi_value_options}" ${ARGV}
+    )
+    if(NOT "${arg___QT_INTERNAL_OUTPUT_MOC_JSON_FILES}" STREQUAL "")
+        set(${arg___QT_INTERNAL_OUTPUT_MOC_JSON_FILES}
+            "${${arg___QT_INTERNAL_OUTPUT_MOC_JSON_FILES}}" PARENT_SCOPE)
+    endif()
 endfunction()
 
 # _qt_internal_wrap_cpp(outfiles inputfile ... )
