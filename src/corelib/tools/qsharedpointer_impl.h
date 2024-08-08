@@ -917,6 +917,8 @@ template <class X, class T>
 Q_INLINE_TEMPLATE QSharedPointer<X> qSharedPointerObjectCast(const QSharedPointer<T> &src)
 {
     X *ptr = qobject_cast<X *>(src.data());
+    if (!ptr)
+        return QSharedPointer<X>();
     return QtSharedPointer::copyAndSetPointer(ptr, src);
 }
 template <class X, class T>
@@ -959,7 +961,9 @@ template <typename X, class T>
 std::shared_ptr<X> qobject_pointer_cast(const std::shared_ptr<T> &src)
 {
     using element_type = typename std::shared_ptr<X>::element_type;
-    return std::shared_ptr<X>(src, qobject_cast<element_type *>(src.get()));
+    if (auto ptr = qobject_cast<element_type *>(src.get()))
+        return std::shared_ptr<X>(src, ptr);
+    return std::shared_ptr<X>();
 }
 
 template <typename X, class T>
