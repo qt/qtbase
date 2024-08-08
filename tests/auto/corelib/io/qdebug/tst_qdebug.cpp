@@ -52,8 +52,8 @@ class tst_QDebug: public QObject
 {
     Q_OBJECT
 public:
-    enum EnumType { EnumValue1 = 1, EnumValue2 = 2 };
-    enum FlagType { EnumFlag1 = 1, EnumFlag2 = 2 };
+    enum EnumType { EnumValue1 = 1, EnumValue2 = INT_MIN };
+    enum FlagType { EnumFlag1 = 1, EnumFlag2 = INT_MIN };
     Q_ENUM(EnumType)
     Q_DECLARE_FLAGS(Flags, FlagType)
     Q_FLAG(Flags)
