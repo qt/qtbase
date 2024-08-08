@@ -166,7 +166,7 @@ public:
 #else
     template <typename ByteArray, if_compatible_qbytearray_like<ByteArray> = true>
     QByteArrayView(const ByteArray &ba) noexcept
-        : QByteArrayView(ba.isNull() ? nullptr : ba.data(), qsizetype(ba.size())) {}
+        : QByteArrayView{ba.begin(), ba.size()} {}
 #endif
 
     template <typename Container, if_compatible_container<Container> = true>
