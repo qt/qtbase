@@ -380,50 +380,50 @@ public:
     template <class X>
     QSharedPointer<X> staticCast() const &
     {
-        return qSharedPointerCast<X, T>(*this);
+        return qSharedPointerCast<X>(*this);
     }
 
     template <class X>
     QSharedPointer<X> staticCast() &&
     {
-        return qSharedPointerCast<X, T>(std::move(*this));
+        return qSharedPointerCast<X>(std::move(*this));
     }
 
     template <class X>
     QSharedPointer<X> dynamicCast() const &
     {
-        return qSharedPointerDynamicCast<X, T>(*this);
+        return qSharedPointerDynamicCast<X>(*this);
     }
 
     template <class X>
     QSharedPointer<X> dynamicCast() &&
     {
-        return qSharedPointerDynamicCast<X, T>(std::move(*this));
+        return qSharedPointerDynamicCast<X>(std::move(*this));
     }
 
     template <class X>
     QSharedPointer<X> constCast() const &
     {
-        return qSharedPointerConstCast<X, T>(*this);
+        return qSharedPointerConstCast<X>(*this);
     }
 
     template <class X>
     QSharedPointer<X> constCast() &&
     {
-        return qSharedPointerConstCast<X, T>(std::move(*this));
+        return qSharedPointerConstCast<X>(std::move(*this));
     }
 
 #ifndef QT_NO_QOBJECT
     template <class X>
     QSharedPointer<X> objectCast() const &
     {
-        return qSharedPointerObjectCast<X, T>(*this);
+        return qSharedPointerObjectCast<X>(*this);
     }
 
     template <class X>
     QSharedPointer<X> objectCast() &&
     {
-        return qSharedPointerObjectCast<X, T>(std::move(*this));
+        return qSharedPointerObjectCast<X>(std::move(*this));
     }
 #endif
 
@@ -910,7 +910,7 @@ Q_INLINE_TEMPLATE QSharedPointer<X> qSharedPointerCast(QSharedPointer<T> &&src)
 template <class X, class T>
 Q_INLINE_TEMPLATE QSharedPointer<X> qSharedPointerCast(const QWeakPointer<T> &src)
 {
-    return qSharedPointerCast<X, T>(src.toStrongRef());
+    return qSharedPointerCast<X>(src.toStrongRef());
 }
 
 template <class X, class T>
@@ -932,7 +932,7 @@ Q_INLINE_TEMPLATE QSharedPointer<X> qSharedPointerDynamicCast(QSharedPointer<T> 
 template <class X, class T>
 Q_INLINE_TEMPLATE QSharedPointer<X> qSharedPointerDynamicCast(const QWeakPointer<T> &src)
 {
-    return qSharedPointerDynamicCast<X, T>(src.toStrongRef());
+    return qSharedPointerDynamicCast<X>(src.toStrongRef());
 }
 
 template <class X, class T>
@@ -950,14 +950,14 @@ Q_INLINE_TEMPLATE QSharedPointer<X> qSharedPointerConstCast(QSharedPointer<T> &&
 template <class X, class T>
 Q_INLINE_TEMPLATE QSharedPointer<X> qSharedPointerConstCast(const QWeakPointer<T> &src)
 {
-    return qSharedPointerConstCast<X, T>(src.toStrongRef());
+    return qSharedPointerConstCast<X>(src.toStrongRef());
 }
 
 template <class X, class T>
 Q_INLINE_TEMPLATE
 QWeakPointer<X> qWeakPointerCast(const QSharedPointer<T> &src)
 {
-    return qSharedPointerCast<X, T>(src).toWeakRef();
+    return qSharedPointerCast<X>(src).toWeakRef();
 }
 
 #ifndef QT_NO_QOBJECT
@@ -987,19 +987,19 @@ template <class X, class T>
 inline QSharedPointer<typename QtSharedPointer::RemovePointer<X>::Type>
 qobject_cast(const QSharedPointer<T> &src)
 {
-    return qSharedPointerObjectCast<typename QtSharedPointer::RemovePointer<X>::Type, T>(src);
+    return qSharedPointerObjectCast<typename QtSharedPointer::RemovePointer<X>::Type>(src);
 }
 template <class X, class T>
 inline QSharedPointer<typename QtSharedPointer::RemovePointer<X>::Type>
 qobject_cast(QSharedPointer<T> &&src)
 {
-    return qSharedPointerObjectCast<typename QtSharedPointer::RemovePointer<X>::Type, T>(std::move(src));
+    return qSharedPointerObjectCast<typename QtSharedPointer::RemovePointer<X>::Type>(std::move(src));
 }
 template <class X, class T>
 inline QSharedPointer<typename QtSharedPointer::RemovePointer<X>::Type>
 qobject_cast(const QWeakPointer<T> &src)
 {
-    return qSharedPointerObjectCast<typename QtSharedPointer::RemovePointer<X>::Type, T>(src);
+    return qSharedPointerObjectCast<typename QtSharedPointer::RemovePointer<X>::Type>(src);
 }
 
 /// ### TODO - QTBUG-88102: make this use toStrongRef() (once support for
