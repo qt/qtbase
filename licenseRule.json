@@ -115,9 +115,9 @@
                 "spdx"      : ["Unicode-3.0"]
             },
             "src/corelib/text/qunicodetables.*" : {
-                "comment" : "Contains data extracted from UCD, under Unicode-DFS-2016",
+                "comment" : "Contains data extracted from UCD, under Unicode-3.0",
                 "file type" : "module and plugin",
-                "spdx"      : ["Unicode-DFS-2016"]
+                "spdx"      : ["Unicode-3.0"]
             },
             "src/tools/" : {
                 "comment" : "Default",
