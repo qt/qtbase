@@ -70,7 +70,6 @@ abstract class QtLoader {
         }
 
         initClassLoader(baseContext);
-        initStaticClasses(baseContext);
         try {
             initContextInfo(baseContext);
         } catch (NameNotFoundException e) {
@@ -144,45 +143,6 @@ abstract class QtLoader {
             }
         }
         return new ArrayList<>();
-    }
-
-    private void initStaticClasses(Context context) {
-        boolean isActivity = context instanceof Activity;
-        for (String className : getStaticInitClasses()) {
-            try {
-                Class<?> initClass = m_classLoader.loadClass(className);
-                Object staticInitDataObject = initClass.newInstance(); // create an instance
-
-                if (isActivity) {
-                    try {
-                        Method m = initClass.getMethod("setActivity", Activity.class, Object.class);
-                        m.invoke(staticInitDataObject, (Activity) context, this);
-                    } catch (InvocationTargetException | NoSuchMethodException e) {
-                        Log.d(QtTAG, "Class " + initClass.getName() + " does not implement " +
-                                     "setActivity method");
-                    }
-                } else {
-                    try {
-                        Method m = initClass.getMethod("setService", Service.class, Object.class);
-                        m.invoke(staticInitDataObject, (Service) context, this);
-                    } catch (InvocationTargetException | NoSuchMethodException e) {
-                        Log.d(QtTAG, "Class " + initClass.getName() + " does not implement " +
-                                     "setService method");
-                    }
-                }
-
-                try {
-                    // For modules that don't need/have setActivity/setService
-                    Method m = initClass.getMethod("setContext", Context.class);
-                    m.invoke(staticInitDataObject, context);
-                } catch (InvocationTargetException | NoSuchMethodException e) {
-                    Log.d(QtTAG, "Class " + initClass.getName() + " does not implement " +
-                                 "setContext method");
-                }
-            } catch (IllegalAccessException | ClassNotFoundException | InstantiationException e) {
-                Log.d(QtTAG, "Could not instantiate class " + className + ", " + e);
-            }
-        }
     }
 
     /**
@@ -392,19 +352,6 @@ abstract class QtLoader {
             Collections.addAll(localLibs, arrayItem.split(":"));
         }
         return localLibs;
-    }
-
-    @SuppressLint("DiscouragedApi")
-    private ArrayList<String> getStaticInitClasses() {
-        int id = m_resources.getIdentifier("static_init_classes", "string", m_packageName);
-        String[] classes = m_resources.getString(id).split(":");
-        ArrayList<String> finalClasses = new ArrayList<>();
-        for (String element : classes) {
-            if (!element.isEmpty()) {
-                finalClasses.add(element);
-            }
-        }
-        return finalClasses;
     }
 
     @SuppressLint("DiscouragedApi")

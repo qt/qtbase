@@ -166,12 +166,9 @@ function(qt_internal_android_dependencies_content target file_content_out)
     if(arg_JAR_DEPENDENCIES)
         foreach(jar_dependency IN LISTS arg_JAR_DEPENDENCIES)
             section(${jar_dependency} ":" jar_file init_class)
-            if (init_class)
-                set(init_class "initClass=\"${init_class}\"")
-            endif()
             # Use unix path to allow using files on any host platform.
             file(TO_CMAKE_PATH ${jar_file} jar_file_unix_path)
-            string(APPEND file_contents "<jar file=\"${jar_file_unix_path}\" ${init_class} />\n")
+            string(APPEND file_contents "<jar file=\"${jar_file_unix_path}\" />\n")
         endforeach()
     endif()
 
@@ -179,13 +176,10 @@ function(qt_internal_android_dependencies_content target file_content_out)
     if(arg_BUNDLED_JAR_DEPENDENCIES)
         foreach(jar_bundle IN LISTS arg_BUNDLED_JAR_DEPENDENCIES)
             section(${jar_bundle} ":" bundle_file init_class)
-            if (init_class)
-                set(init_class "initClass=\"${init_class}\"")
-            endif()
             # Use unix path to allow using files on any host platform.
             file(TO_CMAKE_PATH ${bundle_file} jar_bundle_unix_path)
             string(APPEND file_contents
-                   "<jar bundling=\"1\" file=\"${jar_bundle_unix_path}\" ${init_class} />\n")
+                   "<jar bundling=\"1\" file=\"${jar_bundle_unix_path}\" />\n")
         endforeach()
     endif()
 

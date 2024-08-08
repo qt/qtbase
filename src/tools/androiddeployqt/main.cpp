@@ -237,7 +237,6 @@ struct Options
     bool usesOpenGL = false;
 
     // Per package collected information
-    QStringList initClasses;
     // permissions 'name' => 'optional additional attributes'
     QMap<QString, QString> permissions;
     QStringList features;
@@ -1789,14 +1788,10 @@ bool updateLibsXml(Options *options)
         allLocalLibs += "        <item>%1;%2</item>\n"_L1.arg(it.key(), localLibs.join(u':'));
     }
 
-    options->initClasses.removeDuplicates();
-
     QHash<QString, QString> replacements;
     replacements[QStringLiteral("<!-- %%INSERT_QT_LIBS%% -->")] += qtLibs.trimmed();
     replacements[QStringLiteral("<!-- %%INSERT_LOCAL_LIBS%% -->")] = allLocalLibs.trimmed();
     replacements[QStringLiteral("<!-- %%INSERT_EXTRA_LIBS%% -->")] = extraLibs.trimmed();
-    const QString initClasses = options->initClasses.join(u':');
-    replacements[QStringLiteral("<!-- %%INSERT_INIT_CLASSES%% -->")] = initClasses;
 
     // Set BUNDLE_LOCAL_QT_LIBS based on the deployment used
     replacements[QStringLiteral("<!-- %%BUNDLE_LOCAL_QT_LIBS%% -->")]
@@ -2116,10 +2111,6 @@ bool readAndroidDependencyXml(Options *options,
                             options->qtDependencies[options->currentArchitecture].append(dependency);
                             usedDependencies->insert(dependency.absolutePath);
                         }
-                    }
-
-                    if (reader.attributes().hasAttribute("initClass"_L1)) {
-                        options->initClasses.append(reader.attributes().value("initClass"_L1).toString());
                     }
                 } else if (reader.name() == "lib"_L1) {
                     QString fileName = QDir::cleanPath(reader.attributes().value("file"_L1).toString());
