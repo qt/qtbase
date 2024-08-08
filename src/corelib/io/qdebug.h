@@ -543,9 +543,10 @@ inline typename std::enable_if<
     QDebug>::type
 qt_QMetaEnum_flagDebugOperator_helper(QDebug debug, const QFlags<T> &flags)
 {
+    using UInt = typename QIntegerForSizeof<T>::Unsigned;
     const QMetaObject *obj = qt_getEnumMetaObject(T());
     const char *name = qt_getEnumName(T());
-    return qt_QMetaEnum_flagDebugOperator(debug, flags.toInt(), obj, name);
+    return qt_QMetaEnum_flagDebugOperator(debug, UInt(flags.toInt()), obj, name);
 }
 
 template <class T>

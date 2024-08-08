@@ -11,8 +11,8 @@ class tst_QMetaEnum : public QObject
 {
     Q_OBJECT
 public:
-    enum SuperEnum { SuperValue1 = 1 , SuperValue2 = 2 };
-    enum Flag { Flag1 = 1 , Flag2 = 2 };
+    enum SuperEnum { SuperValue1 = 1, SuperValue2 = INT_MIN };
+    enum Flag { Flag1 = 1, Flag2 = INT_MIN };
     Q_DECLARE_FLAGS(Flags, Flag)
     Q_ENUM(SuperEnum)
     Q_FLAG(Flags)
@@ -47,34 +47,43 @@ Q_DECLARE_METATYPE(Qt::WindowFlags)
 
 void tst_QMetaEnum::valuesToKeys_data()
 {
-   QTest::addColumn<Qt::WindowFlags>("windowFlags");
+   QTest::addColumn<QMetaEnum>("me");
+   QTest::addColumn<quint64>("flags");
    QTest::addColumn<QByteArray>("expected");
 
    QTest::newRow("Window")
-       << Qt::WindowFlags(Qt::Window)
+       << QMetaEnum::fromType<Qt::WindowFlags>()
+       << quint64(Qt::Window)
        << QByteArrayLiteral("Window");
 
    // Verify that Qt::Dialog does not cause 'Window' to appear in the output.
    QTest::newRow("Frameless_Dialog")
-       << (Qt::Dialog | Qt::FramelessWindowHint)
+       << QMetaEnum::fromType<Qt::WindowFlags>()
+       << quint64(Qt::Dialog | Qt::FramelessWindowHint)
        << QByteArrayLiteral("Dialog|FramelessWindowHint");
 
    // Similarly, Qt::WindowMinMaxButtonsHint should not show up as
    // WindowMinimizeButtonHint|WindowMaximizeButtonHint
    QTest::newRow("Tool_MinMax_StaysOnTop")
-       << (Qt::Tool | Qt::WindowMinMaxButtonsHint | Qt::WindowStaysOnTopHint)
+       << QMetaEnum::fromType<Qt::WindowFlags>()
+       << quint64(Qt::Tool | Qt::WindowMinMaxButtonsHint | Qt::WindowStaysOnTopHint)
        << QByteArrayLiteral("Tool|WindowMinMaxButtonsHint|WindowStaysOnTopHint");
+
+   QTest::newRow("INT_MIN")
+           << QMetaEnum::fromType<Flags>()
+           << quint64(uint(Flag2))
+           << QByteArrayLiteral("Flag2");
 }
 
 void tst_QMetaEnum::valuesToKeys()
 {
-    QFETCH(Qt::WindowFlags, windowFlags);
+    QFETCH(QMetaEnum, me);
+    QFETCH(quint64, flags);
     QFETCH(QByteArray, expected);
 
-    QMetaEnum me = QMetaEnum::fromType<Qt::WindowFlags>();
-    QCOMPARE(me.valueToKeys(windowFlags), expected);
+    QCOMPARE(me.valueToKeys(flags), expected);
     bool ok = false;
-    QCOMPARE(uint(me.keysToValue(expected, &ok)), windowFlags.toInt());
+    QCOMPARE(uint(me.keysToValue(expected, &ok)), flags);
     QVERIFY(ok);
 }
 
