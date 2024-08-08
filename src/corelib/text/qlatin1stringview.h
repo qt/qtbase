@@ -40,7 +40,7 @@ public:
         : QLatin1StringView(f, qsizetype(l - f)) {}
     constexpr QLatin1StringView(const char *s, qsizetype sz) noexcept : m_data(s), m_size(sz) {}
     explicit QLatin1StringView(const QByteArray &s) noexcept
-        : QLatin1StringView(s.constData(), s.size()) {}
+        : QLatin1StringView{s.begin(), s.size()} {}
     constexpr explicit QLatin1StringView(QByteArrayView s) noexcept
         : QLatin1StringView(s.constData(), s.size()) {}
 #else
@@ -52,7 +52,7 @@ public:
     constexpr QLatin1String(const char *f, const char *l)
         : QLatin1String(f, qsizetype(l - f)) {}
     constexpr QLatin1String(const char *s, qsizetype sz) noexcept : m_size(sz), m_data(s) {}
-    explicit QLatin1String(const QByteArray &s) noexcept : m_size(s.size()), m_data(s.constData()) {}
+    explicit QLatin1String(const QByteArray &s) noexcept : QLatin1String(s.begin(), s.size()) {}
     constexpr explicit QLatin1String(QByteArrayView s) noexcept : m_size(s.size()), m_data(s.data()) {}
 #endif // !Q_L1S_VIEW_IS_PRIMARY
 

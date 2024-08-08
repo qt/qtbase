@@ -1213,9 +1213,9 @@ template <bool UseChar8T>
 //
 
 QAnyStringView::QAnyStringView(const QByteArray &str) noexcept
-    : QAnyStringView{str.isNull() ? nullptr : str.data(), str.size()} {}
+    : QAnyStringView{str.begin(), str.size()} {}
 QAnyStringView::QAnyStringView(const QString &str) noexcept
-    : QAnyStringView{str.isNull() ? nullptr : str.data(), str.size()} {}
+    : QAnyStringView{str.begin(), str.size()} {}
 
 QString QAnyStringView::toString() const
 { return QtPrivate::convertToQString(*this); }

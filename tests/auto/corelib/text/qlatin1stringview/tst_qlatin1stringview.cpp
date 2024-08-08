@@ -272,12 +272,10 @@ void tst_QLatin1StringView::nullString()
         QVERIFY(null.isNull());
 
         QLatin1StringView l1(null);
-        QEXPECT_FAIL("", "null QByteArrays become non-null QLatin1Strings...", Continue);
         QCOMPARE(static_cast<const void*>(l1.data()), static_cast<const void*>(nullptr));
         QCOMPARE(l1.size(), 0);
 
         QString s = l1;
-        QEXPECT_FAIL("", "null QByteArrays become non-null QLatin1Strings become non-null QStrings...", Continue);
         QVERIFY(s.isNull());
     }
 }

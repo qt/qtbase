@@ -160,7 +160,7 @@ public:
 #else
     template <typename String, if_compatible_qstring_like<String> = true>
     QStringView(const String &str) noexcept
-        : QStringView(str.isNull() ? nullptr : str.data(), qsizetype(str.size())) {}
+        : QStringView{str.begin(), str.size()} {}
 #endif
 
     template <typename Container, if_compatible_container<Container> = true>
