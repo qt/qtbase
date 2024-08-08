@@ -60,6 +60,7 @@ private slots:
     void weakQObjectFromSharedPointer();
     void objectCast();
     void objectCastStdSharedPtr();
+    void objectCastFailureNoLeak();
     void differentPointers();
     void virtualBaseDifferentPointers();
     void virtualBaseWeakPointerConversions();
@@ -1109,6 +1110,21 @@ void tst_QSharedPointer::objectCast()
     safetyCheck();
 }
 
+void tst_QSharedPointer::objectCastFailureNoLeak()
+{
+    // verify that a failing object cast doesn't keep the original object alive
+    auto ptr = QSharedPointer<QObject>::create();
+    auto qptr = QPointer(ptr.data());
+    auto ptr2 = ptr.objectCast<tst_QSharedPointer>();
+
+    QVERIFY(ptr);
+    QVERIFY(qptr);
+    QVERIFY(!ptr2);
+
+    ptr.reset();
+    QVERIFY(!ptr);
+    QVERIFY(!qptr);
+}
 
 void tst_QSharedPointer::objectCastStdSharedPtr()
 {
