@@ -28,6 +28,8 @@
 #define QRHI_D3D12_HAS_DXC
 #endif
 
+#include "qdxgivsyncservice_p.h"
+
 QT_BEGIN_NAMESPACE
 
 namespace QRhiD3D {

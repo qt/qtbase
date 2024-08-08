@@ -343,6 +343,8 @@ bool QRhiD3D12::create(QRhi::Flags flags)
         qCDebug(QRHI_LOG_INFO, "Using imported device %p", dev);
     }
 
+    QDxgiVSyncService::instance()->refAdapter(adapterLuid);
+
     if (debugLayer) {
         ID3D12InfoQueue *infoQueue;
         if (SUCCEEDED(dev->QueryInterface(__uuidof(ID3D12InfoQueue), reinterpret_cast<void **>(&infoQueue)))) {
@@ -607,6 +609,8 @@ void QRhiD3D12::destroy()
         dxgiFactory->Release();
         dxgiFactory = nullptr;
     }
+
+    QDxgiVSyncService::instance()->derefAdapter(adapterLuid);
 }
 
 QList<int> QRhiD3D12::supportedSampleCounts() const
@@ -1701,6 +1705,8 @@ QRhi::FrameOpResult QRhiD3D12::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginF
                                D3D12_QUERY_TYPE_TIMESTAMP,
                                timestampPairStartIndex);
     }
+
+    QDxgiVSyncService::instance()->beginFrame(adapterLuid);
 
     return QRhi::FrameOpSuccess;
 }
@@ -6308,6 +6314,8 @@ void QD3D12SwapChain::destroy()
         frameLatencyWaitableObject = nullptr;
     }
 
+    QDxgiVSyncService::instance()->unregisterWindow(window);
+
     QRHI_RES_RHI(QRhiD3D12);
     if (rhiD) {
         rhiD->swapchains.remove(this);
@@ -6756,6 +6764,8 @@ bool QD3D12SwapChain::createOrResize()
     rtDr->d.sampleCount = int(sampleDesc.Count);
     rtDr->d.colorAttCount = 1;
     rtDr->d.dsAttCount = m_depthStencil ? 1 : 0;
+
+    QDxgiVSyncService::instance()->registerWindow(window);
 
     if (needsRegistration) {
         rhiD->swapchains.insert(this);

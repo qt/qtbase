@@ -394,6 +394,8 @@ bool QRhiD3D11::create(QRhi::Flags flags)
         qCDebug(QRHI_LOG_INFO, "Using imported device %p", dev);
     }
 
+    QDxgiVSyncService::instance()->refAdapter(adapterLuid);
+
     if (FAILED(context->QueryInterface(__uuidof(ID3DUserDefinedAnnotation), reinterpret_cast<void **>(&annotations))))
         annotations = nullptr;
 
@@ -463,6 +465,8 @@ void QRhiD3D11::destroy()
         dxgiFactory->Release();
         dxgiFactory = nullptr;
     }
+
+    QDxgiVSyncService::instance()->derefAdapter(adapterLuid);
 }
 
 void QRhiD3D11::reportLiveObjects(ID3D11Device *device)
@@ -1410,6 +1414,8 @@ QRhi::FrameOpResult QRhiD3D11::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginF
     cmd.args.beginFrame.tsQuery = recordTimestamps ? tsStart : nullptr;
     cmd.args.beginFrame.tsDisjointQuery = recordTimestamps ? tsDisjoint : nullptr;
     cmd.args.beginFrame.swapchainData = rtData(&swapChainD->rt);
+
+    QDxgiVSyncService::instance()->beginFrame(adapterLuid);
 
     return QRhi::FrameOpSuccess;
 }
@@ -5010,6 +5016,8 @@ void QD3D11SwapChain::destroy()
         frameLatencyWaitableObject = nullptr;
     }
 
+    QDxgiVSyncService::instance()->unregisterWindow(window);
+
     QRHI_RES_RHI(QRhiD3D11);
     if (rhiD) {
         rhiD->unregisterResource(this);
@@ -5454,6 +5462,8 @@ bool QD3D11SwapChain::createOrResize()
         timestamps.prepare(rhiD);
         // timestamp queries are optional so we can go on even if they failed
     }
+
+    QDxgiVSyncService::instance()->registerWindow(window);
 
     if (needsRegistration)
         rhiD->registerResource(this);

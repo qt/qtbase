@@ -46,6 +46,8 @@
 
 #include <shellscalingapi.h>
 
+#include <private/qdxgivsyncservice_p.h>
+
 QT_BEGIN_NAMESPACE
 
 using QWindowCreationContextPtr = QSharedPointer<QWindowCreationContext>;
@@ -1539,6 +1541,8 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const QWindowsWindowData &data)
 
 QWindowsWindow::~QWindowsWindow()
 {
+    if (m_vsyncServiceCallbackId != 0)
+        QDxgiVSyncService::instance()->unregisterCallback(m_vsyncServiceCallbackId);
     setFlag(WithinDestroy);
     QWindowsThemeCache::clearThemeCache(m_data.hwnd);
     if (testFlag(TouchRegistered))
@@ -3530,6 +3534,29 @@ void QWindowsWindow::setHasBorderInFullScreen(bool border)
 QString QWindowsWindow::formatWindowTitle(const QString &title)
 {
     return QPlatformWindow::formatWindowTitle(title, QStringLiteral(" - "));
+}
+
+void QWindowsWindow::requestUpdate()
+{
+    QWindow *w = window();
+    QDxgiVSyncService *vs = QDxgiVSyncService::instance();
+    if (vs->supportsWindow(w)) {
+        if (m_vsyncServiceCallbackId == 0) {
+            m_vsyncServiceCallbackId = vs->registerCallback([this, w](const QDxgiVSyncService::CallbackWindowList &windowList, qint64) {
+                if (windowList.contains(w)) {
+                    if (m_vsyncUpdatePending.testAndSetAcquire(1, 0)) {
+                        QMetaObject::invokeMethod(w, [this, w] {
+                            if (w->handle() == this)
+                                deliverUpdateRequest();
+                        });
+                    }
+                }
+            });
+        }
+        m_vsyncUpdatePending.storeRelease(1);
+    } else {
+        QPlatformWindow::requestUpdate();
+    }
 }
 
 QT_END_NAMESPACE
