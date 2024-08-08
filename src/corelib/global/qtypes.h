@@ -63,7 +63,9 @@ typedef unsigned long long quint64; /* 64 bit unsigned */
 typedef qint64 qlonglong;
 typedef quint64 qulonglong;
 
-#if defined(__SIZEOF_INT128__) && !defined(QT_NO_INT128)
+#ifdef Q_QDOC // QDoc always needs to see the typedefs
+#  define QT_SUPPORTS_INT128 16
+#elif defined(__SIZEOF_INT128__) && !defined(QT_NO_INT128)
 #  define QT_SUPPORTS_INT128 __SIZEOF_INT128__
 #else
 #  undef QT_SUPPORTS_INT128
