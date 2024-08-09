@@ -1396,9 +1396,9 @@ void tst_QFile::permissions_data()
                                                     "longFileNamelongFileNamelongFileNamelongFileName"
                                                     "longFileNamelongFileNamelongFileNamelongFileName"
                                                     "longFileNamelongFileNamelongFileNamelongFileName.txt") << uint(QFile::ReadUser) << true << true;
-    QTest::newRow("resource1") << ":/tst_qfileinfo/resources/file1.ext1" << uint(QFile::ReadUser) << true << false;
-    QTest::newRow("resource2") << ":/tst_qfileinfo/resources/file1.ext1" << uint(QFile::WriteUser) << false << false;
-    QTest::newRow("resource3") << ":/tst_qfileinfo/resources/file1.ext1" << uint(QFile::ExeUser) << false << false;
+    QTest::newRow("resource1") << ":/tst_qfile/resources/file1.ext1" << uint(QFile::ReadUser) << true << false;
+    QTest::newRow("resource2") << ":/tst_qfile/resources/file1.ext1" << uint(QFile::WriteUser) << false << false;
+    QTest::newRow("resource3") << ":/tst_qfile/resources/file1.ext1" << uint(QFile::ExeUser) << false << false;
 }
 
 void tst_QFile::permissions()
@@ -3466,8 +3466,8 @@ void tst_QFile::mapResource_data()
     QTest::addColumn<QFile::FileError>("error");
     QTest::addColumn<QString>("fileName");
 
-    QString validFile = ":/tst_qfileinfo/resources/file1.ext1";
-    QString invalidFile = ":/tst_qfileinfo/resources/filefoo.ext1";
+    QString validFile = ":/tst_qfile/resources/file1.ext1";
+    QString invalidFile = ":/tst_qfile/resources/filefoo.ext1";
     const char modes[] = "invalid";
 
     for (int i = 0; i < 2; ++i) {

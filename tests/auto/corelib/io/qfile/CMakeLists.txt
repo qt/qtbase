@@ -38,7 +38,7 @@ set(qfile_resource_files
 
 qt_internal_add_resource(tst_qfile "qfile"
     PREFIX
-        "/tst_qfileinfo/"
+        "/tst_qfile/"
     FILES
         ${qfile_resource_files}
 )
