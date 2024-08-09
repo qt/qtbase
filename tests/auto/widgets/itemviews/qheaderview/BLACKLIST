@@ -1,3 +1,4 @@
 # QTBUG-87406
 [stretchAndRestoreLastSection]
 android
+ubuntu-24.04 # QTBUG-126493
