@@ -775,7 +775,8 @@ public:
     constexpr P get() const noexcept { return ptr; }
     constexpr void reset(P p) noexcept { ptr = p; }
     constexpr P operator->() const noexcept { return get(); }
-    constexpr T& operator*() const noexcept { return *get(); }
+    template <typename U = T, std::enable_if_t<!std::is_void_v<U>, bool> = true>
+    constexpr U &operator*() const noexcept { return *get(); }
 
     explicit constexpr operator bool() const noexcept { return get(); }
 
