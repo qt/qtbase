@@ -36,9 +36,12 @@ void tst_QFreeList::basicTest()
         voidFreeList.at(two);
         voidFreeList.release(one);
         int next = voidFreeList.next();
-        QCOMPARE(next, 1);
+        QCOMPARE_NE(next, 1); // With generation counter
+        QCOMPARE(next & QFreeListDefaultConstants::IndexMask, 1);
         voidFreeList[next];
         voidFreeList.at(next);
+        voidFreeList.release(next);
+        QCOMPARE(voidFreeList.next() & QFreeListDefaultConstants::IndexMask, 1);
     }
 
     {
@@ -57,7 +60,8 @@ void tst_QFreeList::basicTest()
         QCOMPARE(intFreeList.at(two), two);
         intFreeList.release(one);
         int next = intFreeList.next();
-        QCOMPARE(next, 1);
+        QCOMPARE_NE(next, 1); // With generation counter
+        QCOMPARE(next & QFreeListDefaultConstants::IndexMask, 1);
         QCOMPARE(intFreeList.at(next), one);
         intFreeList[next] = -one;
         QCOMPARE(intFreeList.at(next), -one);

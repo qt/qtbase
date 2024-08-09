@@ -664,7 +664,6 @@ void tst_QChronoTimer::newTimerFiresTooSoon()
     listener.killTimer(timerId);
 
     // Assert
-    QEXPECT_FAIL("", "QTBUG-124496 - QObject::timerEvent may be called before the timer elapsed", Continue);
     QVERIFY(!listener.m_timerElapsed);
 #endif
 }
