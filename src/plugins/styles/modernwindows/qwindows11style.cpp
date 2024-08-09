@@ -2096,6 +2096,12 @@ void QWindows11Style::polish(QWidget* widget)
             QLineEdit *le = cb->lineEdit();
             le->setFrame(false);
         }
+    } else if (qobject_cast<QCommandLinkButton *>(widget)) {
+        widget->setProperty("_qt_usingVistaStyle",false);
+        QPalette pal = widget->palette();
+        pal.setColor(QPalette::ButtonText, pal.text().color());
+        pal.setColor(QPalette::BrightText, pal.text().color());
+        widget->setPalette(pal);
     } else if (widget->inherits("QAbstractSpinBox")) {
         const int minWidth = 2 * 24 + 40;
         const int originalWidth = widget->size().width();
@@ -2131,12 +2137,6 @@ void QWindows11Style::polish(QWidget* widget)
         pal.setColor(scrollarea->viewport()->backgroundRole(), Qt::transparent);
         scrollarea->viewport()->setPalette(pal);
         scrollarea->viewport()->setProperty("_q_original_background_palette", originalPalette);
-    } else if (qobject_cast<QCommandLinkButton *>(widget)) {
-        widget->setProperty("_qt_usingVistaStyle",false);
-        QPalette pal = widget->palette();
-        pal.setColor(QPalette::ButtonText, pal.text().color());
-        pal.setColor(QPalette::BrightText, pal.text().color());
-        widget->setPalette(pal);
     }
 }
 
