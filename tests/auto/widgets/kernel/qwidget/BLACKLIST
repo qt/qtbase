@@ -20,6 +20,7 @@ macos-14 ci
 android
 [saveRestoreGeometry]
 android
+xcb ubuntu-24.04 # QTBUG-126495
 [optimizedResizeMove]
 android
 [update]
