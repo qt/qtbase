@@ -666,7 +666,7 @@ function(qt_internal_add_test name)
         list(APPEND extra_test_args "--silence_timeout=60")
         # TODO: Add functionality to specify browser
         list(APPEND extra_test_args "--browser=chrome")
-        list(APPEND extra_test_args "--browser_args=\"--password-store=basic --enable-features=WebAssemblyExperimentalJSPI\"")
+        list(APPEND extra_test_args "--browser_args=\"--password-store=basic\"")
         list(APPEND extra_test_args "--kill_exit")
 
         # Tests may require asyncify if they use exec(). Enable asyncify for
