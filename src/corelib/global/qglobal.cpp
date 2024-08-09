@@ -376,3 +376,7 @@ Q_LOGGING_CATEGORY(lcNativeInterface, "qt.nativeinterface")
 }
 
 QT_END_NAMESPACE
+
+#ifndef QT_NO_QOBJECT
+#include "moc_qnamespace.cpp"
+#endif
