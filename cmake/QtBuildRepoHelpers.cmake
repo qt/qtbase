@@ -555,14 +555,17 @@ macro(qt_build_repo_impl_tests)
             message(FATAL_ERROR
                 "Can't build both standalone tests and standalone examples at once.")
         endif()
-        option(QT_BUILD_TESTS_PROJECT_${PROJECT_NAME} "Configure tests for project ${PROJECT_NAME}" TRUE)
+        string(TOLOWER "${PROJECT_NAME}" __qt_repo_project_name_lowercase)
+        option(QT_BUILD_TESTS_PROJECT_${__qt_repo_project_name_lowercase}
+            "Configure tests for project ${__qt_repo_project_name_lowercase}" TRUE)
 
-        if (QT_BUILD_TESTS_PROJECT_${PROJECT_NAME})
+        if (QT_BUILD_TESTS_PROJECT_${__qt_repo_project_name_lowercase})
             add_subdirectory(tests)
             if(NOT QT_BUILD_TESTS_BY_DEFAULT)
                 set_property(DIRECTORY tests PROPERTY EXCLUDE_FROM_ALL TRUE)
             endif()
         endif()
+        unset(__qt_repo_project_name_lowercase)
     endif()
 endmacro()
 
@@ -576,10 +579,13 @@ macro(qt_build_repo_impl_examples)
 
         message(STATUS "Configuring examples.")
 
-        option(QT_BUILD_EXAMPLES_PROJECT_${PROJECT_NAME} "Configure examples for project ${PROJECT_NAME}" TRUE)
-        if (QT_BUILD_EXAMPLES_PROJECT_${PROJECT_NAME})
+        string(TOLOWER "${PROJECT_NAME}" __qt_repo_project_name_lowercase)
+        option(QT_BUILD_EXAMPLES_PROJECT_${__qt_repo_project_name_lowercase}
+            "Configure examples for project ${__qt_repo_project_name_lowercase}" TRUE)
+        if(QT_BUILD_EXAMPLES_PROJECT_${__qt_repo_project_name_lowercase})
             add_subdirectory(examples)
         endif()
+        unset(__qt_repo_project_name_lowercase)
     endif()
 endmacro()
 
