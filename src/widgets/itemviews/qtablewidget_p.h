@@ -64,6 +64,8 @@ public:
     bool removeRows(int row, int count = 1, const QModelIndex &parent = QModelIndex()) override;
     bool removeColumns(int column, int count = 1, const QModelIndex &parent = QModelIndex()) override;
 
+    bool moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild) override;
+
     void setItem(int row, int column, QTableWidgetItem *item);
     QTableWidgetItem *takeItem(int row, int column);
     QTableWidgetItem *item(int row, int column) const;

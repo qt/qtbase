@@ -114,6 +114,46 @@ bool QTableModel::removeColumns(int column, int count, const QModelIndex &)
     return true;
 }
 
+bool QTableModel::moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild)
+{
+    if (sourceRow < 0
+        || sourceRow + count - 1 >= rowCount(sourceParent)
+        || destinationChild < 0
+        || destinationChild > rowCount(destinationParent)
+        || sourceRow == destinationChild
+        || sourceRow == destinationChild - 1
+        || count <= 0
+        || sourceParent.isValid()
+        || destinationParent.isValid()) {
+        return false;
+    }
+    if (!beginMoveRows(sourceParent, sourceRow, sourceRow + count - 1, destinationParent, destinationChild))
+        return false;
+
+    // Table items
+    int numItems = count * columnCount();
+    int fromIndex = tableIndex(sourceRow, 0);
+    int destinationIndex = tableIndex(destinationChild, 0);
+    if (destinationChild < sourceRow)
+        fromIndex += numItems - 1;
+    else
+        destinationIndex--;
+    while (numItems--)
+        tableItems.move(fromIndex, destinationIndex);
+
+    // Header items
+    int fromRow = sourceRow;
+    if (destinationChild < sourceRow)
+        fromRow += count - 1;
+    else
+        destinationChild--;
+    while (count--)
+        verticalHeaderItems.move(fromRow, destinationChild);
+
+    endMoveRows();
+    return true;
+}
+
 void QTableModel::setItem(int row, int column, QTableWidgetItem *item)
 {
     int i = tableIndex(row, column);
@@ -152,27 +192,8 @@ void QTableModel::setItem(int row, int column, QTableWidgetItem *item)
             sortedRow = qMax((int)(it - colItems.begin()), 0);
         }
         if (sortedRow != row) {
-            emit layoutAboutToBeChanged({}, QAbstractItemModel::VerticalSortHint);
-            // move the items @ row to sortedRow
-            int cc = columnCount();
-            QList<QTableWidgetItem *> rowItems(cc);
-            for (int j = 0; j < cc; ++j)
-                rowItems[j] = tableItems.at(tableIndex(row, j));
-            tableItems.remove(tableIndex(row, 0), cc);
-            tableItems.insert(tableIndex(sortedRow, 0), cc, 0);
-            for (int j = 0; j < cc; ++j)
-                tableItems[tableIndex(sortedRow, j)] = rowItems.at(j);
-            QTableWidgetItem *header = verticalHeaderItems.at(row);
-            verticalHeaderItems.remove(row);
-            verticalHeaderItems.insert(sortedRow, header);
-            // update persistent indexes
-            QModelIndexList oldPersistentIndexes = persistentIndexList();
-            QModelIndexList newPersistentIndexes = oldPersistentIndexes;
-            updateRowIndexes(newPersistentIndexes, row, sortedRow);
-            changePersistentIndexList(oldPersistentIndexes,
-                                      newPersistentIndexes);
-
-            emit layoutChanged({}, QAbstractItemModel::VerticalSortHint);
+            const int destinationChild = sortedRow > row ? sortedRow + 1 : sortedRow;
+            moveRows(QModelIndex(), row, 1, QModelIndex(), destinationChild);
             return;
         }
     }
