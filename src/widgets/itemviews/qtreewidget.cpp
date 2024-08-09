@@ -742,6 +742,8 @@ Qt::DropActions QTreeModel::supportedDropActions() const
 
 void QTreeModel::itemChanged(QTreeWidgetItem *item)
 {
+    if (item->columnCount() <= 0)
+        return;
     SkipSorting skipSorting(this); //this is kind of wrong, but not doing this would kill performance
     QModelIndex left = index(item, 0);
     QModelIndex right = index(item, item->columnCount() - 1);
