@@ -9594,13 +9594,14 @@ void QRhiResourceUpdateBatchPrivate::free()
 {
     Q_ASSERT(poolIndex >= 0 && rhi->resUpdPool[poolIndex] == q);
 
+    quint32 bufferDataTotal = 0;
+    quint32 bufferLargeAllocTotal = 0;
+    for (const BufferOp &op : std::as_const(bufferOps)) {
+        bufferDataTotal += op.data.size();
+        bufferLargeAllocTotal += op.data.largeAlloc(); // alloc when > 1 KB
+    }
+
     if (rhi->rubLogEnabled) {
-        quint32 bufferDataTotal = 0;
-        quint32 bufferLargeAllocTotal = 0;
-        for (const BufferOp &op : std::as_const(bufferOps)) {
-            bufferDataTotal += op.data.size();
-            bufferLargeAllocTotal += op.data.largeAlloc(); // alloc when > 1 KB
-        }
         qDebug() << "[rub] release to pool upd.batch #" << poolIndex
                 << "/ bufferOps active" << activeBufferOpCount
                 << "of" << bufferOps.count()
@@ -9622,10 +9623,19 @@ void QRhiResourceUpdateBatchPrivate::free()
     // at least. Only trimOpList() goes for the more aggressive route with squeeze.
     textureOps.clear();
 
-    // bufferOps is not touched, to allow reusing allocations (incl. in the
-    // elements' QRhiBufferData) as much as possible when this batch is used
-    // again in the future, which is important for performance, in particular
-    // with Qt Quick.
+    // bufferOps is not touched in many cases, to allow reusing allocations
+    // (incl. in the elements' QRhiBufferData) as much as possible when this
+    // batch is used again in the future, which is important for performance, in
+    // particular with Qt Quick where it is easy for scenes to produce lots of,
+    // typically small buffer changes on every frame.
+    //
+    // However, ensure that even in the unlikely case of having the max number
+    // of batches (64) created in resUpdPool, no more than 64 MB in total is
+    // used up by buffer data just to help future reuse. For simplicity, if
+    // there is more than 1 MB data -> clear. Applications with frequent, huge
+    // buffer updates probably have other bottlenecks anyway.
+    if (bufferLargeAllocTotal > 1024 * 1024)
+        bufferOps.clear();
 }
 
 void QRhiResourceUpdateBatchPrivate::merge(QRhiResourceUpdateBatchPrivate *other)
