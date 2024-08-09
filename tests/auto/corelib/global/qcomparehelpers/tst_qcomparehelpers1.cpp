@@ -110,4 +110,15 @@ void tst_QCompareHelpers::totallyOrderedWrapperBasics()
     Qt::totally_ordered_wrapper<int*> pi; // partially-formed
     pi = nullptr;
     QCOMPARE_EQ(pi.get(), nullptr);
+
+    // Test that we can create a wrapper for void*.
+    [[maybe_unused]] constexpr Qt::totally_ordered_wrapper<void*> voidWrp{nullptr};
+
+    // test that operator*() works
+    int val = 10;
+    Qt::totally_ordered_wrapper<int*> intWrp{&val};
+    QCOMPARE_EQ(*intWrp, 10);
+    *intWrp = 20;
+    QCOMPARE_EQ(*intWrp, 20);
+    QCOMPARE_EQ(val, 20);
 }
