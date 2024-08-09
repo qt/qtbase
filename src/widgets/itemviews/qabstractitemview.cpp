@@ -2059,6 +2059,13 @@ void QAbstractItemView::dragMoveEvent(QDragMoveEvent *event)
         if (index.isValid() && d->showDropIndicator) {
             QRect rect = visualRect(index);
             d->dropIndicatorPosition = d->position(event->position().toPoint(), rect, index);
+            if (d->selectionBehavior == QAbstractItemView::SelectRows
+                && d->dropIndicatorPosition != OnViewport
+                && (d->dropIndicatorPosition != OnItem || event->source() == this)) {
+                if (index.column() > 0)
+                    rect = visualRect(index.siblingAtColumn(0));
+                rect.setWidth(viewport()->width() - 1 - rect.x());
+            }
             switch (d->dropIndicatorPosition) {
             case AboveItem:
                 if (d->isIndexDropEnabled(index.parent())) {
