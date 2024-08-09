@@ -385,7 +385,8 @@ QGenericUnixServices::QGenericUnixServices()
 
     QDBusPendingCall pendingCall = QDBusConnection::sessionBus().asyncCall(message);
     auto watcher = new QDBusPendingCallWatcher(pendingCall);
-    QObject::connect(watcher, &QDBusPendingCallWatcher::finished, watcher,
+    m_watcherConnection =
+            QObject::connect(watcher, &QDBusPendingCallWatcher::finished, watcher,
                      [this](QDBusPendingCallWatcher *watcher) {
                          watcher->deleteLater();
                          QDBusPendingReply<QVariant> reply = *watcher;
@@ -393,6 +394,13 @@ QGenericUnixServices::QGenericUnixServices()
                              m_hasScreenshotPortalWithColorPicking = true;
                      });
 
+#endif
+}
+
+QGenericUnixServices::~QGenericUnixServices()
+{
+#if QT_CONFIG(dbus)
+    QObject::disconnect(m_watcherConnection);
 #endif
 }
 
@@ -534,6 +542,7 @@ bool QGenericUnixServices::openDocument(const QUrl &url)
 
 #else
 QGenericUnixServices::QGenericUnixServices() = default;
+QGenericUnixServices::~QGenericUnixServices() = default;
 
 QByteArray QGenericUnixServices::desktopEnvironment() const
 {
