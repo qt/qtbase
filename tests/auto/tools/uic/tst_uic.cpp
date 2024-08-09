@@ -15,6 +15,8 @@
 
 #include <cstdio>
 
+using namespace Qt::StringLiterals;
+
 static const char keepEnvVar[] = "UIC_KEEP_GENERATED_FILES";
 static const char diffToStderrEnvVar[] = "UIC_STDERR_DIFF";
 
@@ -80,7 +82,7 @@ static const char versionRegexp[] =
     R"([*#][*#] Created by: Qt User Interface Compiler version \d{1,2}\.\d{1,2}\.\d{1,2})";
 
 tst_uic::tst_uic()
-    : m_command(QLibraryInfo::path(QLibraryInfo::LibraryExecutablesPath) + QLatin1String("/uic"))
+    : m_command(QLibraryInfo::path(QLibraryInfo::LibraryExecutablesPath) + "/uic"_L1)
     , m_versionRegexp(QLatin1String(versionRegexp))
 {
 }
@@ -95,14 +97,14 @@ static QByteArray msgProcessStartFailed(const QString &command, const QString &w
 // Locate Python and check whether Qt for Python is installed
 static QString locatePython(QTemporaryDir &generatedDir)
 {
-    QString python = QStandardPaths::findExecutable(QLatin1String("python"));
+    const QString python = QStandardPaths::findExecutable("python"_L1);
     if (python.isEmpty()) {
         qWarning("Cannot locate python, skipping tests");
-        return QString();
+        return {};
     }
-    QFile importTestFile(generatedDir.filePath(QLatin1String("import_test.py")));
+    QFile importTestFile(generatedDir.filePath("import_test.py"_L1));
     if (!importTestFile.open(QIODevice::WriteOnly| QIODevice::Text))
-        return QString();
+        return {};
     importTestFile.write("import PySide");
     importTestFile.write(QByteArray::number(QT_VERSION_MAJOR));
     importTestFile.write(".QtCore\n");
@@ -110,11 +112,11 @@ static QString locatePython(QTemporaryDir &generatedDir)
     QProcess process;
     process.start(python, {importTestFile.fileName()});
     if (!process.waitForStarted() || !process.waitForFinished())
-        return QString();
+        return {};
     if (process.exitStatus() != QProcess::NormalExit || process.exitCode() != 0) {
         const QString stdErr = QString::fromLocal8Bit(process.readAllStandardError()).simplified();
         qWarning("PySide6 is not installed (%s)", qPrintable(stdErr));
-        return QString();
+        return {};
     }
     importTestFile.remove();
     return python;
@@ -127,7 +129,7 @@ void tst_uic::initTestCase()
     m_baseline = QFINDTESTDATA("baseline");
     QVERIFY2(!m_baseline.isEmpty(), "Could not find 'baseline'.");
     QProcess process;
-    process.start(m_command, QStringList(QLatin1String("-help")));
+    process.start(m_command, {"-help"_L1});
     QVERIFY2(process.waitForStarted(), msgProcessStartFailed(m_command, process.errorString()));
     QVERIFY(process.waitForFinished());
     QCOMPARE(process.exitStatus(), QProcess::NormalExit);
@@ -149,9 +151,9 @@ void tst_uic::initTestCase()
 
 void tst_uic::populateTestEntries()
 {
-    const QString generatedPrefix = m_generated.path() + QLatin1Char('/');
-    QDir baseline(m_baseline);
-    const QString baseLinePrefix = baseline.path() + QLatin1Char('/');
+    const QString generatedPrefix = m_generated.path() + u'/';
+    const QDir baseline(m_baseline);
+    const QString baseLinePrefix = baseline.path() + u'/';
     const QFileInfoList baselineFiles =
         baseline.entryInfoList(QStringList(QString::fromLatin1("*.ui")), QDir::Files);
     m_testEntries.reserve(baselineFiles.size());
@@ -159,23 +161,23 @@ void tst_uic::populateTestEntries()
         const QString baseName = baselineFile.baseName();
         TestEntry entry;
         // qprintsettingsoutput: variable named 'from' clashes with Python
-        if (baseName == QLatin1String("qprintsettingsoutput"))
+        if (baseName == "qprintsettingsoutput"_L1)
             entry.flags.setFlag(TestEntry::DontTestPythonCompile);
-        else if (baseName  == QLatin1String("qttrid"))
+        else if (baseName  == "qttrid"_L1)
             entry.flags.setFlag(TestEntry::IdBasedTranslation);
         entry.name = baseName.toLocal8Bit();
         entry.uiFileName = baselineFile.absoluteFilePath();
-        entry.baseLineFileName = entry.uiFileName + QLatin1String(".h");
+        entry.baseLineFileName = entry.uiFileName + ".h"_L1;
         const QString generatedFilePrefix = generatedPrefix + baselineFile.fileName();
-        entry.generatedFileName = generatedFilePrefix + QLatin1String(".h");
+        entry.generatedFileName = generatedFilePrefix + ".h"_L1;
         m_testEntries.append(entry);
         // Check for a Python baseline
-        entry.baseLineFileName = entry.uiFileName + QLatin1String(".py");
+        entry.baseLineFileName = entry.uiFileName + ".py"_L1;
         if (QFileInfo::exists(entry.baseLineFileName)) {
             entry.name.append(QByteArrayLiteral("-python"));
             entry.flags.setFlag(TestEntry::DontTestPythonCompile);
             entry.flags.setFlag(TestEntry::Python);
-            entry.generatedFileName = generatedFilePrefix + QLatin1String(".py");
+            entry.generatedFileName = generatedFilePrefix + ".py"_L1;
             m_testEntries.append(entry);
         }
     }
@@ -202,7 +204,7 @@ void tst_uic::stdOut()
     // Checks of everything works when using stdout and whether
     // the OS file format conventions regarding newlines are met.
     QDir baseline(m_baseline);
-    const QFileInfoList baselineFiles = baseline.entryInfoList(QStringList(QLatin1String("*.ui")), QDir::Files);
+    const QFileInfoList baselineFiles = baseline.entryInfoList({"*.ui"_L1}, QDir::Files);
     QVERIFY(!baselineFiles.isEmpty());
     QProcess process;
     process.start(m_command, QStringList(baselineFiles.front().absoluteFilePath()));
@@ -229,8 +231,7 @@ void tst_uic::run()
     QFETCH(QStringList, options);
 
     QProcess process;
-    process.start(m_command, QStringList(originalFile)
-        << QString(QLatin1String("-o")) << generatedFile << options);
+    process.start(m_command, QStringList{originalFile, "-o"_L1, generatedFile} << options);
     QVERIFY2(process.waitForStarted(), msgProcessStartFailed(m_command, process.errorString()));
     QVERIFY(process.waitForFinished());
     QCOMPARE(process.exitStatus(), QProcess::NormalExit);
@@ -247,9 +248,9 @@ void tst_uic::run_data() const
     for (const TestEntry &te : m_testEntries) {
         QStringList options;
         if (te.flags.testFlag(TestEntry::IdBasedTranslation))
-            options.append(QLatin1String("-idbased"));
+            options.append("-idbased"_L1);
         if (te.flags.testFlag(TestEntry::Python))
-            options << QLatin1String("-g") << QLatin1String("python");
+            options << "-g"_L1 << "python"_L1;
         QTest::newRow(te.name.constData()) << te.uiFileName
             << te.generatedFileName << options;
     }
@@ -258,9 +259,9 @@ void tst_uic::run_data() const
 // Helpers to generate a diff using the standard diff tool if present for failures.
 static inline QString diffBinary()
 {
-    QString binary = QLatin1String("diff");
+    QString binary = "diff"_L1;
 #ifdef Q_OS_WIN
-    binary += QLatin1String(".exe");
+    binary += ".exe"_L1;
 #endif
     return QStandardPaths::findExecutable(binary);
 }
@@ -269,10 +270,9 @@ static QString generateDiff(const QString &originalFile, const QString &generate
 {
     static const QString diff = diffBinary();
     if (diff.isEmpty())
-        return QString();
-    const QStringList args = QStringList() << QLatin1String("-u")
-        << QDir::toNativeSeparators(originalFile)
-        << QDir::toNativeSeparators(generatedFile);
+        return {};
+    const QStringList args = {"-u"_L1, QDir::toNativeSeparators(originalFile),
+                              QDir::toNativeSeparators(generatedFile)};
     QProcess diffProcess;
     diffProcess.start(diff, args);
     return diffProcess.waitForStarted() && diffProcess.waitForFinished()
@@ -281,9 +281,8 @@ static QString generateDiff(const QString &originalFile, const QString &generate
 
 static QByteArray msgCannotReadFile(const QFile &file)
 {
-    const QString result = QLatin1String("Could not read file: ")
-        + QDir::toNativeSeparators(file.fileName())
-        + QLatin1String(": ") + file.errorString();
+    const QString result = "Could not read file: "_L1
+        + QDir::toNativeSeparators(file.fileName()) + ": "_L1 + file.errorString();
     return result.toLocal8Bit();
 }
 
@@ -342,13 +341,12 @@ void tst_uic::runTranslation()
     const QDir baseline(m_baseline);
 
     QDir generated(m_generated.path());
-    generated.mkdir(QLatin1String("translation"));
-    QString generatedFile = generated.absolutePath() + QLatin1String("/translation/Dialog_without_Buttons_tr.h");
+    generated.mkdir("translation"_L1);
+    QString generatedFile = generated.absolutePath() + "/translation/Dialog_without_Buttons_tr.h"_L1;
 
-    process.start(m_command, QStringList(baseline.filePath("Dialog_without_Buttons.ui"))
-        << QString(QLatin1String("-tr")) << "i18n"
-        << QString(QLatin1String("-include")) << "ki18n.h"
-        << QString(QLatin1String("-o")) << generatedFile);
+    process.start(m_command, {baseline.filePath("Dialog_without_Buttons.ui"),
+                              "-tr"_L1, "i18n"_L1, "-include"_L1, "ki18n.h"_L1,
+                              "-o"_L1, generatedFile});
     QVERIFY2(process.waitForStarted(), msgProcessStartFailed(m_command, process.errorString()));
     QVERIFY(process.waitForFinished());
     QCOMPARE(process.exitStatus(), QProcess::NormalExit);
@@ -359,7 +357,7 @@ void tst_uic::runTranslation()
 
 void tst_uic::runCompare()
 {
-    const QString dialogFile = QLatin1String("/translation/Dialog_without_Buttons_tr.h");
+    const QString dialogFile = "/translation/Dialog_without_Buttons_tr.h"_L1;
     const QString originalFile = m_baseline + dialogFile;
     QFile orgFile(originalFile);
 
@@ -395,16 +393,16 @@ static inline QByteArray msgCompilePythonFailed(const QByteArray &error)
     // If there is a line with blanks and caret indicating an error in the line
     // above, insert the cursor into the offending line and remove the caret.
     QByteArrayList lines = error.trimmed().split('\n');
-    for (int i = lines.size() -  1; i > 0; --i) {
+    for (auto i = lines.size() -  1; i > 0; --i) {
         const auto &line = lines.at(i);
-        const int caret = line.indexOf('^');
-        if (caret == 0 || (caret > 0 && line.at(caret - 1) == ' ')) {
+        const auto caret = line.indexOf(u'^');
+        if (caret == 0 || (caret > 0 && line.at(caret - 1) == u' ')) {
             lines.removeAt(i);
-            lines[i - 1].insert(caret, '|');
+            lines[i - 1].insert(caret, u'|');
             break;
         }
     }
-    return lines.join('\n');
+    return lines.join(u'\n');
 }
 
 // Test Python code generation by compiling the file
@@ -413,9 +411,9 @@ void tst_uic::pythonCompile_data() const
     QTest::addColumn<QString>("originalFile");
     QTest::addColumn<QString>("generatedFile");
 
-    const int size = m_python.isEmpty()
-        ? qMin(1, m_testEntries.size()) : m_testEntries.size();
-    for (int i = 0; i < size; ++i) {
+    const auto size = m_python.isEmpty()
+        ? qMin(qsizetype(1), m_testEntries.size()) : m_testEntries.size();
+    for (qsizetype i = 0; i < size; ++i) {
         const TestEntry &te = m_testEntries.at(i);
         if (!te.flags.testFlag(TestEntry::DontTestPythonCompile)) {
             QTest::newRow(te.name.constData())
@@ -432,8 +430,8 @@ void tst_uic::pythonCompile()
     if (m_python.isEmpty())
         QSKIP("Python was not found");
 
-    QStringList uicArguments{QLatin1String("-g"), QLatin1String("python"),
-        originalFile, QLatin1String("-o"), generatedFile};
+    const QStringList uicArguments{"-g"_L1, "python"_L1,
+                                   originalFile, "-o"_L1, generatedFile};
     QProcess process;
     process.setWorkingDirectory(m_generated.path());
     process.start(m_command, uicArguments);
@@ -444,7 +442,7 @@ void tst_uic::pythonCompile()
     QVERIFY(QFileInfo::exists(generatedFile));
 
     // Test Python code generation by compiling the file
-    QStringList compileArguments{QLatin1String("-m"), QLatin1String("py_compile"), generatedFile};
+    const QStringList compileArguments{"-m"_L1, "py_compile"_L1, generatedFile};
     process.start(m_python, compileArguments);
     QVERIFY2(process.waitForStarted(), msgProcessStartFailed(m_command, process.errorString()));
     QVERIFY(process.waitForFinished());
