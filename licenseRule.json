@@ -22,6 +22,16 @@
                 "file type" : "examples and snippets",
                 "spdx" : ["LicenseRef-Qt-Commercial OR BSD-3-Clause"]
             },
+            "cmake/QtPublicGitHelpers.cmake" : {
+                "comment" : "MIT licensed copied parts",
+                "file type" : "build system",
+                "spdx" : ["BSD-3-Clause AND MIT"]
+            },
+            "cmake/QtPublicSbomGenerationHelpers.cmake" : {
+                "comment" : "MIT licensed copied parts",
+                "file type" : "build system",
+                "spdx" : ["MIT AND BSD-3-Clause"]
+            },
             "tests/auto/cmake/test_plugin_shared_static_flavor\\.cmake" : {
                 "comment" : "Exception. This is a test file.",
                 "file type" : "test",
