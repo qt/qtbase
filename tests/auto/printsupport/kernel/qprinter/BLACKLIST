@@ -1,0 +1,3 @@
+# QTBUG-127920
+[testPrintPreviewDialog]
+wayland ubuntu-24.04
