@@ -351,7 +351,7 @@ constexpr bool IsFloatType_v = std::is_floating_point_v<T>;
 
 #if QFLOAT16_IS_NATIVE
 template <>
-constexpr bool IsFloatType_v<QtPrivate::NativeFloat16Type> = true;
+inline constexpr bool IsFloatType_v<QtPrivate::NativeFloat16Type> = true;
 #endif
 
 } // namespace QtPrivate
