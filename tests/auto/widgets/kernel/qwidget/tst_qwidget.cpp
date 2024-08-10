@@ -13994,6 +13994,7 @@ void tst_QWidget::reparentWindowHandles()
         child->setParent(&anotherTopLevel);
         QCOMPARE(window->parent(), anotherTopLevel.windowHandle());
     }
+        break;
     case 5: {
         // Popup window that's a child of a widget that is
         // reparented should keep being a (top level) popup.
