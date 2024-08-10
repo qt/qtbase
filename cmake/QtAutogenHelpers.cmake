@@ -26,8 +26,20 @@ function(qt_enable_autogen_tool target tool enable)
     if(NOT autogen_target_depends)
         set(autogen_target_depends "")
     endif()
-    set(tool_executable "$<TARGET_FILE:${QT_CMAKE_EXPORT_NAMESPACE}::${tool}>")
     set(tool_target_name ${QT_CMAKE_EXPORT_NAMESPACE}::${tool})
+    set(tool_executable "$<TARGET_FILE:${tool_target_name}>")
+    # AUTO*_EXECUTABLE does not support multi-config generators as of
+    # CMake 3.21. Instead, we have to pick a preferred configuration.
+    # See: https://gitlab.kitware.com/cmake/cmake/-/issues/20074
+    get_property(multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+    if(multi_config)
+        if(DEFINED QT_AUTOTOOL_EXECUTABLE_CONFIG)
+            set(config "${QT_AUTOTOOL_EXECUTABLE_CONFIG}")
+        else()
+            set(config "${QT_MULTI_CONFIG_FIRST_CONFIG}")
+        endif()
+        set(tool_executable "$<TARGET_FILE_DIR:${tool_target_name}>/${config}/$<TARGET_FILE_NAME:${tool_target_name}>")
+    endif()
 
     if(enable)
         list(APPEND autogen_target_depends ${tool_target_name})
