@@ -50,6 +50,7 @@ enum PropertyFlags : uint {
     Required = 0x01000000,
     Bindable = 0x02000000,
 };
+inline constexpr PropertyFlags DefaultPropertyFlags { Readable | Designable | Scriptable | Stored };
 
 enum MethodFlags : uint {
     AccessPrivate = 0x00,

@@ -14,6 +14,10 @@
 #include <QtCore/qtcoreexports.h>
 #include <QtCore/qtmetamacros.h>
 
+// this function is implemented by moc for the user classes and thus
+// intentionally outside of our namespace
+template <typename T> constexpr auto qt_call_create_metaobjectdata();
+
 QT_BEGIN_NAMESPACE
 
 class QByteArray;

@@ -130,6 +130,8 @@ private: \
     Q_OBJECT_NO_ATTRIBUTES_WARNING \
     Q_DECL_HIDDEN_STATIC_METACALL static void qt_static_metacall(QObject *, QMetaObject::Call, int, void **); \
     QT_WARNING_POP \
+    template <typename> static constexpr auto qt_create_metaobjectdata(); \
+    template <typename> friend constexpr auto ::qt_call_create_metaobjectdata(); \
     QT_DEFINE_TAG_STRUCT(QPrivateSignal); \
     QT_ANNOTATE_CLASS(qt_qobject, "")
 
@@ -147,6 +149,8 @@ private: \
     QT_WARNING_PUSH \
     Q_OBJECT_NO_ATTRIBUTES_WARNING \
     Q_DECL_HIDDEN_STATIC_METACALL static void qt_static_metacall(QObject *, QMetaObject::Call, int, void **); \
+    template <typename> static constexpr auto qt_create_metaobjectdata(); \
+    template <typename> friend constexpr auto ::qt_call_create_metaobjectdata(); \
     QT_WARNING_POP \
     QT_ANNOTATE_CLASS(qt_qgadget, "") \
     /*end*/
@@ -157,6 +161,7 @@ private: \
     /* qmake ignore Q_NAMESPACE_EXPORT */
 #define Q_NAMESPACE_EXPORT(...) \
     extern __VA_ARGS__ const QMetaObject staticMetaObject; \
+    template <typename> static constexpr auto qt_create_metaobjectdata(); \
     QT_ANNOTATE_CLASS(qt_qnamespace, "") \
     /*end*/
 

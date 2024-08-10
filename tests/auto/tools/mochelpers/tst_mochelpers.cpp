@@ -470,7 +470,7 @@ void tst_MocHelpers::constructorUintData()
         QCOMPARE(result.header[1], 1U);
         QCOMPARE(result.header[3], 1U);
         QCOMPARE(result.header[4], AccessPublic | MethodConstructor);
-        QCOMPARE(result.header[5], 1U);
+        QCOMPARE(result.header[5], 0U);
         QCOMPARE(result.payload[0], NoType);
         QCOMPARE(result.payload[1], uint(QMetaType::QObjectStar));
         QCOMPARE(result.payload[2], 2U);
