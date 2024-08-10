@@ -1343,8 +1343,8 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     for (const auto &enumerator : d->enumerators) {
         [[maybe_unused]] int name = strings.enter(enumerator.name);
         [[maybe_unused]] int enumName = strings.enter(enumerator.enumName);
-        [[maybe_unused]] int isFlag = enumerator.isFlag ? EnumIsFlag : 0;
-        [[maybe_unused]] int isScoped = enumerator.isScoped ? EnumIsScoped : 0;
+        [[maybe_unused]] int isFlag = enumerator.isFlag ? EnumIsFlag : EnumFlags{};
+        [[maybe_unused]] int isScoped = enumerator.isScoped ? EnumIsScoped : EnumFlags{};
         int count = enumerator.keys.size();
         int enumOffset = enumIndex;
         if constexpr (mode == Construct) {
