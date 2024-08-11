@@ -64,6 +64,7 @@ public:
 
 private:
     bool m_handleLayoutChanges = true;
+    bool m_handleDataChanges = true;
     QVarLengthArray<QMetaObject::Connection, 18> m_sourceModelConnections;
 };
 
