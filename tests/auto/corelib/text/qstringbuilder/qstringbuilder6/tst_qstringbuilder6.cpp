@@ -20,8 +20,6 @@
 
 #define LITERAL "some literal"
 
-#define HAS_QTBUG_127928    1
-
 namespace {
 #define P +
 #include "../qstringbuilder1/stringbuilder.cpp"

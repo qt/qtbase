@@ -684,11 +684,13 @@ inline QByteArray operator+(const char *a1, const QByteArray &a2)
 { return QByteArray(a1) += a2; }
 inline QByteArray operator+(char a1, const QByteArray &a2)
 { return QByteArray(&a1, 1) += a2; }
+Q_WEAK_OVERLOAD
 inline QByteArray operator+(const QByteArray &lhs, QByteArrayView rhs)
 {
     QByteArray tmp{lhs.size() + rhs.size(), Qt::Uninitialized};
     return tmp.assign(lhs).append(rhs);
 }
+Q_WEAK_OVERLOAD
 inline QByteArray operator+(QByteArrayView lhs, const QByteArray &rhs)
 {
     QByteArray tmp{lhs.size() + rhs.size(), Qt::Uninitialized};
