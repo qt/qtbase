@@ -504,7 +504,12 @@ QMacMimeRtfText::convertToMime(const QString &mimeType,
     NSRange range = NSMakeRange(0, [string length]);
     NSDictionary *dict = @{NSDocumentTypeDocumentAttribute: NSHTMLTextDocumentType};
     NSData *htmlData = [string dataFromRange:range documentAttributes:dict error:&error];
-    return QByteArray::fromNSData(htmlData);
+
+    // Note: We trim the data here, as NSAttributedString wrongly inserts a newline at the
+    // end when generating HTML, which HTML parsers (including our own QTextHtmlParser)
+    // correctly treat as an additional white space in the body of the HTML document
+    // (see HTML5 § 13.2.6.4.22 - The "after after body" insertion mode).
+    return QByteArray::fromNSData(htmlData).trimmed();
 }
 
 QList<QByteArray>
