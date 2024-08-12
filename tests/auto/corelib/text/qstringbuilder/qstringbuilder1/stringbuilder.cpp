@@ -479,7 +479,6 @@ void runScenario()
     r = QByteArrayLiteral(LITERAL) P string;
     QCOMPARE(r, r2);
 
-#ifndef HAS_QTBUG_127928
     r = ba P l1string;
     QCOMPARE(r, r2);
     r = l1string P ba;
@@ -489,7 +488,6 @@ void runScenario()
     QCOMPARE(r, r2);
     r = QLatin1String(l1string) P std::as_const(ba);
     QCOMPARE(r, r2);
-#endif
 
     static const char badata[] = LITERAL_EXTRA;
     ba = QByteArray::fromRawData(badata, LITERAL_LEN);
