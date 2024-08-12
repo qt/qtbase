@@ -3948,13 +3948,13 @@ bool QMetaProperty::write(QObject *object, QVariant &&v) const
             // Assigning a string to a property of type Q_ENUMS (instead of Q_ENUM)
             // means the QMetaType has no associated QMetaObject, so it can't
             // do the conversion (see qmetatype.cpp:convertToEnum()).
-            bool ok;
-            if (isFlagType())
-                v = QVariant(menum.keysToValue(v.toByteArray(), &ok));
-            else
-                v = QVariant(menum.keyToValue(v.toByteArray(), &ok));
-            if (!ok)
-                return false;
+            std::optional value = isFlagType() ? menum.keysToValue64(v.toByteArray())
+                                               : menum.keyToValue64(v.toByteArray());
+            if (value)
+                v = QVariant(qlonglong(*value));
+
+            // If the key(s)ToValue64 call failed, the convert() call below
+            // gives QMetaType one last chance.
         }
         if (!v.isValid()) {
             if (isResettable())
