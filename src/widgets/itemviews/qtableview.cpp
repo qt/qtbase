@@ -3115,6 +3115,68 @@ void QTableView::timerEvent(QTimerEvent *event)
     QAbstractItemView::timerEvent(event);
 }
 
+#if QT_CONFIG(draganddrop)
+/*! \reimp */
+void QTableView::dropEvent(QDropEvent *event)
+{
+    Q_D(QTableView);
+    if (event->source() == this && (event->dropAction() == Qt::MoveAction ||
+                                    dragDropMode() == QAbstractItemView::InternalMove)) {
+        QModelIndex topIndex;
+        int col = -1;
+        int row = -1;
+        // check whether a subclass has already accepted the event, ie. moved the data
+        if (!event->isAccepted() && d->dropOn(event, &row, &col, &topIndex) && !topIndex.isValid() && col != -1) {
+            // Drop between items (reordering) - can only happen with setDragDropOverwriteMode(false)
+            const QModelIndexList indexes = selectedIndexes();
+            QList<QPersistentModelIndex> persIndexes;
+            persIndexes.reserve(indexes.size());
+
+            bool topIndexDropped = false;
+            for (const auto &index : indexes) {
+                // Reorder entire rows
+                QPersistentModelIndex firstColIndex = index.siblingAtColumn(0);
+                if (!persIndexes.contains(firstColIndex))
+                    persIndexes.append(firstColIndex);
+                if (index.row() == topIndex.row()) {
+                    topIndexDropped = true;
+                    break;
+                }
+            }
+            if (!topIndexDropped) {
+                std::sort(persIndexes.begin(), persIndexes.end()); // The dropped items will remain in the same visual order.
+
+                QPersistentModelIndex dropRow = model()->index(row, col, topIndex);
+
+                int r = row == -1 ? model()->rowCount() : (dropRow.row() >= 0 ? dropRow.row() : row);
+                bool dataMoved = false;
+                for (int i = 0; i < persIndexes.size(); ++i) {
+                    const QPersistentModelIndex &pIndex = persIndexes.at(i);
+                    // only generate a move when not same row or behind itself
+                    if (r != pIndex.row() && r != pIndex.row() + 1) {
+                        // try to move (preserves selection)
+                        dataMoved |= model()->moveRow(QModelIndex(), pIndex.row(), QModelIndex(), r);
+                        if (!dataMoved) // can't move - abort and let QAbstractItemView handle this
+                            break;
+                    } else {
+                        // move onto itself is blocked, don't delete anything
+                        dataMoved = true;
+                    }
+                    r = pIndex.row() + 1;   // Dropped items are inserted contiguously and in the right order.
+                }
+                if (dataMoved)
+                    event->accept();
+            }
+        }
+    }
+
+    if (!event->isAccepted()) {
+        // moveRows not implemented, fall back to default
+        QAbstractItemView::dropEvent(event);
+    }
+}
+#endif
+
 /*!
     This slot is called to change the index of the given \a row in the
     table view. The old index is specified by \a oldIndex, and the new

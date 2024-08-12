@@ -2722,7 +2722,8 @@ void QTableWidget::dropEvent(QDropEvent *event) {
         int col = -1;
         int row = -1;
         // check whether a subclass has already accepted the event, ie. moved the data
-        if (!event->isAccepted() && d->dropOn(event, &row, &col, &topIndex)) {
+        if (!event->isAccepted() && d->dropOn(event, &row, &col, &topIndex) && row == -1 && col == -1) {
+            // Drop onto item
             const QModelIndexList indexes = selectedIndexes();
             int top = INT_MAX;
             int left = INT_MAX;
@@ -2730,7 +2731,6 @@ void QTableWidget::dropEvent(QDropEvent *event) {
                 top = qMin(index.row(), top);
                 left = qMin(index.column(), left);
             }
-
             QList<QTableWidgetItem *> taken;
             const int indexesCount = indexes.size();
             taken.reserve(indexesCount);
@@ -2745,7 +2745,7 @@ void QTableWidget::dropEvent(QDropEvent *event) {
 
             event->accept();
         }
-        // either we or a subclass accepted the move event, so assume that the data was
+        // either we or a subclass accepted the drop event, so assume that the data was
         // moved and that QAbstractItemView shouldn't remove the source when QDrag::exec returns
         if (event->isAccepted())
             d->dropEventMoved = true;
