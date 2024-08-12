@@ -114,6 +114,10 @@ protected:
 
     void timerEvent(QTimerEvent *event) override;
 
+#if QT_CONFIG(draganddrop)
+    void dropEvent(QDropEvent *event) override;
+#endif
+
     int horizontalOffset() const override;
     int verticalOffset() const override;
     QModelIndex moveCursor(CursorAction cursorAction, Qt::KeyboardModifiers modifiers) override;
