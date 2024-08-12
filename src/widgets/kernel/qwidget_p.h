@@ -387,7 +387,7 @@ public:
     void hide_helper();
     bool isExplicitlyHidden() const;
     void _q_showIfNotHidden();
-    void setVisible(bool);
+    virtual void setVisible(bool);
 
     void setEnabled_helper(bool);
     static void adjustFlags(Qt::WindowFlags &flags, QWidget *w = nullptr);
