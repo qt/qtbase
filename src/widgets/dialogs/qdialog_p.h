@@ -51,7 +51,7 @@ public:
         {}
     ~QDialogPrivate();
 
-    virtual void setVisible(bool visible);
+    void setVisible(bool visible) override;
 
     QWindow *transientParentWindow() const;
     bool setNativeDialogVisible(bool visible);

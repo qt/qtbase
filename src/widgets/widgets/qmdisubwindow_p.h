@@ -236,6 +236,7 @@ public:
     bool restoreFocus();
     void storeFocusWidget();
     void setWindowFlags(Qt::WindowFlags windowFlags) override;
+    using QWidgetPrivate::setVisible;
     void setVisible(WindowStateAction, bool visible = true);
 #ifndef QT_NO_ACTION
     void setEnabled(WindowStateAction, bool enable = true);

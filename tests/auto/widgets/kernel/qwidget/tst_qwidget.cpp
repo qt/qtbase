@@ -469,6 +469,7 @@ private slots:
 #endif
 
     void setVisibleDuringDestruction();
+    void setVisibleOverrideIsCalled();
 
     void explicitShowHide();
 
@@ -13626,6 +13627,31 @@ void tst_QWidget::setVisibleDuringDestruction()
     widget.destroy();
     QTRY_COMPARE(hideEventSpy.count(), 2);
     QTRY_COMPARE(signalSpy.count(), 4);
+}
+
+void tst_QWidget::setVisibleOverrideIsCalled()
+{
+    struct WidgetPrivate : public QWidgetPrivate
+    {
+        void setVisible(bool visible) override
+        {
+            wasCalled = true;
+        }
+
+        bool wasCalled = false;
+    };
+    class Widget : public QWidget {
+    public:
+        explicit Widget(QWidget *p = nullptr)
+            : QWidget(*new WidgetPrivate, p, {})
+        {
+        }
+    };
+
+    Widget widget;
+    widget.setVisible(true);
+    auto *widgetPrivate = static_cast<WidgetPrivate*>(QWidgetPrivate::get(&widget));
+    QCOMPARE(widgetPrivate->wasCalled, true);
 }
 
 void tst_QWidget::explicitShowHide()

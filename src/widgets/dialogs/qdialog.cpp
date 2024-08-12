@@ -772,7 +772,7 @@ void QDialogPrivate::setVisible(bool visible)
     }
 
     if (visible) {
-        q->QWidget::setVisible(visible);
+        QWidgetPrivate::setVisible(visible);
 
         // Window activation might be prevented. We can't test isActiveWindow here,
         // as the window will be activated asynchronously by the window manager.
@@ -831,7 +831,7 @@ void QDialogPrivate::setVisible(bool visible)
 #endif
 
         // Reimplemented to exit a modal event loop when the dialog is hidden.
-        q->QWidget::setVisible(visible);
+        QWidgetPrivate::setVisible(visible);
         if (eventLoop)
             eventLoop->exit();
     }
