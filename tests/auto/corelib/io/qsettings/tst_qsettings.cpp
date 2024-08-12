@@ -2363,7 +2363,7 @@ void tst_QSettings::testRegistryShortRootNames()
 void tst_QSettings::testRegistry32And64Bit()
 {
 #if !defined (Q_OS_WIN)
-    QSKIP("This test is specific to the Windows registry.", SkipAll);
+    QSKIP("This test is specific to the Windows registry.");
 #else
 
     const QString key("HKEY_LOCAL_MACHINE\\Software");

@@ -6,7 +6,7 @@
 void tst_QMimeDatabase::initTestCaseInternal()
 {
 #if !QT_CONFIG(process)
-    QSKIP("No qprocess support", SkipAll);
+    QSKIP("No qprocess support");
 #else
     const QString mimeDirName = m_globalXdgDir + QStringLiteral("/mime");
     runUpdateMimeDatabase(mimeDirName);

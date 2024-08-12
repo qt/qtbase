@@ -1218,7 +1218,7 @@ private:
 void tst_QLocalSocket::processConnection()
 {
 #if !QT_CONFIG(process)
-    QSKIP("No qprocess support", SkipAll);
+    QSKIP("No qprocess support");
 #else
 
 #ifdef Q_OS_WIN

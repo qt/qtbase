@@ -5093,7 +5093,7 @@ void tst_QNetworkReply::ioPutToFileFromProcess_data()
 void tst_QNetworkReply::ioPutToFileFromProcess()
 {
 #if !QT_CONFIG(process)
-    QSKIP("No qprocess support", SkipAll);
+    QSKIP("No qprocess support");
 #else
 
 #ifdef Q_OS_WIN

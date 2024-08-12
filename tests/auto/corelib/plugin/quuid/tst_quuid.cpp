@@ -645,7 +645,7 @@ void tst_QUuid::threadUniqueness()
 void tst_QUuid::processUniqueness()
 {
 #if !QT_CONFIG(process)
-    QSKIP("No qprocess support", SkipAll);
+    QSKIP("No qprocess support");
 #else
 #ifdef Q_OS_ANDROID
     QSKIP("This test crashes on Android");

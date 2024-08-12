@@ -3079,7 +3079,7 @@ void tst_QObject::dynamicProperties()
 void tst_QObject::recursiveSignalEmission()
 {
 #if !QT_CONFIG(process)
-    QSKIP("No qprocess support", SkipAll);
+    QSKIP("No qprocess support");
 #else
     QProcess proc;
     // signalbug helper app should always be next to this test binary

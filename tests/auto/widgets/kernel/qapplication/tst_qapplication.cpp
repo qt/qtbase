@@ -2641,7 +2641,7 @@ void tst_QApplication::qtbug_12673()
     QVERIFY(testProcess.waitForFinished(20000));
     QCOMPARE(testProcess.exitStatus(), QProcess::NormalExit);
 #else
-    QSKIP( "No QProcess support", SkipAll);
+    QSKIP("No QProcess support");
 #endif
 }
 

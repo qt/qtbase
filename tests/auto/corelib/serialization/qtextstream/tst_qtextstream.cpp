@@ -1443,7 +1443,7 @@ void tst_QTextStream::pos3LargeFile()
 void tst_QTextStream::readStdin()
 {
 #if !QT_CONFIG(process)
-    QSKIP("No qprocess support", SkipAll);
+    QSKIP("No qprocess support");
 #else
     QProcess stdinProcess;
     stdinProcess.start("stdinProcess/stdinProcess");
@@ -1470,7 +1470,7 @@ void tst_QTextStream::readStdin()
 void tst_QTextStream::readAllFromStdin()
 {
 #if !QT_CONFIG(process)
-    QSKIP("No qprocess support", SkipAll);
+    QSKIP("No qprocess support");
 #else
     QProcess stdinProcess;
     stdinProcess.start("readAllStdinProcess/readAllStdinProcess", {}, QIODevice::ReadWrite | QIODevice::Text);
@@ -1491,7 +1491,7 @@ void tst_QTextStream::readAllFromStdin()
 void tst_QTextStream::readLineFromStdin()
 {
 #if !QT_CONFIG(process)
-    QSKIP("No qprocess support", SkipAll);
+    QSKIP("No qprocess support");
 #else
     QProcess stdinProcess;
     stdinProcess.start("readLineStdinProcess/readLineStdinProcess", {}, QIODevice::ReadWrite | QIODevice::Text);

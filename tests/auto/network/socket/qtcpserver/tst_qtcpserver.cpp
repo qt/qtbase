@@ -575,7 +575,7 @@ protected:
 void tst_QTcpServer::addressReusable()
 {
 #if !QT_CONFIG(process)
-    QSKIP("No qprocess support", SkipAll);
+    QSKIP("No qprocess support");
 #else
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {

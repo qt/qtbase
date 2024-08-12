@@ -1076,7 +1076,7 @@ void tst_QArrayData::arrayOpsExtra_data()
 
 void tst_QArrayData::arrayOpsExtra()
 {
-    QSKIP("Skipped while changing QArrayData operations.", SkipAll);
+    QSKIP("Skipped while changing QArrayData operations.");
     QFETCH(QArrayData::GrowthPosition, GrowthPosition);
     CountedObject::LeakChecker leakChecker; Q_UNUSED(leakChecker);
 

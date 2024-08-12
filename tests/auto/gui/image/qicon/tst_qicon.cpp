@@ -121,7 +121,7 @@ void tst_QIcon::actualSize()
     // Skip two corner cases
     if (qApp->devicePixelRatio() > 1 && (qstrcmp(QTest::currentDataTag(), "resource9") == 0
                                       || qstrcmp(QTest::currentDataTag(), "external9") == 0))
-        QSKIP("Behavior is unspecified for devicePixelRatio > 1", QTest::QSkipAll);
+        QSKIP("Behavior is unspecified for devicePixelRatio > 1");
 
     auto expectedDeviceSize = [](QSize deviceIndependentExpectedSize, QSize maxSourceImageSize) -> QSize {
         qreal dpr = qApp->devicePixelRatio();
@@ -167,7 +167,7 @@ void tst_QIcon::actualSize2_data()
 void tst_QIcon::actualSize2()
 {
     if (qApp->devicePixelRatio() > 1)
-        QSKIP("Behavior is unspecified for devicePixelRatio > 1", QTest::SkipAll);
+        QSKIP("Behavior is unspecified for devicePixelRatio > 1");
 
     QIcon icon;
     icon.addPixmap(m_pngImageFileName);
@@ -392,7 +392,7 @@ void tst_QIcon::detach()
 void tst_QIcon::addFile()
 {
     if (qApp->devicePixelRatio() != int(qApp->devicePixelRatio()))
-        QSKIP("Test is not ready for non integer devicePixelRatio", QTest::SkipAll);
+        QSKIP("Test is not ready for non integer devicePixelRatio");
 
     QIcon icon;
     icon.addFile(QLatin1String(":/styles/commonstyle/images/standardbutton-open-16.png"));

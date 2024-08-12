@@ -996,7 +996,7 @@ private:
 void tst_QFile::readAllStdin()
 {
 #if !QT_CONFIG(process)
-    QSKIP("No qprocess support", SkipAll);
+    QSKIP("No qprocess support");
 #else
 #if defined(Q_OS_ANDROID)
     QSKIP("This test crashes when doing nanosleep. See QTBUG-69034.");
@@ -1021,7 +1021,7 @@ void tst_QFile::readAllStdin()
 void tst_QFile::readLineStdin()
 {
 #if !QT_CONFIG(process)
-    QSKIP("No qprocess support", SkipAll);
+    QSKIP("No qprocess support");
 #else
 #if defined(Q_OS_ANDROID)
     QSKIP("This test crashes when doing nanosleep. See QTBUG-69034.");
@@ -1064,7 +1064,7 @@ void tst_QFile::readLineStdin()
 void tst_QFile::readLineStdin_lineByLine()
 {
 #if !QT_CONFIG(process)
-    QSKIP("No qprocess support", SkipAll);
+    QSKIP("No qprocess support");
 #else
 #if defined(Q_OS_ANDROID)
     QSKIP("This test crashes when calling ::poll. See QTBUG-69034.");

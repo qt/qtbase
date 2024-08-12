@@ -1071,9 +1071,9 @@ void tst_NetworkSelfTest::smbServer()
 
     output = smbclient.readAll();
     QCOMPARE(output.constData(), contents);
-    qDebug() << "Test file is correct";
+    qDebug("Test file is correct");
 #else
-    QSKIP( "No QProcess support", SkipAll);
+    QSKIP("No QProcess support");
 #endif
 #endif
 }

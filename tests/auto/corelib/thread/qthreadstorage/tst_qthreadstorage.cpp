@@ -276,7 +276,7 @@ void tst_QThreadStorage::crashOnExit()
     QSKIP("Can't start QProcess to run a custom user binary on Android");
 #endif
 #if !QT_CONFIG(process)
-    QSKIP("No qprocess support", SkipAll);
+    QSKIP("No qprocess support");
 #else
     QString errorMessage;
     QVERIFY2(runCrashOnExit("./crashOnExit_helper", &errorMessage),
