@@ -2469,7 +2469,7 @@ QRhiColorAttachment::QRhiColorAttachment(QRhiRenderBuffer *renderBuffer)
     renderbuffer as depth/stencil to enable depth testing:
 
     \code
-        QRhiTexture *texture = rhi->newTexture(QRhiTexture::RGBA8, QSize(512, 512), 1. QRhiTexture::RenderTarget);
+        QRhiTexture *texture = rhi->newTexture(QRhiTexture::RGBA8, QSize(512, 512), 1, QRhiTexture::RenderTarget);
         texture->create();
         QRhiRenderBuffer *depthStencil = rhi->newRenderBuffer(QRhiRenderBuffer::DepthStencil, QSize(512, 512));
         depthStencil->create();
