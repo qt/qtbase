@@ -172,6 +172,8 @@ private:
         return (it == end ? Int(0) : (Int(*it) | initializer_list_helper(it + 1, end)));
     }
 
+    template <typename E> friend QDataStream &operator<<(QDataStream &, QFlags<E>);
+    template <typename E> friend QDataStream &operator>>(QDataStream &, QFlags<E> &);
     Int i;
 };
 
