@@ -68,9 +68,11 @@ static gboolean socketNotifierSourceDispatch(GSource *source, GSourceFunc, gpoin
     QEvent event(QEvent::SockAct);
 
     GSocketNotifierSource *src = reinterpret_cast<GSocketNotifierSource *>(source);
-    for (src->activeNotifierPos = 0; src->activeNotifierPos < src->pollfds.size();
-         ++src->activeNotifierPos) {
+    src->activeNotifierPos = 0;
+    while (src->activeNotifierPos < src->pollfds.size()) {
         GPollFDWithQSocketNotifier *p = src->pollfds.at(src->activeNotifierPos);
+
+        ++src->activeNotifierPos;
 
         if ((p->pollfd.revents & p->pollfd.events) != 0)
             QCoreApplication::sendEvent(p->socketNotifier, &event);
