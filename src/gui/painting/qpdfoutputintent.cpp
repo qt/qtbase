@@ -54,7 +54,7 @@ QPdfOutputIntent::QPdfOutputIntent()
 /*!
     Constructs a copy of the output intent \a other.
 */
-QPdfOutputIntent::QPdfOutputIntent(const QPdfOutputIntent &other) noexcept = default;
+QPdfOutputIntent::QPdfOutputIntent(const QPdfOutputIntent &other) = default;
 
 /*!
     \fn QPdfOutputIntent::QPdfOutputIntent(QPdfOutputIntent &&other) noexcept
@@ -65,7 +65,7 @@ QPdfOutputIntent::QPdfOutputIntent(const QPdfOutputIntent &other) noexcept = def
 /*!
     Assigns the output intent \a other over this intent.
 */
-QPdfOutputIntent &QPdfOutputIntent::operator=(const QPdfOutputIntent &other) noexcept = default;
+QPdfOutputIntent &QPdfOutputIntent::operator=(const QPdfOutputIntent &other) = default;
 
 /*!
     \fn QPdfOutputIntent &QPdfOutputIntent::operator=(QPdfOutputIntent &&other) noexcept
