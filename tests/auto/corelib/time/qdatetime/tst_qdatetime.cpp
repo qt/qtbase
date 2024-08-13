@@ -3277,6 +3277,8 @@ void tst_QDateTime::fromStringStringFormat_data()
             << u"2001-09-15T09:33:01.001 "_s << u"yyyy-MM-ddThh:mm:ss.z t"_s << 1900 << QDateTime();
     QTest::newRow("invalid-month-year<min") // This used to fail an unfounded assertion.
             << u"0024:91:06 08:52:20"_s << u"yyyy:MM:dd HH:mm:ss"_s << 1900 << QDateTime();
+    QTest::newRow("invalid-year")
+            << u"0000:11:06 08:51:20"_s << u"yyyy:MM:dd HH:mm:ss"_s << 1900 << QDateTime();
 #if QT_CONFIG(timezone)
     QTimeZone southBrazil("America/Sao_Paulo");
     if (southBrazil.isValid()) {
