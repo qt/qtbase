@@ -23,9 +23,9 @@ class Q_GUI_EXPORT QPdfOutputIntent
 {
 public:
     QPdfOutputIntent();
-    QPdfOutputIntent(const QPdfOutputIntent &other) noexcept;
+    QPdfOutputIntent(const QPdfOutputIntent &other);
     QPdfOutputIntent(QPdfOutputIntent &&other) noexcept = default;
-    QPdfOutputIntent &operator=(const QPdfOutputIntent &other) noexcept;
+    QPdfOutputIntent &operator=(const QPdfOutputIntent &other);
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QPdfOutputIntent)
     ~QPdfOutputIntent();
 
