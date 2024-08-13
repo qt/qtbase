@@ -469,7 +469,7 @@ QByteArray byteArray = QByteArray::fromEcmaUint8Array(uint8array);
 
 //! [56]
 QByteArray byteArray = "test";
-emscripten::val uint8array = QByteArray::toEcmaUint8Array(byteArray);
+emscripten::val uint8array = byteArray.toEcmaUint8Array();
 //! [56]
 
 }
