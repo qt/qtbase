@@ -79,7 +79,7 @@ template <int N> struct FixedBufString
         qint64 ratio;
         if (v < 1 && Power == 1000) {
             const char *prefixes = submultiplePrefixes;
-            ratio = qreal(std::atto::num) / std::atto::den;
+            ratio = qreal(std::atto::num) / qreal(std::atto::den);
             while (value * ratio > 1000 && *prefixes) {
                 ++prefixes;
                 ratio *= 1000;

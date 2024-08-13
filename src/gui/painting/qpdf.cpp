@@ -2734,10 +2734,12 @@ QPdfEnginePrivate::createShadingFunction(const QGradient *gradient, int from, in
                 s << "/C0 [" << stops.at(i).second.redF() << stops.at(i).second.greenF() <<  stops.at(i).second.blueF() << "]\n"
                      "/C1 [" << stops.at(i + 1).second.redF() << stops.at(i + 1).second.greenF() <<  stops.at(i + 1).second.blueF() << "]\n";
                 break;
-            case QPdfEngine::ColorModel::Grayscale:
-                s << "/C0 [" << (qGray(stops.at(i).second.rgba()) / 255.) << "]\n"
-                     "/C1 [" << (qGray(stops.at(i + 1).second.rgba()) / 255.) << "]\n";
+            case QPdfEngine::ColorModel::Grayscale: {
+                constexpr qreal normalisationFactor = 1. / 255.;
+                s << "/C0 [" << (qGray(stops.at(i).second.rgba()) * normalisationFactor) << "]\n"
+                     "/C1 [" << (qGray(stops.at(i + 1).second.rgba()) * normalisationFactor) << "]\n";
                 break;
+            }
             case QPdfEngine::ColorModel::CMYK:
                 s << "/C0 [" << stops.at(i).second.cyanF()
                              << stops.at(i).second.magentaF()

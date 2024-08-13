@@ -237,12 +237,12 @@ void QCosmeticStroker::setup()
 
         patternLength = 0;
         for (int i = 0; i < patternSize; ++i) {
-            patternLength += static_cast<int>(qBound(1., penPattern.at(i) * 64, 65536.));
+            patternLength += qBound(1, int(penPattern.at(i) * 64), 65536);
             pattern[i] = patternLength;
         }
         patternLength = 0;
         for (int i = 0; i < patternSize; ++i) {
-            patternLength += static_cast<int>(qBound(1., penPattern.at(patternSize - 1 - i) * 64, 65536.));
+            patternLength += qBound(1, int(penPattern.at(patternSize - 1 - i) * 64), 65536);
             reversePattern[i] = patternLength;
         }
         strokeSelection |= Dashed;
