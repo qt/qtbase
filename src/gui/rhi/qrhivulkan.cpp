@@ -4535,6 +4535,7 @@ QList<QSize> QRhiVulkan::supportedShadingRates(int sampleCount) const
             result.append(QSize(int(s.fragmentSize.width), int(s.fragmentSize.height)));
     }
 #else
+    Q_UNUSED(sampleCount);
     result.append(QSize(1, 1));
 #endif
     return result;
