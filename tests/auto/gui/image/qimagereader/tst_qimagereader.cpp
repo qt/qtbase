@@ -1702,7 +1702,6 @@ void tst_QImageReader::supportsOption_data()
                                 QImageIOHandler::Quality,
                                 QImageIOHandler::CompressionRatio,
                                 QImageIOHandler::Size,
-                                QImageIOHandler::ScaledSize,
                                 QImageIOHandler::ImageFormat,
                             };
 }
