@@ -252,9 +252,9 @@ void parseBlackList()
         return;
 
     QByteArray function;
+    QByteArray line;
 
-    while (!ignored.atEnd()) {
-        QByteArray line = ignored.readLine();
+    while (ignored.readLineInto(&line)) {
         const int commentPosition = line.indexOf('#');
         if (commentPosition >= 0)
             line.truncate(commentPosition);

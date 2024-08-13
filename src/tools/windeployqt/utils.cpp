@@ -225,10 +225,9 @@ QMap<QString, QString> queryQtPaths(const QString &qtpathsBinary, QString *error
     }
     QFile qconfigPriFile(result.value(QStringLiteral("QT_HOST_DATA")) + QStringLiteral("/mkspecs/qconfig.pri"));
     if (qconfigPriFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        while (true) {
-            const QByteArray line = qconfigPriFile.readLine();
-            if (line.isEmpty())
-                break;
+        QByteArray lineArray;
+        while (qconfigPriFile.readLineInto(&lineArray)) {
+            QByteArrayView line = QByteArrayView(lineArray);
             if (line.startsWith("QT_LIBINFIX")) {
                 const int pos = line.indexOf('=');
                 if (pos >= 0) {

@@ -2837,8 +2837,9 @@ QStringList getLibraryProjectsInOutputFolder(const Options &options)
 
     QFile file(options.outputDirectory + "/project.properties"_L1);
     if (file.open(QIODevice::ReadOnly)) {
-        while (!file.atEnd()) {
-            QByteArray line = file.readLine().trimmed();
+        QByteArray lineArray;
+        while (file.readLineInto(&lineArray)) {
+            QByteArrayView line = QByteArrayView(lineArray).trimmed();
             if (line.startsWith("android.library.reference")) {
                 int equalSignIndex = line.indexOf('=');
                 if (equalSignIndex >= 0) {
@@ -2913,8 +2914,8 @@ static bool mergeGradleProperties(const QString &path, GradleProperties properti
 
     QFile oldFile(oldPathStr);
     if (oldFile.open(QIODevice::ReadOnly)) {
-        while (!oldFile.atEnd()) {
-            QByteArray line(oldFile.readLine());
+        QByteArray line;
+        while (oldFile.readLineInto(&line)) {
             QList<QByteArray> prop(line.split('='));
             if (prop.size() > 1) {
                 GradleProperties::iterator it = properties.find(prop.at(0).trimmed());

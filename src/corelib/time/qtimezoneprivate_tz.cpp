@@ -88,12 +88,12 @@ static QTzTimeZoneHash loadTzTimeZones()
         return QTzTimeZoneHash();
 
     QTzTimeZoneHash zonesHash;
-    while (!tzif.atEnd()) {
-        const QByteArray line = tzif.readLine().trimmed();
-        if (line.isEmpty() || line.at(0) == '#') // Ignore empty or comment
+    QByteArray line;
+    while (tzif.readLineInto(&line)) {
+        QByteArrayView text = QByteArrayView(line).trimmed();
+        if (text.isEmpty() || text.at(0) == '#') // Ignore empty or comment
             continue;
         // Data rows are tab-separated columns Region, Coordinates, ID, Optional Comments
-        QByteArrayView text(line);
         int cut = text.indexOf('\t');
         if (Q_LIKELY(cut > 0)) {
             QTzTimeZone zone;

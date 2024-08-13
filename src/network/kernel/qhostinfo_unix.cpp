@@ -123,8 +123,8 @@ QString QHostInfo::localDomainName()
         return QString();       // failure
 
     QString domainName;
-    while (!resolvconf.atEnd()) {
-        const QByteArray lineArray = resolvconf.readLine();
+    QByteArray lineArray;
+    while (resolvconf.readLineInto(&lineArray)) {
         QByteArrayView line = QByteArrayView(lineArray).trimmed();
         constexpr QByteArrayView domainWithSpace = "domain ";
         if (line.startsWith(domainWithSpace))

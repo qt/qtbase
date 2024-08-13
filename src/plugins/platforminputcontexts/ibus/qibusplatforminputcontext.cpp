@@ -776,11 +776,12 @@ void QIBusPlatformInputContextPrivate::createConnection()
     if (!file.open(QFile::ReadOnly))
         return;
 
-    QByteArray address;
+    QByteArrayView address;
     int pid = -1;
+    QByteArray lineArray;
 
-    while (!file.atEnd()) {
-        QByteArray line = file.readLine().trimmed();
+    while (file.readLineInto(&lineArray)) {
+        QByteArrayView line = QByteArrayView(lineArray).trimmed();
         if (line.startsWith('#'))
             continue;
 

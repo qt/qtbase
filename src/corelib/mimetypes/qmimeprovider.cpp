@@ -458,8 +458,8 @@ void QMimeBinaryProvider::loadMimeTypeList()
         // So we have to parse the plain-text files called "types".
         QFile file(m_directory + QStringView(u"/types"));
         if (file.open(QIODevice::ReadOnly)) {
-            while (!file.atEnd()) {
-                const QByteArray line = file.readLine();
+            QByteArray line;
+            while (file.readLineInto(&line)) {
                 auto lineView = QByteArrayView(line);
                 if (lineView.endsWith('\n'))
                     lineView.chop(1);

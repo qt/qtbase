@@ -60,8 +60,8 @@ qint64 QBenchmarkValgrindUtils::extractResult(const QString &fileName)
     Q_UNUSED(openOk);
 
     std::optional<qint64> val = std::nullopt;
-    while (!file.atEnd()) {
-        const QByteArray line = file.readLine();
+    QByteArray line;
+    while (file.readLineInto(&line)) {
         constexpr QByteArrayView tag = "summary: ";
         if (line.startsWith(tag)) {
             const auto maybeNumber = line.data() + tag.size();
