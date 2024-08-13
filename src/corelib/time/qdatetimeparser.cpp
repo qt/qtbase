@@ -785,7 +785,7 @@ QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex, i
 
     const int sectionmaxsize = sectionMaxSize(sectionIndex);
     const bool negate = (sn.type == YearSection && m_text.size() > offset
-                         && m_text.at(offset) == u'-');
+                         && calendar.isProleptic() && m_text.at(offset) == u'-');
     const int negativeYearOffset = negate ? 1 : 0;
 
     QStringView sectionTextRef =
@@ -948,6 +948,12 @@ QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex, i
                     } else {
                         result = ParsedSection(Intermediate, lastVal, used);
                     }
+                } else if (!lastVal && !calendar.hasYearZero()
+                           && (sn.type == YearSection
+                               || (sn.type == YearSection2Digits && currentValue.isValid()
+                                   && currentValue.date().year() / 100 == 0))) {
+                    // Year zero prohibited
+                    result = ParsedSection(unfilled ? Acceptable : Invalid, lastVal, used);
                 } else {
                     result = ParsedSection(Acceptable, lastVal, used);
                 }
