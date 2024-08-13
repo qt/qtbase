@@ -389,8 +389,7 @@ void tst_QImageWriter::supportsOption_data()
                               << QImageIOHandler::Description
                               << QImageIOHandler::Quality
                               << QImageIOHandler::CompressionRatio
-                              << QImageIOHandler::Size
-                              << QImageIOHandler::ScaledSize);
+                              << QImageIOHandler::Size);
 }
 
 void tst_QImageWriter::supportsOption()

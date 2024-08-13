@@ -76,7 +76,8 @@ public:
     };
 
     QPngHandlerPrivate(QPngHandler *qq)
-        : gamma(0.0), fileGamma(0.0), quality(50), compression(50), colorSpaceState(Undefined), png_ptr(nullptr), info_ptr(nullptr), end_info(nullptr), state(Ready), q(qq)
+        : gamma(0.0), fileGamma(0.0), quality(50), compression(50), colorSpaceState(Undefined),
+          png_ptr(nullptr), info_ptr(nullptr), end_info(nullptr), row_pointers(nullptr), state(Ready), q(qq)
     { }
 
     float gamma;
@@ -84,7 +85,6 @@ public:
     int quality; // quality is used for backward compatibility, maps to compression
     int compression;
     QString description;
-    QSize scaledSize;
     QStringList readTexts;
     QColorSpace colorSpace;
     ColorSpaceState colorSpaceState;
@@ -92,36 +92,13 @@ public:
     png_struct *png_ptr;
     png_info *info_ptr;
     png_info *end_info;
+    png_byte **row_pointers;
 
     bool readPngHeader();
     bool readPngImage(QImage *image);
     void readPngTexts(png_info *info);
 
     QImage::Format readImageFormat();
-
-    struct AllocatedMemoryPointers {
-        AllocatedMemoryPointers()
-            : row_pointers(nullptr), accRow(nullptr), inRow(nullptr), outRow(nullptr)
-        { }
-        void deallocate()
-        {
-            delete [] row_pointers;
-            row_pointers = nullptr;
-            delete [] accRow;
-            accRow = nullptr;
-            delete [] inRow;
-            inRow = nullptr;
-            delete [] outRow;
-            outRow = nullptr;
-        }
-
-        png_byte **row_pointers;
-        quint32 *accRow;
-        png_byte *inRow;
-        uchar *outRow;
-    };
-
-    AllocatedMemoryPointers amp;
 
     State state;
 
@@ -206,7 +183,7 @@ void qpiw_flush_fn(png_structp /* png_ptr */)
 }
 
 static
-bool setup_qt(QImage& image, png_structp png_ptr, png_infop info_ptr, QSize scaledSize, bool *doScaledRead)
+bool setup_qt(QImage& image, png_structp png_ptr, png_infop info_ptr)
 {
     png_uint_32 width = 0;
     png_uint_32 height = 0;
@@ -217,8 +194,7 @@ bool setup_qt(QImage& image, png_structp png_ptr, png_infop info_ptr, QSize scal
     int num_trans;
     png_colorp palette = nullptr;
     int num_palette;
-    int interlace_method = PNG_INTERLACE_LAST;
-    png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, &interlace_method, nullptr, nullptr);
+    png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, nullptr, nullptr, nullptr);
     QSize size(width, height);
     png_set_interlace_handling(png_ptr);
 
@@ -360,15 +336,7 @@ bool setup_qt(QImage& image, png_structp png_ptr, png_infop info_ptr, QSize scal
             // We want 4 bytes, but it isn't an alpha channel
             format = QImage::Format_RGB32;
         }
-        QSize outSize(width,height);
-        if (!scaledSize.isEmpty() && quint32(scaledSize.width()) <= width &&
-            quint32(scaledSize.height()) <= height && scaledSize != outSize && interlace_method == PNG_INTERLACE_NONE) {
-            // Do inline downscaling
-            outSize = scaledSize;
-            if (doScaledRead)
-                *doScaledRead = true;
-        }
-        if (!QImageIOHandler::allocateImage(outSize, format, &image))
+        if (!QImageIOHandler::allocateImage(size, format, &image))
             return false;
 
         if (QSysInfo::ByteOrder == QSysInfo::BigEndian)
@@ -382,85 +350,6 @@ bool setup_qt(QImage& image, png_structp png_ptr, png_infop info_ptr, QSize scal
         png_read_update_info(png_ptr, info_ptr);
     }
     return true;
-}
-
-static void read_image_scaled(QImage *outImage, png_structp png_ptr, png_infop info_ptr,
-                              QPngHandlerPrivate::AllocatedMemoryPointers &amp, QSize scaledSize)
-{
-
-    png_uint_32 width = 0;
-    png_uint_32 height = 0;
-    png_int_32 offset_x = 0;
-    png_int_32 offset_y = 0;
-
-    int bit_depth = 0;
-    int color_type = 0;
-    int unit_type = PNG_OFFSET_PIXEL;
-    png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, nullptr, nullptr, nullptr);
-    png_get_oFFs(png_ptr, info_ptr, &offset_x, &offset_y, &unit_type);
-    uchar *data = outImage->bits();
-    qsizetype bpl = outImage->bytesPerLine();
-
-    if (scaledSize.isEmpty() || !width || !height)
-        return;
-
-    const quint32 iysz = height;
-    const quint32 ixsz = width;
-    const quint32 oysz = scaledSize.height();
-    const quint32 oxsz = scaledSize.width();
-    const quint32 ibw = 4*width;
-    amp.accRow = new quint32[ibw];
-    memset(amp.accRow, 0, ibw*sizeof(quint32));
-    amp.inRow = new png_byte[ibw];
-    memset(amp.inRow, 0, ibw*sizeof(png_byte));
-    amp.outRow = new uchar[ibw];
-    memset(amp.outRow, 0, ibw*sizeof(uchar));
-    qint32 rval = 0;
-    for (quint32 oy=0; oy<oysz; oy++) {
-        // Store the rest of the previous input row, if any
-        for (quint32 i=0; i < ibw; i++)
-            amp.accRow[i] = rval*amp.inRow[i];
-        // Accumulate the next input rows
-        for (rval = iysz-rval; rval > 0; rval-=oysz) {
-            png_read_row(png_ptr, amp.inRow, nullptr);
-            quint32 fact = qMin(oysz, quint32(rval));
-            for (quint32 i=0; i < ibw; i++)
-                amp.accRow[i] += fact*amp.inRow[i];
-        }
-        rval *= -1;
-
-        // We have a full output row, store it
-        for (quint32 i=0; i < ibw; i++)
-            amp.outRow[i] = uchar(amp.accRow[i]/iysz);
-
-        quint32 a[4] = {0, 0, 0, 0};
-        qint32 cval = oxsz;
-        quint32 ix = 0;
-        for (quint32 ox=0; ox<oxsz; ox++) {
-            for (quint32 i=0; i < 4; i++)
-                a[i] = cval * amp.outRow[ix+i];
-            for (cval = ixsz - cval; cval > 0; cval-=oxsz) {
-                ix += 4;
-                if (ix >= ibw)
-                    break;            // Safety belt, should not happen
-                quint32 fact = qMin(oxsz, quint32(cval));
-                for (quint32 i=0; i < 4; i++)
-                    a[i] += fact * amp.outRow[ix+i];
-            }
-            cval *= -1;
-            for (quint32 i=0; i < 4; i++)
-                data[(4*ox)+i] = uchar(a[i]/ixsz);
-        }
-        data += bpl;
-    }
-    amp.deallocate();
-
-    outImage->setDotsPerMeterX((png_get_x_pixels_per_meter(png_ptr,info_ptr)*oxsz)/ixsz);
-    outImage->setDotsPerMeterY((png_get_y_pixels_per_meter(png_ptr,info_ptr)*oysz)/iysz);
-
-    if (unit_type == PNG_OFFSET_PIXEL)
-        outImage->setOffset(QPoint(offset_x*oxsz/ixsz, offset_y*oysz/iysz));
-
 }
 
 extern "C" {
@@ -616,10 +505,11 @@ bool QPngHandlerPrivate::readPngImage(QImage *outImage)
         return false;
     }
 
+    row_pointers = nullptr;
     if (setjmp(png_jmpbuf(png_ptr))) {
         png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
         png_ptr = nullptr;
-        amp.deallocate();
+        delete[] row_pointers;
         state = Error;
         return false;
     }
@@ -632,55 +522,49 @@ bool QPngHandlerPrivate::readPngImage(QImage *outImage)
         colorSpaceState = GammaChrm;
     }
 
-    bool doScaledRead = false;
-    if (!setup_qt(*outImage, png_ptr, info_ptr, scaledSize, &doScaledRead)) {
+    if (!setup_qt(*outImage, png_ptr, info_ptr)) {
         png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
         png_ptr = nullptr;
-        amp.deallocate();
+        delete[] row_pointers;
         state = Error;
         return false;
     }
 
-    if (doScaledRead) {
-        read_image_scaled(outImage, png_ptr, info_ptr, amp, scaledSize);
-    } else {
-        png_uint_32 width = 0;
-        png_uint_32 height = 0;
-        png_int_32 offset_x = 0;
-        png_int_32 offset_y = 0;
+    png_uint_32 width = 0;
+    png_uint_32 height = 0;
+    png_int_32 offset_x = 0;
+    png_int_32 offset_y = 0;
 
-        int bit_depth = 0;
-        int color_type = 0;
-        int unit_type = PNG_OFFSET_PIXEL;
-        png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, nullptr, nullptr, nullptr);
-        png_get_oFFs(png_ptr, info_ptr, &offset_x, &offset_y, &unit_type);
-        uchar *data = outImage->bits();
-        qsizetype bpl = outImage->bytesPerLine();
-        amp.row_pointers = new png_bytep[height];
+    int bit_depth = 0;
+    int color_type = 0;
+    int unit_type = PNG_OFFSET_PIXEL;
+    png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, nullptr, nullptr, nullptr);
+    png_get_oFFs(png_ptr, info_ptr, &offset_x, &offset_y, &unit_type);
+    uchar *data = outImage->bits();
+    qsizetype bpl = outImage->bytesPerLine();
+    row_pointers = new png_bytep[height];
 
-        for (uint y = 0; y < height; y++)
-            amp.row_pointers[y] = data + y * bpl;
+    for (uint y = 0; y < height; y++)
+        row_pointers[y] = data + y * bpl;
 
-        png_read_image(png_ptr, amp.row_pointers);
-        amp.deallocate();
+    png_read_image(png_ptr, row_pointers);
 
-        outImage->setDotsPerMeterX(png_get_x_pixels_per_meter(png_ptr,info_ptr));
-        outImage->setDotsPerMeterY(png_get_y_pixels_per_meter(png_ptr,info_ptr));
+    outImage->setDotsPerMeterX(png_get_x_pixels_per_meter(png_ptr,info_ptr));
+    outImage->setDotsPerMeterY(png_get_y_pixels_per_meter(png_ptr,info_ptr));
 
-        if (unit_type == PNG_OFFSET_PIXEL)
-            outImage->setOffset(QPoint(offset_x, offset_y));
+    if (unit_type == PNG_OFFSET_PIXEL)
+        outImage->setOffset(QPoint(offset_x, offset_y));
 
-        // sanity check palette entries
-        if (color_type == PNG_COLOR_TYPE_PALETTE && outImage->format() == QImage::Format_Indexed8) {
-            int color_table_size = outImage->colorCount();
-            for (int y=0; y<(int)height; ++y) {
-                uchar *p = FAST_SCAN_LINE(data, bpl, y);
-                uchar *end = p + width;
-                while (p < end) {
-                    if (*p >= color_table_size)
-                        *p = 0;
-                    ++p;
-                }
+           // sanity check palette entries
+    if (color_type == PNG_COLOR_TYPE_PALETTE && outImage->format() == QImage::Format_Indexed8) {
+        int color_table_size = outImage->colorCount();
+        for (int y=0; y<(int)height; ++y) {
+            uchar *p = FAST_SCAN_LINE(data, bpl, y);
+            uchar *end = p + width;
+            while (p < end) {
+                if (*p >= color_table_size)
+                    *p = 0;
+                ++p;
             }
         }
     }
@@ -694,11 +578,9 @@ bool QPngHandlerPrivate::readPngImage(QImage *outImage)
 
     png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
     png_ptr = nullptr;
-    amp.deallocate();
+    delete[] row_pointers;
+    row_pointers = nullptr;
     state = Ready;
-
-    if (scaledSize.isValid() && outImage->size() != scaledSize)
-        *outImage = outImage->scaled(scaledSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
 
     if (colorSpaceState > Undefined && colorSpace.isValid())
         outImage->setColorSpace(colorSpace);
@@ -1199,8 +1081,7 @@ bool QPngHandler::supportsOption(ImageOption option) const
         || option == ImageFormat
         || option == Quality
         || option == CompressionRatio
-        || option == Size
-        || option == ScaledSize;
+        || option == Size;
 }
 
 QVariant QPngHandler::option(ImageOption option) const
@@ -1221,8 +1102,6 @@ QVariant QPngHandler::option(ImageOption option) const
     else if (option == Size)
         return QSize(png_get_image_width(d->png_ptr, d->info_ptr),
                      png_get_image_height(d->png_ptr, d->info_ptr));
-    else if (option == ScaledSize)
-        return d->scaledSize;
     else if (option == ImageFormat)
         return d->readImageFormat();
     return QVariant();
@@ -1238,8 +1117,6 @@ void QPngHandler::setOption(ImageOption option, const QVariant &value)
         d->compression = value.toInt();
     else if (option == Description)
         d->description = value.toString();
-    else if (option == ScaledSize)
-        d->scaledSize = value.toSize();
 }
 
 QT_END_NAMESPACE
