@@ -3697,6 +3697,41 @@ void tst_QDataStream::enumTest()
     }
     ba.clear();
 
+    enum class E5 : qint64
+    {
+        A,
+        B,
+        C
+    };
+    {
+        QDataStream stream(&ba, QIODevice::WriteOnly);
+        stream << E5::C;
+        QCOMPARE(ba.size(), int(sizeof(E5)));
+    }
+    {
+        QDataStream stream(ba);
+        E5 e;
+        stream >> e;
+        QCOMPARE(e, E5::C);
+    }
+    ba.clear();
+
+    // unlike regular streaming operators, we accept long and ulong, because
+    // usually the only reason people see them is because they have
+    // std::(u)int64_t underlying types.
+    enum class ELong : long { A, B, C };
+    {
+        QDataStream stream(&ba, QIODevice::WriteOnly);
+        stream << ELong::A;
+        QCOMPARE(ba.size(), sizeof(long));
+    }
+    {
+        QDataStream stream(ba);
+        ELong e;
+        stream >> e;
+        QCOMPARE(e, ELong::A);
+    }
+    ba.clear();
 }
 
 void tst_QDataStream::floatingPointPrecision()

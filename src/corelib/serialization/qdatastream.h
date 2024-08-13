@@ -525,12 +525,21 @@ inline QDataStream &operator>>(QDataStream &s, QFlags<Enum> &e)
 template <typename T>
 typename std::enable_if_t<std::is_enum<T>::value, QDataStream &>
 operator<<(QDataStream &s, const T &t)
-{ return s << static_cast<typename std::underlying_type<T>::type>(t); }
+{
+    // std::underlying_type_t<T> may be long or ulong, for which QDataStream
+    // provides no streaming operators. For those, cast to qint64 or quint64.
+    return s << typename QIntegerForSizeof<T>::Unsigned(t);
+}
 
 template <typename T>
 typename std::enable_if_t<std::is_enum<T>::value, QDataStream &>
 operator>>(QDataStream &s, T &t)
-{ return s >> reinterpret_cast<typename std::underlying_type<T>::type &>(t); }
+{
+    typename QIntegerForSizeof<T>::Unsigned i;
+    s >> i;
+    t = T(i);
+    return s;
+}
 
 #ifndef Q_QDOC
 
