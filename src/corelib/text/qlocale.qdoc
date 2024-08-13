@@ -51,7 +51,23 @@
     \note For the current keyboard input locale take a look at
     QInputMethod::locale().
 
+    \section1 Appropriateness of the formats
+
     QLocale's data is based on Common Locale Data Repository v45.
+
+    This data is published by The Unicode Consortium, who aim to follow
+    customary, common use by writers of each language, in each script, in each
+    territory for which data is given. This may in some cases differ from what
+    is recognized as official, depending on how widely that official standard is
+    followed in practice.
+
+    For example, although the relevant international standard (from the BIPM)
+    mandates a thin non-breaking space as the separator between groups of digits
+    in numbers, when they are split up to aid readability, and many
+    jurisdictions have adopted this as their official standard for the
+    formatting of numbers, many locales in fact have a traditional way of
+    formatting numbers with punctuators separating groups of digits. CLDR, and
+    thus QLocale, follows this common usage rather than the official standard.
 
     \section1 Matching combinations of language, script and territory
 
