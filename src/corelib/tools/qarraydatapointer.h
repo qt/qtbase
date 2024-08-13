@@ -441,7 +441,7 @@ public:
 
         T *const b = this->begin() + this->size;
         T *const e = this->begin() + newSize;
-        std::uninitialized_value_construct(b, e);
+        q17::uninitialized_value_construct(b, e);
         this->size = newSize;
     }
 
