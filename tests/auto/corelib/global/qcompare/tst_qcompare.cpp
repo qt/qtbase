@@ -36,14 +36,14 @@ void tst_QCompare::partialOrdering()
 
 
     static_assert(!(QPartialOrdering::Unordered == 0));
-    static_assert(!(QPartialOrdering::Unordered != 0));
+    static_assert( (QPartialOrdering::Unordered != 0));
     static_assert(!(QPartialOrdering::Unordered <  0));
     static_assert(!(QPartialOrdering::Unordered <= 0));
     static_assert(!(QPartialOrdering::Unordered >  0));
     static_assert(!(QPartialOrdering::Unordered >= 0));
 
     static_assert(!(0 == QPartialOrdering::Unordered));
-    static_assert(!(0 != QPartialOrdering::Unordered));
+    static_assert( (0 != QPartialOrdering::Unordered));
     static_assert(!(0 <  QPartialOrdering::Unordered));
     static_assert(!(0 <= QPartialOrdering::Unordered));
     static_assert(!(0 >  QPartialOrdering::Unordered));
@@ -106,15 +106,11 @@ void tst_QCompare::unorderedNeqLiteralZero()
     QVERIFY(0 != stdUnordered);
     QVERIFY(is_neq(stdUnordered));
 
-    QEXPECT_FAIL("", "QTBUG-127759", Continue);
     QCOMPARE_EQ(qtLegacyUnordered != 0, stdUnordered != 0);
-    QEXPECT_FAIL("", "QTBUG-127759", Continue);
     QCOMPARE_EQ(0 != qtLegacyUnordered, 0 != stdUnordered);
 #endif
 
-    QEXPECT_FAIL("", "QTBUG-127759", Continue);
     QVERIFY(qtLegacyUnordered != 0);
-    QEXPECT_FAIL("", "QTBUG-127759", Continue);
     QVERIFY(0 != qtLegacyUnordered);
 }
 
