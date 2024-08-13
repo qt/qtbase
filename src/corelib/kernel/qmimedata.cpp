@@ -410,7 +410,7 @@ void QMimeData::setText(const QString &text)
 */
 bool QMimeData::hasText() const
 {
-    return hasFormat(textPlainLiteral()) || hasUrls();
+    return hasFormat(textPlainLiteral()) || hasFormat(textPlainUtf8Literal()) || hasUrls();
 }
 
 /*!
