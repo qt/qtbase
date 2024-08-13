@@ -2536,7 +2536,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                 Qt::ArrowType arrowType = Qt::UpArrow;
                 if (option->state & State_Horizontal)
                     arrowType = option->direction == Qt::LeftToRight ? Qt::LeftArrow : Qt::RightArrow;
-                qt_fusion_draw_arrow(arrowType, painter, option, upRect, arrowColor);
+                qt_fusion_draw_arrow(arrowType, painter, option, upRect.adjusted(1, 1, 0, 0), arrowColor);
             }
 
             // The AddLine (down/right) button
@@ -2565,7 +2565,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                 Qt::ArrowType arrowType = Qt::DownArrow;
                 if (option->state & State_Horizontal)
                     arrowType = option->direction == Qt::LeftToRight ? Qt::RightArrow : Qt::LeftArrow;
-                qt_fusion_draw_arrow(arrowType, painter, option, downRect, arrowColor);
+                qt_fusion_draw_arrow(arrowType, painter, option, downRect.adjusted(1, 1, 0, 0), arrowColor);
             }
 
         }
