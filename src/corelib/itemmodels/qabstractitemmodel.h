@@ -11,8 +11,6 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qvariant.h>
 
-#include <tuple>
-
 QT_REQUIRE_CONFIG(itemmodel);
 
 QT_BEGIN_NAMESPACE
@@ -145,11 +143,22 @@ public:
     constexpr inline bool isValid() const noexcept { return (r >= 0) && (c >= 0) && (m != nullptr); }
 
 private:
-    constexpr auto asTuple() const noexcept { return std::tie(r, c, i, m); }
     friend constexpr bool comparesEqual(const QModelIndex &lhs, const QModelIndex &rhs) noexcept
-    { return lhs.asTuple() == rhs.asTuple(); }
+    {
+        return lhs.r == rhs.r && lhs.c == rhs.c && lhs.i == rhs.i && lhs.m == rhs.m;
+    }
     friend constexpr Qt::strong_ordering compareThreeWay(const QModelIndex &lhs, const QModelIndex &rhs) noexcept
-    { return QtOrderingPrivate::compareThreeWayMulti(lhs.asTuple(), rhs.asTuple()); }
+    {
+        if (auto val = Qt::compareThreeWay(lhs.r, rhs.r); !is_eq(val))
+            return val;
+        if (auto val = Qt::compareThreeWay(lhs.c, rhs.c); !is_eq(val))
+            return val;
+        if (auto val = Qt::compareThreeWay(lhs.i, rhs.i); !is_eq(val))
+            return val;
+        if (auto val = Qt::compareThreeWay(lhs.m, rhs.m); !is_eq(val))
+            return val;
+        return Qt::strong_ordering::equivalent;
+    }
     Q_DECLARE_STRONGLY_ORDERED_LITERAL_TYPE(QModelIndex)
 private:
     inline QModelIndex(int arow, int acolumn, const void *ptr, const QAbstractItemModel *amodel) noexcept
