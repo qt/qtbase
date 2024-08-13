@@ -287,6 +287,8 @@ class LocaleScanner (object):
         group = self.find(f'{stem}group')
         if decimal == group:
             # mn_Mong_MN @v43 :-(
+            # https://unicode-org.atlassian.net/browse/CLDR-17883
+            # https://unicode-org.atlassian.net/browse/CLDR-16413
             clean = Node.draftScore('approved')
             decimal = self.find(f'{stem}decimal', draft=clean)
             group = self.find(f'{stem}group', draft=clean)
