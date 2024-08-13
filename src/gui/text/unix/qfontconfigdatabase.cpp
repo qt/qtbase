@@ -548,7 +548,7 @@ static void populateFromPattern(FcPattern *pattern,
 
 static bool isDprScaling()
 {
-    return !qFuzzyCompare(qApp->devicePixelRatio(), 1.0);
+    return !qFuzzyCompare(qApp->devicePixelRatio(), qreal(1.0));
 }
 
 QFontconfigDatabase::~QFontconfigDatabase()
