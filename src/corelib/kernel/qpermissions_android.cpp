@@ -56,13 +56,11 @@ static QStringList nativeBluetoothPermission(const QBluetoothPermission &permiss
 
     // API Level < 31
     static QString bluetoothGeneral = u"android.permission.BLUETOOTH"_s;
+    static QString fineLocation = u"android.permission.ACCESS_FINE_LOCATION"_s;
     // API Level >= 31
     static QString bluetoothScan = u"android.permission.BLUETOOTH_SCAN"_s;
     static QString bluetoothAdvertise = u"android.permission.BLUETOOTH_ADVERTISE"_s;
     static QString bluetoothConnect = u"android.permission.BLUETOOTH_CONNECT"_s;
-    // Fine location is currently required for ALL API levels, but that is not
-    // strictly necessary for API Level >= 31. See QTBUG-112164.
-    static QString fineLocation = u"android.permission.ACCESS_FINE_LOCATION"_s;
 
     if (QtAndroidPrivate::androidSdkVersion() < 31) {
         return {bluetoothGeneral, fineLocation};
@@ -72,7 +70,7 @@ static QStringList nativeBluetoothPermission(const QBluetoothPermission &permiss
         if (modes & QBluetoothPermission::Advertise)
             permissionList << bluetoothAdvertise;
         if (modes & QBluetoothPermission::Access)
-            permissionList << bluetoothScan << bluetoothConnect << fineLocation;
+            permissionList << bluetoothScan << bluetoothConnect;
         return permissionList;
     }
 }
