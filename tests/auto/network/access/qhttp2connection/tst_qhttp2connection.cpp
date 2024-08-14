@@ -487,7 +487,7 @@ void tst_QHttp2Connection::testBadFrameSize()
         buffer[2] = size;
 
         auto writtenN = connection->getSocket()->write(reinterpret_cast<const char *>(&buffer[0]), buffer.size());
-        QCOMPARE(writtenN, buffer.size());
+        QCOMPARE(writtenN, qint64(buffer.size()));
     }
 
     QCOMPARE(rstClientSpy.wait(), rst_received);
