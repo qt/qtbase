@@ -38,6 +38,8 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_DECLARE_LOGGING_CATEGORY(lcVirtualKeyboard)
+
 class QColorTrcLut;
 class QPlatformIntegration;
 class QPlatformTheme;
@@ -160,6 +162,9 @@ public:
     static bool processNativeEvent(QWindow *window, const QByteArray &eventType, void *message, qintptr *result);
 
     static bool sendQWindowEventToQPlatformWindow(QWindow *window, QEvent *event);
+
+    static bool maybeForwardEventToVirtualKeyboard(QEvent *e);
+    static bool isUsingVirtualKeyboard();
 
     static inline Qt::Alignment visualAlignment(Qt::LayoutDirection direction, Qt::Alignment alignment)
     {
