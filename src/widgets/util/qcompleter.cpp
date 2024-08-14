@@ -1463,12 +1463,16 @@ bool QCompleter::eventFilter(QObject *o, QEvent *e)
         }
 #endif
         if (!d->popup->underMouse()) {
-            d->popup->hide();
+            if (!QGuiApplicationPrivate::maybeForwardEventToVirtualKeyboard(e))
+                d->popup->hide();
             return true;
         }
         }
         return false;
 
+    case QEvent::MouseButtonRelease:
+        QGuiApplicationPrivate::maybeForwardEventToVirtualKeyboard(e);
+        return true;
     case QEvent::InputMethod:
     case QEvent::ShortcutOverride:
         QCoreApplication::sendEvent(d->widget, e);
