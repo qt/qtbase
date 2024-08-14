@@ -152,6 +152,7 @@ private slots:
     void testSpinBoxAsEditor();
     void removeIndexWhileEditing();
     void focusNextOnHide();
+    void shiftSelectionAfterModelSetCurrentIndex();
 
 private:
     static QAbstractItemView *viewFromString(const QByteArray &viewType, QWidget *parent = nullptr)
@@ -3574,6 +3575,38 @@ void tst_QAbstractItemView::focusNextOnHide()
     table.hide();
     QCOMPARE(table.currentIndex(), table.model()->index(0, 1));
     QVERIFY(lineEdit.hasFocus());
+}
+
+// Tests for QTBUG-127381, where shift-selecting after calling
+// QItemSelectionModel::setCurrentIndex() would produce unexpected results.
+void tst_QAbstractItemView::shiftSelectionAfterModelSetCurrentIndex()
+{
+    QStandardItemModel model(5, 1);
+    QTreeView view;
+    view.setSelectionBehavior(QAbstractItemView::SelectRows);
+    view.setSelectionMode(QAbstractItemView::ExtendedSelection);
+    view.setModel(&model);
+
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+
+    QModelIndex index = model.index(0, 0);
+    view.setCurrentIndex(index);
+    index = model.index(2, 0);
+    view.selectionModel()->setCurrentIndex(index, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
+
+    QTest::keyPress(&view, Qt::Key_Down, Qt::ShiftModifier);
+
+    QItemSelection selection = view.selectionModel()->selection();
+    QCOMPARE(selection.size(), 1);
+    QCOMPARE(selection.first().top(), 2);
+    QCOMPARE(selection.first().bottom(), 3);
+
+    QTest::keyPress(&view, Qt::Key_Up, Qt::ShiftModifier);
+
+    selection = view.selectionModel()->selection();
+    QCOMPARE(selection.first().top(), 2);
+    QCOMPARE(selection.first().bottom(), 2);
 }
 
 QTEST_MAIN(tst_QAbstractItemView)
