@@ -93,6 +93,15 @@ int main(int argc, char *argv[])
 
     NativeWindow nativeParentWindow;
     if (QWindow *foreignWindow = QWindow::fromWinId(nativeParentWindow)) {
+
+#ifdef Q_OS_WIN
+        // Native parent windows should have WS_CLIPCHILDREN style set
+        // to prevent overdrawing child area and cause flickering.
+        const HWND hwnd = reinterpret_cast<HWND>(foreignWindow->winId());
+        const LONG_PTR oldStyle = GetWindowLongPtr(hwnd, GWL_STYLE);
+        SetWindowLongPtr(hwnd, GWL_STYLE, oldStyle | WS_CLIPCHILDREN);
+#endif
+
         foreignWindow->setParent(&window);
         foreignWindow->setGeometry(50, 350, 100, 100);
         foreignWindow->showNormal();
