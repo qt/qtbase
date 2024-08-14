@@ -1823,10 +1823,14 @@ static bool deployWebProcess(const QMap<QString, QString> &qtpathsVariables, con
     const QString webProcess = webProcessBinary(binaryName, sourceOptions.platform);
     const QString webProcessSource = qtpathsVariables.value(QStringLiteral("QT_INSTALL_LIBEXECS"))
             + u'/' + webProcess;
-    if (!updateFile(webProcessSource, sourceOptions.directory, sourceOptions.updateFileFlags, sourceOptions.json, errorMessage))
+    const QString webProcessTargetDir = sourceOptions.platform & WindowsBased
+        && !sourceOptions.libraryDirectory.isEmpty() ?
+        sourceOptions.libraryDirectory :
+        sourceOptions.directory;
+    if (!updateFile(webProcessSource, webProcessTargetDir, sourceOptions.updateFileFlags, sourceOptions.json, errorMessage))
         return false;
     Options options(sourceOptions);
-    options.binaries.append(options.directory + u'/' + webProcess);
+    options.binaries.append(webProcessTargetDir + u'/' + webProcess);
     options.quickImports = false;
     options.translations = false;
     return deploy(options, qtpathsVariables, pluginInfo, errorMessage);
