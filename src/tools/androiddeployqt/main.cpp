@@ -238,7 +238,8 @@ struct Options
 
     // Per package collected information
     QStringList initClasses;
-    QStringList permissions;
+    // permissions 'name' => 'optional additional attributes'
+    QMap<QString, QString> permissions;
     QStringList features;
 
     // Override qml import scanner path
@@ -1853,8 +1854,8 @@ bool updateAndroidManifest(Options &options)
     replacements[QStringLiteral("package=\"org.qtproject.example\"")] = "package=\"%1\""_L1.arg(options.packageName);
 
     QString permissions;
-    for (const QString &permission : std::as_const(options.permissions))
-        permissions += "    <uses-permission android:name=\"%1\" />\n"_L1.arg(permission);
+    for (auto [name, extras] : options.permissions.asKeyValueRange())
+        permissions += "    <uses-permission android:name=\"%1\" %2 />\n"_L1.arg(name).arg(extras);
     replacements[QStringLiteral("<!-- %%INSERT_PERMISSIONS -->")] = permissions.trimmed();
 
     QString features;
@@ -2125,7 +2126,8 @@ bool readAndroidDependencyXml(Options *options,
                     }
                 } else if (reader.name() == "permission"_L1) {
                     QString name = reader.attributes().value("name"_L1).toString();
-                    options->permissions.append(name);
+                    QString extras = reader.attributes().value("extras"_L1).toString();
+                    options->permissions.insert(name, extras);
                 } else if (reader.name() == "feature"_L1) {
                     QString name = reader.attributes().value("name"_L1).toString();
                     options->features.append(name);
@@ -2140,7 +2142,6 @@ bool readAndroidDependencyXml(Options *options,
     } else if (options->verbose) {
         fprintf(stdout, "No android dependencies for %s\n", qPrintable(moduleName));
     }
-    options->permissions.removeDuplicates();
     options->features.removeDuplicates();
 
     return true;
