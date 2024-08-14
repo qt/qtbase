@@ -1377,69 +1377,83 @@ private:
         return iterator(result.it);
     }
 
+    template <typename K>
+    using if_heterogeneously_seachable = QHashPrivate::if_heterogeneously_seachable_with<Key, K>;
+
 public:
-#ifdef __cpp_concepts
-    bool remove(const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key)
+    template <typename K, if_heterogeneously_seachable<K> = true>
+    bool remove(const K &key)
     {
         return removeImpl(key);
     }
-    T take(const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key)
+    template <typename K, if_heterogeneously_seachable<K> = true>
+    T take(const K &key)
     {
         return takeImpl(key);
     }
-    bool contains(const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key) const
+    template <typename K, if_heterogeneously_seachable<K> = true>
+    bool contains(const K &key) const
     {
         return d ? d->findNode(key) != nullptr : false;
     }
-    qsizetype count(const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key) const
+    template <typename K, if_heterogeneously_seachable<K> = true>
+    qsizetype count(const K &key) const
     {
         return contains(key) ? 1 : 0;
     }
-    T value(const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key) const noexcept
+    template <typename K, if_heterogeneously_seachable<K> = true>
+    T value(const K &key) const noexcept
     {
         if (auto *v = valueImpl(key))
             return *v;
         else
             return T();
     }
-    T value(const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key, const T &defaultValue) const noexcept
+    template <typename K, if_heterogeneously_seachable<K> = true>
+    T value(const K &key, const T &defaultValue) const noexcept
     {
         if (auto *v = valueImpl(key))
             return *v;
         else
             return defaultValue;
     }
-    T &operator[](const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key)
+    template <typename K, if_heterogeneously_seachable<K> = true>
+    T &operator[](const K &key)
     {
         return operatorIndexImpl(key);
     }
-    const T operator[](const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key) const noexcept
+    template <typename K, if_heterogeneously_seachable<K> = true>
+    const T operator[](const K &key) const noexcept
     {
         return value(key);
     }
+    template <typename K, if_heterogeneously_seachable<K> = true>
     std::pair<iterator, iterator>
-    equal_range(const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key)
+    equal_range(const K &key)
     {
         return equal_range_impl(*this, key);
     }
+    template <typename K, if_heterogeneously_seachable<K> = true>
     std::pair<const_iterator, const_iterator>
-    equal_range(const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key) const noexcept
+    equal_range(const K &key) const noexcept
     {
         return equal_range_impl(*this, key);
     }
-    iterator find(const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key)
+    template <typename K, if_heterogeneously_seachable<K> = true>
+    iterator find(const K &key)
     {
         return findImpl(key);
     }
-    const_iterator find(const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key) const noexcept
+    template <typename K, if_heterogeneously_seachable<K> = true>
+    const_iterator find(const K &key) const noexcept
     {
         return constFindImpl(key);
     }
-    const_iterator constFind(const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key) const noexcept
+    template <typename K, if_heterogeneously_seachable<K> = true>
+    const_iterator constFind(const K &key) const noexcept
     {
         return find(key);
     }
-#endif // __cpp_concepts
 };
 
 
@@ -2372,99 +2386,120 @@ private:
         return iterator(result.it);
     }
 
+    template <typename K>
+    using if_heterogeneously_seachable = QHashPrivate::if_heterogeneously_seachable_with<Key, K>;
+
 public:
-#ifdef __cpp_concepts
-    qsizetype remove(const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key)
+    template <typename K, if_heterogeneously_seachable<K> = true>
+    qsizetype remove(const K &key)
     {
         return removeImpl(key);
     }
-    T take(const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key)
+    template <typename K, if_heterogeneously_seachable<K> = true>
+    T take(const K &key)
     {
         return takeImpl(key);
     }
-    bool contains(const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key) const noexcept
+    template <typename K, if_heterogeneously_seachable<K> = true>
+    bool contains(const K &key) const noexcept
     {
         if (!d)
             return false;
         return d->findNode(key) != nullptr;
     }
-    T value(const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key) const noexcept
+    template <typename K, if_heterogeneously_seachable<K> = true>
+    T value(const K &key) const noexcept
     {
         if (auto *v = valueImpl(key))
             return *v;
         else
             return T();
     }
-    T value(const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key, const T &defaultValue) const noexcept
+    template <typename K, if_heterogeneously_seachable<K> = true>
+    T value(const K &key, const T &defaultValue) const noexcept
     {
         if (auto *v = valueImpl(key))
             return *v;
         else
             return defaultValue;
     }
-    T &operator[](const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key)
+    template <typename K, if_heterogeneously_seachable<K> = true>
+    T &operator[](const K &key)
     {
         return operatorIndexImpl(key);
     }
-    const T operator[](const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key) const noexcept
+    template <typename K, if_heterogeneously_seachable<K> = true>
+    const T operator[](const K &key) const noexcept
     {
         return value(key);
     }
-    QList<T> values(const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key)
+    template <typename K, if_heterogeneously_seachable<K> = true>
+    QList<T> values(const K &key)
     {
         return valuesImpl(key);
     }
-    iterator find(const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key)
+    template <typename K, if_heterogeneously_seachable<K> = true>
+    iterator find(const K &key)
     {
         return findImpl(key);
     }
-    const_iterator constFind(const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key) const noexcept
+    template <typename K, if_heterogeneously_seachable<K> = true>
+    const_iterator constFind(const K &key) const noexcept
     {
         return constFindImpl(key);
     }
-    const_iterator find(const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key) const noexcept
+    template <typename K, if_heterogeneously_seachable<K> = true>
+    const_iterator find(const K &key) const noexcept
     {
         return constFindImpl(key);
     }
-    bool contains(const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key, const T &value) const noexcept
+    template <typename K, if_heterogeneously_seachable<K> = true>
+    bool contains(const K &key, const T &value) const noexcept
     {
         return containsImpl(key, value);
     }
-    qsizetype remove(const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key, const T &value)
+    template <typename K, if_heterogeneously_seachable<K> = true>
+    qsizetype remove(const K &key, const T &value)
     {
         return removeImpl(key, value);
     }
-    qsizetype count(const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key) const noexcept
+    template <typename K, if_heterogeneously_seachable<K> = true>
+    qsizetype count(const K &key) const noexcept
     {
         return countImpl(key);
     }
-    qsizetype count(const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key, const T &value) const noexcept
+    template <typename K, if_heterogeneously_seachable<K> = true>
+    qsizetype count(const K &key, const T &value) const noexcept
     {
         return countImpl(key, value);
     }
-    iterator find(const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key, const T &value)
+    template <typename K, if_heterogeneously_seachable<K> = true>
+    iterator find(const K &key, const T &value)
     {
         return findImpl(key, value);
     }
-    const_iterator constFind(const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key, const T &value) const noexcept
+    template <typename K, if_heterogeneously_seachable<K> = true>
+    const_iterator constFind(const K &key, const T &value) const noexcept
     {
         return constFindImpl(key, value);
     }
-    const_iterator find(const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key, const T &value) const noexcept
+    template <typename K, if_heterogeneously_seachable<K> = true>
+    const_iterator find(const K &key, const T &value) const noexcept
     {
         return constFind(key, value);
     }
+    template <typename K, if_heterogeneously_seachable<K> = true>
     std::pair<iterator, iterator>
-    equal_range(const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key)
+    equal_range(const K &key)
     {
         return equal_range_impl(key);
     }
+    template <typename K, if_heterogeneously_seachable<K> = true>
     std::pair<const_iterator, const_iterator>
-    equal_range(const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key) const noexcept
+    equal_range(const K &key) const noexcept
     {
         return equal_range_impl(key);
     }
-#endif // __cpp_concepts
 };
 
 Q_DECLARE_ASSOCIATIVE_FORWARD_ITERATOR(Hash)
