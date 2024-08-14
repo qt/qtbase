@@ -32,6 +32,7 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
         m_inputConnectionListener = listener;
         setParent(parentWindow);
         setFocusableInTouchMode(true);
+        setDefaultFocusHighlightEnabled(false);
 
         // Views are by default visible, but QWindows are not.
         // We should ideally pick up the actual QWindow state here,

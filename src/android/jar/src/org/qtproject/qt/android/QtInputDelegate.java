@@ -286,9 +286,11 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
         m_keyboardIsVisible = visibility;
         keyboardVisibilityUpdated(m_keyboardIsVisible);
 
-        // Hiding the keyboard clears the immersive mode, so we need to set it again.
-        if (!visibility)
+        if (!visibility) {
+            // Hiding the keyboard clears the immersive mode, so we need to set it again.
             m_keyboardVisibilityListener.onKeyboardVisibilityChange();
+            m_currentEditText.clearFocus();
+        }
     }
 
     void setFocusedView(QtEditText currentEditText)
