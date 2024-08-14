@@ -3410,7 +3410,14 @@ void QTableViewPrivate::selectRow(int row, bool anchor)
         int column = horizontalHeader->logicalIndexAt(q->isRightToLeft() ? viewport->width() : 0);
         QModelIndex index = model->index(row, column, root);
         QItemSelectionModel::SelectionFlags command = q->selectionCommand(index);
-        selectionModel->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
+
+        {
+            // currentSelectionStartIndex gets modified inside QAbstractItemView::currentChanged()
+            const auto startIndex = currentSelectionStartIndex;
+            selectionModel->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
+            currentSelectionStartIndex = startIndex;
+        }
+
         if ((anchor && !(command & QItemSelectionModel::Current))
             || (q->selectionMode() == QTableView::SingleSelection))
             currentSelectionStartIndex = model->index(row, column, root);
@@ -3450,7 +3457,14 @@ void QTableViewPrivate::selectColumn(int column, bool anchor)
         int row = verticalHeader->logicalIndexAt(0);
         QModelIndex index = model->index(row, column, root);
         QItemSelectionModel::SelectionFlags command = q->selectionCommand(index);
-        selectionModel->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
+
+        {
+            // currentSelectionStartIndex gets modified inside QAbstractItemView::currentChanged()
+            const auto startIndex = currentSelectionStartIndex;
+            selectionModel->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
+            currentSelectionStartIndex = startIndex;
+        }
+
         if ((anchor && !(command & QItemSelectionModel::Current))
             || (q->selectionMode() == QTableView::SingleSelection))
             currentSelectionStartIndex = model->index(row, column, root);
