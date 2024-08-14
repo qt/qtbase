@@ -9,9 +9,6 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qstringfwd.h>
 
-#ifdef __cpp_concepts
-#include <concepts>
-#endif
 #include <numeric> // for std::accumulate
 #include <functional> // for std::hash
 #include <utility> // For std::pair
@@ -246,19 +243,44 @@ size_t qHash(const T &t, size_t seed, Args&&...) noexcept(noexcept(qHash(t)))
 #endif // < Qt 7
 
 namespace QHashPrivate {
-#ifdef __cpp_concepts
-template <typename Key, typename T> concept HeterogeneouslySearchableWithHelper =
+
+namespace detail {
+// approximates std::equality_comparable_with
+template <typename T, typename U, typename = void>
+struct is_equality_comparable_with : std::false_type {};
+
+template <typename T, typename U>
+struct is_equality_comparable_with<T, U,
+    std::void_t<
+        decltype(bool(std::declval<T>() == std::declval<U>())),
+        decltype(bool(std::declval<U>() == std::declval<T>())),
+        decltype(bool(std::declval<T>() != std::declval<U>())),
+        decltype(bool(std::declval<U>() != std::declval<T>()))
+    >>
+    : std::true_type {};
+}
+
+template <typename Key, typename T> struct HeterogeneouslySearchableWithHelper
+    : std::conjunction<
         // if Key and T are not the same (member already exists)
-        !std::is_same_v<Key, T>
+        std::negation<std::is_same<Key, T>>,
         // but are comparable amongst each other
-        && std::equality_comparable_with<Key, T>
+        detail::is_equality_comparable_with<Key, T>,
         // and supports heteregenous hashing
-        && QHashHeterogeneousSearch<Key, T>::value;
-template <typename Key, typename T> concept HeterogeneouslySearchableWith =
-        HeterogeneouslySearchableWithHelper<q20::remove_cvref_t<Key>, q20::remove_cvref_t<T>>;
-#else
-template <typename Key, typename T> constexpr bool HeterogeneouslySearchableWith = false;
-#endif
+        QHashHeterogeneousSearch<Key, T>
+    > {};
+
+template <typename Key, typename T>
+using HeterogeneouslySearchableWith = HeterogeneouslySearchableWithHelper<
+        q20::remove_cvref_t<Key>,
+        q20::remove_cvref_t<T>
+>;
+
+template <typename Key, typename K>
+using if_heterogeneously_seachable_with = std::enable_if_t<
+        QHashPrivate::HeterogeneouslySearchableWith<Key, K>::value,
+    bool>;
+
 }
 
 template<typename T>
@@ -267,9 +289,8 @@ bool qHashEquals(const T &a, const T &b)
     return a == b;
 }
 
-template <typename T1, typename T2>
-std::enable_if_t<QHashPrivate::HeterogeneouslySearchableWith<T1, T2>, bool>
-qHashEquals(const T1 &a, const T2 &b)
+template <typename T1, typename T2, QHashPrivate::if_heterogeneously_seachable_with<T1, T2> = true>
+bool qHashEquals(const T1 &a, const T2 &b)
 {
     return a == b;
 }

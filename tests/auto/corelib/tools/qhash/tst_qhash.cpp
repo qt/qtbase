@@ -1198,9 +1198,12 @@ void tst_QHash::operator_eq()
     }
 }
 
-#ifdef __cpp_concepts
 struct HeterogeneousHashingType
 {
+#ifndef __cpp_aggregate_paren_init
+    HeterogeneousHashingType() = default;
+    HeterogeneousHashingType(const QString &string) : s(string) {}
+#endif
     inline static int conversionCount = 0;
     QString s;
 
@@ -1211,12 +1214,18 @@ struct HeterogeneousHashingType
     }
 
     // std::equality_comparable_with requires we be self-comparable too
-    friend bool operator==(const HeterogeneousHashingType &t1, const HeterogeneousHashingType &t2) = default;
+    friend bool operator==(const HeterogeneousHashingType &t1, const HeterogeneousHashingType &t2) { return t1.s == t2.s; };
 
     friend bool operator==(const QString &string, const HeterogeneousHashingType &tester)
     { return tester.s == string; }
+#ifndef __cpp_impl_three_way_compare // full set required for detail::is_equality_comparable_with<QString>
     friend bool operator!=(const QString &string, const HeterogeneousHashingType &tester)
-    { return !(tester.s == string); }
+    { return !operator==(string, tester); }
+    friend bool operator==(const HeterogeneousHashingType &tester, const QString &string)
+    { return operator==(string, tester); }
+    friend bool operator!=(const HeterogeneousHashingType &tester, const QString &string)
+    { return !operator==(string, tester); }
+#endif
 
     friend size_t qHash(const HeterogeneousHashingType &tester, size_t seed)
     { return qHash(tester.s, seed); }
@@ -1225,10 +1234,9 @@ QT_BEGIN_NAMESPACE
 template <> struct QHashHeterogeneousSearch<QString, HeterogeneousHashingType> : std::true_type {};
 template <> struct QHashHeterogeneousSearch<HeterogeneousHashingType, QString> : std::true_type {};
 QT_END_NAMESPACE
-static_assert(std::is_same_v<QString, std::common_type_t<QString, HeterogeneousHashingType>>);
-static_assert(std::equality_comparable_with<QString, HeterogeneousHashingType>);
-static_assert(QHashPrivate::HeterogeneouslySearchableWith<QString, HeterogeneousHashingType>);
-static_assert(QHashPrivate::HeterogeneouslySearchableWith<HeterogeneousHashingType, QString>);
+static_assert(QHashPrivate::detail::is_equality_comparable_with<QString, HeterogeneousHashingType>::value);
+static_assert(QHashPrivate::HeterogeneouslySearchableWith<QString, HeterogeneousHashingType>::value);
+static_assert(QHashPrivate::HeterogeneouslySearchableWith<HeterogeneousHashingType, QString>::value);
 
 template <typename T> struct HeterogeneousSearchTestHelper
 {
@@ -1248,14 +1256,10 @@ template <> struct HeterogeneousSearchTestHelper<HeterogeneousHashingType>
         QCOMPARE(HeterogeneousHashingType::conversionCount, 0);
     }
 };
-#else
-using HeterogeneousHashingType = QString;
-#endif
 
 template <template <typename, typename> class Hash, typename String, typename View, typename Converter>
 static void heterogeneousSearchTest(const QList<std::remove_const_t<String>> &keys, Converter conv)
 {
-#ifdef __cpp_concepts
     using Helper = HeterogeneousSearchTestHelper<View>;
     String key = keys.last();
     String otherKey = keys.first();
@@ -1363,11 +1367,6 @@ static void heterogeneousSearchTest(const QList<std::remove_const_t<String>> &ke
     QCOMPARE_EQ(hash.find(keyView), hash.end());
     QCOMPARE_EQ(hash.constFind(keyView), hash.constEnd());
     Helper::checkCounter();
-#else
-    Q_UNUSED(keys);
-    Q_UNUSED(conv);
-    QSKIP("This feature requires C++20 (concepts)");
-#endif
 }
 
 template <template <typename, typename> class Hash, typename String, typename View>
