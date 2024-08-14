@@ -108,6 +108,7 @@
 QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcPopup, "qt.gui.popup");
+Q_LOGGING_CATEGORY(lcVirtualKeyboard, "qt.gui.virtualkeyboard");
 
 using namespace Qt::StringLiterals;
 using namespace QtMiscUtils;
@@ -2107,6 +2108,59 @@ bool QGuiApplicationPrivate::sendQWindowEventToQPlatformWindow(QWindow *window, 
 bool QGuiApplicationPrivate::processNativeEvent(QWindow *window, const QByteArray &eventType, void *message, qintptr *result)
 {
     return window->nativeEvent(eventType, message, result);
+}
+
+bool QGuiApplicationPrivate::isUsingVirtualKeyboard()
+{
+    static const bool usingVirtualKeyboard = getenv("QT_IM_MODULE") == QByteArray("qtvirtualkeyboard");
+    return usingVirtualKeyboard;
+}
+
+// If a virtual keyboard exists, forward mouse event
+bool QGuiApplicationPrivate::maybeForwardEventToVirtualKeyboard(QEvent *e)
+{
+    if (!isUsingVirtualKeyboard()) {
+        qCDebug(lcVirtualKeyboard) << "Virtual keyboard not supported.";
+        return false;
+    }
+
+    static QPointer<QWindow> virtualKeyboard;
+    const QEvent::Type type = e->type();
+    Q_ASSERT(type == QEvent::MouseButtonPress || type == QEvent::MouseButtonRelease);
+    const auto me = static_cast<QMouseEvent *>(e);
+    const QPointF posF = me->globalPosition();
+    const QPoint pos = posF.toPoint();
+
+    // Is there a visible virtual keyboard at event position?
+    if (!virtualKeyboard) {
+        if (QWindow *win = QGuiApplication::topLevelAt(pos);
+            win->inherits("QtVirtualKeyboard::InputView")) {
+            virtualKeyboard = win;
+        } else {
+            qCDebug(lcVirtualKeyboard) << "Virtual keyboard supported, but inactive.";
+            return false;
+        }
+    }
+
+    Q_ASSERT(virtualKeyboard);
+    const bool virtualKeyboardUnderMouse = virtualKeyboard->isVisible()
+                                           && virtualKeyboard->geometry().contains(pos);
+
+    if (!virtualKeyboardUnderMouse) {
+        qCDebug(lcVirtualKeyboard) << type << "at" << pos << "is outside geometry"
+                                   << virtualKeyboard->geometry() << "of" << virtualKeyboard.data();
+        return false;
+    }
+
+    QMouseEvent vkbEvent(type, virtualKeyboard->mapFromGlobal(pos), pos,
+                         me->button(), me->buttons(), me->modifiers(),
+                         me->pointingDevice());
+
+    QGuiApplication::sendEvent(virtualKeyboard, &vkbEvent);
+    qCDebug(lcVirtualKeyboard) << "Forwarded" << type << "to" << virtualKeyboard.data()
+                               << "at" << pos;
+
+    return true;
 }
 
 void Q_TRACE_INSTRUMENT(qtgui) QGuiApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePrivate::WindowSystemEvent *e)
