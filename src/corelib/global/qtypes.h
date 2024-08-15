@@ -200,7 +200,7 @@ typedef double qreal;
 
 #if defined(__cplusplus)
 /*
-  quintptr are qptrdiff is guaranteed to be the same size as a pointer, i.e.
+  quintptr and qptrdiff are guaranteed to be the same size as a pointer, i.e.
 
       sizeof(void *) == sizeof(quintptr)
       && sizeof(void *) == sizeof(qptrdiff)
