@@ -237,21 +237,16 @@ void tst_QLocale::fromScriptLand_data()
     ROW("Guru-IN", GurmukhiScript, India);
     ROW("Latn-MA", LatinScript, Morocco);
     ROW("Tfng-MA", TifinaghScript, Morocco);
-    ROW("Cyrl-BA", CyrillicScript, BosniaAndHerzegowina);
     ROW("Cyrl-RS", CyrillicScript, Serbia);
-    ROW("Latn-BA", LatinScript, BosniaAndHerzegowina);
     ROW("Latn-ME", LatinScript, Montenegro);
     ROW("Arab-AF", ArabicScript, Afghanistan);
     ROW("Cyrl-UZ", CyrillicScript, Uzbekistan);
     ROW("Latn-UZ", LatinScript, Uzbekistan);
-    ROW("Latn-LR", LatinScript, Liberia);
     ROW("Vaii-LR", VaiScript, Liberia);
     ROW("Hans-CN", SimplifiedHanScript, China);
     ROW("Hant-HK", TraditionalHanScript, HongKong);
-    ROW("Hans-CN", SimplifiedHanScript, China);
     ROW("Hans-HK", SimplifiedHanScript, HongKong);
     ROW("Hans-SG", SimplifiedHanScript, Singapore);
-    ROW("Hant-HK", TraditionalHanScript, HongKong);
     ROW("Hant-TW", TraditionalHanScript, Taiwan);
 #undef ROW
 }
