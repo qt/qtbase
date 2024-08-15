@@ -712,7 +712,14 @@ bool QTextEdit::fontItalic() const
 QColor QTextEdit::textColor() const
 {
     Q_D(const QTextEdit);
-    return d->control->textCursor().charFormat().foreground().color();
+
+    const auto fg = d->control->textCursor().charFormat().foreground();
+    if (fg.style() == Qt::NoBrush) {
+        const auto context = d->control->getPaintContext(const_cast<QTextEdit *>(this));
+        return context.palette.color(QPalette::Text);
+    }
+
+    return fg.color();
 }
 
 /*!
