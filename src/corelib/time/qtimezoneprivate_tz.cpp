@@ -1024,7 +1024,7 @@ QString QTzTimeZonePrivate::displayName(QTimeZone::TimeType timeType,
 {
     // TZ only provides C-locale abbreviations and offset:
     if (nameType != QTimeZone::LongName && isDataLocale(locale)) {
-        QTimeZonePrivate::Data tran = data(timeType);
+        Data tran = data(timeType);
         if (tran.atMSecsSinceEpoch != invalidMSecs()) {
             if (nameType == QTimeZone::ShortName)
                 return tran.abbreviation;
@@ -1044,7 +1044,7 @@ QString QTzTimeZonePrivate::abbreviation(qint64 atMSecsSinceEpoch) const
 
 int QTzTimeZonePrivate::offsetFromUtc(qint64 atMSecsSinceEpoch) const
 {
-    const QTimeZonePrivate::Data tran = data(atMSecsSinceEpoch);
+    const Data tran = data(atMSecsSinceEpoch);
     return tran.offsetFromUtc; // == tran.standardTimeOffset + tran.daylightTimeOffset
 }
 
@@ -1094,14 +1094,14 @@ QTimeZonePrivate::Data QTzTimeZonePrivate::data(qint64 forMSecsSinceEpoch) const
     // and we have a POSIX rule, then use it:
     if (!cached_data.m_posixRule.isEmpty()
         && (tranCache().isEmpty() || tranCache().last().atMSecsSinceEpoch < forMSecsSinceEpoch)) {
-        QList<QTimeZonePrivate::Data> posixTrans = getPosixTransitions(forMSecsSinceEpoch);
+        QList<Data> posixTrans = getPosixTransitions(forMSecsSinceEpoch);
         auto it = std::partition_point(posixTrans.cbegin(), posixTrans.cend(),
-                                       [forMSecsSinceEpoch] (const QTimeZonePrivate::Data &at) {
+                                       [forMSecsSinceEpoch] (const Data &at) {
                                            return at.atMSecsSinceEpoch <= forMSecsSinceEpoch;
                                        });
         // Use most recent, if any in the past; or the first if we have no other rules:
         if (it > posixTrans.cbegin() || (tranCache().isEmpty() && it < posixTrans.cend())) {
-            QTimeZonePrivate::Data data = *(it > posixTrans.cbegin() ? it - 1 : it);
+            Data data = *(it > posixTrans.cbegin() ? it - 1 : it);
             data.atMSecsSinceEpoch = forMSecsSinceEpoch;
             return data;
         }
@@ -1129,14 +1129,14 @@ QTimeZonePrivate::Data QTzTimeZonePrivate::data(qint64 forMSecsSinceEpoch) const
 QTimeZonePrivate::Data QTzTimeZonePrivate::data(QTimeZone::TimeType timeType) const
 {
     // True if tran is valid and has the DST-ness to match timeType:
-    const auto validMatch = [timeType](const QTimeZonePrivate::Data &tran) {
+    const auto validMatch = [timeType](const Data &tran) {
         return tran.atMSecsSinceEpoch != invalidMSecs()
             && ((timeType == QTimeZone::DaylightTime) != (tran.daylightTimeOffset == 0));
     };
 
     // Get current tran, use if suitable:
     const qint64 currentMSecs = QDateTime::currentMSecsSinceEpoch();
-    QTimeZonePrivate::Data tran = data(currentMSecs);
+    Data tran = data(currentMSecs);
     if (validMatch(tran))
         return tran;
 
@@ -1190,9 +1190,9 @@ QTimeZonePrivate::Data QTzTimeZonePrivate::nextTransition(qint64 afterMSecsSince
     // and we have a POSIX rule, then use it:
     if (!cached_data.m_posixRule.isEmpty()
         && (tranCache().isEmpty() || tranCache().last().atMSecsSinceEpoch < afterMSecsSinceEpoch)) {
-        QList<QTimeZonePrivate::Data> posixTrans = getPosixTransitions(afterMSecsSinceEpoch);
+        QList<Data> posixTrans = getPosixTransitions(afterMSecsSinceEpoch);
         auto it = std::partition_point(posixTrans.cbegin(), posixTrans.cend(),
-                                       [afterMSecsSinceEpoch] (const QTimeZonePrivate::Data &at) {
+                                       [afterMSecsSinceEpoch] (const Data &at) {
                                            return at.atMSecsSinceEpoch <= afterMSecsSinceEpoch;
                                        });
 
@@ -1213,9 +1213,9 @@ QTimeZonePrivate::Data QTzTimeZonePrivate::previousTransition(qint64 beforeMSecs
     // and we have a POSIX rule, then use it:
     if (!cached_data.m_posixRule.isEmpty()
         && (tranCache().isEmpty() || tranCache().last().atMSecsSinceEpoch < beforeMSecsSinceEpoch)) {
-        QList<QTimeZonePrivate::Data> posixTrans = getPosixTransitions(beforeMSecsSinceEpoch);
+        QList<Data> posixTrans = getPosixTransitions(beforeMSecsSinceEpoch);
         auto it = std::partition_point(posixTrans.cbegin(), posixTrans.cend(),
-                                       [beforeMSecsSinceEpoch] (const QTimeZonePrivate::Data &at) {
+                                       [beforeMSecsSinceEpoch] (const Data &at) {
                                            return at.atMSecsSinceEpoch < beforeMSecsSinceEpoch;
                                        });
         if (it > posixTrans.cbegin())

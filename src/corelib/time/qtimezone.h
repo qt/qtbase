@@ -175,11 +175,9 @@ public:
 #  endif
     QString comment() const;
 
-    QString displayName(const QDateTime &atDateTime,
-                        QTimeZone::NameType nameType = QTimeZone::DefaultName,
+    QString displayName(const QDateTime &atDateTime, NameType nameType = DefaultName,
                         const QLocale &locale = QLocale()) const;
-    QString displayName(QTimeZone::TimeType timeType,
-                        QTimeZone::NameType nameType = QTimeZone::DefaultName,
+    QString displayName(TimeType timeType, NameType nameType = DefaultName,
                         const QLocale &locale = QLocale()) const;
     QString abbreviation(const QDateTime &atDateTime) const;
 

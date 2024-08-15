@@ -253,14 +253,14 @@ bool QTimeZonePrivate::isDaylightTime(qint64 atMSecsSinceEpoch) const
 QTimeZonePrivate::Data QTimeZonePrivate::data(QTimeZone::TimeType timeType) const
 {
     // True if tran is valid and has the DST-ness to match timeType:
-    const auto validMatch = [timeType](const QTimeZonePrivate::Data &tran) {
+    const auto validMatch = [timeType](const Data &tran) {
         return tran.atMSecsSinceEpoch != invalidMSecs()
             && ((timeType == QTimeZone::DaylightTime) != (tran.daylightTimeOffset == 0));
     };
 
     // Get current tran, use if suitable:
     const qint64 currentMSecs = QDateTime::currentMSecsSinceEpoch();
-    QTimeZonePrivate::Data tran = data(currentMSecs);
+    Data tran = data(currentMSecs);
     if (validMatch(tran))
         return tran;
 
@@ -310,7 +310,7 @@ QTimeZonePrivate::Data QTimeZonePrivate::data(qint64 forMSecsSinceEpoch) const
 QDateTimePrivate::ZoneState QTimeZonePrivate::stateAtZoneTime(
     qint64 forLocalMSecs, QDateTimePrivate::TransitionOptions resolve) const
 {
-    auto dataToState = [](const QTimeZonePrivate::Data &d) {
+    auto dataToState = [](const Data &d) {
         return QDateTimePrivate::ZoneState(d.atMSecsSinceEpoch + d.offsetFromUtc * 1000,
                                            d.offsetFromUtc,
                                            d.daylightTimeOffset ? QDateTimePrivate::DaylightTime

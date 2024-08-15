@@ -395,7 +395,7 @@ QTimeZone::Data::~Data()
 #endif
 }
 
-QTimeZone::Data &QTimeZone::Data::operator=(const QTimeZone::Data &other) noexcept
+QTimeZone::Data &QTimeZone::Data::operator=(const Data &other) noexcept
 {
 #if QT_CONFIG(timezone)
     if (!other.isShort())

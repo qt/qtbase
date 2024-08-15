@@ -325,7 +325,7 @@ bool QIcuTimeZonePrivate::isDaylightTime(qint64 atMSecsSinceEpoch) const
 QTimeZonePrivate::Data QIcuTimeZonePrivate::data(qint64 forMSecsSinceEpoch) const
 {
     // Available in ICU C++ api, and draft C api in v50
-    QTimeZonePrivate::Data data;
+    Data data;
 #if U_ICU_VERSION_MAJOR_NUM >= 50
     data = ucalTimeZoneTransition(m_ucal, UCAL_TZ_TRANSITION_PREVIOUS_INCLUSIVE,
                                   forMSecsSinceEpoch);

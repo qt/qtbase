@@ -183,7 +183,7 @@ bool QMacTimeZonePrivate::hasTransitions() const
 
 QTimeZonePrivate::Data QMacTimeZonePrivate::nextTransition(qint64 afterMSecsSinceEpoch) const
 {
-    QTimeZonePrivate::Data tran;
+    Data tran;
     const NSTimeInterval seconds = afterMSecsSinceEpoch / 1000.0;
     NSDate *nextDate = [NSDate dateWithTimeIntervalSince1970:seconds];
     nextDate = [m_nstz nextDaylightSavingTimeTransitionAfterDate:nextDate];
