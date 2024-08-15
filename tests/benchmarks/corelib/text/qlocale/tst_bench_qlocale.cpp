@@ -555,13 +555,13 @@ void tst_QLocale::toDouble_data()
     QTest::newRow("se_NO: 4x-3") // Only first character of exponent
             << u"4\u00b7\u2212" "03"_s << u"se_NO"_s << false << 0.0;
     QTest::newRow("ar_EG: 4e-3") // Arabic, Egypt
-            << u"\u0664\u0627\u0633\u061c-\u0660\u0663"_s << u"ar_EG"_s << true << 4e-3;
+            << u"\u0664\u0623\u0633\u061c-\u0660\u0663"_s << u"ar_EG"_s << true << 4e-3;
     QTest::newRow("ar_EG: 4x-3") // Only first character of exponent
-            << u"\u0664\u0627\u061c-\u0660\u0663"_s << u"ar_EG"_s << false << 0.0;
+            << u"\u0664\u0623\u061c-\u0660\u0663"_s << u"ar_EG"_s << false << 0.0;
     QTest::newRow("ar_EG: 4e!3") // Only first character of sign
-            << u"\u0664\u0627\u0633\u061c\u0660\u0663"_s << u"ar_EG"_s << false << 0.0;
+            << u"\u0664\u0623\u0633\u061c\u0660\u0663"_s << u"ar_EG"_s << false << 0.0;
     QTest::newRow("ar_EG: 4x!3") // Only first character of sign and exponent
-            << u"\u0664\u0627\u061c\u0660\u0663"_s << u"ar_EG"_s << false << 0.0;
+            << u"\u0664\u0623\u061c\u0660\u0663"_s << u"ar_EG"_s << false << 0.0;
 }
 
 void tst_QLocale::toDouble()
