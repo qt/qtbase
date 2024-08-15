@@ -32,6 +32,8 @@ private slots:
     void testWriteSection();
     void testWriteTable();
     void testWriteFrameFormat();
+    void testWriteDefaultFont_data();
+    void testWriteDefaultFont();
 
 private:
     /// closes the document and returns the part of the XML stream that the test wrote
@@ -141,6 +143,146 @@ void tst_QTextOdfWriter::testWriteStyle1_data()
     QString colorText = "<span style=\"color: #00FF00; background-color: #FF0000;\"> Color Text </span>";
     QTest::newRow("green/red") << colorText  << 3 <<
         "<style:style style:name=\"c4\" style:family=\"text\"><style:text-properties fo:font-family=\"Sans\" fo:color=\"#00ff00\" fo:background-color=\"#ff0000\"/></style:style>";
+
+}
+
+void tst_QTextOdfWriter::testWriteDefaultFont_data()
+{
+    QTest::addColumn<QFont>("defaultFont");
+    QTest::addColumn<QTextCharFormat>("charFormat");
+    QTest::addColumn<QString>("xml");
+
+    QTextCharFormat emptyFormat;
+
+    QTest::newRow("default")
+        << QFont()
+        << emptyFormat
+        << "<style:style style:name=\"c4\" style:family=\"text\"><style:text-properties fo:font-family=\"Sans\"/></style:style>";
+
+    QTest::newRow("family")
+        << QFont(QStringLiteral("Foobar"))
+        << emptyFormat
+        << "<style:style style:name=\"c4\" style:family=\"text\"><style:text-properties fo:font-family=\"Foobar\"/></style:style>";
+
+    {
+        QFont font;
+        font.setPointSizeF(7.5);
+        QTest::newRow("point-size")
+            << font
+            << emptyFormat
+            << "<style:style style:name=\"c4\" style:family=\"text\"><style:text-properties fo:font-family=\"Sans\" fo:font-size=\"7.5pt\"/></style:style>";
+    }
+
+    {
+        QFont font;
+        font.setItalic(true);
+        QTest::newRow("italic")
+            << font
+            << emptyFormat
+            << "<style:style style:name=\"c4\" style:family=\"text\"><style:text-properties fo:font-style=\"italic\" fo:font-family=\"Sans\"/></style:style>";
+    }
+
+    {
+        QFont font;
+        font.setBold(true);
+        QTest::newRow("bold")
+            << font
+            << emptyFormat
+            << "<style:style style:name=\"c4\" style:family=\"text\"><style:text-properties fo:font-weight=\"bold\" fo:font-family=\"Sans\"/></style:style>";
+    }
+
+    {
+        QFont font;
+        font.setCapitalization(QFont::AllUppercase);
+        QTest::newRow("capitalization")
+            << font
+            << emptyFormat
+            << "<style:style style:name=\"c4\" style:family=\"text\"><style:text-properties fo:font-family=\"Sans\" fo:text-transform=\"uppercase\"/></style:style>";
+    }
+
+    {
+        QFont font;
+        font.setLetterSpacing(QFont::PercentageSpacing, 10);
+        QTest::newRow("letter-spacing")
+            << font
+            << emptyFormat
+            << "<style:style style:name=\"c4\" style:family=\"text\"><style:text-properties fo:font-family=\"Sans\" fo:letter-spacing=\"7.5pt\"/></style:style>";
+    }
+
+    {
+        QFont font;
+        font.setWordSpacing(10);
+        QTest::newRow("word-spacing")
+            << font
+            << emptyFormat
+            << "<style:style style:name=\"c4\" style:family=\"text\"><style:text-properties fo:font-family=\"Sans\" fo:word-spacing=\"7.5pt\"/></style:style>";
+    }
+
+    {
+        QFont font;
+        font.setUnderline(true);
+        QTest::newRow("underline")
+            << font
+            << emptyFormat
+            << "<style:style style:name=\"c4\" style:family=\"text\"><style:text-properties fo:font-family=\"Sans\" style:text-underline-type=\"single\"/></style:style>";
+    }
+
+    {
+        QFont font;
+        font.setStrikeOut(true);
+        QTest::newRow("strike-out")
+            << font
+            << emptyFormat
+            << "<style:style style:name=\"c4\" style:family=\"text\"><style:text-properties fo:font-family=\"Sans\" style:text-line-through-type=\"single\"/></style:style>";
+    }
+
+    {
+        QFont font;
+        font.setFamily(QStringLiteral("Foo"));
+        font.setPointSizeF(7.5);
+        font.setStrikeOut(false);
+        font.setItalic(false);
+        font.setUnderline(false);
+        font.setLetterSpacing(QFont::PercentageSpacing, 10);
+        font.setWordSpacing(20);
+        font.setWeight(QFont::Bold);
+        font.setCapitalization(QFont::AllUppercase);
+
+        QTextCharFormat format;
+        format.setFontItalic(true);
+        format.setFontFamilies(QStringList() << QStringLiteral("Bar"));
+        format.setFontPointSize(5.5);
+        format.setFontStrikeOut(true);
+        format.setFontLetterSpacing(20);
+        format.setFontWordSpacing(30);
+        format.setFontWeight(QFont::Light);
+        format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+        format.setFontCapitalization(QFont::AllLowercase);
+
+        QTest::newRow("char-format-precedence")
+            << font
+            << format
+            << "<style:style style:name=\"c4\" style:family=\"text\"><style:text-properties fo:font-style=\"italic\" fo:font-weight=\"300\" fo:font-family=\"Bar\" fo:font-size=\"5.5pt\" fo:text-transform=\"lowercase\" fo:letter-spacing=\"15pt\" fo:word-spacing=\"22.5pt\" style:text-underline-type=\"single\" style:text-line-through-type=\"single\" style:text-underline-style=\"solid\"/></style:style>";
+    }
+
+}
+
+void tst_QTextOdfWriter::testWriteDefaultFont()
+{
+    QFETCH(QFont, defaultFont);
+    QFETCH(QTextCharFormat, charFormat);
+    QFETCH(QString, xml);
+
+    document->clear();
+    document->setDefaultFont(defaultFont);
+
+    QTextCursor cursor(document);
+    cursor.setCharFormat(charFormat);
+    cursor.insertText(QStringLiteral("Test"));
+
+    odfWriter->writeCharacterFormat(*xmlWriter, cursor.charFormat(), 4);
+    QCOMPARE( getContentFromXml(), xml);
+
 
 }
 

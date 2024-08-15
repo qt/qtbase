@@ -635,24 +635,59 @@ void QTextOdfWriter::writeCharacterFormat(QXmlStreamWriter &writer, QTextCharFor
     writer.writeAttribute(styleNS, QString::fromLatin1("name"), QString::fromLatin1("c%1").arg(formatIndex));
     writer.writeAttribute(styleNS, QString::fromLatin1("family"), QString::fromLatin1("text"));
     writer.writeEmptyElement(styleNS, QString::fromLatin1("text-properties"));
-    if (format.fontItalic())
-        writer.writeAttribute(foNS, QString::fromLatin1("font-style"), QString::fromLatin1("italic"));
-    if (format.hasProperty(QTextFormat::FontWeight) && format.fontWeight() != QFont::Normal) {
-        QString value;
-        if (format.fontWeight() == QFont::Bold)
-            value = QString::fromLatin1("bold");
-        else
-            value = QString::number(format.fontWeight());
-        writer.writeAttribute(foNS, QString::fromLatin1("font-weight"), value);
+
+    const QFont defaultFont = m_document->defaultFont();
+    const uint defaultFontResolveMask = defaultFont.resolveMask();
+
+    if (format.hasProperty(QTextFormat::FontItalic)
+        || (defaultFontResolveMask & QFont::StyleResolved)) {
+        const bool italic = format.hasProperty(QTextFormat::FontItalic) ? format.fontItalic() : defaultFont.italic();
+        if (italic)
+            writer.writeAttribute(foNS, QString::fromLatin1("font-style"), QString::fromLatin1("italic"));
     }
-    if (format.hasProperty(QTextFormat::OldFontFamily))
-        writer.writeAttribute(foNS, QString::fromLatin1("font-family"), format.fontFamilies().toStringList().value(0, QString()));
-    else
+
+    if (format.hasProperty(QTextFormat::FontWeight)
+        || (defaultFontResolveMask & QFont::WeightResolved)) {
+        int weight = format.hasProperty(QTextFormat::FontWeight)
+                         ? format.fontWeight()
+                         : defaultFont.weight();
+
+        if (weight != QFont::Normal) {
+            QString value;
+            if (weight == QFont::Bold)
+                value = QString::fromLatin1("bold");
+            else
+                value = QString::number(weight);
+            writer.writeAttribute(foNS, QString::fromLatin1("font-weight"), value);
+        }
+    }
+
+    if (format.hasProperty(QTextFormat::OldFontFamily)
+        || format.hasProperty(QTextFormat::FontFamilies)
+        || (defaultFontResolveMask & QFont::FamiliesResolved)) {
+        const QString fontFamily = (format.hasProperty(QTextFormat::OldFontFamily)
+                                    || format.hasProperty(QTextFormat::FontFamilies))
+                                        ? format.fontFamilies().toStringList().value(0, QString())
+                                        : defaultFont.family();
+        writer.writeAttribute(foNS, QString::fromLatin1("font-family"), fontFamily);
+    } else {
         writer.writeAttribute(foNS, QString::fromLatin1("font-family"), QString::fromLatin1("Sans")); // Qt default
-    if (format.hasProperty(QTextFormat::FontPointSize))
-        writer.writeAttribute(foNS, QString::fromLatin1("font-size"), QString::fromLatin1("%1pt").arg(format.fontPointSize()));
-    if (format.hasProperty(QTextFormat::FontCapitalization)) {
-        switch(format.fontCapitalization()) {
+    }
+
+    if (format.hasProperty(QTextFormat::FontPointSize)
+        || (defaultFontResolveMask & QFont::SizeResolved)) {
+        const qreal pointSize = format.hasProperty(QTextFormat::FontPointSize)
+                                    ? format.fontPointSize()
+                                    : defaultFont.pointSizeF();
+        writer.writeAttribute(foNS, QString::fromLatin1("font-size"), QString::fromLatin1("%1pt").arg(pointSize));
+    }
+
+    if (format.hasProperty(QTextFormat::FontCapitalization)
+        || (defaultFontResolveMask & QFont::CapitalizationResolved)) {
+        QFont::Capitalization capitalization = format.hasProperty(QTextFormat::FontCapitalization)
+                                                   ? format.fontCapitalization()
+                                                   : defaultFont.capitalization();
+        switch(capitalization) {
         case QFont::MixedCase:
             writer.writeAttribute(foNS, QString::fromLatin1("text-transform"), QString::fromLatin1("none")); break;
         case QFont::AllUppercase:
@@ -665,19 +700,47 @@ void QTextOdfWriter::writeCharacterFormat(QXmlStreamWriter &writer, QTextCharFor
             writer.writeAttribute(foNS, QString::fromLatin1("font-variant"), QString::fromLatin1("small-caps")); break;
         }
     }
-    if (format.hasProperty(QTextFormat::FontLetterSpacing))
-        writer.writeAttribute(foNS, QString::fromLatin1("letter-spacing"), pixelToPoint(format.fontLetterSpacing()));
-    if (format.hasProperty(QTextFormat::FontWordSpacing) && format.fontWordSpacing() != 0)
-            writer.writeAttribute(foNS, QString::fromLatin1("word-spacing"), pixelToPoint(format.fontWordSpacing()));
-    if (format.hasProperty(QTextFormat::FontUnderline))
+
+    if (format.hasProperty(QTextFormat::FontLetterSpacing) ||
+        (defaultFontResolveMask & QFont::LetterSpacingResolved)) {
+        const qreal letterSpacing = format.hasProperty(QTextFormat::FontLetterSpacing)
+                                        ? format.fontLetterSpacing()
+                                        : defaultFont.letterSpacing();
+        writer.writeAttribute(foNS, QString::fromLatin1("letter-spacing"), pixelToPoint(letterSpacing));
+    }
+
+    if (format.hasProperty(QTextFormat::FontWordSpacing)
+        || (defaultFontResolveMask & QFont::WordSpacingResolved)) {
+        const qreal wordSpacing = format.hasProperty(QTextFormat::FontWordSpacing)
+                                      ? format.fontWordSpacing()
+                                      : defaultFont.wordSpacing();
+        if (wordSpacing != 0)
+            writer.writeAttribute(foNS, QString::fromLatin1("word-spacing"), pixelToPoint(wordSpacing));
+    }
+
+    if (format.hasProperty(QTextFormat::FontUnderline)
+        || ((defaultFontResolveMask & QFont::UnderlineResolved)
+            && !format.hasProperty(QTextFormat::TextUnderlineStyle))) {
+        const bool underline = format.hasProperty(QTextFormat::FontUnderline)
+                                   ? format.fontUnderline()
+                                   : defaultFont.underline();
         writer.writeAttribute(styleNS, QString::fromLatin1("text-underline-type"),
-                format.fontUnderline() ? QString::fromLatin1("single") : QString::fromLatin1("none"));
+                underline ? QString::fromLatin1("single") : QString::fromLatin1("none"));
+    }
+
     if (format.hasProperty(QTextFormat::FontOverline)) {
         //   bool   fontOverline () const  TODO
     }
-    if (format.hasProperty(QTextFormat::FontStrikeOut))
+
+    if (format.hasProperty(QTextFormat::FontStrikeOut)
+        || (defaultFontResolveMask & QFont::StrikeOutResolved)) {
+        const bool strikeOut = format.hasProperty(QTextFormat::FontStrikeOut)
+                                   ? format.fontStrikeOut()
+                                   : defaultFont.strikeOut();
         writer.writeAttribute(styleNS,QString::fromLatin1( "text-line-through-type"),
-                format.fontStrikeOut() ? QString::fromLatin1("single") : QString::fromLatin1("none"));
+                strikeOut ? QString::fromLatin1("single") : QString::fromLatin1("none"));
+    }
+
     if (format.hasProperty(QTextFormat::TextUnderlineColor))
         writer.writeAttribute(styleNS, QString::fromLatin1("text-underline-color"), format.underlineColor().name());
     if (format.hasProperty(QTextFormat::FontFixedPitch)) {
