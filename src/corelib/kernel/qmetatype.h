@@ -1267,12 +1267,10 @@ namespace QtPrivate {
     template<typename T>
     inline constexpr bool IsQmlListType = false;
 
-    template<typename T, bool = std::is_enum<T>::value, bool = QtPrivate::IsQFlags<T>::value>
+    template<typename T, bool = std::is_enum<T>::value>
     constexpr bool IsUnsignedEnum = false;
-    template<typename T> constexpr bool IsUnsignedEnum<T, true, false> =
-            !std::is_signed_v<std::underlying_type_t<T>>;
-    template<typename T> constexpr bool IsUnsignedEnum<T, false, true> =
-            !std::is_signed_v<std::underlying_type_t<typename T::enum_type>>;
+    template<typename T>
+    constexpr bool IsUnsignedEnum<T, true> = !std::is_signed_v<std::underlying_type_t<T>>;
 
     template<typename T>
     struct QMetaTypeTypeFlags

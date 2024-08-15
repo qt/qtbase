@@ -2979,13 +2979,8 @@ bool QMetaType::hasRegisteredDataStreamOperators() const
    If this metatype represents an enumeration, this method returns a
    metatype of a numeric class of the same signedness and size as the
    enums underlying type.
-   If it represents a QFlags type, it returns a metatype of a numeric class
-   with the same signedness and size as that \l QFlags::Int type.
+   If it represents a QFlags type, it returns QMetaType::Int.
    In all other cases an invalid QMetaType is returned.
-
-   Do note the metatype is synthesized from size and signedness and may thus
-   not match the actual underlying type of the enum itself. That is, it will
-   never return the metatype for \c{char}, \c{long}, \c{unsigned long}.
  */
 QMetaType QMetaType::underlyingType() const
 {
