@@ -1108,9 +1108,6 @@ bool QSqlTableModel::insertRows(int row, int count, const QModelIndex &parent)
     d->busyInsertingRows = true;
     beginInsertRows(parent, row, row + count - 1);
 
-    if (d->strategy != OnManualSubmit)
-        d->cache.empty();
-
     if (!d->cache.isEmpty()) {
         QMap<int, QSqlTableModelPrivate::ModifiedRow>::Iterator it = d->cache.end();
         while (it != d->cache.begin() && (--it).key() >= row) {
