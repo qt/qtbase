@@ -29,7 +29,7 @@ struct GSocketNotifierSource
 {
     GSource source;
     QList<GPollFDWithQSocketNotifier *> pollfds;
-    int activeNotifierPos;
+    qsizetype activeNotifierPos;
 };
 
 static gboolean socketNotifierSourcePrepare(GSource *, gint *timeout)
@@ -459,7 +459,7 @@ void QEventDispatcherGlib::unregisterSocketNotifier(QSocketNotifier *notifier)
 
     Q_D(QEventDispatcherGlib);
 
-    for (int i = 0; i < d->socketNotifierSource->pollfds.size(); ++i) {
+    for (qsizetype i = 0; i < d->socketNotifierSource->pollfds.size(); ++i) {
         GPollFDWithQSocketNotifier *p = d->socketNotifierSource->pollfds.at(i);
         if (p->socketNotifier == notifier) {
             // found it
