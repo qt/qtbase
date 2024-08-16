@@ -16,6 +16,9 @@
 #include <functional>
 #include <iostream>
 #include <list>
+#ifdef __cpp_lib_ranges
+#include <ranges>
+#endif
 #include <set>
 #include <sstream>
 #include <map>
@@ -737,6 +740,20 @@ void tst_ContainerApiSymmetry::ranged_ctor_associative_impl() const
     QCOMPARE(c3a, reference);
     QCOMPARE(c3b, reference);
     QCOMPARE(c4,  reference);
+
+#ifdef __cpp_lib_ranges
+    {
+        auto view1 = values1 | std::views::transform(std::identity{});
+        Container c5(std::ranges::begin(view1),
+                     std::ranges::end(view1));
+        QCOMPARE(c5, reference);
+
+        auto view2 = values1 | std::views::filter([](auto &&){ return true; });
+        Container c6(std::ranges::begin(view2),
+                     std::ranges::end(view2));
+        QCOMPARE(c6, reference);
+    }
+#endif
 }
 
 template <typename Container>

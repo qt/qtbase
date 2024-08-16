@@ -299,8 +299,8 @@ using KeyAndValueTest = decltype(
 
 template <typename Iterator>
 using FirstAndSecondTest = decltype(
-    std::declval<Iterator &>()->first,
-    std::declval<Iterator &>()->second
+    (*std::declval<Iterator &>()).first,
+    (*std::declval<Iterator &>()).second
 );
 
 template <typename Iterator>
