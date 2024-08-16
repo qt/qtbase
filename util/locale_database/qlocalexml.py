@@ -115,6 +115,68 @@ class QLocaleXmlReader (object):
 
             yield (language, script, territory), locale
 
+    def pruneZoneNaming(self, locmap, report=lambda *x: None):
+        """Deduplicate zoneNaming and metaNaming mapings.
+
+        Where one locale would fall back to another via likely subtag
+        fallbacks, skip any entries in the former's zoneNaming and metaNaming
+        where it agrees with the latter.
+
+        This prunes over half of the (locale, zone) table and nearly two
+        thirds of the (locale, meta) table."""
+        likely = tuple((has, got) for have, has, give, got in self.likelyMap())
+        def fallbacks(key):
+            # Should match QtTimeZoneLocale::fallbackLocalesFor() in qlocale.cpp
+            tried, head = { key }, 2
+            while head > 0:
+                # Retain [:head] of key but use 0 (i.e. Any) for the rest:
+                it = self.__fillLikely(key[:head] + (0,) * (3 - head), likely)
+                if it not in tried:
+                    tried.add(it)
+                    if it in locmap:
+                        yield locmap[it]
+                head -= 1
+
+        # TODO: fix case of later fallbacks lacking a short name for a
+        # metazone, where earlier ones with a short name all agree.  Maybe do
+        # similar for long names, and for zones as well as meta.
+        # For a metazone, the territories in its map to IANA ID, combined with
+        # the language and script of a locale that lacks names, give locales to
+        # consult that might fall back to it, and to which to pay particular
+        # attention.
+
+        zonePrior = metaPrior = 0
+        zoneCount = metaCount = locCount = 0
+        for key, loc in locmap.items():
+            zonePrior += len(loc.zoneNaming)
+            metaPrior += len(loc.metaNaming)
+            # Omit zoneNaming and metaNaming entries that match those
+            # of their likely sub-tag fallbacks.
+            filtered = False
+            for alt in fallbacks(key):
+                filtered = True
+                # Collect keys to purge before purging, so as not to
+                # modify mappings while iterating them.
+                purge = [zone for zone, data in loc.zoneNaming.items()
+                         if (zone in alt.zoneNaming
+                             and data == alt.zoneNaming[zone])]
+                zoneCount += len(purge)
+                for zone in purge:
+                    del loc.zoneNaming[zone]
+
+                purge = [meta for meta, data in loc.metaNaming.items()
+                         if (meta in alt.metaNaming
+                             and data == alt.metaNaming[meta])]
+                metaCount += len(purge)
+                for meta in purge:
+                    del loc.metaNaming[meta]
+            if filtered:
+                locCount += 1
+
+        report(f'Pruned duplicates: {zoneCount} (of {zonePrior}) zone '
+               f'and {metaCount} (of {metaPrior}) metazone '
+               f'entries from {locCount} (of {len(locmap)}) locales.\n')
+
     def aliasToIana(self):
         def attr(elt, key):
             return elt.attributes[key].nodeValue
@@ -281,6 +343,80 @@ class QLocaleXmlReader (object):
         have = tuple(x or huge for x in key)
         # Use language, territory, script for sort order:
         return have[0], have[2], have[1]
+
+    @classmethod
+    def __lowerLikely(cls, key, likely):
+        """Lower-bound index for key in the likely subtag table
+
+        Equivalent to the std::lower_bound() calls in
+        QLocaleId::withLikelySubtagsAdded()."""
+        lo, hi = 0, len(likely)
+        key = cls.__keyLikely(key)
+        while lo + 1 < hi:
+            mid, rem = divmod(lo + hi, 2)
+            has = cls.__keyLikely(likely[mid][0])
+            if has < key:
+                lo = mid
+            elif has > key:
+                hi = mid
+            else:
+                return mid
+        return hi
+
+    @classmethod
+    def __fillLikely(cls, key, likely):
+        """Equivalent to QLocaleId::withLikelySubtagsAdded()
+
+        Takes one (language, script, territory) triple, key, of QLocale enum
+        numeric values and returns another that fills in any zero entries based
+        on the likely subtag data supplied as likely."""
+        lang, script, land = key
+        if lang and likely:
+            likely = likely[cls.__lowerLikely(key, likely):]
+            for entry in likely:
+                vox, txt, ter = entry[0]
+                if vox != lang:
+                    break
+                if land and ter != land:
+                    continue
+                if script and txt != script:
+                    continue
+
+                vox, txt, ter = entry[1]
+                return vox, txt or script, ter or land
+
+        if land and likely:
+            likely = likely[cls.__lowerLikely((0, script, land), likely):]
+            for entry in likely:
+                vox, txt, ter = entry[0]
+                assert not vox, (key, entry)
+                if ter != land:
+                    break
+                if txt != script:
+                    continue
+
+                vox, txt, ter = entry[1]
+                return lang or vox, txt or script, ter
+
+        if script and likely:
+            likely = likely[cls.__lowerLikely((0, script, 0), likely):]
+            for entry in likely:
+                vox, txt, ter = entry[0]
+                assert not (vox or ter), (key, entry)
+                if txt != script:
+                    break
+
+                vox, txt, ter = entry[1]
+                return lang or vox, txt, land or ter
+
+        if not any(key) and likely:
+            likely = likely[cls.__lowerLikely(key, likely):]
+            if likely:
+                assert len(likely) == 1
+                assert likely[0][0] == key
+                return likely[0][1]
+
+        return key
 
     # DOM access:
     from xml.dom import minidom

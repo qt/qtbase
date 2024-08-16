@@ -740,6 +740,7 @@ def main(argv, out, err):
     parser.add_argument('-q', '--quiet', help='less output',
                         dest='verbose', action='store_const', const=-1)
     args = parser.parse_args(argv[1:])
+    mutter = (lambda *x: None) if args.verbose < 0 else out.write
 
     qlocalexml = args.input_file
     qtsrcdir = Path(args.qtbase_path)
@@ -752,6 +753,7 @@ def main(argv, out, err):
 
     reader = QLocaleXmlReader(qlocalexml)
     locale_map = dict(reader.loadLocaleMap(calendars, err.write))
+    reader.pruneZoneNaming(locale_map, mutter)
     locale_keys = sorted(locale_map.keys(), key=LocaleKeySorter(reader.defaultMap()))
 
     code_data = LanguageCodeData(args.iso_path)
