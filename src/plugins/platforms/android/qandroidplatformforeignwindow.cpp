@@ -57,6 +57,7 @@ void QAndroidPlatformForeignWindow::setVisible(bool visible)
         return;
 
     QtAndroid::setViewVisibility(m_view.object(), visible);
+    m_nativeQtWindow.callMethod<void>("setVisible", visible);
 
     if (!visible && m_nativeViewInserted) {
         m_nativeQtWindow.callMethod<void>("removeNativeView");
