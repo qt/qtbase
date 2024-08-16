@@ -58,7 +58,7 @@ public:
     virtual QWindow *window() const;
 
     // relations
-    virtual QList<QPair<QAccessibleInterface *, QAccessible::Relation>>
+    virtual QList<std::pair<QAccessibleInterface *, QAccessible::Relation>>
     relations(QAccessible::Relation match = QAccessible::AllRelations) const;
     virtual QAccessibleInterface *focusChild() const;
 

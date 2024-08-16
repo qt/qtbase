@@ -412,7 +412,7 @@ public:
 
     static void cleanup();
 
-    static QPair< int, int > qAccessibleTextBoundaryHelper(const QTextCursor &cursor, TextBoundaryType boundaryType);
+    static std::pair< int, int > qAccessibleTextBoundaryHelper(const QTextCursor &cursor, TextBoundaryType boundaryType);
 
 private:
     static UpdateHandler updateHandler;

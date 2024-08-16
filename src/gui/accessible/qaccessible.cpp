@@ -949,7 +949,7 @@ void QAccessible::updateAccessibility(QAccessibleEvent *event)
     \param boundaryType the type of boundary to find
     \return the boundaries as pair
 */
-QPair< int, int > QAccessible::qAccessibleTextBoundaryHelper(const QTextCursor &offsetCursor, TextBoundaryType boundaryType)
+std::pair< int, int > QAccessible::qAccessibleTextBoundaryHelper(const QTextCursor &offsetCursor, TextBoundaryType boundaryType)
 {
     Q_ASSERT(!offsetCursor.isNull());
 
@@ -957,7 +957,7 @@ QPair< int, int > QAccessible::qAccessibleTextBoundaryHelper(const QTextCursor &
     endCursor.movePosition(QTextCursor::End);
     int characterCount = endCursor.position();
 
-    QPair<int, int> result;
+    std::pair<int, int> result;
     QTextCursor cursor = offsetCursor;
     switch (boundaryType) {
     case CharBoundary:
@@ -1157,7 +1157,7 @@ QPair< int, int > QAccessible::qAccessibleTextBoundaryHelper(const QTextCursor &
 
     \sa parent(), child()
 */
-QList<QPair<QAccessibleInterface*, QAccessible::Relation>>
+QList<std::pair<QAccessibleInterface*, QAccessible::Relation>>
 QAccessibleInterface::relations(QAccessible::Relation match) const
 {
     Q_UNUSED(match);

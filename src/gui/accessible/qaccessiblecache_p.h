@@ -54,7 +54,7 @@ private:
 
     mutable QHash<QAccessible::Id, QAccessibleInterface *> idToInterface;
     mutable QHash<QAccessibleInterface *, QAccessible::Id> interfaceToId;
-    mutable QMultiHash<QObject *, QPair<QAccessible::Id, const QMetaObject*>> objectToId;
+    mutable QMultiHash<QObject *, std::pair<QAccessible::Id, const QMetaObject*>> objectToId;
 
 #ifdef Q_OS_APPLE
     void removeAccessibleElement(QAccessible::Id axid);
