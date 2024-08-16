@@ -505,14 +505,16 @@ class QLocaleXmlWriter (object):
         tuple of numeric IDs that corresponds to en_US (needed to
         provide fallbacks for the C locale)."""
 
+        def writeLocale(locale, cal = calendars, this = self):
+            this.__openTag('locale')
+            this.__writeLocale(locale, cal)
+            this.__writeLocaleZones(locale)
+            this.__closeTag('locale')
+
         self.__openTag('localeList')
-        self.__openTag('locale')
-        self.__writeLocale(Locale.C(locales[en_US]), calendars)
-        self.__closeTag('locale')
+        writeLocale(Locale.C(locales[en_US]))
         for key in sorted(locales.keys()):
-            self.__openTag('locale')
-            self.__writeLocale(locales[key], calendars)
-            self.__closeTag('locale')
+            writeLocale(locales[key])
         self.__closeTag('localeList')
 
     def inTag(self, tag, text, **attrs):
@@ -601,6 +603,35 @@ class QLocaleXmlWriter (object):
         self.__languages.discard(locale.language_code)
         self.__scripts.discard(locale.script_code)
         self.__territories.discard(locale.territory_code)
+
+    def __writeLocaleZones(self, locale):
+        self.__writeZoneForms('regionZoneFormats', locale.regionZoneFormats)
+        self.__writeZoneNaming('zoneNaming', locale.zoneNaming)
+        self.__writeZoneNaming('metaZoneNaming', locale.metaZoneNaming)
+
+    def __writeZoneNaming(self, group, naming):
+        if not naming:
+            return
+        self.__openTag(group)
+        for iana in sorted(naming.keys()):
+            data = naming[iana]
+            self.__openTag('zoneNames', name=iana)
+            if 'exemplarCity' in data:
+                self.inTag('exemplar', data['exemplarCity'])
+            for form in ('short', 'long'):
+                if form in data:
+                    self.__writeZoneForms(form, data[form])
+            self.__closeTag('zoneNames')
+        self.__closeTag(group)
+
+    def __writeZoneForms(self, group, forms):
+        if all(x is None for x in forms):
+            return
+        self.__openTag('zoneForms', name=group)
+        for i, tag in enumerate(('generic', 'standard', 'daylightSaving')):
+            if forms[i]:
+                self.safeInTag(tag, forms[i])
+        self.__closeTag('zoneForms')
 
     def __openTag(self, tag, **attrs):
         if attrs:
@@ -721,11 +752,17 @@ class Locale (object):
                     'longTimeFormat', 'shortTimeFormat',
                     'currencyIsoCode', 'currencySymbol', 'currencyDisplayName',
                     'currencyFormat', 'currencyNegativeFormat',
+                    'positiveOffsetFormat', 'negativeOffsetFormat',
+                    'gmtOffsetFormat', 'fallbackZoneFormat',
                     ) + tuple(self.propsMonthDay('days')) + tuple(
                 '_'.join((k, cal))
                 for k in self.propsMonthDay('months')
                 for cal in calendars):
             write(key, escape(get(key)))
+
+        # The regionZoneFormats, zoneNaming and metaZoneNaming members
+        # are handled by QLocaleXmlWriter.__writeLocaleZones(). Their
+        # elements hold sub-elements.
 
         write('groupSizes', ';'.join(str(x) for x in get('groupSizes')))
         for key in ('currencyDigits', 'currencyRounding'):

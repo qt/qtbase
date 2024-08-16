@@ -37,6 +37,8 @@ class CldrReader (object):
         self.root = CldrAccess(root)
         self.whitter, self.grumble = whitter, grumble
         self.root.checkEnumData(grumble)
+        # TODO: can we do anything but ignore with the namings here ?
+        self.__bcp47Alias, ignore = self.root.bcp47Aliases()
 
     def likelySubTags(self):
         """Generator for likely subtag information.
@@ -105,7 +107,7 @@ class CldrReader (object):
         that are not mentioned in enumdata.territory_map, on any
         Windows IDs given in zonedata.windowsIdList that are no longer
         covered by the CLDR data."""
-        alias, ignored = self.root.bcp47Aliases()
+        alias = self.__bcp47Alias
         defaults, winIds = self.root.readWindowsTimeZones(alias)
         metamap, zones, territorial = self.root.readMetaZoneMap(alias)
 
@@ -295,6 +297,9 @@ class CldrReader (object):
         locale.update(scan.endonyms(language, script, territory, variant))
         locale.update(scan.unitData()) # byte, kB, MB, GB, ..., KiB, MiB, GiB, ...
         locale.update(scan.calendarNames(calendars)) # Names of days and months
+
+        # Naming of timezones:
+        locale.update(scan.timeZoneNames(self.__bcp47Alias))
 
         return locale
 

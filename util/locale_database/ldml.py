@@ -441,7 +441,7 @@ class LocaleScanner (object):
         See CldrAccess.readMetaZoneMap() for the locale-independent
         data that stitches these pieces together."""
         stem, formats = 'dates/timeZoneNames', {}
-        # '+HH:mm;-HH:mm'
+        # '+HH:mm;-HH:mm' (and :ss is also supported, but nowhere used in v45).
         # Sometimes has single-digit hours
         hours = self.find(f'{stem}/hourFormat').split(';')
         assert all('H' in f and 'm' in f for f in hours), (hours, self.name)

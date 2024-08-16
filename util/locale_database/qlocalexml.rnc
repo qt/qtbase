@@ -86,6 +86,19 @@ Digit = xsd:string { pattern = "\d" }
 Punctuation = xsd:string { pattern = "\p{P}" }
 GroupSizes = xsd:string { pattern = "\d;\d;\d" }
 
+ZoneForms = element zoneForms {
+  attribute name { text }, # 'regionFormats', 'short' or 'long'
+  element generic { text }?,
+  element standard { text }?,
+  element daylightSaving { text }?
+}
+
+ZoneNames = element zoneNames {
+  attribute name { text }, # IANA ID of zone, or CLDR metazone name
+  element exemplar { text }?, # metaZoneNaming omits exemplar
+  ZoneForms* # for name in {'short', 'long'}
+}
+
 Locale = element locale {
   element language { text },
   element script { text },
@@ -125,6 +138,14 @@ Locale = element locale {
   element currencyDisplayName { text },
   element currencyFormat { text },
   element currencyNegativeFormat { text },
+
+  # Timezone (and metazone) format data
+  element positiveOffsetFormat { text },
+  element negativeOffsetFormat { text },
+  element gmtOffsetFormat { text },
+  element fallbackZoneFormat { text },
+
+  # Day names
   element longDays { text },
   element standaloneLongDays { text },
   element shortDays { text },
@@ -154,5 +175,10 @@ Locale = element locale {
 
   element groupSizes { GroupSizes },
   element currencyDigits { xsd:nonNegativeInteger },
-  element currencyRounding { xsd:nonNegativeInteger }
+  element currencyRounding { xsd:nonNegativeInteger },
+
+  # Timezone (and metazone) naming data
+  ZoneForms?, # name is 'regionFormats'
+  element zoneNaming { ZoneNames+ }?,
+  element metaZoneNaming { ZoneNames+ }?
 }
