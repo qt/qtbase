@@ -93,7 +93,7 @@
 
     Due to the practicalities of dealing with external dependencies,
     only the SQLite plugin is shipped with binary builds of Qt.
-    Binary builds of Qt for Windows also include the ODBC plugin.
+    Binary builds of Qt for Windows also include the ODBC and PostgreSQL plugin.
     To be able to add additional drivers to the Qt installation
     without re-building all of Qt, it is possible to configure
     and build the \c qtbase/src/plugins/sqldrivers directory outside
