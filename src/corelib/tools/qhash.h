@@ -894,8 +894,11 @@ public:
         : QHash()
     {
         QtPrivate::reserveIfForwardIterator(this, f, l);
-        for (; f != l; ++f)
-            insert(f->first, f->second);
+        for (; f != l; ++f) {
+            auto &&e = *f;
+            using V = decltype(e);
+            insert(std::forward<V>(e).first, std::forward<V>(e).second);
+        }
     }
 #endif
     void swap(QHash &other) noexcept { qt_ptr_swap(d, other.d); }
@@ -1463,8 +1466,11 @@ public:
     QMultiHash(InputIterator f, InputIterator l)
     {
         QtPrivate::reserveIfForwardIterator(this, f, l);
-        for (; f != l; ++f)
-            insert(f->first, f->second);
+        for (; f != l; ++f) {
+            auto &&e = *f;
+            using V = decltype(e);
+            insert(std::forward<V>(e).first, std::forward<V>(e).second);
+        }
     }
 #endif
     QMultiHash(const QMultiHash &other) noexcept
