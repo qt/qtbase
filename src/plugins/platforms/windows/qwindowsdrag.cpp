@@ -254,8 +254,9 @@ void QWindowsOleDropSource::createCursors()
         if (const QScreen *primaryScreen = QGuiApplication::primaryScreen())
             platformScreen = primaryScreen->handle();
     }
-    Q_ASSERT(platformScreen);
-    QPlatformCursor *platformCursor = platformScreen->cursor();
+    QPlatformCursor *platformCursor = nullptr;
+    if (platformScreen)
+        platformCursor = platformScreen->cursor();
 
     if (GetSystemMetrics (SM_REMOTESESSION) != 0) {
         /* Workaround for RDP issues with large cursors.
