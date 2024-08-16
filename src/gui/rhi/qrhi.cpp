@@ -10535,6 +10535,32 @@ bool QRhi::makeThreadLocalNativeContextCurrent()
 }
 
 /*!
+    With backends and graphics APIs where applicable, this function allows to
+    provide additional arguments to the \b next submission of commands to the
+    graphics command queue.
+
+    In particular, with Vulkan this allows passing in a list of Vulkan semaphore
+    objects for \c vkQueueSubmit() to signal and wait on. \a params must then be
+    a \l QRhiVulkanQueueSubmitParams. This becomes essential in certain advanced
+    use cases, such as when performing native Vulkan calls that involve having
+    to wait on and signal VkSemaphores that the application's custom Vulkan
+    rendering or compute code manages. In addition, this also allows specifying
+    additional semaphores to wait on in the next \c vkQueuePresentKHR().
+
+    \note This function affects the next queue submission only, which will
+    happen in endFrame(), endOffscreenFrame(), or finish(). The enqueuing of
+    present happens in endFrame().
+
+    With many other backends the implementation of this function is a no-op.
+
+    \since 6.9
+ */
+void QRhi::setQueueSubmitParams(QRhiNativeHandles *params)
+{
+    d->setQueueSubmitParams(params);
+}
+
+/*!
     Attempts to release resources in the backend's caches. This can include both
     CPU and GPU resources.  Only memory and resources that can be recreated
     automatically are in scope. As an example, if the backend's

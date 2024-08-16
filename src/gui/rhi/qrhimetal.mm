@@ -935,6 +935,11 @@ bool QRhiMetal::makeThreadLocalNativeContextCurrent()
     return false;
 }
 
+void QRhiMetal::setQueueSubmitParams(QRhiNativeHandles *)
+{
+    // not applicable
+}
+
 void QRhiMetal::releaseCachedResources()
 {
     for (QMetalShader &s : d->shaderCache)

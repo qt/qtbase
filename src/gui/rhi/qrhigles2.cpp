@@ -1575,6 +1575,11 @@ bool QRhiGles2::makeThreadLocalNativeContextCurrent()
         return ensureContext();
 }
 
+void QRhiGles2::setQueueSubmitParams(QRhiNativeHandles *)
+{
+    // not applicable
+}
+
 void QRhiGles2::releaseCachedResources()
 {
     if (!ensureContext())

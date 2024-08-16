@@ -879,6 +879,11 @@ bool QRhiD3D12::makeThreadLocalNativeContextCurrent()
     return false;
 }
 
+void QRhiD3D12::setQueueSubmitParams(QRhiNativeHandles *)
+{
+    // not applicable
+}
+
 void QRhiD3D12::releaseCachedResources()
 {
     shaderBytecodeCache.data.clear();

@@ -2032,6 +2032,7 @@ public:
 
     const QRhiNativeHandles *nativeHandles();
     bool makeThreadLocalNativeContextCurrent();
+    void setQueueSubmitParams(QRhiNativeHandles *params);
 
     static constexpr int MAX_MIP_LEVELS = 16; // -> max width or height is 65536
 

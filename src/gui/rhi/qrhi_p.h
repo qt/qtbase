@@ -139,6 +139,7 @@ public:
     virtual QRhiDriverInfo driverInfo() const = 0;
     virtual QRhiStats statistics() = 0;
     virtual bool makeThreadLocalNativeContextCurrent() = 0;
+    virtual void setQueueSubmitParams(QRhiNativeHandles *params) = 0;
     virtual void releaseCachedResources() = 0;
     virtual bool isDeviceLost() const = 0;
 

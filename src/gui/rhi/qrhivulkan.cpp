@@ -287,6 +287,64 @@ QT_BEGIN_NAMESPACE
     The VkRenderPass object.
 */
 
+/*!
+    \class QRhiVulkanQueueSubmitParams
+    \inmodule QtGui
+    \since 6.9
+    \brief References additional Vulkan API objects that get passed to \c vkQueueSubmit().
+
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
+    for details.
+*/
+
+/*!
+    \variable QRhiVulkanQueueSubmitParams::waitSemaphoreCount
+
+    See
+    \l{https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkSubmitInfo.html}{VkSubmitInfo}
+    for details.
+*/
+
+/*!
+    \variable QRhiVulkanQueueSubmitParams::waitSemaphores
+
+    See
+    \l{https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkSubmitInfo.html}{VkSubmitInfo}
+    for details.
+*/
+
+/*!
+    \variable QRhiVulkanQueueSubmitParams::signalSemaphoreCount
+
+    See
+    \l{https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkSubmitInfo.html}{VkSubmitInfo}
+    for details.
+*/
+
+/*!
+    \variable QRhiVulkanQueueSubmitParams::signalSemaphores
+
+    See
+    \l{https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkSubmitInfo.html}{VkSubmitInfo}
+    for details.
+*/
+
+/*!
+    \variable QRhiVulkanQueueSubmitParams::presentWaitSemaphoreCount
+
+    When non-zero, this applies to the next \c vkQueuePresentKHR() call. See
+    \l{https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkPresentInfoKHR.html}{VkPresentInfoKHR}
+    for details.
+*/
+
+/*!
+    \variable QRhiVulkanQueueSubmitParams::presentWaitSemaphores
+
+    See
+    \l{https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkPresentInfoKHR.html}{VkPresentInfoKHR}
+    for details.
+ */
+
 template <class Int>
 inline Int aligned(Int v, Int byteAlign)
 {
@@ -2543,14 +2601,16 @@ QRhi::FrameOpResult QRhiVulkan::endFrame(QRhiSwapChain *swapChain, QRhi::EndFram
         presInfo.swapchainCount = 1;
         presInfo.pSwapchains = &swapChainD->sc;
         presInfo.pImageIndices = &swapChainD->currentImageIndex;
-        presInfo.waitSemaphoreCount = 1;
-        presInfo.pWaitSemaphores = &frame.drawSem; // gfxQueueFamilyIdx == presQueueFamilyIdx ? &frame.drawSem : &frame.presTransSem;
+        waitSemaphoresForPresent.append(frame.drawSem);
+        presInfo.waitSemaphoreCount = uint32_t(waitSemaphoresForPresent.count());;
+        presInfo.pWaitSemaphores = waitSemaphoresForPresent.constData();
 
         // Do platform-specific WM notification. F.ex. essential on Wayland in
         // order to circumvent driver frame callbacks
         inst->presentAboutToBeQueued(swapChainD->window);
 
         VkResult err = vkQueuePresentKHR(gfxQueue, &presInfo);
+        waitSemaphoresForPresent.clear();
         if (err != VK_SUCCESS) {
             if (err == VK_ERROR_OUT_OF_DATE_KHR) {
                 return QRhi::FrameOpSwapChainOutOfDate;
@@ -2659,18 +2719,29 @@ QRhi::FrameOpResult QRhiVulkan::endAndSubmitPrimaryCommandBuffer(VkCommandBuffer
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &cb;
-    if (waitSem) {
-        submitInfo.waitSemaphoreCount = 1;
-        submitInfo.pWaitSemaphores = waitSem;
+
+    if (waitSem)
+        waitSemaphoresForQueueSubmit.append(*waitSem);
+    if (signalSem)
+        signalSemaphoresForQueueSubmit.append(*signalSem);
+
+    if (!waitSemaphoresForQueueSubmit.isEmpty()) {
+        submitInfo.waitSemaphoreCount = uint32_t(waitSemaphoresForQueueSubmit.count());
+        submitInfo.pWaitSemaphores = waitSemaphoresForQueueSubmit.constData();
     }
-    if (signalSem) {
-        submitInfo.signalSemaphoreCount = 1;
-        submitInfo.pSignalSemaphores = signalSem;
+    if (!signalSemaphoresForQueueSubmit.isEmpty()) {
+        submitInfo.signalSemaphoreCount = uint32_t(signalSemaphoresForQueueSubmit.count());
+        submitInfo.pSignalSemaphores = signalSemaphoresForQueueSubmit.constData();
     }
+
     VkPipelineStageFlags psf = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
     submitInfo.pWaitDstStageMask = &psf;
 
     err = df->vkQueueSubmit(gfxQueue, 1, &submitInfo, cmdFence);
+
+    waitSemaphoresForQueueSubmit.clear();
+    signalSemaphoresForQueueSubmit.clear();
+
     if (err != VK_SUCCESS) {
         if (err == VK_ERROR_DEVICE_LOST) {
             qWarning("Device loss detected in vkQueueSubmit()");
@@ -5191,6 +5262,25 @@ bool QRhiVulkan::makeThreadLocalNativeContextCurrent()
 {
     // not applicable
     return false;
+}
+
+void QRhiVulkan::setQueueSubmitParams(QRhiNativeHandles *params)
+{
+    QRhiVulkanQueueSubmitParams *sp = static_cast<QRhiVulkanQueueSubmitParams *>(params);
+    if (!sp)
+        return;
+
+    waitSemaphoresForQueueSubmit.clear();
+    if (sp->waitSemaphoreCount)
+        waitSemaphoresForQueueSubmit.append(sp->waitSemaphores, sp->waitSemaphoreCount);
+
+    signalSemaphoresForQueueSubmit.clear();
+    if (sp->signalSemaphoreCount)
+        signalSemaphoresForQueueSubmit.append(sp->signalSemaphores, sp->signalSemaphoreCount);
+
+    waitSemaphoresForPresent.clear();
+    if (sp->presentWaitSemaphoreCount)
+        waitSemaphoresForPresent.append(sp->presentWaitSemaphores, sp->presentWaitSemaphoreCount);
 }
 
 void QRhiVulkan::releaseCachedResources()

@@ -724,6 +724,11 @@ bool QRhiD3D11::makeThreadLocalNativeContextCurrent()
     return false;
 }
 
+void QRhiD3D11::setQueueSubmitParams(QRhiNativeHandles *)
+{
+    // not applicable
+}
+
 void QRhiD3D11::releaseCachedResources()
 {
     clearShaderCache();

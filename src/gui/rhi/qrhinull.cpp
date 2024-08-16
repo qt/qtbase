@@ -177,6 +177,11 @@ bool QRhiNull::makeThreadLocalNativeContextCurrent()
     return false;
 }
 
+void QRhiNull::setQueueSubmitParams(QRhiNativeHandles *)
+{
+    // not applicable
+}
+
 void QRhiNull::releaseCachedResources()
 {
     // nothing to do here

@@ -104,6 +104,16 @@ struct Q_GUI_EXPORT QRhiVulkanRenderPassNativeHandles : public QRhiNativeHandles
     VkRenderPass renderPass = VK_NULL_HANDLE;
 };
 
+struct Q_GUI_EXPORT QRhiVulkanQueueSubmitParams : public QRhiNativeHandles
+{
+    uint32_t waitSemaphoreCount;
+    VkSemaphore *waitSemaphores;
+    uint32_t signalSemaphoreCount;
+    VkSemaphore *signalSemaphores;
+    uint32_t presentWaitSemaphoreCount;
+    VkSemaphore *presentWaitSemaphores;
+};
+
 #endif // vulkan/qdoc
 
 #if defined(Q_OS_WIN) || defined(Q_QDOC)

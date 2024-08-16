@@ -777,6 +777,7 @@ public:
     QRhiDriverInfo driverInfo() const override;
     QRhiStats statistics() override;
     bool makeThreadLocalNativeContextCurrent() override;
+    void setQueueSubmitParams(QRhiNativeHandles *params) override;
     void releaseCachedResources() override;
     bool isDeviceLost() const override;
 
@@ -1065,6 +1066,10 @@ public:
     QVarLengthArray<VkPhysicalDeviceFragmentShadingRateKHR, 8> fragmentShadingRates;
     PFN_vkCmdSetFragmentShadingRateKHR vkCmdSetFragmentShadingRateKHR = nullptr;
 #endif
+
+    QVarLengthArray<VkSemaphore, 4> waitSemaphoresForQueueSubmit;
+    QVarLengthArray<VkSemaphore, 4> signalSemaphoresForQueueSubmit;
+    QVarLengthArray<VkSemaphore, 4> waitSemaphoresForPresent;
 };
 
 Q_DECLARE_TYPEINFO(QRhiVulkan::DescriptorPoolData, Q_RELOCATABLE_TYPE);
