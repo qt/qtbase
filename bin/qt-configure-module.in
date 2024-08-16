@@ -34,5 +34,5 @@ echo "$arg" >> "$optfile"
 done
 
 cmake_script_path="$script_dir_path/@__relative_path_to_cmake_scripts_dir@/QtProcessConfigureArgs.cmake"
-qt_cmake_private_path="$script_dir_path/../libexec"
+qt_cmake_private_path="$script_dir_path/../@INSTALL_LIBEXECDIR@"
 "$qt_cmake_private_path/qt-cmake-private" -DOPTFILE=$optfile -DMODULE_ROOT="$module_root" -DCMAKE_COMMAND="$qt_cmake_private_path/qt-cmake-private" -P "$cmake_script_path"
