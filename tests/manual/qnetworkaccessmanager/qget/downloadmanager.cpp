@@ -82,7 +82,7 @@ void DownloadManager::authenticationRequired(QNetworkReply *reply, QAuthenticato
     qDebug() << "authenticationRequired" << reply;
     TransferItem *transfer = findTransfer(reply);
     //provide the credentials exactly once, so that it fails if credentials are incorrect.
-    if ((transfer && !transfer->user.isEmpty()) || !transfer->password.isEmpty()) {
+    if (transfer && (!transfer->user.isEmpty() || !transfer->password.isEmpty())) {
         auth->setUser(transfer->user);
         auth->setPassword(transfer->password);
         transfer->user.clear();
