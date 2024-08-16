@@ -87,7 +87,7 @@ cmake --install .
 mkdir build-psql-driver
 cd build-psql-driver
 
-qt-cmake -G Ninja <qt_source_directory>/qtbase/src/plugins/sqldrivers-DCMAKE_INSTALL_PREFIX=<qt_installation_path>/<platform> -DCMAKE_INCLUDE_PATH="/usr/local/pgsql/include" -DCMAKE_LIBRARY_PATH="/usr/local/pgsql/lib"
+qt-cmake -G Ninja <qt_source_directory>/qtbase/src/plugins/sqldrivers-DCMAKE_INSTALL_PREFIX=<qt_installation_path>/<platform> -DPostgreSQL_ROOT="/usr/local/pgsql"
 cmake --build .
 cmake --install .
 //! [13]
@@ -96,7 +96,7 @@ cmake --install .
 //! [15]
 mkdir build-sqldrivers
 cd build-sqldrivers
-qt-cmake -G Ninja <qt_installation_path>\Src\qtbase\src\plugins\sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>\<platform> -DCMAKE_INCLUDE_PATH="C:\pgsql\include" -DCMAKE_LIBRARY_PATH="C:\pgsql\lib"
+qt-cmake -G Ninja <qt_installation_path>\Src\qtbase\src\plugins\sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>\<platform> -DPostgreSQL_ROOT="C:\pgsql"
 cmake --build .
 cmake --install .
 //! [15]
