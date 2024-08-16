@@ -69,7 +69,7 @@ opttmpfilepath=${outpathPrefix}/config.opt.in
 redofilepath=${outpathPrefix}/config.redo.last
 redotmpfilepath=${outpathPrefix}/config.redo.in
 
-qt_cmake_private_path="$script_dir_path/../libexec"
+qt_cmake_private_path="$script_dir_path/../@INSTALL_LIBEXECDIR@"
 
 fresh_requested_arg=
 if [ -z "$optfile" ]; then   # only write optfile if not currently redoing
