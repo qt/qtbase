@@ -360,7 +360,7 @@ class ControlLabel : public QWidget
 {
     Q_OBJECT
 public:
-    ControlLabel(QMdiSubWindow *subWindow, QWidget *parent = nullptr);
+    ControlLabel(QWidget *parent = nullptr);
 
     QSize sizeHint() const override;
 
@@ -382,10 +382,9 @@ private:
 };
 } // namespace QMdi
 
-ControlLabel::ControlLabel(QMdiSubWindow *subWindow, QWidget *parent)
+ControlLabel::ControlLabel(QWidget *parent)
     : QWidget(parent), isPressed(false)
 {
-    Q_UNUSED(subWindow);
     setFocusPolicy(Qt::NoFocus);
     updateWindowIcon();
     setFixedSize(label.deviceIndependentSize().toSize());
@@ -492,7 +491,7 @@ class ControllerWidget : public QWidget
 {
     Q_OBJECT
 public:
-    ControllerWidget(QMdiSubWindow *subWindow, QWidget *parent = nullptr);
+    ControllerWidget(QWidget *parent = nullptr);
     QSize sizeHint() const override;
     void setControlVisible(QMdiSubWindowPrivate::WindowStateAction action, bool visible);
     inline bool hasVisibleControls() const
@@ -520,12 +519,11 @@ private:
     QStyle::SubControl hoverControl;
     QStyle::SubControls visibleControls;
     void initStyleOption(QStyleOptionComplex *option) const;
-    QMdiArea *mdiArea;
     inline QStyle::SubControl getSubControl(const QPoint &pos) const
     {
         QStyleOptionComplex opt;
         initStyleOption(&opt);
-        return style()->hitTestComplexControl(QStyle::CC_MdiControls, &opt, pos, mdiArea);
+        return style()->hitTestComplexControl(QStyle::CC_MdiControls, &opt, pos, this);
     }
 };
 } // namespace QMdi
@@ -533,15 +531,12 @@ private:
 /*
     \internal
 */
-ControllerWidget::ControllerWidget(QMdiSubWindow *subWindow, QWidget *parent)
+ControllerWidget::ControllerWidget(QWidget *parent)
     : QWidget(parent),
       activeControl(QStyle::SC_None),
       hoverControl(QStyle::SC_None),
-      visibleControls(QStyle::SC_None),
-      mdiArea(nullptr)
+      visibleControls(QStyle::SC_None)
 {
-    if (subWindow->parentWidget())
-        mdiArea = qobject_cast<QMdiArea *>(subWindow->parentWidget()->parentWidget());
     setFocusPolicy(Qt::NoFocus);
     setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
     setMouseTracking(true);
@@ -555,9 +550,9 @@ QSize ControllerWidget::sizeHint() const
     ensurePolished();
     QStyleOptionComplex opt;
     initStyleOption(&opt);
-    const int buttonSize = style()->pixelMetric(QStyle::PM_TitleBarButtonSize, &opt, mdiArea);
+    const int buttonSize = style()->pixelMetric(QStyle::PM_TitleBarButtonSize, &opt, this);
     QSize size(3 * buttonSize, buttonSize);
-    return style()->sizeFromContents(QStyle::CT_MdiControls, &opt, size, mdiArea);
+    return style()->sizeFromContents(QStyle::CT_MdiControls, &opt, size, this);
 }
 
 void ControllerWidget::setControlVisible(QMdiSubWindowPrivate::WindowStateAction action, bool visible)
@@ -593,7 +588,7 @@ void ControllerWidget::paintEvent(QPaintEvent * /*paintEvent*/)
         opt.state |= QStyle::State_MouseOver;
     }
     QPainter painter(this);
-    style()->drawComplexControl(QStyle::CC_MdiControls, &opt, &painter, mdiArea);
+    style()->drawComplexControl(QStyle::CC_MdiControls, &opt, &painter, this);
 }
 
 /*
