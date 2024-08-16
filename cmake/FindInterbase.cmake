@@ -23,13 +23,13 @@
 
 find_path(Interbase_INCLUDE_DIR
           NAMES ibase.h
-          HINTS ${Interbase_INCLUDEDIR}
+          HINTS "${Interbase_INCLUDEDIR}" "${Interbase_ROOT}/include"
           PATH_SUFFIXES firebird
 )
 
 find_library(Interbase_LIBRARY
-             NAMES firebase_ms fbclient gds
-             HINTS ${Interbase_LIBDIR}
+             NAMES firebase_ms fbclient_ms fbclient gds
+             HINTS "${Interbase_LIBDIR}" "${Interbase_ROOT}/lib"
 )
 
 include(FindPackageHandleStandardArgs)

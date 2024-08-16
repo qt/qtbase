@@ -907,9 +907,8 @@
 
     \snippet code/doc_src_sql-driver.qdoc 27
 
-    If you are using Firebird, the Firebird library has to be set explicitly:
-
-    \snippet code/doc_src_sql-driver.qdoc 28
+    Optionally, use the CMake variables \c{Interbase_INCLUDE_DIR} and
+    \c{Interbase_LIBRARY} to specify the include path and library directly.
 
     \section3 How to Build the QIBASE Plugin on Windows
 
@@ -920,9 +919,8 @@
 
     \snippet code/doc_src_sql-driver.qdoc 29
 
-    If you are using Firebird:
-
-    \snippet code/doc_src_sql-driver.qdoc 30
+    Optionally, use the CMake variables \c{Interbase_INCLUDE_DIR} and
+    \c{Interbase_LIBRARY} to specify the include path and library directly.
 
     Note that \c{C:\interbase\bin} must be in the \c PATH.
 

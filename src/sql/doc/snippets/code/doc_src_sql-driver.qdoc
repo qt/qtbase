@@ -141,37 +141,20 @@ cmake --install .
 //! [27]
 mkdir build-sqldrivers
 cd build-sqldrivers
-qt-cmake -G Ninja <qt_source_directory>/qtbase/src/plugins/sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>/<platform> -DInterbase_INCLUDE_DIR="/opt/interbase/include" -DInterbase_LIBRARY="/opt/interbase/lib/libgds.<so|dylib>"
+qt-cmake -G Ninja <qt_source_directory>/qtbase/src/plugins/sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>/<platform> -DInterbase_ROOT="/opt/interbase/"
 cmake --build .
 cmake --install .
 //! [27]
 
 
-//! [28]
-mkdir build-sqldrivers
-cd build-sqldrivers
-qt-cmake -G Ninja <qt_source_directory>/qtbase/src/plugins/sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>/<platform> -DInterbase_INCLUDE_DIR="/opt/interbase/include" -DInterbase_LIBRARY="/opt/interbase/lib/libfbclient.<so|dylib>"
-cmake --build .
-cmake --install .
-//! [28]
-
-
 //! [29]
 mkdir build-sqldrivers
 cd build-sqldrivers
-qt-cmake -G Ninja <qt_installation_path>\Src\qtbase\src\plugins\sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>\<platform> -DInterbase_INCLUDE_DIR="C:\interbase\include" -DInterbase_LIBRARY="C:\interbase\gds.lib"
+qt-cmake -G Ninja <qt_installation_path>\Src\qtbase\src\plugins\sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>\<platform> -DInterbase_ROOT="C:\interbase"
 cmake --build .
 cmake --install .
 //! [29]
 
-
-//! [30]
-mkdir build-sqldrivers
-cd build-sqldrivers
-qt-cmake -G Ninja <qt_installation_path>\Src\qtbase\src\plugins\sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>\<platform> -DInterbase_INCLUDE_DIR="C:\interbase\include" -DInterbase_LIBRARY="C:\interbase\lib\fbclient_ms.lib"
-cmake --build .
-cmake --install .
-//! [30]
 
 //! [31]
 mkdir build-sqldrivers
