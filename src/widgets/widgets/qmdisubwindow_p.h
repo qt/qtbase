@@ -42,7 +42,7 @@ template<typename T>
 class ControlElement : public T             // ELFVERSION:ignore
 {
 public:
-    ControlElement(QMdiSubWindow *child) : T(child, nullptr)
+    ControlElement(QMdiSubWindow *child) : T(nullptr)
     {
         Q_ASSERT(child);
         mdiChild = child;
