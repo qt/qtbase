@@ -86,6 +86,11 @@ class QLocaleXmlReader (object):
         likely = dict(self.__likely)
         for elt in self.__eachEltInGroup(self.root, 'localeList', 'locale'):
             locale = Locale.fromXmlData(lambda k: kid(elt, k), calendars)
+            region, zone, meta = self.__zoneData(elt)
+            locale.update(regionFormats = region,
+                          zoneNaming = zone,
+                          metaNaming = meta)
+
             language = self.__langByName[locale.language][0]
             script = self.__textByName[locale.script][0]
             territory = self.__landByName[locale.territory][0]
@@ -322,6 +327,71 @@ class QLocaleXmlReader (object):
         yield ' '.join(cls.__eltWords(elt))
         for name in names:
             yield elt.attributes[name].nodeValue
+
+    @classmethod
+    def __zoneData(cls, elt):
+        # Inverse of writer's __writeLocaleZones()
+        region = cls.__readZoneForms(elt, 'regionZoneFormats')
+        try:
+            zone = cls.__firstChildElt(elt, 'zoneNaming')
+        except Error as what:
+            if what.message != 'No zoneNaming child found':
+                raise
+            zone = {}
+        else:
+            zone = dict(cls.__readZoneNaming(zone))
+        try:
+            meta = cls.__firstChildElt(elt, 'metaZoneNaming')
+        except Error as what:
+            if what.message != 'No metaZoneNaming child found':
+                raise
+            meta = {}
+        else:
+            meta = dict(cls.__readZoneNaming(meta))
+            assert not any('exemplarCity' in v for v in meta.values())
+        return region, zone, meta
+
+    @classmethod
+    def __readZoneNaming(cls, elt):
+        # Inverse of writer's __writeZoneNaming()
+        child = elt.firstChild
+        while child:
+            if cls.__isNodeNamed(child, 'zoneNames'):
+                iana = child.attributes['name'].nodeValue
+                try:
+                    city = cls.__firstChildText(child, 'exemplar')
+                except Error:
+                    data = {}
+                else:
+                    assert city is not None
+                    data = { 'exemplarCity': city }
+                for form in ('short', 'long'):
+                    data[form] = cls.__readZoneForms(child, form)
+                yield iana, data
+
+            child = child.nextSibling
+
+    @classmethod
+    def __readZoneForms(cls, elt, name):
+        # Inverse of writer's __writeZoneForms()
+        child = elt.firstChild
+        while child:
+            if (cls.__isNodeNamed(child, 'zoneForms')
+                and child.attributes['name'].nodeValue == name):
+                return tuple(cls.__scanZoneForms(child))
+            child = child.nextSibling
+        return (None, None, None)
+
+    @classmethod
+    def __scanZoneForms(cls, elt):
+        # Read each entry in a zoneForms element, yield three forms:
+        for tag in ('generic', 'standard', 'daylightSaving'):
+            try:
+                node = cls.__firstChildElt(elt, tag)
+            except Error:
+                yield None
+            else:
+                yield ' '.join(cls.__eltWords(node))
 
     @classmethod
     def __eachEltInGroup(cls, parent, group, key):
@@ -684,7 +754,12 @@ class Locale (object):
                'byte_unit', 'byte_si_quantified', 'byte_iec_quantified',
                "currencyIsoCode", "currencySymbol", "currencyDisplayName",
                "currencyFormat", "currencyNegativeFormat",
+               # Formats, previously processed on reading from LDML:
+               'positiveOffsetFormat', 'negativeOffsetFormat',
+               'gmtOffsetFormat', 'fallbackZoneFormat',
                )
+    # Require special handling:
+    # 'regionZoneFormats', 'zoneNaming', 'metaZoneNaming'
 
     # Day-of-Week numbering used by Qt:
     __qDoW = {"mon": 1, "tue": 2, "wed": 3, "thu": 4, "fri": 5, "sat": 6, "sun": 7}
