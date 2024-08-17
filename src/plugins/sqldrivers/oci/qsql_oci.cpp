@@ -329,13 +329,13 @@ int QOCIResultPrivate::bindValue(OCIStmt *sql, OCIBind **hbnd, OCIError *err, in
 
     switch (val.typeId()) {
     case QMetaType::QByteArray:
-        r = OCIBindByPos(sql, hbnd, err,
-                         pos + 1,
-                         isOutValue(pos)
+        r = OCIBindByPos2(sql, hbnd, err,
+                          pos + 1,
+                          isOutValue(pos)
                             ?  const_cast<char *>(reinterpret_cast<QByteArray *>(data)->constData())
                             : reinterpret_cast<QByteArray *>(data)->data(),
-                         reinterpret_cast<QByteArray *>(data)->size(),
-                         SQLT_BIN, indPtr, 0, 0, 0, 0, OCI_DEFAULT);
+                          reinterpret_cast<QByteArray *>(data)->size(),
+                          SQLT_BIN, indPtr, 0, 0, 0, 0, OCI_DEFAULT);
         break;
     case QMetaType::QTime:
     case QMetaType::QDate:
@@ -401,20 +401,20 @@ int QOCIResultPrivate::bindValue(OCIStmt *sql, OCIBind **hbnd, OCIError *err, in
     case QMetaType::QString: {
         const QString s = val.toString();
         if (isBinaryValue(pos)) {
-            r = OCIBindByPos(sql, hbnd, err,
-                             pos + 1,
-                             const_cast<ushort *>(s.utf16()),
-                             s.length() * sizeof(QChar),
-                             SQLT_LNG, indPtr, 0, 0, 0, 0, OCI_DEFAULT);
+            r = OCIBindByPos2(sql, hbnd, err,
+                              pos + 1,
+                              const_cast<ushort *>(s.utf16()),
+                              s.length() * sizeof(QChar),
+                              SQLT_LNG, indPtr, 0, 0, 0, 0, OCI_DEFAULT);
             break;
         } else if (!isOutValue(pos)) {
             // don't detach the string
-            r = OCIBindByPos(sql, hbnd, err,
-                             pos + 1,
-                             // safe since oracle doesn't touch OUT values
-                             const_cast<ushort *>(s.utf16()),
-                             (s.length() + 1) * sizeof(QChar),
-                             SQLT_STR, indPtr, 0, 0, 0, 0, OCI_DEFAULT);
+            r = OCIBindByPos2(sql, hbnd, err,
+                              pos + 1,
+                              // safe since oracle doesn't touch OUT values
+                              const_cast<ushort *>(s.utf16()),
+                              (s.length() + 1) * sizeof(QChar),
+                              SQLT_STR, indPtr, 0, 0, 0, 0, OCI_DEFAULT);
             if (r == OCI_SUCCESS)
                 setCharset(*hbnd, OCI_HTYPE_BIND);
             break;
@@ -1480,7 +1480,7 @@ bool QOCICols::execBatch(QOCIResultPrivate *d, QVariantList &boundValues, bool a
 
                     case QMetaType::QString: {
                         const QString s = val.toString();
-                        columns[i].lengths[row] = (s.length() + 1) * sizeof(QChar);
+                        columns[i].lengths[row] = ub2((s.length() + 1) * sizeof(QChar));
                         memcpy(dataPtr, s.utf16(), columns[i].lengths[row]);
                         break;
                     }
@@ -1957,7 +1957,7 @@ bool QOCIResult::prepare(const QString& query)
     }
     d->setStatementAttributes();
     const OraText *txt = reinterpret_cast<const OraText *>(query.utf16());
-    const int len = query.length() * sizeof(QChar);
+    const auto len = ub4(query.length() * sizeof(QChar));
     r = OCIStmtPrepare(d->sql,
                        d->err,
                        txt,
@@ -2249,7 +2249,7 @@ bool QOCIDriver::open(const QString & db,
     if (r == OCI_SUCCESS) {
         r = OCIServerAttach(d->srvhp, d->err,
                             reinterpret_cast<const OraText *>(connectionString.utf16()),
-                            connectionString.length() * sizeof(QChar), OCI_DEFAULT);
+                            sb4(connectionString.length() * sizeof(QChar)), OCI_DEFAULT);
     }
     Q_ASSERT(!d->svc);
     if (r == OCI_SUCCESS || r == OCI_SUCCESS_WITH_INFO) {
@@ -2265,11 +2265,11 @@ bool QOCIDriver::open(const QString & db,
     }
     if (r == OCI_SUCCESS) {
         r = OCIAttrSet(d->authp, OCI_HTYPE_SESSION, const_cast<ushort *>(user.utf16()),
-                       user.length() * sizeof(QChar), OCI_ATTR_USERNAME, d->err);
+                       ub4(user.length() * sizeof(QChar)), OCI_ATTR_USERNAME, d->err);
     }
     if (r == OCI_SUCCESS) {
         r = OCIAttrSet(d->authp, OCI_HTYPE_SESSION, const_cast<ushort *>(password.utf16()),
-                       password.length() * sizeof(QChar), OCI_ATTR_PASSWORD, d->err);
+                       ub4(password.length() * sizeof(QChar)), OCI_ATTR_PASSWORD, d->err);
     }
     Q_ASSERT(!d->trans);
     if (r == OCI_SUCCESS) {
