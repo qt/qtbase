@@ -841,4 +841,49 @@ void QCoreApplicationPrivate::removePostedTimerEvent(QObject *object, int timerI
 }
 #endif // QT_NO_QOBJECT
 
+static bool hasValidStdOutHandle()
+{
+    const HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
+    return h != NULL && h != INVALID_HANDLE_VALUE;
+}
+
+void QCoreApplicationPrivate::initDebuggingConsole()
+{
+    if (hasValidStdOutHandle())
+        return;
+    const QString env = qEnvironmentVariable("QT_WIN_DEBUG_CONSOLE");
+    if (env.isEmpty())
+        return;
+    if (env.compare(u"new"_s, Qt::CaseInsensitive) == 0) {
+        if (AllocConsole() == FALSE)
+            return;
+        consoleAllocated = true;
+    } else if (env.compare(u"attach"_s, Qt::CaseInsensitive) == 0) {
+        // If the calling process is already attached to a console,
+        // the error code returned is ERROR_ACCESS_DENIED.
+        if (!::AttachConsole(ATTACH_PARENT_PROCESS) && ::GetLastError() != ERROR_ACCESS_DENIED)
+            return;
+    } else {
+        // Unknown input, don't make any decision for the user.
+        return;
+    }
+    // The std{in,out,err} handles are read-only, so we need to pass in dummies.
+    FILE *in = nullptr;
+    FILE *out = nullptr;
+    FILE *err = nullptr;
+    freopen_s(&in, "CONIN$", "r", stdin);
+    freopen_s(&out, "CONOUT$", "w", stdout);
+    freopen_s(&err, "CONOUT$", "w", stderr);
+    // However, things wouldn't work if the runtime did not preserve the pointers.
+    Q_ASSERT(in == stdin);
+    Q_ASSERT(out == stdout);
+    Q_ASSERT(err == stderr);
+}
+
+void QCoreApplicationPrivate::cleanupDebuggingConsole()
+{
+    if (consoleAllocated)
+        FreeConsole();
+}
+
 QT_END_NAMESPACE

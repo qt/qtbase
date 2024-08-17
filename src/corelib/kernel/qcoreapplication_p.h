@@ -78,7 +78,10 @@ public:
     static QString infoDictionaryStringProperty(const QString &propertyName);
 #endif
 
-    void initConsole();
+#ifdef Q_OS_WINDOWS
+    void initDebuggingConsole();
+    void cleanupDebuggingConsole();
+#endif
     static void initLocale();
 
     static bool checkInstance(const char *method);
