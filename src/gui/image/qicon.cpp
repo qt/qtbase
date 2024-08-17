@@ -904,6 +904,10 @@ QPixmap QIcon::pixmap(const QSize &size, Mode mode, State state) const
   might be smaller than requested, but never larger, unless the device-pixel ratio
   of the returned pixmap is larger than 1.
 
+  \note Prior to Qt 6.8 this function wronlgy passed the device dependent pixmap size to
+  QIconEngine::scaledPixmap(), since Qt 6.8 it's the device independent size (not scaled
+  with the \a devicePixelRatio).
+
   \sa  actualSize(), paint()
 */
 QPixmap QIcon::pixmap(const QSize &size, qreal devicePixelRatio, Mode mode, State state) const
