@@ -123,12 +123,14 @@ static constexpr auto makeTupleFromArgs(Ret (*)(JNIEnv *, jclass, Args...), va_l
     return makeTupleFromArgsHelper<Args...>(args);
 }
 
-// Get the return type of a function point
-template <typename Ret, typename ...Args>
-auto nativeFunctionReturnType(Ret(*function)(Args...))
+template <typename>
+struct NativeFunctionReturnType {};
+
+template<typename Ret, typename... Args>
+struct NativeFunctionReturnType<Ret(Args...)>
 {
-    return function(std::declval<Args>()...);
-}
+  using type = Ret;
+};
 
 } // namespace Detail
 } // namespace QtJniMethods
@@ -139,7 +141,7 @@ auto nativeFunctionReturnType(Ret(*function)(Args...))
 // the actual function with. This then takes care of implicit conversions,
 // e.g. a jobject becomes a QJniObject.
 #define Q_DECLARE_JNI_NATIVE_METHOD_HELPER(Method)                              \
-static decltype(QtJniMethods::Detail::nativeFunctionReturnType(Method))         \
+static QtJniMethods::Detail::NativeFunctionReturnType<decltype(Method)>::type   \
 va_##Method(JNIEnv *env, jclass thiz, ...)                                      \
 {                                                                               \
     va_list args;                                                               \
