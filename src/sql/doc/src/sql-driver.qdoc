@@ -77,14 +77,6 @@
     useful if the package provides its own set of system libraries that
     should not be recognized by the build routine.
 
-    In some cases it's more convenient to use \c CMAKE_INCLUDE_PATH
-    and \c CMAKE_LIBRARY_PATH variables to locate required libraries.
-    You should prefer this method if module needs to set properties
-    for the provided target libraries (e.g. this is required for PostgreSQL
-    and SQLite).
-    For example, you can do this as follows, to locate MySQL:
-    \snippet code/doc_src_sql-driver.qdoc 43
-
     The particulars for each driver are explained below.
 
     \note If something goes wrong and you want CMake to recheck your

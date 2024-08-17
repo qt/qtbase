@@ -253,24 +253,6 @@ Qt Sql Drivers:
 ...
 //! [42]
 
-//! [43]
-C:\Qt\6.0.0\Src\configure.bat -sql-mysql -- -DCMAKE_INCLUDE_PATH="C:\mysql-8.0.22-winx64\include" -DCMAKE_LIBRARY_PATH="C:\mysql-8.0.22-winx64\lib"
-Configure summary:
-
-...
-Qt Sql Drivers:
-  DB2 (IBM) .............................. no
-  InterBase .............................. no
-  Mimer SQL .............................. yes
-  MySql .................................. yes
-  OCI (Oracle) ........................... no
-  ODBC ................................... yes
-  PostgreSQL ............................. no
-  SQLite ................................. yes
-    Using system provided SQLite ......... no
-...
-//! [43]
-
 //! [44]
 create procedure inout_proc (INOUT param1 INT, OUT param2 INT)
 BEGIN
