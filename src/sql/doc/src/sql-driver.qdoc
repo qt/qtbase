@@ -92,7 +92,14 @@
     directory.
 
     \target DriverStandalone
-    \section2 Compile only a specific sql driver
+    \section2 Compile only a specific SQL driver
+
+    It's possible to only compile a specific SQL driver when Qt is already built
+    or installed as binary version. But you have to make sure to install
+    the exact same version of the Qt sources (for example through the \QMT) -
+    otherwise you might get compile errors due to changed apis.
+    Also make sure to properly set up the build environment by executing the
+    appropriate Qt command prompt in the Windows Start menu.
 
     A typical \c qt-cmake run (in this case to configure for MySQL) looks like this:
 
@@ -944,26 +951,37 @@
     a source distribution to compile the client libraries yourself, you
     must make sure that the pre-compiled library is compatible with
     your compiler, otherwise you will get a lot of "undefined symbols"
-    errors. Some compilers have tools to convert libraries, e.g. Borland
-    ships the tool \c{COFF2OMF.EXE} to convert libraries that have been
-    generated with Microsoft Visual C++.
+    errors.
 
-    If the compilation of a plugin succeeds but it cannot be loaded,
-    make sure that the following requirements are met:
+    If the compilation of a plugin succeeds but it cannot be loaded
+    afterwards, check out the following steps to find out the culprit:
 
-    \list
+    \list 1
     \li Ensure that the plugin is in the correct directory. You can use
         QApplication::libraryPaths() to determine where Qt looks for plugins.
     \li Ensure that the client libraries of the DBMS are available on the
         system. On Unix, run the command \c{ldd} and pass the name of the
         plugin as parameter, for example \c{ldd libqsqlmysql.so}. You will
         get a warning if any of the client libraries could not be found.
-        On Windows, you can use Visual Studio's dependency walker. With
+        On Windows, you can use Visual Studio's dependency walker or
+        \l{https://github.com/lucasg/Dependencies/releases}{Dependencies GUI}
+        to find out the dependent libraries. With
         Qt Creator, you can update the \c PATH environment variable in the
         \gui Run section of the \gui Project panel to include the path to
         the folder containing the client libraries.
-    \li Compile Qt with \c{QT_DEBUG_PLUGINS} defined to get very verbose
-        debug output when loading plugins.
+    \li When using MSVC, also make sure the plugin is built with the correct
+        build type. Due to different MSVC runtimes for debug and release,
+        a Qt debug build can't load a Qt release plugin and vice versa.
+    \li Run the compiled Qt executable with the environment variable
+        \l{Environment Variables Recognized by Qt}{QT_DEBUG_PLUGINS} set
+        to get very verbose debug output when loading plugins.
+    \li To retrieve possible debug messages from the SQL subsystem, enable
+        the output by setting the environment variable \c{QT_LOGGING_RULES}
+        to \c{qt.sql.*.debug=true}. Don't forget to enable the
+        \l{Environment Variables Recognized by Qt}{console} when working on
+        windows.
+        See \l{Logging Rules} for a more detailed explanation on how to set
+        logging rules.
     \endlist
 
     Make sure you have followed the guide to \l{Deploying Plugins}.
