@@ -17,5 +17,5 @@
 //! [2]
 
 //! [3]
-    QT_LOGGING_RULES="*.debug=false;driver.usb.debug=true"
+    QT_LOGGING_RULES=*.debug=false;driver.usb.debug=true
 //! [3]

@@ -278,7 +278,7 @@ void QLoggingRegistry::initializeRules()
 {
     if (qtLoggingDebug()) {
         debugMsg("Initializing the rules database ...");
-        debugMsg("Checking %s environment variable", "QTLOGGING_CONF");
+        debugMsg("Checking %s environment variable", "QT_LOGGING_CONF");
     }
     QList<QLoggingRule> er, qr, cr;
     // get rules from environment
