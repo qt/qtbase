@@ -27,7 +27,7 @@ END
 //! [3]
 mkdir build-sqldrivers
 cd build-sqldrivers
-qt-cmake -G Ninja <qt_source_directory>/qtbase/src/plugins/sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>/<platform> -DMySQL_INCLUDE_DIR="/usr/local/mysql/include" -DMySQL_LIBRARY="/usr/local/mysql/lib/libmysqlclient.<so|dylib>"
+qt-cmake -G Ninja <qt_source_directory>/qtbase/src/plugins/sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>/<platform> -DMySQL_ROOT="/usr/local/mysql"
 cmake --build .
 cmake --install .
 //! [3]
@@ -36,7 +36,7 @@ cmake --install .
 //! [5]
 mkdir build-sqldrivers
 cd build-sqldrivers
-qt-cmake -G Ninja <qt_installation_path>\Src\qtbase\src\plugins\sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>\<platform> -DMySQL_INCLUDE_DIR="C:\mysql-8.0.22-winx64\include" -DMySQL_LIBRARY="C:\mysql-8.0.22-winx64\lib\libmysql.lib"
+qt-cmake -G Ninja <qt_installation_path>\Src\qtbase\src\plugins\sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>\<platform> -DMySQL_ROOT="C:\mysql-8.0.22-winx64"
 cmake --build .
 cmake --install .
 //! [5]
@@ -236,7 +236,7 @@ Qt Sql Drivers:
 //! [41]
 
 //! [42]
-C:\Qt\6.0.0\Src\configure.bat -sql-mysql -- -DMySQL_INCLUDE_DIR="C:\mysql-8.0.22-winx64\include" -DMySQL_LIBRARY="C:\mysql-8.0.22-winx64\lib\libmysql.lib"
+C:\Qt\6.0.0\Src\configure.bat -sql-mysql -- -DMySQL_ROOT="C:\mysql-8.0.22-winx64"
 Configure summary:
 
 ...
