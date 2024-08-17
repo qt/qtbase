@@ -45,7 +45,7 @@ cmake --install .
 //! [7]
 mkdir build-sqldrivers
 cd build-sqldrivers
-qt-cmake -G Ninja <qt_source_directory>/qtbase/src/plugins/sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>/<platform> -DOracle_INCLUDE_DIR="/usr/include/oracle/21/client64" -DOracle_LIBRARY="/usr/lib/oracle/21/client64/lib/libclntsh.<so|dylib>"
+qt-cmake -G Ninja <qt_source_directory>/qtbase/src/plugins/sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>/<platform> -DOracle_ROOT="/usr/include/oracle/21/client64"
 cmake --build .
 cmake --install .
 //! [7]
@@ -54,7 +54,7 @@ cmake --install .
 //! [8]
 mkdir build-sqldrivers
 cd build-sqldrivers
-qt-cmake -G Ninja <qt_installation_path>\Src\qtbase\src\plugins\sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>\<platform> -DOracle_INCLUDE_DIR="C:\oracle\sdk\include" -DOracle_LIBRARY="C:\oracle\oci.lib"
+qt-cmake -G Ninja <qt_installation_path>\Src\qtbase\src\plugins\sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>\<platform> -DOracle_ROOT="C:\oracle"
 cmake --build .
 cmake --install .
 //! [8]
