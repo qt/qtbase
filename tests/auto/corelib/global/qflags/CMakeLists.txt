@@ -16,6 +16,13 @@ qt_internal_add_test(tst_qflags
         tst_qflags.cpp
 )
 
+qt_internal_add_test(tst_qflags64
+    SOURCES
+        tst_qflags.cpp
+    DEFINES
+        QFLAGS_TEST_64
+)
+
 qt_internal_add_test(tst_qflags_non_typesafe
     SOURCES
         tst_qflags.cpp

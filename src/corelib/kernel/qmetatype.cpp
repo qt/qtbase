@@ -2990,8 +2990,6 @@ QMetaType QMetaType::underlyingType() const
        differentiate between different underlying types of the
        same size and signedness (consider char <-> (un)signed char,
        int <-> long <-> long long).
-
-       ### TODO PENDING: QTBUG-111926 - QFlags supporting >32 bit int
     */
     if (flags() & IsUnsignedEnumeration) {
         switch (sizeOf()) {

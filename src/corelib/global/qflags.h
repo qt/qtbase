@@ -7,6 +7,7 @@
 #include <QtCore/qcompare_impl.h>
 #include <QtCore/qtypeinfo.h>
 
+#include <algorithm>
 #include <initializer_list>
 
 QT_BEGIN_NAMESPACE
@@ -51,38 +52,76 @@ constexpr inline QIncompatibleFlag::QIncompatibleFlag(int value) noexcept : i(va
 namespace QtPrivate {
 template <typename T> struct IsQFlags : std::false_type {};
 template <typename E> struct IsQFlags<QFlags<E>> : std::true_type {};
+
+template<typename Enum>
+class QFlagsStorage
+{
+    static_assert(sizeof(Enum) <= sizeof(quint64),
+                  "Only enumerations 64 bits or smaller are supported.");
+    static_assert((std::is_enum<Enum>::value), "QFlags is only usable on enumeration types.");
+
+    static constexpr size_t IntegerSize = (std::max)(sizeof(Enum), sizeof(int));
+    using Integers = QIntegerForSize<IntegerSize>;
+
+protected:
+    typedef typename std::conditional<
+            std::is_unsigned<typename std::underlying_type<Enum>::type>::value,
+            typename Integers::Unsigned,
+            typename Integers::Signed
+        >::type Int;
+
+    Int i = 0;
+
+public:
+    constexpr inline QFlagsStorage() noexcept = default;
+    constexpr inline explicit QFlagsStorage(std::in_place_t, Int v) : i(v) {}
+};
+
+template <typename Enum, int Size = sizeof(QFlagsStorage<Enum>)>
+struct QFlagsStorageHelper : QFlagsStorage<Enum>
+{
+    using QFlagsStorage<Enum>::QFlagsStorage;
+};
+template <typename Enum> struct QFlagsStorageHelper<Enum, sizeof(int)> : QFlagsStorage<Enum>
+{
+    using QFlagsStorage<Enum>::QFlagsStorage;
+
+    // For compatibility with Qt 3, moc goes through QFlag in order to
+    // read/write properties of type QFlags; so a conversion to QFlag is also
+    // needed here. (It otherwise goes through a QFlags->int->QFlag conversion
+    // sequence.)
+    constexpr inline Q_IMPLICIT QFlagsStorageHelper(QFlag flag) noexcept
+        : QFlagsStorage<Enum>(std::in_place, flag) {}
+#ifdef QT_TYPESAFE_FLAGS
+    constexpr inline explicit operator QFlag() const noexcept { return QFlag(this->i); }
+#endif
+};
 } // namespace QtPrivate
 
 template<typename Enum>
-class QFlags
+class QFlags : public QtPrivate::QFlagsStorageHelper<Enum>
 {
-    static_assert((sizeof(Enum) <= sizeof(int)),
-                  "QFlags uses an int as storage, so an enum with underlying "
-                  "long long will overflow.");
-    static_assert((std::is_enum<Enum>::value), "QFlags is only usable on enumeration types.");
-
+    using Base = QtPrivate::QFlagsStorageHelper<Enum>;
 public:
-#if defined(Q_CC_MSVC) || defined(Q_QDOC)
-    // see above for MSVC
-    // the definition below is too complex for qdoc
-    typedef int Int;
-#else
-    typedef typename std::conditional<
-            std::is_unsigned<typename std::underlying_type<Enum>::type>::value,
-            unsigned int,
-            signed int
-        >::type Int;
-#endif
     typedef Enum enum_type;
+    using Int = typename Base::Int;
+    using Base::Base;
+
     // compiler-generated copy/move ctor/assignment operators are fine!
-    constexpr inline QFlags() noexcept : i(0) {}
-    constexpr inline Q_IMPLICIT QFlags(Enum flags) noexcept : i(Int(flags)) {}
-    constexpr inline Q_IMPLICIT QFlags(QFlag flag) noexcept : i(flag) {}
+    constexpr inline QFlags() noexcept = default;
+
+    constexpr inline Q_IMPLICIT QFlags(Enum flags) noexcept : Base(std::in_place, Int(flags)) {}
+
+#ifdef Q_QDOC
+    constexpr inline Q_IMPLICIT QFlags(std::in_place_t, Int flags) noexcept;
+    constexpr inline Q_IMPLICIT QFlags(QFlag flag) noexcept
+        requires(sizeof(Enum) == sizeof(int));
+#endif
 
     constexpr inline QFlags(std::initializer_list<Enum> flags) noexcept
-        : i(initializer_list_helper(flags.begin(), flags.end())) {}
+        : Base(std::in_place, initializer_list_helper(flags.begin(), flags.end())) {}
 
-    constexpr static inline QFlags fromInt(Int i) noexcept { return QFlags(QFlag(i)); }
+    constexpr static inline QFlags fromInt(Int i) noexcept { return QFlags(std::in_place, i); }
     constexpr inline Int toInt() const noexcept { return i; }
 
 #ifndef QT_TYPESAFE_FLAGS
@@ -99,27 +138,22 @@ public:
 #ifdef QT_TYPESAFE_FLAGS
     constexpr inline explicit operator Int() const noexcept { return i; }
     constexpr inline explicit operator bool() const noexcept { return i; }
-    // For some reason, moc goes through QFlag in order to read/write
-    // properties of type QFlags; so a conversion to QFlag is also
-    // needed here. (It otherwise goes through a QFlags->int->QFlag
-    // conversion sequence.)
-    constexpr inline explicit operator QFlag() const noexcept { return QFlag(i); }
 #else
     constexpr inline Q_IMPLICIT operator Int() const noexcept { return i; }
     constexpr inline bool operator!() const noexcept { return !i; }
 #endif
 
-    constexpr inline QFlags operator|(QFlags other) const noexcept { return QFlags(QFlag(i | other.i)); }
-    constexpr inline QFlags operator|(Enum other) const noexcept { return QFlags(QFlag(i | Int(other))); }
-    constexpr inline QFlags operator^(QFlags other) const noexcept { return QFlags(QFlag(i ^ other.i)); }
-    constexpr inline QFlags operator^(Enum other) const noexcept { return QFlags(QFlag(i ^ Int(other))); }
+    constexpr inline QFlags operator|(QFlags other) const noexcept { return QFlags(std::in_place, i | other.i); }
+    constexpr inline QFlags operator|(Enum other) const noexcept { return QFlags(std::in_place, i | Int(other)); }
+    constexpr inline QFlags operator^(QFlags other) const noexcept { return QFlags(std::in_place, i ^ other.i); }
+    constexpr inline QFlags operator^(Enum other) const noexcept { return QFlags(std::in_place, i ^ Int(other)); }
 #ifndef QT_TYPESAFE_FLAGS
-    constexpr inline QFlags operator&(int mask) const noexcept { return QFlags(QFlag(i & mask)); }
-    constexpr inline QFlags operator&(uint mask) const noexcept { return QFlags(QFlag(i & mask)); }
+    constexpr inline QFlags operator&(int mask) const noexcept { return QFlags(std::in_place, i & mask); }
+    constexpr inline QFlags operator&(uint mask) const noexcept { return QFlags(std::in_place, i & mask); }
 #endif
-    constexpr inline QFlags operator&(QFlags other) const noexcept { return QFlags(QFlag(i & other.i)); }
-    constexpr inline QFlags operator&(Enum other) const noexcept { return QFlags(QFlag(i & Int(other))); }
-    constexpr inline QFlags operator~() const noexcept { return QFlags(QFlag(~i)); }
+    constexpr inline QFlags operator&(QFlags other) const noexcept { return QFlags(std::in_place, i & other.i); }
+    constexpr inline QFlags operator&(Enum other) const noexcept { return QFlags(std::in_place, i & Int(other)); }
+    constexpr inline QFlags operator~() const noexcept { return QFlags(std::in_place, ~i); }
 
     constexpr inline void operator+(QFlags other) const noexcept = delete;
     constexpr inline void operator+(Enum other) const noexcept = delete;
@@ -174,7 +208,7 @@ private:
 
     template <typename E> friend QDataStream &operator<<(QDataStream &, QFlags<E>);
     template <typename E> friend QDataStream &operator>>(QDataStream &, QFlags<E> &);
-    Int i;
+    using Base::i;
 };
 
 #ifndef Q_MOC_RUN

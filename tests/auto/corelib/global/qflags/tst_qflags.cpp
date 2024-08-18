@@ -14,10 +14,22 @@
 
 #include <QTest>
 
+#if defined(__cpp_concepts) && __has_include(<concepts>)
+#  include <concepts>
+#endif
+
+#ifdef QFLAGS_TEST_64
+# define tst_QFlags tst_QFlags64
+using IntegerSize = QIntegerForSize<8>;
+#else
+using IntegerSize = QIntegerForSize<4>;
+#endif
+
 class tst_QFlags: public QObject
 {
     Q_OBJECT
 private slots:
+    void construction() const;
     void boolCasts() const;
     void operators() const;
     void mixingDifferentEnums() const;
@@ -28,26 +40,25 @@ private slots:
     void testAnyFlag();
     void constExpr();
     void signedness();
+    void size();
+    void castToFromQFlag();
     void classEnum();
     void initializerLists();
     void testSetFlags();
     void adl();
 };
 
-// untyped enum: even though we expect this to be signed, it's possible the
-// compiler implements it as unsigned
-enum SignedFlag {
+enum SignedFlag : IntegerSize::Signed {
     NoSignedFlag        = 0x00000000,
     LeftSignedFlag      = 0x00000001,
     RightSignedFlag     = 0x00000002,
     MiddleSignedFlag    = 0x00000004,
-    SignedFlagMask      = -1
+    SignedFlagMask      = IntegerSize::Signed(-1)
 };
 Q_DECLARE_FLAGS(SignedFlags, SignedFlag)
 Q_DECLARE_OPERATORS_FOR_FLAGS(SignedFlags)
 
-// typed enum: this one we expect to be unsigned (but MSVC says it isn't)
-enum UnsignedFlag : unsigned {
+enum UnsignedFlag : IntegerSize::Unsigned {
     UnsignedFlag01 = 0x0001,
     UnsignedFlag02 = 0x0002,
     UnsignedFlag04 = 0x0004,
@@ -62,7 +73,18 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(UnsignedFlags)
 enum MixingFlag {
     MixingFlag100 = 0x0100,
 };
-Q_DECLARE_MIXED_ENUM_OPERATORS_SYMMETRIC(int, UnsignedFlag, MixingFlag)
+Q_DECLARE_MIXED_ENUM_OPERATORS_SYMMETRIC(IntegerSize::Signed, UnsignedFlag, MixingFlag)
+
+void tst_QFlags::construction() const
+{
+    UnsignedFlags def;
+    UnsignedFlags copied(def);
+    UnsignedFlags moved(std::move(copied)); Q_UNUSED(moved);
+    UnsignedFlags fromEnum(UnsignedFlag01); Q_UNUSED(fromEnum);
+    UnsignedFlags inPlace(std::in_place, 0xffff); Q_UNUSED(inPlace);
+    UnsignedFlags fromInt = UnsignedFlags::fromInt(0xffff); Q_UNUSED(fromInt);
+    // initializer_list tested in initializerLists()
+}
 
 void tst_QFlags::boolCasts() const
 {
@@ -294,7 +316,11 @@ void tst_QFlags::constExpr()
     VERIFY_CONSTEXPR((LeftSignedFlag | RightSignedFlag) | MiddleSignedFlag, LeftSignedFlag | RightSignedFlag | MiddleSignedFlag);
     VERIFY_CONSTEXPR(~(LeftSignedFlag | RightSignedFlag), ~(LeftSignedFlag | RightSignedFlag));
     VERIFY_CONSTEXPR(SignedFlags(LeftSignedFlag) ^ RightSignedFlag, LeftSignedFlag ^ RightSignedFlag);
+    VERIFY_CONSTEXPR(SignedFlags{}, 0);
+#ifndef tst_QFlags
+    // only works with QFlag help
     VERIFY_CONSTEXPR(SignedFlags(0), 0);
+#endif
 #ifndef QT_TYPESAFE_FLAGS
     VERIFY_CONSTEXPR(SignedFlags(RightSignedFlag) & 0xff, RightSignedFlag);
     VERIFY_CONSTEXPR(SignedFlags(RightSignedFlag) | 0xff, 0xff);
@@ -320,16 +346,118 @@ void tst_QFlags::signedness()
 #endif
 }
 
-enum class MyStrictEnum { StrictZero, StrictOne, StrictTwo, StrictFour=4 };
+enum class MyStrictEnum : IntegerSize::Unsigned
+{ StrictZero, StrictOne, StrictTwo, StrictFour=4 };
 Q_DECLARE_FLAGS( MyStrictFlags, MyStrictEnum )
 Q_DECLARE_OPERATORS_FOR_FLAGS( MyStrictFlags )
 
-enum class MyStrictNoOpEnum { StrictZero, StrictOne, StrictTwo, StrictFour=4 };
+enum class MyStrictNoOpEnum : IntegerSize::Unsigned
+{ StrictZero, StrictOne, StrictTwo, StrictFour=4 };
 Q_DECLARE_FLAGS( MyStrictNoOpFlags, MyStrictNoOpEnum )
 
 static_assert( !QTypeInfo<MyStrictFlags>::isComplex );
 static_assert( QTypeInfo<MyStrictFlags>::isRelocatable );
 static_assert( !std::is_pointer_v<MyStrictFlags> );
+
+void tst_QFlags::size()
+{
+    static_assert(sizeof(UnsignedFlags) >= sizeof(IntegerSize::Unsigned));
+    static_assert(sizeof(MyStrictFlags) == sizeof(IntegerSize::Unsigned));
+}
+
+template <typename Flags, typename FlagType> void castToFromQFlag_template()
+{
+    // Verify that 32-bit QFlags works with QFlag and, through it,
+    // can be constructed from integer types.
+    auto testType = [](auto initialValue) {
+        using T = decltype(+initialValue);
+        FlagType flag(initialValue);    // can construct QFlag from this type
+        T v1 = flag;                    // can cast QFlag to this type
+        Q_UNUSED(v1);
+
+        Flags flags(initialValue);      // can construct QFlags through QFlag from this type
+        T v2 = QFlag(flags);            // can cast QFlags to this type through QFlag
+        Q_UNUSED(v2);
+    };
+    testType(qint8(-1));
+    testType(char(1));
+    testType(uchar(2));
+    testType(short(3));
+    testType(ushort(4));
+    testType(int(5));
+    testType(uint(6));
+#ifdef Q_CC_MSVC
+    // QFlag has a constructor for uint for all other compilers, which make
+    // the construction from long or ulong ambiguous.
+    testType(long(7));
+    testType(ulong(8));
+#endif
+
+    FlagType flag(1);
+    IntegerSize::Signed i = flag;       // must cast to integers
+    IntegerSize::Unsigned u = flag;     // must cast to integers
+    QCOMPARE(i, 1);
+    QCOMPARE(u, 1U);
+
+    // QFlags has a constructor on QFlag
+    SignedFlags f = flag;
+    QCOMPARE(f, LeftSignedFlag);
+    UnsignedFlags uf = flag;
+    QCOMPARE(uf, UnsignedFlag01);
+    MyStrictFlags sf = flag;
+    QCOMPARE(sf, MyStrictEnum::StrictOne);
+
+#ifndef Q_CC_MSVC
+    // QFlags has a cast operator to QFlag
+    // ### this used to work but began failing with MSVC after QFlagsStorage
+    //     was introduced
+    flag = FlagType(f);
+    QCOMPARE(IntegerSize::Signed(flag), 1);
+    flag = FlagType(uf);
+    QCOMPARE(IntegerSize::Signed(flag), 1);
+    flag = FlagType(sf);
+    QCOMPARE(IntegerSize::Signed(flag), 1);
+#endif
+
+    // and thus this should compile
+    QCOMPARE(f, 1);
+    QCOMPARE(uf, 1);
+    QCOMPARE(sf, 1);
+}
+
+template <typename Flags> void noCastToFromQFlag_template()
+{
+    // Verify that non-32-bit QFlags doesn't have QFlag support
+    static_assert(!std::is_constructible_v<Flags, char>);
+    static_assert(!std::is_constructible_v<Flags, uchar>);
+    static_assert(!std::is_constructible_v<Flags, signed char>);
+    static_assert(!std::is_constructible_v<Flags, char16_t>);
+    static_assert(!std::is_constructible_v<Flags, char32_t>);
+    static_assert(!std::is_constructible_v<Flags, short>);
+    static_assert(!std::is_constructible_v<Flags, ushort>);
+    static_assert(!std::is_constructible_v<Flags, int>);
+    static_assert(!std::is_constructible_v<Flags, uint>);
+    static_assert(!std::is_constructible_v<Flags, long>);
+    static_assert(!std::is_constructible_v<Flags, ulong>);
+    static_assert(!std::is_constructible_v<Flags, qlonglong>);
+    static_assert(!std::is_constructible_v<Flags, qulonglong>);
+    static_assert(!std::is_constructible_v<Flags, QFlag>);
+    static_assert(!std::is_constructible_v<QFlag, Flags>);
+
+#if defined(__cpp_concepts) && __has_include(<concepts>)
+    static_assert(!std::equality_comparable_with<QFlag, Flags>);
+    static_assert(!std::equality_comparable_with<Flags, int>);
+#endif
+}
+
+void tst_QFlags::castToFromQFlag()
+{
+    if constexpr (sizeof(IntegerSize::Signed) == sizeof(int)) {
+        castToFromQFlag_template<MyStrictFlags, QFlag>();
+    } else {
+        noCastToFromQFlag_template<MyStrictFlags>();
+    }
+}
 
 void tst_QFlags::classEnum()
 {
@@ -476,7 +604,7 @@ void tst_QFlags::testSetFlags()
 }
 
 namespace SomeNS {
-enum Foo { Foo_A = 1 << 0, Foo_B = 1 << 1, Foo_C = 1 << 2 };
+enum Foo : IntegerSize::Unsigned { Foo_A = 1 << 0, Foo_B = 1 << 1, Foo_C = 1 << 2 };
 
 Q_DECLARE_FLAGS(Foos, Foo)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Foos);
@@ -497,7 +625,7 @@ void tst_QFlags::adl()
 }
 
 // (statically) check QTypeInfo for QFlags instantiations:
-enum MyEnum { Zero, One, Two, Four=4 };
+enum MyEnum : IntegerSize::Unsigned { Zero, One, Two, Four=4 };
 Q_DECLARE_FLAGS( MyFlags, MyEnum )
 Q_DECLARE_OPERATORS_FOR_FLAGS( MyFlags )
 

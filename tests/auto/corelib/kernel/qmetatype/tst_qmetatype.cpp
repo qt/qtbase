@@ -1858,6 +1858,14 @@ void tst_QMetaType::isEnum()
 
     int type6 = ::qMetaTypeId<isEnumTest_Enum1>();
     QVERIFY((QMetaType(type6).flags() & QMetaType::IsEnumeration) == QMetaType::IsEnumeration);
+
+    // QFlags are considered enums
+    QCOMPARE(QMetaType::fromType<QFlags<isEnumTest_Enum0>>().flags() & QMetaType::IsEnumeration,
+             QMetaType::IsEnumeration);
+    QCOMPARE(QMetaType::fromType<QFlags<isEnumTest_Enum1>>().flags() & QMetaType::IsEnumeration,
+             QMetaType::IsEnumeration);
+    QCOMPARE(QMetaType::fromType<QFlags<isEnumTest_Struct0::A>>().flags() & QMetaType::IsEnumeration,
+             QMetaType::IsEnumeration);
 }
 
 enum E1 : unsigned char {};
@@ -1870,12 +1878,13 @@ namespace myflags {
 
     enum  Flag1 : int { A, B };
     enum  Flag2 : short { X, Y };
+    enum  Flag3 : qlonglong { T, W = Q_INT64_C(0x1'0000'0002) };
 
     Q_DECLARE_FLAGS(Flags1, myflags::Flag1);
     Q_FLAG_NS(Flags1)
     Q_DECLARE_FLAGS(Flags2, myflags::Flag2);
     Q_FLAG_NS(Flags2)
-
+    Q_DECLARE_FLAGS(Flags3, myflags::Flag3)
 }
 
 template <typename T>
@@ -1895,14 +1904,16 @@ void tst_QMetaType::underlyingType_data()
                            << QMetaType::fromType<getUnderlyingTypeNormalized<isEnumTest_Enum1>>();
     QTest::newRow("uchar") << QMetaType::fromType<E1>()
                            << QMetaType::fromType<getUnderlyingTypeNormalized<E1>>();
-    QTest::newRow("long") << QMetaType::fromType<E2>()
-                          << QMetaType::fromType<getUnderlyingTypeNormalized<E2>>();
+    QTest::newRow("qlonglong") << QMetaType::fromType<E2>()
+                               << QMetaType::fromType<getUnderlyingTypeNormalized<E2>>();
     QTest::newRow("class_ushort") << QMetaType::fromType<E3>()
                                   << QMetaType::fromType<getUnderlyingTypeNormalized<E3>>();
     QTest::newRow("flags_int") << QMetaType::fromType<myflags::Flags1>()
                                << QMetaType::fromType<int>();
     QTest::newRow("flags_short")  << QMetaType::fromType<myflags::Flags2>()
                                   << QMetaType::fromType<int>(); // sic, not short!
+    QTest::newRow("flags_qlonglong")  << QMetaType::fromType<myflags::Flags3>()
+                                      << QMetaType::fromType<qlonglong>();
 }
 
 void tst_QMetaType::underlyingType()

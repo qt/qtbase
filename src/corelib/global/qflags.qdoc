@@ -72,6 +72,12 @@
     enum value can be OR'd with any other enum value and passed on to
     a function that takes an \c int or \c uint.
 
+    Since Qt 6.9, QFlags supports 64-bit enumerations. It is recommended to use
+    explicit (fixed) underlying types when going above 32 bits, to ensure
+    neither the enumeration nor the QFlags type change sizes if an enumerator
+    is removed. Some compilers will also only make the \c enum type larger than
+    32 bits with explicit underlying types.
+
     Qt uses QFlags to provide type safety. For example, the
     Qt::Alignment type is simply a typedef for
     QFlags<Qt::AlignmentFlag>. QLabel::setAlignment() takes a
@@ -112,8 +118,6 @@
     When a singular name is desired for the QFlags type (e.g., \c
     Alignment), you can use \c Flag as the suffix for the enum type
     (e.g., \c AlignmentFlag).
-
-    \sa QFlag
 */
 
 /*!
@@ -121,8 +125,10 @@
     \since 5.0
 
     Typedef for the integer type used for storage as well as for
-    implicit conversion. Either \c int or \c{unsigned int}, depending
-    on whether the enum's underlying type is signed or unsigned.
+    implicit conversion. Either \c qintXX or \c quintXX, depending on
+    whether the enum's underlying type is signed or unsigned and, since Qt 6.9,
+    the enum's size. Typically, it will be \c qint32 (\c{int}) or \c quint32
+    (\c{unsigned}).
 */
 
 /*!
@@ -159,6 +165,16 @@
     int, we effectively ensure that arbitrary enum values cannot be
     cast to a QFlags, whereas untyped enum values (i.e., \c int
     values) can.
+
+    This constructor is only present for 32-bit \c Enum types. To support all
+    enum sizes, consider the constructor using \c{std::in_place_t}.
+*/
+
+/*!
+    \fn template <typename Enum> QFlags<Enum>::QFlags(std::in_place_t, Int flags)
+    \since 6.9
+
+    Constructs a QFlags object initialized with the integer \a flags.
 */
 
 /*!
@@ -184,6 +200,12 @@
     Performs a bitwise AND operation with \a mask and stores the
     result in this QFlags object. Returns a reference to this object.
 
+//! [unsafe-integer]
+    This operator is disabled if the \c{QT_TYPESAFE_FLAGS} macro is defined.
+    Note that it is not extended to 64-bit for 64-bit QFlags either: for 64-bit
+    support, use the type-safe overload.
+//! [unsafe-integer]
+
     \sa operator&(), operator|=(), operator^=()
 */
 
@@ -191,6 +213,7 @@
     \fn template <typename Enum> QFlags &QFlags<Enum>::operator&=(uint mask)
 
     \overload
+    \include qflags.qdoc unsafe-integer
 */
 
 /*!
@@ -280,6 +303,8 @@
     Returns a QFlags object containing the result of the bitwise AND
     operation on this object and \a mask.
 
+    \include qflags.qdoc unsafe-integer
+
     \sa operator&=(), operator|(), operator^(), operator~()
 */
 
@@ -287,6 +312,7 @@
     \fn template <typename Enum> QFlags QFlags<Enum>::operator&(uint mask) const
 
     \overload
+    \include qflags.qdoc unsafe-integer
 */
 
 /*!

@@ -579,7 +579,7 @@ inline QDebug operator<<(QDebug debug, Flags flags)
 // mutually exclusive.
 
 namespace QtPrivate {
-template <typename T, bool IsEnum = std::is_enum_v<T>, bool SizedForQFlags = sizeof(T) <= 4>
+template <typename T, bool IsEnum = std::is_enum_v<T>, bool = sizeof(T) <= sizeof(quint64)>
 struct EnumHasQFlag { static constexpr bool Value = false; };
 template <typename T> struct EnumHasQFlag<T, true, true> : QtPrivate::IsQEnumHelper<QFlags<T>> {};
 
