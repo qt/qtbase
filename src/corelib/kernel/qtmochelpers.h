@@ -83,6 +83,16 @@ template <uint... Nx> constexpr auto stringData(const char (&...strings)[Nx])
 struct NoType {};
 
 namespace detail {
+template<typename Enum> constexpr int payloadSizeForEnum()
+{
+    // How many uint blocks do we need to store the values of this enum and the
+    // string indices for the enumeration labels? We only support 8- 16-, 32-
+    // and 64-bit enums at the time of this writing, so this code is extra
+    // pedantic allowing for 48-, 96-, 128-bit, etc.
+    int n = int(sizeof(Enum) + sizeof(uint)) - 1;
+    return 1 + n / sizeof(uint);
+}
+
 template <uint H, uint P> struct UintDataBlock
 {
     static constexpr uint headerSize() { return H; }
@@ -207,10 +217,10 @@ struct PropertyData : detail::UintDataBlock<5, 0>
 };
 
 template <typename Enum, int N = 0>
-struct EnumData : detail::UintDataBlock<5, 2 * N>
+struct EnumData : detail::UintDataBlock<5, N * detail::payloadSizeForEnum<Enum>()>
 {
 private:
-    static_assert(sizeof(Enum) <= sizeof(uint), "Cannot store enumeration of this size");
+    static_assert(sizeof(Enum) <= 2 * sizeof(uint), "Cannot store enumeration of this size");
     template <typename T> struct RealEnum { using Type = T; };
     template <typename T> struct RealEnum<QFlags<T>> { using Type = T; };
 public:
@@ -218,7 +228,6 @@ public:
         int nameIndex;
         typename RealEnum<Enum>::Type value;
     };
-
 
     constexpr EnumData(uint nameOffset, uint aliasOffset, uint flags)
     {
@@ -234,7 +243,7 @@ public:
             this->header[2] |= QtMocConstants::EnumIsScoped;
     }
 
-    template <int Added> constexpr auto add(const EnumEntry (&entries)[Added])
+    template <int Added> constexpr auto add(const EnumEntry (&entries)[Added]) const
     {
         EnumData<Enum, N + Added> result(this->header[0], this->header[1], this->header[2]);
 
@@ -244,6 +253,15 @@ public:
             result.payload[o++] = uint(entry.nameIndex);
             auto value = qToUnderlying(entry.value);
             result.payload[o++] = uint(value);
+        }
+
+        if constexpr (sizeof(Enum) > sizeof(uint)) {
+            static_assert(N == 0, "Unimplemented: merging with non-empty EnumData");
+            result.header[2] |= QtMocConstants::EnumIs64Bit;
+            for (auto entry : entries) {
+                auto value = qToUnderlying(entry.value);
+                result.payload[o++] = uint(value >> 32);
+            }
         }
         return result;
     }

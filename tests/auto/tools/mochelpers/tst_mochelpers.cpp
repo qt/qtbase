@@ -123,11 +123,17 @@ template <typename E, int N> void enumUintData_check(const E (&values)[N])
         QCOMPARE(result.payload[2 * i + 0], uint(namesAndOffsets[i].nameIndex));
         QCOMPARE(result.payload[2 * i + 1], uint(values[i]));
     }
+
+    if constexpr (sizeof(E) > sizeof(uint)) {
+        using U = std::underlying_type_t<E>;
+        for (uint i = 0; i < std::size(values); ++i)
+            QCOMPARE(result.payload[2 * N + i], uint(U(values[i]) >> 32));
+    }
 }
 
 enum E1 { AnEnumValue };
 enum class E2 { V0 = INT_MAX, V1 = INT_MIN };
-enum class E3 : int { V = 0x1111'2222, V2 = -V };
+enum class E3 : qint64 { V = 0x1111'2222'3333'4444, V2 = -V };
 void tst_MocHelpers::enumUintData()
 {
     using namespace QtMocHelpers;
@@ -171,17 +177,23 @@ void tst_MocHelpers::enumUintData()
                 .add({ { 2, E3::V }, {3, E3::V2 }, });
         QCOMPARE(result.header[0], 1U);
         QCOMPARE(result.header[1], 1U);
-        QCOMPARE(result.header[2], EnumIsScoped);
+        QCOMPARE(result.header[2], EnumIsScoped | EnumIs64Bit);
         QCOMPARE(result.header[3], 2U);
         QCOMPARE(result.payload[0], 2U);
         QCOMPARE(result.payload[1], uint(E3::V));
         QCOMPARE(result.payload[2], 3U);
         QCOMPARE(result.payload[3], uint(E3::V2));
+        QCOMPARE(result.payload[4], uint(quint64(E3::V) >> 32));
+        QCOMPARE(result.payload[5], uint(quint64(E3::V2) >> 32));
     }
 
     QTest::setThrowOnFail(true);
     {
         enum E { E0, E1 = -1, E2 = 123, E3 = INT_MIN };
+        enumUintData_check({E0, E1, E2, E3});
+    }
+    {
+        enum E : quint64 { E0, E1 = quint64(INT_MIN), E2 = 0x1'0000'0000, E3 = quint64(LLONG_MIN) };
         enumUintData_check({E0, E1, E2, E3});
     }
 }
@@ -223,7 +235,7 @@ template <size_t N> static void checkEnums(const std::array<uint, N> &data)
     // E3:
     QCOMPARE(header[5 + 0], 4U);
     QCOMPARE(header[5 + 1], 5U);
-    QCOMPARE(header[5 + 2], EnumIsFlag | EnumIsScoped);
+    QCOMPARE(header[5 + 2], EnumIsFlag | EnumIsScoped | EnumIs64Bit);
     QCOMPARE(header[5 + 3], 2U);
     QCOMPARE_GE(header[5 + 4], 14U);
     payload = data.data() + header[5 + 4];
@@ -231,6 +243,8 @@ template <size_t N> static void checkEnums(const std::array<uint, N> &data)
     QCOMPARE(payload[1], uint(E3::V));
     QCOMPARE(payload[2], 8U);
     QCOMPARE(payload[3], uint(E3::V2));
+    QCOMPARE(payload[4], uint(quint64(E3::V) >> 32));
+    QCOMPARE(payload[5], uint(quint64(E3::V2) >> 32));
 
     // E2:
     QCOMPARE(header[10 + 0], 7U);

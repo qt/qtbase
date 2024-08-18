@@ -152,12 +152,12 @@ public:
     enum MetaEnumTest_Enum0 { MetaEnumTest_Enum0_dummy = 2, MetaEnumTest_Enum0_value = 42, MetaEnsureSignedEnum0 = -1 };
     Q_ENUM(MetaEnumTest_Enum0)
     enum MetaEnumTest_Enum1 : qint64 { MetaEnumTest_Enum1_value = 42, MetaEnumTest_Enum1_bigValue = (Q_INT64_C(1) << 33) + 50 };
-    // Q_ENUM(MetaEnumTest_Enum1)
+    Q_ENUM(MetaEnumTest_Enum1)
 
     enum MetaEnumTest_Enum3 : qint64 { MetaEnumTest_Enum3_value = -47, MetaEnumTest_Enum3_bigValue = (Q_INT64_C(1) << 56) + 5, MetaEnumTest_Enum3_bigNegValue = -(Q_INT64_C(1) << 56) - 3 };
-    // Q_ENUM(MetaEnumTest_Enum3)
+    Q_ENUM(MetaEnumTest_Enum3)
     enum MetaEnumTest_Enum4 : quint64 { MetaEnumTest_Enum4_value = 47, MetaEnumTest_Enum4_bigValue = (Q_INT64_C(1) << 52) + 45 };
-    // Q_ENUM(MetaEnumTest_Enum4)
+    Q_ENUM(MetaEnumTest_Enum4)
     enum MetaEnumTest_Enum5 : uint { MetaEnumTest_Enum5_value = 47 };
     Q_ENUM(MetaEnumTest_Enum5)
     enum MetaEnumTest_Enum6 : uchar { MetaEnumTest_Enum6_value = 47 };
@@ -5390,13 +5390,13 @@ void tst_QVariant::metaEnums_data()
     QTest::newRow(#Value) << &testVariantMetaEnum<decltype(Value), Value> << #Value;
 
     METAENUMS_TEST(MetaEnumTest_Enum0_value);
-    // METAENUMS_TEST(MetaEnumTest_Enum1_value);
-    // METAENUMS_TEST(MetaEnumTest_Enum1_bigValue);
-    // METAENUMS_TEST(MetaEnumTest_Enum3_value);
-    // METAENUMS_TEST(MetaEnumTest_Enum3_bigValue);
-    // METAENUMS_TEST(MetaEnumTest_Enum3_bigNegValue);
-    // METAENUMS_TEST(MetaEnumTest_Enum4_value);
-    // METAENUMS_TEST(MetaEnumTest_Enum4_bigValue);
+    METAENUMS_TEST(MetaEnumTest_Enum1_value);
+    METAENUMS_TEST(MetaEnumTest_Enum1_bigValue);
+    METAENUMS_TEST(MetaEnumTest_Enum3_value);
+    METAENUMS_TEST(MetaEnumTest_Enum3_bigValue);
+    METAENUMS_TEST(MetaEnumTest_Enum3_bigNegValue);
+    METAENUMS_TEST(MetaEnumTest_Enum4_value);
+    METAENUMS_TEST(MetaEnumTest_Enum4_bigValue);
     METAENUMS_TEST(MetaEnumTest_Enum5_value);
     METAENUMS_TEST(MetaEnumTest_Enum6_value);
     METAENUMS_TEST(MetaEnumTest_Enum8_value);
