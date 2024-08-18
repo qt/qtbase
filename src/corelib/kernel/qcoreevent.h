@@ -367,10 +367,13 @@ class Q_CORE_EXPORT QTimerEvent : public QEvent
     Q_DECL_EVENT_COMMON(QTimerEvent)
 public:
     explicit QTimerEvent(int timerId);
-    int timerId() const { return id; }
+    explicit QTimerEvent(Qt::TimerId timerId);
+
+    int timerId() const { return qToUnderlying(id()); }
+    Qt::TimerId id() const { return m_id; }
 
 protected:
-    int id;
+    Qt::TimerId m_id;
 };
 
 class QObject;
