@@ -16,23 +16,24 @@ class QObject;
 
 class Q_CORE_EXPORT QBasicTimer
 {
-    int id;
+    Qt::TimerId m_id;
     Q_DISABLE_COPY(QBasicTimer)
 
 public:
-    constexpr QBasicTimer() noexcept : id{0} {}
-    inline ~QBasicTimer() { if (id) stop(); }
+    constexpr QBasicTimer() noexcept : m_id{Qt::TimerId::Invalid} {}
+    ~QBasicTimer() { if (isActive()) stop(); }
 
     QBasicTimer(QBasicTimer &&other) noexcept
-        : id{std::exchange(other.id, 0)}
+        : m_id{std::exchange(other.m_id, Qt::TimerId::Invalid)}
     {}
 
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QBasicTimer)
 
-    void swap(QBasicTimer &other) noexcept { std::swap(id, other.id); }
+    void swap(QBasicTimer &other) noexcept { std::swap(m_id, other.m_id); }
 
-    bool isActive() const noexcept { return id != 0; }
-    int timerId() const noexcept { return id; }
+    bool isActive() const noexcept { return m_id != Qt::TimerId::Invalid; }
+    int timerId() const noexcept { return qToUnderlying(id()); }
+    Qt::TimerId id() const noexcept { return m_id; }
     QT_CORE_INLINE_SINCE(6, 5)
     void start(int msec, QObject *obj);
     QT_CORE_INLINE_SINCE(6, 5)
