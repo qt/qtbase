@@ -2376,7 +2376,7 @@ bool scanImports(Options *options, QSet<QString> *usedDependencies)
         if (path.isEmpty()) {
             fprintf(stderr, "Warning: QML import could not be resolved in any of the import paths: %s\n",
                     qPrintable(object.value("name"_L1).toString()));
-        } else {
+        } else if (object.value("type"_L1).toString() == "module"_L1) {
             if (options->verbose)
                 fprintf(stdout, "  -- Adding '%s' as QML dependency\n", qPrintable(path));
 
@@ -2477,6 +2477,9 @@ bool scanImports(Options *options, QSet<QString> *usedDependencies)
             }
 
             options->qtDependencies[options->currentArchitecture].append(qmlImportsDependencies);
+        } else {
+            // We don't need to handle file and directory imports. Generally those should be
+            // considered as part of the application and are therefore scanned separately.
         }
     }
 
