@@ -9,6 +9,7 @@
                 "slots": [
                     {
                         "access": "public",
+                        "index": 0,
                         "name": "works",
                         "returnType": "void"
                     }
@@ -317,21 +318,25 @@
                 "slots": [
                     {
                         "access": "private",
+                        "index": 0,
                         "name": "pureSlot0",
                         "returnType": "void"
                     },
                     {
                         "access": "private",
+                        "index": 1,
                         "name": "pureSlot1",
                         "returnType": "void"
                     },
                     {
                         "access": "private",
+                        "index": 2,
                         "name": "pureSlot2",
                         "returnType": "void"
                     },
                     {
                         "access": "private",
+                        "index": 3,
                         "name": "pureSlot3",
                         "returnType": "void"
                     }
@@ -351,21 +356,25 @@
                 "slots": [
                     {
                         "access": "private",
+                        "index": 0,
                         "name": "pureSlot0",
                         "returnType": "void"
                     },
                     {
                         "access": "private",
+                        "index": 1,
                         "name": "pureSlot1",
                         "returnType": "void"
                     },
                     {
                         "access": "private",
+                        "index": 2,
                         "name": "pureSlot2",
                         "returnType": "void"
                     },
                     {
                         "access": "private",
+                        "index": 3,
                         "name": "pureSlot3",
                         "returnType": "void"
                     }
@@ -385,21 +394,25 @@
                 "slots": [
                     {
                         "access": "private",
+                        "index": 0,
                         "name": "pureSlot0",
                         "returnType": "void"
                     },
                     {
                         "access": "private",
+                        "index": 1,
                         "name": "pureSlot1",
                         "returnType": "void"
                     },
                     {
                         "access": "private",
+                        "index": 2,
                         "name": "pureSlot2",
                         "returnType": "void"
                     },
                     {
                         "access": "private",
+                        "index": 3,
                         "name": "pureSlot3",
                         "returnType": "void"
                     }
@@ -419,21 +432,25 @@
                 "slots": [
                     {
                         "access": "private",
+                        "index": 0,
                         "name": "pureSlot0",
                         "returnType": "void"
                     },
                     {
                         "access": "private",
+                        "index": 1,
                         "name": "pureSlot1",
                         "returnType": "void"
                     },
                     {
                         "access": "private",
+                        "index": 2,
                         "name": "pureSlot2",
                         "returnType": "void"
                     },
                     {
                         "access": "private",
+                        "index": 3,
                         "name": "pureSlot3",
                         "returnType": "void"
                     }
@@ -453,21 +470,25 @@
                 "slots": [
                     {
                         "access": "private",
+                        "index": 0,
                         "name": "pureSlot0",
                         "returnType": "void"
                     },
                     {
                         "access": "private",
+                        "index": 1,
                         "name": "pureSlot1",
                         "returnType": "void"
                     },
                     {
                         "access": "private",
+                        "index": 2,
                         "name": "pureSlot2",
                         "returnType": "void"
                     },
                     {
                         "access": "private",
+                        "index": 3,
                         "name": "pureSlot3",
                         "returnType": "void"
                     }
@@ -487,21 +508,25 @@
                 "slots": [
                     {
                         "access": "private",
+                        "index": 0,
                         "name": "pureSlot0",
                         "returnType": "void"
                     },
                     {
                         "access": "private",
+                        "index": 1,
                         "name": "pureSlot1",
                         "returnType": "void"
                     },
                     {
                         "access": "private",
+                        "index": 2,
                         "name": "pureSlot2",
                         "returnType": "void"
                     },
                     {
                         "access": "private",
+                        "index": 3,
                         "name": "pureSlot3",
                         "returnType": "void"
                     }
@@ -521,21 +546,25 @@
                 "slots": [
                     {
                         "access": "private",
+                        "index": 0,
                         "name": "pureSlot0",
                         "returnType": "void"
                     },
                     {
                         "access": "private",
+                        "index": 1,
                         "name": "pureSlot1",
                         "returnType": "void"
                     },
                     {
                         "access": "private",
+                        "index": 2,
                         "name": "pureSlot2",
                         "returnType": "void"
                     },
                     {
                         "access": "private",
+                        "index": 3,
                         "name": "pureSlot3",
                         "returnType": "void"
                     }
@@ -555,21 +584,25 @@
                 "slots": [
                     {
                         "access": "private",
+                        "index": 0,
                         "name": "pureSlot0",
                         "returnType": "void"
                     },
                     {
                         "access": "private",
+                        "index": 1,
                         "name": "pureSlot1",
                         "returnType": "void"
                     },
                     {
                         "access": "private",
+                        "index": 2,
                         "name": "pureSlot2",
                         "returnType": "void"
                     },
                     {
                         "access": "private",
+                        "index": 3,
                         "name": "pureSlot3",
                         "returnType": "void"
                     }
@@ -589,21 +622,25 @@
                 "slots": [
                     {
                         "access": "private",
+                        "index": 0,
                         "name": "pureSlot0",
                         "returnType": "void"
                     },
                     {
                         "access": "private",
+                        "index": 1,
                         "name": "pureSlot1",
                         "returnType": "void"
                     },
                     {
                         "access": "private",
+                        "index": 2,
                         "name": "pureSlot2",
                         "returnType": "void"
                     },
                     {
                         "access": "private",
+                        "index": 3,
                         "name": "pureSlot3",
                         "returnType": "void"
                     }
@@ -749,6 +786,7 @@
                                 "type": "int"
                             }
                         ],
+                        "index": 0,
                         "name": "trailingSignalReturn",
                         "returnType": "void"
                     }
@@ -756,6 +794,7 @@
                 "slots": [
                     {
                         "access": "public",
+                        "index": 1,
                         "name": "fun",
                         "returnType": "void"
                     },
@@ -771,6 +810,7 @@
                                 "type": "char"
                             }
                         ],
+                        "index": 2,
                         "name": "arguments",
                         "returnType": "int"
                     },
@@ -782,16 +822,19 @@
                                 "type": "int"
                             }
                         ],
+                        "index": 3,
                         "name": "inlineFunc",
                         "returnType": "int"
                     },
                     {
                         "access": "public",
+                        "index": 4,
                         "name": "constRefReturn",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
+                        "index": 5,
                         "name": "constConstRefReturn",
                         "returnType": "void"
                     }
@@ -940,6 +983,7 @@
                                 "type": "ForwardDeclaredParam"
                             }
                         ],
+                        "index": 0,
                         "name": "signalNaked",
                         "returnType": "void"
                     },
@@ -950,6 +994,7 @@
                                 "type": "ForwardDeclaredContainer<ForwardDeclaredParam>"
                             }
                         ],
+                        "index": 1,
                         "name": "signalFDC",
                         "returnType": "void"
                     },
@@ -960,6 +1005,7 @@
                                 "type": "ForwardDeclaredContainer<int>"
                             }
                         ],
+                        "index": 2,
                         "name": "signalFDC",
                         "returnType": "void"
                     },
@@ -970,6 +1016,7 @@
                                 "type": "ForwardDeclaredContainer<QString>"
                             }
                         ],
+                        "index": 3,
                         "name": "signalFDC",
                         "returnType": "void"
                     },
@@ -980,6 +1027,7 @@
                                 "type": "ForwardDeclaredContainer<FullyDefined>"
                             }
                         ],
+                        "index": 4,
                         "name": "signalFDC",
                         "returnType": "void"
                     },
@@ -990,6 +1038,7 @@
                                 "type": "QSet<ForwardDeclaredParam>"
                             }
                         ],
+                        "index": 5,
                         "name": "signalQSet",
                         "returnType": "void"
                     },
@@ -1000,6 +1049,7 @@
                                 "type": "QSet<int>"
                             }
                         ],
+                        "index": 6,
                         "name": "signalQSet",
                         "returnType": "void"
                     },
@@ -1010,6 +1060,7 @@
                                 "type": "QSet<QString>"
                             }
                         ],
+                        "index": 7,
                         "name": "signalQSet",
                         "returnType": "void"
                     },
@@ -1020,6 +1071,7 @@
                                 "type": "QSet<FullyDefined>"
                             }
                         ],
+                        "index": 8,
                         "name": "signalQSet",
                         "returnType": "void"
                     }
@@ -1032,6 +1084,7 @@
                                 "type": "ForwardDeclaredParam"
                             }
                         ],
+                        "index": 9,
                         "name": "slotNaked",
                         "returnType": "void"
                     },
@@ -1042,6 +1095,7 @@
                                 "type": "ForwardDeclaredContainer<ForwardDeclaredParam>"
                             }
                         ],
+                        "index": 10,
                         "name": "slotFDC",
                         "returnType": "void"
                     },
@@ -1052,6 +1106,7 @@
                                 "type": "ForwardDeclaredContainer<int>"
                             }
                         ],
+                        "index": 11,
                         "name": "slotFDC",
                         "returnType": "void"
                     },
@@ -1062,6 +1117,7 @@
                                 "type": "ForwardDeclaredContainer<QString>"
                             }
                         ],
+                        "index": 12,
                         "name": "slotFDC",
                         "returnType": "void"
                     },
@@ -1072,6 +1128,7 @@
                                 "type": "ForwardDeclaredContainer<FullyDefined>"
                             }
                         ],
+                        "index": 13,
                         "name": "slotFDC",
                         "returnType": "void"
                     },
@@ -1082,6 +1139,7 @@
                                 "type": "QSet<ForwardDeclaredParam>"
                             }
                         ],
+                        "index": 14,
                         "name": "slotQSet",
                         "returnType": "void"
                     },
@@ -1092,6 +1150,7 @@
                                 "type": "QSet<int>"
                             }
                         ],
+                        "index": 15,
                         "name": "slotQSet",
                         "returnType": "void"
                     },
@@ -1102,6 +1161,7 @@
                                 "type": "QSet<QString>"
                             }
                         ],
+                        "index": 16,
                         "name": "slotQSet",
                         "returnType": "void"
                     },
@@ -1112,6 +1172,7 @@
                                 "type": "QSet<FullyDefined>"
                             }
                         ],
+                        "index": 17,
                         "name": "slotQSet",
                         "returnType": "void"
                     }
@@ -1137,11 +1198,13 @@
                 "slots": [
                     {
                         "access": "public",
+                        "index": 0,
                         "name": "test1",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
+                        "index": 1,
                         "name": "test2",
                         "returnType": "void"
                     }
@@ -1490,6 +1553,7 @@
                 "signals": [
                     {
                         "access": "public",
+                        "index": 0,
                         "name": "mySignal",
                         "returnType": "void"
                     }
@@ -1497,6 +1561,7 @@
                 "slots": [
                     {
                         "access": "public",
+                        "index": 1,
                         "name": "mySlot",
                         "returnType": "void"
                     }
@@ -1540,6 +1605,7 @@
                 "slots": [
                     {
                         "access": "public",
+                        "index": 0,
                         "name": "foo",
                         "returnType": "void"
                     },
@@ -1562,6 +1628,7 @@
                                 "type": "const int*volatile*"
                             }
                         ],
+                        "index": 1,
                         "name": "bar",
                         "returnType": "int"
                     },
@@ -1575,6 +1642,7 @@
                                 "type": "QObject*"
                             }
                         ],
+                        "index": 2,
                         "name": "slot",
                         "returnType": "void"
                     }
@@ -1620,11 +1688,13 @@
                                 "type": "QMap<int,int>"
                             }
                         ],
+                        "index": 0,
                         "name": "cmdlineSignal",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
+                        "index": 1,
                         "name": "signalQTBUG55853",
                         "returnType": "void"
                     }
@@ -1632,26 +1702,31 @@
                 "slots": [
                     {
                         "access": "public",
+                        "index": 2,
                         "name": "voidFunction",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
+                        "index": 3,
                         "name": "stringMethod",
                         "returnType": "QString"
                     },
                     {
                         "access": "public",
+                        "index": 4,
                         "name": "combined1",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
+                        "index": 5,
                         "name": "combined2",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
+                        "index": 6,
                         "name": "combined3",
                         "returnType": "void"
                     },
@@ -1665,21 +1740,25 @@
                                 "type": "int"
                             }
                         ],
+                        "index": 7,
                         "name": "combined4",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
+                        "index": 8,
                         "name": "combined5",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
+                        "index": 9,
                         "name": "combined6",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
+                        "index": 10,
                         "name": "vararg1",
                         "returnType": "void"
                     },
@@ -1690,6 +1769,7 @@
                                 "type": "int"
                             }
                         ],
+                        "index": 11,
                         "name": "vararg2",
                         "returnType": "void"
                     },
@@ -1703,11 +1783,13 @@
                                 "type": "int"
                             }
                         ],
+                        "index": 12,
                         "name": "vararg3",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
+                        "index": 13,
                         "name": "vararg4",
                         "returnType": "void"
                     },
@@ -1718,6 +1800,7 @@
                                 "type": "int"
                             }
                         ],
+                        "index": 14,
                         "name": "vararg5",
                         "returnType": "void"
                     },
@@ -1731,6 +1814,7 @@
                                 "type": "int"
                             }
                         ],
+                        "index": 15,
                         "name": "vararg6",
                         "returnType": "void"
                     },
@@ -1741,6 +1825,7 @@
                                 "type": "int"
                             }
                         ],
+                        "index": 16,
                         "name": "INNERFUNCTION",
                         "returnType": "void"
                     },
@@ -1751,6 +1836,7 @@
                                 "type": "int"
                             }
                         ],
+                        "index": 17,
                         "name": "inner_expanded",
                         "returnType": "void"
                     },
@@ -1761,11 +1847,13 @@
                                 "type": "int"
                             }
                         ],
+                        "index": 18,
                         "name": "expanded_method",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
+                        "index": 19,
                         "name": "conditionSlot",
                         "returnType": "void"
                     },
@@ -1776,6 +1864,7 @@
                                 "type": "int"
                             }
                         ],
+                        "index": 20,
                         "name": "PD_DEFINE_ITSELF_SUFFIX",
                         "returnType": "void"
                     }
@@ -1824,6 +1913,7 @@
                                 "type": "QPointer<FwdClass>"
                             }
                         ],
+                        "index": 0,
                         "name": "setProp1",
                         "returnType": "void"
                     },
@@ -1834,6 +1924,7 @@
                                 "type": "QSharedPointer<FwdClass>"
                             }
                         ],
+                        "index": 1,
                         "name": "setProp2",
                         "returnType": "void"
                     },
@@ -1844,6 +1935,7 @@
                                 "type": "QWeakPointer<FwdClass>"
                             }
                         ],
+                        "index": 2,
                         "name": "setProp3",
                         "returnType": "void"
                     },
@@ -1854,6 +1946,7 @@
                                 "type": "FwdClass*"
                             }
                         ],
+                        "index": 3,
                         "name": "setProp4",
                         "returnType": "void"
                     },
@@ -1864,6 +1957,7 @@
                                 "type": "const FwdClass*"
                             }
                         ],
+                        "index": 4,
                         "name": "setProp5",
                         "returnType": "void"
                     },
@@ -1874,6 +1968,7 @@
                                 "type": "void*"
                             }
                         ],
+                        "index": 5,
                         "name": "setProp6",
                         "returnType": "void"
                     },
@@ -1884,6 +1979,7 @@
                                 "type": "const void*"
                             }
                         ],
+                        "index": 6,
                         "name": "setProp7",
                         "returnType": "void"
                     }
@@ -1909,11 +2005,13 @@
                 "signals": [
                     {
                         "access": "public",
+                        "index": 0,
                         "name": "mySignal",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
+                        "index": 1,
                         "name": "myOtherSignal",
                         "returnType": "void"
                     },
@@ -1925,6 +2023,7 @@
                                 "type": "int"
                             }
                         ],
+                        "index": 2,
                         "name": "mySignal2",
                         "returnType": "void"
                     }
@@ -1944,6 +2043,7 @@
                 "signals": [
                     {
                         "access": "public",
+                        "index": 0,
                         "name": "mySignal",
                         "returnType": "void"
                     },
@@ -1955,6 +2055,7 @@
                                 "type": "int"
                             }
                         ],
+                        "index": 1,
                         "name": "mySignal2",
                         "returnType": "void"
                     }
@@ -1978,6 +2079,7 @@
                 "methods": [
                     {
                         "access": "public",
+                        "index": 0,
                         "name": "foo",
                         "returnType": "const char*"
                     }
@@ -1997,11 +2099,13 @@
                 "methods": [
                     {
                         "access": "public",
+                        "index": 0,
                         "name": "foo",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
+                        "index": 1,
                         "name": "bar",
                         "returnType": "void"
                     }
@@ -2027,6 +2131,7 @@
                 "methods": [
                     {
                         "access": "private",
+                        "index": 1,
                         "name": "method1",
                         "returnType": "void"
                     }
@@ -2036,6 +2141,7 @@
                 "slots": [
                     {
                         "access": "private",
+                        "index": 0,
                         "name": "_q_privateslot",
                         "returnType": "void"
                     }
@@ -2637,11 +2743,13 @@
                                 "type": "int"
                             }
                         ],
+                        "index": 0,
                         "name": "signalWithDefaultArg",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
+                        "index": 1,
                         "isCloned": true,
                         "name": "signalWithDefaultArg",
                         "returnType": "void"
@@ -2701,16 +2809,19 @@
                                 "type": "TestTemplate<void>"
                             }
                         ],
+                        "index": 0,
                         "name": "mySignal",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
+                        "index": 1,
                         "name": "myVoidSignal",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
+                        "index": 2,
                         "name": "myVoidSignal2",
                         "returnType": "void"
                     }
@@ -2718,11 +2829,13 @@
                 "slots": [
                     {
                         "access": "public",
+                        "index": 3,
                         "name": "dummySlot",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
+                        "index": 4,
                         "name": "dummySlot2",
                         "returnType": "void"
                     },
@@ -2733,11 +2846,13 @@
                                 "type": "TestTemplate<void>"
                             }
                         ],
+                        "index": 5,
                         "name": "anotherSlot",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
+                        "index": 6,
                         "name": "mySlot",
                         "returnType": "TestTemplate<void>"
                     }
@@ -2816,6 +2931,7 @@
                                 "type": "uint"
                             }
                         ],
+                        "index": 0,
                         "name": "a",
                         "returnType": "void"
                     },
@@ -2827,6 +2943,7 @@
                                 "type": "uint"
                             }
                         ],
+                        "index": 1,
                         "name": "b",
                         "returnType": "void"
                     },
@@ -2837,6 +2954,7 @@
                                 "type": "uint*"
                             }
                         ],
+                        "index": 2,
                         "name": "c",
                         "returnType": "void"
                     },
@@ -2848,6 +2966,7 @@
                                 "type": "uint*"
                             }
                         ],
+                        "index": 3,
                         "name": "d",
                         "returnType": "void"
                     },
@@ -2858,6 +2977,7 @@
                                 "type": "uint&"
                             }
                         ],
+                        "index": 4,
                         "name": "e",
                         "returnType": "void"
                     },
@@ -2869,6 +2989,7 @@
                                 "type": "uint&"
                             }
                         ],
+                        "index": 5,
                         "name": "f",
                         "returnType": "void"
                     },
@@ -2879,6 +3000,7 @@
                                 "type": "unsigned1"
                             }
                         ],
+                        "index": 6,
                         "name": "g",
                         "returnType": "void"
                     },
@@ -2890,6 +3012,7 @@
                                 "type": "unsigned1"
                             }
                         ],
+                        "index": 7,
                         "name": "h",
                         "returnType": "void"
                     },
@@ -2903,6 +3026,7 @@
                                 "type": "unsigned1"
                             }
                         ],
+                        "index": 8,
                         "name": "i",
                         "returnType": "void"
                     },
@@ -2916,6 +3040,7 @@
                                 "type": "uint"
                             }
                         ],
+                        "index": 9,
                         "name": "j",
                         "returnType": "void"
                     },
@@ -2926,6 +3051,7 @@
                                 "type": "unsignedQImage"
                             }
                         ],
+                        "index": 10,
                         "name": "k",
                         "returnType": "void"
                     },
@@ -2937,6 +3063,7 @@
                                 "type": "unsignedQImage"
                             }
                         ],
+                        "index": 11,
                         "name": "l",
                         "returnType": "void"
                     }
@@ -2985,6 +3112,7 @@
                                 "type": "QList<QList<int>>"
                             }
                         ],
+                        "index": 0,
                         "name": "foo",
                         "returnType": "void"
                     },
@@ -2995,6 +3123,7 @@
                                 "type": "QList<QList<int>>"
                             }
                         ],
+                        "index": 1,
                         "name": "foo2",
                         "returnType": "void"
                     },
@@ -3005,6 +3134,7 @@
                                 "type": "QList<::AAA::BaseA*>"
                             }
                         ],
+                        "index": 2,
                         "name": "bar",
                         "returnType": "void"
                     },
@@ -3015,6 +3145,7 @@
                                 "type": "QList<::AAA::BaseA*>"
                             }
                         ],
+                        "index": 3,
                         "name": "bar2",
                         "returnType": "void"
                     },
@@ -3025,6 +3156,7 @@
                                 "type": "QList<const ::AAA::BaseA*>"
                             }
                         ],
+                        "index": 4,
                         "name": "bar3",
                         "returnType": "void"
                     }
