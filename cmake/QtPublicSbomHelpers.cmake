@@ -2091,6 +2091,10 @@ function(_qt_internal_sbom_handle_qt_attribution_files out_prefix_outer)
                         ATTRIBUTION_FILE_DIR_PATHS
                     )
 
+                    # Also filter out the FRIENDLY_PACKAGE_NAME option, otherwise we'd try to
+                    # file(GENERATE) multiple times with the same file name, but different content.
+                    list(REMOVE_ITEM sbom_single_args FRIENDLY_PACKAGE_NAME)
+
                     _qt_internal_forward_function_args(
                         FORWARD_APPEND
                         FORWARD_PREFIX arg
