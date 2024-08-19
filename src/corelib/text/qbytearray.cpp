@@ -74,10 +74,10 @@ const void *qmemrchr(const void *s, int needle, size_t size) noexcept
 #if QT_CONFIG(memrchr)
     return memrchr(s, needle, size);
 #endif
-    auto b = static_cast<const char *>(s);
-    const char *n = b + size;
+    auto b = static_cast<const uchar *>(s);
+    const uchar *n = b + size;
     while (n-- != b) {
-        if (*n == needle)
+        if (*n == uchar(needle))
             return n;
     }
     return nullptr;
