@@ -1654,6 +1654,12 @@ function(_qt_internal_sbom_add_recorded_system_libraries)
             continue()
         endif()
 
+        # Automatic system library sbom recording happens at project root source dir scope, which
+        # means it might accidentally pick up a qt_attribution.json file from the project root,
+        # that is not intended to be use for system libraries.
+        # For now, explicitly disable using the root attribution file.
+        list(APPEND args NO_CURRENT_DIR_ATTRIBUTION)
+
         list(APPEND generated_package_names "${package_name}")
         set(sbom_generated_${package_name} TRUE)
 
