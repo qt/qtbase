@@ -27,6 +27,10 @@
 
 QT_BEGIN_NAMESPACE
 
+constexpr int QDateTimeParser::NoSectionIndex;
+constexpr int QDateTimeParser::FirstSectionIndex;
+constexpr int QDateTimeParser::LastSectionIndex;
+
 using namespace Qt::StringLiterals;
 
 template <typename T>
@@ -710,13 +714,6 @@ int QDateTimeParser::sectionMaxSize(Section s, int count) const
         qWarning("QDateTimeParser::sectionMaxSize: Invalid section %s",
                  SectionNode::name(s).toLatin1().constData());
         break;
-
-    case NoSectionIndex:
-    case FirstSectionIndex:
-    case LastSectionIndex:
-    case CalendarPopupIndex:
-        // these cases can't happen
-        break;
     }
     return -1;
 }
@@ -768,15 +765,6 @@ static int matchesSeparator(QStringView text, QStringView separator)
 
 QString QDateTimeParser::sectionText(const QString &text, int sectionIndex, int index) const
 {
-    const SectionNode &sn = sectionNode(sectionIndex);
-    switch (sn.type) {
-    case NoSectionIndex:
-    case FirstSectionIndex:
-    case LastSectionIndex:
-        return QString();
-    default: break;
-    }
-
     return text.mid(index, sectionSize(sectionIndex));
 }
 
