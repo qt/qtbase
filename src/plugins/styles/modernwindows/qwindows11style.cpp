@@ -551,6 +551,48 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
             }
         }
         break;
+    case CC_MdiControls:{
+            QFont buttonFont = QFont(assetFont);
+            buttonFont.setPointSize(8);
+            QPoint mousePos = widget->mapFromGlobal(QCursor::pos());
+            if (option->subControls.testFlag(SC_MdiCloseButton)) {
+                const QRect closeButtonRect = proxy()->subControlRect(QStyle::CC_MdiControls, option, SC_MdiCloseButton, widget);;
+                if (closeButtonRect.isValid()) {
+                    bool hover = closeButtonRect.contains(mousePos);
+                    if (hover)
+                        painter->fillRect(closeButtonRect,shellCloseButtonColor);
+                    const QString textToDraw("\uE8BB");
+                    painter->setPen(QPen(hover ? option->palette.highlightedText().color() : option->palette.text().color()));
+                    painter->setFont(buttonFont);
+                    painter->drawText(closeButtonRect, Qt::AlignVCenter | Qt::AlignHCenter, textToDraw);
+                }
+            }
+            if (option->subControls.testFlag(SC_MdiNormalButton)) {
+                const QRect normalButtonRect = proxy()->subControlRect(QStyle::CC_MdiControls, option, SC_MdiNormalButton, widget);;
+                if (normalButtonRect.isValid()) {
+                    bool hover = normalButtonRect.contains(mousePos);
+                    if (hover)
+                        painter->fillRect(normalButtonRect,WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
+                    const QString textToDraw("\uE923");
+                    painter->setPen(QPen(option->palette.text().color()));
+                    painter->setFont(buttonFont);
+                    painter->drawText(normalButtonRect, Qt::AlignVCenter | Qt::AlignHCenter, textToDraw);
+                }
+            }
+            if (option->subControls.testFlag(QStyle::SC_MdiMinButton)) {
+                const QRect minButtonRect = proxy()->subControlRect(QStyle::CC_MdiControls, option, SC_MdiMinButton, widget);
+                if (minButtonRect.isValid()) {
+                    bool hover = minButtonRect.contains(mousePos);
+                    if (hover)
+                        painter->fillRect(minButtonRect,WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
+                    const QString textToDraw("\uE921");
+                    painter->setPen(QPen(option->palette.text().color()));
+                    painter->setFont(buttonFont);
+                    painter->drawText(minButtonRect, Qt::AlignVCenter | Qt::AlignHCenter, textToDraw);
+                }
+            }
+        }
+        break;
     case CC_TitleBar:
         if (const auto* titlebar = qstyleoption_cast<const QStyleOptionTitleBar*>(option)) {
             painter->setPen(Qt::NoPen);
