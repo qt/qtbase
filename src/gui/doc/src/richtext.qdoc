@@ -1249,6 +1249,11 @@
                 \endlist
     \endtable
 
+    \note Certain CSS properties are only supported when applied to a block tag, such as \c{<p>}.
+    Setting these properties on a \c{<span>}, for instance, will have no effect. The margin is one
+    example of such a property. See QTextBlockFormat and QTextCharFormat for an overview of the
+    formatting options available on blocks and spans in QTextDocument.
+
     \section1 Qt-specific CSS properties
 
     Besides the standard CSS properties listed earlier, the following
