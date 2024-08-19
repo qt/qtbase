@@ -95,7 +95,7 @@ struct FunctionDef
     bool isAbstract = false;
     bool isRawSlot = false;
 
-    QJsonObject toJson() const;
+    QJsonObject toJson(int index) const;
     static void accessToJson(QJsonObject *obj, Access acs);
 };
 Q_DECLARE_TYPEINFO(FunctionDef, Q_RELOCATABLE_TYPE);

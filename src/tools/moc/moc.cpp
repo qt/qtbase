@@ -2019,20 +2019,26 @@ QJsonObject ClassDef::toJson() const
     if (classInfos.size())
         cls["classInfos"_L1] = classInfos;
 
-    const auto appendFunctions = [&cls](const QString &type, const QList<FunctionDef> &funcs) {
+    int methodIndex = 0;
+    const auto appendFunctions
+            = [&cls, &methodIndex](const QString &type, const QList<FunctionDef> &funcs) {
         QJsonArray jsonFuncs;
 
         for (const FunctionDef &fdef: funcs)
-            jsonFuncs.append(fdef.toJson());
+            jsonFuncs.append(fdef.toJson(methodIndex++));
 
         if (!jsonFuncs.isEmpty())
             cls[type] = jsonFuncs;
     };
 
+    // signals, slots, and methods, in this order, follow the same index
     appendFunctions("signals"_L1, signalList);
     appendFunctions("slots"_L1, slotList);
-    appendFunctions("constructors"_L1, constructorList);
     appendFunctions("methods"_L1, methodList);
+
+    // constructors are indexed separately.
+    methodIndex = 0;
+    appendFunctions("constructors"_L1, constructorList);
 
     QJsonArray props;
 
@@ -2086,10 +2092,11 @@ QJsonObject ClassDef::toJson() const
     return cls;
 }
 
-QJsonObject FunctionDef::toJson() const
+QJsonObject FunctionDef::toJson(int index) const
 {
     QJsonObject fdef;
     fdef["name"_L1] = QString::fromUtf8(name);
+    fdef["index"_L1] = index;
     if (!tag.isEmpty())
         fdef["tag"_L1] = QString::fromUtf8(tag);
     fdef["returnType"_L1] = QString::fromUtf8(normalizedType);
