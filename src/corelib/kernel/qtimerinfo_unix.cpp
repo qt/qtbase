@@ -422,7 +422,7 @@ int QTimerInfoList::activateTimers()
         if (!currentTimerInfo->activateRef) {
             currentTimerInfo->activateRef = &currentTimerInfo;
 
-            QTimerEvent e(qToUnderlying(currentTimerInfo->id));
+            QTimerEvent e(currentTimerInfo->id);
             QCoreApplication::sendEvent(currentTimerInfo->obj, &e);
 
             // Storing currentTimerInfo's address in its activateRef allows the

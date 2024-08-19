@@ -56,7 +56,7 @@
 #define FOR_EACH_CORE_EVENT(X) \
     /* qcoreevent.h */ \
     X(QEvent, (QEvent::None)) \
-    X(QTimerEvent, (42)) \
+    X(QTimerEvent, (Qt::TimerId{42})) \
     X(QChildEvent, (QEvent::ChildAdded, nullptr)) \
     X(QDynamicPropertyChangeEvent, ("size")) \
     /* qfutureinterface_p.h */ \

@@ -220,7 +220,7 @@ void QChronoTimer::stop()
 void QChronoTimer::timerEvent(QTimerEvent *e)
 {
     auto *d = d_func();
-    if (Qt::TimerId{e->timerId()} == d->id) {
+    if (e->id() == d->id) {
         if (d->single)
             stop();
         Q_EMIT timeout(QPrivateSignal());

@@ -385,7 +385,7 @@ void QUnifiedTimer::timerEvent(QTimerEvent *event)
             startTimers();
     }
 
-    if (event->timerId() == pauseTimer.timerId()) {
+    if (event->id() == pauseTimer.id()) {
         // update current time on all timers
         updateAnimationTimers();
         restart();
@@ -868,7 +868,7 @@ QDefaultAnimationDriver::~QDefaultAnimationDriver()
 
 void QDefaultAnimationDriver::timerEvent(QTimerEvent *e)
 {
-    Q_ASSERT(e->timerId() == m_timer.timerId());
+    Q_ASSERT(e->id() == m_timer.id());
     Q_UNUSED(e); // if the assertions are disabled
     advance();
 }

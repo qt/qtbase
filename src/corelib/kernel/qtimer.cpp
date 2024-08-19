@@ -283,7 +283,7 @@ void QTimer::stop()
 void QTimer::timerEvent(QTimerEvent *e)
 {
     Q_D(QTimer);
-    if (Qt::TimerId{e->timerId()} == d->id) {
+    if (e->id() == d->id) {
         if (d->single)
             stop();
         emit timeout(QPrivateSignal());
