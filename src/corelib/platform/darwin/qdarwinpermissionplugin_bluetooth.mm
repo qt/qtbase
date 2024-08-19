@@ -66,6 +66,7 @@
         callback(status);
 
     m_callbacks = {};
+    self.manager.delegate = nil;
     self.manager = nil;
 }
 
