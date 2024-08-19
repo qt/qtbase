@@ -577,25 +577,17 @@ QString qAppName()
 }
 
 #ifdef Q_OS_WINDOWS
-// Return true if we could determine that the current process was linked with /SUBSYSTEM:CONSOLE.
-// Return false otherwise.
-static bool isConsoleApplication()
+static bool hasValidStdOutHandle()
 {
-    auto dosHeader = reinterpret_cast<PIMAGE_DOS_HEADER>(GetModuleHandle(nullptr));
-    if (!dosHeader || dosHeader->e_magic != IMAGE_DOS_SIGNATURE)
-        return false;
-    auto dosHeaderAddr = reinterpret_cast<PBYTE>(dosHeader);
-    auto ntHeaders = reinterpret_cast<PIMAGE_NT_HEADERS>(dosHeaderAddr + dosHeader->e_lfanew);
-    if (ntHeaders->Signature != IMAGE_NT_SIGNATURE)
-        return false;
-    return ntHeaders->OptionalHeader.Subsystem == IMAGE_SUBSYSTEM_WINDOWS_CUI;
+    const HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
+    return h != NULL && h != INVALID_HANDLE_VALUE;
 }
 #endif
 
 void QCoreApplicationPrivate::initConsole()
 {
 #ifdef Q_OS_WINDOWS
-    if (isConsoleApplication())
+    if (hasValidStdOutHandle())
         return;
     const QString env = qEnvironmentVariable("QT_WIN_DEBUG_CONSOLE");
     if (env.isEmpty())
