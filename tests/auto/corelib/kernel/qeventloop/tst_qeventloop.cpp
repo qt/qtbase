@@ -25,6 +25,8 @@
 #include <QTcpSocket>
 #include <QSignalSpy>
 
+using namespace std::chrono_literals;
+
 class EventLoopExiter : public QObject
 {
     Q_OBJECT
@@ -475,29 +477,29 @@ void tst_QEventLoop::processEventsExcludeSocket()
 class TimerReceiver : public QObject
 {
 public:
-    int gotTimerEvent;
+    Qt::TimerId gotTimerEvent;
 
     TimerReceiver()
-        : QObject(), gotTimerEvent(-1)
+        : QObject(), gotTimerEvent(Qt::TimerId::Invalid)
     { }
 
     void timerEvent(QTimerEvent *event) override
     {
-        gotTimerEvent = event->timerId();
+        gotTimerEvent = event->id();
     }
 };
 
 void tst_QEventLoop::processEventsExcludeTimers()
 {
     TimerReceiver timerReceiver;
-    int timerId = timerReceiver.startTimer(0);
+    Qt::TimerId timerId = Qt::TimerId{timerReceiver.startTimer(0ns)};
 
     QEventLoop eventLoop;
 
     // normal process events will send timers
     eventLoop.processEvents();
     QCOMPARE(timerReceiver.gotTimerEvent, timerId);
-    timerReceiver.gotTimerEvent = -1;
+    timerReceiver.gotTimerEvent = Qt::TimerId::Invalid;
 
     // but not if we exclude timers
     eventLoop.processEvents(QEventLoop::X11ExcludeTimers);
@@ -512,13 +514,12 @@ void tst_QEventLoop::processEventsExcludeTimers()
 #endif
         QEXPECT_FAIL("", "X11ExcludeTimers only supported in the UNIX/Glib dispatchers", Continue);
 
-    QCOMPARE(timerReceiver.gotTimerEvent, -1);
-    timerReceiver.gotTimerEvent = -1;
+    QCOMPARE(timerReceiver.gotTimerEvent, Qt::TimerId::Invalid);
 
     // resume timer processing
     eventLoop.processEvents();
     QCOMPARE(timerReceiver.gotTimerEvent, timerId);
-    timerReceiver.gotTimerEvent = -1;
+    timerReceiver.gotTimerEvent = Qt::TimerId::Invalid;
 }
 
 namespace DeliverInDefinedOrder {
