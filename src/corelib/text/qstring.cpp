@@ -3771,10 +3771,12 @@ static void replace_helper(QString &str, QSpan<size_t> indices, qsizetype blen, 
     const qsizetype oldSize = str.data_ptr().size;
     const qsizetype adjust = indices.size() * (after.size() - blen);
     const qsizetype newSize = oldSize + adjust;
-    if (str.data_ptr().needsDetach() || needsReallocate(str, newSize)) {
+    if (str.data_ptr().needsDetach()) {
         replace_with_copy(str, indices, blen, after);
         return;
     }
+
+    str.reserve(newSize);
 
     if (QtPrivate::q_points_into_range(after.begin(), str))
         // Copy after if it lies inside our own d.b area (which we could
