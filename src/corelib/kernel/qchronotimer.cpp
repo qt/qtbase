@@ -193,7 +193,7 @@ void QChronoTimer::start()
     if (d->isActive()) // stop running timer
         stop();
     const auto id = Qt::TimerId{QObject::startTimer(d->intervalDuration, d->type)};
-    if (id > Qt::TimerId::Invalid) {
+    if (id != Qt::TimerId::Invalid) {
         d->id = id;
         d->isActiveData.notify();
     }
@@ -293,7 +293,7 @@ void QChronoTimer::setInterval(std::chrono::nanoseconds nsec)
     if (d->isActive()) { // Create new timer
         QObject::killTimer(d->id); // Restart timer
         const auto newId = Qt::TimerId{QObject::startTimer(nsec, d->type)};
-        if (newId > Qt::TimerId::Invalid) {
+        if (newId != Qt::TimerId::Invalid) {
             // Restarted successfully. No need to update the active state.
             d->id = newId;
         } else {
