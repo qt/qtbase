@@ -17,7 +17,7 @@ instructions:
 
   - type: EnvironmentVariable
     variableName: COIN_CMAKE_ARGS
-    variableValue: "-DQT_BUILD_TESTS=OFF"
+    variableValue: "-DQT_BUILD_TESTS=OFF {{.Env.COIN_DOC_CMAKE_ARGS}}"
   - type: EnvironmentVariable
     variableName: CONFIGURE_ENV_PREFIX
     variableValue: "{{.Env.ENV_PREFIX}}"
