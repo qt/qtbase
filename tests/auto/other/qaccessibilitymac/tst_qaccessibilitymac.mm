@@ -70,6 +70,7 @@ QDebug operator<<(QDebug dbg, AXErrorTag err)
     @property (readonly) NSString *value;
     @property (readonly) CGRect rect;
     @property (readonly) NSArray *actions;
+    @property (readonly) bool valid;
 @end
 
 @implementation TestAXObject
@@ -78,7 +79,12 @@ QDebug operator<<(QDebug dbg, AXErrorTag err)
 
     if ((self = [super init])) {
         reference = ref;
-        axError = false;
+        if (!reference) {
+            qCritical() << "Null reference!";
+            axError = true;
+        } else {
+            axError = false;
+        }
     }
     return self;
 }
@@ -344,6 +350,7 @@ QDebug operator<<(QDebug dbg, AXErrorTag err)
     }
 }
 
+- (bool)                valid { return reference != nil; }
 - (NSString*)           role { return [self _stringAttributeValue:kAXRoleAttribute]; }
 - (NSString*)           title { return [self _stringAttributeValue:kAXTitleAttribute]; }
 - (NSString*)           description { return [self _stringAttributeValue:kAXDescriptionAttribute]; }
@@ -771,47 +778,75 @@ void tst_QAccessibilityMac::treeViewTest()
     AXUIElementRef windowRef = (AXUIElementRef)[windowList objectAtIndex:0];
     QVERIFY(windowRef != nil);
     TestAXObject *window = [[TestAXObject alloc] initWithAXUIElementRef:windowRef];
+    QVERIFY(window.valid);
 
     // children of window
     AXUIElementRef treeView = [window findDirectChildByRole:kAXOutlineRole];
     QVERIFY(treeView != nil);
 
     TestAXObject *tv = [[TestAXObject alloc] initWithAXUIElementRef:treeView];
+    QVERIFY(tv.valid);
+
+    [appObject release];
+    [window release];
 
     // here start actual treeview tests. NSAccessibilityOutline is a specialization
     // of NSAccessibilityTable, and we represent trees as tables.
+    const auto cellText = [tv](int rowIndex, int columnIndex) -> QString {
+        NSArray *rowArray = [tv tableRows];
+        Q_ASSERT(rowArray.count > uint(rowIndex));
+        TestAXObject *row = [[TestAXObject alloc] initWithAXUIElementRef:(AXUIElementRef)rowArray[rowIndex]];
+        Q_ASSERT(row && row.valid);
+        TestAXObject *cell = [[TestAXObject alloc] initWithAXUIElementRef:(AXUIElementRef)row.childList[columnIndex]];
+        Q_ASSERT(cell && cell.valid);
+        QString result = QString::fromNSString(cell.title);
+        [rowArray release];
+        return result;
+    };
+
     // Should have 2 columns
     const unsigned int columnCount = 2;
-    NSArray *columnArray = [tv tableColumns];
-    QCOMPARE([columnArray count], columnCount);
+    {
+        NSArray *columnArray = tv.tableColumns;
+        QCOMPARE(columnArray.count, columnCount);
+        [columnArray release];
+    }
 
-    // should have 1 row for now - as long as the root item is not expanded
-    NSArray *rowArray = [tv tableRows];
-    QCOMPARE(int([rowArray count]), 1);
+    // Should have 1 row for now - as long as the root item is not expanded.
+    // That row should have 2 columns.
+    {
+        NSArray *rowArray = tv.tableRows;
+        QCOMPARE(rowArray.count, 1u);
+        {
+            TestAXObject *row = [[TestAXObject alloc] initWithAXUIElementRef:(AXUIElementRef)rowArray[0]];
+            QCOMPARE(row.childList.count, columnCount);
+            [row release];
+        }
+        [rowArray release];
+    }
+    QCOMPARE(cellText(0, 0), root->text(0));
 
     root->setExpanded(true);
-    rowArray = [tv tableRows];
-    QCOMPARE(int([rowArray count]), root->childCount() + 1);
+    // Now that the root node is expanded we should now see all rows.
+    // Each row should have the same number of columns as the tree view.
+    {
+        NSArray *rowArray = tv.tableRows;
+        QCOMPARE(rowArray.count, root->childCount() + 1u);
+
+        for (ulong r = 0; r < rowArray.count; ++r) {
+            QVERIFY(rowArray[r] != nil);
+            TestAXObject *row = [[TestAXObject alloc] initWithAXUIElementRef:(AXUIElementRef)rowArray[r]];
+            const uint childCount = row.childList.count;
+            QCOMPARE(childCount, columnCount);
+            [row release];
+        }
+        [rowArray release];
+    }
 
     // this should not trigger any assert
     tw->setCurrentItem(lastChild);
 
-    bool errorOccurred = false;
-
-    const auto cellText = [rowArray, &errorOccurred](int rowIndex, int columnIndex) -> QString {
-        TestAXObject *row = [[TestAXObject alloc] initWithAXUIElementRef:(AXUIElementRef)rowArray[rowIndex]];
-        Q_ASSERT(row);
-        TestAXObject *cell = [[TestAXObject alloc] initWithAXUIElementRef:(AXUIElementRef)[row childList][columnIndex]];
-        Q_ASSERT(cell);
-        const QString result = QString::fromNSString(cell.title);
-        errorOccurred = cell.errorOccurred;
-        return result;
-    };
-
-    QString text = cellText(0, 0);
-    if (errorOccurred)
-        QSKIP("Cocoa Accessibility API error, aborting");
-    QCOMPARE(text, root->text(0));
+    QCOMPARE(cellText(0, 0), root->text(0));
     QCOMPARE(cellText(1, 0), users->text(0));
     QCOMPARE(cellText(1, 1), users->text(1));
 }
