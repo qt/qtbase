@@ -25,8 +25,7 @@ qt_wrap_cpp(<TARGET> src_file1 [src_file2 ...]
             [DEPENDS ...])
 \endcode
 
-\note The signature above is recommended over the older signature, which is
-deprecated since Qt 6.8.
+\note The signature above is recommended over the older signature.
 
 \badcode
 qt_wrap_cpp(<VAR> src_file1 [src_file2 ...]
