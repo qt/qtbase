@@ -5,9 +5,12 @@
 
 #include <private/qproperty_p.h>
 #include <private/qobject_p.h>
+#include <QtCore/qbasictimer.h>
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qmath.h>
 #include <QtCore/qelapsedtimer.h>
+
+using namespace std::chrono_literals;
 
 QT_BEGIN_NAMESPACE
 
@@ -16,6 +19,7 @@ class QTimeLinePrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QTimeLine)
 public:
     QElapsedTimer timer;
+    QBasicTimer basicTimer;
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(QTimeLinePrivate, QEasingCurve, easingCurve,
                                          QEasingCurve::InOutSine)
 
@@ -32,7 +36,6 @@ public:
     void setCurrentTimeForwardToQ(int time) { q_func()->setCurrentTime(time); }
     Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS(QTimeLinePrivate, int, currentTime,
                                        &QTimeLinePrivate::setCurrentTimeForwardToQ, 0)
-    int timerId = 0;
 
     void setDirection(QTimeLine::Direction direction) { q_func()->setDirection(direction); }
     Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS(QTimeLinePrivate, QTimeLine::Direction, direction,
@@ -611,14 +614,14 @@ qreal QTimeLine::valueForTime(int msec) const
 void QTimeLine::start()
 {
     Q_D(QTimeLine);
-    if (d->timerId) {
+    if (d->basicTimer.isActive()) {
         qWarning("QTimeLine::start: already running");
         return;
     }
     int curTime = 0;
     if (d->direction == Backward)
         curTime = d->duration;
-    d->timerId = startTimer(d->updateInterval);
+    d->basicTimer.start(d->updateInterval * 1ms, this);
     d->startTime = curTime;
     d->currentLoopCount = 0;
     d->timer.start();
@@ -639,11 +642,11 @@ void QTimeLine::start()
 void QTimeLine::resume()
 {
     Q_D(QTimeLine);
-    if (d->timerId) {
+    if (d->basicTimer.isActive()) {
         qWarning("QTimeLine::resume: already running");
         return;
     }
-    d->timerId = startTimer(d->updateInterval);
+    d->basicTimer.start(d->updateInterval * 1ms, this);
     d->startTime = d->currentTime;
     d->timer.start();
     d->setState(Running);
@@ -657,10 +660,8 @@ void QTimeLine::resume()
 void QTimeLine::stop()
 {
     Q_D(QTimeLine);
-    if (d->timerId)
-        killTimer(d->timerId);
+    d->basicTimer.stop();
     d->setState(NotRunning);
-    d->timerId = 0;
 }
 
 /*!
@@ -680,12 +681,11 @@ void QTimeLine::setPaused(bool paused)
     }
     if (paused && d->state != Paused) {
         d->startTime = d->currentTime;
-        killTimer(d->timerId);
-        d->timerId = 0;
+        d->basicTimer.stop();
         d->setState(Paused);
     } else if (!paused && d->state == Paused) {
         // Same as resume()
-        d->timerId = startTimer(d->updateInterval);
+        d->basicTimer.start(d->updateInterval * 1ms, this);
         d->startTime = d->currentTime;
         d->timer.start();
         d->setState(Running);
@@ -712,7 +712,7 @@ void QTimeLine::toggleDirection()
 void QTimeLine::timerEvent(QTimerEvent *event)
 {
     Q_D(QTimeLine);
-    if (event->timerId() != d->timerId) {
+    if (event->id() != d->basicTimer.id()) {
         event->ignore();
         return;
     }
