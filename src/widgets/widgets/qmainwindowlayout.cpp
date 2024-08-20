@@ -274,6 +274,14 @@ public:
 
     QDockAreaLayoutInfo *dockAreaLayoutInfo() { return &layoutState; }
 
+#if QT_CONFIG(toolbar)
+    QToolBarAreaLayout *toolBarAreaLayout()
+    {
+        auto *mainWindow = static_cast<QMainWindow*>(parentWidget());
+        return qt_mainwindow_layout(mainWindow)->toolBarAreaLayout();
+    }
+#endif
+
     bool nativeWindowDeco() const
     {
         return groupWindow()->hasNativeDecos();
