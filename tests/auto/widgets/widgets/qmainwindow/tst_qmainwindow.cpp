@@ -22,6 +22,8 @@
 #include <qscreen.h>
 #include <private/qmainwindowlayout_p.h>
 #include <private/qdockarealayout_p.h>
+#include <private/qtoolbarlayout_p.h>
+#include <private/qtoolbarextension_p.h>
 
 #if QT_CONFIG(tabbar)
 #include <qtabbar.h>
@@ -132,6 +134,9 @@ private slots:
     void resizeDocks_data();
 #if QT_CONFIG(dockwidget) && QT_CONFIG(tabbar)
     void QTBUG52175_tabifiedDockWidgetActivated();
+#endif
+#ifdef QT_BUILD_INTERNAL
+    void expandedToolBarHitTesting();
 #endif
 };
 
@@ -2254,6 +2259,59 @@ void tst_QMainWindow::QTBUG52175_tabifiedDockWidgetActivated()
     QTRY_COMPARE(activated, dwSecond);
 }
 #endif
+
+#ifdef QT_BUILD_INTERNAL
+void tst_QMainWindow::expandedToolBarHitTesting()
+{
+    QMainWindow mainWindow;
+    if (mainWindow.style()->pixelMetric(
+        QStyle::PM_DockWidgetSeparatorExtent, nullptr, &mainWindow) != 1) {
+        QSKIP("Style does not trigger the use of qt_qmainwindow_extended_splitter");
+    }
+
+    mainWindow.setAnimated(false);
+
+    auto *dockWidget = new QDockWidget(&mainWindow);
+    dockWidget->setWidget(new QWidget(dockWidget));
+    mainWindow.addDockWidget(Qt::RightDockWidgetArea, dockWidget);
+
+    auto *toolBar = new QToolBar(&mainWindow);
+    for (int i = 0; i < 10; ++i)
+        toolBar->addWidget(new QLabel(QString("Label %1").arg(i)));
+    mainWindow.addToolBar(toolBar);
+
+    auto *centralWidget = new QWidget(&mainWindow);
+    centralWidget->setMinimumSize(QSize(100, 100));
+    mainWindow.setCentralWidget(centralWidget);
+
+    mainWindow.resize(centralWidget->minimumSize());
+    mainWindow.show();
+    QVERIFY(QTest::qWaitForWindowActive(&mainWindow));
+
+    auto *toolBarExtension = toolBar->findChild<QToolBarExtension*>();
+    QVERIFY(toolBarExtension);
+    QPoint buttonCenter = toolBarExtension->parentWidget()->mapTo(&mainWindow, toolBarExtension->geometry().center());
+    QTest::mouseMove(mainWindow.windowHandle(), buttonCenter);
+    QTest::mouseClick(mainWindow.windowHandle(), Qt::LeftButton, Qt::NoModifier, buttonCenter);
+
+    auto *toolBarLayout = static_cast<QToolBarLayout*>(toolBar->layout());
+    QVERIFY(toolBarLayout);
+    QTRY_COMPARE(toolBarLayout->expanded, true);
+
+    auto *splitter = mainWindow.findChild<QWidget*>("qt_qmainwindow_extended_splitter");
+    QVERIFY(splitter);
+    QCOMPARE(splitter->parentWidget(), &mainWindow);
+
+    // Moving the mouse over the splitter when it's covered by the toolbar
+    // extension area should not trigger a closing of the extension area.
+    QTest::mouseMove(mainWindow.windowHandle(), splitter->geometry().center());
+    QCOMPARE(toolBarLayout->expanded, true);
+
+    // Nor should it result in a split cursor shape, indicating we can move
+    // the splitter.
+    QCOMPARE(mainWindow.cursor().shape(), Qt::ArrowCursor);
+}
+#endif // QT_BUILD_INTERNAL
 
 QTEST_MAIN(tst_QMainWindow)
 #include "tst_qmainwindow.moc"
