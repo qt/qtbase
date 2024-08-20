@@ -36,6 +36,7 @@
 
 #include <QtCore/qdebug.h>
 #include <QtCore/qlibraryinfo.h>
+#include <QtCore/qoperatingsystemversion.h>
 
 #include <dwmapi.h>
 
@@ -2437,6 +2438,12 @@ QWindowsWindowData QWindowsWindow::setWindowFlags_sys(Qt::WindowFlags wt,
     return result;
 }
 
+inline bool QWindowsBaseWindow::hasMaximumSize() const
+{
+    const auto maximumSize = window()->maximumSize();
+    return maximumSize.width() != QWINDOWSIZE_MAX || maximumSize.height() != QWINDOWSIZE_MAX;
+}
+
 void QWindowsWindow::handleWindowStateChange(Qt::WindowStates state)
 {
     qCDebug(lcQpaWindow) << __FUNCTION__ << this << window()
@@ -2453,6 +2460,21 @@ void QWindowsWindow::handleWindowStateChange(Qt::WindowStates state)
             GetWindowPlacement(m_data.hwnd, &windowPlacement);
             const RECT geometry = RECTfromQRect(m_data.restoreGeometry);
             windowPlacement.rcNormalPosition = geometry;
+
+            // A bug in windows 10 grows
+            // - ptMaxPosition.x by the task bar's width, if it's on the left
+            // - ptMaxPosition.y by the task bar's height, if it's on the top
+            // each time GetWindowPlacement() is called.
+            // The offset of the screen's left edge (as per frameMargins_sys().left()) is ignored.
+            // => Check for windows 10 and correct.
+            static const auto windows11 = QOperatingSystemVersion::Windows11_21H2;
+            static const bool isWindows10 = QOperatingSystemVersion::current() < windows11;
+            if (isWindows10 && hasMaximumSize()) {
+                const QMargins margins = frameMargins_sys();
+                const QPoint topLeft = window()->screen()->geometry().topLeft();
+                windowPlacement.ptMaxPosition = POINT{ topLeft.x() - margins.left(), topLeft.y() };
+            }
+
             // Even if the window is hidden, windowPlacement's showCmd is not SW_HIDE, so change it
             // manually to avoid unhiding a hidden window with the subsequent call to
             // SetWindowPlacement().
