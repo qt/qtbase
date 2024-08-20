@@ -19,6 +19,11 @@
 #include "qdockwidget_p.h"
 #include <private/qlayoutengine_p.h>
 
+#if QT_CONFIG(toolbar)
+#include "qtoolbar.h"
+#include "qtoolbarlayout_p.h"
+#endif
+
 #include <qpainter.h>
 #include <qstyleoption.h>
 
@@ -2036,6 +2041,30 @@ bool QDockAreaLayoutInfo::restoreState(QDataStream &stream, QList<QDockWidget*> 
 }
 
 #if QT_CONFIG(tabbar)
+
+static void raiseSeparatorWidget(QWidget *separatorWidget)
+{
+    Q_ASSERT(separatorWidget);
+
+#if QT_CONFIG(toolbar)
+    // Raise the separator widget, but make sure it doesn't go above
+    // an expanded toolbar, as that would break mouse event hit testing.
+    Q_ASSERT(separatorWidget->parent());
+    const auto toolBars = separatorWidget->parent()->findChildren<QToolBar*>(Qt::FindDirectChildrenOnly);
+    for (auto *toolBar : toolBars) {
+        if (auto *toolBarLayout = qobject_cast<QToolBarLayout*>(toolBar->layout())) {
+            if (toolBarLayout->expanded) {
+                separatorWidget->stackUnder(toolBar);
+                return;
+            }
+        }
+    }
+#endif
+
+    separatorWidget->raise();
+}
+
+
 void QDockAreaLayoutInfo::updateSeparatorWidgets() const
 {
     if (tabbed) {
@@ -2077,7 +2106,7 @@ void QDockAreaLayoutInfo::updateSeparatorWidgets() const
         j++;
 
         Q_ASSERT(sepWidget);
-        sepWidget->raise();
+        raiseSeparatorWidget(sepWidget);
 
         QRect sepRect = separatorRect(i).adjusted(-2, -2, 2, 2);
         sepWidget->setGeometry(sepRect);
@@ -3362,7 +3391,7 @@ void QDockAreaLayout::updateSeparatorWidgets() const
         j++;
 
         Q_ASSERT(sepWidget);
-        sepWidget->raise();
+        raiseSeparatorWidget(sepWidget);
 
         QRect sepRect = separatorRect(i).adjusted(-2, -2, 2, 2);
         sepWidget->setGeometry(sepRect);
