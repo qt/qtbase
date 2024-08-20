@@ -1479,6 +1479,11 @@ QString QFileDialog::selectedNameFilter() const
     if (!d->usingWidgets())
         return d->selectedNameFilter_sys();
 
+    if (testOption(HideNameFilterDetails)) {
+        const auto idx = d->qFileDialogUi->fileTypeCombo->currentIndex();
+        if (idx >= 0 && idx < d->options->nameFilters().size())
+            return d->options->nameFilters().at(d->qFileDialogUi->fileTypeCombo->currentIndex());
+    }
     return d->qFileDialogUi->fileTypeCombo->currentText();
 }
 

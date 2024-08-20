@@ -97,7 +97,6 @@ private slots:
     void selectFile();
     void selectFiles();
     void selectFileWrongCaseSaveAs();
-    void selectFilter();
     void viewMode();
     void proxymodel();
     void setMimeTypeFilters_data();
@@ -702,29 +701,6 @@ void tst_QFiledialog::filters()
     QCOMPARE(expected, fd2.nameFilters());
 }
 
-void tst_QFiledialog::selectFilter()
-{
-    QFileDialog fd;
-    QSignalSpy spyFilterSelected(&fd, SIGNAL(filterSelected(QString)));
-    QCOMPARE(fd.selectedNameFilter(), QString("All Files (*)"));
-    QStringList filters;
-    filters << "Image files (*.png *.xpm *.jpg)"
-         << "Text files (*.txt)"
-         << "Any files (*.*)";
-    fd.setNameFilters(filters);
-    QCOMPARE(fd.selectedNameFilter(), filters.at(0));
-    fd.selectNameFilter(filters.at(1));
-    QCOMPARE(fd.selectedNameFilter(), filters.at(1));
-    fd.selectNameFilter(filters.at(2));
-    QCOMPARE(fd.selectedNameFilter(), filters.at(2));
-
-    fd.selectNameFilter("bob");
-    QCOMPARE(fd.selectedNameFilter(), filters.at(2));
-    fd.selectNameFilter("");
-    QCOMPARE(fd.selectedNameFilter(), filters.at(2));
-    QCOMPARE(spyFilterSelected.size(), 0);
-}
-
 void tst_QFiledialog::history()
 {
     QFileDialog fd;
@@ -1077,23 +1053,19 @@ void tst_QFiledialog::setNameFilter_data()
     QTest::newRow("namedetailsvisible-empty") << true << QStringList() << QString() << QString();
     QTest::newRow("namedetailsinvisible-empty") << false << QStringList() << QString() << QString();
 
-    const QString anyFileNoDetails = QLatin1String("Any files");
-    const QString anyFile = anyFileNoDetails + QLatin1String(" (*)");
-    const QString imageFilesNoDetails = QLatin1String("Image files");
-    const QString imageFiles = imageFilesNoDetails + QLatin1String(" (*.png *.xpm *.jpg)");
-    const QString textFileNoDetails = QLatin1String("Text files");
-    const QString textFile = textFileNoDetails + QLatin1String(" (*.txt)");
+    const QString anyFile = QLatin1String("Any files (*)");
+    const QString imageFiles = QLatin1String("Image files (*.png *.xpm *.jpg)");
+    const QString textFile = QLatin1String("Text files (*.txt)");
 
-    QStringList filters;
-    filters << anyFile << imageFiles << textFile;
+    QStringList filters {anyFile, imageFiles, textFile};
 
     QTest::newRow("namedetailsvisible-images") << true << filters << imageFiles << imageFiles;
-    QTest::newRow("namedetailsinvisible-images") << false << filters << imageFiles << imageFilesNoDetails;
+    QTest::newRow("namedetailsinvisible-images") << false << filters << imageFiles << imageFiles;
 
     const QString invalid = "foo";
     QTest::newRow("namedetailsvisible-invalid") << true << filters << invalid << anyFile;
     // Potential crash when trying to convert the invalid filter into a list and stripping it, resulting in an empty list.
-    QTest::newRow("namedetailsinvisible-invalid") << false << filters << invalid << anyFileNoDetails;
+    QTest::newRow("namedetailsinvisible-invalid") << false << filters << invalid << anyFile;
 }
 
 void tst_QFiledialog::setNameFilter()
@@ -1101,13 +1073,17 @@ void tst_QFiledialog::setNameFilter()
     QFETCH(bool, nameFilterDetailsVisible);
     QFETCH(QStringList, filters);
     QFETCH(QString, selectFilter);
-    QFETCH(QString, expectedSelectedFilter);
 
     QFileDialog fd;
+    QSignalSpy spyFilterSelected(&fd, &QFileDialog::filterSelected);
     fd.setNameFilters(filters);
     fd.setOption(QFileDialog::HideNameFilterDetails, !nameFilterDetailsVisible);
-    fd.selectNameFilter(selectFilter);
-    QCOMPARE(fd.selectedNameFilter(), expectedSelectedFilter);
+
+    for (const auto &filter : filters) {
+      fd.selectNameFilter(filter);
+      QCOMPARE(fd.selectedNameFilter(), filter);
+    }
+    QCOMPARE(spyFilterSelected.size(), 0);
 }
 
 void tst_QFiledialog::focus()
