@@ -104,34 +104,46 @@ QDebug operator<<(QDebug dbg, AXErrorTag err)
 - (NSArray*) childList
 {
     NSArray *list;
-    AXUIElementCopyAttributeValues(
-                reference,
-                kAXChildrenAttribute,
-                0, 100, /*min, max*/
-                (CFArrayRef *) &list);
+    AXError err;
+
+    if (kAXErrorSuccess != (err = AXUIElementCopyAttributeValues(reference, kAXChildrenAttribute,
+                                                                 0, 100, /*min, max*/
+                                                                 (CFArrayRef *) &list))) {
+        axError = true;
+        qDebug() << "AXUIElementCopyAttributeValue(kAXChildrenAttribute) returned error = "
+                 << AXErrorTag(err) << "with reference" << reference;
+    }
     return list;
 }
 
 - (NSArray *)tableRows
 {
-        NSArray *arr;
-        AXUIElementCopyAttributeValues(
-                    reference,
-                    kAXRowsAttribute,
-                    0, 100, /*min, max*/
-                    (CFArrayRef *) &arr);
-        return arr;
+    NSArray *arr;
+    AXError err;
+
+    if (kAXErrorSuccess != (err = AXUIElementCopyAttributeValues(reference, kAXRowsAttribute,
+                                                                    0, 100, /*min, max*/
+                                                                    (CFArrayRef *) &arr))) {
+        axError = true;
+        qDebug() << "AXUIElementCopyAttributeValue(kAXRowsAttribute) returned error = "
+                 << AXErrorTag(err) << "with reference" << reference;
+    }
+    return arr;
 }
 
 - (NSArray *)tableColumns
 {
-        NSArray *arr;
-        AXUIElementCopyAttributeValues(
-                    reference,
-                    kAXColumnsAttribute,
-                    0, 100, /*min, max*/
-                    (CFArrayRef *) &arr);
-        return arr;
+    NSArray *arr;
+    AXError err;
+
+    if (kAXErrorSuccess != (err = AXUIElementCopyAttributeValues(reference, kAXColumnsAttribute,
+                                                                    0, 100, /*min, max*/
+                                                                    (CFArrayRef *) &arr))) {
+        axError = true;
+        qDebug() << "AXUIElementCopyAttributeValue(kAXColumnsAttribute) returned error = "
+                 << AXErrorTag(err) << "with reference" << reference;
+    }
+    return arr;
 }
 
 - (AXUIElementRef) findDirectChildByRole: (CFStringRef) role
