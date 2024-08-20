@@ -421,7 +421,7 @@ int main(int argc, char **argv)
 {
     QGuiApplication app(argc, argv);
 
-    QLoggingCategory::setFilterRules(QLatin1String("qt.rhi.*=true"));
+    QLoggingCategory::setFilterRules(QLatin1String("qt.rhi.general=true"));
 
     // Defaults.
 #if defined(Q_OS_WIN)
