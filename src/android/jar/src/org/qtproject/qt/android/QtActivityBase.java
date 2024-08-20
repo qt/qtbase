@@ -115,12 +115,10 @@ public class QtActivityBase extends Activity
                         loader.getMainLibraryPath());
             } else {
                 showErrorDialog();
-                finish();
             }
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
             showErrorDialog();
-            finish();
         }
     }
 
