@@ -1564,14 +1564,18 @@ void QHttp2Connection::handlePUSH_PROMISE()
 #endif
     // RFC 9113, 6.6: PUSH_PROMISE frames MUST only be sent on a peer-initiated stream that
     // is in either the "open" or "half-closed (remote)" state.
+
+    // I.e. If you are the server then the client must have initiated the stream you are sending
+    // the promise on. And since this is about _sending_ we have to invert "Remote" to "Local"
+    // because we are receiving.
     if (it == m_streams.constEnd())
         return connectionError(ENHANCE_YOUR_CALM, "PUSH_PROMISE with invalid associated stream");
-    if ((m_connectionType == Type::Client && (streamID & 1) == 1) ||
-        (m_connectionType == Type::Server && (streamID & 1) == 0)) {
+    if ((m_connectionType == Type::Client && (streamID & 1) == 0) ||
+        (m_connectionType == Type::Server && (streamID & 1) == 1)) {
         return connectionError(ENHANCE_YOUR_CALM, "PUSH_PROMISE with invalid associated stream");
     }
     if ((*it)->state() != QHttp2Stream::State::Open &&
-        (*it)->state() != QHttp2Stream::State::HalfClosedRemote) {
+        (*it)->state() != QHttp2Stream::State::HalfClosedLocal) {
         return connectionError(ENHANCE_YOUR_CALM, "PUSH_PROMISE with invalid associated stream");
     }
 
@@ -1600,7 +1604,7 @@ void QHttp2Connection::handlePUSH_PROMISE()
     // Length field. If the length of the padding is the length of the frame payload or greater,
     // the recipient MUST treat this as a connection error (Section 5.4.1) of type PROTOCOL_ERROR.
     // checked in Frame::validateHeader()
-    Q_ASSERT(inboundFrame.dataSize() > qFromBigEndian<quint8>(inboundFrame.dataBegin() + 32));
+    Q_ASSERT(inboundFrame.dataSize() > inboundFrame.padding());
     const bool endHeaders = inboundFrame.flags().testFlag(FrameFlag::END_HEADERS);
     continuedFrames.clear();
     continuedFrames.push_back(std::move(inboundFrame));
