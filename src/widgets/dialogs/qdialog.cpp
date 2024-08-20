@@ -493,8 +493,6 @@ void QDialog::setResult(int r)
 }
 
 /*!
-    \since 4.5
-
     Shows the dialog as a \l{QDialog#Modal Dialogs}{window modal dialog},
     returning immediately.
 
@@ -1066,7 +1064,6 @@ void QDialog::resizeEvent(QResizeEvent *)
 }
 
 /*! \fn void QDialog::finished(int result)
-    \since 4.1
 
     This signal is emitted when the dialog's \a result code has been
     set, either by the user or by calling done(), accept(), or
@@ -1080,7 +1077,6 @@ void QDialog::resizeEvent(QResizeEvent *)
 */
 
 /*! \fn void QDialog::accepted()
-    \since 4.1
 
     This signal is emitted when the dialog has been accepted either by
     the user or by calling accept() or done() with the
@@ -1094,7 +1090,6 @@ void QDialog::resizeEvent(QResizeEvent *)
 */
 
 /*! \fn void QDialog::rejected()
-    \since 4.1
 
     This signal is emitted when the dialog has been rejected either by
     the user or by calling reject() or done() with the
