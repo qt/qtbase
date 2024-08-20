@@ -383,7 +383,6 @@ void QErrorMessage::showMessage(const QString &message)
 }
 
 /*!
-    \since 4.5
     \overload
 
     Shows the given message, \a message, and returns immediately. If the user

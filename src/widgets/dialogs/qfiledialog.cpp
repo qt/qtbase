@@ -296,7 +296,6 @@ Q_GLOBAL_STATIC(QUrl, lastVisitedDir)
 
 /*!
   \fn void QFileDialog::directoryEntered(const QString &directory)
-  \since 4.3
 
   This signal is emitted for local operations when the user enters
   a \a directory.
@@ -312,7 +311,6 @@ Q_GLOBAL_STATIC(QUrl, lastVisitedDir)
 
 /*!
   \fn void QFileDialog::filterSelected(const QString &filter)
-  \since 4.3
 
   This signal is emitted when the user selects a \a filter.
 */
@@ -382,7 +380,6 @@ QFileDialog::~QFileDialog()
 }
 
 /*!
-    \since 4.3
     Sets the \a urls that are located in the sidebar.
 
     For instance:
@@ -403,7 +400,6 @@ void QFileDialog::setSidebarUrls(const QList<QUrl> &urls)
 }
 
 /*!
-    \since 4.3
     Returns a list of urls that are currently in the sidebar
 */
 QList<QUrl> QFileDialog::sidebarUrls() const
@@ -415,7 +411,6 @@ QList<QUrl> QFileDialog::sidebarUrls() const
 static const qint32 QFileDialogMagic = 0xbe;
 
 /*!
-    \since 4.3
     Saves the state of the dialog's layout, history and current directory.
 
     Typically this is used in conjunction with QSettings to remember the size
@@ -449,7 +444,6 @@ QByteArray QFileDialog::saveState() const
 }
 
 /*!
-    \since 4.3
     Restores the dialogs's layout, history and current directory to the \a state specified.
 
     Typically this is used in conjunction with QSettings to restore the size
@@ -713,7 +707,6 @@ bool QFileDialogPrivate::usingWidgets() const
 }
 
 /*!
-    \since 4.5
     Sets the given \a option to be enabled if \a on is true; otherwise,
     clears the given \a option.
 
@@ -737,8 +730,6 @@ void QFileDialog::setOption(Option option, bool on)
 }
 
 /*!
-    \since 4.5
-
     Returns \c true if the given \a option is enabled; otherwise, returns
     false.
 
@@ -753,7 +744,6 @@ bool QFileDialog::testOption(Option option) const
 /*!
     \property QFileDialog::options
     \brief The various options that affect the look and feel of the dialog.
-    \since 4.5
 
     By default, all options are disabled.
 
@@ -824,8 +814,6 @@ QFileDialog::Options QFileDialog::options() const
 }
 
 /*!
-    \since 4.5
-
     This function shows the dialog, and connects the slot specified by \a receiver
     and \a member to the signal that informs about selection changes. If the fileMode is
     ExistingFiles, this is the filesSelected() signal, otherwise it is the fileSelected() signal.
@@ -1358,8 +1346,6 @@ QStringList qt_make_filter_list(const QString &filter)
 }
 
 /*!
-    \since 4.4
-
     Sets the filter used in the file dialog to the given \a filter.
 
     If \a filter contains a pair of parentheses containing one or more
@@ -1404,8 +1390,6 @@ QStringList qt_strip_filters(const QStringList &filters)
 
 
 /*!
-    \since 4.4
-
     Sets the \a filters used in the file dialog.
 
     Note that the filter \b{*.*} is not portable, because the historical
@@ -1448,8 +1432,6 @@ void QFileDialog::setNameFilters(const QStringList &filters)
 }
 
 /*!
-    \since 4.4
-
     Returns the file type filters that are in operation on this file
     dialog.
 */
@@ -1459,8 +1441,6 @@ QStringList QFileDialog::nameFilters() const
 }
 
 /*!
-    \since 4.4
-
     Sets the current file type \a filter. Multiple filters can be
     passed in \a filter by separating them with semicolons or spaces.
 
@@ -1489,8 +1469,6 @@ void QFileDialog::selectNameFilter(const QString &filter)
 }
 
 /*!
-    \since 4.4
-
     Returns the filter that the user selected in the file dialog.
 
     \sa selectedFiles()
@@ -1505,8 +1483,6 @@ QString QFileDialog::selectedNameFilter() const
 }
 
 /*!
-    \since 4.4
-
     Returns the filter that is used when displaying files.
 
     \sa setFilter()
@@ -1520,8 +1496,6 @@ QDir::Filters QFileDialog::filter() const
 }
 
 /*!
-    \since 4.4
-
     Sets the filter used by the model to \a filters. The filter is used
     to specify the kind of files that should be shown.
 
@@ -3164,8 +3138,6 @@ void QFileDialogPrivate::showHeader(QAction *action)
 
 #if QT_CONFIG(proxymodel)
 /*!
-    \since 4.3
-
     Sets the model for the views to the given \a proxyModel.  This is useful if you
     want to modify the underlying model; for example, to add columns, filter
     data or add drives.

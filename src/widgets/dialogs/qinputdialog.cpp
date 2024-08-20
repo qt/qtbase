@@ -471,7 +471,6 @@ void QInputDialogPrivate::currentRowChanged(const QModelIndex &newIndex,
 
 /*!
     \enum QInputDialog::InputMode
-    \since 4.5
 
     This enum describes the different modes of input that can be selected for
     the dialog.
@@ -485,8 +484,6 @@ void QInputDialogPrivate::currentRowChanged(const QModelIndex &newIndex,
 */
 
 /*!
-    \since 4.5
-
     Constructs a new input dialog with the given \a parent and window \a flags.
 */
 QInputDialog::QInputDialog(QWidget *parent, Qt::WindowFlags flags)
@@ -495,8 +492,6 @@ QInputDialog::QInputDialog(QWidget *parent, Qt::WindowFlags flags)
 }
 
 /*!
-    \since 4.5
-
     Destroys the input dialog.
 */
 QInputDialog::~QInputDialog()
@@ -504,8 +499,6 @@ QInputDialog::~QInputDialog()
 }
 
 /*!
-    \since 4.5
-
     \property QInputDialog::inputMode
 
     \brief the mode used for input
@@ -559,8 +552,6 @@ QInputDialog::InputMode QInputDialog::inputMode() const
 }
 
 /*!
-    \since 4.5
-
     \property QInputDialog::labelText
 
     \brief the label's text which describes what needs to be input
@@ -584,8 +575,6 @@ QString QInputDialog::labelText() const
 
 /*!
     \enum QInputDialog::InputDialogOption
-
-    \since 4.5
 
     This enum specifies various options that affect the look and feel
     of an input dialog.
@@ -627,7 +616,6 @@ bool QInputDialog::testOption(InputDialogOption option) const
 /*!
     \property QInputDialog::options
     \brief the various options that affect the look and feel of the dialog
-    \since 4.5
 
     By default, all options are disabled.
 
@@ -659,8 +647,6 @@ QInputDialog::InputDialogOptions QInputDialog::options() const
 }
 
 /*!
-    \since 4.5
-
     \property QInputDialog::textValue
 
     \brief the text value for the input dialog
@@ -691,8 +677,6 @@ QString QInputDialog::textValue() const
 }
 
 /*!
-    \since 4.5
-
     \property QInputDialog::textEchoMode
 
     \brief the echo mode for the text value
@@ -718,8 +702,6 @@ QLineEdit::EchoMode QInputDialog::textEchoMode() const
 }
 
 /*!
-    \since 4.5
-
     \property QInputDialog::comboBoxEditable
 
     \brief whether or not the combo box used in the input dialog is editable
@@ -744,8 +726,6 @@ bool QInputDialog::isComboBoxEditable() const
 }
 
 /*!
-    \since 4.5
-
     \property QInputDialog::comboBoxItems
 
     \brief the items used in the combo box for the input dialog
@@ -780,7 +760,6 @@ QStringList QInputDialog::comboBoxItems() const
 
 /*!
     \property QInputDialog::intValue
-    \since 4.5
     \brief the current integer value accepted as input
 
     This property is only relevant when the input dialog is used in
@@ -805,7 +784,6 @@ int QInputDialog::intValue() const
 
 /*!
     \property QInputDialog::intMinimum
-    \since 4.5
     \brief the minimum integer value accepted as input
 
     This property is only relevant when the input dialog is used in
@@ -830,7 +808,6 @@ int QInputDialog::intMinimum() const
 
 /*!
     \property QInputDialog::intMaximum
-    \since 4.5
     \brief the maximum integer value accepted as input
 
     This property is only relevant when the input dialog is used in
@@ -867,7 +844,6 @@ void QInputDialog::setIntRange(int min, int max)
 
 /*!
     \property QInputDialog::intStep
-    \since 4.5
     \brief the step by which the integer value is increased and decreased
 
     This property is only relevant when the input dialog is used in
@@ -892,7 +868,6 @@ int QInputDialog::intStep() const
 
 /*!
     \property QInputDialog::doubleValue
-    \since 4.5
     \brief the current double precision floating point value accepted as input
 
     This property is only relevant when the input dialog is used in
@@ -917,7 +892,6 @@ double QInputDialog::doubleValue() const
 
 /*!
     \property QInputDialog::doubleMinimum
-    \since 4.5
     \brief the minimum double precision floating point value accepted as input
 
     This property is only relevant when the input dialog is used in
@@ -942,7 +916,6 @@ double QInputDialog::doubleMinimum() const
 
 /*!
     \property QInputDialog::doubleMaximum
-    \since 4.5
     \brief the maximum double precision floating point value accepted as input
 
     This property is only relevant when the input dialog is used in
@@ -978,8 +951,6 @@ void QInputDialog::setDoubleRange(double min, double max)
 }
 
 /*!
-    \since 4.5
-
     \property QInputDialog::doubleDecimals
 
     \brief sets the precision of the double spinbox in decimals
@@ -1004,8 +975,6 @@ int QInputDialog::doubleDecimals() const
 }
 
 /*!
-    \since 4.5
-
     \property QInputDialog::okButtonText
 
     \brief the text for the button used to accept the entry in the dialog
@@ -1025,8 +994,6 @@ QString QInputDialog::okButtonText() const
 }
 
 /*!
-    \since 4.5
-
     \property QInputDialog::cancelButtonText
     \brief the text for the button used to cancel the dialog
 */
@@ -1045,8 +1012,6 @@ QString QInputDialog::cancelButtonText() const
 }
 
 /*!
-    \since 4.5
-
     This function connects one of its signals to the slot specified by \a receiver
     and \a member. The specific signal depends on the arguments that are specified
     in \a member. These are:
@@ -1240,8 +1205,6 @@ QString QInputDialog::getMultiLineText(QWidget *parent, const QString &title, co
 }
 
 /*!
-    \since 4.5
-
     Static convenience function to get an integer input from the user.
 
     \a title is the text which is displayed in the title bar of the dialog.

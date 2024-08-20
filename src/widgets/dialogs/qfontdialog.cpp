@@ -108,8 +108,6 @@ QFontDialogPrivate::~QFontDialogPrivate()
 */
 
 /*!
-    \since 4.5
-
     Constructs a standard font dialog.
 
     Use setCurrentFont() to set the initial font attributes.
@@ -126,8 +124,6 @@ QFontDialog::QFontDialog(QWidget *parent)
 }
 
 /*!
-    \since 4.5
-
     Constructs a standard font dialog with the given \a parent and specified
     \a initial font.
 */
@@ -773,15 +769,11 @@ void QFontDialog::changeEvent(QEvent *e)
 }
 
 /*!
-    \since 4.5
-
     \property QFontDialog::currentFont
     \brief the current font of the dialog.
 */
 
 /*!
-    \since 4.5
-
     Sets the font highlighted in the QFontDialog to the given \a font.
 
     \sa selectedFont()
@@ -807,8 +799,6 @@ void QFontDialog::setCurrentFont(const QFont &font)
 }
 
 /*!
-    \since 4.5
-
     Returns the current font.
 
     \sa selectedFont()
@@ -840,7 +830,6 @@ QFont QFontDialog::selectedFont() const
 
 /*!
     \enum QFontDialog::FontDialogOption
-    \since 4.5
 
     This enum specifies various options that affect the look and feel
     of a font dialog.
@@ -891,7 +880,6 @@ bool QFontDialog::testOption(FontDialogOption option) const
 /*!
     \property QFontDialog::options
     \brief the various options that affect the look and feel of the dialog
-    \since 4.5
 
     By default, all options are disabled.
 
@@ -919,8 +907,6 @@ QFontDialog::FontDialogOptions QFontDialog::options() const
 }
 
 /*!
-    \since 4.5
-
     Opens the dialog and connects its fontSelected() signal to the slot specified
     by \a receiver and \a member.
 
@@ -936,8 +922,6 @@ void QFontDialog::open(QObject *receiver, const char *member)
 }
 
 /*!
-    \since 4.5
-
     \fn void QFontDialog::currentFontChanged(const QFont &font)
 
     This signal is emitted when the current font is changed. The new font is
@@ -950,8 +934,6 @@ void QFontDialog::open(QObject *receiver, const char *member)
 */
 
 /*!
-    \since 4.5
-
     \fn void QFontDialog::fontSelected(const QFont &font)
 
     This signal is emitted when a font has been selected. The selected font is
