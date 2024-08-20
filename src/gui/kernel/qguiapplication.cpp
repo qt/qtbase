@@ -2033,9 +2033,24 @@ void QGuiApplicationPrivate::captureGlobalModifierState(QEvent *e)
 */
 bool QGuiApplication::notify(QObject *object, QEvent *event)
 {
+    Q_D(QGuiApplication);
     if (object->isWindowType()) {
         if (QGuiApplicationPrivate::sendQWindowEventToQPlatformWindow(static_cast<QWindow *>(object), event))
             return true; // Platform plugin ate the event
+    }
+
+    switch (event->type()) {
+    case QEvent::ApplicationDeactivate:
+    case QEvent::OrientationChange:
+        // Close all popups (triggers when switching applications
+        // by pressing ALT-TAB on Windows, which is not received as a key event.
+        // triggers when the screen rotates.)
+        // This is also necessary on Wayland, and platforms where
+        // QWindow::setMouseGrabEnabled(true) doesn't work.
+        d->closeAllPopups();
+        break;
+    default:
+        break;
     }
 
     QGuiApplicationPrivate::captureGlobalModifierState(event);
