@@ -642,14 +642,7 @@ Content table
 
 @media print {
     .toc {
-        float: right;
-        clear: right;
-        padding-bottom: 10px;
-        padding-top: 50px;
-        width: 100%;
-        background-image: url(../images/bgrContent.png);
-        background-position: top;
-        background-repeat: no-repeat;
+        display: none;
     }
 }
 
