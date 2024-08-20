@@ -117,12 +117,10 @@ public class QtActivityBase extends Activity
                         loader.getMainLibraryPath());
             } else if (result == QtLoader.LoadingResult.Failed) {
                 showErrorDialog();
-                finish();
             }
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
             showErrorDialog();
-            finish();
         }
     }
 
