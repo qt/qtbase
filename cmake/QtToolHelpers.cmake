@@ -143,7 +143,6 @@ function(qt_internal_add_tool target_name)
         # qt_set_target_info_properties knows how to process them
     )
     qt_internal_add_target_aliases("${target_name}")
-    _qt_internal_apply_strict_cpp("${target_name}")
     qt_internal_adjust_main_config_runtime_output_dir("${target_name}" "${output_dir}")
 
     if (WIN32)
