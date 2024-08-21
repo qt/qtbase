@@ -38,6 +38,12 @@
     make your binaries smaller by leaving out even the implementation of the
     deprecated APIs.
 
+    \note In order to avoid linker errors, the same deprecation level should be
+    used consistently in the entire binary. This means that in static builds
+    the Qt libraries should also be built with \c {QT_DISABLE_DEPRECATED_UP_TO}
+    set to the same version as in the user code. That is because in static
+    build the Qt libraries also become a part of the binary.
+
     \sa QT_DEPRECATED_WARNINGS, QT_DISABLE_DEPRECATED_UP_TO
 */
 
