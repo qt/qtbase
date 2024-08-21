@@ -62,6 +62,8 @@ public:
         if (window->parent() == nullptr)
             return;
         Q_Q(QWindowContainer);
+        if (q->testAttribute(Qt::WA_DontCreateNativeAncestors))
+            return;
         if (q->internalWinId()) {
             // Allow use native widgets if the window container is already a native widget
             usesNativeWidgets = true;
