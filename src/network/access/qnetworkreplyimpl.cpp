@@ -437,7 +437,7 @@ void QNetworkReplyImplPrivate::initCacheSaveDevice()
 
     cacheSaveDevice = networkCache()->prepare(metaData);
 
-    if (!cacheSaveDevice || (cacheSaveDevice && !cacheSaveDevice->isOpen())) {
+    if (!cacheSaveDevice || !cacheSaveDevice->isOpen()) {
         if (Q_UNLIKELY(cacheSaveDevice && !cacheSaveDevice->isOpen()))
             qCritical("QNetworkReplyImpl: network cache returned a device that is not open -- "
                   "class %s probably needs to be fixed",
