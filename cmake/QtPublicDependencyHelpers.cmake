@@ -265,6 +265,8 @@ macro(_qt_internal_setup_qt_host_path
     # Requiredness can be overridden via variable.
     if(DEFINED QT_REQUIRE_HOST_PATH_CHECK)
         set(_qt_platform_host_path_required "${QT_REQUIRE_HOST_PATH_CHECK}")
+    elseif(DEFINED ENV{QT_REQUIRE_HOST_PATH_CHECK})
+        set(_qt_platform_host_path_required "$ENV{QT_REQUIRE_HOST_PATH_CHECK}")
     else()
         set(_qt_platform_host_path_required "${host_path_required}")
     endif()
