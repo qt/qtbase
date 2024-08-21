@@ -61,8 +61,8 @@ public:
 
     // Override QDateTimeParser:
     QString displayText() const override { return edit->text(); }
-    QDateTime getMinimum() const override;
-    QDateTime getMaximum() const override;
+    QDateTime getMinimum(const QTimeZone &zone) const override;
+    QDateTime getMaximum(const QTimeZone &zone) const override;
     QLocale locale() const override { return q_func()->locale(); }
     int cursorPosition() const override { return edit ? edit->cursorPosition() : -1; }
 

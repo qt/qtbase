@@ -24,6 +24,7 @@
 #include "QtCore/qlist.h"
 #include "QtCore/qlocale.h"
 #include "QtCore/qstringlist.h"
+#include "QtCore/qtimezone.h"
 #ifndef QT_BOOTSTRAPPED
 # include "QtCore/qvariant.h"
 #endif
@@ -230,8 +231,8 @@ protected: // for the benefit of QDateTimeEditPrivate
     }
     QString stateName(State s) const;
 
-    virtual QDateTime getMinimum() const;
-    virtual QDateTime getMaximum() const;
+    virtual QDateTime getMinimum(const QTimeZone &zone) const;
+    virtual QDateTime getMaximum(const QTimeZone &zone) const;
     virtual int cursorPosition() const { return -1; }
     virtual QLocale locale() const { return defaultLocale; }
 
