@@ -34,3 +34,6 @@ instructions:
         - condition: property
           property: features
           contains_value: LicenseCheckV2
+        - condition: property
+          property: features
+          contains_value: DoNotRunTestsButCreateTestWorkItem
