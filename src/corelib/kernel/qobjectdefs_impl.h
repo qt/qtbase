@@ -321,14 +321,14 @@ namespace QtPrivate {
 
     /* get the return type of a functor, given the signal argument list  */
     template <typename Functor, typename ArgList> struct FunctorReturnType;
-    template <typename Functor, typename ... ArgList> struct FunctorReturnType<Functor, List<ArgList...>> {
-        typedef decltype(std::declval<Functor>().operator()((std::declval<ArgList>())...)) Value;
-    };
+    template <typename Functor, typename... ArgList> struct FunctorReturnType<Functor, List<ArgList...>>
+        : std::invoke_result<Functor, ArgList...>
+    { };
 
     template<typename Func, typename... Args>
     struct FunctorCallable
     {
-        using ReturnType = decltype(std::declval<Func>()(std::declval<Args>()...));
+        using ReturnType = std::invoke_result_t<Func, Args...>;
         using Function = ReturnType(*)(Args...);
         enum {ArgumentCount = sizeof...(Args)};
         using Arguments = QtPrivate::List<Args...>;
