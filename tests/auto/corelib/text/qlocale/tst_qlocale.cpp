@@ -42,6 +42,7 @@ public:
 private slots:
     void initTestCase();
     void compareCompiles();
+    void compareWithLanguage();
 #if defined(Q_OS_WIN)
     void windowsDefaultLocale();
 #endif
@@ -191,11 +192,6 @@ tst_QLocale::tst_QLocale()
     qRegisterMetaType<QLocale::FormatType>("QLocale::FormatType");
 }
 
-void tst_QLocale::compareCompiles()
-{
-    QTestPrivate::testEqualityOperatorsCompile<QLocale>();
-}
-
 void tst_QLocale::initTestCase()
 {
 #ifdef Q_OS_ANDROID
@@ -225,6 +221,25 @@ void tst_QLocale::initTestCase()
         cleanEnv << entry;
     }
 #endif // QT_CONFIG(process)
+}
+
+void tst_QLocale::compareCompiles()
+{
+    QTestPrivate::testEqualityOperatorsCompile<QLocale>();
+    QTestPrivate::testEqualityOperatorsCompile<QLocale, QLocale::Language>();
+}
+
+void tst_QLocale::compareWithLanguage()
+{
+    QLocale de(QLocale::German);
+    QT_TEST_EQUALITY_OPS(de, QLocale::German, true);
+    QT_TEST_EQUALITY_OPS(de, QLocale::English, false);
+
+    QLocale en_DE(QLocale::English, QLocale::Germany);
+    QCOMPARE_EQ(en_DE.language(), QLocale::English);
+    QCOMPARE_EQ(en_DE.territory(), QLocale::Germany);
+    // Territory won't match
+    QT_TEST_EQUALITY_OPS(en_DE, QLocale::English, false);
 }
 
 void tst_QLocale::ctor_data()

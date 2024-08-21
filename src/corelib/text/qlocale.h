@@ -1180,6 +1180,9 @@ private:
     }
     Q_DECLARE_EQUALITY_COMPARABLE(QLocale)
 
+    friend Q_CORE_EXPORT bool comparesEqual(const QLocale &lhs, Language rhs);
+    Q_DECLARE_EQUALITY_COMPARABLE_NON_NOEXCEPT(QLocale, Language)
+
     QSharedDataPointer<QLocalePrivate> d;
 };
 Q_DECLARE_SHARED(QLocale)
