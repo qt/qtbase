@@ -1387,11 +1387,11 @@ public:
     {
         return takeImpl(key);
     }
-    bool contains(const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key)
+    bool contains(const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key) const
     {
         return d ? d->findNode(key) != nullptr : false;
     }
-    qsizetype count(const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key)
+    qsizetype count(const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key) const
     {
         return contains(key) ? 1 : 0;
     }
