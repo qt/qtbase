@@ -1820,26 +1820,30 @@ void QDateTimeEditPrivate::updateEdit()
     }
 }
 
-QDateTime QDateTimeEditPrivate::getMinimum() const
+QDateTime QDateTimeEditPrivate::getMinimum(const QTimeZone &zone) const
 {
     if (keyboardTracking)
-        return minimum.toDateTime();
+        return minimum.toDateTime().toTimeZone(zone);
 
+    // QDTP's min is the local-time start of QDATETIMEEDIT_DATE_MIN, cached
+    // (along with its conversion to UTC).
     if (timeZone.timeSpec() == Qt::LocalTime)
-        return QDateTimeParser::getMinimum();
+        return QDateTimeParser::getMinimum(zone);
 
-    return QDATETIMEEDIT_DATE_MIN.startOfDay(timeZone);
+    return QDATETIMEEDIT_DATE_MIN.startOfDay(timeZone).toTimeZone(zone);
 }
 
-QDateTime QDateTimeEditPrivate::getMaximum() const
+QDateTime QDateTimeEditPrivate::getMaximum(const QTimeZone &zone) const
 {
     if (keyboardTracking)
-        return maximum.toDateTime();
+        return maximum.toDateTime().toTimeZone(zone);
 
+    // QDTP's max is the local-time end of QDATETIMEEDIT_DATE_MAX, cached
+    // (along with its conversion to UTC).
     if (timeZone.timeSpec() == Qt::LocalTime)
-        return QDateTimeParser::getMaximum();
+        return QDateTimeParser::getMaximum(zone);
 
-    return QDATETIMEEDIT_DATE_MAX.endOfDay(timeZone);
+    return QDATETIMEEDIT_DATE_MAX.endOfDay(timeZone).toTimeZone(zone);
 }
 
 /*!
