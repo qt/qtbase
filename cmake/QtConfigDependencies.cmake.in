@@ -3,7 +3,13 @@
 
 set(@INSTALL_CMAKE_NAMESPACE@_FOUND FALSE)
 
-set(__qt_platform_requires_host_info_package "@platform_requires_host_info_package@")
+if(DEFINED QT_REQUIRE_HOST_PATH_CHECK)
+    set(__qt_platform_requires_host_info_package "${QT_REQUIRE_HOST_PATH_CHECK}")
+elseif(DEFINED ENV{QT_REQUIRE_HOST_PATH_CHECK})
+    set(__qt_platform_requires_host_info_package "$ENV{QT_REQUIRE_HOST_PATH_CHECK}")
+else()
+    set(__qt_platform_requires_host_info_package "@platform_requires_host_info_package@")
+endif()
 set(__qt_platform_initial_qt_host_path "@qt_host_path_absolute@")
 set(__qt_platform_initial_qt_host_path_cmake_dir "@qt_host_path_cmake_dir_absolute@")
 
