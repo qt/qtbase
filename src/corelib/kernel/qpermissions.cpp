@@ -382,6 +382,8 @@ QT_PERMISSION_IMPL_COMMON(QMicrophonePermission)
     \l {QLocationPermission::Precise}{precise location}) and ensure that
     \c {BLUETOOTH_SCAN} permission doesn't have the
     \c {android:usesPermissionFlags="neverForLocation"} attribute set.
+    For setting and customizing permissions in the application manifest,
+    \l {Qt Permissions and Features}{see this guide}.
 
     \include permissions.qdocinc permission-metadata
 */

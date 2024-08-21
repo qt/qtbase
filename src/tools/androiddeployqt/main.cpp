@@ -1853,6 +1853,21 @@ bool updateAndroidManifest(Options &options)
     replacements[QStringLiteral("-- %%INSERT_VERSION_CODE%% --")] = options.versionCode;
     replacements[QStringLiteral("package=\"org.qtproject.example\"")] = "package=\"%1\""_L1.arg(options.packageName);
 
+    const QString androidManifestPath = options.outputDirectory + "/AndroidManifest.xml"_L1;
+    QFile androidManifestXml(androidManifestPath);
+    // User may have manually defined permissions in the AndroidManifest.xml
+    // Read these permissions in order to remove any duplicates, as otherwise the
+    // application build would fail.
+    if (androidManifestXml.exists() && androidManifestXml.open(QIODevice::ReadOnly)) {
+        QXmlStreamReader reader(&androidManifestXml);
+        while (!reader.atEnd()) {
+            reader.readNext();
+            if (reader.isStartElement() && reader.name() == "uses-permission"_L1)
+                options.permissions.remove(QString(reader.attributes().value("android:name"_L1)));
+        }
+        androidManifestXml.close();
+    }
+
     QString permissions;
     for (auto [name, extras] : options.permissions.asKeyValueRange())
         permissions += "    <uses-permission android:name=\"%1\" %2 />\n"_L1.arg(name).arg(extras);
@@ -1866,13 +1881,11 @@ bool updateAndroidManifest(Options &options)
 
     replacements[QStringLiteral("<!-- %%INSERT_FEATURES -->")] = features.trimmed();
 
-    QString androidManifestPath = options.outputDirectory + "/AndroidManifest.xml"_L1;
     if (!updateFile(androidManifestPath, replacements))
         return false;
 
     // read the package, min & target sdk API levels from manifest file.
     bool checkOldAndroidLabelString = false;
-    QFile androidManifestXml(androidManifestPath);
     if (androidManifestXml.exists()) {
         if (!androidManifestXml.open(QIODevice::ReadOnly)) {
             fprintf(stderr, "Cannot open %s for reading.\n", qPrintable(androidManifestPath));

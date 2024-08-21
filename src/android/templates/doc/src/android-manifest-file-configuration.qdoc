@@ -246,6 +246,17 @@ the actual values:
 able to include the correct permissions. So some functionalities
 might not work properly.
 
+\section3 Customizing Permissions
+
+Since Qt 6.9, it is possible to override the default permissions set
+by Qt modules. This is useful if you need to define the same permissions
+as used by a Qt module, but with additional or different attributes.
+
+To achieve this, you can manually define these permissions in the Android
+manifest file, along with the \c {<!-- %%INSERT_PERMISSIONS -->} placeholder.
+Manually defined permissions take precedence over the same permissions added
+by Qt modules, avoiding duplication.
+
 \section2 Style Extraction
 
 Qt uses different methods to determine how Qt Widgets and Qt Quick Controls
