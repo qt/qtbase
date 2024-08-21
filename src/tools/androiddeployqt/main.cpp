@@ -444,7 +444,11 @@ Options parseOptions()
             else
                 options.buildDirectory = arguments.at(++i);
         } else if (argument.compare("--sign"_L1, Qt::CaseInsensitive) == 0) {
-            if (i + 2 >= arguments.size()) {
+            if (i + 2 < arguments.size() && !arguments.at(i + 1).startsWith("--"_L1) &&
+                       !arguments.at(i + 2).startsWith("--"_L1)) {
+                options.keyStore = arguments.at(++i);
+                options.keyStoreAlias = arguments.at(++i);
+            } else {
                 const QString keyStore = qEnvironmentVariable("QT_ANDROID_KEYSTORE_PATH");
                 const QString storeAlias = qEnvironmentVariable("QT_ANDROID_KEYSTORE_ALIAS");
                 if (keyStore.isEmpty() || storeAlias.isEmpty()) {
@@ -457,14 +461,6 @@ Options parseOptions()
                     options.keyStore = keyStore;
                     options.keyStoreAlias = storeAlias;
                 }
-            } else if (!arguments.at(i + 1).startsWith("--"_L1) &&
-                       !arguments.at(i + 2).startsWith("--"_L1)) {
-                options.keyStore = arguments.at(++i);
-                options.keyStoreAlias = arguments.at(++i);
-            } else {
-                options.helpRequested = true;
-                fprintf(stderr, "Package signing path and alias values are not "
-                                "specified.\n");
             }
 
             // Do not override if the passwords are provided through arguments
