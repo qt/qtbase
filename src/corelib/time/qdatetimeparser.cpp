@@ -834,7 +834,7 @@ QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex, i
             QString sectiontext = sectionTextRef.toString();
             int num = 0, used = 0;
             if (sn.type == MonthSection) {
-                const QDate minDate = getMinimum().date();
+                const QDate minDate = getMinimum(currentValue.timeRepresentation()).date();
                 const int year = currentValue.date().year(calendar);
                 const int min = (year == minDate.year(calendar)) ? minDate.month(calendar) : 1;
                 num = findMonth(sectiontext.toLower(), min, sectionIndex, year, &sectiontext, &used);
@@ -1490,8 +1490,8 @@ QDateTimeParser::StateNode
 QDateTimeParser::parse(const QString &input, int position,
                        const QDateTime &defaultValue, bool fixup) const
 {
-    const QDateTime minimum = getMinimum();
-    const QDateTime maximum = getMaximum();
+    const QDateTime minimum = getMinimum(defaultValue.timeRepresentation());
+    const QDateTime maximum = getMaximum(defaultValue.timeRepresentation());
     m_text = input;
 
     QDTPDEBUG << "parse" << input;
@@ -2148,8 +2148,8 @@ bool QDateTimeParser::skipToNextSection(int index, const QDateTime &current, QSt
     int max = absoluteMax(index, current);
     // Time-zone field is only numeric if given as offset from UTC:
     if (node.type != TimeZoneSection || current.timeSpec() == Qt::OffsetFromUTC) {
-        const QDateTime maximum = getMaximum();
-        const QDateTime minimum = getMinimum();
+        const QDateTime maximum = getMaximum(current.timeRepresentation());
+        const QDateTime minimum = getMinimum(current.timeRepresentation());
         // Range from minimum to maximum might not contain current if an earlier
         // field's value was full-width but out of range. In such a case the
         // parse is already headed for Invalid, so it doesn't matter that we get
@@ -2226,9 +2226,9 @@ QString QDateTimeParser::stateName(State s) const
 QDateTime QDateTimeParser::baseDate(const QTimeZone &zone) const
 {
     QDateTime when = QDate(defaultCenturyStart, 1, 1).startOfDay(zone);
-    if (const QDateTime start = getMinimum(); when < start)
+    if (const QDateTime start = getMinimum(zone); when < start)
         return start;
-    if (const QDateTime end = getMaximum(); when > end)
+    if (const QDateTime end = getMaximum(zone); when > end)
         return end;
     return when;
 }
@@ -2269,18 +2269,28 @@ bool QDateTimeParser::fromString(const QString &t, QDateTime *datetime, int base
     return tmp.state >= Intermediate && !tmp.conflicts && tmp.value.isValid();
 }
 
-QDateTime QDateTimeParser::getMinimum() const
+QDateTime QDateTimeParser::getMinimum(const QTimeZone &zone) const
 {
     // NB: QDateTimeParser always uses Qt::LocalTime time spec by default. If
     //     any subclass needs a changing time spec, it must override this
     //     method. At the time of writing, this is done by QDateTimeEditPrivate.
 
-    // Cache the only case
+    // Cache the only case (and make sure it knows its UTC offset):
     static const QDateTime localTimeMin(QDATETIMEEDIT_DATE_MIN.startOfDay());
-    return localTimeMin;
+    static const QDateTime utcTimeMin = localTimeMin.toUTC();
+    switch (zone.timeSpec()) {
+    case Qt::LocalTime:
+        return localTimeMin;
+    case Qt::UTC:
+        return utcTimeMin;
+    case Qt::OffsetFromUTC:
+    case Qt::TimeZone:
+        break;
+    }
+    return utcTimeMin.toTimeZone(zone);
 }
 
-QDateTime QDateTimeParser::getMaximum() const
+QDateTime QDateTimeParser::getMaximum(const QTimeZone &zone) const
 {
     // NB: QDateTimeParser always uses Qt::LocalTime time spec by default. If
     //     any subclass needs a changing time spec, it must override this
@@ -2288,7 +2298,17 @@ QDateTime QDateTimeParser::getMaximum() const
 
     // Cache the only case
     static const QDateTime localTimeMax(QDATETIMEEDIT_DATE_MAX.endOfDay());
-    return localTimeMax;
+    static const QDateTime utcTimeMax = localTimeMax.toUTC();
+    switch (zone.timeSpec()) {
+    case Qt::LocalTime:
+        return localTimeMax;
+    case Qt::UTC:
+        return utcTimeMax;
+    case Qt::OffsetFromUTC:
+    case Qt::TimeZone:
+        break;
+    }
+    return utcTimeMax.toTimeZone(zone);
 }
 
 QString QDateTimeParser::getAmPmText(AmPm ap, Case cs) const
