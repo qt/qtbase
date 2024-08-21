@@ -1269,7 +1269,7 @@ void QComboBoxPrivate::updateLineEditGeometry()
     q->initStyleOption(&opt);
     QRect editRect = q->style()->subControlRect(QStyle::CC_ComboBox, &opt,
                                                 QStyle::SC_ComboBoxEditField, q);
-    if (!q->itemIcon(q->currentIndex()).isNull()) {
+    if (currentIndex.isValid() && !q->itemIcon(q->currentIndex()).isNull()) {
         QRect comboRect(editRect);
         editRect.setWidth(editRect.width() - q->iconSize().width() - 4);
         editRect = QStyle::alignedRect(q->layoutDirection(), Qt::AlignRight,
