@@ -399,7 +399,9 @@ void QCALayerBackingStore::flushSubWindow(QWindow *subWindow)
         subWindowBackingStore->m_clearSurfaceOnPaint = false;
     }
 
-    auto subWindowSize = subWindow->size();
+    // Query platform window for subwindow size, so that we
+    // incorporate any effects of the QHighDpiScaling layer.
+    auto subWindowSize = subWindow->handle()->geometry().size();
     static const auto kNoStaticContents = QRegion();
     subWindowBackingStore->resize(subWindowSize, kNoStaticContents);
 
