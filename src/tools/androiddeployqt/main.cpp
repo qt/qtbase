@@ -2127,7 +2127,12 @@ bool readAndroidDependencyXml(Options *options,
                 } else if (reader.name() == "permission"_L1) {
                     QString name = reader.attributes().value("name"_L1).toString();
                     QString extras = reader.attributes().value("extras"_L1).toString();
-                    options->permissions.insert(name, extras);
+                    // With duplicate permissions prioritize the one without any attributes,
+                    // as that is likely the most permissive
+                    if (!options->permissions.contains(name)
+                        || !options->permissions.value(name).isEmpty()) {
+                        options->permissions.insert(name, extras);
+                    }
                 } else if (reader.name() == "feature"_L1) {
                     QString name = reader.attributes().value("name"_L1).toString();
                     options->features.append(name);
