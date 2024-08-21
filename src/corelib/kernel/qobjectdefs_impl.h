@@ -133,8 +133,8 @@ namespace QtPrivate {
     }
 
     template <typename, typename, typename, typename> struct FunctorCall;
-    template <int... II, typename... SignalArgs, typename R, typename Function>
-    struct FunctorCall<IndexesList<II...>, List<SignalArgs...>, R, Function> : FunctorCallBase
+    template <size_t... II, typename... SignalArgs, typename R, typename Function>
+    struct FunctorCall<std::index_sequence<II...>, List<SignalArgs...>, R, Function> : FunctorCallBase
     {
         static void call(Function &f, void **arg)
         {
@@ -143,8 +143,8 @@ namespace QtPrivate {
             });
         }
     };
-    template <int... II, typename... SignalArgs, typename R, typename... SlotArgs, typename SlotRet, class Obj>
-    struct FunctorCall<IndexesList<II...>, List<SignalArgs...>, R, SlotRet (Obj::*)(SlotArgs...)> : FunctorCallBase
+    template <size_t... II, typename... SignalArgs, typename R, typename... SlotArgs, typename SlotRet, class Obj>
+    struct FunctorCall<std::index_sequence<II...>, List<SignalArgs...>, R, SlotRet (Obj::*)(SlotArgs...)> : FunctorCallBase
     {
         static void call(SlotRet (Obj::*f)(SlotArgs...), Obj *o, void **arg)
         {
@@ -154,8 +154,8 @@ namespace QtPrivate {
             });
         }
     };
-    template <int... II, typename... SignalArgs, typename R, typename... SlotArgs, typename SlotRet, class Obj>
-    struct FunctorCall<IndexesList<II...>, List<SignalArgs...>, R, SlotRet (Obj::*)(SlotArgs...) const> : FunctorCallBase
+    template <size_t... II, typename... SignalArgs, typename R, typename... SlotArgs, typename SlotRet, class Obj>
+    struct FunctorCall<std::index_sequence<II...>, List<SignalArgs...>, R, SlotRet (Obj::*)(SlotArgs...) const> : FunctorCallBase
     {
         static void call(SlotRet (Obj::*f)(SlotArgs...) const, Obj *o, void **arg)
         {
@@ -165,8 +165,8 @@ namespace QtPrivate {
             });
         }
     };
-    template <int... II, typename... SignalArgs, typename R, typename... SlotArgs, typename SlotRet, class Obj>
-    struct FunctorCall<IndexesList<II...>, List<SignalArgs...>, R, SlotRet (Obj::*)(SlotArgs...) noexcept> : FunctorCallBase
+    template <size_t... II, typename... SignalArgs, typename R, typename... SlotArgs, typename SlotRet, class Obj>
+    struct FunctorCall<std::index_sequence<II...>, List<SignalArgs...>, R, SlotRet (Obj::*)(SlotArgs...) noexcept> : FunctorCallBase
     {
         static void call(SlotRet (Obj::*f)(SlotArgs...) noexcept, Obj *o, void **arg)
         {
@@ -176,8 +176,8 @@ namespace QtPrivate {
             });
         }
     };
-    template <int... II, typename... SignalArgs, typename R, typename... SlotArgs, typename SlotRet, class Obj>
-    struct FunctorCall<IndexesList<II...>, List<SignalArgs...>, R, SlotRet (Obj::*)(SlotArgs...) const noexcept> : FunctorCallBase
+    template <size_t... II, typename... SignalArgs, typename R, typename... SlotArgs, typename SlotRet, class Obj>
+    struct FunctorCall<std::index_sequence<II...>, List<SignalArgs...>, R, SlotRet (Obj::*)(SlotArgs...) const noexcept> : FunctorCallBase
     {
         static void call(SlotRet (Obj::*f)(SlotArgs...) const noexcept, Obj *o, void **arg)
         {
@@ -197,7 +197,7 @@ namespace QtPrivate {
         enum {ArgumentCount = sizeof...(Args), IsPointerToMemberFunction = true};
         template <typename SignalArgs, typename R>
         static void call(Function f, Obj *o, void **arg) {
-            FunctorCall<typename Indexes<ArgumentCount>::Value, SignalArgs, R, Function>::call(f, o, arg);
+            FunctorCall<std::index_sequence_for<Args...>, SignalArgs, R, Function>::call(f, o, arg);
         }
     };
     template<class Obj, typename Ret, typename... Args> struct FunctionPointer<Ret (Obj::*) (Args...) const>
@@ -209,7 +209,7 @@ namespace QtPrivate {
         enum {ArgumentCount = sizeof...(Args), IsPointerToMemberFunction = true};
         template <typename SignalArgs, typename R>
         static void call(Function f, Obj *o, void **arg) {
-            FunctorCall<typename Indexes<ArgumentCount>::Value, SignalArgs, R, Function>::call(f, o, arg);
+            FunctorCall<std::index_sequence_for<Args...>, SignalArgs, R, Function>::call(f, o, arg);
         }
     };
 
@@ -221,7 +221,7 @@ namespace QtPrivate {
         enum {ArgumentCount = sizeof...(Args), IsPointerToMemberFunction = false};
         template <typename SignalArgs, typename R>
         static void call(Function f, void *, void **arg) {
-            FunctorCall<typename Indexes<ArgumentCount>::Value, SignalArgs, R, Function>::call(f, arg);
+            FunctorCall<std::index_sequence_for<Args...>, SignalArgs, R, Function>::call(f, arg);
         }
     };
 
@@ -234,7 +234,7 @@ namespace QtPrivate {
         enum {ArgumentCount = sizeof...(Args), IsPointerToMemberFunction = true};
         template <typename SignalArgs, typename R>
         static void call(Function f, Obj *o, void **arg) {
-            FunctorCall<typename Indexes<ArgumentCount>::Value, SignalArgs, R, Function>::call(f, o, arg);
+            FunctorCall<std::index_sequence_for<Args...>, SignalArgs, R, Function>::call(f, o, arg);
         }
     };
     template<class Obj, typename Ret, typename... Args> struct FunctionPointer<Ret (Obj::*) (Args...) const noexcept>
@@ -246,7 +246,7 @@ namespace QtPrivate {
         enum {ArgumentCount = sizeof...(Args), IsPointerToMemberFunction = true};
         template <typename SignalArgs, typename R>
         static void call(Function f, Obj *o, void **arg) {
-            FunctorCall<typename Indexes<ArgumentCount>::Value, SignalArgs, R, Function>::call(f, o, arg);
+            FunctorCall<std::index_sequence_for<Args...>, SignalArgs, R, Function>::call(f, o, arg);
         }
     };
 
@@ -258,7 +258,7 @@ namespace QtPrivate {
         enum {ArgumentCount = sizeof...(Args), IsPointerToMemberFunction = false};
         template <typename SignalArgs, typename R>
         static void call(Function f, void *, void **arg) {
-            FunctorCall<typename Indexes<ArgumentCount>::Value, SignalArgs, R, Function>::call(f, arg);
+            FunctorCall<std::index_sequence_for<Args...>, SignalArgs, R, Function>::call(f, arg);
         }
     };
 
@@ -360,7 +360,7 @@ namespace QtPrivate {
 
         template <typename SignalArgs, typename R>
         static void call(Func &f, void *, void **arg) {
-            FunctorCall<typename Indexes<ArgumentCount>::Value, SignalArgs, R, Func>::call(f, arg);
+            FunctorCall<std::index_sequence_for<Args...>, SignalArgs, R, Func>::call(f, arg);
         }
     };
 
