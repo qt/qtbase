@@ -197,7 +197,7 @@
 
     \snippet code/src_corelib_global_qglobal.cpp qlikely
 
-    \sa Q_UNLIKELY()
+    \sa Q_UNLIKELY(), Q_LIKELY_BRANCH, Q_UNLIKELY_BRANCH
 */
 
 /*!
@@ -214,7 +214,39 @@
 
     \snippet code/src_corelib_global_qglobal.cpp qunlikely
 
-    \sa Q_LIKELY()
+    \sa Q_LIKELY(), Q_LIKELY_BRANCH, Q_UNLIKELY_BRANCH
+*/
+
+/*!
+    \macro Q_LIKELY_BRANCH
+    \relates <QtCompilerDetection>
+    \since 6.9
+
+    \brief Hints to the compiler that the following block is likely to be
+    executed.
+
+    Use of this macro can help the compiler to optimize the code.
+
+    It is defined as the C++20 attribute \c{[[likely]]}, and is a no-op on
+    compilers that don't support it.
+
+    \sa Q_LIKELY(), Q_UNLIKELY(), Q_UNLIKELY_BRANCH
+*/
+
+/*!
+    \macro Q_UNLIKELY_BRANCH
+    \relates <QtCompilerDetection>
+    \since 6.9
+
+    \brief Hints to the compiler that the following block is unlikely to be
+    executed.
+
+    Use of this macro can help the compiler to optimize the code.
+
+    It is defined as the C++20 attribute \c{[[unlikely]]}, and is a no-op on
+    compilers that don't support it.
+
+    \sa Q_LIKELY(), Q_UNLIKELY(), Q_LIKELY_BRANCH
 */
 
 /*!

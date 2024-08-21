@@ -1031,6 +1031,16 @@
 #  endif
 #endif
 
+#ifndef Q_LIKELY_BRANCH
+#  if __has_cpp_attribute(likely)
+#    define Q_LIKELY_BRANCH [[likely]]
+#    define Q_UNLIKELY_BRANCH [[unlikely]]
+#  else
+#    define Q_LIKELY_BRANCH
+#    define Q_UNLIKELY_BRANCH
+#  endif
+#endif
+
 /*
  * Fallback macros to certain compiler features
  */
