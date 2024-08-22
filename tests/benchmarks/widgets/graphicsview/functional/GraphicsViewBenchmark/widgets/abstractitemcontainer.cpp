@@ -211,7 +211,7 @@ bool AbstractItemContainer::itemVisibleInView(AbstractViewItem* item, const QRec
 
 void AbstractItemContainer::updateItemBuffer()
 {
-    if (!m_itemView || (m_itemView && !m_itemView->boundingRect().isValid()))
+    if (!m_itemView || !m_itemView->boundingRect().isValid())
         return;
 
     int maxCount = maxItemCountInItemBuffer();
