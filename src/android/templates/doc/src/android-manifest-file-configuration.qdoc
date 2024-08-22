@@ -10,7 +10,7 @@
 \nextpage android-services.html
 
 The Android Manifest is an XML file necessary for any Android app. It contains
-app configuration for different settings and features that the app use, as well
+app configuration for different settings and features that the app uses, as well
 as details on the app itself, such as, package name, app name, version, etc.
 Permissions and hardware features can also be set from the manifest.
 
@@ -229,7 +229,7 @@ The main ones are:
 
 Different Qt modules might require some Android permissions or features to
 function properly, for example, Camera permission in \l {QtMultimedia}.
-l{The androiddeployqt Tool} takes care of including such requirements into the
+\l{The androiddeployqt Tool} takes care of including such requirements into the
 Android manifest during the build. Qt defines the following lines into the
 manifest, which they get replaced by
 the actual values:
