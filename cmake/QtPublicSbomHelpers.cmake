@@ -310,15 +310,14 @@ endmacro()
 # _qt_internal_sbom_add_target.
 macro(_qt_internal_get_sbom_purl_add_target_options opt_args single_args multi_args)
     set(${opt_args} "")
-    set(${single_args}
-        PURL_QT_VALUE
-        PURL_3RDPARTY_UPSTREAM_VALUE
-        PURL_MIRROR_VALUE
-    )
+    set(${single_args} "")
     set(${multi_args}
         PURL_QT_ARGS
         PURL_3RDPARTY_UPSTREAM_ARGS
         PURL_MIRROR_ARGS
+        PURL_QT_VALUES
+        PURL_3RDPARTY_UPSTREAM_VALUES
+        PURL_MIRROR_VALUES
     )
 endmacro()
 
@@ -681,8 +680,8 @@ function(_qt_internal_sbom_add_target target)
             VERSION "${package_version}")
         list(APPEND project_package_options CPE "${custom_cpe}")
     endif()
-    if(qa_cpe)
-        list(APPEND project_package_options CPE "${qa_cpe}")
+    if(qa_cpes)
+        list(APPEND project_package_options CPE "${qa_cpes}")
     endif()
     if(is_qt_entity_type)
         _qt_internal_sbom_compute_security_cpe_for_qt(cpe_list)
@@ -710,8 +709,8 @@ function(_qt_internal_sbom_add_target target)
     if(is_qt_entity_type)
         list(APPEND purl_args IS_QT_ENTITY_TYPE)
     endif()
-    if(qa_upstream_purl)
-        list(APPEND purl_args PURL_3RDPARTY_UPSTREAM_VALUE "${qa_upstream_purl}")
+    if(qa_purls)
+        list(APPEND purl_args PURL_3RDPARTY_UPSTREAM_VALUES "${qa_purls}")
     endif()
     list(APPEND purl_args OUT_VAR purl_package_options)
 
@@ -2258,35 +2257,10 @@ function(_qt_internal_sbom_read_qt_attribution out_prefix)
         _qt_internal_sbom_get_attribution_key(Description description "${out_prefix}")
         _qt_internal_sbom_get_attribution_key(QtUsage qt_usage "${out_prefix}")
         _qt_internal_sbom_get_attribution_key(DownloadLocation download_location "${out_prefix}")
-        _qt_internal_sbom_get_attribution_key(Copyright copyrights "${out_prefix}")
+        _qt_internal_sbom_get_attribution_key(Copyright copyrights "${out_prefix}" IS_MULTI_VALUE)
         _qt_internal_sbom_get_attribution_key(CopyrightFile copyright_file "${out_prefix}")
-        _qt_internal_sbom_get_attribution_key(UpstreamPURL upstream_purl "${out_prefix}")
-        _qt_internal_sbom_get_attribution_key(CPE cpe "${out_prefix}")
-
-        # In some attribution files (like harfbuzz) Copyright contains an array of copyrights rather
-        # than a single string. Extract all of them.
-        if(copyrights)
-            string(JSON copyright_type TYPE "${contents}" ${indices} Copyright)
-            if(copyright_type STREQUAL "ARRAY")
-                set(copyright_json_array "${copyrights}")
-                string(JSON array_len LENGTH "${copyright_json_array}")
-
-                set(copyright_list "")
-                set(index 0)
-                while(index LESS array_len)
-                    string(JSON copyright GET "${copyright_json_array}" ${index})
-                    if(copyright)
-                        list(APPEND copyright_list "${copyright}")
-                    endif()
-                    math(EXPR index "${index} + 1")
-                endwhile()
-
-                if(copyright_list)
-                    set(${out_prefix}_copyrights "${copyright_list}" PARENT_SCOPE)
-                    list(APPEND variable_names "copyrights")
-                endif()
-            endif()
-        endif()
+        _qt_internal_sbom_get_attribution_key(PURL purls "${out_prefix}" IS_MULTI_VALUE)
+        _qt_internal_sbom_get_attribution_key(CPE cpes "${out_prefix}" IS_MULTI_VALUE)
 
         # Some attribution files contain a copyright file that contains the actual list of
         # copyrights. Read it and use it.
@@ -2308,6 +2282,57 @@ function(_qt_internal_sbom_read_qt_attribution out_prefix)
     endif()
 endfunction()
 
+# Extracts a string or an array of strings from a json index path, depending on the extracted value
+# type.
+#
+# Given the 'contents' of the whole json document and the EXTRACTED_VALUE of a json key specified
+# by the INDICES path, it tries to determine whether the value is an array, in which case the array
+# is converted to a cmake list and assigned to ${out_var} in the parent scope.
+# Otherwise the function assumes the EXTRACTED_VALUE was not an array, and just assigns the value
+# of EXTRACTED_VALUE to ${out_var}
+function(_qt_internal_sbom_handle_attribution_json_array contents)
+    set(opt_args "")
+    set(single_args
+        EXTRACTED_VALUE
+        OUT_VAR
+    )
+    set(multi_args
+        INDICES
+    )
+    cmake_parse_arguments(PARSE_ARGV 1 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    # Write the original value to the parent scope, in case it was not an array.
+    set(${arg_OUT_VAR} "${arg_EXTRACTED_VALUE}" PARENT_SCOPE)
+
+    if(NOT arg_EXTRACTED_VALUE)
+        return()
+    endif()
+
+    string(JSON element_type TYPE "${contents}" ${arg_INDICES})
+
+    if(NOT element_type STREQUAL "ARRAY")
+        return()
+    endif()
+
+    set(json_array "${arg_EXTRACTED_VALUE}")
+    string(JSON array_len LENGTH "${json_array}")
+
+    set(value_list "")
+
+    math(EXPR array_len "${array_len} - 1")
+    foreach(index RANGE 0 "${array_len}")
+        string(JSON value GET "${json_array}" ${index})
+        if(value)
+            list(APPEND value_list "${value}")
+        endif()
+    endforeach()
+
+    if(value_list)
+        set(${arg_OUT_VAR} "${value_list}" PARENT_SCOPE)
+    endif()
+endfunction()
+
 # Escapes various characters in json content, so that the generate cmake code to append the content
 # to the spdx document is syntactically valid.
 function(_qt_internal_sbom_escape_json_content content out_var)
@@ -2320,15 +2345,40 @@ function(_qt_internal_sbom_escape_json_content content out_var)
     set(${out_var} "${escaped_content}" PARENT_SCOPE)
 endfunction()
 
-# Reads a json key from a qt_attribution.json file, and assigns it to out_var.
-# Also adds the out_var to the parent scope ${variable_names}.
-# Expects contents, indices and out_prefix to be set in parent scope.
+# This macro reads a json key from a qt_attribution.json file, and assigns the escaped value to
+# out_var.
+# Also appends the name of the out_var to the parent scope 'variable_names' var.
+#
+# Expects 'contents' and 'indices' to already be set in the calling scope.
+#
+# If IS_MULTI_VALUE is set, handles the key as if it contained an array of
+# values, by converting the array of json values to a cmake list.
 macro(_qt_internal_sbom_get_attribution_key json_key out_var out_prefix)
+    cmake_parse_arguments(arg "IS_MULTI_VALUE" "" "" ${ARGN})
+
     string(JSON "${out_var}" ERROR_VARIABLE get_error GET "${contents}" ${indices} "${json_key}")
     if(NOT "${${out_var}}" STREQUAL "" AND NOT get_error)
-        _qt_internal_sbom_escape_json_content("${${out_var}}" escaped_content)
+        set(extracted_value "${${out_var}}")
+
+        if(arg_IS_MULTI_VALUE)
+            _qt_internal_sbom_handle_attribution_json_array("${contents}"
+                EXTRACTED_VALUE "${extracted_value}"
+                INDICES ${indices} ${json_key}
+                OUT_VAR value_list
+            )
+            if(value_list)
+                set(extracted_value "${value_list}")
+            endif()
+        endif()
+
+        _qt_internal_sbom_escape_json_content("${extracted_value}" escaped_content)
+
         set(${out_prefix}_${out_var} "${escaped_content}" PARENT_SCOPE)
         list(APPEND variable_names "${out_var}")
+
+        unset(extracted_value)
+        unset(escaped_content)
+        unset(value_list)
     endif()
 endmacro()
 
@@ -3009,22 +3059,26 @@ function(_qt_internal_sbom_handle_purl_values target)
     endforeach()
 
     set(direct_values
-        PURL_QT_VALUE
-        PURL_3RDPARTY_UPSTREAM_VALUE
-        PURL_MIRROR_VALUE
+        PURL_QT_VALUES
+        PURL_MIRROR_VALUES
+        PURL_3RDPARTY_UPSTREAM_VALUES
     )
 
     foreach(direct_value IN LISTS direct_values)
         if(arg_${direct_value})
-            _qt_internal_sbom_get_purl_value_extref(
-                VALUE "${arg_${direct_value}}" OUT_VAR package_manager_external_ref)
+            set(direct_values_per_type "")
+            foreach(direct_value IN LISTS arg_${direct_value})
+                _qt_internal_sbom_get_purl_value_extref(
+                    VALUE "${direct_value}" OUT_VAR package_manager_external_ref)
 
-            # The order in which the purls are generated matters for tools that consume the SBOM.
+                list(APPEND direct_values_per_type ${package_manager_external_ref})
+            endforeach()
+            # The order in which the purls are generated, matters for tools that consume the SBOM.
             # Some tools can only handle one PURL per package, so the first one should be the
             # important one.
-            # For now, I deem that the directly specified one (probably via a qt_attribution.json)
-            # file is the important one. So we prepend it.
-            list(PREPEND project_package_options ${package_manager_external_ref})
+            # For now, I deem that the directly specified ones (probably via a qt_attribution.json
+            # file) are the more important ones. So we prepend them.
+            list(PREPEND project_package_options ${direct_values_per_type})
         endif()
     endforeach()
 
