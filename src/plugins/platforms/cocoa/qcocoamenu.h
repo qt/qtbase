@@ -5,6 +5,7 @@
 #ifndef QCOCOAMENU_H
 #define QCOCOAMENU_H
 
+#include <QtCore/qbasictimer.h>
 #include <QtCore/QList>
 #include <qpa/qplatformmenu.h>
 #include <qpa/qplatformmenu_p.h>
@@ -76,7 +77,7 @@ private:
     QList<QCocoaMenuItem *> m_menuItems;
     QCocoaNSMenu *m_nativeMenu;
     NSMenuItem *m_attachedItem;
-    int m_updateTimer;
+    QBasicTimer m_updateTimer;
     bool m_enabled:1;
     bool m_parentEnabled:1;
     bool m_visible:1;
