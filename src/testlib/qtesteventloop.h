@@ -31,7 +31,10 @@ public:
     inline void enterLoop(std::chrono::milliseconds msecs);
 
     inline void changeInterval(int secs)
-    { timer.start(std::chrono::seconds{secs}, this); }
+    { changeInterval(std::chrono::seconds{secs}); }
+
+    void changeInterval(std::chrono::nanoseconds nsecs)
+    { timer.start(nsecs, this); }
 
     inline bool timeout() const
     { return _timeout; }
