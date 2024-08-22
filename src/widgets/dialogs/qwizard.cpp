@@ -1752,10 +1752,6 @@ void QWizardAntiFlickerWidget::paintEvent(QPaintEvent *)
     can use these classes directly, or you can subclass them for more
     control.
 
-    Topics:
-
-    \tableofcontents
-
     \section1 A Trivial Example
 
     The following example illustrates how to create wizard pages and

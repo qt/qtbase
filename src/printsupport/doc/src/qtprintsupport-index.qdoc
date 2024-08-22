@@ -16,8 +16,6 @@
 
   Qt Print Support is not available on iOS.
 
-  \tableofcontents
-
   \section1 Classes Supporting Printing
 
   The following classes support the selecting and setting up of printers and

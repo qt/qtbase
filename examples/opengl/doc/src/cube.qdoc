@@ -34,8 +34,6 @@
 
     We'll start by initializing OpenGL ES 2.0 in \c MainWidget.
 
-    \tableofcontents
-
     \section1 Initializing OpenGL ES 2.0
 
     Since OpenGL ES 2.0 doesn't support fixed graphics pipeline anymore it has to

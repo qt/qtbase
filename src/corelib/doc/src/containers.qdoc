@@ -11,8 +11,6 @@
 
     \brief Qt's template-based container classes.
 
-    \tableofcontents
-
     \section1 Introduction
 
     The Qt library provides a set of general purpose template-based

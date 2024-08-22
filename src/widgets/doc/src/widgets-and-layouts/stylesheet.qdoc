@@ -107,8 +107,6 @@
     identical to those of HTML CSS. If you already know CSS, you can
     probably skim quickly through this section.
 
-    \tableofcontents
-
     \section1 Style Rules
 
     Style sheets consist of a sequence of style rules. A \e{style
@@ -564,8 +562,6 @@
     padding rectangle, and the content rectangle. The box model describes
     this in further detail.
 
-    \tableofcontents
-
     \target box model
     \section1 The Box Model
 
@@ -665,8 +661,6 @@
     Qt Style Sheets support various properties, pseudo-states, and
     subcontrols that make it possible to customize the look of
     widgets.
-
-    \tableofcontents
 
     \section1 List of Stylable Widgets
 
@@ -3886,7 +3880,6 @@
 
     We will now see a few examples to get started with using Qt Style Sheets.
 
-    \tableofcontents
     \section1 Style Sheet Usage
 
     \section2 Customizing the Foreground and Background Colors

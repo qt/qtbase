@@ -166,8 +166,6 @@ void QMainWindowPrivate::init()
     \ingroup mainwindow-classes
     \inmodule QtWidgets
 
-    \tableofcontents
-
     \section1 Qt Main Window Framework
 
     A main window provides a framework for building an

@@ -34,8 +34,6 @@
     pointer to the data is passed around, and the data is copied only
     if and when a function writes to it, i.e., \e {copy-on-write}.
 
-    \tableofcontents
-
     \section1 Overview
 
     A shared class consists of a pointer to a shared data block that

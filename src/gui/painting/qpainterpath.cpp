@@ -159,8 +159,6 @@ static void qt_debug_path(const QPainterPath &path)
     toReversed() function. There are also several functions to convert
     this painter path object into a polygon representation.
 
-    \tableofcontents
-
     \section1 Composing a QPainterPath
 
     A QPainterPath object can be constructed as an empty path, with a

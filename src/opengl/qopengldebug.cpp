@@ -42,8 +42,6 @@ QT_IMPL_METATYPE_EXTERN(QOpenGLDebugMessage)
     \since 5.1
     \ingroup painting-3D
 
-    \tableofcontents
-
     \section1 Introduction
 
     OpenGL programming can be very error prone. Most of the time, a single

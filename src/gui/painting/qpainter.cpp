@@ -954,8 +954,6 @@ void QPainterPrivate::updateState(QPainterState *newState)
     used inside a paintEvent() function or in a function called by
     paintEvent().
 
-    \tableofcontents
-
     \section1 Settings
 
     There are several settings that you can customize to make QPainter

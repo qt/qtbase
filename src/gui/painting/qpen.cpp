@@ -56,8 +56,6 @@ QT_BEGIN_NAMESPACE
     For more information about painting in general, see the \l{Paint
     System} documentation.
 
-    \tableofcontents
-
     \section1 Pen Style
 
     Qt provides several built-in styles represented by the

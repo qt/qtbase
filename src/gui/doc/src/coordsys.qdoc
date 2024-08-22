@@ -31,8 +31,6 @@
     systems coincide by default. QPainter also supports coordinate
     transformations (e.g. rotation and scaling).
 
-    \tableofcontents
-
     \section1 Rendering
 
     \section2 Logical Representation

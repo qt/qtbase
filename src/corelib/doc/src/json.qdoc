@@ -21,8 +21,6 @@
     More details about the JSON data format can be found at \l{http://json.org}{json.org}
     and in \l {RFC 4627}.
 
-    \tableofcontents
-
     \section1 Overview
 
     JSON is a format to store structured data. It has 6 basic data types:

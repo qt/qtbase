@@ -63,8 +63,6 @@
 
     \title Rich Text Document Structure
 
-    \tableofcontents
-
     Text documents are represented by the QTextDocument class, which
     contains information about the document's internal representation, its
     structure, and keeps track of modifications to provide undo/redo
@@ -324,8 +322,6 @@
     \nextpage Document Layouts
 
     \title The QTextCursor Interface
-
-    \tableofcontents
 
     Documents can be edited via the interface provided by the QTextCursor
     class; cursors are either created using a constructor or obtained from
@@ -631,8 +627,6 @@
 
     \title Document Layouts
 
-    \tableofcontents
-
     The layout of a document is only relevant when it is to be displayed on
     a device, or when some information is requested that requires a visual
     representation of the document. Until this occurs, the document does
@@ -680,8 +674,6 @@
     \nextpage Advanced Rich Text Processing
 
     \title Common Rich Text Editing Tasks
-
-    \tableofcontents
 
     There are a number of tasks that are often performed by developers
     when editing and processing text documents using Qt. These include the use
@@ -821,8 +813,6 @@
     Qt's text widgets are able to display rich text, specified using a subset of \l {http://www.w3.org/TR/html401/}{HTML 4}
     markup. Widgets that use QTextDocument, such as QLabel and QTextEdit, are able to display
     rich text specified in this way.
-
-    \tableofcontents
 
     \section1 Using HTML Markup in Text Widgets
 

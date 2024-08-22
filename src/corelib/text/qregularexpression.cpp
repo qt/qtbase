@@ -84,8 +84,6 @@ using namespace Qt::StringLiterals;
     regular expression tutorial}.
     \endlist
 
-    \tableofcontents
-
     \section1 Introduction
 
     QRegularExpression implements Perl-compatible regular expressions. It fully

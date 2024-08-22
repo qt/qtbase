@@ -14,8 +14,6 @@
     driver source code is supplied and can be used as a model for
     \l{#development}{writing your own drivers}.
 
-    \tableofcontents
-
     \section1 Supported Databases
 
     The table below lists the drivers included with Qt:

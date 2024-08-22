@@ -15,8 +15,6 @@
     other frameworks. Signals and slots are made possible by Qt's
     \l{The Meta-Object System}{meta-object system}.
 
-    \tableofcontents
-
     \section1 Introduction
 
     In GUI programming, when we change one widget, we often want

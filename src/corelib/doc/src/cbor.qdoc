@@ -21,8 +21,6 @@
 
     More details about the CBOR data format can be found in \l {RFC 7049}.
 
-    \tableofcontents
-
     \section1 Overview
 
     CBOR is a format to store structured data. It has three groups of built-in types:
