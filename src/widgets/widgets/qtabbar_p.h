@@ -103,7 +103,7 @@ public:
 
     struct Tab {
         inline Tab(const QIcon &ico, const QString &txt)
-        : text(txt), icon(ico), enabled(true), visible(true)
+        : text(txt), icon(ico), enabled(true), visible(true), measuringMinimum(false)
         {
         }
         /*
@@ -136,6 +136,7 @@ public:
         int dragOffset = 0;
         uint enabled : 1;
         uint visible : 1;
+        uint measuringMinimum : 1;
 
 #if QT_CONFIG(animation)
         struct TabBarAnimation : public QVariantAnimation {

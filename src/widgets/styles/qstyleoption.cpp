@@ -1401,6 +1401,8 @@ QStyleOptionTab::QStyleOptionTab(int version)
 
     \value None A normal tab button.
     \value HasFrame The tab button is positioned on a tab frame
+    \value [since 6.9] MinimumSizeHint The tab button's minimum size hint is being measured,
+           in contrast to its regular size hint.
 
     \sa QStyleOptionToolBar::features
 */

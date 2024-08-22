@@ -189,6 +189,8 @@ void QTabBarPrivate::initBasicStyleOption(QStyleOptionTab *option, int tabIndex)
             option->cornerWidgets |= QStyleOptionTab::RightCornerWidget;
     }
 #endif
+    if (tab.measuringMinimum)
+        option->features |= QStyleOptionTab::MinimumSizeHint;
     option->tabIndex = tabIndex;
 }
 
@@ -1554,8 +1556,10 @@ QSize QTabBar::minimumTabSizeHint(int index) const
     QTabBarPrivate::Tab *tab = d->tabList.at(index);
     QString oldText = tab->text;
     tab->text = computeElidedText(d->elideMode, oldText);
+    tab->measuringMinimum = true;
     QSize size = tabSizeHint(index);
     tab->text = oldText;
+    tab->measuringMinimum = false;
     return size;
 }
 
