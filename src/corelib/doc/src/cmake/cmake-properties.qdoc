@@ -256,12 +256,17 @@ CMake will attempt to use the latest installed version.
 \summary {The app's package name.}
 
 \cmakepropertysince 6.8
-\preliminarycmakeproperty
 \cmakepropertyandroidonly
 
 Specifies the app's package name. This is usually a unique dot separated
 name for the app, that will be used to identify the app on devices or in
-the Play Store. For example, "org.qtproject.example.gallery".
+the Play Store. For example, "org.qtproject.gallery".
+
+\badcode
+set_target_properties(${target} PROPERTIES
+    QT_ANDROID_PACKAGE_NAME "org.qtproject.gallery"
+)
+\endcode
 
 The package name set by this property is passed to the \c build.gradle file
 as a \c namespace property, instead of \c AndroidManifest.xml, since the
