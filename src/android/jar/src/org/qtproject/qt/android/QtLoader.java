@@ -52,6 +52,8 @@ abstract class QtLoader {
     protected static QtLoader m_instance = null;
     protected boolean m_librariesLoaded;
 
+    enum LoadingResult { Succeeded, AlreadyLoaded, Failed }
+
     /**
      * Sets and initialize the basic pieces.
      * Initializes the class loader since it doesn't rely on anything
@@ -414,15 +416,17 @@ abstract class QtLoader {
     }
 
     /**
-     * Loads all Qt native bundled libraries and main library.
+     * Returns QtLoader.LoadingResult.Succeeded if libraries are successfully loaded,
+     * QtLoader.LoadingResult.AlreadyLoaded if they have already been loaded,
+     * and QtLoader.LoadingResult.Failed if loading the libraries failed.
      **/
-    public boolean loadQtLibraries() {
+    public LoadingResult loadQtLibraries() {
         if (m_librariesLoaded)
-            return true;
+            return LoadingResult.AlreadyLoaded;
 
         if (!useLocalQtLibs()) {
             Log.w(QtTAG, "Use local Qt libs is false");
-            return false;
+            return LoadingResult.Failed;
         }
 
         if (m_nativeLibrariesDir == null)
@@ -430,7 +434,7 @@ abstract class QtLoader {
 
         if (m_nativeLibrariesDir == null || m_nativeLibrariesDir.isEmpty()) {
             Log.e(QtTAG, "The native libraries directory is null or empty");
-            return false;
+            return LoadingResult.Failed;
         }
 
         setEnvironmentVariable("QT_PLUGIN_PATH", m_nativeLibrariesDir);
@@ -461,14 +465,14 @@ abstract class QtLoader {
 
         if (!loadLibraries(nativeLibraries)) {
             Log.e(QtTAG, "Loading Qt native libraries failed");
-            return false;
+            return LoadingResult.Failed;
         }
 
         // add all bundled Qt libs to loader params
         ArrayList<String> bundledLibraries = new ArrayList<>(preferredAbiLibs(getBundledLibs()));
         if (!loadLibraries(bundledLibraries)) {
             Log.e(QtTAG, "Loading Qt bundled libraries failed");
-            return false;
+            return LoadingResult.Failed;
         }
 
         if (m_mainLibName == null)
@@ -476,10 +480,10 @@ abstract class QtLoader {
         // Load main lib
         if (!loadMainLibrary(m_mainLibName + "_" + m_preferredAbi)) {
             Log.e(QtTAG, "Loading main library failed");
-            return false;
+            return LoadingResult.Failed;
         }
         m_librariesLoaded = true;
-        return true;
+        return LoadingResult.Succeeded;
     }
 
     // Loading libraries using System.load() uses full lib paths
