@@ -128,7 +128,7 @@ private:
 
     // 10 minute timer used to discard old XdndDrop transactions
     static constexpr std::chrono::minutes XdndDropTransactionTimeout{10};
-    int cleanup_timer;
+    QBasicTimer cleanup_timer;
 
     QList<xcb_atom_t> drag_types;
 

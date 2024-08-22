@@ -13,6 +13,8 @@
 
 #include <QtCore/QDebug>
 
+using namespace std::chrono_literals;
+
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_CLIPBOARD
@@ -130,14 +132,12 @@ QXcbClipboardTransaction::QXcbClipboardTransaction(QXcbClipboard *clipboard, xcb
     xcb_change_window_attributes(m_clipboard->xcb_connection(), m_window,
                                  XCB_CW_EVENT_MASK, values);
 
-    m_abortTimerId = startTimer(std::chrono::milliseconds{m_clipboard->clipboardTimeout()});
+    m_abortTimer.start(m_clipboard->clipboardTimeout() * 1ms, this);
 }
 
 QXcbClipboardTransaction::~QXcbClipboardTransaction()
 {
-    if (m_abortTimerId)
-        killTimer(m_abortTimerId);
-    m_abortTimerId = 0;
+    m_abortTimer.stop();
     m_clipboard->removeTransaction(m_window);
 }
 
@@ -147,9 +147,7 @@ bool QXcbClipboardTransaction::updateIncrementalProperty(const xcb_property_noti
         return false;
 
     // restart the timer
-    if (m_abortTimerId)
-        killTimer(m_abortTimerId);
-    m_abortTimerId = startTimer(std::chrono::milliseconds{m_clipboard->clipboardTimeout()});
+    m_abortTimer.start(m_clipboard->clipboardTimeout() * 1ms, this);
 
     uint bytes_left = uint(m_data.size()) - m_offset;
     if (bytes_left > 0) {
@@ -180,7 +178,7 @@ bool QXcbClipboardTransaction::updateIncrementalProperty(const xcb_property_noti
 
 void QXcbClipboardTransaction::timerEvent(QTimerEvent *ev)
 {
-    if (ev->timerId() == m_abortTimerId) {
+    if (ev->id() == m_abortTimer.id()) {
         // this can happen when the X client we are sending data
         // to decides to exit (normally or abnormally)
         qCDebug(lcQpaClipboard, "timed out while sending data to %p", this);

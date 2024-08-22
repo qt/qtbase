@@ -9,6 +9,7 @@
 #include <xcb/xcb.h>
 #include <xcb/xfixes.h>
 
+#include <QtCore/qbasictimer.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qmap.h>
 
@@ -42,7 +43,7 @@ private:
     xcb_atom_t m_target;
     uint8_t m_format;
     uint m_offset = 0;
-    int m_abortTimerId = 0;
+    QBasicTimer m_abortTimer;
 };
 
 class QXcbClipboard : public QXcbObject, public QPlatformClipboard
