@@ -19,6 +19,8 @@
 #include <errno.h>
 #include <sys/keycodes.h>
 
+using namespace std::chrono_literals;
+
 Q_LOGGING_CATEGORY(lcQpaScreenEvents, "qt.qpa.screen.events");
 
 static int qtKey(int virtualKey, QChar::Category category)
@@ -107,7 +109,6 @@ QQnxScreenEventHandler::QQnxScreenEventHandler(QQnxIntegration *integration)
     , m_touchDevice(0)
     , m_mouseDevice(0)
     , m_eventThread(0)
-    , m_focusLostTimer(-1)
 {
     // Create a touch device
     m_touchDevice = new QPointingDevice(
@@ -701,15 +702,12 @@ void QQnxScreenEventHandler::handleKeyboardFocusPropertyEvent(screen_window_t wi
 
     QWindow *focusWindow = QQnxIntegration::instance()->window(window);
 
-    if (m_focusLostTimer != -1) {
-        killTimer(m_focusLostTimer);
-        m_focusLostTimer = -1;
-    }
+    m_focusLostTimer.stop();
 
     if (focus && focusWindow != QGuiApplication::focusWindow())
         QWindowSystemInterface::handleFocusWindowChanged(focusWindow, Qt::ActiveWindowFocusReason);
     else if (!focus && focusWindow == QGuiApplication::focusWindow())
-        m_focusLostTimer = startTimer(50);
+        m_focusLostTimer.start(50ms, this);
 }
 
 void QQnxScreenEventHandler::handleGeometryPropertyEvent(screen_window_t window)
@@ -736,9 +734,8 @@ void QQnxScreenEventHandler::handleGeometryPropertyEvent(screen_window_t window)
 
 void QQnxScreenEventHandler::timerEvent(QTimerEvent *event)
 {
-    if (event->timerId() == m_focusLostTimer) {
-        killTimer(m_focusLostTimer);
-        m_focusLostTimer = -1;
+    if (event->id() == m_focusLostTimer.id()) {
+        m_focusLostTimer.stop();
         event->accept();
     } else {
         QObject::timerEvent(event);
