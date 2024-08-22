@@ -417,8 +417,6 @@ static QStringList get_colornames()
     For more information about painting in general, see the \l{Paint
     System} documentation.
 
-    \tableofcontents
-
     \section1 Integer vs. Floating Point Precision
 
     QColor supports floating point precision and provides floating

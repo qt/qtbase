@@ -20,8 +20,6 @@
     and high level classes such as QNetworkRequest, QNetworkReply and
     QNetworkAccessManager to perform network operations using common protocols.
 
-    \tableofcontents
-
     \section1 Qt's Classes for Network Programming
 
     The \l{Qt Network C++ Classes} page contains a list of the C++ classes

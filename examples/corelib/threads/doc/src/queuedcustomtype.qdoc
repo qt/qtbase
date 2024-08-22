@@ -12,10 +12,6 @@
 
     \image queuedcustomtype-example.png
 
-    Contents:
-
-    \tableofcontents
-
     \section1 Overview
 
     In this example, we create a value class, \c Block, and register it with

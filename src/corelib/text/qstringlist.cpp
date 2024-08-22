@@ -58,9 +58,7 @@ QT_BEGIN_NAMESPACE
     functions like append(), prepend(), insert(), replace(), removeAll(),
     removeAt(), removeFirst(), removeLast(), and removeOne() to modify a
     QStringList. In addition, QStringList provides a few convenience
-    functions that make handling lists of strings easier:
-
-    \tableofcontents
+    functions that make handling lists of strings easier.
 
     \section1 Initializing
 

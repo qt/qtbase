@@ -8,8 +8,6 @@
 
     \ingroup how-to
 
-    \tableofcontents
-
     \section1 Overview
 
     When creating user interfaces with Qt, particularly those with specialized controls and

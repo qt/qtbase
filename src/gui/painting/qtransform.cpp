@@ -98,8 +98,6 @@ void QTransform::do_map(qreal x, qreal y, qreal &nx, qreal &ny) const
     and subtraction, and objects of the class can be streamed as well
     as compared.
 
-    \tableofcontents
-
     \section1 Rendering Graphics
 
     When rendering graphics, the matrix defines the transformations

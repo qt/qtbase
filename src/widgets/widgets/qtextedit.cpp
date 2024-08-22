@@ -363,8 +363,6 @@ void QTextEditPrivate::ensureVisible(const QRectF &_rect)
     \ingroup richtext-processing
     \inmodule QtWidgets
 
-    \tableofcontents
-
     \section1 Introduction and Concepts
 
     QTextEdit is an advanced WYSIWYG viewer/editor supporting rich

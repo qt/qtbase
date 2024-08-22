@@ -8,8 +8,6 @@
     \ingroup qt-basic-concepts
     \brief Java style iterators for Qt's containers.
 
-    \tableofcontents
-
     \section1 Java-Style Iterators
 
     For each container class, there are two Java-style iterator data

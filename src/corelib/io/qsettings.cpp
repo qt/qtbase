@@ -1933,8 +1933,6 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     If all you need is a non-persistent memory-based structure,
     consider using QMap<QString, QVariant> instead.
 
-    \tableofcontents section1
-
     \section1 Basic Usage
 
     When creating a QSettings object, you must pass the name of your

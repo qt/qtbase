@@ -14,8 +14,6 @@
     and drop is similar in function to the clipboard's cut and paste
     mechanism.
 
-    \tableofcontents
-
     This document describes the basic drag and drop mechanism and
     outlines the approach used to enable it in custom controls. Drag
     and drop operations are also supported by many of Qt's controls,

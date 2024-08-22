@@ -16,8 +16,6 @@
     the word list is static, you can pass a QStringList to
     QCompleter's constructor.)
 
-    \tableofcontents
-
     \section1 Basic Usage
 
     A QCompleter is used typically with a QLineEdit or QComboBox.

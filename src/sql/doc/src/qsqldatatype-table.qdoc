@@ -16,8 +16,6 @@
   storage format for output from that database, because it would be
   stored with 64-bit precision in C++.
 
-  \tableofcontents
-
   \section2 IBM DB2 Data Types
 
   \table 90%

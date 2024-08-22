@@ -129,8 +129,6 @@ static int unpackControlTypes(QSizePolicy::ControlTypes controls, QSizePolicy::C
 
     Topics:
 
-    \tableofcontents
-
     \section1 Setting a Style
 
     The style of the entire application can be set using the

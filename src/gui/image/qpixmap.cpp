@@ -1186,8 +1186,6 @@ QPixmap QPixmap::transformed(const QTransform &transform,
     there are several functions that enables transformation of the
     pixmap.
 
-    \tableofcontents
-
     \section1 Reading and Writing Image Files
 
     QPixmap provides several ways of reading an image file: The file

@@ -31,8 +31,6 @@
     demonstrate the common techniques used for animating QObject and
     GUI elements.
 
-    \tableofcontents
-
     \section1 The Animation architecture
 
     The following diagram shows the most important classes provided by the

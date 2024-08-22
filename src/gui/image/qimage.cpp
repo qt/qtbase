@@ -365,8 +365,6 @@ bool QImageData::checkForAlphaPixels() const
     \warning Painting on a QImage with the format
     QImage::Format_Indexed8 or QImage::Format_CMYK8888 is not supported.
 
-    \tableofcontents
-
     \section1 Reading and Writing Image Files
 
     QImage provides several ways of loading an image file: The file

@@ -16,8 +16,6 @@
     the interpretation of the gesture and the action taken are the choice of the
     developer.
 
-    \tableofcontents
-
     \section1 Overview
 
     QGesture is the central class in Qt's gesture framework, providing a container

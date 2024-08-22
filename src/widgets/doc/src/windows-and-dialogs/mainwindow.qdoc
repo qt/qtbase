@@ -135,8 +135,6 @@
     \ingroup qt-gui-concepts
     \brief Creating the application window.
 
-    \tableofcontents
-
     \section1 Overview of the Main Window Classes
 
     These classes provide everything you need for a typical modern main

@@ -17,8 +17,6 @@
     arranging child widgets within a widget to ensure that they make good use
     of the available space.
 
-    \tableofcontents
-
     \section1 Introduction
 
     Qt includes a set of layout management classes that are used to describe

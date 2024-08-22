@@ -32,10 +32,6 @@
     Graphics View was introduced in Qt 4.2, replacing its predecessor,
     QCanvas.
 
-    Topics:
-
-    \tableofcontents
-
     \section1 The Graphics View Architecture
 
       Graphics View provides an item-based approach to model-view programming,

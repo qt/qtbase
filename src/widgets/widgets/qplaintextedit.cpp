@@ -1028,8 +1028,6 @@ void QPlainTextEditPrivate::ensureViewportLayouted()
     \ingroup richtext-processing
     \inmodule QtWidgets
 
-    \tableofcontents
-
     \section1 Introduction and Concepts
 
     QPlainTextEdit is an advanced viewer/editor supporting plain

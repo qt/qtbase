@@ -9,8 +9,6 @@
 
     \brief Qt's foreach keyword.
 
-    \tableofcontents
-
     \target foreach-keyword
     \section1 The foreach Keyword
 

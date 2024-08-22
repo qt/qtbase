@@ -84,8 +84,6 @@ QT_BEGIN_NAMESPACE
 
     Finally, QRect objects can be streamed as well as compared.
 
-    \tableofcontents
-
     \section1 Rendering
 
     When using an \l {QPainter::Antialiasing}{anti-aliased} painter,
@@ -1351,8 +1349,6 @@ QDebug operator<<(QDebug dbg, const QRect &r)
     empty QRectF is defined in essentially the same way as QRect.
 
     Finally, QRectF objects can be streamed as well as compared.
-
-    \tableofcontents
 
     \section1 Rendering
 
