@@ -7,6 +7,7 @@
 #include <QtCore/qcompare.h>
 #include <QtCore/qendian.h>
 #include <QtCore/qstring.h>
+#include <QtCore/qsystemdetection.h>
 
 #if defined(Q_OS_WIN) || defined(Q_QDOC)
 #ifndef GUID_DEFINED
@@ -61,7 +62,7 @@ public:
         quint16 data16[8];
         quint32 data32[4];
         quint64 data64[2];
-#if defined(__SIZEOF_INT128__)
+#if defined(QT_COMPILER_SUPPORTS_INT128)
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_GCC("-Wpedantic")    // ISO C++ does not support ‘__int128’ for ‘data128’
         unsigned __int128 data128[1];

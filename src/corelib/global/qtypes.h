@@ -6,6 +6,7 @@
 #define QTYPES_H
 
 #include <QtCore/qprocessordetection.h>
+#include <QtCore/qsystemdetection.h>
 #include <QtCore/qtconfigmacros.h>
 #include <QtCore/qassert.h>
 
@@ -66,8 +67,8 @@ typedef quint64 qulonglong;
 
 #ifdef Q_QDOC // QDoc always needs to see the typedefs
 #  define QT_SUPPORTS_INT128 16
-#elif defined(__SIZEOF_INT128__) && !defined(QT_NO_INT128)
-#  define QT_SUPPORTS_INT128 __SIZEOF_INT128__
+#elif defined(QT_COMPILER_SUPPORTS_INT128) && !defined(QT_NO_INT128)
+#  define QT_SUPPORTS_INT128 QT_COMPILER_SUPPORTS_INT128
 #  if defined(__GLIBCXX__) && defined(__STRICT_ANSI__) // -ansi/-std=c++NN instead of gnu++NN
 #    undef QT_SUPPORTS_INT128                          // breaks <type_traits> on libstdc++
 #  endif
