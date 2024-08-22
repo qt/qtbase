@@ -173,7 +173,7 @@ void tst_QDBusType::isValidFixedType()
     QFETCH(bool, result);
     QFETCH(bool, isValid);
     QVERIFY2(data.size() == 1, "Test is malformed, this function must test only one-letter types");
-    QVERIFY(isValid || (!isValid && !result));
+    QVERIFY(isValid || !result);
 
     int type = data.at(0).unicode();
     if (isValid)
