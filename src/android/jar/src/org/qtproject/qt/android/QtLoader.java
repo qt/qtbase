@@ -16,6 +16,8 @@ import android.content.pm.ComponentInfo;
 import android.content.res.Resources;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Debug;
+import android.system.Os;
 import android.util.Log;
 
 import java.io.File;
@@ -45,8 +47,6 @@ public abstract class QtLoader {
     protected String m_mainLibName;
     protected String m_applicationParameters = "";
     protected HashMap<String, String> m_environmentVariables = new HashMap<>();
-
-    protected int m_debuggerSleepMs = 0;
 
     /**
      * Sets and initialize the basic pieces.
@@ -441,11 +441,23 @@ public abstract class QtLoader {
         ArrayList<String> nativeLibraries = getQtLibrariesList();
         nativeLibraries.addAll(getLocalLibrariesList());
 
-        if (m_debuggerSleepMs > 0) {
-            Log.i(QtTAG, "Sleeping for " + m_debuggerSleepMs +
-                         "ms, helping the native debugger to settle. " +
-                         "Use the env QT_ANDROID_DEBUGGER_MAIN_THREAD_SLEEP_MS variable to change this value.");
-            QtNative.getQtThread().sleep(m_debuggerSleepMs);
+        if (Debug.isDebuggerConnected()) {
+            final String debuggerSleepEnvVarName = "QT_ANDROID_DEBUGGER_MAIN_THREAD_SLEEP_MS";
+            int debuggerSleepMs = 3000;
+            if (Os.getenv(debuggerSleepEnvVarName) != null) {
+                try {
+                   debuggerSleepMs = Integer.parseInt(Os.getenv(debuggerSleepEnvVarName));
+                } catch (NumberFormatException ignored) {
+                }
+            }
+
+            if (debuggerSleepMs > 0) {
+                Log.i(QtTAG, "Sleeping for " + debuggerSleepMs +
+                             "ms, helping the native debugger to settle. " +
+                             "Use the env " + debuggerSleepEnvVarName +
+                             " variable to change this value.");
+                QtNative.getQtThread().sleep(debuggerSleepMs);
+            }
         }
 
         if (!loadLibraries(nativeLibraries)) {
