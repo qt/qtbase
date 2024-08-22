@@ -1670,8 +1670,7 @@ void QPlainTextEdit::keyPressEvent(QKeyEvent *e)
             break;
         case Qt::Key_Back:
         case Qt::Key_No:
-            if (!QApplicationPrivate::keypadNavigationEnabled()
-                    || (QApplicationPrivate::keypadNavigationEnabled() && !hasEditFocus())) {
+            if (!QApplicationPrivate::keypadNavigationEnabled() || !hasEditFocus()) {
                 e->ignore();
                 return;
             }
