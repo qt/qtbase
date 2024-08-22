@@ -64,10 +64,33 @@ function(_qt_internal_wasm_add_target_helpers target)
 
             configure_file("${WASM_BUILD_DIR}/plugins/platforms/wasm_shell.html"
                 "${_target_directory}/${_target_output_name}.html" @ONLY)
-            configure_file("${WASM_BUILD_DIR}/plugins/platforms/qtloader.js"
-                ${_target_directory}/qtloader.js COPYONLY)
-            configure_file("${WASM_BUILD_DIR}/plugins/platforms/qtlogo.svg"
-                ${_target_directory}/qtlogo.svg COPYONLY)
+            if(CMAKE_CONFIGURATION_TYPES) # if multiconfig generator
+                add_custom_command(
+                    TARGET ${target} POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                        "${_target_directory}/${_target_output_name}.html"
+                        ${_target_directory}/$<CONFIG>/${_target_output_name}.html
+                )
+                add_custom_command(
+                    TARGET ${target} POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                        "${WASM_BUILD_DIR}/plugins/platforms/qtloader.js"
+                        ${_target_directory}/$<CONFIG>/qtloader.js
+                )
+                add_custom_command(
+                    TARGET ${target} POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                        "${WASM_BUILD_DIR}/plugins/platforms/qtlogo.svg"
+                        ${_target_directory}/$<CONFIG>/qtlogo.svg
+                )
+            else()
+                configure_file("${WASM_BUILD_DIR}/plugins/platforms/qtloader.js"
+                    ${_target_directory}/qtloader.js COPYONLY)
+                configure_file("${WASM_BUILD_DIR}/plugins/platforms/qtlogo.svg"
+                    ${_target_directory}/qtlogo.svg COPYONLY)
+
+            endif()
+         
         endif()
 
         if(QT_FEATURE_thread)
