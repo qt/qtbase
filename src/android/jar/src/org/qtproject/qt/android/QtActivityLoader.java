@@ -11,7 +11,6 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.system.Os;
 import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -112,14 +111,6 @@ class QtActivityLoader extends QtLoader {
             if (extras.containsKey("extraappparams")) {
                 String extraAppParams = extras.getString("extraappparams");
                 appendApplicationParameters(getDecodedUtfString(extraAppParams));
-            }
-
-            m_debuggerSleepMs = 3000;
-            if (Os.getenv("QT_ANDROID_DEBUGGER_MAIN_THREAD_SLEEP_MS") != null) {
-                try {
-                   m_debuggerSleepMs = Integer.parseInt(Os.getenv("QT_ANDROID_DEBUGGER_MAIN_THREAD_SLEEP_MS"));
-                } catch (NumberFormatException ignored) {
-                }
             }
         } else {
             Log.d(QtNative.QtTAG, "Not in debug mode! It is not allowed to use extra arguments " +
