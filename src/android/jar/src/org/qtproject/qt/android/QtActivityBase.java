@@ -110,10 +110,12 @@ public class QtActivityBase extends Activity
             QtActivityLoader loader = QtActivityLoader.getActivityLoader(this);
             loader.appendApplicationParameters(m_applicationParams);
 
-            if (loader.loadQtLibraries()) {
+            QtLoader.LoadingResult result = loader.loadQtLibraries();
+
+            if (result == QtLoader.LoadingResult.Succeeded) {
                 m_delegate.startNativeApplication(loader.getApplicationParameters(),
                         loader.getMainLibraryPath());
-            } else {
+            } else if (result == QtLoader.LoadingResult.Failed) {
                 showErrorDialog();
                 finish();
             }
