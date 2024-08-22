@@ -8,8 +8,11 @@
 #include <QSignalSpy>
 
 #include <QtCore/qanimationgroup.h>
+#include <QtCore/qbasictimer.h>
 #include <QtCore/qsequentialanimationgroup.h>
 #include <QtCore/qparallelanimationgroup.h>
+
+using namespace std::chrono_literals;
 
 Q_DECLARE_METATYPE(QAbstractAnimation::State)
 
@@ -72,7 +75,7 @@ class UncontrolledAnimation : public QPropertyAnimation
     Q_OBJECT
 public:
     UncontrolledAnimation(QObject *target, const QByteArray &propertyName, QObject *parent = nullptr)
-        : QPropertyAnimation(target, propertyName, parent), id(0)
+        : QPropertyAnimation(target, propertyName, parent)
     {
         setDuration(250);
     }
@@ -82,22 +85,21 @@ public:
 protected:
     void timerEvent(QTimerEvent *event) override
     {
-        if (event->timerId() == id)
+        if (event->id() == timer.id())
             stop();
     }
 
     void updateRunning(bool running)
     {
         if (running) {
-            id = startTimer(500);
+            timer.start(500ms, this);
         } else {
-            killTimer(id);
-            id = 0;
+            timer.stop();
         }
     }
 
 private:
-    int id;
+    QBasicTimer timer;
 };
 
 void tst_QAnimationGroup::emptyGroup()
