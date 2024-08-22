@@ -335,7 +335,7 @@ int QTextDocumentPrivate::insert_block(int pos, uint strPos, int format, int blo
     int n = blocks.findNode(block_pos);
     int key = n ? blocks.position(n) : blocks.length();
 
-    Q_ASSERT(n || (!n && block_pos == blocks.length()));
+    Q_ASSERT(n || block_pos == blocks.length());
     if (key != block_pos) {
         Q_ASSERT(key < block_pos);
         int oldSize = blocks.size(n);
