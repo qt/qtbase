@@ -7,6 +7,7 @@
 #include <QtTest/qttestglobal.h>
 #include <QtTest/qtestcase.h>
 
+#include <QtCore/qbasictimer.h>
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qeventloop.h>
 #include <QtCore/qobject.h>
@@ -30,7 +31,7 @@ public:
     inline void enterLoop(std::chrono::milliseconds msecs);
 
     inline void changeInterval(int secs)
-    { killTimer(timerId); timerId = startTimer(secs * 1000); }
+    { timer.start(std::chrono::seconds{secs}, this); }
 
     inline bool timeout() const
     { return _timeout; }
@@ -51,7 +52,7 @@ protected:
 
 private:
     QEventLoop *loop = nullptr;
-    int timerId = -1;
+    QBasicTimer timer;
     uint _timeout   :1;
     Q_DECL_UNUSED_MEMBER uint reserved   :31;
 };
@@ -67,7 +68,7 @@ inline void QTestEventLoop::enterLoop(std::chrono::milliseconds msecs)
     using namespace std::chrono_literals;
     QEventLoop l;
     // if tests want to measure sub-second precision, use a precise timer
-    timerId = startTimer(msecs, msecs < 1s ? Qt::PreciseTimer : Qt::CoarseTimer);
+    timer.start(msecs, msecs < 1s ? Qt::PreciseTimer : Qt::CoarseTimer, this);
 
     loop = &l;
     l.exec();
@@ -82,9 +83,7 @@ inline void QTestEventLoop::exitLoop()
         return;
     }
 
-    if (timerId != -1)
-        killTimer(timerId);
-    timerId = -1;
+    timer.stop();
 
     if (loop)
         loop->exit();
@@ -92,7 +91,7 @@ inline void QTestEventLoop::exitLoop()
 
 inline void QTestEventLoop::timerEvent(QTimerEvent *e)
 {
-    if (e->timerId() != timerId)
+    if (e->id() != timer.id())
         return;
     _timeout = true;
     exitLoop();
