@@ -10,7 +10,8 @@ function(_qt_internal_android_get_sdk_build_tools_revision out_var)
             LIST_DIRECTORIES true
             RELATIVE "${ANDROID_SDK_ROOT}/build-tools"
             "${ANDROID_SDK_ROOT}/build-tools/*")
-        if (NOT android_build_tools)
+        list(FILTER android_build_tools INCLUDE REGEX "[0-9]+\.[0-9]+(\.[0-9]+)?")
+        if(NOT android_build_tools)
             message(FATAL_ERROR "Could not locate Android SDK build tools under \"${ANDROID_SDK_ROOT}/build-tools\"")
         endif()
         list(SORT android_build_tools)
