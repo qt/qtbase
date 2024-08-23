@@ -2900,9 +2900,7 @@ void tst_QAccessibility::listTest()
     listView->setSelectionMode(QAbstractItemView::ExtendedSelection);
     listView->resize(400,400);
     listView->show();
-    QTest::qWait(1); // Need this for indexOfchild to work.
-    QCoreApplication::processEvents();
-    QTest::qWait(100);
+    QVERIFY(QTest::qWaitForWindowExposed(listView));
 
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(listView);
     QCOMPARE(verifyHierarchy(iface), 0);
@@ -2939,18 +2937,26 @@ void tst_QAccessibility::listTest()
     QTest::mouseClick(listView->viewport(), Qt::LeftButton, { }, listView->visualRect(model->index(1, listView->modelColumn())).center());
     QAccessibleEvent selectionEvent(listView, QAccessible::SelectionAdd);
     selectionEvent.setChild(1);
-    QAccessibleEvent focusEvent(listView, QAccessible::Focus);
-    focusEvent.setChild(1);
+
     QVERIFY(QTestAccessibility::containsEvent(&selectionEvent));
-    QVERIFY(QTestAccessibility::containsEvent(&focusEvent));
+    // skip focus event tests on platforms where window focus cannot be ensured
+    const bool checkFocus = QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation);
+    if (checkFocus) {
+        QAccessibleEvent focusEvent(listView, QAccessible::Focus);
+        focusEvent.setChild(1);
+        QVERIFY(QTestAccessibility::containsEvent(&focusEvent));
+    }
+
     QTest::mouseClick(listView->viewport(), Qt::LeftButton, { }, listView->visualRect(model->index(2, listView->modelColumn())).center());
 
     QAccessibleEvent selectionEvent2(listView, QAccessible::SelectionAdd);
     selectionEvent2.setChild(2);
-    QAccessibleEvent focusEvent2(listView, QAccessible::Focus);
-    focusEvent2.setChild(2);
     QVERIFY(QTestAccessibility::containsEvent(&selectionEvent2));
-    QVERIFY(QTestAccessibility::containsEvent(&focusEvent2));
+    if (checkFocus) {
+        QAccessibleEvent focusEvent2(listView, QAccessible::Focus);
+        focusEvent2.setChild(2);
+        QVERIFY(QTestAccessibility::containsEvent(&focusEvent2));
+    }
 
     QAccessibleTableInterface *table = iface->tableInterface();
     QAccessibleInterface *cell3 = table->cellAt(2, 0);
