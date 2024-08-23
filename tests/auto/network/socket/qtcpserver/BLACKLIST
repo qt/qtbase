@@ -9,5 +9,7 @@ osx
 qnx
 windows-10
 
+[qtbug6305]
+macos-12 arm # QTBUG-127568
 [linkLocal]
 macos arm
