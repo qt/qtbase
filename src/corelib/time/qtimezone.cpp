@@ -843,7 +843,7 @@ QByteArray QTimeZone::id() const
 
     This method is only available when feature \c timezone is enabled.
 */
-bool QTimeZone::aliasMatches(QByteArrayView alias) const
+bool QTimeZone::hasAlternativeName(QByteArrayView alias) const
 {
     if (alias == id())
         return true;
