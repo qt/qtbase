@@ -761,17 +761,16 @@ qsizetype QDecompressHelper::readZstandard(char *data, const qsizetype maxSize)
             errorStr = QLatin1String("ZStandard error: %1")
                                .arg(QString::fromUtf8(ZSTD_getErrorName(retValue)));
             return -1;
-        } else {
-            decoderHasData = false;
-            bytesDecoded = outBuf.pos;
-            // if pos == size then there may be data left over in internal buffers
-            if (outBuf.pos == outBuf.size) {
-                decoderHasData = true;
-            } else if (inBuf.pos == inBuf.size) {
-                compressedDataBuffer.advanceReadPointer(input.size());
-                input = compressedDataBuffer.readPointer();
-                inBuf = { input.constData(), size_t(input.size()), 0 };
-            }
+        }
+        decoderHasData = false;
+        bytesDecoded = outBuf.pos;
+        // if pos == size then there may be data left over in internal buffers
+        if (outBuf.pos == outBuf.size) {
+            decoderHasData = true;
+        } else if (inBuf.pos == inBuf.size) {
+            compressedDataBuffer.advanceReadPointer(input.size());
+            input = compressedDataBuffer.readPointer();
+            inBuf = { input.constData(), size_t(input.size()), 0 };
         }
     }
     compressedDataBuffer.advanceReadPointer(inBuf.pos);
