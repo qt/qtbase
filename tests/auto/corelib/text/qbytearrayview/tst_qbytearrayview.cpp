@@ -487,7 +487,7 @@ namespace help {
 template <typename T>
 size_t size(const T &t) { return size_t(t.size()); }
 template <typename T>
-size_t size(const T *t) { return std::char_traits<T>::length(t); }
+size_t size(const T *t) { return QtPrivate::lengthHelperPointer(t); }
 
 template <typename T>
 decltype(auto)             cbegin(const T &t) { return t.begin(); }
