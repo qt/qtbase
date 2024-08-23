@@ -5,6 +5,7 @@
 #define QBASICTIMER_H
 
 #include <QtCore/qglobal.h>
+#include <QtCore/qabstracteventdispatcher.h>
 #include <QtCore/qnamespace.h>
 
 #include <chrono>
@@ -20,6 +21,9 @@ class Q_CORE_EXPORT QBasicTimer
     Q_DISABLE_COPY(QBasicTimer)
 
 public:
+    // use the same duration type
+    using Duration = QAbstractEventDispatcher::Duration;
+
     constexpr QBasicTimer() noexcept : m_id{Qt::TimerId::Invalid} {}
     ~QBasicTimer() { if (isActive()) stop(); }
 
@@ -38,8 +42,14 @@ public:
     void start(int msec, QObject *obj);
     QT_CORE_INLINE_SINCE(6, 5)
     void start(int msec, Qt::TimerType timerType, QObject *obj);
+
+#if QT_CORE_REMOVED_SINCE(6, 9)
     void start(std::chrono::milliseconds duration, QObject *obj);
     void start(std::chrono::milliseconds duration, Qt::TimerType timerType, QObject *obj);
+#endif
+    void start(Duration duration, QObject *obj)
+    { start(duration, Qt::CoarseTimer, obj); }
+    void start(Duration duration, Qt::TimerType timerType, QObject *obj);
     void stop();
 };
 Q_DECLARE_TYPEINFO(QBasicTimer, Q_RELOCATABLE_TYPE);

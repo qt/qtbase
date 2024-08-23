@@ -1206,6 +1206,18 @@ bool QUrlQuery::operator==(const QUrlQuery &other) const
     return comparesEqual(*this, other);
 }
 
+#include "qbasictimer.h"
+
+void QBasicTimer::start(std::chrono::milliseconds duration, QObject *object)
+{
+    start(std::chrono::nanoseconds(duration), object);
+}
+
+void QBasicTimer::start(std::chrono::milliseconds duration, Qt::TimerType timerType, QObject *obj)
+{
+    start(std::chrono::nanoseconds(duration), timerType, obj);
+}
+
 #include "quuid.h"
 
 bool QUuid::operator<(const QUuid &other) const noexcept
