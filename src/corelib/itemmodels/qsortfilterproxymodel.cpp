@@ -3080,6 +3080,25 @@ void QSortFilterProxyModel::invalidate()
 }
 
 /*!
+   \since 6.9
+
+   Prepares a change of the filter.
+
+   This function should be called if you are implementing custom filtering
+   (e.g. filterAcceptsRow()), and your filter parameter is about to be changed.
+
+    \snippet ../widgets/itemviews/customsortfiltermodel/mysortfilterproxymodel.cpp 2
+
+    \sa invalidateFilter(), invalidateColumnsFilter(), invalidateRowsFilter()
+*/
+
+void QSortFilterProxyModel::beginFilterChange()
+{
+    Q_D(QSortFilterProxyModel);
+    d->create_mapping({});
+}
+
+/*!
    \since 4.3
 
    Invalidates the current filtering.
@@ -3087,9 +3106,12 @@ void QSortFilterProxyModel::invalidate()
    This function should be called if you are implementing custom filtering
    (e.g. filterAcceptsRow()), and your filter parameters have changed.
 
-   \sa invalidate()
-   \sa invalidateColumnsFilter()
-   \sa invalidateRowsFilter()
+   Before your filter parameters change, call beginFilterChange().
+
+   \snippet ../widgets/itemviews/customsortfiltermodel/mysortfilterproxymodel.cpp 2
+
+   \sa invalidate(), invalidateColumnsFilter(), invalidateRowsFilter(),
+       beginFilterChange()
 */
 void QSortFilterProxyModel::invalidateFilter()
 {
@@ -3109,9 +3131,9 @@ void QSortFilterProxyModel::invalidateFilter()
    instead of invalidateFilter() if you want to hide or show a column where
    the rows don't change.
 
-   \sa invalidate()
-   \sa invalidateFilter()
-   \sa invalidateRowsFilter()
+   Before your filter parameters change, call beginFilterChange().
+
+   \sa invalidate(), invalidateRowsFilter(), beginFilterChange()
 */
 void QSortFilterProxyModel::invalidateColumnsFilter()
 {
@@ -3131,9 +3153,9 @@ void QSortFilterProxyModel::invalidateColumnsFilter()
    instead of invalidateFilter() if you want to hide or show a row where
    the columns don't change.
 
-   \sa invalidate()
-   \sa invalidateFilter()
-   \sa invalidateColumnsFilter()
+   Before your filter parameters change, call beginFilterChange().
+
+   \sa invalidate(), invalidateFilter(), invalidateColumnsFilter()
 */
 void QSortFilterProxyModel::invalidateRowsFilter()
 {

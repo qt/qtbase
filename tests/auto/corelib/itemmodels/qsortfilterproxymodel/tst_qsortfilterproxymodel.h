@@ -153,6 +153,8 @@ private slots:
     void filterCaseSensitivityBinding();
     void filterRegularExpressionBinding();
 
+    void filterChangeEmitsModelChangedSignals();
+
 protected:
     void buildHierarchy(const QStringList &data, QAbstractItemModel *model);
     void checkHierarchy(const QStringList &data, const QAbstractItemModel *model);
