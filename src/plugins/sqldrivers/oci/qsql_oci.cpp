@@ -77,7 +77,7 @@ static const ub2 qOraCharset = OCI_UCS2ID;
 #endif
 
 typedef QVarLengthArray<sb2, 32> IndicatorArray;
-typedef QVarLengthArray<ub2, 32> SizeArray;
+typedef QVarLengthArray<ub4, 32> SizeArray;
 
 static QByteArray qMakeOCINumber(const qlonglong &ll, OCIError *err);
 static QByteArray qMakeOCINumber(const qulonglong& ull, OCIError* err);
@@ -248,7 +248,7 @@ public:
 
     void setStatementAttributes();
     int bindValue(OCIStmt *sql, OCIBind **hbnd, OCIError *err, int pos,
-                  const QVariant &val, dvoid *indPtr, ub2 *tmpSize, TempStorage &tmpStorage);
+                  const QVariant &val, dvoid *indPtr, ub4 *tmpSize, TempStorage &tmpStorage);
     int bindValues(QVariantList &values, IndicatorArray &indicators, SizeArray &tmpSizes,
                    TempStorage &tmpStorage);
     void outValues(QVariantList &values, IndicatorArray &indicators,
@@ -325,7 +325,7 @@ void QOCIResultPrivate::setStatementAttributes()
 }
 
 int QOCIResultPrivate::bindValue(OCIStmt *sql, OCIBind **hbnd, OCIError *err, int pos,
-                                 const QVariant &val, dvoid *indPtr, ub2 *tmpSize, TempStorage &tmpStorage)
+                                 const QVariant &val, dvoid *indPtr, ub4 *tmpSize, TempStorage &tmpStorage)
 {
     int r = OCI_SUCCESS;
     void *data = const_cast<void *>(val.constData());
@@ -344,62 +344,62 @@ int QOCIResultPrivate::bindValue(OCIStmt *sql, OCIBind **hbnd, OCIError *err, in
     case QMetaType::QDate:
     case QMetaType::QDateTime: {
         QOCIDateTime *ptr = new QOCIDateTime(env, err, val.toDateTime());
-        r = OCIBindByPos(sql, hbnd, err,
-                         pos + 1,
-                         &ptr->dateTime,
-                         sizeof(OCIDateTime *),
-                         SQLT_TIMESTAMP_TZ, indPtr, 0, 0, 0, 0, OCI_DEFAULT);
+        r = OCIBindByPos2(sql, hbnd, err,
+                          pos + 1,
+                          &ptr->dateTime,
+                          sizeof(OCIDateTime *),
+                          SQLT_TIMESTAMP_TZ, indPtr, 0, 0, 0, 0, OCI_DEFAULT);
         tmpStorage.dateTimes.append(ptr);
         break;
     }
     case QMetaType::Int:
-        r = OCIBindByPos(sql, hbnd, err,
-                         pos + 1,
-                         // if it's an out value, the data is already detached
-                         // so the const cast is safe.
-                         const_cast<void *>(data),
-                         sizeof(int),
-                         SQLT_INT, indPtr, 0, 0, 0, 0, OCI_DEFAULT);
+        r = OCIBindByPos2(sql, hbnd, err,
+                          pos + 1,
+                          // if it's an out value, the data is already detached
+                          // so the const cast is safe.
+                          const_cast<void *>(data),
+                          sizeof(int),
+                          SQLT_INT, indPtr, 0, 0, 0, 0, OCI_DEFAULT);
         break;
     case QMetaType::UInt:
-        r = OCIBindByPos(sql, hbnd, err,
-                         pos + 1,
-                         // if it's an out value, the data is already detached
-                         // so the const cast is safe.
-                         const_cast<void *>(data),
-                         sizeof(uint),
-                         SQLT_UIN, indPtr, 0, 0, 0, 0, OCI_DEFAULT);
+        r = OCIBindByPos2(sql, hbnd, err,
+                          pos + 1,
+                          // if it's an out value, the data is already detached
+                          // so the const cast is safe.
+                          const_cast<void *>(data),
+                          sizeof(uint),
+                          SQLT_UIN, indPtr, 0, 0, 0, 0, OCI_DEFAULT);
         break;
     case QMetaType::LongLong:
     {
         QByteArray ba = qMakeOCINumber(val.toLongLong(), err);
-        r = OCIBindByPos(sql, hbnd, err,
-                           pos + 1,
-                           ba.data(),
-                           ba.size(),
-                           SQLT_VNU, indPtr, 0, 0, 0, 0, OCI_DEFAULT);
+        r = OCIBindByPos2(sql, hbnd, err,
+                          pos + 1,
+                          ba.data(),
+                          ba.size(),
+                          SQLT_VNU, indPtr, 0, 0, 0, 0, OCI_DEFAULT);
         tmpStorage.rawData.append(ba);
         break;
     }
     case QMetaType::ULongLong:
     {
         QByteArray ba = qMakeOCINumber(val.toULongLong(), err);
-        r = OCIBindByPos(sql, hbnd, err,
-                           pos + 1,
-                           ba.data(),
-                           ba.size(),
-                           SQLT_VNU, indPtr, 0, 0, 0, 0, OCI_DEFAULT);
+        r = OCIBindByPos2(sql, hbnd, err,
+                          pos + 1,
+                          ba.data(),
+                          ba.size(),
+                          SQLT_VNU, indPtr, 0, 0, 0, 0, OCI_DEFAULT);
         tmpStorage.rawData.append(ba);
         break;
     }
     case QMetaType::Double:
-        r = OCIBindByPos(sql, hbnd, err,
-                         pos + 1,
-                         // if it's an out value, the data is already detached
-                         // so the const cast is safe.
-                         const_cast<void *>(data),
-                         sizeof(double),
-                         SQLT_FLT, indPtr, 0, 0, 0, 0, OCI_DEFAULT);
+        r = OCIBindByPos2(sql, hbnd, err,
+                          pos + 1,
+                          // if it's an out value, the data is already detached
+                          // so the const cast is safe.
+                          const_cast<void *>(data),
+                          sizeof(double),
+                          SQLT_FLT, indPtr, 0, 0, 0, 0, OCI_DEFAULT);
         break;
     case QMetaType::QString: {
         const QString s = val.toString();
@@ -429,12 +429,12 @@ int QOCIResultPrivate::bindValue(OCIStmt *sql, OCIBind **hbnd, OCIError *err, in
             if (val.canConvert<QOCIRowIdPointer>() && !isOutValue(pos)) {
                 // use a const pointer to prevent a detach
                 const QOCIRowIdPointer rptr = qvariant_cast<QOCIRowIdPointer>(val);
-                r = OCIBindByPos(sql, hbnd, err,
-                                 pos + 1,
-                                 // it's an IN value, so const_cast is ok
-                                 const_cast<OCIRowid **>(&rptr->id),
-                                 -1,
-                                 SQLT_RDD, indPtr, 0, 0, 0, 0, OCI_DEFAULT);
+                r = OCIBindByPos2(sql, hbnd, err,
+                                  pos + 1,
+                                  // it's an IN value, so const_cast is ok
+                                  const_cast<OCIRowid **>(&rptr->id),
+                                  -1,
+                                  SQLT_RDD, indPtr, 0, 0, 0, 0, OCI_DEFAULT);
             } else {
                 qCWarning(lcOci, "Unknown bind variable");
                 r = OCI_ERROR;
@@ -446,17 +446,17 @@ int QOCIResultPrivate::bindValue(OCIStmt *sql, OCIBind **hbnd, OCIError *err, in
             if (isOutValue(pos)) {
                 ba.reserve((s.capacity() + 1) * sizeof(QChar));
                 *tmpSize = ba.size();
-                r = OCIBindByPos(sql, hbnd, err,
-                                 pos + 1,
-                                 ba.data(),
-                                 ba.capacity(),
-                                 SQLT_STR, indPtr, tmpSize, 0, 0, 0, OCI_DEFAULT);
+                r = OCIBindByPos2(sql, hbnd, err,
+                                  pos + 1,
+                                  ba.data(),
+                                  ba.capacity(),
+                                  SQLT_STR, indPtr, tmpSize, 0, 0, 0, OCI_DEFAULT);
             } else {
-                r = OCIBindByPos(sql, hbnd, err,
-                                 pos + 1,
-                                 ba.data(),
-                                 ba.size(),
-                                 SQLT_STR, indPtr, 0, 0, 0, 0, OCI_DEFAULT);
+                r = OCIBindByPos2(sql, hbnd, err,
+                                  pos + 1,
+                                  ba.data(),
+                                  ba.size(),
+                                  SQLT_STR, indPtr, 0, 0, 0, 0, OCI_DEFAULT);
             }
             if (r == OCI_SUCCESS)
                 setCharset(*hbnd, OCI_HTYPE_BIND);
@@ -1492,7 +1492,7 @@ bool QOCICols::execBatch(QOCIResultPrivate *d, QVariantList &boundValues, bool a
         QOCIBatchColumn &bindColumn = columns[i];
 
 #ifdef QOCI_DEBUG
-            qCDebug(lcOci, "OCIBindByPos(%p, %p, %p, %d, %p, %d, %d, %p, %p, 0, %d, %p, OCI_DEFAULT)",
+            qCDebug(lcOci, "OCIBindByPos2(%p, %p, %p, %d, %p, %d, %d, %p, %p, 0, %d, %p, OCI_DEFAULT)",
             d->sql, &bindColumn.bindh, d->err, i + 1, bindColumn.data,
             bindColumn.maxLen, bindColumn.bindAs, bindColumn.indicators, bindColumn.lengths,
             arrayBind ? bindColumn.maxarr_len : 0, arrayBind ? &bindColumn.curelep : 0);
