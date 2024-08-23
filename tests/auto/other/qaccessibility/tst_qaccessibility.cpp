@@ -1939,6 +1939,8 @@ void tst_QAccessibility::textEditTest()
         keys.addKeyClick('c');
         keys.simulate(&edit);
         keys.clear();
+        QTRY_COMPARE(edit.toPlainText(), "Ac");
+
         QAccessibleTextInsertEvent insertC(&edit, 1, "c");
         QVERIFY_EVENT(&insertC);
         QAccessibleTextCursorEvent move2(&edit, 2);
@@ -1947,6 +1949,7 @@ void tst_QAccessibility::textEditTest()
         keys.addKeyClick(Qt::Key_Backspace);
         keys.simulate(&edit);
         keys.clear();
+        QTRY_COMPARE(edit.toPlainText(), "A");
 
         // FIXME this should get a proper string instead of space
         QAccessibleTextRemoveEvent del(&edit, 1, " ");
@@ -2346,12 +2349,14 @@ void tst_QAccessibility::lineEditTest()
     QTestEventList keys;
     keys.addKeyClick('D');
     keys.simulate(lineEdit);
+    QTRY_COMPARE(lineEdit->text(), "barD");
 
     QAccessibleTextInsertEvent insertD(lineEdit, 3, "D");
     QVERIFY_EVENT(&insertD);
     keys.clear();
     keys.addKeyClick('E');
     keys.simulate(lineEdit);
+    QTRY_COMPARE(lineEdit->text(), "barDE");
 
     QAccessibleTextInsertEvent insertE(lineEdit, 4, "E");
     QVERIFY(QTestAccessibility::containsEvent(&insertE));
@@ -2359,6 +2364,8 @@ void tst_QAccessibility::lineEditTest()
     keys.addKeyClick(Qt::Key_Left);
     keys.addKeyClick(Qt::Key_Left);
     keys.simulate(lineEdit);
+    QTRY_COMPARE(lineEdit->cursorPosition(), 3);
+
     cursorEvent.setCursorPosition(4);
     QVERIFY(QTestAccessibility::containsEvent(&cursorEvent));
     cursorEvent.setCursorPosition(3);
@@ -2367,6 +2374,7 @@ void tst_QAccessibility::lineEditTest()
     keys.clear();
     keys.addKeyClick('C');
     keys.simulate(lineEdit);
+    QTRY_COMPARE(lineEdit->text(), "barCDE");
 
     QAccessibleTextInsertEvent insertC(lineEdit, 3, "C");
     QVERIFY(QTestAccessibility::containsEvent(&insertC));
@@ -2374,6 +2382,8 @@ void tst_QAccessibility::lineEditTest()
     keys.clear();
     keys.addKeyClick('O');
     keys.simulate(lineEdit);
+    QTRY_COMPARE(lineEdit->text(), "barCODE");
+
     QAccessibleTextInsertEvent insertO(lineEdit, 4, "O");
     QVERIFY(QTestAccessibility::containsEvent(&insertO));
     }
