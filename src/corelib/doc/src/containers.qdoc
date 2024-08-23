@@ -103,9 +103,8 @@
     doesn't matter QHash is a faster alternative.
 
     \row \li \l{QMultiMap}<Key, T>
-    \li This is a convenience subclass of QMap that provides a nice
-    interface for multi-valued maps, i.e. maps where one key can be
-    associated with multiple values.
+    \li This provides a dictionary, like QMap, except it allows
+    inserting multiple equivalent keys.
 
     \row \li \l{QHash}<Key, T>
     \li This has almost the same API as QMap, but provides
@@ -113,8 +112,8 @@
     arbitrary order.
 
     \row \li \l{QMultiHash}<Key, T>
-    \li This is a convenience subclass of QHash that
-    provides a nice interface for multi-valued hashes.
+    \li This provides a hash-table-based dictionary, like QHash,
+    except it allows inserting multiple equivalent keys.
 
     \endtable
 
