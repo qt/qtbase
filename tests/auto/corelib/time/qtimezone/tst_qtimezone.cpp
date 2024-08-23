@@ -41,8 +41,8 @@ private Q_SLOTS:
     void availableTimeZoneIds();
     void utcOffsetId_data();
     void utcOffsetId();
-    void aliasMatches_data();
-    void aliasMatches();
+    void hasAlternativeName_data();
+    void hasAlternativeName();
     void specificTransition_data();
     void specificTransition();
     void transitionEachZone_data();
@@ -565,7 +565,7 @@ void tst_QTimeZone::isTimeZoneIdAvailable()
         QVERIFY2(QTimeZone::isTimeZoneIdAvailable(id), id);
         const QTimeZone zone(id);
         QVERIFY2(zone.isValid(), id);
-        QVERIFY2(zone.aliasMatches(id), zone.id() + " != " + id);
+        QVERIFY2(zone.hasAlternativeName(id), zone.id() + " != " + id);
     }
     // availableTimeZoneIds() doesn't list all possible offset IDs, but
     // isTimeZoneIdAvailable() should accept them.
@@ -708,7 +708,7 @@ void tst_QTimeZone::utcOffsetId()
     }
 }
 
-void tst_QTimeZone::aliasMatches_data()
+void tst_QTimeZone::hasAlternativeName_data()
 {
     QTest::addColumn<QByteArray>("iana");
     QTest::addColumn<QByteArray>("alias");
@@ -735,7 +735,7 @@ void tst_QTimeZone::aliasMatches_data()
     QTest::newRow("Enderbury=Enderbury") << "Pacific/Enderbury"_ba << "Pacific/Enderbury"_ba;
 }
 
-void tst_QTimeZone::aliasMatches()
+void tst_QTimeZone::hasAlternativeName()
 {
     QFETCH(const QByteArray, iana);
     QFETCH(const QByteArray, alias);
@@ -749,14 +749,14 @@ void tst_QTimeZone::aliasMatches()
         qDebug("Using %s and %s", zid.constData(), pid.constData());
     });
     QVERIFY2(peer.isValid(), "Construction should have fallen back on IANA ID");
-    QVERIFY(zone.aliasMatches(zone.id()));
-    QVERIFY(zone.aliasMatches(iana));
-    QVERIFY(peer.aliasMatches(peer.id()));
-    QVERIFY(peer.aliasMatches(alias));
-    QVERIFY(zone.aliasMatches(peer.id()));
-    QVERIFY(zone.aliasMatches(alias));
-    QVERIFY(peer.aliasMatches(zone.id()));
-    QVERIFY(peer.aliasMatches(iana));
+    QVERIFY(zone.hasAlternativeName(zone.id()));
+    QVERIFY(zone.hasAlternativeName(iana));
+    QVERIFY(peer.hasAlternativeName(peer.id()));
+    QVERIFY(peer.hasAlternativeName(alias));
+    QVERIFY(zone.hasAlternativeName(peer.id()));
+    QVERIFY(zone.hasAlternativeName(alias));
+    QVERIFY(peer.hasAlternativeName(zone.id()));
+    QVERIFY(peer.hasAlternativeName(iana));
     report.dismiss();
 }
 
@@ -984,7 +984,7 @@ void tst_QTimeZone::stressTest()
     for (const QByteArray &id : idList) {
         QTimeZone testZone = QTimeZone(id);
         QCOMPARE(testZone.isValid(), true);
-        QVERIFY2(testZone.aliasMatches(id), testZone.id() + " != " + id);
+        QVERIFY2(testZone.hasAlternativeName(id), testZone.id() + " != " + id);
         QDateTime testDate = QDateTime(QDate(2015, 1, 1), QTime(0, 0), UTC);
         testZone.territory();
         testZone.comment();
@@ -1920,7 +1920,7 @@ void tst_QTimeZone::stdCompatibility()
     QByteArrayView zoneName = QByteArrayView(timeZone->name());
     QTimeZone tz = QTimeZone::fromStdTimeZonePtr(timeZone);
     if (tz.isValid())
-        QVERIFY2(tz.aliasMatches(zoneName), tz.id().constData());
+        QVERIFY2(tz.hasAlternativeName(zoneName), tz.id().constData());
     else
         QVERIFY(!QTimeZone::isTimeZoneIdAvailable(zoneName.toByteArray()));
 #else
