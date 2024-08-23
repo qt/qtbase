@@ -584,7 +584,7 @@ qsizetype QDecompressHelper::readZLib(char *data, const qsizetype maxSize)
         // also an error.
         // in the case where we get Z_DATA_ERROR this could be because we received raw deflate
         // compressed data.
-        if (ret == Z_DATA_ERROR && !triedRawDeflate) {
+        if (ret == Z_DATA_ERROR && !triedRawDeflate) Q_UNLIKELY_BRANCH {
             inflateEnd(inflateStream);
             triedRawDeflate = true;
             inflateStream->zalloc = Z_NULL;
@@ -708,6 +708,7 @@ qsizetype QDecompressHelper::readBrotli(char *data, const qsizetype maxSize)
         bytesDecoded += previousUnusedDecodedSize - unusedDecodedSize;
 
         switch (result) {
+        Q_UNLIKELY_BRANCH
         case BROTLI_DECODER_RESULT_ERROR:
             errorStr = QLatin1String("Brotli error: %1")
                                .arg(QString::fromUtf8(BrotliDecoderErrorString(
@@ -756,7 +757,7 @@ qsizetype QDecompressHelper::readZstandard(char *data, const qsizetype maxSize)
     qsizetype bytesDecoded = 0;
     while (outBuf.pos < outBuf.size && (inBuf.pos < inBuf.size || decoderHasData)) {
         size_t retValue = ZSTD_decompressStream(zstdStream, &outBuf, &inBuf);
-        if (ZSTD_isError(retValue)) {
+        if (ZSTD_isError(retValue)) Q_UNLIKELY_BRANCH {
             errorStr = QLatin1String("ZStandard error: %1")
                                .arg(QString::fromUtf8(ZSTD_getErrorName(retValue)));
             return -1;
