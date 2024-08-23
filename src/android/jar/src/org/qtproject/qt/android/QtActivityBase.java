@@ -24,7 +24,7 @@ import android.view.View;
 import android.view.Window;
 import java.lang.IllegalArgumentException;
 
-public class QtActivityBase extends Activity implements QtNative.AppStateDetailsListener
+public class QtActivityBase extends Activity
 {
     private String m_applicationParams = "";
     private boolean m_isCustomThemeSet = false;
@@ -102,7 +102,7 @@ public class QtActivityBase extends Activity implements QtNative.AppStateDetails
 
         m_delegate = new QtActivityDelegate(this);
 
-        QtNative.registerAppStateListener(this);
+        QtNative.registerAppStateListener(m_delegate);
 
         addReferrer(getIntent());
 
@@ -122,14 +122,6 @@ public class QtActivityBase extends Activity implements QtNative.AppStateDetails
             showErrorDialog();
             finish();
         }
-    }
-
-    @Override
-    public void onAppStateDetailsChanged(QtNative.ApplicationStateDetails details) {
-        if (details.isStarted)
-            m_delegate.registerBackends();
-        else
-            m_delegate.unregisterBackends();
     }
 
     @Override
@@ -178,7 +170,7 @@ public class QtActivityBase extends Activity implements QtNative.AppStateDetails
     {
         super.onDestroy();
         if (!m_retainNonConfigurationInstance) {
-            QtNative.unregisterAppStateListener(this);
+            QtNative.unregisterAppStateListener(m_delegate);
             QtNative.terminateQt();
             QtNative.setActivity(null);
             QtNative.getQtThread().exit();
