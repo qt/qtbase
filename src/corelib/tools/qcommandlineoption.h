@@ -19,7 +19,8 @@ class Q_CORE_EXPORT QCommandLineOption
 public:
     enum Flag {
         HiddenFromHelp = 0x1,
-        ShortOptionStyle = 0x2
+        ShortOptionStyle = 0x2,
+        IgnoreOptionsAfter = 0x4,
     };
     Q_DECLARE_FLAGS(Flags, Flag)
 

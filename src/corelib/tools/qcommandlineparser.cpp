@@ -653,7 +653,12 @@ bool QCommandLineParserPrivate::parseOptionValue(const QString &optionName, cons
     if (nameHashIt != nameHash.constEnd()) {
         const qsizetype assignPos = argument.indexOf(assignChar);
         const NameHash_t::mapped_type optionOffset = *nameHashIt;
-        const bool withValue = !commandLineOptionList.at(optionOffset).valueName().isEmpty();
+        const QCommandLineOption &option = commandLineOptionList.at(optionOffset);
+        if (option.flags() & QCommandLineOption::IgnoreOptionsAfter) {
+            *argumentIterator = argsEnd;
+            return true;
+        }
+        const bool withValue = !option.valueName().isEmpty();
         if (withValue) {
             if (assignPos == -1) {
                 ++(*argumentIterator);

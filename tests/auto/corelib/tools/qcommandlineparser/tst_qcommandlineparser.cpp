@@ -59,6 +59,7 @@ private slots:
     void testHelpAll_data();
     void testHelpAll();
     void testVeryLongOptionNames();
+    void testIgnoringOptions();
 };
 
 static char *empty_argv[] = { 0 };
@@ -784,6 +785,21 @@ void tst_QCommandLineParser::testVeryLongOptionNames()
 #endif // QT_CONFIG(process)
 }
 
+void tst_QCommandLineParser::testIgnoringOptions()
+{
+    QCommandLineParser parser;
+    QCommandLineOption ignoreAfterOption(QStringLiteral("ignoreAfterOption"));
+    ignoreAfterOption.setFlags(QCommandLineOption::IgnoreOptionsAfter);
+    ignoreAfterOption.setValueName(QStringLiteral("ignoreAfterValue"));
+    parser.addOption(ignoreAfterOption);
+    QCommandLineOption normalOption(QStringLiteral("normalOption"));
+    parser.addOption(QCommandLineOption(QStringLiteral("normalOption")));
+    QVERIFY(parser.parse({"executableName", "--normalOption", "--ignoreAfterOption=value", "--badOption", "notAnOption"}));
+    QVERIFY(parser.isSet(normalOption));
+    QVERIFY(parser.isSet(ignoreAfterOption)); // The ignore option is not ignored itself
+    QVERIFY(parser.value(ignoreAfterOption).isEmpty()); // Values passed to the ignore option should be ignored
+    QVERIFY(!parser.isSet("badOption"));
+}
+
 QTEST_APPLESS_MAIN(tst_QCommandLineParser)
 #include "tst_qcommandlineparser.moc"
-

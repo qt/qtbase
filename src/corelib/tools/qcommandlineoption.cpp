@@ -389,6 +389,10 @@ void QCommandLineOption::setFlags(Flags flags)
     interpreted as short flags even when the parser is in
     QCommandLineParser::ParseAsLongOptions mode.
 
+    \value IgnoreOptionsAfter [since 6.9] No options beyond this one will be parsed. Useful
+    for cases where you need to send extra command line arguments to a secondary
+    application. If a value is provided for this option, it will be ignored.
+
     \sa QCommandLineOption::setFlags(), QCommandLineOption::flags()
 */
 
