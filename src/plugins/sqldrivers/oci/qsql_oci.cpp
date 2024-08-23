@@ -792,13 +792,13 @@ qulonglong qMakeULongLong(const char* ociNumber, OCIError* err)
 class QOCICols
 {
 public:
-    QOCICols(int size, QOCIResultPrivate* dp);
-    ~QOCICols();
+    QOCICols(qsizetype size, QOCIResultPrivate* dp);
+
     int readPiecewise(QVariantList &values, int index = 0);
     int readLOBs(QVariantList &values, int index = 0);
-    int fieldFromDefine(OCIDefine* d);
+    qsizetype fieldFromDefine(OCIDefine *d) const;
     void getValues(QVariantList &v, int index);
-    inline int size() { return fieldInf.size(); }
+    inline qsizetype size() const { return fieldInf.size(); }
     static bool execBatch(QOCIResultPrivate *d, QVariantList &boundValues, bool arrayBind);
 
     QSqlRecord rec;
@@ -808,20 +808,18 @@ private:
     OCILobLocator ** createLobLocator(int position, OCIEnv* env);
     OraFieldInfo qMakeOraField(const QOCIResultPrivate* p, OCIParam* param) const;
 
-    class OraFieldInf
+    struct OraFieldInf
     {
-    public:
-        OraFieldInf() : data(0), len(0), ind(0), oraType(0), def(0), lob(0), dataPtr(nullptr)
-        {}
         ~OraFieldInf();
-        char *data;
-        int len;
-        sb2 ind;
+
+        char *data = nullptr;
+        int len = 0;
+        sb2 ind = 0;
         QMetaType typ;
-        ub4 oraType;
-        OCIDefine *def;
-        OCILobLocator *lob;
-        void *dataPtr;
+        ub4 oraType = 0;
+        OCIDefine *def = nullptr;
+        OCILobLocator *lob = nullptr;
+        void *dataPtr = nullptr;
     };
 
     QList<OraFieldInf> fieldInf;
@@ -852,7 +850,7 @@ QOCICols::OraFieldInf::~OraFieldInf()
     }
 }
 
-QOCICols::QOCICols(int size, QOCIResultPrivate* dp)
+QOCICols::QOCICols(qsizetype size, QOCIResultPrivate* dp)
     : fieldInf(size), d(dp)
 {
     ub4 dataSize = 0;
@@ -1046,10 +1044,6 @@ QOCICols::QOCICols(int size, QOCIResultPrivate* dp)
     }
 }
 
-QOCICols::~QOCICols()
-{
-}
-
 char* QOCICols::create(int position, int size)
 {
     char* c = new char[size+1];
@@ -1085,7 +1079,6 @@ int QOCICols::readPiecewise(QVariantList &values, int index)
     ub1            piecep;
     sword          status;
     text           col [QOCI_DYNAMIC_CHUNK_SIZE+1];
-    int            fieldNum = -1;
     int            r = 0;
     bool           nullField;
 
@@ -1094,7 +1087,7 @@ int QOCICols::readPiecewise(QVariantList &values, int index)
                                  &in_outp, &iterp, &idxp, &piecep);
         if (r != OCI_SUCCESS)
             qOraWarning("OCIResultPrivate::readPiecewise: unable to get piece info:", d->err);
-        fieldNum = fieldFromDefine(dfn);
+        qsizetype fieldNum = fieldFromDefine(dfn);
         bool isStringField = fieldInf.at(fieldNum).oraType == SQLT_LNG;
         ub4 chunkSize = QOCI_DYNAMIC_CHUNK_SIZE;
         nullField = false;
@@ -1267,19 +1260,15 @@ OraFieldInfo QOCICols::qMakeOraField(const QOCIResultPrivate* p, OCIParam* param
 
 struct QOCIBatchColumn
 {
-    inline QOCIBatchColumn()
-        : bindh(0), bindAs(0), maxLen(0), recordCount(0),
-          data(0), lengths(0), indicators(0), maxarr_len(0), curelep(0) {}
-
-    OCIBind* bindh;
-    ub2 bindAs;
-    ub4 maxLen;
-    ub4 recordCount;
-    char* data;
-    ub4* lengths;
-    sb2* indicators;
-    ub4 maxarr_len;
-    ub4 curelep;
+    OCIBind* bindh = nullptr;
+    ub2 bindAs = 0;
+    ub4 maxLen = 0;
+    ub4 recordCount = 0;
+    char* data  = nullptr;
+    ub4* lengths = nullptr;
+    sb2* indicators = nullptr;
+    ub4 maxarr_len = 0;
+    ub4 curelep = 0;
 };
 
 struct QOCIBatchCleanupHandler
@@ -1302,7 +1291,7 @@ struct QOCIBatchCleanupHandler
 
 bool QOCICols::execBatch(QOCIResultPrivate *d, QVariantList &boundValues, bool arrayBind)
 {
-    int columnCount = boundValues.count();
+    qsizetype columnCount = boundValues.count();
     if (boundValues.isEmpty() || columnCount == 0)
         return false;
 
@@ -1310,11 +1299,10 @@ bool QOCICols::execBatch(QOCIResultPrivate *d, QVariantList &boundValues, bool a
     qCDebug(lcOci) << "columnCount:" << columnCount << boundValues;
 #endif
 
-    int i;
     sword r;
 
     QVarLengthArray<QMetaType> fieldTypes;
-    for (i = 0; i < columnCount; ++i) {
+    for (qsizetype i = 0; i < columnCount; ++i) {
         QMetaType tp = boundValues.at(i).metaType();
         fieldTypes.append(tp.id() == QMetaType::QVariantList ? boundValues.at(i).toList().value(0).metaType() : tp);
     }
@@ -1324,7 +1312,7 @@ bool QOCICols::execBatch(QOCIResultPrivate *d, QVariantList &boundValues, bool a
     TempStorage tmpStorage;
 
     // figuring out buffer sizes
-    for (i = 0; i < columnCount; ++i) {
+    for (qsizetype i = 0; i < columnCount; ++i) {
 
         if (boundValues.at(i).typeId() != QMetaType::QVariantList) {
 
@@ -1458,7 +1446,7 @@ bool QOCICols::execBatch(QOCIResultPrivate *d, QVariantList &boundValues, bool a
                     {
                         columns[i].lengths[row] = columns[i].maxLen;
                         const QByteArray ba = qMakeOCINumber(val.toLongLong(), d->err);
-                        Q_ASSERT(ba.size() == int(columns[i].maxLen));
+                        Q_ASSERT(ba.size() == columns[i].maxLen);
                         memcpy(dataPtr, ba.constData(), columns[i].maxLen);
                         break;
                     }
@@ -1466,7 +1454,7 @@ bool QOCICols::execBatch(QOCIResultPrivate *d, QVariantList &boundValues, bool a
                     {
                         columns[i].lengths[row] = columns[i].maxLen;
                         const QByteArray ba = qMakeOCINumber(val.toULongLong(), d->err);
-                        Q_ASSERT(ba.size() == int(columns[i].maxLen));
+                        Q_ASSERT(ba.size() == columns[i].maxLen);
                         memcpy(dataPtr, ba.constData(), columns[i].maxLen);
                         break;
                     }
@@ -1572,7 +1560,7 @@ bool QOCICols::execBatch(QOCIResultPrivate *d, QVariantList &boundValues, bool a
     }
 
     // for out parameters we copy data back to value list
-    for (i = 0; i < columnCount; ++i) {
+    for (qsizetype i = 0; i < columnCount; ++i) {
 
         if (!d->isOutValue(i))
             continue;
@@ -1702,7 +1690,7 @@ int QOCICols::readLOBs(QVariantList &values, int index)
     OCILobLocator *lob;
     int r = OCI_SUCCESS;
 
-    for (int i = 0; i < size(); ++i) {
+    for (qsizetype i = 0; i < size(); ++i) {
         const OraFieldInf &fi = fieldInf.at(i);
         if (fi.ind == -1 || !(lob = fi.lob))
             continue;
@@ -1727,9 +1715,9 @@ int QOCICols::readLOBs(QVariantList &values, int index)
     return r;
 }
 
-int QOCICols::fieldFromDefine(OCIDefine* d)
+qsizetype QOCICols::fieldFromDefine(OCIDefine *d) const
 {
-    for (int i = 0; i < fieldInf.count(); ++i) {
+    for (qsizetype i = 0; i < fieldInf.size(); ++i) {
         if (fieldInf.at(i).def == d)
             return i;
     }
@@ -1738,7 +1726,7 @@ int QOCICols::fieldFromDefine(OCIDefine* d)
 
 void QOCICols::getValues(QVariantList &v, int index)
 {
-    for (int i = 0; i < fieldInf.size(); ++i) {
+    for (qsizetype i = 0; i < fieldInf.size(); ++i) {
         const OraFieldInf &fld = fieldInf.at(i);
 
         if (fld.ind == -1) {
