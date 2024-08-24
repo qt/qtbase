@@ -270,9 +270,21 @@ static constexpr const char * methodToName(QCryptographicHash::Algorithm method)
     CASE(RealSha3_512, "SHA3-512");
     CASE(Blake2b_512, "BLAKE2B512");
     CASE(Blake2s_256, "BLAKE2S256");
+    // not supported by OpenSSL:
+    CASE(Keccak_224, nullptr);
+    CASE(Keccak_256, nullptr);
+    CASE(Keccak_384, nullptr);
+    CASE(Keccak_512, nullptr);
+    CASE(Blake2b_160, nullptr);
+    CASE(Blake2b_256, nullptr);
+    CASE(Blake2b_384, nullptr);
+    CASE(Blake2s_128, nullptr);
+    CASE(Blake2s_160, nullptr);
+    CASE(Blake2s_224, nullptr);
+    CASE(NumAlgorithms, nullptr);
 #undef CASE
-    default: return nullptr;
     }
+    return nullptr;
 }
 
 /*
