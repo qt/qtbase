@@ -274,7 +274,7 @@ public:
     }
 
 public:
-    QList() = default;
+    constexpr QList() noexcept = default;
     explicit QList(qsizetype size)
         : d(size)
     {
