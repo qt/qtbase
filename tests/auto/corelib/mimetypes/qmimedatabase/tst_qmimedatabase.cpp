@@ -817,7 +817,7 @@ void tst_QMimeDatabase::allMimeTypes()
     if (m_hasFreedesktopOrg)
         QCOMPARE(lst.size(), 908);
     else
-        QCOMPARE(lst.size(), 1640); // interestingly, tika has more mimetypes (but many are empty)
+        QCOMPARE(lst.size(), 1641); // interestingly, tika has more mimetypes (but many are empty)
 
     foreach (const QMimeType &mime, lst) {
         const QString name = mime.name();
