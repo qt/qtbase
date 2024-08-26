@@ -9,13 +9,12 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qstringfwd.h>
 
+#ifdef __cpp_concepts
+#include <concepts>
+#endif
 #include <numeric> // for std::accumulate
 #include <functional> // for std::hash
 #include <utility> // For std::pair
-
-#ifdef __cpp_concepts
-#  include <concepts>
-#endif
 
 #if 0
 #pragma qt_class(QHashFunctions)
