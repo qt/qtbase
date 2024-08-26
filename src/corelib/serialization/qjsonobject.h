@@ -152,13 +152,13 @@ public:
         }
 
         static Qt::strong_ordering compareThreeWay_helper(const iterator &lhs,
-                                                          const iterator &rhs) noexcept
+                                                          const iterator &rhs)
         {
             Q_ASSERT(lhs.item.d == rhs.item.d);
             return Qt::compareThreeWay(lhs.item.index, rhs.item.index);
         }
         static Qt::strong_ordering compareThreeWay_helper(const iterator &lhs,
-                                                          const const_iterator &rhs) noexcept
+                                                          const const_iterator &rhs)
         {
             Q_ASSERT(lhs.item.d == rhs.item.d);
             return Qt::compareThreeWay(lhs.item.index, rhs.item.index);
@@ -170,22 +170,22 @@ public:
             return comparesEqual_helper(lhs, rhs);
         }
         friend Qt::strong_ordering compareThreeWay(const iterator &lhs,
-                                                   const iterator &rhs) noexcept
+                                                   const iterator &rhs)
         {
             return compareThreeWay_helper(lhs, rhs);
         }
-        Q_DECLARE_STRONGLY_ORDERED(iterator)
+        Q_DECLARE_STRONGLY_ORDERED_NON_NOEXCEPT(iterator)
 
         friend bool comparesEqual(const iterator &lhs, const const_iterator &rhs) noexcept
         {
             return comparesEqual_helper(lhs, rhs);
         }
         friend Qt::strong_ordering compareThreeWay(const iterator &lhs,
-                                                   const const_iterator &rhs) noexcept
+                                                   const const_iterator &rhs)
         {
             return compareThreeWay_helper(lhs, rhs);
         }
-        Q_DECLARE_STRONGLY_ORDERED(iterator, const_iterator)
+        Q_DECLARE_STRONGLY_ORDERED_NON_NOEXCEPT(iterator, const_iterator)
     };
     friend class iterator;
 
@@ -259,7 +259,7 @@ public:
             return lhs.item.d == rhs.item.d && lhs.item.index == rhs.item.index;
         }
         static Qt::strong_ordering compareThreeWay_helper(const const_iterator &lhs,
-                                                          const const_iterator &rhs) noexcept
+                                                          const const_iterator &rhs)
         {
             Q_ASSERT(lhs.item.d == rhs.item.d);
             return Qt::compareThreeWay(lhs.item.index, rhs.item.index);
@@ -271,11 +271,11 @@ public:
             return comparesEqual_helper(lhs, rhs);
         }
         friend Qt::strong_ordering compareThreeWay(const const_iterator &lhs,
-                                                   const const_iterator &rhs) noexcept
+                                                   const const_iterator &rhs)
         {
             return compareThreeWay_helper(lhs, rhs);
         }
-        Q_DECLARE_STRONGLY_ORDERED(const_iterator)
+        Q_DECLARE_STRONGLY_ORDERED_NON_NOEXCEPT(const_iterator)
     };
     friend class const_iterator;
 
