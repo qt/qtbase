@@ -605,6 +605,8 @@ QDirListing::QDirListing(const QString &path, const QStringList &nameFilters, ui
 }
 
 /*!
+    \fn QDirListing::QDirListing(QDirListing &&other)
+
     Move constructor. Moves \a other into this QDirListing.
 
 //! [partially-formed]
@@ -613,20 +615,22 @@ QDirListing::QDirListing(const QString &path, const QStringList &nameFilters, ui
     value.
 //! [partially-formed]
 */
-QDirListing::QDirListing(QDirListing &&other) = default;
 
 /*!
+    \fn QDirListing &QDirListing::operator=(QDirListing &&other)
+
     Move-assigns \a other to this QDirListing.
 
     \include qdirlisting.cpp partially-formed
 */
-QDirListing &QDirListing::operator=(QDirListing &&other) = default;
-
 
 /*!
     Destroys the QDirListing.
 */
-QDirListing::~QDirListing() = default;
+QDirListing::~QDirListing()
+{
+    delete d;
+}
 
 /*!
     Returns the directory path used to construct this QDirListing.
@@ -690,7 +694,7 @@ QStringList QDirListing::nameFilters() const
 QDirListing::const_iterator QDirListing::begin() const
 {
     d->beginIterating();
-    const_iterator it{d.get()};
+    const_iterator it{d};
     return ++it;
 }
 
