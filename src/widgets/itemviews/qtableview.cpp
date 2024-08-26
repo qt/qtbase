@@ -3143,8 +3143,7 @@ void QTableView::dropEvent(QDropEvent *event)
 
                 int r = row == -1 ? model()->rowCount() : (dropRow.row() >= 0 ? dropRow.row() : row);
                 bool dataMoved = false;
-                for (int i = 0; i < persIndexes.size(); ++i) {
-                    const QPersistentModelIndex &pIndex = persIndexes.at(i);
+                for (const QPersistentModelIndex &pIndex : std::as_const(persIndexes)) {
                     // only generate a move when not same row or behind itself
                     if (r != pIndex.row() && r != pIndex.row() + 1) {
                         // try to move (preserves selection)
