@@ -45,8 +45,11 @@ public:
     Q_CORE_EXPORT explicit QDirListing(const QString &path, const QStringList &nameFilters,
                                        IteratorFlags flags = IteratorFlag::Default);
 
-    QDirListing(QDirListing &&);
-    QDirListing &operator=(QDirListing &&);
+    QDirListing(QDirListing &&other) noexcept
+        : d{std::exchange(other.d, nullptr)} {}
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QDirListing)
+
+    void swap(QDirListing &other) noexcept { qt_ptr_swap(d, other.d); }
 
     Q_CORE_EXPORT ~QDirListing();
 
@@ -137,7 +140,7 @@ private:
     Q_CORE_EXPORT QDirListing(const QString &path, const QStringList &nameFilters, uint dirFilters,
                               uint qdirIteratorFlags = 0); // QDirIterator::NoIteratorFlags == 0x0
 
-    std::unique_ptr<QDirListingPrivate> d;
+    QDirListingPrivate *d;
     friend class QDir;
     friend class QDirPrivate;
     friend class QDirIteratorPrivate;
