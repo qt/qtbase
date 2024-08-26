@@ -4601,6 +4601,7 @@ void tst_QAccessibility::focusChild()
         QAccessibleInterface *iface = nullptr;
 
         comboBox.setFocus();
+        QTRY_VERIFY(comboBox.hasFocus());
         {
             QAccessibleEvent focusEvent(&comboBox, QAccessible::Focus);
             QVERIFY(QTestAccessibility::containsEvent(&focusEvent));
@@ -4610,6 +4611,7 @@ void tst_QAccessibility::focusChild()
         QCOMPARE(iface->focusChild(), nullptr);
 
         editableComboBox.setFocus();
+        QTRY_VERIFY(editableComboBox.hasFocus());
         // Qt updates about the editable combobox, not the lineedit, as the
         // combobox is the lineedit's focus proxy.
         {
