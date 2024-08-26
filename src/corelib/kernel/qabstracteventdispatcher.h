@@ -100,7 +100,7 @@ class Q_CORE_EXPORT QAbstractEventDispatcherV2 : public QAbstractEventDispatcher
 
 public:
     explicit QAbstractEventDispatcherV2(QObject *parent = nullptr);
-    ~QAbstractEventDispatcherV2();
+    ~QAbstractEventDispatcherV2() override;
 
     // new virtuals
     virtual void registerTimer(Qt::TimerId timerId, Duration interval, Qt::TimerType timerType,
@@ -115,12 +115,11 @@ protected:
 
 private:
     // final overrides from V1
-    virtual void registerTimer(int timerId, qint64 interval, Qt::TimerType timerType,
-                               QObject *object) override final;
-    virtual bool unregisterTimer(int timerId) override final;
-    virtual QList<TimerInfo> registeredTimers(QObject *object) const override final;
-
-    virtual int remainingTime(int timerId) override final;
+    void registerTimer(int timerId, qint64 interval, Qt::TimerType timerType,
+                       QObject *object) final;
+    bool unregisterTimer(int timerId) final;
+    QList<TimerInfo> registeredTimers(QObject *object) const final;
+    int remainingTime(int timerId) final;
 };
 #else
 using QAbstractEventDispatcherV2 = QAbstractEventDispatcher;
