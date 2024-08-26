@@ -58,18 +58,17 @@ namespace QtPrivate {
     struct FunctorCallBase
     {
         template <typename R, typename Lambda>
-        static void call_internal(void **args, Lambda &&fn) noexcept(noexcept(fn()))
+        static void call_internal([[maybe_unused]] void **args, Lambda &&fn)
+            noexcept(std::is_nothrow_invocable_v<Lambda>)
         {
-            using SlotRet = decltype(fn());
-            if constexpr (std::is_void_v<R> || std::is_void_v<SlotRet>) {
-                Q_UNUSED(args);
+            if constexpr (std::is_void_v<R> || std::is_void_v<std::invoke_result_t<Lambda>>) {
+                std::forward<Lambda>(fn)();
             } else {
-                if (args[0]) {
-                    *reinterpret_cast<R *>(args[0]) = fn();
-                    return;
-                }
+                if (args[0])
+                    *reinterpret_cast<R *>(args[0]) = std::forward<Lambda>(fn)();
+                else
+                    [[maybe_unused]] auto r = std::forward<Lambda>(fn)();
             }
-            fn();
         }
     };
 
