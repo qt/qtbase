@@ -219,6 +219,8 @@ static bool isFatal(QtMsgType msgType)
     return false;
 }
 
+#ifndef Q_OS_WASM
+
 /*!
     Returns true if writing to \c stderr is supported.
 
@@ -229,8 +231,6 @@ static bool systemHasStderr()
 {
     return true;
 }
-
-#ifndef Q_OS_WASM
 
 /*!
     Returns true if writing to \c stderr will end up in a console/terminal visible to the user.
