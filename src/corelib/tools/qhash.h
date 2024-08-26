@@ -1030,49 +1030,62 @@ public:
     }
 
 private:
-    template <typename Fn> Key keyImpl(const T &value, Fn &&defaultFn) const noexcept
+    const Key *keyImpl(const T &value) const noexcept
     {
         if (d) {
             const_iterator i = begin();
             while (i != end()) {
                 if (i.value() == value)
-                    return i.key();
+                    return &i.key();
                 ++i;
             }
         }
 
-        return defaultFn();
+        return nullptr;
     }
 
 public:
     Key key(const T &value) const noexcept
     {
-        return keyImpl(value, [] { return Key(); });
+        if (auto *k = keyImpl(value))
+            return *k;
+        else
+            return Key();
     }
     Key key(const T &value, const Key &defaultKey) const noexcept
     {
-        return keyImpl(value, [&] { return defaultKey; });
+        if (auto *k = keyImpl(value))
+            return *k;
+        else
+            return defaultKey;
     }
 
 private:
-    template <typename K, typename Fn> T valueImpl(const K &key, Fn &&defaultValue) const noexcept
+    template <typename K>
+    T *valueImpl(const K &key) const noexcept
     {
         if (d) {
             Node *n = d->findNode(key);
             if (n)
-                return n->value;
+                return &n->value;
         }
-        return defaultValue();
+        return nullptr;
     }
 public:
     T value(const Key &key) const noexcept
     {
-        return valueImpl(key, [] { return T(); });
+        if (T *v = valueImpl(key))
+            return *v;
+        else
+            return T();
     }
 
     T value(const Key &key, const T &defaultValue) const noexcept
     {
-        return valueImpl(key, [&] { return defaultValue; });
+        if (T *v = valueImpl(key))
+            return *v;
+        else
+            return defaultValue;
     }
 
     T &operator[](const Key &key)
@@ -1392,11 +1405,17 @@ public:
     }
     T value(const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key) const noexcept
     {
-        return valueImpl(key, [] { return T(); });
+        if (auto *v = valueImpl(key))
+            return *v;
+        else
+            return T();
     }
     T value(const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key, const T &defaultValue) const noexcept
     {
-        return valueImpl(key, [&] { return defaultValue; });
+        if (auto *v = valueImpl(key))
+            return *v;
+        else
+            return defaultValue;
     }
     T &operator[](const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key)
     {
@@ -1681,50 +1700,63 @@ public:
     }
 
 private:
-    template <typename Fn> Key keyImpl(const T &value, Fn &&defaultValue) const noexcept
+    const Key *keyImpl(const T &value) const noexcept
     {
         if (d) {
             auto i = d->begin();
             while (i != d->end()) {
                 Chain *e = i.node()->value;
                 if (e->contains(value))
-                    return i.node()->key;
+                    return &i.node()->key;
                 ++i;
             }
         }
 
-        return defaultValue();
+        return nullptr;
     }
 public:
     Key key(const T &value) const noexcept
     {
-        return keyImpl(value, [] { return Key(); });
+        if (auto *k = keyImpl(value))
+            return *k;
+        else
+            return Key();
     }
     Key key(const T &value, const Key &defaultKey) const noexcept
     {
-        return keyImpl(value, [&] { return defaultKey; });
+        if (auto *k = keyImpl(value))
+            return *k;
+        else
+            return defaultKey;
     }
 
 private:
-    template <typename K, typename Fn> T valueImpl(const K &key, Fn &&defaultValue) const noexcept
+    template <typename K>
+    T *valueImpl(const K &key) const noexcept
     {
         if (d) {
             Node *n = d->findNode(key);
             if (n) {
                 Q_ASSERT(n->value);
-                return n->value->value;
+                return &n->value->value;
             }
         }
-        return defaultValue();
+        return nullptr;
     }
 public:
     T value(const Key &key) const noexcept
     {
-        return valueImpl(key, [] { return T(); });
+        if (auto *v = valueImpl(key))
+            return *v;
+        else
+            return T();
     }
     T value(const Key &key, const T &defaultValue) const noexcept
     {
-        return valueImpl(key, [&] { return defaultValue; });
+        if (auto *v = valueImpl(key))
+            return *v;
+        else
+            return defaultValue;
     }
 
     T &operator[](const Key &key)
@@ -2369,11 +2401,17 @@ public:
     }
     T value(const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key) const noexcept
     {
-        return valueImpl(key, [] { return T(); });
+        if (auto *v = valueImpl(key))
+            return *v;
+        else
+            return T();
     }
     T value(const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key, const T &defaultValue) const noexcept
     {
-        return valueImpl(key, [&] { return defaultValue; });
+        if (auto *v = valueImpl(key))
+            return *v;
+        else
+            return defaultValue;
     }
     T &operator[](const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key)
     {
