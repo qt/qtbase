@@ -8501,6 +8501,9 @@ void tst_QWidget::render_windowOpacity()
     painter.setOpacity(opacity);
     child.render(&painter);
     painter.end();
+#if defined(Q_OS_WIN) && defined(Q_PROCESSOR_ARM_64)
+    QEXPECT_FAIL("", "QTBUG-128371", Abort);
+#endif
     QCOMPARE(result, expected);
     }
 
