@@ -1522,6 +1522,11 @@ uint QChar::toLower(uint ucs4) noexcept
 
     Returns the uppercase equivalent if the character is lowercase or titlecase;
     otherwise returns the character itself.
+
+    \note This function also returns the original character in the rare case of
+    the uppercase form of the character requiring two or more characters.
+
+    \sa QString::toUpper()
 */
 
 /*!
@@ -1529,6 +1534,13 @@ uint QChar::toLower(uint ucs4) noexcept
     Returns the uppercase equivalent of the UCS-4-encoded character specified
     by \a ucs4 if the character is lowercase or titlecase; otherwise returns
     the character itself.
+
+    \note This function also returns the original character in the rare case of
+    the uppercase form of the character requiring two or more characters.
+
+    \note Before Qt 6, this function took a \c uint argument and returned \c uint.
+
+    \sa QString::toUpper()
 */
 uint QChar::toUpper(uint ucs4) noexcept
 {
