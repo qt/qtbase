@@ -2,8 +2,8 @@
 // Copyright (C) 2024 Ahmad Samir <a.samirh78@gmail.com>
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#ifndef QDILISTING_H
-#define QDILISTING_H
+#ifndef QDIRLISTING_H
+#define QDIRLISTING_H
 
 #include <QtCore/qfiledevice.h>
 #include <QtCore/qflags.h>
@@ -148,4 +148,4 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QDirListing::IteratorFlags)
 
 QT_END_NAMESPACE
 
-#endif // QDILISTING_H
+#endif // QDIRLISTING_H
