@@ -521,7 +521,7 @@ public:
     static QMetaType fromName(QByteArrayView name);
 private:
     friend bool comparesEqual(const QMetaType &lhs,
-                              const QMetaType &rhs) noexcept
+                              const QMetaType &rhs)
     {
         if (lhs.d_ptr == rhs.d_ptr)
             return true;
@@ -532,7 +532,7 @@ private:
         const int bId = rhs.id();
         return aId == bId;
     }
-    Q_DECLARE_EQUALITY_COMPARABLE(QMetaType)
+    Q_DECLARE_EQUALITY_COMPARABLE_NON_NOEXCEPT(QMetaType)
 #ifndef QT_NO_DEBUG_STREAM
 private:
     friend Q_CORE_EXPORT QDebug operator<<(QDebug d, QMetaType m);
