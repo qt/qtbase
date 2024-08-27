@@ -56,11 +56,11 @@ public:
 
 private:
     friend bool comparesEqual(const ResultIteratorBase &lhs,
-                              const ResultIteratorBase &rhs) noexcept
+                              const ResultIteratorBase &rhs)
     {
         return (lhs.mapIterator == rhs.mapIterator && lhs.m_vectorIndex == rhs.m_vectorIndex);
     }
-    Q_DECLARE_EQUALITY_COMPARABLE(ResultIteratorBase)
+    Q_DECLARE_EQUALITY_COMPARABLE_NON_NOEXCEPT(ResultIteratorBase)
 protected:
     QMap<int, ResultItem>::const_iterator mapIterator;
     int m_vectorIndex;
