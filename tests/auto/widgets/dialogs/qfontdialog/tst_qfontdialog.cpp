@@ -44,6 +44,7 @@ private slots:
 #ifndef QT_NO_STYLE_STYLESHEET
     void qtbug_41513_stylesheetStyle();
 #endif
+    void noCrashWhenParentIsDeleted();
 
     void hideNativeByDestruction();
 
@@ -210,6 +211,37 @@ void tst_QFontDialog::qtbug_41513_stylesheetStyle()
     qApp->setStyleSheet(QString());
 }
 #endif // QT_NO_STYLE_STYLESHEET
+
+void tst_QFontDialog::noCrashWhenParentIsDeleted()
+{
+    {
+        QPointer<QWidget> mainWindow = new QWidget();
+        QTimer::singleShot(1000, mainWindow, [mainWindow]
+                           { if (mainWindow.get()) mainWindow->deleteLater(); });
+        bool accepted = false;
+        const QFont testFont = QFont(QStringLiteral("QtsSpecialTestFont1"));
+        QFontDialog::getFont(&accepted, testFont,
+                             mainWindow.get(),
+                             QLatin1String("QFontDialog - crash parent test"),
+                             QFontDialog::DontUseNativeDialog);
+        QVERIFY(!accepted);
+        QVERIFY(!mainWindow.get());
+    }
+
+    {
+        QPointer<QWidget> mainWindow = new QWidget();
+        QTimer::singleShot(1000, mainWindow, [mainWindow]
+                           { if (mainWindow.get()) mainWindow->deleteLater(); });
+        bool accepted = false;
+        const QFont testFont = QFont(QStringLiteral("QtsSpecialTestFont2"));
+        QFontDialog::getFont(&accepted, testFont,
+                             mainWindow.get(),
+                             QLatin1String("QFontDialog - crash parent test"),
+                             QFontDialog::NoButtons | QFontDialog::DontUseNativeDialog);
+        QVERIFY(accepted);
+        QVERIFY(!mainWindow.get());
+    }
+}
 
 void tst_QFontDialog::testNonStandardFontSize()
 {
