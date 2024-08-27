@@ -475,7 +475,7 @@ QJsonValue QJsonArray::operator[](qsizetype i) const
     return at(i);
 }
 
-bool comparesEqual(const QJsonArray &lhs, const QJsonArray &rhs) noexcept
+bool comparesEqual(const QJsonArray &lhs, const QJsonArray &rhs)
 {
     if (lhs.a == rhs.a)
         return true;
@@ -494,7 +494,7 @@ bool comparesEqual(const QJsonArray &lhs, const QJsonArray &rhs) noexcept
     return true;
 }
 
-bool comparesEqual(const QJsonArray &lhs, const QJsonValue &rhs) noexcept
+bool comparesEqual(const QJsonArray &lhs, const QJsonValue &rhs)
 {
     return lhs == rhs.toArray();
 }

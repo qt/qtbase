@@ -100,8 +100,8 @@ public:
 
 private:
     friend Q_CORE_EXPORT bool comparesEqual(const QJsonValue &lhs,
-                                            const QJsonValue &rhs) noexcept;
-    Q_DECLARE_EQUALITY_COMPARABLE(QJsonValue)
+                                            const QJsonValue &rhs);
+    Q_DECLARE_EQUALITY_COMPARABLE_NON_NOEXCEPT(QJsonValue)
 
     // avoid implicit conversions from char * to bool
     QJsonValue(const void *) = delete;
@@ -157,17 +157,17 @@ public:
 
 protected:
     friend bool comparesEqual(const QJsonValueConstRef &lhs,
-                              const QJsonValueConstRef &rhs) noexcept
+                              const QJsonValueConstRef &rhs)
     {
         return comparesEqual(concrete(lhs), concrete(rhs));
     }
     friend bool comparesEqual(const QJsonValueConstRef &lhs,
-                              const QJsonValue &rhs) noexcept
+                              const QJsonValue &rhs)
     {
         return comparesEqual(concrete(lhs), rhs);
     }
-    Q_DECLARE_EQUALITY_COMPARABLE(QJsonValueConstRef)
-    Q_DECLARE_EQUALITY_COMPARABLE(QJsonValueConstRef, QJsonValue)
+    Q_DECLARE_EQUALITY_COMPARABLE_NON_NOEXCEPT(QJsonValueConstRef)
+    Q_DECLARE_EQUALITY_COMPARABLE_NON_NOEXCEPT(QJsonValueConstRef, QJsonValue)
 
     Q_CORE_EXPORT static QJsonValue::Type
     concreteType(QJsonValueConstRef self) noexcept Q_DECL_PURE_FUNCTION;
@@ -280,18 +280,16 @@ public:
 #endif
 
 private:
-    friend bool comparesEqual(const QJsonValueRef &lhs,
-                              const QJsonValueRef &rhs) noexcept
+    friend bool comparesEqual(const QJsonValueRef &lhs, const QJsonValueRef &rhs)
     {
         return comparesEqual(QJsonValue(lhs), QJsonValue(rhs));
     }
-    friend bool comparesEqual(const QJsonValueRef &lhs,
-                              const QJsonValueConstRef &rhs) noexcept
+    friend bool comparesEqual(const QJsonValueRef &lhs, const QJsonValueConstRef &rhs)
     {
         return comparesEqual(QJsonValue(lhs), QJsonValue(rhs));
     }
-    Q_DECLARE_EQUALITY_COMPARABLE(QJsonValueRef)
-    Q_DECLARE_EQUALITY_COMPARABLE(QJsonValueRef, QJsonValueConstRef)
+    Q_DECLARE_EQUALITY_COMPARABLE_NON_NOEXCEPT(QJsonValueRef)
+    Q_DECLARE_EQUALITY_COMPARABLE_NON_NOEXCEPT(QJsonValueRef, QJsonValueConstRef)
 
     QJsonValue toValue() const;
 #else

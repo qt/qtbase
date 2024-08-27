@@ -831,7 +831,7 @@ const QJsonValue QJsonValue::operator[](qsizetype i) const
 
     Returns \c true if the \a lhs value is equal to \a rhs value, \c false otherwise.
 */
-bool comparesEqual(const QJsonValue &lhs, const QJsonValue &rhs) noexcept
+bool comparesEqual(const QJsonValue &lhs, const QJsonValue &rhs)
 {
     if (lhs.value.type() != rhs.value.type()) {
         if (lhs.isDouble() && rhs.isDouble()) {
