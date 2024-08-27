@@ -2125,6 +2125,11 @@ void QWindowPrivate::destroy()
     resizeEventPending = true;
     receivedExpose = false;
     exposed = false;
+
+    // Position set via setFramePosition will have propagated back to
+    // our geometry member as client geometry, so when creating the
+    // window again we need to ensure the policy matches that.
+    positionPolicy = QWindowPrivate::WindowFrameExclusive;
 }
 
 /*!
