@@ -408,7 +408,7 @@ bool comparesEqual(const QStorageInfo &lhs, const QStorageInfo &rhs) noexcept
 {
     if (lhs.d == rhs.d)
         return true;
-    return lhs.device() == rhs.device() && lhs.rootPath() == rhs.rootPath();
+    return lhs.d->device == rhs.d->device && lhs.d->rootPath == rhs.d->rootPath;
 }
 
 #ifndef QT_NO_DEBUG_STREAM
