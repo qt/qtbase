@@ -1159,7 +1159,7 @@ QEasingCurve::~QEasingCurve()
     equal; otherwise returns \c false.
     It will also compare the properties of the curves.
  */
-bool comparesEqual(const QEasingCurve &lhs, const QEasingCurve &rhs) noexcept
+bool comparesEqual(const QEasingCurve &lhs, const QEasingCurve &rhs)
 {
     bool res = lhs.d_ptr->func == rhs.d_ptr->func
             && lhs.d_ptr->type == rhs.d_ptr->type;
