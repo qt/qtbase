@@ -11,15 +11,9 @@ QT_USE_NAMESPACE
 
 #include "qmetatype.h"
 
-// keep in sync with version in header
 int QMetaType::id() const
 {
-    if (d_ptr) {
-        if (int id = d_ptr->typeId.loadRelaxed())
-            return id;
-        return idHelper();
-    }
-    return 0;
+    return registerHelper();
 }
 
 #endif // QT_CORE_REMOVED_SINCE(6, 1)

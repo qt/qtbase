@@ -471,7 +471,6 @@ public:
     // unused int parameter is used to avoid ODR violation
     int id(int = 0) const
     {
-        // keep in sync with the version in removed_api.cpp
         return registerHelper();
     }
 #endif
@@ -779,7 +778,6 @@ private:
     static int registerHelper(const QtPrivate::QMetaTypeInterface *iface);
     int registerHelper() const
     {
-        // keep in sync with the QMetaType::id() version in removed_api.cpp
         if (d_ptr) {
             if (int id = d_ptr->typeId.loadRelaxed())
                 return id;
