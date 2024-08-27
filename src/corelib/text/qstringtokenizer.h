@@ -72,10 +72,6 @@ public:
         iterator& operator++() { advance(); return *this; }
         iterator  operator++(int) { auto tmp = *this; advance(); return tmp; }
 
-        friend constexpr bool operator==(const iterator &lhs, const iterator &rhs) noexcept
-        { return lhs.current.ok == rhs.current.ok && (!lhs.current.ok || (Q_ASSERT(lhs.tokenizer == rhs.tokenizer), lhs.current.state == rhs.current.state)); }
-        friend constexpr bool operator!=(const iterator &lhs, const iterator &rhs) noexcept
-        { return !operator==(lhs, rhs); }
         friend constexpr bool operator==(const iterator &lhs, sentinel) noexcept
         { return !lhs.current.ok; }
         friend constexpr bool operator!=(const iterator &lhs, sentinel) noexcept
