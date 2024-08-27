@@ -114,14 +114,14 @@ public:
 
 private:
     friend bool comparesEqual(const QArgumentType &lhs,
-                              const QArgumentType &rhs) noexcept
+                              const QArgumentType &rhs)
     {
         if (lhs._type && rhs._type)
             return lhs._type == rhs._type;
         else
             return lhs.name() == rhs.name();
     }
-    Q_DECLARE_EQUALITY_COMPARABLE(QArgumentType)
+    Q_DECLARE_EQUALITY_COMPARABLE_NON_NOEXCEPT(QArgumentType)
 
     int _type;
     QByteArray _name;
