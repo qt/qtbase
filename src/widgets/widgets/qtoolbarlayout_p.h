@@ -38,7 +38,7 @@ public:
     bool customWidget;
 };
 
-class Q_AUTOTEST_EXPORT QToolBarLayout : public QLayout
+class QToolBarLayout : public QLayout
 {
     Q_OBJECT
 
