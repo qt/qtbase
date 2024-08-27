@@ -10453,10 +10453,23 @@ bool QWidget::hasHeightForWidth() const
 
 QWidget *QWidget::childAt(const QPoint &p) const
 {
+    return d_func()->childAt_helper(QPointF(p), false);
+}
+
+/*!
+    \overload
+    \since 6.8
+
+    Returns the visible child widget at point \a p in the widget's own
+    coordinate system.
+*/
+
+QWidget *QWidget::childAt(const QPointF &p) const
+{
     return d_func()->childAt_helper(p, false);
 }
 
-QWidget *QWidgetPrivate::childAt_helper(const QPoint &p, bool ignoreChildrenInDestructor) const
+QWidget *QWidgetPrivate::childAt_helper(const QPointF &p, bool ignoreChildrenInDestructor) const
 {
     if (children.isEmpty())
         return nullptr;
@@ -10466,7 +10479,7 @@ QWidget *QWidgetPrivate::childAt_helper(const QPoint &p, bool ignoreChildrenInDe
     return childAtRecursiveHelper(p, ignoreChildrenInDestructor);
 }
 
-QWidget *QWidgetPrivate::childAtRecursiveHelper(const QPoint &p, bool ignoreChildrenInDestructor) const
+QWidget *QWidgetPrivate::childAtRecursiveHelper(const QPointF &p, bool ignoreChildrenInDestructor) const
 {
     for (int i = children.size() - 1; i >= 0; --i) {
         QWidget *child = qobject_cast<QWidget *>(children.at(i));
@@ -10476,7 +10489,7 @@ QWidget *QWidgetPrivate::childAtRecursiveHelper(const QPoint &p, bool ignoreChil
         }
 
         // Map the point 'p' from parent coordinates to child coordinates.
-        QPoint childPoint = p;
+        QPointF childPoint = p;
         childPoint -= child->data->crect.topLeft();
 
         // Check if the point hits the child.

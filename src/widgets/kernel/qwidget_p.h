@@ -420,9 +420,9 @@ public:
     bool setMinimumSize_helper(int &minw, int &minh);
     bool setMaximumSize_helper(int &maxw, int &maxh);
     void setConstraints_sys();
-    bool pointInsideRectAndMask(const QPoint &) const;
-    QWidget *childAt_helper(const QPoint &, bool) const;
-    QWidget *childAtRecursiveHelper(const QPoint &p, bool) const;
+    bool pointInsideRectAndMask(const QPointF &) const;
+    QWidget *childAt_helper(const QPointF &, bool) const;
+    QWidget *childAtRecursiveHelper(const QPointF &p, bool) const;
     void updateGeometry_helper(bool forceUpdate);
 
     void getLayoutItemMargins(int *left, int *top, int *right, int *bottom) const;
@@ -885,11 +885,14 @@ inline void QWidgetPrivate::setSharedPainter(QPainter *painter)
     x->sharedPainter = painter;
 }
 
-inline bool QWidgetPrivate::pointInsideRectAndMask(const QPoint &p) const
+inline bool QWidgetPrivate::pointInsideRectAndMask(const QPointF &p) const
 {
     Q_Q(const QWidget);
-    return q->rect().contains(p) && (!extra || !extra->hasMask || q->testAttribute(Qt::WA_MouseNoMask)
-                                     || extra->mask.contains(p));
+    // Use QRectF::contains so that (0, -0.1) isn't in, with p.toPoint() it would be
+    // The adjusted matches QRect semantics: (160,160) isn't contained in QRect(0, 0, 160, 160)
+    return QRectF(q->rect().adjusted(0, 0, -1, -1)).contains(p)
+            && (!extra || !extra->hasMask || q->testAttribute(Qt::WA_MouseNoMask)
+                || extra->mask.contains(p.toPoint() /* incorrect for the -0.1 case */));
 }
 
 inline QWidgetRepaintManager *QWidgetPrivate::maybeRepaintManager() const
