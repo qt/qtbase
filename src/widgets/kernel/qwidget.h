@@ -624,6 +624,7 @@ public:
     static QWidget *find(WId);
     inline QWidget *childAt(int x, int y) const;
     QWidget *childAt(const QPoint &p) const;
+    QWidget *childAt(const QPointF &p) const;
 
     void setAttribute(Qt::WidgetAttribute, bool on = true);
     inline bool testAttribute(Qt::WidgetAttribute) const;
@@ -796,7 +797,7 @@ template <> inline const QWidget *qobject_cast<const QWidget*>(const QObject *o)
 #endif // !Q_QDOC
 
 inline QWidget *QWidget::childAt(int ax, int ay) const
-{ return childAt(QPoint(ax, ay)); }
+{ return childAt(QPointF(ax, ay)); }
 
 inline Qt::WindowType QWidget::windowType() const
 { return static_cast<Qt::WindowType>((data->window_flags & Qt::WindowType_Mask).toInt()); }

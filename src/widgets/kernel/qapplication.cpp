@@ -2253,8 +2253,8 @@ bool QApplicationPrivate::modalState()
 /*
    \internal
 */
-QWidget *QApplicationPrivate::pickMouseReceiver(QWidget *candidate, const QPoint &windowPos,
-                                                QPoint *pos, QEvent::Type type,
+QWidget *QApplicationPrivate::pickMouseReceiver(QWidget *candidate, const QPointF &windowPos,
+                                                QPointF *pos, QEvent::Type type,
                                                 Qt::MouseButtons buttons, QWidget *buttonDown,
                                                 QWidget *alienWidget)
 {

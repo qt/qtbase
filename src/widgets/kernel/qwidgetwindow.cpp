@@ -450,7 +450,7 @@ void QWidgetWindow::handleEnterLeaveEvent(QEvent *event)
         }
     } else {
         const QEnterEvent *ee = static_cast<QEnterEvent *>(event);
-        QWidget *child = m_widget->childAt(ee->position().toPoint());
+        QWidget *child = m_widget->childAt(ee->position());
         QWidget *receiver = child ? child : m_widget.data();
         QWidget *leave = nullptr;
         if (QApplicationPrivate::inPopupMode() && receiver == m_widget
@@ -513,7 +513,7 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
         if (activePopupWidget != m_widget)
             mapped = activePopupWidget->mapFromGlobal(event->globalPosition());
         bool releaseAfter = false;
-        QWidget *popupChild  = activePopupWidget->childAt(mapped.toPoint());
+        QWidget *popupChild = activePopupWidget->childAt(mapped);
 
         if (activePopupWidget != qt_popup_down) {
             qt_button_down = nullptr;
@@ -601,8 +601,8 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
         return;
 
     // which child should have it?
-    QWidget *widget = m_widget->childAt(event->position().toPoint());
-    QPoint mapped = event->position().toPoint();
+    QWidget *widget = m_widget->childAt(event->position());
+    QPointF mapped = event->position();
 
     if (!widget)
         widget = m_widget;
@@ -611,7 +611,7 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
     if (event->type() == QEvent::MouseButtonPress && initialPress)
         qt_button_down = widget;
 
-    QWidget *receiver = QApplicationPrivate::pickMouseReceiver(m_widget, event->scenePosition().toPoint(), &mapped, event->type(), event->buttons(),
+    QWidget *receiver = QApplicationPrivate::pickMouseReceiver(m_widget, event->scenePosition(), &mapped, event->type(), event->buttons(),
                                                                qt_button_down, widget);
     if (!receiver)
         return;
@@ -637,7 +637,7 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
     if (event->type() == QGuiApplicationPrivate::contextMenuEventType()
         && event->button() == Qt::RightButton
         && m_widget->rect().contains(event->position().toPoint())) {
-        QContextMenuEvent e(QContextMenuEvent::Mouse, mapped, event->globalPosition().toPoint(), event->modifiers());
+        QContextMenuEvent e(QContextMenuEvent::Mouse, mapped.toPoint(), event->globalPosition().toPoint(), event->modifiers());
         QGuiApplication::forwardEvent(receiver, &e, event);
         if (e.isAccepted())
             event->accept();
@@ -867,7 +867,7 @@ void QWidgetWindow::handleWheelEvent(QWheelEvent *event)
     }
 
     // which child should have it?
-    QWidget *widget = rootWidget->childAt(pos.toPoint());
+    QWidget *widget = rootWidget->childAt(pos);
 
     if (!widget)
         widget = rootWidget;
@@ -1076,7 +1076,7 @@ void QWidgetWindow::handleTabletEvent(QTabletEvent *event)
     QWidget *widget = qt_tablet_target;
 
     if (!widget) {
-        widget = m_widget->childAt(event->position().toPoint());
+        widget = m_widget->childAt(event->position());
         if (!widget)
             widget = m_widget;
         if (event->type() == QEvent::TabletPress)
