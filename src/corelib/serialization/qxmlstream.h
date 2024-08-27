@@ -33,6 +33,14 @@ public:
 
     operator QStringView() const noexcept { return QStringView(m_string.data(), m_string.size); }
     qsizetype size() const noexcept { return m_string.size; }
+    bool isNull() const noexcept { return m_string.isNull(); }
+
+private:
+    friend bool comparesEqual(const QXmlString &lhs, const QXmlString &rhs) noexcept
+    {
+        return QStringView(lhs) == QStringView(rhs);
+    }
+    Q_DECLARE_EQUALITY_COMPARABLE(QXmlString)
 };
 
 }
