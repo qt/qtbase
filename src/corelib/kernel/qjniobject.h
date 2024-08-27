@@ -799,9 +799,9 @@ public:
     }
 
 private:
-    friend bool comparesEqual(const JObject &lhs, const JObject &rhs) noexcept
+    friend bool comparesEqual(const JObject &lhs, const JObject &rhs)
     { return lhs.m_object == rhs.m_object; }
-    Q_DECLARE_EQUALITY_COMPARABLE_LITERAL_TYPE(JObject);
+    Q_DECLARE_EQUALITY_COMPARABLE(JObject);
 };
 }
 
