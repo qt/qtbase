@@ -2826,7 +2826,13 @@ bool QMetaType::isRegistered(int type)
     return interfaceForTypeNoWarning(type) != nullptr;
 }
 
-template <bool tryNormalizedType>
+namespace {
+enum NormalizeTypeMode {
+    DontNormalizeType,
+    TryNormalizeType
+};
+}
+template <NormalizeTypeMode tryNormalizedType>
 static inline int qMetaTypeTypeImpl(const char *typeName, int length)
 {
     if (!length)
@@ -2869,7 +2875,7 @@ static inline int qMetaTypeTypeImpl(const char *typeName, int length)
 */
 Q_CORE_EXPORT int qMetaTypeTypeInternal(const char *typeName)
 {
-    return qMetaTypeTypeImpl</*tryNormalizedType=*/false>(typeName, int(qstrlen(typeName)));
+    return qMetaTypeTypeImpl<DontNormalizeType>(typeName, int(qstrlen(typeName)));
 }
 
 /*!
@@ -3039,7 +3045,7 @@ QMetaType QMetaType::underlyingType() const
  */
 QMetaType QMetaType::fromName(QByteArrayView typeName)
 {
-    return QMetaType(qMetaTypeTypeImpl</*tryNormalizedType=*/true>(typeName.data(), typeName.size()));
+    return QMetaType(qMetaTypeTypeImpl<TryNormalizeType>(typeName.data(), typeName.size()));
 }
 
 /*!
