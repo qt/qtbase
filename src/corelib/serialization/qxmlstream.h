@@ -78,10 +78,12 @@ private:
     friend bool comparesEqual(const QXmlStreamAttribute &lhs,
                               const QXmlStreamAttribute &rhs) noexcept
     {
-        return (lhs.value() == rhs.value()
-                && (lhs.namespaceUri().isNull() ? (lhs.qualifiedName() == rhs.qualifiedName())
-                                                : (lhs.namespaceUri() == rhs.namespaceUri()
-                                                   && lhs.name() == rhs.name())));
+        if (lhs.m_value != rhs.m_value)
+            return false;
+        if (lhs.m_namespaceUri.isNull())
+            return lhs.m_qualifiedName == rhs.m_qualifiedName;
+        return lhs.m_namespaceUri == rhs.m_namespaceUri
+            && lhs.m_name == rhs.m_name;
     }
     Q_DECLARE_EQUALITY_COMPARABLE(QXmlStreamAttribute)
 };
@@ -140,7 +142,8 @@ private:
     friend bool comparesEqual(const QXmlStreamNamespaceDeclaration &lhs,
                               const QXmlStreamNamespaceDeclaration &rhs) noexcept
     {
-        return (lhs.prefix() == rhs.prefix() && lhs.namespaceUri() == rhs.namespaceUri());
+        return lhs.m_prefix == rhs.m_prefix
+            && lhs.m_namespaceUri == rhs.m_namespaceUri;
     }
     Q_DECLARE_EQUALITY_COMPARABLE(QXmlStreamNamespaceDeclaration)
 };
@@ -168,8 +171,8 @@ private:
     friend bool comparesEqual(const QXmlStreamNotationDeclaration &lhs,
                               const QXmlStreamNotationDeclaration &rhs) noexcept
     {
-        return (lhs.name() == rhs.name() && lhs.systemId() == rhs.systemId()
-                && lhs.publicId() == rhs.publicId());
+        return lhs.m_name == rhs.m_name && lhs.m_systemId == rhs.m_systemId
+                && lhs.m_publicId == rhs.m_publicId;
     }
     Q_DECLARE_EQUALITY_COMPARABLE(QXmlStreamNotationDeclaration)
 };
@@ -200,11 +203,11 @@ private:
     friend bool comparesEqual(const QXmlStreamEntityDeclaration &lhs,
                               const QXmlStreamEntityDeclaration &rhs) noexcept
     {
-        return (lhs.name() == rhs.name()
-                && lhs.notationName() == rhs.notationName()
-                && lhs.systemId() == rhs.systemId()
-                && lhs.publicId() == rhs.publicId()
-                && lhs.value() == rhs.value());
+        return lhs.m_name == rhs.m_name
+            && lhs.m_notationName == rhs.m_notationName
+            && lhs.m_systemId == rhs.m_systemId
+            && lhs.m_publicId == rhs.m_publicId
+            && lhs.m_value == rhs.m_value;
     }
     Q_DECLARE_EQUALITY_COMPARABLE(QXmlStreamEntityDeclaration)
 };
