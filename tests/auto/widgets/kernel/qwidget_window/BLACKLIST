@@ -16,6 +16,3 @@ android
 # QTBUG-96270
 [tst_paintEventOnSecondShow]
 opensuse
-
-[tst_QWidget_window::mouseMoveWithPopup]
-ci
