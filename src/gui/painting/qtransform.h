@@ -304,7 +304,7 @@ inline QTransform &QTransform::operator-=(qreal num)
 
 QT_WARNING_POP
 
-inline bool qFuzzyCompare(const QTransform& t1, const QTransform& t2)
+inline bool qFuzzyCompare(const QTransform& t1, const QTransform& t2) noexcept
 {
     return qFuzzyCompare(t1.m11(), t2.m11())
         && qFuzzyCompare(t1.m12(), t2.m12())

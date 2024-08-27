@@ -735,7 +735,7 @@ QMatrix4x4 operator/(const QMatrix4x4& matrix, float divisor)
     Returns \c true if \a m1 and \a m2 are equal, allowing for a small
     fuzziness factor for floating-point comparisons; false otherwise.
 */
-bool qFuzzyCompare(const QMatrix4x4& m1, const QMatrix4x4& m2)
+bool qFuzzyCompare(const QMatrix4x4& m1, const QMatrix4x4& m2) noexcept
 {
     return qFuzzyCompare(m1.m[0][0], m2.m[0][0]) &&
             qFuzzyCompare(m1.m[0][1], m2.m[0][1]) &&

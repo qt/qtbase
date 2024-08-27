@@ -93,7 +93,7 @@ public:
     friend QMatrix4x4 operator*(const QMatrix4x4& matrix, float factor);
     friend Q_GUI_EXPORT QMatrix4x4 operator/(const QMatrix4x4& matrix, float divisor);
 
-    friend Q_GUI_EXPORT bool qFuzzyCompare(const QMatrix4x4& m1, const QMatrix4x4& m2);
+    friend Q_GUI_EXPORT bool qFuzzyCompare(const QMatrix4x4& m1, const QMatrix4x4& m2) noexcept;
 
 #ifndef QT_NO_VECTOR3D
     void scale(const QVector3D& vector);
