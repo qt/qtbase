@@ -713,7 +713,7 @@ public:
 
 inline bool QVariant::isValid() const
 {
-    return d.type().isValid();
+    return d.type().isValid(QT6_CALL_NEW_OVERLOAD);
 }
 
 #ifndef QT_NO_DATASTREAM

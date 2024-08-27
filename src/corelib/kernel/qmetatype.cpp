@@ -512,10 +512,6 @@ const char *QtMetaTypePrivate::typedefNameForType(const QtPrivate::QMetaTypeInte
 
     \sa isRegistered()
 */
-bool QMetaType::isValid() const
-{
-    return d_ptr;
-}
 
 /*!
     \fn bool QMetaType::isRegistered() const
@@ -527,10 +523,6 @@ bool QMetaType::isValid() const
 
     \sa qRegisterMetaType(), isValid()
 */
-bool QMetaType::isRegistered() const
-{
-    return d_ptr && d_ptr->typeId.loadRelaxed();
-}
 
 /*!
     \fn int QMetaType::id() const

@@ -457,8 +457,12 @@ public:
     explicit constexpr QMetaType(const QtPrivate::QMetaTypeInterface *d) : d_ptr(d) {}
     constexpr QMetaType() = default;
 
+#if QT_CORE_REMOVED_SINCE(6, 9)
     bool isValid() const;
     bool isRegistered() const;
+#endif
+    constexpr bool isValid(QT6_DECL_NEW_OVERLOAD) const noexcept;
+    inline bool isRegistered(QT6_DECL_NEW_OVERLOAD) const noexcept;
     void registerType() const
     {
         // "register" is a reserved keyword
@@ -2638,6 +2642,16 @@ constexpr QMetaType QMetaType::fromType()
 {
     QtPrivate::checkTypeIsSuitableForMetaType<T>();
     return QMetaType(QtPrivate::qMetaTypeInterfaceForType<T>());
+}
+
+constexpr bool QMetaType::isValid(QT6_IMPL_NEW_OVERLOAD) const noexcept
+{
+    return d_ptr;
+}
+
+bool QMetaType::isRegistered(QT6_IMPL_NEW_OVERLOAD) const noexcept
+{
+    return d_ptr && d_ptr->typeId.loadRelaxed();
 }
 
 constexpr qsizetype QMetaType::sizeOf() const
