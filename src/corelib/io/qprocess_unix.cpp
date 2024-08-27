@@ -257,6 +257,20 @@ struct QChildProcess
         : d(d), argv(resolveExecutable(d->program), d->arguments),
           envp(d->environmentPrivate())
     {
+        // Open the working directory first, because this operation can fail.
+        // That way, if it does, we don't have anything to clean up.
+        if (!d->workingDirectory.isEmpty()) {
+            workingDirectory = opendirfd(QFile::encodeName(d->workingDirectory));
+            if (workingDirectory < 0) {
+                d->setErrorAndEmit(QProcess::FailedToStart, "chdir: "_L1 + qt_error_string());
+                d->cleanup();
+
+                // make sure our destructor does nothing
+                isUsingVfork = false;
+                return;
+            }
+        }
+
         // Block Unix signals, to ensure the user's handlers aren't run in the
         // child side and do something weird, especially if the handler and the
         // user of QProcess are completely different codebases.
@@ -268,15 +282,6 @@ struct QChildProcess
         // would be bad enough with regular fork(), but it's likely fatal with
         // vfork().
         disableThreadCancellations();
-
-        if (!d->workingDirectory.isEmpty()) {
-            workingDirectory = opendirfd(QFile::encodeName(d->workingDirectory));
-            if (workingDirectory < 0) {
-                d->setErrorAndEmit(QProcess::FailedToStart, "chdir: "_L1 + qt_error_string());
-                d->cleanup();
-            }
-        }
-
     }
     ~QChildProcess() noexcept(false)
     {
@@ -335,7 +340,7 @@ private:
     }
 
 #if defined(PTHREAD_CANCEL_DISABLE)
-    int oldstate;
+    int oldstate = PTHREAD_CANCEL_DISABLE;
     void disableThreadCancellations() noexcept
     {
         // the following is *not* noexcept, but it won't throw while disabling
@@ -343,8 +348,10 @@ private:
     }
     void restoreThreadCancellations() noexcept(false)
     {
-        // this doesn't touch errno
-        pthread_setcancelstate(oldstate, nullptr);
+        if (oldstate != PTHREAD_CANCEL_DISABLE) {
+            // this doesn't touch errno
+            pthread_setcancelstate(oldstate, nullptr);
+        }
     }
 #else
     void disableThreadCancellations() noexcept {}
