@@ -3379,6 +3379,9 @@ Qt::LayoutDirection QLocale::textDirection() const
   Otherwise the conversion may be done in a platform-dependent manner,
   with QString::toUpper() as a generic fallback.
 
+  \note In some cases the uppercase form of a string may be longer than the
+  original.
+
   \sa QString::toUpper()
 */
 QString QLocale::toUpper(const QString &str) const

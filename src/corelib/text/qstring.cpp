@@ -7009,7 +7009,10 @@ QString QString::toCaseFolded_helper(QString &str)
     \snippet qstring/main.cpp 81
 
     The case conversion will always happen in the 'C' locale. For
-    locale-dependent case folding use QLocale::toUpper()
+    locale-dependent case folding use QLocale::toUpper().
+
+    \note In some cases the uppercase form of a string may be longer than the
+    original.
 
     \sa toLower(), QLocale::toLower()
 */
