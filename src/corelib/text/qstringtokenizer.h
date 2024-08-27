@@ -11,8 +11,6 @@ QT_BEGIN_NAMESPACE
 
 template <typename, typename> class QStringBuilder;
 
-#define Q_STRINGTOKENIZER_USE_SENTINEL
-
 class QStringTokenizerBaseBase
 {
 protected:
@@ -48,14 +46,10 @@ public:
 
     class iterator;
     friend class iterator;
-#ifdef Q_STRINGTOKENIZER_USE_SENTINEL
     class sentinel {
         friend constexpr bool operator==(sentinel, sentinel) noexcept { return true; }
         friend constexpr bool operator!=(sentinel, sentinel) noexcept { return false; }
     };
-#else
-    using sentinel = iterator;
-#endif
     class iterator {
         const QStringTokenizerBase *tokenizer;
         next_result current;
@@ -82,7 +76,6 @@ public:
         { return lhs.current.ok == rhs.current.ok && (!lhs.current.ok || (Q_ASSERT(lhs.tokenizer == rhs.tokenizer), lhs.current.state == rhs.current.state)); }
         friend constexpr bool operator!=(const iterator &lhs, const iterator &rhs) noexcept
         { return !operator==(lhs, rhs); }
-#ifdef Q_STRINGTOKENIZER_USE_SENTINEL
         friend constexpr bool operator==(const iterator &lhs, sentinel) noexcept
         { return !lhs.current.ok; }
         friend constexpr bool operator!=(const iterator &lhs, sentinel) noexcept
@@ -91,7 +84,6 @@ public:
         { return !rhs.current.ok; }
         friend constexpr bool operator!=(sentinel, const iterator &rhs) noexcept
         { return !operator==(sentinel{}, rhs); }
-#endif
     private:
         void advance() {
             Q_ASSERT(current.ok);
@@ -110,9 +102,7 @@ public:
 
     [[nodiscard]] iterator begin() const noexcept { return iterator{*this}; }
     [[nodiscard]] iterator cbegin() const noexcept { return begin(); }
-    template <bool = std::is_same<iterator, sentinel>::value> // ODR protection
     [[nodiscard]] constexpr sentinel end() const noexcept { return {}; }
-    template <bool = std::is_same<iterator, sentinel>::value> // ODR protection
     [[nodiscard]] constexpr sentinel cend() const noexcept { return {}; }
 
 private:
