@@ -326,10 +326,6 @@ QFontDialog::~QFontDialog()
   \snippet code/src_gui_dialogs_qfontdialog.cpp 3
   In this example, if the user clicks OK the font they chose will be
   used, and if they click Cancel the original font is used.
-
-  \warning Do not delete \a parent during the execution of the dialog.
-           If you want to do this, you should create the dialog
-           yourself using one of the QFontDialog constructors.
 */
 QFont QFontDialog::getFont(bool *ok, const QFont &initial, QWidget *parent, const QString &title,
                            FontDialogOptions options)
@@ -352,10 +348,6 @@ QFont QFontDialog::getFont(bool *ok, const QFont &initial, QWidget *parent, cons
 
   Example:
   \snippet code/src_gui_dialogs_qfontdialog.cpp 4
-
-  \warning Do not delete \a parent during the execution of the dialog.
-           If you want to do this, you should create the dialog
-           yourself using one of the QFontDialog constructors.
 */
 QFont QFontDialog::getFont(bool *ok, QWidget *parent)
 {
@@ -366,17 +358,17 @@ QFont QFontDialog::getFont(bool *ok, QWidget *parent)
 QFont QFontDialogPrivate::getFont(bool *ok, const QFont &initial, QWidget *parent,
                                   const QString &title, QFontDialog::FontDialogOptions options)
 {
-    QFontDialog dlg(parent);
-    dlg.setOptions(options);
-    dlg.setCurrentFont(initial);
+    QAutoPointer<QFontDialog> dlg(new QFontDialog(parent));
+    dlg->setOptions(options);
+    dlg->setCurrentFont(initial);
     if (!title.isEmpty())
-        dlg.setWindowTitle(title);
+        dlg->setWindowTitle(title);
 
-    int ret = (dlg.exec() || (options & QFontDialog::NoButtons));
+    int ret = (dlg->exec() || (options & QFontDialog::NoButtons));
     if (ok)
         *ok = !!ret;
-    if (ret) {
-        return dlg.selectedFont();
+    if (ret && bool(dlg)) {
+        return dlg->selectedFont();
     } else {
         return initial;
     }

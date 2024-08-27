@@ -1149,7 +1149,7 @@ QString QInputDialog::getText(QWidget *parent, const QString &title, const QStri
     const int ret = dialog->exec();
     if (ok)
         *ok = !!ret;
-    if (ret) {
+    if (bool(dialog) && ret) {
         return dialog->textValue();
     } else {
         return QString();
@@ -1197,7 +1197,7 @@ QString QInputDialog::getMultiLineText(QWidget *parent, const QString &title, co
     const int ret = dialog->exec();
     if (ok)
         *ok = !!ret;
-    if (ret) {
+    if (bool(dialog) && ret) {
         return dialog->textValue();
     } else {
         return QString();
@@ -1242,7 +1242,7 @@ int QInputDialog::getInt(QWidget *parent, const QString &title, const QString &l
     const int ret = dialog->exec();
     if (ok)
         *ok = !!ret;
-    if (ret) {
+    if (bool(dialog) && ret) {
         return dialog->intValue();
     } else {
         return value;
@@ -1291,7 +1291,7 @@ double QInputDialog::getDouble(QWidget *parent, const QString &title, const QStr
     const int ret = dialog->exec();
     if (ok)
         *ok = !!ret;
-    if (ret) {
+    if (bool(dialog) && ret) {
         return dialog->doubleValue();
     } else {
         return value;
@@ -1344,7 +1344,7 @@ QString QInputDialog::getItem(QWidget *parent, const QString &title, const QStri
     const int ret = dialog->exec();
     if (ok)
         *ok = !!ret;
-    if (ret) {
+    if (bool(dialog) && ret) {
         return dialog->textValue();
     } else {
         return text;

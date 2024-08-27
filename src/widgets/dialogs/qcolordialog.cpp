@@ -2197,13 +2197,19 @@ void QColorDialog::open(QObject *receiver, const char *member)
 QColor QColorDialog::getColor(const QColor &initial, QWidget *parent, const QString &title,
                               ColorDialogOptions options)
 {
-    QColorDialog dlg(parent);
+    QAutoPointer<QColorDialog> dlg(new QColorDialog(parent));
     if (!title.isEmpty())
-        dlg.setWindowTitle(title);
-    dlg.setOptions(options);
-    dlg.setCurrentColor(initial);
-    dlg.exec();
-    return dlg.selectedColor();
+        dlg->setWindowTitle(title);
+    dlg->setOptions(options);
+    dlg->setCurrentColor(initial);
+
+    // If the dlg was deleted with a parent window,
+    // dlg == nullptr after leaving the exec().
+    dlg->exec();
+    if (bool(dlg))
+        return dlg->selectedColor();
+    else
+        return QColor();
 }
 
 /*!
