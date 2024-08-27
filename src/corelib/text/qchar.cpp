@@ -1588,6 +1588,11 @@ char32_t QChar::toLower(char32_t ucs4) noexcept
 
     Returns the uppercase equivalent if the character is lowercase or titlecase;
     otherwise returns the character itself.
+
+    \note This function also returns the original character in the rare case of
+    the uppercase form of the character requiring two or more characters.
+
+    \sa QString::toUpper()
 */
 
 /*!
@@ -1596,7 +1601,12 @@ char32_t QChar::toLower(char32_t ucs4) noexcept
     by \a ucs4 if the character is lowercase or titlecase; otherwise returns
     the character itself.
 
+    \note This function also returns the original character in the rare case of
+    the uppercase form of the character requiring two or more characters.
+
     \note Before Qt 6, this function took a \c uint argument and returned \c uint.
+
+    \sa QString::toUpper()
 */
 char32_t QChar::toUpper(char32_t ucs4) noexcept
 {
