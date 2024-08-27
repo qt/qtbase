@@ -31,8 +31,8 @@ public:
         m_string.swap(other.m_string);
     }
 
-    inline operator QStringView() const { return QStringView(m_string.data(), m_string.size); }
-    inline qsizetype size() const { return m_string.size; }
+    operator QStringView() const noexcept { return QStringView(m_string.data(), m_string.size); }
+    qsizetype size() const noexcept { return m_string.size; }
 };
 
 }
