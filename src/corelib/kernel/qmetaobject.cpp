@@ -646,10 +646,11 @@ bool QMetaObjectPrivate::methodMatch(const QMetaObject *m, const QMetaMethod &me
     int paramsIndex = data.parameters() + 1;
     for (int i = 0; i < argc; ++i) {
         uint typeInfo = m->d.data[paramsIndex + i];
-        if (int id = types[i].type()) {
-            if (id == QMetaType(ifaces[i]).id())
+        QMetaType mt = types[i].metaType();
+        if (mt.isValid()) {
+            if (mt == QMetaType(ifaces[i]))
                 continue;
-            if (id != typeFromTypeInfo(m, typeInfo))
+            if (mt.id() != typeFromTypeInfo(m, typeInfo))
                 return false;
         } else {
             if (types[i].name() == QMetaType(ifaces[i]).name())
@@ -3994,7 +3995,7 @@ int QMetaProperty::notifySignalIndex() const
     if (idx >= 0)
         return idx + m->methodOffset();
     // try 1-arg signal
-    QArgumentType argType(typeId());
+    QArgumentType argType(metaType());
     idx = QMetaObjectPrivate::indexOfMethodRelative<MethodSignal>(&m, signalName, 1, &argType);
     if (idx >= 0)
         return idx + m->methodOffset();

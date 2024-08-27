@@ -41,21 +41,19 @@ Q_CORE_EXPORT int qMetaTypeTypeInternal(const char *);
 class QArgumentType
 {
 public:
-    QArgumentType(int type)
-        : _type(type)
+    QArgumentType() = default;
+    QArgumentType(QMetaType metaType)
+        : _metaType(metaType)
     {}
     QArgumentType(const QByteArray &name)
-        : _type(qMetaTypeTypeInternal(name.constData())), _name(name)
+        : _metaType(QMetaType(qMetaTypeTypeInternal(name.constData()))), _name(name)
     {}
-    QArgumentType()
-        : _type(0)
-    {}
-    int type() const
-    { return _type; }
-    QByteArray name() const
+    QMetaType metaType() const noexcept
+    { return _metaType; }
+    QByteArrayView name() const noexcept
     {
-        if (_type && _name.isEmpty())
-            const_cast<QArgumentType *>(this)->_name = QMetaType(_type).name();
+        if (_name.isEmpty())
+            return metaType().name();
         return _name;
     }
 
@@ -63,14 +61,14 @@ private:
     friend bool comparesEqual(const QArgumentType &lhs,
                               const QArgumentType &rhs)
     {
-        if (lhs._type && rhs._type)
-            return lhs._type == rhs._type;
+        if (lhs.metaType().isValid() && rhs.metaType().isValid())
+            return lhs.metaType() == rhs.metaType();
         else
             return lhs.name() == rhs.name();
     }
     Q_DECLARE_EQUALITY_COMPARABLE_NON_NOEXCEPT(QArgumentType)
 
-    int _type;
+    QMetaType _metaType;
     QByteArray _name;
 };
 Q_DECLARE_TYPEINFO(QArgumentType, Q_RELOCATABLE_TYPE);

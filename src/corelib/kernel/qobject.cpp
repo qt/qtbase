@@ -101,13 +101,14 @@ static int *queuedConnectionTypes(const QMetaMethod &method)
     return typeIds;
 }
 
+// ### Future work: replace with an array of QMetaType or QtPrivate::QMetaTypeInterface *
 static int *queuedConnectionTypes(const QArgumentType *argumentTypes, int argc)
 {
     auto types = std::make_unique<int[]>(argc + 1);
     for (int i = 0; i < argc; ++i) {
         const QArgumentType &type = argumentTypes[i];
-        if (type.type())
-            types[i] = type.type();
+        if (type.metaType().isValid())
+            types[i] = type.metaType().id();
         else if (type.name().endsWith('*'))
             types[i] = QMetaType::VoidStar;
         else
@@ -3059,6 +3060,8 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const char *sign
         return QMetaObject::Connection(nullptr);
     }
 
+    // ### Future work: attempt get the metatypes from the meta object first
+    // because it's possible they're all registered.
     int *types = nullptr;
     if ((type == Qt::QueuedConnection)
             && !(types = queuedConnectionTypes(signalTypes.constData(), signalTypes.size()))) {
