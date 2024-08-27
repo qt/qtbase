@@ -1041,7 +1041,10 @@ void QNetworkRequest::setDecompressedSafetyCheckThreshold(qint64 threshold)
 
     Returns the timeout used for transfers, in milliseconds.
 
-    \sa setTransferTimeout()
+    If transferTimeoutAsDuration().count() cannot be represented in \c{int},
+    this function returns \c{INT_MAX}/\c{INT_MIN} instead.
+
+    \sa setTransferTimeout(), transferTimeoutAsDuration()
 */
 
 /*!
