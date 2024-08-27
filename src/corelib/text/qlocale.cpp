@@ -742,9 +742,9 @@ qsizetype qt_repeatCount(QStringView s)
 Q_CONSTINIT static const QLocaleData *default_data = nullptr;
 Q_CONSTINIT QBasicAtomicInt QLocalePrivate::s_generation = Q_BASIC_ATOMIC_INITIALIZER(0);
 
-static QLocalePrivate *c_private()
+static QLocalePrivate *c_private() noexcept
 {
-    static QLocalePrivate c_locale(locale_data, 0, QLocale::OmitGroupSeparator, 1);
+    Q_CONSTINIT static QLocalePrivate c_locale(locale_data, 0, QLocale::OmitGroupSeparator, 1);
     return &c_locale;
 }
 
