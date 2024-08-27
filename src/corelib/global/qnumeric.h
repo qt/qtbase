@@ -366,22 +366,22 @@ template <typename T>
 constexpr inline const T &min(const T &a, const T &b) { return (a < b) ? a : b; }
 }
 
-[[nodiscard]] constexpr bool qFuzzyCompare(double p1, double p2)
+[[nodiscard]] constexpr bool qFuzzyCompare(double p1, double p2) noexcept
 {
     return (qAbs(p1 - p2) * 1000000000000. <= QtPrivate::min(qAbs(p1), qAbs(p2)));
 }
 
-[[nodiscard]] constexpr bool qFuzzyCompare(float p1, float p2)
+[[nodiscard]] constexpr bool qFuzzyCompare(float p1, float p2) noexcept
 {
     return (qAbs(p1 - p2) * 100000.f <= QtPrivate::min(qAbs(p1), qAbs(p2)));
 }
 
-[[nodiscard]] constexpr bool qFuzzyIsNull(double d)
+[[nodiscard]] constexpr bool qFuzzyIsNull(double d) noexcept
 {
     return qAbs(d) <= 0.000000000001;
 }
 
-[[nodiscard]] constexpr bool qFuzzyIsNull(float f)
+[[nodiscard]] constexpr bool qFuzzyIsNull(float f) noexcept
 {
     return qAbs(f) <= 0.00001f;
 }
