@@ -36,7 +36,7 @@ public:
 };
 
 }
-Q_DECLARE_SHARED(QtPrivate::QXmlString)
+Q_DECLARE_SHARED_NS_EXT(QtPrivate, QXmlString)
 
 
 class QXmlStreamReaderPrivate;
