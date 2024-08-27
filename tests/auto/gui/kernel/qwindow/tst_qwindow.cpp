@@ -47,6 +47,7 @@ private slots:
     void positioning();
     void framePositioning();
     void framePositioning_data();
+    void framePositioningStableAfterDestroy();
     void positioningDuringMinimized();
     void childWindowPositioning_data();
     void childWindowPositioning();
@@ -664,6 +665,23 @@ void tst_QWindow::framePositioning()
     window.setPosition(screenCenterAdjusted);
     QTRY_VERIFY(window.received(QEvent::Move));
     QTRY_COMPARE(screenCenterAdjusted, window.position());
+}
+
+void tst_QWindow::framePositioningStableAfterDestroy()
+{
+    QWindow window;
+    window.setFramePosition(QPoint(100, 100));
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+
+    const QPoint stablePosition = window.position();
+    const QPoint stableFramePosition = window.framePosition();
+
+    window.destroy();
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+    QCOMPARE(window.position(), stablePosition);
+    QCOMPARE(window.framePosition(), stableFramePosition);
 }
 
 void tst_QWindow::positioningDuringMinimized()
