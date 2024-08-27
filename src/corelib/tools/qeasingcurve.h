@@ -85,9 +85,9 @@ private:
     friend Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QEasingCurve &);
 #endif
     friend Q_CORE_EXPORT bool
-    comparesEqual(const QEasingCurve &lhs, const QEasingCurve &rhs) noexcept;
+    comparesEqual(const QEasingCurve &lhs, const QEasingCurve &rhs);
 #if !QT_CORE_REMOVED_SINCE(6, 8)
-    Q_DECLARE_EQUALITY_COMPARABLE(QEasingCurve)
+    Q_DECLARE_EQUALITY_COMPARABLE_NON_NOEXCEPT(QEasingCurve)
 #endif
 };
 Q_DECLARE_SHARED(QEasingCurve)
