@@ -132,9 +132,8 @@ QList<QUrl> QLibProxyWrapper::getProxies(const QUrl &url)
     if (data.proxies) {
         for (int i = 0; data.proxies[i]; i++) {
             ret.append(QUrl::fromEncoded(data.proxies[i]));
-            free(data.proxies[i]);
         }
-        free(data.proxies);
+        px_proxy_factory_free_proxies(data.proxies);
     }
     return ret;
 }
