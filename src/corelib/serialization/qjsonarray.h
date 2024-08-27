@@ -302,12 +302,12 @@ private:
     friend Q_CORE_EXPORT QDebug operator<<(QDebug, const QJsonArray &);
 
     friend Q_CORE_EXPORT bool comparesEqual(const QJsonArray &lhs,
-                                            const QJsonArray &rhs) noexcept;
+                                            const QJsonArray &rhs);
 
     friend Q_CORE_EXPORT bool comparesEqual(const QJsonArray &lhs,
-                                            const QJsonValue &rhs) noexcept;
-    Q_DECLARE_EQUALITY_COMPARABLE(QJsonArray)
-    Q_DECLARE_EQUALITY_COMPARABLE(QJsonArray, QJsonValue)
+                                            const QJsonValue &rhs);
+    Q_DECLARE_EQUALITY_COMPARABLE_NON_NOEXCEPT(QJsonArray)
+    Q_DECLARE_EQUALITY_COMPARABLE_NON_NOEXCEPT(QJsonArray, QJsonValue)
 
     QJsonArray(QCborContainerPrivate *array);
     bool detach(qsizetype reserve = 0);

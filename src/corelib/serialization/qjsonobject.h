@@ -313,20 +313,18 @@ public:
 
 private:
     friend Q_CORE_EXPORT bool comparesEqual(const QJsonObject &lhs,
-                                            const QJsonObject &rhs) noexcept;
-    friend bool comparesEqual(const QJsonObject &lhs,
-                              const QJsonValue &rhs) noexcept
+                                            const QJsonObject &rhs);
+    friend bool comparesEqual(const QJsonObject &lhs, const QJsonValue &rhs)
     {
         return comparesEqual(lhs, rhs.toObject());
     }
-    friend bool comparesEqual(const QJsonObject &lhs,
-                              const QJsonValueConstRef &rhs) noexcept
+    friend bool comparesEqual(const QJsonObject &lhs, const QJsonValueConstRef &rhs)
     {
         return comparesEqual(lhs, rhs.toObject());
     }
-    Q_DECLARE_EQUALITY_COMPARABLE(QJsonObject)
-    Q_DECLARE_EQUALITY_COMPARABLE(QJsonObject, QJsonValue)
-    Q_DECLARE_EQUALITY_COMPARABLE(QJsonObject, QJsonValueConstRef)
+    Q_DECLARE_EQUALITY_COMPARABLE_NON_NOEXCEPT(QJsonObject)
+    Q_DECLARE_EQUALITY_COMPARABLE_NON_NOEXCEPT(QJsonObject, QJsonValue)
+    Q_DECLARE_EQUALITY_COMPARABLE_NON_NOEXCEPT(QJsonObject, QJsonValueConstRef)
     friend class QJsonValue;
     friend class QJsonDocument;
     friend class QJsonPrivate::Value;

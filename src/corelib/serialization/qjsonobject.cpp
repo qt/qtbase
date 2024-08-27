@@ -621,7 +621,7 @@ bool QJsonObject::containsImpl(T key) const
 
     Returns \c true if \a lhs object is equal to \a rhs, \c false otherwise.
 */
-bool comparesEqual(const QJsonObject &lhs, const QJsonObject &rhs) noexcept
+bool comparesEqual(const QJsonObject &lhs, const QJsonObject &rhs)
 {
     if (lhs.o == rhs.o)
         return true;
