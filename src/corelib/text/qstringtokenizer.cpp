@@ -24,8 +24,8 @@ QT_BEGIN_NAMESPACE
     enumerations Qt::SplitBehavior and Qt::CaseSensitivity further
     control the output.
 
-    QStringTokenizer drives QStringView::tokenize(), but, at least with a
-    recent compiler, you can use it directly, too:
+    QStringTokenizer drives QStringView::tokenize(), but you can use it
+    directly, too:
 
     \code
     for (auto it : QStringTokenizer{string, separator})
@@ -33,10 +33,9 @@ QT_BEGIN_NAMESPACE
     \endcode
 
     \note You should never, ever, name the template arguments of a
-    QStringTokenizer explicitly.  If you can use C++17 Class Template
-    Argument Deduction (CTAD), you may write
+    QStringTokenizer explicitly. You may write
     \c{QStringTokenizer{string, separator}} (without template
-    arguments).  If you can't use C++17 CTAD, you must use the
+    arguments), or use the qTokenize() function, or the
     QStringView::split() or QLatin1StringView::split() member functions
     and store the return value only in \c{auto} variables:
 
@@ -320,10 +319,6 @@ QT_BEGIN_NAMESPACE
 
     Pass values from Qt::CaseSensitivity and Qt::SplitBehavior enumerators
     as \a flags to modify the behavior of the tokenizer.
-
-    You can use this function if your compiler doesn't, yet, support C++17 Class
-    Template Argument Deduction (CTAD). We recommend direct use of QStringTokenizer
-    with CTAD instead.
 */
 
 QT_END_NAMESPACE
