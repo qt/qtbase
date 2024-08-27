@@ -283,8 +283,8 @@ struct QChildProcess
         if (workingDirectory >= 0)
             close(workingDirectory);
 
-        restoreThreadCancellations();
         restoreSignalMask();
+        restoreThreadCancellations();
     }
 
     void maybeBlockSignals() noexcept
