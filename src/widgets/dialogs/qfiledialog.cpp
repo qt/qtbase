@@ -2068,10 +2068,6 @@ QString QFileDialog::labelText(DialogLabel label) const
     \a options includes DontResolveSymlinks, the file dialog will treat
     symlinks as regular directories.
 
-    \warning Do not delete \a parent during the execution of the dialog. If you
-    want to do this, you should create the dialog yourself using one of the
-    QFileDialog constructors.
-
     \sa getOpenFileNames(), getSaveFileName(), getExistingDirectory()
 */
 QString QFileDialog::getOpenFileName(QWidget *parent,
@@ -2132,14 +2128,15 @@ QUrl QFileDialog::getOpenFileUrl(QWidget *parent,
     args.mode = ExistingFile;
     args.options = options;
 
-    QFileDialog dialog(args);
-    dialog.setSupportedSchemes(supportedSchemes);
+    QAutoPointer<QFileDialog> dialog(new QFileDialog(args));
+    dialog->setSupportedSchemes(supportedSchemes);
     if (selectedFilter && !selectedFilter->isEmpty())
-        dialog.selectNameFilter(*selectedFilter);
-    if (dialog.exec() == QDialog::Accepted) {
+        dialog->selectNameFilter(*selectedFilter);
+    const int execResult = dialog->exec();
+    if (bool(dialog) && execResult == QDialog::Accepted) {
         if (selectedFilter)
-            *selectedFilter = dialog.selectedNameFilter();
-        return dialog.selectedUrls().value(0);
+            *selectedFilter = dialog->selectedNameFilter();
+        return dialog->selectedUrls().value(0);
     }
     return QUrl();
 }
@@ -2180,10 +2177,6 @@ QUrl QFileDialog::getOpenFileUrl(QWidget *parent,
     The \a options argument holds various options about how to run the dialog,
     see the QFileDialog::Option enum for more information on the flags you can
     pass.
-
-    \warning Do not delete \a parent during the execution of the dialog. If you
-    want to do this, you should create the dialog yourself using one of the
-    QFileDialog constructors.
 
     \sa getOpenFileName(), getSaveFileName(), getExistingDirectory()
 */
@@ -2247,14 +2240,15 @@ QList<QUrl> QFileDialog::getOpenFileUrls(QWidget *parent,
     args.mode = ExistingFiles;
     args.options = options;
 
-    QFileDialog dialog(args);
-    dialog.setSupportedSchemes(supportedSchemes);
+    QAutoPointer<QFileDialog> dialog(new QFileDialog(args));
+    dialog->setSupportedSchemes(supportedSchemes);
     if (selectedFilter && !selectedFilter->isEmpty())
-        dialog.selectNameFilter(*selectedFilter);
-    if (dialog.exec() == QDialog::Accepted) {
+        dialog->selectNameFilter(*selectedFilter);
+    const int execResult = dialog->exec();
+    if (bool(dialog) && execResult == QDialog::Accepted) {
         if (selectedFilter)
-            *selectedFilter = dialog.selectedNameFilter();
-        return dialog.selectedUrls();
+            *selectedFilter = dialog->selectedNameFilter();
+        return dialog->selectedUrls();
     }
     return QList<QUrl>();
 }
@@ -2421,10 +2415,6 @@ void QFileDialog::saveFileContent(const QByteArray &fileContent, const QString &
     \a options includes DontResolveSymlinks the file dialog will treat symlinks
     as regular directories.
 
-    \warning Do not delete \a parent during the execution of the dialog. If you
-    want to do this, you should create the dialog yourself using one of the
-    QFileDialog constructors.
-
     \sa getOpenFileName(), getOpenFileNames(), getExistingDirectory()
 */
 QString QFileDialog::getSaveFileName(QWidget *parent,
@@ -2485,15 +2475,16 @@ QUrl QFileDialog::getSaveFileUrl(QWidget *parent,
     args.mode = AnyFile;
     args.options = options;
 
-    QFileDialog dialog(args);
-    dialog.setSupportedSchemes(supportedSchemes);
-    dialog.setAcceptMode(AcceptSave);
+    QAutoPointer<QFileDialog> dialog(new QFileDialog(args));
+    dialog->setSupportedSchemes(supportedSchemes);
+    dialog->setAcceptMode(AcceptSave);
     if (selectedFilter && !selectedFilter->isEmpty())
-        dialog.selectNameFilter(*selectedFilter);
-    if (dialog.exec() == QDialog::Accepted) {
+        dialog->selectNameFilter(*selectedFilter);
+    const int execResult = dialog->exec();
+    if (bool(dialog) && execResult == QDialog::Accepted) {
         if (selectedFilter)
-            *selectedFilter = dialog.selectedNameFilter();
-        return dialog.selectedUrls().value(0);
+            *selectedFilter = dialog->selectedNameFilter();
+        return dialog->selectedUrls().value(0);
     }
     return QUrl();
 }
@@ -2534,10 +2525,6 @@ QUrl QFileDialog::getSaveFileUrl(QWidget *parent,
     On Windows, the dialog will spin a blocking modal event loop that will not
     dispatch any QTimers, and if \a parent is not \nullptr then it will position
     the dialog just below the parent's title bar.
-
-    \warning Do not delete \a parent during the execution of the dialog. If you
-    want to do this, you should create the dialog yourself using one of the
-    QFileDialog constructors.
 
     \sa getOpenFileName(), getOpenFileNames(), getSaveFileName()
 */
@@ -2594,10 +2581,11 @@ QUrl QFileDialog::getExistingDirectoryUrl(QWidget *parent,
     args.mode = Directory;
     args.options = options;
 
-    QFileDialog dialog(args);
-    dialog.setSupportedSchemes(supportedSchemes);
-    if (dialog.exec() == QDialog::Accepted)
-        return dialog.selectedUrls().value(0);
+    QAutoPointer<QFileDialog> dialog(new QFileDialog(args));
+    dialog->setSupportedSchemes(supportedSchemes);
+    const int execResult = dialog->exec();
+    if (bool(dialog) && execResult == QDialog::Accepted)
+        return dialog->selectedUrls().value(0);
     return QUrl();
 }
 
