@@ -15,6 +15,7 @@
 #include <QtCore/qtemporarydir.h>
 #include <QtCore/qthread.h>
 #include <QtCore/qxpfunctional.h>
+#include <QtCore/q20utility.h>
 
 #include <string.h>
 
@@ -623,10 +624,18 @@ namespace QTest
         using D1 = std::decay_t<T1>;
         using D2 = std::decay_t<T2>;
         using Internal::genericToString;
-        return compare_helper(t1 == t2, "Compared values are not the same",
-                              std::addressof(t1), std::addressof(t2),
-                              genericToString<D1>, genericToString<D2>,
-                              actual, expected, file, line);
+        if constexpr (QtPrivate::is_standard_or_extended_integer_type_v<T1>
+                      && QtPrivate::is_standard_or_extended_integer_type_v<T2>) {
+            return compare_helper(q20::cmp_equal(t1, t2), "Compared values are not the same",
+                                  std::addressof(t1), std::addressof(t2),
+                                  genericToString<D1>, genericToString<D2>,
+                                  actual, expected, file, line);
+        } else {
+            return compare_helper(t1 == t2, "Compared values are not the same",
+                                  std::addressof(t1), std::addressof(t2),
+                                  genericToString<D1>, genericToString<D2>,
+                                  actual, expected, file, line);
+        }
     }
 
     inline bool qCompare(double const &t1, float const &t2, const char *actual,
