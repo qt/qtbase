@@ -217,7 +217,6 @@ public:
     void serialize(QDataStream &ds) const override;
 
 private:
-    void init(const QByteArray &zoneId);
     void init(const QByteArray &zoneId, int offsetSeconds, const QString &name,
               const QString &abbreviation, QLocale::Territory territory,
               const QString &comment);

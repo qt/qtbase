@@ -1021,11 +1021,6 @@ bool QUtcTimeZonePrivate::isDataLocale(const QLocale &locale) const
     return locale.language() == QLocale::C || locale.language() == QLocale::English;
 }
 
-void QUtcTimeZonePrivate::init(const QByteArray &zoneId)
-{
-    m_id = zoneId;
-}
-
 void QUtcTimeZonePrivate::init(const QByteArray &zoneId, int offsetSeconds, const QString &name,
                                const QString &abbreviation, QLocale::Territory territory,
                                const QString &comment)
