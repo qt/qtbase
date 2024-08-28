@@ -396,7 +396,7 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
     header->enumeratorData = 0;
     header->constructorCount = 0;
     header->constructorData = 0;
-    header->flags = RequiresVariantMetaObject;
+    header->flags = RequiresVariantMetaObject | AllocatedMetaObject;
     header->signalCount = signals_.size();
     // These are specific to QDBusMetaObject:
     header->propertyDBusData = int(header->propertyData + header->propertyCount

@@ -136,10 +136,21 @@ static inline QByteArrayView stringDataView(const QMetaObject *mo, int index)
     return {string, qsizetype(length)};
 }
 
+static inline QByteArray stringData(const QMetaObject *mo, QByteArrayView view)
+{
+    if (QMetaObjectPrivate::get(mo)->flags & AllocatedMetaObject) {
+        // allocate memory, in case the meta object disappears
+        return view.toByteArray();
+    }
+
+    // don't allocate memory: we assume that the meta object remains loaded
+    // forever (modern C++ libraries can't be unloaded from memory anyway)
+    return QByteArray::fromRawData(view.data(), view.size());
+}
+
 static inline QByteArray stringData(const QMetaObject *mo, int index)
 {
-    const auto view = stringDataView(mo, index);
-    return QByteArray::fromRawData(view.data(), view.size());
+    return stringData(mo, stringDataView(mo, index));
 }
 
 static inline QByteArrayView typeNameFromTypeInfo(const QMetaObject *mo, uint typeInfo)
@@ -178,7 +189,7 @@ public:
     { return static_cast<const QMetaMethodPrivate *>(q); }
 
     inline QByteArray signature() const;
-    inline QByteArray name() const;
+    inline QByteArrayView name() const noexcept;
     inline int typesDataIndex() const;
     inline const char *rawReturnTypeName() const;
     inline int returnType() const;
@@ -189,10 +200,10 @@ public:
     inline void getParameterTypes(int *types) const;
     inline const QtPrivate::QMetaTypeInterface *returnMetaTypeInterface() const;
     inline const QtPrivate::QMetaTypeInterface *const *parameterMetaTypeInterfaces() const;
-    inline QByteArray parameterTypeName(int index) const;
+    inline QByteArrayView parameterTypeName(int index) const noexcept;
     inline QList<QByteArray> parameterTypes() const;
     inline QList<QByteArray> parameterNames() const;
-    inline QByteArray tag() const;
+    inline const char *tag() const;
     inline int ownMethodIndex() const;
     inline int ownConstructorMethodIndex() const;
 
@@ -1908,10 +1919,10 @@ QByteArray QMetaMethodPrivate::signature() const
     return result;
 }
 
-QByteArray QMetaMethodPrivate::name() const
+QByteArrayView QMetaMethodPrivate::name() const noexcept
 {
     Q_ASSERT(priv(mobj->d.data)->revision >= 7);
-    return stringData(mobj, data.name());
+    return stringDataView(mobj, data.name());
 }
 
 int QMetaMethodPrivate::typesDataIndex() const
@@ -2022,10 +2033,10 @@ void QMetaMethodPrivate::getParameterTypes(int *types) const
     }
 }
 
-QByteArray QMetaMethodPrivate::parameterTypeName(int index) const
+QByteArrayView QMetaMethodPrivate::parameterTypeName(int index) const noexcept
 {
     int paramsIndex = parametersDataIndex();
-    return typeNameFromTypeInfo(mobj, mobj->d.data[paramsIndex + index]).toByteArray();
+    return typeNameFromTypeInfo(mobj, mobj->d.data[paramsIndex + index]);
 }
 
 QList<QByteArray> QMetaMethodPrivate::parameterTypes() const
@@ -2054,10 +2065,10 @@ QList<QByteArray> QMetaMethodPrivate::parameterNames() const
     return list;
 }
 
-QByteArray QMetaMethodPrivate::tag() const
+const char *QMetaMethodPrivate::tag() const
 {
     Q_ASSERT(priv(mobj->d.data)->revision >= 7);
-    return stringData(mobj, data.tag());
+    return rawStringData(mobj, data.tag());
 }
 
 int QMetaMethodPrivate::ownMethodIndex() const
@@ -2099,7 +2110,8 @@ QByteArray QMetaMethod::name() const
 {
     if (!mobj)
         return QByteArray();
-    return QMetaMethodPrivate::get(this)->name();
+    // ### Qt 7: change the return type and make noexcept
+    return stringData(mobj, QMetaMethodPrivate::get(this)->name());
 }
 
 /*!
@@ -2228,7 +2240,8 @@ QByteArray QMetaMethod::parameterTypeName(int index) const
 {
     if (!mobj || index < 0 || index >= parameterCount())
         return {};
-    return QMetaMethodPrivate::get(this)->parameterTypeName(index);
+    // ### Qt 7: change the return type and make noexcept
+    return stringData(mobj, QMetaMethodPrivate::get(this)->parameterTypeName(index));
 }
 
 /*!
@@ -2284,7 +2297,7 @@ const char *QMetaMethod::tag() const
 {
     if (!mobj)
         return nullptr;
-    return QMetaMethodPrivate::get(this)->tag().constData();
+    return QMetaMethodPrivate::get(this)->tag();
 }
 
 

@@ -73,9 +73,10 @@ enum MethodFlags : uint {
 };
 
 enum MetaObjectFlag : uint {
-    DynamicMetaObject = 0x01,
+    DynamicMetaObject = 0x01,               // is derived from QAbstractDynamicMetaObject
     RequiresVariantMetaObject = 0x02,
     PropertyAccessInStaticMetaCall = 0x04,  // since Qt 5.5, property code is in the static metacall
+    AllocatedMetaObject = 0x08,             // meta object was allocated in dynamic memory (and may be freed)
 };
 
 enum MetaDataFlags : uint {
