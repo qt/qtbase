@@ -64,6 +64,7 @@ private: // convenience functions
 
 private slots:
     void initTestCase();
+    void constructorsAndAssignment();
     void iterateRelativeDirectory_data();
     void iterateRelativeDirectory();
     void iterateResource_data();
@@ -180,6 +181,41 @@ void tst_QDirListing::initTestCase()
     createDirectory("hiddenDirs_hiddenFiles/.hiddenDirectory/subdir");
     createDirectory("hiddenDirs_hiddenFiles/.hiddenDirectory/.hidden-subdir");
 #endif
+}
+
+void tst_QDirListing::constructorsAndAssignment()
+{
+    using F = QDirListing::IteratorFlag;
+    const QString path = "entrylist"_L1;
+    const auto flags = QDirListing::IteratorFlags{F::IncludeDotAndDotDot | F::IncludeHidden};
+    const QStringList nameFilters = {"*.cpp"_L1, "*.h"_L1};
+    {
+        const QDirListing dl{path, flags};
+        QCOMPARE_EQ(dl.iteratorPath(), path);
+        QCOMPARE_EQ(dl.iteratorFlags(), flags);
+        QVERIFY(dl.nameFilters().isEmpty());
+    }
+    {
+        const QDirListing dl{path, nameFilters, flags};
+        QCOMPARE_EQ(dl.iteratorPath(), path);
+        QCOMPARE_EQ(dl.iteratorFlags(), flags);
+        QCOMPARE_EQ(dl.nameFilters(), nameFilters);
+    }
+    {
+        QDirListing other{path, nameFilters, flags};
+        QDirListing dl{std::move(other)};
+        QCOMPARE_EQ(dl.iteratorPath(), path);
+        QCOMPARE_EQ(dl.iteratorFlags(), flags);
+        QCOMPARE_EQ(dl.nameFilters(), nameFilters);
+    }
+    {
+        QDirListing dl{"foo"_L1};
+        QDirListing other{path, nameFilters, flags};
+        dl = std::move(other);
+        QCOMPARE_EQ(dl.iteratorPath(), path);
+        QCOMPARE_EQ(dl.iteratorFlags(), flags);
+        QCOMPARE_EQ(dl.nameFilters(), nameFilters);
+    }
 }
 
 void tst_QDirListing::iterateRelativeDirectory_data()
