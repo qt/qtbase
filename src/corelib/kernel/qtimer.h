@@ -144,6 +144,8 @@ private:
     Q_DECLARE_PRIVATE(QTimer)
     friend class QChronoTimer;
 
+    static std::chrono::nanoseconds from_msecs(std::chrono::milliseconds);
+
     inline int startTimer(int){ return -1;}
     inline void killTimer(int){}
 

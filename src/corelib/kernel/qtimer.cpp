@@ -290,7 +290,8 @@ void QTimer::timerEvent(QTimerEvent *e)
     }
 }
 
-static QAbstractEventDispatcher::Duration from_msecs(std::chrono::milliseconds ms)
+QAbstractEventDispatcher::Duration // statically asserts that Duration is nanoseconds
+QTimer::from_msecs(std::chrono::milliseconds ms)
 {
     using Duration = QAbstractEventDispatcher::Duration;
 
