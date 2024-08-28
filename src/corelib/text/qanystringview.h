@@ -5,6 +5,7 @@
 #define QANYSTRINGVIEW_H
 
 #include <QtCore/qcompare.h>
+#include <QtCore/qcontainerfwd.h>
 #include <QtCore/qlatin1stringview.h>
 #include <QtCore/qstringview.h>
 #include <QtCore/qutf8stringview.h>
@@ -304,6 +305,12 @@ public:
     [[nodiscard]] constexpr bool empty() const noexcept { return size() == 0; }
     [[nodiscard]] constexpr qsizetype size_bytes() const noexcept
     { return size() * charSize(); }
+
+    [[nodiscard]] constexpr qsizetype max_size() const noexcept
+    {
+        // -1 to deal with the pointer one-past-the-end;
+        return QtPrivate::MaxAllocSize / charSize() - 1;
+    }
 
     //
     // Qt compatibility API:

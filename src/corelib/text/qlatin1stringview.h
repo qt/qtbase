@@ -9,6 +9,7 @@
 
 #include <QtCore/qchar.h>
 #include <QtCore/qcompare.h>
+#include <QtCore/qcontainerfwd.h>
 #include <QtCore/qnamespace.h>
 #include <QtCore/qtversionchecks.h>
 #include <QtCore/qstringview.h>
@@ -204,6 +205,14 @@ public:
     const_reverse_iterator crbegin() const noexcept { return const_reverse_iterator(end()); }
     const_reverse_iterator rend() const noexcept { return const_reverse_iterator(begin()); }
     const_reverse_iterator crend() const noexcept { return const_reverse_iterator(begin()); }
+
+    [[nodiscard]] constexpr qsizetype max_size() const noexcept { return maxSize(); }
+
+    [[nodiscard]] static constexpr qsizetype maxSize() noexcept
+    {
+        // -1 to deal with the pointer one-past-the-end;
+        return QtPrivate::MaxAllocSize - 1;
+    }
 
     [[nodiscard]] constexpr QLatin1StringView mid(qsizetype pos, qsizetype n = -1) const
     {

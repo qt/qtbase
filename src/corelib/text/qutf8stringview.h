@@ -12,6 +12,7 @@
 #include <QtCore/qarraydata.h> // for QContainerImplHelper
 #include <QtCore/qbytearrayview.h>
 #include <QtCore/qcompare.h>
+#include <QtCore/qcontainerfwd.h>
 
 #include <string>
 #include <string_view>
@@ -281,6 +282,8 @@ public:
     [[nodiscard]] Q_IMPLICIT operator std::basic_string_view<storage_type>() const noexcept
     { return std::basic_string_view<storage_type>(data(), size_t(size())); }
 
+    [[nodiscard]] constexpr qsizetype max_size() const noexcept { return maxSize(); }
+
     //
     // Qt compatibility API:
     //
@@ -308,6 +311,12 @@ public:
     [[nodiscard]] bool equal(QStringView other) const noexcept;
     [[nodiscard]] bool equal(QLatin1StringView other) const noexcept;
     [[nodiscard]] bool equal(const QByteArray &other) const noexcept;
+
+    [[nodiscard]] static constexpr qsizetype maxSize() noexcept
+    {
+        // -1 to deal with the pointer one-past-the-end;
+        return QtPrivate::MaxAllocSize - 1;
+    }
 
 private:
     [[nodiscard]] static inline int compare(QBasicUtf8StringView lhs, QBasicUtf8StringView rhs) noexcept
