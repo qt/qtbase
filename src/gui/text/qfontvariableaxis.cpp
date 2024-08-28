@@ -81,10 +81,10 @@ QFont::Tag QFontVariableAxis::tag() const
  */
 void QFontVariableAxis::setTag(QFont::Tag tag)
 {
-    Q_D(QFontVariableAxis);
-    if (d->tag == tag)
+    if (d_func()->tag == tag)
         return;
     detach();
+    Q_D(QFontVariableAxis);
     d->tag = tag;
 }
 
@@ -109,10 +109,10 @@ QString QFontVariableAxis::name() const
  */
 void QFontVariableAxis::setName(const QString &name)
 {
-    Q_D(QFontVariableAxis);
-    if (d->name == name)
+    if (d_func()->name == name)
         return;
     detach();
+    Q_D(QFontVariableAxis);
     d->name = name;
 }
 
@@ -138,10 +138,10 @@ qreal QFontVariableAxis::minimumValue() const
 */
 void QFontVariableAxis::setMinimumValue(qreal minimumValue)
 {
-    Q_D(QFontVariableAxis);
-    if (d->minimumValue == minimumValue)
+    if (d_func()->minimumValue == minimumValue)
         return;
     detach();
+    Q_D(QFontVariableAxis);
     d->minimumValue = minimumValue;
 }
 
@@ -167,10 +167,10 @@ qreal QFontVariableAxis::maximumValue() const
 */
 void QFontVariableAxis::setMaximumValue(qreal maximumValue)
 {
-    Q_D(QFontVariableAxis);
-    if (d->maximumValue == maximumValue)
+    if (d_func()->maximumValue == maximumValue)
         return;
     detach();
+    Q_D(QFontVariableAxis);
     d->maximumValue = maximumValue;
 }
 
@@ -196,10 +196,10 @@ qreal QFontVariableAxis::defaultValue() const
 */
 void QFontVariableAxis::setDefaultValue(qreal defaultValue)
 {
-    Q_D(QFontVariableAxis);
-    if (d->defaultValue == defaultValue)
+    if (d_func()->defaultValue == defaultValue)
         return;
     detach();
+    Q_D(QFontVariableAxis);
     d->defaultValue = defaultValue;
 }
 
