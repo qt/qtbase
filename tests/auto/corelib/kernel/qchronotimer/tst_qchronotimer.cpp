@@ -477,8 +477,8 @@ public:
         inTimerEvent = true;
 
         QEventLoop eventLoop;
-        QChronoTimer::singleShot(std::max<std::chrono::nanoseconds>(100ms, interval * 2),
-                                 &eventLoop, &QEventLoop::quit);
+        QTimer::singleShot(std::max<std::chrono::nanoseconds>(100ms, interval * 2),
+                           &eventLoop, &QEventLoop::quit);
         eventLoop.exec();
 
         inTimerEvent = false;
@@ -506,8 +506,8 @@ void tst_QChronoTimer::timerInfiniteRecursion()
     (void) object.startTimer(interval);
 
     QEventLoop eventLoop;
-    QChronoTimer::singleShot(std::max<std::chrono::nanoseconds>(100ms, interval * 2), &eventLoop,
-                             &QEventLoop::quit);
+    QTimer::singleShot(std::max<std::chrono::nanoseconds>(100ms, interval * 2),
+                       &eventLoop, &QEventLoop::quit);
     eventLoop.exec();
 
     QVERIFY(!object.timerEventRecursed);
@@ -532,7 +532,7 @@ public:
             Q_EMIT done();
         } if (recurse) {
             QEventLoop eventLoop;
-            QChronoTimer::singleShot(100ms, &eventLoop, &QEventLoop::quit);
+            QTimer::singleShot(100ms, &eventLoop, &QEventLoop::quit);
             eventLoop.exec();
         }
     }
@@ -854,7 +854,7 @@ public slots:
 void tst_QChronoTimer::recurseOnTimeoutAndStopTimer()
 {
     QEventLoop eventLoop;
-    QChronoTimer::singleShot(1s, &eventLoop, &QEventLoop::quit);
+    QTimer::singleShot(1s, &eventLoop, &QEventLoop::quit);
 
     RecursOnTimeoutAndStopTimerTimer t;
     t.one = new QChronoTimer(&t);
@@ -1223,16 +1223,16 @@ public:
         switch (callType)
         {
         case String:
-            QChronoTimer::singleShot(0ns, this, SLOT(stringSlot()));
+            QTimer::singleShot(0ns, this, SLOT(stringSlot()));
             break;
         case PMF:
-            QChronoTimer::singleShot(0ns, this, &OrderHelper::pmfSlot);
+            QTimer::singleShot(0ns, this, &OrderHelper::pmfSlot);
             break;
         case Functor:
-            QChronoTimer::singleShot(0ns, this, [this]() { functorSlot(); });
+            QTimer::singleShot(0ns, this, [this]() { functorSlot(); });
             break;
         case FunctorNoCtx:
-            QChronoTimer::singleShot(0ns, [this]() { functorNoCtxSlot(); });
+            QTimer::singleShot(0ns, [this]() { functorNoCtxSlot(); });
             break;
         }
     }
