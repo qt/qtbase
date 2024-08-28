@@ -142,6 +142,7 @@ protected:
 private:
     Q_DISABLE_COPY(QTimer)
     Q_DECLARE_PRIVATE(QTimer)
+    friend class QChronoTimer;
 
     inline int startTimer(int){ return -1;}
     inline void killTimer(int){}
@@ -149,7 +150,7 @@ private:
     static constexpr Qt::TimerType defaultTypeFor(int msecs) noexcept
     { return defaultTypeFor(std::chrono::milliseconds{msecs}); }
 
-    static constexpr Qt::TimerType defaultTypeFor(std::chrono::milliseconds interval) noexcept
+    static constexpr Qt::TimerType defaultTypeFor(std::chrono::nanoseconds interval) noexcept
     {
         // coarse timers are worst in their first firing
         // so we prefer a high precision timer for something that happens only once

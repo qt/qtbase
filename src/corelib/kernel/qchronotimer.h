@@ -10,6 +10,7 @@
 #include <QtCore/qnamespace.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qproperty.h>
+#include <QtCore/qtimer.h>
 
 #include <chrono>
 
@@ -68,7 +69,7 @@ public:
     static void singleShot(std::chrono::nanoseconds interval,
                            const FunctorContext<Functor> *receiver, Functor &&slot)
     {
-        singleShot(interval, defaultTimerTypeFor(interval), receiver, std::forward<Functor>(slot));
+        singleShot(interval, QTimer::defaultTypeFor(interval), receiver, std::forward<Functor>(slot));
     }
     template <typename Functor>
     static void singleShot(std::chrono::nanoseconds interval, Qt::TimerType timerType,
@@ -88,14 +89,14 @@ public:
     template <typename Functor>
     static void singleShot(std::chrono::nanoseconds interval, Functor &&slot)
     {
-        singleShot(interval, defaultTimerTypeFor(interval), nullptr, std::forward<Functor>(slot));
+        singleShot(interval, QTimer::defaultTypeFor(interval), nullptr, std::forward<Functor>(slot));
     }
 
     static void singleShot(std::chrono::nanoseconds interval, Qt::TimerType timerType,
                            const QObject *receiver, const char *member);
     static void singleShot(std::chrono::nanoseconds interval, const QObject *receiver,
                            const char *member)
-    { singleShot(interval, defaultTimerTypeFor(interval), receiver, member); }
+    { singleShot(interval, QTimer::defaultTypeFor(interval), receiver, member); }
 
 #ifdef Q_QDOC
     template <typename Functor>
@@ -131,12 +132,6 @@ private:
     // These two functions are inherited from QObject
     int startTimer(std::chrono::nanoseconds) = delete;
     void killTimer(int) = delete;
-
-    static constexpr Qt::TimerType defaultTimerTypeFor(std::chrono::nanoseconds interval) noexcept
-    {
-        using namespace std::chrono_literals;
-        return interval >= 2s ? Qt::CoarseTimer : Qt::PreciseTimer;
-    }
 
     static void singleShotImpl(std::chrono::nanoseconds interval, Qt::TimerType timerType,
                                const QObject *receiver, QtPrivate::QSlotObjectBase *slotObj);
