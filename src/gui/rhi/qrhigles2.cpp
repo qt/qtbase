@@ -5786,6 +5786,11 @@ bool QGles2Texture::create()
                 rhiD->f->glTexStorage2D(target, mipLevelCount, glsizedintformat, size.width(),
                                         is1D ? qMax(0, m_arraySize) : size.height());
         }
+        // Make sure the min filter is set to something non-mipmap-based already
+        // here, given the ridiculous default of GL. It is changed based on
+        // the sampler later, but there could be cases when one pulls the native
+        // object out via nativeTexture() right away.
+        rhiD->f->glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         specified = true;
     } else {
         // Cannot use glCompressedTexImage2D without valid data, so defer.
