@@ -92,6 +92,11 @@ QT_BEGIN_NAMESPACE
 
     \section1 Alternatives to QChronoTimer
 
+    QChronoTimer provides nanosecond resolution and a ±292 years range
+    (less chances of integer overflow if the interval is longer than \c
+    std::numeric_limits<int>::max()). If you only need millisecond resolution
+    and ±24 days range, you can continue to use the classical QTimer class
+
     An alternative to using QChronoTimer is to call QObject::startTimer()
     for your object and reimplement the QObject::timerEvent() event handler
     in your class (which must be a sub-class of QObject). The disadvantage

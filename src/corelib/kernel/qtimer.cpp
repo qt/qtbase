@@ -74,13 +74,6 @@ QT_BEGIN_NAMESPACE
     more and more platforms, we expect that zero-millisecond
     QTimer objects will gradually be replaced by \l{QThread}s.
 
-    \note Since Qt 6.8 this class is superseded by \l{QChronoTimer}.
-    The maximum interval QTimer supports is limited by the number of
-    milliseconds that would fit in an \c int (which is around 24 days);
-    whereas QChronoTimer stores its interval as \c std::chrono::nanoseconds
-    (which raises that limit to ±292 years), that is, there is
-    less chance of integer overflow with QChronoTimer.
-
     \section1 Accuracy and Timer Resolution
 
     The accuracy of timers depends on the underlying operating system
@@ -103,7 +96,15 @@ QT_BEGIN_NAMESPACE
 
     \section1 Alternatives to QTimer
 
-    An alternative to using QTimer is to call QObject::startTimer()
+    Qt 6.8 introduced QChronoTimer. The main difference between the two
+    classes, is that QChronoTimer supports a larger interval range and a
+    higher precision (\c std::chrono::nanoseconds). For QTimer the maximum
+    supported interval is ±24 days, whereas for QChronoTimer it is ±292
+    years (less chances of interger overflow with intervals longer than
+    \c std::numeric_limits<int>::max()). If you only need millisecond
+    resolution and ±24 days range, you can continue to use QTimer.
+
+    Another alternative is to call QObject::startTimer()
     for your object and reimplement the QObject::timerEvent() event
     handler in your class (which must inherit QObject). The
     disadvantage is that timerEvent() does not support such
