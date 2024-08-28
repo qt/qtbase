@@ -36,28 +36,28 @@ public:
 #if (__cpp_lib_chrono >= 201907L && !defined(Q_OS_INTEGRITY)) || defined(Q_QDOC)
     QT_POST_CXX17_API_IN_EXPORTED_CLASS
     Q_IMPLICIT constexpr QDate(std::chrono::year_month_day date) noexcept
-        : jd(date.ok() ? stdSysDaysToJulianDay(date QT6_CALL_NEW_OVERLOAD_TAIL) : nullJd())
+        : jd(date.ok() ? stdSysDaysToJulianDay(date) : nullJd())
     {}
 
     QT_POST_CXX17_API_IN_EXPORTED_CLASS
     Q_IMPLICIT constexpr QDate(std::chrono::year_month_day_last date) noexcept
-        : jd(date.ok() ? stdSysDaysToJulianDay(date QT6_CALL_NEW_OVERLOAD_TAIL) : nullJd())
+        : jd(date.ok() ? stdSysDaysToJulianDay(date) : nullJd())
     {}
 
     QT_POST_CXX17_API_IN_EXPORTED_CLASS
     Q_IMPLICIT constexpr QDate(std::chrono::year_month_weekday date) noexcept
-        : jd(date.ok() ? stdSysDaysToJulianDay(date QT6_CALL_NEW_OVERLOAD_TAIL) : nullJd())
+        : jd(date.ok() ? stdSysDaysToJulianDay(date) : nullJd())
     {}
 
     QT_POST_CXX17_API_IN_EXPORTED_CLASS
     Q_IMPLICIT constexpr QDate(std::chrono::year_month_weekday_last date) noexcept
-        : jd(date.ok() ? stdSysDaysToJulianDay(date QT6_CALL_NEW_OVERLOAD_TAIL) : nullJd())
+        : jd(date.ok() ? stdSysDaysToJulianDay(date) : nullJd())
     {}
 
     QT_POST_CXX17_API_IN_EXPORTED_CLASS
     static constexpr QDate fromStdSysDays(const std::chrono::sys_days &days) noexcept
     {
-        return QDate(stdSysDaysToJulianDay(days QT6_CALL_NEW_OVERLOAD_TAIL));
+        return QDate(stdSysDaysToJulianDay(days));
     }
 
     QT_POST_CXX17_API_IN_EXPORTED_CLASS
@@ -180,9 +180,11 @@ private:
 
 // INTEGRITY incident-85878 (timezone and clock_cast are not supported)
 #if __cpp_lib_chrono >= 201907L && !defined(Q_OS_INTEGRITY)
+#if !QT_CORE_REMOVED_SINCE(6, 7)
     QT_POST_CXX17_API_IN_EXPORTED_CLASS
+#endif
     static constexpr qint64
-    stdSysDaysToJulianDay(const std::chrono::sys_days &days QT6_DECL_NEW_OVERLOAD_TAIL) noexcept
+    stdSysDaysToJulianDay(const std::chrono::sys_days &days) noexcept
     {
         const auto epochDays = days.time_since_epoch().count();
         // minJd() and maxJd() fit into 40 bits.
@@ -194,13 +196,6 @@ private:
         }
         return unixEpochJd() + epochDays;
     }
-
-#if QT_VERSION_MAJOR < 7 && !defined(QT_BOOTSTRAPPED)
-    static constexpr qint64 stdSysDaysToJulianDay(const std::chrono::sys_days &days) noexcept
-    {
-        return stdSysDaysToJulianDay(days QT6_CALL_NEW_OVERLOAD_TAIL);
-    }
-#endif // Qt < 7 and not bootstrapped
 #endif // __cpp_lib_chrono >= 201907L
 
     qint64 jd;

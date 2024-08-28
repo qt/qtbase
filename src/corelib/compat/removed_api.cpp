@@ -700,7 +700,7 @@ QCborError QCborStreamReader::lastError()
     return std::as_const(*this).lastError();
 }
 
-#include "qdatetime.h"
+#include "qdatetime.h" // also inlined API
 
 QDateTime::QDateTime(QDate date, QTime time, const QTimeZone &timeZone)
     : QDateTime(date, time, timeZone, TransitionResolution::LegacyBehavior) {}
