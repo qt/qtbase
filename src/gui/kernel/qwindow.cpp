@@ -2083,16 +2083,6 @@ void QWindowPrivate::destroy()
         QObject *object = childrenWindows.at(i);
         if (object->isWindowType()) {
             QWindow *w = static_cast<QWindow*>(object);
-            auto *childPlatformWindow = w->handle();
-            if (!childPlatformWindow)
-                continue;
-
-            // Decouple the foreign window from this window,
-            // so that destroying our native handle doesn't
-            // bring down the foreign window as well.
-            if (childPlatformWindow->isForeignWindow())
-                childPlatformWindow->setParent(nullptr);
-
             qt_window_private(w)->destroy();
         }
     }
