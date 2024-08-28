@@ -1456,12 +1456,10 @@ QByteArray QIODevice::readLine(qint64 maxSize)
         // Size is unknown, read incrementally.
         maxSize = QByteArray::maxSize() - 1;
 
-        // The first iteration needs to leave an extra byte for the terminating null
-        result.resize(1);
-
         qint64 readResult;
         do {
-            result.resize(qsizetype(qMin(maxSize, qint64(result.size() + d->buffer.chunkSize()))));
+            // +1 since d->readLine() actually _writes_ a terminating NUL (### why does it?)
+            result.resize(qsizetype(qMin(maxSize, 1 + readBytes + d->buffer.chunkSize())));
             readResult = d->readLine(result.data() + readBytes, result.size() - readBytes);
             if (readResult > 0 || readBytes == 0)
                 readBytes += readResult;
