@@ -127,11 +127,19 @@ public:
         return std::chrono::milliseconds(remainingTime());
     }
 
+#if QT_CORE_REMOVED_SINCE(6, 8)
     static void singleShot(std::chrono::milliseconds value, const QObject *receiver, const char *member)
     {
         singleShot(value, defaultTypeFor(value), receiver, member);
     }
     static void singleShot(std::chrono::milliseconds interval, Qt::TimerType timerType,
+                           const QObject *receiver, const char *member);
+#endif // QT_CORE_REMOVED_SINCE(6, 8)
+    static void singleShot(std::chrono::nanoseconds value, const QObject *receiver, const char *member)
+    {
+        singleShot(value, defaultTypeFor(value), receiver, member);
+    }
+    static void singleShot(std::chrono::nanoseconds interval, Qt::TimerType timerType,
                            const QObject *receiver, const char *member);
 
     void start(std::chrono::milliseconds value);

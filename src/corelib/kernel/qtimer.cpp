@@ -395,15 +395,15 @@ void QTimer::singleShotImpl(std::chrono::milliseconds msec, Qt::TimerType timerT
     \sa start()
 */
 
-void QTimer::singleShot(std::chrono::milliseconds msec, Qt::TimerType timerType,
+void QTimer::singleShot(std::chrono::nanoseconds ns, Qt::TimerType timerType,
                         const QObject *receiver, const char *member)
 {
-    if (Q_UNLIKELY(msec < 0ms)) {
+    if (ns < 0ns) {
         qWarning("QTimer::singleShot: Timers cannot have negative timeouts");
         return;
     }
     if (receiver && member) {
-        if (msec == 0ms) {
+        if (ns == 0ns) {
             // special code shortpath for 0-timers
             const char* bracketPosition = strchr(member, '(');
             if (!bracketPosition || !(member[0] >= '0' && member[0] <= '2')) {
@@ -416,7 +416,7 @@ void QTimer::singleShot(std::chrono::milliseconds msec, Qt::TimerType timerType,
                                       Qt::QueuedConnection);
             return;
         }
-        (void) new QSingleShotTimer(from_msecs(msec), timerType, receiver, member);
+        (void) new QSingleShotTimer(ns, timerType, receiver, member);
     }
 }
 
@@ -447,7 +447,7 @@ void QTimer::singleShot(std::chrono::milliseconds msec, Qt::TimerType timerType,
 */
 
 /*!
-    \fn void QTimer::singleShot(std::chrono::milliseconds msec, const QObject *receiver, const char *member)
+    \fn void QTimer::singleShot(std::chrono::nanoseconds nsec, const QObject *receiver, const char *member)
     \since 5.8
     \overload
     \reentrant
@@ -459,13 +459,19 @@ void QTimer::singleShot(std::chrono::milliseconds msec, Qt::TimerType timerType,
     create a local QTimer object.
 
     The \a receiver is the receiving object and the \a member is the slot. The
-    time interval is given in the duration object \a msec.
+    time interval is given in the duration object \a nsec.
+
+//! [qtimer-ns-overflow]
+    \note In Qt versions prior to 6.8, this function took chrono::milliseconds,
+    not chrono::nanoseconds. The compiler will automatically convert for you,
+    but the conversion may overflow for extremely large milliseconds counts.
+//! [qtimer-ns-overflow]
 
     \sa start()
 */
 
 /*!
-    \fn void QTimer::singleShot(std::chrono::milliseconds msec, Qt::TimerType timerType, const QObject *receiver, const char *member)
+    \fn void QTimer::singleShot(std::chrono::nanoseconds nsec, Qt::TimerType timerType, const QObject *receiver, const char *member)
     \since 5.8
     \overload
     \reentrant
@@ -477,8 +483,10 @@ void QTimer::singleShot(std::chrono::milliseconds msec, Qt::TimerType timerType,
     create a local QTimer object.
 
     The \a receiver is the receiving object and the \a member is the slot. The
-    time interval is given in the duration object \a msec. The \a timerType affects the
+    time interval is given in the duration object \a nsec. The \a timerType affects the
     accuracy of the timer.
+
+    \include qtimer.cpp qtimer-ns-overflow
 
     \sa start()
 */
