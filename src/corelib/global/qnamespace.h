@@ -1816,6 +1816,7 @@ namespace Qt {
 #endif
     Q_ENUM_NS(CursorMoveStyle)
     Q_ENUM_NS(TimerType)
+    Q_ENUM_NS(TimerId)
     Q_ENUM_NS(ScrollPhase)
     Q_ENUM_NS(MouseEventSource)
     Q_FLAG_NS(MouseEventFlags)
