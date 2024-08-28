@@ -141,6 +141,7 @@ function(qt_copy_framework_headers target)
         add_custom_target(${target}_copy_fw_sync_headers
             COMMAND ${copy_fw_sync_headers_command}
             COMMAND ${copy_fw_sync_headers_marker_file_command}
+            DEPENDS ${target}_sync_headers
         )
     endif()
 
