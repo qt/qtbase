@@ -173,7 +173,11 @@ private:
     static void singleShotImpl(int msec, Qt::TimerType timerType,
                                const QObject *receiver, QtPrivate::QSlotObjectBase *slotObj);
 
+#if QT_CORE_REMOVED_SINCE(6, 8)
     static void singleShotImpl(std::chrono::milliseconds interval, Qt::TimerType timerType,
+                               const QObject *receiver, QtPrivate::QSlotObjectBase *slotObj);
+#endif
+    static void singleShotImpl(std::chrono::nanoseconds interval, Qt::TimerType timerType,
                                const QObject *receiver, QtPrivate::QSlotObjectBase *slotObj);
 };
 

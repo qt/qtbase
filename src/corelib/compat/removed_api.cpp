@@ -1174,6 +1174,14 @@ void QTimer::singleShot(std::chrono::milliseconds interval, Qt::TimerType timerT
     singleShot(from_msecs(interval), timerType, receiver, member);
 }
 
+void QTimer::singleShotImpl(std::chrono::milliseconds interval, Qt::TimerType timerType,
+                            const QObject *receiver, QtPrivate::QSlotObjectBase *slotObj)
+{
+    QtPrivate::SlotObjUniquePtr slot(slotObj); // don't leak if from_msecs throws
+    const auto ns = from_msecs(interval);
+    singleShotImpl(ns, timerType, receiver, slot.release());
+}
+
 #include "qurl.h"
 
 bool QUrl::operator<(const QUrl &url) const

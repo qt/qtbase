@@ -319,11 +319,11 @@ QTimer::from_msecs(std::chrono::milliseconds ms)
                 as the final sender class.
     \a slotObj the slot object
 */
-void QTimer::singleShotImpl(std::chrono::milliseconds msec, Qt::TimerType timerType,
+void QTimer::singleShotImpl(std::chrono::nanoseconds ns, Qt::TimerType timerType,
                             const QObject *receiver,
                             QtPrivate::QSlotObjectBase *slotObj)
 {
-    if (msec == 0ms) {
+    if (ns == 0ns) {
         bool deleteReceiver = false;
         // Optimize: set a receiver context when none is given, such that we can use
         // QMetaObject::invokeMethod which is more efficient than going through a timer.
@@ -352,7 +352,7 @@ void QTimer::singleShotImpl(std::chrono::milliseconds msec, Qt::TimerType timerT
         return;
     }
 
-    new QSingleShotTimer(from_msecs(msec), timerType, receiver, slotObj);
+    (void) new QSingleShotTimer(ns, timerType, receiver, slotObj);
 }
 
 /*!
@@ -420,14 +420,14 @@ void QTimer::singleShot(std::chrono::nanoseconds ns, Qt::TimerType timerType,
     }
 }
 
-/*! \fn template<typename Duration, typename Functor> void QTimer::singleShot(Duration msec, const QObject *context, Functor &&functor)
-    \fn template<typename Duration, typename Functor> void QTimer::singleShot(Duration msec, Qt::TimerType timerType, const QObject *context, Functor &&functor)
-    \fn template<typename Duration, typename Functor> void QTimer::singleShot(Duration msec, Functor &&functor)
-    \fn template<typename Duration, typename Functor> void QTimer::singleShot(Duration msec, Qt::TimerType timerType, Functor &&functor)
+/*! \fn template<typename Duration, typename Functor> void QTimer::singleShot(Duration interval, const QObject *context, Functor &&functor)
+    \fn template<typename Duration, typename Functor> void QTimer::singleShot(Duration interval, Qt::TimerType timerType, const QObject *context, Functor &&functor)
+    \fn template<typename Duration, typename Functor> void QTimer::singleShot(Duration interval, Functor &&functor)
+    \fn template<typename Duration, typename Functor> void QTimer::singleShot(Duration interval, Qt::TimerType timerType, Functor &&functor)
     \since 5.4
 
     \reentrant
-    This static function calls \a functor after \a msec milliseconds.
+    This static function calls \a functor after \a interval.
 
     It is very convenient to use this function because you do not need
     to bother with a \l{QObject::timerEvent()}{timerEvent} or
@@ -441,7 +441,12 @@ void QTimer::singleShot(std::chrono::nanoseconds ns, Qt::TimerType timerType,
     If \a functor is a member
     function of \a context, then the function will be called on the object.
 
-    The \a msec parameter can be an \c int or a \c std::chrono::milliseconds value.
+    The \a interval parameter can be an \c int (interpreted as a millisecond
+    count) or a \c std::chrono type that implicitly converts to nanoseconds.
+
+    \note In Qt versions prior to 6.8, the chrono overloads took chrono::milliseconds,
+    not chrono::nanoseconds. The compiler will automatically convert for you,
+    but the conversion may overflow for extremely large milliseconds counts.
 
     \sa start()
 */
