@@ -216,6 +216,11 @@ QString QTimeZonePrivate::displayName(QTimeZone::TimeType timeType,
 
 QString QTimeZonePrivate::abbreviation(qint64 atMSecsSinceEpoch) const
 {
+    if (QLocale() != QLocale::c()) {
+        const QString name = displayName(atMSecsSinceEpoch, QTimeZone::ShortName, QLocale());
+        if (!name.isEmpty())
+            return name;
+    }
     return displayName(atMSecsSinceEpoch, QTimeZone::ShortName, QLocale::c());
 }
 
