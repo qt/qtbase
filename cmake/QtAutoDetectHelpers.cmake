@@ -445,7 +445,8 @@ function(qt_auto_detect_macos_single_arch_cross_compilation)
     endif()
 
     qt_internal_get_early_apple_host_system_arch(host_arch)
-    if(NOT "${host_arch}" STREQUAL "${target_arch}")
+    if(NOT "${host_arch}" STREQUAL "${target_arch}" AND
+            NOT ("${host_arch}" STREQUAL "x86_64" AND "${target_arch}" STREQUAL "x86_64h"))
         message(
             STATUS "Detected implicit macOS cross-compilation. "
             "Host arch: ${host_arch} Target arch: ${target_arch}. "
