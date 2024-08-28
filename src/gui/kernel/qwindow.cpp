@@ -1401,11 +1401,19 @@ bool QWindowPrivate::updateDevicePixelRatio()
 {
     Q_Q(QWindow);
 
-    // If there is no platform window use the associated screen's devicePixelRatio,
-    // which typically is the primary screen and will be correct for single-display
-    // systems (a very common case).
-    const qreal newDevicePixelRatio = platformWindow ?
-        platformWindow->devicePixelRatio() * QHighDpiScaling::factor(q) : q->screen()->devicePixelRatio();
+    const qreal newDevicePixelRatio = [this, q]{
+        if (platformWindow)
+            return platformWindow->devicePixelRatio() * QHighDpiScaling::factor(q);
+
+        // If there is no platform window use the associated screen's devicePixelRatio,
+        // which typically is the primary screen and will be correct for single-display
+        // systems (a very common case).
+        if (auto *screen = q->screen())
+            return screen->devicePixelRatio();
+
+        // In some cases we are running without any QScreens, so fall back to QGuiApp
+        return qGuiApp->devicePixelRatio();
+    }();
 
     if (newDevicePixelRatio == devicePixelRatio)
         return false;
