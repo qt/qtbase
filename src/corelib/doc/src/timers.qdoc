@@ -31,16 +31,17 @@
     stop all timers in the object's thread; it is not possible to
     start timers for objects in another thread.
 
-    The main API for the timer functionality was \l QTimer. QTimer stores
+    The main API for the timer functionality is \l QTimer. QTimer stores
     the interval in a signed integer, which limits the maximum interval it
     supports to the number of milliseconds that can fit in a signed integer
     (in practice, this is a period of around 24 days).
 
-    Qt 6.8 introduced the \l QChronoTimer class to replace QTimer. QChronoTimer
-    stores the interval as \c std::chrono::nanoseconds, which means that
-    the maximum interval it supports is around 292 years. This mitigates
-    the chances of integer overflow that QTimer had if the interval was more
-    than \c{std::numeric_limits<int>::max()}.
+    Qt 6.8 introduced the \l QChronoTimer class. The main difference between
+    the two classes is that QChronoTimer supports a larger interval range
+    and a higher precision (\c std::chrono::nanoseconds). For QTimer the
+    maximum supported interval is ±24 days, whereas for QChronoTimer it is
+    ±292 years. If you only need millisecond resolution and ±24 days range,
+    you can continue to use \l QTimer.
 
     The accuracy of the timers depends on the underlying operating system.
     Windows 2000 has 15ms accuracy; other systems that we have tested can
