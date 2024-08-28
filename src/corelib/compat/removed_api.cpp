@@ -926,8 +926,6 @@ QUrl QUrl::fromEncoded(const QByteArray &input, ParsingMode mode)
     return QUrl::fromEncoded(QByteArrayView(input), mode);
 }
 
-#include "qtimer.h" // inlined API
-
 
 // #include "qotherheader.h"
 // // implement removed functions from qotherheader.h
@@ -1167,6 +1165,8 @@ auto QStringConverter::encodingForName(const char *name) noexcept -> std::option
 #if QT_CONFIG(thread)
 #  include "qthreadpool.h" // inlined API
 #endif
+
+#include "qtimer.h" // inlined API
 
 #include "qurl.h"
 
