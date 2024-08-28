@@ -1364,6 +1364,12 @@ QWindowsForeignWindow::QWindowsForeignWindow(QWindow *window, HWND hwnd)
         setParent(QPlatformWindow::parent());
 }
 
+QWindowsForeignWindow::~QWindowsForeignWindow()
+{
+    if (QPlatformWindow::parent())
+        setParent(nullptr);
+}
+
 void QWindowsForeignWindow::setParent(const QPlatformWindow *newParentWindow)
 {
     const bool wasTopLevel = isTopLevel_sys();

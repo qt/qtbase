@@ -530,6 +530,9 @@ QXcbForeignWindow::QXcbForeignWindow(QWindow *window, WId nativeHandle)
 
 QXcbForeignWindow::~QXcbForeignWindow()
 {
+    if (QPlatformWindow::parent())
+        setParent(nullptr);
+
     // Clear window so that destroy() does not affect it
     m_window = 0;
 

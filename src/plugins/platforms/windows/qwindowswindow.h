@@ -160,6 +160,7 @@ class QWindowsForeignWindow : public QWindowsBaseWindow
 {
 public:
     explicit QWindowsForeignWindow(QWindow *window, HWND hwnd);
+    ~QWindowsForeignWindow();
 
     void setParent(const QPlatformWindow *window) override;
     void setGeometry(const QRect &rect) override { setGeometry_sys(rect); }
