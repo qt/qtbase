@@ -38,9 +38,8 @@ QT_BEGIN_NAMESPACE
 
     You can set a timer to time out only once by calling setSingleShot(true).
 
-    QChronoTimer also has singleShot() static methods:
-
-    \snippet timers/timers.cpp qchronotimer-singleshot
+    \note QChronoTimer has no singleShot() static methods, as the ones on
+    QTimer already work with chrono types and nanoseconds resolution.
 
     In multithreaded applications, you can use QChronoTimer in any thread
     that has an event loop. To start an event loop from a non-GUI
@@ -358,96 +357,6 @@ Qt::TimerType QChronoTimer::timerType() const
 QBindable<Qt::TimerType> QChronoTimer::bindableTimerType()
 {
     return {&d_func()->type};
-}
-
-/*!
-    \overload
-    \reentrant
-
-    This static function calls the slot \a member, on object \a receiver, after
-    time interval \a interval. \a timerType affects the precision of the timer
-
-    \a member has to be a member function of \a receiver; you need to use the
-    \c SLOT() macro to get this parameter.
-
-    This function is provided as a convenience to save the need to use a
-    \l{QObject::timerEvent()}{timerEvent} or create a local QChronoTimer
-    object.
-
-    \sa start(), Qt::TimerType
-*/
-void QChronoTimer::singleShot(std::chrono::nanoseconds interval, Qt::TimerType timerType,
-                              const QObject *receiver, const char *member)
-{
-    if (Q_UNLIKELY(interval < 0ns)) {
-        qWarning("QChronoTimer::singleShot: Timers cannot have negative timeouts");
-        return;
-    }
-    if (receiver && member) {
-        if (interval == 0ns) {
-            // special code shortpath for 0-timers
-            const char* bracketPosition = strchr(member, '(');
-            if (!bracketPosition || !(member[0] >= '0' && member[0] <= '2')) {
-                qWarning("QChronoTimer::singleShot: Invalid slot specification");
-                return;
-            }
-            const auto methodName = QByteArrayView(member + 1, // extract method name
-                                                   bracketPosition - 1 - member).trimmed();
-            QMetaObject::invokeMethod(const_cast<QObject *>(receiver),
-                                      methodName.toByteArray().constData(),
-                                      Qt::QueuedConnection);
-            return;
-        }
-        (void) new QSingleShotTimer(interval, timerType, receiver, member);
-    }
-}
-
-/*!
-    \internal
-
-    \list
-        \li \a interval the time interval
-        \li \a timerType the type of the timer; this affects the precision of
-            the timer
-        \li \a receiver the receiver or context object; if this is \c nullptr,
-            this method will figure out a context object to use, see code
-            comments below
-        \li \a slotObj a callable, for example a lambda
-    \endlist
-*/
-void QChronoTimer::singleShotImpl(std::chrono::nanoseconds interval, Qt::TimerType timerType,
-                                  const QObject *receiver, QtPrivate::QSlotObjectBase *slotObj)
-{
-    if (interval == 0ns) {
-        bool deleteReceiver = false;
-        // Optimize: set a receiver context when none is given, such that we can use
-        // QMetaObject::invokeMethod which is more efficient than going through a timer.
-        // We need a QObject living in the current thread. But the QThread itself lives
-        // in a different thread - with the exception of the main QThread which lives in
-        // itself. And QThread::currentThread() is among the few QObjects we know that will
-        // most certainly be there. Note that one can actually call singleShot before the
-        // QApplication is created!
-        if (!receiver && QThread::currentThread() == QCoreApplicationPrivate::mainThread()) {
-            // reuse main thread as context object
-            receiver = QThread::currentThread();
-        } else if (!receiver) {
-            // Create a receiver context object on-demand. According to the benchmarks,
-            // this is still more efficient than going through a timer.
-            receiver = new QObject;
-            deleteReceiver = true;
-        }
-
-        auto h = QtPrivate::invokeMethodHelper({});
-        QMetaObject::invokeMethodImpl(const_cast<QObject *>(receiver), slotObj,
-                Qt::QueuedConnection, h.parameterCount(), h.parameters.data(), h.typeNames.data(),
-                h.metaTypes.data());
-
-        if (deleteReceiver)
-            const_cast<QObject *>(receiver)->deleteLater();
-        return;
-    }
-
-    new QSingleShotTimer(interval, timerType, receiver, slotObj);
 }
 
 QT_END_NAMESPACE

@@ -55,49 +55,6 @@ public:
     bool isSingleShot() const;
     QBindable<bool> bindableSingleShot();
 
-    // singleShot with context
-#ifdef Q_QDOC
-    template <typename Functor>
-    static inline void singleShot(std::chrono::nanoseconds interval,
-                                  const QObject *receiver, Functor &&slot);
-    template <typename Functor>
-    static inline void singleShot(std::chrono::nanoseconds interval interval,
-                                  Qt::TimerType timerType,
-                                  const QObject *receiver, Functor &&slot);
-#else
-    template <typename Functor>
-    static void singleShot(std::chrono::nanoseconds interval,
-                           const FunctorContext<Functor> *receiver, Functor &&slot)
-    {
-        singleShot(interval, QTimer::defaultTypeFor(interval), receiver, std::forward<Functor>(slot));
-    }
-    template <typename Functor>
-    static void singleShot(std::chrono::nanoseconds interval, Qt::TimerType timerType,
-                           const FunctorContext<Functor> *receiver, Functor &&slot)
-    {
-        using Prototype = void(*)();
-        auto *slotObj = QtPrivate::makeCallableObject<Prototype>(std::forward<Functor>(slot));
-        singleShotImpl(interval, timerType, receiver, slotObj);
-    }
-#endif
-
-    template <typename Functor>
-    static void singleShot(std::chrono::nanoseconds interval, Qt::TimerType timerType,
-                           Functor &&slot)
-    { singleShot(interval, timerType, nullptr, std::forward<Functor>(slot)); }
-
-    template <typename Functor>
-    static void singleShot(std::chrono::nanoseconds interval, Functor &&slot)
-    {
-        singleShot(interval, QTimer::defaultTypeFor(interval), nullptr, std::forward<Functor>(slot));
-    }
-
-    static void singleShot(std::chrono::nanoseconds interval, Qt::TimerType timerType,
-                           const QObject *receiver, const char *member);
-    static void singleShot(std::chrono::nanoseconds interval, const QObject *receiver,
-                           const char *member)
-    { singleShot(interval, QTimer::defaultTypeFor(interval), receiver, member); }
-
 #ifdef Q_QDOC
     template <typename Functor>
     QMetaObject::Connection callOnTimeout(const QObject *context, Functor &&slot,
@@ -132,9 +89,6 @@ private:
     // These two functions are inherited from QObject
     int startTimer(std::chrono::nanoseconds) = delete;
     void killTimer(int) = delete;
-
-    static void singleShotImpl(std::chrono::nanoseconds interval, Qt::TimerType timerType,
-                               const QObject *receiver, QtPrivate::QSlotObjectBase *slotObj);
 };
 
 QT_END_NAMESPACE
