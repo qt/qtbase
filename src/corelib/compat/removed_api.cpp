@@ -1168,6 +1168,12 @@ auto QStringConverter::encodingForName(const char *name) noexcept -> std::option
 
 #include "qtimer.h" // inlined API
 
+void QTimer::singleShot(std::chrono::milliseconds interval, Qt::TimerType timerType,
+                        const QObject *receiver, const char *member)
+{
+    singleShot(from_msecs(interval), timerType, receiver, member);
+}
+
 #include "qurl.h"
 
 bool QUrl::operator<(const QUrl &url) const
