@@ -21,7 +21,7 @@ class QFileInfo;
 class QDir;
 class QTimeZone;
 
-class Q_CORE_EXPORT QDirListing
+class QDirListing
 {
 public:
     enum class IteratorFlag {
@@ -40,44 +40,45 @@ public:
     };
     Q_DECLARE_FLAGS(IteratorFlags, IteratorFlag)
 
-    explicit QDirListing(const QString &path, IteratorFlags flags = IteratorFlag::Default);
-    explicit QDirListing(const QString &path, const QStringList &nameFilters,
-                         IteratorFlags flags = IteratorFlag::Default);
+    Q_CORE_EXPORT explicit QDirListing(const QString &path,
+                                       IteratorFlags flags = IteratorFlag::Default);
+    Q_CORE_EXPORT explicit QDirListing(const QString &path, const QStringList &nameFilters,
+                                       IteratorFlags flags = IteratorFlag::Default);
 
     QDirListing(QDirListing &&);
     QDirListing &operator=(QDirListing &&);
 
-    ~QDirListing();
+    Q_CORE_EXPORT ~QDirListing();
 
-    QString iteratorPath() const;
-    IteratorFlags iteratorFlags() const;
-    QStringList nameFilters() const;
+    Q_CORE_EXPORT QString iteratorPath() const;
+    Q_CORE_EXPORT IteratorFlags iteratorFlags() const;
+    Q_CORE_EXPORT QStringList nameFilters() const;
 
-    class Q_CORE_EXPORT DirEntry
+    class DirEntry
     {
         friend class QDirListing;
         QDirListingPrivate *dirListPtr = nullptr;
     public:
-        QString fileName() const;
-        QString baseName() const;
-        QString completeBaseName() const;
-        QString suffix() const;
-        QString bundleName() const;
-        QString completeSuffix() const;
-        QString filePath() const;
-        bool isDir() const;
-        bool isFile() const;
-        bool isSymLink() const;
-        bool exists() const;
-        bool isHidden() const;
-        bool isReadable() const;
-        bool isWritable() const;
-        bool isExecutable() const;
-        QFileInfo fileInfo() const;
-        QString canonicalFilePath() const;
-        QString absoluteFilePath() const;
-        QString absolutePath() const;
-        qint64 size() const;
+        Q_CORE_EXPORT QString fileName() const;
+        Q_CORE_EXPORT QString baseName() const;
+        Q_CORE_EXPORT QString completeBaseName() const;
+        Q_CORE_EXPORT QString suffix() const;
+        Q_CORE_EXPORT QString bundleName() const;
+        Q_CORE_EXPORT QString completeSuffix() const;
+        Q_CORE_EXPORT QString filePath() const;
+        Q_CORE_EXPORT bool isDir() const;
+        Q_CORE_EXPORT bool isFile() const;
+        Q_CORE_EXPORT bool isSymLink() const;
+        Q_CORE_EXPORT bool exists() const;
+        Q_CORE_EXPORT bool isHidden() const;
+        Q_CORE_EXPORT bool isReadable() const;
+        Q_CORE_EXPORT bool isWritable() const;
+        Q_CORE_EXPORT bool isExecutable() const;
+        Q_CORE_EXPORT QFileInfo fileInfo() const;
+        Q_CORE_EXPORT QString canonicalFilePath() const;
+        Q_CORE_EXPORT QString absoluteFilePath() const;
+        Q_CORE_EXPORT QString absolutePath() const;
+        Q_CORE_EXPORT qint64 size() const;
 
         QDateTime birthTime(const QTimeZone &tz) const
         { return fileTime(QFileDevice::FileBirthTime, tz); }
@@ -87,7 +88,7 @@ public:
         { return fileTime(QFileDevice::FileModificationTime, tz); }
         QDateTime lastRead(const QTimeZone &tz) const
         { return fileTime(QFileDevice::FileAccessTime, tz); }
-        QDateTime fileTime(QFileDevice::FileTime type, const QTimeZone &tz) const;
+        Q_CORE_EXPORT QDateTime fileTime(QFileDevice::FileTime type, const QTimeZone &tz) const;
     };
 
     class const_iterator
@@ -117,7 +118,7 @@ public:
         { return !(lhs == rhs); }
     };
 
-    const_iterator begin() const;
+    Q_CORE_EXPORT const_iterator begin() const;
     const_iterator cbegin() const { return begin(); }
     const_iterator end() const { return {}; }
     const_iterator cend() const { return end(); }
@@ -133,8 +134,8 @@ private:
     // `uint` instead of QDir::Filters and QDirIterator::IteratorFlags
     // because qdir.h can't be included here; qdiriterator.h can't included
     // either, because it includes qdir.h
-    QDirListing(const QString &path, const QStringList &nameFilters, uint dirFilters,
-                uint qdirIteratorFlags = 0); // QDirIterator::NoIteratorFlags == 0x0
+    Q_CORE_EXPORT QDirListing(const QString &path, const QStringList &nameFilters, uint dirFilters,
+                              uint qdirIteratorFlags = 0); // QDirIterator::NoIteratorFlags == 0x0
 
     std::unique_ptr<QDirListingPrivate> d;
     friend class QDir;
