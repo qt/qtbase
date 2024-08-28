@@ -285,8 +285,14 @@ struct QChildProcess
     }
     ~QChildProcess() noexcept(false)
     {
+        cleanup();
+    }
+
+    void cleanup() noexcept(false)
+    {
         if (workingDirectory >= 0)
             close(workingDirectory);
+        workingDirectory = -1;
 
         restoreSignalMask();
         restoreThreadCancellations();
@@ -306,6 +312,7 @@ struct QChildProcess
 
     void restoreSignalMask() const noexcept
     {
+        // this function may be called more than once
         if (isUsingVfork)
             pthread_sigmask(SIG_SETMASK, &oldsigset, nullptr);
     }
@@ -348,9 +355,11 @@ private:
     }
     void restoreThreadCancellations() noexcept(false)
     {
-        if (oldstate != PTHREAD_CANCEL_DISABLE) {
+        // ensure we don't call pthread_setcancelstate() again
+        int oldoldstate = std::exchange(oldstate, PTHREAD_CANCEL_DISABLE);
+        if (oldoldstate != PTHREAD_CANCEL_DISABLE) {
             // this doesn't touch errno
-            pthread_setcancelstate(oldstate, nullptr);
+            pthread_setcancelstate(oldoldstate, nullptr);
         }
     }
 #else
@@ -727,6 +736,7 @@ void QProcessPrivate::startProcess()
 
     if (forkfd == -1) {
         // Cleanup, report error and return
+        childProcess.cleanup();
 #if defined (QPROCESS_DEBUG)
         qDebug("fork failed: %ls", qUtf16Printable(qt_error_string(lastForkErrno)));
 #endif
@@ -1337,6 +1347,7 @@ bool QProcessPrivate::startDetached(qint64 *pid)
     closeChannels();
 
     if (childPid == -1) {
+        childProcess.cleanup();
         setErrorAndEmit(QProcess::FailedToStart, "fork: "_L1 + qt_error_string(savedErrno));
         return false;
     }
@@ -1367,6 +1378,7 @@ bool QProcessPrivate::startDetached(qint64 *pid)
     } else if (!success) {
         if (pid)
             *pid = -1;
+        childProcess.cleanup();
         setErrorAndEmit(QProcess::FailedToStart,
                         startFailureErrorMessage(childStatus, startResult));
     }
