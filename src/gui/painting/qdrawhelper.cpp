@@ -1251,6 +1251,45 @@ static inline uint interpolate_4_pixels_16(uint tl, uint tr, uint bl, uint br, u
 }
 #endif
 
+#if defined(__loongarch_sx)
+static inline void interpolate_4_pixels_16_lsx(__m128i tl, __m128i tr, __m128i bl, __m128i br,
+                                               __m128i distx, __m128i disty, uint *b)
+{
+    const __m128i colorMask = __lsx_vreplgr2vr_w(0x00ff00ff);
+    const __m128i v_256 = __lsx_vreplgr2vr_h(256);
+    const __m128i dxdy = __lsx_vmul_h(distx, disty);
+    const __m128i distx_ = __lsx_vslli_h(distx, 4);
+    const __m128i disty_ = __lsx_vslli_h(disty, 4);
+    const __m128i idxidy =  __lsx_vadd_h(dxdy, __lsx_vsub_h(v_256, __lsx_vadd_h(distx_, disty_)));
+    const __m128i dxidy = __lsx_vsub_h(distx_, dxdy);
+    const __m128i idxdy = __lsx_vsub_h(disty_,dxdy);
+
+    __m128i tlAG = __lsx_vsrli_h(tl, 8);
+    __m128i tlRB = __lsx_vand_v(tl, colorMask);
+    __m128i trAG = __lsx_vsrli_h(tr, 8);
+    __m128i trRB = __lsx_vand_v(tr, colorMask);
+    __m128i blAG = __lsx_vsrli_h(bl, 8);
+    __m128i blRB = __lsx_vand_v(bl, colorMask);
+    __m128i brAG = __lsx_vsrli_h(br, 8);
+    __m128i brRB = __lsx_vand_v(br, colorMask);
+
+    tlAG = __lsx_vmul_h(tlAG, idxidy);
+    tlRB = __lsx_vmul_h(tlRB, idxidy);
+    trAG = __lsx_vmul_h(trAG, dxidy);
+    trRB = __lsx_vmul_h(trRB, dxidy);
+    blAG = __lsx_vmul_h(blAG, idxdy);
+    blRB = __lsx_vmul_h(blRB, idxdy);
+    brAG = __lsx_vmul_h(brAG, dxdy);
+    brRB = __lsx_vmul_h(brRB, dxdy);
+
+    __m128i rAG =__lsx_vadd_h(__lsx_vadd_h(tlAG, trAG), __lsx_vadd_h(blAG, brAG));
+    __m128i rRB =__lsx_vadd_h(__lsx_vadd_h(tlRB, trRB), __lsx_vadd_h(blRB, brRB));
+    rAG = __lsx_vandn_v(colorMask, rAG);
+    rRB = __lsx_vsrli_h(rRB, 8);
+    __lsx_vst(__lsx_vor_v(rAG, rRB), b, 0);
+}
+#endif
+
 template<TextureBlendType blendType>
 void fetchTransformedBilinear_pixelBounds(int max, int l1, int l2, int &v1, int &v2);
 
@@ -1425,6 +1464,36 @@ static void QT_FASTCALL fetchTransformedBilinearARGB32PM_simple_scale_helper(uin
             int16x8_t rRB = vaddq_s16(topRB, bottomRB);
             rRB = vreinterpretq_s16_u16(vshrq_n_u16(vreinterpretq_u16_s16(rRB), 8));
             vst1q_s16((int16_t*)(&intermediate.buffer_rb[f]), rRB);
+        }
+#elif defined(__loongarch_sx)
+        const __m128i disty_ = __lsx_vreplgr2vr_h(disty);
+        const __m128i idisty_ = __lsx_vreplgr2vr_h(idisty);
+        const __m128i colorMask = __lsx_vreplgr2vr_w(0x00ff00ff);
+
+        lim -= 3;
+        for (; f < lim; x += 4, f += 4) {
+            // Load 4 pixels from s1, and split the alpha-green and red-blue component
+            __m128i top = __lsx_vld((const __m128i*)((const uint *)(s1)+x), 0);
+            __m128i topAG = __lsx_vsrli_h(top, 8);
+            __m128i topRB = __lsx_vand_v(top, colorMask);
+            // Multiplies each color component by idisty
+            topAG = __lsx_vmul_h(topAG, idisty_);
+            topRB = __lsx_vmul_h(topRB, idisty_);
+
+            // Same for the s2 vector
+            __m128i bottom = __lsx_vld((const __m128i*)((const uint *)(s2)+x), 0);
+            __m128i bottomAG = __lsx_vsrli_h(bottom, 8);
+            __m128i bottomRB = __lsx_vand_v(bottom, colorMask);
+            bottomAG = __lsx_vmul_h(bottomAG, disty_);
+            bottomRB = __lsx_vmul_h(bottomRB, disty_);
+
+            // Add the values, and shift to only keep 8 significant bits per colors
+            __m128i rAG = __lsx_vadd_h(topAG, bottomAG);
+            rAG = __lsx_vsrli_h(rAG, 8);
+            __lsx_vst(rAG, (__m128i*)(&intermediate.buffer_ag[f]), 0);
+            __m128i rRB = __lsx_vadd_h(topRB, bottomRB);
+            rRB = __lsx_vsrli_h(rRB, 8);
+            __lsx_vst(rRB, (__m128i*)(&intermediate.buffer_rb[f]), 0);
         }
 #endif
     }
@@ -1615,6 +1684,33 @@ static void QT_FASTCALL fetchTransformedBilinearARGB32PM_downscale_helper(uint *
             b+=4;
             v_fx = vaddq_s32(v_fx, v_fdx);
         }
+#elif defined (__loongarch_sx)
+        const __m128i shuffleMask = (__m128i)(v8i16){0, 0, 2, 2, 4, 4, 6, 6};
+        const __m128i v_disty = __lsx_vreplgr2vr_h(disty4);
+        const __m128i v_fdx = __lsx_vreplgr2vr_w(fdx*4);
+        const __m128i v_fx_r = __lsx_vreplgr2vr_w(0x8);
+        __m128i v_fx = (__m128i)(v4i32){fx, fx + fdx, fx + fdx + fdx, fx + fdx + fdx + fdx};
+
+        while (b < boundedEnd - 3) {
+            __m128i offset = __lsx_vsrli_w(v_fx, 16);
+            const int offset0 = __lsx_vpickve2gr_w(offset, 0);
+            const int offset1 = __lsx_vpickve2gr_w(offset, 1);
+            const int offset2 = __lsx_vpickve2gr_w(offset, 2);
+            const int offset3 = __lsx_vpickve2gr_w(offset, 3);
+            const __m128i tl = (__m128i)(v4u32){s1[offset0], s1[offset1], s1[offset2], s1[offset3]};
+            const __m128i tr = (__m128i)(v4u32){s1[offset0 + 1], s1[offset1 + 1], s1[offset2 + 1], s1[offset3 + 1]};
+            const __m128i bl = (__m128i)(v4u32){s2[offset0], s2[offset1], s2[offset2], s2[offset3]};
+            const __m128i br = (__m128i)(v4u32){s2[offset0 + 1], s2[offset1 + 1], s2[offset2 + 1], s2[offset3 + 1]};
+
+            __m128i v_distx = __lsx_vsrli_h(v_fx, 8);
+            v_distx = __lsx_vsrli_h(__lsx_vadd_w(v_distx, v_fx_r), 4);
+            v_distx = __lsx_vshuf_h(shuffleMask, v_distx, v_distx);
+
+            interpolate_4_pixels_16_lsx(tl, tr, bl, br, v_distx, v_disty, b);
+            b += 4;
+            v_fx = __lsx_vadd_w(v_fx, v_fdx);
+        }
+        fx = __lsx_vpickve2gr_w(v_fx, 0);
 #endif
         while (b < boundedEnd) {
             int x = (fx >> 16);
@@ -1852,6 +1948,50 @@ static void QT_FASTCALL fetchTransformedBilinearARGB32PM_fast_rotate_helper(uint
             v_fx = vaddq_s32(v_fx, v_fdx);
             v_fy = vaddq_s32(v_fy, v_fdy);
         }
+#elif defined(__loongarch_sx)
+        const __m128i v_fdx = __lsx_vreplgr2vr_w(fdx*4);
+        const __m128i v_fdy = __lsx_vreplgr2vr_w(fdy*4);
+        const __m128i v_fxy_r = __lsx_vreplgr2vr_w(0x8);
+        __m128i v_fx = (__m128i)(v4i32){fx, fx + fdx, fx + fdx + fdx, fx + fdx + fdx + fdx};
+        __m128i v_fy = (__m128i)(v4i32){fy, fy + fdy, fy + fdy + fdy, fy + fdy + fdy + fdy};
+
+        const uchar *textureData = image.imageData;
+        const qsizetype bytesPerLine = image.bytesPerLine;
+        const __m128i zero = __lsx_vldi(0);
+        const __m128i shuffleMask = (__m128i)(v8i16){0, 0, 0, 0, 4, 5, 6, 7};
+        const __m128i shuffleMask1 = (__m128i)(v8i16){0, 0, 2, 2, 4, 4, 6, 6};
+        const __m128i vbpl = __lsx_vshuf_h(shuffleMask, zero, __lsx_vinsgr2vr_w(zero, bytesPerLine/4, 0));
+
+        while (b < boundedEnd - 3) {
+            const __m128i vy = __lsx_vpickev_h(zero, __lsx_vsat_w(__lsx_vsrli_w(v_fy, 16), 15));
+            // 4x16bit * 4x16bit -> 4x32bit
+            __m128i offset = __lsx_vilvl_h(__lsx_vmuh_h(vy, vbpl), __lsx_vmul_h(vy, vbpl));
+            offset = __lsx_vadd_w(offset, __lsx_vsrli_w(v_fx, 16));
+            const int offset0 = __lsx_vpickve2gr_w(offset, 0);
+            const int offset1 = __lsx_vpickve2gr_w(offset, 1);
+            const int offset2 = __lsx_vpickve2gr_w(offset, 2);
+            const int offset3 = __lsx_vpickve2gr_w(offset, 3);
+            const uint *topData = (const uint *)(textureData);
+            const __m128i tl = (__m128i)(v4u32){topData[offset0], topData[offset1], topData[offset2], topData[offset3]};
+            const __m128i tr = (__m128i)(v4u32){topData[offset0 + 1], topData[offset1 + 1], topData[offset2 + 1], topData[offset3 + 1]};
+            const uint *bottomData = (const uint *)(textureData + bytesPerLine);
+            const __m128i bl = (__m128i)(v4u32){bottomData[offset0], bottomData[offset1], bottomData[offset2], bottomData[offset3]};
+            const __m128i br = (__m128i)(v4u32){bottomData[offset0 + 1], bottomData[offset1 + 1], bottomData[offset2 + 1], bottomData[offset3 + 1]};
+
+            __m128i v_distx = __lsx_vsrli_h(v_fx, 8);
+            __m128i v_disty = __lsx_vsrli_h(v_fy, 8);
+            v_distx = __lsx_vsrli_h(__lsx_vadd_w(v_distx, v_fxy_r), 4);
+            v_disty = __lsx_vsrli_h(__lsx_vadd_w(v_disty, v_fxy_r), 4);
+            v_distx = __lsx_vshuf_h(shuffleMask1, zero, v_distx);
+            v_disty = __lsx_vshuf_h(shuffleMask1, zero, v_disty);
+
+            interpolate_4_pixels_16_lsx(tl, tr, bl, br, v_distx, v_disty, b);
+            b += 4;
+            v_fx = __lsx_vadd_w(v_fx, v_fdx);
+            v_fy = __lsx_vadd_w(v_fy, v_fdy);
+        }
+        fx = __lsx_vpickve2gr_w(v_fx, 0);
+        fy = __lsx_vpickve2gr_w(v_fy, 0);
 #endif
         while (b < boundedEnd) {
             int x = (fx >> 16);

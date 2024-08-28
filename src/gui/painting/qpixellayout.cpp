@@ -1141,6 +1141,108 @@ static inline void qConvertARGB32PMToRGBA64PM_neon(QRgba64 *buffer, const uint *
         *buffer++ = QRgba64::fromArgb32(s);
     }
 }
+#elif defined __loongarch_sx
+template<bool RGBA, bool maskAlpha>
+static inline void qConvertARGB32PMToRGBA64PM_lsx(QRgba64 *buffer, const uint *src, int count)
+{
+    if (count <= 0)
+        return;
+
+    const __m128i amask = __lsx_vreplgr2vr_w(0xff000000);
+    const __m128i shuffleMask = (__m128i)(v8i16){2, 1, 0, 3, 6, 5, 4, 7};
+    int i = 0;
+    for (; ((uintptr_t)buffer & 0xf) && i < count; ++i) {
+        uint s = *src++;
+        if (maskAlpha)
+            s = s | 0xff000000;
+        if (RGBA)
+            s = RGBA2ARGB(s);
+        *buffer++ = QRgba64::fromArgb32(s);
+    }
+    for (; i < count-3; i += 4) {
+        __m128i vs = __lsx_vld((const __m128i*)src, 0);
+        if (maskAlpha)
+            vs = __lsx_vor_v(vs, amask);
+        src += 4;
+        __m128i v1 = __lsx_vilvl_b(vs, vs);
+        __m128i v2 = __lsx_vilvh_b(vs, vs);
+        if (!RGBA) {
+            v1 = __lsx_vshuf_h(shuffleMask, v1, v1);
+            v2 = __lsx_vshuf_h(shuffleMask, v2, v2);
+        }
+        __lsx_vst(v1, buffer, 0);
+        buffer += 2;
+        __lsx_vst(v2, buffer, 0);
+        buffer += 2;
+    }
+
+    SIMD_EPILOGUE(i, count, 3) {
+        uint s = *src++;
+        if (maskAlpha)
+            s = s | 0xff000000;
+        if (RGBA)
+            s = RGBA2ARGB(s);
+        *buffer++ = QRgba64::fromArgb32(s);
+    }
+}
+
+template<QtPixelOrder PixelOrder>
+static inline void qConvertRGBA64PMToA2RGB30PM_lsx(uint *dest, const QRgba64 *buffer, int count)
+{
+    const __m128i gmask = __lsx_vreplgr2vr_w(0x000ffc00);
+    const __m128i cmask = __lsx_vreplgr2vr_w(0x000003ff);
+    int i = 0;
+    __m128i vr, vg, vb, va;
+    for (; i < count && uintptr_t(buffer) & 0xF; ++i) {
+        *dest++ = qConvertRgb64ToRgb30<PixelOrder>(*buffer++);
+    }
+
+    for (; i < count-15; i += 16) {
+        __m128i vOr = __lsx_vreplgr2vr_w(0);
+        __m128i vAnd = __lsx_vreplgr2vr_w(0xffffffff);
+        for (int j = 0; j < 16; j += 2) {
+            __m128i vs = __lsx_vld((const __m128i*)(buffer + j), 0);
+            vOr = __lsx_vor_v(vOr, vs);
+            vAnd = __lsx_vand_v(vAnd, vs);
+        }
+        const quint16 orAlpha = ((uint)__lsx_vpickve2gr_h(vOr, 3)) | ((uint)__lsx_vpickve2gr_h(vOr, 7));
+        const quint16 andAlpha = ((uint)__lsx_vpickve2gr_h(vAnd, 3)) & ((uint)__lsx_vpickve2gr_h(vAnd, 7));
+
+        if (andAlpha == 0xffff) {
+            for (int j = 0; j < 16; j += 2) {
+                __m128i vs = __lsx_vld((const __m128i*)buffer, 0);
+                buffer += 2;
+                vr = __lsx_vsrli_d(vs, 6);
+                vg = __lsx_vsrli_d(vs, 16 + 6 - 10);
+                vb = __lsx_vsrli_d(vs, 32 + 6);
+                vr = __lsx_vand_v(vr, cmask);
+                vg = __lsx_vand_v(vg, gmask);
+                vb = __lsx_vand_v(vb, cmask);
+                va = __lsx_vsrli_d(vs, 48 + 14);
+                if (PixelOrder == PixelOrderRGB)
+                    vr = __lsx_vslli_w(vr, 20);
+                else
+                    vb = __lsx_vslli_w(vb, 20);
+                va = __lsx_vslli_w(va, 30);
+                __m128i vd = __lsx_vor_v(__lsx_vor_v(vr, vg), __lsx_vor_v(vb, va));
+                vd = __lsx_vshuf4i_w(vd, 0b11011000);
+                __lsx_vstelm_d(vd, dest, 0, 0);
+                dest += 2;
+            }
+        } else if (orAlpha == 0) {
+            for (int j = 0; j < 16; ++j) {
+                *dest++ = 0;
+                buffer++;
+            }
+        } else {
+            for (int j = 0; j < 16; ++j)
+                *dest++ = qConvertRgb64ToRgb30<PixelOrder>(*buffer++);
+        }
+    }
+
+    SIMD_EPILOGUE(i, count, 15)
+        *dest++ = qConvertRgb64ToRgb30<PixelOrder>(*buffer++);
+}
 #endif
 
 static const QRgba64 *QT_FASTCALL convertRGB32ToRGB64(QRgba64 *buffer, const uint *src, int count,
@@ -1150,6 +1252,8 @@ static const QRgba64 *QT_FASTCALL convertRGB32ToRGB64(QRgba64 *buffer, const uin
     qConvertARGB32PMToRGBA64PM_sse2<false, true>(buffer, src, count);
 #elif defined(__ARM_NEON__)
     qConvertARGB32PMToRGBA64PM_neon<false, true>(buffer, src, count);
+#elif defined(__loongarch_sx)
+    qConvertARGB32PMToRGBA64PM_lsx<false, true>(buffer, src, count);
 #else
     for (int i = 0; i < count; ++i)
         buffer[i] = QRgba64::fromArgb32(0xff000000 | src[i]);
@@ -1184,6 +1288,8 @@ static const QRgba64 *QT_FASTCALL convertARGB32PMToRGBA64PM(QRgba64 *buffer, con
     qConvertARGB32PMToRGBA64PM_sse2<false, false>(buffer, src, count);
 #elif defined(__ARM_NEON__)
     qConvertARGB32PMToRGBA64PM_neon<false, false>(buffer, src, count);
+#elif defined(__loongarch_sx)
+    qConvertARGB32PMToRGBA64PM_lsx<false, false>(buffer, src, count);
 #else
     for (int i = 0; i < count; ++i)
         buffer[i] = QRgba64::fromArgb32(src[i]);
@@ -1238,6 +1344,8 @@ static const QRgba64 *QT_FASTCALL convertRGBA8888PMToRGBA64PM(QRgba64 *buffer, c
     qConvertARGB32PMToRGBA64PM_sse2<true, false>(buffer, src, count);
 #elif defined(__ARM_NEON__)
     qConvertARGB32PMToRGBA64PM_neon<true, false>(buffer, src, count);
+#elif defined(__loongarch_sx)
+    qConvertARGB32PMToRGBA64PM_lsx<true, false>(buffer, src, count);
 #else
     for (int i = 0; i < count; ++i)
         buffer[i] = QRgba64::fromArgb32(RGBA2ARGB(src[i]));
@@ -1348,6 +1456,48 @@ static inline void qConvertA2RGB30PMToRGBA64PM_sse2(QRgba64 *buffer, const uint 
     SIMD_EPILOGUE(i, count, 3)
         *buffer++ = qConvertA2rgb30ToRgb64<PixelOrder>(*src++);
 }
+#elif defined(__loongarch_sx)
+template<QtPixelOrder PixelOrder>
+static inline void qConvertA2RGB30PMToRGBA64PM_lsx(QRgba64 *buffer, const uint *src, int count)
+{
+    if (count <= 0)
+        return;
+
+    const __m128i rmask = __lsx_vreplgr2vr_w(0x3ff00000);
+    const __m128i gmask = __lsx_vreplgr2vr_w(0x000ffc00);
+    const __m128i bmask = __lsx_vreplgr2vr_w(0x000003ff);
+    const __m128i afactor = __lsx_vreplgr2vr_h(0x5555);
+    int i = 0;
+
+    for (; ((uintptr_t)buffer & 0xf) && i < count; ++i)
+        *buffer++ = qConvertA2rgb30ToRgb64<PixelOrder>(*src++);
+
+    for (; i < count-3; i += 4) {
+        __m128i vs = __lsx_vld((const __m128i*)src, 0);
+        src += 4;
+        __m128i va = __lsx_vsrli_w(vs, 30);
+        __m128i vr = __lsx_vand_v(vs, rmask);
+        __m128i vb = __lsx_vand_v(vs, bmask);
+        __m128i vg = __lsx_vand_v(vs, gmask);
+        va = __lsx_vmul_h(va, afactor);
+        vr = __lsx_vor_v(__lsx_vsrli_w(vr, 14), __lsx_vsrli_w(vr, 24));
+        vg = __lsx_vor_v(__lsx_vsrli_w(vg, 4), __lsx_vsrli_w(vg, 14));
+        vb = __lsx_vor_v(__lsx_vslli_w(vb, 6), __lsx_vsrli_w(vb, 4));
+        __m128i vrb;
+        if (PixelOrder == PixelOrderRGB)
+             vrb = __lsx_vor_v(vr, __lsx_vbsll_v(vb, 2));
+        else
+             vrb = __lsx_vor_v(vb, __lsx_vbsll_v(vr, 2));
+        __m128i vga = __lsx_vor_v(vg, __lsx_vbsll_v(va, 2));
+        __lsx_vst(__lsx_vilvl_h(vga, vrb), buffer, 0);
+        buffer += 2;
+        __lsx_vst(__lsx_vilvh_h(vga, vrb), buffer, 0);
+        buffer += 2;
+    }
+
+    SIMD_EPILOGUE(i, count, 3)
+        *buffer++ = qConvertA2rgb30ToRgb64<PixelOrder>(*src++);
+}
 #endif
 
 template<QtPixelOrder PixelOrder>
@@ -1356,6 +1506,8 @@ static const QRgba64 *QT_FASTCALL convertA2RGB30PMToRGBA64PM(QRgba64 *buffer, co
 {
 #ifdef __SSE2__
     qConvertA2RGB30PMToRGBA64PM_sse2<PixelOrder>(buffer, src, count);
+#elif defined (__loongarch_sx)
+    qConvertA2RGB30PMToRGBA64PM_lsx<PixelOrder>(buffer, src, count);
 #else
     for (int i = 0; i < count; ++i)
         buffer[i] = qConvertA2rgb30ToRgb64<PixelOrder>(src[i]);
@@ -1464,6 +1616,37 @@ void qt_convertRGBA64ToARGB32(uint *dst, const QRgba64 *src, int count)
         v1 = _mm_packs_epi32(v1, v2);
         v1 = _mm_packus_epi16(v1, vzero);
         _mm_storel_epi64((__m128i*)(dst), v1);
+        dst += 2;
+    }
+#elif defined(__loongarch_sx)
+    if (((uintptr_t)dst & 0x7) && count > 0) {
+        uint s = (*src++).toArgb32();
+        if (RGBA)
+            s = ARGB2RGBA(s);
+        *dst++ = s;
+        i++;
+    }
+    const __m128i vhalf = __lsx_vreplgr2vr_w(0x80);
+    const __m128i vzero = __lsx_vldi(0);
+    const __m128i shuffleMask = (__m128i)(v8i16){2, 1, 0, 3, 6, 5, 4, 7};
+    for (; i < count-1; i += 2) {
+        __m128i vs = __lsx_vld((const __m128i*)src, 0);
+        src += 2;
+        if (!RGBA) {
+            vs = __lsx_vshuf_h(shuffleMask, vzero, vs);
+        }
+        __m128i v1 = __lsx_vilvl_h(vzero, vs);
+        __m128i v2 = __lsx_vilvh_h(vzero, vs);
+        v1 = __lsx_vadd_w(v1, vhalf);
+        v2 = __lsx_vadd_w(v2, vhalf);
+        v1 = __lsx_vsub_w(v1, __lsx_vsrli_w(v1, 8));
+        v2 = __lsx_vsub_w(v2, __lsx_vsrli_w(v2, 8));
+        v1 = __lsx_vsrli_w(v1, 8);
+        v2 = __lsx_vsrli_w(v2, 8);
+        v1 = __lsx_vpickev_h(__lsx_vsat_w(v2, 15), __lsx_vsat_w(v1, 15));
+        v1 = __lsx_vmaxi_h(v1, 0);
+        v1 = __lsx_vpickev_b(vzero, __lsx_vsat_hu(v1, 7));
+        __lsx_vstelm_d(v1, dst, 0, 0);
         dst += 2;
     }
 #endif
@@ -1902,6 +2085,8 @@ static void QT_FASTCALL storeRGB30FromRGBA64PM(uchar *dest, const QRgba64 *src, 
     uint *d = (uint*)dest + index;
 #ifdef __SSE2__
     qConvertRGBA64PMToA2RGB30PM_sse2<PixelOrder>(d, src, count);
+#elif defined (__loongarch_sx)
+    qConvertRGBA64PMToA2RGB30PM_lsx<PixelOrder>(d, src, count);
 #else
     for (int i = 0; i < count; ++i)
         d[i] = qConvertRgb64ToRgb30<PixelOrder>(src[i]);
