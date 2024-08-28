@@ -302,11 +302,14 @@ Q_GLOBAL_STATIC(QTimeZoneSingleton, global_tz);
     The type of time zone name.
 
     \value DefaultName
-           The default form of the time zone name, e.g. LongName, ShortName or OffsetName
+           The default form of the time zone name, one of LongName, ShortName or
+           OffsetName
     \value LongName
            The long form of the time zone name, e.g. "Central European Time"
     \value ShortName
-           The short form of the time zone name, usually an abbreviation, e.g. "CET"
+           The short form of the time zone name, usually an abbreviation,
+           e.g. "CET", in locales that have one for the zone, otherwise a
+           compact GMT-offset form, e.g. "GMT+1"
     \value OffsetName
            The standard ISO offset form of the time zone name, e.g. "UTC+01:00"
 
