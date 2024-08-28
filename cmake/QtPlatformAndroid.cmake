@@ -36,7 +36,7 @@ function(qt_get_android_sdk_jar_for_api api out_jar_location)
 endfunction()
 
 # Minimum recommend android SDK api version
-set(QT_ANDROID_API_VERSION "android-33")
+set(QT_ANDROID_API_VERSION "android-34")
 
 function(qt_internal_sort_android_platforms out_var)
     if(CMAKE_VERSION GREATER_EQUAL 3.18)
