@@ -136,19 +136,20 @@ inline constexpr int qMetaTypeId();
     F(QObjectStar, 39, QObject*)
 
 #ifndef QT_NO_VARIANT
-#  define QT_FOR_EACH_STATIC_CORE_TEMPLATE(F)\
+#  define QT_FOR_EACH_STATIC_CORE_QVARIANT_TEMPLATE(F) \
     F(QVariantMap, 8, QVariantMap) \
     F(QVariantList, 9, QVariantList) \
     F(QVariantHash, 28, QVariantHash) \
     F(QVariantPair, 58, QVariantPair) \
-    F(QByteArrayList, 49, QByteArrayList) \
-    F(QStringList, 11, QStringList) \
     /**/
 #else
-#  define QT_FOR_EACH_STATIC_CORE_TEMPLATE(F)\
+#  define QT_FOR_EACH_STATIC_CORE_QVARIANT_TEMPLATE(F)
+#endif // QT_NO_VARIANT
+
+#define QT_FOR_EACH_STATIC_CORE_TEMPLATE(F) \
+    QT_FOR_EACH_STATIC_CORE_QVARIANT_TEMPLATE(F) \
     F(QByteArrayList, 49, QByteArrayList) \
     F(QStringList, 11, QStringList)
-#endif
 
 #if QT_CONFIG(shortcut)
 #define QT_FOR_EACH_STATIC_KEYSEQUENCE_CLASS(F)\
