@@ -257,17 +257,19 @@ void Generator::generateCode()
 
     const QByteArray qualifiedClassNameIdentifier = generateQualifiedClassNameIdentifier(cdef->qualified);
 
-    // ensure the qt_meta_stringdata_XXXX_t type is local
-    fprintf(out, "namespace {\n");
+    // ensure the qt_meta_tag_XXXX_t type is local
+    fprintf(out, "namespace {\n"
+                 "struct qt_meta_tag_%s_t {};\n"
+                 "} // unnamed namespace\n\n",
+            qualifiedClassNameIdentifier.constData());
 
 //
-// Build the strings using QtMocHelpers::StringData
+// Build the strings using QtMocHelpers::stringData
 //
 
     fprintf(out, "\n#ifdef QT_MOC_HAS_STRINGDATA\n"
-                 "struct qt_meta_stringdata_%s_t {};\n"
-                 "constexpr auto qt_meta_stringdata_%s = QtMocHelpers::stringData(",
-            qualifiedClassNameIdentifier.constData(), qualifiedClassNameIdentifier.constData());
+                 "static constexpr auto qt_meta_stringdata_%s = QtMocHelpers::stringData(",
+            qualifiedClassNameIdentifier.constData());
     {
         char comma = 0;
         for (const QByteArray &str : strings) {
@@ -280,8 +282,7 @@ void Generator::generateCode()
     fprintf(out, "\n);\n"
             "#else  // !QT_MOC_HAS_STRINGDATA\n");
     fprintf(out, "#error \"qtmochelpers.h not found or too old.\"\n");
-    fprintf(out, "#endif // !QT_MOC_HAS_STRINGDATA\n");
-    fprintf(out, "} // unnamed namespace\n\n");
+    fprintf(out, "#endif // !QT_MOC_HAS_STRINGDATA\n\n");
 
 //
 // build the data array
@@ -512,7 +513,7 @@ void Generator::generateCode()
         return "QtPrivate::TypeAndForceComplete<" % type % forceCompleteType;
     };
     if (!requireCompleteness) {
-        fprintf(out, "    qt_incomplete_metaTypeArray<qt_meta_stringdata_%s_t", qualifiedClassNameIdentifier.constData());
+        fprintf(out, "    qt_incomplete_metaTypeArray<qt_meta_tag_%s_t", qualifiedClassNameIdentifier.constData());
         comma = ",";
     } else {
         fprintf(out, "    qt_metaTypeArray<");
