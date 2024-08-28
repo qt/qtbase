@@ -6,6 +6,7 @@
 
 #include <QtCore/qchar.h>
 #include <QtCore/qcompare.h>
+#include <QtCore/qcontainerfwd.h>
 #include <QtCore/qbytearray.h>
 #include <QtCore/qstringliteral.h>
 #include <QtCore/qstringalgorithms.h>
@@ -408,6 +409,8 @@ public:
     [[nodiscard]] Q_IMPLICIT operator std::u16string_view() const noexcept
     { return std::u16string_view(m_data, size_t(m_size)); }
 
+    [[nodiscard]] constexpr qsizetype max_size() const noexcept { return maxSize(); }
+
     //
     // Qt compatibility API:
     //
@@ -419,6 +422,12 @@ public:
     { return size(); }
     [[nodiscard]] constexpr QChar first() const { return front(); }
     [[nodiscard]] constexpr QChar last()  const { return back(); }
+
+    [[nodiscard]] static constexpr qsizetype maxSize() noexcept
+    {
+        // -1 to deal with the pointer one-past-the-end;
+        return QtPrivate::MaxAllocSize / sizeof(storage_type) - 1;
+    }
 private:
 #if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0) || defined(QT_BOOTSTRAPPED)
     const storage_type *m_data = nullptr;

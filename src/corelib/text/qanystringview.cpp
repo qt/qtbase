@@ -641,6 +641,21 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn QAnyStringView::max_size() const
+    \since 6.8
+
+    This function is provided for STL compatibility.
+
+    It returns the maximum number of elements that the string view can
+    theoretically represent. In practice, the number can be much smaller,
+    limited by the amount of memory available to the system.
+
+    \note The returned value is calculated based on the currently used character
+    type, so calling this function on two different views may return different
+    results.
+*/
+
+/*!
     \fn QAnyStringView::operator<<(QDebug d, QAnyStringView s)
     \since 6.7
     \relates QDebug

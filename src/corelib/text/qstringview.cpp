@@ -1478,4 +1478,22 @@ or the character \a ch
     this view.
 */
 
+/*!
+    \fn QStringView::maxSize()
+    \since 6.8
+
+    It returns the maximum number of elements that the view can
+    theoretically represent. In practice, the number can be much smaller,
+    limited by the amount of memory available to the system.
+*/
+
+/*!
+    \fn QStringView::max_size() const
+    \since 6.8
+
+    This function is provided for STL compatibility.
+
+    Returns maxSize().
+*/
+
 QT_END_NAMESPACE

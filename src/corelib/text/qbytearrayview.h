@@ -5,6 +5,7 @@
 
 #include <QtCore/qbytearrayalgorithms.h>
 #include <QtCore/qcompare.h>
+#include <QtCore/qcontainerfwd.h>
 #include <QtCore/qstringfwd.h>
 #include <QtCore/qarraydata.h>
 
@@ -320,6 +321,8 @@ public:
     [[nodiscard]] constexpr Q_IMPLICIT operator std::string_view() const noexcept
     { return std::string_view(m_data, size_t(m_size)); }
 
+    [[nodiscard]] constexpr qsizetype max_size() const noexcept { return maxSize(); }
+
     //
     // Qt compatibility API:
     //
@@ -329,6 +332,12 @@ public:
     { return size(); }
     [[nodiscard]] constexpr char first() const { return front(); }
     [[nodiscard]] constexpr char last()  const { return back(); }
+
+    [[nodiscard]] static constexpr qsizetype maxSize() noexcept
+    {
+        // -1 to deal with the pointer one-past-the-end;
+        return QtPrivate::MaxAllocSize - 1;
+    }
 
 private:
     Q_ALWAYS_INLINE constexpr void verify([[maybe_unused]] qsizetype pos = 0,
