@@ -164,6 +164,11 @@
                 "file type" : "util",
                 "spdx" : ["LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0"]
             },
+            "util/locale_database/testlocales/localemodel.cpp" : {
+                "comment" : "Exception: this contains CLDR-generated code",
+                "file type" : "util",
+                "spdx" : ["Unicode-3.0"]
+            },
             "util/wasm/batchedtestrunner/" : {
                 "comment" : "Exception: this is a helper tool",
                 "file type" : "util",
