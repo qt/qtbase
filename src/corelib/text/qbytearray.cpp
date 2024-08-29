@@ -1421,9 +1421,8 @@ QByteArray &QByteArray::operator=(const char *str)
 */
 
 /*! \fn qsizetype QByteArray::max_size()
+    \fn qsizetype QByteArray::maxSize()
     \since 6.8
-
-    This function is provided for STL compatibility.
 
     It returns the maximum number of elements that the byte array can
     theoretically hold. In practice, the number can be much smaller,

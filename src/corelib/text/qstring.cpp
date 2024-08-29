@@ -6415,9 +6415,8 @@ QString& QString::fill(QChar ch, qsizetype size)
 
 /*!
     \fn qsizetype QString::max_size()
+    \fn qsizetype QString::maxSize()
     \since 6.8
-
-    This function is provided for STL compatibility.
 
     It returns the maximum number of elements that the string can
     theoretically hold. In practice, the number can be much smaller,

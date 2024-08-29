@@ -184,10 +184,14 @@ public:
     iterator erase(const_iterator begin, const_iterator end);
     iterator erase(const_iterator pos) { return erase(pos, pos + 1); }
 
-    static constexpr qsizetype max_size() noexcept
+    static constexpr qsizetype maxSize() noexcept
     {
         // -1 to deal with the pointer one-past-the-end
         return (QtPrivate::MaxAllocSize / sizeof(T)) - 1;
+    }
+    static constexpr qsizetype max_size() noexcept
+    {
+        return maxSize();
     }
 
     size_t hash(size_t seed) const noexcept(QtPrivate::QNothrowHashable_v<T>)
@@ -404,6 +408,7 @@ public:
     }
 #ifdef Q_QDOC
     inline qsizetype size() const { return this->s; }
+    static constexpr qsizetype maxSize() noexcept { return QVLABase<T>::maxSize(); }
     static constexpr qsizetype max_size() noexcept { return QVLABase<T>::max_size(); }
 #endif
     using Base::size;

@@ -183,6 +183,12 @@ public:
         = default;
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QString)
     void swap(QString &other) noexcept { d.swap(other.d); }
+
+    static constexpr qsizetype maxSize() noexcept
+    {
+        // -1 to deal with the NUL terminator
+        return Data::maxSize() - 1;
+    }
     inline qsizetype size() const noexcept { return d.size; }
 #if QT_DEPRECATED_SINCE(6, 4)
     QT_DEPRECATED_VERSION_X_6_4("Use size() or length() instead.")
@@ -965,8 +971,7 @@ public:
     inline iterator erase(const_iterator it) { return erase(it, it + 1); }
     static constexpr qsizetype max_size() noexcept
     {
-        // -1 to deal with the NUL terminator
-        return Data::max_size() - 1;
+        return maxSize();
     }
 
     static inline QString fromStdString(const std::string &s);

@@ -395,6 +395,7 @@ public:
     bool operator>=(const QList &other) const;
 #endif // Q_QDOC
 
+    static constexpr qsizetype maxSize() { return Data::maxSize(); }
     qsizetype size() const noexcept { return d->size; }
     qsizetype count() const noexcept { return size(); }
     qsizetype length() const noexcept { return size(); }
@@ -692,7 +693,7 @@ public:
     void shrink_to_fit() { squeeze(); }
     static constexpr qsizetype max_size() noexcept
     {
-        return Data::max_size();
+        return maxSize();
     }
 
     // comfort
