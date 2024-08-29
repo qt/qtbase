@@ -465,7 +465,7 @@ QByteArray QLocalePrivate::bcp47Name(char separator) const
     return m_data->id().withLikelySubtagsRemoved().name(separator);
 }
 
-static qsizetype findLocaleIndexById(QLocaleId localeId)
+static qsizetype findLocaleIndexById(QLocaleId localeId) noexcept
 {
     qsizetype idx = locale_index[localeId.language_id];
     // If there are no locales for specified language (so we we've got the
@@ -484,7 +484,7 @@ static qsizetype findLocaleIndexById(QLocaleId localeId)
     return -1;
 }
 
-qsizetype QLocaleData::findLocaleIndex(QLocaleId lid)
+qsizetype QLocaleData::findLocaleIndex(QLocaleId lid) noexcept
 {
     QLocaleId localeId = lid;
     QLocaleId likelyId = localeId.withLikelySubtagsAdded();
@@ -853,7 +853,7 @@ static qsizetype defaultIndex()
     return data - locale_data;
 }
 
-const QLocaleData *QLocaleData::c()
+const QLocaleData *QLocaleData::c() noexcept
 {
     Q_ASSERT(locale_index[QLocale::C] == 0);
     return locale_data;
