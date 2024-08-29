@@ -182,6 +182,8 @@ QString QAccessibleApplication::text(QAccessible::Text t) const
         return QGuiApplication::applicationName();
     case QAccessible::Description:
         return QGuiApplication::applicationFilePath();
+    case QAccessible::Identifier:
+        return QGuiApplication::desktopFileName();
     default:
         break;
     }
