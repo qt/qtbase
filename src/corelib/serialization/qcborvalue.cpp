@@ -1808,7 +1808,7 @@ void QCborContainerPrivate::decodeStringFromCbor(QCborStreamReader &reader)
         // add space for aligned ByteData (this can't overflow)
         offset += sizeof(QtCbor::ByteData) + alignof(QtCbor::ByteData);
         offset &= ~(alignof(QtCbor::ByteData) - 1);
-        if (offset > size_t(QByteArray::max_size())) {
+        if (offset > size_t(QByteArray::maxSize())) {
             // overflow
             setErrorInReader(reader, { QCborError::DataTooLarge });
             return;
@@ -1821,9 +1821,9 @@ void QCborContainerPrivate::decodeStringFromCbor(QCborStreamReader &reader)
             // so capa how much we allocate
             newCapacity = offset + MaxMemoryIncrement - EstimatedOverhead;
         }
-        if (newCapacity > size_t(QByteArray::max_size())) {
+        if (newCapacity > size_t(QByteArray::maxSize())) {
             // this may cause an allocation failure
-            newCapacity = QByteArray::max_size();
+            newCapacity = QByteArray::maxSize();
         }
         if (newCapacity > size_t(data.capacity()))
             data.reserve(newCapacity);
@@ -1874,7 +1874,7 @@ void QCborContainerPrivate::decodeStringFromCbor(QCborStreamReader &reader)
 
         // check that this UTF-8 text string can be loaded onto a QString
         if (e.type == QCborValue::String) {
-            if (Q_UNLIKELY(b->len > QString::max_size())) {
+            if (Q_UNLIKELY(b->len > QString::maxSize())) {
                 setErrorInReader(reader, { QCborError::DataTooLarge });
                 status = QCborStreamReader::Error;
             }

@@ -898,7 +898,7 @@ void tst_QCborStreamReader::validation_data()
     // Add QCborStreamReader-specific limitations due to use of QByteArray and
     // QString, which are allocated by QArrayData::allocate().
     const qsizetype MaxInvalid = std::numeric_limits<QByteArray::size_type>::max();
-    const qsizetype MinInvalid = QByteArray::max_size() + 1;
+    const qsizetype MinInvalid = QByteArray::maxSize() + 1;
 
     addValidationColumns();
     addValidationData(MinInvalid);
@@ -975,7 +975,7 @@ void tst_QCborStreamReader::validation()
 
 void tst_QCborStreamReader::hugeDeviceValidation_data()
 {
-    addValidationHugeDevice(QByteArray::max_size() + 1, QString::max_size() + 1);
+    addValidationHugeDevice(QByteArray::maxSize() + 1, QString::maxSize() + 1);
 }
 
 void tst_QCborStreamReader::hugeDeviceValidation()

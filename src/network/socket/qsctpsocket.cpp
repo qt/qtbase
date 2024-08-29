@@ -132,7 +132,7 @@ bool QSctpSocketPrivate::canReadNotification()
                 bytesToRead = 4096;
             }
 
-            Q_ASSERT((datagramSize + qsizetype(bytesToRead)) < QByteArray::max_size());
+            Q_ASSERT((datagramSize + qsizetype(bytesToRead)) < QByteArray::maxSize());
             incomingDatagram.resize(datagramSize + int(bytesToRead));
 
 #if defined (QSCTPSOCKET_DEBUG)
