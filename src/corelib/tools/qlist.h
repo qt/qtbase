@@ -691,7 +691,7 @@ public:
     inline reference back() { return last(); }
     inline const_reference back() const noexcept { return last(); }
     void shrink_to_fit() { squeeze(); }
-    static constexpr qsizetype max_size() noexcept
+    constexpr qsizetype max_size() const noexcept
     {
         return maxSize();
     }

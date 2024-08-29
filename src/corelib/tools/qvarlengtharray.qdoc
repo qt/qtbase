@@ -140,7 +140,7 @@
     \sa isEmpty(), resize()
 */
 
-/*! \fn template<class T, qsizetype Prealloc> qsizetype QVarLengthArray<T, Prealloc>::max_size()
+/*! \fn template<class T, qsizetype Prealloc> qsizetype QVarLengthArray<T, Prealloc>::max_size() const
     \fn template<class T, qsizetype Prealloc> qsizetype QVarLengthArray<T, Prealloc>::maxSize()
     \since 6.8
 

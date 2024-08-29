@@ -482,8 +482,7 @@ public:
     void shrink_to_fit() { squeeze(); }
     iterator erase(const_iterator first, const_iterator last);
     inline iterator erase(const_iterator it) { return erase(it, it + 1); }
-
-    static constexpr qsizetype max_size() noexcept
+    constexpr qsizetype max_size() const noexcept
     {
         return maxSize();
     }

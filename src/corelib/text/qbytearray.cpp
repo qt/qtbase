@@ -1420,7 +1420,7 @@ QByteArray &QByteArray::operator=(const char *str)
     \sa isEmpty(), resize()
 */
 
-/*! \fn qsizetype QByteArray::max_size()
+/*! \fn qsizetype QByteArray::max_size() const
     \fn qsizetype QByteArray::maxSize()
     \since 6.8
 

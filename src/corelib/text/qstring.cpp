@@ -6414,7 +6414,7 @@ QString& QString::fill(QChar ch, qsizetype size)
 */
 
 /*!
-    \fn qsizetype QString::max_size()
+    \fn qsizetype QString::max_size() const
     \fn qsizetype QString::maxSize()
     \since 6.8
 

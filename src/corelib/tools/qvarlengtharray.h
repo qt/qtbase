@@ -189,7 +189,7 @@ public:
         // -1 to deal with the pointer one-past-the-end
         return (QtPrivate::MaxAllocSize / sizeof(T)) - 1;
     }
-    static constexpr qsizetype max_size() noexcept
+    constexpr qsizetype max_size() const noexcept
     {
         return maxSize();
     }
@@ -409,9 +409,10 @@ public:
 #ifdef Q_QDOC
     inline qsizetype size() const { return this->s; }
     static constexpr qsizetype maxSize() noexcept { return QVLABase<T>::maxSize(); }
-    static constexpr qsizetype max_size() noexcept { return QVLABase<T>::max_size(); }
+    constexpr qsizetype max_size() const noexcept { return QVLABase<T>::max_size(); }
 #endif
     using Base::size;
+    using Base::max_size;
     inline qsizetype count() const { return size(); }
     inline qsizetype length() const { return size(); }
     inline T &first()
