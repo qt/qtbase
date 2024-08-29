@@ -184,7 +184,13 @@ void tst_qfloat16::ordering()
     CHECK_FP(qfloat16);
     CHECK_FP(float);
     CHECK_FP(double);
+    // Qt built for VxWorks x86_64 fails to link due to undefined reference to
+    // __extendhfxf2 when below check is enabled.
+    // This has been acknowledged by WindRiver as a bug
+    // and is being tracked in ticket 00154117
+#if !(defined(Q_OS_VXWORKS) && defined(Q_PROCESSOR_X86_64))
     CHECK_FP(long double);
+#endif
 
 #undef CHECK_FP
 
