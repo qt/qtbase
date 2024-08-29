@@ -244,8 +244,8 @@ struct QLocaleData
 public:
     // Having an index for each locale enables us to have diverse sources of
     // data, e.g. calendar locales, as well as the main CLDR-derived data.
-    [[nodiscard]] static qsizetype findLocaleIndex(QLocaleId localeId);
-    [[nodiscard]] static const QLocaleData *c();
+    [[nodiscard]] static qsizetype findLocaleIndex(QLocaleId localeId) noexcept;
+    [[nodiscard]] static const QLocaleData *c() noexcept;
 
     enum DoubleForm {
         DFExponent = 0,
