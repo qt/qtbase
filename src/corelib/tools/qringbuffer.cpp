@@ -90,7 +90,7 @@ void QRingBuffer::free(qint64 bytes)
                     clear(); // try to minify/squeeze us
                 }
             } else {
-                Q_ASSERT(bytes < QByteArray::max_size());
+                Q_ASSERT(bytes < QByteArray::maxSize());
                 chunk.advance(bytes);
                 bufferSize -= bytes;
             }
@@ -105,7 +105,7 @@ void QRingBuffer::free(qint64 bytes)
 
 char *QRingBuffer::reserve(qint64 bytes)
 {
-    Q_ASSERT(bytes > 0 && bytes < QByteArray::max_size());
+    Q_ASSERT(bytes > 0 && bytes < QByteArray::maxSize());
 
     const qsizetype chunkSize = qMax(qint64(basicBlockSize), bytes);
     qsizetype tail = 0;
@@ -135,7 +135,7 @@ char *QRingBuffer::reserve(qint64 bytes)
 */
 char *QRingBuffer::reserveFront(qint64 bytes)
 {
-    Q_ASSERT(bytes > 0 && bytes < QByteArray::max_size());
+    Q_ASSERT(bytes > 0 && bytes < QByteArray::maxSize());
 
     const qsizetype chunkSize = qMax(qint64(basicBlockSize), bytes);
     if (bufferSize == 0) {
@@ -181,7 +181,7 @@ void QRingBuffer::chop(qint64 bytes)
                     clear(); // try to minify/squeeze us
                 }
             } else {
-                Q_ASSERT(bytes < QByteArray::max_size());
+                Q_ASSERT(bytes < QByteArray::maxSize());
                 chunk.grow(-bytes);
                 bufferSize -= bytes;
             }

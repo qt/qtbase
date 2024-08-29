@@ -800,7 +800,7 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
         return QByteArray();
     }
 
-    constexpr auto MaxDecompressedSize = size_t(QByteArray::max_size());
+    constexpr auto MaxDecompressedSize = size_t(QByteArray::maxSize());
     if constexpr (MaxDecompressedSize < std::numeric_limits<CompressSizeHint_t>::max()) {
         if (expectedSize > MaxDecompressedSize)
             return tooMuchData(ZLibOp::Decompression);

@@ -88,9 +88,9 @@ static void checkWarnMessage(const QIODevice *device, const char *function, cons
 
 #define CHECK_MAXBYTEARRAYSIZE(function) \
     do { \
-        if (maxSize >= QByteArray::max_size()) { \
+        if (maxSize >= QByteArray::maxSize()) { \
             checkWarnMessage(this, #function, "maxSize argument exceeds QByteArray size limit"); \
-            maxSize = QByteArray::max_size() - 1; \
+            maxSize = QByteArray::maxSize() - 1; \
         } \
     } while (0)
 
@@ -1242,7 +1242,7 @@ QByteArray QIODevice::readAll()
                                                       : d->buffer.size());
         qint64 readResult;
         do {
-            if (readBytes + readChunkSize >= QByteArray::max_size()) {
+            if (readBytes + readChunkSize >= QByteArray::maxSize()) {
                 // If resize would fail, don't read more, return what we have.
                 break;
             }
@@ -1256,8 +1256,8 @@ QByteArray QIODevice::readAll()
     } else {
         // Read it all in one go.
         readBytes -= d->pos;
-        if (readBytes >= QByteArray::max_size())
-            readBytes = QByteArray::max_size();
+        if (readBytes >= QByteArray::maxSize())
+            readBytes = QByteArray::maxSize();
         result.resize(readBytes);
         readBytes = d->read(result.data(), readBytes);
     }
@@ -1448,7 +1448,7 @@ QByteArray QIODevice::readLine(qint64 maxSize)
     qint64 readBytes = 0;
     if (maxSize == 0) {
         // Size is unknown, read incrementally.
-        maxSize = QByteArray::max_size() - 1;
+        maxSize = QByteArray::maxSize() - 1;
 
         // The first iteration needs to leave an extra byte for the terminating null
         result.resize(1);
