@@ -1453,13 +1453,10 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
             int checkcol = qMax<int>(menuItem->rect.height() * 0.79,
                                      qMax<int>(menuItem->maxIconWidth, dpiScaled(21, option)));
             bool ignoreCheckMark = false;
-            if (
 #if QT_CONFIG(combobox)
-                qobject_cast<const QComboBox*>(widget) ||
-#endif
-                (option->styleObject && option->styleObject->property("_q_isComboBoxPopupItem").toBool()))
+            if (qobject_cast<const QComboBox*>(widget))
                 ignoreCheckMark = true; //ignore the checkmarks provided by the QComboMenuDelegate
-
+#endif
             if (!ignoreCheckMark || menuItem->state & (State_On | State_Off)) {
                 // Check, using qreal and QRectF to avoid error accumulation
                 const qreal boxMargin = dpiScaled(3.5, option);
