@@ -1,9 +1,0 @@
-Just type
-    nmake
-in this directory to generate the files from the idl files.
-The generated files will be put in
-..\generated\x86 and ..\generated\amd64
-
-In order for it to work on msvc-2010 you need to use MIDL shipped with
-that version
-(Microsoft (R) 32b/64b MIDL Compiler Version 7.00.0555).
