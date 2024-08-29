@@ -1956,6 +1956,7 @@ enum class CallbackParameterType
     Int,
     Double,
     JniArray,
+    RawArray,
     QList,
     QStringList,
 };
@@ -2022,6 +2023,14 @@ static int callbackWithJniArray(JNIEnv *, jobject, const QJniArray<jdouble> &val
 }
 Q_DECLARE_JNI_NATIVE_METHOD(callbackWithJniArray)
 
+static std::optional<QJniObject> calledWithRawArray;
+static int callbackWithRawArray(JNIEnv *, jobject, jobjectArray value)
+{
+    calledWithRawArray.emplace(QJniObject(value));
+    return int(CallbackParameterType::RawArray);
+}
+Q_DECLARE_JNI_NATIVE_METHOD(callbackWithRawArray)
+
 static std::optional<QList<double>> calledWithQList;
 static int callbackWithQList(JNIEnv *, jobject, const QList<double> &value)
 {
@@ -2050,6 +2059,7 @@ void tst_QJniObject::callback_data()
     QTest::addRow("Int")        << CallbackParameterType::Int;
     QTest::addRow("Double")     << CallbackParameterType::Double;
     QTest::addRow("JniArray")   << CallbackParameterType::JniArray;
+    QTest::addRow("RawArray")   << CallbackParameterType::RawArray;
     QTest::addRow("QList")      << CallbackParameterType::QList;
     QTest::addRow("QStringList") << CallbackParameterType::QStringList;
 }
@@ -2126,6 +2136,19 @@ void tst_QJniObject::callback()
         result = testObject.callMethod<int>("callMeBackWithJniArray", doubles);
         QVERIFY(calledWithJniArray);
         QCOMPARE(calledWithJniArray, doubles);
+        break;
+    }
+    case CallbackParameterType::RawArray: {
+        QVERIFY(TestClass::registerNativeMethods({
+            Q_JNI_NATIVE_METHOD(callbackWithRawArray)
+        }));
+        const QStringList strings{"a", "b", "c"};
+        const QJniArray stringArray(strings);
+        result = testObject.callMethod<int>("callMeBackWithRawArray",
+                                            stringArray.object<jobjectArray>());
+        QVERIFY(calledWithRawArray);
+        const auto stringsReceived = QJniArray<QString>(*calledWithRawArray).toContainer();
+        QCOMPARE(stringsReceived, strings);
         break;
     }
     case CallbackParameterType::QList: {
