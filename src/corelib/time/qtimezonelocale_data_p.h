@@ -1,4 +1,5 @@
 // Copyright (C) 2024 The Qt Company Ltd.
+// Copyright © 2004-2023 Unicode, Inc.
 // SPDX-License-Identifier: Unicode-3.0
 
 #ifndef QTIMEZONELOCALE_DATA_P_H
