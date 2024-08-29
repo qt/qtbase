@@ -453,6 +453,7 @@ function(_qt_internal_sbom_add_target target)
     set(project_package_options "")
 
     _qt_internal_sbom_is_qt_entity_type("${arg_TYPE}" is_qt_entity_type)
+    _qt_internal_sbom_is_qt_3rd_party_entity_type("${arg_TYPE}" is_qt_3rd_party_entity_type)
 
     if(arg_FRIENDLY_PACKAGE_NAME)
         set(package_name_for_spdx_id "${arg_FRIENDLY_PACKAGE_NAME}")
@@ -629,9 +630,7 @@ function(_qt_internal_sbom_add_target target)
     endif()
 
     set(supplier "")
-    if((is_qt_entity_type
-            OR arg_TYPE STREQUAL "QT_THIRD_PARTY_MODULE"
-            OR arg_TYPE STREQUAL "QT_THIRD_PARTY_SOURCES")
+    if((is_qt_entity_type OR is_qt_3rd_party_entity_type)
             AND NOT arg_NO_DEFAULT_QT_SUPPLIER)
         _qt_internal_sbom_get_default_supplier(supplier)
     endif()
@@ -720,8 +719,7 @@ function(_qt_internal_sbom_add_target target)
         list(APPEND project_package_options ${purl_package_options})
     endif()
 
-    if(arg_TYPE STREQUAL "QT_THIRD_PARTY_MODULE"
-            OR arg_TYPE STREQUAL "QT_THIRD_PARTY_SOURCES"
+    if(is_qt_3rd_party_entity_type
             OR arg_TYPE STREQUAL "SYSTEM_LIBRARY"
             OR arg_TYPE STREQUAL "THIRD_PARTY_LIBRARY"
             OR arg_TYPE STREQUAL "THIRD_PARTY_LIBRARY_WITH_FILES"
@@ -2558,6 +2556,21 @@ function(_qt_internal_sbom_is_qt_entity_type sbom_type out_var)
     endif()
 
     set(${out_var} ${is_qt_entity_type} PARENT_SCOPE)
+endfunction()
+
+# Returns whether the given sbom type is considered to a Qt 3rd party entity type.
+function(_qt_internal_sbom_is_qt_3rd_party_entity_type sbom_type out_var)
+    set(entity_types
+        QT_THIRD_PARTY_MODULE
+        QT_THIRD_PARTY_SOURCES
+    )
+
+    set(is_qt_third_party_entity_type FALSE)
+    if(sbom_type IN_LIST entity_types)
+        set(is_qt_third_party_entity_type TRUE)
+    endif()
+
+    set(${out_var} ${is_qt_third_party_entity_type} PARENT_SCOPE)
 endfunction()
 
 # Save a spdx id for all known related target names of a given Qt target.
