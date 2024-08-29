@@ -669,22 +669,33 @@ function(_qt_internal_sbom_add_target target)
     _qt_internal_sbom_get_package_purpose("${arg_TYPE}" package_purpose)
     list(APPEND project_package_options PURPOSE "${package_purpose}")
 
+    set(cpe_args "")
+
     if(arg_CPE)
-        list(APPEND project_package_options CPE "${arg_CPE}")
+        list(APPEND cpe_args CPE "${arg_CPE}")
     endif()
+
     if(arg_CPE_VENDOR AND arg_CPE_PRODUCT)
         _qt_internal_sbom_compute_security_cpe(custom_cpe
             VENDOR "${arg_CPE_VENDOR}"
             PRODUCT "${arg_CPE_PRODUCT}"
             VERSION "${package_version}")
-        list(APPEND project_package_options CPE "${custom_cpe}")
+        list(APPEND cpe_args CPE "${custom_cpe}")
     endif()
+
     if(qa_cpes)
-        list(APPEND project_package_options CPE "${qa_cpes}")
+        list(APPEND cpe_args CPE "${qa_cpes}")
     endif()
-    if(is_qt_entity_type)
+
+    # Add the qt-specific CPE if the target is a Qt entity type, or if it's a 3rd party entity type
+    # without any CPE specified.
+    if(is_qt_entity_type OR (is_qt_3rd_party_entity_type AND NOT cpe_args))
         _qt_internal_sbom_compute_security_cpe_for_qt(cpe_list)
-        list(APPEND project_package_options CPE "${cpe_list}")
+        list(APPEND cpe_args CPE "${cpe_list}")
+    endif()
+
+    if(cpe_args)
+        list(APPEND project_package_options ${cpe_args})
     endif()
 
     # Assemble arguments to forward to the function that handles purl options.
