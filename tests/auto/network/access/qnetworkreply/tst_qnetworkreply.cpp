@@ -10164,21 +10164,17 @@ void tst_QNetworkReply::moreActivitySignals()
     QSignalSpy spy2(reply.data(), SIGNAL(requestSent()));
     QSignalSpy spy3(reply.data(), SIGNAL(metaDataChanged()));
     QSignalSpy spy4(reply.data(), SIGNAL(finished()));
-    spy1.wait();
     if (url.host() == u"localhost") {
         // localhost may resolve to both v4 and v6, so we may get two
         // socketStartedConnecting signals
-        QCOMPARE_GE(spy1.size(), 1);
+        QTRY_COMPARE_GE(spy1.size(), 1);
         QCOMPARE_LE(spy1.size(), 2);
     } else {
-        QCOMPARE(spy1.size(), 1);
+        QTRY_COMPARE(spy1.size(), 1);
     }
-    spy2.wait();
-    QCOMPARE(spy2.size(), 1);
-    spy3.wait();
-    QCOMPARE(spy3.size(), 1);
-    spy4.wait();
-    QCOMPARE(spy4.size(), 1);
+    QTRY_COMPARE(spy2.size(), 1);
+    QTRY_COMPARE(spy3.size(), 1);
+    QTRY_COMPARE(spy4.size(), 1);
     QVERIFY(reply->error() == QNetworkReply::NoError);
     // Second request will not send socketStartedConnecting because of keep-alive, so don't check it.
     QNetworkReplyPtr secondreply;
@@ -10191,12 +10187,9 @@ void tst_QNetworkReply::moreActivitySignals()
     QSignalSpy secondspy2(secondreply.data(), SIGNAL(requestSent()));
     QSignalSpy secondspy3(secondreply.data(), SIGNAL(metaDataChanged()));
     QSignalSpy secondspy4(secondreply.data(), SIGNAL(finished()));
-    secondspy2.wait();
-    QCOMPARE(secondspy2.size(), 1);
-    secondspy3.wait();
-    QCOMPARE(secondspy3.size(), 1);
-    secondspy4.wait();
-    QCOMPARE(secondspy4.size(), 1);
+    QTRY_COMPARE(secondspy2.size(), 1);
+    QTRY_COMPARE(secondspy3.size(), 1);
+    QTRY_COMPARE(secondspy4.size(), 1);
     QVERIFY(secondreply->error() == QNetworkReply::NoError);
 }
 
