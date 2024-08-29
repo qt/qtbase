@@ -1332,7 +1332,7 @@
     returns \c false.
 */
 
-/*! \fn template <typename T> qsizetype QList<T>::max_size()
+/*! \fn template <typename T> qsizetype QList<T>::max_size() const
     \fn template <typename T> qsizetype QList<T>::maxSize()
     \since 6.8
 
