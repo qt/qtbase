@@ -1424,6 +1424,7 @@ QByteArray &QByteArray::operator=(const char *str)
     \since 6.8
 
     This function is provided for STL compatibility.
+
     It returns the maximum number of elements that the byte array can
     theoretically hold. In practice, the number can be much smaller,
     limited by the amount of memory available to the system.
