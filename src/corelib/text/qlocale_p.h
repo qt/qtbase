@@ -189,34 +189,34 @@ namespace QIcu {
 struct QLocaleId
 {
     [[nodiscard]] Q_AUTOTEST_EXPORT static QLocaleId fromName(QStringView name);
-    [[nodiscard]] inline bool operator==(QLocaleId other) const
+    [[nodiscard]] inline bool operator==(QLocaleId other) const noexcept
     { return language_id == other.language_id && script_id == other.script_id && territory_id == other.territory_id; }
-    [[nodiscard]] inline bool operator!=(QLocaleId other) const
+    [[nodiscard]] inline bool operator!=(QLocaleId other) const noexcept
     { return !operator==(other); }
-    [[nodiscard]] inline bool isValid() const
+    [[nodiscard]] inline bool isValid() const noexcept
     {
         return language_id <= QLocale::LastLanguage && script_id <= QLocale::LastScript
                 && territory_id <= QLocale::LastTerritory;
     }
-    [[nodiscard]] inline bool matchesAll() const
+    [[nodiscard]] inline bool matchesAll() const noexcept
     {
         return !language_id && !script_id && !territory_id;
     }
     // Use as: filter.accept...(candidate)
-    [[nodiscard]] inline bool acceptLanguage(quint16 lang) const
+    [[nodiscard]] inline bool acceptLanguage(quint16 lang) const noexcept
     {
         // Always reject AnyLanguage (only used for last entry in locale_data array).
         // So, when searching for AnyLanguage, accept everything *but* AnyLanguage.
         return language_id ? lang == language_id : lang;
     }
-    [[nodiscard]] inline bool acceptScriptTerritory(QLocaleId other) const
+    [[nodiscard]] inline bool acceptScriptTerritory(QLocaleId other) const noexcept
     {
         return (!territory_id || other.territory_id == territory_id)
                 && (!script_id || other.script_id == script_id);
     }
 
-    [[nodiscard]] QLocaleId withLikelySubtagsAdded() const;
-    [[nodiscard]] QLocaleId withLikelySubtagsRemoved() const;
+    [[nodiscard]] QLocaleId withLikelySubtagsAdded() const noexcept;
+    [[nodiscard]] QLocaleId withLikelySubtagsRemoved() const noexcept;
 
     [[nodiscard]] QByteArray name(char separator = '-') const;
 
