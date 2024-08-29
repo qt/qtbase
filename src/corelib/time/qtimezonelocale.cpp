@@ -12,6 +12,7 @@
 #  include <private/qtimezoneprivate_data_p.h>
 #  ifdef QT_CLDR_ZONE_DEBUG
 #    include <private/qlocale_data_p.h>
+QT_BEGIN_NAMESPACE
 static_assert(std::size(locale_data) == std::size(QtTimeZoneLocale::localeZoneData));
 // Size includes terminal rows: for now, they do match in tag IDs, but they needn't.
 static_assert([]() {
@@ -26,6 +27,7 @@ static_assert([]() {
     }
     return true;
 }());
+QT_END_NAMESPACE
 #  endif
 #endif
 
