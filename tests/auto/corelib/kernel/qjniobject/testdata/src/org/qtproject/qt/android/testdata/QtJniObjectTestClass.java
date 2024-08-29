@@ -304,6 +304,7 @@ public class QtJniObjectTestClass
     native public int callbackWithInt(int value);
     native public int callbackWithDouble(double value);
     native public int callbackWithJniArray(double[] value);
+    native public int callbackWithRawArray(Object[] value);
     native public int callbackWithQList(double[] value);
     native public int callbackWithStringList(String[] value);
 
@@ -344,6 +345,10 @@ public class QtJniObjectTestClass
     public int callMeBackWithJniArray(double[] value)
     {
         return callbackWithJniArray(value);
+    }
+    public int callMeBackWithRawArray(Object[] value)
+    {
+        return callbackWithRawArray(value);
     }
     public int callMeBackWithQList(double[] value)
     {
