@@ -1373,7 +1373,7 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
         if (const QStyleOptionProgressBar* progbaropt = qstyleoption_cast<const QStyleOptionProgressBar*>(option)) {
             QRect rect = subElementRect(SE_ProgressBarLabel, progbaropt, widget);
             painter->setPen(progbaropt->palette.text().color());
-            painter->drawText(rect, progbaropt->text,Qt::AlignVCenter|Qt::AlignLeft);
+            painter->drawText(rect, progbaropt->text,progbaropt->textAlignment);
         }
         break;
     case CE_PushButtonLabel:
@@ -1855,6 +1855,15 @@ QRect QWindows11Style::subElementRect(QStyle::SubElement element, const QStyleOp
             }
         } else {
             ret = QWindowsVistaStyle::subElementRect(element, option, widget);
+        }
+        break;
+    case QStyle::SE_ProgressBarLabel:
+        if (const QStyleOptionProgressBar *pb = qstyleoption_cast<const QStyleOptionProgressBar *>(option)) {
+            if (pb->textAlignment.testFlags(Qt::AlignVCenter)) {
+                ret = option->rect.adjusted(0, 6, 0, 0);
+            } else {
+                ret = QWindowsVistaStyle::subElementRect(element, option, widget);
+            }
         }
         break;
     case QStyle::SE_HeaderLabel:
