@@ -171,10 +171,14 @@ struct QTypedArrayData
         return static_cast<T *>(start);
     }
 
-    constexpr static qsizetype max_size() noexcept
+    constexpr static qsizetype maxSize() noexcept
     {
         // -1 to deal with the pointer one-past-the-end
         return (QtPrivate::MaxAllocSize - sizeof(QtPrivate::AlignedQArrayData) - 1) / sizeof(T);
+    }
+    constexpr static qsizetype max_size() noexcept
+    {
+        return maxSize();
     }
 };
 
