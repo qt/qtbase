@@ -123,7 +123,7 @@ void tst_QTimeZone::displayName_data()
     const auto names = enoughZones();
     for (const auto &name : names) {
         for (const auto &when : times) {
-            qsizetype locIndex = 0;
+            std::size_t locIndex = 0;
             for (const auto &where : locs) {
                 const QByteArray dt = when.toString(Qt::ISODate).toUtf8();
                 const QByteArray loc =
