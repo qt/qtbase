@@ -364,13 +364,12 @@ if(QT_FEATURE_opengl)
         find_package(GLESv2)
         target_link_libraries(Gui PUBLIC GLESv2::GLESv2)
 
-        if(INTEGRITY AND _qt_igy_gui_libs)
+        if(TARGET PlatformGraphics::PlatformGraphics)
             qt_internal_extend_target(Gui
                 LIBRARIES
-                    IntegrityPlatformGraphics::IntegrityPlatformGraphics
+                    PlatformGraphics::PlatformGraphics
             )
         endif()
-
     elseif(NOT QT_FEATURE_opengl_dynamic)
         target_link_libraries(Gui PUBLIC WrapOpenGL::WrapOpenGL)
     endif()

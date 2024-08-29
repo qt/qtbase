@@ -33,12 +33,11 @@ qt_set01(X11_SUPPORTED LINUX OR HPUX OR FREEBSD OR NETBSD OR OPENBSD OR SOLARIS 
 qt_find_package(ATSPI2 PROVIDED_TARGETS PkgConfig::ATSPI2 MODULE_NAME gui QMAKE_LIB atspi)
 qt_find_package(DirectFB PROVIDED_TARGETS PkgConfig::DirectFB MODULE_NAME gui QMAKE_LIB directfb)
 qt_find_package(Libdrm PROVIDED_TARGETS Libdrm::Libdrm MODULE_NAME gui QMAKE_LIB drm)
+qt_find_package(PlatformGraphics
+        PROVIDED_TARGETS PlatformGraphics::PlatformGraphics
+        MODULE_NAME gui QMAKE_LIB platform_graphics)
 qt_find_package(EGL PROVIDED_TARGETS EGL::EGL MODULE_NAME gui QMAKE_LIB egl)
-if(INTEGRITY AND _qt_igy_gui_libs)
-    qt_find_package(IntegrityPlatformGraphics
-        PROVIDED_TARGETS IntegrityPlatformGraphics::IntegrityPlatformGraphics
-        MODULE_NAME gui QMAKE_LIB integrity_platform_graphics)
-endif()
+
 qt_find_package(WrapSystemFreetype 2.2.0 PROVIDED_TARGETS WrapSystemFreetype::WrapSystemFreetype MODULE_NAME gui QMAKE_LIB freetype)
 if(QT_FEATURE_system_zlib)
     qt_add_qmake_lib_dependency(freetype zlib)
@@ -157,6 +156,12 @@ qt_find_package(RenderDoc PROVIDED_TARGETS RenderDoc::RenderDoc)
 
 #### Tests
 
+if(TARGET PlatformGraphics::PlatformGraphics)
+    set(plaform_graphics_libs PlatformGraphics::PlatformGraphics)
+else()
+    set(plaform_graphics_libs "")
+endif()
+
 # drm_atomic
 qt_config_compile_test(drm_atomic
     LABEL "DRM Atomic API"
@@ -185,6 +190,7 @@ qt_config_compile_test(egl_x11
     LIBRARIES
         EGL::EGL
         X11::X11
+        ${plaform_graphics_libs}
     CODE
 "// Check if EGL is compatible with X. Some EGL implementations, typically on
 // embedded devices, are not intended to be used together with X. EGL support
@@ -214,6 +220,7 @@ qt_config_compile_test(egl_brcm
     LABEL "Broadcom EGL (Raspberry Pi)"
     LIBRARIES
         EGL::EGL
+        ${plaform_graphics_libs}
     CODE
 "#include <EGL/egl.h>
 #include <bcm_host.h>
@@ -233,6 +240,7 @@ qt_config_compile_test(egl_egldevice
     LABEL "EGLDevice"
     LIBRARIES
         EGL::EGL
+        ${plaform_graphics_libs}
     CODE
 "#include <EGL/egl.h>
 #include <EGL/eglext.h>
@@ -255,6 +263,7 @@ qt_config_compile_test(egl_mali
     LABEL "Mali EGL"
     LIBRARIES
         EGL::EGL
+        ${plaform_graphics_libs}
     CODE
 "#include <EGL/fbdev_window.h>
 #include <EGL/egl.h>
@@ -274,6 +283,7 @@ qt_config_compile_test(egl_mali_2
     LABEL "Mali 2 EGL"
     LIBRARIES
         EGL::EGL
+        ${plaform_graphics_libs}
     CODE
 "#include <EGL/egl.h>
 #include <GLES2/gl2.h>
@@ -288,10 +298,12 @@ mali_native_window *w = 0;
 ")
 
 # egl-viv
+
 qt_config_compile_test(egl_viv
     LABEL "i.Mx6 EGL"
     LIBRARIES
         EGL::EGL
+        ${plaform_graphics_libs}
     COMPILE_OPTIONS
         "-DEGL_API_FB=1"
     CODE
@@ -314,16 +326,12 @@ fbGetDisplayByIndex(0);
 "# FIXME: qmake: ['DEFINES += EGL_API_FB=1', '!integrity: DEFINES += LINUX=1']
 )
 
-set(test_libs EGL::EGL)
-if(INTEGRITY AND _qt_igy_gui_libs)
-    set(test_libs ${test_libs} IntegrityPlatformGraphics::IntegrityPlatformGraphics)
-endif()
-
 # egl-openwfd
 qt_config_compile_test(egl_openwfd
     LABEL "OpenWFD EGL"
     LIBRARIES
-        ${test_libs}
+        EGL::EGL
+        ${plaform_graphics_libs}
     CODE
 "#include <wfd.h>
 
@@ -342,6 +350,7 @@ qt_config_compile_test(egl_rcar
     LIBRARIES
         EGL::EGL
         GLESv2::GLESv2
+        ${plaform_graphics_libs}
     CODE
 "#include <EGL/egl.h>
 extern \"C\" {
@@ -435,15 +444,11 @@ if(WASM)
     set(extra_compiler_options "-s FULL_ES3=1")
 endif()
 
-set(test_libs GLESv2::GLESv2)
-if(INTEGRITY AND _qt_igy_gui_libs)
-    set(test_libs ${test_libs} IntegrityPlatformGraphics::IntegrityPlatformGraphics)
-endif()
-
 qt_config_compile_test(opengles3
     LABEL "OpenGL ES 3.0"
     LIBRARIES
-        ${test_libs}
+        GLESv2::GLESv2
+        ${plaform_graphics_libs}
     COMPILE_OPTIONS ${extra_compiler_options}
     CODE
 "#ifdef __APPLE__
@@ -471,7 +476,8 @@ glMapBufferRange(GL_ARRAY_BUFFER, 0, 0, GL_MAP_READ_BIT);
 qt_config_compile_test(opengles31
     LABEL "OpenGL ES 3.1"
     LIBRARIES
-        ${test_libs}
+        GLESv2::GLESv2
+        ${plaform_graphics_libs}
     CODE
 "#include <GLES3/gl31.h>
 
@@ -489,7 +495,8 @@ glProgramUniform1i(0, 0, 0);
 qt_config_compile_test(opengles32
     LABEL "OpenGL ES 3.2"
     LIBRARIES
-        ${test_libs}
+        GLESv2::GLESv2
+        ${plaform_graphics_libs}
     CODE
 "#include <GLES3/gl32.h>
 

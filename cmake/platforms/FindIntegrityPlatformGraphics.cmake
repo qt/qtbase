@@ -4,12 +4,18 @@
 #.rst:
 # IntegrityPlatformGraphics
 # ---------
+
+# Temporary fall back to allow integrating this pachset without the
+# toolchain file updated.
+set(IntegrityPlatformGraphics_REQUIRED_LIBRARIES ${_qt_igy_gui_libs})
+
 find_package_handle_standard_args(IntegrityPlatformGraphics
     FOUND_VAR
         IntegrityPlatformGraphics_FOUND
     REQUIRED_VARS
         IntegrityPlatformGraphics_LIBRARY
         IntegrityPlatformGraphics_INCLUDE_DIR
+        IntegrityPlatformGraphics_REQUIRED_LIBRARIES
 )
 
 if(IntegrityPlatformGraphics_FOUND

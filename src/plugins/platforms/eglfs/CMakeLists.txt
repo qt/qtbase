@@ -57,9 +57,10 @@ qt_internal_extend_target(EglFSDeviceIntegrationPrivate CONDITION TARGET Qt::Inp
         Qt::InputSupportPrivate
 )
 
-qt_internal_extend_target(EglFSDeviceIntegrationPrivate CONDITION INTEGRITY AND TARGET IntegrityPlatformGraphics::IntegrityPlatformGraphics
-    LIBRARIES
-        IntegrityPlatformGraphics::IntegrityPlatformGraphics
+qt_internal_extend_target(EglFSDeviceIntegrationPrivate
+    CONDITION TARGET PlatformGraphics::PlatformGraphics
+    PUBLIC_LIBRARIES
+        PlatformGraphics::PlatformGraphics
 )
 
 qt_internal_extend_target(EglFSDeviceIntegrationPrivate CONDITION QT_FEATURE_opengl
