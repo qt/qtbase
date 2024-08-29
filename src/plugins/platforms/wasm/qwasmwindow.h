@@ -123,9 +123,13 @@ private:
     void applyWindowState();
     void commitParent(QWasmWindowTreeNode *parent);
 
+    void handleKeyEvent(const emscripten::val &event);
     bool processKey(const KeyEvent &event);
+    void handleKeyForInputContextEvent(const emscripten::val &event);
     bool processKeyForInputContext(const KeyEvent &event);
+    void handlePointerEvent(const emscripten::val &event);
     bool processPointer(const PointerEvent &event);
+    void handleWheelEvent(const emscripten::val &event);
     bool processWheel(const WheelEvent &event);
 
     QWindow *m_window = nullptr;
