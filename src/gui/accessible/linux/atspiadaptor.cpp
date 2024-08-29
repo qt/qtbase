@@ -2196,7 +2196,7 @@ namespace
         QString name = ia2Name;
         QString value = ia2Value;
 
-        // IAccessible2: https://wiki.linuxfoundation.org/accessibility/iaccessible2/textattributes
+        // IAccessible2: https://github.com/LinuxA11y/IAccessible2/blob/master/spec/textattributes.md
         // ATK attribute names: https://gitlab.gnome.org/GNOME/orca/-/blob/master/src/orca/text_attribute_names.py
         // ATK attribute values: https://gnome.pages.gitlab.gnome.org/atk/AtkText.html#AtkTextAttribute
 
