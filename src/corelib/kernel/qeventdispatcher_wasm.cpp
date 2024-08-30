@@ -931,9 +931,6 @@ void QEventDispatcherWasm::callOnLoadedIfRequired()
     if (qtLoadedCalled)
         return;
     qtLoadedCalled = true;
-
-    Q_ASSERT(g_mainThreadEventDispatcher);
-    g_mainThreadEventDispatcher->onLoaded();
 }
 
 void QEventDispatcherWasm::onLoaded()

@@ -12,7 +12,7 @@
 
 using namespace emscripten;
 
-bool QWasmCompositor::m_requestUpdateHoldEnabled = true;
+bool QWasmCompositor::m_requestUpdateHoldEnabled = false;
 
 QWasmCompositor::QWasmCompositor(QWasmScreen *screen) : QObject(screen)
 {
