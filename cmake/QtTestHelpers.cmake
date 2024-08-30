@@ -673,7 +673,12 @@ function(qt_internal_add_test name)
         list(APPEND extra_test_args "qtestname=${testname}")
         list(APPEND extra_test_args "--silence_timeout=60")
         # TODO: Add functionality to specify browser
-        list(APPEND extra_test_args "--browser=chrome")
+        if(DEFINED ENV{BROWSER_FOR_WASM})
+            set(browser $ENV{BROWSER_FOR_WASM})
+        else()
+            set(browser "chrome")
+        endif()
+        list(APPEND extra_test_args "--browser=${browser}")
         list(APPEND extra_test_args "--browser_args=\"--password-store=basic\"")
         list(APPEND extra_test_args "--kill_exit")
 
