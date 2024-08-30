@@ -1837,7 +1837,7 @@ int QObject::startTimer(int interval, Qt::TimerType timerType)
     event parameter class when a timer event occurs. Reimplement this
     function to get timer events.
 
-    If multiple timers are running, the QTimerEvent::timerId() can be
+    If multiple timers are running, the QTimerEvent::id() method can be
     used to find out which timer was activated.
 
     Example:
