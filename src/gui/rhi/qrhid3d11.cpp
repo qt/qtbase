@@ -2861,7 +2861,7 @@ void QRhiD3D11::executeCommandBuffer(QD3D11CommandBuffer *cbD)
             break;
         case QD3D11CommandBuffer::Command::Draw:
             if (cmd.args.draw.ps) {
-                if (cmd.args.draw.instanceCount == 1)
+                if (cmd.args.draw.instanceCount == 1 && cmd.args.draw.firstInstance == 0)
                     context->Draw(cmd.args.draw.vertexCount, cmd.args.draw.firstVertex);
                 else
                     context->DrawInstanced(cmd.args.draw.vertexCount, cmd.args.draw.instanceCount,
@@ -2872,7 +2872,7 @@ void QRhiD3D11::executeCommandBuffer(QD3D11CommandBuffer *cbD)
             break;
         case QD3D11CommandBuffer::Command::DrawIndexed:
             if (cmd.args.drawIndexed.ps) {
-                if (cmd.args.drawIndexed.instanceCount == 1)
+                if (cmd.args.drawIndexed.instanceCount == 1 && cmd.args.drawIndexed.firstInstance == 0)
                     context->DrawIndexed(cmd.args.drawIndexed.indexCount, cmd.args.drawIndexed.firstIndex,
                                          cmd.args.drawIndexed.vertexOffset);
                 else
