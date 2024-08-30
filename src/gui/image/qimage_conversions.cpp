@@ -2780,6 +2780,18 @@ static void qInitImageConversions()
     }
 #endif
 
+#if defined(QT_COMPILER_SUPPORTS_LASX)
+    if (qCpuHasFeature(LASX)) {
+        extern void convert_RGB888_to_RGB32_lasx(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags);
+        qimage_converter_map[QImage::Format_RGB888][QImage::Format_RGB32] = convert_RGB888_to_RGB32_lasx;
+        qimage_converter_map[QImage::Format_RGB888][QImage::Format_ARGB32] = convert_RGB888_to_RGB32_lasx;
+        qimage_converter_map[QImage::Format_RGB888][QImage::Format_ARGB32_Premultiplied] = convert_RGB888_to_RGB32_lasx;
+        qimage_converter_map[QImage::Format_BGR888][QImage::Format_RGBX8888] = convert_RGB888_to_RGB32_lasx;
+        qimage_converter_map[QImage::Format_BGR888][QImage::Format_RGBA8888] = convert_RGB888_to_RGB32_lasx;
+        qimage_converter_map[QImage::Format_BGR888][QImage::Format_RGBA8888_Premultiplied] = convert_RGB888_to_RGB32_lasx;
+    }
+#endif
+
 #if defined(__ARM_NEON__)
     extern void convert_RGB888_to_RGB32_neon(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags);
     qimage_converter_map[QImage::Format_RGB888][QImage::Format_RGB32] = convert_RGB888_to_RGB32_neon;

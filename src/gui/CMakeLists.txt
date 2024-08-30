@@ -664,6 +664,12 @@ qt_internal_add_simd_part(Gui SIMD lsx
         painting/qimagescale_lsx.cpp
 )
 
+qt_internal_add_simd_part(Gui SIMD lasx
+    SOURCES
+        image/qimage_lasx.cpp
+        painting/qdrawhelper_lasx.cpp
+)
+
 if(NOT ANDROID)
     qt_internal_add_simd_part(Gui SIMD mips_dsp
         SOURCES

@@ -43,6 +43,11 @@ void qt_blend_rgb32_on_rgb32_lsx(uchar *destPixels, int dbpl,
 
 #endif // QT_COMPILER_SUPPORTS_LSX
 
+#ifdef QT_COMPILER_SUPPORTS_LASX
+void qt_memfill64_lasx(quint64 *dest, quint64 value, qsizetype count);
+void qt_memfill32_lasx(quint32 *dest, quint32 value, qsizetype count);
+#endif // QT_COMPILER_SUPPORTS_LASX
+
 QT_END_NAMESPACE
 
 #endif // QDRAWHELPER_LOONGARCH64_P_H

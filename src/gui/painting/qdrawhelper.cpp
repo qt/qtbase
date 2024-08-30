@@ -6987,6 +6987,73 @@ static void qInitDrawhelperFunctions()
         qStoreFromRGBA32F[QImage::Format_RGBA32FPx4] = storeRGBA32FFromRGBA32F_lsx;
 #endif // QT_CONFIG(raster_fp)
     }
+
+#if defined(QT_COMPILER_SUPPORTS_LASX)
+    if (qCpuHasFeature(LASX)) {
+        qt_memfill32 = qt_memfill32_lasx;
+        qt_memfill64 = qt_memfill64_lasx;
+
+        extern void qt_blend_rgb32_on_rgb32_lasx(uchar *destPixels, int dbpl,
+                                                 const uchar *srcPixels, int sbpl,
+                                                 int w, int h, int const_alpha);
+        extern void qt_blend_argb32_on_argb32_lasx(uchar *destPixels, int dbpl,
+                                                   const uchar *srcPixels, int sbpl,
+                                                   int w, int h, int const_alpha);
+        qBlendFunctions[QImage::Format_RGB32][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_lasx;
+        qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_lasx;
+        qBlendFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_lasx;
+        qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_lasx;
+        qBlendFunctions[QImage::Format_RGBX8888][QImage::Format_RGBX8888] = qt_blend_rgb32_on_rgb32_lasx;
+        qBlendFunctions[QImage::Format_RGBA8888_Premultiplied][QImage::Format_RGBX8888] = qt_blend_rgb32_on_rgb32_lasx;
+        qBlendFunctions[QImage::Format_RGBX8888][QImage::Format_RGBA8888_Premultiplied] = qt_blend_argb32_on_argb32_lasx;
+        qBlendFunctions[QImage::Format_RGBA8888_Premultiplied][QImage::Format_RGBA8888_Premultiplied] = qt_blend_argb32_on_argb32_lasx;
+
+        extern void QT_FASTCALL comp_func_Source_lasx(uint *destPixels, const uint *srcPixels, int length, uint const_alpha);
+        extern void QT_FASTCALL comp_func_SourceOver_lasx(uint *destPixels, const uint *srcPixels, int length, uint const_alpha);
+        extern void QT_FASTCALL comp_func_solid_SourceOver_lasx(uint *destPixels, int length, uint color, uint const_alpha);
+        qt_functionForMode_C[QPainter::CompositionMode_Source] = comp_func_Source_lasx;
+        qt_functionForMode_C[QPainter::CompositionMode_SourceOver] = comp_func_SourceOver_lasx;
+        qt_functionForModeSolid_C[QPainter::CompositionMode_SourceOver] = comp_func_solid_SourceOver_lasx;
+#if QT_CONFIG(raster_64bit)
+        extern void QT_FASTCALL comp_func_Source_rgb64_lasx(QRgba64 *destPixels, const QRgba64 *srcPixels, int length, uint const_alpha);
+        extern void QT_FASTCALL comp_func_solid_SourceOver_rgb64_lasx(QRgba64 *destPixels, int length, QRgba64 color, uint const_alpha);
+        qt_functionForMode64_C[QPainter::CompositionMode_Source] = comp_func_Source_rgb64_lasx;
+        qt_functionForModeSolid64_C[QPainter::CompositionMode_SourceOver] = comp_func_solid_SourceOver_rgb64_lasx;
+#endif
+
+        extern void QT_FASTCALL fetchTransformedBilinearARGB32PM_simple_scale_helper_lasx(uint *b, uint *end, const QTextureData &image,
+                                                                                          int &fx, int &fy, int fdx, int /*fdy*/);
+        extern void QT_FASTCALL fetchTransformedBilinearARGB32PM_downscale_helper_lasx(uint *b, uint *end, const QTextureData &image,
+                                                                                       int &fx, int &fy, int fdx, int /*fdy*/);
+        extern void QT_FASTCALL fetchTransformedBilinearARGB32PM_fast_rotate_helper_lasx(uint *b, uint *end, const QTextureData &image,
+                                                                                         int &fx, int &fy, int fdx, int fdy);
+
+        bilinearFastTransformHelperARGB32PM[0][SimpleScaleTransform] = fetchTransformedBilinearARGB32PM_simple_scale_helper_lasx;
+        bilinearFastTransformHelperARGB32PM[0][DownscaleTransform] = fetchTransformedBilinearARGB32PM_downscale_helper_lasx;
+        bilinearFastTransformHelperARGB32PM[0][FastRotateTransform] = fetchTransformedBilinearARGB32PM_fast_rotate_helper_lasx;
+
+        extern void QT_FASTCALL convertARGB32ToARGB32PM_lasx(uint *buffer, int count, const QList<QRgb> *);
+        extern void QT_FASTCALL convertRGBA8888ToARGB32PM_lasx(uint *buffer, int count, const QList<QRgb> *);
+        extern const uint *QT_FASTCALL fetchARGB32ToARGB32PM_lasx(uint *buffer, const uchar *src, int index, int count,
+                                                                  const QList<QRgb> *, QDitherInfo *);
+        extern const uint *QT_FASTCALL fetchRGBA8888ToARGB32PM_lasx(uint *buffer, const uchar *src, int index, int count,
+                                                                    const QList<QRgb> *, QDitherInfo *);
+        qPixelLayouts[QImage::Format_ARGB32].fetchToARGB32PM = fetchARGB32ToARGB32PM_lasx;
+        qPixelLayouts[QImage::Format_ARGB32].convertToARGB32PM = convertARGB32ToARGB32PM_lasx;
+        qPixelLayouts[QImage::Format_RGBA8888].fetchToARGB32PM = fetchRGBA8888ToARGB32PM_lasx;
+        qPixelLayouts[QImage::Format_RGBA8888].convertToARGB32PM = convertRGBA8888ToARGB32PM_lasx;
+
+        extern const QRgba64 * QT_FASTCALL convertARGB32ToRGBA64PM_lasx(QRgba64 *, const uint *, int, const QList<QRgb> *, QDitherInfo *);
+        extern const QRgba64 * QT_FASTCALL convertRGBA8888ToRGBA64PM_lasx(QRgba64 *, const uint *, int count, const QList<QRgb> *, QDitherInfo *);
+        extern const QRgba64 *QT_FASTCALL fetchARGB32ToRGBA64PM_lasx(QRgba64 *, const uchar *, int, int, const QList<QRgb> *, QDitherInfo *);
+        extern const QRgba64 *QT_FASTCALL fetchRGBA8888ToRGBA64PM_lasx(QRgba64 *, const uchar *, int, int, const QList<QRgb> *, QDitherInfo *);
+        qPixelLayouts[QImage::Format_ARGB32].convertToRGBA64PM = convertARGB32ToRGBA64PM_lasx;
+        qPixelLayouts[QImage::Format_RGBX8888].convertToRGBA64PM = convertRGBA8888ToRGBA64PM_lasx;
+        qPixelLayouts[QImage::Format_ARGB32].fetchToRGBA64PM = fetchARGB32ToRGBA64PM_lasx;
+        qPixelLayouts[QImage::Format_RGBX8888].fetchToRGBA64PM = fetchRGBA8888ToRGBA64PM_lasx;
+    }
+#endif  //QT_COMPILER_SUPPORTS_LASX
+
 #endif //QT_COMPILER_SUPPORTS_LSX
 
 #if defined(__ARM_NEON__)
