@@ -15,12 +15,15 @@ instructions:
     userMessageOnFailure: >
       Failed to create links to provisioned binaries.
 
+  - !include "{{qt/qtbase}}/prepare_building_env.yaml"
+
   - type: EnvironmentVariable
     variableName: COIN_CMAKE_ARGS
     variableValue: "-DQT_BUILD_TESTS=OFF {{.Env.COIN_DOC_CMAKE_ARGS}}"
   - type: EnvironmentVariable
     variableName: CONFIGURE_ENV_PREFIX
     variableValue: "{{.Env.ENV_PREFIX}}"
+
   - !include "{{qt/qtbase}}/call_configure_module.yaml"
 
   - type: ExecuteCommand
