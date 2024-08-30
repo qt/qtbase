@@ -457,14 +457,14 @@ void QCocoaScreen::deliverUpdateRequests()
         auto windows = QGuiApplication::allWindows();
         for (int i = 0; i < windows.size(); ++i) {
             QWindow *window = windows.at(i);
-            auto *platformWindow = static_cast<QCocoaWindow*>(window->handle());
+            if (window->screen() != screen())
+                continue;
+
+            QPointer<QCocoaWindow> platformWindow = static_cast<QCocoaWindow*>(window->handle());
             if (!platformWindow)
                 continue;
 
             if (!platformWindow->hasPendingUpdateRequest())
-                continue;
-
-            if (window->screen() != screen())
                 continue;
 
             // Skip windows that are not doing update requests via display link
@@ -491,6 +491,10 @@ void QCocoaScreen::deliverUpdateRequests()
             }
 
             platformWindow->deliverUpdateRequest();
+
+            // platform window can be destroyed in deliverUpdateRequest()
+            if (!platformWindow)
+                continue;
 
             // Another update request was triggered, keep the display link running
             if (platformWindow->hasPendingUpdateRequest())
