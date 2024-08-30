@@ -124,10 +124,9 @@ MyObject::MyObject(QObject *parent)
 
 void MyObject::timerEvent(QTimerEvent *event)
 {
-    qDebug() << "Timer ID:" << event->timerId();
+    qDebug() << "Timer ID:" << event->id();
 }
 //! [8]
-
 
 //! [10]
 QPushButton *button = parentWidget->findChild<QPushButton *>("button1");
@@ -474,11 +473,8 @@ someQObject->blockSignals(wasBlocked);
 //! [invalid-timer-id]
     QObject *obj;
     ...
-    int id = obj->startTimer(100ms);
-    if (id > Qt::TimerId::Invalid)
-        // The timer has been started successfully
-
-    if (id > 0) // Equivalent, albeit less readable
+    const auto id = Qt::TimerId{obj->startTimer(100ms)};
+    if (id != Qt::TimerId::Invalid)
         // The timer has been started successfully
 //! [invalid-timer-id]
 }
