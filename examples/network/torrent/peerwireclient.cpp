@@ -22,14 +22,14 @@ static const char ProtocolIdSize = 19;
 PeerWireClient::PeerWireClient(const QByteArray &peerId, QObject *parent)
     : QTcpSocket(parent), pendingBlockSizes(0),
       pwState(ChokingPeer | ChokedByPeer), receivedHandShake(false), gotPeerId(false),
-      sentHandShake(false), nextPacketLength(-1), pendingRequestTimer(0), invalidateTimeout(false),
-      keepAliveTimer(0), torrentPeer(nullptr)
+      sentHandShake(false), nextPacketLength(-1), invalidateTimeout(false),
+      torrentPeer(nullptr)
 {
     memset(uploadSpeedData, 0, sizeof(uploadSpeedData));
     memset(downloadSpeedData, 0, sizeof(downloadSpeedData));
 
-    transferSpeedTimer = startTimer(PeerRateControlTimerDelay);
-    timeoutTimer = startTimer(ConnectTimeout);
+    transferSpeedTimer.start(PeerRateControlTimerDelay, this);
+    timeoutTimer.start(ConnectTimeout, this);
     peerIdString = peerId;
 
     connect(this, &PeerWireClient::readyRead,
@@ -103,8 +103,7 @@ void PeerWireClient::unchokePeer()
     write(message, sizeof(message));
     pwState &= ~ChokingPeer;
 
-    if (pendingRequestTimer)
-        killTimer(pendingRequestTimer);
+    pendingRequestTimer.stop();
 }
 
 // Sends a "keep-alive" message to prevent the peer from closing
@@ -126,9 +125,7 @@ void PeerWireClient::sendInterested()
     // After telling the peer that we're interested, we expect to get
     // unchoked within a certain timeframe; otherwise we'll drop the
     // connection.
-    if (pendingRequestTimer)
-        killTimer(pendingRequestTimer);
-    pendingRequestTimer = startTimer(PendingRequestTimeout);
+    pendingRequestTimer.start(PendingRequestTimeout, this);
 }
 
 // Sends a "not interested" message, informing the peer that it does
@@ -200,9 +197,7 @@ void PeerWireClient::requestBlock(qint32 piece, qint32 offset, qint32 length)
     // After requesting a block, we expect the block to be sent by the
     // other peer within a certain number of seconds. Otherwise, we
     // drop the connection.
-    if (pendingRequestTimer)
-        killTimer(pendingRequestTimer);
-    pendingRequestTimer = startTimer(PendingRequestTimeout);
+    pendingRequestTimer.start(PendingRequestTimeout, this);
 }
 
 // Cancels a request for a block.
@@ -347,7 +342,7 @@ void PeerWireClient::diconnectFromHost()
 
 void PeerWireClient::timerEvent(QTimerEvent *event)
 {
-    if (event->timerId() == transferSpeedTimer) {
+    if (event->id() == transferSpeedTimer.id()) {
         // Rotate the upload / download records.
         for (int i = 6; i >= 0; --i) {
             uploadSpeedData[i + 1] = uploadSpeedData[i];
@@ -355,7 +350,7 @@ void PeerWireClient::timerEvent(QTimerEvent *event)
         }
         uploadSpeedData[0] = 0;
         downloadSpeedData[0] = 0;
-    } else if (event->timerId() == timeoutTimer) {
+    } else if (event->id() == timeoutTimer.id()) {
         // Disconnect if we timed out; otherwise the timeout is
         // restarted.
         if (invalidateTimeout) {
@@ -364,9 +359,9 @@ void PeerWireClient::timerEvent(QTimerEvent *event)
             abort();
             emit infoHashReceived(QByteArray());
         }
-    } else if (event->timerId() == pendingRequestTimer) {
+    } else if (event->id() == pendingRequestTimer.id()) {
         abort();
-    } else if (event->timerId() == keepAliveTimer) {
+    } else if (event->id() == keepAliveTimer.id()) {
         sendKeepAlive();
     }
     QTcpSocket::timerEvent(event);
@@ -378,9 +373,7 @@ void PeerWireClient::sendHandShake()
     sentHandShake = true;
 
     // Restart the timeout
-    if (timeoutTimer)
-        killTimer(timeoutTimer);
-    timeoutTimer = startTimer(ClientTimeout);
+    timeoutTimer.start(ClientTimeout, this);
 
     // Write the 68 byte PeerWire handshake.
     write(&ProtocolIdSize, 1);
@@ -440,8 +433,8 @@ void PeerWireClient::processIncomingData()
     }
 
     // Initialize keep-alive timer
-    if (!keepAliveTimer)
-        keepAliveTimer = startTimer(KeepAliveInterval);
+    if (!keepAliveTimer.isActive())
+        keepAliveTimer.start(KeepAliveInterval, this);
 
     do {
         // Find the packet length
@@ -482,8 +475,7 @@ void PeerWireClient::processIncomingData()
             // We have been choked.
             pwState |= ChokedByPeer;
             incoming.clear();
-            if (pendingRequestTimer)
-                killTimer(pendingRequestTimer);
+            pendingRequestTimer.stop();
             emit choked();
             break;
         case UnchokePacket:
@@ -546,11 +538,8 @@ void PeerWireClient::processIncomingData()
             // The peer sends a block.
             emit blockReceived(index, begin, packet.mid(9));
 
-            // Kill the pending block timer.
-            if (pendingRequestTimer) {
-                killTimer(pendingRequestTimer);
-                pendingRequestTimer = 0;
-            }
+            // Stop the pending block timer.
+            pendingRequestTimer.stop();
             break;
         }
         case CancelPacket: {

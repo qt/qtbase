@@ -4,6 +4,7 @@
 #ifndef PEERWIRECLIENT_H
 #define PEERWIRECLIENT_H
 
+#include <QBasicTimer>
 #include <QBitArray>
 #include <QList>
 #include <QTcpSocket>
@@ -150,13 +151,13 @@ private:
     // Upload/download speed records
     qint64 uploadSpeedData[8];
     qint64 downloadSpeedData[8];
-    int transferSpeedTimer;
+    QBasicTimer transferSpeedTimer;
 
     // Timeout handling
-    int timeoutTimer;
-    int pendingRequestTimer;
+    QBasicTimer timeoutTimer;
+    QBasicTimer pendingRequestTimer;
     bool invalidateTimeout;
-    int keepAliveTimer;
+    QBasicTimer keepAliveTimer;
 
     // Checksum, peer ID and set of available pieces
     QByteArray infoHash;

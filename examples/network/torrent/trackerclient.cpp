@@ -45,7 +45,7 @@ void TrackerClient::stop()
 
 void TrackerClient::timerEvent(QTimerEvent *event)
 {
-    if (event->timerId() == requestIntervalTimer) {
+    if (event->id() == requestIntervalTimer.id()) {
         fetchPeerList();
     } else {
         QObject::timerEvent(event);
@@ -151,9 +151,7 @@ void TrackerClient::httpRequestDone(QNetworkReply *reply)
 
     if (dict.contains("interval")) {
         // Mandatory item
-        if (requestIntervalTimer != -1)
-            killTimer(requestIntervalTimer);
-        requestIntervalTimer = startTimer(std::chrono::seconds(dict.value("interval").toInt()));
+        requestIntervalTimer.start(std::chrono::seconds(dict.value("interval").toInt()), this);
     }
 
     if (dict.contains("peers")) {

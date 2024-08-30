@@ -4,6 +4,7 @@
 #ifndef TRACKERCLIENT_H
 #define TRACKERCLIENT_H
 
+#include <QBasicTimer>
 #include <QByteArray>
 #include <QList>
 #include <QObject>
@@ -51,7 +52,7 @@ private slots:
 private:
     TorrentClient *torrentDownloader;
 
-    int requestIntervalTimer = -1;
+    QBasicTimer requestIntervalTimer;
     QNetworkAccessManager http;
     MetaInfo metaInfo;
     QByteArray trackerId;

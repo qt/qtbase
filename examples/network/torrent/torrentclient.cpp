@@ -67,7 +67,7 @@ public:
     void callScheduler();
     bool connectingToClients;
     void callPeerConnector();
-    int uploadScheduleTimer;
+    QBasicTimer uploadScheduleTimer;
 
     // Pieces
     QMap<qint32, PeerWireClient *> readIds;
@@ -83,7 +83,7 @@ public:
     qint64 uploadedBytes;
     int downloadRate[RateControlWindowLength];
     int uploadRate[RateControlWindowLength];
-    int transferRateTimer;
+    QBasicTimer transferRateTimer;
 
     TorrentClient *q;
 };
@@ -97,14 +97,12 @@ TorrentClientPrivate::TorrentClientPrivate(TorrentClient *qq)
     stateString = QT_TRANSLATE_NOOP(TorrentClient, "Idle");
     schedulerCalled = false;
     connectingToClients = false;
-    uploadScheduleTimer = 0;
     lastProgressValue = -1;
     pieceCount = 0;
     downloadedBytes = 0;
     uploadedBytes = 0;
     memset(downloadRate, 0, sizeof(downloadRate));
     memset(uploadRate, 0, sizeof(uploadRate));
-    transferRateTimer = 0;
 }
 
 void TorrentClientPrivate::setError(TorrentClient::Error errorCode)
@@ -414,11 +412,7 @@ void TorrentClient::stop()
     State oldState = d->state;
     d->setState(Stopping);
 
-    // Stop the timer
-    if (d->transferRateTimer) {
-        killTimer(d->transferRateTimer);
-        d->transferRateTimer = 0;
-    }
+    d->transferRateTimer.stop();
 
     // Abort all existing connections
     for (PeerWireClient *client : std::as_const(d->connections)) {
@@ -461,13 +455,13 @@ void TorrentClient::setPaused(bool paused)
 
 void TorrentClient::timerEvent(QTimerEvent *event)
 {
-    if (event->timerId() == d->uploadScheduleTimer) {
+    if (event->id() == d->uploadScheduleTimer.id()) {
         // Update the state of who's choked and who's not
         scheduleUploads();
         return;
     }
 
-    if (event->timerId() != d->transferRateTimer) {
+    if (event->id() != d->transferRateTimer.id()) {
         QObject::timerEvent(event);
         return;
     }
@@ -492,8 +486,7 @@ void TorrentClient::timerEvent(QTimerEvent *event)
 
     // Stop the timer if there is no activity.
     if (downloadBytesPerSecond == 0 && uploadBytesPerSecond == 0) {
-        killTimer(d->transferRateTimer);
-        d->transferRateTimer = 0;
+        d->transferRateTimer.stop();
     }
 }
 
@@ -534,7 +527,7 @@ void TorrentClient::fullVerificationDone()
             ++it;
     }
 
-    d->uploadScheduleTimer = startTimer(UploadScheduleInterval);
+    d->uploadScheduleTimer.start(UploadScheduleInterval, this);
 
     // Start the server
     TorrentServer *server = TorrentServer::instance();
@@ -1009,8 +1002,8 @@ void TorrentClient::blockReceived(qint32 pieceIndex, qint32 begin, const QByteAr
 
 void TorrentClient::peerWireBytesWritten(qint64 size)
 {
-    if (!d->transferRateTimer)
-        d->transferRateTimer = startTimer(RateControlTimerDelay);
+    if (!d->transferRateTimer.isActive())
+        d->transferRateTimer.start(RateControlTimerDelay, this);
 
     d->uploadRate[0] += size;
     d->uploadedBytes += size;
@@ -1019,8 +1012,8 @@ void TorrentClient::peerWireBytesWritten(qint64 size)
 
 void TorrentClient::peerWireBytesReceived(qint64 size)
 {
-    if (!d->transferRateTimer)
-        d->transferRateTimer = startTimer(RateControlTimerDelay);
+    if (!d->transferRateTimer.isActive())
+        d->transferRateTimer.start(RateControlTimerDelay, this);
 
     d->downloadRate[0] += size;
     d->downloadedBytes += size;
