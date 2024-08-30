@@ -4945,6 +4945,9 @@ void tst_QTableView::resetDefaultSectionSize()
     // 0 as previously. QTBUG-116013
     QTableWidget view(10, 10);
     view.resize(300, 300);
+    // We need to move this into section items mode...
+    view.verticalHeader()->swapSections(0, 1);
+    view.verticalHeader()->swapSections(0, 1);
     view.verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     view.verticalHeader()->setDefaultSectionSize(120);
     view.verticalHeader()->resetDefaultSectionSize();

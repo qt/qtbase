@@ -229,6 +229,14 @@ private slots:
     void testModelMovingColumns();
     void testModelMovingRows();
 
+    void lowMemoryUsageInBasicMode();
+    void lowMememoryUsageOnSetDefaultSectionSize();
+    void normalMemoryUsageOnSwap();
+    void normalMemoryUsageOnMove();
+    void normalMemoryUsageOnResize();
+    void normalMemoryUsageOnHide();
+    void storeRestoreLowMemoryMode();
+
 protected:
     void setupTestData(bool use_reset_model = false);
     void additionalInit();
@@ -3680,6 +3688,122 @@ void tst_QHeaderView::testModelMovingRows()
     QVERIFY(hv.isSectionHidden(1));
     QVERIFY(!hv.isSectionHidden(3));
 }
+
+// Helpers for memory tests
+struct BasicModel : public QStandardItemModel
+{
+    BasicModel()
+    {
+        setRowCount(1000);
+        setColumnCount(3);
+    }
+    void resetModel()
+    {
+        beginResetModel();
+        endResetModel();
+    }
+};
+
+struct TableViewWithBasicModel : public QTableView
+{
+    TableViewWithBasicModel()
+    {
+        emptyState = verticalHeader()->saveState();
+        setModel(&m);
+        header = verticalHeader();
+    }
+
+    bool hasLowMemoryUsage() const {
+        return emptyState.size() == header->saveState().size();
+    }
+
+    bool hasHigherMemoryUsage() const {
+        const int delta = 1000;
+        return header->saveState().size() > delta + emptyState.size();
+    }
+
+    BasicModel m;
+    QHeaderView *header;
+    QByteArray emptyState;
+};
+
+void tst_QHeaderView::lowMemoryUsageInBasicMode()
+{
+    TableViewWithBasicModel tv;
+    QVERIFY(tv.hasLowMemoryUsage());
+    tv.m.setRowCount(10000);
+    QVERIFY(tv.hasLowMemoryUsage());
+    tv.m.setRowCount(500);
+    QVERIFY(tv.hasLowMemoryUsage());
+    tv.m.insertRows(200, 100);
+    QVERIFY(tv.hasLowMemoryUsage());
+    tv.m.removeRows(100, 50);
+    QVERIFY(tv.hasLowMemoryUsage());
+}
+
+void tst_QHeaderView::normalMemoryUsageOnSwap()
+{
+    TableViewWithBasicModel tv;
+    QVERIFY(tv.hasLowMemoryUsage());
+    tv.header->swapSections(0, 1);
+    QVERIFY(tv.hasHigherMemoryUsage());
+}
+
+void tst_QHeaderView::normalMemoryUsageOnMove()
+{
+    TableViewWithBasicModel tv;
+    QVERIFY(tv.hasLowMemoryUsage());
+    tv.header->moveSection(2, 7);
+    QVERIFY(tv.hasHigherMemoryUsage());
+}
+
+void tst_QHeaderView::normalMemoryUsageOnResize()
+{
+    TableViewWithBasicModel tv;
+    QVERIFY(tv.hasLowMemoryUsage());
+    tv.header->resizeSection(6, 10);
+    QVERIFY(tv.hasHigherMemoryUsage());
+}
+
+void tst_QHeaderView::normalMemoryUsageOnHide()
+{
+    TableViewWithBasicModel tv;
+    QVERIFY(tv.hasLowMemoryUsage());
+    tv.header->hideSection(9);
+    QVERIFY(tv.hasHigherMemoryUsage());
+}
+
+void tst_QHeaderView::storeRestoreLowMemoryMode()
+{
+    TableViewWithBasicModel tv;
+    QByteArray stateLowMemory = tv.header->saveState();
+    tv.header->swapSections(0, 1);
+    tv.header->swapSections(0, 1);
+    QByteArray stateNormalMemoryUsage = tv.header->saveState();
+
+    QVERIFY(!tv.hasLowMemoryUsage());
+    QVERIFY(tv.header->restoreState(stateLowMemory));
+    QVERIFY(tv.hasLowMemoryUsage());
+
+    QVERIFY(tv.header->restoreState(stateNormalMemoryUsage));
+    QVERIFY(tv.hasHigherMemoryUsage());
+}
+
+void tst_QHeaderView::lowMememoryUsageOnSetDefaultSectionSize()
+{
+    TableViewWithBasicModel tv;
+    tv.header->setMinimumSectionSize(10);
+    tv.header->setMaximumSectionSize(30);
+    QVERIFY(tv.hasLowMemoryUsage());
+    tv.header->setDefaultSectionSize(12);
+    const int oldLength = tv.header->length();
+    QVERIFY(tv.hasLowMemoryUsage());
+    tv.header->setDefaultSectionSize(18);
+    const int newLength = tv.header->length();
+    QCOMPARE_GT(newLength, oldLength); // It has grown
+    QVERIFY(tv.hasLowMemoryUsage());
+}
+
 
 QTEST_MAIN(tst_QHeaderView)
 #include "tst_qheaderview.moc"
