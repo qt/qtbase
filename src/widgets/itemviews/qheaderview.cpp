@@ -2658,7 +2658,7 @@ void QHeaderView::mouseReleaseEvent(QMouseEvent *e)
             d->section = d->target = -1;
             d->updateSectionIndicator(d->section, pos);
             if (from == to)
-                d->updateSectionsBeforeAfter(from);
+                d->updateSectionsBeforeAfter(logicalIndex(from));
             break;
         } // not moving
         Q_FALLTHROUGH();
