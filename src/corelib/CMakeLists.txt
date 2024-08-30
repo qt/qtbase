@@ -311,6 +311,7 @@ qt_internal_add_module(Core
         tools/qtools_p.h
         tools/qtyperevision.cpp tools/qtyperevision.h
         tools/quniquehandle_p.h
+        tools/quniquehandle_types.cpp tools/quniquehandle_types_p.h
         tools/qvarlengtharray.h
         tools/qvector.h
         tools/qversionnumber.cpp tools/qversionnumber.h
