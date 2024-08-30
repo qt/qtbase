@@ -27,9 +27,9 @@
 
 QT_REQUIRE_CONFIG(timezone);
 QT_REQUIRE_CONFIG(timezone_locale);
+// #define QT_CLDR_ZONE_DEBUG
 
 QT_BEGIN_NAMESPACE
-#define QT_CLDR_ZONE_DEBUG
 
 namespace QtTimeZoneLocale {
 #if QT_CONFIG(icu)
