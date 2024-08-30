@@ -2247,6 +2247,7 @@ static void populateLightSystemBasePalette(QPalette &result)
     const bool styleSheetChanged = oldStyleSheet != qApp->styleSheet();
 
     const QColor textColor = QColor(0x00,0x00,0x00,0xE4);
+    const QColor textDisabled = QColor(0x00,0x00,0x00,0x5C);
     const QColor btnFace = QColor(0xFF,0xFF,0xFF,0xB3);
     const QColor alternateBase = QColor(0x00,0x00,0x00,0x09);
     const QColor btnHighlight = result.accent().color();
@@ -2268,6 +2269,8 @@ static void populateLightSystemBasePalette(QPalette &result)
     SET_IF_UNRESOLVED(QPalette::All, QPalette::ToolTipBase, result.window().color());
     SET_IF_UNRESOLVED(QPalette::All, QPalette::ToolTipText, result.windowText().color());
     SET_IF_UNRESOLVED(QPalette::All, QPalette::AlternateBase, alternateBase);
+
+    result.setColor(QPalette::Disabled, QPalette::WindowText, textDisabled);
 
     if (result.midlight() == result.button())
         result.setColor(QPalette::Midlight, btnColor.lighter(110));
