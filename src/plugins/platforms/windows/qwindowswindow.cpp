@@ -1376,10 +1376,12 @@ void QWindowsForeignWindow::setParent(const QPlatformWindow *newParentWindow)
     const HWND newParent = newParentWindow ? reinterpret_cast<HWND>(newParentWindow->winId()) : HWND(nullptr);
     const bool isTopLevel = !newParent;
     const DWORD oldStyle = style();
+
     qCDebug(lcQpaWindow) << __FUNCTION__ << window() << "newParent="
         << newParentWindow << newParent << "oldStyle=" << debugWinStyle(oldStyle);
-    SetParent(m_hwnd, newParent);
-    if (wasTopLevel != isTopLevel) { // Top level window flags need to be set/cleared manually.
+
+    auto updateWindowFlags = [=]{
+        // Top level window flags need to be set/cleared manually.
         DWORD newStyle = oldStyle;
         if (isTopLevel) {
             newStyle = m_topLevelStyle;
@@ -1389,6 +1391,20 @@ void QWindowsForeignWindow::setParent(const QPlatformWindow *newParentWindow)
             newStyle |= WS_CHILD;
         }
         SetWindowLongPtr(m_hwnd, GWL_STYLE, newStyle);
+    };
+
+    if (wasTopLevel && !isTopLevel) {
+        // Becoming a child window requires the style
+        // flags to be updated before reparenting.
+        updateWindowFlags();
+    }
+
+    SetParent(m_hwnd, newParent);
+
+    if (!wasTopLevel && isTopLevel) {
+        // Becoming a top level window requires the style
+        // flags to be updated after reparenting.
+        updateWindowFlags();
     }
 }
 
