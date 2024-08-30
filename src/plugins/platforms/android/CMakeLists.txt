@@ -12,6 +12,7 @@ qt_internal_add_plugin(QAndroidIntegrationPlugin
     DEFAULT_IF "android" IN_LIST QT_QPA_PLATFORMS
     SOURCES
         androidcontentfileengine.cpp androidcontentfileengine.h
+        qandroidapkfileengine.h qandroidapkfileengine.cpp
         androiddeadlockprotector.h
         androidjniaccessibility.cpp androidjniaccessibility.h
         androidjniinput.cpp androidjniinput.h

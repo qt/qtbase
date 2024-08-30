@@ -13,6 +13,9 @@
 #if defined(Q_OS_WIN)
 #  include <qt_windows.h>
 #endif
+#ifdef Q_OS_ANDROID
+#include <private/qjnihelpers_p.h>
+#endif
 
 #ifdef Q_OS_UNIX
 #include <unistd.h>
@@ -529,10 +532,15 @@ void tst_qstandardpaths::testFindExecutableLinkToDirectory()
 #ifdef Q_OS_WASM
     QSKIP("No applicationdir on wasm");
 #else
+    const QString appPath = QCoreApplication::applicationDirPath();
+#ifdef Q_OS_ANDROID
+    if (QtAndroidPrivate::isUncompressedNativeLibs())
+        QSKIP("Can't create a link to applicationDir which points inside an APK on Android");
+#endif
     // link to directory
     const QString target = QDir::tempPath() + QDir::separator() + QLatin1String("link.lnk");
     QFile::remove(target);
-    QFile appFile(QCoreApplication::applicationDirPath());
+    QFile appFile(appPath);
     QVERIFY(appFile.link(target));
     QVERIFY(QStandardPaths::findExecutable(target).isEmpty());
     QFile::remove(target);

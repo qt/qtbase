@@ -8,6 +8,7 @@
 #include <semaphore.h>
 
 #include "androidcontentfileengine.h"
+#include "qandroidapkfileengine.h"
 #include "androiddeadlockprotector.h"
 #include "androidjniaccessibility.h"
 #include "androidjniinput.h"
@@ -83,6 +84,7 @@ static double m_density = 1.0;
 
 static AndroidAssetsFileEngineHandler *m_androidAssetsFileEngineHandler = nullptr;
 static AndroidContentFileEngineHandler *m_androidContentFileEngineHandler = nullptr;
+static QAndroidApkFileEngineHandler *m_androidApkFileEngineHandler = nullptr;
 
 static AndroidBackendRegister *m_backendRegister = nullptr;
 
@@ -384,6 +386,7 @@ static jboolean startQtAndroidPlugin(JNIEnv *env, jobject /*object*/, jstring pa
     m_androidPlatformIntegration = nullptr;
     m_androidAssetsFileEngineHandler = new AndroidAssetsFileEngineHandler();
     m_androidContentFileEngineHandler = new AndroidContentFileEngineHandler();
+    m_androidApkFileEngineHandler = new QAndroidApkFileEngineHandler();
     m_mainLibraryHnd = nullptr;
     m_backendRegister = new AndroidBackendRegister();
 
@@ -496,6 +499,8 @@ static void quitQtAndroidPlugin(JNIEnv *env, jclass /*clazz*/)
     m_androidAssetsFileEngineHandler = nullptr;
     delete m_androidContentFileEngineHandler;
     m_androidContentFileEngineHandler = nullptr;
+    delete m_androidApkFileEngineHandler;
+    m_androidApkFileEngineHandler = nullptr;
 }
 
 static void terminateQt(JNIEnv *env, jclass /*clazz*/)
@@ -533,6 +538,8 @@ static void terminateQt(JNIEnv *env, jclass /*clazz*/)
     m_androidPlatformIntegration = nullptr;
     delete m_androidAssetsFileEngineHandler;
     m_androidAssetsFileEngineHandler = nullptr;
+    delete m_androidApkFileEngineHandler;
+    m_androidApkFileEngineHandler = nullptr;
     delete m_backendRegister;
     m_backendRegister = nullptr;
     sem_post(&m_exitSemaphore);

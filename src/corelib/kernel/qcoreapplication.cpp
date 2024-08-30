@@ -2409,6 +2409,10 @@ void QCoreApplicationPrivate::setApplicationFilePath(const QString &path)
     the executable, which may be inside an application bundle (if the
     application is bundled).
 
+    On Android this will point to the directory actually containing the
+    executable, which may be inside the application APK (if it was built
+    with uncompressed libraries support).
+
     \warning On Linux, this function will try to get the path from the
     \c {/proc} file system. If that fails, it assumes that \c
     {argv[0]} contains the absolute file name of the executable. The

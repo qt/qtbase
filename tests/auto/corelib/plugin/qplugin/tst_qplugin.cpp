@@ -11,6 +11,10 @@
 
 #include <private/qplugin_p.h>
 
+#ifdef Q_OS_ANDROID
+#include <private/qjnihelpers_p.h>
+#endif
+
 class tst_QPlugin : public QObject
 {
     Q_OBJECT
@@ -198,6 +202,11 @@ void tst_QPlugin::scanInvalidPlugin()
 
     {
         QFile f(newName);
+#ifdef Q_OS_ANDROID
+        // set write permission to plugin file that's copied from read-only location
+        if (QtAndroidPrivate::isUncompressedNativeLibs())
+            f.setPermissions(QFileDevice::WriteOwner | f.permissions());
+#endif
         QVERIFY(f.open(QIODevice::ReadWrite | QIODevice::Unbuffered));
         QVERIFY(f.size() > qint64(strlen(invalidPluginSignature)));
         uchar *data = f.map(0, f.size());

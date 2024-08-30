@@ -764,7 +764,6 @@ bool copyFileIfNewer(const QString &sourceFileName,
 
 struct GradleBuildConfigs {
     QString appNamespace;
-    bool setsLegacyPackaging = false;
     bool usesIntegerCompileSdkVersion = false;
 };
 
@@ -797,9 +796,7 @@ GradleBuildConfigs gradleBuildConfigs(const QString &path)
         const QByteArray trimmedLine = line.trimmed();
         if (isComment(trimmedLine))
             continue;
-        if (trimmedLine.contains("useLegacyPackaging")) {
-            configs.setsLegacyPackaging = true;
-        } else if (trimmedLine.contains("compileSdkVersion androidCompileSdkVersion.toInteger()")) {
+        if (trimmedLine.contains("compileSdkVersion androidCompileSdkVersion.toInteger()")) {
             configs.usesIntegerCompileSdkVersion = true;
         } else if (trimmedLine.contains("namespace")) {
             configs.appNamespace = QString::fromUtf8(extractValue(trimmedLine));
@@ -2972,8 +2969,6 @@ bool buildAndroidProject(const Options &options)
 
     const QString gradleBuildFilePath = options.outputDirectory + "build.gradle"_L1;
     GradleBuildConfigs gradleConfigs = gradleBuildConfigs(gradleBuildFilePath);
-    if (!gradleConfigs.setsLegacyPackaging)
-        gradleProperties["android.bundle.enableUncompressedNativeLibs"] = "false";
 
     gradleProperties["buildDir"] = "build";
     gradleProperties["qtAndroidDir"] =

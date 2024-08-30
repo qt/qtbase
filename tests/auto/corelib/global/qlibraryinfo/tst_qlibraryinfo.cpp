@@ -5,7 +5,7 @@
 #include <QtCore/qlibraryinfo.h>
 #include <QtCore/qscopeguard.h>
 #include <QtCore/private/qlibraryinfo_p.h>
-
+#include <QStandardPaths>
 
 class tst_QLibraryInfo : public QObject
 {
@@ -87,7 +87,7 @@ void tst_QLibraryInfo::merge()
     QLibraryInfoPrivate::setQtconfManualPath(&qtConfPath);
     QLibraryInfoPrivate::reload();
 
-    QString baseDir = QCoreApplication::applicationDirPath();
+    QString baseDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     QString docPath = QLibraryInfo::path(QLibraryInfo::DocumentationPath);
     // we can't know where exactly the doc path points, but it should not point to ${baseDir}/doc,
     // which would be the  behavior without merge_qt_conf

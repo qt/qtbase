@@ -37,6 +37,7 @@
 // come with sandboxes that kill applications that make system calls outside a
 // whitelist and several Android vendors can't be bothered to update the list.
 #  undef STATX_BASIC_STATS
+#include <private/qjnihelpers_p.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -433,6 +434,15 @@ static std::vector<MountInfo> parseMountInfo(FilterMountInfo filter = FilterMoun
 
 void QStorageInfoPrivate::doStat()
 {
+#ifdef Q_OS_ANDROID
+    if (QtAndroidPrivate::isUncompressedNativeLibs()) {
+        // We need to pass the actual file path on the file system to statfs64
+        QString possibleApk = QtAndroidPrivate::resolveApkPath(rootPath);
+        if (!possibleApk.isEmpty())
+            rootPath = possibleApk;
+    }
+#endif
+
     retrieveVolumeInfo();
     if (!ready)
         return;

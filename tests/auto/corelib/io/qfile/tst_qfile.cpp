@@ -29,6 +29,10 @@
 #include <QtCore/private/qfunctions_win_p.h>
 #endif
 
+#ifdef Q_OS_ANDROID
+#include <QtCore/private/qjnihelpers_p.h>
+#endif
+
 #include <QtTest/private/qemulationdetector_p.h>
 
 #ifdef Q_OS_WIN
@@ -1387,6 +1391,10 @@ void tst_QFile::permissions_data()
 
 #ifndef Q_OS_WASM
     // Application path is empty on wasm
+#ifdef Q_OS_ANDROID
+    // Android in-APK application path doesn't report exec permission
+    if (!QtAndroidPrivate::isUncompressedNativeLibs())
+#endif
     QTest::newRow("data0") << QCoreApplication::instance()->applicationFilePath() << uint(QFile::ExeUser) << true << false;
 #endif
     QTest::newRow("data1") << m_testSourceFile << uint(QFile::ReadUser) << true << false;
@@ -2715,7 +2723,12 @@ void tst_QFile::virtualFile()
         lines += std::move(data);
     }
 
-    if (!QT_CONFIG(static) && !QTestPrivate::isRunningArmOnX86()) {
+    if (!QT_CONFIG(static) && !QTestPrivate::isRunningArmOnX86()
+#ifdef Q_OS_ANDROID
+            // With uncompressed libs, only the app's APK path is shown and no library names.
+            && !QtAndroidPrivate::isUncompressedNativeLibs()
+#endif
+            ) {
         // we must be able to find QtCore and QtTest somewhere
         static const char corelib[] = "libQt" QT_STRINGIFY(QT_VERSION_MAJOR) "Core";
         static const char testlib[] = "libQt" QT_STRINGIFY(QT_VERSION_MAJOR) "Test";

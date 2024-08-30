@@ -12,6 +12,10 @@
 #include <qcoreapplication.h>
 #include <quuid.h>
 
+#ifdef Q_OS_ANDROID
+#include <QStandardPaths>
+#endif
+
 class tst_QUuid : public QObject
 {
     Q_OBJECT
@@ -82,7 +86,7 @@ void tst_QUuid::initTestCase()
 #if QT_CONFIG(process)
     // chdir to the directory containing our testdata, then refer to it with relative paths
 #ifdef Q_OS_ANDROID
-    QString testdata_dir = QCoreApplication::applicationDirPath();
+    QString testdata_dir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
 #else // !Q_OS_ANDROID
     QString testdata_dir = QFileInfo(QFINDTESTDATA("testProcessUniqueness")).absolutePath();
 #endif

@@ -17,6 +17,8 @@ list(APPEND test_data "tst_qstandardpaths.cpp")
 qt_internal_add_test(tst_qstandardpaths
     SOURCES
         tst_qstandardpaths.cpp
+    LIBRARIES
+        Qt::CorePrivate
     TESTDATA ${test_data}
 )
 

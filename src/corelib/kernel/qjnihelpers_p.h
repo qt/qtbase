@@ -106,6 +106,9 @@ namespace QtAndroidPrivate
 
     Q_CORE_EXPORT bool acquireAndroidDeadlockProtector();
     Q_CORE_EXPORT void releaseAndroidDeadlockProtector();
+
+    Q_CORE_EXPORT bool isUncompressedNativeLibs();
+    Q_CORE_EXPORT QString resolveApkPath(const QString &fileName);
 }
 
 #define Q_JNI_FIND_AND_CHECK_CLASS(CLASS_NAME) \

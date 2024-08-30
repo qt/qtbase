@@ -18,6 +18,10 @@
 #  include <QtCore/private/qmachparser_p.h>
 #endif
 
+#ifdef Q_OS_ANDROID
+#include <private/qjnihelpers_p.h>
+#endif
+
 using namespace Qt::StringLiterals;
 
 // Helper macros to let us know if some suffixes are valid
@@ -723,6 +727,12 @@ static void loadCorruptElf_helper(const QString &origLibrary)
 {
     QFETCH(QString, snippet);
     QFETCH(ElfPatcher, patcher);
+
+#ifdef Q_OS_ANDROID
+    // patchElf() tries to map with private mode
+    if (QtAndroidPrivate::isUncompressedNativeLibs())
+        QSKIP("Mapping in-APK libraries with private mode is not supported on Android");
+#endif
 
     std::unique_ptr<QTemporaryFile> tmplib = patchElf(origLibrary, patcher);
 
