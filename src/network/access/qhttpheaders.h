@@ -5,7 +5,8 @@
 #define QHTTPHEADERS_H
 
 #include <QtNetwork/qtnetworkglobal.h>
-#include <QtCore/qmetaobject.h>
+
+#include <QtCore/qobjectdefs.h>
 #include <QtCore/qshareddata.h>
 #include <QtCore/qcontainerfwd.h>
 
