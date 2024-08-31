@@ -17,6 +17,7 @@
 
 #include <QtGui/private/qtguiglobal_p.h>
 #include "QtGui/qfont.h"
+#include "QtCore/qbasictimer.h"
 #include "QtCore/qmap.h"
 #include "QtCore/qhash.h"
 #include "QtCore/qobject.h"
@@ -288,7 +289,7 @@ private:
     uint current_timestamp;
     bool fast;
     const bool autoClean;
-    int timer_id;
+    QBasicTimer timer;
     const int m_id;
 };
 

@@ -3390,7 +3390,6 @@ QFontCache::QFontCache()
       current_timestamp(0), fast(false),
       autoClean(QGuiApplication::instance()
                 && (QGuiApplication::instance()->thread() == QThread::currentThread())),
-      timer_id(-1),
       m_id(font_cache_id.fetchAndAddRelaxed(1) + 1)
 {
 }
@@ -3563,12 +3562,10 @@ void QFontCache::increaseCost(uint cost)
         if (!autoClean)
             return;
 
-        if (timer_id == -1 || ! fast) {
+        if (!timer.isActive() || ! fast) {
             FC_DEBUG("  TIMER: starting fast timer (%d s)", static_cast<int>(fast_timeout.count()));
 
-            if (timer_id != -1)
-                killTimer(timer_id);
-            timer_id = startTimer(fast_timeout);
+            timer.start(fast_timeout, this);
             fast = true;
         }
     }
@@ -3593,8 +3590,7 @@ void QFontCache::timerEvent(QTimerEvent *)
     if (total_cost <= max_cost && max_cost <= min_cost) {
         FC_DEBUG("  cache redused sufficiently, stopping timer");
 
-        killTimer(timer_id);
-        timer_id = -1;
+        timer.stop();
         fast = false;
 
         return;
@@ -3663,9 +3659,8 @@ void QFontCache::decreaseCache()
             if (fast) {
                 FC_DEBUG("  cannot shrink cache, slowing timer");
 
-                if (timer_id != -1) {
-                    killTimer(timer_id);
-                timer_id = startTimer(slow_timeout);
+                if (timer.isActive()) {
+                    timer.start(slow_timeout, this);
                 fast = false;
             }
 
@@ -3673,9 +3668,7 @@ void QFontCache::decreaseCache()
         } else if (! fast) {
             FC_DEBUG("  dropping into passing gear");
 
-            if (timer_id != -1)
-                killTimer(timer_id);
-            timer_id = startTimer(fast_timeout);
+            timer.start(fast_timeout, this);
             fast = true;        }
         }
     }
