@@ -791,8 +791,8 @@ QByteArray QDtlsClientVerifierOpenSSL::verifiedHello() const
 
 void QDtlsPrivateOpenSSL::TimeoutHandler::start(int hintMs)
 {
-    Q_ASSERT(timerId == -1);
-    timerId = startTimer(hintMs > 0 ? hintMs : timeoutMs, Qt::PreciseTimer);
+    Q_ASSERT(!timer.isActive());
+    timer.start(hintMs > 0 ? hintMs : timeoutMs, Qt::PreciseTimer, this);
 }
 
 void QDtlsPrivateOpenSSL::TimeoutHandler::doubleTimeout()
@@ -805,19 +805,15 @@ void QDtlsPrivateOpenSSL::TimeoutHandler::doubleTimeout()
 
 void QDtlsPrivateOpenSSL::TimeoutHandler::stop()
 {
-    if (timerId != -1) {
-        killTimer(timerId);
-        timerId = -1;
-    }
+    timer.stop();
 }
 
 void QDtlsPrivateOpenSSL::TimeoutHandler::timerEvent(QTimerEvent *event)
 {
     Q_UNUSED(event);
-    Q_ASSERT(timerId != -1);
+    Q_ASSERT(timer.isActive());
 
-    killTimer(timerId);
-    timerId = -1;
+    timer.stop();
 
     Q_ASSERT(dtlsConnection);
     dtlsConnection->reportTimeout();
