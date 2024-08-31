@@ -18,6 +18,7 @@
 
 #include <QtCore/qobject.h>
 #include <QtCore/qabstracteventdispatcher.h>
+#include <QtCore/qbasictimer.h>
 #include <QtCore/qnamespace.h>
 
 QT_BEGIN_NAMESPACE
@@ -30,7 +31,7 @@ class QSingleShotTimer : public QObject
 {
     Q_OBJECT
 
-    Qt::TimerId timerId = Qt::TimerId::Invalid;
+    QBasicTimer timer;
 
 public:
     // use the same duration type

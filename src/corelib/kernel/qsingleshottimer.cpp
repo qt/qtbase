@@ -30,11 +30,7 @@ QSingleShotTimer::QSingleShotTimer(Duration interval, Qt::TimerType timerType,
     startTimerForReceiver(interval, timerType, r);
 }
 
-QSingleShotTimer::~QSingleShotTimer()
-{
-    if (timerId > Qt::TimerId::Invalid)
-        killTimer(timerId);
-}
+QSingleShotTimer::~QSingleShotTimer() = default;
 
 /*
     Move the timer, and the dispatching and handling of the timer event, into
@@ -57,12 +53,12 @@ void QSingleShotTimer::startTimerForReceiver(Duration interval, Qt::TimerType ti
             if (deadline.hasExpired()) {
                 Q_EMIT timeout();
             } else {
-                timerId = Qt::TimerId{startTimer(deadline.remainingTimeAsDuration(), timerType)};
+                timer.start(deadline.remainingTimeAsDuration(), timerType, this);
             }
         };
         QMetaObject::invokeMethod(this, invokable, Qt::QueuedConnection);
     } else {
-        timerId = Qt::TimerId{startTimer(interval, timerType)};
+        timer.start(interval, timerType, this);
     }
 }
 
@@ -70,8 +66,7 @@ void QSingleShotTimer::timerEvent(QTimerEvent *)
 {
     // need to kill the timer _before_ we emit timeout() in case the
     // slot connected to timeout calls processEvents()
-    if (timerId > Qt::TimerId::Invalid)
-        killTimer(std::exchange(timerId, Qt::TimerId::Invalid));
+    timer.stop();
 
     Q_EMIT timeout();
 
