@@ -1844,7 +1844,7 @@ int QObject::startTimer(int interval, Qt::TimerType timerType)
 
     \snippet code/src_corelib_kernel_qobject.cpp 8
 
-    Note that the accuracy of QChronoTimer depends on the underlying operating
+    Note that the accuracy of the timer depends on the underlying operating
     system and hardware.
 
     The \a timerType argument allows you to customize the accuracy of
