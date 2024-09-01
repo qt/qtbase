@@ -5620,6 +5620,7 @@
   </mime-type>
 
   <mime-type type="audio/x-flac">
+    <alias type="audio/flac" />
     <acronym>FLAC</acronym>
     <comment>Free Lossless Audio Codec</comment>
     <magic priority="50">
