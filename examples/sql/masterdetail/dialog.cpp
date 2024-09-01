@@ -173,6 +173,7 @@ void Dialog::increaseAlbumCount(const QModelIndex &artistIndex)
 
     int albumCount = albumCountIndex.data().toInt();
     artistModel->setData(albumCountIndex, QVariant(albumCount + 1));
+    artistModel->submitAll();
 }
 
 
