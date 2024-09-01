@@ -20,10 +20,11 @@
 
 #include <QtGui/QIcon>
 #include <QtGui/QIconEngine>
-#include <private/qiconengine_p.h>
-#include <QtCore/QHash>
 #include <QtCore/QList>
 #include <QtCore/QSharedPointer>
+#include <QtCore/QVarLengthArray>
+#include <private/qflatmap_p.h>
+#include <private/qiconengine_p.h>
 
 #include <vector>
 #include <memory>
@@ -35,8 +36,8 @@ class QIconLoader;
 
 struct QIconDirInfo
 {
-    enum Type { Fixed, Scalable, Threshold, Fallback };
-    enum Context { UnknownContext, Applications, MimeTypes };
+    enum Type : uint8_t { Fixed, Scalable, Threshold, Fallback };
+    enum Context : uint8_t { UnknownContext, Applications, MimeTypes };
     QIconDirInfo(const QString &_path = QString()) :
             path(_path),
             size(0),
@@ -204,7 +205,7 @@ private:
     mutable QString m_userFallbackTheme;
     mutable QString m_systemTheme;
     mutable QStringList m_iconDirs;
-    mutable QHash <QString, QIconTheme> themeList;
+    mutable QVarLengthFlatMap <QString, QIconTheme, 5> themeList;
     mutable QStringList m_fallbackDirs;
     mutable QString m_iconName;
 };
