@@ -931,7 +931,7 @@ QJniObject QJniObject::callStaticObjectMethodV(jclass clazz,
     is a jobject type, then the returned value will be a QJniObject.
 
     \code
-    QJniObject myJavaStrin("org/qtproject/qt/TestClass");
+    QJniObject myJavaString("org/qtproject/qt/TestClass");
     jint index = myJavaString.callMethod<jint>("indexOf", "(I)I", 0x0051);
     \endcode
 */
@@ -945,7 +945,7 @@ QJniObject QJniObject::callStaticObjectMethodV(jclass clazz,
     will be a QJniObject.
 
     \code
-    QJniObject myJavaStrin("org/qtproject/qt/TestClass");
+    QJniObject myJavaString("org/qtproject/qt/TestClass");
     jint size = myJavaString.callMethod<jint>("length");
     \endcode
 
