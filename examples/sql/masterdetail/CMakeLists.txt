@@ -32,6 +32,7 @@ target_link_libraries(masterdetail PRIVATE
 set(masterdetail_resource_files
     "images/icon.png"
     "images/image.png"
+    "albumdetails.xml"
 )
 
 qt_add_resources(masterdetail "masterdetail"

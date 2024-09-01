@@ -202,6 +202,8 @@ void MainWindow::removeAlbumFromFile(int id)
 void MainWindow::removeAlbumFromDatabase(const QModelIndex &index)
 {
     model->removeRow(index.row());
+    // to avoid a blank row, see QSqlTableModel::removeRows()
+    model->select();
 }
 
 void MainWindow::decreaseAlbumCount(const QModelIndex &artistIndex)
@@ -217,6 +219,7 @@ void MainWindow::decreaseAlbumCount(const QModelIndex &artistIndex)
         showImageLabel();
     } else {
         artists->setData(albumCountIndex, QVariant(albumCount - 1));
+        artists->submitAll();
     }
 }
 
