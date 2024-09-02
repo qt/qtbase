@@ -725,8 +725,8 @@ QDirListing::const_iterator QDirListing::begin() const
 */
 QDirListing::const_iterator &QDirListing::const_iterator::operator++()
 {
-    dirListPtr->advance();
-    if (!dirListPtr->hasIterators())
+    dirEntry.dirListPtr->advance();
+    if (!dirEntry.dirListPtr->hasIterators())
         *this = {}; // All done, make `this` equal to the end() iterator
     return *this;
 }
