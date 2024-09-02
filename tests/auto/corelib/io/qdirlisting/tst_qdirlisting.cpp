@@ -23,6 +23,8 @@
 #include <QStandardPaths>
 #endif
 
+#include <algorithm>
+
 using namespace Qt::StringLiterals;
 
 Q_DECLARE_METATYPE(QDirListing::IteratorFlags)
@@ -748,18 +750,25 @@ void tst_QDirListing::hiddenDirs()
 
 void tst_QDirListing::withStdAlgorithms()
 {
+#ifndef __cpp_lib_ranges
+    QSKIP("This test requires C++20 ranges support enabled in the standard library");
+#else
+#ifdef __cpp_lib_concepts
+    static_assert(std::ranges::input_range<QDirListing&>);
+#endif
     QDirListing dirList(u"entrylist"_s, ItFlag::Recursive);
 
-    std::for_each(dirList.cbegin(), dirList.cend(), [](const auto &dirEntry) {
+    std::ranges::for_each(dirList.cbegin(), dirList.cend(), [](const auto &dirEntry) {
         QVERIFY(dirEntry.absoluteFilePath().contains("entrylist"));
     });
 
     const auto fileName = "dummy"_L1;
-    auto it = std::find_if(dirList.cbegin(), dirList.cend(), [fileName](const auto &dirEntry) {
+    auto it = std::ranges::find_if(dirList.cbegin(), dirList.cend(), [fileName](const auto &dirEntry) {
         return dirEntry.fileName() == fileName;
     });
     QVERIFY(it != dirList.cend());
     QCOMPARE(it->fileName(), fileName);
+#endif
 }
 
 QTEST_MAIN(tst_QDirListing)

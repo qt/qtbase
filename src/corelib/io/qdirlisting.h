@@ -94,6 +94,12 @@ public:
         Q_CORE_EXPORT QDateTime fileTime(QFileDevice::FileTime type, const QTimeZone &tz) const;
     };
 
+    class sentinel
+    {
+        friend constexpr bool operator==(sentinel, sentinel) noexcept { return true; }
+        friend constexpr bool operator!=(sentinel, sentinel) noexcept { return false; }
+    };
+
     class const_iterator
     {
         friend class QDirListing;
@@ -112,23 +118,28 @@ public:
         pointer operator->() const { return &dirEntry; }
         Q_CORE_EXPORT const_iterator &operator++();
         const_iterator operator++(int) { auto tmp = *this; operator++(); return tmp; };
-        friend bool operator==(const const_iterator &lhs, const const_iterator &rhs) noexcept
+        friend bool operator==(const const_iterator &lhs, sentinel) noexcept
         {
-            // This is only used for the sentinel end iterator
-            return lhs.dirListPtr == nullptr && rhs.dirListPtr == nullptr;
+            return lhs.dirListPtr == nullptr;
         }
-        friend bool operator!=(const const_iterator &lhs, const const_iterator &rhs) noexcept
-        { return !(lhs == rhs); }
+#ifndef __cpp_impl_three_way_comparison
+        friend bool operator!=(const const_iterator &lhs, sentinel) noexcept
+        { return !operator==(lhs, sentinel{}); }
+        friend bool operator==(sentinel, const const_iterator &rhs) noexcept
+        { return operator==(rhs, sentinel{}); }
+        friend bool operator!=(sentinel, const const_iterator &rhs) noexcept
+        { return !operator==(sentinel{}, rhs); }
+#endif // __cpp_impl_three_way_comparison
     };
 
     Q_CORE_EXPORT const_iterator begin() const;
     const_iterator cbegin() const { return begin(); }
-    const_iterator end() const { return {}; }
-    const_iterator cend() const { return end(); }
+    sentinel end() const { return {}; }
+    sentinel cend() const { return end(); }
 
     // Qt compatibility
     const_iterator constBegin() const { return begin(); }
-    const_iterator constEnd() const { return end(); }
+    sentinel constEnd() const { return end(); }
 
 private:
     Q_DISABLE_COPY(QDirListing)
