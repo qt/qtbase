@@ -188,7 +188,7 @@ namespace QIcu {
 
 struct QLocaleId
 {
-    [[nodiscard]] Q_AUTOTEST_EXPORT static QLocaleId fromName(QStringView name);
+    [[nodiscard]] Q_AUTOTEST_EXPORT static QLocaleId fromName(QStringView name) noexcept;
     [[nodiscard]] inline bool operator==(QLocaleId other) const noexcept
     { return language_id == other.language_id && script_id == other.script_id && territory_id == other.territory_id; }
     [[nodiscard]] inline bool operator!=(QLocaleId other) const noexcept
@@ -564,7 +564,8 @@ inline QLocalePrivate *QSharedDataPointer<QLocalePrivate>::clone()
 // point after it (so not [[nodiscard]]):
 QString qt_readEscapedFormatString(QStringView format, qsizetype *idx);
 [[nodiscard]] bool qt_splitLocaleName(QStringView name, QStringView *lang = nullptr,
-                                      QStringView *script = nullptr, QStringView *cntry = nullptr);
+                                      QStringView *script = nullptr,
+                                      QStringView *cntry = nullptr) noexcept;
 [[nodiscard]] qsizetype qt_repeatCount(QStringView s) noexcept;
 
 [[nodiscard]] constexpr inline bool ascii_isspace(uchar c) noexcept

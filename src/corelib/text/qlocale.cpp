@@ -164,24 +164,33 @@ QLocale::Language QLocalePrivate::codeToLanguage(QStringView code,
     return QLocale::AnyLanguage;
 }
 
-QLocale::Script QLocalePrivate::codeToScript(QStringView code) noexcept
+static qsizetype scriptIndex(QStringView code, Qt::CaseSensitivity cs) noexcept
 {
-    const auto len = code.size();
-    if (len != 4)
-        return QLocale::AnyScript;
+    if (code.size() != 4)
+        return -1;
 
-    // script is titlecased in our data
-    unsigned char c0 = code[0].toUpper().toLatin1();
-    unsigned char c1 = code[1].toLower().toLatin1();
-    unsigned char c2 = code[2].toLower().toLatin1();
-    unsigned char c3 = code[3].toLower().toLatin1();
+    // Scripts are titlecased in script_code_list.
+    const bool fixCase = cs == Qt::CaseInsensitive;
+    const unsigned char c0 = (fixCase ? code[0].toUpper() : code[0]).toLatin1();
+    const unsigned char c1 = (fixCase ? code[1].toLower() : code[1]).toLatin1();
+    const unsigned char c2 = (fixCase ? code[2].toLower() : code[2]).toLatin1();
+    const unsigned char c3 = (fixCase ? code[3].toLower() : code[3]).toLatin1();
+    // Any outside the Latin1 repertoire aren't ASCII => will not match.
+    if (!c0 || !c1 || !c2 || !c3)
+        return -1;
 
     const unsigned char *c = script_code_list;
     for (qsizetype i = 0; i < QLocale::LastScript; ++i, c += 4) {
         if (c0 == c[0] && c1 == c[1] && c2 == c[2] && c3 == c[3])
-            return QLocale::Script(i);
+            return i;
     }
-    return QLocale::AnyScript;
+    return -1;
+}
+
+QLocale::Script QLocalePrivate::codeToScript(QStringView code) noexcept
+{
+    qsizetype index = scriptIndex(code, Qt::CaseInsensitive);
+    return index < 0 ? QLocale::AnyScript : QLocale::Script(index);
 }
 
 QLocale::Territory QLocalePrivate::codeToTerritory(QStringView code) noexcept
@@ -613,17 +622,8 @@ static bool validTag(QStringView tag)
     return tag.size() > 0;
 }
 
-static bool isScript(QStringView tag)
-{
-    // Every script name is 4 characters, a capital followed by three lower-case;
-    // so a search for tag in allScripts *can* only match if it's aligned.
-    static const QString allScripts =
-        QString::fromLatin1(reinterpret_cast<const char *>(script_code_list),
-                            sizeof(script_code_list) - 1);
-    return tag.size() == 4 && allScripts.indexOf(tag) % 4 == 0;
-}
-
-bool qt_splitLocaleName(QStringView name, QStringView *lang, QStringView *script, QStringView *land)
+bool qt_splitLocaleName(QStringView name,
+                        QStringView *lang, QStringView *script, QStringView *land) noexcept
 {
     // Assume each of lang, script and land is nullptr or points to an empty QStringView.
     enum ParserState { NoState, LangState, ScriptState, CountryState };
@@ -646,7 +646,7 @@ bool qt_splitLocaleName(QStringView name, QStringView *lang, QStringView *script
             state = sep ? ScriptState : NoState;
             break;
         case ScriptState:
-            if (isScript(tag)) {
+            if (scriptIndex(tag, Qt::CaseSensitive) >= 0) {
                 if (script)
                     *script = tag;
                 state = sep ? CountryState : NoState;
@@ -667,7 +667,7 @@ bool qt_splitLocaleName(QStringView name, QStringView *lang, QStringView *script
     return state != LangState;
 }
 
-QLocaleId QLocaleId::fromName(QStringView name)
+QLocaleId QLocaleId::fromName(QStringView name) noexcept
 {
     QStringView lang;
     QStringView script;
