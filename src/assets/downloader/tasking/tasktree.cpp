@@ -629,19 +629,19 @@ private:
 */
 
 /*!
-    \typealias CustomTask::Task
+    \typealias Tasking::CustomTask::Task
 
     Type alias for the task type associated with the custom task's \c Adapter.
 */
 
 /*!
-    \typealias CustomTask::Deleter
+    \typealias Tasking::CustomTask::Deleter
 
     Type alias for the task's type deleter associated with the custom task's \c Adapter.
 */
 
 /*!
-    \typealias CustomTask::TaskSetupHandler
+    \typealias Tasking::CustomTask::TaskSetupHandler
 
     Type alias for \c std::function<SetupResult(Task &)>.
 
@@ -676,9 +676,9 @@ private:
 */
 
 /*!
-    \typealias CustomTask::TaskDoneHandler
+    \typealias Tasking::CustomTask::TaskDoneHandler
 
-    Type alias for \c std::function<DoneResult(const Task &, DoneWith)>.
+    Type alias for \c std::function<DoneResult(const Task &, DoneWith)> or DoneResult.
 
     The \c TaskDoneHandler is an optional argument of a custom task element's constructor.
     Any function with the above signature, when passed as a task done handler,
@@ -702,6 +702,9 @@ private:
     In this case, the final result of the task will be equal to the value indicated by
     the DoneWith argument. When the handler returns the DoneResult value,
     the task's final result may be tweaked inside the done handler's body by the returned value.
+
+    For a \c TaskDoneHandler of the DoneResult type, no additional handling is executed,
+    and the task finishes unconditionally with the passed value of DoneResult.
 
     \sa CustomTask(), TaskSetupHandler, GroupDoneHandler
 */
@@ -862,7 +865,83 @@ private:
 */
 
 /*!
-    \variable sequential
+    \variable Tasking::nullItem
+
+    A convenient global group's element indicating a no-op item.
+
+    This is useful in conditional expressions to indicate the absence of an optional element:
+
+    \code
+        const ExecutableItem task = ...;
+        const std::optional<ExecutableItem> optionalTask = ...;
+
+        Group group {
+            task,
+            optionalTask ? *optionalTask : nullItem
+        };
+    \endcode
+*/
+
+/*!
+    \variable Tasking::successItem
+
+    A convenient global executable element containing an empty, successful, synchronous task.
+
+    This is useful in if-statements to indicate that a branch ends with success:
+
+    \code
+        const ExecutableItem conditionalTask = ...;
+
+        Group group {
+            stopOnDone,
+            If (conditionalTask) >> Then {
+                ...
+            } >> Else {
+                successItem
+            },
+            nextTask
+        };
+    \endcode
+
+    In the above example, if the \c conditionalTask finishes with an error, the \c Else branch
+    is chosen, which finishes immediately with success. This causes the \c nextTask to be skipped
+    (because of the stopOnDone workflow policy of the \c group)
+    and the \c group finishes with success.
+
+    \sa errorItem
+*/
+
+/*!
+    \variable Tasking::errorItem
+
+    A convenient global executable element containing an empty, erroneous, synchronous task.
+
+    This is useful in if-statements to indicate that a branch ends with an error:
+
+    \code
+        const ExecutableItem conditionalTask = ...;
+
+        Group group {
+            stopOnError,
+            If (conditionalTask) >> Then {
+                ...
+            } >> Else {
+                errorItem
+            },
+            nextTask
+        };
+    \endcode
+
+    In the above example, if the \c conditionalTask finishes with an error, the \c Else branch
+    is chosen, which finishes immediately with an error. This causes the \c nextTask to be skipped
+    (because of the stopOnError workflow policy of the \c group)
+    and the \c group finishes with an error.
+
+    \sa successItem
+*/
+
+/*!
+    \variable Tasking::sequential
     A convenient global group's element describing the sequential execution mode.
 
     This is the default execution mode of the Group element.
@@ -877,7 +956,7 @@ private:
 */
 
 /*!
-    \variable parallel
+    \variable Tasking::parallel
     A convenient global group's element describing the parallel execution mode.
 
     All the direct child tasks of a group are started after the group is started,
@@ -888,7 +967,7 @@ private:
 */
 
 /*!
-    \variable parallelIdealThreadCountLimit
+    \variable Tasking::parallelIdealThreadCountLimit
     A convenient global group's element describing the parallel execution mode with a limited
     number of tasks running simultanously. The limit is equal to the ideal number of threads
     excluding the calling thread.
@@ -902,39 +981,39 @@ private:
 */
 
 /*!
-    \variable stopOnError
+    \variable Tasking::stopOnError
     A convenient global group's element describing the StopOnError workflow policy.
 
     This is the default workflow policy of the Group element.
 */
 
 /*!
-    \variable continueOnError
+    \variable Tasking::continueOnError
     A convenient global group's element describing the ContinueOnError workflow policy.
 */
 
 /*!
-    \variable stopOnSuccess
+    \variable Tasking::stopOnSuccess
     A convenient global group's element describing the StopOnSuccess workflow policy.
 */
 
 /*!
-    \variable continueOnSuccess
+    \variable Tasking::continueOnSuccess
     A convenient global group's element describing the ContinueOnSuccess workflow policy.
 */
 
 /*!
-    \variable stopOnSuccessOrError
+    \variable Tasking::stopOnSuccessOrError
     A convenient global group's element describing the StopOnSuccessOrError workflow policy.
 */
 
 /*!
-    \variable finishAllAndSuccess
+    \variable Tasking::finishAllAndSuccess
     A convenient global group's element describing the FinishAllAndSuccess workflow policy.
 */
 
 /*!
-    \variable finishAllAndError
+    \variable Tasking::finishAllAndError
     A convenient global group's element describing the FinishAllAndError workflow policy.
 */
 
@@ -1025,7 +1104,7 @@ private:
 */
 
 /*!
-    \typealias GroupItem::GroupSetupHandler
+    \typealias Tasking::GroupItem::GroupSetupHandler
 
     Type alias for \c std::function<SetupResult()>.
 
@@ -1055,9 +1134,9 @@ private:
 */
 
 /*!
-    \typealias GroupItem::GroupDoneHandler
+    \typealias Tasking::GroupItem::GroupDoneHandler
 
-    Type alias for \c std::function<DoneResult(DoneWith)>.
+    Type alias for \c std::function<DoneResult(DoneWith)> or DoneResult.
 
     The \c GroupDoneHandler is an argument of the onGroupDone() element.
     Any function with the above signature, when passed as a group done handler,
@@ -1071,6 +1150,10 @@ private:
     In this case, the final result of the group will be equal to the value indicated by
     the DoneWith argument. When the handler returns the DoneResult value,
     the group's final result may be tweaked inside the done handler's body by the returned value.
+
+    For a \c GroupDoneHandler of the DoneResult type, no additional handling is executed,
+    and the group finishes unconditionally with the passed value of DoneResult,
+    ignoring the group's workflow policy.
 
     \sa onGroupDone(), GroupSetupHandler, CustomTask::TaskDoneHandler
 */
@@ -1159,9 +1242,9 @@ private:
 
     \sa sequential, parallel
 */
-GroupItem parallelLimit(int limit)
+GroupItem ParallelLimitFunctor::operator()(int limit) const
 {
-    return Group::parallelLimit(qMax(limit, 0));
+    return GroupItem({{}, limit});
 }
 
 /*!
@@ -1172,12 +1255,13 @@ GroupItem parallelLimit(int limit)
     \sa stopOnError, continueOnError, stopOnSuccess, continueOnSuccess, stopOnSuccessOrError,
         finishAllAndSuccess, finishAllAndError, WorkflowPolicy
 */
-GroupItem workflowPolicy(WorkflowPolicy policy)
+GroupItem WorkflowPolicyFunctor::operator()(WorkflowPolicy policy) const
 {
-    return Group::workflowPolicy(policy);
+    return GroupItem({{}, {}, policy});
 }
 
-const GroupItem nullItem = GroupItem({});
+const ParallelLimitFunctor parallelLimit = ParallelLimitFunctor();
+const WorkflowPolicyFunctor workflowPolicy = WorkflowPolicyFunctor();
 
 const GroupItem sequential = parallelLimit(1);
 const GroupItem parallel = parallelLimit(0);
@@ -1190,6 +1274,11 @@ const GroupItem continueOnSuccess = workflowPolicy(WorkflowPolicy::ContinueOnSuc
 const GroupItem stopOnSuccessOrError = workflowPolicy(WorkflowPolicy::StopOnSuccessOrError);
 const GroupItem finishAllAndSuccess = workflowPolicy(WorkflowPolicy::FinishAllAndSuccess);
 const GroupItem finishAllAndError = workflowPolicy(WorkflowPolicy::FinishAllAndError);
+
+// Keep below the above in order to avoid static initialization fiasco.
+const GroupItem nullItem = GroupItem({});
+const ExecutableItem successItem = Group { finishAllAndSuccess };
+const ExecutableItem errorItem = Group { finishAllAndError };
 
 // Please note the thread_local keyword below guarantees a separate instance per thread.
 // The s_activeTaskTrees is currently used internally only and is not exposed in the public API.
@@ -1292,7 +1381,7 @@ const void *Loop::valuePtr() const
 
 using StoragePtr = void *;
 
-constexpr QLatin1StringView s_activeStorageWarning =
+static constexpr QLatin1StringView s_activeStorageWarning =
     "The referenced storage is not reachable in the running tree. "
     "A nullptr will be returned which might lead to a crash in the calling code. "
     "It is possible that no storage was added to the tree, "
@@ -1501,6 +1590,128 @@ ExecutableItem ExecutableItem::withLog(const QString &logName) const
                                          << " within " << elapsed.count() << "ms.";
         })
     };
+}
+
+/*!
+    \fn ExecutableItem ExecutableItem::operator!(const ExecutableItem &item)
+
+    Returns an ExecutableItem with the DoneResult of \a item negated.
+
+    If \a item reports DoneResult::Success, the returned item reports DoneResult::Error.
+    If \a item reports DoneResult::Error, the returned item reports DoneResult::Success.
+
+    The returned item is equivalent to:
+    \code
+        Group {
+            item,
+            onGroupDone([](DoneWith doneWith) { return toDoneResult(doneWith == DoneWith::Error); })
+        }
+    \endcode
+
+    \sa operator&&(), operator||()
+*/
+ExecutableItem operator!(const ExecutableItem &item)
+{
+    return Group {
+        item,
+        onGroupDone([](DoneWith doneWith) { return toDoneResult(doneWith == DoneWith::Error); })
+    };
+}
+
+/*!
+    \fn ExecutableItem ExecutableItem::operator&&(const ExecutableItem &first, const ExecutableItem &second)
+
+    Returns an ExecutableItem with \a first and \a second tasks merged with conjunction.
+
+    Both \a first and \a second tasks execute in sequence.
+    If both tasks report DoneResult::Success, the returned item reports DoneResult::Success.
+    Otherwise, the returned item reports DoneResult::Error.
+
+    The returned item is
+    \l {https://en.wikipedia.org/wiki/Short-circuit_evaluation}{short-circuiting}:
+    if the \a first task reports DoneResult::Error, the \a second task is skipped,
+    and the returned item reports DoneResult::Error immediately.
+
+    The returned item is equivalent to:
+    \code
+        Group { stopOnError, first, second }
+    \endcode
+
+    \note Parallel execution of conjunction in a short-circuit manner can be achieved with the
+          following code: \c {Group { parallel, stopOnError, first, second }}. In this case:
+          if the \e {first finished} task reports DoneResult::Error,
+          the \e other task is canceled, and the group reports DoneResult::Error immediately.
+
+    \sa operator||(), operator!()
+*/
+ExecutableItem operator&&(const ExecutableItem &first, const ExecutableItem &second)
+{
+    return Group { stopOnError, first, second };
+}
+
+/*!
+    \fn ExecutableItem ExecutableItem::operator||(const ExecutableItem &first, const ExecutableItem &second)
+
+    Returns an ExecutableItem with \a first and \a second tasks merged with disjunction.
+
+    Both \a first and \a second tasks execute in sequence.
+    If both tasks report DoneResult::Error, the returned item reports DoneResult::Error.
+    Otherwise, the returned item reports DoneResult::Success.
+
+    The returned item is
+    \l {https://en.wikipedia.org/wiki/Short-circuit_evaluation}{short-circuiting}:
+    if the \a first task reports DoneResult::Success, the \a second task is skipped,
+    and the returned item reports DoneResult::Success immediately.
+
+    The returned item is equivalent to:
+    \code
+        Group { stopOnSuccess, first, second }
+    \endcode
+
+    \note Parallel execution of disjunction in a short-circuit manner can be achieved with the
+          following code: \c {Group { parallel, stopOnSuccess, first, second }}. In this case:
+          if the \e {first finished} task reports DoneResult::Success,
+          the \e other task is canceled, and the group reports DoneResult::Success immediately.
+
+    \sa operator&&(), operator!()
+*/
+ExecutableItem operator||(const ExecutableItem &first, const ExecutableItem &second)
+{
+    return Group { stopOnSuccess, first, second };
+}
+
+/*!
+    \fn ExecutableItem ExecutableItem::operator&&(const ExecutableItem &item, DoneResult result)
+    \overload ExecutableItem::operator&&()
+
+    Returns the \a item task if the \a result is DoneResult::Success; otherwise returns
+    the \a item task with its done result tweaked to DoneResult::Error.
+
+    The \c {task && DoneResult::Error} is an eqivalent to tweaking the task's done result
+    into DoneResult::Error unconditionally.
+*/
+ExecutableItem operator&&(const ExecutableItem &item, DoneResult result)
+{
+    if (result == DoneResult::Success)
+        return item;
+    return Group { finishAllAndError, item };
+}
+
+/*!
+    \fn ExecutableItem ExecutableItem::operator||(const ExecutableItem &item, DoneResult result)
+    \overload ExecutableItem::operator||()
+
+    Returns the \a item task if the \a result is DoneResult::Error; otherwise returns
+    the \a item task with its done result tweaked to DoneResult::Success.
+
+    The \c {task || DoneResult::Success} is an eqivalent to tweaking the task's done result
+    into DoneResult::Success unconditionally.
+*/
+ExecutableItem operator||(const ExecutableItem &item, DoneResult result)
+{
+    if (result == DoneResult::Error)
+        return item;
+    return Group { finishAllAndSuccess, item };
 }
 
 ExecutableItem ExecutableItem::withCancelImpl(
@@ -1974,13 +2185,6 @@ SetupResult TaskTreePrivate::start(RuntimeContainer *container)
             container->m_successBit = startAction == SetupResult::StopWithSuccess;
         }
     }
-    if (startAction == SetupResult::Continue
-        && (containerNode.m_children.empty()
-            || (containerNode.m_loop && !invokeLoopHandler(container)))) {
-        if (isProgressive(container))
-            advanceProgress(containerNode.m_taskCount);
-        startAction = toSetupResult(container->m_successBit);
-    }
     return continueStart(container, startAction);
 }
 
@@ -1988,23 +2192,24 @@ SetupResult TaskTreePrivate::continueStart(RuntimeContainer *container, SetupRes
 {
     const SetupResult groupAction = startAction == SetupResult::Continue ? startChildren(container)
                                                                          : startAction;
-    if (groupAction != SetupResult::Continue) {
-        const bool bit = container->updateSuccessBit(groupAction == SetupResult::StopWithSuccess);
-        RuntimeIteration *parentIteration = container->parentIteration();
-        RuntimeTask *parentTask = container->m_parentTask;
-        QT_CHECK(parentTask);
-        const bool result = invokeDoneHandler(container, bit ? DoneWith::Success : DoneWith::Error);
-        if (parentIteration) {
-            parentIteration->deleteChild(parentTask);
-            if (!parentIteration->m_container->isStarting())
-                childDone(parentIteration, result);
-        } else {
-            QT_CHECK(m_runtimeRoot.get() == parentTask);
-            m_runtimeRoot.reset();
-            emitDone(result ? DoneWith::Success : DoneWith::Error);
-        }
+    if (groupAction == SetupResult::Continue)
+        return groupAction;
+
+    const bool bit = container->updateSuccessBit(groupAction == SetupResult::StopWithSuccess);
+    RuntimeIteration *parentIteration = container->parentIteration();
+    RuntimeTask *parentTask = container->m_parentTask;
+    QT_CHECK(parentTask);
+    const bool result = invokeDoneHandler(container, bit ? DoneWith::Success : DoneWith::Error);
+    if (parentIteration) {
+        parentIteration->deleteChild(parentTask);
+        if (!parentIteration->m_container->isStarting())
+            childDone(parentIteration, result);
+    } else {
+        QT_CHECK(m_runtimeRoot.get() == parentTask);
+        m_runtimeRoot.reset();
+        emitDone(result ? DoneWith::Success : DoneWith::Error);
     }
-    return groupAction;
+    return toSetupResult(result);
 }
 
 SetupResult TaskTreePrivate::startChildren(RuntimeContainer *container)
@@ -2013,14 +2218,14 @@ SetupResult TaskTreePrivate::startChildren(RuntimeContainer *container)
     const int childCount = int(containerNode.m_children.size());
 
     if (container->m_iterationCount == 0) {
+        if (container->m_shouldIterate && !invokeLoopHandler(container)) {
+            if (isProgressive(container))
+                advanceProgress(containerNode.m_taskCount);
+            return toSetupResult(container->m_successBit);
+        }
         container->m_iterations.emplace_back(
             std::make_unique<RuntimeIteration>(container->m_iterationCount, container));
         ++container->m_iterationCount;
-    } else if (containerNode.m_parallelLimit == 0) {
-        container->deleteFinishedIterations();
-        if (container->m_iterations.empty())
-            return toSetupResult(container->m_successBit);
-        return SetupResult::Continue;
     }
 
     GuardLocker locker(container->m_startGuard);
@@ -2029,17 +2234,20 @@ SetupResult TaskTreePrivate::startChildren(RuntimeContainer *container)
            || container->m_runningChildren < containerNode.m_parallelLimit) {
         container->deleteFinishedIterations();
         if (container->m_nextToStart == childCount) {
-            if (container->m_shouldIterate && invokeLoopHandler(container)) {
+            if (invokeLoopHandler(container)) {
                 container->m_nextToStart = 0;
                 container->m_iterations.emplace_back(
                     std::make_unique<RuntimeIteration>(container->m_iterationCount, container));
                 ++container->m_iterationCount;
+            } else if (container->m_iterations.empty()) {
+                return toSetupResult(container->m_successBit);
             } else {
-                if (container->m_iterations.empty())
-                    return toSetupResult(container->m_successBit);
                 return SetupResult::Continue;
             }
         }
+        if (containerNode.m_children.size() == 0) // Empty loop body.
+            continue;
+
         RuntimeIteration *iteration = container->m_iterations.back().get();
         RuntimeTask *newTask = new RuntimeTask{containerNode.m_children.at(container->m_nextToStart),
                                                iteration};
@@ -2436,7 +2644,7 @@ bool TaskTreePrivate::invokeDoneHandler(RuntimeTask *node, DoneWith doneWith)
     \section2 Task's Done Handler
 
     When a running task finishes, the task tree invokes an optionally provided done handler.
-    The handler should always take a \c const \e reference to the associated task class object:
+    The handler should take a \c const \e reference to the associated task class object:
 
     \code
         const auto onSetup = [](QProcess &process) {
@@ -3399,13 +3607,13 @@ void TimeoutTaskAdapter::start()
 }
 
 /*!
-    \typealias TaskTreeTask
+    \typealias Tasking::TaskTreeTask
 
     Type alias for the CustomTask, to be used inside recipes, associated with the TaskTree task.
 */
 
 /*!
-    \typealias TimeoutTask
+    \typealias Tasking::TimeoutTask
 
     Type alias for the CustomTask, to be used inside recipes, associated with the
     \c std::chrono::milliseconds type. \c std::chrono::milliseconds is used to set up the
