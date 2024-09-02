@@ -102,6 +102,7 @@ public:
 
     class const_iterator
     {
+        Q_DISABLE_COPY(const_iterator)
         friend class QDirListing;
         explicit const_iterator(QDirListingPrivate *dp) { dirEntry.dirListPtr = dp; }
         DirEntry dirEntry;
@@ -113,6 +114,9 @@ public:
         using reference = const value_type &;
 
         const_iterator() = default;
+        const_iterator(const_iterator &&) noexcept = default;
+        const_iterator &operator=(const_iterator &&) noexcept = default;
+
         reference operator*() const { return dirEntry; }
         pointer operator->() const { return &dirEntry; }
         Q_CORE_EXPORT const_iterator &operator++();
