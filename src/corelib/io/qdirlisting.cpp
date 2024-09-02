@@ -32,12 +32,16 @@
     files, recursively:
     \snippet code/src_corelib_io_qdirlisting.cpp 6
 
-    Iterators constructed by QDirListing (QDirListing::const_iterator) are
+    Iterators constructed by QDirListing (QDirListing::const_iterator)
+    model C++20
+    \l{https://en.cppreference.com/w/cpp/iterator/input_iterator}{std::input_iterator},
+    that is, they are
     forward-only, single-pass iterators, that don't allow random access. They
-    can be used in ranged-for loops (or with STL alogrithms that don't
+    can be used in ranged-for loops (or with C++20 range algorithms that don't
     require random access iterators). Dereferencing a valid iterator returns
-    a QDirListing::DirEntry object. The (c)end() iterator marks the end of
-    the iteration. Dereferencing the end iterator is undefined behavior.
+    a QDirListing::DirEntry object. The (c)end() sentinel marks the end of
+    the iteration. Dereferencing an iterator that is equal to \l{sentinel} is
+    undefined behavior.
 
     QDirListing::DirEntry offers a subset of QFileInfo's API (for example,
     fileName(), filePath(), exists()). Internally, DirEntry only constructs
@@ -660,8 +664,8 @@ QStringList QDirListing::nameFilters() const
 /*!
     \fn QDirListing::const_iterator QDirListing::begin() const
     \fn QDirListing::const_iterator QDirListing::cbegin() const
-    \fn QDirListing::const_iterator QDirListing::end() const
-    \fn QDirListing::const_iterator QDirListing::cend() const
+    \fn QDirListing::sentinel QDirListing::end() const
+    \fn QDirListing::sentinel QDirListing::cend() const
 
     (c)begin() returns a QDirListing::const_iterator that can be used to
     iterate over directory entries.
@@ -673,8 +677,8 @@ QStringList QDirListing::nameFilters() const
     \li Can be used in ranged-for loops; or with STL algorithms that don't
         require random access iterators
     \li Dereferencing a valid iterator returns a \c{const DirEntry &}
-    \li (c)end() returns a sentinel-like const_iterator that signals the
-        end of the iteration. Dereferencing the end() iterator is undefined
+    \li (c)end() returns a sentinel that signals the end of the iteration.
+        Dereferencing an iterator that compares equal to end() is undefined
         behavior
     \li Each time (c)begin() is called on the same QDirListing object,
         the internal state is reset and the iteration starts anew
@@ -688,6 +692,10 @@ QStringList QDirListing::nameFilters() const
 
     Here's how to find and read all files filtered by name, recursively:
     \snippet code/src_corelib_io_qdirlisting.cpp 1
+
+    \note The "classical" STL algorithms don't support iterator/sentinel, so
+    you need to use C++20 std::ranges algorithms fo QDirListing, or else a
+    3rd-party library that provides range-based algorithms in C++17.
 
     \sa QDirListing::DirEntry
 */
@@ -719,7 +727,7 @@ QDirListing::const_iterator &QDirListing::const_iterator::operator++()
 {
     dirListPtr->advance();
     if (!dirListPtr->hasIterators())
-        *this = {}; // All done, make `this` the end() iterator
+        *this = {}; // All done, make `this` equal to the end() iterator
     return *this;
 }
 
