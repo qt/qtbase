@@ -931,7 +931,7 @@ void QNetworkReply::setHeaders(QHttpHeaders &&newHeaders)
     Sets the header \a name to be of value \a value. If \a
     name was previously set, it is overridden.
 */
-void QNetworkReply::setWellKnownHeader(QHttpHeaders::WellKnownHeader name, const QByteArray &value)
+void QNetworkReply::setWellKnownHeader(QHttpHeaders::WellKnownHeader name, QByteArrayView value)
 {
     Q_D(QNetworkReply);
     d->setHeader(name, value);

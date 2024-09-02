@@ -155,7 +155,7 @@ protected:
     void setRawHeader(const QByteArray &headerName, const QByteArray &value);
     void setHeaders(const QHttpHeaders &newHeaders);
     void setHeaders(QHttpHeaders &&newHeaders);
-    void setWellKnownHeader(QHttpHeaders::WellKnownHeader name, const QByteArray &value);
+    void setWellKnownHeader(QHttpHeaders::WellKnownHeader name, QByteArrayView value);
     void setAttribute(QNetworkRequest::Attribute code, const QVariant &value);
 
 #if QT_CONFIG(ssl)
