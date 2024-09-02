@@ -723,14 +723,23 @@ QDirListing::const_iterator QDirListing::begin() const
 */
 
 /*!
+    \fn QDirListing::const_iterator::operator++()
+
     Advances the iterator and returns a reference to it.
 */
-QDirListing::const_iterator &QDirListing::const_iterator::operator++()
+
+/*!
+    \internal
+
+    Implements the actual advancing. Not a member function to avoid forcing
+    DirEntry objects (and therefore const_iterator ones) onto the stack.
+*/
+auto QDirListing::next(DirEntry dirEntry) -> DirEntry
 {
     dirEntry.dirListPtr->advance();
     if (!dirEntry.dirListPtr->hasIterators())
-        *this = {}; // All done, make `this` equal to the end() iterator
-    return *this;
+        return {}; // All done, make `this` equal to the end() iterator
+    return dirEntry;
 }
 
 /*!

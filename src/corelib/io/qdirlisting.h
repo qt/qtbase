@@ -119,7 +119,7 @@ public:
 
         reference operator*() const { return dirEntry; }
         pointer operator->() const { return &dirEntry; }
-        Q_CORE_EXPORT const_iterator &operator++();
+        const_iterator &operator++() { dirEntry = next(dirEntry); return *this; }
         void operator++(int) { ++*this; }; // [iterator.concept.winc]/14 not required to return sth
     private:
         bool atEnd() const noexcept { return dirEntry.dirListPtr == nullptr; }
@@ -145,6 +145,8 @@ public:
 
 private:
     Q_DISABLE_COPY(QDirListing)
+
+    Q_CORE_EXPORT static DirEntry next(DirEntry);
 
     // Private constructor that is used in deprecated code paths.
     // `uint` instead of QDir::Filters and QDirIterator::IteratorFlags
