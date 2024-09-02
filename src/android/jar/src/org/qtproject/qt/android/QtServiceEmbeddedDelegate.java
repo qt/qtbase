@@ -13,6 +13,8 @@ import android.view.Display;
 import android.view.View;
 import android.util.DisplayMetrics;
 
+import java.util.HashSet;
+
 /**
  * QtServiceEmbeddedDelegate is used for embedding QML into Android Service contexts. Implements
  * {@link QtEmbeddedViewInterface} so it can be used by QtView to communicate with the Qt layer.
@@ -20,8 +22,7 @@ import android.util.DisplayMetrics;
 class QtServiceEmbeddedDelegate implements QtEmbeddedViewInterface, QtNative.AppStateDetailsListener
 {
     private final Service m_service;
-    private QtView m_view;
-    private boolean m_windowLoaded = false;
+    private HashSet<QtView> m_views = new HashSet<QtView>();
 
     QtServiceEmbeddedDelegate(Service service)
     {
@@ -38,17 +39,14 @@ class QtServiceEmbeddedDelegate implements QtEmbeddedViewInterface, QtNative.App
         synchronized (this) {
             if (ready) {
                 QtNative.runAction(() -> {
-                    if (m_view == null)
-                        return;
-
                     final DisplayMetrics metrics = Resources.getSystem().getDisplayMetrics();
 
-                    final int maxWidth = m_view.getWidth();
-                    final int maxHeight = m_view.getHeight();
+                    final int maxWidth = metrics.widthPixels;
+                    final int maxHeight = metrics.heightPixels;
                     final int width = maxWidth;
                     final int height = maxHeight;
-                    final int insetLeft = m_view.getLeft();
-                    final int insetTop = m_view.getTop();
+                    final int insetLeft = 0;
+                    final int insetTop = 0;
 
                     final DisplayManager dm = m_service.getSystemService(DisplayManager.class);
                     QtDisplayManager.setDisplayMetrics(
@@ -58,7 +56,6 @@ class QtServiceEmbeddedDelegate implements QtEmbeddedViewInterface, QtNative.App
                             QtDisplayManager.getRefreshRate(
                                     dm.getDisplay(Display.DEFAULT_DISPLAY)));
                 });
-                createRootWindow();
             }
         }
     }
@@ -73,30 +70,25 @@ class QtServiceEmbeddedDelegate implements QtEmbeddedViewInterface, QtNative.App
     @Override
     public void addView(QtView view)
     {
-        m_view = view;
-        QtNative.runAction(() -> {
-            createRootWindow();
-        });
+        if (m_views.add(view)) {
+            QtNative.runAction(() -> createRootWindow(view));
+        }
     }
 
     @Override
     public void removeView(QtView view)
     {
-        if (m_view == view) {
-            m_view = null;
-            m_windowLoaded = false;
-            // If the embedded view is destroyed, do cleanup:
+        m_views.remove(view);
+        if (m_views.isEmpty())
             cleanup();
-        }
     }
     // QtEmbeddedViewInterface implementation end
 
-    private void createRootWindow()
+    private void createRootWindow(QtView view)
     {
-        if (m_view != null && !m_windowLoaded) {
-            QtView.createRootWindow(m_view, m_view.getLeft(), m_view.getTop(), m_view.getWidth(),
-                                    m_view.getHeight());
-            m_windowLoaded = true;
+        if (m_views.contains(view)) {
+            QtView.createRootWindow(view, view.getLeft(), view.getTop(), view.getWidth(),
+                                    view.getHeight());
         }
     }
 
