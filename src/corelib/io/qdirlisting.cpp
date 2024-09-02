@@ -35,7 +35,7 @@
     Iterators constructed by QDirListing (QDirListing::const_iterator)
     model C++20
     \l{https://en.cppreference.com/w/cpp/iterator/input_iterator}{std::input_iterator},
-    that is, they are
+    that is, they are move-only,
     forward-only, single-pass iterators, that don't allow random access. They
     can be used in ranged-for loops (or with C++20 range algorithms that don't
     require random access iterators). Dereferencing a valid iterator returns
@@ -673,6 +673,7 @@ QStringList QDirListing::nameFilters() const
     \list
     \li This is a forward-only, single-pass iterator (you cannot iterate
         directory entries in reverse order)
+    \li Can't be copied, only \c{std::move()}d.
     \li Doesn't allow random access
     \li Can be used in ranged-for loops; or with STL algorithms that don't
         require random access iterators
@@ -703,7 +704,8 @@ QDirListing::const_iterator QDirListing::begin() const
 {
     d->beginIterating();
     const_iterator it{d};
-    return ++it;
+    ++it;
+    return it;
 }
 
 /*!
