@@ -48,7 +48,7 @@ template <typename MaskType, uchar Lowest> struct QCharacterSetMatch
     static constexpr int MaxRange = std::numeric_limits<MaskType>::digits;
     MaskType mask;
 
-    constexpr QCharacterSetMatch(std::string_view set)
+    constexpr QCharacterSetMatch(std::string_view set) noexcept
         : mask(0)
     {
         for (char c : set) {
@@ -57,7 +57,7 @@ template <typename MaskType, uchar Lowest> struct QCharacterSetMatch
         }
     }
 
-    constexpr bool matches(uchar c) const
+    constexpr bool matches(uchar c) const noexcept
     {
         unsigned idx = c - Lowest;
         if (idx >= MaxRange)
@@ -76,7 +76,7 @@ inline constexpr char ascii_space_chars[] =
         " ";    // 32: space
 
 template <const char *Set, int ForcedLowest = -1>
-inline constexpr auto makeCharacterSetMatch()
+inline constexpr auto makeCharacterSetMatch() noexcept
 {
     constexpr auto view = std::string_view(Set);
     constexpr uchar MinElement = *std::min_element(view.begin(), view.end());
@@ -565,9 +565,9 @@ inline QLocalePrivate *QSharedDataPointer<QLocalePrivate>::clone()
 QString qt_readEscapedFormatString(QStringView format, qsizetype *idx);
 [[nodiscard]] bool qt_splitLocaleName(QStringView name, QStringView *lang = nullptr,
                                       QStringView *script = nullptr, QStringView *cntry = nullptr);
-[[nodiscard]] qsizetype qt_repeatCount(QStringView s);
+[[nodiscard]] qsizetype qt_repeatCount(QStringView s) noexcept;
 
-[[nodiscard]] constexpr inline bool ascii_isspace(uchar c)
+[[nodiscard]] constexpr inline bool ascii_isspace(uchar c) noexcept
 {
     constexpr auto matcher = QtPrivate::makeCharacterSetMatch<QtPrivate::ascii_space_chars>();
     return matcher.matches(c);

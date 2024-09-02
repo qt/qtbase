@@ -731,7 +731,7 @@ QString qt_readEscapedFormatString(QStringView format, qsizetype *idx)
     qt_repeatCount(u"aab"); // == 2
     \endcode
 */
-qsizetype qt_repeatCount(QStringView s)
+qsizetype qt_repeatCount(QStringView s) noexcept
 {
     if (s.isEmpty())
         return 0;
