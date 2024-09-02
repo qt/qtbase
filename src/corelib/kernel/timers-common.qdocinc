@@ -1,0 +1,24 @@
+// Copyright (C) 2024 Ahmad Samir <a.samirh78@gmail.com>
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+//! [q-chrono-timer-alternatives]
+    Another alternative is reimplementing the QObject::timerEvent() method
+    in your class (which must be a sub-class of QObject), and using one of
+    the following approaches:
+
+    \list
+    \li Using QBasicTimer, a lightweight value-class wrapping a timer
+    ID. You can start the timer with QBasicTimer::start() and stop it with
+    QBasicTimer::stop(). You can handle the event in your reimplemneted
+    timerEvent().
+
+    \li A more low-level method is manipulating the timer IDs directly.
+    To start the timer call QObject::startTimer(), storing the returned
+    ID. To stop the timer call QObject::killTimer(). You can handle the event
+    in your reimplemented timerEvent(). This approach is typically more
+    cumbersome than using QBasicTimer.
+    \endlist
+
+    A disadvantage of using timerEvent() is that some high-level features,
+    such as single-shot timers and signals, aren't supported.
+//! [q-chrono-timer-alternatives]
