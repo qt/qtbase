@@ -9,11 +9,13 @@ qt_internal_add_module(ExamplesAssetDownloaderPrivate
         assetdownloader.cpp assetdownloader.h
         tasking/barrier.cpp tasking/barrier.h
         tasking/concurrentcall.h
+        tasking/conditional.cpp tasking/conditional.h
         tasking/networkquery.cpp tasking/networkquery.h
         tasking/qprocesstask.cpp tasking/qprocesstask.h
         tasking/tasking_global.h
         tasking/tasktree.cpp tasking/tasktree.h
         tasking/tasktreerunner.cpp tasking/tasktreerunner.h
+        tasking/tcpsocket.cpp tasking/tcpsocket.h
     DEFINES
         QT_NO_CAST_FROM_ASCII
     PUBLIC_LIBRARIES
