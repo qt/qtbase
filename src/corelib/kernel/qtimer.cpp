@@ -78,7 +78,7 @@ QT_BEGIN_NAMESPACE
     The maximum interval QTimer supports is limited by the number of
     milliseconds that would fit in an \c int (which is around 24 days);
     whereas QChronoTimer stores its interval as \c std::chrono::nanoseconds
-    (which raises that limit to around 292 million years), that is, there is
+    (which raises that limit to ±292 years), that is, there is
     less chance of integer overflow with QChronoTimer.
 
     \section1 Accuracy and Timer Resolution
