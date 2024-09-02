@@ -12,11 +12,16 @@
 
 #include "tst_qmetatype_common.h"
 
+#include <QtCore/QByteArray>
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDir>
 #include <QtCore/QEventLoop>
+#if QT_CONFIG(process)
+#include <QtCore/QProcess>
+#endif
 #include <QtCore/QtGlobal>
 #include <QtCore/QThread>
+#include <QtCore/QScopeGuard>
 #include <QtCore/QSysInfo>
 #if QT_CONFIG(shortcut)
 #  include <QtGui/QKeySequence>
@@ -60,6 +65,8 @@ Q_DECLARE_METATYPE(QSettings::Format)
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QSettings)
+
+using namespace Qt::StringLiterals;
 
 static inline bool canWriteNativeSystemSettings()
 {
@@ -854,8 +861,9 @@ void tst_QSettings::testErrorHandling_data()
     QSKIP("Windows doesn't support most file modes, including read-only directories, so this test is moot.");
 #elif defined(Q_OS_VXWORKS)
     QSKIP("VxWorks doesn't have users/groups, so this test is moot.");
-#endif
-
+#elif !QT_CONFIG(process)
+    QSKIP("No QProcess available. Skipping the test.");
+#else
     QTest::addColumn<int>("filePerms"); // -1 means file should not exist
     QTest::addColumn<int>("dirPerms");
     QTest::addColumn<int>("statusAfterCtor");
@@ -863,7 +871,7 @@ void tst_QSettings::testErrorHandling_data()
     QTest::addColumn<int>("statusAfterGet");
     QTest::addColumn<int>("statusAfterSetAndSync");
 
-    //                         file    dir     afterCtor                      empty     afterGet                      afterSetAndSync
+    //                            file    dir     afterCtor                      empty     afterGet                      afterSetAndSync
     QTest::newRow("0600 0700") << 0600 << 0700 << (int)QSettings::NoError     << false << (int)QSettings::NoError     << (int)QSettings::NoError;
 
     QTest::newRow("0400 0700") << 0400 << 0700 << (int)QSettings::NoError
@@ -875,20 +883,19 @@ void tst_QSettings::testErrorHandling_data()
 
     QTest::newRow("  -1 0000") <<   -1 << 0000 << (int)QSettings::NoError     << true  << (int)QSettings::NoError     << (int)QSettings::AccessError;
     QTest::newRow("  -1 0100") <<   -1 << 0100 << (int)QSettings::NoError     << true  << (int)QSettings::NoError     << (int)QSettings::AccessError;
-    QTest::newRow("0600 0100") << 0600 << 0100 << (int)QSettings::NoError     << false << (int)QSettings::NoError     << (int)QSettings::NoError;
+    QTest::newRow("0600 0100") << 0600 << 0100 << (int)QSettings::NoError     << false << (int)QSettings::NoError     << (int)QSettings::AccessError;
     QTest::newRow("  -1 0300") <<   -1 << 0300 << (int)QSettings::NoError     << true  << (int)QSettings::NoError     << (int)QSettings::NoError;
     QTest::newRow("0600 0300") << 0600 << 0300 << (int)QSettings::NoError     << false << (int)QSettings::NoError     << (int)QSettings::NoError;
     QTest::newRow("  -1 0500") <<   -1 << 0500 << (int)QSettings::NoError     << true  << (int)QSettings::NoError     << (int)QSettings::AccessError;
-    QTest::newRow("0600 0500") << 0600 << 0500 << (int)QSettings::NoError     << false << (int)QSettings::NoError     << (int)QSettings::NoError;
+    QTest::newRow("0600 0500") << 0600 << 0500 << (int)QSettings::NoError     << false << (int)QSettings::NoError     << (int)QSettings::AccessError;
+#endif // !QT_CONFIG(process)
 }
 
 void tst_QSettings::testErrorHandling()
 {
-#if !defined(Q_OS_WIN) && !defined(Q_OS_VXWORKS)
+#if !defined(Q_OS_WIN) && !defined(Q_OS_VXWORKS) && QT_CONFIG(process)
     if (::getuid() == 0)
         QSKIP("Running this test as root doesn't work, since file perms do not bother him");
-
-    QSKIP("QTBUG-126008: This test is failing.");
 
     QFETCH(int, filePerms);
     QFETCH(int, dirPerms);
@@ -897,10 +904,11 @@ void tst_QSettings::testErrorHandling()
     QFETCH(int, statusAfterGet);
     QFETCH(int, statusAfterSetAndSync);
 
-    system(QString("chmod 700 %1 2>/dev/null").arg(settingsPath("someDir")).toLatin1());
-    system(QString("chmod -R u+rwx %1 2>/dev/null").arg(settingsPath("someDir")).toLatin1());
-    system(QString("rm -fr %1").arg(settingsPath("someDir")).toLatin1());
-
+    auto freer = qScopeGuard([&] {
+        QProcess::execute("chmod", QStringList{u"-R"_s, u"u+rwx"_s, settingsPath("someDir")});
+        QProcess::execute("rm", QStringList{u"-fr"_s, settingsPath("someDir")});
+    });
+    Q_UNUSED(freer)
     // prepare a file with some settings
     if (filePerms != -1) {
         QSettings settings(settingsPath("someDir/someSettings.ini"), QSettings::IniFormat);
@@ -915,22 +923,17 @@ void tst_QSettings::testErrorHandling()
         settings.endGroup();
         settings.setValue("alpha/gamma/splitter", 5);
     } else {
-        system(QString("mkdir -p %1").arg(settingsPath("someDir")).toLatin1());
+        QProcess::execute("mkdir", QStringList{u"-p"_s, settingsPath("someDir")});
     }
 
     if (filePerms != -1) {
-        system(QString("chmod %1 %2")
-                    .arg(QString::number(filePerms, 8))
-                    .arg(settingsPath("someDir/someSettings.ini"))
-                    .toLatin1());
+        QProcess::execute("chmod", QStringList{QString::number(filePerms, 8),
+                                                settingsPath("someDir/someSettings.ini")});
     }
-    system(QString("chmod %1 %2")
-                .arg(QString::number(dirPerms, 8))
-                .arg(settingsPath("someDir"))
-                .toLatin1());
-
+    QProcess::execute("chmod", QStringList{QString::number(dirPerms, 8), settingsPath("someDir")});
     // the test
     {
+#ifdef QT_BUILD_INTERNAL
         QConfFile::clearCache();
         QSettings settings(settingsPath("someDir/someSettings.ini"), QSettings::IniFormat);
         QCOMPARE((int)settings.status(), statusAfterCtor);
@@ -947,10 +950,10 @@ void tst_QSettings::testErrorHandling()
         settings.sync();
         QCOMPARE(settings.value("alpha/beta/geometry").toInt(), 100);
         QCOMPARE((int)settings.status(), statusAfterSetAndSync);
+#endif // QT_BUILD_INTERNAL
     }
-#endif // !Q_OS_WIN && !Q_OS_VXWORKS
+#endif // !defined(Q_OS_WIN) && !defined(Q_OS_VXWORKS) && QT_CONFIG(process)
 }
-
 Q_DECLARE_METATYPE(QSettings::Status)
 
 #ifdef QT_BUILD_INTERNAL
