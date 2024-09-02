@@ -1068,17 +1068,11 @@ static QDataStream& operator>>(QDataStream& s, QNtlmBuffer& b)
 class QNtlmPhase1Block
 {  // request
 public:
-    char magic[8];
-    quint32 type;
-    quint32 flags;
+    char magic[8] = {'N', 'T', 'L', 'M', 'S', 'S', 'P', '\0'};
+    quint32 type = 1;
+    quint32 flags = NTLMSSP_NEGOTIATE_UNICODE | NTLMSSP_NEGOTIATE_NTLM | NTLMSSP_REQUEST_TARGET | NTLMSSP_NEGOTIATE_ALWAYS_SIGN | NTLMSSP_NEGOTIATE_NTLM2;
     QNtlmBuffer domain;
     QNtlmBuffer workstation;
-
-    QNtlmPhase1Block() {
-        qstrncpy(magic, "NTLMSSP", 8);
-        type = 1;
-        flags = NTLMSSP_NEGOTIATE_UNICODE | NTLMSSP_NEGOTIATE_NTLM | NTLMSSP_REQUEST_TARGET | NTLMSSP_NEGOTIATE_ALWAYS_SIGN | NTLMSSP_NEGOTIATE_NTLM2;
-    }
 
     // extracted
     QString domainStr, workstationStr;
@@ -1088,19 +1082,14 @@ public:
 class QNtlmPhase2Block
 {  // challenge
 public:
-    char magic[8];
-    quint32 type;
+    char magic[8] = {0};
+    quint32 type = 0xffffffff;
     QNtlmBuffer targetName;
     quint32 flags = 0;
     unsigned char challenge[8] = {'\0'};
     quint32 context[2] = {0, 0};
     QNtlmBuffer targetInfo;
     enum { Size = 48 };
-
-    QNtlmPhase2Block() {
-        magic[0] = 0;
-        type = 0xffffffff;
-    }
 
     // extracted
     QString targetNameStr, targetInfoStr;
@@ -1112,22 +1101,16 @@ public:
 class QNtlmPhase3Block
 {  // response
 public:
-    char magic[8];
-    quint32 type;
+    char magic[8] = {'N', 'T', 'L', 'M', 'S', 'S', 'P', '\0'};
+    quint32 type = 3;
     QNtlmBuffer lmResponse;
     QNtlmBuffer ntlmResponse;
     QNtlmBuffer domain;
     QNtlmBuffer user;
     QNtlmBuffer workstation;
     QNtlmBuffer sessionKey;
-    quint32 flags;
+    quint32 flags = NTLMSSP_NEGOTIATE_UNICODE | NTLMSSP_NEGOTIATE_NTLM | NTLMSSP_NEGOTIATE_TARGET_INFO;
     enum { Size = 64 };
-
-    QNtlmPhase3Block() {
-        qstrncpy(magic, "NTLMSSP", 8);
-        type = 3;
-        flags = NTLMSSP_NEGOTIATE_UNICODE | NTLMSSP_NEGOTIATE_NTLM | NTLMSSP_NEGOTIATE_TARGET_INFO;
-    }
 
     // extracted
     QByteArray lmResponseBuf, ntlmResponseBuf;
