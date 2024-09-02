@@ -103,8 +103,7 @@ public:
     class const_iterator
     {
         friend class QDirListing;
-        const_iterator(QDirListingPrivate *dp) : dirListPtr(dp) { dirEntry.dirListPtr = dp; }
-        QDirListingPrivate *dirListPtr = nullptr;
+        explicit const_iterator(QDirListingPrivate *dp) { dirEntry.dirListPtr = dp; }
         DirEntry dirEntry;
     public:
         using iterator_category = std::input_iterator_tag;
@@ -118,10 +117,9 @@ public:
         pointer operator->() const { return &dirEntry; }
         Q_CORE_EXPORT const_iterator &operator++();
         const_iterator operator++(int) { auto tmp = *this; operator++(); return tmp; };
-        friend bool operator==(const const_iterator &lhs, sentinel) noexcept
-        {
-            return lhs.dirListPtr == nullptr;
-        }
+    private:
+        bool atEnd() const noexcept { return dirEntry.dirListPtr == nullptr; }
+        friend bool operator==(const const_iterator &lhs, sentinel) noexcept { return lhs.atEnd(); }
 #ifndef __cpp_impl_three_way_comparison
         friend bool operator!=(const const_iterator &lhs, sentinel) noexcept
         { return !operator==(lhs, sentinel{}); }
