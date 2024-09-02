@@ -141,9 +141,9 @@ private:
 
 Q_DECLARE_SHARED(QDnsTextRecord)
 
-class Q_NETWORK_EXPORT QDnsTlsAssociationRecord
+class QDnsTlsAssociationRecord
 {
-    Q_GADGET
+    Q_GADGET_EXPORT(Q_NETWORK_EXPORT)
     Q_CLASSINFO("RegisterEnumClassesUnscoped", "false")
 public:
     enum class CertificateUsage : quint8 {
@@ -189,21 +189,21 @@ public:
     };
     Q_ENUM(MatchingType)
 
-    QDnsTlsAssociationRecord();
-    QDnsTlsAssociationRecord(const QDnsTlsAssociationRecord &other);
+    Q_NETWORK_EXPORT QDnsTlsAssociationRecord();
+    Q_NETWORK_EXPORT QDnsTlsAssociationRecord(const QDnsTlsAssociationRecord &other);
     QDnsTlsAssociationRecord(QDnsTlsAssociationRecord &&other) noexcept = default;
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QDnsTlsAssociationRecord)
-    QDnsTlsAssociationRecord &operator=(const QDnsTlsAssociationRecord &other);
-    ~QDnsTlsAssociationRecord();
+    Q_NETWORK_EXPORT QDnsTlsAssociationRecord &operator=(const QDnsTlsAssociationRecord &other);
+    Q_NETWORK_EXPORT ~QDnsTlsAssociationRecord();
 
     void swap(QDnsTlsAssociationRecord &other) noexcept { d.swap(other.d); }
 
-    QString name() const;
-    quint32 timeToLive() const;
-    CertificateUsage usage() const;
-    Selector selector() const;
-    MatchingType matchType() const;
-    QByteArray value() const;
+    Q_NETWORK_EXPORT QString name() const;
+    Q_NETWORK_EXPORT quint32 timeToLive() const;
+    Q_NETWORK_EXPORT CertificateUsage usage() const;
+    Q_NETWORK_EXPORT Selector selector() const;
+    Q_NETWORK_EXPORT MatchingType matchType() const;
+    Q_NETWORK_EXPORT QByteArray value() const;
 
 private:
     QExplicitlySharedDataPointer<QDnsTlsAssociationRecordPrivate> d;
