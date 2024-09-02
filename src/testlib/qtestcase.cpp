@@ -1265,6 +1265,17 @@ public:
 
 #endif  // QT_CONFIG(thread)
 
+template <typename Functor>
+void runWithWatchdog(std::optional<WatchDog> &watchDog, Functor &&f)
+{
+    if (watchDog)
+        watchDog->beginTest();
+
+    f();
+
+    if (watchDog)
+        watchDog->testFinished();
+}
 
 static void printUnknownDataTagError(QLatin1StringView name, QLatin1StringView tag,
                                      const QTestTable &lTable, const QTestTable &gTable)
@@ -1336,7 +1347,9 @@ bool TestMethods::invokeTest(int index, QLatin1StringView tag, std::optional<Wat
 
         if (curGlobalDataIndex == 0) {
             std::snprintf(member, 512, "%s_data()", name.constData());
-            invokeTestMethodIfExists(member);
+            runWithWatchdog(watchDog, [&member] {
+                invokeTestMethodIfExists(member);
+            });
             if (QTestResult::skipCurrentTest())
                 break;
         }
@@ -1369,12 +1382,14 @@ bool TestMethods::invokeTest(int index, QLatin1StringView tag, std::optional<Wat
                         curDataIndex >= dataCount ? nullptr : table.testData(curDataIndex));
 
                     QTestPrivate::qtestMouseButtons = Qt::NoButton;
-                    if (watchDog)
-                        watchDog->beginTest();
-                    QTest::lastMouseTimestamp += 500;   // Maintain at least 500ms mouse event timestamps between each test function call
-                    invokeTestOnData(index);
-                    if (watchDog)
-                        watchDog->testFinished();
+
+                    // Maintain at least 500ms mouse event timestamps between each test function
+                    // call
+                    QTest::lastMouseTimestamp += 500;
+
+                    runWithWatchdog(watchDog, [this, index] {
+                        invokeTestOnData(index);
+                    });
                 }
 
                 if (!tag.isEmpty() && !globalDataCount)
@@ -1681,8 +1696,6 @@ void TestMethods::invokeTests(QObject *testObject) const
 {
     const QMetaObject *metaObject = testObject->metaObject();
     QTEST_ASSERT(metaObject);
-    QTestResult::setCurrentTestFunction("initTestCase");
-    invokeTestMethodIfValid(m_initTestCaseDataMethod, testObject);
 
     std::optional<WatchDog> watchDog = std::nullopt;
     if (!CrashHandler::alreadyDebugging()
@@ -1693,10 +1706,18 @@ void TestMethods::invokeTests(QObject *testObject) const
         watchDog.emplace();
     }
 
+    QTestResult::setCurrentTestFunction("initTestCase");
+    runWithWatchdog(watchDog, [this, testObject] {
+        invokeTestMethodIfValid(m_initTestCaseDataMethod, testObject);
+    });
+
     QSignalDumper::startDump();
 
     if (!QTestResult::skipCurrentTest() && !QTestResult::currentTestFailed()) {
-        invokeTestMethodIfValid(m_initTestCaseMethod, testObject);
+
+        runWithWatchdog(watchDog, [this, testObject] {
+            invokeTestMethodIfValid(m_initTestCaseMethod, testObject);
+        });
 
         // finishedCurrentTestDataCleanup() resets QTestResult::currentTestFailed(), so use a local copy.
         const bool previousFailed = QTestResult::currentTestFailed();
@@ -1720,7 +1741,10 @@ void TestMethods::invokeTests(QObject *testObject) const
         QTestResult::setSkipCurrentTest(false);
         QTestResult::setBlacklistCurrentTest(false);
         QTestResult::setCurrentTestFunction("cleanupTestCase");
-        invokeTestMethodIfValid(m_cleanupTestCaseMethod, testObject);
+        runWithWatchdog(watchDog, [this, testObject] {
+            invokeTestMethodIfValid(m_cleanupTestCaseMethod, testObject);
+        });
+
         QTestResult::finishedCurrentTestData();
         // Restore skip state as it affects decision on whether we passed:
         QTestResult::setSkipCurrentTest(wasSkipped || QTestResult::skipCurrentTest());
