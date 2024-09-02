@@ -539,7 +539,7 @@ void QWasmWindow::handleKeyForInputContextEvent(const emscripten::val &event)
             return;
         } else if (keyString.size() != 1) {
             if (!wasmInput->preeditString().isEmpty()) {
-                if (keyString == "Process" || keyString == "Backspace") {
+                if (keyString == "Process" || keyString == "Backspace" || keyString == "Dead") {
                     // processed by InputContext
                     // "Process" should be handled by InputContext but
                     // QWasmInputContext's function is incomplete now
