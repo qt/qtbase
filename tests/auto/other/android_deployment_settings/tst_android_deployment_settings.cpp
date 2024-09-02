@@ -1,6 +1,7 @@
 // Copyright (C) 2023 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QFile>
@@ -82,13 +83,29 @@ void tst_android_deployment_settings::DeploymentSettings_data()
                                           << "org.qtproject.android_deployment_settings_test";
     QTest::newRow("android-app-name") << "android-app-name"
                                           << "Android Deployment Settings Test";
+    QTest::newRow("permissions") << "permissions"
+                        << "[{\"name\":\"PERMISSION_WITH_ATTRIBUTES\","
+                           "\"extras\":\"android:minSdkVersion='32' android:maxSdkVersion='34' \"},"
+                           "{\"name\":\"PERMISSION_WITHOUT_ATTRIBUTES\"}]";
 }
 
 void tst_android_deployment_settings::DeploymentSettings()
 {
     QFETCH(QString, key);
     QFETCH(QString, value);
-    QCOMPARE(jsonDoc[key].toString(), value);
+    QJsonValue keyValue = jsonDoc[key];
+    if (keyValue.type() == QJsonValue::Type::String) {
+        QCOMPARE(keyValue.toString(), value);
+    } else if (keyValue.type() == QJsonValue::Type::Array) {
+        QJsonParseError parseError;
+        // For robustness (field order, whitespaces etc.) make comparison between QJsonDocuments
+        QJsonDocument expectedDoc = QJsonDocument::fromJson(value.toUtf8(), &parseError);
+        if (parseError.error != QJsonParseError::NoError)
+            qFatal("Failed to parse expected JSON array: %s", qPrintable(parseError.errorString()));
+        QCOMPARE(QJsonDocument(keyValue.toArray()), expectedDoc);
+    } else {
+        qFatal("Unhandled JSON type: %i", keyValue.type());
+    }
 }
 
 void tst_android_deployment_settings::QtPaths_data()

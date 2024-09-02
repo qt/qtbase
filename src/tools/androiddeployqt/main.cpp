@@ -242,7 +242,8 @@ struct Options
 
     // Per package collected information
     // permissions 'name' => 'optional additional attributes'
-    QMap<QString, QString> permissions;
+    QMap<QString, QString> modulePermissions;
+    QMap<QString, QString> applicationPermissions;
     QStringList features;
 
     // Override qml import scanner path
@@ -1457,6 +1458,21 @@ bool readInputFile(Options *options)
         }
     }
 
+    {
+        QJsonArray permissions = jsonObject.value("permissions"_L1).toArray();
+        if (!permissions.isEmpty()) {
+            for (const QJsonValue &value : permissions) {
+                if (value.isObject()) {
+                    QJsonObject permissionObj = value.toObject();
+                    QString name = permissionObj.value("name"_L1).toString();
+                    QString extras;
+                    if (permissionObj.contains("extras"_L1))
+                        extras = permissionObj.value("extras"_L1).toString().trimmed();
+                    options->applicationPermissions.insert(name, extras);
+                }
+            }
+        }
+    }
     return true;
 }
 
@@ -1896,14 +1912,23 @@ bool updateAndroidManifest(Options &options)
         QXmlStreamReader reader(&androidManifestXml);
         while (!reader.atEnd()) {
             reader.readNext();
-            if (reader.isStartElement() && reader.name() == "uses-permission"_L1)
-                options.permissions.remove(QString(reader.attributes().value("android:name"_L1)));
+            if (reader.isStartElement() && reader.name() == "uses-permission"_L1) {
+                options.modulePermissions.remove(
+                        QString(reader.attributes().value("android:name"_L1)));
+                options.applicationPermissions.remove(
+                        QString(reader.attributes().value("android:name"_L1)));
+            }
         }
         androidManifestXml.close();
     }
 
+    // Application may define permissions in its CMakeLists.txt, give them the priority
+    QMap<QString, QString> resolvedPermissions = options.modulePermissions;
+    for (auto [name, extras] : options.applicationPermissions.asKeyValueRange())
+        resolvedPermissions.insert(name, extras);
+
     QString permissions;
-    for (auto [name, extras] : options.permissions.asKeyValueRange())
+    for (auto [name, extras] : resolvedPermissions.asKeyValueRange())
         permissions += "    <uses-permission android:name=\"%1\" %2 />\n"_L1.arg(name).arg(extras);
     replacements[QStringLiteral("<!-- %%INSERT_PERMISSIONS -->")] = permissions.trimmed();
 
@@ -2172,9 +2197,9 @@ bool readAndroidDependencyXml(Options *options,
                     QString extras = reader.attributes().value("extras"_L1).toString();
                     // With duplicate permissions prioritize the one without any attributes,
                     // as that is likely the most permissive
-                    if (!options->permissions.contains(name)
-                        || !options->permissions.value(name).isEmpty()) {
-                        options->permissions.insert(name, extras);
+                    if (!options->modulePermissions.contains(name)
+                        || !options->modulePermissions.value(name).isEmpty()) {
+                        options->modulePermissions.insert(name, extras);
                     }
                 } else if (reader.name() == "feature"_L1) {
                     QString name = reader.attributes().value("name"_L1).toString();

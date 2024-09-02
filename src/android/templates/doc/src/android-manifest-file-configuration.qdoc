@@ -258,10 +258,14 @@ Since Qt 6.9, it is possible to override the default permissions set
 by Qt modules. This is useful if you need to define the same permissions
 as used by a Qt module, but with additional or different attributes.
 
-To achieve this, you can manually define these permissions in the Android
-manifest file, along with the \c {<!-- %%INSERT_PERMISSIONS -->} placeholder.
-Manually defined permissions take precedence over the same permissions added
-by Qt modules, avoiding duplication.
+There are two ways to achieve this. First way is to use
+\l {qt_add_android_permission} CMake function in the application's
+\c {CMakeLists.txt}. Permissions defined this way take precedence over
+the same permissions defined by Qt modules, avoiding duplication.
+
+Second way is to manually define these permissions in the Android
+manifest file. Permissions defined this way take precedence over permissions
+set by Qt modules, or set with \l {qt_add_android_permission}.
 
 \section2 Style Extraction
 

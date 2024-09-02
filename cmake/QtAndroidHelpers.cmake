@@ -89,40 +89,7 @@ macro(qt_internal_setup_android_target_properties)
 endmacro()
 
 function(qt_internal_add_android_permission target)
-    cmake_parse_arguments(arg "" "NAME" "ATTRIBUTES" ${ARGN})
-
-    if(NOT target)
-        message(FATAL_ERROR "Target for adding Android permission cannot be empty (${arg_NAME})")
-    endif()
-
-    if(NOT arg_NAME)
-        message(FATAL_ERROR "NAME for adding Android permission cannot be empty (${target})")
-    endif()
-
-    set(permission_entry "${arg_NAME}")
-
-    if(arg_ATTRIBUTES)
-        # Permission with additional attributes
-        list(LENGTH arg_ATTRIBUTES attributes_len)
-        math(EXPR attributes_modulus "${attributes_len} % 2")
-        if(NOT (attributes_len GREATER 1 AND attributes_modulus EQUAL 0))
-            message(FATAL_ERROR "Android permission attributes must be name-value pairs (${arg_NAME})")
-        endif()
-        # Combine name-value pairs
-        set(index 0)
-        set(attributes "")
-        while(index LESS attributes_len)
-            list(GET arg_ATTRIBUTES ${index} name)
-            math(EXPR index "${index} + 1")
-            list(GET arg_ATTRIBUTES ${index} value)
-            string(APPEND attributes " android:${name}=\"${value}\"")
-            math(EXPR index "${index} + 1")
-        endwhile()
-        set(permission_entry "${permission_entry}\;${attributes}")
-    endif()
-
-    # Append the permission to the target's property
-    set_property(TARGET ${target} APPEND PROPERTY QT_ANDROID_PERMISSIONS "${permission_entry}")
+    _qt_internal_add_android_permission(${ARGV})
 endfunction()
 
 
@@ -233,9 +200,9 @@ function(qt_internal_android_dependencies_content target file_content_out)
             elseif(permission_len EQUAL 2)
                 list(GET permission 0 name)
                 list(GET permission 1 extras)
-                string(APPEND file_contents "<permission name=\"${name}\" extras=\'${extras}\'/>\n")
+                string(APPEND file_contents "<permission name=\"${name}\" extras=\"${extras}\"/>\n")
             else()
-                message(FATAL_ERROR "Unexpected permission: " "${permission}" "${permission_len}")
+                message(FATAL_ERROR "Invalid permission format: ${permission} ${permission_len}")
             endif()
         endforeach()
     endif()

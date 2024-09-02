@@ -50,6 +50,43 @@ function(_qt_internal_add_tool_to_android_deployment_settings out_var tool json_
     set(${out_var} "${${out_var}}" PARENT_SCOPE)
 endfunction()
 
+# Generates a JSON array of permissions that the 'target' may have,
+# returns an empty JSON array if no permissions were found.
+function(_qt_internal_generate_android_permissions_json out_result target)
+
+    set(${out_result} "[]" PARENT_SCOPE)
+
+    if(NOT TARGET ${target})
+        return()
+    endif()
+
+    get_target_property(permissions ${target} QT_ANDROID_PERMISSIONS)
+    if(NOT permissions)
+        return()
+    endif()
+
+    set(result "[")
+    set(json_objects "")
+    foreach(permission IN LISTS permissions)
+        # Check if the permission has also extra attributes in addition to the permission name
+        list(LENGTH permission permission_len)
+        if(permission_len EQUAL 1)
+            list(APPEND json_objects "{ \"name\": \"${permission}\" }")
+        elseif(permission_len EQUAL 2)
+            list(GET permission 0 name)
+            list(GET permission 1 extras)
+            list(APPEND json_objects "{ \"name\": \"${name}\", \"extras\": \"${extras}\" }")
+        else()
+            message(FATAL_ERROR "Invalid permission format: ${permission} ${permission_len}")
+        endif()
+    endforeach()
+
+    # Join all JSON objects with a comma. This also avoids trailing commas JSON doesn't accept
+    string(JOIN ",\n      " joined_json_objects ${json_objects})
+    string(APPEND result "\n      ${joined_json_objects}\n   ]")
+    set(${out_result} "${result}" PARENT_SCOPE)
+endfunction()
+
 # Generate the deployment settings json file for a cmake target.
 function(qt6_android_generate_deployment_settings target)
     # Information extracted from mkspecs/features/android/android_deployment_settings.prf
@@ -257,6 +294,9 @@ function(qt6_android_generate_deployment_settings target)
     __qt_internal_collect_plugin_library_files("${target}" "${plugin_targets}" plugin_targets)
     string(APPEND file_contents "   \"android-deploy-plugins\":\"${plugin_targets}\",\n")
 
+    _qt_internal_generate_android_permissions_json(permissions_json_array "${target}")
+    string(APPEND file_contents "   \"permissions\": ${permissions_json_array},\n")
+
     # App binary
     string(APPEND file_contents
         "   \"application-binary\": \"${target_output_name}\",\n")
@@ -342,6 +382,54 @@ endfunction()
 if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
     function(qt_android_generate_deployment_settings)
         qt6_android_generate_deployment_settings(${ARGV})
+    endfunction()
+endif()
+
+function(_qt_internal_add_android_permission target)
+    if(NOT TARGET ${target})
+        message(FATAL_ERROR "Empty or invalid target for adding Android permission: (${target})")
+    endif()
+
+    cmake_parse_arguments(arg "" "NAME" "ATTRIBUTES" ${ARGN})
+
+    if(NOT arg_NAME)
+        message(FATAL_ERROR "NAME for adding Android permission cannot be empty (${target})")
+    endif()
+
+    set(permission_entry "${arg_NAME}")
+
+    if(arg_ATTRIBUTES)
+        # Permission with additional attributes
+        list(LENGTH arg_ATTRIBUTES attributes_len)
+        math(EXPR attributes_modulus "${attributes_len} % 2")
+        if(NOT (attributes_len GREATER 1 AND attributes_modulus EQUAL 0))
+            message(FATAL_ERROR "Android permission: ${arg_NAME} attributes: ${arg_ATTRIBUTES} must"
+                                " be name-value pairs (for example: minSdkVersion 30)")
+        endif()
+        # Combine name-value pairs
+        set(index 0)
+        set(attributes "")
+        while(index LESS attributes_len)
+            list(GET arg_ATTRIBUTES ${index} name)
+            math(EXPR index "${index} + 1")
+            list(GET arg_ATTRIBUTES ${index} value)
+            string(APPEND attributes "android:${name}=\'${value}\' ")
+            math(EXPR index "${index} + 1")
+        endwhile()
+        set(permission_entry "${permission_entry}\;${attributes}")
+    endif()
+
+    # Append the permission to the target's property
+    set_property(TARGET ${target} APPEND PROPERTY QT_ANDROID_PERMISSIONS "${permission_entry}")
+endfunction()
+
+function(qt6_add_android_permission target)
+    _qt_internal_add_android_permission(${ARGV})
+endfunction()
+
+if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
+    function(qt_add_android_permission target)
+        qt6_add_android_permission(${ARGV})
     endfunction()
 endif()
 

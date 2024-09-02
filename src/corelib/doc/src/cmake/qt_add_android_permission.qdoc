@@ -1,0 +1,38 @@
+// Copyright (C) 2024 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+\page qt-add-android-permission.html
+\ingroup cmake-commands-qtcore
+
+\title qt_add_android_permission
+\keyword qt6_add_android_permission
+
+\summary {Adds an Android permission to the target executable.}
+
+\include cmake-find-package-core.qdocinc
+
+\cmakecommandsince 6.9
+
+\section1 Synopsis
+
+\badcode
+qt_add_android_permission(target NAME <permission-name> [ATTRIBUTES <name1> <value1> ...])
+\endcode
+
+\versionlessCMakeCommandsNote qt6_add_android_permission()
+
+\section1 Description
+
+The command adds an Android permission to the \c {target} executable.
+This can be used to define additional permissions, or overriding
+the default permissions set by Qt modules.
+
+For further information on defining Android permissions,
+see \l {Qt Permissions and Features}.
+
+\section1 Example
+
+\snippet cmake-macros/examples.cmake qt_add_android_permission
+
+*/

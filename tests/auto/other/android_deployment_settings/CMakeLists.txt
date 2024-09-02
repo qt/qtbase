@@ -18,6 +18,13 @@ function(tst_generate_android_deployment_setting target)
     qt6_android_generate_deployment_settings(${target})
 endfunction()
 
+function(tst_add_android_permissions target)
+    qt6_add_android_permission(${target} NAME PERMISSION_WITH_ATTRIBUTES
+                                         ATTRIBUTES
+                                             minSdkVersion 32 maxSdkVersion 34)
+    qt6_add_android_permission(${target} NAME PERMISSION_WITHOUT_ATTRIBUTES)
+endfunction()
+
 qt6_policy(SET QTP0002 NEW)
 
 set(target tst_android_deployment_settings_new)
@@ -46,6 +53,7 @@ set_target_properties(${target} PROPERTIES
     # qt6_android_generate_deployment_settings
     QT_ANDROID_DEPLOYMENT_SETTINGS_FILE "custom_deployment_settings.json"
 )
+tst_add_android_permissions(${target})
 tst_generate_android_deployment_setting(${target})
 
 qt6_policy(SET QTP0002 OLD)
@@ -67,6 +75,7 @@ set_target_properties(${target} PROPERTIES
     QT_ANDROID_PACKAGE_SOURCE_DIR "path\\to/source\\dir"
     QT_ANDROID_SYSTEM_LIBS_PREFIX "myLibPrefix"
 )
+tst_add_android_permissions(${target})
 tst_generate_android_deployment_setting(${target})
 
 get_target_property(new_settings

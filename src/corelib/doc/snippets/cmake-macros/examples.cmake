@@ -92,6 +92,21 @@ qt_android_generate_deployment_settings(myapp)
 qt_android_add_apk_target(myapp)
 #! [qt_android_deploy_basic]
 
+#! [qt_add_android_permission]
+qt_add_executable(myapp
+    // ...
+)
+qt_add_android_permission(myapp
+    NAME android.permission.BLUETOOTH_SCAN
+    ATTRIBUTES
+        minSdkVersion 31
+        usesPermissionFlags neverForLocation
+)
+qt_add_android_permission(myapp
+    NAME android.permission.ACCESS_COARSE_LOCATION
+)
+#! [qt_add_android_permission]
+
 #! [qt_finalize_project_manual]
 cmake_minimum_required(VERSIONS 3.16)
 
