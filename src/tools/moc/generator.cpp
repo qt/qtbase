@@ -202,17 +202,14 @@ static bool qualifiedNameEquals(const QByteArray &qualifiedName, const QByteArra
 
 static QByteArray generateQualifiedClassNameIdentifier(const QByteArray &identifier)
 {
-    QByteArray qualifiedClassNameIdentifier = identifier;
-
-    // Remove ':'s in the name, but be sure not to create any illegal
-    // identifiers in the process. (Don't replace with '_', because
-    // that will create problems with things like NS_::_class.)
-    qualifiedClassNameIdentifier.replace("::", "SCOPE");
-
-    // Also, avoid any leading/trailing underscores (we'll concatenate
-    // the generated name with other prefixes/suffixes, and these latter
-    // may already include an underscore, leading to two underscores)
-    qualifiedClassNameIdentifier = "CLASS" + qualifiedClassNameIdentifier + "ENDCLASS";
+    // This is similar to the IA-64 C++ ABI mangling scheme.
+    QByteArray qualifiedClassNameIdentifier = "ZN";
+    for (const auto scope : qTokenize(QLatin1StringView(identifier), QLatin1Char(':'),
+                                      Qt::SkipEmptyParts)) {
+        qualifiedClassNameIdentifier += QByteArray::number(scope.size());
+        qualifiedClassNameIdentifier += scope;
+    }
+    qualifiedClassNameIdentifier += 'E';
     return qualifiedClassNameIdentifier;
 }
 
