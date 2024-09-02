@@ -514,14 +514,14 @@ quint32 HuffmanDecoder::addTable(quint32 prefix, quint32 index)
     return quint32(prefixTables.size() - 1);
 }
 
-PrefixTableEntry HuffmanDecoder::tableEntry(const PrefixTable &table, quint32 index)
+PrefixTableEntry HuffmanDecoder::tableEntry(PrefixTable table, quint32 index)
 {
     Q_ASSERT(index < table.size());
     return tableData[table.offset + index];
 }
 
-void HuffmanDecoder::setTableEntry(const PrefixTable &table, quint32 index,
-                                   const PrefixTableEntry &entry)
+void HuffmanDecoder::setTableEntry(PrefixTable table, quint32 index,
+                                   PrefixTableEntry entry)
 {
     Q_ASSERT(index < table.size());
     tableData[table.offset + index] = entry;
