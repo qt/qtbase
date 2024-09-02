@@ -16,6 +16,7 @@ qt_internal_add_test(tst_qpluginloader
         ../theplugin/plugininterface.h
         ../tst_qpluginloader.cpp
     LIBRARIES
+        Qt::CorePrivate
         staticplugin
     TESTDATA ${test_data}
 )
@@ -46,26 +47,3 @@ if(ANDROID)
         QT_ANDROID_EXTRA_LIBS "${extra_libs}"
     )
 endif()
-
-## Scopes:
-#####################################################################
-
-qt_internal_extend_target(tst_qpluginloader
-    LIBRARIES
-        Qt::CorePrivate
-)
-
-qt_internal_extend_target(tst_qpluginloader CONDITION CMAKE_BUILD_TYPE STREQUAL Debug AND WIN32 AND debug_and_release
-    LIBRARIES
-        # Remove: L../staticplugin/debug
-)
-
-qt_internal_extend_target(tst_qpluginloader CONDITION WIN32 AND debug_and_release AND NOT CMAKE_BUILD_TYPE STREQUAL Debug
-    LIBRARIES
-        # Remove: L../staticplugin/release
-)
-
-qt_internal_extend_target(tst_qpluginloader CONDITION UNIX OR NOT debug_and_release
-    LIBRARIES
-        # Remove: L../staticplugin
-)

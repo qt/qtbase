@@ -12,7 +12,7 @@
 #include <QScopeGuard>
 #include "theplugin/plugininterface.h"
 
-#include <QtCore/private/qglobal_p.h>
+#include <QtCore/private/qsimd_p.h>
 
 #if defined(QT_BUILD_INTERNAL) && defined(Q_OF_MACH_O)
 #  include <QtCore/private/qmachparser_p.h>
@@ -861,7 +861,9 @@ void tst_QPluginLoader::archSpecificVersion()
 
     QString expectedArch;
 #if defined(Q_PROCESSOR_X86_64) && defined(Q_OS_UNIX) && !defined(Q_OS_DARWIN)
-    if (__builtin_cpu_supports("avx2") && __builtin_cpu_supports("fma"))
+    // On Unix systems (other than Darwin, which has fat binaries),
+    // QPluginLoader will load a separate file for x86-64-v3 systems.
+    if (qCpuHasFeature(ArchHaswell))
         expectedArch = "x86-64-v3";
 #endif
 
