@@ -412,6 +412,9 @@ QByteArray QLocaleId::name(char separator) const
         return QByteArray();
     if (language_id == QLocale::C)
         return QByteArrayLiteral("C");
+    Q_ASSERT(language_id <= QLocale::LastLanguage);
+    Q_ASSERT(script_id <= QLocale::LastScript);
+    Q_ASSERT(territory_id <= QLocale::LastTerritory);
 
     const LanguageCodeEntry &language = languageCodeList[language_id];
     AlphaCode lang;
