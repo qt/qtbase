@@ -15,6 +15,15 @@
     regular intervals until you explicitly call QObject::killTimer()
     with that timer ID.
 
+    Instead of handling timer IDs directly, you can use \l QBasicTimer.
+    QBasicTimer is a value-class,
+    \l{http://en.cppreference.com/w/cpp/language/raii}{RAII} wrapper around
+    a timer ID. You start the timer with \l{QBasicTimer::start()}, and stop
+    it with \l{QBasicTimer::stop()} (the latter is also called upon destruction).
+    To use QBasicTimer, you must reimplement \l{QObject::timerEvent()}{timerEvent()}
+    in your class (which must be a sub-class of QObject), and handle the
+    timer event there.
+
     For this mechanism to work, the application must run in an event
     loop. You cat start an event loop with QApplication::exec(). When a
     timer fires, the application sends a QTimerEvent, and the flow of
@@ -87,10 +96,4 @@
 
     Every second, QChronoTimer will call the QWidget::update() slot to
     refresh the clock's display.
-
-    If you already have a QObject subclass and want an easy
-    optimization, you can use QBasicTimer instead of QTimer. With
-    QBasicTimer, you must reimplement
-    \l{QObject::timerEvent()}{timerEvent()} in your QObject subclass
-    and handle the timeout there.
 */

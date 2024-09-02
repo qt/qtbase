@@ -104,15 +104,7 @@ QT_BEGIN_NAMESPACE
     \c std::numeric_limits<int>::max()). If you only need millisecond
     resolution and ±24 days range, you can continue to use QTimer.
 
-    Another alternative is to call QObject::startTimer()
-    for your object and reimplement the QObject::timerEvent() event
-    handler in your class (which must inherit QObject). The
-    disadvantage is that timerEvent() does not support such
-    high-level features as single-shot timers or signals.
-
-    Another alternative is QBasicTimer. It is typically less
-    cumbersome than using QObject::startTimer()
-    directly. See \l{Timers} for an overview of all three approaches.
+    \include timers-common.qdocinc q-chrono-timer-alternatives
 
     Some operating systems limit the number of timers that may be
     used; Qt tries to work around these limitations.
