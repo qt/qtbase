@@ -59,7 +59,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRhiVulkanInitParams
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief Vulkan specific initialization parameters.
 
@@ -189,7 +190,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRhiVulkanNativeHandles
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief Collects device, queue, and other Vulkan objects that are used by the QRhi.
 
@@ -247,7 +249,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRhiVulkanCommandBufferNativeHandles
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief Holds the Vulkan command buffer object that is backing a QRhiCommandBuffer.
 
@@ -269,7 +272,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRhiVulkanRenderPassNativeHandles
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief Holds the Vulkan render pass object backing a QRhiRenderPassDescriptor.
 

@@ -23,7 +23,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRhiD3D12InitParams
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \brief Direct3D 12 specific initialization parameters.
 
     \note This is a RHI API with limited compatibility guarantees, see \l QRhi
@@ -70,7 +71,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRhiD3D12NativeHandles
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \brief Holds the D3D12 device used by the QRhi.
 
     \note The class uses \c{void *} as the type since including the COM-based
@@ -129,7 +131,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRhiD3D12CommandBufferNativeHandles
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \brief Holds the ID3D12GraphicsCommandList1 object that is backing a QRhiCommandBuffer.
 
     \note The command list object is only guaranteed to be valid, and
