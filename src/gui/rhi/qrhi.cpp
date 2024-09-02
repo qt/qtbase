@@ -1186,7 +1186,8 @@ Q_STATIC_LOGGING_CATEGORY(QRHI_LOG_RUB, "qt.rhi.rub")
 
 /*!
     \class QRhiInitParams
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief Base class for backend-specific initialization parameters.
 
@@ -1198,7 +1199,8 @@ Q_STATIC_LOGGING_CATEGORY(QRHI_LOG_RUB, "qt.rhi.rub")
 
 /*!
     \class QRhiDepthStencilClearValue
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief Specifies clear values for a depth or stencil buffer.
 
@@ -1277,7 +1279,8 @@ QDebug operator<<(QDebug dbg, const QRhiDepthStencilClearValue &v)
 
 /*!
     \class QRhiViewport
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief Specifies a viewport rectangle.
 
@@ -1402,7 +1405,8 @@ QDebug operator<<(QDebug dbg, const QRhiViewport &v)
 
 /*!
     \class QRhiScissor
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief Specifies a scissor rectangle.
 
@@ -1493,7 +1497,8 @@ QDebug operator<<(QDebug dbg, const QRhiScissor &s)
 
 /*!
     \class QRhiVertexInputBinding
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief Describes a vertex input binding.
 
@@ -1643,7 +1648,8 @@ QDebug operator<<(QDebug dbg, const QRhiVertexInputBinding &b)
 
 /*!
     \class QRhiVertexInputAttribute
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief Describes a single vertex input element.
 
@@ -1995,7 +2001,8 @@ quint32 QRhiImplementation::byteSizePerVertexForVertexInputFormat(QRhiVertexInpu
 
 /*!
     \class QRhiVertexInputLayout
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief Describes the layout of vertex inputs consumed by a vertex shader.
 
@@ -2123,7 +2130,8 @@ QDebug operator<<(QDebug dbg, const QRhiVertexInputLayout &v)
 
 /*!
     \class QRhiShaderStage
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief Specifies the type and the shader code for a shader stage in the pipeline.
 
@@ -2269,7 +2277,8 @@ QDebug operator<<(QDebug dbg, const QRhiShaderStage &s)
 
 /*!
     \class QRhiColorAttachment
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief Describes the a single color attachment of a render target.
 
@@ -2521,7 +2530,8 @@ QRhiColorAttachment::QRhiColorAttachment(QRhiRenderBuffer *renderBuffer)
 
 /*!
     \class QRhiTextureRenderTargetDescription
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief Describes the color and depth or depth/stencil attachments of a render target.
 
@@ -2811,7 +2821,8 @@ QRhiTextureRenderTargetDescription::QRhiTextureRenderTargetDescription(const QRh
 
 /*!
     \class QRhiTextureSubresourceUploadDescription
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief Describes the source for one mip level in a layer in a texture upload operation.
 
@@ -3020,7 +3031,8 @@ QRhiTextureSubresourceUploadDescription::QRhiTextureSubresourceUploadDescription
 
 /*!
     \class QRhiTextureUploadEntry
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
 
     \brief Describes one layer (face for cubemaps, slice for 3D textures,
@@ -3084,7 +3096,8 @@ QRhiTextureUploadEntry::QRhiTextureUploadEntry(int layer, int level,
 
 /*!
     \class QRhiTextureUploadDescription
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief Describes a texture upload operation.
 
@@ -3233,7 +3246,8 @@ QRhiTextureUploadDescription::QRhiTextureUploadDescription(std::initializer_list
 
 /*!
     \class QRhiTextureCopyDescription
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief Describes a texture-to-texture copy operation.
 
@@ -3341,7 +3355,8 @@ QRhiTextureUploadDescription::QRhiTextureUploadDescription(std::initializer_list
 
 /*!
     \class QRhiReadbackDescription
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief Describes a readback (reading back texture contents from possibly GPU-only memory) operation.
 
@@ -3444,7 +3459,8 @@ QRhiReadbackDescription::QRhiReadbackDescription(QRhiTexture *texture)
 
 /*!
     \class QRhiReadbackResult
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief Describes the results of a potentially asynchronous buffer or texture readback operation.
 
@@ -3486,7 +3502,8 @@ QRhiReadbackDescription::QRhiReadbackDescription(QRhiTexture *texture)
 
 /*!
     \class QRhiNativeHandles
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief Base class for classes exposing backend-specific collections of native resource objects.
 
@@ -3496,7 +3513,8 @@ QRhiReadbackDescription::QRhiReadbackDescription(QRhiTexture *texture)
 
 /*!
     \class QRhiResource
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief Base class for classes encapsulating native resource objects.
 
@@ -3678,7 +3696,8 @@ QRhi *QRhiResource::rhi() const
 
 /*!
     \class QRhiBuffer
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief Vertex, index, or uniform (constant) buffer resource.
 
@@ -3858,7 +3877,8 @@ QRhi *QRhiResource::rhi() const
 
 /*!
     \class QRhiBuffer::NativeBuffer
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \brief Contains information about the underlying native resources of a buffer.
  */
 
@@ -4066,7 +4086,8 @@ void QRhiBuffer::fullDynamicBufferUpdateForCurrentFrame(const void *data)
 
 /*!
     \class QRhiRenderBuffer
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief Renderbuffer resource.
 
@@ -4106,7 +4127,8 @@ void QRhiBuffer::fullDynamicBufferUpdateForCurrentFrame(const void *data)
 
 /*!
     \struct QRhiRenderBuffer::NativeRenderBuffer
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \brief Wraps a native renderbuffer object.
  */
 
@@ -4253,7 +4275,8 @@ bool QRhiRenderBuffer::createFrom(NativeRenderBuffer src)
 
 /*!
     \class QRhiTexture
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief Texture resource.
 
@@ -4482,7 +4505,8 @@ bool QRhiRenderBuffer::createFrom(NativeRenderBuffer src)
 
 /*!
     \struct QRhiTexture::NativeTexture
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \brief Contains information about the underlying native resources of a texture.
  */
 
@@ -4712,7 +4736,8 @@ void QRhiTexture::setNativeLayout(int layout)
 
 /*!
     \struct QRhiTexture::ViewFormat
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.8
     \brief Specifies the view format for reading or writing from or to the texture.
 
@@ -4793,7 +4818,8 @@ void QRhiTexture::setNativeLayout(int layout)
 
 /*!
     \class QRhiSampler
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief Sampler resource.
 
@@ -4930,7 +4956,8 @@ QRhiResource::Type QRhiSampler::resourceType() const
 
 /*!
     \class QRhiShadingRateMap
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.9
     \brief An object that wraps a texture or another kind of native 3D API object.
 
@@ -4947,7 +4974,8 @@ QRhiResource::Type QRhiSampler::resourceType() const
 
 /*!
     \struct QRhiShadingRateMap::NativeShadingRateMap
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.9
     \brief Wraps a native shading rate map.
 
@@ -5038,7 +5066,8 @@ bool QRhiShadingRateMap::createFrom(QRhiTexture *src)
 
 /*!
     \class QRhiRenderPassDescriptor
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief Render pass resource.
 
@@ -5182,7 +5211,8 @@ const QRhiNativeHandles *QRhiRenderPassDescriptor::nativeHandles()
 
 /*!
     \class QRhiRenderTarget
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief Represents an onscreen (swapchain) or offscreen (texture) render target.
 
@@ -5264,7 +5294,8 @@ QRhiSwapChainRenderTarget::QRhiSwapChainRenderTarget(QRhiImplementation *rhi, QR
 
 /*!
     \class QRhiSwapChainRenderTarget
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief Swapchain render target resource.
 
@@ -5294,7 +5325,8 @@ QRhiResource::Type QRhiSwapChainRenderTarget::resourceType() const
 
 /*!
     \class QRhiTextureRenderTarget
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief Texture render target resource.
 
@@ -5460,7 +5492,8 @@ QRhiResource::Type QRhiTextureRenderTarget::resourceType() const
 
 /*!
     \class QRhiShaderResourceBindings
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief Encapsulates resources for making buffer, texture, sampler resources visible to shaders.
 
@@ -5653,7 +5686,8 @@ void QRhiImplementation::updateLayoutDesc(QRhiShaderResourceBindings *srb)
 
 /*!
     \class QRhiShaderResourceBinding
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief Describes the shader resource for a single binding point.
 
@@ -6593,7 +6627,8 @@ QDebug operator<<(QDebug dbg, const QRhiShaderResourceBindings &srb)
 
 /*!
     \class QRhiGraphicsPipeline
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief Graphics pipeline state resource.
 
@@ -6850,7 +6885,8 @@ QDebug operator<<(QDebug dbg, const QRhiShaderResourceBindings &srb)
 
 /*!
     \struct QRhiGraphicsPipeline::TargetBlend
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief Describes the blend state for one color attachment.
 
@@ -6898,7 +6934,8 @@ QDebug operator<<(QDebug dbg, const QRhiShaderResourceBindings &srb)
 
 /*!
     \struct QRhiGraphicsPipeline::StencilOpState
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief Describes the stencil operation state.
 
@@ -7314,7 +7351,8 @@ QRhiResource::Type QRhiGraphicsPipeline::resourceType() const
 
 /*!
     \class QRhiSwapChain
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief Swapchain resource.
 
@@ -7857,7 +7895,8 @@ QRhiRenderTarget *QRhiSwapChain::currentFrameRenderTarget(StereoTargetBuffer tar
 
 /*!
     \struct QRhiSwapChainHdrInfo
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
 
     \brief Describes the high dynamic range related information of the
@@ -8098,7 +8137,8 @@ QDebug operator<<(QDebug dbg, const QRhiSwapChainHdrInfo &info)
 
 /*!
     \class QRhiComputePipeline
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief Compute pipeline state resource.
 
@@ -8181,7 +8221,8 @@ QRhiComputePipeline::QRhiComputePipeline(QRhiImplementation *rhi)
 
 /*!
     \class QRhiCommandBuffer
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief Command buffer resource.
 
@@ -8876,7 +8917,8 @@ bool QRhi::probe(QRhi::Implementation impl, QRhiInitParams *params)
 
 /*!
     \struct QRhiSwapChainProxyData
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
 
     \brief Opaque data describing native objects needed to set up a swapchain.
@@ -8982,7 +9024,8 @@ const char *QRhi::backendName() const
 
 /*!
     \struct QRhiDriverInfo
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
 
     \brief Describes the physical device, adapter, or graphics API
@@ -9140,7 +9183,8 @@ void QRhi::runCleanup()
 
 /*!
     \class QRhiResourceUpdateBatch
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief Records upload and copy type of operations.
 
@@ -10659,7 +10703,8 @@ void QRhi::setPipelineCacheData(const QByteArray &data)
 
 /*!
     \struct QRhiStats
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
 
     \brief Statistics provided from the underlying memory allocator.

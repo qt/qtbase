@@ -28,7 +28,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRhiGles2InitParams
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief OpenGL specific initialization parameters.
 
@@ -140,7 +141,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRhiGles2NativeHandles
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief Holds the OpenGL context used by the QRhi.
 

@@ -28,7 +28,8 @@ using namespace Qt::StringLiterals;
 
 /*!
     \class QRhiD3D11InitParams
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief Direct3D 11 specific initialization parameters.
 
@@ -81,7 +82,8 @@ using namespace Qt::StringLiterals;
 
 /*!
     \class QRhiD3D11NativeHandles
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief Holds the D3D device and device context used by the QRhi.
 

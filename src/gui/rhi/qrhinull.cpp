@@ -9,7 +9,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRhiNullInitParams
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief Null backend specific initialization parameters.
 
@@ -31,7 +32,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRhiNullNativeHandles
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief Empty.
 

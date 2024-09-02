@@ -57,7 +57,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRhiMetalInitParams
-    \inmodule QtRhi
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief Metal specific initialization parameters.
 
@@ -95,7 +96,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRhiMetalNativeHandles
-    \inmodule QtRhi
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief Holds the Metal device used by the QRhi.
 
@@ -118,7 +120,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRhiMetalCommandBufferNativeHandles
-    \inmodule QtRhi
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
     \brief Holds the MTLCommandBuffer and MTLRenderCommandEncoder objects that are backing a QRhiCommandBuffer.
 
