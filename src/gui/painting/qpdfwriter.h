@@ -37,7 +37,7 @@ public:
     void setCreator(const QString &creator);
 
     QUuid documentId() const;
-    void setDocumentId(const QUuid &documentId);
+    void setDocumentId(QUuid documentId);
 
     QString author() const;
     void setAuthor(const QString &author);
