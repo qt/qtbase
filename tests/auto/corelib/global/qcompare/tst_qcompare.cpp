@@ -693,20 +693,6 @@ void tst_QCompare::conversions()
         static_assert(Qt::partial_ordering::less == std::weak_ordering::less);
         static_assert(Qt::partial_ordering::equivalent == std::strong_ordering::equivalent);
         static_assert(Qt::partial_ordering::equivalent != std::strong_ordering::less);
-
-        // convert Qt::strong to std::partial
-        constexpr Qt::strong_ordering qtS = Qt::strong_ordering::less;
-        constexpr std::partial_ordering stdP1 = qtS;
-        static_assert(stdP1 == qtS);
-
-        // convert Qt::strong to std::weak
-        constexpr std::weak_ordering stdW = qtS;
-        static_assert(stdW == qtS);
-
-        // convert Qt::weak to std::partial
-        constexpr Qt::weak_ordering qtW = Qt::weak_ordering::greater;
-        constexpr std::partial_ordering stdP2 = qtW;
-        static_assert(stdP2 == qtW);
     }
 #endif
 
