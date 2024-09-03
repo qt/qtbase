@@ -1453,8 +1453,8 @@ void tst_QDir::normalizePathSegments()
     QFETCH(UncHandling, uncHandling);
     QFETCH(QString, expected);
     // for QDirPrivate::RemotePath, see tst_QUrl::resolving
-    QString cleaned = qt_normalizePathSegments(path, uncHandling == HandleUnc ? QDirPrivate::AllowUncPaths : QDirPrivate::DefaultNormalization);
-    QCOMPARE(cleaned, expected);
+    qt_normalizePathSegments(&path, uncHandling == HandleUnc ? QDirPrivate::AllowUncPaths : QDirPrivate::DefaultNormalization);
+    QCOMPARE(path, expected);
 }
 # endif //QT_BUILD_INTERNAL
 

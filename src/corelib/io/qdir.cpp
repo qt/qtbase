@@ -970,7 +970,7 @@ QString QDir::fromNativeSeparators(const QString &pathName)
 #endif
 }
 
-static QString qt_cleanPath(const QString &path, bool *ok = nullptr);
+static bool qt_cleanPath(QString *path);
 
 /*!
     Changes the QDir's directory to \a dirName.
@@ -992,7 +992,8 @@ bool QDir::cd(const QString &dirName)
         return true;
     QString newPath;
     if (isAbsolutePath(dirName)) {
-        newPath = qt_cleanPath(dirName);
+        newPath = dirName;
+        qt_cleanPath(&newPath);
     } else {
         newPath = d->dirEntry.filePath();
         if (!newPath.endsWith(u'/'))
@@ -1001,9 +1002,7 @@ bool QDir::cd(const QString &dirName)
         if (dirName.indexOf(u'/') >= 0
             || dirName == ".."_L1
             || d->dirEntry.filePath() == u'.') {
-            bool ok;
-            newPath = qt_cleanPath(newPath, &ok);
-            if (!ok)
+            if (!qt_cleanPath(&newPath))
                 return false;
             /*
               If newPath starts with .., we convert it to absolute to
@@ -2358,25 +2357,15 @@ bool qt_normalizePathSegments(QString *path, QDirPrivate::PathNormalizations fla
     return ok || prefixLength == 0;
 }
 
-QString qt_normalizePathSegments(const QString &name, QDirPrivate::PathNormalizations flags, bool *ok)
+static bool qt_cleanPath(QString *path)
 {
-    // temporary compat
-    QString copy = name;
-    bool r = qt_normalizePathSegments(&copy, flags);
-    if (ok)
-        *ok = r;
-    return copy;
-}
+    if (path->isEmpty())
+        return true;
 
-static QString qt_cleanPath(const QString &path, bool *ok)
-{
-    if (path.isEmpty()) {
-        Q_ASSERT(!ok); // The only caller passing ok knows its path is non-empty
-        return path;
-    }
-
-    QString name = QDir::fromNativeSeparators(path);
-    QString ret = qt_normalizePathSegments(name, OSSupportsUncPaths ? QDirPrivate::AllowUncPaths : QDirPrivate::DefaultNormalization, ok);
+    QString &ret = *path;
+    ret = QDir::fromNativeSeparators(ret);
+    auto normalization = OSSupportsUncPaths ? QDirPrivate::AllowUncPaths : QDirPrivate::DefaultNormalization;
+    bool ok = qt_normalizePathSegments(&ret, normalization);
 
     // Strip away last slash except for root directories
     if (ret.size() > 1 && ret.endsWith(u'/')) {
@@ -2386,7 +2375,7 @@ static QString qt_cleanPath(const QString &path, bool *ok)
             ret.chop(1);
     }
 
-    return ret;
+    return ok;
 }
 
 /*!
@@ -2403,7 +2392,9 @@ static QString qt_cleanPath(const QString &path, bool *ok)
 */
 QString QDir::cleanPath(const QString &path)
 {
-    return qt_cleanPath(path);
+    QString ret = path;
+    qt_cleanPath(&ret);
+    return ret;
 }
 
 /*!
