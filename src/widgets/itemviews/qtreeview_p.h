@@ -16,8 +16,10 @@
 //
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
+#include "qtreeview.h"
 #include "private/qabstractitemview_p.h"
 #include <QtCore/qabstractitemmodel.h>
+#include <QtCore/qbasictimer.h>
 #include <QtCore/qlist.h>
 #if QT_CONFIG(animation)
 #include <QtCore/qvariantanimation.h>
@@ -58,7 +60,7 @@ public:
           itemsExpandable(true), sortingEnabled(false),
           expandsOnDoubleClick(true),
           allColumnsShowFocus(false), customIndent(false), current(0), spanning(false),
-          animationsEnabled(false), columnResizeTimerID(0),
+          animationsEnabled(false),
           autoExpandDelay(-1), hoverBranch(-1), geometryRecursionBlock(false), hasRemovedItems(false),
           treePosition(0) {}
 
@@ -239,7 +241,7 @@ public:
     QSet<QPersistentModelIndex> spanningIndexes;
 
     // used for updating resized columns
-    int columnResizeTimerID;
+    QBasicTimer columnResizeTimer;
     QList<int> columnsToUpdate;
 
     // used for the automatic opening of nodes during DND

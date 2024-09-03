@@ -25,6 +25,8 @@
 
 #include <algorithm>
 
+using namespace std::chrono_literals;
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -1243,10 +1245,9 @@ void QTreeView::changeEvent(QEvent *event)
 void QTreeView::timerEvent(QTimerEvent *event)
 {
     Q_D(QTreeView);
-    if (event->timerId() == d->columnResizeTimerID) {
+    if (event->id() == d->columnResizeTimer.id()) {
         updateGeometries();
-        killTimer(d->columnResizeTimerID);
-        d->columnResizeTimerID = 0;
+        d->columnResizeTimer.stop();
         QRect rect;
         int viewportHeight = d->viewport->height();
         int viewportWidth = d->viewport->width();
@@ -2863,8 +2864,8 @@ void QTreeView::columnResized(int column, int /* oldSize */, int /* newSize */)
 {
     Q_D(QTreeView);
     d->columnsToUpdate.append(column);
-    if (d->columnResizeTimerID == 0)
-        d->columnResizeTimerID = startTimer(0);
+    if (!d->columnResizeTimer.isActive())
+        d->columnResizeTimer.start(0ns, this);
 }
 
 /*!
