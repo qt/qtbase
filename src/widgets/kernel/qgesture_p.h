@@ -19,6 +19,7 @@
 #include "qrect.h"
 #include "qpoint.h"
 #include "qgesture.h"
+#include "qbasictimer.h"
 #include "qelapsedtimer.h"
 #include "private/qobject_p.h"
 
@@ -150,12 +151,11 @@ class QTapAndHoldGesturePrivate : public QGesturePrivate
 
 public:
     QTapAndHoldGesturePrivate()
-        : timerId(0)
     {
     }
 
     QPointF position;
-    int timerId;
+    QBasicTimer tapAndHoldTimer;
     static int Timeout;
 };
 

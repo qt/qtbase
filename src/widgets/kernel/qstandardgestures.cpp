@@ -16,6 +16,8 @@
 
 #ifndef QT_NO_GESTURES
 
+using namespace std::chrono_literals;
+
 QT_BEGIN_NAMESPACE
 
 // If the change in scale for a single touch event is out of this range,
@@ -469,8 +471,7 @@ QTapAndHoldGestureRecognizer::recognize(QGesture *state, QObject *object,
     QTapAndHoldGesturePrivate *d = q->d_func();
 
     if (object == state && event->type() == QEvent::Timer) {
-        q->killTimer(d->timerId);
-        d->timerId = 0;
+        d->tapAndHoldTimer.stop();
         return QGestureRecognizer::FinishGesture | QGestureRecognizer::ConsumeEventHint;
     }
 
@@ -482,9 +483,7 @@ QTapAndHoldGestureRecognizer::recognize(QGesture *state, QObject *object,
         const QGraphicsSceneMouseEvent *gsme = static_cast<const QGraphicsSceneMouseEvent *>(event);
         d->position = gsme->screenPos();
         q->setHotSpot(d->position);
-        if (d->timerId)
-            q->killTimer(d->timerId);
-        d->timerId = q->startTimer(QTapAndHoldGesturePrivate::Timeout);
+        d->tapAndHoldTimer.start(QTapAndHoldGesturePrivate::Timeout * 1ms, q);
         return QGestureRecognizer::MayBeGesture; // we don't show a sign of life until the timeout
     }
 #endif
@@ -492,18 +491,14 @@ QTapAndHoldGestureRecognizer::recognize(QGesture *state, QObject *object,
         const QMouseEvent *me = static_cast<const QMouseEvent *>(event);
         d->position = me->globalPosition().toPoint();
         q->setHotSpot(d->position);
-        if (d->timerId)
-            q->killTimer(d->timerId);
-        d->timerId = q->startTimer(QTapAndHoldGesturePrivate::Timeout);
+        d->tapAndHoldTimer.start(QTapAndHoldGesturePrivate::Timeout * 1ms, q);
         return QGestureRecognizer::MayBeGesture; // we don't show a sign of life until the timeout
     }
     case QEvent::TouchBegin: {
         const QTouchEvent *ev = static_cast<const QTouchEvent *>(event);
         d->position = ev->points().at(0).globalPressPosition();
         q->setHotSpot(d->position);
-        if (d->timerId)
-            q->killTimer(d->timerId);
-        d->timerId = q->startTimer(QTapAndHoldGesturePrivate::Timeout);
+        d->tapAndHoldTimer.start(QTapAndHoldGesturePrivate::Timeout * 1ms, q);
         return QGestureRecognizer::MayBeGesture; // we don't show a sign of life until the timeout
     }
 #if QT_CONFIG(graphicsview)
@@ -514,7 +509,7 @@ QTapAndHoldGestureRecognizer::recognize(QGesture *state, QObject *object,
         return QGestureRecognizer::CancelGesture; // get out of the MayBeGesture state
     case QEvent::TouchUpdate: {
         const QTouchEvent *ev = static_cast<const QTouchEvent *>(event);
-        if (d->timerId && ev->points().size() == 1) {
+        if (d->tapAndHoldTimer.isActive() && ev->points().size() == 1) {
             const QEventPoint &p = ev->points().at(0);
             QPoint delta = p.position().toPoint() - p.pressPosition().toPoint();
             if (delta.manhattanLength() <= TapRadius)
@@ -525,7 +520,7 @@ QTapAndHoldGestureRecognizer::recognize(QGesture *state, QObject *object,
     case QEvent::MouseMove: {
         const QMouseEvent *me = static_cast<const QMouseEvent *>(event);
         QPoint delta = me->globalPosition().toPoint() - d->position.toPoint();
-        if (d->timerId && delta.manhattanLength() <= TapRadius)
+        if (d->tapAndHoldTimer.isActive() && delta.manhattanLength() <= TapRadius)
             return QGestureRecognizer::MayBeGesture;
         return QGestureRecognizer::CancelGesture;
     }
@@ -533,7 +528,7 @@ QTapAndHoldGestureRecognizer::recognize(QGesture *state, QObject *object,
     case QEvent::GraphicsSceneMouseMove: {
         const QGraphicsSceneMouseEvent *gsme = static_cast<const QGraphicsSceneMouseEvent *>(event);
         QPoint delta = gsme->screenPos() - d->position.toPoint();
-        if (d->timerId && delta.manhattanLength() <= TapRadius)
+        if (d->tapAndHoldTimer.isActive() && delta.manhattanLength() <= TapRadius)
             return QGestureRecognizer::MayBeGesture;
         return QGestureRecognizer::CancelGesture;
     }
@@ -549,9 +544,7 @@ void QTapAndHoldGestureRecognizer::reset(QGesture *state)
     QTapAndHoldGesturePrivate *d = q->d_func();
 
     d->position = QPointF();
-    if (d->timerId)
-        q->killTimer(d->timerId);
-    d->timerId = 0;
+    d->tapAndHoldTimer.stop();
 
     QGestureRecognizer::reset(state);
 }
