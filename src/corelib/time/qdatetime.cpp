@@ -5626,7 +5626,6 @@ QDateTime QDateTime::fromMSecsSinceEpoch(qint64 msecs, const QTimeZone &timeZone
 }
 
 /*!
-    \since 6.5
     \overload
 */
 QDateTime QDateTime::fromMSecsSinceEpoch(qint64 msecs)
@@ -5657,7 +5656,6 @@ QDateTime QDateTime::fromSecsSinceEpoch(qint64 secs, const QTimeZone &timeZone)
 }
 
 /*!
-    \since 6.5
     \overload
 */
 QDateTime QDateTime::fromSecsSinceEpoch(qint64 secs)
