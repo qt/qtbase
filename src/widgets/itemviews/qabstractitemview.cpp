@@ -3302,7 +3302,8 @@ bool QAbstractItemView::isPersistentEditorOpen(const QModelIndex &index) const
     to true, otherwise the widget's background will be transparent, showing
     both the model data and the item at the given \a index.
 
-    If index widget A is replaced with index widget B, index widget A will be
+    \note The view takes ownership of the \a widget.
+    This means if index widget A is replaced with index widget B, index widget A will be
     deleted. For example, in the code snippet below, the QLineEdit object will
     be deleted.
 
