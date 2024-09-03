@@ -6,6 +6,7 @@
 import sys
 import os
 import re
+import glob
 import subprocess
 
 from subprocess import STDOUT, PIPE
@@ -52,9 +53,12 @@ def run(*args, **kwargs):
     return proc
 
 # Helper to run qt-testrunner.py with proper testing arguments.
-def run_testrunner(xml_filename=None, extra_args=None, env=None):
+def run_testrunner(xml_filename=None, wrapper_script=None, extra_args=None, env=None):
 
-    args = [ testrunner, mock_test ]
+    args = [ testrunner ]
+    if wrapper_script:
+        args += [ wrapper_script ]
+    args += [ mock_test ]
     if xml_filename:
         args += [ "--parse-xml-testlog", xml_filename ]
     if extra_args:
@@ -127,9 +131,11 @@ class Test_testrunner(unittest.TestCase):
         state_file = os.environ["QT_MOCK_TEST_STATE_FILE"]
         if os.path.exists(state_file):
             os.remove(state_file)
-        old_logfile = os.path.join(TEMPDIR.name, os.path.basename(mock_test) + ".xml")
-        if os.path.exists(old_logfile):
-            os.remove(old_logfile)
+        # The mock_test honors only the XML output arguments, the rest are ignored.
+        old_logfiles = glob.glob(os.path.basename(mock_test) + "*.xml",
+                                 root_dir=TEMPDIR.name)
+        for fname in old_logfiles:
+            os.remove(os.path.join(TEMPDIR.name, fname))
         self.env = dict()
         self.env["QT_MOCK_TEST_XML_TEMPLATE_FILE"] = os.environ["QT_MOCK_TEST_XML_TEMPLATE_FILE"]
         self.env["QT_MOCK_TEST_STATE_FILE"]        = state_file
@@ -147,6 +153,14 @@ class Test_testrunner(unittest.TestCase):
         self.prepare_env(run_list=["always_pass"])
         proc = self.run2()
         self.assertEqual(proc.returncode, 0)
+    def test_output_files_are_generated(self):
+        proc = self.run2()
+        xml_output_files = glob.glob(os.path.basename(mock_test) + "-*[0-9].xml",
+                                     root_dir=TEMPDIR.name)
+        if DEBUG:
+            print("Output files found: ",
+                  xml_output_files)
+        self.assertEqual(len(xml_output_files), 1)
     def test_always_fail(self):
         self.prepare_env(run_list=["always_fail"])
         proc = self.run2()
@@ -214,6 +228,25 @@ class Test_testrunner(unittest.TestCase):
         self.prepare_env(run_list=["always_fail"])
         proc = self.run2()
         self.assertEqual(proc.returncode, 3)
+
+    def create_wrapper(self, filename):
+        with open(os.path.join(TEMPDIR.name, filename), "w") as f:
+            f.write('#!/bin/sh\nexec "$@"\n')
+            self.wrapper_script = f.name
+        os.chmod(self.wrapper_script, 0o500)
+    # Test that qt-testrunner detects the correct executable name even if we
+    # use a special wrapper script, and that it uses that in the XML log filename.
+    def test_wrapper(self):
+        self.create_wrapper("coin_vxworks_qemu_runner.sh")
+        proc = run_testrunner(wrapper_script=self.wrapper_script,
+                              extra_args=["--log-dir",TEMPDIR.name],
+                              env=self.env)
+        self.assertEqual(proc.returncode, 0)
+        xml_output_files = glob.glob(os.path.basename(mock_test) + "-*[0-9].xml",
+                                     root_dir=TEMPDIR.name)
+        if DEBUG:
+            print("XML output files found: ", xml_output_files)
+        self.assertEqual(len(xml_output_files), 1)
 
 
 # Test qt-testrunner script with an existing XML log file:
