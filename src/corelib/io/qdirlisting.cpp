@@ -32,12 +32,13 @@
     files, recursively:
     \snippet code/src_corelib_io_qdirlisting.cpp 6
 
-    Iterators constructed by QDirListing (QDirListing::const_iterator)
-    model C++20
+//! [std-input-iterator-tag]
+    QDirListing::const_iterator models C++20
     \l{https://en.cppreference.com/w/cpp/iterator/input_iterator}{std::input_iterator},
-    that is, they are move-only,
-    forward-only, single-pass iterators, that don't allow random access. They
-    can be used in ranged-for loops (or with C++20 range algorithms that don't
+    that is, it is a move-only, forward-only, single-pass iterator, that
+    doesn't allow random access.
+//! [std-input-iterator-tag]
+    It can be used in ranged-for loops (or with C++20 range algorithms that don't
     require random access iterators). Dereferencing a valid iterator returns
     a QDirListing::DirEntry object. The (c)end() sentinel marks the end of
     the iteration. Dereferencing an iterator that is equal to \l{sentinel} is
@@ -662,6 +663,62 @@ QStringList QDirListing::nameFilters() const
 }
 
 /*!
+    \class QDirListing::const_iterator
+    \since 6.8
+    \inmodule QtCore
+    \ingroup  io
+
+    The iterator type returned by QDirListing::cbegin().
+
+//! [dirlisting-iterator-behavior]
+    \list
+    \li This is a forward-only, single-pass iterator (you cannot iterate
+        directory entries in reverse order)
+    \li Can't be copied, only \c{std::move()}d.
+    \li \include qdirlisting.cpp post-increment-partially-formed
+    \li Doesn't allow random access
+    \li Can be used in ranged-for loops; or with C++20 std::ranges algorithms
+        that don't require random access iterators
+    \li Dereferencing a valid iterator returns a \c{const DirEntry &}
+    \li (c)end() returns a \l QDirListing::sentinel that signals the end of
+        the iteration. Dereferencing an iterator that compares equal to end()
+        is undefined behavior
+    \endlist
+//! [dirlisting-iterator-behavior]
+
+    \include qdirlisting.cpp ranges-algorithms-note
+
+    \sa QDirListing, QDirListing::sentinel, QDirListing::DirEntry
+*/
+
+/*!
+    \typealias QDirListing::const_iterator::reference
+
+    A typedef for \c {const QDirListing::DirEntry &}.
+*/
+
+/*!
+    \typealias QDirListing::const_iterator::pointer
+
+    A typedef for \c {const QDirListing::DirEntry *}.
+*/
+
+/*!
+    \class QDirListing::sentinel
+    \since 6.8
+    \inmodule QtCore
+    \ingroup  io
+
+    \l QDirListing returns an object of this type to signal the end of
+    iteration. Dereferencing a \l QDirListing::const_iterator that is
+    equal to \c sentinel{} is undefined behavior.
+
+    \include qdirlisting.cpp ranges-algorithms-note
+
+    \sa QDirListing, QDirListing::const_iterator, QDirListing::DirEntry
+*/
+
+/*!
     \fn QDirListing::const_iterator QDirListing::begin() const
     \fn QDirListing::const_iterator QDirListing::cbegin() const
     \fn QDirListing::sentinel QDirListing::end() const
@@ -670,20 +727,10 @@ QStringList QDirListing::nameFilters() const
     (c)begin() returns a QDirListing::const_iterator that can be used to
     iterate over directory entries.
 
-    \list
-    \li This is a forward-only, single-pass iterator (you cannot iterate
-        directory entries in reverse order)
-    \li Can't be copied, only \c{std::move()}d.
-    \li Doesn't allow random access
-    \li Can be used in ranged-for loops; or with STL algorithms that don't
-        require random access iterators
-    \li Dereferencing a valid iterator returns a \c{const DirEntry &}
-    \li (c)end() returns a sentinel that signals the end of the iteration.
-        Dereferencing an iterator that compares equal to end() is undefined
-        behavior
-    \li Each time (c)begin() is called on the same QDirListing object,
-        the internal state is reset and the iteration starts anew
-    \endlist
+    \include qdirlisting.cpp dirlisting-iterator-behavior
+
+    \note Each time (c)begin() is called on the same QDirListing object,
+    the internal state is reset and the iteration starts anew.
 
     (Some of the above restrictions are dictated by the underlying system
     library functions' implementation).
@@ -694,9 +741,11 @@ QStringList QDirListing::nameFilters() const
     Here's how to find and read all files filtered by name, recursively:
     \snippet code/src_corelib_io_qdirlisting.cpp 1
 
+//! [ranges-algorithms-note]
     \note The "classical" STL algorithms don't support iterator/sentinel, so
-    you need to use C++20 std::ranges algorithms fo QDirListing, or else a
+    you need to use C++20 std::ranges algorithms for QDirListing, or else a
     3rd-party library that provides range-based algorithms in C++17.
+//! [ranges-algorithms-note]
 
     \sa QDirListing::DirEntry
 */
@@ -725,7 +774,24 @@ QDirListing::const_iterator QDirListing::begin() const
 /*!
     \fn QDirListing::const_iterator::operator++()
 
+    Pre-increment operator.
     Advances the iterator and returns a reference to it.
+*/
+
+/*!
+    \fn void QDirListing::const_iterator::operator++(int)
+
+    Post-increment operator.
+
+    \include qdirlisting.cpp std-input-iterator-tag
+
+//! [post-increment-partially-formed]
+    The return value of post-increment on objects that model
+    \c std::input_iterator is partially-formed (a copy of an iterator that
+    has since been advanced), the only valid operations on such an object
+    are destruction and assignment of a new iterator. Therefore the
+    post-increment operator advances the iterator and returns \c void.
+//! [post-increment-partially-formed]
 */
 
 /*!
