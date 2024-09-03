@@ -349,6 +349,9 @@ def main():
                 if results_file:
                     failed_functions = parse_log(results_file)
 
+            if retcode < 0:
+                L.warning("CRASH detected, re-running the whole executable")
+                continue
             if retcode == 0:
                 if failed_functions:
                     L.warning("The test executable returned success but the logfile"
