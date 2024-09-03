@@ -181,6 +181,8 @@ function(_qt_internal_sbom_begin_project)
         OUT_VAR_PROJECT_SPDX_ID repo_project_spdx_id
     )
 
+    set_property(GLOBAL PROPERTY _qt_internal_project_attribution_files "")
+
     set_property(GLOBAL PROPERTY _qt_internal_sbom_repo_document_namespace
         "${repo_spdx_namespace}")
 
@@ -284,6 +286,11 @@ function(_qt_internal_sbom_end_project)
     endforeach()
 
     set_property(GLOBAL PROPERTY _qt_internal_sbom_repo_begin_called FALSE)
+
+    # Add configure-time dependency on project attribution files.
+    get_property(attribution_files GLOBAL PROPERTY _qt_internal_project_attribution_files)
+    list(REMOVE_DUPLICATES attribution_files)
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${attribution_files}")
 endfunction()
 
 # Helper to get purl parsing options.
@@ -2005,6 +2012,11 @@ function(_qt_internal_sbom_handle_qt_attribution_files out_prefix_outer)
     set(file_index 0)
     set(first_attribution_processed FALSE)
     foreach(attribution_file_path IN LISTS attribution_files)
+        # Collect all processed attribution files to later create a configure-time dependency on
+        # them so that the SBOM is regenerated (and CMake is re-ran) if they are modified.
+        set_property(GLOBAL APPEND PROPERTY _qt_internal_project_attribution_files
+            "${attribution_file_path}")
+
         # Set a unique out_prefix that will not overlap when multiple entries are processed.
         set(out_prefix_file "${out_prefix_outer}_${file_index}")
 
