@@ -335,6 +335,7 @@ def main():
             sys.exit(3)
 
         try:
+            results_file = None
             failed_functions = []
             if args.parse_xml_testlog:      # do not run test, just parse file
                 failed_functions = parse_log(args.parse_xml_testlog)
@@ -356,8 +357,9 @@ def main():
                 sys.exit(0)    # PASS
 
             if len(failed_functions) == 0:
-                L.warning("No failures listed in the XML test log!"
-                          " Did the test CRASH right after all its testcases PASSed?")
+                if results_file:
+                    L.warning("No failures listed in the XML test log!"
+                              " Did the test CRASH right after all its testcases PASSed?")
                 continue
 
             cant_rerun = [ f.func for f in failed_functions if f.func in NO_RERUN_FUNCTIONS ]
