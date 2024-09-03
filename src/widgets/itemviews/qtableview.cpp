@@ -25,6 +25,8 @@
 
 #include <algorithm>
 
+using namespace std::chrono_literals;
+
 QT_BEGIN_NAMESPACE
 
 /** \internal
@@ -3022,8 +3024,8 @@ void QTableView::rowResized(int row, int, int)
 {
     Q_D(QTableView);
     d->rowsToUpdate.append(row);
-    if (d->rowResizeTimerID == 0)
-        d->rowResizeTimerID = startTimer(0);
+    if (!d->rowResizeTimer.isActive())
+        d->rowResizeTimer.start(0ns, this);
 }
 
 /*!
@@ -3037,8 +3039,8 @@ void QTableView::columnResized(int column, int, int)
 {
     Q_D(QTableView);
     d->columnsToUpdate.append(column);
-    if (d->columnResizeTimerID == 0)
-        d->columnResizeTimerID = startTimer(0);
+    if (!d->columnResizeTimer.isActive())
+        d->columnResizeTimer.start(0ns, this);
 }
 
 /*!
@@ -3048,12 +3050,11 @@ void QTableView::timerEvent(QTimerEvent *event)
 {
     Q_D(QTableView);
 
-    if (event->timerId() == d->columnResizeTimerID) {
+    if (event->id() == d->columnResizeTimer.id()) {
         const int oldScrollMax = horizontalScrollBar()->maximum();
         if (horizontalHeader()->d_func()->state != QHeaderViewPrivate::ResizeSection) {
             updateGeometries();
-            killTimer(d->columnResizeTimerID);
-            d->columnResizeTimerID = 0;
+            d->columnResizeTimer.stop();
         } else {
             updateEditorGeometries();
         }
@@ -3078,12 +3079,11 @@ void QTableView::timerEvent(QTimerEvent *event)
         d->columnsToUpdate.clear();
     }
 
-    if (event->timerId() == d->rowResizeTimerID) {
+    if (event->id() == d->rowResizeTimer.id()) {
         const int oldScrollMax = verticalScrollBar()->maximum();
         if (verticalHeader()->d_func()->state != QHeaderViewPrivate::ResizeSection) {
             updateGeometries();
-            killTimer(d->rowResizeTimerID);
-            d->rowResizeTimerID = 0;
+            d->rowResizeTimer.stop();
         } else {
             updateEditorGeometries();
         }

@@ -19,6 +19,7 @@
 #include "qtableview.h"
 #include "qheaderview.h"
 
+#include <QtCore/QBasicTimer>
 #include <QtCore/QList>
 #include <QtCore/QMap>
 #include <QtCore/QSet>
@@ -107,7 +108,6 @@ class Q_AUTOTEST_EXPORT QTableViewPrivate : public QAbstractItemViewPrivate
 public:
     QTableViewPrivate()
         : showGrid(true), gridStyle(Qt::SolidLine),
-          columnResizeTimerID(0), rowResizeTimerID(0),
           horizontalHeader(nullptr), verticalHeader(nullptr),
           sortingEnabled(false), geometryRecursionBlock(false),
           visualCursor(QPoint())
@@ -157,8 +157,8 @@ public:
 
     bool showGrid;
     Qt::PenStyle gridStyle;
-    int columnResizeTimerID;
-    int rowResizeTimerID;
+    QBasicTimer columnResizeTimer;
+    QBasicTimer rowResizeTimer;
     QList<int> columnsToUpdate;
     QList<int> rowsToUpdate;
     QHeaderView *horizontalHeader;
