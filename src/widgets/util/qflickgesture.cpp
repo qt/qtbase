@@ -16,6 +16,7 @@
 #include "private/qapplication_p.h"
 #include "private/qevent_p.h"
 #include "private/qflickgesture_p.h"
+#include "qbasictimer.h"
 #include "qdebug.h"
 
 #ifndef QT_NO_GESTURES
@@ -63,7 +64,6 @@ class PressDelayHandler : public QObject
 private:
     PressDelayHandler(QObject *parent = nullptr)
         : QObject(parent)
-        , pressDelayTimer(0)
         , sendingEvent(false)
         , mouseButton(Qt::NoButton)
         , mouseTarget(nullptr)
@@ -98,7 +98,8 @@ public:
     {
         if (!pressDelayEvent) {
             pressDelayEvent.reset(copyMouseEvent(e));
-            pressDelayTimer = startTimer(delay);
+            using namespace std::chrono_literals;
+            pressDelayTimer.start(delay * 1ms, this);
             mouseTarget = QApplication::widgetAt(pressDelayEvent->globalPosition().toPoint());
             mouseButton = pressDelayEvent->button();
             mouseEventSource = pressDelayEvent->source();
@@ -115,10 +116,9 @@ public:
         bool result = scrollerWasActive || scrollerIsActive;
 
         // stop the timer
-        if (pressDelayTimer) {
-            killTimer(pressDelayTimer);
-            pressDelayTimer = 0;
-        }
+        if (pressDelayTimer.isActive())
+            pressDelayTimer.stop();
+
         // we still haven't even sent the press, so do it now
         if (pressDelayEvent && mouseTarget && !scrollerIsActive) {
             QScopedPointer<QMouseEvent> releaseEvent(copyMouseEvent(e));
@@ -144,10 +144,8 @@ public:
         qFGDebug("QFG: deleting delayed mouse press, since scroller was only intercepted");
         if (pressDelayEvent) {
             // we still haven't even sent the press, so just throw it away now
-            if (pressDelayTimer) {
-                killTimer(pressDelayTimer);
-                pressDelayTimer = 0;
-            }
+            if (pressDelayTimer.isActive())
+                pressDelayTimer.stop();
             pressDelayEvent.reset(nullptr);
         }
         mouseTarget = nullptr;
@@ -158,10 +156,8 @@ public:
         if (pressDelayEvent) {
             // we still haven't even sent the press, so just throw it away now
             qFGDebug("QFG: deleting delayed mouse press, since scroller is active now");
-            if (pressDelayTimer) {
-                killTimer(pressDelayTimer);
-                pressDelayTimer = 0;
-            }
+            if (pressDelayTimer.isActive())
+                pressDelayTimer.stop();
             pressDelayEvent.reset(nullptr);
             mouseTarget = nullptr;
         } else if (mouseTarget) {
@@ -180,17 +176,15 @@ public:
 protected:
     void timerEvent(QTimerEvent *e) override
     {
-        if (e->timerId() == pressDelayTimer) {
+        if (e->id() == pressDelayTimer.id()) {
             if (pressDelayEvent && mouseTarget) {
                 qFGDebug() << "QFG: timer event: re-sending mouse press to " << mouseTarget;
                 sendMouseEvent(pressDelayEvent.data(), UngrabMouseBefore);
             }
             pressDelayEvent.reset(nullptr);
 
-            if (pressDelayTimer) {
-                killTimer(pressDelayTimer);
-                pressDelayTimer = 0;
-            }
+            if (pressDelayTimer.isActive())
+                pressDelayTimer.stop();
         }
     }
 
@@ -246,7 +240,7 @@ protected:
 
 
 private:
-    int pressDelayTimer;
+    QBasicTimer pressDelayTimer;
     QScopedPointer<QMouseEvent> pressDelayEvent;
     bool sendingEvent;
     Qt::MouseButton mouseButton;
