@@ -2567,6 +2567,8 @@ void QTreeWidgetPrivate::dataChanged(const QModelIndex &topLeft,
   \fn void QTreeWidget::removeItemWidget(QTreeWidgetItem *item, int column)
 
   Removes the widget set in the given \a item in the given \a column.
+
+  \sa itemWidget(), setItemWidget()
 */
 
 /*!
@@ -3016,6 +3018,7 @@ bool QTreeWidget::isPersistentEditorOpen(QTreeWidgetItem *item, int column) cons
 
     Returns the widget displayed in the cell specified by \a item and the given \a column.
 
+    \sa setItemWidget(), removeItemWidget()
 */
 QWidget *QTreeWidget::itemWidget(QTreeWidgetItem *item, int column) const
 {
@@ -3042,9 +3045,9 @@ QWidget *QTreeWidget::itemWidget(QTreeWidgetItem *item, int column) const
     i.e., the QTreeWidgetItem that will hold \a widget must have been added to
     the view before \a widget is set.
 
-    \note The tree takes ownership of the widget.
+    \note The tree takes ownership of \a widget.
 
-    \sa {Delegate Classes}
+    \sa itemWidget(), removeItemWidget(), {Delegate Classes}
 */
 void QTreeWidget::setItemWidget(QTreeWidgetItem *item, int column, QWidget *widget)
 {
