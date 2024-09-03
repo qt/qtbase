@@ -21,6 +21,7 @@
 #include "qgraphicsitem_p.h"
 #include "qgraphicsscene_bsp_p.h"
 
+#include <QtCore/qbasictimer.h>
 #include <QtCore/qrect.h>
 #include <QtCore/qlist.h>
 
@@ -80,7 +81,7 @@ public:
     QGraphicsSceneBspTree bsp;
     QRectF sceneRect;
     int bspTreeDepth;
-    int indexTimerId;
+    QBasicTimer indexTimer;
     bool restartIndexTimer;
     bool regenerateIndex;
     int lastItemCount;
