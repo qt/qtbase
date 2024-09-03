@@ -11,15 +11,20 @@ from selenium.webdriver.common.actions.pointer_input import PointerInput
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.expected_conditions import presence_of_element_located
 from selenium.webdriver.support.ui import WebDriverWait
-from webdriver_manager.chrome import ChromeDriverManager
 
+import os
 import time
 import unittest
 from enum import Enum, auto
 
 class WidgetTestCase(unittest.TestCase):
     def setUp(self):
-        self._driver = Chrome(service=ChromeService(ChromeDriverManager().install()))
+        chromedriver_path = os.getenv('CHROMEDRIVER_PATH')
+        if chromedriver_path:
+            self._driver = Chrome(service=ChromeService(executable_path=chromedriver_path))
+        else:
+            self._driver = Chrome()
+        self._driver.maximize_window()
         self._driver.get(
             'http://localhost:8001/tst_qwasmwindow_harness_run.html')
         self._test_sandbox_element = WebDriverWait(self._driver, 30).until(
@@ -138,7 +143,7 @@ class WidgetTestCase(unittest.TestCase):
         window.drag(Handle.BOTTOM_LEFT, direction=DOWN(10) + LEFT(10))
         self.assertEqual(window.rect, Rect(x=80, y=95, width=210, height=230))
 
-        window.drag(Handle.LEFT, direction=DOWN(343) + LEFT(5))
+        window.drag(Handle.LEFT, direction=DOWN(30) + LEFT(5))
         self.assertEqual(window.rect, Rect(x=75, y=95, width=215, height=230))
 
         window.drag(Handle.BOTTOM_RIGHT, direction=UP(150) + LEFT(150))
@@ -221,8 +226,6 @@ class WidgetTestCase(unittest.TestCase):
         self.assertEqual(windows[1].rect, Rect(x=380, y=420, width=100, height=100))
         self.assertEqual(windows[2].rect, Rect(x=70, y=380, width=100, height=100))
 
-    #TODO FIX IN CI
-    @unittest.skip('Skip temporarily')
     def test_multitouch_window_resize(self):
         screen = Screen(self._driver, ScreenPosition.FIXED,
                         x=0, y=0, width=800, height=800)
