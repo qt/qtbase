@@ -474,7 +474,7 @@ static void populateFromPattern(FcPattern *pattern,
     if (!scalable)
         FcPatternGetDouble (pattern, FC_PIXEL_SIZE, 0, &pixel_size);
 
-    bool fixedPitch = spacing_value >= FC_MONO;
+    bool isMonospace = spacing_value >= FC_DUAL;
     // Note: stretch should really be an int but registerFont incorrectly uses an enum
     QFont::Stretch stretch = QFont::Stretch(stretchFromFcWidth(width_value));
     QString styleName = style_value ? QString::fromUtf8((const char *) style_value) : QString();
@@ -490,7 +490,7 @@ static void populateFromPattern(FcPattern *pattern,
         applicationFont->properties.append(properties);
     }
 
-    QPlatformFontDatabase::registerFont(familyName,styleName,QLatin1StringView((const char *)foundry_value),weight,style,stretch,antialias,scalable,pixel_size,fixedPitch,writingSystems,fontFile);
+    QPlatformFontDatabase::registerFont(familyName,styleName,QLatin1StringView((const char *)foundry_value),weight,style,stretch,antialias,scalable,pixel_size,isMonospace,writingSystems,fontFile);
     if (applicationFont != nullptr && face != nullptr && db != nullptr) {
         db->addNamedInstancesForFace(face,
                                      indexValue,
@@ -499,7 +499,7 @@ static void populateFromPattern(FcPattern *pattern,
                                      weight,
                                      stretch,
                                      style,
-                                     fixedPitch,
+                                     isMonospace,
                                      writingSystems,
                                      QByteArray((const char*)file_value),
                                      applicationFont->data);
@@ -536,7 +536,7 @@ static void populateFromPattern(FcPattern *pattern,
                 applicationFont->properties.append(properties);
             }
             FontFile *altFontFile = new FontFile(*fontFile);
-            QPlatformFontDatabase::registerFont(altFamilyName, altStyleName, QLatin1StringView((const char *)foundry_value),weight,style,stretch,antialias,scalable,pixel_size,fixedPitch,writingSystems,altFontFile);
+            QPlatformFontDatabase::registerFont(altFamilyName, altStyleName, QLatin1StringView((const char *)foundry_value),weight,style,stretch,antialias,scalable,pixel_size,isMonospace,writingSystems,altFontFile);
         } else {
             QPlatformFontDatabase::registerAliasToFontFamily(familyName, altFamilyName);
         }
