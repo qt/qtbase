@@ -329,7 +329,8 @@ void tst_QNumeric::classifyfp()
     QCOMPARE(qFpClassify(-huge), FP_NORMAL);
     QCOMPARE(qFpClassify(tiny), FP_NORMAL);
     QCOMPARE(qFpClassify(-tiny), FP_NORMAL);
-    if (Bounds::has_denorm == std::denorm_present) {
+    QT_IGNORE_DEPRECATIONS(const bool has_denorm = Bounds::has_denorm == std::denorm_present;)
+    if (has_denorm) {
         QCOMPARE(qFpClassify(tiny / two), FP_SUBNORMAL);
         QCOMPARE(qFpClassify(tiny / -two), FP_SUBNORMAL);
     }
@@ -391,7 +392,8 @@ void tst_QNumeric::distance()
     QFETCH(F, from);
     QFETCH(F, stop);
     QFETCH(Count, expectedDistance);
-    if constexpr (std::numeric_limits<F>::has_denorm != std::denorm_present) {
+    QT_IGNORE_DEPRECATIONS(constexpr bool has_denorm = std::numeric_limits<F>::has_denorm != std::denorm_present;)
+    if constexpr (has_denorm) {
         if (qstrcmp(QTest::currentDataTag(), "denormal") == 0) {
             QSKIP("Skipping 'denorm' as this type lacks denormals on this system");
         }

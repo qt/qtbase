@@ -6848,7 +6848,8 @@ void tst_QString::number_double()
     QFETCH(double, value);
     QFETCH(char, format);
     QFETCH(int, precision);
-    if constexpr (std::numeric_limits<double>::has_denorm != std::denorm_present) {
+    QT_IGNORE_DEPRECATIONS(constexpr bool has_denorm = std::numeric_limits<double>::has_denorm != std::denorm_present;)
+    if constexpr (has_denorm) {
         if (::qstrcmp(QTest::currentDataTag(), "Very small number, very high precision, format 'f', precision 350") == 0) {
             QSKIP("Skipping 'denorm' as this type lacks denormals on this system");
         }
