@@ -27,6 +27,7 @@
 #include "QtWidgets/qwidget.h"
 #include "QtGui/qpixmap.h"
 #include <qpa/qplatformsystemtrayicon.h>
+#include "QtCore/qbasictimer.h"
 #include "QtCore/qstring.h"
 #include "QtCore/qpointer.h"
 
@@ -103,7 +104,7 @@ protected:
 private:
     QSystemTrayIcon *trayIcon;
     QPixmap pixmap;
-    int timerId;
+    QBasicTimer timer;
     bool showArrow;
 };
 
