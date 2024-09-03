@@ -2050,12 +2050,14 @@ QSize QWindows11Style::sizeFromContents(ContentsType type, const QStyleOption *o
 #endif
     case QStyle::CT_SpinBox: {
         if (const auto *spinBoxOpt = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
-            if (qobject_cast<const QDateTimeEdit *>(widget))
-                break;
-
             // Add button + frame widths
             int width = 0;
-            if (const QSpinBox *spinBox = qobject_cast<const QSpinBox *>(widget)) {
+
+            if (const QDateTimeEdit *spinBox = qobject_cast<const QDateTimeEdit *>(widget)) {
+                const QSize textSizeMin = spinBoxOpt->fontMetrics.size(Qt::TextSingleLine, spinBox->minimumDateTime().toString(spinBox->displayFormat()));
+                const QSize textSizeMax = spinBoxOpt->fontMetrics.size(Qt::TextSingleLine, spinBox->maximumDateTime().toString(spinBox->displayFormat()));
+                width = qMax(textSizeMin.width(),textSizeMax.width());
+            } else if (const QSpinBox *spinBox = qobject_cast<const QSpinBox *>(widget)) {
                 const QSize textSizeMin = spinBoxOpt->fontMetrics.size(Qt::TextSingleLine, QString::number(spinBox->minimum()));
                 const QSize textSizeMax = spinBoxOpt->fontMetrics.size(Qt::TextSingleLine, QString::number(spinBox->maximum()));
                 width = qMax(textSizeMin.width(),textSizeMax.width());
