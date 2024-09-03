@@ -20,7 +20,9 @@
 #include <QHash>
 #include <QSet>
 #include <QMap>
+#if QT_CONFIG(process)
 #include <QProcess>
+#endif
 
 #include <depfile_shared.h>
 #include <shellquote_shared.h>
@@ -3483,6 +3485,7 @@ int generateJavaQmlComponents(const Options &options)
         const QString qmlDomCmd = "%1 -d -D required -f +:propertyInfos %2 %3"_L1.arg(
                 shellQuote(qmlDomExecPath), importFlags,
                 shellQuote("%1/%2"_L1.arg(qmldirPath, qmlFile)));
+#if QT_CONFIG(process)
         const QStringList qmlDomCmdParts = QProcess::splitCommand(qmlDomCmd);
         QProcess process;
         process.start(qmlDomCmdParts.first(), qmlDomCmdParts.sliced(1));
@@ -3502,6 +3505,10 @@ int generateJavaQmlComponents(const Options &options)
         if (jsonError.error != QJsonParseError::NoError)
             fprintf(stderr, "Output of %s is not valid JSON document.", qPrintable(qmlDomCmd));
         return jsonDoc.object();
+#else
+#warning Generating QtQuickView Java Contents is not possible with missing QProcess feature.
+        return QJsonObject();
+#endif
     };
 
     const auto getComponent = [](const QJsonObject &dom) -> QJsonObject {
