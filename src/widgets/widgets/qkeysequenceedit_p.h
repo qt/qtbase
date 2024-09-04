@@ -19,6 +19,7 @@
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "qkeysequenceedit.h"
 
+#include <QtCore/qbasictimer.h>
 #include <private/qwidget_p.h>
 #include <private/qkeysequence_p.h>
 
@@ -45,7 +46,7 @@ public:
     int maximumSequenceLength = QKeySequencePrivate::MaxKeyCount;
     QKeyCombination key[QKeySequencePrivate::MaxKeyCount];
     int prevKey;
-    int releaseTimer;
+    QBasicTimer releaseTimer;
     QList<QKeyCombination> finishingKeyCombinations;
 };
 

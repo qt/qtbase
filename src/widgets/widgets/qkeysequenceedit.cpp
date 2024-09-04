@@ -9,6 +9,8 @@
 #include "qlineedit.h"
 #include <private/qkeymapper_p.h>
 
+using namespace std::chrono_literals;
+
 QT_BEGIN_NAMESPACE
 
 static_assert(QKeySequencePrivate::MaxKeyCount == 4); // assumed by the code around here
@@ -28,7 +30,6 @@ void QKeySequenceEditPrivate::init()
 
     keyNum = 0;
     prevKey = -1;
-    releaseTimer = 0;
     finishingKeyCombinations = {Qt::Key_Tab, Qt::Key_Backtab};
 
     QVBoxLayout *layout = new QVBoxLayout(q);
@@ -62,12 +63,8 @@ int QKeySequenceEditPrivate::translateModifiers(Qt::KeyboardModifiers state, con
 
 void QKeySequenceEditPrivate::resetState()
 {
-    Q_Q(QKeySequenceEdit);
-
-    if (releaseTimer) {
-        q->killTimer(releaseTimer);
-        releaseTimer = 0;
-    }
+    if (releaseTimer.isActive())
+        releaseTimer.stop();
     prevKey = -1;
     lineEdit->setText(keySequence.toString(QKeySequence::NativeText));
     lineEdit->setPlaceholderText(QKeySequenceEdit::tr("Press shortcut"));
@@ -388,7 +385,7 @@ void QKeySequenceEdit::keyReleaseEvent(QKeyEvent *e)
 
     if (d->prevKey == e->key()) {
         if (d->keyNum < d->maximumSequenceLength)
-            d->releaseTimer = startTimer(1000);
+            d->releaseTimer.start(1s, this);
         else
             d->finishEditing();
     }
@@ -401,7 +398,7 @@ void QKeySequenceEdit::keyReleaseEvent(QKeyEvent *e)
 void QKeySequenceEdit::timerEvent(QTimerEvent *e)
 {
     Q_D(QKeySequenceEdit);
-    if (e->timerId() == d->releaseTimer) {
+    if (e->id() == d->releaseTimer.id()) {
         d->finishEditing();
         return;
     }
