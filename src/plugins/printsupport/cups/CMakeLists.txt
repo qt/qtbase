@@ -1,7 +1,12 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-qt_find_package(Cups PROVIDED_TARGETS Cups::Cups)
+if(NOT APPLE AND BUILD_SHARED_LIBS)
+    set(mark_cups_optional MARK_OPTIONAL)
+else()
+    set(mark_cups_optional "")
+endif()
+qt_find_package(Cups PROVIDED_TARGETS Cups::Cups ${mark_cups_optional})
 
 #####################################################################
 ## QCupsPrinterSupportPlugin Plugin:
