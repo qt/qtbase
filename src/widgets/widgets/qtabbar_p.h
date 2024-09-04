@@ -21,6 +21,7 @@
 
 #include <qicon.h>
 #include <qtoolbutton.h>
+#include <qbasictimer.h>
 #include <qdebug.h>
 #if QT_CONFIG(animation)
 #include <qvariantanimation.h>
@@ -75,7 +76,7 @@ public:
     QMovableTabWidget *movingTab = nullptr;
     int hoverIndex = -1;
     int switchTabCurrentIndex = -1;
-    int switchTabTimerId = 0;
+    QBasicTimer switchTabTimer;
     Qt::TextElideMode elideMode = Qt::ElideNone;
     QTabBar::SelectionBehavior selectionBehaviorOnRemove = QTabBar::SelectRightTab;
     QTabBar::Shape shape = QTabBar::RoundedNorth;

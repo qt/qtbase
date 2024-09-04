@@ -35,6 +35,7 @@
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
+using namespace std::chrono_literals;
 
 namespace {
 class CloseButton : public QAbstractButton
@@ -709,11 +710,7 @@ void QTabBarPrivate::makeVisible(int index)
 
 void QTabBarPrivate::killSwitchTabTimer()
 {
-    Q_Q(QTabBar);
-    if (switchTabTimerId) {
-        q->killTimer(switchTabTimerId);
-        switchTabTimerId = 0;
-    }
+    switchTabTimer.stop();
     switchTabCurrentIndex = -1;
 }
 
@@ -1760,9 +1757,8 @@ bool QTabBar::event(QEvent *event)
             const int tabIndex = tabAt(static_cast<QDragMoveEvent *>(event)->position().toPoint());
             if (isTabEnabled(tabIndex) && d->switchTabCurrentIndex != tabIndex) {
                 d->switchTabCurrentIndex = tabIndex;
-                if (d->switchTabTimerId)
-                    killTimer(d->switchTabTimerId);
-                d->switchTabTimerId = startTimer(style()->styleHint(QStyle::SH_TabBar_ChangeCurrentDelay));
+                d->switchTabTimer.start(
+                    style()->styleHint(QStyle::SH_TabBar_ChangeCurrentDelay) * 1ms, this);
             }
             event->ignore();
         }
@@ -2479,9 +2475,8 @@ void QTabBar::changeEvent(QEvent *event)
 void QTabBar::timerEvent(QTimerEvent *event)
 {
     Q_D(QTabBar);
-    if (event->timerId() == d->switchTabTimerId) {
-        killTimer(d->switchTabTimerId);
-        d->switchTabTimerId = 0;
+    if (event->id() == d->switchTabTimer.id()) {
+        d->switchTabTimer.stop();
         setCurrentIndex(d->switchTabCurrentIndex);
         d->switchTabCurrentIndex = -1;
     }
