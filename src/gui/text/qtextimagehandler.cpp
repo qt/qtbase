@@ -9,6 +9,7 @@
 #include <qpainter.h>
 #include <qdebug.h>
 #include <qfile.h>
+#include <qicon.h>
 #include <private/qtextengine_p.h>
 #include <qpalette.h>
 #include <qthread.h>
@@ -18,40 +19,45 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-static inline QString findAtNxFileOrResource(const QString &baseFileName,
-                                             qreal targetDevicePixelRatio,
-                                             qreal *sourceDevicePixelRatio)
+static inline QUrl findAtNxFileOrResource(const QString &baseFileName,
+                                          qreal targetDevicePixelRatio,
+                                          qreal *sourceDevicePixelRatio,
+                                          QString *name)
 {
     // qt_findAtNxFile expects a file name that can be tested with QFile::exists.
     // so if the format.name() is a file:/ or qrc:/ URL, then we need to strip away the schema.
     QString localFile;
     const QUrl url(baseFileName);
-    if (url.isLocalFile())
+    bool hasFileScheme = false;
+    bool isResource = false;
+    if (url.isLocalFile()) {
         localFile = url.toLocalFile();
-    else if (baseFileName.startsWith("qrc:/"_L1))
+        hasFileScheme = true;
+    } else if (baseFileName.startsWith("qrc:/"_L1)) {
+        // QFile::exists() can only handle ":/file.txt"
         localFile = baseFileName.sliced(3);
-    else
+        isResource = true;
+    } else {
         localFile = baseFileName;
-    extern QString qt_findAtNxFile(const QString &baseFileName, qreal targetDevicePixelRatio,
-                                   qreal *sourceDevicePixelRatio);
-    return qt_findAtNxFile(localFile, targetDevicePixelRatio, sourceDevicePixelRatio);
-}
+        isResource = baseFileName.startsWith(":/"_L1);
+    }
+    *name = qt_findAtNxFile(localFile, targetDevicePixelRatio, sourceDevicePixelRatio);
 
-static inline QUrl fromLocalfileOrResources(QString path)
-{
-    if (path.startsWith(":/"_L1)) // auto-detect resources and convert them to url
-        path = path.prepend("qrc"_L1);
-    return QUrl(path);
+    if (hasFileScheme)
+        return QUrl::fromLocalFile(*name);
+    if (isResource)
+        return QUrl("qrc"_L1 + *name);
+    return QUrl(*name);
 }
 
 template<typename T>
 static T getAs(QTextDocument *doc, const QTextImageFormat &format, const qreal devicePixelRatio = 1.0)
 {
     qreal sourcePixelRatio = 1.0;
-    const QString name = findAtNxFileOrResource(format.name(), devicePixelRatio, &sourcePixelRatio);
-    const QUrl url = fromLocalfileOrResources(name);
-
+    QString name;
+    const QUrl url = findAtNxFileOrResource(format.name(), devicePixelRatio, &sourcePixelRatio, &name);
     const QVariant data = doc->resource(QTextDocument::ImageResource, url);
+
     T result;
     if (data.userType() == QMetaType::QPixmap || data.userType() == QMetaType::QImage)
         result = data.value<T>();
