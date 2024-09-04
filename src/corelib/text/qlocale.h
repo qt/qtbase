@@ -1167,7 +1167,7 @@ public:
 
 private:
     QLocale(QLocalePrivate &dd);
-    bool equals(const QLocale &other) const;
+    bool equals(const QLocale &other) const noexcept;
     friend class QLocalePrivate;
     friend class QSystemLocale;
     friend class QTimeZonePrivate;
