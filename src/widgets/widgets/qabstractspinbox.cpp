@@ -41,6 +41,7 @@
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
+using namespace std::chrono_literals;
 
 /*!
     \class QAbstractSpinBox
@@ -1017,10 +1018,10 @@ void QAbstractSpinBox::keyPressEvent(QKeyEvent *event)
         if (style()->styleHint(QStyle::SH_SpinBox_AnimateButton, nullptr, this)) {
             d->buttonState = (Keyboard | (up ? Up : Down));
         }
-        if (d->spinClickTimerId == -1)
+        if (!d->spinClickTimer.isActive())
             stepBy(steps);
         if (event->isAutoRepeat() && !isPgUpOrDown) {
-            if (d->spinClickThresholdTimerId == -1 && d->spinClickTimerId == -1) {
+            if (!d->spinClickThresholdTimer.isActive() && !d->spinClickTimer.isActive()) {
                 d->updateState(up, true);
             }
         }
@@ -1236,21 +1237,19 @@ void QAbstractSpinBox::timerEvent(QTimerEvent *event)
     Q_D(QAbstractSpinBox);
 
     bool doStep = false;
-    if (event->timerId() == d->spinClickThresholdTimerId) {
-        killTimer(d->spinClickThresholdTimerId);
-        d->spinClickThresholdTimerId = -1;
+    if (event->id() == d->spinClickThresholdTimer.id()) {
+        d->spinClickThresholdTimer.stop();
         d->effectiveSpinRepeatRate = d->buttonState & Keyboard
                                      ? QGuiApplication::styleHints()->keyboardAutoRepeatRateF()
                                      : d->spinClickTimerInterval;
-        d->spinClickTimerId = startTimer(d->effectiveSpinRepeatRate);
+        d->spinClickTimer.start(d->effectiveSpinRepeatRate, this);
         doStep = true;
-    } else if (event->timerId() == d->spinClickTimerId) {
+    } else if (event->id() == d->spinClickTimer.id()) {
         if (d->accelerate) {
             d->acceleration = d->acceleration + (int)(d->effectiveSpinRepeatRate * 0.05);
-            if (d->effectiveSpinRepeatRate - d->acceleration >= 10) {
-                killTimer(d->spinClickTimerId);
-                d->spinClickTimerId = startTimer(d->effectiveSpinRepeatRate - d->acceleration);
-            }
+            auto interval = int(d->effectiveSpinRepeatRate - d->acceleration) * 1ms;
+            if (interval >= 10ms)
+                d->spinClickTimer.start(interval, this);
         }
         doStep = true;
     }
@@ -1343,7 +1342,7 @@ void QAbstractSpinBox::mouseMoveEvent(QMouseEvent *event)
     d->updateHoverControl(event->position().toPoint());
 
     // If we have a timer ID, update the state
-    if (d->spinClickTimerId != -1 && d->buttonSymbols != NoButtons) {
+    if (d->spinClickTimer.isActive() && d->buttonSymbols != NoButtons) {
         const StepEnabled se = stepEnabled();
         if ((se & StepUpEnabled) && d->hoverControl == QStyle::SC_SpinBoxUp)
             d->updateState(true);
@@ -1631,11 +1630,8 @@ void QAbstractSpinBoxPrivate::reset()
 
     buttonState = None;
     if (q) {
-        if (spinClickTimerId != -1)
-            q->killTimer(spinClickTimerId);
-        if (spinClickThresholdTimerId != -1)
-            q->killTimer(spinClickThresholdTimerId);
-        spinClickTimerId = spinClickThresholdTimerId = -1;
+        spinClickTimer.stop();
+        spinClickThresholdTimer.stop();
         acceleration = 0;
         q->update();
     }
@@ -1660,7 +1656,7 @@ void QAbstractSpinBoxPrivate::updateState(bool up, bool fromKeyboard /* = false 
         if (keyboardModifiers & stepModifier)
             steps *= 10;
         q->stepBy(steps);
-        spinClickThresholdTimerId = q->startTimer(spinClickThresholdTimerInterval);
+        spinClickThresholdTimer.start(spinClickThresholdTimerInterval * 1ms, q);
 #if QT_CONFIG(accessibility)
         QAccessibleValueChangeEvent event(q, value);
         QAccessible::updateAccessibility(&event);

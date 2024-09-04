@@ -21,6 +21,7 @@
 #include "QtWidgets/qlineedit.h"
 #include "QtWidgets/qstyleoption.h"
 #include "QtGui/qvalidator.h"
+#include "QtCore/qbasictimer.h"
 #include "QtCore/qdatetime.h"
 #include "QtCore/qvariant.h"
 #include "private/qwidget_p.h"
@@ -98,9 +99,9 @@ public:
     QLineEdit *edit = nullptr;
     QSpinBoxValidator *validator = nullptr;
     QMetaType::Type type = QMetaType::UnknownType;
-    int spinClickTimerId = -1;
+    QBasicTimer spinClickTimer;
     int spinClickTimerInterval = 100;
-    int spinClickThresholdTimerId = -1;
+    QBasicTimer spinClickThresholdTimer;
     int spinClickThresholdTimerInterval = -1;
     qreal effectiveSpinRepeatRate = 1;
     int acceleration = 0;
