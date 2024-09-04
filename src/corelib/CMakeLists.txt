@@ -320,6 +320,7 @@ qt_internal_add_module(Core
         # despite the fact that appropriate checks are in place to avoid that!
         tools/qshareddata.cpp tools/qshareddata.h
         text/qlocale.cpp text/qlocale.h
+        global/qassert.cpp # Windows: inconsistent linkage of qAbort()
         global/qglobal.cpp  # undef qFatal
         global/qlogging.cpp # undef qFatal/qInfo/qDebug
         global/qrandom.cpp # undef Q_ASSERT/_X
