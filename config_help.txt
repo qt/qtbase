@@ -2,9 +2,10 @@ Usage:  configure [options] [-- cmake-options]
 
 This is a convenience script for configuring Qt with CMake.
 Options after the double dash are directly passed to CMake.
-
-Configure understands variable assignments like VAR=value on the command line.
-These are passed to CMake as -DVAR=value.
+You can pass CMake variables as configure arguments:
+    configure VAR=value
+which is equivalent to
+    configure -- -DVAR=value
 
 Top-level installation directories:
   -prefix <dir> ...... The deployment directory, as seen on the target device.
