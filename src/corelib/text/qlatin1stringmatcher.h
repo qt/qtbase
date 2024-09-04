@@ -14,9 +14,9 @@
 QT_BEGIN_NAMESPACE
 
 namespace QtPrivate {
-template <typename T>
-constexpr inline bool isLatin1OrUtf16View =
-    std::disjunction_v<std::is_same<T, QLatin1StringView>, std::is_same<T, QStringView>>;
+template <typename T> constexpr inline bool isLatin1OrUtf16View = false;
+template <> constexpr inline bool isLatin1OrUtf16View<QLatin1StringView> = true;
+template <> constexpr inline bool isLatin1OrUtf16View<QStringView> = true;
 
 template<class RandomIt1,
          class Hash = std::hash<typename std::iterator_traits<RandomIt1>::value_type>,
