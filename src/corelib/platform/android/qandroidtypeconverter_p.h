@@ -79,6 +79,8 @@ namespace QAndroidTypeConverter
             return env->NewLocalRef(QJniObject::construct<QtJniTypes::Boolean>(
                                             get<bool>(var))
                                             .object());
+        case QMetaType::Type::VoidStar:
+            return env->NewLocalRef(QJniObject::construct<QtJniTypes::Void>().object());
         case QMetaType::Type::QString:
             return env->NewLocalRef(
                     QJniObject::fromString(get<QString>(var)).object());
