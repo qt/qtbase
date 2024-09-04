@@ -28,6 +28,7 @@
 #if QT_CONFIG(completer)
 #include "QtWidgets/qcompleter.h"
 #endif
+#include "QtCore/qbasictimer.h"
 #include "QtCore/qthread.h"
 #include "QtGui/private/qinputcontrol_p.h"
 
@@ -57,11 +58,10 @@ public:
         , m_cursor(0), m_preeditCursor(0), m_cursorWidth(0), m_layoutDirection(Qt::LayoutDirectionAuto),
         m_hideCursor(false), m_separator(0), m_readOnly(0),
         m_dragEnabled(0), m_echoMode(0), m_textDirty(0), m_selDirty(0),
-        m_validInput(1), m_blinkStatus(0), m_blinkEnabled(false), m_blinkTimer(0), m_deleteAllTimer(0),
+        m_validInput(1), m_blinkStatus(0), m_blinkEnabled(false),
         m_ascent(0), m_maxLength(32767), m_lastCursorPos(-1),
-        m_tripleClickTimer(0), m_maskData(nullptr), m_modifiedState(0), m_undoState(0),
+        m_maskData(nullptr), m_modifiedState(0), m_undoState(0),
         m_selstart(0), m_selend(0), m_passwordEchoEditing(false)
-        , m_passwordEchoTimer(0)
         , m_passwordMaskDelay(-1)
 #if defined(QT_BUILD_INTERNAL)
         , m_passwordMaskDelayOverride(-1)
@@ -311,7 +311,7 @@ public:
 
     void updatePasswordEchoEditing(bool editing);
     bool passwordEchoEditing() const {
-        if (m_passwordEchoTimer != 0)
+        if (m_passwordEchoTimer.isActive())
             return true;
         return m_passwordEchoEditing ;
     }
@@ -404,14 +404,14 @@ private:
     uint m_validInput : 1;
     uint m_blinkStatus : 1;
     uint m_blinkEnabled : 1;
-    int m_blinkTimer;
-    int m_deleteAllTimer;
+    QBasicTimer m_blinkTimer;
+    QBasicTimer m_deleteAllTimer;
     int m_ascent;
     int m_maxLength;
     int m_lastCursorPos;
     QList<int> m_transactions;
     QPoint m_tripleClick;
-    int m_tripleClickTimer;
+    QBasicTimer m_tripleClickTimer;
     QString m_cancelText;
 
     void emitCursorPositionChanged();
@@ -469,14 +469,11 @@ private:
 
     bool m_passwordEchoEditing;
     QChar m_passwordCharacter;
-    int m_passwordEchoTimer;
+    QBasicTimer m_passwordEchoTimer;
     int m_passwordMaskDelay;
     void cancelPasswordEchoTimer()
     {
-        if (m_passwordEchoTimer != 0) {
-            killTimer(m_passwordEchoTimer);
-            m_passwordEchoTimer = 0;
-        }
+        m_passwordEchoTimer.stop();
     }
 
     int redoTextLayout() const;
