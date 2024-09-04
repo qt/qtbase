@@ -16,8 +16,11 @@
 //
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
+#include "qscrollbar.h"
 #include "private/qabstractslider_p.h"
 #include "qstyle.h"
+
+#include <QtCore/qbasictimer.h>
 
 QT_REQUIRE_CONFIG(scrollbar);
 
@@ -46,7 +49,7 @@ public:
     void setTransient(bool value);
 
     bool flashed;
-    int flashTimer;
+    QBasicTimer flashTimer;
     void flash();
 };
 

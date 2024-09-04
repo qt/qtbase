@@ -23,6 +23,8 @@
 #include <limits.h>
 #include "qscrollbar_p.h"
 
+using namespace std::chrono_literals;
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -214,8 +216,8 @@ void QScrollBarPrivate::flash()
         else
             q->update();
     }
-    if (!flashTimer)
-        flashTimer = q->startTimer(0);
+    if (!flashTimer.isActive())
+        flashTimer.start(0ns, q);
 }
 
 void QScrollBarPrivate::activateControl(uint control, int threshold)
@@ -352,7 +354,6 @@ void QScrollBarPrivate::init()
     opt.initFrom(q);
     transient = q->style()->styleHint(QStyle::SH_ScrollBar_Transient, &opt, q);
     flashed = false;
-    flashTimer = 0;
     q->setFocusPolicy(Qt::NoFocus);
     QSizePolicy sp(QSizePolicy::Minimum, QSizePolicy::Fixed, QSizePolicy::Slider);
     if (orientation == Qt::Vertical)
@@ -451,15 +452,14 @@ bool QScrollBar::event(QEvent *event)
         break;
     }
     case QEvent::Timer:
-        if (static_cast<QTimerEvent *>(event)->timerId() == d->flashTimer) {
+        if (static_cast<QTimerEvent *>(event)->id() == d->flashTimer.id()) {
             QStyleOptionSlider opt;
             initStyleOption(&opt);
             if (d->flashed && style()->styleHint(QStyle::SH_ScrollBar_Transient, &opt, this)) {
                 d->flashed = false;
                 update();
             }
-            killTimer(d->flashTimer);
-            d->flashTimer = 0;
+            d->flashTimer.stop();
         }
         break;
     default:
