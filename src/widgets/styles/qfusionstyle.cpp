@@ -610,7 +610,7 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
             painter->drawRoundedRect(r.adjusted(1, 1, -2, -2), 1.7, 1.7);
         }
         // Draw inner shadow
-        painter->setPen(d->topShadow());
+        painter->setPen(QFusionStylePrivate::topShadow);
         painter->drawLine(QPoint(r.left() + 2, r.top() + 1), QPoint(r.right() - 2, r.top() + 1));
 
         painter->restore();
@@ -711,15 +711,15 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
         if (option->state & State_Horizontal) {
             for (int i = -3 ; i < 2 ; i += 3) {
                 for (int j = -8 ; j < 10 ; j += 3) {
-                    painter->fillRect(rect.center().x() + i, rect.center().y() + j, 2, 2, d->lightShade());
-                    painter->fillRect(rect.center().x() + i, rect.center().y() + j, 1, 1, d->darkShade());
+                    painter->fillRect(rect.center().x() + i, rect.center().y() + j, 2, 2, QFusionStylePrivate::lightShade);
+                    painter->fillRect(rect.center().x() + i, rect.center().y() + j, 1, 1, QFusionStylePrivate::darkShade);
                 }
             }
         } else { //vertical toolbar
             for (int i = -6 ; i < 12 ; i += 3) {
                 for (int j = -3 ; j < 2 ; j += 3) {
-                    painter->fillRect(rect.center().x() + i, rect.center().y() + j, 2, 2, d->lightShade());
-                    painter->fillRect(rect.center().x() + i, rect.center().y() + j, 1, 1, d->darkShade());
+                    painter->fillRect(rect.center().x() + i, rect.center().y() + j, 2, 2, QFusionStylePrivate::lightShade);
+                    painter->fillRect(rect.center().x() + i, rect.center().y() + j, 1, 1, QFusionStylePrivate::darkShade);
                 }
             }
         }
@@ -816,7 +816,7 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
         p->setPen(!isEnabled ? QPen(darkOutline.lighter(115)) : QPen(darkOutline));
         p->drawRoundedRect(r, 2.0, 2.0);
 
-        p->setPen(d->innerContrastLine());
+        p->setPen(QFusionStylePrivate::innerContrastLine);
         p->drawRoundedRect(r.adjusted(1, 1, -1, -1), 2.0, 2.0);
 
         END_STYLE_PIXMAPCACHE
@@ -844,7 +844,7 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
             painter->drawRect(rect);
 
             // Inner frame highlight
-            painter->setPen(d->innerContrastLine());
+            painter->setPen(QFusionStylePrivate::innerContrastLine);
             painter->drawRect(rect.adjusted(1, 1, -1, -1));
 
         }
@@ -879,7 +879,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
     QRect rect = option->rect;
     QColor outline = d->outline(option->palette);
     QColor highlightedOutline = d->highlightedOutline(option->palette);
-    QColor shadow = d->darkShade();
+    QColor shadow = QFusionStylePrivate::darkShade;
 
     switch (element) {
     case CE_ComboBoxLabel:
@@ -921,13 +921,13 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
             //draw grips
             if (option->state & State_Horizontal) {
                 for (int j = -6 ; j< 12 ; j += 3) {
-                    painter->fillRect(rect.center().x() + 1, rect.center().y() + j, 2, 2, d->lightShade());
-                    painter->fillRect(rect.center().x() + 1, rect.center().y() + j, 1, 1, d->darkShade());
+                    painter->fillRect(rect.center().x() + 1, rect.center().y() + j, 2, 2, QFusionStylePrivate::lightShade);
+                    painter->fillRect(rect.center().x() + 1, rect.center().y() + j, 1, 1, QFusionStylePrivate::darkShade);
                 }
             } else {
                 for (int i = -6; i< 12 ; i += 3) {
-                    painter->fillRect(rect.center().x() + i, rect.center().y(), 2, 2, d->lightShade());
-                    painter->fillRect(rect.center().x() + i, rect.center().y(), 1, 1, d->darkShade());
+                    painter->fillRect(rect.center().x() + i, rect.center().y(), 2, 2, QFusionStylePrivate::lightShade);
+                    painter->fillRect(rect.center().x() + i, rect.center().y(), 1, 1, QFusionStylePrivate::darkShade);
                 }
             }
         }
@@ -970,8 +970,8 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
         for (int i = -6; i< 12 ; i += 3) {
             for (int j = -6 ; j< 12 ; j += 3) {
                 if ((option->direction == Qt::LeftToRight && i > -j) || (option->direction == Qt::RightToLeft && j > i) ) {
-                    painter->fillRect(rect.center().x() + i, rect.center().y() + j, 2, 2, d->lightShade());
-                    painter->fillRect(rect.center().x() + i, rect.center().y() + j, 1, 1, d->darkShade());
+                    painter->fillRect(rect.center().x() + i, rect.center().y() + j, 2, 2, QFusionStylePrivate::lightShade);
+                    painter->fillRect(rect.center().x() + i, rect.center().y() + j, 1, 1, QFusionStylePrivate::darkShade);
                 }
             }
         }
@@ -995,8 +995,8 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
             gradient.setColorAt(1, option->palette.window().color());
             painter->fillRect(option->rect, gradient);
 
-            QColor light = d->lightShade();
-            QColor shadow = d->darkShade();
+            constexpr QColor light = QFusionStylePrivate::lightShade;
+            constexpr QColor shadow = QFusionStylePrivate::darkShade;
 
             QPen oldPen = painter->pen();
             if (toolBar->toolBarArea == Qt::TopToolBarArea) {
@@ -1170,7 +1170,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
                     gradient.setColorAt(1, gradientStopColor.darker(104));
                 }
                 cachePainter.fillRect(pixmapRect, gradient);
-                cachePainter.setPen(d->innerContrastLine());
+                cachePainter.setPen(QFusionStylePrivate::innerContrastLine);
                 cachePainter.setBrush(Qt::NoBrush);
                 cachePainter.drawLine(pixmapRect.topLeft(), pixmapRect.topRight());
                 cachePainter.setPen(d->outline(option->palette));
@@ -1181,7 +1181,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
                         header->position != QStyleOptionHeader::OnlyOneSection) {
                     cachePainter.setPen(QColor(0, 0, 0, 40));
                     cachePainter.drawLine(pixmapRect.topRight(), pixmapRect.bottomRight() + QPoint(0, -1));
-                    cachePainter.setPen(d->innerContrastLine());
+                    cachePainter.setPen(QFusionStylePrivate::innerContrastLine);
                     cachePainter.drawLine(pixmapRect.topRight() + QPoint(-1, 0), pixmapRect.bottomRight() + QPoint(-1, -1));
                 } else if (header->orientation == Qt::Vertical) {
                     cachePainter.setPen(d->outline(option->palette));
@@ -1210,7 +1210,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
         painter->drawRoundedRect(rect.adjusted(0, 0, -1, -1), 2, 2);
 
         // Inner shadow
-        painter->setPen(d->topShadow());
+        painter->setPen(QFusionStylePrivate::topShadow);
         painter->drawLine(QPoint(rect.left() + 1, rect.top() + 1),
                           QPoint(rect.right() - 1, rect.top() + 1));
     }
@@ -1675,7 +1675,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
             int y1 = r2.top();
             int y2 = r2.bottom();
 
-            painter->setPen(d->innerContrastLine());
+            painter->setPen(QFusionStylePrivate::innerContrastLine);
 
             QTransform rotMatrix;
             bool flip = false;
@@ -1756,15 +1756,15 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
             painter->setBrush(fillGradient);
             painter->drawRoundedRect(drawRect.adjusted(0, 0, -1, -1), 2.0, 2.0);
             painter->setBrush(Qt::NoBrush);
-            painter->setPen(d->innerContrastLine());
+            painter->setPen(QFusionStylePrivate::innerContrastLine);
             painter->drawRoundedRect(drawRect.adjusted(1, 1, -2, -1), 2.0, 2.0);
             painter->restore();
 
             if (selected) {
                 painter->fillRect(rect.left() + 1, rect.bottom() - 1, rect.width() - 2, rect.bottom() - 1, tabFrameColor);
-                painter->fillRect(QRect(rect.bottomRight() + QPoint(-2, -1), QSize(1, 1)), d->innerContrastLine());
-                painter->fillRect(QRect(rect.bottomLeft() + QPoint(0, -1), QSize(1, 1)), d->innerContrastLine());
-                painter->fillRect(QRect(rect.bottomRight() + QPoint(-1, -1), QSize(1, 1)), d->innerContrastLine());
+                painter->fillRect(QRect(rect.bottomRight() + QPoint(-2, -1), QSize(1, 1)), QFusionStylePrivate::innerContrastLine);
+                painter->fillRect(QRect(rect.bottomLeft() + QPoint(0, -1), QSize(1, 1)), QFusionStylePrivate::innerContrastLine);
+                painter->fillRect(QRect(rect.bottomRight() + QPoint(-1, -1), QSize(1, 1)), QFusionStylePrivate::innerContrastLine);
             }
         }
         painter->restore();
@@ -1915,7 +1915,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                     cachePainter.drawRoundedRect(r.adjusted(0, 0, -1, -1), 2, 2);
 
                     // Draw inner shadow
-                    cachePainter.setPen(d->topShadow());
+                    cachePainter.setPen(QFusionStylePrivate::topShadow);
                     cachePainter.drawLine(QPoint(r.left() + 2, r.top() + 1), QPoint(r.right() - 2, r.top() + 1));
 
                     if (!upRect.isNull()) {
@@ -1931,7 +1931,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                         cachePainter.save();
                         cachePainter.setClipRect(updownRect);
                         cachePainter.drawRoundedRect(r.adjusted(0, 0, -1, -1), 2, 2);
-                        cachePainter.setPen(QPen(d->innerContrastLine()));
+                        cachePainter.setPen(QPen(QFusionStylePrivate::innerContrastLine));
                         cachePainter.setBrush(Qt::NoBrush);
                         cachePainter.drawRoundedRect(r.adjusted(1, 1, -2, -2), 2, 2);
                         cachePainter.restore();
@@ -1941,14 +1941,14 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                         if (sunken)
                             cachePainter.fillRect(upRect.adjusted(0, -1, 0, 0), gradientStopColor.darker(110));
                         else if (hover)
-                            cachePainter.fillRect(upRect.adjusted(0, -1, 0, 0), d->innerContrastLine());
+                            cachePainter.fillRect(upRect.adjusted(0, -1, 0, 0), QFusionStylePrivate::innerContrastLine);
                     }
 
                     if ((spinBox->stepEnabled & QAbstractSpinBox::StepDownEnabled) && downIsActive) {
                         if (sunken)
                             cachePainter.fillRect(downRect.adjusted(0, 0, 0, 1), gradientStopColor.darker(110));
                         else if (hover)
-                            cachePainter.fillRect(downRect.adjusted(0, 0, 0, 1), d->innerContrastLine());
+                            cachePainter.fillRect(downRect.adjusted(0, 0, 0, 1), QFusionStylePrivate::innerContrastLine);
                     }
 
                     cachePainter.setPen(hasFocus ? d->highlightedOutline(option->palette) : outline);
@@ -2470,7 +2470,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                 if (transient) {
                     QRect rect = scrollBarSlider.adjusted(horizontal ? 1 : 2, horizontal ? 2 : 1, -1, -1);
                     painter->setPen(Qt::NoPen);
-                    painter->setBrush(isDarkBg ? d->lightShade() : d->darkShade());
+                    painter->setBrush(isDarkBg ? QFusionStylePrivate::lightShade : QFusionStylePrivate::darkShade);
                     int r = qMin(rect.width(), rect.height()) / 2;
 
                     painter->save();
@@ -2491,7 +2491,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
 
                     painter->drawRect(pixmapRect.adjusted(horizontal ? -1 : 0, horizontal ? 0 : -1, horizontal ? 0 : -1, horizontal ? -1 : 0));
 
-                    painter->setPen(d->innerContrastLine());
+                    painter->setPen(QFusionStylePrivate::innerContrastLine);
                     painter->drawRect(scrollBarSlider.adjusted(horizontal ? 0 : 1, horizontal ? 1 : 0, -1, -1));
 
                     // Outer shadow
@@ -2522,7 +2522,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                 painter->drawRect(upRect);
 
                 painter->setBrush(Qt::NoBrush);
-                painter->setPen(d->innerContrastLine());
+                painter->setPen(QFusionStylePrivate::innerContrastLine);
                 painter->drawRect(upRect.adjusted(1, 1, -1, -1));
 
                 // Arrows
@@ -2548,7 +2548,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                 painter->drawRect(downRect);
 
                 painter->setBrush(Qt::NoBrush);
-                painter->setPen(d->innerContrastLine());
+                painter->setPen(QFusionStylePrivate::innerContrastLine);
                 painter->drawRect(downRect.adjusted(1, 1, -1, -1));
 
                 Qt::ArrowType arrowType = Qt::DownArrow;
@@ -2744,7 +2744,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                     gradient.setColorAt(1, activeHighlight.lighter(130));
                     groovePainter.setBrush(gradient);
                     groovePainter.drawRoundedRect(pixmapRect.adjusted(1, 1, -2, -2), 1, 1);
-                    groovePainter.setPen(d->innerContrastLine());
+                    groovePainter.setPen(QFusionStylePrivate::innerContrastLine);
                     groovePainter.setBrush(Qt::NoBrush);
                     groovePainter.drawRoundedRect(pixmapRect.adjusted(2, 2, -3, -3), 1, 1);
                     groovePainter.end();
@@ -2856,7 +2856,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                     handlePainter.setBrush(gradient);
                     handlePainter.drawRoundedRect(r, 2, 2);
                     handlePainter.setBrush(Qt::NoBrush);
-                    handlePainter.setPen(d->innerContrastLine());
+                    handlePainter.setPen(QFusionStylePrivate::innerContrastLine);
                     handlePainter.drawRoundedRect(r.adjusted(1, 1, -1, -1), 2, 2);
 
                     QColor cornerAlpha = outline.darker(120);

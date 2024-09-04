@@ -33,20 +33,10 @@ public:
     QFusionStylePrivate();
 
     // Used for grip handles
-    QColor lightShade() const {
-        return QColor(255, 255, 255, 90);
-    }
-    QColor darkShade() const {
-        return QColor(0, 0, 0, 60);
-    }
-
-    QColor topShadow() const {
-        return QColor(0, 0, 0, 18);
-    }
-
-    QColor innerContrastLine() const {
-        return QColor(255, 255, 255, 30);
-    }
+    static constexpr QColor lightShade = QColor(255, 255, 255, 90);
+    static constexpr QColor darkShade = QColor(0, 0, 0, 60);
+    static constexpr QColor topShadow = QColor(0, 0, 0, 18);
+    static constexpr QColor innerContrastLine = QColor(255, 255, 255, 30);
 
     // On mac we want a standard blue color used when the system palette is used
     bool isMacSystemPalette(const QPalette &pal) const {
