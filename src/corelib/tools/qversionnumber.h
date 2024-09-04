@@ -201,11 +201,35 @@ class QVersionNumber
         friend class QVersionNumber;
         explicit constexpr It(const QVersionNumber *vn, qsizetype idx) noexcept : v(vn), i(idx) {}
 
-        friend constexpr bool comparesEqual(const It &lhs, const It &rhs) noexcept
+        friend constexpr bool comparesEqual(const It &lhs, const It &rhs)
         { Q_ASSERT(lhs.v == rhs.v); return lhs.i == rhs.i; }
-        friend constexpr Qt::strong_ordering compareThreeWay(const It &lhs, const It &rhs) noexcept
+        friend constexpr Qt::strong_ordering compareThreeWay(const It &lhs, const It &rhs)
         { Q_ASSERT(lhs.v == rhs.v); return Qt::compareThreeWay(lhs.i, rhs.i); }
-        Q_DECLARE_STRONGLY_ORDERED_LITERAL_TYPE(It)
+        // macro variant does not exist: Q_DECLARE_STRONGLY_ORDERED_LITERAL_TYPE_NON_NOEXCEPT(It)
+        friend constexpr bool operator==(It lhs, It rhs) {
+            return comparesEqual(lhs, rhs);
+        }
+#ifdef __cpp_lib_three_way_comparison
+        friend constexpr std::strong_ordering operator<=>(It lhs, It rhs) {
+            return compareThreeWay(lhs, rhs);
+        }
+#else
+        friend constexpr bool operator!=(It lhs, It rhs) {
+            return !operator==(lhs, rhs);
+        }
+        friend constexpr bool operator<(It lhs, It rhs) {
+            return is_lt(compareThreeWay(lhs, rhs));
+        }
+        friend constexpr bool operator<=(It lhs, It rhs) {
+            return is_lteq(compareThreeWay(lhs, rhs));
+        }
+        friend constexpr bool operator>(It lhs, It rhs) {
+            return is_gt(compareThreeWay(lhs, rhs));
+        }
+        friend constexpr bool operator>=(It lhs, It rhs) {
+            return is_gteq(compareThreeWay(lhs, rhs));
+        }
+#endif
 
     public:
         // Rule Of Zero applies
