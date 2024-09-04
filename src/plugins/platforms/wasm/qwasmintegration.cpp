@@ -120,14 +120,14 @@ QWasmIntegration::QWasmIntegration()
 
     // install browser window resize handler
     emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_TRUE,
-                                   [](int, const EmscriptenUiEvent *, void *) -> int {
+                                   [](int, const EmscriptenUiEvent *, void *) -> EM_BOOL {
                                        // This resize event is called when the HTML window is
                                        // resized. Depending on the page layout the elements might
                                        // also have been resized, so we update the Qt screen sizes
                                        // (and canvas render sizes).
                                        if (QWasmIntegration *integration = QWasmIntegration::get())
                                            integration->resizeAllScreens();
-                                       return 0;
+                                       return EM_FALSE;
                                    });
 
     // install visualViewport resize handler which picks up size and scale change on mobile.

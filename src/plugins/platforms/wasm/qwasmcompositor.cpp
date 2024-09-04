@@ -62,7 +62,7 @@ void QWasmCompositor::requestUpdate()
     if (m_requestAnimationFrameId != -1)
         return;
 
-    static auto frame = [](double frameTime, void *context) -> int {
+    static auto frame = [](double frameTime, void *context) -> EM_BOOL {
         Q_UNUSED(frameTime);
 
         QWasmCompositor *compositor = reinterpret_cast<QWasmCompositor *>(context);
@@ -70,7 +70,7 @@ void QWasmCompositor::requestUpdate()
         compositor->m_requestAnimationFrameId = -1;
         compositor->deliverUpdateRequests();
 
-        return 0;
+        return EM_FALSE;
     };
     m_requestAnimationFrameId = emscripten_request_animation_frame(frame, this);
 }
