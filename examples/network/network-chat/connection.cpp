@@ -6,6 +6,8 @@
 
 #include <QTimerEvent>
 
+using namespace std::chrono_literals;
+
 static const int TransferTimeout = 30 * 1000;
 static const int PongTimeout = 60 * 1000;
 static const int PingInterval = 5 * 1000;
@@ -85,10 +87,9 @@ bool Connection::sendMessage(const QString &message)
 
 void Connection::timerEvent(QTimerEvent *timerEvent)
 {
-    if (timerEvent->timerId() == transferTimerId) {
+    if (timerEvent->matches(transferTimer)) {
         abort();
-        killTimer(transferTimerId);
-        transferTimerId = -1;
+        transferTimer.stop();
     }
 }
 
@@ -159,10 +160,7 @@ void Connection::processReadyRead()
 
             // Next state: no command read
             reader.leaveContainer();
-            if (transferTimerId != -1) {
-                killTimer(transferTimerId);
-                transferTimerId = -1;
-            }
+            transferTimer.stop();
 
             processData();
         }
@@ -171,8 +169,8 @@ void Connection::processReadyRead()
     if (reader.lastError() != QCborError::EndOfFile)
         abort();       // parse error
 
-    if (transferTimerId != -1 && reader.containerDepth() > 1)
-        transferTimerId = startTimer(TransferTimeout);
+    if (transferTimer.isActive() && reader.containerDepth() > 1)
+        transferTimer.start(TransferTimeout * 1ms, this);
 }
 
 void Connection::sendPing()

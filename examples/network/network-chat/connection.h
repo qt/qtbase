@@ -4,6 +4,7 @@
 #ifndef CONNECTION_H
 #define CONNECTION_H
 
+#include <QBasicTimer>
 #include <QCborStreamReader>
 #include <QCborStreamWriter>
 #include <QElapsedTimer>
@@ -69,7 +70,7 @@ private:
     QByteArray peerUniqueId;
     ConnectionState state = WaitingForGreeting;
     DataType currentDataType = Undefined;
-    int transferTimerId = -1;
+    QBasicTimer transferTimer;
     bool isGreetingMessageSent = false;
 };
 
