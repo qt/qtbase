@@ -298,19 +298,21 @@ public:
         return QtPrivate::compareStrings(*this, other, cs);
     }
 
-    [[nodiscard]] int compare(QChar other,
-                              Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
-    [[nodiscard]] int compare(QStringView other,
-                              Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
-    [[nodiscard]] int compare(QLatin1StringView other,
-                              Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
-    [[nodiscard]] int compare(const QByteArray &other,
-                              Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
+    // all defined in qstring.h
+    [[nodiscard]] inline int compare(QChar other,
+                                     Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
+    [[nodiscard]] inline int compare(QStringView other,
+                                     Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
+    [[nodiscard]] inline int compare(QLatin1StringView other,
+                                     Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
+    [[nodiscard]] inline int compare(const QByteArray &other,
+                                     Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
 
-    [[nodiscard]] bool equal(QChar other) const noexcept;
-    [[nodiscard]] bool equal(QStringView other) const noexcept;
-    [[nodiscard]] bool equal(QLatin1StringView other) const noexcept;
-    [[nodiscard]] bool equal(const QByteArray &other) const noexcept;
+    [[nodiscard]] inline bool equal(QChar other) const noexcept;
+    [[nodiscard]] inline bool equal(QStringView other) const noexcept;
+    [[nodiscard]] inline bool equal(QLatin1StringView other) const noexcept;
+    [[nodiscard]] inline bool equal(const QByteArray &other) const noexcept;
+    // end defined in qstring.h
 
     [[nodiscard]] static constexpr qsizetype maxSize() noexcept
     {
