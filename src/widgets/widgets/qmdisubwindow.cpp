@@ -139,6 +139,7 @@
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
+using namespace std::chrono_literals;
 
 using namespace QMdi;
 
@@ -872,7 +873,6 @@ QMdiSubWindowPrivate::QMdiSubWindowPrivate()
       isExplicitlyDeactivated(false),
       keyboardSingleStep(5),
       keyboardPageStep(20),
-      resizeTimerId(-1),
       currentOperation(None),
       hoveredSubControl(QStyle::SC_None),
       activeSubControl(QStyle::SC_None),
@@ -1136,7 +1136,7 @@ void QMdiSubWindowPrivate::updateMask()
         || q->windowFlags() & Qt::FramelessWindowHint)
         return;
 
-    if (resizeTimerId == -1)
+    if (!resizeTimer.isActive())
         cachedStyleOptions = titleBarOptions();
     cachedStyleOptions.rect = q->rect();
     QStyleHintReturnMask frameMask;
@@ -1460,9 +1460,8 @@ void QMdiSubWindowPrivate::setActive(bool activate, bool changeFocus)
 
     // Make sure we don't use cached style options if we get
     // resize events right before activation/deactivation.
-    if (resizeTimerId != -1) {
-        q->killTimer(resizeTimerId);
-        resizeTimerId = -1;
+    if (resizeTimer.isActive()) {
+        resizeTimer.stop();
         updateDirtyRegions();
     }
 
@@ -3045,11 +3044,9 @@ void QMdiSubWindow::resizeEvent(QResizeEvent *resizeEvent)
     if (!isVisible())
         return;
 
-    if (d->resizeTimerId <= 0)
+    if (!d->resizeTimer.isActive())
         d->cachedStyleOptions = d->titleBarOptions();
-    else
-        killTimer(d->resizeTimerId);
-    d->resizeTimerId = startTimer(200);
+    d->resizeTimer.start(200ms, this);
 }
 
 /*!
@@ -3058,9 +3055,8 @@ void QMdiSubWindow::resizeEvent(QResizeEvent *resizeEvent)
 void QMdiSubWindow::timerEvent(QTimerEvent *timerEvent)
 {
     Q_D(QMdiSubWindow);
-    if (timerEvent->timerId() == d->resizeTimerId) {
-        killTimer(d->resizeTimerId);
-        d->resizeTimerId = -1;
+    if (timerEvent->id() == d->resizeTimer.id()) {
+        d->resizeTimer.stop();
         d->updateDirtyRegions();
     }
 }
@@ -3092,7 +3088,7 @@ void QMdiSubWindow::paintEvent(QPaintEvent *paintEvent)
 
     Q_D(QMdiSubWindow);
 
-    if (d->resizeTimerId != -1) {
+    if (d->resizeTimer.isActive()) {
         // Only update the style option rect and the window title.
         int border = d->hasBorder(d->cachedStyleOptions) ? 4 : 0;
         int titleBarHeight = d->titleBarHeight(d->cachedStyleOptions);

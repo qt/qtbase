@@ -746,7 +746,7 @@ void tst_QMdiSubWindow::setOpaqueResizeAndMove()
 
     // we need to wait for the resizeTimer to make sure updateDirtyRegions is called
     auto priv = static_cast<QMdiSubWindowPrivate*>(qt_widget_private(window));
-    QTRY_COMPARE(priv->resizeTimerId, -1);
+    QTRY_COMPARE(priv->resizeTimer.id(), Qt::TimerId::Invalid);
 
     // Enter resize mode.
     int offset = window->style()->pixelMetric(QStyle::PM_MdiSubWindowFrameWidth) / 2;
