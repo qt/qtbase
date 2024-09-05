@@ -6,6 +6,7 @@
 
 #include "arthurwidgets.h"
 
+#include <QBasicTimer>
 #include <QPainter>
 #include <QEvent>
 
@@ -137,7 +138,7 @@ private:
 
     ObjectType m_current_object;
     bool m_animation_enabled;
-    int m_animationTimer;
+    QBasicTimer m_animationTimer;
 };
 
 #endif // COMPOSITION_H
