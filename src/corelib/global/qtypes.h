@@ -72,6 +72,9 @@ typedef quint64 qulonglong;
 #  if defined(__GLIBCXX__) && defined(__STRICT_ANSI__) // -ansi/-std=c++NN instead of gnu++NN
 #    undef QT_SUPPORTS_INT128                          // breaks <type_traits> on libstdc++
 #  endif
+#  if defined(__clang__) && defined(_MSVC_STL_VERSION) // Clang with MSVC's STL
+#    undef QT_SUPPORTS_INT128                          // MSVC's STL doesn't support int128
+#  endif
 #else
 #  undef QT_SUPPORTS_INT128
 #endif
