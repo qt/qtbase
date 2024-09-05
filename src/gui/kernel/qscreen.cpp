@@ -61,7 +61,8 @@ void QScreenPrivate::updateGeometry()
     qreal scaleFactor = QHighDpiScaling::factor(platformScreen);
     QRect nativeGeometry = platformScreen->geometry();
     geometry = QRect(nativeGeometry.topLeft(), QHighDpi::fromNative(nativeGeometry.size(), scaleFactor));
-    availableGeometry = QHighDpi::fromNative(platformScreen->availableGeometry(), scaleFactor, geometry.topLeft());
+    QRect nativeAvailableGeometry = platformScreen->availableGeometry();
+    availableGeometry = QRect(nativeAvailableGeometry.topLeft(), QHighDpi::fromNative(nativeAvailableGeometry.size(), scaleFactor));
 }
 
 /*!
