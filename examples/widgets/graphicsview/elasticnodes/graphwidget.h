@@ -4,6 +4,7 @@
 #ifndef GRAPHWIDGET_H
 #define GRAPHWIDGET_H
 
+#include <QBasicTimer>
 #include <QGraphicsView>
 
 class Node;
@@ -34,7 +35,7 @@ protected:
     void scaleView(qreal scaleFactor);
 
 private:
-    int timerId = 0;
+    QBasicTimer timer;
     Node *centerNode;
 };
 //! [0]

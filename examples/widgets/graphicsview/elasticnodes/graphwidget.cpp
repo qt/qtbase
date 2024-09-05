@@ -74,8 +74,10 @@ GraphWidget::GraphWidget(QWidget *parent)
 //! [2]
 void GraphWidget::itemMoved()
 {
-    if (!timerId)
-        timerId = startTimer(1000 / 25);
+    using namespace std::chrono_literals;
+
+    if (!timer.isActive())
+        timer.start(1000ms / 25, this);
 }
 //! [2]
 
@@ -132,10 +134,8 @@ void GraphWidget::timerEvent(QTimerEvent *event)
             itemsMoved = true;
     }
 
-    if (!itemsMoved) {
-        killTimer(timerId);
-        timerId = 0;
-    }
+    if (!itemsMoved)
+        timer.stop();
 }
 //! [4]
 
