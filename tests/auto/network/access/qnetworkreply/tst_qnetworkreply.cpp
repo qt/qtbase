@@ -10165,7 +10165,14 @@ void tst_QNetworkReply::moreActivitySignals()
     QSignalSpy spy3(reply.data(), SIGNAL(metaDataChanged()));
     QSignalSpy spy4(reply.data(), SIGNAL(finished()));
     spy1.wait();
-    QCOMPARE(spy1.size(), 1);
+    if (url.host() == u"localhost") {
+        // localhost may resolve to both v4 and v6, so we may get two
+        // socketStartedConnecting signals
+        QCOMPARE_GE(spy1.size(), 1);
+        QCOMPARE_LE(spy1.size(), 2);
+    } else {
+        QCOMPARE(spy1.size(), 1);
+    }
     spy2.wait();
     QCOMPARE(spy2.size(), 1);
     spy3.wait();
