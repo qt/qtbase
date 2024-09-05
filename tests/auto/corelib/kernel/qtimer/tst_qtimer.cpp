@@ -458,10 +458,10 @@ void tst_QTimer::basic_chrono()
 
 void tst_QTimer::livelock_data()
 {
-    QTest::addColumn<int>("interval");
-    QTest::newRow("zero timer") << 0;
-    QTest::newRow("non-zero timer") << 1;
-    QTest::newRow("longer than sleep") << 20;
+    QTest::addColumn<std::chrono::milliseconds>("interval");
+    QTest::newRow("zero timer") << 0ms;
+    QTest::newRow("non-zero timer") << 1ms;
+    QTest::newRow("longer than sleep") << 20ms;
 }
 
 /*!
@@ -473,13 +473,13 @@ void tst_QTimer::livelock_data()
 class LiveLockTester : public QObject
 {
 public:
-    LiveLockTester(int i)
+    LiveLockTester(std::chrono::milliseconds i)
         : interval(i),
           timeoutsForFirst(0), timeoutsForExtra(0), timeoutsForSecond(0),
           postEventAtRightTime(false)
     {
         firstTimerId = startTimer(interval);
-        extraTimerId = startTimer(interval + 80);
+        extraTimerId = startTimer(interval + 80ms);
         secondTimerId = -1; // started later
     }
 
@@ -514,7 +514,7 @@ public:
         killTimer(te->timerId());
     }
 
-    const int interval;
+    const std::chrono::milliseconds interval;
     int firstTimerId;
     int secondTimerId;
     int extraTimerId;
@@ -533,7 +533,7 @@ void tst_QTimer::livelock()
       events (since new posted events are not sent until the next
       iteration of the eventloop either).
     */
-    QFETCH(int, interval);
+    QFETCH(std::chrono::milliseconds, interval);
     LiveLockTester tester(interval);
     QTest::qWait(180); // we have to use wait here, since we're testing timers with a non-zero timeout
     QTRY_COMPARE(tester.timeoutsForFirst, 1);
