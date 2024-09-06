@@ -87,6 +87,12 @@ function(qt_internal_add_linker_version_script target)
 
         get_target_property(target_type ${target} TYPE)
         if(NOT target_type STREQUAL "INTERFACE_LIBRARY")
+            # Export all specializations of the QExplicitlySharedDataPointer
+            # and QSharedDataPointer destructors; due to use of the
+            # QT_DECLARE_Q{,E}SDP_SPECIALIZATION_DTOR_WITH_EXPORT macros
+            string(APPEND contents "\n    _ZN*18QSharedDataPointerI*D?Ev;")
+            string(APPEND contents "\n    _ZN*28QExplicitlySharedDataPointerI*D?Ev;")
+
             set(genex_prefix "\n    ")
             set(genex_glue "$<SEMICOLON>\n    ")
             set(genex_suffix "$<SEMICOLON>")
