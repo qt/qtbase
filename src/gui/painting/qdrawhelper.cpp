@@ -1581,9 +1581,10 @@ static void QT_FASTCALL fetchTransformedBilinearARGB32PM_downscale_helper(uint *
         const int32x4_t v_ffff_mask = vdupq_n_s32(0x0000ffff);
         const int32x4_t v_fx_r = vdupq_n_s32(0x0800);
 
+         // Pre-initialize to work-around code-analysis warnings/crashes in MSVC:
+        uint32x4x2_t v_top = {};
+        uint32x4x2_t v_bot = {};
         while (b < boundedEnd - 3) {
-            uint32x4x2_t v_top, v_bot;
-
             int x1 = (fx >> 16);
             fx += fdx;
             v_top = vld2q_lane_u32(s1 + x1, v_top, 0);
@@ -1797,9 +1798,10 @@ static void QT_FASTCALL fetchTransformedBilinearARGB32PM_fast_rotate_helper(uint
         const int32x4_t v_ffff_mask = vdupq_n_s32(0x0000ffff);
         const int32x4_t v_round = vdupq_n_s32(0x0800);
 
+         // Pre-initialize to work-around code-analysis warnings/crashes in MSVC:
+        uint32x4x2_t v_top = {};
+        uint32x4x2_t v_bot = {};
         while (b < boundedEnd - 3) {
-            uint32x4x2_t v_top, v_bot;
-
             int x1 = (fx >> 16);
             int y1 = (fy >> 16);
             fx += fdx; fy += fdy;
