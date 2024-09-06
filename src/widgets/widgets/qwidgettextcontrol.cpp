@@ -3460,12 +3460,12 @@ void QUnicodeControlCharacterMenu::menuActionTriggered()
 
 static constexpr auto supportedMimeTypes = qOffsetStringArray(
     "text/plain",
-    "text/html",
+    "text/html"
 #if QT_CONFIG(textmarkdownwriter)
-    "text/markdown",
+    , "text/markdown"
 #endif
 #if QT_CONFIG(textodfwriter)
-    "application/vnd.oasis.opendocument.text"
+    , "application/vnd.oasis.opendocument.text"
 #endif
 );
 
