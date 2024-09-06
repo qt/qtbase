@@ -1388,6 +1388,9 @@ private:
     template <typename K>
     using if_heterogeneously_seachable = QHashPrivate::if_heterogeneously_seachable_with<Key, K>;
 
+    template <typename K>
+    using if_key_constructible_from = std::enable_if_t<std::is_constructible_v<Key, K>, bool>;
+
 public:
     template <typename K, if_heterogeneously_seachable<K> = true>
     bool remove(const K &key)
@@ -1425,7 +1428,7 @@ public:
         else
             return defaultValue;
     }
-    template <typename K, if_heterogeneously_seachable<K> = true>
+    template <typename K, if_heterogeneously_seachable<K> = true, if_key_constructible_from<K> = true>
     T &operator[](const K &key)
     {
         return operatorIndexImpl(key);
@@ -2400,6 +2403,9 @@ private:
     template <typename K>
     using if_heterogeneously_seachable = QHashPrivate::if_heterogeneously_seachable_with<Key, K>;
 
+    template <typename K>
+    using if_key_constructible_from = std::enable_if_t<std::is_constructible_v<Key, K>, bool>;
+
 public:
     template <typename K, if_heterogeneously_seachable<K> = true>
     qsizetype remove(const K &key)
@@ -2434,7 +2440,7 @@ public:
         else
             return defaultValue;
     }
-    template <typename K, if_heterogeneously_seachable<K> = true>
+    template <typename K, if_heterogeneously_seachable<K> = true, if_key_constructible_from<K> = true>
     T &operator[](const K &key)
     {
         return operatorIndexImpl(key);
