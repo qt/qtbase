@@ -228,6 +228,9 @@ QColor qt_mac_toQColor(CGColorRef color)
 #ifdef Q_OS_MACOS
 QColor qt_mac_toQColor(const NSColor *color)
 {
+    if (!color)
+        return QColor();
+
     QColor qtColor;
     switch (color.type) {
     case NSColorTypeComponentBased: {
