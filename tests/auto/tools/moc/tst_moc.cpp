@@ -4326,7 +4326,6 @@ void tst_Moc::mocJsonOutput()
     QVERIFY(expectedOutput);
 
     const auto showPotentialDiff = [](const QJsonDocument &actual, const QJsonDocument &expected) -> QByteArray {
-#if defined(Q_OS_UNIX)
         QByteArray actualStr = actual.toJson();
         QByteArray expectedStr = expected.toJson();
 
@@ -4343,19 +4342,26 @@ void tst_Moc::mocJsonOutput()
         expectedFile.flush();
 
         QProcess diffProc;
-        diffProc.setProgram("diff");
-        diffProc.setArguments(QStringList() << "-ub" << expectedFile.fileName() << actualFile.fileName());
+        QStringList arguments;
+        if (auto git = QStandardPaths::findExecutable("git"); !git.isEmpty()) {
+            diffProc.setProgram(git);
+            arguments << "diff";
+        } else {
+            diffProc.setProgram("diff");
+        }
+        arguments << "-ub" << expectedFile.fileName() << actualFile.fileName();
+        diffProc.setArguments(std::move(arguments));
+
         diffProc.start();
-        if (!diffProc.waitForStarted())
-            return "Error waiting for diff process to start.";
-        if (!diffProc.waitForFinished())
-            return "Error waiting for diff process to finish.";
+        if (!diffProc.waitForStarted()) {
+            return "Error waiting for " + diffProc.program().toLocal8Bit() + " process to start. ("
+                    + diffProc.errorString().toLocal8Bit() + ")";
+        }
+        if (!diffProc.waitForFinished()) {
+            return "Error waiting for " + diffProc.program().toLocal8Bit() + " process to finish. ("
+                    + diffProc.errorString().toLocal8Bit() + ")";
+        }
         return diffProc.readAllStandardOutput();
-#else
-        Q_UNUSED(actual);
-        Q_UNUSED(expected);
-        return "Cannot launch diff. Please check allmocs.json and allmocs_baseline.json on disk.";
-#endif
     };
 
     QVERIFY2(*actualOutput == *expectedOutput, showPotentialDiff(*actualOutput, *expectedOutput).constData());
