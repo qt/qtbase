@@ -162,7 +162,7 @@ public:
     Q_NODISCARD_CTOR
     QExplicitlySharedDataPointer(const QExplicitlySharedDataPointer<X> &o) noexcept
 #ifdef QT_ENABLE_QEXPLICITLYSHAREDDATAPOINTER_STATICCAST
-        : d(warnIfQExplicitlySharedDataPointerStaticCastMacroDefined(), static_cast<T *>(o.data()))
+        : d{(warnIfQExplicitlySharedDataPointerStaticCastMacroDefined(), static_cast<T *>(o.data()))}
 #else
         : d(o.data())
 #endif
