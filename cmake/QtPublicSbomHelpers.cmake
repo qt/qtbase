@@ -2736,7 +2736,7 @@ endfunction()
 # Get the default qt copyright.
 function(_qt_internal_sbom_get_default_qt_copyright_header out_var)
     set(${out_var}
-        "Copyright (C) 2024 The Qt Company Ltd."
+        "Copyright (C) The Qt Company Ltd. and other contributors."
         PARENT_SCOPE)
 endfunction()
 
