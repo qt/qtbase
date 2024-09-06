@@ -1156,3 +1156,4 @@ void QHostInfoCache::clear()
 QT_END_NAMESPACE
 
 #include "moc_qhostinfo_p.cpp"
+#include "moc_qhostinfo.cpp"
