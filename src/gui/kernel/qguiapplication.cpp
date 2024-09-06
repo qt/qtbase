@@ -2444,15 +2444,13 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
     ev.setTimestamp(e->timestamp);
 
     if (activePopup && activePopup != window && (!popup_closed_on_press || type == QEvent::MouseButtonRelease)) {
+        // If the popup handles the event, we're done.
         auto *handlingPopup = window->d_func()->forwardToPopup(&ev, active_popup_on_press);
-        if (handlingPopup && ev.isBeginEvent())
-            active_popup_on_press = handlingPopup;
-        // Regardless of whether the popup accepted the event or not, we return now so that we
-        // don't forward it to the window under the mouse instead. We're only supposed to
-        // do such forwarding if QPlatformIntegration::ReplayMousePressOutsidePopup is set,
-        // but support for that is currently not reimplemented (it needs to be done in
-        // conjunction with support for WA_NoMouseReplay). This is normally only wanted on Windows.
-        return;
+        if (handlingPopup) {
+            if (type == QEvent::MouseButtonPress)
+                active_popup_on_press = handlingPopup;
+            return;
+        }
     }
 
     if (doubleClick && (ev.type() == QEvent::MouseButtonPress)) {
@@ -2977,15 +2975,9 @@ void QGuiApplicationPrivate::processTabletEvent(QWindowSystemInterfacePrivate::T
     tabletEvent.setTimestamp(e->timestamp);
 
     if (activePopup && activePopup != window) {
-        auto *handlingPopup = window->d_func()->forwardToPopup(&tabletEvent, active_popup_on_press);
-        if (handlingPopup && tabletEvent.isBeginEvent())
-            active_popup_on_press = handlingPopup;
-        // Regardless of whether the popup accepted the event or not, we return now so that we
-        // don't forward it to the window under the mouse instead. We're only supposed to
-        // do such forwarding if QPlatformIntegration::ReplayMousePressOutsidePopup is set,
-        // but support for that is currently not reimplemented (it needs to be done in
-        // conjunction with support for WA_NoMouseReplay). This is normally only wanted on Windows.
-        return;
+        // If the popup handles the event, we're done.
+        if (window->d_func()->forwardToPopup(&tabletEvent, active_popup_on_press))
+            return;
     }
 
     QGuiApplication::sendSpontaneousEvent(window, &tabletEvent);
