@@ -5,8 +5,6 @@
 
 #include <Contacts/Contacts.h>
 
-QT_DEFINE_PERMISSION_STATUS_CONVERTER(CNAuthorizationStatus);
-
 @interface QDarwinContactsPermissionHandler ()
 @property (nonatomic, retain) CNContactStore *contactStore;
 @end
@@ -21,7 +19,21 @@ QT_DEFINE_PERMISSION_STATUS_CONVERTER(CNAuthorizationStatus);
 - (Qt::PermissionStatus)currentStatus
 {
     const auto status = [CNContactStore authorizationStatusForEntityType:CNEntityTypeContacts];
-    return nativeStatusToQtStatus(status);
+    switch (status) {
+    case CNAuthorizationStatusAuthorized:
+#if defined(Q_OS_IOS) && QT_IOS_PLATFORM_SDK_EQUAL_OR_ABOVE(180000)
+    case CNAuthorizationStatusLimited:
+#endif
+        return Qt::PermissionStatus::Granted;
+    case CNAuthorizationStatusDenied:
+    case CNAuthorizationStatusRestricted:
+        return Qt::PermissionStatus::Denied;
+    case CNAuthorizationStatusNotDetermined:
+        return Qt::PermissionStatus::Undetermined;
+    }
+    qCWarning(lcPermissions) << "Unknown permission status" << status << "detected in"
+        << QT_STRINGIFY(QT_DARWIN_PERMISSION_PLUGIN);
+    return Qt::PermissionStatus::Denied;
 }
 
 - (QStringList)usageDescriptionsFor:(QPermission)permission
