@@ -1797,3 +1797,5 @@ static bool qGssapiTestGetCredentials(QStringView host)
 #endif // gssapi
 
 QT_END_NAMESPACE
+
+#include "moc_qauthenticator.cpp"
