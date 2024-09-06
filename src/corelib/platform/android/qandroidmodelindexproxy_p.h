@@ -50,6 +50,6 @@ public:
     static bool registerNatives(QJniEnvironment &env);
 };
 
-QT_BEGIN_NAMESPACE
+QT_END_NAMESPACE
 
 #endif // QANDROIDMODELINDEXPROXY_P_H
