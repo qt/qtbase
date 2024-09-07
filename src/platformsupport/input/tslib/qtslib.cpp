@@ -17,7 +17,7 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-Q_LOGGING_CATEGORY(qLcTsLib, "qt.qpa.input")
+Q_STATIC_LOGGING_CATEGORY(qLcTsLib, "qt.qpa.input")
 
 QTsLibMouseHandler::QTsLibMouseHandler(const QString &key,
                                        const QString &specification,
