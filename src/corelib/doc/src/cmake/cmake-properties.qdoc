@@ -329,6 +329,51 @@ set_target_properties(${target} PROPERTIES
 */
 
 /*!
+\page cmake-target-property-qt-android-app-icon.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+
+\title QT_ANDROID_APP_ICON
+\target cmake-target-property-QT_ANDROID_APP_ICON
+\ingroup cmake-android-manifest-properties
+
+\summary {The Android app's icon resource name.}
+
+\cmakepropertysince 6.9
+\cmakepropertyandroidonly
+
+Specifies the app's icon name as an Android drawable or mipmap reference.
+This only works if the \c {AndroidManifest.xml} file contains the placeholder
+or when the \c {AndroidManifest.xml} is managed by Qt.
+
+\badcode
+<application
+    ...
+    android:icon="-- %%INSERT_APP_ICON%% --"
+    ...
+>
+\endcode
+
+You can use this property as follows:
+
+\badcode
+set_target_properties(${target} PROPERTIES
+    QT_ANDROID_APP_ICON "@mipmap/ic_launcher"
+)
+\endcode
+
+Or using drawables:
+
+\badcode
+set_target_properties(${target} PROPERTIES
+    QT_ANDROID_APP_ICON "@drawable/ic_launcher"
+)
+\endcode
+
+\sa{qt6_android_generate_deployment_settings}{qt_android_generate_deployment_settings()}
+*/
+
+/*!
 \page cmake-target-property-qt-android-version-code.html
 \ingroup cmake-properties-qtcore
 \ingroup cmake-target-properties-qtcore

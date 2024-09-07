@@ -70,7 +70,7 @@ Qt sets the following manifest configuration by default:
         default values are \c anyDensity, \c largeScreens,
         \c normalScreens, and \c smallScreens.
 \row
-    \li {1, 6} \l {Android: App Manifest <application>}{<application>}
+    \li {1, 7} \l {Android: App Manifest <application>}{<application>}
     \li android:name
     \li The application class name. Default value is
         \c {org.qtproject.qt.android.bindings.QtApplication}.
@@ -78,6 +78,11 @@ Qt sets the following manifest configuration by default:
     \li android:label
     \li The application name label. Default value is the Qt project's target name.
         This can be set using \l {QT_ANDROID_APP_NAME}.
+\row
+    \li android:icon
+    \li The application icon as a reference to a drawable or mipmap resource. This
+        tag is not used unless set using \l {QT_ANDROID_APP_ICON} or set manually
+        in the \c {AndroidManifest.xml}.
 \row
     \li android:hardwareAccelerated
     \li Sets hardware acceleration preference. The default value is \c true.

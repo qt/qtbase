@@ -225,6 +225,10 @@ function(qt6_android_generate_deployment_settings target)
     _qt_internal_add_android_deployment_property(file_contents "android-app-name"
         ${target} "QT_ANDROID_APP_NAME")
 
+    # app icon
+    _qt_internal_add_android_deployment_property(file_contents "android-app-icon"
+        ${target} "QT_ANDROID_APP_ICON")
+
     # version code
     _qt_internal_add_android_deployment_property(file_contents "android-version-code"
         ${target} "QT_ANDROID_VERSION_CODE")

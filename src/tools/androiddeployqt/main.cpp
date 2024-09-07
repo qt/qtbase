@@ -192,6 +192,7 @@ struct Options
     QString systemLibsPath;
     QString packageName;
     QString appName;
+    QString appIcon;
     QStringList extraLibs;
     QHash<QString, QStringList> archExtraLibs;
     QStringList extraPlugins;
@@ -1381,6 +1382,12 @@ bool readInputFile(Options *options)
     }
 
     {
+        const QJsonValue androidAppIcon = jsonObject.value("android-app-icon"_L1);
+        if (!androidAppIcon.isUndefined())
+            options->appIcon = androidAppIcon.toString();
+    }
+
+    {
         using ItFlag = QDirListing::IteratorFlag;
         const QJsonValue deploymentDependencies = jsonObject.value("deployment-dependencies"_L1);
         if (!deploymentDependencies.isUndefined()) {
@@ -1701,6 +1708,11 @@ bool updateFile(const QString &fileName, const QHash<QString, QString> &replacem
             return false;
         }
 
+        // Remove leftover empty lines after replacements, for example,
+        // in case of setting the app icon.
+        QRegularExpression emptyLinesRegex("\\n\\s+\\n"_L1);
+        contents = QString::fromUtf8(contents).replace(emptyLinesRegex, "\n"_L1).toUtf8();
+
         inputFile.write(contents);
     }
 
@@ -1858,6 +1870,10 @@ bool updateAndroidManifest(Options &options)
     replacements[QStringLiteral("-- %%INSERT_VERSION_NAME%% --")] = options.versionName;
     replacements[QStringLiteral("-- %%INSERT_VERSION_CODE%% --")] = options.versionCode;
     replacements[QStringLiteral("package=\"org.qtproject.example\"")] = "package=\"%1\""_L1.arg(options.packageName);
+
+    const QString iconAttribute = "android:icon=\"%1\""_L1;
+    replacements[iconAttribute.arg("-- %%INSERT_APP_ICON%% --"_L1)] = options.appIcon.isEmpty() ?
+            ""_L1 : iconAttribute.arg(options.appIcon);
 
     const QString androidManifestPath = options.outputDirectory + "/AndroidManifest.xml"_L1;
     QFile androidManifestXml(androidManifestPath);
