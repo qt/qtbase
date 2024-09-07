@@ -78,6 +78,8 @@ void tst_android_deployment_settings::DeploymentSettings_data()
                                                 << "2";
     QTest::newRow("android-package-name") << "android-package-name"
                                           << "org.qtproject.android_deployment_settings_test";
+    QTest::newRow("android-app-name") << "android-app-name"
+                                          << "Android Deployment Settings Test";
 }
 
 void tst_android_deployment_settings::DeploymentSettings()

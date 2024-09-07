@@ -217,9 +217,13 @@ function(qt6_android_generate_deployment_settings target)
     _qt_internal_add_android_deployment_property(file_contents "android-package-source-directory"
         ${target} "_qt_android_native_package_source_dir")
 
-    # version code
+    # package name
     _qt_internal_add_android_deployment_property(file_contents "android-package-name"
         ${target} "QT_ANDROID_PACKAGE_NAME")
+
+    # app name
+    _qt_internal_add_android_deployment_property(file_contents "android-app-name"
+        ${target} "QT_ANDROID_APP_NAME")
 
     # version code
     _qt_internal_add_android_deployment_property(file_contents "android-version-code"

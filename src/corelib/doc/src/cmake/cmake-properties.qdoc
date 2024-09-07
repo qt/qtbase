@@ -300,6 +300,35 @@ For more information, see Android's
 */
 
 /*!
+\page cmake-target-property-qt-android-app-name.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+
+\title QT_ANDROID_APP_NAME
+\target cmake-target-property-QT_ANDROID_APP_NAME
+\ingroup cmake-android-manifest-properties
+
+\summary {The Android app's name.}
+
+\cmakepropertysince 6.9
+\cmakepropertyandroidonly
+
+Specifies the app's name that's shown in the launcher. This is human readable name
+of the app, and it is different from the \l {QT_ANDROID_PACKAGE_NAME}{package name}
+of the app. This doesn't do anything if the name is set explicitly in the
+\c {AndroidManifest.xml}.
+
+\badcode
+set_target_properties(${target} PROPERTIES
+    QT_ANDROID_APP_NAME "Gallery"
+)
+\endcode
+
+\sa{qt6_android_generate_deployment_settings}{qt_android_generate_deployment_settings()}
+\sa {QT_ANDROID_PACKAGE_NAME}
+*/
+
+/*!
 \page cmake-target-property-qt-android-version-code.html
 \ingroup cmake-properties-qtcore
 \ingroup cmake-target-properties-qtcore

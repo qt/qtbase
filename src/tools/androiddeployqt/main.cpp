@@ -191,6 +191,7 @@ struct Options
     DeploymentMechanism deploymentMechanism;
     QString systemLibsPath;
     QString packageName;
+    QString appName;
     QStringList extraLibs;
     QHash<QString, QStringList> archExtraLibs;
     QStringList extraPlugins;
@@ -1372,6 +1373,14 @@ bool readInputFile(Options *options)
     }
 
     {
+        const QJsonValue androidAppName = jsonObject.value("android-app-name"_L1);
+        if (!androidAppName.isUndefined())
+            options->appName = androidAppName.toString();
+        else
+            options->appName = options->applicationBinary;
+    }
+
+    {
         using ItFlag = QDirListing::IteratorFlag;
         const QJsonValue deploymentDependencies = jsonObject.value("deployment-dependencies"_L1);
         if (!deploymentDependencies.isUndefined()) {
@@ -1843,7 +1852,7 @@ bool updateAndroidManifest(Options &options)
         fprintf(stdout, "  -- AndroidManifest.xml \n");
 
     QHash<QString, QString> replacements;
-    replacements[QStringLiteral("-- %%INSERT_APP_NAME%% --")] = options.applicationBinary;
+    replacements[QStringLiteral("-- %%INSERT_APP_NAME%% --")] = options.appName;
     replacements[QStringLiteral("-- %%INSERT_APP_ARGUMENTS%% --")] = options.applicationArguments;
     replacements[QStringLiteral("-- %%INSERT_APP_LIB_NAME%% --")] = options.applicationBinary;
     replacements[QStringLiteral("-- %%INSERT_VERSION_NAME%% --")] = options.versionName;

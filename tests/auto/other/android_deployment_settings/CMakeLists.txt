@@ -30,6 +30,7 @@ set_target_properties(${target} PROPERTIES
     QT_ANDROID_SDK_BUILD_TOOLS_REVISION "23.0.2"
     QT_ANDROID_MIN_SDK_VERSION "1"
     QT_ANDROID_TARGET_SDK_VERSION "2"
+    QT_ANDROID_APP_NAME "Android Deployment Settings Test"
     QT_ANDROID_PACKAGE_NAME "org.qtproject.android_deployment_settings_test"
     QT_ANDROID_DEPLOYMENT_DEPENDENCIES "dep1.so;dep2.so;dep3.so"
     QT_ANDROID_DEPLOYMENT_SETTINGS_FILE "attempt_to_rewrite.json"
@@ -54,6 +55,7 @@ set_target_properties(${target} PROPERTIES
     QT_ANDROID_SDK_BUILD_TOOLS_REVISION "23.0.2"
     QT_ANDROID_MIN_SDK_VERSION "1"
     QT_ANDROID_TARGET_SDK_VERSION "2"
+    QT_ANDROID_APP_NAME "Android Deployment Settings Test"
     QT_ANDROID_PACKAGE_NAME "org.qtproject.android_deployment_settings_test"
     QT_ANDROID_DEPLOYMENT_DEPENDENCIES "dep1.so;dep2.so;dep3.so"
     QT_ANDROID_EXTRA_LIBS

@@ -77,6 +77,7 @@ Qt sets the following manifest configuration by default:
 \row
     \li android:label
     \li The application name label. Default value is the Qt project's target name.
+        This can be set using \l {QT_ANDROID_APP_NAME}.
 \row
     \li android:hardwareAccelerated
     \li Sets hardware acceleration preference. The default value is \c true.
