@@ -202,7 +202,7 @@ int QShortcutMap::setShortcutEnabled(bool enable, int id, QObject *owner, const 
     int i = d->shortcuts.size()-1;
     while (i>=0)
     {
-        QShortcutEntry entry = d->shortcuts.at(i);
+        const QShortcutEntry &entry = d->shortcuts.at(i);
         if ((allOwners || entry.owner == owner)
             && (allIds || entry.id == id)
             && (allKeys || entry.keySequence == keySequence)) {
