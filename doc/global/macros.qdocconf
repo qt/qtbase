@@ -97,7 +97,7 @@ macro.AndroidMaxVer       = "14"
 macro.AndroidPlatformVer  = "34"
 macro.AndroidBuildToolsVer = "34.0.0"
 macro.GradleVer           = "8.10"
-macro.AGPVer              = "8.5.2"
+macro.AGPVer              = "8.6.0"
 macro.AAOSVer             = "10 to 13"
 
 macro.beginfloatleft.HTML   = "<div style=\"float: left; margin-right: 2em\">"
