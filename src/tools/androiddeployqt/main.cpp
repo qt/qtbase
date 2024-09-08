@@ -1023,15 +1023,27 @@ bool readInputFile(Options *options)
 
         options->sdkPath = QDir::fromNativeSeparators(sdkPath.toString());
 
+    }
+
+    {
         if (options->androidPlatform.isEmpty()) {
-            options->androidPlatform = detectLatestAndroidPlatform(options->sdkPath);
-            if (options->androidPlatform.isEmpty())
-                return false;
-        } else {
-            if (!QDir(options->sdkPath + "/platforms/"_L1 + options->androidPlatform).exists()) {
-                fprintf(stderr, "Warning: Android platform '%s' does not exist in SDK.\n",
-                        qPrintable(options->androidPlatform));
+            const QJsonValue ver = jsonObject.value("android-compile-sdk-version"_L1);
+            if (!ver.isUndefined()) {
+                const auto value = ver.toString();
+                options->androidPlatform = value.startsWith("android-"_L1) ?
+                        value : "android-%1"_L1.arg(value);
             }
+
+            if (options->androidPlatform.isEmpty()) {
+                options->androidPlatform = detectLatestAndroidPlatform(options->sdkPath);
+                if (options->androidPlatform.isEmpty())
+                    return false;
+            }
+        }
+
+        if (!QDir(options->sdkPath + "/platforms/"_L1 + options->androidPlatform).exists()) {
+            fprintf(stderr, "Warning: Android platform '%s' does not exist in SDK.\n",
+                    qPrintable(options->androidPlatform));
         }
     }
 

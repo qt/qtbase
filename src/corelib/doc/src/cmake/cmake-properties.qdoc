@@ -224,6 +224,43 @@ Specifies the target Android API level for the target.
 */
 
 /*!
+\page cmake-target-property-qt-android-compile-sdk-version.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+\ingroup cmake-android-build-properties
+
+\title QT_ANDROID_COMPILE_SDK_VERSION
+\target cmake-target-property-QT_ANDROID_COMPILE_SDK_VERSION
+
+\summary {Android target SDK version.}
+
+\cmakepropertysince 6.9
+\cmakepropertyandroidonly
+
+Specifies the version of the Android SDK against which your application is compiled.
+This is propagated to \c {build.gradle} as \c compileSdkVersion. This value can be
+provided via \l {androiddeployqt}'s \c {--android-platform} parameter which takes
+precedence over this CMake property.
+
+\badcode
+set_target_properties(${target} PROPERTIES
+    QT_ANDROID_COMPILE_SDK_VERSION 35
+)
+\endcode
+
+The following format also works:
+
+\badcode
+set_target_properties(${target} PROPERTIES
+ QT_ANDROID_COMPILE_SDK_VERSION "android-35"
+)
+\endcode
+
+\sa{qt6_android_generate_deployment_settings}{qt_android_generate_deployment_settings()}
+\sa QT_ANDROID_TARGET_SDK_VERSION
+*/
+
+/*!
 \page cmake-target-property-qt-android-sdk-build-tools-revision.html
 \ingroup cmake-properties-qtcore
 \ingroup cmake-target-properties-qtcore

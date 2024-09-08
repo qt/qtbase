@@ -76,6 +76,8 @@ void tst_android_deployment_settings::DeploymentSettings_data()
                                              << "1";
     QTest::newRow("android-target-sdk-version") << "android-target-sdk-version"
                                                 << "2";
+    QTest::newRow("android-compile-sdk-version") << "android-compile-sdk-version"
+                                                << "35";
     QTest::newRow("android-package-name") << "android-package-name"
                                           << "org.qtproject.android_deployment_settings_test";
     QTest::newRow("android-app-name") << "android-app-name"

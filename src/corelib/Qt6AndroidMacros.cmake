@@ -245,6 +245,10 @@ function(qt6_android_generate_deployment_settings target)
     _qt_internal_add_android_deployment_property(file_contents "android-target-sdk-version"
         ${target} "QT_ANDROID_TARGET_SDK_VERSION")
 
+    # compile SDK version
+    _qt_internal_add_android_deployment_property(file_contents "android-compile-sdk-version"
+        ${target} "QT_ANDROID_COMPILE_SDK_VERSION")
+
     # should Qt shared libs be excluded from deployment
     _qt_internal_add_android_deployment_property(file_contents "android-no-deploy-qt-libs"
         ${target} "QT_ANDROID_NO_DEPLOY_QT_LIBS")
