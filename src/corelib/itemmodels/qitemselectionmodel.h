@@ -42,16 +42,14 @@ public:
 
     inline bool contains(const QModelIndex &index) const
     {
-        return (parent() == index.parent()
-                && tl.row() <= index.row() && tl.column() <= index.column()
-                && br.row() >= index.row() && br.column() >= index.column());
+        return contains(index.row(), index.column(), index.parent());
     }
 
     inline bool contains(int row, int column, const QModelIndex &parentIndex) const
     {
-        return (parent() == parentIndex
-                && tl.row() <= row && tl.column() <= column
-                && br.row() >= row && br.column() >= column);
+        return (tl.row() <= row && tl.column() <= column &&
+                br.row() >= row && br.column() >= column &&
+                parent() == parentIndex);
     }
 
     bool intersects(const QItemSelectionRange &other) const;

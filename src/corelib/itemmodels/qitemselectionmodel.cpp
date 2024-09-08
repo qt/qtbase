@@ -256,7 +256,7 @@ static void rowLengthsFromRange(const QItemSelectionRange &range, QList<std::pai
     }
 }
 
-static bool isSelectableAndEnabled(Qt::ItemFlags flags)
+static inline bool isSelectableAndEnabled(Qt::ItemFlags flags)
 {
     return flags.testFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
 }
@@ -416,12 +416,8 @@ void QItemSelection::select(const QModelIndex &topLeft, const QModelIndex &botto
 
 bool QItemSelection::contains(const QModelIndex &index) const
 {
-    if (isSelectableAndEnabled(index.flags())) {
-        QList<QItemSelectionRange>::const_iterator it = begin();
-        for (; it != end(); ++it)
-            if ((*it).contains(index))
-                return true;
-    }
+    if (isSelectableAndEnabled(index.flags()))
+        return std::any_of(begin(), end(), [&](const auto &range) { return range.contains(index); });
     return false;
 }
 
@@ -1429,15 +1425,10 @@ bool QItemSelectionModel::isSelected(const QModelIndex &index) const
     if (d->model != index.model() || !index.isValid())
         return false;
 
-    bool selected = false;
     //  search model ranges
-    QList<QItemSelectionRange>::const_iterator it = d->ranges.begin();
-    for (; it != d->ranges.end(); ++it) {
-        if ((*it).isValid() && (*it).contains(index)) {
-            selected = true;
-            break;
-        }
-    }
+    const auto containsIndex = [&](const auto &range)
+        { return range.isValid() && range.contains(index); };
+    bool selected = std::any_of(d->ranges.begin(), d->ranges.end(), containsIndex);
 
     // check  currentSelection
     if (d->currentSelection.size()) {
@@ -1475,24 +1466,31 @@ bool QItemSelectionModel::isRowSelected(int row, const QModelIndex &parent) cons
         return false;
 
     // return false if row exist in currentSelection (Deselect)
-    if (d->currentCommand & Deselect && d->currentSelection.size()) {
-        for (int i=0; i<d->currentSelection.size(); ++i) {
-            if (d->currentSelection.at(i).parent() == parent &&
-                row >= d->currentSelection.at(i).top() &&
-                row <= d->currentSelection.at(i).bottom())
-                return false;
-        }
+    if (d->currentCommand & Deselect) {
+        const auto matchesRow = [&](const auto &selection)
+        {
+            return row >= selection.top() &&
+                   row <= selection.bottom() &&
+                   parent == selection.parent();
+        };
+        if (std::any_of(d->currentSelection.cbegin(), d->currentSelection.cend(), matchesRow))
+            return false;
     }
     // return false if ranges in both currentSelection and ranges
     // intersect and have the same row contained
-    if (d->currentCommand & Toggle && d->currentSelection.size()) {
-        for (int i=0; i<d->currentSelection.size(); ++i)
-            if (d->currentSelection.at(i).top() <= row &&
-                d->currentSelection.at(i).bottom() >= row)
-                for (int j=0; j<d->ranges.size(); ++j)
-                    if (d->ranges.at(j).top() <= row && d->ranges.at(j).bottom() >= row
-                        && d->currentSelection.at(i).intersected(d->ranges.at(j)).isValid())
-                        return false;
+    if (d->currentCommand & Toggle) {
+        for (const auto &selection : d->currentSelection) {
+            if (row >= selection.top() && row <= selection.bottom()) {
+                const auto selectionAndRangeIntersect = [&](const auto &range)
+                {
+                    return row >= range.top() &&
+                           row <= range.bottom() &&
+                           selection.intersected(range).isValid();
+                };
+                if (std::any_of(d->ranges.cbegin(), d->ranges.cend(), selectionAndRangeIntersect))
+                    return false;
+            }
+        }
     }
 
     auto isSelectable = [&](int row, int column) {
@@ -1501,29 +1499,28 @@ bool QItemSelectionModel::isRowSelected(int row, const QModelIndex &parent) cons
 
     const int colCount = d->model->columnCount(parent);
     int unselectable = 0;
-    // add ranges and currentSelection and check through them all
-    QList<QItemSelectionRange>::const_iterator it;
-    QList<QItemSelectionRange> joined = d->ranges;
-    if (d->currentSelection.size())
-        joined += d->currentSelection;
+    // check ranges and currentSelection
     for (int column = 0; column < colCount; ++column) {
         if (!isSelectable(row, column)) {
             ++unselectable;
             continue;
         }
-
-        for (it = joined.constBegin(); it != joined.constEnd(); ++it) {
-            if ((*it).contains(row, column, parent)) {
-                for (int i = column; i <= (*it).right(); ++i) {
-                    if (!isSelectable(row, i))
-                        ++unselectable;
+        const auto doCheck = [&](const auto &listToCheck)
+        {
+            for (const auto &curSel : listToCheck) {
+                if (curSel.contains(row, column, parent)) {
+                    const auto right = curSel.right();
+                    for (int i = column + 1; i <= right; ++i) {
+                        if (!isSelectable(row, i))
+                            ++unselectable;
+                    }
+                    column = qMax(column, right);
+                    return true;
                 }
-
-                column = qMax(column, (*it).right());
-                break;
             }
-        }
-        if (it == joined.constEnd())
+            return false;
+        };
+        if (!doCheck(d->ranges) && !doCheck(d->currentSelection))
             return false;
     }
     return unselectable < colCount;
@@ -1549,26 +1546,29 @@ bool QItemSelectionModel::isColumnSelected(int column, const QModelIndex &parent
         return false;
 
     // return false if column exist in currentSelection (Deselect)
-    if (d->currentCommand & Deselect && d->currentSelection.size()) {
-        for (int i = 0; i < d->currentSelection.size(); ++i) {
-            if (d->currentSelection.at(i).parent() == parent &&
-                column >= d->currentSelection.at(i).left() &&
-                column <= d->currentSelection.at(i).right())
-                return false;
-        }
+    if (d->currentCommand & Deselect) {
+        const auto matchesColumn = [&](const auto &selection)
+        {
+            return column >= selection.left() &&
+                   column <= selection.right() &&
+                   parent == selection.parent();
+        };
+        if (std::any_of(d->currentSelection.cbegin(), d->currentSelection.cend(), matchesColumn))
+            return false;
     }
     // return false if ranges in both currentSelection and the selection model
     // intersect and have the same column contained
-    if (d->currentCommand & Toggle && d->currentSelection.size()) {
-        for (int i = 0; i < d->currentSelection.size(); ++i) {
-            if (d->currentSelection.at(i).left() <= column &&
-                d->currentSelection.at(i).right() >= column) {
-                for (int j = 0; j < d->ranges.size(); ++j) {
-                    if (d->ranges.at(j).left() <= column && d->ranges.at(j).right() >= column
-                        && d->currentSelection.at(i).intersected(d->ranges.at(j)).isValid()) {
-                        return false;
-                    }
-                }
+    if (d->currentCommand & Toggle) {
+        for (const auto &selection : d->currentSelection) {
+            if (column >= selection.left() && column <= selection.right()) {
+                const auto selectionAndRangeIntersect = [&](const auto &range)
+                {
+                    return column >= range.left() &&
+                           column <= range.right() &&
+                           selection.intersected(range).isValid();
+                };
+                if (std::any_of(d->ranges.cbegin(), d->ranges.cend(), selectionAndRangeIntersect))
+                    return false;
             }
         }
     }
@@ -1576,31 +1576,31 @@ bool QItemSelectionModel::isColumnSelected(int column, const QModelIndex &parent
     auto isSelectable = [&](int row, int column) {
         return isSelectableAndEnabled(d->model->index(row, column, parent).flags());
     };
+
     const int rowCount = d->model->rowCount(parent);
     int unselectable = 0;
-
-    // add ranges and currentSelection and check through them all
-    QList<QItemSelectionRange>::const_iterator it;
-    QList<QItemSelectionRange> joined = d->ranges;
-    if (d->currentSelection.size())
-        joined += d->currentSelection;
+    // check ranges and currentSelection
     for (int row = 0; row < rowCount; ++row) {
         if (!isSelectable(row, column)) {
             ++unselectable;
             continue;
         }
-        for (it = joined.constBegin(); it != joined.constEnd(); ++it) {
-            if ((*it).contains(row, column, parent)) {
-                for (int i = row; i <= (*it).bottom(); ++i) {
-                    if (!isSelectable(i, column)) {
-                        ++unselectable;
+        const auto doCheck = [&](const auto &listToCheck)
+        {
+            for (const auto &curSel : listToCheck) {
+                if (curSel.contains(row, column, parent)) {
+                    const auto bottom = curSel.bottom();
+                    for (int i = row + 1; i <= bottom; ++i) {
+                        if (!isSelectable(i, column))
+                            ++unselectable;
                     }
+                    row = qMax(row, bottom);
+                    return true;
                 }
-                row = qMax(row, (*it).bottom());
-                break;
             }
-        }
-        if (it == joined.constEnd())
+            return false;
+        };
+        if (!doCheck(d->ranges) && !doCheck(d->currentSelection))
             return false;
     }
     return unselectable < rowCount;
@@ -1623,14 +1623,15 @@ bool QItemSelectionModel::rowIntersectsSelection(int row, const QModelIndex &par
 
     QItemSelection sel = d->ranges;
     sel.merge(d->currentSelection, d->currentCommand);
+    if (sel.isEmpty() || sel.constFirst().parent() != parent)
+        return false;
+
     for (const QItemSelectionRange &range : std::as_const(sel)) {
-        if (range.parent() != parent)
-            return false;
         int top = range.top();
         int bottom = range.bottom();
-        int left = range.left();
-        int right = range.right();
         if (top <= row && bottom >= row) {
+            int left = range.left();
+            int right = range.right();
             for (int j = left; j <= right; j++) {
                 if (isSelectableAndEnabled(d->model->index(row, j, parent).flags()))
                     return true;
@@ -1658,14 +1659,15 @@ bool QItemSelectionModel::columnIntersectsSelection(int column, const QModelInde
 
     QItemSelection sel = d->ranges;
     sel.merge(d->currentSelection, d->currentCommand);
+    if (sel.isEmpty() || sel.constFirst().parent() != parent)
+        return false;
+
     for (const QItemSelectionRange &range : std::as_const(sel)) {
-        if (range.parent() != parent)
-            return false;
-        int top = range.top();
-        int bottom = range.bottom();
         int left = range.left();
         int right = range.right();
         if (left <= column && right >= column) {
+            int top = range.top();
+            int bottom = range.bottom();
             for (int j = top; j <= bottom; j++) {
                 if (isSelectableAndEnabled(d->model->index(j, column, parent).flags()))
                     return true;
@@ -1683,7 +1685,7 @@ bool QItemSelectionModel::columnIntersectsSelection(int column, const QModelInde
     In contrast to selection.isEmpty(), this takes into account
     whether items are enabled and whether they are selectable.
 */
-static bool selectionIsEmpty(const QItemSelection &selection)
+static inline bool selectionIsEmpty(const QItemSelection &selection)
 {
     return std::all_of(selection.begin(), selection.end(),
                        [](const QItemSelectionRange &r) { return r.isEmpty(); });
