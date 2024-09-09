@@ -57,7 +57,6 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmDeadKeySupport *deadKeySupport,
       m_document(dom::document()),
       m_qtWindow(m_document.call<emscripten::val>("createElement", emscripten::val("div"))),
       m_windowContents(m_document.call<emscripten::val>("createElement", emscripten::val("div"))),
-      m_canvasContainer(m_document.call<emscripten::val>("createElement", emscripten::val("div"))),
       m_a11yContainer(m_document.call<emscripten::val>("createElement", emscripten::val("div"))),
       m_canvas(m_document.call<emscripten::val>("createElement", emscripten::val("canvas")))
 {
@@ -87,14 +86,10 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmDeadKeySupport *deadKeySupport,
 
     // Hide the canvas from screen readers.
     m_canvas.call<void>("setAttribute", std::string("aria-hidden"), std::string("true"));
+    m_windowContents.call<void>("appendChild", m_canvas);
 
-    m_windowContents.call<void>("appendChild", m_canvasContainer);
-
-    m_canvasContainer["classList"].call<void>("add", emscripten::val("qt-window-canvas-container"));
-    m_canvasContainer.call<void>("appendChild", m_canvas);
-
-    m_canvasContainer.call<void>("appendChild", m_a11yContainer);
     m_a11yContainer["classList"].call<void>("add", emscripten::val("qt-window-a11y-container"));
+    m_windowContents.call<void>("appendChild", m_a11yContainer);
 
     const bool rendersTo2dContext = w->surfaceType() != QSurface::OpenGLSurface;
     if (rendersTo2dContext)
@@ -134,7 +129,7 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmDeadKeySupport *deadKeySupport,
 QWasmWindow::~QWasmWindow()
 {
     emscripten::val::module_property("specialHTMLTargets").delete_(canvasSelector());
-    m_canvasContainer.call<void>("removeChild", m_canvas);
+    m_windowContents.call<void>("removeChild", m_canvas);
     m_context2d = emscripten::val::undefined();
     commitParent(nullptr);
     if (m_requestAnimationFrameId > -1)
@@ -282,8 +277,8 @@ void QWasmWindow::setGeometry(const QRect &rect)
 
     m_qtWindow["style"].set("left", std::to_string(frameRect.left()) + "px");
     m_qtWindow["style"].set("top", std::to_string(frameRect.top()) + "px");
-    m_canvasContainer["style"].set("width", std::to_string(clientAreaRect.width()) + "px");
-    m_canvasContainer["style"].set("height", std::to_string(clientAreaRect.height()) + "px");
+    m_canvas["style"].set("width", std::to_string(clientAreaRect.width()) + "px");
+    m_canvas["style"].set("height", std::to_string(clientAreaRect.height()) + "px");
     m_a11yContainer["style"].set("width", std::to_string(clientAreaRect.width()) + "px");
     m_a11yContainer["style"].set("height", std::to_string(clientAreaRect.height()) + "px");
 

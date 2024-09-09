@@ -165,9 +165,8 @@ const char *Style = R"css(
     opacity: 0.35;
 }
 
-.qt-window-canvas-container {
+.qt-window-contents {
     display: flex;
-    pointer-events: none;
 }
 
 .title-bar div {
