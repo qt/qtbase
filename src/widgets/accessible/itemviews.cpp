@@ -860,6 +860,10 @@ QAccessibleInterface *QAccessibleTree::child(int logicalIndex) const
     if (logicalIndex < 0 || !theModel || !theModel->columnCount(rootIndex))
         return nullptr;
 
+    auto id = childToId.constFind(logicalIndex);
+    if (id != childToId.constEnd())
+        return QAccessible::accessibleInterface(id.value());
+
     QAccessibleInterface *iface = nullptr;
     int index = logicalIndex;
 
@@ -879,7 +883,7 @@ QAccessibleInterface *QAccessibleTree::child(int logicalIndex) const
         iface = new QAccessibleTableCell(view(), modelIndex, cellRole());
     }
     QAccessible::registerAccessibleInterface(iface);
-    // ### FIXME: get interfaces from the cache instead of re-creating them
+    childToId.insert(logicalIndex, QAccessible::uniqueId(iface));
     return iface;
 }
 
@@ -931,7 +935,7 @@ QAccessibleInterface *QAccessibleTree::cellAt(int row, int column) const
     Q_ASSERT(treeView);
     int logicalIndex = treeView->d_func()->accessibleTable2Index(index);
 
-    return child(logicalIndex); // FIXME ### new QAccessibleTableCell(view(), index, cellRole());
+    return child(logicalIndex);
 }
 
 QString QAccessibleTree::rowDescription(int) const
