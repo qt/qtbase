@@ -494,7 +494,7 @@ QThread::~QThread()
             locker.relock();
         }
         if (d->threadState == QThreadPrivate::Running && !d->data->isAdopted)
-            qFatal("QThread: Destroyed while thread is still running");
+            qFatal("QThread: Destroyed while thread '%ls' is still running", qUtf16Printable(objectName()));
 
         d->data->thread.storeRelease(nullptr);
     }
