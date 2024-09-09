@@ -1,0 +1,34 @@
+From c3c113a4ec9b0c41cf096fe832e6420eac29122e Mon Sep 17 00:00:00 2001
+From: Tatiana Borisova <tatiana.borisova@qt.io>
+Date: Wed, 11 Sep 2024 11:16:07 +0200
+Subject: [PATCH] Harfbuzz: Fix Integrity compilation error
+
+Add Condition pre-declaration before _hb_recurse_condition_evaluate
+
+The patch is fixing the following compilation error:
+"/home/qt/work/qt/qtbase/src/3rdparty/harfbuzz-ng/src/hb-ot-layout-common.hh", line 3805: error #1201:
+typedef "Condition" may not be used in an elaborated type specifier
+_hb_recurse_condition_evaluate (const struct Condition &condition.
+
+Follows-up bec7f5ffe0bbe75d4bc2128cfa52f17f821a0820
+
+Change-Id: I5bc87b34169799ff25d6dd513436b71827e52a0d
+---
+ src/3rdparty/harfbuzz-ng/src/hb-ot-layout-common.hh | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/3rdparty/harfbuzz-ng/src/hb-ot-layout-common.hh b/src/3rdparty/harfbuzz-ng/src/hb-ot-layout-common.hh
+index 66274534b0..1f38923c61 100644
+--- a/src/3rdparty/harfbuzz-ng/src/hb-ot-layout-common.hh
++++ b/src/3rdparty/harfbuzz-ng/src/hb-ot-layout-common.hh
+@@ -3799,6 +3799,7 @@ enum Cond_with_Var_flag_t
+   DROP_RECORD_WITH_VAR = 3,
+ };
+ 
++struct Condition;
+ 
+ template <typename Instancer>
+ static bool
+-- 
+2.40.0.windows.1
+
