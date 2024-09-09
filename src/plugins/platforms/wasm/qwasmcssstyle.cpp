@@ -35,7 +35,7 @@ const char *Style = R"css(
     background-color: lightgray;
 }
 
-.qt-window-contents {
+.qt-window {
     overflow: hidden;
     position: relative;
 }
@@ -165,7 +165,7 @@ const char *Style = R"css(
     opacity: 0.35;
 }
 
-.qt-window-contents {
+.qt-window {
     display: flex;
 }
 

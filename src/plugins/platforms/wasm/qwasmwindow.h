@@ -94,7 +94,7 @@ public:
 
     emscripten::val context2d() const { return m_context2d; }
     emscripten::val a11yContainer() const { return m_a11yContainer; }
-    emscripten::val inputHandlerElement() const { return m_windowContents; }
+    emscripten::val inputHandlerElement() const { return m_window; }
 
     // QNativeInterface::Private::QWasmWindow
     emscripten::val document() const override { return m_document; }
@@ -138,7 +138,7 @@ private:
 
     emscripten::val m_document;
     emscripten::val m_decoratedWindow;
-    emscripten::val m_windowContents;
+    emscripten::val m_window;
     emscripten::val m_a11yContainer;
     emscripten::val m_canvas;
     emscripten::val m_context2d = emscripten::val::undefined();
