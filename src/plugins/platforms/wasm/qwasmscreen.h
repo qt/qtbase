@@ -36,7 +36,6 @@ public:
     static QWasmScreen *get(QPlatformScreen *screen);
     static QWasmScreen *get(QScreen *screen);
     emscripten::val element() const;
-    QString eventTargetId() const;
     QString outerScreenId() const;
     QPointingDevice *touchDevice() { return m_touchDevice.get(); }
     QPointingDevice *tabletDevice() { return m_tabletDevice.get(); }

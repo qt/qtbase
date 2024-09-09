@@ -78,9 +78,6 @@ QWasmScreen::QWasmScreen(const emscripten::val &containerOrCanvas)
     // on its id only under some conditions, like the target being embedded in a shadow DOM or a
     // subframe.
     emscripten::val::module_property("specialHTMLTargets")
-            .set(eventTargetId().toStdString(), m_shadowContainer);
-
-    emscripten::val::module_property("specialHTMLTargets")
             .set(outerScreenId().toStdString(), m_container);
 
     updateQScreenAndCanvasRenderSize();
@@ -109,9 +106,6 @@ QWasmScreen::QWasmScreen(const emscripten::val &containerOrCanvas)
 QWasmScreen::~QWasmScreen()
 {
     m_intermediateContainer.call<void>("remove");
-
-    emscripten::val::module_property("specialHTMLTargets")
-            .set(eventTargetId().toStdString(), emscripten::val::undefined());
 
     m_shadowContainer.set(m_canvasResizeObserverCallbackContextPropertyName,
                           emscripten::val(intptr_t(0)));
@@ -145,12 +139,6 @@ emscripten::val QWasmScreen::element() const
     return m_shadowContainer;
 }
 
-QString QWasmScreen::eventTargetId() const
-{
-    // Return a globally unique id for the canvas. We can choose any string,
-    // as long as it starts with a "!".
-    return QString("!qtcanvas_%1").arg(uintptr_t(this));
-}
 
 QString QWasmScreen::outerScreenId() const
 {
