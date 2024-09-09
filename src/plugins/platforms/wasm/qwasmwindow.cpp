@@ -101,11 +101,11 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmDeadKeySupport *deadKeySupport,
 
     m_flags = window()->flags();
 
-    m_pointerEnterCallback = std::make_unique<qstdweb::EventCallback>(m_qtWindow, "pointerenter",
+    m_pointerEnterCallback = std::make_unique<qstdweb::EventCallback>(m_windowContents, "pointerenter",
         [this](emscripten::val event) { this->handlePointerEvent(event); });
-    m_pointerLeaveCallback = std::make_unique<qstdweb::EventCallback>(m_qtWindow, "pointerleave",
+    m_pointerLeaveCallback = std::make_unique<qstdweb::EventCallback>(m_windowContents, "pointerleave",
         [this](emscripten::val event) { this->handlePointerEvent(event); });
-    m_wheelEventCallback = std::make_unique<qstdweb::EventCallback>( m_qtWindow, "wheel",
+    m_wheelEventCallback = std::make_unique<qstdweb::EventCallback>( m_windowContents, "wheel",
         [this](emscripten::val event) { this->handleWheelEvent(event); });
 
     QWasmInputContext *wasmInput = QWasmIntegration::get()->wasmInputContext();
@@ -118,9 +118,9 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmDeadKeySupport *deadKeySupport,
             [this](emscripten::val event) { this->handleKeyForInputContextEvent(event); });
     }
 
-    m_keyDownCallback = std::make_unique<qstdweb::EventCallback>(m_qtWindow, "keydown",
+    m_keyDownCallback = std::make_unique<qstdweb::EventCallback>(m_windowContents, "keydown",
         [this](emscripten::val event) { this->handleKeyEvent(event); });
-    m_keyUpCallback =std::make_unique<qstdweb::EventCallback>(m_qtWindow, "keyup",
+    m_keyUpCallback =std::make_unique<qstdweb::EventCallback>(m_windowContents, "keyup",
         [this](emscripten::val event) { this->handleKeyEvent(event); });
 
     setParent(parent());
