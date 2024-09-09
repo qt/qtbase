@@ -259,6 +259,9 @@ private slots:
     void ibaseInt128_data() { generic_data("QIBASE"); }
     void ibaseInt128();
 
+    void QTBUG_128493_data() { generic_data("QIBASE"); }
+    void QTBUG_128493();
+
 
     void psqlJsonOperator_data() { generic_data("QPSQL"); }
     void psqlJsonOperator();
@@ -4866,6 +4869,56 @@ void tst_QSqlQuery::ibaseDateTimeWithTZ()
         QVERIFY(q.next());
         QCOMPARE(q.value(0).toDateTime(), dt);
     }
+}
+
+void tst_QSqlQuery::QTBUG_128493()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+    if (tst_Databases::getDatabaseType(db) != QSqlDriver::Interbase)
+        QSKIP("Implemented only for Interbase");
+
+    if (tst_Databases::getIbaseEngineVersion(db).majorVersion() < 4)
+        QSKIP("Time zone support only implemented for firebird engine version 4 and greater");
+
+
+    QSqlQuery q{db};
+
+#if QT_CONFIG(timezone)
+    const auto currentDateTime = QDateTime::currentDateTime().toTimeZone(QTimeZone("Europe/Vienna"_ba));
+    //Set session time zone
+    QVERIFY_SQL(q, exec(u"set time zone 'Europe/Vienna'"_s));
+#else
+    const auto currentDateTime = QDateTime::currentDateTime();
+#endif // QT_CONFIG(timezone)
+
+    QVERIFY_SQL(q, exec(u"select current_timestamp from rdb$database"_s));
+    QVERIFY_SQL(q, isActive());
+    QVERIFY_SQL(q, next());
+    const auto currentDateTimeDB = q.value(0).toDateTime();
+
+    QCOMPARE(currentDateTime.date(), currentDateTimeDB.date());
+    QCOMPARE(currentDateTime.offsetFromUtc(), currentDateTimeDB.offsetFromUtc());
+    QCOMPARE(currentDateTime.isDaylightTime(), currentDateTimeDB.isDaylightTime());
+
+    QCOMPARE(currentDateTime.time().hour(), currentDateTimeDB.time().hour());
+
+    const QString tableName(qTableName(u"dateTimeTS"_s, __FILE__, db));
+    QVERIFY_SQL(q, exec(u"CREATE TABLE "_s + tableName + u"(dt timestamp with time zone)"_s));
+
+    QVERIFY_SQL(q, prepare(u"INSERT INTO %1 values(:dt)"_s.arg(tableName)));
+    q.bindValue(":dt", currentDateTime );
+    QVERIFY_SQL(q, exec());
+
+    QVERIFY_SQL(q, exec(u"SELECT cast(dt AS VARCHAR(50)) FROM "_s + tableName));
+    QVERIFY_SQL(q, next());
+
+    const auto currentDateTimeFromDBString = q.value(0).toString();
+    auto currentDateTimeFromDB = QDateTime::fromString(currentDateTimeFromDBString,
+                                                       u"yyyy-MM-dd hh:mm:ss.zzz0 tttt"_s);
+
+    QCOMPARE(currentDateTimeFromDB, currentDateTime);
 }
 
 void tst_QSqlQuery::sqliteVirtualTable()
