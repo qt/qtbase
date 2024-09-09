@@ -50,7 +50,6 @@ Q_GUI_EXPORT int qt_defaultDpiX();
 QWasmWindow::QWasmWindow(QWindow *w, QWasmDeadKeySupport *deadKeySupport,
                          QWasmCompositor *compositor, QWasmBackingStore *backingStore)
     : QPlatformWindow(w),
-      m_window(w),
       m_compositor(compositor),
       m_backingStore(backingStore),
       m_deadKeySupport(deadKeySupport),
@@ -606,7 +605,7 @@ bool QWasmWindow::processPointer(const PointerEvent &event)
         const auto pointInScreen = platformScreen()->mapFromLocal(
             dom::mapPoint(event.target(), platformScreen()->element(), event.localPoint));
         QWindowSystemInterface::handleEnterEvent(
-                window(), m_window->mapFromGlobal(pointInScreen), pointInScreen);
+                window(), mapFromGlobal(pointInScreen.toPoint()), pointInScreen);
         break;
     }
     case EventType::PointerLeave:

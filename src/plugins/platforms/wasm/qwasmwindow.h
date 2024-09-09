@@ -89,7 +89,6 @@ public:
     QWasmScreen *platformScreen() const;
     void setBackingStore(QWasmBackingStore *store) { m_backingStore = store; }
     QWasmBackingStore *backingStore() const { return m_backingStore; }
-    QWindow *window() const { return m_window; }
 
     std::string canvasSelector() const;
 
@@ -132,7 +131,6 @@ private:
     void handleWheelEvent(const emscripten::val &event);
     bool processWheel(const WheelEvent &event);
 
-    QWindow *m_window = nullptr;
     QWasmCompositor *m_compositor = nullptr;
     QWasmBackingStore *m_backingStore = nullptr;
     QWasmDeadKeySupport *m_deadKeySupport;
