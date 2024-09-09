@@ -30,6 +30,7 @@ qt_internal_add_3rdparty_library(BundledHarfbuzz
         src/hb-fallback-shape.cc
         src/hb-font.cc src/hb-font.h src/hb-font.hh
         src/hb-ft-colr.hh
+        src/hb-geometry.hh
         src/hb-limits.hh
         src/hb-map.cc
         src/hb-mutex.hh
@@ -169,6 +170,7 @@ qt_internal_extend_target(BundledHarfbuzz CONDITION TRUE
         src/hb-ot-var-fvar-table.hh
         src/hb-ot-var-hvar-table.hh
         src/hb-ot-var-mvar-table.hh
+        src/hb-ot-var-varc-table.hh
         src/OT/Color/CBDT/CBDT.hh
         src/OT/Color/COLR/COLR.hh
         src/OT/Color/COLR/colrv1-closure.hh
@@ -177,6 +179,8 @@ qt_internal_extend_target(BundledHarfbuzz CONDITION TRUE
         src/OT/Color/svg/svg.hh
         src/OT/Layout/GDEF/GDEF.hh
         src/OT/name/name.hh
+        src/OT/Var/VARC/coord-setter.hh
+        src/OT/Var/VARC/VARC.cc src/OT/Var/VARC/VARC.hh
     DEFINES
         HAVE_OT
 )
