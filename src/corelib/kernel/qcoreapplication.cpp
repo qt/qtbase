@@ -43,6 +43,7 @@
 #include <private/qlocale_p.h>
 #include <private/qlocking_p.h>
 #include <private/qhooks_p.h>
+#include <private/qnativeinterface_p.h>
 
 #if QT_CONFIG(permissions)
 #include <private/qpermissions_p.h>
@@ -3361,6 +3362,16 @@ void QCoreApplication::setEventDispatcher(QAbstractEventDispatcher *eventDispatc
 
 void *QCoreApplication::resolveInterface(const char *name, int revision) const
 {
+#if defined(Q_OS_ANDROID)
+    // The QAndroidApplication is wrongly using static methods for
+    // its native interface (QTBUG-128796). Until we fix that we at
+    // least want the preferred way of resolving a native interface
+    // to work, so provide a minimal subclass of the interface.
+    using namespace QNativeInterface;
+    struct AndroidApplication : public QAndroidApplication {};
+    static AndroidApplication androidApplication;
+    QT_NATIVE_INTERFACE_RETURN_IF(QAndroidApplication, &androidApplication);
+#endif
     Q_UNUSED(name); Q_UNUSED(revision);
     return nullptr;
 }
