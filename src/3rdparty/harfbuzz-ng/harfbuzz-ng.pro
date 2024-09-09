@@ -202,7 +202,9 @@ contains(SHAPERS, opentype) {
         $$PWD/src/hb-ot-var-fvar-table.hh \
         $$PWD/src/hb-ot-var-gvar-table.hh \
         $$PWD/src/hb-ot-var-hvar-table.hh \
-        $$PWD/src/hb-ot-var-mvar-table.hh
+        $$PWD/src/hb-ot-var-mvar-table.hh \
+        $$PWD/src/hb-ot-var-varc-table.hh \
+        $$PWD/src/OT/Var/VARC/VARC.cc
 
     HEADERS += \
         $$PWD/src/hb-ot.h \
@@ -219,7 +221,9 @@ contains(SHAPERS, opentype) {
         $$PWD/src/OT/Color/sbix/sbix.hh \
         $$PWD/src/OT/Color/svg/svg.hh \
         $$PWD/src/OT/Layout/GDEF/GDEF.hh \
-        $$PWD/src/OT/name/name.hh
+        $$PWD/src/OT/name/name.hh \
+        $$PWD/src/OT/Var/VARC/coord-setter.hh \
+        $$PWD/src/OT/Var/VARC/VARC.hh
 
 }
 
