@@ -126,7 +126,6 @@ qt_internal_add_module(Core
         io/qfilesystementry.cpp io/qfilesystementry_p.h
         io/qfilesystemiterator_p.h
         io/qfilesystemmetadata_p.h
-        io/qfloat16format.h
         io/qfsfileengine.cpp io/qfsfileengine_p.h
         io/qfsfileengine_iterator.cpp io/qfsfileengine_iterator_p.h
         io/qiodevice.cpp io/qiodevice.h io/qiodevice_p.h

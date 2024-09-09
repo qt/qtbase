@@ -17,3 +17,12 @@ qt_internal_add_test(tst_qfloat16
     LIBRARIES
         Qt::TestPrivate
 )
+
+# To test std::format support, if possible
+if(NOT VXWORKS)
+    set_target_properties(tst_qfloat16
+        PROPERTIES
+            CXX_STANDARD 20
+            CXX_STANDARD_REQUIRED OFF
+    )
+endif()
