@@ -185,14 +185,19 @@ QT_IMPL_METATYPE_EXTERN(QItemSelection)
 bool QItemSelectionRange::intersects(const QItemSelectionRange &other) const
 {
     // isValid() and parent() last since they are more expensive
-    return (model() == other.model()
-            && ((top() <= other.top() && bottom() >= other.top())
-                || (top() >= other.top() && top() <= other.bottom()))
-            && ((left() <= other.left() && right() >= other.left())
-                || (left() >= other.left() && left() <= other.right()))
-            && parent() == other.parent()
-            && isValid() && other.isValid()
-            );
+    if (model() != other.model())
+        return false;
+
+    if (top() > other.bottom() || bottom() < other.top())
+        return false;
+
+    if (left() > other.right() || right() < other.left())
+        return false;
+
+    if (parent() != other.parent())
+        return false;
+
+    return isValid() && other.isValid();
 }
 
 /*!
