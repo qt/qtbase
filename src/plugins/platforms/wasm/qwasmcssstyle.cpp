@@ -30,7 +30,7 @@ const char *Style = R"css(
     touch-action: none;
 }
 
-.qt-window {
+.qt-decorated-window {
     position: absolute;
     background-color: lightgray;
 }
@@ -40,20 +40,20 @@ const char *Style = R"css(
     position: relative;
 }
 
-.qt-window.transparent-for-input {
+.qt-decorated-window.transparent-for-input {
     pointer-events: none;
 }
 
-.qt-window.has-shadow {
+.qt-decorated-window.has-shadow {
     box-shadow: rgb(0 0 0 / 20%) 0px 10px 16px 0px, rgb(0 0 0 / 19%) 0px 6px 20px 0px;
 }
 
-.qt-window.has-border {
+.qt-decorated-window.has-border {
     border: var(--border-width) solid lightgray;
     caret-color: transparent;
 }
 
-.qt-window.frameless {
+.qt-decorated-window.frameless {
     background-color: transparent;
 }
 
@@ -62,9 +62,9 @@ const char *Style = R"css(
     display: none;
 }
 
-.qt-window.no-resize > .resize-outline { display: none; }
+.qt-decorated-window.no-resize > .resize-outline { display: none; }
 
-.qt-window.has-border:not(.maximized):not(.no-resize) > .resize-outline {
+.qt-decorated-window.has-border:not(.maximized):not(.no-resize) > .resize-outline {
     display: block;
 }
 
@@ -140,7 +140,7 @@ const char *Style = R"css(
     padding-bottom: 4px;
 }
 
-.qt-window.has-border > .title-bar {
+.qt-decorated-window.has-border > .title-bar {
     display: flex;
 }
 
@@ -153,7 +153,7 @@ const char *Style = R"css(
 }
 
 
-.qt-window.has-title .title-bar .window-name {
+.qt-decorated-window.has-title .title-bar .window-name {
     display: block;
 }
 
@@ -161,7 +161,7 @@ const char *Style = R"css(
     flex-grow: 1
 }
 
-.qt-window.inactive .title-bar {
+.qt-decorated-window.inactive .title-bar {
     opacity: 0.35;
 }
 
@@ -200,7 +200,7 @@ const char *Style = R"css(
     pointer-events: all;
 }
 
-.qt-window.blocked div {
+.qt-decorated-window.blocked div {
     pointer-events: none;
 }
 

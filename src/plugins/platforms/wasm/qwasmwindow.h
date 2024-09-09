@@ -98,7 +98,7 @@ public:
 
     // QNativeInterface::Private::QWasmWindow
     emscripten::val document() const override { return m_document; }
-    emscripten::val clientArea() const override { return m_qtWindow; }
+    emscripten::val clientArea() const override { return m_decoratedWindow; }
 
     // QWasmWindowTreeNode:
     emscripten::val containerElement() final;
@@ -137,7 +137,7 @@ private:
     QRect m_normalGeometry {0, 0, 0 ,0};
 
     emscripten::val m_document;
-    emscripten::val m_qtWindow;
+    emscripten::val m_decoratedWindow;
     emscripten::val m_windowContents;
     emscripten::val m_a11yContainer;
     emscripten::val m_canvas;
