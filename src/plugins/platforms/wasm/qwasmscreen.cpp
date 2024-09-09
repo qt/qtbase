@@ -80,7 +80,7 @@ QWasmScreen::QWasmScreen(const emscripten::val &containerOrCanvas)
     emscripten::val::module_property("specialHTMLTargets")
             .set(outerScreenId().toStdString(), m_container);
 
-    updateQScreenAndCanvasRenderSize();
+    updateQScreenSize();
     m_shadowContainer.call<void>("focus");
 
     m_touchDevice = std::make_unique<QPointingDevice>(
@@ -266,23 +266,12 @@ void QWasmScreen::onSubtreeChanged(QWasmWindowTreeNodeChangeType changeType,
     m_compositor->onWindowTreeChanged(changeType, child);
 }
 
-void QWasmScreen::updateQScreenAndCanvasRenderSize()
+void QWasmScreen::updateQScreenSize()
 {
-    // The HTML canvas has two sizes: the CSS size and the canvas render size.
-    // The CSS size is determined according to standard CSS rules, while the
-    // render size is set using the "width" and "height" attributes. The render
-    // size must be set manually and is not auto-updated on CSS size change.
-    // Setting the render size to a value larger than the CSS size enables high-dpi
-    // rendering.
     double css_width;
     double css_height;
     emscripten_get_element_css_size(outerScreenId().toUtf8().constData(), &css_width, &css_height);
     QSizeF cssSize(css_width, css_height);
-
-    QSizeF canvasSize = cssSize * devicePixelRatio();
-
-    m_shadowContainer.set("width", canvasSize.width());
-    m_shadowContainer.set("height", canvasSize.height());
 
     // Returns the html elements document/body position
     auto getElementBodyPosition = [](const emscripten::val &element) -> QPoint {
@@ -309,10 +298,7 @@ void QWasmScreen::canvasResizeObserverCallback(emscripten::val entries, emscript
         return;
     }
 
-    // We could access contentBoxSize|contentRect|devicePixelContentBoxSize on the entry here, but
-    // these are not universally supported across all browsers. Get the sizes from the canvas
-    // instead.
-    screen->updateQScreenAndCanvasRenderSize();
+    screen->updateQScreenSize();
 }
 
 EMSCRIPTEN_BINDINGS(qtCanvasResizeObserverCallback)

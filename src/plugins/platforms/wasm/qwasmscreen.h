@@ -65,7 +65,7 @@ public:
     QPointF clipPoint(const QPointF &p) const;
 
     void invalidateSize();
-    void updateQScreenAndCanvasRenderSize();
+    void updateQScreenSize();
     void installCanvasResizeObserver();
     static void canvasResizeObserverCallback(emscripten::val entries, emscripten::val);
 
