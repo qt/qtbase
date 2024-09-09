@@ -249,7 +249,10 @@ QDateTime fromTimeStampTz(char *buffer)
 
     QByteArray timeZoneName = qFbTzIdToIanaIdMap()->value(fpTzID);
     if (!timeZoneName.isEmpty())
-        return QDateTime(d, t, QTimeZone(timeZoneName));
+    {
+        const auto utc = QDateTime(d, t, QTimeZone(QTimeZone::UTC));
+        return utc.toTimeZone(QTimeZone(timeZoneName));
+    }
     else
         return {};
 }
@@ -258,9 +261,11 @@ ISC_TIMESTAMP_TZ toTimeStampTz(const QDateTime &dt)
 {
     static const QTime midnight(0, 0, 0, 0);
     static const QDate basedate(1858, 11, 17);
+
+    const auto dtUtc = dt.toUTC();
     ISC_TIMESTAMP_TZ ts;
-    ts.utc_timestamp.timestamp_time = midnight.msecsTo(dt.time()) * 10;
-    ts.utc_timestamp.timestamp_date = basedate.daysTo(dt.date());
+    ts.utc_timestamp.timestamp_time = midnight.msecsTo(dtUtc.time()) * 10;
+    ts.utc_timestamp.timestamp_date = basedate.daysTo(dtUtc.date());
     ts.time_zone = qIanaIdToFbTzIdMap()->value(dt.timeZone().id().simplified(), 0);
     return ts;
 }
