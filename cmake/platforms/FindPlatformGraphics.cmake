@@ -5,9 +5,9 @@
 # PlatformGraphics
 # ---------
 
-if(INTEGRITY)
+if(CMAKE_SYSTEM_NAME STREQUAL "Integrity")
     set(platform Integrity)
-elseif(VXWORKS)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "VxWorks")
     set(platform VxWorks)
 else()
     set(PlatformGraphics_FOUND FALSE)
