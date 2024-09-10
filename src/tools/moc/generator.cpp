@@ -1023,7 +1023,7 @@ void Generator::generateStaticMetacall()
                     const ArgumentDef &a = *it;
                     if (it != begin)
                         fprintf(out, ",");
-                    fprintf(out, "(*reinterpret_cast< %s>(_a[%d]))", disambiguatedTypeNameForCast(a.normalizedType).constData(), offset++);
+                    fprintf(out, "(*reinterpret_cast<%s>(_a[%d]))", disambiguatedTypeNameForCast(a.normalizedType).constData(), offset++);
                     usedArgs |= UsedA;
                 }
                 if (f.isPrivateSignal) {
@@ -1034,7 +1034,7 @@ void Generator::generateStaticMetacall()
             }
             fprintf(out, ");");
             if (f.normalizedType != "void") {
-                fprintf(out, "\n            if (_a[0]) *reinterpret_cast< %s*>(_a[0]) = std::move(_r); } ",
+                fprintf(out, "\n            if (_a[0]) *reinterpret_cast<%s*>(_a[0]) = std::move(_r); } ",
                         disambiguatedTypeName(noRef(f.normalizedType)).constData());
                 usedArgs |= UsedA;
             }
