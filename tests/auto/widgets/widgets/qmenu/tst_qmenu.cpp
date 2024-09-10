@@ -116,6 +116,7 @@ private slots:
     void deleteWhenTriggered();
 
     void nestedTearOffDetached();
+    void closeMenuOnClickIfMouseHasntMoved();
 
 protected slots:
     void onActivated(QAction*);
@@ -2111,6 +2112,37 @@ void tst_QMenu::nestedTearOffDetached()
     QTest::mouseMove(menuTorn, menuTorn->actionGeometry(subSubMenu->menuAction()).center());
     QTRY_VERIFY(subSubMenu->isVisible());
     QTest::mouseClick(subSubMenu, Qt::LeftButton, {}, QPoint(subSubMenu->width() / 2, tearOffOffset));
+}
+
+/*!
+    Test that a menu will close if you do a mouse click on top of
+    it without having moved the mouse.
+    (QTBUG-128359).
+*/
+void tst_QMenu::closeMenuOnClickIfMouseHasntMoved()
+{
+    QWidget w;
+    w.resize(100, 100);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+
+    QMenu contextMenu;
+    for (int i = 0; i < 5; ++i) {
+        QAction *action = contextMenu.addAction(QStringLiteral("action"));
+        connect(action, &QAction::triggered, []{ QFAIL("No menu item should trigger"); });
+    }
+
+    const QPoint pos = w.rect().center();
+    const QPoint globalPos = w.mapToGlobal(pos);
+    // Move the mouse inside the window
+    QTest::mouseMove(&w, pos);
+    // Move the menu a bit up, so that a menu item falls underneath the
+    // mouse (similar to the code attached to the bug report: QTBUG-128359).
+    contextMenu.popup(globalPos - QPoint(0, 20));
+    QVERIFY(QTest::qWaitForWindowExposed(&contextMenu));
+    // Do a mouse click without having moved the cursor. This
+    // should close the menu, even if it's underneath the mouse.
+    QTest::mouseClick(&contextMenu, Qt::RightButton, {}, contextMenu.mapFromGlobal(pos));
 }
 
 QTEST_MAIN(tst_QMenu)
