@@ -18,6 +18,48 @@ QT_BEGIN_NAMESPACE
 QT_IMPL_METATYPE_EXTERN(QItemSelectionRange)
 QT_IMPL_METATYPE_EXTERN(QItemSelection)
 
+// a small helper to cache calls to QPMI functions as they are expensive
+struct QItemSelectionRangeRefCache
+{
+    QItemSelectionRangeRefCache(const QItemSelectionRange &range)
+        : m_range(range)
+    {}
+    inline void invalidate() { m_top = m_left = m_bottom = m_right = -1; }
+    inline bool contains(int row, int column, const QModelIndex &parentIndex)
+    {
+        populate();
+        return (m_bottom >= row && m_right >= column &&
+                m_top    <= row && m_left  <= column &&
+                parent() == parentIndex);
+    }
+    inline void populate()
+    {
+        if (m_top > -2)
+            return;
+        m_top = m_range.top();
+        m_left = m_range.left();
+        m_bottom = m_range.bottom();
+        m_right = m_range.right();
+    }
+    inline const QModelIndex &parent()
+    {
+        if (!m_parent.has_value())
+            m_parent = m_range.parent();
+        return m_parent.value();
+    }
+    // we assume we're initialized for the next functions
+    inline int bottom() const { return m_bottom; }
+    inline int right() const { return m_right; }
+
+private:
+    int m_top = -2;
+    int m_left = 0;
+    int m_bottom = 0;
+    int m_right = 0;
+    std::optional<QModelIndex> m_parent;
+    const QItemSelectionRange &m_range;
+};
+
 /*!
     \class QItemSelectionRange
     \inmodule QtCore
@@ -1504,28 +1546,32 @@ bool QItemSelectionModel::isRowSelected(int row, const QModelIndex &parent) cons
 
     const int colCount = d->model->columnCount(parent);
     int unselectable = 0;
+    std::vector<QItemSelectionRangeRefCache> cache;
+    cache.reserve(d->currentSelection.size() + d->ranges.size());
+    std::copy(d->currentSelection.begin(), d->currentSelection.end(), std::back_inserter(cache));
+    std::copy(d->ranges.begin(), d->ranges.end(), std::back_inserter(cache));
+
     // check ranges and currentSelection
     for (int column = 0; column < colCount; ++column) {
         if (!isSelectable(row, column)) {
             ++unselectable;
             continue;
         }
-        const auto doCheck = [&](const auto &listToCheck)
-        {
-            for (const auto &curSel : listToCheck) {
-                if (curSel.contains(row, column, parent)) {
-                    const auto right = curSel.right();
-                    for (int i = column + 1; i <= right; ++i) {
-                        if (!isSelectable(row, i))
-                            ++unselectable;
-                    }
-                    column = qMax(column, right);
-                    return true;
+        bool foundSelection = false;
+        for (auto &curSel : cache) {
+            if (curSel.contains(row, column, parent)) {
+                const auto right = curSel.right();
+                for (int i = column + 1; i <= right; ++i) {
+                    if (!isSelectable(row, i))
+                        ++unselectable;
                 }
+                column = right;
+                foundSelection = true;
+                curSel.invalidate();
+                break;
             }
-            return false;
-        };
-        if (!doCheck(d->ranges) && !doCheck(d->currentSelection))
+        }
+        if (!foundSelection)
             return false;
     }
     return unselectable < colCount;
@@ -1584,28 +1630,32 @@ bool QItemSelectionModel::isColumnSelected(int column, const QModelIndex &parent
 
     const int rowCount = d->model->rowCount(parent);
     int unselectable = 0;
+    std::vector<QItemSelectionRangeRefCache> cache;
+    cache.reserve(d->currentSelection.size() + d->ranges.size());
+    std::copy(d->currentSelection.begin(), d->currentSelection.end(), std::back_inserter(cache));
+    std::copy(d->ranges.begin(), d->ranges.end(), std::back_inserter(cache));
+
     // check ranges and currentSelection
     for (int row = 0; row < rowCount; ++row) {
         if (!isSelectable(row, column)) {
             ++unselectable;
             continue;
         }
-        const auto doCheck = [&](const auto &listToCheck)
-        {
-            for (const auto &curSel : listToCheck) {
-                if (curSel.contains(row, column, parent)) {
-                    const auto bottom = curSel.bottom();
-                    for (int i = row + 1; i <= bottom; ++i) {
-                        if (!isSelectable(i, column))
-                            ++unselectable;
-                    }
-                    row = qMax(row, bottom);
-                    return true;
+        bool foundSelection = false;
+        for (auto &curSel : cache) {
+            if (curSel.contains(row, column, parent)) {
+                const auto bottom = curSel.bottom();
+                for (int i = row + 1; i <= bottom; ++i) {
+                    if (!isSelectable(i, column))
+                        ++unselectable;
                 }
+                row = bottom;
+                foundSelection = true;
+                curSel.invalidate();
+                break;
             }
-            return false;
-        };
-        if (!doCheck(d->ranges) && !doCheck(d->currentSelection))
+        }
+        if (!foundSelection)
             return false;
     }
     return unselectable < rowCount;
