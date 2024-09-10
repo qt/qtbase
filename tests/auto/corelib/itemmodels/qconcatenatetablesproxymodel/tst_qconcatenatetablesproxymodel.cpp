@@ -10,6 +10,7 @@
 #include <QMimeData>
 #include <QStringListModel>
 #include <QAbstractItemModelTester>
+#include <QTransposeProxyModel>
 
 #include <qconcatenatetablesproxymodel.h>
 
@@ -72,6 +73,8 @@ private Q_SLOTS:
     void shouldIncreaseColumnCountWhenRemovingFirstModel();
     void shouldHandleColumnInsertionAndRemoval();
     void shouldPropagateLayoutChanged();
+    void shouldPropagateRowMove();
+    void shouldPropagateColumnMove();
     void shouldReactToModelReset();
     void shouldUpdateColumnsOnModelReset();
     void shouldPropagateDropOnItem_data();
@@ -543,6 +546,68 @@ void tst_QConcatenateTablesProxyModel::shouldPropagateLayoutChanged()
         QCOMPARE(lstAfter.at(col).row(), 2);
         QCOMPARE(lstAfter.at(col).column(), col);
     }
+}
+
+void tst_QConcatenateTablesProxyModel::shouldPropagateRowMove()
+{
+    // Given two source models (which support moving rows)
+    QStringListModel model1({ "0", "1", "2" });
+    QStringListModel model2({ "A", "B", "C" });
+    QConcatenateTablesProxyModel proxy;
+    new QAbstractItemModelTester(&proxy, &proxy);
+    proxy.addSourceModel(&model1);
+    proxy.addSourceModel(&model2);
+    QCOMPARE(extractColumnTexts(&proxy, 0), QStringLiteral("012ABC"));
+    QSignalSpy rowsATBMSpy(&proxy, &QAbstractItemModel::rowsAboutToBeMoved);
+    QSignalSpy rowsMovedSpy(&proxy, &QAbstractItemModel::rowsMoved);
+
+    // When moving a row
+    QVERIFY(model2.moveRow({}, 0, {}, 2));
+
+    // Then
+    QCOMPARE(extractColumnTexts(&proxy, 0), QStringLiteral("012BAC"));
+    QCOMPARE(rowsATBMSpy.count(), 1);
+    QCOMPARE(rowsMovedSpy.count(), 1);
+    QCOMPARE(rowsATBMSpy[0][1].toInt(), 3); // sourceStart
+    QCOMPARE(rowsATBMSpy[0][2].toInt(), 3); // sourceEnd
+    QCOMPARE(rowsATBMSpy[0][4].toInt(), 5); // destinationRow
+    QCOMPARE(rowsMovedSpy[0][1].toInt(), 3); // sourceStart
+    QCOMPARE(rowsMovedSpy[0][2].toInt(), 3); // sourceEnd
+    QCOMPARE(rowsMovedSpy[0][4].toInt(), 5); // destinationRow
+}
+
+void tst_QConcatenateTablesProxyModel::shouldPropagateColumnMove()
+{
+    // Given two source models (which support moving rows)
+    // and two transpose proxies (so it becomes columns)
+    QStringListModel model1({ "0", "1", "2" });
+    QStringListModel model2({ "A", "B", "C" });
+    QTransposeProxyModel transpose1;
+    QTransposeProxyModel transpose2;
+    transpose1.setSourceModel(&model1);
+    transpose2.setSourceModel(&model2);
+
+    QConcatenateTablesProxyModel proxy;
+    new QAbstractItemModelTester(&proxy, &proxy);
+    proxy.addSourceModel(&transpose1);
+    proxy.addSourceModel(&transpose2);
+    QCOMPARE(extractRowTexts(&proxy, 0), QStringLiteral("012"));
+    QCOMPARE(extractRowTexts(&proxy, 1), QStringLiteral("ABC"));
+    QSignalSpy columnsATBMSpy(&proxy, &QAbstractItemModel::columnsAboutToBeMoved);
+    QSignalSpy columnsMovedSpy(&proxy, &QAbstractItemModel::columnsMoved);
+    QPersistentModelIndex A(proxy.index(1, 0));
+    QCOMPARE(A.data().toString(), "A");
+
+    // When moving a row in a stringlist model, which moves a column in a transpose proxy
+    QVERIFY(model2.moveRow({}, 0, {}, 2));
+
+    // Then, well, we didn't fully move a column in the concatenate proxy.
+    // It will emit layoutChanged and update persistent indexes, instead.
+    QCOMPARE(extractRowTexts(&proxy, 0), QStringLiteral("012"));
+    QCOMPARE(extractRowTexts(&proxy, 1), QStringLiteral("BAC"));
+    QCOMPARE(columnsATBMSpy.count(), 0);
+    QCOMPARE(columnsMovedSpy.count(), 0);
+    QCOMPARE(A.data().toString(), "A");
 }
 
 void tst_QConcatenateTablesProxyModel::shouldReactToModelReset()
