@@ -1018,12 +1018,21 @@ void Generator::generateStaticMetacall()
             cdef->qualified.constData());
 
     enum UsedArgs {
-        UsedO = 1,
+        UsedT = 1,
         UsedC = 2,
         UsedId = 4,
         UsedA = 8,
     };
     uint usedArgs = 0;
+
+    if (cdef->hasQObject) {
+#ifndef QT_NO_DEBUG
+        fprintf(out, "    Q_ASSERT(_o == nullptr || staticMetaObject.cast(_o));\n");
+#endif
+        fprintf(out, "    auto *_t = static_cast<%s *>(_o);\n", cdef->classname.constData());
+    } else {
+        fprintf(out, "    auto *_t = reinterpret_cast<%s *>(_o);\n", cdef->classname.constData());
+    }
 
     const auto generateCtorArguments = [&](int ctorindex) {
         const FunctionDef &f = cdef->constructorList.at(ctorindex);
@@ -1076,17 +1085,8 @@ void Generator::generateStaticMetacall()
     methodList += cdef->methodList;
 
     if (!methodList.isEmpty()) {
-        usedArgs |= UsedO | UsedC | UsedId;
+        usedArgs |= UsedT | UsedC | UsedId;
         fprintf(out, "    if (_c == QMetaObject::InvokeMetaMethod) {\n");
-        if (cdef->hasQObject) {
-#ifndef QT_NO_DEBUG
-            fprintf(out, "        Q_ASSERT(staticMetaObject.cast(_o));\n");
-#endif
-            fprintf(out, "        auto *_t = static_cast<%s *>(_o);\n", cdef->classname.constData());
-        } else {
-            fprintf(out, "        auto *_t = reinterpret_cast<%s *>(_o);\n", cdef->classname.constData());
-        }
-        fprintf(out, "        (void)_t;\n");
         fprintf(out, "        switch (_id) {\n");
         for (int methodindex = 0; methodindex < methodList.size(); ++methodindex) {
             const FunctionDef &f = methodList.at(methodindex);
@@ -1239,24 +1239,12 @@ void Generator::generateStaticMetacall()
             hasBindableProperties |= !p.bind.isEmpty();
         }
         if (needGet || needSet || hasBindableProperties || needReset)
-            usedArgs |= UsedO | UsedC | UsedId;
+            usedArgs |= UsedT | UsedC | UsedId;
         if (needGet || needSet || hasBindableProperties)
             usedArgs |= UsedA;  // resetting doesn't need arguments
 
-        auto setupMemberAccess = [this]() {
-            if (cdef->hasQObject) {
-#ifndef QT_NO_DEBUG
-                fprintf(out, "        Q_ASSERT(staticMetaObject.cast(_o));\n");
-#endif
-                fprintf(out, "        auto *_t = static_cast<%s *>(_o);\n", cdef->classname.constData());
-            } else {
-                fprintf(out, "        auto *_t = reinterpret_cast<%s *>(_o);\n", cdef->classname.constData());
-            }
-        };
-
         if (needGet) {
             fprintf(out, "    if (_c == QMetaObject::ReadProperty) {\n");
-            setupMemberAccess();
             if (needTempVarForGet)
                 fprintf(out, "        void *_v = _a[0];\n");
             fprintf(out, "        switch (_id) {\n");
@@ -1295,7 +1283,6 @@ void Generator::generateStaticMetacall()
 
         if (needSet) {
             fprintf(out, "    if (_c == QMetaObject::WriteProperty) {\n");
-            setupMemberAccess();
             fprintf(out, "        void *_v = _a[0];\n");
             fprintf(out, "        switch (_id) {\n");
             for (int propindex = 0; propindex < int(cdef->propertyList.size()); ++propindex) {
@@ -1347,7 +1334,6 @@ void Generator::generateStaticMetacall()
 
         if (needReset) {
             fprintf(out, "if (_c == QMetaObject::ResetProperty) {\n");
-            setupMemberAccess();
             fprintf(out, "        switch (_id) {\n");
             for (int propindex = 0; propindex < int(cdef->propertyList.size()); ++propindex) {
                 const PropertyDef &p = cdef->propertyList.at(propindex);
@@ -1367,7 +1353,6 @@ void Generator::generateStaticMetacall()
 
         if (hasBindableProperties) {
             fprintf(out, "    if (_c == QMetaObject::BindableProperty) {\n");
-            setupMemberAccess();
             fprintf(out, "        switch (_id) {\n");
             for (int propindex = 0; propindex < int(cdef->propertyList.size()); ++propindex) {
                 const PropertyDef &p = cdef->propertyList.at(propindex);
@@ -1392,7 +1377,7 @@ void Generator::generateStaticMetacall()
         if ((usedArgs & entry) == 0)
             fprintf(out, "    (void)%s;\n", name);
     };
-    printUnused(UsedO, "_o");
+    printUnused(UsedT, "_t");
     printUnused(UsedC, "_c");
     printUnused(UsedId, "_id");
     printUnused(UsedA, "_a");
