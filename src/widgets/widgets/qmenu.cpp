@@ -2459,7 +2459,7 @@ void QMenuPrivate::popup(const QPoint &p, QAction *atAction, PositionFunction po
         }
     }
 
-    QPoint mouse = QCursor::pos();
+    const QPoint mouse = QGuiApplicationPrivate::lastCursorPosition.toPoint();
     mousePopupPos = mouse;
     const bool snapToMouse = !causedPopup.widget && (QRect(p.x() - 3, p.y() - 3, 6, 6).contains(mouse));
 
@@ -2892,7 +2892,9 @@ void QMenu::mousePressEvent(QMouseEvent *e)
     // and mouse clicks on second screen, e->pos() is QPoint(0,0) and the menu doesn't hide. This trick makes
     // possible to hide the menu when mouse clicks on another screen (e->screenPos() returns correct value).
     // Only when mouse clicks in QPoint(0,0) on second screen, the menu doesn't hide.
-    if ((e->position().toPoint().isNull() && !e->globalPosition().isNull()) || !rect().contains(e->position().toPoint())) {
+    if ((e->position().toPoint().isNull() && !e->globalPosition().isNull())
+        || !rect().contains(e->position().toPoint())
+        || !d->hasMouseMoved(e->globalPosition().toPoint())) {
          if (d->noReplayFor
              && QRect(d->noReplayFor->mapToGlobal(QPoint()), d->noReplayFor->size()).contains(e->globalPosition().toPoint()))
              setAttribute(Qt::WA_NoMouseReplay);
@@ -2923,8 +2925,15 @@ void QMenu::mouseReleaseEvent(QMouseEvent *e)
 
     QMenuPrivate::mouseDown = nullptr;
     d->setSyncAction();
-    QAction *action = d->actionAt(e->position().toPoint());
 
+    if (!d->hasMouseMoved(e->globalPosition().toPoint())) {
+        // We don't want to trigger a menu item if the mouse hasn't moved
+        // since the popup was opened. Instead we want to close the menu.
+        d->hideUpToMenuBar();
+        return;
+    }
+
+    QAction *action = d->actionAt(e->position().toPoint());
     if (action && action == d->currentAction) {
         if (!action->menu()) {
 #if defined(Q_OS_WIN)
@@ -2933,7 +2942,7 @@ void QMenu::mouseReleaseEvent(QMouseEvent *e)
 #endif
                 d->activateAction(action, QAction::Trigger);
         }
-    } else if ((!action || action->isEnabled()) && d->hasMouseMoved(e->globalPosition().toPoint())) {
+    } else if (!action || action->isEnabled()) {
         d->hideUpToMenuBar();
     }
 }
