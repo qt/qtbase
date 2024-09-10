@@ -93,7 +93,8 @@ function(qt_internal_add_executable name)
     endif()
 
     qt_autogen_tools_initial_setup(${name})
-    qt_skip_warnings_are_errors_when_repo_unclean("${name}")
+
+    qt_internal_default_warnings_are_errors("${name}")
 
     set(extra_libraries "")
     if(arg_CORE_LIBRARY STREQUAL "Bootstrap")

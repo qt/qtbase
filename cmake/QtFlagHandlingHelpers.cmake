@@ -301,17 +301,27 @@ function(qt_internal_set_exceptions_flags target value)
     set_target_properties(${target} PROPERTIES _qt_internal_use_exceptions ${value})
 endfunction()
 
+# Deprecated. Replaced by qt_internal_set_skip_warnings_are_errors.
 function(qt_skip_warnings_are_errors target)
+    qt_internal_set_skip_warnings_are_errors(${target} TRUE)
+endfunction()
+
+# Controls the QT_SKIP_WARNINGS_ARE_ERRORS property for the given target.
+function(qt_internal_set_skip_warnings_are_errors target value)
     get_target_property(target_type "${target}" TYPE)
     if(target_type STREQUAL "INTERFACE_LIBRARY")
         return()
     endif()
-    set_target_properties("${target}" PROPERTIES QT_SKIP_WARNINGS_ARE_ERRORS ON)
+    set_target_properties("${target}" PROPERTIES QT_SKIP_WARNINGS_ARE_ERRORS ${value})
 endfunction()
 
-function(qt_skip_warnings_are_errors_when_repo_unclean target)
-    if(QT_REPO_NOT_WARNINGS_CLEAN)
-        qt_skip_warnings_are_errors("${target}")
+# Sets the default warnings behavior according to the WARNINGS_ARE_ERRORS and
+# QT_REPO_NOT_WARNINGS_CLEAN flags.
+function(qt_internal_default_warnings_are_errors target)
+    if(WARNINGS_ARE_ERRORS AND NOT QT_REPO_NOT_WARNINGS_CLEAN)
+        qt_internal_set_skip_warnings_are_errors("${target}" FALSE)
+    else()
+        qt_internal_set_skip_warnings_are_errors("${target}" TRUE)
     endif()
 endfunction()
 

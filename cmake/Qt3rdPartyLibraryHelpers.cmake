@@ -95,7 +95,7 @@ function(qt_internal_add_cmake_library target)
 
     qt_internal_add_common_qt_library_helper(${target} ${library_helper_args})
 
-    qt_skip_warnings_are_errors_when_repo_unclean("${target}")
+    qt_internal_default_warnings_are_errors("${target}")
 
     if (arg_OUTPUT_DIRECTORY)
         set_target_properties(${target} PROPERTIES
@@ -198,7 +198,7 @@ function(qt_internal_add_3rdparty_library target)
     qt_internal_add_qt_repo_known_module(${target})
     qt_internal_add_target_aliases(${target})
 
-    qt_skip_warnings_are_errors_when_repo_unclean("${target}")
+    qt_internal_default_warnings_are_errors("${target}")
 
     set_target_properties(${target} PROPERTIES
         LIBRARY_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_LIBDIR}"

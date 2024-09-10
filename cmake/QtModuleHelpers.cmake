@@ -311,7 +311,8 @@ function(qt_internal_add_module target)
     endif()
 
     qt_internal_add_target_aliases("${target}")
-    qt_skip_warnings_are_errors_when_repo_unclean("${target}")
+
+    qt_internal_default_warnings_are_errors("${target}")
 
     # No need to compile Q_IMPORT_PLUGIN-containing files for non-executables.
     if(is_static_lib)
