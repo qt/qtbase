@@ -777,6 +777,9 @@ private slots:
     void uLongLong();
     void inputFileNameWithDotsButNoExtension();
     void userProperties();
+#if QT_VERSION <= QT_VERSION_CHECK(7, 0, 0)
+    void integerAccessFlagsProperties();
+#endif
     void supportConstSignals();
     void task87883();
     void multilineComments();
@@ -1076,6 +1079,25 @@ void tst_Moc::userProperties()
     QVERIFY(property.isValid());
     QVERIFY(!property.isUser());
 }
+
+#if QT_VERSION <= QT_VERSION_CHECK(7, 0, 0)
+#include "flags-property-integer-access.h"
+
+void tst_Moc::integerAccessFlagsProperties()
+{
+    ClassWithFlagsAccessAsInteger o;
+
+    const QMetaObject *mobj = &ClassWithFlagsAccessAsInteger::staticMetaObject;
+    QMetaProperty property = mobj->property(mobj->indexOfProperty("flagsValue"));
+    QVERIFY(property.isValid());
+    QCOMPARE(property.metaType(), QMetaType::fromType<ClassWithFlagsAccessAsInteger::Flags>());
+
+    QVariant v = property.read(&o);
+    QCOMPARE(v, 0);
+    property.write(&o, QVariant::fromValue(ClassWithFlagsAccessAsInteger::F2));
+    QCOMPARE(o.flagsValue(), ClassWithFlagsAccessAsInteger::F2);
+}
+#endif
 
 void tst_Moc::supportConstSignals()
 {

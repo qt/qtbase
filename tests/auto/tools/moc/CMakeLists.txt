@@ -92,6 +92,10 @@ qt_internal_extend_target(tst_moc CONDITION CMAKE_CROSSCOMPILING
         MOC_CROSS_COMPILED
 )
 
+if (${PROJECT_VERSION_MAJOR} LESS 7)
+    qt_internal_extend_target(tst_moc SOURCES flags-property-integer-access.h)
+endif()
+
 if (UNIX AND (CLANG OR GCC OR QCC))
     qt_wrap_cpp(os9_moc os9-newlines.h)
 endif()
