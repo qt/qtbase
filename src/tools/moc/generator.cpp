@@ -1016,7 +1016,13 @@ void Generator::generateStaticMetacall()
     fprintf(out, "void %s::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)\n{\n",
             cdef->qualified.constData());
 
-    bool isUsed_a = false;
+    enum UsedArgs {
+        UsedO = 1,
+        UsedC = 2,
+        UsedId = 4,
+        UsedA = 8,
+    };
+    uint usedArgs = 0;
 
     const auto generateCtorArguments = [&](int ctorindex) {
         const FunctionDef &f = cdef->constructorList.at(ctorindex);
@@ -1060,7 +1066,7 @@ void Generator::generateStaticMetacall()
         fprintf(out, "        default: break;\n");
         fprintf(out, "        }\n");
         fprintf(out, "    }\n");
-        isUsed_a = true;
+        usedArgs |= UsedC | UsedId | UsedA;
     }
 
     QList<FunctionDef> methodList;
@@ -1069,6 +1075,7 @@ void Generator::generateStaticMetacall()
     methodList += cdef->methodList;
 
     if (!methodList.isEmpty()) {
+        usedArgs |= UsedO | UsedC | UsedId;
         fprintf(out, "    if (_c == QMetaObject::InvokeMetaMethod) {\n");
         if (cdef->hasQObject) {
 #ifndef QT_NO_DEBUG
@@ -1094,6 +1101,7 @@ void Generator::generateStaticMetacall()
 
             if (f.isRawSlot) {
                 fprintf(out, "QMethodRawArguments{ _a }");
+                usedArgs |= UsedA;
             } else {
                 const auto begin = f.arguments.cbegin();
                 const auto end = f.arguments.cend();
@@ -1102,7 +1110,7 @@ void Generator::generateStaticMetacall()
                     if (it != begin)
                         fprintf(out, ",");
                     fprintf(out, "(*reinterpret_cast< %s>(_a[%d]))",a.typeNameForCast.constData(), offset++);
-                    isUsed_a = true;
+                    usedArgs |= UsedA;
                 }
                 if (f.isPrivateSignal) {
                     if (!f.arguments.isEmpty())
@@ -1114,7 +1122,7 @@ void Generator::generateStaticMetacall()
             if (f.normalizedType != "void") {
                 fprintf(out, "\n            if (_a[0]) *reinterpret_cast< %s*>(_a[0]) = std::move(_r); } ",
                         noRef(f.normalizedType).constData());
-                isUsed_a = true;
+                usedArgs |= UsedA;
             }
             fprintf(out, " break;\n");
         }
@@ -1148,11 +1156,12 @@ void Generator::generateStaticMetacall()
             }
             fprintf(out, "        }\n");
             fprintf(out, "    }\n");
-            isUsed_a = true;
+            usedArgs |= UsedC | UsedId | UsedA;
         }
 
     }
     if (!cdef->signalList.isEmpty()) {
+        usedArgs |= UsedC | UsedA;
         fprintf(out, "    if (_c == QMetaObject::IndexOfMethod) {\n");
         fprintf(out, "        int *result = reinterpret_cast<int *>(_a[0]);\n");
         bool anythingUsed = false;
@@ -1209,7 +1218,7 @@ void Generator::generateStaticMetacall()
         }
         fprintf(out, "        }\n");
         fprintf(out, "    }\n");
-        isUsed_a = true;
+        usedArgs |= UsedC | UsedId | UsedA;
     }
 
     if (!cdef->propertyList.empty()) {
@@ -1228,6 +1237,10 @@ void Generator::generateStaticMetacall()
             needReset |= !p.reset.isEmpty();
             hasBindableProperties |= !p.bind.isEmpty();
         }
+        if (needGet || needSet || hasBindableProperties || needReset)
+            usedArgs |= UsedO | UsedC | UsedId;
+        if (needGet || needSet || hasBindableProperties)
+            usedArgs |= UsedA;  // resetting doesn't need arguments
 
         auto setupMemberAccess = [this]() {
             if (cdef->hasQObject) {
@@ -1374,15 +1387,14 @@ void Generator::generateStaticMetacall()
         }
     }
 
-    if (methodList.isEmpty()) {
-        fprintf(out, "    (void)_o;\n");
-        if (cdef->constructorList.isEmpty() && automaticPropertyMetaTypes.isEmpty() && methodsWithAutomaticTypesHelper(methodList).isEmpty()) {
-            fprintf(out, "    (void)_id;\n");
-            fprintf(out, "    (void)_c;\n");
-        }
-    }
-    if (!isUsed_a)
-        fprintf(out, "    (void)_a;\n");
+    auto printUnused = [&](UsedArgs entry, const char *name) {
+        if ((usedArgs & entry) == 0)
+            fprintf(out, "    (void)%s;\n", name);
+    };
+    printUnused(UsedO, "_o");
+    printUnused(UsedC, "_c");
+    printUnused(UsedId, "_id");
+    printUnused(UsedA, "_a");
 
     fprintf(out, "}\n");
 }
