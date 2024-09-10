@@ -3803,38 +3803,43 @@ void QAbstractItemView::currentChanged(const QModelIndex &current, const QModelI
     Q_D(QAbstractItemView);
     Q_ASSERT(d->model);
 
+    QPersistentModelIndex persistentCurrent(current); // in case commitData() moves things around (QTBUG-127852)
+
     if (previous.isValid()) {
         QModelIndex buddy = d->model->buddy(previous);
         QWidget *editor = d->editorForIndex(buddy).widget.data();
+        if (isVisible()) {
+            update(previous);
+        }
         if (editor && !d->persistent.contains(editor)) {
-            commitData(editor);
-            if (current.row() != previous.row())
+            const bool rowChanged = current.row() != previous.row();
+            commitData(editor); // might invalidate previous, don't use after this line (QTBUG-127852)
+            if (rowChanged)
                 closeEditor(editor, QAbstractItemDelegate::SubmitModelCache);
             else
                 closeEditor(editor, QAbstractItemDelegate::NoHint);
         }
-        if (isVisible()) {
-            update(previous);
-        }
     }
 
-    QItemSelectionModel::SelectionFlags command = selectionCommand(current, nullptr);
-    if ((command & QItemSelectionModel::Current) == 0)
-        d->currentSelectionStartIndex = current;
+    const QModelIndex newCurrent = persistentCurrent;
 
-    if (current.isValid() && !d->autoScrollTimer.isActive()) {
+    QItemSelectionModel::SelectionFlags command = selectionCommand(newCurrent, nullptr);
+    if ((command & QItemSelectionModel::Current) == 0)
+        d->currentSelectionStartIndex = newCurrent;
+
+    if (newCurrent.isValid() && !d->autoScrollTimer.isActive()) {
         if (isVisible()) {
             if (d->autoScroll)
-                scrollTo(current);
-            update(current);
-            edit(current, CurrentChanged, nullptr);
-            if (current.row() == (d->model->rowCount(d->root) - 1))
+                scrollTo(newCurrent);
+            update(newCurrent);
+            edit(newCurrent, CurrentChanged, nullptr);
+            if (newCurrent.row() == (d->model->rowCount(d->root) - 1))
                 d->fetchMore();
         } else {
             d->shouldScrollToCurrentOnShow = d->autoScroll;
         }
     }
-    setAttribute(Qt::WA_InputMethodEnabled, (current.isValid() && (current.flags() & Qt::ItemIsEditable)));
+    setAttribute(Qt::WA_InputMethodEnabled, (newCurrent.isValid() && (newCurrent.flags() & Qt::ItemIsEditable)));
 }
 
 #if QT_CONFIG(draganddrop)
