@@ -946,7 +946,6 @@ void Generator::generateMetacall()
     }
 
 
-    bool needElse = false;
     QList<FunctionDef> methodList;
     methodList += cdef->signalList;
     methodList += cdef->slotList;
@@ -959,39 +958,32 @@ void Generator::generateMetacall()
         fprintf(out, "    if (_id < 0)\n        return _id;\n");
     }
 
-    fprintf(out, "    ");
-
     if (methodList.size()) {
-        needElse = true;
-        fprintf(out, "if (_c == QMetaObject::InvokeMetaMethod) {\n");
+        fprintf(out, "    if (_c == QMetaObject::InvokeMetaMethod) {\n");
         fprintf(out, "        if (_id < %d)\n", int(methodList.size()));
         fprintf(out, "            qt_static_metacall(this, _c, _id, _a);\n");
-        fprintf(out, "        _id -= %d;\n    }", int(methodList.size()));
+        fprintf(out, "        _id -= %d;\n    }\n", int(methodList.size()));
 
-        fprintf(out, " else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {\n");
+        fprintf(out, "    if (_c == QMetaObject::RegisterMethodArgumentMetaType) {\n");
         fprintf(out, "        if (_id < %d)\n", int(methodList.size()));
 
         if (methodsWithAutomaticTypesHelper(methodList).isEmpty())
             fprintf(out, "            *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();\n");
         else
             fprintf(out, "            qt_static_metacall(this, _c, _id, _a);\n");
-        fprintf(out, "        _id -= %d;\n    }", int(methodList.size()));
+        fprintf(out, "        _id -= %d;\n    }\n", int(methodList.size()));
 
     }
 
     if (cdef->propertyList.size()) {
-        if (needElse)
-            fprintf(out, "else ");
         fprintf(out,
-            "if (_c == QMetaObject::ReadProperty || _c == QMetaObject::WriteProperty\n"
+            "    if (_c == QMetaObject::ReadProperty || _c == QMetaObject::WriteProperty\n"
             "            || _c == QMetaObject::ResetProperty || _c == QMetaObject::BindableProperty\n"
             "            || _c == QMetaObject::RegisterPropertyMetaType) {\n"
             "        qt_static_metacall(this, _c, _id, _a);\n"
-            "        _id -= %d;\n    }", int(cdef->propertyList.size()));
+            "        _id -= %d;\n    }\n", int(cdef->propertyList.size()));
     }
-    if (methodList.size() || cdef->propertyList.size())
-        fprintf(out, "\n    ");
-    fprintf(out,"return _id;\n}\n");
+    fprintf(out,"    return _id;\n}\n");
 }
 
 
@@ -1027,7 +1019,6 @@ void Generator::generateStaticMetacall()
     fprintf(out, "void %s::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)\n{\n",
             cdef->qualified.constData());
 
-    bool needElse = false;
     bool isUsed_a = false;
 
     const auto generateCtorArguments = [&](int ctorindex) {
@@ -1060,7 +1051,8 @@ void Generator::generateStaticMetacall()
         }
         fprintf(out, "        default: break;\n");
         fprintf(out, "        }\n");
-        fprintf(out, "    } else if (_c == QMetaObject::ConstructInPlace) {\n");
+        fprintf(out, "    }\n");
+        fprintf(out, "    if (_c == QMetaObject::ConstructInPlace) {\n");
         fprintf(out, "        switch (_id) {\n");
         for (int ctorindex = 0; ctorindex < ctorend; ++ctorindex) {
             fprintf(out, "        case %d: { new (_a[0]) %s(",
@@ -1070,8 +1062,7 @@ void Generator::generateStaticMetacall()
         }
         fprintf(out, "        default: break;\n");
         fprintf(out, "        }\n");
-        fprintf(out, "    }");
-        needElse = true;
+        fprintf(out, "    }\n");
         isUsed_a = true;
     }
 
@@ -1081,11 +1072,7 @@ void Generator::generateStaticMetacall()
     methodList += cdef->methodList;
 
     if (!methodList.isEmpty()) {
-        if (needElse)
-            fprintf(out, " else ");
-        else
-            fprintf(out, "    ");
-        fprintf(out, "if (_c == QMetaObject::InvokeMetaMethod) {\n");
+        fprintf(out, "    if (_c == QMetaObject::InvokeMetaMethod) {\n");
         if (cdef->hasQObject) {
 #ifndef QT_NO_DEBUG
             fprintf(out, "        Q_ASSERT(staticMetaObject.cast(_o));\n");
@@ -1136,13 +1123,12 @@ void Generator::generateStaticMetacall()
         }
         fprintf(out, "        default: ;\n");
         fprintf(out, "        }\n");
-        fprintf(out, "    }");
-        needElse = true;
+        fprintf(out, "    }\n");
 
         QMap<int, QMultiMap<QByteArray, int> > methodsWithAutomaticTypes = methodsWithAutomaticTypesHelper(methodList);
 
         if (!methodsWithAutomaticTypes.isEmpty()) {
-            fprintf(out, " else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {\n");
+            fprintf(out, "    if (_c == QMetaObject::RegisterMethodArgumentMetaType) {\n");
             fprintf(out, "        switch (_id) {\n");
             fprintf(out, "        default: *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType(); break;\n");
             QMap<int, QMultiMap<QByteArray, int> >::const_iterator it = methodsWithAutomaticTypes.constBegin();
@@ -1164,14 +1150,13 @@ void Generator::generateStaticMetacall()
                 fprintf(out, "            break;\n");
             }
             fprintf(out, "        }\n");
-            fprintf(out, "    }");
+            fprintf(out, "    }\n");
             isUsed_a = true;
         }
 
     }
     if (!cdef->signalList.isEmpty()) {
-        Q_ASSERT(needElse); // if there is signal, there was method.
-        fprintf(out, " else if (_c == QMetaObject::IndexOfMethod) {\n");
+        fprintf(out, "    if (_c == QMetaObject::IndexOfMethod) {\n");
         fprintf(out, "        int *result = reinterpret_cast<int *>(_a[0]);\n");
         bool anythingUsed = false;
         for (int methodindex = 0; methodindex < int(cdef->signalList.size()); ++methodindex) {
@@ -1207,18 +1192,13 @@ void Generator::generateStaticMetacall()
         }
         if (!anythingUsed)
             fprintf(out, "        (void)result;\n");
-        fprintf(out, "    }");
-        needElse = true;
+        fprintf(out, "    }\n");
     }
 
     const QMultiMap<QByteArray, int> automaticPropertyMetaTypes = automaticPropertyMetaTypesHelper();
 
     if (!automaticPropertyMetaTypes.isEmpty()) {
-        if (needElse)
-            fprintf(out, " else ");
-        else
-            fprintf(out, "    ");
-        fprintf(out, "if (_c == QMetaObject::RegisterPropertyMetaType) {\n");
+        fprintf(out, "    if (_c == QMetaObject::RegisterPropertyMetaType) {\n");
         fprintf(out, "        switch (_id) {\n");
         fprintf(out, "        default: *reinterpret_cast<int*>(_a[0]) = -1; break;\n");
         auto it = automaticPropertyMetaTypes.begin();
@@ -1231,9 +1211,8 @@ void Generator::generateStaticMetacall()
                 fprintf(out, "            *reinterpret_cast<int*>(_a[0]) = qRegisterMetaType< %s >(); break;\n", lastKey.constData());
         }
         fprintf(out, "        }\n");
-        fprintf(out, "    } ");
+        fprintf(out, "    }\n");
         isUsed_a = true;
-        needElse = true;
     }
 
     if (!cdef->propertyList.empty()) {
@@ -1252,9 +1231,6 @@ void Generator::generateStaticMetacall()
             needReset |= !p.reset.isEmpty();
             hasBindableProperties |= !p.bind.isEmpty();
         }
-        if (needElse)
-            fprintf(out, " else ");
-        fprintf(out, "if (_c == QMetaObject::ReadProperty) {\n");
 
         auto setupMemberAccess = [this]() {
             if (cdef->hasQObject) {
@@ -1265,10 +1241,10 @@ void Generator::generateStaticMetacall()
             } else {
                 fprintf(out, "        auto *_t = reinterpret_cast<%s *>(_o);\n", cdef->classname.constData());
             }
-            fprintf(out, "        (void)_t;\n");
         };
 
         if (needGet) {
+            fprintf(out, "    if (_c == QMetaObject::ReadProperty) {\n");
             setupMemberAccess();
             if (needTempVarForGet)
                 fprintf(out, "        void *_v = _a[0];\n");
@@ -1303,14 +1279,11 @@ void Generator::generateStaticMetacall()
             }
             fprintf(out, "        default: break;\n");
             fprintf(out, "        }\n");
+            fprintf(out, "    }\n");
         }
 
-        fprintf(out, "    }");
-
-        fprintf(out, " else ");
-        fprintf(out, "if (_c == QMetaObject::WriteProperty) {\n");
-
         if (needSet) {
+            fprintf(out, "    if (_c == QMetaObject::WriteProperty) {\n");
             setupMemberAccess();
             fprintf(out, "        void *_v = _a[0];\n");
             fprintf(out, "        switch (_id) {\n");
@@ -1358,13 +1331,11 @@ void Generator::generateStaticMetacall()
             }
             fprintf(out, "        default: break;\n");
             fprintf(out, "        }\n");
+            fprintf(out, "    }\n");
         }
 
-        fprintf(out, "    }");
-
-        fprintf(out, " else ");
-        fprintf(out, "if (_c == QMetaObject::ResetProperty) {\n");
         if (needReset) {
+            fprintf(out, "if (_c == QMetaObject::ResetProperty) {\n");
             setupMemberAccess();
             fprintf(out, "        switch (_id) {\n");
             for (int propindex = 0; propindex < int(cdef->propertyList.size()); ++propindex) {
@@ -1380,12 +1351,11 @@ void Generator::generateStaticMetacall()
             }
             fprintf(out, "        default: break;\n");
             fprintf(out, "        }\n");
+            fprintf(out, "    }\n");
         }
-        fprintf(out, "    }");
 
-        fprintf(out, " else ");
-        fprintf(out, "if (_c == QMetaObject::BindableProperty) {\n");
         if (hasBindableProperties) {
+            fprintf(out, "    if (_c == QMetaObject::BindableProperty) {\n");
             setupMemberAccess();
             fprintf(out, "        switch (_id) {\n");
             for (int propindex = 0; propindex < int(cdef->propertyList.size()); ++propindex) {
@@ -1403,13 +1373,9 @@ void Generator::generateStaticMetacall()
             }
             fprintf(out, "        default: break;\n");
             fprintf(out, "        }\n");
+            fprintf(out, "    }\n");
         }
-        fprintf(out, "    }");
-        needElse = true;
     }
-
-    if (needElse)
-        fprintf(out, "\n");
 
     if (methodList.isEmpty()) {
         fprintf(out, "    (void)_o;\n");
