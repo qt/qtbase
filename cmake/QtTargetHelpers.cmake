@@ -1457,6 +1457,7 @@ function(qt_internal_is_target_skipped_for_examples target out_var)
 endfunction()
 
 function(qt_internal_link_internal_platform_for_object_library target)
+    cmake_parse_arguments(arg "" "PARENT_TARGET" "" ${ARGN})
     # We need to apply iOS bitcode flags to object libraries that are associated with internal
     # modules or plugins (e.g. object libraries added by qt_internal_add_resource,
     # qt_internal_add_plugin, etc.)
@@ -1464,6 +1465,13 @@ function(qt_internal_link_internal_platform_for_object_library target)
     # present by default.
     # Achieve this by compiling the cpp files with the PlatformModuleInternal compile flags.
     target_link_libraries("${target}" PRIVATE Qt::PlatformModuleInternal)
+
+    if(arg_PARENT_TARGET AND TARGET "${arg_PARENT_TARGET}")
+        foreach(property QT_SKIP_WARNINGS_ARE_ERRORS _qt_internal_use_exceptions)
+            set_property(TARGET "${target}" PROPERTY
+                ${property} "$<BOOL:$<TARGET_PROPERTY:${arg_PARENT_TARGET},${property}>>")
+        endforeach()
+    endif()
 endfunction()
 
 # Use ${dep_target}'s include dirs when building ${target}.

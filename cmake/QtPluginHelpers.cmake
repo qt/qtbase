@@ -339,7 +339,8 @@ function(qt_internal_add_plugin target)
 
     if(target_type STREQUAL STATIC_LIBRARY)
         if(qt_module_target)
-            qt_internal_link_internal_platform_for_object_library("${plugin_init_target}")
+            qt_internal_link_internal_platform_for_object_library("${plugin_init_target}"
+                PARENT_TARGET "${target}")
         endif()
     endif()
 
