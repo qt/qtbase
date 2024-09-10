@@ -154,6 +154,14 @@ class Test_qt_mock_test(unittest.TestCase):
         self.assertTrue(os.path.exists(filename))
         self.assertEqual(os.path.getsize(filename), 0)
         os.remove(filename)
+    def test_crash_cleanly(self):
+        proc = run(mock_test,
+                   env= os.environ | {"QT_MOCK_TEST_CRASH_CLEANLY":"1"} )
+        if DEBUG:
+            print("returncode:", proc.returncode)
+        self.assertTrue(proc.returncode < 0 or
+                        proc.returncode >= 128)
+
 
 # Test regular invocations of qt-testrunner.
 class Test_testrunner(unittest.TestCase):
@@ -346,6 +354,23 @@ class Test_testrunner(unittest.TestCase):
             f.write(f'#!/bin/sh\n{content}\n')
             self.wrapper_script = f.name
         os.chmod(self.wrapper_script, 0o700)
+
+    # Test that it re-runs the full executable in case of crash, even if the
+    # XML file is valid and shows one specific test failing.
+    def test_crash_reruns_full_QTQAINFRA_5226(self):
+        self.env["QT_MOCK_TEST_RUN_LIST"]      = "always_fail"
+        # Tell qt_mock_test to crash after writing a proper XML file.
+        self.env["QT_MOCK_TEST_CRASH_CLEANLY"] = "1"
+        proc = self.run2()
+        # Verify qt-testrunner exited with 3 which means CRASH.
+        self.assertEqual(proc.returncode, 3)
+        # Verify that a full executable re-run happened that re-runs 2 times,
+        # instead of individual functions that re-run 5 times.
+        xml_output_files = glob.glob(os.path.basename(mock_test) + "-*[0-9].xml",
+                                     root_dir=TEMPDIR.name)
+        if DEBUG:
+            print("XML output files found: ", xml_output_files)
+        self.assertEqual(len(xml_output_files), 2)
 
     # Test that qt-testrunner detects the correct executable name even if we
     # use a special wrapper script, and that it uses that in the XML log filename.
