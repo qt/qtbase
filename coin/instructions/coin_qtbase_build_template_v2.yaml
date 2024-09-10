@@ -61,11 +61,11 @@ instructions:
         - condition: and
           conditions:
             - condition: property
-              property: host.compiler
-              equals_value: MSVC2019
+              property: target.os
+              equals_value: Windows
             - condition: property
               property: target.arch
-              equals_value: ARM64
+              not_equals_property: host.arch
             - condition: property
               property: features
               not_contains_value: "DebianPackaging"
