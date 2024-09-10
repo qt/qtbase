@@ -1282,6 +1282,7 @@ void tst_QFileInfo::isSymLink_data()
     QTest::newRow("existent file") << m_sourceFile << false << "";
     QTest::newRow("link") << "link.lnk" << true << QFileInfo(m_sourceFile).absoluteFilePath();
     QTest::newRow("broken link") << "brokenlink.lnk" << true << QFileInfo("dummyfile").absoluteFilePath();
+    QTest::newRow("nonexistent") << "thispathdoesntexist.lnk" << false << QString();
 
 #ifndef Q_OS_WIN
     QDir::current().mkdir("relative");
@@ -1407,6 +1408,8 @@ void tst_QFileInfo::isSymbolicLink_data()
         << regularFile.fileName() << false;
     QTest::newRow("directory")
         << QDir::currentPath() << false;
+    QTest::newRow("nonexistent")
+        << "thispathdoesntexist.lnk" << false;
 
 #ifndef Q_NO_SYMLINKS
 #if defined(Q_OS_WIN)
