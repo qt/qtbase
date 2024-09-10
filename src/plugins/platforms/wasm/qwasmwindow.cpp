@@ -72,7 +72,7 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmDeadKeySupport *deadKeySupport,
     m_windowContents.set("className", "qt-window-contents");
     m_qtWindow.call<void>("appendChild", m_windowContents);
 
-    m_canvas["classList"].call<void>("add", emscripten::val("qt-window-content"));
+    m_canvas["classList"].call<void>("add", emscripten::val("qt-window-canvas"));
 
     // Set contenteditable so that the canvas gets clipboard events,
     // then hide the resulting focus frame.
