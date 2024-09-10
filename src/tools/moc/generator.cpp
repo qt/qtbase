@@ -1535,9 +1535,11 @@ void Generator::generateStaticMetacall()
                 else if (p.gspec == PropertyDef::ReferenceSpec)
                     fprintf(out, "        case %d: _a[0] = const_cast<void*>(reinterpret_cast<const void*>(&%s%s())); break;\n",
                             propindex, prefix.constData(), p.read.constData());
+#if QT_VERSION <= QT_VERSION_CHECK(7, 0, 0)
                 else if (auto eflags = cdef->enumDeclarations.value(p.type); eflags & EnumIsFlag)
-                    fprintf(out, "        case %d: *reinterpret_cast<int*>(_v) = QFlag(%s%s()); break;\n",
-                            propindex, prefix.constData(), p.read.constData());
+                    fprintf(out, "        case %d: QtMocHelpers::assignFlags<%s>(_v, %s%s()); break;\n",
+                            propindex, p.type.constData(), prefix.constData(), p.read.constData());
+#endif
                 else if (p.read == "default")
                     fprintf(out, "        case %d: *reinterpret_cast< %s*>(_v) = %s%s().value(); break;\n",
                             propindex, p.type.constData(), prefix.constData(), p.bind.constData());
@@ -1567,10 +1569,7 @@ void Generator::generateStaticMetacall()
                 if (p.inPrivateClass.size()) {
                     prefix += p.inPrivateClass + "->";
                 }
-                if (auto eflags = cdef->enumDeclarations.value(p.type); eflags & EnumIsFlag) {
-                    fprintf(out, "        case %d: %s%s(QFlag(*reinterpret_cast<int*>(_v))); break;\n",
-                            propindex, prefix.constData(), p.write.constData());
-                } else if (p.write == "default") {
+                if (p.write == "default") {
                     fprintf(out, "        case %d: {\n", propindex);
                     fprintf(out, "            %s%s().setValue(*reinterpret_cast< %s*>(_v));\n",
                             prefix.constData(), p.bind.constData(), p.type.constData());

@@ -446,6 +446,33 @@ constexpr auto metaObjectData(uint flags, const Methods &methods, const Properti
 
 #define QT_MOC_HAS_UINTDATA    1
 
+template <typename T> inline std::enable_if_t<std::is_enum_v<T>> assignFlags(void *v, T t) noexcept
+{
+    *static_cast<T *>(v) = t;
+}
+
+template <typename T> inline std::enable_if_t<QtPrivate::IsQFlags<T>::value> assignFlags(void *v, T t) noexcept
+{
+    *static_cast<T *>(v) = t;
+}
+
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+template <typename T>
+Q_DECL_DEPRECATED_X("Returning int/uint from a Q_PROPERTY that is a Q_FLAG is deprecated; "
+                    "please update to return the actual property's type")
+inline void assignFlagsFromInteger(QFlags<T> &f, int i) noexcept
+{
+     f = QFlag(i);
+}
+
+template <typename T, typename I>
+inline std::enable_if_t<QtPrivate::IsQFlags<T>::value && sizeof(T) == sizeof(int) && std::is_integral_v<I>>
+assignFlags(void *v, I i) noexcept
+{
+    assignFlagsFromInteger(*static_cast<T *>(v), i);
+}
+#endif  // Qt 7
+
 } // namespace QtMocHelpers
 QT_END_NAMESPACE
 
