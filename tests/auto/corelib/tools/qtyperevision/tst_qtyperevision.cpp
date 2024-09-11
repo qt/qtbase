@@ -95,7 +95,7 @@ void tst_QTypeRevision::qTypeRevision()
 void tst_QTypeRevision::qTypeRevisionTypes()
 {
     compileTestRevision<quint8>();
-    // compileTestRevision<qint8>();
+    compileTestRevision<qint8>();
     compileTestRevision<quint16>();
     compileTestRevision<qint16>();
     compileTestRevision<quint32>();
@@ -104,7 +104,7 @@ void tst_QTypeRevision::qTypeRevisionTypes()
     compileTestRevision<qint64>();
     compileTestRevision<long>();
     compileTestRevision<ulong>();
-    // compileTestRevision<char>();
+    compileTestRevision<char>();
 
     QVERIFY(!QTypeRevision::isValidSegment(0xff));
     QVERIFY(!QTypeRevision::isValidSegment(-1));
