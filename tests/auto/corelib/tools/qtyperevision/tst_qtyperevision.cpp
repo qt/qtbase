@@ -22,8 +22,17 @@ private slots:
 };
 
 template<typename Integer>
-void compileTestRevisionMajorMinor()
+void compileTestRevision()
 {
+    if constexpr (std::numeric_limits<Integer>::max() >= 0xffff) {
+        const Integer value = 0x0510;
+        const QTypeRevision r = QTypeRevision::fromEncodedVersion(value);
+
+        QCOMPARE(r.majorVersion(), 5);
+        QCOMPARE(r.minorVersion(), 16);
+        QCOMPARE(r.toEncodedVersion<Integer>(), value);
+    }
+
     const Integer major = 8;
     const Integer minor = 4;
 
@@ -38,43 +47,6 @@ void compileTestRevisionMajorMinor()
     const QTypeRevision r4 = QTypeRevision::fromMinorVersion(minor);
     QVERIFY(!r4.hasMajorVersion());
     QCOMPARE(r4.minorVersion(), 4);
-}
-
-
-template<typename Integer>
-void compileTestRevision()
-{
-    if (std::is_signed<Integer>::value)
-        compileTestRevision<typename QIntegerForSize<sizeof(Integer) / 2>::Signed>();
-    else
-        compileTestRevision<typename QIntegerForSize<sizeof(Integer) / 2>::Unsigned>();
-
-    const Integer value = 0x0510;
-    const QTypeRevision r = QTypeRevision::fromEncodedVersion(value);
-
-    QCOMPARE(r.majorVersion(), 5);
-    QCOMPARE(r.minorVersion(), 16);
-    QCOMPARE(r.toEncodedVersion<Integer>(), value);
-
-    compileTestRevisionMajorMinor<Integer>();
-}
-
-template<>
-void compileTestRevision<qint16>()
-{
-    compileTestRevisionMajorMinor<quint8>();
-}
-
-template<>
-void compileTestRevision<quint8>()
-{
-    compileTestRevisionMajorMinor<quint8>();
-}
-
-template<>
-void compileTestRevision<qint8>()
-{
-    compileTestRevisionMajorMinor<qint8>();
 }
 
 void tst_QTypeRevision::qTypeRevision_data()
@@ -122,8 +94,17 @@ void tst_QTypeRevision::qTypeRevision()
 
 void tst_QTypeRevision::qTypeRevisionTypes()
 {
+    compileTestRevision<quint8>();
+    // compileTestRevision<qint8>();
+    compileTestRevision<quint16>();
+    compileTestRevision<qint16>();
+    compileTestRevision<quint32>();
+    compileTestRevision<qint32>();
     compileTestRevision<quint64>();
     compileTestRevision<qint64>();
+    compileTestRevision<long>();
+    compileTestRevision<ulong>();
+    // compileTestRevision<char>();
 
     QVERIFY(!QTypeRevision::isValidSegment(0xff));
     QVERIFY(!QTypeRevision::isValidSegment(-1));
