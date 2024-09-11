@@ -20,6 +20,7 @@ class Q_CORE_EXPORT QCollatorSortKey
 {
     friend class QCollator;
 public:
+    QCollatorSortKey() = delete;
     QCollatorSortKey(const QCollatorSortKey &other);
     QCollatorSortKey(QCollatorSortKey &&other) noexcept = default;
     ~QCollatorSortKey();
@@ -38,7 +39,6 @@ protected:
     QExplicitlySharedDataPointer<QCollatorSortKeyPrivate> d;
 
 private:
-    QCollatorSortKey();
 };
 
 class Q_CORE_EXPORT QCollator
