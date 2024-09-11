@@ -523,6 +523,7 @@ CursorHandlePtr QWindowsCursor::standardWindowCursor(Qt::CursorShape shape)
 
 HCURSOR QWindowsCursor::m_overriddenCursor = nullptr;
 HCURSOR QWindowsCursor::m_overrideCursor = nullptr;
+POINT QWindowsCursor::m_cursorPositionCache = {0,0};
 
 /*!
     \brief Return cached pixmap cursor or create new one.
@@ -633,8 +634,9 @@ void QWindowsCursor::clearOverrideCursor()
 QPoint QWindowsCursor::mousePosition()
 {
     POINT p;
-    GetCursorPos(&p);
-    return QPoint(p.x, p.y);
+    if (GetCursorPos(&p))
+        m_cursorPositionCache = p;
+    return QPoint(m_cursorPositionCache.x, m_cursorPositionCache.y);
 }
 
 QWindowsCursor::State QWindowsCursor::cursorState()
@@ -658,6 +660,7 @@ QPoint QWindowsCursor::pos() const
 
 void QWindowsCursor::setPos(const QPoint &pos)
 {
+    m_cursorPositionCache = {pos.x(), pos.y()};
     SetCursorPos(pos.x() , pos.y());
 }
 

@@ -111,6 +111,7 @@ private:
 
     static HCURSOR m_overriddenCursor;
     static HCURSOR m_overrideCursor;
+    static POINT m_cursorPositionCache;
 };
 
 QT_END_NAMESPACE
