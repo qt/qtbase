@@ -29,7 +29,7 @@ public:
     void swap(QCollatorSortKey &other) noexcept
     { d.swap(other.d); }
 
-    int compare(const QCollatorSortKey &key) const;
+    int compare(const QCollatorSortKey &key) const noexcept;
     friend bool operator<(const QCollatorSortKey &lhs, const QCollatorSortKey &rhs)
     { return lhs.compare(rhs) < 0; }
 

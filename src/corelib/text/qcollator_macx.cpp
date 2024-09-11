@@ -115,7 +115,7 @@ QCollatorSortKey QCollator::sortKey(const QString &string) const
     return QCollatorSortKey(new QCollatorSortKeyPrivate(std::move(ret)));
 }
 
-int QCollatorSortKey::compare(const QCollatorSortKey &key) const
+int QCollatorSortKey::compare(const QCollatorSortKey &key) const noexcept
 {
     if (!d.data())
         return 0;
