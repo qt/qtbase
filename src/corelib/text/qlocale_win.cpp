@@ -1123,32 +1123,6 @@ static const char *winLangCodeToIsoName(int code)
 
 }
 
-LCID qt_inIsoNametoLCID(const char *name)
-{
-    if (!name)
-        return LOCALE_USER_DEFAULT;
-    if (std::strlen(name) >= sizeof(WindowsToISOListElt::iso_name))
-        return LOCALE_USER_DEFAULT; // cannot possibly match (too long)
-
-    // normalize separators:
-    char n[sizeof(WindowsToISOListElt::iso_name)];
-    // we know it will fit (we checked at the top of the function)
-    strncpy(n, name, sizeof(n));
-    char *c = n;
-    while (*c) {
-        if (*c == '-')
-            *c = '_';
-        ++c;
-    }
-
-    for (const WindowsToISOListElt &i : windows_to_iso_list) {
-        if (!memcmp(n, i.iso_name, sizeof(WindowsToISOListElt::iso_name)))
-            return i.windows_code;
-    }
-    return LOCALE_USER_DEFAULT;
-}
-
-
 static QString winIso639LangName(LCID id)
 {
     QString result;

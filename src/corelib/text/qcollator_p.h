@@ -56,9 +56,6 @@ class QCollatorPrivate
 public:
     QAtomicInt ref = 1;
     QLocale locale;
-#if defined(Q_OS_WIN) && !QT_CONFIG(icu)
-    LCID localeID;
-#endif
     Qt::CaseSensitivity caseSensitivity = Qt::CaseSensitive;
     bool numericMode = false;
     bool ignorePunctuation = false;
