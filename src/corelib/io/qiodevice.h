@@ -78,6 +78,7 @@ public:
     QByteArray readAll();
     qint64 readLine(char *data, qint64 maxlen);
     QByteArray readLine(qint64 maxlen = 0);
+    bool readLineInto(QByteArray *result, qint64 maxlen = 0);
     virtual bool canReadLine() const;
 
     void startTransaction();

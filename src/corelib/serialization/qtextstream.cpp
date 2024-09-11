@@ -1569,7 +1569,7 @@ QString QTextStream::readLine(qint64 maxlen)
     an error has occurred; otherwise returns \c true. The contents in
     \a line before the call are discarded in any case.
 
-    \sa readAll(), QIODevice::readLine()
+    \sa readAll(), QIODevice::readLine(), QIODevice::readLineInto()
 */
 bool QTextStream::readLineInto(QString *line, qint64 maxlen)
 {

@@ -149,6 +149,7 @@ public:
     virtual qint64 peek(char *data, qint64 maxSize);
     virtual QByteArray peek(qint64 maxSize);
     qint64 skipByReading(qint64 maxSize);
+    qint64 skipLine();
     void write(const char *data, qint64 size);
 
     inline bool isWriteChunkCached(const char *data, qint64 size) const

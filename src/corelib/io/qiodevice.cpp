@@ -1442,44 +1442,89 @@ qint64 QIODevicePrivate::readLine(char *data, qint64 maxSize)
 */
 QByteArray QIODevice::readLine(qint64 maxSize)
 {
+    QByteArray result;
+    if (!readLineInto(&result, maxSize) && !result.isNull())
+        result = QByteArray();
+    return result;
+}
+
+/*!
+    \since 6.9
+
+    Reads a line from the device, but no more than \a maxSize characters.
+    and stores it as a byte array in \a line.
+
+    \note Reads a line from this device even if \a line is \nullptr.
+
+    If \a maxSize is 0 or not specified, the line can be of any length,
+    thereby enabling unlimited reading.
+
+    The resulting line can have trailing end-of-line characters ("\n" or "\r\n"),
+    so calling QByteArray::trimmed() may be necessary.
+
+    If no data was currently available for reading, or in case an error occurred,
+    this function returns \c{false} and sets \a line to
+    \l{QByteArray::isEmpty()}{empty}. Otherwise it returns \c true.
+
+    Note that the contents of \a line before the call are discarded in any case
+    but its \l{QByteArray::}{capacity()} is never reduced.
+
+    \sa readAll(), readLine(), QTextStream::readLineInto()
+*/
+bool QIODevice::readLineInto(QByteArray *line, qint64 maxSize)
+{
     Q_D(QIODevice);
 #if defined QIODEVICE_DEBUG
-    printf("%p QIODevice::readLine(%lld), d->pos = %lld, d->buffer.size() = %lld\n",
+    printf("%p QIODevice::readLineInto(%lld), d->pos = %lld, d->buffer.size() = %lld\n",
            this, maxSize, d->pos, d->buffer.size());
 #endif
 
-    QByteArray result;
-    CHECK_READABLE(readLine, result);
+    auto emptyResultOnFailure = qScopeGuard([line] {
+        if (line)
+            line->resize(0);
+    });
+
+    CHECK_READABLE(readLineInto, false);
 
     qint64 readBytes = 0;
+
     if (maxSize == 0) {
         // Size is unknown, read incrementally.
         maxSize = QByteArray::maxSize() - 1;
 
         qint64 readResult;
-        do {
-            // +1 since d->readLine() actually _writes_ a terminating NUL (### why does it?)
-            result.resize(qsizetype(qMin(maxSize, 1 + readBytes + d->buffer.chunkSize())));
-            readResult = d->readLine(result.data() + readBytes, result.size() - readBytes);
-            if (readResult > 0 || readBytes == 0)
-                readBytes += readResult;
-        } while (readResult == d->buffer.chunkSize()
-                && result[qsizetype(readBytes - 1)] != '\n');
+        if (!line) {
+            readBytes = d->skipLine();
+        } else {
+            do {
+                // Leave an extra byte for the terminating null by adding + 1
+                line->resize(qsizetype(qMin(maxSize, 1 + readBytes + d->buffer.chunkSize())));
+                readResult = d->readLine(line->data() + readBytes, line->size() - readBytes);
+                if (readResult > 0 || readBytes == 0)
+                    readBytes += readResult;
+            } while (readResult == d->buffer.chunkSize()
+                     && (*line)[qsizetype(readBytes - 1)] != '\n');
+        }
     } else {
-        CHECK_LINEMAXLEN(readLine, result);
-        CHECK_MAXBYTEARRAYSIZE(readLine);
+        CHECK_LINEMAXLEN(readLineInto, false);
+        CHECK_MAXBYTEARRAYSIZE(readLineInto);
 
-        result.resize(maxSize);
-        readBytes = d->readLine(result.data(), result.size());
+        if (!line){
+            readBytes = skip(maxSize);
+        } else {
+            line->resize(maxSize);
+            readBytes = d->readLine(line->data(), line->size());
+        }
     }
 
     if (readBytes <= 0)
-        result.clear();
-    else
-        result.resize(readBytes);
+        return false;
 
-    result.squeeze();
-    return result;
+    if (line)
+        line->resize(readBytes);
+
+    emptyResultOnFailure.dismiss();
+    return true;
 }
 
 /*!
@@ -2027,6 +2072,42 @@ qint64 QIODevicePrivate::skipByReading(qint64 maxSize)
         maxSize -= readResult;
     } while (maxSize > 0);
 
+    return readSoFar;
+}
+
+/*!
+    \internal
+
+    \since 6.9
+
+    Reads to the end of the line without storing its content.
+    Returns the number of bytes read from the current line including
+    the '\n' byte.
+
+    If an error occurs, -1 is returned. This happens when no bytes
+    were read or when trying to read past EOF.
+
+    \sa readLineData(), skip()
+*/
+qint64 QIODevicePrivate::skipLine()
+{
+    char c;
+    qint64 readSoFar = 0;
+    qint64 lastReadReturn = 0;
+
+    while ((lastReadReturn = read(&c, 1)) == 1) {
+        ++readSoFar;
+        if (c == '\n')
+            break;
+    }
+
+#if defined QIODEVICE_DEBUG
+    printf("%p QIODevicePrivate::skipLine(), pos = %lld, buffer.size() = %lld, "
+           "returns %lld\n", this, pos, buffer.size(), readSoFar);
+#endif
+
+    if (lastReadReturn != 1 && readSoFar == 0)
+        return isSequential() ? lastReadReturn : -1;
     return readSoFar;
 }
 

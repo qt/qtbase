@@ -28,6 +28,11 @@ private slots:
     void readLine2_data();
     void readLine2();
 
+    void readLineInto_Checks_data();
+    void readLineInto_Checks();
+
+    void readLineInto();
+
     void readAllKeepPosition();
     void writeInTextMode();
     void skip_data();
@@ -528,6 +533,99 @@ void tst_QIODevice::readLine2()
         QCOMPARE(buffer.readLine().size(), 10);
         QVERIFY(buffer.readLine().isNull());
     }
+}
+
+void tst_QIODevice::readLineInto_Checks_data()
+{
+    QTest::addColumn<bool>("open");
+    QTest::addColumn<QIODevice::OpenModeFlag>("openModeFlag");
+    QTest::addColumn<QString>("warningMessage");
+
+    QTest::newRow("Device not open") << false << QIODevice::ReadOnly
+                                     << "QIODevice::readLineInto (QBuffer): device not open";
+    QTest::newRow("Write only") << true << QIODevice::WriteOnly
+                                << "QIODevice::readLineInto (QBuffer): WriteOnly device";
+    QTest::newRow("Incorrect maxSize") << true << QIODevice::ReadOnly
+                                       << "QIODevice::readLineInto (QBuffer): Called with maxSize "
+                                          "< 2";
+}
+
+void tst_QIODevice::readLineInto_Checks()
+{
+    QFETCH(bool, open);
+    QFETCH(QIODevice::OpenModeFlag, openModeFlag);
+    QFETCH(QString, warningMessage);
+
+    QByteArray data("Try to read this.");
+    QBuffer buffer(&data);
+
+    QByteArray l1 = "Not Empty";
+    QVERIFY(!l1.isEmpty());
+    qsizetype cap_before = l1.capacity();
+
+    if (open) {
+        QVERIFY(buffer.open(openModeFlag));
+        buffer.seek(0);
+    }
+    qint64 pos_before = buffer.pos();
+
+    QTest::ignoreMessage(QtWarningMsg, warningMessage.toLatin1());
+    QCOMPARE(buffer.readLineInto(&l1, 1), false);
+    QVERIFY(l1.isEmpty()); // Make sure readLineInto() makes l1 empty in case an error occurred.
+
+    QVERIFY(l1.capacity() >= cap_before); // Capacity should not be reduced.
+    QCOMPARE(buffer.pos(), pos_before);
+}
+
+void tst_QIODevice::readLineInto()
+{
+    QByteArray data ("First line.\r\n");
+    data.append(QByteArray(100, 'x'));
+    data.append("\r\n");
+    data.append(QByteArray(32769, 'y'));
+    data.append("\r\n");
+    data.append(QByteArray(16388, 'z'));
+    data.append("\r\nThe end.");
+
+    QBuffer buffer(&data);
+    QVERIFY(buffer.open(QIODevice::ReadOnly));
+    QVERIFY(buffer.canReadLine());
+    buffer.seek(0);
+    QByteArray l1;
+
+    qsizetype cap_before = l1.capacity();
+    qint64 pos_before = buffer.pos();
+    QCOMPARE(buffer.readLineInto(&l1, 0), true);
+    QCOMPARE(l1, "First line.\r\n");
+    QCOMPARE_GT(l1.capacity(), cap_before);
+    QVERIFY(buffer.pos() > pos_before);
+
+    cap_before = l1.capacity();
+    pos_before = buffer.pos();
+    QCOMPARE(buffer.readLineInto(&l1), true);
+    QCOMPARE(l1.size(), 100 + 2);
+    QCOMPARE_GE(l1.capacity(), cap_before);
+    QCOMPARE(buffer.pos(), pos_before + 102);
+
+    pos_before = buffer.pos();
+    QCOMPARE(buffer.readLineInto(nullptr), true); // Read: 32769 'y' + '\r' + '\n'
+                                                  // but don't store it.
+    QCOMPARE(buffer.pos(), pos_before + 32769 + 2);
+
+    pos_before = buffer.pos();
+    QCOMPARE(buffer.readLineInto(nullptr, 16388 + 2), true);
+    QCOMPARE(buffer.pos(), pos_before + 16388 + 2);
+
+    pos_before = buffer.pos();
+    QByteArray *l = nullptr;
+    QCOMPARE(buffer.readLineInto(l), true); // Read "The end." but don't store it.
+    QVERIFY(buffer.pos() > pos_before);
+
+    cap_before = l1.capacity();
+    pos_before = buffer.pos();
+    QCOMPARE(buffer.readLineInto(&l1), false); // End of buffer.
+    QCOMPARE_EQ(l1.capacity(), cap_before);
+    QCOMPARE(buffer.pos(), pos_before);
 }
 
 class SequentialReadBuffer : public QIODevice
