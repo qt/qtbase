@@ -997,29 +997,17 @@ enumdata.py (keeping the old name as an alias):
 
         return cache
 
-    def __localeAsDoc(self, name: str, aliasFor = None):
-        path = f'common/main/{name}.xml'
-        if self.root.joinpath(path).exists():
-            elt = self.__xml(path)
-            for child in Node(elt).findAllChildren('alias'):
-                try:
-                    alias = child.dom.attributes['source'].nodeValue
-                except (KeyError, AttributeError):
-                    pass
-                else:
-                    return self.__localeAsDoc(alias, aliasFor or name)
-            # No alias child with a source:
-            return elt
-
-        if aliasFor:
-            raise Error(f'Fatal error: found an alias "{aliasFor}" -> "{name}", '
-                        'but found no file for the alias')
-
-    def __scanLocaleRoots(self, name):
+    def __scanLocaleRoots(self, name: str):
         while name and name != 'root':
-            doc = self.__localeAsDoc(name)
-            if doc is not None:
-                yield Node(doc, self.__unDistinguishedAttributes)
+            path = f'common/main/{name}.xml'
+            if self.root.joinpath(path).exists():
+                elt = self.__xml(path) # which has no top-level alias children:
+                assert not any(True
+                               for child in Node(elt).findAllChildren(
+                                       'alias', allDull=True)
+                               ), (f"Locale {name} "
+                                   "has an archaic top-level alias element")
+                yield Node(elt, self.__unDistinguishedAttributes)
 
             try:
                 name = self.__parentLocale[name]

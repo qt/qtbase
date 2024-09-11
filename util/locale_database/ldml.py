@@ -233,19 +233,8 @@ class LocaleScanner (object):
         The tag codes are language, script, territory and variant; an
         empty value for any of them indicates that no value was
         provided.  The values are obtained from the primary file's
-        top-level <identity> element.  An Error is raised if any
-        top-level <alias> element of this file has a non-empty source
-        attribute; that attribute value is mentioned in the error's
-        message."""
+        top-level <identity> element."""
         root = self.nodes[0]
-        for alias in root.findAllChildren('alias', allDull=True):
-            try:
-                source = alias.dom.attributes['source'].nodeValue
-            except (KeyError, AttributeError):
-                pass
-            else:
-                raise Error(f'Alias to {source}')
-
         ids = root.findUniqueChild('identity')
         for code in ('language', 'script', 'territory', 'variant'):
             for node in ids.findAllChildren(code, allDull=True):
@@ -529,15 +518,16 @@ class LocaleScanner (object):
                     yield elt
 
             # Process roots separately: otherwise the alias-processing
-            # is excessive.
+            # is excessive (and alias only ever shows up in root.xml,
+            # always with source="locale").
             for i, selector in enumerate(tags):
                 tag, attrs = _parseXPath(selector)
 
                 for alias in tuple(_iterateEach(r.findAllChildren('alias', allDull=True)
                                                 for r in roots)):
-                    if alias.dom.attributes['source'].nodeValue == 'locale':
-                        replace = alias.dom.attributes['path'].nodeValue.split('/')
-                        retries.append(self.__xpathJoin(tags[:i], replace, tags[i:]))
+                    assert alias.dom.attributes['source'].nodeValue == 'locale', alias
+                    replace = alias.dom.attributes['path'].nodeValue.split('/')
+                    retries.append(self.__xpathJoin(tags[:i], replace, tags[i:]))
 
                 roots = tuple(_iterateEach(r.findAllChildren(tag, attrs,
                                                              allDull=allDull)
