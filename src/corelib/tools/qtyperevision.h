@@ -45,9 +45,11 @@ public:
     static constexpr bool isValidSegment(Integer segment)
     {
         // using extra parentheses around max to avoid expanding it if it is a macro
+        // and adding zero to cause it to be promoted
+        constexpr auto Max = (std::numeric_limits<Integer>::max)() + 0;
+        constexpr bool HasSufficientRange = Max >= SegmentUnknown;
         return segment >= Integer(0)
-                && ((std::numeric_limits<Integer>::max)() < Integer(SegmentUnknown)
-                    || segment < Integer(SegmentUnknown));
+                && (!HasSufficientRange || segment < Integer(SegmentUnknown));
     }
 
     template<typename Major, typename Minor,
