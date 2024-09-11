@@ -41,7 +41,7 @@ typedef QList<UCCollationValue> CollatorKeyType;
 const CollatorType NoCollator = 0;
 
 #elif defined(Q_OS_WIN)
-typedef QString CollatorKeyType;
+typedef QByteArray CollatorKeyType;
 typedef int CollatorType;
 const CollatorType NoCollator = 0;
 
