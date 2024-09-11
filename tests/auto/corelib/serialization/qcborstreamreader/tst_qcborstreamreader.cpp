@@ -927,8 +927,8 @@ void tst_QCborStreamReader::validation()
     QCOMPARE(reader.lastError(), error);
 
     // check toString() and toByteArray() too
+    reader.reset();
     if (reader.isString() || reader.isByteArray()) {
-        reader.reset();
         if (reader.isString()) {
             QString prefix = "some prefix";
             QString str = prefix;
@@ -947,9 +947,9 @@ void tst_QCborStreamReader::validation()
             QVERIFY(reader.readAllString().isNull());
         else
             QVERIFY(reader.readAllByteArray().isNull());
-    }
 
-    reader.reset();
+        reader.reset();
+    }
 
     // and the UTF-8 API
     if (reader.isString()) {
