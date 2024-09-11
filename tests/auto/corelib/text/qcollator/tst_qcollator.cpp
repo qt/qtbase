@@ -273,6 +273,8 @@ void tst_QCollator::compare()
 #if !QT_CONFIG(icu) && !defined(Q_OS_WIN) && !defined(Q_OS_MACOS)
     if (collator.locale() != QLocale::c() && collator.locale() != QLocale::system().collation())
         QSKIP("POSIX implementation of collation only supports C and system collation locales");
+#elif QT_CONFIG(icu) || defined(Q_OS_WIN)
+#  define SORTKEY_WORKS
 #endif
 
     if (numericMode)
@@ -296,12 +298,10 @@ void tst_QCollator::compare()
 #endif
     }
 
-    // NOTE: currently QCollatorSortKey::compare is not working
-    // properly without icu: see QTBUG-88704 for details
     QCOMPARE(asSign(collator.compare(s1, s2)), result);
     if (!numericMode)
         QCOMPARE(asSign(QCollator::defaultCompare(s1, s2)), result);
-#if QT_CONFIG(icu)
+#ifdef SORTKEY_WORKS
     auto key1 = collator.sortKey(s1);
     auto key2 = collator.sortKey(s2);
     QCOMPARE(asSign(key1.compare(key2)), keyCompareResult);
@@ -313,14 +313,14 @@ void tst_QCollator::compare()
 #endif
     collator.setCaseSensitivity(Qt::CaseInsensitive);
     QCOMPARE(asSign(collator.compare(s1, s2)), caseInsensitiveResult);
-#if QT_CONFIG(icu)
+#ifdef SORTKEY_WORKS
     key1 = collator.sortKey(s1);
     key2 = collator.sortKey(s2);
     QCOMPARE(asSign(key1.compare(key2)), keyCompareCaseInsensitiveResult);
 #endif
     collator.setIgnorePunctuation(ignorePunctuation);
     QCOMPARE(asSign(collator.compare(s1, s2)), punctuationResult);
-#if QT_CONFIG(icu)
+#ifdef SORTKEY_WORKS
     key1 = collator.sortKey(s1);
     key2 = collator.sortKey(s2);
     QCOMPARE(asSign(key1.compare(key2)), keyComparePunctuationResultResult);

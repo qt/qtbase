@@ -92,17 +92,22 @@ int QCollator::compare(QStringView s1, QStringView s2) const
 
 QCollatorSortKey QCollator::sortKey(const QString &string) const
 {
+    if (string.isEmpty()) {
+        // empty strings sort before everything and LCMapString doesn't
+        // like them
+        return QCollatorSortKey(nullptr);
+    }
     d->ensureInitialized();
 
     if (d->isC())
-        return QCollatorSortKey(new QCollatorSortKeyPrivate(string));
+        return QCollatorSortKey(new QCollatorSortKeyPrivate(string.toUtf8()));
 
     // truncating sizes (QTBUG-105038)
     int size = LCMapStringW(d->localeID, LCMAP_SORTKEY | d->collator,
                            reinterpret_cast<const wchar_t*>(string.constData()), string.size(),
                            0, 0);
 
-    QString ret(size, Qt::Uninitialized);
+    CollatorKeyType ret(size, Qt::Uninitialized);
     int finalSize = LCMapStringW(d->localeID, LCMAP_SORTKEY | d->collator,
                            reinterpret_cast<const wchar_t*>(string.constData()), string.size(),
                            reinterpret_cast<wchar_t*>(ret.data()), ret.size());
@@ -116,6 +121,10 @@ QCollatorSortKey QCollator::sortKey(const QString &string) const
 
 int QCollatorSortKey::compare(const QCollatorSortKey &otherKey) const
 {
+    if (!d)
+        return otherKey.d ? -1 : 0;
+    if (!otherKey.d)
+        return +1;
     return d->m_key.compare(otherKey.d->m_key);
 }
 
