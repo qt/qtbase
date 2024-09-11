@@ -1034,16 +1034,6 @@ QFileInfo QAbstractFileEngineIterator::currentFileInfo() const
     \sa QDirListing
 */
 QAbstractFileEngine::IteratorUniquePtr
-QAbstractFileEngine::beginEntryList(const QString &path, QDir::Filters filters,
-                                    const QStringList &filterNames)
-{
-    Q_UNUSED(path);
-    Q_UNUSED(filters);
-    Q_UNUSED(filterNames);
-    return {};
-}
-
-QAbstractFileEngine::IteratorUniquePtr
 QAbstractFileEngine::beginEntryList(const QString &path, QDirListing::IteratorFlags filters,
                                     const QStringList &filterNames)
 {
