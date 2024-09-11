@@ -19,16 +19,11 @@ QT_BEGIN_NAMESPACE
 #define SORT_DIGITSASNUMBERS 8
 #endif
 
-// implemented in qlocale_win.cpp
-extern LCID qt_inIsoNametoLCID(const char *name);
-
 void QCollatorPrivate::init()
 {
     collator = 0;
     if (isC())
         return;
-
-    localeID = qt_inIsoNametoLCID(QLocalePrivate::get(locale)->bcp47Name().constData());
 
     if (caseSensitivity == Qt::CaseInsensitive)
         collator |= NORM_IGNORECASE;
@@ -68,9 +63,12 @@ int QCollator::compare(QStringView s1, QStringView s2) const
     // [...] The function returns 0 if it does not succeed.
     // https://docs.microsoft.com/en-us/windows/desktop/api/stringapiset/nf-stringapiset-comparestringex#return-value
 
-    const int ret = CompareString(d->localeID, d->collator,
-                                  reinterpret_cast<const wchar_t *>(s1.data()), s1.size(),
-                                  reinterpret_cast<const wchar_t *>(s2.data()), s2.size());
+    const QString locale = d->locale.bcp47Name();
+    const int ret = CompareStringEx(reinterpret_cast<const wchar_t *>(locale.constData()),
+                                    d->collator,
+                                    reinterpret_cast<const wchar_t *>(s1.data()), s1.size(),
+                                    reinterpret_cast<const wchar_t *>(s2.data()), s2.size(),
+                                    nullptr, nullptr, 0);
     if (Q_LIKELY(ret))
         return ret - 2;
 
@@ -82,7 +80,7 @@ int QCollator::compare(QStringView s1, QStringView s2) const
         qWarning("Invalid parameter for QCollator::compare()");
         break;
     default:
-        qWarning("Failed (%ld) comparison in QCollator::compare()", long(error));
+        qErrnoWarning(error, "Failed comparison in QCollator::compare()");
         break;
     }
     // We have no idea what to return, so pretend we think they're equal.
@@ -102,20 +100,23 @@ QCollatorSortKey QCollator::sortKey(const QString &string) const
     if (d->isC())
         return QCollatorSortKey(new QCollatorSortKeyPrivate(string.toUtf8()));
 
-    // truncating sizes (QTBUG-105038)
-    int size = LCMapStringW(d->localeID, LCMAP_SORTKEY | d->collator,
-                           reinterpret_cast<const wchar_t*>(string.constData()), string.size(),
-                           0, 0);
+    const QString localeName = d->locale.bcp47Name();
+    auto callLcMapString = [&](LPWSTR lpDestStr, int cchDest) {
+        // note: truncating sizes (QTBUG-105038)
+        return LCMapStringEx(reinterpret_cast<const wchar_t *>(localeName.constData()),
+                             LCMAP_SORTKEY | d->collator,
+                             reinterpret_cast<const wchar_t*>(string.constData()), string.size(),
+                             lpDestStr, cchDest, nullptr, nullptr, 0);
+    };
 
+    int size = callLcMapString(nullptr, 0);
     CollatorKeyType ret(size, Qt::Uninitialized);
-    int finalSize = LCMapStringW(d->localeID, LCMAP_SORTKEY | d->collator,
-                           reinterpret_cast<const wchar_t*>(string.constData()), string.size(),
-                           reinterpret_cast<wchar_t*>(ret.data()), ret.size());
-    if (finalSize == 0) {
-        qWarning()
-            << "there were problems when generating the ::sortKey by LCMapStringW with error:"
-            << GetLastError();
-    }
+    size = callLcMapString(reinterpret_cast<wchar_t*>(ret.data()), ret.size());
+    if (size != ret.size())
+        ret.truncate(size);
+    if (size == 0)
+        qErrnoWarning("Error when generating the ::sortKey by LCMapStringEx");
+
     return QCollatorSortKey(new QCollatorSortKeyPrivate(std::move(ret)));
 }
 
