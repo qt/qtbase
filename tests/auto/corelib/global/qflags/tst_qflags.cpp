@@ -32,6 +32,7 @@ private slots:
     void construction() const;
     void boolCasts() const;
     void operators() const;
+    void compareToZero() const;
     void mixingDifferentEnums() const;
     void testFlag() const;
     void testFlagZeroFlag() const;
@@ -148,6 +149,21 @@ void tst_QFlags::operators() const
     CHECK(^, UnsignedFlag20, UnsignedFlag10, UnsignedFlag30);
     CHECK(^, UnsignedFlag20, UnsignedFlag20, UnsignedFlags());
 #undef CHECK
+}
+
+void tst_QFlags::compareToZero() const
+{
+    SignedFlags sf;
+    UnsignedFlags uf;
+    // Don't change these to QT_TEST_EQUALITY_OPS
+    QVERIFY(sf == 0);
+    QVERIFY(0 == sf);
+    QVERIFY(!(sf != 0));
+    QVERIFY(!(0 != sf));
+    QVERIFY(uf == 0);
+    QVERIFY(0 == uf);
+    QVERIFY(!(uf != 0));
+    QVERIFY(!(0 != uf));
 }
 
 void tst_QFlags::mixingDifferentEnums() const
