@@ -117,7 +117,7 @@ QCollatorSortKey QCollator::sortKey(const QString &string) const
 
 int QCollatorSortKey::compare(const QCollatorSortKey &otherKey) const
 {
-    return qstrcmp(d->m_key, otherKey.d->m_key);
+    return d->m_key.compare(otherKey.d->m_key);
 }
 
 QT_END_NAMESPACE
