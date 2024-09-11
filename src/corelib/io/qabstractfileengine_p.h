@@ -127,10 +127,7 @@ public:
     typedef QAbstractFileEngineIterator Iterator;
     using IteratorUniquePtr = std::unique_ptr<Iterator>;
 
-    virtual IteratorUniquePtr
-    beginEntryList(const QString &path, QDir::Filters filters, const QStringList &filterNames);
     virtual IteratorUniquePtr endEntryList() { return {}; }
-
     virtual IteratorUniquePtr
     beginEntryList(const QString &path, QDirListing::IteratorFlags filters,
                    const QStringList &filterNames);

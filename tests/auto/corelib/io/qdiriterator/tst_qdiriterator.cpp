@@ -439,7 +439,7 @@ public:
     { }
 
     IteratorUniquePtr
-    beginEntryList(const QString &, QDir::Filters, const QStringList &) override
+    beginEntryList(const QString &, QDirListing::IteratorFlags, const QStringList &) override
     { return nullptr; }
 };
 
