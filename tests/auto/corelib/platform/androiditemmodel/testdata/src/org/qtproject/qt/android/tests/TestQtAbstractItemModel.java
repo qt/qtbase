@@ -10,7 +10,7 @@ import java.util.List;
 import org.qtproject.qt.android.QtAbstractItemModel;
 import org.qtproject.qt.android.QtModelIndex;
 
-public class TestModel extends QtAbstractItemModel
+public class TestQtAbstractItemModel extends QtAbstractItemModel
 {
     int m_rows = 0;
     int m_cols = 0;
