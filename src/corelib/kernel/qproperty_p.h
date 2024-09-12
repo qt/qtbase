@@ -45,11 +45,11 @@ private:
     QPropertyObserver *d = nullptr;
 public:
     QBindingObserverPtr() = default;
-    Q_DISABLE_COPY(QBindingObserverPtr);
+    Q_DISABLE_COPY(QBindingObserverPtr)
     void swap(QBindingObserverPtr &other) noexcept
     { qt_ptr_swap(d, other.d); }
     QBindingObserverPtr(QBindingObserverPtr &&other) noexcept : d(std::exchange(other.d, nullptr)) {}
-    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QBindingObserverPtr);
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QBindingObserverPtr)
 
 
     inline QBindingObserverPtr(QPropertyObserver *observer) noexcept;
