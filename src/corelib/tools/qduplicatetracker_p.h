@@ -78,7 +78,7 @@ class QDuplicateTracker {
     QSet<T> set = makeQSet();
     int setSize = 0;
 #endif
-    Q_DISABLE_COPY_MOVE(QDuplicateTracker);
+    Q_DISABLE_COPY_MOVE(QDuplicateTracker)
 public:
     QDuplicateTracker() = default;
     void reserve(int n) { set.reserve(n); }
