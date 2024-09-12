@@ -242,21 +242,12 @@ struct CompatPropertySafePoint
 struct CurrentCompatPropertyThief
 {
     Q_DISABLE_COPY_MOVE(CurrentCompatPropertyThief)
+    QScopedValueRollback<CompatPropertySafePoint *> m_guard;
 public:
     CurrentCompatPropertyThief(QBindingStatus *status)
-        : status(&status->currentCompatProperty)
-        , stolen(std::exchange(status->currentCompatProperty, nullptr))
+        : m_guard(status->currentCompatProperty, nullptr)
     {
     }
-
-    ~CurrentCompatPropertyThief()
-    {
-        *status = stolen;
-    }
-
-private:
-    CompatPropertySafePoint **status = nullptr;
-    CompatPropertySafePoint *stolen = nullptr;
 };
 
 }
