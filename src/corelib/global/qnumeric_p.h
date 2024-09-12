@@ -384,7 +384,7 @@ convertDoubleTo(double v, T *value, bool allow_precision_upgrade = true)
 
     // Check for in-range value to ensure the conversion is not UB (see the
     // comment above for Standard language).
-    if (std::fabs(v) > (std::numeric_limits<T>::max)()) {
+    if (std::fabs(v) > double{(std::numeric_limits<T>::max)()}) {
         *value = v < 0 ? -Huge : Huge;
         return false;
     }
