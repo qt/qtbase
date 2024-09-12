@@ -384,11 +384,11 @@ public:
     QPropertyBindingSourceLocation sourceLocation() const
     {
         if (!hasCustomVTable())
-            return this->location;
-        QPropertyBindingSourceLocation location;
+            return location;
+        QPropertyBindingSourceLocation result;
         constexpr auto msg = "Custom location";
-        location.fileName = msg;
-        return location;
+        result.fileName = msg;
+        return result;
     }
     QPropertyBindingError bindingError() const { return m_error; }
     QMetaType valueMetaType() const { return metaType; }
