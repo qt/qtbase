@@ -83,7 +83,7 @@ public:
         }
     };
 
-signals:
+Q_SIGNALS:
     void driveLockForRemoval(const QString &);
     void driveLockForRemovalFailed(const QString &);
     void driveRemoved(const QString &);

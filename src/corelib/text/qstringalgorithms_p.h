@@ -95,7 +95,7 @@ template <typename StringType> struct QStringAlgorithms
         Char *dst = const_cast<Char *>(result.cbegin());
         Char *ptr = dst;
         bool unmodified = true;
-        forever {
+        while (true) {
             while (src != end && isSpace(*src))
                 ++src;
             while (src != end && !isSpace(*src))

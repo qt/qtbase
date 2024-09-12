@@ -130,7 +130,7 @@ bool QXmlStreamReaderPrivate::parse()
 
     act = state_stack[tos];
 
-    forever {
+    while (true) {
         if (token == -1 && - TERMINAL_COUNT != action_index[act]) {
             uint cu = getChar();
             token = NOTOKEN;

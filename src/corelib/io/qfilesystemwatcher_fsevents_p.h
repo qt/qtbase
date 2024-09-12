@@ -47,7 +47,7 @@ Q_SIGNALS:
     void emitDirectoryChanged(const QString &path, bool removed);
     void scheduleStreamRestart();
 
-private slots:
+private Q_SLOTS:
     void doEmitFileChanged(const QString &path, bool removed);
     void doEmitDirectoryChanged(const QString &path, bool removed);
     bool restartStream();
