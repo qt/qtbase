@@ -3413,7 +3413,10 @@ QMetaEnum::QMetaEnum(const QMetaObject *mobj, int index)
 
 int QMetaEnum::Data::index(const QMetaObject *mobj) const
 {
-    return (d - mobj->d.data - priv(mobj->d.data)->enumeratorData) / Size;
+#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0)
+#  warning "Consider changing Size to a power of 2"
+#endif
+    return (unsigned(d - mobj->d.data) - priv(mobj->d.data)->enumeratorData) / Size;
 }
 
 /*!
@@ -3551,7 +3554,10 @@ QMetaType QMetaProperty::metaType() const
 
 int QMetaProperty::Data::index(const QMetaObject *mobj) const
 {
-    return (d - mobj->d.data - priv(mobj->d.data)->propertyData) / Size;
+#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0)
+#  warning "Consider changing Size to a power of 2"
+#endif
+    return (unsigned(d - mobj->d.data) - priv(mobj->d.data)->propertyData) / Size;
 }
 
 /*!
