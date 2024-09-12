@@ -45,12 +45,7 @@ function(__qt_internal_get_tool_imported_location out_var tool)
     set(${out_var} "${${out_var}}" PARENT_SCOPE)
 endfunction()
 
-function(_qt_internal_generate_tool_command_wrapper)
-    get_property(is_called GLOBAL PROPERTY _qt_internal_generate_tool_command_wrapper_called)
-    if(NOT CMAKE_HOST_WIN32 OR is_called)
-        return()
-    endif()
-
+function(_qt_internal_collect_tool_paths out_paths)
     set(prefixes "")
 
     # In a prefix build, the just-built tools should pick up libraries from the current repo build
@@ -93,6 +88,16 @@ function(_qt_internal_generate_tool_command_wrapper)
         endif()
     endforeach()
 
+    set(${out_paths} "${path_dirs}" PARENT_SCOPE)
+endfunction()
+
+function(_qt_internal_generate_tool_command_wrapper)
+    get_property(is_called GLOBAL PROPERTY _qt_internal_generate_tool_command_wrapper_called)
+    if(NOT CMAKE_HOST_WIN32 OR is_called)
+        return()
+    endif()
+    _qt_internal_collect_tool_paths(path_dirs)
+
     set(tool_command_wrapper_dir "${CMAKE_BINARY_DIR}/.qt/bin")
     file(MAKE_DIRECTORY "${tool_command_wrapper_dir}")
     set(tool_command_wrapper_path "${tool_command_wrapper_dir}/qt_setup_tool_path.bat")
@@ -114,3 +119,27 @@ function(_qt_internal_get_tool_wrapper_script_path out_variable)
 
     set(${out_variable} "${QT_TOOL_COMMAND_WRAPPER_PATH}" PARENT_SCOPE)
 endfunction()
+
+# Attempts to run execute_process command in the Qt environment. The macro
+# sets the PATH on windows platforms so the executable can locate the required
+# Qt dlls. Marco arguments should be preliminary packed inside variable. The
+# variable name then should be used as an execute_process_args_var argument:
+#
+# set(execute_echo_command
+#     ${CMAKE_COMMAND} -E echo [["Test _qt_internal_execute_proccess_in_qt_env"]]
+# )
+# _qt_internal_execute_proccess_in_qt_env(execute_echo_command)
+#
+macro(_qt_internal_execute_proccess_in_qt_env execute_process_args_var)
+    if(CMAKE_HOST_WIN32)
+        _qt_internal_collect_tool_paths(path_dirs)
+        set(_qt_internal_execute_proccess_in_qt_env_path_backup "$ENV{PATH}")
+        set(ENV{PATH} "$ENV{PATH};${path_dirs}")
+    endif()
+    # We avoid escaping issues this way.
+    execute_process(${${execute_process_args_var}})
+    if(CMAKE_HOST_WIN32)
+        set(ENV{PATH} "${path_backup}")
+        unset(_qt_internal_execute_proccess_in_qt_env_path_backup)
+    endif()
+endmacro()
