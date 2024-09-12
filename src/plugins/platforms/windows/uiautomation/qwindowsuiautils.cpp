@@ -150,6 +150,7 @@ long roleToControlTypeId(QAccessible::Role role)
         {QAccessible::Paragraph, UIA_TextControlTypeId},
         {QAccessible::WebDocument, UIA_DocumentControlTypeId},
         {QAccessible::Heading, UIA_TextControlTypeId},
+        {QAccessible::BlockQuote, UIA_GroupControlTypeId},
     };
 
     return mapping.value(role, UIA_CustomControlTypeId);

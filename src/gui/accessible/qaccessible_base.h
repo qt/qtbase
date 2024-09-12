@@ -314,6 +314,14 @@ public:
         // IA2_ROLE_TOGGLE_BUTTON = 0x42A,
         // IA2_ROLE_VIEW_PORT = 0x42B,
         ComplementaryContent = 0x42C,
+        // IA2_ROLE_LANDMARK = 0x42D,
+        // IA2_ROLE_LEVEL_BAR = 0x42E,
+        // IA2_ROLE_CONTENT_DELETION = 0x42F,
+        // IA2_ROLE_CONTENT_INSERTION = 0x430,
+        BlockQuote = 0x431,
+        // IA2_ROLE_MARK = 0x432,
+        // IA2_ROLE_SUGGESTION = 0x433,
+        // IA2_ROLE_COMMENT = = 0x434,
 
         UserRole       = 0x0000ffff
     };
