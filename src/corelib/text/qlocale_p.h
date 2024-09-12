@@ -309,7 +309,7 @@ public:
     {
         if (qIsInf(d))
             return float(d);
-        if (std::fabs(d) > (std::numeric_limits<float>::max)()) {
+        if (std::fabs(d) > double{(std::numeric_limits<float>::max)()}) {
             if (ok)
                 *ok = false;
             const float huge = std::numeric_limits<float>::infinity();
