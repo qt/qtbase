@@ -306,7 +306,7 @@ protected:
         };
     };
 private:
-    QPropertyBindingError error;
+    QPropertyBindingError m_error;
 
     QMetaType metaType;
 
@@ -392,7 +392,7 @@ public:
         location.fileName = msg;
         return location;
     }
-    QPropertyBindingError bindingError() const { return error; }
+    QPropertyBindingError bindingError() const { return m_error; }
     QMetaType valueMetaType() const { return metaType; }
 
     void unlinkAndDeref();
@@ -410,7 +410,7 @@ public:
     { return static_cast<QPropertyBindingPrivate *>(binding.d.data()); }
 
     void setError(QPropertyBindingError &&e)
-    { error = std::move(e); }
+    { m_error = std::move(e); }
 
     void detachFromProperty()
     {
@@ -827,7 +827,7 @@ struct QUntypedBindablePrivate
 inline bool QPropertyBindingPrivate::evaluateRecursive_inline(PendingBindingObserverList &bindingObservers, QBindingStatus *status)
 {
     if (updating) {
-        error = QPropertyBindingError(QPropertyBindingError::BindingLoop);
+        m_error = QPropertyBindingError(QPropertyBindingError::BindingLoop);
         if (isQQmlPropertyBinding)
             errorCallBack(this);
         return false;
