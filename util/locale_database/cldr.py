@@ -124,7 +124,7 @@ class CldrReader (object):
                 f'Duplicated (territory, Windows ID) entries:\n\t{joined}\n')
             winIds = [trip for trip in winIds if trip[:2] not in winDup]
             for (w, t), seq in winDup.items():
-                ianalist = []
+                ianaList = []
                 for ids in seq:
                     for iana in ids.split():
                         if iana not in ianaList:
