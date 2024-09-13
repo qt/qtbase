@@ -19,6 +19,7 @@ You can download jing from https://relaxng.org/jclark/jing.html if your
 package manager lacks the jing package.
 """
 
+from typing import Iterator
 from xml.sax.saxutils import escape
 
 from localetools import Error, qtVersion
@@ -261,7 +262,7 @@ class QLocaleXmlReader (object):
                 what.args += (have, give)
                 raise
 
-    def defaultMap(self):
+    def defaultMap(self) -> Iterator[tuple[tuple[int, int], int]]:
         """Map language and script to their default territory by ID.
 
         Yields ((language, script), territory) wherever the likely

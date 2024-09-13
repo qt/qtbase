@@ -17,7 +17,7 @@ The ISO 639-3 data file can be downloaded from the SIL website:
 import datetime
 import argparse
 from pathlib import Path
-from typing import Optional
+from typing import Iterator, Optional
 
 from qlocalexml import QLocaleXmlReader
 from localetools import *
@@ -55,12 +55,12 @@ class LocaleKeySorter:
     # QLocale's likely sub-tag matching algorithms. Make sure this is
     # sorting in an order compatible with those algorithms.
 
-    def __init__(self, defaults):
-        self.map = dict(defaults)
-    def foreign(self, key):
-        default = self.map.get(key[:2])
+    def __init__(self, defaults: Iterator[tuple[tuple[int, int], int]]) -> None:
+        self.map: dict[tuple[int, int], int] = dict(defaults)
+    def foreign(self, key: tuple[int, int, int]) -> bool:
+        default: int | None = self.map.get(key[:2])
         return default is None or default != key[2]
-    def __call__(self, key):
+    def __call__(self, key: tuple[int, int, int]) -> tuple[int, bool, int, int]:
         # TODO: should we compare territory before or after script ?
         return (key[0], self.foreign(key)) + key[1:]
 
@@ -1010,7 +1010,8 @@ def main(argv, out, err):
     reader = QLocaleXmlReader(qlocalexml)
     locale_map = dict(reader.loadLocaleMap(calendars, err.write))
     reader.pruneZoneNaming(locale_map, mutter)
-    locale_keys = sorted(locale_map.keys(), key=LocaleKeySorter(reader.defaultMap()))
+    locale_keys: list[tuple[int, int, int]] = sorted(locale_map.keys(),
+                                                     key=LocaleKeySorter(reader.defaultMap()))
 
     code_data = LanguageCodeData(args.iso_path)
 
