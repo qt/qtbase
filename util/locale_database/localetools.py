@@ -99,7 +99,7 @@ def AtomicRenameTemporaryFile(originalLocation: Path, *, prefix: str, dir: Path)
         yield tempFile
         tempFile.close()
         # Move the modified file to the original location
-        Path(tempFile.name).rename(originalLocation)
+        Path(tempFile.name).replace(originalLocation)
     except Exception:
         # delete the temporary file in case of error
         tempFile.close()
