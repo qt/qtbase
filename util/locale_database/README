@@ -10,3 +10,6 @@ time/q*calendar_data_p.h and time/qtimezone*_data_p.h under
 src/corelib/). See enumdata.py and zonedata.py for when and how to
 update the data they provide. You shall definitely need to pass
 --no-verify or -n to git commit for these changes.
+
+NOTE: on Windows it is advisable to set the environment variable
+PYTHONUTF8 to 1 before running the scripts to avoid encoding errors.
