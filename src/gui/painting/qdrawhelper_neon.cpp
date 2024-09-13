@@ -1069,12 +1069,10 @@ const uint * QT_FASTCALL qt_fetchUntransformed_888_neon(uint *buffer, const Oper
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
 static inline uint32x4_t vrgba2argb(uint32x4_t srcVector)
 {
-#if defined(Q_PROCESSOR_ARM_64) && defined(_MSC_VER)
-    const uint8x16_t rgbaMask  = { 0x0704050603000102ULL, 0x0F0C0D0E0B08090AULL };
-#elif defined(Q_PROCESSOR_ARM_64)
-    const uint8x16_t rgbaMask  = { 2, 1, 0, 3, 6, 5, 4, 7, 10, 9, 8, 11, 14, 13, 12, 15};
+#if defined(Q_PROCESSOR_ARM_64)
+    const uint8x16_t rgbaMask  = qvsetq_n_u8(2, 1, 0, 3, 6, 5, 4, 7, 10, 9, 8, 11, 14, 13, 12, 15);
 #else
-    const uint8x8_t rgbaMask  = { 2, 1, 0, 3, 6, 5, 4, 7 };
+    const uint8x8_t rgbaMask  = qvset_n_u8(2, 1, 0, 3, 6, 5, 4, 7);
 #endif
 #if defined(Q_PROCESSOR_ARM_64)
     srcVector = vreinterpretq_u32_u8(vqtbl1q_u8(vreinterpretq_u8_u32(srcVector), rgbaMask));
@@ -1091,11 +1089,7 @@ template<bool RGBA>
 static inline void convertARGBToARGB32PM_neon(uint *buffer, const uint *src, int count)
 {
     int i = 0;
-#ifdef _MSC_VER
-    const uint8x8_t shuffleMask = { 0x0707070703030303ULL };
-#else
-    const uint8x8_t shuffleMask = { 3, 3, 3, 3, 7, 7, 7, 7};
-#endif
+    const uint8x8_t shuffleMask = qvset_n_u8(3, 3, 3, 3, 7, 7, 7, 7);
     const uint32x4_t blendMask = vdupq_n_u32(0xff000000);
 
     for (; i < count - 3; i += 4) {
@@ -1147,11 +1141,7 @@ static inline void convertARGB32ToRGBA64PM_neon(QRgba64 *buffer, const uint *src
     if (count <= 0)
         return;
 
-#ifdef _MSC_VER
-    const uint8x8_t shuffleMask = { 0x0707070703030303ULL };
-#else
-    const uint8x8_t shuffleMask = { 3, 3, 3, 3, 7, 7, 7, 7};
-#endif
+    const uint8x8_t shuffleMask = qvset_n_u8(3, 3, 3, 3, 7, 7, 7, 7);
     const uint64x2_t blendMask = vdupq_n_u64(Q_UINT64_C(0xffff000000000000));
 
     int i = 0;

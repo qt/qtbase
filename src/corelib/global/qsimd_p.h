@@ -283,6 +283,59 @@ inline uint8_t vaddv_u8(uint8x8_t v8)
 }
 #endif
 
+// Missing NEON intrinsics, needed due different type definitions:
+inline uint16x8_t qvsetq_n_u16(uint16_t v1, uint16_t v2, uint16_t v3, uint16_t v4,
+                               uint16_t v5, uint16_t v6, uint16_t v7, uint16_t v8) {
+#if defined(Q_CC_MSVC) && !defined(Q_CC_CLANG)
+    using u64 = uint64_t;
+    const uint16x8_t vmask = {
+        v1 | (v2 << 16) | (u64(v3) << 32) | (u64(v4) << 48),
+        v5 | (v6 << 16) | (u64(v7) << 32) | (u64(v8) << 48)
+    };
+#else
+    const uint16x8_t vmask = { v1, v2, v3, v4, v5, v6, v7, v8 };
+#endif
+    return vmask;
+}
+inline uint8x8_t qvset_n_u8(uint8_t v1, uint8_t v2, uint8_t v3, uint8_t v4,
+                            uint8_t v5, uint8_t v6, uint8_t v7, uint8_t v8) {
+#if defined(Q_CC_MSVC) && !defined(Q_CC_CLANG)
+    using u64 = uint64_t;
+    const uint8x8_t vmask = {
+        v1 | (v2 << 8) | (v3 << 16) | (v4 << 24) |
+        (u64(v5) << 32) | (u64(v6) << 40) | (u64(v7) << 48) | (u64(v8) << 56)
+    };
+#else
+    const uint8x8_t vmask = { v1, v2, v3, v4, v5, v6, v7, v8 };
+#endif
+    return vmask;
+}
+inline uint8x16_t qvsetq_n_u8(uint8_t v1,  uint8_t v2,  uint8_t v3,  uint8_t v4,
+                              uint8_t v5,  uint8_t v6,  uint8_t v7,  uint8_t v8,
+                              uint8_t v9,  uint8_t v10, uint8_t v11, uint8_t v12,
+                              uint8_t v13, uint8_t v14, uint8_t v15, uint8_t v16) {
+#if defined(Q_CC_MSVC) && !defined(Q_CC_CLANG)
+    using u64 = uint64_t;
+    const uint8x16_t vmask = {
+        v1 | (v2 << 8) | (v3 << 16) | (v4 << 24) |
+        (u64(v5) << 32) | (u64(v6) << 40) | (u64(v7) << 48) | (u64(v8) << 56),
+        v9 | (v10 << 8) | (v11 << 16) | (v12 << 24) |
+        (u64(v13) << 32) | (u64(v14) << 40) | (u64(v15) << 48) | (u64(v16) << 56)
+    };
+#else
+    const uint8x16_t vmask = { v1, v2,  v3,  v4,  v5,  v6,  v7,  v8,
+                               v9, v10, v11, v12, v13, v14, v15, v16};
+#endif
+    return vmask;
+}
+inline uint32x4_t qvsetq_n_u32(uint32_t a, uint32_t b, uint32_t c, uint32_t d)
+{
+#if defined(Q_CC_MSVC) && !defined(Q_CC_CLANG)
+    return uint32x4_t{ (uint64_t(b) << 32) | a, (uint64_t(d) << 32) | c };
+#else
+    return uint32x4_t{ a, b, c, d };
+#endif
+}
 #endif
 
 #if defined(Q_PROCESSOR_ARM) && defined(__ARM_FEATURE_CRC32)
