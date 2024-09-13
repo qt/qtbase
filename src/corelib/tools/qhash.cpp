@@ -715,7 +715,7 @@ static size_t aeshash(const uchar *p, size_t len, size_t seed, size_t seed2) noe
 }
 #endif // x86 AESNI
 
-#if defined(Q_PROCESSOR_ARM) && QT_COMPILER_SUPPORTS_HERE(AES) && !defined(QHASH_AES_SANITIZER_BUILD) && !defined(QT_BOOTSTRAPPED)
+#if defined(Q_PROCESSOR_ARM) && QT_COMPILER_SUPPORTS_HERE(CRYPTO) && !defined(QHASH_AES_SANITIZER_BUILD) && !defined(QT_BOOTSTRAPPED)
 QT_FUNCTION_TARGET(AES)
 static size_t aeshash(const uchar *p, size_t len, size_t seed, size_t seed2) noexcept
 {
@@ -864,7 +864,7 @@ size_t qHashBits(const void *p, size_t size, size_t seed) noexcept
 #ifdef AESHASH
     if (seed && qCpuHasFeature(AES) && qCpuHasFeature(SSE4_2))
         return aeshash(data, size, seed, seed2);
-#elif defined(Q_PROCESSOR_ARM) && QT_COMPILER_SUPPORTS_HERE(AES) && !defined(QHASH_AES_SANITIZER_BUILD) && !defined(QT_BOOTSTRAPPED)
+#elif defined(Q_PROCESSOR_ARM) && QT_COMPILER_SUPPORTS_HERE(CRYPTO) && !defined(QHASH_AES_SANITIZER_BUILD) && !defined(QT_BOOTSTRAPPED)
     if (seed && qCpuHasFeature(AES))
         return aeshash(data, size, seed, seed2);
 #endif

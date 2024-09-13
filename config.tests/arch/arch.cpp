@@ -245,10 +245,10 @@ const char msg2[] = "==Qt=magic=Qt== Sub-architecture:"
 #ifdef __IWMMXT__
 " iwmmxt"
 #endif
-#ifdef __ARM_FEATURE_CRC32
+#if defined(__ARM_FEATURE_CRC32) || (defined(_M_ARM64) && __ARM_ARCH >= 800)
 " crc32"
 #endif
-#ifdef __ARM_FEATURE_CRYPTO
+#if defined(__ARM_FEATURE_CRYPTO) || (defined(_M_ARM64) && __ARM_ARCH >= 800)
 " crypto"
 #endif
 
