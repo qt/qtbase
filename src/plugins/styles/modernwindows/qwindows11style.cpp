@@ -1810,6 +1810,9 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                                           option->rect.x() + 1,option->rect.y() + option->rect.height() - 2);
                     }
                 }
+            } else {
+                QRect textRect = proxy()->subElementRect(SE_ItemViewItemText, vopt, widget);
+                d->viewItemDrawText(painter, vopt, textRect);
             }
         }
         break;
