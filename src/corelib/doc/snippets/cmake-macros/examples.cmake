@@ -68,11 +68,11 @@ qt_generate_moc(main.cpp main.moc TARGET myapp)
 
 #! [qt_import_plugins]
 qt_add_executable(myapp main.cpp)
-target_link_libraries(myapp Qt::Gui Qt::Sql)
+target_link_libraries(myapp Qt6::Gui Qt6::Sql)
 qt_import_plugins(myapp
-    INCLUDE Qt::QCocoaIntegrationPlugin
-    EXCLUDE Qt::QMinimalIntegrationPlugin
-    INCLUDE_BY_TYPE imageformats Qt::QGifPlugin Qt::QJpegPlugin
+    INCLUDE Qt6::QCocoaIntegrationPlugin
+    EXCLUDE Qt6::QMinimalIntegrationPlugin
+    INCLUDE_BY_TYPE imageformats Qt6::QGifPlugin Qt6::QJpegPlugin
     EXCLUDE_BY_TYPE sqldrivers
 )
 #! [qt_import_plugins]
