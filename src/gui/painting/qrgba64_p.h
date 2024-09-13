@@ -232,11 +232,7 @@ static inline uint toArgb32(QRgba64 rgba64)
 #elif defined __ARM_NEON__
     uint16x4_t v = vreinterpret_u16_u64(vld1_u64(reinterpret_cast<const uint64_t *>(&rgba64)));
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
-#ifdef _MSC_VER
-    const uint8x8_t shuffleMask = { 0x0706010003020504ULL };
-#else
-    const uint8x8_t shuffleMask = { 4, 5, 2, 3, 0, 1, 6, 7 };
-#endif
+    const uint8x8_t shuffleMask = qvset_n_u8(4, 5, 2, 3, 0, 1, 6, 7);
     v = vreinterpret_u16_u8(vtbl1_u8(vreinterpret_u8_u16(v), shuffleMask));
 #else
     v = vext_u16(v, v, 3);
