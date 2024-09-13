@@ -77,16 +77,20 @@ function(qt_internal_add_simd_part target)
             set(simd_flags_expanded "${${simd_flags_var_name}}")
         endif()
 
-        # If requested, don't pass the simd specific flags to excluded arches on apple platforms.
-        # Mostly important for universal / fat builds.
-        get_target_property(osx_architectures ${target} OSX_ARCHITECTURES)
-        if(simd_flags_expanded AND osx_architectures AND arg_EXCLUDE_OSX_ARCHITECTURES)
-            list(REMOVE_ITEM osx_architectures ${arg_EXCLUDE_OSX_ARCHITECTURES})
+        # Only process OSX_ARCHITECTURES when targeting Apple platforms, otherwise it might fail
+        # non-Apple builds when CMAKE_OSX_ARCHITECTURES is accidentally passed to configure.
+        if(APPLE)
+            # If requested, don't pass the simd specific flags to excluded arches on apple platforms.
+            # Mostly important for universal / fat builds.
+            get_target_property(osx_architectures ${target} OSX_ARCHITECTURES)
+            if(simd_flags_expanded AND osx_architectures AND arg_EXCLUDE_OSX_ARCHITECTURES)
+                list(REMOVE_ITEM osx_architectures ${arg_EXCLUDE_OSX_ARCHITECTURES})
 
-            # Assumes that simd_flags_expanded contains only one item on apple platforms.
-            list(TRANSFORM osx_architectures
-                 REPLACE "^(.+)$" "-Xarch_\\1;${simd_flags_expanded}"
-                 OUTPUT_VARIABLE simd_flags_expanded)
+                # Assumes that simd_flags_expanded contains only one item on apple platforms.
+                list(TRANSFORM osx_architectures
+                     REPLACE "^(.+)$" "-Xarch_\\1;${simd_flags_expanded}"
+                     OUTPUT_VARIABLE simd_flags_expanded)
+            endif()
         endif()
 
         # The manual loop is done on purpose. Check Gerrit comments for
