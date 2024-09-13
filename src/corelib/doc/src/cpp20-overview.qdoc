@@ -1,0 +1,14 @@
+// Copyright (C) 2024 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page cpp20-overview.html
+    \title C++20 Overview
+    \brief An overview of C++20 features available in Qt.
+
+    Qt 6 officially requires C++17, however we are constantly working on
+    supporting new C++ language features to make Qt faster and safer, and
+    provide a better experience for our users.
+
+    This page gives a brief overview of C++20 features available in Qt.
+*/
