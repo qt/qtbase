@@ -86,14 +86,19 @@ instructions:
       property: features
       contains_value: AbortTestingOnFirstFailure
 
-    # Enable CTest's JUnit XML summary only for recent versions
+    # Enable CTest's JUnit XML summary
   - type: AppendToEnvironmentVariable
     variableName: CTEST_ARGS
     variableValue: " --output-junit {{.Env.COIN_CTEST_RESULTSDIR}}{{.Env.CI_PATH_SEP}}test_summary.ctest_junit_xml"
-    enable_if:
-      condition: runtime
-      env_var: CMAKE_MIN_SUPPORTED_BIN_PATH
-      equals_value: null
+    disable_if:    # CMake < v3.21 does not support it
+      condition: and
+      conditions:
+        - condition: runtime
+          env_var: CMAKE_MIN_SUPPORTED_BIN_PATH
+          not_equals_value: null
+        - condition: runtime
+          env_var: PATH
+          contains_value: "{{.Env.CMAKE_MIN_SUPPORTED_BIN_PATH}}"
 
   - !include "{{qt/qtbase}}/coin_module_test_android_start_emulator.yaml"
 
