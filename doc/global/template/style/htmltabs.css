@@ -47,11 +47,11 @@ div.tabcontent {
   border-top: 1px solid #ccc;
 }
 
-div.tabcontent >:first-child:not(.pre) {
-  padding-top: 2px;
+div.tabcontent >:first-child:not(pre) {
+  padding-top: 10px;
 }
 
-div.tabcontent >:not(.pre) {
+div.tabcontent >:not(pre) {
   padding-left: 10px;
 }
 
