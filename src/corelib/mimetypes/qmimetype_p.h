@@ -23,7 +23,6 @@ QT_REQUIRE_CONFIG(mimetype);
 #include <QtCore/qhash.h>
 #include <QtCore/qstringlist.h>
 
-class QMimeBinaryProvider;
 QT_BEGIN_NAMESPACE
 
 class Q_AUTOTEST_EXPORT QMimeTypePrivate : public QSharedData
