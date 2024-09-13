@@ -89,7 +89,7 @@ In the snippet above, the following occurs with the executable \c myapp:
 \li The \c Qt6::QMinimalIntegrationPlugin plugin is
     excluded from being automatically imported into myapp.
 \li The default list of plugins for \c imageformats is
-    overridden to only include Qt6::QGifPlugin and Qt6::QJpegPlugin.
+    overridden to only include \c Qt6::QGifPlugin and \c Qt6::QJpegPlugin.
 \li All \c sqldrivers plugins are excluded from automatic importing.
 \endlist
 
