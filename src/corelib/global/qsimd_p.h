@@ -338,8 +338,9 @@ inline uint32x4_t qvsetq_n_u32(uint32_t a, uint32_t b, uint32_t c, uint32_t d)
 }
 #endif
 
-#if defined(Q_PROCESSOR_ARM) && defined(__ARM_FEATURE_CRC32)
-#  include <arm_acle.h>
+#if defined(_M_ARM64) && __ARM_ARCH >= 800
+#define __ARM_FEATURE_CRYPTO 1
+#define __ARM_FEATURE_CRC32 1
 #endif
 
 #if defined(Q_PROCESSOR_ARM_64)
@@ -349,6 +350,9 @@ inline uint32x4_t qvsetq_n_u32(uint32_t a, uint32_t b, uint32_t c, uint32_t d)
 #elif defined(Q_CC_GNU)
 #define QT_FUNCTION_TARGET_STRING_AES        "+crypto"
 #define QT_FUNCTION_TARGET_STRING_CRC32      "+crc"
+#elif defined(Q_CC_MSVC)
+#define QT_FUNCTION_TARGET_STRING_AES
+#define QT_FUNCTION_TARGET_STRING_CRC32
 #endif
 #elif defined(Q_PROCESSOR_ARM_32)
 #if defined(Q_CC_CLANG)
