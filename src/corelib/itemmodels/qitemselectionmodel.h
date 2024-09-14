@@ -47,8 +47,8 @@ public:
 
     inline bool contains(int row, int column, const QModelIndex &parentIndex) const
     {
-        return (tl.row() <= row && tl.column() <= column &&
-                br.row() >= row && br.column() >= column &&
+        return (br.row() >= row && br.column() >= column &&
+                tl.row() <= row && tl.column() <= column &&
                 parent() == parentIndex);
     }
 

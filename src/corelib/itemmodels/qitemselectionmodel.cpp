@@ -1475,9 +1475,10 @@ bool QItemSelectionModel::isSelected(const QModelIndex &index) const
         return false;
 
     //  search model ranges
-    const auto containsIndex = [&](const auto &range)
-        { return range.isValid() && range.contains(index); };
-    bool selected = std::any_of(d->ranges.begin(), d->ranges.end(), containsIndex);
+    auto contains = [](const auto &index) {
+        return [&index](const auto &range) { return range.contains(index); };
+    };
+    bool selected = std::any_of(d->ranges.begin(), d->ranges.end(), contains(index));
 
     // check  currentSelection
     if (d->currentSelection.size()) {
@@ -1516,13 +1517,14 @@ bool QItemSelectionModel::isRowSelected(int row, const QModelIndex &parent) cons
 
     // return false if row exist in currentSelection (Deselect)
     if (d->currentCommand & Deselect) {
-        const auto matchesRow = [&](const auto &selection)
-        {
-            return row >= selection.top() &&
-                   row <= selection.bottom() &&
-                   parent == selection.parent();
+        const auto matches = [](auto row, const auto &parent) {
+            return [row, &parent](const auto &selection) {
+                return row >= selection.top() &&
+                       row <= selection.bottom() &&
+                       parent == selection.parent();
+            };
         };
-        if (std::any_of(d->currentSelection.cbegin(), d->currentSelection.cend(), matchesRow))
+        if (std::any_of(d->currentSelection.cbegin(), d->currentSelection.cend(), matches(row, parent)))
             return false;
     }
     // return false if ranges in both currentSelection and ranges
@@ -1530,13 +1532,14 @@ bool QItemSelectionModel::isRowSelected(int row, const QModelIndex &parent) cons
     if (d->currentCommand & Toggle) {
         for (const auto &selection : d->currentSelection) {
             if (row >= selection.top() && row <= selection.bottom()) {
-                const auto selectionAndRangeIntersect = [&](const auto &range)
-                {
-                    return row >= range.top() &&
-                           row <= range.bottom() &&
-                           selection.intersected(range).isValid();
+                const auto intersects = [](auto row, const auto &selection) {
+                    return [row, &selection](const auto &range) {
+                        return row >= range.top() &&
+                               row <= range.bottom() &&
+                               selection.intersected(range).isValid();
+                    };
                 };
-                if (std::any_of(d->ranges.cbegin(), d->ranges.cend(), selectionAndRangeIntersect))
+                if (std::any_of(d->ranges.cbegin(), d->ranges.cend(), intersects(row, selection)))
                     return false;
             }
         }
@@ -1600,13 +1603,14 @@ bool QItemSelectionModel::isColumnSelected(int column, const QModelIndex &parent
 
     // return false if column exist in currentSelection (Deselect)
     if (d->currentCommand & Deselect) {
-        const auto matchesColumn = [&](const auto &selection)
-        {
-            return column >= selection.left() &&
-                   column <= selection.right() &&
-                   parent == selection.parent();
+        const auto matches = [](auto column, const auto &parent) {
+            return [column, &parent](const auto &selection) {
+                return column >= selection.left() &&
+                       column <= selection.right() &&
+                       parent == selection.parent();
+            };
         };
-        if (std::any_of(d->currentSelection.cbegin(), d->currentSelection.cend(), matchesColumn))
+        if (std::any_of(d->currentSelection.cbegin(), d->currentSelection.cend(), matches(column, parent)))
             return false;
     }
     // return false if ranges in both currentSelection and the selection model
@@ -1614,13 +1618,14 @@ bool QItemSelectionModel::isColumnSelected(int column, const QModelIndex &parent
     if (d->currentCommand & Toggle) {
         for (const auto &selection : d->currentSelection) {
             if (column >= selection.left() && column <= selection.right()) {
-                const auto selectionAndRangeIntersect = [&](const auto &range)
-                {
-                    return column >= range.left() &&
-                           column <= range.right() &&
-                           selection.intersected(range).isValid();
+                const auto intersects = [](auto column, const auto &selection) {
+                    return [column, &selection](const auto &range) {
+                        return column >= range.left() &&
+                               column <= range.right() &&
+                               selection.intersected(range).isValid();
+                    };
                 };
-                if (std::any_of(d->ranges.cbegin(), d->ranges.cend(), selectionAndRangeIntersect))
+                if (std::any_of(d->ranges.cbegin(), d->ranges.cend(), intersects(column, selection)))
                     return false;
             }
         }
