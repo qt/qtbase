@@ -8,9 +8,9 @@
 
 using namespace std::chrono_literals;
 
-static const int TransferTimeout = 30 * 1000;
-static const int PongTimeout = 60 * 1000;
-static const int PingInterval = 5 * 1000;
+static constexpr auto TransferTimeout = 30s;
+static constexpr auto PongTimeout = 60s;
+static constexpr auto PingInterval = 5s;
 
 /*
  * Protocol is defined as follows, using the CBOR Data Definition Language:
@@ -170,12 +170,12 @@ void Connection::processReadyRead()
         abort();       // parse error
 
     if (transferTimer.isActive() && reader.containerDepth() > 1)
-        transferTimer.start(TransferTimeout * 1ms, this);
+        transferTimer.start(TransferTimeout, this);
 }
 
 void Connection::sendPing()
 {
-    if (pongTime.elapsed() > PongTimeout) {
+    if (pongTime.durationElapsed() > PongTimeout) {
         abort();
         return;
     }
