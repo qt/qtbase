@@ -236,6 +236,7 @@ private slots:
     void normalMemoryUsageOnResize();
     void normalMemoryUsageOnHide();
     void storeRestoreLowMemoryMode();
+    void setSectionResizeModeWithSectionWillTakeMemory();
 
 protected:
     void setupTestData(bool use_reset_model = false);
@@ -3804,6 +3805,19 @@ void tst_QHeaderView::lowMememoryUsageOnSetDefaultSectionSize()
     QVERIFY(tv.hasLowMemoryUsage());
 }
 
+void tst_QHeaderView::setSectionResizeModeWithSectionWillTakeMemory()
+{
+    // The global default is only a default for new sections
+    // (and working fine in no memory usage mode when it hasn't been specified)
+    // A (forced) resize mode on a section requires memory for keeping the information.
+    TableViewWithBasicModel tv1;
+    tv1.header->setSectionResizeMode(3, QHeaderView::Fixed);
+    QVERIFY(!tv1.hasLowMemoryUsage());
+
+    TableViewWithBasicModel tv2;
+    tv2.header->setSectionResizeMode(500, QHeaderView::Interactive);
+    QVERIFY(!tv2.hasLowMemoryUsage());
+}
 
 QTEST_MAIN(tst_QHeaderView)
 #include "tst_qheaderview.moc"
