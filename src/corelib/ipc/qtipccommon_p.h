@@ -65,7 +65,7 @@ enum class IpcType {
     SystemSemaphore
 };
 
-static constexpr bool isIpcSupported(IpcType ipcType, QNativeIpcKey::Type type)
+constexpr bool isIpcSupported(IpcType ipcType, QNativeIpcKey::Type type)
 {
     switch (type) {
     case QNativeIpcKey::Type::SystemV:
