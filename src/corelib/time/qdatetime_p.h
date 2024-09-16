@@ -110,17 +110,26 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QDateTimePrivate::StatusFlags)
 namespace QtPrivate {
 namespace DateTimeConstants {
 using namespace std::chrono;
+inline
 constexpr qint64 SECS_PER_MIN = minutes::period::num;
+inline
 constexpr qint64 SECS_PER_HOUR = hours::period::num;
+inline
 constexpr qint64 SECS_PER_DAY = SECS_PER_HOUR * 24; // std::chrono::days is C++20
 
+inline
 constexpr qint64 MINS_PER_HOUR = std::ratio_divide<hours::period, minutes::period>::num;
 
+inline
 constexpr qint64 MSECS_PER_SEC = milliseconds::period::den;
+inline
 constexpr qint64 MSECS_PER_MIN = SECS_PER_MIN * MSECS_PER_SEC;
+inline
 constexpr qint64 MSECS_PER_HOUR = SECS_PER_HOUR * MSECS_PER_SEC;
+inline
 constexpr qint64 MSECS_PER_DAY = SECS_PER_DAY * MSECS_PER_SEC;
 
+inline
 constexpr qint64 JULIAN_DAY_FOR_EPOCH = 2440588; // result of QDate(1970, 1, 1).toJulianDay()
 }
 }
