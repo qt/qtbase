@@ -8,12 +8,12 @@
 
 #include <QtNetwork/qtcpserver.h>
 #include <QtNetwork/qtcpsocket.h>
-#include <QtNetwork/qlocalsocket.h>
 #if QT_CONFIG(ssl)
 #  include <QtNetwork/qsslsocket.h>
 #endif
 #if QT_CONFIG(localserver)
 #  include <QtNetwork/qlocalserver.h>
+#  include <QtNetwork/qlocalsocket.h>
 #endif
 
 #include <QtCore/qpointer.h>
@@ -62,8 +62,10 @@ public:
         for (auto [socket, _] : copy.asKeyValueRange()) {
             if (auto *tcpSocket = qobject_cast<QTcpSocket *>(socket))
                 tcpSocket->disconnectFromHost();
+#if QT_CONFIG(localserver)
             else if (auto *localSocket = qobject_cast<QLocalSocket *>(socket))
                 localSocket->disconnectFromServer();
+#endif
             else
                 Q_UNREACHABLE_RETURN();
             socket->deleteLater();
@@ -136,11 +138,13 @@ private:
 
         if (auto *tcpSocket = qobject_cast<QTcpSocket *>(socket)) {
             connect(tcpSocket, &QAbstractSocket::errorOccurred, this, &MiniHttpServerV2::slotError);
+#if QT_CONFIG(localserver)
         } else if (auto *localSocket = qobject_cast<QLocalSocket *>(socket)) {
             connect(localSocket, &QLocalSocket::errorOccurred, this,
                     [this](QLocalSocket::LocalSocketError error) {
                         slotError(QAbstractSocket::SocketError(error));
                     });
+#endif
         } else {
             Q_UNREACHABLE_RETURN();
         }
