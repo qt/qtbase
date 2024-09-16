@@ -215,7 +215,8 @@ doParseMountInfo(const QByteArray &mountinfo, FilterMountInfo filter = FilterMou
             continue;
         info.fsType = fields[FsType].toByteArray();
 
-        if (filter == FilterMountInfo::Filtered && !shouldIncludeFs(info.mountPoint, info.fsType))
+        if (filter == FilterMountInfo::Filtered
+                && !QStorageInfoPrivate::shouldIncludeFs(info.mountPoint, info.fsType))
             continue;
 
         std::optional<dev_t> devno = deviceNumber(fields[DevNo]);
