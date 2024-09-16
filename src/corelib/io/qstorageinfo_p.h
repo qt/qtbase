@@ -90,6 +90,18 @@ public:
     void retrieveVolumeInfo();
 #endif
 
+#ifdef Q_OS_UNIX
+    // Common helper functions
+    template <typename String>
+    static bool isParentOf(const String &parent, const QString &dirName)
+    {
+        return dirName.startsWith(parent) &&
+                (dirName.size() == parent.size() || dirName.at(parent.size()) == u'/' ||
+                 parent.size() == 1);
+    }
+    static inline bool shouldIncludeFs(const QString &mountDir, const QByteArray &fsType);
+#endif
+
 public:
     QString rootPath;
     QByteArray device;
@@ -107,16 +119,8 @@ public:
     bool valid = false;
 };
 
-// Common helper functions
-template <typename String>
-static bool isParentOf(const String &parent, const QString &dirName)
-{
-    return dirName.startsWith(parent) &&
-            (dirName.size() == parent.size() || dirName.at(parent.size()) == u'/' ||
-             parent.size() == 1);
-}
-
-static inline bool shouldIncludeFs(const QString &mountDir, const QByteArray &fsType)
+#ifdef Q_OS_UNIX
+bool QStorageInfoPrivate::shouldIncludeFs(const QString &mountDir, const QByteArray &fsType)
 {
 #if defined(Q_OS_ANDROID)
     // "rootfs" is the filesystem type of "/" on Android
@@ -158,6 +162,7 @@ static inline bool shouldIncludeFs(const QString &mountDir, const QByteArray &fs
     // size checking in QStorageInfo::mountedVolumes()
     return true;
 }
+#endif // Q_OS_UNIX
 
 QT_END_NAMESPACE
 
