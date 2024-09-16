@@ -108,10 +108,10 @@ template <unsigned b, typename Int> constexpr Int qMod(Int a) { return qDivMod<b
 
 namespace QRomanCalendrical {
 // Julian Day number of Gregorian 1 BCE, February 29th:
-constexpr qint64 LeapDayGregorian1Bce = 1721119;
+inline constexpr qint64 LeapDayGregorian1Bce = 1721119;
 // Aside from (maybe) some turns of centuries, one year in four is leap:
-constexpr unsigned FourYears = 4 * 365 + 1;
-constexpr unsigned FiveMonths = 31 + 30 + 31 + 30 + 31; // Mar-Jul or Aug-Dec.
+inline constexpr unsigned FourYears = 4 * 365 + 1;
+inline constexpr unsigned FiveMonths = 31 + 30 + 31 + 30 + 31; // Mar-Jul or Aug-Dec.
 
 constexpr auto yearMonthToYearDays(int year, int month)
 {
