@@ -15,7 +15,7 @@
 // We mean it.
 //
 
-#include <QtCore/qglobal.h>
+#include <QtCore/qsavefile.h>
 
 #ifndef QT_NO_TEMPORARYFILE
 
