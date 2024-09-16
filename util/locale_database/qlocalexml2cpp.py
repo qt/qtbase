@@ -17,7 +17,7 @@ The ISO 639-3 data file can be downloaded from the SIL website:
 import datetime
 import argparse
 from pathlib import Path
-from typing import Iterator, Optional
+from typing import Callable, Iterator, Optional
 
 from qlocalexml import QLocaleXmlReader
 from localetools import *
@@ -66,13 +66,14 @@ class LocaleKeySorter:
 
 class ByteArrayData:
     # Only for use with ASCII data, e.g. IANA IDs.
-    def __init__(self):
-        self.data, self.hash = [], {}
+    def __init__(self) -> None:
+        self.data: list[str] = []
+        self.hash: dict[str, int] = {}
 
-    def lookup(self, s):
+    def lookup(self, s: str) -> int:
         return self.append(s, False)
 
-    def append(self, s, create = True):
+    def append(self, s: str, create: bool = True) -> int:
         assert s.isascii(), s
         s += '\0'
         if s in self.hash:
@@ -80,21 +81,21 @@ class ByteArrayData:
         if not create:
             raise Error(f'Entry "{s[:-1]}" missing from reused table !')
 
-        index = len(self.data)
+        index: int = len(self.data)
         if index > 0xffff:
             raise Error(f'Index ({index}) outside the uint16 range !')
         self.hash[s] = index
         self.data += unicode2hex(s)
         return index
 
-    def write(self, out, name):
+    def write(self, out: Callable[[str], int], name: str) -> None:
         out(f'\nstatic constexpr char {name}[] = {{\n')
         out(wrap_list(self.data, 16)) # 16 == 100 // len('0xhh, ')
         # All data is ASCII, so only two-digit hex is ever needed.
         out('\n};\n')
 
 class StringDataToken:
-    def __init__(self, index, length, lenbits, indbits):
+    def __init__(self, index: int, length: int, lenbits: int, indbits: int) -> None:
         if index >= (1 << indbits):
             raise ValueError(f'Start-index ({index}) exceeds the {indbits}-bit range!')
         if length >= (1 << lenbits):
@@ -106,27 +107,27 @@ class StringDataToken:
 # Would tables benefit from pre-population, one script at a time ?
 # That might improve the chances of match-ups in store.
 class StringData:
-    def __init__(self, name, lenbits = 8, indbits = 16):
-        self.data = []
-        self.hash = {}
+    def __init__(self, name: str, lenbits: int = 8, indbits: int = 16) -> None:
+        self.data: list[str] = []
+        self.hash: dict[str, StringDataToken] = {}
         self.name = name
         self.text = '' # Used in quick-search for matches in data
-        self.__bits = lenbits, indbits
+        self.__bits: tuple[int, int] = lenbits, indbits
 
-    def end(self):
+    def end(self) -> StringDataToken:
         return StringDataToken(len(self.data), 0, *self.__bits)
 
-    def append(self, s):
+    def append(self, s: str) -> StringDataToken:
         try:
-            token = self.hash[s]
+            token: StringDataToken = self.hash[s]
         except KeyError:
-            token = self.__store(s)
+            token: StringDataToken = self.__store(s)
             self.hash[s] = token
         return token
 
     # The longMetaZoneName table grows to c. 0xe061c bytes, making the
     # searching here rather expensive.
-    def __store(self, s):
+    def __store(self, s: str) -> StringDataToken:
         """Add string s to known data.
 
         Seeks to avoid duplication, where possible.
@@ -134,9 +135,9 @@ class StringData:
         """
         if not s:
             return StringDataToken(0, 0, *self.__bits)
-        ucs2 = unicode2hex(s)
+        ucs2: list[str] = unicode2hex(s)
         try:
-            index = self.text.index(s) - 1
+            index: int = self.text.index(s) - 1
             matched = 0
             while matched < len(ucs2):
                 index, matched = self.data.index(ucs2[0], index + 1), 1
@@ -156,17 +157,17 @@ class StringData:
             e.args += (self.name, s)
             raise
 
-    def write(self, fd):
-        indbits = self.__bits[1]
+    def write(self, out: Callable[[str], int]) -> None:
+        indbits: int = self.__bits[1]
         if len(self.data) >= (1 << indbits):
             raise ValueError(f'Data is too big ({len(self.data)}) '
                              f'for {indbits}-bit index to its end!',
                              self.name)
-        fd.write(f"\nstatic constexpr char16_t {self.name}[] = {{\n")
-        fd.write(wrap_list(self.data, 12)) # 12 == 100 // len('0xhhhh, ')
-        fd.write("\n};\n")
+        out(f"\nstatic constexpr char16_t {self.name}[] = {{\n")
+        out(wrap_list(self.data, 12)) # 12 == 100 // len('0xhhhh, ')
+        out("\n};\n")
 
-def currencyIsoCodeData(s):
+def currencyIsoCodeData(s: str) -> str:
     if s:
         return '{' + ",".join(str(ord(x)) for x in s) + '}'
     return "{0,0,0}"
@@ -583,7 +584,7 @@ class LocaleZoneDataWriter (LocaleSourceEditor):
                      self.__longZoneNameTable,
                      self.__shortMetaZoneNameTable,
                      self.__longMetaZoneNameTable):
-            data.write(self.writer)
+            data.write(self.writer.write)
         self.writer.write('\n')
 
 
@@ -765,7 +766,7 @@ class LocaleDataWriter (LocaleSourceEditor):
                      byte_unit_data, am_data, pm_data, currency_symbol_data,
                      currency_display_name_data, currency_format_data,
                      endonyms_data):
-            data.write(self.writer)
+            data.write(self.writer.write)
 
     @staticmethod
     def __writeNameData(out, book, form):
@@ -883,7 +884,7 @@ class CalendarDataWriter (LocaleSourceEditor):
         self.writer.write(self.formatCalendar(*( (0,) * (3 + 6 * 2) ))
                           + '// trailing zeros\n')
         self.writer.write('};\n')
-        months_data.write(self.writer)
+        months_data.write(self.writer.write)
 
 
 class TestLocaleWriter (LocaleSourceEditor):
