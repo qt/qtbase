@@ -15,7 +15,7 @@
 // We mean it.
 //
 
-#include <QtCore/qglobal.h>
+#include <QtCore/qsavefile.h>
 
 #if QT_CONFIG(temporaryfile)
 
