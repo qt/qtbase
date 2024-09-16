@@ -308,7 +308,7 @@ qt_feature("localserver" PUBLIC
     SECTION "Networking"
     LABEL "QLocalServer"
     PURPOSE "Provides a local socket based server."
-    CONDITION QT_FEATURE_temporaryfile
+    CONDITION QT_FEATURE_temporaryfile AND NOT VXWORKS
 )
 qt_feature_definition("localserver" "QT_NO_LOCALSERVER" NEGATE VALUE "1")
 qt_feature("dnslookup" PUBLIC
