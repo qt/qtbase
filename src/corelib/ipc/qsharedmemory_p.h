@@ -189,9 +189,9 @@ public:
     {
         return visit([&](auto p) { return p->cleanHandle(this); });
     }
-    bool create(qsizetype size)
+    bool create(qsizetype sz)
     {
-        return visit([&](auto p) { return p->create(this, size); });
+        return visit([&](auto p) { return p->create(this, sz); });
     }
     bool attach(QSharedMemory::AccessMode mode)
     {
