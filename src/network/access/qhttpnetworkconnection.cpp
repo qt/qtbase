@@ -112,10 +112,12 @@ void QHttpNetworkConnectionPrivate::pauseConnection()
             else
 #endif
                 QAbstractSocketPrivate::pauseSocketNotifiers(absSocket);
+#if QT_CONFIG(localserver)
         } else if (qobject_cast<QLocalSocket *>(channels[i].socket)) {
             // @todo how would we do this?
 #if 0 // @todo Enable this when there is a debug category for this
             qDebug() << "Should pause socket but there is no way to do it for local sockets";
+#endif
 #endif
         }
     }
@@ -137,9 +139,11 @@ void QHttpNetworkConnectionPrivate::resumeConnection()
             // Resume pending upload if needed
             if (channels[i].state == QHttpNetworkConnectionChannel::WritingState)
                 QMetaObject::invokeMethod(&channels[i], "_q_uploadDataReadyRead", Qt::QueuedConnection);
+#if QT_CONFIG(localserver)
         } else if (qobject_cast<QLocalSocket *>(channels[i].socket)) {
 #if 0 // @todo Enable this when there is a debug category for this
             qDebug() << "Should resume socket but there is no way to do it for local sockets";
+#endif
 #endif
         }
     }
