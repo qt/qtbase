@@ -90,6 +90,9 @@ struct UtcData
     constexpr QByteArrayView id() const; // Space-joined list of IANA IDs
 };
 
+QT_WARNING_PUSH // QTBUG-128930
+QT_WARNING_DISABLE_CLANG("-Wunused-const-variable")
+
 // GENERATED PART STARTS HERE
 
 /*
@@ -1741,6 +1744,8 @@ static constexpr char aliasIdData[] = {
 0x0, 0x5a, 0x75, 0x6c, 0x75, 0x0
 };
 // GENERATED PART ENDS HERE
+
+QT_WARNING_POP // QTBUG-128930
 
 constexpr QByteArrayView AliasData::aliasId() const { return aliasIdData + aliasIdIndex; }
 constexpr QByteArrayView AliasData::ianaId() const { return aliasIdData + ianaIdIndex; }

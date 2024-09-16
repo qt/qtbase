@@ -35,6 +35,9 @@ struct TerritoryLanguage
     quint16 territoryId;
     QLocale::MeasurementSystem system;
 };
+
+QT_WARNING_PUSH // QTBUG-128930
+QT_WARNING_DISABLE_CLANG("-Wunused-const-variable")
 static constexpr TerritoryLanguage ImperialMeasurementSystems[] = {
     { QLocale::English, QLocale::UnitedStates, QLocale::ImperialUSSystem },
     { QLocale::English, QLocale::UnitedStatesMinorOutlyingIslands, QLocale::ImperialUSSystem },
@@ -42,6 +45,7 @@ static constexpr TerritoryLanguage ImperialMeasurementSystems[] = {
     { QLocale::Hawaiian, QLocale::UnitedStates, QLocale::ImperialUSSystem },
     { QLocale::English, QLocale::UnitedKingdom, QLocale::ImperialUKSystem }
 };
+QT_WARNING_POP // QTBUG-128930
 
 /*
   Storage for alpha codes with length of up to 4 allowing efficient comparison.
@@ -75,6 +79,9 @@ struct LanguageCodeEntry {
     AlphaCode part2T;
     AlphaCode part3;
 };
+
+QT_WARNING_PUSH // QTBUG-128930
+QT_WARNING_DISABLE_CLANG("-Wunused-const-variable")
 
 // GENERATED PART STARTS HERE
 
@@ -8509,6 +8516,8 @@ static constexpr unsigned char territory_code_list[] =
 ;
 
 // GENERATED PART ENDS HERE
+
+QT_WARNING_POP // QTBUG-128930
 
 QT_END_NAMESPACE
 
