@@ -218,7 +218,8 @@ std::vector<MountInfo> doParseMountInfo(const QByteArray &mountinfo, FilterMount
             continue;
         info.fsType = fields[FsType].toByteArray();
 
-        if (filter == FilterMountInfo::Filtered && !shouldIncludeFs(info.mountPoint, info.fsType))
+        if (filter == FilterMountInfo::Filtered
+                && !QStorageInfoPrivate::shouldIncludeFs(info.mountPoint, info.fsType))
             continue;
 
         std::optional<dev_t> devno = deviceNumber(fields[DevNo]);
