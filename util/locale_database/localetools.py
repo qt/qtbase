@@ -26,15 +26,15 @@ class Error (Exception):
     def __str__(self):
         return self.message
 
-def unicode2hex(s):
-    lst = []
+def unicode2hex(s: str) -> list[str]:
+    lst: list[str] = []
     for x in s:
-        v = ord(x)
+        v: int = ord(x)
         if v > 0xFFFF:
             # make a surrogate pair
             # copied from qchar.h
-            high = (v >> 10) + 0xd7c0
-            low = (v % 0x400 + 0xdc00)
+            high: int = (v >> 10) + 0xd7c0
+            low: int = (v % 0x400 + 0xdc00)
             lst.append(hex(high))
             lst.append(hex(low))
         else:
