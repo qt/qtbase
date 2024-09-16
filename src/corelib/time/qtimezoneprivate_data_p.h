@@ -123,6 +123,9 @@ struct ZoneMetaHistory
 };
 #endif // timezone_locale but not ICU
 
+QT_WARNING_PUSH // QTBUG-128930
+QT_WARNING_DISABLE_CLANG("-Wunused-const-variable")
+
 // GENERATED PART STARTS HERE
 
 /*
@@ -3236,6 +3239,8 @@ static constexpr char metaIdData[] = {
 #endif // timezone_locale but not ICU
 
 // GENERATED PART ENDS HERE
+
+QT_WARNING_POP // QTBUG-128930
 
 constexpr QByteArrayView AliasData::aliasId() const { return ianaIdData + aliasIdIndex; }
 constexpr QByteArrayView AliasData::ianaId() const { return ianaIdData + ianaIdIndex; }

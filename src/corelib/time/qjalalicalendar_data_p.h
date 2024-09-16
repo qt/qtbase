@@ -23,6 +23,9 @@ QT_BEGIN_NAMESPACE
 
 namespace QtPrivate::Jalali {
 
+QT_WARNING_PUSH // QTBUG-128930
+QT_WARNING_DISABLE_CLANG("-Wunused-const-variable")
+
 // GENERATED PART STARTS HERE
 
 /*
@@ -1165,6 +1168,8 @@ static constexpr char16_t months_data[] = {
 0x73, 0x66, 0x61, 0x6e, 0x64
 };
 // GENERATED PART ENDS HERE
+
+QT_WARNING_POP // QTBUG-128930
 
 } // namespace QtPrivate::Jalali
 
