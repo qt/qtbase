@@ -140,7 +140,7 @@ void QXcbConnection::updateScreens(const xcb_randr_notify_event_t *event)
                 // Screen has been disabled
                 auto outputInfo = Q_XCB_REPLY(xcb_randr_get_output_info, xcb_connection(),
                                               output.output, output.config_timestamp);
-                if (outputInfo->crtc == XCB_NONE) {
+                if (!outputInfo || outputInfo->crtc == XCB_NONE) {
                     qCDebug(lcQpaScreen) << "output" << screen->name() << "has been disabled";
                     destroyScreen(screen);
                 } else {
