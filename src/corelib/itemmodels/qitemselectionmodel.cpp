@@ -43,9 +43,9 @@ struct QItemSelectionRangeRefCache
     }
     inline const QModelIndex &parent()
     {
-        if (!m_parent.has_value())
+        if (!m_parent)
             m_parent = m_range.parent();
-        return m_parent.value();
+        return *m_parent;
     }
     // we assume we're initialized for the next functions
     inline int bottom() const { return m_bottom; }
