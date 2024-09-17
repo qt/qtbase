@@ -42,14 +42,14 @@ public:
             connect(device, SIGNAL(aboutToClose()), this, SLOT(flushStream()),
                     Qt::DirectConnection);
         }
-        this->stream = stream;
+        m_stream = stream;
     }
 
 public Q_SLOTS:
-    inline void flushStream() { stream->flush(); }
+    void flushStream() { m_stream->flush(); }
 
 private:
-    QTextStream *stream;
+    QTextStream *m_stream;
 };
 #endif
 
