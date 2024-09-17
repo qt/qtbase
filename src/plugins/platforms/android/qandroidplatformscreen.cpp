@@ -299,8 +299,10 @@ void QAndroidPlatformScreen::topVisibleWindowChanged()
     QtAndroidMenu::setActiveTopLevelWindow(w);
     if (w && w->handle()) {
         QAndroidPlatformWindow *platformWindow = static_cast<QAndroidPlatformWindow *>(w->handle());
-        if (platformWindow)
+        if (platformWindow) {
             platformWindow->updateSystemUiVisibility();
+            platformWindow->updateFocusedEditText();
+        }
     }
 }
 

@@ -266,6 +266,11 @@ void QAndroidPlatformWindow::updateSystemUiVisibility()
     }
 }
 
+void QAndroidPlatformWindow::updateFocusedEditText()
+{
+    m_nativeQtWindow.callMethod<void>("updateFocusedEditText");
+}
+
 bool QAndroidPlatformWindow::isExposed() const
 {
     return qApp->applicationState() > Qt::ApplicationHidden
