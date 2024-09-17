@@ -16,3 +16,5 @@ android
 # QTBUG-96270
 [tst_paintEventOnSecondShow]
 opensuse
+[setWindowState:maximized]
+xcb ubuntu-24.04 # QTBUG-129026
