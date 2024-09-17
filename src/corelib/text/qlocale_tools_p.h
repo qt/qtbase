@@ -65,7 +65,7 @@ void qt_doubleToAscii(double d, QLocaleData::DoubleForm form, int precision,
 
 [[nodiscard]] constexpr inline bool isZero(double d)
 {
-    return d == 0; // Amusingly, compilers do not grumble.
+    return qIsNull(d);
 }
 
 // Enough space for the digits before the decimal separator:
