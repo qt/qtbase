@@ -959,6 +959,13 @@ static QProcessEnvironment testEnvironment()
         // Avoid the warning from QCoreApplication
         environment.insert("LC_ALL", "en_US.UTF-8");
 #endif
+
+#if defined(Q_OS_MACOS)
+        // Work around system framework spamming logs with
+        // "+[IMKClient subclass]: chose IMKClient_Legacy"
+        if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSSequoia)
+            environment.insert("CFLOG_FORCE_DISABLE_STDERR", "1");
+#endif
     }
     return environment;
 }
