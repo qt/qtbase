@@ -1,3 +1,5 @@
 [task_QTBUG_56693_itemFontFromModel]
 # Counts draw calls, but we could have multiple expose events QTBUG-62080
 osx
+[popupPositionAfterStyleChange]
+xcb ubuntu-24.04 # QTBUG-129029
