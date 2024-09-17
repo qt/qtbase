@@ -30,7 +30,8 @@ public:
     enum PathNormalization {
         DefaultNormalization = 0x00,
         AllowUncPaths = 0x01,
-        RemotePath = 0x02
+        RemotePath = 0x02,
+        KeepLocalTrailingSlash = 0x04,
     };
     Q_DECLARE_FLAGS(PathNormalizations, PathNormalization)
     Q_FLAGS(PathNormalizations)

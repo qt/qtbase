@@ -2215,11 +2215,17 @@ bool QDir::match(const QString &filter, const QString &fileName)
     3) a sequence of "//" is treated as multiple path levels ("a/b//.." becomes
        "a/b/" and "a/b//../.." becomes "a/"), which matches the behavior
        observed in web browsers.
+
+    However, QUrl also uses local path mode for local URLs; with one exception:
+    Even in local mode we leave one trailing slash for paths ending in "/." if
+    the KeepLocalTrailingSlash flag is given. This reflects how QUrl needs to
+    treat local URLs due to compatibility constraints.
 */
 bool qt_normalizePathSegments(QString *path, QDirPrivate::PathNormalizations flags)
 {
     const bool allowUncPaths = flags.testAnyFlag(QDirPrivate::AllowUncPaths);
     const bool isRemote = flags.testAnyFlag(QDirPrivate::RemotePath);
+    const bool keepLocalTrailingSlash = flags.testAnyFlags(QDirPrivate::KeepLocalTrailingSlash);
     const qsizetype prefixLength = rootLength(*path, allowUncPaths);
 
     // RFC 3986 says: "The input buffer is initialized with the now-appended
@@ -2331,11 +2337,25 @@ bool qt_normalizePathSegments(QString *path, QDirPrivate::PathNormalizations fla
         }
 
         if (out > start) {
-            // backtrack one or all the slashes (so "/tmp///" -> "/tmp/")
+            // Always backtrack one slash
             if (out[-1] == u'/' && in != end)
                 --out;
-            while (!isRemote && out > start && out[-1] == u'/')
-                --out;
+
+            if (!isRemote) {
+                bool removedAnySlashes = false;
+
+                // Backtrack all slashes ...
+                while (out > start && out[-1] == u'/') {
+                    --out;
+                    removedAnySlashes = true;
+                }
+
+                // ... except a trailing one if it exists and flag given
+                if (removedAnySlashes && keepLocalTrailingSlash && out > start) {
+                    ++out;
+                    break;
+                }
+            }
         }
         if (out == start) {
             // We've reached the root. Make sure we don't turn a relative path
