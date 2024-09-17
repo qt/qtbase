@@ -1362,10 +1362,10 @@ void tst_QWidget_window::setWindowState_data()
     QString platformName = QGuiApplication::platformName().toLower();
 
     QTest::addColumn<Qt::WindowStates>("state");
-    QTest::newRow("0") << Qt::WindowStates();
-    QTest::newRow("Qt::WindowMaximized") << Qt::WindowStates(Qt::WindowMaximized);
-    QTest::newRow("Qt::WindowMinimized") << Qt::WindowStates(Qt::WindowMinimized);
-    QTest::newRow("Qt::WindowFullScreen") << Qt::WindowStates(Qt::WindowFullScreen);
+    QTest::newRow("nostate") << Qt::WindowStates();
+    QTest::newRow("maximized") << Qt::WindowStates(Qt::WindowMaximized);
+    QTest::newRow("minimized") << Qt::WindowStates(Qt::WindowMinimized);
+    QTest::newRow("fullscreen") << Qt::WindowStates(Qt::WindowFullScreen);
 
     if (platformName != "xcb" && platformName != "windows" && !platformName.startsWith("wayland")
         && platformName != "offscreen")
