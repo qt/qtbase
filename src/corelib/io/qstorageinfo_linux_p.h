@@ -35,7 +35,12 @@ enum class FilterMountInfo {
     Filtered,
 };
 
-Q_AUTOTEST_EXPORT std::vector<MountInfo> doParseMountInfo(
+#ifdef QT_BUILD_INTERNAL
+Q_AUTOTEST_EXPORT
+#else
+static
+#endif
+std::vector<MountInfo> doParseMountInfo(
         const QByteArray &mountinfo, FilterMountInfo filter = FilterMountInfo::All);
 
 QT_END_NAMESPACE

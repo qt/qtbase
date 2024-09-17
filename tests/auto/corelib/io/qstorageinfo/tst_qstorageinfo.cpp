@@ -22,7 +22,7 @@
 
 #include "../../../../manual/qstorageinfo/printvolumes.cpp"
 
-#ifdef Q_OS_LINUX
+#if defined(Q_OS_LINUX) && defined(QT_BUILD_INTERNAL)
 #  include "../../../../../src/corelib/io/qstorageinfo_linux_p.h"
 #endif
 
