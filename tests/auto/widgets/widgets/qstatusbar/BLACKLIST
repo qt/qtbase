@@ -1,3 +1,5 @@
 # QTBUG-87433
 [setSizeGripEnabled]
 android
+[QTBUG4334_hiddenOnMaximizedWindow]
+xcb ubuntu-24.04 # QTBUG-129027
