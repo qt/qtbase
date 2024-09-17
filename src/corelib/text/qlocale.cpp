@@ -3827,7 +3827,7 @@ QString QLocaleData::doubleToString(double d, int precision, DoubleForm form,
     bool negative = false;
     qt_doubleToAscii(d, form, precision, buf.data(), bufSize, negative, length, decpt);
 
-    const QString prefix = signPrefix(negative && !isZero(d), flags);
+    const QString prefix = signPrefix(negative && !qIsNull(d), flags);
     QString numStr;
 
     if (length == 3

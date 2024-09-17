@@ -63,10 +63,13 @@ void qt_doubleToAscii(double d, QLocaleData::DoubleForm form, int precision,
                                                         int base = 10);
 #endif
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 12, 0)
+[[deprecated("Use qIsNull(double) instead.")]]
 [[nodiscard]] constexpr inline bool isZero(double d)
 {
     return qIsNull(d);
 }
+#endif
 
 // Enough space for the digits before the decimal separator:
 [[nodiscard]] inline int wholePartSpace(double d)
