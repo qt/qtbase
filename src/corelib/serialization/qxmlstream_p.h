@@ -1722,8 +1722,8 @@ bool QXmlStreamReaderPrivate::parse()
         break;
 
         case 229: {
-            QStringRef prefix = symPrefix(1);
-            if (prefix.isEmpty() && symString(1) == QLatin1String("xmlns") && namespaceProcessing) {
+            const QStringRef prfx = symPrefix(1);
+            if (prfx.isEmpty() && symString(1) == QLatin1String("xmlns") && namespaceProcessing) {
                 NamespaceDeclaration &namespaceDeclaration = namespaceDeclarations.push();
                 namespaceDeclaration.prefix.clear();
 
@@ -1773,7 +1773,7 @@ bool QXmlStreamReaderPrivate::parse()
                     attribute.value.pos = pos;
                     attribute.value.len = n;
                 }
-                if (prefix == QLatin1String("xmlns") && namespaceProcessing) {
+                if (prfx == QLatin1String("xmlns") && namespaceProcessing) {
                     NamespaceDeclaration &namespaceDeclaration = namespaceDeclarations.push();
                     QStringRef namespacePrefix = symString(attribute.key);
                     QStringRef namespaceUri = symString(attribute.value);

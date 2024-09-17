@@ -1512,8 +1512,8 @@ attribute_value_content ::= literal_content | char_ref | entity_ref_in_attribute
 attribute ::= qname space_opt EQ space_opt attribute_value;
 /.
         case $rule_number: {
-            QStringRef prefix = symPrefix(1);
-            if (prefix.isEmpty() && symString(1) == QLatin1String("xmlns") && namespaceProcessing) {
+            const QStringRef prfx = symPrefix(1);
+            if (prfx.isEmpty() && symString(1) == QLatin1String("xmlns") && namespaceProcessing) {
                 NamespaceDeclaration &namespaceDeclaration = namespaceDeclarations.push();
                 namespaceDeclaration.prefix.clear();
 
@@ -1563,7 +1563,7 @@ attribute ::= qname space_opt EQ space_opt attribute_value;
                     attribute.value.pos = pos;
                     attribute.value.len = n;
                 }
-                if (prefix == QLatin1String("xmlns") && namespaceProcessing) {
+                if (prfx == QLatin1String("xmlns") && namespaceProcessing) {
                     NamespaceDeclaration &namespaceDeclaration = namespaceDeclarations.push();
                     QStringRef namespacePrefix = symString(attribute.key);
                     QStringRef namespaceUri = symString(attribute.value);
