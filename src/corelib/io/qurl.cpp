@@ -909,7 +909,9 @@ inline void QUrlPrivate::appendPath(QString &appendTo, QUrl::FormattingOptions o
 {
     QString thePath = path;
     if (options & QUrl::NormalizePathSegments) {
-        qt_normalizePathSegments(&thePath, isLocalFile() ? QDirPrivate::DefaultNormalization : QDirPrivate::RemotePath);
+        qt_normalizePathSegments(
+                &thePath,
+                isLocalFile() ? QDirPrivate::KeepLocalTrailingSlash : QDirPrivate::RemotePath);
     }
 
     QStringView thePathView(thePath);
@@ -2709,7 +2711,9 @@ QUrl QUrl::resolved(const QUrl &relative) const
     else
         t.d->sectionIsPresent &= ~QUrlPrivate::Fragment;
 
-    qt_normalizePathSegments(&t.d->path, isLocalFile() ? QDirPrivate::DefaultNormalization : QDirPrivate::RemotePath);
+    qt_normalizePathSegments(
+            &t.d->path,
+            isLocalFile() ? QDirPrivate::KeepLocalTrailingSlash : QDirPrivate::RemotePath);
     if (!t.d->hasAuthority())
         fixupNonAuthorityPath(&t.d->path);
 

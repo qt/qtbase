@@ -1489,7 +1489,9 @@ void tst_QUrl::fromLocalFileNormalize_data()
     QTest::newRow("relative-dot-dot") << QString::fromLatin1("././a.txt") << QString::fromLatin1("file:././a.txt") << QString::fromLatin1("file:a.txt");
     QTest::newRow("relative-path-dotdot") << QString::fromLatin1("b/../a.txt") << QString::fromLatin1("file:b/../a.txt") << QString::fromLatin1("file:a.txt");
     QTest::newRow("absolute-path-dotdot") << QString::fromLatin1("/b/../a.txt") << QString::fromLatin1("file:///b/../a.txt") << QString::fromLatin1("file:///a.txt");
-    QTest::newRow("absolute-path-dot") << QString::fromLatin1("/b/.") << QString::fromLatin1("file:///b/.") << QString::fromLatin1("file:///b");
+    QTest::newRow("absolute-path-slash") << QString::fromLatin1("/b/") << QString::fromLatin1("file:///b/") << QString::fromLatin1("file:///b/");
+    QTest::newRow("absolute-path-slahs-dot") << QString::fromLatin1("/b/.") << QString::fromLatin1("file:///b/.") << QString::fromLatin1("file:///b/");
+    QTest::newRow("absolute-path-slahs-dot-slash") << QString::fromLatin1("/b/./") << QString::fromLatin1("file:///b/./") << QString::fromLatin1("file:///b/");
 }
 
 void tst_QUrl::fromLocalFileNormalize()
