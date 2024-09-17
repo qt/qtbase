@@ -236,4 +236,11 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
         if (m_parentWindow != null)
             m_parentWindow.addChildWindow(this);
     }
+
+    @UsedFromNativeCode
+    void updateFocusedEditText()
+    {
+        if (m_editText != null && m_inputConnectionListener != null)
+            m_inputConnectionListener.onEditTextChanged(m_editText);
+    }
 }

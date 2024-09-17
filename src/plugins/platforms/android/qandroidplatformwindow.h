@@ -57,6 +57,7 @@ public:
     void propagateSizeHints() override;
     void requestActivateWindow() override;
     void updateSystemUiVisibility();
+    void updateFocusedEditText();
     inline bool isRaster() const { return m_isRaster; }
     bool isExposed() const override;
     QtJniTypes::QtWindow nativeWindow() const { return m_nativeQtWindow; }
