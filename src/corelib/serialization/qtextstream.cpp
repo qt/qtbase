@@ -249,6 +249,11 @@ QT_BEGIN_NAMESPACE
 using namespace Qt::StringLiterals;
 using namespace QtMiscUtils;
 
+#ifndef QT_NO_QOBJECT
+QDeviceClosedNotifier::~QDeviceClosedNotifier()
+    = default;
+#endif
+
 //-------------------------------------------------------------------
 
 /*!

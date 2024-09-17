@@ -31,6 +31,7 @@ class QDeviceClosedNotifier : public QObject
 public:
     inline QDeviceClosedNotifier()
     { }
+    ~QDeviceClosedNotifier() override;
 
     inline void setupDevice(QTextStream *stream, QIODevice *device)
     {
