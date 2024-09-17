@@ -125,7 +125,7 @@ public:
     { return (std::numeric_limits<qint64>::min)() + 1; }
     [[nodiscard]] static constexpr qint64 invalidMSecs()
     { return (std::numeric_limits<qint64>::min)(); }
-    [[nodiscard]] static constexpr qint64 invalidSeconds()
+    [[nodiscard]] static constexpr int invalidSeconds()
     { return (std::numeric_limits<int>::min)(); }
     static QTimeZone::OffsetData invalidOffsetData();
     static QTimeZone::OffsetData toOffsetData(const Data &data);
