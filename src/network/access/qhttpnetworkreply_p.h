@@ -205,10 +205,6 @@ public:
         ReadingHeaderState,
         ReadingDataState,
         AllDoneState,
-        SPDYSYNSent,
-        SPDYUploading,
-        SPDYHalfClosed,
-        SPDYClosed,
         Aborted
     } state;
 
