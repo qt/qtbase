@@ -386,8 +386,8 @@ void tst_QDialogButtonBox::removeButton()
 #ifdef QT_BUILD_INTERNAL
 void tst_QDialogButtonBox::hideAndShowButton()
 {
-    if (QGuiApplication::styleHints()->tabFocusBehavior() == Qt::NoTabFocus)
-        QSKIP("Test skipped with Qt::NoTabFocus");
+    if (QGuiApplication::styleHints()->tabFocusBehavior() != Qt::TabFocusAllControls)
+        QSKIP("Test requires Qt::TabFocusAllControls tab focus behavior");
 
     QDialogButtonBox buttonBox;
     QDialogButtonBoxPrivate *d = static_cast<QDialogButtonBoxPrivate *>(QObjectPrivate::get(&buttonBox));
