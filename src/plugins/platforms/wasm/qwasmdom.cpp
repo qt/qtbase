@@ -181,10 +181,9 @@ void DataTransfer::toMimeDataWithFile(std::function<void(QMimeData *)> callback)
                     mimeContext->deref();
                     return;
                 }
-                if (file.write(fileContent) < 0) {
+                if (file.write(fileContent) < 0)
                     qWarning() << "Write failed";
-                    file.close();
-                }
+                file.close();
                 mimeContext->deref();
             });
             break;
