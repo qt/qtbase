@@ -2591,6 +2591,9 @@ void tst_QWidget::tabOrderWithCompoundWidgets()
 
 void tst_QWidget::tabOrderWithProxyOutOfOrder()
 {
+    if (QGuiApplication::styleHints()->tabFocusBehavior() != Qt::TabFocusAllControls)
+        QSKIP("Test requires Qt::TabFocusAllControls tab focus behavior");
+
     Container container;
     container.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     container.setObjectName(QLatin1StringView("Container"));
