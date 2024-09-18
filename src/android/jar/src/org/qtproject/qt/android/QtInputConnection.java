@@ -4,9 +4,11 @@
 
 package org.qtproject.qt.android;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.Build;
 import android.util.Log;
+import android.view.inputmethod.TextAttribute;
 import android.view.WindowMetrics;
 import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.CompletionInfo;
@@ -41,6 +43,7 @@ class QtNativeInputConnection
     static native String getSelectedText(int flags);
     static native String getTextAfterCursor(int length, int flags);
     static native String getTextBeforeCursor(int length, int flags);
+    static native boolean replaceText(int start, int end, String text, int newCursorPosition);
     static native boolean setComposingText(String text, int newCursorPosition);
     static native boolean setComposingRegion(int start, int end);
     static native boolean setSelection(int start, int end);
@@ -315,6 +318,35 @@ class QtInputConnection extends BaseInputConnection
     {
         setClosing(false);
         return QtNativeInputConnection.setComposingText(text.toString(), newCursorPosition);
+    }
+
+    @TargetApi(33)
+    @Override
+    public boolean setComposingText(CharSequence text, int newCursorPosition, TextAttribute textAttribute)
+    {
+        return setComposingText(text, newCursorPosition);
+    }
+
+    @TargetApi(33)
+    @Override
+    public boolean setComposingRegion(int start, int end, TextAttribute textAttribute)
+    {
+        return setComposingRegion(start, end);
+    }
+
+    @TargetApi(33)
+    @Override
+    public boolean commitText(CharSequence text, int newCursorPosition, TextAttribute textAttribute)
+    {
+        return commitText(text, newCursorPosition);
+    }
+
+    @TargetApi(34)
+    @Override
+    public boolean replaceText(int start, int end, CharSequence text, int newCursorPosition, TextAttribute textAttribute)
+    {
+        setClosing(false);
+        return QtNativeInputConnection.replaceText(start, end, text.toString(), newCursorPosition);
     }
 
     @Override

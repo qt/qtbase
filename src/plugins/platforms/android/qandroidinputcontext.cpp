@@ -137,6 +137,23 @@ static jboolean finishComposingText(JNIEnv */*env*/, jobject /*thiz*/)
     return res;
 }
 
+static jboolean replaceText(JNIEnv *env, jobject /*thiz*/, jint start, jint end, jstring text, jint newCursorPosition)
+{
+    if (!m_androidInputContext)
+        return JNI_FALSE;
+
+    jboolean isCopy;
+    const jchar *jstr = env->GetStringChars(text, &isCopy);
+    QString str(reinterpret_cast<const QChar *>(jstr), env->GetStringLength(text));
+    env->ReleaseStringChars(text, jstr);
+
+    qCDebug(lcQpaInputMethods) << "@@@ REPLACE" << start << end << str << newCursorPosition;
+    jboolean res = JNI_FALSE;
+    runOnQtThread([&]{res = m_androidInputContext->replaceText(start, end, str, newCursorPosition);});
+
+    return res;
+}
+
 static jint getCursorCapsMode(JNIEnv */*env*/, jobject /*thiz*/, jint reqModes)
 {
     if (!m_androidInputContext)
@@ -336,6 +353,7 @@ static JNINativeMethod methods[] = {
     {"getSelectedText", "(I)Ljava/lang/String;", (void *)getSelectedText},
     {"getTextAfterCursor", "(II)Ljava/lang/String;", (void *)getTextAfterCursor},
     {"getTextBeforeCursor", "(II)Ljava/lang/String;", (void *)getTextBeforeCursor},
+    {"replaceText", "(IILjava/lang/String;I)Z", (void *)replaceText},
     {"setComposingText", "(Ljava/lang/String;I)Z", (void *)setComposingText},
     {"setComposingRegion", "(II)Z", (void *)setComposingRegion},
     {"setSelection", "(II)Z", (void *)setSelection},
@@ -1121,6 +1139,21 @@ jboolean QAndroidInputContext::finishComposingText()
 
     clear();
     return JNI_TRUE;
+}
+
+/*
+  Android docs say: This behaves like calling finishComposingText(), setSelection(start, end)
+  and then commitText(text, newCursorPosition, textAttribute)
+  https://developer.android.com/reference/android/view/inputmethod/InputConnection#replaceText(int,%20int,%20java.lang.CharSequence,%20int,%20android.view.inputmethod.TextAttribute)
+*/
+jboolean QAndroidInputContext::replaceText(jint start, jint end, const QString text, jint newCursorPosition)
+{
+    if (!finishComposingText())
+        return JNI_FALSE;
+    if (!setSelection(start, end))
+        return JNI_FALSE;
+
+    return commitText(text, newCursorPosition);
 }
 
 void QAndroidInputContext::reportFullscreenMode(jboolean enabled)
