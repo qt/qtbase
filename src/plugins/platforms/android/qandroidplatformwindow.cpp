@@ -96,6 +96,7 @@ void QAndroidPlatformWindow::initialize()
 
 QAndroidPlatformWindow::~QAndroidPlatformWindow()
 {
+    const auto guard = destructionGuard();
     if (window()->isTopLevel())
         platformScreen()->removeWindow(this);
 }
@@ -353,6 +354,9 @@ void QAndroidPlatformWindow::setSurface(JNIEnv *env, jobject object, jint window
             continue;
         QAndroidPlatformWindow *platformWindow =
                                 static_cast<QAndroidPlatformWindow *>(window->handle());
+        const auto guard = platformWindow->destructionGuard();
+        if (!platformWindow->m_surfaceCreated)
+            continue;
         if (platformWindow->nativeViewId() == windowId)
             platformWindow->onSurfaceChanged(surface);
     }
@@ -371,6 +375,18 @@ void QAndroidPlatformWindow::windowFocusChanged(JNIEnv *env, jobject object,
         // Clear focus if current window has lost focus
         QWindowSystemInterface::handleFocusWindowChanged(nullptr);
     }
+}
+
+/*
+    Due to calls originating from Android, it is possible for native methods to
+    try to manipulate any given instance of QAndroidPlatformWindow when it is
+    already being destroyed. So we use this to guard against that. It is called
+    in the destructor, and should also be called in any function registered to
+    be called from java that may touch an instance of QAndroidPlatformWindow.
+ */
+QMutexLocker<QMutex> QAndroidPlatformWindow::destructionGuard()
+{
+    return QMutexLocker(&m_destructionMutex);
 }
 
 bool QAndroidPlatformWindow::registerNatives(QJniEnvironment &env)

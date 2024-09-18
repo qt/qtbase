@@ -96,12 +96,15 @@ protected:
     QWaitCondition m_surfaceWaitCondition;
     bool m_surfaceCreated = false;
     QMutex m_surfaceMutex;
+    QMutex m_destructionMutex;
 
 private:
     static void setSurface(JNIEnv *env, jobject obj, jint windowId, QtJniTypes::Surface surface);
     Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(setSurface)
     static void windowFocusChanged(JNIEnv *env, jobject object, jboolean focus, jint windowId);
     Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(windowFocusChanged)
+
+    [[nodiscard]] QMutexLocker<QMutex> destructionGuard();
 };
 
 QT_END_NAMESPACE
