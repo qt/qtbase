@@ -13,7 +13,6 @@
 #endif
 #include "qmetaobject.h"
 #include <private/qproperty_p.h>
-#include "qcorecmdlineargs_p.h"
 #include <qdatastream.h>
 #include <qdebug.h>
 #include <qdir.h>
@@ -109,6 +108,10 @@
 #include <algorithm>
 #include <memory>
 #include <string>
+
+#ifdef Q_OS_WIN
+#  include <qt_windows.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -2536,6 +2539,22 @@ qint64 QCoreApplication::applicationPid()
 #endif
 }
 
+#ifdef Q_OS_WIN
+static inline QStringList winCmdArgs(const QString &cmdLine)
+{
+    QStringList result;
+    int size;
+    if (wchar_t **argv = CommandLineToArgvW(reinterpret_cast<const wchar_t *>(cmdLine.utf16()), &size)) {
+        result.reserve(size);
+        wchar_t **argvEnd = argv + size;
+        for (wchar_t **a = argv; a < argvEnd; ++a)
+            result.append(QString::fromWCharArray(*a));
+        LocalFree(argv);
+    }
+    return result;
+}
+#endif // Q_OS_WIN
+
 /*!
     \since 4.1
 
@@ -2591,7 +2610,7 @@ QStringList QCoreApplication::arguments()
         // the Windows API instead of using argv. Note that we only
         // do this when argv were not modified by the user in main().
         QString cmdline = QString::fromWCharArray(GetCommandLine());
-        QStringList commandLineArguments = qWinCmdArgs(cmdline);
+        QStringList commandLineArguments = winCmdArgs(cmdline);
 
         // Even if the user didn't modify argv before passing them
         // on to QCoreApplication, derived QApplications might have.
