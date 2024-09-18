@@ -1,8 +1,6 @@
 [scrollUpdate]
 android
 b2qt
-[windowOpacity]
-macos ci
 [wheelEventPropagation]
 android
 [forwardTouchEvent]
