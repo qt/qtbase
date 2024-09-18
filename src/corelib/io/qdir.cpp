@@ -2279,7 +2279,7 @@ bool qt_normalizePathSegments(QString *path, QDirPrivate::PathNormalizations fla
                 if (isRemote)
                     *out++ = *in++;
                 else
-                    ++in;
+                    ++in; // Skip multiple slashes for local URLs
 
                 // Note: we may exit this loop with in == end, in which case we
                 // *shouldn't* dereference *in. But since we are pointing to a
@@ -2327,8 +2327,6 @@ bool qt_normalizePathSegments(QString *path, QDirPrivate::PathNormalizations fla
             }
             while (out > start && *--out != u'/')
                 ;
-            while (!isRemote && out > start && out[-1] == u'/')
-                --out;
             while (out > start && out[-1] != u'/')
                 --out;
             in += 2;    // the two dots
