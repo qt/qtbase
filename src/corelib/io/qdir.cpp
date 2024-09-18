@@ -73,7 +73,7 @@ static qsizetype rootLength(QStringView name, bool allowUncPaths)
         return len > 2 && name.at(2) == u'/' ? 3 : 2;
     }
 #endif
-    if (len && name.at(0) == u'/')
+    if (name.at(0) == u'/')
         return 1;
     return 0;
 }

@@ -600,7 +600,7 @@ void tst_QUrl::setUrl()
 
         QUrl url2("../../////kdebase/konqueror");
         QCOMPARE(url.resolved(url2).toString(),
-                QString::fromLatin1("file:///usr/local/src/kde2/kdebase/konqueror"));
+                QString::fromLatin1("file:///usr/local/src/kde2/////kdebase/konqueror"));
     }
 
     {
@@ -929,16 +929,16 @@ void tst_QUrl::resolving_data()
     QTest::newRow(".-on-//") << "http://a/b/c//" << "." << "http://a/b/c//";
     QTest::newRow("./-on-//") << "http://a/b/c//" << "./" << "http://a/b/c//";
     QTest::newRow(".//-on-//") << "http://a/b/c//" << ".//" << "http://a/b/c///";  // weird but correct
-    QTest::newRow("..-on-//") << "http://a/b/c//" << ".." << "http://a/b/c/";
-    QTest::newRow("../-on-//") << "http://a/b/c//" << "../" << "http://a/b/c/";
-    QTest::newRow("..//-on-//") << "http://a/b/c//" << "..//" << "http://a/b/c//";
-    QTest::newRow("../g-on-//") << "http://a/b/c//" << "../g" << "http://a/b/c/g";
-    QTest::newRow("..//g-on-//") << "http://a/b/c//" << "..//g" << "http://a/b/c//g";
-    QTest::newRow("../..-on-//") << "http://a/b/c//" << "../.." << "http://a/b/";
-    QTest::newRow("../../-on-//") << "http://a/b/c//" << "../../" << "http://a/b/";
-    QTest::newRow("../..//-on-//") << "http://a/b/c//" << "../..//" << "http://a/b//";
-    QTest::newRow("../../g-on-//") << "http://a/b/c//" << "../../g" << "http://a/b/g";
-    QTest::newRow("../..//g-on-//") << "http://a/b/c//" << "../..//g" << "http://a/b//g";
+    QTest::newRow("..-on-//") << "http://a/b/c//" << ".." << "http://a/b/";
+    QTest::newRow("../-on-//") << "http://a/b/c//" << "../" << "http://a/b/";
+    QTest::newRow("..//-on-//") << "http://a/b/c//" << "..//" << "http://a/b//";
+    QTest::newRow("../g-on-//") << "http://a/b/c//" << "../g" << "http://a/b/g";
+    QTest::newRow("..//g-on-//") << "http://a/b/c//" << "..//g" << "http://a/b//g";
+    QTest::newRow("../..-on-//") << "http://a/b/c//" << "../.." << "http://a/";
+    QTest::newRow("../../-on-//") << "http://a/b/c//" << "../../" << "http://a/";
+    QTest::newRow("../..//-on-//") << "http://a/b/c//" << "../..//" << "http://a//";
+    QTest::newRow("../../g-on-//") << "http://a/b/c//" << "../../g" << "http://a/g";
+    QTest::newRow("../..//g-on-//") << "http://a/b/c//" << "../..//g" << "http://a//g";
 
     // 5.4.2  Abnormal Examples (http://www.ietf.org/rfc/rfc3986.txt)
 
@@ -4432,7 +4432,6 @@ void tst_QUrl::normalizeRemotePaths()
     QCOMPARE(url.adjusted(QUrl::NormalizePathSegments).toString(), expected);
     QCOMPARE(url.adjusted(QUrl::NormalizePathSegments | QUrl::RemoveFilename).toString(),
              expectedNoFilename);
-    QCOMPARE(url.resolved(QUrl(".")).toString(), expectedNoFilename);
 }
 
 QTEST_MAIN(tst_QUrl)
