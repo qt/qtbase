@@ -267,11 +267,7 @@ class QtEditText extends View
             break;
         case CursorHandleShowNormal:
             if (m_cursorHandle == null) {
-                // We pass this to the CursorHandle to use the QtEditText to calculate its
-                // position. This is OK as the QtEditText size matches the QtWindow size.
-                // If the size of the QtEditText is changed to not reflect the window's anymore,
-                // this should be changed to use getParent() instead of this.
-                m_cursorHandle = new CursorHandle((Activity) getContext(), this,
+                m_cursorHandle = new CursorHandle((Activity) getContext(), (View) getParent(),
                         CursorHandle.IdCursorHandle,
                         android.R.attr.textSelectHandle, false);
             }
