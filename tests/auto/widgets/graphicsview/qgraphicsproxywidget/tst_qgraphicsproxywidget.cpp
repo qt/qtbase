@@ -2609,11 +2609,8 @@ void tst_QGraphicsProxyWidget::windowOpacity()
     // and not on the widget or the proxy itself. The entire proxy needs an update
     // in case it has a window decoration. Update: QGraphicsItem::CacheMode is
     // disabled on platforms without alpha channel support in QPixmap (e.g.,
-    // X11 without XRender). On macOS, we always get a paint event.
+    // X11 without XRender).
     int paints = 0;
-#ifdef Q_OS_MACOS
-    paints = 1;
-#endif
     QTRY_COMPARE(eventSpy.counts[QEvent::UpdateRequest], 0);
     QTRY_COMPARE(eventSpy.counts[QEvent::Paint], paints);
 
