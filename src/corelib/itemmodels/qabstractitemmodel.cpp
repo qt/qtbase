@@ -26,6 +26,7 @@
 QT_BEGIN_NAMESPACE
 
 Q_STATIC_LOGGING_CATEGORY(lcCheckIndex, "qt.core.qabstractitemmodel.checkindex")
+Q_STATIC_LOGGING_CATEGORY(lcReset, "qt.core.qabstractitemmodel.reset")
 
 QT_IMPL_METATYPE_EXTERN(QModelIndexList)
 
@@ -3400,6 +3401,7 @@ void QAbstractItemModel::endMoveColumns()
 */
 void QAbstractItemModel::beginResetModel()
 {
+    qCDebug(lcReset) << "beginResetModel called; about to emit modelAboutToBeReset";
     emit modelAboutToBeReset(QPrivateSignal());
 }
 
@@ -3417,6 +3419,7 @@ void QAbstractItemModel::beginResetModel()
 void QAbstractItemModel::endResetModel()
 {
     Q_D(QAbstractItemModel);
+    qCDebug(lcReset) << "endResetModel called; about to emit modelReset";
     d->invalidatePersistentIndexes();
     resetInternalData();
     emit modelReset(QPrivateSignal());
