@@ -4,6 +4,7 @@
 #include "qwindows11style_p.h"
 #include <qstylehints.h>
 #include <private/qstyleanimation_p.h>
+#include <private/qstyle_p.h>
 #include <private/qstylehelper_p.h>
 #include <private/qapplication_p.h>
 #include <qstyleoption.h>
@@ -254,55 +255,42 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                 painter->drawLine(option->rect.bottomLeft() + QPointF(7,-0.5), option->rect.bottomRight() + QPointF(-7,-0.5));
                 painter->restore();
             }
-            QRectF frameRect = option->rect;
-            frameRect.adjust(0.5,0.5,-0.5,-0.5);
-            QBrush fillColor = option->palette.brush(QPalette::Base);
-            painter->setBrush(fillColor);
+            const QRectF frameRect = QRectF(option->rect).adjusted(2.5, 2.5, -2.5, -2.5);
+            const QBrush fillBrush = option->palette.brush(QPalette::Base);
+            painter->setBrush(fillBrush);
             painter->setPen(QPen(highContrastTheme == true ? sb->palette.buttonText().color() : WINUI3Colors[colorSchemeIndex][frameColorLight]));
-            painter->drawRoundedRect(frameRect.adjusted(2,2,-2,-2), secondLevelRoundingRadius, secondLevelRoundingRadius);
-            QPoint mousePos = widget ? widget->mapFromGlobal(QCursor::pos()) : QPoint();
-            QColor hoverColor = WINUI3Colors[colorSchemeIndex][subtleHighlightColor];
+            painter->drawRoundedRect(frameRect, secondLevelRoundingRadius, secondLevelRoundingRadius);
+            const QPoint mousePos = widget ? widget->mapFromGlobal(QCursor::pos()) : QPoint();
             if (sub & SC_SpinBoxEditField) {
-                QRect rect = proxy()->subControlRect(CC_SpinBox, option, SC_SpinBoxEditField, widget).adjusted(0, 0, 0, 1);
-                if (rect.contains(mousePos) && !(state & State_HasFocus)) {
-                    QBrush fillColor = QBrush(WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
-                    painter->setBrush(fillColor);
+                const QRect rect = proxy()->subControlRect(CC_SpinBox, option, SC_SpinBoxEditField, widget).adjusted(0, 0, 0, 1);
+                if (!(state & State_HasFocus) && rect.contains(mousePos)) {
+                    const QColor fillColor = WINUI3Colors[colorSchemeIndex][subtleHighlightColor];
                     painter->setPen(Qt::NoPen);
-                    painter->drawRoundedRect(option->rect.adjusted(2,2,-2,-2), secondLevelRoundingRadius, secondLevelRoundingRadius);
+                    painter->setBrush(QBrush(fillColor));
+                    painter->drawRoundedRect(option->rect.adjusted(2, 2, -2, -2), secondLevelRoundingRadius,
+                                             secondLevelRoundingRadius);
                 }
             }
-            if (sub & SC_SpinBoxUp) {
-                QRect rect = proxy()->subControlRect(CC_SpinBox, option, SC_SpinBoxUp, widget).adjusted(0, 0, 0, 1);
+            const auto drawUpDown = [&](QStyle::SubControl sc) {
+                const bool isUp = sc == SC_SpinBoxUp;
+                QRect rect = proxy()->subControlRect(CC_SpinBox, option, isUp ? SC_SpinBoxUp : SC_SpinBoxDown, widget);
+                if (isUp)
+                    rect.adjust(0, 0, 0, 1);
                 if (rect.contains(mousePos)) {
+                    const QColor hoverColor = WINUI3Colors[colorSchemeIndex][subtleHighlightColor];
                     painter->setPen(Qt::NoPen);
                     painter->setBrush(QBrush(hoverColor));
-                    painter->drawRoundedRect(rect.adjusted(1,1,-1,-1),secondLevelRoundingRadius, secondLevelRoundingRadius);
+                    painter->drawRoundedRect(rect.adjusted(1, 1, -1, -1), secondLevelRoundingRadius,
+                                             secondLevelRoundingRadius);
                 }
-                painter->save();
-                painter->translate(rect.center());
-                painter->translate(-rect.center());
                 painter->setFont(assetFont);
                 painter->setPen(sb->palette.buttonText().color());
                 painter->setBrush(Qt::NoBrush);
-                painter->drawText(rect,"\uE018", Qt::AlignVCenter | Qt::AlignHCenter);
-                painter->restore();
-            }
-            if (sub & SC_SpinBoxDown) {
-                QRect rect = proxy()->subControlRect(CC_SpinBox, option, SC_SpinBoxDown, widget);
-                if (rect.contains(mousePos)) {
-                    painter->setPen(Qt::NoPen);
-                    painter->setBrush(QBrush(hoverColor));
-                    painter->drawRoundedRect(rect.adjusted(1,1,-1,-1), secondLevelRoundingRadius, secondLevelRoundingRadius);
-                }
-                painter->save();
-                painter->translate(rect.center());
-                painter->translate(-rect.center());
-                painter->setFont(assetFont);
-                painter->setPen(sb->palette.buttonText().color());
-                painter->setBrush(Qt::NoBrush);
-                painter->drawText(rect,"\uE019", Qt::AlignVCenter | Qt::AlignHCenter);
-                painter->restore();
-            }
+                const auto str = isUp ? QStringLiteral(u"\uE018") : QStringLiteral(u"\uE019");
+                painter->drawText(rect, str, Qt::AlignVCenter | Qt::AlignHCenter);
+            };
+            if (sub & SC_SpinBoxUp) drawUpDown(SC_SpinBoxUp);
+            if (sub & SC_SpinBoxDown) drawUpDown(SC_SpinBoxDown);
         }
         break;
 #endif // QT_CONFIG(spinbox)
