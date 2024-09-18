@@ -1,5 +1,5 @@
 [initStyleOption]
-macos ci
+macos
 android
 b2qt
 # QTBUG-100930
