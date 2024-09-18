@@ -1385,22 +1385,17 @@ void tst_QDir::normalizePathSegments_data()
     QTest::newRow("data6") << "/./" << HandleUnc << "/";
     QTest::newRow("data7") << "/.." << HandleUnc << "/..";
     QTest::newRow("data8") << "/../" << HandleUnc << "/../";
-    QTest::newRow("/../.") << "/../." << HandleUnc << "/../";
-    QTest::newRow("/.././") << "/.././" << HandleUnc << "/../";
-    QTest::newRow("/../..") << "/../.." << HandleUnc << "/../..";
     QTest::newRow("data9") << "." << HandleUnc << ".";
-    QTest::newRow("data10") << "./" << HandleUnc << ".";
+    QTest::newRow("data10") << "./" << HandleUnc << "./";
     QTest::newRow("data11") << "./." << HandleUnc << ".";
-    QTest::newRow("data12") << "././" << HandleUnc << ".";
+    QTest::newRow("data12") << "././" << HandleUnc << "./";
     QTest::newRow("data13") << ".." << HandleUnc << "..";
     QTest::newRow("data14") << "../" << HandleUnc << "../";
-    QTest::newRow("data15") << "../." << HandleUnc << "../";
+    QTest::newRow("data15") << "../." << HandleUnc << "..";
     QTest::newRow("data16") << ".././" << HandleUnc << "../";
     QTest::newRow("data17") << "../.." << HandleUnc << "../..";
     QTest::newRow("data18") << "../../" << HandleUnc << "../../";
-    QTest::newRow("./file1.txt") << "./file1.txt" << HandleUnc << "file1.txt";
     QTest::newRow("data19") << ".//file1.txt" << HandleUnc << "file1.txt";
-    QTest::newRow("/foo/bar//file1.txt") << "/foo/bar//file1.txt" << HandleUnc << "/foo/bar/file1.txt";
     QTest::newRow("data20") << "/foo/bar/..//file1.txt" << HandleUnc << "/foo/file1.txt";
     QTest::newRow("data21") << "foo/.." << HandleUnc << ".";
     QTest::newRow("data22") << "./foo/.." << HandleUnc << ".";
@@ -1425,7 +1420,7 @@ void tst_QDir::normalizePathSegments_data()
 #else
     QTest::newRow("data37") << "c:/." << HandleUnc << "c:";
     QTest::newRow("data38") << "c:/.." << HandleUnc << ".";
-    QTest::newRow("data39") << "c:/../" << HandleUnc << ".";
+    QTest::newRow("data39") << "c:/../" << HandleUnc << "./";
 #endif
     QTest::newRow("data40") << "c:/./" << HandleUnc << "c:/";
     QTest::newRow("data41") << "foo/../foo/.." << HandleUnc << ".";
@@ -1452,9 +1447,10 @@ void tst_QDir::normalizePathSegments()
     QFETCH(QString, path);
     QFETCH(UncHandling, uncHandling);
     QFETCH(QString, expected);
-    // for QDirPrivate::RemotePath, see tst_QUrl::resolving
     QString cleaned = qt_normalizePathSegments(path, uncHandling == HandleUnc ? QDirPrivate::AllowUncPaths : QDirPrivate::DefaultNormalization);
     QCOMPARE(cleaned, expected);
+    if (path == expected)
+        QVERIFY2(path.isSharedWith(cleaned), "Strings are same but data is not shared");
 }
 # endif //QT_BUILD_INTERNAL
 

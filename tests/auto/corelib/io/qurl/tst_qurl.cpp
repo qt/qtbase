@@ -839,33 +839,7 @@ void tst_QUrl::resolving_data()
     QTest::addColumn<QString>("relativeUrl");
     QTest::addColumn<QString>("resolvedUrl");
 
-    // boundary cases
-    QTest::newRow("empty-on-empty") << "http://a" << "" << "http://a";
-    QTest::newRow("empty-on-/") << "http://a/" << "" << "http://a/";
-    QTest::newRow("empty-on-//") << "http://a//" << "" << "http://a//";
-    QTest::newRow("empty-on-/.") << "http://a/." << "" << "http://a/";
-    QTest::newRow("empty-on-/./") << "http://a/./" << "" << "http://a/";
-    QTest::newRow("empty-on-/..") << "http://a/.." << "" << "http://a/";
-    QTest::newRow("empty-on-/../") << "http://a/../" << "" << "http://a/";
-
-    QTest::newRow("/-on-empty-with-authority") << "http://a" << "/" << "http://a/";
-    QTest::newRow(".-on-empty-with-authority") << "http://a" << "." << "http://a/";
-    QTest::newRow("./-on-empty-with-authority") << "http://a" << "./" << "http://a/";
-    QTest::newRow(".//-on-empty-with-authority") << "http://a" << ".//" << "http://a//";
-    QTest::newRow("..-on-empty-with-authority") << "http://a" << ".." << "http://a/";
-    QTest::newRow("../-on-empty-with-authority") << "http://a" << "../" << "http://a/";
-    QTest::newRow("/-on-empty-no-authority") << "scheme:" << "/" << "scheme:/";
-    QTest::newRow(".-on-empty-no-authority") << "scheme:" << "." << "scheme:";
-    QTest::newRow("./-on-empty-no-authority") << "scheme:" << "./" << "scheme:";
-    QTest::newRow(".//-on-empty-no-authority") << "scheme:" << "./" << "scheme:";
-    QTest::newRow("..-on-empty-no-authority") << "scheme:" << ".." << "scheme:";
-    QTest::newRow("../-on-empty-no-authority") << "scheme:" << "../" << "scheme:";
-
-    QTest::newRow("scheme-change") << "http://a" << "https://b" << "https://b";
-    QTest::newRow("scheme-change-path") << "http://a/" << "scheme:" << "scheme:";
-
     // 5.4.1 Normal Examples (http://www.ietf.org/rfc/rfc3986.txt)
-    // URL paths not ending in /
     QTest::newRow("g:h")       << QString::fromLatin1("http://a/b/c/d;p?q") << QString::fromLatin1("g:h")      << QString::fromLatin1("g:h");
     QTest::newRow("g")         << QString::fromLatin1("http://a/b/c/d;p?q") << QString::fromLatin1("g")        << QString::fromLatin1("http://a/b/c/g");
     QTest::newRow("./g")       << QString::fromLatin1("http://a/b/c/d;p?q") << QString::fromLatin1("./g")      << QString::fromLatin1("http://a/b/c/g");
@@ -883,62 +857,12 @@ void tst_QUrl::resolving_data()
     QTest::newRow("[empty]")   << QString::fromLatin1("http://a/b/c/d;p?q") << QString::fromLatin1("")         << QString::fromLatin1("http://a/b/c/d;p?q");
     QTest::newRow(".")         << QString::fromLatin1("http://a/b/c/d;p?q") << QString::fromLatin1(".")        << QString::fromLatin1("http://a/b/c/");
     QTest::newRow("./")        << QString::fromLatin1("http://a/b/c/d;p?q") << QString::fromLatin1("./")       << QString::fromLatin1("http://a/b/c/");
-    QTest::newRow(".//")       << QString::fromLatin1("http://a/b/c/d;p?q") << QString::fromLatin1(".//")      << QString::fromLatin1("http://a/b/c//");
     QTest::newRow("..")        << QString::fromLatin1("http://a/b/c/d;p?q") << QString::fromLatin1("..")       << QString::fromLatin1("http://a/b/");
     QTest::newRow("../")       << QString::fromLatin1("http://a/b/c/d;p?q") << QString::fromLatin1("../")      << QString::fromLatin1("http://a/b/");
-    QTest::newRow("..//")      << QString::fromLatin1("http://a/b/c/d;p?q") << QString::fromLatin1("..//")     << QString::fromLatin1("http://a/b//");
     QTest::newRow("../g")      << QString::fromLatin1("http://a/b/c/d;p?q") << QString::fromLatin1("../g")     << QString::fromLatin1("http://a/b/g");
-    QTest::newRow("..//g")     << QString::fromLatin1("http://a/b/c/d;p?q") << QString::fromLatin1("..//g")    << QString::fromLatin1("http://a/b//g");
     QTest::newRow("../..")     << QString::fromLatin1("http://a/b/c/d;p?q") << QString::fromLatin1("../..")    << QString::fromLatin1("http://a/");
     QTest::newRow("../../")    << QString::fromLatin1("http://a/b/c/d;p?q") << QString::fromLatin1("../../")   << QString::fromLatin1("http://a/");
-    QTest::newRow("../..//")   << QString::fromLatin1("http://a/b/c/d;p?q") << QString::fromLatin1("../..//")  << QString::fromLatin1("http://a//");
     QTest::newRow("../../g")   << QString::fromLatin1("http://a/b/c/d;p?q") << QString::fromLatin1("../../g")  << QString::fromLatin1("http://a/g");
-    QTest::newRow("../..//g")  << QString::fromLatin1("http://a/b/c/d;p?q") << QString::fromLatin1("../..//g") << QString::fromLatin1("http://a//g");
-
-    // URL paths ending in /
-    QTest::newRow("g:h-on-/")      << QString::fromLatin1("http://a/b/c/;p?q") << QString::fromLatin1("g:h")      << QString::fromLatin1("g:h");
-    QTest::newRow("g-on-/")        << QString::fromLatin1("http://a/b/c/;p?q") << QString::fromLatin1("g")        << QString::fromLatin1("http://a/b/c/g");
-    QTest::newRow("./g-on-/")      << QString::fromLatin1("http://a/b/c/;p?q") << QString::fromLatin1("./g")      << QString::fromLatin1("http://a/b/c/g");
-    QTest::newRow("g/-on-/")       << QString::fromLatin1("http://a/b/c/;p?q") << QString::fromLatin1("g/")       << QString::fromLatin1("http://a/b/c/g/");
-    QTest::newRow("/g-on-/")       << QString::fromLatin1("http://a/b/c/;p?q") << QString::fromLatin1("/g")       << QString::fromLatin1("http://a/g");
-    QTest::newRow("//g-on-/")      << QString::fromLatin1("http://a/b/c/;p?q") << QString::fromLatin1("//g")      << QString::fromLatin1("http://g");
-    QTest::newRow("?y-on-/")       << QString::fromLatin1("http://a/b/c/;p?q") << QString::fromLatin1("?y")       << QString::fromLatin1("http://a/b/c/;p?y");
-    QTest::newRow("g?y-on-/")      << QString::fromLatin1("http://a/b/c/;p?q") << QString::fromLatin1("g?y")      << QString::fromLatin1("http://a/b/c/g?y");
-    QTest::newRow("#s-on-/")       << QString::fromLatin1("http://a/b/c/;p?q") << QString::fromLatin1("#s")       << QString::fromLatin1("http://a/b/c/;p?q#s");
-    QTest::newRow("g#s-on-/")      << QString::fromLatin1("http://a/b/c/;p?q") << QString::fromLatin1("g#s")      << QString::fromLatin1("http://a/b/c/g#s");
-    QTest::newRow("g?y#s-on-/")    << QString::fromLatin1("http://a/b/c/;p?q") << QString::fromLatin1("g?y#s")    << QString::fromLatin1("http://a/b/c/g?y#s");
-    QTest::newRow(";x-on-/")       << QString::fromLatin1("http://a/b/c/;p?q") << QString::fromLatin1(";x")       << QString::fromLatin1("http://a/b/c/;x");
-    QTest::newRow("g;x-on-/")      << QString::fromLatin1("http://a/b/c/;p?q") << QString::fromLatin1("g;x")      << QString::fromLatin1("http://a/b/c/g;x");
-    QTest::newRow("g;x?y#s-on-/")  << QString::fromLatin1("http://a/b/c/;p?q") << QString::fromLatin1("g;x?y#s")  << QString::fromLatin1("http://a/b/c/g;x?y#s");
-    QTest::newRow("[empty]-on-/")  << QString::fromLatin1("http://a/b/c/;p?q") << QString::fromLatin1("")         << QString::fromLatin1("http://a/b/c/;p?q");
-    QTest::newRow(".-on-/")        << QString::fromLatin1("http://a/b/c/;p?q") << QString::fromLatin1(".")        << QString::fromLatin1("http://a/b/c/");
-    QTest::newRow("./-on-/")       << QString::fromLatin1("http://a/b/c/;p?q") << QString::fromLatin1("./")       << QString::fromLatin1("http://a/b/c/");
-    QTest::newRow(".//-on-/")      << QString::fromLatin1("http://a/b/c/;p?q") << QString::fromLatin1(".//")      << QString::fromLatin1("http://a/b/c//");
-    QTest::newRow("..-on-/")       << QString::fromLatin1("http://a/b/c/;p?q") << QString::fromLatin1("..")       << QString::fromLatin1("http://a/b/");
-    QTest::newRow("../-on-/")      << QString::fromLatin1("http://a/b/c/;p?q") << QString::fromLatin1("../")      << QString::fromLatin1("http://a/b/");
-    QTest::newRow("..//-on-/")     << QString::fromLatin1("http://a/b/c/;p?q") << QString::fromLatin1("..//")     << QString::fromLatin1("http://a/b//");
-    QTest::newRow("../g-on-/")     << QString::fromLatin1("http://a/b/c/;p?q") << QString::fromLatin1("../g")     << QString::fromLatin1("http://a/b/g");
-    QTest::newRow("..//g-on-/")    << QString::fromLatin1("http://a/b/c/;p?q") << QString::fromLatin1("..//g")    << QString::fromLatin1("http://a/b//g");
-    QTest::newRow("../..-on-/")    << QString::fromLatin1("http://a/b/c/;p?q") << QString::fromLatin1("../..")    << QString::fromLatin1("http://a/");
-    QTest::newRow("../../-on-/")   << QString::fromLatin1("http://a/b/c/;p?q") << QString::fromLatin1("../../")   << QString::fromLatin1("http://a/");
-    QTest::newRow("../..//-on-/")  << QString::fromLatin1("http://a/b/c/;p?q") << QString::fromLatin1("../..//")  << QString::fromLatin1("http://a//");
-    QTest::newRow("../../g-on-/")  << QString::fromLatin1("http://a/b/c/;p?q") << QString::fromLatin1("../../g")  << QString::fromLatin1("http://a/g");
-    QTest::newRow("../..//g-on-/") << QString::fromLatin1("http://a/b/c/;p?q") << QString::fromLatin1("../..//g") << QString::fromLatin1("http://a//g");
-
-    // URL paths ending in //
-    QTest::newRow(".-on-//") << "http://a/b/c//" << "." << "http://a/b/c//";
-    QTest::newRow("./-on-//") << "http://a/b/c//" << "./" << "http://a/b/c//";
-    QTest::newRow(".//-on-//") << "http://a/b/c//" << ".//" << "http://a/b/c///";  // weird but correct
-    QTest::newRow("..-on-//") << "http://a/b/c//" << ".." << "http://a/b/";
-    QTest::newRow("../-on-//") << "http://a/b/c//" << "../" << "http://a/b/";
-    QTest::newRow("..//-on-//") << "http://a/b/c//" << "..//" << "http://a/b//";
-    QTest::newRow("../g-on-//") << "http://a/b/c//" << "../g" << "http://a/b/g";
-    QTest::newRow("..//g-on-//") << "http://a/b/c//" << "..//g" << "http://a/b//g";
-    QTest::newRow("../..-on-//") << "http://a/b/c//" << "../.." << "http://a/";
-    QTest::newRow("../../-on-//") << "http://a/b/c//" << "../../" << "http://a/";
-    QTest::newRow("../..//-on-//") << "http://a/b/c//" << "../..//" << "http://a//";
-    QTest::newRow("../../g-on-//") << "http://a/b/c//" << "../../g" << "http://a/g";
-    QTest::newRow("../..//g-on-//") << "http://a/b/c//" << "../..//g" << "http://a//g";
 
     // 5.4.2  Abnormal Examples (http://www.ietf.org/rfc/rfc3986.txt)
 
@@ -946,15 +870,8 @@ void tst_QUrl::resolving_data()
     // relative path ".." segments than there are hierarchical levels in the
     // base URI's path.  Note that the ".." syntax cannot be used to change
     // the authority component of a URI.
-    QTest::newRow("../../../")    << QString::fromLatin1("http://a/b/c/d;p?q") << QString::fromLatin1("../../../")     << QString::fromLatin1("http://a/");
-    QTest::newRow("../../../..") << QString::fromLatin1("http://a/b/c/d;p?q") << QString::fromLatin1("../../../..")  << QString::fromLatin1("http://a/");
-    QTest::newRow("../../../..//") << QString::fromLatin1("http://a/b/c/d;p?q") << QString::fromLatin1("../../../..//")  << QString::fromLatin1("http://a//");
-    QTest::newRow("../../../../..") << QString::fromLatin1("http://a/b/c/d;p?q") << QString::fromLatin1("../../../../..")  << QString::fromLatin1("http://a/");
-    QTest::newRow("../../../../../") << QString::fromLatin1("http://a/b/c/d;p?q") << QString::fromLatin1("../../../../../")  << QString::fromLatin1("http://a/");
     QTest::newRow("../../../g")    << QString::fromLatin1("http://a/b/c/d;p?q") << QString::fromLatin1("../../../g")     << QString::fromLatin1("http://a/g");
-    QTest::newRow("../../..//g")   << QString::fromLatin1("http://a/b/c/d;p?q") << QString::fromLatin1("../../..//g")    << QString::fromLatin1("http://a//g");
     QTest::newRow("../../../../g") << QString::fromLatin1("http://a/b/c/d;p?q") << QString::fromLatin1("../../../../g")  << QString::fromLatin1("http://a/g");
-    QTest::newRow("../../../..//g") << QString::fromLatin1("http://a/b/c/d;p?q") << QString::fromLatin1("../../../..//g") << QString::fromLatin1("http://a//g");
 
     // Similarly, parsers must remove the dot-segments "." and ".." when
     // they are complete components of a path, but not when they are only
@@ -1000,49 +917,11 @@ void tst_QUrl::resolving_data()
     QTest::newRow("../a (2)")  << QString::fromLatin1("b/a") << QString::fromLatin1("../a")  << QString::fromLatin1("a");
     QTest::newRow("../a (3)")  << QString::fromLatin1("b/c/a") << QString::fromLatin1("../a")  << QString::fromLatin1("b/a");
     QTest::newRow("../a (4)")  << QString::fromLatin1("b") << QString::fromLatin1("/a")  << QString::fromLatin1("/a");
-    QTest::newRow("relative+.") << "scheme:" << "." << "scheme:";
-    QTest::newRow("relative+./") << "scheme:" << "./" << "scheme:";
-    QTest::newRow("relative+.//") << "scheme:" << ".//" << "scheme:";
-    QTest::newRow("relative+.///") << "scheme:" << ".///" << "scheme:";
-    QTest::newRow("relative+./.") << "scheme:" << "./." << "scheme:";
-    QTest::newRow("relative+././") << "scheme:" << "././" << "scheme:";
-    QTest::newRow("relative+..") << "scheme:" << ".." << "scheme:";
-    QTest::newRow("relative+../") << "scheme:" << "../" << "scheme:";
-    QTest::newRow("relative+..//") << "scheme:" << "..//" << "scheme:";
-    QTest::newRow("relative+..///") << "scheme:" << "..///" << "scheme:";
-    QTest::newRow("relative+../.") << "scheme:" << "../." << "scheme:";
-    QTest::newRow("relative+.././") << "scheme:" << ".././" << "scheme:";
-    QTest::newRow("relative+.././/") << "scheme:" << ".././/" << "scheme:";
-    QTest::newRow("relative+.././//") << "scheme:" << ".././//" << "scheme:";
-    QTest::newRow("relative+../../../..") << "scheme:b/c/d" << "../../../.." << "scheme:";
-    QTest::newRow("relative+../../../../") << "scheme:b/c/d" << "../../../../" << "scheme:";
-    QTest::newRow("relative+../../../..//") << "scheme:b/c/d" << "../../../..//" << "scheme:";
-    QTest::newRow("relative+../../d/../..") << "scheme:b/c/d" << "../../d/../.." << "scheme:";
-    QTest::newRow("relative+../../d/../../") << "scheme:b/c/d" << "../../d/../../" << "scheme:";
-    QTest::newRow("relative+endslash+../../../..") << "scheme:b/c/d/" << "../../../.." << "scheme:";
-    QTest::newRow("relative+endslash+../../../../") << "scheme:b/c/d/" << "../../../../" << "scheme:";
-    QTest::newRow("relative+endslash+../../../..//") << "scheme:b/c/d/" << "../../../..//" << "scheme:";
 
-    // Resolve absolute without authority with relative
     QTest::newRow("../a (5)")  << QString::fromLatin1("/b") << QString::fromLatin1("../a")  << QString::fromLatin1("/a");
     QTest::newRow("../a (6)")  << QString::fromLatin1("/b/a") << QString::fromLatin1("../a")  << QString::fromLatin1("/a");
     QTest::newRow("../a (7)")  << QString::fromLatin1("/b/c/a") << QString::fromLatin1("../a")  << QString::fromLatin1("/b/a");
     QTest::newRow("../a (8)")  << QString::fromLatin1("/b") << QString::fromLatin1("/a")  << QString::fromLatin1("/a");
-    QTest::newRow("noauthority+.") << "scheme:/a/b" << "." << "scheme:/a/";
-    QTest::newRow("noauthority+./") << "scheme:/a/b" << "./" << "scheme:/a/";
-    QTest::newRow("noauthority+.//") << "scheme:/a/b" << ".//" << "scheme:/a//";
-    QTest::newRow("noauthority+./d") << "scheme:/a/b" << "./d" << "scheme:/a/d";
-    QTest::newRow("noauthority+.//d") << "scheme:/a/b" << ".//d" << "scheme:/a//d";
-    QTest::newRow("noauthority+..") << "scheme:/a/b" << ".." << "scheme:/";
-    QTest::newRow("noauthority+../") << "scheme:/a/b" << "../" << "scheme:/";
-    QTest::newRow("noauthority+..//") << "scheme:/a/b" << "..//" << "scheme:/";
-    QTest::newRow("noauthority+../d") << "scheme:/a/b" << "../d" << "scheme:/d";
-    QTest::newRow("noauthority+..//d") << "scheme:/a/b" << "..//d" << "scheme:/d"; // no double slash!
-    QTest::newRow("noauthority+../..") << "scheme:/a/b" << "../.." << "scheme:/";
-    QTest::newRow("noauthority+../../") << "scheme:/a/b" << "../../" << "scheme:/";
-    QTest::newRow("noauthority+../..//") << "scheme:/a/b" << "../..//" << "scheme:/";
-    QTest::newRow("noauthority+../../d") << "scheme:/a/b" << "../../d" << "scheme:/d";
-    QTest::newRow("noauthority+../..//d") << "scheme:/a/b" << "../..//d" << "scheme:/d"; // no double slash!
 
     // More tests from KDE
     QTest::newRow("brackets")  << QString::fromLatin1("http://www.calorieking.com/personal/diary/") << QString::fromLatin1("/personal/diary/rpc.php?C=jsrs1&F=getDiaryDay&P0=[2006-3-8]&U=1141858921458") << QString::fromLatin1("http://www.calorieking.com/personal/diary/rpc.php?C=jsrs1&F=getDiaryDay&P0=[2006-3-8]&U=1141858921458");
