@@ -104,6 +104,9 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
                 return;
 
             m_currentEditText.setEditTextOptions(enterKeyType, inputHints);
+
+            m_currentEditText.setLayoutParams(new QtLayout.LayoutParams(width, height, x, y));
+
             m_currentEditText.requestFocus();
 
             m_currentEditText.postDelayed(() -> {

@@ -46,8 +46,8 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
         if (!isForeignWindow && context instanceof Activity) {
             // TODO QTBUG-122552 - Service keyboard input not implemented
             m_editText = new QtEditText(context, listener);
-            addView(m_editText, new QtLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                                                      ViewGroup.LayoutParams.MATCH_PARENT));
+            addView(m_editText, new QtLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                                                      ViewGroup.LayoutParams.WRAP_CONTENT));
             m_editText.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
         } else {
             m_editText = null;
