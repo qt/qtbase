@@ -4,6 +4,7 @@
 #ifndef QCOREEVENT_H
 #define QCOREEVENT_H
 
+#include <QtCore/qbasictimer.h>
 #include <QtCore/qnamespace.h>
 #include <QtCore/qbytearray.h>
 #include <QtCore/qobjectdefs.h>
@@ -371,6 +372,8 @@ public:
 
     int timerId() const { return qToUnderlying(id()); }
     Qt::TimerId id() const { return m_id; }
+    bool matches(const QBasicTimer &timer) const noexcept
+    { return m_id == timer.id(); }
 
 protected:
     Qt::TimerId m_id;

@@ -567,6 +567,14 @@ Q_IMPL_EVENT_COMMON(QTimerEvent)
 */
 
 /*!
+    \fn QTimerEvent::matches(const QBasicTimer &timer) const
+    \since 6.9
+
+    Returns \c true if this timer event and \a timer have the same ID,
+    otherwise returns \c false.
+*/
+
+/*!
     \class QChildEvent
     \inmodule QtCore
     \brief The QChildEvent class contains event parameters for child object

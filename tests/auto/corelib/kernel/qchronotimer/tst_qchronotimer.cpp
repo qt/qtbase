@@ -696,7 +696,7 @@ public:
 
     void timerEvent(QTimerEvent* ev) override
     {
-        if (ev->timerId() != m_timer.timerId())
+        if (!ev->matches(m_timer))
             return;
 
         m_timer.stop();
