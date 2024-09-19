@@ -51,33 +51,24 @@ static QString driveSpec(const QString &path)
 }
 #endif
 
-enum {
-#if defined(Q_OS_WIN)
-    OSSupportsUncPaths = true
-#else
-    OSSupportsUncPaths = false
-#endif
-};
-
 // Return the length of the root part of an absolute path, for use by cleanPath(), cd().
-static qsizetype rootLength(QStringView name, bool allowUncPaths)
+static qsizetype rootLength(QStringView name)
 {
+#if defined(Q_OS_WIN)
     const qsizetype len = name.size();
-    // starts with double slash
-    if (allowUncPaths && name.startsWith("//"_L1)) {
+    // Handle possible UNC paths which start with double slash
+    if (name.startsWith("//"_L1)) {
         // Server name '//server/path' is part of the prefix.
         const qsizetype nextSlash = name.indexOf(u'/', 2);
         return nextSlash >= 0 ? nextSlash + 1 : len;
     }
-#if defined(Q_OS_WIN)
     if (len >= 2 && name.at(1) == u':') {
         // Handle a possible drive letter
         return len > 2 && name.at(2) == u'/' ? 3 : 2;
     }
 #endif
-    if (len && name.at(0) == u'/')
-        return 1;
-    return 0;
+
+    return name.startsWith(u'/') ? 1 : 0;
 }
 
 //************* QDirPrivate
@@ -2227,9 +2218,8 @@ bool QDir::match(const QString &filter, const QString &fileName)
 */
 bool qt_normalizePathSegments(QString *path, QDirPrivate::PathNormalizations flags)
 {
-    const bool allowUncPaths = flags.testAnyFlag(QDirPrivate::AllowUncPaths);
     const bool isRemote = flags.testAnyFlag(QDirPrivate::RemotePath);
-    const qsizetype prefixLength = rootLength(*path, allowUncPaths);
+    const qsizetype prefixLength = rootLength(*path);
 
     // RFC 3986 says: "The input buffer is initialized with the now-appended
     // path components and the output buffer is initialized to the empty
@@ -2372,8 +2362,7 @@ static bool qt_cleanPath(QString *path)
 
     QString &ret = *path;
     ret = QDir::fromNativeSeparators(ret);
-    auto normalization = OSSupportsUncPaths ? QDirPrivate::AllowUncPaths : QDirPrivate::DefaultNormalization;
-    bool ok = qt_normalizePathSegments(&ret, normalization);
+    bool ok = qt_normalizePathSegments(&ret, QDirPrivate::DefaultNormalization);
 
     // Strip away last slash except for root directories
     if (ret.size() > 1 && ret.endsWith(u'/')) {
