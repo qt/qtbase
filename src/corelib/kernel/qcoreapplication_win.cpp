@@ -6,7 +6,6 @@
 #include "qcoreapplication_p.h"
 #include "qstringlist.h"
 #include "qfileinfo.h"
-#include "qcorecmdlineargs_p.h"
 #ifndef QT_NO_QOBJECT
 #include "qmutex.h"
 #include <private/qthread_p.h>
