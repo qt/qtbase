@@ -1384,8 +1384,14 @@ void tst_QDir::normalizePathSegments_data()
     QTest::addColumn<UncHandling>("uncHandling");
     QTest::addColumn<QString>("expected");
 
-    QTest::newRow("data0") << "/Users/sam/troll/qt4.0//.." << HandleUnc << "/Users/sam/troll";
-    QTest::newRow("data1") << "/Users/sam////troll/qt4.0//.." << HandleUnc << "/Users/sam/troll";
+    QTest::newRow("data0") << "/Users/sam/troll/qt4.0//.." << HandleUnc << "/Users/sam/troll/";
+    QTest::newRow("data1") << "/Users/sam////troll/qt4.0//.." << HandleUnc << "/Users/sam/troll/";
+    QTest::newRow("data53") <<"/b//." << HandleUnc << "/b/";
+    QTest::newRow("data54") <<"/b//./" << HandleUnc << "/b/";
+    QTest::newRow("data55") <<"/b/." << HandleUnc << "/b/";
+    QTest::newRow("data56") <<"/b/./" << HandleUnc << "/b/";
+    QTest::newRow("data57") <<"/b" << HandleUnc << "/b";
+
     QTest::newRow("data2") << "/" << HandleUnc << "/";
     QTest::newRow("data3") << "//" << HandleUnc << "//";
     QTest::newRow("data4") << "//" << IgnoreUnc << "/";
@@ -1426,12 +1432,11 @@ void tst_QDir::normalizePathSegments_data()
     QTest::newRow("data34") << "c://foo" << HandleUnc << "c:/foo";
     QTest::newRow("data35") << "c:" << HandleUnc << "c:";
     QTest::newRow("data36") << "c:foo/bar" << IgnoreUnc << "c:foo/bar";
-#if defined Q_OS_WIN
     QTest::newRow("data37") << "c:/." << HandleUnc << "c:/";
+#if defined Q_OS_WIN
     QTest::newRow("data38") << "c:/.." << HandleUnc << "c:/..";
     QTest::newRow("data39") << "c:/../" << HandleUnc << "c:/../";
 #else
-    QTest::newRow("data37") << "c:/." << HandleUnc << "c:";
     QTest::newRow("data38") << "c:/.." << HandleUnc << ".";
     QTest::newRow("data39") << "c:/../" << HandleUnc << ".";
 #endif
@@ -1439,9 +1444,9 @@ void tst_QDir::normalizePathSegments_data()
     QTest::newRow("data41") << "foo/../foo/.." << HandleUnc << ".";
     QTest::newRow("data42") << "foo/../foo/../.." << HandleUnc << "..";
     QTest::newRow("data43") << "..foo.bar/foo" << HandleUnc << "..foo.bar/foo";
-    QTest::newRow("data44") << ".foo./bar/.." << HandleUnc << ".foo.";
+    QTest::newRow("data44") << ".foo./bar/.." << HandleUnc << ".foo./";
     QTest::newRow("data45") << "foo/..bar.." << HandleUnc << "foo/..bar..";
-    QTest::newRow("data46") << "foo/.bar./.." << HandleUnc << "foo";
+    QTest::newRow("data46") << "foo/.bar./.." << HandleUnc << "foo/";
     QTest::newRow("data47") << "//foo//bar" << HandleUnc << "//foo/bar";
     QTest::newRow("data48") << "..." << HandleUnc << "...";
     QTest::newRow("data49") << "foo/.../bar" << HandleUnc << "foo/.../bar";

@@ -1487,6 +1487,11 @@ void tst_QUrl::fromLocalFileNormalize_data()
 
     QTest::newRow("absolute-path") << QString::fromLatin1("/a.txt") << QString::fromLatin1("file:///a.txt") << QString::fromLatin1("file:///a.txt");
     QTest::newRow("relative-path") << QString::fromLatin1("a.txt") << QString::fromLatin1("file:a.txt") << QString::fromLatin1("file:a.txt");
+
+    QTest::newRow("absolute-path-trailing-slash") << u"/b/"_s << u"file:///b/"_s << u"file:///b/"_s;
+    QTest::newRow("absolute-path-no-trailing-slash") << u"/b"_s << u"file:///b"_s << u"file:///b"_s;
+    QTest::newRow("absolute-path-2-trailing-slashes") << u"/b//"_s << u"file:///b//"_s << u"file:///b/"_s;
+
     QTest::newRow("percent") << QString::fromLatin1("/a%.txt") << QString::fromLatin1("file:///a%25.txt")
                              << QString::fromLatin1("file:///a%25.txt");
     QTest::newRow("percent25") << QString::fromLatin1("/a%25.txt") << QString::fromLatin1("file:///a%2525.txt")
