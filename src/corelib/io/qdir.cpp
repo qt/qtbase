@@ -2325,8 +2325,10 @@ bool qt_normalizePathSegments(QString *path, QDirPrivate::PathNormalizations fla
                     continue;
                 }
             }
-            while (out > start && *--out != u'/')
-                ;
+
+            if (out > start)
+                --out; // backtrack the first dot
+            // backtrack the previous path segment
             while (out > start && out[-1] != u'/')
                 --out;
             in += 2;    // the two dots
