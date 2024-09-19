@@ -38,6 +38,10 @@
 #include <Foundation/Foundation.h>
 #endif
 
+#if QT_CONFIG(process)
+#include <QProcess>
+#endif
+
 #if defined(Q_OS_VXWORKS)
 #define Q_NO_SYMLINKS
 #endif
@@ -241,6 +245,11 @@ private slots:
 
     void stdfilesystem();
     void readSymLink();
+
+#if defined(Q_OS_DARWIN)
+    void fileSystemCaseSensitivity_data();
+    void fileSystemCaseSensitivity();
+#endif
 
 private:
     const QString m_currentDir;
@@ -2448,5 +2457,68 @@ void tst_QFileInfo::readSymLink()
     QFileInfo info(symLinkName);
     QCOMPARE(info.readSymLink(), QString("../../a"));
 }
+
+#if defined(Q_OS_DARWIN)
+void tst_QFileInfo::fileSystemCaseSensitivity_data()
+{
+    QTest::addColumn<QString>("fileSystemType");
+    QTest::addColumn<QString>("volumeName");
+    QTest::addColumn<Qt::CaseSensitivity>("caseSensitivity");
+
+    QTest::newRow("APFS") << "APFS" << "apfs" << Qt::CaseInsensitive;
+    QTest::newRow("APFS case-sensitive") << "Case-sensitive APFS" << "apfs_case_sensitive" << Qt::CaseSensitive;
+    QTest::newRow("HFS+") << "HFS+" << "hfs" << Qt::CaseInsensitive;
+    QTest::newRow("HFS+ case-sensitive") << "Case-sensitive HFS+" << "hfs_case_sensitive" << Qt::CaseSensitive;
+    QTest::newRow("FAT32") << "MS-DOS FAT32" << "fat32" << Qt::CaseInsensitive;
+    QTest::newRow("ExFAT") << "ExFAT" << "exfat" << Qt::CaseInsensitive;
+}
+
+void tst_QFileInfo::fileSystemCaseSensitivity()
+{
+#if !QT_CONFIG(process)
+    QSKIP("No QProcess available");
+#else
+    QTemporaryDir tmpDir;
+    QVERIFY2(tmpDir.isValid(), qPrintable(tmpDir.errorString()));
+
+    QFETCH(QString, fileSystemType);
+    QFETCH(QString, volumeName);
+
+    QString imageName = tmpDir.filePath(QString("%2.sparseimage").arg(volumeName));
+
+    QVERIFY(QProcess::execute("hdiutil", { "create", "-quiet",
+        "-type", "SPARSE", "-size", "50m", "-fs", fileSystemType,
+        "-volname", volumeName, imageName }) == 0);
+
+    QVERIFY(QProcess::execute("hdiutil", { "attach", "-quiet",
+        "-mountroot", tmpDir.path(), imageName }) == 0);
+
+    QDir mountPoint(tmpDir.filePath(volumeName));
+    QVERIFY(mountPoint.exists());
+
+    auto cleanup = qScopeGuard([&] {
+        QVERIFY(QProcess::execute("hdiutil", { "detach",
+            "-quiet", mountPoint.absolutePath() }) == 0);
+    });
+
+    QFileInfo lowerCase(mountPoint.filePath("foo"));
+    {
+        QFile file(lowerCase.filePath());
+        QVERIFY(file.open(QFile::WriteOnly));
+    }
+
+    QFileInfo upperCase(mountPoint.filePath("FOO"));
+    {
+        QFile file(upperCase.filePath());
+        QVERIFY(file.open(QFile::WriteOnly));
+    }
+
+    QFETCH(Qt::CaseSensitivity, caseSensitivity);
+    QCOMPARE(lowerCase == upperCase, caseSensitivity == Qt::CaseInsensitive);
+
+#endif // QT_CONFIG(process)
+}
+#endif // defined(Q_OS_DARWIN)
+
 QTEST_MAIN(tst_QFileInfo)
 #include "tst_qfileinfo.moc"

@@ -425,11 +425,6 @@ bool QFSFileEnginePrivate::nativeRenameOverwrite(const QFileSystemEntry &newEntr
     return res;
 }
 
-bool QFSFileEngine::caseSensitive() const
-{
-    return false;
-}
-
 QString QFSFileEngine::currentPath(const QString &fileName)
 {
     QString ret;

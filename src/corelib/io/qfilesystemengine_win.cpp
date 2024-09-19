@@ -1861,6 +1861,12 @@ bool QFileSystemEngine::setPermissions(const QFileSystemEntry &entry,
     return ret;
 }
 
+bool QFileSystemEngine::isCaseSensitive(const QFileSystemEntry &, QFileSystemMetaData &)
+{
+    // FIXME: This may not be accurate for all file systems (QTBUG-28246)
+    return false;
+}
+
 static inline QDateTime fileTimeToQDateTime(const FILETIME *time)
 {
     if (time->dwHighDateTime == 0 && time->dwLowDateTime == 0)

@@ -24,6 +24,7 @@
 #if defined(Q_OS_WIN)
 # include <qt_windows.h> // for SetFileAttributes
 #endif
+#include <private/qfileinfo_p.h>
 #include <private/qfilesystemengine_p.h>
 
 #include <algorithm>
@@ -1055,11 +1056,18 @@ void tst_QFileSystemModel::caseSensitivity()
         indexes.append(index);
     }
 
-    if (!QFileSystemEngine::isCaseSensitive()) {
-        // QTBUG-31103, QTBUG-64147: Verify that files can be accessed by paths with fLipPeD case.
+    QFileInfo tmpInfo(tmp);
+    auto *tmpInfoPriv = QFileInfoPrivate::get(&tmpInfo);
+    if (!QFileSystemEngine::isCaseSensitive(tmpInfoPriv->fileEntry, tmpInfoPriv->metaData)) {
+        // Verify that files can be accessed by paths with fLipPeD case.
         for (int i = 0; i < paths.size(); ++i) {
+            const QModelIndex normalCaseIndex = indexes.at(i);
             const QModelIndex flippedCaseIndex = model->index(flipCase(paths.at(i)));
-            QCOMPARE(indexes.at(i), flippedCaseIndex);
+#if !defined(Q_OS_WIN)
+            QEXPECT_FAIL("", "QFileSystemModelNodePathKey is hard-coded to be case"
+                " sensitive on non-Windows and case-insensitive on Windows (QTBUG-31103)", Abort);
+#endif
+            QCOMPARE(normalCaseIndex, flippedCaseIndex);
         }
     }
 }

@@ -874,7 +874,7 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
     Q_CHECK_FILE_NAME(entry, false);
 
 #if defined(Q_OS_DARWIN)
-    if (what & QFileSystemMetaData::BundleType) {
+    if (what & (QFileSystemMetaData::BundleType | QFileSystemMetaData::CaseSensitive)) {
         if (!data.hasFlags(QFileSystemMetaData::DirectoryType))
             what |= QFileSystemMetaData::DirectoryType;
     }
@@ -1028,6 +1028,13 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
             data.entryFlags |= QFileSystemMetaData::BundleType;
 
         data.knownFlagsMask |= QFileSystemMetaData::BundleType;
+    }
+
+    if (what & QFileSystemMetaData::CaseSensitive) {
+        if (entryErrno == 0 && hasResourcePropertyFlag(
+            data, entry, kCFURLVolumeSupportsCaseSensitiveNamesKey))
+            data.entryFlags |= QFileSystemMetaData::CaseSensitive;
+        data.knownFlagsMask |= QFileSystemMetaData::CaseSensitive;
     }
 #endif
 
@@ -1838,4 +1845,19 @@ QFileSystemEntry QFileSystemEngine::currentPath()
 #endif
     return result;
 }
+
+bool QFileSystemEngine::isCaseSensitive(const QFileSystemEntry &entry, QFileSystemMetaData &metaData)
+{
+#if defined(Q_OS_DARWIN)
+    if (!metaData.hasFlags(QFileSystemMetaData::CaseSensitive))
+        fillMetaData(entry, metaData, QFileSystemMetaData::CaseSensitive);
+    return metaData.entryFlags.testFlag(QFileSystemMetaData::CaseSensitive);
+#else
+    Q_UNUSED(entry);
+    Q_UNUSED(metaData);
+    // FIXME: This may not be accurate for all file systems (QTBUG-28246)
+    return true;
+#endif
+}
+
 QT_END_NAMESPACE

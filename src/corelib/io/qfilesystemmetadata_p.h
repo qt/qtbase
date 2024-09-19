@@ -111,6 +111,8 @@ public:
         UserId              = 0x10000000,
         GroupId             = 0x20000000,
 
+        CaseSensitive       = 0x80000000,
+
         OwnerIds            = UserId | GroupId,
 
         PosixStatFlags      = QFileSystemMetaData::OtherPermissions

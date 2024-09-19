@@ -45,6 +45,8 @@ public:
         CachedPerms             = 0x100
     };
 
+    static QFileInfoPrivate *get(QFileInfo *fi) { return fi->d_func(); }
+
     inline QFileInfoPrivate()
         : QSharedData(), fileEngine(nullptr),
         cachedFlags(0),
