@@ -53,25 +53,7 @@ struct PerfEvent
     quint32 type;
     quint64 config;
 };
-static perf_event_attr attr;
 Q_GLOBAL_STATIC(QList<PerfEvent>, eventTypes);
-
-static void initPerf()
-{
-    static bool done;
-    if (!done) {
-        memset(&attr, 0, sizeof attr);
-        attr.size = sizeof attr;
-        attr.read_format = PERF_FORMAT_TOTAL_TIME_ENABLED | PERF_FORMAT_TOTAL_TIME_RUNNING;
-        attr.disabled = true; // we'll enable later
-        attr.inherit = true; // let children processes inherit the monitoring
-        attr.pinned = true; // keep it running in the hardware
-        attr.inherit_stat = true; // aggregate all the info from child processes
-        attr.task = true; // trace fork/exits
-
-        done = true;
-    }
-}
 
 static QList<PerfEvent> defaultCounters()
 {
@@ -407,7 +389,6 @@ static QTest::QBenchmarkMetric metricForEvent(PerfEvent counter)
 
 void QBenchmarkPerfEventsMeasurer::setCounter(const char *name)
 {
-    initPerf();
     eventTypes->clear();
     std::string_view input = name;
     if (qsizetype idx = input.find(':'); idx >= 0)
@@ -473,7 +454,18 @@ void QBenchmarkPerfEventsMeasurer::init()
 
 void QBenchmarkPerfEventsMeasurer::start()
 {
-    initPerf();
+    QT_WARNING_DISABLE_GCC("-Wmissing-field-initializers")
+    QT_WARNING_DISABLE_CLANG("-Wmissing-field-initializers")
+    perf_event_attr attr = {
+        .size = sizeof attr,
+        .read_format = PERF_FORMAT_TOTAL_TIME_ENABLED | PERF_FORMAT_TOTAL_TIME_RUNNING,
+        .disabled = true,       // we'll enable later
+        .inherit = true,        // let children processes inherit the monitoring
+        .pinned = true,         // keep it running in the hardware
+        .inherit_stat = true,   // aggregate all the info from child processes
+        .task = true,           // trace fork/exits
+    };
+
     QList<PerfEvent> &counters = *eventTypes;
     if (counters.isEmpty())
         counters = defaultCounters();
