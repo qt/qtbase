@@ -19,7 +19,7 @@ import argparse
 from pathlib import Path
 from typing import Callable, Iterator, Optional
 
-from qlocalexml import QLocaleXmlReader
+from qlocalexml import Locale, QLocaleXmlReader
 from localetools import *
 from iso639_3 import LanguageCodeData
 from zonedata import utcIdList, windowsIdList
@@ -161,7 +161,7 @@ def currencyIsoCodeData(s: str) -> str:
     return "{0,0,0}"
 
 class LocaleSourceEditor (SourceFileEditor):
-    def __init__(self, path: Path, temp: Path, version: str):
+    def __init__(self, path: Path, temp: Path, version: str) -> None:
         super().__init__(path, temp)
         self.version = version
 
@@ -182,7 +182,7 @@ class LocaleSourceEditor (SourceFileEditor):
 """)
 
 class TimeZoneDataWriter (LocaleSourceEditor):
-    def __init__(self, path: Path, temp: Path, version: str):
+    def __init__(self, path: Path, temp: Path, version: str) -> None:
         super().__init__(path, temp, version)
         self.__ianaTable = ByteArrayData() # Single IANA IDs
         self.__ianaListTable = ByteArrayData() # Space-joined lists of IDs
@@ -192,23 +192,25 @@ class TimeZoneDataWriter (LocaleSourceEditor):
         self.windowsKey = {name: (key, off) for key, (name, off)
                            in enumerate(self.__windowsList, 1)}
 
-    def utcTable(self):
-        offsetMap, out = {}, self.writer.write
+    def utcTable(self) -> None:
+        offsetMap: dict[int, tuple[str, ...]] = {}
+        out: Callable[[str], int] = self.writer.write
         for name in utcIdList:
-            offset = self.__offsetOf(name)
+            offset: int = self.__offsetOf(name)
             offsetMap[offset] = offsetMap.get(offset, ()) + (name,)
 
         # Write UTC ID key table
         out('// IANA ID Index, UTC Offset\n')
         out('static constexpr UtcData utcDataTable[] = {\n')
         for offset in sorted(offsetMap.keys()): # Sort so C++ can binary-chop.
-            names = offsetMap[offset];
-            joined = self.__ianaListTable.append(' '.join(names))
+            names: tuple[str, ...] = offsetMap[offset]
+            joined: int = self.__ianaListTable.append(' '.join(names))
             out(f'    {{ {joined:6d},{offset:6d} }}, // {names[0]}\n')
         out('};\n')
 
-    def aliasToIana(self, pairs):
-        out, store = self.writer.write, self.__ianaTable.append
+    def aliasToIana(self, pairs: Iterator[tuple[str, str]]) -> None:
+        out: Callable[[str], int] = self.writer.write
+        store: Callable[[str], int] = self.__ianaTable.append
 
         out('// Alias ID Index, Alias ID Index\n')
         out('static constexpr AliasData aliasMappingTable[] = {\n')
@@ -218,10 +220,11 @@ class TimeZoneDataWriter (LocaleSourceEditor):
                     f' // {name} -> {iana}\n')
         out('};\n\n')
 
-    def msToIana(self, pairs):
-        out, winStore = self.writer.write, self.__windowsTable.append
-        ianaStore = self.__ianaListTable.append # TODO: Should be __ianaTable
-        alias = dict(pairs) # {MS name: IANA ID}
+    def msToIana(self, pairs: Iterator[tuple[str, str]]) -> None:
+        out: Callable[[str], int] = self.writer.write
+        winStore: Callable[[str], int] = self.__windowsTable.append
+        ianaStore: Callable[[str], int] = self.__ianaTable.append
+        alias: dict[str, str] = dict(pairs) # {MS name: IANA ID}
 
         out('// Windows ID Key, Windows ID Index, IANA ID Index, UTC Offset\n')
         out('static constexpr WindowsData windowsDataTable[] = {\n')
@@ -232,12 +235,16 @@ class TimeZoneDataWriter (LocaleSourceEditor):
                 f'{ianaStore(alias[name]):6d},{offset:6d} }}, // {name}\n')
         out('};\n\n')
 
-    def msLandIanas(self, triples): # (MS name, territory code, IANA list)
-        out, store = self.writer.write, self.__ianaListTable.append
+    def msLandIanas(self, triples: Iterator[tuple[str, str, str]]) -> None:
+        # triples (MS name, territory code, IANA list)
+        out: Callable[[str], int] = self.writer.write
+        store: Callable[[str], int] = self.__ianaListTable.append
         from enumdata import territory_map
-        landKey = {code: (i, name) for i, (name, code) in territory_map.items()}
-        seq = sorted((self.windowsKey[name][0], landKey[land][0], name, landKey[land][1], ianas)
-                     for name, land, ianas in triples)
+        landKey: dict[str, tuple[int, str]] = {code: (i, name) for i, (name, code)
+                                               in territory_map.items()}
+        seq: list[tuple[int, int, str, str, str]] = sorted(
+            (self.windowsKey[name][0], landKey[land][0], name, landKey[land][1], ianas)
+                for name, land, ianas in triples)
 
         out('// Windows ID Key, Territory Enum, IANA ID Index\n')
         out('static constexpr ZoneData zoneDataTable[] = {\n')
@@ -247,7 +254,7 @@ class TimeZoneDataWriter (LocaleSourceEditor):
                 f' // {name} / {land}\n')
         out('};\n\n')
 
-    def writeTables(self):
+    def writeTables(self) -> None:
         self.__windowsTable.write(self.writer.write, 'windowsIdData')
         # TODO: these are misnamed, entries in the first are lists,
         # those in the next are single IANA IDs
@@ -256,7 +263,7 @@ class TimeZoneDataWriter (LocaleSourceEditor):
 
     # Implementation details:
     @staticmethod
-    def __offsetOf(utcName):
+    def __offsetOf(utcName: str) -> int:
         "Maps a UTC±HH:mm name to its offset in seconds"
         assert utcName.startswith('UTC')
         if len(utcName) == 3:
