@@ -3157,8 +3157,10 @@ void QTableView::dropEvent(QDropEvent *event)
                     }
                     r = pIndex.row() + 1;   // Dropped items are inserted contiguously and in the right order.
                 }
-                if (dataMoved)
+                if (dataMoved) {
+                    d->dropEventMoved = true;
                     event->accept();
+                }
             }
         }
     }
