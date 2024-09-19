@@ -61,6 +61,7 @@
 #include <stdlib.h>
 
 #if defined(Q_OS_LINUX)
+#include <sys/prctl.h>
 #include <sys/types.h>
 #include <fcntl.h>
 #endif
@@ -326,6 +327,11 @@ void generateStackTrace()
 {
     if (debugger == None || alreadyDebugging())
         return;
+
+#  if defined(Q_OS_LINUX) && defined(PR_SET_PTRACER)
+    // allow ourselves to be debugged
+    (void) prctl(PR_SET_PTRACER, PR_SET_PTRACER_ANY);
+#  endif
 
 #  if defined(Q_OS_UNIX) && !defined(Q_OS_WASM) && !defined(Q_OS_INTEGRITY) && !defined(Q_OS_VXWORKS)
     writeToStderr("\n=== Stack trace ===\n");
