@@ -90,7 +90,6 @@
 #if __has_include(<paths.h>)
 # include <paths.h>
 #endif
-#include <signal.h>
 #include <time.h>
 #include <sys/mman.h>
 #include <sys/uio.h>
@@ -98,15 +97,6 @@
 #include <unistd.h>
 # if !defined(Q_OS_INTEGRITY)
 #  include <sys/resource.h>
-# endif
-# ifndef _PATH_DEFPATH
-#  define _PATH_DEFPATH     "/usr/bin:/bin"
-# endif
-# ifndef SIGSTKSZ
-#  define SIGSTKSZ          0       /* we have code to set the minimum */
-# endif
-# ifndef SA_RESETHAND
-#  define SA_RESETHAND      0
 # endif
 #endif
 
