@@ -3064,10 +3064,9 @@ void tst_QLocale::negativeNumbers()
     QT_TEST_EQUALITY_OPS(egypt, farsi, false);
 }
 
+#ifdef QT_BUILD_INTERNAL
 #include <private/qlocale_p.h>
-#include <private/qlocale_data_p.h>
-
-static const int locale_data_count = sizeof(locale_data)/sizeof(locale_data[0]);
+#endif
 
 void tst_QLocale::testNames_data()
 {
@@ -3076,16 +3075,21 @@ void tst_QLocale::testNames_data()
 
     QLocale::setDefault(QLocale(QLocale::C)); // Ensures predictable fall-backs
 
-    for (int i = 0; i < locale_data_count; ++i) {
-        const QLocaleData &item = locale_data[i];
+#ifdef QT_BUILD_INTERNAL
+    bool ok = QLocaleData::allLocaleDataRows([](qsizetype index, const QLocaleData &item) {
         const QByteArray lang =
                 QLocale::languageToString(QLocale::Language(item.m_language_id)).toUtf8();
         const QByteArray land =
                 QLocale::territoryToString(QLocale::Territory(item.m_territory_id)).toUtf8();
 
-        QTest::addRow("data_%d (%s/%s)", i, lang.constData(), land.constData())
+        QTest::addRow("data_%d (%s/%s)", int(index), lang.constData(), land.constData())
                 << QLocale::Language(item.m_language_id) << QLocale::Territory(item.m_territory_id);
-    }
+        return true;
+    });
+    QVERIFY(ok);
+#else
+    QSKIP("Only internal builds can access the data to set up this test");
+#endif // QT_BUILD_INTERNAL
 }
 
 void tst_QLocale::testNames()
