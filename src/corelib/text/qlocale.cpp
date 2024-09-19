@@ -480,6 +480,16 @@ static qsizetype findLocaleIndexById(QLocaleId localeId)
     return -1;
 }
 
+static constexpr qsizetype locale_data_size = q20::ssize(locale_data) - 1; // trailing guard
+bool QLocaleData::allLocaleDataRows(bool (*check)(qsizetype, const QLocaleData &))
+{
+    for (qsizetype index = 0; index < locale_data_size; ++index) {
+        if (!(*check)(index, locale_data[index]))
+            return false;
+    }
+    return true;
+}
+
 qsizetype QLocaleData::findLocaleIndex(QLocaleId lid)
 {
     QLocaleId localeId = lid;
@@ -853,8 +863,6 @@ QDataStream &operator>>(QDataStream &ds, QLocale &l)
     return ds;
 }
 #endif // QT_NO_DATASTREAM
-
-static constexpr qsizetype locale_data_size = q20::ssize(locale_data) - 1; // trailing guard
 
 Q_GLOBAL_STATIC(QSharedDataPointer<QLocalePrivate>, defaultLocalePrivate,
                 new QLocalePrivate(defaultData(), defaultIndex()))
