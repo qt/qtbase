@@ -463,7 +463,11 @@ bool comparesEqual(const QFileInfo &lhs, const QFileInfo &rhs)
         if (lhs.d_ptr->fileEngine != rhs.d_ptr->fileEngine) // one is native, the other is a custom file-engine
             return false;
 
-        sensitive = QFileSystemEngine::isCaseSensitive() ? Qt::CaseSensitive : Qt::CaseInsensitive;
+        const bool lhsCaseSensitive = QFileSystemEngine::isCaseSensitive(lhs.d_ptr->fileEntry, lhs.d_ptr->metaData);
+        if (lhsCaseSensitive != QFileSystemEngine::isCaseSensitive(rhs.d_ptr->fileEntry, rhs.d_ptr->metaData))
+            return false;
+
+        sensitive = lhsCaseSensitive ? Qt::CaseSensitive : Qt::CaseInsensitive;
     } else {
         if (lhs.d_ptr->fileEngine->caseSensitive() != rhs.d_ptr->fileEngine->caseSensitive())
             return false;

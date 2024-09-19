@@ -294,11 +294,6 @@ qint64 QFSFileEnginePrivate::nativeSize() const
     return sizeFdFh();
 }
 
-bool QFSFileEngine::caseSensitive() const
-{
-    return true;
-}
-
 QString QFSFileEngine::currentPath(const QString &)
 {
     return QFileSystemEngine::currentPath().filePath();

@@ -29,6 +29,7 @@
 #include <qdir.h>
 #include <qelapsedtimer.h>
 
+#include <private/qfileinfo_p.h>
 #include <private/qfilesystemengine_p.h>
 
 #include <utility>
@@ -57,7 +58,8 @@ public:
 
 #ifndef QT_NO_FSFILEENGINE
     bool isCaseSensitive() const {
-        return QFileSystemEngine::isCaseSensitive();
+        auto *fiPriv = QFileInfoPrivate::get(const_cast<QFileInfo*>(&mFileInfo));
+        return QFileSystemEngine::isCaseSensitive(fiPriv->fileEntry, fiPriv->metaData);
     }
 #endif
 

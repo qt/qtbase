@@ -869,10 +869,6 @@ bool QFSFileEngine::supportsExtension(Extension extension) const
     return false;
 }
 
-/*! \fn bool QFSFileEngine::caseSensitive() const
-  Returns \c false for Windows, true for Unix.
-*/
-
 /*! \fn QString QFSFileEngine::currentPath(const QString &fileName)
   For Unix, returns the current working directory for the file
   engine.
@@ -1044,6 +1040,16 @@ bool QFSFileEngine::rmdir(const QString &name, bool recurseParentDirectories) co
 bool QFSFileEngine::setCurrentPath(const QString &path)
 {
     return QFileSystemEngine::setCurrentPath(QFileSystemEntry(path));
+}
+
+/*!
+    Returns whether the file system considers the file name to be
+    case sensitive.
+*/
+bool QFSFileEngine::caseSensitive() const
+{
+    Q_D(const QFSFileEngine);
+    return QFileSystemEngine::isCaseSensitive(d->fileEntry, d->metaData);
 }
 
 /*! \fn bool QFSFileEngine::setPermissions(uint perms)

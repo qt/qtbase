@@ -27,6 +27,8 @@
 #  include "qmutex.h"
 #endif
 
+#include <private/qorderedmutexlocker_p.h>
+
 #include <algorithm>
 #include <memory>
 #include <stdlib.h>
@@ -1828,7 +1830,12 @@ bool comparesEqual(const QDir &lhs, const QDir &rhs)
         if (d->fileEngine.get() != other->fileEngine.get()) // one is native, the other is a custom file-engine
             return false;
 
-        sensitive = QFileSystemEngine::isCaseSensitive() ? Qt::CaseSensitive : Qt::CaseInsensitive;
+        QOrderedMutexLocker locker(&d->fileCache.mutex, &other->fileCache.mutex);
+        const bool thisCaseSensitive = QFileSystemEngine::isCaseSensitive(d->dirEntry, d->fileCache.metaData);
+        if (thisCaseSensitive != QFileSystemEngine::isCaseSensitive(other->dirEntry, other->fileCache.metaData))
+            return false;
+
+        sensitive = thisCaseSensitive ? Qt::CaseSensitive : Qt::CaseInsensitive;
     } else {
         if (d->fileEngine->caseSensitive() != other->fileEngine->caseSensitive())
             return false;

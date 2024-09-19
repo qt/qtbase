@@ -58,14 +58,10 @@ inline bool qIsFilenameBroken(const QFileSystemEntry &entry)
 class Q_AUTOTEST_EXPORT QFileSystemEngine
 {
 public:
-    static bool isCaseSensitive()
-    {
-#ifndef Q_OS_WIN
-        return true;
-#else
-        return false;
+#ifndef QT_BUILD_INTERNAL
+    Q_CORE_EXPORT
 #endif
-    }
+    static bool isCaseSensitive(const QFileSystemEntry &entry, QFileSystemMetaData &data);
 
     static QFileSystemEntry getLinkTarget(const QFileSystemEntry &link, QFileSystemMetaData &data);
     static QFileSystemEntry getRawLinkPath(const QFileSystemEntry &link,

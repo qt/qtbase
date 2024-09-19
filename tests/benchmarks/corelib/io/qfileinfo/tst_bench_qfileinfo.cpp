@@ -20,6 +20,8 @@ private slots:
     void symLinkTargetPerformanceLNK();
     void junctionTargetPerformanceMountpoint();
 #endif
+    void comparison_data();
+    void comparison();
 };
 
 void tst_QFileInfo::existsTemporary()
@@ -71,6 +73,36 @@ void tst_QFileInfo::junctionTargetPerformanceMountpoint()
     QVERIFY(QDir().rmdir(mountpoint));
 }
 #endif
+
+void tst_QFileInfo::comparison_data()
+{
+    QTest::addColumn<bool>("shouldExist");
+    QTest::addRow("files do not exist") << false;
+    QTest::addRow("files exists") << true;
+}
+
+void tst_QFileInfo::comparison()
+{
+    QTemporaryDir tmpDir;
+    QVERIFY2(tmpDir.isValid(), qPrintable(tmpDir.errorString()));
+
+    QFETCH(bool, shouldExist);
+
+    QFileInfo firstInfo(tmpDir.filePath("first"));
+    QFileInfo secondInfo(tmpDir.filePath("second"));
+
+    if (shouldExist) {
+        QFile first(firstInfo.absoluteFilePath());
+        QVERIFY(first.open(QFile::WriteOnly));
+        QFile second(secondInfo.absoluteFilePath());
+        QVERIFY(second.open(QFile::WriteOnly));
+    }
+
+    QBENCHMARK {
+        // Comparison should be fast because we cache file info
+        [[maybe_unused]] auto r = firstInfo == secondInfo;
+    }
+}
 
 QTEST_MAIN(tst_QFileInfo)
 
