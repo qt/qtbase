@@ -6233,6 +6233,7 @@ int QCommonStyle::layoutSpacing(QSizePolicy::ControlType /* control1 */, QSizePo
 void QCommonStyle::polish(QPalette &pal)
 {
     QStyle::polish(pal);
+    QCachedPainter::cleanupPixmapCache();
 }
 
 /*!
