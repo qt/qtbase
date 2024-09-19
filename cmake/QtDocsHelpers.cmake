@@ -144,6 +144,11 @@ function(qt_internal_add_docs)
     endif()
 
     if(DEFINED ENV{QT_INSTALL_DOCS})
+        if(NOT EXISTS "$ENV{QT_INSTALL_DOCS}")
+            message(FATAL_ERROR
+                "Environment variable QT_INSTALL_DOCS points to a directory which does not exist:\n"
+                "$ENV{QT_INSTALL_DOCS}")
+        endif()
         set(qt_install_docs_env "$ENV{QT_INSTALL_DOCS}")
     elseif(QT_SUPERBUILD OR "${PROJECT_NAME}" STREQUAL "QtBase")
         set(qt_install_docs_env "${QtBase_BINARY_DIR}/${INSTALL_DOCDIR}")
