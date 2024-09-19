@@ -674,9 +674,9 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
          "                       is only supported with the plain text logger.\n"
          " -skipblacklisted    : Skip blacklisted tests. Useful for measuring test coverage.\n"
          " -[no]throwonfail    : Enables/disables throwing on QCOMPARE()/QVERIFY()/etc.\n"
-         "                       Default: off,  unless QTEST_THROW_ON_FAIL is set."
+         "                       Default: off,  unless QTEST_THROW_ON_FAIL is set.\n"
          " -[no]throwonskip    : Enables/disables throwing on QSKIP().\n"
-         "                       Default: off,  unless QTEST_THROW_ON_SKIP is set."
+         "                       Default: off,  unless QTEST_THROW_ON_SKIP is set.\n"
          "\n"
          " Benchmarking options:\n"
 #if QT_CONFIG(valgrind)
