@@ -15,6 +15,7 @@
 #ifndef QTESTCRASHHANDLER_H
 #define QTESTCRASHHANDLER_H
 
+#include <QtCore/qnamespace.h>
 #include <QtTest/qttestglobal.h>
 
 #include <QtCore/private/qtools_p.h>
@@ -23,6 +24,7 @@
 #include <signal.h>
 #include <sys/mman.h>
 #include <sys/uio.h>
+#include <string.h>
 #include <unistd.h>
 #endif
 
