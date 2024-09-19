@@ -547,7 +547,7 @@ void tst_QSettings::ctor()
             // more details in QMacSettingsPrivate::QMacSettingsPrivate(), organization was comify()-ed
             caseSensitive = settings5.fileName().contains("SoftWare.ORG");
         } else {
-            caseSensitive = pathconf(settings5.fileName().toLatin1().constData(), _PC_CASE_SENSITIVE);
+            caseSensitive = pathconf(settings5.fileName().toLatin1().constData(), _PC_CASE_SENSITIVE) == 1;
         }
 #elif defined(Q_OS_WIN32)
         caseSensitive = false;

@@ -3792,7 +3792,7 @@ void tst_QFile::caseSensitivity()
 #if defined(Q_OS_WIN)
     const bool caseSensitive = false;
 #elif defined(Q_OS_DARWIN)
-     const bool caseSensitive = pathconf(QDir::currentPath().toLatin1().constData(), _PC_CASE_SENSITIVE);
+     const bool caseSensitive = pathconf(QDir::currentPath().toLatin1().constData(), _PC_CASE_SENSITIVE) == 1;
 #else
     const bool caseSensitive = true;
 #endif
