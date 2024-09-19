@@ -520,7 +520,7 @@ int QEvent::registerEventType(int hint) noexcept
     timer is started with QObject::startTimer().
 
     The QChronoTimer class provides a high-level programming interface that
-    uses signals instead of events. It also provides single-shot timers.
+    uses signals instead of events.
 
     The event handler QObject::timerEvent() receives timer events.
 
