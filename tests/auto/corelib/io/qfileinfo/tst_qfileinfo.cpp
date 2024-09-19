@@ -1027,7 +1027,7 @@ void tst_QFileInfo::compare_data()
 #if defined(Q_OS_WIN)
         << true;
 #elif defined(Q_OS_DARWIN)
-        << !pathconf(QDir::currentPath().toLatin1().constData(), _PC_CASE_SENSITIVE);
+        << (pathconf(QDir::currentPath().toLatin1().constData(), _PC_CASE_SENSITIVE) != 1);
 #else
         << false;
 #endif
