@@ -2207,9 +2207,9 @@ bool QDir::match(const QString &filter, const QString &fileName)
     This method is shared with QUrl, so it doesn't deal with QDir::separator(),
     nor does it remove the trailing slash, if any.
 
-    When dealing with URLs, we are following section 5.2.4 (Remove dot
-    segments) from http://www.ietf.org/rfc/rfc3986.txt. URL mode differs from
-    from local path mode in these ways:
+    When dealing with URLs, we are following the "Remove dot segments"
+    algorithm from https://www.ietf.org/rfc/rfc3986.html#section-5.2.4
+    URL mode differs from local path mode in these ways:
     1) it can set *path to empty ("." becomes "")
     2) directory path outputs end in / ("a/.." becomes "a/" instead of "a")
     3) a sequence of "//" is treated as multiple path levels ("a/b//.." becomes
