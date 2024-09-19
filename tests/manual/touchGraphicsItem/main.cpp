@@ -21,13 +21,13 @@ protected:
             case QEvent::TouchEnd:
             {
                 QTouchEvent *te = static_cast<QTouchEvent *>(e);
-                for (const QEventPoint &tp : te->touchPoints()) {
+                for (const QEventPoint &tp : te->points()) {
                     QGraphicsEllipseItem *diameterItem = nullptr;
                     QSizeF ellipse = tp.ellipseDiameters();
                     if (ellipse.isNull()) {
                         ellipse = QSizeF(5, 5);
                     } else {
-                        diameterItem = new QGraphicsEllipseItem(QRectF(tp.pos().x() - ellipse.width() / 2, tp.pos().y() - ellipse.height() / 2,
+                        diameterItem = new QGraphicsEllipseItem(QRectF(tp.position().x() - ellipse.width() / 2, tp.position().y() - ellipse.height() / 2,
                                                                        ellipse.width(), ellipse.height()), this);
                         diameterItem->setPen(QPen(Qt::red));
                         diameterItem->setBrush(QBrush(Qt::red));
@@ -35,8 +35,8 @@ protected:
                             ellipse.scale(ellipse.width() - 2, ellipse.height() - 2, Qt::IgnoreAspectRatio);
                     }
                     QGraphicsItem *parent = diameterItem ? static_cast<QGraphicsItem *>(diameterItem) : static_cast<QGraphicsItem *>(this);
-                    QGraphicsEllipseItem *ellipseItem = new QGraphicsEllipseItem(QRectF(tp.pos().x() - ellipse.width() / 2,
-                                                                                        tp.pos().y() - ellipse.height() / 2,
+                    QGraphicsEllipseItem *ellipseItem = new QGraphicsEllipseItem(QRectF(tp.position().x() - ellipse.width() / 2,
+                                                                                        tp.position().y() - ellipse.height() / 2,
                                                                                         ellipse.width(), ellipse.height()), parent);
                     ellipseItem->setPen(QPen(Qt::blue));
                     ellipseItem->setBrush(QBrush(Qt::blue));
@@ -59,24 +59,25 @@ int main(int argc, char **argv)
     QVBoxLayout *vbox = new QVBoxLayout;
     vbox->addWidget(new QLabel("The blue ellipses should indicate touch point contact patches"));
     qDebug() << "Touch devices:";
-    for (const QPointingDevice *device : QPointingDevice::devices()) {
+    for (const QInputDevice *device : QInputDevice::devices()) {
+        const QPointingDevice *dev = qobject_cast<const QPointingDevice *>(device);
         QString result;
         QTextStream str(&result);
         str << (device->type() == QInputDevice::DeviceType::TouchScreen ? "TouchScreen" : "TouchPad")
-            << " \"" << device->name() << "\", max " << device->maximumTouchPoints()
+            << " \"" << device->name() << "\", max " << (dev ? dev->maximumPoints() : 0)
             << " touch points, capabilities:";
-        const QPointingDevice::Capabilities capabilities = device->capabilities();
-        if (capabilities & QPointingDevice::Capability::Position)
+        const QInputDevice::Capabilities capabilities = device->capabilities();
+        if (capabilities & QInputDevice::Capability::Position)
             str << " Position";
-        if (capabilities & QPointingDevice::Capability::Area)
+        if (capabilities & QInputDevice::Capability::Area)
             str << " Area";
-        if (capabilities & QPointingDevice::Capability::Pressure)
+        if (capabilities & QInputDevice::Capability::Pressure)
             str << " Pressure";
-        if (capabilities & QPointingDevice::Velocity)
+        if (capabilities & QInputDevice::Capability::Velocity)
             str << " Velocity";
-        if (capabilities & QPointingDevice::Capability::NormalizedPosition)
+        if (capabilities & QInputDevice::Capability::NormalizedPosition)
             str << " NormalizedPosition";
-        if (capabilities & QInputDevice::DeviceType::MouseEmulation)
+        if (capabilities & QInputDevice::Capability::MouseEmulation)
             str << " MouseEmulation";
         vbox->addWidget(new QLabel(result));
         qDebug() << "   " << result;
