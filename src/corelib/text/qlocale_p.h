@@ -246,6 +246,8 @@ public:
     // data, e.g. calendar locales, as well as the main CLDR-derived data.
     [[nodiscard]] static qsizetype findLocaleIndex(QLocaleId localeId) noexcept;
     [[nodiscard]] static const QLocaleData *c() noexcept;
+    [[nodiscard]] Q_AUTOTEST_EXPORT
+    static bool allLocaleDataRows(bool (*check)(qsizetype, const QLocaleData &));
 
     enum DoubleForm {
         DFExponent = 0,
