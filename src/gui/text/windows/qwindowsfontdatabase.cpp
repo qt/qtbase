@@ -771,7 +771,7 @@ QT_WARNING_POP
 
         QString actualFontName = font.changeFamilyName(uniqueFamilyName);
         if (actualFontName.isEmpty()) {
-            qWarning("%s: Can't change family name of font", __FUNCTION__);
+            qCWarning(lcQpaFonts, "%s: Can't change family name of font", __FUNCTION__);
             return 0;
         }
 
@@ -786,7 +786,7 @@ QT_WARNING_POP
         }
 
         if (fontHandle == 0) {
-            qWarning("%s: AddFontMemResourceEx failed", __FUNCTION__);
+            qCWarning(lcQpaFonts, "%s: AddFontMemResourceEx failed", __FUNCTION__);
         } else {
             QFontDef request;
             request.families = QStringList(uniqueFamilyName);
@@ -801,7 +801,7 @@ QT_WARNING_POP
 
             if (fontEngine) {
                 if (request.families != fontEngine->fontDef.families) {
-                    qWarning("%s: Failed to load font. Got fallback instead: %s", __FUNCTION__,
+                    qCWarning(lcQpaFonts, "%s: Failed to load font. Got fallback instead: %s", __FUNCTION__,
                              qPrintable(fontEngine->fontDef.families.constFirst()));
                     if (fontEngine->ref.loadRelaxed() == 0)
                         delete fontEngine;
@@ -1262,7 +1262,7 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request, const Q
                 directWriteFontFace->Release();
             } else if (useDw) {
                 const QString errorString = qt_error_string(int(hr));
-                qWarning().noquote().nospace() << "DirectWrite: CreateFontFaceFromHDC() failed ("
+                qCWarning(lcQpaFonts).noquote().nospace() << "DirectWrite: CreateFontFaceFromHDC() failed ("
                     << errorString << ") for " << request << ' ' << lf << " dpi=" << dpi;
             }
 
