@@ -67,9 +67,9 @@ QHash<int, QByteArray> QAndroidItemModelProxy::roleNames() const
     QHash<int, QByteArray> roleNames;
     HashMap hashMap = jInstance.callMethod<HashMap>("roleNames");
     Set set = hashMap.callMethod<Set>("keySet");
-    QJniArray<jobject> keyArray = set.callMethod<QJniArray<jobject>>("toArray");
+    const QJniArray keyArray = set.callMethod<jobject[]>("toArray");
 
-    for (auto key : keyArray) {
+    for (const auto &key : keyArray) {
         const QJniObject roleName = hashMap.callMethod<jobject>("get", key);
         const int intKey = QJniObject(key).callMethod<jint>("intValue");
         const QByteArray roleByteArray = String(roleName).toString().toLatin1();
