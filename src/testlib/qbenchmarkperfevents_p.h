@@ -24,7 +24,6 @@ class QBenchmarkPerfEventsMeasurer : public QBenchmarkMeasurerBase
 public:
     QBenchmarkPerfEventsMeasurer();
     ~QBenchmarkPerfEventsMeasurer();
-    void init() override;
     void start() override;
     QList<Measurement> stop() override;
     bool isMeasurementAccepted(Measurement measurement) override;

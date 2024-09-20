@@ -30,7 +30,6 @@ public:
         QTest::QBenchmarkMetric metric;
     };
     virtual ~QBenchmarkMeasurerBase() = default;
-    virtual void init() {}
     virtual void start() = 0;
     virtual QList<Measurement> stop() = 0;
     virtual bool isMeasurementAccepted(Measurement m) = 0;
