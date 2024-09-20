@@ -123,6 +123,12 @@ qt_internal_extend_target(Test CONDITION APPLE
         qappletestlogger.cpp qappletestlogger_p.h
     PUBLIC_LIBRARIES
         ${FWSecurity}
+
+    # cycle_p.h expects the configure system to set up these defines.
+    # Pass through COMPILE_OPTIONS instead of DEFINES, as we know
+    # Clang supports defines with function macros on the command line.
+    COMPILE_OPTIONS
+        "-DHAVE_ARMV8_CNTVCT_EL0='defined(Q_PROCESSOR_ARM)'"
 )
 
 qt_internal_extend_target(Test CONDITION MACOS
