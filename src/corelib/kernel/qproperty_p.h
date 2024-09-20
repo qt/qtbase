@@ -244,6 +244,7 @@ struct CurrentCompatPropertyThief
     Q_DISABLE_COPY_MOVE(CurrentCompatPropertyThief)
     QScopedValueRollback<CompatPropertySafePoint *> m_guard;
 public:
+    Q_NODISCARD_CTOR
     CurrentCompatPropertyThief(QBindingStatus *status)
         : m_guard(status->currentCompatProperty, nullptr)
     {
