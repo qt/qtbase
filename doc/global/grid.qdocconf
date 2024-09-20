@@ -45,7 +45,7 @@ macro.detailedgriditem = \
 "  </li>\n" \
 "  \\endraw\n" \
 "\\else\n" \
-"  \\row \\li \\l {\1}{\2} \\li (\5) \3\n" \
+"  \\row \\li \\l {\1}{\2} \\li \3\n" \
 "\\endif\n"
 
 macro.endgrid = \
