@@ -114,12 +114,16 @@ protected:
     QAbstractEventDispatcherV2(QAbstractEventDispatcherPrivate &, QObject *parent);
 
 private:
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_GCC("-Woverloaded-virtual")
+QT_WARNING_DISABLE_CLANG("-Woverloaded-virtual")
     // final overrides from V1
     void registerTimer(int timerId, qint64 interval, Qt::TimerType timerType,
                        QObject *object) final;
     bool unregisterTimer(int timerId) final;
     QList<TimerInfo> registeredTimers(QObject *object) const final;
     int remainingTime(int timerId) final;
+QT_WARNING_POP
 };
 #else
 using QAbstractEventDispatcherV2 = QAbstractEventDispatcher;
