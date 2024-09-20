@@ -61,22 +61,24 @@ instructions:
 
   - !include "{{qt/qtbase}}/vxworks_test_env_setup.yaml"
 
-    # Keep the testrun quiet for ASAN testruns, since there are FAILs happening all over the place...
-  - type: EnvironmentVariable
+  # Only output verbose test output for failures, unless
+  # the VerboseCTestOutput feature is enabled. The full
+  # test output for all tests are still stored and uploaded
+  # to coin for deeper investigations (see LastTest.log below)
+  - type: AppendToEnvironmentVariable
     variableName: CTEST_ARGS
-    variableValue: "-V"
+    variableValue: " --output-on-failure"
     disable_if:
       condition: property
       property: features
-      contains_value: UseAddressSanitizer
-    # ...and only print the output from a failing test, i.e. test with ASAN errors.
-  - type: EnvironmentVariable
-    variableName: CTEST_OUTPUT_ON_FAILURE
-    variableValue: "1"
+      contains_value: VerboseCTestOutput
+  - type: AppendToEnvironmentVariable
+    variableName: CTEST_ARGS
+    variableValue: " -V"
     enable_if:
       condition: property
       property: features
-      contains_value: UseAddressSanitizer
+      contains_value: VerboseCTestOutput
 
   - type: AppendToEnvironmentVariable
     variableName: CTEST_ARGS
@@ -149,6 +151,18 @@ instructions:
         maxTimeBetweenOutput: "{{.Env.COIN_COMMAND_OUTPUT_TIMEOUT}}"
         userMessageOnFailure: >
           Failed to run tests.
+
+  - type: Group
+    instructions:
+      - type: ExecuteCommand
+        command: >
+          cmake -E copy
+            Testing{{.Env.CI_PATH_SEP}}Temporary{{.Env.CI_PATH_SEP}}LastTest.log
+            {{.Env.COIN_CTEST_RESULTSDIR}}{{.Env.CI_PATH_SEP}}CTest.log
+        executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
+        ignoreExitCode: false
+        userMessageOnFailure: >
+          Failed to copy LastTest.log to testresults directory.
 
   - type: Group
     instructions:
