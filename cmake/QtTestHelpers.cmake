@@ -275,6 +275,7 @@ function(qt_internal_get_test_arg_definitions optional_args single_value_args mu
         TESTDATA
         QT_TEST_SERVER_LIST
         ANDROID_TESTRUNNER_PRE_TEST_ADB_COMMANDS
+        TEST_PROPERTIES # Only supported for qt_internal_add_test
         ${__default_private_args}
         ${__default_public_args}
         PARENT_SCOPE
@@ -949,6 +950,10 @@ function(qt_internal_add_test name)
                 COMMAND ${test_executable} ${extra_test_args}
                 ${add_test_args}
             )
+            if(arg_TEST_PROPERTIES)
+                set_tests_properties("${testname}" PROPERTIES ${arg_TEST_PROPERTIES})
+            endif()
+            # After TEST_PROPERTIES, so a caller-provided ENVIRONMENT is appended to, not overwritten.
             set_property(TEST "${testname}" APPEND PROPERTY
                          ENVIRONMENT "PATH=${test_env_path}"
                                      "QT_TEST_RUNNING_IN_CTEST=1"
@@ -956,6 +961,10 @@ function(qt_internal_add_test name)
             )
         else()
             set(test_wrapper_file "${CMAKE_CURRENT_BINARY_DIR}/${testname}Wrapper$<CONFIG>.cmake")
+            # We will pass this by name so it can be more easily passed around without
+            # accidentally getting content interpreted as a parameter (eg ENVIRONMENT).
+            # That's why it also needs a fairly unique name:
+            set(__qt_test_properties ${arg_TEST_PROPERTIES})
             qt_internal_create_test_script(NAME "${testname}"
                                    COMMAND "${test_executable}"
                                    ARGS "${extra_test_args}"
@@ -964,6 +973,7 @@ function(qt_internal_add_test name)
                                    ENVIRONMENT "QT_TEST_RUNNING_IN_CTEST" 1
                                                "PATH" "${test_env_path}"
                                                "QT_PLUGIN_PATH" "${test_env_plugin_path}"
+                                   TEST_PROPERTIES_VAR __qt_test_properties
             )
         endif()
 
@@ -1197,7 +1207,7 @@ function(qt_internal_create_test_script)
     #This style of parsing keeps ';' in ENVIRONMENT variables
     cmake_parse_arguments(PARSE_ARGV 0 arg
                           ""
-                          "NAME;COMMAND;OUTPUT_FILE;WORKING_DIRECTORY"
+                          "NAME;COMMAND;OUTPUT_FILE;WORKING_DIRECTORY;TEST_PROPERTIES_VAR"
                           "ARGS;ENVIRONMENT;PRE_RUN;POST_RUN"
     )
 
@@ -1248,6 +1258,10 @@ for this function. Will be ignored")
 
     add_test(NAME "${arg_NAME}" COMMAND "${CMAKE_COMMAND}" "-P" "${arg_OUTPUT_FILE}"
                 ${add_test_working_dir})
+    set(test_properties ${${arg_TEST_PROPERTIES_VAR}})
+    if(test_properties)
+        set_tests_properties("${arg_NAME}" PROPERTIES ${test_properties})
+    endif()
 
     # If crosscompiling is enabled, we should avoid run cmake in emulator environment.
     # Prepend emulator to test command in generated cmake script instead. Keep in mind that

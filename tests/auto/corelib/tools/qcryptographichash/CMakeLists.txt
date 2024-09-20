@@ -17,10 +17,16 @@ file(GLOB_RECURSE test_data_glob
     data/*)
 list(APPEND test_data ${test_data_glob})
 
+set(extra_properties "")
+if(QT_FEATURE_sanitize_address)
+    set(extra_properties ENVIRONMENT "QTEST_FUNCTION_TIMEOUT=900000")
+endif()
 qt_internal_add_test(tst_qcryptographichash
     SOURCES
         tst_qcryptographichash.cpp
     TESTDATA ${test_data}
+    TEST_PROPERTIES
+        ${extra_properties}
 )
 
 qt_internal_add_test(tst_qcryptographichash_bigdata
@@ -28,7 +34,3 @@ qt_internal_add_test(tst_qcryptographichash_bigdata
         tst_qcryptographichash_bigdata.cpp
     TESTDATA ${test_data}
 )
-
-if(QT_FEATURE_sanitize_address)
-    set_property(TEST tst_qcryptographichash APPEND PROPERTY ENVIRONMENT "QTEST_FUNCTION_TIMEOUT=900000")
-endif()

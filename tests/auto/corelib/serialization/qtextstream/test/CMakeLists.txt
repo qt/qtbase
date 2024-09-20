@@ -13,6 +13,10 @@ list(APPEND test_data "../qtextstream_integrity.qrc")
 list(APPEND test_data "../tst_qtextstream.cpp")
 list(APPEND test_data "../resources")
 
+set(extra_properties "")
+if(QT_FEATURE_sanitize_address)
+    set(extra_properties ENVIRONMENT "QTEST_FUNCTION_TIMEOUT=900000")
+endif()
 qt_internal_add_test(tst_qtextstream
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../"
     SOURCES
@@ -22,11 +26,9 @@ qt_internal_add_test(tst_qtextstream
         Qt::TestPrivate
     TESTDATA ${test_data}
     QT_TEST_SERVER_LIST "cyrus"
+    TEST_PROPERTIES
+        ${extra_properties}
 )
-
-if(QT_FEATURE_sanitize_address)
-    set_property(TEST tst_qtextstream APPEND PROPERTY ENVIRONMENT "QTEST_FUNCTION_TIMEOUT=900000")
-endif()
 
 # Resources:
 set(qtextstream_resource_files
