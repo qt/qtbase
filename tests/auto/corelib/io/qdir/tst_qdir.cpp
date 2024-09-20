@@ -522,9 +522,6 @@ void tst_QDir::makedirReturnCode()
 
     // the next line specifically targets Windows and macOS (QTBUG-85997, QTBUG-97110)
     // calling mkpath on an existing drive name (Windows) or root path (macOS) shall pass
-#ifdef Q_OS_WASM
-    QEXPECT_FAIL("", "fails on wasm, see bug QTBUG-127767", Continue);
-#endif
     QVERIFY(QDir().mkpath(QDir::rootPath()));
     QVERIFY(!QDir().mkdir(QDir::rootPath()));
 

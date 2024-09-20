@@ -1078,6 +1078,11 @@ bool QFileSystemEngine::cloneFile(int srcfd, int dstfd, const QFileSystemMetaDat
 static bool createDirectoryWithParents(const QByteArray &nativeName, mode_t mode,
                                        bool shouldMkdirFirst = true)
 {
+#ifdef Q_OS_WASM
+    if (nativeName.length() == 1 && nativeName[0] == '/')
+        return true;
+#endif
+
     // helper function to check if a given path is a directory, since mkdir can
     // fail if the dir already exists (it may have been created by another
     // thread or another process)
