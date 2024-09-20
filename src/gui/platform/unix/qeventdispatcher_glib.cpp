@@ -63,6 +63,8 @@ QPAEventDispatcherGlibPrivate::QPAEventDispatcherGlibPrivate(GMainContext *conte
     g_source_attach(&userEventSource->source, mainContext);
 }
 
+QPAEventDispatcherGlibPrivate::~QPAEventDispatcherGlibPrivate()
+    = default;
 
 QPAEventDispatcherGlib::QPAEventDispatcherGlib(QObject *parent)
     : QEventDispatcherGlib(*new QPAEventDispatcherGlibPrivate, parent)

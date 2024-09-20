@@ -77,6 +77,7 @@ class QCocoaEventDispatcherPrivate : public QAbstractEventDispatcherPrivate
 
 public:
     QCocoaEventDispatcherPrivate();
+    ~QCocoaEventDispatcherPrivate() override;
 
     uint processEventsFlags;
 
