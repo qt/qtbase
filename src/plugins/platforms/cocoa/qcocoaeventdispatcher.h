@@ -82,12 +82,12 @@ class QCocoaEventDispatcher : public QAbstractEventDispatcherV2
 public:
     QCocoaEventDispatcher(QAbstractEventDispatcherPrivate &priv, QObject *parent = nullptr);
     explicit QCocoaEventDispatcher(QObject *parent = nullptr);
-    ~QCocoaEventDispatcher();
+    ~QCocoaEventDispatcher() override;
 
-    bool processEvents(QEventLoop::ProcessEventsFlags flags);
+    bool processEvents(QEventLoop::ProcessEventsFlags flags) override;
 
-    void registerSocketNotifier(QSocketNotifier *notifier);
-    void unregisterSocketNotifier(QSocketNotifier *notifier);
+    void registerSocketNotifier(QSocketNotifier *notifier) override;
+    void unregisterSocketNotifier(QSocketNotifier *notifier) override;
 
     void registerTimer(Qt::TimerId timerId, Duration interval, Qt::TimerType timerType,
                        QObject *object) final;
@@ -96,8 +96,8 @@ public:
     QList<TimerInfoV2> timersForObject(QObject *object) const final;
     Duration remainingTime(Qt::TimerId timerId) const final;
 
-    void wakeUp();
-    void interrupt();
+    void wakeUp() override;
+    void interrupt() override;
 
     static void clearCurrentThreadCocoaEventDispatcherInterruptFlag();
 
