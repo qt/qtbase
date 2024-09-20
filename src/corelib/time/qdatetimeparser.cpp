@@ -1612,16 +1612,11 @@ QDateTimeParser::parse(const QString &input, int position,
                 }
             }
         } else {
-            if (context == FromString) {
-                // optimization
-                Q_ASSERT(maximum.date().toJulianDay() == 5373484);
-                if (scan.value.date().toJulianDay() > 5373484)
-                    scan.state = Invalid;
-            } else if (scan.value > maximum) {
+            if (scan.value > maximum)
                 scan.state = Invalid;
-            }
 
-            QDTPDEBUG << "not checking intermediate because scanned value is" << scan.value << minimum << maximum;
+            QDTPDEBUG << "not checking intermediate because scanned value is"
+                      << scan.value << minimum << maximum;
         }
     }
 
