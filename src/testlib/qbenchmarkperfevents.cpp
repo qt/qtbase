@@ -448,10 +448,6 @@ QBenchmarkPerfEventsMeasurer::~QBenchmarkPerfEventsMeasurer()
         qt_safe_close(fd);
 }
 
-void QBenchmarkPerfEventsMeasurer::init()
-{
-}
-
 void QBenchmarkPerfEventsMeasurer::start()
 {
     QT_WARNING_DISABLE_GCC("-Wmissing-field-initializers")

@@ -55,7 +55,6 @@ QBenchmarkMeasurerBase * QBenchmarkGlobalData::createMeasurer()
     } else {
         measurer =  new QBenchmarkTimeMeasurer;
     }
-    measurer->init();
     return measurer;
 }
 
