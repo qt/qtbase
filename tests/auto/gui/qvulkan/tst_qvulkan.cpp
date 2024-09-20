@@ -81,8 +81,8 @@ void tst_QVulkan::vulkanCheckSupported()
 
     if (inst.create()) { // skip the rest when Vulkan is not supported at all
         QVERIFY(!ve.isEmpty());
-        QVERIFY(ve == inst.supportedExtensions());
-        QVERIFY(supportedApiVersion.majorVersion() >= 1);
+        QCOMPARE(ve, inst.supportedExtensions());
+        QCOMPARE_GE(supportedApiVersion.majorVersion(), 1);
     }
 }
 
@@ -298,7 +298,7 @@ void tst_QVulkan::vulkanWindow()
     QVERIFY(w.graphicsCommandPool() != VK_NULL_HANDLE);
     QVERIFY(w.defaultRenderPass() != VK_NULL_HANDLE);
 
-    QVERIFY(w.concurrentFrameCount() > 0);
+    QCOMPARE_GT(w.concurrentFrameCount(), 0);
     QVERIFY(w.concurrentFrameCount() <= QVulkanWindow::MAX_CONCURRENT_FRAME_COUNT);
 }
 
@@ -439,20 +439,20 @@ void tst_QVulkan::vulkanWindowRenderer()
     if (w.availablePhysicalDevices().isEmpty())
         QSKIP("No Vulkan physical devices; skip");
 
-    QVERIFY(testVulkan.preInitResCount == 1);
-    QVERIFY(testVulkan.initResCount == 1);
-    QVERIFY(testVulkan.initSwcResCount == 1);
+    QCOMPARE(testVulkan.preInitResCount, 1);
+    QCOMPARE(testVulkan.initResCount, 1);
+    QCOMPARE(testVulkan.initSwcResCount, 1);
     // this has to be QTRY due to the async update in QVulkanWindowPrivate::ensureStarted()
     QTRY_VERIFY(testVulkan.startNextFrameCount >= 1);
 
     QVERIFY(!w.swapChainImageSize().isEmpty());
-    QVERIFY(w.colorFormat() != VK_FORMAT_UNDEFINED);
-    QVERIFY(w.depthStencilFormat() != VK_FORMAT_UNDEFINED);
+    QCOMPARE_NE(w.colorFormat(), VK_FORMAT_UNDEFINED);
+    QCOMPARE_NE(w.depthStencilFormat(), VK_FORMAT_UNDEFINED);
 
     w.destroy();
     waitForUnexposed(&w);
-    QVERIFY(testVulkan.releaseSwcResCount == 1);
-    QVERIFY(testVulkan.releaseResCount == 1);
+    QCOMPARE(testVulkan.releaseSwcResCount, 1);
+    QCOMPARE(testVulkan.releaseResCount, 1);
 }
 
 void tst_QVulkan::vulkanWindowGrab()
@@ -506,9 +506,9 @@ void tst_QVulkan::vulkanWindowGrab()
     int greenFuzz = qAbs(qGreen(a) - qGreen(refPixel));
     int blueFuzz = qAbs(qBlue(a) - qBlue(refPixel));
 
-    QVERIFY(redFuzz <= 1);
-    QVERIFY(blueFuzz <= 1);
-    QVERIFY(greenFuzz <= 1);
+    QCOMPARE_LE(redFuzz, 1);
+    QCOMPARE_LE(blueFuzz, 1);
+    QCOMPARE_LE(greenFuzz, 1);
 
     w.destroy();
 }
