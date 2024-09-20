@@ -65,6 +65,8 @@ class Q_CORE_EXPORT QEventDispatcherGlibPrivate : public QAbstractEventDispatche
 
 public:
     QEventDispatcherGlibPrivate(GMainContext *context = nullptr);
+    ~QEventDispatcherGlibPrivate() override;
+
     GMainContext *mainContext;
     GPostEventSource *postEventSource;
     GSocketNotifierSource *socketNotifierSource;

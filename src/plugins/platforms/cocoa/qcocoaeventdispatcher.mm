@@ -796,6 +796,9 @@ QCocoaEventDispatcherPrivate::QCocoaEventDispatcherPrivate()
 {
 }
 
+QCocoaEventDispatcherPrivate::~QCocoaEventDispatcherPrivate()
+    = default;
+
 void qt_mac_maybeCancelWaitForMoreEventsForwarder(QAbstractEventDispatcher *eventDispatcher)
 {
     static_cast<QCocoaEventDispatcher *>(eventDispatcher)->d_func()->maybeCancelWaitForMoreEvents();

@@ -43,6 +43,8 @@ class QPAEventDispatcherGlibPrivate : public QEventDispatcherGlibPrivate
     Q_DECLARE_PUBLIC(QPAEventDispatcherGlib)
 public:
     QPAEventDispatcherGlibPrivate(GMainContext *context = nullptr);
+    ~QPAEventDispatcherGlibPrivate() override;
+
     GUserEventSource *userEventSource;
 };
 

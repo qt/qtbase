@@ -322,6 +322,9 @@ QEventDispatcherGlibPrivate::QEventDispatcherGlibPrivate(GMainContext *context)
     g_source_attach(&idleTimerSource->source, mainContext);
 }
 
+QEventDispatcherGlibPrivate::~QEventDispatcherGlibPrivate()
+    = default;
+
 void QEventDispatcherGlibPrivate::runTimersOnceWithNormalPriority()
 {
     timerSource->runWithIdlePriority = false;
