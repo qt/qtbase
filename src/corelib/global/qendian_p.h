@@ -21,7 +21,7 @@
 QT_BEGIN_NAMESPACE
 
 enum class QSpecialIntegerBitfieldInitializer {};
-constexpr QSpecialIntegerBitfieldInitializer QSpecialIntegerBitfieldZero{};
+constexpr inline QSpecialIntegerBitfieldInitializer QSpecialIntegerBitfieldZero{};
 
 template<class S>
 class QSpecialIntegerStorage
