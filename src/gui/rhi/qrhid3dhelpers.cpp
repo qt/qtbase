@@ -18,6 +18,8 @@ bool output6ForWindow(QWindow *w, IDXGIAdapter1 *adapter, IDXGIOutput6 **result)
     IDXGIOutput *currentOutput = nullptr;
     IDXGIOutput *output = nullptr;
     for (UINT i = 0; adapter->EnumOutputs(i, &output) != DXGI_ERROR_NOT_FOUND; ++i) {
+        if (!output)
+            continue;
         DXGI_OUTPUT_DESC desc;
         output->GetDesc(&desc);
         const RECT r = desc.DesktopCoordinates;
