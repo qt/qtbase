@@ -172,14 +172,29 @@ void tst_QSizePolicy::transposed()
     QCOMPARE(sp, tr);
 }
 
-static void makeRow(QSizePolicy sp, QSizePolicy::Policy hp, QSizePolicy::Policy vp,
-                    int hst, int vst, QSizePolicy::ControlType ct, bool hfw, bool wfh,
-                    Qt::Orientations orients)
+static const char *edToString(Qt::Orientations orients)
 {
-    QTest::addRow("%s-%s-%d-%d-%s-%s-%s",
-                  PrettyPrint(hp).s(), PrettyPrint(vp).s(), hst, vst,
+    if (orients.testFlags(Qt::Horizontal | Qt::Vertical))
+        return "HV";
+    if (orients.testFlag(Qt::Horizontal))
+        return "H_";
+    if (orients.testFlag(Qt::Vertical))
+        return "_V";
+    return "__";
+}
+
+static void makeRow(QSizePolicy sp,
+                    QSizePolicy::Policy hp, QSizePolicy::Policy vp,
+                    int hst, int vst, QSizePolicy::ControlType ct, bool hfw, bool wfh,
+                    Qt::Orientations orients, int spId)
+{
+    QTest::addRow("H:%s-V:%s-%d-%d-%s-hfw:%d-wfh:%d-ed:%s-spId:%d",
+                  PrettyPrint(hp).s(), PrettyPrint(vp).s(),
+                  hst, vst,
                   PrettyPrint(ct).s(),
-                  hfw ? "true" : "false", wfh ? "true" : "false")
+                  hfw ? 1 : 0,
+                  wfh ? 1 : 0,
+                  edToString(orients), spId)
             << sp << hp << vp << hst << vst << ct << hfw << wfh << orients;
 }
 
@@ -209,14 +224,15 @@ void tst_QSizePolicy::data() const
         };
 
 #define ITEMCOUNT(arr) int(sizeof(arr)/sizeof(arr[0]))
-        QSizePolicy sp, oldsp;
+        QSizePolicy sp;
+        std::optional<QSizePolicy> oldsp;
 #ifdef GENERATE_BASELINE
         QFile out(QString::fromAscii("qsizepolicy-Qt%1%2.txt").arg((QT_VERSION >> 16) & 0xff).arg((QT_VERSION) >> 8 & 0xff));
         if (out.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
             QDataStream stream(&out);
 #endif
             /* Loop for permutating over the values most likely to trigger a bug:
-              - mininumum, maximum values
+              - minimum, maximum values
               - Some values with LSB set, others with MSB unset. (check if shifts are ok)
 
             */
@@ -232,8 +248,7 @@ void tst_QSizePolicy::data() const
                                 for (int j = 0; j < 3; ++j) {
                                     bool hfw = j & 1;
                                     bool wfh = j & 2;   // cannot set hfw and wfh at the same time
-                                    oldsp = sp;
-                                    for (int i = 0; i < 5; ++i) {
+                                    for (int i = 0; i <= 5; ++i) {
                                         switch (i) {
                                         case 0: sp.setHorizontalPolicy(hp); break;
                                         case 1: sp.setVerticalPolicy(vp); break;
@@ -243,26 +258,28 @@ void tst_QSizePolicy::data() const
                                         case 5: sp.setHeightForWidth(hfw); sp.setWidthForHeight(wfh); break;
                                         default: break;
                                         }
-
+                                        // FIXME these will never be set,
+                                        //   they need QSizePolicy::Expanding or MinimumExpanding.
                                         Qt::Orientations orients;
                                         if (sp.horizontalPolicy() & QSizePolicy::ExpandFlag)
                                             orients |= Qt::Horizontal;
                                         if (sp.verticalPolicy() & QSizePolicy::ExpandFlag)
                                             orients |= Qt::Vertical;
-
-                                        makeRow(sp,
-                                                i >= 0 ? hp  : oldsp.horizontalPolicy(),
-                                                i >= 1 ? vp  : oldsp.verticalPolicy(),
-                                                i >= 2 ? hst : oldsp.horizontalStretch(),
-                                                i >= 3 ? vst : oldsp.verticalStretch(),
-                                                i >= 4 ? ct  : oldsp.controlType(),
-                                                i >= 5 ? hfw : oldsp.hasHeightForWidth(),
-                                                i >= 5 ? wfh : oldsp.hasWidthForHeight(),
-                                                orients);
+                                        if (oldsp)
+                                            makeRow(sp,
+                                                    i >= 0 ? hp  : oldsp->horizontalPolicy(),
+                                                    i >= 1 ? vp  : oldsp->verticalPolicy(),
+                                                    i >= 2 ? hst : oldsp->horizontalStretch(),
+                                                    i >= 3 ? vst : oldsp->verticalStretch(),
+                                                    i >= 4 ? ct  : oldsp->controlType(),
+                                                    i >= 5 ? hfw : oldsp->hasHeightForWidth(),
+                                                    i >= 5 ? wfh : oldsp->hasWidthForHeight(),
+                                                    orients, i);
 #ifdef GENERATE_BASELINE
                                         stream << sp;
 #endif
                                     }
+                                    oldsp = sp;
                                 }
                             }
                         }
