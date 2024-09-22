@@ -1180,7 +1180,7 @@ void Generator::generateStaticMetacall()
                 continue;
             anythingUsed = true;
             fprintf(out, "        {\n");
-            fprintf(out, "            using _t = %s (%s::*)(",f.type.rawName.constData() , cdef->classname.constData());
+            fprintf(out, "            using _q_method_type = %s (%s::*)(",f.type.rawName.constData() , cdef->classname.constData());
 
             const auto begin = f.arguments.cbegin();
             const auto end = f.arguments.cend();
@@ -1199,7 +1199,7 @@ void Generator::generateStaticMetacall()
                 fprintf(out, ") const;\n");
             else
                 fprintf(out, ");\n");
-            fprintf(out, "            if (_t _q_method = &%s::%s; *reinterpret_cast<_t *>(_a[1]) == _q_method) {\n",
+            fprintf(out, "            if (_q_method_type _q_method = &%s::%s; *reinterpret_cast<_q_method_type *>(_a[1]) == _q_method) {\n",
                     cdef->classname.constData(), f.name.constData());
             fprintf(out, "                *result = %d;\n", methodindex);
             fprintf(out, "                return;\n");
