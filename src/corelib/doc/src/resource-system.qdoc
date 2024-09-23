@@ -279,12 +279,12 @@
         rcc -compress 2 -compress-algo zlib myresources.qrc
     \endcode
 
-    It is also possible to use \c threshold, \c compress, and \c compress-algo
-    as attributes in a .qrc \c file tag.
+    It is also possible to use \c compress, \c threshold as attributes in a .qrc \c file tag.
+    For selecting the algorithm, set the \c compression-algorithm attribute.
 
     \code
     <qresource>
-        <file compress="1" compress-algo="zstd">data.txt</file>
+        <file compress="1" compression-algorithm="zstd">data.txt</file>
     </qresource>
     \endcode
 
