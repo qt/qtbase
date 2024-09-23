@@ -333,6 +333,9 @@ endif()
 
 if(QT_FEATURE_stack_protector)
     target_compile_options(PlatformCommonInternal INTERFACE -fstack-protector-strong)
+    if(CMAKE_SYSTEM_NAME STREQUAL "SunOS")
+        target_link_libraries(PlatformCommonInternal INTERFACE ssp)
+    endif()
 endif()
 
 if(QT_FEATURE_stack_clash_protection)
