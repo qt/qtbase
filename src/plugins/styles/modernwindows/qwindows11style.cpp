@@ -65,6 +65,8 @@ static const QColor WINUI3ColorsLight [] {
     QColor(0x75,0x75,0x75,0x66), //surfaceStroke
     QColor(0x00,0x00,0x00,0x37), //controlAccentDisabled
     QColor(0xFF,0xFF,0xFF,0xFF), //textAccentDisabled
+    QColor(0xFF,0xFF,0xFF,0xFF), //focusFrameInnerStroke
+    QColor(0x00,0x00,0x00,0xFF), //focusFrameOuterStroke
 };
 
 static const QColor WINUI3ColorsDark[] {
@@ -86,6 +88,8 @@ static const QColor WINUI3ColorsDark[] {
     QColor(0x75,0x75,0x75,0x66), //surfaceStroke
     QColor(0xFF,0xFF,0xFF,0x28), //controlAccentDisabled
     QColor(0xFF,0xFF,0xFF,0x87), //textAccentDisabled
+    QColor(0x00,0x00,0x00,0xFF), //focusFrameInnerStroke
+    QColor(0xFF,0xFF,0xFF,0xFF), //focusFrameOuterStroke
 };
 
 static const QColor* WINUI3Colors[] {
@@ -259,6 +263,11 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                 };
                 if (sub & SC_SpinBoxUp) drawUpDown(SC_SpinBoxUp);
                 if (sub & SC_SpinBoxDown) drawUpDown(SC_SpinBoxDown);
+                if (state & State_KeyboardFocusChange && state & State_HasFocus) {
+                    QStyleOptionFocusRect fropt;
+                    fropt.QStyleOption::operator=(*option);
+                    proxy()->drawPrimitive(PE_FrameFocusRect, &fropt, cp.painter(), widget);
+                }
             }
         }
         break;
@@ -417,6 +426,14 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                 painter->setFont(assetFont);
                 painter->setPen(combobox->palette.text().color());
                 painter->drawText(rect, QStringLiteral(u"\uE70D"), Qt::AlignVCenter | Qt::AlignHCenter);
+            }
+            if (state & State_HasFocus) {
+                drawPrimitive(PE_FrameFocusRect, option, painter, widget);
+            }
+            if (state & State_KeyboardFocusChange && state & State_HasFocus) {
+                QStyleOptionFocusRect fropt;
+                fropt.QStyleOption::operator=(*option);
+                proxy()->drawPrimitive(PE_FrameFocusRect, &fropt, painter, widget);
             }
         }
         break;
@@ -697,6 +714,21 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
     }
 
     switch (element) {
+    case PE_FrameFocusRect: {
+        if (const QStyleOptionFocusRect *fropt = qstyleoption_cast<const QStyleOptionFocusRect *>(option)) {
+            if (!(fropt->state & State_KeyboardFocusChange))
+                break;
+            QRectF focusRect = option->rect;
+            focusRect = focusRect.marginsRemoved(QMarginsF(1.5,1.5,1.5,1.5));
+            painter->setPen(winUI3Color(focusFrameInnerStroke));
+            painter->drawRoundedRect(focusRect,4,4);
+
+            focusRect = focusRect.marginsAdded(QMarginsF(1.0,1.0,1.0,1.0));
+            painter->setPen(QPen(winUI3Color(focusFrameOuterStroke),1));
+            painter->drawRoundedRect(focusRect,4,4);
+        }
+        break;
+    }
     case PE_PanelTipLabel: {
         const auto rect = QRectF(option->rect).marginsRemoved(QMarginsF(0.5, 0.5, 0.5, 0.5));
         const auto pen = highContrastTheme ? option->palette.buttonText().color()
@@ -884,6 +916,11 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
     case PE_FrameLineEdit: {
         const auto frameRect = QRectF(option->rect).marginsRemoved(QMarginsF(1.5, 1.5, 1.5, 1.5));
         drawLineEditFrame(painter, frameRect, option);
+        if (state & State_KeyboardFocusChange && state & State_HasFocus) {
+            QStyleOptionFocusRect fropt;
+            fropt.QStyleOption::operator=(*option);
+            proxy()->drawPrimitive(PE_FrameFocusRect, &fropt, painter, widget);
+        }
         break;
     }
     case PE_Frame: {
@@ -1765,6 +1802,17 @@ QRect QWindows11Style::subElementRect(QStyle::SubElement element, const QStyleOp
 {
     QRect ret;
     switch (element) {
+    case QStyle::SE_RadioButtonIndicator:
+    case QStyle::SE_CheckBoxIndicator:
+        ret = QWindowsVistaStyle::subElementRect(element, option, widget);
+        ret = ret.marginsRemoved(QMargins(4,0,0,0));
+        break;
+    case QStyle::SE_ComboBoxFocusRect:
+    case QStyle::SE_CheckBoxFocusRect:
+    case QStyle::SE_RadioButtonFocusRect:
+    case QStyle::SE_PushButtonFocusRect:
+        ret = option->rect;
+        break;
     case QStyle::SE_LineEditContents:
         ret = option->rect.adjusted(4,0,-4,0);
         break;

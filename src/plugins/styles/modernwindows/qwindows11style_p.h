@@ -40,7 +40,9 @@ enum WINUI3Color {
     controlFillSolid,                 //Color for solid fill
     surfaceStroke,                    //Color of MDI window frames
     controlAccentDisabled,
-    textAccentDisabled
+    textAccentDisabled,
+    focusFrameInnerStroke,
+    focusFrameOuterStroke
 };
 
 class QWindows11Style : public QWindowsVistaStyle
