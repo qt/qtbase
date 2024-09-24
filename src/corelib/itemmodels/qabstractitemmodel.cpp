@@ -3401,7 +3401,14 @@ void QAbstractItemModel::endMoveColumns()
 */
 void QAbstractItemModel::beginResetModel()
 {
+    Q_D(QAbstractItemModel);
+    if (d->resetting) {
+        qWarning() << "beginResetModel called on" << this << "without calling endResetModel first";
+        // Warn, but don't return early in case user code relies on the incorrect behavior.
+    }
+
     qCDebug(lcReset) << "beginResetModel called; about to emit modelAboutToBeReset";
+    d->resetting = true;
     emit modelAboutToBeReset(QPrivateSignal());
 }
 
@@ -3419,9 +3426,15 @@ void QAbstractItemModel::beginResetModel()
 void QAbstractItemModel::endResetModel()
 {
     Q_D(QAbstractItemModel);
+    if (!d->resetting) {
+        qWarning() << "endResetModel called on" << this << "without calling beginResetModel first";
+        // Warn, but don't return early in case user code relies on the incorrect behavior.
+    }
+
     qCDebug(lcReset) << "endResetModel called; about to emit modelReset";
     d->invalidatePersistentIndexes();
     resetInternalData();
+    d->resetting = false;
     emit modelReset(QPrivateSignal());
 }
 
