@@ -3,3 +3,5 @@
 android
 [testAncestorChange]
 android
+[testFocus]
+wayland # QTBUG-129292
