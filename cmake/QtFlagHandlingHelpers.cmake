@@ -318,7 +318,10 @@ endfunction()
 # Sets the default warnings behavior according to the WARNINGS_ARE_ERRORS and
 # QT_REPO_NOT_WARNINGS_CLEAN flags.
 function(qt_internal_default_warnings_are_errors target)
-    if(WARNINGS_ARE_ERRORS AND NOT QT_REPO_NOT_WARNINGS_CLEAN)
+    if(WARNINGS_ARE_ERRORS AND NOT QT_REPO_NOT_WARNINGS_CLEAN
+       # Xcode enables additional warnings on top of the ones we
+       # enable, and we are not warning clean in that context.
+       AND NOT "${CMAKE_GENERATOR}" STREQUAL "Xcode")
         qt_internal_set_skip_warnings_are_errors("${target}" FALSE)
     else()
         qt_internal_set_skip_warnings_are_errors("${target}" TRUE)
