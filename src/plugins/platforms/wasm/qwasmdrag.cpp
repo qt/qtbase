@@ -187,6 +187,12 @@ void QWasmDrag::onNativeDragFinished(DragEvent *event)
     m_dragState->quitEventLoopClosure();
 }
 
+void QWasmDrag::onNativeDragLeave(DragEvent *event)
+{
+    m_dragState->dropAction = event->dropAction;
+    event->dataTransfer.setDropAction(Qt::DropAction::IgnoreAction);
+}
+
 QWasmDrag::DragState::DragImage::DragImage(const QPixmap &pixmap, const QMimeData *mimeData,
                                            QWindow *window)
     : m_temporaryImageElementParent(QWasmWindow::fromWindow(window)->containerElement())

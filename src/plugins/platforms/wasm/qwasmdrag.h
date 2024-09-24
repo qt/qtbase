@@ -32,6 +32,7 @@ public:
     void onNativeDrop(DragEvent *event);
     void onNativeDragStarted(DragEvent *event);
     void onNativeDragFinished(DragEvent *event);
+    void onNativeDragLeave(DragEvent *event);
 
     // QPlatformDrag:
     Qt::DropAction drag(QDrag *drag) final;
