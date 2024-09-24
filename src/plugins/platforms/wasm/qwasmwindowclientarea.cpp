@@ -60,6 +60,13 @@ ClientArea::ClientArea(QWasmWindow *window, QWasmScreen *screen, emscripten::val
                             QWasmDrag::instance()->onNativeDragFinished(&event);
                         });
 
+        m_dragLeaveCallback = std::make_unique<qstdweb::EventCallback>(
+                    element, "dragleave", [this](emscripten::val webEvent) {
+                            webEvent.call<void>("preventDefault");
+                            auto event = *DragEvent::fromWeb(webEvent, m_window->window());
+                            QWasmDrag::instance()->onNativeDragLeave(&event);
+                        });
+
 }
 
 bool ClientArea::processPointer(const PointerEvent &event)

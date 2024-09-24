@@ -25,6 +25,7 @@ enum class EventType {
     DragEnd,
     DragOver,
     DragStart,
+    DragLeave,
     Drop,
     KeyDown,
     KeyUp,

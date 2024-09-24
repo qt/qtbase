@@ -40,6 +40,7 @@ private:
     std::unique_ptr<qstdweb::EventCallback> m_dragStartCallback;
     std::unique_ptr<qstdweb::EventCallback> m_dragEndCallback;
     std::unique_ptr<qstdweb::EventCallback> m_dropCallback;
+    std::unique_ptr<qstdweb::EventCallback> m_dragLeaveCallback;
 
     QMap<int, QWindowSystemInterface::TouchPoint> m_pointerIdToTouchPoints;
 

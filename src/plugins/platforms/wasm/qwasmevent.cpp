@@ -260,7 +260,6 @@ std::optional<DragEvent> DragEvent::fromWeb(emscripten::val event, QWindow *targ
 {
     const auto eventType = ([&event]() -> std::optional<EventType> {
         const auto eventTypeString = event["type"].as<std::string>();
-
         if (eventTypeString == "dragend")
             return EventType::DragEnd;
         if (eventTypeString == "dragover")
@@ -269,6 +268,8 @@ std::optional<DragEvent> DragEvent::fromWeb(emscripten::val event, QWindow *targ
             return EventType::DragStart;
         if (eventTypeString == "drop")
             return EventType::Drop;
+        if (eventTypeString == "dragleave")
+            return EventType::DragLeave;
         return std::nullopt;
     })();
     if (!eventType)
