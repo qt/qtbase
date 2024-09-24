@@ -104,6 +104,7 @@ private slots:
     void mouseWheel();
     void popupWheelHandling();
 #endif // QT_CONFIG(wheelevent)
+    void sendKeyEventToPopup();
     void layoutDirection();
     void itemListPosition();
     void separatorItem_data();
@@ -2184,6 +2185,54 @@ void tst_QComboBox::popupWheelHandling()
     QCOMPARE(comboBox->view()->pos(), popupPos);
 }
 #endif // QT_CONFIG(wheelevent)
+
+void tst_QComboBox::sendKeyEventToPopup()
+{
+    struct KeyEventFilter : public QObject {
+        uint countWindow = 0;
+        uint countView = 0;
+        bool eventFilter(QObject *obj, QEvent *event) override
+        {
+            if (event->type() != QEvent::KeyPress)
+                return false;
+
+            if (qobject_cast<QWindow *>(obj))
+                ++countWindow;
+
+            if (qobject_cast<QAbstractItemView *>(obj) && event->spontaneous())
+                ++countView;
+
+            return false;
+        }
+    };
+
+    QScrollArea scrollArea;
+    scrollArea.move(300, 300);
+    QWidget *widget = new QWidget;
+    scrollArea.setWidget(widget);
+    QVBoxLayout *layout = new QVBoxLayout(widget);
+    layout->setSizeConstraint(QLayout::SetMinAndMaxSize);
+    QComboBox *comboBox = new QComboBox;
+    comboBox->addItems(QStringList() << QStringLiteral("Won") << QStringLiteral("Too")
+                       << QStringLiteral("3") << QStringLiteral("fore"));
+    layout->addWidget(comboBox);
+    layout->addSpacing(100);
+    const QPoint sizeP(scrollArea.width(), scrollArea.height());
+    scrollArea.move(QGuiApplication::primaryScreen()->availableGeometry().center() - sizeP / 2);
+    scrollArea.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&scrollArea));
+    comboBox->showPopup();
+    auto *itemView = comboBox->findChild<QAbstractItemView *>();
+    QVERIFY(QTest::qWaitForWindowExposed(itemView));
+    KeyEventFilter filter;
+    itemView->installEventFilter(&filter);
+    comboBox->window()->windowHandle()->installEventFilter(&filter);
+    QWindowSystemInterfacePrivate::KeyEvent ke(comboBox->window()->windowHandle(), 0, QEvent::KeyPress, Qt::Key_End, Qt::KeyboardModifiers());
+    QGuiApplicationPrivate::processKeyEvent(&ke);
+    // Make sure that the key event is directly delivered to the popup
+    QCOMPARE(filter.countWindow, 0);
+    QCOMPARE(filter.countView, 1);
+}
 
 void tst_QComboBox::layoutDirection()
 {
