@@ -138,7 +138,8 @@ static inline quint64 detectProcessorFeatures()
         features |= feature ? CpuFeatureNEON : 0;
     if (sysctlbyname("hw.optional.armv8_crc32", &feature, &len, nullptr, 0) == 0)
         features |= feature ? CpuFeatureCRC32 : 0;
-    // There is currently no optional value for crypto/AES.
+    if (sysctlbyname("hw.optional.arm.FEAT_AES", &feature, &len, nullptr, 0) == 0)
+        features |= feature ? CpuFeatureAES : 0;
 #if defined(__ARM_FEATURE_CRYPTO)
     features |= CpuFeatureAES;
 #endif
