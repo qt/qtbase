@@ -45,6 +45,8 @@ public:
     QAbstractItemModelPrivate();
     ~QAbstractItemModelPrivate();
 
+    static const QAbstractItemModelPrivate *get(const QAbstractItemModel *model) { return model->d_func(); }
+
     void removePersistentIndexData(QPersistentModelIndexData *data);
     void movePersistentIndexes(const QList<QPersistentModelIndexData *> &indexes, int change, const QModelIndex &parent,
                                Qt::Orientation orientation);
@@ -114,6 +116,8 @@ public:
         QStack<QList<QPersistentModelIndexData *>> invalidated;
         void insertMultiAtEnd(const QModelIndex& key, QPersistentModelIndexData *data);
     } persistent;
+
+    bool resetting = false;
 
     static const QHash<int,QByteArray> &defaultRoleNames();
     static bool isVariantLessThan(const QVariant &left, const QVariant &right,
