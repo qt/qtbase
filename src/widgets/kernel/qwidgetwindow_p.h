@@ -46,6 +46,8 @@ public:
 
     QObject *focusObject() const override;
     void setNativeWindowVisibility(bool visible);
+    static void focusNextPrevChild(QWidget *widget, bool next);
+
 protected:
     bool event(QEvent *) override;
 

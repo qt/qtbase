@@ -82,31 +82,26 @@ public:
         QWidget *widget = q->widget();
         if (!widget)
             return;
-        QWidget *newFocusWidget = nullptr;
 
         switch (target) {
-        case FocusTarget::First:
-            newFocusWidget = q->getFocusWidget(QWidgetWindow::FirstFocusWidget);
-            break;
-        case FocusTarget::Last:
-            newFocusWidget = q->getFocusWidget(QWidgetWindow::LastFocusWidget);
-            break;
+        case FocusTarget::Prev:
         case FocusTarget::Next: {
             QWidget *focusWidget = widget->focusWidget() ? widget->focusWidget() : widget;
-            newFocusWidget = focusWidget->nextInFocusChain() ? focusWidget->nextInFocusChain() : focusWidget;
-            break;
+            q->focusNextPrevChild(focusWidget, target == FocusTarget::Next);
+            return;
         }
-        case FocusTarget::Prev: {
-            QWidget *focusWidget = widget->focusWidget() ? widget->focusWidget() : widget;
-            newFocusWidget = focusWidget->previousInFocusChain() ? focusWidget->previousInFocusChain() : focusWidget;
+        case FocusTarget::First:
+        case FocusTarget::Last: {
+            QWidgetWindow::FocusWidgets fw = target == FocusTarget::First
+                ? QWidgetWindow::FirstFocusWidget
+                : QWidgetWindow::LastFocusWidget;
+            if (QWidget *newFocusWidget = q->getFocusWidget(fw))
+                newFocusWidget->setFocus(reason);
             break;
         }
         default:
             break;
         }
-
-        if (newFocusWidget)
-            newFocusWidget->setFocus(reason);
     }
 
     QRectF closestAcceptableGeometry(const QRectF &rect) const override;
@@ -231,6 +226,12 @@ void QWidgetWindow::setNativeWindowVisibility(bool visible)
     // visibility logic. Don't call QWidgetWindowPrivate::setVisible()
     // since that will recurse back into QWidget code.
     d->QWindowPrivate::setVisible(visible);
+}
+
+void QWidgetWindow::focusNextPrevChild(QWidget *widget, bool next)
+{
+    Q_ASSERT(widget);
+    widget->focusNextPrevChild(next);
 }
 
 static inline bool shouldBePropagatedToWidget(QEvent *event)
