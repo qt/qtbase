@@ -2455,13 +2455,15 @@ const QWindow *QWindowPrivate::forwardToPopup(QEvent *event, const QWindow */*ac
                     ret = popupWindow;
             }
             qCDebug(lcPopup) << q << "forwarded" << event->type() <<  "to popup" << popupWindow
-                             << "handled?" << (ret != nullptr) << event->isAccepted();
+                             << "handled?" << (ret != nullptr)
+                             << "accepted?" << event->isAccepted();
             return ret;
         } else if (event->type() == QEvent::KeyPress || event->type() == QEvent::KeyRelease) {
             if (QCoreApplication::sendSpontaneousEvent(popupWindow, event))
                 ret = popupWindow;
             qCDebug(lcPopup) << q << "forwarded" << event->type() <<  "to popup" << popupWindow
-                             << "handled?" << (ret != nullptr) << event->isAccepted();
+                             << "handled?" << (ret != nullptr)
+                             << "accepted?" << event->isAccepted();
             return ret;
         }
     }
