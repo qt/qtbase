@@ -30,8 +30,8 @@ class QBindingStorage;
 template<typename Class, typename T, auto Offset, auto Setter, auto Signal, auto Getter>
 class QObjectCompatProperty;
 
-struct QBindingObserverPtr;
-using PendingBindingObserverList = QVarLengthArray<QBindingObserverPtr>;
+class QPropertyBindingPrivatePtr;
+using PendingBindingObserverList = QVarLengthArray<QPropertyBindingPrivatePtr>;
 
 namespace QtPrivate {
 // QPropertyBindingPrivatePtr operates on a RefCountingMixin solely so that we can inline
