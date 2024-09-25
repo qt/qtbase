@@ -59,7 +59,7 @@ public:
     inline QPropertyObserver *operator ->();
 };
 
-using PendingBindingObserverList = QVarLengthArray<QBindingObserverPtr>;
+using PendingBindingObserverList = QVarLengthArray<QPropertyBindingPrivatePtr>;
 
 // Keep all classes related to QProperty in one compilation unit. Performance of this code is crucial and
 // we need to allow the compiler to inline where it makes sense.
@@ -665,8 +665,10 @@ public:
                             // evaluateBindings() can trash the observers. We need to re-fetch here.
                             if (QPropertyObserverPointer observer = d.firstObserver())
                                 observer.notify(this);
-                            for (auto&& bindingObserver: bindingObservers)
-                                bindingObserver.binding()->notifyNonRecursive();
+                            for (auto&& bindingPtr: bindingObservers) {
+                                auto *binding = static_cast<QPropertyBindingPrivate *>(bindingPtr.get());
+                                binding->notifyNonRecursive();
+                            }
                         }
                     }
                 }

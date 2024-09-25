@@ -34,6 +34,7 @@ private slots:
     void basicDependencies();
     void multipleDependencies();
     void bindingWithDeletedDependency();
+    void bindingWithInvalidatedPropertyObserver();
     void dependencyChangeDuringDestruction();
     void recursiveDependency();
     void bindingAfterUse();
@@ -250,6 +251,28 @@ void tst_QProperty::bindingWithDeletedDependency()
     bindingReturnsDynamicProperty = false;
 
     QCOMPARE(propertySelector.value(), staticProperty.value());
+}
+
+void tst_QProperty::bindingWithInvalidatedPropertyObserver()
+{
+    QProperty<bool> dynamicProperty1(false);
+    QProperty<bool> dynamicProperty2(false);
+    QProperty<bool> dynamicProperty3(false);
+    QProperty<bool> dynamicProperty4(false);
+    QProperty<bool> dynamicProperty5(false);
+    QProperty<bool> dynamicProperty6(false);
+    QProperty<bool> propertySelector([&]{
+        return (dynamicProperty1.value() && dynamicProperty2.value() && dynamicProperty3.value() &&
+                dynamicProperty4.value() && dynamicProperty5.value() && dynamicProperty6.value());
+    });
+    dynamicProperty1 = true;
+    dynamicProperty2 = true;
+    dynamicProperty3 = true;
+    dynamicProperty4 = true;
+    dynamicProperty5 = true;
+    QCOMPARE(propertySelector.value(), false);
+    dynamicProperty6 = true;
+    QCOMPARE(propertySelector.value(), true);
 }
 
 class ChangeDuringDtorTester : public QObject
