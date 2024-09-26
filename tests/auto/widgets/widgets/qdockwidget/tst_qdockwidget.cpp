@@ -1237,7 +1237,7 @@ void tst_QDockWidget::createTestWidgets(QMainWindow* &mainWindow, QPointer<QWidg
     d1->show();
     d2->show();
     mainWindow->show();
-    QApplicationPrivate::setActiveWindow(mainWindow);
+    QVERIFY(QTest::qWaitForWindowExposed(mainWindow));
 
 }
 
