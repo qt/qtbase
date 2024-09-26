@@ -126,8 +126,9 @@ macro.QtMinorVersion.match  = "\\d+\\.(\\d+)"
 # along with the offline docs, you must specify it manually. In .qdocconf, to do it for all formats
 # at once, add:
 #
-# {HTML.extraimages,qhp.QtDoc.extraFiles, DocBook.extraimages} += images/dQw4w9WgXcQ.jpg
+# {HTML.extraimages,qhp.<qhp_project>.extraFiles,DocBook.extraimages} += images/dQw4w9WgXcQ.jpg
 #
+# Where <qhp_project> is a project name listed in `qhp.projects`.
 macro.youtube.HTML = "<div class=\"video\">\n" \
                      "<a href=\"https://www.youtube.com/watch/?v=\1\">\n"\
                      "<img src=\"images/\1.jpg\"" \
