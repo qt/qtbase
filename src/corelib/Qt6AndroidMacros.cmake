@@ -1402,6 +1402,9 @@ function(_qt_internal_add_android_abi_step project abi step)
     endif()
 
     _qt_internal_get_android_abi_step_stampfile(stamp ${project} ${abi} ${step})
+    if(step STREQUAL "configure" AND EXISTS "${stamp}")
+        file(REMOVE "${stamp}")
+    endif()
     add_custom_command(OUTPUT "${stamp}"
         COMMAND ${arg_COMMAND}
         COMMAND "${CMAKE_COMMAND}" -E touch "${stamp}"
