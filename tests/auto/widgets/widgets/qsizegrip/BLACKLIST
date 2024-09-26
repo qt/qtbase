@@ -1,5 +1,6 @@
 # QTBUG-87430
 [hideAndShowOnWindowStateChange]
 android
+ubuntu-24.04 wayland # QTBUG-129361
 [orientation]
 android
