@@ -2627,9 +2627,6 @@ QTestData &QTest::addRow(const char *format, ...)
     Example:
     \snippet code/src_qtestlib_qtestcase.cpp 21
 
-    To add custom types to the testdata, the type must be registered with
-    QMetaType via \l Q_DECLARE_METATYPE().
-
     \note This function can only be used called as part of a test's data
     function that is invoked by the test framework.
 
