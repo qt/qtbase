@@ -6049,10 +6049,10 @@ QIcon QCommonStylePrivate::iconFromResourceTheme(QCommonStyle::StandardPixmap st
         addIconFiles(u"media-skip-backward-", pngIconSizes, icon);
         break;
     case QStyle::SP_MediaVolume:
-        addIconFiles(u"media-volume-", {16}, icon);
+        addIconFiles(u"media-volume-", pngIconSizes, icon);
         break;
     case QStyle::SP_MediaVolumeMuted:
-        addIconFiles(u"media-volume-muted-", {16}, icon);
+        addIconFiles(u"media-volume-muted-", pngIconSizes, icon);
         break;
     case QStyle::SP_TitleBarCloseButton:
     case QStyle::SP_DockWidgetCloseButton:
