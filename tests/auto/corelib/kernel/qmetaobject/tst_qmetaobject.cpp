@@ -2640,29 +2640,27 @@ void tst_QMetaObject::keysToValue()
     QCOMPARE(QLatin1String(mf.valueToKeys(3)), QLatin1String("MyFlag1|MyFlag2"));
 
     // Test flags with extra '|'
-    QTest::ignoreMessage(QtWarningMsg,
-        QRegularExpression(u"QMetaEnum::keysToValue: malformed keys string, ends with '|'.+"_s));
+    static const QRegularExpression endsWithBar(
+        R"(QMetaEnum::keysToValue: malformed keys string, ends with '\|'.+)"_L1);
+    QTest::ignoreMessage(QtWarningMsg, endsWithBar);
     QCOMPARE(mf.keysToValue64("MyFlag1|MyFlag2|"), std::nullopt);
-    QTest::ignoreMessage(QtWarningMsg,
-        QRegularExpression(u"QMetaEnum::keysToValue: malformed keys string, ends with '|'.+"_s));
+    QTest::ignoreMessage(QtWarningMsg, endsWithBar);
     QCOMPARE(mf.keysToValue("MyFlag1|MyFlag2|", &ok), -1);
     QCOMPARE(ok, false);
 
-    QTest::ignoreMessage(QtWarningMsg,
-        QRegularExpression(u"QMetaEnum::keysToValue: malformed keys string, starts with '|'.+"_s));
+    static const QRegularExpression startsWithBar(
+        R"(QMetaEnum::keysToValue: malformed keys string, starts with '\|'.+)"_L1);
+    QTest::ignoreMessage(QtWarningMsg, startsWithBar);
     QCOMPARE(mf.keysToValue64("|MyFlag1|MyFlag2|"), std::nullopt);
-    QTest::ignoreMessage(QtWarningMsg,
-        QRegularExpression(u"QMetaEnum::keysToValue: malformed keys string, starts with '|'.+"_s));
+    QTest::ignoreMessage(QtWarningMsg, startsWithBar);
     QCOMPARE(mf.keysToValue("|MyFlag1|MyFlag2|", &ok), -1);
     QCOMPARE(ok, false);
 
-    QTest::ignoreMessage(QtWarningMsg,
-        QRegularExpression(
-            u"QMetaEnum::keysToValue: malformed keys string, has two consecutive '|'.+"_s));
+    static const QRegularExpression doubleBar(
+        R"(QMetaEnum::keysToValue: malformed keys string, has two consecutive '\|'.+)"_L1);
+    QTest::ignoreMessage(QtWarningMsg, doubleBar);
     QCOMPARE(mf.keysToValue64("MyFlag1||MyFlag2"), std::nullopt);
-    QTest::ignoreMessage(QtWarningMsg,
-        QRegularExpression(
-            u"QMetaEnum::keysToValue: malformed keys string, has two consecutive '|'.+"_s));
+    QTest::ignoreMessage(QtWarningMsg, doubleBar);
     QCOMPARE(mf.keysToValue("MyFlag1||MyFlag2", &ok), -1);
     QCOMPARE(ok, false);
 
