@@ -666,6 +666,12 @@ function(qt6_android_add_apk_target target)
                 ${uses_terminal}
             )
         endif()
+    else()
+        if(TARGET ${target}_copy_apk_dependencies)
+            add_dependencies(${target}_make_apk ${target}_copy_apk_dependencies)
+            add_dependencies(${target}_make_aab ${target}_copy_apk_dependencies)
+            add_dependencies(${target}_make_aar ${target}_copy_apk_dependencies)
+        endif()
     endif()
 
     set_property(GLOBAL APPEND PROPERTY _qt_apk_targets ${target})
@@ -1271,7 +1277,7 @@ endfunction()
 
 # Adds the custom build step to the multi-ABI Android project
 function(_qt_internal_add_android_abi_step project abi step)
-    cmake_parse_arguments(arg "" "" "COMMAND;DEPENDS" ${ARGV})
+    cmake_parse_arguments(arg "" "" "COMMAND;DEPENDS;TARGET_DEPENDS" ${ARGV})
 
     if(NOT arg_COMMAND)
         message(FATAL_ERROR "COMMAND is not set for ${project} step ${step} Android ABI ${abi}.")
@@ -1291,6 +1297,10 @@ function(_qt_internal_add_android_abi_step project abi step)
         set(add_to_pool "")
     endif()
 
+    if(NOT arg_TARGET_DEPENDS)
+        set(arg_TARGET_DEPENDS "")
+    endif()
+
     _qt_internal_get_android_abi_step_stampfile(stamp ${project} ${abi} ${step})
     add_custom_command(OUTPUT "${stamp}"
         COMMAND ${arg_COMMAND}
@@ -1298,6 +1308,7 @@ function(_qt_internal_add_android_abi_step project abi step)
         ${add_to_pool}
         DEPENDS
             ${dep_stamps}
+            ${arg_TARGET_DEPENDS}
         WORKING_DIRECTORY
             "${build_dir}"
         VERBATIM
@@ -1443,7 +1454,9 @@ function(_qt_internal_configure_android_multiabi_target target)
     endforeach()
 
     set(missing_qt_abi_toolchains "")
-    set(previous_copy_apk_dependencies_target ${target})
+
+    add_custom_target(${target}_copy_apk_dependencies)
+    set(previous_copy_apk_dependencies_target ${target}_copy_apk_dependencies)
     # Create external projects for each android ABI except the main one.
     list(REMOVE_ITEM android_abis "${CMAKE_ANDROID_ARCH_ABI}")
     foreach(abi IN ITEMS ${android_abis})
@@ -1489,13 +1502,14 @@ function(_qt_internal_configure_android_multiabi_target target)
         _qt_internal_add_android_abi_step(qt_internal_android_${abi} ${abi} ${target}_build
             DEPENDS
                 configure
+            TARGET_DEPENDS
+                ${target}
             COMMAND
                 "${CMAKE_COMMAND}"
                 --build "${android_abi_build_dir}"
                 --config $<CONFIG>
                 --target ${target}
         )
-        add_dependencies(${target} "qt_internal_android_${abi}_${target}_build")
 
         _qt_internal_add_android_abi_step(qt_internal_android_${abi} ${abi}
             ${target}_copy_apk_dependencies
