@@ -10757,8 +10757,9 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
 
     // texture-based widgets need a pre-notification when their associated top-level window changes
     // This is not under the wasCreated/newParent conditions above in order to also play nice with QDockWidget.
-    const bool oldParentUsesRhiFlush = oldParentWithWindow ? oldParentWithWindow->d_func()->usesRhiFlush : false;
-    if (oldParentUsesRhiFlush && ((!parent && parentWidget()) || (parent && parent->window() != oldtlw)))
+    const bool oldWidgetUsesRhiFlush = oldParentWithWindow ? oldParentWithWindow->d_func()->usesRhiFlush
+                                                           : oldtlw->d_func()->usesRhiFlush;
+    if (oldWidgetUsesRhiFlush && ((!parent && parentWidget()) || (parent && parent->window() != oldtlw)))
         qSendWindowChangeToTextureChildrenRecursively(this, QEvent::WindowAboutToChangeInternal);
 
     // If we get parented into another window, children will be folded
@@ -10839,7 +10840,7 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
 
     // texture-based widgets need another event when their top-level window
     // changes (more precisely, has already changed at this point)
-    if (oldParentUsesRhiFlush && oldtlw != window())
+    if (oldWidgetUsesRhiFlush && oldtlw != window())
         qSendWindowChangeToTextureChildrenRecursively(this, QEvent::WindowChangeInternal);
 
     if (!wasCreated) {
