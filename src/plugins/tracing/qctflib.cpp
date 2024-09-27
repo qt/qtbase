@@ -186,7 +186,7 @@ QCtfLibImpl::QCtfLibImpl()
 void QCtfLibImpl::clearLocation()
 {
 #if QT_CONFIG(cxx17_filesystem)
-    const std::filesystem::path location{qUtf16Printable(m_location)};
+    const std::filesystem::path location{m_location.toStdU16String()};
     for (auto const& dirEntry : std::filesystem::directory_iterator{location})
     {
         const auto path = dirEntry.path();
