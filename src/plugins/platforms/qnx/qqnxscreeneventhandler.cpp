@@ -606,11 +606,35 @@ void QQnxScreenEventHandler::handleCloseEvent(screen_event_t event)
 void QQnxScreenEventHandler::handleCreateEvent(screen_event_t event)
 {
     screen_window_t window = 0;
+    int object_type = -1;
+
     Q_SCREEN_CHECKERROR(
+        screen_get_event_property_iv(event, SCREEN_PROPERTY_OBJECT_TYPE, &object_type),
+        "Failed to query object type for create event");
+
+    switch (object_type) {
+    // Other object types than window produces an unnessary warning, thus ignore 
+    case SCREEN_OBJECT_TYPE_CONTEXT:
+    case SCREEN_OBJECT_TYPE_GROUP:
+    case SCREEN_OBJECT_TYPE_DISPLAY:
+    case SCREEN_OBJECT_TYPE_DEVICE:
+    case SCREEN_OBJECT_TYPE_PIXMAP:
+    case SCREEN_OBJECT_TYPE_SESSION:
+    case SCREEN_OBJECT_TYPE_STREAM:
+        break;
+    case SCREEN_OBJECT_TYPE_WINDOW:
+    {
+        Q_SCREEN_CHECKERROR(
             screen_get_event_property_pv(event, SCREEN_PROPERTY_WINDOW, (void**)&window),
             "Failed to query window property");
 
-    Q_EMIT newWindowCreated(window);
+        Q_EMIT newWindowCreated(window);
+        break;
+    }
+    default:
+        qCDebug(lcQpaScreenEvents) << "Ignore create event for object type: " << object_type;
+        break;
+    }
 }
 
 void QQnxScreenEventHandler::handleDisplayEvent(screen_event_t event)
