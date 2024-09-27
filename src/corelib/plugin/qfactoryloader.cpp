@@ -372,8 +372,12 @@ inline void QFactoryLoaderPrivate::updateSinglePath(const QString &path)
                 // whereas the one we're considering has a Qt version that fits
                 // better, we prioritize the better match.
                 int existingVersion = existingLibrary->metaData.value(QtPluginMetaDataKeys::QtVersion).toInteger();
-                if (!(existingVersion > QtVersionNoPatch && thisVersion <= QtVersionNoPatch))
-                    continue; // Existing version is a better match
+                if (existingVersion == QtVersionNoPatch)
+                    continue; // Prefer exact Qt version match
+                if (existingVersion < QtVersionNoPatch && thisVersion > QtVersionNoPatch)
+                    continue; // Better too old than too new
+                if (existingVersion < QtVersionNoPatch && thisVersion < existingVersion)
+                    continue; // Otherwise prefer newest
             }
 
             keyMapEntry = library.get();
