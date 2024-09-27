@@ -111,6 +111,25 @@ public:
     QStyleSheetStylePrivate() { }
 };
 
+class QStyleSheetProxySaver
+{
+public:
+    QStyleSheetProxySaver(const QStyleSheetStyle *that)
+        : m_that(const_cast<QStyleSheetStyle *>(that))
+        , m_oldProxy(const_cast<QStyle *>(that->baseStyle()->proxy()))
+    {
+        m_that->baseStyle()->setProxy(m_that);
+    }
+    ~QStyleSheetProxySaver()
+    {
+        m_that->baseStyle()->setProxy(m_oldProxy);
+    }
+
+private:
+    QStyleSheetStyle *m_that;
+    QStyle *m_oldProxy;
+};
+
 
 static QStyleSheetStyleCaches *styleSheetCaches = nullptr;
 
@@ -4410,6 +4429,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                     p->setClipRegion(clipRegion);
                 }
                 subRule.configurePalette(&optCopy.palette, QPalette::Text, QPalette::NoRole);
+                QStyleSheetProxySaver proxySaver(this);
                 baseStyle()->drawControl(ce, &optCopy, p, w);
                 p->restore();
             }

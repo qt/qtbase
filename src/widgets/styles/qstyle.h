@@ -840,6 +840,7 @@ private:
     friend class QProxyStyle;
     friend class QProxyStylePrivate;
     friend class QStyleFactory;
+    friend class QStyleSheetProxySaver;
     void setProxy(QStyle *style);
 };
 
