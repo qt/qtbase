@@ -134,14 +134,27 @@ static inline quint64 detectProcessorFeatures()
 #elif defined(Q_OS_DARWIN) && defined(Q_PROCESSOR_ARM)
     unsigned feature;
     size_t len = sizeof(feature);
-    if (sysctlbyname("hw.optional.neon", &feature, &len, nullptr, 0) == 0)
-        features |= feature ? CpuFeatureNEON : 0;
+    Q_UNUSED(len);
+#if defined(__ARM_NEON)
+    features |= CpuFeatureNEON;
+#else
+    #error "Misconfiguration, NEON should always be enabled on Apple hardware"
+#endif
+#if defined(__ARM_FEATURE_CRC32)
+    features |= CpuFeatureCRC32;
+#elif defined(Q_OS_MACOS)
+    #error "Misconfiguration, CRC32 should always be enabled on Apple desktop hardware"
+#else
     if (sysctlbyname("hw.optional.armv8_crc32", &feature, &len, nullptr, 0) == 0)
         features |= feature ? CpuFeatureCRC32 : 0;
-    if (sysctlbyname("hw.optional.arm.FEAT_AES", &feature, &len, nullptr, 0) == 0)
-        features |= feature ? CpuFeatureAES : 0;
+#endif
 #if defined(__ARM_FEATURE_CRYPTO)
     features |= CpuFeatureAES;
+#elif defined(Q_OS_MACOS)
+    #error "Misconfiguration, CRYPTO/AES should always be enabled on Apple desktop hardware"
+#else
+    if (sysctlbyname("hw.optional.arm.FEAT_AES", &feature, &len, nullptr, 0) == 0)
+        features |= feature ? CpuFeatureAES : 0;
 #endif
     return features;
 #elif defined(Q_OS_WIN) && defined(Q_PROCESSOR_ARM_64)
