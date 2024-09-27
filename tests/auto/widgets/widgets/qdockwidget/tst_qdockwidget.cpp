@@ -104,6 +104,8 @@ private:
     QSKIP("Platform not supported");
 #else
 #define qCreateFloatingTabs(mainWindow, centralWidget, d1, d2, path1, path2)\
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))\
+        QSKIP("Test skipped on Wayland.");\
     createFloatingTabs(mainWindow, centralWidget, d1, d2, path1, path2);\
     std::unique_ptr<QMainWindow> up_mainWindow(mainWindow);\
     if (!platformSupportingRaise)\
@@ -914,8 +916,7 @@ void tst_QDockWidget::restoreStateWhileStillFloating()
 void tst_QDockWidget::restoreDockWidget()
 {
     if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Fails on Wayland: QTBUG-91483");
-
+        QSKIP("Test skipped on Wayland.");
     QByteArray geometry;
     QByteArray state;
 
@@ -1073,9 +1074,6 @@ void tst_QDockWidget::task248604_infiniteResize()
 
 void tst_QDockWidget::task258459_visibilityChanged()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     QMainWindow win;
     QDockWidget dock1, dock2;
     win.addDockWidget(Qt::RightDockWidgetArea, &dock1);
@@ -1110,9 +1108,6 @@ void tst_QDockWidget::taskQTBUG_1665_closableChanged()
 
 void tst_QDockWidget::taskQTBUG_9758_undockedGeometry()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Fails on Wayland: QTBUG-91483");
-
     QMainWindow window;
     QDockWidget dock1(&window);
     QDockWidget dock2(&window);
@@ -1461,8 +1456,6 @@ void tst_QDockWidget::createFloatingTabs(QMainWindow* &mainWindow, QPointer<QWid
 // test floating tabs and item_tree consistency
 void tst_QDockWidget::floatingTabs()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Test skipped on Wayland.");
 #ifdef Q_OS_WIN
     QSKIP("Test skipped on Windows platforms");
 #endif // Q_OS_WIN
@@ -1580,8 +1573,6 @@ void tst_QDockWidget::deleteFloatingTabWithSingleDockWidget_data()
 
 void tst_QDockWidget::deleteFloatingTabWithSingleDockWidget()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Test skipped on Wayland.");
 #ifdef Q_OS_WIN
     QSKIP("Test skipped on Windows platforms");
 #endif // Q_OS_WIN
