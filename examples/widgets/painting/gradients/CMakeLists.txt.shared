@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE QtCreatorProject>
+<!--
+    Disable 'Use junctions for CMake configuration and build operations' feature in Qt Creator 15 and above;
+    The example needs access to a 'shared' directory
+//-->
+<qtcreator>
+  <data>
+  <variable>ProjectExplorer.Project.PluginSettings</variable>
+   <valuemap type="QVariantMap">
+    <valuemap type="QVariantMap" key="CMakeSpecificSettings">
+      <value type="bool" key="UseJunctionsForSourceAndBuildDirectories">false</value>
+      <value type="bool" key="UseGlobalSettings">false</value>
+    </valuemap>
+  </valuemap>
+ </data>
+ <data>
+  <variable>Version</variable>
+  <value type="int">22</value>
+ </data>
+</qtcreator>
