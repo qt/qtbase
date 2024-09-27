@@ -68,6 +68,7 @@ public:
     ~tst_Http2();
 public slots:
     void init();
+    void cleanup();
 private slots:
     // Tests:
     void defaultQnamHttp2Configuration();
@@ -126,7 +127,8 @@ protected slots:
     void replyFinishedWithError();
 
 private:
-    [[nodiscard]] auto useTemporaryKeychain()
+    std::function<void()> m_temporaryKeyChainRollback;
+    [[nodiscard]] std::function<void()> useTemporaryKeychain()
     {
 #if QT_CONFIG(securetransport)
         // Normally on macOS we use plain text only for SecureTransport
@@ -136,16 +138,16 @@ private:
         // Our CI has this, but somebody testing locally - will have a problem.
         auto value = qEnvironmentVariable("QT_SSL_USE_TEMPORARY_KEYCHAIN");
         qputenv("QT_SSL_USE_TEMPORARY_KEYCHAIN", "1");
-        auto envRollback = qScopeGuard([value](){
+        auto envRollback = [value](){
             if (value.isEmpty())
                 qunsetenv("QT_SSL_USE_TEMPORARY_KEYCHAIN");
             else
                 qputenv("QT_SSL_USE_TEMPORARY_KEYCHAIN", value.toUtf8());
-        });
+        };
         return envRollback;
 #else
         // avoid maybe-unused warnings from callers
-        return qScopeGuard([]{});
+        return {};
 #endif // QT_CONFIG(securetransport)
     }
 
@@ -241,6 +243,15 @@ tst_Http2::~tst_Http2()
 void tst_Http2::init()
 {
     manager.reset(new QNetworkAccessManager);
+
+    m_temporaryKeyChainRollback = useTemporaryKeychain();
+}
+
+void tst_Http2::cleanup()
+{
+    if (m_temporaryKeyChainRollback)
+        m_temporaryKeyChainRollback();
+    m_temporaryKeyChainRollback = {};
 }
 
 void tst_Http2::defaultQnamHttp2Configuration()
@@ -272,8 +283,6 @@ void tst_Http2::singleRequest_data()
 void tst_Http2::singleRequest()
 {
     clearHTTP2State();
-
-    auto rollback = useTemporaryKeychain();
 
     serverPort = 0;
     nRequests = 1;
@@ -718,8 +727,6 @@ void tst_Http2::connectToHost()
 
 #if QT_CONFIG(ssl)
     Q_ASSERT(!clearTextHTTP2 || connectionType != H2Type::h2Alpn);
-
-    auto rollback = useTemporaryKeychain();
 #else
     Q_ASSERT(connectionType == H2Type::h2c || connectionType == H2Type::h2cDirect);
     Q_ASSERT(targetServer->isClearText());
@@ -805,8 +812,6 @@ void tst_Http2::maxFrameSize()
     // Here we test we send 'MAX_FRAME_SIZE' setting in our
     // 'SETTINGS'. If done properly, our server will not chunk
     // the payload into several DATA frames.
-
-    auto rollback = useTemporaryKeychain();
 
     auto connectionType = H2Type::h2Alpn;
     auto attribute = QNetworkRequest::Http2AllowedAttribute;
@@ -961,8 +966,6 @@ void tst_Http2::moreActivitySignals()
 {
     clearHTTP2State();
 
-    auto rollback = useTemporaryKeychain();
-
     serverPort = 0;
     QFETCH(H2Type, connectionType);
     ServerPtr srv(newServer(defaultServerSettings, connectionType));
@@ -1063,8 +1066,6 @@ void tst_Http2::contentEncoding_data()
 void tst_Http2::contentEncoding()
 {
     clearHTTP2State();
-
-    auto rollback = useTemporaryKeychain();
 
     QFETCH(H2Type, connectionType);
 
@@ -1528,8 +1529,6 @@ void tst_Http2::abortOnEncrypted()
 #if !QT_CONFIG(ssl)
     QSKIP("TLS support is needed for this test");
 #else
-
-    auto rollback = useTemporaryKeychain();
 
     clearHTTP2State();
     serverPort = 0;
