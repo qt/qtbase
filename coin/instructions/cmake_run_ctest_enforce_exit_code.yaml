@@ -86,6 +86,8 @@ instructions:
       env_var: CMAKE_MIN_SUPPORTED_BIN_PATH
       equals_value: null
 
+  - !include "{{qt/qtbase}}/coin_module_test_android_start_emulator.yaml"
+
   - type: ExecuteCommand
     command: "{{.Env.TESTS_ENV_PREFIX}} ctest {{.Env.CTEST_ARGS}}"
     executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
