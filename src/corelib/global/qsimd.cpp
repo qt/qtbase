@@ -747,6 +747,12 @@ static bool checkRdrndWorks() noexcept
     constexpr qsizetype TestBufferSize = 4;
     unsigned testBuffer[TestBufferSize] = {};
 
+    // But if the RDRND feature was statically enabled by the compiler, we
+    // assume that the RNG works. That's because the calls to qRandomCpu() will
+    // be guarded by qCpuHasFeature(RDRND) and that will be a constant true.
+    if (_compilerCpuFeatures & CpuFeatureRDRND)
+        return true;
+
     unsigned *end = qt_random_rdrnd(testBuffer, testBuffer + TestBufferSize);
     if (end < testBuffer + 3) {
         // Random generation didn't produce enough data for us to make a
