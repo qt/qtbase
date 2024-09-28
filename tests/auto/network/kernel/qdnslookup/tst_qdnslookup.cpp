@@ -36,18 +36,21 @@ static const int Timeout = 15000; // 15s
 class tst_QDnsLookup: public QObject
 {
     Q_OBJECT
-
+public:
     const QString normalDomain = u".test.qt-project.org"_s;
     const QString idnDomain = u".alqualondë.test.qt-project.org"_s;
+    QHostAddress alternateDnsServer;
+    quint16 alternateDnsServerPort = 53;
     bool usingIdnDomain = false;
     bool dnsServersMustWork = false;
 
+private:
     QString domainName(const QString &input);
     QString domainNameList(const QString &input);
     QStringList domainNameListAlternatives(const QString &input);
 
     std::unique_ptr<QDnsLookup> lookupCommon(QDnsLookup::Type type, const QString &domain,
-                                             const QHostAddress &server = {}, quint16 port = 0,
+                                             QHostAddress server = {}, quint16 port = 0,
                                              QDnsLookup::Protocol protocol = QDnsLookup::Standard);
     QStringList formatReply(const QDnsLookup *lookup) const;
 
@@ -94,6 +97,12 @@ static QList<QHostAddress> systemNameservers(QDnsLookup::Protocol protocol)
     QList<QHostAddress> result;
     if (protocol != QDnsLookup::Standard)
         return result;
+    if (auto tst = static_cast<tst_QDnsLookup *>(QTest::testObject()); !tst->alternateDnsServer.isNull()) {
+        // if the user provided an alternate server, that's our "system"
+        if (tst->alternateDnsServerPort == 53)
+            result.emplaceBack(tst->alternateDnsServer);
+        return result;
+    }
 
 #ifdef Q_OS_WIN
     ULONG infosize = 0;
@@ -249,6 +258,13 @@ void tst_QDnsLookup::initTestCase()
     QNetworkProxyFactory::setUseSystemConfiguration(true);
 #endif
 
+    if (QString alternateDns = qEnvironmentVariable("QTEST_DNS_SERVER"); !alternateDns.isEmpty()) {
+        // use QUrl to parse host:port, so we get IPv6 too
+        QUrl u("dns://" + alternateDns);
+        alternateDnsServer = QHostAddress(u.host());
+        alternateDnsServerPort = u.port(alternateDnsServerPort);
+    }
+
 #if QT_CONFIG(process)
     // make sure these match something in lookup_data()
     QString checkedDomain = domainName(u"a-multi"_s);
@@ -299,9 +315,10 @@ void tst_QDnsLookup::initTestCase()
 #endif
             ;
     };
-    if (!dnsServersMustWork && !dnsServerDoesWork()) {
+    if (!dnsServersMustWork && alternateDnsServer.isNull() && !dnsServerDoesWork()) {
         qWarning() << "Default DNS server in this system cannot correctly resolve" << checkedDomain;
-        qWarning() << "Please check if you are connected to the Internet.";
+        qWarning() << "Please check if you are connected to the Internet or set the "
+                      "QTEST_DNS_SERVER environment variable to a working server.";
         qDebug("Output was:\n%s", output.constData());
         QSKIP("DNS server does not appear to work");
     }
@@ -346,9 +363,13 @@ QStringList tst_QDnsLookup::domainNameListAlternatives(const QString &input)
 
 std::unique_ptr<QDnsLookup>
 tst_QDnsLookup::lookupCommon(QDnsLookup::Type type, const QString &domain,
-                             const QHostAddress &server, quint16 port,
+                             QHostAddress server, quint16 port,
                              QDnsLookup::Protocol protocol)
 {
+    if (server.isNull()) {
+        server = alternateDnsServer;
+        port = alternateDnsServerPort;
+    }
     auto lookup = std::make_unique<QDnsLookup>(type, domainName(domain), protocol, server, port);
     QObject::connect(lookup.get(), &QDnsLookup::finished,
                      &QTestEventLoop::instance(), &QTestEventLoop::exitLoop);
