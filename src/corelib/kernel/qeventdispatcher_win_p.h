@@ -85,14 +85,14 @@ struct QSockFd {
 typedef QHash<qintptr, QSockFd> QSFDict;
 
 struct WinTimerInfo {                           // internal timer info
-    QObject *dispatcher;
-    int timerId;
     qint64 interval;
-    Qt::TimerType timerType;
     quint64 timeout;                            // - when to actually fire
+    QObject *dispatcher;
     QObject *obj;                               // - object to receive events
-    bool inTimerEvent;
+    int timerId;
+    Qt::TimerType timerType;
     UINT fastTimerId;
+    bool inTimerEvent;
 };
 
 class QZeroTimerEvent : public QTimerEvent
