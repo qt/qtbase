@@ -978,9 +978,6 @@ QString QAccessibleMessageBox::text(QAccessible::Text t) const
         if (str.isEmpty()) // implies no title text is set
             str = messageBox()->text();
         break;
-    case QAccessible::Description:
-        str = widget()->accessibleDescription();
-        break;
     case QAccessible::Value:
         str = messageBox()->text();
         break;
@@ -988,6 +985,7 @@ QString QAccessibleMessageBox::text(QAccessible::Text t) const
         str = messageBox()->informativeText();
         break;
     default:
+        str = QAccessibleWidget::text(t);
         break;
     }
 
