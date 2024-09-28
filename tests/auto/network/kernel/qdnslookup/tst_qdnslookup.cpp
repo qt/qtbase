@@ -388,9 +388,14 @@ QStringList tst_QDnsLookup::formatReply(const QDnsLookup *lookup) const
 
 void tst_QDnsLookup::lookupLocalhost()
 {
+    // The "localhost" label is reserved by RFC 2606 to point to the IPv4
+    // address 127.0.0.1. However, DNS servers are not required to answer this
+    // (though it appears to be a good practice).
     auto lookup = lookupCommon(QDnsLookup::Type::A, u"localhost."_s);
     QVERIFY(lookup);
-    QCOMPARE(lookup->error(), QDnsLookup::NoError);
+    QVERIFY(lookup->error() == QDnsLookup::NoError || lookup->error() == QDnsLookup::NotFoundError);
+    if (lookup->error() == QDnsLookup::NotFoundError)
+        return;
 
     QList<QDnsHostAddressRecord> hosts = lookup->hostAddressRecords();
     QCOMPARE(hosts.size(), 1);
