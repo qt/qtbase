@@ -16,6 +16,9 @@
 #if QT_CONFIG(networkproxy)
 #  include <QtNetwork/QNetworkProxyFactory>
 #endif
+#if QT_CONFIG(process)
+#  include <QtCore/QProcess>
+#endif
 #if QT_CONFIG(ssl)
 #  include <QtNetwork/QSslSocket>
 #endif
@@ -244,6 +247,64 @@ void tst_QDnsLookup::initTestCase()
 #if QT_CONFIG(networkproxy)
     // for DNS-over-TLS
     QNetworkProxyFactory::setUseSystemConfiguration(true);
+#endif
+
+#if QT_CONFIG(process)
+    // make sure these match something in lookup_data()
+    QString checkedDomain = domainName(u"a-multi"_s);
+    static constexpr QByteArrayView expectedAddresses[] = {
+        "192.0.2.1", "192.0.2.2", "192.0.2.3"
+    };
+    QByteArray output;
+    auto dnsServerDoesWork = [&]() {
+        // check if the DNS server is too broken
+        QProcess nslookup;
+#ifdef Q_OS_WIN
+        nslookup.setProcessChannelMode(QProcess::MergedChannels);
+#else
+        nslookup.setProcessChannelMode(QProcess::ForwardedErrorChannel);
+#endif
+        nslookup.start(u"nslookup"_s, { checkedDomain } );
+        if (!nslookup.waitForStarted()) {
+            // executable didn't start, we err on assuming the servers work
+            return true;
+        }
+
+        // if nslookup is running, then we must have the correct answers
+        if (!nslookup.waitForFinished(120'000)) {
+            qWarning() << "nslookup timed out";
+            return true;
+        }
+
+        output = nslookup.readAll();
+        bool ok = nslookup.exitCode() == 0;
+        if (ok)
+            ok = std::all_of(std::begin(expectedAddresses), std::end(expectedAddresses),
+                             [&](QByteArrayView addr) { return output.contains(addr); });
+        if (!ok)
+            return false;
+
+        // check a domain that shouldn't exist
+        nslookup.setArguments({ domainName(u"invalid.invalid"_s) });
+        nslookup.start();
+        if (!nslookup.waitForFinished(120'000)) {
+            qWarning() << "nslookup timed out";
+            return true;
+        }
+        output = nslookup.readAll();
+
+        return nslookup.exitCode() != 0
+#ifdef Q_OS_WIN
+            || output.contains("Non-existent domain")
+#endif
+            ;
+    };
+    if (!dnsServersMustWork && !dnsServerDoesWork()) {
+        qWarning() << "Default DNS server in this system cannot correctly resolve" << checkedDomain;
+        qWarning() << "Please check if you are connected to the Internet.";
+        qDebug("Output was:\n%s", output.constData());
+        QSKIP("DNS server does not appear to work");
+    }
 #endif
 }
 
