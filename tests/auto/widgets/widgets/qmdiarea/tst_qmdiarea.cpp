@@ -413,18 +413,6 @@ void tst_QMdiArea::subWindowActivated()
     }
 }
 
-#ifdef Q_OS_MAC
-#include <Security/AuthSession.h>
-bool macHasAccessToWindowsServer()
-{
-    SecuritySessionId mySession;
-    SessionAttributeBits sessionInfo;
-    SessionGetInfo(callerSecuritySession, &mySession, &sessionInfo);
-    return (sessionInfo & sessionHasGraphicAccess);
-}
-#endif
-
-
 void tst_QMdiArea::subWindowActivated2()
 {
     if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
@@ -481,10 +469,6 @@ void tst_QMdiArea::subWindowActivated2()
     // Check that we only emit _one_ signal and the active window
     // is unchanged after showMinimized/showNormal.
     mdiArea.showMinimized();
-#if defined (Q_OS_MAC)
-    if (!macHasAccessToWindowsServer())
-        QEXPECT_FAIL("", "showMinimized doesn't really minimize if you don't have access to the server", Abort);
-#endif
 #ifdef Q_OS_MAC
     QSKIP("QTBUG-25298: This test is unstable on Mac.");
 #endif

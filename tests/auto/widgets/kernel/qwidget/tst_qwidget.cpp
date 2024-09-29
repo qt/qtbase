@@ -85,17 +85,6 @@ static HWND winHandleOf(const QWidget *w)
 #  define Q_CHECK_PAINTEVENTS
 #endif
 
-#ifdef Q_OS_MACOS
-#include <Security/AuthSession.h>
-bool macHasAccessToWindowsServer()
-{
-    SecuritySessionId mySession;
-    SessionAttributeBits sessionInfo;
-    SessionGetInfo(callerSecuritySession, &mySession, &sessionInfo);
-    return (sessionInfo & sessionHasGraphicAccess);
-}
-#endif
-
 #if defined(Q_OS_WIN)
 static inline void setWindowsAnimationsEnabled(bool enabled)
 {
@@ -3563,15 +3552,7 @@ void tst_QWidget::showMinimizedKeepsFocus()
 
         window.showNormal();
         QVERIFY(QTest::qWaitForWindowActive(&window));
-#ifdef Q_OS_MACOS
-        if (!macHasAccessToWindowsServer())
-            QEXPECT_FAIL("", "When not having WindowServer access, we lose focus.", Continue);
-#endif
         QTRY_COMPARE(window.focusWidget(), firstchild);
-#ifdef Q_OS_MACOS
-        if (!macHasAccessToWindowsServer())
-            QEXPECT_FAIL("", "When not having WindowServer access, we lose focus.", Continue);
-#endif
         QTRY_COMPARE(QApplication::focusWidget(), firstchild);
     }
 }
@@ -9636,10 +9617,6 @@ void tst_QWidget::doubleRepaint()
     QSKIP("QTBUG-52974");
 #endif
 
-#if defined(Q_OS_MACOS)
-    if (!macHasAccessToWindowsServer())
-        QSKIP("Not having window server access causes the wrong number of repaints to be issues");
-#endif
    UpdateWidget widget;
    widget.setPalette(simplePalette());
    widget.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
