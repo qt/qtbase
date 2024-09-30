@@ -565,28 +565,23 @@ void tst_QDnsLookup::lookupIdn()
 
 void tst_QDnsLookup::lookupReuse()
 {
-    QDnsLookup lookup;
-
     // first lookup
-    lookup.setType(QDnsLookup::A);
-    lookup.setName(domainName("a-single"));
-    lookup.lookup();
-    QTRY_VERIFY_WITH_TIMEOUT(lookup.isFinished(), Timeout);
+    std::unique_ptr<QDnsLookup> lookup = lookupCommon(QDnsLookup::Type::A, "a-single");
 
-    QCOMPARE(int(lookup.error()), int(QDnsLookup::NoError));
-    QVERIFY(!lookup.hostAddressRecords().isEmpty());
-    QCOMPARE(lookup.hostAddressRecords().first().name(), domainName("a-single"));
-    QCOMPARE(lookup.hostAddressRecords().first().value(), QHostAddress("192.0.2.1"));
+    QCOMPARE(lookup->error(), QDnsLookup::NoError);
+    QVERIFY(!lookup->hostAddressRecords().isEmpty());
+    QCOMPARE(lookup->hostAddressRecords().first().name(), domainName("a-single"));
+    QCOMPARE(lookup->hostAddressRecords().first().value(), QHostAddress("192.0.2.1"));
 
     // second lookup
-    lookup.setType(QDnsLookup::AAAA);
-    lookup.setName(domainName("aaaa-single"));
-    lookup.lookup();
-    QTRY_VERIFY_WITH_TIMEOUT(lookup.isFinished(), Timeout);
-    QCOMPARE(int(lookup.error()), int(QDnsLookup::NoError));
-    QVERIFY(!lookup.hostAddressRecords().isEmpty());
-    QCOMPARE(lookup.hostAddressRecords().first().name(), domainName("aaaa-single"));
-    QCOMPARE(lookup.hostAddressRecords().first().value(), QHostAddress("2001:db8::1"));
+    lookup->setType(QDnsLookup::AAAA);
+    lookup->setName(domainName("aaaa-single"));
+    lookup->lookup();
+    QTRY_VERIFY_WITH_TIMEOUT(lookup->isFinished(), Timeout);
+    QCOMPARE(lookup->error(), QDnsLookup::NoError);
+    QVERIFY(!lookup->hostAddressRecords().isEmpty());
+    QCOMPARE(lookup->hostAddressRecords().first().name(), domainName("aaaa-single"));
+    QCOMPARE(lookup->hostAddressRecords().first().value(), QHostAddress("2001:db8::1"));
 }
 
 
