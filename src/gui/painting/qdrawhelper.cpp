@@ -5329,6 +5329,15 @@ static inline void alphamapblend_generic(int coverage, QRgba64 *dest, int x, con
     }
 }
 
+static void qt_alphamapblit_generic_oneline(const uchar *map, int len,
+                                            const QRgba64 srcColor, QRgba64 *dest,
+                                            const QRgba64 color,
+                                            const QColorTrcLut *colorProfile)
+{
+    for (int j = 0; j < len; ++j)
+        alphamapblend_generic(map[j], dest, j, srcColor, color, colorProfile);
+}
+
 static void qt_alphamapblit_generic(QRasterBuffer *rasterBuffer,
                                     int x, int y, const QRgba64 &color,
                                     const uchar *map,
@@ -5357,11 +5366,11 @@ static void qt_alphamapblit_generic(QRasterBuffer *rasterBuffer,
             int length = mapWidth;
             while (length > 0) {
                 int l = qMin(BufferSize, length);
+
                 QRgba64 *dest = destFetch64(buffer, rasterBuffer, i, y + ly, l);
-                for (int j=0; j < l; ++j) {
-                    const int coverage = map[j + (i - x)];
-                    alphamapblend_generic(coverage, dest, j, srcColor, color, colorProfile);
-                }
+                qt_alphamapblit_generic_oneline(map + i - x, l,
+                                                srcColor, dest, color,
+                                                colorProfile);
                 if (destStore64)
                     destStore64(rasterBuffer, i, y + ly, dest, l);
                 length -= l;
@@ -5388,11 +5397,9 @@ static void qt_alphamapblit_generic(QRasterBuffer *rasterBuffer,
                     continue;
                 Q_ASSERT(end - start <= BufferSize);
                 QRgba64 *dest = destFetch64(buffer, rasterBuffer, start, clip.y, end - start);
-
-                for (int xp=start; xp<end; ++xp) {
-                    const int coverage = map[xp - x];
-                    alphamapblend_generic(coverage, dest, xp - start, srcColor, color, colorProfile);
-                }
+                qt_alphamapblit_generic_oneline(map + start - x, end - start,
+                                                srcColor, dest, color,
+                                                colorProfile);
                 if (destStore64)
                     destStore64(rasterBuffer, start, clip.y, dest, end - start);
             } // for (i -> line.count)
@@ -5535,6 +5542,15 @@ void qt_alphamapblit_quint16(QRasterBuffer *rasterBuffer,
     }
 }
 
+static void qt_alphamapblit_argb32_oneline(const uchar *map,
+                                           int mapWidth, const QRgba64 &srcColor,
+                                           quint32 *dest, const quint32 c,
+                                           const QColorTrcLut *colorProfile)
+{
+    for (int i = 0; i < mapWidth; ++i)
+        alphamapblend_argb32(dest + i, map[i], srcColor, c, colorProfile);
+}
+
 static void qt_alphamapblit_argb32(QRasterBuffer *rasterBuffer,
                                    int x, int y, const QRgba64 &color,
                                    const uchar *map,
@@ -5559,10 +5575,7 @@ static void qt_alphamapblit_argb32(QRasterBuffer *rasterBuffer,
     if (!clip) {
         quint32 *dest = reinterpret_cast<quint32*>(rasterBuffer->scanLine(y)) + x;
         while (--mapHeight >= 0) {
-            for (int i = 0; i < mapWidth; ++i) {
-                const int coverage = map[i];
-                alphamapblend_argb32(dest + i, coverage, srcColor, c, colorProfile);
-            }
+            qt_alphamapblit_argb32_oneline(map, mapWidth, srcColor, dest, c, colorProfile);
             dest += destStride;
             map += mapStride;
         }
@@ -5580,19 +5593,71 @@ static void qt_alphamapblit_argb32(QRasterBuffer *rasterBuffer,
 
             for (int i=0; i<line.count; ++i) {
                 const QT_FT_Span &clip = line.spans[i];
-
                 int start = qMax<int>(x, clip.x);
                 int end = qMin<int>(x + mapWidth, clip.x + clip.len);
-
-                for (int xp=start; xp<end; ++xp) {
-                    const int coverage = map[xp - x];
-                    alphamapblend_argb32(dest + xp, coverage, srcColor, c, colorProfile);
-                } // for (i -> line.count)
+                qt_alphamapblit_argb32_oneline(map + start - x, end - start, srcColor, dest + start, c, colorProfile);
             } // for (yp -> bottom)
             map += mapStride;
         }
     }
 }
+
+#if QT_CONFIG(raster_64bit)
+static void qt_alphamapblit_nonpremul_argb32(QRasterBuffer *rasterBuffer,
+                                             int x, int y, const QRgba64 &color,
+                                             const uchar *map,
+                                             int mapWidth, int mapHeight, int mapStride,
+                                             const QClipData *clip, bool useGammaCorrection)
+{
+    if (clip)
+        return qt_alphamapblit_generic(rasterBuffer, x, y, color, map, mapWidth, mapHeight,
+                                       mapStride, clip, useGammaCorrection);
+
+    if (color.isTransparent())
+        return;
+
+    const QColorTrcLut *colorProfile = nullptr;
+
+    if (useGammaCorrection)
+        colorProfile = QGuiApplicationPrivate::instance()->colorProfileForA8Text();
+
+    const quint32 c = color.toArgb32();
+    QRgba64 srcColor = color;
+    if (colorProfile && color.isOpaque())
+        srcColor = colorProfile->toLinear(srcColor);
+
+    alignas(8) QRgba64 buffer[BufferSize];
+    const DestFetchProc64 destFetch64 = destFetchProc64[rasterBuffer->format];
+    const DestStoreProc64 destStore64 = destStoreProc64[rasterBuffer->format];
+
+    for (int ly = 0; ly < mapHeight; ++ly) {
+        bool dstFullyOpaque = true;
+        int i = x;
+        int length = mapWidth;
+        while (length > 0) {
+            int l = qMin(BufferSize, length);
+            quint32 *dest = reinterpret_cast<quint32*>(rasterBuffer->scanLine(y + ly)) + i;
+            for (int j = 0; j < l && dstFullyOpaque; ++j)
+                dstFullyOpaque = (dest[j] & 0xff000000) == 0xff000000;
+            if (dstFullyOpaque) {
+                // Use RGB/ARGB32PM optimized version
+                qt_alphamapblit_argb32_oneline(map + i - x, l, srcColor, dest, c, colorProfile);
+            } else {
+                // Use generic version
+                QRgba64 *dest64 = destFetch64(buffer, rasterBuffer, i, y + ly, l);
+                qt_alphamapblit_generic_oneline(map + i - x, l,
+                                                srcColor, dest64, color,
+                                                colorProfile);
+                if (destStore64)
+                    destStore64(rasterBuffer, i, y + ly, dest64, l);
+            }
+            length -= l;
+            i += l;
+        }
+        map += mapStride;
+    }
+}
+#endif
 
 static inline int qRgbAvg(QRgb rgb)
 {
@@ -6051,7 +6116,11 @@ DrawHelper qDrawHelper[] =
     {
         blend_color_generic,
         qt_bitmapblit_argb32,
+#if QT_CONFIG(raster_64bit)
+        qt_alphamapblit_nonpremul_argb32,
+#else
         qt_alphamapblit_generic,
+#endif
         qt_alphargbblit_generic,
         qt_rectfill_nonpremul_argb32
     },
