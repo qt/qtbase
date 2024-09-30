@@ -102,6 +102,8 @@ void ShortcutTester::setupLayout()
         Qt::ControlModifier | Qt::Key_BracketRight,
         Qt::ShiftModifier | Qt::Key_F3,
         Qt::ControlModifier | Qt::Key_F3,
+        Qt::Key_Backtab,
+        Qt::ShiftModifier | Qt::Key_Backtab,
     };
 
     for (const auto k : keys3)
