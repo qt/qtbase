@@ -600,6 +600,19 @@ struct PageRule
 };
 QT_CSS_DECLARE_TYPEINFO(PageRule, Q_RELOCATABLE_TYPE)
 
+struct AnimationRule
+{
+    struct AnimationRuleSet
+    {
+        float keyFrame;
+        QList<Declaration> declarations;
+    };
+
+    QString animName;
+    QList<AnimationRuleSet> ruleSets;
+};
+QT_CSS_DECLARE_TYPEINFO(AnimationRule, Q_RELOCATABLE_TYPE)
+
 struct ImportRule
 {
     QString href;
@@ -621,6 +634,7 @@ struct StyleSheet
     QList<StyleRule> styleRules; // only contains rules that are not indexed
     QList<MediaRule> mediaRules;
     QList<PageRule> pageRules;
+    QList<AnimationRule> animationRules;
     QList<ImportRule> importRules;
     StyleSheetOrigin origin;
     int depth; // applicable only for inline style sheets
@@ -752,6 +766,7 @@ public:
     bool parsePage(PageRule *pageRule);
     bool parsePseudoPage(QString *selector);
     bool parseNextOperator(Value *value);
+    bool parseAnimation(AnimationRule *animationRule);
     bool parseCombinator(BasicSelector::Relation *relation);
     bool parseProperty(Declaration *decl);
     bool parseRuleset(StyleRule *styleRule);
@@ -784,6 +799,7 @@ public:
     inline bool testImport() { return testTokenAndEndsWith(ATKEYWORD_SYM, QLatin1StringView("import")); }
     inline bool testMedia() { return testTokenAndEndsWith(ATKEYWORD_SYM, QLatin1StringView("media")); }
     inline bool testPage() { return testTokenAndEndsWith(ATKEYWORD_SYM, QLatin1StringView("page")); }
+    inline bool testAnimation() { return testTokenAndEndsWith(ATKEYWORD_SYM, QLatin1StringView("keyframes")); }
     inline bool testCombinator() { return test(PLUS) || test(GREATER) || test(TILDE) || test(S); }
     inline bool testProperty() { return test(IDENT); }
     bool testTerm();

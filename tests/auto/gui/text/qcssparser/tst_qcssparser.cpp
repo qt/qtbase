@@ -21,6 +21,7 @@ private slots:
     void expr();
     void import();
     void media();
+    void animation();
     void page();
     void ruleset();
     void selector_data();
@@ -396,6 +397,48 @@ void tst_QCssParser::media()
     QCOMPARE(rule.media.at(0), QString("print"));
     QCOMPARE(rule.media.at(1), QString("screen"));
     QVERIFY(rule.styleRules.isEmpty());
+}
+
+void tst_QCssParser::animation()
+{
+    QCss::Parser parser("@keyframes emptyAnimation{} motion{from {x : 10;} to {x : 50;}} color{0% {fill : blue;} 25% {fill : yellow;} 100% {fill : red;}}");
+    QVERIFY(parser.testAnimation());
+
+    {
+        QCss::AnimationRule rule;
+        QVERIFY(parser.parseAnimation(&rule));
+        QCOMPARE(rule.animName, QStringLiteral("emptyAnimation"));
+        QCOMPARE(rule.ruleSets.size(), 0);
+    }
+
+    {
+        QCss::AnimationRule rule;
+        QVERIFY(parser.parseAnimation(&rule));
+        QCOMPARE(rule.animName, QStringLiteral("motion"));
+        QCOMPARE(rule.ruleSets.size(), 2);
+        QCOMPARE(rule.ruleSets[0].keyFrame, 0);
+        QCOMPARE(rule.ruleSets[1].keyFrame, 1);
+        QCOMPARE(rule.ruleSets[0].declarations[0].d->property, QStringLiteral("x"));
+        QCOMPARE(rule.ruleSets[0].declarations[0].d->values[0].toString(), QStringLiteral("10"));
+        QCOMPARE(rule.ruleSets[1].declarations[0].d->property, QStringLiteral("x"));
+        QCOMPARE(rule.ruleSets[1].declarations[0].d->values[0].toString(), QStringLiteral("50"));
+    }
+
+    {
+        QCss::AnimationRule rule;
+        QVERIFY(parser.parseAnimation(&rule));
+        QCOMPARE(rule.animName, QStringLiteral("color"));
+        QCOMPARE(rule.ruleSets.size(), 3);
+        QCOMPARE(rule.ruleSets[0].keyFrame, 0);
+        QCOMPARE(rule.ruleSets[1].keyFrame, 0.25);
+        QCOMPARE(rule.ruleSets[2].keyFrame, 1);
+        QCOMPARE(rule.ruleSets[0].declarations[0].d->property, QStringLiteral("fill"));
+        QCOMPARE(rule.ruleSets[0].declarations[0].d->values[0].toString(), QStringLiteral("blue"));
+        QCOMPARE(rule.ruleSets[1].declarations[0].d->property, QStringLiteral("fill"));
+        QCOMPARE(rule.ruleSets[1].declarations[0].d->values[0].toString(), QStringLiteral("yellow"));
+        QCOMPARE(rule.ruleSets[2].declarations[0].d->property, QStringLiteral("fill"));
+        QCOMPARE(rule.ruleSets[2].declarations[0].d->values[0].toString(), QStringLiteral("red"));
+    }
 }
 
 void tst_QCssParser::page()

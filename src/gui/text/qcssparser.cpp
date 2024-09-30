@@ -2420,6 +2420,10 @@ bool Parser::parse(StyleSheet *styleSheet, Qt::CaseSensitivity nameCaseSensitivi
             PageRule rule;
             if (!parsePage(&rule)) return false;
             styleSheet->pageRules.append(rule);
+        } else if (testAnimation()) {
+            AnimationRule rule;
+            if (!parseAnimation(&rule)) return false;
+            styleSheet->animationRules.append(rule);
         } else if (testRuleset()) {
             StyleRule rule;
             if (!parseRuleset(&rule)) return false;
@@ -2543,6 +2547,72 @@ bool Parser::parseNextOperator(Value *value)
         case COMMA: value->type = Value::TermOperatorComma; skipSpace(); break;
         default: prev(); break;
     }
+    return true;
+}
+
+bool Parser::parseAnimation(AnimationRule *animationRule)
+{
+    skipSpace();
+    if (!test(IDENT)) return false;
+
+    animationRule->animName = lexem();
+
+    if (!next(LBRACE)) return false;
+    skipSpace();
+
+    while (test(PERCENTAGE) || test(IDENT)) {
+        AnimationRule::AnimationRuleSet set;
+        if (lookup() == PERCENTAGE) {
+            QString name = lexem();
+            name.removeLast();
+            float keyFrame = name.toFloat() / 100;
+            set.keyFrame = keyFrame;
+        } else if (lookup() == IDENT) {
+            QString name;
+            if (parseElementName(&name)) {
+                if (name == QStringLiteral("from"))
+                    set.keyFrame = 0;
+                else if (name == QStringLiteral("to"))
+                    set.keyFrame = 1;
+            }
+        }
+
+        skipSpace();
+        if (!next(LBRACE)) return false;
+        const int declarationStart = index;
+
+        do {
+            skipSpace();
+            Declaration decl;
+            const int rewind = index;
+            if (!parseNextDeclaration(&decl)) {
+                index = rewind;
+                const bool foundSemicolon = until(SEMICOLON);
+                const int semicolonIndex = index;
+
+                index = declarationStart;
+                const bool foundRBrace = until(RBRACE);
+
+                if (foundSemicolon && semicolonIndex < index) {
+                    decl = Declaration();
+                    index = semicolonIndex - 1;
+                } else {
+                    skipSpace();
+                    return foundRBrace;
+                }
+            }
+            if (!decl.isEmpty())
+                set.declarations.append(decl);
+        } while (test(SEMICOLON));
+
+        if (!next(RBRACE)) return false;
+        skipSpace();
+        animationRule->ruleSets.append(set);
+    }
+
+    if (!next(RBRACE)) return false;
+    skipSpace();
+
     return true;
 }
 
