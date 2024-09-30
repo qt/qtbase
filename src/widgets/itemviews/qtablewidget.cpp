@@ -849,8 +849,11 @@ bool QTableModel::dropMimeData(const QMimeData *data, Qt::DropAction action,
     if (index.isValid()) {
         row = index.row();
         column = index.column();
-    }else if (row == -1 || column == -1) {  // The user dropped outside the table.
+    } else if (row == -1 || column == -1) { // The user dropped outside the table.
         row = rowCount();
+        column = 0;
+    } else { // The user dropped between two rows
+        // This means inserting a row, which only makes sense at column 0
         column = 0;
     }
 
