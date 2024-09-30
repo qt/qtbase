@@ -1354,6 +1354,11 @@ QList<QKeyCombination> QWindowsKeyMapper::possibleKeyCombinations(const QKeyEven
         return result;
     }
 
+    // If Key_Tab+Shift is pressed we add Key_Backtab without
+    // shift modifier as a possible combination too
+    if (baseKey == Qt::Key_Tab && (keyMods & Qt::ShiftModifier))
+        result << (Qt::Key_Backtab | (keyMods & ~Qt::ShiftModifier));
+
     // The base key is _always_ valid, of course
     result << QKeyCombination::fromCombined(int(baseKey) + int(keyMods));
 
