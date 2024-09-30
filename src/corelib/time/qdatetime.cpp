@@ -5891,16 +5891,7 @@ QDateTime QDateTime::fromString(QStringView string, Qt::DateFormat format)
     two digits.
 
     Incorrectly specified fields of the \a string will cause an invalid
-    QDateTime to be returned. For example, consider the following code,
-    where the two digit year 12 is read as 1912 (see the table below for all
-    field defaults); the resulting datetime is invalid because 23 April 1912
-    was a Tuesday, not a Monday:
-
-    \snippet code/src_corelib_time_qdatetime.cpp 20
-
-    The correct code is:
-
-    \snippet code/src_corelib_time_qdatetime.cpp 21
+    QDateTime to be returned.
 
     \note Day and month names as well as AM/PM indicators must be given in
     English (C locale).  If localized month and day names or localized forms of
