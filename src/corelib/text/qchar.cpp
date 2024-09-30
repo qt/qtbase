@@ -590,12 +590,21 @@ QT_BEGIN_NAMESPACE
     \fn QChar::QChar(QLatin1Char ch)
 
     Constructs a QChar corresponding to ASCII/Latin-1 character \a ch.
+
+//![qchar-implicit-conversions]
+    \note Since Qt 6.9, implicit conversions are disabled for this constructor.
+    That means it accepts only the constructor argument type and not everything
+    that implicitly converts to it. A backwards-compatible fix is to explicitly
+    cast to one of the supported argument types of QChar constructors.
+//![qchar-implicit-conversions]
 */
 
 /*!
     \fn QChar::QChar(SpecialCharacter ch)
 
     Constructs a QChar for the predefined character value \a ch.
+
+    \include qchar.cpp qchar-implicit-conversions
 */
 
 /*!
@@ -603,6 +612,8 @@ QT_BEGIN_NAMESPACE
     \since 5.10
 
     Constructs a QChar corresponding to the UTF-16 character \a ch.
+
+    \include qchar.cpp qchar-implicit-conversions
 */
 
 /*!
@@ -612,6 +623,8 @@ QT_BEGIN_NAMESPACE
     Constructs a QChar corresponding to the wide character \a ch.
 
     \note This constructor is only available on Windows.
+
+    \include qchar.cpp qchar-implicit-conversions
 */
 
 /*!
@@ -621,6 +634,8 @@ QT_BEGIN_NAMESPACE
 
     \note This constructor is not available when \c QT_NO_CAST_FROM_ASCII
     is defined.
+
+    \include qchar.cpp qchar-implicit-conversions
 
     \sa QT_NO_CAST_FROM_ASCII
 */
@@ -632,6 +647,8 @@ QT_BEGIN_NAMESPACE
 
     \note This constructor is not available when \c QT_NO_CAST_FROM_ASCII
     or \c QT_RESTRICTED_CAST_FROM_ASCII is defined.
+
+    \include qchar.cpp qchar-implicit-conversions
 
     \sa QT_NO_CAST_FROM_ASCII, QT_RESTRICTED_CAST_FROM_ASCII
 */
@@ -648,24 +665,40 @@ QT_BEGIN_NAMESPACE
     \fn QChar::QChar(ushort code)
 
     Constructs a QChar for the character with Unicode code point \a code.
+
+    \include qchar.cpp qchar-implicit-conversions
 */
 
 /*!
     \fn QChar::QChar(short code)
 
     Constructs a QChar for the character with Unicode code point \a code.
+
+    \include qchar.cpp qchar-implicit-conversions
+*/
+
+/*!
+    \fn QChar::QChar(char32_t code)
+
+    Constructs a QChar for the character with Unicode code point \a code.
+
+    \include qchar.cpp qchar-implicit-conversions
 */
 
 /*!
     \fn QChar::QChar(uint code)
 
     Constructs a QChar for the character with Unicode code point \a code.
+
+    \include qchar.cpp qchar-implicit-conversions
 */
 
 /*!
     \fn QChar::QChar(int code)
 
     Constructs a QChar for the character with Unicode code point \a code.
+
+    \include qchar.cpp qchar-implicit-conversions
 */
 
 /*!

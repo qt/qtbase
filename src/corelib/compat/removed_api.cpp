@@ -1245,6 +1245,9 @@ QUuid QUuid::createUuidV5(const QUuid &ns, const QByteArray &baseData) noexcept
 #endif // QT_CORE_REMOVED_SINCE(6, 8)
 
 #if QT_CORE_REMOVED_SINCE(6, 9)
+
+#include "qchar.h" // inlined API
+
 #include "qmetatype.h"
 
 bool QMetaType::isRegistered() const

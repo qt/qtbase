@@ -37,6 +37,10 @@ public:
     Q_DECLARE_STRONGLY_ORDERED_LITERAL_TYPE(QLatin1Char, char)
 
 private:
+    friend class QChar;
+    // this is for QChar's ctor only:
+    explicit constexpr operator char16_t() const noexcept { return unicode(); }
+
     char ch;
 };
 
@@ -65,10 +69,55 @@ public:
 #ifdef QT_IMPLICIT_QCHAR_CONSTRUCTION
 #error This macro has been removed in Qt 6.8.
 #endif
-
+private:
+    using is_wide_wchar_t = std::bool_constant<(sizeof(wchar_t) > 2)>;
+    template <typename Char>
+    using is_implicit_conversion_char = std::disjunction<
+            std::is_same<Char, ushort>,
+            std::is_same<Char, short>,
+            std::is_same<Char, SpecialCharacter>,
+            std::is_same<Char, QLatin1Char>,
+            std::conjunction<std::is_same<Char, wchar_t>, std::negation<is_wide_wchar_t>>,
+            std::is_same<Char, char16_t>
+        >;
+    template <typename Char>
+    using is_explicit_conversion_char = std::disjunction<
+            std::is_same<Char, char32_t>, // implicit conversion to uint(?) before 6.8
+            std::conjunction<std::is_same<Char, wchar_t>, is_wide_wchar_t>,
+            std::is_same<Char, int>,
+            std::is_same<Char, uint>
+        >;
+    template <typename Char>
+    using is_conversion_char = std::disjunction<
+            is_implicit_conversion_char<Char>,
+            is_explicit_conversion_char<Char>
+        >;
+    template <typename Char>
+    using is_implicit_ascii_warn_char = std::is_same<Char, char>;
+    template <typename Char>
+    using is_explicit_ascii_warn_char = std::is_same<Char, uchar>;
+    template <typename Char>
+    using if_compatible_char = std::enable_if_t<is_conversion_char<Char>::value, bool>;
+    template <typename Char>
+    using if_implicit_conversion_char = std::enable_if_t<is_implicit_conversion_char<Char>::value, bool>;
+    template <typename Char>
+    using if_explicit_conversion_char = std::enable_if_t<is_explicit_conversion_char<Char>::value, bool>;
+    template <typename Char>
+    using if_implicit_ascii_warn_char = std::enable_if_t<is_implicit_ascii_warn_char<Char>::value, bool>;
+    template <typename Char>
+    using if_explicit_ascii_warn_char = std::enable_if_t<is_explicit_ascii_warn_char<Char>::value, bool>;
+    template <typename Char>
+    [[maybe_unused]] static constexpr bool is_explicit_char_v = std::disjunction_v<
+            is_explicit_conversion_char<Char>,
+            is_explicit_ascii_warn_char<Char>
+        >;
+public:
     constexpr Q_IMPLICIT QChar() noexcept : ucs(0) {}
+#if QT_CORE_REMOVED_SINCE(6, 9) || defined(Q_QDOC)
     constexpr Q_IMPLICIT QChar(ushort rc) noexcept : ucs(rc) {}
+#endif
     constexpr explicit QChar(uchar c, uchar r) noexcept : ucs(char16_t((r << 8) | c)) {}
+#if QT_CORE_REMOVED_SINCE(6, 9) || defined(Q_QDOC)
     constexpr Q_IMPLICIT QChar(short rc) noexcept : ucs(char16_t(rc)) {}
     constexpr explicit QChar(uint rc) noexcept : ucs((Q_ASSERT(rc <= 0xffff), char16_t(rc))) {}
     constexpr explicit QChar(int rc) noexcept : QChar(uint(rc)) {}
@@ -78,12 +127,26 @@ public:
 #if defined(Q_OS_WIN) || defined(Q_QDOC)
     constexpr Q_IMPLICIT QChar(wchar_t ch) noexcept : ucs(char16_t(ch)) {}
 #endif
+#endif // QT_CORE_REMOVED_SINCE(6, 9)
+    template <typename Char, if_implicit_conversion_char<Char> = true>
+    constexpr Q_IMPLICIT QChar(const Char ch) noexcept : ucs(char16_t(ch)) {}
+    template <typename Char, if_explicit_conversion_char<Char> = true>
+    constexpr explicit QChar(const Char ch) noexcept
+        : ucs((Q_ASSERT(char32_t(ch) <= 0xffff), char16_t(ch))) {}
 
 #ifndef QT_NO_CAST_FROM_ASCII
     // Always implicit -- allow for 'x' => QChar conversions
+#if QT_CORE_REMOVED_SINCE(6, 9) || defined(Q_QDOC)
     QT_ASCII_CAST_WARN constexpr Q_IMPLICIT QChar(char c) noexcept : ucs(uchar(c)) { }
+#endif
+    template <typename Char, if_implicit_ascii_warn_char<Char> = true>
+    QT_ASCII_CAST_WARN constexpr Q_IMPLICIT QChar(const Char ch) noexcept : ucs(uchar(ch)) {}
 #ifndef QT_RESTRICTED_CAST_FROM_ASCII
+#if QT_CORE_REMOVED_SINCE(6, 9) || defined(Q_QDOC)
     QT_ASCII_CAST_WARN constexpr explicit QChar(uchar c) noexcept : ucs(c) { }
+#endif
+    template <typename Char, if_explicit_ascii_warn_char<Char> = true>
+    QT_ASCII_CAST_WARN constexpr explicit QChar(const Char c) noexcept : ucs(c) { }
 #endif
 #endif
 
@@ -610,11 +673,6 @@ private:
     }
     Q_DECLARE_STRONGLY_ORDERED(QChar, const char *, Q_WEAK_OVERLOAD QT_ASCII_CAST_WARN)
 #endif // !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
-
-#ifdef QT_NO_CAST_FROM_ASCII
-    QChar(char c) = delete;
-    QChar(uchar c) = delete;
-#endif
 
     char16_t ucs;
 };

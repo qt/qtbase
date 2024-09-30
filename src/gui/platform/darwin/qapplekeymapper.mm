@@ -211,7 +211,7 @@ static int toKeyCode(const QChar &key, int virtualKey, int modifiers)
     qCDebug(lcQpaKeyMapperKeys, "Mapping key: %d (0x%04x) / vk %d (0x%04x)",
         key.unicode(), key.unicode(), virtualKey, virtualKey);
 
-    if (key == QChar(kClearCharCode) && virtualKey == 0x47)
+    if (key == char16_t(kClearCharCode) && virtualKey == 0x47)
         return Qt::Key_Clear;
 
     if (key.isDigit()) {
@@ -246,11 +246,11 @@ static int toKeyCode(const QChar &key, int virtualKey, int modifiers)
     }
 
     // Check if they belong to key codes in private unicode range
-    if (key >= QChar(NSUpArrowFunctionKey) && key <= QChar(NSModeSwitchFunctionKey)) {
+    if (key >= char16_t(NSUpArrowFunctionKey) && key <= char16_t(NSModeSwitchFunctionKey)) {
         if (auto qtKey = functionKeys.value(key.unicode())) {
             qCDebug(lcQpaKeyMapperKeys) << "Got" << qtKey;
             return qtKey;
-        } else if (key >= QChar(NSF1FunctionKey) && key <= QChar(NSF35FunctionKey)) {
+        } else if (key >= char16_t(NSF1FunctionKey) && key <= char16_t(NSF35FunctionKey)) {
             auto functionKey = Qt::Key_F1 + (key.unicode() - NSF1FunctionKey) ;
             qCDebug(lcQpaKeyMapperKeys) << "Got" << functionKey;
             return functionKey;
@@ -331,9 +331,9 @@ QChar QAppleKeyMapper::toCocoaKey(Qt::Key key)
 {
     // Prioritize overloaded keys
     if (key == Qt::Key_Return)
-        return QChar(NSCarriageReturnCharacter);
+        return char16_t(NSCarriageReturnCharacter);
     if (key == Qt::Key_Backspace)
-        return QChar(NSBackspaceCharacter);
+        return char16_t(NSBackspaceCharacter);
 
     Q_CONSTINIT static QHash<Qt::Key, char16_t> reverseCocoaKeys;
     if (reverseCocoaKeys.isEmpty()) {
