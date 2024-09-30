@@ -21,7 +21,7 @@ from typing import Callable, Iterator, Optional
 
 from qlocalexml import Locale, QLocaleXmlReader
 from localetools import *
-from iso639_3 import LanguageCodeData
+from iso639_3 import LanguageCodeData, LanguageCodeEntry
 from zonedata import utcIdList, windowsIdList
 
 
@@ -275,7 +275,7 @@ class TimeZoneDataWriter (LocaleSourceEditor):
         return sign * (hour * 60 + mins) * 60
 
 class LocaleDataWriter (LocaleSourceEditor):
-    def likelySubtags(self, likely):
+    def likelySubtags(self, likely: Iterator[tuple[str, tuple, str, tuple]]) -> None:
         # First sort likely, so that we can use binary search in C++
         # code. Although the entries are (lang, script, region), sort
         # as (lang, region, script) and sort 0 after all non-zero
@@ -290,6 +290,7 @@ class LocaleDataWriter (LocaleSourceEditor):
 
         i = 0
         self.writer.write('static constexpr QLocaleId likely_subtags[] = {\n')
+        # have and give are both triplets of ints
         for had, have, got, give in likely:
             i += 1
             self.writer.write('    {{ {:3d}, {:3d}, {:3d} }}'.format(*have))
@@ -298,14 +299,15 @@ class LocaleDataWriter (LocaleSourceEditor):
             self.writer.write(f' // {had} -> {got}\n')
         self.writer.write('};\n\n')
 
-    def localeIndex(self, indices):
+    def localeIndex(self, indices: Iterator[tuple[int, str]]) -> None:
         self.writer.write('static constexpr quint16 locale_index[] = {\n')
         for index, name in indices:
             self.writer.write(f'{index:6d}, // {name}\n')
         self.writer.write('     0 // trailing 0\n')
         self.writer.write('};\n\n')
 
-    def localeData(self, locales, names):
+    def localeData(self, locales: dict[tuple[int, int, int], Locale],
+                   names: list[tuple[int, int, int]]) -> None:
         list_pattern_part_data = StringData('list_pattern_part_data')
         single_character_data = StringData('single_character_data')
         date_format_data = StringData('date_format_data')
@@ -410,9 +412,10 @@ class LocaleDataWriter (LocaleSourceEditor):
             ',{:6d}' * 3,
             ' }}')).format
         for key in names:
-            locale = locales[key]
+            locale: Locale = locales[key]
             # Sequence of StringDataToken:
-            ranges = (tuple(list_pattern_part_data.append(p) for p in # 5 entries:
+            ranges: tuple[StringDataToken, ...] = (
+                      tuple(list_pattern_part_data.append(p) for p in # 5 entries:
                             (locale.listPatternPartStart, locale.listPatternPartMiddle,
                              locale.listPatternPartEnd, locale.listPatternPartTwo,
                              locale.listDelim)) +
@@ -469,7 +472,7 @@ class LocaleDataWriter (LocaleSourceEditor):
             data.write(self.writer.write)
 
     @staticmethod
-    def __writeNameData(out, book, form):
+    def __writeNameData(out, book: dict[int, tuple[str, str, str]], form: str) -> None:
         out(f'static constexpr char {form}_name_list[] =\n')
         out('"Default\\0"\n')
         for key, value in book.items():
@@ -493,7 +496,7 @@ class LocaleDataWriter (LocaleSourceEditor):
         out('};\n\n')
 
     @staticmethod
-    def __writeCodeList(out, book, form, width):
+    def __writeCodeList(out, book: dict[int, tuple[str, str, str]], form: str, width: int) -> None:
         out(f'static constexpr unsigned char {form}_code_list[] =\n')
         for key, value in book.items():
             code = value[1]
@@ -501,7 +504,7 @@ class LocaleDataWriter (LocaleSourceEditor):
             out(f'"{code}" // {value[0]}\n')
         out(';\n\n')
 
-    def languageNames(self, languages):
+    def languageNames(self, languages: dict[int, tuple[str, str, str]]) -> None:
         self.__writeNameData(self.writer.write, languages, 'language')
 
     def scriptNames(self, scripts):
@@ -513,26 +516,27 @@ class LocaleDataWriter (LocaleSourceEditor):
     # TODO: unify these next three into the previous three; kept
     # separate for now to verify we're not changing data.
 
-    def languageCodes(self, languages, code_data: LanguageCodeData):
-        out = self.writer.write
+    def languageCodes(self, languages: dict[int, tuple[str, str, str]],
+                      code_data: LanguageCodeData) -> None:
+        out: Callable[[str], int] = self.writer.write
 
         out(f'constexpr std::array<LanguageCodeEntry, {len(languages)}> languageCodeList {{\n')
 
         def q(val: Optional[str], size: int) -> str:
             """Quote the value and adjust the result for tabular view."""
-            s = '' if val is None else ', '.join(f"'{c}'" for c in val)
+            s: str = '' if val is None else ', '.join(f"'{c}'" for c in val)
             return f'{{{s}}}' if size == 0 else f'{{{s}}},'.ljust(size * 5 + 2)
 
         for key, value in languages.items():
-            code = value[1]
+            code: str = value[1]
             if key < 2:
-                result = code_data.query('und')
+                result: LanguageCodeEntry = code_data.query('und')
             else:
-                result = code_data.query(code)
+                result: LanguageCodeEntry = code_data.query(code)
                 assert code == result.id()
             assert result is not None
 
-            codeString = q(result.part1Code, 2)
+            codeString: str = q(result.part1Code, 2)
             codeString += q(result.part2BCode, 3)
             codeString += q(result.part2TCode, 3)
             codeString += q(result.part3Code, 0)
@@ -540,10 +544,11 @@ class LocaleDataWriter (LocaleSourceEditor):
 
         out('};\n\n')
 
-    def scriptCodes(self, scripts):
+    def scriptCodes(self, scripts: dict[int, tuple[str, str, str]]) -> None:
         self.__writeCodeList(self.writer.write, scripts, 'script', 4)
 
-    def territoryCodes(self, territories): # TODO: unify with territoryNames()
+    # TODO: unify with territoryNames()
+    def territoryCodes(self, territories: dict[int, tuple[str, str, str]]) -> None:
         self.__writeCodeList(self.writer.write, territories, 'territory', 3)
 
 class CalendarDataWriter (LocaleSourceEditor):
