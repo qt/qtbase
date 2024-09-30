@@ -556,7 +556,8 @@ class CalendarDataWriter (LocaleSourceEditor):
         '      {{'
         + ','.join(('{:6d}',) * 3 + ('{:5d}',) * 6 + ('{:3d}',) * 6)
         + ' }},').format
-    def write(self, calendar, locales, names):
+    def write(self, calendar: str, locales: dict[tuple[int, int, int], Locale],
+              names: list[tuple[int, int, int]]) -> None:
         months_data = StringData('months_data', 16)
 
         self.writer.write('static constexpr QCalendarLocale locale_data[] = {\n')
@@ -577,7 +578,7 @@ class CalendarDataWriter (LocaleSourceEditor):
             'Sizes...'
             '\n')
         for key in names:
-            locale = locales[key]
+            locale: Locale = locales[key]
             # Sequence of StringDataToken:
             try:
                 # Twelve long month names can add up to more than 256 (e.g. kde_TZ: 264)
@@ -602,7 +603,7 @@ class CalendarDataWriter (LocaleSourceEditor):
 
 
 class TestLocaleWriter (LocaleSourceEditor):
-    def localeList(self, locales):
+    def localeList(self, locales: list[tuple[int, int, int]]) -> None:
         self.writer.write('const LocaleListItem g_locale_list[] = {\n')
         from enumdata import language_map, territory_map
         # TODO: update testlocales/ to include script.
@@ -618,19 +619,19 @@ class TestLocaleWriter (LocaleSourceEditor):
 
 
 class LocaleHeaderWriter (SourceFileEditor):
-    def __init__(self, path, temp, enumify):
+    def __init__(self, path: Path, temp: Path, enumify: Callable[[str, str], str]) -> None:
         super().__init__(path, temp)
         self.__enumify = enumify
 
-    def languages(self, languages):
+    def languages(self, languages: dict[int, tuple[str, str, str]]) -> None:
         self.__enum('Language', languages, self.__language)
         self.writer.write('\n')
 
-    def territories(self, territories):
+    def territories(self, territories: dict[int, tuple[str, str, str]]) -> None:
         self.writer.write("    // ### Qt 7: Rename to Territory\n")
         self.__enum('Country', territories, self.__territory, 'Territory')
 
-    def scripts(self, scripts):
+    def scripts(self, scripts: dict[int, tuple[str, str, str]]) -> None:
         self.__enum('Script', scripts, self.__script)
         self.writer.write('\n')
 
@@ -639,13 +640,15 @@ class LocaleHeaderWriter (SourceFileEditor):
                           territory_aliases as __territory,
                           script_aliases as __script)
 
-    def __enum(self, name, book, alias, suffix = None):
+    def __enum(self, name: str, book: dict[int, tuple[str, str, str]],
+               alias: dict[str, str], suffix: str = None) -> None:
         assert book
 
         if suffix is None:
             suffix = name
 
-        out, enumify = self.writer.write, self.__enumify
+        out: Callable[[str], int] = self.writer.write
+        enumify: Callable[[str, str], str] = self.__enumify
         out(f'    enum {name} : ushort {{\n')
         for key, value in book.items():
             member = enumify(value[0], suffix)
