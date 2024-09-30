@@ -4646,7 +4646,7 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
         ret = 0;
         break;
     case PM_DockWidgetFrameWidth:
-        ret = 1;
+        ret = int(QStyleHelper::dpiScaled(1, opt));
         break;
 #endif // QT_CONFIG(dockwidget)
 
