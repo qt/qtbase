@@ -638,42 +638,27 @@ static QString find_translation(const QLocale & locale,
             languages.insert(i + 1, lowerLang);
     }
 
-    QStringList candidates;
-    // assume 3 segments for each entry
-    candidates.reserve(languages.size() * 3);
-    for (QString language : std::as_const(languages)) {
-        // for each language, add versions without territory and script
-        language.replace(u'-', u'_');
+    for (QString localeName : std::as_const(languages)) {
+        localeName.replace(u'-', u'_');
+
+        // try the complete locale name first and progressively truncate from
+        // the end until a matching language tag is found (with or without suffix)
         for (;;) {
-            candidates += language;
-            int rightmost = language.lastIndexOf(u'_');
+            realname += localeName + suffixOrDotQM;
+            if (is_readable_file(realname))
+                return realname;
+
+            realname.truncate(realNameBaseSize + localeName.size());
+            if (is_readable_file(realname))
+                return realname;
+
+            realname.truncate(realNameBaseSize);
+
+            int rightmost = localeName.lastIndexOf(u'_');
             if (rightmost <= 0)
-                break;
-            language.truncate(rightmost);
+                break; // no truncations anymore, break
+            localeName.truncate(rightmost);
         }
-    }
-
-    // now sort the list of candidates
-    std::sort(candidates.begin(), candidates.end(), [](const auto &lhs, const auto &rhs){
-        const auto rhsSegments = rhs.count(u'_');
-        const auto lhsSegments = lhs.count(u'_');
-        // candidates with more segments come first
-        if (rhsSegments != lhsSegments)
-            return rhsSegments < lhsSegments;
-        // candidates with same number of segments are sorted alphanumerically
-        return lhs < rhs;
-    });
-
-    for (const QString &localeName : std::as_const(candidates)) {
-        realname += localeName + suffixOrDotQM;
-        if (is_readable_file(realname))
-            return realname;
-
-        realname.truncate(realNameBaseSize + localeName.size());
-        if (is_readable_file(realname))
-            return realname;
-
-        realname.truncate(realNameBaseSize);
     }
 
     const int realNameBaseSizeFallbacks = path.size() + filename.size();
