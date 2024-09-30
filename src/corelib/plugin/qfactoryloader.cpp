@@ -352,8 +352,10 @@ inline void QFactoryLoaderPrivate::updateSinglePath(const QString &path)
         int thisVersion = library->metaData.value(QtPluginMetaDataKeys::QtVersion).toInteger();
         if (iid.startsWith(QStringLiteral("org.qt-project.Qt.QPA"))) {
             // QPA plugins must match Qt Major.Minor
-            if (thisVersion != QtVersionNoPatch)
+            if (thisVersion != QtVersionNoPatch) {
+                qCDebug(lcFactoryLoader) << "Ignoring QPA plugin due to mismatching Qt versions" << QtVersionNoPatch << thisVersion;
                 continue;
+            }
         }
 
         int keyUsageCount = 0;
