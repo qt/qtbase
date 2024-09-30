@@ -128,8 +128,9 @@ static QList<QHostAddress> systemNameservers(QDnsLookup::Protocol protocol)
             if (!line.startsWith(command))
                 continue;
 
-            QString addr = QLatin1StringView(line).mid(sizeof(command));
-            result.emplaceBack(addr);
+            QHostAddress addr(QLatin1StringView(line).mid(sizeof(command)));
+            if (!result.contains(addr))
+                result.emplaceBack(std::move(addr));
         }
     };
     parseFile("/etc/resolv.conf"_L1);
