@@ -164,10 +164,11 @@ public:
     inline void paintDropIndicator(QPainter *painter)
     {
         if (showDropIndicator && state == QAbstractItemView::DraggingState
+            && !dropIndicatorRect.isNull()
 #ifndef QT_NO_CURSOR
             && viewport->cursor().shape() != Qt::ForbiddenCursor
 #endif
-            ) {
+        ) {
             QStyleOption opt;
             opt.initFrom(q_func());
             opt.rect = dropIndicatorRect;
