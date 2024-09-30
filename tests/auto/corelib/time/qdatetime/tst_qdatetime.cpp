@@ -3116,6 +3116,17 @@ void tst_QDateTime::fromStringStringFormat_data()
         << u"22+221102233Z"_s << u"yyMMddHHmmsst"_s << QDateTime();
     QTest::newRow("ASN.1:Generalized")
         << u"9922+221102233Z"_s << u"yyyyMMddHHmmsst"_s << QDateTime();
+    // Reproducer for QTBUG-129287
+    QTest::newRow("ASN.1:max")
+            << u"99991231235959Z"_s << u"yyyyMMddHHmmsst"_s
+            << QDate(9999, 12, 31).endOfDay(QTimeZone::UTC).addMSecs(-999);
+    // Can also be reproduced with more legible formats:
+    QTest::newRow("UTC:max")
+            << u"9999 Dec 31 23:59:59 +00:00"_s << u"yyyy MMM dd HH:mm:ss t"_s
+            << QDate(9999, 12, 31).endOfDay(QTimeZone::UTC).addMSecs(-999);
+    QTest::newRow("UTC:min")
+            << u"0100 Jan 1 00:00:00 +00:00"_s << u"yyyy MMM d HH:mm:ss t"_s
+            << QDate(100, 1, 1).startOfDay(QTimeZone::UTC);
 
     // fuzzer test
     QTest::newRow("integer overflow found by fuzzer")
@@ -3141,9 +3152,17 @@ void tst_QDateTime::fromStringStringFormat()
     QFETCH(QString, format);
     QFETCH(QDateTime, expected);
 
-    QDateTime dt = QDateTime::fromString(string, format);
+    if (localTimeType == LocalTimeAheadOfUtc) {
+        // The new parser should remove the bounds, removing this limitation.
+        QEXPECT_FAIL("ASN.1:max", "QTBUG-77948: min/max are local times", Abort);
+        QEXPECT_FAIL("UTC:max", "QTBUG-77948: min/max are local times", Abort);
+    }
+    // For contrast, UTC::min gets away with it, which probably means there are
+    // genuinely out-of-range cases the old parser gets wrong.
 
+    QDateTime dt = QDateTime::fromString(string, format);
     QCOMPARE(dt, expected);
+
     if (expected.isValid()) {
         QCOMPARE(dt.timeSpec(), expected.timeSpec());
         QCOMPARE(dt.timeRepresentation(), dt.timeRepresentation());
