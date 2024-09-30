@@ -1173,17 +1173,19 @@ void QDockWidgetPrivate::unplug(const QRect &rect)
     QDockWidgetLayout *dwLayout = qobject_cast<QDockWidgetLayout*>(layout);
     if (dwLayout->nativeWindowDeco(true))
         r.adjust(0, dwLayout->titleHeight(), 0, 0);
-    setWindowState(true, true, r);
+    setWindowState({WindowState::Floating, WindowState::Unplug}, r);
 }
 
 void QDockWidgetPrivate::plug(const QRect &rect)
 {
-    setWindowState(false, false, rect);
+    setWindowState(WindowStates(), rect);
 }
 
-void QDockWidgetPrivate::setWindowState(bool floating, bool unplug, const QRect &rect)
+void QDockWidgetPrivate::setWindowState(WindowStates states, const QRect &rect)
 {
     Q_Q(QDockWidget);
+    const bool floating = states.testFlag(WindowState::Floating);
+    bool unplug = states.testFlag(WindowState::Unplug);
 
     if (!floating && parent) {
         QMainWindowLayout *mwlayout = qt_mainwindow_layout_from_dock(q);
@@ -1415,10 +1417,12 @@ void QDockWidget::setFeatures(QDockWidget::DockWidgetFeatures features)
     update();
     if (closableChanged && layout->nativeWindowDeco()) {
         QDockWidgetGroupWindow *floatingTab = qobject_cast<QDockWidgetGroupWindow *>(parent());
-        if (floatingTab && !isFloating())
+        if (floatingTab && !isFloating()) {
             floatingTab->adjustFlags();
-        else
-            d->setWindowState(true /*floating*/, true /*unplug*/);  //this ensures the native decoration is drawn
+        } else {
+            d->setWindowState({QDockWidgetPrivate::WindowState::Floating,
+                               QDockWidgetPrivate::WindowState::Unplug});
+        }
     }
 }
 
@@ -1485,7 +1489,9 @@ void QDockWidgetPrivate::setFloating(bool floating)
         }
     }
 
-    setWindowState(floating, false, floating ? r : QRect());
+    WindowStates states;
+    states.setFlag(WindowState::Floating, floating);
+    setWindowState(states, floating ? r : QRect());
 
     if (floating && r.isNull()) {
         if (q->x() < 0 || q->y() < 0) //may happen if we have been hidden
@@ -1840,7 +1846,8 @@ void QDockWidget::setTitleBarWidget(QWidget *widget)
     d->updateButtons();
     if (isWindow()) {
         //this ensures the native decoration is drawn
-        d->setWindowState(true /*floating*/, true /*unplug*/);
+        d->setWindowState({QDockWidgetPrivate::WindowState::Floating,
+                           QDockWidgetPrivate::WindowState::Unplug});
     }
 }
 

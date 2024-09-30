@@ -61,6 +61,12 @@ public:
         Abort
     };
 
+    enum class WindowState {
+        Unplug = 0x01,
+        Floating = 0x02,
+    };
+    Q_DECLARE_FLAGS(WindowStates, WindowState)
+
     void init();
     void toggleView(bool);
     void toggleTopLevel();
@@ -93,7 +99,7 @@ public:
     bool mouseDoubleClickEvent(QMouseEvent *event);
     bool mouseMoveEvent(QMouseEvent *event);
     bool mouseReleaseEvent(QMouseEvent *event);
-    void setWindowState(bool floating, bool unplug = false, const QRect &rect = QRect());
+    void setWindowState(WindowStates states, const QRect &rect = QRect());
     void nonClientAreaMouseEvent(QMouseEvent *event);
     void initDrag(const QPoint &pos, bool nca);
     void startDrag(DragScope scope);

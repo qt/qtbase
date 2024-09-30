@@ -3136,7 +3136,9 @@ bool QDockAreaLayout::restoreDockWidget(QDockWidget *dockWidget)
 
     if (placeHolder->window) {
         const QRect r = constrainedRect(placeHolder->topLevelRect, dockWidget);
-        dockWidget->d_func()->setWindowState(true, true, r);
+        dockWidget->d_func()->setWindowState(QDockWidgetPrivate::WindowStates(
+                                            {QDockWidgetPrivate::WindowState::Floating,
+                                             QDockWidgetPrivate::WindowState::Unplug}), r);
     }
     dockWidget->setVisible(!placeHolder->hidden);
 
