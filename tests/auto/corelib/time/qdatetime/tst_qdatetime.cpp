@@ -3099,6 +3099,12 @@ void tst_QDateTime::fromStringStringFormat_data()
         << QStringLiteral("2018 wilful long working block relief 12-19T21:09 cruel")
         << QStringLiteral("yyyy wilful long working block relief MM-ddThh:mm cruel blurb encore flux")
         << QDateTime();
+    QTest::newRow("fix-century-Mon")
+            << u"Monday, 23 April 12 22:51:41"_s << u"dddd, d MMMM yy hh:mm:ss"_s
+            << QDateTime(QDate(2012, 4, 23), QTime(22, 51, 41));
+    QTest::newRow("fix-century-Tue")
+            << u"Tuesday, 23 April 12 22:51:41"_s << u"dddd, d MMMM yy hh:mm:ss"_s
+            << QDateTime(QDate(1912, 4, 23), QTime(22, 51, 41));
 
     // test unicode
     QTest::newRow("unicode handling") << QString(u8"2005🤣06🤣28T07🤣57🤣30.001Z")
