@@ -533,6 +533,8 @@ static void terminateQt(JNIEnv *env, jclass /*clazz*/)
     m_androidPlatformIntegration = nullptr;
     delete m_androidAssetsFileEngineHandler;
     m_androidAssetsFileEngineHandler = nullptr;
+    delete m_androidContentFileEngineHandler;
+    m_androidContentFileEngineHandler = nullptr;
     delete m_backendRegister;
     m_backendRegister = nullptr;
     sem_post(&m_exitSemaphore);
