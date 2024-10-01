@@ -1910,20 +1910,26 @@ const QStringConverter::Interface QStringConverter::encodingInterfaces[QStringCo
 };
 
 // match names case insensitive and skipping '-' and '_'
-static bool nameMatch_impl(const char *a, QLatin1StringView rhs)
+template <typename Char>
+static bool nameMatch_impl_impl(const char *a, const Char *b, const Char *b_end)
 {
-    const char *b = rhs.data();
-    const char *b_end = rhs.end();
     do {
         while (*a == '-' || *a == '_')
             ++a;
-        while (b != b_end && (*b == '-' || *b == '_'))
+        while (b != b_end && (*b == Char{'-'} || *b == Char{'_'}))
             ++b;
         if (!*a && b == b_end) // end of both strings
             return true;
-    } while (QtMiscUtils::toAsciiLower(*a++) == QtMiscUtils::toAsciiLower(*b++));
+        if (char16_t(*b) > 127)
+            return false; // non-US-ASCII cannot match US-ASCII (prevents narrowing below)
+    } while (QtMiscUtils::toAsciiLower(*a++) == QtMiscUtils::toAsciiLower(char(*b++)));
 
     return false;
+}
+
+static bool nameMatch_impl(const char *a, QLatin1StringView b)
+{
+    return nameMatch_impl_impl(a, b.begin(), b.end());
 }
 
 static bool nameMatch_impl(const char *a, QUtf8StringView b)
@@ -1933,7 +1939,7 @@ static bool nameMatch_impl(const char *a, QUtf8StringView b)
 
 static bool nameMatch_impl(const char *a, QStringView b)
 {
-    return nameMatch_impl(a, QLatin1StringView{b.toString().toLatin1()}); // ### optimize
+    return nameMatch_impl_impl(a, b.utf16(), b.utf16() + b.size()); // uses char16_t*, not QChar*
 }
 
 static bool nameMatch(const char *a, QAnyStringView b)
