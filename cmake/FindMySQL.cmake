@@ -40,7 +40,11 @@
 #     The mysql client library
 
 if(NOT DEFINED MySQL_ROOT)
-    find_package(PkgConfig QUIET)
+    if(DEFINED ENV{MySQL_ROOT})
+        set(MySQL_ROOT "$ENV{MySQL_ROOT}")
+    else()
+        find_package(PkgConfig QUIET)
+    endif()
 endif()
 if(PkgConfig_FOUND AND NOT DEFINED MySQL_ROOT)
     pkg_check_modules(PC_MySQL QUIET "mysqlclient")
