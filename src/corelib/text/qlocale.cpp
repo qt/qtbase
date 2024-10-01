@@ -4403,6 +4403,15 @@ QString QLocale::formattedDataSize(qint64 bytes, int precision, DataSizeFormats 
     is the order in which to check for translations; earlier items in the list
     are to be preferred over later ones.
 
+    The returned list may contain entries for more than one language.
+    In particular, this happens for \l{QLocale::system()}{system locale}
+    when the user has configured the system to accept several languages
+    for user-interface translations. In such a case, the order of entries
+    for distinct languages is significant. For example, where a user has
+    configured a primarily German system to also accept English and Chinese,
+    in that order of preference, the returned list shall contain some
+    entries for German, then some for English, and finally some for Chinese.
+
     Most likely you do not need to use this function directly, but just pass the
     QLocale object to the QTranslator::load() function.
 
