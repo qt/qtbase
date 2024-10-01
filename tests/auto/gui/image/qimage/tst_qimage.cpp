@@ -871,11 +871,11 @@ void tst_QImage::convertToFormat_data()
     QTest::newRow("blue rgb888 -> argb32") << int(QImage::Format_RGB888) << 0xff0000ff
                                            << int(QImage::Format_ARGB32) << 0xff0000ff;
 
-    QTest::newRow("red bgr888 -> argb32") << int(QImage::Format_RGB888) << 0xffff0000
+    QTest::newRow("red bgr888 -> argb32") << int(QImage::Format_BGR888) << 0xffff0000
                                           << int(QImage::Format_ARGB32) << 0xffff0000;
-    QTest::newRow("green bgr888 -> argb32") << int(QImage::Format_RGB888) << 0xff00ff00
+    QTest::newRow("green bgr888 -> argb32") << int(QImage::Format_BGR888) << 0xff00ff00
                                             << int(QImage::Format_ARGB32) << 0xff00ff00;
-    QTest::newRow("blue bgr888 -> argb32") << int(QImage::Format_RGB888) << 0xff0000ff
+    QTest::newRow("blue bgr888 -> argb32") << int(QImage::Format_BGR888) << 0xff0000ff
                                            << int(QImage::Format_ARGB32) << 0xff0000ff;
 
     QTest::newRow("red rgb888 -> rgbx8888") << int(QImage::Format_RGB888) << 0xffff0000
