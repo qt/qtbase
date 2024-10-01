@@ -13,6 +13,7 @@ import android.view.Display;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 
 class QtLayout extends ViewGroup {
 
@@ -201,14 +202,19 @@ class QtLayout extends ViewGroup {
         if (!checkLayoutParams(params))
             return;
 
+        final ViewParent parent = childView.getParent();
+
         // View is already in the layout and can therefore be updated
-        final boolean canUpdate = (this == childView.getParent());
+        final boolean canUpdate = (this == parent);
 
         if (canUpdate) {
             childView.setLayoutParams(params);
             if (forceRedraw)
                 invalidate();
         } else {
+            // If the parent was already set it need to be removed first
+            if (parent != null && parent instanceof ViewGroup)
+                ((ViewGroup)parent).removeView(childView);
             addView(childView, params);
         }
     }
