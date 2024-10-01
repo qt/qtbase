@@ -49,6 +49,7 @@
 // copied from <asm/hwcap.h> (Aarch64)
 #define HWCAP_AES               (1 << 3)
 #define HWCAP_CRC32             (1 << 7)
+#define HWCAP_SVE               (1 << 22)
 
 // copied from <linux/auxvec.h>
 #define AT_HWCAP  16    /* arch dependent hints at CPU capabilities */
@@ -75,13 +76,15 @@ uint arraysize(T (&)[N])
  neon
  crc32
  aes
+ sve
  */
 static const char features_string[] =
         "\0"
         " neon\0"
         " crc32\0"
-        " aes\0";
-static const int features_indices[] = { 0, 1, 7, 14 };
+        " aes\0"
+        " sve\0";
+static const int features_indices[] = { 0, 1, 7, 14, 19 };
 #elif defined(Q_PROCESSOR_MIPS)
 /* Data:
  dsp
@@ -118,6 +121,8 @@ static inline quint64 detectProcessorFeatures()
             features |= CpuFeatureCRC32;
         if (auxvHwCap & HWCAP_AES)
             features |= CpuFeatureAES;
+        if (auxvHwCap & HWCAP_SVE)
+            features |= CpuFeatureSVE;
 #  else
         // For ARM32:
         if (auxvHwCap & HWCAP_NEON)
@@ -156,6 +161,12 @@ static inline quint64 detectProcessorFeatures()
     if (sysctlbyname("hw.optional.arm.FEAT_AES", &feature, &len, nullptr, 0) == 0)
         features |= feature ? CpuFeatureAES : 0;
 #endif
+#if defined(__ARM_FEATURE_SVE)
+    features |= CpuFeatureSVE;
+#else
+    if (sysctlbyname("hw.optional.arm.FEAT_SVE", &feature, &len, nullptr, 0) == 0)
+        features |= feature ? CpuFeatureSVE : 0;
+#endif
     return features;
 #elif defined(Q_OS_WIN) && defined(Q_PROCESSOR_ARM_64)
     features |= CpuFeatureNEON;
@@ -173,6 +184,9 @@ static inline quint64 detectProcessorFeatures()
 #endif
 #if defined(__ARM_FEATURE_CRYPTO)
     features |= CpuFeatureAES;
+#endif
+#if defined(__ARM_FEATURE_SVE)
+    features |= CpuFeatureSVE;
 #endif
 
     return features;

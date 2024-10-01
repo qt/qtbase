@@ -929,6 +929,13 @@ qt_feature_definition("arm_crypto" "QT_COMPILER_SUPPORTS_CRYPTO" VALUE "1")
 qt_feature_definition("arm_crypto" "QT_COMPILER_SUPPORTS_AES" VALUE "1")
 qt_feature_config("arm_crypto" QMAKE_PRIVATE_CONFIG)
 
+qt_feature("arm_sve" PRIVATE
+    LABEL "SVE"
+    CONDITION ( TEST_architecture_arch STREQUAL arm64 ) AND TEST_arch_${TEST_architecture_arch}_subarch_sve
+)
+qt_feature_definition("arm_sve" "QT_COMPILER_SUPPORTS_SVE" VALUE "1")
+qt_feature_config("arm_sve" QMAKE_PRIVATE_CONFIG)
+
 qt_feature("wasm-simd128" PUBLIC
     LABEL "WebAssembly SIMD128"
     PURPOSE "Enables WebAssembly SIMD"

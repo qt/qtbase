@@ -347,12 +347,15 @@ inline uint32x4_t qvsetq_n_u32(uint32_t a, uint32_t b, uint32_t c, uint32_t d)
 #if defined(Q_CC_CLANG)
 #define QT_FUNCTION_TARGET_STRING_AES        "crypto"
 #define QT_FUNCTION_TARGET_STRING_CRC32      "crc"
+#define QT_FUNCTION_TARGET_STRING_SVE        "sve"
 #elif defined(Q_CC_GNU)
 #define QT_FUNCTION_TARGET_STRING_AES        "+crypto"
 #define QT_FUNCTION_TARGET_STRING_CRC32      "+crc"
+#define QT_FUNCTION_TARGET_STRING_SVE        "+sve"
 #elif defined(Q_CC_MSVC)
 #define QT_FUNCTION_TARGET_STRING_AES
 #define QT_FUNCTION_TARGET_STRING_CRC32
+#define QT_FUNCTION_TARGET_STRING_SVE
 #endif
 #elif defined(Q_PROCESSOR_ARM_32)
 #if defined(Q_CC_CLANG)
@@ -372,6 +375,7 @@ enum CPUFeatures {
     CpuFeatureCRC32         = 4,
     CpuFeatureAES           = 8,
     CpuFeatureARM_CRYPTO    = CpuFeatureAES,
+    CpuFeatureSVE           = 16,
 #elif defined(Q_PROCESSOR_MIPS)
     CpuFeatureDSP           = 2,
     CpuFeatureDSPR2         = 4,
@@ -395,6 +399,9 @@ static const uint64_t qCompilerCpuFeatures = 0
         | CpuFeatureAES
 #endif
 #endif // Q_OS_LINUX && Q_PROCESSOR_ARM64
+#if defined(__ARM_FEATURE_SVE) && defined(Q_PROCESSOR_ARM_64)
+        | CpuFeatureSVE
+#endif
 #if defined __mips_dsp
         | CpuFeatureDSP
 #endif
