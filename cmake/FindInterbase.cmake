@@ -21,6 +21,12 @@
 # ``Interbase::Interbase``
 #     The Interbase client library
 
+if(NOT DEFINED Interbase_ROOT)
+    if(DEFINED ENV{Interbase_ROOT})
+        set(Interbase_ROOT "$ENV{Interbase_ROOT}")
+    endif()
+endif()
+
 find_path(Interbase_INCLUDE_DIR
           NAMES ibase.h
           HINTS "${Interbase_INCLUDEDIR}" "${Interbase_ROOT}/include"
