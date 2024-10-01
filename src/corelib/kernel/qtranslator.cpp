@@ -15,10 +15,11 @@
 #include "qdatastream.h"
 #include "qendian.h"
 #include "qfile.h"
-#include "qmap.h"
 #include "qalgorithms.h"
 #include "qtranslator_p.h"
 #include "qlocale.h"
+#include "qlogging.h"
+#include "qdebug.h"
 #include "qendian.h"
 #include "qresource.h"
 
@@ -38,6 +39,8 @@
 #include <memory>
 
 QT_BEGIN_NAMESPACE
+
+static Q_LOGGING_CATEGORY(lcTranslator, "qt.core.qtranslator")
 
 namespace {
 enum Tag { Tag_End = 1, Tag_SourceText16, Tag_Translation, Tag_Context16, Tag_Obsolete1,
@@ -600,7 +603,10 @@ Q_NEVER_INLINE
 static bool is_readable_file(const QString &name)
 {
     const QFileInfo fi(name);
-    return fi.isReadable() && fi.isFile();
+    const bool isReadableFile = fi.isReadable() && fi.isFile();
+    qCDebug(lcTranslator) << "Testing file" << name << isReadableFile;
+
+    return isReadableFile;
 }
 
 static QString find_translation(const QLocale & locale,
@@ -609,6 +615,9 @@ static QString find_translation(const QLocale & locale,
                                 const QString & directory,
                                 const QString & suffix)
 {
+    qCDebug(lcTranslator).noquote().nospace() << "Searching translation for "
+                          << filename << prefix << locale << suffix
+                          << " in " << directory;
     QString path;
     if (QFileInfo(filename).isRelative()) {
         path = directory;
@@ -631,8 +640,9 @@ static QString find_translation(const QLocale & locale,
     // that the Qt resource system is always case-sensitive, even on
     // Windows (in other words: this codepath is *not* UNIX-only).
     QStringList languages = locale.uiLanguages(QLocale::TagSeparator::Underscore);
-    for (int i = languages.size()-1; i >= 0; --i) {
-        QString lang = languages.at(i);
+    qCDebug(lcTranslator) << "Requested UI languages" << languages;
+    for (int i = languages.size() - 1; i >= 0; --i) {
+        const QString &lang = languages.at(i);
         QString lowerLang = lang.toLower();
         if (lang != lowerLang)
             languages.insert(i + 1, lowerLang);
