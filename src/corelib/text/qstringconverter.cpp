@@ -30,10 +30,11 @@
 #endif
 
 #include <array>
-
 #if __has_include(<bit>) && __cplusplus > 201703L
 #include <bit>
 #endif
+#include <string>
+#include <QtCore/q20utility.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -2152,9 +2153,35 @@ struct QStringConverterICU : QStringConverter
         return conv;
     }
 
+    static std::string nul_terminate_impl(QLatin1StringView name)
+    { return name.isNull() ? std::string() : std::string{name.data(), size_t(name.size())}; }
+
+    static std::string nul_terminate_impl(QUtf8StringView name)
+    { return nul_terminate_impl(QLatin1StringView{QByteArrayView{name}}); }
+
+    static std::string nul_terminate_impl(QStringView name)
+    {
+        std::string result;
+        const auto convert = [&](char *p, size_t n) {
+                const auto sz = QLatin1::convertFromUnicode(p, name) - p;
+                Q_ASSERT(q20::cmp_less_equal(sz, n));
+                return sz;
+            };
+#ifdef __cpp_lib_string_resize_and_overwrite
+        result.resize_and_overwrite(size_t(name.size()), convert);
+#else
+        result.resize(size_t(name.size()));
+        result.resize(convert(result.data(), result.size()));
+#endif // __cpp_lib_string_resize_and_overwrite
+        return result;
+    }
+
+    static std::string nul_terminate(QAnyStringView name)
+    { return name.visit([](auto name) { return nul_terminate_impl(name); }); }
+
     static const QStringConverter::Interface *
     make_icu_converter(QStringConverterBase::State *state, QAnyStringView name)
-    { return make_icu_converter(state, name.toString().toLatin1().constData()); } // ### optimize
+    { return make_icu_converter(state, nul_terminate(name).data()); }
 
     static const QStringConverter::Interface *make_icu_converter(
             QStringConverterBase::State *state,
