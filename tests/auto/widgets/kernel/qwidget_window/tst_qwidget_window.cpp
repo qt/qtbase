@@ -31,6 +31,7 @@
 #include <QtWidgets/private/qapplication_p.h>
 
 using namespace QTestPrivate;
+using namespace Qt::StringLiterals;
 
 // Compare a window position that may go through scaling in the platform plugin with fuzz.
 static inline bool qFuzzyCompareWindowPosition(const QPoint &p1, const QPoint p2, int fuzz)
@@ -805,6 +806,8 @@ void tst_QWidget_window::tst_dnd_events()
     // catch regressions at cross platform code: QGuiApplication::processDrag/Leave().
     if (platformName != "xcb")
         return;
+    if (qgetenv("XDG_CURRENT_DESKTOP").toLower().contains("ubuntu") && QSysInfo::productVersion() == "24.04"_L1)
+        QSKIP("This hangs on Ubuntu 24.04 X11, see also QTBUG-129567.");
 
     const QString expectedDndEvents = "DragEnter DragMove DropEvent DragEnter DragMove "
                                       "DropEvent DragEnter DragMove DropEvent ";
