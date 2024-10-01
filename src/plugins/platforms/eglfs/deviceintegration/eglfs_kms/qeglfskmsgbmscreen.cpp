@@ -158,6 +158,7 @@ gbm_surface *QEglFSKmsGbmScreen::createSurface(EGLConfig eglConfig)
                                            gbmFlags());
         }
 
+#ifndef Q_OS_VXWORKS
         // Fallback for some drivers, its required to request with modifiers
         if (!m_gbm_surface) {
             uint64_t modifier = DRM_FORMAT_MOD_LINEAR;
@@ -168,6 +169,7 @@ gbm_surface *QEglFSKmsGbmScreen::createSurface(EGLConfig eglConfig)
                                     gbmFormat,
                                     &modifier, 1);
         }
+#endif
         // Fail here, as it would fail with the next usage of the GBM surface, which is very unexpected
         if (!m_gbm_surface)
             qFatal("Could not create GBM surface!");
