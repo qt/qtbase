@@ -966,6 +966,7 @@ public:
     void (QOPENGLF_APIENTRYP glObjectLabel)(GLenum, GLuint, GLsizei, const GLchar *) = nullptr;
     void (QOPENGLF_APIENTRYP glFramebufferTexture2DMultisampleEXT)(GLenum, GLenum, GLenum, GLuint, GLint, GLsizei) = nullptr;
     void (QOPENGLF_APIENTRYP glFramebufferTextureMultisampleMultiviewOVR)(GLenum, GLenum, GLuint, GLint, GLsizei, GLint, GLsizei) = nullptr;
+    void (QOPENGLF_APIENTRYP glRenderbufferStorageMultisampleEXT)(GLenum, GLsizei, GLenum, GLsizei, GLsizei) = nullptr;
     uint vao = 0;
     struct Caps {
         Caps()

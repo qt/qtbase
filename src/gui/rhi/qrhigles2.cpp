@@ -1103,6 +1103,8 @@ bool QRhiGles2::create(QRhi::Flags flags)
         if (caps.glesMultisampleRenderToTexture) {
             glFramebufferTexture2DMultisampleEXT = reinterpret_cast<void(QOPENGLF_APIENTRYP)(GLenum, GLenum, GLenum, GLuint, GLint, GLsizei)>(
                 ctx->getProcAddress(QByteArrayLiteral("glFramebufferTexture2DMultisampleEXT")));
+            glRenderbufferStorageMultisampleEXT = reinterpret_cast<void(QOPENGLF_APIENTRYP)(GLenum, GLsizei, GLenum, GLsizei, GLsizei)>(
+                ctx->getProcAddress(QByteArrayLiteral("glRenderbufferStorageMultisampleEXT")));
         }
         caps.glesMultiviewMultisampleRenderToTexture = ctx->hasExtension("GL_OVR_multiview_multisampled_render_to_texture");
         if (caps.glesMultiviewMultisampleRenderToTexture) {
@@ -5488,8 +5490,15 @@ bool QGles2RenderBuffer::create()
     switch (m_type) {
     case QRhiRenderBuffer::DepthStencil:
         if (rhiD->caps.msaaRenderBuffer && samples > 1) {
-            rhiD->f->glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_DEPTH24_STENCIL8,
-                                                      size.width(), size.height());
+            if (rhiD->caps.glesMultisampleRenderToTexture) {
+                // Must match the logic in QGles2TextureRenderTarget::create().
+                // EXT and non-EXT are not the same thing.
+                rhiD->glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER, samples, GL_DEPTH24_STENCIL8,
+                                                          size.width(), size.height());
+            } else {
+                rhiD->f->glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_DEPTH24_STENCIL8,
+                                                          size.width(), size.height());
+            }
             stencilRenderbuffer = 0;
         } else if (rhiD->caps.packedDepthStencil || rhiD->caps.needsDepthStencilCombinedAttach) {
             const GLenum storage = rhiD->caps.needsDepthStencilCombinedAttach ? GL_DEPTH_STENCIL : GL_DEPTH24_STENCIL8;
