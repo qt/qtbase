@@ -17,7 +17,7 @@ The ISO 639-3 data file can be downloaded from the SIL website:
 import datetime
 import argparse
 from pathlib import Path
-from typing import Callable, Iterator, Optional
+from typing import AnyStr, Callable, Iterator, Optional, TextIO
 
 from qlocalexml import Locale, QLocaleXmlReader
 from localetools import *
@@ -970,7 +970,7 @@ class LocaleHeaderWriter (SourceFileEditor):
         out('\n    };\n')
 
 
-def main(argv, out, err):
+def main(argv: list[str], out: TextIO, err: TextIO) -> int:
     """Updates QLocale's CLDR data from a QLocaleXML file.
 
     Takes sys.argv, sys.stdout, sys.stderr (or equivalents) as
@@ -983,7 +983,7 @@ def main(argv, out, err):
 
     Updates various src/corelib/t*/q*_data_p.h files within the qtbase
     checkout to contain data extracted from the QLocaleXML file."""
-    calendars_map = {
+    calendars_map: dict[str, str] = {
         # CLDR name: Qt file name fragment
         'gregorian': 'roman',
         'persian': 'jalali',
@@ -1008,12 +1008,12 @@ def main(argv, out, err):
                         action='count', default=0)
     parser.add_argument('-q', '--quiet', help='less output',
                         dest='verbose', action='store_const', const=-1)
-    args = parser.parse_args(argv[1:])
-    mutter = (lambda *x: None) if args.verbose < 0 else out.write
+    args: argparse.Namespace = parser.parse_args(argv[1:])
+    mutter: Callable[[AnyStr], int] = (lambda *x: 0) if args.verbose < 0 else out.write
 
-    qlocalexml = args.input_file
+    qlocalexml: str = args.input_file
     qtsrcdir = Path(args.qtbase_path)
-    calendars = {cal: calendars_map[cal] for cal in args.calendars}
+    calendars: dict[str, str] = {cal: calendars_map[cal] for cal in args.calendars}
 
     if not (qtsrcdir.is_dir()
             and all(qtsrcdir.joinpath('src/corelib/text', leaf).is_file()
