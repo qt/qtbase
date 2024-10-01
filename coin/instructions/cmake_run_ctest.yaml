@@ -88,6 +88,10 @@ instructions:
       property: features
       contains_value: AbortTestingOnFirstFailure
 
+  - type: AppendToEnvironmentVariable
+    variableName: CTEST_ARGS
+    variableValue: " --no-label-summary"
+
     # Enable CTest's JUnit XML summary
   - type: AppendToEnvironmentVariable
     variableName: CTEST_ARGS
