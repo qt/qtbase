@@ -18,6 +18,8 @@ endif()
 qt_internal_add_test(tst_qtranslator
     SOURCES
         tst_qtranslator.cpp
+    LIBRARIES
+        Qt::CorePrivate
 )
 
 # Resources:

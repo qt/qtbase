@@ -9,9 +9,54 @@
 #include <qfile.h>
 #include <qtemporarydir.h>
 
+#include <QtCore/private/qlocale_p.h>
+
 #ifdef Q_OS_ANDROID
 #include <QDirIterator>
 #endif
+
+#if !defined(QT_NO_SYSTEMLOCALE) && defined(QT_BUILD_INTERNAL)
+// from tst_qlocale.cpp; override the system locale with one that supports multiple
+// languages
+class MySystemLocale : public QSystemLocale
+{
+    Q_DISABLE_COPY_MOVE(MySystemLocale)
+public:
+    MySystemLocale(const QStringList &languages)
+        : m_languages(languages), m_locale(languages.first())
+        , m_id(QLocaleId::fromName(languages.first()))
+    {
+    }
+
+    QVariant query(QueryType type, QVariant &&/*in*/) const override
+    {
+        switch (type) {
+        case UILanguages:
+            return QVariant(m_languages);
+        case LanguageId:
+            return m_id.language_id;
+        case TerritoryId:
+            return m_id.territory_id;
+        case ScriptId:
+            return m_id.script_id;
+
+        default:
+            break;
+        }
+        return QVariant();
+    }
+
+    QLocale fallbackLocale() const override
+    {
+        return m_locale;
+    }
+
+private:
+    QStringList m_languages;
+    const QLocale m_locale;
+    const QLocaleId m_id;
+};
+#endif // !defined(QT_NO_SYSTEMLOCALE) && defined(QT_BUILD_INTERNAL)
 
 class tst_QTranslator : public QObject
 {
@@ -27,6 +72,7 @@ private slots:
 
     void load_data();
     void load();
+    void loadLocale_data();
     void loadLocale();
     void threadLoad();
     void testLanguageChange();
@@ -116,12 +162,40 @@ void tst_QTranslator::load()
     }
 }
 
+void tst_QTranslator::loadLocale_data()
+{
+    QTest::addColumn<QLocale>("wantedLocale");
+    QTest::addColumn<QStringList>("languages");
+
+    // variation of translation files for the same language
+    QTest::addRow("US English")
+                            << QLocale("en-US")
+                            << QStringList{"en-US", "en"};
+    QTest::addRow("Australia")
+                            << QLocale("en-AU")
+                            << QStringList{"en-Latn-AU", "en-AU", "en"};
+
+    // This produces a QLocale::uiLanguages list of
+    // {"en-NO", "en-Latn-NO", "nb-NO", "nb-Latn-NO", "nb",
+    //  "de-DE", "de-Latn-DE", "de", "zh-Hant-NO"}
+    QTest::addRow("System, mixed languages")
+                            << QLocale::system()
+                            << QStringList{"en-NO", "nb-NO", "de-DE", "zh-Hant-NO"};
+}
+
 void tst_QTranslator::loadLocale()
 {
-    QLocale locale;
-    auto localeName = locale.uiLanguages(QLocale::TagSeparator::Underscore).value(0);
-    if (localeName.isEmpty())
-        QSKIP("This test requires at least one available UI language.");
+    QFETCH(const QLocale, wantedLocale);
+    QFETCH(const QStringList, languages);
+
+#if !defined(QT_NO_SYSTEMLOCALE) && defined(QT_BUILD_INTERNAL)
+    std::unique_ptr<MySystemLocale> systemLocaleOverride;
+    if (wantedLocale == QLocale::system())
+        systemLocaleOverride.reset(new MySystemLocale(languages));
+#else
+    if (wantedLocale == QLocale::system())
+        QSKIP("Test only applicable in developer builds with system locale");
+#endif
 
     QByteArray ba;
     {
@@ -134,36 +208,20 @@ void tst_QTranslator::loadLocale()
     QTemporaryDir dir;
     QVERIFY(dir.isValid());
 
-    auto path = dir.path();
+    const auto path = dir.path();
     QFile file(path + "/dummy");
     QVERIFY2(file.open(QFile::WriteOnly), qPrintable(file.errorString()));
     QCOMPARE(file.write(ba), ba.size());
     file.close();
 
-    /*
-        Test the following order:
-
-        /tmp/tmpDir/foo-en_US.qm
-        /tmp/tmpDir/foo-en_US
-        /tmp/tmpDir/foo-en.qm
-        /tmp/tmpDir/foo-en
-        /tmp/tmpDir/foo.qm
-        /tmp/tmpDir/foo-
-        /tmp/tmpDir/foo
-    */
-
     QStringList files;
-    while (true) {
-        files.append(path + "/foo-" + localeName + ".qm");
+    for (auto language : languages) {
+        language.replace('-', '_');
+        const QString filename = path + "/foo-" + language;
+        files.append(filename + ".qm");
         QVERIFY2(file.copy(files.last()), qPrintable(file.errorString()));
-
-        files.append(path + "/foo-" + localeName);
+        files.append(filename);
         QVERIFY2(file.copy(files.last()), qPrintable(file.errorString()));
-
-        int rightmost = localeName.lastIndexOf(QLatin1Char('_'));
-        if (rightmost <= 0)
-            break;
-        localeName.truncate(rightmost);
     }
 
     files.append(path + "/foo.qm");
@@ -175,9 +233,37 @@ void tst_QTranslator::loadLocale()
     files.append(path + "/foo");
     QVERIFY2(file.rename(files.last()), qPrintable(file.errorString()));
 
+    // Verify that all files exist. They are removed at the latest when
+    // the temporary directory is destroyed.
+    for (const auto &filePath : files)
+        QVERIFY(QFile::exists(filePath));
+
+    const QRegularExpression localeExpr("foo-(.*)(\\.qm|$)");
     QTranslator tor;
+    // Load the translation for the wanted locale
+    QVERIFY(tor.load(wantedLocale, "foo", "-", path, ".qm"));
+    // The loaded translation file should be for the preferred language.
+    const QFileInfo fileInfo(tor.filePath());
+    const auto matches = localeExpr.match(fileInfo.fileName());
+    QVERIFY(matches.hasMatch());
+    QVERIFY(matches.hasCaptured(1));
+    const QLocale matchedLocale(matches.captured(1));
+    QCOMPARE(matchedLocale.language(), wantedLocale.language());
+
+    // Remove one file at a time, and verify that QTranslator falls back to the
+    // more general alternatives, or to languages with lower priority.
     for (const auto &filePath : files) {
-        QVERIFY(tor.load(locale, "foo", "-", path, ".qm"));
+        QVERIFY(tor.load(wantedLocale, "foo", "-", path, ".qm"));
+        // we search 'en_Latn_US/AU', 'en_Latn', and 'en', but never 'en_US/AU'
+        if (filePath.endsWith("en_US") || filePath.endsWith("en_US.qm")) {
+            QEXPECT_FAIL("US English",
+                "QTBUG-124898 - we search 'en_Latn_US', 'en_Latn', and 'en', but never 'en_US",
+                Continue);
+        } else if (filePath.endsWith("en_AU") || filePath.endsWith("en_AU.qm")) {
+            QEXPECT_FAIL("Australia",
+                "QTBUG-124898 - we search 'en_Latn_AU', 'en_Latn', and 'en', but never 'en_AU",
+                Continue);
+        }
         QCOMPARE(tor.filePath(), filePath);
         QVERIFY2(file.remove(filePath), qPrintable(file.errorString()));
     }
