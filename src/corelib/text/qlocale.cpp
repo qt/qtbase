@@ -4848,14 +4848,25 @@ QString QLocale::formattedDataSize(qint64 bytes, int precision, DataSizeFormats 
     than dashes, to separate locale tags, pass QLocale::TagSeparator::Underscore
     as \a separator.
 
-    The returned list may contain entries for more than one language.
-    In particular, this happens for \l{QLocale::system()}{system locale}
-    when the user has configured the system to accept several languages
-    for user-interface translations. In such a case, the order of entries
-    for distinct languages is significant. For example, where a user has
-    configured a primarily German system to also accept English and Chinese,
-    in that order of preference, the returned list shall contain some
-    entries for German, then some for English, and finally some for Chinese.
+    Returns a list of locale names. This may include multiple languages,
+    especially for the system locale when multiple UI translation languages are
+    configured. The order of entries is significant. For example, for the system
+    locale, it reflects user preferences.
+
+    Prior to Qt 6.9, the list only contained explicitly configured locales and
+    their equivalents. This led some callers to add truncations (such as from
+    'en-Latn-DE' to 'en') as fallbacks. This could sometimes result in
+    inappropriate choices, especially if these were tried before later entries
+    that would be more appropriate fallbacks.
+
+    Starting from Qt 6.9, reasonable truncations are included in the returned
+    list \e after the explicitly specified locales. This change allows for more
+    accurate fallback options without callers needing to do any truncation.
+
+    Users can explicitly include preferred fallback locales (such as en-US) in
+    their system configuration to control the order of preference. You are
+    advised to rely on the order of entries in uiLanguages() rather than using
+    custom fallback methods.
 
     Most likely you do not need to use this function directly, but just pass the
     QLocale object to the QTranslator::load() function.
@@ -4911,24 +4922,45 @@ QStringList QLocale::uiLanguages(TagSeparator separator) const
     {
         localeIds.append(d->m_data->id());
     }
+
+    // Warning: this processing is quadratic in the length of the final list.
+    // Hopefully that list isn't too long, though.
+    QStringList fallbacks;
+    auto gatherTruncations = [&fallbacks, cut = QLatin1Char(sep)](const QString &name) {
+        fallbacks.removeAll(name);
+        for (qsizetype at = name.indexOf(cut); at >= 0; at = name.indexOf(cut, at + 1)) {
+            Q_ASSERT(at > 1); // First sub-tag length is >= 2 (C is handled separately).
+            // We find shorter entries before fuller ones; we want the long ones
+            // earlier, the short ones later, but all before any entries from
+            // later in the localeIds list (already present in fallbacks because
+            // of the reverse traversal). However, that can still leave a
+            // shorter truncation of a long name before some truncations of
+            // shorter names of which the shorter one is a prefix; that's
+            // handled in the final appending to uiLanguages; see exclude.
+            fallbacks.insert(0, name.first(at));
+        }
+    };
+
     for (qsizetype i = localeIds.size(); i-- > 0; ) {
         QLocaleId id = localeIds.at(i);
         qsizetype j;
-        QByteArray prior;
+        if (id.language_id == C) {
+            if (!uiLanguages.contains(u"C"_s))
+                uiLanguages.append(u"C"_s);
+            // Attempt no likely sub-tag amendments to C.
+            continue;
+        }
+
+        const auto prior = QString::fromLatin1(id.name(sep));
         if (isSystem && i < uiLanguages.size()) {
             // Adding likely-adjusted forms to system locale's list.
-            // Name the locale is derived from:
-            prior = uiLanguages.at(i).toLatin1();
             // Insert just after the entry we're supplementing:
+            Q_ASSERT(uiLanguages.at(i) == prior);
             j = i + 1;
-        } else if (id.language_id == C) {
-            // Attempt no likely sub-tag amendments to C:
-            uiLanguages.append(QString::fromLatin1(id.name(sep)));
-            continue;
         } else {
             // Plain locale or empty system uiLanguages; just append.
-            prior = id.name(sep);
-            uiLanguages.append(QString::fromLatin1(prior));
+            if (!uiLanguages.contains(prior))
+                uiLanguages.append(prior);
             j = uiLanguages.size();
         }
 
@@ -4936,36 +4968,73 @@ QStringList QLocale::uiLanguages(TagSeparator separator) const
         const QLocaleId min = max.withLikelySubtagsRemoved();
 
         // Include minimal version (last) unless it's what our locale is derived from:
-        if (auto name = min.name(sep); name != prior)
-            uiLanguages.insert(j, QString::fromLatin1(name));
-        else if (!isSystem)
-            --j; // bcp47Name() matches min(): put more specific forms *before* it.
+        if (auto name = QString::fromLatin1(min.name(sep)); name != prior) {
+            uiLanguages.insert(j, name);
+            gatherTruncations(name);
+        } else if (!isSystem && min == id) {
+            --j; // Put more specific forms *before* minimal entry.
+        }
 
         if (id.script_id) {
             // Include scriptless version if likely-equivalent and distinct:
             id.script_id = 0;
             if (id != min && id.withLikelySubtagsAdded() == max) {
-                if (auto name = id.name(sep); name != prior)
-                    uiLanguages.insert(j, QString::fromLatin1(name));
+                if (auto name = QString::fromLatin1(id.name(sep)); name != prior) {
+                    uiLanguages.insert(j, name);
+                    gatherTruncations(name);
+                }
             }
         }
 
         if (!id.territory_id) {
             Q_ASSERT(!min.territory_id);
             Q_ASSERT(!id.script_id); // because we just cleared it.
-            // Include version with territory if it likely-equivalent and distinct:
+            // Include version with territory if likely-equivalent and distinct:
             id.territory_id = max.territory_id;
             if (id != max && id.withLikelySubtagsAdded() == max) {
-                if (auto name = id.name(sep); name != prior)
-                    uiLanguages.insert(j, QString::fromLatin1(name));
+                if (auto name = QString::fromLatin1(id.name(sep)); name != prior) {
+                    uiLanguages.insert(j, name);
+                    gatherTruncations(name);
+                }
             }
         }
+        gatherTruncations(prior); // After trimmed forms, before max.
 
         // Include version with all likely sub-tags (first) if distinct from the rest:
         if (max != min && max != id) {
-            if (auto name = max.name(sep); name != prior)
-                uiLanguages.insert(j, QString::fromLatin1(name));
+            if (auto name = QString::fromLatin1(max.name(sep)); name != prior) {
+                uiLanguages.insert(j, name);
+                gatherTruncations(name);
+            }
         }
+    }
+
+    auto exclude = [fallbacks, cut = QLatin1Char(sep)](QStringList::const_iterator entry,
+                                                       const QStringList &uiLanguages) {
+        // If this entry in fallbacks reappears later, after one of which it is
+        // a prefix, that's not yet in uiLanguages, leave it for the later entry
+        // to take care of.
+        const QString &name = *entry;
+        // entry < constEnd(), so found < constEnd()
+        auto found = entry;
+        // Initial found < constEnd(), so found + 1 is at worst constEnd(), not beyond it.
+        while ((found = std::find(found + 1, fallbacks.constEnd(), name)) != fallbacks.constEnd()) {
+            // entry < returned found < constEnd()
+            // *found is a repeat of name
+            // entry < found, so found - 1 is at worst entry
+            const QString &prev = *(found - 1);
+            if (uiLanguages.contains(prev))
+                continue;
+            if (prev.size() > name.size() && prev.startsWith(name) && prev[name.size()] == cut)
+                return true;
+        }
+        return false;
+    };
+    for (auto it = fallbacks.constBegin(); it < fallbacks.constEnd(); ++it) {
+        const QString &name = *it;
+        if (uiLanguages.contains(name) || exclude(it, uiLanguages))
+            continue;
+        uiLanguages.append(name);
     }
     return uiLanguages;
 }

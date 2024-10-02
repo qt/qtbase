@@ -181,6 +181,9 @@ void tst_QTranslator::loadLocale_data()
     QTest::addRow("System, mixed languages")
                             << QLocale::system()
                             << QStringList{"en-NO", "nb-NO", "de-DE", "zh-Hant-NO"};
+    QTest::addRow("System, mixed dialects")
+                            << QLocale::system()
+                            << QStringList{"en-AU", "en-NZ", "de-DE", "en-GB"};
 }
 
 void tst_QTranslator::loadLocale()
@@ -254,16 +257,6 @@ void tst_QTranslator::loadLocale()
     // more general alternatives, or to languages with lower priority.
     for (const auto &filePath : files) {
         QVERIFY(tor.load(wantedLocale, "foo", "-", path, ".qm"));
-        // we search 'en_Latn_US/AU', 'en_Latn', and 'en', but never 'en_US/AU'
-        if (filePath.endsWith("en_US") || filePath.endsWith("en_US.qm")) {
-            QEXPECT_FAIL("US English",
-                "QTBUG-124898 - we search 'en_Latn_US', 'en_Latn', and 'en', but never 'en_US",
-                Continue);
-        } else if (filePath.endsWith("en_AU") || filePath.endsWith("en_AU.qm")) {
-            QEXPECT_FAIL("Australia",
-                "QTBUG-124898 - we search 'en_Latn_AU', 'en_Latn', and 'en', but never 'en_AU",
-                Continue);
-        }
         QCOMPARE(tor.filePath(), filePath);
         QVERIFY2(file.remove(filePath), qPrintable(file.errorString()));
     }

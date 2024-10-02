@@ -629,40 +629,37 @@ static QString find_translation(const QLocale & locale,
 
     // see http://www.unicode.org/reports/tr35/#LanguageMatching for inspiration
 
-    // For each language_country returned by locale.uiLanguages(), add
-    // also a lowercase version to the list. Since these languages are
-    // used to create file names, this is important on case-sensitive
-    // file systems, where otherwise a file called something like
-    // "prefix_en_us.qm" won't be found under the "en_US" locale. Note
-    // that the Qt resource system is always case-sensitive, even on
-    // Windows (in other words: this codepath is *not* UNIX-only).
-    QStringList languages = locale.uiLanguages(QLocale::TagSeparator::Underscore);
+    // For each name returned by locale.uiLanguages(), also try a lowercase
+    // version. Since these languages are used to create file names, this is
+    // important on case-sensitive file systems, where otherwise a file called
+    // something like "prefix_en_us.qm" won't be found under the "en_US"
+    // locale. Note that the Qt resource system is always case-sensitive, even
+    // on Windows (in other words: this codepath is *not* UNIX-only).
+    const QStringList languages = locale.uiLanguages(QLocale::TagSeparator::Underscore);
     qCDebug(lcTranslator) << "Requested UI languages" << languages;
-    for (qsizetype i = languages.size() - 1; i >= 0; --i) {
-        const QString &lang = languages.at(i);
-        QString lowerLang = lang.toLower();
-        if (lang != lowerLang)
-            languages.insert(i + 1, lowerLang);
-    }
 
-    for (QString localeName : std::as_const(languages)) {
-        // try the complete locale name first and progressively truncate from
-        // the end until a matching language tag is found (with or without suffix)
-        for (;;) {
-            realname += localeName + suffixOrDotQM;
+    for (const QString &localeName : languages) {
+        QString loc = localeName;
+        // First try this given name, then in lower-case form (if different):
+        while (true) {
+            // First, try with suffix:
+            realname += loc + suffixOrDotQM;
             if (is_readable_file(realname))
                 return realname;
 
-            realname.truncate(realNameBaseSize + localeName.size());
+            // Next, try without:
+            realname.truncate(realNameBaseSize + loc.size());
             if (is_readable_file(realname))
                 return realname;
-
+            // Reset realname:
             realname.truncate(realNameBaseSize);
 
-            qsizetype rightmost = localeName.lastIndexOf(u'_');
-            if (rightmost <= 0)
-                break; // no truncations anymore, break
-            localeName.truncate(rightmost);
+            // Non-trivial while-loop condition:
+            if (loc != localeName) // loc was the lower-case form, we're done.
+                break;
+            loc = std::move(loc).toLower(); // Try lower-case next,
+            if (loc == localeName) // but only if different.
+                break;
         }
     }
 
