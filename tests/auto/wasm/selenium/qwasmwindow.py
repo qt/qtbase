@@ -34,6 +34,13 @@ class WidgetTestCase(unittest.TestCase):
 
         w0 = Widget(self._driver, "w0")
         w0.show()
+        w0.showToolTip()
+
+        #
+        # Wait for tooltip to disappear
+        #
+        time.sleep(60)
+        #time.sleep(3600)
         self.assertEqual(w0.hasFocus(), True)
 
         w1 = Widget(self._driver, "w1")
@@ -60,6 +67,35 @@ class WidgetTestCase(unittest.TestCase):
         self.assertEqual(w1.hasFocus(), False)
         self.assertEqual(w2.hasFocus(), False)
         self.assertEqual(w3.hasFocus(), True)
+
+        clearWidgets(self._driver)
+
+    #Looks weird, no asserts, the test is that
+    #the test itself finishes
+    def test_showContextMenu_doesNotDeadlock(self):
+        screen = Screen(self._driver, ScreenPosition.FIXED,
+                   x=0, y=0, width=600, height=1200)
+
+        w0 = Widget(self._driver, "w0")
+        w0.show()
+        w0.showToolTip()
+
+        w1 = Widget(self._driver, "w1")
+        w1.setNoFocusShow()
+        w1.show()
+        w1.showToolTip()
+
+        w2 = Widget(self._driver, "w2")
+        w2.show()
+        w2.showToolTip()
+
+        w3 = Widget(self._driver,  "w3")
+        w3.setNoFocusShow()
+        w3.show()
+        w3.showToolTip()
+
+        w3.activate();
+        w3.showToolTip();
 
         clearWidgets(self._driver)
 
@@ -641,6 +677,19 @@ class Widget:
             '''
         )
 
+    def showContextMenu(self):
+        self.driver.execute_script(
+            f'''
+                instance.showContextMenuWidget('{self.name}');
+            '''
+        )
+
+    def showToolTip(self):
+        self.driver.execute_script(
+            f'''
+                instance.showToolTipWidget('{self.name}');
+            '''
+        )
 
 class Window:
     def __init__(self, parent=None, rect=None, title=None, element=None, visible=True, opengl=0):

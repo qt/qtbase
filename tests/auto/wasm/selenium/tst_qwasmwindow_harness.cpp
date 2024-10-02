@@ -16,6 +16,12 @@
 #include <QApplication>
 #include <QDialog>
 #include <QSysInfo>
+#include <QTreeView>
+#include <QFileSystemModel>
+#include <QScrollArea>
+#include <QVBoxLayout>
+#include <QSpinBox>
+#include <QToolTip>
 
 #include <QOpenGLWindow>
 #include <QOpenGLFunctions>
@@ -44,6 +50,25 @@ public:
 class TestWidget : public QDialog
 {
     Q_OBJECT
+};
+
+// We override to be able to test that the contextMenu
+// calls popup and not exec. Calling exec locks the
+// test.
+class TestSpinBox : public QSpinBox
+{
+    Q_OBJECT
+
+public:
+    TestSpinBox(QWidget *parent = nullptr) : QSpinBox(parent) { }
+
+    void ShowContextMenu()
+    {
+        QContextMenuEvent event(QContextMenuEvent::Reason::Mouse, QPoint(0, geometry().bottom()),
+                                mapToGlobal(QPoint(0, geometry().bottom())), Qt::NoModifier);
+
+        contextMenuEvent(&event);
+    }
 };
 
 class TestWindow : public QRasterWindow, public TestWindowBase
@@ -378,10 +403,10 @@ public:
         return nullptr;
     }
 
-    QLineEdit *findEdit(const std::string &name)
+    TestSpinBox *findSpinBox(const std::string &name)
     {
-        auto it = m_lineEdits.find(name);
-        if (it != m_lineEdits.end())
+        auto it = m_spinBoxes.find(name);
+        if (it != m_spinBoxes.end())
             return it->second;
         return nullptr;
     }
@@ -389,17 +414,45 @@ public:
     void make(const std::string &name)
     {
         auto widget = std::make_shared<TestWidget>();
-        auto *lineEdit = new QLineEdit(widget.get());
+
+        widget->setWindowTitle("Dialog");
+        auto spinBox = new TestSpinBox(widget.get());
+        spinBox->setToolTip(QString(u"A ToolTip"));
 
         widget->setMinimumSize(200, 200);
         widget->setMaximumSize(200, 200);
         widget->setGeometry(0, m_widgetY, 200, 200);
         m_widgetY += 200;
 
-        lineEdit->setText("Hello world");
+        m_widgets[name] = widget;
+        m_spinBoxes[name] = spinBox;
+    }
+    void showContextMenu(const std::string &name)
+    {
+        TestSpinBox *spinBox = findSpinBox(name);
+        if (spinBox)
+            spinBox->ShowContextMenu();
+    }
+    void showToolTip(const std::string &name)
+    {
+        TestSpinBox *spinBox = findSpinBox(name);
+        if (spinBox)
+            QToolTip::showText(spinBox->mapToGlobal(QPoint(0, 0)), spinBox->toolTip());
+    }
+    void makeNative(const std::string &name)
+    {
+        auto widget = std::make_shared<TestWidget>();
+        widget->setWindowTitle("Dialog");
+        auto spinBox = new TestSpinBox(widget.get());
+        spinBox->setToolTip(QString(u"A ToolTip"));
+
+        widget->setMinimumSize(200, 200);
+        widget->setMaximumSize(200, 200);
+        widget->setGeometry(0, m_widgetY, 200, 200);
+        m_widgetY += 200;
 
         m_widgets[name] = widget;
-        m_lineEdits[name] = lineEdit;
+        m_spinBoxes[name] = spinBox;
     }
 
 private:
@@ -407,7 +460,7 @@ private:
 
     static WidgetStorage               * s_instance;
     std::map<std::string, TestWidgetPtr> m_widgets;
-    std::map<std::string, QLineEdit  *>  m_lineEdits;
+    std::map<std::string, TestSpinBox *> m_spinBoxes;
     int                                  m_widgetY = 0;
 };
 
@@ -503,6 +556,21 @@ void createWidget(const std::string &name)
     WidgetStorage::getInstance()->make(name);
 }
 
+void createNativeWidget(const std::string &name)
+{
+    WidgetStorage::getInstance()->makeNative(name);
+}
+
+void showContextMenuWidget(const std::string &name)
+{
+    WidgetStorage::getInstance()->showContextMenu(name);
+}
+
+void showToolTipWidget(const std::string &name)
+{
+    WidgetStorage::getInstance()->showToolTip(name);
+}
+
 void setWidgetNoFocusShow(const std::string &name)
 {
     auto w = WidgetStorage::getInstance()->findWidget(name);
@@ -520,9 +588,9 @@ void showWidget(const std::string &name)
 void hasWidgetFocus(const std::string &name)
 {
     bool focus = false;
-    auto le = WidgetStorage::getInstance()->findEdit(name);
-    if (le)
-        focus = le->hasFocus();
+    auto spinBox = WidgetStorage::getInstance()->findSpinBox(name);
+    if (spinBox)
+        focus = spinBox->hasFocus();
 
     emscripten::val::global("window").call<void>("hasWidgetFocusCallback",
                                                  emscripten::val(focus));
@@ -678,6 +746,9 @@ EMSCRIPTEN_BINDINGS(qwasmwindow)
     emscripten::function("getOpenGLColorAt_0_0", &getOpenGLColorAt_0_0);
 
     emscripten::function("createWidget", &createWidget);
+    emscripten::function("createNativeWidget", &createNativeWidget);
+    emscripten::function("showContextMenuWidget", &showContextMenuWidget);
+    emscripten::function("showToolTipWidget", &showToolTipWidget);
     emscripten::function("setWidgetNoFocusShow", &setWidgetNoFocusShow);
     emscripten::function("showWidget", &showWidget);
     emscripten::function("activateWidget", &activateWidget);
