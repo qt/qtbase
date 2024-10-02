@@ -21,8 +21,9 @@
 #endif
 #include <QtWidgets/qtextedit.h>
 #include <QtWidgets/qtreeview.h>
-#include <QtWidgets/qdatetimeedit.h>
-
+#if QT_CONFIG(datetimeedit)
+#  include <QtWidgets/qdatetimeedit.h>
+#endif
 #include "qdrawutil.h"
 #include <chrono>
 
@@ -2058,12 +2059,14 @@ QSize QWindows11Style::sizeFromContents(ContentsType type, const QStyleOption *o
         if (const auto *spinBoxOpt = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
             // Add button + frame widths
             int width = 0;
-
+#if QT_CONFIG(datetimeedit)
             if (const QDateTimeEdit *spinBox = qobject_cast<const QDateTimeEdit *>(widget)) {
                 const QSize textSizeMin = spinBoxOpt->fontMetrics.size(Qt::TextSingleLine, spinBox->minimumDateTime().toString(spinBox->displayFormat()));
                 const QSize textSizeMax = spinBoxOpt->fontMetrics.size(Qt::TextSingleLine, spinBox->maximumDateTime().toString(spinBox->displayFormat()));
                 width = qMax(textSizeMin.width(),textSizeMax.width());
-            } else if (const QSpinBox *spinBox = qobject_cast<const QSpinBox *>(widget)) {
+            } else
+#endif
+            if (const QSpinBox *spinBox = qobject_cast<const QSpinBox *>(widget)) {
                 const QSize textSizeMin = spinBoxOpt->fontMetrics.size(Qt::TextSingleLine, QString::number(spinBox->minimum()));
                 const QSize textSizeMax = spinBoxOpt->fontMetrics.size(Qt::TextSingleLine, QString::number(spinBox->maximum()));
                 width = qMax(textSizeMin.width(),textSizeMax.width());
