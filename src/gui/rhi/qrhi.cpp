@@ -5134,7 +5134,7 @@ QRhiResource::Type QRhiSwapChainRenderTarget::resourceType() const
         texture->create();
         QRhiTextureRenderTarget *rt = rhi->newTextureRenderTarget({ texture });
         rp = rt->newCompatibleRenderPassDescriptor();
-        rt->setRenderPassDescriptor(rt);
+        rt->setRenderPassDescriptor(rp);
         rt->create();
         // rt can now be used with beginPass()
     \endcode
