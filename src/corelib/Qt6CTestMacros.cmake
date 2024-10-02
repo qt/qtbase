@@ -509,6 +509,7 @@ macro(_qt_internal_test_expect_pass _dir)
     endif()
     set_tests_properties(${testname} PROPERTIES ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
     _qt_internal_make_check_target(${testname})
+    set_property(TEST ${testname} PROPERTY RUN_SERIAL TRUE)
 
     if(_ARGS_BINARY)
         set(run_env_args "")
@@ -656,6 +657,7 @@ function(_qt_internal_add_qmake_test dir_name)
     set_tests_properties(${testname} PROPERTIES
         DEPENDS ${testname}_qmake
         FIXTURES_REQUIRED "${testname}_ensure_clean_build_dir;${testname}_configure_project"
+        RUN_SERIAL TRUE
     )
 endfunction()
 
