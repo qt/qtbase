@@ -2610,9 +2610,7 @@ QRegularExpressionMatchIterator &QRegularExpressionMatchIterator::operator=(cons
 
 /*!
     \fn void QRegularExpressionMatchIterator::swap(QRegularExpressionMatchIterator &other)
-
-    Swaps the iterator \a other with this iterator object. This operation is
-    very fast and never fails.
+    \memberswap{iterator}
 */
 
 /*!

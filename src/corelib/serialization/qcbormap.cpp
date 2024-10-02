@@ -214,8 +214,7 @@ QCborMap &QCborMap::operator=(const QCborMap &other) noexcept
 
 /*!
     \fn void QCborMap::swap(QCborMap &other)
-
-    Swaps the contents of this map and \a other.
+    \memberswap{map}
  */
 
 /*!

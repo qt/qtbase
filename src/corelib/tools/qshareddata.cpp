@@ -309,8 +309,7 @@ QT_BEGIN_NAMESPACE
  */
 
 /*! \fn template <class T> void QSharedDataPointer<T>::swap(QSharedDataPointer &other)
-  Swap this instance's shared data pointer with the shared
-  data pointer in \a other.
+    \memberswap{shared data pointer}
  */
 
 /*!
@@ -500,8 +499,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*! \fn template <class T> void QExplicitlySharedDataPointer<T>::swap(QExplicitlySharedDataPointer &other)
-  Swap this instance's explicitly shared data pointer with
-  the explicitly shared data pointer in \a other.
+    \memberswap{explicitly-shared data pointer}
  */
 
 /*! \fn template <class T> bool QExplicitlySharedDataPointer<T>::operator==(const QExplicitlySharedDataPointer<T>& lhs, const QExplicitlySharedDataPointer<T>& rhs)

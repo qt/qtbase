@@ -123,8 +123,7 @@ QCborArray &QCborArray::operator=(const QCborArray &other) noexcept
 
 /*!
     \fn void QCborArray::swap(QCborArray &other)
-
-    Swaps the contents of this object and \a other.
+    \memberswap{array}
  */
 
 /*!

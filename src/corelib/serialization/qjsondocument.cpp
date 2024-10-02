@@ -177,8 +177,7 @@ QJsonDocument &QJsonDocument::operator =(const QJsonDocument &other)
 /*!
     \fn void QJsonDocument::swap(QJsonDocument &other)
     \since 5.10
-
-    Swaps the document \a other with this. This operation is very fast and never fails.
+    \memberswap{document}
 */
 
 /*!

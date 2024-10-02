@@ -1364,8 +1364,7 @@ QDBusArgument &operator<<(QDBusArgument &a, const QLineF &line)
 
 /*!
     \fn void QDBusArgument::swap(QDBusArgument &other)
-
-    Swaps this QDBusArgument instance with \a other.
+    \memberswap{argument}
 */
 
 QT_END_NAMESPACE

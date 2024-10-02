@@ -113,10 +113,8 @@ QSslPreSharedKeyAuthenticator &QSslPreSharedKeyAuthenticator::operator=(const QS
 */
 
 /*!
-    \fn void QSslPreSharedKeyAuthenticator::swap(QSslPreSharedKeyAuthenticator &authenticator)
-
-    Swaps the QSslPreSharedKeyAuthenticator object \a authenticator with this object.
-    This operation is very fast and never fails.
+    \fn void QSslPreSharedKeyAuthenticator::swap(QSslPreSharedKeyAuthenticator &other)
+    \memberswap{authenticator}
 */
 
 /*!
