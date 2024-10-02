@@ -625,9 +625,7 @@ QBrush &QBrush::operator=(const QBrush &b)
 /*!
     \fn void QBrush::swap(QBrush &other)
     \since 4.8
-
-    Swaps brush \a other with this brush. This operation is very
-    fast and never fails.
+    \memberswap{brush}
 */
 
 /*!

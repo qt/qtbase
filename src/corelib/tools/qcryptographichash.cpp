@@ -467,10 +467,7 @@ QCryptographicHash::~QCryptographicHash()
 
 /*!
     \fn void QCryptographicHash::swap(QCryptographicHash &other)
-
-    Swaps cryptographic hash \a other with this cryptographic hash. This
-    operation is very fast and never fails.
-
+    \memberswap{cryptographic hash}
     \since 6.5
 */
 

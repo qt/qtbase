@@ -198,8 +198,7 @@ bool QHstsPolicy::isExpired() const
 
 /*!
   \fn void QHstsPolicy::swap(QHstsPolicy &other)
-
-  Swaps this policy with the \a other policy.
+    \memberswap{policy}
 */
 
 QT_END_NAMESPACE

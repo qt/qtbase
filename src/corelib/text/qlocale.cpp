@@ -1121,9 +1121,7 @@ bool QLocale::equals(const QLocale &other) const
 /*!
     \fn void QLocale::swap(QLocale &other)
     \since 5.6
-
-    Swaps locale \a other with this locale. This operation is very fast and
-    never fails.
+    \memberswap{locale}
 */
 
 /*!
