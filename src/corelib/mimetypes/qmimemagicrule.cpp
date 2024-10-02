@@ -35,7 +35,7 @@ static constexpr auto magicRuleTypes = qOffsetStringArray(
 QMimeMagicRule::Type QMimeMagicRule::type(const QByteArray &theTypeName)
 {
     for (int i = String; i <= Byte; ++i) {
-        if (theTypeName == magicRuleTypes.at(i))
+        if (theTypeName == magicRuleTypes.viewAt(i))
             return Type(i);
     }
     return Invalid;
