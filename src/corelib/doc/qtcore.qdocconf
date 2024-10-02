@@ -73,5 +73,4 @@ manifestmeta.highlighted.names = \
     "QtCore/Serialization Converter" \
     "QtCore/QXmlStream Bookmarks Example"
 
-# QTBUG-126546
-warninglimit = 2
+warninglimit = 0
