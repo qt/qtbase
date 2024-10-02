@@ -17,16 +17,16 @@ instructions:
   - type: MakeDirectory
     directory: .git
   - type: MakeDirectory
-    directory: build
+    directory: "{{.SourceDir}}_build"
   - type: ChangeDirectory
-    directory: "{{.BuildDir}}/build"
+    directory: "{{.SourceDir}}_build"
   - type: MakeDirectory
     directory: target
   - type: EnvironmentVariable
     variableName: DESTDIR
     variableValue: ""
   - type: SetBuildDirectory
-    directory: "{{.SourceDir}}/build/target"
+    directory: "{{.SourceDir}}_build/target"
   - type: ChangeDirectory
     directory: "{{.BuildDir}}"
 
