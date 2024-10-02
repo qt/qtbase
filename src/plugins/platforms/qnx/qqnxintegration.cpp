@@ -32,11 +32,12 @@
 #if QT_CONFIG(qqnx_pps)
 #  include "qqnxbuttoneventnotifier.h"
 #  include "qqnxclipboard.h"
-#  if QT_CONFIG(qqnx_imf)
-#    include "qqnxinputcontext_imf.h"
-#  else
-#    include "qqnxinputcontext_noimf.h"
-#  endif
+#endif
+
+#if QT_CONFIG(qqnx_imf)
+#  include "qqnxinputcontext_imf.h"
+#else
+#  include "qqnxinputcontext_noimf.h"
 #endif
 
 #include <qpa/qplatforminputcontextfactory_p.h>
@@ -117,9 +118,9 @@ QQnxIntegration::QQnxIntegration(const QStringList &paramList)
     , m_screenEventThread(0)
     , m_navigatorEventHandler(new QQnxNavigatorEventHandler())
     , m_virtualKeyboard(0)
+    , m_inputContext(0)
 #if QT_CONFIG(qqnx_pps)
     , m_navigatorEventNotifier(0)
-    , m_inputContext(0)
     , m_buttonsNotifier(new QQnxButtonEventNotifier())
 #endif
     , m_qpaInputContext(0)
@@ -403,7 +404,6 @@ QPlatformOpenGLContext *QQnxIntegration::createPlatformOpenGLContext(QOpenGLCont
 }
 #endif
 
-#if QT_CONFIG(qqnx_pps)
 QPlatformInputContext *QQnxIntegration::inputContext() const
 {
     qCDebug(lcQpaQnx) << Q_FUNC_INFO;
@@ -411,7 +411,6 @@ QPlatformInputContext *QQnxIntegration::inputContext() const
         return m_qpaInputContext;
     return m_inputContext;
 }
-#endif
 
 void QQnxIntegration::moveToScreen(QWindow *window, int screen)
 {
