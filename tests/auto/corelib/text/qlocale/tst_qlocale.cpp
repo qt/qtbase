@@ -4085,7 +4085,17 @@ public:
         switch (type) {
         case UILanguages:
             if (m_name == u"en-DE") // QTBUG-104930: simulate macOS's list not including m_name.
-                return QVariant(QStringList{QStringLiteral("en-GB"), QStringLiteral("de-DE")});
+                return QVariant(QStringList{u"en-GB"_s, u"de-DE"_s});
+            if (m_name == u"en-Dsrt-GB")
+                return QVariant(QStringList{u"en-Dsrt-GB"_s, u"en-GB"_s});
+            if (m_name == u"en-FO") { // Nominally Faroe Islands, used for en-mixed test
+                return QVariant(QStringList{u"en-DK"_s, u"en-GB"_s, u"fo-FO"_s,
+                                            u"da-FO"_s, u"da-DK"_s});
+            }
+            if (m_name == u"de-CA") { // Imagine a 2nd generation Canadian of de-AT ancestry ...
+                return QVariant(QStringList{u"en-CA"_s, u"fr-CA"_s, u"de-AT"_s,
+                                            u"en-GB"_s, u"fr-FR"_s});
+            }
             return QVariant(QStringList{m_name});
         case LanguageId:
             return m_id.language_id;
@@ -4171,6 +4181,21 @@ void tst_QLocale::mySystemLocale_data()
         << QString("C-Hans-CN") << QLocale::C
         << QStringList{QStringLiteral("C-Hans-CN"), QStringLiteral("C")};
 
+    QTest::newRow("en-Dsrt-GB")
+        << u"en-Dsrt-GB"_s << QLocale::English
+        << QStringList{u"en-Dsrt-GB"_s, u"en-GB"_s, u"en-Latn-GB"_s};
+    QTest::newRow("en-mixed")
+        << u"en-FO"_s << QLocale::English
+        << QStringList{u"en-FO"_s, u"en-Latn-FO"_s, u"en-DK"_s, u"en-Latn-DK"_s,
+                       u"en-GB"_s, u"en-Latn-GB"_s,
+                       u"fo-FO"_s, u"fo-Latn-FO"_s, u"fo"_s,
+                       u"da-FO"_s, u"da-Latn-FO"_s, u"da-DK"_s, u"da-Latn-DK"_s, u"da"_s};
+    QTest::newRow("polylingual-CA")
+        << u"de-CA"_s << QLocale::German
+        << QStringList{u"de-CA"_s, u"de-Latn-CA"_s, u"en-CA"_s, u"en-Latn-CA"_s,
+                       u"fr-CA"_s, u"fr-Latn-CA"_s, u"de-AT"_s, u"de-Latn-AT"_s,
+                       u"en-GB"_s, u"en-Latn-GB"_s, u"fr-FR"_s, u"fr-Latn-FR"_s, u"fr"_s};
+
     QTest::newRow("und-US")
         << QString("und-US") << QLocale::C
         << QStringList{QStringLiteral("und-US"), QStringLiteral("C")};
@@ -4201,7 +4226,8 @@ void tst_QLocale::mySystemLocale()
         QCOMPARE(QLocale().language(), language);
         QCOMPARE(QLocale::system().language(), language);
         auto reporter = qScopeGuard([]() {
-            qDebug("\n\t%s", qPrintable(QLocale::system().uiLanguages().join(u"\n\t")));
+            qDebug("Actual entries:\n\t%s",
+                   qPrintable(QLocale::system().uiLanguages().join(u"\n\t")));
         });
         QCOMPARE(QLocale::system().uiLanguages(), uiLanguages);
         QCOMPARE(QLocale::system().uiLanguages(QLocale::TagSeparator::Underscore),
