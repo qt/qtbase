@@ -157,7 +157,9 @@ void QGraphicsFrameCaptureMetal::openCapture()
 
 void QGraphicsFrameCaptureMetal::updateCaptureFileName()
 {
-    m_traceURL = QUrl::fromLocalFile(m_capturePath + "/" + m_capturePrefix + "_" + QString::number(frameNumber) + ".gputrace").toNSURL();
+    m_traceURL = QUrl::fromLocalFile(m_capturePath + u"/" + m_capturePrefix + u"_"
+                                     + QString::number(frameNumber) + u".gputrace")
+                         .toNSURL();
     // We need to remove the trace file if it already existed else MTLCaptureManager
     // will fail to.
     if ([NSFileManager.defaultManager fileExistsAtPath:m_traceURL.path])
