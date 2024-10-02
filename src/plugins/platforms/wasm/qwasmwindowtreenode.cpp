@@ -42,9 +42,13 @@ void QWasmWindowTreeNode::onSubtreeChanged(QWasmWindowTreeNodeChangeType changeT
         && m_childStack.topWindow()
         && m_childStack.topWindow()->window()) {
 
+        const auto flags = m_childStack.topWindow()->window()->flags();
+        const bool notToolOrPopup = ((flags & Qt::ToolTip) != Qt::ToolTip) && ((flags & Qt::Popup) != Qt::Popup);
         const QVariant showWithoutActivating = m_childStack.topWindow()->window()->property("_q_showWithoutActivating");
-        if (!showWithoutActivating.isValid() || !showWithoutActivating.toBool())
-            m_childStack.topWindow()->requestActivateWindow();
+        if (!showWithoutActivating.isValid() || !showWithoutActivating.toBool()) {
+            if (notToolOrPopup)
+                m_childStack.topWindow()->requestActivateWindow();
+        }
     }
 
     if (parentNode())

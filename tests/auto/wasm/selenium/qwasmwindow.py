@@ -57,6 +57,13 @@ class WidgetTestCase(unittest.TestCase):
 
         w0 = Widget(self._driver, "w0")
         w0.show()
+        w0.showToolTip()
+
+        #
+        # Wait for tooltip to disappear
+        #
+        time.sleep(60)
+        #time.sleep(3600)
         self.assertEqual(w0.hasFocus(), True)
 
         w1 = Widget(self._driver, "w1")
@@ -95,23 +102,28 @@ class WidgetTestCase(unittest.TestCase):
         w0 = Widget(self._driver, "w0")
         w0.show()
         w0.showContextMenu()
+        w0.showToolTip()
 
         w1 = Widget(self._driver, "w1")
         w1.setNoFocusShow()
         w1.show()
         w1.showContextMenu()
+        w1.showToolTip()
 
         w2 = Widget(self._driver, "w2")
         w2.show()
         w2.showContextMenu()
+        w2.showToolTip()
 
         w3 = Widget(self._driver,  "w3")
         w3.setNoFocusShow()
         w3.show()
         w3.showContextMenu()
+        w3.showToolTip()
 
         w3.activate();
         w3.showContextMenu()
+        w3.showToolTip();
 
         clearWidgets(self._driver)
 
@@ -722,6 +734,13 @@ class Widget:
         self.driver.execute_script(
             f'''
                 instance.showContextMenuWidget('{self.name}');
+            '''
+        )
+
+    def showToolTip(self):
+        self.driver.execute_script(
+            f'''
+                instance.showToolTipWidget('{self.name}');
             '''
         )
 
