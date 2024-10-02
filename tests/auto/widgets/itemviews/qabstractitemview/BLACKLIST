@@ -2,3 +2,5 @@
 wayland
 [selectionAutoScrolling]
 wayland
+[testDialogAsEditor]
+xcb ubuntu-24.04 # QTBUG-129516
