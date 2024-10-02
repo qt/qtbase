@@ -3712,6 +3712,16 @@ void tst_QLocale::uiLanguages_data()
         << QLocale(QLocale::Chinese, QLocale::SimplifiedHanScript, QLocale::China)
         << QStringList{QString("zh-Hans-CN"), QString("zh-CN"), QString("zh")};
 
+    // GB has no native Punjabi locales, so is eliminated by likely subtag rules:
+    QTest::newRow("pa_IN")
+        << QLocale("pa_IN") << QStringList{u"pa-Guru-IN"_s, u"pa-IN"_s, u"pa"_s};
+    QTest::newRow("pa_GB")
+        << QLocale("pa_GB") << QStringList{u"pa-Guru-IN"_s, u"pa-IN"_s, u"pa"_s};
+    QTest::newRow("pa_PK")
+        << QLocale("pa_PK") << QStringList{u"pa-Arab-PK"_s, u"pa-PK"_s};
+    QTest::newRow("pa_Arab_GB")
+        << QLocale("pa_Arab_GB") << QStringList{u"pa-Arab-PK"_s, u"pa-PK"_s};
+
     // We presently map und (or any other unrecognized language) to C, ignoring
     // what a sub-tag lookup would surely find us.
     QTest::newRow("und_US") << QLocale("und_US") << QStringList{QString("C")};
