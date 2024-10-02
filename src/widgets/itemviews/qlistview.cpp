@@ -886,8 +886,9 @@ void QListView::dropEvent(QDropEvent *event)
 {
     Q_D(QListView);
 
-    if (event->source() == this && (event->dropAction() == Qt::MoveAction ||
-                                    dragDropMode() == QAbstractItemView::InternalMove)) {
+    const bool moveAction = event->dropAction() == Qt::MoveAction
+                         || dragDropMode() == QAbstractItemView::InternalMove;
+    if (event->source() == this && moveAction) {
         QModelIndex topIndex;
         bool topIndexDropped = false;
         int col = -1;
@@ -941,7 +942,7 @@ void QListView::dropEvent(QDropEvent *event)
 
     if (!d->commonListView->filterDropEvent(event) || !d->dropEventMoved) {
         // icon view didn't move the data, and moveRows not implemented, so fall back to default
-        if (!d->dropEventMoved)
+        if (!d->dropEventMoved && moveAction)
             event->ignore();
         QAbstractItemView::dropEvent(event);
     }
