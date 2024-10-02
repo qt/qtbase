@@ -183,7 +183,16 @@ QCocoaWindow::~QCocoaWindow()
 
 QSurfaceFormat QCocoaWindow::format() const
 {
-    return window()->requestedFormat();
+    auto format = window()->requestedFormat();
+    if (auto *view = qnsview_cast(m_view); view.colorSpace) {
+        auto colorSpace = QColorSpace::fromIccProfile(QByteArray::fromNSData(view.colorSpace.ICCProfileData));
+        if (!colorSpace.isValid()) {
+            qCWarning(lcQpaWindow) << "Failed to parse ICC profile for" << view.colorSpace
+                                   << "with ICC data" << view.colorSpace.ICCProfileData;
+        }
+        format.setColorSpace(colorSpace);
+    }
+    return format;
 }
 
 void QCocoaWindow::setGeometry(const QRect &rectIn)
