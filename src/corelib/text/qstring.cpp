@@ -5712,6 +5712,7 @@ QByteArray QtPrivate::convertToUtf8(QLatin1StringView string)
     if (Q_UNLIKELY(string.isNull()))
         return QByteArray();
 
+    // create a QByteArray with the worst case scenario size
     QByteArray ba(string.size() * 2, Qt::Uninitialized);
     const qsizetype sz = QUtf8::convertFromLatin1(ba.data(), string) - ba.data();
     ba.truncate(sz);

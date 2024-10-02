@@ -33,6 +33,8 @@ private Q_SLOTS:
     void count();
     void indexOf_data();
     void indexOf();
+    void toUtf8_data();
+    void toUtf8();
 };
 
 void tst_QLatin1StringView::constExpr()
@@ -510,6 +512,43 @@ void tst_QLatin1StringView::indexOf()
     QFETCH(int, indexCaseInsensitive);
     QCOMPARE(haystack.indexOf(needle, from, Qt::CaseSensitive), (qsizetype)indexCaseSensitive);
     QCOMPARE(haystack.indexOf(needle, from, Qt::CaseInsensitive), (qsizetype)indexCaseInsensitive);
+}
+
+void tst_QLatin1StringView::toUtf8_data()
+{
+    QTest::addColumn<QByteArray>("input");
+    QTest::newRow("null") << QByteArray();
+    QTest::newRow("empty") << QByteArray("");
+
+    for (int i = 0; i < 256; ++i) {
+        char c = i;
+        QTest::addRow("char-0x%02x", i) << QByteArray(1, c);
+    }
+
+    QByteArray ba = "abcd";
+    for (int i = 0; i < 6; ++i) {
+        QTest::addRow("ascii-%d", int(ba.size())) << ba;
+        ba += ba;
+        QTest::addRow("ascii-%d", int(ba.size()) - 1) << ba.left(ba.size() - 1);
+    }
+
+    ba = "\xe0""abcdef\xff";
+    for (int i = 0; i < 6; ++i) {
+        QTest::addRow("nonascii-%d", int(ba.size())) << ba;
+        ba += ba;
+        QTest::addRow("nonascii-%d", int(ba.size()) - 1) << ba.left(ba.size() - 1);
+    }
+}
+
+void tst_QLatin1StringView::toUtf8()
+{
+    QFETCH(QByteArray, input);
+    QLatin1StringView sv(input);
+    QByteArray expected = sv.toString().toUtf8();
+
+    QByteArray result = sv.toUtf8();
+    QCOMPARE(result.isNull(), sv.isNull());
+    QCOMPARE(result, expected);
 }
 
 QTEST_APPLESS_MAIN(tst_QLatin1StringView)

@@ -58,6 +58,7 @@ public:
 #endif // !Q_L1S_VIEW_IS_PRIMARY
 
     inline QString toString() const;
+    QByteArray toUtf8() const { return QtPrivate::convertToUtf8(*this); }
 
     constexpr const char *latin1() const noexcept { return m_data; }
     constexpr qsizetype size() const noexcept { return m_size; }

@@ -270,6 +270,18 @@
     \code
     return QString(*this);
     \endcode
+
+    \sa toUtf8()
+*/
+
+/*!
+    \fn QByteArray QLatin1StringView::toUtf8() const
+    \since 6.9
+
+    Returns a UTF-8 representation of the string as a QByteArray. This function
+    is more efficient than converting first to QString.
+
+    \sa toString(), QString::toUtf8()
 */
 
 /*! \fn const char *QLatin1StringView::latin1() const
