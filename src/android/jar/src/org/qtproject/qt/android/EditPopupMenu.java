@@ -82,6 +82,9 @@ class EditPopupMenu implements ViewTreeObserver.OnPreDrawListener, View.OnLayout
             } catch (ClassCastException e) {
                 Log.w(QtNative.QtTAG, "QtEditText " + m_editText + " parent is not a QtLayout, " +
                                       "requestLayout() skipped");
+            } catch (NullPointerException e) {
+                Log.w(QtNative.QtTAG, "QtEditText " + m_editText + " does not have a parent, " +
+                                      "requestLayout() skipped");
             }
         }
 
