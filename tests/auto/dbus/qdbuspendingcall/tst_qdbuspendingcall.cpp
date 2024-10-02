@@ -14,12 +14,12 @@
 #include <QDBusPendingCallWatcher>
 #include <QDBusInterface>
 
-#define TEST_INTERFACE_NAME "org.qtproject.QtDBus.MyObject"
+#define TEST_INTERFACE_NAME "org.qtproject.QtDBus.PendingCall.MyObject"
 
 class MyObject : public QDBusAbstractAdaptor
 {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "org.qtproject.QtDBus.MyObject")
+    Q_CLASSINFO("D-Bus Interface", "org.qtproject.QtDBus.PendingCall.MyObject")
 
 public:
     MyObject(QObject* parent =0)

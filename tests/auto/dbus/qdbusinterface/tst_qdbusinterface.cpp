@@ -25,8 +25,8 @@ using namespace Qt::StringLiterals;
 #define TEST_INTERFACE_NAME "org.qtproject.QtDBus.MyObject"
 #define TEST_SIGNAL_NAME "somethingHappened"
 
-static const char serviceName[] = "org.qtproject.autotests.qmyserver";
-static const char objectPath[] = "/org/qtproject/qmyserver";
+static const char serviceName[] = "org.qtproject.autotests.dbusinterface.qmyserver";
+static const char objectPath[] = "/org/qtproject/dbusinterface/qmyserver";
 static const char *interfaceName = serviceName;
 
 int MyObject::callCount = 0;

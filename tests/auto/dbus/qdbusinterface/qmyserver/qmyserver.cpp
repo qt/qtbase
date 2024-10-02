@@ -7,8 +7,8 @@
 
 #include "../myobject.h"
 
-static const char serviceName[] = "org.qtproject.autotests.qmyserver";
-static const char objectPath[] = "/org/qtproject/qmyserver";
+static const char serviceName[] = "org.qtproject.autotests.dbusinterface.qmyserver";
+static const char objectPath[] = "/org/qtproject/dbusinterface/qmyserver";
 //static const char *interfaceName = serviceName;
 
 int MyObject::callCount = 0;
@@ -17,7 +17,7 @@ QVariantList MyObject::callArgs;
 class MyServer : public QDBusServer, protected QDBusContext
 {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "org.qtproject.autotests.qmyserver")
+    Q_CLASSINFO("D-Bus Interface", "org.qtproject.autotests.dbusinterface.qmyserver")
 
 public:
     MyServer(QObject *parent = nullptr)
