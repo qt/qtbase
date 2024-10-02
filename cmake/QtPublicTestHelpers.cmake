@@ -84,20 +84,32 @@ is not specified")
         set(command_echo "COMMAND_ECHO ${arg_COMMAND_ECHO}")
     endif()
 
+    set(command_escaped "")
+    foreach(command_arg IN LISTS arg_COMMAND)
+        if(NOT command_arg MATCHES "^\\\${[^}]+}$" AND NOT command_arg MATCHES "^\".+\"$")
+            string(REPLACE "\"" "\\\"" command_arg "${command_arg}")
+            string(APPEND command_escaped " \"${command_arg}\"")
+        else()
+            # Assume that all arguments that passed as escaped variables can be empty when
+            # unwrapped during the script execution.
+            string(APPEND command_escaped " ${command_arg}")
+        endif()
+    endforeach()
+
     file(GENERATE OUTPUT "${arg_OUTPUT_FILE}" CONTENT
 "#!${CMAKE_COMMAND} -P
 # Qt generated command wrapper
 
 ${environment_extras}
 ${pre_run}
-execute_process(COMMAND ${extra_runner} ${arg_COMMAND}
+execute_process(COMMAND ${extra_runner} ${command_escaped}
                 WORKING_DIRECTORY \"${arg_WORKING_DIRECTORY}\"
                 ${command_echo}
                 RESULT_VARIABLE result
 )
 ${post_run}
 if(NOT result EQUAL 0)
-    string(JOIN \" \" full_command ${extra_runner} ${arg_COMMAND})
+    string(JOIN \" \" full_command ${extra_runner} ${command_escaped})
     message(FATAL_ERROR \"\${full_command} execution failed with exit code \${result}.\")
 endif()"
     )

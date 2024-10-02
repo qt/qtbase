@@ -948,7 +948,6 @@ for this function. Will be ignored")
     if(arg_ARGS)
         set(command_args ${arg_ARGS})# Avoid "${arg_ARGS}" usage and let cmake expand string to
                                     # semicolon-separated list
-        qt_internal_wrap_command_arguments(command_args)
     endif()
 
     if(TARGET ${arg_COMMAND})
@@ -974,13 +973,15 @@ for this function. Will be ignored")
         get_target_property(crosscompiling_emulator ${executable_name} CROSSCOMPILING_EMULATOR)
         if(NOT crosscompiling_emulator)
             set(crosscompiling_emulator "")
-        else()
-            qt_internal_wrap_command_arguments(crosscompiling_emulator)
         endif()
     endif()
 
-    _qt_internal_create_command_script(COMMAND "${crosscompiling_emulator} \${env_test_runner} \
-\"${executable_file}\" \${env_test_args} ${command_args}"
+    _qt_internal_create_command_script(COMMAND
+                                           ${crosscompiling_emulator}
+                                           "\${env_test_runner}"
+                                           "${executable_file}"
+                                           "\${env_test_args}"
+                                           ${command_args}
                                       OUTPUT_FILE "${arg_OUTPUT_FILE}"
                                       WORKING_DIRECTORY "${arg_WORKING_DIRECTORY}"
                                       ENVIRONMENT ${arg_ENVIRONMENT}
@@ -1042,12 +1043,6 @@ function(qt_internal_add_test_helper name)
     # Disable the QT_NO_NARROWING_CONVERSIONS_IN_CONNECT define for test helpers
     qt_internal_undefine_global_definition(${name} QT_NO_NARROWING_CONVERSIONS_IN_CONNECT)
 
-endfunction()
-
-function(qt_internal_wrap_command_arguments argument_list)
-    list(TRANSFORM ${argument_list} REPLACE "^(.+)$" "[=[\\1]=]")
-    list(JOIN ${argument_list} " " ${argument_list})
-    set(${argument_list} "${${argument_list}}" PARENT_SCOPE)
 endfunction()
 
 function(qt_internal_collect_command_environment out_path out_plugin_path)
