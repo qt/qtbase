@@ -195,9 +195,7 @@ QFontMetrics &QFontMetrics::operator=(const QFontMetrics &fm)
 /*!
     \fn void QFontMetrics::swap(QFontMetrics &other)
     \since 5.0
-
-    Swaps this font metrics instance with \a other. This function is
-    very fast and never fails.
+    \memberswap{font metrics instance}
 */
 
 /*!
@@ -1038,9 +1036,7 @@ QFontMetricsF &QFontMetricsF::operator=(const QFontMetrics &other)
 /*!
     \fn void QFontMetricsF::swap(QFontMetricsF &other)
     \since 5.0
-
-    Swaps this font metrics instance with \a other. This function is
-    very fast and never fails.
+    \memberswap{font metrics instance}
 */
 
 

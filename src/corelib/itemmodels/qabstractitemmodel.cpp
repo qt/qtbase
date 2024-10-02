@@ -433,9 +433,7 @@ QPersistentModelIndex &QPersistentModelIndex::operator=(const QPersistentModelIn
 /*!
     \fn void QPersistentModelIndex::swap(QPersistentModelIndex &other)
     \since 5.0
-
-    Swaps this persistent modelindex with \a other. This function is
-    very fast and never fails.
+    \memberswap{persistent modelindex}
 */
 
 /*!

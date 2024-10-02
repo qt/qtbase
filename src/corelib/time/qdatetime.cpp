@@ -3517,9 +3517,7 @@ QDateTime &QDateTime::operator=(const QDateTime &other) noexcept
 /*!
     \fn void QDateTime::swap(QDateTime &other)
     \since 5.0
-
-    Swaps this datetime with \a other. This operation is very fast
-    and never fails.
+    \memberswap{datetime}
 */
 
 /*!

@@ -107,9 +107,7 @@ qsizetype QHttp1Configuration::numberOfConnectionsPerHost() const
 
 /*!
     \fn void QHttp1Configuration::swap(QHttp1Configuration &other)
-
-    Swaps this HTTP/1 configuration with \a other. This operation is very fast
-    and never fails.
+    \memberswap{HTTP/1 configuration}
 */
 
 /*!

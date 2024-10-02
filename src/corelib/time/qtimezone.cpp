@@ -689,9 +689,7 @@ QTimeZone::~QTimeZone()
 
 /*!
     \fn QTimeZone::swap(QTimeZone &other) noexcept
-
-    Swaps this time zone instance with \a other. This function is very
-    fast and never fails.
+    \memberswap{time zone instance}
 */
 
 /*!

@@ -348,9 +348,7 @@ void QDebug::putByteArray(const char *begin, size_t length, Latin1Content conten
 /*!
     \fn QDebug::swap(QDebug &other)
     \since 5.0
-
-    Swaps this debug stream instance with \a other. This function is
-    very fast and never fails.
+    \memberswap{debug stream instance}
 */
 
 /*!

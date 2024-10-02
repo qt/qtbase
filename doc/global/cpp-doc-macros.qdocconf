@@ -11,5 +11,5 @@
 #    The function's argument name must be \a other.
 macro.memberswap = \
     "\n\n" \
-    "Swaps \1 \\a{other} with this \1. This operation is very fast and never fails." \
+    "Swaps this \1 with \\a{other}. This operation is very fast and never fails." \
     "\n\n"

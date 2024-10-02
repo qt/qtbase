@@ -171,9 +171,7 @@ QRawFont &QRawFont::operator=(const QRawFont &other)
 /*!
   \fn void QRawFont::swap(QRawFont &other)
   \since 5.0
-
-  Swaps this raw font with \a other. This function is very fast and
-  never fails.
+    \memberswap{raw font}
 */
 
 /*!

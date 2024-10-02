@@ -308,7 +308,7 @@ QT_BEGIN_NAMESPACE
     \deprecated [6.2] Use \c std::unique_ptr instead; this function may let a pointer
     escape its scope.
 
-    Swap this pointer with \a other.
+    \memberswap{pointer}.
  */
 
 QT_END_NAMESPACE
