@@ -310,13 +310,21 @@ class QtActivityDelegate extends QtActivityDelegateBase
                 return;
             }
             m_layout.setLayoutParams(focusedEditText, new QtLayout.LayoutParams(w, h, x, y), false);
-            PopupMenu popup = new PopupMenu(m_activity, focusedEditText);
-            QtActivityDelegate.this.onCreatePopupMenu(popup.getMenu());
-            popup.setOnMenuItemClickListener(menuItem ->
-                    m_activity.onContextItemSelected(menuItem));
-            popup.setOnDismissListener(popupMenu ->
-                    m_activity.onContextMenuClosed(popupMenu.getMenu()));
-            popup.show();
+            focusedEditText.requestLayout();
+            focusedEditText.getViewTreeObserver().addOnGlobalLayoutListener(
+                new ViewTreeObserver.OnGlobalLayoutListener() {
+                    @Override
+                    public void onGlobalLayout() {
+                        focusedEditText.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                        PopupMenu popup = new PopupMenu(m_activity, focusedEditText);
+                        QtActivityDelegate.this.onCreatePopupMenu(popup.getMenu());
+                        popup.setOnMenuItemClickListener(menuItem ->
+                                m_activity.onContextItemSelected(menuItem));
+                        popup.setOnDismissListener(popupMenu ->
+                                m_activity.onContextMenuClosed(popupMenu.getMenu()));
+                        popup.show();
+                    }
+            });
         }, 100);
     }
     // QtMenuInterface implementation end
