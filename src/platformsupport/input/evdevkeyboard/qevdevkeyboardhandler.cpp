@@ -172,23 +172,23 @@ void QEvdevKeyboardHandler::readKeycode()
         quint16 code = buffer[i].code;
         qint32 value = buffer[i].value;
 
-        QEvdevKeyboardHandler::KeycodeAction ka;
+        QKeycodeAction ka;
         ka = processKeycode(code, value != 0, value == 2);
 
         switch (ka) {
-        case QEvdevKeyboardHandler::CapsLockOn:
-        case QEvdevKeyboardHandler::CapsLockOff:
-            switchLed(LED_CAPSL, ka == QEvdevKeyboardHandler::CapsLockOn);
+        case QKeycodeAction::CapsLockOn:
+        case QKeycodeAction::CapsLockOff:
+            switchLed(LED_CAPSL, ka == QKeycodeAction::CapsLockOn);
             break;
 
-        case QEvdevKeyboardHandler::NumLockOn:
-        case QEvdevKeyboardHandler::NumLockOff:
-            switchLed(LED_NUML, ka == QEvdevKeyboardHandler::NumLockOn);
+        case QKeycodeAction::NumLockOn:
+        case QKeycodeAction::NumLockOff:
+            switchLed(LED_NUML, ka == QKeycodeAction::NumLockOn);
             break;
 
-        case QEvdevKeyboardHandler::ScrollLockOn:
-        case QEvdevKeyboardHandler::ScrollLockOff:
-            switchLed(LED_SCROLLL, ka == QEvdevKeyboardHandler::ScrollLockOn);
+        case QKeycodeAction::ScrollLockOn:
+        case QKeycodeAction::ScrollLockOff:
+            switchLed(LED_SCROLLL, ka == QKeycodeAction::ScrollLockOn);
             break;
 
         default:
@@ -213,9 +213,9 @@ void QEvdevKeyboardHandler::processKeyEvent(int nativecode, int unicode, int qtc
                                                    (unicode != 0xffff ) ? QString(QChar(unicode)) : QString(), autoRepeat);
 }
 
-QEvdevKeyboardHandler::KeycodeAction QEvdevKeyboardHandler::processKeycode(quint16 keycode, bool pressed, bool autorepeat)
+QKeycodeAction QEvdevKeyboardHandler::processKeycode(quint16 keycode, bool pressed, bool autorepeat)
 {
-    KeycodeAction result = None;
+    QKeycodeAction result = QKeycodeAction::None;
     bool first_press = pressed && !autorepeat;
 
     const QEvdevKeyboardMap::Mapping *map_plain = nullptr;
@@ -274,16 +274,16 @@ QEvdevKeyboardHandler::KeycodeAction QEvdevKeyboardHandler::processKeycode(quint
             lock ^= 1;
 
             switch (qtcode) {
-            case Qt::Key_CapsLock  : result = lock ? CapsLockOn : CapsLockOff; break;
-            case Qt::Key_NumLock   : result = lock ? NumLockOn : NumLockOff; break;
-            case Qt::Key_ScrollLock: result = lock ? ScrollLockOn : ScrollLockOff; break;
+            case Qt::Key_CapsLock  : result = lock ? QKeycodeAction::CapsLockOn : QKeycodeAction::CapsLockOff; break;
+            case Qt::Key_NumLock   : result = lock ? QKeycodeAction::NumLockOn : QKeycodeAction::NumLockOff; break;
+            case Qt::Key_ScrollLock: result = lock ? QKeycodeAction::ScrollLockOn : QKeycodeAction::ScrollLockOff; break;
             default                : break;
             }
         }
     } else if ((it->flags & QEvdevKeyboardMap::IsSystem) && it->special && first_press) {
         switch (it->special) {
         case QEvdevKeyboardMap::SystemReboot:
-            result = Reboot;
+            result = QKeycodeAction::Reboot;
             break;
 
         case QEvdevKeyboardMap::SystemZap:
@@ -292,17 +292,20 @@ QEvdevKeyboardHandler::KeycodeAction QEvdevKeyboardHandler::processKeycode(quint
             break;
 
         case QEvdevKeyboardMap::SystemConsolePrevious:
-            result = PreviousConsole;
+            result = QKeycodeAction::PreviousConsole;
             break;
 
         case QEvdevKeyboardMap::SystemConsoleNext:
-            result = NextConsole;
+            result = QKeycodeAction::NextConsole;
             break;
 
         default:
             if (it->special >= QEvdevKeyboardMap::SystemConsoleFirst &&
                 it->special <= QEvdevKeyboardMap::SystemConsoleLast) {
-                result = KeycodeAction(SwitchConsoleFirst + ((it->special & QEvdevKeyboardMap::SystemConsoleMask) & SwitchConsoleMask));
+                result = QKeycodeAction(
+                    static_cast<int>(QKeycodeAction::SwitchConsoleFirst)
+                    + (it->special & static_cast<int>(QEvdevKeyboardMap::SystemConsoleMask)
+                       & static_cast<int>(QKeycodeAction::SwitchConsoleMask)));
             }
             break;
         }

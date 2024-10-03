@@ -18,6 +18,7 @@
 #include <qobject.h>
 #include <qloggingcategory.h>
 #include <QtInputSupport/private/qfdcontainer_p.h>
+#include <QtInputSupport/private/qkeycodeaction_p.h>
 
 #include <QDataStream>
 #include <private/qglobal_p.h>
@@ -121,25 +122,6 @@ public:
     QEvdevKeyboardHandler(const QString &device, QFdContainer &fd, bool disableZap, bool enableCompose, const QString &keymapFile);
     ~QEvdevKeyboardHandler();
 
-    enum KeycodeAction {
-        None               = 0,
-
-        CapsLockOff        = 0x01000000,
-        CapsLockOn         = 0x01000001,
-        NumLockOff         = 0x02000000,
-        NumLockOn          = 0x02000001,
-        ScrollLockOff      = 0x03000000,
-        ScrollLockOn       = 0x03000001,
-
-        Reboot             = 0x04000000,
-
-        PreviousConsole    = 0x05000000,
-        NextConsole        = 0x05000001,
-        SwitchConsoleFirst = 0x06000000,
-        SwitchConsoleLast  = 0x0600007f,
-        SwitchConsoleMask  = 0x0000007f
-    };
-
     static std::unique_ptr<QEvdevKeyboardHandler> create(const QString &device,
                                          const QString &specification,
                                          const QString &defaultKeymapFile = QString());
@@ -148,7 +130,7 @@ public:
     void unloadKeymap();
 
     void readKeycode();
-    KeycodeAction processKeycode(quint16 keycode, bool pressed, bool autorepeat);
+    QKeycodeAction processKeycode(quint16 keycode, bool pressed, bool autorepeat);
 
     void switchLang();
 
