@@ -268,7 +268,7 @@ hb_buffer_t::similar (const hb_buffer_t &src)
   unicode = hb_unicode_funcs_reference (src.unicode);
   flags = src.flags;
   cluster_level = src.cluster_level;
-  replacement = src.replacement;
+  replacement = src.invisible;
   invisible = src.invisible;
   not_found = src.not_found;
 }

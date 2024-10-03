@@ -122,13 +122,9 @@ struct hb_array_t : hb_iter_with_fallback_t<hb_array_t<Type>, Type&>
 
   uint32_t hash () const
   {
-    // FNV-1a hash function
-    uint32_t current = /*cbf29ce4*/0x84222325;
+    uint32_t current = 0;
     for (auto &v : *this)
-    {
-      current = current ^ hb_hash (v);
-      current = current * 16777619;
-    }
+      current = current * 31 + hb_hash (v);
     return current;
   }
 
@@ -456,50 +452,36 @@ inline bool hb_array_t<const unsigned char>::operator == (const hb_array_t<const
 template <>
 inline uint32_t hb_array_t<const char>::hash () const
 {
-  // FNV-1a hash function
-  uint32_t current = /*cbf29ce4*/0x84222325;
+  uint32_t current = 0;
   unsigned i = 0;
 
 #if defined(__OPTIMIZE__) && !defined(HB_NO_PACKED) && \
     ((defined(__GNUC__) && __GNUC__ >= 5) || defined(__clang__))
   struct __attribute__((packed)) packed_uint32_t { uint32_t v; };
   for (; i + 4 <= this->length; i += 4)
-  {
-    current = current ^ hb_hash ((uint32_t) ((const packed_uint32_t *) &this->arrayZ[i])->v);
-    current = current * 16777619;
-  }
+    current = current * 31 + hb_hash ((uint32_t) ((packed_uint32_t *) &this->arrayZ[i])->v);
 #endif
 
   for (; i < this->length; i++)
-  {
-    current = current ^ hb_hash (this->arrayZ[i]);
-    current = current * 16777619;
-  }
+    current = current * 31 + hb_hash (this->arrayZ[i]);
   return current;
 }
 
 template <>
 inline uint32_t hb_array_t<const unsigned char>::hash () const
 {
-  // FNV-1a hash function
-  uint32_t current = /*cbf29ce4*/0x84222325;
+  uint32_t current = 0;
   unsigned i = 0;
 
 #if defined(__OPTIMIZE__) && !defined(HB_NO_PACKED) && \
     ((defined(__GNUC__) && __GNUC__ >= 5) || defined(__clang__))
   struct __attribute__((packed)) packed_uint32_t { uint32_t v; };
   for (; i + 4 <= this->length; i += 4)
-  {
-    current = current ^ hb_hash ((uint32_t) ((const packed_uint32_t *) &this->arrayZ[i])->v);
-    current = current * 16777619;
-  }
+    current = current * 31 + hb_hash ((uint32_t) ((packed_uint32_t *) &this->arrayZ[i])->v);
 #endif
 
   for (; i < this->length; i++)
-  {
-    current = current ^ hb_hash (this->arrayZ[i]);
-    current = current * 16777619;
-  }
+    current = current * 31 + hb_hash (this->arrayZ[i]);
   return current;
 }
 

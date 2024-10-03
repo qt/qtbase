@@ -87,42 +87,19 @@ struct CompositeGlyphRecord
     }
   }
 
-  static void transform (const float (&matrix)[4],
-			 hb_array_t<contour_point_t> points)
-  {
-    auto arrayZ = points.arrayZ;
-    unsigned count = points.length;
-
-    if (matrix[0] != 1.f || matrix[1] != 0.f ||
-	matrix[2] != 0.f || matrix[3] != 1.f)
-      for (unsigned i = 0; i < count; i++)
-        arrayZ[i].transform (matrix);
-  }
-
-  static void translate (const contour_point_t &trans,
-			 hb_array_t<contour_point_t> points)
-  {
-    auto arrayZ = points.arrayZ;
-    unsigned count = points.length;
-
-    if (trans.x != 0.f || trans.y != 0.f)
-      for (unsigned i = 0; i < count; i++)
-        arrayZ[i].translate (trans);
-  }
-
-  void transform_points (hb_array_t<contour_point_t> points,
+  void transform_points (contour_point_vector_t &points,
 			 const float (&matrix)[4],
 			 const contour_point_t &trans) const
   {
     if (scaled_offsets ())
     {
-      translate (trans, points);
-      transform (matrix, points);
+      points.translate (trans);
+      points.transform (matrix);
     }
     else
     {
-      transform (matrix, points);
-      translate (trans, points);
+      points.transform (matrix);
+      points.translate (trans);
     }
   }
 
@@ -131,9 +108,8 @@ struct CompositeGlyphRecord
     float matrix[4];
     contour_point_t trans;
     get_transformation (matrix, trans);
-    points.alloc (points.length + 4); // For phantom points
     if (unlikely (!points.resize (points.length + 1))) return false;
-    points.arrayZ[points.length - 1] = trans;
+    points[points.length - 1] = trans;
     return true;
   }
 

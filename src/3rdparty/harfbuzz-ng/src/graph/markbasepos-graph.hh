@@ -319,8 +319,7 @@ struct MarkBasePosFormat1 : public OT::Layout::GPOS_impl::MarkBasePosFormat1_2<S
     hb_vector_t<class_info_t> class_to_info;
 
     unsigned class_count= classCount;
-    if (!class_to_info.resize (class_count))
-      return hb_vector_t<class_info_t>();
+    class_to_info.resize (class_count);
 
     auto mark_array = c.graph.as_table<MarkArray> (this_index, &markArray);
     if (!mark_array) return hb_vector_t<class_info_t> ();
@@ -328,7 +327,6 @@ struct MarkBasePosFormat1 : public OT::Layout::GPOS_impl::MarkBasePosFormat1_2<S
     for (unsigned mark = 0; mark < mark_count; mark++)
     {
       unsigned klass = (*mark_array.table)[mark].get_class ();
-      if (klass >= class_count) continue;
       class_to_info[klass].marks.add (mark);
     }
 
@@ -337,7 +335,6 @@ struct MarkBasePosFormat1 : public OT::Layout::GPOS_impl::MarkBasePosFormat1_2<S
       unsigned mark = (link.position - 2) /
                      OT::Layout::GPOS_impl::MarkRecord::static_size;
       unsigned klass = (*mark_array.table)[mark].get_class ();
-      if (klass >= class_count) continue;
       class_to_info[klass].child_indices.push (link.objidx);
     }
 

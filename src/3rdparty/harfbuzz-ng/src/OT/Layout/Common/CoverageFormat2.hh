@@ -95,25 +95,18 @@ struct CoverageFormat2_4
     unsigned count = 0;
     unsigned range = (unsigned) -1;
     last = (hb_codepoint_t) -2;
-    unsigned unsorted = false;
     for (auto g: glyphs)
     {
       if (last + 1 != g)
       {
-	if (unlikely (last != (hb_codepoint_t) -2 && last + 1 > g))
-	  unsorted = true;
-
         range++;
-        rangeRecord.arrayZ[range].first = g;
-        rangeRecord.arrayZ[range].value = count;
+        rangeRecord[range].first = g;
+        rangeRecord[range].value = count;
       }
-      rangeRecord.arrayZ[range].last = g;
+      rangeRecord[range].last = g;
       last = g;
       count++;
     }
-
-    if (unlikely (unsorted))
-      rangeRecord.as_array ().qsort (RangeRecord<Types>::cmp_range);
 
     return_trace (true);
   }
@@ -192,8 +185,8 @@ struct CoverageFormat2_4
         if (__more__ ())
         {
           unsigned int old = coverage;
-          j = c->rangeRecord.arrayZ[i].first;
-          coverage = c->rangeRecord.arrayZ[i].value;
+          j = c->rangeRecord[i].first;
+          coverage = c->rangeRecord[i].value;
           if (unlikely (coverage != old + 1))
           {
             /* Broken table. Skip. Important to avoid DoS.

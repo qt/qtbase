@@ -270,8 +270,7 @@ struct TupleVariationHeader
 
       if (shared_tuple_active_idx)
       {
-	if (unlikely (index >= shared_tuple_active_idx->length))
-	  return 0.f;
+        assert (index < shared_tuple_active_idx->length);
 	int v = (*shared_tuple_active_idx).arrayZ[index];
 	if (v != -1)
 	{

@@ -64,17 +64,13 @@
 using hb_ot_font_cmap_cache_t    = hb_cache_t<21, 16, 8, true>;
 using hb_ot_font_advance_cache_t = hb_cache_t<24, 16, 8, true>;
 
-#ifndef HB_NO_OT_FONT_CMAP_CACHE
 static hb_user_data_key_t hb_ot_font_cmap_cache_user_data_key;
-#endif
 
 struct hb_ot_font_t
 {
   const hb_ot_face_t *ot_face;
 
-#ifndef HB_NO_OT_FONT_CMAP_CACHE
   hb_ot_font_cmap_cache_t *cmap_cache;
-#endif
 
   /* h_advance caching */
   mutable hb_atomic_int_t cached_coords_serial;
@@ -90,7 +86,6 @@ _hb_ot_font_create (hb_font_t *font)
 
   ot_font->ot_face = &font->face->table;
 
-#ifndef HB_NO_OT_FONT_CMAP_CACHE
   // retry:
   auto *cmap_cache  = (hb_ot_font_cmap_cache_t *) hb_face_get_user_data (font->face,
 									 &hb_ot_font_cmap_cache_user_data_key);
@@ -117,7 +112,6 @@ _hb_ot_font_create (hb_font_t *font)
   }
   out:
   ot_font->cmap_cache = cmap_cache;
-#endif
 
   return ot_font;
 }
@@ -142,11 +136,7 @@ hb_ot_get_nominal_glyph (hb_font_t *font HB_UNUSED,
 {
   const hb_ot_font_t *ot_font = (const hb_ot_font_t *) font_data;
   const hb_ot_face_t *ot_face = ot_font->ot_face;
-  hb_ot_font_cmap_cache_t *cmap_cache = nullptr;
-#ifndef HB_NO_OT_FONT_CMAP_CACHE
-  cmap_cache = ot_font->cmap_cache;
-#endif
-  return ot_face->cmap->get_nominal_glyph (unicode, glyph, cmap_cache);
+  return ot_face->cmap->get_nominal_glyph (unicode, glyph, ot_font->cmap_cache);
 }
 
 static unsigned int
@@ -161,14 +151,10 @@ hb_ot_get_nominal_glyphs (hb_font_t *font HB_UNUSED,
 {
   const hb_ot_font_t *ot_font = (const hb_ot_font_t *) font_data;
   const hb_ot_face_t *ot_face = ot_font->ot_face;
-  hb_ot_font_cmap_cache_t *cmap_cache = nullptr;
-#ifndef HB_NO_OT_FONT_CMAP_CACHE
-  cmap_cache = ot_font->cmap_cache;
-#endif
   return ot_face->cmap->get_nominal_glyphs (count,
 					    first_unicode, unicode_stride,
 					    first_glyph, glyph_stride,
-					    cmap_cache);
+					    ot_font->cmap_cache);
 }
 
 static hb_bool_t
@@ -181,13 +167,9 @@ hb_ot_get_variation_glyph (hb_font_t *font HB_UNUSED,
 {
   const hb_ot_font_t *ot_font = (const hb_ot_font_t *) font_data;
   const hb_ot_face_t *ot_face = ot_font->ot_face;
-  hb_ot_font_cmap_cache_t *cmap_cache = nullptr;
-#ifndef HB_NO_OT_FONT_CMAP_CACHE
-  cmap_cache = ot_font->cmap_cache;
-#endif
   return ot_face->cmap->get_variation_glyph (unicode,
                                              variation_selector, glyph,
-                                             cmap_cache);
+                                             ot_font->cmap_cache);
 }
 
 static void
@@ -206,7 +188,7 @@ hb_ot_get_glyph_h_advances (hb_font_t* font, void* font_data,
 
   hb_position_t *orig_first_advance = first_advance;
 
-#if !defined(HB_NO_VAR) && !defined(HB_NO_OT_FONT_ADVANCE_CACHE)
+#ifndef HB_NO_VAR
   const OT::HVAR &HVAR = *hmtx.var_table;
   const OT::VariationStore &varStore = &HVAR + HVAR.varStore;
   OT::VariationStore::cache_t *varStore_cache = font->num_coords * count >= 128 ? varStore.create_cache () : nullptr;
@@ -276,7 +258,7 @@ hb_ot_get_glyph_h_advances (hb_font_t* font, void* font_data,
     }
   }
 
-#if !defined(HB_NO_VAR) && !defined(HB_NO_OT_FONT_ADVANCE_CACHE)
+#ifndef HB_NO_VAR
   OT::VariationStore::destroy_cache (varStore_cache);
 #endif
 
@@ -311,7 +293,7 @@ hb_ot_get_glyph_v_advances (hb_font_t* font, void* font_data,
 
   if (vmtx.has_data ())
   {
-#if !defined(HB_NO_VAR) && !defined(HB_NO_OT_FONT_ADVANCE_CACHE)
+#ifndef HB_NO_VAR
     const OT::VVAR &VVAR = *vmtx.var_table;
     const OT::VariationStore &varStore = &VVAR + VVAR.varStore;
     OT::VariationStore::cache_t *varStore_cache = font->num_coords ? varStore.create_cache () : nullptr;
@@ -326,7 +308,7 @@ hb_ot_get_glyph_v_advances (hb_font_t* font, void* font_data,
       first_advance = &StructAtOffsetUnaligned<hb_position_t> (first_advance, advance_stride);
     }
 
-#if !defined(HB_NO_VAR) && !defined(HB_NO_OT_FONT_ADVANCE_CACHE)
+#ifndef HB_NO_VAR
     OT::VariationStore::destroy_cache (varStore_cache);
 #endif
   }
