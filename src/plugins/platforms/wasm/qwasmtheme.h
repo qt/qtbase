@@ -23,9 +23,22 @@ public:
     QWasmTheme();
     ~QWasmTheme();
 
+    const QPalette *palette(Palette type = SystemPalette) const override;
+    Qt::ColorScheme colorScheme() const override;
+    void requestColorScheme(Qt::ColorScheme scheme) override;
     QVariant themeHint(ThemeHint hint) const override;
     const QFont *font(Font type) const override;
     QFont *fixedFont = nullptr;
+
+    static void onColorSchemeChange(emscripten::val event);
+
+private:
+    Qt::ColorScheme m_colorScheme = Qt::ColorScheme::Unknown;
+    std::unique_ptr<QPalette> m_palette;
+    mutable bool m_paletteIsDirty = false;
+
+    static Qt::ColorScheme s_autoColorScheme;
+    static bool s_autoPaletteIsDirty;
 };
 
 QT_END_NAMESPACE
