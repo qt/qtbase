@@ -3682,35 +3682,25 @@ void tst_QLocale::uiLanguages_data()
     QTest::addColumn<QLocale>("locale");
     QTest::addColumn<QStringList>("all");
 
-    QTest::newRow("C") << QLocale::c() << QStringList{QString("C")};
+    QTest::newRow("C") << QLocale::c() << QStringList{u"C"_s};
 
     QTest::newRow("en_US")
-        << QLocale("en_US")
-        << QStringList{QString("en-Latn-US"), QString("en-US"), QString("en")};
-
-    QTest::newRow("en_Latn_US")
-        << QLocale("en_Latn_US") // Specifying the default script makes no difference
-        << QStringList{QString("en-Latn-US"), QString("en-US"), QString("en")};
-
+        << QLocale("en_US") << QStringList{u"en-Latn-US"_s, u"en-US"_s, u"en"_s};
+    QTest::newRow("en_Latn_US") // Specifying the default script makes no difference
+        << QLocale("en_Latn_US") << QStringList{u"en-Latn-US"_s, u"en-US"_s, u"en"_s};
     QTest::newRow("en_GB")
-        << QLocale("en_GB")
-        << QStringList{QString("en-Latn-GB"), QString("en-GB")};
-
+        << QLocale("en_GB") << QStringList{u"en-Latn-GB"_s, u"en-GB"_s};
     QTest::newRow("en_Dsrt_US")
-        << QLocale("en_Dsrt_US")
-        << QStringList{QString("en-Dsrt-US"), QString("en-Dsrt")};
+        << QLocale("en_Dsrt_US") << QStringList{u"en-Dsrt-US"_s, u"en-Dsrt"_s};
 
     QTest::newRow("ru_RU")
-        << QLocale("ru_RU")
-        << QStringList{QString("ru-Cyrl-RU"), QString("ru-RU"), QString("ru")};
+        << QLocale("ru_RU") << QStringList{u"ru-Cyrl-RU"_s, u"ru-RU"_s, u"ru"_s};
 
     QTest::newRow("zh_Hant")
-        << QLocale("zh_Hant")
-        << QStringList{QString("zh-Hant-TW"), QString("zh-TW")};
-
+        << QLocale("zh_Hant") << QStringList{u"zh-Hant-TW"_s, u"zh-TW"_s};
     QTest::newRow("zh_Hans_CN")
         << QLocale(QLocale::Chinese, QLocale::SimplifiedHanScript, QLocale::China)
-        << QStringList{QString("zh-Hans-CN"), QString("zh-CN"), QString("zh")};
+        << QStringList{u"zh-Hans-CN"_s, u"zh-CN"_s, u"zh"_s};
 
     // GB has no native Punjabi locales, so is eliminated by likely subtag rules:
     QTest::newRow("pa_IN")
@@ -3724,8 +3714,8 @@ void tst_QLocale::uiLanguages_data()
 
     // We presently map und (or any other unrecognized language) to C, ignoring
     // what a sub-tag lookup would surely find us.
-    QTest::newRow("und_US") << QLocale("und_US") << QStringList{QString("C")};
-    QTest::newRow("und_Latn") << QLocale("und_Latn") << QStringList{QString("C")};
+    QTest::newRow("und_US") << QLocale("und_US") << QStringList{u"C"_s};
+    QTest::newRow("und_Latn") << QLocale("und_Latn") << QStringList{u"C"_s};
 }
 
 void tst_QLocale::uiLanguages()
@@ -4129,57 +4119,57 @@ void tst_QLocale::mySystemLocale_data()
     QTest::addColumn<QStringList>("uiLanguages");
 
     QTest::addRow("catalan")
-        << QString("ca") << QLocale::Catalan
-        << QStringList{QStringLiteral("ca"), QStringLiteral("ca-Latn-ES"), QStringLiteral("ca-ES")};
+        << u"ca"_s << QLocale::Catalan
+        << QStringList{u"ca"_s, u"ca-Latn-ES"_s, u"ca-ES"_s};
     QTest::addRow("catalan-spain")
-        << QString("ca-ES") << QLocale::Catalan
-        << QStringList{QStringLiteral("ca-ES"), QStringLiteral("ca-Latn-ES"), QStringLiteral("ca")};
+        << u"ca-ES"_s << QLocale::Catalan
+        << QStringList{u"ca-ES"_s, u"ca-Latn-ES"_s, u"ca"_s};
     QTest::addRow("catalan-latin")
-        << QString("ca-Latn") << QLocale::Catalan
-        << QStringList{QStringLiteral("ca-Latn"), QStringLiteral("ca-Latn-ES"),
-                       QStringLiteral("ca-ES"), QStringLiteral("ca")};
+        << u"ca-Latn"_s << QLocale::Catalan
+        << QStringList{u"ca-Latn"_s, u"ca-Latn-ES"_s, u"ca-ES"_s, u"ca"_s};
     QTest::addRow("ukrainian")
-        << QString("uk") << QLocale::Ukrainian
-        << QStringList{QStringLiteral("uk"), QStringLiteral("uk-Cyrl-UA"), QStringLiteral("uk-UA")};
+        << u"uk"_s << QLocale::Ukrainian
+        << QStringList{u"uk"_s, u"uk-Cyrl-UA"_s, u"uk-UA"_s};
     QTest::addRow("english-germany")
-        << QString("en-DE") << QLocale::English
+        << u"en-DE"_s << QLocale::English
         // First two were missed out before fix to QTBUG-104930:
-        << QStringList{QStringLiteral("en-DE"), QStringLiteral("en-Latn-DE"),
-                       QStringLiteral("en-GB"), QStringLiteral("en-Latn-GB"),
-                       QStringLiteral("de-DE"), QStringLiteral("de-Latn-DE"), QStringLiteral("de")};
+        << QStringList{u"en-DE"_s, u"en-Latn-DE"_s,
+                       u"en-GB"_s, u"en-Latn-GB"_s,
+                       u"de-DE"_s, u"de-Latn-DE"_s, u"de"_s};
     QTest::addRow("german")
-        << QString("de") << QLocale::German
-        << QStringList{QStringLiteral("de"), QStringLiteral("de-Latn-DE"), QStringLiteral("de-DE")};
+        << u"de"_s << QLocale::German
+        << QStringList{u"de"_s, u"de-Latn-DE"_s, u"de-DE"_s};
     QTest::addRow("german-britain")
-        << QString("de-GB") << QLocale::German
-        << QStringList{QStringLiteral("de-GB"), QStringLiteral("de-Latn-GB")};
+        << u"de-GB"_s << QLocale::German
+        << QStringList{u"de-GB"_s, u"de-Latn-GB"_s};
     QTest::addRow("chinese-min")
-        << QString("zh") << QLocale::Chinese
-        << QStringList{QStringLiteral("zh"), QStringLiteral("zh-Hans-CN"), QStringLiteral("zh-CN")};
+        << u"zh"_s << QLocale::Chinese
+        << QStringList{u"zh"_s, u"zh-Hans-CN"_s, u"zh-CN"_s};
     QTest::addRow("chinese-full")
-        << QString("zh-Hans-CN") << QLocale::Chinese
-        << QStringList{QStringLiteral("zh-Hans-CN"), QStringLiteral("zh-CN"), QStringLiteral("zh")};
+        << u"zh-Hans-CN"_s << QLocale::Chinese
+        << QStringList{u"zh-Hans-CN"_s, u"zh-CN"_s, u"zh"_s};
 
     // For C, it should preserve what the system gave us but only add "C", never anything more:
-    QTest::addRow("C") << QString("C") << QLocale::C << QStringList{QStringLiteral("C")};
+    QTest::addRow("C")
+        << u"C"_s << QLocale::C << QStringList{u"C"_s};
     QTest::addRow("C-Latn")
-        << QString("C-Latn") << QLocale::C
-        << QStringList{QStringLiteral("C-Latn"), QStringLiteral("C")};
+        << u"C-Latn"_s << QLocale::C
+        << QStringList{u"C-Latn"_s, u"C"_s};
     QTest::addRow("C-US")
-        << QString("C-US") << QLocale::C
-        << QStringList{QStringLiteral("C-US"), QStringLiteral("C")};
+        << u"C-US"_s << QLocale::C
+        << QStringList{u"C-US"_s, u"C"_s};
     QTest::addRow("C-Latn-US")
-        << QString("C-Latn-US") << QLocale::C
-        << QStringList{QStringLiteral("C-Latn-US"), QStringLiteral("C")};
+        << u"C-Latn-US"_s << QLocale::C
+        << QStringList{u"C-Latn-US"_s, u"C"_s};
     QTest::addRow("C-Hans")
-        << QString("C-Hans") << QLocale::C
-        << QStringList{QStringLiteral("C-Hans"), QStringLiteral("C")};
+        << u"C-Hans"_s << QLocale::C
+        << QStringList{u"C-Hans"_s, u"C"_s};
     QTest::addRow("C-CN")
-        << QString("C-CN") << QLocale::C
-        << QStringList{QStringLiteral("C-CN"), QStringLiteral("C")};
+        << u"C-CN"_s << QLocale::C
+        << QStringList{u"C-CN"_s, u"C"_s};
     QTest::addRow("C-Hans-CN")
-        << QString("C-Hans-CN") << QLocale::C
-        << QStringList{QStringLiteral("C-Hans-CN"), QStringLiteral("C")};
+        << u"C-Hans-CN"_s << QLocale::C
+        << QStringList{u"C-Hans-CN"_s, u"C"_s};
 
     QTest::newRow("en-Dsrt-GB")
         << u"en-Dsrt-GB"_s << QLocale::English
@@ -4197,12 +4187,11 @@ void tst_QLocale::mySystemLocale_data()
                        u"en-GB"_s, u"en-Latn-GB"_s, u"fr-FR"_s, u"fr-Latn-FR"_s, u"fr"_s};
 
     QTest::newRow("und-US")
-        << QString("und-US") << QLocale::C
-        << QStringList{QStringLiteral("und-US"), QStringLiteral("C")};
-
+        << u"und-US"_s << QLocale::C
+        << QStringList{u"und-US"_s, u"C"_s};
     QTest::newRow("und-Latn")
-        << QString("und-Latn") << QLocale::C
-        << QStringList{QStringLiteral("und-Latn"), QStringLiteral("C")};
+        << u"und-Latn"_s << QLocale::C
+        << QStringList{u"und-Latn"_s, u"C"_s};
 
     // TODO: test actual system backends correctly handle locales with
     // script-specificity (script listed first is the default, in CLDR v40):
