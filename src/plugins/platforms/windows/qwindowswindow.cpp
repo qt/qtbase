@@ -2460,12 +2460,6 @@ QWindowsWindowData QWindowsWindow::setWindowFlags_sys(Qt::WindowFlags wt,
     return result;
 }
 
-inline bool QWindowsBaseWindow::hasMaximumSize() const
-{
-    const auto maximumSize = window()->maximumSize();
-    return maximumSize.width() != QWINDOWSIZE_MAX || maximumSize.height() != QWINDOWSIZE_MAX;
-}
-
 void QWindowsWindow::handleWindowStateChange(Qt::WindowStates state)
 {
     qCDebug(lcQpaWindow) << __FUNCTION__ << this << window()
@@ -2482,20 +2476,7 @@ void QWindowsWindow::handleWindowStateChange(Qt::WindowStates state)
             GetWindowPlacement(m_data.hwnd, &windowPlacement);
             const RECT geometry = RECTfromQRect(m_data.restoreGeometry);
             windowPlacement.rcNormalPosition = geometry;
-
-            // A bug in windows 10 grows
-            // - ptMaxPosition.x by the task bar's width, if it's on the left
-            // - ptMaxPosition.y by the task bar's height, if it's on the top
-            // each time GetWindowPlacement() is called.
-            // The offset of the screen's left edge (as per frameMargins_sys().left()) is ignored.
-            // => Check for windows 10 and correct.
-            static const auto windows11 = QOperatingSystemVersion::Windows11_21H2;
-            static const bool isWindows10 = QOperatingSystemVersion::current() < windows11;
-            if (isWindows10 && hasMaximumSize()) {
-                const QMargins margins = frameMargins_sys();
-                const QPoint topLeft = window()->screen()->geometry().topLeft();
-                windowPlacement.ptMaxPosition = POINT{ topLeft.x() - margins.left(), topLeft.y() };
-            }
+            correctWindowPlacement(windowPlacement);
 
             // Even if the window is hidden, windowPlacement's showCmd is not SW_HIDE, so change it
             // manually to avoid unhiding a hidden window with the subsequent call to
@@ -2524,6 +2505,65 @@ void QWindowsWindow::handleWindowStateChange(Qt::WindowStates state)
         }
         if (exposeEventsSent && !QWindowsContext::instance()->asyncExpose())
             QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents);
+    }
+}
+
+// Apply corrections to window placement in Windows 10
+// Related to task bar on top or left.
+
+inline bool QWindowsBaseWindow::hasMaximumHeight() const
+{
+    return window()->maximumHeight() != QWINDOWSIZE_MAX;
+}
+
+inline bool QWindowsBaseWindow::hasMaximumWidth() const
+{
+    return window()->maximumWidth() != QWINDOWSIZE_MAX;
+}
+
+inline bool QWindowsBaseWindow::hasMaximumSize() const
+{
+    return hasMaximumHeight() || hasMaximumWidth();
+}
+
+void QWindowsWindow::correctWindowPlacement(WINDOWPLACEMENT &windowPlacement)
+{
+    static const auto windows11 = QOperatingSystemVersion::Windows11_21H2;
+    static const bool isWindows10 = QOperatingSystemVersion::current() < windows11;
+    if (!isWindows10)
+        return;
+
+    // Correct normal position by placement offset on Windows 10
+    // (where task bar can be on any side of the screen)
+    const QPoint offset = windowPlacementOffset(m_data.hwnd, m_data.restoreGeometry.topLeft());
+    windowPlacement.rcNormalPosition = RECTfromQRect(m_data.restoreGeometry.translated(-offset));
+    qCDebug(lcQpaWindow) << "Corrected normal position by" << -offset;
+
+    // A bug in windows 10 grows
+    // - ptMaxPosition.x by the task bar's width, if it's on the left
+    // - ptMaxPosition.y by the task bar's height, if it's on the top
+    // each time GetWindowPlacement() is called.
+    // The offset of the screen's left edge (as per frameMargins_sys().left()) is ignored.
+    // => Check for windows 10 and correct.
+    if (hasMaximumSize()) {
+        const QMargins margins = frameMargins_sys();
+        const QPoint topLeft = window()->screen()->geometry().topLeft();
+        windowPlacement.ptMaxPosition = POINT{ topLeft.x() - margins.left(), topLeft.y() };
+        qCDebug(lcQpaWindow) << "Window has maximum size. Corrected topLeft by"
+                             << -margins.left();
+
+        // If there is a placement offset correct width/height unless restricted,
+        // in order to fit window onto the screen.
+        if (offset.x() > 0 && !hasMaximumWidth()) {
+            const int adjust = offset.x() / window()->devicePixelRatio();
+            window()->setWidth(window()->width() - adjust);
+            qCDebug(lcQpaWindow) << "Width shortened by" << adjust << "logical pixels.";
+        }
+        if (offset.y() > 0 && !hasMaximumHeight()) {
+            const int adjust = offset.y() / window()->devicePixelRatio();
+            window()->setHeight(window()->height() - adjust);
+            qCDebug(lcQpaWindow) << "Height shortened by" << adjust << "logical pixels.";
+        }
     }
 }
 
