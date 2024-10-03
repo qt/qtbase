@@ -128,6 +128,8 @@ public:
 protected:
     HWND parentHwnd() const { return GetAncestor(handle(), GA_PARENT); }
     bool isTopLevel_sys() const;
+    inline bool hasMaximumHeight() const;
+    inline bool hasMaximumWidth() const;
     inline bool hasMaximumSize() const;
     QRect frameGeometry_sys() const;
     QRect geometry_sys() const;
@@ -368,6 +370,7 @@ private:
     void fireExpose(const QRegion &region, bool force=false);
     void fireFullExpose(bool force=false);
     void calculateFullFrameMargins();
+    void correctWindowPlacement(WINDOWPLACEMENT &windowPlacement);
 
     mutable QWindowsWindowData m_data;
     QPointer<QWindowsMenuBar> m_menuBar;
