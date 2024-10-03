@@ -134,6 +134,7 @@ private slots:
     void placeholderVisibility();
     void scrollBarSignals();
     void dontCrashWithCss();
+    void consistentLogicalCursorMoves();
 
 private:
     void createSelection();
@@ -1962,6 +1963,42 @@ void tst_QPlainTextEdit::dontCrashWithCss()
     qApp->setStyleSheet(QString());
 }
 
+void tst_QPlainTextEdit::consistentLogicalCursorMoves()
+{
+    QPlainTextEdit plainTextEdit;
+    QTextDocument *document = plainTextEdit.document();
+    document->setDefaultCursorMoveStyle(Qt::LogicalMoveStyle);
+
+    QTextOption option = document->defaultTextOption();
+    option.setTextDirection(Qt::RightToLeft);
+    document->setDefaultTextOption(option);
+
+    // Red herring: QPlainTextDocumentLayout doesn't respect this format
+    // property, this test ensures that it doesn't break cursor movements.
+    QTextBlockFormat format;
+    format.setLayoutDirection(Qt::LeftToRight);
+
+    QTextCursor cursor = plainTextEdit.textCursor();
+    cursor.setBlockFormat(format);
+    cursor.insertText("ABC DEF");
+
+    QCOMPARE(document->firstBlock().textDirection(), Qt::LeftToRight);
+    QCOMPARE(document->firstBlock().layout()->textOption().textDirection(), Qt::RightToLeft);
+
+    cursor.setPosition(2);
+
+    cursor.movePosition(QTextCursor::Right);
+    QCOMPARE(cursor.position(), 1);
+
+    cursor.movePosition(QTextCursor::Left);
+    QCOMPARE(cursor.position(), 2);
+
+    cursor.movePosition(QTextCursor::WordRight);
+    QCOMPARE(cursor.position(), 0);
+
+    cursor.movePosition(QTextCursor::WordLeft);
+    QCOMPARE(cursor.position(), 4);
+}
 
 QTEST_MAIN(tst_QPlainTextEdit)
 #include "tst_qplaintextedit.moc"
