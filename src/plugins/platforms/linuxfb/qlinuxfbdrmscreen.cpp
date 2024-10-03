@@ -89,7 +89,7 @@ QLinuxFbDevice::QLinuxFbDevice(QKmsScreenConfig *screenConfig)
 
 bool QLinuxFbDevice::open()
 {
-    int fd = qt_safe_open(devicePath().toLocal8Bit().constData(), O_RDWR | O_CLOEXEC);
+    int fd = qt_safe_open(devicePath().toLocal8Bit().constData(), O_RDWR);
     if (fd == -1) {
         qErrnoWarning("Could not open DRM device %s", qPrintable(devicePath()));
         return false;
