@@ -66,20 +66,15 @@ static Q_ALWAYS_INLINE uint qBitScanReverse(unsigned v) noexcept
 #endif
 
 #if defined(__SSE2__)
-static inline bool simdEncodeAscii(uchar *&dst, const char16_t *&nextAscii, const char16_t *&src, const char16_t *end)
+template <QCpuFeatureType Cpu = _compilerCpuFeatures> static Q_ALWAYS_INLINE bool
+simdEncodeAscii(uchar *&dst, const char16_t *&nextAscii, const char16_t *&src, const char16_t *end)
 {
     size_t sizeBytes = reinterpret_cast<const char *>(end) - reinterpret_cast<const char *>(src);
 
     // do sixteen characters at a time
     auto process16Chars = [](uchar *dst, const char16_t *src) {
-#  ifdef __AVX2__
-        __m256i data = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(src));
-        __m128i data1 = _mm256_castsi256_si128(data);
-        __m128i data2 = _mm256_extracti128_si256(data, 1);
-#  else
         __m128i data1 = _mm_loadu_si128((const __m128i*)src);
         __m128i data2 = _mm_loadu_si128(1+(const __m128i*)src);
-#  endif
 
         // check if everything is ASCII
         // the highest ASCII value is U+007F
@@ -120,6 +115,40 @@ static inline bool simdEncodeAscii(uchar *&dst, const char16_t *&nextAscii, cons
         src = end;
     };
 
+    if constexpr (Cpu & CpuFeatureAVX2) {
+        // The 256-bit VPACKUSWB[1] instruction interleaves the two input
+        // operands, so we need an extra permutation to get them back in-order.
+        // VPERMW takes 2 cyles to run while VPERMQ takes only 1.
+        // [1] https://www.felixcloutier.com/x86/PACKUSWB.html
+        constexpr size_t Step = 32;
+        auto process32Chars = [](const char16_t *src, uchar *dst) {
+            __m256i data1 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(src));
+            __m256i data2 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(src) + 1);
+            __m256i packed = _mm256_packus_epi16(data1, data2); // will be [A, B, A, B]
+            __m256i permuted = _mm256_permute4x64_epi64(packed, _MM_SHUFFLE(3, 1, 2, 0));
+            __m256i nonAscii = _mm256_cmpgt_epi8(permuted, _mm256_setzero_si256());
+
+            // store, even if there are non-ASCII characters here
+            _mm256_storeu_si256(reinterpret_cast<__m256i *>(dst), permuted);
+
+            return ~_mm256_movemask_epi8(nonAscii);
+        };
+
+        if (sizeBytes >= Step * sizeof(char16_t)) {
+            // do 32 characters at a time
+            qptrdiff offset = 0;
+            for ( ; (offset + Step) * sizeof(char16_t) < sizeBytes; offset += Step) {
+                if (uint n = process32Chars(src + offset, dst + offset))
+                    return maybeFoundNonAscii(n, offset);
+            }
+
+            // do 32 characters again, possibly overlapping with the loop above
+            adjustToEnd();
+            uint n = process32Chars(src - Step, dst - Step);
+            return maybeFoundNonAscii(n, -int(Step));
+        }
+    }
+
     constexpr size_t Step = 16;
     if (sizeBytes >= Step * sizeof(char16_t)) {
 
@@ -128,6 +157,8 @@ static inline bool simdEncodeAscii(uchar *&dst, const char16_t *&nextAscii, cons
             ushort n = process16Chars(dst + offset, src + offset);
             if (n)
                 return maybeFoundNonAscii(n, offset);
+            if (Cpu & CpuFeatureAVX2)
+                break;      // we can only ever loop once because of the code above
         }
 
         // do sixteen characters again, possibly overlapping with the loop above
@@ -183,7 +214,8 @@ static inline bool simdEncodeAscii(uchar *&dst, const char16_t *&nextAscii, cons
     return src == end;
 }
 
-static inline bool simdDecodeAscii(char16_t *&dst, const uchar *&nextAscii, const uchar *&src, const uchar *end)
+template <QCpuFeatureType Cpu = _compilerCpuFeatures> static Q_ALWAYS_INLINE bool
+simdDecodeAscii(char16_t *&dst, const uchar *&nextAscii, const uchar *&src, const uchar *end)
 {
     // do sixteen characters at a time
     auto process16Chars = [](char16_t *dst, const uchar *src) {
@@ -193,17 +225,9 @@ static inline bool simdDecodeAscii(char16_t *&dst, const uchar *&nextAscii, cons
         // movemask extracts the high bit of every byte, so n is non-zero if something isn't ASCII
         uint n = _mm_movemask_epi8(data);
 
-#ifdef __AVX2__
-        // load and zero extend to an YMM register
-        const __m256i extended = _mm256_cvtepu8_epi16(data);
-
-        // store everything, even mojibake
-        _mm256_storeu_si256((__m256i*)dst, extended);
-#else
         // store everything, even mojibake
         _mm_storeu_si128((__m128i*)dst, _mm_unpacklo_epi8(data, _mm_setzero_si128()));
         _mm_storeu_si128(1+(__m128i*)dst, _mm_unpackhi_epi8(data, _mm_setzero_si128()));
-#endif
         return ushort(n);
     };
     auto maybeFoundNonAscii = [&](uint n, qptrdiff offset = 0) {
@@ -226,6 +250,51 @@ static inline bool simdDecodeAscii(char16_t *&dst, const uchar *&nextAscii, cons
         src = end;
     };
 
+    if constexpr (Cpu & CpuFeatureAVX2) {
+        constexpr qsizetype Step = 32;
+        auto process32Chars = [](char16_t *dst, const uchar *src) {
+            __m128i data1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(src));
+            __m128i data2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(src) + 1);
+
+            // the processor can execute this VPOR (dispatches 3/cycle) faster
+            // than waiting for the VPMOVMSKB (1/cycle) of both data to check
+            // their masks
+            __m128i ored = _mm_or_si128(data1, data2);
+            bool any = _mm_movemask_epi8(ored);
+
+            // store everything, even mojibake
+            __m256i extended1 = _mm256_cvtepu8_epi16(data1);
+            __m256i extended2 = _mm256_cvtepu8_epi16(data2);
+            _mm256_storeu_si256(reinterpret_cast<__m256i *>(dst), extended1);
+            _mm256_storeu_si256(reinterpret_cast<__m256i *>(dst) + 1, extended2);
+
+            uint n1 = _mm_movemask_epi8(data1);
+            uint n2 = _mm_movemask_epi8(data2);
+            struct R {
+                uint n1, n2;
+                bool any;
+                operator bool() const { return any; }
+                operator uint() const { return n1|(n2 << 16); }
+            };
+            return R{ n1, n2, any };
+        };
+
+        if (end - src >= Step) {
+            // do 32 characters at a time
+            qptrdiff offset = 0;
+            for ( ; offset + Step < end - src; offset += Step) {
+                auto r = process32Chars(dst + offset, src + offset);
+                if (r)
+                    return maybeFoundNonAscii(r, offset);
+            }
+
+            // do 32 characters again, possibly overlapping with the loop above
+            adjustToEnd();
+            auto r = process32Chars(dst - Step, src - Step);
+            return maybeFoundNonAscii(r, -Step);
+        }
+    }
+
     constexpr qsizetype Step = 16;
     if (end - src >= Step) {
         qptrdiff offset = 0;
@@ -233,6 +302,8 @@ static inline bool simdDecodeAscii(char16_t *&dst, const uchar *&nextAscii, cons
             ushort n = process16Chars(dst + offset, src + offset);
             if (n)
                 return maybeFoundNonAscii(n, offset);
+            if (Cpu & CpuFeatureAVX2)
+                break;      // we can only ever loop once because of the code above
         }
 
         // do one chunk again, possibly overlapping with the loop above
