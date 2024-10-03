@@ -15,7 +15,7 @@
 // We mean it.
 //
 
-#include <QtCore/qglobal.h>
+#include <QtCore/qnamespace.h>
 #include <QtCore/private/quniquehandle_p.h>
 
 #include <cstdio>
