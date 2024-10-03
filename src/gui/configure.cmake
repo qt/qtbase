@@ -393,6 +393,26 @@ input_event buf[32];
 }
 ")
 
+# vxworksevdev
+qt_config_compile_test(vxworksevdev
+    LABEL "VxWorks evdev"
+"#include <evdevLib.h>
+enum {
+    e1 = EV_DEV_ABS,
+    e2 = EV_DEV_PTR_ABS_X,
+    e3 = EV_DEV_PTR_ABS_Y,
+    e4 = EV_DEV_PTR_BTN_TOUCH,
+};
+
+int main(void)
+{
+    /* BEGIN TEST: */
+EV_DEV_EVENT buf[32];
+(void) buf;
+    /* END TEST: */
+    return 0;
+}")
+
 # integrityfb
 qt_config_compile_test(integrityfb
     LABEL "INTEGRITY framebuffer"
@@ -682,6 +702,10 @@ qt_feature("direct2d1_1" PRIVATE
 qt_feature("evdev" PRIVATE
     LABEL "evdev"
     CONDITION QT_FEATURE_thread AND TEST_evdev
+)
+qt_feature("vxworksevdev" PRIVATE
+    LABEL "vxworksevdev"
+    CONDITION QT_FEATURE_thread AND TEST_vxworksevdev
 )
 qt_feature("freetype" PUBLIC PRIVATE
     SECTION "Fonts"
@@ -1322,6 +1346,7 @@ qt_configure_add_summary_entry(ARGS "integrityhid")
 qt_configure_add_summary_entry(ARGS "mtdev")
 qt_configure_add_summary_entry(ARGS "tslib")
 qt_configure_add_summary_entry(ARGS "xkbcommon")
+qt_configure_add_summary_entry(ARGS "vxworksevdev")
 qt_configure_add_summary_section(NAME "X11 specific")
 qt_configure_add_summary_entry(ARGS "xlib")
 qt_configure_add_summary_entry(ARGS "xcb-xlib")
