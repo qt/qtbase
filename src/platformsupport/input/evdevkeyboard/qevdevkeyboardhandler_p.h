@@ -17,6 +17,7 @@
 
 #include <qobject.h>
 #include <qloggingcategory.h>
+#include <QtInputSupport/private/qfdcontainer_p.h>
 
 #include <QDataStream>
 #include <private/qglobal_p.h>
@@ -98,21 +99,6 @@ inline QDataStream &operator<<(QDataStream &ds, const QEvdevKeyboardMap::Composi
 {
     return ds << c.first << c.second << c.result;
 }
-
-class QFdContainer
-{
-    int m_fd;
-    Q_DISABLE_COPY_MOVE(QFdContainer);
-public:
-    Q_NODISCARD_CTOR explicit QFdContainer(int fd = -1) noexcept : m_fd(fd) {}
-    ~QFdContainer() { reset(); }
-
-    int get() const noexcept { return m_fd; }
-
-    int release() noexcept { int result = m_fd; m_fd = -1; return result; }
-    void reset() noexcept;
-    void reset(int fd) { reset(); m_fd = fd; }
-};
 
 class QEvdevKeyboardHandler : public QObject
 {

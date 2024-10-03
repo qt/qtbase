@@ -102,6 +102,7 @@ qt_internal_extend_target(InputSupportPrivate CONDITION QT_FEATURE_evdev OR QT_F
     SOURCES
         shared/devicehandlerlist_p.h
         shared/qevdevutil.cpp shared/qevdevutil_p.h
+        shared/qfdcontainer.cpp shared/qfdcontainer_p.h
         shared/qoutputmapping.cpp shared/qoutputmapping_p.h
 )
 
