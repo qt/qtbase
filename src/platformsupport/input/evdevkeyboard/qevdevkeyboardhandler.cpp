@@ -202,7 +202,7 @@ void QEvdevKeyboardHandler::processKeyEvent(int nativecode, int unicode, int qtc
                                             Qt::KeyboardModifiers modifiers, bool isPress, bool autoRepeat)
 {
     if (!autoRepeat)
-        QGuiApplicationPrivate::inputDeviceManager()->setKeyboardModifiers(QEvdevKeyboardHandler::toQtModifiers(m_modifiers));
+        QGuiApplicationPrivate::inputDeviceManager()->setKeyboardModifiers(QEvdevKeyboardMap::toQtModifiers(m_modifiers));
 
     QWindow *window = nullptr;
 #ifdef Q_OS_WEBOS
@@ -336,7 +336,7 @@ QEvdevKeyboardHandler::KeycodeAction QEvdevKeyboardHandler::processKeycode(quint
         // so just report the plain mapping with additional modifiers.
         if ((it == map_plain && it != map_withmod) ||
             (map_withmod && !(map_withmod->qtcode & modmask))) {
-            qtcode |= QEvdevKeyboardHandler::toQtModifiers(modifiers);
+            qtcode |= QEvdevKeyboardMap::toQtModifiers(modifiers);
         }
 
         if (m_composing == 2 && first_press && !(it->flags & QEvdevKeyboardMap::IsModifier)) {

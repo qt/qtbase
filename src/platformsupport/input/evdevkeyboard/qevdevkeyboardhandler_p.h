@@ -78,6 +78,21 @@ namespace QEvdevKeyboardMap {
         ModCtrlR   = 0x80
         // ModCapsShift = 0x100, // not supported!
     };
+
+    inline Qt::KeyboardModifiers toQtModifiers(quint8 mod)
+    {
+        Qt::KeyboardModifiers qtmod = Qt::NoModifier;
+
+        if (mod & (ModShift | ModShiftL | ModShiftR))
+            qtmod |= Qt::ShiftModifier;
+        if (mod & (ModControl | ModCtrlL | ModCtrlR))
+            qtmod |= Qt::ControlModifier;
+        if (mod & ModAlt)
+            qtmod |= Qt::AltModifier;
+
+        return qtmod;
+    }
+
 }
 
 inline QDataStream &operator>>(QDataStream &ds, QEvdevKeyboardMap::Mapping &m)
@@ -128,20 +143,6 @@ public:
     static std::unique_ptr<QEvdevKeyboardHandler> create(const QString &device,
                                          const QString &specification,
                                          const QString &defaultKeymapFile = QString());
-
-    static Qt::KeyboardModifiers toQtModifiers(quint8 mod)
-    {
-        Qt::KeyboardModifiers qtmod = Qt::NoModifier;
-
-        if (mod & (QEvdevKeyboardMap::ModShift | QEvdevKeyboardMap::ModShiftL | QEvdevKeyboardMap::ModShiftR))
-            qtmod |= Qt::ShiftModifier;
-        if (mod & (QEvdevKeyboardMap::ModControl | QEvdevKeyboardMap::ModCtrlL | QEvdevKeyboardMap::ModCtrlR))
-            qtmod |= Qt::ControlModifier;
-        if (mod & QEvdevKeyboardMap::ModAlt)
-            qtmod |= Qt::AltModifier;
-
-        return qtmod;
-    }
 
     bool loadKeymap(const QString &file);
     void unloadKeymap();
