@@ -2079,6 +2079,10 @@ bool QGuiApplication::event(QEvent *e)
                 postEvent(topLevelWindow, new QEvent(e->type()));
         }
         break;
+    case QEvent::ThemeChange:
+        for (auto *w : QGuiApplication::allWindows())
+            forwardEvent(w, e);
+        break;
     case QEvent::Quit:
         // Close open windows. This is done in order to deliver de-expose
         // events while the event loop is still running.
@@ -2795,9 +2799,10 @@ void QGuiApplicationPrivate::processThemeChanged(QWindowSystemInterfacePrivate::
     QIconPrivate::clearIconCache();
 
     QEvent themeChangeEvent(QEvent::ThemeChange);
-    const QWindowList windows = tce->window ? QWindowList{tce->window} : window_list;
-    for (auto *window : windows)
-        QGuiApplication::sendSpontaneousEvent(window, &themeChangeEvent);
+    if (tce->window)
+        QGuiApplication::sendSpontaneousEvent(tce->window, &themeChangeEvent);
+    else
+        QGuiApplication::sendSpontaneousEvent(qGuiApp, &themeChangeEvent);
 }
 
 void QGuiApplicationPrivate::handleThemeChanged()
