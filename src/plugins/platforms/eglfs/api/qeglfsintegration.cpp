@@ -50,6 +50,10 @@
 #include <QtInputSupport/private/qevdevtouchmanager_p.h>
 #endif
 
+#if QT_CONFIG(vxworksevdev)
+#include <QtInputSupport/private/qvxmousemanager_p.h>
+#endif
+
 #if QT_CONFIG(tslib)
 #include <QtInputSupport/private/qtslib_p.h>
 #endif
@@ -435,6 +439,8 @@ void QEglFSIntegration::createInputHandlers()
     if (!useTslib)
 #endif
         new QEvdevTouchManager("EvdevTouch"_L1, QString() /* spec */, this);
+#elif QT_CONFIG(vxworksevdev)
+    new QVxMouseManager("VxMouse"_L1, QString() /* spec */, this);
 #endif
 
 #if QT_CONFIG(integrityhid)

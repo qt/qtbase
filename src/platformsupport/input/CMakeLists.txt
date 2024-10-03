@@ -33,7 +33,7 @@ qt_internal_extend_target(InputSupportPrivate CONDITION QT_FEATURE_evdev
         evdevkeyboard/qevdevkeyboard_defaultmap_p.h
         evdevkeyboard/qevdevkeyboardhandler.cpp evdevkeyboard/qevdevkeyboardhandler_p.h
         evdevkeyboard/qevdevkeyboardmanager.cpp evdevkeyboard/qevdevkeyboardmanager_p.h
-        evdevmouse/qevdevmousehandler_p.h
+        evdevmouse/qevdevmousehandler.cpp evdevmouse/qevdevmousehandler_p.h
         evdevmouse/qevdevmousemanager.cpp evdevmouse/qevdevmousemanager_p.h
         evdevtouch/qevdevtouchhandler.cpp evdevtouch/qevdevtouchhandler_p.h
         evdevtouch/qevdevtouchfilter_p.h
@@ -63,14 +63,10 @@ qt_internal_extend_target(InputSupportPrivate CONDITION QT_FEATURE_evdev AND QT_
         PkgConfig::Mtdev
 )
 
-qt_internal_extend_target(InputSupportPrivate CONDITION QT_FEATURE_evdev AND NOT VXWORKS
+qt_internal_extend_target(InputSupportPrivate CONDITION QT_FEATURE_vxworksevdev
     SOURCES
-        evdevmouse/qevdevmousehandler.cpp
-)
-
-qt_internal_extend_target(InputSupportPrivate CONDITION QT_FEATURE_evdev AND VXWORKS
-    SOURCES
-        evdevmouse/qevdevmousehandler_vxworks.cpp
+        vxmouse/qvxmousehandler.cpp vxmouse/qvxmousehandler_p.h
+        vxmouse/qvxmousemanager.cpp vxmouse/qvxmousemanager_p.h
 )
 
 qt_internal_extend_target(InputSupportPrivate CONDITION QT_FEATURE_tslib
@@ -98,7 +94,7 @@ qt_internal_extend_target(InputSupportPrivate CONDITION QT_FEATURE_libinput AND 
         XKB::XKB
 )
 
-qt_internal_extend_target(InputSupportPrivate CONDITION QT_FEATURE_evdev OR QT_FEATURE_libinput
+qt_internal_extend_target(InputSupportPrivate CONDITION QT_FEATURE_evdev OR QT_FEATURE_libinput OR QT_FEATURE_vxworksevdev
     SOURCES
         shared/devicehandlerlist_p.h
         shared/qevdevutil.cpp shared/qevdevutil_p.h

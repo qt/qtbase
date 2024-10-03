@@ -1,7 +1,7 @@
 // Copyright (C) 2024 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include "qevdevmousehandler_p.h"
+#include "qvxmousehandler_p.h"
 
 #include <QGuiApplication>
 #include <QLoggingCategory>
@@ -18,11 +18,11 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(qLcEvdevMouse, "qt.qpa.input")
+Q_LOGGING_CATEGORY(qLcVxMouse, "qt.qpa.input")
 
-std::unique_ptr<QEvdevMouseHandler> QEvdevMouseHandler::create(const QString &device, const QString &specification)
+std::unique_ptr<QVxMouseHandler> QVxMouseHandler::create(const QString &device, const QString &specification)
 {
-    qCDebug(qLcEvdevMouse) << "create mouse handler for" << device << specification;
+    qCDebug(qLcVxMouse) << "create mouse handler for" << device << specification;
 
     bool compression = false;
     int jitterLimit = 0;
@@ -36,33 +36,33 @@ std::unique_ptr<QEvdevMouseHandler> QEvdevMouseHandler::create(const QString &de
 
     int fd = qt_safe_open(device.toLocal8Bit().constData(), O_RDONLY | O_NONBLOCK, 0);
     if (fd >= 0) {
-        return std::unique_ptr<QEvdevMouseHandler>(new QEvdevMouseHandler(device, fd, abs, compression, jitterLimit));
+        return std::unique_ptr<QVxMouseHandler>(new QVxMouseHandler(device, fd, abs, compression, jitterLimit));
     } else {
-        qCWarning(qLcEvdevMouse) << "Cannot open mouse input device" << qPrintable(device) << ":" << strerror(errno);
+        qCWarning(qLcVxMouse) << "Cannot open mouse input device" << qPrintable(device) << ":" << strerror(errno);
         return nullptr;
     }
 }
 
-QEvdevMouseHandler::QEvdevMouseHandler(const QString &device, int fd, bool abs, bool, int jitterLimit)
+QVxMouseHandler::QVxMouseHandler(const QString &device, int fd, bool abs, bool, int jitterLimit)
     : m_device(device), m_fd(fd), m_notify(0), m_x(0), m_y(0), m_prevx(0), m_prevy(0),
       m_abs(abs), m_buttons(0), m_button(Qt::NoButton), m_eventType(QEvent::None), m_prevInvalid(true)
 {
     Q_UNUSED(jitterLimit)
-    setObjectName(QLatin1String("Evdev Mouse Handler"));
+    setObjectName(QLatin1String("VxWorksEvdev Mouse Handler"));
 
     QSocketNotifier *notifier;
     notifier = new QSocketNotifier(m_fd, QSocketNotifier::Read, this);
     connect(notifier, &QSocketNotifier::activated,
-            this, &QEvdevMouseHandler::readMouseData);
+            this, &QVxMouseHandler::readMouseData);
 }
 
-QEvdevMouseHandler::~QEvdevMouseHandler()
+QVxMouseHandler::~QVxMouseHandler()
 {
     if (m_fd >= 0)
         qt_safe_close(m_fd);
 }
 
-void QEvdevMouseHandler::sendMouseEvent()
+void QVxMouseHandler::sendMouseEvent()
 {
     int x = m_x - m_prevx;
     int y = m_y - m_prevy;
@@ -79,7 +79,7 @@ void QEvdevMouseHandler::sendMouseEvent()
     m_prevy = m_y;
 }
 
-void QEvdevMouseHandler::readMouseData()
+void QVxMouseHandler::readMouseData()
 {
     bool posChanged = false;
     bool btnChanged = false;
