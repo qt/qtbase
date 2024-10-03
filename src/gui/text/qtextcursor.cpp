@@ -312,7 +312,13 @@ bool QTextCursorPrivate::movePosition(QTextCursor::MoveOperation op, QTextCursor
     if (!blockIt.isValid())
         return false;
 
-    if (blockIt.textDirection() == Qt::RightToLeft) {
+    const QTextLayout *layout = blockLayout(blockIt);
+
+    Qt::LayoutDirection blockDirection = layout->textOption().textDirection();
+    if (blockDirection == Qt::LayoutDirectionAuto)
+        blockDirection = blockIt.textDirection();
+
+    if (blockDirection == Qt::RightToLeft) {
         if (op == QTextCursor::WordLeft)
             op = QTextCursor::NextWord;
         else if (op == QTextCursor::WordRight)
@@ -326,7 +332,6 @@ bool QTextCursorPrivate::movePosition(QTextCursor::MoveOperation op, QTextCursor
         }
     }
 
-    const QTextLayout *layout = blockLayout(blockIt);
     int relativePos = position - blockIt.position();
     QTextLine line;
     if (!priv->isInEditBlock())
