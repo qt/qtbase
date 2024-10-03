@@ -408,11 +408,11 @@ static bool parseTestArgs()
     testAppArgs = "\"%1\""_L1.arg(testAppArgs.trimmed());
     const QString activityName = "%1/%2"_L1.arg(g_options.package).arg(g_options.activity);
 
-    // Pass over any testlib env vars if set
+    // Pass over any qt or testlib env vars if set
     QString testEnvVars;
     const QStringList envVarsList = QProcessEnvironment::systemEnvironment().toStringList();
     for (const QString &var : envVarsList) {
-        if (var.startsWith("QTEST_"_L1))
+        if (var.startsWith("QTEST_"_L1) || var.startsWith("QT_"_L1))
             testEnvVars += "%1 "_L1.arg(var);
     }
 
