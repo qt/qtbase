@@ -18,24 +18,28 @@ returned by minidom.parse() and their child-nodes:
 
 See individual classes for further detail.
 """
+from __future__ import annotations
 from localetools import Error
 from dateconverter import convert_date
+from typing import Any, Iterator
+from xml.dom import minidom
 
 # The github version of CLDR uses '↑↑↑' to indicate "inherit"
 INHERIT = '↑↑↑'
 
-def _attrsFromDom(dom):
+def _attrsFromDom(dom: minidom.Element) -> dict[str, str]:
     return { k: (v if isinstance(v, str) else v.nodeValue)
              for k, v in dom.attributes.items() }
 
 class Node (object):
     """Wrapper for an arbitrary DOM node.
 
-    Provides various ways to select chldren of a node. Selected child
+    Provides various ways to select children of a node. Selected child
     nodes are returned wrapped as Node objects.  A Node exposes the
     raw DOM node it wraps via its .dom attribute."""
 
-    def __init__(self, elt, dullAttrs = None, draft = 0):
+    def __init__(self, elt: minidom.Element,
+                 dullAttrs: dict[str, tuple[str, ...]]|None = None, draft: int = 0) -> None:
         """Wraps a DOM node for ease of access.
 
         First argument, elt, is the DOM node to wrap.
@@ -51,16 +55,17 @@ class Node (object):
         score of any ancestor of the new node.)"""
         self.dom, self.__dull = elt, dullAttrs
         try:
-            attr = elt.attributes['draft'].nodeValue
+            attr: str = elt.attributes['draft'].nodeValue
         except KeyError:
             self.draft = draft
         else:
             self.draft = max(draft, self.draftScore(attr))
 
-    def attributes(self):
+    def attributes(self) -> dict[str, str]:
         return _attrsFromDom(self.dom)
 
-    def findAllChildren(self, tag, wanted = None, allDull = False):
+    def findAllChildren(self, tag: str, wanted: dict[str, str]|None = None,
+                        allDull: bool = False) -> Iterator[Node]:
         """All children that do have the given tag and attributes.
 
         First argument is the tag: children with any other tag are
@@ -76,7 +81,7 @@ class Node (object):
 
         if self.__dull is None:
             allDull = True
-        dull = () if allDull else self.__dull[tag]
+        dull: tuple[str, ...] = () if allDull else self.__dull[tag]
 
         for child in self.dom.childNodes:
             if child.nodeType != child.ELEMENT_NODE:
@@ -102,14 +107,14 @@ class Node (object):
 
             yield Node(child, self.__dull, self.draft)
 
-    def findUniqueChild(self, tag):
+    def findUniqueChild(self, tag: str) -> Node:
         """Returns the single child with the given nodeName.
 
         Raises Error if there is no such child or there is more than
         one."""
-        seq = self.findAllChildren(tag)
+        seq: Iterator[Node] = self.findAllChildren(tag)
         try:
-            node = next(seq)
+            node: Node = next(seq)
         except StopIteration:
             raise Error('No child found where one was expected', tag)
         for it in seq:
@@ -117,7 +122,7 @@ class Node (object):
         return node
 
     @classmethod
-    def draftScore(cls, level):
+    def draftScore(cls, level: str) -> int:
         """Maps draft level names to numeric scores.
 
         Single parameter, level, is the least sure value of the draft
@@ -139,19 +144,19 @@ class Node (object):
     __draftScores = dict(true = 4, unconfirmed = 3, provisional = 2,
                          contributed = 1, approved = 0, false = 0)
 
-def _parseXPath(selector):
+def _parseXPath(selector: str) -> tuple[str, dict[str, str]]:
     # Split "tag[attr=val][...]" into tag-name and attribute mapping
-    attrs = selector.split('[')
-    name = attrs.pop(0)
+    attrs: list[str] = selector.split('[')
+    name: str = attrs.pop(0)
     if attrs:
         attrs = [x.strip() for x in attrs]
         assert all(x.endswith(']') for x in attrs)
-        attrs = [x[:-1].split('=') for x in attrs]
+        attrs: list[list[str]] = [x[:-1].split('=') for x in attrs]
         assert all(len(x) in (1, 2) for x in attrs)
-        attrs = (('type', x[0]) if len(x) == 1 else x for x in attrs)
+        attrs: Iterator[tuple[str, str]] = (('type', x[0]) if len(x) == 1 else x for x in attrs)
     return name, dict(attrs)
 
-def _iterateEach(iters):
+def _iterateEach(iters: Iterator[Iterator[Any]]) -> Iterator[Any]:
     # Flatten a two-layer iterator.
     for it in iters:
         for item in it:
