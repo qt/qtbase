@@ -1,0 +1,4 @@
+{
+    "Keys": [ "png", "foo", "gif" ],
+    "MimeTypes": [ "image/png", "image/foo", "image/gif" ]
+}
