@@ -883,12 +883,7 @@ endfunction()
 function(qt_internal_get_android_test_timeout input_timeout percentage output_timeout_var)
     set(actual_timeout "${input_timeout}")
     if(NOT actual_timeout)
-        # we have coin ci timeout set use that to avoid having the emulator killed
-        # so we can at least get some logs from the android test runner.
-        set(coin_timeout $ENV{COIN_COMMAND_OUTPUT_TIMEOUT})
-        if(coin_timeout)
-            set(actual_timeout "${coin_timeout}")
-        elseif(DART_TESTING_TIMEOUT)
+        if(DART_TESTING_TIMEOUT)
             # Related: https://gitlab.kitware.com/cmake/cmake/-/issues/20450
             set(actual_timeout "${DART_TESTING_TIMEOUT}")
         elseif(CTEST_TEST_TIMEOUT)

@@ -138,7 +138,7 @@ instructions:
         executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
         ignoreExitCode: false
         maxTimeInSeconds: 14400
-        maxTimeBetweenOutput: "{{.Env.COIN_COMMAND_OUTPUT_TIMEOUT}}"
+        maxTimeBetweenOutput: 14400
         userMessageOnFailure: >
           Failed to run tests.
   - type: Group
@@ -152,7 +152,7 @@ instructions:
         executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
         ignoreExitCode: true
         maxTimeInSeconds: 14400
-        maxTimeBetweenOutput: "{{.Env.COIN_COMMAND_OUTPUT_TIMEOUT}}"
+        maxTimeBetweenOutput: 14400
         userMessageOnFailure: >
           Failed to run tests.
 
