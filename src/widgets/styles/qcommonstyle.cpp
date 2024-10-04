@@ -1638,7 +1638,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                 pbBits.palette = pal2;
                 int myY = pbBits.rect.y();
                 int myHeight = pbBits.rect.height();
-                pbBits.state = State_None;
+                pbBits.state &= QStyle::State_Horizontal;  // all other is irrelevant here
                 for (int i = 0; i < nu; ++i) {
                     pbBits.rect.setRect(x0 + x, myY, unit_width, myHeight);
                     pbBits.rect = m.mapRect(QRectF(pbBits.rect)).toRect();
