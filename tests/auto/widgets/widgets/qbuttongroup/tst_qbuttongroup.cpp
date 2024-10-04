@@ -539,18 +539,18 @@ void tst_QButtonGroup::autoIncrementId()
     QRadioButton *radio3 = new QRadioButton(&dlg);
     radio3->setText("radio3");
 
-    buttons->addButton(radio1);
+    buttons->addButton(radio1, 2);
     vbox->addWidget(radio1);
-    buttons->addButton(radio2);
+    buttons->addButton(radio2, -1);
     vbox->addWidget(radio2);
     buttons->addButton(radio3);
     vbox->addWidget(radio3);
 
     radio1->setChecked(true);
 
-    QCOMPARE(buttons->id(radio1), -2);
-    QCOMPARE(buttons->id(radio2), -3);
-    QCOMPARE(buttons->id(radio3), -4);
+    QCOMPARE(buttons->id(radio1), 2);
+    QCOMPARE(buttons->id(radio2), -2);
+    QCOMPARE(buttons->id(radio3), -3);
 
     dlg.show();
 }
