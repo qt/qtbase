@@ -390,6 +390,7 @@ static inline QString retrieveLabel(const QByteArray &device)
 
 void QStorageInfoPrivate::doStat()
 {
+    valid = ready = false;
     initRootPath();
     if (rootPath.isEmpty())
         return;
@@ -403,10 +404,8 @@ void QStorageInfoPrivate::retrieveVolumeInfo()
     QT_STATFSBUF statfs_buf;
     int result;
     QT_EINTR_LOOP(result, QT_STATFS(QFile::encodeName(rootPath).constData(), &statfs_buf));
-    if (result == 0) {
-        valid = true;
-        ready = true;
-
+    valid = ready = (result == 0);
+    if (valid) {
 #if defined(Q_OS_INTEGRITY) || (defined(Q_OS_BSD4) && !defined(Q_OS_NETBSD)) || defined(Q_OS_RTEMS)
         bytesTotal = statfs_buf.f_blocks * statfs_buf.f_bsize;
         bytesFree = statfs_buf.f_bfree * statfs_buf.f_bsize;

@@ -197,10 +197,8 @@ void QStorageInfoPrivate::retrieveVolumeInfo()
     struct statfs64 statfs_buf;
     int result;
     QT_EINTR_LOOP(result, statfs64(QFile::encodeName(rootPath).constData(), &statfs_buf));
-    if (result == 0) {
-        valid = true;
-        ready = true;
-
+    valid = ready = (result == 0);
+    if (valid) {
         bytesTotal = statfs_buf.f_blocks * statfs_buf.f_frsize;
         bytesFree = statfs_buf.f_bfree * statfs_buf.f_frsize;
         bytesAvailable = statfs_buf.f_bavail * statfs_buf.f_frsize;
