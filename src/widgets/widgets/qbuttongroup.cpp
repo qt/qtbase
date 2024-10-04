@@ -211,12 +211,11 @@ void QButtonGroup::addButton(QAbstractButton *button, int id)
     button->d_func()->group = this;
     d->buttonList.append(button);
     if (id == -1) {
-        const QHash<QAbstractButton*, int>::const_iterator it
-                = std::min_element(d->mapping.cbegin(), d->mapping.cend());
+        const auto it = std::min_element(d->mapping.cbegin(), d->mapping.cend());
         if (it == d->mapping.cend())
             d->mapping[button] = -2;
         else
-            d->mapping[button] = *it - 1;
+            d->mapping[button] = (*it >= 0) ? -2 : (*it - 1);
     } else {
         d->mapping[button] = id;
     }
