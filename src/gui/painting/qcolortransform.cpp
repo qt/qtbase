@@ -84,6 +84,14 @@ void QColorTransformPrivate::updateLutsOut() const
     It can be applied on color and pixels to convert them from one color space to
     another.
 
+    To create a QColorTransform, use QColorSpace::transformationToColorSpace():
+
+    \code
+    QColorSpace sourceColorSpace(QColorSpace::SRgb);
+    QColorSpace targetColorSpace(QColorSpace::DisplayP3);
+    QColorTransform srgbToP3Transform = sourceColorSpace.transformationToColorSpace(targetColorSpace);
+    \endcode
+
     Setting up a QColorTransform takes some preprocessing, so keeping around
     QColorTransforms that you need often is recommended, instead of generating
     them on the fly.
