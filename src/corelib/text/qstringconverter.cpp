@@ -143,50 +143,38 @@ static inline bool simdDecodeAscii(char16_t *&dst, const uchar *&nextAscii, cons
 #ifdef __AVX2__
         // load and zero extend to an YMM register
         const __m256i extended = _mm256_cvtepu8_epi16(data);
-        if (!n) {
-            // store
-            _mm256_storeu_si256((__m256i*)dst, extended);
-            continue;
-        }
+
+        // store everything, even mojibake
+        _mm256_storeu_si256((__m256i*)dst, extended);
 #else
-        if (!n) {
-            // unpack
-            _mm_storeu_si128((__m128i*)dst, _mm_unpacklo_epi8(data, _mm_setzero_si128()));
-            _mm_storeu_si128(1+(__m128i*)dst, _mm_unpackhi_epi8(data, _mm_setzero_si128()));
-            continue;
-        }
+        // store everything, even mojibake
+        _mm_storeu_si128((__m128i*)dst, _mm_unpacklo_epi8(data, _mm_setzero_si128()));
+        _mm_storeu_si128(1+(__m128i*)dst, _mm_unpackhi_epi8(data, _mm_setzero_si128()));
 #endif
-
-        // copy the front part that is still ASCII
-        while (!(n & 1)) {
-            *dst++ = *src++;
-            n >>= 1;
-        }
-
         // find the next probable ASCII character
         // we don't want to load 16 bytes again in this loop if we know there are non-ASCII
         // characters still coming
-        n = qBitScanReverse(n);
-        nextAscii = src + n + 1;
-        return false;
-
+        if (n) {
+            uint c = qCountTrailingZeroBits(n);
+            n = qBitScanReverse(n);
+            nextAscii = src + n + 1;
+            src += c;
+            dst += c;
+        }
+        return src == end;
     }
 
     if (end - src >= 8) {
         __m128i data = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(src));
         uint n = _mm_movemask_epi8(data) & 0xff;
-        if (!n) {
-            // unpack and store
-            _mm_storeu_si128(reinterpret_cast<__m128i *>(dst), _mm_unpacklo_epi8(data, _mm_setzero_si128()));
-        } else {
-            while (!(n & 1)) {
-                *dst++ = *src++;
-                n >>= 1;
-            }
-
+        // store everything, even mojibake
+        _mm_storeu_si128(reinterpret_cast<__m128i *>(dst), _mm_unpacklo_epi8(data, _mm_setzero_si128()));
+        if (n) {
+            uint c = qCountTrailingZeroBits(n);
             n = qBitScanReverse(n);
             nextAscii = src + n + 1;
-            return false;
+            src += c;
+            dst += c;
         }
     }
 
