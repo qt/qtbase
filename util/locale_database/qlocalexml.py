@@ -349,7 +349,7 @@ class QLocaleXmlWriter (object):
         self.__openTag('zoneAliases')
         # iana is a single IANA ID
         # name has the same form, but has been made redundant
-        for name, iana in sorted(alias.items()):
+        for name, iana in sorted(alias.items(), key = lambda s: (s[0].lower(), s[1])):
             self.__openTag('zoneAlias')
             self.inTag('alias', name)
             self.inTag('iana', iana)
