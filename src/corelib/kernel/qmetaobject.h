@@ -22,6 +22,7 @@ public:
 
     QByteArray methodSignature() const;
     QByteArray name() const;
+    QByteArrayView nameView() const;
     const char *typeName() const;
     int returnType() const;
     QMetaType returnMetaType() const;

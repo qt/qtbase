@@ -614,6 +614,7 @@ void tst_QMetaMethod::method()
 
     QByteArray computedName = signature.left(signature.indexOf('('));
     QCOMPARE(method.name(), computedName);
+    QCOMPARE_EQ(method.nameView(), method.name());
 
     QCOMPARE(method.tag(), "");
     QCOMPARE(method.returnType(), returnType);

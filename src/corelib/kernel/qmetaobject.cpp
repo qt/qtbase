@@ -2115,6 +2115,20 @@ QByteArray QMetaMethod::name() const
 }
 
 /*!
+    \since 6.9
+
+    Returns the name of this method.
+    The returned QByteArrayView is valid as long as the meta-object of
+    the class to which the method belongs is valid.
+
+    \sa name
+ */
+QByteArrayView QMetaMethod::nameView() const
+{
+    return QMetaMethodPrivate::get(this)->name();
+}
+
+/*!
     \since 5.0
 
     Returns the return type of this method.
