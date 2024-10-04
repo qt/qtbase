@@ -472,13 +472,12 @@ static void simdCompareAscii(const qchar8_t *&, const qchar8_t *, const char16_t
 
 enum { HeaderDone = 1 };
 
-QByteArray QUtf8::convertFromUnicode(QStringView in)
+template <typename OnErrorLambda> Q_ALWAYS_INLINE
+char *QUtf8::convertFromUnicode(char *out, QStringView in, OnErrorLambda &&onError) noexcept
 {
     qsizetype len = in.size();
 
-    // create a QByteArray with the worst case scenario size
-    QByteArray result(len * 3, Qt::Uninitialized);
-    uchar *dst = reinterpret_cast<uchar *>(const_cast<char *>(result.constData()));
+    uchar *dst = reinterpret_cast<uchar *>(out);
     const char16_t *src = reinterpret_cast<const char16_t *>(in.data());
     const char16_t *const end = src + len;
 
@@ -490,14 +489,27 @@ QByteArray QUtf8::convertFromUnicode(QStringView in)
         do {
             char16_t u = *src++;
             int res = QUtf8Functions::toUtf8<QUtf8BaseTraits>(u, dst, src, end);
-            if (res < 0) {
-                // encoding error - append '?'
-                *dst++ = '?';
-            }
+            if (Q_UNLIKELY(res < 0))
+                onError(dst, u, res);
         } while (src < nextAscii);
     }
 
-    result.truncate(dst - reinterpret_cast<uchar *>(const_cast<char *>(result.constData())));
+    return reinterpret_cast<char *>(dst);
+}
+
+QByteArray QUtf8::convertFromUnicode(QStringView in)
+{
+    qsizetype len = in.size();
+
+    // create a QByteArray with the worst case scenario size
+    QByteArray result(len * 3, Qt::Uninitialized);
+    char *dst = const_cast<char *>(result.constData());
+    dst = convertFromUnicode(dst, in, [](auto *dst, ...) {
+        // encoding error - append '?'
+        *dst++ = '?';
+    });
+
+    result.truncate(dst - result.constData());
     return result;
 }
 
@@ -548,35 +560,22 @@ char *QUtf8::convertFromUnicode(char *out, QStringView in, QStringConverter::Sta
         }
     }
 
-    while (src != end) {
-        const char16_t *nextAscii = end;
-        if (simdEncodeAscii(cursor, nextAscii, src, end))
-            break;
-
-        do {
-            char16_t uc = *src++;
-            int res = QUtf8Functions::toUtf8<QUtf8BaseTraits>(uc, cursor, src, end);
-            if (Q_LIKELY(res >= 0))
-                continue;
-
-            if (res == QUtf8BaseTraits::Error) {
-                // encoding error
+    out = reinterpret_cast<char *>(cursor);
+    return convertFromUnicode(out, { src, end }, [&](uchar *&cursor, char16_t uc, int res) {
+        if (res == QUtf8BaseTraits::Error) {
+            // encoding error
+            ++state->invalidChars;
+            cursor = appendReplacementChar(cursor);
+        } else if (res == QUtf8BaseTraits::EndOfString) {
+            if (state->flags & QStringConverter::Flag::Stateless) {
                 ++state->invalidChars;
                 cursor = appendReplacementChar(cursor);
-            } else if (res == QUtf8BaseTraits::EndOfString) {
-                if (state->flags & QStringConverter::Flag::Stateless) {
-                    ++state->invalidChars;
-                    cursor = appendReplacementChar(cursor);
-                } else {
-                    state->remainingChars = 1;
-                    state->state_data[0] = uc;
-                }
-                return reinterpret_cast<char *>(cursor);
+            } else {
+                state->remainingChars = 1;
+                state->state_data[0] = uc;
             }
-        } while (src < nextAscii);
-    }
-
-    return reinterpret_cast<char *>(cursor);
+        }
+    });
 }
 
 char *QUtf8::convertFromLatin1(char *out, QLatin1StringView in)
@@ -636,35 +635,41 @@ QString QUtf8::convertToUnicode(QByteArrayView in)
 */
 char16_t *QUtf8::convertToUnicode(char16_t *dst, QByteArrayView in) noexcept
 {
+    // check if have to skip a BOM
+    auto bom = QByteArrayView::fromArray(utf8bom);
+    if (in.size() >= bom.size() && in.first(bom.size()) == bom)
+        in.slice(sizeof(utf8bom));
+
+    return convertToUnicode(dst, in, [](char16_t *&dst, ...) {
+        // decoding error
+        *dst++ = QChar::ReplacementCharacter;
+        return true;        // continue decoding
+    });
+}
+
+template <typename OnErrorLambda> Q_ALWAYS_INLINE char16_t *
+QUtf8::convertToUnicode(char16_t *dst, QByteArrayView in, OnErrorLambda &&onError) noexcept
+{
     const uchar *const start = reinterpret_cast<const uchar *>(in.data());
     const uchar *src = start;
     const uchar *end = src + in.size();
 
     // attempt to do a full decoding in SIMD
     const uchar *nextAscii = end;
-    if (!simdDecodeAscii(dst, nextAscii, src, end)) {
-        // at least one non-ASCII entry
-        // check if we failed to decode the UTF-8 BOM; if so, skip it
-        if (Q_UNLIKELY(src == start)
-                && end - src >= 3
-                && Q_UNLIKELY(src[0] == utf8bom[0] && src[1] == utf8bom[1] && src[2] == utf8bom[2])) {
-            src += 3;
-        }
+    while (src < end) {
+        nextAscii = end;
+        if (simdDecodeAscii(dst, nextAscii, src, end))
+            break;
 
-        while (src < end) {
-            nextAscii = end;
-            if (simdDecodeAscii(dst, nextAscii, src, end))
-                break;
-
-            do {
-                uchar b = *src++;
-                const qsizetype res = QUtf8Functions::fromUtf8<QUtf8BaseTraits>(b, dst, src, end);
-                if (res < 0) {
-                    // decoding error
-                    *dst++ = QChar::ReplacementCharacter;
-                }
-            } while (src < nextAscii);
-        }
+        do {
+            uchar b = *src++;
+            const qsizetype res = QUtf8Functions::fromUtf8<QUtf8BaseTraits>(b, dst, src, end);
+            if (Q_LIKELY(res >= 0))
+                continue;
+            // decoding error
+            if (!onError(dst, src, res))
+                return dst;
+        } while (src < nextAscii);
     }
 
     return dst;
@@ -702,7 +707,6 @@ char16_t *QUtf8::convertToUnicode(char16_t *dst, QByteArrayView in, QStringConve
         replacement = QChar::Null;
 
     qsizetype res;
-    uchar ch = 0;
 
     const uchar *src = reinterpret_cast<const uchar *>(in.data());
     const uchar *end = src + len;
@@ -754,19 +758,16 @@ char16_t *QUtf8::convertToUnicode(char16_t *dst, QByteArrayView in, QStringConve
 
     // main body, stateless decoding
     res = 0;
-    const uchar *nextAscii = src;
-    while (res >= 0 && src < end) {
-        if (src >= nextAscii && simdDecodeAscii(dst, nextAscii, src, end))
-            break;
-
-        ch = *src++;
-        res = QUtf8Functions::fromUtf8<QUtf8BaseTraits>(ch, dst, src, end);
+    dst = convertToUnicode(dst, { src, end }, [&](char16_t *&dst, const uchar *src_, int res_) {
+        res = res_;
+        src = src_;
         if (res == QUtf8BaseTraits::Error) {
             res = 0;
             ++state->invalidChars;
             *dst++ = replacement;
         }
-    }
+        return res == 0;    // continue if plain decoding error
+    });
 
     if (res == QUtf8BaseTraits::EndOfString) {
         // unterminated UTF sequence
