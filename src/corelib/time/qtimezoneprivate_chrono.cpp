@@ -124,9 +124,9 @@ QChronoTimeZonePrivate::nextTransition(qint64 afterMSecsSinceEpoch) const
     if (const auto info = infoAtEpochMillis(m_timeZone, afterMSecsSinceEpoch)) {
         const auto tran = info->end;
         qint64 when = milliseconds(tran.time_since_epoch()).count();
-        if (when > afterMSecsSinceEpoch) {
-            return fromSysInfo(*info, afterMSecsSinceEpoch);
-        } // else we were already at (or after) the end-of-time "transition"
+        if (when > afterMSecsSinceEpoch)
+            return fromSysInfo(m_timeZone->get_info(tran), when);
+        // else we were already at (or after) the end-of-time "transition"
     }
     return {};
 }
@@ -136,9 +136,9 @@ QChronoTimeZonePrivate::previousTransition(qint64 beforeMSecsSinceEpoch) const
 {
     if (const auto info = infoAtEpochMillis(m_timeZone, beforeMSecsSinceEpoch - 1)) {
         qint64 when = milliseconds(info->begin.time_since_epoch()).count();
-        if (when < beforeMSecsSinceEpoch) {
-            return fromSysInfo(*info, beforeMSecsSinceEpoch);
-        } // else we were already at (or before) the start-of-time "transition"
+        if (when < beforeMSecsSinceEpoch)
+            return fromSysInfo(*info, when);
+        // else we were already at (or before) the start-of-time "transition"
     }
     return {};
 }

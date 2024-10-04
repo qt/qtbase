@@ -10,10 +10,6 @@
 #include <private/qtenvironmentvariables_p.h> // for qTzSet(), qTzName()
 #include <private/qcomparisontesthelper_p.h>
 
-#if defined(Q_OS_WIN) && !QT_CONFIG(icu)
-#  define USING_WIN_TZ
-#endif
-
 #undef USING_MS_TZDB
 #undef USING_WIN_TZ
 #ifdef Q_OS_WIN
