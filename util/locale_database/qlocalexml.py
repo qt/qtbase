@@ -655,7 +655,8 @@ class QLocaleXmlWriter (object):
         self.__openTag('zoneAliases')
         # iana is a single IANA ID
         # name has the same form, but has been made redundant
-        for name, iana in sorted(alias.items()):
+        # Do case-insensitive sorting, to match how lookup is done:
+        for name, iana in sorted(alias.items(), key = lambda s: (s[0].lower(), s[1])):
             if name == iana:
                 continue
             self.asTag('zoneAlias', alias = name, iana = iana)
