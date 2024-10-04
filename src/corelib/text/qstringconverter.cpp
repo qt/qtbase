@@ -136,23 +136,19 @@ static inline bool simdDecodeAscii(char16_t *&dst, const uchar *&nextAscii, cons
     for ( ; end - src >= 16; src += 16, dst += 16) {
         __m128i data = _mm_loadu_si128((const __m128i*)src);
 
+        // check if everything is ASCII
+        // movemask extracts the high bit of every byte, so n is non-zero if something isn't ASCII
+        uint n = _mm_movemask_epi8(data);
+
 #ifdef __AVX2__
-        const int BitSpacing = 2;
         // load and zero extend to an YMM register
         const __m256i extended = _mm256_cvtepu8_epi16(data);
-
-        uint n = _mm256_movemask_epi8(extended);
         if (!n) {
             // store
             _mm256_storeu_si256((__m256i*)dst, extended);
             continue;
         }
 #else
-        const int BitSpacing = 1;
-
-        // check if everything is ASCII
-        // movemask extracts the high bit of every byte, so n is non-zero if something isn't ASCII
-        uint n = _mm_movemask_epi8(data);
         if (!n) {
             // unpack
             _mm_storeu_si128((__m128i*)dst, _mm_unpacklo_epi8(data, _mm_setzero_si128()));
@@ -164,14 +160,14 @@ static inline bool simdDecodeAscii(char16_t *&dst, const uchar *&nextAscii, cons
         // copy the front part that is still ASCII
         while (!(n & 1)) {
             *dst++ = *src++;
-            n >>= BitSpacing;
+            n >>= 1;
         }
 
         // find the next probable ASCII character
         // we don't want to load 16 bytes again in this loop if we know there are non-ASCII
         // characters still coming
         n = qBitScanReverse(n);
-        nextAscii = src + (n / BitSpacing) + 1;
+        nextAscii = src + n + 1;
         return false;
 
     }
