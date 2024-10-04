@@ -165,15 +165,16 @@ def _iterateEach(iters: Iterator[Iterator[Any]]) -> Iterator[Any]:
 class XmlScanner (object):
     """Wrap an XML file to enable XPath access to its nodes.
     """
-    def __init__(self, node):
+    def __init__(self, node: Node) -> None:
         self.root = node
 
-    def findNodes(self, xpath):
+    def findNodes(self, xpath: str) -> tuple[Node, ...]:
         """Return all nodes under self.root matching this xpath.
 
         Ignores any excess attributes."""
-        elts = (self.root,)
+        elts: tuple[Node, ...] = (self.root,)
         for selector in xpath.split('/'):
+            # tag is a str and attrs is a dict[str, str]
             tag, attrs = _parseXPath(selector)
             elts = tuple(_iterateEach(e.findAllChildren(tag, attrs) for e in elts))
             if not elts:
@@ -181,7 +182,8 @@ class XmlScanner (object):
         return elts
 
 class Supplement (XmlScanner):
-    def find(self, xpath, exclude=()):
+    def find(self, xpath: str,
+             exclude: tuple[str, ...] = ()) -> Iterator[tuple[str, dict[str, str]]]:
         """Finds nodes by matching a specified xpath.
 
         If exclude is passed, it should be a sequence of attribute names (its
@@ -193,7 +195,7 @@ class Supplement (XmlScanner):
         nodeName and attrs is a dict mapping the node's attribute's names to
         their values. For attribute values that are not simple strings, the
         nodeValue of the attribute node is used."""
-        elts = self.findNodes(xpath)
+        elts: tuple[Node, ...] = self.findNodes(xpath)
         for elt in _iterateEach(e.dom.childNodes or (e.dom,)
                                 for e in elts
                                 if not any(a in e.dom.attributes
