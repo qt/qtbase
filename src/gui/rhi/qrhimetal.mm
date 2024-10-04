@@ -337,7 +337,7 @@ QRhiMetal::QRhiMetal(QRhiMetalInitParams *params, QRhiMetalNativeHandles *import
 
     importedDevice = importDevice != nullptr;
     if (importedDevice) {
-        if (d->dev) {
+        if (importDevice->dev) {
             d->dev = (id<MTLDevice>) importDevice->dev;
             importedCmdQueue = importDevice->cmdQueue != nullptr;
             if (importedCmdQueue)

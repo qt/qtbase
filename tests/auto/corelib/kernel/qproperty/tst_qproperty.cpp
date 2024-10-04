@@ -99,6 +99,7 @@ private slots:
     void metaProperty();
 
     void modifyObserverListWhileIterating();
+    void noDoubleCapture();
     void compatPropertyNoDobuleNotification();
     void compatPropertySignals();
 
@@ -120,6 +121,8 @@ private slots:
 
     void qpropertyAlias();
     void scheduleNotify();
+
+    void notifyAfterAllDepsGone();
 };
 
 void tst_QProperty::functorBinding()
@@ -1491,6 +1494,22 @@ void tst_QProperty::modifyObserverListWhileIterating()
     }
 }
 
+void tst_QProperty::noDoubleCapture()
+{
+    QProperty<long long> size;
+    size = 3;
+    QProperty<int> max;
+    max.setBinding([&size]() -> int {
+        // each loop run attempts to capture size
+        for (int i = 0; i < size; ++i) {}
+        return size.value();
+    });
+    auto bindingPriv = QPropertyBindingPrivate::get(max.binding());
+    QCOMPARE(bindingPriv->dependencyObserverCount, 1U);
+    size = 4; // should not crash
+    QCOMPARE(max.value(), 4);
+}
+
 class CompatPropertyTester : public QObject
 {
     Q_OBJECT
@@ -2010,6 +2029,28 @@ void tst_QProperty::scheduleNotify()
     p.setBinding(b);
     QCOMPARE(notifications, 1);
     QCOMPARE(p.value(), 0);
+}
+
+void tst_QProperty::notifyAfterAllDepsGone()
+{
+    bool b = true;
+    QProperty<int> iprop;
+    QProperty<int> jprop(42);
+    iprop.setBinding([&](){
+        if (b)
+            return jprop.value();
+        return 13;
+    });
+    int changeCounter = 0;
+    auto keepAlive = iprop.onValueChanged([&](){ changeCounter++; });
+    QCOMPARE(iprop.value(), 42);
+    jprop = 44;
+    QCOMPARE(iprop.value(), 44);
+    QCOMPARE(changeCounter, 1);
+    b = false;
+    jprop = 43;
+    QCOMPARE(iprop.value(), 13);
+    QCOMPARE(changeCounter, 2);
 }
 
 QTEST_MAIN(tst_QProperty);

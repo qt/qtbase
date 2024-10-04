@@ -140,6 +140,8 @@ private slots:
     void callVirtualObjectLocal();
     void pendingCallWhenDisconnected();
 
+    void emptyServerAddress();
+
 public:
     QString serviceName() const { return "org.qtproject.Qt.Autotests.QDBusConnection"; }
     bool callMethod(const QDBusConnection &conn, const QString &path);

@@ -137,6 +137,8 @@ private slots:
     void screenOrientationChangedCloseMenu();
     void deleteWhenTriggered();
 
+    void nestedTearOffDetached();
+
 protected slots:
     void onActivated(QAction*);
     void onHighlighted(QAction*);
@@ -1993,6 +1995,83 @@ void tst_QMenu::deleteWhenTriggered()
     menu->setActiveAction(action);
     QTest::keyClick(menu, Qt::Key_Return);
     QTRY_VERIFY(!menu);
+}
+
+/*
+    QMenu uses the caused-stack to create the parent/child relationship
+    for tear-off menus. Since QTornOffMenu set the DeleteOnClose flag, closing a
+    tear-off in the parent chain will result in a null-pointer in the caused-stack.
+    Verify that we don't crash when traversing the chain, as reported in QTBUG-112217.
+
+    The test has to open the submenus by hovering of the menu action, otherwise
+    the caused-stack remains empty and the issue doesn't reproduce. Due to QMenu's
+    timing and "sloppiness", we need to move the mouse within the action, with some
+    waiting and event processing in between to trigger the opening of the submenu.
+    If this fails we skip, as we then can't test what we are trying to test.
+*/
+void tst_QMenu::nestedTearOffDetached()
+{
+    // Since QTornOffMenu is not declared in qmenuprivate.h we can't access the
+    // object even through QMenuPrivate. So use an event filter to watch out for
+    // a QTornOffMenu showing.
+    class TearOffWatcher : public QObject
+    {
+    public:
+        QMenu *tornOffMenu = nullptr;
+    protected:
+        bool eventFilter(QObject *receiver, QEvent *event) override
+        {
+            if (event->type() == QEvent::Show && receiver->inherits("QTornOffMenu"))
+                tornOffMenu = qobject_cast<QMenu *>(receiver);
+            return QObject::eventFilter(receiver, event);
+        }
+    } watcher;
+    qApp->installEventFilter(&watcher);
+
+    QWidget widget;
+    QMenu *menu = new QMenu("Context", &widget);
+
+    MenuMetrics mm(menu);
+    const int tearOffOffset = mm.fw + mm.vmargin + mm.tearOffHeight / 2;
+
+    QMenu *subMenu = menu->addMenu("SubMenu");
+    menu->setTearOffEnabled(true);
+    QMenu *subSubMenu = subMenu->addMenu("SubSubMenu");
+    subMenu->setTearOffEnabled(true);
+    subSubMenu->addAction("Action!");
+    subSubMenu->setTearOffEnabled(true);
+
+    widget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+
+    // open and tear off context menu
+    menu->popup(widget.geometry().center());
+    QTest::mouseClick(menu, Qt::LeftButton, {}, QPoint(menu->width() / 2, tearOffOffset));
+
+    QMenu *menuTorn = watcher.tornOffMenu;
+    watcher.tornOffMenu = nullptr;
+    QVERIFY(menuTorn);
+    QVERIFY(QTest::qWaitForWindowExposed(menuTorn));
+
+    // open second menu and tear-off
+    QTest::mouseMove(menuTorn, menuTorn->actionGeometry(subMenu->menuAction()).topLeft());
+    QTest::qWait(100);
+    QTest::mouseMove(menuTorn, menuTorn->actionGeometry(subMenu->menuAction()).center());
+    if (!QTest::qWaitFor([subMenu]{ return subMenu->isVisible(); }))
+        QSKIP("Menu failed to show, skipping test");
+
+    QTest::mouseClick(subMenu, Qt::LeftButton, {}, QPoint(subMenu->width() / 2, tearOffOffset));
+    menuTorn = watcher.tornOffMenu;
+    QVERIFY(menuTorn);
+    QVERIFY(QTest::qWaitForWindowExposed(menuTorn));
+    // close the top level tear off
+    menu->hideTearOffMenu();
+    // open third menu and tear-off
+    QTest::mouseMove(menuTorn, menuTorn->actionGeometry(subSubMenu->menuAction()).topLeft());
+    QTest::qWait(100);
+    QTest::mouseMove(menuTorn, menuTorn->actionGeometry(subSubMenu->menuAction()).center());
+    QTRY_VERIFY(subSubMenu->isVisible());
+    QTest::mouseClick(subSubMenu, Qt::LeftButton, {}, QPoint(subSubMenu->width() / 2, tearOffOffset));
 }
 
 QTEST_MAIN(tst_QMenu)

@@ -5,13 +5,16 @@
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/89c872f5ce1c42af802602bfcd15d90a)](https://www.codacy.com/gh/harfbuzz/harfbuzz/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=harfbuzz/harfbuzz&amp;utm_campaign=Badge_Grade)
 [![Codecov Code Coverage](https://codecov.io/gh/harfbuzz/harfbuzz/branch/main/graph/badge.svg)](https://codecov.io/gh/harfbuzz/harfbuzz)
 [![Packaging status](https://repology.org/badge/tiny-repos/harfbuzz.svg)](https://repology.org/project/harfbuzz/versions)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/harfbuzz/harfbuzz/badge)](https://securityscorecards.dev/viewer/?uri=github.com/harfbuzz/harfbuzz)
+
 
 # HarfBuzz
 
 HarfBuzz is a text shaping engine. It primarily supports [OpenType][1], but also
 [Apple Advanced Typography][2]. HarfBuzz is used in Android, Chrome,
-ChromeOS, Firefox, GNOME, GTK+, KDE, LibreOffice, OpenJDK, PlayStation, Qt,
-XeTeX, and other places.
+ChromeOS, Firefox, GNOME, GTK+, KDE, Qt, LibreOffice, OpenJDK, XeTeX,
+PlayStation, Microsoft Edge, Photoshop, Illustrator, InDesign,
+and other places.
 
 For bug reports, mailing list, and other information please visit:
 
@@ -26,8 +29,8 @@ For user manual as well as API documentation, check: https://harfbuzz.github.io
 ## Download
 
 For tarball releases of HarfBuzz, look [here][3]. At the same place you
-will also find Win32/Win64 binary bundles that include libharfbuzz DLL,
-hb-view.exe, hb-shape.exe, and all dependencies.
+will also find Win32/Win64 binary bundles that include `libharfbuzz` DLL,
+`hb-view.exe`, `hb-shape.exe`, and all dependencies.
 
 The canonical source tree is available on [github][4].
 

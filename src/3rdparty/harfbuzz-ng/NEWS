@@ -1,3 +1,114 @@
+Overview of changes leading to 8.2.0
+Friday, September 8, 2023
+====================================
+- Various build and fuzzing fixes
+- Improvements to COLRv1 painting.
+
+- New API:
++hb_paint_color_glyph_func_t
++hb_paint_funcs_set_color_glyph_func
++hb_paint_color_glyph
+
+
+Overview of changes leading to 8.1.1
+Wednesday, August 2, 2023
+====================================
+- Fix shaping of contextual rules at the end of string, introduced in 8.1.0
+- Fix stack-overflow in repacker with malicious fonts.
+- 30% speed up loading Noto Duployan font.
+
+
+Overview of changes leading to 8.1.0
+Tuesday, August 1, 2023
+====================================
+- Fix long-standing build issue with the AIX compiler and older Apple clang.
+
+- Revert optimization that could cause timeout during subsetting with malicious fonts.
+
+- More optimization work:
+  - 45% speed up in shaping Noto Duployan font.
+  - 10% speed up in subsetting Noto Duployan font.
+  - Another 8% speed up in shaping Gulzar.
+  - 5% speed up in loading Roboto.
+
+- New API:
++hb_ot_layout_collect_features_map()
+
+
+Overview of changes leading to 8.0.1
+Wednesday, July 12, 2023
+====================================
+- Build fix on 32-bit ARM.
+
+- More speed optimizations:
+  - 60% speed up in retain-gid (used for IFT) subsetting of SourceHanSans-VF.
+  - 16% speed up in retain-gid (used for IFT) subsetting of NotoSansCJKkr.
+  - 38% speed up in subsetting (beyond-64k) mega-merged Noto.
+
+
+Overview of changes leading to 8.0.0
+Sunday, July 9, 2023
+====================================
+- New, experimental, WebAssembly (WASM) shaper, that provides greater
+  flexibility over OpenType/AAT/Graphite shaping, using WebAssembly embedded
+  inside the font file. Currently WASM shaper is disabled by default and needs
+  to be enabled at build time. For details, see:
+
+    https://github.com/harfbuzz/harfbuzz/blob/main/docs/wasm-shaper.md
+
+  For example fonts making use of the WASM shaper, see:
+
+    https://github.com/harfbuzz/harfbuzz-wasm-examples
+
+- Improvements to Experimental features introduced in earlier releases:
+  - Support for subsetting beyond-64k and VarComposites fonts.
+  - Support for instancing variable fonts with cubic “glyf” table.
+
+- Many big speed optimizations:
+  - Up to 89% speedup loading variable fonts for shaping.
+  - Up to 88% speedup in small subsets of large (eg. CJK) fonts (both TTF and
+    OTF), essential for Incremental Font Transfer (IFT).
+  - Over 50% speedup in loading Roboto font for shaping.
+  - Up to 40% speed up in loading (sanitizing) complex fonts.
+  - 30% speed up in shaping Gulzar font.
+  - Over 25% speedup in glyph loading Roboto font.
+  - 10% speed up loading glyph shapes in VarComposite Hangul font.
+  - hb-hashmap optimizations & hashing improvements.
+
+- New macro HB_ALWAYS_INLINE. HarfBuzz now inlines functions more aggressively,
+  which results in some speedup at the expense of bigger code size. To disable
+  this feature define the macro to just inline.
+
+- New API:
++HB_CODEPOINT_INVALID
++hb_ot_layout_get_baseline2()
++hb_ot_layout_get_baseline_with_fallback2()
++hb_ot_layout_get_font_extents()
++hb_ot_layout_get_font_extents2()
++hb_subset_input_set_axis_range()
+
+
+Overview of changes leading to 7.3.0
+Tuesday, May 9, 2023
+====================================
+- Speedup applying glyph variation in VarComposites fonts (over 40% speedup).
+  (Behdad Esfahbod)
+- Speedup instancing some fonts (over 20% speedup in instancing RobotoFlex).
+  (Behdad Esfahbod)
+- Speedup shaping some fonts (over 30% speedup in shaping Roboto).
+  (Behdad Esfahbod)
+- Support subsetting VarComposites and beyond-64k fonts. (Behdad Esfahbod)
+- New configuration macro HB_MINIMIZE_MEMORY_USAGE to favor optimizing memory
+  usage over speed. (Behdad Esfahbod)
+- Supporting setting the mapping between old and new glyph indices during
+  subsetting. (Garret Rieger)
+- Various fixes and improvements.
+  (Behdad Esfahbod, Denis Rochette, Garret Rieger, Han Seung Min, Qunxin Liu)
+
+- New API:
++hb_subset_input_old_to_new_glyph_mapping()
+
+
 Overview of changes leading to 7.2.0
 Thursday, April 27, 2023
 ====================================

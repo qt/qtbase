@@ -388,6 +388,10 @@ void QToolBarPrivate::plug(const QRect &r)
     \ingroup mainwindow-classes
     \inmodule QtWidgets
 
+    A toolbar is typically created by calling
+    \l QMainWindow::addToolBar(const QString &title), but it can also
+    be added as the first widget in a QVBoxLayout, for example.
+
     Toolbar buttons are added by adding \e actions, using addAction()
     or insertAction(). Groups of buttons can be separated using
     addSeparator() or insertSeparator(). If a toolbar button is not

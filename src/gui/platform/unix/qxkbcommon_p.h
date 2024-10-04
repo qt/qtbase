@@ -95,7 +95,7 @@ public:
     static xkb_keysym_t lookupLatinKeysym(xkb_state *state, xkb_keycode_t keycode);
 
     static bool isLatin1(xkb_keysym_t sym) {
-        return sym <= 0xff;
+        return sym >= 0x20 && sym <= 0xff;
     }
     static bool isKeypad(xkb_keysym_t sym) {
         return sym >= XKB_KEY_KP_Space && sym <= XKB_KEY_KP_9;

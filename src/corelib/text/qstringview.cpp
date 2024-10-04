@@ -515,7 +515,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn qsizetype QStringView::size() const
 
-    Returns the size of this string view, in UTF-16 code points (that is,
+    Returns the size of this string view, in UTF-16 code units (that is,
     surrogate pairs count as two for the purposes of this function, the same
     as in QString).
 

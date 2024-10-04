@@ -1614,17 +1614,17 @@ QMap<QString, QRect> dockWidgetGeometries(QMainWindow *mw)
 
 #define COMPARE_DOCK_WIDGET_GEOS(_oldGeos, _newGeos) \
 { \
-    QMap<QString, QRect> __oldGeos = _oldGeos; \
-    QMap<QString, QRect> __newGeos = _newGeos; \
-    QCOMPARE(__newGeos.keys(), __oldGeos.keys()); \
-    QStringList __keys = __newGeos.keys(); \
-    foreach (const QString &key, __keys) { \
-        QRect __r1 = __oldGeos[key]; \
-        QRect __r2 = __newGeos[key]; \
-        if (__r1 != __r2) \
-            qWarning() << key << __r1 << __r2; \
+    QMap<QString, QRect> _v_oldGeos = _oldGeos; \
+    QMap<QString, QRect> _v_newGeos = _newGeos; \
+    QCOMPARE(_v_newGeos.keys(), _v_oldGeos.keys()); \
+    QStringList _v_keys = _v_newGeos.keys(); \
+    foreach (const QString &key, _v_keys) { \
+        QRect _v_r1 = _v_oldGeos[key]; \
+        QRect _v_r2 = _v_newGeos[key]; \
+        if (_v_r1 != _v_r2) \
+            qWarning() << key << _v_r1 << _v_r2; \
     } \
-    QCOMPARE(__newGeos, __oldGeos); \
+    QCOMPARE(_v_newGeos, _v_oldGeos); \
 }
 
 #ifdef QT_BUILD_INTERNAL

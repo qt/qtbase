@@ -2123,7 +2123,7 @@ QFont QTextCharFormat::font() const
     associated QTextBlockFormat that specifies its characteristics.
 
     To cater for left-to-right and right-to-left languages you can set
-    a block's direction with setDirection(). Paragraph alignment is
+    a block's direction with setLayoutDirection(). Paragraph alignment is
     set with setAlignment(). Margins are controlled by setTopMargin(),
     setBottomMargin(), setLeftMargin(), setRightMargin(). Overall
     indentation is set with setIndent(), the indentation of the first

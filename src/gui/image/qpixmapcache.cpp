@@ -351,30 +351,21 @@ QPixmap *QPMCache::object(const QPixmapCache::Key &key) const
 
 bool QPMCache::insert(const QString& key, const QPixmap &pixmap, int cost)
 {
-    QPixmapCache::Key &cacheKey = cacheKeys[key];
     //If for the same key we add already a pixmap we should delete it
-    if (cacheKey.d)
-        QCache<QPixmapCache::Key, QPixmapCacheEntry>::remove(cacheKey);
+    remove(key);
 
-    //we create a new key the old one has been removed
-    cacheKey = createKey();
-
-    bool success = QCache<QPixmapCache::Key, QPixmapCacheEntry>::insert(cacheKey, new QPixmapCacheEntry(cacheKey, pixmap), cost);
-    if (success) {
-        if (!theid) {
-            theid = startTimer(flush_time);
-            t = false;
-        }
-    } else {
-        //Insertion failed we released the new allocated key
-        cacheKeys.remove(key);
+    // this will create a new key; the old one has been removed
+    auto k = insert(pixmap, cost);
+    if (k.isValid()) {
+        cacheKeys[key] = std::move(k);
+        return true;
     }
-    return success;
+    return false;
 }
 
 QPixmapCache::Key QPMCache::insert(const QPixmap &pixmap, int cost)
 {
-    QPixmapCache::Key cacheKey = createKey();
+    QPixmapCache::Key cacheKey = createKey(); // invalidated by ~QPixmapCacheEntry on failed insert
     bool success = QCache<QPixmapCache::Key, QPixmapCacheEntry>::insert(cacheKey, new QPixmapCacheEntry(cacheKey, pixmap), cost);
     if (success) {
         if (!theid) {
@@ -406,13 +397,8 @@ bool QPMCache::replace(const QPixmapCache::Key &key, const QPixmap &pixmap, int 
 
 bool QPMCache::remove(const QString &key)
 {
-    auto cacheKey = cacheKeys.constFind(key);
-    //The key was not in the cache
-    if (cacheKey == cacheKeys.constEnd())
-        return false;
-    const bool result = QCache<QPixmapCache::Key, QPixmapCacheEntry>::remove(cacheKey.value());
-    cacheKeys.erase(cacheKey);
-    return result;
+    const auto cacheKey = cacheKeys.take(key);
+    return cacheKey.isValid() && remove(cacheKey);
 }
 
 bool QPMCache::remove(const QPixmapCache::Key &key)
@@ -473,6 +459,7 @@ void QPMCache::clear()
         killTimer(theid);
         theid = 0;
     }
+    cacheKeys.clear();
 }
 
 QPixmapCache::KeyData* QPMCache::getKeyData(QPixmapCache::Key *key)

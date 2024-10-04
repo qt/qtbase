@@ -57,6 +57,7 @@
 #include <QtCore/QSharedPointer>
 #include <QtCore/QLoggingCategory>
 #include <QtCore/qhashfunctions.h>
+#include <QtCore/qmutex.h>
 #include <QtCore/qt_windows.h>
 
 QT_BEGIN_NAMESPACE
@@ -123,6 +124,7 @@ private:
         QAtomicInt refCount;
     };
 
+    QMutex m_uniqueFontDataMutex; // protects m_uniqueFontData
     QMap<QString, UniqueFontData> m_uniqueFontData;
 
     static unsigned m_fontOptions;

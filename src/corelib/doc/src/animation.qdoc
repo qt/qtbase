@@ -246,7 +246,7 @@
     A QPropertyAnimation should always have a parent that controls
     its lifespan. A typical application may include several animations that
     are grouped, where the animation group takes ownership of those animations.
-    An independent QProperyAnimation must be explicitly assigned a parent to
+    An independent QPropertyAnimation must be explicitly assigned a parent to
     control its lifespan. In the following example, you can see that an
     independent QPropertyAnimation has the QApplication instance as its
     parent:

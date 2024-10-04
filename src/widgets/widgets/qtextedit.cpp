@@ -1634,6 +1634,8 @@ void QTextEditPrivate::paint(QPainter *p, QPaintEvent *e)
 This event handler can be reimplemented in a subclass to receive paint events passed in \a event.
 It is usually unnecessary to reimplement this function in a subclass of QTextEdit.
 
+\note If you create a QPainter, it must operate on the \l{QAbstractScrollArea::}{viewport()}.
+
 \warning The underlying text document must not be modified from within a reimplementation
 of this function.
 */

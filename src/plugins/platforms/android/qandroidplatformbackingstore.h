@@ -57,7 +57,6 @@ public:
     void setBackingStore(QWindow *window);
 protected:
     QImage m_image;
-    bool m_backingStoreSet = false;
 };
 
 QT_END_NAMESPACE

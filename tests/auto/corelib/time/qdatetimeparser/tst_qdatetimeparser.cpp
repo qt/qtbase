@@ -71,12 +71,44 @@ class tst_QDateTimeParser : public QObject
     Q_OBJECT
 
 private Q_SLOTS:
+    void reparse();
     void parseSection_data();
     void parseSection();
 
     void intermediateYear_data();
     void intermediateYear();
 };
+
+void tst_QDateTimeParser::reparse()
+{
+    const QDateTime when = QDate(2023, 6, 15).startOfDay();
+    // QTBUG-114575: 6.2 through 6.5 got back a bogus Qt::TimeZone (with zero offset):
+    const Qt::TimeSpec spec = ([](QStringView name) {
+        // When local time is UTC or a fixed offset from it, the parser prefers
+        // to interpret a UTC or offset suffix as such, rather than as local
+        // time (thereby avoiding DST-ness checks). We have to match that here.
+        if (name == QLatin1String("UTC"))
+            return Qt::UTC;
+        if (name.startsWith(u'+') || name.startsWith(u'-')) {
+            if (std::all_of(name.begin() + 1, name.end(), [](QChar ch) { return ch == u'0'; }))
+                return Qt::UTC;
+            if (std::all_of(name.begin() + 1, name.end(), [](QChar ch) { return ch.isDigit(); }))
+                return Qt::OffsetFromUTC;
+            // Potential hh:mm offset ?  Not yet seen as local tzname[] entry.
+        }
+        return Qt::LocalTime;
+    })(when.timeZoneAbbreviation());
+
+    const QStringView format = u"dd/MM/yyyy HH:mm t";
+    QDateTimeParser who(QMetaType::QDateTime, QDateTimeParser::DateTimeEdit);
+    QVERIFY(who.parseFormat(format));
+    const auto state = who.parse(when.toString(format), -1, when, false);
+    QCOMPARE(state.state, QDateTimeParser::Acceptable);
+    QVERIFY(!state.conflicts);
+    QCOMPARE(state.padded, 0);
+    QCOMPARE(state.value.timeSpec(), spec);
+    QCOMPARE(state.value, when);
+}
 
 void tst_QDateTimeParser::parseSection_data()
 {

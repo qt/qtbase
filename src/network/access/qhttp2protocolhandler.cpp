@@ -1001,7 +1001,12 @@ void QHttp2ProtocolHandler::handleContinuedHEADERS()
     }
 
     std::vector<uchar> hpackBlock(assemble_hpack_block(continuedFrames));
-    if (!hpackBlock.size()) {
+    const bool hasHeaderFields = !hpackBlock.empty();
+    if (hasHeaderFields) {
+        HPack::BitIStream inputStream{&hpackBlock[0], &hpackBlock[0] + hpackBlock.size()};
+        if (!decoder.decodeHeaderFields(inputStream))
+            return connectionError(COMPRESSION_ERROR, "HPACK decompression failed");
+    } else if (firstFrameType == FrameType::PUSH_PROMISE) {
         // It could be a PRIORITY sent in HEADERS - already handled by this
         // point in handleHEADERS. If it was PUSH_PROMISE (HTTP/2 8.2.1):
         // "The header fields in PUSH_PROMISE and any subsequent CONTINUATION
@@ -1010,21 +1015,16 @@ void QHttp2ProtocolHandler::handleContinuedHEADERS()
         // not include a complete and valid set of header fields or the :method
         // pseudo-header field identifies a method that is not safe, it MUST
         // respond with a stream error (Section 5.4.2) of type PROTOCOL_ERROR."
-        if (firstFrameType == FrameType::PUSH_PROMISE)
-            resetPromisedStream(continuedFrames[0], Http2::PROTOCOL_ERROR);
-
+        resetPromisedStream(continuedFrames[0], Http2::PROTOCOL_ERROR);
         return;
     }
-
-    HPack::BitIStream inputStream{&hpackBlock[0], &hpackBlock[0] + hpackBlock.size()};
-    if (!decoder.decodeHeaderFields(inputStream))
-        return connectionError(COMPRESSION_ERROR, "HPACK decompression failed");
 
     switch (firstFrameType) {
     case FrameType::HEADERS:
         if (activeStreams.contains(streamID)) {
             Stream &stream = activeStreams[streamID];
-            updateStream(stream, decoder.decodedHeader());
+            if (hasHeaderFields)
+                updateStream(stream, decoder.decodedHeader());
             // Needs to resend the request; we should finish and delete the current stream
             const bool needResend = stream.request().d->needResendWithCredentials;
             // No DATA frames. Or needs to resend.

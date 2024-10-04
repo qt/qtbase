@@ -2,8 +2,8 @@
 
 # Set the QT_IS_BUILDING_QT variable so we can verify whether we are building
 # Qt from source
-set(QT_BUILDING_QT TRUE CACHE
-    TYPE STRING "When this is present and set to true, it signals that we are building Qt from source.")
+set(QT_BUILDING_QT TRUE CACHE BOOL
+        "When this is present and set to true, it signals that we are building Qt from source.")
 
 # Pre-calculate the developer_build feature if it's set by the user via INPUT_developer_build
 if(NOT FEATURE_developer_build AND INPUT_developer_build

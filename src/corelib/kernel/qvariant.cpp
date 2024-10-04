@@ -217,22 +217,22 @@ static qlonglong qConvertToNumber(const QVariant::Private *d, bool *ok, bool all
     return Q_INT64_C(0);
 }
 
-static qreal qConvertToRealNumber(const QVariant::Private *d, bool *ok)
+static double qConvertToRealNumber(const QVariant::Private *d, bool *ok)
 {
     *ok = true;
     switch (uint(d->typeId())) {
     case QMetaType::QString:
         return d->get<QString>().toDouble(ok);
     case QMetaType::Double:
-        return qreal(d->get<double>());
+        return d->get<double>();
     case QMetaType::Float:
-        return qreal(d->get<float>());
+        return double(d->get<float>());
     case QMetaType::ULongLong:
     case QMetaType::UInt:
     case QMetaType::UChar:
     case QMetaType::UShort:
     case QMetaType::ULong:
-        return qreal(qMetaTypeUNumber(d));
+        return double(qMetaTypeUNumber(d));
 #ifndef QT_BOOTSTRAPPED
     case QMetaType::QCborValue:
         return d->get<QCborValue>().toDouble();
@@ -241,7 +241,7 @@ static qreal qConvertToRealNumber(const QVariant::Private *d, bool *ok)
 #endif
     default:
         // includes enum conversion as well as invalid types
-        return qreal(qConvertToNumber(d, ok));
+        return double(qConvertToNumber(d, ok));
     }
 }
 
@@ -506,11 +506,6 @@ void QVariant::create(QMetaType type, const void *copy)
     \fn QVariant::~QVariant()
 
     Destroys the QVariant and the contained object.
-
-    Note that subclasses that reimplement clear() should reimplement
-    the destructor to call clear(). This destructor calls clear(), but
-    because it is the destructor, QVariant::clear() is called rather
-    than a subclass's clear().
 */
 
 QVariant::~QVariant()
@@ -2344,12 +2339,12 @@ static bool numericEquals(const QVariant::Private *d1, const QVariant::Private *
     if (promotedType != QMetaType::QReal)
         return integralEquals(promotedType, d1, d2);
 
-    // qreal comparisons
+    // floating point comparison
     bool ok;
-    qreal r1 = qConvertToRealNumber(d1, &ok);
+    const double r1 = qConvertToRealNumber(d1, &ok);
     if (!ok)
         return false;
-    qreal r2 = qConvertToRealNumber(d2, &ok);
+    const double r2 = qConvertToRealNumber(d2, &ok);
     if (!ok)
         return false;
     if (r1 == r2)

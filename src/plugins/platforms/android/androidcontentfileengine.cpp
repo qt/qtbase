@@ -624,7 +624,8 @@ QJniObject parseUri(const QString &uri)
 
 DocumentFilePtr DocumentFile::parseFromAnyUri(const QString &fileName)
 {
-    const QJniObject uri = parseUri(fileName);
+    const QString encodedUri = QUrl(fileName).toEncoded();
+    const QJniObject uri = parseUri(encodedUri);
 
     if (DocumentsContract::isDocumentUri(uri))
         return fromSingleUri(uri);
@@ -632,17 +633,17 @@ DocumentFilePtr DocumentFile::parseFromAnyUri(const QString &fileName)
     const QString documentType = QLatin1String("/document/");
     const QString treeType = QLatin1String("/tree/");
 
-    const int treeIndex = fileName.indexOf(treeType);
-    const int documentIndex = fileName.indexOf(documentType);
+    const int treeIndex = encodedUri.indexOf(treeType);
+    const int documentIndex = encodedUri.indexOf(documentType);
     const int index = fileName.lastIndexOf(QLatin1Char('/'));
 
     if (index <= treeIndex + treeType.size() || index <= documentIndex + documentType.size())
         return fromTreeUri(uri);
 
-    const QString parentUrl = fileName.left(index);
+    const QString parentUrl = encodedUri.left(index);
     DocumentFilePtr parentDocFile = fromTreeUri(parseUri(parentUrl));
 
-    const QString baseName = fileName.mid(index);
+    const QString baseName = encodedUri.mid(index);
     const QString fileUrl = parentUrl + QUrl::toPercentEncoding(baseName);
 
     DocumentFilePtr docFile = std::make_shared<MakeableDocumentFile>(parseUri(fileUrl));

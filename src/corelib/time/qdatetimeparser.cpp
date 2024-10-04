@@ -1186,19 +1186,17 @@ QDateTimeParser::scanString(const QDateTime &defaultValue, bool fixup) const
         sectionNodes[index].pos = pos;
         int *current = nullptr;
         const SectionNode sn = sectionNodes.at(index);
-        ParsedSection sect;
-
-        {
+        const QDateTime usedDateTime = [&] {
             const QDate date = actualDate(isSet, calendar, year, year2digits,
                                           month, day, dayofweek);
             const QTime time = actualTime(isSet, hour, hour12, ampm, minute, second, msec);
-            sect = parseSection(
 #if QT_CONFIG(timezone)
-                                tspec == Qt::TimeZone ? QDateTime(date, time, timeZone) :
+            if (tspec == Qt::TimeZone)
+                return QDateTime(date, time, timeZone);
 #endif
-                                QDateTime(date, time, tspec, zoneOffset),
-                                index, pos);
-        }
+            return QDateTime(date, time, tspec, zoneOffset);
+        }();
+        ParsedSection sect = parseSection(usedDateTime, index, pos);
 
         QDTPDEBUG << "sectionValue" << sn.name() << m_text
                   << "pos" << pos << "used" << sect.used << stateName(sect.state);
@@ -1235,15 +1233,15 @@ QDateTimeParser::scanString(const QDateTime &defaultValue, bool fixup) const
 
                 if (isUtc || isUtcOffset) {
                     tspec = sect.value ? Qt::OffsetFromUTC : Qt::UTC;
-                } else {
 #if QT_CONFIG(timezone)
-                    timeZone = QTimeZone(zoneName.toLatin1());
-                    tspec = timeZone.isValid()
-                        ? Qt::TimeZone
-                        : (Q_ASSERT(startsWithLocalTimeZone(zoneName)), Qt::LocalTime);
-#else
-                    tspec = Qt::LocalTime;
+                } else if (startsWithLocalTimeZone(zoneName, usedDateTime) != sect.used) {
+                    QTimeZone namedZone = QTimeZone(zoneName.toLatin1());
+                    Q_ASSERT(namedZone.isValid());
+                    timeZone = namedZone;
+                    tspec = Qt::TimeZone;
 #endif
+                } else {
+                    tspec = Qt::LocalTime;
                 }
             }
             break;
@@ -1747,7 +1745,7 @@ QDateTimeParser::ParsedSection QDateTimeParser::findUtcOffset(QStringView str) c
 QDateTimeParser::ParsedSection
 QDateTimeParser::findTimeZoneName(QStringView str, const QDateTime &when) const
 {
-    const int systemLength = startsWithLocalTimeZone(str);
+    const int systemLength = startsWithLocalTimeZone(str, when);
 #if QT_CONFIG(timezone)
     // Collect up plausibly-valid characters; let QTimeZone work out what's
     // truly valid.

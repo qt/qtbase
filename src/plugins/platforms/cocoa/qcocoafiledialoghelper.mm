@@ -253,10 +253,9 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
     NSString *fileType = fileAttrs.fileType;
     bool isDir = [fileType isEqualToString:NSFileTypeDirectory];
     if (isDir) {
-        if (!m_panel.treatsFilePackagesAsDirectories) {
-            if ([NSWorkspace.sharedWorkspace isFilePackageAtPath:filename] == NO)
-                return YES;
-        }
+        bool treatBundlesAsFiles = !m_panel.treatsFilePackagesAsDirectories;
+        if (!(treatBundlesAsFiles && [NSWorkspace.sharedWorkspace isFilePackageAtPath:filename]))
+            return YES;
     }
 
     // Treat symbolic links and aliases to directories like directories

@@ -7,10 +7,9 @@
 
         "Description": "FreeType is a freely available software library to render fonts.",
         "Homepage": "http://www.freetype.org",
-        "Version": "2.13.0",
-
+        "Version": "2.13.2",
         "License": "Freetype Project License or GNU General Public License v2.0 only",
-        "LicenseId": "FTL OR GPL-2.0",
+        "LicenseId": "FTL OR GPL-2.0-only",
         "LicenseFile": "LICENSE.txt",
         "Copyright": "Copyright (c) 2007-2014 Adobe Systems Incorporated
 Copyright (c) 2004-2023 Albert Chin-A-Young

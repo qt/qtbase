@@ -362,7 +362,7 @@ private:
     mutable QExplicitlySharedDataPointer<const QIcuTimeZonePrivate> m_icu;
 #endif
     QTzTimeZoneCacheEntry cached_data;
-    QList<QTzTransitionTime> tranCache() const { return cached_data.m_tranTimes; }
+    const QList<QTzTransitionTime> &tranCache() const { return cached_data.m_tranTimes; }
 };
 #endif // Q_OS_UNIX
 

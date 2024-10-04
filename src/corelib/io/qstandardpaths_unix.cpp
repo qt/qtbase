@@ -210,15 +210,18 @@ QString QStandardPaths::writableLocation(StandardLocation type)
     case CacheLocation:
     case GenericCacheLocation:
     {
-        // http://standards.freedesktop.org/basedir-spec/basedir-spec-0.6.html
-        QString xdgCacheHome = QFile::decodeName(qgetenv("XDG_CACHE_HOME"));
-        if (!xdgCacheHome.startsWith(u'/'))
-            xdgCacheHome.clear(); // spec says relative paths should be ignored
-
-        if (isTestModeEnabled())
+        QString xdgCacheHome;
+        if (isTestModeEnabled()) {
             xdgCacheHome = QDir::homePath() + QLatin1String("/.qttest/cache");
-        if (xdgCacheHome.isEmpty())
-            xdgCacheHome = QDir::homePath() + QLatin1String("/.cache");
+        } else {
+            // http://standards.freedesktop.org/basedir-spec/basedir-spec-0.6.html
+            xdgCacheHome = QFile::decodeName(qgetenv("XDG_CACHE_HOME"));
+            if (!xdgCacheHome.startsWith(u'/'))
+                xdgCacheHome.clear(); // spec says relative paths should be ignored
+
+            if (xdgCacheHome.isEmpty())
+                xdgCacheHome = QDir::homePath() + QLatin1String("/.cache");
+        }
         if (type == QStandardPaths::CacheLocation)
             appendOrganizationAndApp(xdgCacheHome);
         return xdgCacheHome;
@@ -227,14 +230,17 @@ QString QStandardPaths::writableLocation(StandardLocation type)
     case AppLocalDataLocation:
     case GenericDataLocation:
     {
-        QString xdgDataHome = QFile::decodeName(qgetenv("XDG_DATA_HOME"));
-        if (!xdgDataHome.startsWith(u'/'))
-            xdgDataHome.clear(); // spec says relative paths should be ignored
-
-        if (isTestModeEnabled())
+        QString xdgDataHome;
+        if (isTestModeEnabled()) {
             xdgDataHome = QDir::homePath() + QLatin1String("/.qttest/share");
-        if (xdgDataHome.isEmpty())
-            xdgDataHome = QDir::homePath() + QLatin1String("/.local/share");
+        } else {
+            xdgDataHome = QFile::decodeName(qgetenv("XDG_DATA_HOME"));
+            if (!xdgDataHome.startsWith(u'/'))
+                xdgDataHome.clear(); // spec says relative paths should be ignored
+
+            if (xdgDataHome.isEmpty())
+                xdgDataHome = QDir::homePath() + QLatin1String("/.local/share");
+        }
         if (type == AppDataLocation || type == AppLocalDataLocation)
             appendOrganizationAndApp(xdgDataHome);
         return xdgDataHome;
@@ -243,15 +249,18 @@ QString QStandardPaths::writableLocation(StandardLocation type)
     case GenericConfigLocation:
     case AppConfigLocation:
     {
-        // http://standards.freedesktop.org/basedir-spec/latest/
-        QString xdgConfigHome = QFile::decodeName(qgetenv("XDG_CONFIG_HOME"));
-        if (!xdgConfigHome.startsWith(u'/'))
-            xdgConfigHome.clear(); // spec says relative paths should be ignored
-
-        if (isTestModeEnabled())
+        QString xdgConfigHome;
+        if (isTestModeEnabled()) {
             xdgConfigHome = QDir::homePath() + QLatin1String("/.qttest/config");
-        if (xdgConfigHome.isEmpty())
-            xdgConfigHome = QDir::homePath() + QLatin1String("/.config");
+        } else {
+            // http://standards.freedesktop.org/basedir-spec/latest/
+            xdgConfigHome = QFile::decodeName(qgetenv("XDG_CONFIG_HOME"));
+            if (!xdgConfigHome.startsWith(u'/'))
+                xdgConfigHome.clear(); // spec says relative paths should be ignored
+
+            if (xdgConfigHome.isEmpty())
+                xdgConfigHome = QDir::homePath() + QLatin1String("/.config");
+        }
         if (type == AppConfigLocation)
             appendOrganizationAndApp(xdgConfigHome);
         return xdgConfigHome;
@@ -298,7 +307,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
     if (!key.isEmpty() && !isTestModeEnabled() && file.open(QIODevice::ReadOnly)) {
         QTextStream stream(&file);
         // Only look for lines like: XDG_DESKTOP_DIR="$HOME/Desktop"
-        QRegularExpression exp(QLatin1String("^XDG_(.*)_DIR=(.*)$"));
+        static const QRegularExpression exp(QLatin1String("^XDG_(.*)_DIR=(.*)$"));
         QString result;
         while (!stream.atEnd()) {
             const QString &line = stream.readLine();

@@ -93,6 +93,8 @@ public:
     // Set the redirect URL and count. The server will return a redirect response with the url
     // 'count' amount of times
     void setRedirect(const QByteArray &redirectUrl, int count);
+    // Send a trailing HEADERS frame with PRIORITY and END_STREAM flag
+    void setSendTrailingHEADERS(bool enable);
     void emulateGOAWAY(int timeout);
     void redirectOpenStream(quint16 targetPort);
 
@@ -228,6 +230,8 @@ private:
 
     QByteArray redirectUrl;
     int redirectCount = 0;
+
+    bool sendTrailingHEADERS = false;
 protected slots:
     void ignoreErrorSlot();
 };

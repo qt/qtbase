@@ -116,6 +116,10 @@
 
     \snippet code/src_concurrent_qtconcurrentrun.cpp 2
 
+    If you don't need the result (for example, because the function returns
+    \c{void}), using the QThreadPool::start() overload taking a function object
+    is more efficient.
+
     As documented above, passing arguments is done like this:
 
     \snippet code/src_concurrent_qtconcurrentrun.cpp 3
@@ -288,7 +292,7 @@
     running task, fetching multiple results from the called \a function or
     monitoring progress reported by the \a function.
 
-    \sa {Concurrent Run (basic mode)}, {Concurrent Run With Promise}
+    \sa {Concurrent Run (basic mode)}, {Concurrent Run With Promise}, QThreadPool::start()
 //! [run-description]
 */
 
@@ -296,9 +300,8 @@
     \since 5.4
     \fn QFuture<T> QtConcurrent::run(QThreadPool *pool, Function function, ...);
 
-    Runs \a function in a separate thread. The thread is taken from the
-    QThreadPool \a pool. Note that \a function may not run immediately; \a function
-    will only be run once a thread becomes available.
+    Schedules \a function on \a pool. Note that \a function may not run
+    immediately; \a function will only be run once a thread becomes available.
 
     \include qtconcurrentrun.cpp run-description
 */

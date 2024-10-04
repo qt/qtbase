@@ -963,26 +963,43 @@ static inline int pathHashKey(QSettings::Format format, QSettings::Scope scope)
 }
 
 #ifndef Q_OS_WIN
-static QString make_user_path()
+static constexpr QChar sep = QLatin1Char('/');
+
+#if !defined(QSETTINGS_USE_QSTANDARDPATHS) || defined(Q_OS_ANDROID)
+static QString make_user_path_without_qstandard_paths()
 {
-    static constexpr QChar sep = QLatin1Char('/');
-#ifndef QSETTINGS_USE_QSTANDARDPATHS
-    // Non XDG platforms (OS X, iOS, Android...) have used this code path erroneously
-    // for some time now. Moving away from that would require migrating existing settings.
     QByteArray env = qgetenv("XDG_CONFIG_HOME");
     if (env.isEmpty()) {
         return QDir::homePath() + QLatin1String("/.config/");
     } else if (env.startsWith('/')) {
         return QFile::decodeName(env) + sep;
-    } else {
-        return QDir::homePath() + sep + QFile::decodeName(env) + sep;
     }
+
+    return QDir::homePath() + sep + QFile::decodeName(env) + sep;
+}
+#endif // !QSETTINGS_USE_QSTANDARDPATHS || Q_OS_ANDROID
+
+static QString make_user_path()
+{
+#ifndef QSETTINGS_USE_QSTANDARDPATHS
+    // Non XDG platforms (OS X, iOS, Android...) have used this code path erroneously
+    // for some time now. Moving away from that would require migrating existing settings.
+    // The migration has already been done for Android.
+    return make_user_path_without_qstandard_paths();
 #else
-    // When using a proper XDG platform, use QStandardPaths rather than the above hand-written code;
-    // it makes the use of test mode from unit tests possible.
+
+#ifdef Q_OS_ANDROID
+    // If an old settings path exists, use it instead of creating a new one
+    QString ret = make_user_path_without_qstandard_paths();
+    if (QFile(ret).exists())
+        return ret;
+#endif // Q_OS_ANDROID
+
+    // When using a proper XDG platform or Android platform, use QStandardPaths rather than the
+    // above hand-written code. It makes the use of test mode from unit tests possible.
     // Ideally all platforms should use this, but see above for the migration issue.
     return QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation) + sep;
-#endif
+#endif // !QSETTINGS_USE_QSTANDARDPATHS
 }
 #endif // !Q_OS_WIN
 
@@ -1351,8 +1368,7 @@ void QConfFileSettingsPrivate::syncConfFile(QConfFile *confFile)
     // On android and if it is a content URL put the lock file in a
     // writable location to prevent permissions issues and invalid paths.
     if (confFile->name.startsWith(QLatin1String("content:")))
-        lockFileName = QStandardPaths::writableLocation(QStandardPaths::CacheLocation)
-                + QFileInfo(lockFileName).fileName();
+        lockFileName = make_user_path() + QFileInfo(lockFileName).fileName();
 #    endif
     /*
         Use a lockfile in order to protect us against other QSettings instances
@@ -2181,8 +2197,8 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     following files are used by default:
 
     \list 1
-    \li \c{$HOME/.config/MySoft/Star Runner.conf} (Qt for Embedded Linux: \c{$HOME/Settings/MySoft/Star Runner.conf})
-    \li \c{$HOME/.config/MySoft.conf} (Qt for Embedded Linux: \c{$HOME/Settings/MySoft.conf})
+    \li \c{$HOME/.config/MySoft/Star Runner.conf}
+    \li \c{$HOME/.config/MySoft.conf}
     \li for each directory <dir> in $XDG_CONFIG_DIRS: \c{<dir>/MySoft/Star Runner.conf}
     \li for each directory <dir> in $XDG_CONFIG_DIRS: \c{<dir>/MySoft.conf}
     \endlist
@@ -2219,8 +2235,8 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     used on Unix, \macos, and iOS:
 
     \list 1
-    \li \c{$HOME/.config/MySoft/Star Runner.ini} (Qt for Embedded Linux: \c{$HOME/Settings/MySoft/Star Runner.ini})
-    \li \c{$HOME/.config/MySoft.ini} (Qt for Embedded Linux: \c{$HOME/Settings/MySoft.ini})
+    \li \c{$HOME/.config/MySoft/Star Runner.ini}
+    \li \c{$HOME/.config/MySoft.ini}
     \li for each directory <dir> in $XDG_CONFIG_DIRS: \c{<dir>/MySoft/Star Runner.ini}
     \li for each directory <dir> in $XDG_CONFIG_DIRS: \c{<dir>/MySoft.ini}
     \endlist
@@ -3352,8 +3368,6 @@ QSettings::Format QSettings::defaultFormat()
     \row    \li{1,2} Windows     \li{1,2} IniFormat               \li UserScope   \li \c FOLDERID_RoamingAppData
     \row                                                        \li SystemScope \li \c FOLDERID_ProgramData
     \row    \li{1,2} Unix        \li{1,2} NativeFormat, IniFormat \li UserScope   \li \c $HOME/.config
-    \row                                                        \li SystemScope \li \c /etc/xdg
-    \row    \li{1,2} Qt for Embedded Linux \li{1,2} NativeFormat, IniFormat \li UserScope   \li \c $HOME/Settings
     \row                                                        \li SystemScope \li \c /etc/xdg
     \row    \li{1,2} \macos and iOS   \li{1,2} IniFormat               \li UserScope   \li \c $HOME/.config
     \row                                                        \li SystemScope \li \c /etc/xdg

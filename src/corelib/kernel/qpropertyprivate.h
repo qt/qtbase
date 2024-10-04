@@ -54,6 +54,7 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qtaggedpointer.h>
 #include <QtCore/qmetatype.h>
+#include <QtCore/qcontainerfwd.h>
 
 #include <functional>
 
@@ -63,6 +64,9 @@ class QBindingStorage;
 
 template<typename Class, typename T, auto Offset, auto Setter, auto Signal>
 class QObjectCompatProperty;
+
+struct QBindingObserverPtr;
+using PendingBindingObserverList = QVarLengthArray<QBindingObserverPtr>;
 
 namespace QtPrivate {
 // QPropertyBindingPrivatePtr operates on a RefCountingMixin solely so that we can inline

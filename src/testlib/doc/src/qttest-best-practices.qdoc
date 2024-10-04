@@ -200,14 +200,19 @@
     \section2 Select Appropriate Mechanisms to Exclude Tests
 
     It is important to select the appropriate mechanism to exclude inapplicable
-    tests: \l QSKIP(), using conditional statements to exclude parts of a test
-    function, or not building the test for a particular platform.
+    tests.
 
-    Use QSKIP() to handle cases where a whole test function is found at run-time
-    to be inapplicable in the current test environment. When just a part of a
-    test function is to be skipped, a conditional statement can be used,
-    optionally with a \c qDebug() call to report the reason for skipping the
-    inapplicable part.
+    Use \l QSKIP() to handle cases where a whole test function is found at
+    run-time to be inapplicable in the current test environment. When just a
+    part of a test function is to be skipped, a conditional statement can be
+    used, optionally with a \c qDebug() call to report the reason for skipping
+    the inapplicable part.
+
+    When there are known test failures that should eventually be fixed,
+    \l QEXPECT_FAIL is recommended, as it supports running the rest of the
+    test, when possible. It also verifies that the issue still exists, and
+    lets the code's maintainer know if they unwittingly fix it, a benefit
+    which is gained even when using the \l {QTest::}{Abort} flag.
 
     Test functions or data rows of a data-driven test can be limited to
     particular platforms, or to particular features being enabled using

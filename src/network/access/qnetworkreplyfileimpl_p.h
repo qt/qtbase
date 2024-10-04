@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QNETWORKREPLYFILEIMPL_H
-#define QNETWORKREPLYFILEIMPL_H
+#ifndef QNETWORKREPLYFILEIMPL_P_H
+#define QNETWORKREPLYFILEIMPL_P_H
 
 //
 //  W A R N I N G
@@ -99,4 +99,4 @@ QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QNetworkRequest::KnownHeaders)
 
-#endif // QNETWORKREPLYFILEIMPL_H
+#endif // QNETWORKREPLYFILEIMPL_P_H

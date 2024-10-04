@@ -2373,17 +2373,22 @@ static QString qt_tzname(QDateTimePrivate::DaylightStatus daylightStatus)
   \internal
   Implemented here to share qt_tzname()
 */
-int QDateTimeParser::startsWithLocalTimeZone(QStringView name)
+int QDateTimeParser::startsWithLocalTimeZone(QStringView name, const QDateTime &when)
 {
     QDateTimePrivate::DaylightStatus zones[2] = {
         QDateTimePrivate::StandardTime,
         QDateTimePrivate::DaylightTime
     };
+    // On MS-Win, at least when system zone is UTC, the tzname[]s may be empty.
     for (const auto z : zones) {
         QString zone(qt_tzname(z));
-        if (name.startsWith(zone))
+        if (!zone.isEmpty() && name.startsWith(zone))
             return zone.size();
     }
+    // Mimic what QLocale::toString() would have used, to ensure round-trips work:
+    const QString local = QDateTime(when.date(), when.time()).timeZoneAbbreviation();
+    if (name.startsWith(local))
+        return local.size();
     return 0;
 }
 #endif // datetimeparser

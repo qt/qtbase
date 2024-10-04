@@ -78,7 +78,8 @@ QT_BEGIN_NAMESPACE
   data row's name coincides with that of a local data row, some unintended
   matches may result; try to keep your data-row tags distinct.)
 
-  Subsequent lines give conditions for ignoring this test.
+  Subsequent lines give conditions for ignoring this test. You need at least
+  one or the group has no effect.
 
         # See qtbase/src/testlib/qtestblacklist.cpp for format
         # Test doesn't work on QNX at all

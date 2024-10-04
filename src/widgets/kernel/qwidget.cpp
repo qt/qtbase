@@ -1269,7 +1269,6 @@ void QWidgetPrivate::create()
         win->setProperty("_q_showWithoutActivating", QVariant(true));
     if (q->testAttribute(Qt::WA_MacAlwaysShowToolWindow))
         win->setProperty("_q_macAlwaysShowToolWindow", QVariant(true));
-    setNetWmWindowTypes(true); // do nothing if none of WA_X11NetWmWindowType* is set
     win->setFlags(flags);
     fixPosIncludesFrame();
     if (q->testAttribute(Qt::WA_Moved)
@@ -1328,7 +1327,6 @@ void QWidgetPrivate::create()
 #endif
 
     QBackingStore *store = q->backingStore();
-
     if (!store) {
         if (q->windowType() != Qt::Desktop) {
             if (q->isWindow())
@@ -1346,6 +1344,7 @@ void QWidgetPrivate::create()
         Q_ASSERT(id != WId(0));
         setWinId(id);
     }
+    setNetWmWindowTypes(true); // do nothing if none of WA_X11NetWmWindowType* is set
 
     // Check children and create windows for them if necessary
     q_createNativeChildrenAndSetParent(q);
@@ -6707,6 +6706,13 @@ bool QWidget::focusNextPrevChild(bool next)
 QWidget *QWidget::focusWidget() const
 {
     return const_cast<QWidget *>(d_func()->focus_child);
+}
+
+QObject *QWidgetPrivate::focusObject()
+{
+    Q_Q(QWidget);
+    QWidget *proxy = deepestFocusProxy();
+    return proxy ? proxy : q;
 }
 
 /*!

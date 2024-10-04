@@ -128,7 +128,8 @@ check_cxx_source_compiles("
 #include <EGL/egl.h>
 
 int main(int, char **) {
-    EGLint x = 0; EGLDisplay dpy = 0; EGLContext ctx = 0;
+    [[maybe_unused]] EGLint x = 0;
+    EGLDisplay dpy = 0; EGLContext ctx = 0;
     eglDestroyContext(dpy, ctx);
 }" HAVE_EGL)
 

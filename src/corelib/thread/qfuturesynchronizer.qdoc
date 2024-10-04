@@ -62,7 +62,7 @@
 */
 
 /*!
-    \fn template <typename T> QFutureSynchronizer<T>::QFutureSynchronizer(const QFuture<T> &future)
+    \fn template <typename T> QFutureSynchronizer<T>::QFutureSynchronizer(QFuture<T> future)
 
     Constructs a QFutureSynchronizer and begins watching \a future by calling
     addFuture().
@@ -80,7 +80,7 @@
 */
 
 /*!
-    \fn template <typename T> void QFutureSynchronizer<T>::setFuture(const QFuture<T> &future)
+    \fn template <typename T> void QFutureSynchronizer<T>::setFuture(QFuture<T> future)
 
     Sets \a future to be the only future managed by this QFutureSynchronizer.
     This is a convenience function that calls waitForFinished(),
@@ -90,7 +90,7 @@
 */
 
 /*!
-    \fn template <typename T> void QFutureSynchronizer<T>::addFuture(const QFuture<T> &future)
+    \fn template <typename T> void QFutureSynchronizer<T>::addFuture(QFuture<T> future)
 
     Adds \a future to the list of managed futures.
 

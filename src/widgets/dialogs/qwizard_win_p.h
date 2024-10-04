@@ -152,7 +152,7 @@ private:
 
     int titleBarOffset;  // Extra spacing above the text
     int iconSpacing;    // Space between button and icon
-    static int m_devicePixelRatio;
+    static qreal m_devicePixelRatio;
 };
 
 

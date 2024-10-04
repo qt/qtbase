@@ -202,9 +202,12 @@ void QXdgDesktopPortalFileDialog::openPortal()
 
         if (!d->selectedFiles.isEmpty()) {
             // current_file for the file to be pre-selected, current_name for the file name to be pre-filled
-            // current_file accepts absolute path while current_name accepts just file name
-            options.insert(QLatin1String("current_file"), QFile::encodeName(d->selectedFiles.first()).append('\0'));
-            options.insert(QLatin1String("current_name"), QFileInfo(d->selectedFiles.first()).fileName());
+            // current_file accepts absolute path and requires the file to exist
+            // while current_name accepts just file name
+            QFileInfo selectedFileInfo(d->selectedFiles.first());
+            if (selectedFileInfo.exists())
+                options.insert(QLatin1String("current_file"), QFile::encodeName(d->selectedFiles.first()).append('\0'));
+            options.insert(QLatin1String("current_name"), selectedFileInfo.fileName());
         }
     }
 

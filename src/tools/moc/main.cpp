@@ -543,7 +543,10 @@ int runMoc(int argc, char **argv)
         if (!out)
 #endif
         {
-            fprintf(stderr, "moc: Cannot create %s\n", QFile::encodeName(output).constData());
+            const auto fopen_errno = errno;
+            fprintf(stderr, "moc: Cannot create %s. Error: %s\n",
+                    QFile::encodeName(output).constData(),
+                    strerror(fopen_errno));
             return 1;
         }
 
@@ -556,9 +559,12 @@ int runMoc(int argc, char **argv)
             f = fopen(QFile::encodeName(jsonOutputFileName).constData(), "w");
             if (!f)
 #endif
-                fprintf(stderr, "moc: Cannot create JSON output file %s. %s\n",
+            {
+                const auto fopen_errno = errno;
+                fprintf(stderr, "moc: Cannot create JSON output file %s. Error: %s\n",
                         QFile::encodeName(jsonOutputFileName).constData(),
-                        strerror(errno));
+                        strerror(fopen_errno));
+            }
             jsonOutput.reset(f);
         }
     } else { // use stdout
@@ -603,9 +609,12 @@ int runMoc(int argc, char **argv)
         depFileHandleRaw = fopen(QFile::encodeName(depOutputFileName).constData(), "w");
         if (!depFileHandleRaw)
 #endif
-            fprintf(stderr, "moc: Cannot create dep output file '%s'. %s\n",
+        {
+            const auto fopen_errno = errno;
+            fprintf(stderr, "moc: Cannot create dep output file '%s'. Error: %s\n",
                     QFile::encodeName(depOutputFileName).constData(),
-                    strerror(errno));
+                    strerror(fopen_errno));
+        }
         depFileHandle.reset(depFileHandleRaw);
 
         if (!depFileHandle.isNull()) {

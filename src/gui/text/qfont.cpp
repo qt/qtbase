@@ -494,8 +494,6 @@ QFontEngineData::~QFontEngineData()
     The font matching algorithm works as follows:
     \list 1
     \li The specified font families (set by setFamilies()) are searched for.
-    \li If not found, then if set the specified font family exists and can be used to represent
-        the writing system in use, it will be selected.
     \li If not, a replacement font that supports the writing system is
         selected. The font matching algorithm will try to find the
         best match for all the properties set in the QFont. How this is

@@ -41,6 +41,7 @@
 package org.qtproject.qt.android;
 
 import android.content.Context;
+import android.graphics.Point;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -105,6 +106,8 @@ public class EditPopupMenu implements ViewTreeObserver.OnPreDrawListener, View.O
         initOverlay();
 
         m_view.updateButtons(buttons);
+        Point viewSize = m_view.getCalculatedSize();
+
         final int[] layoutLocation = new int[2];
         m_layout.getLocationOnScreen(layoutLocation);
 
@@ -117,9 +120,9 @@ public class EditPopupMenu implements ViewTreeObserver.OnPreDrawListener, View.O
         int x2 = x + layoutLocation[0] - activityLocation[0];
         int y2 = y + layoutLocation[1] + (activityLocationInWindow[1] - activityLocation[1]);
 
-        x2 -= m_view.getWidth() / 2 ;
+        x2 -= viewSize.x / 2 ;
 
-        y2 -= m_view.getHeight();
+        y2 -= viewSize.y;
         if (y2 < 0) {
             if (cursorHandle != null) {
                 y2 = cursorHandle.bottom();
@@ -130,8 +133,8 @@ public class EditPopupMenu implements ViewTreeObserver.OnPreDrawListener, View.O
             }
         }
 
-        if (m_layout.getWidth() < x + m_view.getWidth() / 2)
-            x2 = m_layout.getWidth() - m_view.getWidth();
+        if (m_layout.getWidth() < x + viewSize.x / 2)
+            x2 = m_layout.getWidth() - viewSize.x;
 
         if (x2 < 0)
             x2 = 0;

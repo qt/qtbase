@@ -46,8 +46,9 @@ if [ $# -ne 2 ]; then
     exit 1
 fi
 
-ZLIB_DIR=$1
-TARGET_DIR=$2
+# Name the arguments, omitting trailing slashes as we'll add where needed.
+ZLIB_DIR="${1%/}"
+TARGET_DIR="${2%/}"
 
 if [ ! -d "$ZLIB_DIR" -o ! -r "$ZLIB_DIR" -o ! -d "$TARGET_DIR" -o ! -w "$TARGET_DIR" ]; then
     echo "Either the zlib source dir or the target dir do not exist,"
@@ -71,7 +72,7 @@ copy_file() {
     fi
 
     mkdir -p "$TARGET_DIR/$(dirname "$SOURCE_FILE")"
-    cp "$ZLIB_DIR/$SOURCE_FILE" "$TARGET_DIR/$DEST_FILE"
+    cp -v "$ZLIB_DIR/$SOURCE_FILE" "$TARGET_DIR/$DEST_FILE"
 }
 
 FILES="
@@ -110,3 +111,18 @@ FILES="
 for i in $FILES; do
     copy_file "$i" "src/$i"
 done
+
+cat << EOF
+
+Please do not forget to patch qtpatches.diff
+The usual routine after this script is:
+  1. Create commit to clean staging
+  2. Apply qtpatches.diff with:
+       patch -p1 < qtpatches.diff
+  3. Update the version in: ChangeLog and src/zlib.h
+  4. Validate all changes and create new qtpatches.diff with:
+       git diff --relative > qtpatches.diff
+  5. Add changed files and amend the commit with these files.
+
+If you want to revert the diff use: patch -p1 -Ri qtpatches.diff
+EOF
