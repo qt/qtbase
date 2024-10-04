@@ -885,29 +885,30 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
         break;
     case PE_PanelButtonTool:
     case PE_PanelButtonBevel:{
-            QRectF rect = option->rect.marginsRemoved(QMargins(2,2,2,2));
-            rect.adjust(-0.5,-0.5,0.5,0.5);
-            painter->setBrush(Qt::NoBrush);
-            if (element == PE_PanelButtonTool
-                && ((!(state & QStyle::State_MouseOver) && !(state & QStyle::State_Raised))
-                    || !(state & QStyle::State_Enabled)))
+            const bool isEnabled = state & QStyle::State_Enabled;
+            const bool isMouseOver = state & QStyle::State_MouseOver;
+            const bool isRaised = state & QStyle::State_Raised;
+            const QRectF rect = option->rect.marginsRemoved(QMargins(2,2,2,2));
+            if (element == PE_PanelButtonTool && ((!isMouseOver && !isRaised) || !isEnabled))
                 painter->setPen(Qt::NoPen);
             else
                 painter->setPen(QPen(WINUI3Colors[colorSchemeIndex][controlStrokePrimary]));
-            painter->drawRoundedRect(rect, secondLevelRoundingRadius, secondLevelRoundingRadius);
+            painter->setBrush(buttonFillBrush(option));
+            painter->drawRoundedRect(rect.marginsAdded(QMargins(0.5, 0.5, 0.5, 0.5)),
+                                     secondLevelRoundingRadius, secondLevelRoundingRadius);
 
-            rect = option->rect.marginsRemoved(QMargins(2,2,2,2));
             painter->setPen(Qt::NoPen);
-            if (!(state & (State_Raised)))
+            if (!isRaised)
                 painter->setBrush(WINUI3Colors[colorSchemeIndex][controlFillTertiary]);
-            else if (state & State_MouseOver)
+            else if (isMouseOver)
                 painter->setBrush(WINUI3Colors[colorSchemeIndex][controlFillSecondary]);
             else
                 painter->setBrush(option->palette.button());
             painter->drawRoundedRect(rect, secondLevelRoundingRadius, secondLevelRoundingRadius);
-            painter->setPen(QPen(WINUI3Colors[colorSchemeIndex][controlStrokeSecondary]));
-            if (state & State_Raised)
+            if (isRaised) {
+                painter->setPen(QPen(WINUI3Colors[colorSchemeIndex][controlStrokeSecondary]));
                 painter->drawLine(rect.bottomLeft() + QPoint(2,1), rect.bottomRight() + QPoint(-2,1));
+            }
         }
         break;
     case PE_FrameDefaultButton:
@@ -2294,6 +2295,8 @@ QBrush QWindows11Style::buttonFillBrush(const QStyleOption *option)
 {
     const bool isOn = (option->state & QStyle::State_On || option->state & QStyle::State_NoChange);
     QBrush brush = isOn ? option->palette.accent() : option->palette.window();
+    if (!isOn && option->state & QStyle::State_AutoRaise)
+        return Qt::NoBrush;
     if (option->state & QStyle::State_MouseOver)
         brush.setColor(isOn ? brush.color().lighter(107) : brush.color().darker(107));
     return brush;
