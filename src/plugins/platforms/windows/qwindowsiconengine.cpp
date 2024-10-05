@@ -118,7 +118,7 @@ QString QWindowsIconEngine::glyphs() const
         {"window-new"_L1, u"\ue78b"},
         {"zoom-fit-best"_L1, u"\ue9a6"},
         {"zoom-in"_L1, u"\ue8a3"},
-        //{"zoom-original"_L1, u"\u"},
+        {"zoom-original"_L1, u"\ue71e"},
         {"zoom-out"_L1, u"\ue71f"},
 
         {"process-working"_L1, u"\ue9f3"},
