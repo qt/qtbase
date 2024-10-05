@@ -286,7 +286,7 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                 painter->setFont(assetFont);
                 painter->setPen(sb->palette.buttonText().color());
                 painter->setBrush(Qt::NoBrush);
-                const auto str = isUp ? QStringLiteral(u"\uE018") : QStringLiteral(u"\uE019");
+                const auto str = isUp ? QStringLiteral(u"\uE70E") : QStringLiteral(u"\uE70D");
                 painter->drawText(rect, str, Qt::AlignVCenter | Qt::AlignHCenter);
             };
             if (sub & SC_SpinBoxUp) drawUpDown(SC_SpinBoxUp);
@@ -456,7 +456,7 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                 QRectF rect = proxy()->subControlRect(CC_ComboBox, option, SC_ComboBoxArrow, widget).adjusted(-4, 0, -4, 1);
                 painter->setFont(assetFont);
                 painter->setPen(combobox->palette.text().color());
-                painter->drawText(rect,"\uE019", Qt::AlignVCenter | Qt::AlignHCenter);
+                painter->drawText(rect,"\uE70D", Qt::AlignVCenter | Qt::AlignHCenter);
             }
             if (combobox->editable) {
                 QColor lineColor = state & State_HasFocus ? option->palette.accent().color() : QColor(0,0,0);
@@ -671,7 +671,7 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                     bool hover = (titlebar->activeSubControls & SC_TitleBarShadeButton) && (titlebar->state & State_MouseOver);
                     if (hover)
                         painter->fillRect(shadeButtonRect,WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
-                    const QString textToDraw("\uE010");
+                    const QString textToDraw("\uE96D");
                     painter->setPen(QPen(titlebar->palette.text().color()));
                     painter->setFont(buttonFont);
                     painter->drawText(shadeButtonRect, Qt::AlignVCenter | Qt::AlignHCenter, textToDraw);
@@ -685,7 +685,7 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                     bool hover = (titlebar->activeSubControls & SC_TitleBarUnshadeButton) && (titlebar->state & State_MouseOver);
                     if (hover)
                         painter->fillRect(unshadeButtonRect,WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
-                    const QString textToDraw("\uE011");
+                    const QString textToDraw("\uE96E");
                     painter->setPen(QPen(titlebar->palette.text().color()));
                     painter->setFont(buttonFont);
                     painter->drawText(unshadeButtonRect, Qt::AlignVCenter | Qt::AlignHCenter, textToDraw);
@@ -843,7 +843,7 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
             rect.moveCenter(center);
 
             float clipWidth = animation != nullptr ? animation->currentValue() : 1.0f;
-            QRectF clipRect = fm.boundingRect("\uE001");
+            QRectF clipRect = fm.boundingRect("\uE73E");
             clipRect.moveCenter(center);
             clipRect.setLeft(rect.x() + (rect.width() - clipRect.width()) / 2.0);
             clipRect.setWidth(clipWidth * clipRect.width());
@@ -866,9 +866,9 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
             painter->setPen(option->palette.highlightedText().color());
             painter->setBrush(option->palette.highlightedText().color());
             if (option->state & State_On)
-                painter->drawText(clipRect, Qt::AlignVCenter | Qt::AlignLeft,"\uE001");
+                painter->drawText(clipRect, Qt::AlignVCenter | Qt::AlignLeft,"\uE73E");
             else if (option->state & State_NoChange)
-                painter->drawText(rect, Qt::AlignVCenter | Qt::AlignHCenter,"\uE108");
+                painter->drawText(rect, Qt::AlignVCenter | Qt::AlignHCenter,"\uE73C");
         }
         break;
 
@@ -1589,7 +1589,7 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                         text_flags |= Qt::TextHideMnemonic;
                     text_flags |= Qt::AlignLeft;
 
-                    const QString textToDraw("\uE001");
+                    const QString textToDraw("\uE73E");
                     painter->setPen(option->palette.text().color());
                     painter->drawText(vTextRect, text_flags, textToDraw);
                     painter->restore();
@@ -1653,7 +1653,7 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                 if (!proxy()->styleHint(SH_UnderlineShortcut, menuitem, widget))
                     text_flags |= Qt::TextHideMnemonic;
                 text_flags |= Qt::AlignLeft;
-                const QString textToDraw("\uE013");
+                const QString textToDraw("\uE974");
                 painter->setPen(option->palette.text().color());
                 painter->drawText(vSubMenuRect, text_flags, textToDraw);
                 painter->restore();
