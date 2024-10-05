@@ -3362,11 +3362,11 @@ void QPainterPath::computeControlPointRect() const
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug s, const QPainterPath &p)
 {
+    QDebugStateSaver saver(s);
     s.nospace() << "QPainterPath: Element count=" << p.elementCount() << Qt::endl;
     const char *types[] = {"MoveTo", "LineTo", "CurveTo", "CurveToData"};
     for (int i=0; i<p.elementCount(); ++i) {
         s.nospace() << " -> " << types[p.elementAt(i).type] << "(x=" << p.elementAt(i).x << ", y=" << p.elementAt(i).y << ')' << Qt::endl;
-
     }
     return s;
 }
