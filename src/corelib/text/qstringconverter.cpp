@@ -68,8 +68,10 @@ static Q_ALWAYS_INLINE uint qBitScanReverse(unsigned v) noexcept
 #if defined(__SSE2__)
 static inline bool simdEncodeAscii(uchar *&dst, const char16_t *&nextAscii, const char16_t *&src, const char16_t *end)
 {
+    size_t sizeBytes = reinterpret_cast<const char *>(end) - reinterpret_cast<const char *>(src);
+
     // do sixteen characters at a time
-    for ( ; end - src >= 16; src += 16, dst += 16) {
+    auto process16Chars = [](uchar *dst, const char16_t *src) {
 #  ifdef __AVX2__
         __m256i data = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(src));
         __m128i data1 = _mm256_castsi256_si128(data);
@@ -95,10 +97,15 @@ static inline bool simdEncodeAscii(uchar *&dst, const char16_t *&nextAscii, cons
 
         // n will contain 1 bit set per character in [data1, data2] that is non-ASCII (or NUL)
         ushort n = ~_mm_movemask_epi8(nonAscii);
+        return n;
+    };
+    auto maybeFoundNonAscii = [&](auto n, qptrdiff offset = 0) {
         if (n) {
             // find the next probable ASCII character
             // we don't want to load 32 bytes again in this loop if we know there are non-ASCII
             // characters still coming
+            src += offset;
+            dst += offset;
             nextAscii = src + qBitScanReverse(n) + 1;
 
             n = qCountTrailingZeroBits(n);
@@ -106,11 +113,34 @@ static inline bool simdEncodeAscii(uchar *&dst, const char16_t *&nextAscii, cons
             src += n;
             return false;
         }
+        return src == end;
+    };
+    auto adjustToEnd = [&] {
+        dst += sizeBytes / sizeof(char16_t);
+        src = end;
+    };
+
+    constexpr size_t Step = 16;
+    if (sizeBytes >= Step * sizeof(char16_t)) {
+
+        qptrdiff offset = 0;
+        for ( ; (offset + Step) * sizeof(char16_t) < sizeBytes; offset += Step) {
+            ushort n = process16Chars(dst + offset, src + offset);
+            if (n)
+                return maybeFoundNonAscii(n, offset);
+        }
+
+        // do sixteen characters again, possibly overlapping with the loop above
+        adjustToEnd();
+        ushort n = process16Chars(dst - Step, src - Step);
+        return maybeFoundNonAscii(n, -int(Step));
     }
 
-    if (end - src >= 8) {
+#  if !defined(__OPTIMIZE_SIZE__)
+    if (sizeBytes >= 8 * sizeof(char16_t)) {
         // do eight characters at a time
         __m128i data = _mm_loadu_si128(reinterpret_cast<const __m128i *>(src));
+        __m128i data2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(end - 8));
         __m128i packed = _mm_packus_epi16(data, data);
         __m128i nonAscii = _mm_cmpgt_epi8(packed, _mm_setzero_si128());
 
@@ -118,14 +148,37 @@ static inline bool simdEncodeAscii(uchar *&dst, const char16_t *&nextAscii, cons
         _mm_storel_epi64(reinterpret_cast<__m128i *>(dst), packed);
 
         uchar n = ~_mm_movemask_epi8(nonAscii);
-        if (n) {
-            nextAscii = src + qBitScanReverse(n) + 1;
-            n = qCountTrailingZeroBits(n);
-            dst += n;
-            src += n;
-            return false;
-        }
+        if (n)
+            return maybeFoundNonAscii(n);
+
+        adjustToEnd();
+        packed = _mm_packus_epi16(data2, data2);
+        nonAscii = _mm_cmpgt_epi8(packed, _mm_setzero_si128());
+        _mm_storel_epi64(reinterpret_cast<__m128i *>(dst - 8), packed);
+        n = ~_mm_movemask_epi8(nonAscii);
+        return maybeFoundNonAscii(n, -8);
+    } else if (sizeBytes >= 4 * sizeof(char16_t)) {
+        // do four characters at a time
+        __m128i data1 = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(src));
+        __m128i data2 = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(end - 4));
+        __m128i packed = _mm_packus_epi16(data1, data1);
+        __m128i nonAscii = _mm_cmpgt_epi8(packed, _mm_setzero_si128());
+
+        // store even non-ASCII
+        qToUnaligned(_mm_cvtsi128_si32(packed), dst);
+
+        uchar n = uchar(_mm_movemask_epi8(nonAscii) ^ 0xf);
+        if (n)
+            return maybeFoundNonAscii(n);
+
+        adjustToEnd();
+        packed = _mm_packus_epi16(data2, data2);
+        nonAscii = _mm_cmpgt_epi8(packed, _mm_setzero_si128());
+        qToUnaligned(_mm_cvtsi128_si32(packed), dst - 4);
+        n = uchar(_mm_movemask_epi8(nonAscii) ^ 0xf);
+        return maybeFoundNonAscii(n, -4);
     }
+#endif
 
     return src == end;
 }
@@ -133,7 +186,7 @@ static inline bool simdEncodeAscii(uchar *&dst, const char16_t *&nextAscii, cons
 static inline bool simdDecodeAscii(char16_t *&dst, const uchar *&nextAscii, const uchar *&src, const uchar *end)
 {
     // do sixteen characters at a time
-    for ( ; end - src >= 16; src += 16, dst += 16) {
+    auto process16Chars = [](char16_t *dst, const uchar *src) {
         __m128i data = _mm_loadu_si128((const __m128i*)src);
 
         // check if everything is ASCII
@@ -151,32 +204,77 @@ static inline bool simdDecodeAscii(char16_t *&dst, const uchar *&nextAscii, cons
         _mm_storeu_si128((__m128i*)dst, _mm_unpacklo_epi8(data, _mm_setzero_si128()));
         _mm_storeu_si128(1+(__m128i*)dst, _mm_unpackhi_epi8(data, _mm_setzero_si128()));
 #endif
+        return ushort(n);
+    };
+    auto maybeFoundNonAscii = [&](uint n, qptrdiff offset = 0) {
         // find the next probable ASCII character
         // we don't want to load 16 bytes again in this loop if we know there are non-ASCII
         // characters still coming
         if (n) {
             uint c = qCountTrailingZeroBits(n);
+            src += offset;
+            dst += offset;
             n = qBitScanReverse(n);
             nextAscii = src + n + 1;
             src += c;
             dst += c;
         }
         return src == end;
+    };
+    auto adjustToEnd = [&] {
+        dst += end - src;
+        src = end;
+    };
+
+    constexpr qsizetype Step = 16;
+    if (end - src >= Step) {
+        qptrdiff offset = 0;
+        for ( ; offset + Step < end - src; offset += Step) {
+            ushort n = process16Chars(dst + offset, src + offset);
+            if (n)
+                return maybeFoundNonAscii(n, offset);
+        }
+
+        // do one chunk again, possibly overlapping with the loop above
+        adjustToEnd();
+        return maybeFoundNonAscii(process16Chars(dst - Step, src - Step), -Step);
     }
 
+#  if !defined(__OPTIMIZE_SIZE__)
     if (end - src >= 8) {
         __m128i data = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(src));
+        __m128i data2 = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(end - 8));
         uint n = _mm_movemask_epi8(data) & 0xff;
         // store everything, even mojibake
         _mm_storeu_si128(reinterpret_cast<__m128i *>(dst), _mm_unpacklo_epi8(data, _mm_setzero_si128()));
-        if (n) {
-            uint c = qCountTrailingZeroBits(n);
-            n = qBitScanReverse(n);
-            nextAscii = src + n + 1;
-            src += c;
-            dst += c;
-        }
+        if (n)
+            return maybeFoundNonAscii(n);
+
+        // do one chunk again, possibly overlapping the above
+        adjustToEnd();
+        n = _mm_movemask_epi8(data2) & 0xff;
+        data2 = _mm_unpacklo_epi8(data2, _mm_setzero_si128());
+        _mm_storeu_si128(reinterpret_cast<__m128i *>(dst - 8), data2);
+        return maybeFoundNonAscii(n, -8);
     }
+    if (end - src >= 4) {
+        __m128i data = _mm_cvtsi32_si128(qFromUnaligned<quint32>(src));
+        __m128i data2 = _mm_cvtsi32_si128(qFromUnaligned<quint32>(end - 4));
+        uchar n = uchar(_mm_movemask_epi8(data) & 0xf);
+        // store everything, even mojibake
+        data = _mm_unpacklo_epi8(data, _mm_setzero_si128());
+        _mm_storel_epi64(reinterpret_cast<__m128i *>(dst), data);
+        if (n)
+            return maybeFoundNonAscii(n);
+
+        // do one chunk again, possibly overlapping the above
+        adjustToEnd();
+        n = uchar(_mm_movemask_epi8(data2) & 0xf);
+        data2 = _mm_unpacklo_epi8(data2, _mm_setzero_si128());
+        _mm_storel_epi64(reinterpret_cast<__m128i *>(dst - 4), data2);
+        return maybeFoundNonAscii(n, -4);
+    }
+#endif
 
     return src == end;
 }
