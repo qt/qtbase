@@ -19,15 +19,10 @@ public:
 
 QStyle *QModernWindowsStylePlugin::create(const QString &key)
 {
-    bool isWin11OrAbove = QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows11;
-    if (isWin11OrAbove && key.compare(QLatin1String("windows11"), Qt::CaseInsensitive) == 0) {
+    if (key.compare(QLatin1String("windows11"), Qt::CaseInsensitive) == 0)
         return new QWindows11Style();
-    } else if (!isWin11OrAbove && key.compare(QLatin1String("windows11"), Qt::CaseInsensitive) == 0) {
-        qWarning("QWindows11Style: Style is only supported on Windows11 and above");
+    if (key.compare(QLatin1String("windowsvista"), Qt::CaseInsensitive) == 0)
         return new QWindowsVistaStyle();
-    } else if (key.compare(QLatin1String("windowsvista"), Qt::CaseInsensitive) == 0) {
-        return new QWindowsVistaStyle();
-    }
     return nullptr;
 }
 
