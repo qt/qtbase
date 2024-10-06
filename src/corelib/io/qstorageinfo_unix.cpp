@@ -98,7 +98,7 @@ private:
 #elif defined(Q_OS_HURD)
     FILE *fp;
     QByteArray buffer;
-    mountinfoent mnt;
+    struct mntent mnt;
 #elif defined(Q_OS_HAIKU)
     BVolumeRoster m_volumeRoster;
 
