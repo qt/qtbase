@@ -1177,7 +1177,7 @@ void tst_QDebug::qDebugStdChrono_data() const
     addRow("1decades", decades{1}, "1[10]yr");
     addRow("1centuries", centuries{1}, "1[100]yr");
     addRow("1millennia", millennia{1}, "1[1000]yr");
-#if defined(Q_OS_LINUX) || defined(Q_OS_DARWIN)
+#if defined(Q_OS_LINUX) || defined(Q_OS_DARWIN) || defined(__GLIBC__)
     // some OSes print the exponent differently
     addRow("1Es", exaseconds{1}, "1[1e+18]s");
     addRow("13gigayears", gigayears{13}, "13[1e+09]yr");

@@ -169,7 +169,7 @@ void tst_toString::chrono_duration_data()
     ADD_ROW("1decades", decades{1}, "1[10]yr (315569520s)");
     ADD_ROW("1centuries", centuries{1}, "1[100]yr (3.1556952e+09s)");
     ADD_ROW("1millennia", millennia{1}, "1[1000]yr (3.1556952e+10s)");
-#if defined(Q_OS_LINUX) || defined(Q_OS_DARWIN)
+#if defined(Q_OS_LINUX) || defined(Q_OS_DARWIN) || defined(__GLIBC__)
     // some OSes print the exponent differently
     ADD_ROW("13gigayears", gigayears{13}, "13[1e+09]yr (4.10240376e+17s)");
 #endif
@@ -208,7 +208,7 @@ void tst_toString::chrono_duration_data()
     ADD_ROW("1.0zs", fpsec{1e-21}, "1e-21s");  // zeptosecond
     ADD_ROW("1.0ys", fpsec{1e-24}, "1e-24s");  // yoctosecond
     ADD_ROW("planck-time", fpsec(5.39124760e-44), "5.3912476e-44s");
-#if defined(Q_OS_LINUX) || defined(Q_OS_DARWIN)
+#if defined(Q_OS_LINUX) || defined(Q_OS_DARWIN) || defined(__GLIBC__)
     // some OSes print the exponent differently
     ADD_ROW("13.813Gyr", fpGyr(13.813), "13.813[1e+09]yr (4.35896178e+17s)");
     ADD_ROW("1universe", universe{1}, "1[1.3813e+10]yr (4.35896178e+17s)");
