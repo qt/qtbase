@@ -196,7 +196,7 @@ function(incremental_build_test)
 endfunction()
 
 function(get_generators output)
-    if(${CMAKE_HOST_SYSTEM_NAME} MATCHES "Linux")
+    if(${CMAKE_HOST_SYSTEM_NAME} MATCHES "Linux|GNU")
         set(generators "Unix Makefiles" "Ninja" "Ninja Multi-Config")
     elseif(${CMAKE_HOST_SYSTEM_NAME} MATCHES "Windows")
         # CI fails with Clang and Visual Studio generators.
