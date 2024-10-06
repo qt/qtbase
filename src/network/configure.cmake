@@ -353,7 +353,7 @@ qt_feature("publicsuffix-qt" PRIVATE
 qt_feature("publicsuffix-system" PRIVATE
     LABEL "  System publicsuffix database"
     CONDITION QT_FEATURE_topleveldomain
-    AUTODETECT LINUX
+    AUTODETECT LINUX OR HURD
     ENABLE INPUT_publicsuffix STREQUAL "system" OR INPUT_publicsuffix STREQUAL "all"
     DISABLE INPUT_publicsuffix STREQUAL "qt"
 )
