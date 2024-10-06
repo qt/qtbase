@@ -1641,9 +1641,10 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                 if (!proxy()->styleHint(SH_UnderlineShortcut, menuitem, widget))
                     text_flags |= Qt::TextHideMnemonic;
                 text_flags |= Qt::AlignLeft;
-                const QString textToDraw("\uE974");
                 painter->setPen(option->palette.text().color());
-                painter->drawText(vSubMenuRect, text_flags, textToDraw);
+                const bool isReverse = option->direction == Qt::RightToLeft;
+                const auto str = isReverse ? QStringLiteral(u"\uE973") : QStringLiteral(u"\uE974");
+                painter->drawText(vSubMenuRect, text_flags, str);
                 painter->restore();
             }
         }
