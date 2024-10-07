@@ -59,7 +59,7 @@ public:
 #ifndef QT_NO_FSFILEENGINE
     bool isCaseSensitive() const {
         auto *fiPriv = QFileInfoPrivate::get(const_cast<QFileInfo*>(&mFileInfo));
-        return QFileSystemEngine::isCaseSensitive(fiPriv->fileEntry, fiPriv->metaData);
+        return qt_isCaseSensitive(fiPriv->fileEntry, fiPriv->metaData);
     }
 #endif
 

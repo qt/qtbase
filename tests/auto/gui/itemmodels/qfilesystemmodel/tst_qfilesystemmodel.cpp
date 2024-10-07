@@ -1058,7 +1058,7 @@ void tst_QFileSystemModel::caseSensitivity()
 
     QFileInfo tmpInfo(tmp);
     auto *tmpInfoPriv = QFileInfoPrivate::get(&tmpInfo);
-    if (!QFileSystemEngine::isCaseSensitive(tmpInfoPriv->fileEntry, tmpInfoPriv->metaData)) {
+    if (!qt_isCaseSensitive(tmpInfoPriv->fileEntry, tmpInfoPriv->metaData)) {
         // Verify that files can be accessed by paths with fLipPeD case.
         for (int i = 0; i < paths.size(); ++i) {
             const QModelIndex normalCaseIndex = indexes.at(i);

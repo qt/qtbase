@@ -143,6 +143,12 @@ static bool _q_createLegacyEngine_recursive(QFileSystemEntry &entry, QFileSystem
     return _q_checkEntry(entry, data, resolvingEntry);
 }
 
+Q_CORE_EXPORT bool qt_isCaseSensitive(const QFileSystemEntry &entry, QFileSystemMetaData &data)
+{
+    // called from QtGui (QFileSystemModel, QFileInfoGatherer)
+    return QFileSystemEngine::isCaseSensitive(entry, data);
+}
+
 /*!
     \internal
 
