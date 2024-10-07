@@ -2475,7 +2475,7 @@ int QMetaEnumBuilder::value(int index) const
     Returns the value with the given \a index if it exists; or returns a
     disengaged \c{std::optional} if it doesn't.
 
-    \include qmetaobject.cpp qmetaenum-32bit-zeroextend-64bit
+    \include qmetaobject.cpp qmetaenum-32bit-signextend-64bit
 
     \sa keyCount(), key(), addKey()
 */
