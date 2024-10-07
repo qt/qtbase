@@ -67,6 +67,7 @@ public:
     // the host resources are insufficient. A simple UTC backend is used if no
     // alternative is available.
     QExplicitlySharedDataPointer<QTimeZonePrivate> backend;
+    // TODO QTBUG-56899: refresh should update this backend.
 };
 
 Q_GLOBAL_STATIC(QTimeZoneSingleton, global_tz);
@@ -1401,7 +1402,7 @@ QByteArray QTimeZone::systemTimeZoneId()
     if (!sys.isEmpty())
         return sys;
     // The system zone, despite the empty ID, may know its real ID anyway:
-    return systemTimeZone().id();
+    return global_tz->backend->id();
 }
 
 /*!
@@ -1424,9 +1425,9 @@ QByteArray QTimeZone::systemTimeZoneId()
 */
 QTimeZone QTimeZone::systemTimeZone()
 {
-    // Use ID even if empty, as default constructor is invalid but empty-ID
-    // constructor goes to backend's default constructor, which may succeed.
-    const auto sys = QTimeZone(global_tz->backend->systemTimeZoneId());
+    // Short-cut constructor's handling of empty ID:
+    const QByteArray sysId = global_tz->backend->systemTimeZoneId();
+    const auto sys = sysId.isEmpty() ? QTimeZone(global_tz->backend) : QTimeZone(sysId);
     if (!sys.isValid()) {
         static bool neverWarned = true;
         if (neverWarned) {
