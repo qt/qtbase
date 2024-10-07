@@ -116,6 +116,7 @@ struct Options
     int timeoutSecs = 600; // 10 minutes
     QString buildPath;
     QString adbCommand{"adb"_L1};
+    QString serial;
     QString makeCommand;
     QString package;
     QString activity;
@@ -186,7 +187,13 @@ static bool execCommand(const QString &program, const QStringList &args,
 static bool execAdbCommand(const QStringList &args, QByteArray *output = nullptr,
                            bool verbose = true)
 {
-    return execCommand(g_options.adbCommand, args, output, verbose);
+    if (g_options.serial.isEmpty())
+        return execCommand(g_options.adbCommand, args, output, verbose);
+
+    QStringList argsWithSerial = {"-s"_L1, g_options.serial};
+    argsWithSerial.append(args);
+
+    return execCommand(g_options.adbCommand, argsWithSerial, output, verbose);
 }
 
 static bool execCommand(const QString &command, QByteArray *output = nullptr, bool verbose = true)
@@ -259,9 +266,7 @@ static bool parseOptions()
     if (g_options.helpRequested || g_options.buildPath.isEmpty() || g_options.apkPath.isEmpty())
         return false;
 
-    QString serial = qEnvironmentVariable("ANDROID_DEVICE_SERIAL");
-    if (!serial.isEmpty())
-        g_options.adbCommand += " -s %1"_L1.arg(serial);
+    g_options.serial = qEnvironmentVariable("ANDROID_DEVICE_SERIAL");
 
     if (g_options.ndkStackPath.isEmpty()) {
         const QString ndkPath = qEnvironmentVariable("ANDROID_NDK_ROOT");
@@ -610,7 +615,10 @@ void printLogcatCrashBuffer(const QString &formattedTime)
         ndkStackProcess.start(g_options.ndkStackPath, { "-sym"_L1, libsPath });
     }
 
-    const QStringList adbCrashArgs = { "logcat"_L1, "-b"_L1, "crash"_L1, "-t"_L1, formattedTime };
+    QStringList adbCrashArgs = { "logcat"_L1, "-b"_L1, "crash"_L1, "-t"_L1, formattedTime };
+    if (!g_options.serial.isEmpty())
+        adbCrashArgs = QStringList{"-s"_L1 + g_options.serial} + adbCrashArgs;
+
     adbCrashProcess.start(g_options.adbCommand, adbCrashArgs);
 
     if (!adbCrashProcess.waitForStarted()) {
