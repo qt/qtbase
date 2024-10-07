@@ -10,5 +10,16 @@ foreach(dir global config)
     if(QT_SUPERBUILD OR "${PROJECT_NAME}" STREQUAL "QtBase")
         qt_path_join(destination ${QtBase_BINARY_DIR} ${INSTALL_DOCDIR})
         file(COPY ${dir} DESTINATION ${destination})
+
+        if(NOT QT_NO_SET_QTBASE_DOC_FILE_DEPS_COPYING)
+            # Make sure touched doc files cause a reconfigure, so they get re-copied.
+            # TODO: Consider making this a build time file copy dependency.
+            # It is more complicated, because all documentation generation custom targets would have
+            # to depend on the file outputs of add_custom_command(copy), and it's not clear how the
+            # dependencies should be set up in that case (coarsness, use install vs build dirs,
+            # etc).
+            file(GLOB_RECURSE files LIST_DIRECTORIES FALSE "${dir}/*")
+            set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${files})
+        endif()
     endif()
 endforeach()
