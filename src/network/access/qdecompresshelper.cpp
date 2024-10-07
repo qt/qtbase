@@ -234,8 +234,11 @@ void QDecompressHelper::feed(QByteArray &&data)
     Q_ASSERT(contentEncoding != None);
     totalCompressedBytes += data.size();
     compressedDataBuffer.append(std::move(data));
-    if (!countInternal(compressedDataBuffer[compressedDataBuffer.bufferCount() - 1]))
+    if (!countInternal(compressedDataBuffer[compressedDataBuffer.bufferCount() - 1])) {
+        if (errorStr.isEmpty() && countHelper)
+            errorStr = countHelper->errorString();
         clear(); // If our counting brother failed then so will we :|
+    }
 }
 
 /*!
@@ -247,8 +250,11 @@ void QDecompressHelper::feed(const QByteDataBuffer &buffer)
     Q_ASSERT(contentEncoding != None);
     totalCompressedBytes += buffer.byteAmount();
     compressedDataBuffer.append(buffer);
-    if (!countInternal(buffer))
+    if (!countInternal(buffer)) {
+        if (errorStr.isEmpty() && countHelper)
+            errorStr = countHelper->errorString();
         clear(); // If our counting brother failed then so will we :|
+    }
 }
 
 /*!
@@ -261,8 +267,11 @@ void QDecompressHelper::feed(QByteDataBuffer &&buffer)
     totalCompressedBytes += buffer.byteAmount();
     const QByteDataBuffer copy(buffer);
     compressedDataBuffer.append(std::move(buffer));
-    if (!countInternal(copy))
+    if (!countInternal(copy)) {
+        if (errorStr.isEmpty() && countHelper)
+            errorStr = countHelper->errorString();
         clear(); // If our counting brother failed then so will we :|
+    }
 }
 
 /*!
@@ -552,8 +561,6 @@ void QDecompressHelper::clear()
     totalBytesRead = 0;
     totalUncompressedBytes = 0;
     totalCompressedBytes = 0;
-
-    errorStr.clear();
 }
 
 qsizetype QDecompressHelper::readZLib(char *data, const qsizetype maxSize)
