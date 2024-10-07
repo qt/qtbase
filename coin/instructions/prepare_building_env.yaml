@@ -499,16 +499,26 @@ instructions:
     variableName: SBOM_PYTHON_APPS_PATH
     variableValue: "{{.Env.PIP3_PATH}}"
     enable_if:
-      condition: property
-      property: host.os
-      equals_value: Windows
+      condition: and
+      conditions:
+        - condition: property
+          property: host.os
+          equals_value: Windows
+        - condition: runtime
+          env_var: SBOM_PYTHON_APPS_PATH
+          equals_value: null
   - type: EnvironmentVariable
     variableName: SBOM_PYTHON_APPS_PATH
     variableValue: "{{.Env.PYTHON3_PATH}}"
-    disable_if:
-      condition: property
-      property: host.os
-      equals_value: Windows
+    enable_if:
+      condition: and
+      conditions:
+        - condition: property
+          property: host.os
+          not_equals_value: Windows
+        - condition: runtime
+          env_var: SBOM_PYTHON_APPS_PATH
+          equals_value: null
 
 
   # SBOM verification and auditing
