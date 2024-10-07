@@ -270,7 +270,7 @@ class LocaleScanner (object):
         yield 'currencySymbol', symbol
         yield 'currencyDisplayName', name
 
-    def numericData(self, lookup, complain = lambda text: None):
+    def numericData(self, lookup):
         """Generate assorted numeric data for the locale.
 
         First argument, lookup, is a callable that maps a numbering
@@ -436,7 +436,7 @@ class LocaleScanner (object):
 
         See CldrAccess.readMetaZoneMap() for the locale-independent
         data that stitches these pieces together."""
-        stem, formats = 'dates/timeZoneNames', {}
+        stem = 'dates/timeZoneNames'
         # '+HH:mm;-HH:mm' (and :ss is also supported, but nowhere used in v45).
         # Sometimes has single-digit hours
         hours = self.find(f'{stem}/hourFormat').split(';')

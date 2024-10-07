@@ -292,7 +292,7 @@ class CldrReader (object):
                       currencyRounding = int(rounding))
 
         locale.update(scan.currencyData(iso))
-        locale.update(scan.numericData(self.root.numberSystem, self.whitter))
+        locale.update(scan.numericData(self.root.numberSystem))
         locale.update(scan.textPatternData())
         locale.update(scan.endonyms(language, script, territory, variant))
         locale.update(scan.unitData()) # byte, kB, MB, GB, ..., KiB, MiB, GiB, ...
