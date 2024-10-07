@@ -6,4 +6,5 @@ add_subdirectory(localfileapi)
 add_subdirectory(qwasmkeytranslator)
 add_subdirectory(qwasmwindowstack)
 add_subdirectory(qwasmwindowtreenode)
-add_subdirectory(selenium)
+# TODO: re-enable selenium tests when fixed - QTBUG-129735
+# add_subdirectory(selenium)
