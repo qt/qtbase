@@ -2152,8 +2152,10 @@ QString QTime::toString(Qt::DateFormat format) const
     \fn QString QTime::toString(const QString &format) const
     \fn QString QTime::toString(QStringView format) const
 
-    Returns the time as a string. The \a format parameter determines
-    the format of the result string.
+    Returns a string representing the time.
+
+    The \a format parameter determines the format of the result string. If the
+    time is invalid, an empty string will be returned.
 
     These expressions may be used:
 
@@ -2198,7 +2200,7 @@ QString QTime::toString(Qt::DateFormat format) const
              change of case.
     \row \li t
          \li The timezone abbreviation (for example "CEST"). Note that time zone
-             abbreviations are not unique. In particular, \l toString() cannot
+             abbreviations are not unique. In particular, \l fromString() cannot
              parse this.
     \row \li tt
          \li The timezone's offset from UTC with no colon between the hours and
@@ -2215,6 +2217,14 @@ QString QTime::toString(Qt::DateFormat format) const
              QTimeZone::LongName type. This may depend on the operating system
              in use.
     \endtable
+
+    \note To get localized forms of AM or PM (the \c{AP}, \c{ap}, \c{A}, \c{a},
+    \c{aP} or \c{Ap} formats) or of time zone representations (the \c{t}
+    formats), use QLocale::system().toString().
+
+    When the timezone cannot be determined or no suitable representation of it
+    is available, the \c{t} forms to represent it may be skipped. See \l
+    QTimeZone::displayName() for details of when it returns an empty string.
 
     Any non-empty sequence of characters enclosed in single quotes will be
     included verbatim in the output string (stripped of the quotes), even if it
@@ -2235,11 +2245,6 @@ QString QTime::toString(Qt::DateFormat format) const
     \row \li h:m:s ap     \li 2:13:9 pm
     \row \li H:m:s a      \li 14:13:9 pm
     \endtable
-
-    If the time is invalid, an empty string will be returned.
-
-    \note To get localized forms of AM or PM (the AP, ap, A, a, aP or Ap
-    formats), use QLocale::system().toString().
 
     \note If a format character is repeated more times than the longest
     expression in the table above using it, this part of the format will be read
