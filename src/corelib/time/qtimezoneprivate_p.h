@@ -241,6 +241,8 @@ public:
     QChronoTimeZonePrivate(QByteArrayView id);
     ~QChronoTimeZonePrivate() override;
 
+    QByteArray systemTimeZoneId() const override;
+
     QString abbreviation(qint64 atMSecsSinceEpoch) const override;
     int offsetFromUtc(qint64 atMSecsSinceEpoch) const override;
     int standardTimeOffset(qint64 atMSecsSinceEpoch) const override;

@@ -62,6 +62,15 @@ QChronoTimeZonePrivate::QChronoTimeZonePrivate(QByteArrayView id)
 QChronoTimeZonePrivate::~QChronoTimeZonePrivate()
         = default;
 
+QByteArray QChronoTimeZonePrivate::systemTimeZoneId() const
+{
+    if (const time_zone *zone = std::chrono::current_zone()) {
+        std::string_view name = zone->name();
+        return {name.begin(), qsizetype(name.size())};
+    }
+    return {};
+}
+
 QString QChronoTimeZonePrivate::abbreviation(qint64 atMSecsSinceEpoch) const
 {
     if (auto info = infoAtEpochMillis(m_timeZone, atMSecsSinceEpoch))
