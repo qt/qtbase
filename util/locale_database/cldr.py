@@ -368,7 +368,7 @@ class CldrAccess (object):
         for ignore, attrs in self.supplement('likelySubtags.xml').find('likelySubtags'):
             yield attrs['from'], attrs['to']
 
-    def numberSystem(self, system):
+    def numberSystem(self, system: str) -> dict[str, str]:
         """Get a description of a numbering system.
 
         Returns a mapping, with keys 'digits', 'type' and 'id'; the

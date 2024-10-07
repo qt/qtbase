@@ -21,7 +21,7 @@ See individual classes for further detail.
 from __future__ import annotations
 from localetools import Error
 from dateconverter import convert_date
-from typing import Any, Iterator
+from typing import Any, Callable, Iterator
 from xml.dom import minidom
 
 # The github version of CLDR uses '↑↑↑' to indicate "inherit"
@@ -204,17 +204,17 @@ class Supplement (XmlScanner):
                 yield elt.nodeName, _attrsFromDom(elt)
 
 class LocaleScanner (object):
-    def __init__(self, name, nodes, root):
+    def __init__(self, name: str, nodes: list[Node], root: XmlScanner) -> None:
         """Set up to scan data for a specified locale.
 
         First parameter is the name of the locale; it will be used in
-        error messages. Second is a tuple of DOM root-nodes of files
+        error messages. Second is a sequence of DOM root-nodes of files
         with locale data, later ones serving as fall-backs for data
         missing in earlier ones. Third parameter is the root locale's
         DOM node."""
         self.name, self.nodes, self.base = name, nodes, root
 
-    def find(self, xpath, default = None, draft = None):
+    def find(self, xpath: str, default: str|None = None, draft: int|None = None) -> str:
         """XPath search for the content of an element.
 
         Required argument, xpath, is the XPath to search for. Optional
@@ -234,15 +234,15 @@ class LocaleScanner (object):
                 raise
             return default
 
-    def tagCodes(self):
+    def tagCodes(self) -> Iterator[str]:
         """Yields four tag codes
 
         The tag codes are language, script, territory and variant; an
         empty value for any of them indicates that no value was
         provided.  The values are obtained from the primary file's
         top-level <identity> element."""
-        root = self.nodes[0]
-        ids = root.findUniqueChild('identity')
+        root: Node = self.nodes[0]
+        ids: Node = root.findUniqueChild('identity')
         for code in ('language', 'script', 'territory', 'variant'):
             for node in ids.findAllChildren(code, allDull=True):
                 try:
@@ -254,7 +254,7 @@ class LocaleScanner (object):
             else: # No value for this code, use empty
                 yield ''
 
-    def currencyData(self, isoCode):
+    def currencyData(self, isoCode: str) -> Iterator[tuple[str, str]]:
         """Fetches currency data for this locale.
 
         Single argument, isoCode, is the ISO currency code for the
@@ -262,30 +262,31 @@ class LocaleScanner (object):
         includes some currency formats.
         """
         if isoCode:
-            stem = f'numbers/currencies/currency[{isoCode}]/'
-            symbol = self.find(f'{stem}symbol', '')
-            name = self.__currencyDisplayName(stem)
+            stem: str = f'numbers/currencies/currency[{isoCode}]/'
+            symbol: str = self.find(f'{stem}symbol', '')
+            name: str = self.__currencyDisplayName(stem)
         else:
             symbol = name = ''
         yield 'currencySymbol', symbol
         yield 'currencyDisplayName', name
 
-    def numericData(self, lookup):
+    def numericData(self, lookup: Callable[[str], dict[str, str]]
+                    ) -> Iterator[tuple[str, str]]:
         """Generate assorted numeric data for the locale.
 
         First argument, lookup, is a callable that maps a numbering
         system's name to certain data about the system, as a mapping;
         we expect this to have 'digits' as a key.
         """
-        system = self.find('numbers/defaultNumberingSystem')
-        stem = f'numbers/symbols[numberSystem={system}]/'
-        decimal = self.find(f'{stem}decimal')
-        group = self.find(f'{stem}group')
+        system: str = self.find('numbers/defaultNumberingSystem')
+        stem: str = f'numbers/symbols[numberSystem={system}]/'
+        decimal: str = self.find(f'{stem}decimal')
+        group: str = self.find(f'{stem}group')
         if decimal == group:
             # mn_Mong_MN @v43 :-(
             # https://unicode-org.atlassian.net/browse/CLDR-17883
             # https://unicode-org.atlassian.net/browse/CLDR-16413
-            clean = Node.draftScore('approved')
+            clean: int = Node.draftScore('approved')
             decimal = self.find(f'{stem}decimal', draft=clean)
             group = self.find(f'{stem}group', draft=clean)
             assert decimal != group, (self.name, system, decimal)
@@ -297,9 +298,9 @@ class LocaleScanner (object):
         yield 'exp', self.find(f'{stem}exponential')
         yield 'groupSizes', self.__numberGrouping(system)
 
-        digits = lookup(system)['digits']
+        digits: str = lookup(system)['digits']
         assert len(digits) == 10
-        zero = digits[0]
+        zero: str = digits[0]
         # Qt's number-formatting code assumes digits are consecutive
         # (except Suzhou - see QTBUG-85409 - which shares its zero
         # with CLDR's very-non-contiguous hanidec):
@@ -307,15 +308,15 @@ class LocaleScanner (object):
                    for i, c in enumerate(digits[1:], 1))
         yield 'zero', zero
 
-        plus = self.find(f'{stem}plusSign')
-        minus = self.find(f'{stem}minusSign')
+        plus: str = self.find(f'{stem}plusSign')
+        minus: str = self.find(f'{stem}minusSign')
         yield 'plus', plus
         yield 'minus', minus
 
         # Currency formatting:
         xpath = 'numbers/currencyFormats/currencyFormatLength/currencyFormat[accounting]/pattern'
         try:
-            money = self.find(xpath.replace('Formats/',
+            money: str = self.find(xpath.replace('Formats/',
                                             f'Formats[numberSystem={system}]/'))
         except Error:
             money = self.find(xpath)
@@ -327,7 +328,7 @@ class LocaleScanner (object):
             neg = it
         yield 'currencyNegativeFormat', neg
 
-    def textPatternData(self):
+    def textPatternData(self) -> Iterator[tuple[str, str]]:
         for key in ('quotationStart', 'alternateQuotationEnd',
                     'quotationEnd', 'alternateQuotationStart'):
             yield key, self.find(f'delimiters/{key}')
@@ -354,7 +355,8 @@ class LocaleScanner (object):
                        convert_date(self.find(
                             f'{stem}{key}Formats/{key}FormatLength[{pair[1]}]/{key}Format/pattern')))
 
-    def endonyms(self, language, script, territory, variant):
+    def endonyms(self, language: str, script: str, territory: str, variant: str
+                 ) -> Iterator[tuple[str, str]]:
         # TODO: take variant into account ?
         # TODO: QTBUG-47892, support query for all combinations
         for seq in ((language, script, territory),
@@ -375,12 +377,12 @@ class LocaleScanner (object):
         yield ('territoryEndonym',
                self.find(f'localeDisplayNames/territories/territory[{territory}]', ''))
 
-    def unitData(self):
+    def unitData(self) -> Iterator[tuple[str, str]]:
         yield ('byte_unit',
                self.find('units/unitLength[long]/unit[digital-byte]/displayName',
                          'bytes'))
 
-        unit = self.__findUnit('', 'B')
+        unit: str | None = self.__findUnit('', 'B')
         cache = [] # Populated by the SI call, to give hints to the IEC call
         yield ('byte_si_quantified',
                ';'.join(self.__unitCount('', unit, cache)))
@@ -389,8 +391,8 @@ class LocaleScanner (object):
         yield ('byte_iec_quantified',
                ';'.join(self.__unitCount('bi', 'iB', cache)))
 
-    def calendarNames(self, calendars):
-        namings = self.__nameForms
+    def calendarNames(self, calendars: list[str]) -> Iterator[tuple[str, str]]:
+        namings: tuple[tuple[str, str, str], ...] = self.__nameForms
         for cal in calendars:
             stem = f'dates/calendars/calendar[{cal}]/months/'
             for key, mode, size in namings:
@@ -408,7 +410,7 @@ class LocaleScanner (object):
                    ';'.join(self.find(f'{stem}{prop}[{day}]')
                             for day in days))
 
-    def timeZoneNames(self, alias):
+    def timeZoneNames(self, alias: dict[str, str]) -> Iterator[tuple[str, Any]]:
         """Names of zones and metazones for this locale.
 
         Single argument, alias, should be the first return from
@@ -439,12 +441,12 @@ class LocaleScanner (object):
         stem = 'dates/timeZoneNames'
         # '+HH:mm;-HH:mm' (and :ss is also supported, but nowhere used in v45).
         # Sometimes has single-digit hours
-        hours = self.find(f'{stem}/hourFormat').split(';')
+        hours: list[str] = self.find(f'{stem}/hourFormat').split(';')
         assert all('H' in f and 'm' in f for f in hours), (hours, self.name)
         yield 'positiveOffsetFormat', hours[0]
         yield 'negativeOffsetFormat', hours[1]
 
-        get = lambda n, s=stem: self.find(f'{s}/{n}').replace('{0}', '%0')
+        get: Callable[[str], str] = lambda n, s=stem: self.find(f'{s}/{n}').replace('{0}', '%0')
         # 'GMT{0}' with offset as {0}
         yield 'gmtOffsetFormat', get('gmtFormat')
         # '{0} (Winter|Summer)? Time' with exemplar city or territory as {0}
@@ -455,14 +457,14 @@ class LocaleScanner (object):
         # or territory as {0}.
         yield 'fallbackZoneFormat', get('fallbackFormat').replace('{1}', '%1')
 
-        zones = {}
+        zones: dict[str, str|dict[str, str]] = {}
         for elt in self.__find(f'{stem}/zone', allDull=True):
-            iana = elt.attributes()['type']
+            iana: str = elt.attributes()['type']
             if iana == 'Etc/Unknown': # CLDR special, of no interest to us
                 continue
             # Map CLDR-canonical ID to IANA ID:
             iana = alias.get(iana, iana)
-            data = zones.setdefault(iana, {})
+            data: dict[str, str|dict[str, str]] = zones.setdefault(iana, {})
 
             for child in elt.dom.childNodes:
                 if child.nodeType != child.ELEMENT_NODE:
@@ -481,9 +483,9 @@ class LocaleScanner (object):
                 # Ignore any other child nodes.
         yield 'zoneNaming', {k: self.__cleanZone(v) for k, v in zones.items() if v}
 
-        metazones = {}
+        metazones: dict[str, dict[str, str]] = {}
         for elt in self.__find(f'{stem}/metazone', allDull=True, mustFind=False):
-            meta = elt.attributes()['type']
+            meta: str = elt.attributes()['type']
             data = metazones.setdefault(meta, {})
             for child in elt.dom.childNodes:
                 if child.nodeType != child.ELEMENT_NODE:
@@ -504,11 +506,14 @@ class LocaleScanner (object):
         ('narrow', 'format', 'narrow'),
     ) # Used for month and day names
 
-    def __find(self, xpath, allDull = False, mustFind = True):
-        retries = [ xpath.split('/') ]
+    def __find(self, xpath: str, allDull: bool = False, mustFind: bool = True) -> Iterator[Node]:
+        retries: list[list[str]] = [ xpath.split('/') ]
         while retries:
-            tags, elts, roots = retries.pop(), self.nodes, (self.base.root,)
+            tags: list[str] = retries.pop()
+            elts: tuple[Node, ...] = tuple(self.nodes)
+            roots: tuple[Node] = (self.base.root,)
             for selector in tags:
+                # tag is a str, attrs is a dict[str, str]
                 tag, attrs = _parseXPath(selector)
                 elts = tuple(_iterateEach(e.findAllChildren(tag, attrs,
                                                             allDull=allDull)
@@ -528,12 +533,13 @@ class LocaleScanner (object):
             # is excessive (and alias only ever shows up in root.xml,
             # always with source="locale").
             for i, selector in enumerate(tags):
+                # tag is a str, attrs is a dict[str, str]
                 tag, attrs = _parseXPath(selector)
 
                 for alias in tuple(_iterateEach(r.findAllChildren('alias', allDull=True)
                                                 for r in roots)):
                     assert alias.dom.attributes['source'].nodeValue == 'locale', alias
-                    replace = alias.dom.attributes['path'].nodeValue.split('/')
+                    replace: list[str] = alias.dom.attributes['path'].nodeValue.split('/')
                     retries.append(self.__xpathJoin(tags[:i], replace, tags[i:]))
 
                 roots = tuple(_iterateEach(r.findAllChildren(tag, attrs,
@@ -562,7 +568,7 @@ class LocaleScanner (object):
             raise Error(f'No {sought} in {self.name}')
 
     @staticmethod
-    def __skipInheritors(elts):
+    def __skipInheritors(elts: tuple[Node, ...]) -> Iterator[Node]:
         for elt in elts:
             try:
                 if elt.dom.firstChild.nodeValue != INHERIT:
@@ -570,7 +576,7 @@ class LocaleScanner (object):
             except (AttributeError, KeyError):
                 yield elt
 
-    def __currencyDisplayName(self, stem):
+    def __currencyDisplayName(self, stem: str) -> str | None:
         try:
             return self.find(stem + 'displayName')
         except Error:
@@ -583,7 +589,7 @@ class LocaleScanner (object):
         return ''
 
     @staticmethod
-    def __zoneNames(dom, data):
+    def __zoneNames(dom: minidom.Element, data: dict[str, str]) -> dict[str, str]:
         for child in dom.childNodes:
             if child.nodeType != child.ELEMENT_NODE:
                 continue
@@ -598,7 +604,8 @@ class LocaleScanner (object):
         return data
 
     @staticmethod
-    def __cleanZone(data, keys = ('generic', 'standard', 'daylight')):
+    def __cleanZone(data: dict[str, str|dict[str, str]], keys = ('generic', 'standard', 'daylight')
+                    ) -> dict[str, str|tuple[str|None, str|None, str|None]]:
         if 'long' in data:
             data['long'] = tuple(data['long'].get(k) for k in keys)
         if 'short' in data:
@@ -606,7 +613,7 @@ class LocaleScanner (object):
         # Leave any other keys alone.
         return data
 
-    def __findUnit(self, keySuffix, quantify, fallback=''):
+    def __findUnit(self, keySuffix: str, quantify: str, fallback: str = '') -> str:
         # The displayName for a quantified unit in en.xml is kByte
         # (even for unitLength[narrow]) instead of kB (etc.), so
         # prefer any unitPattern provided, but prune its placeholder:
@@ -614,7 +621,7 @@ class LocaleScanner (object):
             stem = f'units/unitLength[{size}{keySuffix}]/unit[digital-{quantify}byte]/'
             for count in ('many', 'few', 'two', 'other', 'zero', 'one'):
                 try:
-                    ans = self.find(f'{stem}unitPattern[count={count}]')
+                    ans: str = self.find(f'{stem}unitPattern[count={count}]')
                 except Error:
                     continue
 
@@ -633,10 +640,11 @@ class LocaleScanner (object):
 
         return fallback
 
-    def __unitCount(self, keySuffix, suffix, cache,
+    def __unitCount(self, keySuffix: str, suffix: str, cache: list[str],
                     # Stop at exa/exbi: 16 exbi = 2^{64} < zetta =
                     # 1000^7 < zebi = 2^{70}, the next quantifiers up:
-                    siQuantifiers = ('kilo', 'mega', 'giga', 'tera', 'peta', 'exa')):
+                    siQuantifiers: tuple[str, ...] = ('kilo',
+                    'mega', 'giga', 'tera', 'peta', 'exa')) -> Iterator[str]:
         """Work out the unit quantifiers.
 
         Unfortunately, the CLDR data only go up to terabytes and we
@@ -662,7 +670,7 @@ class LocaleScanner (object):
         else: # first call
             tail = suffix = suffix or 'B'
             for q in siQuantifiers:
-                it = self.__findUnit(keySuffix, q)
+                it: str | None = self.__findUnit(keySuffix, q)
                 # kB for kilobyte, in contrast with KiB for IEC:
                 q = q[0] if q == 'kilo' else q[0].upper()
                 if not it:
@@ -673,7 +681,7 @@ class LocaleScanner (object):
                     cache.append(rest)
                 yield it
 
-    def __numberGrouping(self, system):
+    def __numberGrouping(self, system: str) -> tuple[int, int, int]:
         """Sizes of groups of digits within a number.
 
         Returns a triple (least, higher, top) for which:
@@ -693,9 +701,9 @@ class LocaleScanner (object):
         elsewhere)."""
         top = int(self.find('numbers/minimumGroupingDigits'))
         assert top < 4, top # We store it in a 2-bit field
-        grouping = self.find(f'numbers/decimalFormats[numberSystem={system}]/'
+        grouping: str | None = self.find(f'numbers/decimalFormats[numberSystem={system}]/'
                              'decimalFormatLength/decimalFormat/pattern')
-        groups = grouping.split('.')[0].split(',')[-3:]
+        groups: list[str] = grouping.split('.')[0].split(',')[-3:]
         assert all(len(x) < 8 for x in groups[-2:]), grouping # we store them in 3-bit fields
         if len(groups) > 2:
             return len(groups[-1]), len(groups[-2]), top
@@ -704,7 +712,7 @@ class LocaleScanner (object):
         return size, size, top
 
     @staticmethod
-    def __currencyFormats(patterns, plus, minus):
+    def __currencyFormats(patterns: str, plus: str, minus: str) -> Iterator[str]:
         for p in patterns.split(';'):
             p = p.replace('0', '#').replace(',', '').replace('.', '')
             try:
@@ -725,17 +733,17 @@ class LocaleScanner (object):
             yield p
 
     @staticmethod
-    def __fromLdmlListPattern(pattern):
+    def __fromLdmlListPattern(pattern: str) -> str:
         # This is a very limited parsing of the format for list pattern part only.
         return pattern.replace('{0}', '%1').replace('{1}', '%2').replace('{2}', '%3')
 
     @staticmethod
-    def __fromLdmlPath(seq): # tool function for __xpathJoin()
+    def __fromLdmlPath(seq: list[str]) -> Iterator[str]: # tool function for __xpathJoin()
         """Convert LDML's [@name='value'] to our [name=value] form."""
         for it in seq:
             # First dismember it:
-            attrs = it.split('[')
-            tag = attrs.pop(0)
+            attrs: list[str] = it.split('[')
+            tag: str = attrs.pop(0)
             if not attrs: # Short-cut the easy case:
                 yield it
                 continue
@@ -752,7 +760,7 @@ class LocaleScanner (object):
             yield '['.join(attrs)
 
     @classmethod
-    def __xpathJoin(cls, head, insert, tail):
+    def __xpathJoin(cls, head: list[str], insert: list[str], tail: list[str]) -> list[str]:
         """Join three lists of XPath selectors.
 
         Each of head, insert and tail is a sequence of selectors but
