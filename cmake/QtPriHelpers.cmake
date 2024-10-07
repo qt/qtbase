@@ -57,10 +57,34 @@ function(qt_generate_qmake_libraries_pri_content module_name output_root_dir out
                 list(APPEND lib_incdir "${target_include_dir}")
                 list(APPEND lib_defines "$<TARGET_PROPERTY:${lib_target},INTERFACE_COMPILE_DEFINITIONS>")
             else()
-                if(lib_target MATCHES "/([^/]+).framework$")
+                # Strip any directory scope tokens.
+                __qt_internal_strip_target_directory_scope_token("${lib_target}" lib_target)
+
+                # Skip CMAKE_DIRECTORY_ID_SEP. If a target_link_libraries is applied to a target
+                # that was defined in a different scope, CMake appends and prepends a special
+                # directory id separator. Filter those out.
+                if(lib_target MATCHES "^::@")
+                    continue()
+
+                elseif(lib_target MATCHES "^\\$<TARGET_OBJECTS:")
+                    # Skip object files.
+                    continue()
+
+                elseif(lib_target MATCHES "/([^/]+).framework$")
+                    # Handle frameworks
                     list(APPEND lib_libs "-framework ${CMAKE_MATCH_1}")
+
+                elseif(lib_target MATCHES "^\\$<LINK_ONLY:(.*)>$")
+                    # Extract value of LINK_ONLY genex, because it can't be used in file(GENERATE)
+                    set(lib_target "${CMAKE_MATCH_1}")
+                    if(lib_target)
+                        list(PREPEND lib_targets ${lib_target})
+                    endif()
                 else()
-                    list(APPEND lib_libs "${lib_target}")
+                    # Regular library name, library path, or -lfoo-like flag. Check for emptiness.
+                    if(lib_target)
+                        list(APPEND lib_libs "${lib_target}")
+                    endif()
                 endif()
             endif()
         endwhile()
