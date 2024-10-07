@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.net.Uri;
@@ -29,6 +30,7 @@ public class QtActivityBase extends Activity
     private String m_applicationParams = "";
     private boolean m_isCustomThemeSet = false;
     private boolean m_retainNonConfigurationInstance = false;
+    private Configuration m_prevConfig;
 
     private QtActivityDelegate m_delegate;
 
@@ -122,6 +124,8 @@ public class QtActivityBase extends Activity
             e.printStackTrace();
             showErrorDialog();
         }
+
+        m_prevConfig = new Configuration(getResources().getConfiguration());
     }
 
     @Override
@@ -183,6 +187,12 @@ public class QtActivityBase extends Activity
     {
         super.onConfigurationChanged(newConfig);
         m_delegate.handleUiModeChange(newConfig.uiMode & Configuration.UI_MODE_NIGHT_MASK);
+
+        int diff = newConfig.diff(m_prevConfig);
+        if ((diff & ActivityInfo.CONFIG_LOCALE) != 0)
+            QtNative.updateLocale();
+
+        m_prevConfig = new Configuration(newConfig);
     }
 
     @Override

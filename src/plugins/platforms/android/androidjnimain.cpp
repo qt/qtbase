@@ -633,6 +633,12 @@ static void updateApplicationState(JNIEnv */*env*/, jobject /*thiz*/, jint state
     }
 }
 
+static void updateLocale(JNIEnv */*env*/, jobject /*thiz*/)
+{
+    QCoreApplication::postEvent(QCoreApplication::instance(), new QEvent(QEvent::LocaleChange));
+    QCoreApplication::postEvent(QCoreApplication::instance(), new QEvent(QEvent::LanguageChange));
+}
+
 static void handleOrientationChanged(JNIEnv */*env*/, jobject /*thiz*/, jint newRotation, jint nativeOrientation)
 {
     // Array of orientations rotated in 90 degree increments, counterclockwise
@@ -736,7 +742,8 @@ static JNINativeMethod methods[] = {
     { "updateApplicationState", "(I)V", (void *)updateApplicationState },
     { "onActivityResult", "(IILandroid/content/Intent;)V", (void *)onActivityResult },
     { "onNewIntent", "(Landroid/content/Intent;)V", (void *)onNewIntent },
-    { "onBind", "(Landroid/content/Intent;)Landroid/os/IBinder;", (void *)onBind }
+    { "onBind", "(Landroid/content/Intent;)Landroid/os/IBinder;", (void *)onBind },
+    { "updateLocale", "()V", (void *)updateLocale },
 };
 
 #define FIND_AND_CHECK_CLASS(CLASS_NAME) \

@@ -435,6 +435,7 @@ public class QtNative
 
     // application methods
     static native void updateApplicationState(int state);
+    static native void updateLocale();
 
     // menu methods
     static native boolean onPrepareOptionsMenu(Menu menu);
