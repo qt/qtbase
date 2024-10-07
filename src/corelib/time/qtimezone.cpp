@@ -928,12 +928,19 @@ QString QTimeZone::comment() const
     The name returned is the one for the given \a locale, applicable at the
     given \a atDateTime, and of the form indicated by \a nameType. The display
     name may change depending on DST or historical events.
+//! [display-name-caveats]
+    If no suitably localized name of the given type is available, another name
+    type may be used, or an empty string may be returned.
 
     If the \a locale is not provided, then the application default locale will
     be used. For custom timezones created by client code, the data supplied to
     the constructor are used, as no localization data will be available for it.
+    If this timezone is invalid, an empty string is returned. This may also
+    arise for the representation of local time if determining the system time
+    zone fails.
 
     This method is only available when feature \c timezone is enabled.
+//! [display-name-caveats]
 
     \sa abbreviation()
 */
@@ -967,12 +974,7 @@ QString QTimeZone::displayName(const QDateTime &atDateTime, NameType nameType,
     given \a timeType is in effect and of the form indicated by \a nameType.
     Where the time zone display names have changed over time, the current names
     will be used.
-
-    If the \a locale is not provided, then the application default locale will
-    be used. For custom timezones created by client code, the data supplied to
-    the constructor are used, as no localization data will be available for it.
-
-    This method is only available when feature \c timezone is enabled.
+    \include qtimezone.cpp display-name-caveats
 
     \sa abbreviation()
 */
