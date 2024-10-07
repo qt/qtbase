@@ -1085,8 +1085,10 @@ void tst_QGraphicsWidget::initStyleOption()
     }
     QFETCH(bool, underMouse);
     if (underMouse) {
-        QCursor::setPos(view.viewport()->mapToGlobal(view.mapFromScene(widget->mapToScene(widget->boundingRect().center()))));
-        QTest::qWait(100);
+        const auto pos = view.viewport()->mapToGlobal(view.mapFromScene(widget->mapToScene(widget->boundingRect().center())));
+        QCursor::setPos(pos);
+        if (!QTest::qWaitFor([pos]{ return QCursor::pos() == pos; }))
+            QSKIP("Cannot move cursor");
     }
 
     QFETCH(QPalette, palette);
