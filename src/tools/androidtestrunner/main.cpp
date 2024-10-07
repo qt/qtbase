@@ -157,7 +157,7 @@ static bool execCommand(const QString &program, const QStringList &args,
     const auto command = program + " "_L1 + args.join(u' ');
 
     if (verbose && g_options.verbose)
-        qDebug("Execute %s.", command.toUtf8().constData());
+        fprintf(stdout,"Execute %s.\n", command.toUtf8().constData());
 
     QProcess process;
     process.start(program, args);
@@ -179,7 +179,7 @@ static bool execCommand(const QString &program, const QStringList &args,
         output->append(stdOut);
 
     if (verbose && g_options.verbose)
-        qDebug() << stdOut.constData();
+        fprintf(stdout, "%s\n", stdOut.constData());
 
     return process.exitCode() == 0;
 }
@@ -536,7 +536,7 @@ static bool pullFiles()
         auto checkerIt = g_options.checkFiles.find(outSuffix);
         ret &= (checkerIt != g_options.checkFiles.end() && checkerIt.value()(output));
         if (it.value() == "-"_L1) {
-            qDebug() << output.constData();
+            fprintf(stdout, "%s\n", output.constData());
         } else {
             QFile out{it.value()};
             if (!out.open(QIODevice::WriteOnly))
