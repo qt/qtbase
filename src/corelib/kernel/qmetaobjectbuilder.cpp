@@ -1250,8 +1250,8 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
 
     // Output the methods in the class.
     Q_ASSERT(!buf || dataIndex == pmeta->methodData);
-    // + 1 for metatype of this metaobject
-    int parameterMetaTypesIndex = int(d->properties.size()) + 1;
+    // property count + enum count  + 1 for metatype of this metaobject
+    int parameterMetaTypesIndex = int(d->properties.size()) + int(d->enumerators.size()) + 1;
     for (const auto &method : d->methods) {
         [[maybe_unused]] int name = strings.enter(method.name());
         int argc = method.parameterCount();
@@ -1409,12 +1409,19 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     }
 
     ALIGN(size, QtPrivate::QMetaTypeInterface *);
-    auto types = reinterpret_cast<QtPrivate::QMetaTypeInterface **>(buf + size);
+    auto types = reinterpret_cast<const QtPrivate::QMetaTypeInterface **>(buf + size);
     if constexpr (mode == Construct) {
         meta->d.metaTypes = types;
         for (const auto &prop : d->properties) {
             QMetaType mt = prop.metaType;
-            *types = reinterpret_cast<QtPrivate::QMetaTypeInterface *&>(mt);
+            *types = mt.iface();
+            types++;
+        }
+        // add metatypes for enumerators
+        for (const auto &enumerator: d->enumerators) {
+            QMetaType mt = enumerator.metaType;
+            mt.registerType();
+            *types = mt.iface();
             types++;
         }
         // add metatype interface for this metaobject - must be null
@@ -1427,14 +1434,14 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
             types++;
             for (const auto &parameterType: method.parameterTypes()) {
                 QMetaType mt = QMetaType::fromName(parameterType);
-                *types = reinterpret_cast<QtPrivate::QMetaTypeInterface *&>(mt);
+                *types = mt.iface();
                 types++;
             }
         }
         for (const auto &constructor : d->constructors) {
             for (const auto &parameterType : constructor.parameterTypes()) {
                 QMetaType mt = QMetaType::fromName(parameterType);
-                *types = reinterpret_cast<QtPrivate::QMetaTypeInterface *&>(mt);
+                *types = mt.iface();
                 types++;
             }
         }

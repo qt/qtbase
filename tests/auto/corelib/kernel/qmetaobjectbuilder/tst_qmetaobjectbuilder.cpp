@@ -39,6 +39,7 @@ private slots:
     void classNameFirstInStringData();
 
     void propertyMetaType();
+    void enumCloning();
 
     void cleanupTestCase();
 
@@ -1655,6 +1656,25 @@ void tst_QMetaObjectBuilder::propertyMetaType()
     QCOMPARE(metaProp.typeId(), metaId);
     QCOMPARE(metaProp.metaType(), meta);
     free(mo);
+}
+
+void tst_QMetaObjectBuilder::enumCloning()
+{
+    QMetaObjectBuilder builder(&SomethingOfEverything::staticMetaObject);
+    auto smo = SomethingOfEverything::staticMetaObject;
+    auto mo = builder.toMetaObject();
+    auto cleanup = qScopeGuard([&]() { free(mo); });
+    QCOMPARE_EQ(mo->enumeratorCount(), smo.enumeratorCount());
+    for (int enumIndex = 0; enumIndex <  smo.enumeratorCount(); ++enumIndex) {
+        QMetaEnum metaEnumFromBuilder = mo->enumerator(enumIndex);
+        QMetaEnum originalMetaEnum = smo.enumerator(enumIndex);
+        QCOMPARE_EQ(metaEnumFromBuilder.metaType(), originalMetaEnum.metaType());
+        QCOMPARE_EQ(metaEnumFromBuilder.keyCount(), originalMetaEnum.keyCount());
+        for (int k = 0; k < originalMetaEnum.keyCount(); ++k) {
+            QCOMPARE_EQ(QByteArrayView(metaEnumFromBuilder.key(k)), QByteArrayView(originalMetaEnum.key(k)));
+            QCOMPARE_EQ(metaEnumFromBuilder.value(k), originalMetaEnum.value(k));
+        }
+    }
 }
 
 void tst_QMetaObjectBuilder::ownMetaTypeNoProperties()
