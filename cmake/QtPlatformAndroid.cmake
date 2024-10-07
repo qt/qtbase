@@ -187,7 +187,7 @@ define_property(TARGET
 )
 
 # Returns test execution arguments for Android targets
-function(qt_internal_android_test_arguments target timeout out_test_runner out_test_arguments)
+function(qt_internal_android_test_runner_arguments target out_test_runner out_test_arguments)
     set(${out_test_runner} "${QT_HOST_PATH}/${QT${PROJECT_VERSION_MAJOR}_HOST_INFO_BINDIR}/androidtestrunner" PARENT_SCOPE)
     set(deployment_tool "${QT_HOST_PATH}/${QT${PROJECT_VERSION_MAJOR}_HOST_INFO_BINDIR}/androiddeployqt")
 
@@ -196,21 +196,14 @@ function(qt_internal_android_test_arguments target timeout out_test_runner out_t
         message(FATAL_ERROR "Target ${target} is not a valid android executable target\n")
     endif()
 
-    set(target_binary_dir "$<TARGET_PROPERTY:${target},BINARY_DIR>")
-    if(QT_USE_TARGET_ANDROID_BUILD_DIR)
-        set(apk_dir "${target_binary_dir}/android-build-${target}")
-    else()
-        set(apk_dir "${target_binary_dir}/android-build")
-    endif()
+    qt_internal_android_get_target_android_build_dir(${target} android_build_dir)
     set(${out_test_arguments}
-        "--path" "${apk_dir}"
+        "--path" "${android_build_dir}"
         "--adb" "${ANDROID_SDK_ROOT}/platform-tools/adb"
         "--skip-install-root"
         "--make" "\"${CMAKE_COMMAND}\" --build ${CMAKE_BINARY_DIR} --target ${target}_make_apk"
-        "--apk" "${apk_dir}/${target}.apk"
+        "--apk" "${android_build_dir}/${target}.apk"
         "--ndk-stack" "${ANDROID_NDK_ROOT}/ndk-stack"
-        "--timeout" "${timeout}"
-        "--verbose"
         PARENT_SCOPE
     )
 endfunction()

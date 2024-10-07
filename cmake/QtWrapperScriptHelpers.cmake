@@ -235,6 +235,10 @@ export CMAKE_GENERATOR=Xcode
 
     qt_internal_create_qt_configure_part_wrapper_script("STANDALONE_TESTS")
     qt_internal_create_qt_configure_part_wrapper_script("STANDALONE_EXAMPLES")
+
+    if(NOT CMAKE_CROSSCOMPILING)
+        qt_internal_create_qt_android_runner_wrapper_script()
+    endif()
 endfunction()
 
 function(qt_internal_create_qt_configure_part_wrapper_script component)
@@ -375,4 +379,10 @@ function(qt_internal_create_qt_configure_redo_script)
     configure_file("${input_script_path}" "${output_path}" @ONLY NEWLINE_STYLE ${newline_style})
 
     set_property(GLOBAL PROPERTY _qt_configure_redo_script_created TRUE)
+endfunction()
+
+function(qt_internal_create_qt_android_runner_wrapper_script)
+    qt_path_join(android_runner_destination "${QT_INSTALL_DIR}" "${INSTALL_LIBEXECDIR}")
+    qt_path_join(android_runner "${CMAKE_CURRENT_SOURCE_DIR}" "libexec" "qt-android-runner.py")
+    qt_copy_or_install(PROGRAMS "${android_runner}" DESTINATION "${android_runner_destination}")
 endfunction()

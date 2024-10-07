@@ -31,6 +31,12 @@ function(qt_internal_add_executable name)
 
     _qt_internal_create_executable(${name})
     qt_internal_mark_as_internal_target(${name})
+
+    set_target_properties(${name} PROPERTIES
+        _qt_is_test_executable ${arg_QT_TEST}
+        _qt_is_manual_test ${arg_QT_MANUAL_TEST}
+    )
+
     if(ANDROID)
         _qt_internal_android_executable_finalizer(${name})
     endif()

@@ -444,6 +444,8 @@ macro(qt_internal_setup_default_target_function_options)
         DELAY_RC
         DELAY_TARGET_INFO
         QT_APP
+        QT_TEST
+        QT_MANUAL_TEST
         NO_UNITY_BUILD
         ${__qt_internal_sbom_optional_args}
     )

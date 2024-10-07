@@ -1672,6 +1672,79 @@ function(_qt_internal_android_executable_finalizer target)
     _qt_internal_configure_android_multiabi_target("${target}")
     qt6_android_generate_deployment_settings("${target}")
     qt6_android_add_apk_target("${target}")
+    _qt_internal_android_create_runner_wrapper("${target}")
+endfunction()
+
+# Generates an Android app runner script for target
+function(_qt_internal_android_create_runner_wrapper target)
+    get_target_property(is_test ${target} _qt_is_test_executable)
+    get_target_property(is_manual_test ${target} _qt_is_manual_test)
+    if(is_test AND NOT is_manual_test)
+        qt_internal_android_test_runner_arguments("${target}" tool_path arguments)
+    else()
+        qt_internal_android_app_runner_arguments("${target}" tool_path arguments)
+    endif()
+
+    set(args_splitter "")
+    if(CMAKE_HOST_WIN32)
+        set(args_splitter "^")
+    else()
+        set(args_splitter "\\")
+    endif()
+
+    list(PREPEND arguments "${tool_path}")
+    set(formatted_command "")
+    # format args in pairs and or single args over multiple lines with indentation
+    foreach(item IN LISTS arguments)
+        if(formatted_command STREQUAL "")
+            set(formatted_command "${item}")
+        elseif(item MATCHES "^--.*")
+            set(formatted_command "${formatted_command} ${args_splitter}\n    ${item}")
+        else()
+            set(formatted_command "${formatted_command} \"${item}\"")
+        endif()
+    endforeach()
+
+    get_target_property(target_binary_dir ${target} BINARY_DIR)
+
+    if(CMAKE_HOST_WIN32)
+        set(script_content "${formatted_command} ${args_splitter}\n    %*\n")
+        set(wrapper_path "${target_binary_dir}/${target}.bat")
+    else()
+        set(script_content "#!/bin/sh\n\n${formatted_command} ${args_splitter}\n    $@\n")
+        set(wrapper_path "${target_binary_dir}/${target}")
+    endif()
+
+    set(template_file "${__qt_core_macros_module_base_dir}/Qt6CoreConfigureFileTemplate.in")
+    set(qt_core_configure_file_contents "${script_content}")
+    configure_file("${template_file}" "${wrapper_path}")
+
+    if(CMAKE_HOST_UNIX)
+        execute_process(COMMAND chmod +x ${wrapper_path})
+    endif()
+endfunction()
+
+# Get the android runner script path and its arguments for a target
+function(qt_internal_android_app_runner_arguments target out_runner_path out_arguments)
+    set(runner_dir "${QT_HOST_PATH}/${QT6_HOST_INFO_LIBEXECDIR}")
+    set(${out_runner_path} "${runner_dir}/qt-android-runner.py" PARENT_SCOPE)
+
+    qt_internal_android_get_target_android_build_dir(${target} android_build_dir)
+    set(${out_arguments}
+        "--adb" "${ANDROID_SDK_ROOT}/platform-tools/adb"
+        "--build-path" "${android_build_dir}"
+        "--apk" "${android_build_dir}/${target}.apk"
+        PARENT_SCOPE
+    )
+endfunction()
+
+function(qt_internal_android_get_target_android_build_dir target out_build_dir)
+    get_target_property(target_binary_dir ${target} BINARY_DIR)
+    if(QT_USE_TARGET_ANDROID_BUILD_DIR)
+        set(${out_build_dir} "${target_binary_dir}/android-build-${target}" PARENT_SCOPE)
+    else()
+        set(${out_build_dir} "${target_binary_dir}/android-build" PARENT_SCOPE)
+    endif()
 endfunction()
 
 function(_qt_internal_expose_android_package_source_dir_to_ide target)
