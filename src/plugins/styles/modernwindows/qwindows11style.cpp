@@ -953,7 +953,7 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
     case QStyle::PE_FrameMenu:
         break;
     case PE_PanelMenu: {
-        const QRect rect = option->rect.marginsRemoved(QMargins(2, 2, 12, 2));
+        const QRect rect = option->rect.marginsRemoved(QMargins(2, 2, 2, 2));
         QPen pen(WINUI3Colors[colorSchemeIndex][frameColorLight]);
         painter->save();
         painter->setPen(pen);
@@ -2005,10 +2005,6 @@ QSize QWindows11Style::sizeFromContents(ContentsType type, const QStyleOption *o
 
     switch (type) {
 
-    case CT_Menu:
-        contentSize += QSize(10, 0);
-        break;
-
 #if QT_CONFIG(menubar)
     case CT_MenuBarItem:
         if (!contentSize.isEmpty()) {
@@ -2020,6 +2016,44 @@ QSize QWindows11Style::sizeFromContents(ContentsType type, const QStyleOption *o
         }
         break;
 #endif
+#if QT_CONFIG(menu)
+    case CT_MenuItem:
+        if (const auto *menuItem = qstyleoption_cast<const QStyleOptionMenuItem *>(option)) {
+            const int checkcol = qMax<int>(menuItem->maxIconWidth, 32);
+            int width = size.width();
+            int height;
+            if (menuItem->menuItemType == QStyleOptionMenuItem::Separator) {
+                width = 10;
+                height = 6;
+            } else {
+                height = menuItem->fontMetrics.height() + 8;
+                if (!menuItem->icon.isNull()) {
+                    int iconExtent = proxy()->pixelMetric(PM_SmallIconSize, option, widget);
+                    height = qMax(height,
+                                  menuItem->icon.actualSize(QSize(iconExtent, iconExtent)).height() + 4);
+                }
+            }
+            if (menuItem->text.contains(u'\t'))
+                width += menuItem->reservedShortcutWidth;
+            else if (menuItem->menuItemType == QStyleOptionMenuItem::SubMenu)
+                width += 2 * QWindowsStylePrivate::windowsArrowHMargin;
+            else if (menuItem->menuItemType == QStyleOptionMenuItem::DefaultItem) {
+                const QFontMetrics fm(menuItem->font);
+                QFont fontBold = menuItem->font;
+                fontBold.setBold(true);
+                const QFontMetrics fmBold(fontBold);
+                width += fmBold.horizontalAdvance(menuItem->text) - fm.horizontalAdvance(menuItem->text);
+            }
+            width += checkcol;
+            width += 2 * QWindowsStylePrivate::windowsItemFrame;
+             if (!menuItem->text.isEmpty()) {
+                width += QWindowsStylePrivate::windowsItemHMargin;
+                width += QWindowsStylePrivate::windowsRightBorder;
+            }
+            contentSize = QSize(width, height);
+        }
+        break;
+#endif // QT_CONFIG(menu)
     case QStyle::CT_SpinBox: {
         if (const auto *spinBoxOpt = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
             // Add button + frame widths
@@ -2087,6 +2121,9 @@ int QWindows11Style::pixelMetric(PixelMetric metric, const QStyleOption *option,
         break;
     case QStyle::PM_ScrollBarExtent:
         res = 12;
+        break;
+    case QStyle::PM_SubMenuOverlap:
+        res = -1;
         break;
     default:
         res = QWindowsVistaStyle::pixelMetric(metric, option, widget);
