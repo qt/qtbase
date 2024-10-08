@@ -9,15 +9,20 @@ from distutils.version import LooseVersion
 
 MODULE_NAME = 'qt'
 
+debug = print if 'QT_LLDB_SUMMARY_PROVIDER_DEBUG' in os.environ \
+    else lambda *a, **k: None
+
 def import_bridge(path, debugger, session_dict, reload_module=False):
     if not reload_module and MODULE_NAME in sys.modules:
         del sys.modules[MODULE_NAME]
 
     if sys.version_info[0] >= 3:
         sys.path.append(os.path.dirname(path))
+    debug(f"Loading source of Qt Creator bridge from '{path}'")
     bridge = imp.load_source(MODULE_NAME, path)
 
     if not hasattr(bridge, '__lldb_init_module'):
+        print("Could not find '__lldb_init_module'. Ignoring.")
         return None
 
     # Make available for the current LLDB session, so that LLDB
@@ -25,13 +30,16 @@ def import_bridge(path, debugger, session_dict, reload_module=False):
     session_dict[MODULE_NAME] = bridge
 
     # Initialize the module now that it's available globally
+    debug(f"Initializing Qt Creator bridge by calling __lldb_init_module(): {bridge}")
     bridge.__lldb_init_module(debugger, session_dict)
 
     if not debugger.GetCategory('Qt'):
+        debug("Could not find Qt debugger category. Qt Creator summary providers not loaded.")
         # Summary provider failed for some reason
         del session_dict[MODULE_NAME]
         return None
 
+    debug("Bridge loaded successfully")
     return bridge
 
 def __lldb_init_module(debugger, session_dict):
@@ -40,11 +48,15 @@ def __lldb_init_module(debugger, session_dict):
     # LLDB process invocation, while still reloading for each session.
     if MODULE_NAME in sys.modules:
         module = sys.modules[MODULE_NAME]
+        debug(f"Module '{module.__file__}' already imported. Reloading for this session.")
         # Reload module for this sessions
         bridge = import_bridge(module.__file__, debugger, session_dict,
             reload_module = True)
         if bridge:
+            debug("Qt summary providers successfully reloaded.")
             return
+        else:
+            print("Bridge reload failed. Trying to find other Qt Creator bridges.")
 
     versions = {}
     for path in os.popen('mdfind kMDItemCFBundleIdentifier=org.qt-project.qtcreator'):
@@ -72,8 +84,14 @@ def __lldb_init_module(debugger, session_dict):
 
     for version in sorted(versions, key=LooseVersion, reverse=True):
         path = versions[version]
-        print(f"Loading Qt summary providers from Creator {version} in '{path}'")
+        debug(f"Loading Qt summary providers from Creator Qt {version} in '{path}'")
         bridge_path = '{}/Contents/Resources/debugger/lldbbridge.py'.format(path)
         bridge = import_bridge(bridge_path, debugger, session_dict)
         if bridge:
+            debug(f"Qt summary providers successfully loaded.")
             return
+
+    if 'QT_LLDB_SUMMARY_PROVIDER_DEBUG' not in os.environ:
+        print("Could not find any valid Qt Creator bridges with summary providers. "
+              "Launch lldb or Qt Creator with the QT_LLDB_SUMMARY_PROVIDER_DEBUG environment "
+              "variable to debug.")
