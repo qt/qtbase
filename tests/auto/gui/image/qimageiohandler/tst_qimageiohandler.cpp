@@ -89,7 +89,7 @@ void tst_QImageIOHandler::pluginRead_data()
 
     QTest::newRow("testplugin") << "green" << "foo" << QStringList({ "formatname-matched" });
     QTest::newRow("overridden-builtin") << "red" << "png" << QStringList({ "formatname-matched" });
-    QTest::newRow("builtin") << "black" << "bmp" << QStringList({ "formatname-unmatched" }); //### Should be null
+    QTest::newRow("builtin") << "black" << "bmp" << QStringList();
     QTest::newRow("no-suffix") << "blue" << "" << QStringList({ "contents-matched" });
     QTest::newRow("wrong-suffix") << "yellow" << "jpg" << QStringList({ "contents-matched" });
     QTest::newRow("unknown-suffix") << "black" << "bar" << QStringList({ "formatname-unmatched", "contents-unmatched" });
