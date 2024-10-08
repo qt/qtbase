@@ -274,17 +274,22 @@ bool QHttp2Stream::sendRST_STREAM(Http2::Http2Error errorCode)
     This function will send as many DATA frames as needed to send all the data
     from \a payload. If \a endStream is \c true, the END_STREAM flag will be
     set.
+
+    Returns \c{true} if we were able to \e{start} writing to the socket,
+    false otherwise.
+    Note that even though we started writing, the socket may error out before
+    this function returns. Call state() for the new status.
 */
-void QHttp2Stream::sendDATA(const QByteArray &payload, bool endStream)
+bool QHttp2Stream::sendDATA(const QByteArray &payload, bool endStream)
 {
     Q_ASSERT(!m_uploadByteDevice);
     if (m_state != State::Open && m_state != State::HalfClosedRemote)
-        return;
+        return false;
 
     auto *byteDevice = QNonContiguousByteDeviceFactory::create(payload);
     m_owningByteDevice = true;
     byteDevice->setParent(this);
-    sendDATA(byteDevice, endStream);
+    return sendDATA(byteDevice, endStream);
 }
 
 /*!
@@ -296,8 +301,13 @@ void QHttp2Stream::sendDATA(const QByteArray &payload, bool endStream)
     \a device must stay alive for the duration of the upload.
     A way of doing this is to heap-allocate the \a device and parent it to the
     QHttp2Stream.
+
+    Returns \c{true} if we were able to \e{start} writing to the socket,
+    false otherwise.
+    Note that even though we started writing, the socket may error out before
+    this function returns. Call state() for the new status.
 */
-void QHttp2Stream::sendDATA(QIODevice *device, bool endStream)
+bool QHttp2Stream::sendDATA(QIODevice *device, bool endStream)
 {
     Q_ASSERT(!m_uploadDevice);
     Q_ASSERT(!m_uploadByteDevice);
@@ -306,7 +316,7 @@ void QHttp2Stream::sendDATA(QIODevice *device, bool endStream)
         qCWarning(qHttp2ConnectionLog, "[%p] attempt to sendDATA on closed stream %u, "
                                        "of device: %p.",
                   getConnection(), m_streamID, device);
-        return;
+        return false;
     }
 
     qCDebug(qHttp2ConnectionLog, "[%p] starting sendDATA on stream %u, of device: %p",
@@ -315,7 +325,7 @@ void QHttp2Stream::sendDATA(QIODevice *device, bool endStream)
     m_owningByteDevice = true;
     byteDevice->setParent(this);
     m_uploadDevice = device;
-    sendDATA(byteDevice, endStream);
+    return sendDATA(byteDevice, endStream);
 }
 
 /*!
@@ -327,8 +337,13 @@ void QHttp2Stream::sendDATA(QIODevice *device, bool endStream)
     \a device must stay alive for the duration of the upload.
     A way of doing this is to heap-allocate the \a device and parent it to the
     QHttp2Stream.
+
+    Returns \c{true} if we were able to \e{start} writing to the socket,
+    false otherwise.
+    Note that even though we started writing, the socket may error out before
+    this function returns. Call state() for the new status.
 */
-void QHttp2Stream::sendDATA(QNonContiguousByteDevice *device, bool endStream)
+bool QHttp2Stream::sendDATA(QNonContiguousByteDevice *device, bool endStream)
 {
     Q_ASSERT(!m_uploadByteDevice);
     Q_ASSERT(device);
@@ -336,7 +351,7 @@ void QHttp2Stream::sendDATA(QNonContiguousByteDevice *device, bool endStream)
         qCWarning(qHttp2ConnectionLog, "[%p] attempt to sendDATA on closed stream %u, "
                                        "of device: %p.",
                   getConnection(), m_streamID, device);
-        return;
+        return false;
     }
 
     qCDebug(qHttp2ConnectionLog, "[%p] starting sendDATA on stream %u, of device: %p",
@@ -348,6 +363,9 @@ void QHttp2Stream::sendDATA(QNonContiguousByteDevice *device, bool endStream)
     connect(m_uploadByteDevice, &QObject::destroyed, this, &QHttp2Stream::uploadDeviceDestroyed);
 
     internalSendDATA();
+    // There is no early-out in internalSendDATA so if we reach this spot we
+    // have at least started to send something, even if it errors out.
+    return true;
 }
 
 void QHttp2Stream::internalSendDATA()
