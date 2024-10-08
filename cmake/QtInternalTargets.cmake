@@ -389,6 +389,13 @@ function(qt_internal_add_exceptions_flags)
             # this hack since some unknown MSVC version.
             set(enable_flag "${enable_flag}" "/d2FH4")
         endif()
+    elseif(WASM)
+        # Use native WebAssembly exceptions if enabled
+        if(QT_FEATURE_wasm_exceptions)
+            set(enable_flag "-fwasm-exceptions")
+        else()
+            set(enable_flag "-fexceptions")
+        endif()
     else()
         set(enable_flag "-fexceptions")
     endif()
