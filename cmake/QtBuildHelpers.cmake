@@ -294,6 +294,7 @@ function(qt_internal_get_qt_build_public_helpers out_var)
         QtPublicTestHelpers
         QtPublicToolHelpers
         QtPublicWalkLibsHelpers
+        QtPublicWindowsHelpers
         PARENT_SCOPE
     )
 endfunction()
