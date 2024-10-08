@@ -370,6 +370,12 @@ qt_config_compile_test_x86simd(avx512vbmi2 "AVX512VBMI2")
 # x86: vaes
 qt_config_compile_test_x86simd(vaes "VAES")
 
+# arm: crypto
+qt_config_compile_test_armintrin(crypto "CRYPTO")
+
+# arm: sve
+qt_config_compile_test_armintrin(sve "SVE")
+
 # localtime_r
 qt_config_compile_test(localtime_r
     LABEL "localtime_r()"
@@ -923,7 +929,7 @@ qt_feature_definition("arm_crc32" "QT_COMPILER_SUPPORTS_CRC32" VALUE "1")
 qt_feature_config("arm_crc32" QMAKE_PRIVATE_CONFIG)
 qt_feature("arm_crypto" PRIVATE
     LABEL "AES"
-    CONDITION ( ( TEST_architecture_arch STREQUAL arm ) OR ( TEST_architecture_arch STREQUAL arm64 ) ) AND TEST_arch_${TEST_architecture_arch}_subarch_crypto
+    CONDITION ( ( TEST_architecture_arch STREQUAL arm ) OR ( TEST_architecture_arch STREQUAL arm64 ) ) AND ( TEST_arch_${TEST_architecture_arch}_subarch_crypto OR TEST_subarch_crypto )
 )
 qt_feature_definition("arm_crypto" "QT_COMPILER_SUPPORTS_CRYPTO" VALUE "1")
 qt_feature_definition("arm_crypto" "QT_COMPILER_SUPPORTS_AES" VALUE "1")
@@ -931,7 +937,7 @@ qt_feature_config("arm_crypto" QMAKE_PRIVATE_CONFIG)
 
 qt_feature("arm_sve" PRIVATE
     LABEL "SVE"
-    CONDITION ( TEST_architecture_arch STREQUAL arm64 ) AND TEST_arch_${TEST_architecture_arch}_subarch_sve
+    CONDITION ( TEST_architecture_arch STREQUAL arm64 ) AND ( TEST_arch_${TEST_architecture_arch}_subarch_sve OR TEST_subarch_sve )
 )
 qt_feature_definition("arm_sve" "QT_COMPILER_SUPPORTS_SVE" VALUE "1")
 qt_feature_config("arm_sve" QMAKE_PRIVATE_CONFIG)
@@ -1291,7 +1297,7 @@ qt_configure_add_summary_entry(
 )
 qt_configure_add_summary_entry(
     TYPE "featureList"
-    ARGS "neon arm_crc32 arm_crypto"
+    ARGS "neon arm_crc32 arm_crypto arm_sve"
     MESSAGE "ARM Extensions"
     CONDITION ( TEST_architecture_arch STREQUAL arm ) OR ( TEST_architecture_arch STREQUAL arm64 )
 )

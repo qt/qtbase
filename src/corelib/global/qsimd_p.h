@@ -99,7 +99,7 @@ QT_WARNING_DISABLE_INTEL(103)
 
 #define QT_COMPILER_SUPPORTS(x)     (QT_COMPILER_SUPPORTS_ ## x - 0)
 
-#if defined(Q_PROCESSOR_ARM)
+#if defined(Q_PROCESSOR_ARM_64)
 #  define QT_COMPILER_SUPPORTS_HERE(x)    ((__ARM_FEATURE_ ## x) || (__ ## x ## __) || QT_COMPILER_SUPPORTS(x))
 #  if defined(Q_CC_GNU)
      /* GCC requires attributes for a function */
@@ -107,6 +107,10 @@ QT_WARNING_DISABLE_INTEL(103)
 #  else
 #    define QT_FUNCTION_TARGET(x)
 #  endif
+#elif defined(Q_PROCESSOR_ARM_32)
+   /* We do not support for runtime CPU feature switching on ARM32 */
+#  define QT_COMPILER_SUPPORTS_HERE(x)    ((__ARM_FEATURE_ ## x) || (__ ## x ## __))
+#  define QT_FUNCTION_TARGET(x)
 #elif defined(Q_PROCESSOR_MIPS)
 #  define QT_COMPILER_SUPPORTS_HERE(x)    (__ ## x ## __)
 #  define QT_FUNCTION_TARGET(x)
@@ -345,7 +349,7 @@ inline uint32x4_t qvsetq_n_u32(uint32_t a, uint32_t b, uint32_t c, uint32_t d)
 
 #if defined(Q_PROCESSOR_ARM_64)
 #if defined(Q_CC_CLANG)
-#define QT_FUNCTION_TARGET_STRING_AES        "crypto"
+#define QT_FUNCTION_TARGET_STRING_AES        "aes"
 #define QT_FUNCTION_TARGET_STRING_CRC32      "crc"
 #define QT_FUNCTION_TARGET_STRING_SVE        "sve"
 #elif defined(Q_CC_GNU)
@@ -395,7 +399,7 @@ static const uint64_t qCompilerCpuFeatures = 0
 #if defined __ARM_FEATURE_CRC32
         | CpuFeatureCRC32
 #endif
-#if defined __ARM_FEATURE_CRYPTO
+#if defined (__ARM_FEATURE_CRYPTO) || defined(__ARM_FEATURE_AES)
         | CpuFeatureAES
 #endif
 #endif // Q_OS_LINUX && Q_PROCESSOR_ARM64
