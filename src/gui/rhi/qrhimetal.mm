@@ -600,7 +600,7 @@ bool QRhiMetal::create(QRhi::Flags flags)
     const QString label = QString::asprintf("Qt capture scope for QRhi %p", this);
     d->captureScope.label = label.toNSString();
 
-#if defined(Q_OS_MACOS)
+#if defined(Q_OS_MACOS) || defined(Q_OS_VISIONOS)
     caps.maxTextureSize = 16384;
     caps.baseVertexAndInstance = true;
     caps.isAppleGPU = [d->dev supportsFamily:MTLGPUFamilyApple7];
