@@ -77,8 +77,7 @@ namespace QTest
                      pos.x(), pos.y(), windowSize.width(), windowSize.height());
         }
 
-        int actualDelay = (delay == -1 || delay < defaultMouseDelay()) ? defaultMouseDelay() : delay;
-        lastMouseTimestamp += qMax(1, actualDelay);
+        int actualDelay = qMax(1, (delay == -1 || delay < defaultMouseDelay()) ? defaultMouseDelay() : delay);
 
         if (pos.isNull())
             pos = QPoint(window->width() / 2, window->height() / 2);
@@ -95,15 +94,18 @@ namespace QTest
         {
         case MouseDClick:
             qtestMouseButtons.setFlag(button, true);
+            lastMouseTimestamp += actualDelay;
             qt_handleMouseEvent(w, pos, global, qtestMouseButtons, button, QEvent::MouseButtonPress,
                                 stateKey, lastMouseTimestamp);
             qtestMouseButtons.setFlag(button, false);
+            lastMouseTimestamp += actualDelay;
             qt_handleMouseEvent(w, pos, global, qtestMouseButtons, button, QEvent::MouseButtonRelease,
                                 stateKey, lastMouseTimestamp);
             Q_FALLTHROUGH();
         case MousePress:
         case MouseClick:
             qtestMouseButtons.setFlag(button, true);
+            lastMouseTimestamp += actualDelay;
             qt_handleMouseEvent(w, pos, global, qtestMouseButtons, button, QEvent::MouseButtonPress,
                                 stateKey, lastMouseTimestamp);
             if (action == MousePress)
@@ -111,12 +113,14 @@ namespace QTest
             Q_FALLTHROUGH();
         case MouseRelease:
             qtestMouseButtons.setFlag(button, false);
+            lastMouseTimestamp += actualDelay;
             qt_handleMouseEvent(w, pos, global, qtestMouseButtons, button, QEvent::MouseButtonRelease,
                                 stateKey, lastMouseTimestamp);
             if (delay == -1)
                 lastMouseTimestamp += mouseDoubleClickInterval; // avoid double clicks being generated
             break;
         case MouseMove:
+            lastMouseTimestamp += actualDelay;
             qt_handleMouseEvent(w, pos, global, qtestMouseButtons, Qt::NoButton, QEvent::MouseMove,
                                 stateKey, lastMouseTimestamp);
             break;

@@ -283,13 +283,15 @@ void tst_Mouse::doubleClick()
     ts = w.lastTimeStamp;
     QTest::mouseClick(&w, Qt::LeftButton, {}, point, 10);
     QCOMPARE_GE(w.lastTimeStamp, ts + 500); // because the last release had a default delay
-    QTest::mouseClick(&w, Qt::LeftButton, {}, point);
+    ts = w.lastTimeStamp;
+    QTest::mouseClick(&w, Qt::LeftButton, {}, point, 10); // 10 ms before press, 10 ms before release
     QCOMPARE(w.doubleClickCount, 2);
+    QCOMPARE(w.lastTimeStamp, ts + 20);
 
     // use the mouseDClick function to generate another double-click
     ts = w.lastTimeStamp;
     QTest::mouseDClick(&w, Qt::LeftButton, {}, point);
-    QCOMPARE_GE(w.lastTimeStamp, ts + 500); // because the last release had a default delay
+    QCOMPARE(w.lastTimeStamp, ts + 4); // 1 ms before each press and release
     QCOMPARE(w.doubleClickCount, 3);
 
     // use the mouseClick function with default delay to avoid double-click
