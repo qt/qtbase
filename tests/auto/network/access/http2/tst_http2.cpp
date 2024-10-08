@@ -276,7 +276,8 @@ void tst_Http2::singleRequest_data()
     }
 
 #if QT_CONFIG(ssl)
-    QTest::addRow("h2-direct") << QNetworkRequest::Http2DirectAttribute << H2Type::h2Direct;
+    if (QSslSocket::supportsSsl())
+        QTest::addRow("h2-direct") << QNetworkRequest::Http2DirectAttribute << H2Type::h2Direct;
 #endif
 }
 
@@ -691,9 +692,11 @@ void tst_Http2::connectToHost_data()
     QTest::addColumn<H2Type>("connectionType");
 
 #if QT_CONFIG(ssl)
-    QTest::addRow("encrypted-h2-direct") << QNetworkRequest::Http2DirectAttribute << H2Type::h2Direct;
-    if (!clearTextHTTP2)
-        QTest::addRow("encrypted-h2-ALPN") << QNetworkRequest::Http2AllowedAttribute << H2Type::h2Alpn;
+    if (QSslSocket::supportsSsl()) {
+        QTest::addRow("encrypted-h2-direct") << QNetworkRequest::Http2DirectAttribute << H2Type::h2Direct;
+        if (!clearTextHTTP2)
+            QTest::addRow("encrypted-h2-ALPN") << QNetworkRequest::Http2AllowedAttribute << H2Type::h2Alpn;
+    }
 #endif // QT_CONFIG(ssl)
     // This works for all configurations, tests 'preconnect-http' scheme:
     // h2 with protocol upgrade is not working for now (the logic is a bit
@@ -726,11 +729,15 @@ void tst_Http2::connectToHost()
     ServerPtr targetServer(newServer(defaultServerSettings, connectionType));
 
 #if QT_CONFIG(ssl)
-    Q_ASSERT(!clearTextHTTP2 || connectionType != H2Type::h2Alpn);
-#else
-    Q_ASSERT(connectionType == H2Type::h2c || connectionType == H2Type::h2cDirect);
-    Q_ASSERT(targetServer->isClearText());
-#endif // QT_CONFIG(ssl)
+    if (QSslSocket::supportsSsl())
+    {
+        Q_ASSERT(!clearTextHTTP2 || connectionType != H2Type::h2Alpn);
+    } else
+#endif
+    {
+        Q_ASSERT(connectionType == H2Type::h2c || connectionType == H2Type::h2cDirect);
+        Q_ASSERT(targetServer->isClearText());
+    }
 
     QMetaObject::invokeMethod(targetServer.data(), "startServer", Qt::QueuedConnection);
     runEventLoop();
@@ -957,8 +964,10 @@ void tst_Http2::moreActivitySignals_data()
                 << QNetworkRequest::Http2AllowedAttribute << H2Type::h2Alpn;
 
 #if QT_CONFIG(ssl)
-    QTest::addRow("h2-direct")
-            << QNetworkRequest::Http2DirectAttribute << H2Type::h2Direct;
+    if (QSslSocket::supportsSsl()) {
+        QTest::addRow("h2-direct")
+                << QNetworkRequest::Http2DirectAttribute << H2Type::h2Direct;
+    }
 #endif
 }
 
@@ -1056,9 +1065,11 @@ void tst_Http2::contentEncoding_data()
                     << QNetworkRequest::Http2AllowedAttribute << H2Type::h2Alpn;
 
 #if QT_CONFIG(ssl)
-        QTest::addRow("%s-h2-direct", name)
-                << data.contentEncoding << data.body << data.expected
-                << QNetworkRequest::Http2DirectAttribute << H2Type::h2Direct;
+        if (QSslSocket::supportsSsl()) {
+            QTest::addRow("%s-h2-direct", name)
+                    << data.contentEncoding << data.body << data.expected
+                    << QNetworkRequest::Http2DirectAttribute << H2Type::h2Direct;
+        }
 #endif
     }
 }
@@ -1529,6 +1540,8 @@ void tst_Http2::abortOnEncrypted()
 #if !QT_CONFIG(ssl)
     QSKIP("TLS support is needed for this test");
 #else
+    if (!QSslSocket::supportsSsl())
+        QSKIP("TLS support is needed for this test");
 
     clearHTTP2State();
     serverPort = 0;
