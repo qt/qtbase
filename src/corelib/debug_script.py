@@ -43,6 +43,12 @@ def import_bridge(path, debugger, session_dict, reload_module=False):
     return bridge
 
 def __lldb_init_module(debugger, session_dict):
+    qtc_env_vars = ['QTC_DEBUGGER_PROCESS', 'QT_CREATOR_LLDB_PROCESS']
+    if any(v in os.environ for v in qtc_env_vars) and \
+        not 'QT_FORCE_LOAD_LLDB_SUMMARY_PROVIDER' in os.environ:
+        debug("Qt Creator lldb bridge not loaded because we're already in a debugging session.")
+        return
+
     # Check if the module has already been imported globally. This ensures
     # that the Qt Creator application search is only performed once per
     # LLDB process invocation, while still reloading for each session.
