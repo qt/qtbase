@@ -950,11 +950,8 @@
 
 /*!
     \fn template <typename T, qsizetype Prealloc> size_t qHash(const QVarLengthArray<T, Prealloc> &key, size_t seed = 0)
-    \relates QVarLengthArray
+    \qhasholdT{QVarLengthArray}{T}
     \since 5.14
-
-    Returns the hash value for \a key, using \a seed to seed the
-    calculation.
 */
 
 /*! \fn template <typename T, qsizetype Prealloc> template <typename AT = T> qsizetype QVarLengthArray<T, Prealloc>::removeAll(const AT &t)

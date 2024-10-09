@@ -996,9 +996,9 @@ QDebug operator<<(QDebug dbg, const QUuid &id)
 #endif
 
 /*!
+    \fn size_t qHash(const QUuid &key, size_t seed)
     \since 5.0
-    \relates QUuid
-    Returns a hash of the UUID \a uuid, using \a seed to seed the calculation.
+    \qhashold{QUuid}
 */
 size_t qHash(const QUuid &uuid, size_t seed) noexcept
 {

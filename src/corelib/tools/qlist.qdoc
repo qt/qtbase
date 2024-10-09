@@ -429,12 +429,7 @@
 /*!
     \fn template <typename T> size_t qHash(const QList<T> &key, size_t seed = 0)
     \since 5.6
-    \relates QList
-
-    Returns the hash value for \a key,
-    using \a seed to seed the calculation.
-
-    This function requires qHash() to be overloaded for the value type \c T.
+    \qhasholdT{QList}{T}
 */
 
 /*! \fn template <typename T> qsizetype QList<T>::size() const

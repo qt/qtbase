@@ -3567,9 +3567,7 @@
 
 /*!
   \fn size_t qHash(QKeyCombination key, size_t seed = 0) noexcept
-  \relates QKeyCombination
-
-  Returns the hash value for the \a key, using \a seed to seed the calculation.
+  \qhashold{QKeyCombination}
 */
 
 #ifndef QT_NO_DEBUG_STREAM
