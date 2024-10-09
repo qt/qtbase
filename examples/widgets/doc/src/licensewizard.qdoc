@@ -19,7 +19,7 @@
 
     Some wizards are more complex in that they allow different
     traversal paths based on the information provided by the user.
-    The License Wizard example illustrates this. It provides five
+    The License Wizard example illustrates this. It provides several
     wizard pages; depending on which options are selected, the user
     can reach different pages.
 
