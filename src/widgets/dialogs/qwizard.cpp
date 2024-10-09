@@ -1972,7 +1972,7 @@ void QWizardAntiFlickerWidget::paintEvent(QPaintEvent *)
     Some wizards are more complex in that they allow different
     traversal paths based on the information provided by the user.
     The \l{dialogs/licensewizard}{License Wizard} example illustrates this.
-    It provides five wizard pages; depending on which options are
+    It provides several wizard pages; depending on which options are
     selected, the user can reach different pages.
 
     \image licensewizard-flow.png

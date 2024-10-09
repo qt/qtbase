@@ -9,6 +9,8 @@
     \ingroup examples-widgets
     \brief The Widgets Gallery example shows widgets relevant for designing UIs.
 
+    \image gallery-example.png "Screenshot of the example"
+
     This example demonstrates widgets typically used in dialogs and forms.
     It also allows for changing the style.
 */
