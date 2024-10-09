@@ -9285,7 +9285,7 @@ void QRhiResourceUpdateBatch::generateMips(QRhiTexture *tex)
    destroyed. Instead, the batch is returned the pool for reuse by passing
    it to QRhiCommandBuffer::beginPass(), QRhiCommandBuffer::endPass(), or
    QRhiCommandBuffer::resourceUpdate(), or by calling
-   QRhiResourceUpdateBatch::destroy() on it.
+   QRhiResourceUpdateBatch::release() on it.
 
    \note Can be called outside beginFrame() - endFrame() as well since a batch
    instance just collects data on its own, it does not perform any operations.
