@@ -63,13 +63,7 @@ void QAndroidParcelPrivate::writeData(const QByteArray &data) const
     if (data.isEmpty())
         return;
 
-    QJniEnvironment().checkAndClearExceptions();
-    QJniEnvironment env;
-    jbyteArray array = env->NewByteArray(data.size());
-    env->SetByteArrayRegion(array, 0, data.length(),
-                            reinterpret_cast<const jbyte*>(data.constData()));
-    handle.callMethod<void>("writeByteArray", "([B)V", array);
-    env->DeleteLocalRef(array);
+    handle.callMethod<void>("writeByteArray", data);
 }
 
 void QAndroidParcelPrivate::writeBinder(const QAndroidBinder &binder) const
@@ -768,15 +762,7 @@ QAndroidIntent::QAndroidIntent(const QJniObject &packageContext, const char *cla
  */
 void QAndroidIntent::putExtra(const QString &key, const QByteArray &data)
 {
-    QJniEnvironment().checkAndClearExceptions();
-    QJniEnvironment env;
-    jbyteArray array = env->NewByteArray(data.size());
-    env->SetByteArrayRegion(array, 0, data.length(),
-                            reinterpret_cast<const jbyte*>(data.constData()));
-    m_handle.callObjectMethod("putExtra", "(Ljava/lang/String;[B)Landroid/content/Intent;",
-                              QJniObject::fromString(key).object(), array);
-    env->DeleteLocalRef(array);
-    QJniEnvironment().checkAndClearExceptions();
+    m_handle.callMethod<QtJniTypes::Intent>("putExtra", key, data);
 }
 
 /*!
@@ -784,19 +770,7 @@ void QAndroidIntent::putExtra(const QString &key, const QByteArray &data)
  */
 QByteArray QAndroidIntent::extraBytes(const QString &key)
 {
-    QJniEnvironment().checkAndClearExceptions();
-    auto array = m_handle.callObjectMethod("getByteArrayExtra", "(Ljava/lang/String;)[B",
-                                           QJniObject::fromString(key).object());
-    if (!array.isValid() || !array.object())
-        return QByteArray();
-    QJniEnvironment env;
-    auto sz = env->GetArrayLength(jarray(array.object()));
-    QByteArray res(sz, Qt::Initialization::Uninitialized);
-    env->GetByteArrayRegion(jbyteArray(array.object()), 0, sz,
-                            reinterpret_cast<jbyte *>(res.data()));
-    QJniEnvironment().checkAndClearExceptions();
-
-    return res;
+    return m_handle.callMethod<QByteArray>("getByteArrayExtra", key);
 }
 
 /*!
