@@ -55,7 +55,6 @@ Qt::ScreenOrientation QAndroidPlatformIntegration::m_nativeOrientation = Qt::Pri
 
 bool QAndroidPlatformIntegration::m_showPasswordEnabled = false;
 
-Q_DECLARE_JNI_CLASS(QtNative, "org/qtproject/qt/android/QtNative")
 Q_DECLARE_JNI_CLASS(QtDisplayManager, "org/qtproject/qt/android/QtDisplayManager")
 Q_DECLARE_JNI_CLASS(Display, "android/view/Display")
 

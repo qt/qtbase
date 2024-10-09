@@ -55,7 +55,6 @@ Q_DECLARE_JNI_CLASS(Display, "android/view/Display")
 Q_DECLARE_JNI_CLASS(DisplayMetrics, "android/util/DisplayMetrics")
 Q_DECLARE_JNI_CLASS(Resources, "android/content/res/Resources")
 Q_DECLARE_JNI_CLASS(Size, "android/util/Size")
-Q_DECLARE_JNI_CLASS(QtNative, "org/qtproject/qt/android/QtNative")
 Q_DECLARE_JNI_CLASS(QtDisplayManager, "org/qtproject/qt/android/QtDisplayManager")
 Q_DECLARE_JNI_CLASS(QtWindowInterface, "org/qtproject/qt/android/QtWindowInterface")
 

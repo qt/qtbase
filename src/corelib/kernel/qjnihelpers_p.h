@@ -22,6 +22,8 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_DECLARE_JNI_CLASS(QtNative, "org/qtproject/qt/android/QtNative")
+
 namespace QtAndroidPrivate
 {
     class Q_CORE_EXPORT ActivityResultListener

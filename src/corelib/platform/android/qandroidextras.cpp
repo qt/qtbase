@@ -17,6 +17,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace QtJniTypes;
+
 class QAndroidParcelPrivate
 {
 public:
@@ -1029,8 +1031,6 @@ void QAndroidActivityCallbackResultReceiver::registerCallback(
 
 // Permissions API
 
-static const char qtNativeClassName[] = "org/qtproject/qt/android/QtNative";
-
 QtAndroidPrivate::PermissionResult resultFromAndroid(jint value)
 {
     return value == 0 ? QtAndroidPrivate::Authorized : QtAndroidPrivate::Denied;
@@ -1054,10 +1054,12 @@ static int nextRequestCode()
     Once a permission is requested, the result is braodcast by the OS and listened
     to by QtActivity which passes it to C++ through a native JNI method call.
  */
-static void sendRequestPermissionsResult(JNIEnv *env, jobject *obj, jint requestCode,
-                                         jobjectArray permissions, jintArray grantResults)
+static void sendRequestPermissionsResult(JNIEnv *env, jobject obj, jint requestCode,
+                                         const QStringList &permissions, const QList<int> &grantResults)
 {
+    Q_UNUSED(env);
     Q_UNUSED(obj);
+    Q_UNUSED(permissions);
 
     QMutexLocker locker(&g_pendingPermissionRequestsMutex);
     auto it = g_pendingPermissionRequests->constFind(requestCode);
@@ -1070,18 +1072,13 @@ static void sendRequestPermissionsResult(JNIEnv *env, jobject *obj, jint request
     g_pendingPermissionRequests->erase(it);
     locker.unlock();
 
-    const int size = env->GetArrayLength(permissions);
-    std::unique_ptr<jint[]> results(new jint[size]);
-    env->GetIntArrayRegion(grantResults, 0, size, results.get());
-
-    for (int i = 0 ; i < size; ++i) {
-        QtAndroidPrivate::PermissionResult result = resultFromAndroid(results[i]);
-        request->addResult(result, i);
-    }
+    for (qsizetype i = 0; i < grantResults.size(); ++i)
+        request->addResult(resultFromAndroid(grantResults.at(i)), i);
 
     QtAndroidPrivate::releaseAndroidDeadlockProtector();
     request->finish();
 }
+Q_DECLARE_JNI_NATIVE_METHOD(sendRequestPermissionsResult)
 
 QFuture<QtAndroidPrivate::PermissionResult>
 requestPermissionsInternal(const QStringList &permissions)
@@ -1165,10 +1162,7 @@ QtAndroidPrivate::checkPermission(const QString &permission)
 {
     QtAndroidPrivate::PermissionResult result = Denied;
     if (!permission.isEmpty()) {
-        auto res = QJniObject::callStaticMethod<jint>(qtNativeClassName,
-                                                      "checkSelfPermission",
-                                                      "(Ljava/lang/String;)I",
-                                                      QJniObject::fromString(permission).object());
+        auto res = QtNative::callStaticMethod<jint>("checkSelfPermission", permission);
         result = resultFromAndroid(res);
     }
     return QtFuture::makeReadyValueFuture(result);
@@ -1179,12 +1173,9 @@ bool QtAndroidPrivate::registerPermissionNatives(QJniEnvironment &env)
     if (QtAndroidPrivate::androidSdkVersion() < 23)
         return true;
 
-    const JNINativeMethod methods[] = {
-        {"sendRequestPermissionsResult", "(I[Ljava/lang/String;[I)V",
-         reinterpret_cast<void *>(sendRequestPermissionsResult)
-        }};
-
-    return env.registerNativeMethods(qtNativeClassName, methods, 1);
+    return env.registerNativeMethods<QtNative>({
+        Q_JNI_NATIVE_METHOD(sendRequestPermissionsResult)
+    });
 }
 
 QT_END_NAMESPACE
