@@ -800,19 +800,8 @@ class LocaleDataWriter (LocaleSourceEditor):
             out(f'"{code}" // {value[0]}\n')
         out(';\n\n')
 
-    def languageNames(self, languages):
+    def languageNaming(self, languages, code_data: LanguageCodeData):
         self.__writeNameData(self.writer.write, languages, 'language')
-
-    def scriptNames(self, scripts):
-        self.__writeNameData(self.writer.write, scripts, 'script')
-
-    def territoryNames(self, territories):
-        self.__writeNameData(self.writer.write, territories, 'territory')
-
-    # TODO: unify these next three into the previous three; kept
-    # separate for now to verify we're not changing data.
-
-    def languageCodes(self, languages, code_data: LanguageCodeData):
         out = self.writer.write
 
         out(f'constexpr std::array<LanguageCodeEntry, {len(languages)}> languageCodeList {{\n')
@@ -839,10 +828,12 @@ class LocaleDataWriter (LocaleSourceEditor):
 
         out('};\n\n')
 
-    def scriptCodes(self, scripts):
+    def scriptNaming(self, scripts):
+        self.__writeNameData(self.writer.write, scripts, 'script')
         self.__writeCodeList(self.writer.write, scripts, 'script', 4)
 
-    def territoryCodes(self, territories): # TODO: unify with territoryNames()
+    def territoryNaming(self, territories):
+        self.__writeNameData(self.writer.write, territories, 'territory')
         self.__writeCodeList(self.writer.write, territories, 'territory', 3)
 
 class CalendarDataWriter (LocaleSourceEditor):
@@ -1022,13 +1013,9 @@ def main(argv, out, err):
             writer.localeIndex(reader.languageIndices(tuple(k[0] for k in locale_map)))
             writer.localeData(locale_map, locale_keys)
             writer.writer.write('\n')
-            writer.languageNames(reader.languages)
-            writer.scriptNames(reader.scripts)
-            writer.territoryNames(reader.territories)
-            # TODO: merge the next three into the previous three
-            writer.languageCodes(reader.languages, code_data)
-            writer.scriptCodes(reader.scripts)
-            writer.territoryCodes(reader.territories)
+            writer.languageNaming(reader.languages, code_data)
+            writer.scriptNaming(reader.scripts)
+            writer.territoryNaming(reader.territories)
     except Exception as e:
         err.write(f'\nError updating locale data: {e}\n')
         if args.verbose > 0:
