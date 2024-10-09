@@ -6,6 +6,7 @@
 #include <QFontDatabase>
 #include <QList>
 #include <qpa/qwindowsysteminterface.h>
+#include <qpalette.h>
 
 #include <private/qstdweb_p.h>
 
