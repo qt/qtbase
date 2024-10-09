@@ -300,10 +300,7 @@ QVulkanInstance::~QVulkanInstance()
 /*!
     \fn size_t qHash(const QVulkanLayer &key, size_t seed = 0)
     \since 5.10
-    \relates QVulkanLayer
-
-    Returns the hash value for the \a key, using \a seed to seed the
-    calculation.
+    \qhashold{QVulkanLayer}
 */
 
 /*!
@@ -344,10 +341,7 @@ QVulkanInstance::~QVulkanInstance()
 /*!
     \fn size_t qHash(const QVulkanExtension &key, size_t seed = 0)
     \since 5.10
-    \relates QVulkanExtension
-
-    Returns the hash value for the \a key, using \a seed to seed the
-    calculation.
+    \qhashold{QVulkanExtension}
 */
 
 /*!

@@ -305,11 +305,9 @@ QDebug operator<<(QDebug debug, const QSslDiffieHellmanParameters &dhparam)
 #endif
 
 /*!
+    \fn size_t qHash(const QSslDiffieHellmanParameters &key, size_t seed)
     \since 5.8
-    \relates QSslDiffieHellmanParameters
-
-    Returns an hash value for \a dhparam, using \a seed to seed
-    the calculation.
+    \qhashold{QSslDiffieHellmanParameters}
 */
 size_t qHash(const QSslDiffieHellmanParameters &dhparam, size_t seed) noexcept
 {

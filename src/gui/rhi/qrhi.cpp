@@ -902,9 +902,8 @@ bool operator!=(const QRhiDepthStencilClearValue &a, const QRhiDepthStencilClear
 }
 
 /*!
-    \return the hash value for \a v, using \a seed to seed the calculation.
-
-    \relates QRhiDepthStencilClearValue
+    \fn size_t QRhiDepthStencilClearValue::qHash(const QRhiDepthStencilClearValue &key, size_t seed)
+    \qhash{QRhiDepthStencilClearValue}
  */
 size_t qHash(const QRhiDepthStencilClearValue &v, size_t seed) noexcept
 {
@@ -998,9 +997,8 @@ bool operator!=(const QRhiViewport &a, const QRhiViewport &b) noexcept
 }
 
 /*!
-    \return the hash value for \a v, using \a seed to seed the calculation.
-
-    \relates QRhiViewport
+    \fn size_t QRhiViewport::qHash(const QRhiViewport &key, size_t seed)
+    \qhash{QRhiViewport}
  */
 size_t qHash(const QRhiViewport &v, size_t seed) noexcept
 {
@@ -1089,9 +1087,8 @@ bool operator!=(const QRhiScissor &a, const QRhiScissor &b) noexcept
 }
 
 /*!
-    \return the hash value for \a v, using \a seed to seed the calculation.
-
-    \relates QRhiScissor
+    \fn size_t QRhiScissor::qHash(const QRhiScissor &key, size_t seed)
+    \qhash{QRhiScissor}
  */
 size_t qHash(const QRhiScissor &v, size_t seed) noexcept
 {
@@ -1223,9 +1220,8 @@ bool operator!=(const QRhiVertexInputBinding &a, const QRhiVertexInputBinding &b
 }
 
 /*!
-    \return the hash value for \a v, using \a seed to seed the calculation.
-
-    \relates QRhiVertexInputBinding
+    \fn size_t QRhiVertexInputBinding::qHash(const QRhiVertexInputBinding &key, size_t seed)
+    \qhash{QRhiVertexInputBinding}
  */
 size_t qHash(const QRhiVertexInputBinding &v, size_t seed) noexcept
 {
@@ -1391,9 +1387,8 @@ bool operator!=(const QRhiVertexInputAttribute &a, const QRhiVertexInputAttribut
 }
 
 /*!
-    \return the hash value for \a v, using \a seed to seed the calculation.
-
-    \relates QRhiVertexInputAttribute
+    \fn size_t QRhiVertexInputAttribute::qHash(const QRhiVertexInputAttribute &key, size_t seed)
+    \qhash{QRhiVertexInputAttribute}
  */
 size_t qHash(const QRhiVertexInputAttribute &v, size_t seed) noexcept
 {
@@ -1529,9 +1524,8 @@ bool operator!=(const QRhiVertexInputLayout &a, const QRhiVertexInputLayout &b) 
 }
 
 /*!
-    \return the hash value for \a v, using \a seed to seed the calculation.
-
-    \relates QRhiVertexInputLayout
+    \fn size_t QRhiVertexInputLayout::qHash(const QRhiVertexInputLayout &key, size_t seed)
+    \qhash{QRhiVertexInputLayout}
  */
 size_t qHash(const QRhiVertexInputLayout &v, size_t seed) noexcept
 {
@@ -1625,9 +1619,8 @@ bool operator!=(const QRhiShaderStage &a, const QRhiShaderStage &b) noexcept
 }
 
 /*!
-    \return the hash value for \a v, using \a seed to seed the calculation.
-
-    \relates QRhiShaderStage
+    \fn size_t QRhiShaderStage::qHash(const QRhiShaderStage &key, size_t seed)
+    \qhash{QRhiShaderStage}
  */
 size_t qHash(const QRhiShaderStage &v, size_t seed) noexcept
 {
@@ -4154,9 +4147,8 @@ bool operator!=(const QRhiShaderResourceBinding &a, const QRhiShaderResourceBind
 }
 
 /*!
-    \return the hash value for \a b, using \a seed to seed the calculation.
-
-    \relates QRhiShaderResourceBinding
+    \fn size_t qHash(const QRhiShaderResourceBinding &key, size_t seed)
+    \qhashold{QRhiShaderResourceBinding}
  */
 size_t qHash(const QRhiShaderResourceBinding &b, size_t seed) noexcept
 {

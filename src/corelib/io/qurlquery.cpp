@@ -418,10 +418,7 @@ bool QUrlQuery::operator ==(const QUrlQuery &other) const
 
 /*!
     \since 5.6
-    \relates QUrlQuery
-
-    Returns the hash value for \a key,
-    using \a seed to seed the calculation.
+    \qhashold{QUrlQuery}
 */
 size_t qHash(const QUrlQuery &key, size_t seed) noexcept
 {

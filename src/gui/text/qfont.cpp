@@ -2095,10 +2095,8 @@ QString QFont::toString() const
 }
 
 /*!
-    Returns the hash value for \a font. If specified, \a seed is used
-    to initialize the hash.
-
-    \relates QFont
+    \fn size_t qHash(const QFont &key, size_t seed)
+    \qhashold{QFont}
     \since 5.3
 */
 size_t qHash(const QFont &font, size_t seed) noexcept

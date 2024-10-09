@@ -160,12 +160,9 @@ bool QSslEllipticCurve::isTlsNamedCurve() const noexcept
 */
 
 /*!
-    \fn size_t qHash(QSslEllipticCurve curve, size_t seed = 0)
+    \fn size_t qHash(QSslEllipticCurve key, size_t seed)
     \since 5.5
-    \relates QHash
-
-    Returns an hash value for the curve \a curve, using \a seed to seed
-    the calculation.
+    \qhashold{QHash}
 */
 
 #ifndef QT_NO_DEBUG_STREAM
