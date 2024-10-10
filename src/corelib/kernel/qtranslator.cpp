@@ -478,11 +478,8 @@ bool QTranslator::load(const QString & filename, const QString & directory,
             break;
 
         qsizetype rightmost = 0;
-        for (auto ch : delims) {
-            qsizetype k = fname.lastIndexOf(ch);
-            if (k > rightmost)
-                rightmost = k;
-        }
+        for (auto ch : delims)
+            rightmost = std::max(rightmost, fname.lastIndexOf(ch));
 
         // no truncations? fail
         if (rightmost == 0)
