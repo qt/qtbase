@@ -45,7 +45,6 @@ public:
     QFontEngine *fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference) override;
     QStringList fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const override;
     QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName, QFontDatabasePrivate::ApplicationFont *font = nullptr) override;
-    QFont defaultFont() const override;
 
     bool isPrivateFontFamily(const QString &family) const override;
     bool supportsVariableApplicationFonts() const override;
