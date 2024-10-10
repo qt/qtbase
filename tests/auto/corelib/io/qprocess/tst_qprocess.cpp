@@ -1774,6 +1774,7 @@ void tst_QProcess::unixProcessParameters_data()
     addRow("file-descriptors", P::CloseFileDescriptors);
     addRow("setsid", P::CreateNewSession);
     addRow("reset-ids", P::ResetIds);
+    addRow("no-coredumps", P::DisableCoreDumps);
 
     // On FreeBSD, we need to be session leader to disconnect from the CTTY
     addRow("noctty", P::DisconnectControllingTerminal | P::CreateNewSession);
@@ -1788,6 +1789,7 @@ void tst_QProcess::unixProcessParameters()
     struct Scope {
         int devnull;
         struct sigaction old_sigusr1, old_sigpipe;
+        struct rlimit old_corelimit = {};
         Scope()
         {
             int fd = open("/dev/null", O_RDONLY);
@@ -1806,6 +1808,13 @@ void tst_QProcess::unixProcessParameters()
             sigset_t *set = &act.sa_mask;               // reuse this sigset_t
             sigaddset(set, SIGUSR2);
             sigprocmask(SIG_BLOCK, set, nullptr);
+
+            if (getrlimit(RLIMIT_CORE, &old_corelimit) == 0 && old_corelimit.rlim_max) {
+                struct rlimit new_corelimit = old_corelimit;
+                new_corelimit.rlim_cur = new_corelimit.rlim_max;
+                if (setrlimit(RLIMIT_CORE, &new_corelimit) != 0)
+                    old_corelimit = {};
+            }
         }
         ~Scope()
         {
@@ -1822,6 +1831,9 @@ void tst_QProcess::unixProcessParameters()
             sigset_t *set = &old_sigusr1.sa_mask;       // reuse this sigset_t
             sigaddset(set, SIGUSR2);
             sigprocmask(SIG_BLOCK, set, nullptr);
+
+            if (old_corelimit.rlim_max)
+                setrlimit(RLIMIT_CORE, &old_corelimit);
         }
     } scope;
 
@@ -1835,6 +1847,11 @@ void tst_QProcess::unixProcessParameters()
             qInfo("Process has no controlling terminal; this test will do nothing");
             close(fd);
         }
+    }
+
+    if (params.flags & QProcess::UnixProcessFlag::DisableCoreDumps
+            && scope.old_corelimit.rlim_max == 0) {
+        QSKIP("Cannot raise the core size limit (hard limit is set to zero)");
     }
 
     QProcess process;

@@ -96,6 +96,18 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
+    if (cmd == "no-coredumps") {
+        struct rlimit corelimit;
+        if (getrlimit(RLIMIT_CORE, &corelimit) != 0) {
+            // this shouldn't happen, so just assume it worked
+            return EXIT_SUCCESS;
+        }
+        if (corelimit.rlim_cur == 0)
+            return EXIT_SUCCESS;
+        fprintf(stderr, "rlim_cur = %lx\n", (unsigned long)corelimit.rlim_cur);
+        return EXIT_FAILURE;
+    }
+
     if (cmd == "setsid") {
         pid_t pgid = getpgrp();
         if (pgid == getpid())

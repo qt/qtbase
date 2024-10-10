@@ -191,6 +191,7 @@ public:
         CreateNewSession                    = 0x0040, // like POSIX_SPAWN_SETSID
         DisconnectControllingTerminal       = 0x0080,
         ResetIds                            = 0x0100, // like POSIX_SPAWN_RESETIDS
+        DisableCoreDumps                    = 0x0200,
     };
     Q_DECLARE_FLAGS(UnixProcessFlags, UnixProcessFlag)
     struct UnixProcessParameters

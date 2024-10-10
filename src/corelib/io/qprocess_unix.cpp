@@ -885,6 +885,15 @@ static const char *applyProcessParameters(const QProcess::UnixProcessParameters 
         }
     }
 
+    // Disable core dumps near the end. This isn't expected to fail.
+    if (struct rlimit lim; getrlimit(RLIMIT_CORE, &lim) == 0 && lim.rlim_cur) {
+        // We'll leave rlim_max untouched, so the child can set it back if it
+        // wants to. We don't expect setrlimit() to fail, so we ignore its
+        // return value.
+        lim.rlim_cur = 0;
+        (void) setrlimit(RLIMIT_CORE, &lim);
+    }
+
     // Apply UID and GID parameters last. This isn't expected to fail either:
     // either we're trying to impersonate what we already are, or we're EUID or
     // EGID root, in which case we are allowed to do this.
