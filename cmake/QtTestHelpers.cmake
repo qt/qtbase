@@ -193,7 +193,7 @@ function(qt_internal_prepare_test_target_flags version_arg exceptions_text gui_t
     # Qt modules get compiled without exceptions enabled by default.
     # However, testcases should be still built with exceptions.
     set(${exceptions_text} "EXCEPTIONS" PARENT_SCOPE)
-    if (${arg_NO_EXCEPTIONS} OR WASM)
+    if (${arg_NO_EXCEPTIONS})
         set(${exceptions_text} "" PARENT_SCOPE)
     endif()
 
