@@ -3634,7 +3634,8 @@ void QMenu::internalDelayedPopup()
 
     int subMenuOffset = style()->pixelMetric(QStyle::PM_SubMenuOverlap, nullptr, this);
     const QRect actionRect(d->actionRect(d->currentAction));
-    QPoint subMenuPos(mapToGlobal(QPoint(actionRect.right() + subMenuOffset + 1, actionRect.top())));
+    const auto ofs = isRightToLeft() ? (-subMenuOffset - actionRect.width() + 1) : subMenuOffset;
+    QPoint subMenuPos(mapToGlobal(QPoint(actionRect.right() + ofs, actionRect.top())));
     if (subMenuPos.x() > screen.right())
         subMenuPos.setX(geometry().left());
 
