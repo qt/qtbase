@@ -128,11 +128,6 @@ enum class Tag : quint32 {
 
 } // namespace QIcc
 
-inline size_t qHash(const QIcc::Tag &key, size_t seed = 0)
-{
-    return qHash(quint32(key), seed);
-}
-
 namespace QIcc {
 
 struct TagTableEntry
