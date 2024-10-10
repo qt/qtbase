@@ -7100,7 +7100,7 @@ void qt_format_text(const QFont &fnt, const QRectF &_r,
 
     Q_ASSERT( !((tf & ~Qt::TextDontPrint)!=0 && option!=nullptr) ); // we either have an option or flags
 
-    if (_r.isEmpty()) {
+    if (_r.isEmpty() && !(tf & Qt::TextDontClip)) {
         if (!brect)
             return;
         else
