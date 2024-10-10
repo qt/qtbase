@@ -477,9 +477,9 @@ bool QTranslator::load(const QString & filename, const QString & directory,
         if (fi.isReadable() && fi.isFile())
             break;
 
-        int rightmost = 0;
-        for (int i = 0; i < (int)delims.size(); i++) {
-            int k = fname.lastIndexOf(delims[i]);
+        qsizetype rightmost = 0;
+        for (auto ch : delims) {
+            qsizetype k = fname.lastIndexOf(ch);
             if (k > rightmost)
                 rightmost = k;
         }
@@ -628,7 +628,7 @@ static QString find_translation(const QLocale & locale,
 
     QString realname;
     realname += path + filename + prefix; // using += in the hope for some reserve capacity
-    const int realNameBaseSize = realname.size();
+    const qsizetype realNameBaseSize = realname.size();
 
     // see http://www.unicode.org/reports/tr35/#LanguageMatching for inspiration
 
@@ -641,7 +641,7 @@ static QString find_translation(const QLocale & locale,
     // Windows (in other words: this codepath is *not* UNIX-only).
     QStringList languages = locale.uiLanguages(QLocale::TagSeparator::Underscore);
     qCDebug(lcTranslator) << "Requested UI languages" << languages;
-    for (int i = languages.size() - 1; i >= 0; --i) {
+    for (qsizetype i = languages.size() - 1; i >= 0; --i) {
         const QString &lang = languages.at(i);
         QString lowerLang = lang.toLower();
         if (lang != lowerLang)
@@ -662,14 +662,14 @@ static QString find_translation(const QLocale & locale,
 
             realname.truncate(realNameBaseSize);
 
-            int rightmost = localeName.lastIndexOf(u'_');
+            qsizetype rightmost = localeName.lastIndexOf(u'_');
             if (rightmost <= 0)
                 break; // no truncations anymore, break
             localeName.truncate(rightmost);
         }
     }
 
-    const int realNameBaseSizeFallbacks = path.size() + filename.size();
+    const qsizetype realNameBaseSizeFallbacks = path.size() + filename.size();
 
     // realname == path + filename + prefix;
     if (!suffix.isNull()) {
