@@ -789,11 +789,6 @@ void QWindowsDirectWriteFontDatabase::populateFontDatabase()
     }
 }
 
-QFont QWindowsDirectWriteFontDatabase::defaultFont() const
-{
-    return QFont(QStringLiteral("Segoe UI"));
-}
-
 bool QWindowsDirectWriteFontDatabase::supportsVariableApplicationFonts() const
 {
     QSharedPointer<QWindowsFontEngineData> fontEngineData = data();
