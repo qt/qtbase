@@ -801,4 +801,17 @@ bool QWindowsDirectWriteFontDatabase::supportsVariableApplicationFonts() const
     return false;
 }
 
+void QWindowsDirectWriteFontDatabase::invalidate()
+{
+    QWindowsFontDatabase::invalidate();
+
+    for (IDWriteFontFamily *value : m_populatedFonts)
+        value->Release();
+    m_populatedFonts.clear();
+    m_populatedFonts.squeeze();
+
+    m_populatedBitmapFonts.clear();
+    m_populatedBitmapFonts.squeeze();
+}
+
 QT_END_NAMESPACE
