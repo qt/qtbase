@@ -1420,6 +1420,17 @@ size_t qHash(long double key, size_t seed) noexcept
 }
 #endif
 
+/*!
+    \fn template <typename Enum, std::enable_if_t<std::is_enum_v<Enum>, bool> = true> size_t qHash(Enum key, size_t seed)
+    \since 6.5
+    \qhashbuiltin
+
+    \note Prior to Qt 6.5, unscoped enums relied on the integer overloads of this
+    function due to implicit conversion to their underlying integer types.
+    For scoped enums, you had to implement an overload yourself. This is still the
+    backwards-compatible fix to remain compatible with older Qt versions.
+*/
+
 /*! \fn size_t qHash(const QChar key, size_t seed = 0)
     \since 5.0
     \qhashold{QHash}
