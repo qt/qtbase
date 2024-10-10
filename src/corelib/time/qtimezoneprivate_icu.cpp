@@ -149,7 +149,7 @@ static QTimeZonePrivate::Data ucalTimeZoneTransition(UCalendar *m_ucal,
     QTimeZone::TimeType timeType = dst == 0 ? QTimeZone::StandardTime : QTimeZone::DaylightTime;
     using namespace QtTimeZoneLocale;
     tran.abbreviation = ucalTimeZoneDisplayName(m_ucal, timeType,
-                                                QTimeZone::ShortName, QLocale().name());
+                                                QTimeZone::ShortName, QLocale().name().toUtf8());
     return tran;
 }
 #endif // U_ICU_VERSION_SHORT
@@ -258,7 +258,7 @@ QString QIcuTimeZonePrivate::displayName(QTimeZone::TimeType timeType,
     // Technically this may be suspect, if locale isn't QLocale(), since that's
     // what we used when constructing m_ucal; does ICU cope with inconsistency ?
     using namespace QtTimeZoneLocale;
-    return ucalTimeZoneDisplayName(m_ucal, timeType, nameType, locale.name());
+    return ucalTimeZoneDisplayName(m_ucal, timeType, nameType, locale.name().toUtf8());
 }
 
 int QIcuTimeZonePrivate::offsetFromUtc(qint64 atMSecsSinceEpoch) const
