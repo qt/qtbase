@@ -136,7 +136,7 @@ void QWindowsDirectWriteFontDatabase::populateFamily(const QString &familyName)
                                                DWRITE_FONT_STYLE_NORMAL,
                                                &matchingFonts))) {
         for (uint j = 0; j < matchingFonts->GetFontCount(); ++j) {
-            IDWriteFont *font;
+            DirectWriteScope<IDWriteFont> font;
             if (SUCCEEDED(matchingFonts->GetFont(j, &font))) {
                 DirectWriteScope<IDWriteFont1> font1;
                 if (!SUCCEEDED(font->QueryInterface(__uuidof(IDWriteFont1),
