@@ -35,7 +35,7 @@ namespace QtTimeZoneLocale {
 #if QT_CONFIG(icu)
 QString ucalTimeZoneDisplayName(UCalendar *ucal, QTimeZone::TimeType timeType,
                                 QTimeZone::NameType nameType,
-                                const QString &localeCode);
+                                const QByteArray &localeCode);
 #else
 
 QList<QByteArrayView> ianaIdsForTerritory(QLocale::Territory territory);
