@@ -64,7 +64,7 @@ def wrap_list(lst, perline=20):
             yield head
     return ",\n".join(", ".join(x) for x in split(lst, perline))
 
-def names_clash(cldr, enum):
+def names_clash(cldr: str, enum: str) -> None | str:
     """True if the reader might not recognize cldr as the name of enum
 
     First argument, cldr, is the name CLDR gives for some language,
