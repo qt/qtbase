@@ -335,7 +335,12 @@ QTimeZonePrivate::Data QIcuTimeZonePrivate::data(qint64 forMSecsSinceEpoch) cons
         ucalOffsetsAtTime(m_ucal, forMSecsSinceEpoch, &data.standardTimeOffset,
                           &data.daylightTimeOffset);
         data.offsetFromUtc = data.standardTimeOffset + data.daylightTimeOffset;
-        data.abbreviation = abbreviation(forMSecsSinceEpoch);
+        // TODO No ICU API for abbreviation, use short name for it:
+        using namespace QtTimeZoneLocale;
+        QTimeZone::TimeType timeType
+            = data.daylightTimeOffset ? QTimeZone::DaylightTime : QTimeZone::StandardTime;
+        data.abbreviation = ucalTimeZoneDisplayName(m_ucal, timeType, QTimeZone::ShortName,
+                                                    QLocale().name().toUtf8());
     }
     data.atMSecsSinceEpoch = forMSecsSinceEpoch;
     return data;
