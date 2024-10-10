@@ -59,6 +59,9 @@ public:
         return m_populatedFonts.contains(fontFamily);
     }
 
+protected:
+    void invalidate() override;
+
 private:
     friend class QWindowsFontEngineDirectWrite;
     static QString localeString(IDWriteLocalizedStrings *names, wchar_t localeName[]);
