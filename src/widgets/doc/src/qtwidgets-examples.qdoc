@@ -142,3 +142,16 @@
     also supports keyboard shortcuts and accelerator keys in menu items.
 
 */
+
+/*!
+    \group examples-widgets-tools
+    \ingroup all-examples
+    \title Widget Tools Examples
+    \brief Using autocomplete features, regular expressions, and undo framework.
+
+    \image completer-example.png
+
+    Qt provides the functionality for autocomplete, Undo/Redo actions, and
+    regular expressions for the Widget-based applications.
+
+*/
