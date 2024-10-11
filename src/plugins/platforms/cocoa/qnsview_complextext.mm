@@ -484,6 +484,18 @@
     }
 }
 
+/*
+    Returns the first logical boundary rectangle for characters in the given range,
+    in screen coordinates.
+
+    The "first" in the name refers to the rectangle enclosing the first line when
+    the range encompasses multiple lines of text. In that case, actualRange should
+    be set to the range covered by the first rect, so all line fragments can
+    be queried by invoking this method repeatedly.
+
+    If the length of range is 0 (as it would be if there is nothing selected at
+    the insertion point), then the rectangle coincides with the insertion point.
+*/
 - (NSRect)firstRectForCharacterRange:(NSRange)range actualRange:(NSRangePointer)actualRange
 {
     Q_UNUSED(range);
@@ -491,6 +503,8 @@
 
     QWindow *window = m_platformWindow ? m_platformWindow->window() : nullptr;
     if (window && queryInputMethod(window->focusObject())) {
+        if (range.length) // FIXME: Handle the case when range is non-zero
+            qCWarning(lcQpaKeys) << "Can't satisfy firstRectForCharacterRange for" << range;
         QRect cursorRect = qApp->inputMethod()->cursorRectangle().toRect();
         cursorRect.moveBottomLeft(window->mapToGlobal(cursorRect.bottomLeft()));
         return QCocoaScreen::mapToNative(cursorRect);
