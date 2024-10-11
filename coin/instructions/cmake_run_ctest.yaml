@@ -167,6 +167,7 @@ instructions:
         ignoreExitCode: false
         userMessageOnFailure: >
           Failed to copy LastTest.log to testresults directory.
+        executeOn: always
 
   - type: Group
     instructions:
