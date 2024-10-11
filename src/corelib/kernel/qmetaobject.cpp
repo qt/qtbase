@@ -2352,8 +2352,9 @@ int QMetaMethod::relativeMethodIndex() const
 // This method has been around for a while, but the documentation was marked \internal until 5.1
 /*!
     \since 5.1
-    Returns the method revision if one was
-    specified by Q_REVISION, otherwise returns 0.
+    Returns the method revision if one was specified by Q_REVISION, otherwise
+    returns 0. Since Qt 6.0, non-zero values are encoded and can be decoded
+    using QTypeRevision::fromEncodedVersion().
  */
 int QMetaMethod::revision() const
 {
@@ -4181,8 +4182,9 @@ int QMetaProperty::notifySignalIndex() const
 /*!
     \since 5.1
 
-    Returns the property revision if one was
-    specified by REVISION, otherwise returns 0.
+    Returns the property revision if one was specified by Q_REVISION, otherwise
+    returns 0. Since Qt 6.0, non-zero values are encoded and can be decoded
+    using QTypeRevision::fromEncodedVersion().
  */
 int QMetaProperty::revision() const
 {
