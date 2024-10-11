@@ -85,6 +85,11 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSViewMouseMoveHelper);
 @interface QNSView (ServicesMenu) <NSServicesMenuRequestor>
 @end
 
+#if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(150000)
+@interface QNSView (ContentSelectionInfo) <NSViewContentSelectionInfo>
+@end
+#endif
+
 @interface QT_MANGLE_NAMESPACE(QNSViewMenuHelper) : NSObject
 - (instancetype)initWithView:(QNSView *)theView;
 @end
