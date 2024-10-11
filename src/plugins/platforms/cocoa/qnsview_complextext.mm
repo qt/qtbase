@@ -679,4 +679,35 @@
 
 @end
 
+#if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(150000)
+@implementation QNSView (ContentSelectionInfo)
 
+/*
+    This method is used by AppKit for positioning of context menus in
+    response to the context menu keyboard hotkey, and for placement of
+    the Writing Tools popup.
+*/
+- (NSRect)selectionAnchorRect
+{
+    if (queryInputMethod(self.focusObject)) {
+        // We don't have a way of querying the selection rectangle via
+        // the input method protocol (yet), so we use crude heuristics.
+        const auto *inputMethod = qApp->inputMethod();
+        auto cursorRect = inputMethod->cursorRectangle();
+        auto anchorRect = inputMethod->anchorRectangle();
+        auto selectionRect = cursorRect.united(anchorRect);
+        if (cursorRect.top() != anchorRect.top()) {
+            // Multi line selection. Assume the selections extends to
+            // the entire width of the input item. This does not account
+            // for center-aligned text and a bunch of other cases. FIXME
+            auto itemClipRect = inputMethod->inputItemClipRectangle();
+            selectionRect.setLeft(itemClipRect.left());
+            selectionRect.setRight(itemClipRect.right());
+        }
+        return selectionRect.toCGRect();
+    } else {
+        return NSZeroRect;
+    }
+}
+@end
+#endif // macOS 15 SDK
