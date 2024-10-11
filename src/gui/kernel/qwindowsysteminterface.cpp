@@ -1028,12 +1028,12 @@ void QWindowSystemInterface::handlePlatformPanelEvent(QWindow *w)
 }
 
 #ifndef QT_NO_CONTEXTMENU
-void QWindowSystemInterface::handleContextMenuEvent(QWindow *window, bool mouseTriggered,
+QT_DEFINE_QPA_EVENT_HANDLER(bool, handleContextMenuEvent, QWindow *window, bool mouseTriggered,
                                                     const QPoint &pos, const QPoint &globalPos,
                                                     Qt::KeyboardModifiers modifiers)
 {
-    handleWindowSystemEvent<QWindowSystemInterfacePrivate::ContextMenuEvent>(window,
-        mouseTriggered, pos, globalPos, modifiers);
+    return handleWindowSystemEvent<QWindowSystemInterfacePrivate::ContextMenuEvent, Delivery>(
+        window, mouseTriggered, pos, globalPos, modifiers);
 }
 #endif
 

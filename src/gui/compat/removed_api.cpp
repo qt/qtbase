@@ -68,6 +68,17 @@ bool QPageLayout::setBottomMargin(qreal bottomMargin)
     return setBottomMargin(bottomMargin, OutOfBoundsPolicy::Reject);
 }
 
+#ifndef QT_NO_CONTEXTMENU
+#include <qpa/qwindowsysteminterface.h>
+void QWindowSystemInterface::handleContextMenuEvent(QWindow *window, bool mouseTriggered,
+                                                    const QPoint &pos, const QPoint &globalPos,
+                                                    Qt::KeyboardModifiers modifiers)
+{
+    handleContextMenuEvent<QWindowSystemInterface::DefaultDelivery>(
+        window, mouseTriggered, pos, globalPos, modifiers);
+}
+#endif // QT_NO_CONTEXTMENU
+
 // #include "qotherheader.h"
 // // implement removed functions from qotherheader.h
 // order sections alphabetically

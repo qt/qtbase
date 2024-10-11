@@ -248,8 +248,15 @@ public:
 #endif // QT_NO_GESTURES
 
     static void handlePlatformPanelEvent(QWindow *window);
+
 #ifndef QT_NO_CONTEXTMENU
+#if QT_GUI_REMOVED_SINCE(6, 8)
     static void handleContextMenuEvent(QWindow *window, bool mouseTriggered,
+                                       const QPoint &pos, const QPoint &globalPos,
+                                       Qt::KeyboardModifiers modifiers);
+#endif
+    template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
+    static bool handleContextMenuEvent(QWindow *window, bool mouseTriggered,
                                        const QPoint &pos, const QPoint &globalPos,
                                        Qt::KeyboardModifiers modifiers);
 #endif
