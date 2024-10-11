@@ -3435,7 +3435,9 @@ void QAbstractItemView::dataChanged(const QModelIndex &topLeft, const QModelInde
                 topLeft.row() > bottomRight.row() ||
                 topLeft.column() > bottomRight.column()) {
                 // invalid parameter - call update() to redraw all
-                Q_ASSERT(false);
+                qWarning().nospace() << "dataChanged() called with an invalid index range:"
+                                     << "\n    topleft: " << topLeft
+                                     << "\n    bottomRight:" << bottomRight;
                 d->viewport->update();
             } else if ((bottomRight.row() - topLeft.row() + 1ULL) *
                        (bottomRight.column() - topLeft.column() + 1ULL) > d->updateThreshold) {
