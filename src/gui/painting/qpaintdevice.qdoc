@@ -300,8 +300,6 @@
 /*!
     \fn int QPaintDevice::encodeMetricF(PaintDeviceMetric metric, double value)
 
-    \internal
-
     Returns \a value encoded for the metric \a metric. Subclasses implementing metric() should use
     this function to encode \value as an integer return value when the query metric specifies an
     encoded floating-point value.
