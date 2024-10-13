@@ -269,7 +269,7 @@ using HeterogeneouslySearchableWith = HeterogeneouslySearchableWithHelper<
 >;
 
 template <typename Key, typename K>
-using if_heterogeneously_seachable_with = std::enable_if_t<
+using if_heterogeneously_searchable_with = std::enable_if_t<
         QHashPrivate::HeterogeneouslySearchableWith<Key, K>::value,
     bool>;
 
@@ -281,7 +281,7 @@ bool qHashEquals(const T &a, const T &b)
     return a == b;
 }
 
-template <typename T1, typename T2, QHashPrivate::if_heterogeneously_seachable_with<T1, T2> = true>
+template <typename T1, typename T2, QHashPrivate::if_heterogeneously_searchable_with<T1, T2> = true>
 bool qHashEquals(const T1 &a, const T2 &b)
 {
     return a == b;
