@@ -113,7 +113,12 @@ void QThreadPoolThread::run()
         manager->waitingThreads.enqueue(this);
         registerThreadInactive();
         // wait for work, exiting after the expiry timeout is reached
-        runnableReady.wait(locker.mutex(), QDeadlineTimer(manager->expiryTimeout));
+        QDeadlineTimer deadline;
+        if (manager->expiryTimeout.count() < 0)
+            deadline = QDeadlineTimer::Forever;
+        else
+            deadline.setRemainingTime(manager->expiryTimeout);
+        runnableReady.wait(locker.mutex(), deadline);
         // this thread is about to be deleted, do not work or expire
         if (!manager->allThreads.contains(this)) {
             Q_ASSERT(manager->queue.isEmpty());
