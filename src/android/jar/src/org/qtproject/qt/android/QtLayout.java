@@ -12,6 +12,7 @@ import android.util.Log;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.Display;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
@@ -54,6 +55,13 @@ public class QtLayout extends ViewGroup
     public QtLayout(Context context, AttributeSet attrs, int defStyle)
     {
         super(context, attrs, defStyle);
+    }
+
+    @Override
+    public boolean onKeyDown (int keyCode, KeyEvent event)
+    {
+        // QtLayout does not handle input.
+        return false;
     }
 
     @Override

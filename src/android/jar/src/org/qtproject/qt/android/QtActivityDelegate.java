@@ -240,8 +240,12 @@ public class QtActivityDelegate
         m_keyboardIsVisible = visibility;
         QtNative.keyboardVisibilityUpdated(m_keyboardIsVisible);
 
-        if (visibility == false)
+        if (visibility == false) {
             updateFullScreen(); // Hiding the keyboard clears the immersive mode, so we need to set it again.
+            if (m_editText.hasFocus()) {
+                m_editText.clearFocus();
+            }
+        }
 
         return true;
     }
@@ -826,6 +830,10 @@ public class QtActivityDelegate
             };
         }
         m_layout = new QtLayout(m_activity, startApplication);
+        m_layout.setFocusable(true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            m_layout.setDefaultFocusHighlightEnabled(false);
+        }
 
         DisplayManager displayManager = (DisplayManager)m_activity.getSystemService(Context.DISPLAY_SERVICE);
         displayManager.registerDisplayListener(displayListener, null);
