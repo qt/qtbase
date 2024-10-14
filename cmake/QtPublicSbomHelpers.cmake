@@ -245,23 +245,43 @@ function(_qt_internal_sbom_end_project)
     endif()
 
     set(end_project_options "")
-    if(QT_INTERNAL_SBOM_VERIFY OR QT_INTERNAL_SBOM_DEFAULT_CHECKS)
-        list(APPEND end_project_options VERIFY)
+
+    if(QT_SBOM_GENERATE_JSON OR QT_INTERNAL_SBOM_GENERATE_JSON OR QT_INTERNAL_SBOM_DEFAULT_CHECKS)
+        list(APPEND end_project_options GENERATE_JSON)
     endif()
+
+    # Tring to generate the JSON might fail if the python dependencies are not available.
+    # The user can explicitly request to fail the build if dependencies are not found.
+    # error out. For internal options that the CI uses, we always want to fail the build if the
+    # deps are not found.
+    if(QT_SBOM_REQUIRE_GENERATE_JSON OR QT_INTERNAL_SBOM_GENERATE_JSON
+            OR QT_INTERNAL_SBOM_DEFAULT_CHECKS)
+        list(APPEND end_project_options GENERATE_JSON_REQUIRED)
+    endif()
+
+    if(QT_SBOM_VERIFY OR QT_INTERNAL_SBOM_VERIFY OR QT_INTERNAL_SBOM_DEFAULT_CHECKS)
+        list(APPEND end_project_options VERIFY_SBOM)
+    endif()
+
+    # Do the same requirement check for SBOM verification.
+    if(QT_SBOM_REQUIRE_VERIFY OR QT_INTERNAL_SBOM_VERIFY OR QT_INTERNAL_SBOM_DEFAULT_CHECKS)
+        list(APPEND end_project_options VERIFY_SBOM_REQUIRED)
+    endif()
+
     if(QT_INTERNAL_SBOM_VERIFY_NTIA_COMPLIANT OR QT_INTERNAL_SBOM_DEFAULT_CHECKS)
         list(APPEND end_project_options VERIFY_NTIA_COMPLIANT)
     endif()
+
     if(QT_INTERNAL_SBOM_SHOW_TABLE OR QT_INTERNAL_SBOM_DEFAULT_CHECKS)
         list(APPEND end_project_options SHOW_TABLE)
     endif()
+
     if(QT_INTERNAL_SBOM_AUDIT OR QT_INTERNAL_SBOM_AUDIT_NO_ERROR)
         list(APPEND end_project_options AUDIT)
     endif()
+
     if(QT_INTERNAL_SBOM_AUDIT_NO_ERROR)
         list(APPEND end_project_options AUDIT_NO_ERROR)
-    endif()
-    if(QT_INTERNAL_SBOM_GENERATE_JSON OR QT_INTERNAL_SBOM_DEFAULT_CHECKS)
-        list(APPEND end_project_options GENERATE_JSON)
     endif()
 
     if(QT_GENERATE_SOURCE_SBOM)

@@ -229,8 +229,10 @@ endfunction()
 function(_qt_internal_sbom_end_project_generate)
     set(opt_args
         GENERATE_JSON
+        GENERATE_JSON_REQUIRED
         GENERATE_SOURCE_SBOM
-        VERIFY
+        VERIFY_SBOM
+        VERIFY_SBOM_REQUIRED
         VERIFY_NTIA_COMPLIANT
         LINT_SOURCE_SBOM
         LINT_SOURCE_SBOM_NO_ERROR
@@ -258,13 +260,33 @@ function(_qt_internal_sbom_end_project_generate)
     _qt_internal_get_staging_area_spdx_file_path(staging_area_spdx_file)
 
     if(arg_GENERATE_JSON AND NOT QT_INTERNAL_NO_SBOM_PYTHON_OPS)
-        _qt_internal_sbom_find_and_handle_sbom_op_dependencies(REQUIRED OP_KEY "GENERATE_JSON")
-        _qt_internal_sbom_generate_json()
+        set(op_args
+            OP_KEY "GENERATE_JSON"
+            OUT_VAR_DEPS_FOUND deps_found
+        )
+        if(arg_GENERATE_JSON_REQUIRED)
+            list(APPEND op_args REQUIRED)
+        endif()
+
+        _qt_internal_sbom_find_and_handle_sbom_op_dependencies(${op_args})
+        if(deps_found)
+            _qt_internal_sbom_generate_json()
+        endif()
     endif()
 
-    if(arg_VERIFY AND NOT QT_INTERNAL_NO_SBOM_PYTHON_OPS)
-        _qt_internal_sbom_find_and_handle_sbom_op_dependencies(REQUIRED OP_KEY "VERIFY_SBOM")
-        _qt_internal_sbom_verify_valid()
+    if(arg_VERIFY_SBOM AND NOT QT_INTERNAL_NO_SBOM_PYTHON_OPS)
+        set(op_args
+            OP_KEY "VERIFY_SBOM"
+            OUT_VAR_DEPS_FOUND deps_found
+        )
+        if(arg_VERIFY_SBOM_REQUIRED)
+            list(APPEND op_args REQUIRED)
+        endif()
+
+        _qt_internal_sbom_find_and_handle_sbom_op_dependencies(${op_args})
+        if(deps_found)
+            _qt_internal_sbom_verify_valid()
+        endif()
     endif()
 
     if(arg_VERIFY_NTIA_COMPLIANT AND NOT QT_INTERNAL_NO_SBOM_PYTHON_OPS)

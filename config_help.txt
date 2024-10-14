@@ -105,8 +105,18 @@ Build options:
                          through an app store by default, in particular Android,
                          iOS, tvOS, and watchOS. [auto]
 
-  -sbom ................ Enable Software Bill of Materials (SBOM) generation
-                         [no]
+  -sbom ................ Enable generation of Software Bill of Materials (SBOM)
+                         documents in SPDX tag:value format
+                         [yes; no for developer builds]
+  -sbom-json ........... Enable SBOM generation in SPDX JSON format [auto]
+                         (if Python dependencies are available)
+  -sbom-json-required .. Fails the build if the Python dependencies for JSON
+                         generation are not found [no]
+  -sbom-verify ......... Verify generated SBOM files [auto] (if Python
+                         dependencies are available)
+  -sbom-verify-required  Fails the build if the Python dependencies for SBOM
+                         verification are not found [no]
+
 
   -qt-host-path <path> . Specify path to a Qt host build for cross-compiling.
   -qtnamespace <name> .. Wrap all Qt library code in 'namespace <name> {...}'.
