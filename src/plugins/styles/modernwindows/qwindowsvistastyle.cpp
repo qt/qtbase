@@ -4782,6 +4782,9 @@ void QWindowsVistaStyle::polish(QPalette &pal)
         d->groupBoxTextColor = qRgb(GetRValue(cref), GetGValue(cref), GetBValue(cref));
         GetThemeColor(theme.handle(), BP_GROUPBOX, GBS_DISABLED, TMT_TEXTCOLOR, &cref);
         d->groupBoxTextColorDisabled = qRgb(GetRValue(cref), GetGValue(cref), GetBValue(cref));
+        //Work around Windows API returning the same color for enabled and disabled group boxes
+        if (d->groupBoxTextColor == d->groupBoxTextColorDisabled)
+             d->groupBoxTextColorDisabled = pal.color(QPalette::Disabled, QPalette::ButtonText).rgb();
         // Where does this color come from?
         //GetThemeColor(theme.handle(), TKP_TICS, TSS_NORMAL, TMT_COLOR, &cref);
         d->sliderTickColor = qRgb(165, 162, 148);
