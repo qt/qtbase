@@ -421,6 +421,8 @@ macro(qt_internal_setup_build_and_global_variables)
 
     qt_internal_setup_build_tools()
 
+    qt_internal_setup_sbom()
+
     # Depends on qt_internal_setup_default_install_prefix
     qt_internal_setup_build_examples()
 
