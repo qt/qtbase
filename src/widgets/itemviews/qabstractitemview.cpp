@@ -2222,7 +2222,7 @@ bool QAbstractItemViewPrivate::dropOn(QDropEvent *event, int *dropRow, int *drop
     // rootIndex() (i.e. the viewport) might be a valid index
     if (viewport->rect().contains(event->position().toPoint())) {
         index = q->indexAt(event->position().toPoint());
-        if (!index.isValid() || !q->visualRect(index).contains(event->position().toPoint()))
+        if (!index.isValid())
             index = root;
     }
 
