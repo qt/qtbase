@@ -414,6 +414,21 @@ void tst_QThreadPool::expiryTimeout()
 
     threadPool.setExpiryTimeout(expiryTimeout);
     QCOMPARE(threadPool.expiryTimeout(), expiryTimeout);
+
+    threadPool.waitForDone();
+    // Negative times should be 'forever'
+    threadPool.setExpiryTimeout(-1);
+    QCOMPARE(threadPool.expiryTimeout(), -1);
+
+    threadPool.start(&task);
+    QVERIFY(task.semaphore.tryAcquire(1, 10'000));
+    QCOMPARE(task.runCount.loadRelaxed(), 3);
+    firstThread = task.thread;
+
+    QTest::qWait(100); // Let some time elapse after the task finishes...
+
+    // Since the thread never expires it should still be waiting for a new task:
+    QVERIFY(firstThread->isRunning());
 }
 
 void tst_QThreadPool::expiryTimeoutRace() // QTBUG-3786
