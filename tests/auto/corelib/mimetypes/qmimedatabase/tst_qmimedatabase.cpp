@@ -221,7 +221,7 @@ void tst_QMimeDatabase::mimeTypeForName()
     QCOMPARE(doesNotExist.comment(), QString());
     QCOMPARE(doesNotExist.aliases(), QStringList());
 
-#ifdef Q_OS_LINUX
+#if defined(Q_OS_UNIX) && !defined(Q_OS_DARWIN)
     if (m_hasFreedesktopOrg) {
         QString exePath = QStandardPaths::findExecutable(QLatin1String("ls"));
         if (exePath.isEmpty())
