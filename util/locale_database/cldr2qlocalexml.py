@@ -38,10 +38,11 @@ from pathlib import Path
 import argparse
 
 from cldr import CldrReader
+from typing import TextIO
 from qlocalexml import QLocaleXmlWriter
 
 
-def main(argv, out, err):
+def main(argv: list[str], out: TextIO, err: TextIO) -> int:
     """Generate a QLocaleXML file from CLDR data.
 
     Takes sys.argv, sys.stdout, sys.stderr (or equivalents) as
@@ -87,7 +88,7 @@ def main(argv, out, err):
             parser.error(f'Failed to open "{xml}" to write output to it')
 
     reader = CldrReader(root,
-                        (lambda *x: None) if args.verbose < 0 else
+                        (lambda *x: 0) if args.verbose < 0 else
                         # Use stderr for logging if stdout is where our XML is going:
                         err.write if out is emit else out.write,
                         err.write)
