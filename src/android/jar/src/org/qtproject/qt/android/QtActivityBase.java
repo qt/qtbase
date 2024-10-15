@@ -337,7 +337,7 @@ public class QtActivityBase extends Activity
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults)
     {
-        QtNative.sendRequestPermissionsResult(requestCode, permissions, grantResults);
+        QtNative.sendRequestPermissionsResult(requestCode, grantResults);
     }
 
     @UsedFromNativeCode

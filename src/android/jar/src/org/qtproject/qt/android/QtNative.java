@@ -462,7 +462,7 @@ public class QtNative
 
     static native void runPendingCppRunnables();
 
-    static native void sendRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults);
+    static native void sendRequestPermissionsResult(int requestCode, int[] grantResults);
     // activity methods
 
     // service methods

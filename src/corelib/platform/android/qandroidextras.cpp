@@ -1051,15 +1051,14 @@ static int nextRequestCode()
     \internal
 
     This function is called when the result of the permission request is available.
-    Once a permission is requested, the result is braodcast by the OS and listened
+    Once a permission is requested, the result is broadcast by the OS and listened
     to by QtActivity which passes it to C++ through a native JNI method call.
  */
-static void sendRequestPermissionsResult(JNIEnv *env, jobject obj, jint requestCode,
-                                         const QStringList &permissions, const QList<int> &grantResults)
+static void sendRequestPermissionsResult(JNIEnv *env, jclass obj, jint requestCode,
+                                         const QJniArray<int> &grantResults)
 {
     Q_UNUSED(env);
     Q_UNUSED(obj);
-    Q_UNUSED(permissions);
 
     QMutexLocker locker(&g_pendingPermissionRequestsMutex);
     auto it = g_pendingPermissionRequests->constFind(requestCode);
@@ -1072,8 +1071,13 @@ static void sendRequestPermissionsResult(JNIEnv *env, jobject obj, jint requestC
     g_pendingPermissionRequests->erase(it);
     locker.unlock();
 
-    for (qsizetype i = 0; i < grantResults.size(); ++i)
-        request->addResult(resultFromAndroid(grantResults.at(i)), i);
+    request->addResults([grantResults](){
+        QList<QtAndroidPrivate::PermissionResult> results(grantResults.size(),
+                                                          Qt::Uninitialized);
+        for (qsizetype i = 0; i < grantResults.size(); ++i)
+            results[i] = resultFromAndroid(grantResults.at(i));
+        return results;
+    }());
 
     QtAndroidPrivate::releaseAndroidDeadlockProtector();
     request->finish();
