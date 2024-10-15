@@ -212,6 +212,7 @@ public:
         MaxConcurrentStreamsReached,
         StreamIdsExhausted,
         ReceivedGOAWAY,
+        UnknownError,
     };
     Q_ENUM(CreateStreamError)
 
