@@ -75,7 +75,10 @@ class QtEmbeddedDelegate extends QtActivityDelegateBase
 
             @Override
             public void onActivityDestroyed(Activity activity) {
-                if (m_activity == activity && m_stateDetails.isStarted) {
+                // If the Activity was destroyed due to a configuration change, it will be recreated
+                // instantly, so don't terminate Qt if that's the case
+                if (m_activity == activity && m_stateDetails.isStarted &&
+                    !activity.isChangingConfigurations()) {
                     m_activity.getApplication().unregisterActivityLifecycleCallbacks(this);
                     QtNative.unregisterAppStateListener(QtEmbeddedDelegate.this);
                     QtEmbeddedViewInterfaceFactory.remove(m_activity);
