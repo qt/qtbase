@@ -878,8 +878,13 @@ QHttp2Connection::createStreamInternal()
     const quint32 streamID = m_nextStreamID;
     if (size_t(m_maxConcurrentStreams) <= size_t(numActiveLocalStreams()))
         return { QHttp2Connection::CreateStreamError::MaxConcurrentStreamsReached };
-    m_nextStreamID += 2;
-    return { createStreamInternal_impl(streamID) };
+
+    if (QHttp2Stream *ptr = createStreamInternal_impl(streamID)) {
+        m_nextStreamID += 2;
+        return {ptr};
+    }
+    // Connection could be broken, we could've ran out of memory, we don't know
+    return { QHttp2Connection::CreateStreamError::UnknownError };
 }
 
 QHttp2Stream *QHttp2Connection::createStreamInternal_impl(quint32 streamID)
