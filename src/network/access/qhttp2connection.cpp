@@ -1937,7 +1937,7 @@ bool QHttp2Connection::acceptSetting(Http2::Settings identifier, quint32 newValu
         qCDebug(qHttp2ConnectionLog, "[%p] Adjusting initial window size for %zu streams by %d",
                 this, size_t(m_streams.size()), delta);
         for (const QPointer<QHttp2Stream> &stream : std::as_const(m_streams)) {
-            if (!stream || !stream->isActive())
+            if (!stream)
                 continue;
             qint32 sum = 0;
             if (qAddOverflow(stream->m_sendWindow, delta, &sum)) {
