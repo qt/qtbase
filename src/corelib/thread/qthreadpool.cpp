@@ -11,6 +11,8 @@
 #include <algorithm>
 #include <memory>
 
+using namespace std::chrono_literals;
+
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
@@ -113,12 +115,7 @@ void QThreadPoolThread::run()
         manager->waitingThreads.enqueue(this);
         registerThreadInactive();
         // wait for work, exiting after the expiry timeout is reached
-        QDeadlineTimer deadline;
-        if (manager->expiryTimeout.count() < 0)
-            deadline = QDeadlineTimer::Forever;
-        else
-            deadline.setRemainingTime(manager->expiryTimeout);
-        runnableReady.wait(locker.mutex(), deadline);
+        runnableReady.wait(locker.mutex(), QDeadlineTimer(manager->expiryTimeout));
         // this thread is about to be deleted, do not work or expire
         if (!manager->allThreads.contains(this)) {
             Q_ASSERT(manager->queue.isEmpty());
@@ -606,6 +603,8 @@ int QThreadPool::expiryTimeout() const
     using namespace std::chrono;
     Q_D(const QThreadPool);
     QMutexLocker locker(&d->mutex);
+    if (d->expiryTimeout == decltype(d->expiryTimeout)::max())
+        return -1;
     return duration_cast<milliseconds>(d->expiryTimeout).count();
 }
 
@@ -613,7 +612,10 @@ void QThreadPool::setExpiryTimeout(int expiryTimeout)
 {
     Q_D(QThreadPool);
     QMutexLocker locker(&d->mutex);
-    d->expiryTimeout = std::chrono::milliseconds(expiryTimeout);
+    if (expiryTimeout < 0)
+        d->expiryTimeout = decltype(d->expiryTimeout)::max();
+    else
+        d->expiryTimeout = expiryTimeout * 1ms;
 }
 
 /*! \property QThreadPool::maxThreadCount
