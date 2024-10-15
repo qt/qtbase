@@ -19,8 +19,9 @@ You can download jing from https://relaxng.org/jclark/jing.html if your
 package manager lacks the jing package.
 """
 
-from typing import Iterator
+from typing import Callable, Iterable, Iterator
 from xml.sax.saxutils import escape
+from xml.dom import minidom
 
 from localetools import Error
 
@@ -46,14 +47,16 @@ def startCount(c, text): # strspn
         return len(text)
 
 class QLocaleXmlReader (object):
-    def __init__(self, filename):
-        self.root = self.__parse(filename)
+    def __init__(self, filename: str) -> None:
+        self.root: minidom.Element = self.__parse(filename)
 
         from enumdata import language_map, script_map, territory_map
-        # Lists of (id, enum name, code, en.xml name) tuples:
+        # Tuples  of (id, enum name, code, en.xml name) tuples:
         languages = tuple(self.__loadMap('language', language_map))
         scripts = tuple(self.__loadMap('script', script_map))
         territories = tuple(self.__loadMap('territory', territory_map))
+
+        # as enum numeric values, tuple[tuple[int, int, int], tuple[int, int, int]]
         self.__likely = tuple(self.__likelySubtagsMap())
 
         # Mappings {ID: (enum name, code, en.xml name)}
@@ -69,14 +72,15 @@ class QLocaleXmlReader (object):
         self.__dupes = set(v[1] for v in languages) & set(v[1] for v in territories)
         self.cldrVersion = self.__firstChildText(self.root, "version")
 
-    def loadLocaleMap(self, calendars, grumble = lambda text: None):
-        kid = self.__firstChildText
-        likely = dict(self.__likely)
+    def loadLocaleMap(self, calendars: Iterable[str], grumble = lambda text: None):
+        kid: Callable[[minidom.Element, str], str] = self.__firstChildText
+        likely: dict[tuple[int, int, int], tuple[int, int, int]] = dict(self.__likely)
+
         for elt in self.__eachEltInGroup(self.root, 'localeList', 'locale'):
-            locale = Locale.fromXmlData(lambda k: kid(elt, k), calendars)
-            language = self.__langByName[locale.language][0]
-            script = self.__textByName[locale.script][0]
-            territory = self.__landByName[locale.territory][0]
+            locale: Locale = Locale.fromXmlData(lambda k: kid(elt, k), calendars)
+            language: int = self.__langByName[locale.language][0]
+            script: int = self.__textByName[locale.script][0]
+            territory: int = self.__landByName[locale.territory][0]
 
             if language != 1: # C
                 if territory == 0:
@@ -87,7 +91,8 @@ class QLocaleXmlReader (object):
                     # http://www.unicode.org/reports/tr35/#Likely_Subtags
                     try:
                         try:
-                            to = likely[(locale.language, 'AnyScript', locale.territory)]
+                            to: tuple[int, int, int] = likely[(locale.language, 'AnyScript',
+                                                               locale.territory)]
                         except KeyError:
                             to = likely[(locale.language, 'AnyScript', 'AnyTerritory')]
                     except KeyError:
@@ -98,22 +103,22 @@ class QLocaleXmlReader (object):
 
             yield (language, script, territory), locale
 
-    def aliasToIana(self):
-        kid = self.__firstChildText
+    def aliasToIana(self) -> Iterator[tuple[str, str]]:
+        kid: Callable[[minidom.Element, str], str] = self.__firstChildText
         for elt in self.__eachEltInGroup(self.root, 'zoneAliases', 'zoneAlias'):
             yield kid(elt, 'alias'), kid(elt, 'iana')
 
-    def msToIana(self):
-        kid = self.__firstChildText
+    def msToIana(self) -> Iterator[tuple[str, str]]:
+        kid: Callable[[minidom.Element, str], str] = self.__firstChildText
         for elt in self.__eachEltInGroup(self.root, 'windowsZone', 'msZoneIana'):
             yield kid(elt, 'msid'), kid(elt, 'iana')
 
-    def msLandIanas(self):
-        kid = self.__firstChildText
+    def msLandIanas(self) -> Iterator[tuple[str, str, str]]:
+        kid: Callable[[minidom.Element, str], str] = self.__firstChildText
         for elt in self.__eachEltInGroup(self.root, 'windowsZone', 'msLandZones'):
             yield kid(elt, 'msid'), kid(elt, 'territorycode'), kid(elt, 'ianaids')
 
-    def languageIndices(self, locales):
+    def languageIndices(self, locales: tuple[int, ...]) -> Iterator[tuple[int, str]]:
         index = 0
         for key, value in self.languages.items():
             i, count = 0, locales.count(key)
@@ -122,14 +127,15 @@ class QLocaleXmlReader (object):
                 index += count
             yield i, value[0]
 
-    def likelyMap(self):
-        def tag(t):
+    def likelyMap(self) -> Iterator[tuple[str, tuple[int, int, int], str, tuple[int, int, int]]]:
+        def tag(t: tuple[tuple[int, str], tuple[int, str], tuple[int, str]]) -> Iterator[str]:
             lang, script, land = t
             yield lang[1] if lang[0] else 'und'
             if script[0]: yield script[1]
             if land[0]: yield land[1]
 
-        def ids(t):
+        def ids(t: tuple[tuple[int, str], tuple[int, str], tuple[int, str]]
+                ) -> tuple[int, int, int]:
             return tuple(x[0] for x in t)
 
         for pair in self.__likely:
@@ -151,7 +157,7 @@ class QLocaleXmlReader (object):
                         self.__textByName[give[1]][0]),
                        self.__landByName[give[2]][0])
 
-    def enumify(self, name, suffix):
+    def enumify(self, name: str, suffix: str) -> str:
         """Stick together the parts of an enumdata.py name.
 
         Names given in enumdata.py include spaces and hyphens that we
@@ -178,17 +184,21 @@ class QLocaleXmlReader (object):
         return name
 
     # Implementation details:
-    def __loadMap(self, category, enum):
+    def __loadMap(self, category: str, enum: dict[int, tuple[str, str]]
+                 ) -> Iterator[tuple[int, str, str, str]]:
         kid = self.__firstChildText
         for element in self.__eachEltInGroup(self.root, f'{category}List', category):
             key = int(kid(element, 'id'))
             yield key, enum[key][0], kid(element, 'code'), kid(element, 'name')
 
-    def __likelySubtagsMap(self):
-        def triplet(element, keys=('language', 'script', 'territory'), kid = self.__firstChildText):
+    # Likely subtag management:
+    def __likelySubtagsMap(self) -> Iterator[tuple[tuple[int, int, int], tuple[int, int, int]]]:
+        def triplet(element: minidom.Element,
+                    keys: tuple[str, str, str]=('language', 'script', 'territory'),
+                    kid = self.__firstChildText) -> tuple[str, str, str]:
             return tuple(kid(element, key) for key in keys)
 
-        kid = self.__firstChildElt
+        kid: Callable[[minidom.Element, str], minidom.Element] = self.__firstChildElt
         for elt in self.__eachEltInGroup(self.root, 'likelySubtags', 'likelySubtag'):
             yield triplet(kid(elt, "from")), triplet(kid(elt, "to"))
 
@@ -198,17 +208,18 @@ class QLocaleXmlReader (object):
     # DOM access:
     from xml.dom import minidom
     @staticmethod
-    def __parse(filename, read = minidom.parse):
+    def __parse(filename: str, read = minidom.parse) -> minidom.Element:
         return read(filename).documentElement
 
     @staticmethod
-    def __isNodeNamed(elt, name, TYPE=minidom.Node.ELEMENT_NODE):
+    def __isNodeNamed(elt: minidom.Element|minidom.Text, name: str,
+                      TYPE: int = minidom.Node.ELEMENT_NODE) -> bool:
         return elt.nodeType == TYPE and elt.nodeName == name
     del minidom
 
     @staticmethod
-    def __eltWords(elt):
-        child = elt.firstChild
+    def __eltWords(elt: minidom.Element) -> Iterator[str]:
+        child: minidom.Text|minidom.CDATASection|None = elt.firstChild
         while child:
             if child.nodeType == elt.TEXT_NODE:
                 # Note: do not strip(), as some group separators are
@@ -217,8 +228,8 @@ class QLocaleXmlReader (object):
             child = child.nextSibling
 
     @classmethod
-    def __firstChildElt(cls, parent, name):
-        child = parent.firstChild
+    def __firstChildElt(cls, parent: minidom.Element, name: str) -> minidom.Element:
+        child: minidom.Text|minidom.Element = parent.firstChild
         while child:
             if cls.__isNodeNamed(child, name):
                 return child
@@ -227,13 +238,14 @@ class QLocaleXmlReader (object):
         raise Error(f'No {name} child found')
 
     @classmethod
-    def __firstChildText(cls, elt, key):
+    def __firstChildText(cls, elt: minidom.Element, key: str) -> str:
         return ' '.join(cls.__eltWords(cls.__firstChildElt(elt, key)))
 
     @classmethod
-    def __eachEltInGroup(cls, parent, group, key):
+    def __eachEltInGroup(cls, parent: minidom.Element, group: str, key: str
+                         ) -> Iterator[minidom.Element]:
         try:
-            element = cls.__firstChildElt(parent, group).firstChild
+            element: minidom.Element = cls.__firstChildElt(parent, group).firstChild
         except Error:
             element = None
 
