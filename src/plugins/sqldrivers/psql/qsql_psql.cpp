@@ -205,7 +205,7 @@ bool QPSQLDriverPrivate::setSingleRowMode() const
 
 PGresult *QPSQLDriverPrivate::getResult(StatementId stmtId) const
 {
-    // Make sure the results of stmtId weren't discaded. This might
+    // Make sure the results of stmtId weren't discarded. This might
     // happen for forward-only queries if somebody executed another
     // SQL query on the same db connection.
     if (stmtId != currentStmtId) {
