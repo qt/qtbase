@@ -256,16 +256,14 @@ function(_qt_internal_sbom_end_project_generate)
 
     _qt_internal_get_staging_area_spdx_file_path(staging_area_spdx_file)
 
-    if((arg_GENERATE_JSON OR arg_VERIFY) AND NOT QT_INTERNAL_NO_SBOM_PYTHON_OPS)
-        _qt_internal_sbom_find_python()
-        _qt_internal_sbom_find_python_dependencies()
-    endif()
-
     if(arg_GENERATE_JSON AND NOT QT_INTERNAL_NO_SBOM_PYTHON_OPS)
+        _qt_internal_sbom_find_and_handle_sbom_op_dependencies(REQUIRED OP_KEY "GENERATE_JSON")
         _qt_internal_sbom_generate_json()
     endif()
 
     if(arg_VERIFY AND NOT QT_INTERNAL_NO_SBOM_PYTHON_OPS)
+        _qt_internal_sbom_find_and_handle_sbom_op_dependencies(REQUIRED OP_KEY "VERIFY_SBOM")
+        _qt_internal_sbom_find_and_handle_sbom_op_dependencies(REQUIRED OP_KEY "RUN_NTIA")
         _qt_internal_sbom_verify_valid_and_ntia_compliant()
     endif()
 
@@ -978,82 +976,311 @@ function(_qt_internal_sbom_get_and_check_spdx_id)
     set(${arg_VARIABLE} "${id}" PARENT_SCOPE)
 endfunction()
 
-# Helper to find the python interpreter, to be able to run post-installation steps like NTIA
-# verification.
+# Helper to find a python interpreter and a specific python dependency, e.g. to be able to generate
+# a SPDX JSON SBOM, or run post-installation steps like NTIA verification.
+# The exact dependency should be specified as the OP_KEY.
 #
 # Caches the found python executable in a separate cache var QT_INTERNAL_SBOM_PYTHON_EXECUTABLE, to
-# avoid conflicts with any other found python package.
+# avoid conflicts with any other found python interpreter.
+function(_qt_internal_sbom_find_and_handle_sbom_op_dependencies)
+    set(opt_args
+        REQUIRED
+    )
+    set(single_args
+        OP_KEY
+        OUT_VAR_DEPS_FOUND
+    )
+    set(multi_args "")
+    cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    if(NOT arg_OP_KEY)
+        message(FATAL_ERROR "OP_KEY is required")
+    endif()
+
+    set(supported_ops "GENERATE_JSON" "VERIFY_SBOM" "RUN_NTIA")
+
+    if(arg_OP_KEY STREQUAL "GENERATE_JSON" OR arg_OP_KEY STREQUAL "VERIFY_SBOM")
+        set(import_statement "import spdx_tools.spdx.clitools.pyspdxtools")
+    elseif(arg_OP_KEY STREQUAL "RUN_NTIA")
+        set(import_statement "import ntia_conformance_checker.main")
+    else()
+        message(FATAL_ERROR "OP_KEY must be one of ${supported_ops}")
+    endif()
+
+    # Return early if we found the dependencies.
+    if(QT_INTERNAL_SBOM_DEPS_FOUND_FOR_${arg_OP_KEY})
+        if(arg_OUT_VAR_DEPS_FOUND)
+            set(${arg_OUT_VAR_DEPS_FOUND} TRUE PARENT_SCOPE)
+        endif()
+        return()
+    endif()
+
+    # NTIA-compliance checker requires Python 3.9 or later, so we use it as the minimum for all
+    # SBOM OPs.
+    set(required_version "3.9")
+
+    set(python_common_args
+        VERSION "${required_version}"
+    )
+
+    set(everything_found FALSE)
+
+    # On macOS FindPython prefers looking in the system framework location, but that usually would
+    # not have the required dependencies. So we first look in it, and then fallback to any other
+    # non-framework python found.
+    if(CMAKE_HOST_APPLE)
+        set(extra_python_args SEARCH_IN_FRAMEWORKS QUIET)
+        _qt_internal_sbom_find_python_and_dependency_helper_lambda()
+    endif()
+
+    if(NOT everything_found)
+        set(extra_python_args QUIET)
+        _qt_internal_sbom_find_python_and_dependency_helper_lambda()
+    endif()
+
+    if(NOT everything_found)
+        if(arg_REQUIRED)
+            set(message_type "FATAL_ERROR")
+        else()
+            set(message_type "DEBUG")
+        endif()
+
+        if(NOT python_found)
+            # Look for python one more time, this time without QUIET, to show an error why it
+            # wasn't found.
+            if(arg_REQUIRED)
+                _qt_internal_sbom_find_python_helper(${python_common_args}
+                    OUT_VAR_PYTHON_PATH unused_python
+                    OUT_VAR_PYTHON_FOUND unused_found
+                )
+            endif()
+            message(${message_type} "Python ${required_version} for running SBOM ops not found.")
+        elseif(NOT dep_found)
+            message(${message_type} "Python dependency for running SBOM op ${arg_OP_KEY} "
+                "not found:\n Python: ${python_path} \n Output: \n${dep_find_output}")
+        endif()
+    else()
+        message(DEBUG "Using Python ${python_path} for running SBOM ops.")
+
+        if(NOT QT_INTERNAL_SBOM_PYTHON_EXECUTABLE)
+            set(QT_INTERNAL_SBOM_PYTHON_EXECUTABLE "${python_path}" CACHE INTERNAL
+                "Python interpeter used for SBOM generation.")
+        endif()
+
+        set(QT_INTERNAL_SBOM_DEPS_FOUND_FOR_${arg_OP_KEY} "TRUE" CACHE INTERNAL
+            "All dependencies found to run SBOM OP ${arg_OP_KEY}")
+    endif()
+
+    if(arg_OUT_VAR_DEPS_FOUND)
+        set(${arg_OUT_VAR_DEPS_FOUND} "${QT_INTERNAL_SBOM_DEPS_FOUND_FOR_${arg_OP_KEY}}"
+            PARENT_SCOPE)
+    endif()
+endfunction()
+
+# Helper macro to find python and a given dependency. Expects the caller to set all of the vars.
+# Meant to reduce the line noise due to the repeated calls.
+macro(_qt_internal_sbom_find_python_and_dependency_helper_lambda)
+    _qt_internal_sbom_find_python_and_dependency_helper(
+        PYTHON_ARGS
+            ${extra_python_args}
+            ${python_common_args}
+        DEPENDENCY_ARGS
+            DEPENDENCY_IMPORT_STATEMENT "${import_statement}"
+        OUT_VAR_PYTHON_PATH python_path
+        OUT_VAR_PYTHON_FOUND python_found
+        OUT_VAR_DEP_FOUND dep_found
+        OUT_VAR_PYTHON_AND_DEP_FOUND everything_found
+        OUT_VAR_DEP_FIND_OUTPUT dep_find_output
+    )
+endmacro()
+
+# Tries to find python and a given dependency based on the args passed to PYTHON_ARGS and
+# DEPENDENCY_ARGS which are forwarded to the respective finding functions.
+# Returns the path to the python interpreter, whether it was found, whether the dependency was
+# found, whether both were found, and the reason why the dependency might not be found.
+function(_qt_internal_sbom_find_python_and_dependency_helper)
+    set(opt_args)
+    set(single_args
+        OUT_VAR_PYTHON_PATH
+        OUT_VAR_PYTHON_FOUND
+        OUT_VAR_DEP_FOUND
+        OUT_VAR_PYTHON_AND_DEP_FOUND
+        OUT_VAR_DEP_FIND_OUTPUT
+    )
+    set(multi_args
+        PYTHON_ARGS
+        DEPENDENCY_ARGS
+    )
+    cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    set(everything_found_inner FALSE)
+    set(deps_find_output_inner "")
+
+    if(NOT arg_OUT_VAR_PYTHON_PATH)
+        message(FATAL_ERROR "OUT_VAR_PYTHON_PATH var is required")
+    endif()
+
+    if(NOT arg_OUT_VAR_PYTHON_FOUND)
+        message(FATAL_ERROR "OUT_VAR_PYTHON_FOUND var is required")
+    endif()
+
+    if(NOT arg_OUT_VAR_DEP_FOUND)
+        message(FATAL_ERROR "OUT_VAR_DEP_FOUND var is required")
+    endif()
+
+    if(NOT arg_OUT_VAR_PYTHON_AND_DEP_FOUND)
+        message(FATAL_ERROR "OUT_VAR_PYTHON_AND_DEP_FOUND var is required")
+    endif()
+
+    if(NOT arg_OUT_VAR_DEP_FIND_OUTPUT)
+        message(FATAL_ERROR "OUT_VAR_DEP_FIND_OUTPUT var is required")
+    endif()
+
+    _qt_internal_sbom_find_python_helper(
+        ${arg_PYTHON_ARGS}
+        OUT_VAR_PYTHON_PATH python_path_inner
+        OUT_VAR_PYTHON_FOUND python_found_inner
+    )
+
+    if(python_found_inner AND python_path_inner)
+        _qt_internal_sbom_find_python_dependency_helper(
+            ${arg_DEPENDENCY_ARGS}
+            PYTHON_PATH "${python_path_inner}"
+            OUT_VAR_FOUND dep_found_inner
+            OUT_VAR_OUTPUT dep_find_output_inner
+        )
+
+        if(dep_found_inner)
+            set(everything_found_inner TRUE)
+        endif()
+    endif()
+
+    set(${arg_OUT_VAR_PYTHON_PATH} "${python_path_inner}" PARENT_SCOPE)
+    set(${arg_OUT_VAR_PYTHON_FOUND} "${python_found_inner}" PARENT_SCOPE)
+    set(${arg_OUT_VAR_DEP_FOUND} "${dep_found_inner}" PARENT_SCOPE)
+    set(${arg_OUT_VAR_PYTHON_AND_DEP_FOUND} "${everything_found_inner}" PARENT_SCOPE)
+    set(${arg_OUT_VAR_DEP_FIND_OUTPUT} "${dep_find_output_inner}" PARENT_SCOPE)
+endfunction()
+
+# Tries to find the python intrepreter, given the QT_SBOM_PYTHON_INTERP path hint, as well as
+# other options.
+# Ignores any previously found python.
+# Returns the python interpreter path and whether it was successfully found.
 #
 # This is intentionally a function, and not a macro, to prevent overriding the Python3_EXECUTABLE
 # non-cache variable in a global scope in case if a different python is found and used for a
 # different purpose (e.g. qtwebengine or qtinterfaceframework).
 # The reason to use a different python is that an already found python might not be the version we
-# need.
+# need, or might lack the dependencies we need.
 # https://gitlab.kitware.com/cmake/cmake/-/issues/21797#note_901621 claims that finding multiple
 # python versions in separate directory scopes is possible, and I claim a function scope is as
 # good as a directory scope.
-function(_qt_internal_sbom_find_python)
-    # Return early if we found a suitable python.
-    if(QT_INTERNAL_SBOM_PYTHON_EXECUTABLE)
-        return()
+function(_qt_internal_sbom_find_python_helper)
+    set(opt_args
+        SEARCH_IN_FRAMEWORKS
+        QUIET
+    )
+    set(single_args
+        VERSION
+        OUT_VAR_PYTHON_PATH
+        OUT_VAR_PYTHON_FOUND
+    )
+    set(multi_args "")
+    cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    if(NOT arg_OUT_VAR_PYTHON_PATH)
+        message(FATAL_ERROR "OUT_VAR_PYTHON_PATH var is required")
+    endif()
+
+    if(NOT arg_OUT_VAR_PYTHON_FOUND)
+        message(FATAL_ERROR "OUT_VAR_PYTHON_FOUND var is required")
     endif()
 
     # Allow disabling looking for a python interpreter shipped as part of a macOS system framework.
-    if(QT_INTERNAL_NO_SBOM_FIND_PYTHON_FRAMEWORK)
-        set(Python_FIND_FRAMEWORK NEVER)
+    if(NOT arg_SEARCH_IN_FRAMEWORKS)
         set(Python3_FIND_FRAMEWORK NEVER)
     endif()
 
-    # NTIA-compliance checker requires Python 3.9 or later.
-    set(required_version "3.9")
-
-    # Python3_VERSION would have been set by a previous find_package(Python3) call.
-    set(already_found_python_version "${Python3_VERSION}")
-
-    if(NOT already_found_python_version
-            OR "${already_found_python_version}" VERSION_LESS "${required_version}")
-        # Locally reset any executable that was possibly already found and is a lower version.
-        # We do this to ensure we re-do the lookup, rather than error out saying a low version was
-        # found.
-        set(Python3_EXECUTABLE "")
-
-        if(QT_SBOM_PYTHON_INTERP)
-            set(Python3_ROOT_DIR ${QT_SBOM_PYTHON_INTERP})
-        endif()
-
-        find_package(Python3 ${required_version} REQUIRED COMPONENTS Interpreter)
-
-        # We won't get here unless a version was found, because of the REQUIRED.
-        set(QT_INTERNAL_SBOM_PYTHON_EXECUTABLE "${Python3_EXECUTABLE}" CACHE STRING
-            "Python interpeter used for SBOM steps")
+    set(required_version "")
+    if(arg_VERSION)
+        set(required_version "${arg_VERSION}")
     endif()
+
+    set(find_quiet "")
+    if(arg_QUIET)
+        set(find_quiet "QUIET")
+    endif()
+
+    # Locally reset any executable that was possibly already found.
+    # We do this to ensure we always re-do the lookup/
+    # This needs to be set to an empty string, to override any cache variable
+    set(Python3_EXECUTABLE "")
+
+    # This needs to be unset, because the Python module checks whether the variable is defined, not
+    # whether it is empty.
+    unset(_Python3_EXECUTABLE)
+
+    if(QT_SBOM_PYTHON_INTERP)
+        set(Python3_ROOT_DIR ${QT_SBOM_PYTHON_INTERP})
+    endif()
+
+    find_package(Python3 ${required_version} ${find_quiet} COMPONENTS Interpreter)
+
+    set(${arg_OUT_VAR_PYTHON_PATH} "${Python3_EXECUTABLE}" PARENT_SCOPE)
+    set(${arg_OUT_VAR_PYTHON_FOUND} "${Python3_Interpreter_FOUND}" PARENT_SCOPE)
 endfunction()
 
-# Helper to find the various python package dependencies needed to run the post-installation NTIA
-# verification and the spdx format validation step.
-function(_qt_internal_sbom_find_python_dependencies)
-    if(NOT QT_INTERNAL_SBOM_PYTHON_EXECUTABLE)
-        message(FATAL_ERROR "Python interpreter not found for sbom dependencies.")
+# Helper that takes an python import statement to run using the given python interpreter path,
+# to confirm that the given python dependency can be found.
+# Returns whether the dependency was found and the output of running the import, for error handling.
+function(_qt_internal_sbom_find_python_dependency_helper)
+    set(opt_args "")
+    set(single_args
+        DEPENDENCY_IMPORT_STATEMENT
+        PYTHON_PATH
+        OUT_VAR_FOUND
+        OUT_VAR_OUTPUT
+    )
+    set(multi_args "")
+    cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    if(NOT arg_PYTHON_PATH)
+        message(FATAL_ERROR "Python interpreter path not given.")
     endif()
 
-    if(QT_SBOM_HAVE_PYTHON_DEPS)
-        return()
+    if(NOT arg_DEPENDENCY_IMPORT_STATEMENT)
+        message(FATAL_ERROR "Python depdendency import statement not given.")
     endif()
+
+    if(NOT arg_OUT_VAR_FOUND)
+        message(FATAL_ERROR "Out var found variable not given.")
+    endif()
+
+    set(python_path "${arg_PYTHON_PATH}")
     execute_process(
         COMMAND
-            ${QT_INTERNAL_SBOM_PYTHON_EXECUTABLE} -c "
-import spdx_tools.spdx.clitools.pyspdxtools
-import ntia_conformance_checker.main
-"
+            ${python_path} -c "${arg_DEPENDENCY_IMPORT_STATEMENT}"
         RESULT_VARIABLE res
         OUTPUT_VARIABLE output
         ERROR_VARIABLE output
     )
 
     if("${res}" STREQUAL "0")
-        set(QT_SBOM_HAVE_PYTHON_DEPS TRUE CACHE INTERNAL "")
+        set(found TRUE)
+        set(output "${output}")
     else()
-        message(FATAL_ERROR "SBOM Python dependencies not found. Error:\n${output}")
+        set(found FALSE)
+        string(CONCAT output "SBOM Python dependency ${arg_DEPENDENCY_IMPORT_STATEMENT} not found. "
+            "Error:\n${output}")
+    endif()
+
+    set(${arg_OUT_VAR_FOUND} "${found}" PARENT_SCOPE)
+    if(arg_OUT_VAR_OUTPUT)
+        set(${arg_OUT_VAR_OUTPUT} "${output}" PARENT_SCOPE)
     endif()
 endfunction()
 
@@ -1105,6 +1332,9 @@ function(_qt_internal_sbom_generate_json)
     if(NOT QT_INTERNAL_SBOM_PYTHON_EXECUTABLE)
         message(FATAL_ERROR "Python interpreter not found for generating SBOM json file.")
     endif()
+    if(NOT QT_INTERNAL_SBOM_DEPS_FOUND_FOR_GENERATE_JSON)
+        message(FATAL_ERROR "Python dependencies not found for generating SBOM json file.")
+    endif()
 
     set(content "
         message(STATUS \"Generating JSON: \${QT_SBOM_OUTPUT_PATH}.json\")
@@ -1129,6 +1359,14 @@ endfunction()
 function(_qt_internal_sbom_verify_valid_and_ntia_compliant)
     if(NOT QT_INTERNAL_SBOM_PYTHON_EXECUTABLE)
         message(FATAL_ERROR "Python interpreter not found for verifying SBOM file.")
+    endif()
+
+    if(NOT QT_INTERNAL_SBOM_DEPS_FOUND_FOR_VERIFY_SBOM)
+        message(FATAL_ERROR "Python dependencies not found for verifying SBOM file")
+    endif()
+
+    if(NOT QT_INTERNAL_SBOM_DEPS_FOUND_FOR_RUN_NTIA)
+        message(FATAL_ERROR "Python dependencies not found for running the SBOM NTIA checker.")
     endif()
 
     set(content "
