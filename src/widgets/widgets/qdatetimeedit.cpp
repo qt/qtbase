@@ -41,7 +41,7 @@ using namespace Qt::StringLiterals;
   \ingroup basicwidgets
   \inmodule QtWidgets
 
-  \image windows-datetimeedit.png
+  \image fusion-datetimeedit.png
 
   QDateTimeEdit allows the user to edit dates by using the keyboard or
   the arrow keys to increase and decrease date and time values. The
@@ -1609,7 +1609,7 @@ void QDateTimeEdit::mousePressEvent(QMouseEvent *event)
   \ingroup basicwidgets
   \inmodule QtWidgets
 
-  \image windows-timeedit.png
+  \image fusion-timeedit.png
 
   Many of the properties and functions provided by QTimeEdit are implemented in
   QDateTimeEdit. These are the relevant properties of this class:
@@ -1680,7 +1680,7 @@ QTimeEdit::~QTimeEdit()
   \ingroup basicwidgets
   \inmodule QtWidgets
 
-  \image windows-dateedit.png
+  \image fusion-dateedit.png
 
   Many of the properties and functions provided by QDateEdit are implemented in
   QDateTimeEdit. These are the relevant properties of this class:
