@@ -189,9 +189,11 @@ QT_BEGIN_NAMESPACE
 
     The behavior is undefined if \a len is negative or, when positive, if \a str is \nullptr.
 
+//! [compatible-char-types]
     This constructor only participates in overload resolution if \c Char is a compatible
     character type. The compatible character types are: \c QChar, \c ushort, \c char16_t and
     (on platforms, such as Windows, where it is a 16-bit type) \c wchar_t.
+//! [compatible-char-types]
 */
 
 /*!
@@ -208,10 +210,7 @@ QT_BEGIN_NAMESPACE
     The behavior is undefined if \a last precedes \a first, or \a first
     is \nullptr and \a last is not.
 
-    This constructor only participates in overload resolution if \c Char
-    is a compatible character type. The compatible character types
-    are: \c QChar, \c ushort, \c char16_t and (on platforms, such as
-    Windows, where it is a 16-bit type) \c wchar_t.
+    \include qstringview.cpp compatible-char-types
 */
 
 /*!
@@ -224,11 +223,7 @@ QT_BEGIN_NAMESPACE
 
     Passing \nullptr as \a str is safe and results in a null string view.
 
-    This constructor only participates in overload resolution if \a
-    str is not an array and if \c Char is a compatible character
-    type. The compatible character types are: \c QChar, \c ushort, \c
-    char16_t and (on platforms, such as Windows, where it is a 16-bit
-    type) \c wchar_t.
+    \include qstringview.cpp compatible-char-types
 */
 
 /*!
@@ -242,11 +237,7 @@ QT_BEGIN_NAMESPACE
     \a string must remain valid for the lifetime of this string view
     object.
 
-    This constructor only participates in overload resolution if \a
-    string is an actual array and \c Char is a compatible character
-    type. The compatible character types are: \c QChar, \c ushort, \c
-    char16_t and (on platforms, such as Windows, where it is a 16-bit
-    type) \c wchar_t.
+    \include qstringview.cpp compatible-char-types
 
     \sa fromArray
 */
