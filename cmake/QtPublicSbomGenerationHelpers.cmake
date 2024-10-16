@@ -231,6 +231,7 @@ function(_qt_internal_sbom_end_project_generate)
         GENERATE_JSON
         GENERATE_SOURCE_SBOM
         VERIFY
+        VERIFY_NTIA_COMPLIANT
         LINT_SOURCE_SBOM
         LINT_SOURCE_SBOM_NO_ERROR
         SHOW_TABLE
@@ -263,8 +264,12 @@ function(_qt_internal_sbom_end_project_generate)
 
     if(arg_VERIFY AND NOT QT_INTERNAL_NO_SBOM_PYTHON_OPS)
         _qt_internal_sbom_find_and_handle_sbom_op_dependencies(REQUIRED OP_KEY "VERIFY_SBOM")
+        _qt_internal_sbom_verify_valid()
+    endif()
+
+    if(arg_VERIFY_NTIA_COMPLIANT AND NOT QT_INTERNAL_NO_SBOM_PYTHON_OPS)
         _qt_internal_sbom_find_and_handle_sbom_op_dependencies(REQUIRED OP_KEY "RUN_NTIA")
-        _qt_internal_sbom_verify_valid_and_ntia_compliant()
+        _qt_internal_sbom_verify_ntia_compliant()
     endif()
 
     if(arg_SHOW_TABLE AND NOT QT_INTERNAL_NO_SBOM_PYTHON_OPS)
@@ -1355,18 +1360,14 @@ function(_qt_internal_sbom_generate_json)
     set_property(GLOBAL APPEND PROPERTY _qt_sbom_cmake_verify_include_files "${verify_sbom}")
 endfunction()
 
-# Helper to verify the generated sbom is valid and NTIA compliant.
-function(_qt_internal_sbom_verify_valid_and_ntia_compliant)
+# Helper to verify the generated sbom is valid.
+function(_qt_internal_sbom_verify_valid)
     if(NOT QT_INTERNAL_SBOM_PYTHON_EXECUTABLE)
         message(FATAL_ERROR "Python interpreter not found for verifying SBOM file.")
     endif()
 
     if(NOT QT_INTERNAL_SBOM_DEPS_FOUND_FOR_VERIFY_SBOM)
         message(FATAL_ERROR "Python dependencies not found for verifying SBOM file")
-    endif()
-
-    if(NOT QT_INTERNAL_SBOM_DEPS_FOUND_FOR_RUN_NTIA)
-        message(FATAL_ERROR "Python dependencies not found for running the SBOM NTIA checker.")
     endif()
 
     set(content "
@@ -1379,7 +1380,27 @@ function(_qt_internal_sbom_verify_valid_and_ntia_compliant)
         if(NOT res EQUAL 0)
             message(FATAL_ERROR \"SBOM verification failed: \${res}\")
         endif()
+")
 
+    _qt_internal_get_current_project_sbom_dir(sbom_dir)
+    set(verify_sbom "${sbom_dir}/verify_valid.cmake")
+    file(GENERATE OUTPUT "${verify_sbom}" CONTENT "${content}")
+
+    set_property(GLOBAL APPEND PROPERTY _qt_sbom_cmake_verify_include_files "${verify_sbom}")
+endfunction()
+
+# Helper to verify the generated sbom is NTIA compliant.
+function(_qt_internal_sbom_verify_ntia_compliant)
+    if(NOT QT_INTERNAL_SBOM_PYTHON_EXECUTABLE)
+        message(FATAL_ERROR "Python interpreter not found for verifying SBOM file.")
+    endif()
+
+    if(NOT QT_INTERNAL_SBOM_DEPS_FOUND_FOR_RUN_NTIA)
+        message(FATAL_ERROR "Python dependencies not found for running the SBOM NTIA checker.")
+    endif()
+
+    set(content "
+        message(STATUS \"Checking for NTIA compliance: \${QT_SBOM_OUTPUT_PATH}\")
         execute_process(
             COMMAND ${QT_INTERNAL_SBOM_PYTHON_EXECUTABLE} -m ntia_conformance_checker.main
             --file \"\${QT_SBOM_OUTPUT_PATH}\"
@@ -1391,7 +1412,7 @@ function(_qt_internal_sbom_verify_valid_and_ntia_compliant)
 ")
 
     _qt_internal_get_current_project_sbom_dir(sbom_dir)
-    set(verify_sbom "${sbom_dir}/verify_valid_and_ntia.cmake")
+    set(verify_sbom "${sbom_dir}/verify_ntia.cmake")
     file(GENERATE OUTPUT "${verify_sbom}" CONTENT "${content}")
 
     set_property(GLOBAL APPEND PROPERTY _qt_sbom_cmake_verify_include_files "${verify_sbom}")
