@@ -309,7 +309,7 @@ inline void QFactoryLoaderPrivate::updateSinglePath(const QString &path)
 #elif defined(Q_OS_ANDROID)
                 QStringList("libplugins_%1_*.so"_L1.arg(suffix)),
 #endif
-                QDirListing::IteratorFlag::FilesOnly);
+                QDirListing::IteratorFlag::FilesOnly | QDirListing::IteratorFlag::ResolveSymlinks);
 
     for (const auto &dirEntry : plugins) {
         const QString &fileName = dirEntry.fileName();

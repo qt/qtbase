@@ -729,7 +729,8 @@ void QMimeXMLProvider::ensureLoaded()
 {
     QStringList allFiles;
     const QString packageDir = m_directory + QStringView(u"/packages");
-    for (const auto &entry : QDirListing(packageDir, QDirListing::IteratorFlag::FilesOnly))
+    for (const auto &entry : QDirListing(packageDir, QDirListing::IteratorFlag::FilesOnly
+                                         | QDirListing::IteratorFlag::ResolveSymlinks))
         allFiles.emplace_back(packageDir + u'/' + entry.fileName());
 
     if (m_allFiles == allFiles)
