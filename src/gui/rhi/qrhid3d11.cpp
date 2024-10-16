@@ -3301,6 +3301,10 @@ bool QD3D11Texture::prepareCreate(QSize *adjustedSize)
     if (tex || tex3D || tex1D)
         destroy();
 
+    QRHI_RES_RHI(QRhiD3D11);
+    if (!rhiD->isTextureFormatSupported(m_format, m_flags))
+        return false;
+
     const bool isDepth = isDepthTextureFormat(m_format);
     const bool isCube = m_flags.testFlag(CubeMap);
     const bool is3D = m_flags.testFlag(ThreeDimensional);
@@ -3311,7 +3315,6 @@ bool QD3D11Texture::prepareCreate(QSize *adjustedSize)
     const QSize size = is1D ? QSize(qMax(1, m_pixelSize.width()), 1)
                             : (m_pixelSize.isEmpty() ? QSize(1, 1) : m_pixelSize);
 
-    QRHI_RES_RHI(QRhiD3D11);
     dxgiFormat = toD3DTextureFormat(m_format, m_flags);
     mipLevelCount = uint(hasMipMaps ? rhiD->q->mipLevelsForSize(size) : 1);
     sampleDesc = rhiD->effectiveSampleDesc(m_sampleCount);
