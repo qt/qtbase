@@ -6143,7 +6143,16 @@ QString& QString::setUnicode(const QChar *unicode, qsizetype size)
 }
 
 /*!
-    \fn QString &QString::setUtf16(const ushort *unicode, qsizetype size)
+    \fn QString::setUnicode(const char16_t *unicode, qsizetype size)
+    \overload
+    \since 6.9
+
+    \sa unicode(), setUtf16()
+*/
+
+/*!
+    \fn QString::setUtf16(const char16_t *unicode, qsizetype size)
+    \since 6.9
 
     Resizes the string to \a size characters and copies \a unicode
     into the string.
@@ -6155,6 +6164,11 @@ QString& QString::setUnicode(const QChar *unicode, qsizetype size)
     possibly differing byte ordering.
 
     \sa utf16(), setUnicode()
+*/
+
+/*!
+    \fn QString &QString::setUtf16(const ushort *unicode, qsizetype size)
+    \obsolete Use the \c char16_t overload instead.
 */
 
 /*!
@@ -7586,8 +7600,8 @@ QString QString::vasprintf(const char *cformat, va_list ap)
             }
             case 's': {
                 if (length_mod == lm_l) {
-                    const ushort *buff = va_arg(ap, const ushort*);
-                    const ushort *ch = buff;
+                    const char16_t *buff = va_arg(ap, const char16_t*);
+                    const auto *ch = buff;
                     while (precision != 0 && *ch != 0) {
                         ++ch;
                         --precision;

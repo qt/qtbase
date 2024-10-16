@@ -5937,14 +5937,15 @@ void tst_QString::setRawData()
 void tst_QString::setUnicode()
 {
     const QChar ptr[] = { u'ሴ', QChar(0x0000) };
+    const char16_t utf16[] = { u'ሴ', 0x0000 };
 
     QTest::ThrowOnFailEnabler throwOnFail;
 
     auto doTest = [](const auto ptr, QString &str) mutable {
-        // make sure that the data is copied
-        QVERIFY(str.constData() != ptr);
+        // make sure that the data was copied
+        QCOMPARE_NE(str.constData(), reinterpret_cast<const QChar *>(ptr));
         QVERIFY(str.isDetached());
-        QCOMPARE(str, QString(ptr, 1));
+        QCOMPARE(str, QString(reinterpret_cast<const QChar *>(ptr), 1));
 
         // make sure that the string is resized, even if the data is nullptr
         str = u"test"_s;
@@ -5959,6 +5960,23 @@ void tst_QString::setUnicode()
         QVERIFY(!str.isDetached());
         str.setUnicode(ptr, 1);
         doTest(ptr, str);
+        str.setUnicode(nullptr, 0);
+    }
+
+    {
+        QString str;
+        QVERIFY(!str.isDetached());
+        str.setUnicode(utf16, 1);
+        doTest(utf16, str);
+        str.setUnicode(nullptr, 0);
+    }
+
+    {
+        QString str;
+        QVERIFY(!str.isDetached());
+        str.setUtf16(utf16, 1);
+        doTest(utf16, str);
+        str.setUtf16(nullptr, 0);
     }
 }
 

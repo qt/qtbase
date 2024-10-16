@@ -768,7 +768,17 @@ public:
 
     QString &setRawData(const QChar *unicode, qsizetype size);
     QString &setUnicode(const QChar *unicode, qsizetype size);
-    inline QString &setUtf16(const ushort *utf16, qsizetype size); // ### Qt 7 char16_t
+    Q_WEAK_OVERLOAD
+    QString &setUnicode(const char16_t *utf16, qsizetype size)
+    { return setUnicode(reinterpret_cast<const QChar *>(utf16), size); }
+    QString &setUtf16(const char16_t *utf16, qsizetype size)
+    { return setUnicode(reinterpret_cast<const QChar *>(utf16), size); }
+
+#if !QT_CORE_REMOVED_SINCE(6, 9)
+    Q_WEAK_OVERLOAD
+#endif
+    QString &setUtf16(const ushort *autf16, qsizetype asize)
+    { return setUnicode(reinterpret_cast<const QChar *>(autf16), asize); }
 
     int compare(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
     int compare(QLatin1StringView other, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
@@ -1417,8 +1427,6 @@ void QString::squeeze()
         d.clearFlag(Data::CapacityReserved);
 }
 
-QString &QString::setUtf16(const ushort *autf16, qsizetype asize)
-{ return setUnicode(reinterpret_cast<const QChar *>(autf16), asize); }
 QChar &QString::operator[](qsizetype i)
 { verify(i, 1); return data()[i]; }
 QChar &QString::front() { return operator[](0); }
