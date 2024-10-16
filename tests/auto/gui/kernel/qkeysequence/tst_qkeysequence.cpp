@@ -533,6 +533,20 @@ void tst_QKeySequence::parseString_data()
     QTest::newRow("Meta+A") << "Meta+a" <<  QKeySequence(Qt::META | Qt::Key_A);
     QTest::newRow("mEtA+A") << "mEtA+a" <<  QKeySequence(Qt::META | Qt::Key_A);
     QTest::newRow("Ctrl++") << "Ctrl++" << QKeySequence(Qt::CTRL | Qt::Key_Plus);
+    QTest::newRow("+") << "+" << QKeySequence(Qt::Key_Plus);
+
+    // Tolerance for spaces
+    QTest::newRow("Ctrl_+_Del") << "Ctrl + Del" << QKeySequence(Qt::CTRL | Qt::Key_Delete);
+    QTest::newRow("Ctrl+Del_") << "Ctrl+Del " << QKeySequence(Qt::CTRL | Qt::Key_Delete);
+    QTest::newRow("Ctrl_+_Del_") << "Ctrl + Del " << QKeySequence(Qt::CTRL | Qt::Key_Delete);
+    QTest::newRow("space") << " " << QKeySequence(Qt::Key_Space);
+    QTest::newRow("Ctrl+space") << "Ctrl+ " << QKeySequence(Qt::CTRL | Qt::Key_Space);
+    QTest::newRow("Ctrl_++") << "Ctrl ++" << QKeySequence(Qt::CTRL | Qt::Key_Plus);
+    QTest::newRow("Ctrl_+_+") << "Ctrl + +" << QKeySequence(Qt::CTRL | Qt::Key_Plus);
+    QTest::newRow("Ctrl_+_+_") << "Ctrl + + " << QKeySequence(Qt::CTRL | Qt::Key_Plus);
+    QTest::newRow("+_") << "+ " << QKeySequence(Qt::Key_Plus);
+    QTest::newRow("_+") << " +" << QKeySequence(Qt::Key_Plus);
+    QTest::newRow("_+_") << " + " << QKeySequence(Qt::Key_Plus);
 
     // Invalid modifiers
     QTest::newRow("Win+A") << "Win+a" <<  QKeySequence(Qt::Key_unknown);
@@ -547,7 +561,9 @@ void tst_QKeySequence::parseString_data()
     QTest::newRow("4+3=2") << "4+3=2" <<  QKeySequence(Qt::Key_unknown);
     QTest::newRow("Alabama") << "Alabama" << QKeySequence(Qt::Key_unknown);
     QTest::newRow("Simon+G") << "Simon+G" << QKeySequence(Qt::Key_unknown);
-    QTest::newRow("Shift+++2") << "Shift+++2" <<  QKeySequence(Qt::Key_unknown);
+    QTest::newRow("Shift+++2") << "Shift+++2" << QKeySequence(Qt::Key_unknown);
+    QTest::newRow("Ctrl+D_el") << "Ctrl+D el" << QKeySequence(Qt::Key_unknown);
+    QTest::newRow("Ct_rl+D_el") << "Ct rl+D el" << QKeySequence(Qt::Key_unknown);
 
     // Wrong order
     QTest::newRow("A+Meta") << "a+Meta" <<  QKeySequence(Qt::Key_unknown);
@@ -560,6 +576,7 @@ void tst_QKeySequence::parseString_data()
     //QTest::newRow("Shift") << "Shift" << QKeySequence(Qt::SHIFT);
 
     // Incomplete
+    QTest::newRow("Ctrl+") << "Ctrl+" << QKeySequence(Qt::Key_unknown);
     QTest::newRow("Meta+Shift+") << "Meta+Shift+" << QKeySequence(Qt::Key_unknown);
 }
 

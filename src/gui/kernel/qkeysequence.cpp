@@ -1100,10 +1100,16 @@ QKeyCombination QKeySequencePrivate::decodeString(QString accel, QKeySequence::S
         return Qt::Key_unknown;
 #endif
 
+    int singlePlus = -1;
     qsizetype i = 0;
     qsizetype lastI = 0;
     while ((i = sl.indexOf(u'+', i + 1)) != -1) {
-        const QStringView sub = QStringView{sl}.mid(lastI, i - lastI + 1);
+        QStringView sub = QStringView{ sl }.mid(lastI, i - lastI + 1);
+        while (sub.size() > 1 && sub.at(0) == QLatin1Char(' ')) {
+            sub = sub.mid(1);
+            ++lastI;
+        }
+
         // If we get here the shortcuts contains at least one '+'. We break up
         // along the following strategy:
         //      Meta+Ctrl++   ( "Meta+", "Ctrl+", "+" )
@@ -1115,33 +1121,49 @@ QKeyCombination QKeySequencePrivate::decodeString(QString accel, QKeySequence::S
         // Only '+' can have length 1.
         if (sub.size() == 1) {
             // Make sure we only encounter a single '+' at the end of the accel
-            if (accel.lastIndexOf(u'+') != accel.size()-1)
+            if (singlePlus >= 0)
                 return Qt::Key_unknown;
+            singlePlus = lastI;
         } else {
-            // Identify the modifier
-            bool validModifier = false;
-            for (int j = 0; j < modifs.size(); ++j) {
-                const QModifKeyName &mkf = modifs.at(j);
-                if (sub == mkf.name) {
-                    ret |= mkf.qt_key;
-                    validModifier = true;
-                    break; // Shortcut, since if we find an other it would/should just be a dup
-                }
-            }
 
+            const auto identifyModifier = [&](QStringView sub) {
+                for (int j = 0; j < modifs.size(); ++j) {
+                    const QModifKeyName &mkf = modifs.at(j);
+                    if (sub == mkf.name) {
+                        ret |= mkf.qt_key;
+                        return true; // Shortcut, since if we find another it would/should just be a dup
+                    }
+                }
+                return false;
+            };
+
+            bool validModifier = identifyModifier(sub);
+
+            if (!validModifier) {
+                // Try harder with slower code that trims spaces
+                const QString cleanedSub = sub.toString().remove(QLatin1Char(' '));
+                validModifier = identifyModifier(cleanedSub);
+            }
             if (!validModifier)
                 return Qt::Key_unknown;
         }
         lastI = i + 1;
     }
 
-    qsizetype p = accel.lastIndexOf(u'+', accel.size() - 2); // -2 so that Ctrl++ works
+    qsizetype p = accel.lastIndexOf(u'+', singlePlus > 0 ? singlePlus - 1 : accel.size() - 1);
     QStringView accelRef(accel);
     if (p > 0)
         accelRef = accelRef.mid(p + 1);
 
+    while (accelRef.size() > 1 && accelRef.at(0) == QLatin1Char(' '))
+        accelRef = accelRef.mid(1);
+    while (accelRef.size() > 1 && accelRef.endsWith(QLatin1Char(' ')))
+        accelRef.chop(1);
+
     int fnum = 0;
-    if (accelRef.size() == 1) {
+    if (accelRef.isEmpty())
+        return Qt::Key_unknown;
+    else if (accelRef.size() == 1) {
 #if defined(Q_OS_APPLE)
         int qtKey = qtkeyForAppleSymbol(accelRef.at(0));
         if (qtKey != -1) {
