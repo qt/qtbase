@@ -47,7 +47,7 @@ QLabelPrivate::~QLabelPrivate()
     \ingroup basicwidgets
     \inmodule QtWidgets
 
-    \image windows-label.png
+    \image fusion-label.png
 
     QLabel is used for displaying text or an image. No user
     interaction functionality is provided. The visual appearance of

@@ -79,7 +79,7 @@ interfaces
     which use lists and tables are structured to separate the data and view
     using models, views, and delegates.
 
-    \image windows-treeview.png
+    \image fusion-treeview.png
 
     \section1 Graphics View
 

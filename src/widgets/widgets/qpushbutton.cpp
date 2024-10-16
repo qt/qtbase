@@ -44,7 +44,7 @@ QT_BEGIN_NAMESPACE
     \ingroup basicwidgets
     \inmodule QtWidgets
 
-    \image windows-pushbutton.png
+    \image fusion-pushbutton.png
 
     The push button, or command button, is perhaps the most commonly
     used widget in any graphical user interface. Push (click) a button

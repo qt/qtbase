@@ -2417,7 +2417,7 @@ void QTreeWidgetPrivate::dataChanged(const QModelIndex &topLeft,
   \ingroup model-view
   \inmodule QtWidgets
 
-  \image windows-treeview.png
+  \image fusion-treeview.png
 
   The QTreeWidget class is a convenience class that provides a standard
   tree widget with a classic item-based interface similar to that used by

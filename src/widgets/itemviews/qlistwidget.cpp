@@ -1186,7 +1186,7 @@ void QListWidgetPrivate::dataChanged(const QModelIndex &topLeft,
     \ingroup model-view
     \inmodule QtWidgets
 
-    \image windows-listview.png
+    \image fusion-listview.png
 
     QListWidget is a convenience class that provides a list view similar to the
     one supplied by QListView, but with a classic item-based interface for

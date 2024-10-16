@@ -143,7 +143,7 @@ int QDialPrivate::valueFromPoint(const QPoint &p) const
     \ingroup basicwidgets
     \inmodule QtWidgets
 
-    \image windows-dial.png
+    \image fusion-dial.png
 
     QDial is used when the user needs to control a value within a
     program-definable range, and the range either wraps around

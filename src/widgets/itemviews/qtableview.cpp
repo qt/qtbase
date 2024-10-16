@@ -1138,7 +1138,7 @@ int QTableViewPrivate::heightHintForIndex(const QModelIndex &index, int hint, QS
     \ingroup advanced
     \inmodule QtWidgets
 
-    \image windows-tableview.png
+    \image fusion-tableview.png
 
     A QTableView implements a table view that displays items from a
     model. This class is used to provide standard tables that were
