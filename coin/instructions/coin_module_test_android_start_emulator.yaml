@@ -2,6 +2,11 @@ type: Group
 instructions:
   - type: Group
     instructions:
+      - type: EnvironmentVariable
+        # This variable interferes with Android input tests
+        # when forwarded by androidtestrunner.
+        variableName: QT_IM_MODULE
+        variableValue: ""
       - type: ExecuteCommand
         command: "{{.Env.ANDROID_EMULATOR_RUNNER}}"
         maxTimeInSeconds: 600
