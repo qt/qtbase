@@ -11006,7 +11006,7 @@ void tst_QWidget::hoverPosition()
         QSKIP("Can't move cursor");
 
     QWidget root;
-    root.resize(300, 300);
+    root.setGeometry(100,100,300,300);
     HoverWidget h(&root);
     h.setGeometry(100, 100, 100, 100);
     root.show();
