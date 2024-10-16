@@ -1294,7 +1294,7 @@ void VcprojGenerator::initDeploymentTool()
 
             int pathSize = searchPath.size();
             using F = QDirListing::IteratorFlag;
-            QDirListing dirList(searchPath, QStringList{nameFilter}, F::FilesOnly | F::Recursive);
+            QDirListing dirList(searchPath, QStringList{nameFilter}, F::FilesOnly | F::ResolveSymlinks | F::Recursive);
             // foreach dirIterator-entry in d
             for (const auto &dirEntry : dirList) {
                 const QString absoluteItemPath = Option::fixPathToTargetOS(dirEntry.absolutePath());
