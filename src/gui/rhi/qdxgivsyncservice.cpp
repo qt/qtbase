@@ -8,6 +8,7 @@
 #include <QCoreApplication>
 #include <QLoggingCategory>
 #include <QScreen>
+#include <QVarLengthArray>
 #include <QtCore/private/qsystemerror_p.h>
 
 QT_BEGIN_NAMESPACE

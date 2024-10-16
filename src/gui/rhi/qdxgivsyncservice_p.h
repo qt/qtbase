@@ -17,6 +17,7 @@
 
 #include <QWindow>
 #include <QMutex>
+#include <QHash>
 
 #include <dxgi1_6.h>
 
