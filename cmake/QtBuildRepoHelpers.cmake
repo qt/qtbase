@@ -170,6 +170,59 @@ macro(qt_internal_setup_standalone_parts)
     endif()
 endmacro()
 
+macro(qt_internal_setup_global_doc_targets)
+    # Add global docs targets that will work both for per-repo builds, and super builds.
+    if(NOT TARGET docs AND QT_BUILD_DOCS)
+        add_custom_target(docs)
+        add_custom_target(prepare_docs)
+        add_custom_target(generate_docs)
+        add_custom_target(html_docs)
+        add_custom_target(qch_docs)
+        add_custom_target(install_html_docs)
+        add_custom_target(install_qch_docs)
+        add_custom_target(install_docs)
+        add_dependencies(html_docs generate_docs)
+        add_dependencies(docs html_docs qch_docs)
+        add_dependencies(install_docs install_html_docs install_qch_docs)
+    endif()
+
+    if(QT_BUILD_DOCS)
+        set(qt_docs_target_name docs_${project_name_lower})
+        set(qt_docs_prepare_target_name prepare_docs_${project_name_lower})
+        set(qt_docs_generate_target_name generate_docs_${project_name_lower})
+        set(qt_docs_html_target_name html_docs_${project_name_lower})
+        set(qt_docs_qch_target_name qch_docs_${project_name_lower})
+        set(qt_docs_install_html_target_name install_html_docs_${project_name_lower})
+        set(qt_docs_install_qch_target_name install_qch_docs_${project_name_lower})
+        set(qt_docs_install_target_name install_docs_${project_name_lower})
+
+        add_custom_target(${qt_docs_target_name})
+        add_custom_target(${qt_docs_prepare_target_name})
+        add_custom_target(${qt_docs_generate_target_name})
+        add_custom_target(${qt_docs_qch_target_name})
+        add_custom_target(${qt_docs_html_target_name})
+        add_custom_target(${qt_docs_install_html_target_name})
+        add_custom_target(${qt_docs_install_qch_target_name})
+        add_custom_target(${qt_docs_install_target_name})
+
+        add_dependencies(${qt_docs_generate_target_name} ${qt_docs_prepare_target_name})
+        add_dependencies(${qt_docs_html_target_name} ${qt_docs_generate_target_name})
+        add_dependencies(${qt_docs_target_name}
+            ${qt_docs_html_target_name} ${qt_docs_qch_target_name})
+        add_dependencies(${qt_docs_install_target_name}
+            ${qt_docs_install_html_target_name} ${qt_docs_install_qch_target_name})
+
+        # Make top-level prepare_docs target depend on the repository-level
+        # prepare_docs_<repo> target.
+        add_dependencies(prepare_docs ${qt_docs_prepare_target_name})
+
+        # Make top-level install_*_docs targets depend on the repository-level
+        # install_*_docs targets.
+        add_dependencies(install_html_docs ${qt_docs_install_html_target_name})
+        add_dependencies(install_qch_docs ${qt_docs_install_qch_target_name})
+    endif()
+endmacro()
+
 macro(qt_build_repo_begin)
     qt_internal_setup_standalone_parts()
 
@@ -197,21 +250,6 @@ macro(qt_build_repo_begin)
     qt_enable_cmake_languages()
 
     qt_internal_generate_binary_strip_wrapper()
-
-    # Add global docs targets that will work both for per-repo builds, and super builds.
-    if(NOT TARGET docs)
-        add_custom_target(docs)
-        add_custom_target(prepare_docs)
-        add_custom_target(generate_docs)
-        add_custom_target(html_docs)
-        add_custom_target(qch_docs)
-        add_custom_target(install_html_docs)
-        add_custom_target(install_qch_docs)
-        add_custom_target(install_docs)
-        add_dependencies(html_docs generate_docs)
-        add_dependencies(docs html_docs qch_docs)
-        add_dependencies(install_docs install_html_docs install_qch_docs)
-    endif()
 
     if(NOT TARGET sync_headers)
         add_custom_target(sync_headers)
@@ -262,35 +300,8 @@ macro(qt_build_repo_begin)
     endif()
 
     set(qt_repo_targets_name ${project_name_lower})
-    set(qt_docs_target_name docs_${project_name_lower})
-    set(qt_docs_prepare_target_name prepare_docs_${project_name_lower})
-    set(qt_docs_generate_target_name generate_docs_${project_name_lower})
-    set(qt_docs_html_target_name html_docs_${project_name_lower})
-    set(qt_docs_qch_target_name qch_docs_${project_name_lower})
-    set(qt_docs_install_html_target_name install_html_docs_${project_name_lower})
-    set(qt_docs_install_qch_target_name install_qch_docs_${project_name_lower})
-    set(qt_docs_install_target_name install_docs_${project_name_lower})
 
-    add_custom_target(${qt_docs_target_name})
-    add_custom_target(${qt_docs_prepare_target_name})
-    add_custom_target(${qt_docs_generate_target_name})
-    add_custom_target(${qt_docs_qch_target_name})
-    add_custom_target(${qt_docs_html_target_name})
-    add_custom_target(${qt_docs_install_html_target_name})
-    add_custom_target(${qt_docs_install_qch_target_name})
-    add_custom_target(${qt_docs_install_target_name})
-
-    add_dependencies(${qt_docs_generate_target_name} ${qt_docs_prepare_target_name})
-    add_dependencies(${qt_docs_html_target_name} ${qt_docs_generate_target_name})
-    add_dependencies(${qt_docs_target_name} ${qt_docs_html_target_name} ${qt_docs_qch_target_name})
-    add_dependencies(${qt_docs_install_target_name} ${qt_docs_install_html_target_name} ${qt_docs_install_qch_target_name})
-
-    # Make top-level prepare_docs target depend on the repository-level prepare_docs_<repo> target.
-    add_dependencies(prepare_docs ${qt_docs_prepare_target_name})
-
-    # Make top-level install_*_docs targets depend on the repository-level install_*_docs targets.
-    add_dependencies(install_html_docs ${qt_docs_install_html_target_name})
-    add_dependencies(install_qch_docs ${qt_docs_install_qch_target_name})
+    qt_internal_setup_global_doc_targets()
 
     # Add host_tools meta target, so that developrs can easily build only tools and their
     # dependencies when working in qtbase.
