@@ -350,6 +350,10 @@ macro(qt_internal_set_qt_host_path)
         "Installed Qt host directory path, used for cross compiling.")
 endmacro()
 
+macro(qt_internal_setup_build_docs)
+    option(QT_BUILD_DOCS "Generate Qt documentation targets" ON)
+endmacro()
+
 macro(qt_internal_set_use_ccache)
     option(QT_USE_CCACHE "Enable the use of ccache")
     if(QT_USE_CCACHE)
