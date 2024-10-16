@@ -4326,6 +4326,10 @@ bool QD3D12Texture::prepareCreate(QSize *adjustedSize)
     if (!handle.isNull())
         destroy();
 
+    QRHI_RES_RHI(QRhiD3D12);
+    if (!rhiD->isTextureFormatSupported(m_format, m_flags))
+        return false;
+
     const bool isDepth = isDepthTextureFormat(m_format);
     const bool isCube = m_flags.testFlag(CubeMap);
     const bool is3D = m_flags.testFlag(ThreeDimensional);
@@ -4357,7 +4361,6 @@ bool QD3D12Texture::prepareCreate(QSize *adjustedSize)
             srvFormat = toD3DTextureFormat(m_readViewFormat.format, m_readViewFormat.srgb ? sRGB : Flags());
     }
 
-    QRHI_RES_RHI(QRhiD3D12);
     mipLevelCount = uint(hasMipMaps ? rhiD->q->mipLevelsForSize(size) : 1);
     sampleDesc = rhiD->effectiveSampleDesc(m_sampleCount, dxgiFormat);
     if (sampleDesc.Count > 1) {
