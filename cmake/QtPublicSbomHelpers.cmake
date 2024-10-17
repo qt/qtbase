@@ -166,6 +166,15 @@ function(_qt_internal_sbom_begin_project)
         _qt_internal_sbom_get_qt_repo_source_download_location(download_location)
     endif()
 
+    set(project_comment "")
+
+    _qt_internal_get_configure_line(configure_line)
+    if(configure_line)
+        set(configure_line_comment
+            "\n${repo_project_name_lowercase} was configured with:\n    ${configure_line}\n")
+        string(APPEND project_comment "${configure_line_comment}")
+    endif()
+
     _qt_internal_sbom_begin_project_generate(
         OUTPUT "${repo_spdx_install_path}"
         OUTPUT_RELATIVE_PATH "${repo_spdx_relative_install_path}"
@@ -175,6 +184,7 @@ function(_qt_internal_sbom_begin_project)
         SUPPLIER_URL "${repo_supplier_url}"
         DOWNLOAD_LOCATION "${download_location}"
         PROJECT "${repo_project_name_lowercase}"
+        PROJECT_COMMENT "${project_comment}"
         PROJECT_FOR_SPDX_ID "${repo_project_name_for_spdx_id}"
         NAMESPACE "${repo_spdx_namespace}"
         CPE "${qt_cpe}"
@@ -3512,4 +3522,42 @@ function(_qt_internal_sbom_join_two_license_ids_with_op left_id op right_id out_
 
     set(value "(${left_id}) ${op} (${right_id})")
     set(${out_var} "${value}" PARENT_SCOPE)
+endfunction()
+
+# Returns the configure line used to configure the current repo or top-level build, by reading
+# the config.opt file that the configure script writes out.
+# Returns an empty string if configure was not called, but CMake was called directly.
+# If the build is reconfigured with bare CMake, the config.opt remains untouched, and thus
+# the previous contents is returned.
+function(_qt_internal_get_configure_line out_var)
+    set(content "")
+
+    if(QT_SUPERBUILD OR PROJECT_NAME STREQUAL "QtBase")
+        set(configure_script_name "qt6/configure")
+    elseif(PROJECT_NAME STREQUAL "QtBase")
+        set(configure_script_name "qtbase/configure")
+    else()
+        _qt_internal_sbom_get_root_project_name_lower_case(repo_project_name_lowercase)
+        set(configure_script_name "qt-configure-module <sources>/${repo_project_name_lowercase}")
+    endif()
+
+    if(QT_SUPERBUILD)
+        set(config_opt_path "${PROJECT_BINARY_DIR}/../config.opt")
+    else()
+        set(config_opt_path "${PROJECT_BINARY_DIR}/config.opt")
+    endif()
+
+    if(NOT EXISTS "${config_opt_path}")
+        message(DEBUG "Couldn't find config.opt file in ${config_opt} for argument extraction.")
+        set(${out_var} "${content}" PARENT_SCOPE)
+        return()
+    endif()
+
+    file(STRINGS "${config_opt_path}" args)
+    list(JOIN args " " joined_args)
+
+    set(content "${configure_script_name} ${joined_args}")
+    string(STRIP "${content}" content)
+
+    set(${out_var} "${content}" PARENT_SCOPE)
 endfunction()
