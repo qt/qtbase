@@ -76,7 +76,7 @@ QThreadData *QThreadData::current(bool createIfNecessary)
         // avoid recursion.
         TlsSetValue(qt_current_thread_data_tls_index, threadData);
         QT_TRY {
-            threadData->thread = new QAdoptedThread(threadData);
+            threadData->thread.storeRelease(new QAdoptedThread(threadData));
         } QT_CATCH(...) {
             TlsSetValue(qt_current_thread_data_tls_index, 0);
             threadData->deref();
@@ -101,7 +101,7 @@ QThreadData *QThreadData::current(bool createIfNecessary)
                     0,
                     FALSE,
                     DUPLICATE_SAME_ACCESS);
-            qt_watch_adopted_thread(realHandle, threadData->thread);
+            qt_watch_adopted_thread(realHandle, threadData->thread.loadRelaxed());
         }
     }
     return threadData;
