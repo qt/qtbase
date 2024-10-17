@@ -540,6 +540,25 @@ instructions:
           env_var: SBOM_PYTHON_APPS_PATH
           equals_value: null
 
+  # Always pass the location of the python intrepreter meant to be used for SBOM generation,
+  # because the Qt default has changed to always generate an SBOM.
+  - type: EnvironmentVariable
+    variableName: SBOM_PYTHON_ARGS
+    variableValue: >-
+      -DQT_SBOM_PYTHON_INTERP={{.Env.PYTHON3_PATH}}
+      -DQT_SBOM_PYTHON_APPS_PATH={{.Env.SBOM_PYTHON_APPS_PATH}}
+  - type: AppendToEnvironmentVariable
+    variableName: COMMON_CMAKE_ARGS
+    variableValue: " {{.Env.SBOM_PYTHON_ARGS}} "
+  - type: AppendToEnvironmentVariable
+    variableName: COMMON_NON_QTBASE_CMAKE_ARGS
+    variableValue: " {{.Env.SBOM_PYTHON_ARGS}} "
+  - type: AppendToEnvironmentVariable
+    variableName: COMMON_TARGET_CMAKE_ARGS
+    variableValue: " {{.Env.SBOM_PYTHON_ARGS}} "
+  - type: AppendToEnvironmentVariable
+    variableName: COMMON_NON_QTBASE_TARGET_CMAKE_ARGS
+    variableValue: " {{.Env.SBOM_PYTHON_ARGS}} "
 
   # SBOM verification and auditing
   - type: Group
@@ -555,8 +574,6 @@ instructions:
         -DQT_INTERNAL_SBOM_DEFAULT_CHECKS=ON
         -DQT_INTERNAL_SBOM_AUDIT=ON
         -DQT_INTERNAL_SBOM_AUDIT_NO_ERROR=ON
-        -DQT_SBOM_PYTHON_INTERP={{.Env.PYTHON3_PATH}}
-        -DQT_SBOM_PYTHON_APPS_PATH={{.Env.SBOM_PYTHON_APPS_PATH}}
     - type: AppendToEnvironmentVariable
       variableName: COMMON_CMAKE_ARGS
       variableValue: " {{.Env.SBOM_COMMON_ARGS}} "
