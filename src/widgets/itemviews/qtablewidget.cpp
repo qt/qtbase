@@ -496,7 +496,7 @@ Qt::ItemFlags QTableModel::flags(const QModelIndex &index) const
 
 void QTableModel::sort(int column, Qt::SortOrder order)
 {
-    QList<QPair<QTableWidgetItem *, int>> sortable;
+    QList<std::pair<QTableWidgetItem *, int>> sortable;
     QList<int> unsortable;
     const int numRows = rowCount();
 
@@ -505,7 +505,7 @@ void QTableModel::sort(int column, Qt::SortOrder order)
 
     for (int row = 0; row < numRows; ++row) {
         if (QTableWidgetItem *itm = item(row, column))
-            sortable.append(QPair<QTableWidgetItem*,int>(itm, row));
+            sortable.emplace_back(itm, row);
         else
             unsortable.append(row);
     }
@@ -549,7 +549,7 @@ void QTableModel::ensureSorted(int column, Qt::SortOrder order,
                                int start, int end)
 {
     int count = end - start + 1;
-    QList<QPair<QTableWidgetItem *, int>> sorting;
+    QList<std::pair<QTableWidgetItem *, int>> sorting;
     sorting.reserve(count);
     for (int row = start; row <= end; ++row) {
         QTableWidgetItem *itm = item(row, column);
@@ -558,7 +558,7 @@ void QTableModel::ensureSorted(int column, Qt::SortOrder order,
             // at the end of the table when it is sorted)
             break;
         }
-        sorting.append(QPair<QTableWidgetItem*,int>(itm, row));
+        sorting.emplace_back(itm, row);
     }
 
     const auto compare = (order == Qt::AscendingOrder ? &itemLessThan : &itemGreaterThan);
@@ -686,14 +686,14 @@ QTableModel::sortedInsertionIterator(const QList<QTableWidgetItem *>::iterator &
     return std::lower_bound(begin, end, item, QTableModelGreaterThan());
 }
 
-bool QTableModel::itemLessThan(const QPair<QTableWidgetItem*,int> &left,
-                               const QPair<QTableWidgetItem*,int> &right)
+bool QTableModel::itemLessThan(const std::pair<QTableWidgetItem*,int> &left,
+                               const std::pair<QTableWidgetItem*,int> &right)
 {
     return *(left.first) < *(right.first);
 }
 
-bool QTableModel::itemGreaterThan(const QPair<QTableWidgetItem*,int> &left,
-                                  const QPair<QTableWidgetItem*,int> &right)
+bool QTableModel::itemGreaterThan(const std::pair<QTableWidgetItem*,int> &left,
+                                  const std::pair<QTableWidgetItem*,int> &right)
 {
     return (*(right.first) < *(left .first));
 }

@@ -475,14 +475,14 @@ public:
     void identifyFloatItems(const QSet<AnchorData *> &visited, Qt::Orientation orientation);
     void identifyNonFloatItems_helper(const AnchorData *ad, QSet<QGraphicsLayoutItem *> *nonFloatingItemsIdentifiedSoFar);
 
-    inline AnchorVertex *internalVertex(const QPair<QGraphicsLayoutItem*, Qt::AnchorPoint> &itemEdge) const
+    inline AnchorVertex *internalVertex(const std::pair<QGraphicsLayoutItem*, Qt::AnchorPoint> &itemEdge) const
     {
         return m_vertexList.value(itemEdge).first;
     }
 
     inline AnchorVertex *internalVertex(const QGraphicsLayoutItem *item, Qt::AnchorPoint edge) const
     {
-        return internalVertex(qMakePair(const_cast<QGraphicsLayoutItem *>(item), edge));
+        return internalVertex(std::pair(const_cast<QGraphicsLayoutItem *>(item), edge));
     }
 
     inline void changeLayoutVertex(Qt::Orientation orientation, AnchorVertex *oldV, AnchorVertex *newV)
@@ -528,7 +528,7 @@ public:
     // Mapping between high level anchorage points (Item, Edge) to low level
     // ones (Graph Vertices)
 
-    QHash<QPair<QGraphicsLayoutItem*, Qt::AnchorPoint>, QPair<AnchorVertex *, int> > m_vertexList;
+    QHash<std::pair<QGraphicsLayoutItem*, Qt::AnchorPoint>, std::pair<AnchorVertex *, int> > m_vertexList;
 
     // Internal graph of anchorage points and anchors, for both orientations
     QHVContainer<Graph<AnchorVertex, AnchorData>> graph;

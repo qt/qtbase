@@ -17,7 +17,6 @@
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include <QtCore/qhash.h>
-#include <QtCore/qpair.h>
 #include <QtCore/qstring.h>
 
 QT_REQUIRE_CONFIG(graphicsview);
@@ -58,7 +57,7 @@ struct QSimplexConstraint
     qreal constant;
     Ratio ratio;
 
-    QPair<QSimplexVariable *, qreal> helper;
+    std::pair<QSimplexVariable *, qreal> helper;
     QSimplexVariable * artificial;
 
     void invert();

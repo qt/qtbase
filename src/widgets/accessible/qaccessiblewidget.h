@@ -23,7 +23,7 @@ public:
     QWindow *window() const override;
     int childCount() const override;
     int indexOfChild(const QAccessibleInterface *child) const override;
-    QList<QPair<QAccessibleInterface *, QAccessible::Relation>>
+    QList<std::pair<QAccessibleInterface *, QAccessible::Relation>>
     relations(QAccessible::Relation match = QAccessible::AllRelations) const override;
     QAccessibleInterface *focusChild() const override;
 

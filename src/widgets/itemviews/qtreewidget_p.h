@@ -17,7 +17,6 @@
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include <QtCore/qabstractitemmodel.h>
 #include <private/qabstractitemmodel_p.h>
-#include <QtCore/qpair.h>
 #include <QtCore/qbasictimer.h>
 #include <QtWidgets/qtreewidget.h>
 #include <private/qtreeview_p.h>
@@ -77,10 +76,10 @@ public:
     void sort(int column, Qt::SortOrder order) override;
     void ensureSorted(int column, Qt::SortOrder order,
                       int start, int end, const QModelIndex &parent);
-    static bool itemLessThan(const QPair<QTreeWidgetItem*,int> &left,
-                             const QPair<QTreeWidgetItem*,int> &right);
-    static bool itemGreaterThan(const QPair<QTreeWidgetItem*,int> &left,
-                                const QPair<QTreeWidgetItem*,int> &right);
+    static bool itemLessThan(const std::pair<QTreeWidgetItem*,int> &left,
+                             const std::pair<QTreeWidgetItem*,int> &right);
+    static bool itemGreaterThan(const std::pair<QTreeWidgetItem*,int> &left,
+                                const std::pair<QTreeWidgetItem*,int> &right);
     static QList<QTreeWidgetItem*>::iterator sortedInsertionIterator(
         const QList<QTreeWidgetItem*>::iterator &begin,
         const QList<QTreeWidgetItem*>::iterator &end,
