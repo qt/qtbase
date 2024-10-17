@@ -1576,7 +1576,7 @@ function(_qt_internal_sbom_record_system_library_usage target)
     )
 
     get_cmake_property(sbom_repo_begin_called _qt_internal_sbom_repo_begin_called)
-    if(sbom_repo_begin_called)
+    if(sbom_repo_begin_called AND TARGET "${target}")
         _qt_internal_sbom_record_system_library_spdx_id(${target} ${spdx_options})
     else()
         set_property(GLOBAL PROPERTY
