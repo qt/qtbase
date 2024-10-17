@@ -43,6 +43,8 @@
     qCDebug(lcQpaKeys).nospace() << "Inserting \"" << text << "\""
         << ", replacing range " << replacementRange;
 
+    NSString *string = [self stringForText:text];
+
     if (m_composingText.isEmpty()) {
         // The input method may have transformed the incoming key event
         // to text that doesn't match what the original key event would
@@ -54,7 +56,7 @@
                            || currentEvent.type == NSEventTypeKeyUp
                                 ? currentEvent.characters : nil;
 
-        if ([text isEqualToString:eventText]) {
+        if ([string isEqualToString:eventText]) {
             // We do not send input method events for simple text input,
             // and instead let handleKeyEvent send the key event.
             qCDebug(lcQpaKeys) << "Ignoring text insertion for simple text";
@@ -66,8 +68,7 @@
     if (queryInputMethod(self.focusObject)) {
         QInputMethodEvent inputMethodEvent;
 
-        const bool isAttributedString = [text isKindOfClass:NSAttributedString.class];
-        QString commitString = QString::fromNSString(isAttributedString ? [text string] : text);
+        QString commitString = QString::fromNSString(string);
 
         // Ensure we have a valid replacement range
         replacementRange = [self sanitizeReplacementRange:replacementRange];
@@ -166,7 +167,7 @@
         << ", replacing range " << replacementRange;
 
     const bool isAttributedString = [text isKindOfClass:NSAttributedString.class];
-    QString preeditString = QString::fromNSString(isAttributedString ? [text string] : text);
+    QString preeditString = QString::fromNSString([self stringForText:text]);
 
     QList<QInputMethodEvent::Attribute> preeditAttributes;
 
@@ -595,6 +596,11 @@
     replaceLength = qMax(0ll, replaceLength);
 
     return {replaceFrom, replaceLength};
+}
+
+- (NSString*)stringForText:(id)text
+{
+    return [text isKindOfClass:NSAttributedString.class] ? [text string] : text;
 }
 
 @end
