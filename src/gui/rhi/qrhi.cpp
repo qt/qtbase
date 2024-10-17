@@ -4005,11 +4005,11 @@ void QRhiBuffer::endFullDynamicBufferUpdateForCurrentFrame()
 /*!
     \internal
  */
-void QRhiBuffer::fullDynamicBufferUpdateForCurrentFrame(const void *data)
+void QRhiBuffer::fullDynamicBufferUpdateForCurrentFrame(const void *data, quint32 size)
 {
     char *p = beginFullDynamicBufferUpdateForCurrentFrame();
     if (p) {
-        memcpy(p, data, m_size);
+        memcpy(p, data, size > 0 ? size : m_size);
         endFullDynamicBufferUpdateForCurrentFrame();
     }
 }

@@ -881,7 +881,7 @@ public:
 
     virtual char *beginFullDynamicBufferUpdateForCurrentFrame();
     virtual void endFullDynamicBufferUpdateForCurrentFrame();
-    virtual void fullDynamicBufferUpdateForCurrentFrame(const void *data);
+    virtual void fullDynamicBufferUpdateForCurrentFrame(const void *data, quint32 size = 0);
 
 protected:
     QRhiBuffer(QRhiImplementation *rhi, Type type_, UsageFlags usage_, quint32 size_);

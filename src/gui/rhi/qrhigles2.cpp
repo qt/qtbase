@@ -5356,14 +5356,15 @@ void QGles2Buffer::endFullDynamicBufferUpdateForCurrentFrame()
     }
 }
 
-void QGles2Buffer::fullDynamicBufferUpdateForCurrentFrame(const void *bufferData)
+void QGles2Buffer::fullDynamicBufferUpdateForCurrentFrame(const void *bufferData, quint32 size)
 {
+    const quint32 copySize = size > 0 ? size : m_size;
     if (!m_usage.testFlag(UniformBuffer)) {
         QRHI_RES_RHI(QRhiGles2);
         rhiD->f->glBindBuffer(targetForDataOps, buffer);
-        rhiD->f->glBufferSubData(targetForDataOps, 0, m_size, bufferData);
+        rhiD->f->glBufferSubData(targetForDataOps, 0, copySize, bufferData);
     } else {
-        memcpy(data.data(), bufferData, m_size);
+        memcpy(data.data(), bufferData, copySize);
     }
 }
 

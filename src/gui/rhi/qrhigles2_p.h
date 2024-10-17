@@ -38,7 +38,7 @@ struct QGles2Buffer : public QRhiBuffer
     QRhiBuffer::NativeBuffer nativeBuffer() override;
     char *beginFullDynamicBufferUpdateForCurrentFrame() override;
     void endFullDynamicBufferUpdateForCurrentFrame() override;
-    void fullDynamicBufferUpdateForCurrentFrame(const void *data) override;
+    void fullDynamicBufferUpdateForCurrentFrame(const void *data, quint32 size) override;
 
     quint32 nonZeroSize = 0;
     GLuint buffer = 0;
