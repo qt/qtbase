@@ -1675,9 +1675,9 @@ void iteratorsInEmptyHashTestMethod()
     QVERIFY(it7 == Iter());
     QVERIFY(!hash3.isDetached());
 
-    Iter it8 = hash3.begin(); // calls detach()
+    Iter it8 = hash3.begin();
     QVERIFY(it8 == Iter());
-    QVERIFY(hash3.isDetached());
+    QVERIFY(!hash3.isDetached()); // No detach from empty hash just for iteration!
 }
 
 void tst_QHash::iteratorsInEmptyHash()
@@ -1887,9 +1887,9 @@ void keyValueIteratorInEmptyHashTestMethod()
     QVERIFY(it5 == KeyValueIter());
     QVERIFY(!hash3.isDetached());
 
-    KeyValueIter it6 = hash3.keyValueBegin(); // calls detach()
+    KeyValueIter it6 = hash3.keyValueBegin();
     QVERIFY(it6 == KeyValueIter());
-    QVERIFY(hash3.isDetached());
+    QVERIFY(!hash3.isDetached()); // No detach in empty hash just for iteration
 }
 
 void tst_QHash::keyValueIteratorInEmptyHash()

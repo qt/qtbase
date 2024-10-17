@@ -1234,7 +1234,7 @@ public:
     typedef QKeyValueIterator<const Key&, T&, iterator> key_value_iterator;
 
     // STL style
-    inline iterator begin() { detach(); return iterator(d->begin()); }
+    inline iterator begin() { if (!d) return iterator(); detach(); return iterator(d->begin()); }
     inline const_iterator begin() const noexcept { return d ? const_iterator(d->begin()): const_iterator(); }
     inline const_iterator cbegin() const noexcept { return d ? const_iterator(d->begin()): const_iterator(); }
     inline const_iterator constBegin() const noexcept { return d ? const_iterator(d->begin()): const_iterator(); }
@@ -1982,7 +1982,7 @@ public:
     typedef QKeyValueIterator<const Key&, T&, iterator> key_value_iterator;
 
     // STL style
-    inline iterator begin() { detach(); return iterator(d->begin()); }
+    inline iterator begin() { if (!d) return iterator(); detach(); return iterator(d->begin()); }
     inline const_iterator begin() const noexcept { return d ? const_iterator(d->begin()): const_iterator(); }
     inline const_iterator cbegin() const noexcept { return d ? const_iterator(d->begin()): const_iterator(); }
     inline const_iterator constBegin() const noexcept { return d ? const_iterator(d->begin()): const_iterator(); }
