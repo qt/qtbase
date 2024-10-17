@@ -1248,7 +1248,7 @@ function(qt_describe_module target)
     if(ANDROID)
         string(APPEND extra_build_information "
         \"android\": {
-            \"api_version\": \"${QT_ANDROID_API_VERSION}\",
+            \"api_version\": \"${QT_ANDROID_API_USED_FOR_JAVA}\",
             \"ndk\": {
                 \"version\": \"${ANDROID_NDK_REVISION}\"
             }
