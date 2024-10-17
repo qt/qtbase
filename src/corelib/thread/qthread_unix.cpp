@@ -178,7 +178,7 @@ QThreadData *QThreadData::current(bool createIfNecessary)
         data = new QThreadData;
         QT_TRY {
             set_thread_data(data);
-            data->thread = new QAdoptedThread(data);
+            data->thread.storeRelease(new QAdoptedThread(data));
         } QT_CATCH(...) {
             clear_thread_data();
             data->deref();
