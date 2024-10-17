@@ -45,6 +45,7 @@ function(_qt_internal_sbom_begin_project_generate)
         COPYRIGHT
         DOWNLOAD_LOCATION
         PROJECT
+        PROJECT_COMMENT
         PROJECT_FOR_SPDX_ID
         SUPPLIER
         SUPPLIER_URL
@@ -106,6 +107,19 @@ function(_qt_internal_sbom_begin_project_generate)
 
     qt_internal_sbom_set_default_option_value(DOWNLOAD_LOCATION "NOASSERTION")
 
+    set(cmake_version "Built by CMake ${CMAKE_VERSION}")
+    set(system_name_and_processor "${CMAKE_SYSTEM_NAME} (${CMAKE_SYSTEM_PROCESSOR})")
+    set(default_project_comment
+        "${cmake_version} with ${cmake_configs} configuration for ${system_name_and_processor}")
+
+    set(project_comment "${default_project_comment}")
+
+    if(arg_PROJECT_COMMENT)
+        string(APPEND project_comment "${arg_PROJECT_COMMENT}")
+    endif()
+
+    set(project_comment "<text>${project_comment}</text>")
+
     set(content
         "SPDXVersion: SPDX-2.3
 DataLicense: CC0-1.0
@@ -143,7 +157,7 @@ PackageLicenseConcluded: ${arg_LICENSE}
 PackageLicenseDeclared: ${arg_LICENSE}
 PackageCopyrightText: ${arg_COPYRIGHT}
 PackageHomePage: ${arg_SUPPLIER_URL}
-PackageComment: <text>Built by CMake ${CMAKE_VERSION} with ${cmake_configs} configuration for ${CMAKE_SYSTEM_NAME} (${CMAKE_SYSTEM_PROCESSOR})</text>
+PackageComment: ${project_comment}
 PackageVerificationCode: \${QT_SBOM_VERIFICATION_CODE}
 BuiltDate: ${current_utc}
 Relationship: SPDXRef-DOCUMENT DESCRIBES ${project_spdx_id}
