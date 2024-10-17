@@ -596,17 +596,18 @@ FileCopyrightText: NOASSERTION"
     endif()
 
     set(content "
-        if(NOT EXISTS $ENV{DESTDIR}${install_prefix}/${arg_FILENAME}
+        if(NOT EXISTS \$ENV{DESTDIR}${install_prefix}/${arg_FILENAME}
                 AND NOT QT_SBOM_BUILD_TIME AND NOT QT_SBOM_FAKE_CHECKSUM)
             if(NOT ${arg_OPTIONAL})
-                message(FATAL_ERROR \"Cannot find ${arg_FILENAME}\")
+                message(FATAL_ERROR \"Cannot find '${arg_FILENAME}' to compute its checksum. \"
+                    \"Expected to find it at '\$ENV{DESTDIR}${install_prefix}/${arg_FILENAME}' \")
             endif()
         else()
             if(NOT QT_SBOM_BUILD_TIME)
                 if(QT_SBOM_FAKE_CHECKSUM)
                     set(sha1 \"158942a783ee1095eafacaffd93de73edeadbeef\")
                 else()
-                    file(SHA1 $ENV{DESTDIR}${install_prefix}/${arg_FILENAME} sha1)
+                    file(SHA1 \$ENV{DESTDIR}${install_prefix}/${arg_FILENAME} sha1)
                 endif()
                 list(APPEND QT_SBOM_VERIFICATION_CODES \${sha1})
             endif()
