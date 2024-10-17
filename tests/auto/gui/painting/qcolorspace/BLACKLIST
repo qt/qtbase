@@ -1,0 +1,3 @@
+# QTBUG-130076
+[imageConversionOverLargerGamut2:rgbx16x4, rgba16x4, rgba16x4PM]
+vxworks
