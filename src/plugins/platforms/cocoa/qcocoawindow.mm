@@ -179,6 +179,11 @@ QCocoaWindow::~QCocoaWindow()
 
     [m_view release];
     [m_nsWindow closeAndRelease];
+
+    // Disposing of the view and window should have resulted in an
+    // expose event with isExposed=false, but just in case we try
+    // to stop the display link here as well.
+    static_cast<QCocoaScreen *>(screen())->maybeStopDisplayLink();
 }
 
 QSurfaceFormat QCocoaWindow::format() const
@@ -1546,6 +1551,9 @@ void QCocoaWindow::handleExposeEvent(const QRegion &region)
 
     qCDebug(lcQpaDrawing) << "QCocoaWindow::handleExposeEvent" << window() << region << "isExposed" << isExposed();
     QWindowSystemInterface::handleExposeEvent<QWindowSystemInterface::SynchronousDelivery>(window(), region);
+
+    if (!isExposed())
+        static_cast<QCocoaScreen *>(screen())->maybeStopDisplayLink();
 }
 
 // --------------------------------------------------------------------------
