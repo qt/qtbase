@@ -66,12 +66,15 @@ class QtInputConnection extends BaseInputConnection
     private static final int ID_COPY_URL = android.R.id.copyUrl;
     private static final int ID_SWITCH_INPUT_METHOD = android.R.id.switchInputMethod;
     private static final int ID_ADD_TO_DICTIONARY = android.R.id.addToDictionary;
+    private static final int KEYBOARD_CHECK_DELAY_MS = 100;
 
     private static final String QtTAG = "QtInputConnection";
 
     private final QtInputConnectionListener m_qtInputConnectionListener;
 
     class HideKeyboardRunnable implements Runnable {
+        private int m_numberOfAttempts = 10;
+
         @Override
         public void run() {
             // Check that the keyboard is really no longer there.
@@ -79,6 +82,14 @@ class QtInputConnection extends BaseInputConnection
                 Log.w(QtTAG, "HideKeyboardRunnable: QtInputConnectionListener is null");
                 return;
             }
+
+            if (m_qtInputConnectionListener.keyboardTransitionInProgress()
+                    && m_numberOfAttempts > 0) {
+                --m_numberOfAttempts;
+                m_view.postDelayed(this, KEYBOARD_CHECK_DELAY_MS);
+                return;
+            }
+
             if (m_qtInputConnectionListener.isKeyboardHidden())
                 m_qtInputConnectionListener.onHideKeyboardRunnableDone(false, System.nanoTime());
         }
@@ -89,6 +100,7 @@ class QtInputConnection extends BaseInputConnection
         void onHideKeyboardRunnableDone(boolean visibility, long hideTimeStamp);
         void onSendKeyEventDefaultCase();
         void onEditTextChanged(QtEditText editText);
+        boolean keyboardTransitionInProgress();
         boolean isKeyboardHidden();
     }
 
@@ -98,7 +110,7 @@ class QtInputConnection extends BaseInputConnection
     private void setClosing(boolean closing)
     {
         if (closing)
-            m_view.postDelayed(new HideKeyboardRunnable(), 100);
+            m_view.postDelayed(new HideKeyboardRunnable(), KEYBOARD_CHECK_DELAY_MS);
         else if (m_qtInputConnectionListener != null)
             m_qtInputConnectionListener.onSetClosing(false);
     }
