@@ -373,10 +373,16 @@ QFileDialog::QFileDialog(const QFileDialogArgs &args)
 */
 QFileDialog::~QFileDialog()
 {
-#if QT_CONFIG(settings)
     Q_D(QFileDialog);
+#if QT_CONFIG(settings)
     d->saveSettings();
 #endif
+    if (QPlatformFileDialogHelper *platformHelper = d->platformFileDialogHelper()) {
+        // QIOSFileDialog emits directoryChanged while hiding, causing an assert
+        // because of a partially destroyed QFileDialog.
+        QObjectPrivate::disconnect(platformHelper, &QPlatformFileDialogHelper::directoryEntered,
+                                   d, &QFileDialogPrivate::nativeEnterDirectory);
+    }
 }
 
 /*!
