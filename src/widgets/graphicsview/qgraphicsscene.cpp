@@ -5832,7 +5832,7 @@ int QGraphicsScenePrivate::findClosestTouchPointId(const QPointF &scenePos)
 
 void QGraphicsScenePrivate::touchEventHandler(QTouchEvent *sceneTouchEvent)
 {
-    typedef QPair<QEventPoint::States, QList<QEventPoint> > StatesAndTouchPoints;
+    typedef std::pair<QEventPoint::States, QList<QEventPoint> > StatesAndTouchPoints;
     QHash<QGraphicsItem *, StatesAndTouchPoints> itemsNeedingEvents;
 
     const auto &touchPoints = sceneTouchEvent->points();

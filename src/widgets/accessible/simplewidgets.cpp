@@ -486,17 +486,17 @@ QString QAccessibleDisplay::text(QAccessible::Text t) const
 }
 
 /*! \reimp */
-QList<QPair<QAccessibleInterface *, QAccessible::Relation>>
+QList<std::pair<QAccessibleInterface *, QAccessible::Relation>>
 QAccessibleDisplay::relations(QAccessible::Relation match /* = QAccessible::AllRelations */) const
 {
-    QList<QPair<QAccessibleInterface *, QAccessible::Relation>> rels =
+    QList<std::pair<QAccessibleInterface *, QAccessible::Relation>> rels =
             QAccessibleWidget::relations(match);
 #    if QT_CONFIG(shortcut) && QT_CONFIG(label)
     if (match & QAccessible::Labelled) {
         if (QLabel *label = qobject_cast<QLabel*>(object())) {
             const QAccessible::Relation rel = QAccessible::Labelled;
             if (QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(label->buddy()))
-                rels.append(qMakePair(iface, rel));
+                rels.emplace_back(iface, rel);
         }
     }
 #endif
@@ -598,10 +598,10 @@ QAccessible::Role QAccessibleGroupBox::role() const
     return groupBox()->isCheckable() ? QAccessible::CheckBox : QAccessible::Grouping;
 }
 
-QList<QPair<QAccessibleInterface *, QAccessible::Relation>>
+QList<std::pair<QAccessibleInterface *, QAccessible::Relation>>
 QAccessibleGroupBox::relations(QAccessible::Relation match /* = QAccessible::AllRelations */) const
 {
-    QList<QPair<QAccessibleInterface *, QAccessible::Relation>> rels =
+    QList<std::pair<QAccessibleInterface *, QAccessible::Relation>> rels =
             QAccessibleWidget::relations(match);
 
     if ((match & QAccessible::Labelled) && (!groupBox()->title().isEmpty())) {
@@ -609,7 +609,7 @@ QAccessibleGroupBox::relations(QAccessible::Relation match /* = QAccessible::All
         for (QWidget *kid : kids) {
             QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(kid);
             if (iface)
-                rels.append(qMakePair(iface, QAccessible::Relation(QAccessible::Labelled)));
+                rels.emplace_back(iface, QAccessible::Relation(QAccessible::Labelled));
         }
     }
     return rels;

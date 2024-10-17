@@ -953,7 +953,7 @@ QString QAccessibleTextWidget::textBeforeOffset(int offset, QAccessible::TextBou
 
     QTextCursor cursor = textCursor();
     cursor.setPosition(offset);
-    QPair<int, int> boundaries = QAccessible::qAccessibleTextBoundaryHelper(cursor, boundaryType);
+    std::pair<int, int> boundaries = QAccessible::qAccessibleTextBoundaryHelper(cursor, boundaryType);
     cursor.setPosition(boundaries.first - 1);
     boundaries = QAccessible::qAccessibleTextBoundaryHelper(cursor, boundaryType);
 
@@ -972,7 +972,7 @@ QString QAccessibleTextWidget::textAfterOffset(int offset, QAccessible::TextBoun
 
     QTextCursor cursor = textCursor();
     cursor.setPosition(offset);
-    QPair<int, int> boundaries = QAccessible::qAccessibleTextBoundaryHelper(cursor, boundaryType);
+    std::pair<int, int> boundaries = QAccessible::qAccessibleTextBoundaryHelper(cursor, boundaryType);
     cursor.setPosition(boundaries.second);
     boundaries = QAccessible::qAccessibleTextBoundaryHelper(cursor, boundaryType);
 
@@ -990,7 +990,7 @@ QString QAccessibleTextWidget::textAtOffset(int offset, QAccessible::TextBoundar
 
     QTextCursor cursor = textCursor();
     cursor.setPosition(offset);
-    QPair<int, int> boundaries = QAccessible::qAccessibleTextBoundaryHelper(cursor, boundaryType);
+    std::pair<int, int> boundaries = QAccessible::qAccessibleTextBoundaryHelper(cursor, boundaryType);
 
     *startOffset = boundaries.first;
     *endOffset = boundaries.second;

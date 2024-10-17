@@ -250,10 +250,10 @@ static inline bool isAncestor(const QObject *obj, const QObject *child)
 }
 
 /*! \reimp */
-QList<QPair<QAccessibleInterface *, QAccessible::Relation>>
+QList<std::pair<QAccessibleInterface *, QAccessible::Relation>>
 QAccessibleWidget::relations(QAccessible::Relation match /*= QAccessible::AllRelations*/) const
 {
-    QList<QPair<QAccessibleInterface *, QAccessible::Relation>> rels;
+    QList<std::pair<QAccessibleInterface *, QAccessible::Relation>> rels;
     if (match & QAccessible::Label) {
         const QAccessible::Relation rel = QAccessible::Label;
         if (QWidget *parent = widget()->parentWidget()) {
@@ -266,7 +266,7 @@ QAccessibleWidget::relations(QAccessible::Relation match /*= QAccessible::AllRel
                 if (QLabel *labelSibling = qobject_cast<QLabel*>(kid)) {
                     if (labelSibling->buddy() == widget()) {
                         QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(labelSibling);
-                        rels.append(qMakePair(iface, rel));
+                        rels.emplace_back(iface, rel);
                     }
                 }
             }
@@ -275,7 +275,7 @@ QAccessibleWidget::relations(QAccessible::Relation match /*= QAccessible::AllRel
             QGroupBox *groupbox = qobject_cast<QGroupBox*>(parent);
             if (groupbox && !groupbox->title().isEmpty()) {
                 QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(groupbox);
-                rels.append(qMakePair(iface, rel));
+                rels.emplace_back(iface, rel);
             }
 #endif
         }
@@ -295,7 +295,7 @@ QAccessibleWidget::relations(QAccessible::Relation match /*= QAccessible::AllRel
             const QAccessible::Relation rel = QAccessible::Controlled;
             QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(allReceivers.at(i));
             if (iface)
-                rels.append(qMakePair(iface, rel));
+                rels.emplace_back(iface, rel);
         }
     }
 

@@ -137,11 +137,11 @@ public:
     int itemDecorationAt(const QPoint &pos) const;
     QRect itemDecorationRect(const QModelIndex &index) const;
 
-    QList<QPair<int, int>> columnRanges(const QModelIndex &topIndex,
+    QList<std::pair<int, int>> columnRanges(const QModelIndex &topIndex,
                                         const QModelIndex &bottomIndex) const;
     void select(const QModelIndex &start, const QModelIndex &stop, QItemSelectionModel::SelectionFlags command);
 
-    QPair<int,int> startAndEndColumns(const QRect &rect) const;
+    std::pair<int,int> startAndEndColumns(const QRect &rect) const;
 
     void updateChildCount(const int parentItem, const int delta);
 
@@ -183,7 +183,7 @@ public:
     bool customIndent;
 
     // used for drawing
-    mutable QPair<int,int> leftAndRight;
+    mutable std::pair<int,int> leftAndRight;
     mutable int current;
     mutable bool spanning;
 

@@ -83,7 +83,7 @@ public:
     QAccessible::Role role() const override;
     QAccessible::State state() const override;
 
-    QList<QPair<QAccessibleInterface *, QAccessible::Relation>>
+    QList<std::pair<QAccessibleInterface *, QAccessible::Relation>>
     relations(QAccessible::Relation match = QAccessible::AllRelations) const override;
     void *interface_cast(QAccessible::InterfaceType t) override;
 
@@ -103,7 +103,7 @@ public:
     QAccessible::Role role() const override;
     QString text(QAccessible::Text t) const override;
 
-    QList<QPair<QAccessibleInterface *, QAccessible::Relation>>
+    QList<std::pair<QAccessibleInterface *, QAccessible::Relation>>
     relations(QAccessible::Relation match = QAccessible::AllRelations) const override;
 
     //QAccessibleActionInterface

@@ -581,7 +581,7 @@ void QTreeModel::ensureSorted(int column, Qt::SortOrder order,
     QList<QTreeWidgetItem*> lst = itm->children;
 
     int count = end - start + 1;
-    QList<QPair<QTreeWidgetItem *, int>> sorting(count);
+    QList<std::pair<QTreeWidgetItem *, int>> sorting(count);
     for (int i = 0; i < count; ++i) {
         sorting[i].first = lst.at(start + i);
         sorting[i].second = start + i;
@@ -661,8 +661,8 @@ void QTreeModel::ensureSorted(int column, Qt::SortOrder order,
   Used by the sorting functions.
 */
 
-bool QTreeModel::itemLessThan(const QPair<QTreeWidgetItem*,int> &left,
-                              const QPair<QTreeWidgetItem*,int> &right)
+bool QTreeModel::itemLessThan(const std::pair<QTreeWidgetItem*,int> &left,
+                              const std::pair<QTreeWidgetItem*,int> &right)
 {
     return *(left.first) < *(right.first);
 }
@@ -676,8 +676,8 @@ bool QTreeModel::itemLessThan(const QPair<QTreeWidgetItem*,int> &left,
   Used by the sorting functions.
 */
 
-bool QTreeModel::itemGreaterThan(const QPair<QTreeWidgetItem*,int> &left,
-                                 const QPair<QTreeWidgetItem*,int> &right)
+bool QTreeModel::itemGreaterThan(const std::pair<QTreeWidgetItem*,int> &left,
+                                 const std::pair<QTreeWidgetItem*,int> &right)
 {
     return *(right.first) < *(left.first);
 }
@@ -826,7 +826,7 @@ void QTreeModel::sortItems(QList<QTreeWidgetItem*> *items, int column, Qt::SortO
         return;
 
     // store the original order of indexes
-    QList<QPair<QTreeWidgetItem *, int>> sorting(items->size());
+    QList<std::pair<QTreeWidgetItem *, int>> sorting(items->size());
     for (int i = 0; i < sorting.size(); ++i) {
         sorting[i].first = items->at(i);
         sorting[i].second = i;

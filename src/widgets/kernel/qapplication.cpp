@@ -3802,8 +3802,8 @@ void QApplicationPrivate::activateImplicitTouchGrab(QWidget *widget, QTouchEvent
 bool QApplicationPrivate::translateRawTouchEvent(QWidget *window, const QTouchEvent *te)
 {
     QApplicationPrivate *d = self;
-    // TODO get rid of this QPair
-    typedef QPair<QEventPoint::State, QList<QEventPoint> > StatesAndTouchPoints;
+    // TODO get rid of this std::pair
+    typedef std::pair<QEventPoint::State, QList<QEventPoint> > StatesAndTouchPoints;
     QHash<QWidget *, StatesAndTouchPoints> widgetsNeedingEvents;
 
     const auto *device = te->pointingDevice();

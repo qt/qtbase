@@ -50,7 +50,6 @@
 #include <QtCore/qtimeline.h>
 #include <QtCore/qpoint.h>
 #include <QtCore/qpointer.h>
-#include <QtCore/qpair.h>
 
 #include <algorithm>
 
@@ -248,13 +247,14 @@ void QGraphicsItemAnimation::setPosAt(qreal step, const QPointF &pos)
 
   \sa posAt(), setPosAt()
 */
-QList<QPair<qreal, QPointF> > QGraphicsItemAnimation::posList() const
+QList<std::pair<qreal, QPointF> > QGraphicsItemAnimation::posList() const
 {
-    QList<QPair<qreal, QPointF> > list;
+    QList<std::pair<qreal, QPointF>> list;
     const int xPosCount = d->xPosition.size();
     list.reserve(xPosCount);
     for (int i = 0; i < xPosCount; ++i)
-        list << QPair<qreal, QPointF>(d->xPosition.at(i).step, QPointF(d->xPosition.at(i).value, d->yPosition.at(i).value));
+        list.emplace_back(d->xPosition.at(i).step,
+                          QPointF(d->xPosition.at(i).value, d->yPosition.at(i).value));
 
     return list;
 }
@@ -306,13 +306,13 @@ void QGraphicsItemAnimation::setRotationAt(qreal step, qreal angle)
 
   \sa rotationAt(), setRotationAt()
 */
-QList<QPair<qreal, qreal> > QGraphicsItemAnimation::rotationList() const
+QList<std::pair<qreal, qreal> > QGraphicsItemAnimation::rotationList() const
 {
-    QList<QPair<qreal, qreal> > list;
+    QList<std::pair<qreal, qreal>> list;
     const int numRotations = d->rotation.size();
     list.reserve(numRotations);
     for (int i = 0; i < numRotations; ++i)
-        list << QPair<qreal, qreal>(d->rotation.at(i).step, d->rotation.at(i).value);
+        list.emplace_back(d->rotation.at(i).step, d->rotation.at(i).value);
 
     return list;
 }
@@ -356,13 +356,14 @@ void QGraphicsItemAnimation::setTranslationAt(qreal step, qreal dx, qreal dy)
 
   \sa xTranslationAt(), yTranslationAt(), setTranslationAt()
 */
-QList<QPair<qreal, QPointF> > QGraphicsItemAnimation::translationList() const
+QList<std::pair<qreal, QPointF> > QGraphicsItemAnimation::translationList() const
 {
-    QList<QPair<qreal, QPointF> > list;
+    QList<std::pair<qreal, QPointF>> list;
     const int numTranslations = d->xTranslation.size();
     list.reserve(numTranslations);
     for (int i = 0; i < numTranslations; ++i)
-        list << QPair<qreal, QPointF>(d->xTranslation.at(i).step, QPointF(d->xTranslation.at(i).value, d->yTranslation.at(i).value));
+        list.emplace_back(d->xTranslation.at(i).step,
+                          QPointF(d->xTranslation.at(i).value, d->yTranslation.at(i).value));
 
     return list;
 }
@@ -407,13 +408,15 @@ void QGraphicsItemAnimation::setScaleAt(qreal step, qreal sx, qreal sy)
 
   \sa verticalScaleAt(), horizontalScaleAt(), setScaleAt()
 */
-QList<QPair<qreal, QPointF> > QGraphicsItemAnimation::scaleList() const
+QList<std::pair<qreal, QPointF> > QGraphicsItemAnimation::scaleList() const
 {
-    QList<QPair<qreal, QPointF> > list;
+    QList<std::pair<qreal, QPointF>> list;
     const int numScales = d->horizontalScale.size();
     list.reserve(numScales);
     for (int i = 0; i < numScales; ++i)
-        list << QPair<qreal, QPointF>(d->horizontalScale.at(i).step, QPointF(d->horizontalScale.at(i).value, d->verticalScale.at(i).value));
+        list.emplace_back(d->horizontalScale.at(i).step,
+                          QPointF(d->horizontalScale.at(i).value,
+                                  d->verticalScale.at(i).value));
 
     return list;
 }
@@ -457,13 +460,15 @@ void QGraphicsItemAnimation::setShearAt(qreal step, qreal sh, qreal sv)
 
   \sa verticalShearAt(), horizontalShearAt(), setShearAt()
 */
-QList<QPair<qreal, QPointF> > QGraphicsItemAnimation::shearList() const
+QList<std::pair<qreal, QPointF> > QGraphicsItemAnimation::shearList() const
 {
-    QList<QPair<qreal, QPointF> > list;
+    QList<std::pair<qreal, QPointF>> list;
     const int numShears = d->horizontalShear.size();
     list.reserve(numShears);
     for (int i = 0; i < numShears; ++i)
-        list << QPair<qreal, QPointF>(d->horizontalShear.at(i).step, QPointF(d->horizontalShear.at(i).value, d->verticalShear.at(i).value));
+        list.emplace_back(d->horizontalShear.at(i).step,
+                          QPointF(d->horizontalShear.at(i).value,
+                                  d->verticalShear.at(i).value));
 
     return list;
 }

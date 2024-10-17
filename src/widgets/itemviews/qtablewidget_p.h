@@ -103,10 +103,10 @@ public:
     Qt::ItemFlags flags(const QModelIndex &index) const override;
 
     void sort(int column, Qt::SortOrder order) override;
-    static bool itemLessThan(const QPair<QTableWidgetItem*,int> &left,
-                             const QPair<QTableWidgetItem*,int> &right);
-    static bool itemGreaterThan(const QPair<QTableWidgetItem*,int> &left,
-                                const QPair<QTableWidgetItem*,int> &right);
+    static bool itemLessThan(const std::pair<QTableWidgetItem*,int> &left,
+                             const std::pair<QTableWidgetItem*,int> &right);
+    static bool itemGreaterThan(const std::pair<QTableWidgetItem*,int> &left,
+                                const std::pair<QTableWidgetItem*,int> &right);
 
     void ensureSorted(int column, Qt::SortOrder order, int start, int end);
     QList<QTableWidgetItem *> columnItems(int column) const;

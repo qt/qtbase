@@ -77,10 +77,10 @@ public:
 
     void sort(int column, Qt::SortOrder order) override;
     void ensureSorted(int column, Qt::SortOrder order, int start, int end);
-    static bool itemLessThan(const QPair<QListWidgetItem*,int> &left,
-                             const QPair<QListWidgetItem*,int> &right);
-    static bool itemGreaterThan(const QPair<QListWidgetItem*,int> &left,
-                                const QPair<QListWidgetItem*,int> &right);
+    static bool itemLessThan(const std::pair<QListWidgetItem*,int> &left,
+                             const std::pair<QListWidgetItem*,int> &right);
+    static bool itemGreaterThan(const std::pair<QListWidgetItem*,int> &left,
+                                const std::pair<QListWidgetItem*,int> &right);
     static QList<QListWidgetItem*>::iterator sortedInsertionIterator(
         const QList<QListWidgetItem*>::iterator &begin,
         const QList<QListWidgetItem*>::iterator &end,

@@ -2778,10 +2778,10 @@ void QTreeView::expandRecursively(const QModelIndex &index, int depth)
     expand(index);
     if (depth == 0)
         return;
-    QStack<QPair<QModelIndex, int>> parents;
+    QStack<std::pair<QModelIndex, int>> parents;
     parents.push({index, 0});
     while (!parents.isEmpty()) {
-        const QPair<QModelIndex, int> elem = parents.pop();
+        const std::pair<QModelIndex, int> elem = parents.pop();
         const QModelIndex &parent = elem.first;
         const int curDepth = elem.second;
         const int rowCount = d->model->rowCount(parent);
@@ -3933,8 +3933,8 @@ QRect QTreeViewPrivate::itemDecorationRect(const QModelIndex &index) const
     return q->style()->subElementRect(QStyle::SE_TreeViewDisclosureItem, &opt, q);
 }
 
-QList<QPair<int, int>> QTreeViewPrivate::columnRanges(const QModelIndex &topIndex,
-                                                      const QModelIndex &bottomIndex) const
+QList<std::pair<int, int>> QTreeViewPrivate::columnRanges(const QModelIndex &topIndex,
+                                                          const QModelIndex &bottomIndex) const
 {
     const int topVisual = header->visualIndex(topIndex.column()),
         bottomVisual = header->visualIndex(bottomIndex.column());
@@ -3954,8 +3954,8 @@ QList<QPair<int, int>> QTreeViewPrivate::columnRanges(const QModelIndex &topInde
     //let's sort the list
     std::sort(logicalIndexes.begin(), logicalIndexes.end());
 
-    QList<QPair<int, int>> ret;
-    QPair<int, int> current;
+    QList<std::pair<int, int>> ret;
+    std::pair<int, int> current;
     current.first = -2; // -1 is not enough because -1+1 = 0
     current.second = -2;
     for(int i = 0; i < logicalIndexes.size(); ++i) {
@@ -3988,8 +3988,8 @@ void QTreeViewPrivate::select(const QModelIndex &topIndex, const QModelIndex &bo
     const int top = viewIndex(topIndex),
         bottom = viewIndex(bottomIndex);
 
-    const QList<QPair<int, int>> colRanges = columnRanges(topIndex, bottomIndex);
-    QList<QPair<int, int>>::const_iterator it;
+    const QList<std::pair<int, int>> colRanges = columnRanges(topIndex, bottomIndex);
+    QList<std::pair<int, int>>::const_iterator it;
     for (it = colRanges.begin(); it != colRanges.end(); ++it) {
         const int left = (*it).first,
             right = (*it).second;
@@ -4040,7 +4040,7 @@ void QTreeViewPrivate::select(const QModelIndex &topIndex, const QModelIndex &bo
     q->selectionModel()->select(selection, command);
 }
 
-QPair<int,int> QTreeViewPrivate::startAndEndColumns(const QRect &rect) const
+std::pair<int,int> QTreeViewPrivate::startAndEndColumns(const QRect &rect) const
 {
     Q_Q(const QTreeView);
     int start = header->visualIndexAt(rect.left());
@@ -4052,7 +4052,7 @@ QPair<int,int> QTreeViewPrivate::startAndEndColumns(const QRect &rect) const
         start = (start == -1 ? 0 : start);
         end = (end == -1 ? header->count() - 1 : end);
     }
-    return qMakePair(qMin(start, end), qMax(start, end));
+    return std::pair(qMin(start, end), qMax(start, end));
 }
 
 bool QTreeViewPrivate::hasVisibleChildren(const QModelIndex& parent) const
