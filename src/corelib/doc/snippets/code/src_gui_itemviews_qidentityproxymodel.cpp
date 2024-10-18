@@ -16,7 +16,8 @@ class DateFormatProxyModel : public QIdentityProxyModel
     if (role != Qt::DisplayRole)
       return QIdentityProxyModel::data(index, role);
 
-    const QDateTime dateTime = sourceModel()->data(SourceClass::DateRole).toDateTime();
+    const QModelIndex sourceIndex = mapToSource(index);
+    const QDateTime dateTime = sourceModel()->data(sourceIndex, SourceClass::DateRole).toDateTime();
     return dateTime.toString(m_formatString);
   }
 
