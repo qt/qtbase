@@ -12902,14 +12902,14 @@ void tst_QWidget::largerThanScreen_QTBUG30142()
     widget.resize(200, 4000);
     widget.show();
     QVERIFY(QTest::qWaitForWindowExposed(&widget));
-    QVERIFY2(widget.frameGeometry().y() >= 0,
+    QTRY_VERIFY2(widget.frameGeometry().y() >= 0,
              msgComparisonFailed(widget.frameGeometry().y(), " >=", 0));
 
     QWidget widget2;
     widget2.resize(10000, 400);
     widget2.show();
     QVERIFY(QTest::qWaitForWindowExposed(&widget2));
-    QVERIFY2(widget2.frameGeometry().x() >= 0,
+    QTRY_VERIFY2(widget2.frameGeometry().x() >= 0,
              msgComparisonFailed(widget.frameGeometry().x(), " >=", 0));
 }
 
