@@ -1454,9 +1454,9 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
         case QMetaType::QDateTime: {
             const auto dt = field.value().toDateTime();
             if (dt.isValid()) {
-                // we force the value to be considered with a timezone information, and we force it to be UTC
-                // this is safe since postgresql stores only the UTC value and not the timezone offset (only used
-                // while parsing), so we have correct behavior in both case of with timezone and without tz
+                // even though the documentation (https://www.postgresql.org/docs/current/datatype-datetime.html)
+                // states that any time zone indication for 'timestamp without tz' columns will be ignored,
+                // it is stored as the correct utc timestamp - so we can pass the utc offset here
                 r = QStringLiteral("TIMESTAMP WITH TIME ZONE ") + u'\'' +
                         dt.toOffsetFromUtc(dt.offsetFromUtc()).toString(Qt::ISODateWithMs) + u'\'';
             } else {
