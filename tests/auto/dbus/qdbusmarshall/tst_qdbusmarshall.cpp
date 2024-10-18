@@ -938,6 +938,10 @@ void tst_QDBusMarshall::sendCallErrors_data()
             << "org.freedesktop.DBus.Error.UnknownMethod"
             << "Method \"ping\" with signature \"\" on interface \"org.qtproject.autotests.qpong\" doesn't exist\n" << (const char*)0;
 
+    QTest::newRow("invalid-service-single-label") << "service" << objectPath << interfaceName << "ping" << QVariantList()
+            << "org.qtproject.QtDBus.Error.InvalidService"
+            << "Invalid service name: service" << "";
+
     QTest::newRow("invalid-service") << "this isn't valid" << objectPath << interfaceName << "ping" << QVariantList()
             << "org.qtproject.QtDBus.Error.InvalidService"
             << "Invalid service name: this isn't valid" << "";
