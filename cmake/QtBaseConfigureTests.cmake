@@ -18,7 +18,7 @@ function(qt_run_config_test_architecture)
     message(STATUS
             "Building architecture extraction project with the following CMake arguments:")
     list(POP_BACK CMAKE_MESSAGE_CONTEXT _context)
-    message(NOTICE ${flags_indented})
+    message(STATUS ${flags_indented})
     list(APPEND CMAKE_MESSAGE_CONTEXT ${_context})
 
     try_compile(
