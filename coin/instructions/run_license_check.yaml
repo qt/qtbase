@@ -6,7 +6,7 @@ instructions:
       maxTimeInSeconds: 600
       maxTimeBetweenOutput: 600
       project: qt/qtqa
-      ref: dev
+      ref: "CURRENT_BRANCH"
       directory: qt/qtqa-latest
       userMessageOnFailure: >
               Could not install qtqa source archive. Please investigate why.
