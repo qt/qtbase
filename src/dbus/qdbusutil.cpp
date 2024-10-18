@@ -407,6 +407,8 @@ namespace QDBusUtil
             return isValidUniqueConnectionName(busName);
 
         const auto parts = QStringView{busName}.split(u'.');
+        if (parts.size() < 2)
+            return false;
         for (QStringView part : parts) {
             if (part.isEmpty())
                 return false;
