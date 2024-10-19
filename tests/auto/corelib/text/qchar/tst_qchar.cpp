@@ -6,6 +6,59 @@
 #include <qfile.h>
 #include <qstringlist.h>
 
+#include <type_traits>
+
+template <typename C>
+constexpr inline bool implicitly = std::is_convertible_v<C, QChar>;
+template <typename C>
+constexpr inline bool explicitly = std::is_constructible_v<QChar, C>;
+template <typename C>
+constexpr inline bool disabled = !explicitly<C>;
+
+//
+// Conversion from character types
+//
+static_assert(implicitly<char>);
+#ifdef __cpp_char8_t
+static_assert(disabled<char8_t>); // ### should this be enabled?
+#endif
+static_assert(implicitly<char16_t>);
+#ifdef Q_OS_WIN
+static_assert(implicitly<wchar_t>);
+#else
+static_assert(explicitly<wchar_t>);
+#endif
+static_assert(explicitly<char32_t>);
+
+//
+// Conversion from others
+//
+static_assert(explicitly<uchar>);
+static_assert(implicitly<short>);
+static_assert(implicitly<ushort>);
+static_assert(explicitly<int>);
+static_assert(explicitly<uint>);
+
+//
+// Disabled conversions (from Qt 6.9)
+//
+static_assert(disabled<bool>);
+static_assert(disabled<std::byte>);
+static_assert(disabled<signed char>);
+static_assert(disabled<long>);
+static_assert(disabled<long long>);
+static_assert(disabled<unsigned long>);
+static_assert(disabled<unsigned long long>);
+static_assert(disabled<Qt::Key>);
+enum E1 {};
+static_assert(disabled<E1>);
+enum class E2 {};
+static_assert(disabled<E2>);
+enum E1C : char16_t {};
+static_assert(disabled<E1C>);
+enum class E2C : char16_t {};
+static_assert(disabled<E2C>);
+
 class tst_QChar : public QObject
 {
     Q_OBJECT
