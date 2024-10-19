@@ -6,6 +6,7 @@
 #include <qfile.h>
 #include <qstringlist.h>
 
+#include <climits>
 #include <type_traits>
 
 template <typename C>
@@ -33,7 +34,11 @@ static_assert(explicitly<char32_t>);
 //
 // Conversion from others
 //
+#if defined(QT_RESTRICTED_CAST_FROM_ASCII)
+static_assert(explicitly<uchar>); // via integer promotion
+#else
 static_assert(explicitly<uchar>);
+#endif
 static_assert(implicitly<short>);
 static_assert(implicitly<ushort>);
 static_assert(explicitly<int>);
