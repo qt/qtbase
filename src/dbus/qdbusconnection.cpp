@@ -873,7 +873,9 @@ QString QDBusConnection::name() const
 */
 QDBusConnection::ConnectionCapabilities QDBusConnection::connectionCapabilities() const
 {
-    return d ? d->connectionCapabilities() : ConnectionCapabilities();
+    if (!d)
+        return {};
+    return d->connectionCapabilities() & ~QDBusConnectionPrivate::InternalCapabilitiesMask;
 }
 
 /*!

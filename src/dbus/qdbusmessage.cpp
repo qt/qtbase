@@ -109,7 +109,10 @@ DBusMessage *QDBusMessagePrivate::toDBusMessage(const QDBusMessage &message, QDB
     case QDBusMessage::MethodCallMessage:
         // only service and interface can be empty -> path and name must not be empty
         if (!d_ptr->parametersValidated) {
-            if (!QDBusUtil::checkBusName(d_ptr->service, QDBusUtil::EmptyAllowed, error))
+            using namespace QDBusUtil;
+            AllowEmptyFlag serviceCheckMode = capabilities & QDBusConnectionPrivate::ConnectionIsBus
+                    ? EmptyNotAllowed : EmptyAllowed;
+            if (!checkBusName(d_ptr->service, serviceCheckMode, error))
                 return nullptr;
             if (!QDBusUtil::checkObjectPath(d_ptr->path, QDBusUtil::EmptyNotAllowed, error))
                 return nullptr;
@@ -146,7 +149,7 @@ DBusMessage *QDBusMessagePrivate::toDBusMessage(const QDBusMessage &message, QDB
         }
         break;
     case QDBusMessage::SignalMessage:
-        // only the service name can be empty here
+        // only the service name can be empty here (even for bus connections)
         if (!d_ptr->parametersValidated) {
             if (!QDBusUtil::checkBusName(d_ptr->service, QDBusUtil::EmptyAllowed, error))
                 return nullptr;
