@@ -132,7 +132,14 @@ private:
     static constexpr Qt::strong_ordering
     compareThreeWay_helper(const QUuid &lhs, const QUuid &rhs) noexcept
     {
-#if defined(__cpp_lib_bit_cast) && defined(QT_SUPPORTS_INT128)
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
+        if (const auto c = Qt::compareThreeWay(lhs.data1, rhs.data1); !is_eq(c))
+            return c;
+        if (const auto c = Qt::compareThreeWay(lhs.data2, rhs.data2); !is_eq(c))
+            return c;
+        if (const auto c = Qt::compareThreeWay(lhs.data3, rhs.data3); !is_eq(c))
+            return c;
+#elif defined(__cpp_lib_bit_cast) && defined(QT_SUPPORTS_INT128)
         quint128 lu = qFromBigEndian(std::bit_cast<quint128>(lhs));
         quint128 ru = qFromBigEndian(std::bit_cast<quint128>(rhs));
         return Qt::compareThreeWay(lu, ru);
@@ -144,13 +151,12 @@ private:
         };
         if (const auto c = Qt::compareThreeWay(make_int(lhs), make_int(rhs)); !is_eq(c))
             return c;
-
+#endif
         for (unsigned i = 0; i < sizeof(lhs.data4); ++i) {
             if (const auto c = Qt::compareThreeWay(lhs.data4[i], rhs.data4[i]); !is_eq(c))
                 return c;
         }
         return Qt::strong_ordering::equal;
-#endif
     }
     friend constexpr Qt::strong_ordering compareThreeWay(const QUuid &lhs, const QUuid &rhs) noexcept
     {
