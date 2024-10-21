@@ -74,6 +74,7 @@ private slots:
     void qDebugQStringView() const;
     void qDebugQUtf8StringView() const;
     void qDebugQLatin1String() const;
+    void qDebugStdPair() const;
     void qDebugStdString() const;
     void qDebugStdStringView() const;
     void qDebugStdWString() const;
@@ -676,6 +677,31 @@ void tst_QDebug::qDebugQLatin1String() const
 
     qDebug() << string;
     QCOMPARE(s_msg, QString("\"\\nSm\\u00F8rg\\u00E5sbord\\\\\""));
+}
+
+void tst_QDebug::qDebugStdPair() const
+{
+    QByteArray file, function;
+    int line = 0;
+    MessageHandlerSetter mhs(myMessageHandler);
+    {
+        QDebug d = qDebug();
+        d << std::pair(42, u"foo"_s) << std::pair(u"barbaz"_s, 4.2);
+        d.nospace().noquote() << std::pair(u"baz"_s, -42);
+    }
+#ifndef QT_NO_MESSAGELOGCONTEXT
+    file = __FILE__; line = __LINE__ - 5; function = Q_FUNC_INFO;
+#endif
+    QCOMPARE(s_msgType, QtDebugMsg);
+    QCOMPARE(s_msg, R"(std::pair(42,"foo") std::pair("barbaz",4.2) std::pair(baz,-42))"_L1);
+    QCOMPARE(s_file, file);
+    QCOMPARE(s_line, line);
+    QCOMPARE(s_function, function);
+
+    /* simpler tests from now on */
+    // nested:
+    qDebug() << std::pair(std::pair(std::pair(4.2, 42), ".42"), u"42"_s);
+    QCOMPARE(s_msg, R"(std::pair(std::pair(std::pair(4.2,42),.42),"42"))"_L1);
 }
 
 void tst_QDebug::qDebugStdString() const
