@@ -354,9 +354,12 @@ QThreadPrivate::~QThreadPrivate()
     \fn void QThread::started()
 
     This signal is emitted from the associated thread when it starts executing,
-    before the run() function is called.
+    so any slots connected to it may be called via queued invocation. Whilst
+    the event may have been posted before run() is called, any
+    \l {Signals and Slots Across Threads} {cross-thread delivery} of the signal
+    may still be pending.
 
-    \sa finished()
+    \sa run(), finished()
 */
 
 /*!
