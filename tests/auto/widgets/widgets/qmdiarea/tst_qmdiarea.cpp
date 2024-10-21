@@ -26,6 +26,8 @@
 
 #include <QtWidgets/private/qapplication_p.h>
 
+using namespace Qt::StringLiterals;
+
 static const Qt::WindowFlags DefaultWindowFlags
     = Qt::SubWindow | Qt::WindowSystemMenuHint
       | Qt::WindowTitleHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint;
@@ -264,6 +266,7 @@ private slots:
     void tabbedview_activefirst();
     void tabbedview_activesecond();
     void tabbedview_activethird();
+    void tabbedview_closeInactive();
 
 private:
     QMdiSubWindow *activeWindow;
@@ -2784,6 +2787,46 @@ void tst_QMdiArea::tabbedview_activethird()
     QCOMPARE(mdiArea.activeSubWindow(), sub2);
 }
 
+void tst_QMdiArea::tabbedview_closeInactive()
+{
+    QMdiArea mdiArea;
+    auto createNewWindow = [&mdiArea](const QString &name){
+        QMdiSubWindow *subWindow = new QMdiSubWindow;
+        subWindow->setObjectName(name);
+        subWindow->setAttribute(Qt::WA_DeleteOnClose);
+        subWindow->setWindowTitle(name);
+        mdiArea.addSubWindow(subWindow);
+        subWindow->show();
+        return subWindow;
+    };
+
+    mdiArea.setViewMode(QMdiArea::TabbedView);
+    mdiArea.setTabsClosable(true);
+    mdiArea.setTabPosition(QTabWidget::South);
+    mdiArea.setOption(QMdiArea::DontMaximizeSubWindowOnActivation, true);
+    mdiArea.setActivationOrder(QMdiArea::ActivationHistoryOrder);
+
+    mdiArea.resize(800, 600);
+    mdiArea.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
+    // This is needed for QMdiAreaPrivate::updateTabBarGeometry to update the
+    // viewport margins.
+    mdiArea.setStyleSheet(uR"qss(
+        QTabBar::tab:bottom:selected {
+            border-bottom: 1px solid;
+        }
+    )qss"_s);
+
+    QPointer<QMdiSubWindow> mdi1 = createNewWindow(u"mdi1"_s);
+    QPointer<QMdiSubWindow> mdi2 = createNewWindow(u"mdi2"_s);
+    QTRY_COMPARE(mdiArea.subWindowList().size() , 2);
+    QCOMPARE(mdiArea.activeSubWindow(), mdi2.data());
+
+    mdi1->close();
+
+    QTRY_COMPARE(mdiArea.subWindowList().size() , 1);
+    QTRY_VERIFY(!mdi1);
+}
 
 QTEST_MAIN(tst_QMdiArea)
 #include "tst_qmdiarea.moc"
