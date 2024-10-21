@@ -1341,8 +1341,6 @@ void Moc::createPropertyDef(PropertyDef &propDef, int propertyIndex, Moc::Proper
     type = normalizeType(type);
     if (type == "QMap")
         type = "QMap<QString,QVariant>";
-    else if (type == "QValueList")
-        type = "QValueList<QVariant>";
     else if (type == "LongLong")
         type = "qlonglong";
     else if (type == "ULongLong")
