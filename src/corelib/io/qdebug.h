@@ -296,6 +296,16 @@ public:
         return putTupleLike("std", "tuple", t);
     }
 
+    template <typename T, if_streamable<T> = true>
+    QDebug &operator<<(const std::optional<T> &o)
+    {
+        if (!o)
+            return *this << std::nullopt;
+        StreamTypeErased s = &streamTypeErased<std::remove_cv_t<T>>;
+        const void *d = std::addressof(*o);
+        return putTupleLikeImplImpl("std", "optional", 1, &s, &d);
+    }
+
 private:
     template <typename T>
     using if_ordering_type = std::enable_if_t<QtOrderingPrivate::is_ordering_type_v<T>, bool>;
@@ -485,16 +495,6 @@ template <class Key, class T>
 inline QDebugIfHasDebugStreamContainer<QMultiHash<Key, T>, Key, T> operator<<(QDebug debug, const QMultiHash<Key, T> &hash)
 {
     return QtPrivate::printAssociativeContainer(std::move(debug), "QMultiHash", hash);
-}
-
-template <class T>
-inline QDebugIfHasDebugStream<T> operator<<(QDebug debug, const std::optional<T> &opt)
-{
-    if (!opt)
-        return debug << std::nullopt;
-    const QDebugStateSaver saver(debug);
-    debug.nospace() << "std::optional(" << *opt << ')';
-    return debug;
 }
 
 template <class T1, class T2>
