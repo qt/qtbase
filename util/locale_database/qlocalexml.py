@@ -456,7 +456,7 @@ class QLocaleXmlReader (object):
 
     @classmethod
     def __textThenAttrs(cls, elt, *names):
-        """Read an elements text than a sequence of its attributes.
+        """Read an element's text, then a sequence of its attributes.
 
         First parameter is the XML element, subsequent parameters name
         attributes of it. Yields the text of the element, followed by the text
