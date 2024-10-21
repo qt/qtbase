@@ -45,6 +45,9 @@ You can also rotate the coordinates directly, using the rotate option:
 
 Supported rotations are 90, 180, and 270.
 
+If you need to receive touch events while the window is not in focus, make sure
+that the QT_TUIOTOUCH_DELIVER_WITHOUT_FOCUS environment variable is set.
+
 ## Further work
 
 * Support other profiles (we implement 2Dcur, we want 2Dobj, 2Dblb?)
