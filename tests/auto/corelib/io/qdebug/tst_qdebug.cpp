@@ -704,7 +704,7 @@ void tst_QDebug::qDebugStdPair() const
     file = __FILE__; line = __LINE__ - 5; function = Q_FUNC_INFO;
 #endif
     QCOMPARE(s_msgType, QtDebugMsg);
-    QCOMPARE(s_msg, R"(std::pair(42,"foo") std::pair("barbaz",4.2) std::pair(baz,-42))"_L1);
+    QCOMPARE(s_msg, R"(std::pair(42, "foo") std::pair("barbaz", 4.2) std::pair(baz, -42))"_L1);
     QCOMPARE(s_file, file);
     QCOMPARE(s_line, line);
     QCOMPARE(s_function, function);
@@ -712,7 +712,7 @@ void tst_QDebug::qDebugStdPair() const
     /* simpler tests from now on */
     // nested:
     qDebug() << std::pair(std::pair(std::pair(4.2, 42), ".42"), u"42"_s);
-    QCOMPARE(s_msg, R"(std::pair(std::pair(std::pair(4.2,42),.42),"42"))"_L1);
+    QCOMPARE(s_msg, R"(std::pair(std::pair(std::pair(4.2, 42), .42), "42"))"_L1);
 }
 
 void tst_QDebug::qDebugStdString() const

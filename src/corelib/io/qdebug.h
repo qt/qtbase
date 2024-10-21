@@ -436,7 +436,7 @@ template <class T1, class T2>
 inline QDebugIfHasDebugStream<T1, T2> operator<<(QDebug debug, const std::pair<T1, T2> &pair)
 {
     const QDebugStateSaver saver(debug);
-    debug.nospace() << "std::pair(" << pair.first << ',' << pair.second << ')';
+    debug.nospace() << "std::pair(" << pair.first << ", " << pair.second << ')';
     return debug;
 }
 
