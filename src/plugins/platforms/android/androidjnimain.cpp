@@ -47,8 +47,6 @@ QT_BEGIN_NAMESPACE
 
 static JavaVM *m_javaVM = nullptr;
 static jclass m_applicationClass  = nullptr;
-static jobject m_classLoaderObject = nullptr;
-static jmethodID m_loadClassMethodID = nullptr;
 static AAssetManager *m_assetManager = nullptr;
 static jobject m_assets = nullptr;
 static jobject m_resourcesObj = nullptr;
@@ -513,7 +511,6 @@ static void terminateQt(JNIEnv *env, jclass /*clazz*/)
     sem_destroy(&m_terminateSemaphore);
 
     env->DeleteGlobalRef(m_applicationClass);
-    env->DeleteGlobalRef(m_classLoaderObject);
     if (m_resourcesObj)
         env->DeleteGlobalRef(m_resourcesObj);
     if (m_bitmapClass)
@@ -827,11 +824,6 @@ static bool registerNatives(QJniEnvironment &env)
     const auto releaseContextObject = qScopeGuard([&env, contextObject]{
         env->DeleteLocalRef(contextObject);
     });
-
-    GET_AND_CHECK_STATIC_METHOD(methodID, m_applicationClass, "classLoader", "()Ljava/lang/ClassLoader;");
-    m_classLoaderObject = env->NewGlobalRef(env->CallStaticObjectMethod(m_applicationClass, methodID));
-    clazz = env->GetObjectClass(m_classLoaderObject);
-    GET_AND_CHECK_METHOD(m_loadClassMethodID, clazz, "loadClass", "(Ljava/lang/String;)Ljava/lang/Class;");
 
     FIND_AND_CHECK_CLASS("android/content/ContextWrapper");
     GET_AND_CHECK_METHOD(methodID, clazz, "getAssets", "()Landroid/content/res/AssetManager;");
