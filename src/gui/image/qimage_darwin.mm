@@ -12,9 +12,10 @@
 QT_BEGIN_NAMESPACE
 
 /*!
-    \brief Creates a \c CGImage equivalent to this QImage.
+    \fn CGImageRef QImage::toCGImage() const
 
-    Returns a \c CGImageRef handle.
+    Creates a \c CGImage equivalent to this QImage, and returns a \c CGImageRef
+    handle.
 
     The returned CGImageRef partakes in the QImage implicit sharing,
     and holds a reference to the QImage data. CGImage is immutable
