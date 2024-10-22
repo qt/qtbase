@@ -7,8 +7,8 @@
 
     "Description": "SQLite is a small C library that implements a self-contained, embeddable, zero-configuration SQL database engine.",
     "Homepage": "https://www.sqlite.org/",
-    "Version": "3.46.1",
-    "DownloadLocation": "https://www.sqlite.org/2024/sqlite-amalgamation-3460100.zip",
+    "Version": "3.47.0",
+    "DownloadLocation": "https://www.sqlite.org/2024/sqlite-amalgamation-3470000.zip",
     "License": "SQLite Blessing",
     "LicenseId": "blessing",
     "Copyright": "The authors disclaim copyright to the source code. However, a license can be obtained if needed."
