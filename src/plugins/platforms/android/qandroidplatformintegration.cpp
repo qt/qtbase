@@ -83,7 +83,7 @@ static bool isValidAndroidContextForRendering()
 void *QAndroidPlatformNativeInterface::nativeResourceForIntegration(const QByteArray &resource)
 {
     if (resource=="JavaVM")
-        return QtAndroid::javaVM();
+        return QtAndroidPrivate::javaVM();
     if (resource == "QtActivity") {
         extern Q_CORE_EXPORT jobject qt_androidActivity();
         return qt_androidActivity();

@@ -45,7 +45,6 @@ namespace QtAndroid
     int availableHeightPixels();
     double scaledDensity();
     double pixelDensity();
-    JavaVM *javaVM();
     jobject assets();
     AAssetManager *assetManager();
     jclass applicationClass();

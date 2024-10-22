@@ -45,7 +45,6 @@ using namespace Qt::StringLiterals;
 
 QT_BEGIN_NAMESPACE
 
-static JavaVM *m_javaVM = nullptr;
 static jclass m_applicationClass  = nullptr;
 static AAssetManager *m_assetManager = nullptr;
 static jobject m_assets = nullptr;
@@ -162,11 +161,6 @@ namespace QtAndroid
     double pixelDensity()
     {
         return m_density;
-    }
-
-    JavaVM *javaVM()
-    {
-        return m_javaVM;
     }
 
     AAssetManager *assetManager()
@@ -860,7 +854,7 @@ static bool registerNatives(QJniEnvironment &env)
 
 QT_END_NAMESPACE
 
-Q_DECL_EXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void */*reserved*/)
+Q_DECL_EXPORT jint JNICALL JNI_OnLoad(JavaVM */*vm*/, void */*reserved*/)
 {
     static bool initialized = false;
     if (initialized)
@@ -868,10 +862,8 @@ Q_DECL_EXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void */*reserved*/)
     initialized = true;
 
     QT_USE_NAMESPACE
-    m_javaVM = vm;
     QJniEnvironment env;
     if (!env.isValid()) {
-        m_javaVM = nullptr;
         __android_log_print(ANDROID_LOG_FATAL, "Qt", "Failed to initialize the JNI Environment");
         return -1;
     }
