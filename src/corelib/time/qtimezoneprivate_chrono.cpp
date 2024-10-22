@@ -66,7 +66,7 @@ QByteArray QChronoTimeZonePrivate::systemTimeZoneId() const
 {
     if (const time_zone *zone = std::chrono::current_zone()) {
         std::string_view name = zone->name();
-        return {name.begin(), qsizetype(name.size())};
+        return {name.data(), qsizetype(name.size())};
     }
     return {};
 }
