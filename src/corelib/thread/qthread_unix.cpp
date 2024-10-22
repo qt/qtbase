@@ -455,7 +455,11 @@ int QThread::idealThreadCount() noexcept
     size_t len = sizeof(cores);
     int mib[2];
     mib[0] = CTL_HW;
+#ifdef HW_NCPUONLINE
+    mib[1] = HW_NCPUONLINE;
+#else
     mib[1] = HW_NCPU;
+#endif
     if (sysctl(mib, 2, &cores, &len, NULL, 0) != 0) {
         perror("sysctl");
     }
