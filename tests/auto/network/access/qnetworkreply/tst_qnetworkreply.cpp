@@ -84,6 +84,7 @@ Q_DECLARE_METATYPE(QSharedPointer<char>)
 #include <time.h>
 
 #include "../../../network-settings.h"
+#include "../../../network-helpers.h"
 
 #ifdef Q_OS_INTEGRITY
 #include "qplatformdefs.h"
@@ -5657,6 +5658,9 @@ void tst_QNetworkReply::ioGetFromBuiltinHttp()
     QFETCH(bool, https);
     QFETCH(int, bufferSize);
 
+    if (https && QtNetworkTestHelpers::isSecureTransportBlockingTest())
+        QSKIP("SecureTransport: temporary keychain is not working on this version of macOS");
+
     QByteArray testData;
     // Make the data big enough so that it can fill the kernel buffer
     // (which seems to hold 202 KB here)
@@ -6418,6 +6422,9 @@ void tst_QNetworkReply::httpProxyCommands_data()
         << QByteArray("HTTP/1.0 200 OK\r\nProxy-Connection: close\r\nContent-Length: 1\r\n\r\n1")
         << "GET http://0.0.0.0:4443/http-request HTTP/1.";
 #if QT_CONFIG(ssl)
+    if (QtNetworkTestHelpers::isSecureTransportBlockingTest())
+        QSKIP("SecureTransport: temporary keychain is not working on this version of macOS");
+
     QTest::newRow("https")
         << QUrl("https://0.0.0.0:4443/https-request")
         << QByteArray("HTTP/1.0 200 Connection Established\r\n\r\n")
@@ -6644,8 +6651,10 @@ void tst_QNetworkReply::httpConnectionCount_data()
     QTest::addRow("http/1.1") << false << false;
     QTest::addRow("http/2") << true << false;
 #if QT_CONFIG(ssl)
-    QTest::addRow("https/1.1") << false << true;
-    QTest::addRow("https/2") << true << true;
+    if (!QtNetworkTestHelpers::isSecureTransportBlockingTest()) {
+        QTest::addRow("https/1.1") << false << true;
+        QTest::addRow("https/2") << true << true;
+    }
 #endif
 }
 
@@ -7003,6 +7012,9 @@ void tst_QNetworkReply::encrypted()
 
 void tst_QNetworkReply::abortOnEncrypted()
 {
+    if (QtNetworkTestHelpers::isSecureTransportBlockingTest())
+        QSKIP("SecureTransport: temporary keychain is not working on this version of macOS");
+
     SslServer server;
     server.listen();
     if (!server.isListening())
@@ -9841,6 +9853,9 @@ public slots:
 
 void tst_QNetworkReply::putWithServerClosingConnectionImmediately()
 {
+    if (QtNetworkTestHelpers::isSecureTransportBlockingTest())
+        QSKIP("SecureTransport: temporary keychain is not working on this version of macOS");
+
     const int numUploads = 40;
     qint64 wantedSize = 512*1024; // 512 kB
     QByteArray sourceFile;
