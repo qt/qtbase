@@ -34,7 +34,7 @@ QPersistentModelIndexData *QPersistentModelIndexData::create(const QModelIndex &
     Q_ASSERT(index.isValid()); // we will _never_ insert an invalid index in the list
     QPersistentModelIndexData *d = nullptr;
     QAbstractItemModel *model = const_cast<QAbstractItemModel *>(index.model());
-    QMultiHash<QModelIndex, QPersistentModelIndexData *> &indexes = model->d_func()->persistent.indexes;
+    QMultiHash<QtPrivate::QModelIndexWrapper, QPersistentModelIndexData *> &indexes = model->d_func()->persistent.indexes;
     const auto it = indexes.constFind(index);
     if (it != indexes.cend()) {
         d = (*it);
