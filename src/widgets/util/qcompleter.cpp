@@ -923,8 +923,13 @@ void QCompleterPrivate::showPopup(const QRect& rect)
 
     popup->setGeometry(pos.x(), pos.y(), w, h);
 
-    if (!popup->isVisible())
+    if (!popup->isVisible()) {
+        // Make sure popup has a transient parent set, Wayland needs it. QTBUG-130474
+        popup->winId(); // force creation of windowHandle
+        popup->windowHandle()->setTransientParent(widget->window()->windowHandle());
+
         popup->show();
+    }
 }
 
 #if QT_CONFIG(filesystemmodel)
