@@ -2864,24 +2864,6 @@ void tst_QGraphicsView::levelOfDetail()
     QTRY_COMPARE(item->lastLod, lod);
 }
 
-// Simulates motif scrollbar for range tests
-class FauxMotifStyle : public QCommonStyle {
-public:
-    int styleHint(StyleHint hint, const QStyleOption *option, const QWidget *widget, QStyleHintReturn *returnData) const override
-    {
-        if (hint == QStyle::SH_ScrollView_FrameOnlyAroundContents)
-            return true;
-        return QCommonStyle::styleHint(hint, option, widget, returnData);
-    }
-
-    int pixelMetric(PixelMetric m, const QStyleOption *opt, const QWidget *widget) const override
-    {
-        if (m == QStyle::PM_ScrollView_ScrollBarSpacing)
-            return 4;
-        return QCommonStyle::pixelMetric(m, opt, widget);
-    }
-};
-
 static void scrollBarRanges_addTestData(const QString &style, bool styled)
 {
     const int viewWidth = 250;
@@ -4115,10 +4097,7 @@ void tst_QGraphicsView::scrollBarRanges()
     view.setTransform(transform);
     view.setFrameStyle(useStyledPanel ? QFrame::StyledPanel : QFrame::NoFrame);
 
-    if (style == "motif")
-        stylePtr.reset(new FauxMotifStyle);
-    else
-        stylePtr.reset(QStyleFactory::create(style));
+    stylePtr.reset(QStyleFactory::create(style));
     view.setStyle(stylePtr.data());
     view.setStyleSheet(" "); // enables style propagation ;-)
 
