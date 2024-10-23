@@ -1784,9 +1784,13 @@ QRect QWindows11Style::subElementRect(QStyle::SubElement element, const QStyleOp
     case QStyle::SE_ItemViewItemText:
         if (const auto *item = qstyleoption_cast<const QStyleOptionViewItem *>(option)) {
             const int decorationOffset = item->features.testFlag(QStyleOptionViewItem::HasDecoration) ? item->decorationSize.width() : 0;
+            const int checkboxOffset = item->features.testFlag(QStyleOptionViewItem::HasCheckIndicator) ? 16 : 0;
             if (widget && widget->parentWidget()
              && widget->parentWidget()->inherits("QComboBoxPrivateContainer")) {
-                ret = option->rect.adjusted(decorationOffset + 5, 0, -5, 0);
+                if (option->direction == Qt::LeftToRight)
+                    ret = option->rect.adjusted(decorationOffset + checkboxOffset + 5, 0, -5, 0);
+                else
+                    ret = option->rect.adjusted(5, 0, decorationOffset - checkboxOffset - 5, 0);
             } else {
                 ret = QWindowsVistaStyle::subElementRect(element, option, widget);
             }
