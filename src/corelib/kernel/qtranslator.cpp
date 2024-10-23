@@ -23,6 +23,8 @@
 #include "qendian.h"
 #include "qresource.h"
 
+#include <QtCore/private/qduplicatetracker_p.h>
+
 #if defined(Q_OS_UNIX) && !defined(Q_OS_INTEGRITY)
 #  define QT_USE_MMAP
 #  include "private/qcore_unix_p.h"
@@ -628,7 +630,7 @@ static QString find_translation(const QLocale & locale,
 
     QString realname;
     realname += path + filename + prefix; // using += in the hope for some reserve capacity
-    const int realNameBaseSize = realname.size();
+    const qsizetype realNameBaseSize = realname.size();
 
     // see http://www.unicode.org/reports/tr35/#LanguageMatching for inspiration
 
@@ -640,8 +642,54 @@ static QString find_translation(const QLocale & locale,
     // that the Qt resource system is always case-sensitive, even on
     // Windows (in other words: this codepath is *not* UNIX-only).
     QStringList languages = locale.uiLanguages();
+    for (auto &localeName : languages)
+        localeName.replace(u'-', u'_');
     qCDebug(lcTranslator) << "Requested UI languages" << languages;
-    for (int i = languages.size() - 1; i >= 0; --i) {
+
+    QDuplicateTracker<QString> duplicates(languages.size() * 2);
+    for (const auto &l : std::as_const(languages))
+        (void)duplicates.hasSeen(l);
+
+    for (qsizetype i = languages.size() - 1; i >= 0; --i) {
+        QString language = languages.at(i);
+
+        // Add candidates for each entry where we progressively truncate sections
+        // from the end, until a matching language tag is found. For compatibility
+        // reasons (see QTBUG-124898) we add a special case: if we find a
+        // language_Script_Territory entry (i.e. an entry with two sections), try
+        // language_Territory as well as language_Script. Use QDuplicateTracker
+        // so that we don't add any entries as fallbacks that are already in the
+        // list anyway.
+        // This is a kludge, and such entries are added at the end of the candidate
+        // list; from 6.9 on, this is fixed in QLocale::uiLanguages().
+        QStringList fallbacks;
+        const auto addIfNew = [&duplicates, &fallbacks](const QString &fallback) {
+            if (!duplicates.hasSeen(fallback))
+                fallbacks.append(fallback);
+        };
+
+        while (true) {
+            const qsizetype last = language.lastIndexOf(u'_');
+            if (last < 0) // no more sections
+                break;
+
+            const qsizetype first = language.indexOf(u'_');
+            // two sections, add fallback without script
+            if (first != last && language.count(u'_') == 2) {
+                QString fallback = language.left(first) + language.mid(last);
+                addIfNew(fallback);
+            }
+            QString fallback = language.left(last);
+            addIfNew(fallback);
+
+            language.truncate(last);
+        }
+        for (qsizetype j = fallbacks.size() - 1; j >= 0; --j)
+            languages.insert(i + 1, fallbacks.at(j));
+    }
+
+    qCDebug(lcTranslator) << "Augmented UI languages" << languages;
+    for (qsizetype i = languages.size() - 1; i >= 0; --i) {
         const QString &lang = languages.at(i);
         QString lowerLang = lang.toLower();
         if (lang != lowerLang)
@@ -649,26 +697,16 @@ static QString find_translation(const QLocale & locale,
     }
 
     for (QString localeName : std::as_const(languages)) {
-        localeName.replace(u'-', u'_');
+        // try each locale with and without suffix
+        realname += localeName + suffixOrDotQM;
+        if (is_readable_file(realname))
+            return realname;
 
-        // try the complete locale name first and progressively truncate from
-        // the end until a matching language tag is found (with or without suffix)
-        for (;;) {
-            realname += localeName + suffixOrDotQM;
-            if (is_readable_file(realname))
-                return realname;
+        realname.truncate(realNameBaseSize + localeName.size());
+        if (is_readable_file(realname))
+            return realname;
 
-            realname.truncate(realNameBaseSize + localeName.size());
-            if (is_readable_file(realname))
-                return realname;
-
-            realname.truncate(realNameBaseSize);
-
-            int rightmost = localeName.lastIndexOf(u'_');
-            if (rightmost <= 0)
-                break; // no truncations anymore, break
-            localeName.truncate(rightmost);
-        }
+        realname.truncate(realNameBaseSize);
     }
 
     const int realNameBaseSizeFallbacks = path.size() + filename.size();
