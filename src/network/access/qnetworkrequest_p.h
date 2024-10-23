@@ -25,6 +25,8 @@
 #include "QtCore/qsharedpointer.h"
 #include "QtCore/qpointer.h"
 
+#include <utility>
+
 QT_BEGIN_NAMESPACE
 
 class QNetworkCookie;
@@ -33,7 +35,7 @@ class QNetworkCookie;
 class QNetworkHeadersPrivate
 {
 public:
-    typedef QPair<QByteArray, QByteArray> RawHeaderPair;
+    typedef std::pair<QByteArray, QByteArray> RawHeaderPair;
     typedef QList<RawHeaderPair> RawHeadersList;
     typedef QHash<QNetworkRequest::KnownHeaders, QVariant> CookedHeadersMap;
     typedef QHash<QNetworkRequest::Attribute, QVariant> AttributesMap;

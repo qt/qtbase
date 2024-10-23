@@ -974,7 +974,7 @@ bool QHostAddress::isInSubnet(const QHostAddress &subnet, int netmask) const
     prefix and the int (second) member contains the netmask (prefix
     length).
 */
-bool QHostAddress::isInSubnet(const QPair<QHostAddress, int> &subnet) const
+bool QHostAddress::isInSubnet(const std::pair<QHostAddress, int> &subnet) const
 {
     return isInSubnet(subnet.first, subnet.second);
 }
@@ -1004,7 +1004,7 @@ bool QHostAddress::isInSubnet(const QPair<QHostAddress, int> &subnet) const
 
     \sa isInSubnet()
 */
-QPair<QHostAddress, int> QHostAddress::parseSubnet(const QString &subnet)
+std::pair<QHostAddress, int> QHostAddress::parseSubnet(const QString &subnet)
 {
     // We support subnets in the form:
     //   ddd.ddd.ddd.ddd/nn
@@ -1021,7 +1021,7 @@ QPair<QHostAddress, int> QHostAddress::parseSubnet(const QString &subnet)
     //
     //  where nn can be an IPv4-style netmask for the IPv4 forms
 
-    const QPair<QHostAddress, int> invalid = qMakePair(QHostAddress(), -1);
+    const std::pair<QHostAddress, int> invalid = std::pair(QHostAddress(), -1);
     if (subnet.isEmpty())
         return invalid;
 
@@ -1064,7 +1064,7 @@ QPair<QHostAddress, int> QHostAddress::parseSubnet(const QString &subnet)
             return invalid;     // failed to parse the IP
 
         clearBits(net.d->a6.c, netmask, 128);
-        return qMakePair(net, netmask);
+        return std::pair(net, netmask);
     }
 
     if (netmask > 32)
@@ -1102,7 +1102,7 @@ QPair<QHostAddress, int> QHostAddress::parseSubnet(const QString &subnet)
         addr &= mask;
     }
 
-    return qMakePair(QHostAddress(addr), netmask);
+    return std::pair(QHostAddress(addr), netmask);
 }
 
 /*!

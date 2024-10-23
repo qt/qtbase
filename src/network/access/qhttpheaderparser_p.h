@@ -20,7 +20,6 @@
 
 #include <QByteArray>
 #include <QList>
-#include <QPair>
 #include <QString>
 
 QT_BEGIN_NAMESPACE

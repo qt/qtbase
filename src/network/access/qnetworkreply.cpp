@@ -638,7 +638,7 @@ QByteArray QNetworkReply::rawHeader(QAnyStringView headerName) const
 
 /*! \typedef QNetworkReply::RawHeaderPair
 
-  RawHeaderPair is a QPair<QByteArray, QByteArray> where the first
+  RawHeaderPair is a std::pair<QByteArray, QByteArray> where the first
   QByteArray is the header name and the second is the header.
  */
 

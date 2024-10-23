@@ -64,7 +64,7 @@ Q_GLOBAL_STATIC(QNetworkCacheMetaDataPrivate, metadata_shared_invalid)
 /*!
     \typedef QNetworkCacheMetaData::RawHeader
 
-    Synonym for QPair<QByteArray, QByteArray>
+    Synonym for std::pair<QByteArray, QByteArray>
 */
 
 /*!

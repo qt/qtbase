@@ -37,6 +37,8 @@
 
 #include <private/qhttpnetworkconnectionchannel_p.h>
 
+#include <utility>
+
 QT_REQUIRE_CONFIG(http);
 
 QT_BEGIN_NAMESPACE
@@ -129,7 +131,7 @@ private:
 
 
 // private classes
-typedef QPair<QHttpNetworkRequest, QHttpNetworkReply*> HttpMessagePair;
+typedef std::pair<QHttpNetworkRequest, QHttpNetworkReply*> HttpMessagePair;
 
 
 class QHttpNetworkConnectionPrivate : public QObjectPrivate
