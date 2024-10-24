@@ -6,7 +6,6 @@
 #include "qxcbatom.h"
 #include "qxcbexport.h"
 
-#include <QtCore/QPair>
 #include <QtCore/QObject>
 #include <QtCore/QByteArray>
 #include <QtCore/QLoggingCategory>
@@ -52,7 +51,7 @@ public:
     bool hasXKB() const { return m_hasXkb; }
     bool hasXRender(int major = -1, int minor = -1) const {
         if (m_hasXRender && major != -1 && minor != -1)
-            return m_xrenderVersion >= qMakePair(major, minor);
+            return m_xrenderVersion >= std::pair(major, minor);
 
         return m_hasXRender;
     }
@@ -105,7 +104,7 @@ private:
     bool m_hasShmFd = false;
     bool m_hasXSync = false;
 
-    QPair<int, int> m_xrenderVersion;
+    std::pair<int, int> m_xrenderVersion;
 
     bool m_xi2Enabled = false;
     int m_xi2Minor = -1;

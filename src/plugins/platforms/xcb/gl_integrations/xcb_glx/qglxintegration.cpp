@@ -156,7 +156,7 @@ static void updateFormatFromContext(QSurfaceFormat &format)
                 format.setOption(QSurfaceFormat::ResetNotification);
         }
 
-        if (format.version() < qMakePair(3, 0)) {
+        if (format.version() < std::pair(3, 0)) {
             format.setOption(QSurfaceFormat::DeprecatedFunctions);
             return;
         }
@@ -169,7 +169,7 @@ static void updateFormatFromContext(QSurfaceFormat &format)
             format.setOption(QSurfaceFormat::DeprecatedFunctions);
         if (value & GL_CONTEXT_FLAG_DEBUG_BIT)
             format.setOption(QSurfaceFormat::DebugContext);
-        if (format.version() < qMakePair(3, 2))
+        if (format.version() < std::pair(3, 2))
             return;
 
         // Version 3.2 and newer have a profile

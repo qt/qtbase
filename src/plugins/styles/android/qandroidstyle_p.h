@@ -191,7 +191,7 @@ public:
         virtual void setPaddingLeftToSizeWidth();
         QSize sizeImage(const QStyleOption *opt) const;
     private:
-        typedef QPair<int, const AndroidDrawable *> StateType;
+        typedef std::pair<int, const AndroidDrawable *> StateType;
         QList<StateType> m_states;
     };
 
@@ -206,7 +206,7 @@ public:
         AndroidDrawable *layer(int id) const;
         QSize size() const;
     private:
-        typedef QPair<int, AndroidDrawable *> LayerType;
+        typedef std::pair<int, AndroidDrawable *> LayerType;
         QList<LayerType> m_layers;
         int m_id;
         double m_factor;

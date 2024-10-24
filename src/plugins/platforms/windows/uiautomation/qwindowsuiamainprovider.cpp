@@ -362,7 +362,7 @@ void QWindowsUiaMainProvider::fillVariantArrayForRelation(QAccessibleInterface* 
 {
     Q_ASSERT(accessible);
 
-    typedef QPair<QAccessibleInterface*, QAccessible::Relation> RelationPair;
+    typedef std::pair<QAccessibleInterface*, QAccessible::Relation> RelationPair;
     const QList<RelationPair> relationInterfaces = accessible->relations(relation);
     if (relationInterfaces.empty())
         return;
