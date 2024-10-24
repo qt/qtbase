@@ -615,7 +615,7 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
             Read = 0x01,
             Write = 0x02
         };
-        QHash<QRhiResource *, QPair<int, bool> > writtenResources;
+        QHash<QRhiResource *, std::pair<int, bool> > writtenResources;
         void reset() {
             writtenResources.clear();
         }

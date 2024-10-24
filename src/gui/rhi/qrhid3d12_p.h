@@ -417,7 +417,7 @@ struct QD3D12ReleaseQueue
         int viewCount = 0;
         std::function<void(void*)> callback = nullptr;
         void *callbackUserData = nullptr;
-        QPair<ID3D12Resource *, D3D12MA::Allocation *> resourceAndAllocation = {};
+        std::pair<ID3D12Resource *, D3D12MA::Allocation *> resourceAndAllocation = {};
         ID3D12DescriptorHeap *descriptorHeap = nullptr;
     };
     QVector<DeferredReleaseEntry> queue;
@@ -995,10 +995,10 @@ struct QD3D12CommandBuffer : public QRhiCommandBuffer
 
     // per-setShaderResources
     struct VisitorData {
-        QVarLengthArray<QPair<QD3D12ObjectHandle, quint32>, 4> cbufs[6];
+        QVarLengthArray<std::pair<QD3D12ObjectHandle, quint32>, 4> cbufs[6];
         QVarLengthArray<QD3D12Descriptor, 8> srvs[6];
         QVarLengthArray<QD3D12Descriptor, 8> samplers[6];
-        QVarLengthArray<QPair<QD3D12ObjectHandle, D3D12_UNORDERED_ACCESS_VIEW_DESC>, 4> uavs[6];
+        QVarLengthArray<std::pair<QD3D12ObjectHandle, D3D12_UNORDERED_ACCESS_VIEW_DESC>, 4> uavs[6];
     } visitorData;
 
     void visitUniformBuffer(QD3D12Stage s,

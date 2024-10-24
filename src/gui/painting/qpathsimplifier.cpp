@@ -323,14 +323,14 @@ private:
     bool equalElements(const Element *e1, const Element *e2);
     bool splitLineAt(QDataBuffer<Element *> &elements, BVHNode *node, quint32 pointIndex, bool processAgain);
     void appendSeparatingAxes(QVarLengthArray<QPoint, 12> &axes, Element *element);
-    QPair<int, int> calculateSeparatingAxisRange(const QPoint &axis, Element *element);
+    std::pair<int, int> calculateSeparatingAxisRange(const QPoint &axis, Element *element);
     void splitCurve(QDataBuffer<Element *> &elements, BVHNode *node);
     bool setElementToQuadratic(Element *element, quint32 pointIndex1, const QPoint &ctrl, quint32 pointIndex2);
     bool setElementToCubic(Element *element, quint32 pointIndex1, const QPoint &ctrl1, const QPoint &ctrl2, quint32 pointIndex2);
     void setElementToCubicAndSimplify(Element *element, quint32 pointIndex1, const QPoint &ctrl1, const QPoint &ctrl2, quint32 pointIndex2);
-    RBNode *findElementLeftOf(const Element *element, const QPair<RBNode *, RBNode *> &bounds);
+    RBNode *findElementLeftOf(const Element *element, const std::pair<RBNode *, RBNode *> &bounds);
     bool elementIsLeftOf(const Element *left, const Element *right);
-    QPair<RBNode *, RBNode *> outerBounds(const QPoint &point);
+    std::pair<RBNode *, RBNode *> outerBounds(const QPoint &point);
     static bool flattenQuadratic(const QPoint &u, const QPoint &v, const QPoint &w);
     static bool flattenCubic(const QPoint &u, const QPoint &v, const QPoint &w, const QPoint &q);
     static bool splitQuadratic(const QPoint &u, const QPoint &v, const QPoint &w, QPoint *result);
@@ -692,12 +692,12 @@ bool PathSimplifier::connectElements()
         QPoint eventPoint = event->point;
 
         // Find all elements passing through the event point.
-        QPair<RBNode *, RBNode *> bounds = outerBounds(eventPoint);
+        std::pair<RBNode *, RBNode *> bounds = outerBounds(eventPoint);
 
         // Special case: single element above and single element below event point.
         int eventCount = events.size();
         if (event->type == Event::Lower && eventCount > 2) {
-            QPair<RBNode *, RBNode *> range;
+            std::pair<RBNode *, RBNode *> range;
             range.first = bounds.first ? m_elementList.next(bounds.first)
                                        : m_elementList.front(m_elementList.root);
             range.second = bounds.second ? m_elementList.previous(bounds.second)
@@ -1038,8 +1038,8 @@ bool PathSimplifier::intersectNodes(QDataBuffer<Element *> &elements, BVHNode *e
             appendSeparatingAxes(axes, elementNode->element);
             appendSeparatingAxes(axes, treeNode->element);
             for (int i = 0; i < axes.size(); ++i) {
-                QPair<int, int> range1 = calculateSeparatingAxisRange(axes.at(i), elementNode->element);
-                QPair<int, int> range2 = calculateSeparatingAxisRange(axes.at(i), treeNode->element);
+                std::pair<int, int> range1 = calculateSeparatingAxisRange(axes.at(i), elementNode->element);
+                std::pair<int, int> range2 = calculateSeparatingAxisRange(axes.at(i), treeNode->element);
                 if (range1.first >= range2.second || range1.second <= range2.first) {
                     return false; // Separating axis found.
                 }
@@ -1195,9 +1195,9 @@ void PathSimplifier::appendSeparatingAxes(QVarLengthArray<QPoint, 12> &axes, Ele
     }
 }
 
-QPair<int, int> PathSimplifier::calculateSeparatingAxisRange(const QPoint &axis, Element *element)
+std::pair<int, int> PathSimplifier::calculateSeparatingAxisRange(const QPoint &axis, Element *element)
 {
-    QPair<int, int> range(0x7fffffff, -0x7fffffff);
+    std::pair<int, int> range(0x7fffffff, -0x7fffffff);
     for (int i = 0; i <= element->degree; ++i) {
         const QPoint &p = m_points->at(element->indices[i]);
         int dist = dot(axis, p);
@@ -1375,7 +1375,7 @@ void PathSimplifier::setElementToCubicAndSimplify(Element *element, quint32 poin
 }
 
 PathSimplifier::RBNode *PathSimplifier::findElementLeftOf(const Element *element,
-                                                          const QPair<RBNode *, RBNode *> &bounds)
+                                                          const std::pair<RBNode *, RBNode *> &bounds)
 {
     if (!m_elementList.root)
         return nullptr;
@@ -1422,10 +1422,10 @@ bool PathSimplifier::elementIsLeftOf(const Element *left, const Element *right)
     return d < 0;
 }
 
-QPair<PathSimplifier::RBNode *, PathSimplifier::RBNode *> PathSimplifier::outerBounds(const QPoint &point)
+std::pair<PathSimplifier::RBNode *, PathSimplifier::RBNode *> PathSimplifier::outerBounds(const QPoint &point)
 {
     RBNode *current = m_elementList.root;
-    QPair<RBNode *, RBNode *> result(nullptr, nullptr);
+    std::pair<RBNode *, RBNode *> result(nullptr, nullptr);
 
     while (current) {
         const Element *element = current->data;

@@ -21,7 +21,6 @@
 #include <QtCore/qbitarray.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qmap.h>
-#include <QtCore/qpair.h>
 #include <QtCore/qsize.h>
 #include <QtCore/qrect.h>
 #include <QtCore/qdebug.h>
@@ -194,7 +193,7 @@ public:
     int q_stretch;
 };
 
-typedef QMap<QPair<int, int>, QGridLayoutMultiCellData> MultiCellMap;
+typedef QMap<std::pair<int, int>, QGridLayoutMultiCellData> MultiCellMap;
 
 class QGridLayoutRowInfo;
 

@@ -2737,7 +2737,7 @@ void QD3D12ShaderVisibleDescriptorHeap::destroyWithDeferredRelease(QD3D12Release
     heap.destroyWithDeferredRelease(releaseQueue);
 }
 
-static inline QPair<int, int> mapBinding(int binding, const QShader::NativeResourceBindingMap &map)
+static inline std::pair<int, int> mapBinding(int binding, const QShader::NativeResourceBindingMap &map)
 {
     if (map.isEmpty())
         return { binding, binding }; // assume 1:1 mapping

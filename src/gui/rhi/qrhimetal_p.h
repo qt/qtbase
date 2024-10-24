@@ -295,7 +295,7 @@ struct QMetalCommandBuffer : public QRhiCommandBuffer
     int currentCullMode;
     int currentTriangleFillMode;
     int currentFrontFaceWinding;
-    QPair<float, float> currentDepthBiasValues;
+    std::pair<float, float> currentDepthBiasValues;
 
     const QRhiNativeHandles *nativeHandles();
     void resetState(double lastGpuTime = 0);

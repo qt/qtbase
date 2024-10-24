@@ -1708,11 +1708,11 @@ public:
     void endPass(QRhiResourceUpdateBatch *resourceUpdates = nullptr);
 
     void setGraphicsPipeline(QRhiGraphicsPipeline *ps);
-    using DynamicOffset = QPair<int, quint32>; // binding, offset
+    using DynamicOffset = std::pair<int, quint32>; // binding, offset
     void setShaderResources(QRhiShaderResourceBindings *srb = nullptr,
                             int dynamicOffsetCount = 0,
                             const DynamicOffset *dynamicOffsets = nullptr);
-    using VertexInput = QPair<QRhiBuffer *, quint32>; // buffer, offset
+    using VertexInput = std::pair<QRhiBuffer *, quint32>; // buffer, offset
     void setVertexInput(int startBinding, int bindingCount, const VertexInput *bindings,
                         QRhiBuffer *indexBuf = nullptr, quint32 indexOffset = 0,
                         IndexFormat indexFormat = IndexUInt16);

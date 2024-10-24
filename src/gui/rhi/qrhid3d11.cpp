@@ -2283,9 +2283,9 @@ void QRhiD3D11::dispatch(QRhiCommandBuffer *cb, int x, int y, int z)
     cmd.args.dispatch.z = UINT(z);
 }
 
-static inline QPair<int, int> mapBinding(int binding,
-                                         int stageIndex,
-                                         const QShader::NativeResourceBindingMap *nativeResourceBindingMaps[])
+static inline std::pair<int, int> mapBinding(int binding,
+                                             int stageIndex,
+                                             const QShader::NativeResourceBindingMap *nativeResourceBindingMaps[])
 {
     const QShader::NativeResourceBindingMap *map = nativeResourceBindingMaps[stageIndex];
     if (!map || map->isEmpty())
@@ -2392,32 +2392,32 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
             // (ByteWidth) is always a multiple of 256.
             const quint32 sizeInConstants = aligned(b->u.ubuf.maybeSize ? b->u.ubuf.maybeSize : bufD->m_size, 256u) / 16;
             if (b->stage.testFlag(QRhiShaderResourceBinding::VertexStage)) {
-                QPair<int, int> nativeBinding = mapBinding(b->binding, RBM_VERTEX, nativeResourceBindingMaps);
+                std::pair<int, int> nativeBinding = mapBinding(b->binding, RBM_VERTEX, nativeResourceBindingMaps);
                 if (nativeBinding.first >= 0)
                     res[RBM_VERTEX].buffers.append({ b->binding, nativeBinding.first, bufD->buffer, offsetInConstants, sizeInConstants });
             }
             if (b->stage.testFlag(QRhiShaderResourceBinding::TessellationControlStage)) {
-                QPair<int, int> nativeBinding = mapBinding(b->binding, RBM_HULL, nativeResourceBindingMaps);
+                std::pair<int, int> nativeBinding = mapBinding(b->binding, RBM_HULL, nativeResourceBindingMaps);
                 if (nativeBinding.first >= 0)
                     res[RBM_HULL].buffers.append({ b->binding, nativeBinding.first, bufD->buffer, offsetInConstants, sizeInConstants });
             }
             if (b->stage.testFlag(QRhiShaderResourceBinding::TessellationEvaluationStage)) {
-                QPair<int, int> nativeBinding = mapBinding(b->binding, RBM_DOMAIN, nativeResourceBindingMaps);
+                std::pair<int, int> nativeBinding = mapBinding(b->binding, RBM_DOMAIN, nativeResourceBindingMaps);
                 if (nativeBinding.first >= 0)
                     res[RBM_DOMAIN].buffers.append({ b->binding, nativeBinding.first, bufD->buffer, offsetInConstants, sizeInConstants });
             }
             if (b->stage.testFlag(QRhiShaderResourceBinding::GeometryStage)) {
-                QPair<int, int> nativeBinding = mapBinding(b->binding, RBM_GEOMETRY, nativeResourceBindingMaps);
+                std::pair<int, int> nativeBinding = mapBinding(b->binding, RBM_GEOMETRY, nativeResourceBindingMaps);
                 if (nativeBinding.first >= 0)
                     res[RBM_GEOMETRY].buffers.append({ b->binding, nativeBinding.first, bufD->buffer, offsetInConstants, sizeInConstants });
             }
             if (b->stage.testFlag(QRhiShaderResourceBinding::FragmentStage)) {
-                QPair<int, int> nativeBinding = mapBinding(b->binding, RBM_FRAGMENT, nativeResourceBindingMaps);
+                std::pair<int, int> nativeBinding = mapBinding(b->binding, RBM_FRAGMENT, nativeResourceBindingMaps);
                 if (nativeBinding.first >= 0)
                     res[RBM_FRAGMENT].buffers.append({ b->binding, nativeBinding.first, bufD->buffer, offsetInConstants, sizeInConstants });
             }
             if (b->stage.testFlag(QRhiShaderResourceBinding::ComputeStage)) {
-                QPair<int, int> nativeBinding = mapBinding(b->binding, RBM_COMPUTE, nativeResourceBindingMaps);
+                std::pair<int, int> nativeBinding = mapBinding(b->binding, RBM_COMPUTE, nativeResourceBindingMaps);
                 if (nativeBinding.first >= 0)
                     res[RBM_COMPUTE].buffers.append({ b->binding, nativeBinding.first, bufD->buffer, offsetInConstants, sizeInConstants });
             }
@@ -2429,12 +2429,12 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
         {
             const QRhiShaderResourceBinding::Data::TextureAndOrSamplerData *data = &b->u.stex;
             bd.stex.count = data->count;
-            const QPair<int, int> nativeBindingVert = mapBinding(b->binding, RBM_VERTEX, nativeResourceBindingMaps);
-            const QPair<int, int> nativeBindingHull = mapBinding(b->binding, RBM_HULL, nativeResourceBindingMaps);
-            const QPair<int, int> nativeBindingDomain = mapBinding(b->binding, RBM_DOMAIN, nativeResourceBindingMaps);
-            const QPair<int, int> nativeBindingGeom = mapBinding(b->binding, RBM_GEOMETRY, nativeResourceBindingMaps);
-            const QPair<int, int> nativeBindingFrag = mapBinding(b->binding, RBM_FRAGMENT, nativeResourceBindingMaps);
-            const QPair<int, int> nativeBindingComp = mapBinding(b->binding, RBM_COMPUTE, nativeResourceBindingMaps);
+            const std::pair<int, int> nativeBindingVert = mapBinding(b->binding, RBM_VERTEX, nativeResourceBindingMaps);
+            const std::pair<int, int> nativeBindingHull = mapBinding(b->binding, RBM_HULL, nativeResourceBindingMaps);
+            const std::pair<int, int> nativeBindingDomain = mapBinding(b->binding, RBM_DOMAIN, nativeResourceBindingMaps);
+            const std::pair<int, int> nativeBindingGeom = mapBinding(b->binding, RBM_GEOMETRY, nativeResourceBindingMaps);
+            const std::pair<int, int> nativeBindingFrag = mapBinding(b->binding, RBM_FRAGMENT, nativeResourceBindingMaps);
+            const std::pair<int, int> nativeBindingComp = mapBinding(b->binding, RBM_COMPUTE, nativeResourceBindingMaps);
             // if SPIR-V binding b is mapped to tN and sN in HLSL, and it
             // is an array, then it will use tN, tN+1, tN+2, ..., and sN,
             // sN+1, sN+2, ...
@@ -2508,7 +2508,7 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
             bd.simage.id = texD->m_id;
             bd.simage.generation = texD->generation;
             if (b->stage.testFlag(QRhiShaderResourceBinding::ComputeStage)) {
-                QPair<int, int> nativeBinding = mapBinding(b->binding, RBM_COMPUTE, nativeResourceBindingMaps);
+                std::pair<int, int> nativeBinding = mapBinding(b->binding, RBM_COMPUTE, nativeResourceBindingMaps);
                 if (nativeBinding.first >= 0) {
                     ID3D11UnorderedAccessView *uav = texD->unorderedAccessViewForLevel(b->u.simage.level);
                     if (uav)
@@ -2527,7 +2527,7 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
             bd.sbuf.id = bufD->m_id;
             bd.sbuf.generation = bufD->generation;
             if (b->stage.testFlag(QRhiShaderResourceBinding::ComputeStage)) {
-                QPair<int, int> nativeBinding = mapBinding(b->binding, RBM_COMPUTE, nativeResourceBindingMaps);
+                std::pair<int, int> nativeBinding = mapBinding(b->binding, RBM_COMPUTE, nativeResourceBindingMaps);
                 if (nativeBinding.first >= 0) {
                     ID3D11UnorderedAccessView *uav = bufD->unorderedAccessView(b->u.sbuf.offset);
                     if (uav)

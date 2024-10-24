@@ -358,7 +358,7 @@ private:
     int patternColorSpaceCMYK;
     QList<uint> pages;
     QHash<qint64, uint> imageCache;
-    QHash<QPair<uint, uint>, uint > alphaCache;
+    QHash<std::pair<uint, uint>, uint > alphaCache;
     QList<DestInfo> destCache;
     QList<AttachmentInfo> fileCache;
     QByteArray xmpDocumentMetadata;

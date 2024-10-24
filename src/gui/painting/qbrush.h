@@ -6,7 +6,6 @@
 
 #include <QtGui/qtguiglobal.h>
 #include <QtCore/qlist.h>
-#include <QtCore/qpair.h>
 #include <QtCore/qpoint.h>
 #include <QtCore/qscopedpointer.h>
 #include <QtGui/qcolor.h>
@@ -158,7 +157,7 @@ inline bool QBrush::isDetached() const { return d->ref.loadRelaxed() == 1; }
  */
 class QGradientPrivate;
 
-typedef QPair<qreal, QColor> QGradientStop;
+typedef std::pair<qreal, QColor> QGradientStop;
 typedef QList<QGradientStop> QGradientStops;
 
 class Q_GUI_EXPORT QGradient

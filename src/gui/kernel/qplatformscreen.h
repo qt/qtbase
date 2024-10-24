@@ -37,7 +37,7 @@ class QPlatformCursor;
 class QScreen;
 class QSurfaceFormat;
 
-typedef QPair<qreal, qreal> QDpi;
+typedef std::pair<qreal, qreal> QDpi;
 
 
 class Q_GUI_EXPORT QPlatformScreen

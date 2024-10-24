@@ -18,7 +18,6 @@
 
 #include <QtGui/private/qtguiglobal_p.h>
 #include <QtCore/qlist.h>
-#include <QtCore/qpair.h>
 #include <QtDBus/QDBusArgument>
 #include <QtDBus/QDBusConnection>
 #include <QtDBus/QDBusObjectPath>
@@ -92,7 +91,7 @@ typedef QList<QSpiEventListener> QSpiEventListenerArray;
 QDBusArgument &operator<<(QDBusArgument &argument, const QSpiEventListener &action);
 const QDBusArgument &operator>>(const QDBusArgument &argument, QSpiEventListener &action);
 
-typedef QPair<unsigned int, QSpiObjectReferenceArray> QSpiRelationArrayEntry;
+typedef std::pair<unsigned int, QSpiObjectReferenceArray> QSpiRelationArrayEntry;
 typedef QList<QSpiRelationArrayEntry> QSpiRelationArray;
 
 //a(iisv)

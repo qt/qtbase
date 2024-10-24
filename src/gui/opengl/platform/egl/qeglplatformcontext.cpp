@@ -319,7 +319,7 @@ void QEGLPlatformContext::updateFormatFromGL()
                         m_format.setOption(QSurfaceFormat::DeprecatedFunctions);
                     if (value & GL_CONTEXT_FLAG_DEBUG_BIT)
                         m_format.setOption(QSurfaceFormat::DebugContext);
-                    if (m_format.version() >= qMakePair(3, 2)) {
+                    if (m_format.version() >= std::pair(3, 2)) {
                         value = 0;
                         glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &value);
                         if (value & GL_CONTEXT_CORE_PROFILE_BIT)

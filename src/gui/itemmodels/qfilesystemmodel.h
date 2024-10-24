@@ -6,7 +6,6 @@
 
 #include <QtGui/qtguiglobal.h>
 #include <QtCore/qabstractitemmodel.h>
-#include <QtCore/qpair.h>
 #include <QtCore/qdir.h>
 #include <QtGui/qicon.h>
 

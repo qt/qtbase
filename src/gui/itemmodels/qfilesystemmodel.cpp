@@ -1157,12 +1157,10 @@ void QFileSystemModel::sort(int column, Qt::SortOrder order)
 
     emit layoutAboutToBeChanged();
     QModelIndexList oldList = persistentIndexList();
-    QList<QPair<QFileSystemModelPrivate::QFileSystemNode *, int>> oldNodes;
+    QList<std::pair<QFileSystemModelPrivate::QFileSystemNode *, int>> oldNodes;
     oldNodes.reserve(oldList.size());
-    for (const QModelIndex &oldNode : oldList) {
-        QPair<QFileSystemModelPrivate::QFileSystemNode*, int> pair(d->node(oldNode), oldNode.column());
-        oldNodes.append(pair);
-    }
+    for (const QModelIndex &oldNode : oldList)
+        oldNodes.emplace_back(d->node(oldNode), oldNode.column());
 
     if (!(d->sortColumn == column && d->sortOrder != order && !d->forceSort)) {
         //we sort only from where we are, don't need to sort all the model

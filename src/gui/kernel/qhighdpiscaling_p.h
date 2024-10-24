@@ -32,7 +32,7 @@ Q_DECLARE_LOGGING_CATEGORY(lcHighDpi);
 
 class QScreen;
 class QPlatformScreen;
-typedef QPair<qreal, qreal> QDpi;
+typedef std::pair<qreal, qreal> QDpi;
 
 #ifndef QT_NO_HIGHDPISCALING
 class Q_GUI_EXPORT QHighDpiScaling {

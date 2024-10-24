@@ -3513,7 +3513,7 @@ void QRhiVulkan::updateShaderResourceBindings(QRhiShaderResourceBindings *srb, i
     using ArrayOfImageDesc = QVarLengthArray<VkDescriptorImageInfo, 8>;
     QVarLengthArray<ArrayOfImageDesc, 8> imageInfos;
     QVarLengthArray<VkWriteDescriptorSet, 12> writeInfos;
-    QVarLengthArray<QPair<int, int>, 12> infoIndices;
+    QVarLengthArray<std::pair<int, int>, 12> infoIndices;
 
     const bool updateAll = descSetIdx < 0;
     int frameSlot = updateAll ? 0 : descSetIdx;

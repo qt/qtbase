@@ -3077,7 +3077,7 @@ int QPdfEnginePrivate::addConstantAlphaObject(int brushAlpha, int penAlpha)
 {
     if (brushAlpha == 255 && penAlpha == 255)
         return 0;
-    uint object = alphaCache.value(QPair<uint, uint>(brushAlpha, penAlpha), 0);
+    uint object = alphaCache.value(std::pair<uint, uint>(brushAlpha, penAlpha), 0);
     if (!object) {
         object = addXrefEntry(-1);
         QByteArray alphaDef;
@@ -3085,7 +3085,7 @@ int QPdfEnginePrivate::addConstantAlphaObject(int brushAlpha, int penAlpha)
         s << "<<\n/ca " << (brushAlpha/qreal(255.)) << '\n';
         s << "/CA " << (penAlpha/qreal(255.)) << "\n>>";
         xprintf("%s\nendobj\n", alphaDef.constData());
-        alphaCache.insert(QPair<uint, uint>(brushAlpha, penAlpha), object);
+        alphaCache.insert(std::pair<uint, uint>(brushAlpha, penAlpha), object);
     }
     if (currentPage->graphicStates.indexOf(object) < 0)
         currentPage->graphicStates.append(object);

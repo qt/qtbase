@@ -979,7 +979,7 @@ QDebug operator<<(QDebug dbg, const QShaderVersion &v)
 /*!
     \typedef QShader::NativeResourceBindingMap
 
-    Synonym for QMap<int, QPair<int, int>>.
+    Synonym for QMap<int, std::pair<int, int>>.
 
     The resource binding model QRhi assumes is based on SPIR-V. This means that
     uniform buffers, storage buffers, combined image samplers, and storage

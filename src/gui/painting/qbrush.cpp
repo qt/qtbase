@@ -1066,7 +1066,7 @@ QDataStream &operator<<(QDataStream &s, const QBrush &b)
             s << quint32(stops.size());
             for (int i = 0; i < stops.size(); ++i) {
                 const QGradientStop &stop = stops.at(i);
-                s << QPair<double, QColor>(double(stop.first), stop.second);
+                s << std::pair<double, QColor>(double(stop.first), stop.second);
             }
         }
 
@@ -1152,7 +1152,7 @@ QDataStream &operator>>(QDataStream &s, QBrush &b)
             stops.reserve(numStops);
             for (quint32 i = 0; i < numStops; ++i) {
                 s >> n >> c;
-                stops << QPair<qreal, QColor>(n, c);
+                stops << std::pair<qreal, QColor>(n, c);
             }
         }
 
@@ -2504,7 +2504,7 @@ void QConicalGradient::setAngle(qreal angle)
     \typedef QGradientStop
     \relates QGradient
 
-    Typedef for QPair<\l qreal, QColor>.
+    Typedef for std::pair<\l qreal, QColor>.
 */
 
 /*!

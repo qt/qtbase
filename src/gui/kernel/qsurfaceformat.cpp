@@ -625,13 +625,13 @@ int QSurfaceFormat::minorVersion() const
 }
 
 /*!
-    Returns a QPair<int, int> representing the OpenGL version.
+    Returns a std::pair<int, int> representing the OpenGL version.
 
-    Useful for version checks, for example format.version() >= qMakePair(3, 2)
+    Useful for version checks, for example format.version() >= std::pair(3, 2)
 */
-QPair<int, int> QSurfaceFormat::version() const
+std::pair<int, int> QSurfaceFormat::version() const
 {
-    return qMakePair(d->major, d->minor);
+    return std::pair(d->major, d->minor);
 }
 
 /*!

@@ -362,7 +362,7 @@ Q_STATIC_LOGGING_CATEGORY(lcAccessibilityCore, "qt.accessibility.core");
     interfaces of the calling object, together with the relations
     for each object.
 
-    Each entry in the list is a QPair where the \c second member stores
+    Each entry in the list is a std::pair where the \c second member stores
     the relation type(s) between the \c returned object represented by the
     \c first member and the \c origin (the caller) interface/object.
 

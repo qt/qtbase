@@ -1039,7 +1039,7 @@ QList<QGlyphRun> QTextLayout::glyphRuns(int from,
     if (length < 0)
         length = text().size();
 
-    QHash<QPair<QFontEngine *, int>, QGlyphRun> glyphRunHash;
+    QHash<std::pair<QFontEngine *, int>, QGlyphRun> glyphRunHash;
     for (int i=0; i<d->lines.size(); ++i) {
         if (d->lines.at(i).from > from + length)
             break;
@@ -1050,7 +1050,7 @@ QList<QGlyphRun> QTextLayout::glyphRuns(int from,
 
                 QFontEngine *fontEngine = rawFont.d->fontEngine;
                 QGlyphRun::GlyphRunFlags flags = glyphRun.flags();
-                QPair<QFontEngine *, int> key(fontEngine, int(flags));
+                std::pair<QFontEngine *, int> key(fontEngine, int(flags));
                 // merge the glyph runs using the same font
                 QGlyphRun &oldGlyphRun = glyphRunHash[key];
                 if (oldGlyphRun.isEmpty()) {

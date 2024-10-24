@@ -53,7 +53,7 @@ private Q_SLOTS:
 private:
     static QKeyEvent* copyKeyEvent(QKeyEvent*);
 
-    QQueue<QPair<QPointer<QObject>, QKeyEvent*> > keyEvents;
+    QQueue<std::pair<QPointer<QObject>, QKeyEvent*> > keyEvents;
     QDBusConnection dbusConnection;
 };
 

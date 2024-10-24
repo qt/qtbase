@@ -21,7 +21,6 @@
 #include "private/qabstractitemmodel_p.h"
 
 #include <QtCore/qlist.h>
-#include <QtCore/qpair.h>
 #include <QtCore/qstack.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qdebug.h>
@@ -126,7 +125,7 @@ public:
         }
         return childsLastIndexInParent;
     }
-    QPair<int, int> position() const;
+    std::pair<int, int> position() const;
     void setChild(int row, int column, QStandardItem *item,
                   bool emitChanged = false);
     inline int rowCount() const {

@@ -393,7 +393,7 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
     bool hasShadingRateSet;
 
     struct {
-        QHash<QRhiResource *, QPair<VkAccessFlags, bool> > writtenResources;
+        QHash<QRhiResource *, std::pair<VkAccessFlags, bool> > writtenResources;
         void reset() {
             writtenResources.clear();
         }

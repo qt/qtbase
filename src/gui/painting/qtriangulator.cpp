@@ -605,8 +605,8 @@ public:
         bool edgeIsLeftOfEdge(int leftEdgeIndex, int rightEdgeIndex) const;
         QRBTree<int>::Node *searchEdgeLeftOf(int edgeIndex) const;
         QRBTree<int>::Node *searchEdgeLeftOf(int edgeIndex, QRBTree<int>::Node *after) const;
-        QPair<QRBTree<int>::Node *, QRBTree<int>::Node *> bounds(const QPodPoint &point) const;
-        QPair<QRBTree<int>::Node *, QRBTree<int>::Node *> outerBounds(const QPodPoint &point) const;
+        std::pair<QRBTree<int>::Node *, QRBTree<int>::Node *> bounds(const QPodPoint &point) const;
+        std::pair<QRBTree<int>::Node *, QRBTree<int>::Node *> outerBounds(const QPodPoint &point) const;
         void splitEdgeListRange(QRBTree<int>::Node *leftmost, QRBTree<int>::Node *rightmost, int vertex, const QIntersectionPoint &intersectionPoint);
         void reorderEdgeListRange(QRBTree<int>::Node *leftmost, QRBTree<int>::Node *rightmost);
         void sortEdgeList(const QPodPoint eventPoint);
@@ -1025,10 +1025,10 @@ QRBTree<int>::Node *QTriangulator<T>::ComplexToSimple::searchEdgeLeftOf(int edge
 }
 
 template <typename T>
-QPair<QRBTree<int>::Node *, QRBTree<int>::Node *> QTriangulator<T>::ComplexToSimple::bounds(const QPodPoint &point) const
+std::pair<QRBTree<int>::Node *, QRBTree<int>::Node *> QTriangulator<T>::ComplexToSimple::bounds(const QPodPoint &point) const
 {
     QRBTree<int>::Node *current = m_edgeList.root;
-    QPair<QRBTree<int>::Node *, QRBTree<int>::Node *> result(nullptr, nullptr);
+    std::pair<QRBTree<int>::Node *, QRBTree<int>::Node *> result(nullptr, nullptr);
     while (current) {
         const QPodPoint &v1 = m_parent->m_vertices.at(m_edges.at(current->data).lower());
         const QPodPoint &v2 = m_parent->m_vertices.at(m_edges.at(current->data).upper());
@@ -1074,10 +1074,10 @@ QPair<QRBTree<int>::Node *, QRBTree<int>::Node *> QTriangulator<T>::ComplexToSim
 }
 
 template <typename T>
-QPair<QRBTree<int>::Node *, QRBTree<int>::Node *> QTriangulator<T>::ComplexToSimple::outerBounds(const QPodPoint &point) const
+std::pair<QRBTree<int>::Node *, QRBTree<int>::Node *> QTriangulator<T>::ComplexToSimple::outerBounds(const QPodPoint &point) const
 {
     QRBTree<int>::Node *current = m_edgeList.root;
-    QPair<QRBTree<int>::Node *, QRBTree<int>::Node *> result(nullptr, nullptr);
+    std::pair<QRBTree<int>::Node *, QRBTree<int>::Node *> result(nullptr, nullptr);
 
     while (current) {
         const QPodPoint &v1 = m_parent->m_vertices.at(m_edges.at(current->data).lower());
@@ -1271,7 +1271,7 @@ void QTriangulator<T>::ComplexToSimple::calculateIntersections()
         sortEdgeList(event.point);
 
         // Find all edges in the edge list that contain the current vertex and mark them to be split later.
-        QPair<QRBTree<int>::Node *, QRBTree<int>::Node *> range = bounds(event.point);
+        std::pair<QRBTree<int>::Node *, QRBTree<int>::Node *> range = bounds(event.point);
         QRBTree<int>::Node *leftNode = range.first ? m_edgeList.previous(range.first) : nullptr;
         int vertex = (event.type == Event::Upper ? m_edges.at(event.edge).upper() : m_edges.at(event.edge).lower());
         QIntersectionPoint eventPoint = QT_PREPEND_NAMESPACE(qIntersectionPoint)(event.point);
@@ -1424,7 +1424,7 @@ void QTriangulator<T>::ComplexToSimple::removeUnwantedEdgesAndConnect()
         //}
 
         orderedEdges.clear();
-        QPair<QRBTree<int>::Node *, QRBTree<int>::Node *> b = outerBounds(event.point);
+        std::pair<QRBTree<int>::Node *, QRBTree<int>::Node *> b = outerBounds(event.point);
         if (m_edgeList.root) {
             QRBTree<int>::Node *current = (b.first ? m_edgeList.next(b.first) : m_edgeList.front(m_edgeList.root));
             // Process edges that are going to be removed from the edge list at the current event point.
@@ -1978,7 +1978,7 @@ void QTriangulator<T>::SimpleToMonotone::monotoneDecomposition()
         return;
 
     Q_ASSERT(!m_edgeList.root);
-    QDataBuffer<QPair<int, int> > diagonals(m_upperVertex.size());
+    QDataBuffer<std::pair<int, int> > diagonals(m_upperVertex.size());
 
     int i = 0;
     for (int index = 1; index < m_edges.size(); ++index) {
@@ -2014,7 +2014,7 @@ void QTriangulator<T>::SimpleToMonotone::monotoneDecomposition()
                 if (m_edges.at(i).node) {
                     Q_ASSERT(!m_edges.at(j).node);
                     if (m_edges.at(m_edges.at(i).helper).type == MergeVertex)
-                        diagonals.add(QPair<int, int>(i, m_edges.at(i).helper));
+                        diagonals.add(std::pair<int, int>(i, m_edges.at(i).helper));
                     m_edges.at(j).node = m_edges.at(i).node;
                     m_edges.at(i).node = nullptr;
                     m_edges.at(j).node->data = j;
@@ -2022,7 +2022,7 @@ void QTriangulator<T>::SimpleToMonotone::monotoneDecomposition()
                 } else if (m_edges.at(j).node) {
                     Q_ASSERT(!m_edges.at(i).node);
                     if (m_edges.at(m_edges.at(j).helper).type == MergeVertex)
-                        diagonals.add(QPair<int, int>(i, m_edges.at(j).helper));
+                        diagonals.add(std::pair<int, int>(i, m_edges.at(j).helper));
                     m_edges.at(i).node = m_edges.at(j).node;
                     m_edges.at(j).node = nullptr;
                     m_edges.at(i).node->data = i;
@@ -2034,7 +2034,7 @@ void QTriangulator<T>::SimpleToMonotone::monotoneDecomposition()
                 leftEdgeNode = searchEdgeLeftOfPoint(m_edges.at(i).from);
                 if (leftEdgeNode) {
                     if (m_edges.at(m_edges.at(leftEdgeNode->data).helper).type == MergeVertex)
-                        diagonals.add(QPair<int, int>(i, m_edges.at(leftEdgeNode->data).helper));
+                        diagonals.add(std::pair<int, int>(i, m_edges.at(leftEdgeNode->data).helper));
                     m_edges.at(leftEdgeNode->data).helper = i;
                 } else {
                     qWarning("Inconsistent polygon. (#2)");
@@ -2044,7 +2044,7 @@ void QTriangulator<T>::SimpleToMonotone::monotoneDecomposition()
         case SplitVertex:
             leftEdgeNode = searchEdgeLeftOfPoint(m_edges.at(i).from);
             if (leftEdgeNode) {
-                diagonals.add(QPair<int, int>(i, m_edges.at(leftEdgeNode->data).helper));
+                diagonals.add(std::pair<int, int>(i, m_edges.at(leftEdgeNode->data).helper));
                 m_edges.at(leftEdgeNode->data).helper = i;
             } else {
                 qWarning("Inconsistent polygon. (#3)");
@@ -2073,7 +2073,7 @@ void QTriangulator<T>::SimpleToMonotone::monotoneDecomposition()
             leftEdgeNode = searchEdgeLeftOfPoint(m_edges.at(i).from);
             if (leftEdgeNode) {
                 if (m_edges.at(m_edges.at(leftEdgeNode->data).helper).type == MergeVertex)
-                    diagonals.add(QPair<int, int>(i, m_edges.at(leftEdgeNode->data).helper));
+                    diagonals.add(std::pair<int, int>(i, m_edges.at(leftEdgeNode->data).helper));
                 m_edges.at(leftEdgeNode->data).helper = i;
             } else {
                 qWarning("Inconsistent polygon. (#4)");
@@ -2082,7 +2082,7 @@ void QTriangulator<T>::SimpleToMonotone::monotoneDecomposition()
         case EndVertex:
             if (m_clockwiseOrder) {
                 if (m_edges.at(m_edges.at(i).helper).type == MergeVertex)
-                    diagonals.add(QPair<int, int>(i, m_edges.at(i).helper));
+                    diagonals.add(std::pair<int, int>(i, m_edges.at(i).helper));
                 if (m_edges.at(i).node) {
                     m_edgeList.deleteNode(m_edges.at(i).node);
                     Q_ASSERT(m_edgeList.validate());
@@ -2091,7 +2091,7 @@ void QTriangulator<T>::SimpleToMonotone::monotoneDecomposition()
                 }
             } else {
                 if (m_edges.at(m_edges.at(j).helper).type == MergeVertex)
-                    diagonals.add(QPair<int, int>(i, m_edges.at(j).helper));
+                    diagonals.add(std::pair<int, int>(i, m_edges.at(j).helper));
                 if (m_edges.at(j).node) {
                     m_edgeList.deleteNode(m_edges.at(j).node);
                     Q_ASSERT(m_edgeList.validate());

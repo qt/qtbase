@@ -152,7 +152,7 @@ QDpi QPlatformScreen::logicalDpi() const
 
 // Helper function for accessing the platform screen logical dpi
 // which accounts for QT_FONT_DPI.
-QPair<qreal, qreal> QPlatformScreen::overrideDpi(const QPair<qreal, qreal> &in)
+QDpi QPlatformScreen::overrideDpi(const QDpi &in)
 {
     static const int overrideDpi = qEnvironmentVariableIntValue("QT_FONT_DPI");
     return overrideDpi > 0 ?  QDpi(overrideDpi, overrideDpi) : in;

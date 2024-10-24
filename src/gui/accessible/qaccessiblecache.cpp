@@ -116,7 +116,7 @@ QAccessible::Id QAccessibleCache::insert(QObject *object, QAccessibleInterface *
     QObject *obj = iface->object();
     Q_ASSERT(object == obj);
     if (obj) {
-        objectToId.insert(obj, qMakePair(id, obj->metaObject()));
+        objectToId.insert(obj, std::pair(id, obj->metaObject()));
         connect(obj, &QObject::destroyed, this, &QAccessibleCache::objectDestroyed);
     }
     idToInterface.insert(id, iface);
