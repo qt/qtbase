@@ -231,7 +231,7 @@ void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemoni
     \row    \li Cut              \li Ctrl+X, Shift+Del                    \li Ctrl+X, Meta+K           \li Ctrl+X, F20, Shift+Del \li Ctrl+X, F20, Shift+Del
     \row    \li Copy             \li Ctrl+C, Ctrl+Ins                     \li Ctrl+C                   \li Ctrl+C, F16, Ctrl+Ins  \li Ctrl+C, F16, Ctrl+Ins
     \row    \li Paste            \li Ctrl+V, Shift+Ins                    \li Ctrl+V, Meta+Y           \li Ctrl+V, F18, Shift+Ins \li Ctrl+V, F18, Shift+Ins
-    \row    \li Preferences      \li                                      \li Ctrl+,                   \li              \li
+    \row    \li Preferences      \li                                      \li Ctrl+,                   \li Ctrl+Shift+, \li
     \row    \li Undo             \li Ctrl+Z, Alt+Backspace                \li Ctrl+Z                   \li Ctrl+Z, F14  \li Ctrl+Z, F14
     \row    \li Redo             \li Ctrl+Y, Shift+Ctrl+Z, Alt+Shift+Backspace \li Ctrl+Shift+Z        \li Ctrl+Shift+Z \li Ctrl+Shift+Z
     \row    \li Back             \li Alt+Left, Backspace                  \li Ctrl+[                   \li Alt+Left     \li Alt+Left
