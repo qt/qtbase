@@ -732,8 +732,8 @@ QFontEngine *QFontDatabasePrivate::loadSingleEngine(int script,
             if (engine) {
                 // Also check for OpenType tables when using complex scripts
                 if (Q_UNLIKELY(!engine->supportsScript(QChar::Script(script)))) {
-                    qWarning("  OpenType support missing for \"%s\", script %d",
-                             qPrintable(def.families.first()), script);
+                    qInfo("  OpenType support missing for \"%s\", script %d",
+                          qPrintable(def.families.first()), script);
                     return nullptr;
                 }
 
@@ -757,8 +757,8 @@ QFontEngine *QFontDatabasePrivate::loadSingleEngine(int script,
         if (engine) {
             // Also check for OpenType tables when using complex scripts
             if (!engine->supportsScript(QChar::Script(script))) {
-                qWarning("  OpenType support missing for \"%s\", script %d",
-                         +qPrintable(def.families.first()), script);
+                qInfo("  OpenType support missing for \"%s\", script %d",
+                      qPrintable(def.families.first()), script);
                 if (engine->ref.loadRelaxed() == 0)
                     delete engine;
                 return nullptr;
