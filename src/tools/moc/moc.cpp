@@ -847,6 +847,7 @@ void Moc::parse()
                     if (test(Q_SIGNALS_TOKEN))
                         error("Signals cannot have access specifier");
                     break;
+                case STRUCT:
                 case CLASS: {
                     ClassDef nestedDef;
                     if (parseClassHead(&nestedDef)) {
