@@ -689,6 +689,15 @@ void tst_QDebug::qDebugStdPair() const
     // nested:
     qDebug() << std::pair(std::pair(std::pair(4.2, 42), ".42"), u"42"_s);
     QCOMPARE(s_msg, R"(std::pair(std::pair(std::pair(4.2,42),.42),"42"))"_L1);
+    // with references:
+    {
+        auto d = 4.2; auto i = 42;
+        qDebug() << std::pair<double &, const int &>(d, i);
+        QCOMPARE(s_msg, R"(std::pair(4.2,42))"_L1);
+        s_msg.clear(); // avoid False Positives (next line outputs same as prior)
+        qDebug() << std::pair<const double &&, int &&>(std::move(d), std::move(i));
+        QCOMPARE(s_msg, R"(std::pair(4.2,42))"_L1);
+    }
 }
 
 void tst_QDebug::qDebugStdString() const
