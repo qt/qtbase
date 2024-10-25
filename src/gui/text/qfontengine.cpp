@@ -396,6 +396,10 @@ bool QFontEngine::processHheaTable() const
             return false;
 
         QFixed unitsPerEm = emSquareSize();
+        // Bail out if values are too large for QFixed
+        const auto limitForQFixed = std::numeric_limits<int>::max() / (fontDef.pixelSize * 64);
+        if (ascent > limitForQFixed || descent > limitForQFixed || leading > limitForQFixed)
+            return false;
         m_ascent = QFixed::fromReal(ascent * fontDef.pixelSize) / unitsPerEm;
         m_descent = -QFixed::fromReal(descent * fontDef.pixelSize) / unitsPerEm;
 
@@ -452,6 +456,11 @@ bool QFontEngine::processOS2Table() const
         if (preferTypoLineMetrics() || fsSelection & USE_TYPO_METRICS) {
             // Some fonts may have invalid OS/2 data. We detect this and bail out.
             if (typoAscent == 0 && typoDescent == 0)
+                return false;
+            // Bail out if values are too large for QFixed
+            const auto limitForQFixed = std::numeric_limits<int>::max() / (fontDef.pixelSize * 64);
+            if (typoAscent > limitForQFixed || typoDescent > limitForQFixed
+                    || typoLineGap > limitForQFixed)
                 return false;
             m_ascent = QFixed::fromReal(typoAscent * fontDef.pixelSize) / unitsPerEm;
             m_descent = -QFixed::fromReal(typoDescent * fontDef.pixelSize) / unitsPerEm;
