@@ -2210,13 +2210,13 @@ QString QTime::toString(Qt::DateFormat format) const
          \li The timezone's offset from UTC with a colon between the hours and
              minutes (for example "+02:00").
     \row \li tttt
-         \li The timezone name (for example "Europe/Berlin"). Note that this
-             gives no indication of whether the datetime was in daylight-saving
-             time or standard time, which may lead to ambiguity if the datetime
-             falls in an hour repeated by a transition between the two. The name
-             used is the one provided by \l QTimeZone::displayName() with the \l
-             QTimeZone::LongName type. This may depend on the operating system
-             in use.
+         \li The timezone name, as provided by \l QTimeZone::displayName() with
+             the \l QTimeZone::LongName type. This may depend on the operating
+             system in use. If no such name is available, the IANA ID of the
+             zone (such as "Europe/Berlin") may be used.  It may give no
+             indication of whether the datetime was in daylight-saving time or
+             standard time, which may lead to ambiguity if the datetime falls in
+             an hour repeated by a transition between the two.
     \endtable
 
     \note To get localized forms of AM or PM (the \c{AP}, \c{ap}, \c{A}, \c{a},
@@ -5879,9 +5879,10 @@ QDateTime QDateTime::fromString(QStringView string, Qt::DateFormat format)
          \li the timezone in offset format with a colon between hours and
              minutes (for example "+02:00")
     \row \li tttt
-         \li the timezone name (for example "Europe/Berlin").  The name
-             recognized are those known to \l QTimeZone, which may depend on the
-             operating system in use.
+         \li the timezone name, either what \l QTimeZone::displayName() reports
+             for \l QTimeZone::LongName or the IANA ID of the zone (for example
+             "Europe/Berlin"). The names recognized are those known to \l
+             QTimeZone, which may depend on the operating system in use.
     \endtable
 
     If no 't' format specifier is present, the system's local time-zone is used.

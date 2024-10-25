@@ -85,6 +85,8 @@ private slots:
     void formatTimeZone();
     void toDateTime_data();
     void toDateTime();
+    void roundtripDateTimeFormat_data();
+    void roundtripDateTimeFormat();
     void toDate_data();
     void toDate();
     void toTime_data();
@@ -2385,6 +2387,79 @@ void tst_QLocale::toDateTime()
         QCOMPARE(l.toDateTime(string, QLocale::LongFormat), result);
     if (l.dateTimeFormat(QLocale::ShortFormat) == format)
         QCOMPARE(l.toDateTime(string, QLocale::ShortFormat), result);
+}
+
+void tst_QLocale::roundtripDateTimeFormat_data()
+{
+    QTest::addColumn<QLocale>("locale");
+    QTest::addColumn<QDateTime>("when");
+    QTest::addColumn<QCalendar>("cal");
+    QTest::addColumn<QLocale::FormatType>("format");
+    QTest::addColumn<int>("baseYear");
+    const QCalendar greg;
+
+#if QT_CONFIG(timezone)
+    qsizetype count = 0;
+    const QTimeZone westOz("Australia/Perth");
+    if (westOz.isValid()) {
+        QTest::newRow("de_DE/LongFormat/2024-05-06T12:34/AWT") // QTBUG-130278
+            << QLocale(QLocale::German, QLocale::Germany)
+            << QDateTime(QDate(2024, 5, 6, greg), QTime(12, 34), westOz)
+            << greg << QLocale::LongFormat << 2000;
+        ++count;
+    }
+
+    const QTimeZone nepal("Asia/Katmandu");
+    if (nepal.isValid()) {
+        // Triggers the region-format code-path:
+        QTest::newRow("en_US/LongFormat/2025-02-06T20:20/Katmandu")
+            << QLocale(QLocale::English, QLocale::UnitedStates)
+            << QDateTime(QDate(2025, 2, 6, greg), QTime(20, 20), nepal)
+            << greg << QLocale::LongFormat << 2000;
+        ++count;
+    }
+
+    if (!count)
+        QSKIP("Missing zones for both test-cases");
+#else
+    QSKIP("The only test-case depends on feature timezone");
+#endif
+}
+
+void tst_QLocale::roundtripDateTimeFormat()
+{
+    QFETCH(const QLocale, locale);
+    QFETCH(const QDateTime, when);
+    QFETCH(const QCalendar, cal);
+    QFETCH(const QLocale::FormatType, format);
+    QFETCH(const int, baseYear);
+
+    const QString text = locale.toString(when, format, cal);
+    auto report = qScopeGuard([=]() {
+        qDebug() << "Went via:" << text;
+        qDebug() << "Used format:" << locale.dateTimeFormat(format);
+        QDateTime parsed = locale.toDateTime(text, format, cal, baseYear);
+        if (parsed.isValid()) {
+            switch (parsed.timeSpec()) {
+#if QT_CONFIG(timezone)
+            case Qt::TimeZone:
+                qDebug() << "Used zone:" << parsed.timeZone().id();
+                break;
+#endif
+            case Qt::OffsetFromUTC:
+                qDebug() << "Used fixed UTC offset:" << parsed.offsetFromUtc();
+                break;
+            case Qt::LocalTime:
+                qDebug("Used local time");
+                break;
+            case Qt::UTC:
+                qDebug("Used plain UTC");
+                break;
+            }
+        }
+    });
+    QCOMPARE(locale.toDateTime(text, format, cal, baseYear), when);
+    report.dismiss();
 }
 
 void tst_QLocale::toDate_data()

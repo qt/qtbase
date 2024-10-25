@@ -3882,8 +3882,15 @@ QString QCalendarBackend::dateTimeToString(QStringView format, const QDateTime &
                         text = when.timeRepresentation().displayName(when, mode, locale);
                         if (!text.isEmpty())
                             return text;
-                        // else fall back to an unlocalized one if we can manage it:
-                    } // else: prefer QDateTime's abbreviation, for backwards-compatibility.
+                        // else fall back to an unlocalized one if we can find one.
+                    }
+                    if (type == Long) {
+                        // If no long name found, use IANA ID:
+                        text = QString::fromLatin1(when.timeZone().id());
+                        if (!text.isEmpty())
+                            return text;
+                    }
+                    // else: prefer QDateTime's abbreviation, for backwards-compatibility.
 #endif // else, make do with non-localized abbreviation:
                     // Absent timezone_locale data, Offset might still reach here:
                     if (type == Offset) // Our prior failure might not have tried this:

@@ -25,6 +25,7 @@
 #if QT_CONFIG(timezone_tzdb)
 #include <chrono>
 #endif
+#include <optional>
 
 #if QT_CONFIG(icu)
 #include <unicode/ucal.h>
@@ -156,6 +157,14 @@ public:
     static QList<QByteArray> windowsIdToIanaIds(const QByteArray &windowsId);
     static QList<QByteArray> windowsIdToIanaIds(const QByteArray &windowsId,
                                                 QLocale::Territory territory);
+    struct NamePrefixMatch
+    {
+        QByteArray ianaId;
+        qsizetype nameLength = 0;
+        QTimeZone::TimeType timeType = QTimeZone::GenericTime;
+    };
+    static NamePrefixMatch findLongNamePrefix(QStringView text, const QLocale &locale,
+                                              std::optional<qint64> atEpochMillis = std::nullopt);
 
     // returns "UTC" QString and QByteArray
     [[nodiscard]] static inline QString utcQString()
@@ -167,6 +176,14 @@ public:
     {
         return QByteArrayLiteral("UTC");
     }
+
+
+#ifdef QT_BUILD_INTERNAL // For the benefit of a test
+    [[nodiscard]] static inline const QTimeZonePrivate *extractPrivate(const QTimeZone &zone)
+    {
+        return zone.d.operator->();
+    }
+#endif
 
 protected:
     // Zones CLDR data says match a condition.
