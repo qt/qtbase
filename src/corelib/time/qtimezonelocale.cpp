@@ -6,6 +6,7 @@
 
 #if !QT_CONFIG(icu)
 #  include <private/qdatetime_p.h>
+#  include <private/qtools_p.h>
 // Use data generated from CLDR:
 #  include <private/qtimezonelocale_data_p.h>
 #  include <private/qtimezoneprivate_data_p.h>
