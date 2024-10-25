@@ -256,7 +256,7 @@ class QLocaleXmlReader (object):
 
 
 class Spacer (object):
-    def __init__(self, indent = None, initial = ''):
+    def __init__(self, indent:str|int|None = None, initial: str = '') -> None:
         """Prepare to manage indentation and line breaks.
 
         Arguments are both optional.
@@ -275,17 +275,17 @@ class Spacer (object):
         an end-tag. The text is not parsed any more carefully than
         just described."""
         if indent is None:
-            self.__call = lambda x: x
+            self.__call: Callable[[str], str] = lambda x: x
         else:
-            self.__each = ' ' * indent if isinstance(indent, int) else indent
+            self.__each: str = ' ' * indent if isinstance(indent, int) else indent
             self.current = initial
             self.__call = self.__wrap
 
-    def __wrap(self, line):
+    def __wrap(self, line: str) -> str:
         if not line:
             return '\n'
 
-        indent = self.current
+        indent: str = self.current
         if line.startswith('</'):
             indent = self.current = indent[:-len(self.__each)]
         elif line.startswith('<') and not line.startswith('<!'):
@@ -295,7 +295,7 @@ class Spacer (object):
                 self.current += self.__each
         return indent + line + '\n'
 
-    def __call__(self, line):
+    def __call__(self, line: str) -> str:
         return self.__call(line)
 
 class QLocaleXmlWriter (object):
