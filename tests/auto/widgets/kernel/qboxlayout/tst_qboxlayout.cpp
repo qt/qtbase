@@ -42,6 +42,7 @@ private slots:
     void taskQTBUG_40609_addingLayoutToItself();
     void replaceWidget();
     void indexOf();
+    void invalidIndex();
 };
 
 class CustomLayoutStyle : public QProxyStyle
@@ -582,6 +583,15 @@ void tst_QBoxLayout::indexOf()
     QCOMPARE(outer->indexOf(outer), -1);
     QCOMPARE(outer->indexOf(inner), 0);
     QCOMPARE(inner->indexOf(inner->itemAt(0)), 0);
+}
+
+void tst_QBoxLayout::invalidIndex()
+{
+    QLabel lbl("aaa");
+    QVBoxLayout layout;
+    layout.insertWidget(1, &lbl);    // should not crash
+    QVERIFY(layout.itemAt(0));
+    QCOMPARE(layout.itemAt(0)->widget(), &lbl);
 }
 
 QTEST_MAIN(tst_QBoxLayout)
