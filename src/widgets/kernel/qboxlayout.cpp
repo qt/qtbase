@@ -413,8 +413,9 @@ int QBoxLayoutPrivate::validateIndex(int index) const
     if (index < 0)
         return list.size(); // append
 
-    Q_ASSERT_X(index >= 0 && index <= list.size(), "QBoxLayout::insert", "index out of range");
-    return index;
+    if (index > list.size())
+        qWarning("QBoxLayout::insert: index %d out of range (max: %d)", index, int(list.size()));
+    return index <= list.size() ? index : list.size();
 }
 
 /*!
@@ -811,8 +812,10 @@ void QBoxLayout::addItem(QLayoutItem *item)
 }
 
 /*!
-    Inserts \a item into this box layout at position \a index. If \a
-    index is negative, the item is added at the end.
+    Inserts \a item into this box layout at position \a index.
+    Index must be either negative or within the range 0 to count(),
+    inclusive. If \a index is negative or count(), the item is
+    added at the end.
 
     \sa addItem(), insertWidget(), insertLayout(), insertStretch(),
         insertSpacing()
