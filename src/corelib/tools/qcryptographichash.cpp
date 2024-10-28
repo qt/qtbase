@@ -128,7 +128,7 @@ template <size_t N>
 class QSmallByteArray
 {
     std::array<quint8, N> m_data;
-    static_assert(N <= std::numeric_limits<std::uint8_t>::max());
+    static_assert(N <= (std::numeric_limits<std::uint8_t>::max)());
     quint8 m_size = 0;
 public:
     QSmallByteArray() = default;
