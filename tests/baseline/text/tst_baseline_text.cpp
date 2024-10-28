@@ -18,6 +18,7 @@ private slots:
     void tst_render_data();
     void tst_render();
     void tst_differentScriptsBackgrounds();
+    void tst_synthesizedObliqueAndRotation();
 
 private:
     QDir htmlDir;
@@ -100,6 +101,29 @@ void tst_Text::tst_differentScriptsBackgrounds()
     }
 
     QBASELINE_CHECK(image, "tst_differentScriptsBackgrounds");
+}
+
+void tst_Text::tst_synthesizedObliqueAndRotation()
+{
+    QFont font(QString::fromLatin1("Abyssinica SIL"));
+    font.setPixelSize(40);
+    font.setItalic(true);
+
+    QImage image(800, 600, QImage::Format_ARGB32);
+    image.fill(Qt::white);
+
+    {
+        QPainter painter(&image);
+        painter.setFont(font);
+
+        painter.save();
+        painter.translate(200, 450);
+        painter.rotate(270);
+        painter.drawText(0, 0, QString::fromLatin1("Foobar"));
+        painter.restore();
+    }
+
+    QBASELINE_CHECK(image, "tst_synthesizedObliqueAndRotation");
 }
 
 
