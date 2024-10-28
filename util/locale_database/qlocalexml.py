@@ -19,7 +19,7 @@ You can download jing from https://relaxng.org/jclark/jing.html if your
 package manager lacks the jing package.
 """
 
-from typing import Callable, Iterable, Iterator
+from typing import Callable, Iterable, Iterator, NoReturn
 from xml.sax.saxutils import escape
 from xml.dom import minidom
 
@@ -303,7 +303,7 @@ class QLocaleXmlWriter (object):
 
     The output saved by this should conform to qlocalexml.rnc's
     schema."""
-    def __init__(self, save = None, space = Spacer(4)):
+    def __init__(self, save: Callable[[str], int]|None = None, space: Spacer = Spacer(4)) -> None:
         """Set up to write digested CLDR data as QLocale XML.
 
         Arguments are both optional.
@@ -321,12 +321,12 @@ class QLocaleXmlWriter (object):
         back on a close-tag (its parsing is naive, but adequate to how
         this class uses it), while adding a newline to each line.
         """
-        self.__rawOutput = self.__printit if save is None else save
+        self.__rawOutput: Callable[[str], int] = self.__printit if save is None else save
         self.__wrap = space
         self.__write('<localeDatabase>')
 
     # Output of various sections, in their usual order:
-    def enumData(self, code2name):
+    def enumData(self, code2name: Callable[[str], Callable[[str, str], str]]) -> None:
         """Output name/id/code tables for language, script and territory.
 
         Parameter, code2name, is a function taking 'language',
@@ -342,14 +342,15 @@ class QLocaleXmlWriter (object):
         self.__enumTable('script', script_map, code2name)
         self.__enumTable('territory', territory_map, code2name)
         # Prepare to detect any unused codes (see __writeLocale(), close()):
-        self.__languages = set(p[1] for p in language_map.values()
-                               if not p[1].isspace())
-        self.__scripts = set(p[1] for p in script_map.values()
-                             if p[1] != 'Zzzz')
-        self.__territories = set(p[1] for p in territory_map.values()
-                                 if p[1] != 'ZZ')
+        self.__languages: set[str] = set(p[1] for p in language_map.values()
+                                         if not p[1].isspace())
+        self.__scripts: set[str] = set(p[1] for p in script_map.values()
+                                       if p[1] != 'Zzzz')
+        self.__territories: set[str] = set(p[1] for p in territory_map.values()
+                                           if p[1] != 'ZZ')
 
-    def likelySubTags(self, entries):
+    def likelySubTags(self, entries: Iterator[tuple[tuple[int, int, int, int],
+                                                    tuple[int, int, int, int]]]) -> None:
         self.__openTag('likelySubtags')
         for have, give in entries:
             self.__openTag('likelySubtag')
@@ -358,7 +359,9 @@ class QLocaleXmlWriter (object):
             self.__closeTag('likelySubtag')
         self.__closeTag('likelySubtags')
 
-    def zoneData(self, alias, defaults, windowsIds):
+    def zoneData(self, alias: dict[str, str],
+                 defaults: dict[str, str],
+                 windowsIds: dict[tuple[str, str], str]) -> None:
         self.__openTag('zoneAliases')
         # iana is a single IANA ID
         # name has the same form, but has been made redundant
@@ -385,7 +388,8 @@ class QLocaleXmlWriter (object):
             self.__closeTag('msZoneIana')
         self.__closeTag('windowsZone')
 
-    def locales(self, locales, calendars, en_US):
+    def locales(self, locales: dict[tuple[int, int, int, int], "Locale"], calendars: list[str],
+                en_US: tuple[int, int, int, int]) -> None:
         """Write the data for each locale.
 
         First argument, locales, is the mapping whose values are the
@@ -405,13 +409,13 @@ class QLocaleXmlWriter (object):
             self.__closeTag('locale')
         self.__closeTag('localeList')
 
-    def version(self, cldrVersion):
+    def version(self, cldrVersion: str) -> None:
         self.inTag('version', cldrVersion)
 
-    def inTag(self, tag, text):
+    def inTag(self, tag: str, text: str) -> None:
         self.__write(f'<{tag}>{text}</{tag}>')
 
-    def close(self, grumble):
+    def close(self, grumble: Callable[[str], int]) -> None:
         """Finish writing and grumble about any issues discovered."""
         if self.__rawOutput != self.__complain:
             self.__write('</localeDatabase>')
@@ -420,7 +424,7 @@ class QLocaleXmlWriter (object):
         if self.__languages or self.__scripts or self.__territories:
             grumble('Some enum members are unused, corresponding to these tags:\n')
             import textwrap
-            def kvetch(kind, seq, g = grumble, w = textwrap.wrap):
+            def kvetch(kind, seq, g = grumble, w = textwrap.wrap) -> None:
                 g('\n\t'.join(w(f' {kind}: {", ".join(sorted(seq))}', width=80)) + '\n')
             if self.__languages:
                 kvetch('Languages', self.__languages)
@@ -432,19 +436,23 @@ class QLocaleXmlWriter (object):
 
     # Implementation details
     @staticmethod
-    def __printit(text):
+    def __printit(text: str) -> int:
         print(text, end='')
+        return 0
+
     @staticmethod
-    def __complain(text):
+    def __complain(text) -> NoReturn:
         raise Error('Attempted to write data after closing :-(')
 
     @staticmethod
-    def __xmlSafe(text):
+    def __xmlSafe(text: str) -> str:
         return text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
 
-    def __enumTable(self, tag, table, code2name):
+    def __enumTable(self, tag: str, table: dict[int, tuple[str, str]],
+                    code2name: Callable[[str], Callable[[str, str], str]]) -> None:
         self.__openTag(f'{tag}List')
-        enname, safe = code2name(tag), self.__xmlSafe
+        enname: Callable[[str, str], str] = code2name(tag)
+        safe: Callable[[str], str] = self.__xmlSafe
         for key, (name, code) in table.items():
             self.__openTag(tag)
             self.inTag('name', safe(enname(code, name)))
@@ -453,7 +461,7 @@ class QLocaleXmlWriter (object):
             self.__closeTag(tag)
         self.__closeTag(f'{tag}List')
 
-    def __likelySubTag(self, tag, likely):
+    def __likelySubTag(self, tag: str, likely: tuple[int, int, int, int]) -> None:
         self.__openTag(tag)
         self.inTag('language', likely[0])
         self.inTag('script', likely[1])
@@ -461,21 +469,21 @@ class QLocaleXmlWriter (object):
         # self.inTag('variant', likely[3])
         self.__closeTag(tag)
 
-    def __writeLocale(self, locale, calendars):
+    def __writeLocale(self, locale: "Locale", calendars: list[str]) -> None:
         locale.toXml(self.inTag, calendars)
         self.__languages.discard(locale.language_code)
         self.__scripts.discard(locale.script_code)
         self.__territories.discard(locale.territory_code)
 
-    def __openTag(self, tag, **attrs):
+    def __openTag(self, tag: str, **attrs: int|str) -> None:
         if attrs:
-            text = ', '.join(f'{k}="{v}"' for k, v in attrs.items())
+            text: str = ', '.join(f'{k}="{v}"' for k, v in attrs.items())
             tag = f'{tag} {text}'
         self.__write(f'<{tag}>')
     def __closeTag(self, tag):
         self.__write(f'</{tag}>')
 
-    def __write(self, line):
+    def __write(self, line: str) -> None:
         self.__rawOutput(self.__wrap(line))
 
 class Locale (object):

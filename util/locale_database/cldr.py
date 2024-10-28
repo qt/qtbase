@@ -334,7 +334,8 @@ class CldrAccess (object):
         inheritance, where relevant."""
         return LocaleScanner(name, self.__localeRoots(name), self.__rootLocale)
 
-    def englishNaming(self, tag: str) -> Callable[[str], str]: # see QLocaleXmlWriter.enumData()
+    # see QLocaleXmlWriter.enumData()
+    def englishNaming(self, tag: str) -> Callable[[str, str], str]:
         return self.__codeMap(tag).get
 
     @property
