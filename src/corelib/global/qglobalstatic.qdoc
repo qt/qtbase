@@ -246,7 +246,7 @@
 
     The QGlobalStatic::exists() and QGlobalStatic::isDestroyed() functions
     operate solely on the guard variable: the former returns \c true if the guard
-    is negative, whereas the latter returns \c true only if it is -2.
+    is -1, the latter returns \c true if it is -2.
 
     \endomit
 
@@ -359,12 +359,13 @@
 
     This function returns \c true if the global static object has already
     completed initialization (that is, if the constructor for the type has
-    already returned). In specific, note that this function returns \c false if
-    the initialization is still in progress.
+    already returned) and has not yet completed destruction. In particular, note
+    that this function returns \c false if the initialization is still in
+    progress.
 
     Once this function has returned true once, it will never return false again
-    until either the program is restarted or the plugin or library containing
-    the global static is unloaded and reloaded.
+    until the global static object is destroyed. The latter happens on program
+    exit or when the plugin or library containing the global static is unloaded.
 
     This function is safe to call at any point in the program execution: it
     cannot fail and cannot cause a deadlock. Additionally, it will not cause
