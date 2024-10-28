@@ -913,8 +913,13 @@ void QToolBar::changeEvent(QEvent *event)
         break;
     case QEvent::StyleChange:
         d->layout->invalidate();
-        if (!d->explicitIconSize)
-            setIconSize(QSize());
+        if (!d->explicitIconSize) {
+            QStyleOptionToolBar opt;
+            initStyleOption(&opt);
+            const int metric = style()->pixelMetric(QStyle::PM_ToolBarIconSize, &opt, this);
+            setIconSize({metric, metric});
+            d->explicitIconSize = false;
+        }
         d->layout->updateMarginAndSpacing();
         break;
     case QEvent::LayoutDirectionChange:
