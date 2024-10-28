@@ -9,7 +9,6 @@
 #include <QtCore/private/qsmallbytearray_p.h>
 #include <qiodevice.h>
 #include <qmutex.h>
-#include <qvarlengtharray.h>
 #include <private/qlocking_p.h>
 
 #include <array>
