@@ -6,6 +6,7 @@
 #include <qcryptographichash.h>
 #include <qmessageauthenticationcode.h>
 
+#include <QtCore/private/qsmallbytearray_p.h>
 #include <qiodevice.h>
 #include <qmutex.h>
 #include <qvarlengtharray.h>
@@ -123,75 +124,6 @@ static inline int SHA384_512AddLength(SHA512Context *context, unsigned int lengt
 #endif
 
 QT_BEGIN_NAMESPACE
-
-template <size_t N>
-class QSmallByteArray
-{
-    std::array<quint8, N> m_data;
-    static_assert(N <= (std::numeric_limits<std::uint8_t>::max)());
-    quint8 m_size = 0;
-public:
-    QSmallByteArray() = default;
-    // all compiler-generated SMFs are ok!
-    template <std::size_t M, std::enable_if_t<M < N, bool> = true> // M == N is for copy ctor!
-    constexpr QSmallByteArray(const QSmallByteArray<M> &other) noexcept
-    {
-        assign(other);
-    }
-    template <std::size_t M, std::enable_if_t<M < N, bool> = true> // M == N is for copy-assignment op!
-    constexpr QSmallByteArray &operator=(const QSmallByteArray<M> &other) noexcept
-    {
-        assign(other);
-        return *this;
-    }
-
-    template <typename Container> // ### underconstrained
-    constexpr void assign(const Container &c)
-    {
-        const size_t otherSize = size_t(std::size(c));
-        Q_ASSERT(otherSize < N);
-        memcpy(data(), std::data(c), otherSize);
-        m_size = quint8(otherSize);
-    }
-
-    constexpr quint8 *data() noexcept { return m_data.data(); }
-    constexpr const quint8 *data() const noexcept { return m_data.data(); }
-    constexpr qsizetype size() const noexcept { return qsizetype{m_size}; }
-    constexpr quint8 &operator[](qsizetype n)
-    {
-        Q_ASSERT(n < size());
-        return data()[n];
-    }
-    constexpr const quint8 &operator[](qsizetype n) const
-    {
-        Q_ASSERT(n < size());
-        return data()[n];
-    }
-    constexpr bool isEmpty() const noexcept { return size() == 0; }
-    constexpr void clear() noexcept { m_size = 0; }
-    constexpr void resizeForOverwrite(qsizetype s)
-    {
-        Q_ASSERT(s >= 0);
-        Q_ASSERT(size_t(s) <= N);
-        m_size = std::uint8_t(s);
-    }
-    constexpr void resize(qsizetype s, quint8 v)
-    {
-        const auto oldSize = size();
-        resizeForOverwrite(s);
-        if (s > oldSize)
-            memset(data() + oldSize, v, size() - oldSize);
-    }
-    constexpr QByteArrayView toByteArrayView() const noexcept
-    { return *this; }
-
-    constexpr auto begin() noexcept { return data(); }
-    constexpr auto begin() const noexcept { return data(); }
-    constexpr auto cbegin() const noexcept { return begin(); }
-    constexpr auto end() noexcept { return data() + size(); }
-    constexpr auto end() const noexcept { return data() + size(); }
-    constexpr auto cend() const noexcept { return end(); }
-};
 
 static constexpr int hashLengthInternal(QCryptographicHash::Algorithm method) noexcept
 {
