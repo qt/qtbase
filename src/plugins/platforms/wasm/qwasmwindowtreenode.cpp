@@ -4,6 +4,9 @@
 #include "qwasmwindowtreenode.h"
 
 #include "qwasmwindow.h"
+#include "qwasmscreen.h"
+
+uint64_t QWasmWindowTreeNode::s_nextActiveIndex = 0;
 
 QWasmWindowTreeNode::QWasmWindowTreeNode()
     : m_childStack(std::bind(&QWasmWindowTreeNode::onTopWindowChanged, this))
@@ -11,6 +14,39 @@ QWasmWindowTreeNode::QWasmWindowTreeNode()
 }
 
 QWasmWindowTreeNode::~QWasmWindowTreeNode() = default;
+
+void QWasmWindowTreeNode::shutdown()
+{
+    QWasmWindow *window = asWasmWindow();
+    if (!window ||
+        !window->window() ||
+        (QGuiApplication::focusWindow() && // Don't act if we have a focus window different from this
+         QGuiApplication::focusWindow() != window->window()))
+        return;
+
+    // Make a list of all windows sorted on active index.
+    // Skip windows with active index 0 as they have
+    // never been active.
+    std::map<uint64_t, QWasmWindow *> allWindows;
+    for (const auto &w : window->platformScreen()->allWindows()) {
+        if (w->getActiveIndex() > 0)
+            allWindows.insert({w->getActiveIndex(), w});
+    }
+
+    // window is not in all windows
+    if (window->getActiveIndex() > 0)
+        allWindows.insert({window->getActiveIndex(), window});
+
+    if (allWindows.size() >= 2) {
+        const auto lastIt = std::prev(allWindows.end());
+        const auto prevIt = std::prev(lastIt);
+        const auto lastW = lastIt->second;
+        const auto prevW = prevIt->second;
+
+        if (lastW == window) // Only act if window is last to be active
+            prevW->requestActivateWindow();
+    }
+}
 
 void QWasmWindowTreeNode::onParentChanged(QWasmWindowTreeNode *previousParent,
                                           QWasmWindowTreeNode *currentParent,
@@ -73,6 +109,9 @@ void QWasmWindowTreeNode::setAsActiveNode()
 {
     if (parentNode())
         parentNode()->setActiveChildNode(asWasmWindow());
+
+    // At the end, this is a recursive function
+    m_activeIndex = ++s_nextActiveIndex;
 }
 
 void QWasmWindowTreeNode::bringToTop()

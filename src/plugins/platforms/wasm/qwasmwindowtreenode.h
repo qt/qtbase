@@ -38,13 +38,21 @@ protected:
     void setAsActiveNode();
     void bringToTop();
     void sendToBottom();
+    void shutdown();
 
     const QWasmWindowStack &childStack() const { return m_childStack; }
     QWasmWindow *activeChild() const { return m_activeChild; }
 
+    uint64_t getActiveIndex() const {
+        return m_activeIndex;
+    }
+
 private:
     void onTopWindowChanged();
     void setActiveChildNode(QWasmWindow *activeChild);
+
+    uint64_t m_activeIndex = 0;
+    static uint64_t s_nextActiveIndex;
 
     QWasmWindowStack m_childStack;
     QWasmWindow *m_activeChild = nullptr;

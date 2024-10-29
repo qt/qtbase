@@ -68,6 +68,18 @@ class WidgetTestCase(unittest.TestCase):
         self.assertEqual(w2.hasFocus(), False)
         self.assertEqual(w3.hasFocus(), True)
 
+        w3.close();
+        self.assertEqual(w0.hasFocus(), False)
+        self.assertEqual(w1.hasFocus(), False)
+        self.assertEqual(w2.hasFocus(), True)
+
+        w2.close();
+        self.assertEqual(w0.hasFocus(), True)
+        self.assertEqual(w1.hasFocus(), False)
+
+        w1.close();
+        self.assertEqual(w0.hasFocus(), True)
+
         clearWidgets(self._driver)
 
     #Looks weird, no asserts, the test is that
@@ -688,6 +700,13 @@ class Widget:
         self.driver.execute_script(
             f'''
                 instance.showToolTipWidget('{self.name}');
+            '''
+        )
+
+    def close(self):
+        self.driver.execute_script(
+            f'''
+                instance.closeWidget('{self.name}');
             '''
         )
 

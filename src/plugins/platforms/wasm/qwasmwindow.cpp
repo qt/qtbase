@@ -133,6 +133,8 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmDeadKeySupport *deadKeySupport,
 
 QWasmWindow::~QWasmWindow()
 {
+    shutdown();
+
     emscripten::val::module_property("specialHTMLTargets").delete_(canvasSelector());
     m_canvasContainer.call<void>("removeChild", m_canvas);
     m_context2d = emscripten::val::undefined();

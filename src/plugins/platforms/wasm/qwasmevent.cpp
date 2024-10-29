@@ -62,6 +62,8 @@ Qt::Key webKeyToQtKey(const std::string &code, const std::string &key, bool isDe
             return Qt::Key_unknown;
         }
     } else if (auto mapping = QWasmKeyTranslator::mapWebKeyTextToQtKey(key.c_str())) {
+        if (modifiers.testFlag(Qt::ShiftModifier) && (*mapping == Qt::Key::Key_Tab))
+            *mapping = Qt::Key::Key_Backtab;
         return *mapping;
     }
 
