@@ -287,6 +287,7 @@ void QWindowsTheme::populateLightSystemBasePalette(QPalette &result)
     const QColor background = getSysColor(COLOR_BTNFACE);
     const QColor textColor = getSysColor(COLOR_WINDOWTEXT);
 
+    const QColor accent = qt_accentColor(AccentColorNormal);
     const QColor accentDark = qt_accentColor(AccentColorDark);
     const QColor accentDarker = qt_accentColor(AccentColorDarker);
     const QColor accentDarkest = qt_accentColor(AccentColorDarkest);
@@ -295,7 +296,7 @@ void QWindowsTheme::populateLightSystemBasePalette(QPalette &result)
     const QColor btnFace = background;
     const QColor btnHighlight = getSysColor(COLOR_BTNHIGHLIGHT);
 
-    result.setColor(QPalette::Highlight, getSysColor(COLOR_HIGHLIGHT));
+    result.setColor(QPalette::Highlight, accent);
     result.setColor(QPalette::WindowText, getSysColor(COLOR_WINDOWTEXT));
     result.setColor(QPalette::Button, btnFace);
     result.setColor(QPalette::Light, btnHighlight);
