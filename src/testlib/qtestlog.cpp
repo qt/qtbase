@@ -209,9 +209,11 @@ namespace QTest {
         static QBasicAtomicInt counter = Q_BASIC_ATOMIC_INITIALIZER(QTest::maxWarnings);
 
         if (!QTestLog::hasLoggers()) {
-            // if this goes wrong, something is seriously broken.
-            qInstallMessageHandler(oldMessageHandler);
-            QTEST_ASSERT(QTestLog::hasLoggers());
+            // the message handler may be called from a worker thread, after the main thread stopped logging.
+            // Forwarding to original message handler to avoid swallowing the message
+            Q_ASSERT(oldMessageHandler);
+            oldMessageHandler(type, context, message);
+            return;
         }
 
         if (handleIgnoredMessage(type, message)) {
