@@ -772,6 +772,17 @@ void QMdiAreaPrivate::_q_moveTab(int from, int to)
     Q_UNUSED(to);
 #else
     childWindows.move(from, to);
+
+    // Put the active window in front to update activation order.
+    const int indexToActiveWindow = childWindows.indexOf(active);
+    if (indexToActiveWindow != -1) {
+        const int index = indicesToActivatedChildren.indexOf(indexToActiveWindow);
+        Q_ASSERT(index != -1);
+        if (index != 0) { // if it's not in front
+            indicesToActivatedChildren.move(index, 0);
+            internalRaise(active);
+        }
+    }
 #endif // QT_CONFIG(tabbar)
 }
 
