@@ -102,6 +102,31 @@ struct ThreadWrapper
 };
 #endif
 
+struct FutureWatcher
+{
+    bool thenCalled = false;
+    bool onFailedCalled = false;
+    bool onCanceledCalled = false;
+
+    FutureWatcher() = default;
+    Q_DISABLE_COPY_MOVE(FutureWatcher)
+
+    template <typename T>
+    explicit FutureWatcher(QFuture<T> &f) { setFuture(f); }
+
+    template <typename T>
+    void setFuture(QFuture<T> &f)
+    {
+        f.onFailed([&]{
+                       onFailedCalled = true;
+                       if constexpr (!std::is_void_v<T>)
+                           return T{};
+                   })
+         .then([&](auto&&...) { thenCalled = true; })
+         .onCanceled([&]{ onCanceledCalled = true; });
+    }
+};
+
 void tst_QPromise::promise()
 {
     const auto testCanCreatePromise = [] (auto promise) {
@@ -520,20 +545,15 @@ template <typename T>
 static inline void testCancelWhenDestroyedRunsContinuations()
 {
     QFuture<T> future;
-    bool onCanceledCalled = false;
-    bool thenCalled = false;
+    FutureWatcher r;
     {
         QPromise<T> promise;
         future = promise.future();
-        future.then([&] (auto&&) {
-            thenCalled = true;
-        }).onCanceled([&] () {
-            onCanceledCalled = true;
-        });
+        r.setFuture(future);
     }
     QVERIFY(future.isFinished());
-    QVERIFY(!thenCalled);
-    QVERIFY(onCanceledCalled);
+    QVERIFY(!r.thenCalled);
+    QVERIFY(r.onCanceledCalled);
 }
 
 void tst_QPromise::cancelWhenDestroyedRunsContinuations()
@@ -548,24 +568,15 @@ template <typename T>
 static inline void testCancelWhenDestroyedWithFailureHandler()
 {
     QFuture<T> future;
-    bool onFailedCalled = false;
-    bool thenCalled = false;
+    FutureWatcher r;
     {
         QPromise<T> promise;
         future = promise.future();
-        future
-            .onFailed([&] () {
-                onFailedCalled = true;
-                if constexpr (!std::is_same_v<void, T>)
-                    return T{};
-            })
-            .then([&] (auto&&) {
-                thenCalled = true;
-            });
+        r.setFuture(future);
     }
     QVERIFY(future.isFinished());
-    QVERIFY(!onFailedCalled);
-    QVERIFY(!thenCalled);
+    QVERIFY(!r.onFailedCalled);
+    QVERIFY(!r.thenCalled);
 }
 
 void tst_QPromise::cancelWhenDestroyedWithFailureHandler()
@@ -582,10 +593,7 @@ static inline void testContinuationsRunWhenFinished()
     QPromise<T> promise;
     QFuture<T> future = promise.future();
 
-    bool thenCalled = false;
-    future.then([&] (auto&&) {
-        thenCalled = true;
-    });
+    FutureWatcher r(future);
 
     promise.start();
     if constexpr (!std::is_void_v<T>) {
@@ -593,7 +601,7 @@ static inline void testContinuationsRunWhenFinished()
     }
     promise.finish();
 
-    QVERIFY(thenCalled);
+    QVERIFY(r.thenCalled);
 }
 
 void tst_QPromise::continuationsRunWhenFinished()
