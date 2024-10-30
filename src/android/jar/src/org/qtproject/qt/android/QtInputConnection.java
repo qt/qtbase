@@ -66,6 +66,9 @@ class QtInputConnection extends BaseInputConnection
     private static final int ID_COPY_URL = android.R.id.copyUrl;
     private static final int ID_SWITCH_INPUT_METHOD = android.R.id.switchInputMethod;
     private static final int ID_ADD_TO_DICTIONARY = android.R.id.addToDictionary;
+    // We can't rely on a hardcoded value, because screens have different resolutions.
+    // That is why we assume that the keyboard should be higher than 0.15 of the screen.
+    private static final float KEYBOARD_TO_SCREEN_RATIO = 0.15f;
 
     private static final String QtTAG = "QtInputConnection";
 
@@ -98,7 +101,7 @@ class QtInputConnection extends BaseInputConnection
                 screenHeight = maximumWindowMetrics.getBounds().height();
             }
             final int kbHeight = screenHeight - r.bottom;
-            if (kbHeight < 100)
+            if (kbHeight < screenHeight * KEYBOARD_TO_SCREEN_RATIO)
                 m_qtInputConnectionListener.onHideKeyboardRunnableDone(false, System.nanoTime());
         }
     }
