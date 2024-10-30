@@ -16,6 +16,8 @@ import android.view.inputmethod.ExtractedText;
 import android.view.inputmethod.ExtractedTextRequest;
 import android.view.inputmethod.InputMethodManager;
 import android.view.KeyEvent;
+import android.view.WindowInsets;
+import android.view.WindowInsets.Type;
 import android.graphics.Rect;
 import android.app.Activity;
 import android.util.DisplayMetrics;
@@ -88,20 +90,21 @@ class QtInputConnection extends BaseInputConnection
                 return;
             }
 
-            Rect r = new Rect();
-            activity.getWindow().getDecorView().getWindowVisibleDisplayFrame(r);
+            boolean isKeyboardHidden = true;
 
-            int screenHeight;
             if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                Rect r = new Rect();
+                activity.getWindow().getDecorView().getWindowVisibleDisplayFrame(r);
                 DisplayMetrics metrics = new DisplayMetrics();
                 activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
-                screenHeight = metrics.heightPixels;
+                int screenHeight = metrics.heightPixels;
+                final int kbHeight = screenHeight - r.bottom;
+                isKeyboardHidden = kbHeight < screenHeight * KEYBOARD_TO_SCREEN_RATIO;
             } else {
-                final WindowMetrics maximumWindowMetrics = activity.getWindowManager().getMaximumWindowMetrics();
-                screenHeight = maximumWindowMetrics.getBounds().height();
+                WindowInsets w = activity.getWindow().getDecorView().getRootWindowInsets();
+                isKeyboardHidden = !w.isVisible(Type.ime());
             }
-            final int kbHeight = screenHeight - r.bottom;
-            if (kbHeight < screenHeight * KEYBOARD_TO_SCREEN_RATIO)
+            if (isKeyboardHidden)
                 m_qtInputConnectionListener.onHideKeyboardRunnableDone(false, System.nanoTime());
         }
     }
