@@ -9,12 +9,20 @@
 #include <qfuture.h>
 #include <qfuturewatcher.h>
 #include <qpromise.h>
+#include <QtCore/qsemaphore.h>
 
 #include <algorithm>
 #include <memory>
 #include <chrono>
 
 using namespace std::chrono_literals;
+
+template <typename T>
+struct promise_type {};
+template <typename T>
+struct promise_type<QPromise<T>> { using type = T; };
+template <typename T>
+using promise_type_t = typename promise_type<T>::type;
 
 class tst_QPromise : public QObject
 {
@@ -27,6 +35,8 @@ private slots:
     void addResultOutOfOrder();
 #ifndef QT_NO_EXCEPTIONS
     void setException();
+    void setExceptionAfterCancelDoesNothing(); // QTBUG-128405
+    void setExceptionAfterFinishDoesNothing();
 #endif
     void cancel();
     void progress();
@@ -289,6 +299,69 @@ void tst_QPromise::setException()
                        std::make_exception_ptr(TestException()));
     RUN_TEST_FUNC(testExceptionCaught, QPromise<MoveOnlyType>(),
                        std::make_exception_ptr(TestException()));
+}
+
+void tst_QPromise::setExceptionAfterCancelDoesNothing()
+{
+    struct TestException {};
+
+    auto test = [](auto promise, auto exception) {
+        auto f = promise.future();
+        FutureWatcher r(f);
+        QSemaphore sem;
+        QSemaphoreReleaser rel(sem);
+        ThreadWrapper t([&] {
+            auto p = std::move(promise);
+            p.start();
+            sem.acquire(); // wait for cancel() in main thread
+            p.setException(std::move(exception));
+        });
+
+        f.cancel();
+        rel.cancel()->release(); // give a go for setException() in worker thread
+
+        t.join();
+
+        QVERIFY(f.isCanceled());
+        QVERIFY(!r.thenCalled);
+        QVERIFY(!r.onFailedCalled);
+        QVERIFY(r.onCanceledCalled);
+    };
+
+    RUN_TEST_FUNC(test, QPromise<void>(), QException());
+    RUN_TEST_FUNC(test, QPromise<int>(),  QException());
+    RUN_TEST_FUNC(test, QPromise<void>(), std::make_exception_ptr(TestException()));
+    RUN_TEST_FUNC(test, QPromise<int>(), std::make_exception_ptr(TestException()));
+    RUN_TEST_FUNC(test, QPromise<CopyOnlyType>(), std::make_exception_ptr(TestException()));
+    RUN_TEST_FUNC(test, QPromise<MoveOnlyType>(), std::make_exception_ptr(TestException()));
+}
+
+void tst_QPromise::setExceptionAfterFinishDoesNothing()
+{
+    struct TestException {};
+
+    auto test = [](auto promise, auto exception) {
+        auto f = promise.future();
+        FutureWatcher r(f);
+        promise.start();
+        using T = promise_type_t<decltype(promise)>;
+        if constexpr (!std::is_void_v<T>)
+            promise.addResult(T());
+        promise.finish();
+        promise.setException(std::move(exception));
+
+        QVERIFY(f.isFinished());
+        QVERIFY(r.thenCalled);
+        QVERIFY(!r.onFailedCalled);
+        QVERIFY(!r.onCanceledCalled);
+    };
+
+    RUN_TEST_FUNC(test, QPromise<void>(), QException());
+    RUN_TEST_FUNC(test, QPromise<int>(),  QException());
+    RUN_TEST_FUNC(test, QPromise<void>(), std::make_exception_ptr(TestException()));
+    RUN_TEST_FUNC(test, QPromise<int>(), std::make_exception_ptr(TestException()));
+    RUN_TEST_FUNC(test, QPromise<CopyOnlyType>(), std::make_exception_ptr(TestException()));
+    RUN_TEST_FUNC(test, QPromise<MoveOnlyType>(), std::make_exception_ptr(TestException()));
 }
 #endif
 

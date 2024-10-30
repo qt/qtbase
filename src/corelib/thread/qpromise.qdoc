@@ -116,7 +116,7 @@
     \note You can set at most one exception throughout the computation
     execution.
 
-    \note This method must not be used after QFuture::cancel() or
+    \note This method has no effect after QFuture::cancel() or
     finish().
 
     \sa isCanceled()
