@@ -231,13 +231,13 @@ public:
     constexpr QAnyStringView(Container &&c, QtPrivate::wrapped_t<Container, QByteArray> &&capacity = {})
             //noexcept(std::is_nothrow_constructible_v<QByteArray, Container>)
         : QAnyStringView(capacity = std::forward<Container>(c)) {}
+
     template <typename Char, if_compatible_char<Char> = true>
     constexpr QAnyStringView(const Char &c) noexcept
         : QAnyStringView{&c, 1} {}
     template <typename Char, if_convertible_to<QChar, Char> = true>
     constexpr QAnyStringView(Char ch, QCharContainer &&capacity = QCharContainer()) noexcept
         : QAnyStringView{&(capacity.ch = ch), 1} {}
-
     template <typename Char, typename Container = decltype(QChar::fromUcs4(U'x')),
               std::enable_if_t<std::is_same_v<Char, char32_t>, bool> = true>
     constexpr QAnyStringView(Char c, Container &&capacity = {}) noexcept
