@@ -1372,11 +1372,13 @@ bool QCompleter::eventFilter(QObject *o, QEvent *e)
             return false;
         }
 
-        // Send the event to the widget. If the widget accepted the event, do nothing
-        // If the widget did not accept the event, provide a default implementation
-        d->eatFocusOut = false;
-        (static_cast<QObject *>(d->widget))->event(ke);
-        d->eatFocusOut = true;
+        if (d->widget) {
+            // Send the event to the widget. If the widget accepted the event, do nothing
+            // If the widget did not accept the event, provide a default implementation
+            d->eatFocusOut = false;
+            (static_cast<QObject *>(d->widget))->event(ke);
+            d->eatFocusOut = true;
+        }
         if (!d->widget || e->isAccepted() || !d->popup->isVisible()) {
             // widget lost focus, hide the popup
             if (d->widget && (!d->widget->hasFocus()
@@ -1428,8 +1430,9 @@ bool QCompleter::eventFilter(QObject *o, QEvent *e)
 
 #ifdef QT_KEYPAD_NAVIGATION
     case QEvent::KeyRelease: {
-        QKeyEvent *ke = static_cast<QKeyEvent *>(e);
-        if (QApplicationPrivate::keypadNavigationEnabled() && ke->key() == Qt::Key_Back) {
+        if (d->widget &&
+            QApplicationPrivate::keypadNavigationEnabled() && ke->key() == Qt::Key_Back) {
+            QKeyEvent *ke = static_cast<QKeyEvent *>(e);
             // Send the event to the 'widget'. This is what we did for KeyPress, so we need
             // to do the same for KeyRelease, in case the widget's KeyPress event set
             // up something (such as a timer) that is relying on also receiving the
@@ -1446,7 +1449,8 @@ bool QCompleter::eventFilter(QObject *o, QEvent *e)
 
     case QEvent::MouseButtonPress: {
 #ifdef QT_KEYPAD_NAVIGATION
-        if (QApplicationPrivate::keypadNavigationEnabled()) {
+        if (d->widget
+            && QApplicationPrivate::keypadNavigationEnabled()) {
             // if we've clicked in the widget (or its descendant), let it handle the click
             QWidget *source = qobject_cast<QWidget *>(o);
             if (source) {
@@ -1471,7 +1475,8 @@ bool QCompleter::eventFilter(QObject *o, QEvent *e)
 
     case QEvent::InputMethod:
     case QEvent::ShortcutOverride:
-        QCoreApplication::sendEvent(d->widget, e);
+        if (d->widget)
+            QCoreApplication::sendEvent(d->widget, e);
         break;
 
     default:
