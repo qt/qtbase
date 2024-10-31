@@ -66,9 +66,6 @@ template <> struct treat_as_integral_arg<unsigned short> : std::true_type {};
 template <> struct treat_as_integral_arg<  signed short> : std::true_type {};
 template <> struct treat_as_integral_arg<unsigned  char> : std::true_type {};
 template <> struct treat_as_integral_arg<  signed  char> : std::true_type {};
-// QTBUG-126054, keep until we can fix it for all platforms, not just Windows
-// (where wchar_t does convert to QAnyStringView):
-template <> struct treat_as_integral_arg<wchar_t> : std::true_type {};
 }
 
 // Qt 4.x compatibility

@@ -242,7 +242,7 @@ constexpr bool CanConvertFromWCharT =
 #endif
         ;
 
-static_assert(CanConvert<wchar_t> == CanConvertFromWCharT); // ### FIXME: should work everywhere
+static_assert(CanConvert<wchar_t>);
 
 static_assert(CanConvert<      wchar_t[123]> == CanConvertFromWCharT);
 static_assert(CanConvert<const wchar_t[123]> == CanConvertFromWCharT);
@@ -414,7 +414,10 @@ private Q_SLOTS:
         fromCharacter(U'\x1F0A0', 2, true); // U+1F0A0: PLAYING CARD BACK
     }
     void fromWCharT() const {
-        ONLY_WIN(fromCharacter(L'ä', 1)); // should work on Unix, too (char32_t does)
+        fromCharacter(L'ä', 1, sizeof(L'ä') == sizeof(char32_t));
+#ifndef Q_OS_WIN // sizedof(wchar_t) == 2 on Windows, so L'\x1F0A0' would be out-of-range
+        fromCharacter(L'\x1F0A0', 2, true); // U+1F0A0: PLAYING CARD BACK
+#endif
     }
     void fromQChar() const { fromCharacter(QChar(u'ä'), 1); }
     void fromQLatin1Char() const { fromCharacter(QLatin1Char('\xE4'), 1, true); }

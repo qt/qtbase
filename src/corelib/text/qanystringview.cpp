@@ -138,6 +138,7 @@ QT_BEGIN_NAMESPACE
     \list
     \li \c QLatin1Char
     \li \c QChar::SpecialCharacter
+    \li \c wchar_t (where it's a 32-bit type, i.e. Unix) (since 6.10)
     \li \c char32_t
     \endlist
 

@@ -25,6 +25,11 @@ struct wrapped { using type = Result; };
 template <typename Tag, typename Result>
 using wrapped_t = typename wrapped<Tag, Result>::type;
 
+template <typename Char>
+struct is_compatible_utf32_char : std::false_type {};
+template <> struct is_compatible_utf32_char<char32_t> : std::true_type {};
+template <> struct is_compatible_utf32_char<wchar_t> : std::bool_constant<sizeof(wchar_t) == 4> {};
+
 } // namespace QtPrivate
 
 class QAnyStringView
@@ -58,6 +63,11 @@ private:
         Utf16    = TwoByteCodePointFlag,
         Unused   = TypeMask,
     };
+
+    template <typename Char>
+    using if_compatible_utf32_char = std::enable_if_t<
+        QtPrivate::is_compatible_utf32_char<Char>::value
+    , bool>;
 
     template <typename Char>
     using is_compatible_char = std::disjunction<
@@ -220,7 +230,7 @@ public:
     constexpr QAnyStringView(Char ch, QCharContainer &&capacity = QCharContainer()) noexcept
         : QAnyStringView{&(capacity.ch = ch), 1} {}
     template <typename Char, typename Container = decltype(QChar::fromUcs4(U'x')),
-              std::enable_if_t<std::is_same_v<Char, char32_t>, bool> = true>
+              if_compatible_utf32_char<Char> = true>
     constexpr QAnyStringView(Char c, Container &&capacity = {}) noexcept
         : QAnyStringView(capacity = QChar::fromUcs4(c)) {}
 

@@ -6859,10 +6859,7 @@ void tst_QString::arg()
     // char-ish overloads
     QCOMPARE(s4.arg('\xE4'), QStringView(u"[ä]"));
     QCOMPARE(s4.arg(u'ø'), QStringView(u"[ø]"));
-#ifdef Q_OS_WIN
     QCOMPARE(QLatin1String("[%1]").arg(L'ø'), QStringView(u"[ø]"));
-#endif
-    QEXPECT_FAIL("", "QTBUG-126054", Continue);
     QCOMPARE(s4.arg(L'ø'), QStringView(u"[ø]"));
 #ifndef __cpp_char8_t
 #ifndef QT_NO_CAST_FROM_ASCII
