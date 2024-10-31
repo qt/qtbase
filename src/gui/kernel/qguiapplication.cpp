@@ -3585,7 +3585,7 @@ QPlatformDragQtResponse QGuiApplicationPrivate::processDrag(QWindow *w, const QM
         lastAcceptedDropAction = Qt::IgnoreAction;
         return QPlatformDragQtResponse(false, lastAcceptedDropAction, QRect());
     }
-    QDragMoveEvent me(p, supportedActions, dropData, buttons, modifiers);
+    QDragMoveEvent me(QPointF(p), supportedActions, dropData, buttons, modifiers);
 
     if (w != currentDragWindow) {
         lastAcceptedDropAction = Qt::IgnoreAction;
@@ -3594,7 +3594,7 @@ QPlatformDragQtResponse QGuiApplicationPrivate::processDrag(QWindow *w, const QM
             QGuiApplication::sendEvent(currentDragWindow, &e);
         }
         currentDragWindow = w;
-        QDragEnterEvent e(p, supportedActions, dropData, buttons, modifiers);
+        QDragEnterEvent e(QPointF(p), supportedActions, dropData, buttons, modifiers);
         QGuiApplication::sendEvent(w, &e);
         if (e.isAccepted() && e.dropAction() != Qt::IgnoreAction)
             lastAcceptedDropAction = e.dropAction();

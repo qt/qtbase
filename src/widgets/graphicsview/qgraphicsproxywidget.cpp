@@ -1042,7 +1042,7 @@ void QGraphicsProxyWidget::dragEnterEvent(QGraphicsSceneDragDropEvent *event)
     if (!d->widget)
         return;
 
-    QDragEnterEvent proxyDragEnter(event->pos().toPoint(), event->dropAction(), event->mimeData(), event->buttons(), event->modifiers());
+    QDragEnterEvent proxyDragEnter(event->pos(), event->dropAction(), event->mimeData(), event->buttons(), event->modifiers());
     proxyDragEnter.setAccepted(event->isAccepted());
     QCoreApplication::sendEvent(d->widget, &proxyDragEnter);
     event->setAccepted(proxyDragEnter.isAccepted());
@@ -1086,7 +1086,7 @@ void QGraphicsProxyWidget::dragMoveEvent(QGraphicsSceneDragDropEvent *event)
         if (!receiver->isEnabled() || !receiver->acceptDrops())
             continue;
         // Map event position from us to the receiver
-        QPoint receiverPos = d->mapToReceiver(p, receiver).toPoint();
+        QPointF receiverPos = d->mapToReceiver(p, receiver);
         if (receiver != d->dragDropWidget) {
             // Try to enter before we leave
             QDragEnterEvent dragEnter(receiverPos, event->possibleActions(), event->mimeData(), event->buttons(), event->modifiers());

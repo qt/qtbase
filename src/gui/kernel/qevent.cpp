@@ -3053,6 +3053,28 @@ Q_IMPL_POINTER_EVENT(QNativeGestureEvent)
 #endif // QT_NO_GESTURES
 
 #if QT_CONFIG(draganddrop)
+
+#if QT_DEPRECATED_SINCE(6, 16)
+/*!
+    Creates a QDragMoveEvent of the required \a type indicating
+    that the mouse is at position \a pos given within a widget.
+
+    The mouse and keyboard states are specified by \a buttons and
+    \a modifiers, and the \a actions describe the types of drag
+    and drop operation that are possible.
+    The drag data is passed as MIME-encoded information in \a data.
+
+    \warning Do not attempt to create a QDragMoveEvent yourself.
+    These objects rely on Qt's internal state.
+    \deprecated
+*/
+QDragMoveEvent::QDragMoveEvent(const QPoint& pos, Qt::DropActions actions, const QMimeData *data,
+                               Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, Type type)
+    : QDropEvent(QPointF(pos), actions, data, buttons, modifiers, type)
+    , m_rect(pos, QSize(1, 1))
+{}
+#endif
+
 /*!
     Creates a QDragMoveEvent of the required \a type indicating
     that the mouse is at position \a pos given within a widget.
@@ -3065,10 +3087,10 @@ Q_IMPL_POINTER_EVENT(QNativeGestureEvent)
     \warning Do not attempt to create a QDragMoveEvent yourself.
     These objects rely on Qt's internal state.
 */
-QDragMoveEvent::QDragMoveEvent(const QPoint& pos, Qt::DropActions actions, const QMimeData *data,
+QDragMoveEvent::QDragMoveEvent(QPointF pos, Qt::DropActions actions, const QMimeData *data,
                                Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, Type type)
     : QDropEvent(pos, actions, data, buttons, modifiers, type)
-    , m_rect(pos, QSize(1, 1))
+    , m_rect(pos.toPoint(), QSize(1, 1))
 {}
 
 Q_IMPL_EVENT_COMMON(QDragMoveEvent)
@@ -3333,6 +3355,26 @@ void QDropEvent::setDropAction(Qt::DropAction action)
     \sa QDragLeaveEvent, QDragMoveEvent, QDropEvent
 */
 
+#if QT_DEPRECATED_SINCE(6, 16)
+/*!
+    Constructs a QDragEnterEvent that represents a drag entering a
+    widget at the given \a point with mouse and keyboard states specified by
+    \a buttons and \a modifiers.
+
+    The drag data is passed as MIME-encoded information in \a data, and the
+    specified \a actions describe the possible types of drag and drop
+    operation that can be performed.
+
+    \warning Do not create a QDragEnterEvent yourself since these
+    objects rely on Qt's internal state.
+    \deprecated
+*/
+QDragEnterEvent::QDragEnterEvent(const QPoint& point, Qt::DropActions actions, const QMimeData *data,
+                                 Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers)
+    : QDragMoveEvent(QPointF(point), actions, data, buttons, modifiers, DragEnter)
+{}
+#endif
+
 /*!
     Constructs a QDragEnterEvent that represents a drag entering a
     widget at the given \a point with mouse and keyboard states specified by
@@ -3345,7 +3387,7 @@ void QDropEvent::setDropAction(Qt::DropAction action)
     \warning Do not create a QDragEnterEvent yourself since these
     objects rely on Qt's internal state.
 */
-QDragEnterEvent::QDragEnterEvent(const QPoint& point, Qt::DropActions actions, const QMimeData *data,
+QDragEnterEvent::QDragEnterEvent(QPointF point, Qt::DropActions actions, const QMimeData *data,
                                  Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers)
     : QDragMoveEvent(point, actions, data, buttons, modifiers, DragEnter)
 {}

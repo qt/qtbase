@@ -55,8 +55,8 @@
 
 #if QT_CONFIG(draganddrop)
 #define X_QDropEvent(X) X(QDropEvent, ({}, {}, {}, {}, {}))
-#define X_QDragMoveEvent(X) X(QDragMoveEvent, ({}, {}, {}, {}, {}))
-#define X_QDragEnterEvent(X) X(QDragEnterEvent, ({}, {}, {}, {}, {}))
+#define X_QDragMoveEvent(X) X(QDragMoveEvent, (QPointF(), {}, {}, {}, {}))
+#define X_QDragEnterEvent(X) X(QDragEnterEvent, (QPointF(), {}, {}, {}, {}))
 #define X_QDragLeaveEvent(X) X(QDragLeaveEvent, ())
 #else
 #define X_QDropEvent(X)

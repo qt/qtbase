@@ -755,7 +755,12 @@ class Q_GUI_EXPORT QDragMoveEvent : public QDropEvent
 {
     Q_DECL_EVENT_COMMON(QDragMoveEvent)
 public:
+#if QT_DEPRECATED_SINCE(6, 16)
+    QT_DEPRECATED_VERSION_X_6_16("Use the constructor taking QPointF")
     QDragMoveEvent(const QPoint &pos, Qt::DropActions actions, const QMimeData *data,
+                   Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, Type type = DragMove);
+#endif
+    QDragMoveEvent(QPointF pos, Qt::DropActions actions, const QMimeData *data,
                    Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, Type type = DragMove);
 
     inline QRect answerRect() const { return m_rect; }
@@ -775,7 +780,12 @@ class Q_GUI_EXPORT QDragEnterEvent : public QDragMoveEvent
 {
     Q_DECL_EVENT_COMMON(QDragEnterEvent)
 public:
+#if QT_DEPRECATED_SINCE(6, 16)
+    QT_DEPRECATED_VERSION_X_6_16("Use the constructor taking QPointF")
     QDragEnterEvent(const QPoint &pos, Qt::DropActions actions, const QMimeData *data,
+                    Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers);
+#endif
+    QDragEnterEvent(QPointF pos, Qt::DropActions actions, const QMimeData *data,
                     Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers);
 };
 
