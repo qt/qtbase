@@ -1834,7 +1834,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     message box should be centered or not (see QDialogButtonBox::setCentered()).
 
     \value SH_MessageBox_TextInteractionFlags A boolean indicating if
-    the text in a message box should allow user interfactions (e.g.
+    the text in a message box should allow user interactions (e.g.
     selection) or not.
 
     \value SH_TitleBar_AutoRaise A boolean indicating whether
