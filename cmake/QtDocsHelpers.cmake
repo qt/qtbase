@@ -39,7 +39,7 @@ function(qt_internal_add_docs)
     if (${ARGC} GREATER 2)
         # The INDEX_DIRECTORIES key should enable passing a list of index
         # directories as extra command-line arguments to qdoc.
-        set(qdocExtraArgs INDEX_DIRECTORIES)
+        set(qdocExtraArgs "INDEX_DIRECTORIES;DEFINES")
         cmake_parse_arguments(PARSE_ARGV 2 arg "" "" "${qdocExtraArgs}")
         if(arg_UNPARSED_ARGUMENTS)
             message(FATAL_ERROR ${error_msg})
@@ -158,6 +158,11 @@ function(qt_internal_add_docs)
         "QT_VERSION_TAG=${PROJECT_VERSION_MAJOR}${PROJECT_VERSION_MINOR}${PROJECT_VERSION_PATCH}"
         "BUILDDIR=${target_bin_dir}"
     )
+    if(arg_DEFINES)
+        foreach(define ${arg_DEFINES})
+            list(APPEND qdoc_env_args "${define}")
+        endforeach()
+    endif()
 
     add_custom_target(prepare_docs_${target}
         COMMAND ${CMAKE_COMMAND} -E env ${qdoc_env_args}
