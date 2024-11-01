@@ -344,11 +344,13 @@ void tst_QPromise::addInThread()
         promise.start();
         auto f = promise.future();
         // move construct QPromise
-        ThreadWrapper thr([p = std::move(promise), &result] () mutable {
+        ThreadWrapper thr([&] {
+            auto p = std::move(promise);
             p.addResult(result);
         });
         // Waits for result first
-        QCOMPARE(f.result(), result);
+        const auto actual = f.result();
+        QCOMPARE(actual, result);
         QCOMPARE(f.resultAt(0), result);
     };
 
@@ -367,7 +369,8 @@ void tst_QPromise::addInThreadMoveOnlyObject()
     promise.start();
     auto f = promise.future();
 
-    ThreadWrapper thr([p = std::move(promise)] () mutable {
+    ThreadWrapper thr([&] {
+        auto p = std::move(promise);
         p.addResult(MoveOnlyType{-11});
     });
 
@@ -447,7 +450,7 @@ void tst_QPromise::doNotCancelWhenFinished()
         promise.start();
 
         // Finish QPromise inside thread, destructor must not call cancel()
-        ThreadWrapper([p = std::move(promise)] () mutable { p.finish(); }).join();
+        ThreadWrapper([&] { auto p = std::move(promise); p.finish(); }).join();
 
         f.waitForFinished();
 
@@ -509,7 +512,8 @@ void tst_QPromise::cancelWhenReassigned()
     auto f = promise.future();
     promise.start();
 
-    ThreadWrapper thr([p = std::move(promise)] () mutable {
+    ThreadWrapper thr([&] {
+        auto p = std::move(promise);
         QThread::msleep(100);
         p = QPromise<int>();  // assign new promise, old must be correctly destroyed
     });
