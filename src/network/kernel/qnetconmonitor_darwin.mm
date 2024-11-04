@@ -11,6 +11,9 @@
 
 #include <netinet/in.h>
 
+#include <QtCore/qmutex.h>
+#include <QtCore/qwaitcondition.h>
+
 #include <cstring>
 
 QT_BEGIN_NAMESPACE
@@ -85,6 +88,10 @@ public:
     SCNetworkReachabilityFlags state = kSCNetworkReachabilityFlagsIsLocalAddress;
     bool scheduled = false;
 
+    QWaitCondition refCounterWaitCondition;
+    QMutex refCounterMutex;
+    quint32 refCounter = 0;
+
     void updateState(SCNetworkReachabilityFlags newState);
     void reset();
     bool isReachable() const;
@@ -92,7 +99,30 @@ public:
     bool isWwan() const;
 #endif
 
+    void retain()
+    {
+        QMutexLocker locker(&refCounterMutex);
+        ++refCounter;
+    }
+
+    void release()
+    {
+        QMutexLocker locker(&refCounterMutex);
+        if (--refCounter == 0)
+            refCounterWaitCondition.wakeAll();
+    }
+
+    void waitForRefCountZero()
+    {
+        QMutexLocker locker(&refCounterMutex);
+        while (refCounter > 0) {
+            refCounterWaitCondition.wait(&refCounterMutex);
+        }
+    }
+
     static void probeCallback(SCNetworkReachabilityRef probe, SCNetworkReachabilityFlags flags, void *info);
+    static const void *retainInfo(const void* info);
+    static void releaseInfo(const void* info);
 
     Q_DECLARE_PUBLIC(QNetworkConnectionMonitor)
 };
@@ -130,6 +160,7 @@ void QNetworkConnectionMonitorPrivate::reset()
 
     state = kSCNetworkReachabilityFlagsIsLocalAddress;
     scheduled = false;
+    waitForRefCountZero();
 }
 
 bool QNetworkConnectionMonitorPrivate::isReachable() const
@@ -152,6 +183,19 @@ void QNetworkConnectionMonitorPrivate::probeCallback(SCNetworkReachabilityRef pr
     auto monitorPrivate = static_cast<QNetworkConnectionMonitorPrivate *>(info);
     Q_ASSERT(monitorPrivate);
     monitorPrivate->updateState(flags);
+}
+
+const void *QNetworkConnectionMonitorPrivate::retainInfo(const void *info)
+{
+    auto monitorPrivate = static_cast<QNetworkConnectionMonitorPrivate*>(const_cast<void*>(info));
+    monitorPrivate->retain();
+    return info;
+}
+
+void QNetworkConnectionMonitorPrivate::releaseInfo(const void *info)
+{
+    auto monitorPrivate = static_cast<QNetworkConnectionMonitorPrivate*>(const_cast<void*>(info));
+    monitorPrivate->release();
 }
 
 QNetworkConnectionMonitor::QNetworkConnectionMonitor()
@@ -235,6 +279,8 @@ bool QNetworkConnectionMonitor::startMonitoring()
 
     SCNetworkReachabilityContext context = {};
     context.info = d;
+    context.retain = QNetworkConnectionMonitorPrivate::retainInfo;
+    context.release = QNetworkConnectionMonitorPrivate::releaseInfo;
     if (!SCNetworkReachabilitySetCallback(d->probe, QNetworkConnectionMonitorPrivate::probeCallback, &context)) {
         qCWarning(lcNetMon, "Failed to set a reachability callback");
         return false;
