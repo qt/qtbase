@@ -11,4 +11,24 @@
     provide a better experience for our users.
 
     This page gives a brief overview of C++20 features available in Qt.
+
+    \section1 Support for \c{std::chrono}
+
+    Various classes related to date and time have support for \l
+    {https://en.cppreference.com/w/cpp/chrono} {std::chrono} features from older
+    versions of C++. With the arrival of C++20, \c{std::chrono} has added new \l
+    {https://en.cppreference.com//w/cpp/chrono#Calendar} {calendar types}, such
+    as \l {https://en.cppreference.com/w/cpp/chrono/year_month_day}
+    {year_month_day}, plus \l
+    {https://en.cppreference.com//w/cpp/chrono#Time_point} {date and time
+    representations}, such as the \l
+    {https://en.cppreference.com/w/cpp/chrono/system_clock} {system_clock} and
+    its \l {https://en.cppreference.com/w/cpp/chrono/time_point} {time_point}
+    types. When Qt is built with C++20, it can now make use of these additions.
+
+    QDate and QDateTime now support conversion to and from the various calendar,
+    date and date-time types, along with addition of \l
+    {https://en.cppreference.com/w/cpp/chrono/duration} {duration
+    types}. QTimeZone now supports construction from a \l
+    {https://en.cppreference.com/w/cpp/chrono/time_zone} {time_zone}.
 */
