@@ -3381,6 +3381,8 @@ void QMenu::keyPressEvent(QKeyEvent *e)
                     if (d->actionRects.at(i).isNull())
                         continue;
                     QAction *act = d->actions.at(i);
+                    if (!act->isEnabled() || act->isSeparator())
+                        continue;
                     QKeySequence sequence = QKeySequence::mnemonic(act->text());
                     int key = sequence[0].toCombined() & 0xffff; // suspicious
                     if (key == c.unicode()) {
