@@ -464,6 +464,16 @@ public:
     void drawTearOff(QPainter *painter, const QRect &rect);
     QRect rect() const;
 
+    bool considerAction(const QAction *action) const
+    {
+        Q_Q(const QMenu);
+        if (!action || action->isSeparator())
+            return false;
+        if (action->isEnabled())
+            return true;
+        return q->style()->styleHint(QStyle::SH_Menu_AllowActiveAndDisabled, nullptr, q);
+    }
+
     mutable uint maxIconWidth = 0;
     mutable uint tabWidth = 0;
     int motions = 0;
