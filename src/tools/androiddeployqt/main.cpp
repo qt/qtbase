@@ -4,6 +4,7 @@
 #include <QCoreApplication>
 #include <QStringList>
 #include <QDir>
+#include <QDirIterator>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
@@ -3507,9 +3508,7 @@ bool writeDependencyFile(const Options &options)
 
 int generateJavaQmlComponents(const Options &options)
 {
-    // TODO QTBUG-125892: Current method of path discovery are to be improved
-    // For instance, it does not discover statically linked **inner** QML modules.
-    const auto getImportPaths = [](const QString &buildPath, const QString &libName,
+    const auto getImportPaths = [options](const QString &buildPath, const QString &libName,
                              QStringList &appImports, QStringList &externalImports) -> bool {
         QFile confRspFile("%1/.qt/qml_imports/%2_conf.rsp"_L1.arg(buildPath, libName));
         if (!confRspFile.exists() || !confRspFile.open(QFile::ReadOnly))
@@ -3525,6 +3524,22 @@ int generateJavaQmlComponents(const Options &options)
                     externalImports << currentLine;
             }
         }
+
+        // Find inner qmldir files
+        QSet<QString> qmldirDirectories;
+        for (const QString &path : appImports) {
+            QDirIterator it(path, QDir::Dirs | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
+            while (it.hasNext()) {
+                const QDir dir(it.next());
+                const QString absolutePath = dir.absolutePath();
+                if (!absolutePath.startsWith(options.outputDirectory)
+                    && dir.exists("qmldir"_L1)) {
+                    qmldirDirectories.insert(absolutePath);
+                }
+            }
+        }
+        appImports << qmldirDirectories.values();
+
         return appImports.count() + externalImports.count();
     };
 
@@ -3546,6 +3561,7 @@ int generateJavaQmlComponents(const Options &options)
         if (!qmlDirFile.exists() || !qmlDirFile.open(QFile::ReadOnly))
             return ModuleInfo();
         ModuleInfo moduleInfo;
+        QSet<QString> qmlComponentNames;
         QTextStream qmldirStream(&qmlDirFile);
         while (!qmldirStream.atEnd()) {
             const QString currentLine = qmldirStream.readLine();
@@ -3558,8 +3574,10 @@ int generateJavaQmlComponents(const Options &options)
             } else if (currentLine.size()
                        && (currentLine[0].isUpper() || currentLine.startsWith("singleton"_L1))) {
                 const QStringList parts = currentLine.split(" "_L1);
-                if (parts.size() > 2)
+                if (parts.size() > 2 && !qmlComponentNames.contains(parts.first())) {
                     moduleInfo.qmlComponents.append({ parts.first(), parts.last() });
+                    qmlComponentNames.insert(parts.first());
+                }
             }
         }
         return moduleInfo;
@@ -3571,7 +3589,7 @@ int generateJavaQmlComponents(const Options &options)
         QByteArray domInfo;
         QString importFlags;
         for (auto &importPath : otherImportPaths)
-            importFlags.append(" -i %1"_L1.arg(shellQuote(importPath)));
+            importFlags.append(" -I %1"_L1.arg(shellQuote(importPath)));
 
         const QString qmlDomCmd = "%1 -d -D required -f +:propertyInfos %2 %3"_L1.arg(
                 shellQuote(qmlDomExecPath), importFlags,
