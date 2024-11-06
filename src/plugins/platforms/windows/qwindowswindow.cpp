@@ -2671,8 +2671,24 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowStates newState)
             setFlag(WithinMaximize);
             if (newState & Qt::WindowFullScreen)
                 setFlag(MaximizeToFullScreen);
-            ShowWindow(m_data.hwnd,
-                       (newState & Qt::WindowMaximized) ? SW_MAXIMIZE : SW_SHOWNOACTIVATE);
+            if (m_data.flags & Qt::FramelessWindowHint) {
+                if (newState == Qt::WindowNoState) {
+                    const QRect &rect = m_savedFrameGeometry;
+                    MoveWindow(m_data.hwnd, rect.x(), rect.y(), rect.width(), rect.height(), true);
+                } else {
+                    HMONITOR monitor = MonitorFromWindow(m_data.hwnd, MONITOR_DEFAULTTONEAREST);
+                    MONITORINFO monitorInfo = {};
+                    monitorInfo.cbSize = sizeof(MONITORINFO);
+                    GetMonitorInfo(monitor, &monitorInfo);
+                    const RECT &rect = monitorInfo.rcWork;
+                    m_savedFrameGeometry = geometry();
+                    MoveWindow(m_data.hwnd, rect.left, rect.top,
+                               rect.right - rect.left, rect.bottom - rect.top, true);
+                }
+            } else {
+                ShowWindow(m_data.hwnd,
+                           (newState & Qt::WindowMaximized) ? SW_MAXIMIZE : SW_SHOWNOACTIVATE);
+            }
             clearFlag(WithinMaximize);
             clearFlag(MaximizeToFullScreen);
         } else if (visible && (oldState & newState & Qt::WindowMinimized)) {
