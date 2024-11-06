@@ -38,6 +38,17 @@ void QCocoaDrag::setLastInputEvent(NSEvent *event, NSView *view)
     m_lastView = view;
 }
 
+void QCocoaDrag::viewDestroyed(NSView *view)
+{
+    if (view == m_lastView) {
+        if (m_lastEvent.window.contentView == view) {
+            [m_lastEvent release];
+            m_lastEvent = nil;
+        }
+        m_lastView = nil;
+    }
+}
+
 QMimeData *QCocoaDrag::dragMimeData()
 {
     if (m_drag)
@@ -95,9 +106,11 @@ Qt::DropAction QCocoaDrag::defaultAction(Qt::DropActions possibleActions,
 
 Qt::DropAction QCocoaDrag::drag(QDrag *o)
 {
-    m_drag = o;
     m_executed_drop_action = Qt::IgnoreAction;
+    if (!m_lastEvent)
+        return m_executed_drop_action;
 
+    m_drag = o;
     QMacPasteboard dragBoard(CFStringRef(NSPasteboardNameDrag), QUtiMimeConverter::HandlerScopeFlag::DnD);
     m_drag->mimeData()->setData("application/x-qt-mime-type-name"_L1, QByteArray("dummy"));
     dragBoard.setMimeData(m_drag->mimeData(), QMacPasteboard::LazyRequest);

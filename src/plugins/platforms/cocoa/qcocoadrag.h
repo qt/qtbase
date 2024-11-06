@@ -36,6 +36,7 @@ public:
     * event and view when handling an event in QNSView
     */
     void setLastInputEvent(NSEvent *event, NSView *view);
+    void viewDestroyed(NSView *view);
 
     void setAcceptedAction(Qt::DropAction act);
     void exitDragLoop();
