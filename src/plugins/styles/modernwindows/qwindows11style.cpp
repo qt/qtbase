@@ -585,7 +585,8 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
 
             // draw title
             QRect textRect = proxy()->subControlRect(CC_TitleBar, titlebar, SC_TitleBarLabel, widget);
-            painter->setPen(titlebar->palette.text().color());
+            QColor textColor = titlebar->palette.color(titlebar->titleBarState & Qt::WindowActive ? QPalette::Active : QPalette::Disabled,QPalette::WindowText);
+            painter->setPen(textColor);
             // Note workspace also does elliding but it does not use the correct font
             QString title = painter->fontMetrics().elidedText(titlebar->text, Qt::ElideRight, textRect.width() - 14);
             painter->drawText(textRect.adjusted(1, 1, 1, 1), title, QTextOption(Qt::AlignHCenter | Qt::AlignVCenter));
@@ -601,7 +602,7 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                     if (hover)
                         painter->fillRect(minButtonRect,WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
                     const QString textToDraw("\uE921");
-                    painter->setPen(QPen(titlebar->palette.text().color()));
+                    painter->setPen(hover ? titlebar->palette.color(QPalette::Active, QPalette::WindowText) : textColor);
                     painter->setFont(buttonFont);
                     painter->drawText(minButtonRect, Qt::AlignVCenter | Qt::AlignHCenter, textToDraw);
                 }
@@ -615,7 +616,7 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                     if (hover)
                         painter->fillRect(maxButtonRect,WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
                     const QString textToDraw("\uE922");
-                    painter->setPen(QPen(titlebar->palette.text().color()));
+                    painter->setPen(hover ? titlebar->palette.color(QPalette::Active, QPalette::WindowText) : textColor);
                     painter->setFont(buttonFont);
                     painter->drawText(maxButtonRect, Qt::AlignVCenter | Qt::AlignHCenter, textToDraw);
                 }
@@ -629,7 +630,7 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                     if (hover)
                         painter->fillRect(closeButtonRect,shellCloseButtonColor);
                     const QString textToDraw("\uE8BB");
-                    painter->setPen(QPen(hover ? titlebar->palette.highlightedText().color() : titlebar->palette.text().color()));
+                    painter->setPen(QPen(hover ? titlebar->palette.highlightedText().color() : textColor));
                     painter->setFont(buttonFont);
                     painter->drawText(closeButtonRect, Qt::AlignVCenter | Qt::AlignHCenter, textToDraw);
                 }
@@ -647,7 +648,7 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                     if (hover)
                         painter->fillRect(normalButtonRect,WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
                     const QString textToDraw("\uE923");
-                    painter->setPen(QPen(titlebar->palette.text().color()));
+                    painter->setPen(hover ? titlebar->palette.color(QPalette::Active, QPalette::WindowText) : textColor);
                     painter->setFont(buttonFont);
                     painter->drawText(normalButtonRect, Qt::AlignVCenter | Qt::AlignHCenter, textToDraw);
                 }
@@ -662,7 +663,7 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                     if (hover)
                         painter->fillRect(contextHelpButtonRect,WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
                     const QString textToDraw("\uE897");
-                    painter->setPen(QPen(titlebar->palette.text().color()));
+                    painter->setPen(hover ? titlebar->palette.color(QPalette::Active, QPalette::WindowText) : textColor);
                     painter->setFont(buttonFont);
                     painter->drawText(contextHelpButtonRect, Qt::AlignVCenter | Qt::AlignHCenter, textToDraw);
                 }
@@ -676,7 +677,7 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                     if (hover)
                         painter->fillRect(shadeButtonRect,WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
                     const QString textToDraw("\uE96D");
-                    painter->setPen(QPen(titlebar->palette.text().color()));
+                    painter->setPen(hover ? titlebar->palette.color(QPalette::Active, QPalette::WindowText) : textColor);
                     painter->setFont(buttonFont);
                     painter->drawText(shadeButtonRect, Qt::AlignVCenter | Qt::AlignHCenter, textToDraw);
                 }
@@ -690,7 +691,7 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                     if (hover)
                         painter->fillRect(unshadeButtonRect,WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
                     const QString textToDraw("\uE96E");
-                    painter->setPen(QPen(titlebar->palette.text().color()));
+                    painter->setPen(textColor);
                     painter->setFont(buttonFont);
                     painter->drawText(unshadeButtonRect, Qt::AlignVCenter | Qt::AlignHCenter, textToDraw);
                 }
