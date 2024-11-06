@@ -955,11 +955,7 @@ void tst_qmessagehandler::formatLogMessage_data()
             << format << "[F] msg"
             << QtFatalMsg << BA("") << 0 << BA("func") << QByteArray() << "msg";
     QTest::newRow("if_cat")
-#ifndef Q_OS_ANDROID
             << format << "[F] cat: msg"
-#else
-            << format << "[F] : msg"
-#endif
             << QtFatalMsg << BA("") << 0 << BA("func") << BA("cat") << "msg";
 }
 

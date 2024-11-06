@@ -1130,7 +1130,11 @@ static const char ifFatalTokenC[] = "%{if-fatal}";
 static const char endifTokenC[] = "%{endif}";
 static const char emptyTokenC[] = "";
 
+#ifdef Q_OS_ANDROID
+static const char defaultPattern[] = "%{message}";
+#else
 static const char defaultPattern[] = "%{if-category}%{category}: %{endif}%{message}";
+#endif
 
 struct QMessagePattern
 {
@@ -1158,6 +1162,18 @@ struct QMessagePattern
 
     bool fromEnvironment;
     static QBasicMutex mutex;
+
+#ifdef Q_OS_ANDROID
+    bool containsToken(const char *token) const
+    {
+        for (int i = 0; tokens[i]; ++i) {
+            if (tokens[i] == token)
+                return true;
+        }
+
+        return false;
+    }
+#endif
 };
 #ifdef QLOGGING_HAVE_BACKTRACE
 Q_DECLARE_TYPEINFO(QMessagePattern::BacktraceParams, Q_RELOCATABLE_TYPE);
@@ -1619,10 +1635,7 @@ static QString formatLogMessage(QtMsgType type, const QMessageLogContext &contex
         } else if (token == messageTokenC) {
             message.append(str);
         } else if (token == categoryTokenC) {
-#ifndef Q_OS_ANDROID
-            // Don't add the category to the message on Android
             message.append(QLatin1StringView(context.category));
-#endif
         } else if (token == typeTokenC) {
             switch (type) {
             case QtDebugMsg:   message.append("debug"_L1); break;
@@ -1878,11 +1891,12 @@ static bool android_default_message_handler(QtMsgType type,
         break;
     };
 
-    // If application name is a tag ensure it has no spaces
-    // If a category is defined, use it as an Android logging tag
-    __android_log_print(priority, isDefaultCategory(context.category) ?
-                        qPrintable(QCoreApplication::applicationName().replace(u' ', u'_')) : context.category,
-                        "%s\n", qPrintable(formattedMessage));
+    QMessagePattern *pattern = qMessagePattern();
+    const QString tag = (pattern && pattern->containsToken(categoryTokenC))
+        // If application name is a tag ensure it has no spaces
+        ? QCoreApplication::applicationName().replace(u' ', u'_')
+        : QString::fromUtf8(context.category);
+    __android_log_print(priority, qPrintable(tag), "%s\n", qPrintable(formattedMessage));
 
     return true; // Prevent further output to stderr
 }
@@ -2298,6 +2312,11 @@ void qErrnoWarning(int code, const char *msg, ...)
     \snippet code/src_corelib_global_qlogging.cpp 0
 
     The default \a pattern is \c{%{if-category}%{category}: %{endif}%{message}}.
+
+    \note On Android, the default \a pattern is \c{%{message}} because the category is used as
+    \l{Android: log_print}{tag} since Android logcat has has a dedicated field for the logging
+    categories, see \l{Android: Log}{Android Logging}. If a custom \a pattern including the
+    category is used, QCoreApplication::applicationName() is used as \l{Android: log_print}{tag}.
 
     The \a pattern can also be changed at runtime by setting the QT_MESSAGE_PATTERN
     environment variable; if both \l qSetMessagePattern() is called and QT_MESSAGE_PATTERN is
