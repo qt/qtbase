@@ -541,10 +541,10 @@ static inline void testCancelWhenDestroyedWithoutStarting()
 
 void tst_QPromise::cancelWhenDestroyedWithoutStarting()
 {
-    testCancelWhenDestroyedWithoutStarting<void>();
-    testCancelWhenDestroyedWithoutStarting<int>();
-    testCancelWhenDestroyedWithoutStarting<CopyOnlyType>();
-    testCancelWhenDestroyedWithoutStarting<MoveOnlyType>();
+    RUN_TEST_FUNC(testCancelWhenDestroyedWithoutStarting<void>);
+    RUN_TEST_FUNC(testCancelWhenDestroyedWithoutStarting<int>);
+    RUN_TEST_FUNC(testCancelWhenDestroyedWithoutStarting<CopyOnlyType>);
+    RUN_TEST_FUNC(testCancelWhenDestroyedWithoutStarting<MoveOnlyType>);
 }
 
 template <typename T>
@@ -564,10 +564,10 @@ static inline void testCancelWhenDestroyedRunsContinuations()
 
 void tst_QPromise::cancelWhenDestroyedRunsContinuations()
 {
-    testCancelWhenDestroyedRunsContinuations<void>();
-    testCancelWhenDestroyedRunsContinuations<int>();
-    testCancelWhenDestroyedRunsContinuations<CopyOnlyType>();
-    testCancelWhenDestroyedRunsContinuations<MoveOnlyType>();
+    RUN_TEST_FUNC(testCancelWhenDestroyedRunsContinuations<void>);
+    RUN_TEST_FUNC(testCancelWhenDestroyedRunsContinuations<int>);
+    RUN_TEST_FUNC(testCancelWhenDestroyedRunsContinuations<CopyOnlyType>);
+    RUN_TEST_FUNC(testCancelWhenDestroyedRunsContinuations<MoveOnlyType>);
 }
 
 template <typename T>
@@ -587,10 +587,10 @@ static inline void testCancelWhenDestroyedWithFailureHandler()
 
 void tst_QPromise::cancelWhenDestroyedWithFailureHandler()
 {
-    testCancelWhenDestroyedWithFailureHandler<void>();
-    testCancelWhenDestroyedWithFailureHandler<int>();
-    testCancelWhenDestroyedWithFailureHandler<CopyOnlyType>();
-    testCancelWhenDestroyedWithFailureHandler<MoveOnlyType>();
+    RUN_TEST_FUNC(testCancelWhenDestroyedWithFailureHandler<void>);
+    RUN_TEST_FUNC(testCancelWhenDestroyedWithFailureHandler<int>);
+    RUN_TEST_FUNC(testCancelWhenDestroyedWithFailureHandler<CopyOnlyType>);
+    RUN_TEST_FUNC(testCancelWhenDestroyedWithFailureHandler<MoveOnlyType>);
 }
 
 template <typename T>
@@ -612,10 +612,10 @@ static inline void testContinuationsRunWhenFinished()
 
 void tst_QPromise::continuationsRunWhenFinished()
 {
-    testContinuationsRunWhenFinished<void>();
-    testContinuationsRunWhenFinished<int>();
-    testContinuationsRunWhenFinished<CopyOnlyType>();
-    testContinuationsRunWhenFinished<MoveOnlyType>();
+    RUN_TEST_FUNC(testContinuationsRunWhenFinished<void>);
+    RUN_TEST_FUNC(testContinuationsRunWhenFinished<int>);
+    RUN_TEST_FUNC(testContinuationsRunWhenFinished<CopyOnlyType>);
+    RUN_TEST_FUNC(testContinuationsRunWhenFinished<MoveOnlyType>);
 }
 
 void tst_QPromise::finishWhenSwapped()
@@ -698,10 +698,10 @@ void testCancelWhenMoved()
 
 void tst_QPromise::cancelWhenMoved()
 {
-    testCancelWhenMoved<void>();
-    testCancelWhenMoved<int>();
-    testCancelWhenMoved<CopyOnlyType>();
-    testCancelWhenMoved<MoveOnlyType>();
+    RUN_TEST_FUNC(testCancelWhenMoved<void>);
+    RUN_TEST_FUNC(testCancelWhenMoved<int>);
+    RUN_TEST_FUNC(testCancelWhenMoved<CopyOnlyType>);
+    RUN_TEST_FUNC(testCancelWhenMoved<MoveOnlyType>);
 }
 
 void tst_QPromise::waitUntilResumed()
