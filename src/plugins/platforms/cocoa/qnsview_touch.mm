@@ -34,6 +34,10 @@ Q_LOGGING_CATEGORY(lcQpaTouch, "qt.qpa.input.touch")
         return;
 
     const NSTimeInterval timestamp = [event timestamp];
+
+    QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
+    nativeDrag->setLastInputEvent(event, self);
+
     const QList<QWindowSystemInterface::TouchPoint> points = QCocoaTouch::getCurrentTouchPointList(event, [self shouldSendSingleTouch]);
     qCDebug(lcQpaTouch) << "touchesMovedWithEvent" << points << "from device" << Qt::hex << [event deviceID];
     QWindowSystemInterface::handleTouchEvent(m_platformWindow->window(), timestamp * 1000, QCocoaTouch::getTouchDevice(QInputDevice::DeviceType::TouchPad, [event deviceID]), points);
@@ -45,6 +49,10 @@ Q_LOGGING_CATEGORY(lcQpaTouch, "qt.qpa.input.touch")
         return;
 
     const NSTimeInterval timestamp = [event timestamp];
+
+    QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
+    nativeDrag->setLastInputEvent(event, self);
+
     const QList<QWindowSystemInterface::TouchPoint> points = QCocoaTouch::getCurrentTouchPointList(event, [self shouldSendSingleTouch]);
     qCDebug(lcQpaTouch) << "touchesEndedWithEvent" << points << "from device" << Qt::hex << [event deviceID];
     QWindowSystemInterface::handleTouchEvent(m_platformWindow->window(), timestamp * 1000, QCocoaTouch::getTouchDevice(QInputDevice::DeviceType::TouchPad, [event deviceID]), points);
@@ -56,6 +64,10 @@ Q_LOGGING_CATEGORY(lcQpaTouch, "qt.qpa.input.touch")
         return;
 
     const NSTimeInterval timestamp = [event timestamp];
+
+    QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
+    nativeDrag->setLastInputEvent(event, self);
+
     const QList<QWindowSystemInterface::TouchPoint> points = QCocoaTouch::getCurrentTouchPointList(event, [self shouldSendSingleTouch]);
     qCDebug(lcQpaTouch) << "touchesCancelledWithEvent" << points << "from device" << Qt::hex << [event deviceID];
     QWindowSystemInterface::handleTouchEvent(m_platformWindow->window(), timestamp * 1000, QCocoaTouch::getTouchDevice(QInputDevice::DeviceType::TouchPad, [event deviceID]), points);

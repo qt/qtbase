@@ -35,7 +35,7 @@ public:
     * to meet NSView dragImage:at guarantees, we need to record the original
     * event and view when handling an event in QNSView
     */
-    void setLastMouseEvent(NSEvent *event, NSView *view);
+    void setLastInputEvent(NSEvent *event, NSView *view);
 
     void setAcceptedAction(Qt::DropAction act);
     void exitDragLoop();

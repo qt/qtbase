@@ -31,7 +31,7 @@ QCocoaDrag::~QCocoaDrag()
     [m_lastEvent release];
 }
 
-void QCocoaDrag::setLastMouseEvent(NSEvent *event, NSView *view)
+void QCocoaDrag::setLastInputEvent(NSEvent *event, NSView *view)
 {
     [m_lastEvent release];
     m_lastEvent = [event copy];

@@ -28,6 +28,9 @@ Q_GLOBAL_STATIC(QCocoaTabletDeviceMap, devicesInProximity)
 
     ulong timestamp = [theEvent timestamp] * 1000;
 
+    QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
+    nativeDrag->setLastInputEvent(theEvent, self);
+
     QPointF windowPoint;
     QPointF screenPoint;
     [self convertFromScreen:[self screenMousePoint:theEvent] toWindowPoint: &windowPoint andScreenPoint: &screenPoint];
