@@ -1,4 +1,4 @@
 <?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="fatal_error_msg">Aplicaţia dumneavoastră a întâmpinat o eroare fatală şi nu poate continua.</string>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="fatal_error_msg" tools:ignore="UnusedResources">Aplicaţia dumneavoastră a întâmpinat o eroare fatală şi nu poate continua.</string>
 </resources>
