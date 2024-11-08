@@ -309,8 +309,6 @@ void QImageTextureGlyphCache::fillTexture(const Coord &c,
         return;
     }
 #endif
-    Q_ASSERT(mask.width() <= c.w && mask.height() <= c.h);
-
     if (m_format == QFontEngine::Format_A32
         || m_format == QFontEngine::Format_ARGB) {
         QImage ref(m_image.bits() + (c.x * 4 + c.y * m_image.bytesPerLine()),
