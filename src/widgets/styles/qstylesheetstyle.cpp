@@ -5457,6 +5457,11 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
                     drawCheckMark = false; // ignore the checkmarks provided by the QComboMenuDelegate
 #endif
                 QSize sz(csz);
+                if (subRule.hasFont) {
+                    QFontMetrics fm(subRule.font.resolve(mi->font));
+                    const QRect r = fm.boundingRect(QRect(), Qt::TextSingleLine | Qt::TextShowMnemonic, mi->text);
+                    sz = sz.expandedTo(r.size());
+                }
                 if (mi->text.contains(u'\t'))
                     sz.rwidth() += 12; //as in QCommonStyle
                 if (!mi->icon.isNull()) {
@@ -5469,11 +5474,6 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
                     sz.rwidth() += std::max(mi->maxIconWidth, checkmarkRect.width()) + 4;
                 } else {
                     sz.rwidth() += mi->maxIconWidth;
-                }
-                if (subRule.hasFont) {
-                    QFontMetrics fm(subRule.font.resolve(mi->font));
-                    const QRect r = fm.boundingRect(QRect(), Qt::TextSingleLine | Qt::TextShowMnemonic, mi->text);
-                    sz = sz.expandedTo(r.size());
                 }
                 return subRule.boxSize(subRule.adjustSize(sz));
             }
