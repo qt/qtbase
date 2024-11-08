@@ -373,10 +373,10 @@ void tst_QPromise::cancel()
         QCOMPARE(promise.isCanceled(), true);
     };
 
-    testCancel(QPromise<void>());
-    testCancel(QPromise<int>());
-    testCancel(QPromise<CopyOnlyType>());
-    testCancel(QPromise<MoveOnlyType>());
+    RUN_TEST_FUNC(testCancel, QPromise<void>());
+    RUN_TEST_FUNC(testCancel, QPromise<int>());
+    RUN_TEST_FUNC(testCancel, QPromise<CopyOnlyType>());
+    RUN_TEST_FUNC(testCancel, QPromise<MoveOnlyType>());
 }
 
 void tst_QPromise::progress()
