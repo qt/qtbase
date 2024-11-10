@@ -2286,21 +2286,22 @@ void tst_Gestures::conflictingGesturesInGraphicsView()
     GraphicsView view(&scene);
     view.setWindowFlags(Qt::X11BypassWindowManagerHint);
 
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+    view.ensureVisible(scene.sceneRect());
+    const QRectF gestureRect(0, 0, view.width() * 0.9, view.height() * 0.9);
+
     GestureItem *item1 = new GestureItem("item1");
     item1->grabGesture(CustomGesture::GestureType);
-    item1->size = QRectF(0, 0, 100, 100);
+    item1->size = gestureRect;
     item1->setZValue(2);
     scene.addItem(item1);
 
     GestureItem *item2 = new GestureItem("item2");
     item2->grabGesture(CustomGesture::GestureType);
-    item2->size = QRectF(0, 0, 100, 100);
+    item2->size = gestureRect;
     item2->setZValue(5);
     scene.addItem(item2);
-
-    view.show();
-    QVERIFY(QTest::qWaitForWindowExposed(&view));
-    view.ensureVisible(scene.sceneRect());
 
     static const int TotalGestureEventsCount = CustomGesture::SerialFinishedThreshold - CustomGesture::SerialStartedThreshold + 1;
 
