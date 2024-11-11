@@ -8,6 +8,8 @@
 #include <qpa/qplatformdrag.h>
 #include <private/qsimpledrag_p.h>
 
+#include <QtCore/private/qcore_mac_p.h>
+
 #include <QtGui/private/qdnd_p.h>
 #include <QtGui/private/qinternalmimedata_p.h>
 
@@ -36,14 +38,13 @@ public:
     * event and view when handling an event in QNSView
     */
     void setLastInputEvent(NSEvent *event, NSView *view);
-    void viewDestroyed(NSView *view);
 
     void setAcceptedAction(Qt::DropAction act);
     void exitDragLoop();
 private:
     QDrag *m_drag;
     NSEvent *m_lastEvent;
-    NSView *m_lastView;
+    QObjCWeakPointer<NSView> m_lastView;
     Qt::DropAction m_executed_drop_action;
     QEventLoop *m_internalDragLoop = nullptr;
 

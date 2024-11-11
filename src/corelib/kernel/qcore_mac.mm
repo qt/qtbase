@@ -774,5 +774,19 @@ QMacVersion::VersionTuple QMacVersion::libraryVersion()
 
 // -------------------------------------------------------------------------
 
+#if !(__has_feature(objc_arc_weak) && __has_feature(objc_arc_fields))
+QT_END_NAMESPACE
+@implementation QT_MANGLE_NAMESPACE(WeakPointerLifetimeTracker)
+- (void)dealloc
+{
+    *self.pointer = {};
+    [super dealloc];
+}
+@end
+QT_BEGIN_NAMESPACE
+#endif
+
+// -------------------------------------------------------------------------
+
 QT_END_NAMESPACE
 
