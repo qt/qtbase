@@ -68,7 +68,7 @@ QAndroidPlatformOpenGLWindow::~QAndroidPlatformOpenGLWindow()
     lockSurface();
     if (m_nativeSurfaceId != -1)
         QtAndroid::destroySurface(m_nativeSurfaceId);
-    clearEgl();
+    clearSurface();
     unlockSurface();
 }
 
@@ -166,14 +166,14 @@ void QAndroidPlatformOpenGLWindow::applicationStateChanged(Qt::ApplicationState 
             QtAndroid::destroySurface(m_nativeSurfaceId);
             m_nativeSurfaceId = -1;
         }
-        clearEgl();
+        clearSurface();
         unlockSurface();
     }
 }
 
 void QAndroidPlatformOpenGLWindow::createEgl(EGLConfig config)
 {
-    clearEgl();
+    clearSurface();
     QJNIEnvironmentPrivate env;
     m_nativeWindow = ANativeWindow_fromSurface(env, m_androidSurfaceObject.object());
     m_androidSurfaceObject = QJNIObjectPrivate();
@@ -194,7 +194,7 @@ QSurfaceFormat QAndroidPlatformOpenGLWindow::format() const
         return m_format;
 }
 
-void QAndroidPlatformOpenGLWindow::clearEgl()
+void QAndroidPlatformOpenGLWindow::clearSurface()
 {
     if (m_eglSurface != EGL_NO_SURFACE) {
         eglMakeCurrent(m_eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
@@ -204,7 +204,7 @@ void QAndroidPlatformOpenGLWindow::clearEgl()
 
     if (m_nativeWindow) {
         ANativeWindow_release(m_nativeWindow);
-        m_nativeWindow = 0;
+        m_nativeWindow = nullptr;
     }
 }
 
@@ -216,11 +216,13 @@ void QAndroidPlatformOpenGLWindow::surfaceChanged(JNIEnv *jniEnv, jobject surfac
 
     lockSurface();
     m_androidSurfaceObject = surface;
-    if (surface) // wait until we have a valid surface to draw into
+    if (m_androidSurfaceObject.isValid()) // wait until we have a valid surface to draw into
         m_surfaceWaitCondition.wakeOne();
+    else
+        clearSurface();
     unlockSurface();
 
-    if (surface) {
+    if (m_androidSurfaceObject.isValid()) {
         // repaint the window, when we have a valid surface
         QRect availableGeometry = screen()->availableGeometry();
         if (geometry().width() > 0 && geometry().height() > 0 && availableGeometry.width() > 0 && availableGeometry.height() > 0)
