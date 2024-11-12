@@ -1821,6 +1821,13 @@ void Declaration::borderImageValue(QString *image, int *cuts,
             if (v.type != Value::Number)
                 break;
             cuts[i] = v.variant.toString().toInt();
+            if (cuts[i] < 0) {
+                qWarning("Declaration::borderImageValue: Invalid cut value %d at position %d",
+                         cuts[i], i);
+                cuts[0] = cuts[1] = cuts[2] = cuts[3] = -1;
+                i = 4;
+                break;
+            }
         }
         if (i == 0) cuts[0] = cuts[1] = cuts[2] = cuts[3] = 0;
         else if (i == 1) cuts[3] = cuts[2] = cuts[1] = cuts[0];
