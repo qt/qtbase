@@ -4111,6 +4111,7 @@ QDebug operator<<(QDebug dbg, const QEvent *e)
         dbg << "QWheelEvent(" << we->phase();
         if (!we->pixelDelta().isNull() || !we->angleDelta().isNull())
             dbg << ", pixelDelta=" << we->pixelDelta() << ", angleDelta=" << we->angleDelta();
+        dbg << " dev=" << we->device() << ')';
         dbg << ')';
     }
         break;
