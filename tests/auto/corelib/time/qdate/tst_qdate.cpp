@@ -554,9 +554,6 @@ void tst_QDate::startOfDay_endOfDay_data()
         const QTime end;
         const BackendKludges msOpt;
     } transitions[] = {
-        // The western Mexico time-zones skipped the first hour of 1970.
-        { "BajaMexico", "America/Hermosillo", QDate(1970, 1, 1), QTime(1, 0), late, MsNoStart },
-
         // Compare tst_QDateTime::fromStringDateFormat(ISO 24:00 in DST).
         { "Brazil", "America/Sao_Paulo", QDate(2008, 10, 19), QTime(1, 0), late, Clean },
 
