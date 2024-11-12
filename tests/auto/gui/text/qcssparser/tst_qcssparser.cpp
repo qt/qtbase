@@ -54,6 +54,10 @@ private slots:
     void extractFontSize();
     void extractBorder_data();
     void extractBorder();
+    void extractBorderImage_data();
+    void extractBorderImage();
+    void extractBorderImageCuts_data();
+    void extractBorderImageCuts();
     void noTextDecoration();
     void quotedAndUnquotedIdentifiers();
     void whitespaceValues_data();
@@ -1751,6 +1755,118 @@ void tst_QCssParser::extractBorder()
     QCOMPARE(widths[QCss::TopEdge], expectedTopWidth);
     QCOMPARE(int(styles[QCss::TopEdge]), expectedTopStyle);
     QCOMPARE(colors[QCss::TopEdge].color(), expectedTopColor);
+}
+
+void tst_QCssParser::extractBorderImage_data()
+{
+    QTest::addColumn<QString>("css");
+    QTest::addColumn<QString>("imgUrl");
+    QTest::addColumn<QCss::TileMode>("tileMode1");
+    QTest::addColumn<QCss::TileMode>("tileMode2");
+
+    QTest::newRow("no valid url, 1 stretch")
+        << "border-image: stretch" << QString()
+        << QCss::TileMode::TileMode_Stretch
+        << QCss::TileMode::TileMode_Stretch;
+    QTest::newRow("tilemode stretch")
+        << "border-image: url(:/image.png) 1 stretch"  << ":/image.png"
+        << QCss::TileMode::TileMode_Stretch
+        << QCss::TileMode::TileMode_Stretch;
+    QTest::newRow("tilemode repeat")
+        << "border-image: url(:/image.png) 1 2 repeat" << ":/image.png"
+        << QCss::TileMode::TileMode_Repeat
+        << QCss::TileMode::TileMode_Repeat;
+    QTest::newRow("tilemode repeat and stretch")
+        << "border-image: url(:/image.png) 1 2 3 repeat stretch" << ":/image.png"
+        << QCss::TileMode::TileMode_Repeat
+        << QCss::TileMode::TileMode_Stretch;
+}
+
+void tst_QCssParser::extractBorderImage()
+{
+    QFETCH(QString, css);
+    QFETCH(QString, imgUrl);
+    QFETCH(QCss::TileMode, tileMode1);
+    QFETCH(QCss::TileMode, tileMode2);
+
+    css.prepend("dummy {");
+    css.append(QLatin1Char('}'));
+
+    QCss::Parser parser(css);
+    QCss::StyleSheet sheet;
+    QVERIFY(parser.parse(&sheet));
+
+    QCOMPARE(sheet.styleRules.size() + sheet.nameIndex.size(), 1);
+    QCss::StyleRule rule =  (!sheet.styleRules.isEmpty()) ?
+            sheet.styleRules.at(0) : *sheet.nameIndex.begin();
+    const QList<QCss::Declaration> decls = rule.declarations;
+    QVERIFY(!decls.isEmpty());
+
+    QString uri;
+    QCss::TileMode horizStretch, vertStretch;
+    int cuts[4];
+    for (const auto& decl : decls) {
+        if (decl.d->propertyId == QCss::BorderImage) {
+            decl.borderImageValue(&uri, cuts, &horizStretch, &vertStretch);
+            QCOMPARE(uri, imgUrl);
+            QCOMPARE(horizStretch, tileMode1);
+            QCOMPARE(vertStretch, tileMode2);
+        }
+    }
+}
+void tst_QCssParser::extractBorderImageCuts_data()
+{
+    QTest::addColumn<QString>("css");
+    QTest::addColumn<int>("expCut1");
+    QTest::addColumn<int>("expCut2");
+    QTest::addColumn<int>("expCut3");
+    QTest::addColumn<int>("expCut4");
+
+    const QString url = "border-image: url(:/image.png)";
+    QTest::newRow("no cuts") << url << -1 << -1 << -1 << -1;
+    QTest::newRow("1 cut, valid") << url + " 2" << 2 << 2 << 2 << 2;
+    QTest::newRow("1 cut, invalid") << url + " -42" << -1 << -1 << -1 << -1;
+    QTest::newRow("2 cuts, valid") << url + " 2 3" << 2 << 3 << 2 << 3;
+    QTest::newRow("2 cuts, invalid") << url + " 2 -3" << -1 << -1 << -1 << -1;
+    QTest::newRow("3 cuts, valid") << url + " 2 3 4" << 2 << 3 << 4 << 3;
+    QTest::newRow("3 cuts, invalid") << url + " 2 3 -4" << -1 << -1 << -1 << -1;
+    QTest::newRow("4 cuts, valid") << url + " 2 3 4 5" << 2 << 3 << 4 << 5;
+    QTest::newRow("4 cuts, invalid") << url + " 2 3 4 -5" << -1 << -1 << -1 << -1;
+}
+
+void tst_QCssParser::extractBorderImageCuts()
+{
+    QFETCH(QString, css);
+    QFETCH(int, expCut1);
+    QFETCH(int, expCut2);
+    QFETCH(int, expCut3);
+    QFETCH(int, expCut4);
+
+    css.prepend("dummy {");
+    css.append(QLatin1Char('}'));
+
+    QCss::Parser parser(css);
+    QCss::StyleSheet sheet;
+    QVERIFY(parser.parse(&sheet));
+
+    QCOMPARE(sheet.styleRules.size() + sheet.nameIndex.size(), 1);
+    QCss::StyleRule rule =  (!sheet.styleRules.isEmpty()) ?
+            sheet.styleRules.at(0) : *sheet.nameIndex.begin();
+    const QList<QCss::Declaration> decls = rule.declarations;
+    QVERIFY(!decls.isEmpty());
+
+    QString uri;
+    QCss::TileMode horizStretch, vertStretch;
+    int cuts[4];
+    for (const auto& decl : decls) {
+        if (decl.d->propertyId == QCss::BorderImage) {
+            decl.borderImageValue(&uri, cuts, &horizStretch, &vertStretch);
+            QCOMPARE(cuts[0], expCut1);
+            QCOMPARE(cuts[1], expCut2);
+            QCOMPARE(cuts[2], expCut3);
+            QCOMPARE(cuts[3], expCut4);
+        }
+    }
 }
 
 void tst_QCssParser::noTextDecoration()
