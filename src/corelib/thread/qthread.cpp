@@ -94,22 +94,6 @@ QThreadData::~QThreadData()
     // fprintf(stderr, "QThreadData %p destroyed\n", this);
 }
 
-void QThreadData::ref()
-{
-#if QT_CONFIG(thread)
-    (void) _ref.ref();
-    Q_ASSERT(_ref.loadRelaxed() != 0);
-#endif
-}
-
-void QThreadData::deref()
-{
-#if QT_CONFIG(thread)
-    if (!_ref.deref())
-        delete this;
-#endif
-}
-
 QAbstractEventDispatcher *QThreadData::createEventDispatcher()
 {
     QAbstractEventDispatcher *ed = QThreadPrivate::createEventDispatcher(this);

@@ -296,9 +296,21 @@ public:
     static QThreadData *get2(QThread *thread)
     { Q_ASSERT_X(thread != nullptr, "QThread", "internal error"); return thread->d_func()->data; }
 
-
-    void ref();
-    void deref();
+#if QT_CONFIG(thread)
+    void ref()
+    {
+        (void) _ref.ref();
+        Q_ASSERT(_ref.loadRelaxed() != 0);
+    }
+    void deref()
+    {
+        if (!_ref.deref())
+            delete this;
+    }
+#else
+    void ref() {}
+    void deref() {}
+#endif
     inline bool hasEventDispatcher() const
     { return eventDispatcher.loadRelaxed() != nullptr; }
     QAbstractEventDispatcher *createEventDispatcher();
