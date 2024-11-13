@@ -82,7 +82,7 @@ QThreadData::~QThreadData()
     thread.storeRelease(nullptr);
     delete t;
 
-    for (int i = 0; i < postEventList.size(); ++i) {
+    for (qsizetype i = 0; i < postEventList.size(); ++i) {
         const QPostEvent &pe = postEventList.at(i);
         if (pe.event) {
             --pe.receiver->d_func()->postedEvents;
