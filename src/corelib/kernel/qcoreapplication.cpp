@@ -509,7 +509,7 @@ void QCoreApplicationPrivate::cleanupThreadData()
         const auto locker = qt_scoped_lock(thisThreadData->postEventList.mutex);
         for (const QPostEvent &pe : std::as_const(thisThreadData->postEventList)) {
             if (pe.event) {
-                --pe.receiver->d_func()->postedEvents;
+                pe.receiver->d_func()->postedEvents.fetchAndSubAcquire(1);
                 pe.event->m_posted = false;
                 delete pe.event;
             }
@@ -1714,7 +1714,7 @@ void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
     QThreadData *data = locker.threadData;
 
     // if this is one of the compressible events, do compression
-    if (receiver->d_func()->postedEvents
+    if (receiver->d_func()->postedEvents.loadAcquire()
         && self && self->compressEvent(event, receiver, &data->postEventList)) {
         Q_TRACE(QCoreApplication_postEvent_event_compressed, receiver, event);
         return;
@@ -1727,7 +1727,7 @@ void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
     data->postEventList.addEvent(QPostEvent(receiver, event, priority));
     Q_UNUSED(eventDeleter.release());
     event->m_posted = true;
-    ++receiver->d_func()->postedEvents;
+    receiver->d_func()->postedEvents.fetchAndAddRelease(1);
     data->canWait = false;
     locker.unlock();
 
@@ -1829,7 +1829,8 @@ void QCoreApplicationPrivate::sendPostedEvents(QObject *receiver, int event_type
     // events, canWait will be set to false.
     data->canWait = (data->postEventList.size() == 0);
 
-    if (data->postEventList.size() == 0 || (receiver && !receiver->d_func()->postedEvents)) {
+    if (data->postEventList.size() == 0
+            || (receiver && !receiver->d_func()->postedEvents.loadAcquire())) {
         --data->postEventList.recursion;
         return;
     }
@@ -1958,7 +1959,7 @@ void QCoreApplicationPrivate::sendPostedEvents(QObject *receiver, int event_type
         QEvent *e = pe.event;
         QObject * r = pe.receiver;
 
-        --r->d_func()->postedEvents;
+        r->d_func()->postedEvents.fetchAndSubAcquire(1);
         Q_ASSERT(r->d_func()->postedEvents >= 0);
 
         // next, update the data structure so that we're ready
@@ -2009,7 +2010,7 @@ void QCoreApplication::removePostedEvents(QObject *receiver, int eventType)
     // happen while the event loop is in the middle of posting events,
     // and when we get here, we may not have any more posted events
     // for this object.
-    if (receiver && !receiver->d_func()->postedEvents)
+    if (receiver && !receiver->d_func()->postedEvents.loadAcquire())
         return;
 
     //we will collect all the posted events for the QObject
@@ -2023,7 +2024,7 @@ void QCoreApplication::removePostedEvents(QObject *receiver, int eventType)
 
         if ((!receiver || pe.receiver == receiver)
             && (pe.event && (eventType == 0 || pe.event->type() == eventType))) {
-            --pe.receiver->d_func()->postedEvents;
+            pe.receiver->d_func()->postedEvents.fetchAndSubAcquire(1);
             pe.event->m_posted = false;
             events.append(pe.event);
             const_cast<QPostEvent &>(pe).event = nullptr;
@@ -2084,7 +2085,7 @@ void QCoreApplicationPrivate::removePostedEvent(QEvent * event)
                      pe.receiver->metaObject()->className(),
                      pe.receiver->objectName().toLocal8Bit().data());
 #endif
-            --pe.receiver->d_func()->postedEvents;
+            pe.receiver->d_func()->postedEvents.fetchAndSubAcquire(1);
             pe.event->m_posted = false;
             delete pe.event;
             const_cast<QPostEvent &>(pe).event = nullptr;
