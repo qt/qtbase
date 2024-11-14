@@ -18,9 +18,25 @@ function(qt_internal_sbom_set_default_option_value_and_error_if_empty option_nam
     endif()
 endfunction()
 
+# Helper that returns the relative sbom build dir.
+# To accommodate multiple projects within a qt repo (like qtwebengine), we need to choose separate
+# build dirs for each project.
+function(_qt_internal_get_current_project_sbom_relative_dir out_var)
+    _qt_internal_sbom_get_root_project_name_lower_case(repo_project_name_lowercase)
+    _qt_internal_sbom_get_qt_repo_project_name_lower_case(real_qt_repo_project_name_lowercase)
+
+    if(repo_project_name_lowercase STREQUAL real_qt_repo_project_name_lowercase)
+        set(sbom_dir "qt_sbom")
+    else()
+        set(sbom_dir "qt_sbom/${repo_project_name_lowercase}")
+    endif()
+    set(${out_var} "${sbom_dir}" PARENT_SCOPE)
+endfunction()
+
 # Helper that returns the directory where the intermediate sbom files will be generated.
 function(_qt_internal_get_current_project_sbom_dir out_var)
-    set(sbom_dir "${PROJECT_BINARY_DIR}/qt_sbom")
+    _qt_internal_get_current_project_sbom_relative_dir(relative_dir)
+    set(sbom_dir "${PROJECT_BINARY_DIR}/${relative_dir}")
     set(${out_var} "${sbom_dir}" PARENT_SCOPE)
 endfunction()
 
@@ -414,6 +430,7 @@ function(_qt_internal_sbom_end_project_generate)
     endif()
 
     _qt_internal_sbom_get_root_project_name_lower_case(repo_project_name_lowercase)
+    _qt_internal_sbom_get_qt_repo_project_name_lower_case(real_qt_repo_project_name_lowercase)
 
     # Create a build target to create a build-time sbom (no verification codes or sha1s).
     set(repo_sbom_target "sbom_${repo_project_name_lowercase}")
@@ -427,7 +444,7 @@ function(_qt_internal_sbom_end_project_generate)
         USES_TERMINAL # To avoid running two configs of the command in parallel
     )
 
-    get_cmake_property(qt_repo_deps _qt_repo_deps_${repo_project_name_lowercase})
+    get_cmake_property(qt_repo_deps _qt_repo_deps_${real_qt_repo_project_name_lowercase})
     if(qt_repo_deps)
         foreach(repo_dep IN LISTS qt_repo_deps)
             set(repo_dep_sbom "sbom_${repo_dep}")
@@ -767,6 +784,7 @@ function(_qt_internal_sbom_generate_add_external_reference)
     set(content "
         set(relative_file_name \"${arg_FILENAME}\")
         set(document_dir_paths ${install_prefixes})
+        list(JOIN document_dir_paths \"\\n\" document_dir_paths_per_line)
         foreach(document_dir_path IN LISTS document_dir_paths)
             set(document_file_path \"\${document_dir_path}/\${relative_file_name}\")
             if(EXISTS \"\${document_file_path}\")
@@ -775,7 +793,7 @@ function(_qt_internal_sbom_generate_add_external_reference)
         endforeach()
         if(NOT EXISTS \"\${document_file_path}\")
             message(FATAL_ERROR \"Could not find external SBOM document \${relative_file_name}\"
-                \" in any of the document dir paths: \${document_dir_paths} \"
+                \" in any of the document dir paths: \${document_dir_paths_per_line} \"
             )
         endif()
         file(SHA1 \"\${document_file_path}\" ext_sha1)

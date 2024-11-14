@@ -38,6 +38,7 @@ function(_qt_internal_sbom_begin_project)
         DOCUMENT_NAMESPACE
         VERSION
         SBOM_PROJECT_NAME
+        QT_REPO_PROJECT_NAME
         CPE
     )
     set(multi_args
@@ -69,6 +70,13 @@ function(_qt_internal_sbom_begin_project)
     else()
         _qt_internal_sbom_set_root_project_name("${PROJECT_NAME}")
     endif()
+
+    if(arg_QT_REPO_PROJECT_NAME)
+        _qt_internal_sbom_set_qt_repo_project_name("${arg_QT_REPO_PROJECT_NAME}")
+    else()
+        _qt_internal_sbom_set_qt_repo_project_name("${PROJECT_NAME}")
+    endif()
+
     _qt_internal_sbom_get_root_project_name_for_spdx_id(repo_project_name_for_spdx_id)
     _qt_internal_sbom_get_root_project_name_lower_case(repo_project_name_lowercase)
 
@@ -374,6 +382,75 @@ function(_qt_internal_sbom_end_project)
     get_property(attribution_files GLOBAL PROPERTY _qt_internal_project_attribution_files)
     list(REMOVE_DUPLICATES attribution_files)
     set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${attribution_files}")
+endfunction()
+
+# Automatically begins sbom generation for a qt git repo unless QT_SKIP_SBOM_AUTO_PROJECT is TRUE.
+function(_qt_internal_sbom_auto_begin_qt_repo_project)
+    # Allow skipping auto generation of sbom project, in case it needs to be manually adjusted with
+    # extra parameters.
+    if(QT_SKIP_SBOM_AUTO_PROJECT)
+        return()
+    endif()
+
+    _qt_internal_sbom_begin_qt_repo_project()
+endfunction()
+
+# Sets up sbom generation for a qt git repo or qt-git-repo-sub-project (e.g. qtpdf in qtwebengine).
+#
+# In the case of a qt-git-repo-sub-project, the function expects the following options:
+# - SBOM_PROJECT_NAME (e.g. QtPdf)
+# - QT_REPO_PROJECT_NAME (e.g. QtWebEngine)
+#
+# Expects the following variables to always be set before the function call:
+# - QT_STAGING_PREFIX
+# - INSTALL_SBOMDIR
+function(_qt_internal_sbom_begin_qt_repo_project)
+    set(opt_args "")
+    set(single_args
+        SBOM_PROJECT_NAME
+        QT_REPO_PROJECT_NAME
+    )
+    set(multi_args "")
+
+    cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    set(sbom_project_args "")
+
+    _qt_internal_forward_function_args(
+        FORWARD_APPEND
+        FORWARD_PREFIX arg
+        FORWARD_OUT_VAR sbom_project_args
+        FORWARD_OPTIONS
+            ${opt_args}
+        FORWARD_SINGLE
+            ${single_args}
+        FORWARD_MULTI
+            ${multi_args}
+    )
+
+    _qt_internal_sbom_begin_project(
+        INSTALL_SBOM_DIR "${INSTALL_SBOMDIR}"
+        QT_CPE
+        ${sbom_project_args}
+    )
+endfunction()
+
+# Automatically ends sbom generation for a qt git repo unless QT_SKIP_SBOM_AUTO_PROJECT is TRUE.
+function(_qt_internal_sbom_auto_end_qt_repo_project)
+    # Allow skipping auto generation of sbom project, in case it needs to be manually adjusted with
+    # extra parameters.
+    if(QT_SKIP_SBOM_AUTO_PROJECT)
+        return()
+    endif()
+
+    _qt_internal_sbom_end_qt_repo_project()
+endfunction()
+
+# Endssbom generation for a qt git repo or qt-git-repo-sub-project.
+
+function(_qt_internal_sbom_end_qt_repo_project)
+    _qt_internal_sbom_end_project()
 endfunction()
 
 # Helper to get purl parsing options.
@@ -2608,9 +2685,15 @@ macro(_qt_internal_sbom_get_attribution_key json_key out_var out_prefix)
     endif()
 endmacro()
 
-# Set sbom project name for the root project.
+# Sets the sbom project name for the root project.
 function(_qt_internal_sbom_set_root_project_name project_name)
     set_property(GLOBAL PROPERTY _qt_internal_sbom_repo_project_name "${project_name}")
+endfunction()
+
+# Sets the real qt repo project name for a given project (e.g. set QtWebEngine for project QtPdf).
+# This is needed to be able to extract the qt repo dependencies in a top-level build.
+function(_qt_internal_sbom_set_qt_repo_project_name project_name)
+    set_property(GLOBAL PROPERTY _qt_internal_sbom_qt_repo_project_name "${project_name}")
 endfunction()
 
 # Get repo project_name spdx id reference, needs to start with Package- to be NTIA compliant.
@@ -2620,12 +2703,25 @@ function(_qt_internal_sbom_get_root_project_name_for_spdx_id out_var)
     set(${out_var} "${sbom_repo_project_name}" PARENT_SCOPE)
 endfunction()
 
-# Just a lower case sbom project name.
+# Returns the lower case sbom project name.
 function(_qt_internal_sbom_get_root_project_name_lower_case out_var)
     get_cmake_property(project_name _qt_internal_sbom_repo_project_name)
 
     if(NOT project_name)
         message(FATAL_ERROR "No SBOM project name was set.")
+    endif()
+
+    string(TOLOWER "${project_name}" repo_project_name_lowercase)
+    set(${out_var} "${repo_project_name_lowercase}" PARENT_SCOPE)
+endfunction()
+
+# Returns the lower case real qt repo project name (e.g. returns 'qtwebengine' when building the
+# project qtpdf).
+function(_qt_internal_sbom_get_qt_repo_project_name_lower_case out_var)
+    get_cmake_property(project_name _qt_internal_sbom_qt_repo_project_name)
+
+    if(NOT project_name)
+        message(FATAL_ERROR "No real Qt repo SBOM project name was set.")
     endif()
 
     string(TOLOWER "${project_name}" repo_project_name_lowercase)
