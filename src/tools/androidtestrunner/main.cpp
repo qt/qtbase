@@ -175,6 +175,14 @@ static bool parseOptions()
             g_options.testArgsList << arguments.at(i);
         }
     }
+
+    if (!g_options.skipAddInstallRoot) {
+        // we need to run make INSTALL_ROOT=path install to install the application file(s) first
+        g_options.makeCommand = "%1 INSTALL_ROOT=%2 install"_L1
+            .arg(g_options.makeCommand)
+            .arg(QDir::toNativeSeparators(g_options.buildPath));
+    }
+
     for (;i < arguments.size(); ++i)
         g_options.testArgsList << arguments.at(i);
 
@@ -811,17 +819,10 @@ int main(int argc, char *argv[])
                        "to generate the apk.";
         return EXIT_ERROR;
     }
+
     if (!execCommand(g_options.makeCommand, nullptr, true)) {
-        if (!g_options.skipAddInstallRoot) {
-            // we need to run make INSTALL_ROOT=path install to install the application file(s) first
-            if (!execCommand("%1 INSTALL_ROOT=%2 install"_L1.arg(g_options.makeCommand,
-                                        QDir::toNativeSeparators(g_options.buildPath)), nullptr)) {
-                return EXIT_ERROR;
-            }
-        } else {
-            if (!execCommand(g_options.makeCommand, nullptr))
-                return EXIT_ERROR;
-        }
+        qCritical("The build command \"%s\" failed", qPrintable(g_options.makeCommand));
+        return EXIT_ERROR;
     }
 
     if (!QFile::exists(g_options.apkPath)) {
