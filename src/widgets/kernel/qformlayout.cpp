@@ -1087,7 +1087,7 @@ QLayoutItem* QFormLayoutPrivate::replaceAt(int index, QLayoutItem *newitem)
            the fields don't grow beyond their size hint, and the
            form is horizontally centered.
         \li Recommended style for
-           \l{KDE applications}. Similar to MacStyle, except that the form
+           KDE applications. Similar to MacStyle, except that the form
            is left-aligned and all fields grow to fill the available
            space.
         \li Default style for Qt Extended styles. Labels are right-aligned,
