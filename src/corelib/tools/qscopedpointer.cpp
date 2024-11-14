@@ -230,7 +230,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn template <typename T, typename Cleanup> void QScopedPointer<T, Cleanup>::swap(QScopedPointer &other)
 
-    \deprecated [6.1] Use \c std::unique_ptr instead; this function may let a pointer
+    \deprecated [6.2] Use \c std::unique_ptr instead; this function may let a pointer
     escape its scope.
 
     \memberswap{scoped pointer}
