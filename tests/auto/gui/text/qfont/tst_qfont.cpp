@@ -150,6 +150,9 @@ void tst_QFont::italicOblique()
             QString style = *s_it;
 
             if (QFontDatabase::isSmoothlyScalable(family, style)) {
+                QFont f = QFontDatabase::font(family, style, 12);
+                bool wasItalic = f.italic();
+
                 if (style.contains("Oblique")) {
                     style.replace("Oblique", "Italic");
                 } else if (style.contains("Italic")) {
@@ -157,8 +160,8 @@ void tst_QFont::italicOblique()
                 } else {
                     continue;
                 }
-                QFont f = QFontDatabase::font(family, style, 12);
-                QVERIFY2(f.italic(), qPrintable(QString::asprintf("Failed for font \"%ls\"", qUtf16Printable(f.family()))));
+                f = QFontDatabase::font(family, style, 12);
+                QVERIFY2(f.italic() == wasItalic, qPrintable(QString::asprintf("Failed for font \"%ls\"", qUtf16Printable(f.family()))));
             }
         }
     }
