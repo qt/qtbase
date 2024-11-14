@@ -233,7 +233,8 @@ contains(SHAPERS, coretext) {
     DEFINES += HAVE_CORETEXT
 
     SOURCES += \
-        $$PWD/src/hb-coretext.cc
+        $$PWD/src/hb-coretext-font.cc \
+        $$PWD/src/hb-coretext-shape.cc
 
     HEADERS += \
         $$PWD/src/hb-coretext.h
