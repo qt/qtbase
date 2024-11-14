@@ -1010,6 +1010,11 @@ QThread *QThread::currentThread()
     return QThreadData::current()->thread.loadAcquire();
 }
 
+bool QThread::isMainThread() noexcept
+{
+    return true;
+}
+
 bool QThread::isCurrentThread() const noexcept
 {
     return true;
