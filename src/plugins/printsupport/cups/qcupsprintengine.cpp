@@ -64,6 +64,12 @@ void QCupsPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &v
         break;
     case PPK_CupsOptions:
         d->cupsOptions = value.toStringList();
+        if (d->cupsOptions.size() % 2 == 1) {
+            qWarning("%s: malformed value for key = PPK_CupsOptions "
+                     "(odd number of elements in the string-list; "
+                     "appending an empty entry)", Q_FUNC_INFO);
+            d->cupsOptions.emplace_back();
+        }
         break;
     case PPK_QPageSize:
         d->setPageSize(qvariant_cast<QPageSize>(value));
@@ -212,6 +218,7 @@ void QCupsPrintEnginePrivate::closePrintDevice()
             options.append(QPair<QByteArray, QByteArray>("landscape", ""));
 
         QStringList::const_iterator it = cupsOptions.constBegin();
+        Q_ASSERT(cupsOptions.size() % 2 == 0);
         while (it != cupsOptions.constEnd()) {
             options.append(QPair<QByteArray, QByteArray>((*it).toLocal8Bit(), (*(it+1)).toLocal8Bit()));
             it += 2;
