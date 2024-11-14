@@ -6,6 +6,7 @@ package org.qtproject.qt.android;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Rect;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
@@ -16,6 +17,8 @@ import android.view.InputDevice;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+import android.view.WindowInsets;
+import android.view.WindowInsets.Type;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 
@@ -44,6 +47,10 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
 
     private QtEditText m_currentEditText = null;
     private InputMethodManager m_imm;
+
+    // We can't rely on a hardcoded value, because screens have different resolutions.
+    // That is why we assume that the keyboard should be higher than 0.15 of the screen.
+    private static final float KEYBOARD_TO_SCREEN_RATIO = 0.15f;
 
     private boolean m_keyboardIsVisible = false;
     private boolean m_isKeyboardHidingAnimationOngoing = false;
@@ -227,6 +234,32 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
     // QtInputInterface implementation end
 
     // QtInputConnectionListener methods
+    @Override
+    public boolean isKeyboardHidden() {
+        Activity activity = QtNative.activity();
+        if (activity == null) {
+            Log.w(TAG, "isKeyboardHidden: The activity reference is null");
+            return true;
+        }
+
+        boolean isKeyboardHidden = true;
+
+        if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            Rect r = new Rect();
+            activity.getWindow().getDecorView().getWindowVisibleDisplayFrame(r);
+            DisplayMetrics metrics = new DisplayMetrics();
+            activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+            int screenHeight = metrics.heightPixels;
+            final int kbHeight = screenHeight - r.bottom;
+            isKeyboardHidden = kbHeight < screenHeight * KEYBOARD_TO_SCREEN_RATIO;
+        } else {
+            WindowInsets w = activity.getWindow().getDecorView().getRootWindowInsets();
+            isKeyboardHidden = !w.isVisible(Type.ime());
+        }
+
+        return isKeyboardHidden;
+    }
+
     @Override
     public void onSetClosing(boolean closing) {
         if (!closing)

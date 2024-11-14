@@ -16,8 +16,6 @@ import android.view.inputmethod.ExtractedText;
 import android.view.inputmethod.ExtractedTextRequest;
 import android.view.inputmethod.InputMethodManager;
 import android.view.KeyEvent;
-import android.view.WindowInsets;
-import android.view.WindowInsets.Type;
 import android.graphics.Rect;
 import android.app.Activity;
 import android.util.DisplayMetrics;
@@ -68,9 +66,6 @@ class QtInputConnection extends BaseInputConnection
     private static final int ID_COPY_URL = android.R.id.copyUrl;
     private static final int ID_SWITCH_INPUT_METHOD = android.R.id.switchInputMethod;
     private static final int ID_ADD_TO_DICTIONARY = android.R.id.addToDictionary;
-    // We can't rely on a hardcoded value, because screens have different resolutions.
-    // That is why we assume that the keyboard should be higher than 0.15 of the screen.
-    private static final float KEYBOARD_TO_SCREEN_RATIO = 0.15f;
 
     private static final String QtTAG = "QtInputConnection";
 
@@ -80,31 +75,11 @@ class QtInputConnection extends BaseInputConnection
         @Override
         public void run() {
             // Check that the keyboard is really no longer there.
-            Activity activity = QtNative.activity();
-            if (activity == null) {
-                Log.w(QtTAG, "HideKeyboardRunnable: The activity reference is null");
-                return;
-            }
             if (m_qtInputConnectionListener == null) {
                 Log.w(QtTAG, "HideKeyboardRunnable: QtInputConnectionListener is null");
                 return;
             }
-
-            boolean isKeyboardHidden = true;
-
-            if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
-                Rect r = new Rect();
-                activity.getWindow().getDecorView().getWindowVisibleDisplayFrame(r);
-                DisplayMetrics metrics = new DisplayMetrics();
-                activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
-                int screenHeight = metrics.heightPixels;
-                final int kbHeight = screenHeight - r.bottom;
-                isKeyboardHidden = kbHeight < screenHeight * KEYBOARD_TO_SCREEN_RATIO;
-            } else {
-                WindowInsets w = activity.getWindow().getDecorView().getRootWindowInsets();
-                isKeyboardHidden = !w.isVisible(Type.ime());
-            }
-            if (isKeyboardHidden)
+            if (m_qtInputConnectionListener.isKeyboardHidden())
                 m_qtInputConnectionListener.onHideKeyboardRunnableDone(false, System.nanoTime());
         }
     }
@@ -114,6 +89,7 @@ class QtInputConnection extends BaseInputConnection
         void onHideKeyboardRunnableDone(boolean visibility, long hideTimeStamp);
         void onSendKeyEventDefaultCase();
         void onEditTextChanged(QtEditText editText);
+        boolean isKeyboardHidden();
     }
 
     private final QtEditText m_view;
