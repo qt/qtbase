@@ -5,8 +5,8 @@ package org.qtproject.qt.android;
 
 /**
  * Represents an index in a custom item model, similar to
- * {@link https://doc.qt.io/qt-6/https://doc.qt.io/qt-6/qmodelindex.html QModelindex}
- * in c++.
+ * <a href="https://doc.qt.io/qt-6/https://doc.qt.io/qt-6/qmodelindex.html">QModelindex</a>
+ * in C++.
  */
 public class QtModelIndex
 {

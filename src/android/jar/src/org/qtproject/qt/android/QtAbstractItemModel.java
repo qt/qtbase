@@ -27,9 +27,9 @@ import java.util.HashMap;
  * @image modelindex-no-parent.png
  *
  * Every item of data that can be accessed via a model has an associated model
- * index. You can obtain this model index using the {@link #index(int, int)} method.
- * Each index may have a {@link #sibling(int, int)} index; child items have a
- * {@link #parent()} index.
+ * index. You can obtain this model index using the {@link #index(int, int, QtModelIndex)} method.
+ * Each index may have a {@link #sibling(int, int, QtModelIndex)} index; child items have a
+ * {@link #parent(QtModelIndex)} index.
  *
  * Each item has data elements associated with it, and they can be
  * retrieved by specifying a role to the model's {@link #data(QtModelIndex, int)} function.
@@ -43,13 +43,12 @@ import java.util.HashMap;
  * Extending QtAbstractItemModel:
  *
  * Some general guidelines for sub-classing models are available in the
- * {@link https://doc.qt.io/qt-6/model-view-programming.html#model-subclassing-reference}
- * model sub-classing reference.
+ * <a href="https://doc.qt.io/qt-6/model-view-programming.html#model-subclassing-reference">model sub-classing reference</a>.
  *
  * When sub-classing QtAbstractItemModel, at the very least, you must implement
- * {@link #index(int, int)}, {@link #parent(QtModelIndex)},{@link #rowCount(QtModelIndex)},
- * {@link #columnCount(QtModelIndex)}, and {@link #data(QtModelIndex, int)}.
- * These abstract methods are used in all models.
+ * {@link #index(int, int, QtModelIndex)}, {@link #parent(QtModelIndex)},
+ * {@link #rowCount(QtModelIndex)}, {@link #columnCount(QtModelIndex)}, and
+ * {@link #data(QtModelIndex, int)}. These abstract methods are used in all models.
  *
  * You can also re-implement {@link #hasChildren(QtModelIndex)} to provide special behavior for
  * models where the implementation of {@link #rowCount(QtModelIndex)} is expensive. This makes it
@@ -99,12 +98,12 @@ public abstract class QtAbstractItemModel
     /**
      * Returns the data for the given index and role.
      * Types conversions are:
-     * QML <- Java
-     * int <- Integer
-     * string <- String
-     * double <- Double
-     * real <- Double
-     * bool <- Boolean
+     * Java -&gt; QML
+     * Integer -&gt; int
+     * String -&gt; string
+     * Double -&gt; double
+     * Double -&gt; real
+     * Boolean -&gt; bool
      *
      * @param index The index.
      * @param role The role.
@@ -133,8 +132,8 @@ public abstract class QtAbstractItemModel
      * QtModelIndex would be 0.
 
      * When re-implementing this function in a subclass, be careful to avoid
-     * calling QtModelIndex member functions, such as QtModelIndex::parent(), since
-     * indexes belonging to your model will call your implementation,
+     * calling QtModelIndex member functions, such as {@link #parent(QtModelIndex)},
+     * since indexes belonging to your model will call your implementation,
      * leading to infinite recursion.
      *
      * @param index The index.
@@ -191,7 +190,7 @@ public abstract class QtAbstractItemModel
     /**
      * Returns a map of role names.
      * You must override this to provide your own role names or the
-     * {@link https://doc.qt.io/qt-6/qabstractitemmodel.html#roleNames defaults}
+     * <a href="https://doc.qt.io/qt-6/qabstractitemmodel.html#roleNames">defaults</a>
      * will be used.
      *
      * @return The role names map.
@@ -314,8 +313,7 @@ public abstract class QtAbstractItemModel
      * This method returns false if either condition is true, in which case you
      * should abort your move operation.
 
-     * {@link https://doc.qt.io/qt-6/qabstractitemmodel.html#beginMoveRows PossibleOps}
-
+     * @see <a href="https://doc.qt.io/qt-6/qabstractitemmodel.html#beginMoveRows">PossibleOps</a>
      * @see #endMoveRows()
     */
     protected final boolean beginMoveRows(QtModelIndex sourceParent, int sourceFirst,
@@ -335,7 +333,7 @@ public abstract class QtAbstractItemModel
      * are removed;  first and  last are the column numbers of the first and
      * last columns to be removed.
      *
-     * {@link https://doc.qt.io/qt-6/qabstractitemmodel.html#beginRemoveColumns RemoveColums}
+     * @see <a href="https://doc.qt.io/qt-6/qabstractitemmodel.html#beginRemoveColumns">RemoveColums</a>
      * @see #endRemoveColumns()
     */
     protected final void beginRemoveColumns(QtModelIndex parent, int first, int last)
@@ -351,8 +349,8 @@ public abstract class QtAbstractItemModel
      * The  parent index corresponds to the parent from which the new rows are
      * removed;  first and  last are the row numbers of the rows to be.
 
-      {@link https://doc.qt.io/qt-6/qabstractitemmodel.html#beginRemoveRows RemoveRows}
-     * @see #endRemoveRow()
+     * @see #endRemoveRows()
+     * @see <a href="https://doc.qt.io/qt-6/qabstractitemmodel.html#beginRemoveRows">RemoveRows</a>
     */
     protected final void beginRemoveRows(QtModelIndex parent, int first, int last)
     {
@@ -376,9 +374,9 @@ public abstract class QtAbstractItemModel
      * You must call this function before resetting any internal data structures
       in your model.
 
-     * @see #modelAboutToBeReset()
-     * @see #modelReset()
      * @see #endResetModel()
+     * @see <a href="https://doc.qt.io/qt-6/qabstractitemmodel.html#modelAboutToBeReset">modelAboutToBeReset</a>
+     * @see <a href="https://doc.qt.io/qt-6/qabstractitemmodel.html#modelReset">modelReset</a>
     */
     protected final void beginResetModel() { jni_beginResetModel(); }
 
@@ -400,7 +398,7 @@ public abstract class QtAbstractItemModel
     * function after inserting data into the model's underlying data
     * store.
 
-    * @see #beginInsertColumns()
+    * @see #beginInsertColumns(QtModelIndex, int, int)
     */
     protected final void endInsertColumns() { jni_endInsertColumns(); }
     /**
@@ -409,7 +407,7 @@ public abstract class QtAbstractItemModel
      * When re-implementing insertRows() in a subclass, you must call this function
      * after inserting data into the model's underlying data store.
 
-     * @see #beginInsertRows()
+     * @see #beginInsertRows(QtModelIndex, int, int)
     */
     protected final void endInsertRows() { jni_endInsertRows(); }
     /**
@@ -419,7 +417,7 @@ public abstract class QtAbstractItemModel
     * function after moving data within the model's underlying data
     * store.
 
-    * @see #beginMoveColumns()
+    * @see #beginMoveColumns(QtModelIndex, int, int, QtModelIndex, int)
     */
     protected final void endMoveColumns() { jni_endMoveColumns(); }
     /**
@@ -429,7 +427,7 @@ public abstract class QtAbstractItemModel
     function after moving data within the model's underlying data
     store.
 
-    @see #beginMoveRows()
+    @see #beginMoveRows(QtModelIndex, int, int, QtModelIndex, int)
     */
     protected final void endMoveRows() { jni_endMoveRows(); }
     /**
@@ -438,7 +436,7 @@ public abstract class QtAbstractItemModel
      * When reimplementing removeColumns() in a subclass, you must call this
      * function after removing data from the model's underlying data store.
 
-     * @see #beginRemoveColumns()
+     * @see #beginRemoveColumns(QtModelIndex, int, int)
     */
     protected final void endRemoveColumns() { jni_endRemoveColumns(); }
     /**
@@ -448,7 +446,7 @@ public abstract class QtAbstractItemModel
      * function after moving data within the model's underlying data
      * store.
 
-     * @see #beginMoveRows(QtModelIndex sourceParent, int sourceFirst, int sourceLast, QtModelIndexdestinationParent, int destinationChild)
+     * @see #beginMoveRows(QtModelIndex, int, int , QtModelIndex, int)
     */
     protected final void endRemoveRows() { jni_endRemoveRows(); }
     /**
