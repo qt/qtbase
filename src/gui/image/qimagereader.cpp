@@ -1489,7 +1489,7 @@ QByteArray QImageReader::imageFormat(QIODevice *device)
     Reading and writing SVG files is supported through the \l{Qt SVG} module.
     The \l{Qt Image Formats} module provides support for additional image formats.
 
-    Note that the QApplication instance must be created before this function is
+    Note that the QCoreApplication instance must be created before this function is
     called.
 
     \sa setFormat(), QImageWriter::supportedImageFormats(), QImageIOPlugin
