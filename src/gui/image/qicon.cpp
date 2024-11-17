@@ -1188,9 +1188,22 @@ void QIcon::addFile(const QString &fileName, const QSize &size, Mode mode, State
         return;
 
     // Check if a "@Nx" file exists and add it.
-    QString atNxFileName = qt_findAtNxFile(fileName, qApp->devicePixelRatio());
-    if (atNxFileName != fileName)
-        d->engine->addFile(atNxFileName, size, mode, state);
+    QVarLengthArray<int, 4> devicePixelRatios;
+    const auto screens = qApp->screens();
+    for (const auto *screen : screens) {
+        const auto dpr = qCeil(screen->devicePixelRatio()); // qt_findAtNxFile only supports integer values
+        if (dpr >= 1 && !devicePixelRatios.contains(dpr))
+            devicePixelRatios.push_back(dpr);
+    }
+    std::sort(devicePixelRatios.begin(), devicePixelRatios.end(), std::greater<int>());
+    qreal sourceDevicePixelRatio = std::numeric_limits<qreal>::max();
+    for (const auto dpr : std::as_const(devicePixelRatios)) {
+        if (dpr >= sourceDevicePixelRatio)
+            continue;
+        const QString atNxFileName = qt_findAtNxFile(fileName, dpr, &sourceDevicePixelRatio);
+        if (atNxFileName != fileName)
+            d->engine->addFile(atNxFileName, size, mode, state);
+    }
 }
 
 /*!
@@ -2030,6 +2043,8 @@ QDebug operator<<(QDebug dbg, const QIcon &i)
 QString qt_findAtNxFile(const QString &baseFileName, qreal targetDevicePixelRatio,
                         qreal *sourceDevicePixelRatio)
 {
+    if (sourceDevicePixelRatio)
+        *sourceDevicePixelRatio = 1;
     if (targetDevicePixelRatio <= 1.0)
         return baseFileName;
 
