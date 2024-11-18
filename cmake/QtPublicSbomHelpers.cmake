@@ -1012,6 +1012,15 @@ function(_qt_internal_sbom_add_target target)
         ${copyrights_option}
         ${license_option}
     )
+
+    _qt_internal_sbom_handle_target_custom_files("${target}"
+        ${no_install_option}
+        ${install_prefix_option}
+        PACKAGE_TYPE "${arg_TYPE}"
+        PACKAGE_SPDX_ID "${package_spdx_id}"
+        ${copyrights_option}
+        ${license_option}
+    )
 endfunction()
 
 # Walks a target's direct dependencies and assembles a list of relationships between the packages
@@ -1389,27 +1398,43 @@ function(_qt_internal_sbom_handle_target_binary_files target)
         QT_THIRD_PARTY_MODULE
         QT_THIRD_PARTY_SOURCES
         SYSTEM_LIBRARY
+        QT_TRANSLATIONS
+        QT_RESOURCES
+        QT_CUSTOM
+        QT_CUSTOM_NO_INFIX
 
         # This will be meant for user projects, and are not currently used by Qt's sbom.
         THIRD_PARTY_LIBRARY
         THIRD_PARTY_LIBRARY_WITH_FILES
         EXECUTABLE
         LIBRARY
+        TRANSLATIONS
+        RESOURCES
+        CUSTOM
+        CUSTOM_NO_INFIX
     )
 
     if(NOT arg_TYPE IN_LIST supported_types)
         message(FATAL_ERROR "Unsupported target TYPE for SBOM creation: ${arg_TYPE}")
     endif()
 
-    set(types_without_files
-        SYSTEM_LIBRARY
+    set(types_without_binary_files
         QT_THIRD_PARTY_SOURCES
+        QT_TRANSLATIONS
+        QT_RESOURCES
+        QT_CUSTOM
+        QT_CUSTOM_NO_INFIX
+        SYSTEM_LIBRARY
         THIRD_PARTY_LIBRARY
+        TRANSLATIONS
+        RESOURCES
+        CUSTOM
+        CUSTOM_NO_INFIX
     )
 
     get_target_property(target_type ${target} TYPE)
 
-    if(arg_TYPE IN_LIST types_without_files)
+    if(arg_TYPE IN_LIST types_without_binary_files)
         message(DEBUG "Target ${target} has no binary files to reference in the SBOM "
             "because it has the ${arg_TYPE} type.")
         return()
@@ -1532,6 +1557,7 @@ endfunction()
 # Add a binary file of a target to the sbom (e.g a shared library or an executable).
 # Adds relationships to the SBOM that the binary file was generated from its source files,
 # as well as relationship to the owning package.
+# TODO: Consider merging the common parts with _qt_internal_sbom_add_custom_file somehow.
 function(_qt_internal_sbom_add_binary_file target file_path)
     set(opt_args
         OPTIONAL
@@ -1600,7 +1626,7 @@ function(_qt_internal_sbom_add_binary_file target file_path)
     set(relationships "${arg_PACKAGE_SPDX_ID} CONTAINS ${spdx_id}")
 
     # Add source file relationships from which the binary file was generated.
-    _qt_internal_sbom_add_source_files("${target}" "${spdx_id}" source_relationships)
+    _qt_internal_sbom_add_target_source_files("${target}" "${spdx_id}" source_relationships)
     if(source_relationships)
         list(APPEND relationships "${source_relationships}")
     endif()
@@ -1624,6 +1650,425 @@ function(_qt_internal_sbom_add_binary_file target file_path)
         ${config_to_install_option}
         ${relationship_option}
     )
+endfunction()
+
+# Add a list of to-be-installed files that should appear in the files section of the target's
+# SBOM document.
+# Supports multiple calls with the same target name.
+# Each call is handled as a separate set of files.
+# For options that can be passed, see the doc-comment of
+# _qt_internal_sbom_handle_target_custom_file_set.
+function(_qt_internal_sbom_add_files target)
+    if(NOT QT_GENERATE_SBOM)
+        return()
+    endif()
+
+    if(NOT TARGET "${target}")
+        message(FATAL_ERROR "The target ${target} does not exist.")
+    endif()
+
+    get_target_property(file_sets_count "${target}" _qt_sbom_custom_file_sets_count)
+    if(NOT file_sets_count)
+        set(file_sets_count 0)
+    endif()
+
+    set_property(TARGET "${target}"
+        APPEND PROPERTY _qt_sbom_custom_file_set_${file_sets_count} "${ARGN}")
+
+    math(EXPR file_sets_count "${file_sets_count}+1")
+    set_property(TARGET "${target}" PROPERTY _qt_sbom_custom_file_sets_count "${file_sets_count}")
+endfunction()
+
+# Handles addition of custom file SPDX entries for a given target, by processing all the collected
+# file sets so far.
+# Applies the passed license and copyright info to all collected files.
+#
+# Options that can be passed.
+#
+# NO_INSTALL - if set, custom file processing is skipped, because the files will not be installed.
+#
+# PACKAGE_TYPE - the type of the package that the files belong to, is used to compute an infix
+# for the file spdx id.
+#
+# PACKAGE_SPDX_ID - the package spdx id is used to add a relationship between the package and file.
+#
+# LICENSE_EXPRESSION - a license expression to apply to the files.
+#
+# INSTALL_PREFIX - the install prefix for the files, this is usually the install prefix of qt.
+#
+# COPYRIGHTS - a list of copyright strings to apply to the files.
+function(_qt_internal_sbom_handle_target_custom_files target)
+    set(opt_args
+        NO_INSTALL
+    )
+    set(single_args
+        PACKAGE_TYPE
+        PACKAGE_SPDX_ID
+        LICENSE_EXPRESSION
+        INSTALL_PREFIX
+    )
+    set(multi_args
+        COPYRIGHTS
+    )
+
+    cmake_parse_arguments(PARSE_ARGV 1 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    # Nothing to process if no file sets were defined.
+    get_target_property(file_sets_count "${target}" _qt_sbom_custom_file_sets_count)
+    if(NOT file_sets_count)
+        return()
+    endif()
+
+    if(arg_NO_INSTALL)
+        message(DEBUG "Skipping sbom custom file processing for ${target} because NO_INSTALL is "
+            "set")
+        return()
+    endif()
+
+    if(NOT arg_PACKAGE_SPDX_ID)
+        message(FATAL_ERROR "PACKAGE_SPDX_ID must be set")
+    endif()
+
+    _qt_internal_forward_function_args(
+        FORWARD_PREFIX arg
+        FORWARD_OUT_VAR file_common_options
+        FORWARD_SINGLE
+            PACKAGE_TYPE
+            PACKAGE_SPDX_ID
+            LICENSE_EXPRESSION
+            INSTALL_PREFIX
+        FORWARD_MULTI
+            COPYRIGHTS
+    )
+
+    # Subtract -1, because foreach(RANGE is inclusive).
+    math(EXPR file_sets_count "${file_sets_count}-1")
+    foreach(file_set_index RANGE ${file_sets_count})
+        get_target_property(file_set_args "${target}" _qt_sbom_custom_file_set_${file_set_index})
+
+        if(NOT file_set_args)
+            message(FATAL_ERROR "No arguments were specified for SBOM custom file set for "
+                "${target}")
+        endif()
+
+        _qt_internal_sbom_handle_target_custom_file_set("${target}"
+            ${file_common_options} ${file_set_args})
+    endforeach()
+endfunction()
+
+# Processes a file set of custom files for which to include SBOM info.
+# The
+#   NO_INSTALL
+#   PACKAGE_TYPE
+#   PACKAGE_SPDX_ID
+#   LICENSE_EXPRESSION
+#   INSTALL_PREFIX
+#   COPYRIGHTS
+# options are the same as in _qt_internal_sbom_handle_target_custom_files, and are actually
+# forwarded from that function, because they might be set at the target level.
+#
+# In addition, more options can be passed when called via qt_internal_sbom_add_custom_files:
+#
+# They are:
+#
+# FILE_TYPE - the type of each provided file. Supported types can be found in the implementation of
+# _qt_internal_sbom_get_spdx_v2_3_file_type_for_file().
+# Some examples are QT_TRANSLATION, QT_TRANSLATIONS_CATALOG, QT_RESOURCE.
+#
+# FILES - a list of file paths to include in the SBOM. Only the file name is currently used.
+#
+# SOURCE_FILES - which source files were used to generate the custom files. All source files apply
+# to each input file.
+#
+# SOURCE_FILES_PER_INPUT_FILE - for each index i in FILES, the corresponding source files are
+# in SOURCE_FILES[i], so that each input gets exactly one source file.
+# This is provided as an option, to prevent performance overhead from having to add a
+# custom file set for each new source file, when dealing with translations that have a
+# 1-to-1 ts->qm relationship.
+#
+# There is also a set of multi config aware options that can be set, like
+#   INSTALL_PATH
+#   INSTALL_PATH_<CONFIG>
+# which should be the relative install dir path where the
+# files will be installed, relative to $ENV{DESTDIR}/${CMAKE_INSTALL_PREFIX}.
+function(_qt_internal_sbom_handle_target_custom_file_set target)
+    set(opt_args
+        ""
+    )
+    set(single_args
+        FILE_TYPE
+        PACKAGE_SPDX_ID
+        PACKAGE_TYPE
+        LICENSE_EXPRESSION
+        INSTALL_PREFIX
+    )
+    set(multi_args
+        COPYRIGHTS
+        FILES
+        SOURCE_FILES
+        SOURCE_FILES_PER_INPUT_FILE
+    )
+
+    # Don't explicitly forward the multi config single args, but still parse them.
+    # They will be accessed from the current scope directly.
+    set(single_args_without_multi_config_args "${single_args}")
+    _qt_internal_sbom_get_multi_config_single_args(multi_config_single_args)
+    list(APPEND single_args ${multi_config_single_args})
+
+    cmake_parse_arguments(PARSE_ARGV 1 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    # No custom files to process.
+    if(NOT arg_FILES)
+        return()
+    endif()
+
+    # Don't forward the FILES option.
+    set(multi_args_without_files "${multi_args}")
+    list(REMOVE_ITEM multi_args_without_files FILES)
+
+    # Handle the case where we have one source file per input file.
+    if(arg_SOURCE_FILES_PER_INPUT_FILE)
+        list(LENGTH arg_FILES files_count)
+        list(LENGTH arg_SOURCE_FILES_PER_INPUT_FILE source_files_count)
+        if(NOT files_count EQUAL source_files_count)
+            message(FATAL_ERROR "The number of files passed to SOURCE_FILES must match the number"
+                "of files passed to SOURCE_FILES_PER_INPUT_FILE.")
+        endif()
+
+        # Don't forward all of the source files, but rather one per input file.
+        list(REMOVE_ITEM multi_args_without_files SOURCE_FILES_PER_INPUT_FILE)
+    endif()
+
+    _qt_internal_forward_function_args(
+        FORWARD_PREFIX arg
+        FORWARD_OUT_VAR forward_args
+        FORWARD_SINGLE
+            ${single_args_without_multi_config_args}
+        FORWARD_MULTI
+            ${multi_args_without_files}
+    )
+
+    set(file_index 0)
+    foreach(file_path IN LISTS arg_FILES)
+        set(per_file_forward_args "")
+
+        # We don't currently use the file path for anything other than getting the file name, to
+        # embed it into the spdx document entry.
+        # What matters in the end is the location where the file is installed, which is handled
+        # by the PATH_KIND option.
+        get_filename_component(file_name "${file_path}" NAME)
+
+        if(arg_SOURCE_FILES_PER_INPUT_FILE)
+            list(GET arg_SOURCE_FILES_PER_INPUT_FILE "${file_index}" source_file)
+            list(APPEND per_file_forward_args SOURCE_FILES "${source_file}")
+        endif()
+
+        # The multi_config_single_args are deliberately not forwarded, but are available in this
+        # function scope, for direct access in the called function scope, because
+        # cmake_parse_arguments can't handle:
+        #   PATH_KIND "INSTALL_PATH"
+        #   INSTALL_PATH "/some_path"
+        # the parsing gets confused by what's the option and what's the value.
+        _qt_internal_sbom_handle_multi_config_custom_file(${target}
+            PATH_KIND "INSTALL_PATH"
+            PATH_SUFFIX "${file_name}"
+            OPTIONS
+                ${forward_args}
+                ${per_file_forward_args}
+        )
+        math(EXPR file_index "${file_index}+1")
+    endforeach()
+endfunction()
+
+# Helper function to add a custom file to the sbom, while handling multi-config and different
+# kind of paths.
+# In multi-config builds, we assume that the non-default config file will be optional, because it
+# might not be installed.
+#
+# Expects the parent scope to contain the ${PATH_KIND} and ${PATH_KIND}_<CONFIG> variables.
+# Examples are INSTALL_PATH or INSTALL_PATH_DEBUG.
+# They can't be forwarded as options because of cmake_parse_arguments parsing issues when a value
+# can be the same as a key. See comment in implementation of
+#_qt_internal_sbom_handle_target_custom_file_set.
+function(_qt_internal_sbom_handle_multi_config_custom_file target)
+    set(opt_args "")
+    set(single_args
+        PATH_KIND
+        PATH_SUFFIX
+    )
+    set(multi_args
+        OPTIONS
+    )
+
+    cmake_parse_arguments(PARSE_ARGV 1 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    get_cmake_property(is_multi_config GENERATOR_IS_MULTI_CONFIG)
+    if(is_multi_config)
+        set(configs ${CMAKE_CONFIGURATION_TYPES})
+    else()
+        set(configs "${CMAKE_BUILD_TYPE}")
+    endif()
+
+    foreach(config IN LISTS configs)
+        _qt_internal_sbom_get_and_check_multi_config_aware_single_arg_option(
+            arg "${arg_PATH_KIND}" "${config}" resolved_path)
+        _qt_internal_sbom_get_target_file_is_optional_in_multi_config("${config}" is_optional)
+        _qt_internal_path_join(file_path "${resolved_path}" "${arg_PATH_SUFFIX}")
+        _qt_internal_sbom_add_custom_file(
+            "${target}"
+            "${file_path}"
+            ${arg_OPTIONS}
+            ${is_optional}
+            CONFIG ${config}
+        )
+    endforeach()
+endfunction()
+
+# Adds one custom file with the given relative install path into the SBOM document.
+# Will embed GENERATED_FROM source file relationships if a list of source files is specified.
+function(_qt_internal_sbom_add_custom_file target installed_file_relative_path)
+    set(opt_args
+        OPTIONAL
+    )
+    set(single_args
+        PACKAGE_SPDX_ID
+        PACKAGE_TYPE
+        LICENSE_EXPRESSION
+        INSTALL_PREFIX
+        FILE_TYPE
+        CONFIG
+    )
+    set(multi_args
+        COPYRIGHTS
+        SOURCE_FILES
+    )
+
+    cmake_parse_arguments(PARSE_ARGV 2 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    if(NOT arg_PACKAGE_SPDX_ID)
+        message(FATAL_ERROR "PACKAGE_SPDX_ID must be set")
+    endif()
+
+    set(file_common_options "")
+
+    if(arg_COPYRIGHTS)
+        list(JOIN arg_COPYRIGHTS "\n" copyrights)
+        list(APPEND file_common_options COPYRIGHT "<text>${copyrights}</text>")
+    endif()
+
+    if(arg_LICENSE_EXPRESSION)
+        list(APPEND file_common_options LICENSE "${arg_LICENSE_EXPRESSION}")
+    endif()
+
+    if(arg_INSTALL_PREFIX)
+        list(APPEND file_common_options INSTALL_PREFIX "${arg_INSTALL_PREFIX}")
+    endif()
+
+    get_cmake_property(is_multi_config GENERATOR_IS_MULTI_CONFIG)
+    if(is_multi_config)
+        set(spdx_id_suffix "${arg_CONFIG}")
+        set(config_to_install_option CONFIG ${arg_CONFIG})
+    else()
+        set(spdx_id_suffix "")
+        set(config_to_install_option "")
+    endif()
+
+    if(arg_FILE_TYPE)
+        _qt_internal_sbom_get_spdx_v2_3_file_type_for_file(file_type "${arg_FILE_TYPE}")
+    else()
+        set(file_type "OTHER")
+    endif()
+
+    get_filename_component(file_name "${installed_file_relative_path}" NAME)
+
+    _qt_internal_sbom_get_package_infix("${arg_PACKAGE_TYPE}" package_infix)
+
+    _qt_internal_sbom_get_file_spdx_id(
+        "${package_infix}-${target}-${file_name}-${spdx_id_suffix}" spdx_id)
+
+    # Add relationship from owning package.
+    set(relationships "${arg_PACKAGE_SPDX_ID} CONTAINS ${spdx_id}")
+
+    # Add source file relationships from which the custom file was generated.
+    set(sources_option "")
+
+    if(arg_SOURCE_FILES)
+        set(sources_option SOURCES ${arg_SOURCE_FILES})
+    endif()
+
+    _qt_internal_sbom_add_source_files(
+        ${sources_option}
+        SPDX_ID "${spdx_id}"
+        OUT_RELATIONSHIPS_VAR source_relationships
+    )
+
+    if(source_relationships)
+        list(APPEND relationships "${source_relationships}")
+    endif()
+
+    set(glue "\nRelationship: ")
+    # Replace semicolon with $<SEMICOLON> to avoid errors when passing into sbom_add.
+    string(REPLACE ";" "$<SEMICOLON>" relationships "${relationships}")
+
+    # Glue the relationships at generation time, because there some source file relationships
+    # will be conditional on genexes, and evaluate to an empty value, and we want to discard
+    # such relationships.
+    set(relationships "$<JOIN:${relationships},${glue}>")
+    set(relationship_option RELATIONSHIP "${relationships}")
+
+    _qt_internal_sbom_generate_add_file(
+        FILENAME "${installed_file_relative_path}"
+        FILETYPE "${file_type}" ${optional}
+        SPDXID "${spdx_id}"
+        ${file_common_options}
+        ${config_to_install_option}
+        ${relationship_option}
+    )
+endfunction()
+
+# Maps an arbitrary file type to a spdx v2.3 file type.
+# There is a list of known SPDX types, and custom Qt ones.
+# Any other type is mapped to OTHER.
+# The mapping might change when we start generating spdx v3.0 documents.
+function(_qt_internal_sbom_get_spdx_v2_3_file_type_for_file out_var file_type_in)
+    set(spdx_v2_3_file_types
+        SOURCE
+        BINARY
+        ARCHIVE
+        APPLICATION
+        AUDIO
+        IMAGE
+        TEXT
+        VIDEO
+        DOCUMENTATION
+        SPDX
+        OTHER
+    )
+
+    # No semantic meaning at the moment, but we might want to map the values to something else
+    # when we port to SPDX v3.0+.
+    set(qt_file_types
+        QT_TRANSLATION
+        QT_TRANSLATIONS_CATALOG
+        QT_RESOURCE
+        TRANSLATION
+        RESOURCE
+        CUSTOM
+    )
+
+    if(file_type_in IN_LIST spdx_v2_3_file_types)
+        set(file_type "${file_type_in}")
+    elseif(file_type_in IN_LIST qt_file_types)
+        set(file_type OTHER)
+    else()
+        set(file_type OTHER)
+    endif()
+
+    set(${out_var} "${file_type}" PARENT_SCOPE)
 endfunction()
 
 # Takes a relative or absolute path and maps it to a reproducible path that is relative to
@@ -1706,10 +2151,54 @@ function(_qt_internal_sbom_map_path_to_reproducible_relative_path out_var)
     endif()
 endfunction()
 
-# Adds source file "generated from" relationship comments to the sbom for a given target.
-function(_qt_internal_sbom_add_source_files target spdx_id out_relationships)
+# Collect source file "generated from" relationship comments for a given target file.
+function(_qt_internal_sbom_add_target_source_files target spdx_id out_relationships)
     get_target_property(sources ${target} SOURCES)
+    if(NOT sources)
+        set(sources "")
+    endif()
     list(REMOVE_DUPLICATES sources)
+
+    set(sources_option "")
+    if(sources)
+        set(sources_option SOURCES ${sources})
+    endif()
+
+    _qt_internal_sbom_add_source_files(
+        ${sources_option}
+        SPDX_ID "${spdx_id}"
+        OUT_RELATIONSHIPS_VAR relationships
+    )
+
+    set(${out_relationships} "${relationships}" PARENT_SCOPE)
+endfunction()
+
+# Collect source file "generated from" relationship comments for the given sources.
+function(_qt_internal_sbom_add_source_files)
+    set(opt_args "")
+    set(single_args
+        SPDX_ID
+        OUT_RELATIONSHIPS_VAR
+    )
+    set(multi_args
+        SOURCES
+    )
+    cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    if(NOT arg_SPDX_ID)
+        message(FATAL_ERROR "SPDX_ID must be set")
+    endif()
+
+    if(NOT arg_OUT_RELATIONSHIPS_VAR)
+        message(FATAL_ERROR "OUT_RELATIONSHIPS_VAR must be set")
+    endif()
+
+    if(NOT arg_SOURCES)
+        set(sources "")
+    else()
+        set(sources "${arg_SOURCES}")
+    endif()
 
     set(relationships "")
 
@@ -1750,7 +2239,7 @@ function(_qt_internal_sbom_add_source_files target spdx_id out_relationships)
         list(APPEND relationships "${relationship}")
     endforeach()
 
-    set(${out_relationships} "${relationships}" PARENT_SCOPE)
+    set(${arg_OUT_RELATIONSHIPS_VAR} "${relationships}" PARENT_SCOPE)
 endfunction()
 
 # Adds a license id and its text to the sbom.
@@ -2865,6 +3354,10 @@ function(_qt_internal_sbom_is_qt_entity_type sbom_type out_var)
         QT_PLUGIN
         QT_APP
         QT_TOOL
+        QT_TRANSLATIONS
+        QT_RESOURCES
+        QT_CUSTOM
+        QT_CUSTOM_NO_INFIX
     )
 
     set(is_qt_entity_type FALSE)
@@ -2949,6 +3442,14 @@ function(_qt_internal_sbom_get_package_infix type out_infix)
         set(package_infix "qt-bundled-3rdparty-module")
     elseif(type STREQUAL "QT_THIRD_PARTY_SOURCES")
         set(package_infix "qt-3rdparty-sources")
+    elseif(type STREQUAL "QT_TRANSLATIONS")
+        set(package_infix "qt-translation")
+    elseif(type STREQUAL "QT_RESOURCES")
+        set(package_infix "qt-resource")
+    elseif(type STREQUAL "QT_CUSTOM")
+        set(package_infix "qt-custom")
+    elseif(type STREQUAL "QT_CUSTOM_NO_INFIX")
+        set(package_infix "qt")
     elseif(type STREQUAL "SYSTEM_LIBRARY")
         set(package_infix "system-3rdparty")
     elseif(type STREQUAL "EXECUTABLE")
@@ -2959,6 +3460,14 @@ function(_qt_internal_sbom_get_package_infix type out_infix)
         set(package_infix "3rdparty-library")
     elseif(type STREQUAL "THIRD_PARTY_LIBRARY_WITH_FILES")
         set(package_infix "3rdparty-library-with-files")
+    elseif(type STREQUAL "TRANSLATIONS")
+        set(package_infix "translations")
+    elseif(type STREQUAL "RESOURCES")
+        set(package_infix "resource")
+    elseif(type STREQUAL "CUSTOM")
+        set(package_infix "custom")
+    elseif(type STREQUAL "CUSTOM_NO_INFIX")
+        set(package_infix "")
     else()
         message(DEBUG "No package infix due to unknown type: ${type}")
         set(package_infix "")
@@ -2982,6 +3491,14 @@ function(_qt_internal_sbom_get_package_purpose type out_purpose)
         set(package_purpose "LIBRARY")
     elseif(type STREQUAL "QT_THIRD_PARTY_SOURCES")
         set(package_purpose "LIBRARY")
+    elseif(type STREQUAL "QT_TRANSLATIONS")
+        set(package_purpose "OTHER")
+    elseif(type STREQUAL "QT_RESOURCES")
+        set(package_purpose "OTHER")
+    elseif(type STREQUAL "QT_CUSTOM")
+        set(package_purpose "OTHER")
+    elseif(type STREQUAL "QT_CUSTOM_NO_INFIX")
+        set(package_purpose "OTHER")
     elseif(type STREQUAL "SYSTEM_LIBRARY")
         set(package_purpose "LIBRARY")
     elseif(type STREQUAL "EXECUTABLE")
@@ -2992,6 +3509,14 @@ function(_qt_internal_sbom_get_package_purpose type out_purpose)
         set(package_purpose "LIBRARY")
     elseif(type STREQUAL "THIRD_PARTY_LIBRARY_WITH_FILES")
         set(package_purpose "LIBRARY")
+    elseif(type STREQUAL "TRANSLATIONS")
+        set(package_purpose "OTHER")
+    elseif(type STREQUAL "RESOURCES")
+        set(package_purpose "OTHER")
+    elseif(type STREQUAL "CUSTOM")
+        set(package_purpose "OTHER")
+    elseif(type STREQUAL "CUSTOM_NO_INFIX")
+        set(package_purpose "OTHER")
     else()
         set(package_purpose "OTHER")
     endif()
@@ -3669,8 +4194,8 @@ function(_qt_internal_sbom_handle_multi_config_target_binary_file target)
     endforeach()
 endfunction()
 
-# Helper to retrieve a list of multi-config aware option names that can be parsed by the binary
-# file handling function.
+# Helper to retrieve a list of multi-config aware option names that can be parsed by the
+# file handling functions.
 # For example in single config we need to parse RUNTIME_PATH, in multi-config we need to parse
 # RUNTIME_PATH_DEBUG and RUNTIME_PATH_RELEASE.
 #
@@ -3694,18 +4219,25 @@ function(_qt_internal_sbom_get_multi_config_single_args out_var)
         FRAMEWORK_PATH
     )
 
+    list(APPEND single_args "${single_args_to_process}")
+
+    # We need to process multi config args even in a single config build, because there might be API
+    # calls that specify them directly. Use a default set of multi config configs.
+    set(configs Release RelWithDebInfo MinSizeRel Debug)
+
     get_cmake_property(is_multi_config GENERATOR_IS_MULTI_CONFIG)
-    if(is_multi_config)
-        set(configs ${CMAKE_CONFIGURATION_TYPES})
-        foreach(config IN LISTS configs)
-            string(TOUPPER ${config} config_upper)
-            foreach(single_arg IN LISTS single_args_to_process)
-                list(APPEND single_args "${single_arg}_${config_upper}")
-            endforeach()
-        endforeach()
-    else()
-        list(APPEND single_args "${single_args_to_process}")
+    if(is_multi_config AND CMAKE_CONFIGURATION_TYPES)
+        list(APPEND configs ${CMAKE_CONFIGURATION_TYPES})
     endif()
+
+    list(REMOVE_DUPLICATES configs)
+
+    foreach(config IN LISTS configs)
+        string(TOUPPER ${config} config_upper)
+        foreach(single_arg IN LISTS single_args_to_process)
+            list(APPEND single_args "${single_arg}_${config_upper}")
+        endforeach()
+    endforeach()
 
     set_property(GLOBAL PROPERTY
         _qt_internal_sbom_multi_config_single_args "${single_args}")
@@ -3736,11 +4268,14 @@ function(_qt_internal_sbom_get_and_check_multi_config_aware_single_arg_option
         arg_prefix arg_name config out_var)
     get_cmake_property(is_multi_config GENERATOR_IS_MULTI_CONFIG)
 
+    # Prefer the multi config option if it is set.
     if(is_multi_config)
         string(TOUPPER ${config} config_upper)
         set(outer_scope_var_name "${arg_prefix}_${arg_name}_${config_upper}")
         set(option_name "${arg_name}_${config_upper}")
-    else()
+    endif()
+
+    if(NOT is_multi_config OR NOT DEFINED ${outer_scope_var_name})
         set(outer_scope_var_name "${arg_prefix}_${arg_name}")
         set(option_name "${arg_name}")
     endif()
