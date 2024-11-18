@@ -31,3 +31,7 @@ function(qt_internal_sbom_end_qt_repo_project)
     _qt_internal_sbom_end_qt_repo_project(${ARGN})
 endfunction()
 
+function(qt_internal_sbom_add_files)
+    _qt_internal_sbom_add_files(${ARGN})
+endfunction()
+
