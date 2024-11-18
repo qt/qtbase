@@ -66,9 +66,6 @@ void QEglFSWindow::create()
 
     m_flags = Created;
 
-    if (window()->type() == Qt::Desktop)
-        return;
-
     // Stop if there is already a window backed by a native window and surface. Additional
     // raster windows will not have their own native window, surface and context. Instead,
     // they will be composited onto the root window's surface.
