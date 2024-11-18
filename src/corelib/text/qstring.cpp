@@ -5430,7 +5430,7 @@ QString QString::sliced_helper(QString &str, qsizetype pos, qsizetype n)
     \note The behavior is undefined if \a pos < 0, \a n < 0,
     or \a pos + \a n > size().
 
-    \snippet qstring/main.cpp 97
+    \snippet qstring/main.cpp slice97
 
     \sa sliced(), first(), last(), chopped(), chop(), truncate()
 */
