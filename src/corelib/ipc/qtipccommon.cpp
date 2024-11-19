@@ -497,12 +497,6 @@ void QNativeIpcKey::setNativeKey_internal(const QString &)
 }
 
 /*!
-    \fn size_t QNativeIpcKey::qHash(const QNativeIpcKey &ipcKey) noexcept
-
-    Returns the hash value for \a ipcKey, using a default seed of \c 0.
-*/
-
-/*!
     \fn size_t QNativeIpcKey::qHash(const QNativeIpcKey &ipcKey, size_t seed) noexcept
 
     Returns the hash value for \a ipcKey, using \a seed to seed the calculation.

@@ -153,9 +153,13 @@ private:
     constexpr bool isSlowPath() const noexcept
     { return Q_UNLIKELY(d); }
 
+#ifdef Q_QDOC
+    friend size_t qHash(const QNativeIpcKey &ipcKey, size_t seed = 0) noexcept { return 0; }
+#else
     friend Q_CORE_EXPORT size_t qHash(const QNativeIpcKey &ipcKey, size_t seed) noexcept;
     friend size_t qHash(const QNativeIpcKey &ipcKey) noexcept
     { return qHash(ipcKey, 0); }
+#endif
 
     Q_CORE_EXPORT void copy_internal(const QNativeIpcKey &other);
     Q_CORE_EXPORT void move_internal(QNativeIpcKey &&other) noexcept;
