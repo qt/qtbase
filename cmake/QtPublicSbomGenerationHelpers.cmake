@@ -572,9 +572,14 @@ function(_qt_internal_sbom_generate_add_file)
     qt_internal_sbom_set_default_option_value_and_error_if_empty(FILENAME "")
     qt_internal_sbom_set_default_option_value_and_error_if_empty(FILETYPE "")
 
+    set(check_option "")
+    if(arg_SPDXID)
+        set(check_option "CHECK" "${arg_SPDXID}")
+    endif()
+
     _qt_internal_sbom_get_and_check_spdx_id(
         VARIABLE arg_SPDXID
-        CHECK "${arg_SPDXID}"
+        ${check_option}
         HINTS "SPDXRef-${arg_FILENAME}"
     )
 
@@ -811,9 +816,14 @@ function(_qt_internal_sbom_generate_add_package)
 
     qt_internal_sbom_set_default_option_value_and_error_if_empty(PACKAGE "")
 
+    set(check_option "")
+    if(arg_SPDXID)
+        set(check_option "CHECK" "${arg_SPDXID}")
+    endif()
+
     _qt_internal_sbom_get_and_check_spdx_id(
         VARIABLE arg_SPDXID
-        CHECK "${arg_SPDXID}"
+        ${check_option}
         HINTS "SPDXRef-${arg_PACKAGE}"
     )
 
@@ -940,9 +950,14 @@ function(_qt_internal_sbom_generate_add_license)
 
     qt_internal_sbom_set_default_option_value_and_error_if_empty(LICENSE_ID "")
 
+    set(check_option "")
+    if(arg_SPDXID)
+        set(check_option "CHECK" "${arg_SPDXID}")
+    endif()
+
     _qt_internal_sbom_get_and_check_spdx_id(
         VARIABLE arg_SPDXID
-        CHECK "${arg_SPDXID}"
+        ${check_option}
         HINTS "SPDXRef-${arg_LICENSE_ID}"
     )
 

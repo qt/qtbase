@@ -139,6 +139,11 @@ function(_qt_internal_sbom_begin_project)
         set(repo_license "")
     endif()
 
+    set(repo_license_option "")
+    if(repo_license)
+        set(repo_license_option "LICENSE" "${repo_license}")
+    endif()
+
     if(arg_COPYRIGHTS)
         list(JOIN arg_COPYRIGHTS "\n" arg_COPYRIGHTS)
         set(repo_copyright "<text>${arg_COPYRIGHTS}</text>")
@@ -178,7 +183,7 @@ function(_qt_internal_sbom_begin_project)
     _qt_internal_sbom_begin_project_generate(
         OUTPUT "${repo_spdx_install_path}"
         OUTPUT_RELATIVE_PATH "${repo_spdx_relative_install_path}"
-        LICENSE "${repo_license}"
+        ${repo_license_option}
         COPYRIGHT "${repo_copyright}"
         SUPPLIER "${repo_supplier}" # This must not contain spaces!
         SUPPLIER_URL "${repo_supplier_url}"
@@ -754,11 +759,18 @@ function(_qt_internal_sbom_add_target target)
             ${purl_multi_args}
     )
 
-    list(APPEND purl_args SUPPLIER "${supplier}")
-    list(APPEND purl_args VERSION "${package_version}")
+    if(supplier)
+        list(APPEND purl_args SUPPLIER "${supplier}")
+    endif()
+
+    if(package_version)
+        list(APPEND purl_args VERSION "${package_version}")
+    endif()
+
     if(is_qt_entity_type)
         list(APPEND purl_args IS_QT_ENTITY_TYPE)
     endif()
+
     if(qa_purls)
         list(APPEND purl_args PURL_3RDPARTY_UPSTREAM_VALUES "${qa_purls}")
     endif()
@@ -852,6 +864,16 @@ function(_qt_internal_sbom_add_target target)
             ${multi_config_single_args}
     )
 
+    set(copyrights_option "")
+    if(copyrights)
+        set(copyrights_option COPYRIGHTS "${copyrights}")
+    endif()
+
+    set(license_option "")
+    if(license_expression)
+        set(license_option LICENSE_EXPRESSION "${license_expression}")
+    endif()
+
     _qt_internal_sbom_handle_target_binary_files("${target}"
         ${no_install_option}
         ${framework_option}
@@ -859,8 +881,8 @@ function(_qt_internal_sbom_add_target target)
         TYPE "${arg_TYPE}"
         ${target_binary_multi_config_args}
         SPDX_ID "${package_spdx_id}"
-        COPYRIGHTS "${copyrights}"
-        LICENSE_EXPRESSION "${license_expression}"
+        ${copyrights_option}
+        ${license_option}
     )
 endfunction()
 
@@ -1923,9 +1945,14 @@ function(_qt_internal_extend_sbom target)
     # relationships for other targets, even if the target was not yet finalized.
     if(arg_TYPE)
         # Friendly package name is allowed to be empty.
+        set(package_name_option "")
+        if(arg_FRIENDLY_PACKAGE_NAME)
+            set(package_name_option PACKAGE_NAME "${arg_FRIENDLY_PACKAGE_NAME}")
+        endif()
+
         _qt_internal_sbom_record_target_spdx_id(${target}
             TYPE "${arg_TYPE}"
-            PACKAGE_NAME "${arg_FRIENDLY_PACKAGE_NAME}"
+            ${package_name_option}
         )
     endif()
 
@@ -3189,26 +3216,38 @@ function(_qt_internal_sbom_handle_purl_values target)
 
                 # Add a vcs_url to the generic QT variant.
                 if(purl_variant STREQUAL "QT")
+                    set(entity_vcs_url_version_option "")
+                    # Can be empty.
+                    if(QT_SBOM_GIT_HASH_SHORT)
+                        set(entity_vcs_url_version_option VERSION "${QT_SBOM_GIT_HASH_SHORT}")
+                    endif()
+
                     _qt_internal_sbom_get_qt_entity_vcs_url(${target}
                         REPO_NAME "${repo_project_name_lowercase}"
-                        VERSION "${QT_SBOM_GIT_HASH_SHORT}" # can be empty
+                        ${entity_vcs_url_version_option}
                         OUT_VAR vcs_url)
                     list(APPEND purl_args PURL_QUALIFIERS "vcs_url=${vcs_url}")
                 endif()
 
                 # Add the subdirectory path where the target was created as a custom qualifier.
                 _qt_internal_sbom_get_qt_entity_repo_source_dir(${target} OUT_VAR sub_path)
-                list(APPEND purl_args PURL_SUBPATH "${sub_path}")
+                if(sub_path)
+                    list(APPEND purl_args PURL_SUBPATH "${sub_path}")
+                endif()
 
                 # Add the target name as a custom qualifer.
                 list(APPEND purl_args PURL_QUALIFIERS "library_name=${target}")
+
+                # Can be empty.
+                if(QT_SBOM_GIT_HASH_SHORT)
+                    list(APPEND purl_args VERSION "${QT_SBOM_GIT_HASH_SHORT}")
+                endif()
 
                 # Get purl args the Qt entity type, taking into account defaults.
                 _qt_internal_sbom_get_qt_entity_purl_args(${target}
                     NAME "${repo_project_name_lowercase}-${target}"
                     REPO_NAME "${repo_project_name_lowercase}"
                     SUPPLIER "${arg_SUPPLIER}"
-                    VERSION "${QT_SBOM_GIT_HASH_SHORT}" # can be empty
                     PURL_VARIANT "${purl_variant}"
                     ${purl_args}
                     OUT_VAR purl_args
@@ -3307,11 +3346,16 @@ function(_qt_internal_sbom_get_qt_entity_purl_args target)
         set(purl_version "${arg_PURL_VERSION}")
     endif()
 
+    set(purl_version_option "")
+    if(purl_version)
+        set(purl_version_option PURL_VERSION "${purl_version}")
+    endif()
+
     set(purl_args
         PURL_TYPE "${purl_type}"
         PURL_NAMESPACE "${purl_namespace}"
         PURL_NAME "${purl_name}"
-        PURL_VERSION "${purl_version}"
+        ${purl_version_option}
     )
 
     if(arg_PURL_QUALIFIERS)
