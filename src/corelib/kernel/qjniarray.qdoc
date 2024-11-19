@@ -60,8 +60,7 @@
 
 /*!
     \fn void QJniArrayBase::swap(QJniArrayBase &other)
-
-    Swaps this array object with \a other. This function is very fast and never fails.
+    \memberswap{array object}
 */
 
 /*!

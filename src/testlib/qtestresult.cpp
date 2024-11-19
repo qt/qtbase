@@ -321,12 +321,38 @@ bool QTestResult::verify(bool statement, const char *statementStr,
 
 static const char *leftArgNameForOp(QTest::ComparisonOperation op)
 {
-    return op == QTest::ComparisonOperation::CustomCompare ? "Actual   " : "Computed ";
+    switch (op) {
+    case QTest::ComparisonOperation::CustomCompare:
+        return "Actual   ";
+    case QTest::ComparisonOperation::ThreeWayCompare:
+        return "Left     ";
+    case QTest::ComparisonOperation::Equal:
+    case QTest::ComparisonOperation::NotEqual:
+    case QTest::ComparisonOperation::LessThan:
+    case QTest::ComparisonOperation::LessThanOrEqual:
+    case QTest::ComparisonOperation::GreaterThan:
+    case QTest::ComparisonOperation::GreaterThanOrEqual:
+        return "Computed ";
+    }
+    Q_UNREACHABLE_RETURN("");
 }
 
 static const char *rightArgNameForOp(QTest::ComparisonOperation op)
 {
-    return op == QTest::ComparisonOperation::CustomCompare ? "Expected " : "Baseline ";
+    switch (op) {
+    case QTest::ComparisonOperation::CustomCompare:
+        return "Expected ";
+    case QTest::ComparisonOperation::ThreeWayCompare:
+        return "Right    ";
+    case QTest::ComparisonOperation::Equal:
+    case QTest::ComparisonOperation::NotEqual:
+    case QTest::ComparisonOperation::LessThan:
+    case QTest::ComparisonOperation::LessThanOrEqual:
+    case QTest::ComparisonOperation::GreaterThan:
+    case QTest::ComparisonOperation::GreaterThanOrEqual:
+        return "Baseline ";
+    }
+    Q_UNREACHABLE_RETURN("");
 }
 
 static int approx_wide_len(const char *s)
@@ -632,6 +658,8 @@ static const char *macroNameForOp(QTest::ComparisonOperation op)
         return "QCOMPARE_GT";
     case ComparisonOperation::GreaterThanOrEqual:
         return "QCOMPARE_GE";
+    case ComparisonOperation::ThreeWayCompare:
+        return "QCOMPARE_3WAY";
     }
     Q_UNREACHABLE_RETURN("");
 }
@@ -642,6 +670,8 @@ static const char *failureMessageForOp(QTest::ComparisonOperation op)
     switch (op) {
     case ComparisonOperation::CustomCompare:
         return "Compared values are not the same"; /* not used */
+    case ComparisonOperation::ThreeWayCompare:
+        return "The result of operator<=>() is not what was expected";
     case ComparisonOperation::Equal:
         return "The computed value is expected to be equal to the baseline, but is not";
     case ComparisonOperation::NotEqual:
@@ -692,6 +722,63 @@ bool QTestResult::reportResult(bool success, const void *lhs, const void *rhs,
 
     formatFailMessage(msg, maxMsgLen, failureMessage, lhsPtr.get(), rhsPtr.get(),
                       lhsExpr, rhsExpr, op);
+
+    return checkStatement(success, msg, file, line);
+}
+
+bool QTestResult::report3WayResult(bool success,
+                                   const char *failureMessage,
+                                   const void *lhs, const void *rhs,
+                                   const char *(*lhsFormatter)(const void*),
+                                   const char *(*rhsFormatter)(const void*),
+                                   const char *lhsExpression, const char *rhsExpression,
+                                   const char *(*orderFormatter)(const void*),
+                                   const void *actualOrder, const void *expectedOrder,
+                                   const char *expectedExpression,
+                                   const char *file, int line)
+{
+    char msg[maxMsgLen];
+    msg[0] = '\0';
+
+    QTEST_ASSERT(lhsExpression);
+    QTEST_ASSERT(rhsExpression);
+    QTEST_ASSERT(expectedExpression);
+    const char *macroName = macroNameForOp(QTest::ComparisonOperation::ThreeWayCompare);
+    const std::string actualExpression = std::string(lhsExpression) + " <=> " + rhsExpression;
+
+    if (QTestLog::verboseLevel() >= 2) {
+        std::snprintf(msg, maxMsgLen, "%s(%s, %s, %s)",
+                      macroName, lhsExpression, rhsExpression, expectedExpression);
+        QTestLog::info(msg, file, line);
+    }
+
+    if (success) {
+        if (QTest::expectFailMode) {
+            std::snprintf(msg, maxMsgLen, "%s(%s, %s, %s) returned TRUE unexpectedly.",
+                          macroName, lhsExpression, rhsExpression, expectedExpression);
+        }
+        return checkStatement(success, msg, file, line);
+    }
+    const std::unique_ptr<const char[]> lhsStr{lhsFormatter(lhs)};
+    const std::unique_ptr<const char[]> rhsStr{rhsFormatter(rhs)};
+
+    const std::unique_ptr<const char[]> actual{orderFormatter(actualOrder)};
+    const std::unique_ptr<const char[]> expected{orderFormatter(expectedOrder)};
+
+    if (!failureMessage)
+        failureMessage = failureMessageForOp(QTest::ComparisonOperation::ThreeWayCompare);
+
+    // Left and Right compared parameters of QCOMPARE_3WAY
+    formatFailMessage(msg, maxMsgLen, failureMessage,
+                      lhsStr.get(), rhsStr.get(),
+                      lhsExpression, rhsExpression,
+                      QTest::ComparisonOperation::ThreeWayCompare);
+
+    // Actual and Expected results of comparison
+    formatFailMessage(msg + strlen(msg), maxMsgLen - strlen(msg), "",
+                      actual.get(), expected.get(),
+                      actualExpression.c_str(), expectedExpression,
+                      QTest::ComparisonOperation::CustomCompare);
 
     return checkStatement(success, msg, file, line);
 }

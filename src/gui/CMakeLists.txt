@@ -183,6 +183,8 @@ qt_internal_add_module(Gui
         painting/qdrawhelper_p.h
         painting/qdrawhelper_x86_p.h
         painting/qdrawingprimitive_sse2_p.h
+        painting/qdrawhelper_loongarch64_p.h
+        painting/qdrawingprimitive_lsx_p.h
         painting/qemulationpaintengine.cpp painting/qemulationpaintengine_p.h
         painting/qfixed_p.h
         painting/qgrayraster.c painting/qgrayraster_p.h
@@ -315,10 +317,6 @@ if(QT_FEATURE_pdf)
     qt_internal_extend_target(Gui
         ATTRIBUTION_FILE_DIR_PATHS
             ../3rdparty/icc
-    )
-    qt_internal_sbom_add_license(
-        LICENSE_ID "ICC-License"
-        LICENSE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../3rdparty/icc/LICENSE.txt"
     )
 
     qt_internal_add_resource(Gui "qpdf"
@@ -462,6 +460,7 @@ qt_internal_extend_target(Gui CONDITION WIN32
         rhi/cs_mipmap_p.h
         ../3rdparty/D3D12MemoryAllocator/D3D12MemAlloc.h
         ../3rdparty/D3D12MemoryAllocator/D3D12MemAlloc.cpp
+        rhi/qdxgivsyncservice_p.h rhi/qdxgivsyncservice.cpp
         text/windows/qwindowsfontdatabase.cpp text/windows/qwindowsfontdatabase_p.h
         text/windows/qwindowsfontdatabasebase.cpp text/windows/qwindowsfontdatabasebase_p.h
         text/windows/qwindowsfontengine.cpp text/windows/qwindowsfontengine_p.h
@@ -566,6 +565,7 @@ qt_internal_extend_target(Gui CONDITION atspi_accessibility
     DBUS_INTERFACE_SOURCES
         accessible/linux/dbusxml/Bus.xml
         accessible/linux/dbusxml/Socket.xml
+        accessible/linux/dbusxml/org.freedesktop.DBus.Properties.xml
     DBUS_INTERFACE_FLAGS
         "-i" "QtGui/private/qspi_struct_marshallers_p.h"
 )
@@ -652,6 +652,19 @@ qt_internal_add_simd_part(Gui SIMD neon
         image/qimage_neon.cpp
         painting/qdrawhelper_neon.cpp painting/qdrawhelper_neon_p.h
         painting/qimagescale_neon.cpp
+)
+
+qt_internal_add_simd_part(Gui SIMD lsx
+    SOURCES
+        image/qimage_lsx.cpp
+        painting/qdrawhelper_lsx.cpp
+        painting/qimagescale_lsx.cpp
+)
+
+qt_internal_add_simd_part(Gui SIMD lasx
+    SOURCES
+        image/qimage_lasx.cpp
+        painting/qdrawhelper_lasx.cpp
 )
 
 if(NOT ANDROID)
@@ -940,6 +953,11 @@ if (QT_FEATURE_vulkan)
         qt_path_join(qvkgen
             "${QT_HOST_PATH}"
             "${QT${PROJECT_VERSION_MAJOR}_HOST_INFO_LIBEXECDIR}"
+            "qvkgen${host_executable_suffix}")
+    elseif(QT_OPTIONAL_TOOLS_PATH)
+        qt_path_join(qvkgen
+            "${QT_OPTIONAL_TOOLS_PATH}"
+            "${INSTALL_LIBEXECDIR}"
             "qvkgen${host_executable_suffix}")
     else()
         set(qvkgen "${QT_CMAKE_EXPORT_NAMESPACE}::qvkgen")

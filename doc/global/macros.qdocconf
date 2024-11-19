@@ -174,3 +174,4 @@ macro.qtpolicydeprecatedbehavior = "\\note The \\c{OLD} behavior of a policy is 
 macro.techpreview = "(Technical preview)\n\n\\meta status {Technical preview}\n\\ingroup tech_preview\n"
 
 include(grid.qdocconf)
+include(cpp-doc-macros.qdocconf)

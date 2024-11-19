@@ -1074,9 +1074,7 @@ QVariant &QVariant::operator=(const QVariant &variant)
 /*!
     \fn void QVariant::swap(QVariant &other)
     \since 4.8
-
-    Swaps variant \a other with this variant. This operation is very
-    fast and never fails.
+    \memberswap{variant}
 */
 
 /*!

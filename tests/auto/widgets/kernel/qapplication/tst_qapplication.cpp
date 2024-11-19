@@ -1010,6 +1010,9 @@ void tst_QApplication::libraryPaths()
         expected = QSet<QString>(expected.constBegin(), expected.constEnd()).values();
         expected.sort();
 
+#if defined(Q_OS_VXWORKS)
+        QEXPECT_FAIL("", "QTBUG-130736: Actual paths on VxWorks differ from expected", Abort);
+#endif
         QVERIFY2(isPathListIncluded(actual, expected),
                  qPrintable("actual:\n - " + actual.join("\n - ") +
                             "\nexpected:\n - " + expected.join("\n - ")));
@@ -1117,6 +1120,9 @@ void tst_QApplication::libraryPaths_qt_plugin_path_2()
             << QDir(QCoreApplication::applicationDirPath()).canonicalPath()
             << QDir(QDir::fromNativeSeparators(QString::fromLatin1(validPath))).canonicalPath();
 
+#if defined(Q_OS_VXWORKS)
+        QEXPECT_FAIL("", "QTBUG-130736: Actual paths on VxWorks differ from expected", Abort);
+#endif
         QVERIFY2(isPathListIncluded(QCoreApplication::libraryPaths(), expected),
                  qPrintable("actual:\n - " + QCoreApplication::libraryPaths().join("\n - ") +
                             "\nexpected:\n - " + expected.join("\n - ")));

@@ -89,7 +89,7 @@ private slots:
 private:
     void handleScreenChange();
     void handleDevicePixelRatioChange();
-    void repaintWindow();
+    void scheduleRepaint();
     bool updateSize();
     void updateMargins();
     void updateNormalGeometry();

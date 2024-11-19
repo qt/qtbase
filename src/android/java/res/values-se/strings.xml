@@ -1,5 +1,4 @@
 <?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="fatal_error_msg">Vaša aplikacija je naišla na fatalnu grešku i ne može nastaviti sa radom.</string>
-    <string name="unsupported_android_version">Ova verzija Android-a nije podržana.</string>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="fatal_error_msg" tools:ignore="UnusedResources">Vaša aplikacija je naišla na fatalnu grešku i ne može nastaviti sa radom.</string>
 </resources>

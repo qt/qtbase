@@ -31,11 +31,44 @@ function(qt_internal_add_executable name)
 
     _qt_internal_create_executable(${name})
     qt_internal_mark_as_internal_target(${name})
-    if(ANDROID)
-        _qt_internal_android_executable_finalizer(${name})
-    endif()
-    if(WASM)
-        qt_internal_wasm_add_finalizers(${name})
+
+    set_target_properties(${name} PROPERTIES
+        _qt_is_test_executable ${arg_QT_TEST}
+        _qt_is_manual_test ${arg_QT_MANUAL_TEST}
+        _qt_is_benchmark_test ${arg_QT_BENCHMARK_TEST}
+    )
+
+    # Opt out to skip the new way of running test finalizers, and instead use the old way for
+    # specific platforms.
+    # TODO: Remove once we confirm that the new way of running test finalizers for all platforms
+    # doesn't cause any issues.
+    if(NOT QT_INTERNAL_SKIP_TEST_FINALIZERS_V2)
+        # We don't run finalizers for all executables on all platforms, because there are still
+        # some unsolved issues there. One of them is trying to run finalizers for the
+        # qmlimportscanner executable would create a circular depenendecy trying to run
+        # qmlimportscanner on itself.
+        #
+        # For now, we only run finalizers for test-like executables on all platforms, and all
+        # android and wasm internal executables.
+        # For android and wasm all executables, to be behavior compatible with the old way of
+        # running finalizers.
+        if(ANDROID
+            OR WASM
+            OR arg_QT_TEST
+            OR arg_QT_MANUAL_TEST
+            OR arg_QT_BENCHMARK_TEST)
+            set(QT_INTERNAL_USE_POOR_MANS_SCOPE_FINALIZER TRUE)
+            _qt_internal_finalize_target_defer("${name}")
+        endif()
+    else()
+        if(ANDROID)
+            # This direct calls the finalizer, which in the v2 way is deferred.
+            _qt_internal_android_executable_finalizer(${name})
+        endif()
+        if(WASM)
+            # This defer calls the finalizer.
+            qt_internal_wasm_add_finalizers(${name})
+        endif()
     endif()
 
     if(arg_QT_APP AND QT_FEATURE_debug_and_release AND CMAKE_VERSION VERSION_GREATER_EQUAL "3.19.0")
@@ -209,9 +242,13 @@ function(qt_internal_add_executable name)
         else()
             unset(separate_debug_info_executable_arg)
         endif()
-        qt_enable_separate_debug_info(${name} "${arg_INSTALL_DIRECTORY}"
-                                      ${separate_debug_info_executable_arg}
-                                      ADDITIONAL_INSTALL_ARGS ${additional_install_args})
+
+        qt_internal_defer_separate_debug_info("${name}"
+            SEPARATE_DEBUG_INFO_ARGS
+                "${arg_INSTALL_DIRECTORY}"
+                ${separate_debug_info_executable_arg}
+                ADDITIONAL_INSTALL_ARGS ${additional_install_args}
+        )
         qt_internal_install_pdb_files(${name} "${arg_INSTALL_DIRECTORY}")
     endif()
 
@@ -231,6 +268,13 @@ function(qt_internal_add_executable name)
 
         _qt_internal_extend_sbom(${name} ${sbom_args})
     endif()
+
+    qt_add_list_file_finalizer(qt_internal_finalize_executable "${name}")
+endfunction()
+
+# Finalizer for all generic internal executables.
+function(qt_internal_finalize_executable target)
+    qt_internal_finalize_executable_separate_debug_info("${target}")
 endfunction()
 
 # This function compiles the target at configure time the very first time and creates the custom

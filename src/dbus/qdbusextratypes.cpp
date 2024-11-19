@@ -216,20 +216,17 @@ QDBusObjectPath::operator QVariant() const { return QVariant::fromValue(*this); 
 
 /*!
     \fn void QDBusObjectPath::swap(QDBusObjectPath &other)
-
-    Swaps this QDBusObjectPath instance with \a other.
+    \memberswap{object path}
 */
 
 /*!
     \fn void QDBusSignature::swap(QDBusSignature &other)
-
-    Swaps this QDBusSignature instance with \a other.
+    \memberswap{signature}
 */
 
 /*!
     \fn void QDBusVariant::swap(QDBusVariant &other)
-
-    Swaps this QDBusVariant instance with \a other.
+    \memberswap{variant}
 */
 
 QT_END_NAMESPACE

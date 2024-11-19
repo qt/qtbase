@@ -1,5 +1,4 @@
 <?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="fatal_error_msg">Programmiga juhtus fataalne viga.\nKahjuks ei saa jätkata.</string>
-    <string name="unsupported_android_version">Seda Androidi versiooni ei toetata.</string>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="fatal_error_msg" tools:ignore="UnusedResources">Programmiga juhtus fataalne viga.\nKahjuks ei saa jätkata.</string>
 </resources>

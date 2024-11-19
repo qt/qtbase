@@ -729,8 +729,7 @@ QDeadlineTimer operator+(QDeadlineTimer dt, qint64 msecs)
 
 /*!
   \fn void QDeadlineTimer::swap(QDeadlineTimer &other)
-
-  Swaps this deadline timer with the \a other deadline timer.
+    \memberswap{deadline timer}
  */
 
 /*!

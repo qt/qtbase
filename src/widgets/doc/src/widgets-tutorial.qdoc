@@ -3,7 +3,7 @@
 
 /*!
     \page widgets-tutorial.html
-    \ingroup tutorials
+    \ingroup widget-tutorials
     \title Widgets Tutorial
     \brief This tutorial covers basic usage of widgets and layouts, showing how
     they are used to build GUI applications.

@@ -104,6 +104,7 @@ public:
         if (!extraData)
             extraData = new ExtraData(this);
     }
+    void setObjectNameWithoutBindings(const QString &name);
 
     typedef void (*StaticMetaCallFunction)(QObject *, QMetaObject::Call, int, void **);
     struct Connection;

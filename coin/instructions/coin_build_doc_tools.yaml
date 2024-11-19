@@ -1,0 +1,47 @@
+type: Group
+instructions:
+  - type: SetBuildDirectory
+    directory: "{{.SourceDir}}"
+  - type: ChangeDirectory
+    directory: "{{.BuildDir}}"
+
+  - !include "{{qt/qtbase}}/prepare_building_env.yaml"
+
+  # This tells the script where to install the doc tools, and what files the archive will contain.
+  - type: EnvironmentVariable
+    variableName: QT_CI_DOC_TOOLS_INSTALL_DIR
+    variableValue: "{{.BuildDir}}/doc_tools_build/install"
+
+  - type: ExecuteCommand
+    command: "{{.Env.ENV_PREFIX}} cmake -P {{.SourceDir}}/cmake/QtBuildStaticDocToolsScript.cmake"
+    executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
+    maxTimeInSeconds: 6000
+    maxTimeBetweenOutput: 1200
+    userMessageOnFailure: >
+      Failed to build doc tools.
+    enable_if:
+      condition: runtime
+      env_var: TESTED_MODULE_COIN
+      contains_value: qtbase
+
+  # For non-qtbase repos, call the build script from the installed folder.
+  - type: ExecuteCommand
+    command: "{{.Env.ENV_PREFIX}} cmake -P {{.Env.COIN_CMAKE_INSTALL_DIR}}/lib/cmake/Qt6/QtBuildStaticDocToolsScript.cmake"
+    executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
+    maxTimeInSeconds: 6000
+    maxTimeBetweenOutput: 1200
+    userMessageOnFailure: >
+      Failed to build doc tools.
+    disable_if:
+      condition: runtime
+      env_var: TESTED_MODULE_COIN
+      contains_value: qtbase
+
+  - type: UploadArtifact
+    archiveDirectory: "{{.Env.QT_CI_DOC_TOOLS_INSTALL_DIR}}"
+    transferType: GenericArtifactWithName
+    filename: "static_doc_tools_{{.Env.TESTED_MODULE_COIN}}.tar.gz"
+    maxTimeInSeconds: 1200
+    maxTimeBetweenOutput: 1200
+    userMessageOnFailure: >
+      Failed to upload built doc tools.

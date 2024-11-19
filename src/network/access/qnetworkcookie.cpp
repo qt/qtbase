@@ -19,6 +19,8 @@
 #include "QtNetwork/qhostaddress.h"
 #include "private/qobject_p.h"
 
+#include <utility>
+
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
@@ -117,9 +119,7 @@ QNetworkCookie &QNetworkCookie::operator=(const QNetworkCookie &other)
 /*!
     \fn void QNetworkCookie::swap(QNetworkCookie &other)
     \since 5.0
-
-    Swaps this cookie with \a other. This function is very fast and
-    never fails.
+    \memberswap{cookie}
 */
 
 /*!
@@ -376,7 +376,7 @@ void QNetworkCookie::setValue(const QByteArray &value)
 }
 
 // ### move this to qnetworkcookie_p.h and share with qnetworkaccesshttpbackend
-static QPair<QByteArray, QByteArray> nextField(QByteArrayView text, int &position, bool isNameValue)
+static std::pair<QByteArray, QByteArray> nextField(QByteArrayView text, int &position, bool isNameValue)
 {
     // format is one of:
     //    (1)  token
@@ -392,7 +392,7 @@ static QPair<QByteArray, QByteArray> nextField(QByteArrayView text, int &positio
     int equalsPosition = text.indexOf('=', position);
     if (equalsPosition < 0 || equalsPosition > semiColonPosition) {
         if (isNameValue)
-            return qMakePair(QByteArray(), QByteArray()); //'=' is required for name-value-pair (RFC6265 section 5.2, rule 2)
+            return std::pair(QByteArray(), QByteArray()); //'=' is required for name-value-pair (RFC6265 section 5.2, rule 2)
         equalsPosition = semiColonPosition; //no '=' means there is an attribute-name but no attribute-value
     }
 
@@ -403,7 +403,7 @@ static QPair<QByteArray, QByteArray> nextField(QByteArrayView text, int &positio
         second = text.mid(equalsPosition + 1, secondLength).trimmed().toByteArray();
 
     position = semiColonPosition;
-    return qMakePair(first, second);
+    return std::pair(first, second);
 }
 
 /*!
@@ -964,7 +964,7 @@ QList<QNetworkCookie> QNetworkCookiePrivate::parseSetCookieHeaderLine(QByteArray
         QNetworkCookie cookie;
 
         // The first part is always the "NAME=VALUE" part
-        QPair<QByteArray,QByteArray> field = nextField(cookieString, position, true);
+        std::pair<QByteArray,QByteArray> field = nextField(cookieString, position, true);
         if (field.first.isEmpty())
             // parsing error
             break;

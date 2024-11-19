@@ -1,0 +1,14 @@
+version = 1
+
+[[annotations]]
+path = ["**"]
+precedence = "closest"
+SPDX-FileCopyrightText = ["Copyright (c) 1997-2024 University of Cambridge",
+    "Copyright (c) 2010-2024 Zoltan Herczeg"]
+SPDX-License-Identifier = "LicenseRef-BSD-3-Clause-with-PCRE2-Binary-Like-Packages-Exception"
+
+[[annotations]]
+path = ["src/sljit/**"]
+precedence = "closest"
+SPDX-FileCopyrightText = ["Copyright (c) 2009-2024 Zoltan Herczeg"]
+SPDX-License-Identifier = "BSD-2-Clause"

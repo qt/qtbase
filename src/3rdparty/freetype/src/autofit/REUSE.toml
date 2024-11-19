@@ -1,0 +1,45 @@
+version = 1
+
+[[annotations]]
+path = ["afdummy.c", "afdummy.h", "afglobal.c", "afglobal.h", "afhints.c", "afhints.h", "aflatin.c",
+        "aflatin.h", "afloader.c", "afloader.h", "afmodule.c", "afmodule.h", "aftypes.h",
+        "autofit.c", "module.mk", "rules.mk"]
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = ["Copyright (C) 2003-2023 by David Turner, Robert Wilhelm, and Werner Lemberg."]
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = ["aferrors.h"]
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = ["Copyright (C) 2005-2023 by David Turner, Robert Wilhelm, and Werner Lemberg."]
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = ["afcjk.c", "afcjk.h"]
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = ["Copyright (C) 2006-2023 by David Turner, Robert Wilhelm, and Werner Lemberg."]
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = ["afblue.c", "afblue.cin", "afblue.dat", "afblue.h", "afblue.hin", "afcover.h", "afranges.c",
+        "afranges.h", "afscript.h", "afshaper.c", "afshaper.h", "afstyles.h", "afws-decl.h", "afws-iter.h"]
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = ["Copyright (C) 2013-2023 by David Turner, Robert Wilhelm, and Werner Lemberg."]
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = ["afindic.c", "afindic.h"]
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = ["Copyright (C) 2007-2023 by Rahul Bhalerao <rahul.bhalerao@redhat.com>, <b.rahul.pm@gmail.com>."]
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = ["ft-hb.c", "ft-hb.h"]
+precedence = "closest"
+SPDX-FileCopyrightText = ["Copyright © 2009, 2023  Red Hat, Inc.", "Copyright © 2015  Google, Inc."]
+SPDX-License-Identifier = "MIT"

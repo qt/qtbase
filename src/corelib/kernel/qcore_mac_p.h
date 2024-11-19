@@ -462,6 +462,89 @@ qt_objc_cast(id object)
 
 // -------------------------------------------------------------------------
 
+#if defined( __OBJC__)
+
+template <typename T = NSObject>
+class QObjCWeakPointer;
+
+#if __has_feature(objc_arc_weak) && __has_feature(objc_arc_fields)
+#  define USE_OBJC_WEAK 1
+#endif
+
+#if !USE_OBJC_WEAK
+QT_END_NAMESPACE
+#include <objc/runtime.h>
+Q_CORE_EXPORT
+QT_DECLARE_NAMESPACED_OBJC_INTERFACE(WeakPointerLifetimeTracker, NSObject
+@property (atomic, assign) QT_PREPEND_NAMESPACE(QObjCWeakPointer)<NSObject> *pointer;
+)
+QT_BEGIN_NAMESPACE
+#endif
+
+template <typename T>
+class QObjCWeakPointer
+{
+public:
+    QObjCWeakPointer(T *object = nil) : m_object(object)
+    {
+#if !USE_OBJC_WEAK
+        trackObjectLifetime();
+#endif
+    }
+
+    QObjCWeakPointer(const QObjCWeakPointer &other)
+    {
+        QMacAutoReleasePool pool;
+        m_object = other.m_object;
+#if !USE_OBJC_WEAK
+        trackObjectLifetime();
+#endif
+    }
+
+    QObjCWeakPointer &operator=(const QObjCWeakPointer &other)
+    {
+        QMacAutoReleasePool pool;
+        m_object = other.m_object;
+#if !USE_OBJC_WEAK
+        trackObjectLifetime();
+#endif
+        return *this;
+    }
+
+    ~QObjCWeakPointer()
+    {
+#if !USE_OBJC_WEAK
+        if (m_object)
+            objc_setAssociatedObject(m_object, this, nil, OBJC_ASSOCIATION_RETAIN);
+#endif
+    }
+
+    operator T*() const { return static_cast<T*>([[m_object retain] autorelease]); }
+
+private:
+#if USE_OBJC_WEAK
+    __weak
+#else
+    void trackObjectLifetime()
+    {
+        if (!m_object)
+            return;
+
+        auto *lifetimeTracker = [WeakPointerLifetimeTracker new];
+        lifetimeTracker.pointer = reinterpret_cast<QObjCWeakPointer<NSObject>*>(this);
+        objc_setAssociatedObject(m_object, this, lifetimeTracker, OBJC_ASSOCIATION_RETAIN);
+        [lifetimeTracker release];
+    }
+#endif
+    NSObject *m_object = nil;
+};
+
+#undef USE_OBJC_WEAK
+
+#endif //  __OBJC__
+
+// -------------------------------------------------------------------------
+
 QT_END_NAMESPACE
 
 #endif // QCORE_MAC_P_H

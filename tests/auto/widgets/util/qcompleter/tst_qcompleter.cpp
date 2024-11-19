@@ -1,13 +1,27 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
-#include <QTest>
-#include <QtGui>
-#include <QtWidgets>
-#include <QtDebug>
-#include <QList>
-#include <QPointer>
-#include <QSignalSpy>
+#include <QtTest/qtest.h>
+#include <QtTest/qsignalspy.h>
+
+#include <QtWidgets/qboxlayout.h>
+#include <QtWidgets/qcombobox.h>
+#include <QtWidgets/qcompleter.h>
+#include <QtWidgets/qgraphicsview.h>
+#include <QtWidgets/qlineedit.h>
+#include <QtWidgets/qlistview.h>
+#include <QtWidgets/qtextedit.h>
+#include <QtWidgets/qtreewidget.h>
+
+#include <QtGui/qfilesystemmodel.h>
+#include <QtGui/qstandarditemmodel.h>
+
+#include <QtCore/qabstractproxymodel.h>
+#include <QtCore/qdebug.h>
+#include <QtCore/qlist.h>
+#include <QtCore/qpointer.h>
+#include <QtCore/qstandardpaths.h>
+#include <QtCore/qstringlistmodel.h>
 
 #include <QtTest/private/qtesthelpers_p.h>
 

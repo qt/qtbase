@@ -5,6 +5,7 @@
 #include <QtCore/qvarlengtharray.h>
 #include <QtCore/qstringlist.h>
 #include <QtCore/qfileinfo.h>
+#include <QtCore/private/wcharhelpers_win_p.h>
 
 /*!
 
@@ -81,7 +82,7 @@ HINSTANCE QSystemLibrary::load(const wchar_t *libraryName, bool onlySystemDirect
             fullPathAttempt.append(u'\\');
         }
         fullPathAttempt.append(fileName);
-        HINSTANCE inst = ::LoadLibrary(reinterpret_cast<const wchar_t *>(fullPathAttempt.utf16()));
+        HINSTANCE inst = ::LoadLibrary(qt_castToWchar(fullPathAttempt));
         if (inst != nullptr)
             return inst;
     }

@@ -553,8 +553,10 @@ QVariant QCborValue::toVariant() const
         // ignore tags
         return taggedValue().toVariant();
 
+#if QT_CONFIG(datestring)
     case DateTime:
         return toDateTime();
+#endif
 
 #ifndef QT_BOOTSTRAPPED
     case Url:
@@ -732,8 +734,10 @@ QCborValue QCborValue::fromVariant(const QVariant &variant)
         return QCborArray::fromStringList(variant.toStringList());
     case QMetaType::QByteArray:
         return variant.toByteArray();
+#if QT_CONFIG(datestring)
     case QMetaType::QDateTime:
         return QCborValue(variant.toDateTime());
+#endif
 #ifndef QT_BOOTSTRAPPED
     case QMetaType::QUrl:
         return QCborValue(variant.toUrl());

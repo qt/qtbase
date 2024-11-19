@@ -1,8 +1,14 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
-#include <QTest>
-#include <QtGui>
-#include <QtCore>
+
+#include <QtTest/qtest.h>
+
+#include <QtGui/qcolorspace.h>
+#include <QtGui/qimagereader.h>
+#include <QtGui/qimagewriter.h>
+
+#include <QtCore/qbuffer.h>
+#include <QtCore/qfile.h>
 
 class tst_QIcoImageFormat : public QObject
 {

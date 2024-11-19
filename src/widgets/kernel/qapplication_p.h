@@ -109,6 +109,8 @@ public:
     static bool inPopupMode();
     void closePopup(QWidget *popup);
     void openPopup(QWidget *popup);
+    static bool replayMousePress;
+
     static void setFocusWidget(QWidget *focus, Qt::FocusReason reason);
     static QWidget *focusNextPrevChild_helper(QWidget *toplevel, bool next,
                                               bool *wrappingOccurred = nullptr);

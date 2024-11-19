@@ -721,19 +721,23 @@ QImage QWindowsFontEngineDirectWrite::alphaMapForGlyph(glyph_t glyph,
 {
     QImage im = imageForGlyph(glyph, subPixelPosition, glyphMargin(Format_A8), t);
 
-    QImage alphaMap(im.width(), im.height(), QImage::Format_Alpha8);
+    if (!im.isNull()) {
+        QImage alphaMap(im.width(), im.height(), QImage::Format_Alpha8);
 
-    for (int y=0; y<im.height(); ++y) {
-        const uint *src = reinterpret_cast<const uint *>(im.constScanLine(y));
-        uchar *dst = alphaMap.scanLine(y);
-        for (int x=0; x<im.width(); ++x) {
-            *dst = 255 - (m_fontEngineData->pow_gamma[qGray(0xffffffff - *src)] * 255. / 2047.);
-            ++dst;
-            ++src;
+        for (int y=0; y<im.height(); ++y) {
+            const uint *src = reinterpret_cast<const uint *>(im.constScanLine(y));
+            uchar *dst = alphaMap.scanLine(y);
+            for (int x=0; x<im.width(); ++x) {
+                *dst = 255 - (m_fontEngineData->pow_gamma[qGray(0xffffffff - *src)] * 255. / 2047.);
+                ++dst;
+                ++src;
+            }
         }
-    }
 
-    return alphaMap;
+        return alphaMap;
+    } else {
+        return QFontEngine::alphaMapForGlyph(glyph, t);
+    }
 }
 
 QImage QWindowsFontEngineDirectWrite::alphaMapForGlyph(glyph_t glyph,
@@ -855,8 +859,10 @@ QImage QWindowsFontEngineDirectWrite::imageForGlyph(glyph_t t,
                                                 : DWRITE_TEXTURE_CLEARTYPE_3x1,
                                              &rect);
 
-        if (rect.top == rect.bottom || rect.left == rect.right)
+        if (rect.top == rect.bottom || rect.left == rect.right) {
+            qCDebug(lcQpaFonts) << __FUNCTION__ << "Cannot get alpha texture bounds. Falling back to slower rendering path.";
             return QImage();
+        }
 
         QRect boundingRect = QRect(QPoint(rect.left - margin,
                                           rect.top - margin),
@@ -1070,6 +1076,12 @@ QImage QWindowsFontEngineDirectWrite::alphaRGBMapForGlyph(glyph_t t,
                                 glyphMargin(QFontEngine::Format_A32),
                                 xform);
 
+    if (mask.isNull()) {
+        mask = QFontEngine::renderedPathForGlyph(t, Qt::white);
+        if (!xform.isIdentity())
+            mask = mask.transformed(xform);
+    }
+
     return mask.depth() == 32
            ? mask
            : mask.convertToFormat(QImage::Format_RGB32);
@@ -1218,7 +1230,7 @@ glyph_metrics_t QWindowsFontEngineDirectWrite::alphaMapBoundingBox(glyph_t glyph
         int margin = glyphMargin(format);
 
         if (rect.left == rect.right || rect.top == rect.bottom)
-            return glyph_metrics_t();
+            return bbox;
 
         return glyph_metrics_t(rect.left,
                                rect.top,

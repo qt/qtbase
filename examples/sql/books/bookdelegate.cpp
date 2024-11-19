@@ -6,35 +6,30 @@
 #include <QMouseEvent>
 #include <QPainter>
 #include <QSpinBox>
+#include <QTableView>
+
+BookDelegate::BookDelegate(int ratingColumn, QObject *parent)
+    : QSqlRelationalDelegate(parent), ratingColumn(ratingColumn)
+{}
 
 void BookDelegate::paint(QPainter *painter,
                          const QStyleOptionViewItem &option,
                          const QModelIndex &index) const
 {
-    if (index.column() != 5) {
+    if (index.column() != ratingColumn) {
         QSqlRelationalDelegate::paint(painter, option, index);
     } else {
-        const QAbstractItemModel *model = index.model();
-        QPalette::ColorGroup cg = (option.state & QStyle::State_Enabled) ?
-            (option.state & QStyle::State_Active) ?
-                        QPalette::Normal :
-                        QPalette::Inactive :
-                        QPalette::Disabled;
+        if (option.state & QStyle::State_Selected) {
+            painter->fillRect(option.rect,
+                              option.palette.color(QPalette::Highlight));
+        }
 
-        if (option.state & QStyle::State_Selected)
-            painter->fillRect(
-                        option.rect,
-                        option.palette.color(cg, QPalette::Highlight));
-
-        const int rating = model->data(index, Qt::DisplayRole).toInt();
-        const int width = iconDimension;
-        const int height = width;
+        const int rating = index.data(Qt::DisplayRole).toInt();
+        const int height = qMin(option.rect.height(), iconDimension);
+        const int width = height;
         // add cellPadding / 2 to center the stars in the cell
         int x = option.rect.x() + cellPadding / 2;
         int y = option.rect.y() + (option.rect.height() / 2) - (height / 2);
-
-        QIcon starIcon(QStringLiteral(":images/star.svg"));
-        QIcon starFilledIcon(QStringLiteral(":images/star-filled.svg"));
 
         for (int i = 0; i < 5; ++i) {
             if (i < rating)
@@ -49,7 +44,7 @@ void BookDelegate::paint(QPainter *painter,
 QSize BookDelegate::sizeHint(const QStyleOptionViewItem &option,
                              const QModelIndex &index) const
 {
-    if (index.column() == 5)
+    if (index.column() == ratingColumn)
         return QSize(5 * iconDimension, iconDimension) + QSize(cellPadding, cellPadding);
     // Since we draw the grid ourselves:
     return QSqlRelationalDelegate::sizeHint(option, index) + QSize(cellPadding, cellPadding);
@@ -59,7 +54,7 @@ bool BookDelegate::editorEvent(QEvent *event, QAbstractItemModel *model,
                                const QStyleOptionViewItem &option,
                                const QModelIndex &index)
 {
-    if (index.column() != 5)
+    if (!ratingColumn || index.column() != ratingColumn)
         return QSqlRelationalDelegate::editorEvent(event, model, option, index);
 
     if (event->type() == QEvent::MouseButtonPress) {
@@ -78,7 +73,7 @@ QWidget *BookDelegate::createEditor(QWidget *parent,
                                     const QStyleOptionViewItem &option,
                                     const QModelIndex &index) const
 {
-    if (index.column() != 4)
+    if (!ratingColumn || index.column() != 4)
         return QSqlRelationalDelegate::createEditor(parent, option, index);
 
     // For editing the year, return a spinbox with a range from -1000 to 2100.

@@ -1,0 +1,16 @@
+{
+    "Id": "emoji-segmenter",
+    "Name": "Emoji Segmenter",
+    "QDocModule": "qtgui",
+    "QtUsage": "Used in QtGui for parsing complex emoji sequences. Can be configured using the -emojisegmenter option.",
+    "SecurityCritical": true,
+
+    "Description": "A parser for emoji sequences.",
+    "Homepage": "https://github.com/google/emoji-segmenter",
+    "Version": "0.4.0",
+    "DownloadLocation": "https://github.com/google/emoji-segmenter/releases/tag/0.4.0",
+
+    "License": "Apache License 2.0",
+    "LicenseId": "Apache-2.0",
+    "Copyright": "Copyright 2019 Google LLC"
+}

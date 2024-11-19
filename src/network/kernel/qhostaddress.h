@@ -6,12 +6,13 @@
 #define QHOSTADDRESS_H
 
 #include <QtNetwork/qtnetworkglobal.h>
-#include <QtCore/qpair.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qshareddata.h>
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
 #include <QtNetwork/qabstractsocket.h>
 #endif
+
+#include <utility>
 
 struct sockaddr;
 
@@ -120,7 +121,7 @@ public:
     void clear();
 
     bool isInSubnet(const QHostAddress &subnet, int netmask) const;
-    bool isInSubnet(const QPair<QHostAddress, int> &subnet) const;
+    bool isInSubnet(const std::pair<QHostAddress, int> &subnet) const;
 
     bool isLoopback() const;
     bool isGlobal() const;
@@ -131,7 +132,7 @@ public:
     bool isBroadcast() const;
     bool isPrivateUse() const;
 
-    static QPair<QHostAddress, int> parseSubnet(const QString &subnet);
+    static std::pair<QHostAddress, int> parseSubnet(const QString &subnet);
 
     friend Q_NETWORK_EXPORT size_t qHash(const QHostAddress &key, size_t seed) noexcept;
 

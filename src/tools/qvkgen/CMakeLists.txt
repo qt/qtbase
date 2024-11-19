@@ -7,6 +7,7 @@
 
 qt_get_tool_target_name(target_name qvkgen)
 qt_internal_add_tool(${target_name}
+    REQUIRED_FOR_DOCS
     TARGET_DESCRIPTION "Qt Vulkan Header Generator"
     INSTALL_DIR "${INSTALL_LIBEXECDIR}"
     TOOLS_TARGET Gui

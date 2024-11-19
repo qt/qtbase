@@ -1,0 +1,8 @@
+version = 1
+
+[[annotations]]
+path = ["qregion.cpp"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = ["Copyright (c) 1987, 1988 X Consortium",
+"Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts."]
+SPDX-License-Identifier = "X11 AND HPND"

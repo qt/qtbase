@@ -783,9 +783,7 @@ QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QColorSpacePrivate)
 QColorSpace::QColorSpace(const QColorSpace &colorSpace) noexcept = default;
 
 /*! \fn void QColorSpace::swap(QColorSpace &other)
-
-    Swaps color space \a other with this color space. This operation is very fast and
-    never fails.
+    \memberswap{color space}
 */
 
 /*!

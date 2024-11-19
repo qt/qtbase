@@ -12,4 +12,4 @@ interface QtEmbeddedViewInterface {
     void startQtApplication(String appParams, String mainLib);
     void addView(QtView view);
     void removeView(QtView view);
-};
+}

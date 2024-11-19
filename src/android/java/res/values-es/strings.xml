@@ -1,5 +1,4 @@
 <?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="fatal_error_msg">La aplicación ha causado un error grave y no es posible continuar.</string>
-    <string name="unsupported_android_version">Esta versión de Android no es compatible.</string>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="fatal_error_msg" tools:ignore="UnusedResources">La aplicación ha causado un error grave y no es posible continuar.</string>
 </resources>

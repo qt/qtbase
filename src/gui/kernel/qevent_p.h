@@ -34,13 +34,11 @@ public:
         QTouchEvent(eventType, device, modifiers, touchPoints) { }
     ~QMutableTouchEvent() override;
 
-    static QMutableTouchEvent *from(QTouchEvent *e) { return static_cast<QMutableTouchEvent *>(e); }
-
-    static QMutableTouchEvent &from(QTouchEvent &e) { return static_cast<QMutableTouchEvent &>(e); }
-
     void setTarget(QObject *target) { m_target = target; }
-
     void addPoint(const QEventPoint &point);
+
+    static void setTarget(QTouchEvent *e, QObject *target) { e->m_target = target; }
+    static void addPoint(QTouchEvent *e, const QEventPoint &point);
 };
 
 class Q_GUI_EXPORT QMutableSinglePointEvent : public QSinglePointEvent
@@ -54,15 +52,21 @@ public:
         QSinglePointEvent(type, device, point, button, buttons, modifiers, source) { }
     ~QMutableSinglePointEvent() override;
 
-    static QMutableSinglePointEvent *from(QSinglePointEvent *e) { return static_cast<QMutableSinglePointEvent *>(e); }
-
-    static QMutableSinglePointEvent &from(QSinglePointEvent &e) { return static_cast<QMutableSinglePointEvent &>(e); }
-
     void setSource(Qt::MouseEventSource s) { m_source = s; }
 
     bool isDoubleClick() { return m_doubleClick; }
 
     void setDoubleClick(bool d = true) { m_doubleClick = d; }
+
+    static bool isDoubleClick(const QSinglePointEvent *ev)
+    {
+        return ev->m_doubleClick;
+    }
+
+    static void setDoubleClick(QSinglePointEvent *ev, bool d)
+    {
+        ev->m_doubleClick = d;
+    }
 };
 
 QT_END_NAMESPACE

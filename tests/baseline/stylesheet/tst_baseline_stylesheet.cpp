@@ -206,6 +206,9 @@ void tst_Stylesheet::tst_QTreeView()
 
     tw->topLevelItem(Children)->child(0)->setSelected(true);
     QBASELINE_CHECK_DEFERRED(takeSnapshot(), "itemSelected");
+
+    testWindow()->resize(testWindow()->size() * 2);
+    QBASELINE_CHECK_DEFERRED(takeSnapshot(), "withEmptyArea");
 }
 
 void tst_Stylesheet::tst_QHeaderView_data()

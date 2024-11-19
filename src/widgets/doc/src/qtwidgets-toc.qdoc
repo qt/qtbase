@@ -42,13 +42,7 @@
     \li \l {Gestures in Widgets and Graphics View}
     \li \l {Graphics View Framework}
     \li \l {Changes to Qt Widgets}{Upgrading form Qt 5}
-    \li \l {Widgets Tutorial}
-        \list
-            \li \l{Widgets Tutorial - Creating a Window}{Creating a Window}
-            \li \l{Widgets Tutorial - Child Widgets}{Child Widgets}
-            \li \l{Widgets Tutorial - Using Layouts}{Using Layouts}
-            \li \l{Widgets Tutorial - Nested Layouts}{Nested Layouts}
-        \endlist
+    \li \l {Qt Widgets Tutorials}{Tutorials}
     \li \l {Qt Widgets Examples}{Examples}
         \list
             \li \l{Main Window Examples}
@@ -58,6 +52,7 @@
             \li \l{Painting Examples}
             \li \l{Rich Text Examples}
             \li \l{Graphics View Examples}
+            \li \l{Widget Tools Examples}
         \endlist
     \endlist
 

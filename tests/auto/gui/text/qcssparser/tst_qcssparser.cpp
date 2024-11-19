@@ -401,11 +401,13 @@ void tst_QCssParser::media()
 
 void tst_QCssParser::animation()
 {
-    QCss::Parser parser("@keyframes emptyAnimation{} motion{from {x : 10;} to {x : 50;}} color{0% {fill : blue;} 25% {fill : yellow;} 100% {fill : red;}}");
-    QVERIFY(parser.testAnimation());
+    QCss::Parser parser("@keyframes emptyAnimation{} "
+                        "@keyframes motion{from {x : 10;} to {x : 50;}} "
+                        "@keyframes color{0% {fill : blue;} 25% {fill : yellow;} 100% {fill : red;}}");
 
     {
         QCss::AnimationRule rule;
+        QVERIFY(parser.testAnimation());
         QVERIFY(parser.parseAnimation(&rule));
         QCOMPARE(rule.animName, QStringLiteral("emptyAnimation"));
         QCOMPARE(rule.ruleSets.size(), 0);
@@ -413,6 +415,7 @@ void tst_QCssParser::animation()
 
     {
         QCss::AnimationRule rule;
+        QVERIFY(parser.testAnimation());
         QVERIFY(parser.parseAnimation(&rule));
         QCOMPARE(rule.animName, QStringLiteral("motion"));
         QCOMPARE(rule.ruleSets.size(), 2);
@@ -426,6 +429,7 @@ void tst_QCssParser::animation()
 
     {
         QCss::AnimationRule rule;
+        QVERIFY(parser.testAnimation());
         QVERIFY(parser.parseAnimation(&rule));
         QCOMPARE(rule.animName, QStringLiteral("color"));
         QCOMPARE(rule.ruleSets.size(), 3);

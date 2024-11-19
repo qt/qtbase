@@ -846,10 +846,8 @@ QOpenGLDebugMessage &QOpenGLDebugMessage::operator=(const QOpenGLDebugMessage &d
 */
 
 /*!
-    \fn void QOpenGLDebugMessage::swap(QOpenGLDebugMessage &debugMessage)
-
-    Swaps the message \a debugMessage with this message. This operation is very
-    fast and never fails.
+    \fn void QOpenGLDebugMessage::swap(QOpenGLDebugMessage &other)
+    \memberswap{message]
 */
 
 /*!

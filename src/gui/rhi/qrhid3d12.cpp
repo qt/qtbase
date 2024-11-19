@@ -343,6 +343,8 @@ bool QRhiD3D12::create(QRhi::Flags flags)
         qCDebug(QRHI_LOG_INFO, "Using imported device %p", dev);
     }
 
+    QDxgiVSyncService::instance()->refAdapter(adapterLuid);
+
     if (debugLayer) {
         ID3D12InfoQueue *infoQueue;
         if (SUCCEEDED(dev->QueryInterface(__uuidof(ID3D12InfoQueue), reinterpret_cast<void **>(&infoQueue)))) {
@@ -607,6 +609,8 @@ void QRhiD3D12::destroy()
         dxgiFactory->Release();
         dxgiFactory = nullptr;
     }
+
+    QDxgiVSyncService::instance()->derefAdapter(adapterLuid);
 }
 
 QList<int> QRhiD3D12::supportedSampleCounts() const
@@ -803,6 +807,8 @@ bool QRhiD3D12::isFeatureSupported(QRhi::Feature feature) const
     case QRhi::VariableRateShadingMap:
     case QRhi::VariableRateShadingMapWithTexture:
         return caps.vrsMap;
+    case QRhi::PerRenderTargetBlending:
+        return true;
     }
     return false;
 }
@@ -1701,6 +1707,8 @@ QRhi::FrameOpResult QRhiD3D12::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginF
                                D3D12_QUERY_TYPE_TIMESTAMP,
                                timestampPairStartIndex);
     }
+
+    QDxgiVSyncService::instance()->beginFrame(adapterLuid);
 
     return QRhi::FrameOpSuccess;
 }
@@ -4026,6 +4034,13 @@ static inline DXGI_FORMAT toD3DTextureFormat(QRhiTexture::Format format, QRhiTex
     case QRhiTexture::RGB10A2:
         return DXGI_FORMAT_R10G10B10A2_UNORM;
 
+    case QRhiTexture::R32UI:
+        return DXGI_FORMAT_R32_UINT;
+    case QRhiTexture::RG32UI:
+        return DXGI_FORMAT_R32G32_UINT;
+    case QRhiTexture::RGBA32UI:
+        return DXGI_FORMAT_R32G32B32A32_UINT;
+
     case QRhiTexture::D16:
         return DXGI_FORMAT_R16_TYPELESS;
     case QRhiTexture::D24:
@@ -4320,6 +4335,10 @@ bool QD3D12Texture::prepareCreate(QSize *adjustedSize)
     if (!handle.isNull())
         destroy();
 
+    QRHI_RES_RHI(QRhiD3D12);
+    if (!rhiD->isTextureFormatSupported(m_format, m_flags))
+        return false;
+
     const bool isDepth = isDepthTextureFormat(m_format);
     const bool isCube = m_flags.testFlag(CubeMap);
     const bool is3D = m_flags.testFlag(ThreeDimensional);
@@ -4351,7 +4370,6 @@ bool QD3D12Texture::prepareCreate(QSize *adjustedSize)
             srvFormat = toD3DTextureFormat(m_readViewFormat.format, m_readViewFormat.srgb ? sRGB : Flags());
     }
 
-    QRHI_RES_RHI(QRhiD3D12);
     mipLevelCount = uint(hasMipMaps ? rhiD->q->mipLevelsForSize(size) : 1);
     sampleDesc = rhiD->effectiveSampleDesc(m_sampleCount, dxgiFormat);
     if (sampleDesc.Count > 1) {
@@ -6308,6 +6326,8 @@ void QD3D12SwapChain::destroy()
         frameLatencyWaitableObject = nullptr;
     }
 
+    QDxgiVSyncService::instance()->unregisterWindow(window);
+
     QRHI_RES_RHI(QRhiD3D12);
     if (rhiD) {
         rhiD->swapchains.remove(this);
@@ -6756,6 +6776,8 @@ bool QD3D12SwapChain::createOrResize()
     rtDr->d.sampleCount = int(sampleDesc.Count);
     rtDr->d.colorAttCount = 1;
     rtDr->d.dsAttCount = m_depthStencil ? 1 : 0;
+
+    QDxgiVSyncService::instance()->registerWindow(window);
 
     if (needsRegistration) {
         rhiD->swapchains.insert(this);

@@ -48,6 +48,7 @@
 #include <QtCore/qscopedpointer.h>
 
 #include <memory>
+#include <utility>
 
 QT_REQUIRE_CONFIG(http);
 
@@ -58,7 +59,7 @@ class QHttpNetworkReply;
 class QByteArray;
 
 #ifndef HttpMessagePair
-typedef QPair<QHttpNetworkRequest, QHttpNetworkReply*> HttpMessagePair;
+typedef std::pair<QHttpNetworkRequest, QHttpNetworkReply*> HttpMessagePair;
 #endif
 
 class QHttpNetworkConnectionChannel : public QObject {

@@ -15,7 +15,6 @@ import android.content.ClipboardManager;
 import android.text.Html;
 import android.text.Spanned;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
@@ -39,9 +38,9 @@ class ButtonStruct implements View.OnClickListener
         m_id = id;
         m_text = Html.fromHtml(text);
     }
-    QtMessageDialogHelper m_dialog;
+    final QtMessageDialogHelper m_dialog;
     private final int m_id;
-    Spanned m_text;
+    final Spanned m_text;
 
     @Override
     public void onClick(View view) {
@@ -123,9 +122,11 @@ class QtMessageDialogHelper
     private Drawable getStyledDrawable(int id)
     {
         int[] attrs = { id };
-        final TypedArray a = m_theme.obtainStyledAttributes(attrs);
-        Drawable d = a.getDrawable(0);
-        a.recycle();
+        Drawable d;
+        try (TypedArray a = m_theme.obtainStyledAttributes(attrs)) {
+            d = a.getDrawable(0);
+            a.recycle();
+        }
         return  d;
     }
 

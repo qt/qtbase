@@ -124,6 +124,8 @@ private slots:
     void resourceUpdateBatchBufferTextureWithSwapchainFrames();
     void textureRenderTargetAutoRebuild_data();
     void textureRenderTargetAutoRebuild();
+    void renderToMRTPerRenderTargetBlending();
+    void renderToMRTPerRenderTargetBlending_data();
 
     void pipelineCache_data();
     void pipelineCache();
@@ -4369,6 +4371,152 @@ void tst_QRhi::textureRenderTargetAutoRebuild()
         texture->setPixelSize(sz);
         QVERIFY(texture->create());
         QCOMPARE(rt->pixelSize(), sz);
+    }
+}
+
+
+void tst_QRhi::renderToMRTPerRenderTargetBlending_data()
+{
+    rhiTestData();
+}
+
+static QRhiGraphicsPipeline *createMRTBLPipeline(QRhi *rhi, QRhiShaderResourceBindings *srb, QRhiRenderPassDescriptor *rpDesc, QRhiGraphicsPipeline::TargetBlend blend[2])
+{
+    std::unique_ptr<QRhiGraphicsPipeline> pipeline(rhi->newGraphicsPipeline());
+    QShader vs = loadShader(":/data/mrtbl.vert.qsb");
+    if (!vs.isValid())
+        return nullptr;
+    QShader fs = loadShader(":/data/mrtbl.frag.qsb");
+    if (!fs.isValid())
+        return nullptr;
+    pipeline->setShaderStages({ { QRhiShaderStage::Vertex, vs }, { QRhiShaderStage::Fragment, fs } });
+    QRhiVertexInputLayout inputLayout;
+    inputLayout.setBindings({ { 2 * sizeof(float) } });
+    inputLayout.setAttributes({ { 0, 0, QRhiVertexInputAttribute::Float2, 0 } });
+    pipeline->setVertexInputLayout(inputLayout);
+    pipeline->setShaderResourceBindings(srb);
+    pipeline->setRenderPassDescriptor(rpDesc);
+    pipeline->setTargetBlends({blend[0], blend[1]});
+    return pipeline->create() ? pipeline.release() : nullptr;
+}
+
+void tst_QRhi::renderToMRTPerRenderTargetBlending()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing rendering");
+    if (!rhi->isFeatureSupported(QRhi::PerRenderTargetBlending))
+        QSKIP("QRhi::PerRenderTargetBlending not supported, skipping testing rendering");
+
+    const QSize outputSize(1920, 1080);
+    QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, outputSize, 1,
+                                                        QRhiTexture::RenderTarget | QRhiTexture::UsedAsTransferSource));
+    QVERIFY(texture->create());
+
+    QScopedPointer<QRhiTexture> texture2(rhi->newTexture(QRhiTexture::RGBA8, outputSize, 1,
+                                                         QRhiTexture::RenderTarget | QRhiTexture::UsedAsTransferSource));
+    QVERIFY(texture2->create());
+
+    QRhiTextureRenderTargetDescription desc;
+    desc.setColorAttachments({{texture.data()}, {texture2.data()}});
+    QScopedPointer<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget(desc));
+    QScopedPointer<QRhiRenderPassDescriptor> rpDesc(rt->newCompatibleRenderPassDescriptor());
+    rt->setRenderPassDescriptor(rpDesc.data());
+    QVERIFY(rt->create());
+
+    QRhiCommandBuffer *cb = nullptr;
+    QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
+    QVERIFY(cb);
+
+    QRhiResourceUpdateBatch *updates = rhi->nextResourceUpdateBatch();
+
+    QScopedPointer<QRhiBuffer> vbuf(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(triangleVertices)));
+    QVERIFY(vbuf->create());
+    updates->uploadStaticBuffer(vbuf.data(), triangleVertices);
+
+    QScopedPointer<QRhiShaderResourceBindings> srb(rhi->newShaderResourceBindings());
+    QVERIFY(srb->create());
+
+    QRhiGraphicsPipeline::TargetBlend blend[2];
+    blend[0].enable = true;    // Use src-over for first rt
+    blend[0].srcColor = QRhiGraphicsPipeline::One;
+    blend[0].dstColor = QRhiGraphicsPipeline::Zero;
+    blend[0].srcAlpha = QRhiGraphicsPipeline::One;
+    blend[0].dstAlpha = QRhiGraphicsPipeline::Zero;
+    blend[1].enable = true;    // Use custom blending second rt
+    blend[1].srcColor = QRhiGraphicsPipeline::Zero;
+    blend[1].dstColor = QRhiGraphicsPipeline::OneMinusSrcColor;
+    blend[1].srcAlpha = QRhiGraphicsPipeline::One;
+    blend[1].dstAlpha = QRhiGraphicsPipeline::Zero;
+
+    QScopedPointer<QRhiGraphicsPipeline> pipeline(createMRTBLPipeline(rhi.data(), srb.data(), rpDesc.data(), blend));
+    QVERIFY(pipeline);
+
+    cb->beginPass(rt.data(), Qt::white, { 1.0f, 0 }, updates);
+    cb->setGraphicsPipeline(pipeline.data());
+    cb->setViewport({ 0, 0, float(outputSize.width()), float(outputSize.height()) });
+    QRhiCommandBuffer::VertexInput vbindings(vbuf.data(), 0);
+    cb->setVertexInput(0, 1, &vbindings);
+    cb->draw(3);
+
+    QRhiReadbackResult readResult1;
+    QImage result1;
+    readResult1.completed = [&readResult1, &result1] {
+        result1 = QImage(reinterpret_cast<const uchar *>(readResult1.data.constData()),
+                        readResult1.pixelSize.width(), readResult1.pixelSize.height(),
+                        QImage::Format_RGBA8888_Premultiplied); // non-owning, no copy needed because readResult outlives result
+    };
+    QRhiReadbackResult readResult2;
+    QImage result2;
+    readResult2.completed = [&readResult2, &result2] {
+        result2 = QImage(reinterpret_cast<const uchar *>(readResult2.data.constData()),
+                        readResult2.pixelSize.width(), readResult2.pixelSize.height(),
+                        QImage::Format_RGBA8888_Premultiplied); // non-owning, no copy needed because readResult outlives result
+    };
+    QRhiResourceUpdateBatch *readbackBatch = rhi->nextResourceUpdateBatch();
+    readbackBatch->readBackTexture({ texture.data() }, &readResult1);
+    readbackBatch->readBackTexture({ texture2.data() }, &readResult2);
+    cb->endPass(readbackBatch);
+
+    rhi->endOffscreenFrame();
+
+    QCOMPARE(result1.size(), texture->pixelSize());
+    QCOMPARE(result2.size(), texture2->pixelSize());
+
+    if (impl == QRhi::Null)
+        return;
+
+    // Now we have a red triangle in result1 and an 'electric blue' triangle in the result2
+    // which are complementary colors. If we sum them up they should return all white.
+
+    int y = result1.size().height() / 2;
+    const quint32 *p1 = reinterpret_cast<const quint32 *>(result1.constScanLine(y));
+    const quint32 *p2 = reinterpret_cast<const quint32 *>(result2.constScanLine(y));
+
+    const int width = result1.size().width();
+    for (int i = 0; i < width; i++) {
+        QRgb c1(*p1++);
+        QRgb c2(*p2++);
+        const bool c1white = (qAbs(qRed(c1) - 255) <= 1 && qAbs(qGreen(c1) - 255) <= 1 && qAbs(qBlue(c1) - 255) <= 1);
+        const bool c2white = (qAbs(qRed(c2) - 255) <= 1 && qAbs(qGreen(c2) - 255) <= 1 && qAbs(qBlue(c2) - 255) <= 1);
+
+        // skip if both pixels are white
+        if (c1white && c2white)
+            continue;
+
+        // remove the chance that either color accounts
+        // for all the value in the color sum
+        if (c1white || c2white)
+            QFAIL("If both colors are not white then neither can be white.");
+
+        if (qAbs((qRed(c1) + qRed(c2) - 255)) > 1
+            || qAbs((qGreen(c1) + qGreen(c2) - 255)) > 1
+            || qAbs((qBlue(c1) + qBlue(c2) - 255)) > 1) {
+            QFAIL("Colors in resulting images are not complementary");
+        }
     }
 }
 

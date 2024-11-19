@@ -24,6 +24,8 @@
 
 #include <QtWidgets/private/qapplication_p.h>
 
+#include <QtCore/private/qlocale_p.h> // for QSystemLocale
+
 class DoubleSpinBox : public QDoubleSpinBox
 {
     Q_OBJECT
@@ -184,6 +186,10 @@ private slots:
 
     void stepModifierPressAndHold_data();
     void stepModifierPressAndHold();
+
+    void digitGroupingControl_data();
+    void digitGroupingControl();
+
 public slots:
     void valueChangedHelper(const QString &);
     void valueChangedHelper(double);
@@ -1765,6 +1771,73 @@ void tst_QDoubleSpinBox::stepModifierPressAndHold()
     const auto value = spy.last().at(0);
     QVERIFY(value.userType() == QMetaType::Double);
     QCOMPARE(value.toDouble(), spy.size() * expectedStepModifier);
+}
+
+void tst_QDoubleSpinBox::digitGroupingControl_data()
+{
+    QTest::addColumn<QLocale>("locale");
+
+    QTest::addRow("en_US") << QLocale("en_US");
+    QTest::addRow("C") << QLocale("C");
+#if !defined(QT_NO_SYSTEMLOCALE) && defined(QT_BUILD_INTERNAL)
+    QTest::addRow("system") << QLocale(QLocale::AnyLanguage);
+#endif // !defined(QT_NO_SYSTEMLOCALE) && defined(QT_BUILD_INTERNAL)
+}
+
+void tst_QDoubleSpinBox::digitGroupingControl()
+{
+    QFETCH(QLocale, locale);
+
+#if !defined(QT_NO_SYSTEMLOCALE) && defined(QT_BUILD_INTERNAL)
+    class MySystemLocale : public QSystemLocale
+    {
+        Q_DISABLE_COPY_MOVE(MySystemLocale)
+    public:
+        MySystemLocale(const QLocale &fallback)
+            : m_fallback(fallback)
+        {}
+
+        QVariant query(QueryType type, QVariant &&/*in*/) const override
+        {
+            switch (type) {
+            case GroupSeparator:
+            case DecimalPoint:
+                return QVariant(".");
+            default:
+                break;
+            }
+            return QVariant();
+        }
+
+        QLocale fallbackLocale() const override { return m_fallback; }
+
+    private:
+        const QLocale m_fallback;
+    } customLocale(locale);
+
+    if (locale.language() == QLocale::AnyLanguage) {
+        // For the lifetime of `customLocale`, the system locale will use our
+        // custom implementation above.
+        locale = QLocale::system();
+    }
+#endif // !defined(QT_NO_SYSTEMLOCALE) && defined(QT_BUILD_INTERNAL)
+
+    QDoubleSpinBox spinbox;
+    spinbox.setLocale(locale);
+    spinbox.setRange(-100000, 100000);
+
+    constexpr int precision = 3;
+    constexpr double value = 12345.678;
+    spinbox.setDecimals(precision);
+    spinbox.setValue(value);
+
+    spinbox.setGroupSeparatorShown(true);
+    locale.setNumberOptions(locale.numberOptions() & ~QLocale::OmitGroupSeparator);
+    QCOMPARE(spinbox.text(), locale.toString(value, 'f', precision));
+
+    spinbox.setGroupSeparatorShown(false);
+    locale.setNumberOptions(locale.numberOptions() | QLocale::OmitGroupSeparator);
+    QCOMPARE(spinbox.text(), locale.toString(value, 'f', precision));
 }
 
 QTEST_MAIN(tst_QDoubleSpinBox)

@@ -424,9 +424,7 @@ void QNativeIpcKey::destroy_internal() noexcept
 
 /*!
     \fn QNativeIpcKey::swap(QNativeIpcKey &other) noexcept
-
-    Swaps the native IPC key and type \a other with this object.
-    This operation is very fast and never fails.
+    \memberswap{native IPC key and type}
 */
 
 /*!

@@ -498,11 +498,12 @@ void QTableModel::sort(int column, Qt::SortOrder order)
 {
     QList<QPair<QTableWidgetItem *, int>> sortable;
     QList<int> unsortable;
+    const int numRows = rowCount();
 
-    sortable.reserve(rowCount());
-    unsortable.reserve(rowCount());
+    sortable.reserve(numRows);
+    unsortable.reserve(numRows);
 
-    for (int row = 0; row < rowCount(); ++row) {
+    for (int row = 0; row < numRows; ++row) {
         if (QTableWidgetItem *itm = item(row, column))
             sortable.append(QPair<QTableWidgetItem*,int>(itm, row));
         else
@@ -515,7 +516,6 @@ void QTableModel::sort(int column, Qt::SortOrder order)
     QList<QTableWidgetItem *> sorted_table(tableItems.size());
     QModelIndexList from;
     QModelIndexList to;
-    const int numRows = rowCount();
     const int numColumns = columnCount();
     from.reserve(numRows * numColumns);
     to.reserve(numRows * numColumns);
@@ -1536,7 +1536,7 @@ QTableWidgetItem &QTableWidgetItem::operator=(const QTableWidgetItem &other)
     \ingroup model-view
     \inmodule QtWidgets
 
-    \image windows-tableview.png
+    \image fusion-tableview.png
 
     Table widgets provide standard table display facilities for applications.
     The items in a QTableWidget are provided by QTableWidgetItem.

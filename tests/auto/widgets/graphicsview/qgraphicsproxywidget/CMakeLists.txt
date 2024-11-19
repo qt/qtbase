@@ -16,6 +16,7 @@ qt_internal_add_test(tst_qgraphicsproxywidget
         tst_qgraphicsproxywidget.cpp
     DEFINES
         QTEST_QPA_MOUSE_HANDLING
+        QT_NO_CAST_FROM_ASCII
     LIBRARIES
         Qt::CorePrivate
         Qt::Gui

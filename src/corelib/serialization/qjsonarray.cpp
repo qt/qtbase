@@ -171,8 +171,7 @@ QJsonArray &QJsonArray::operator =(const QJsonArray &other) noexcept = default;
 /*!
     \fn void QJsonArray::swap(QJsonArray &other)
     \since 5.10
-
-    Swaps the array \a other with this. This operation is very fast and never fails.
+    \memberswap{array}
 */
 
 /*! \fn QJsonArray &QJsonArray::operator+=(const QJsonValue &value)

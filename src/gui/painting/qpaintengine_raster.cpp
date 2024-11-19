@@ -3360,6 +3360,9 @@ bool QRasterPaintEngine::shouldDrawCachedGlyphs(QFontEngine *fontEngine, const Q
     if (!fontEngine->hasInternalCaching() && !fontEngine->supportsTransformation(m))
         return false;
 
+    if (fontEngine->supportsTransformation(m) && !fontEngine->isSmoothlyScalable)
+        return true;
+
     return QPaintEngineEx::shouldDrawCachedGlyphs(fontEngine, m);
 }
 

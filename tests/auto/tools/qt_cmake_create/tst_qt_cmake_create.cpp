@@ -1,15 +1,15 @@
 // Copyright (C) 2023 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
-#include <QTest>
-#include <QtTest>
+#include <QtTest/qtest.h>
 
-#include <QLibraryInfo>
-#include <QLatin1StringView>
-#include <QDir>
-#include <QFileInfo>
-#include <QProcess>
-#include <QCryptographicHash>
+#include <QtCore/qcryptographichash.h>
+#include <QtCore/qdir.h>
+#include <QtCore/qfileinfo.h>
+#include <QtCore/qlatin1stringview.h>
+#include <QtCore/qlibraryinfo.h>
+#include <QtCore/qprocess.h>
+#include <QtCore/qstandardpaths.h>
 
 #include <array>
 

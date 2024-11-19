@@ -4090,7 +4090,10 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
         d->drawFocusRing(p, opt->rect, hMargin, vMargin, QMacStylePrivate::CocoaControl(ct, cs));
         break; }
     case CE_MenuEmptyArea:
-        // Skip: PE_PanelMenu fills in everything
+        // for QComboBoxListView
+        if (qobject_cast<const QAbstractItemView *>(w))
+            proxy()->drawPrimitive(PE_PanelMenu, opt, p, w);
+        // otherwise, PE_PanelMenu has already drawn everything
         break;
     case CE_MenuItem:
     case CE_MenuHMargin:

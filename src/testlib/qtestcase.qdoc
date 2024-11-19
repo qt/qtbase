@@ -269,6 +269,36 @@
     \sa QCOMPARE_EQ(), QCOMPARE_NE(), QCOMPARE_LT(), QCOMPARE_LE(), QCOMPARE_GT()
 */
 
+/*! \macro QCOMPARE_3WAY(lhs, rhs, order)
+    \since 6.9
+
+    \relates QTest
+
+    The QCOMPARE_3WAY() macro applies the three-way comparison operator \c {<=>}
+    to the input expressions \a lhs and \a rhs, and checks if the result
+    is \a order.
+    If that is true, execution continues. If not, a
+    failure is recorded in the test log and the test function returns without
+    attempting any later checks.
+    The macro only accepts Qt:: and std:: ordering types as \a order
+    argument, otherwise it asserts.
+    \note \a order can be a Qt:: ordering type even if a
+    \c {decltype(lhs <=> rhs)} is a std one.
+    The result of \c {decltype(lhs <=> rhs)} operation should have the same
+    strength as \a order. Otherwise, applying the macro will result in
+    a compilation error. For example, if the result of \c {decltype(lhs <=> rhs)}
+    has a weak ordering type,  the \a order argument can't have partial
+    or strong ordering types.
+    \note The macro only works if the compiler supports the \c{<=>} operator,
+    and otherwise it statically asserts that the prerequisite feature
+    isn't available. Before a macro usage always check if
+    \c __cpp_lib_three_way_comparison is defined, and use QSKIP, if it isn't.
+
+    \include qtestcase.qdoc macro-usage-limitation
+
+    \include qtestcase.qdoc to-string-overload-desc
+*/
+
 /*! \macro QVERIFY_EXCEPTION_THROWN(expression, exceptiontype)
    \since 5.3
 

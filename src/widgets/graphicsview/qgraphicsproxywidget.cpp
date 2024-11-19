@@ -295,6 +295,15 @@ void QGraphicsProxyWidgetPrivate::sendWidgetMouseEvent(QGraphicsSceneMouseEvent 
 #endif
     }
 
+#ifndef QT_NO_CURSOR
+    // Keep cursor in sync
+    if (lastWidgetUnderMouse) {
+        QCursor widgetsCursor = lastWidgetUnderMouse->cursor();
+        if (q->cursor() != widgetsCursor)
+            q->setCursor(widgetsCursor);
+    }
+#endif
+
     event->setAccepted(mouseEvent.isAccepted());
 }
 

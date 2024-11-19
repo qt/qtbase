@@ -179,11 +179,25 @@ QCocoaWindow::~QCocoaWindow()
 
     [m_view release];
     [m_nsWindow closeAndRelease];
+
+    // Disposing of the view and window should have resulted in an
+    // expose event with isExposed=false, but just in case we try
+    // to stop the display link here as well.
+    static_cast<QCocoaScreen *>(screen())->maybeStopDisplayLink();
 }
 
 QSurfaceFormat QCocoaWindow::format() const
 {
-    return window()->requestedFormat();
+    auto format = window()->requestedFormat();
+    if (auto *view = qnsview_cast(m_view); view.colorSpace) {
+        auto colorSpace = QColorSpace::fromIccProfile(QByteArray::fromNSData(view.colorSpace.ICCProfileData));
+        if (!colorSpace.isValid()) {
+            qCWarning(lcQpaWindow) << "Failed to parse ICC profile for" << view.colorSpace
+                                   << "with ICC data" << view.colorSpace.ICCProfileData;
+        }
+        format.setColorSpace(colorSpace);
+    }
+    return format;
 }
 
 void QCocoaWindow::setGeometry(const QRect &rectIn)
@@ -200,8 +214,6 @@ void QCocoaWindow::setGeometry(const QRect &rectIn)
         const QMargins margins = frameMargins();
         rect.moveTopLeft(rect.topLeft() + QPoint(margins.left(), margins.top()));
     }
-    if (geometry() == rect)
-        return;
 
     setCocoaGeometry(rect);
 }
@@ -463,14 +475,10 @@ void QCocoaWindow::setVisible(bool visible)
     } else {
         // Window not visible, hide it
         if (isContentView()) {
-            if (eventDispatcher()->hasModalSession()) {
+            if (eventDispatcher()->hasModalSession())
                 eventDispatcher()->endModalSession(window());
-            } else {
-                if ([m_view.window isSheet]) {
-                    Q_ASSERT_X(parentCocoaWindow, "QCocoaWindow", "Window modal dialog has no transient parent.");
-                    [parentCocoaWindow->nativeWindow() endSheet:m_view.window];
-                }
-            }
+            else if ([m_view.window isSheet])
+                [m_view.window.sheetParent endSheet:m_view.window];
 
             // Note: We do not guard the order out by checking NSWindow.visible, as AppKit will
             // in some cases, such as when hiding the application, order out and make a window
@@ -1473,18 +1481,6 @@ bool QCocoaWindow::windowShouldClose()
 
 void QCocoaWindow::handleGeometryChange()
 {
-    // Prevent geometry change during initialization, as that will result
-    // in a resize event, and Qt expects those to come after the show event.
-    // FIXME: Remove once we've clarified the Qt behavior for this.
-    if (!m_initialized)
-        return;
-
-    // It can happen that the current NSWindow is nil (if we are changing styleMask
-    // from/to borderless, and the content view is being re-parented), which results
-    // in invalid coordinates.
-    if (m_inSetStyleMask && !m_view.window)
-        return;
-
     QRect newGeometry;
     if (isContentView() && !isEmbedded()) {
         // Content views are positioned at (0, 0) in the window, so we resolve via the window
@@ -1499,6 +1495,24 @@ void QCocoaWindow::handleGeometryChange()
 
     qCDebug(lcQpaWindow) << "QCocoaWindow::handleGeometryChange" << window()
                                << "current" << geometry() << "new" << newGeometry;
+
+    // It can happen that the current NSWindow is nil (if we are changing styleMask
+    // from/to borderless, and the content view is being re-parented), which results
+    // in invalid coordinates.
+    if (m_inSetStyleMask && !m_view.window) {
+        qCDebug(lcQpaWindow) << "Lacking window during style mask update, ignoring geometry change";
+        return;
+    }
+
+    // Prevent geometry change during initialization, as that will result
+    // in a resize event, and Qt expects those to come after the show event.
+    // FIXME: Remove once we've clarified the Qt behavior for this.
+    if (!m_initialized) {
+        // But update the QPlatformWindow reality
+        QPlatformWindow::setGeometry(newGeometry);
+        qCDebug(lcQpaWindow) << "Window still initializing, skipping event";
+        return;
+    }
 
     QWindowSystemInterface::handleGeometryChange(window(), newGeometry);
 
@@ -1537,6 +1551,9 @@ void QCocoaWindow::handleExposeEvent(const QRegion &region)
 
     qCDebug(lcQpaDrawing) << "QCocoaWindow::handleExposeEvent" << window() << region << "isExposed" << isExposed();
     QWindowSystemInterface::handleExposeEvent<QWindowSystemInterface::SynchronousDelivery>(window(), region);
+
+    if (!isExposed())
+        static_cast<QCocoaScreen *>(screen())->maybeStopDisplayLink();
 }
 
 // --------------------------------------------------------------------------

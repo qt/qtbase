@@ -122,9 +122,7 @@ QStorageInfo &QStorageInfo::operator=(const QStorageInfo &other)
 
 /*!
     \fn void QStorageInfo::swap(QStorageInfo &other)
-
-    Swaps this volume info with \a other. This function is very fast and
-    never fails.
+    \memberswap{volume info}
 */
 
 /*!

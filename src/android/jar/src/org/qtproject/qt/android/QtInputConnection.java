@@ -152,10 +152,7 @@ class QtInputConnection extends BaseInputConnection
         QtNativeInputConnection.reportFullscreenMode(enabled);
         // Always ignored on calling editor.
         // Always false on Android 8 and later, true with earlier.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-            return false;
-
-        return true;
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.O;
     }
 
     @Override

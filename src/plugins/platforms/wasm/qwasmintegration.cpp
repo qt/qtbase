@@ -394,7 +394,7 @@ void QWasmIntegration::resizeScreen(const emscripten::val &element)
                    << QString::fromEcmaString(element["id"]);
         return;
     }
-    it->wasmScreen->updateQScreenAndCanvasRenderSize();
+    it->wasmScreen->updateQScreenSize();
 }
 
 void QWasmIntegration::updateDpi()
@@ -410,7 +410,7 @@ void QWasmIntegration::updateDpi()
 void QWasmIntegration::resizeAllScreens()
 {
     for (const auto &elementAndScreen : m_screens)
-        elementAndScreen.wasmScreen->updateQScreenAndCanvasRenderSize();
+        elementAndScreen.wasmScreen->updateQScreenSize();
 }
 
 void QWasmIntegration::loadLocalFontFamilies(emscripten::val families)

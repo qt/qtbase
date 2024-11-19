@@ -1,0 +1,7 @@
+version = 1
+
+[[annotations]]
+path = ["rfc2616.html"]
+precedence = "closest"
+SPDX-FileCopyrightText = "Copyright (C) The Internet Society (1999).  All Rights Reserved."
+SPDX-License-Identifier = "CC0-1.0"

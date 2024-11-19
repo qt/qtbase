@@ -6,3 +6,11 @@ rhel
 centos
 b2qt
 rhel
+
+# QTBUG-130738
+[familyNameWithCommaQuote:weird]
+vxworks
+[familyNameWithCommaQuote:commaSeparatedWeird]
+vxworks
+[familyNameWithCommaQuote:commaSeparatedBogus]
+vxworks

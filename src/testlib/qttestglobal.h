@@ -31,6 +31,7 @@ namespace QTest
         LessThanOrEqual,
         GreaterThan,
         GreaterThanOrEqual,
+        ThreeWayCompare,
     };
 }
 

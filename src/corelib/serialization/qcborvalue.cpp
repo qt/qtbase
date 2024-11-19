@@ -464,8 +464,7 @@ Q_DECL_UNUSED static constexpr quint64 MaximumPreallocatedElementCount =
 
 /*!
     \fn void QCborValue::swap(QCborValue &other)
-
-    Swaps the contents of this QCborValue object and \a other.
+    \memberswap{value}
  */
 
 /*!
@@ -775,6 +774,7 @@ static QCborValue::Type convertToExtendedType(QCborContainerPrivate *d)
     };
 
     switch (tag) {
+#if QT_CONFIG(datestring)
     case qint64(QCborKnownTags::DateTimeString):
     case qint64(QCborKnownTags::UnixTime_t): {
         QDateTime dt;
@@ -814,6 +814,7 @@ static QCborValue::Type convertToExtendedType(QCborContainerPrivate *d)
         }
         break;
     }
+#endif
 
 #ifndef QT_BOOTSTRAPPED
     case qint64(QCborKnownTags::Url):
@@ -2043,6 +2044,7 @@ QCborValue::QCborValue(const QCborValue &other) noexcept
         container->ref.ref();
 }
 
+#if QT_CONFIG(datestring)
 /*!
     Creates a QCborValue object of the date/time extended type and containing
     the value represented by \a dt. The value can later be retrieved using
@@ -2063,6 +2065,7 @@ QCborValue::QCborValue(const QDateTime &dt)
     t = DateTime;
     container->elements[1].type = String;
 }
+#endif
 
 #ifndef QT_BOOTSTRAPPED
 /*!
@@ -2206,6 +2209,7 @@ QString QCborValue::toString(const QString &defaultValue) const
     return container->stringAt(n);
 }
 
+#if QT_CONFIG(datestring)
 /*!
     Returns the date/time value stored in this QCborValue, if it is of the
     date/time extended type. Otherwise, it returns \a defaultValue.
@@ -2229,6 +2233,7 @@ QDateTime QCborValue::toDateTime(const QDateTime &defaultValue) const
     Q_ASSERT((container->elements.at(1).flags & Element::StringIsUtf16) == 0);
     return QDateTime::fromString(byteData->asLatin1(), Qt::ISODateWithMs);
 }
+#endif
 
 #ifndef QT_BOOTSTRAPPED
 /*!
@@ -3173,8 +3178,10 @@ size_t qHash(const QCborValue &value, size_t seed)
         return seed;
     case QCborValue::Double:
         return qHash(value.toDouble(), seed);
+#if QT_CONFIG(datestring)
     case QCborValue::DateTime:
         return qHash(value.toDateTime(), seed);
+#endif
 #ifndef QT_BOOTSTRAPPED
     case QCborValue::Url:
         return qHash(value.toUrl(), seed);
@@ -3308,8 +3315,10 @@ static QDebug debugContents(QDebug &dbg, const QCborValue &v)
         else
             return dbg << v.toDouble();
     }
+#if QT_CONFIG(datestring)
     case QCborValue::DateTime:
         return dbg << v.toDateTime();
+#endif
 #ifndef QT_BOOTSTRAPPED
     case QCborValue::Url:
         return dbg << v.toUrl();

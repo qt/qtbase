@@ -130,9 +130,7 @@ QSqlRecord::QSqlRecord(const QSqlRecord &other)
 /*!
     \fn void QSqlRecord::swap(QSqlRecord &other)
     \since 6.6
-
-    Swaps SQL record \a other with this SQL record. This operation is very fast
-    and never fails.
+    \memberswap{SQL record}
 */
 
 

@@ -38,7 +38,7 @@ struct QGles2Buffer : public QRhiBuffer
     QRhiBuffer::NativeBuffer nativeBuffer() override;
     char *beginFullDynamicBufferUpdateForCurrentFrame() override;
     void endFullDynamicBufferUpdateForCurrentFrame() override;
-    void fullDynamicBufferUpdateForCurrentFrame(const void *data) override;
+    void fullDynamicBufferUpdateForCurrentFrame(const void *data, quint32 size) override;
 
     quint32 nonZeroSize = 0;
     GLuint buffer = 0;
@@ -575,8 +575,8 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
         bool cullFace;
         GLenum cullMode;
         GLenum frontFace;
-        bool blendEnabled;
-        struct ColorMask { bool r, g, b, a; } colorMask;
+        bool blendEnabled[16];
+        struct ColorMask { bool r, g, b, a; } colorMask[16];
         struct Blend {
             GLenum srcColor;
             GLenum dstColor;
@@ -584,7 +584,7 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
             GLenum dstAlpha;
             GLenum opColor;
             GLenum opAlpha;
-        } blend;
+        } blend[16];
         bool depthTest;
         bool depthWrite;
         GLenum depthFunc;
@@ -993,6 +993,7 @@ public:
               bgraInternalFormat(false),
               r8Format(false),
               r16Format(false),
+              r32uiFormat(false),
               floatFormats(false),
               rgb10Formats(false),
               depthTexture(false),
@@ -1025,7 +1026,8 @@ public:
               objectLabel(false),
               glesMultisampleRenderToTexture(false),
               glesMultiviewMultisampleRenderToTexture(false),
-              unpackRowLength(false)
+              unpackRowLength(false),
+              perRenderTargetBlending(false)
         { }
         int ctxMajor;
         int ctxMinor;
@@ -1052,6 +1054,7 @@ public:
         uint bgraInternalFormat : 1;
         uint r8Format : 1;
         uint r16Format : 1;
+        uint r32uiFormat : 1;
         uint floatFormats : 1;
         uint rgb10Formats : 1;
         uint depthTexture : 1;
@@ -1085,6 +1088,7 @@ public:
         uint glesMultisampleRenderToTexture : 1;
         uint glesMultiviewMultisampleRenderToTexture : 1;
         uint unpackRowLength : 1;
+        uint perRenderTargetBlending : 1;
     } caps;
     QGles2SwapChain *currentSwapChain = nullptr;
     QSet<GLint> supportedCompressedFormats;

@@ -660,9 +660,9 @@ QVariant QSystemLocalePrivate::toCurrencyString(const QSystemLocale::CurrencyToS
         format.NumDigits = getLocaleInfo_int(LOCALE_ICURRDIGITS);
         format.LeadingZero = getLocaleInfo_int(LOCALE_ILZERO);
         decimalSep = getLocaleInfo(LOCALE_SMONDECIMALSEP).toString();
-        format.lpDecimalSep = (wchar_t *)decimalSep.utf16();
+        format.lpDecimalSep = reinterpret_cast<wchar_t *>(decimalSep.data());
         thousandSep = getLocaleInfo(LOCALE_SMONTHOUSANDSEP).toString();
-        format.lpThousandSep = (wchar_t *)thousandSep.utf16();
+        format.lpThousandSep = reinterpret_cast<wchar_t *>(thousandSep.data());
         format.NegativeOrder = getLocaleInfo_int(LOCALE_INEGCURR);
         format.PositiveOrder = getLocaleInfo_int(LOCALE_ICURRENCY);
         format.lpCurrencySymbol = (wchar_t *)arg.symbol.utf16();

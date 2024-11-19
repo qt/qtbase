@@ -216,9 +216,7 @@ QOpenGLBuffer &QOpenGLBuffer::operator=(const QOpenGLBuffer &other)
 /*!
     \fn QOpenGLBuffer::swap(QOpenGLBuffer &other)
     \since 6.5
-
-    Swaps buffer \a other with this buffer. This operation is very fast and
-    never fails.
+    \memberswap{buffer}
 */
 
 /*!

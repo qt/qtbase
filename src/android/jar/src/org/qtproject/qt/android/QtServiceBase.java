@@ -9,6 +9,7 @@ import android.os.IBinder;
 import android.util.Log;
 
 import java.lang.IllegalArgumentException;
+import java.util.Objects;
 
 public class QtServiceBase extends Service {
     @Override
@@ -39,7 +40,7 @@ public class QtServiceBase extends Service {
                 stopSelf();
             }
         } catch (IllegalArgumentException e) {
-            Log.w(QtNative.QtTAG, e.getMessage());
+            Log.w(QtNative.QtTAG, Objects.requireNonNull(e.getMessage()));
             stopSelf();
         }
     }

@@ -229,6 +229,7 @@ function(qt_internal_get_qt_build_private_files_to_install out_var)
         QtBaseTopLevelHelpers.cmake
         QtBuild.cmake
         QtBuildHelpers.cmake
+        QtBuildStaticDocToolsScript.cmake
         QtCMakePackageVersionFile.cmake.in
         QtCompilerFlags.cmake
         QtCompilerOptimization.cmake
@@ -288,12 +289,14 @@ function(qt_internal_get_qt_build_public_helpers out_var)
         QtPublicFindPackageHelpers
         QtPublicGitHelpers
         QtPublicPluginHelpers
+        QtPublicPluginHelpers_v2
         QtPublicSbomGenerationHelpers
         QtPublicSbomHelpers
         QtPublicTargetHelpers
         QtPublicTestHelpers
         QtPublicToolHelpers
         QtPublicWalkLibsHelpers
+        QtPublicWindowsHelpers
         PARENT_SCOPE
     )
 endfunction()
@@ -421,10 +424,14 @@ macro(qt_internal_setup_build_and_global_variables)
 
     qt_internal_setup_build_tools()
 
+    qt_internal_setup_sbom()
+
     # Depends on qt_internal_setup_default_install_prefix
     qt_internal_setup_build_examples()
 
     qt_internal_set_qt_host_path()
+
+    qt_internal_setup_build_docs()
 
     qt_internal_include_qt_platform_android()
 

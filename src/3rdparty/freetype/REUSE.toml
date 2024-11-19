@@ -1,0 +1,14 @@
+version = 1
+
+[[annotations]]
+path = ["*"]
+precedence = "closest"
+SPDX-FileCopyrightText = ["Copyright (c) 2006, 2023 David Turner, Robert Wilhelm, and Werner Lemberg."]
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = ["CMakeLists.txt"]
+precedence = "override"
+SPDX-FileCopyrightText = ["Copyright (C) 2013-2024 by David Turner, Robert Wilhelm, and Werner Lemberg.",
+"Copyright (C) 2024 The Qt Company Ltd."]
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"

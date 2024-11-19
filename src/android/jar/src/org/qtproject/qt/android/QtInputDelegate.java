@@ -19,9 +19,6 @@ import android.view.MotionEvent;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 
-import org.qtproject.qt.android.QtInputConnection.QtInputConnectionListener;
-
-/** @noinspection FieldCanBeLocal*/
 class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, QtInputInterface
 {
 
@@ -43,7 +40,7 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
     // handle methods
 
     private QtEditText m_currentEditText = null;
-    private final InputMethodManager m_imm;
+    private InputMethodManager m_imm;
 
     private boolean m_keyboardIsVisible = false;
     private boolean m_isKeyboardHidingAnimationOngoing = false;
@@ -72,10 +69,16 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
 
     private final KeyboardVisibilityListener m_keyboardVisibilityListener;
 
-    QtInputDelegate(Activity activity, KeyboardVisibilityListener listener)
+    QtInputDelegate(KeyboardVisibilityListener listener)
     {
-        this.m_keyboardVisibilityListener = listener;
+        m_keyboardVisibilityListener = listener;
+    }
+
+    void initInputMethodManager(Activity activity)
+    {
         m_imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (m_imm == null)
+            Log.w(TAG, "getSystemService() returned a null InputMethodManager instance");
     }
 
     // QtInputInterface implementation begin
@@ -83,12 +86,14 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
     public void updateSelection(final int selStart, final int selEnd,
                                 final int candidatesStart, final int candidatesEnd)
     {
-        QtNative.runAction(() -> {
-            if (m_imm == null)
-                return;
-
-            m_imm.updateSelection(m_currentEditText, selStart, selEnd, candidatesStart, candidatesEnd);
-        });
+        if (m_imm != null) {
+            QtNative.runAction(() -> {
+                if (m_imm != null) {
+                    m_imm.updateSelection(m_currentEditText, selStart, selEnd,
+                            candidatesStart, candidatesEnd);
+                }
+            });
+        }
     }
 
     @Override
@@ -96,6 +101,9 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
                                      final int x, final int y, final int width, final int height,
                                      final int inputHints, final int enterKeyType)
     {
+        if (m_imm == null)
+            return;
+
         QtNative.runAction(() -> {
             if (m_imm == null || m_currentEditText == null)
                 return;
@@ -104,14 +112,14 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
                 return;
 
             m_currentEditText.setEditTextOptions(enterKeyType, inputHints);
-
             m_currentEditText.setLayoutParams(new QtLayout.LayoutParams(width, height, x, y));
-
             m_currentEditText.requestFocus();
-
             m_currentEditText.postDelayed(() -> {
+                if (m_imm == null)
+                    return;
                 m_imm.showSoftInput(m_currentEditText, 0, new ResultReceiver(new Handler()) {
                     @Override
+                    @SuppressWarnings("fallthrough")
                     protected void onReceiveResult(int resultCode, Bundle resultData) {
                         switch (resultCode) {
                             case InputMethodManager.RESULT_SHOWN:
@@ -171,6 +179,8 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
         if (m_imm == null || m_currentEditText == null)
             return;
         m_currentEditText.postDelayed(() -> {
+            if (m_imm == null || m_currentEditText == null)
+                return;
             m_imm.restartInput(m_currentEditText);
             m_currentEditText.m_optionsChanged = false;
         }, 5);
@@ -179,6 +189,9 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
     @Override
     public void hideSoftwareKeyboard()
     {
+        if (m_imm == null || m_currentEditText == null)
+            return;
+
         m_isKeyboardHidingAnimationOngoing = true;
         QtNative.runAction(() -> {
             if (m_imm == null || m_currentEditText == null)
@@ -269,7 +282,8 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
         if (!visibility) {
             // Hiding the keyboard clears the immersive mode, so we need to set it again.
             m_keyboardVisibilityListener.onKeyboardVisibilityChange();
-            m_currentEditText.clearFocus();
+            if (m_currentEditText != null)
+                m_currentEditText.clearFocus();
         }
     }
 

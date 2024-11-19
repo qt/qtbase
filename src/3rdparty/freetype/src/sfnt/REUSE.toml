@@ -1,0 +1,94 @@
+version = 1
+
+[[annotations]]
+path = ["module.mk", "rules.mk", "sfdriver.c", "sfdriver.h", "sfnt.c", "sfobjs.c", "sfobjs.h", "sfwoff.c",
+        "sfwoff.h", "ttkern.c", "ttkern.h", "ttload.c", "ttload.h", "ttpost.c", "ttpost.h", "ttsbit.h"]
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (C) 1996-2023 by David Turner, Robert Wilhelm, and Werner Lemberg."
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = ["ttsvg.c", "ttsvg.h"]
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (C) 2022-2023 by David Turner, Robert Wilhelm, Werner Lemberg, and Moazin Khatti."
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = ["sfwoff2.c", "sfwoff2.h", "woff2tags.c", "woff2tags.h"]
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (C) 2019-2023 by Nikhil Ramakrishnan, David Turner, Robert Wilhelm, and Werner Lemberg."
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = "ttsbit.c"
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = ["Copyright (C) 2005-2023 by David Turner, Robert Wilhelm, and Werner Lemberg.",
+                          "Copyright 2013 by Google, Inc. Google Author(s): Behdad Esfahbod."]
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = ["pngshim.c", "pngshim.h"]
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (C) 2013-2023 by Google, Inc. Written by Stuart Gill and Behdad Esfahbod."
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = ["ttbdf.c", "ttbdf.h"]
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (C) 2005-2023 by David Turner, Robert Wilhelm, and Werner Lemberg."
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = ["ttmtx.h", "ttmtx.c"]
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (C) 2006-2023 by David Turner, Robert Wilhelm, and Werner Lemberg."
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = "ttcolr.c"
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (C) 2018-2023 by David Turner, Robert Wilhelm, Dominik Röttsches, and Werner Lemberg."
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = "ttcmapc.h"
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (C) 2009-2023 by Oran Agra and Mickey Gabel."
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = ["ttcmap.h", "ttcmap.c"]
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (C) 2002-2023 by David Turner, Robert Wilhelm, and Werner Lemberg."
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = "sferrors.h"
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (C) 2001-2023 by David Turner, Robert Wilhelm, and Werner Lemberg."
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = ["ttcolr.h", "ttcpal.c", "ttcpal.h"]
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (C) 2018-2023 by David Turner, Robert Wilhelm, and Werner Lemberg."
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = ["ttgpos.c", "ttgpos.h"]
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (C) 2024 by David Saltzman"
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"

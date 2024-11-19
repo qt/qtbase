@@ -639,14 +639,9 @@ QDomNodeListPrivate::~QDomNodeListPrivate()
         delete node_impl;
 }
 
-bool QDomNodeListPrivate::operator==(const QDomNodeListPrivate &other) const
+bool QDomNodeListPrivate::operator==(const QDomNodeListPrivate &other) const noexcept
 {
     return (node_impl == other.node_impl) && (tagname == other.tagname);
-}
-
-bool QDomNodeListPrivate::operator!=(const QDomNodeListPrivate &other) const
-{
-    return !operator==(other);
 }
 
 void QDomNodeListPrivate::createList() const
@@ -799,26 +794,26 @@ QDomNodeList& QDomNodeList::operator=(const QDomNodeList &other)
 }
 
 /*!
-    Returns \c true if the node list \a other and this node list are equal;
+    \fn bool QDomNodeList::operator==(const QDomNodeList &lhs, const QDomNodeList &rhs)
+
+    Returns \c true if the node lists \a lhs and \a rhs are equal;
     otherwise returns \c false.
 */
-bool QDomNodeList::operator==(const QDomNodeList &other) const
+bool comparesEqual(const QDomNodeList &lhs, const QDomNodeList &rhs) noexcept
 {
-    if (impl == other.impl)
+    if (lhs.impl == rhs.impl)
         return true;
-    if (!impl || !other.impl)
+    if (!lhs.impl || !rhs.impl)
         return false;
-    return (*impl == *other.impl);
+    return *lhs.impl == *rhs.impl;
 }
 
 /*!
-    Returns \c true the node list \a other and this node list are not equal;
+    \fn bool QDomNodeList::operator!=(const QDomNodeList &lhs, const QDomNodeList &rhs)
+
+    Returns \c true if the node lists \a lhs and \a rhs are not equal;
     otherwise returns \c false.
 */
-bool QDomNodeList::operator!=(const QDomNodeList &other) const
-{
-    return !operator==(other);
-}
 
 /*!
     Destroys the object and frees its resources.

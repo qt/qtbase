@@ -133,6 +133,10 @@ extern void QT_FASTCALL storeRGB32FromARGB32PM_sse4(uchar *dest, const uint *src
 #elif defined(__ARM_NEON__) && (Q_BYTE_ORDER == Q_LITTLE_ENDIAN)
 extern void QT_FASTCALL storeRGB32FromARGB32PM_neon(uchar *dest, const uint *src, int index, int count,
                                                     const QList<QRgb> *, QDitherInfo *);
+#elif defined QT_COMPILER_SUPPORTS_LSX
+// from painting/qdrawhelper_lsx.cpp
+extern void QT_FASTCALL storeRGB32FromARGB32PM_lsx(uchar *dest, const uint *src, int index, int count,
+                                                   const QList<QRgb> *, QDitherInfo *);
 #endif
 
 void convert_generic(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags flags)
@@ -156,6 +160,11 @@ void convert_generic(QImageData *dest, const QImageData *src, Qt::ImageConversio
 #ifdef QT_COMPILER_SUPPORTS_SSE4_1
             if (qCpuHasFeature(SSE4_1))
                 store = storeRGB32FromARGB32PM_sse4;
+            else
+                store = storeRGB32FromARGB32PM;
+#elif defined QT_COMPILER_SUPPORTS_LSX
+            if (qCpuHasFeature(LSX))
+                store = storeRGB32FromARGB32PM_lsx;
             else
                 store = storeRGB32FromARGB32PM;
 #elif defined(__ARM_NEON__) && (Q_BYTE_ORDER == Q_LITTLE_ENDIAN)
@@ -374,6 +383,11 @@ bool convert_generic_inplace(QImageData *data, QImage::Format dst_format, Qt::Im
 #ifdef QT_COMPILER_SUPPORTS_SSE4_1
             if (qCpuHasFeature(SSE4_1))
                 store = storeRGB32FromARGB32PM_sse4;
+            else
+                store = storeRGB32FromARGB32PM;
+#elif defined QT_COMPILER_SUPPORTS_LSX
+            if (qCpuHasFeature(LSX))
+                store = storeRGB32FromARGB32PM_lsx;
             else
                 store = storeRGB32FromARGB32PM;
 #elif defined(__ARM_NEON__) && (Q_BYTE_ORDER == Q_LITTLE_ENDIAN)
@@ -2751,6 +2765,30 @@ static void qInitImageConversions()
         qimage_converter_map[QImage::Format_BGR888][QImage::Format_RGBX8888] = convert_RGB888_to_RGB32_ssse3;
         qimage_converter_map[QImage::Format_BGR888][QImage::Format_RGBA8888] = convert_RGB888_to_RGB32_ssse3;
         qimage_converter_map[QImage::Format_BGR888][QImage::Format_RGBA8888_Premultiplied] = convert_RGB888_to_RGB32_ssse3;
+    }
+#endif
+
+#if defined(QT_COMPILER_SUPPORTS_LSX)
+    if (qCpuHasFeature(LSX)) {
+        extern void convert_RGB888_to_RGB32_lsx(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags);
+        qimage_converter_map[QImage::Format_RGB888][QImage::Format_RGB32] = convert_RGB888_to_RGB32_lsx;
+        qimage_converter_map[QImage::Format_RGB888][QImage::Format_ARGB32] = convert_RGB888_to_RGB32_lsx;
+        qimage_converter_map[QImage::Format_RGB888][QImage::Format_ARGB32_Premultiplied] = convert_RGB888_to_RGB32_lsx;
+        qimage_converter_map[QImage::Format_BGR888][QImage::Format_RGBX8888] = convert_RGB888_to_RGB32_lsx;
+        qimage_converter_map[QImage::Format_BGR888][QImage::Format_RGBA8888] = convert_RGB888_to_RGB32_lsx;
+        qimage_converter_map[QImage::Format_BGR888][QImage::Format_RGBA8888_Premultiplied] = convert_RGB888_to_RGB32_lsx;
+    }
+#endif
+
+#if defined(QT_COMPILER_SUPPORTS_LASX)
+    if (qCpuHasFeature(LASX)) {
+        extern void convert_RGB888_to_RGB32_lasx(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags);
+        qimage_converter_map[QImage::Format_RGB888][QImage::Format_RGB32] = convert_RGB888_to_RGB32_lasx;
+        qimage_converter_map[QImage::Format_RGB888][QImage::Format_ARGB32] = convert_RGB888_to_RGB32_lasx;
+        qimage_converter_map[QImage::Format_RGB888][QImage::Format_ARGB32_Premultiplied] = convert_RGB888_to_RGB32_lasx;
+        qimage_converter_map[QImage::Format_BGR888][QImage::Format_RGBX8888] = convert_RGB888_to_RGB32_lasx;
+        qimage_converter_map[QImage::Format_BGR888][QImage::Format_RGBA8888] = convert_RGB888_to_RGB32_lasx;
+        qimage_converter_map[QImage::Format_BGR888][QImage::Format_RGBA8888_Premultiplied] = convert_RGB888_to_RGB32_lasx;
     }
 #endif
 

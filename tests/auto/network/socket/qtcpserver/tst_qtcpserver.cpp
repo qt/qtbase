@@ -517,7 +517,7 @@ void tst_QTcpServer::setSocketDescriptor()
 #ifdef Q_OS_WIN
     // ensure winsock is started
     WSADATA wsaData;
-    QVERIFY(WSAStartup(MAKEWORD(2,0), &wsaData) == NO_ERROR);
+    QVERIFY(WSAStartup(MAKEWORD(2, 2), &wsaData) == NO_ERROR);
 #endif
 
     SOCKET sock = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);

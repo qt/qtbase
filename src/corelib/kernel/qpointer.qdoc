@@ -143,9 +143,7 @@
 /*!
     \fn template <class T> void QPointer<T>::swap(QPointer &other)
     \since 5.6
-
-    Swaps the contents of this QPointer with the contents of \a other.
-    This operation is very fast and never fails.
+    \memberswap{pointer}
 */
 
 /*!

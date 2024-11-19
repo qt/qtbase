@@ -1147,9 +1147,7 @@ QEasingCurve::~QEasingCurve()
 /*!
     \fn void QEasingCurve::swap(QEasingCurve &other)
     \since 5.0
-
-    Swaps curve \a other with this curve. This operation is very
-    fast and never fails.
+    \memberswap{curve}
 */
 
 /*!

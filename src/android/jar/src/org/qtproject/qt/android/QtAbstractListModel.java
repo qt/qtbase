@@ -3,11 +3,9 @@
 
 package org.qtproject.qt.android;
 
-import java.util.HashMap;
-
 public abstract class QtAbstractListModel extends QtAbstractItemModel
 {
-    public QtAbstractListModel(){};
+    public QtAbstractListModel(){}
 
     @Override public final int columnCount(QtModelIndex parent) { return parent.isValid() ? 0 : 1; }
 
@@ -20,7 +18,7 @@ public abstract class QtAbstractListModel extends QtAbstractItemModel
 
     @Override public final boolean hasChildren(QtModelIndex parent)
     {
-        return parent.isValid() ? false : (rowCount(new QtModelIndex()) > 0);
+        return !parent.isValid() && (rowCount(new QtModelIndex()) > 0);
     }
 
     @Override public QtModelIndex sibling(int row, int column, QtModelIndex parent)

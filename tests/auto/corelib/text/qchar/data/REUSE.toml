@@ -1,0 +1,7 @@
+version = 1
+
+[[annotations]]
+path = ["NormalizationTest.txt"]
+precedence = "closest"
+SPDX-FileCopyrightText = "© 2023 Unicode®, Inc."
+SPDX-License-Identifier = "Unicode-3.0"

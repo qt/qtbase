@@ -32,7 +32,16 @@ android {
 
     sourceSets {
         main {
-            java.srcDir 'src/'
+            java.srcDirs = ['src/', '../../../../qtbase/src/network/android/jar/src',
+                            '../../../../qtbase/src/plugins/networkinformation/android/jar/src',
+                            '../../../../qtwebview/src/jar/src',
+                            '../../../../qtdeclarative/src/quick/platform/android/jar/src',
+                            '../../../../qtconnectivity/src/android/nfc/src',
+                            '../../../../qtconnectivity/src/android/bluetooth/src',
+                            '../../../../qtspeech/src/plugins/tts/android/jar/src',
+                            '../../../../qtmultimedia/src/android/jar/src',
+                            '../../../../qtpositioning/src/plugins/position/android/jar/src'
+            ]
             resources.srcDir 'libs/'
             manifest.srcFile 'AndroidManifest.xml'
             res.srcDirs = ['res/']

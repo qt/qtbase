@@ -9,22 +9,16 @@
 //  W A R N I N G
 //  -------------
 //
-// This file is not part of the Qt API.  It exists for the convenience
-// of qapplication_*.cpp, qwidget*.cpp and qfiledialog.cpp.  This header
-// file may change from version to version without notice, or even be removed.
+// This file is not a normal header file.
+// It defines data tables for internal use by QHijriCalendar.
+// It may change incompatibly between versions, or even be removed.
 //
 // We mean it.
 //
 
-#include <QtCore/private/qglobal_p.h>
-#include <QtCore/private/qcalendarbackend_p.h>
-
 QT_BEGIN_NAMESPACE
 
 namespace QtPrivate::Hijri {
-
-QT_WARNING_PUSH // QTBUG-128930
-QT_WARNING_DISABLE_CLANG("-Wunused-const-variable")
 
 // GENERATED PART STARTS HERE
 
@@ -39,7 +33,7 @@ QT_WARNING_DISABLE_CLANG("-Wunused-const-variable")
     edited) CLDR data; see qtbase/util/locale_database/.
 */
 
-static constexpr QCalendarLocale locale_data[] = {
+static inline constexpr QCalendarLocale locale_data[] = {
      // lang   script terr  sLong  long sShrt short sNarw narow Sizes...
       {     1,     0,     0,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// C/AnyScript/AnyTerritory
       {     2,    27,    90,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// Abkhazian/Cyrillic/Georgia
@@ -717,7 +711,7 @@ static constexpr QCalendarLocale locale_data[] = {
       {     0,     0,     0,    0,    0,    0,    0,    0,    0,  0,  0,  0,  0,  0,  0 },// trailing zeros
 };
 
-static constexpr char16_t months_data[] = {
+static inline constexpr char16_t months_data[] = {
 0x4d, 0x75, 0x68, 0x61, 0x72, 0x72, 0x61, 0x6d, 0x3b, 0x53, 0x61, 0x66,
 0x61, 0x72, 0x3b, 0x52, 0x61, 0x62, 0x69, 0x2bb, 0x20, 0x49, 0x3b, 0x52,
 0x61, 0x62, 0x69, 0x2bb, 0x20, 0x49, 0x49, 0x3b, 0x4a, 0x75, 0x6d, 0x61,
@@ -1793,8 +1787,6 @@ static constexpr char16_t months_data[] = {
 0x3b, 0x417, 0x438, 0x43b, 0x2d, 0x4b3, 0x438, 0x436, 0x436, 0x430
 };
 // GENERATED PART ENDS HERE
-
-QT_WARNING_POP // QTBUG-128930
 
 } // namespace QtPrivate::Hijri
 

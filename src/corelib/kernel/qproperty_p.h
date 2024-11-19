@@ -663,8 +663,8 @@ public:
                         if (bd->notifyObserver_helper(this, storage, observer, bindingObservers)
                                 == QtPrivate::QPropertyBindingData::Evaluated) {
                             // evaluateBindings() can trash the observers. We need to re-fetch here.
-                            if (QPropertyObserverPointer observer = d.firstObserver())
-                                observer.notify(this);
+                            if (QPropertyObserverPointer obs = d.firstObserver())
+                                obs.notify(this);
                             for (auto&& bindingPtr: bindingObservers) {
                                 auto *binding = static_cast<QPropertyBindingPrivate *>(bindingPtr.get());
                                 binding->notifyNonRecursive();

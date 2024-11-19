@@ -254,7 +254,7 @@ might not work properly.
 
 \section3 Customizing Permissions
 
-Since Qt 6.9, it is possible to override the default permissions set
+Since Qt 6.8.1, it is possible to override the default permissions set
 by Qt modules. This is useful if you need to define the same permissions
 as used by a Qt module, but with additional or different attributes.
 

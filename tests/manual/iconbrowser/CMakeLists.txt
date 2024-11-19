@@ -29,6 +29,7 @@ target_link_libraries(iconbrowser PRIVATE
 endif()
 
 if (ANDROID)
+    set(font_uri "MaterialSymbolsOutlined%5BFILL%2CGRAD%2Copsz%2Cwght%5D.ttf")
     set(font_filename "MaterialSymbolsOutlined[FILL,GRAD,opsz,wght].ttf")
     if (QT_ALLOW_DOWNLOAD)
         include(FetchContent)
@@ -36,7 +37,7 @@ if (ANDROID)
         FetchContent_Declare(
             MaterialIcons
             URL
-                "https://github.com/google/material-design-icons/raw/master/variablefont/${font_filename}"
+                "https://github.com/google/material-design-icons/raw/master/variablefont/${font_uri}"
             DOWNLOAD_DIR        ${CMAKE_CURRENT_BINARY_DIR}
             DOWNLOAD_NAME       "${font_filename}"
             DOWNLOAD_NO_EXTRACT TRUE

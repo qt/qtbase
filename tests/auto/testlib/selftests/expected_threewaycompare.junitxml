@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite name="tst_ThreeWayCompare" timestamp="@TEST_START_TIME@" hostname="@HOSTNAME@" tests="52" failures="34" errors="0" skipped="0" time="@TEST_DURATION@">
+  <properties>
+    <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
+    <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
+    <property name="QtBuild" value=""/>
+  </properties>
+  <testcase name="initTestCase" classname="tst_ThreeWayCompare" time="@TEST_DURATION@"/>
+  <testcase name="compareInts(Qt::strong_ordering::equivalent)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@"/>
+  <testcase name="compareInts(Qt::strong_ordering::less)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@">
+    <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
+      <![CDATA[   Left     (lhs): 1
+   Right    (rhs): 2
+   Actual   (lhs <=> rhs)  : Qt::strong_ordering::less
+   Expected (expectedOrder): Qt::strong_ordering::equal]]>
+    </failure>
+  </testcase>
+  <testcase name="compareInts(Qt::strong_ordering::greater)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@">
+    <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
+      <![CDATA[   Left     (lhs): 2
+   Right    (rhs): 1
+   Actual   (lhs <=> rhs)  : Qt::strong_ordering::greater
+   Expected (expectedOrder): Qt::strong_ordering::equal]]>
+    </failure>
+  </testcase>
+  <testcase name="compareFloats(Qt::partial_ordering::equivalent)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@">
+    <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
+      <![CDATA[   Left     (lhs): 1
+   Right    (rhs): 1
+   Actual   (lhs <=> rhs)  : Qt::partial_ordering::equivalent
+   Expected (expectedOrder): Qt::partial_ordering::less]]>
+    </failure>
+  </testcase>
+  <testcase name="compareFloats(Qt::partial_ordering::less)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@"/>
+  <testcase name="compareFloats(Qt::partial_ordering::greater)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@">
+    <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
+      <![CDATA[   Left     (lhs): 1.1
+   Right    (rhs): 1
+   Actual   (lhs <=> rhs)  : Qt::partial_ordering::greater
+   Expected (expectedOrder): Qt::partial_ordering::less]]>
+    </failure>
+  </testcase>
+  <testcase name="compareDoubles(Qt::partial_ordering::equivalent)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@">
+    <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
+      <![CDATA[   Left     (lhs): 0
+   Right    (rhs): 0
+   Actual   (lhs <=> rhs)  : Qt::partial_ordering::equivalent
+   Expected (expectedOrder): Qt::partial_ordering::greater]]>
+    </failure>
+  </testcase>
+  <testcase name="compareDoubles(Qt::partial_ordering::less)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@">
+    <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
+      <![CDATA[   Left     (lhs): 0
+   Right    (rhs): 0.1
+   Actual   (lhs <=> rhs)  : Qt::partial_ordering::less
+   Expected (expectedOrder): Qt::partial_ordering::greater]]>
+    </failure>
+  </testcase>
+  <testcase name="compareDoubles(Qt::partial_ordering::greater)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@"/>
+  <testcase name="comparePointers(Qt::strong_ordering::equivalent)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@"/>
+  <testcase name="comparePointers(Qt::strong_ordering::less)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@">
+    <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
+      <![CDATA[   Left     (lhs): 1
+   Right    (rhs): 2
+   Actual   (lhs <=> rhs)  : Qt::strong_ordering::less
+   Expected (expectedOrder): Qt::strong_ordering::equal]]>
+    </failure>
+  </testcase>
+  <testcase name="comparePointers(Qt::strong_ordering::greater)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@">
+    <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
+      <![CDATA[   Left     (lhs): 2
+   Right    (rhs): 1
+   Actual   (lhs <=> rhs)  : Qt::strong_ordering::greater
+   Expected (expectedOrder): Qt::strong_ordering::equal]]>
+    </failure>
+  </testcase>
+  <testcase name="compareToNullptr(Qt::strong_ordering::equivalent)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@"/>
+  <testcase name="compareToNullptr(Qt::strong_ordering::less)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@">
+    <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
+      <![CDATA[   Left     (lhs): "nullptr"
+   Right    (rhs): 1
+   Actual   (lhs <=> rhs)  : Qt::strong_ordering::less
+   Expected (expectedOrder): Qt::strong_ordering::equal]]>
+    </failure>
+  </testcase>
+  <testcase name="compareToNullptr(Qt::strong_ordering::greater)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@">
+    <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
+      <![CDATA[   Left     (lhs): 1
+   Right    (rhs): "nullptr"
+   Actual   (lhs <=> rhs)  : Qt::strong_ordering::greater
+   Expected (expectedOrder): Qt::strong_ordering::equal]]>
+    </failure>
+  </testcase>
+  <testcase name="compareUnregisteredEnum(Qt::strong_ordering::equivalent)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@">
+    <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
+      <![CDATA[   Left     (lhs): 0
+   Right    (rhs): 0
+   Actual   (lhs <=> rhs)  : Qt::strong_ordering::equal
+   Expected (expectedOrder): Qt::strong_ordering::less]]>
+    </failure>
+  </testcase>
+  <testcase name="compareUnregisteredEnum(Qt::strong_ordering::less)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@"/>
+  <testcase name="compareUnregisteredEnum(Qt::strong_ordering::greater)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@">
+    <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
+      <![CDATA[   Left     (lhs): 1
+   Right    (rhs): 0
+   Actual   (lhs <=> rhs)  : Qt::strong_ordering::greater
+   Expected (expectedOrder): Qt::strong_ordering::less]]>
+    </failure>
+  </testcase>
+  <testcase name="compareRegisteredEnum(Qt::strong_ordering::equivalent)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@">
+    <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
+      <![CDATA[   Left     (lhs): Monday
+   Right    (rhs): Monday
+   Actual   (lhs <=> rhs)  : Qt::strong_ordering::equal
+   Expected (expectedOrder): Qt::strong_ordering::greater]]>
+    </failure>
+  </testcase>
+  <testcase name="compareRegisteredEnum(Qt::strong_ordering::less)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@">
+    <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
+      <![CDATA[   Left     (lhs): Monday
+   Right    (rhs): Sunday
+   Actual   (lhs <=> rhs)  : Qt::strong_ordering::less
+   Expected (expectedOrder): Qt::strong_ordering::greater]]>
+    </failure>
+  </testcase>
+  <testcase name="compareRegisteredEnum(Qt::strong_ordering::greater)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@"/>
+  <testcase name="compareCustomTypes(Qt::strong_ordering::equivalent)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@">
+    <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
+      <![CDATA[   Left     (lhs): MyClass(1)
+   Right    (rhs): MyClass(1)
+   Actual   (lhs <=> rhs)  : Qt::strong_ordering::equal
+   Expected (expectedOrder): Qt::strong_ordering::less]]>
+    </failure>
+  </testcase>
+  <testcase name="compareCustomTypes(Qt::strong_ordering::less)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@"/>
+  <testcase name="compareCustomTypes(Qt::strong_ordering::greater)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@">
+    <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
+      <![CDATA[   Left     (lhs): MyClass(2)
+   Right    (rhs): MyClass(1)
+   Actual   (lhs <=> rhs)  : Qt::strong_ordering::greater
+   Expected (expectedOrder): Qt::strong_ordering::less]]>
+    </failure>
+  </testcase>
+  <testcase name="stdCompareInts(std::strong_ordering::equivalent)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@"/>
+  <testcase name="stdCompareInts(std::strong_ordering::less)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@">
+    <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
+      <![CDATA[   Left     (lhs): 1
+   Right    (rhs): -2
+   Actual   (lhs <=> rhs)  : std::strong_ordering::greater
+   Expected (expectedOrder): std::strong_ordering::equal]]>
+    </failure>
+  </testcase>
+  <testcase name="stdCompareInts(std::strong_ordering::greater)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@">
+    <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
+      <![CDATA[   Left     (lhs): -2
+   Right    (rhs): 1
+   Actual   (lhs <=> rhs)  : std::strong_ordering::less
+   Expected (expectedOrder): std::strong_ordering::equal]]>
+    </failure>
+  </testcase>
+  <testcase name="stdCompareFloats(std::partial_ordering::equivalent)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@">
+    <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
+      <![CDATA[   Left     (lhs): 2
+   Right    (rhs): 2
+   Actual   (lhs <=> rhs)  : std::partial_ordering::equivalent
+   Expected (expectedOrder): std::partial_ordering::less]]>
+    </failure>
+  </testcase>
+  <testcase name="stdCompareFloats(std::partial_ordering::less)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@">
+    <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
+      <![CDATA[   Left     (lhs): 2
+   Right    (rhs): 1.1
+   Actual   (lhs <=> rhs)  : std::partial_ordering::greater
+   Expected (expectedOrder): std::partial_ordering::less]]>
+    </failure>
+  </testcase>
+  <testcase name="stdCompareFloats(std::partial_ordering::greater)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@"/>
+  <testcase name="stdCompareDoubles(std::partial_ordering::equivalent)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@">
+    <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
+      <![CDATA[   Left     (lhs): 0.15
+   Right    (rhs): 0.15
+   Actual   (lhs <=> rhs)  : std::partial_ordering::equivalent
+   Expected (expectedOrder): std::partial_ordering::greater]]>
+    </failure>
+  </testcase>
+  <testcase name="stdCompareDoubles(std::partial_ordering::less)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@">
+    <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
+      <![CDATA[   Left     (lhs): 0.15
+   Right    (rhs): 0.25
+   Actual   (lhs <=> rhs)  : std::partial_ordering::less
+   Expected (expectedOrder): std::partial_ordering::greater]]>
+    </failure>
+  </testcase>
+  <testcase name="stdCompareDoubles(std::partial_ordering::greater)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@"/>
+  <testcase name="stdComparePointers(std::strong_ordering::equivalent)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@"/>
+  <testcase name="stdComparePointers(std::strong_ordering::less)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@">
+    <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
+      <![CDATA[   Left     (lhs): 1
+   Right    (rhs): 2
+   Actual   (lhs <=> rhs)  : std::strong_ordering::less
+   Expected (expectedOrder): std::strong_ordering::equal]]>
+    </failure>
+  </testcase>
+  <testcase name="stdComparePointers(std::strong_ordering::greater)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@">
+    <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
+      <![CDATA[   Left     (lhs): 2
+   Right    (rhs): 1
+   Actual   (lhs <=> rhs)  : std::strong_ordering::greater
+   Expected (expectedOrder): std::strong_ordering::equal]]>
+    </failure>
+  </testcase>
+  <testcase name="stdCompareToNullptr(std::strong_ordering::equivalent)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@"/>
+  <testcase name="stdCompareToNullptr(std::strong_ordering::less)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@">
+    <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
+      <![CDATA[   Left     (lhs): "nullptr"
+   Right    (rhs): 1
+   Actual   (lhs <=> rhs)  : std::strong_ordering::less
+   Expected (expectedOrder): std::strong_ordering::equal]]>
+    </failure>
+  </testcase>
+  <testcase name="stdCompareToNullptr(std::strong_ordering::greater)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@">
+    <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
+      <![CDATA[   Left     (lhs): 1
+   Right    (rhs): "nullptr"
+   Actual   (lhs <=> rhs)  : std::strong_ordering::greater
+   Expected (expectedOrder): std::strong_ordering::equal]]>
+    </failure>
+  </testcase>
+  <testcase name="stdCompareUnregisteredEnum(std::strong_ordering::equivalent)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@">
+    <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
+      <![CDATA[   Left     (lhs): 1
+   Right    (rhs): 1
+   Actual   (lhs <=> rhs)  : std::strong_ordering::equal
+   Expected (expectedOrder): std::strong_ordering::less]]>
+    </failure>
+  </testcase>
+  <testcase name="stdCompareUnregisteredEnum(std::strong_ordering::less)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@">
+    <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
+      <![CDATA[   Left     (lhs): 1
+   Right    (rhs): 0
+   Actual   (lhs <=> rhs)  : std::strong_ordering::greater
+   Expected (expectedOrder): std::strong_ordering::less]]>
+    </failure>
+  </testcase>
+  <testcase name="stdCompareUnregisteredEnum(std::strong_ordering::greater)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@"/>
+  <testcase name="stdCompareRegisteredEnum(std::strong_ordering::equivalent)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@">
+    <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
+      <![CDATA[   Left     (lhs): Monday
+   Right    (rhs): Monday
+   Actual   (lhs <=> rhs)  : std::strong_ordering::equal
+   Expected (expectedOrder): std::strong_ordering::greater]]>
+    </failure>
+  </testcase>
+  <testcase name="stdCompareRegisteredEnum(std::strong_ordering::less)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@">
+    <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
+      <![CDATA[   Left     (lhs): Monday
+   Right    (rhs): Friday
+   Actual   (lhs <=> rhs)  : std::strong_ordering::less
+   Expected (expectedOrder): std::strong_ordering::greater]]>
+    </failure>
+  </testcase>
+  <testcase name="stdCompareRegisteredEnum(std::strong_ordering::greater)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@"/>
+  <testcase name="stdCompareCustomTypes(std::strong_ordering::equivalent)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@">
+    <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
+      <![CDATA[   Left     (lhs): MyClass(1)
+   Right    (rhs): MyClass(1)
+   Actual   (lhs <=> rhs)  : std::strong_ordering::equal
+   Expected (expectedOrder): std::strong_ordering::less]]>
+    </failure>
+  </testcase>
+  <testcase name="stdCompareCustomTypes(std::strong_ordering::less)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@"/>
+  <testcase name="stdCompareCustomTypes(std::strong_ordering::greater)" classname="tst_ThreeWayCompare" time="@TEST_DURATION@">
+    <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
+      <![CDATA[   Left     (lhs): MyClass(2)
+   Right    (rhs): MyClass(1)
+   Actual   (lhs <=> rhs)  : std::strong_ordering::greater
+   Expected (expectedOrder): std::strong_ordering::less]]>
+    </failure>
+  </testcase>
+  <testcase name="checkComparisonForTemporaryObjects" classname="tst_ThreeWayCompare" time="@TEST_DURATION@">
+    <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
+      <![CDATA[   Left     (getClassForValue(0).getValuePointer()): MyClass(2) on memory address with index 0
+   Right    (getClassForValue(1).getValuePointer()): MyClass(1) on memory address with index 1
+   Actual   (getClassForValue(0).getValuePointer() <=> getClassForValue(1).getValuePointer()): std::strong_ordering::less
+   Expected (std::strong_ordering::equal)                                                    : std::strong_ordering::equal]]>
+    </failure>
+  </testcase>
+  <testcase name="checkWeakComparison" classname="tst_ThreeWayCompare" time="@TEST_DURATION@">
+    <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
+      <![CDATA[   Left     (june)     : 2012/06/20 14:33:02.500[CEST]
+   Right    (juneLater): 2012/06/20 14:33:02.501[CEST]
+   Actual   (june <=> juneLater)        : Qt::weak_ordering::less
+   Expected (Qt::weak_ordering::greater): Qt::weak_ordering::greater]]>
+    </failure>
+  </testcase>
+  <testcase name="cleanupTestCase" classname="tst_ThreeWayCompare" time="@TEST_DURATION@"/>
+</testsuite>

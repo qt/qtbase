@@ -1273,6 +1273,20 @@ QByteArray QMetaEnum::valueToKeys(int value) const
     return valueToKeys(quint64(uint(value)));
 }
 
+
+#include "qstring.h"
+
+QString QtPrivate::argToQString(QStringView pattern, size_t n, const ArgBase **args)
+{
+    return argToQString(QAnyStringView{pattern}, n, args);
+}
+
+QString QtPrivate::argToQString(QLatin1StringView pattern, size_t n, const ArgBase **args)
+{
+    return argToQString(QAnyStringView{pattern}, n, args);
+}
+
+
 #include "quuid.h"
 
 bool QUuid::isNull() const noexcept

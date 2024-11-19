@@ -100,9 +100,7 @@
 
 /*!
     \fn template <class T> void QSet<T>::swap(QSet<T> &other)
-
-    Swaps set \a other with this set. This operation is very fast and
-    never fails.
+    \memberswap{set}
 */
 
 /*!

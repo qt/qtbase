@@ -81,6 +81,49 @@
     <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
   </TestFunction>
+  <TestFunction name="compare_stringLiterals">
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
+      <Description><![CDATA[Compared values are not the same
+   Actual   (lhs): "abc"
+   Expected (u""): ]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
+      <Description><![CDATA[The computed value is expected to be equal to the baseline, but is not
+   Computed (lhs): "abc"
+   Baseline (u""): ]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
+      <Description><![CDATA[Compared values are not the same
+   Actual   (lhs)    : "abc"
+   Expected (u"abcd"): abcd]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
+      <Description><![CDATA[The computed value is expected to be equal to the baseline, but is not
+   Computed (lhs)    : "abc"
+   Baseline (u"abcd"): abcd]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
+      <Description><![CDATA[Compared values are not the same
+   Actual   (lhs): "abc"
+   Expected ("") : ]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
+      <Description><![CDATA[The computed value is expected to be equal to the baseline, but is not
+   Computed (lhs): "abc"
+   Baseline ("") : ]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
+      <Description><![CDATA[Compared values are not the same
+   Actual   (lhs)   : "abc"
+   Expected ("abcd"): abcd]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
+      <Description><![CDATA[The computed value is expected to be equal to the baseline, but is not
+   Computed (lhs)   : "abc"
+   Baseline ("abcd"): abcd]]></Description>
+    </Incident>
+    <Duration msecs="0"/>
+  </TestFunction>
   <TestFunction name="compare_tostring">
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
       <DataTag><![CDATA[int, string]]></DataTag>

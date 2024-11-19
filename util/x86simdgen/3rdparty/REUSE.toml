@@ -1,0 +1,8 @@
+version = 1
+
+[[annotations]]
+path = ["**.conf"]
+comment = "assuming the .conf file have the same copyright and license as the .pl"
+precedence = "closest"
+SPDX-FileCopyrightText = "Copyright 2022 Intel Corporation"
+SPDX-License-Identifier = "Apache-2.0"

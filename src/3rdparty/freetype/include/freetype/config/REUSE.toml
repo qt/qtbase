@@ -1,0 +1,28 @@
+version = 1
+
+[[annotations]]
+path = "ftmodule.h"
+precedence = "override"
+SPDX-FileCopyrightText = "None"
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = ["mac-support.h", "integer-types.h", "ftoption.h", "ftheader.h", "ftconfig.h"]
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (C) 1996-2023 by Just van Rossum, David Turner, Robert Wilhelm, and Werner Lemberg."
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = "ftstdlib.h"
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (C) 2002-2023 by David Turner, Robert Wilhelm, and Werner Lemberg."
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = "public-macros.h"
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (C) 2020-2023 by David Turner, Robert Wilhelm, and Werner Lemberg."
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"

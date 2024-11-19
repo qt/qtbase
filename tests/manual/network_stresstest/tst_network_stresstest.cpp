@@ -82,7 +82,7 @@ tst_NetworkStressTest::tst_NetworkStressTest()
     WSAData wsadata;
 
     // IPv6 requires Winsock v2.0 or better.
-    WSAStartup(MAKEWORD(2,0), &wsadata);
+    WSAStartup(MAKEWORD(2, 2), &wsadata);
 #elif defined(Q_OS_UNIX)
     ::signal(SIGALRM, SIG_IGN);
 #endif

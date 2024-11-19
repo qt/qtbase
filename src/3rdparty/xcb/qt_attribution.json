@@ -7,10 +7,12 @@
  the system, pass -no-bundled-xcb-xinput.",
     "Description": "XInput 2 extension for XCB (The X protocol C-language Binding) library.",
     "Homepage": "https://xcb.freedesktop.org/",
+    "PURL": "pkg:generic/xcb-xinput?download_url=http://xcb.freedesktop.org/",
     "License": "MIT License",
     "LicenseId": "MIT",
     "LicenseFile": "LICENSE",
     "Copyright": ["Copyright (C) 2001-2006 Bart Massey, Jamey Sharp, and Josh Triplett.",
     "Copyright (C) 2006 Peter Hutterer",
-    "Copyright (C) 2013 Daniel Martin"]
+    "Copyright (C) 2013 Daniel Martin"],
+    "Comment": "no relevant CPE found"
 }

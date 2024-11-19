@@ -10,10 +10,17 @@ import java.util.List;
 import org.qtproject.qt.android.QtAbstractItemModel;
 import org.qtproject.qt.android.QtModelIndex;
 
-public class TestQtAbstractItemModel extends QtAbstractItemModel
+public class TestQtAbstractItemModel
+        extends QtAbstractItemModel implements QtAbstractItemModel.OnDataChangedListener
 {
     int m_rows = 0;
     int m_cols = 0;
+    int m_dataChangedCount = 0;
+
+    public TestQtAbstractItemModel()
+    {
+        setOnDataChangedListener(this);
+    }
 
     @Override
     public int columnCount(QtModelIndex parent)
@@ -92,6 +99,18 @@ public class TestQtAbstractItemModel extends QtAbstractItemModel
         endInsertRows();
     }
 
+    @Override
+    public boolean setData(QtModelIndex index, Object value, int role)
+    {
+        dataChanged(index, index , new int[]{role});
+        return true;
+    }
+
+    @Override
+    public void onDataChanged(QtModelIndex topLeft, QtModelIndex bottomRight, int[] roles) {
+        m_dataChangedCount++;
+    }
+
     public void addRow()
     {
         beginInsertRows(new QtModelIndex(), m_rows, m_rows);
@@ -130,5 +149,6 @@ public class TestQtAbstractItemModel extends QtAbstractItemModel
         m_rows = 0;
         m_cols = 0;
         endResetModel();
+        m_dataChangedCount = 0;
     }
 }

@@ -12,6 +12,7 @@
 #include <QtCore/qjniobject.h>
 #include <QtCore/qjnitypes.h>
 #include <QtCore/qstring.h>
+#include <QSignalSpy>
 
 using namespace Qt::Literals;
 
@@ -39,6 +40,8 @@ private slots:
     void fetchMore();
     void hasIndex();
     void data();
+    void setData_data();
+    void setData();
 };
 
 void tst_AndroidItemModel::initTestCase_data()
@@ -202,6 +205,51 @@ void tst_AndroidItemModel::data()
             }
         }
     }
+}
+
+void tst_AndroidItemModel::setData_data()
+{
+    QTest::addColumn<int>("row");
+    QTest::addColumn<int>("column");
+    QTest::addColumn<int>("role");
+
+    QTest::newRow("role0") << 0 << 0 << 0;
+    QTest::newRow("role1") << 0 << 0 << 1;
+    QTest::newRow("role2") << 0 << 0 << 2;
+}
+
+void tst_AndroidItemModel::setData()
+{
+    QFETCH_GLOBAL(bool, isList);
+    QFETCH(int, row);
+    QFETCH(int, column);
+    QFETCH(int, role);
+
+    QSignalSpy spy(qProxy, &QAbstractItemModel::dataChanged);
+
+    jModel.callMethod<void>("addRow");
+    if (!isList)
+        jModel.callMethod<void>("addCol");
+
+    QCOMPARE_EQ(qProxy->rowCount(), 1);
+    QCOMPARE_EQ(qProxy->columnCount(), 1);
+
+    JQtModelIndex index = jModel.callMethod<JQtModelIndex>("index", row, column, JQtModelIndex());
+    QVERIFY(jModel.callMethod<jboolean>("setData", index, QJniObject(Void()), role));
+    QTRY_COMPARE(spy.count(), 1);
+
+    const QList<QVariant> arguments = spy.takeFirst();
+    QCOMPARE(arguments.size(), 3);
+
+    const auto topLeft = qvariant_cast<QModelIndex>(arguments.at(0));
+    const auto bottomRight = qvariant_cast<QModelIndex>(arguments.at(1));
+    const auto roles = qvariant_cast<QList<int>>(arguments.at(2));
+
+    QCOMPARE(topLeft, qProxy->index(row, column, QModelIndex()));
+    QCOMPARE(bottomRight, qProxy->index(row, column, QModelIndex()));
+    QCOMPARE(roles, QList<int>{role});
+
+    QTRY_COMPARE(jModel.getField<jint>("m_dataChangedCount"), 1);
 }
 
 void tst_AndroidItemModel::resetModel()

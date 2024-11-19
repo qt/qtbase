@@ -58,7 +58,7 @@ class QtNetwork
     static ProxyInfo getProxyInfo(final Context context)
     {
         if (m_proxyInfo == null)
-            m_proxyInfo = (ProxyInfo)getConnectivityManager(context).getDefaultProxy();
+            m_proxyInfo = getConnectivityManager(context).getDefaultProxy();
         return m_proxyInfo;
     }
 }

@@ -112,6 +112,12 @@ set(subprograms
     watchdog
 )
 
+if(FEATURE_cxx20)
+  list(APPEND subprograms
+      threewaycompare
+  )
+endif()
+
 if(TARGET Qt::Gui)
     list(APPEND subprograms
         keyboard

@@ -117,6 +117,10 @@ with open_input_file(inputfile) as f:
                 if 'value="0x' in line and 'type="string"' in line:
                     line = transform_hex_value(line)
 
+                # Need more tolerance in SVG magic
+                if '&lt;svg' in line and 'offset="0"' in line:
+                    line = line.replace('offset="0"', 'offset="0:100"')
+
             if '<mime-info xmlns' in line:
                 line += """
   <!-- Qt additions START -->

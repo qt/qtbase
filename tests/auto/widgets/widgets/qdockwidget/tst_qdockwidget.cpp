@@ -2001,8 +2001,8 @@ void tst_QDockWidget::saveAndRestore()
     // Compare positions, sizes and floating status
     // If the test fails in the following 12 lines,
     // the de-serialization format/sequence have changed
-    QCOMPARE(topLeft1, d1->pos());
-    QCOMPARE(topLeft2, d2->pos());
+    QTRY_COMPARE(topLeft1, d1->pos());
+    QTRY_COMPARE(topLeft2, d2->pos());
     QCOMPARE(widgetSize1, d1->size());
     QCOMPARE(widgetSize2, d2->size());
     QVERIFY(d1->isFloating());

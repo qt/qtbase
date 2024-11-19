@@ -115,9 +115,7 @@ QNetworkRequestFactory &QNetworkRequestFactory::operator=(const QNetworkRequestF
 
 /*!
     \fn void QNetworkRequestFactory::swap(QNetworkRequestFactory &other)
-
-    Swaps this factory with \a other. This operation is
-    very fast and never fails.
+    \memberswap{factory}
  */
 
 /*!

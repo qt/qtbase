@@ -159,15 +159,13 @@ void QEvdevMouseHandler::sendMouseEvent()
     if (!m_abs) {
         x = m_x - m_prevx;
         y = m_y - m_prevy;
-    }
-    else {
+        if (m_prevInvalid) {
+            x = y = 0;
+            m_prevInvalid = false;
+        }
+    } else {
         x = m_x / m_hardwareScalerX;
         y = m_y / m_hardwareScalerY;
-    }
-
-    if (m_prevInvalid) {
-        x = y = 0;
-        m_prevInvalid = false;
     }
 
     if (m_eventType == QEvent::MouseMove)

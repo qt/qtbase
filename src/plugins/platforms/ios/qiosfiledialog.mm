@@ -100,7 +100,7 @@ bool QIOSFileDialog::showImagePickerDialog(QWindow *parent)
         [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 if (status == PHAuthorizationStatusAuthorized) {
-                    if (thisGuard && winGuard)
+                    if (thisGuard && (winGuard || !parent))
                         thisGuard->showImagePickerDialog_helper(winGuard);
 
                 } else if (thisGuard) {

@@ -4,6 +4,7 @@
 #include "qtimezoneprivate_p.h"
 
 #include <chrono>
+#include <optional>
 
 QT_BEGIN_NAMESPACE
 
@@ -34,6 +35,41 @@ static const std::chrono::time_zone *idToZone(std::string_view id)
     EXCEPTION_CHECKED(return get_tzdb().locate_zone(id), return nullptr);
 }
 
+static const std::vector<std::string_view> getAllZoneIds(std::optional<int> offset = std::nullopt)
+{
+    const tzdb &db = get_tzdb(); // May throw std::runtime_error.
+    std::vector<std::string_view> raw, links, all;
+    auto now = system_clock::now();
+    for (const time_zone &zone : db.zones) {
+        if (offset) {
+            const sys_info info = zone.get_info(now);
+            if (info.offset.count() != *offset)
+                continue;
+        }
+        raw.push_back(zone.name());
+    }
+    for (const time_zone_link &link : db.links) {
+        if (offset) {
+            const std::string_view target = link.target();
+            const time_zone *zone = db.locate_zone(target);
+            const sys_info info = zone->get_info(now);
+            if (info.offset.count() != *offset)
+                continue;
+        }
+        links.push_back(link.name());
+    }
+    // Each is sorted, so we can unite them; and the result shall be sorted.
+    all.reserve(raw.size() + links.size());
+    std::set_union(raw.begin(), raw.end(), links.begin(), links.end(), std::back_inserter(all));
+    return all;
+}
+
+static const std::optional<std::vector<std::string_view>>
+allZoneIds(std::optional<int> offset = std::nullopt)
+{
+    EXCEPTION_CHECKED(return getAllZoneIds(offset), return std::nullopt);
+}
+
 static QChronoTimeZonePrivate::Data
 fromSysInfo(std::chrono::sys_info info, qint64 atMSecsSinceEpoch)
 {
@@ -59,8 +95,51 @@ QChronoTimeZonePrivate::QChronoTimeZonePrivate(QByteArrayView id)
         m_id.assign(m_timeZone->name());
 }
 
+QChronoTimeZonePrivate *QChronoTimeZonePrivate::clone() const
+{
+    return new QChronoTimeZonePrivate(*this);
+}
+
 QChronoTimeZonePrivate::~QChronoTimeZonePrivate()
         = default;
+
+QByteArray QChronoTimeZonePrivate::systemTimeZoneId() const
+{
+    if (const time_zone *zone = std::chrono::current_zone()) {
+        std::string_view name = zone->name();
+        return {name.data(), qsizetype(name.size())};
+    }
+    return {};
+}
+
+bool QChronoTimeZonePrivate::isTimeZoneIdAvailable(const QByteArray &ianaId) const
+{
+    return idToZone(std::string_view(ianaId.data(), ianaId.size())) != nullptr;
+}
+
+QList<QByteArray> QChronoTimeZonePrivate::availableTimeZoneIds() const
+{
+    QList<QByteArray> result;
+    if (auto ids = allZoneIds()) {
+        result.reserve(ids->size());
+        for (std::string_view id : *ids)
+            result << QByteArray{id.data(), qsizetype(id.size())};
+        // Order preserved; they were already sorted and unique.
+    }
+    return result;
+}
+
+QList<QByteArray> QChronoTimeZonePrivate::availableTimeZoneIds(int utcOffset) const
+{
+    QList<QByteArray> result;
+    if (auto ids = allZoneIds(utcOffset)) {
+        result.reserve(ids->size());
+        for (std::string_view id : *ids)
+            result << QByteArray{id.data(), qsizetype(id.size())};
+        // Order preserved; they were already sorted and unique.
+    }
+    return result;
+}
 
 QString QChronoTimeZonePrivate::abbreviation(qint64 atMSecsSinceEpoch) const
 {

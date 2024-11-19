@@ -5,25 +5,22 @@
 #ifndef TST_DATABASES_H
 #define TST_DATABASES_H
 
-#include <QSqlDatabase>
-#include <QSqlDriver>
-#include <QSqlError>
-#include <QSqlQuery>
-#include <QSqlRecord>
-#include <QRegularExpression>
-#include <QRegularExpressionMatch>
-#include <QDir>
-#include <QScopedPointer>
-#include <QVariant>
-#include <QDebug>
-#include <QSqlTableModel>
-#include <QJsonArray>
-#include <QJsonObject>
-#include <QJsonDocument>
-#include <QSysInfo>
-#include <QVersionNumber>
-#include <QtSql/private/qsqldriver_p.h>
-#include <QTest>
+#include <QtTest/qtest.h>
+
+#include <QtSql/qsqldatabase.h>
+#include <QtSql/qsqldriver.h>
+#include <QtSql/qsqlerror.h>
+#include <QtSql/qsqlquery.h>
+#include <QtSql/qsqlrecord.h>
+#include <QtSql/qsqltablemodel.h>
+
+#include <QtCore/qjsonarray.h>
+#include <QtCore/qjsondocument.h>
+#include <QtCore/qjsonobject.h>
+#include <QtCore/qregularexpression.h>
+#include <QtCore/qscopedpointer.h>
+#include <QtCore/qtemporarydir.h>
+#include <QtCore/qversionnumber.h>
 
 using namespace Qt::StringLiterals;
 

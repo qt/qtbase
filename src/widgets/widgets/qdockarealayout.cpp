@@ -1474,7 +1474,7 @@ QList<int> QDockAreaLayoutInfo::indexOfPlaceHolder(const QString &objectName) co
     return QList<int>();
 }
 
-QList<int> QDockAreaLayoutInfo::indexOf(QWidget *widget) const
+QList<int> QDockAreaLayoutInfo::indexOf(const QWidget *widget) const
 {
     for (int i = 0; i < item_list.size(); ++i) {
         const QDockAreaLayoutItem &item = item_list.at(i);
@@ -2458,7 +2458,7 @@ QList<int> QDockAreaLayout::indexOfPlaceHolder(const QString &objectName) const
     return QList<int>();
 }
 
-QList<int> QDockAreaLayout::indexOf(QWidget *dockWidget) const
+QList<int> QDockAreaLayout::indexOf(const QWidget *dockWidget) const
 {
     for (int i = 0; i < QInternal::DockCount; ++i) {
         QList<int> result = docks[i].indexOf(dockWidget);

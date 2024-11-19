@@ -147,6 +147,11 @@ function(_qt_internal_add_wasm_extra_exported_methods target)
             "SHELL:-s EXPORTED_RUNTIME_METHODS=${wasm_default_exported_methods}"
         )
     endif()
+    # TODO: Remove these flags when LLVM got fixed - QTBUG-131279
+    if(QT_FEATURE_thread)
+         target_link_options("${target}" PRIVATE
+                "SHELL:-s EXPORTED_FUNCTIONS=_main,__embind_initialize_bindings")
+    endif()
 endfunction()
 
 function(_qt_internal_set_wasm_export_name target)

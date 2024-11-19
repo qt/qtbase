@@ -1,14 +1,20 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
-
-#include <QTest>
 #include "../../kernel/qsqldatabase/tst_databases.h"
-#include <QtSql>
+
+#include <QtTest/qtest.h>
+#include <QtTest/qsignalspy.h>
+
+#include <QtSql/qsqltablemodel.h>
+#include <QtSql/qsqldriver.h>
+#include <QtSql/qsqlfield.h>
+
+#include <QtCore/qthread.h>
+#include <QtCore/qelapsedtimer.h>
+#include <QtCore/qvariant.h>
+
 #include <QtSql/private/qsqltablemodel_p.h>
-#include <QThread>
-#include <QElapsedTimer>
-#include <QSignalSpy>
 
 // In order to catch when the warning message occurs, indicating that the database belongs to another
 // thread, we have to install our own message handler. To ensure that the test reporting still happens

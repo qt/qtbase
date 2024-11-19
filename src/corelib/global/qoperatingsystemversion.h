@@ -138,6 +138,7 @@ public:
 class QOperatingSystemVersion : public QOperatingSystemVersionBase
 {
     using QOperatingSystemVersionUnexported = QOperatingSystemVersionBase;
+public:
 #endif
 
     // ### Qt7: Regroup with the rest below

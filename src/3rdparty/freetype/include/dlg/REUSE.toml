@@ -1,0 +1,7 @@
+version = 1
+
+[[annotations]]
+path = "*"
+precedence = "closest"
+SPDX-FileCopyrightText = "Copyright (c) 2019 nyorain"
+SPDX-License-Identifier = "BSL-1.0"

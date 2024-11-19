@@ -94,7 +94,11 @@ public:
     static void setSetuidAllowed(bool allow);
     static bool isSetuidAllowed();
 
+#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0)
+    static QCoreApplication *instance() noexcept { return self.loadRelaxed(); }
+#else
     static QCoreApplication *instance() noexcept { return self; }
+#endif
 
 #ifndef QT_NO_QOBJECT
     static int exec();
@@ -227,7 +231,11 @@ private:
     static QStringList libraryPathsLocked();
 #endif
 
+#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0)
+    static QBasicAtomicPointer<QCoreApplication> self;
+#else
     static QCoreApplication *self;
+#endif
 
     Q_DISABLE_COPY(QCoreApplication)
 

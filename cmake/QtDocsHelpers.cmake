@@ -17,6 +17,10 @@ function(qt_internal_add_doc_tool_dependency doc_target tool_name)
 endfunction()
 
 function(qt_internal_add_docs)
+    if(NOT QT_BUILD_DOCS)
+        return()
+    endif()
+
     if(${ARGC} EQUAL 1)
         # Function called from old generated CMakeLists.txt that was missing the target parameter
         return()
@@ -39,7 +43,7 @@ function(qt_internal_add_docs)
     if (${ARGC} GREATER 2)
         # The INDEX_DIRECTORIES key should enable passing a list of index
         # directories as extra command-line arguments to qdoc.
-        set(qdocExtraArgs INDEX_DIRECTORIES)
+        set(qdocExtraArgs "INDEX_DIRECTORIES;DEFINES")
         cmake_parse_arguments(PARSE_ARGV 2 arg "" "" "${qdocExtraArgs}")
         if(arg_UNPARSED_ARGUMENTS)
             message(FATAL_ERROR ${error_msg})
@@ -64,6 +68,10 @@ function(qt_internal_add_docs)
         set(tool_dependencies_enabled FALSE)
         set(doc_tools_bin "${QT_HOST_PATH}/${QT${PROJECT_VERSION_MAJOR}_HOST_INFO_BINDIR}")
         set(doc_tools_libexec "${QT_HOST_PATH}/${QT${PROJECT_VERSION_MAJOR}_HOST_INFO_LIBEXECDIR}")
+    elseif(NOT "${QT_OPTIONAL_TOOLS_PATH}" STREQUAL "")
+        set(tool_dependencies_enabled FALSE)
+        set(doc_tools_bin "${QT_OPTIONAL_TOOLS_PATH}/${INSTALL_BINDIR}")
+        set(doc_tools_libexec "${QT_OPTIONAL_TOOLS_PATH}/${INSTALL_LIBEXECDIR}")
     elseif(QT_SUPERBUILD)
         set(doc_tools_bin "${QtBase_BINARY_DIR}/${INSTALL_BINDIR}")
         set(doc_tools_libexec "${QtBase_BINARY_DIR}/${INSTALL_LIBEXECDIR}")
@@ -72,9 +80,15 @@ function(qt_internal_add_docs)
         set(doc_tools_libexec "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/${INSTALL_LIBEXECDIR}")
     endif()
 
-    set(qdoc_bin "${doc_tools_bin}/qdoc${CMAKE_EXECUTABLE_SUFFIX}")
-    set(qtattributionsscanner_bin "${doc_tools_libexec}/qtattributionsscanner${CMAKE_EXECUTABLE_SUFFIX}")
-    set(qhelpgenerator_bin "${doc_tools_libexec}/qhelpgenerator${CMAKE_EXECUTABLE_SUFFIX}")
+    if(CMAKE_HOST_WIN32)
+        set(executable_suffix ".exe")
+    else()
+        set(executable_suffix "")
+    endif()
+
+    set(qdoc_bin "${doc_tools_bin}/qdoc${executable_suffix}")
+    set(qtattributionsscanner_bin "${doc_tools_libexec}/qtattributionsscanner${executable_suffix}")
+    set(qhelpgenerator_bin "${doc_tools_libexec}/qhelpgenerator${executable_suffix}")
 
     get_target_property(target_type ${target} TYPE)
     if (NOT target_type STREQUAL "INTERFACE_LIBRARY")
@@ -163,6 +177,11 @@ function(qt_internal_add_docs)
         "QT_VERSION_TAG=${PROJECT_VERSION_MAJOR}${PROJECT_VERSION_MINOR}${PROJECT_VERSION_PATCH}"
         "BUILDDIR=${target_bin_dir}"
     )
+    if(arg_DEFINES)
+        foreach(define ${arg_DEFINES})
+            list(APPEND qdoc_env_args "${define}")
+        endforeach()
+    endif()
 
     add_custom_target(prepare_docs_${target}
         COMMAND ${CMAKE_COMMAND} -E env ${qdoc_env_args}

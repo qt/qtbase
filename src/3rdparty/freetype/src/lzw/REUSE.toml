@@ -1,0 +1,13 @@
+version = 1
+
+[[annotations]]
+path = ["ftzopen.h", "ftzopen.c"]
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (C) 2005-2023 by David Turner, Robert Wilhelm, and Werner Lemberg."
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = ["rules.mk", "ftlzw.c"]
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (C) 2004-2023 by David Turner, Robert Wilhelm, and Werner Lemberg."
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"

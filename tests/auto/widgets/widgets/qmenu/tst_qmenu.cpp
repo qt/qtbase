@@ -118,6 +118,8 @@ private slots:
     void nestedTearOffDetached();
     void closeMenuOnClickIfMouseHasntMoved();
 
+    void invisibleActions();
+
 protected slots:
     void onActivated(QAction*);
     void onHighlighted(QAction*);
@@ -2143,6 +2145,38 @@ void tst_QMenu::closeMenuOnClickIfMouseHasntMoved()
     // Do a mouse click without having moved the cursor. This
     // should close the menu, even if it's underneath the mouse.
     QTest::mouseClick(&contextMenu, Qt::RightButton, {}, contextMenu.mapFromGlobal(pos));
+}
+
+void tst_QMenu::invisibleActions()
+{
+    QWidget window;
+    window.resize(100, 100);
+    window.show();
+
+    const QPoint globalPos = window.mapToGlobal(window.rect().center());
+
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+
+    QMenu contextMenu;
+    QList<QAction *> actions;
+    for (int i = 0; i < 5; ++i)
+        actions << contextMenu.addAction("action");
+    QVERIFY(contextMenu.sizeHint().isValid());
+
+    contextMenu.popup(globalPos);
+    QVERIFY(contextMenu.isVisible());
+
+    contextMenu.close();
+
+    for (const auto &action : actions)
+        action->setVisible(false);
+
+    contextMenu.popup(globalPos);
+    QCOMPARE(contextMenu.isVisible(), contextMenu.sizeHint().isValid());
+
+    // if it wasn't shown previously, then exec() shouldn't do anything either
+    if (!contextMenu.isVisible())
+        QVERIFY(!contextMenu.exec());
 }
 
 QTEST_MAIN(tst_QMenu)

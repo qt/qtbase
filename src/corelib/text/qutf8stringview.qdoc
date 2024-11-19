@@ -761,3 +761,12 @@
 
     Returns maxSize().
 */
+
+/*!
+    \fn template <typename...Args> QString QUtf8StringView::arg(Args &&...args) const
+    \since 6.9
+
+    \include qstringview.cpp qstring-multi-arg
+
+    \sa QString::arg(Args&&...)
+*/

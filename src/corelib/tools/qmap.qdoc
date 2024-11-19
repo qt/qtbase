@@ -172,9 +172,7 @@
 
 /*! \fn template <class Key, class T> void QMap<Key, T>::swap(QMap<Key, T> &other) noexcept
     \since 4.8
-
-    Swaps map \a other with this map. This operation is very
-    fast and never fails.
+    \memberswap{map}
 */
 
 /*! \fn template <class Key, class T> QMap<Key, T>::QMap(std::initializer_list<std::pair<Key,T> > list)

@@ -1800,10 +1800,21 @@ bool updateLibsXml(Options *options)
 
         QStringList localLibs;
         localLibs = options->localLibs[it.key()];
+        const QList<QtDependency>& deps = options->qtDependencies[it.key()];
+        auto notExistsInDependencies = [&deps] (const QString &lib) {
+            return std::none_of(deps.begin(), deps.end(), [&lib] (const QtDependency &dep) {
+                return QFileInfo(dep.absolutePath).fileName() == QFileInfo(lib).fileName();
+            });
+        };
+
+        // Clean up localLibs: remove libs that were not added to qtDependecies
+        localLibs.erase(std::remove_if(localLibs.begin(), localLibs.end(), notExistsInDependencies),
+                        localLibs.end());
+
         // If .pro file overrides dependency detection, we need to see which platform plugin they picked
         if (localLibs.isEmpty()) {
             QString plugin;
-            for (const QtDependency &qtDependency : options->qtDependencies[it.key()]) {
+            for (const QtDependency &qtDependency : deps) {
                 if (qtDependency.relativePath.contains("libplugins_platforms_qtforandroid_"_L1))
                     plugin = qtDependency.relativePath;
 

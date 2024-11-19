@@ -15,7 +15,8 @@ package org.qtproject.qt.android;
 
 class QtAndroidItemModelProxy extends QtAbstractItemModel
 {
-    @Override public int columnCount(QtModelIndex parent) { return jni_columnCount(parent); };
+    @Override public int columnCount(QtModelIndex parent) { return jni_columnCount(parent); }
+
     @Override public Object data(QtModelIndex index, int role) { return jni_data(index, role); }
     @Override public QtModelIndex index(int row, int column, QtModelIndex parent)
     {

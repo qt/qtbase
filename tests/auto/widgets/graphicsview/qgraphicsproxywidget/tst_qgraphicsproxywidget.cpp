@@ -1,17 +1,47 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
+#include <QtTest/qtest.h>
+#include <QtTest/qsignalspy.h>
 
-#include <QTest>
-#include <QtGui>
-#include <QtWidgets>
-#include <QSignalSpy>
+#include <QtWidgets/qabstractitemview.h>
+#include <QtWidgets/qcheckbox.h>
+#include <QtWidgets/qdial.h>
+#include <QtWidgets/qfiledialog.h>
+#include <QtWidgets/qfontcombobox.h>
+#include <QtWidgets/qgraphicslinearlayout.h>
+#include <QtWidgets/qgraphicsproxywidget.h>
+#include <QtWidgets/qgridlayout.h>
+#include <QtWidgets/qgroupbox.h>
+#include <QtWidgets/qboxlayout.h>
+#include <QtWidgets/qlabel.h>
+#include <QtWidgets/qlineedit.h>
+#include <QtWidgets/qmainwindow.h>
+#include <QtWidgets/qmenu.h>
+#include <QtWidgets/qpushbutton.h>
+#include <QtWidgets/qscrollbar.h>
+#include <QtWidgets/qspinbox.h>
+#include <QtWidgets/qstylefactory.h>
+
+#include <QtGui/qevent.h>
+
+#include <QtCore/qmimedata.h>
+#include <QtCore/qtimer.h>
+
+#include <private/qapplication_p.h>
 #include <private/qgraphicsproxywidget_p.h>
 #include <private/qlayoutengine_p.h>    // qSmartMin functions...
 
-#include <QtWidgets/private/qapplication_p.h>
+#include <memory>
+
+using namespace Qt::StringLiterals;
 
 Q_LOGGING_CATEGORY(lcTests, "qt.widgets.tests")
+
+static QStringList weekDays()
+{
+    return {"monday"_L1, "tuesday"_L1, "wednesday"_L1, "thursday"_L1, "saturday"_L1, "sunday"_L1};
+}
 
 /*
     Notes:
@@ -135,6 +165,7 @@ private slots:
     void QTBUG_6986_sendMouseEventToAlienWidget();
     void mapToGlobal();
     void mapToGlobalWithoutScene();
+    void mapToGlobalIgnoreTranformation();
     void QTBUG_43780_visibility();
 #if QT_CONFIG(wheelevent)
     void wheelEventPropagation();
@@ -175,11 +206,11 @@ public:
 class WheelWidget : public QWidget
 {
 public:
-    WheelWidget() : wheelEventCalled(false) { setFocusPolicy(Qt::WheelFocus); }
+    WheelWidget() { setFocusPolicy(Qt::WheelFocus); }
 
-    virtual void wheelEvent(QWheelEvent *event) override { event->accept(); wheelEventCalled = true; }
+    void wheelEvent(QWheelEvent *event) override { event->accept(); wheelEventCalled = true; }
 
-    bool wheelEventCalled;
+    bool wheelEventCalled = false;
 };
 #endif // QT_CONFIG(wheelevent)
 
@@ -204,18 +235,18 @@ void tst_QGraphicsProxyWidget::cleanup()
 void tst_QGraphicsProxyWidget::qgraphicsproxywidget()
 {
     SubQGraphicsProxyWidget proxy;
-    proxy.paint(0, 0, 0);
-    proxy.setWidget(0);
+    proxy.paint(nullptr, nullptr, nullptr);
+    proxy.setWidget(nullptr);
     QCOMPARE(proxy.type(), int(QGraphicsProxyWidget::Type));
     QVERIFY(!proxy.widget());
     QEvent event(QEvent::None);
-    proxy.eventFilter(0, &event);
+    proxy.eventFilter(nullptr, &event);
     QFocusEvent focusEvent(QEvent::FocusIn);
     focusEvent.ignore();
     proxy.focusInEvent(&focusEvent);
-    QCOMPARE(focusEvent.isAccepted(), false);
-    QCOMPARE(proxy.focusNextPrevChild(false), false);
-    QCOMPARE(proxy.focusNextPrevChild(true), false);
+    QVERIFY(!focusEvent.isAccepted());
+    QVERIFY(!proxy.focusNextPrevChild(false));
+    QVERIFY(!proxy.focusNextPrevChild(true));
     proxy.focusOutEvent(&focusEvent);
     QHideEvent hideEvent;
     proxy.hideEvent(&hideEvent);
@@ -243,7 +274,7 @@ void tst_QGraphicsProxyWidget::paint()
 {
     SubQGraphicsProxyWidget proxy;
 
-    proxy.paint(0, 0, 0);
+    proxy.paint(nullptr, nullptr, nullptr);
 }
 
 class MyProxyWidget : public QGraphicsProxyWidget
@@ -262,7 +293,7 @@ public:
 
 void tst_QGraphicsProxyWidget::paint_2()
 {
-    MyProxyWidget *proxyWidget = new MyProxyWidget;
+    auto *proxyWidget = new MyProxyWidget;
     proxyWidget->setWidget(new QLineEdit);
 
     QGraphicsScene scene;
@@ -307,7 +338,7 @@ void tst_QGraphicsProxyWidget::setWidget()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.show();
-    QScopedPointer<QStyle> style(QStyleFactory::create(QLatin1String("Fusion")));
+    QScopedPointer<QStyle> style(QStyleFactory::create("Fusion"_L1));
     if (style.isNull())
         QSKIP("This test requires the Fusion style");
     QVERIFY(QTest::qWaitForWindowExposed(&view));
@@ -326,14 +357,14 @@ void tst_QGraphicsProxyWidget::setWidget()
         proxy->setWidget(existingSubWidget);
     }
 
-    QWidget *widget = new QWidget;
+    auto *widget = new QWidget;
 #ifndef QT_NO_CURSOR
     widget->setCursor(Qt::IBeamCursor);
 #endif
     widget->setPalette(QPalette(Qt::magenta));
     widget->setLayoutDirection(Qt::RightToLeft);
     widget->setStyle(style.data());
-    widget->setFont(QFont("Times"));
+    widget->setFont(QFont("Times"_L1));
     widget->setVisible(true);
     QApplicationPrivate::setActiveWindow(widget);
     widget->activateWindow();
@@ -352,14 +383,14 @@ void tst_QGraphicsProxyWidget::setWidget()
     if (hasParent)
         widget->setParent(&parentWidget);
 
-    QWidget *subWidget = insertWidget ? widget : 0;
+    QWidget *subWidget = insertWidget ? widget : nullptr;
     bool shouldBeInsertable = !hasParent && subWidget;
     if (shouldBeInsertable)
         subWidget->setAttribute(Qt::WA_QuitOnClose, true);
 
     if (hasParent) {
         QTest::ignoreMessage(QtWarningMsg, QRegularExpression(
-            "QGraphicsProxyWidget::setWidget: cannot embed widget .* which is not a toplevel widget, and is not a child of an embedded widget"));
+            "QGraphicsProxyWidget::setWidget: cannot embed widget .* which is not a toplevel widget, and is not a child of an embedded widget"_L1));
     }
     proxy->setWidget(subWidget);
 
@@ -367,7 +398,7 @@ void tst_QGraphicsProxyWidget::setWidget()
         QCOMPARE(proxy->widget(), subWidget);
         QVERIFY(subWidget->testAttribute(Qt::WA_DontShowOnScreen));
         QVERIFY(!subWidget->testAttribute(Qt::WA_QuitOnClose));
-        QCOMPARE(proxy->acceptHoverEvents(), true);
+        QVERIFY(proxy->acceptHoverEvents());
 #ifndef QT_NO_CURSOR
         QVERIFY(proxy->hasCursor());
 
@@ -391,7 +422,7 @@ void tst_QGraphicsProxyWidget::setWidget()
         QCOMPARE(proxy->rect().toRect(), widget->rect());
         QCOMPARE(proxy->focusPolicy(), Qt::WheelFocus);
         QVERIFY(proxy->acceptDrops());
-        QCOMPARE(proxy->acceptHoverEvents(), true); // to get widget enter events
+        QVERIFY(proxy->acceptHoverEvents()); // to get widget enter events
         const QMarginsF margins = QMarginsF{widget->contentsMargins()};
         qreal rleft, rtop, rright, rbottom;
         proxy->getContentsMargins(&rleft, &rtop, &rright, &rbottom);
@@ -402,7 +433,7 @@ void tst_QGraphicsProxyWidget::setWidget()
     } else {
         // proxy shouldn't mess with the widget if it can't insert it.
         QCOMPARE(proxy->widget(), nullptr);
-        QCOMPARE(proxy->acceptHoverEvents(), false);
+        QVERIFY(!proxy->acceptHoverEvents());
         if (subWidget) {
             QVERIFY(!subWidget->testAttribute(Qt::WA_DontShowOnScreen));
             QVERIFY(subWidget->testAttribute(Qt::WA_QuitOnClose));
@@ -418,7 +449,7 @@ void tst_QGraphicsProxyWidget::setWidget()
     }
 
     if (hasParent)
-        widget->setParent(0);
+        widget->setParent(nullptr);
 
     delete widget;
     if (shouldBeInsertable)
@@ -459,12 +490,12 @@ void tst_QGraphicsProxyWidget::testEventFilter()
 
     QGraphicsScene scene;
     QEvent windowActivate(QEvent::WindowActivate);
-    qApp->sendEvent(&scene, &windowActivate);
+    QCoreApplication::sendEvent(&scene, &windowActivate);
 
-    SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
+    auto *proxy = new SubQGraphicsProxyWidget;
     scene.addItem(proxy);
 
-    QWidget *widget = new QWidget(0, Qt::FramelessWindowHint);
+    auto *widget = new QWidget(nullptr, Qt::FramelessWindowHint);
     widget->setFocusPolicy(Qt::TabFocus);
     widget->resize(10, 10);
     widget->show();
@@ -510,7 +541,7 @@ void tst_QGraphicsProxyWidget::testEventFilter()
             QHideEvent event;
             proxy->eventFilter(widget, &event);
         }
-        QCOMPARE(proxy->isVisible(), false);
+        QVERIFY(!proxy->isVisible());
         break;
                          }
     case QEvent::Show: {
@@ -522,7 +553,7 @@ void tst_QGraphicsProxyWidget::testEventFilter()
             QShowEvent event;
             proxy->eventFilter(widget, &event);
         }
-        QCOMPARE(proxy->isVisible(), true);
+        QVERIFY(proxy->isVisible());
         break;
                          }
     case QEvent::EnabledChange: {
@@ -530,14 +561,14 @@ void tst_QGraphicsProxyWidget::testEventFilter()
         proxy->setEnabled(false);
         if (fromObject) {
             widget->setEnabled(true);
-            QCOMPARE(proxy->isEnabled(), true);
+            QVERIFY(proxy->isEnabled());
             widget->setEnabled(false);
-            QCOMPARE(proxy->isEnabled(), false);
+            QVERIFY(!proxy->isEnabled());
         } else {
             QEvent event(QEvent::EnabledChange);
             proxy->eventFilter(widget, &event);
             // match the widget not the event
-            QCOMPARE(proxy->isEnabled(), false);
+            QVERIFY(!proxy->isEnabled());
         }
         break;
                          }
@@ -599,13 +630,13 @@ void tst_QGraphicsProxyWidget::focusInEvent()
 
     QGraphicsScene scene;
     QEvent windowActivate(QEvent::WindowActivate);
-    qApp->sendEvent(&scene, &windowActivate);
+    QCoreApplication::sendEvent(&scene, &windowActivate);
 
-    SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
+    auto *proxy = new SubQGraphicsProxyWidget;
     proxy->setEnabled(true);
     scene.addItem(proxy);
 
-    QWidget *widget = new QWidget;
+    auto *widget = new QWidget;
     widget->resize(100, 100);
     if (widgetCanHaveFocus)
         widget->setFocusPolicy(Qt::WheelFocus);
@@ -631,7 +662,7 @@ void tst_QGraphicsProxyWidget::focusInEventNoWidget()
 {
     QGraphicsView view;
     QGraphicsScene scene(&view);
-    SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
+    auto *proxy = new SubQGraphicsProxyWidget;
     proxy->setEnabled(true);
     scene.addItem(proxy);
     view.show();
@@ -682,7 +713,7 @@ void tst_QGraphicsProxyWidget::focusNextPrevChild()
     auto *proxy = proxyGuard.get();
 
     if (hasWidget) {
-        QLabel *widget = new QLabel;
+        auto *widget = new QLabel;
         widget->setText(R"(
             <html>
             <head>
@@ -701,7 +732,7 @@ void tst_QGraphicsProxyWidget::focusNextPrevChild()
                 </a>
             </p>
             </body>
-            </html>)");
+            </html>)"_L1);
         widget->setTextInteractionFlags(Qt::TextBrowserInteraction);
         proxy->setWidget(widget);
     }
@@ -717,7 +748,7 @@ void tst_QGraphicsProxyWidget::focusNextPrevChild()
         // widget should take precedence over scene so make scene.focusNextPrevChild return false
         // so we know that a true can only come from the widget
         if (!(hasWidget && hasScene)) {
-            QGraphicsTextItem *item = new QGraphicsTextItem("Foo");
+            auto *item = new QGraphicsTextItem("Foo"_L1);
             item->setTextInteractionFlags(Qt::TextBrowserInteraction);
             scene.addItem(item);
             item->setPos(50, 40);
@@ -747,7 +778,7 @@ void tst_QGraphicsProxyWidget::focusOutEvent()
 
     QGraphicsScene scene;
     QGraphicsView view(&scene);
-    SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
+    auto *proxy = new SubQGraphicsProxyWidget;
     scene.addItem(proxy);
     view.show();
     view.activateWindow();
@@ -774,9 +805,9 @@ void tst_QGraphicsProxyWidget::focusOutEvent()
         QTRY_VERIFY(other->isVisible());
         other->setFocus();
         QTRY_VERIFY(other->hasFocus());
-        QTRY_COMPARE(proxy->hasFocus(), false);
+        QTRY_VERIFY(!proxy->hasFocus());
         QVERIFY(proxy->focusOut);
-        QCOMPARE(widget->hasFocus(), false);
+        QVERIFY(!widget->hasFocus());
     }
 }
 
@@ -812,14 +843,14 @@ void tst_QGraphicsProxyWidget::focusProxy_QTBUG_51856()
 
     QGraphicsScene scene;
     QGraphicsView view(&scene);
-    SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
+    auto *proxy = new SubQGraphicsProxyWidget;
     scene.addItem(proxy);
     view.show();
     view.raise();
     view.activateWindow();
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
-    FocusedSpinBox *spinBox = new FocusedSpinBox;
+    auto *spinBox = new FocusedSpinBox;
 
     proxy->setWidget(spinBox);
     proxy->show();
@@ -842,7 +873,7 @@ void tst_QGraphicsProxyWidget::focusProxy_QTBUG_51856()
             QTRY_COMPARE(spinBox->focusCount, 1);
         }
 
-        QLineEdit *edit = new QLineEdit(&view);
+        auto *edit = new QLineEdit(&view);
         edit->show();
         QTRY_VERIFY(edit->isVisible());
         edit->setFocus();
@@ -858,11 +889,7 @@ void tst_QGraphicsProxyWidget::focusProxy_QTBUG_51856()
 class EventLogger : public QWidget
 {
 public:
-    EventLogger() : QWidget(), enterCount(0), leaveCount(0), moveCount(0),
-        hoverEnter(0), hoverLeave(0), hoverMove(0)
-    {
-        installEventFilter(this);
-    }
+    EventLogger() { installEventFilter(this); }
 
     void enterEvent(QEnterEvent *event) override
     {
@@ -883,13 +910,14 @@ public:
         QWidget::mouseMoveEvent(event);
     }
 
-    int enterCount;
-    int leaveCount;
-    int moveCount;
+    int enterCount = 0;
+    int leaveCount = 0;
+    int moveCount = 0;
 
-    int hoverEnter;
-    int hoverLeave;
-    int hoverMove;
+    int hoverEnter = 0;
+    int hoverLeave = 0;
+    int hoverMove = 0;
+
 protected:
     bool eventFilter(QObject *object, QEvent *event) override
     {
@@ -933,7 +961,7 @@ void tst_QGraphicsProxyWidget::hoverEnterLeaveEvent()
     view.show();
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
-    SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
+    auto *proxy = new SubQGraphicsProxyWidget;
     std::unique_ptr<EventLogger> widgetGuard(new EventLogger);
     EventLogger *widget = widgetGuard.get();
     widget->resize(50, 50);
@@ -945,12 +973,12 @@ void tst_QGraphicsProxyWidget::hoverEnterLeaveEvent()
     proxy->setPos(50, 0);
     QSignalSpy sceneChangedSpy(&scene, &QGraphicsScene::changed);
     scene.addItem(proxy);
-    QTRY_VERIFY(sceneChangedSpy.size() > 0);
+    QTRY_VERIFY(!sceneChangedSpy.isEmpty());
 
     // outside graphics item
     QTest::mouseMove(&view, QPoint(10, 10));
 
-    QCOMPARE(widget->testAttribute(Qt::WA_UnderMouse), false);
+    QVERIFY(!widget->testAttribute(Qt::WA_UnderMouse));
     QCOMPARE(widget->enterCount, 0);
     QCOMPARE(widget->hoverEnter, 0);
     // over graphics item
@@ -963,7 +991,7 @@ void tst_QGraphicsProxyWidget::hoverEnterLeaveEvent()
     QTRY_COMPARE(widget->hoverLeave, 0);
     // outside graphics item
     QTest::mouseMove(&view, QPoint(10, 10));
-    QTRY_COMPARE(widget->testAttribute(Qt::WA_UnderMouse), false);
+    QTRY_VERIFY(!widget->testAttribute(Qt::WA_UnderMouse));
     QTRY_COMPARE(widget->leaveCount, hasWidget ? 1 : 0);
     QTRY_COMPARE(widget->hoverLeave, (hasWidget && hoverEnabled) ? 1 : 0);
 }
@@ -987,7 +1015,7 @@ void tst_QGraphicsProxyWidget::keyPressEvent()
     QVERIFY(QTest::qWaitForWindowFocused(&view));
     QCOMPARE(QApplication::activeWindow(), (QWidget*)&view);
 
-    SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
+    auto *proxy = new SubQGraphicsProxyWidget;
     proxy->setFlag(QGraphicsItem::ItemIsFocusable, true); // ### remove me!!!
 
     std::unique_ptr<QLineEdit> widgetGuard(new QLineEdit);
@@ -1004,7 +1032,8 @@ void tst_QGraphicsProxyWidget::keyPressEvent()
 
     QTest::keyPress(view.viewport(), 'x');
 
-    QTRY_COMPARE(widget->text(), hasWidget ? QString("x") : QString());
+    const auto expected = hasWidget ? QLatin1StringView("x") : QLatin1StringView{};
+    QTRY_COMPARE(widget->text(), expected);
 }
 
 void tst_QGraphicsProxyWidget::keyReleaseEvent_data()
@@ -1026,7 +1055,7 @@ void tst_QGraphicsProxyWidget::keyReleaseEvent()
     QCOMPARE(QApplication::activeWindow(), (QWidget*)&view);
 
 
-    SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
+    auto *proxy = new SubQGraphicsProxyWidget;
     proxy->setFlag(QGraphicsItem::ItemIsFocusable, true); // ### remove me!!!
     std::unique_ptr<QPushButton> widgetGuard(new QPushButton);
     QSignalSpy spy(widgetGuard.get(), SIGNAL(clicked()));
@@ -1052,10 +1081,9 @@ void tst_QGraphicsProxyWidget::mouseDoubleClickEvent()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
 
-    SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
+    auto *proxy = new SubQGraphicsProxyWidget;
     proxy->setFlag(QGraphicsItem::ItemIsFocusable, true); // ### remove me!!!
-    QLineEdit *widget = new QLineEdit;
-    widget->setText("foo");
+    auto *widget = new QLineEdit("foo"_L1);
     widget->resize(50, 50);
     proxy->setWidget(widget);
 
@@ -1070,14 +1098,14 @@ void tst_QGraphicsProxyWidget::mouseDoubleClickEvent()
     QVERIFY(QTest::qWaitForWindowFocused(&view));
     QCOMPARE(QApplication::activeWindow(), (QWidget*)&view);
     // wait for scene to be updated before doing any coordinate mappings on it
-    QTRY_VERIFY(sceneChangedSpy.size() > 0);
+    QTRY_VERIFY(!sceneChangedSpy.isEmpty());
 
     QPoint pointInLineEdit = view.mapFromScene(proxy->mapToScene(15, proxy->boundingRect().center().y()));
     QTest::mousePress(view.viewport(), Qt::LeftButton, {}, pointInLineEdit);
     QTest::mouseRelease(view.viewport(), Qt::LeftButton, {}, pointInLineEdit);
     QTest::mouseDClick(view.viewport(), Qt::LeftButton, {}, pointInLineEdit);
 
-    QTRY_COMPARE(widget->selectedText(), QString("foo"));
+    QTRY_COMPARE(widget->selectedText(), "foo"_L1);
 }
 
 void tst_QGraphicsProxyWidget::mousePressReleaseEvent_data()
@@ -1098,7 +1126,7 @@ void tst_QGraphicsProxyWidget::mousePressReleaseEvent()
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
-    SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
+    auto *proxy = new SubQGraphicsProxyWidget;
     proxy->setFlag(QGraphicsItem::ItemIsFocusable, true); // ### remove me!!!
     std::unique_ptr<QPushButton> widgetGuard(new QPushButton);
     QSignalSpy spy(widgetGuard.get(), SIGNAL(clicked()));
@@ -1111,7 +1139,7 @@ void tst_QGraphicsProxyWidget::mousePressReleaseEvent()
     proxy->setFocus();
 
     // wait for scene to be updated before doing any coordinate mappings on it
-    QTRY_VERIFY(sceneChangedSpy.size() > 0);
+    QTRY_VERIFY(!sceneChangedSpy.isEmpty());
 
     QPoint buttonCenter = view.mapFromScene(proxy->mapToScene(proxy->boundingRect().center()));
     QTest::mousePress(view.viewport(), Qt::LeftButton, {}, buttonCenter);
@@ -1157,7 +1185,7 @@ void tst_QGraphicsProxyWidget::paintEvent()
 
     SubQGraphicsProxyWidget proxy;
 
-    QWidget *w = new QWidget;
+    auto *w = new QWidget;
     //showing the widget here seems to create a bug in Graphics View
     //this bug prevents the widget from being updated
 
@@ -1167,7 +1195,7 @@ void tst_QGraphicsProxyWidget::paintEvent()
     QSignalSpy sceneChangedSpy(&scene, &QGraphicsScene::changed);
     scene.addItem(&proxy);
 
-    QTRY_VERIFY(sceneChangedSpy.size() > 0); // make sure the scene is ready
+    QTRY_VERIFY(!sceneChangedSpy.isEmpty()); // make sure the scene is ready
 
     proxy.paintCount = 0;
     w->update();
@@ -1183,7 +1211,7 @@ void tst_QGraphicsProxyWidget::wheelEvent()
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
-    WheelWidget *wheelWidget = new WheelWidget();
+    auto *wheelWidget = new WheelWidget();
     wheelWidget->setFixedSize(400, 400);
 
     QGraphicsProxyWidget *proxy = scene.addWidget(wheelWidget);
@@ -1269,11 +1297,11 @@ void tst_QGraphicsProxyWidget::maximumSize()
 class View : public QGraphicsView
 {
 public:
-    View(QGraphicsScene *scene, QWidget *parent = nullptr)
-        : QGraphicsView(scene, parent), npaints(0)
-    { }
+    using QGraphicsView::QGraphicsView;
+
     QRegion paintEventRegion;
-    int npaints;
+    int npaints = 0;
+
 protected:
     void paintEvent(QPaintEvent *event) override
     {
@@ -1287,12 +1315,12 @@ class ScrollWidget : public QWidget
 {
     Q_OBJECT
 public:
-    ScrollWidget() : npaints(0)
+    ScrollWidget()
     {
         resize(200, 200);
     }
     QRegion paintEventRegion;
-    int npaints;
+    int npaints = 0;
 
 public slots:
     void updateScroll()
@@ -1325,7 +1353,7 @@ void tst_QGraphicsProxyWidget::scrollUpdate()
     if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
         QSKIP("QWindow::requestActivate() is not supported.");
 
-    ScrollWidget *widget = new ScrollWidget;
+    auto *widget = new ScrollWidget;
 
     QGraphicsScene scene;
     scene.addWidget(widget);
@@ -1354,7 +1382,7 @@ void tst_QGraphicsProxyWidget::scrollUpdate()
 void tst_QGraphicsProxyWidget::setWidget_simple()
 {
     QGraphicsProxyWidget proxy;
-    QLineEdit *lineEdit = new QLineEdit;
+    auto *lineEdit = new QLineEdit;
     proxy.setWidget(lineEdit);
 
     QVERIFY(lineEdit->testAttribute(Qt::WA_DontShowOnScreen));
@@ -1393,7 +1421,7 @@ void tst_QGraphicsProxyWidget::setWidget_ownership()
         QCOMPARE(proxy.widget(), (QWidget *)lineEdit);
 
         // Remove the widget without destroying it.
-        proxy.setWidget(0);
+        proxy.setWidget(nullptr);
         QVERIFY(!proxy.widget());
         QVERIFY(lineEdit);
 
@@ -1432,8 +1460,8 @@ void tst_QGraphicsProxyWidget::resize_simple()
     QFETCH(QSizeF, size);
 
     QGraphicsProxyWidget proxy;
-    QWidget *widget = new QWidget;
-    widget->setGeometry(0, 0, (int)size.width(), (int)size.height());
+    auto *widget = new QWidget;
+    widget->setGeometry(QRect{ QPoint{}, size.toSize() });
     proxy.setWidget(widget);
     widget->show();
     QCOMPARE(widget->pos(), QPoint());
@@ -1453,7 +1481,7 @@ void tst_QGraphicsProxyWidget::resize_simple()
 void tst_QGraphicsProxyWidget::symmetricMove()
 {
     QGraphicsProxyWidget proxy;
-    QLineEdit *lineEdit = new QLineEdit;
+    auto *lineEdit = new QLineEdit;
     proxy.setWidget(lineEdit);
     lineEdit->show();
 
@@ -1469,7 +1497,7 @@ void tst_QGraphicsProxyWidget::symmetricMove()
 void tst_QGraphicsProxyWidget::symmetricResize()
 {
     QGraphicsProxyWidget proxy;
-    QLineEdit *lineEdit = new QLineEdit;
+    auto *lineEdit = new QLineEdit;
     proxy.setWidget(lineEdit);
     lineEdit->show();
 
@@ -1485,7 +1513,7 @@ void tst_QGraphicsProxyWidget::symmetricResize()
 void tst_QGraphicsProxyWidget::symmetricVisible()
 {
     QGraphicsProxyWidget proxy;
-    QLineEdit *lineEdit = new QLineEdit;
+    auto *lineEdit = new QLineEdit;
     proxy.setWidget(lineEdit);
     lineEdit->show();
 
@@ -1504,7 +1532,7 @@ void tst_QGraphicsProxyWidget::symmetricVisible()
 void tst_QGraphicsProxyWidget::symmetricEnabled()
 {
     QGraphicsProxyWidget proxy;
-    QLineEdit *lineEdit = new QLineEdit;
+    auto *lineEdit = new QLineEdit;
     proxy.setWidget(lineEdit);
     lineEdit->show();
 
@@ -1522,20 +1550,19 @@ void tst_QGraphicsProxyWidget::symmetricEnabled()
 void tst_QGraphicsProxyWidget::tabFocus_simpleWidget()
 {
     QGraphicsScene scene;
-    QLineEdit *edit = new QLineEdit;
+    auto *edit = new QLineEdit;
     QGraphicsProxyWidget *editProxy = scene.addWidget(edit);
     editProxy->show();
 
-    QDial *leftDial = new QDial;
-    QDial *rightDial = new QDial;
-    QGraphicsView *view = new QGraphicsView(&scene);
+    auto *leftDial = new QDial;
+    auto *rightDial = new QDial;
+    auto *view = new QGraphicsView(&scene);
 
     QWidget window;
-    QHBoxLayout *layout = new QHBoxLayout;
+    auto *layout = new QHBoxLayout(&window);
     layout->addWidget(leftDial);
     layout->addWidget(view);
     layout->addWidget(rightDial);
-    window.setLayout(layout);
 
     window.show();
     window.activateWindow();
@@ -1601,24 +1628,23 @@ void tst_QGraphicsProxyWidget::tabFocus_simpleWidget()
 void tst_QGraphicsProxyWidget::tabFocus_simpleTwoWidgets()
 {
     QGraphicsScene scene;
-    QLineEdit *edit = new QLineEdit;
-    QLineEdit *edit2 = new QLineEdit;
+    auto *edit = new QLineEdit;
+    auto *edit2 = new QLineEdit;
     QGraphicsProxyWidget *editProxy = scene.addWidget(edit);
     editProxy->show();
     QGraphicsProxyWidget *editProxy2 = scene.addWidget(edit2);
     editProxy2->show();
     editProxy2->setPos(0, editProxy->rect().height() * 1.1);
 
-    QDial *leftDial = new QDial;
-    QDial *rightDial = new QDial;
-    QGraphicsView *view = new QGraphicsView(&scene);
+    auto *leftDial = new QDial;
+    auto *rightDial = new QDial;
+    auto *view = new QGraphicsView(&scene);
 
     QWidget window;
-    QHBoxLayout *layout = new QHBoxLayout;
+    auto *layout = new QHBoxLayout(&window);
     layout->addWidget(leftDial);
     layout->addWidget(view);
     layout->addWidget(rightDial);
-    window.setLayout(layout);
 
     window.show();
     window.activateWindow();
@@ -1725,32 +1751,29 @@ void tst_QGraphicsProxyWidget::tabFocus_complexWidget()
 {
     QGraphicsScene scene;
 
-    QLineEdit *edit1 = new QLineEdit;
-    edit1->setText("QLineEdit 1");
-    QLineEdit *edit2 = new QLineEdit;
-    edit2->setText("QLineEdit 2");
-    QVBoxLayout *vlayout = new QVBoxLayout;
-    vlayout->addWidget(edit1);
-    vlayout->addWidget(edit2);
-
-    QGroupBox *box = new QGroupBox("QGroupBox");
+    auto *box = new QGroupBox("QGroupBox"_L1);
     box->setCheckable(true);
     box->setChecked(true);
-    box->setLayout(vlayout);
+    auto *vlayout = new QVBoxLayout(box);
+    auto *edit1 = new QLineEdit;
+    edit1->setText("QLineEdit 1"_L1);
+    auto *edit2 = new QLineEdit;
+    edit2->setText("QLineEdit 2"_L1);
+    vlayout->addWidget(edit1);
+    vlayout->addWidget(edit2);
 
     QGraphicsProxyWidget *proxy = scene.addWidget(box);
     proxy->show();
 
-    QDial *leftDial = new QDial;
-    QDial *rightDial = new QDial;
-    QGraphicsView *view = new QGraphicsView(&scene);
+    auto *leftDial = new QDial;
+    auto *rightDial = new QDial;
+    auto *view = new QGraphicsView(&scene);
 
     QWidget window;
-    QHBoxLayout *layout = new QHBoxLayout;
+    auto *layout = new QHBoxLayout(&window);
     layout->addWidget(leftDial);
     layout->addWidget(view);
     layout->addWidget(rightDial);
-    window.setLayout(layout);
 
     window.show();
     window.activateWindow();
@@ -1837,35 +1860,31 @@ void tst_QGraphicsProxyWidget::tabFocus_complexTwoWidgets()
     // ### add event spies to this test.
     QGraphicsScene scene;
 
-    QLineEdit *edit1 = new QLineEdit;
-    edit1->setText("QLineEdit 1");
-    QLineEdit *edit2 = new QLineEdit;
-    edit2->setText("QLineEdit 2");
-    QFontComboBox *fontComboBox = new QFontComboBox;
-    QVBoxLayout *vlayout = new QVBoxLayout;
+    auto *box = new QGroupBox("QGroupBox"_L1);
+    box->setCheckable(true);
+    box->setChecked(true);
+    auto *vlayout = new QVBoxLayout(box);
+    auto *edit1 = new QLineEdit;
+    edit1->setText("QLineEdit 1"_L1);
+    auto *edit2 = new QLineEdit;
+    edit2->setText("QLineEdit 2"_L1);
+    auto *fontComboBox = new QFontComboBox;
     vlayout->addWidget(edit1);
     vlayout->addWidget(fontComboBox);
     vlayout->addWidget(edit2);
 
-    QGroupBox *box = new QGroupBox("QGroupBox");
-    box->setCheckable(true);
-    box->setChecked(true);
-    box->setLayout(vlayout);
-
-    QLineEdit *edit1_2 = new QLineEdit;
-    edit1_2->setText("QLineEdit 1_2");
-    QLineEdit *edit2_2 = new QLineEdit;
-    edit2_2->setText("QLineEdit 2_2");
-    QFontComboBox *fontComboBox2 = new QFontComboBox;
-    vlayout = new QVBoxLayout;
+    auto *box_2 = new QGroupBox("QGroupBox 2"_L1);
+    box_2->setCheckable(true);
+    box_2->setChecked(true);
+    vlayout = new QVBoxLayout(box_2);
+    auto *edit1_2 = new QLineEdit;
+    edit1_2->setText("QLineEdit 1_2"_L1);
+    auto *edit2_2 = new QLineEdit;
+    edit2_2->setText("QLineEdit 2_2"_L1);
+    auto *fontComboBox2 = new QFontComboBox;
     vlayout->addWidget(edit1_2);
     vlayout->addWidget(fontComboBox2);
     vlayout->addWidget(edit2_2);
-
-    QGroupBox *box_2 = new QGroupBox("QGroupBox 2");
-    box_2->setCheckable(true);
-    box_2->setChecked(true);
-    box_2->setLayout(vlayout);
 
     QGraphicsProxyWidget *proxy = scene.addWidget(box);
     proxy->show();
@@ -1874,19 +1893,18 @@ void tst_QGraphicsProxyWidget::tabFocus_complexTwoWidgets()
     proxy_2->setPos(proxy->boundingRect().width() * 1.2, 0);
     proxy_2->show();
 
-    QDial *leftDial = new QDial;
-    QDial *rightDial = new QDial;
-    QGraphicsView *view = new QGraphicsView(&scene);
+    auto *leftDial = new QDial;
+    auto *rightDial = new QDial;
+    auto *view = new QGraphicsView(&scene);
     view->setRenderHint(QPainter::Antialiasing);
     view->rotate(45);
     view->scale(0.5, 0.5);
 
     QWidget window;
-    QHBoxLayout *layout = new QHBoxLayout;
+    auto *layout = new QHBoxLayout(&window);
     layout->addWidget(leftDial);
     layout->addWidget(view);
     layout->addWidget(rightDial);
-    window.setLayout(layout);
 
     window.show();
     window.activateWindow();
@@ -2046,20 +2064,19 @@ void tst_QGraphicsProxyWidget::tabFocus_complexTwoWidgets()
 void tst_QGraphicsProxyWidget::setFocus_simpleWidget()
 {
     QGraphicsScene scene;
-    QLineEdit *edit = new QLineEdit;
+    auto *edit = new QLineEdit;
     QGraphicsProxyWidget *editProxy = scene.addWidget(edit);
     editProxy->show();
 
-    QDial *leftDial = new QDial;
-    QDial *rightDial = new QDial;
-    QGraphicsView *view = new QGraphicsView(&scene);
+    auto *leftDial = new QDial;
+    auto *rightDial = new QDial;
+    auto *view = new QGraphicsView(&scene);
 
     QWidget window;
-    QHBoxLayout *layout = new QHBoxLayout;
+    auto *layout = new QHBoxLayout(&window);
     layout->addWidget(leftDial);
     layout->addWidget(view);
     layout->addWidget(rightDial);
-    window.setLayout(layout);
 
     window.show();
     window.activateWindow();
@@ -2113,24 +2130,23 @@ void tst_QGraphicsProxyWidget::setFocus_simpleWidget()
 void tst_QGraphicsProxyWidget::setFocus_simpleTwoWidgets()
 {
     QGraphicsScene scene;
-    QLineEdit *edit = new QLineEdit;
+    auto *edit = new QLineEdit;
     QGraphicsProxyWidget *editProxy = scene.addWidget(edit);
     editProxy->show();
-    QLineEdit *edit2 = new QLineEdit;
-    QGraphicsProxyWidget *edit2Proxy = scene.addWidget(edit2);
+    auto *edit2 = new QLineEdit;
+    auto *edit2Proxy = scene.addWidget(edit2);
     edit2Proxy->show();
     edit2Proxy->setPos(editProxy->boundingRect().width() * 1.01, 0);
 
-    QDial *leftDial = new QDial;
-    QDial *rightDial = new QDial;
-    QGraphicsView *view = new QGraphicsView(&scene);
+    auto *leftDial = new QDial;
+    auto *rightDial = new QDial;
+    auto *view = new QGraphicsView(&scene);
 
     QWidget window;
-    QHBoxLayout *layout = new QHBoxLayout;
+    auto *layout = new QHBoxLayout(&window);
     layout->addWidget(leftDial);
     layout->addWidget(view);
     layout->addWidget(rightDial);
-    window.setLayout(layout);
 
     window.show();
     window.activateWindow();
@@ -2166,31 +2182,27 @@ void tst_QGraphicsProxyWidget::setFocus_complexTwoWidgets()
     // ### add event spies to this test.
     QGraphicsScene scene;
 
-    QLineEdit *edit1 = new QLineEdit;
-    edit1->setText("QLineEdit 1");
-    QLineEdit *edit2 = new QLineEdit;
-    edit2->setText("QLineEdit 2");
-    QVBoxLayout *vlayout = new QVBoxLayout;
+    auto *box = new QGroupBox("QGroupBox"_L1);
+    box->setCheckable(true);
+    box->setChecked(true);
+    auto *vlayout = new QVBoxLayout(box);
+    auto *edit1 = new QLineEdit;
+    edit1->setText("QLineEdit 1"_L1);
+    auto *edit2 = new QLineEdit;
+    edit2->setText("QLineEdit 2"_L1);
     vlayout->addWidget(edit1);
     vlayout->addWidget(edit2);
 
-    QGroupBox *box = new QGroupBox("QGroupBox");
-    box->setCheckable(true);
-    box->setChecked(true);
-    box->setLayout(vlayout);
-
-    QLineEdit *edit1_2 = new QLineEdit;
-    edit1_2->setText("QLineEdit 1_2");
-    QLineEdit *edit2_2 = new QLineEdit;
-    edit2_2->setText("QLineEdit 2_2");
-    vlayout = new QVBoxLayout;
-    vlayout->addWidget(edit1_2);
-    vlayout->addWidget(edit2_2);
-
-    QGroupBox *box_2 = new QGroupBox("QGroupBox 2");
+    auto *box_2 = new QGroupBox("QGroupBox 2"_L1);
     box_2->setCheckable(true);
     box_2->setChecked(true);
-    box_2->setLayout(vlayout);
+    vlayout = new QVBoxLayout(box_2);
+    auto *edit1_2 = new QLineEdit;
+    edit1_2->setText("QLineEdit 1_2"_L1);
+    auto *edit2_2 = new QLineEdit;
+    edit2_2->setText("QLineEdit 2_2"_L1);
+    vlayout->addWidget(edit1_2);
+    vlayout->addWidget(edit2_2);
 
     QGraphicsProxyWidget *proxy = scene.addWidget(box);
     proxy->show();
@@ -2199,16 +2211,15 @@ void tst_QGraphicsProxyWidget::setFocus_complexTwoWidgets()
     proxy_2->setPos(proxy->boundingRect().width() * 1.2, 0);
     proxy_2->show();
 
-    QDial *leftDial = new QDial;
-    QDial *rightDial = new QDial;
-    QGraphicsView *view = new QGraphicsView(&scene);
+    auto *leftDial = new QDial;
+    auto *rightDial = new QDial;
+    auto *view = new QGraphicsView(&scene);
 
     QWidget window;
-    QHBoxLayout *layout = new QHBoxLayout;
+    auto *layout = new QHBoxLayout(&window);
     layout->addWidget(leftDial);
     layout->addWidget(view);
     layout->addWidget(rightDial);
-    window.setLayout(layout);
 
     window.show();
     window.activateWindow();
@@ -2298,10 +2309,9 @@ void tst_QGraphicsProxyWidget::popup_basic()
     view.show();
 
     QComboBox *box = boxGuard.get();
-    QGraphicsProxyWidget *proxy = new QGraphicsProxyWidget;
+    auto *proxy = new QGraphicsProxyWidget;
     box->setGeometry(0, 0, 320, 40);
-    box->addItems(QStringList() << "monday" << "tuesday" << "wednesday"
-                  << "thursday" << "saturday" << "sunday");
+    box->addItems(weekDays());
     QCOMPARE(proxy->childItems().size(), 0);
     proxy->setWidget(boxGuard.release());
     proxy->show();
@@ -2320,7 +2330,7 @@ void tst_QGraphicsProxyWidget::popup_basic()
     QTRY_COMPARE(box->pos(), QPoint());
 
     QCOMPARE(proxy->childItems().size(), 1);
-    QGraphicsProxyWidget *child = (QGraphicsProxyWidget*)(proxy->childItems())[0];
+    auto *child = static_cast<QGraphicsProxyWidget*>(proxy->childItems().at(0));
     QVERIFY(child->isWidget());
     QVERIFY(child->widget());
     QCOMPARE(child->widget()->parent(), box);
@@ -2340,19 +2350,17 @@ void tst_QGraphicsProxyWidget::popup_basic()
 
 void tst_QGraphicsProxyWidget::popup_subwidget()
 {
-    QGroupBox *groupBox = new QGroupBox;
-    groupBox->setTitle("GroupBox");
+    auto *groupBox = new QGroupBox;
+    groupBox->setTitle("GroupBox"_L1);
     groupBox->setCheckable(true);
 
-    QComboBox *box = new QComboBox;
-    box->addItems(QStringList() << "monday" << "tuesday" << "wednesday"
-                  << "thursday" << "saturday" << "sunday");
+    auto *box = new QComboBox;
+    box->addItems(weekDays());
 
-    QVBoxLayout *layout = new QVBoxLayout;
-    layout->addWidget(new QLineEdit("QLineEdit"));
+    auto *layout = new QVBoxLayout(groupBox);
+    layout->addWidget(new QLineEdit("QLineEdit"_L1));
     layout->addWidget(box);
-    layout->addWidget(new QLineEdit("QLineEdit"));
-    groupBox->setLayout(layout);
+    layout->addWidget(new QLineEdit("QLineEdit"_L1));
 
     QGraphicsScene scene;
     QGraphicsProxyWidget *groupBoxProxy = scene.addWidget(groupBox);
@@ -2374,7 +2382,7 @@ void tst_QGraphicsProxyWidget::popup_subwidget()
     opt.editable = box->isEditable();
     if (box->style()->styleHint(QStyle::SH_ComboBox_Popup, &opt))
         QSKIP("Does not work due to SH_Combobox_Popup");
-    QGraphicsProxyWidget *child = (QGraphicsProxyWidget*)(groupBoxProxy->childItems())[0];
+    auto *child = static_cast<QGraphicsProxyWidget*>(groupBoxProxy->childItems().at(0));
     QWidget *popup = child->widget();
     QCOMPARE(popup->parent(), static_cast<QObject*>(box));
     QCOMPARE(popup->x(), box->mapToGlobal(QPoint()).x());
@@ -2394,12 +2402,12 @@ void tst_QGraphicsProxyWidget::changingCursor_basic()
     view.show();
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
-    QGraphicsProxyWidget *proxy = new QGraphicsProxyWidget;
-    QLineEdit *widget = new QLineEdit;
+    auto *proxy = new QGraphicsProxyWidget;
+    auto *widget = new QLineEdit;
     proxy->setWidget(widget);
     QSignalSpy sceneChangedSpy(&scene, &QGraphicsScene::changed);
     scene.addItem(proxy);
-    QTRY_VERIFY(sceneChangedSpy.size() > 0); // make sure the scene is ready
+    QTRY_VERIFY(!sceneChangedSpy.isEmpty()); // make sure the scene is ready
 
     // in
     QTest::mouseMove(view.viewport(), view.mapFromScene(proxy->mapToScene(proxy->boundingRect().center())));
@@ -2429,12 +2437,12 @@ static bool findViewAndTipLabel(const QWidget *view)
 
 void tst_QGraphicsProxyWidget::tooltip_basic()
 {
-    QString toolTip = "Qt rocks!";
-    QString toolTip2 = "Qt rocks even more!";
+    QString toolTip = "Qt rocks!"_L1;
+    QString toolTip2 = "Qt rocks even more!"_L1;
 
-    QPushButton *button = new QPushButton("button");
-    QGraphicsProxyWidget *proxy = new QGraphicsProxyWidget;
-    QGraphicsProxyWidgetPrivate *proxyd = static_cast<QGraphicsProxyWidgetPrivate *>(QGraphicsItemPrivate::get(proxy));
+    auto *button = new QPushButton("button"_L1);
+    auto *proxy = new QGraphicsProxyWidget;
+    auto *proxyd = static_cast<QGraphicsProxyWidgetPrivate *>(QGraphicsItemPrivate::get(proxy));
     proxy->setWidget(button);
     proxyd->lastWidgetUnderMouse = button; // force widget under mouse
 
@@ -2518,10 +2526,10 @@ void tst_QGraphicsProxyWidget::childPos()
     QGraphicsScene scene;
 
     QComboBox box;
-    box.addItem("Item 1");
-    box.addItem("Item 2");
-    box.addItem("Item 3");
-    box.addItem("Item 4");
+    box.addItem("Item 1"_L1);
+    box.addItem("Item 2"_L1);
+    box.addItem("Item 3"_L1);
+    box.addItem("Item 4"_L1);
 
     if (moveCombo)
         box.move(comboPos);
@@ -2545,8 +2553,8 @@ void tst_QGraphicsProxyWidget::childPos()
         QVERIFY(menu->testAttribute(Qt::WA_DontShowOnScreen));
 
         QCOMPARE(proxy->childItems().size(), 1);
-        QGraphicsProxyWidget *proxyChild = qobject_cast<QGraphicsProxyWidget *>(
-            static_cast<QGraphicsWidget *>(proxy->childItems().first()));
+        auto *proxyChild = qobject_cast<QGraphicsProxyWidget *>(
+            static_cast<QGraphicsWidget *>(proxy->childItems().constFirst()));
         QVERIFY(proxyChild);
         QVERIFY(proxyChild->isVisible());
         qreal expectedXPosition = 0.0;
@@ -2566,20 +2574,19 @@ void tst_QGraphicsProxyWidget::autoShow()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
 
-    QGraphicsProxyWidget *proxy1 = scene.addWidget(new QPushButton("Button1"));
+    QGraphicsProxyWidget *proxy1 = scene.addWidget(new QPushButton("Button1"_L1));
 
-    QPushButton *button2 = new QPushButton("Button2");
+    auto *button2 = new QPushButton("Button2"_L1);
     button2->hide();
-    QGraphicsProxyWidget *proxy2 = new QGraphicsProxyWidget();
+    auto *proxy2 = new QGraphicsProxyWidget();
     proxy2->setWidget(button2);
     scene.addItem(proxy2);
 
     view.show();
     QApplication::processEvents();
 
-    QCOMPARE(proxy1->isVisible(), true);
-    QCOMPARE(proxy2->isVisible(), false);
-
+    QVERIFY(proxy1->isVisible());
+    QVERIFY(!proxy2->isVisible());
 }
 
 void tst_QGraphicsProxyWidget::windowOpacity()
@@ -2587,7 +2594,7 @@ void tst_QGraphicsProxyWidget::windowOpacity()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
 
-    QWidget *widget = new QWidget;
+    auto *widget = new QWidget;
     widget->resize(100, 100);
     QGraphicsProxyWidget *proxy = scene.addWidget(widget);
     proxy->setCacheMode(QGraphicsItem::ItemCoordinateCache);
@@ -2623,9 +2630,9 @@ void tst_QGraphicsProxyWidget::windowOpacity()
 
 void tst_QGraphicsProxyWidget::stylePropagation()
 {
-    QPointer<QStyle> windowsStyle = QStyleFactory::create("windows");
+    QPointer<QStyle> windowsStyle = QStyleFactory::create("windows"_L1);
 
-    QLineEdit *edit = new QLineEdit;
+    auto *edit = new QLineEdit;
     QGraphicsProxyWidget proxy;
     proxy.setWidget(edit);
 
@@ -2638,7 +2645,7 @@ void tst_QGraphicsProxyWidget::stylePropagation()
     QCOMPARE(editSpy.counts[QEvent::StyleChange], 1);
     QCOMPARE(proxySpy.counts[QEvent::StyleChange], 1);
     QCOMPARE(proxy.style(), (QStyle *)windowsStyle);
-    edit->setStyle(0);
+    edit->setStyle(nullptr);
     QCOMPARE(editSpy.counts[QEvent::StyleChange], 2);
     QCOMPARE(proxySpy.counts[QEvent::StyleChange], 2);
     QCOMPARE(proxy.style(), QApplication::style());
@@ -2650,7 +2657,7 @@ void tst_QGraphicsProxyWidget::stylePropagation()
     QCOMPARE(editSpy.counts[QEvent::StyleChange], 3);
     QCOMPARE(proxySpy.counts[QEvent::StyleChange], 3);
     QCOMPARE(edit->style(), (QStyle *)windowsStyle);
-    proxy.setStyle(0);
+    proxy.setStyle(nullptr);
     QCOMPARE(editSpy.counts[QEvent::StyleChange], 4);
     QCOMPARE(proxySpy.counts[QEvent::StyleChange], 4);
     QCOMPARE(proxy.style(), QApplication::style());
@@ -2667,7 +2674,7 @@ void tst_QGraphicsProxyWidget::palettePropagation()
     QPalette palette = lineEditPalette;
     palette.setBrush(QPalette::Text, Qt::red);
 
-    QLineEdit *edit = new QLineEdit;
+    auto *edit = new QLineEdit;
     QGraphicsProxyWidget proxy;
     proxy.setWidget(edit);
 
@@ -2716,7 +2723,7 @@ void tst_QGraphicsProxyWidget::fontPropagation()
     QFont font = lineEditFont;
     font.setPointSize(43);
 
-    QLineEdit *edit = new QLineEdit;
+    auto *edit = new QLineEdit;
     QGraphicsProxyWidget proxy;
     proxy.setWidget(edit);
 
@@ -2757,7 +2764,7 @@ void tst_QGraphicsProxyWidget::fontPropagation()
     QCOMPARE(edit->font(), lineEditFont);
 
     proxy.setFont(font);
-    QLineEdit *edit2 = new QLineEdit;
+    auto *edit2 = new QLineEdit;
     proxy.setWidget(edit2);
     delete edit;
     QCOMPARE(edit2->font().pointSize(), 43);
@@ -2775,7 +2782,7 @@ public:
       layout = new QGraphicsLinearLayout(item);
       layout->addItem(widget);
       item->setLayout(layout);
-      button = new QPushButton("Push me");
+      button = new QPushButton("Push me"_L1);
       widget->setWidget(button);
       setCentralWidget(view);
       scene->addItem(item);
@@ -2793,7 +2800,7 @@ public:
 
 void tst_QGraphicsProxyWidget::dontCrashWhenDie()
 {
-    MainWidget *w = new MainWidget();
+    auto *w = new MainWidget();
     w->show();
     QVERIFY(QTest::qWaitForWindowExposed(w));
 
@@ -2808,8 +2815,8 @@ void tst_QGraphicsProxyWidget::dontCrashWhenDie()
 
 void tst_QGraphicsProxyWidget::dontCrashNoParent()  // QTBUG-15442
 {
-    QGraphicsProxyWidget *parent(new QGraphicsProxyWidget);
-    QGraphicsProxyWidget *child(new QGraphicsProxyWidget);
+    auto *parent = new QGraphicsProxyWidget;
+    auto *child = new QGraphicsProxyWidget;
     QScopedPointer<QLabel> label0(new QLabel);
     QScopedPointer<QLabel> label1(new QLabel);
 
@@ -2824,32 +2831,28 @@ void tst_QGraphicsProxyWidget::createProxyForChildWidget()
 {
     QGraphicsScene scene;
 
-    QLineEdit *edit1 = new QLineEdit;
-    edit1->setText("QLineEdit 1");
-    QLineEdit *edit2 = new QLineEdit;
-    edit2->setText("QLineEdit 2");
-    QCheckBox *checkbox = new QCheckBox("QCheckBox");
-    QVBoxLayout *vlayout = new QVBoxLayout;
-
+    auto *box = new QGroupBox("QGroupBox"_L1);
+    box->setCheckable(true);
+    box->setChecked(true);
+    auto *edit1 = new QLineEdit;
+    edit1->setText("QLineEdit 1"_L1);
+    auto *edit2 = new QLineEdit;
+    edit2->setText("QLineEdit 2"_L1);
+    auto *checkbox = new QCheckBox("QCheckBox"_L1);
+    auto *vlayout = new QVBoxLayout(box);
     vlayout->addWidget(edit1);
     vlayout->addWidget(edit2);
     vlayout->addWidget(checkbox);
     vlayout->insertStretch(-1);
 
-    QGroupBox *box = new QGroupBox("QGroupBox");
-    box->setCheckable(true);
-    box->setChecked(true);
-    box->setLayout(vlayout);
-
-    QDial *leftDial = new QDial;
-    QDial *rightDial = new QDial;
+    auto *leftDial = new QDial;
+    auto *rightDial = new QDial;
 
     QWidget window;
-    QHBoxLayout *layout = new QHBoxLayout;
+    auto *layout = new QHBoxLayout(&window);
     layout->addWidget(leftDial);
     layout->addWidget(box);
     layout->addWidget(rightDial);
-    window.setLayout(layout);
 
     QVERIFY(!window.graphicsProxyWidget());
     QVERIFY(!checkbox->graphicsProxyWidget());
@@ -2896,7 +2899,7 @@ void tst_QGraphicsProxyWidget::createProxyForChildWidget()
 
 
 
-    boxProxy->setWidget(0);
+    boxProxy->setWidget(nullptr);
 
     QVERIFY(!checkbox->graphicsProxyWidget());
     QVERIFY(!box->graphicsProxyWidget());
@@ -2910,15 +2913,11 @@ class ContextMenuWidget : public QLabel
 {
     Q_OBJECT
 public:
-    ContextMenuWidget()
-        : QLabel(QStringLiteral("ContextMenuWidget"))
-        , embeddedPopup(false)
-        , gotContextMenuEvent(false)
-        , m_embeddedPopupSet(false)
-        , m_timer(0)
-    { }
-    bool embeddedPopup;
-    bool gotContextMenuEvent;
+    ContextMenuWidget() : QLabel(QStringLiteral("ContextMenuWidget")) { }
+
+    bool embeddedPopup = false;
+    bool gotContextMenuEvent = false;
+
 protected:
     bool event(QEvent *event) override
     {
@@ -2930,7 +2929,7 @@ protected:
                 m_timer->start();
             }
         }
-        return QWidget::event(event);
+        return QLabel::event(event);
     }
     void contextMenuEvent(QContextMenuEvent *) override
     {
@@ -2940,10 +2939,10 @@ protected:
 private slots:
     void checkMenu()
     {
-        QMenu *menu = findChild<QMenu *>();
+        auto *menu = findChild<QMenu *>();
         if (!m_embeddedPopupSet) {
             m_embeddedPopupSet = true;
-            embeddedPopup = menu != 0;
+            embeddedPopup = menu != nullptr;
         }
         if (menu && menu->isVisible())
             menu->hide();
@@ -2951,8 +2950,8 @@ private slots:
     }
 
 private:
-    bool m_embeddedPopupSet;
-    QTimer *m_timer;
+    bool m_embeddedPopupSet = false;
+    QTimer *m_timer{};
 };
 #endif // QT_NO_CONTEXTMENU
 
@@ -2973,11 +2972,11 @@ void tst_QGraphicsProxyWidget::actionsContextMenu()
     QFETCH(bool, hasFocus);
     QFETCH(bool, actionsContextMenu);
 
-    ContextMenuWidget *widget = new ContextMenuWidget;
+    auto *widget = new ContextMenuWidget;
     if (actionsContextMenu) {
-        widget->addAction(new QAction("item 1", widget));
-        widget->addAction(new QAction("item 2", widget));
-        widget->addAction(new QAction("item 3", widget));
+        widget->addAction(new QAction("item 1"_L1, widget));
+        widget->addAction(new QAction("item 2"_L1, widget));
+        widget->addAction(new QAction("item 3"_L1, widget));
         widget->setContextMenuPolicy(Qt::ActionsContextMenu);
     }
     QGraphicsScene scene;
@@ -3002,7 +3001,7 @@ void tst_QGraphicsProxyWidget::actionsContextMenu()
                                        view.viewport()->rect().center(),
                                        view.viewport()->mapToGlobal(view.viewport()->rect().center()));
     contextMenuEvent.accept();
-    qApp->sendEvent(view.viewport(), &contextMenuEvent);
+    QCoreApplication::sendEvent(view.viewport(), &contextMenuEvent);
 
     if (hasFocus) {
         if (actionsContextMenu) {
@@ -3032,15 +3031,16 @@ void tst_QGraphicsProxyWidget::deleteProxyForChildWidget()
     QGraphicsScene scene;
     scene.setSceneRect(QRectF(0, 0, 640, 480));
     QGraphicsView view(&scene);
-    QComboBox *combo = new QComboBox;
-    combo->addItems(QStringList() << "red" << "green" << "blue" << "white" << "black" << "yellow" << "cyan" << "magenta");
+    auto *combo = new QComboBox;
+    combo->addItems({ "red"_L1, "green"_L1, "blue"_L1, "white"_L1, "black"_L1,
+                      "yellow"_L1, "cyan"_L1, "magenta"_L1 });
     dialog.setLayout(new QVBoxLayout);
     dialog.layout()->addWidget(combo);
 
     QGraphicsProxyWidget *proxy = scene.addWidget(&dialog);
     view.show();
 
-    proxy->setWidget(0);
+    proxy->setWidget(nullptr);
     //just don't crash
     QApplication::processEvents();
     delete combo;
@@ -3079,16 +3079,16 @@ void tst_QGraphicsProxyWidget::bypassGraphicsProxyWidget()
     flags |= Qt::Dialog;
     if (bypass)
         flags |= Qt::BypassGraphicsProxyWidget;
-    QFileDialog *dialog = new QFileDialog(widget, flags);
-    dialog->setOption(QFileDialog::DontUseNativeDialog, true);
-    dialog->show();
-    QVERIFY(QTest::qWaitForWindowActive(dialog));
+    QFileDialog dialog(widget, flags);
+    dialog.setOption(QFileDialog::DontUseNativeDialog, true);
+    dialog.show();
+    QVERIFY(QTest::qWaitForWindowActive(&dialog));
 
     QCOMPARE(proxy->childItems().size(), bypass ? 0 : 1);
     if (!bypass)
-        QCOMPARE(((QGraphicsProxyWidget *)proxy->childItems().first())->widget(), (QWidget *)dialog);
+        QCOMPARE(static_cast<QGraphicsProxyWidget *>(proxy->childItems().constFirst())->widget(), &dialog);
 
-    dialog->hide();
+    dialog.hide();
     QApplication::processEvents();
 }
 
@@ -3108,8 +3108,8 @@ static void makeDndEvent(QGraphicsSceneDragDropEvent *event, QGraphicsView *view
 
 void tst_QGraphicsProxyWidget::dragDrop()
 {
-    QPushButton *button = new QPushButton; // acceptDrops(false)
-    QLineEdit *edit = new QLineEdit; // acceptDrops(true)
+    auto *button = new QPushButton; // acceptDrops(false)
+    auto *edit = new QLineEdit; // acceptDrops(true)
 
     QGraphicsScene scene;
     QGraphicsProxyWidget *buttonProxy = scene.addWidget(button);
@@ -3125,36 +3125,36 @@ void tst_QGraphicsProxyWidget::dragDrop()
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     QMimeData data;
-    data.setText("hei");
+    data.setText("hei"_L1);
     {
         QGraphicsSceneDragDropEvent event(QEvent::GraphicsSceneDragEnter);
         makeDndEvent(&event, &view, QPointF(50, 25));
         event.setMimeData(&data);
-        qApp->sendEvent(&scene, &event);
+        QCoreApplication::sendEvent(&scene, &event);
         QVERIFY(event.isAccepted());
     }
     {
         QGraphicsSceneDragDropEvent event(QEvent::GraphicsSceneDragMove);
         makeDndEvent(&event, &view, QPointF(50, 25));
         event.setMimeData(&data);
-        qApp->sendEvent(&scene, &event);
+        QCoreApplication::sendEvent(&scene, &event);
         QVERIFY(!event.isAccepted());
     }
     {
         QGraphicsSceneDragDropEvent event(QEvent::GraphicsSceneDragMove);
         makeDndEvent(&event, &view, QPointF(50, 75));
         event.setMimeData(&data);
-        qApp->sendEvent(&scene, &event);
+        QCoreApplication::sendEvent(&scene, &event);
         QVERIFY(event.isAccepted());
     }
     {
         QGraphicsSceneDragDropEvent event(QEvent::GraphicsSceneDrop);
         makeDndEvent(&event, &view, QPointF(50, 75));
         event.setMimeData(&data);
-        qApp->sendEvent(&scene, &event);
+        QCoreApplication::sendEvent(&scene, &event);
         QVERIFY(event.isAccepted());
     }
-    QCOMPARE(edit->text(), QString("hei"));
+    QCOMPARE(edit->text(), "hei"_L1);
 }
 
 void tst_QGraphicsProxyWidget::windowFlags_data()
@@ -3176,15 +3176,15 @@ void tst_QGraphicsProxyWidget::windowFlags()
     QFETCH(int, widgetFlags);
     QFETCH(int, resultingProxyFlags);
     QFETCH(int, resultingWidgetFlags);
-    Qt::WindowFlags proxyWFlags = Qt::WindowFlags(proxyFlags);
-    Qt::WindowFlags widgetWFlags = Qt::WindowFlags(widgetFlags);
-    Qt::WindowFlags resultingProxyWFlags = Qt::WindowFlags(resultingProxyFlags);
-    Qt::WindowFlags resultingWidgetWFlags = Qt::WindowFlags(resultingWidgetFlags);
+    const Qt::WindowFlags proxyWFlags(proxyFlags);
+    const Qt::WindowFlags widgetWFlags(widgetFlags);
+    const Qt::WindowFlags resultingProxyWFlags(resultingProxyFlags);
+    const Qt::WindowFlags resultingWidgetWFlags(resultingWidgetFlags);
 
-    QGraphicsProxyWidget proxy(0, proxyWFlags);
+    QGraphicsProxyWidget proxy(nullptr, proxyWFlags);
     QVERIFY((proxy.windowFlags() & proxyWFlags) == proxyWFlags);
 
-    QWidget *widget = new QWidget(0, widgetWFlags);
+    auto *widget = new QWidget(nullptr, widgetWFlags);
     QVERIFY((widget->windowFlags() & widgetWFlags) == widgetWFlags);
 
     proxy.setWidget(widget);
@@ -3198,10 +3198,10 @@ void tst_QGraphicsProxyWidget::windowFlags()
 
 void tst_QGraphicsProxyWidget::comboboxWindowFlags()
 {
-    QComboBox *comboBox = new QComboBox;
-    comboBox->addItem("Item 1");
-    comboBox->addItem("Item 2");
-    comboBox->addItem("Item 3");
+    auto *comboBox = new QComboBox;
+    comboBox->addItem("Item 1"_L1);
+    comboBox->addItem("Item 2"_L1);
+    comboBox->addItem("Item 3"_L1);
     QWidget *embedWidget = comboBox;
 
     QGraphicsScene scene;
@@ -3224,7 +3224,7 @@ void tst_QGraphicsProxyWidget::updateAndDelete()
     QSKIP("Test case unstable on this platform, QTBUG-23700");
 #endif
     QGraphicsScene scene;
-    QGraphicsProxyWidget *proxy = scene.addWidget(new QPushButton("Hello World"));
+    QGraphicsProxyWidget *proxy = scene.addWidget(new QPushButton("Hello World"_L1));
     View view(&scene);
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
@@ -3279,7 +3279,7 @@ void tst_QGraphicsProxyWidget::inputMethod()
     // check that the proxy is initialized with the correct input method sensitivity
     for (int i = 0; i < 2; ++i)
     {
-        QLineEdit *lineEdit = new QLineEdit;
+        auto *lineEdit = new QLineEdit;
         lineEdit->setAttribute(Qt::WA_InputMethodEnabled, !!i);
         QGraphicsProxyWidget *proxy = scene.addWidget(lineEdit);
         QCOMPARE(!!(proxy->flags() & QGraphicsItem::ItemAcceptsInputMethod), !!i);
@@ -3288,7 +3288,7 @@ void tst_QGraphicsProxyWidget::inputMethod()
     // check that input method events are only forwarded to widgets with focus
     for (int i = 0; i < 2; ++i)
     {
-        InputMethod_LineEdit *lineEdit = new InputMethod_LineEdit;
+        auto *lineEdit = new InputMethod_LineEdit;
         lineEdit->setAttribute(Qt::WA_InputMethodEnabled, true);
         QGraphicsProxyWidget *proxy = scene.addWidget(lineEdit);
 
@@ -3297,17 +3297,17 @@ void tst_QGraphicsProxyWidget::inputMethod()
 
         lineEdit->inputMethodEvents = 0;
         QInputMethodEvent event;
-        qApp->sendEvent(proxy, &event);
+        QCoreApplication::sendEvent(proxy, &event);
         QCOMPARE(lineEdit->inputMethodEvents, i);
     }
 
     scene.clear();
     QGraphicsView view(&scene);
-    QWidget *w = new QWidget;
-    w->setLayout(new QVBoxLayout(w));
-    QLineEdit *lineEdit = new QLineEdit;
+    auto *w = new QWidget;
+    auto *vLayout = new QVBoxLayout(w);
+    auto *lineEdit = new QLineEdit;
     lineEdit->setEchoMode(QLineEdit::Password);
-    w->layout()->addWidget(lineEdit);
+    vLayout->addWidget(lineEdit);
     lineEdit->setAttribute(Qt::WA_InputMethodEnabled, true);
     QGraphicsProxyWidget *proxy = scene.addWidget(w);
     view.show();
@@ -3321,7 +3321,7 @@ void tst_QGraphicsProxyWidget::clickFocus()
 {
     QGraphicsScene scene;
     scene.setItemIndexMethod(QGraphicsScene::NoIndex);
-    QLineEdit *le1 = new QLineEdit;
+    auto *le1 = new QLineEdit;
     QGraphicsProxyWidget *proxy = scene.addWidget(le1);
 
     QGraphicsView view(&scene);
@@ -3352,7 +3352,7 @@ void tst_QGraphicsProxyWidget::clickFocus()
         QCOMPARE(proxySpy.counts[QEvent::FocusIn], 1);
         QCOMPARE(widgetSpy.counts[QEvent::FocusIn], 1);
 
-        scene.setFocusItem(0);
+        scene.setFocusItem(nullptr);
         QVERIFY(!proxy->hasFocus());
         QVERIFY(!proxy->widget()->hasFocus());
         QCOMPARE(proxySpy.counts[QEvent::FocusOut], 1);
@@ -3363,7 +3363,7 @@ void tst_QGraphicsProxyWidget::clickFocus()
             QGraphicsSceneMouseEvent event(QEvent::GraphicsSceneMousePress);
             event.setScenePos(lineEditCenter);
             event.setButton(Qt::LeftButton);
-            qApp->sendEvent(&scene, &event);
+            QCoreApplication::sendEvent(&scene, &event);
             QVERIFY(proxy->hasFocus());
             QVERIFY(proxy->widget()->hasFocus());
             QCOMPARE(proxySpy.counts[QEvent::FocusIn], 2);
@@ -3371,7 +3371,7 @@ void tst_QGraphicsProxyWidget::clickFocus()
         }
     }
 
-    scene.setFocusItem(0);
+    scene.setFocusItem(nullptr);
     proxy->setWidget(new QLineEdit); // resets focusWidget
     delete le1;
 
@@ -3389,14 +3389,14 @@ void tst_QGraphicsProxyWidget::clickFocus()
             QGraphicsSceneMouseEvent event(QEvent::GraphicsSceneMousePress);
             event.setScenePos(lineEditCenter);
             event.setButton(Qt::LeftButton);
-            qApp->sendEvent(&scene, &event);
+            QCoreApplication::sendEvent(&scene, &event);
             QVERIFY(!proxy->hasFocus());
             QVERIFY(!proxy->widget()->hasFocus());
             QCOMPARE(proxySpy.counts[QEvent::FocusIn], 0);
             QCOMPARE(widgetSpy.counts[QEvent::FocusIn], 0);
         }
 
-        scene.setFocusItem(0);
+        scene.setFocusItem(nullptr);
         QVERIFY(!proxy->hasFocus());
         QVERIFY(!proxy->widget()->hasFocus());
         QCOMPARE(proxySpy.counts[QEvent::FocusOut], 0);
@@ -3410,7 +3410,7 @@ void tst_QGraphicsProxyWidget::clickFocus()
 
         // Multiple clicks should only result in one FocusIn.
         proxy->widget()->setFocusPolicy(Qt::StrongFocus);
-        scene.setFocusItem(0);
+        scene.setFocusItem(nullptr);
         QVERIFY(!proxy->hasFocus());
         QVERIFY(!proxy->widget()->hasFocus());
         QTest::mouseClick(view.viewport(), Qt::LeftButton, {}, view.mapFromScene(lineEditCenter));
@@ -3425,13 +3425,13 @@ void tst_QGraphicsProxyWidget::clickFocus()
 void tst_QGraphicsProxyWidget::windowFrameMargins()
 {
     // Make sure the top margin is non-zero when passing Qt::Window.
-    QGraphicsProxyWidget *proxy = new QGraphicsProxyWidget(nullptr, Qt::Window);
+    auto *proxy = new QGraphicsProxyWidget(nullptr, Qt::Window);
 
     qreal left, top, right, bottom;
     proxy->getWindowFrameMargins(&left, &top, &right, &bottom);
     QVERIFY(top > 0);
 
-    proxy->setWidget(new QPushButton("testtest"));
+    proxy->setWidget(new QPushButton("testtest"_L1));
     proxy->getWindowFrameMargins(&left, &top, &right, &bottom);
     QVERIFY(top > 0);
 
@@ -3461,14 +3461,14 @@ void tst_QGraphicsProxyWidget::QTBUG_6986_sendMouseEventToAlienWidget()
     };
 
     QGraphicsScene scene;
-    QWidget *background = new QWidget;
+    auto *background = new QWidget;
     background->setGeometry(0, 0, 500, 500);
-    HoverButton *hoverButton = new HoverButton(background);
-    hoverButton->setText("Second button");
+    auto *hoverButton = new HoverButton(background);
+    hoverButton->setText("Second button"_L1);
     hoverButton->setGeometry(10, 10, 200, 50);
     scene.addWidget(background);
 
-    QPushButton *hideButton = new QPushButton("I'm a button with a very very long text");
+    auto *hideButton = new QPushButton("I'm a button with a very very long text"_L1);
     hideButton->setGeometry(10, 10, 400, 50);
     QGraphicsProxyWidget *topButton = scene.addWidget(hideButton);
     connect(hideButton, &QPushButton::clicked, &scene, [&]() { topButton->hide(); });
@@ -3482,13 +3482,13 @@ void tst_QGraphicsProxyWidget::QTBUG_6986_sendMouseEventToAlienWidget()
     QPoint topButtonTopLeftCorner = view.mapFromScene(topButton->scenePos());
     QTest::mouseClick(view.viewport(), Qt::LeftButton, {}, topButtonTopLeftCorner);
     // move to the bottom right corner (buttons are placed in the top left corner)
-    QCOMPARE(hoverButton->hoverLeaveReceived, false);
+    QVERIFY(!hoverButton->hoverLeaveReceived);
     QTest::mouseMove(view.viewport(), view.viewport()->rect().bottomRight());
-    if (QGuiApplication::platformName() == QLatin1String("cocoa")) {
+    if (QGuiApplication::platformName() == "cocoa"_L1) {
         // The "Second button" does not receive QEvent::HoverLeave
         QEXPECT_FAIL("", "This test fails only on Cocoa. Investigate why. See QTBUG-69219", Continue);
     }
-    QTRY_COMPARE(hoverButton->hoverLeaveReceived, true);
+    QTRY_VERIFY(hoverButton->hoverLeaveReceived);
 }
 
 static QByteArray msgPointMismatch(const QPoint &actual, const QPoint &expected)
@@ -3508,14 +3508,14 @@ void tst_QGraphicsProxyWidget::mapToGlobal() // QTBUG-41135
     view.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     view.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     view.setTransform(QTransform::fromScale(2, 2));  // QTBUG-50136, use transform.
-    view.setWindowTitle(QTest::currentTestFunction());
+    view.setWindowTitle(QLatin1StringView(QTest::currentTestFunction()));
     view.resize(size);
     view.move(availableGeometry.bottomRight() - QPoint(size.width(), size.height()) - QPoint(100, 100));
-    QWidget *embeddedWidget = new QGroupBox(QLatin1String("Embedded"));
-    embeddedWidget->setStyleSheet(QLatin1String("background-color: \"yellow\"; "));
+    auto *embeddedWidget = new QGroupBox("Embedded"_L1);
+    embeddedWidget->setStyleSheet("background-color: \"yellow\"; "_L1);
     embeddedWidget->setFixedSize((size - QSize(10, 10)) / 2);
-    QWidget *childWidget = new QGroupBox(QLatin1String("Child"), embeddedWidget);
-    childWidget->setStyleSheet(QLatin1String("background-color: \"red\"; "));
+    auto *childWidget = new QGroupBox("Child"_L1, embeddedWidget);
+    childWidget->setStyleSheet("background-color: \"red\"; "_L1);
     childWidget->resize(embeddedWidget->size() / 2);
     childWidget->move(embeddedWidget->width() / 4, embeddedWidget->height() / 4); // center in embeddedWidget
     scene.addWidget(embeddedWidget);
@@ -3545,11 +3545,60 @@ void tst_QGraphicsProxyWidget::mapToGlobal() // QTBUG-41135
 void tst_QGraphicsProxyWidget::mapToGlobalWithoutScene() // QTBUG-44509
 {
     QGraphicsProxyWidget proxyWidget;
-    QWidget *embeddedWidget = new QWidget;
+    auto *embeddedWidget = new QWidget;
     proxyWidget.setWidget(embeddedWidget);
     const QPoint localPos(0, 0);
     const QPoint globalPos = embeddedWidget->mapToGlobal(localPos);
     QCOMPARE(embeddedWidget->mapFromGlobal(globalPos), localPos);
+}
+
+// QTBUG-128913,  QGraphicsProxyWidget with ItemIgnoresTransformations
+void tst_QGraphicsProxyWidget::mapToGlobalIgnoreTranformation()
+{
+    const QRect availableGeometry = QGuiApplication::primaryScreen()->availableGeometry();
+    const QSize size = availableGeometry.size() / 2;
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    view.setWindowTitle(QLatin1StringView(QTest::currentTestFunction()));
+    view.setAlignment(Qt::AlignLeft | Qt::AlignTop);
+    view.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    view.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    view.setTransform(QTransform::fromScale(2, 2));
+    view.resize(size);
+    view.move(availableGeometry.bottomRight() - QPoint(size.width(), size.height())
+              - QPoint(100, 100));
+
+    static constexpr int labelWidth = 200;
+    static constexpr int labelHeight = 50;
+    auto *transforming = new QGraphicsProxyWidget();
+    auto *transformingLabel = new QLabel("Transforming"_L1);
+    transformingLabel->resize(labelWidth, labelHeight);
+    transforming->setWidget(transformingLabel);
+    transforming->setPos(0, 0);
+    scene.addItem(transforming);
+
+    auto *nonTransforming = new QGraphicsProxyWidget();
+    nonTransforming->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+    auto *nonTransformingLabel = new QLabel("NonTransforming"_L1);
+    nonTransformingLabel->resize(labelWidth, labelHeight);
+    nonTransforming->setWidget(nonTransformingLabel);
+    nonTransforming->setPos(labelWidth, 0);
+    scene.addItem(nonTransforming);
+
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+
+    const QPoint labelCenter{ labelWidth / 2, labelHeight / 2 };
+    const QPoint topPos = view.geometry().topLeft() + view.viewport()->geometry().topLeft();
+    const QPoint transformingGlobal = transformingLabel->mapToGlobal(labelCenter);
+    const QPoint nonTransformingGlobal = nonTransformingLabel->mapToGlobal(labelCenter);
+
+    // Center of label at 0,0 scaled by 2 should match size
+    QCOMPARE(transformingGlobal - topPos, QPoint(labelWidth, labelHeight));
+
+    // Center of non-transforming label at 200 (scaled by 2), 0
+    QCOMPARE(nonTransformingGlobal - topPos,
+             QPoint(labelWidth * 2 + labelWidth / 2, labelHeight / 2));
 }
 
 // QTBUG_43780: Embedded widgets have isWindow()==true but showing them should not
@@ -3560,19 +3609,19 @@ void tst_QGraphicsProxyWidget::QTBUG_43780_visibility()
     const QRect availableGeometry = QGuiApplication::primaryScreen()->availableGeometry();
     const QSize size = availableGeometry.size() / 4;
     QWidget mainWindow;
-    QVBoxLayout *layout = new QVBoxLayout(&mainWindow);
-    QComboBox *combo = new QComboBox(&mainWindow);
-    combo->addItems(QStringList() << "i1" << "i2" << "i3");
+    auto *layout = new QVBoxLayout(&mainWindow);
+    auto *combo = new QComboBox(&mainWindow);
+    combo->addItems({ "i1"_L1, "i2"_L1, "i3"_L1 });
     layout->addWidget(combo);
-    QGraphicsScene *scene = new QGraphicsScene(&mainWindow);
-    QGraphicsView *view = new QGraphicsView(scene, &mainWindow);
+    auto *scene = new QGraphicsScene(&mainWindow);
+    auto *view = new QGraphicsView(scene, &mainWindow);
     layout->addWidget(view);
-    mainWindow.setWindowTitle(QTest::currentTestFunction());
+    mainWindow.setWindowTitle(QLatin1StringView(QTest::currentTestFunction()));
     mainWindow.resize(size);
     mainWindow.move(availableGeometry.topLeft()
                     + QPoint(availableGeometry.width() - size.width(),
                              availableGeometry.height() - size.height()) / 2);
-    QLabel *label = new QLabel(QTest::currentTestFunction());
+    auto *label = new QLabel(QLatin1StringView(QTest::currentTestFunction()));
     scene->addWidget(label);
     label->hide();
     mainWindow.show();
@@ -3626,7 +3675,7 @@ void tst_QGraphicsProxyWidget::wheelEventPropagation()
 {
     QGraphicsScene scene(0, 0, 600, 600);
 
-    QWidget *label = new QLabel("Direct");
+    auto *label = new QLabel("Direct"_L1);
     label->setFixedSize(300, 30);
     QGraphicsProxyWidget *labelProxy = scene.addWidget(label);
     labelProxy->setPos(0, 50);
@@ -3639,9 +3688,8 @@ void tst_QGraphicsProxyWidget::wheelEventPropagation()
         {
             setObjectName("Nested Label");
             QLabel *nested = new QLabel(text);
-            QHBoxLayout *hbox = new QHBoxLayout;
+            auto *hbox = new QHBoxLayout(this);
             hbox->addWidget(nested);
-            setLayout(hbox);
         }
 
         int wheelEventCount = 0;
@@ -3651,7 +3699,7 @@ void tst_QGraphicsProxyWidget::wheelEventPropagation()
             ++wheelEventCount;
         }
     };
-    NestedWidget *nestedWidget = new NestedWidget("Nested");
+    auto *nestedWidget = new NestedWidget("Nested"_L1);
     nestedWidget->setFixedSize(300, 60);
     QGraphicsProxyWidget *nestedProxy = scene.addWidget(nestedWidget);
     nestedProxy->setPos(0, 120);
@@ -3678,7 +3726,7 @@ void tst_QGraphicsProxyWidget::wheelEventPropagation()
         QCoreApplication::processEvents();
     };
 
-    int scrollCount = 0;
+    qsizetype scrollCount = 0;
     // test non-kinetic events; they are not grabbed, and should scroll the view unless
     // accepted by the embedded widget
     QCOMPARE(view.itemAt(wheelPosition), nullptr);
@@ -3724,7 +3772,6 @@ void tst_QGraphicsProxyWidget::wheelEventPropagation()
 
     // reset
     view.verticalScrollBar()->setValue(0);
-    scrollCount = scrollSpy.size();
 
     // starting a scroll on a widget that doesn't accept wheel events
     // should also scroll the view, which still gets the grab
@@ -3757,7 +3804,7 @@ void tst_QGraphicsProxyWidget::forwardTouchEvent()
 {
     QGraphicsScene scene;
 
-    TouchWidget *widget = new TouchWidget;
+    auto *widget = new TouchWidget;
     widget->setAttribute(Qt::WA_AcceptTouchEvents);
 
     QGraphicsProxyWidget *proxy = scene.addWidget(widget);
@@ -3791,36 +3838,35 @@ void tst_QGraphicsProxyWidget::forwardTouchEvent()
 void tst_QGraphicsProxyWidget::touchEventPropagation()
 {
     QGraphicsScene scene(0, 0, 300, 200);
-    QWidget *simpleWidget = new QWidget;
+    auto *simpleWidget = new QWidget;
     simpleWidget->setObjectName("simpleWidget");
     simpleWidget->setAttribute(Qt::WA_AcceptTouchEvents, true);
     QGraphicsProxyWidget *simpleProxy = scene.addWidget(simpleWidget);
     simpleProxy->setAcceptTouchEvents(true);
     simpleProxy->setGeometry(QRectF(0, 0, 30, 30));
 
-    QWidget *formWidget = new QWidget;
+    auto *formWidget = new QWidget;
     formWidget->setObjectName("formWidget");
     formWidget->setAttribute(Qt::WA_AcceptTouchEvents, true);
-    QPushButton *pushButton1 = new QPushButton("One");
+    auto *pushButton1 = new QPushButton("One"_L1);
     pushButton1->setObjectName("pushButton1");
     pushButton1->setAttribute(Qt::WA_AcceptTouchEvents, true);
-    QPushButton *pushButton2 = new QPushButton("Two");
+    auto *pushButton2 = new QPushButton("Two"_L1);
     pushButton2->setObjectName("pushButton2");
     pushButton2->setAttribute(Qt::WA_AcceptTouchEvents, true);
-    TouchWidget *touchWidget1 = new TouchWidget;
+    auto *touchWidget1 = new TouchWidget;
     touchWidget1->setObjectName("touchWidget1");
     touchWidget1->setAttribute(Qt::WA_AcceptTouchEvents, true);
     touchWidget1->setFixedSize(pushButton1->sizeHint());
-    TouchWidget *touchWidget2 = new TouchWidget;
+    auto *touchWidget2 = new TouchWidget;
     touchWidget2->setObjectName("touchWidget2");
     touchWidget2->setAttribute(Qt::WA_AcceptTouchEvents, true);
     touchWidget2->setFixedSize(pushButton2->sizeHint());
-    QVBoxLayout *vbox = new QVBoxLayout;
+    auto *vbox = new QVBoxLayout(formWidget);
     vbox->addWidget(pushButton1);
     vbox->addWidget(pushButton2);
     vbox->addWidget(touchWidget1);
     vbox->addWidget(touchWidget2);
-    formWidget->setLayout(vbox);
     QGraphicsProxyWidget *formProxy = scene.addWidget(formWidget);
     formProxy->setAcceptTouchEvents(true);
     formProxy->setGeometry(QRectF(50, 50, 200, 160));
@@ -3861,7 +3907,7 @@ void tst_QGraphicsProxyWidget::touchEventPropagation()
             case QEvent::TouchUpdate:
             case QEvent::TouchCancel:
             case QEvent::TouchEnd: {
-                QTouchEvent *touchEvent = static_cast<QTouchEvent *>(event);
+                auto *touchEvent = static_cast<QTouchEvent *>(event);
                 // instead of detaching each QEventPoint, just store the relative positions
                 for (const auto &touchPoint : touchEvent->points())
                     records[touchPoint.id()] << TouchRecord{receiver, event->type(), touchPoint.position()};
@@ -3880,7 +3926,7 @@ void tst_QGraphicsProxyWidget::touchEventPropagation()
     } eventSpy;
     qApp->installEventFilter(&eventSpy);
 
-    auto touchDevice = QTest::createTouchDevice();
+    auto *touchDevice = QTest::createTouchDevice();
     const QPointF simpleCenter = simpleProxy->geometry().center();
 
     // On systems without double conversion we might get different rounding behavior.

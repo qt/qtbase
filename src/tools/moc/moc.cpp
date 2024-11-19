@@ -884,6 +884,7 @@ void Moc::parse()
                     if (test(Q_SIGNALS_TOKEN))
                         error("Signals cannot have access specifier");
                     break;
+                case STRUCT:
                 case CLASS: {
                     ClassDef nestedDef;
                     if (parseClassHead(&nestedDef)) {
@@ -1341,8 +1342,6 @@ void Moc::createPropertyDef(PropertyDef &propDef, int propertyIndex, Moc::Proper
     type = normalizeType(type);
     if (type == "QMap")
         type = "QMap<QString,QVariant>";
-    else if (type == "QValueList")
-        type = "QValueList<QVariant>";
     else if (type == "LongLong")
         type = "qlonglong";
     else if (type == "ULongLong")
@@ -2100,6 +2099,8 @@ QJsonObject FunctionDef::toJson(int index) const
     if (!tag.isEmpty())
         fdef["tag"_L1] = QString::fromUtf8(tag);
     fdef["returnType"_L1] = QString::fromUtf8(normalizedType);
+    if (isConst)
+        fdef["isConst"_L1] = true;
 
     QJsonArray args;
     for (const ArgumentDef &arg: arguments)

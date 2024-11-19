@@ -393,6 +393,26 @@ input_event buf[32];
 }
 ")
 
+# vxworksevdev
+qt_config_compile_test(vxworksevdev
+    LABEL "VxWorks evdev"
+"#include <evdevLib.h>
+enum {
+    e1 = EV_DEV_ABS,
+    e2 = EV_DEV_PTR_ABS_X,
+    e3 = EV_DEV_PTR_ABS_Y,
+    e4 = EV_DEV_PTR_BTN_TOUCH,
+};
+
+int main(void)
+{
+    /* BEGIN TEST: */
+EV_DEV_EVENT buf[32];
+(void) buf;
+    /* END TEST: */
+    return 0;
+}")
+
 # integrityfb
 qt_config_compile_test(integrityfb
     LABEL "INTEGRITY framebuffer"
@@ -679,9 +699,19 @@ qt_feature("direct2d1_1" PRIVATE
     LABEL "Direct 2D 1.1"
     CONDITION QT_FEATURE_direct2d AND TEST_d2d1_1
 )
+qt_feature("emojisegmenter" PUBLIC PRIVATE
+    SECTION "Fonts"
+    LABEL "Emoji Segmenter"
+    PURPOSE "Supports parsing complex emoji sequences for better font resolution."
+)
+qt_feature_definition("emojisegmenter" "QT_NO_EMOJISEGMENTER" NEGATE VALUE "1")
 qt_feature("evdev" PRIVATE
     LABEL "evdev"
     CONDITION QT_FEATURE_thread AND TEST_evdev
+)
+qt_feature("vxworksevdev" PRIVATE
+    LABEL "vxworksevdev"
+    CONDITION QT_FEATURE_thread AND TEST_vxworksevdev
 )
 qt_feature("freetype" PUBLIC PRIVATE
     SECTION "Fonts"
@@ -1275,6 +1305,7 @@ qt_feature("wayland" PUBLIC
 
 qt_configure_add_summary_section(NAME "Qt Gui")
 qt_configure_add_summary_entry(ARGS "accessibility")
+qt_configure_add_summary_entry(ARGS "emojisegmenter")
 qt_configure_add_summary_entry(ARGS "freetype")
 qt_configure_add_summary_entry(ARGS "system-freetype")
 qt_configure_add_summary_entry(ARGS "harfbuzz")
@@ -1322,6 +1353,7 @@ qt_configure_add_summary_entry(ARGS "integrityhid")
 qt_configure_add_summary_entry(ARGS "mtdev")
 qt_configure_add_summary_entry(ARGS "tslib")
 qt_configure_add_summary_entry(ARGS "xkbcommon")
+qt_configure_add_summary_entry(ARGS "vxworksevdev")
 qt_configure_add_summary_section(NAME "X11 specific")
 qt_configure_add_summary_entry(ARGS "xlib")
 qt_configure_add_summary_entry(ARGS "xcb-xlib")

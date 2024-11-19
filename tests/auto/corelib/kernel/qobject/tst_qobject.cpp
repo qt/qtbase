@@ -8646,25 +8646,25 @@ signals:
     correctly guarded. QTBUG-105286
 */
 namespace QtDeclarative {
-static QAbstractDeclarativeData *theData;
+static std::unique_ptr<QAbstractDeclarativeData> theData;
 
 static void destroyed(QAbstractDeclarativeData *data, QObject *)
 {
-    QCOMPARE(data, theData);
+    QCOMPARE(data, theData.get());
 }
 static void signalEmitted(QAbstractDeclarativeData *data, QObject *, int, void **)
 {
-    QCOMPARE(data, theData);
+    QCOMPARE(data, theData.get());
 }
 // we can't use QCOMPARE in the next two functions, as they don't return void
 static int receivers(QAbstractDeclarativeData *data, const QObject *, int)
 {
-    QTest::qCompare(data, theData, "data", "theData", __FILE__, __LINE__);
+    QTest::qCompare(data, theData.get(), "data", "theData", __FILE__, __LINE__);
     return 0;
 }
 static bool isSignalConnected(QAbstractDeclarativeData *data, const QObject *, int)
 {
-    QTest::qCompare(data, theData, "data", "theData", __FILE__, __LINE__);
+    QTest::qCompare(data, theData.get(), "data", "theData", __FILE__, __LINE__);
     return true;
 }
 
@@ -8705,7 +8705,8 @@ void tst_QObject::declarativeData()
 
     QtDeclarative::Object p;
     QObjectPrivate *priv = QObjectPrivate::get(&p);
-    priv->declarativeData = QtDeclarative::theData = new QAbstractDeclarativeData;
+    priv->declarativeData = new QAbstractDeclarativeData;
+    QtDeclarative::theData.reset(priv->declarativeData);
 
     connect(&p, &QtDeclarative::Object::theSignal, &p, []{
     });

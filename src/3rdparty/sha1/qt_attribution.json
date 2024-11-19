@@ -5,9 +5,11 @@
     "QtUsage": "Used in Qt Core (QCryptographicHash).",
 
     "Description": "Implements the Secure Hash Algorithms SHA 1",
+    "PURL": "pkg:generic/csha1?download_url=https://www.dominik-reichl.de/projects/csha1/",
     "Homepage": "http://www.dominik-reichl.de/projects/csha1/",
     "License": "Public Domain",
     "LicenseId": "LicenseRef-SHA1-Public-Domain",
     "Copyright": ["Copyright (C) Dominik Reichl <dominik.reichl@t-online.de>",
-    "Copyright (C) 2016 The Qt Company Ltd"]
+    "Copyright (C) 2016 The Qt Company Ltd"],
+    "Comment": "no relevant CPE found"
 }

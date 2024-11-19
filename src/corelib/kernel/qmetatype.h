@@ -1275,28 +1275,6 @@ namespace QtPrivate {
     template<typename T>
     constexpr bool IsUnsignedEnum<T, true> = !std::is_signed_v<std::underlying_type_t<T>>;
 
-    template<typename T>
-    struct QMetaTypeTypeFlags
-    {
-        enum { Flags = (QTypeInfo<T>::isRelocatable ? QMetaType::RelocatableType : 0)
-                     | ((!std::is_default_constructible_v<T> || !QTypeInfo<T>::isValueInitializationBitwiseZero) ? QMetaType::NeedsConstruction : 0)
-                     | (!std::is_trivially_destructible_v<T> ? QMetaType::NeedsDestruction : 0)
-                     | (!std::is_trivially_copy_constructible_v<T> ? QMetaType::NeedsCopyConstruction : 0)
-                     | (!std::is_trivially_move_constructible_v<T> ? QMetaType::NeedsMoveConstruction : 0)
-                     | (IsPointerToTypeDerivedFromQObject<T>::Value ? QMetaType::PointerToQObject : 0)
-                     | (IsSharedPointerToTypeDerivedFromQObject<T>::Value ? QMetaType::SharedPointerToQObject : 0)
-                     | (IsWeakPointerToTypeDerivedFromQObject<T>::Value ? QMetaType::WeakPointerToQObject : 0)
-                     | (IsTrackingPointerToTypeDerivedFromQObject<T>::Value ? QMetaType::TrackingPointerToQObject : 0)
-                     | (IsEnumOrFlags<T>::value ? QMetaType::IsEnumeration : 0)
-                     | (IsGadgetHelper<T>::IsGadgetOrDerivedFrom ? QMetaType::IsGadget : 0)
-                     | (IsPointerToGadgetHelper<T>::IsGadgetOrDerivedFrom ? QMetaType::PointerToGadget : 0)
-                     | (std::is_pointer_v<T> ? QMetaType::IsPointer : 0)
-                     | (IsUnsignedEnum<T> ? QMetaType::IsUnsignedEnumeration : 0)
-                     | (IsQmlListType<T> ? QMetaType::IsQmlList : 0)
-                     | (std::is_const_v<std::remove_pointer_t<T>> ? QMetaType::IsConst : 0)
-             };
-    };
-
     template<typename T, bool defined>
     struct MetaTypeDefinedHelper
     {
@@ -2427,7 +2405,44 @@ class QMetaTypeForType
 {
 public:
     static constexpr decltype(typenameHelper<S>()) name = typenameHelper<S>();
-    static constexpr unsigned Flags = QMetaTypeTypeFlags<S>::Flags;
+
+    static constexpr unsigned flags()
+    {
+        uint flags = 0;
+        if constexpr (QTypeInfo<S>::isRelocatable)
+            flags |= QMetaType::RelocatableType;
+        if constexpr (!std::is_default_constructible_v<S> || !QTypeInfo<S>::isValueInitializationBitwiseZero)
+            flags |= QMetaType::NeedsConstruction;
+        if constexpr (!std::is_trivially_destructible_v<S>)
+            flags |= QMetaType::NeedsDestruction;
+        if constexpr (!std::is_trivially_copy_constructible_v<S>)
+            flags |= QMetaType::NeedsCopyConstruction;
+        if constexpr (!std::is_trivially_move_constructible_v<S>)
+            flags |= QMetaType::NeedsMoveConstruction;
+        if constexpr (IsPointerToTypeDerivedFromQObject<S>::Value)
+            flags |= QMetaType::PointerToQObject;
+        if constexpr (IsSharedPointerToTypeDerivedFromQObject<S>::Value)
+            flags |= QMetaType::SharedPointerToQObject;
+        if constexpr (IsWeakPointerToTypeDerivedFromQObject<S>::Value)
+            flags |= QMetaType::WeakPointerToQObject;
+        if constexpr (IsTrackingPointerToTypeDerivedFromQObject<S>::Value)
+            flags |= QMetaType::TrackingPointerToQObject;
+        if constexpr (IsEnumOrFlags<S>::value)
+            flags |= QMetaType::IsEnumeration;
+        if constexpr (IsGadgetHelper<S>::IsGadgetOrDerivedFrom)
+            flags |= QMetaType::IsGadget;
+        if constexpr (IsPointerToGadgetHelper<S>::IsGadgetOrDerivedFrom)
+            flags |= QMetaType::PointerToGadget;
+        if constexpr (std::is_pointer_v<S>)
+            flags |= QMetaType::IsPointer;
+        if constexpr (IsUnsignedEnum<S>)
+            flags |= QMetaType::IsUnsignedEnumeration;
+        if constexpr (IsQmlListType<S>)
+            flags |= QMetaType::IsQmlList;
+        if constexpr (std::is_const_v<std::remove_pointer_t<S>>)
+            flags |= QMetaType::IsConst;
+        return flags;
+    }
 
     static constexpr QMetaTypeInterface::DefaultCtrFn getDefaultCtr()
     {
@@ -2489,6 +2504,12 @@ public:
     }
 };
 
+// Temporary until sources are updated
+template <typename T> struct QMetaTypeTypeFlags
+{
+    enum { Flags = QMetaTypeForType<T>::flags() };
+};
+
 template<typename T>
 struct QMetaTypeInterfaceWrapper
 {
@@ -2502,7 +2523,7 @@ struct QMetaTypeInterfaceWrapper
         /*.revision=*/ QMetaTypeInterface::CurrentRevision,
         /*.alignment=*/ alignof(T),
         /*.size=*/ sizeof(T),
-        /*.flags=*/ QMetaTypeForType<T>::Flags,
+        /*.flags=*/ QMetaTypeForType<T>::flags(),
         /*.typeId=*/ BuiltinMetaType<T>::value,
         /*.metaObjectFn=*/ MetaObjectForType<T>::metaObjectFunction,
         /*.name=*/ QMetaTypeForType<T>::getName(),
@@ -2518,6 +2539,8 @@ struct QMetaTypeInterfaceWrapper
         /*.legacyRegisterOp=*/ QMetaTypeForType<T>::getLegacyRegister()
     };
 };
+template<typename T> struct QMetaTypeInterfaceWrapper<T &> {};
+
 
 #if !defined(Q_OS_WIN) && defined(Q_CC_CLANG)
 #  pragma GCC visibility pop

@@ -6,7 +6,7 @@
     "Files": ["pktdef.h", "wintab.h"],
 
     "Description": "Wintab is a de facto API for pointing devices on Windows.",
-    "PackageComment": "Upstream http://www.pointing.com/Wintab.html no longer offers updates; treat as final",
+    "PackageComment": "Upstream http://www.pointing.com/Wintab.html no longer offers updates; treat as final, no relevant CPE and PURL found",
     "License": "LCS-Telegraphics License",
     "LicenseId": "LicenseRef-Lcs-Telegraphics",
     "Copyright": "Copyright 1991-1998 by LCS/Telegraphics."

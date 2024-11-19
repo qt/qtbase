@@ -1069,6 +1069,12 @@ Q_STATIC_LOGGING_CATEGORY(QRHI_LOG_RUB, "qt.rhi.rub")
     specification of the shading rate is supported via regular textures. In
     practice this may be supported with Direct 3D 12 and Vulkan. This enum value
     has been introduced in Qt 6.9.
+
+    \value PerRenderTargetBlending Indicates that per rendertarget blending is
+    supported i.e. different render targets in MRT framebuffer can have different
+    blending modes. In practice this can be expected to be supported everywhere
+    except OpenGL ES, where it is only available with GLES 3.2 implementations.
+    This enum value has been introduced in Qt 6.9.
  */
 
 /*!
@@ -4075,11 +4081,11 @@ void QRhiBuffer::endFullDynamicBufferUpdateForCurrentFrame()
 /*!
     \internal
  */
-void QRhiBuffer::fullDynamicBufferUpdateForCurrentFrame(const void *data)
+void QRhiBuffer::fullDynamicBufferUpdateForCurrentFrame(const void *data, quint32 size)
 {
     char *p = beginFullDynamicBufferUpdateForCurrentFrame();
     if (p) {
-        memcpy(p, data, m_size);
+        memcpy(p, data, size > 0 ? size : m_size);
         endFullDynamicBufferUpdateForCurrentFrame();
     }
 }
@@ -4501,6 +4507,9 @@ bool QRhiRenderBuffer::createFrom(NativeRenderBuffer src)
     \value ASTC_12x12
 
     \value R8UI One component, unsigned 8 bit.
+    \value R32UI One component, unsigned 32 bit.
+    \value RG32UI Two component, unsigned 32 bit.
+    \value RGBA32UI Four component, unsigned 32 bit.
  */
 
 /*!
@@ -8553,6 +8562,15 @@ void QRhiImplementation::textureFormatInfo(QRhiTexture::Format format, const QSi
     case QRhiTexture::R8UI:
         bpc = 1;
         break;
+    case QRhiTexture::R32UI:
+        bpc = 4;
+        break;
+    case QRhiTexture::RG32UI:
+        bpc = 8;
+        break;
+    case QRhiTexture::RGBA32UI:
+        bpc = 16;
+        break;
 
     default:
         Q_UNREACHABLE();
@@ -9547,7 +9565,7 @@ void QRhiResourceUpdateBatch::generateMips(QRhiTexture *tex)
    destroyed. Instead, the batch is returned the pool for reuse by passing
    it to QRhiCommandBuffer::beginPass(), QRhiCommandBuffer::endPass(), or
    QRhiCommandBuffer::resourceUpdate(), or by calling
-   QRhiResourceUpdateBatch::destroy() on it.
+   QRhiResourceUpdateBatch::release() on it.
 
    \note Can be called outside beginFrame() - endFrame() as well since a batch
    instance just collects data on its own, it does not perform any operations.
@@ -9701,8 +9719,8 @@ void QRhiResourceUpdateBatchPrivate::merge(QRhiResourceUpdateBatchPrivate *other
 
 bool QRhiResourceUpdateBatchPrivate::hasOptimalCapacity() const
 {
-    return activeBufferOpCount < BUFFER_OPS_STATIC_ALLOC - 16
-            && activeTextureOpCount < TEXTURE_OPS_STATIC_ALLOC - 16;
+    return activeBufferOpCount < BUFFER_OPS_STATIC_ALLOC - 4
+            && activeTextureOpCount < TEXTURE_OPS_STATIC_ALLOC - 4;
 }
 
 void QRhiResourceUpdateBatchPrivate::trimOpLists()

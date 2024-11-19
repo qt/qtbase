@@ -2,18 +2,19 @@
 // Copyright (C) 2016 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
-#include <qurl.h>
-#include <QtCore/QDebug>
+#include <QtTest/qtest.h>
 
-#include <QTest>
+#include <QtConcurrent/qtconcurrentrun.h>
+
+#include <QtCore/qcoreapplication.h>
+#include <QtCore/qdebug.h>
+#include <QtCore/qdiriterator.h>
+#include <QtCore/qfileinfo.h>
+#include <QtCore/qmap.h>
+#include <QtCore/qthreadpool.h>
+#include <QtCore/qurl.h>
+
 #include <QtTest/private/qcomparisontesthelper_p.h>
-#include <QDirIterator>
-
-#include <qcoreapplication.h>
-
-#include <qfileinfo.h>
-#include <qmap.h>
-
 #include <QtTest/private/qemulationdetector_p.h>
 
 using namespace Qt::StringLiterals;
@@ -4249,9 +4250,6 @@ void tst_QUrl::testThreadingHelper()
         QTest::qWait(10); // give time for the other threads to start
     }
 }
-
-#include <QThreadPool>
-#include <QtConcurrent>
 
 void tst_QUrl::testThreading()
 {

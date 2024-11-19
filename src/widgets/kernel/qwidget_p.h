@@ -888,9 +888,15 @@ inline void QWidgetPrivate::setSharedPainter(QPainter *painter)
 inline bool QWidgetPrivate::pointInsideRectAndMask(const QPointF &p) const
 {
     Q_Q(const QWidget);
-    // Use QRectF::contains so that (0, -0.1) isn't in, with p.toPoint() it would be
-    // The adjusted matches QRect semantics: (160,160) isn't contained in QRect(0, 0, 160, 160)
-    return QRectF(q->rect().adjusted(0, 0, -1, -1)).contains(p)
+
+    // Use QRectF::contains so that (0, -0.1) isn't in, with p.toPoint() it would be in.
+    // The -1 on right and bottom matches QRect semantics:
+    // (160,160) isn't contained in QRect(0, 0, 160, 160)
+    QRect r = q->rect();
+    r.setRight(qMax(-1, r.right() - 1));
+    r.setBottom(qMax(-1, r.bottom() - 1));
+
+    return r.toRectF().contains(p)
             && (!extra || !extra->hasMask || q->testAttribute(Qt::WA_MouseNoMask)
                 || extra->mask.contains(p.toPoint() /* incorrect for the -0.1 case */));
 }

@@ -1,0 +1,16 @@
+version = 1
+
+[[annotations]]
+path = ["t42types.h", "t42parse.h", "t42parse.c", "t42objs.h", "t42objs.c",
+        "t42drivr.h", "t42drivr.c"]
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (C) 2002-2023 by Roberto Alameda"
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = ["module.mk", "rules.mk", "t42error.h", "type42.c"]
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (C) 2002-2023 by David Turner, Robert Wilhelm, and Werner Lemberg"
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"

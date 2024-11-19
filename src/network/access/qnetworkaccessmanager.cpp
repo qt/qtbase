@@ -64,6 +64,7 @@
 #include "qnetconmonitor_p.h"
 
 #include <mutex>
+#include <utility>
 
 QT_BEGIN_NAMESPACE
 
@@ -415,7 +416,7 @@ QNetworkAccessManager::QNetworkAccessManager(QObject *parent)
     qRegisterMetaType<QSslConfiguration>();
     qRegisterMetaType<QSslPreSharedKeyAuthenticator *>();
 #endif
-    qRegisterMetaType<QList<QPair<QByteArray,QByteArray> > >();
+    qRegisterMetaType<QList<std::pair<QByteArray, QByteArray>>>();
 #if QT_CONFIG(http)
     qRegisterMetaType<QHttpNetworkRequest>();
 #endif

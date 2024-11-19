@@ -3,6 +3,7 @@
 
 package org.qtproject.qt.android;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.view.GestureDetector;
@@ -13,6 +14,7 @@ import android.view.ViewGroup;
 
 import java.util.HashMap;
 
+@SuppressLint("ViewConstructor")
 class QtWindow extends QtLayout implements QtSurfaceInterface {
     private View m_surfaceContainer;
     private View m_nativeView;
@@ -47,11 +49,9 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
             // TODO QTBUG-122552 - Service keyboard input not implemented
             m_editText = new QtEditText(context, listener);
             m_editText.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
-            QtNative.runAction(() -> {
-                addView(m_editText,
-                        new QtLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                                                  ViewGroup.LayoutParams.WRAP_CONTENT));
-            });
+            LayoutParams layoutParams = new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT);
+            QtNative.runAction(() -> addView(m_editText, layoutParams));
         } else {
             m_editText = null;
         }

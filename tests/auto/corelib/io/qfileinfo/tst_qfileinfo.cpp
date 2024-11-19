@@ -1205,8 +1205,8 @@ void tst_QFileInfo::fileTimes()
     const auto disabledAccessTimes =
         QWinRegistryKey(HKEY_LOCAL_MACHINE,
                         LR"(SYSTEM\CurrentControlSet\Control\FileSystem)")
-        .dwordValue(L"NtfsDisableLastAccessUpdate");
-    if (disabledAccessTimes.second && disabledAccessTimes.first != 0)
+        .value<DWORD>(L"NtfsDisableLastAccessUpdate");
+    if (disabledAccessTimes.value_or(0) != 0)
         noAccessTime = true;
 #endif
 

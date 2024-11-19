@@ -6,6 +6,7 @@
 
 #if QT_CONFIG(systemsemaphore)
 #include <QtCore/q20memory.h>
+#include <errno.h>
 
 QT_BEGIN_NAMESPACE
 

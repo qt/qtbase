@@ -82,7 +82,7 @@ public:
     \ingroup basicwidgets
     \inmodule QtWidgets
 
-    \image windows-spinbox.png
+    \image fusion-spinbox.png
 
     QSpinBox is designed to handle integers and discrete sets of
     values (e.g., month names); use QDoubleSpinBox for floating point
@@ -484,10 +484,12 @@ QString QSpinBox::textFromValue(int value) const
         const auto prefix = value < 0 ? "-"_L1 : ""_L1;
         str = prefix + QString::number(qAbs(value), d->displayIntegerBase);
     } else {
-        str = locale().toString(value);
-        if (!d->showGroupSeparator && (qAbs(value) >= 1000 || value == INT_MIN)) {
-            str.remove(locale().groupSeparator());
-        }
+        QLocale loc = locale();
+        if (d->showGroupSeparator)
+            loc.setNumberOptions(loc.numberOptions() & ~QLocale::OmitGroupSeparator);
+        else
+            loc.setNumberOptions(loc.numberOptions() | QLocale::OmitGroupSeparator);
+        str = loc.toString(value);
     }
 
     return str;
@@ -550,6 +552,8 @@ void QSpinBox::fixup(QString &input) const
 
     \ingroup basicwidgets
     \inmodule QtWidgets
+
+    \image fusion-doublespinbox.png
 
     QDoubleSpinBox allows the user to choose a value by clicking the
     up and down buttons or by pressing Up or Down on the keyboard to
@@ -957,11 +961,12 @@ void QDoubleSpinBox::setDecimals(int decimals)
 QString QDoubleSpinBox::textFromValue(double value) const
 {
     Q_D(const QDoubleSpinBox);
-    QString str = locale().toString(value, 'f', d->decimals);
-    if (!d->showGroupSeparator && qAbs(value) >= 1000.0)
-        str.remove(locale().groupSeparator());
-
-    return str;
+    QLocale loc = locale();
+    if (d->showGroupSeparator)
+        loc.setNumberOptions(loc.numberOptions() & ~QLocale::OmitGroupSeparator);
+    else
+        loc.setNumberOptions(loc.numberOptions() | QLocale::OmitGroupSeparator);
+    return loc.toString(value, 'f', d->decimals);
 }
 
 /*!

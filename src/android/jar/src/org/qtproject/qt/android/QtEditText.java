@@ -4,6 +4,7 @@
 
 package org.qtproject.qt.android;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;
@@ -15,6 +16,7 @@ import android.view.KeyEvent;
 
 import org.qtproject.qt.android.QtInputConnection.QtInputConnectionListener;
 
+@SuppressLint("ViewConstructor")
 class QtEditText extends View
 {
     int m_initialCapsMode = 0;

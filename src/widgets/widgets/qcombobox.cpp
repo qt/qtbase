@@ -348,6 +348,12 @@ QSize QComboBoxPrivate::recomputeSizeHint(QSize &sh) const
 {
     Q_Q(const QComboBox);
     if (!sh.isValid()) {
+        if (q->itemDelegate() && q->labelDrawingMode() == QComboBox::LabelDrawingMode::UseDelegate) {
+            QStyleOptionViewItem option;
+            initViewItemOption(&option);
+            sh = q->itemDelegate()->sizeHint(option, currentIndex);
+        }
+
         bool hasIcon = sizeAdjustPolicy == QComboBox::AdjustToMinimumContentsLengthWithIcon;
         int count = q->count();
         QSize iconSize = q->iconSize();
@@ -1257,6 +1263,16 @@ void QComboBox::initStyleOption(QStyleOptionComboBox *option) const
     option->iconSize = iconSize();
     if (d->container && d->container->isVisible())
         option->state |= QStyle::State_On;
+}
+
+void QComboBoxPrivate::initViewItemOption(QStyleOptionViewItem *option) const
+{
+    Q_Q(const QComboBox);
+    q->view()->initViewItemOption(option);
+    option->widget = q;
+    option->index = currentIndex;
+    option->text = q->currentText();
+    option->icon = itemIcon(currentIndex);
 }
 
 void QComboBoxPrivate::updateLineEditGeometry()
@@ -3067,6 +3083,7 @@ void QComboBox::resizeEvent(QResizeEvent *)
 */
 void QComboBox::paintEvent(QPaintEvent *)
 {
+    Q_D(QComboBox);
     QStylePainter painter(this);
     painter.setPen(palette().color(QPalette::Text));
 
@@ -3080,8 +3097,17 @@ void QComboBox::paintEvent(QPaintEvent *)
         opt.currentText = placeholderText();
     }
 
-    // draw the icon and text
-    painter.drawControl(QStyle::CE_ComboBoxLabel, opt);
+    // draw contents
+    if (itemDelegate() && labelDrawingMode() == QComboBox::LabelDrawingMode::UseDelegate) {
+        QStyleOptionViewItem itemOption;
+        d->initViewItemOption(&itemOption);
+        itemOption.rect = style()->subControlRect(QStyle::CC_ComboBox, &opt,
+                                                  QStyle::SC_ComboBoxEditField, this);
+        itemDelegate()->paint(&painter, itemOption, d->currentIndex);
+    } else {
+        // draw the icon and text
+        painter.drawControl(QStyle::CE_ComboBoxLabel, opt);
+    }
 }
 
 /*!
@@ -3572,6 +3598,47 @@ void QComboBox::setModelColumn(int visibleColumn)
         d->lineEdit->completer()->setCompletionColumn(visibleColumn);
 #endif
     setCurrentIndex(currentIndex()); //update the text to the text of the new column;
+}
+
+/*!
+    \enum QComboBox::LabelDrawingMode
+    \since 6.9
+
+    This enum specifies how the combobox draws its label.
+
+    \value UseStyle The combobox uses the \l{QStyle}{style} to draw its label.
+    \value UseDelegate The combobox uses the \l{itemDelegate()}{item delegate} to
+           draw the label. Set a suitable item delegate when using this mode.
+
+    \sa labelDrawingMode, {Books}{Books example}
+*/
+
+/*!
+    \property QComboBox::labelDrawingMode
+    \since 6.9
+
+    \brief the mode used by the combobox to draw its label.
+
+    The default value is \l{QComboBox::}{UseStyle}. When changing this property
+    to UseDelegate, make sure to also set a suitable \l{itemDelegate()}{item delegate}.
+    The default delegate depends on the style and might not be suitable for
+    drawing the label.
+
+    \sa {Books}{Books example}
+*/
+QComboBox::LabelDrawingMode QComboBox::labelDrawingMode() const
+{
+    Q_D(const QComboBox);
+    return d->labelDrawingMode;
+}
+
+void QComboBox::setLabelDrawingMode(LabelDrawingMode drawingLabel)
+{
+    Q_D(QComboBox);
+    if (d->labelDrawingMode != drawingLabel) {
+        d->labelDrawingMode = drawingLabel;
+        update();
+    }
 }
 
 QT_END_NAMESPACE

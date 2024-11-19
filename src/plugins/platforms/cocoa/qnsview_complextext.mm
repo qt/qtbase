@@ -43,6 +43,8 @@
     qCDebug(lcQpaKeys).nospace() << "Inserting \"" << text << "\""
         << ", replacing range " << replacementRange;
 
+    NSString *string = [self stringForText:text];
+
     if (m_composingText.isEmpty()) {
         // The input method may have transformed the incoming key event
         // to text that doesn't match what the original key event would
@@ -54,7 +56,7 @@
                            || currentEvent.type == NSEventTypeKeyUp
                                 ? currentEvent.characters : nil;
 
-        if ([text isEqualToString:eventText]) {
+        if ([string isEqualToString:eventText]) {
             // We do not send input method events for simple text input,
             // and instead let handleKeyEvent send the key event.
             qCDebug(lcQpaKeys) << "Ignoring text insertion for simple text";
@@ -66,8 +68,7 @@
     if (queryInputMethod(self.focusObject)) {
         QInputMethodEvent inputMethodEvent;
 
-        const bool isAttributedString = [text isKindOfClass:NSAttributedString.class];
-        QString commitString = QString::fromNSString(isAttributedString ? [text string] : text);
+        QString commitString = QString::fromNSString(string);
 
         // Ensure we have a valid replacement range
         replacementRange = [self sanitizeReplacementRange:replacementRange];
@@ -166,7 +167,7 @@
         << ", replacing range " << replacementRange;
 
     const bool isAttributedString = [text isKindOfClass:NSAttributedString.class];
-    QString preeditString = QString::fromNSString(isAttributedString ? [text string] : text);
+    QString preeditString = QString::fromNSString([self stringForText:text]);
 
     QList<QInputMethodEvent::Attribute> preeditAttributes;
 
@@ -483,6 +484,18 @@
     }
 }
 
+/*
+    Returns the first logical boundary rectangle for characters in the given range,
+    in screen coordinates.
+
+    The "first" in the name refers to the rectangle enclosing the first line when
+    the range encompasses multiple lines of text. In that case, actualRange should
+    be set to the range covered by the first rect, so all line fragments can
+    be queried by invoking this method repeatedly.
+
+    If the length of range is 0 (as it would be if there is nothing selected at
+    the insertion point), then the rectangle coincides with the insertion point.
+*/
 - (NSRect)firstRectForCharacterRange:(NSRange)range actualRange:(NSRangePointer)actualRange
 {
     Q_UNUSED(range);
@@ -490,6 +503,8 @@
 
     QWindow *window = m_platformWindow ? m_platformWindow->window() : nullptr;
     if (window && queryInputMethod(window->focusObject())) {
+        if (range.length) // FIXME: Handle the case when range is non-zero
+            qCWarning(lcQpaKeys) << "Can't satisfy firstRectForCharacterRange for" << range;
         QRect cursorRect = qApp->inputMethod()->cursorRectangle().toRect();
         cursorRect.moveBottomLeft(window->mapToGlobal(cursorRect.bottomLeft()));
         return QCocoaScreen::mapToNative(cursorRect);
@@ -553,10 +568,15 @@
     // the range ourselves, based on the current state of the input context.
 
     const auto markedRange = [self markedRange];
-    if (markedRange.location != NSNotFound)
+    const auto selectedRange = [self selectedRange];
+
+    if (markedRange.length)
         return markedRange;
+    else if (selectedRange.length)
+        return selectedRange;
     else
-        return [self selectedRange];
+        return markedRange; // Represents cursor position when length is 0
+
 }
 
 /*
@@ -565,36 +585,67 @@
 
     The two APIs have different semantics.
 */
-- (std::pair<long long, long long>)inputMethodRangeForRange:(NSRange)range
+- (std::pair<long long, long long>)inputMethodRangeForRange:(NSRange)replacementRange
 {
-    long long replaceFrom = range.location;
-    long long replaceLength = range.length;
+    long long replaceFrom = replacementRange.location;
+    long long replaceLength = replacementRange.length;
 
     const auto markedRange = [self markedRange];
     const auto selectedRange = [self selectedRange];
 
-    // The QInputMethodEvent replacement start is relative to the start
-    // of the marked text (the location of the preedit string).
-    if (markedRange.location != NSNotFound)
+    if (markedRange.length && selectedRange.length) {
+        // We assume below that we have either marked text or selected text
+        qCWarning(lcQpaKeys) << "Got both markedRange" << markedRange
+                             << "and selectedRange" << selectedRange;
+    }
+
+    if (markedRange.length) {
+        // The replacement length of QInputMethodEvent already includes
+        // the preedit string, as the documentation says that "When doing
+        // replacement, the area of the preedit string is ignored".
+        replaceLength -= markedRange.length;
+
+        // The QInputMethodEvent replacement start is relative to the start
+        // of the marked text (the location of the preedit string).
         replaceFrom -= markedRange.location;
-    else
+    } else if (selectedRange.length) {
+        if (!NSEqualRanges(NSIntersectionRange(replacementRange, selectedRange), selectedRange)) {
+            qCWarning(lcQpaKeys) << "Replacement range" << replacementRange
+                                 << "is a subset of selection" << selectedRange;
+            // FIXME: To support this case we would need to extract parts of the
+            // selection into the committed text. But for now we ignore it, as we
+            // don't know if it happens in practice.
+        }
+
+        // Our input method protocol specifies that the entire selection
+        // should be removed as the first step, and the replacement length
+        // of the QInputMethodEvent refers to any additional text that should
+        // be removed/replaced.
+        replaceLength -= selectedRange.length;
+
+        // Once the selection has been removed the cursor position will be
+        // at the leftmost point of the selection, regardless of whether the
+        // cursor was at the start or end of the selection. The replacement
+        // start of QInputMethodEvent should be relative to this position.
+        replaceFrom -= selectedRange.location;
+    } else if (markedRange.location != NSNotFound) {
+        // The QInputMethodEvent replacement start is relative to the cursor
+        // position.
+        replaceFrom -= markedRange.location;
+    } else{
         replaceFrom = 0;
-
-    // The replacement length of QInputMethodEvent already includes
-    // the selection, as the documentation says that "If the widget
-    // has selected text, the selected text should get removed."
-    replaceLength -= selectedRange.length;
-
-    // The replacement length of QInputMethodEvent already includes
-    // the preedit string, as the documentation says that "When doing
-    // replacement, the area of the preedit string is ignored".
-    replaceLength -= markedRange.length;
+    }
 
     // What we're left with is any _additional_ replacement.
     // Make sure it's valid before passing it on.
     replaceLength = qMax(0ll, replaceLength);
 
     return {replaceFrom, replaceLength};
+}
+
+- (NSString*)stringForText:(id)text
+{
+    return [text isKindOfClass:NSAttributedString.class] ? [text string] : text;
 }
 
 @end
@@ -659,4 +710,35 @@
 
 @end
 
+#if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(150000)
+@implementation QNSView (ContentSelectionInfo)
 
+/*
+    This method is used by AppKit for positioning of context menus in
+    response to the context menu keyboard hotkey, and for placement of
+    the Writing Tools popup.
+*/
+- (NSRect)selectionAnchorRect
+{
+    if (queryInputMethod(self.focusObject)) {
+        // We don't have a way of querying the selection rectangle via
+        // the input method protocol (yet), so we use crude heuristics.
+        const auto *inputMethod = qApp->inputMethod();
+        auto cursorRect = inputMethod->cursorRectangle();
+        auto anchorRect = inputMethod->anchorRectangle();
+        auto selectionRect = cursorRect.united(anchorRect);
+        if (cursorRect.top() != anchorRect.top()) {
+            // Multi line selection. Assume the selections extends to
+            // the entire width of the input item. This does not account
+            // for center-aligned text and a bunch of other cases. FIXME
+            auto itemClipRect = inputMethod->inputItemClipRectangle();
+            selectionRect.setLeft(itemClipRect.left());
+            selectionRect.setRight(itemClipRect.right());
+        }
+        return selectionRect.toCGRect();
+    } else {
+        return NSZeroRect;
+    }
+}
+@end
+#endif // macOS 15 SDK

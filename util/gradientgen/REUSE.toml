@@ -1,0 +1,7 @@
+version = 1
+
+[[annotations]]
+path = ["webgradients.css"]
+precedence = "closest"
+SPDX-FileCopyrightText = "Copyright (c) 2017 itmeo"
+SPDX-License-Identifier = "MIT"

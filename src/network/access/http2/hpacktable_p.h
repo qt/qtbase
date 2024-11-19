@@ -16,12 +16,12 @@
 //
 
 #include <QtCore/qbytearray.h>
-#include <QtCore/qpair.h>
 
 #include <vector>
 #include <memory>
 #include <deque>
 #include <set>
+#include <utility>
 
 QT_BEGIN_NAMESPACE
 
@@ -49,7 +49,7 @@ struct Q_AUTOTEST_EXPORT HeaderField
     QByteArray value;
 };
 
-using HeaderSize = QPair<bool, quint32>;
+using HeaderSize = std::pair<bool, quint32>;
 
 HeaderSize entry_size(QByteArrayView name, QByteArrayView value);
 

@@ -1,0 +1,7 @@
+version = 1
+
+[[annotations]]
+path = ["**"]
+precedence = "closest"
+SPDX-FileCopyrightText = ["Copyright © 2016-2024 Martin Mitáš"]
+SPDX-License-Identifier = "MIT"

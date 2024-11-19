@@ -1,0 +1,7 @@
+version = 1
+
+[[annotations]]
+path = ["**"]
+precedence = "closest"
+SPDX-FileCopyrightText = ["Copyright (c) 2011 IETF Trust and the persons identified as authors of the code."]
+SPDX-License-Identifier = "BSD-3-Clause"

@@ -1221,7 +1221,7 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
         const bool isFullPage = (d->m_pageLayout.mode() == QPageLayout::FullPageMode);
         QVariant orientation = QVariant::fromValue(d->m_pageLayout.orientation());
         QVariant margins = QVariant::fromValue(
-            QPair<QMarginsF, QPageLayout::Unit>(d->m_pageLayout.margins(), d->m_pageLayout.units()));
+            std::pair<QMarginsF, QPageLayout::Unit>(d->m_pageLayout.margins(), d->m_pageLayout.units()));
         QPrintDevice printDevice = ps->createPrintDevice(id.isEmpty() ? ps->defaultPrintDeviceId() : id);
         if (printDevice.isValid()) {
             d->m_printDevice = printDevice;
@@ -1312,7 +1312,7 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
     }
 
     case PPK_QPageMargins: {
-        QPair<QMarginsF, QPageLayout::Unit> pair = value.value<QPair<QMarginsF, QPageLayout::Unit> >();
+        auto pair = value.value<std::pair<QMarginsF, QPageLayout::Unit>>();
         d->m_pageLayout.setUnits(pair.second);
         d->m_pageLayout.setMargins(pair.first, QPageLayout::OutOfBoundsPolicy::Clamp);
         d->updateMetrics();
@@ -1518,7 +1518,7 @@ QVariant QWin32PrintEngine::property(PrintEnginePropertyKey key) const
         break;
 
     case PPK_QPageMargins: {
-        QPair<QMarginsF, QPageLayout::Unit> pair = qMakePair(d->m_pageLayout.margins(), d->m_pageLayout.units());
+        std::pair<QMarginsF, QPageLayout::Unit> pair(d->m_pageLayout.margins(), d->m_pageLayout.units());
         value.setValue(pair);
         break;
     }

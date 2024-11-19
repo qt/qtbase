@@ -912,11 +912,11 @@ void Widget::arrayOperator()
 
 void Widget::sliceFunction()
 {
-    //! [86]
+    //! [97]
     QString x = u"Nine pineapples"_s;
     x.slice(5);     // x == "pineapples"
     x.slice(4, 3);  // x == "app"
-    //! [86]
+    //! [97]
 }
 
 

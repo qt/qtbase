@@ -7,3 +7,45 @@ centos
 macos arm
 [linkLocalIPv6]
 macos arm
+
+# QTBUG-130078
+[writeDatagramToNonExistingPeer:localhost-bound, remote-bound]
+vxworks
+[bindMode]
+vxworks
+[performance]
+vxworks
+[writeDatagram]
+vxworks
+[pendingDatagramSize]
+vxworks
+[bindAndConnectToHost]
+vxworks
+[connectToHost]
+vxworks
+[dualStackNoIPv4onV6only]
+vxworks
+[dualStackAutoBinding]
+vxworks
+[dualStack]
+vxworks
+[loop]
+vxworks
+[echo]
+vxworks
+[unconnectedServerAndClientTest]
+vxworks
+[asyncReadDatagram]
+vxworks
+[readyReadForEmptyDatagram]
+vxworks
+[linkLocalIPv6]
+vxworks
+[multicast]
+vxworks
+[setMulticastInterface]
+vxworks
+[multicastLeaveAfterClose]
+vxworks
+[zeroLengthDatagram]
+vxworks

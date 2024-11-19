@@ -84,9 +84,6 @@ instructions:
         - condition: property
           property: features
           contains_value: Packaging
-        - condition: property
-          property: host.arch
-          equals_value: X86_64 # Sign only on X86 until Coin has support for arm signing
     directory: "{{.InstallRoot}}/{{.AgentWorkingDir}}"
     maxTimeInSeconds: 1200
     maxTimeBetweenOutput: 1200

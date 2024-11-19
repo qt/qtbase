@@ -338,6 +338,7 @@ private:
     friend class QListModeViewBase;
     friend class QListViewPrivate;
     friend class QAbstractSlider;
+    friend class QComboBoxPrivate; // needed to call initViewItemOption
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QAbstractItemView::EditTriggers)

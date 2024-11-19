@@ -46,6 +46,8 @@
 
 #include <shellscalingapi.h>
 
+#include <private/qdxgivsyncservice_p.h>
+
 QT_BEGIN_NAMESPACE
 
 using QWindowCreationContextPtr = QSharedPointer<QWindowCreationContext>;
@@ -1361,7 +1363,7 @@ void QWindowsForeignWindow::setParent(const QPlatformWindow *newParentWindow)
     qCDebug(lcQpaWindow) << __FUNCTION__ << window() << "newParent="
         << newParentWindow << newParent << "oldStyle=" << debugWinStyle(oldStyle);
 
-    auto updateWindowFlags = [=]{
+    auto updateWindowFlags = [&] {
         // Top level window flags need to be set/cleared manually.
         DWORD newStyle = oldStyle;
         if (isTopLevel) {
@@ -1539,6 +1541,8 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const QWindowsWindowData &data)
 
 QWindowsWindow::~QWindowsWindow()
 {
+    if (m_vsyncServiceCallbackId != 0)
+        QDxgiVSyncService::instance()->unregisterCallback(m_vsyncServiceCallbackId);
     setFlag(WithinDestroy);
     QWindowsThemeCache::clearThemeCache(m_data.hwnd);
     if (testFlag(TouchRegistered))
@@ -2711,8 +2715,24 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowStates newState)
             setFlag(WithinMaximize);
             if (newState & Qt::WindowFullScreen)
                 setFlag(MaximizeToFullScreen);
-            ShowWindow(m_data.hwnd,
-                       (newState & Qt::WindowMaximized) ? SW_MAXIMIZE : SW_SHOWNOACTIVATE);
+            if (m_data.flags & Qt::FramelessWindowHint) {
+                if (newState == Qt::WindowNoState) {
+                    const QRect &rect = m_savedFrameGeometry;
+                    MoveWindow(m_data.hwnd, rect.x(), rect.y(), rect.width(), rect.height(), true);
+                } else {
+                    HMONITOR monitor = MonitorFromWindow(m_data.hwnd, MONITOR_DEFAULTTONEAREST);
+                    MONITORINFO monitorInfo = {};
+                    monitorInfo.cbSize = sizeof(MONITORINFO);
+                    GetMonitorInfo(monitor, &monitorInfo);
+                    const RECT &rect = monitorInfo.rcWork;
+                    m_savedFrameGeometry = geometry();
+                    MoveWindow(m_data.hwnd, rect.left, rect.top,
+                               rect.right - rect.left, rect.bottom - rect.top, true);
+                }
+            } else {
+                ShowWindow(m_data.hwnd,
+                           (newState & Qt::WindowMaximized) ? SW_MAXIMIZE : SW_SHOWNOACTIVATE);
+            }
             clearFlag(WithinMaximize);
             clearFlag(MaximizeToFullScreen);
         } else if (visible && (oldState & newState & Qt::WindowMinimized)) {
@@ -3530,6 +3550,29 @@ void QWindowsWindow::setHasBorderInFullScreen(bool border)
 QString QWindowsWindow::formatWindowTitle(const QString &title)
 {
     return QPlatformWindow::formatWindowTitle(title, QStringLiteral(" - "));
+}
+
+void QWindowsWindow::requestUpdate()
+{
+    QWindow *w = window();
+    QDxgiVSyncService *vs = QDxgiVSyncService::instance();
+    if (vs->supportsWindow(w)) {
+        if (m_vsyncServiceCallbackId == 0) {
+            m_vsyncServiceCallbackId = vs->registerCallback([this, w](const QDxgiVSyncService::CallbackWindowList &windowList, qint64) {
+                if (windowList.contains(w)) {
+                    if (m_vsyncUpdatePending.testAndSetAcquire(1, 0)) {
+                        QMetaObject::invokeMethod(w, [this, w] {
+                            if (w->handle() == this)
+                                deliverUpdateRequest();
+                        });
+                    }
+                }
+            });
+        }
+        m_vsyncUpdatePending.storeRelease(1);
+    } else {
+        QPlatformWindow::requestUpdate();
+    }
 }
 
 QT_END_NAMESPACE

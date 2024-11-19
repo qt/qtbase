@@ -7,6 +7,7 @@
 #include <QtCore/qt_windows.h>
 #include <qpa/qplatformdialoghelper.h>
 #include <qpa/qplatformtheme.h>
+#include <QtCore/qbasictimer.h>
 #include <QtCore/qstringlist.h>
 #include <QtCore/qsharedpointer.h>
 
@@ -56,7 +57,7 @@ private:
 
     QWindowsNativeDialogBasePtr m_nativeDialog;
     HWND m_ownerWindow = nullptr;
-    int m_timerId = 0;
+    QBasicTimer m_timer;
     QThread *m_thread = nullptr;
 };
 

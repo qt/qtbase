@@ -733,8 +733,8 @@ QFontEngine *QFontDatabasePrivate::loadSingleEngine(int script,
             if (engine) {
                 // Also check for OpenType tables when using complex scripts
                 if (Q_UNLIKELY(!engine->supportsScript(QChar::Script(script)))) {
-                    qCWarning(lcFontDb, "OpenType support missing for \"%ls\", script %d",
-                             qUtf16Printable(def.families.constFirst()), script);
+                    qCInfo(lcFontDb, "OpenType support missing for \"%ls\", script %d",
+                           qUtf16Printable(def.families.constFirst()), script);
                     return nullptr;
                 }
 
@@ -758,8 +758,8 @@ QFontEngine *QFontDatabasePrivate::loadSingleEngine(int script,
         if (engine) {
             // Also check for OpenType tables when using complex scripts
             if (!engine->supportsScript(QChar::Script(script))) {
-                qCWarning(lcFontDb, "OpenType support missing for \"%ls\", script %d",
-                         qUtf16Printable(def.families.constFirst()), script);
+                qCInfo(lcFontDb, "OpenType support missing for \"%ls\", script %d",
+                       qUtf16Printable(def.families.constFirst()), script);
                 if (engine->ref.loadRelaxed() == 0)
                     delete engine;
                 return nullptr;
@@ -2627,10 +2627,10 @@ QFontEngine *QFontDatabasePrivate::findFont(const QFontDef &req,
             }
         }
 
-        if (!engine)
+        if (!engine) {
             engine = new QFontEngineBox(request.pixelSize);
-
-        qCDebug(lcFontMatch, "returning box engine");
+            qCDebug(lcFontMatch, "returning box engine");
+        }
     }
 
     return engine;

@@ -550,6 +550,18 @@ class TestClass : public MyNamespace::TestSuperClass, public DONT_CONFUSE_MOC(My
 public:
     inline TestClass() {}
 
+    // These two here test that Q_DECLARE_FLAGS is permitted in a class or
+    // struct nested inside of a Q_OBJECT and defined within the body of the
+    // class. A Q_OBJECT is not allowed here (see privateClass()).
+    struct NestedStruct {
+        enum E {};
+        Q_DECLARE_FLAGS(Flags, E)
+    };
+    class NestedClass {
+        enum E {};
+        Q_DECLARE_FLAGS(Flags, E)
+    };
+
 private slots:
     inline void dummy1() MACRO_WITH_POSSIBLE_COMPILER_SPECIFIC_ATTRIBUTES {}
     inline void dummy2() MACRO_WITH_POSSIBLE_COMPILER_SPECIFIC_ATTRIBUTES const {}
@@ -910,7 +922,6 @@ private:
     QString m_moc;
     QString m_sourceDirectory;
     QString qtIncludePath;
-    class PrivateClass;
     QString sMember;
     const QString sConst;
     PrivatePropertyTest *pPPTest;
@@ -953,6 +964,15 @@ void tst_Moc::initTestCase()
     QVERIFY(fi.exists());
     QVERIFY(fi.isDir());
 #endif
+
+    // Classes whose only test is to ensure moc did properly parse them and its
+    // output compiles. These lines here simply ensure that they did, indeed,
+    // get compiled.
+    QVERIFY(MyBooooooostishClass::staticMetaObject.className());
+    QVERIFY(MyTechPreviewObject::staticMetaObject.className());
+    QVERIFY(QmlMacro::staticMetaObject.className());
+    QVERIFY(SignalWithDefaultArg::staticMetaObject.className());
+    QVERIFY(TestPointeeCanBeIncomplete::staticMetaObject.className());
 }
 
 void tst_Moc::dontStripNamespaces()
@@ -1858,7 +1878,7 @@ void tst_Moc::constructors()
         QCOMPARE(mm.access(), QMetaMethod::Public);
         QCOMPARE(mm.methodType(), QMetaMethod::Constructor);
         QCOMPARE(mm.methodSignature(), QByteArray("CtorTestClass(QObject*)"));
-        QCOMPARE(mm.typeName(), "");
+        QCOMPARE(QByteArrayView(mm.typeName()), QByteArrayView());
         QList<QByteArray> paramNames = mm.parameterNames();
         QCOMPARE(paramNames.size(), 1);
         QCOMPARE(paramNames.at(0), QByteArray("parent"));
@@ -1871,7 +1891,7 @@ void tst_Moc::constructors()
         QCOMPARE(mm.access(), QMetaMethod::Public);
         QCOMPARE(mm.methodType(), QMetaMethod::Constructor);
         QCOMPARE(mm.methodSignature(), QByteArray("CtorTestClass()"));
-        QCOMPARE(mm.typeName(), "");
+        QCOMPARE(QByteArrayView(mm.typeName()), QByteArrayView());
         QCOMPARE(mm.parameterNames().size(), 0);
         QCOMPARE(mm.parameterTypes().size(), 0);
     }
@@ -1880,7 +1900,7 @@ void tst_Moc::constructors()
         QCOMPARE(mm.access(), QMetaMethod::Public);
         QCOMPARE(mm.methodType(), QMetaMethod::Constructor);
         QCOMPARE(mm.methodSignature(), QByteArray("CtorTestClass(QString)"));
-        QCOMPARE(mm.typeName(), "");
+        QCOMPARE(QByteArrayView(mm.typeName()), QByteArrayView());
         QList<QByteArray> paramNames = mm.parameterNames();
         QCOMPARE(paramNames.size(), 1);
         QCOMPARE(paramNames.at(0), QByteArray("str"));
@@ -2497,6 +2517,29 @@ void tst_Moc::warnings_data()
         << QString()
         << QString("standard input:2:1: error: Plugin Metadata file \".\" could not be opened: file to open is a directory");
 #endif
+
+    static const char *tags[] = { "class", "struct" };
+    static const char *metaKeywords[] = { "Q_OBJECT", "Q_GADGET" };
+    for (size_t i = 0; i < std::size(tags) * 2 * std::size(metaKeywords) * 2; ++i) {
+        const char *tag1 = tags[i & 1];
+        const char *tag2 = tags[(i >> 1) & 1];
+        const char *meta1 = metaKeywords[(i >> 2) & 1];
+        const char *meta2 = metaKeywords[(i >> 3) & 1];
+        QByteArray input = tag1;
+        input += " X : public Base {\n    ";
+        input += meta1;
+        input += "\n    ";
+        input += tag2;
+        input += " Nested : public Base {\n        ";
+        input += meta2;
+        input += "    };\n};\n";
+        QTest::addRow("nested-%s-%s-%s-%s", tag1, meta1, tag2, meta2)
+                << input
+                << QStringList()
+                << 1
+                << QString()
+                << "standard input:4:1: error: Meta object features not supported for nested classes";
+    }
 }
 
 void tst_Moc::warnings()
@@ -2544,7 +2587,15 @@ void tst_Moc::warnings()
 #endif
 }
 
-class tst_Moc::PrivateClass : public QObject
+class OuterPrivateClass
+{
+    // not a Q_OBJECT, otherwise some friendship is granted
+    class PrivateClass;
+public:
+    static void doTest();
+};
+
+class OuterPrivateClass::PrivateClass : public QObject
 {
     Q_PROPERTY(int someProperty READ someSlot WRITE someSlot2)
 Q_OBJECT
@@ -2555,16 +2606,19 @@ public Q_SLOTS:
     void someSlot2(int) {}
 public:
     Q_INVOKABLE PrivateClass()  {}
-#ifdef QT_MOC_HAS_UINTDATA  // access to private class' enums was fixed for Qt 6.9
     enum SomeEnum {
         Value0,
         Value1,
     };
     Q_ENUM(SomeEnum)
-#endif
 };
 
 void tst_Moc::privateClass()
+{
+    OuterPrivateClass::doTest();
+}
+
+void OuterPrivateClass::doTest()
 {
     QCOMPARE(PrivateClass::staticMetaObject.indexOfConstructor("PrivateClass()"), 0);
     QVERIFY(PrivateClass::staticMetaObject.indexOfSignal("someSignal()") > 0);

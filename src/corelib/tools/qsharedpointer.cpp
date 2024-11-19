@@ -527,9 +527,7 @@
 /*!
     \fn template <class T> void QSharedPointer<T>::swap(QSharedPointer<T> &other);
     \since 5.3
-
-    Swaps this shared pointer instance with \a other. This function is
-    very fast and never fails.
+    \memberswap{shared pointer instance}
 */
 
 /*!
@@ -848,9 +846,7 @@
 /*!
     \fn template <class T> void QWeakPointer<T>::swap(QWeakPointer<T> &other)
     \since 5.4
-
-    Swaps this weak pointer instance with \a other. This function is
-    very fast and never fails.
+    \memberswap{weak pointer instance}
 */
 
 /*!

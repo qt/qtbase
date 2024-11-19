@@ -1,0 +1,7 @@
+version = 1
+
+[[annotations]]
+path = ["bigfile"]
+precedence = "closest"
+SPDX-FileCopyrightText = "Copyright (C) The Internet Society (2002).  All Rights Reserved."
+SPDX-License-Identifier = "CC0-1.0"

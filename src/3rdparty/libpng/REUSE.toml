@@ -1,0 +1,28 @@
+version = 1
+
+[[annotations]]
+path = ["**"]
+precedence = "closest"
+SPDX-FileCopyrightText = ["Copyright (c) 1995-2024 The PNG Reference Library Authors",
+    "Copyright (c) 2000-2024 Cosmin Truta",
+    "Copyright (c) 1998-2018 Glenn Randers-Pehrson",
+    "Copyright (c) 1996-1997 Andreas Dilger",
+    "Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.",
+    "Copyright (c) 2000-2017 Simon-Pierre Cadieux",
+    "Copyright (c) 2000-2017 Eric S. Raymond",
+    "Copyright (c) 2000-2017 Mans Rullgard",
+    "Copyright (c) 2000-2017 Gilles Vollant",
+    "Copyright (c) 2000-2017 James Yu",
+    "Copyright (c) 2000-2017 Mandar Sahastrabuddhe",
+    "Copyright (c) 1998-2000 Tom Lane",
+    "Copyright (c) 1998-2000 Willem van Schaik",
+    "Copyright (c) 1996-1997 John Bowler",
+    "Copyright (c) 1996-1997 Kevin Bracey",
+    "Copyright (c) 1996-1997 Sam Bushell",
+    "Copyright (c) 1996-1997 Magnus Holmgren",
+    "Copyright (c) 1996-1997 Greg Roelofs",
+    "Copyright (c) 1996-1997 Tom Tanner",
+    "Copyright (c) 1995-1996 Dave Martindale",
+    "Copyright (c) 1995-1996 Paul Schmidt",
+    "Copyright (c) 1995-1996 Tim Wegner"]
+SPDX-License-Identifier = "Libpng AND libpng-2.0"

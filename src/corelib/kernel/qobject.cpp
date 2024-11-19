@@ -1289,6 +1289,17 @@ QString QObject::objectName() const
 }
 
 /*!
+    \internal
+    Only use if you know nothing can be bound yet. Usually used for
+    internal objects that do get names.
+*/
+void QObjectPrivate::setObjectNameWithoutBindings(const QString &name)
+{
+    ensureExtraData();
+    extraData->objectName.setValueBypassingBindings(name);
+}
+
+/*!
     \fn void QObject::setObjectName(const QString &name)
     Sets the object's name to \a name.
 */

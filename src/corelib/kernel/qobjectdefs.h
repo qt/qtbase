@@ -14,10 +14,6 @@
 #include <QtCore/qtcoreexports.h>
 #include <QtCore/qtmetamacros.h>
 
-// this function is implemented by moc for the user classes and thus
-// intentionally outside of our namespace
-template <typename T> constexpr auto qt_call_create_metaobjectdata();
-
 QT_BEGIN_NAMESPACE
 
 class QByteArray;
@@ -300,6 +296,15 @@ struct Q_CORE_EXPORT QMetaObject
     static void activate(QObject *sender, int signal_index, void **argv);
     static void activate(QObject *sender, const QMetaObject *, int local_signal_index, void **argv);
     static void activate(QObject *sender, int signal_offset, int local_signal_index, void **argv);
+    template <typename Ret, typename... Args> static inline void
+    activate(QObject *sender, const QMetaObject *mo, int local_signal_index, Ret *ret, const Args &... args)
+    {
+        void *_a[] = {
+            const_cast<void *>(reinterpret_cast<const volatile void *>(ret)),
+            const_cast<void *>(reinterpret_cast<const volatile void *>(std::addressof(args)))...
+        };
+        activate(sender, mo, local_signal_index, _a);
+    }
 
 #if QT_VERSION <= QT_VERSION_CHECK(7, 0, 0)
     static bool invokeMethod(QObject *obj, const char *member,

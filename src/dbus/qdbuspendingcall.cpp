@@ -278,9 +278,7 @@ QDBusPendingCall &QDBusPendingCall::operator=(const QDBusPendingCall &other)
 /*!
     \fn void QDBusPendingCall::swap(QDBusPendingCall &other)
     \since 5.0
-
-    Swaps this pending call instance with \a other. This function is
-    very fast and never fails.
+    \memberswap{pending call instance}
 */
 
 /*!

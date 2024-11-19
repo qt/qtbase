@@ -1868,7 +1868,7 @@ void QMainWindowLayout::splitDockWidget(QDockWidget *after,
     invalidate();
 }
 
-Qt::DockWidgetArea QMainWindowLayout::dockWidgetArea(QWidget *widget) const
+Qt::DockWidgetArea QMainWindowLayout::dockWidgetArea(const QWidget *widget) const
 {
     const QList<int> pathToWidget = layoutState.dockAreaLayout.indexOf(widget);
     if (pathToWidget.isEmpty())

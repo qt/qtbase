@@ -300,6 +300,63 @@ macro(qt_internal_setup_build_tools)
     unset(_qt_build_tools_by_default_default)
 endmacro()
 
+# A heuristic to determine that the currently processed project is a cmake build test project.
+function(qt_internal_current_project_is_cmake_build_test_project out_var)
+    set(current_dir "${CMAKE_CURRENT_SOURCE_DIR}")
+
+    set(result FALSE)
+
+    if(current_dir MATCHES "tests/auto/cmake")
+        set(result TRUE)
+    endif()
+
+    set(${out_var} "${result}" PARENT_SCOPE)
+endfunction()
+
+function(qt_internal_compute_sbom_default out_var)
+    # Default to generating the SBOM, except for:
+    # - developer-builds
+    # - no-prefix builds.
+    # - standalone tests or examples
+    # - cmake build tests
+    # Regular developers of Qt (which would pass -developer-build) likely don't need SBOMs.
+    # -no-prefix builds don't make much sense for SBOMs because the installed file checksums
+    # will be missing, and thus the SBOMs will not be complete / valid.
+    # Honor any explicitly or previously set value.
+    qt_internal_current_project_is_cmake_build_test_project(is_cmake_build_test)
+
+    if(FEATURE_developer_build
+            OR QT_FEATURE_developer_build
+            OR FEATURE_no_prefix
+            OR QT_FEATURE_no_prefix
+            OR QT_BUILD_STANDALONE_EXAMPLES
+            OR QT_BUILD_STANDALONE_TESTS
+            OR QT_INTERNAL_BUILD_STANDALONE_PARTS
+            OR is_cmake_build_test
+        )
+        set(enable_sbom OFF)
+    else()
+        set(enable_sbom ON)
+    endif()
+    set(${out_var} "${enable_sbom}" PARENT_SCOPE)
+endfunction()
+
+macro(qt_internal_setup_sbom)
+    qt_internal_compute_sbom_default(_qt_generate_sbom_default)
+
+    option(QT_GENERATE_SBOM "Generate SBOM documents in SPDX v2.3 tag:value format."
+        "${_qt_generate_sbom_default}")
+
+    option(QT_SBOM_GENERATE_JSON
+        "Generate SBOM documents in SPDX v2.3 JSON format if dependencies are available" ON)
+    option(QT_SBOM_REQUIRE_GENERATE_JSON
+        "Error out if JSON SBOM generation dependencies are not found." OFF)
+
+    option(QT_SBOM_VERIFY "Verify generated SBOM documents." ON)
+    option(QT_SBOM_REQUIRE_VERIFY
+        "Error out if SBOM verification dependencies are not found." OFF)
+endmacro()
+
 macro(qt_internal_setup_build_examples)
     option(QT_BUILD_EXAMPLES "Build Qt examples" OFF)
     option(QT_BUILD_EXAMPLES_BY_DEFAULT
@@ -348,6 +405,10 @@ macro(qt_internal_set_qt_host_path)
     ## a different host build.
     set(QT_HOST_PATH "$ENV{QT_HOST_PATH}" CACHE PATH
         "Installed Qt host directory path, used for cross compiling.")
+endmacro()
+
+macro(qt_internal_setup_build_docs)
+    option(QT_BUILD_DOCS "Generate Qt documentation targets" ON)
 endmacro()
 
 macro(qt_internal_set_use_ccache)

@@ -1,5 +1,4 @@
 <?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="fatal_error_msg">Wystąpił błąd krytyczny. Aplikacja zostanie zamknięta.</string>
-    <string name="unsupported_android_version">Ta wersja Androida nie jest obsługiwana.</string>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="fatal_error_msg" tools:ignore="UnusedResources">Wystąpił błąd krytyczny. Aplikacja zostanie zamknięta.</string>
 </resources>

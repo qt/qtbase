@@ -17,8 +17,7 @@ qt_internal_add_test(tst_qwasmkeytranslator
     DEFINES
         QT_NO_FOREACH
     LIBRARIES
+        Qt::Core
         Qt::Gui
         Qt::GuiPrivate
-    PUBLIC_LIBRARIES
-        Qt::Core
 )

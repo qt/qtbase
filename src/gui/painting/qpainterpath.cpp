@@ -563,9 +563,7 @@ QPainterPath &QPainterPath::operator=(const QPainterPath &other)
 /*!
     \fn void QPainterPath::swap(QPainterPath &other)
     \since 4.8
-
-    Swaps painter path \a other with this painter path. This operation is very
-    fast and never fails.
+    \memberswap{painer path}
 */
 
 /*!

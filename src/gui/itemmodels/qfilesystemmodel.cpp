@@ -310,6 +310,24 @@ static QString qt_GetLongPathName(const QString &strShortPath)
         return QDir::fromNativeSeparators(strShortPath);
     }
 }
+
+static inline void chopSpaceAndDot(QString &element)
+{
+    if (element == "."_L1 || element == ".."_L1)
+        return;
+    // On Windows, "filename    " and "filename" are equivalent and
+    // "filename  .  " and "filename" are equivalent
+    // "filename......." and "filename" are equivalent Task #133928
+    // whereas "filename  .txt" is still "filename  .txt"
+    while (element.endsWith(u'.') || element.endsWith(u' '))
+        element.chop(1);
+
+    // If a file is saved as ' Foo.txt', where the leading character(s)
+    // is an ASCII Space (0x20), it will be saved to the file system as 'Foo.txt'.
+    while (element.startsWith(u' '))
+        element.remove(0, 1);
+}
+
 #endif
 
 /*!
@@ -403,15 +421,10 @@ QFileSystemModelPrivate::QFileSystemNode *QFileSystemModelPrivate::node(const QS
         if (i == pathElements.size() - 1)
             elementPath.append(trailingSeparator);
 #ifdef Q_OS_WIN
-        // On Windows, "filename    " and "filename" are equivalent and
-        // "filename  .  " and "filename" are equivalent
-        // "filename......." and "filename" are equivalent Task #133928
-        // whereas "filename  .txt" is still "filename  .txt"
         // If after stripping the characters there is nothing left then we
         // just return the parent directory as it is assumed that the path
-        // is referring to the parent
-        while (element.endsWith(u'.') || element.endsWith(u' '))
-            element.chop(1);
+        // is referring to the parent.
+        chopSpaceAndDot(element);
         // Only filenames that can't possibly exist will be end up being empty
         if (element.isEmpty())
             return parent;
@@ -866,6 +879,12 @@ bool QFileSystemModel::setData(const QModelIndex &idx, const QVariant &value, in
     }
 
     QString newName = value.toString();
+#ifdef Q_OS_WIN
+    chopSpaceAndDot(newName);
+    if (newName.isEmpty())
+        return false;
+#endif
+
     QString oldName = idx.data().toString();
     if (newName == oldName)
         return true;
@@ -1428,17 +1447,24 @@ QModelIndex QFileSystemModel::mkdir(const QModelIndex &parent, const QString &na
     if (!parent.isValid())
         return parent;
 
+    QString fileName = name;
+#ifdef Q_OS_WIN
+    chopSpaceAndDot(fileName);
+    if (fileName.isEmpty())
+        return QModelIndex();
+#endif
+
     QDir dir(filePath(parent));
-    if (!dir.mkdir(name))
+    if (!dir.mkdir(fileName))
         return QModelIndex();
     QFileSystemModelPrivate::QFileSystemNode *parentNode = d->node(parent);
-    d->addNode(parentNode, name, QFileInfo());
-    Q_ASSERT(parentNode->children.contains(name));
-    QFileSystemModelPrivate::QFileSystemNode *node = parentNode->children[name];
+    d->addNode(parentNode, fileName, QFileInfo());
+    Q_ASSERT(parentNode->children.contains(fileName));
+    QFileSystemModelPrivate::QFileSystemNode *node = parentNode->children[fileName];
 #if QT_CONFIG(filesystemwatcher)
-    node->populate(d->fileInfoGatherer->getInfo(QFileInfo(dir.absolutePath() + QDir::separator() + name)));
+    node->populate(d->fileInfoGatherer->getInfo(QFileInfo(dir.absolutePath() + QDir::separator() + fileName)));
 #endif
-    d->addVisibleFiles(parentNode, QStringList(name));
+    d->addVisibleFiles(parentNode, QStringList(fileName));
     return d->index(node);
 }
 
@@ -1932,6 +1958,11 @@ void QFileSystemModelPrivate::fileSystemChanged(const QString &path,
         QExtendedInformation info = fileInfoGatherer->getInfo(update.second);
         bool previouslyHere = parentNode->children.contains(fileName);
         if (!previouslyHere) {
+#ifdef Q_OS_WIN
+            chopSpaceAndDot(fileName);
+            if (fileName.isEmpty())
+                continue;
+#endif
             addNode(parentNode, fileName, info.fileInfo());
         }
         QFileSystemModelPrivate::QFileSystemNode * node = parentNode->children.value(fileName);

@@ -5,7 +5,6 @@
 #define QSTYLE_P_H
 
 #include "private/qobject_p.h"
-#include <QtGui/qguiapplication.h>
 #include <QtWidgets/qstyle.h>
 
 QT_BEGIN_NAMESPACE
@@ -43,35 +42,6 @@ inline QPixmap styleCachePixmap(const QSize &size, qreal pixelRatio)
     return cachePixmap;
 }
 
-#define BEGIN_STYLE_PIXMAPCACHE(a) \
-    QRect rect = option->rect; \
-    QPixmap internalPixmapCache; \
-    QPainter *p = painter; \
-    const auto dpr = QStyleHelper::getDpr(p); \
-    const QString unique = QStyleHelper::uniqueName((a), option, option->rect.size(), dpr); \
-    int txType = painter->deviceTransform().type() | painter->worldTransform().type(); \
-    const bool doPixmapCache = (!option->rect.isEmpty()) \
-            && ((txType <= QTransform::TxTranslate) || (painter->deviceTransform().type() == QTransform::TxScale)); \
-    if (doPixmapCache && QPixmapCache::find(unique, &internalPixmapCache)) { \
-        painter->drawPixmap(option->rect.topLeft(), internalPixmapCache); \
-    } else { \
-        if (doPixmapCache) { \
-            rect.setRect(0, 0, option->rect.width(), option->rect.height()); \
-            internalPixmapCache = styleCachePixmap(option->rect.size(), dpr); \
-            p = new QPainter(&internalPixmapCache); \
-        }
-
-
-
-#define END_STYLE_PIXMAPCACHE \
-        if (doPixmapCache) { \
-            p->end(); \
-            delete p; \
-            painter->drawPixmap(option->rect.topLeft(), internalPixmapCache); \
-            QPixmapCache::insert(unique, internalPixmapCache); \
-        } \
-    }
-
 // small helper to read out the pixmap to paint from QPixmapCache or re-draw
 // it and put it into the QPixmapCache for later usage
 class Q_WIDGETS_EXPORT QCachedPainter
@@ -84,6 +54,11 @@ public:
     bool needsPainting() const
     {
         return !m_alreadyCached;
+    }
+    QRect pixmapRect() const
+    {
+        const auto sz = m_pixmap.deviceIndependentSize();
+        return QRect(0, 0, sz.width(), sz.height());
     }
     QPainter *operator->()
     {

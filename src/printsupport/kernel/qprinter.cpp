@@ -218,7 +218,7 @@ public:
         QPrinterPrivate *pd = QPrinterPrivate::get(m_printer);
 
         // Try to set print engine margins
-        QPair<QMarginsF, QPageLayout::Unit> pair = qMakePair(margins, units);
+        std::pair<QMarginsF, QPageLayout::Unit> pair(margins, units);
         pd->setProperty(QPrintEngine::PPK_QPageMargins, QVariant::fromValue(pair));
 
         return pageLayout().margins() == margins && pageLayout().units() == units;
@@ -1546,7 +1546,7 @@ QPrinter::PrintRange QPrinter::printRange() const
 
     \value PPK_QPageSize Set the page size using a QPageSize object.
 
-    \value PPK_QPageMargins Set the page margins using a QPair of QMarginsF and QPageLayout::Unit.
+    \value PPK_QPageMargins Set the page margins using a std::pair of QMarginsF and QPageLayout::Unit.
 
     \value PPK_QPageLayout Set the page layout using a QPageLayout object.
 

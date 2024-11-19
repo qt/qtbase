@@ -1,0 +1,7 @@
+version = 1
+
+[[annotations]]
+path = ["catch_p.h"]
+precedence = "closest"
+SPDX-FileCopyrightText = ["Copyright (c) 2022 Two Blue Cubes Ltd. All rights reserved."]
+SPDX-License-Identifier = "BSL-1.0"

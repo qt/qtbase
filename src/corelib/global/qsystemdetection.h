@@ -242,7 +242,8 @@
 #if defined(__SIZEOF_INT128__)
 // Compiler used in VxWorks SDK declares __SIZEOF_INT128__ but VxWorks doesn't support this type,
 // so we can't rely solely on compiler here.
-#if !defined(Q_OS_VXWORKS)
+// MSVC STL used by MSVC and clang-cl does not support int128
+#if !defined(Q_OS_VXWORKS) && !defined(_MSC_VER)
 #  define QT_COMPILER_SUPPORTS_INT128 __SIZEOF_INT128__
 #endif
 #endif // defined(__SIZEOF_INT128__)

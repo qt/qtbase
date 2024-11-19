@@ -2,29 +2,23 @@
 // Copyright © 2004-2023 Unicode, Inc.
 // SPDX-License-Identifier: Unicode-3.0
 
-#ifndef QPERSIANCALENDAR_DATA_P_H
-#define QPERSIANCALENDAR_DATA_P_H
+#ifndef QJALALICALENDAR_DATA_P_H
+#define QJALALICALENDAR_DATA_P_H
 
 //
 //  W A R N I N G
 //  -------------
 //
-// This file is not part of the Qt API.  It exists for the convenience
-// of qapplication_*.cpp, qwidget*.cpp and qfiledialog.cpp.  This header
-// file may change from version to version without notice, or even be removed.
+// This file is not a normal header file.
+// It defines data tables for internal use by QJalaliCalendar.
+// It may change incompatibly between versions, or even be removed.
 //
 // We mean it.
 //
 
-#include <QtCore/private/qglobal_p.h>
-#include <QtCore/private/qcalendarbackend_p.h>
-
 QT_BEGIN_NAMESPACE
 
 namespace QtPrivate::Jalali {
-
-QT_WARNING_PUSH // QTBUG-128930
-QT_WARNING_DISABLE_CLANG("-Wunused-const-variable")
 
 // GENERATED PART STARTS HERE
 
@@ -39,7 +33,7 @@ QT_WARNING_DISABLE_CLANG("-Wunused-const-variable")
     edited) CLDR data; see qtbase/util/locale_database/.
 */
 
-static constexpr QCalendarLocale locale_data[] = {
+static inline constexpr QCalendarLocale locale_data[] = {
      // lang   script terr  sLong  long sShrt short sNarw narow Sizes...
       {     1,     0,     0,    0,    0,   83,   83,  130,  153, 83, 83, 47, 47, 23, 26 },// C/AnyScript/AnyTerritory
       {     2,    27,    90,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Abkhazian/Cyrillic/Georgia
@@ -717,7 +711,7 @@ static constexpr QCalendarLocale locale_data[] = {
       {     0,     0,     0,    0,    0,    0,    0,    0,    0,  0,  0,  0,  0,  0,  0 },// trailing zeros
 };
 
-static constexpr char16_t months_data[] = {
+static inline constexpr char16_t months_data[] = {
 0x46, 0x61, 0x72, 0x76, 0x61, 0x72, 0x64, 0x69, 0x6e, 0x3b, 0x4f, 0x72,
 0x64, 0x69, 0x62, 0x65, 0x68, 0x65, 0x73, 0x68, 0x74, 0x3b, 0x4b, 0x68,
 0x6f, 0x72, 0x64, 0x61, 0x64, 0x3b, 0x54, 0x69, 0x72, 0x3b, 0x4d, 0x6f,
@@ -1169,10 +1163,8 @@ static constexpr char16_t months_data[] = {
 };
 // GENERATED PART ENDS HERE
 
-QT_WARNING_POP // QTBUG-128930
-
 } // namespace QtPrivate::Jalali
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QJALALICALENDAR_DATA_P_H

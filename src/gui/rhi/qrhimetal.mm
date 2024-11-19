@@ -867,6 +867,8 @@ bool QRhiMetal::isFeatureSupported(QRhi::Feature feature) const
         return caps.shadingRateMap;
     case QRhi::VariableRateShadingMapWithTexture:
         return false;
+    case QRhi::PerRenderTargetBlending:
+        return true;
     default:
         Q_UNREACHABLE();
         return false;
@@ -3489,6 +3491,13 @@ static inline MTLPixelFormat toMetalTextureFormat(QRhiTexture::Format format, QR
 
     case QRhiTexture::RGB10A2:
         return MTLPixelFormatRGB10A2Unorm;
+
+    case QRhiTexture::R32UI:
+        return MTLPixelFormatR32Uint;
+    case QRhiTexture::RG32UI:
+        return MTLPixelFormatRG32Uint;
+    case QRhiTexture::RGBA32UI:
+        return MTLPixelFormatRGBA32Uint;
 
 #ifdef Q_OS_MACOS
     case QRhiTexture::D16:

@@ -363,7 +363,7 @@ function(qt_internal_add_module target)
         qt_set_target_info_properties(${target} ${ARGN})
         qt_handle_multi_config_output_dirs("${target}")
 
-        if(NOT BUILD_SHARED_LIBS AND LINUX)
+        if(NOT BUILD_SHARED_LIBS AND (LINUX OR VXWORKS))
             # Horrible workaround for static build failures due to incorrect static library link
             # order. By increasing the multiplicity to 3, each library cycle will be repeated
             # 3 times on the link line, reducing the probability of undefined symbols at
@@ -499,6 +499,9 @@ function(qt_internal_add_module target)
         # Plugin types associated to a module
         if(NOT "x${arg_PLUGIN_TYPES}" STREQUAL "x")
             qt_internal_add_plugin_types("${target}" "${arg_PLUGIN_TYPES}")
+            # Ensure that QT_PLUGIN_TARGETS is a known transitive compile property. Works with CMake
+            # versions >= 3.30.
+            _qt_internal_add_transitive_property(${target} COMPILE QT_PLUGIN_TARGETS)
         endif()
     endif()
 
@@ -607,6 +610,13 @@ function(qt_internal_add_module target)
         set(arg_EXTERNAL_HEADERS "")
     endif()
 
+    _qt_internal_forward_function_args(
+        FORWARD_PREFIX arg
+        FORWARD_OUT_VAR extend_target_args
+        FORWARD_SINGLE
+            PRECOMPILED_HEADER
+    )
+
     qt_internal_extend_target("${target}"
         ${arg_NO_UNITY_BUILD}
         SOURCES
@@ -640,8 +650,8 @@ function(qt_internal_add_module target)
         MOC_OPTIONS ${arg_MOC_OPTIONS}
         ENABLE_AUTOGEN_TOOLS ${arg_ENABLE_AUTOGEN_TOOLS}
         DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
-        PRECOMPILED_HEADER ${arg_PRECOMPILED_HEADER}
         NO_PCH_SOURCES ${arg_NO_PCH_SOURCES}
+        ${extend_target_args}
     )
 
     # The public module define is not meant to be used when building the module itself,
@@ -760,6 +770,9 @@ set(QT_ALLOW_MISSING_TOOLS_PACKAGES TRUE)")
         set(args "")
         if(QT_WILL_INSTALL)
             set(metatypes_install_dir "${INSTALL_ARCHDATADIR}/metatypes")
+            if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.31")
+                cmake_path(SET metatypes_install_dir NORMALIZE "${metatypes_install_dir}")
+            endif()
             list(APPEND args
                 __QT_INTERNAL_INSTALL __QT_INTERNAL_INSTALL_DIR "${metatypes_install_dir}")
         endif()
@@ -1220,11 +1233,8 @@ function(qt_describe_module target)
     set(descfile_in "${QT_CMAKE_DIR}/ModuleDescription.json.in")
     set(descfile_out "${build_dir}/${target}.json")
     string(TOLOWER "${PROJECT_NAME}" lower_case_project_name)
-    set(cross_compilation "false")
-    if(CMAKE_CROSSCOMPILING)
-        set(cross_compilation "true")
-    endif()
     set(extra_module_information "")
+    set(platforms_information "")
 
     get_target_property(target_type ${target} TYPE)
     if(NOT target_type STREQUAL "INTERFACE_LIBRARY")
@@ -1235,27 +1245,111 @@ function(qt_describe_module target)
         endif()
     endif()
 
+    # Generate extra module information
     get_target_property(is_internal ${target} _qt_is_internal_module)
     if(is_internal)
         string(APPEND extra_module_information "\n    \"internal\": true,")
     endif()
-
-    set(extra_build_information "")
+    if(APPLE)
+        set(bundle_type "none")
+        if(QT_FEATURE_framework)
+            set(bundle_type "framework")
+        endif()
+        string(APPEND extra_module_information "\n    \"bundle_type\": \"framework\",")
+    endif()
     if(NOT QT_NAMESPACE STREQUAL "")
-        string(APPEND extra_build_information "
-        \"namespace\": \"${QT_NAMESPACE}\",")
+        string(APPEND extra_module_information "\n    \"namespace\": \"${QT_NAMESPACE}\",")
     endif()
-    if(ANDROID)
-        string(APPEND extra_build_information "
-        \"android\": {
-            \"api_version\": \"${QT_ANDROID_API_VERSION}\",
-            \"ndk\": {
-                \"version\": \"${ANDROID_NDK_REVISION}\"
-            }
-        },")
+    if(target STREQUAL "Gui")
+        qt_internal_list_to_json_array(qpa_platforms_array QT_QPA_PLATFORMS)
+        string(APPEND extra_module_information "
+    \"qpa\": {
+        \"platforms\": ${qpa_platforms_array},
+        \"default_platform\": \"${QT_QPA_DEFAULT_PLATFORM}\"
+    },")
     endif()
-    configure_file("${descfile_in}" "${descfile_out}")
 
+    # Set up indentation helper variables.
+    set(indent1 "    ")
+    set(k 1)
+    foreach(i RANGE 2 5)
+        set(indent${i} "${indent${k}}${indent1}")
+        set(k ${i})
+    endforeach()
+
+    # Set up the platforms to write.
+    set(nr_of_platforms 1)
+    set(platform_0_name "${CMAKE_SYSTEM_NAME}")
+    set(platform_0_variant "")
+    set(platform_0_architectures "${TEST_architecture_architectures}")
+
+    # Handle iOS builds specially.
+    if(platform_0_name STREQUAL "iOS")
+        if(QT_FEATURE_simulator_and_device)
+            # This must match the setup done in qt_auto_detect_apple.
+            set(nr_of_platforms 2)
+            set(platform_0_name "iOS")
+            set(platform_0_variant "iphoneos")
+            set(platform_0_architectures "arm64")
+            set(platform_1_name "iOS")
+            set(platform_1_variant "iphonesimulator")
+            set(platform_1_architectures "x86_64")
+        elseif(NOT "${QT_APPLE_SDK}" STREQUAL "")
+            # Explicit SDK requested.
+            set(platform_0_variant "${QT_APPLE_SDK}")
+        endif()
+    endif()
+
+    # Write platform information. At the moment, we write exactly one platform. With xcframeworks
+    # for example, we'd support multiple platforms.
+    math(EXPR last_platform_idx "${nr_of_platforms} - 1")
+    foreach(i RANGE 0 ${last_platform_idx})
+        # Write target architecture information.
+        set(platform_name "${platform_${i}_name}")
+        set(platform_variant "${platform_${i}_variant}")
+        set(platform_architectures "${platform_${i}_architectures}")
+        set(targets_information "")
+        foreach(architecture IN LISTS platform_architectures)
+            if(NOT targets_information STREQUAL "")
+                string(APPEND targets_information ",")
+            endif()
+            string(APPEND targets_information "\n${indent4}{\n")
+            if(NOT QT_FEATURE_shared)
+                string(APPEND targets_information "${indent5}\"static\": true,\n")
+            endif()
+            if(ANDROID)
+                string(APPEND targets_information
+                    "${indent5}\"api_version\": \"${QT_ANDROID_API_USED_FOR_JAVA}\",
+${indent5}\"ndk_version\": \"${ANDROID_NDK_REVISION}\",\n")
+            endif()
+            string(APPEND targets_information "${indent5}\"architecture\": \"${architecture}\",\n")
+            string(APPEND targets_information "${indent5}\"abi\": \"${TEST_arch_${architecture}_abi}\"\n")
+            string(APPEND targets_information "${indent4}}")
+        endforeach()
+
+        if(i GREATER 0)
+            string(APPEND platforms_information ",")
+        endif()
+        string(APPEND platforms_information "
+${indent2}{
+${indent3}\"name\": \"${platform_name}\",")
+        if(NOT platform_variant STREQUAL "")
+            string(APPEND platforms_information "
+${indent3}\"variant\": \"${platform_variant}\",")
+        endif()
+        if(NOT "${CMAKE_SYSTEM_VERSION}" STREQUAL "")
+            string(APPEND platforms_information "
+${indent3}\"version\": \"${CMAKE_SYSTEM_VERSION}\",")
+        endif()
+        string(APPEND platforms_information "
+${indent3}\"compiler_id\": \"${CMAKE_CXX_COMPILER_ID}\",
+${indent3}\"compiler_version\": \"${CMAKE_CXX_COMPILER_VERSION}\",
+${indent3}\"targets\": [${targets_information}
+${indent3}]
+${indent2}}")
+    endforeach()
+
+    configure_file("${descfile_in}" "${descfile_out}")
     qt_install(FILES "${descfile_out}" DESTINATION "${install_dir}")
 endfunction()
 

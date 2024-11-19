@@ -13,7 +13,7 @@ QT_FORWARD_DECLARE_CLASS(QPainter)
 class BookDelegate : public QSqlRelationalDelegate
 {
 public:
-    using QSqlRelationalDelegate::QSqlRelationalDelegate;
+    explicit BookDelegate(int ratingColumn, QObject *parent = nullptr);
 
     void paint(QPainter *painter, const QStyleOptionViewItem &option,
                const QModelIndex &index) const override;
@@ -29,8 +29,12 @@ public:
                           const QModelIndex &index) const override;
 
 private:
+    const QIcon starIcon{QStringLiteral(":images/star.svg")};
+    const QIcon starFilledIcon{QStringLiteral(":images/star-filled.svg")};
+
     const int cellPadding = 6;
     const int iconDimension = 24;
+    const int ratingColumn; // 0 in the combobox, otherwise 5
 };
 
 #endif

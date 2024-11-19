@@ -33,6 +33,19 @@ else()
                              QT_VERSION_PATCH @PROJECT_VERSION_PATCH@)
 endif()
 
+if(TARGET @INSTALL_CMAKE_NAMESPACE@::PlatformCommonInternal)
+    get_target_property(_qt_platform_internal_common_target
+        @INSTALL_CMAKE_NAMESPACE@::PlatformCommonInternal ALIASED_TARGET)
+    if(NOT _qt_platform_internal_common_target)
+        set(_qt_platform_internal_common_target @INSTALL_CMAKE_NAMESPACE@::PlatformCommonInternal)
+    endif()
+    set_target_properties(${_qt_platform_internal_common_target}
+        PROPERTIES
+            _qt_internal_cmake_generator "${CMAKE_GENERATOR}"
+    )
+    unset(_qt_platform_internal_common_target)
+endif()
+
 get_filename_component(_qt_import_prefix "${CMAKE_CURRENT_LIST_FILE}" PATH)
 get_filename_component(_qt_import_prefix "${_qt_import_prefix}" REALPATH)
 list(APPEND CMAKE_MODULE_PATH "${_qt_import_prefix}")

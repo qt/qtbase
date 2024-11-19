@@ -1,0 +1,9 @@
+version = 1
+
+[[annotations]]
+path = ["cube.h"]
+precedence = "closest"
+SPDX-FileCopyrightText = ["Copyright (c) 2015-2016 The Khronos Group Inc.",
+                          "Copyright (c) 2015-2016 Valve Corporation",
+                          "Copyright (c) 2015-2016 LunarG, Inc."]
+SPDX-License-Identifier = "Apache-2.0"

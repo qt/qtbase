@@ -9,16 +9,15 @@
 //  W A R N I N G
 //  -------------
 //
-// This file is not part of the Qt API.  It exists for the convenience
-// of internal files.  This header file may change from version to version
-// without notice, or even be removed.
+// This file is not a normal header file.
+// It defines data tables for internal use by QTimeZone's L10n code.
+// It may change incompatibly between versions, or even be removed.
 //
 // We mean it.
 //
 
 // Only qtimezonelocale.cpp should #include this (after other things it needs),
 // and even that only when feature icu is disabled.
-#include "qtimezonelocale_p.h"
 
 QT_REQUIRE_CONFIG(timezone_locale);
 #if QT_CONFIG(icu)
@@ -70,7 +69,7 @@ namespace QtTimeZoneLocale {
 */
 
 // Sorted by locale index, then iana name
-static constexpr LocaleZoneExemplar localeZoneExemplarTable[] = {
+static inline constexpr LocaleZoneExemplar localeZoneExemplarTable[] = {
     // locInd, ianaInd, xcty{ind, sz}
     {    0,   14,       0,  6, }, // Africa/Asmara C/AnyScript/AnyTerritory
     {    0, 4337,       6,  8, }, // Africa/Sao_Tome
@@ -47845,7 +47844,7 @@ static constexpr LocaleZoneExemplar localeZoneExemplarTable[] = {
 }; // Exemplar city table
 
 // Sorted by locale index, then iana name
-static constexpr LocaleZoneNames localeZoneNameTable[] = {
+static inline constexpr LocaleZoneNames localeZoneNameTable[] = {
     // locInd, ianaInd, (lngGen, lngStd, lngDst, srtGen, srtStd, srtDst){ind, sz}
     {    0, 2347,       0,       0,       0,    0,    0,    0,  0, 26,  0,  0,  3,  0, }, // Etc/UTC C/AnyScript/AnyTerritory
     {    0, 2260,       0,       0,      26,    0,    0,    0,  0,  0, 19,  0,  0,  0, }, // Europe/Dublin
@@ -48630,7 +48629,7 @@ static constexpr LocaleZoneNames localeZoneNameTable[] = {
 }; // Zone naming table
 
 // Sorted by locale index, then meta key
-static constexpr LocaleMetaZoneLongNames localeMetaZoneLongNameTable[] = {
+static inline constexpr LocaleMetaZoneLongNames localeMetaZoneLongNameTable[] = {
     // locInd, metaKey, (generic, standard, DST){ind, sz}
     {    0,    0,       0,       9,      27,  9, 18, 16, }, // Acre C/AnyScript/AnyTerritory
     {    0,    5,       0,      43,       0,  0, 16,  0, }, // Afghanistan
@@ -73892,7 +73891,7 @@ static constexpr LocaleMetaZoneLongNames localeMetaZoneLongNameTable[] = {
 }; // Metazone long name table
 
 // Sorted by locale index, then meta key
-static constexpr LocaleMetaZoneShortNames localeMetaZoneShortNameTable[] = {
+static inline constexpr LocaleMetaZoneShortNames localeMetaZoneShortNameTable[] = {
     // locInd, metaKey, (generic, standard, DST){ind, sz}
     {    0,  107,    0,    3,    7,  3,  4,  4, }, // Alaska C/AnyScript/AnyTerritory
     {    0,  142,   11,   13,   16,  2,  3,  3, }, // America_Central
@@ -75313,7 +75312,7 @@ static constexpr LocaleMetaZoneShortNames localeMetaZoneShortNameTable[] = {
 }; // Metazone short name table
 
 // Indexing matches that of locale_data in qlocale_data_p.h
-static constexpr LocaleZoneData localeZoneData[] = {
+static inline constexpr LocaleZoneData localeZoneData[] = {
     // LOCALE_TAGS(lng,scp,ter) xct1st, zn1st, ml1st, ms1st, (+hr, -hr, gmt, flbk, rgen, rstd, rdst){ind,sz}
     { LOCALE_TAGS(  1,  0,  0)     0,     0,     0,     0,    0,    6,    0,    0,    0,    7,   23,  6,  6,  5,  7,  7, 16, 16, }, // C/AnyScript/AnyTerritory
     { LOCALE_TAGS(  2, 27, 90)    42,   158,     8,     4,    0,    6,    0,    0,   39,   47,   66,  6,  6,  5,  7,  8, 19, 17, }, // Abkhazian/Cyrillic/Georgia
@@ -75991,7 +75990,7 @@ static constexpr LocaleZoneData localeZoneData[] = {
     { LOCALE_TAGS(  0,  0,  0) 47770, 25257,  1416,   780,   88,   88,  271,   49, 6066, 6066, 6066,  0,  0,  0,  0,  0,  0,  0, } // Terminal row
 }; // Locale/zone data
 
-static constexpr char16_t hourFormatTable[] = {
+static inline constexpr char16_t hourFormatTable[] = {
 0x2b, 0x48, 0x48, 0x3a, 0x6d, 0x6d, 0x2d, 0x48, 0x48, 0x3a, 0x6d, 0x6d,
 0x2b, 0x48, 0x48, 0x6d, 0x6d, 0x2d, 0x48, 0x48, 0x6d, 0x6d, 0x2212, 0x48,
 0x48, 0x3a, 0x6d, 0x6d, 0x20, 0x2d, 0x48, 0x48, 0x3a, 0x6d, 0x6d, 0x2b,
@@ -76002,7 +76001,7 @@ static constexpr char16_t hourFormatTable[] = {
 0x48, 0x3a, 0x6d, 0x6d
 };
 
-static constexpr char16_t gmtFormatTable[] = {
+static inline constexpr char16_t gmtFormatTable[] = {
 0x47, 0x4d, 0x54, 0x25, 0x30, 0x1302, 0x20, 0x12a4, 0x121d, 0x20, 0x1272, 0x25,
 0x30, 0x63a, 0x631, 0x64a, 0x646, 0x62a, 0x634, 0x25, 0x30, 0x47, 0x4d, 0x54,
 0x20, 0x25, 0x30, 0x91c, 0x93f, 0x2e, 0x90f, 0x92e, 0x2e, 0x924, 0x93f, 0x20,
@@ -76028,7 +76027,7 @@ static constexpr char16_t gmtFormatTable[] = {
 0x970, 0x20, 0x91f, 0x948, 0x970, 0x25, 0x30
 };
 
-static constexpr char16_t regionFormatTable[] = {
+static inline constexpr char16_t regionFormatTable[] = {
 0x25, 0x30, 0x20, 0x54, 0x69, 0x6d, 0x65, 0x25, 0x30, 0x20, 0x53, 0x74,
 0x61, 0x6e, 0x64, 0x61, 0x72, 0x64, 0x20, 0x54, 0x69, 0x6d, 0x65, 0x25,
 0x30, 0x20, 0x44, 0x61, 0x79, 0x6c, 0x69, 0x67, 0x68, 0x74, 0x20, 0x54,
@@ -76537,7 +76536,7 @@ static constexpr char16_t regionFormatTable[] = {
 0xb1f, 0x20, 0xb2c, 0xb47, 0xb32, 0xb3e
 };
 
-static constexpr char16_t fallbackFormatTable[] = {
+static inline constexpr char16_t fallbackFormatTable[] = {
 0x25, 0x31, 0x20, 0x28, 0x25, 0x30, 0x29, 0x25, 0x31, 0x20, 0x25, 0x30,
 0x25, 0x31, 0xff08, 0x25, 0x30, 0xff09, 0x25, 0x31, 0xf0d, 0x20, 0x28, 0x25,
 0x30, 0xf0b, 0x29, 0x5b, 0x25, 0x31, 0x20, 0x28, 0x25, 0x30, 0x29, 0x5d,
@@ -76545,7 +76544,7 @@ static constexpr char16_t fallbackFormatTable[] = {
 0x29
 };
 
-static constexpr char16_t exemplarCityTable[] = {
+static inline constexpr char16_t exemplarCityTable[] = {
 0x41, 0x73, 0x6d, 0x61, 0x72, 0x61, 0x53, 0xe3, 0x6f, 0x20, 0x54, 0x6f,
 0x6d, 0xe9, 0x41, 0x73, 0x75, 0x6e, 0x63, 0x69, 0xf3, 0x6e, 0x41, 0x74,
 0x69, 0x6b, 0x6f, 0x6b, 0x61, 0x6e, 0x42, 0x61, 0x68, 0xed, 0x61, 0x20,
@@ -94435,7 +94434,7 @@ static constexpr char16_t exemplarCityTable[] = {
 0x69, 0x73
 };
 
-static constexpr char16_t shortZoneNameTable[] = {
+static inline constexpr char16_t shortZoneNameTable[] = {
 0x55, 0x54, 0x43, 0x48, 0x53, 0x54, 0x48, 0x44, 0x54, 0x2205, 0x2205, 0x2205,
 0x49, 0x53, 0x54, 0x42, 0x53, 0x54, 0x54, 0x55, 0x48, 0x54, 0xd83a, 0xdd11,
 0xd83a, 0xdd16, 0xd83a, 0xdd0a, 0xd83a, 0xdd11, 0xd83a, 0xdd16, 0xd83a, 0xdd16, 0xd83a, 0xdd11,
@@ -94452,7 +94451,7 @@ static constexpr char16_t shortZoneNameTable[] = {
 0x189, 0x41, 0x4b
 };
 
-static constexpr char16_t longZoneNameTable[] = {
+static inline constexpr char16_t longZoneNameTable[] = {
 0x43, 0x6f, 0x6f, 0x72, 0x64, 0x69, 0x6e, 0x61, 0x74, 0x65, 0x64, 0x20,
 0x55, 0x6e, 0x69, 0x76, 0x65, 0x72, 0x73, 0x61, 0x6c, 0x20, 0x54, 0x69,
 0x6d, 0x65, 0x49, 0x72, 0x69, 0x73, 0x68, 0x20, 0x53, 0x74, 0x61, 0x6e,
@@ -95251,7 +95250,7 @@ static constexpr char16_t longZoneNameTable[] = {
 0x72, 0xe3, 0x20, 0x6d, 0x61, 0x73, 0x61, 0x20, 0x62, 0x65, 0x6c, 0x101
 };
 
-static constexpr char16_t shortMetaZoneNameTable[] = {
+static inline constexpr char16_t shortMetaZoneNameTable[] = {
 0x41, 0x4b, 0x54, 0x41, 0x4b, 0x53, 0x54, 0x41, 0x4b, 0x44, 0x54, 0x43,
 0x54, 0x43, 0x53, 0x54, 0x43, 0x44, 0x54, 0x45, 0x54, 0x45, 0x53, 0x54,
 0x45, 0x44, 0x54, 0x4d, 0x54, 0x4d, 0x53, 0x54, 0x4d, 0x44, 0x54, 0x50,
@@ -95325,7 +95324,7 @@ static constexpr char16_t shortMetaZoneNameTable[] = {
 0x51, 0x47, 0x47, 0x6b
 };
 
-static constexpr char16_t longMetaZoneNameTable[] = {
+static inline constexpr char16_t longMetaZoneNameTable[] = {
 0x41, 0x63, 0x72, 0x65, 0x20, 0x54, 0x69, 0x6d, 0x65, 0x41, 0x63, 0x72,
 0x65, 0x20, 0x53, 0x74, 0x61, 0x6e, 0x64, 0x61, 0x72, 0x64, 0x20, 0x54,
 0x69, 0x6d, 0x65, 0x41, 0x63, 0x72, 0x65, 0x20, 0x53, 0x75, 0x6d, 0x6d,

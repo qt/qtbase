@@ -352,6 +352,7 @@ public:
     void updateLayoutDirection();
     void setCurrentIndex(const QModelIndex &index);
     void updateDelegate(bool force = false);
+    void initViewItemOption(QStyleOptionViewItem *option) const;
     void keyboardSearchString(const QString &text);
     void modelChanged();
     void updateViewContainerPaletteAndOpacity();
@@ -396,6 +397,7 @@ public:
     QComboBox::SizeAdjustPolicy sizeAdjustPolicy = QComboBox::AdjustToContentsOnFirstShow;
     QStyle::StateFlag arrowState = QStyle::State_None;
     QStyle::SubControl hoverControl = QStyle::SC_None;
+    QComboBox::LabelDrawingMode labelDrawingMode = QComboBox::LabelDrawingMode::UseStyle;
     int minimumContentsLength = 0;
     int indexBeforeChange = -1;
     int maxVisibleItems = 10;

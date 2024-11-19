@@ -12,13 +12,15 @@
                          "01-rename-ticks.patch",
                          "02-preprocesor-checks.patch",
                          "03-parisc-compile.patch"
-                     ]
+                     ],
+                     "General": "no relevant CPE found"
                    },
         "Files": "cycle_p.h",
 
         "Description": "Allows to access the CPU's cycle counters.",
         "Homepage": "http://fftw.org/",
         "Version": "3.3.10",
+        "PURL": "pkg:github/FFTW/fftw3@fftw-3.3.10",
         "License": "MIT License",
         "LicenseId": "MIT",
         "LicenseFile": "LICENSE.txt",

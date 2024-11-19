@@ -245,11 +245,22 @@
 
         handleExposeEvent();
 
-        // If the expose event resulted in a secondary thread requesting that its
-        // drawable should be presented on the main thread with transaction, do so.
-        if (auto mainThreadPresentation = qtMetalLayer.mainThreadPresentation) {
-            mainThreadPresentation();
-            qtMetalLayer.mainThreadPresentation = nil;
+        {
+            // Clearing the mainThreadPresentation below will auto-release the
+            // block held by the property, which in turn holds on to drawables,
+            // so we want to clean up as soon as possible, to prevent stalling
+            // when requesting new drawables. But merely referencing the block
+            // below for the nil-check will make another auto-released copy of
+            // the block, so the scope of the auto-release pool needs to include
+            // that check as well.
+            QMacAutoReleasePool pool;
+
+            // If the expose event resulted in a secondary thread requesting that its
+            // drawable should be presented on the main thread with transaction, do so.
+            if (auto mainThreadPresentation = qtMetalLayer.mainThreadPresentation) {
+                mainThreadPresentation();
+                qtMetalLayer.mainThreadPresentation = nil;
+            }
         }
 
         qtMetalLayer.presentsWithTransaction = presentedWithTransaction;

@@ -1,0 +1,21 @@
+version = 1
+
+[[annotations]]
+path = ["module.mk", "otvalid.c", "otvalid.h", "otvbase.c", "otvcommn.c",
+        "otvcommn.h", "otverror.h", "otvgdef.c", "otvgpos.h", "otvgsub.c",
+        "otvjstf.c", "otvmod.c", "otvmod.h", "rules.mk"]
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (C) 2004-2023 by David Turner, Robert Wilhelm, and Werner Lemberg."
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = ["otvgpos.c"]
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (C) 2002-2023 by David Turner, Robert Wilhelm, and Werner Lemberg."
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = ["otvmath.c"]
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (C) 2007-2023 by David Turner, Robert Wilhelm, and Werner Lemberg."
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"

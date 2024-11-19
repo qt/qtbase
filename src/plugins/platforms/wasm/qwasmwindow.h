@@ -89,17 +89,16 @@ public:
     QWasmScreen *platformScreen() const;
     void setBackingStore(QWasmBackingStore *store) { m_backingStore = store; }
     QWasmBackingStore *backingStore() const { return m_backingStore; }
-    QWindow *window() const { return m_window; }
 
     std::string canvasSelector() const;
 
     emscripten::val context2d() const { return m_context2d; }
     emscripten::val a11yContainer() const { return m_a11yContainer; }
-    emscripten::val inputHandlerElement() const { return m_windowContents; }
+    emscripten::val inputHandlerElement() const { return m_window; }
 
     // QNativeInterface::Private::QWasmWindow
     emscripten::val document() const override { return m_document; }
-    emscripten::val clientArea() const override { return m_qtWindow; }
+    emscripten::val clientArea() const override { return m_decoratedWindow; }
 
     // QWasmWindowTreeNode:
     emscripten::val containerElement() final;
@@ -132,16 +131,14 @@ private:
     void handleWheelEvent(const emscripten::val &event);
     bool processWheel(const WheelEvent &event);
 
-    QWindow *m_window = nullptr;
     QWasmCompositor *m_compositor = nullptr;
     QWasmBackingStore *m_backingStore = nullptr;
     QWasmDeadKeySupport *m_deadKeySupport;
     QRect m_normalGeometry {0, 0, 0 ,0};
 
     emscripten::val m_document;
-    emscripten::val m_qtWindow;
-    emscripten::val m_windowContents;
-    emscripten::val m_canvasContainer;
+    emscripten::val m_decoratedWindow;
+    emscripten::val m_window;
     emscripten::val m_a11yContainer;
     emscripten::val m_canvas;
     emscripten::val m_context2d = emscripten::val::undefined();

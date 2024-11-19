@@ -1,0 +1,7 @@
+version = 1
+
+[[annotations]]
+path = ["**"]
+precedence = "closest"
+SPDX-FileCopyrightText = ["Copyright 1991-1998 by LCS/Telegraphics."]
+SPDX-License-Identifier = "LicenseRef-Lcs-Telegraphics"

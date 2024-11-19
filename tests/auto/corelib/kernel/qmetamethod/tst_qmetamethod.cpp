@@ -618,7 +618,10 @@ void tst_QMetaMethod::method()
 
     QCOMPARE(method.tag(), "");
     QCOMPARE(method.returnType(), returnType);
-    QVERIFY(method.typeName() != 0);
+    if (QT7_ONLY(method.methodType() == QMetaMethod::Constructor) QT6_ONLY(false))
+        QVERIFY(method.typeName());
+    else
+        QVERIFY(method.typeName() != 0);
     if (QByteArray(method.typeName()) != returnTypeName) {
         // QMetaMethod should always produce a semantically equivalent typename
         QCOMPARE(QMetaType::fromName(method.typeName()), QMetaType::fromName(returnTypeName));

@@ -603,6 +603,13 @@ void tst_QGroupBox::buttonPressKeys()
         QTest::keyClick(&groupBox, buttonPressKeys[i]);
         QCOMPARE(clickedSpy.size(), i + 1);
     }
+
+    groupBox.setCheckable(false);
+    QSignalSpy notClickedSpy(&groupBox, &QGroupBox::clicked);
+    for (int i = 0; i < buttonPressKeys.size(); ++i) {
+        QTest::keyClick(&groupBox, buttonPressKeys[i]);
+        QCOMPARE(notClickedSpy.size(), 0);
+    }
 }
 
 void tst_QGroupBox::sendMouseMoveEvent(QWidget *widget, const QPoint &localPos)

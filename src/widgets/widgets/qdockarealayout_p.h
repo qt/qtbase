@@ -143,7 +143,7 @@ public:
     int next(int idx) const;
     int prev(int idx) const;
 
-    QList<int> indexOf(QWidget *widget) const;
+    QList<int> indexOf(const QWidget *widget) const;
     QList<int> indexOfPlaceHolder(const QString &objectName) const;
 
     QDockWidget *apply(bool animate);
@@ -217,7 +217,7 @@ public:
     bool restoreState(QDataStream &stream, const QList<QDockWidget*> &widgets, bool testing = false);
 
     QList<int> indexOfPlaceHolder(const QString &objectName) const;
-    QList<int> indexOf(QWidget *dockWidget) const;
+    QList<int> indexOf(const QWidget *dockWidget) const;
     QList<int> gapIndex(const QPoint &pos, bool disallowTabs) const;
     QList<int> findSeparator(const QPoint &pos) const;
 

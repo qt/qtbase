@@ -240,7 +240,10 @@ namespace Qt {
         CustomizeWindowHint = 0x02000000,
         WindowStaysOnBottomHint = 0x04000000,
         WindowCloseButtonHint = 0x08000000,
-        MacWindowToolBarButtonHint = 0x10000000,
+#if QT_DEPRECATED_SINCE(6, 9)
+        MacWindowToolBarButtonHint Q_DECL_ENUMERATOR_DEPRECATED_X(
+            "This flag has been a no-op since Qt 5") = 0x10000000,
+#endif
         BypassGraphicsProxyWidget = 0x20000000,
         NoDropShadowWindowHint = 0x40000000,
         WindowFullscreenButtonHint = 0x80000000

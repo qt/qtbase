@@ -122,7 +122,9 @@ public:
         : QCborValue(QCborTag(t_), tv)
     {}
 
+#if QT_CONFIG(datestring)
     explicit QCborValue(const QDateTime &dt);
+#endif
 #ifndef QT_BOOTSTRAPPED
     explicit QCborValue(const QUrl &url);
 #  if QT_CONFIG(regularexpression)
@@ -196,7 +198,9 @@ public:
 
     QByteArray toByteArray(const QByteArray &defaultValue = {}) const;
     QString toString(const QString &defaultValue = {}) const;
+#if QT_CONFIG(datestring)
     QDateTime toDateTime(const QDateTime &defaultValue = {}) const;
+#endif
 #ifndef QT_BOOTSTRAPPED
     QUrl toUrl(const QUrl &defaultValue = {}) const;
 #  if QT_CONFIG(regularexpression)
@@ -346,8 +350,10 @@ public:
     { return concrete().toByteArray(defaultValue); }
     QString toString(const QString &defaultValue = {}) const
     { return concrete().toString(defaultValue); }
+#if QT_CONFIG(datestring)
     QDateTime toDateTime(const QDateTime &defaultValue = {}) const
     { return concrete().toDateTime(defaultValue); }
+#endif
 #ifndef QT_BOOTSTRAPPED
     QUrl toUrl(const QUrl &defaultValue = {}) const
     { return concrete().toUrl(defaultValue); }
@@ -516,8 +522,10 @@ public:
     { return concreteByteArray(*this, defaultValue); }
     QString toString(const QString &defaultValue = {}) const
     { return concreteString(*this, defaultValue); }
+#if QT_CONFIG(datestring)
     QDateTime toDateTime(const QDateTime &defaultValue = {}) const
     { return concrete().toDateTime(defaultValue); }
+#endif
 #ifndef QT_BOOTSTRAPPED
     QUrl toUrl(const QUrl &defaultValue = {}) const
     { return concrete().toUrl(defaultValue); }

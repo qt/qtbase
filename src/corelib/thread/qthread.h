@@ -51,6 +51,13 @@ public:
         InheritPriority
     };
 
+    enum class QualityOfService {
+        Auto,
+        High,
+        Eco,
+    };
+    Q_ENUM(QualityOfService)
+
     void setPriority(Priority priority);
     Priority priority() const;
 
@@ -70,6 +77,9 @@ public:
     int loopLevel() const;
 
     bool isCurrentThread() const noexcept;
+
+    void setServiceLevel(QualityOfService serviceLevel);
+    QualityOfService serviceLevel() const;
 
     template <typename Function, typename... Args>
     [[nodiscard]] static QThread *create(Function &&f, Args &&... args);

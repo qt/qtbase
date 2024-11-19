@@ -296,9 +296,7 @@ void QRegion::exec(const QByteArray &buffer, int ver, QDataStream::ByteOrder byt
 /*!
     \fn void QRegion::swap(QRegion &other)
     \since 4.8
-
-    Swaps region \a other with this region. This operation is very
-    fast and never fails.
+    \memberswap{region}
 */
 
 /*!
@@ -1085,7 +1083,7 @@ struct QRegionPrivate {
     QRect extents;
     QRect innerRect;
 
-    inline QRegionPrivate() : numRects(0), innerArea(-1) {}
+    constexpr QRegionPrivate() : numRects(0), innerArea(-1) {}
     inline QRegionPrivate(const QRect &r)
         : numRects(1),
           innerArea(r.width() * r.height()),
@@ -1594,8 +1592,8 @@ void QRegionPrivate::selfTest() const
 }
 #endif // QT_REGION_DEBUG
 
-static QRegionPrivate qrp;
-const QRegion::QRegionData QRegion::shared_empty = {Q_REFCOUNT_INITIALIZE_STATIC, &qrp};
+Q_CONSTINIT static QRegionPrivate qrp;
+Q_CONSTINIT const QRegion::QRegionData QRegion::shared_empty = {Q_REFCOUNT_INITIALIZE_STATIC, &qrp};
 
 typedef void (*OverlapFunc)(QRegionPrivate &dest, const QRect *r1, const QRect *r1End,
                             const QRect *r2, const QRect *r2End, int y1, int y2);

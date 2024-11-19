@@ -5,6 +5,8 @@
 #define QDOM_H
 
 #include <QtXml/qtxmlglobal.h>
+
+#include <QtCore/qcompare.h>
 #include <QtCore/qstring.h>
 
 #if QT_CONFIG(dom)
@@ -215,8 +217,10 @@ public:
     QDomNodeList();
     QDomNodeList(const QDomNodeList &nodeList);
     QDomNodeList& operator=(const QDomNodeList &other);
+#if QT_XML_REMOVED_SINCE(6, 9)
     bool operator==(const QDomNodeList &other) const;
     bool operator!=(const QDomNodeList &other) const;
+#endif
     ~QDomNodeList();
 
     // DOM functions
@@ -228,6 +232,10 @@ public:
     inline int count() const { return length(); } // Qt API consitancy
     inline int size() const { return length(); } // Qt API consistency
     inline bool isEmpty() const { return length() == 0; } // Qt API consistency
+
+private:
+    Q_XML_EXPORT friend bool comparesEqual(const QDomNodeList &lhs, const QDomNodeList &rhs) noexcept;
+    Q_DECLARE_EQUALITY_COMPARABLE(QDomNodeList)
 
 private:
     QDomNodeListPrivate* impl;

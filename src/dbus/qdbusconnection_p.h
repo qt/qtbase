@@ -276,11 +276,18 @@ signals:
     void callWithCallbackFailed(const QDBusError &error, const QDBusMessage &message);
 
 public:
+    static constexpr QDBusConnection::ConnectionCapabilities ConnectionIsBus =
+            QDBusConnection::ConnectionCapabilities::fromInt(0x8000'0000);
+    static constexpr QDBusConnection::ConnectionCapabilities InternalCapabilitiesMask = ConnectionIsBus;
+
     QAtomicInt ref;
     QAtomicInt capabilities;
     QDBusConnection::ConnectionCapabilities connectionCapabilities() const
     {
-        return (QDBusConnection::ConnectionCapabilities)capabilities.loadRelaxed();
+        uint capa = capabilities.loadRelaxed();
+        if (mode == ClientMode)
+            capa |= ConnectionIsBus;
+        return QDBusConnection::ConnectionCapabilities(capa);
     }
     QString name;               // this connection's name
     QString baseService;        // this connection's base service

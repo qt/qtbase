@@ -33,7 +33,12 @@ qt_internal_extend_target(DeviceDiscoverySupportPrivate CONDITION QT_FEATURE_evd
         qdevicediscovery_static.cpp qdevicediscovery_static_p.h
 )
 
-qt_internal_extend_target(DeviceDiscoverySupportPrivate CONDITION NOT QT_FEATURE_evdev AND NOT QT_FEATURE_libudev
+qt_internal_extend_target(DeviceDiscoverySupportPrivate CONDITION NOT QT_FEATURE_evdev AND NOT QT_FEATURE_libudev AND NOT QT_FEATURE_vxworksevdev
     SOURCES
         qdevicediscovery_dummy.cpp qdevicediscovery_dummy_p.h
+)
+
+qt_internal_extend_target(DeviceDiscoverySupportPrivate CONDITION QT_FEATURE_vxworksevdev
+        SOURCES
+        qdevicediscovery_vxworks.cpp qdevicediscovery_vxworks_p.h
 )

@@ -2794,11 +2794,12 @@ void tst_QSqlQuery::lastInsertId()
                             .arg(ts.tableName())));
         QVERIFY_SQL(q, exec(QLatin1String("insert into %1 (t_varchar, t_char) values "
                                           "('VarChar41', 'Char41')").arg(ts.tableName())));
+        QVERIFY(q.lastInsertId().isValid());
     } else {
         QVERIFY_SQL(q, exec(QLatin1String("insert into %1 (id, t_varchar, t_char) values (41, 'VarChar41', 'Char41')")
                             .arg(qtest)));
+        QVERIFY(q.lastInsertId().isValid());
     }
-    QVERIFY(q.lastInsertId().isValid());
 }
 
 void tst_QSqlQuery::lastQuery()

@@ -135,14 +135,12 @@ public:
 QWindowsSockInit::QWindowsSockInit()
 :   version(0)
 {
-    //### should we try for 2.2 on all platforms ??
     WSAData wsadata;
 
-    // IPv6 requires Winsock v2.0 or better.
-    if (WSAStartup(MAKEWORD(2, 0), &wsadata) != 0) {
-        qWarning("QTcpSocketAPI: WinSock v2.0 initialization failed.");
+    if (WSAStartup(MAKEWORD(2, 2), &wsadata) != 0) {
+        qWarning("QTcpSocketAPI: WinSock v2.2 initialization failed.");
     } else {
-        version = 0x20;
+        version = 0x22;
     }
 }
 
@@ -963,11 +961,11 @@ QString QSysInfo::machineHostName()
     hostName.resize(512);
     unsigned long len = hostName.size();
     BOOL res = GetComputerNameEx(ComputerNameDnsHostname,
-            reinterpret_cast<wchar_t *>(const_cast<quint16 *>(hostName.utf16())), &len);
+                                 reinterpret_cast<wchar_t *>(hostName.data()), &len);
     if (!res && len > 512) {
         hostName.resize(len - 1);
-        GetComputerNameEx(ComputerNameDnsHostname,
-                reinterpret_cast<wchar_t *>(const_cast<quint16 *>(hostName.utf16())), &len);
+        GetComputerNameEx(ComputerNameDnsHostname, reinterpret_cast<wchar_t *>(hostName.data()),
+                          &len);
     }
     hostName.truncate(len);
     return hostName;

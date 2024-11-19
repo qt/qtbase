@@ -1,0 +1,9 @@
+version = 1
+
+[[annotations]]
+path = ["**"]
+precedence = "closest"
+SPDX-FileCopyrightText = ["Copyright (c) 2000, 2006 Sun Microsystems, Inc.",
+    "Copyright (c) 2006 IBM Corporation",
+    "Copyright (c) 2007, 2010, 2012, 2013 Linux Foundation\nIAccessible2 is a trademark of the Linux Foundation. The IAccessible2 mark may be used in accordance with the Linux Foundation Trademark Policy to indicate compliance with the IAccessible2 specification."]
+SPDX-License-Identifier = "BSD-3-Clause"

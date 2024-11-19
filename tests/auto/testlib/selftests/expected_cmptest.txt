@@ -34,6 +34,38 @@ FAIL!  : tst_Cmptest::test_unregistered_flags(fail2) Compared values are not the
 PASS   : tst_Cmptest::compare_boolfuncs()
 PASS   : tst_Cmptest::compare_to_nullptr()
 PASS   : tst_Cmptest::compare_pointerfuncs()
+FAIL!  : tst_Cmptest::compare_stringLiterals() Compared values are not the same
+   Actual   (lhs): "abc"
+   Expected (u""): 
+   Loc: [qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)]
+FAIL!  : tst_Cmptest::compare_stringLiterals() The computed value is expected to be equal to the baseline, but is not
+   Computed (lhs): "abc"
+   Baseline (u""): 
+   Loc: [qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)]
+FAIL!  : tst_Cmptest::compare_stringLiterals() Compared values are not the same
+   Actual   (lhs)    : "abc"
+   Expected (u"abcd"): abcd
+   Loc: [qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)]
+FAIL!  : tst_Cmptest::compare_stringLiterals() The computed value is expected to be equal to the baseline, but is not
+   Computed (lhs)    : "abc"
+   Baseline (u"abcd"): abcd
+   Loc: [qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)]
+FAIL!  : tst_Cmptest::compare_stringLiterals() Compared values are not the same
+   Actual   (lhs): "abc"
+   Expected ("") : 
+   Loc: [qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)]
+FAIL!  : tst_Cmptest::compare_stringLiterals() The computed value is expected to be equal to the baseline, but is not
+   Computed (lhs): "abc"
+   Baseline ("") : 
+   Loc: [qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)]
+FAIL!  : tst_Cmptest::compare_stringLiterals() Compared values are not the same
+   Actual   (lhs)   : "abc"
+   Expected ("abcd"): abcd
+   Loc: [qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)]
+FAIL!  : tst_Cmptest::compare_stringLiterals() The computed value is expected to be equal to the baseline, but is not
+   Computed (lhs)   : "abc"
+   Baseline ("abcd"): abcd
+   Loc: [qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)]
 FAIL!  : tst_Cmptest::compare_tostring(int, string) Compared values are not the same
    Actual   (actual)  : QVariant(int,123)
    Expected (expected): QVariant(QString,hi)
@@ -217,5 +249,5 @@ FAIL!  : tst_Cmptest::tryVerify2() '!c' returned FALSE. (Should time out and fai
    Loc: [qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)]
 PASS   : tst_Cmptest::verifyExplicitOperatorBool()
 PASS   : tst_Cmptest::cleanupTestCase()
-Totals: 23 passed, 51 failed, 0 skipped, 0 blacklisted, 0ms
+Totals: 23 passed, 52 failed, 0 skipped, 0 blacklisted, 0ms
 ********* Finished testing of tst_Cmptest *********

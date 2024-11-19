@@ -51,6 +51,11 @@ public:
     void unpolish(QWidget *widget) override;
 protected:
     QWindows11Style(QWindows11StylePrivate &dd);
+
+private:
+    static inline QBrush buttonFillBrush(const QStyleOption *option);
+    static inline QPen buttonLabelPen(const QStyleOption *option, int colorSchemeIndex);
+
 private:
     Q_DISABLE_COPY_MOVE(QWindows11Style)
     Q_DECLARE_PRIVATE(QWindows11Style)

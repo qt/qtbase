@@ -156,8 +156,7 @@ QJsonObject &QJsonObject::operator =(const QJsonObject &other) noexcept = defaul
 /*!
     \fn void QJsonObject::swap(QJsonObject &other)
     \since 5.10
-
-    Swaps the object \a other with this. This operation is very fast and never fails.
+    \memberswap{object}
 */
 
 #ifndef QT_NO_VARIANT

@@ -37,6 +37,8 @@
 #include <algorithm>
 #include <vector>
 
+using namespace std::chrono_literals;
+
 // #define USE_NATIVE_COLOR_DIALOG /* Testing purposes only */
 
 QT_BEGIN_NAMESPACE
@@ -269,7 +271,7 @@ bool QWindowsDialogHelperBase<BaseClass>::show(Qt::WindowFlags,
     // timer is stopped and dialog->exec() is called directly.
     cleanupThread();
     if (modal) {
-        m_timerId = this->startTimer(0);
+        m_timer.start(0ns, this);
     } else {
         startDialogThread();
     }
@@ -289,10 +291,7 @@ void QWindowsDialogHelperBase<BaseClass>::startDialogThread()
 template <class BaseClass>
 void QWindowsDialogHelperBase<BaseClass>::stopTimer()
 {
-    if (m_timerId) {
-        this->killTimer(m_timerId);
-        m_timerId = 0;
-    }
+    m_timer.stop();
 }
 
 template <class BaseClass>

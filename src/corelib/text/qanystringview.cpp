@@ -696,5 +696,13 @@ QDebug operator<<(QDebug d, QAnyStringView s)
     return d;
 }
 
+/*!
+    \fn template <typename...Args> QString QAnyStringView::arg(Args &&...args) const
+    \since 6.9
+
+    \include qstringview.cpp qstring-multi-arg
+
+    \sa QString::arg(Args&&...)
+*/
 
 QT_END_NAMESPACE

@@ -873,7 +873,9 @@ QString QDBusConnection::name() const
 */
 QDBusConnection::ConnectionCapabilities QDBusConnection::connectionCapabilities() const
 {
-    return d ? d->connectionCapabilities() : ConnectionCapabilities();
+    if (!d)
+        return {};
+    return d->connectionCapabilities() & ~QDBusConnectionPrivate::InternalCapabilitiesMask;
 }
 
 /*!
@@ -1006,8 +1008,7 @@ QByteArray QDBusConnection::localMachineId()
 
 /*!
     \fn void QDBusConnection::swap(QDBusConnection &other)
-
-    Swaps this QDBusConnection instance with \a other.
+    \memberswap{connection}
 */
 
 QT_END_NAMESPACE

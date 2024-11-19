@@ -409,7 +409,7 @@ void QMenuPrivate::updateActionRects(const QRect &screen) const
           sz = w->sizeHint().expandedTo(w->minimumSize()).expandedTo(w->minimumSizeHint()).boundedTo(w->maximumSize());
         } else {
             //calc what I think the size is..
-            if (action->isSeparator()) {
+            if (action->isSeparator() && action->text().isEmpty()) {
                 sz = QSize(2, 2);
             } else {
                 QString s = action->text();
@@ -2459,6 +2459,13 @@ void QMenuPrivate::popup(const QPoint &p, QAction *atAction, PositionFunction po
         }
     }
 
+    // do nothing if we don't have a valid size, e.g. when all actions are invisible
+    if (!size.isValid()) {
+        eventLoop = nullptr;
+        syncAction = nullptr;
+        return;
+    }
+
     const QPoint mouse = QGuiApplicationPrivate::lastCursorPosition.toPoint();
     mousePopupPos = mouse;
     const bool snapToMouse = !causedPopup.widget && (QRect(p.x() - 3, p.y() - 3, 6, 6).contains(mouse));
@@ -2505,6 +2512,7 @@ void QMenuPrivate::popup(const QPoint &p, QAction *atAction, PositionFunction po
             }
         }
     }
+
     const int subMenuOffset = q->style()->pixelMetric(QStyle::PM_SubMenuOverlap, nullptr, q);
     QMenu *caused = qobject_cast<QMenu*>(causedPopup.widget);
     if (caused && caused->geometry().width() + menuSizeHint.width() + subMenuOffset < screen.width()) {
@@ -2667,7 +2675,8 @@ QAction *QMenuPrivate::exec(const QPoint &p, QAction *action, PositionFunction p
     popup(p, action, positionFunction);
 
     QPointer<QObject> guard = q;
-    (void) evtLoop.exec();
+    if (eventLoop) // popup might have reset if there was nothing to show
+        (void)eventLoop->exec();
     if (guard.isNull())
         return nullptr;
 
@@ -3634,7 +3643,8 @@ void QMenu::internalDelayedPopup()
 
     int subMenuOffset = style()->pixelMetric(QStyle::PM_SubMenuOverlap, nullptr, this);
     const QRect actionRect(d->actionRect(d->currentAction));
-    QPoint subMenuPos(mapToGlobal(QPoint(actionRect.right() + subMenuOffset + 1, actionRect.top())));
+    const auto ofs = isRightToLeft() ? (-subMenuOffset - actionRect.width() + 1) : subMenuOffset;
+    QPoint subMenuPos(mapToGlobal(QPoint(actionRect.right() + ofs, actionRect.top())));
     if (subMenuPos.x() > screen.right())
         subMenuPos.setX(geometry().left());
 

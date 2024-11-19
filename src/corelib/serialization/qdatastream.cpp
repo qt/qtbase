@@ -1030,7 +1030,7 @@ QDataStream &QDataStream::operator>>(char32_t &c)
 
 #if QT_DEPRECATED_SINCE(6, 11)
 
-/*
+/*!
     \deprecated [6.11] Use an overload that takes qint64 length instead.
 */
 QDataStream &QDataStream::readBytes(char *&s, uint &l)

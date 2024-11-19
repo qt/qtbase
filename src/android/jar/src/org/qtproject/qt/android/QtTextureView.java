@@ -4,12 +4,13 @@
 
 package org.qtproject.qt.android;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.SurfaceTexture;
-import android.util.Log;
 import android.view.Surface;
 import android.view.TextureView;
 
+@SuppressLint("ViewConstructor")
 class QtTextureView extends TextureView implements TextureView.SurfaceTextureListener
 {
     private final QtSurfaceInterface m_surfaceCallback;

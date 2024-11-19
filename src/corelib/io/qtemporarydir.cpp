@@ -67,12 +67,11 @@ static QString defaultTemplateName()
 void QTemporaryDirPrivate::create(const QString &templateName)
 {
     QTemporaryFileName tfn(templateName);
+    constexpr auto perms = QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner;
     for (int i = 0; i < 256; ++i) {
         tfn.generateNext();
         QFileSystemEntry fileSystemEntry(tfn.path, QFileSystemEntry::FromNativePath());
-        if (QFileSystemEngine::createDirectory(fileSystemEntry, false,
-                                               QFile::ReadOwner | QFile::WriteOwner
-                                                       | QFile::ExeOwner)) {
+        if (QFileSystemEngine::mkdir(fileSystemEntry, perms)) {
             success = true;
             pathOrError = fileSystemEntry.filePath();
             return;
@@ -192,10 +191,7 @@ QTemporaryDir::QTemporaryDir(const QString &templatePath)
 
 /*!
     \fn void QTemporaryDir::swap(QTemporaryDir &other)
-
-    Swaps temporary-dir \a other with this temporary-dir. This operation is
-    very fast and never fails.
-
+    \memberswap{temporary-dir}
     \since 6.4
 */
 

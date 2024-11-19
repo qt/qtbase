@@ -164,9 +164,7 @@ void QContiguousCacheData::freeData(QContiguousCacheData *data)
 
 /*! \fn template<typename T> void QContiguousCache<T>::swap(QContiguousCache<T> &other)
     \since 4.8
-
-    Swaps cache \a other with this cache. This operation is very
-    fast and never fails.
+    \memberswap{cache}
 */
 
 /*! \fn template<typename T> bool QContiguousCache<T>::operator==(const QContiguousCache<T> &other) const

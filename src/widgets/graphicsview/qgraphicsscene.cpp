@@ -4771,7 +4771,7 @@ static inline void setClip(QPainter *painter, QGraphicsItem *item)
     QRectF clipRect;
     const QPainterPath clipPath(item->shape());
     if (QPathClipper::pathToRect(clipPath, &clipRect))
-        painter->setClipRect(clipRect, Qt::IntersectClip);
+        painter->setClipRect(clipRect.normalized(), Qt::IntersectClip);
     else
         painter->setClipPath(clipPath, Qt::IntersectClip);
 }

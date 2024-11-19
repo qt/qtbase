@@ -66,6 +66,37 @@ function(qt_internal_try_compile_binary_for_strip binary_out_var)
     set(${binary_out_var} "${output_binary_path}" PARENT_SCOPE)
 endfunction()
 
+# Helper to defer calling the separate debug info helper args until the finalizer is run.
+function(qt_internal_defer_separate_debug_info target)
+    set(opt_args "")
+    set(single_args "")
+    set(multi_args
+        SEPARATE_DEBUG_INFO_ARGS
+    )
+    cmake_parse_arguments(PARSE_ARGV 1 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    set_property(TARGET "${target}" PROPERTY _qt_finalize_separate_debug_info_enabled TRUE)
+    set_property(TARGET "${target}" APPEND PROPERTY _qt_finalize_separate_debug_info_args
+        ${arg_SEPARATE_DEBUG_INFO_ARGS}
+    )
+endfunction()
+
+# Handler to run the separate debug info helper using finalizer args.
+function(qt_internal_finalize_executable_separate_debug_info target)
+    get_target_property(enabled "${target}" _qt_finalize_separate_debug_info_enabled)
+    if(NOT enabled)
+        return()
+    endif()
+
+    get_target_property(args "${target}" _qt_finalize_separate_debug_info_args)
+    if(NOT args)
+        set(args "")
+    endif()
+
+    qt_enable_separate_debug_info("${target}" ${args})
+endfunction()
+
 # When using the MinGW 11.2.0 toolchain, cmake --install --strip as used by
 # qt-cmake-private-install.cmake, removes the .gnu_debuglink section in binaries and thus
 # breaks the separate debug info feature.
@@ -255,9 +286,11 @@ function(qt_enable_separate_debug_info target installDestination)
             set(BUNDLE_ID ${target})
         endif()
 
+        get_target_property(is_bundle ${target} MACOSX_BUNDLE)
+
         if (NOT "x${arg_DSYM_OUTPUT_DIR}" STREQUAL "x")
             set(debug_info_bundle_dir "${arg_DSYM_OUTPUT_DIR}/${target}")
-        elseif(is_framework)
+        elseif(is_framework OR is_bundle)
             set(debug_info_bundle_dir "$<TARGET_BUNDLE_DIR:${target}>")
         else()
             set(debug_info_bundle_dir "$<TARGET_FILE:${target}>")

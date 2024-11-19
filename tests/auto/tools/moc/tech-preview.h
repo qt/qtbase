@@ -6,6 +6,10 @@
 
 #include <QObject>
 
+#ifdef Q_MOC_RUN
+#  undef QT_TECH_PREVIEW_API
+#endif
+
 class QT_TECH_PREVIEW_API MyTechPreviewObject : public QObject
 {
     QT_TECH_PREVIEW_API

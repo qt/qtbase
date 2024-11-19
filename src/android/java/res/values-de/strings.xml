@@ -1,5 +1,4 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="fatal_error_msg">In Ihrer Anwendung ist ein schwerwiegender Fehler aufgetreten, sie kann nicht fortgesetzt werden</string>
-    <string name="unsupported_android_version">Diese Android-Version wird nicht unterstützt.</string>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="fatal_error_msg" tools:ignore="UnusedResources">In Ihrer Anwendung ist ein schwerwiegender Fehler aufgetreten, sie kann nicht fortgesetzt werden</string>
 </resources>

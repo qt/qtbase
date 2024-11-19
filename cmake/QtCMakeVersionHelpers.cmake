@@ -86,9 +86,26 @@ endfunction()
 # is only used for policy settings. The currently running CMake must not be
 # older than this version though (doing so will result in an error).
 function(qt_internal_get_min_new_policy_cmake_version out_var)
-    # QT_MIN_NEW_POLICY_CMAKE_VERSION is set either in .cmake.conf or in
-    # QtBuildInternalsExtras.cmake when building a child repo.
-    set(lower_version "${QT_MIN_NEW_POLICY_CMAKE_VERSION}")
+    if(NOT DEFINED BUILD_SHARED_LIBS)
+        message(FATAL_ERROR "BUILD_SHARED_LIBS is needed to decide the oldest CMake version "
+            "for which NEW policies should be enabled. "
+            "It should have been set by this point.")
+    endif()
+
+    # First check if a value is already set in QtBuildInternalsExtras.cmake, which means we're
+    # building a repo other than qtbase and the lower version was already recorded.
+    if(QT_MIN_NEW_POLICY_CMAKE_VERSION)
+        set(lower_version "${QT_MIN_NEW_POLICY_CMAKE_VERSION}")
+
+    # We're building qtbase so the values come from .cmake.conf.
+    elseif(APPLE)
+        set(lower_version "${QT_MIN_NEW_POLICY_CMAKE_VERSION_QT_APPLE}")
+    elseif(BUILD_SHARED_LIBS)
+        set(lower_version "${QT_MIN_NEW_POLICY_CMAKE_VERSION_QT_SHARED}")
+    else()
+        set(lower_version "${QT_MIN_NEW_POLICY_CMAKE_VERSION_QT_STATIC}")
+    endif()
+
     set(${out_var} "${lower_version}" PARENT_SCOPE)
 endfunction()
 
@@ -96,13 +113,31 @@ endfunction()
 # This cannot be less than the minimum CMake policy version or we will end up
 # specifying a version range with the max less than the min.
 function(qt_internal_get_max_new_policy_cmake_version out_var)
-    # QT_MAX_NEW_POLICY_CMAKE_VERSION is set either in .cmake.conf or in
-    # QtBuildInternalsExtras.cmake when building a child repo.
-    set(upper_version "${QT_MAX_NEW_POLICY_CMAKE_VERSION}")
+    if(NOT DEFINED BUILD_SHARED_LIBS)
+        message(FATAL_ERROR "BUILD_SHARED_LIBS is needed to decide the latest CMake version "
+            "for which NEW policies should be enabled. "
+            "It should have been set by this point.")
+    endif()
+
+    # First check if a value is already set in QtBuildInternalsExtras.cmake, which means we're
+    # building a repo other than qtbase and the lower version was already recorded.
+    if(QT_MAX_NEW_POLICY_CMAKE_VERSION)
+        set(upper_version "${QT_MAX_NEW_POLICY_CMAKE_VERSION}")
+
+    # We're building qtbase so the values come from .cmake.conf.
+    elseif(APPLE)
+        set(upper_version "${QT_MAX_NEW_POLICY_CMAKE_VERSION_QT_APPLE}")
+    elseif(BUILD_SHARED_LIBS)
+        set(upper_version "${QT_MAX_NEW_POLICY_CMAKE_VERSION_QT_SHARED}")
+    else()
+        set(upper_version "${QT_MAX_NEW_POLICY_CMAKE_VERSION_QT_STATIC}")
+    endif()
+
     qt_internal_get_min_new_policy_cmake_version(lower_version)
     if(upper_version VERSION_LESS lower_version)
         set(upper_version ${lower_version})
     endif()
+
     set(${out_var} "${upper_version}" PARENT_SCOPE)
 endfunction()
 
@@ -230,7 +265,7 @@ endfunction()
 # but not to any that are already defined. Ordinary CMake code not inside a
 # function or macro will be affected by these policy settings too.
 function(qt_internal_upgrade_cmake_policies)
-    qt_internal_get_computed_min_cmake_version_for_building_qt(lower_version)
+    qt_internal_get_min_new_policy_cmake_version(lower_version)
     qt_internal_get_max_new_policy_cmake_version(upper_version)
     cmake_minimum_required(VERSION ${lower_version}...${upper_version})
 endfunction()

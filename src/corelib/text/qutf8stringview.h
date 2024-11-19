@@ -215,6 +215,9 @@ public:
 
     [[nodiscard]] constexpr storage_type at(qsizetype n) const { return (*this)[n]; }
 
+    template <typename...Args>
+    [[nodiscard]] inline QString arg(Args &&...args) const;
+
     [[nodiscard]]
     constexpr QBasicUtf8StringView mid(qsizetype pos, qsizetype n = -1) const
     {

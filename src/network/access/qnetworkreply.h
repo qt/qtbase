@@ -12,6 +12,8 @@
 #include <QtNetwork/QNetworkRequest>
 #include <QtNetwork/QNetworkAccessManager>
 
+#include <utility>
+
 QT_BEGIN_NAMESPACE
 
 
@@ -107,7 +109,7 @@ public:
 #endif
     QByteArray rawHeader(QAnyStringView headerName) const;
 
-    typedef QPair<QByteArray, QByteArray> RawHeaderPair;
+    typedef std::pair<QByteArray, QByteArray> RawHeaderPair;
     const QList<RawHeaderPair>& rawHeaderPairs() const;
     QHttpHeaders headers() const;
 

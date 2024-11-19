@@ -17,6 +17,8 @@
 #include <QtCore/qsettings.h>
 #include <qpa/qwindowsysteminterface.h>
 
+#include <QtGui/private/qguiapplication_p.h>
+
 #include <commctrl.h>
 #include <shellapi.h>
 #include <shlobj.h>
@@ -388,6 +390,10 @@ bool QWindowsSystemTrayIcon::winEvent(const MSG &message, long *result)
             // since hi-res coordinates are delivered in this case (Windows issue).
             // Default to primary screen with check to prevent a crash.
             const QPoint globalPos = QPoint(GET_X_LPARAM(message.wParam), GET_Y_LPARAM(message.wParam));
+            // QTBUG-130832: QMenu relies on lastCursorPosition being up to date. When this code
+            // is called it still holds the last known mouse position inside a Qt window. Do a
+            // forced update of this position.
+            QGuiApplicationPrivate::lastCursorPosition = QCursor::pos().toPointF();
             const auto &screenManager = QWindowsContext::instance()->screenManager();
             const QPlatformScreen *screen = screenManager.screenAtDp(globalPos);
             if (!screen)

@@ -3345,6 +3345,12 @@ void tst_QDateTime::fromStringStringFormat_data()
             << u"2018 wilful long working block relief 12-19T21:09 cruel"_s
             << u"yyyy wilful long working block relief MM-ddThh:mm cruel blurb encore flux"_s
             << 1900 << QDateTime();
+    QTest::newRow("fix-century-Mon")
+            << u"Monday, 23 April 12 22:51:41"_s << u"dddd, d MMMM yy hh:mm:ss"_s << 1900
+            << QDateTime(QDate(2012, 4, 23), QTime(22, 51, 41));
+    QTest::newRow("fix-century-Tue")
+            << u"Tuesday, 23 April 12 22:51:41"_s << u"dddd, d MMMM yy hh:mm:ss"_s << 2000
+            << QDateTime(QDate(1912, 4, 23), QTime(22, 51, 41));
 
     // test unicode
     QTest::newRow("unicode handling")
@@ -3364,6 +3370,17 @@ void tst_QDateTime::fromStringStringFormat_data()
     QTest::newRow("ASN.1:UTC-end")
             << u"491231235959Z"_s << u"yyMMddHHmmsst"_s << 1950
             << QDate(2049, 12, 31).endOfDay(QTimeZone::UTC).addMSecs(-999);
+    // Reproducer for QTBUG-129287
+    QTest::newRow("ASN.1:max")
+            << u"99991231235959Z"_s << u"yyyyMMddHHmmsst"_s << 1950
+            << QDate(9999, 12, 31).endOfDay(QTimeZone::UTC).addMSecs(-999);
+    // Can also be reproduced with more legible formats:
+    QTest::newRow("UTC:max")
+            << u"9999 Dec 31 23:59:59 +00:00"_s << u"yyyy MMM dd HH:mm:ss t"_s << 9900
+            << QDate(9999, 12, 31).endOfDay(QTimeZone::UTC).addMSecs(-999);
+    QTest::newRow("UTC:min")
+            << u"0100 Jan 1 00:00:00 +00:00"_s << u"yyyy MMM d HH:mm:ss t"_s << 100
+            << QDate(100, 1, 1).startOfDay(QTimeZone::UTC);
 
     // fuzzer test
     QTest::newRow("integer overflow found by fuzzer")
@@ -3389,12 +3406,20 @@ void tst_QDateTime::fromStringStringFormat()
     QFETCH(int, baseYear);
     QFETCH(QDateTime, expected);
 
-    QDateTime dt = QDateTime::fromString(string, format, baseYear);
+    if (futureTimeType == LocalTimeAheadOfUtc) {
+        // The new parser should remove the bounds, removing this limitation.
+        QEXPECT_FAIL("ASN.1:max", "QTBUG-77948: min/max are local times", Abort);
+        QEXPECT_FAIL("UTC:max", "QTBUG-77948: min/max are local times", Abort);
+    }
+    // For contrast, UTC::min gets away with it, which probably means there are
+    // genuinely out-of-range cases the old parser gets wrong.
 
+    QDateTime dt = QDateTime::fromString(string, format, baseYear);
 #ifdef USING_MS_TZDB
     QEXPECT_FAIL("spring-forward-midnight", "MS misreads the IANA DB", Continue);
 #endif
     QCOMPARE(dt, expected);
+
     if (expected.isValid()) {
         QCOMPARE(dt.timeSpec(), expected.timeSpec());
         QCOMPARE(dt.timeRepresentation(), dt.timeRepresentation());

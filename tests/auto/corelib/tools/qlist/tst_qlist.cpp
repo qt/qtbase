@@ -1,6 +1,12 @@
 // Copyright (C) 2021 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
+#ifdef QT_NO_STRICT_QLIST_ITERATORS
+#  ifdef QT_STRICT_QLIST_ITERATORS
+#    undef QT_STRICT_QLIST_ITERATORS
+#  endif
+#endif
+
 #include <QTest>
 #include <QAtomicInt>
 #include <QThread>
@@ -9,6 +15,7 @@
 #include <qlist.h>
 
 #include <cstdio>
+#include <QtCore/q20memory.h>
 
 #ifdef QT_COMPILER_HAS_LWG3346
 #  if __has_include(<concepts>)
@@ -334,6 +341,7 @@ private slots:
     void swapInt() const { swap<int>(); }
     void swapMovable() const { swap<Movable>(); }
     void swapCustom() const { swap<Custom>(); }
+    void toAddress() const;
     void toList() const;
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     void fromStdVector() const;
@@ -2927,6 +2935,23 @@ void tst_QList::startsWith() const
     // remove it again :)
     myvec.remove(0);
     QVERIFY(myvec.startsWith(1));
+}
+
+void tst_QList::toAddress() const
+{
+    // Annoyingly, QList::iterator is a class; make sure std::to_address works on them
+    QList<int> l = {1, 2, 3, 4, 5};
+    auto check = [&](auto b, auto e) {
+        QCOMPARE_EQ(q20::to_address(b), l.data());
+        QCOMPARE_EQ(q20::to_address(e), l.data() + l.size());
+    };
+    // begin QTBUG-130643
+    check(l.begin(), l.end());
+    check(l.cbegin(), l.cend());
+    // end QTBUG-130643
+    // for reverse_iterator, account for the off-by-one to its ::base():
+    check(l.rend() - 1, l.rbegin() - 1);
+    check(l.crend() - 1, l.crbegin() - 1);
 }
 
 template<typename T>

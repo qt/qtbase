@@ -378,6 +378,21 @@ bool QEGLPlatformContext::makeCurrent(QPlatformSurface *surface)
             if (eglSurface != EGL_NO_SURFACE) // skip if using surfaceless context
                 eglSwapInterval(eglDisplay(), m_swapInterval);
         }
+#if defined(Q_OS_VXWORKS) && defined(Q_PROCESSOR_X86_64)
+        // Clear set of framebuffers as workaround for display artifacts found
+        // in Wind River's Mesa OpenGL implementation
+        static bool firstWindow = true;
+        if (firstWindow && (QSurface::Window == surface->surface()->surfaceClass())) {
+            glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+            swapBuffers(surface);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+            swapBuffers(surface);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+            swapBuffers(surface);
+            firstWindow = false;
+        }
+#endif
     } else {
         qWarning("QEGLPlatformContext: eglMakeCurrent failed: %x", eglGetError());
     }

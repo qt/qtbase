@@ -1,0 +1,13 @@
+version = 1
+
+[[annotations]]
+path = ["bigfile", "rfc3252.txt"]
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (C) The Internet Society (2002).  All Rights Reserved."
+SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = ["resource"]
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (C) The Internet Society (1998).  All Rights Reserved."
+SPDX-License-Identifier = "CC0-1.0"

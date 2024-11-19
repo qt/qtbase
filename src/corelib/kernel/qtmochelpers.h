@@ -78,9 +78,26 @@ template <uint... Nx> constexpr auto stringData(const char (&...strings)[Nx])
     return result;
 }
 
-#  define QT_MOC_HAS_STRINGDATA       1
+template <typename FuncType> inline bool indexOfMethod(void **_a, FuncType f, int index) noexcept
+{
+    int *result = static_cast<int *>(_a[0]);
+    auto candidate = reinterpret_cast<FuncType *>(_a[1]);
+    if (*candidate != f)
+        return false;
+    *result = index;
+    return true;
+}
+
+template <typename Prop, typename Value> inline bool setProperty(Prop &property, Value &&value)
+{
+    if (property == value)
+        return false;
+    property = std::forward<Value>(value);
+    return true;
+}
 
 struct NoType {};
+template <typename T> struct ForceCompleteMetaTypes {};
 
 namespace detail {
 template<typename Enum> constexpr int payloadSizeForEnum()
@@ -101,10 +118,53 @@ template <uint H, uint P> struct UintDataBlock
     uint payload[P ? P : 1] = {};
 };
 
+// By default, we allow metatypes for incomplete types to be stored in the
+// metatype array, but we provide a way to require them to be complete by using
+// ForceCompleteMetaTypes in either the Unique type (used by moc if
+// --require-complete-types is passed or some internal heuristic for QML
+// matches) or in the type itself, used below for properties and enums.
+template <typename T> struct TypeMustBeComplete : std::false_type {};
+template <typename T> struct TypeMustBeComplete<ForceCompleteMetaTypes<T>> : std::true_type {};
+// template <> struct TypeMustBeComplete<void> : std::true_type {};
+
+template <typename Unique, typename T, typename RequireComplete = TypeMustBeComplete<Unique>>
+struct TryMetaTypeInterfaceForType
+{
+    static constexpr const QtPrivate::QMetaTypeInterface *type() noexcept
+    {
+        using namespace QtPrivate;
+        using Query = TypeAndForceComplete<T, RequireComplete>;
+        return qTryMetaTypeInterfaceForType<Unique, Query>();
+    }
+};
+
+template <typename Unique, typename T, typename RequireComplete>
+struct TryMetaTypeInterfaceForType<Unique, ForceCompleteMetaTypes<T>, RequireComplete> :
+        TryMetaTypeInterfaceForType<void, T, std::true_type>
+{};
+
+template <typename... T> struct MetaTypeList
+{
+    static constexpr int count() { return sizeof...(T); }
+    template <typename Result> static constexpr void copyTo(Result &result, uint &metatypeoffset)
+    {
+        if constexpr (count()) {
+            using namespace QtPrivate;
+            using Unique = typename Result::UniqueType;
+            const QMetaTypeInterface *metaTypes[] = {
+                TryMetaTypeInterfaceForType<Unique, T>::type()...
+            };
+            for (const QMetaTypeInterface *mt : metaTypes)
+                result.metaTypes[metatypeoffset++] = mt;
+        }
+    }
+};
+
 template <int Idx, typename T> struct UintDataEntry
 {
     T entry;
     constexpr UintDataEntry(T &&entry_) : entry(std::move(entry_)) {}
+    static constexpr int metaTypeCount() { return decltype(T::metaTypes())::Count; }
 };
 
 // This storage type is designed similar to libc++'s std::tuple, in that it
@@ -130,6 +190,19 @@ template <int... Idx, typename... T> struct UintDataStorage<std::integer_sequenc
             invoke(static_cast<const UintDataEntry<Idx, T> &>(*this))...
         };
         (void) dummy;
+    }
+
+    static constexpr int metaTypeCount()
+    {
+        // same as:
+        //   return (0 + ... + UintDataEntry<Idx, T>::metaTypeCount());
+        // but not using the fold expression to avoid exceeding compiler limits
+        // (calculation done using int to get compile-time overflow checking)
+        int total = 0;
+        int counts[] = { 0, UintDataEntry<Idx, T>::metaTypeCount()... };
+        for (int n : counts)
+            total += n;
+        return total;
     }
 };
 } // namespace detail
@@ -163,9 +236,18 @@ template <typename... Block> struct UintData
         return total;
     }
     static constexpr uint dataSize() { return headerSize() + payloadSize(); }
+    static constexpr int metaTypeCount()
+    {
+        // ditto again
+        int total = 0;
+        int sizes[] = { 0, decltype(Block::metaTypes())::count()... };
+        for (int n : sizes)
+            total += n;
+        return total;
+    }
 
     template <typename Result>
-    constexpr void copyTo(Result &result, size_t dataoffset) const
+    constexpr void copyTo(Result &result, size_t dataoffset, uint &metatypeoffset) const
     {
         uint *ptr = result.data.data();
         size_t payloadoffset = dataoffset + headerSize();
@@ -173,7 +255,10 @@ template <typename... Block> struct UintData
             // copy the uint data
             q20::copy_n(input.header, input.headerSize(), ptr + dataoffset);
             q20::copy_n(input.payload, input.payloadSize(), ptr + payloadoffset);
-            input.adjustOffset(ptr, uint(dataoffset), uint(payloadoffset));
+            input.adjustOffsets(ptr, uint(dataoffset), uint(payloadoffset), metatypeoffset);
+
+            // copy the metatypes
+            decltype(input.metaTypes())::copyTo(result, metatypeoffset);
 
             dataoffset += input.headerSize();
             payloadoffset += input.payloadSize();
@@ -202,7 +287,7 @@ template <int N> struct ClassInfos : detail::UintDataBlock<2 * N, 0>
     }
 };
 
-struct PropertyData : detail::UintDataBlock<5, 0>
+template <typename PropertyType> struct PropertyData : detail::UintDataBlock<5, 0>
 {
     constexpr PropertyData(uint nameIndex, uint typeIndex, uint flags, uint notifyId = uint(-1), uint revision = 0)
     {
@@ -213,7 +298,10 @@ struct PropertyData : detail::UintDataBlock<5, 0>
         this->header[4] = revision;
     }
 
-    static constexpr void adjustOffset(uint *, uint, uint) noexcept {}
+    static constexpr auto metaTypes()
+    { return detail::MetaTypeList<ForceCompleteMetaTypes<PropertyType>>{}; }
+
+    static constexpr void adjustOffsets(uint *, uint, uint, uint) noexcept {}
 };
 
 template <typename Enum, int N = 0>
@@ -266,9 +354,14 @@ public:
         return result;
     }
 
-    static constexpr void adjustOffset(uint *ptr, uint dataoffset, uint payloadoffset) noexcept
+    static constexpr auto metaTypes()
+    { return detail::MetaTypeList<ForceCompleteMetaTypes<Enum>>{}; }
+
+    static constexpr void
+    adjustOffsets(uint *ptr, uint dataoffset, uint payloadoffset, uint metatypeoffset) noexcept
     {
         ptr[dataoffset + 4] += uint(payloadoffset);
+        (void) metatypeoffset;
     }
 };
 
@@ -284,15 +377,34 @@ struct FunctionData<Ret (Args...), ExtraFlags>
     };
     using ParametersArray = std::array<FunctionParameter, sizeof...(Args)>;
 
-    static constexpr void adjustOffset(uint *ptr, uint dataoffset, uint payloadoffset) noexcept
+    static auto metaTypes()
+    {
+        using namespace QtMocConstants;
+        if constexpr (std::is_same_v<Ret, NoType>) {
+            // constructors have no return type
+            static_assert((ExtraFlags & MethodConstructor) == MethodConstructor,
+                    "NoType return type used on a non-constructor");
+            static_assert((ExtraFlags & MethodIsConst) == 0,
+                    "Constructors cannot be const");
+            return detail::MetaTypeList<Args...>{};
+        } else {
+            static_assert((ExtraFlags & MethodConstructor) != MethodConstructor,
+                    "Constructors must use NoType as return type");
+            return detail::MetaTypeList<Ret, Args...>{};
+        }
+    }
+
+    static constexpr void
+    adjustOffsets(uint *ptr, uint dataoffset, uint payloadoffset, uint metatypeoffset) noexcept
     {
         if constexpr (IsRevisioned)
             ++payloadoffset;
         ptr[dataoffset + 2] += uint(payloadoffset);
+        ptr[dataoffset + 5] = metatypeoffset;
     }
 
     constexpr
-    FunctionData(uint nameIndex, uint tagIndex, uint metaTypesIndex, uint flags,
+    FunctionData(uint nameIndex, uint tagIndex, uint flags,
                  uint returnType, ParametersArray params = {})
     {
         this->header[0] = nameIndex;
@@ -300,30 +412,35 @@ struct FunctionData<Ret (Args...), ExtraFlags>
         this->header[2] = 0;        // will be set in adjustOffsets()
         this->header[3] = tagIndex;
         this->header[4] = flags | ExtraFlags;
-        this->header[5] = metaTypesIndex;
+        this->header[5] = 0;        // will be set in adjustOffsets()
 
         uint *p = this->payload;
         if constexpr (ExtraFlags & QtMocConstants::MethodRevisioned)
             ++p;
         *p++ = returnType;
-        for (uint i = 0; i < sizeof...(Args); ++i)
-            *p++ = params[i].typeIdx;
-        for (uint i = 0; i < sizeof...(Args); ++i)
-            *p++ = params[i].nameIdx;
+        if constexpr (sizeof...(Args)) {
+            for (uint i = 0; i < sizeof...(Args); ++i)
+                *p++ = params[i].typeIdx;
+            for (uint i = 0; i < sizeof...(Args); ++i)
+                *p++ = params[i].nameIdx;
+        } else {
+            Q_UNUSED(params);
+        }
     }
 
     constexpr
-    FunctionData(uint nameIndex, uint tagIndex, uint metaTypesIndex, uint flags, uint revision,
+    FunctionData(uint nameIndex, uint tagIndex, uint flags, uint revision,
                  uint returnType, ParametersArray params = {})
 #ifdef __cpp_concepts
             requires(IsRevisioned)
 #endif
-        : FunctionData(nameIndex, tagIndex, metaTypesIndex, flags, returnType, params)
+        : FunctionData(nameIndex, tagIndex, flags, returnType, params)
     {
         // note: we place the revision differently from meta object revision 12
         this->payload[0] = revision;
     }
 };
+
 template <typename Ret, typename... Args, uint ExtraFlags>
 struct FunctionData<Ret (Args...) const, ExtraFlags>
     : FunctionData<Ret (Args...), ExtraFlags | QtMocConstants::MethodIsConst>
@@ -348,7 +465,13 @@ template <typename F> struct SlotData : FunctionData<F, QtMocConstants::MethodSl
 
 template <typename F> struct ConstructorData : FunctionData<F, QtMocConstants::MethodConstructor>
 {
-    using FunctionData<F, QtMocConstants::MethodConstructor>::FunctionData;
+    using Base = FunctionData<F, QtMocConstants::MethodConstructor>;
+
+    // the name for a constructor is always the class name (string index zero)
+    // and it has no return type
+    constexpr ConstructorData(uint tagIndex, uint flags, typename Base::ParametersArray params = {})
+        : Base(0, tagIndex, flags, QMetaType::UnknownType, params)
+    {}
 };
 
 template <typename F> struct RevisionedMethodData :
@@ -372,22 +495,37 @@ template <typename F> struct RevisionedSlotData :
 template <typename F> struct RevisionedConstructorData :
         FunctionData<F, QtMocConstants::MethodRevisioned | QtMocConstants::MethodConstructor>
 {
-    using FunctionData<F, QtMocConstants::MethodRevisioned | QtMocConstants::MethodConstructor>::FunctionData;
+    using Base = FunctionData<F, QtMocConstants::MethodRevisioned | QtMocConstants::MethodConstructor>;
+
+    // the name for a constructor is always the class name (string index zero)
+    // and it has no return type
+    constexpr RevisionedConstructorData(uint tagIndex, uint flags, uint revision,
+                                        typename Base::ParametersArray params = {})
+        : Base(0, tagIndex, flags, revision, QMetaType::UnknownType, params)
+    {}
 };
 
 
-
-template <uint N> struct UintDataResult
+template <uint N, uint M, typename Unique = void> struct UintAndMetaTypeData
 {
     std::array<uint, N> data;
+    std::array<const QtPrivate::QMetaTypeInterface *, M> metaTypes;
+    using UniqueType = Unique;
 };
 
-template <typename Methods, typename Properties, typename Enums,
+template <typename ObjectType, typename Unique,
+          typename Methods, typename Properties, typename Enums,
           typename Constructors = UintData<>, typename ClassInfo = detail::UintDataBlock<0, 0>>
 constexpr auto metaObjectData(uint flags, const Methods &methods, const Properties &properties,
                               const Enums &enums, const Constructors &constructors = {},
                               const ClassInfo &classInfo = {})
 {
+    constexpr uint MetaTypeCount = Properties::metaTypeCount()
+            + Enums::metaTypeCount()
+            + 1     // the gadget's or void
+            + Methods::metaTypeCount()
+            + Constructors::metaTypeCount();
+
     constexpr uint HeaderSize = 14;
     constexpr uint TotalSize = HeaderSize
             + Properties::dataSize()
@@ -396,8 +534,9 @@ constexpr auto metaObjectData(uint flags, const Methods &methods, const Properti
             + Constructors::dataSize()
             + ClassInfo::headerSize() // + ClassInfo::payloadSize()
             + 1;    // empty EOD
-    UintDataResult<TotalSize> result = {};
+    UintAndMetaTypeData<TotalSize, MetaTypeCount, Unique> result = {};
     uint dataoffset = HeaderSize;
+    uint metatypeoffset = 0;
 
     result.data[0] = QtMocConstants::OutputRevision;
     result.data[1] = 0;     // class name index (it's always 0)
@@ -409,22 +548,27 @@ constexpr auto metaObjectData(uint flags, const Methods &methods, const Properti
 
     result.data[6] = properties.count();
     result.data[7] = properties.count() ? dataoffset : 0;
-    properties.copyTo(result, dataoffset);
+    properties.copyTo(result, dataoffset, metatypeoffset);
     dataoffset += properties.dataSize();
 
     result.data[8] = enums.count();
     result.data[9] = enums.count() ? dataoffset : 0;
-    enums.copyTo(result, dataoffset);
+    enums.copyTo(result, dataoffset, metatypeoffset);
     dataoffset += enums.dataSize();
+
+    // the meta type referring to the object itself
+    result.metaTypes[metatypeoffset++] =
+            QtPrivate::qTryMetaTypeInterfaceForType<void,
+                QtPrivate::TypeAndForceComplete<ObjectType, std::true_type>>();
 
     result.data[4] = methods.count();
     result.data[5] = methods.count() ? dataoffset : 0;
-    methods.copyTo(result, dataoffset);
+    methods.copyTo(result, dataoffset, metatypeoffset);
     dataoffset += methods.dataSize();
 
     result.data[10] = constructors.count();
     result.data[11] = constructors.count() ? dataoffset : 0;
-    constructors.copyTo(result, dataoffset);
+    constructors.copyTo(result, dataoffset, metatypeoffset);
     dataoffset += constructors.dataSize();
 
     result.data[12] = flags;
@@ -443,8 +587,6 @@ constexpr auto metaObjectData(uint flags, const Methods &methods, const Properti
 
     return result;
 }
-
-#define QT_MOC_HAS_UINTDATA    1
 
 template <typename T> inline std::enable_if_t<std::is_enum_v<T>> assignFlags(void *v, T t) noexcept
 {

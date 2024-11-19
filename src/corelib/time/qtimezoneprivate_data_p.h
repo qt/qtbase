@@ -10,16 +10,12 @@
 //  W A R N I N G
 //  -------------
 //
-// This file is not part of the Qt API.  It exists for the convenience
-// of internal files.  This header file may change from version to version
-// without notice, or even be removed.
+// This file is not a normal header file.
+// It defines data tables for internal use by QTimeZone's L10n code.
+// It may change incompatibly between versions, or even be removed.
 //
 // We mean it.
 //
-
-#include <QtCore/private/qglobal_p.h>
-#include "qbytearrayview.h"
-#include "qstring.h"
 
 QT_REQUIRE_CONFIG(timezone);
 QT_BEGIN_NAMESPACE
@@ -123,9 +119,6 @@ struct ZoneMetaHistory
 };
 #endif // timezone_locale but not ICU
 
-QT_WARNING_PUSH // QTBUG-128930
-QT_WARNING_DISABLE_CLANG("-Wunused-const-variable")
-
 // GENERATED PART STARTS HERE
 
 /*
@@ -140,7 +133,7 @@ QT_WARNING_DISABLE_CLANG("-Wunused-const-variable")
 */
 
 // IANA ID indices of alias and IANA ID
-static constexpr AliasData aliasMappingTable[] = {
+static inline constexpr AliasData aliasMappingTable[] = {
     {      0,    14 }, // Africa/Asmera -> Africa/Asmara
     {     28,    44 }, // Africa/Timbuktu -> Africa/Bamako
     {     58,    91 }, // America/Argentina/ComodRivadavia -> America/Argentina/Catamarca
@@ -288,7 +281,7 @@ static constexpr AliasData aliasMappingTable[] = {
 };
 
 // Windows ID Key, Territory Enum, IANA List Index
-static constexpr ZoneData zoneDataTable[] = {
+static inline constexpr ZoneData zoneDataTable[] = {
     {      1,     1,     0 }, // Afghanistan Standard Time / Afghanistan
     {      2,   248,    11 }, // Alaskan Standard Time / United States
     {      3,   248,   106 }, // Aleutian Standard Time / United States
@@ -657,7 +650,7 @@ static constexpr ZoneData zoneDataTable[] = {
 };
 
 // Windows ID Key, Windows ID Index, IANA ID Index, UTC Offset
-static constexpr WindowsData windowsDataTable[] = {
+static inline constexpr WindowsData windowsDataTable[] = {
     {      1,     0,  3462, 16200 }, // Afghanistan Standard Time
     {      2,    26,  3183,-32400 }, // Alaskan Standard Time
     {      3,    48,   132,-36000 }, // Aleutian Standard Time
@@ -800,7 +793,7 @@ static constexpr WindowsData windowsDataTable[] = {
 };
 
 // IANA List Index, UTC Offset
-static constexpr UtcData utcDataTable[] = {
+static inline constexpr UtcData utcDataTable[] = {
     {   7184,-50400 }, // UTC-14:00
     {   7194,-46800 }, // UTC-13:00
     {   7204,-43200 }, // UTC-12:00
@@ -848,7 +841,7 @@ static constexpr UtcData utcDataTable[] = {
 #if QT_CONFIG(timezone_locale) && !QT_CONFIG(icu)
 
 // QLocale::Territory value, IANA ID Index
-static constexpr TerritoryZone territoryZoneMap[] = {
+static inline constexpr TerritoryZone territoryZoneMap[] = {
     {     49,  2165 }, // Chile -> America/Santiago
     {     50,  1020 }, // China -> Asia/Shanghai
     {     70,  4743 }, // Ecuador -> America/Guayaquil
@@ -863,7 +856,7 @@ static constexpr TerritoryZone territoryZoneMap[] = {
 };
 
 // MetaZone Key, MetaZone Name Index, QLocale::Territory value, IANA ID Index
-static constexpr MetaZoneData metaZoneTable[] = {
+static inline constexpr MetaZoneData metaZoneTable[] = {
     {      1,     0,   258,   695 }, // Acre/world -> America/Rio_Branco
     {      2,     5,   258,  3462 }, // Afghanistan/world -> Asia/Kabul
     {      3,    17,    30,  4808 }, // Africa_Central/Botswana -> Africa/Gaborone
@@ -1188,7 +1181,7 @@ static constexpr MetaZoneData metaZoneTable[] = {
 };
 
 // IANA ID Index, MetaZone Key, interval start, end
-static constexpr ZoneMetaHistory zoneHistoryTable[] = {
+static inline constexpr ZoneMetaHistory zoneHistoryTable[] = {
     {   6751,    76,         0,4294967295 },
     {   6723,    76,         0,4294967295 },
     {   4961,     4,         0,4294967295 },
@@ -1865,7 +1858,7 @@ static constexpr ZoneMetaHistory zoneHistoryTable[] = {
 
 #endif // timezone_locale but not ICU
 
-static constexpr char windowsIdData[] = {
+static inline constexpr char windowsIdData[] = {
 0x41, 0x66, 0x67, 0x68, 0x61, 0x6e, 0x69, 0x73, 0x74, 0x61, 0x6e, 0x20, 0x53, 0x74, 0x61, 0x6e,
 0x64, 0x61, 0x72, 0x64, 0x20, 0x54, 0x69, 0x6d, 0x65, 0x0, 0x41, 0x6c, 0x61, 0x73, 0x6b, 0x61,
 0x6e, 0x20, 0x53, 0x74, 0x61, 0x6e, 0x64, 0x61, 0x72, 0x64, 0x20, 0x54, 0x69, 0x6d, 0x65, 0x0,
@@ -2070,7 +2063,7 @@ static constexpr char windowsIdData[] = {
 0x6d, 0x65, 0x0
 };
 
-static constexpr char ianaListData[] = {
+static inline constexpr char ianaListData[] = {
 0x41, 0x73, 0x69, 0x61, 0x2f, 0x4b, 0x61, 0x62, 0x75, 0x6c, 0x0, 0x41, 0x6d, 0x65, 0x72, 0x69,
 0x63, 0x61, 0x2f, 0x41, 0x6e, 0x63, 0x68, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x20, 0x41, 0x6d, 0x65,
 0x72, 0x69, 0x63, 0x61, 0x2f, 0x4a, 0x75, 0x6e, 0x65, 0x61, 0x75, 0x20, 0x41, 0x6d, 0x65, 0x72,
@@ -2550,7 +2543,7 @@ static constexpr char ianaListData[] = {
 0x30, 0x0
 };
 
-static constexpr char ianaIdData[] = {
+static inline constexpr char ianaIdData[] = {
 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x41, 0x73, 0x6d, 0x65, 0x72, 0x61, 0x0, 0x41, 0x66,
 0x72, 0x69, 0x63, 0x61, 0x2f, 0x41, 0x73, 0x6d, 0x61, 0x72, 0x61, 0x0, 0x41, 0x66, 0x72, 0x69,
 0x63, 0x61, 0x2f, 0x54, 0x69, 0x6d, 0x62, 0x75, 0x6b, 0x74, 0x75, 0x0, 0x41, 0x66, 0x72, 0x69,
@@ -3114,7 +3107,7 @@ static constexpr char ianaIdData[] = {
 
 #if QT_CONFIG(timezone_locale) && !QT_CONFIG(icu)
 
-static constexpr char metaIdData[] = {
+static inline constexpr char metaIdData[] = {
 0x41, 0x63, 0x72, 0x65, 0x0, 0x41, 0x66, 0x67, 0x68, 0x61, 0x6e, 0x69, 0x73, 0x74, 0x61, 0x6e,
 0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x5f, 0x43, 0x65, 0x6e, 0x74, 0x72, 0x61, 0x6c, 0x0,
 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x5f, 0x45, 0x61, 0x73, 0x74, 0x65, 0x72, 0x6e, 0x0, 0x41,
@@ -3239,8 +3232,6 @@ static constexpr char metaIdData[] = {
 #endif // timezone_locale but not ICU
 
 // GENERATED PART ENDS HERE
-
-QT_WARNING_POP // QTBUG-128930
 
 constexpr QByteArrayView AliasData::aliasId() const { return ianaIdData + aliasIdIndex; }
 constexpr QByteArrayView AliasData::ianaId() const { return ianaIdData + ianaIdIndex; }

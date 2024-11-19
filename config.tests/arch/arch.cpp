@@ -248,7 +248,7 @@ const char msg2[] = "==Qt=magic=Qt== Sub-architecture:"
 #if defined(__ARM_FEATURE_CRC32) || (defined(_M_ARM64) && __ARM_ARCH >= 800)
 " crc32"
 #endif
-#if defined(__ARM_FEATURE_CRYPTO) || (defined(_M_ARM64) && __ARM_ARCH >= 800)
+#if defined(__ARM_FEATURE_AES) || defined(__ARM_FEATURE_CRYPTO) || (defined(_M_ARM64) && __ARM_ARCH >= 800)
 " crypto"
 #endif
 #ifdef __ARM_FEATURE_SVE

@@ -116,6 +116,7 @@ private slots:
     void compare_boolfuncs();
     void compare_to_nullptr();
     void compare_pointerfuncs();
+    void compare_stringLiterals();
     void compare_tostring();
     void compare_tostring_data();
     void compare_unknown();
@@ -285,6 +286,28 @@ void tst_Cmptest::compareQObjects()
     QCOMPARE(&object1, &object2);
     QCOMPARE(&object1, nullptr);
     QCOMPARE(nullptr, &object2);
+}
+
+void tst_Cmptest::compare_stringLiterals()
+{
+    const QString lhs = QStringLiteral("abc");
+
+    // We don't want to put those into test data since we want to specifically test comparison
+    // against inline string literals.
+
+    [&]() { QCOMPARE(lhs, u""); }();
+    [&]() { QCOMPARE_EQ(lhs, u""); }();
+    [&]() { QCOMPARE(lhs, u"abc"); }();
+    [&]() { QCOMPARE_EQ(lhs, u"abc"); }();
+    [&]() { QCOMPARE(lhs, u"abcd"); }();
+    [&]() { QCOMPARE_EQ(lhs, u"abcd"); }();
+
+    [&]() { QCOMPARE(lhs, ""); }();
+    [&]() { QCOMPARE_EQ(lhs, ""); }();
+    [&]() { QCOMPARE(lhs, "abc"); }();
+    [&]() { QCOMPARE_EQ(lhs, "abc"); }();
+    [&]() { QCOMPARE(lhs, "abcd"); }();
+    [&]() { QCOMPARE_EQ(lhs, "abcd"); }();
 }
 
 struct PhonyClass

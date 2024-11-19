@@ -1,5 +1,4 @@
 <?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="fatal_error_msg">您的应用程序遇到一个致命错误导致它无法继续。</string>
-    <string name="unsupported_android_version">这个版本的安卓系统不被支持。</string>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="fatal_error_msg" tools:ignore="UnusedResources">您的应用程序遇到一个致命错误导致它无法继续。</string>
 </resources>

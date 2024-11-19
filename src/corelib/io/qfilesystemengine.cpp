@@ -13,6 +13,21 @@
 
 QT_BEGIN_NAMESPACE
 
+/*! \class QFileSystemEngine
+    \internal
+
+    QFileSystemEngine offers OS-independent API for native system library
+    methods, which work with files on physical disk drives; using such methods
+    directly is faster than using a custom file engine (see QAbstractFileEngine
+    and its sub-classes). Typically, you need a custom file engine when working
+    with virtual file systems (for example QResource). Various Qt classes,
+    for example QDir, QFile, and QFileInfo, can handle both types of files by
+    detecting the file path scheme, for example, \c file:///, \c :/someresource
+    (QResource).
+
+    \sa QAbstractFileEngine, QAbstractFileEngineHandler, QFSFileEngine, QResourceFileEngine
+*/
+
 /*!
     \internal
 

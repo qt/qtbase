@@ -1445,11 +1445,9 @@ void QWindowsContext::setAsyncExpose(bool value)
 
 DWORD QWindowsContext::readAdvancedExplorerSettings(const wchar_t *subKey, DWORD defaultValue)
 {
-    const auto value =
-        QWinRegistryKey(HKEY_CURRENT_USER,
-                        LR"(Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced)")
-                       .dwordValue(subKey);
-    return value.second ? value.first : defaultValue;
+    const auto advancedSettings = QWinRegistryKey(
+            HKEY_CURRENT_USER, LR"(Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced)");
+    return advancedSettings.value<DWORD>(subKey).value_or(defaultValue);
 }
 
 static inline bool isEmptyRect(const RECT &rect)

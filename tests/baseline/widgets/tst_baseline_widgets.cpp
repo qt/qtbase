@@ -76,6 +76,9 @@ private slots:
     void tst_QCombobox_data();
     void tst_QCombobox();
 
+    void tst_QComboboxDelegate_data();
+    void tst_QComboboxDelegate();
+
     void tst_QCommandLinkButton_data();
     void tst_QCommandLinkButton();
 
@@ -1213,6 +1216,82 @@ void tst_Widgets::tst_QCombobox()
     combobox->setModel(itemModel);
     combobox->setFrame(hasFrame);
     combobox->setEditable(isEditable);
+
+    QHBoxLayout layout;
+    layout.addWidget(combobox.get());
+    testWindow()->setLayout(&layout);
+    takeStandardSnapshots();
+
+    QTest::keyClick(combobox.get(), Qt::Key_Down, Qt::AltModifier);
+    QBASELINE_CHECK_DEFERRED(takeScreenSnapshot(testWindow()->geometry()), "combobox");
+}
+
+void tst_Widgets::tst_QComboboxDelegate_data()
+{
+    QTest::addColumn<int>("paddingTest");
+    QTest::addColumn<int>("widthTest");
+
+    QTest::addRow("padding0") << 2 << 0;
+    QTest::addRow("padding20") << 20 << 0;
+    QTest::addRow("padding50") << 50 << 0;
+    QTest::addRow("width0") << 2 << 0;
+    QTest::addRow("width20") << 2 << 20;
+    QTest::addRow("width150") << 2 << 450;
+}
+
+void tst_Widgets::tst_QComboboxDelegate()
+{
+    QFETCH(int, paddingTest);
+    QFETCH(int, widthTest);
+
+    testWindow()->resize(300, 300);
+    QScopedPointer<QComboBox> combobox(new QComboBox(testWindow()));
+
+    class RectDelegate : public QAbstractItemDelegate
+    {
+    public:
+        int sizeHintPadding = 2;
+        int sizeHintWidth = 22;
+        RectDelegate(QObject *parent = nullptr) : QAbstractItemDelegate(parent) {}
+
+        void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override
+        {
+            Q_UNUSED(index);
+            QRect rect = option.rect;
+            int padding = sizeHintPadding;
+            const int height = 22;
+            const int width = height + sizeHintWidth;
+            int yOffset = (option.rect.height() - height) / 2;
+            int x = rect.x() + padding;
+            int y = rect.y() + yOffset;
+            painter->setClipRect(rect);
+            painter->setBrush(QBrush(Qt::blue));
+            painter->drawRect(QRect(x, y, width, height));
+        }
+
+        QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const override
+        {
+            Q_UNUSED(option);
+            Q_UNUSED(index);
+            const int height = 22;
+            const int width = height;
+            return QSize(width + 2 * sizeHintPadding, height + 2 * sizeHintPadding);
+        }
+    };
+
+    auto rect1 = new RectDelegate(this);
+    rect1->sizeHintPadding = paddingTest;
+    rect1->sizeHintWidth = widthTest;
+    combobox->setLabelDrawingMode(QComboBox::LabelDrawingMode::UseDelegate);
+    combobox->setItemDelegate(rect1);
+    combobox->addItem("item1");
+
+    auto rect2 = new RectDelegate(this);
+    rect2->sizeHintPadding = paddingTest;
+    rect2->sizeHintWidth = widthTest;
+    combobox->setLabelDrawingMode(QComboBox::LabelDrawingMode::UseDelegate);
+    combobox->setItemDelegate(rect2);
+    combobox->addItem("item2");
 
     QHBoxLayout layout;
     layout.addWidget(combobox.get());

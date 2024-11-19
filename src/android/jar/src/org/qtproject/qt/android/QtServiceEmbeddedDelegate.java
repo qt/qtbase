@@ -6,11 +6,9 @@ package org.qtproject.qt.android;
 import static org.qtproject.qt.android.QtNative.ApplicationState.ApplicationSuspended;
 
 import android.app.Service;
-import android.content.Context;
 import android.content.res.Resources;
 import android.hardware.display.DisplayManager;
 import android.view.Display;
-import android.view.View;
 import android.util.DisplayMetrics;
 
 import java.util.HashSet;
@@ -22,7 +20,7 @@ import java.util.HashSet;
 class QtServiceEmbeddedDelegate implements QtEmbeddedViewInterface, QtNative.AppStateDetailsListener
 {
     private final Service m_service;
-    private HashSet<QtView> m_views = new HashSet<QtView>();
+    private final HashSet<QtView> m_views = new HashSet<>();
 
     QtServiceEmbeddedDelegate(Service service)
     {
@@ -43,14 +41,12 @@ class QtServiceEmbeddedDelegate implements QtEmbeddedViewInterface, QtNative.App
 
                     final int maxWidth = metrics.widthPixels;
                     final int maxHeight = metrics.heightPixels;
-                    final int width = maxWidth;
-                    final int height = maxHeight;
                     final int insetLeft = 0;
                     final int insetTop = 0;
 
                     final DisplayManager dm = m_service.getSystemService(DisplayManager.class);
                     QtDisplayManager.setDisplayMetrics(
-                            maxWidth, maxHeight, insetLeft, insetTop, width, height,
+                            maxWidth, maxHeight, insetLeft, insetTop, maxWidth, maxHeight,
                             QtDisplayManager.getXDpi(metrics), QtDisplayManager.getYDpi(metrics),
                             metrics.scaledDensity, metrics.density,
                             QtDisplayManager.getRefreshRate(

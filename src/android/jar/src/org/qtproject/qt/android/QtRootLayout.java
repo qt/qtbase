@@ -6,9 +6,6 @@ package org.qtproject.qt.android;
 
 import android.app.Activity;
 import android.content.Context;
-import android.os.Build;
-import android.util.DisplayMetrics;
-import android.view.Display;
 import android.content.res.Configuration;
 import android.view.Surface;
 

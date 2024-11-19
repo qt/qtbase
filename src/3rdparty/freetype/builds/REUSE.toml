@@ -1,0 +1,8 @@
+version = 1
+
+[[annotations]]
+path = ["unix/ftconfig.h", "unix/ftsystem.c", "windows/ftdebug.c"]
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (c) 2001, 2012 David Turner, Robert Wilhelm, and Werner Lemberg"
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"

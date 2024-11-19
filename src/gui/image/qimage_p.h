@@ -560,7 +560,7 @@ inline QImage::Format qt_opaqueVersionForPainting(QImage::Format format)
 inline QImage::Format qt_alphaVersionForPainting(QImage::Format format)
 {
     QImage::Format toFormat = qt_alphaVersion(format);
-#if defined(__ARM_NEON__) || defined(__SSE2__)
+#if defined(__ARM_NEON__) || defined(__SSE2__) || defined(QT_COMPILER_SUPPORT_LSX)
     // If we are switching depth anyway and we have optimized ARGB32PM routines, upgrade to that.
     if (qt_depthForFormat(format) != qt_depthForFormat(toFormat) && qt_depthForFormat(toFormat) <= 32)
         toFormat = QImage::Format_ARGB32_Premultiplied;

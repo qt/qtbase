@@ -2,8 +2,9 @@
 // Copyright (C) 2016 David Faure <david.faure@kdab.com>
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
-#include <QtGui>
-#include <QtTest/QtTest>
+#include <QtTest/qtest.h>
+
+#include <QtGui/qguiapplication.h>
 
 #include <QtGui/private/qtx11extras_p.h>
 

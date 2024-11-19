@@ -341,9 +341,7 @@ QPen &QPen::operator=(const QPen &p) noexcept
 /*!
     \fn void QPen::swap(QPen &other)
     \since 4.8
-
-    Swaps pen \a other with this pen. This operation is very
-    fast and never fails.
+    \memberswap{pen}
 */
 
 /*!

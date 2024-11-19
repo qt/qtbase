@@ -63,11 +63,13 @@ static bool isReportedArchitectureX86(void);
  */
 static bool isX86SpecificFileAvailable()
 {
+    using namespace Qt::StringLiterals;
+
     // MTRR (Memory Type Range Registers) are a feature of the x86 architecture
     // and /proc/mtrr is only present (on Linux) for that family.
     // However, it's an optional kernel feature, so the absence of the file is
     // not sufficient to conclude we're on real hardware.
-    QFileInfo mtrr("/proc/mtrr");
+    QFileInfo mtrr(u"/proc/mtrr"_s);
     if (mtrr.exists())
         return true;
     return false;
@@ -78,6 +80,8 @@ static bool isX86SpecificFileAvailable()
  */
 static bool isReportedArchitectureX86(void)
 {
+    using namespace Qt::StringLiterals;
+
 #if QT_CONFIG(process) && QT_CONFIG(regularexpression)
     QProcess unamer;
     QString machineString;
@@ -85,14 +89,14 @@ static bool isReportedArchitectureX86(void)
     // Using syscall "uname" is not possible since that would be captured by
     // QEMU and result would be the architecture being emulated (e.g. armv7l).
     // By using QProcess we get the architecture used by the host.
-    unamer.start("uname -a");
+    unamer.start(u"uname -a"_s);
     if (!unamer.waitForFinished()) {
         return false;
     }
-    machineString = unamer.readAll();
+    machineString = QString::fromLocal8Bit(unamer.readAll());
 
     // Is our current host cpu x86?
-    if (machineString.contains(QRegularExpression("i386|i686|x86"))) {
+    if (machineString.contains(QRegularExpression(u"i386|i686|x86"_s))) {
         return true;
     }
 #endif

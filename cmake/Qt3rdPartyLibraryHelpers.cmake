@@ -427,14 +427,21 @@ function(qt_internal_add_3rdparty_header_module target)
     )
     _qt_internal_validate_all_args_are_parsed(arg)
 
+    _qt_internal_forward_function_args(
+        FORWARD_PREFIX arg
+        FORWARD_OUT_VAR add_module_args
+        FORWARD_SINGLE
+            EXTERNAL_HEADERS
+            EXTERNAL_HEADERS_DIR
+    )
+
     qt_internal_add_module(${target}
         IS_QT_3RD_PARTY_HEADER_MODULE
         INTERNAL_MODULE
         HEADER_MODULE
         NO_CONFIG_HEADER_FILE
         NO_GENERATE_CPP_EXPORTS
-        EXTERNAL_HEADERS ${arg_EXTERNAL_HEADERS}
-        EXTERNAL_HEADERS_DIR ${arg_EXTERNAL_HEADERS_DIR}
+        ${add_module_args}
     )
 
     set_target_properties(${target} PROPERTIES

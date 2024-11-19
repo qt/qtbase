@@ -87,9 +87,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn QBasicTimer::swap(QBasicTimer &other)
     \since 5.14
-
-    Swaps the timer \a other with this timer.
-    This operation is very fast and never fails.
+    \memberswap{timer}
 */
 
 /*!

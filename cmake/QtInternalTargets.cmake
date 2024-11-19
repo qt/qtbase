@@ -262,6 +262,13 @@ endif()
 # Taken from mkspecs/common/msvc-version.conf and mkspecs/common/msvc-desktop.conf
 if (MSVC AND NOT CLANG)
     if (MSVC_VERSION GREATER_EQUAL 1799)
+        set_target_properties(PlatformCommonInternal PROPERTIES _qt_cpp_compiler_frontend_variant
+            "${CMAKE_CXX_COMPILER_FRONTEND_VARIANT}")
+
+        # Protect against adding these flags when building qtbase with MSVC, and qtwebengine using
+        # clang-cl.
+        set(is_not_clang_cl_start "$<$<NOT:$<STREQUAL:$<CXX_COMPILER_ID>,Clang>>:")
+        set(is_not_clang_cl_end ">")
         target_compile_options(PlatformCommonInternal INTERFACE
             -FS
             -Zc:rvalueCast
@@ -271,18 +278,18 @@ if (MSVC AND NOT CLANG)
     if (MSVC_VERSION GREATER_EQUAL 1899)
         target_compile_options(PlatformCommonInternal INTERFACE
             -Zc:strictStrings
-            -Zc:throwingNew
+            "${is_not_clang_cl_start}-Zc:throwingNew${is_not_clang_cl_end}"
         )
     endif()
     if (MSVC_VERSION GREATER_EQUAL 1909) # MSVC 2017
         target_compile_options(PlatformCommonInternal INTERFACE
-            -Zc:referenceBinding
+            "${is_not_clang_cl_start}-Zc:referenceBinding${is_not_clang_cl_end}"
             -Zc:ternary
         )
     endif()
     if (MSVC_VERSION GREATER_EQUAL 1919) # MSVC 2019
         target_compile_options(PlatformCommonInternal INTERFACE
-            -Zc:externConstexpr
+            "${is_not_clang_cl_start}-Zc:externConstexpr${is_not_clang_cl_end}"
             #-Zc:lambda # Buggy. TODO: Enable again when stable enough.
             #-Zc:preprocessor # breaks build due to bug in default Windows SDK 10.0.19041
         )
@@ -347,7 +354,25 @@ if(QT_FEATURE_libstdcpp_assertions)
 endif()
 
 if(QT_FEATURE_libcpp_hardening)
-    target_compile_definitions(PlatformCommonInternal INTERFACE -D_LIBCPP_HARDENING_MODE=$<IF:$<CONFIG:Debug>,_LIBCPP_HARDENING_MODE_EXTENSIVE,_LIBCPP_HARDENING_MODE_FAST>)
+    string(JOIN "" hardening_flags
+        "$<$<NOT:$<STREQUAL:"
+            "$<TARGET_PROPERTY:"
+                "${QT_CMAKE_EXPORT_NAMESPACE}::PlatformCommonInternal,"
+                "_qt_internal_cmake_generator"
+            ">,"
+            "Xcode"
+        ">>:"
+            "_LIBCPP_HARDENING_MODE=$<IF:$<CONFIG:Debug>,"
+                "_LIBCPP_HARDENING_MODE_EXTENSIVE,"
+                "_LIBCPP_HARDENING_MODE_FAST"
+            ">"
+        ">"
+    )
+    set_target_properties(PlatformCommonInternal
+        PROPERTIES
+            _qt_internal_cmake_generator "${CMAKE_GENERATOR}"
+    )
+    target_compile_definitions(PlatformCommonInternal INTERFACE "${hardening_flags}")
 endif()
 
 if(QT_FEATURE_relro_now_linker)

@@ -1,0 +1,39 @@
+version = 1
+
+[[annotations]]
+path = ["sun/sun-*", "japanese/japanese.xml"]
+precedence = "closest"
+SPDX-FileCopyrightText = "Copyright 1998 by Sun Microsystems, Inc."
+SPDX-License-Identifier = "SPL-1.0"
+
+[[annotations]]
+path = ["japanese/weekly-*"]
+comment = "double check the license"
+precedence = "closest"
+SPDX-FileCopyrightText = "Copyright 1997 Fuji Xerox Information Systems Co.,Ltd."
+SPDX-License-Identifier = "Xerox"
+
+[[annotations]]
+path = ["finalCatalog.xml", "ibm/*", "ibm/xml-1.1/*"]
+comment = "double check the license"
+precedence = "closest"
+SPDX-FileCopyrightText = "(C) Copyright IBM Corp. 2003  All rights reserved."
+SPDX-License-Identifier = "IPL-1.0"
+
+[[annotations]]
+path = ["sun/valid/out/pe00.xml"]
+comment = "double check the license"
+precedence = "closest"
+SPDX-FileCopyrightText = "© 1947 Éditions Gallimard. All rights reserved"
+SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = ["eduni/errata-2e/xmlconf.xml",
+        "eduni/errata-3e/xmlconf.xml",
+        "eduni/namespaces/errata-1e/xmlconf.xml",
+        "eduni/namespaces/xmlconf.xml",
+        "eduni/xml-1.1/xmlconf.xml"]
+precedence = "closest"
+comment = "May be freely redistributed provided copyright notice is retained."
+SPDX-FileCopyrightText = "Copyright Richard Tobin, HCRC"
+SPDX-License-Identifier = "BSD-3-Clause"

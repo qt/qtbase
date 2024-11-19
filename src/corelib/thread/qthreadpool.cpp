@@ -11,6 +11,8 @@
 #include <algorithm>
 #include <memory>
 
+using namespace std::chrono_literals;
+
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
@@ -247,6 +249,7 @@ void QThreadPoolPrivate::startThread(QRunnable *runnable)
     if (objectName.isEmpty())
         objectName = u"Thread (pooled)"_s;
     thread->setObjectName(objectName);
+    thread->setServiceLevel(serviceLevel);
     Q_ASSERT(!allThreads.contains(thread.get())); // if this assert hits, we have an ABA problem (deleted threads don't get removed here)
     allThreads.insert(thread.get());
     ++activeThreads;
@@ -479,7 +482,9 @@ QThreadPool *QThreadPoolPrivate::qtGuiInstance()
 {
     Q_CONSTINIT static QPointer<QThreadPool> guiInstance;
     Q_CONSTINIT static QBasicMutex theMutex;
-
+    const static bool runtime_disable = qEnvironmentVariableIsSet("QT_NO_GUI_THREADPOOL");
+    if (runtime_disable)
+        return nullptr;
     const QMutexLocker locker(&theMutex);
     if (guiInstance.isNull() && !QCoreApplication::closingDown()) {
         guiInstance = new QThreadPool();
@@ -601,6 +606,8 @@ int QThreadPool::expiryTimeout() const
     using namespace std::chrono;
     Q_D(const QThreadPool);
     QMutexLocker locker(&d->mutex);
+    if (d->expiryTimeout == decltype(d->expiryTimeout)::max())
+        return -1;
     return duration_cast<milliseconds>(d->expiryTimeout).count();
 }
 
@@ -608,7 +615,10 @@ void QThreadPool::setExpiryTimeout(int expiryTimeout)
 {
     Q_D(QThreadPool);
     QMutexLocker locker(&d->mutex);
-    d->expiryTimeout = std::chrono::milliseconds(expiryTimeout);
+    if (expiryTimeout < 0)
+        d->expiryTimeout = decltype(d->expiryTimeout)::max();
+    else
+        d->expiryTimeout = expiryTimeout * 1ms;
 }
 
 /*! \property QThreadPool::maxThreadCount
@@ -753,6 +763,38 @@ void QThreadPool::releaseThread()
     QMutexLocker locker(&d->mutex);
     --d->reservedThreads;
     d->tryToStartMoreThreads();
+}
+
+/*!
+    \since 6.9
+
+    Sets the Quality of Service level of thread objects created after the call
+    to this setter to \a serviceLevel.
+
+    Support is not available on every platform. Consult
+    QThread::setServiceLevel() for details.
+
+    \sa serviceLevel(), QThread::serviceLevel()
+*/
+void QThreadPool::setServiceLevel(QThread::QualityOfService serviceLevel)
+{
+    Q_D(QThreadPool);
+    QMutexLocker locker(&d->mutex);
+    d->serviceLevel = serviceLevel;
+}
+
+/*!
+    \since 6.9
+
+    Returns the current Quality of Service level of the thread.
+
+    \sa setServiceLevel(), QThread::serviceLevel()
+*/
+QThread::QualityOfService QThreadPool::serviceLevel() const
+{
+    Q_D(const QThreadPool);
+    QMutexLocker locker(&d->mutex);
+    return d->serviceLevel;
 }
 
 /*!

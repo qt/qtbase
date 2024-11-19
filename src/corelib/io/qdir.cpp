@@ -1506,7 +1506,7 @@ bool QDir::mkdir(const QString &dirName, QFile::Permissions permissions) const
 
     QString fn = filePath(dirName);
     if (!d->fileEngine)
-        return QFileSystemEngine::createDirectory(QFileSystemEntry(fn), false, permissions);
+        return QFileSystemEngine::mkdir(QFileSystemEntry(fn), permissions);
     return d->fileEngine->mkdir(fn, false, permissions);
 }
 
@@ -1528,7 +1528,7 @@ bool QDir::mkdir(const QString &dirName) const
 
     QString fn = filePath(dirName);
     if (!d->fileEngine)
-        return QFileSystemEngine::createDirectory(QFileSystemEntry(fn), false);
+        return QFileSystemEngine::mkdir(QFileSystemEntry(fn));
     return d->fileEngine->mkdir(fn, false);
 }
 
@@ -1580,7 +1580,7 @@ bool QDir::mkpath(const QString &dirPath) const
 
     QString fn = filePath(dirPath);
     if (!d->fileEngine)
-        return QFileSystemEngine::createDirectory(QFileSystemEntry(fn), true);
+        return QFileSystemEngine::mkpath(QFileSystemEntry(fn));
     return d->fileEngine->mkdir(fn, true);
 }
 
@@ -1871,9 +1871,7 @@ QDir &QDir::operator=(const QDir &dir)
 /*!
     \fn void QDir::swap(QDir &other)
     \since 5.0
-
-    Swaps this QDir instance with \a other. This function is very fast
-    and never fails.
+    \memberswap{QDir instance}
 */
 
 /*!

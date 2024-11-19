@@ -48,6 +48,10 @@
 #include <QtInputSupport/private/qevdevmousemanager_p.h>
 #include <QtInputSupport/private/qevdevkeyboardmanager_p.h>
 #include <QtInputSupport/private/qevdevtouchmanager_p.h>
+#elif QT_CONFIG(vxworksevdev)
+#include <QtInputSupport/private/qvxkeyboardmanager_p.h>
+#include <QtInputSupport/private/qvxmousemanager_p.h>
+#include <QtInputSupport/private/qvxtouchmanager_p.h>
 #endif
 
 #if QT_CONFIG(tslib)
@@ -70,8 +74,7 @@ QT_BEGIN_NAMESPACE
 using namespace Qt::StringLiterals;
 
 QEglFSIntegration::QEglFSIntegration()
-    : m_kbdMgr(nullptr),
-      m_display(EGL_NO_DISPLAY),
+    : m_display(EGL_NO_DISPLAY),
       m_inputContext(nullptr),
       m_fontDb(new QGenericUnixFontDatabase),
       m_services(new QGenericUnixServices),
@@ -395,7 +398,7 @@ QVariant QEglFSIntegration::styleHint(QPlatformIntegration::StyleHint hint) cons
     return QPlatformIntegration::styleHint(hint);
 }
 
-#if QT_CONFIG(evdev)
+#if QT_CONFIG(evdev) || QT_CONFIG(vxworksevdev)
 void QEglFSIntegration::loadKeymap(const QString &filename)
 {
     if (m_kbdMgr)
@@ -435,6 +438,10 @@ void QEglFSIntegration::createInputHandlers()
     if (!useTslib)
 #endif
         new QEvdevTouchManager("EvdevTouch"_L1, QString() /* spec */, this);
+#elif QT_CONFIG(vxworksevdev)
+    m_kbdMgr = new QVxKeyboardManager("VxKeyboard"_L1, QString() /* spec */, this);
+    new QVxMouseManager("VxMouse"_L1, QString() /* spec */, this);
+    new QVxTouchManager("VxTouch"_L1, QString() /* spec */, this);
 #endif
 
 #if QT_CONFIG(integrityhid)

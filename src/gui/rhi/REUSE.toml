@@ -1,0 +1,7 @@
+version = 1
+
+[[annotations]]
+path = ["mipmap.hlsl"]
+precedence = "closest"
+SPDX-FileCopyrightText = "Copyright (c) Microsoft. All rights reserved."
+SPDX-License-Identifier = "MIT"

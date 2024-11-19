@@ -18,12 +18,11 @@ QT_BEGIN_NAMESPACE
 namespace QtPrivate {
 
 template <typename Byte>
-struct IsCompatibleByteTypeHelper
-    : std::integral_constant<bool,
-                             std::is_same_v<Byte, char> ||
-                             std::is_same_v<Byte, uchar> ||
-                             std::is_same_v<Byte, signed char> ||
-                             std::is_same_v<Byte, std::byte>> {};
+struct IsCompatibleByteTypeHelper : std::false_type {};
+template <> struct IsCompatibleByteTypeHelper<char> : std::true_type {};
+template <> struct IsCompatibleByteTypeHelper<signed char> : std::true_type {};
+template <> struct IsCompatibleByteTypeHelper<unsigned char> : std::true_type {};
+template <> struct IsCompatibleByteTypeHelper<std::byte> : std::true_type {};
 
 template <typename Byte>
 struct IsCompatibleByteType

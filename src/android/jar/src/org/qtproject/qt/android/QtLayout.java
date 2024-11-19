@@ -4,13 +4,8 @@
 
 package org.qtproject.qt.android;
 
-import android.app.Activity;
 import android.content.Context;
-import android.os.Build;
 import android.util.AttributeSet;
-import android.util.DisplayMetrics;
-import android.view.Display;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
@@ -213,7 +208,7 @@ class QtLayout extends ViewGroup {
                 invalidate();
         } else {
             // If the parent was already set it need to be removed first
-            if (parent != null && parent instanceof ViewGroup)
+            if (parent instanceof ViewGroup)
                 ((ViewGroup)parent).removeView(childView);
             addView(childView, params);
         }

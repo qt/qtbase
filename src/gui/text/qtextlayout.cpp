@@ -1951,15 +1951,16 @@ void QTextLine::layout_helper(int maxGlyphs)
                 }
             }
 
-            hasInlineObject = true;
-            maxInlineObjectHeight = qMax(maxInlineObjectHeight, current.ascent + current.descent);
-
             lbh.tmpData.textWidth += current.width;
 
             newItem = item + 1;
             ++lbh.glyphCount;
             if (lbh.checkFullOtherwiseExtend(line))
                 goto found;
+
+            hasInlineObject = true;
+            maxInlineObjectHeight = qMax(maxInlineObjectHeight, current.ascent + current.descent);
+
         } else if (attributes[lbh.currentPosition].whiteSpace
                    && eng->layoutData->string.at(lbh.currentPosition).decompositionTag() != QChar::NoBreak) {
             lbh.whiteSpaceOrObject = true;

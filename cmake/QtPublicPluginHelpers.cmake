@@ -488,6 +488,36 @@ function(__qt_internal_apply_plugin_imports_finalizer_mode target)
     set_target_properties(${target} PROPERTIES _qt_plugin_finalizer_imports_processed TRUE)
 endfunction()
 
+# Adds the specific plugin target to the INTERFACE_QT_PLUGIN_TARGETS transitive compile property.
+# The property is then propagated to all targets that link the plugin_module_target and
+# can be accessed using $<TARGET_PROPERTY:tgt_name,QT_PLUGIN_TARGETS> genex.
+#
+# Note: this is only supported in CMake versions 3.30 and higher.
+function(__qt_internal_add_interface_plugin_target plugin_module_target plugin_target)
+    if(CMAKE_VERSION VERSION_LESS 3.30)
+        return()
+    endif()
+
+    cmake_parse_arguments(arg "BUILD_ONLY" "" "" ${ARGN})
+    if(arg_UNPARSED_ARGUMENTS)
+        message(FATAL_ERROR "Unexpected arguments: ${arg_UNPARSED_ARGUMENTS}")
+    endif()
+
+    __qt_internal_get_static_plugin_condition_genex(${plugin_target} plugin_target_condition)
+    string(JOIN "" plugin_target_name_wrapped
+        "$<${plugin_target_condition}:"
+            "$<TARGET_NAME:${QT_CMAKE_EXPORT_NAMESPACE}::${plugin_target}>"
+        ">"
+    )
+
+    if(arg_BUILD_ONLY)
+        set(plugin_target_name_wrapped "$<BUILD_LOCAL_INTERFACE:${plugin_target_name_wrapped}>")
+    endif()
+
+    set_property(TARGET ${plugin_module_target}
+        APPEND PROPERTY INTERFACE_QT_PLUGIN_TARGETS ${plugin_target_name_wrapped})
+endfunction()
+
 # Include CMake plugin packages that belong to the Qt module ${target} and initialize automatic
 # linkage of the plugins in static builds.
 # The variables inside the macro have to be named unique to the module because an included Plugin
@@ -504,6 +534,11 @@ macro(__qt_internal_include_plugin_packages target)
         set(__qt_${target}_plugin_module_target ${_aliased_target})
     endif()
 
+    # Ensure that QT_PLUGIN_TARGETS is a known transitive compile property. Works with CMake
+    # versions >= 3.30.
+    _qt_internal_add_transitive_property(${__qt_${target}_plugin_module_target}
+        COMPILE QT_PLUGIN_TARGETS)
+
     # Include all PluginConfig.cmake files and update the _qt_plugins and QT_PLUGINS property of
     # the module. The underscored version is the one we will use going forward to have compatibility
     # with INTERFACE libraries. QT_PLUGINS is now deprecated and only kept so that we don't break
@@ -518,6 +553,8 @@ macro(__qt_internal_include_plugin_packages target)
         include("${__qt_${target}_plugin_config_file}")
         if(TARGET "${QT_CMAKE_EXPORT_NAMESPACE}::${__qt_${target}_qt_plugin}")
             list(APPEND __qt_${target}_plugins ${__qt_${target}_qt_plugin})
+            __qt_internal_add_interface_plugin_target(${__qt_${target}_plugin_module_target}
+                ${__qt_${target}_qt_plugin})
         endif()
     endforeach()
     set_property(TARGET ${__qt_${target}_plugin_module_target}

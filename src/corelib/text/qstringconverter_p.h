@@ -334,6 +334,12 @@ struct QUtf8
                            Qt::CaseSensitivity cs = Qt::CaseSensitive);
     static int compareUtf8(QByteArrayView lhs, QByteArrayView rhs,
                            Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept;
+
+private:
+    template <typename OnErrorLambda> static char *
+    convertFromUnicode(char *out, QStringView in, OnErrorLambda &&onError) noexcept;
+    template <typename OnErrorLambda> static char16_t *
+    convertToUnicode(char16_t *dst, QByteArrayView in, OnErrorLambda &&onError) noexcept;
 };
 
 struct QUtf16

@@ -538,9 +538,7 @@ QNetworkProxy &QNetworkProxy::operator=(const QNetworkProxy &other)
 /*!
     \fn void QNetworkProxy::swap(QNetworkProxy &other)
     \since 5.0
-
-    Swaps this network proxy instance with \a other. This function is
-    very fast and never fails.
+    \memberswap{network proxy instance}
 */
 
 /*!
@@ -1161,9 +1159,7 @@ QNetworkProxyQuery &QNetworkProxyQuery::operator=(const QNetworkProxyQuery &othe
 /*!
     \fn void QNetworkProxyQuery::swap(QNetworkProxyQuery &other)
     \since 5.0
-
-    Swaps this network proxy query instance with \a other. This
-    function is very fast and never fails.
+    \memberswap{network proxy query instance}
 */
 
 /*!

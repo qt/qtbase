@@ -1,9 +1,20 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
-#include <QtGui>
-#include <QtWidgets>
-#include <QTest>
+#include <QtTest/qtest.h>
+
+#include <QtWidgets/qapplication.h>
+#include <QtWidgets/qscroller.h>
+#include <QtWidgets/qwidget.h>
+
+#include <QtGui/qevent.h>
+#include <QtGui/qpointingdevice.h>
+#include <QtGui/qstylehints.h>
+
+#include <QtCore/qeasingcurve.h>
+#include <QtCore/qpoint.h>
+#include <QtCore/qrect.h>
+
 #include <QtGui/private/qevent_p.h>
 #include <QtGui/private/qeventpoint_p.h>
 #include <qpa/qwindowsysteminterface.h>

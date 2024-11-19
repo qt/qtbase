@@ -20,31 +20,6 @@
 
 QT_BEGIN_NAMESPACE
 
-static constexpr clockid_t SteadyClockClockId =
-#if !defined(CLOCK_MONOTONIC)
-        // we don't know how to set the monotonic clock
-        CLOCK_REALTIME
-#elif defined(_LIBCPP_VERSION) && defined(_LIBCPP_HAS_NO_MONOTONIC_CLOCK)
-        // libc++ falling back to system_clock
-        CLOCK_REALTIME
-#elif defined(__GLIBCXX__) && !defined(_GLIBCXX_USE_CLOCK_MONOTONIC)
-        // libstdc++ falling back to system_clock
-        CLOCK_REALTIME
-#elif defined(Q_OS_DARWIN)
-        // Darwin lacks pthread_condattr_setclock()
-        CLOCK_REALTIME
-#elif defined(Q_OS_QNX)
-        // unknown why
-        CLOCK_REALTIME
-#elif defined(__GLIBCXX__) || defined(_LIBCPP_VERSION)
-        // both libstdc++ and libc++ do use CLOCK_MONOTONIC
-        CLOCK_MONOTONIC
-#else
-#  warning "Unknown C++ Standard Library implementation - code may be sub-optimal"
-        CLOCK_REALTIME
-#endif
-        ;
-
 static void qt_report_pthread_error(int code, const char *where, const char *what)
 {
     if (code != 0)
@@ -55,26 +30,17 @@ static void qt_initialize_pthread_cond(pthread_cond_t *cond, const char *where)
 {
     pthread_condattr_t *attrp = nullptr;
 
-#if defined(CLOCK_MONOTONIC) && !defined(Q_OS_DARWIN)
+#if QT_CONFIG(pthread_condattr_setclock)
     pthread_condattr_t condattr;
     attrp = &condattr;
 
     pthread_condattr_init(&condattr);
     auto destroy = qScopeGuard([&] { pthread_condattr_destroy(&condattr); });
-    if (SteadyClockClockId != CLOCK_REALTIME)
-        pthread_condattr_setclock(&condattr, SteadyClockClockId);
+    if (QWaitConditionClockId != CLOCK_REALTIME)
+        pthread_condattr_setclock(&condattr, QWaitConditionClockId);
 #endif
 
     qt_report_pthread_error(pthread_cond_init(cond, attrp), where, "cv init");
-}
-
-static void qt_abstime_for_timeout(timespec *ts, QDeadlineTimer deadline)
-{
-    using namespace std::chrono;
-    using Clock =
-        std::conditional_t<SteadyClockClockId == CLOCK_REALTIME, system_clock, steady_clock>;
-    auto timePoint = deadline.deadline<Clock>();
-    *ts = durationToTimespec(timePoint.time_since_epoch());
 }
 
 class QWaitConditionPrivate
@@ -87,8 +53,7 @@ public:
 
     int wait_relative(QDeadlineTimer deadline)
     {
-        timespec ti;
-        qt_abstime_for_timeout(&ti, deadline);
+        timespec ti = deadlineToAbstime<QWaitConditionClockId>(deadline);
         return pthread_cond_timedwait(&cond, &mutex, &ti);
     }
 

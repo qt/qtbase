@@ -33,7 +33,7 @@
 #  endif
 #elif defined(Q_OS_LINUX) && defined(Q_PROCESSOR_MIPS_32)
 #  include "private/qcore_unix_p.h"
-#elif QT_CONFIG(getauxval) && defined(Q_PROCESSOR_ARM)
+#elif QT_CONFIG(getauxval) && (defined(Q_PROCESSOR_ARM) || defined(Q_PROCESSOR_LOONGARCH))
 #  include <sys/auxv.h>
 
 // the kernel header definitions for HWCAP_*
@@ -94,6 +94,19 @@ static const char features_string[] =
     "\0"
     " dsp\0"
     " dspr2\0";
+
+static const int features_indices[] = {
+       0, 1, 6
+};
+#elif defined(Q_PROCESSOR_LOONGARCH)
+/* Data:
+ lsx
+ lasx
+*/
+static const char features_string[] =
+    "\0"
+    " lsx\0"
+    " lasx\0";
 
 static const int features_indices[] = {
        0, 1, 6
@@ -192,6 +205,40 @@ static inline quint64 detectProcessorFeatures()
     return features;
 }
 
+#elif defined(Q_PROCESSOR_LOONGARCH)
+static inline quint64 detectProcessorFeatures()
+{
+    quint64 features = 0;
+#  if QT_CONFIG(getauxval)
+    quint64 hwcap = getauxval(AT_HWCAP);
+
+    if (hwcap & HWCAP_LOONGARCH_LSX)
+        features |= CpuFeatureLSX;
+    if (hwcap & HWCAP_LOONGARCH_LASX)
+        features |= CpuFeatureLASX;
+#  else
+    enum LoongArchFeatures {
+        LOONGARCH_CFG2 = 0x2,
+        LOONGARCH_CFG2_LSX = (1 << 6),
+        LOONGARCH_CFG2_LASX = (1 << 7)
+    };
+
+    quint64 reg = 0;
+
+    __asm__ volatile(
+        "cpucfg %0, %1 \n\t"
+        : "+&r"(reg)
+        : "r"(LOONGARCH_CFG2)
+    );
+
+    if (reg & LOONGARCH_CFG2_LSX)
+        features |= CpuFeatureLSX;
+    if (reg & LOONGARCH_CFG2_LASX)
+        features |= CpuFeatureLASX;
+#  endif
+    return features;
+}
+
 #elif defined(Q_PROCESSOR_X86)
 
 #ifdef Q_PROCESSOR_X86_32
@@ -205,7 +252,7 @@ static inline quint64 detectProcessorFeatures()
 # define X86_BASELINE   "no-sse"
 #endif
 
-#if defined(Q_CC_GNU)
+#if defined(Q_CC_GNU) || defined(Q_CC_CLANG)
 // lower the target for functions in this file
 #  undef QT_FUNCTION_TARGET_BASELINE
 #  define QT_FUNCTION_TARGET_BASELINE               __attribute__((target(X86_BASELINE)))

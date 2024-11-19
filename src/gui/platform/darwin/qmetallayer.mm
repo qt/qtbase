@@ -62,10 +62,14 @@ QT_USE_NAMESPACE
 
 - (id<CAMetalDrawable>)nextDrawable
 {
-    // Drop the presentation block early, so that if the main thread for
-    // some reason doesn't handle the presentation, the block won't hold on
-    // to a drawable unnecessarily.
-    self.mainThreadPresentation = nil;
+    {
+        // Drop the presentation block early, so that if the main thread for
+        // some reason doesn't handle the presentation, the block won't hold on
+        // to a drawable unnecessarily.
+        QMacAutoReleasePool pool;
+        self.mainThreadPresentation = nil;
+    }
+
     return [super nextDrawable];
 }
 

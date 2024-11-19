@@ -1,0 +1,40 @@
+type: Group
+instructions:
+  # This tells the script where to install the soon to be downloaded doc tools
+  - type: EnvironmentVariable
+    variableName: QT_CI_DOC_TOOLS_INSTALL_DIR
+    variableValue: "{{.BuildDir}}/doc_tools_build/install"
+
+  # Define the doc tools archive name when it is built by qtbase.
+  - type: EnvironmentVariable
+    variableName: QT_CI_DOC_TOOLS_ARCHIVE_NAME
+    variableValue: "static_doc_tools_qtbase.tar.gz"
+    enable_if:
+      condition: runtime
+      env_var: QT_CI_FETCH_REPO_DOC_TOOLS
+      not_equals_value: "1"
+
+  # Define the doc tools archive name when it is built by a repo other than qtbase.
+  - type: EnvironmentVariable
+    variableName: QT_CI_DOC_TOOLS_ARCHIVE_NAME
+    variableValue: "static_doc_tools_{{.Env.TESTED_MODULE_COIN}}.tar.gz"
+    enable_if:
+      condition: runtime
+      env_var: QT_CI_FETCH_REPO_DOC_TOOLS
+      equals_value: "1"
+
+  # Downloads the doc tools archive and extracts it to the install directory
+  - type: InstallBinaryArchive
+    directory: "{{.Env.QT_CI_DOC_TOOLS_INSTALL_DIR}}"
+    regex: "{{.Env.QT_CI_DOC_TOOLS_ARCHIVE_NAME}}"
+    maxTimeInSeconds: 1200
+    maxTimeBetweenOutput: 1200
+
+  - type: AppendToEnvironmentVariable
+    variableName: COIN_TEST_DOCS_CONFIGURE_EXTRA_CMAKE_ARGS
+    variableValue: " -DQT_OPTIONAL_TOOLS_PATH={{.Env.QT_CI_DOC_TOOLS_INSTALL_DIR}}"
+
+enable_if:
+  condition: property
+  property: features
+  contains_value: DocsGenerationV2

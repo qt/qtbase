@@ -1,0 +1,15 @@
+# Macros for documenting repetitive aspects of C++ classes
+
+# Sort groups alphabetically
+
+#
+# Macros for swap()
+#
+
+# \memberswap{what}
+#    what - a prose version of the type of object (e.g. "string", "collator", "pen")
+#    The function's argument name must be \a other.
+macro.memberswap = \
+    "\n\n" \
+    "Swaps this \1 with \\a{other}. This operation is very fast and never fails." \
+    "\n\n"

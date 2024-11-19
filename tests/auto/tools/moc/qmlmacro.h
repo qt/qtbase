@@ -13,7 +13,7 @@ struct QmlMacro : QObject
     Q_OBJECT
     Q_CLASSINFO("QML.Element", "auto")
 
-    signals:
-    void f(QByteArray &b);
+signals:
+    void f(const QByteArray &b);
 };
 #endif

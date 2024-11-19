@@ -1,0 +1,15 @@
+version = 1
+
+[[annotations]]
+path = ["*"]
+precedence = "closest"
+comment = "not sure about all those files"
+SPDX-FileCopyrightText = "Unknown"
+SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = ["black.xpm"]
+precedence = "closest"
+SPDX-FileCopyrightText = "Copyright (C) 1997 TU Braunschweig, Germany."
+SPDX-License-Identifier = "GPL-3.0-only"
+

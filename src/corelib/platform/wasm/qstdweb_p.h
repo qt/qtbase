@@ -281,7 +281,7 @@ namespace qstdweb {
         return savedWindow;
     }
 
-    bool haveAsyncify();
+    bool Q_CORE_EXPORT haveAsyncify();
     bool Q_CORE_EXPORT haveJspi();
     bool canBlockCallingThread();
 

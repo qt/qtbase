@@ -107,8 +107,10 @@ class CursorHandle implements ViewTreeObserver.OnPreDrawListener
 
         Context context = m_layout.getContext();
         int[] attrs = {m_attr};
-        TypedArray a = context.getTheme().obtainStyledAttributes(attrs);
-        Drawable drawable = a.getDrawable(0);
+        Drawable drawable;
+        try (TypedArray a = context.getTheme().obtainStyledAttributes(attrs)) {
+            drawable = a.getDrawable(0);
+        }
 
         m_cursorView = new CursorView(context, this);
         m_cursorView.setImageDrawable(drawable);

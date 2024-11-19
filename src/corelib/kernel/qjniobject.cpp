@@ -739,8 +739,7 @@ QJniObject::~QJniObject()
 /*!
     \fn void QJniObject::swap(QJniObject &other)
     \since 6.8
-
-    Swaps this object with \a other. This function is very fast and never fails.
+    \memberswap{object}
 */
 
 

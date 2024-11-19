@@ -146,6 +146,8 @@ addSimdCompiler(rdseed)
 addSimdCompiler(neon)
 addSimdCompiler(mips_dsp)
 addSimdCompiler(mips_dspr2)
+addSimdCompiler(lsx)
+addSimdCompiler(lasx)
 
 # Haswell sub-architecture
 defineTest(addSimdArch) {

@@ -2302,8 +2302,7 @@
     \value WindowContextHelpButtonHint  Adds a context help button to dialogs.
            On some platforms this implies Qt::WindowSystemMenuHint for it to work.
 
-    \value MacWindowToolBarButtonHint On \macos adds a tool bar button (i.e.,
-           the oblong button that is on the top right of windows that have toolbars).
+    \omitvalue MacWindowToolBarButtonHint
 
     \value WindowFullscreenButtonHint On \macos adds a fullscreen button.
 

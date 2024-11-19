@@ -50,7 +50,6 @@ public:
 
     bool requestUpdate();
     void deliverUpdateRequests();
-    bool isRunningDisplayLink() const;
 
     static QCocoaScreen *primaryScreen();
     static QCocoaScreen *get(NSScreen *nsScreen);
@@ -95,7 +94,10 @@ private:
 
     CVDisplayLinkRef m_displayLink = nullptr;
     dispatch_source_t m_displayLinkSource = nullptr;
-    QAtomicInt m_pendingUpdates;
+    QAtomicInt m_pendingUpdateRequests;
+    QAtomicInt m_pendingDisplayLinkUpdates;
+
+    void maybeStopDisplayLink();
 
     friend class QCocoaIntegration;
     friend class QCocoaWindow;

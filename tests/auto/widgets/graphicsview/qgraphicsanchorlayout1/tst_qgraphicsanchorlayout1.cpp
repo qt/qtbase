@@ -1,11 +1,14 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
-#include <QtGui>
-#include <QTest>
-#include <QTest>
-#include <QMetaType>
+#include <QtTest/qtest.h>
+
 #include <QtWidgets/qgraphicsanchorlayout.h>
+#include <QtWidgets/qgraphicswidget.h>
+
+#include <QtCore/qmetatype.h>
+#include <QtCore/qlibraryinfo.h>
+
 #include <private/qgraphicsanchorlayout_p.h>
 
 #define TEST_COMPLEX_CASES

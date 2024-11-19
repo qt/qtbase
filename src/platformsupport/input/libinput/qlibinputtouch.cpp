@@ -70,7 +70,8 @@ static void setMatrix(libinput_device *dev)
             float matrix[6];
             QList<QByteArray> list = env.split(' ');
             if (list.length() != 6) {
-                qCWarning(qLcLibInput, "matrix length %lld wrong, should be 6", list.length());
+                qCWarning(qLcLibInput, "matrix length %" PRIdQSIZETYPE " wrong, should be 6",
+                          list.length());
                 return;
             }
             for (int i = 0; i < 6; i++) {

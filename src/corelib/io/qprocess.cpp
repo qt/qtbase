@@ -179,9 +179,7 @@ QProcessEnvironment &QProcessEnvironment::operator=(const QProcessEnvironment &o
 /*!
     \fn void QProcessEnvironment::swap(QProcessEnvironment &other)
     \since 5.0
-
-    Swaps this process environment instance with \a other. This
-    function is very fast and never fails.
+    \memberswap{process environment instance}
 */
 
 /*!

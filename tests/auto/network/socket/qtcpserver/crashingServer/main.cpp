@@ -1,9 +1,12 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
+#include <QtNetwork/qtcpserver.h>
+#include <QtNetwork/qtcpsocket.h>
+#include <QtNetwork/qhostaddress.h>
 
-#include <QtCore>
-#include <QtNetwork>
+#include <QtCore/qcoreapplication.h>
+
 #if defined(Q_OS_WIN) && defined(Q_CC_MSVC)
 #  include <crtdbg.h>
 #endif

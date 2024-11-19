@@ -34,10 +34,7 @@ if(ANDROID_PLATFORM)
     _qt_internal_create_global_android_targets()
     _qt_internal_collect_default_android_abis()
     if(NOT QT_NO_CREATE_TARGETS)
-        set_property(TARGET ${__qt_core_target} APPEND PROPERTY
-            INTERFACE_QT_EXECUTABLE_FINALIZERS
-                _qt_internal_android_executable_finalizer
-        )
+        _qt_internal_add_android_executable_finalizer(${__qt_core_target})
     endif()
 endif()
 

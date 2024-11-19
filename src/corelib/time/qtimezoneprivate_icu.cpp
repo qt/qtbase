@@ -408,9 +408,10 @@ QList<QByteArray> QIcuTimeZonePrivate::availableTimeZoneIds() const
 {
     UErrorCode status = U_ZERO_ERROR;
     UEnumeration *uenum = ucal_openTimeZones(&status);
+    // Does not document order of entries.
     QList<QByteArray> result;
     if (U_SUCCESS(status))
-        result = uenumToIdList(uenum);
+        result = uenumToIdList(uenum); // Ensures sorted, unique.
     uenum_close(uenum);
     return result;
 }

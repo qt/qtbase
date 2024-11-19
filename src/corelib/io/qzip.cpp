@@ -1009,6 +1009,8 @@ bool QZipReader::extractAll(const QString &destinationDir) const
     // need to recreate directory structure based on the file paths.
     if (hasDirs && !foundDirs) {
         for (const FileInfo &fi : allFiles) {
+            if (!fi.filePath.contains(u"/"))
+                continue;
             const auto dirPath = fi.filePath.left(fi.filePath.lastIndexOf(u"/"));
             if (!baseDir.mkpath(dirPath))
                 return false;

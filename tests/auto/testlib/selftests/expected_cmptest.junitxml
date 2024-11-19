@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite name="tst_Cmptest" timestamp="@TEST_START_TIME@" hostname="@HOSTNAME@" tests="74" failures="51" errors="0" skipped="0" time="@TEST_DURATION@">
+<testsuite name="tst_Cmptest" timestamp="@TEST_START_TIME@" hostname="@HOSTNAME@" tests="75" failures="52" errors="0" skipped="0" time="@TEST_DURATION@">
   <properties>
     <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
@@ -53,6 +53,12 @@
   <testcase name="compare_boolfuncs" classname="tst_Cmptest" time="@TEST_DURATION@"/>
   <testcase name="compare_to_nullptr" classname="tst_Cmptest" time="@TEST_DURATION@"/>
   <testcase name="compare_pointerfuncs" classname="tst_Cmptest" time="@TEST_DURATION@"/>
+  <testcase name="compare_stringLiterals" classname="tst_Cmptest" time="@TEST_DURATION@">
+    <failure type="fail" message="Compared values are not the same">
+      <![CDATA[   Actual   (lhs): "abc"
+   Expected (u""): ]]>
+    </failure>
+  </testcase>
   <testcase name="compare_tostring(int, string)" classname="tst_Cmptest" time="@TEST_DURATION@">
     <failure type="fail" message="Compared values are not the same">
       <![CDATA[   Actual   (actual)  : QVariant(int,123)

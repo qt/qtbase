@@ -18,6 +18,7 @@ apply plugin: qtGradlePluginType
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
+    //noinspection GradleDependency
     implementation 'androidx.core:core:1.13.1'
 }
 

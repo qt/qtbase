@@ -225,15 +225,14 @@ void tst_qwinregistrykey::qwinregistrykey()
     QVERIFY(registry.stringValue(TEST_NOT_EXIST.first).isEmpty());
 
     {
-        const auto value = registry.dwordValue(TEST_DWORD.first);
-        QVERIFY(value.second);
-        QCOMPARE(value.first, TEST_DWORD.second);
+        const auto value = registry.value<DWORD>(TEST_DWORD.first);
+        QVERIFY(value);
+        QCOMPARE(*value, TEST_DWORD.second);
     }
 
     {
-        const auto value = registry.dwordValue(TEST_NOT_EXIST.first);
-        QVERIFY(!value.second);
-        QCOMPARE(value.first, DWORD(0));
+        const auto value = registry.value<DWORD>(TEST_NOT_EXIST.first);
+        QVERIFY(!value);
     }
 }
 

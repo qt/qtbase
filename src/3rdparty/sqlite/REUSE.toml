@@ -1,0 +1,7 @@
+version = 1
+
+[[annotations]]
+path = ["**"]
+precedence = "closest"
+SPDX-FileCopyrightText = ["The authors disclaim copyright to the source code. However, a license can be obtained if needed."]
+SPDX-License-Identifier = "blessing"

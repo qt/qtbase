@@ -10,7 +10,7 @@ instructions:
       testdir="$(dirname $1)"
       testexecutable="$1"
       echo RUNNING via serial: "$quoted_args"
-      echo "cmd rtp exec -p 200 -t 0x01000000 -u 300000 $testexecutable -- $quoted_args" > /home/qt/work/vx.sh
+      echo "cmd rtp exec -p 200 -t 0x01000000 -u 1000000 $testexecutable -- $quoted_args" > /home/qt/work/vx.sh
       echo "cmd echo \"qtest_in_vxworks_complete: $?\"" >> /home/qt/work/vx.sh
       #rtp exec            Execute a process.
       #               -p : specify the initial task priority
@@ -22,9 +22,31 @@ instructions:
 
       # qtest_in_vxworks_complete echo is used to detect test process completion as it will
       # be echoed after test process ends normally or crashes when normal log lines are not present.
+      # Check that emulator is functioning
+      echo "cmd echo \"health check\"" > /tmp/guest.in
+      sleep 0.5
+      read -t 5 echoline</tmp/guest.out
+      read -t 1 testline</tmp/guest.out
+      if [[ -z "$testline" ]]; then
+          echo "Restarting  stuck emulator"
+          pkill qemu-system
+          rm /tmp/guest.in /tmp/guest.out
+          mkfifo /tmp/guest.in /tmp/guest.out
+          /bin/bash /home/qt/vxworks_qemu_launcher.sh $VXWORKS_EMULATOR_TYPE
+          sleep 1
+          /bin/bash /home/qt/work/coin_vxworks_vars.sh
+          sleep 1
+      else
+          echo "Emulator responding"
+      fi
+
+      # Empty output
+      while read -t 1 line; do
+          echo $line
+      done < /tmp/guest.out
 
       echo "cmd cd $testdir" > /tmp/guest.in
-      sleep 0.5
+      sleep 1
       echo "</home/qt/work/vx.sh" > /tmp/guest.in
 
       while read -t 600 line; do

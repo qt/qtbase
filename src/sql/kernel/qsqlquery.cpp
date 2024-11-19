@@ -263,8 +263,7 @@ QSqlQuery& QSqlQuery::operator=(const QSqlQuery& other)
 /*!
     \fn void QSqlQuery::swap(QSqlQuery &other) noexcept
     \since 6.2
-    Swaps \a other to this object. This operation is very
-    fast and never fails.
+    \memberswap{query}
 */
 
 /*!

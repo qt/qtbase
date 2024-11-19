@@ -4,7 +4,7 @@
     "QDocModule": "qtcore",
     "QtUsage": "Used in Qt Core (QCryptographicHash).",
 
-    "Comment": "Treat as final version; no upstream known",
+    "Comment": "Treat as final version; no upstream known, no relevant CPE or PURL found",
     "Description": "An OpenSSL-compatible implementation of the RSA Data Security, Inc. MD4 Message-Digest Algorithm.",
     "License": "Public Domain",
     "LicenseId": "CC0-1.0",

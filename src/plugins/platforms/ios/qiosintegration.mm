@@ -94,14 +94,13 @@ void QIOSIntegration::initialize()
     // Depends on a primary screen being present
     m_inputContext = new QIOSInputContext;
 
-    m_touchDevice = new QPointingDevice;
-    m_touchDevice->setType(QInputDevice::DeviceType::TouchScreen);
     QPointingDevice::Capabilities touchCapabilities = QPointingDevice::Capability::Position | QPointingDevice::Capability::NormalizedPosition;
 #if !defined(Q_OS_VISIONOS)
     if (mainScreen.traitCollection.forceTouchCapability == UIForceTouchCapabilityAvailable)
         touchCapabilities |= QPointingDevice::Capability::Pressure;
 #endif
-    m_touchDevice->setCapabilities(touchCapabilities);
+    m_touchDevice = new QPointingDevice("touchscreen", 0, QInputDevice::DeviceType::TouchScreen,
+                                QPointingDevice::PointerType::Finger, touchCapabilities, 10, 0);
     QWindowSystemInterface::registerInputDevice(m_touchDevice);
 #if QT_CONFIG(tabletevent)
     QWindowSystemInterfacePrivate::TabletEvent::setPlatformSynthesizesMouse(false);

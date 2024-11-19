@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
 /*!
-    \example tutorials/notepad
+    \page widgets-getting-started.html
     \title Getting Started Programming with Qt Widgets
+    \ingroup widget-tutorials
     \examplecategory {User Interface Components}
     \brief A tutorial for Qt Widgets based notepad application.
 

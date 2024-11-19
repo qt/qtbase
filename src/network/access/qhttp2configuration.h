@@ -39,6 +39,9 @@ public:
     bool setMaxFrameSize(unsigned size);
     unsigned maxFrameSize() const;
 
+    void setMaxConcurrentStreams(unsigned value);
+    unsigned maxConcurrentStreams() const;
+
     void swap(QHttp2Configuration &other) noexcept;
 
 private:

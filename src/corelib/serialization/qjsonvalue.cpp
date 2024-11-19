@@ -292,8 +292,7 @@ void QJsonValue::swap(QJsonValue &other) noexcept
 /*!
     \fn void QJsonValue::swap(QJsonValue &other)
     \since 5.10
-
-    Swaps the value \a other with this. This operation is very fast and never fails.
+    \memberswap{value}
 */
 
 /*!

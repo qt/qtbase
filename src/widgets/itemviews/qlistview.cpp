@@ -41,7 +41,7 @@ extern bool qt_sendSpontaneousEvent(QObject *receiver, QEvent *event);
     \ingroup advanced
     \inmodule QtWidgets
 
-    \image windows-listview.png
+    \image fusion-listview.png
 
     A QListView presents items stored in a model, either as a simple
     non-hierarchical list, or as a collection of icons. This class is used
@@ -580,7 +580,8 @@ void QListViewPrivate::selectAll(QItemSelectionModel::SelectionFlags command)
     QModelIndex topLeft;
     int row = 0;
     const int colCount = model->columnCount(root);
-    for(; row < model->rowCount(root); ++row) {
+    const int rowCount = model->rowCount(root);
+    for ( ; row < rowCount; ++row) {
         if (isHidden(row)) {
             //it might be the end of a selection range
             if (topLeft.isValid()) {
@@ -883,8 +884,9 @@ void QListView::dropEvent(QDropEvent *event)
 {
     Q_D(QListView);
 
-    if (event->source() == this && (event->dropAction() == Qt::MoveAction ||
-                                    dragDropMode() == QAbstractItemView::InternalMove)) {
+    const bool moveAction = event->dropAction() == Qt::MoveAction
+                         || dragDropMode() == QAbstractItemView::InternalMove;
+    if (event->source() == this && moveAction) {
         QModelIndex topIndex;
         bool topIndexDropped = false;
         int col = -1;
@@ -937,7 +939,7 @@ void QListView::dropEvent(QDropEvent *event)
 
     if (!d->commonListView->filterDropEvent(event) || !d->dropEventMoved) {
         // icon view didn't move the data, and moveRows not implemented, so fall back to default
-        if (!d->dropEventMoved)
+        if (!d->dropEventMoved && moveAction)
             event->ignore();
         QAbstractItemView::dropEvent(event);
     }

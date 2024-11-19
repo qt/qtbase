@@ -885,16 +885,14 @@ void QGraphicsViewPrivate::populateSceneDragDropEvent(QGraphicsSceneDragDropEven
 /*!
     \internal
 */
-QRect QGraphicsViewPrivate::mapToViewRect(const QGraphicsItem *item, const QRectF &rect) const
+QTransform QGraphicsViewPrivate::mapToViewTransform(const QGraphicsItem *item) const
 {
     Q_Q(const QGraphicsView);
     if (dirtyScroll)
         const_cast<QGraphicsViewPrivate *>(this)->updateScroll();
 
-    if (item->d_ptr->itemIsUntransformable()) {
-        QTransform itv = item->deviceTransform(q->viewportTransform());
-        return itv.mapRect(rect).toAlignedRect();
-    }
+    if (item->d_ptr->itemIsUntransformable())
+        return item->deviceTransform(q->viewportTransform());
 
     // Translate-only
     // COMBINE
@@ -908,21 +906,20 @@ QRect QGraphicsViewPrivate::mapToViewRect(const QGraphicsItem *item, const QRect
         offset += itemd->pos;
     } while ((parentItem = itemd->parent));
 
-    QRectF baseRect = rect.translated(offset.x(), offset.y());
+    QTransform move = QTransform::fromTranslate(offset.x(), offset.y());
     if (!parentItem) {
-        if (identityMatrix) {
-            baseRect.translate(-scrollX, -scrollY);
-            return baseRect.toAlignedRect();
-        }
-        return matrix.mapRect(baseRect).translated(-scrollX, -scrollY).toAlignedRect();
+        move.translate(-scrollX, -scrollY);
+        return identityMatrix ? move : matrix * move;
     }
-
     QTransform tr = parentItem->sceneTransform();
     if (!identityMatrix)
         tr *= matrix;
-    QRectF r = tr.mapRect(baseRect);
-    r.translate(-scrollX, -scrollY);
-    return r.toAlignedRect();
+    return move * tr * QTransform::fromTranslate(-scrollX, -scrollY);
+}
+
+QRect QGraphicsViewPrivate::mapToViewRect(const QGraphicsItem *item, const QRectF &rect) const
+{
+    return mapToViewTransform(item).mapRect(rect).toAlignedRect();
 }
 
 /*!
@@ -2905,7 +2902,7 @@ bool QGraphicsView::viewportEvent(QEvent *event)
         if (d->scene && d->sceneInteractionAllowed) {
             // Convert and deliver the touch event to the scene.
             QTouchEvent *touchEvent = static_cast<QTouchEvent *>(event);
-            QMutableTouchEvent::from(touchEvent)->setTarget(viewport());
+            QMutableTouchEvent::setTarget(touchEvent, viewport());
             QGraphicsViewPrivate::translateTouchEvent(d, touchEvent);
             QCoreApplication::sendEvent(d->scene, touchEvent);
         } else {

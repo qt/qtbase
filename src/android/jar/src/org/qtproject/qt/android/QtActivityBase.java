@@ -27,34 +27,31 @@ import java.lang.IllegalArgumentException;
 
 public class QtActivityBase extends Activity
 {
+    public static final String EXTRA_SOURCE_INFO = "org.qtproject.qt.android.sourceInfo";
+
     private String m_applicationParams = "";
     private boolean m_isCustomThemeSet = false;
     private boolean m_retainNonConfigurationInstance = false;
     private Configuration m_prevConfig;
-
-    private QtActivityDelegate m_delegate;
-
-    public static final String EXTRA_SOURCE_INFO = "org.qtproject.qt.android.sourceInfo";
+    private final QtActivityDelegate m_delegate;
 
     private void addReferrer(Intent intent)
     {
-        if (intent.getExtras() != null && intent.getExtras().getString(EXTRA_SOURCE_INFO) != null)
+        Bundle extras = intent.getExtras();
+        if (extras != null && extras.getString(EXTRA_SOURCE_INFO) != null)
             return;
 
-        String browserApplicationId = "";
-        if (intent.getExtras() != null)
-            browserApplicationId = intent.getExtras().getString(Browser.EXTRA_APPLICATION_ID);
-
-        String sourceInformation = "";
-        if (browserApplicationId != null && !browserApplicationId.isEmpty()) {
-            sourceInformation = browserApplicationId;
-        } else {
+        if (extras == null) {
             Uri referrer = getReferrer();
-            if (referrer != null)
-                sourceInformation = referrer.toString().replaceFirst("android-app://", "");
+            if (referrer != null) {
+                String cleanReferrer = referrer.toString().replaceFirst("android-app://", "");
+                intent.putExtra(EXTRA_SOURCE_INFO, cleanReferrer);
+            }
+        } else {
+            String applicationId = extras.getString(Browser.EXTRA_APPLICATION_ID);
+            if (applicationId != null)
+                intent.putExtra(EXTRA_SOURCE_INFO, applicationId);
         }
-
-        intent.putExtra(EXTRA_SOURCE_INFO, sourceInformation);
     }
 
     // Append any parameters to your application.
@@ -83,6 +80,11 @@ public class QtActivityBase extends Activity
         Runtime.getRuntime().exit(0);
     }
 
+    public QtActivityBase()
+    {
+        m_delegate = new QtActivityDelegate(this);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -102,10 +104,7 @@ public class QtActivityBase extends Activity
             restartApplication();
         }
 
-        m_delegate = new QtActivityDelegate(this);
-
         QtNative.registerAppStateListener(m_delegate);
-
         addReferrer(getIntent());
 
         try {
@@ -126,18 +125,6 @@ public class QtActivityBase extends Activity
         }
 
         m_prevConfig = new Configuration(getResources().getConfiguration());
-    }
-
-    @Override
-    protected void onStart()
-    {
-        super.onStart();
-    }
-
-    @Override
-    protected void onRestart()
-    {
-        super.onRestart();
     }
 
     @Override
@@ -337,19 +324,13 @@ public class QtActivityBase extends Activity
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults)
     {
-        QtNative.sendRequestPermissionsResult(requestCode, permissions, grantResults);
+        QtNative.sendRequestPermissionsResult(requestCode, grantResults);
     }
 
     @UsedFromNativeCode
     public void hideSplashScreen(final int duration)
     {
         m_delegate.hideSplashScreen(duration);
-    }
-
-    @UsedFromNativeCode
-    QtActivityDelegateBase getActivityDelegate()
-    {
-        return m_delegate;
     }
 
     private void showErrorDialog() {

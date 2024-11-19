@@ -1,10 +1,19 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
+#include <QtTest/qtest.h>
 
-#include <QTest>
-#include <QtGui>
-#include <QtWidgets>
+#include <QtWidgets/qboxlayout.h>
+#include <QtWidgets/qdial.h>
+#include <QtWidgets/qdialog.h>
+#include <QtWidgets/qgroupbox.h>
+#include <QtWidgets/qlabel.h>
+#include <QtWidgets/qlineedit.h>
+#include <QtWidgets/qproxystyle.h>
+#include <QtWidgets/qpushbutton.h>
+#include <QtWidgets/qstylefactory.h>
+#include <QtWidgets/qstyleoption.h>
+#include <QtWidgets/qwidget.h>
 
 #include <QtTest/private/qtesthelpers_p.h>
 

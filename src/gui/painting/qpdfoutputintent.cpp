@@ -80,9 +80,7 @@ QPdfOutputIntent::~QPdfOutputIntent() = default;
 
 /*!
     \fn void QPdfOutputIntent::swap(QPdfOutputIntent &other) noexcept
-
-    Swaps the output intent \a other with this output intent. This
-    operation is very fast and never fails.
+    \memberswap{output intent}
 */
 
 /*!

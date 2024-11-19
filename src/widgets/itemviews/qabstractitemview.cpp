@@ -2207,7 +2207,7 @@ bool QAbstractItemViewPrivate::dropOn(QDropEvent *event, int *dropRow, int *drop
     // rootIndex() (i.e. the viewport) might be a valid index
     if (viewport->rect().contains(event->position().toPoint())) {
         index = q->indexAt(event->position().toPoint());
-        if (!index.isValid() || !q->visualRect(index).contains(event->position().toPoint()))
+        if (!index.isValid())
             index = root;
     }
 
@@ -3435,7 +3435,9 @@ void QAbstractItemView::dataChanged(const QModelIndex &topLeft, const QModelInde
                 topLeft.row() > bottomRight.row() ||
                 topLeft.column() > bottomRight.column()) {
                 // invalid parameter - call update() to redraw all
-                Q_ASSERT(false);
+                qWarning().nospace() << "dataChanged() called with an invalid index range:"
+                                     << "\n    topleft: " << topLeft
+                                     << "\n    bottomRight:" << bottomRight;
                 d->viewport->update();
             } else if ((bottomRight.row() - topLeft.row() + 1ULL) *
                        (bottomRight.column() - topLeft.column() + 1ULL) > d->updateThreshold) {

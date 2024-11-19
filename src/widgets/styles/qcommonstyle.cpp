@@ -2243,7 +2243,8 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                     editRect.translate(cb->iconSize.width() + 4, 0);
             }
             if (!cb->currentText.isEmpty() && !cb->editable) {
-                proxy()->drawItemText(p, editRect.adjusted(1, 0, -1, 0),
+                // keep in sync with QLineEditPrivate::horizontalMargin = 2
+                proxy()->drawItemText(p, editRect.adjusted(2, 0, -2, 0),
                              visualAlignment(cb->direction, cb->textAlignment),
                              cb->palette, cb->state & State_Enabled, cb->currentText);
             }
@@ -5044,14 +5045,16 @@ QSize QCommonStyle::sizeFromContents(ContentsType contentsType, const QStyleOpti
 #if QT_CONFIG(spinbox)
     case CT_SpinBox:
         if (const auto *spinBoxOpt = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
-            // Add button + frame widths
-            const qreal dpi = QStyleHelper::dpi(opt);
+            const int frameWidth = spinBoxOpt->frame
+                ? proxy()->pixelMetric(PM_SpinBoxFrameWidth, spinBoxOpt, widget)
+                : 0;
+            size += QSize(2 * frameWidth, 2 * frameWidth);
             const bool hasButtons = (spinBoxOpt->buttonSymbols != QAbstractSpinBox::NoButtons);
-            const int buttonWidth = hasButtons ? qRound(QStyleHelper::dpiScaled(16, dpi)) : 0;
-            const int frameWidth = spinBoxOpt->frame ? proxy()->pixelMetric(PM_SpinBoxFrameWidth,
-                                                                         spinBoxOpt, widget) : 0;
-
-            size += QSize(buttonWidth + 2 * frameWidth, 2 * frameWidth);
+            if (hasButtons) {
+                const auto height = qMax(8, size.height() / 2 - frameWidth);
+                const auto buttonWidth = qMax(16, qMin(height * 8 / 5, size.width() / 3));
+                size.rwidth() += buttonWidth;
+            }
         }
         break;
 #endif

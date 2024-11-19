@@ -1,0 +1,26 @@
+From 4ced1426e27320e00b0dd28693df5d95c648d230 Mon Sep 17 00:00:00 2001
+From: Eskil Abrahamsen Blomfeldt <eskil.abrahamsen-blomfeldt@qt.io>
+Date: Thu, 14 Nov 2024 09:42:11 +0100
+Subject: [PATCH] Compile with warnings-are-errors
+
+Change-Id: Icea8febefc90f3f047143e5b76ff511145c0dcae
+---
+ src/3rdparty/emoji-segmenter/emoji_presentation_scanner.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/3rdparty/emoji-segmenter/emoji_presentation_scanner.c b/src/3rdparty/emoji-segmenter/emoji_presentation_scanner.c
+index 56e2e78033..ce7e01846c 100644
+--- a/src/3rdparty/emoji-segmenter/emoji_presentation_scanner.c
++++ b/src/3rdparty/emoji-segmenter/emoji_presentation_scanner.c
+@@ -101,6 +101,8 @@ scan_emoji_presentation (emoji_text_iter_t p,
+   emoji_text_iter_t te;
+   const emoji_text_iter_t eof = pe;
+ 
++  (void)ts;
++
+   unsigned act;
+   int cs;
+ 
+-- 
+2.40.0.windows.1
+

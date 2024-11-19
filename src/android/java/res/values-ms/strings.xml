@@ -1,5 +1,4 @@
 <?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="fatal_error_msg">Aplikasi anda menemui ralat muat dan tidak boleh diteruskan.</string>
-    <string name="unsupported_android_version">Versi Android ini tidak disokong.</string>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="fatal_error_msg" tools:ignore="UnusedResources">Aplikasi anda menemui ralat muat dan tidak boleh diteruskan.</string>
 </resources>

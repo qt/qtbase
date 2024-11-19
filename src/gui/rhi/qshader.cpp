@@ -332,9 +332,7 @@ QShader::~QShader()
 /*!
     \fn void QShader::swap(QShader &other)
     \since 6.7
-
-    Swaps shader \a other with this shader. This operation is very fast and
-    never fails.
+    \memberswap{shader}
 */
 
 /*!

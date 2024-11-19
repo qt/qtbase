@@ -1,0 +1,28 @@
+version = 1
+
+[[annotations]]
+path = ["pcfutil.c", "README"]
+precedence = "closest"
+SPDX-FileCopyrightText = ["Copyright 1990, 1994, 1998  The Open Group", "Copyright (c) 2000-2014 Francesco Zappa Nardelli"]
+SPDX-License-Identifier = "MIT AND MIT-open-group"
+
+[[annotations]]
+path = ["module.mk", "rules.mk", "pcfutil.h", "pcfread.h", "pcfread.c", "pcfdrivr.h", "pcfdrivr.c", "pcf.h", "pcf.c"]
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (c) 2000-2014 Francesco Zappa Nardelli"
+SPDX-License-Identifier = "MIT AND MIT-open-group"
+
+[[annotations]]
+path = ["pcferror.h"]
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (c) 2001, 2012 David Turner, Robert Wilhelm, and Werner Lemberg"
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = ["REUSE.toml"]
+comment = "The copyrights inside those files are not related to the file"
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (C) 2024 The Qt Company Ltd."
+SPDX-License-Identifier = "BSD-3-Clause"

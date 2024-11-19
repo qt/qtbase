@@ -57,6 +57,24 @@ static inline uint16x4_t multiplyAlpha65535(uint16x4_t rgba64, uint alpha65535)
     vs32 = vsraq_n_u32(vs32, vs32, 16); // vs = vs + (vs >> 16)
     return vrshrn_n_u32(vs32, 16); // vs = (vs + 0x8000) >> 16
 }
+#elif defined(__loongarch_sx)
+static inline __m128i Q_DECL_VECTORCALL multiplyAlpha65535(__m128i rgba64, __m128i va)
+{
+    __m128i vs = rgba64;
+    vs = __lsx_vilvl_h(__lsx_vmuh_hu(vs, va), __lsx_vmul_h(vs, va));
+    vs = __lsx_vadd_w(vs, __lsx_vsrli_w(vs, 16));
+    vs = __lsx_vadd_w(vs, __lsx_vreplgr2vr_w(0x8000));
+    vs = __lsx_vsrai_w(vs, 16);
+    vs = __lsx_vpickev_h(__lsx_vsat_w(vs, 15), __lsx_vsat_w(vs, 15));
+    return vs;
+}
+static inline __m128i Q_DECL_VECTORCALL multiplyAlpha65535(__m128i rgba64, uint alpha65535)
+{
+    const __m128i shuffleMask = (__m128i)(v8i16){0, 0, 0, 0, 4, 5, 6, 7};
+    const __m128i va = __lsx_vshuf_h(shuffleMask, __lsx_vldi(0),
+                                     __lsx_vinsgr2vr_w(__lsx_vldi(0), alpha65535, 0));
+    return multiplyAlpha65535(rgba64, va);
+}
 #endif
 
 static inline QRgba64 multiplyAlpha65535(QRgba64 rgba64, uint alpha65535)
@@ -73,6 +91,12 @@ static inline QRgba64 multiplyAlpha65535(QRgba64 rgba64, uint alpha65535)
     QRgba64 r;
     vst1_u64(reinterpret_cast<uint64_t *>(&r), vreinterpret_u64_u16(vr));
     return r;
+#elif defined(__loongarch_sx)
+    const __m128i v = __lsx_vldrepl_d(reinterpret_cast<const __m128i *>(&rgba64), 0);
+    const __m128i vr = multiplyAlpha65535(v, alpha65535);
+    QRgba64 r;
+    __lsx_vstelm_d(vr, reinterpret_cast<__m128i *>(&r), 0, 0);
+    return r;
 #else
     return QRgba64::fromRgba64(qt_div_65535(rgba64.red()   * alpha65535),
                                qt_div_65535(rgba64.green() * alpha65535),
@@ -81,7 +105,7 @@ static inline QRgba64 multiplyAlpha65535(QRgba64 rgba64, uint alpha65535)
 #endif
 }
 
-#if defined(__SSE2__) || defined(__ARM_NEON__)
+#if defined(__SSE2__) || defined(__ARM_NEON__) || defined(__loongarch_sx)
 template<typename T>
 static inline T Q_DECL_VECTORCALL multiplyAlpha255(T rgba64, uint alpha255)
 {
@@ -112,6 +136,14 @@ inline uint16x4_t interpolate255(uint16x4_t x, uint alpha1, uint16x4_t y, uint a
 }
 #endif
 
+#if defined __loongarch_sx
+static inline __m128i Q_DECL_VECTORCALL
+interpolate255(__m128i x, uint alpha1, __m128i y, uint alpha2)
+{
+    return __lsx_vadd_h(multiplyAlpha255(x, alpha1), multiplyAlpha255(y, alpha2));
+}
+#endif
+
 static inline QRgba64 interpolate255(QRgba64 x, uint alpha1, QRgba64 y, uint alpha2)
 {
 #if defined(__SSE2__)
@@ -127,6 +159,13 @@ static inline QRgba64 interpolate255(QRgba64 x, uint alpha1, QRgba64 y, uint alp
     const uint16x4_t vr = interpolate255(vx, alpha1, vy, alpha2);
     QRgba64 r;
     vst1_u64(reinterpret_cast<uint64_t *>(&r), vreinterpret_u64_u16(vr));
+    return r;
+#elif defined(__loongarch_sx)
+    const __m128i vx = __lsx_vldrepl_d(reinterpret_cast<const __m128i *>(&x), 0);
+    const __m128i vy = __lsx_vldrepl_d(reinterpret_cast<const __m128i *>(&y), 0);
+    const __m128i vr = interpolate255(vx, alpha1, vy, alpha2);
+    QRgba64 r;
+    __lsx_vstelm_d(vr, reinterpret_cast<__m128i *>(&r), 0, 0);
     return r;
 #else
     return QRgba64::fromRgba64(multiplyAlpha255(x, alpha1) + multiplyAlpha255(y, alpha2));
@@ -156,6 +195,18 @@ inline uint16x4_t interpolate65535(uint16x4_t x, uint16x4_t alpha1, uint16x4_t y
 }
 #endif
 
+#if defined __loongarch_sx
+static inline __m128i Q_DECL_VECTORCALL interpolate65535(__m128i x, uint alpha1, __m128i y, uint alpha2)
+{
+    return __lsx_vadd_h(multiplyAlpha65535(x, alpha1), multiplyAlpha65535(y, alpha2));
+}
+
+static inline __m128i Q_DECL_VECTORCALL interpolate65535(__m128i x, __m128i alpha1, __m128i y, __m128i alpha2)
+{
+    return __lsx_vadd_h(multiplyAlpha65535(x, alpha1), multiplyAlpha65535(y, alpha2));
+}
+#endif
+
 static inline QRgba64 interpolate65535(QRgba64 x, uint alpha1, QRgba64 y, uint alpha2)
 {
 #if defined(__SSE2__)
@@ -171,6 +222,13 @@ static inline QRgba64 interpolate65535(QRgba64 x, uint alpha1, QRgba64 y, uint a
     const uint16x4_t vr = interpolate65535(vx, alpha1, vy, alpha2);
     QRgba64 r;
     vst1_u64(reinterpret_cast<uint64_t *>(&r), vreinterpret_u64_u16(vr));
+    return r;
+#elif defined(__loongarch_sx)
+    const __m128i vx = __lsx_vldrepl_d(reinterpret_cast<const __m128i *>(&x), 0);
+    const __m128i vy = __lsx_vldrepl_d(reinterpret_cast<const __m128i *>(&y), 0);
+    const __m128i vr = interpolate65535(vx, alpha1, vy, alpha2);
+    QRgba64 r;
+    __lsx_vstelm_d(vr, reinterpret_cast<__m128i *>(&r), 0, 0);
     return r;
 #else
     return QRgba64::fromRgba64(multiplyAlpha65535(x, alpha1) + multiplyAlpha65535(y, alpha2));
@@ -191,6 +249,13 @@ static inline QRgba64 addWithSaturation(QRgba64 a, QRgba64 b)
     const uint16x4_t vb = vreinterpret_u16_u64(vld1_u64(reinterpret_cast<const uint64_t *>(&b)));
     QRgba64 r;
     vst1_u64(reinterpret_cast<uint64_t *>(&r), vreinterpret_u64_u16(vqadd_u16(va, vb)));
+    return r;
+#elif defined(__loongarch_sx)
+    const __m128i va = __lsx_vldrepl_d(reinterpret_cast<const __m128i *>(&a), 0);
+    const __m128i vb = __lsx_vldrepl_d(reinterpret_cast<const __m128i *>(&b), 0);
+    const __m128i vr = __lsx_vsadd_hu(va, vb);
+    QRgba64 r;
+    __lsx_vstelm_d(vr, reinterpret_cast<__m128i *>(&r), 0, 0);
     return r;
 #else
 
@@ -221,6 +286,18 @@ static inline uint toArgb32(uint16x4_t v)
     uint8x8_t v8 = vmovn_u16(vcombine_u16(v, v));
     return vget_lane_u32(vreinterpret_u32_u8(v8), 0);
 }
+#elif defined __loongarch_sx
+static inline uint Q_DECL_VECTORCALL toArgb32(__m128i v)
+{
+    v = __lsx_vilvl_h(__lsx_vldi(0), v);
+    v = __lsx_vadd_w(v, __lsx_vreplgr2vr_w(128));
+    v = __lsx_vsub_w(v, __lsx_vsrli_w(v, 8));
+    v = __lsx_vsrli_w(v, 8);
+    v = __lsx_vpickev_h(__lsx_vsat_w(v, 15), __lsx_vsat_w(v, 15));
+    __m128i tmp = __lsx_vmaxi_h(v, 0);
+    v = __lsx_vpickev_b(__lsx_vsat_hu(tmp, 7), __lsx_vsat_hu(tmp, 7));
+    return __lsx_vpickve2gr_w(v, 0);
+}
 #endif
 
 static inline uint toArgb32(QRgba64 rgba64)
@@ -238,6 +315,11 @@ static inline uint toArgb32(QRgba64 rgba64)
     v = vext_u16(v, v, 3);
 #endif
     return toArgb32(v);
+#elif defined __loongarch_sx
+    __m128i v = __lsx_vldrepl_d(reinterpret_cast<const __m128i *>(&rgba64), 0);
+    const __m128i shuffleMask = (__m128i)(v8i16){2, 1, 0, 3, 4, 5, 6, 7};
+    v = __lsx_vshuf_h(shuffleMask, __lsx_vldi(0), v);
+    return toArgb32(v);
 #else
     return rgba64.toArgb32();
 #endif
@@ -250,6 +332,9 @@ static inline uint toRgba8888(QRgba64 rgba64)
     return toArgb32(v);
 #elif defined __ARM_NEON__
     uint16x4_t v = vreinterpret_u16_u64(vld1_u64(reinterpret_cast<const uint64_t *>(&rgba64)));
+    return toArgb32(v);
+#elif defined __loongarch_sx
+    __m128i v = __lsx_vldrepl_d(reinterpret_cast<const __m128i *>(&rgba64), 0);
     return toArgb32(v);
 #else
     return ARGB2RGBA(toArgb32(rgba64));
@@ -289,6 +374,23 @@ static inline QRgba64 rgbBlend(QRgba64 d, QRgba64 s, uint rgbAlpha)
     vd32 = vsraq_n_u32(vd32, vd32, 16);
     vd = vrshrn_n_u32(vd32, 16);
     vst1_u64(reinterpret_cast<uint64_t *>(&blend), vreinterpret_u64_u16(vd));
+#elif defined(__loongarch_sx)
+    __m128i vd = __lsx_vldrepl_d(reinterpret_cast<const __m128i *>(&d), 0);
+    __m128i vs = __lsx_vldrepl_d(reinterpret_cast<const __m128i *>(&s), 0);
+    __m128i va = __lsx_vinsgr2vr_w(__lsx_vldi(0), rgbAlpha, 0);
+    va = __lsx_vilvl_b(va, va);
+    const __m128i shuffleMask = (__m128i)(v8i16){2, 1, 0, 3, 4, 5, 6, 7};
+    va = __lsx_vshuf_h(shuffleMask, __lsx_vldi(0), va);
+    __m128i vb = __lsx_vxor_v(__lsx_vreplgr2vr_h(-1), va);
+
+    vs = __lsx_vilvl_h(__lsx_vmuh_hu(vs, va), __lsx_vmul_h(vs, va));
+    vd = __lsx_vilvl_h(__lsx_vmuh_hu(vd, vb), __lsx_vmul_h(vd, vb));
+    vd = __lsx_vadd_w(vd, vs);
+    vd = __lsx_vadd_w(vd, __lsx_vsrli_w(vd, 16));
+    vd = __lsx_vadd_w(vd, __lsx_vreplgr2vr_w(0x8000));
+    vd = __lsx_vsrai_w(vd, 16);
+    vd = __lsx_vpickev_h(__lsx_vsat_w(vd, 15), __lsx_vsat_w(vd, 15));
+    __lsx_vstelm_d(vd, reinterpret_cast<__m128i *>(&blend), 0, 0);
 #else
     const int mr = qRed(rgbAlpha);
     const int mg = qGreen(rgbAlpha);
@@ -318,6 +420,13 @@ static inline void blend_pixel(QRgba64 &dst, QRgba64 src)
         const uint16x4_t via = veor_u16(vdup_n_u16(0xffff), vdup_lane_u16(vs, 3));
         const uint16x4_t vr = vadd_u16(vs, multiplyAlpha65535(vd, via));
         vst1_u64(reinterpret_cast<uint64_t *>(&dst), vreinterpret_u64_u16(vr));
+#elif defined(__loongarch_sx)
+        const __m128i vd = __lsx_vldrepl_d(reinterpret_cast<const __m128i *>(&dst), 0);
+        const __m128i vs = __lsx_vldrepl_d(reinterpret_cast<const __m128i *>(&src), 0);
+        const __m128i shuffleMask = (__m128i)(v8i16){3, 3, 3, 3, 4, 5, 6, 7};
+        const __m128i via = __lsx_vxor_v(__lsx_vreplgr2vr_h(-1), __lsx_vshuf_h(shuffleMask, __lsx_vldi(0), vs));
+        const __m128i vr = __lsx_vadd_h(vs, multiplyAlpha65535(vd, via));
+        __lsx_vstelm_d(vr, reinterpret_cast<__m128i *>(&dst), 0, 0);
 #else
         dst = src + multiplyAlpha65535(dst, 65535 - src.alpha());
 #endif
@@ -343,6 +452,14 @@ static inline void blend_pixel(QRgba64 &dst, QRgba64 src, const int const_alpha)
         const uint16x4_t via = veor_u16(vdup_n_u16(0xffff), vdup_lane_u16(vs, 3));
         const uint16x4_t vr = vadd_u16(vs, multiplyAlpha65535(vd, via));
         vst1_u64(reinterpret_cast<uint64_t *>(&dst), vreinterpret_u64_u16(vr));
+#elif defined(__loongarch_sx)
+        const __m128i vd = __lsx_vldrepl_d(reinterpret_cast<const __m128i *>(&dst), 0);
+        __m128i vs = __lsx_vldrepl_d(reinterpret_cast<const __m128i *>(&src), 0);
+        vs = multiplyAlpha255(vs, const_alpha);
+        const __m128i shuffleMask = (__m128i)(v8i16){3, 3, 3, 3, 4, 5, 6, 7};
+        const __m128i via = __lsx_vxor_v(__lsx_vreplgr2vr_h(-1), __lsx_vshuf_h(shuffleMask, __lsx_vldi(0), vs));
+        const __m128i vr = __lsx_vadd_h(vs, multiplyAlpha65535(vd, via));
+        __lsx_vstelm_d(vr, reinterpret_cast<__m128i *>(&dst), 0, 0);
 #else
         src = multiplyAlpha255(src, const_alpha);
         dst = src + multiplyAlpha65535(dst, 65535 - src.alpha());

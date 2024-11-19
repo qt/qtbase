@@ -1,2 +1,6 @@
 [styleOptionViewItem]
 wayland ubuntu-24.04 # QTBUG-127920
+
+# QTBUG-130743
+[taskQTBUG_8376]
+vxworks

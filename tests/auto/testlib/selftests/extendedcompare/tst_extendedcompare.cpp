@@ -17,6 +17,7 @@ switch (Type) { \
     case QTest::ComparisonOperation::LessThanOrEqual:    QCOMPARE_LE(arg1, arg2); break; \
     case QTest::ComparisonOperation::GreaterThan:        QCOMPARE_GT(arg1, arg2); break; \
     case QTest::ComparisonOperation::GreaterThanOrEqual: QCOMPARE_GE(arg1, arg2); break; \
+    case QTest::ComparisonOperation::ThreeWayCompare:    break; \
 }
 
 class MyClass
@@ -186,6 +187,7 @@ template <typename T> static void executeComparison()
     case QTest::ComparisonOperation::LessThanOrEqual:    QCOMPARE_LE(lhs, rhs); break;
     case QTest::ComparisonOperation::GreaterThan:        QCOMPARE_GT(lhs, rhs); break;
     case QTest::ComparisonOperation::GreaterThanOrEqual: QCOMPARE_GE(lhs, rhs); break;
+    case QTest::ComparisonOperation::ThreeWayCompare:    break;
     }
 }
 
@@ -329,6 +331,7 @@ void tst_ExtendedCompare::checkComparisonWithTimeout()
     case QTest::ComparisonOperation::CustomCompare:
         QFAIL("Unexpected comparison operation");
         break;
+    case QTest::ComparisonOperation::ThreeWayCompare: break;
     }
 }
 

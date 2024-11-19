@@ -141,6 +141,10 @@ void QOpenGLCompositorBackingStore::flush(QWindow *flushedWindow, const QRegion 
     Q_UNUSED(region);
     Q_UNUSED(offset);
 
+    QOpenGLCompositorWindow *handle = dynamic_cast<QOpenGLCompositorWindow *>(flushedWindow->handle());
+    if (handle && !handle->backingStore())
+        handle->setBackingStore(this);
+
     if (!rhi(flushedWindow)) {
         QPlatformBackingStoreRhiConfig rhiConfig;
         rhiConfig.setApi(QPlatformBackingStoreRhiConfig::OpenGL);

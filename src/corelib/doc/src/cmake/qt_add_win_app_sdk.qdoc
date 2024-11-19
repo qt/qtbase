@@ -1,0 +1,38 @@
+// Copyright (C) 2024 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+\page qt-add-win-app-sdk.html
+\ingroup cmake-commands-qtcore
+
+\title qt_add_win_app_sdk
+\keyword qt6_add_win_app_sdk
+
+\summary {Adds the Windows App SDK library to the application.}
+
+\cmakecommandsince 6.9
+\preliminarycmakecommand
+
+\section1 Synopsis
+
+\badcode
+qt_add_win_app_sdk(target)
+\endcode
+
+\versionlessCMakeCommandsNote qt6_add_win_app_sdk()
+
+\section1 Description
+
+Adds Windows App SDK include files to the project, and links the necessary
+libraries to the given CMake target. Windows App SDK is provided as a \l{https://learn.microsoft.com/en-us/nuget/what-is-nuget}{NuGet}
+package so it can be easily used in managed apps. However, for unmanaged
+C++ applications we need header files.
+The function takes the following steps:
+\list 1
+       \li Tries to find the Windows App SDK and cppwinrt.exe tool
+       \li Generates Windows App SDK headers using the cppwinrt.exe tool
+       \li Includes those header files and links the library to the given CMake target
+\endlist
+
+\warning This command is not supported on non-MSVC platforms.
+*/

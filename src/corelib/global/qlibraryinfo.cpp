@@ -729,7 +729,7 @@ QStringList QLibraryInfo::platformPluginArguments(const QString &platformName)
 
 /*!
     \typealias QLibraryInfo::LibraryLocation
-    \deprecated Use LibraryPath with QLibraryInfo::path() instead.
+    \deprecated [6.0] Use LibraryPath with QLibraryInfo::path() instead.
 */
 
 /*!

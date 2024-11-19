@@ -20,6 +20,7 @@
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qwindow_p.h>
 #include <QtGui/private/qapplekeymapper_p.h>
+#include <QtGui/private/qpointingdevice_p.h>
 #include <qpa/qwindowsysteminterface_p.h>
 
 Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
@@ -346,12 +347,10 @@ inline ulong getTimeStamp(UIEvent *event)
     [super traitCollectionDidChange: previousTraitCollection];
 
     QPointingDevice *touchDevice = QIOSIntegration::instance()->touchDevice();
-    QPointingDevice::Capabilities touchCapabilities = touchDevice->capabilities();
+    auto *devicePriv = QPointingDevicePrivate::get(touchDevice);
 
-    touchCapabilities.setFlag(QPointingDevice::Capability::Pressure,
-                              (self.traitCollection.forceTouchCapability == UIForceTouchCapabilityAvailable));
-
-    touchDevice->setCapabilities(touchCapabilities);
+    devicePriv->capabilities.setFlag(QPointingDevice::Capability::Pressure,
+                                     (self.traitCollection.forceTouchCapability == UIForceTouchCapabilityAvailable));
 }
 
 -(BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event

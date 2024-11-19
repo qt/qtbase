@@ -24,9 +24,21 @@ private slots:
     void loadAtNImages_data();
 #ifndef QT_NO_TEXTHTMLPARSER
     void loadAtNImages();
+    void customResourceSchema_data();
+    void customResourceSchema();
     void maxWidth_data();
     void maxWidth();
 #endif
+};
+
+struct MyTextDocument : public QTextDocument
+{
+    QVariant loadResource(int, const QUrl &name) override
+    {
+        retrievedScheme = name.scheme();
+        return {};
+    }
+    QString retrievedScheme;
 };
 
 tst_QTextImageHandler::tst_QTextImageHandler()
@@ -82,6 +94,40 @@ void tst_QTextImageHandler::loadAtNImages()
         const auto expectedColor = dpr == 1 ? Qt::red : Qt::green;
         QCOMPARE(img.pixelColor(0, 0), expectedColor);
     }
+}
+
+void tst_QTextImageHandler::customResourceSchema_data()
+{
+    QTest::addColumn<QString>("imageFile");
+    QTest::addColumn<QString>("expectedScheme");
+
+    QTest::addRow("file_url") << QUrl::fromLocalFile(QFINDTESTDATA("data/image.png")).toString() << "file";
+    QTest::addRow("resource") << ":/data/image.png" << "qrc";
+    QTest::addRow("qrc_url") << "qrc:/data/image.png" << "qrc";
+    QTest::addRow("custom_url") << "custom:/data/image.png" << "custom";
+}
+
+void tst_QTextImageHandler::customResourceSchema()
+{
+    QFETCH(QString, imageFile);
+    QFETCH(QString, expectedScheme);
+
+    MyTextDocument doc;
+
+    QTextCursor c(&doc);
+    c.insertHtml("<img src=\"" + imageFile + "\">");
+    const auto formats = doc.allFormats();
+    const auto it = std::find_if(formats.begin(), formats.end(), [](const auto &format){
+        return format.objectType() == QTextFormat::ImageObject;
+    });
+    QCOMPARE_NE(it, formats.end());
+    QImage img(20, 20, QImage::Format_ARGB32_Premultiplied);
+    img.fill(Qt::white);
+    QPainter p(&img);
+    QTextImageHandler handler;
+    handler.drawObject(&p, QRect(0, 0, 20, 20), &doc, 0, *it);
+    p.end();
+    QCOMPARE(expectedScheme, doc.retrievedScheme);
 }
 
 void tst_QTextImageHandler::maxWidth_data()

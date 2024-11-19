@@ -496,9 +496,7 @@ quint32 QBitArray::toUInt32(QSysInfo::Endian endianness, bool *ok) const noexcep
 
 /*! \fn void QBitArray::swap(QBitArray &other)
     \since 4.8
-
-    Swaps bit array \a other with this bit array. This operation is very
-    fast and never fails.
+    \memberswap{bit array}
 */
 
 /*! \fn bool QBitArray::operator==(const QBitArray &lhs, const QBitArray &rhs)

@@ -1,5 +1,4 @@
 <?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="fatal_error_msg">アプリケーションで致命的なエラーが発生したため続行できません。</string>
-    <string name="unsupported_android_version">このバージョンのAndroidはサポートされていません。</string>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="fatal_error_msg" tools:ignore="UnusedResources">アプリケーションで致命的なエラーが発生したため続行できません。</string>
 </resources>

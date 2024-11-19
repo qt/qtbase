@@ -3864,7 +3864,6 @@ void QXmlStreamWriterPrivate::writeStartElement(QAnyStringView namespaceUri, QAn
     tag.namespaceDeclarationsSize = lastNamespaceDeclaration;
 }
 
-#if QT_CONFIG(xmlstreamreader)
 /*!  Writes the current state of the \a reader. All possible valid
   states are supported.
 
@@ -3929,6 +3928,8 @@ void QXmlStreamWriter::writeCurrentToken(const QXmlStreamReader &reader)
     }
 }
 
+#endif // feature xmlstreamwriter
+#if QT_CONFIG(xmlstreamreader)
 static constexpr bool isTokenAllowedInContext(QXmlStreamReader::TokenType type,
                                                QXmlStreamReaderPrivate::XmlContext ctxt)
 {
@@ -4045,7 +4046,6 @@ void QXmlStreamReaderPrivate::checkToken()
 */
 
 #endif // feature xmlstreamreader
-#endif // feature xmlstreamwriter
 
 QT_END_NAMESPACE
 

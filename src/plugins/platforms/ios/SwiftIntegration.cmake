@@ -27,7 +27,7 @@ set(SWIFT_SOURCES
 add_library(${target} STATIC ${SWIFT_SOURCES})
 set_target_properties(${target} PROPERTIES
     Swift_MODULE_NAME ${target})
-target_include_directories(${target} PUBLIC
+target_include_directories(${target} PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}"
     "${QT_CORE_INCLUDES}"
     "${QT_GUI_INCLUDES}"
@@ -35,7 +35,7 @@ target_include_directories(${target} PUBLIC
     "${QT_GUI_PRIVATE_INCLUDES}"
 
 )
-target_compile_options(${target} PUBLIC
+target_compile_options(${target} PRIVATE
   $<$<COMPILE_LANGUAGE:Swift>:-cxx-interoperability-mode=default>
   $<$<COMPILE_LANGUAGE:Swift>:-Xcc -std=c++17>)
 

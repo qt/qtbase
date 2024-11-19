@@ -197,9 +197,7 @@ QCommandLineOption &QCommandLineOption::operator=(const QCommandLineOption &othe
 
 /*!
     \fn void QCommandLineOption::swap(QCommandLineOption &other)
-
-    Swaps option \a other with this option. This operation is very
-    fast and never fails.
+    \memberswap{option}
 */
 
 /*!

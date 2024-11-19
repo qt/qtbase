@@ -1,0 +1,54 @@
+type: Group
+instructions:
+  - type: EnvironmentVariable
+    variableName: QDOC_NOLINKERRORS
+    variableValue: 1
+  - type: EnvironmentVariable
+    variableName: QDOC_ENABLE_WARNINGLIMIT
+    variableValue: 1
+  - type: SetBuildDirectory
+    directory: "{{.SourceDir}}"
+  - type: ChangeDirectory
+    directory: "{{.BuildDir}}"
+  - type: ExecuteCommand
+    command: "cp -rfs /opt/qt-doctools/. {{.InstallDir}}"
+    userMessageOnFailure: >
+      Failed to create links to provisioned binaries.
+    enable_if:
+      condition: property
+      property: features
+      not_contains_value: "DocsGenerationV2"
+
+  - !include "{{qt/qtbase}}/coin_fetch_doc_tools.yaml"
+
+  - !include "{{qt/qtbase}}/prepare_building_env.yaml"
+
+  - type: EnvironmentVariable
+    variableName: COIN_CMAKE_ARGS
+    variableValue: "-DQT_BUILD_TESTS=OFF {{.Env.COIN_TEST_DOCS_CONFIGURE_EXTRA_CMAKE_ARGS}}"
+  - type: EnvironmentVariable
+    variableName: CONFIGURE_ENV_PREFIX
+    variableValue: "{{.Env.ENV_PREFIX}}"
+
+  - type: Group
+    instructions:
+      - !include "{{qt/qtbase}}/call_configure_qtbase.yaml"
+    enable_if:
+      condition: runtime
+      env_var: COIN_TEST_DOCS_CALL_QTBASE_CONFIGURE
+      equals_value: "1"
+  - type: Group
+    instructions:
+      - !include "{{qt/qtbase}}/call_configure_module.yaml"
+    enable_if:
+      condition: runtime
+      env_var: COIN_TEST_DOCS_CALL_QTBASE_CONFIGURE
+      not_equals_value: "1"
+
+  - type: ExecuteCommand
+    command: "{{.Env.ENV_PREFIX}} cmake --build . --target generate_docs -v"
+    ignoreExitCode: false
+    maxTimeInSeconds: 1800
+    maxTimeBetweenOutput: 900
+    userMessageOnFailure: >
+      Documentation check failed, see the log for details.

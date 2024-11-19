@@ -50,67 +50,61 @@ Q_GUI_EXPORT int qt_defaultDpiX();
 QWasmWindow::QWasmWindow(QWindow *w, QWasmDeadKeySupport *deadKeySupport,
                          QWasmCompositor *compositor, QWasmBackingStore *backingStore)
     : QPlatformWindow(w),
-      m_window(w),
       m_compositor(compositor),
       m_backingStore(backingStore),
       m_deadKeySupport(deadKeySupport),
       m_document(dom::document()),
-      m_qtWindow(m_document.call<emscripten::val>("createElement", emscripten::val("div"))),
-      m_windowContents(m_document.call<emscripten::val>("createElement", emscripten::val("div"))),
-      m_canvasContainer(m_document.call<emscripten::val>("createElement", emscripten::val("div"))),
+      m_decoratedWindow(m_document.call<emscripten::val>("createElement", emscripten::val("div"))),
+      m_window(m_document.call<emscripten::val>("createElement", emscripten::val("div"))),
       m_a11yContainer(m_document.call<emscripten::val>("createElement", emscripten::val("div"))),
       m_canvas(m_document.call<emscripten::val>("createElement", emscripten::val("canvas")))
 {
-    m_qtWindow.set("className", "qt-window");
-    m_qtWindow["style"].set("display", std::string("none"));
+    m_decoratedWindow.set("className", "qt-decorated-window");
+    m_decoratedWindow["style"].set("display", std::string("none"));
 
-    m_nonClientArea = std::make_unique<NonClientArea>(this, m_qtWindow);
+    m_nonClientArea = std::make_unique<NonClientArea>(this, m_decoratedWindow);
     m_nonClientArea->titleBar()->setTitle(window()->title());
 
-    m_clientArea = std::make_unique<ClientArea>(this, compositor->screen(), m_windowContents);
+    m_clientArea = std::make_unique<ClientArea>(this, compositor->screen(), m_window);
 
-    m_windowContents.set("className", "qt-window-contents");
-    m_qtWindow.call<void>("appendChild", m_windowContents);
+    m_window.set("className", "qt-window");
+    m_decoratedWindow.call<void>("appendChild", m_window);
 
-    m_canvas["classList"].call<void>("add", emscripten::val("qt-window-content"));
+    m_canvas["classList"].call<void>("add", emscripten::val("qt-window-canvas"));
 
-    // Set contenteditable so that the canvas gets clipboard events,
+    // Set contentEditable so that the window gets clipboard events,
     // then hide the resulting focus frame.
-    m_canvas.set("contentEditable", std::string("true"));
-    m_canvas["style"].set("outline", std::string("none"));
+    m_window.set("contentEditable", std::string("true"));
+    m_window["style"].set("outline", std::string("none"));
 
-    QWasmClipboard::installEventHandlers(m_canvas);
+    QWasmClipboard::installEventHandlers(m_window);
 
-    // set inputMode to none to stop mobile keyboard opening
-    // when user clicks anywhere on the canvas.
-    m_canvas.set("inputMode", std::string("none"));
+    // Set inputMode to none to stop the mobile keyboard from opening
+    // when the user clicks on the window.
+    m_window.set("inputMode", std::string("none"));
 
     // Hide the canvas from screen readers.
     m_canvas.call<void>("setAttribute", std::string("aria-hidden"), std::string("true"));
+    m_window.call<void>("appendChild", m_canvas);
 
-    m_windowContents.call<void>("appendChild", m_canvasContainer);
-
-    m_canvasContainer["classList"].call<void>("add", emscripten::val("qt-window-canvas-container"));
-    m_canvasContainer.call<void>("appendChild", m_canvas);
-
-    m_canvasContainer.call<void>("appendChild", m_a11yContainer);
     m_a11yContainer["classList"].call<void>("add", emscripten::val("qt-window-a11y-container"));
+    m_window.call<void>("appendChild", m_a11yContainer);
 
     const bool rendersTo2dContext = w->surfaceType() != QSurface::OpenGLSurface;
     if (rendersTo2dContext)
         m_context2d = m_canvas.call<emscripten::val>("getContext", emscripten::val("2d"));
     static int serialNo = 0;
     m_winId = ++serialNo;
-    m_qtWindow.set("id", "qt-window-" + std::to_string(m_winId));
+    m_decoratedWindow.set("id", "qt-window-" + std::to_string(m_winId));
     emscripten::val::module_property("specialHTMLTargets").set(canvasSelector(), m_canvas);
 
     m_flags = window()->flags();
 
-    m_pointerEnterCallback = std::make_unique<qstdweb::EventCallback>(m_qtWindow, "pointerenter",
+    m_pointerEnterCallback = std::make_unique<qstdweb::EventCallback>(m_window, "pointerenter",
         [this](emscripten::val event) { this->handlePointerEvent(event); });
-    m_pointerLeaveCallback = std::make_unique<qstdweb::EventCallback>(m_qtWindow, "pointerleave",
+    m_pointerLeaveCallback = std::make_unique<qstdweb::EventCallback>(m_window, "pointerleave",
         [this](emscripten::val event) { this->handlePointerEvent(event); });
-    m_wheelEventCallback = std::make_unique<qstdweb::EventCallback>( m_qtWindow, "wheel",
+    m_wheelEventCallback = std::make_unique<qstdweb::EventCallback>( m_window, "wheel",
         [this](emscripten::val event) { this->handleWheelEvent(event); });
 
     QWasmInputContext *wasmInput = QWasmIntegration::get()->wasmInputContext();
@@ -123,9 +117,9 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmDeadKeySupport *deadKeySupport,
             [this](emscripten::val event) { this->handleKeyForInputContextEvent(event); });
     }
 
-    m_keyDownCallback = std::make_unique<qstdweb::EventCallback>(m_qtWindow, "keydown",
+    m_keyDownCallback = std::make_unique<qstdweb::EventCallback>(m_window, "keydown",
         [this](emscripten::val event) { this->handleKeyEvent(event); });
-    m_keyUpCallback =std::make_unique<qstdweb::EventCallback>(m_qtWindow, "keyup",
+    m_keyUpCallback =std::make_unique<qstdweb::EventCallback>(m_window, "keyup",
         [this](emscripten::val event) { this->handleKeyEvent(event); });
 
     setParent(parent());
@@ -134,7 +128,7 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmDeadKeySupport *deadKeySupport,
 QWasmWindow::~QWasmWindow()
 {
     emscripten::val::module_property("specialHTMLTargets").delete_(canvasSelector());
-    m_canvasContainer.call<void>("removeChild", m_canvas);
+    m_window.call<void>("removeChild", m_canvas);
     m_context2d = emscripten::val::undefined();
     commitParent(nullptr);
     if (m_requestAnimationFrameId > -1)
@@ -233,12 +227,12 @@ void QWasmWindow::paint()
 
 void QWasmWindow::setZOrder(int z)
 {
-    m_qtWindow["style"].set("zIndex", std::to_string(z));
+    m_decoratedWindow["style"].set("zIndex", std::to_string(z));
 }
 
 void QWasmWindow::setWindowCursor(QByteArray cssCursorName)
 {
-    m_windowContents["style"].set("cursor", emscripten::val(cssCursorName.constData()));
+    m_window["style"].set("cursor", emscripten::val(cssCursorName.constData()));
 }
 
 void QWasmWindow::setGeometry(const QRect &rect)
@@ -280,15 +274,15 @@ void QWasmWindow::setGeometry(const QRect &rect)
                     .adjusted(-margins.left(), -margins.top(), margins.right(), margins.bottom())
                     .translated(!parent() ? -screen()->geometry().topLeft() : QPoint());
 
-    m_qtWindow["style"].set("left", std::to_string(frameRect.left()) + "px");
-    m_qtWindow["style"].set("top", std::to_string(frameRect.top()) + "px");
-    m_canvasContainer["style"].set("width", std::to_string(clientAreaRect.width()) + "px");
-    m_canvasContainer["style"].set("height", std::to_string(clientAreaRect.height()) + "px");
+    m_decoratedWindow["style"].set("left", std::to_string(frameRect.left()) + "px");
+    m_decoratedWindow["style"].set("top", std::to_string(frameRect.top()) + "px");
+    m_canvas["style"].set("width", std::to_string(clientAreaRect.width()) + "px");
+    m_canvas["style"].set("height", std::to_string(clientAreaRect.height()) + "px");
     m_a11yContainer["style"].set("width", std::to_string(clientAreaRect.width()) + "px");
     m_a11yContainer["style"].set("height", std::to_string(clientAreaRect.height()) + "px");
 
     // Important for the title flexbox to shrink correctly
-    m_windowContents["style"].set("width", std::to_string(clientAreaRect.width()) + "px");
+    m_window["style"].set("width", std::to_string(clientAreaRect.width()) + "px");
 
     QSizeF canvasSize = clientAreaRect.size() * devicePixelRatio();
 
@@ -310,12 +304,12 @@ void QWasmWindow::setGeometry(const QRect &rect)
 void QWasmWindow::setVisible(bool visible)
 {
     // TODO(mikolajboc): isVisible()?
-    const bool nowVisible = m_qtWindow["style"]["display"].as<std::string>() == "block";
+    const bool nowVisible = m_decoratedWindow["style"]["display"].as<std::string>() == "block";
     if (visible == nowVisible)
         return;
 
     m_compositor->requestUpdateWindow(this, QRect(QPoint(0, 0), geometry().size()), QWasmCompositor::ExposeEventDelivery);
-    m_qtWindow["style"].set("display", visible ? "block" : "none");
+    m_decoratedWindow["style"].set("display", visible ? "block" : "none");
     if (window()->isActive())
         m_canvas.call<void>("focus");
     if (visible)
@@ -330,9 +324,9 @@ bool QWasmWindow::isVisible() const
 QMargins QWasmWindow::frameMargins() const
 {
     const auto frameRect =
-            QRectF::fromDOMRect(m_qtWindow.call<emscripten::val>("getBoundingClientRect"));
+            QRectF::fromDOMRect(m_decoratedWindow.call<emscripten::val>("getBoundingClientRect"));
     const auto canvasRect =
-            QRectF::fromDOMRect(m_windowContents.call<emscripten::val>("getBoundingClientRect"));
+            QRectF::fromDOMRect(m_window.call<emscripten::val>("getBoundingClientRect"));
     return QMarginsF(canvasRect.left() - frameRect.left(), canvasRect.top() - frameRect.top(),
                      frameRect.right() - canvasRect.right(),
                      frameRect.bottom() - canvasRect.bottom())
@@ -365,7 +359,7 @@ void QWasmWindow::propagateSizeHints()
 
 void QWasmWindow::setOpacity(qreal level)
 {
-    m_qtWindow["style"].set("opacity", qBound(0.0, level, 1.0));
+    m_decoratedWindow["style"].set("opacity", qBound(0.0, level, 1.0));
 }
 
 void QWasmWindow::invalidate()
@@ -375,7 +369,7 @@ void QWasmWindow::invalidate()
 
 void QWasmWindow::onActivationChanged(bool active)
 {
-    dom::syncCSSClassWith(m_qtWindow, "inactive", !active);
+    dom::syncCSSClassWith(m_decoratedWindow, "inactive", !active);
 }
 
 // Fix top level window flags in case only the type flags are passed.
@@ -405,11 +399,11 @@ void QWasmWindow::setWindowFlags(Qt::WindowFlags flags)
         onPositionPreferenceChanged(positionPreferenceFromWindowFlags(flags));
     }
     m_flags = flags;
-    dom::syncCSSClassWith(m_qtWindow, "frameless", !hasFrame() || !window()->isTopLevel());
-    dom::syncCSSClassWith(m_qtWindow, "has-border", hasBorder());
-    dom::syncCSSClassWith(m_qtWindow, "has-shadow", hasShadow());
-    dom::syncCSSClassWith(m_qtWindow, "has-title", hasTitleBar());
-    dom::syncCSSClassWith(m_qtWindow, "transparent-for-input",
+    dom::syncCSSClassWith(m_decoratedWindow, "frameless", !hasFrame() || !window()->isTopLevel());
+    dom::syncCSSClassWith(m_decoratedWindow, "has-border", hasBorder());
+    dom::syncCSSClassWith(m_decoratedWindow, "has-shadow", hasShadow());
+    dom::syncCSSClassWith(m_decoratedWindow, "has-title", hasTitleBar());
+    dom::syncCSSClassWith(m_decoratedWindow, "transparent-for-input",
                           flags.testFlag(Qt::WindowTransparentForInput));
 
     m_nonClientArea->titleBar()->setMaximizeVisible(hasMaximizeButton());
@@ -474,8 +468,8 @@ void QWasmWindow::applyWindowState()
     else
         newGeom = normalGeometry();
 
-    dom::syncCSSClassWith(m_qtWindow, "has-border", hasBorder());
-    dom::syncCSSClassWith(m_qtWindow, "maximized", isMaximized);
+    dom::syncCSSClassWith(m_decoratedWindow, "has-border", hasBorder());
+    dom::syncCSSClassWith(m_decoratedWindow, "maximized", isMaximized);
 
     m_nonClientArea->titleBar()->setRestoreVisible(isMaximized);
     m_nonClientArea->titleBar()->setMaximizeVisible(hasMaximizeButton());
@@ -611,7 +605,7 @@ bool QWasmWindow::processPointer(const PointerEvent &event)
         const auto pointInScreen = platformScreen()->mapFromLocal(
             dom::mapPoint(event.target(), platformScreen()->element(), event.localPoint));
         QWindowSystemInterface::handleEnterEvent(
-                window(), m_window->mapFromGlobal(pointInScreen), pointInScreen);
+                window(), mapFromGlobal(pointInScreen.toPoint()), pointInScreen);
         break;
     }
     case EventType::PointerLeave:
@@ -730,10 +724,10 @@ bool QWasmWindow::windowEvent(QEvent *event)
 {
     switch (event->type()) {
     case QEvent::WindowBlocked:
-        m_qtWindow["classList"].call<void>("add", emscripten::val("blocked"));
+        m_decoratedWindow["classList"].call<void>("add", emscripten::val("blocked"));
         return false; // Propagate further
     case QEvent::WindowUnblocked:;
-        m_qtWindow["classList"].call<void>("remove", emscripten::val("blocked"));
+        m_decoratedWindow["classList"].call<void>("remove", emscripten::val("blocked"));
         return false; // Propagate further
     default:
         return QPlatformWindow::windowEvent(event);
@@ -743,7 +737,7 @@ bool QWasmWindow::windowEvent(QEvent *event)
 void QWasmWindow::setMask(const QRegion &region)
 {
     if (region.isEmpty()) {
-        m_qtWindow["style"].set("clipPath", emscripten::val(""));
+        m_decoratedWindow["style"].set("clipPath", emscripten::val(""));
         return;
     }
 
@@ -757,7 +751,7 @@ void QWasmWindow::setMask(const QRegion &region)
         cssClipPath << "L " << cssRect.left() << " " << cssRect.bottom() << " z ";
     }
     cssClipPath << "')";
-    m_qtWindow["style"].set("clipPath", emscripten::val(cssClipPath.str()));
+    m_decoratedWindow["style"].set("clipPath", emscripten::val(cssClipPath.str()));
 }
 
 void QWasmWindow::setParent(const QPlatformWindow *)
@@ -776,7 +770,7 @@ std::string QWasmWindow::canvasSelector() const
 
 emscripten::val QWasmWindow::containerElement()
 {
-    return m_windowContents;
+    return m_window;
 }
 
 QWasmWindowTreeNode *QWasmWindow::parentNode()
@@ -795,9 +789,9 @@ void QWasmWindow::onParentChanged(QWasmWindowTreeNode *previous, QWasmWindowTree
                                   QWasmWindowStack::PositionPreference positionPreference)
 {
     if (previous)
-        previous->containerElement().call<void>("removeChild", m_qtWindow);
+        previous->containerElement().call<void>("removeChild", m_decoratedWindow);
     if (current)
-        current->containerElement().call<void>("appendChild", m_qtWindow);
+        current->containerElement().call<void>("appendChild", m_decoratedWindow);
     QWasmWindowTreeNode::onParentChanged(previous, current, positionPreference);
 }
 

@@ -1,17 +1,16 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
+#include <QtTest/qtest.h>
+#include <QtTest/qtesteventloop.h>
 
-#include <QTest>
-#include <QtGui>
-#include <QtWidgets>
-#include <QtCore>
-#include <QTestEventLoop>
+#include <QtWidgets/qprogressdialog.h>
 
-#include <QtNetwork/QNetworkAccessManager>
-#include <QtNetwork/QNetworkRequest>
-#include <QtNetwork/QNetworkReply>
-#include <qdebug.h>
+#include <QtNetwork/qnetworkaccessmanager.h>
+#include <QtNetwork/qnetworkrequest.h>
+#include <QtNetwork/qnetworkreply.h>
+
+#include <QtCore/qdebug.h>
 
 #include "../../network-settings.h"
 

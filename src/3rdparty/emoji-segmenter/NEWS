@@ -1,0 +1,28 @@
+Overview of changes leading to 0.4.0
+Friday, November 15, 2024
+====================================
+
+* Add `make size` targe to
+  determine binary size.
+* Set has_vs for
+  emoji_keycap_sequence
+
+Overview of changes leading to 0.3.0
+Tuesday, September 5, 2024
+====================================
+
+* Add segmentation for variation
+  selector pairs, VS15 and VS16,
+  needed for font-variant-emoji.
+
+Overview of changes leading to 0.2.0
+Tuesday, Februar 20, 2024
+====================================
+
+* Change Ragel mode to -F1
+
+Overview of changes leading to 0.1.0
+Tuesday, January 29, 2019
+====================================
+
+* Initial release

@@ -40,6 +40,7 @@
 #include <cstdio>
 
 #include <QtCore/private/qfunctions_win_p.h>
+#include <QtCore/private/wcharhelpers_win_p.h>
 
 #ifndef SPI_GETPLATFORMTYPE
 #define SPI_GETPLATFORMTYPE 257
@@ -684,8 +685,7 @@ static QString readSymLink(const QFileSystemEntry &link)
             DWORD len;
             wchar_t buffer[MAX_PATH];
             const QString volumeName = "\\\\?\\"_L1 + matchVolume.captured();
-            if (GetVolumePathNamesForVolumeName(reinterpret_cast<LPCWSTR>(volumeName.utf16()),
-                                                buffer, MAX_PATH, &len)
+            if (GetVolumePathNamesForVolumeName(qt_castToWchar(volumeName), buffer, MAX_PATH, &len)
                 != 0) {
                 result.replace(0, matchVolume.capturedLength(), QString::fromWCharArray(buffer));
             }
@@ -1526,32 +1526,43 @@ static bool createDirectoryWithParents(const QString &nativeName,
     return isDir(nativeName);
 }
 
-//static
-bool QFileSystemEngine::createDirectory(const QFileSystemEntry &entry, bool createParents,
-                                        std::optional<QFile::Permissions> permissions)
+bool QFileSystemEngine::mkpath(const QFileSystemEntry &entry,
+                               std::optional<QFile::Permissions> permissions)
 {
     QString dirName = entry.filePath();
     Q_CHECK_FILE_NAME(dirName, false);
-
-    dirName = QDir::toNativeSeparators(QDir::cleanPath(dirName));
 
     QNativeFilePermissions nativePermissions(permissions, true);
     if (!nativePermissions.isOk())
         return false;
 
     auto securityAttributes = nativePermissions.securityAttributes();
+    dirName = QDir::toNativeSeparators(QDir::cleanPath(dirName));
 
     // try to mkdir this directory
     DWORD lastError;
     if (mkDir(dirName, securityAttributes, &lastError))
         return true;
-    // mkpath should return true, if the directory already exists, mkdir false.
-    if (!createParents)
-        return false;
+    // mkpath should return true, if the directory already exists
     if (lastError == ERROR_ALREADY_EXISTS || lastError == ERROR_ACCESS_DENIED)
         return isDirPath(dirName, nullptr);
 
     return createDirectoryWithParents(dirName, securityAttributes, false);
+}
+
+bool QFileSystemEngine::mkdir(const QFileSystemEntry &entry,
+                              std::optional<QFile::Permissions> permissions)
+{
+    QString dirName = entry.filePath();
+    Q_CHECK_FILE_NAME(dirName, false);
+
+
+    QNativeFilePermissions nativePermissions(permissions, true);
+    if (!nativePermissions.isOk())
+        return false;
+
+    dirName = QDir::toNativeSeparators(QDir::cleanPath(dirName));
+    return mkDir(dirName, nativePermissions.securityAttributes());
 }
 
 bool QFileSystemEngine::rmdir(const QFileSystemEntry &entry)
@@ -1841,12 +1852,10 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
 
 //static
 bool QFileSystemEngine::setPermissions(const QFileSystemEntry &entry,
-                                       QFile::Permissions permissions, QSystemError &error,
-                                       QFileSystemMetaData *data)
+                                       QFile::Permissions permissions, QSystemError &error)
 {
     Q_CHECK_FILE_NAME(entry, false);
 
-    Q_UNUSED(data);
     int mode = 0;
 
     if (permissions & (QFile::ReadOwner | QFile::ReadUser | QFile::ReadGroup | QFile::ReadOther))

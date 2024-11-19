@@ -12,6 +12,9 @@
 
 #ifdef __cplusplus
 #  include <cstddef>
+#  if defined(_HAS_STD_BYTE) && _HAS_STD_BYTE == 0
+#    error "Qt requires std::byte, but _HAS_STD_BYTE has been set to 0"
+#  endif
 #  include <cstdint>
 #  if defined(__STDCPP_FLOAT16_T__) && __has_include(<stdfloat>)
 // P1467 implementation - https://wg21.link/p1467

@@ -27,6 +27,26 @@ function(qt_print_feature_summary)
         endif()
     endif()
 
+    # Print debug information about which tests were not run.
+    get_property(known_compile_tests GLOBAL PROPERTY _qtfeature_known_compile_tests)
+    list(REMOVE_DUPLICATES known_compile_tests)
+    set(tests_not_run "")
+    foreach(test_name IN LISTS known_compile_tests)
+        if(NOT DEFINED "TEST_${test_name}")
+            list(APPEND tests_not_run "${test_name}")
+        endif()
+    endforeach()
+    if(tests_not_run STREQUAL "")
+        message(DEBUG "All known compile tests were run.")
+    else()
+        message(DEBUG
+            "The following compile tests were not run, because their values were not requested."
+        )
+        foreach(test_name IN LISTS tests_not_run)
+            message(DEBUG "The compile test '${test_name}' was not run.")
+        endforeach()
+    endif()
+
     # Show which packages were found.
     feature_summary(INCLUDE_QUIET_PACKAGES
                     WHAT PACKAGES_FOUND

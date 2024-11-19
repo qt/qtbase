@@ -103,6 +103,11 @@ public:
 
     void advance()
     {
+        // Match the behavior of advance() from before porting to QDirListing,
+        // that is, even if hasNext() returns false, calling next() returns an
+        // empty string without crashing. QTBUG-130142
+        if (it == lister.end())
+            return;
         currentFileInfo = nextFileInfo;
         if (++it != lister.end()) {
             nextFileInfo = it->fileInfo();
@@ -203,8 +208,8 @@ QDirIterator::~QDirIterator()
 
 /*!
     Advances the iterator to the next entry, and returns the file path of this
-    new entry. If hasNext() returns \c false, this function does nothing, and
-    returns an empty QString.
+    new entry. You should first check hasNext() before using this method, to
+    avoid unexpected results.
 
     You can call fileName() or filePath() to get the current entry's file name
     or path, or fileInfo() to get a QFileInfo for the current entry.
@@ -223,8 +228,8 @@ QString QDirIterator::next()
     \since 6.3
 
     Advances the iterator to the next entry, and returns the file info of this
-    new entry. If hasNext() returns \c false, this function does nothing, and
-    returns an empty QFileInfo.
+    new entry. You should first check hasNext() before using this method, to
+    avoid unexpected results.
 
     You can call fileName() or filePath() to get the current entry's file name
     or path, or fileInfo() to get a QFileInfo for the current entry.

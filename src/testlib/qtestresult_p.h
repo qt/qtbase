@@ -108,6 +108,17 @@ public:
                              QTest::ComparisonOperation op, const char *file, int line,
                              const char *failureMessage = nullptr);
 
+    static bool report3WayResult(bool success,
+                                 const char *failureMessage,
+                                 const void *lhs, const void *rhs,
+                                 const char *(*lhsFormatter)(const void *),
+                                 const char *(*rhsFormatter)(const void *),
+                                 const char *lhsExpression, const char *rhsExpression,
+                                 const char *(*orderFormatter)(const void *),
+                                 const void *actualOrder, const void *expectedOrder,
+                                 const char *expectedExpression,
+                                 const char *file, int line);
+
 private:
     Q_DISABLE_COPY(QTestResult)
 };

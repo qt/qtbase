@@ -87,3 +87,11 @@ instructions:
           condition: property
           property: features
           contains_value: "DebianPackaging"
+
+  # Normally the doc tools are only built in qtbase, but a repository can choose
+  # to opt into building the doc tools during the repo's build phase, instead of using
+  # the qtbase tools, perhaps to use a different qttools sha1.
+  # In that case, the repository must set the QT_CI_BUILD_REPO_DOC_TOOLS=1 environment variable
+  # in its module CI build phase instructions, and QT_CI_FETCH_REPO_DOC_TOOLS=1 in its test phase
+  # instructions.
+  - !include "{{qt/qtbase}}/coin_build_doc_tools_checked.yaml"

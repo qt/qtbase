@@ -33,6 +33,9 @@ void _q_toHex(char *&dst, Integral value)
     }
 }
 
+#if QT_VERSION_MAJOR == 7
+#  warning Consider storing the UUID as simple bytes, not as {uint, ushort, short, array}
+#endif
 template <class Integral>
 bool _q_fromHex(const char *&src, Integral &value)
 {

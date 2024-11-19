@@ -155,7 +155,7 @@ private:
     static constexpr QAnyStringView fromCharInternal(const Char &ch) noexcept
     {
         if constexpr (sizeof ch == 1) // even char8_t is Latin-1 as single octet
-            return QtPrivate::wrapped_t<Char, QLatin1StringView>{QByteArrayView{&ch, 1}};
+            return QAnyStringView{&ch, 1, size_t{Tag::Latin1}};
         else // sizeof ch == 2
             return {&ch, 1};
     }
@@ -209,13 +209,13 @@ public:
     constexpr QAnyStringView(Container &&c, QtPrivate::wrapped_t<Container, QByteArray> &&capacity = {})
             //noexcept(std::is_nothrow_constructible_v<QByteArray, Container>)
         : QAnyStringView(capacity = std::forward<Container>(c)) {}
+
     template <typename Char, if_compatible_char<Char> = true>
     constexpr QAnyStringView(const Char &c) noexcept
         : QAnyStringView{fromCharInternal(c)} {}
     template <typename Char, if_convertible_to<QChar, Char> = true>
     constexpr QAnyStringView(Char ch, QCharContainer &&capacity = QCharContainer()) noexcept
         : QAnyStringView{&(capacity.ch = ch), 1} {}
-
     template <typename Char, typename Container = decltype(QChar::fromUcs4(U'x')),
               std::enable_if_t<std::is_same_v<Char, char32_t>, bool> = true>
     constexpr QAnyStringView(Char c, Container &&capacity = {}) noexcept
@@ -279,6 +279,8 @@ public:
     constexpr void chop(qsizetype n)
     { verify(0, n); setSize(size() - n); }
 
+    template <typename...Args>
+    [[nodiscard]] inline QString arg(Args &&...args) const;
 
     [[nodiscard]] inline QString toString() const; // defined in qstring.h
 

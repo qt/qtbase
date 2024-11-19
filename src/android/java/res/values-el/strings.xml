@@ -1,5 +1,4 @@
 <?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="fatal_error_msg">Παρουσιάστηκε ένα κρίσιμο σφάλμα και η εφαρμογή δεν μπορεί να συνεχίσει.</string>
-    <string name="unsupported_android_version">Αυτή η έκδοση του Android δεν υποστηρίζεται.</string>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="fatal_error_msg" tools:ignore="UnusedResources">Παρουσιάστηκε ένα κρίσιμο σφάλμα και η εφαρμογή δεν μπορεί να συνεχίσει.</string>
 </resources>

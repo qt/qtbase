@@ -1,0 +1,20 @@
+version = 1
+
+[[annotations]]
+path = ["overflow.patch"]
+precedence = "closest"
+SPDX-FileCopyrightText = ["None"]
+SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = ["brg_endian.h*"]
+precedence = "closest"
+SPDX-FileCopyrightText = ["Copyright (c) 1998-2013, Brian Gladman, Worcester, UK. All rights reserved."]
+SPDX-License-Identifier = "BSD-2-Clause"
+
+[[annotations]]
+path = ["Kecca*"]
+precedence = "closest"
+SPDX-FileCopyrightText = ["Guido Bertoni, Joan Daemen, Michaël Peeters and Gilles Van Assche.",
+                          "To the extent possible under law, the implementers have waived all copyright and related or neighboring rights to the source code in this file."]
+SPDX-License-Identifier = "CC0-1.0"

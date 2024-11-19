@@ -2,9 +2,18 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 
-#include <QTest>
-#include <QtGui>
-#include <QtWidgets>
+#include <QtTest/qtest.h>
+
+#include <QtWidgets/qgraphicslinearlayout.h>
+#include <QtWidgets/qgraphicsview.h>
+#include <QtWidgets/qgraphicswidget.h>
+#include <QtWidgets/qstyleoption.h>
+
+#include <QtCore/qmap.h>
+#include <QtCore/qrect.h>
+#include <QtCore/qset.h>
+#include <QtCore/qtimeline.h>
+
 #include <math.h>
 
 class tst_QGraphicsLayout : public QObject

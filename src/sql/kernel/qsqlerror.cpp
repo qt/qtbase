@@ -78,9 +78,7 @@ QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QSqlErrorPrivate)
 */
 
 /*! \fn QSqlError::swap(QSqlError &other)
-    Swaps error \a other with this error. This operation is very fast
-    and never fails.
-
+    \memberswap{error}
     \since 5.10
 */
 

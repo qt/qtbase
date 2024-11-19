@@ -12,13 +12,11 @@ import java.io.FileInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import java.util.NoSuchElementException;
 import java.util.zip.ZipFile;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Collections;
 import java.util.Comparator;
 
 import android.util.Log;
@@ -34,7 +32,7 @@ class QtApkFileEngine {
     private static String m_appApkPath;
 
     private AssetFileDescriptor m_assetFd;
-    private AssetManager m_assetManager;
+    private final AssetManager m_assetManager;
     private FileInputStream m_assetInputStream;
     private long m_pos = -1;
 
@@ -49,7 +47,7 @@ class QtApkFileEngine {
             m_assetFd = m_assetManager.openNonAssetFd(fileName);
             m_assetInputStream = m_assetFd.createInputStream();
         } catch (IOException e) {
-            Log.e(QtTAG, "Failed to open the app APK with " + e.toString());
+            Log.e(QtTAG, "Failed to open the app APK with " + e);
         }
 
         return m_assetInputStream != null;
@@ -63,7 +61,7 @@ class QtApkFileEngine {
             if (m_assetFd != null)
                 m_assetFd.close();
         } catch (IOException e) {
-            Log.e(QtTAG, "Failed to close resources with " + e.toString());
+            Log.e(QtTAG, "Failed to close resources with " + e);
         }
 
         return m_assetInputStream == null && m_assetFd == null;
@@ -99,7 +97,7 @@ class QtApkFileEngine {
 
             return mapped;
         } catch (Exception e) {
-            Log.e(QtTAG, "Failed to map APK file to memory with " + e.toString());
+            Log.e(QtTAG, "Failed to map APK file to memory with " + e);
         }
 
         return null;
@@ -126,7 +124,7 @@ class QtApkFileEngine {
 
             outputStream.close();
         } catch (IOException e) {
-            Log.e(QtTAG, "Failed to read content with " + e.toString());
+            Log.e(QtTAG, "Failed to read content with " + e);
         }
 
         return outputStream.toByteArray();
@@ -142,7 +140,7 @@ class QtApkFileEngine {
             PackageManager pm = context.getPackageManager();
             m_appApkPath = pm.getApplicationInfo(context.getPackageName(), 0).sourceDir;
         } catch (PackageManager.NameNotFoundException e) {
-            Log.e(QtTAG, "Failed to get the app APK path with " + e.toString());
+            Log.e(QtTAG, "Failed to get the app APK path with " + e);
             return null;
         }
         return m_appApkPath;
@@ -198,14 +196,9 @@ class QtApkFileEngine {
             }
 
             // sort alphabetically based on the file path
-            Collections.sort(fileInfos, new Comparator<JFileInfo>() {
-                @Override
-                public int compare(JFileInfo info1, JFileInfo info2) {
-                    return info1.relativePath.compareTo(info2.relativePath);
-                }
-            });
+            fileInfos.sort(Comparator.comparing(info -> info.relativePath));
         } catch (Exception e) {
-            Log.e(QtTAG, "Failed to list App's APK files with " + e.toString());
+            Log.e(QtTAG, "Failed to list App's APK files with " + e);
         }
 
         return fileInfos;

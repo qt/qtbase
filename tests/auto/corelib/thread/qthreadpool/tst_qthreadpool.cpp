@@ -76,6 +76,7 @@ private slots:
     void tryStartCount();
     void priorityStart_data();
     void priorityStart();
+    void qualityOfService();
     void waitForDone();
     void clear();
     void clearWithAutoDelete();
@@ -414,6 +415,21 @@ void tst_QThreadPool::expiryTimeout()
 
     threadPool.setExpiryTimeout(expiryTimeout);
     QCOMPARE(threadPool.expiryTimeout(), expiryTimeout);
+
+    threadPool.waitForDone();
+    // Negative times should be 'forever'
+    threadPool.setExpiryTimeout(-1);
+    QCOMPARE(threadPool.expiryTimeout(), -1);
+
+    threadPool.start(&task);
+    QVERIFY(task.semaphore.tryAcquire(1, 10'000));
+    QCOMPARE(task.runCount.loadRelaxed(), 3);
+    firstThread = task.thread;
+
+    QTest::qWait(100); // Let some time elapse after the task finishes...
+
+    // Since the thread never expires it should still be waiting for a new task:
+    QVERIFY(firstThread->isRunning());
 }
 
 void tst_QThreadPool::expiryTimeoutRace() // QTBUG-3786
@@ -1029,6 +1045,18 @@ void tst_QThreadPool::priorityStart()
     sem.release();
     WAIT_FOR_DONE(threadPool);
     QCOMPARE(firstStarted.loadRelaxed(), expected);
+}
+
+void tst_QThreadPool::qualityOfService()
+{
+    QThreadPool p;
+    p.setServiceLevel(QThread::QualityOfService::Eco);
+    QThread::QualityOfService level = QThread::QualityOfService::Auto;
+    p.tryStart([&level](){
+        level = QThread::currentThread()->serviceLevel();
+    });
+    QVERIFY(p.waitForDone(QDeadlineTimer(10s)));
+    QCOMPARE(level, QThread::QualityOfService::Eco);
 }
 
 void tst_QThreadPool::waitForDone()

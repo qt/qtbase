@@ -1,0 +1,7 @@
+version = 1
+
+[[annotations]]
+path = ["double-conversion/*"]
+precedence = "closest"
+SPDX-FileCopyrightText = "Copyright 2006-2012, the V8 project authors"
+SPDX-License-Identifier = "BSD-3-Clause"

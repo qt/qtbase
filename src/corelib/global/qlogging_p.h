@@ -17,7 +17,7 @@
 
 #include <QtCore/private/qglobal_p.h>
 #include "qlogging.h"
-#include "qloggingcategory.h"
+#include <QtCore/qloggingcategory.h>
 
 #if !defined(QT_BOOTSTRAPPED) && QT_CONFIG(regularexpression)
 #  if __has_include(<cxxabi.h>) && QT_CONFIG(backtrace)

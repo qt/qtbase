@@ -1,0 +1,7 @@
+version = 1
+
+[[annotations]]
+path = ["*"]
+precedence = "override"
+SPDX-FileCopyrightText = "None"
+SPDX-License-Identifier = "CC0-1.0"

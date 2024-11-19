@@ -22,6 +22,10 @@
 #     TRY_RUN_FLAGS
 #         Command line flags that are going to be passed to the tool for testing its correctness.
 #         If no flags were given, we default to `-v`.
+#     REQUIRED_FOR_DOCS
+#         Specifies that the built tool is required to generate documentation. Examples are qdoc,
+#         and qvkgen (because they participate in header file generation, which are needed for
+#         documentation generation).
 #
 # One-value Arguments:
 #     EXTRA_CMAKE_FILES
@@ -51,6 +55,7 @@ function(qt_internal_add_tool target_name)
         EXCEPTIONS
         NO_UNITY_BUILD
         TRY_RUN
+        REQUIRED_FOR_DOCS
         ${__qt_internal_sbom_optional_args}
     )
     set(one_value_keywords
@@ -112,6 +117,17 @@ function(qt_internal_add_tool target_name)
         set(arg_NO_UNITY_BUILD "")
     endif()
 
+    _qt_internal_forward_function_args(
+        FORWARD_PREFIX arg
+        FORWARD_OUT_VAR add_executable_args
+        FORWARD_SINGLE
+            TARGET_COMPANY
+            TARGET_COPYRIGHT
+            TARGET_DESCRIPTION
+            TARGET_PRODUCT
+            TARGET_VERSION
+    )
+
     qt_internal_add_executable("${target_name}"
         OUTPUT_DIRECTORY "${output_dir}"
         ${exceptions}
@@ -134,11 +150,7 @@ function(qt_internal_add_tool target_name)
         LINK_OPTIONS ${arg_LINK_OPTIONS}
         MOC_OPTIONS ${arg_MOC_OPTIONS}
         DISABLE_AUTOGEN_TOOLS ${disable_autogen_tools}
-        TARGET_VERSION ${arg_TARGET_VERSION}
-        TARGET_PRODUCT ${arg_TARGET_PRODUCT}
-        TARGET_DESCRIPTION ${arg_TARGET_DESCRIPTION}
-        TARGET_COMPANY ${arg_TARGET_COMPANY}
-        TARGET_COPYRIGHT ${arg_TARGET_COPYRIGHT}
+        ${add_executable_args}
         # If you are putting anything after these, make sure that
         # qt_set_target_info_properties knows how to process them
     )
@@ -170,6 +182,9 @@ function(qt_internal_add_tool target_name)
 
     if(TARGET host_tools)
         add_dependencies(host_tools "${target_name}")
+        if(arg_REQUIRED_FOR_DOCS)
+            add_dependencies(doc_tools "${target_name}")
+        endif()
         if(arg_CORE_LIBRARY STREQUAL "Bootstrap")
             add_dependencies(bootstrap_tools "${target_name}")
         endif()
@@ -215,7 +230,9 @@ function(qt_internal_add_tool target_name)
         qt_get_cmake_configurations(cmake_configs)
 
         set(install_initial_call_args
-            EXPORT "${INSTALL_CMAKE_NAMESPACE}${arg_TOOLS_TARGET}ToolsTargets")
+            EXPORT "${INSTALL_CMAKE_NAMESPACE}${arg_TOOLS_TARGET}ToolsTargets"
+            COMPONENT host_tools
+        )
 
         foreach(cmake_config ${cmake_configs})
             qt_get_install_target_default_args(
@@ -266,7 +283,11 @@ function(qt_internal_add_tool target_name)
         _qt_internal_add_try_run_post_build("${target_name}" "${arg_TRY_RUN_FLAGS}")
     endif()
 
-    qt_enable_separate_debug_info(${target_name} "${install_dir}" QT_EXECUTABLE)
+    qt_internal_defer_separate_debug_info("${target_name}"
+        SEPARATE_DEBUG_INFO_ARGS
+            "${install_dir}"
+            QT_EXECUTABLE
+    )
     qt_internal_install_pdb_files(${target_name} "${install_dir}")
 
     if(QT_GENERATE_SBOM)

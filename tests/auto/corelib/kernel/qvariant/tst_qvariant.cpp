@@ -5874,7 +5874,7 @@ void tst_QVariant::equalsWithoutMetaObject()
         /*.revision=*/ 0,
         /*.alignment=*/ alignof(T),
         /*.size=*/ sizeof(T),
-        /*.flags=*/ QtPrivate::QMetaTypeTypeFlags<T>::Flags,
+        /*.flags=*/ QtPrivate::QMetaTypeForType<T>::flags(),
         /*.typeId=*/ 0,
         /*.metaObject=*/ nullptr, // on purpose.
         /*.name=*/ "NoMetaObject*",

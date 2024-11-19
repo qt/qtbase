@@ -84,6 +84,10 @@ void *QKeyMapper::resolveInterface(const char *name, int revision) const
     QT_NATIVE_INTERFACE_RETURN_IF(QEvdevKeyMapper, QGuiApplicationPrivate::platformIntegration());
 #endif
 
+#if QT_CONFIG(vxworksevdev)
+    QT_NATIVE_INTERFACE_RETURN_IF(QVxKeyMapper, QGuiApplicationPrivate::platformIntegration());
+#endif
+
     return nullptr;
 }
 

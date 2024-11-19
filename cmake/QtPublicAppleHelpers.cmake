@@ -731,30 +731,28 @@ function(_qt_internal_set_ios_simulator_arch target)
 endfunction()
 
 # Export Apple platform sdk and xcode version requirements to Qt6ConfigExtras.cmake.
+# Always exported, even on non-Apple platforms, so that we can use them when building
+# documentation.
 function(_qt_internal_export_apple_sdk_and_xcode_version_requirements out_var)
-    if(NOT APPLE)
-        return()
-    endif()
+    set(vars_to_assign
+        QT_SUPPORTED_MIN_IOS_SDK_VERSION
+        QT_SUPPORTED_MAX_IOS_SDK_VERSION
+        QT_SUPPORTED_MIN_IOS_XCODE_VERSION
+        QT_SUPPORTED_MIN_IOS_VERSION
+        QT_SUPPORTED_MAX_IOS_VERSION_TESTED
 
-    if(IOS)
-        set(vars_to_assign
-            QT_SUPPORTED_MIN_IOS_SDK_VERSION
-            QT_SUPPORTED_MAX_IOS_SDK_VERSION
-            QT_SUPPORTED_MIN_IOS_XCODE_VERSION
-        )
-    elseif(VISIONOS)
-        set(vars_to_assign
-            QT_SUPPORTED_MIN_VISIONOS_SDK_VERSION
-            QT_SUPPORTED_MAX_VISIONOS_SDK_VERSION
-            QT_SUPPORTED_MIN_VISIONOS_XCODE_VERSION
-        )
-    else()
-        set(vars_to_assign
-            QT_SUPPORTED_MIN_MACOS_SDK_VERSION
-            QT_SUPPORTED_MAX_MACOS_SDK_VERSION
-            QT_SUPPORTED_MIN_MACOS_XCODE_VERSION
-        )
-    endif()
+        QT_SUPPORTED_MIN_VISIONOS_SDK_VERSION
+        QT_SUPPORTED_MAX_VISIONOS_SDK_VERSION
+        QT_SUPPORTED_MIN_VISIONOS_XCODE_VERSION
+        QT_SUPPORTED_MIN_VISIONOS_VERSION
+        QT_SUPPORTED_MAX_VISIONOS_VERSION_TESTED
+
+        QT_SUPPORTED_MIN_MACOS_SDK_VERSION
+        QT_SUPPORTED_MAX_MACOS_SDK_VERSION
+        QT_SUPPORTED_MIN_MACOS_XCODE_VERSION
+        QT_SUPPORTED_MIN_MACOS_VERSION
+        QT_SUPPORTED_MAX_MACOS_VERSION_TESTED
+    )
 
     set(assignments "")
     foreach(var IN LISTS vars_to_assign)

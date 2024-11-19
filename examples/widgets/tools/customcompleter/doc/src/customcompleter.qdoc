@@ -4,6 +4,8 @@
 /*!
     \example tools/customcompleter
     \title Custom Completer Example
+    \examplecategory {User Interface Components}
+
 
     \ingroup examples-widgets-tools
 

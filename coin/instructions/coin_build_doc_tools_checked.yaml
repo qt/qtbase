@@ -1,0 +1,25 @@
+type: Group
+instructions:
+  - type: Group
+    instructions:
+      - !include "{{qt/qtbase}}/coin_build_doc_tools.yaml"
+    enable_if:
+      condition: or
+      conditions:
+      # This is set by qtbase instructions.
+      - condition: runtime
+        env_var:  QT_CI_BUILD_DOC_TOOLS
+        equals_value: "1"
+      # This could potentially bet set by non-qtbase instructions.
+      - condition: runtime
+        env_var:  QT_CI_BUILD_REPO_DOC_TOOLS
+        equals_value: "1"
+enable_if:
+  condition: and
+  conditions:
+  - condition: property
+    property: host.os
+    equals_property: target.os
+  - condition: property
+    property: features
+    contains_value: DocsGenerationV2

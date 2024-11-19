@@ -14,11 +14,11 @@ QT_BEGIN_NAMESPACE
 class Parser
 {
 public:
-    Parser():index(0), displayWarnings(true), displayNotes(true) {}
     Symbols symbols;
-    qsizetype index;
-    bool displayWarnings;
-    bool displayNotes;
+    qsizetype index = 0;
+    bool displayWarnings = true;
+    bool displayNotes = true;
+    bool activeQtMode = false;
 
     struct IncludePath
     {

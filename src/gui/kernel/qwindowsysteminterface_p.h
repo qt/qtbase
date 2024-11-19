@@ -28,7 +28,7 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_DECLARE_LOGGING_CATEGORY(lcQpaInputDevices);
+QT_DECLARE_EXPORTED_QT_LOGGING_CATEGORY(lcQpaInputDevices, Q_GUI_EXPORT)
 
 class QWindowSystemEventHandler;
 

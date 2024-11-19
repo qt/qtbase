@@ -64,7 +64,7 @@ Q_GLOBAL_STATIC(QNetworkCacheMetaDataPrivate, metadata_shared_invalid)
 /*!
     \typedef QNetworkCacheMetaData::RawHeader
 
-    Synonym for QPair<QByteArray, QByteArray>
+    Synonym for std::pair<QByteArray, QByteArray>
 */
 
 /*!
@@ -117,9 +117,7 @@ QNetworkCacheMetaData &QNetworkCacheMetaData::operator=(const QNetworkCacheMetaD
 /*!
     \fn void QNetworkCacheMetaData::swap(QNetworkCacheMetaData &other)
     \since 5.0
-
-    Swaps this metadata instance with \a other. This function is very
-    fast and never fails.
+    \memberswap{metadata instance}
  */
 
 /*!

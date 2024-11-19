@@ -56,7 +56,7 @@ private:
     void setBitFlag(const QString &flag);
 
     // sending messages
-    QVariantList packDBusSignalArguments(const QString &type, int data1, int data2, const QVariant &variantData) const;
+    static QVariantList packDBusSignalArguments(const QString &type, int data1, int data2, const QVariant &variantData);
     bool sendDBusSignal(const QString &path, const QString &interface, const QString &name, const QVariantList &arguments) const;
     QVariant variantForPath(const QString &path) const;
 

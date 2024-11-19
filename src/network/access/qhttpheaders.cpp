@@ -959,9 +959,7 @@ QHttpHeaders &QHttpHeaders::operator=(const QHttpHeaders &other)
 
 /*!
     \fn void QHttpHeaders::swap(QHttpHeaders &other)
-
-    Swaps this QHttpHeaders with \a other. This function is very fast and
-    never fails.
+    \memberswap{QHttpHeaders}
 */
 
 #ifndef QT_NO_DEBUG_STREAM

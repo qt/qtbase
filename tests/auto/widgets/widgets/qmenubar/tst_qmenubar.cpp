@@ -1090,15 +1090,14 @@ void tst_QMenuBar::task256322_highlight()
     if (!QGuiApplication::platformName().compare(QLatin1String("minimal"), Qt::CaseInsensitive))
         QSKIP("Highlighting does not work correctly for minimal platform");
 
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     QMainWindow win;
     win.menuBar()->setNativeMenuBar(false);  //we can't check the geometry of native menubars
     QMenu menu;
+    menu.addAction("New");
     QAction *file = win.menuBar()->addMenu(&menu);
     file->setText("file");
     QMenu menu2;
+    menu2.addAction("Open");
     QAction *file2 = win.menuBar()->addMenu(&menu2);
     file2->setText("file2");
     QAction *nothing = win.menuBar()->addAction("nothing");

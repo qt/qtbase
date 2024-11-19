@@ -120,15 +120,13 @@ QVariant QWinRegistryKey::value(QStringView subKey) const
     return {};
 }
 
+// Returns the value of the specified subKey as a string, obtained using
+// qvariant_cast from the underlying QVariant. If that value is not a string,
+// or the subKey has no value, a string whose isNull() is true is returned.
+// Otherwise, the resulting string (which may be empty) is returned.
 QString QWinRegistryKey::stringValue(QStringView subKey) const
 {
     return value<QString>(subKey).value_or(QString());
-}
-
-std::pair<DWORD, bool> QWinRegistryKey::dwordValue(QStringView subKey) const
-{
-    const std::optional<DWORD> val = value<DWORD>(subKey);
-    return {val.value_or(0), val.has_value()};
 }
 
 QT_END_NAMESPACE

@@ -128,6 +128,7 @@ private slots:
     void min_maximumWidth_data();
     void min_maximumWidth();
     void negativeLineWidth();
+    void embeddedImageLineHeight();
 
 private:
     QFont testFont;
@@ -2758,6 +2759,54 @@ void tst_QTextLayout::negativeLineWidth()
         line.setNumColumns(2, -1);
         QVERIFY(line.textLength() > 0);
         layout.endLayout();
+    }
+}
+
+void tst_QTextLayout::embeddedImageLineHeight()
+{
+    QString s1 = QStringLiteral("Foobar Foobar Foobar Foobar");
+    QString s2 = QStringLiteral("<img height=\"80\" width=\"80\" />Foobar Foobar Foobar Foobar");
+
+    qreal s1Width;
+    qreal s1Height;
+    {
+        QTextDocument document;
+        document.setHtml(s1);
+        QCOMPARE(document.blockCount(), 1);
+
+        // Trigger layout
+        {
+            QImage img(1, 1, QImage::Format_ARGB32_Premultiplied);
+            QPainter p(&img);
+            document.drawContents(&p);
+        }
+
+        QTextLayout *layout = document.firstBlock().layout();
+        QVERIFY(layout != nullptr);
+        QCOMPARE(layout->lineCount(), 1);
+        QTextLine line = layout->lineAt(0);
+        s1Width = document.idealWidth();
+        s1Height = line.ascent() + line.descent();
+    }
+
+    {
+        QTextDocument document;
+        document.setHtml(s1 + s2);
+        document.setTextWidth(std::ceil(s1Width));
+        QCOMPARE(document.blockCount(), 1);
+
+        // Trigger layout
+        {
+            QImage img(1, 1, QImage::Format_ARGB32_Premultiplied);
+            QPainter p(&img);
+            document.drawContents(&p);
+        }
+
+        QTextLayout *layout = document.firstBlock().layout();
+        QVERIFY(layout != nullptr);
+        QVERIFY(layout->lineCount() > 1);
+        QTextLine line = layout->lineAt(0);
+        QCOMPARE(line.ascent() + line.descent(), s1Height);
     }
 }
 

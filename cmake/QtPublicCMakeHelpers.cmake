@@ -675,3 +675,25 @@ function(_qt_internal_forward_function_args)
 
     set(${arg_FORWARD_OUT_VAR} "${forward_args}" PARENT_SCOPE)
 endfunction()
+
+# Function adds the transitive property of the specified type to a target, avoiding duplicates.
+# Supported types: COMPILE, LINK
+#
+# See:
+#   https://cmake.org/cmake/help/latest/prop_tgt/TRANSITIVE_COMPILE_PROPERTIES.html
+#   https://cmake.org/cmake/help/latest/prop_tgt/TRANSITIVE_LINK_PROPERTIES.html
+function(_qt_internal_add_transitive_property target type property)
+    if(CMAKE_VERSION VERSION_LESS 3.30)
+        return()
+    endif()
+    if(NOT type MATCHES "^(COMPILE|LINK)$")
+        message(FATAL_ERROR "Attempt to assign unknown TRANSITIVE_${type}_PROPERTIES property")
+    endif()
+
+    get_target_property(transitive_properties ${target}
+        TRANSITIVE_${type}_PROPERTIES)
+    if(NOT "${property}" IN_LIST transitive_properties)
+        set_property(TARGET ${target}
+            APPEND PROPERTY TRANSITIVE_${type}_PROPERTIES ${property})
+    endif()
+endfunction()

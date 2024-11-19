@@ -1,0 +1,7 @@
+version = 1
+
+[[annotations]]
+path = ["**"]
+precedence = "closest"
+SPDX-FileCopyrightText = ["Copyright (C) 2024 Gradle Inc."]
+SPDX-License-Identifier = "Apache-2.0"

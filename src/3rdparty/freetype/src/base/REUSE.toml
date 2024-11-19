@@ -1,0 +1,129 @@
+version = 1
+
+[[annotations]]
+path = ["ftbase.c", "ftbbox.c", "ftcalc.c", "ftdebug.c", "ftglyph.c", "ftinit.c",
+        "ftmm.c", "ftobjs.c", "ftoutln.c", "ftsnames.c", "ftsystem.c", "rules.mk"]
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = ["Copyright (C) 1996-2023 by David Turner, Robert Wilhelm, and Werner Lemberg."]
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = ["ftmac.c"]
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = ["Copyright (C) 1996-2023 by Just van Rossum, David Turner, Robert Wilhelm, and Werner Lemberg."]
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = ["ftstream.c", "ftsynth.c"]
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = ["Copyright (C) 2000-2023 by David Turner, Robert Wilhelm, and Werner Lemberg."]
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = ["ftdbgmem.c", "fttrigon.c"]
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = ["Copyright (C) 2001-2023 by David Turner, Robert Wilhelm, and Werner Lemberg."]
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = ["ftbdf.c", "ftfntfmt.c", "ftpfr.c", "ftstroke.c", "fttype1.c", "ftutil.c", "ftgloadr.c"]
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = ["Copyright (C) 2002-2023 by David Turner, Robert Wilhelm, and Werner Lemberg."]
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = ["ftwinfnt.c"]
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = ["Copyright (C) 2003-2023 by David Turner, Robert Wilhelm, and Werner Lemberg."]
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = ["ftbitmap.c", "ftotval.c"]
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = ["Copyright (C) 2004-2023 by David Turner, Robert Wilhelm, and Werner Lemberg."]
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = ["ftgxval.c"]
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = ["Copyright (C) 2004-2023 by Masatake YAMATO, Redhat K.K, David Turner, Robert Wilhelm, and Werner Lemberg."]
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = ["ftrfork.c"]
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = ["Copyright (C) 2004-2023 by Masatake YAMATO, Redhat K.K."]
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = ["ftlcdfil.c"]
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = ["Copyright (C) 2006-2023 by David Turner, Robert Wilhelm, and Werner Lemberg."]
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = ["ftgasp.c"]
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = ["Copyright (C) 2007-2023 by David Turner, Robert Wilhelm, and Werner Lemberg."]
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = ["ftcid.c"]
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = ["Copyright (C) 2007-2023 by Derek Clegg and Michael Toftdal."]
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = ["ftpatent.c"]
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = ["Copyright (C) 2007-2023 by David Turner."]
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = ["ftadvanc.c", "ftbase.h", "ftfstype.c"]
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = ["Copyright (C) 2008-2023 by David Turner, Robert Wilhelm, and Werner Lemberg."]
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = ["ftpsprop.c"]
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = ["Copyright (C) 2017-2023 by David Turner, Robert Wilhelm, and Werner Lemberg."]
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = ["ftcolor.c", "fterrors.c", "ftver.rc"]
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = ["Copyright (C) 2018-2023 by David Turner, Robert Wilhelm, and Werner Lemberg."]
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = ["md5.c", "md5.h"]
+comment = "Copyright info on line mix other text"
+precedence = "override"
+SPDX-FileCopyrightText = ["Copyright (c) 2001 Alexander Peslyak"]
+SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = ["fthash.c"]
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = ["Copyright 2000 Computing Research Labs, New Mexico State University",
+                          "Copyright 2001-2015 Francesco Zappa Nardelli"]
+SPDX-License-Identifier = "MIT"

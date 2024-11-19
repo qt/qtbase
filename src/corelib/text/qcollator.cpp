@@ -168,9 +168,7 @@ QCollator &QCollator::operator=(const QCollator &other)
 
 /*!
     \fn void QCollator::swap(QCollator &other)
-
-    Swaps this collator with \a other. This function is very fast and
-    never fails.
+    \memberswap{collator}
 */
 
 /*!
@@ -470,8 +468,7 @@ QCollatorSortKey& QCollatorSortKey::operator=(const QCollatorSortKey &other)
 
 /*!
     \fn void QCollatorSortKey::swap(QCollatorSortKey & other)
-
-    Swaps this collator key with \a other.
+    \memberswap{collator key}
 */
 
 /*!

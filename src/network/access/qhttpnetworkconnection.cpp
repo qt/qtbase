@@ -630,7 +630,7 @@ QHttpNetworkReply* QHttpNetworkConnectionPrivate::queueRequest(const QHttpNetwor
     reply->setRequest(request);
     reply->d_func()->connection = q;
     reply->d_func()->connectionChannel = &channels[0]; // will have the correct one set later
-    HttpMessagePair pair = qMakePair(request, reply);
+    HttpMessagePair pair = std::pair(request, reply);
 
     if (request.isPreConnect())
         preConnectRequests++;

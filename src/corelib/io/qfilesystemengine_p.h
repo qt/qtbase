@@ -91,8 +91,7 @@ public:
     static QByteArray id(int fd);
     static bool setFileTime(int fd, const QDateTime &newDate,
                             QFile::FileTime whatTime, QSystemError &error);
-    static bool setPermissions(int fd, QFile::Permissions permissions, QSystemError &error,
-                               QFileSystemMetaData *data = nullptr);
+    static bool setPermissions(int fd, QFile::Permissions permissions, QSystemError &error);
 #endif
 #if defined(Q_OS_WIN)
     static QFileSystemEntry junctionTarget(const QFileSystemEntry &link, QFileSystemMetaData &data);
@@ -116,7 +115,18 @@ public:
     static QString tempPath();
 
     static bool createDirectory(const QFileSystemEntry &entry, bool createParents,
-                                std::optional<QFile::Permissions> permissions = std::nullopt);
+                                std::optional<QFile::Permissions> permissions = std::nullopt)
+    {
+        if (createParents)
+            return mkpath(entry, permissions);
+        return mkdir(entry, permissions);
+    }
+
+    static bool mkdir(const QFileSystemEntry &entry,
+                      std::optional<QFile::Permissions> permissions = std::nullopt);
+    static bool mkpath(const QFileSystemEntry &entry,
+                       std::optional<QFile::Permissions> permissions = std::nullopt);
+
     static bool removeDirectory(const QFileSystemEntry &entry, bool removeEmptyParents)
     {
         if (removeEmptyParents)
@@ -136,8 +146,8 @@ public:
     static bool renameOverwriteFile(const QFileSystemEntry &source, const QFileSystemEntry &target, QSystemError &error);
     static bool removeFile(const QFileSystemEntry &entry, QSystemError &error);
 
-    static bool setPermissions(const QFileSystemEntry &entry, QFile::Permissions permissions, QSystemError &error,
-                               QFileSystemMetaData *data = nullptr);
+    static bool setPermissions(const QFileSystemEntry &entry, QFile::Permissions permissions,
+                               QSystemError &error);
 
     // unused, therefore not implemented
     static bool setFileTime(const QFileSystemEntry &entry, const QDateTime &newDate,

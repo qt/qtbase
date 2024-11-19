@@ -40,7 +40,7 @@ public:
     \ingroup basicwidgets
     \inmodule QtWidgets
 
-    \image windows-checkbox.png
+    \image fusion-checkbox.png
 
     A QCheckBox is an option button that can be switched on (checked) or off
     (unchecked). Checkboxes are typically used to represent features in an
@@ -79,12 +79,6 @@ public:
     In this example, the shortcut is \e{Alt+A}. See the \l{QShortcut#mnemonic}
     {QShortcut} documentation for details. To display an actual ampersand,
     use '&&'.
-
-    Important inherited functions: text(), setText(), text(), pixmap(),
-    setPixmap(), accel(), setAccel(), isToggleButton(), setDown(), isDown(),
-    isOn(), checkState(), autoRepeat(), isExclusiveToggle(), group(),
-    setAutoRepeat(), toggle(), pressed(), released(), clicked(), toggled(),
-    checkState(), and checkStateChanged().
 
     \sa QAbstractButton, QRadioButton
 */

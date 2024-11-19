@@ -1,21 +1,20 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
+#include <QtTest/qtest.h>
+#include <QtTest/qsignalspy.h>
 
-#include <QTest>
-#include <QtGui>
-#include <QtWidgets>
-#include <QSignalSpy>
+#include <QtWidgets/qtableview.h>
 
-#include <qsqldriver.h>
-#include <qsqldatabase.h>
-#include <qsqlerror.h>
-#include <qsqlfield.h>
-#include <qsqlquery.h>
-#include <qsqlrecord.h>
+#include <QtSql/qsqldriver.h>
+#include <QtSql/qsqldatabase.h>
+#include <QtSql/qsqlerror.h>
+#include <QtSql/qsqlfield.h>
+#include <QtSql/qsqlquery.h>
+#include <QtSql/qsqlrecord.h>
+#include <QtSql/qsqlquerymodel.h>
 
-#include <qsqlquerymodel.h>
-#include <qsortfilterproxymodel.h>
+#include <QtCore/qsortfilterproxymodel.h>
 
 #include "../../kernel/qsqldatabase/tst_databases.h"
 

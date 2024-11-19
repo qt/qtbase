@@ -1,0 +1,8 @@
+version = 1
+
+[[annotations]]
+path = ["**"]
+precedence = "closest"
+SPDX-FileCopyrightText = ["Copyright (C) Dominik Reichl <dominik.reichl@t-online.de>",
+    "Copyright (C) 2016 The Qt Company Ltd"]
+SPDX-License-Identifier = "LicenseRef-SHA1-Public-Domain"

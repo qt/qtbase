@@ -1,0 +1,19 @@
+version = 1
+
+[[annotations]]
+path = ["module.mk", "psmodule.c", "psmodule.h", "psnames.c", "rules.mk"]
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (C) 1996-2023 by David Turner, Robert Wilhelm, and Werner Lemberg."
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = ["psnamerr.h"]
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (C) 2001-2023 by David Turner, Robert Wilhelm, and Werner Lemberg."
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = ["pstables.h"]
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (C) 2005-2023 by David Turner, Robert Wilhelm, and Werner Lemberg."
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"

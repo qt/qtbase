@@ -348,6 +348,7 @@ void QInputDevicePrivate::registerDevice(const QInputDevice *dev)
 {
     QMutexLocker lock(&devicesMutex);
     deviceList()->append(dev);
+    qCInfo(lcQpaInputDevices) << "Registered" << dev;
 }
 
 /*!
@@ -357,6 +358,7 @@ void QInputDevicePrivate::unregisterDevice(const QInputDevice *dev)
 {
     QMutexLocker lock(&devicesMutex);
     deviceList()->removeOne(dev);
+    qCInfo(lcQpaInputDevices) << "Unregistered" << dev;
 }
 
 bool QInputDevice::operator==(const QInputDevice &other) const

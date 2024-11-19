@@ -111,7 +111,7 @@ public:
         return x;
     }
 
-    // Apply inverse, optimized by giving a previous result a value < x.
+    // Apply inverse, optimized by giving a previous result for a value < x.
     float applyInverse(float x, float resultLargerThan = 0.0f) const
     {
         Q_ASSERT(resultLargerThan >= 0.0f && resultLargerThan <= 1.0f);
@@ -191,7 +191,7 @@ private:
     template<typename T>
     static float inverseLookup(float needle, float resultLargerThan, const QList<T> &table, quint32 tableMax)
     {
-        uint32_t i = static_cast<uint32_t>(resultLargerThan * tableMax);
+        uint32_t i = qMax(static_cast<uint32_t>(resultLargerThan * tableMax), 1U) - 1;
         auto it = std::lower_bound(table.cbegin() + i, table.cend(), needle);
         i = it - table.cbegin();
         if (i == 0)

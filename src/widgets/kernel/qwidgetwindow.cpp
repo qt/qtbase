@@ -564,7 +564,7 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
                 }
             }
 
-            if ((event->type() != QEvent::MouseButtonPress) || !(QMutableSinglePointEvent::from(event)->isDoubleClick())) {
+            if ((event->type() != QEvent::MouseButtonPress) || !(QMutableSinglePointEvent::isDoubleClick(event))) {
                 // if the widget that was pressed is gone, then deliver move events without buttons
                 const auto buttons = event->type() == QEvent::MouseMove && qt_popup_down_closed
                                    ? Qt::NoButton : event->buttons();
@@ -586,6 +586,40 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
             default:
                 break;
             }
+        }
+
+        if (QApplication::activePopupWidget() != activePopupWidget
+            && QApplicationPrivate::replayMousePress
+            && QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::ReplayMousePressOutsidePopup).toBool()) {
+            if (m_widget->windowType() != Qt::Popup)
+                qt_button_down = nullptr;
+            if (event->type() == QEvent::MouseButtonPress) {
+                // the popup disappeared: replay the mouse press event to whatever is behind it
+                QWidget *w = QApplication::widgetAt(event->globalPosition().toPoint());
+                if (w && !QApplicationPrivate::isBlockedByModal(w)) {
+                    // activate window of the widget under mouse pointer
+                    if (!w->isActiveWindow()) {
+                        w->activateWindow();
+                        w->window()->raise();
+                    }
+
+                    if (auto win = qt_widget_private(w)->windowHandle(QWidgetPrivate::WindowHandleMode::Closest)) {
+                        const QRect globalGeometry = win->isTopLevel()
+                        ? win->geometry()
+                        : QRect(win->mapToGlobal(QPoint(0, 0)), win->size());
+                        if (globalGeometry.contains(event->globalPosition().toPoint())) {
+                            // Use postEvent() to ensure the local QEventLoop terminates when called from QMenu::exec()
+                            const QPoint localPos = win->mapFromGlobal(event->globalPosition().toPoint());
+                            QMouseEvent *e = new QMouseEvent(QEvent::MouseButtonPress, localPos, localPos, event->globalPosition().toPoint(),
+                                                             event->button(), event->buttons(), event->modifiers(), event->source());
+                            QCoreApplicationPrivate::setEventSpontaneous(e, true);
+                            e->setTimestamp(event->timestamp());
+                            QCoreApplication::postEvent(win, e);
+                        }
+                    }
+                }
+            }
+            QApplicationPrivate::replayMousePress = false;
         }
 
         if (releaseAfter) {
@@ -622,7 +656,7 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
         mapped = event->position().toPoint();
     }
 
-    if ((event->type() != QEvent::MouseButtonPress) || !QMutableSinglePointEvent::from(event)->isDoubleClick()) {
+    if ((event->type() != QEvent::MouseButtonPress) || !QMutableSinglePointEvent::isDoubleClick(event)) {
 
         // The preceding statement excludes MouseButtonPress events which caused
         // creation of a MouseButtonDblClick event. QTBUG-25831
@@ -723,9 +757,8 @@ void QWidgetWindow::handleScreenChange()
     // Send an event recursively to the widget and its children.
     sendChangeRecursively(m_widget, QEvent::ScreenChangeInternal);
 
-    // Invalidate the backing store buffer and repaint immediately.
-    if (screen())
-        repaintWindow();
+    // Invalidate the backing store buffer and schedule repaint
+    scheduleRepaint();
 }
 
 void QWidgetWindow::handleDevicePixelRatioChange()
@@ -733,20 +766,35 @@ void QWidgetWindow::handleDevicePixelRatioChange()
     // Send an event recursively to the widget and its children.
     sendChangeRecursively(m_widget, QEvent::DevicePixelRatioChange);
 
-    // Invalidate the backing store buffer and repaint immediately.
-    if (screen())
-        repaintWindow();
+    // Invalidate the backing store buffer and schedule repaint
+    scheduleRepaint();
 }
 
-void QWidgetWindow::repaintWindow()
+/*
+    Schedules a repaint in response to screen or DPR changes
+
+    Normally these changes will come with a corresponding expose
+    event following the change, but to guarantee that we refresh
+    the widget based on the new properties we also schedule our
+    own repaint.
+
+    Note that we do not do a synchronous repaint here, as the system
+    hasn't asked us to repaint just yet, it just informed us about
+    the new window state.
+*/
+void QWidgetWindow::scheduleRepaint()
 {
+    if (!screen())
+        return;
+
     if (!m_widget->isVisible() || !m_widget->updatesEnabled() || !m_widget->rect().isValid())
         return;
 
     QTLWExtra *tlwExtra = m_widget->window()->d_func()->maybeTopData();
-    if (tlwExtra && tlwExtra->backingStore)
+    if (tlwExtra && tlwExtra->backingStore) {
         tlwExtra->repaintManager->markDirty(m_widget->rect(), m_widget,
-                                                 QWidgetRepaintManager::UpdateNow, QWidgetRepaintManager::BufferInvalid);
+            QWidgetRepaintManager::UpdateLater, QWidgetRepaintManager::BufferInvalid);
+    }
 }
 
 // Store normal geometry used for saving application settings.

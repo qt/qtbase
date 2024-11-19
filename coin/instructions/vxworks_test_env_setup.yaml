@@ -18,8 +18,22 @@ instructions:
     maxTimeInSeconds: 60
     maxTimeBetweenOutput: 60
     userMessageOnFailure: "Failed to mkfifo"
+  - type: EnvironmentVariable
+    variableName: VXWORKS_EMULATOR_TYPE
+    variableValue: "arm"
+    enable_if:
+      condition: property
+      property: target.arch
+      equals_value: ARMV7
+  - type: EnvironmentVariable
+    variableName: VXWORKS_EMULATOR_TYPE
+    variableValue: "intel"
+    enable_if:
+      condition: property
+      property: target.arch
+      equals_value: X86_64
   - type: ExecuteCommand
-    command: "{{.Env.HOME}}/vxworks_qemu_launcher.sh"
+    command: "{{.Env.HOME}}/vxworks_qemu_launcher.sh {{.Env.VXWORKS_EMULATOR_TYPE}}"
     maxTimeInSeconds: 60
     maxTimeBetweenOutput: 60
     userMessageOnFailure: "Failed to start VxWorks emulator"
@@ -43,11 +57,11 @@ instructions:
       hosts["iptables.test-net.qt.local"]="172.31.1.1"
 
       declare -A env_vars
-      env_vars["LD_LIBRARY_PATH"]=$VXWORKS_TEST_LIBS_PATH
-      env_vars["ICU_DATA"]="/opt/fsl_imx6_2_0_6_2_VSB/3pp/ICU/icu/source/data/in/icudt73l.dat"
+      env_vars["LD_LIBRARY_PATH"]="$VXWORKS_TEST_LIBS_PATH"
+      env_vars["ICU_DATA"]="$WIND_CC_SYSROOT/3pp/ICU/icu/source/data/in/icudt73l.dat"
       env_vars["TMPDIR"]="/tmp"
-      env_vars["QT_QPA_FONTDIR"]="/opt/fsl_imx6_2_0_6_2_VSB/fonts"
-      env_vars["VXWORKS_CERTS_DIR"]="/opt/fsl_imx6_2_0_6_2_VSB/certs"
+      env_vars["QT_QPA_FONTDIR"]="$WIND_CC_SYSROOT/fonts"
+      env_vars["VXWORKS_CERTS_DIR"]="$WIND_CC_SYSROOT/certs"
       env_vars["HOME"]="/home/qt/work/vxworkshome"
       env_vars["QML_LOADERTHREAD_STACK_SIZE"]="131072"
       env_vars["QTEST_FUNCTION_TIMEOUT"]="600000"

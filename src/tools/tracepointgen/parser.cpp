@@ -505,7 +505,7 @@ void Parser::addIncludesRecursive(const QString &filename, QList<QString> &inclu
         data += line + QLatin1Char(QLatin1Char('\n'));
     }
 
-    QRegularExpression includeMacro(QStringLiteral("#include [\"<]([A-Za-z0-9_./]*.h)[\">]"));
+    QRegularExpression includeMacro(QStringLiteral("#include [\"<]([A-Za-z0-9_./-]*.h)[\">]"));
     QRegularExpressionMatchIterator i = includeMacro.globalMatch(data);
     while (i.hasNext()) {
         QRegularExpressionMatch match = i.next();
@@ -521,9 +521,8 @@ void Parser::addIncludesRecursive(const QString &filename, QList<QString> &inclu
             rinc = info2.absoluteFilePath();
             filename = info2.fileName();
         }
-
         // only search possible qt headers
-        if (filename.startsWith(QLatin1Char('q'), Qt::CaseInsensitive)) {
+        if (QFileInfo(filename).baseName().startsWith(QLatin1Char('q'), Qt::CaseInsensitive)) {
             QString resolved = resolveInclude(rinc);
             if (!resolved.isEmpty() && !includes.contains(resolved)) {
                 includes.push_back(resolved);
@@ -550,7 +549,7 @@ void Parser::parse(QIODevice &input, const QString &name)
 
     QStringList includes;
 
-    QRegularExpression includeMacro(QStringLiteral("#include [\"<]([A-Za-z0-9_./]*.h)[\">]"));
+    QRegularExpression includeMacro(QStringLiteral("#include [\"<]([A-Za-z0-9_./-]*.h)[\">]"));
     QRegularExpressionMatchIterator i = includeMacro.globalMatch(data);
     while (i.hasNext()) {
         QRegularExpressionMatch match = i.next();

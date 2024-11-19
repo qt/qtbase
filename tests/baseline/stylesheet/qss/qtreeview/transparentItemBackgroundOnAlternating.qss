@@ -1,0 +1,11 @@
+QTreeView {
+  qproperty-alternatingRowColors: true;
+  alternate-background-color: fuchsia;
+  background-color: orange;
+}
+
+QTreeView::item {
+  background-color: "#A00000FF";
+  color: #3C3C3C;
+  padding: 2px;
+}

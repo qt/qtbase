@@ -8,9 +8,11 @@
 
         "Homepage": "https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator",
         "Version": "3.1.0",
+        "PURL": "pkg:github/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator@v3.1.0",
         "License": "MIT License",
         "LicenseId": "MIT",
         "LicenseFile": "LICENSE.txt",
-        "Copyright": "Copyright (c) 2017-2024 Advanced Micro Devices, Inc. All rights reserved."
+        "Copyright": "Copyright (c) 2017-2024 Advanced Micro Devices, Inc. All rights reserved.",
+        "Comment": "no relevant CPE found"
     }
 ]

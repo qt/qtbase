@@ -26,22 +26,15 @@ public:
 private:
     bool registerableMetaType(const QByteArray &propertyType);
     void registerClassInfoStrings();
-    void generateClassInfos();
     void registerFunctionStrings(const QList<FunctionDef> &list);
     void registerByteArrayVector(const QList<QByteArray> &list);
-    void addProperties(int &initialMetaTypeOffset);
-    void addEnums(int &initialMetaTypeOffset);
-    void addFunctions(const QList<FunctionDef> &list, const char *functype, int &initialMetatypeOffset);
+    void addProperties();
+    void addEnums();
+    void addFunctions(const QList<FunctionDef> &list, const char *functype);
     void addClassInfos();
-    void generateFunctions(const QList<FunctionDef> &list, const char *functype, int type,
-                           int &paramsIndex, int &initialMetatypeOffset);
-    void generateFunctionRevisions(const QList<FunctionDef> &list, const char *functype);
-    void generateFunctionParameters(const QList<FunctionDef> &list, const char *functype);
     void generateTypeInfo(const QByteArray &typeName, bool allowEmptyName = false);
     void registerEnumStrings();
-    void generateEnums(int index);
     void registerPropertyStrings();
-    void generateProperties();
     void generateMetacall();
     void generateStaticMetacall();
     void generateSignal(const FunctionDef *def, int index);

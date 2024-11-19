@@ -1397,9 +1397,7 @@ QByteArray &QByteArray::operator=(const char *str)
 
 /*! \fn void QByteArray::swap(QByteArray &other)
     \since 4.8
-
-    Swaps byte array \a other with this byte array. This operation is very
-    fast and never fails.
+    \memberswap{byte array}
 */
 
 /*! \fn qsizetype QByteArray::size() const

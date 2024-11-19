@@ -331,7 +331,10 @@ int main(void)
 "# FIXME: qmake: ['TEMPLATE = lib', 'CONFIG += dll bsymbolic_functions', 'isEmpty(QMAKE_LFLAGS_BSYMBOLIC_FUNC): error("Nope")']
 )
 
-if(NOT MSVC AND NOT APPLE)
+if(MSVC OR APPLE)
+    # These platforms / toolchains support separate debug information. Skip the compile test.
+    set(TEST_separate_debug_info ON CACHE INTERNAL "separate debug information support")
+else()
     qt_config_compile_test("separate_debug_info"
                        LABEL "separate debug information support"
                        PROJECT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/config.tests/separate_debug_info"
@@ -369,6 +372,18 @@ qt_config_compile_test_x86simd(avx512vbmi2 "AVX512VBMI2")
 
 # x86: vaes
 qt_config_compile_test_x86simd(vaes "VAES")
+
+# arm: crypto
+qt_config_compile_test_armintrin(crypto "CRYPTO")
+
+# arm: sve
+qt_config_compile_test_armintrin(sve "SVE")
+
+# loongarch: lsx
+qt_config_compile_test_loongarchsimd(lsx "LSX")
+
+# loongarch: lasx
+qt_config_compile_test_loongarchsimd(lasx "LASX")
 
 # localtime_r
 qt_config_compile_test(localtime_r
@@ -592,7 +607,7 @@ qt_feature_config("force_debug_info" QMAKE_PRIVATE_CONFIG)
 qt_feature("separate_debug_info" PUBLIC
     LABEL "Split off debug information"
     AUTODETECT OFF
-    CONDITION ( QT_FEATURE_shared ) AND ( QT_FEATURE_debug OR QT_FEATURE_debug_and_release OR QT_FEATURE_force_debug_info ) AND ( MSVC OR APPLE OR TEST_separate_debug_info )
+    CONDITION ( QT_FEATURE_shared ) AND ( QT_FEATURE_debug OR QT_FEATURE_debug_and_release OR QT_FEATURE_force_debug_info ) AND TEST_separate_debug_info
 )
 qt_feature_config("separate_debug_info" QMAKE_PUBLIC_QT_CONFIG)
 qt_feature("appstore-compliant" PUBLIC
@@ -895,6 +910,18 @@ qt_feature("shani" PRIVATE
 )
 qt_feature_definition("shani" "QT_COMPILER_SUPPORTS_SHA" VALUE "1")
 qt_feature_config("shani" QMAKE_PRIVATE_CONFIG)
+qt_feature("lsx" PRIVATE
+    LABEL "LSX"
+    CONDITION ( TEST_architecture_arch STREQUAL loongarch64 ) AND TEST_subarch_lsx
+)
+qt_feature_definition("lsx" "QT_COMPILER_SUPPORTS_LSX" VALUE "1")
+qt_feature_config("lsx" QMAKE_PRIVATE_CONFIG)
+qt_feature("lasx" PRIVATE
+    LABEL "LASX"
+    CONDITION ( TEST_architecture_arch STREQUAL loongarch64 ) AND TEST_subarch_lasx
+)
+qt_feature_definition("lasx" "QT_COMPILER_SUPPORTS_LASX" VALUE "1")
+qt_feature_config("lasx" QMAKE_PRIVATE_CONFIG)
 qt_feature("mips_dsp" PRIVATE
     LABEL "DSP"
     CONDITION ( TEST_architecture_arch STREQUAL mips ) AND TEST_arch_${TEST_architecture_arch}_subarch_dsp
@@ -923,7 +950,7 @@ qt_feature_definition("arm_crc32" "QT_COMPILER_SUPPORTS_CRC32" VALUE "1")
 qt_feature_config("arm_crc32" QMAKE_PRIVATE_CONFIG)
 qt_feature("arm_crypto" PRIVATE
     LABEL "AES"
-    CONDITION ( ( TEST_architecture_arch STREQUAL arm ) OR ( TEST_architecture_arch STREQUAL arm64 ) ) AND TEST_arch_${TEST_architecture_arch}_subarch_crypto
+    CONDITION ( ( TEST_architecture_arch STREQUAL arm ) OR ( TEST_architecture_arch STREQUAL arm64 ) ) AND ( TEST_arch_${TEST_architecture_arch}_subarch_crypto OR TEST_subarch_crypto )
 )
 qt_feature_definition("arm_crypto" "QT_COMPILER_SUPPORTS_CRYPTO" VALUE "1")
 qt_feature_definition("arm_crypto" "QT_COMPILER_SUPPORTS_AES" VALUE "1")
@@ -931,7 +958,7 @@ qt_feature_config("arm_crypto" QMAKE_PRIVATE_CONFIG)
 
 qt_feature("arm_sve" PRIVATE
     LABEL "SVE"
-    CONDITION ( TEST_architecture_arch STREQUAL arm64 ) AND TEST_arch_${TEST_architecture_arch}_subarch_sve
+    CONDITION ( TEST_architecture_arch STREQUAL arm64 ) AND ( TEST_arch_${TEST_architecture_arch}_subarch_sve OR TEST_subarch_sve )
 )
 qt_feature_definition("arm_sve" "QT_COMPILER_SUPPORTS_SVE" VALUE "1")
 qt_feature_config("arm_sve" QMAKE_PRIVATE_CONFIG)
@@ -1291,9 +1318,15 @@ qt_configure_add_summary_entry(
 )
 qt_configure_add_summary_entry(
     TYPE "featureList"
-    ARGS "neon arm_crc32 arm_crypto"
+    ARGS "neon arm_crc32 arm_crypto arm_sve"
     MESSAGE "ARM Extensions"
     CONDITION ( TEST_architecture_arch STREQUAL arm ) OR ( TEST_architecture_arch STREQUAL arm64 )
+)
+qt_configure_add_summary_entry(
+    TYPE "featureList"
+    ARGS "lsx lasx"
+    MESSAGE "LOONGARCH Extensions"
+    CONDITION ( TEST_architecture_arch STREQUAL loongarch64 )
 )
 qt_configure_add_summary_entry(
     ARGS "mips_dsp"
@@ -1418,13 +1451,18 @@ qt_configure_add_report_entry(
 )
 qt_configure_add_report_entry(
     TYPE NOTE
-    MESSAGE "Enable thread support"
+    MESSAGE "WASM Thread support enabled."
     CONDITION QT_FEATURE_thread AND WASM
 )
 qt_configure_add_report_entry(
     TYPE WARNING
     MESSAGE "You should use the recommended Emscripten version ${QT_EMCC_RECOMMENDED_VERSION} with this Qt. You have ${EMCC_VERSION}."
     CONDITION WASM AND NOT ${EMCC_VERSION} MATCHES ${QT_EMCC_RECOMMENDED_VERSION}
+)
+qt_configure_add_report_entry(
+    TYPE WARNING
+    MESSAGE "Some tests might fail to build when targeting WASM without -feature-thread."
+    CONDITION WASM AND QT_BUILD_TESTS AND NOT QT_FEATURE_thread
 )
 qt_configure_add_report_entry(
     TYPE ERROR
@@ -1452,4 +1490,10 @@ qt_configure_add_report_entry(
 E.g., When building QtWebEngine, enabling this option may result in build issues in certain platforms.
 See https://bugreports.qt.io/browse/QTBUG-59769."
     CONDITION QT_ALLOW_SYMLINK_IN_PATHS
+)
+
+# QtGuiTest interface
+qt_feature_definition("test_gui" "QT_GUI_TEST" VALUE "1")
+qt_feature("test_gui" PUBLIC
+    LABEL "Build QtGuiTest namespace"
 )

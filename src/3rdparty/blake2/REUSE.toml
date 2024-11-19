@@ -1,0 +1,8 @@
+version = 1
+
+[[annotations]]
+path = ["src/blake2b-ref.c", "src/blake2s-ref.c", "src/blake2.h", "src/blake2-impl.h"]
+comment = "Copyright line mixed with other text."
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright 2012, Samuel Neves <sneves@dei.uc.pt>"
+SPDX-License-Identifier = "CC0-1.0 OR Apache-2.0"

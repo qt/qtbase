@@ -88,6 +88,13 @@ void QCALayerBackingStore::beginPaint(const QRegion &region)
 
     qCInfo(lcQpaBackingStore) << "Beginning paint of" << region << "into backingstore of" << m_requestedSize;
 
+    if (m_requestedSize.isEmpty()) {
+        // We can't create IOSurfaces with and empty size, so instead reset our back buffer
+        qCDebug(lcQpaBackingStore) << "Size is empty, throwing away back buffer";
+        m_buffers.back().reset(nullptr);
+        return;
+    }
+
     ensureBackBuffer(); // Find an unused back buffer, or reserve space for a new one
 
     const bool bufferWasRecreated = recreateBackBufferIfNeeded();
@@ -241,12 +248,19 @@ bool QCALayerBackingStore::recreateBackBufferIfNeeded()
 
 QPaintDevice *QCALayerBackingStore::paintDevice()
 {
-    Q_ASSERT(m_buffers.back());
-    return m_buffers.back()->asImage();
+    if (m_buffers.back()) {
+        return m_buffers.back()->asImage();
+    } else {
+        static QImage fallbackDevice;
+        return &fallbackDevice;
+    }
 }
 
 void QCALayerBackingStore::endPaint()
 {
+    if (!m_buffers.back())
+        return;
+
     qCInfo(lcQpaBackingStore) << "Paint ended. Back buffer valid region is now" << m_buffers.back()->validRegion();
     m_buffers.back()->unlock();
 
@@ -317,7 +331,7 @@ void QCALayerBackingStore::flush(QWindow *flushedWindow, const QRegion &region, 
     Q_UNUSED(offset);
 
     if (!m_buffers.back()) {
-        qCWarning(lcQpaBackingStore) << "Tried to flush backingstore without painting to it first";
+        qCWarning(lcQpaBackingStore) << "Flush requested with no back buffer. Ignoring.";
         return;
     }
 
@@ -444,7 +458,7 @@ QPlatformBackingStore::FlushResult QCALayerBackingStore::rhiFlush(QWindow *windo
                                                                   bool translucentBackground)
 {
     if (!m_buffers.back()) {
-        qCWarning(lcQpaBackingStore) << "Tried to flush backingstore without painting to it first";
+        qCWarning(lcQpaBackingStore) << "Flush requested with no back buffer. Ignoring.";
         return FlushFailed;
     }
 

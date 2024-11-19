@@ -93,9 +93,7 @@ QMimeType::QMimeType(const QMimeTypePrivate &dd) :
 
 /*!
     \fn void QMimeType::swap(QMimeType &other);
-    Swaps QMimeType \a other with this QMimeType object.
-
-    This operation is very fast and never fails.
+    \memberswap{mime type}
 
     The swap() method helps with the implementation of assignment
     operators in an exception-safe way. For more information consult

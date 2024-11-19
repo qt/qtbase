@@ -21,7 +21,7 @@
     const auto status = [CNContactStore authorizationStatusForEntityType:CNEntityTypeContacts];
     switch (status) {
     case CNAuthorizationStatusAuthorized:
-#if defined(Q_OS_IOS) && QT_IOS_PLATFORM_SDK_EQUAL_OR_ABOVE(180000)
+#if (defined(Q_OS_IOS) && QT_IOS_PLATFORM_SDK_EQUAL_OR_ABOVE(180000)) || defined(Q_OS_VISIONOS)
     case CNAuthorizationStatusLimited:
 #endif
         return Qt::PermissionStatus::Granted;

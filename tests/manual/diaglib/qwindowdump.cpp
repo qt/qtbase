@@ -79,7 +79,6 @@ void formatWindowFlags(QTextStream &str, Qt::WindowFlags flags)
     debugFlag(str, flags, Qt::NoDropShadowWindowHint)
     debugFlag(str, flags, Qt::WindowFullscreenButtonHint)
     debugFlag(str, flags, Qt::WindowStaysOnBottomHint)
-    debugFlag(str, flags, Qt::MacWindowToolBarButtonHint)
     debugFlag(str, flags, Qt::BypassGraphicsProxyWidget)
 }
 

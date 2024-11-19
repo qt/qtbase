@@ -1,0 +1,18 @@
+version = 1
+
+[[annotations]]
+path = ["**.json", "**.png", "**.svg", "**.xml",
+        "generic/evdevtouch/70-qtouchscreen.rules",
+        "platforms/ios/module.modulemap",
+        "tracing/metadata_template.txt"]
+precedence = "closest"
+SPDX-FileCopyrightText = "Copyright (C) 2024 The Qt Company Ltd."
+SPDX-License-Identifier = "LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only"
+
+[[annotations]]
+path = ["**.qmake.conf", "networkinformation/android/jar/build.gradle",
+        "networkinformation/android/jar/settings.gradle"]
+precedence = "closest"
+SPDX-FileCopyrightText = "Copyright (C) 2024 The Qt Company Ltd."
+SPDX-License-Identifier = "BSD-3-Clause"
+

@@ -342,9 +342,7 @@
 
 /*! \fn template <typename T> void QList<T>::swap(QList<T> &other)
     \since 4.8
-
-    Swaps list \a other with this list. This operation is very fast and
-    never fails.
+    \memberswap{list}
 */
 
 /*! \fn template <typename T> void QList<T>::swapItemsAt(qsizetype i, qsizetype j)

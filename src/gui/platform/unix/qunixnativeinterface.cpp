@@ -231,6 +231,21 @@ QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QEvdevKeyMapper);
 
 #endif // QT_CONFIG(evdev)
 
+#if QT_CONFIG(vxworksevdev)
+
+/*!
+    \class QNativeInterface::Private::QVxKeyMapper
+    \since 6.8
+    \internal
+    \brief Native interface to QKeyMapper.
+    \inmodule QtGui
+    \ingroup native-interfaces
+*/
+
+QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QVxKeyMapper);
+
+#endif // QT_CONFIG(vxworksevdev)
+
 #if QT_CONFIG(wayland)
 
 /*!

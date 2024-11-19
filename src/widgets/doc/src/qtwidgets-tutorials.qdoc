@@ -1,0 +1,15 @@
+// Copyright (C) 2024 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page widget-tutorials.html
+    \title Qt Widgets Tutorials
+    \brief Tutorials of how to use different kinds of widgets.
+
+    \image notepad1.png "Notepad application"
+
+    Qt comes with a large range of standard widgets that users of modern
+    applications have come to expect.
+
+    \annotatedlist widget-tutorials
+*/

@@ -531,8 +531,6 @@ bool QNetworkReplyHttpImplPrivate::loadFromCacheIfAllowed(QHttpNetworkRequest &h
     value = cacheHeaders.value(QHttpHeaders::WellKnownHeader::CacheControl);
     if (!value.empty()) {
         QHash<QByteArray, QByteArray> cacheControl = parseHttpOptionHeader(value);
-        if (cacheControl.contains("must-revalidate"_ba))
-            return false;
         if (cacheControl.contains("no-cache"_ba))
             return false;
     }

@@ -1,12 +1,11 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
+#include <QtTest/qtest.h>
 
-#include <QtNetwork>
-#include <QTest>
-
-#include <QNetworkProxy>
-#include <QAuthenticator>
+#include <QtNetwork/qsslsocket.h>
+#include <QtNetwork/qnetworkproxy.h>
+#include <QtNetwork/qauthenticator.h>
 
 #include "private/qhostinfo_p.h"
 

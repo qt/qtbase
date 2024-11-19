@@ -316,7 +316,7 @@ void NmakeMakefileGenerator::writeImplicitRulesPart(QTextStream &t)
         fixifiedSourceDirs.removeDuplicates();
         using F = QDirListing::IteratorFlag;
         for (const QString &sourceDir : std::as_const(fixifiedSourceDirs)) {
-            for (const auto &dirEntry : QDirListing(sourceDir, sourceFilesFilter, F::FilesOnly)) {
+            for (const auto &dirEntry : QDirListing(sourceDir, sourceFilesFilter, F::FilesOnly | F::ResolveSymlinks)) {
                 QString &duplicate = fileNames[dirEntry.completeBaseName()];
                 if (duplicate.isNull()) {
                     duplicate = dirEntry.filePath();

@@ -1,5 +1,4 @@
 <?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="fatal_error_msg">Aplikasi Anda mengalami kesalahan fatal dan tidak dapat melanjutkan.</string>
-    <string name="unsupported_android_version">Versi Android ini tidak didukung.</string>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="fatal_error_msg" tools:ignore="UnusedResources">Aplikasi Anda mengalami kesalahan fatal dan tidak dapat melanjutkan.</string>
 </resources>

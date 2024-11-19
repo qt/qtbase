@@ -399,6 +399,8 @@ private Q_SLOTS:
     void comparison_data();
     void comparison();
 
+    void arg() const;
+
 private:
     template <typename StringBuilder>
     void fromQStringBuilder(StringBuilder &&sb, QStringView expected) const;
@@ -616,6 +618,7 @@ void tst_QAnyStringView::fromCharacterSpecial() const
     // Treating 'ä' as a UTF-8 sequence doesn't make sense, as it would be
     // invalid. And this is not how legacy Qt APIs handled it, either:
     QCOMPARE_NE(QAnyStringView('\xE4').tag(), QAnyStringView::Tag::Utf8);
+    QCOMPARE_NE(QAnyStringView(u8' ').tag(), QAnyStringView::Tag::Utf8);
 
     // Latin1 is expected, but UTF-16 is harmless (atm, QL1C is converted to
     // QChar, thus UTF-16). We only care that it's not UTF-8, anyway:
@@ -959,6 +962,62 @@ void tst_QAnyStringView::comparison()
         const char *rhs_u8data = rhs_u8.constData();
         QT_TEST_ALL_COMPARISON_OPS(lhs, rhs_u8data, ordering);
     }
+}
+
+void tst_QAnyStringView::arg() const
+{
+    // nullness checks
+    QCOMPARE(QAnyStringView().arg(QStringView()), "");
+    QCOMPARE(QAnyStringView(u"%1").arg(QStringView()), "");
+
+#define CHECK1IMPL(pattern, arg1, expected) \
+    do { \
+        auto p = QAnyStringView(pattern); \
+        QCOMPARE(p.arg(QLatin1StringView(arg1)), expected); \
+        QCOMPARE(p.arg(u"" arg1), expected); \
+        QCOMPARE(p.arg(QStringLiteral(arg1)), expected); \
+        QCOMPARE(p.arg(QString(QLatin1StringView(arg1))), expected); \
+    } while (false) \
+    /*end*/
+#define CHECK1(pattern, arg1, expected) \
+    do { \
+        CHECK1IMPL("" pattern, arg1, expected); \
+        CHECK1IMPL(u8"" pattern, arg1, expected); \
+        CHECK1IMPL(pattern ""_L1, arg1, expected); \
+        CHECK1IMPL(u"" pattern, arg1, expected); \
+    } while (false) \
+    /*end*/
+#define CHECK2(pattern, arg1, arg2, expected) \
+    do { \
+        auto p = QAnyStringView(pattern); \
+        QCOMPARE(p.arg(QLatin1StringView(arg1), QLatin1StringView(arg2)), expected); \
+        QCOMPARE(p.arg(u"" arg1, QLatin1StringView(arg2)), expected); \
+        QCOMPARE(p.arg(QLatin1StringView(arg1), u"" arg2), expected); \
+        QCOMPARE(p.arg(u"" arg1, u"" arg2), expected); \
+    } while (false) \
+    /*end*/
+
+    CHECK1("", "World", "");
+    CHECK1("%1", "World", "World");
+    CHECK1("!%1?", "World", "!World?");
+    CHECK1("%1%1", "World", "WorldWorld");
+    CHECK1("%1%2", "World", "World%2");
+    CHECK1("%2%1", "World", "%2World");
+
+    CHECK2("", "Hello", "World", "");
+    CHECK2("%1", "Hello", "World", "Hello");
+    CHECK2("!%1, %2?", "Hello", "World", "!Hello, World?");
+    CHECK2("%1%1", "Hello", "World", "HelloHello");
+    CHECK2("%1%2", "Hello", "World", "HelloWorld");
+    CHECK2("%2%1", "Hello", "World", "WorldHello");
+
+#undef CHECK2
+#undef CHECK1
+
+    QCOMPARE_EQ(QAnyStringView(u8"ä %2 %2—%1 %3 ").arg(QLatin1Char('c'), QChar::CarriageReturn, u'C'),
+                u"ä \r \r—c C "_s);
+    QCOMPARE_EQ(QUtf8StringView(u8"ä %2 %2—%1 %3 ").arg(QLatin1Char('c'), QChar::CarriageReturn, u'C'),
+                u"ä \r \r—c C "_s);
 }
 
 QTEST_APPLESS_MAIN(tst_QAnyStringView)

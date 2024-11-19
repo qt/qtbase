@@ -63,12 +63,15 @@ endif()
 if(CMAKE_MINIMUM_REQUIRED_VERSION VERSION_LESS 2.8.12)
     message(AUTHOR_WARNING "Your project should require at least CMake 2.8.12 to use Findgbm.cmake")
 endif()
-
 if(NOT WIN32)
+    if(VXWORKS)
+        set(_vxworks_lib_search_path "$ENV{WIND_CC_SYSROOT}/usr/lib/common/")
+        set(_vxworks_lib_gbm_library_name gfxMesaEGL)
+    endif()
     # Use pkg-config to get the directories and then use these values
     # in the FIND_PATH() and FIND_LIBRARY() calls
     find_package(PkgConfig QUIET)
-    pkg_check_modules(PKG_gbm QUIET gbm)
+    pkg_check_modules(PKG_gbm QUIET gbm "${_vxworks_lib_gbm_library_name}")
 
     set(gbm_DEFINITIONS ${PKG_gbm_CFLAGS_OTHER})
     set(gbm_VERSION ${PKG_gbm_VERSION})
@@ -82,8 +85,10 @@ if(NOT WIN32)
     find_library(gbm_LIBRARY
         NAMES
             gbm
+            ${_vxworks_lib_gbm_library_name}
         HINTS
             ${PKG_gbm_LIBRARY_DIRS}
+            "${_vxworks_lib_search_path}"
     )
 
     include(FindPackageHandleStandardArgs)

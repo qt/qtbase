@@ -140,8 +140,7 @@ public:
     QDomNodeListPrivate(QDomNodePrivate *, const QString &, const QString &);
     ~QDomNodeListPrivate();
 
-    bool operator==(const QDomNodeListPrivate &) const;
-    bool operator!=(const QDomNodeListPrivate &) const;
+    bool operator==(const QDomNodeListPrivate &) const noexcept;
 
     void createList() const;
     bool maybeCreateList() const;

@@ -40,6 +40,7 @@ set(JSON_HEADERS
         pure-virtual-signals.h
         qflags64object.h
         qinvokable.h
+        qmlmacro.h
         qprivateslots.h
         qtbug-35657-gadget.h
         related-metaobjects-in-gadget.h
@@ -52,6 +53,7 @@ set(JSON_HEADERS
         task234909.h
         task240368.h
         task87883.h
+        tech-preview.h
         trigraphs.h
         using-namespaces.h
 )

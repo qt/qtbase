@@ -44,6 +44,7 @@ class tst_QStyle : public QObject
     Q_OBJECT
 
 private slots:
+    void init();
     void drawItemPixmap();
     void cleanup();
 #ifndef QT_NO_STYLE_FUSION
@@ -87,6 +88,11 @@ public:
 protected:
     void paintEvent(QPaintEvent *) override;
 };
+
+void tst_QStyle::init()
+{
+    QTest::failOnWarning(QRegularExpression("QPainter:.*"));
+}
 
 void tst_QStyle::cleanup()
 {

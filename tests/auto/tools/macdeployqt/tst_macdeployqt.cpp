@@ -1,8 +1,12 @@
 // Copyright (C) 2020 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
-#include <QtCore>
-#include <QtTest>
+#include <QtTest/qtest.h>
+
+#include <QtCore/qloggingcategory.h>
+#include <QtCore/qlibraryinfo.h>
+#include <QtCore/qprocess.h>
+#include <QtCore/qstandardpaths.h>
 
 Q_LOGGING_CATEGORY(lcTests, "qt.tools.tests")
 

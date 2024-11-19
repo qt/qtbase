@@ -39,6 +39,43 @@
     return [super supplementalTargetForAction:action sender:sender];
 }
 
+#if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(150000)
+- (void)showContextMenuForSelection:(id)sender
+{
+    QPointF windowPoint;
+    QPointF screenPoint;
+    [self convertFromScreen:[NSEvent mouseLocation]
+        toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
+
+    auto *keyMapper = QCocoaIntegration::instance()->keyMapper();
+    auto keyboardModifiers = keyMapper->queryKeyboardModifiers();
+
+    // We currently propagate this as QContextMenuEvent::Reason::Keyboard,
+    // but we can also get here via an accessibility ShowMenu action, in
+    // which case QContextMenuEvent::Reason::Other reason might fit better.
+    // Unfortunately QWSI/QGuiApplication/QWidgetWindow doesn't handle that
+    // yet. FIXME: Teach other parts of Qt about QContextMenuEvent::Other.
+    const bool mouseTriggered = false;
+
+    qCDebug(lcQpaMenus) << "Initiating context menu at"
+        << windowPoint.toPoint() << "in" << m_platformWindow
+        << "with" << keyboardModifiers;
+
+    bool accepted = QWindowSystemInterface::handleContextMenuEvent<
+        QWindowSystemInterface::SynchronousDelivery>(
+        m_platformWindow->window(), mouseTriggered,
+        windowPoint.toPoint(), screenPoint.toPoint(),
+        keyboardModifiers);
+
+    qCDebug(lcQpaMenus) << "Context menu event accepted =" << accepted;
+
+    // If the view does not support a context menu we should pass
+    // the request up the responder chain.
+    if (!accepted)
+        [[self nextResponder] tryToPerform:_cmd with:sender];
+}
+#endif
+
 @end
 
 @interface QNSViewMenuHelper ()

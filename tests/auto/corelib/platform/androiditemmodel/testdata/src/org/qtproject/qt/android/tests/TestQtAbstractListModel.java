@@ -10,9 +10,16 @@ import java.util.List;
 import org.qtproject.qt.android.QtAbstractListModel;
 import org.qtproject.qt.android.QtModelIndex;
 
-public class TestQtAbstractListModel extends QtAbstractListModel
+public class TestQtAbstractListModel
+        extends QtAbstractListModel implements QtAbstractListModel.OnDataChangedListener
 {
     int m_rows = 0;
+    int m_dataChangedCount = 0;
+
+    public TestQtAbstractListModel()
+    {
+        setOnDataChangedListener(this);
+    }
 
     @Override public Object data(QtModelIndex index, int role)
     {
@@ -65,6 +72,18 @@ public class TestQtAbstractListModel extends QtAbstractListModel
         endInsertRows();
     }
 
+    @Override
+    public boolean setData(QtModelIndex index, Object value, int role)
+    {
+        dataChanged(index, index , new int[]{role});
+        return true;
+    }
+
+    @Override
+    public void onDataChanged(QtModelIndex topLeft, QtModelIndex bottomRight, int[] roles) {
+        m_dataChangedCount++;
+    }
+
     public void addRow()
     {
         beginInsertRows(new QtModelIndex(), m_rows, m_rows);
@@ -86,5 +105,6 @@ public class TestQtAbstractListModel extends QtAbstractListModel
         beginResetModel();
         m_rows = 0;
         endResetModel();
+        m_dataChangedCount = 0;
     }
 }

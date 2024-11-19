@@ -69,6 +69,10 @@ macro(qt_internal_top_level_setup_no_create_targets)
 endmacro()
 
 macro(qt_internal_top_level_end)
+    if(QT_BUILD_TESTS)
+        qt_internal_finalize_test_batch_blacklist()
+    endif()
+
     qt_internal_print_top_level_info()
 
     # Depends on QtBuildInternalsConfig being included, which is the case whenver any repo is

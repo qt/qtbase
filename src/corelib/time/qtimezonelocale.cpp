@@ -8,10 +8,10 @@
 #  include <QtCore/qspan.h>
 #  include <private/qdatetime_p.h>
 // Use data generated from CLDR:
-#  include <private/qtimezonelocale_data_p.h>
-#  include <private/qtimezoneprivate_data_p.h>
+#  include "qtimezonelocale_data_p.h"
+#  include "qtimezoneprivate_data_p.h"
 #  ifdef QT_CLDR_ZONE_DEBUG
-#    include <private/qlocale_data_p.h>
+#    include "../text/qlocale_data_p.h"
 QT_BEGIN_NAMESPACE
 static_assert(std::size(locale_data) == std::size(QtTimeZoneLocale::localeZoneData));
 // Size includes terminal rows: for now, they do match in tag IDs, but they needn't.
@@ -261,7 +261,8 @@ QString addPadded(qsizetype width, const QString &zero, const QString &number, Q
     return std::move(onto) + number;
 }
 
-QString formatOffset(QStringView format, int offsetMinutes, const QLocale &locale)
+QString formatOffset(QStringView format, int offsetMinutes, const QLocale &locale,
+                     QLocale::FormatType form)
 {
     Q_ASSERT(offsetMinutes >= 0);
     const QString hour = locale.toString(offsetMinutes / 60);
@@ -306,13 +307,24 @@ QString formatOffset(QStringView format, int offsetMinutes, const QLocale &local
             while (width < tail.size() && tail[width] == u'H')
                 ++width;
             tail = tail.sliced(width);
-            result = addPadded(width, zero, hour, std::move(result));
+            if (form != QLocale::NarrowFormat)
+                result = addPadded(width, zero, hour, std::move(result));
+            else
+                result += hour;
         } else if (tail.startsWith(u'm')) {
             qsizetype width = 1;
             while (width < tail.size() && tail[width] == u'm')
                 ++width;
+            // (At CLDR v45, all locales use two-digit minutes.)
+            // (No known zone has single-digit non-zero minutes.)
             tail = tail.sliced(width);
-            result = addPadded(width, zero, mins, std::move(result));
+            if (form != QLocale::NarrowFormat)
+                result = addPadded(width, zero, mins, std::move(result));
+            else if (offsetMinutes % 60)
+                result += mins;
+            else if (result.endsWith(u':') || result.endsWith(u'.'))
+                result.chop(1);
+            // (At CLDR v45, mm follows H either immediately or after a colon or dot.)
         } else if (tail[0].isHighSurrogate() && tail.size() > 1
                    && tail[1].isLowSurrogate()) {
             result += tail.first(2);
@@ -349,7 +361,37 @@ QList<QByteArrayView> ianaIdsForTerritory(QLocale::Territory territory)
     return result;
 }
 
+// The QDateTime is only needed by the fall-back implementation in qlocale.cpp;
+// the calls below don't need to pass a valid QDateTime (based on its
+// atMSecsSinceEpoch); an invalid QDateTime() will suffice and be ignored.
+QString zoneOffsetFormat(const QLocale &locale, qsizetype locInd, QLocale::FormatType width,
+                         const QDateTime &, int offsetSeconds)
+{
+    // QLocale::LongFormat gets the full GMT-prefix plus hour offset.
+    // QLocale::ShortFormat gets just the hour offset (with full with).
+    // QLocale::NarrowFormat gets the GMT-prefix plus the pruned hour format.
+    // The last drops :00 for zero minutes and removes leading 0 from the hour.
+    const LocaleZoneData &locData = localeZoneData[locInd];
+
+    auto hourFormatR = offsetSeconds < 0 ? locData.negHourFormat() : locData.posHourFormat();
+    QStringView hourFormat = hourFormatR.viewData(hourFormatTable);
+    Q_ASSERT(!hourFormat.isEmpty());
+    // Sign is already handled by choice of the hourFormat:
+    offsetSeconds = qAbs(offsetSeconds);
+    // Offsets are only displayed in minutes - round seconds (if any) to nearest
+    // minute (prefering an even minute when rounding an exact half):
+    const int offsetMinutes = (offsetSeconds + 29 + (1 & (offsetSeconds / 60))) / 60;
+
+    const QString hourOffset = formatOffset(hourFormat, offsetMinutes, locale, width);
+    if (width == QLocale::ShortFormat)
+        return hourOffset;
+
+    QStringView offsetFormat = locData.offsetGmtFormat().viewData(gmtFormatTable);
+    Q_ASSERT(!offsetFormat.isEmpty());
+    return offsetFormat.arg(hourOffset);
 }
+
+} // QtTimeZoneLocale
 
 QString QTimeZonePrivate::localeName(qint64 atMSecsSinceEpoch, int offsetFromUtc,
                                      QTimeZone::TimeType timeType,
@@ -358,18 +400,8 @@ QString QTimeZonePrivate::localeName(qint64 atMSecsSinceEpoch, int offsetFromUtc
 {
     if (nameType == QTimeZone::OffsetName) {
         // Doesn't need fallbacks, since every locale has hour and offset formats.
-        qsizetype locInd = locale.d->m_index;
-        const LocaleZoneData &locData = localeZoneData[locInd];
-        QStringView offsetFormat = locData.offsetGmtFormat().viewData(gmtFormatTable);
-
-        auto hourFormatR = offsetFromUtc < 0 ? locData.negHourFormat() : locData.posHourFormat();
-        QStringView hourFormat = hourFormatR.viewData(hourFormatTable);
-        Q_ASSERT(!hourFormat.isEmpty() && !offsetFormat.isEmpty());
-        // Sign is already handled by choice of the hourFormat:
-        offsetFromUtc = qAbs(offsetFromUtc);
-
-        // Offsets are only displayed in minutes, any seconds are discarded.
-        return offsetFormat.arg(formatOffset(hourFormat, offsetFromUtc / 60, locale));
+        return QtTimeZoneLocale::zoneOffsetFormat(locale, locale.d->m_index, QLocale::LongFormat,
+                                                  QDateTime(), offsetFromUtc);
     }
 
     // An IANA ID may give clues to fall back on for abbreviation or exemplar city:
@@ -577,22 +609,8 @@ QString QTimeZonePrivate::localeName(qint64 atMSecsSinceEpoch, int offsetFromUtc
     // Final fall-back: ICU seems to use a compact form of offset time for
     // short-forms it doesn't know. This seems to correspond to the short form
     // of LDML's Localized GMT format.
-    QString result =
-        localeName(atMSecsSinceEpoch, offsetFromUtc, timeType, QTimeZone::OffsetName, locale);
-    // Kludge, only when format is like GMT+HH:mm
-    if ((result.startsWith(u"UTC") || result.startsWith(u"GMT"))
-            && result.size() > 6 && result.size() <= 9
-            && (result.at(3) == u'-' || result.at(3) == u'+')) {
-        // Prune trailing zero minutes
-        if (result.endsWith(u":00"))
-            result.chop(3);
-        // (At CLDR v45, all locales use two-digit minutes.)
-        // Skip leading zero on hour:
-        if (result.size() > 5 && result.at(4) == u'0' && result.at(5).isDigit())
-            result.remove(4, 1);
-        // (No known zone has a leading zero on non-zero minutes.)
-    }
-    return result;
+    return QtTimeZoneLocale::zoneOffsetFormat(locale, locale.d->m_index, QLocale::NarrowFormat,
+                                              QDateTime(), offsetFromUtc);
 }
 #endif // ICU or not
 

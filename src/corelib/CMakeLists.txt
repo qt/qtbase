@@ -148,6 +148,7 @@ qt_internal_add_module(Core
         io/qurlquery.cpp io/qurlquery.h
         io/qurlrecode.cpp
         io/qzipreader_p.h io/qzipwriter_p.h io/qzip.cpp
+        io/wcharhelpers_win_p.h
         kernel/qabstracteventdispatcher.cpp kernel/qabstracteventdispatcher.h kernel/qabstracteventdispatcher_p.h
         kernel/qabstractnativeeventfilter.cpp kernel/qabstractnativeeventfilter.h
         kernel/qapplicationstatic.h
@@ -224,7 +225,6 @@ qt_internal_add_module(Core
         text/qlatin1stringmatcher.cpp text/qlatin1stringmatcher.h
         text/qlatin1stringview.h
         text/qlocale.cpp text/qlocale.h text/qlocale_p.h
-        text/qlocale_data_p.h
         text/qlocale_tools.cpp text/qlocale_tools_p.h
         text/qstaticlatin1stringmatcher.h
         text/qstring.cpp text/qstring.h
@@ -267,7 +267,6 @@ qt_internal_add_module(Core
         time/qlocaltime.cpp time/qlocaltime_p.h
         time/qmilankoviccalendar.cpp time/qmilankoviccalendar_p.h
         time/qromancalendar.cpp time/qromancalendar_p.h
-        time/qromancalendar_data_p.h
         time/qtimezone.cpp time/qtimezone.h
         tools/qalgorithms.h
         tools/qarraydata.cpp tools/qarraydata.h
@@ -309,6 +308,7 @@ qt_internal_add_module(Core
         tools/qsharedpointer.cpp tools/qsharedpointer.h
         tools/qsharedpointer_impl.h
         tools/qsize.cpp tools/qsize.h
+        tools/qsmallbytearray_p.h
         tools/qspan.h
         tools/qspan_p.h
         tools/qstack.h
@@ -416,6 +416,9 @@ set(core_metatype_args MANUAL_MOC_JSON_FILES ${core_qobject_metatypes_json_list}
 
 if(QT_WILL_INSTALL)
     set(metatypes_install_dir ${INSTALL_ARCHDATADIR}/metatypes)
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.31")
+        cmake_path(SET metatypes_install_dir NORMALIZE "${metatypes_install_dir}")
+    endif()
     list(APPEND core_metatype_args
         __QT_INTERNAL_INSTALL __QT_INTERNAL_INSTALL_DIR "${metatypes_install_dir}")
 endif()
@@ -466,6 +469,7 @@ if(QT_FEATURE_reduce_relocations AND UNIX AND GCC)
 endif()
 
 if(ANDROID)
+    _qt_internal_add_android_executable_finalizer(Core)
     set_property(TARGET Core APPEND PROPERTY QT_ANDROID_BUNDLED_JAR_DEPENDENCIES
         jar/Qt${QtBase_VERSION_MAJOR}Android.jar
     )
@@ -903,7 +907,6 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_openssl_hash
 qt_internal_extend_target(Core CONDITION QT_FEATURE_hijricalendar
     SOURCES
         time/qhijricalendar.cpp time/qhijricalendar_p.h
-        time/qhijricalendar_data_p.h
 )
 
 qt_internal_extend_target(Core CONDITION QT_FEATURE_islamiccivilcalendar
@@ -914,13 +917,11 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_islamiccivilcalendar
 qt_internal_extend_target(Core CONDITION QT_FEATURE_jalalicalendar
     SOURCES
         time/qjalalicalendar.cpp time/qjalalicalendar_p.h
-        time/qjalalicalendar_data_p.h
 )
 
 qt_internal_extend_target(Core CONDITION QT_FEATURE_timezone
     SOURCES
         time/qtimezoneprivate.cpp time/qtimezoneprivate_p.h
-        time/qtimezoneprivate_data_p.h
 )
 
 qt_internal_extend_target(Core
@@ -975,13 +976,6 @@ qt_internal_extend_target(Core
         QT_FEATURE_timezone_locale
     SOURCES
         time/qtimezonelocale.cpp time/qtimezonelocale_p.h
-)
-
-qt_internal_extend_target(Core
-    CONDITION
-        QT_FEATURE_timezone_locale AND NOT QT_FEATURE_icu
-    SOURCES
-        time/qtimezonelocale_data_p.h
 )
 
 qt_internal_extend_target(Core CONDITION QT_FEATURE_datetimeparser
@@ -1557,6 +1551,8 @@ function(qt_internal_library_deprecation_level)
     # QT_DISABLE_DEPRECATED_UP_TO controls which version we use as a cut-off
     # compiling in to the library. E.g. if it is set to QT_VERSION then no
     # code which was deprecated before QT_VERSION will be compiled in.
+    set(digit "[0-9a-fA-F]")
+    string(REPEAT "${digit}" 6 six_digits)
     if(NOT DEFINED QT_DISABLE_DEPRECATED_UP_TO)
         if(WIN32)
             # On Windows, due to the way DLLs work, we need to export all functions,
@@ -1566,7 +1562,7 @@ function(qt_internal_library_deprecation_level)
             # On other platforms, Qt's own compilation does need to compile the Qt 5.0 API
             set(QT_DISABLE_DEPRECATED_UP_TO "0x050000")
         endif()
-    elseif(NOT QT_DISABLE_DEPRECATED_UP_TO MATCHES "^0x[0-9][0-9][0-9][0-9][0-9][0-9]$")
+    elseif(NOT QT_DISABLE_DEPRECATED_UP_TO MATCHES "^0x${six_digits}$")
         message(FATAL_ERROR "Invalid format of the QT_DISABLE_DEPRECATED_UP_TO macro:"
             " ${QT_DISABLE_DEPRECATED_UP_TO}. The expected format is the hexadecimal number,"
             " e.g. 0x060102")

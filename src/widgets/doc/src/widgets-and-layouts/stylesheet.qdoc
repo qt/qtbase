@@ -2272,6 +2272,13 @@
            See also \l{#right-prop}{right}, \l{Qt Style Sheets Reference#top-prop}{top}, and
            \l{#bottom-prop}{bottom}.
 
+    \section2 letter-spacing
+    \table
+      \row \li \b Type \li \l{#Length}{Length}
+    \endtable
+
+           Space between characters in a string within a widget.
+
     \section2 lineedit-password-character*
     \target lineedit-password-character-prop
     \table
@@ -2901,6 +2908,12 @@
 
            See also \l{#height-prop}{height}.
 
+    \section2 word-spacing
+    \table
+      \row \li \b Type \li \l{#Length}{Length}
+    \endtable
+
+           Space between each word in a string within a widget.
 
     \section2 -qt-background-role
     \table
@@ -2918,7 +2931,6 @@
            The list of CSS properties that you want to apply Qt-specific styles on.
 
             \note The \c list can only include properties that are not pixmap-based.
-
 
     \target list of icons
     \section1 List of Icons

@@ -65,10 +65,13 @@ if(CMAKE_MINIMUM_REQUIRED_VERSION VERSION_LESS 2.8.12)
 endif()
 
 if(NOT WIN32)
-    # Use pkg-config to get the directories and then use these values
-    # in the FIND_PATH() and FIND_LIBRARY() calls
+    if (VXWORKS)
+        set(_vxworks_lib_search_path "$ENV{WIND_CC_SYSROOT}/usr/lib/common/")
+        set(_vxworks_lib_drm_library_name gfxLibDRM)
+    endif()
+
     find_package(PkgConfig QUIET)
-    pkg_check_modules(PKG_Libdrm QUIET libdrm)
+    pkg_check_modules(PKG_Libdrm QUIET libdrm ${_vxworks_lib_drm_library_name})
 
     set(Libdrm_DEFINITIONS ${PKG_Libdrm_CFLAGS_OTHER})
     set(Libdrm_VERSION ${PKG_Libdrm_VERSION})
@@ -84,8 +87,10 @@ if(NOT WIN32)
     find_library(Libdrm_LIBRARY
         NAMES
             drm
+            ${_vxworks_lib_drm_library_name}
         HINTS
             ${PKG_Libdrm_LIBRARY_DIRS}
+            "${_vxworks_lib_search_path}"
     )
 
     include(FindPackageHandleStandardArgs)

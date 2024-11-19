@@ -149,6 +149,7 @@ public:
     int activeThreads = 0;
     uint stackSize = 0;
     QThread::Priority threadPriority = QThread::InheritPriority;
+    QThread::QualityOfService serviceLevel = QThread::QualityOfService::Auto;
 };
 
 QT_END_NAMESPACE

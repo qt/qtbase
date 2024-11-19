@@ -174,6 +174,8 @@ static auto parse_scope(QByteArrayView qualifiedKey) noexcept
         std::optional<QByteArrayView> scope;
         QByteArrayView key;
     };
+    if (qualifiedKey.startsWith("QFlags<") && qualifiedKey.endsWith('>'))
+        qualifiedKey.slice(7, qualifiedKey.length() - 8);
     const auto scopePos = qualifiedKey.lastIndexOf("::"_L1);
     if (scopePos < 0)
         return R{std::nullopt, qualifiedKey};
@@ -650,7 +652,7 @@ bool QMetaObjectPrivate::methodMatch(const QMetaObject *m, const QMetaMethod &me
     if (priv->parameterCount() != argc)
         return false;
 
-    if (stringData(m, data.name()) != name)
+    if (QMetaMethodPrivate::get(&method)->name() != name)
         return false;
 
     const QtPrivate::QMetaTypeInterface * const *ifaces = priv->parameterMetaTypeInterfaces();
@@ -1797,9 +1799,7 @@ bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *
 /*!
     \fn QMetaObject::Connection::swap(Connection &other)
     \since 5.15
-
-    Swaps this Connection instance with \a other. This operation is very fast
-    and never fails.
+    \memberswap{Connection instance}
 */
 
 /*!
@@ -1922,7 +1922,10 @@ QByteArray QMetaMethodPrivate::signature() const
 QByteArrayView QMetaMethodPrivate::name() const noexcept
 {
     Q_ASSERT(priv(mobj->d.data)->revision >= 7);
-    return stringDataView(mobj, data.name());
+    QByteArrayView name = stringDataView(mobj, data.name());
+    if (qsizetype colon = name.lastIndexOf(':'); colon > 0)
+        return name.sliced(colon + 1);
+    return name;
 }
 
 int QMetaMethodPrivate::typesDataIndex() const
@@ -2272,7 +2275,11 @@ QList<QByteArray> QMetaMethod::parameterNames() const
 
 
 /*!
-    Returns the return type name of this method.
+    Returns the return type name of this method. If this method is a
+    constructor, this function returns an empty string (constructors have no
+    return types).
+
+    \note In Qt 7, this function will return a null pointer for constructors.
 
     \sa returnType(), QMetaType::type()
 */
@@ -2280,6 +2287,10 @@ const char *QMetaMethod::typeName() const
 {
     if (!mobj)
         return nullptr;
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+    if (methodType() == QMetaMethod::Constructor)
+        return "";
+#endif
     return QMetaMethodPrivate::get(this)->rawReturnTypeName();
 }
 

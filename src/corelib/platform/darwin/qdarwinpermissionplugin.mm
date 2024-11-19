@@ -28,7 +28,10 @@ void QDarwinPermissionPlugin::requestPermission(const QPermission &permission, c
         return;
     }
 
-    [m_handler requestPermission:permission withCallback:[=](Qt::PermissionStatus status) {
+    // QCoreApplication::requestPermission is commonly used with an inline lambda for the
+    // callback object, meaning it won't be alive when the permission is granted later,
+    // so make sure to copy the callback object.
+    [m_handler requestPermission:permission withCallback:[&, callback](Qt::PermissionStatus status) {
         // In case the callback comes in on a secondary thread we need to marshal it
         // back to the main thread. And if it doesn't, we still want to propagate it
         // via an event, to avoid any GCD locks deadlocking the application on iOS

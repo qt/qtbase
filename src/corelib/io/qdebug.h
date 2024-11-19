@@ -27,6 +27,8 @@
 #include <optional>
 #include <string>
 #include <string_view>
+#include <tuple>
+#include <QtCore/q20type_traits.h>
 #include <utility>
 #include <vector>
 
@@ -82,6 +84,11 @@ class QT6_ONLY(Q_CORE_EXPORT) QDebug : public QIODeviceBase
     QT7_ONLY(Q_CORE_EXPORT) void putUInt128(const void *i);
     QT7_ONLY(Q_CORE_EXPORT) void putQtOrdering(QtOrderingPrivate::QtOrderingTypeFlag flags,
                                                Qt::partial_ordering order);
+
+    template <typename...Ts>
+    using if_streamable = std::enable_if_t<
+            std::conjunction_v<QTypeTraits::has_ostream_operator<QDebug, Ts>...>
+        , bool>;
 public:
     explicit QDebug(QIODevice *device) : stream(new Stream(device)) {}
     explicit QDebug(QString *string) : stream(new Stream(string)) {}
@@ -241,6 +248,32 @@ private:
     using StreamTypeErased = void(*)(QDebug&, const void*);
     QT7_ONLY(Q_CORE_EXPORT) static QString toStringImpl(StreamTypeErased s, const void *obj);
     QT7_ONLY(Q_CORE_EXPORT) static QByteArray toBytesImpl(StreamTypeErased s, const void *obj);
+    QT7_ONLY(Q_CORE_EXPORT) QDebug &putTupleLikeImplImpl(const char *ns, const char *what, size_t n,
+                                                         StreamTypeErased *ops, const void **data);
+
+    template <typename TupleLike, size_t...Is>
+    QDebug &putTupleLikeImpl(const char *ns, const char *what, const TupleLike &t,
+                             std::index_sequence<Is...>)
+    {
+        if constexpr (sizeof...(Is)) {
+            StreamTypeErased ops[] = {
+                &streamTypeErased<q20::remove_cvref_t<std::tuple_element_t<Is, TupleLike>>>...
+            };
+            const void *data[] = {
+                std::addressof(std::get<Is>(t))...
+            };
+            return putTupleLikeImplImpl(ns, what, sizeof...(Is), ops, data);
+        } else {
+            return putTupleLikeImplImpl(ns, what, 0, nullptr, nullptr);
+        }
+    }
+
+    template <typename TupleLike>
+    QDebug &putTupleLike(const char *ns, const char *what, const TupleLike &t)
+    {
+        using Indexes = std::make_index_sequence<std::tuple_size_v<TupleLike>>;
+        return putTupleLikeImpl(ns, what, t, Indexes{});
+    }
 public:
     template <typename T>
     static QString toString(const T &object)
@@ -252,6 +285,12 @@ public:
     static QByteArray toBytes(const T &object)
     {
         return toBytesImpl(&streamTypeErased<T>, std::addressof(object));
+    }
+
+    template <typename...Ts, if_streamable<Ts...> = true>
+    QDebug &operator<<(const std::tuple<Ts...> &t)
+    {
+        return putTupleLike("std", "tuple", t);
     }
 
 private:
@@ -424,11 +463,10 @@ inline QDebugIfHasDebugStreamContainer<QMultiHash<Key, T>, Key, T> operator<<(QD
 template <class T>
 inline QDebugIfHasDebugStream<T> operator<<(QDebug debug, const std::optional<T> &opt)
 {
-    const QDebugStateSaver saver(debug);
     if (!opt)
-        debug.nospace() << std::nullopt;
-    else
-        debug.nospace() << "std::optional(" << *opt << ')';
+        return debug << std::nullopt;
+    const QDebugStateSaver saver(debug);
+    debug.nospace() << "std::optional(" << *opt << ')';
     return debug;
 }
 
@@ -436,7 +474,7 @@ template <class T1, class T2>
 inline QDebugIfHasDebugStream<T1, T2> operator<<(QDebug debug, const std::pair<T1, T2> &pair)
 {
     const QDebugStateSaver saver(debug);
-    debug.nospace() << "std::pair(" << pair.first << ',' << pair.second << ')';
+    debug.nospace() << "std::pair(" << pair.first << ", " << pair.second << ')';
     return debug;
 }
 

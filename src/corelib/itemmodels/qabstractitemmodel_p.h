@@ -37,6 +37,26 @@ public:
     static void destroy(QPersistentModelIndexData *data);
 };
 
+namespace QtPrivate {
+// This class is just a wrapper so we can use the fixed qHash() function for QModelIndex.
+struct QModelIndexWrapper // ### Qt 7: Remove again, use QModelIndex directly.
+{
+    QModelIndex index;
+    Q_IMPLICIT QModelIndexWrapper(const QModelIndex &i) : index(i) { }
+    Q_IMPLICIT inline operator QModelIndex() const { return index; }
+    friend bool operator==(const QModelIndexWrapper &l, const QModelIndexWrapper &r) { return l.index == r.index; }
+    friend bool operator!=(const QModelIndexWrapper &l, const QModelIndexWrapper &r) { return !(operator==(l,r)); }
+    friend bool operator==(const QModelIndexWrapper &l, const QModelIndex &r) { return l.index == r; }
+    friend bool operator!=(const QModelIndexWrapper &l, const QModelIndex &r) { return !(operator==(l.index,r)); }
+    friend bool operator==(const QModelIndex &l, const QModelIndexWrapper &r) { return l == r.index; }
+    friend bool operator!=(const QModelIndex &l, const QModelIndexWrapper &r) { return !(operator==(l,r.index)); }
+    friend inline size_t qHash(const QtPrivate::QModelIndexWrapper &index, size_t seed = 0) noexcept
+    {
+        return qHashMulti(seed, index.index.row(), index.index.column(), index.index.internalId());
+    }
+};
+}
+
 class Q_CORE_EXPORT QAbstractItemModelPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QAbstractItemModel)
@@ -111,7 +131,7 @@ public:
 
     struct Persistent {
         Persistent() {}
-        QMultiHash<QModelIndex, QPersistentModelIndexData *> indexes;
+        QMultiHash<QtPrivate::QModelIndexWrapper, QPersistentModelIndexData *> indexes;
         QStack<QList<QPersistentModelIndexData *>> moved;
         QStack<QList<QPersistentModelIndexData *>> invalidated;
         void insertMultiAtEnd(const QModelIndex& key, QPersistentModelIndexData *data);

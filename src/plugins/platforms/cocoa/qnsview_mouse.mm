@@ -22,7 +22,7 @@ static const QPointingDevice *pointingDeviceFor(qint64 deviceID)
     if (primaryDevice->systemId() == kDefaultPrimaryPointingDeviceId) {
         // Adopt existing primary device instead of creating a new one
         QPointingDevicePrivate::get(const_cast<QPointingDevice *>(primaryDevice))->systemId = deviceID;
-        qCDebug(lcInputDevices) << "primaryPointingDevice is now" << primaryDevice;
+        qCDebug(lcQpaInputDevices) << "primaryPointingDevice is now" << primaryDevice;
         return primaryDevice;
     } else {
         // Register a new device. Name and capabilities may need updating later.
@@ -117,7 +117,7 @@ static const QPointingDevice *pointingDeviceFor(qint64 deviceID)
     ulong timestamp = [theEvent timestamp] * 1000;
 
     QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
-    nativeDrag->setLastMouseEvent(theEvent, self);
+    nativeDrag->setLastInputEvent(theEvent, self);
 
     const auto modifiers = QAppleKeyMapper::fromCocoaModifiers(theEvent.modifierFlags);
     auto button = cocoaButton2QtButton(theEvent);
@@ -756,7 +756,7 @@ static const QPointingDevice *pointingDeviceFor(qint64 deviceID)
             devicePriv->name = "trackpad or magic mouse"_L1;
             devicePriv->deviceType = QInputDevice::DeviceType::TouchPad;
             devicePriv->capabilities |= QInputDevice::Capability::PixelScroll;
-            qCDebug(lcInputDevices) << "mouse scrolling: updated capabilities" << device;
+            qCDebug(lcQpaInputDevices) << "mouse scrolling: updated capabilities" << device;
         }
     }
 

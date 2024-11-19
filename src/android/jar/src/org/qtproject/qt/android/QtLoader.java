@@ -23,8 +23,6 @@ import android.util.Log;
 
 import java.io.File;
 import java.lang.IllegalArgumentException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -40,6 +38,7 @@ abstract class QtLoader {
     private final String m_packageName;
     private String m_preferredAbi = null;
     private String m_extractedNativeLibsDir = null;
+    /** @noinspection FieldCanBeLocal*/
     private ClassLoader m_classLoader;
 
     protected ComponentInfo m_contextInfo;
@@ -47,7 +46,7 @@ abstract class QtLoader {
     protected String m_mainLibPath;
     protected String m_mainLibName;
     protected String m_applicationParameters = "";
-    protected HashMap<String, String> m_environmentVariables = new HashMap<>();
+    protected final HashMap<String, String> m_environmentVariables = new HashMap<>();
 
     protected static QtLoader m_instance = null;
     protected boolean m_librariesLoaded;

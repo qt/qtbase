@@ -1,0 +1,9 @@
+version = 1
+
+[[annotations]]
+path = ["DejaVuSans.ttf", "DejaVuSansMono.ttf"]
+precedence = "closest"
+SPDX-FileCopyrightText = ["Copyright (c) 2003 by Bitstream, Inc",
+    "Copyright (c) 2006 by Tavmjong Bah",
+    "(c) American Mathematical Society"]
+SPDX-License-Identifier = "Bitstream-Vera"

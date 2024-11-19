@@ -912,9 +912,7 @@ QTextFormat &QTextFormat::operator=(const QTextFormat &rhs)
 /*!
     \fn void QTextFormat::swap(QTextFormat &other)
     \since 5.0
-
-    Swaps this text format with \a other. This function is very fast
-    and never fails.
+    \memberswap{text format}
 */
 
 /*!

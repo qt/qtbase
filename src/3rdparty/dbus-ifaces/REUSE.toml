@@ -1,0 +1,11 @@
+version = 1
+
+[[annotations]]
+path = ["*"]
+comment = ["Need to get the proper copyright and license.",
+           "https://github.com/KDE/liquidshell/blob/master/org.freedesktop.Notifications.xml",
+           "https://github.com/KDE/plasma-workspace/blob/master/appmenu/com.canonical.AppMenu.Registrar.xml",
+           "https://github.com/KDE/plasma-workspace/blob/master/xembed-sni-proxy/org.kde.StatusNotifierItem.xml"]
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright © 2011-2018 The KDE community"
+SPDX-License-Identifier = "BSD-3-Clause"

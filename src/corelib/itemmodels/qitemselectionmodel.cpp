@@ -119,9 +119,7 @@ private:
 /*!
     \fn QItemSelectionRange::swap(QItemSelectionRange &other)
     \since 5.6
-
-    Swaps this selection range's contents with \a other.
-    This function is very fast and never fails.
+    \memberswap{selection range's contents}
 */
 
 /*!

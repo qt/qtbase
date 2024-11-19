@@ -1,0 +1,7 @@
+version = 1
+
+[[annotations]]
+path = ["aglfn.txt"]
+precedence = "closest"
+SPDX-FileCopyrightText = "Copyright 2003, 2005-2008, 2010 Adobe Systems Incorporated."
+SPDX-License-Identifier = "BSD-3-Clause"

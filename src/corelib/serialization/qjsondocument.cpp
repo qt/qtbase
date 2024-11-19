@@ -56,24 +56,8 @@ class QJsonDocumentPrivate
 public:
     QJsonDocumentPrivate() = default;
     QJsonDocumentPrivate(QCborValue data) : value(std::move(data)) {}
-    ~QJsonDocumentPrivate()
-    {
-        if (rawData)
-            free(rawData);
-    }
 
     QCborValue value;
-    char *rawData = nullptr;
-    uint rawDataSize = 0;
-
-    void clearRawData()
-    {
-        if (rawData) {
-            free(rawData);
-            rawData = nullptr;
-            rawDataSize = 0;
-        }
-    }
 };
 
 /*!
@@ -152,8 +136,6 @@ QJsonDocument &QJsonDocument::operator =(const QJsonDocument &other)
         if (other.d) {
             if (!d)
                 d = std::make_unique<QJsonDocumentPrivate>();
-            else
-                d->clearRawData();
             d->value = other.d->value;
         } else {
             d.reset();
@@ -179,8 +161,7 @@ QJsonDocument &QJsonDocument::operator =(const QJsonDocument &other)
 /*!
     \fn void QJsonDocument::swap(QJsonDocument &other)
     \since 5.10
-
-    Swaps the document \a other with this. This operation is very fast and never fails.
+    \memberswap{document}
 */
 
 #ifndef QT_NO_VARIANT
@@ -375,8 +356,6 @@ void QJsonDocument::setObject(const QJsonObject &object)
 {
     if (!d)
         d = std::make_unique<QJsonDocumentPrivate>();
-    else
-        d->clearRawData();
 
     d->value = QCborValue::fromJsonValue(object);
 }
@@ -390,8 +369,6 @@ void QJsonDocument::setArray(const QJsonArray &array)
 {
     if (!d)
         d = std::make_unique<QJsonDocumentPrivate>();
-    else
-        d->clearRawData();
 
     d->value = QCborValue::fromJsonValue(array);
 }

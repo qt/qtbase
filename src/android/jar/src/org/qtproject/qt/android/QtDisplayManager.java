@@ -46,16 +46,12 @@ class QtDisplayManager {
 
     private static int m_previousRotation = -1;
 
-    private DisplayManager.DisplayListener m_displayListener = null;
+    private final DisplayManager.DisplayListener m_displayListener;
     private final Activity m_activity;
 
     QtDisplayManager(Activity activity)
     {
         m_activity = activity;
-        initDisplayListener();
-    }
-
-    private void initDisplayListener() {
         m_displayListener = new DisplayManager.DisplayListener() {
             @Override
             public void onDisplayAdded(int displayId) {

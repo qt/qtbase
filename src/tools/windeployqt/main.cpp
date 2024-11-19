@@ -987,7 +987,7 @@ static QString deployPlugin(const QString &plugin, const QDir &subDir, const boo
     if (optVerboseLevel && subDirName == u"tls" && plugin.contains(u"qopensslbackend")
         && !deployOpenSslPlugin) {
         std::wcout << "Skipping plugin " << plugin
-                   << ". Use -force_openssl or specify -openssl-root if you want to use it.\n";
+                   << ". Use -force-openssl or specify -openssl-root if you want to use it.\n";
         return {};
     }
 

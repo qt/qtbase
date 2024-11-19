@@ -11,7 +11,8 @@
 QT_BEGIN_NAMESPACE
 
 #ifndef Q_MOC_OUTPUT_REVISION
-#define Q_MOC_OUTPUT_REVISION 68
+// This number should be in sync with moc's outputrevision.h
+#define Q_MOC_OUTPUT_REVISION 69
 #endif
 
 // The following macros can be defined by tools that understand Qt
@@ -116,6 +117,20 @@ QT_BEGIN_NAMESPACE
 #  define Q_OBJECT_NO_ATTRIBUTES_WARNING
 #endif
 
+#define QT_META_OBJECT_VARS \
+    template <typename> static constexpr auto qt_create_metaobjectdata();       \
+    template <typename MetaObjectTagType> static constexpr inline auto          \
+    qt_staticMetaObjectContent = qt_create_metaobjectdata<MetaObjectTagType>(); \
+    template <typename MetaObjectTagType> static constexpr inline auto          \
+    qt_staticMetaObjectStaticContent = qt_staticMetaObjectContent<MetaObjectTagType>.data;      \
+    template <typename MetaObjectTagType> static constexpr inline auto          \
+    qt_staticMetaObjectRelocatingContent = qt_staticMetaObjectContent<MetaObjectTagType>.metaTypes;
+
+#define QT_OBJECT_GADGET_COMMON  \
+    QT_META_OBJECT_VARS \
+    Q_OBJECT_NO_ATTRIBUTES_WARNING \
+    Q_DECL_HIDDEN_STATIC_METACALL static void qt_static_metacall(QObject *, QMetaObject::Call, int, void **);
+
 /* qmake ignore Q_OBJECT */
 #define Q_OBJECT \
 public: \
@@ -127,12 +142,9 @@ public: \
     virtual int qt_metacall(QMetaObject::Call, int, void **); \
     QT_TR_FUNCTIONS \
 private: \
-    Q_OBJECT_NO_ATTRIBUTES_WARNING \
-    Q_DECL_HIDDEN_STATIC_METACALL static void qt_static_metacall(QObject *, QMetaObject::Call, int, void **); \
-    QT_WARNING_POP \
-    template <typename> static constexpr auto qt_create_metaobjectdata(); \
-    template <typename> friend constexpr auto ::qt_call_create_metaobjectdata(); \
+    QT_OBJECT_GADGET_COMMON \
     QT_DEFINE_TAG_STRUCT(QPrivateSignal); \
+    QT_WARNING_POP \
     QT_ANNOTATE_CLASS(qt_qobject, "")
 
 /* qmake ignore Q_OBJECT */
@@ -147,10 +159,7 @@ public: \
     typedef void QtGadgetHelper; \
 private: \
     QT_WARNING_PUSH \
-    Q_OBJECT_NO_ATTRIBUTES_WARNING \
-    Q_DECL_HIDDEN_STATIC_METACALL static void qt_static_metacall(QObject *, QMetaObject::Call, int, void **); \
-    template <typename> static constexpr auto qt_create_metaobjectdata(); \
-    template <typename> friend constexpr auto ::qt_call_create_metaobjectdata(); \
+    QT_OBJECT_GADGET_COMMON \
     QT_WARNING_POP \
     QT_ANNOTATE_CLASS(qt_qgadget, "") \
     /*end*/

@@ -933,10 +933,13 @@ void tst_QDBusMarshall::sendCallErrors_data()
     QTest::addColumn<QString>("errorMsg");
     QTest::addColumn<QString>("ignoreMsg");
 
-    // this error comes from the bus server
     QTest::newRow("empty-service") << "" << objectPath << interfaceName << "ping" << QVariantList()
-            << "org.freedesktop.DBus.Error.UnknownMethod"
-            << "Method \"ping\" with signature \"\" on interface \"org.qtproject.autotests.qpong\" doesn't exist\n" << (const char*)0;
+            << "org.qtproject.QtDBus.Error.InvalidService"
+            << "Service name cannot be empty" << "";
+
+    QTest::newRow("invalid-service-single-label") << "service" << objectPath << interfaceName << "ping" << QVariantList()
+            << "org.qtproject.QtDBus.Error.InvalidService"
+            << "Invalid service name: service" << "";
 
     QTest::newRow("invalid-service") << "this isn't valid" << objectPath << interfaceName << "ping" << QVariantList()
             << "org.qtproject.QtDBus.Error.InvalidService"

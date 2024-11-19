@@ -60,6 +60,7 @@
 #include "QtWidgets/qgraphicsproxywidget.h"
 #include "QtWidgets/qgraphicsscene.h"
 #include "private/qgraphicsproxywidget_p.h"
+#include "private/qgraphicsview_p.h"
 #endif
 #include "QtWidgets/qabstractscrollarea.h"
 #include "private/qabstractscrollarea_p.h"
@@ -1580,6 +1581,7 @@ QWidget::~QWidget()
 #if QT_CONFIG(graphicseffect)
     delete d->graphicsEffect;
 #endif
+    d->deleteExtra();
 
     d->isWidget = false;
 }
@@ -12682,8 +12684,8 @@ static MapToGlobalTransformResult mapToGlobalTransform(const QWidget *w)
             if (const QGraphicsScene *scene = qgpw->scene()) {
                 const QList <QGraphicsView *> views = scene->views();
                 if (!views.isEmpty()) {
-                    result.transform *= qgpw->sceneTransform();
-                    result.transform *= views.first()->viewportTransform();
+                    auto *viewP = static_cast<QGraphicsViewPrivate *>(qt_widget_private(views.constFirst()));
+                    result.transform *= viewP->mapToViewTransform(qgpw);
                     w = views.first()->viewport();
                 }
             }
@@ -12695,8 +12697,8 @@ static MapToGlobalTransformResult mapToGlobalTransform(const QWidget *w)
             break;
         }
 
-        const QPoint topLeft = w->geometry().topLeft();
-        result.transform.translate(topLeft.x(), topLeft.y());
+        const auto &geometry = w->geometry();
+        result.transform *= QTransform::fromTranslate(geometry.x(), geometry.y());
         if (w->isWindow())
             break;
     }

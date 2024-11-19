@@ -4,7 +4,10 @@
     "Name": "Unicode Character Database (UCD)",
     "QDocModule": "qtcore",
     "QtUsage": "Qt Core uses data obtained from UCD files for working with characters and strings.",
-    "Comment": { "Files": "For update, see qtbase/util/unicode/README" },
+    "Comment": {
+        "Files": "For update, see qtbase/util/unicode/README",
+        "General": "no relevant CPE and PURL found"
+    },
     "Files": [ "qunicodetables_p.h", "qunicodetables.cpp" ],
 
     "Description": "The Unicode Character Database (UCD) is a set of files that
@@ -24,7 +27,10 @@
     "Name": "Unicode Common Locale Data Repository (CLDR)",
     "QDocModule": "qtcore",
     "QtUsage": "Used in Qt Core (QTimeZone, QLocale).",
-    "Comment": { "Files": "For update, see qtbase/util/locale_database/cldr2qlocalexml.py" },
+    "Comment": {
+        "Files": "For update, see qtbase/util/locale_database/cldr2qlocalexml.py",
+        "General": "no relevant CPE and PURL found"
+    },
     "Files": [ "qlocale_data_p.h",
                "../time/qtimezoneprivate_data_p.h", "../time/qtimezonelocale_data_p.h",
                "../time/qhijricalendar_data_p.h", "../time/qjalalicalendar_data_p.h",

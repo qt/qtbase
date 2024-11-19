@@ -353,6 +353,8 @@ public:
 
     bool isFrameless() const { return m_data.flags.testFlag(Qt::FramelessWindowHint); }
 
+    void requestUpdate() override;
+
 private:
     inline void show_sys() const;
     inline QWindowsWindowData setWindowFlags_sys(Qt::WindowFlags wt, unsigned flags = 0) const;
@@ -398,6 +400,9 @@ private:
 #endif
     static bool m_borderInFullScreenDefault;
     static bool m_inSetgeometry;
+
+    qsizetype m_vsyncServiceCallbackId = 0;
+    QAtomicInt m_vsyncUpdatePending;
 };
 
 #ifndef QT_NO_DEBUG_STREAM

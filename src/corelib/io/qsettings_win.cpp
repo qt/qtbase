@@ -8,6 +8,8 @@
 #include "qmap.h"
 #include "qdebug.h"
 #include "qscopeguard.h"
+#include <QtCore/private/wcharhelpers_win_p.h>
+
 #include <qt_windows.h>
 
 // See "Accessing an Alternate Registry View" at:
@@ -262,7 +264,7 @@ static void deleteChildGroups(HKEY parentHandle, REGSAM access = 0)
         RegCloseKey(childGroupHandle);
 
         // delete group itself
-        LONG res = RegDeleteKey(parentHandle, reinterpret_cast<const wchar_t *>(group.utf16()));
+        LONG res = RegDeleteKey(parentHandle, qt_castToWchar(group));
         if (res != ERROR_SUCCESS) {
             qErrnoWarning(int(res), "QSettings: RegDeleteKey failed on subkey \"%ls\"",
                           qUtf16Printable(group));
@@ -547,8 +549,7 @@ HKEY QWinSettingsPrivate::writeHandle() const
 QWinSettingsPrivate::~QWinSettingsPrivate()
 {
     if (deleteWriteHandleOnExit && writeHandle() != 0) {
-        QString emptyKey;
-        DWORD res = RegDeleteKey(writeHandle(), reinterpret_cast<const wchar_t *>(emptyKey.utf16()));
+        DWORD res = RegDeleteKey(writeHandle(), L"");
         if (res != ERROR_SUCCESS) {
             qErrnoWarning(int(res), "QSettings: Failed to delete key \"%ls\"",
                           qUtf16Printable(regList.constFirst().key()));
@@ -585,7 +586,7 @@ void QWinSettingsPrivate::remove(const QString &uKey)
             const QStringList childKeys = childKeysOrGroups(handle, QSettingsPrivate::ChildKeys);
 
             for (const QString &group : childKeys) {
-                LONG res = RegDeleteValue(handle, reinterpret_cast<const wchar_t *>(group.utf16()));
+                LONG res = RegDeleteValue(handle, qt_castToWchar(group));
                 if (res != ERROR_SUCCESS) {
                     qErrnoWarning(int(res), "QSettings: RegDeleteValue failed on subkey \"%ls\"",
                                   qUtf16Printable(group));
@@ -679,7 +680,7 @@ void QWinSettingsPrivate::set(const QString &uKey, const QVariant &value)
             int length = s.length();
             if (type == REG_SZ)
                 ++length;
-            regValueBuff = QByteArray(reinterpret_cast<const char *>(s.utf16()),
+            regValueBuff = QByteArray(reinterpret_cast<const char *>(s.constData()),
                                       int(sizeof(wchar_t)) * length);
             break;
         }

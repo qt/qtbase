@@ -13,6 +13,8 @@
 
 #include <qpa/qwindowsysteminterface.h>
 
+#include <QtGui/private/qhighdpiscaling_p.h>
+
 Q_LOGGING_CATEGORY(lcQpaEvents, "qt.qpa.events");
 
 static bool isMouseEvent(NSEvent *ev)
@@ -233,7 +235,8 @@ NSWindow<QNSWindowProtocol> *qnswindow_cast(NSWindow *window)
     // client geometry based on the QWindow's positionPolicy is a noop.
     // Now that we have a NSWindow to read the frame from we re-apply
     // the QWindow geometry, which will move the NSWindow if needed.
-    m_platformWindow->setGeometry(window->geometry());
+    m_platformWindow->setGeometry(QHighDpi::toNativeWindowGeometry(window->geometry(), window));
+
 
     m_platformWindow->setVisible(window->isVisible());
 }

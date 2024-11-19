@@ -67,8 +67,7 @@ using SqlrTm = QSqlRelationalTableModelSql;
 
 /*!
   \fn void QSqlRelation::swap(QSqlRelation &other)
-
-  Swaps \c this with \a other.
+    \memberswap{relation}
  */
 
 /*!

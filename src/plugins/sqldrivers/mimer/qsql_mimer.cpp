@@ -845,7 +845,7 @@ QVariant QMimerSQLResult::data(int i)
                                         err, QSqlError::StatementError, d->drv_d_func()));
                 return QVariant(QMetaType(type), nullptr);
             }
-            const QByteArray uuidByteArray = QByteArray(reinterpret_cast<char *>(uuidChar), 16);
+            const auto uuidByteArray = QByteArrayView(reinterpret_cast<char *>(uuidChar), 16);
             return QUuid::fromRfc4122(uuidByteArray);
         }
         case MimerColumnTypes::Unknown:
@@ -1084,8 +1084,7 @@ bool QMimerSQLResult::exec()
             break;
         }
         case MimerColumnTypes::Uuid: {
-            const QByteArray uuidArray =
-                    QByteArray::fromHex(val.toUuid().toString(QUuid::WithoutBraces).toLatin1());
+            const QByteArray uuidArray = val.toUuid().toRfc4122();
             const unsigned char *uuid =
                     reinterpret_cast<const unsigned char *>(uuidArray.constData());
             err = MimerSetUUID(d->statementhandle, i + 1, uuid);
@@ -1152,7 +1151,7 @@ bool QMimerSQLResult::exec()
             break;
         }
         case MimerColumnTypes::Blob: {
-            QByteArray blobArr = val.toByteArray();
+            const QByteArray blobArr = val.toByteArray();
             const char *blobData = blobArr.constData();
             qsizetype size = blobArr.size();
             err = MimerSetLob(d->statementhandle, i + 1, size, &d->lobhandle);

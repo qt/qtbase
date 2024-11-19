@@ -126,7 +126,7 @@ public:
         QModelIndex source_parent;
     };
 
-    mutable QHash<QModelIndex, Mapping*> source_index_mapping;
+    mutable QHash<QtPrivate::QModelIndexWrapper, Mapping*> source_index_mapping;
 
     void setSortCaseSensitivityForwarder(Qt::CaseSensitivity cs)
     {
@@ -239,9 +239,9 @@ public:
 
     std::array<QMetaObject::Connection, 18> sourceConnections;
 
-    QHash<QModelIndex, Mapping *>::const_iterator create_mapping(
+    QHash<QtPrivate::QModelIndexWrapper, Mapping *>::const_iterator create_mapping(
         const QModelIndex &source_parent) const;
-    QHash<QModelIndex, Mapping *>::const_iterator create_mapping_recursive(
+    QHash<QtPrivate::QModelIndexWrapper, Mapping *>::const_iterator create_mapping_recursive(
             const QModelIndex &source_parent) const;
     QModelIndex proxy_to_source(const QModelIndex &proxyIndex) const;
     QModelIndex source_to_proxy(const QModelIndex &sourceIndex) const;
@@ -265,14 +265,14 @@ public:
         filter_regularexpression.setValueBypassingBindings(re);
     }
 
-    inline QHash<QModelIndex, Mapping *>::const_iterator index_to_iterator(
+    inline QHash<QtPrivate::QModelIndexWrapper, Mapping *>::const_iterator index_to_iterator(
         const QModelIndex &proxy_index) const
     {
         Q_ASSERT(proxy_index.isValid());
         Q_ASSERT(proxy_index.model() == q_func());
         const void *p = proxy_index.internalPointer();
         Q_ASSERT(p);
-        QHash<QModelIndex, Mapping *>::const_iterator it =
+        QHash<QtPrivate::QModelIndexWrapper, Mapping *>::const_iterator it =
                 source_index_mapping.constFind(static_cast<const Mapping*>(p)->source_parent);
         Q_ASSERT(it != source_index_mapping.constEnd());
         Q_ASSERT(it.value());
@@ -280,7 +280,7 @@ public:
     }
 
     inline QModelIndex create_index(int row, int column,
-                                    QHash<QModelIndex, Mapping*>::const_iterator it) const
+                                    QHash<QtPrivate::QModelIndexWrapper, Mapping*>::const_iterator it) const
     {
         return q_func()->createIndex(row, column, *it);
     }
@@ -382,7 +382,7 @@ public:
     bool recursiveParentAcceptsRow(const QModelIndex &source_parent) const;
 };
 
-typedef QHash<QModelIndex, QSortFilterProxyModelPrivate::Mapping *> IndexMap;
+typedef QHash<QtPrivate::QModelIndexWrapper, QSortFilterProxyModelPrivate::Mapping *> IndexMap;
 
 static bool operator&(QSortFilterProxyModelPrivate::Direction a, QSortFilterProxyModelPrivate::Direction b)
 {

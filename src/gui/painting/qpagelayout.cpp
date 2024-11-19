@@ -369,9 +369,7 @@ QPageLayout &QPageLayout::operator=(const QPageLayout &other)
 
 /*!
     \fn void QPageLayout::swap(QPageLayout &other)
-
-    Swaps this page layout with \a other. This function is very fast and
-    never fails.
+    \memberswap{page layout}
 */
 
 /*!

@@ -47,6 +47,11 @@ QT_BEGIN_NAMESPACE
 
 class Q_AUTOTEST_EXPORT QTimeZonePrivate : public QSharedData
 {
+    // Nothing should be copy-assigning instances of either this or its derived
+    // classes (only clone() should copy, using the copy-constructor):
+    bool operator=(const QTimeZonePrivate &) const = delete;
+protected:
+    QTimeZonePrivate(const QTimeZonePrivate &other) = default;
 public:
     // Version of QTimeZone::OffsetData struct using msecs for efficiency
     struct Data {
@@ -73,10 +78,9 @@ public:
 
     // Create null time zone
     QTimeZonePrivate();
-    QTimeZonePrivate(const QTimeZonePrivate &other);
     virtual ~QTimeZonePrivate();
 
-    virtual QTimeZonePrivate *clone() const;
+    virtual QTimeZonePrivate *clone() const = 0;
 
     bool operator==(const QTimeZonePrivate &other) const;
     bool operator!=(const QTimeZonePrivate &other) const;
@@ -116,7 +120,7 @@ public:
     virtual QByteArray systemTimeZoneId() const;
 
     virtual bool isTimeZoneIdAvailable(const QByteArray &ianaId) const;
-    virtual QList<QByteArray> availableTimeZoneIds() const;
+    virtual QList<QByteArray> availableTimeZoneIds() const = 0;
     virtual QList<QByteArray> availableTimeZoneIds(QLocale::Territory territory) const;
     virtual QList<QByteArray> availableTimeZoneIds(int utcOffset) const;
 
@@ -174,6 +178,8 @@ template<> QTimeZonePrivate *QSharedDataPointer<QTimeZonePrivate>::clone();
 
 class Q_AUTOTEST_EXPORT QUtcTimeZonePrivate final : public QTimeZonePrivate
 {
+    bool operator=(const QUtcTimeZonePrivate &) const = delete;
+    QUtcTimeZonePrivate(const QUtcTimeZonePrivate &other);
 public:
     // Create default UTC time zone
     QUtcTimeZonePrivate();
@@ -185,7 +191,6 @@ public:
     QUtcTimeZonePrivate(const QByteArray &zoneId, int offsetSeconds, const QString &name,
                         const QString &abbreviation, QLocale::Territory territory,
                         const QString &comment);
-    QUtcTimeZonePrivate(const QUtcTimeZonePrivate &other);
     virtual ~QUtcTimeZonePrivate();
 
     // Fall-back for UTC[+-]\d+(:\d+){,2} IDs.
@@ -236,15 +241,24 @@ private:
 #if QT_CONFIG(timezone_tzdb)
 class QChronoTimeZonePrivate final : public QTimeZonePrivate
 {
+    bool operator=(const QChronoTimeZonePrivate &) const = delete;
+    QChronoTimeZonePrivate(const QChronoTimeZonePrivate &) = default;
 public:
     QChronoTimeZonePrivate();
     QChronoTimeZonePrivate(QByteArrayView id);
     ~QChronoTimeZonePrivate() override;
+    QChronoTimeZonePrivate *clone() const override;
+
+    QByteArray systemTimeZoneId() const override;
 
     QString abbreviation(qint64 atMSecsSinceEpoch) const override;
     int offsetFromUtc(qint64 atMSecsSinceEpoch) const override;
     int standardTimeOffset(qint64 atMSecsSinceEpoch) const override;
     int daylightTimeOffset(qint64 atMSecsSinceEpoch) const override;
+
+    bool isTimeZoneIdAvailable(const QByteArray &ianaId) const override;
+    QList<QByteArray> availableTimeZoneIds() const override;
+    QList<QByteArray> availableTimeZoneIds(int utcOffset) const override;
 
     bool hasDaylightTime() const override;
     bool isDaylightTime(qint64 atMSecsSinceEpoch) const override;
@@ -257,17 +271,17 @@ public:
 
 private:
     const std::chrono::time_zone *const m_timeZone;
-    Q_DISABLE_COPY_MOVE(QChronoTimeZonePrivate)
 };
 #elif defined(Q_OS_DARWIN)
 class Q_AUTOTEST_EXPORT QMacTimeZonePrivate final : public QTimeZonePrivate
 {
+    bool operator=(const QMacTimeZonePrivate &) const = delete;
+    QMacTimeZonePrivate(const QMacTimeZonePrivate &other);
 public:
     // Create default time zone
     QMacTimeZonePrivate();
     // Create named time zone
     QMacTimeZonePrivate(const QByteArray &ianaId);
-    QMacTimeZonePrivate(const QMacTimeZonePrivate &other);
     ~QMacTimeZonePrivate();
 
     QMacTimeZonePrivate *clone() const override;
@@ -307,12 +321,13 @@ private:
 #elif defined(Q_OS_ANDROID)
 class QAndroidTimeZonePrivate final : public QTimeZonePrivate
 {
+    bool operator=(const QAndroidTimeZonePrivate &) const = delete;
+    QAndroidTimeZonePrivate(const QAndroidTimeZonePrivate &) = default;
 public:
     // Create default time zone
     QAndroidTimeZonePrivate();
     // Create named time zone
     QAndroidTimeZonePrivate(const QByteArray &ianaId);
-    QAndroidTimeZonePrivate(const QAndroidTimeZonePrivate &other);
     ~QAndroidTimeZonePrivate();
 
     QAndroidTimeZonePrivate *clone() const override;
@@ -340,7 +355,6 @@ private:
     void init(const QByteArray &zoneId);
 
     QJniObject androidTimeZone;
-
 };
 #elif defined(Q_OS_UNIX)
 struct QTzTransitionTime
@@ -375,6 +389,7 @@ struct QTzTimeZoneCacheEntry
 
 class Q_AUTOTEST_EXPORT QTzTimeZonePrivate final : public QTimeZonePrivate
 {
+    bool operator=(const QTzTimeZonePrivate &) const = delete;
     QTzTimeZonePrivate(const QTzTimeZonePrivate &) = default;
 public:
     // Create default time zone
@@ -427,12 +442,13 @@ private:
 #elif QT_CONFIG(icu)
 class Q_AUTOTEST_EXPORT QIcuTimeZonePrivate final : public QTimeZonePrivate
 {
+    bool operator=(const QIcuTimeZonePrivate &) const = delete;
+    QIcuTimeZonePrivate(const QIcuTimeZonePrivate &other);
 public:
     // Create default time zone
     QIcuTimeZonePrivate();
     // Create named time zone
     QIcuTimeZonePrivate(const QByteArray &ianaId);
-    QIcuTimeZonePrivate(const QIcuTimeZonePrivate &other);
     ~QIcuTimeZonePrivate();
 
     QIcuTimeZonePrivate *clone() const override;
@@ -470,6 +486,8 @@ private:
 #elif defined(Q_OS_WIN)
 class Q_AUTOTEST_EXPORT QWinTimeZonePrivate final : public QTimeZonePrivate
 {
+    bool operator=(const QWinTimeZonePrivate &) const = delete;
+    QWinTimeZonePrivate(const QWinTimeZonePrivate &) = default;
 public:
     struct QWinTransitionRule {
         int startYear;
@@ -483,7 +501,6 @@ public:
     QWinTimeZonePrivate();
     // Create named time zone
     QWinTimeZonePrivate(const QByteArray &ianaId);
-    QWinTimeZonePrivate(const QWinTimeZonePrivate &other);
     ~QWinTimeZonePrivate();
 
     QWinTimeZonePrivate *clone() const override;

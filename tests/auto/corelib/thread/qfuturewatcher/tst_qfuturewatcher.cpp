@@ -1,11 +1,20 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
-#include <QCoreApplication>
-#include <QDebug>
-#include <QElapsedTimer>
-#include <QSignalSpy>
 
-#include <QtConcurrent>
+#include <QtTest/qtest.h>
+#include <QtTest/qsignalspy.h>
+
+#include <QtConcurrent/qtconcurrentfilter.h>
+#include <QtConcurrent/qtconcurrentmap.h>
+#include <QtConcurrent/qtconcurrentrun.h>
+
+#include <QtCore/qcoreapplication.h>
+#include <QtCore/qdebug.h>
+#include <QtCore/qelapsedtimer.h>
+#include <QtCore/qfuturesynchronizer.h>
+#include <QtCore/qfuturewatcher.h>
+#include <QtCore/qset.h>
+
 #include <private/qfutureinterface_p.h>
 
 using namespace QtConcurrent;

@@ -189,7 +189,8 @@ public:
         NotStarted = 0,     // before start() or if failed to start
         Running = 1,        // in run()
         Finishing = 2,      // in QThreadPrivate::finish()
-        Finished = 3,       // QThreadPrivate::finish() is done
+        Finished = 3,       // QThreadPrivate::finish() or cleanup() is done
+                            //    or, if using pthread_join, joining is done
     };
 
     State threadState = NotStarted;
@@ -199,26 +200,34 @@ public:
     bool terminated = false; // when (the first) terminate has been called
 #endif
 
+    int waiters = 0;
     int returnCode = -1;
 
     uint stackSize = 0;
     std::underlying_type_t<QThread::Priority> priority = QThread::InheritPriority;
 
+    bool wait(QMutexLocker<QMutex> &locker, QDeadlineTimer deadline);
+
+    QThread::QualityOfService serviceLevel = QThread::QualityOfService::Auto;
+    void setQualityOfServiceLevel(QThread::QualityOfService qosLevel);
+#ifdef Q_OS_DARWIN
+    qos_class_t nativeQualityOfServiceClass() const;
+#endif
+
 #ifdef Q_OS_UNIX
     QWaitCondition thread_done;
 
+    void wakeAll();
     static void *start(void *arg);
-    static void finish(void *);
-
+    void finish();          // happens early (before thread-local dtors)
+    void cleanup();         // happens late (as a thread-local dtor, if possible)
 #endif // Q_OS_UNIX
 
 #ifdef Q_OS_WIN
     static unsigned int __stdcall start(void *) noexcept;
-    static void finish(void *, bool lockAnyway = true) noexcept;
+    void finish(bool lockAnyway = true) noexcept;
 
     Qt::HANDLE handle;
-    unsigned int id;
-    int waiters;
     bool terminationEnabled, terminatePending;
 #endif // Q_OS_WIN
 #ifdef Q_OS_WASM
@@ -354,7 +363,7 @@ class QAdoptedThread : public QThread
     Q_DECLARE_PRIVATE(QThread)
 
 public:
-    QAdoptedThread(QThreadData *data = nullptr);
+    QAdoptedThread(QThreadData *data);
     ~QAdoptedThread();
     void init();
 

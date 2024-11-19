@@ -50,3 +50,15 @@ osx
 #QTBUG-103055
 [ioGetFromHttpWithProxyAuth]
 qnx
+
+# QTBUG-130740
+[chaining]
+vxworks
+[getFromFile]
+vxworks
+[getFromUnreachableIp]
+vxworks
+[ioGetFromFile]
+vxworks
+[moreActivitySignals]
+vxworks

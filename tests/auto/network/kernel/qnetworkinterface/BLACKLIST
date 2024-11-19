@@ -1,0 +1,5 @@
+# QTBUG-130070
+[localAddress:enet0-fe80::8f41:f072:e573:3caa%enet0]
+vxworks
+[localAddress:localhost-ipv6]
+vxworks

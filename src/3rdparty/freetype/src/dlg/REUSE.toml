@@ -1,0 +1,14 @@
+version = 1
+
+[[annotations]]
+path = ["dlgwrap.c", "rules.mk"]
+comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
+precedence = "override"
+SPDX-FileCopyrightText = ["Copyright (C) 2020-2023 by David Turner, Robert Wilhelm, and Werner Lemberg."]
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = ["gxvfgen.c", "dlg.c"]
+precedence = "closest"
+SPDX-FileCopyrightText = ["Copyright (c) 2019 nyorain"]
+SPDX-License-Identifier = "BSL-1.0"

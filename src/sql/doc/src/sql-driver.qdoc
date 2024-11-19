@@ -122,6 +122,13 @@
     library binary parity and exact matching with MySQL APIs and commands.
     Therefore the plugin for MySQL and MariaDB are combined into one Qt plugin.
 
+    \section3 Timestamp Support
+    Since Qt 6.8, QDateTime values are converted to UTC before insertion and
+    back from UTC during retrieval. To make this work, the driver sets
+    the connection time zone to UTC during open() (SET time_zone = '+00:00').
+    Since MySQL does not store any timezone information, this information is
+    lost and all retrieved QDateTime values are UTC.
+
     \section3 QMYSQL Stored Procedure Support
 
     MySQL has stored procedure support at the SQL level, but no
@@ -444,6 +451,12 @@
     Some drivers do not support scrollable cursors. In that case, only
     queries in \l QSqlQuery::setForwardOnly() mode can be used successfully.
 
+    \section3 Timestamp Support
+    ODBC is using TIMESTAMP_STRUCT which has no information about any
+    timezone or similar. Due to this, the QDateTime is used without honoring
+    the timezone at all.
+    \note: This might change in the future.
+
     \section3 ODBC Stored Procedure Support
 
     With Microsoft SQL Server the result set returned by a stored
@@ -541,6 +554,14 @@
     The QPSQL driver supports version 7.3 and higher of the PostgreSQL server.
 
     For more information about PostgreSQL visit \l http://www.postgresql.org.
+
+    \section3 Timestamp Support
+    Since Qt 6.8, QDateTime values are converted to UTC before insertion
+    and back from UTC during retrieval. To make this work, the driver sets
+    the connection time zone to UTC during open() (SET TIME ZONE 'UTC').
+    Although PostgreSQL has the `timestamptz` column type, the timezone
+    used during insertion is not preserved and therefore all retrieved
+    QDateTime values are UTC.
 
     \section3 QPSQL Unicode Support
 
@@ -716,6 +737,12 @@
 
     You can find information about SQLite on \l{http://www.sqlite.org}.
 
+    \section3 Timestamp Support
+    SQLite does not have a special timestamp column type. A QDateTime is
+    stored as string, formatted in Qt::ISODateWithMs and therefore the
+    QDateTime timezone information is preserved during insertion and
+    select.
+
     \section3 Connection options
     The Qt SQLite plugin honors the following connection options:
     \table
@@ -836,6 +863,12 @@
     National Character Varying (NVARCHAR), or National Character Large Object (NCLOB) must be used.
     For more information about Mimer SQL and unicode, see \l{https://developer.mimer.com/features/multilingual-support}
 
+    \section3 Timestamp Support
+    MimerSQL does not know anything about timezones and QDateTime
+    is used without honoring the timezone at all.
+
+    \note: This might change in the future.
+
     \section3 QMIMER Stored Procedure Support
 
     Mimer SQL have stored procedures according to the SQL standard (PSM) and
@@ -876,6 +909,16 @@
     Note that InterBase requires you to specify the full path to the
     database file, no matter whether it is stored locally or on another
     server.
+
+    \section3 Timestamp Support
+    Interbase stores timestamps in UTC without any timezone information.
+    Due to this, the QDateTime is used without honoring the timezone at all.
+
+    Since Firebird 4.0, the database supports timestamps with timezones. The
+    timezone information is stored separately to the timestamp so it can
+    be properly retrieved later on. See the Firebird
+    \l {https://firebirdsql.org/file/documentation/chunk/en/refdocs/fblangref40/fblangref40-datatypes-datetime.html}
+    {documentation} for more information about timestamp handling.
 
     \section3 Connection options
     The Qt Borland InterBase plugin honors the following connection options:

@@ -1,0 +1,7 @@
+version = 1
+
+[[annotations]]
+path = ["qopengles2ext.h", "qopenglext.h"]
+precedence = "closest"
+SPDX-FileCopyrightText = "Copyright (c) 2013-2018 The Khronos Group Inc."
+SPDX-License-Identifier = "MIT-Khronos-old"

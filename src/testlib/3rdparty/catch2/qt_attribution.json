@@ -4,13 +4,17 @@
         "Name": "Catch2",
         "QDocModule": "qttestlib",
         "QtUsage": "Used for testing of the Qt Test module.",
-        "Comment": { "UpstreamFile": "single_include/catch2/catch.hpp",
-                     "Generator": "scripts/generateSingleHeader.py" },
+        "Comment": {
+            "UpstreamFile": "single_include/catch2/catch.hpp",
+            "Generator": "scripts/generateSingleHeader.py",
+            "General": "no relevant CPE found"
+        },
         "Files": "catch_p.h",
 
         "Description": "Catch2 is a multi-paradigm test framework for C++.",
         "Homepage": "https://github.com/catchorg/Catch2",
         "Version": "2.13.10",
+        "PURL": "pkg:github/catchorg/Catch2@v2.13.10",
         "License": "Boost Software License 1.0",
         "LicenseId": "BSL-1.0",
         "LicenseFile": "LICENSE.txt",

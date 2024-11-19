@@ -8,7 +8,9 @@
 #
 ######################################
 
-set(__qt_core_macros_module_base_dir "${CMAKE_CURRENT_LIST_DIR}")
+# Save the 'macros base dir' in a global property instead of a variable, to allow access in a
+# deferred function where the variable might not be accessible by the function scope.
+set_property(GLOBAL PROPERTY __qt_core_macros_module_base_dir "${CMAKE_CURRENT_LIST_DIR}")
 
 # macro used to create the names of output files preserving relative dirs
 macro(_qt_internal_make_output_file infile prefix ext outfile )
@@ -650,17 +652,7 @@ function(qt6_add_executable target)
         return()
     endif()
 
-    # Defer the finalization if we can. When the caller's project requires
-    # CMake 3.19 or later, this makes the calls to this function concise while
-    # still allowing target property modification before finalization.
-    if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
-        # Need to wrap in an EVAL CODE or else ${target} won't be evaluated
-        # due to special behavior of cmake_language() argument handling
-        cmake_language(EVAL CODE "cmake_language(DEFER CALL qt6_finalize_target ${target})")
-    else()
-        set_target_properties("${target}" PROPERTIES _qt_is_immediately_finalized TRUE)
-        qt6_finalize_target("${target}")
-    endif()
+    _qt_internal_finalize_target_defer("${target}")
 endfunction()
 
 # Just like for qt_add_resources, we should disable zstd compression when cross-compiling to a
@@ -780,26 +772,6 @@ function(_qt_internal_finalize_executable target)
     endif()
 endfunction()
 
-function(_cat IN_FILE OUT_FILE)
-  file(READ ${IN_FILE} CONTENTS)
-  file(APPEND ${OUT_FILE} "${CONTENTS}\n")
-endfunction()
-
-function(_qt_internal_finalize_batch name)
-    find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS Core)
-
-    set(generated_blacklist_file "${CMAKE_CURRENT_BINARY_DIR}/BLACKLIST")
-    get_target_property(blacklist_files "${name}" _qt_blacklist_files)
-    file(WRITE "${generated_blacklist_file}" "")
-    foreach(blacklist_file ${blacklist_files})
-        _cat("${blacklist_file}" "${generated_blacklist_file}")
-    endforeach()
-    qt_internal_add_resource(${name} "batch_blacklist"
-        PREFIX "/"
-        FILES "${CMAKE_CURRENT_BINARY_DIR}/BLACKLIST"
-        BASE ${CMAKE_CURRENT_BINARY_DIR})
-endfunction()
-
 # If a task needs to run before any targets are finalized in the current directory
 # scope, call this function and pass the ID of that task as the argument.
 function(_qt_internal_delay_finalization_until_after defer_id)
@@ -877,6 +849,22 @@ function(qt6_finalize_target target)
     endif()
 
     set_target_properties(${target} PROPERTIES _qt_is_finalized TRUE)
+endfunction()
+
+function(_qt_internal_finalize_target_defer target)
+    # Defer the finalization if we can. When the caller's project requires
+    # CMake 3.19 or later, this makes the calls to this function concise while
+    # still allowing target property modification before finalization.
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
+        # Need to wrap in an EVAL CODE or else ${target} won't be evaluated
+        # due to special behavior of cmake_language() argument handling
+        cmake_language(EVAL CODE "cmake_language(DEFER CALL qt6_finalize_target ${target})")
+    elseif(QT_BUILDING_QT AND QT_INTERNAL_USE_POOR_MANS_SCOPE_FINALIZER)
+        qt_add_list_file_finalizer(qt6_finalize_target "${target}")
+    else()
+        set_target_properties("${target}" PROPERTIES _qt_is_immediately_finalized TRUE)
+        qt6_finalize_target("${target}")
+    endif()
 endfunction()
 
 function(_qt_internal_finalize_source_groups target)
@@ -2110,6 +2098,7 @@ function(__qt_internal_sanitize_resource_name out_var name)
 endfunction()
 
 function(__qt_internal_generate_init_resource_source_file out_var target resource_name)
+    get_property(__qt_core_macros_module_base_dir GLOBAL PROPERTY __qt_core_macros_module_base_dir)
     set(template_file "${__qt_core_macros_module_base_dir}/Qt6CoreResourceInit.in.cpp")
 
     # Gets replaced in the template
@@ -2378,6 +2367,7 @@ function(_qt_internal_process_resource target resourceName)
     # </qresource></RCC>
     string(APPEND qrcContents "  </qresource>\n</RCC>\n")
 
+    get_property(__qt_core_macros_module_base_dir GLOBAL PROPERTY __qt_core_macros_module_base_dir)
     set(template_file "${__qt_core_macros_module_base_dir}/Qt6CoreConfigureFileTemplate.in")
     set(qt_core_configure_file_contents "${qrcContents}")
     configure_file("${template_file}" "${generatedResourceFile}")
@@ -2399,7 +2389,12 @@ function(_qt_internal_process_resource target resourceName)
         list(APPEND rccArgsAllPasses "--no-zstd")
     endif()
 
-    set_property(SOURCE "${generatedResourceFile}" PROPERTY SKIP_AUTOGEN ON)
+    # Disable AUTOGEN on the generated .qrc file.
+    set(scope_args "")
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.18")
+        set(scope_args TARGET_DIRECTORY ${target})
+    endif()
+    set_property(SOURCE "${generatedResourceFile}" ${scope_args} PROPERTY SKIP_AUTOGEN ON)
 
     # Set output file name for rcc command
     if(isBinary)
@@ -2639,17 +2634,7 @@ function(qt6_add_plugin target)
         return()
     endif()
 
-    # Defer the finalization if we can. When the caller's project requires
-    # CMake 3.19 or later, this makes the calls to this function concise while
-    # still allowing target property modification before finalization.
-    if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
-        # Need to wrap in an EVAL CODE or else ${target} won't be evaluated
-        # due to special behavior of cmake_language() argument handling
-        cmake_language(EVAL CODE "cmake_language(DEFER CALL qt6_finalize_target ${target})")
-    else()
-        set_target_properties("${target}" PROPERTIES _qt_is_immediately_finalized TRUE)
-        qt6_finalize_target("${target}")
-    endif()
+    _qt_internal_finalize_target_defer("${target}")
 endfunction()
 
 if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
@@ -2675,17 +2660,7 @@ function(qt6_add_library target)
         return()
     endif()
 
-    # Defer the finalization if we can. When the caller's project requires
-    # CMake 3.19 or later, this makes the calls to this function concise while
-    # still allowing target property modification before finalization.
-    if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
-        # Need to wrap in an EVAL CODE or else ${target} won't be evaluated
-        # due to special behavior of cmake_language() argument handling
-        cmake_language(EVAL CODE "cmake_language(DEFER CALL qt6_finalize_target ${target})")
-    else()
-        set_target_properties("${target}" PROPERTIES _qt_is_immediately_finalized TRUE)
-        qt6_finalize_target("${target}")
-    endif()
+    _qt_internal_finalize_target_defer("${target}")
 endfunction()
 
 # Creates a library target by forwarding the arguments to add_library.

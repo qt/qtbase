@@ -3,27 +3,41 @@
 
 include(CheckCXXSourceCompiles)
 
-function(qt_run_config_test_architecture)
-    set(QT_BASE_CONFIGURE_TESTS_VARS_TO_EXPORT
-        "" CACHE INTERNAL "Test variables that should be exported" FORCE)
+function(qt_internal_run_config_test_architecture)
+    set(no_value_options "")
+    set(single_value_options
+        FLAVOR
+        OUT_VAR_ARCH
+        OUT_VAR_ABI
+        OUT_VAR_SUBARCH
+    )
+    set(multi_value_options
+        CMAKE_FLAGS
+    )
+    cmake_parse_arguments(PARSE_ARGV 0 arg
+        "${no_value_options}" "${single_value_options}" "${multi_value_options}"
+    )
 
-    # Compile test to find the target architecture and sub-architectures.
-    set(flags "")
-    qt_get_platform_try_compile_vars(platform_try_compile_vars)
-    list(APPEND flags ${platform_try_compile_vars})
-
+    set(flags "${arg_CMAKE_FLAGS}")
     list(TRANSFORM flags PREPEND "            " OUTPUT_VARIABLE flags_indented)
     list(JOIN flags_indented "\n" flags_indented)
 
+    set(project_label "")
+    set(binary_dir_suffix "")
+    if(DEFINED arg_FLAVOR)
+        set(project_label " (${arg_FLAVOR})")
+        set(binary_dir_suffix "-${arg_FLAVOR}")
+    endif()
+
     message(STATUS
-            "Building architecture extraction project with the following CMake arguments:")
+            "Building architecture extraction project${project_label} with the following CMake arguments:")
     list(POP_BACK CMAKE_MESSAGE_CONTEXT _context)
-    message(NOTICE ${flags_indented})
+    message(STATUS ${flags_indented})
     list(APPEND CMAKE_MESSAGE_CONTEXT ${_context})
 
     try_compile(
         _arch_result
-        "${CMAKE_CURRENT_BINARY_DIR}/config.tests/arch"
+        "${CMAKE_CURRENT_BINARY_DIR}/config.tests/arch${binary_dir_suffix}"
         "${CMAKE_CURRENT_SOURCE_DIR}/config.tests/arch"
         arch
         CMAKE_FLAGS ${flags}
@@ -43,7 +57,7 @@ function(qt_run_config_test_architecture)
         set(_arch_file_suffix ".wasm")
     endif()
 
-    set(arch_test_location "config.tests/arch")
+    set(arch_test_location "config.tests/arch${binary_dir_suffix}")
     if(QT_MULTI_CONFIG_FIRST_CONFIG)
         string(APPEND arch_test_location "/${QT_MULTI_CONFIG_FIRST_CONFIG}")
     endif()
@@ -70,6 +84,7 @@ function(qt_run_config_test_architecture)
          REGEX "==Qt=magic=Qt==")
     cmake_policy(POP)
 
+    set(architectures "")
     foreach (_line ${_arch_lines})
         string(LENGTH "${_line}" lineLength)
         string(FIND "${_line}" "==Qt=magic=Qt== Architecture:" _pos)
@@ -99,16 +114,74 @@ function(qt_run_config_test_architecture)
                 Here are the first few lines extracted:\n${arch_lines_output}")
     endif()
 
+    set("${arg_OUT_VAR_ARCH}" "${_architecture}" PARENT_SCOPE)
+    set("${arg_OUT_VAR_SUBARCH}" "${_sub_architecture}" PARENT_SCOPE)
+    set("${arg_OUT_VAR_ABI}" "${_build_abi}" PARENT_SCOPE)
+endfunction()
+
+function(qt_run_config_test_architecture)
+    set(QT_BASE_CONFIGURE_TESTS_VARS_TO_EXPORT
+        "" CACHE INTERNAL "Test variables that should be exported" FORCE)
+
+    # Compile test to find the target architecture and sub-architectures.
+    qt_get_platform_try_compile_vars(platform_try_compile_vars)
+    list(APPEND flags ${platform_try_compile_vars})
+
+    set(first_arch "")
+    set(architectures "")
+    if("${CMAKE_OSX_ARCHITECTURES}" STREQUAL "")
+        qt_internal_run_config_test_architecture(
+            CMAKE_FLAGS ${flags}
+            OUT_VAR_ARCH arch
+            OUT_VAR_SUBARCH subarch
+            OUT_VAR_ABI abi
+        )
+        set(first_arch "${arch}")
+        set(architectures "${arch}")
+        set(sub_architecture_${arch} "${subarch}")
+        set(build_abi_${arch} "${abi}")
+    else()
+        list(FILTER flags EXCLUDE REGEX "^-DCMAKE_OSX_ARCHITECTURES[:=]")
+        foreach(osxarch IN LISTS CMAKE_OSX_ARCHITECTURES)
+            set(local_flags ${flags})
+            if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
+                if(osxarch STREQUAL "x86_64")
+                    list(APPEND local_flags "-DCMAKE_OSX_SYSROOT=iphonesimulator")
+                endif()
+            endif()
+            qt_internal_run_config_test_architecture(
+                FLAVOR "${osxarch}"
+                CMAKE_FLAGS ${local_flags} -DCMAKE_OSX_ARCHITECTURES=${osxarch}
+                OUT_VAR_ARCH arch
+                OUT_VAR_SUBARCH subarch
+                OUT_VAR_ABI abi
+            )
+            if(first_arch STREQUAL "")
+                set(first_arch "${arch}")
+            endif()
+            list(APPEND architectures "${arch}")
+            set(sub_architecture_${arch} "${subarch}")
+            set(build_abi_${arch} "${abi}")
+        endforeach()
+    endif()
+
     set(TEST_architecture 1 CACHE INTERNAL "Ran the architecture test")
-    set(TEST_architecture_arch "${_architecture}" CACHE INTERNAL "Target machine architecture")
+    list(GET architectures 0 first_arch)
+    set(TEST_architecture_arch "${first_arch}" CACHE INTERNAL "Target machine architecture")
     list(APPEND QT_BASE_CONFIGURE_TESTS_VARS_TO_EXPORT TEST_architecture_arch)
+    set(TEST_architecture_architectures "${architectures}" CACHE INTERNAL "Target machine architectures")
+    list(APPEND QT_BASE_CONFIGURE_TESTS_VARS_TO_EXPORT TEST_architecture_architectures)
     set(TEST_subarch 1 CACHE INTERNAL "Ran machine subArchitecture test")
-    set(TEST_subarch_result "${_sub_architecture}" CACHE INTERNAL "Target sub-architectures")
+    set(TEST_subarch_result "${sub_architecture_${first_arch}}" CACHE INTERNAL "Target sub-architectures")
     list(APPEND QT_BASE_CONFIGURE_TESTS_VARS_TO_EXPORT TEST_subarch_result)
-    foreach(it ${_sub_architecture})
-        # Equivalent to qmake's QT_CPU_FEATURES.$arch.
-        set(TEST_arch_${TEST_architecture_arch}_subarch_${it} 1 CACHE INTERNAL "Target sub architecture result")
-        list(APPEND QT_BASE_CONFIGURE_TESTS_VARS_TO_EXPORT TEST_arch_${TEST_architecture_arch}_subarch_${it})
+    foreach(arch IN LISTS architectures)
+        # Extended version of qmake's QT_CPU_FEATURES.$arch.
+        set(TEST_arch_${arch}_abi "${build_abi_${arch}}" CACHE INTERNAL "Target architecture ABI")
+        list(APPEND QT_BASE_CONFIGURE_TESTS_VARS_TO_EXPORT TEST_arch_${arch}_abi)
+        foreach(it IN LISTS sub_architecture_${arch})
+            set(TEST_arch_${arch}_subarch_${it} 1 CACHE INTERNAL "Target sub architecture result")
+            list(APPEND QT_BASE_CONFIGURE_TESTS_VARS_TO_EXPORT TEST_arch_${arch}_subarch_${it})
+        endforeach()
     endforeach()
     set(TEST_buildAbi "${_build_abi}" CACHE INTERNAL "Target machine buildAbi")
     list(APPEND QT_BASE_CONFIGURE_TESTS_VARS_TO_EXPORT TEST_buildAbi)

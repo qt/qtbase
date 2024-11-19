@@ -374,7 +374,7 @@ QT_PERMISSION_IMPL_COMMON(QMicrophonePermission)
             \endlist
     \include permissions.qdocinc end-usage-declarations
 
-    \note Since Qt 6.9, the ACCESS_FINE_LOCATION permission is no longer
+    \note Since Qt 6.8.1, the ACCESS_FINE_LOCATION permission is no longer
     requested if API Level >= 31. This
     \l {Android Bluetooth Permissions}{may limit some Bluetooth scan results}.
     Users needing these results need

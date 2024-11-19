@@ -1,8 +1,10 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
-#include <QtGui>
-#include <QEvent>
+#include <QtGui/qguiapplication.h>
+#include <QtGui/qevent.h>
+
+#include <QtCore/qfile.h>
 
 struct MyApplication : public QGuiApplication
 {

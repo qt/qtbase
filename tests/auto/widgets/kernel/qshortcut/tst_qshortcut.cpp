@@ -1064,7 +1064,7 @@ void tst_QShortcut::context()
 
     // Focus on 'other1' edit, so Active Window context should trigger
     other1->activateWindow(); // <---
-    QCOMPARE(QApplication::activeWindow(), other1->window());
+    QTRY_COMPARE(QApplication::activeWindow(), other1->window());
     QCOMPARE(QApplication::focusWidget(), static_cast<QWidget *>(other1));
 
     currentResult = NoResult;

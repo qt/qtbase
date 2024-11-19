@@ -651,10 +651,12 @@ QVariant QPSQLResult::data(int i)
     case QMetaType::QTime:
         return QVariant(QTime::fromString(QString::fromLatin1(val), Qt::ISODate));
     case QMetaType::QDateTime: {
-        QString tzString(QString::fromLatin1(val));
-        if (!tzString.endsWith(u'Z'))
-            tzString.append(u'Z');       // make UTC
-        return QVariant(QDateTime::fromString(tzString, Qt::ISODate));
+        const QLatin1StringView tzString(val);
+        const auto timeString(tzString.sliced(11));
+        if (timeString.contains(u'-') || timeString.contains(u'+') || timeString.endsWith(u'Z'))
+            return QDateTime::fromString(tzString, Qt::ISODate);
+        const auto utc = tzString.toString() + u'Z';
+        return QVariant(QDateTime::fromString(utc, Qt::ISODate));
     }
 #else
     case QMetaType::QDate:
@@ -1452,12 +1454,11 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
         case QMetaType::QDateTime: {
             const auto dt = field.value().toDateTime();
             if (dt.isValid()) {
-                // we force the value to be considered with a timezone information, and we force it to be UTC
-                // this is safe since postgresql stores only the UTC value and not the timezone offset (only used
-                // while parsing), so we have correct behavior in both case of with timezone and without tz
+                // even though the documentation (https://www.postgresql.org/docs/current/datatype-datetime.html)
+                // states that any time zone indication for 'timestamp without tz' columns will be ignored,
+                // it is stored as the correct utc timestamp - so we can pass the utc offset here
                 r = QStringLiteral("TIMESTAMP WITH TIME ZONE ") + u'\'' +
-                        QLocale::c().toString(dt.toUTC(), u"yyyy-MM-ddThh:mm:ss.zzz") +
-                        u'Z' + u'\'';
+                        dt.toOffsetFromUtc(dt.offsetFromUtc()).toString(Qt::ISODateWithMs) + u'\'';
             } else {
                 r = nullStr();
             }

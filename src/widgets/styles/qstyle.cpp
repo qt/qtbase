@@ -1835,7 +1835,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     message box should be centered or not (see QDialogButtonBox::setCentered()).
 
     \value SH_MessageBox_TextInteractionFlags A boolean indicating if
-    the text in a message box should allow user interfactions (e.g.
+    the text in a message box should allow user interactions (e.g.
     selection) or not.
 
     \value SH_TitleBar_AutoRaise A boolean indicating whether
@@ -2433,14 +2433,14 @@ QCachedPainter::QCachedPainter(QPainter *painter, const QString &cachePrefix,
     , m_option(option)
     , m_paintRect(paintRect)
 {
-    const auto sz = size.isNull() ? option->rect.size() : size;
+    const auto sz = size.isEmpty() ? option->rect.size() : size;
     const qreal dpr = QStyleHelper::getDpr(painter);
     m_pixmapName = QStyleHelper::uniqueName(cachePrefix, option, sz, dpr);
     m_alreadyCached = QPixmapCache::find(m_pixmapName, &m_pixmap);
     if (!m_alreadyCached) {
         m_pixmap = styleCachePixmap(sz, dpr);
         m_pixmapPainter = std::make_unique<QPainter>(&m_pixmap);
-        m_pixmapPainter->setRenderHint(QPainter::Antialiasing);
+        m_pixmapPainter->setRenderHints(painter->renderHints());
         s_pixmapCacheKeys += m_pixmapName;
     }
 }

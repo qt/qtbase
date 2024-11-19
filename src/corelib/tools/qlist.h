@@ -120,8 +120,8 @@ public:
         using value_type = T;
 #ifdef QT_COMPILER_HAS_LWG3346
         using iterator_concept = std::contiguous_iterator_tag;
-        using element_type = value_type;
 #endif
+        using element_type = value_type;
         using iterator_category = std::random_access_iterator_tag;
         using pointer = T *;
         using reference = T &;
@@ -190,8 +190,8 @@ public:
         using value_type = T;
 #ifdef QT_COMPILER_HAS_LWG3346
         using iterator_concept = std::contiguous_iterator_tag;
-        using element_type = const value_type;
 #endif
+        using element_type = const value_type;
         using iterator_category = std::random_access_iterator_tag;
         using pointer = const T *;
         using reference = const T &;

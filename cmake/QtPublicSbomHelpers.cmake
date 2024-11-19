@@ -166,6 +166,15 @@ function(_qt_internal_sbom_begin_project)
         _qt_internal_sbom_get_qt_repo_source_download_location(download_location)
     endif()
 
+    set(project_comment "")
+
+    _qt_internal_get_configure_line(configure_line)
+    if(configure_line)
+        set(configure_line_comment
+            "\n${repo_project_name_lowercase} was configured with:\n    ${configure_line}\n")
+        string(APPEND project_comment "${configure_line_comment}")
+    endif()
+
     _qt_internal_sbom_begin_project_generate(
         OUTPUT "${repo_spdx_install_path}"
         OUTPUT_RELATIVE_PATH "${repo_spdx_relative_install_path}"
@@ -175,11 +184,14 @@ function(_qt_internal_sbom_begin_project)
         SUPPLIER_URL "${repo_supplier_url}"
         DOWNLOAD_LOCATION "${download_location}"
         PROJECT "${repo_project_name_lowercase}"
+        PROJECT_COMMENT "${project_comment}"
         PROJECT_FOR_SPDX_ID "${repo_project_name_for_spdx_id}"
         NAMESPACE "${repo_spdx_namespace}"
         CPE "${qt_cpe}"
         OUT_VAR_PROJECT_SPDX_ID repo_project_spdx_id
     )
+
+    set_property(GLOBAL PROPERTY _qt_internal_project_attribution_files "")
 
     set_property(GLOBAL PROPERTY _qt_internal_sbom_repo_document_namespace
         "${repo_spdx_namespace}")
@@ -243,20 +255,43 @@ function(_qt_internal_sbom_end_project)
     endif()
 
     set(end_project_options "")
-    if(QT_INTERNAL_SBOM_VERIFY OR QT_INTERNAL_SBOM_DEFAULT_CHECKS)
-        list(APPEND end_project_options VERIFY)
+
+    if(QT_SBOM_GENERATE_JSON OR QT_INTERNAL_SBOM_GENERATE_JSON OR QT_INTERNAL_SBOM_DEFAULT_CHECKS)
+        list(APPEND end_project_options GENERATE_JSON)
     endif()
+
+    # Tring to generate the JSON might fail if the python dependencies are not available.
+    # The user can explicitly request to fail the build if dependencies are not found.
+    # error out. For internal options that the CI uses, we always want to fail the build if the
+    # deps are not found.
+    if(QT_SBOM_REQUIRE_GENERATE_JSON OR QT_INTERNAL_SBOM_GENERATE_JSON
+            OR QT_INTERNAL_SBOM_DEFAULT_CHECKS)
+        list(APPEND end_project_options GENERATE_JSON_REQUIRED)
+    endif()
+
+    if(QT_SBOM_VERIFY OR QT_INTERNAL_SBOM_VERIFY OR QT_INTERNAL_SBOM_DEFAULT_CHECKS)
+        list(APPEND end_project_options VERIFY_SBOM)
+    endif()
+
+    # Do the same requirement check for SBOM verification.
+    if(QT_SBOM_REQUIRE_VERIFY OR QT_INTERNAL_SBOM_VERIFY OR QT_INTERNAL_SBOM_DEFAULT_CHECKS)
+        list(APPEND end_project_options VERIFY_SBOM_REQUIRED)
+    endif()
+
+    if(QT_INTERNAL_SBOM_VERIFY_NTIA_COMPLIANT OR QT_INTERNAL_SBOM_DEFAULT_CHECKS)
+        list(APPEND end_project_options VERIFY_NTIA_COMPLIANT)
+    endif()
+
     if(QT_INTERNAL_SBOM_SHOW_TABLE OR QT_INTERNAL_SBOM_DEFAULT_CHECKS)
         list(APPEND end_project_options SHOW_TABLE)
     endif()
+
     if(QT_INTERNAL_SBOM_AUDIT OR QT_INTERNAL_SBOM_AUDIT_NO_ERROR)
         list(APPEND end_project_options AUDIT)
     endif()
+
     if(QT_INTERNAL_SBOM_AUDIT_NO_ERROR)
         list(APPEND end_project_options AUDIT_NO_ERROR)
-    endif()
-    if(QT_INTERNAL_SBOM_GENERATE_JSON OR QT_INTERNAL_SBOM_DEFAULT_CHECKS)
-        list(APPEND end_project_options GENERATE_JSON)
     endif()
 
     if(QT_GENERATE_SOURCE_SBOM)
@@ -284,6 +319,11 @@ function(_qt_internal_sbom_end_project)
     endforeach()
 
     set_property(GLOBAL PROPERTY _qt_internal_sbom_repo_begin_called FALSE)
+
+    # Add configure-time dependency on project attribution files.
+    get_property(attribution_files GLOBAL PROPERTY _qt_internal_project_attribution_files)
+    list(REMOVE_DUPLICATES attribution_files)
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${attribution_files}")
 endfunction()
 
 # Helper to get purl parsing options.
@@ -748,8 +788,11 @@ function(_qt_internal_sbom_add_target target)
         endif()
 
         if(qa_chosen_attribution_file_path)
+            _qt_internal_sbom_map_path_to_reproducible_relative_path(relative_attribution_path
+                PATH "${qa_chosen_attribution_file_path}"
+            )
             string(APPEND package_comment
-                "    Information extracted from:\n     ${qa_chosen_attribution_file_path}\n")
+                "    Information extracted from:\n     ${relative_attribution_path}\n")
         endif()
 
         if(NOT "${qa_chosen_attribution_entry_index}" STREQUAL "")
@@ -1446,12 +1489,90 @@ function(_qt_internal_sbom_add_binary_file target file_path)
     )
 endfunction()
 
+# Takes a relative or absolute path and maps it to a reproducible path that is relative to
+# the project source or build dir.
+function(_qt_internal_sbom_map_path_to_reproducible_relative_path out_var)
+    set(opt_args "")
+    set(single_args
+        PATH
+        REPO_PROJECT_NAME_LOWERCASE
+        OUT_SUCCESS
+    )
+    set(multi_args "")
+    cmake_parse_arguments(PARSE_ARGV 1 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    set(is_in_source_dir FALSE)
+    set(is_in_build_dir FALSE)
+
+    if(NOT arg_REPO_PROJECT_NAME_LOWERCASE)
+        _qt_internal_sbom_get_root_project_name_lower_case(repo_project_name)
+    else()
+        set(repo_project_name "${arg_REPO_PROJECT_NAME_LOWERCASE}")
+    endif()
+
+    if(NOT DEFINED arg_PATH)
+        message(FATAL_ERROR "PATH must be set")
+    endif()
+    set(path "${arg_PATH}")
+
+    set(handled FALSE)
+
+    if(path MATCHES "$<.+>")
+        # TODO: Paths wrapped in genexes are usually absolute paths that we also want to handle,
+        # but can't at configure time. We'll need a separate processing step at build time.
+        # Keep these as is for now, but signal failure of handling.
+        set(path_out "${path}")
+    else()
+        if(IS_ABSOLUTE "${path}")
+            set(path_in "${path}")
+            if(path MATCHES "^${PROJECT_SOURCE_DIR}/")
+                set(is_in_source_dir TRUE)
+            elseif(path MATCHES "^${PROJECT_BINARY_DIR}/")
+                set(is_in_build_dir TRUE)
+            endif()
+        else()
+            # We consider relative paths to be relative to the current source dir.
+            set(is_in_source_dir TRUE)
+            set(path_in "${CMAKE_CURRENT_SOURCE_DIR}/${path}")
+        endif()
+
+        # Resolve any .. and replace the absolute path with a path relative to the source dir
+        # or build dir, prefixed with a root marker.
+        get_filename_component(path_in_real "${path_in}" REALPATH)
+
+        # Replace the absolute prefixes with markers.
+        if(is_in_source_dir)
+            set(handled TRUE)
+            set(marker "/src_dir")
+            string(REPLACE "${PROJECT_SOURCE_DIR}/" "${marker}/${repo_project_name}/"
+                path_out "${path_in_real}")
+        elseif(is_in_build_dir)
+            set(handled TRUE)
+            set(marker "/build_dir")
+            string(REPLACE "${PROJECT_BINARY_DIR}/" "${marker}/${repo_project_name}/"
+                path_out "${path_in_real}")
+        else()
+            # If it's not a source dir or a build dir, it might be some kind of weird genex
+            # or marker that we don't handle yet.
+            set(path_out "${path_in_real}")
+        endif()
+    endif()
+
+    set(${out_var} "${path_out}" PARENT_SCOPE)
+    if(arg_OUT_SUCCESS)
+        set(${arg_OUT_SUCCESS} "${handled}" PARENT_SCOPE)
+    endif()
+endfunction()
+
 # Adds source file "generated from" relationship comments to the sbom for a given target.
 function(_qt_internal_sbom_add_source_files target spdx_id out_relationships)
     get_target_property(sources ${target} SOURCES)
     list(REMOVE_DUPLICATES sources)
 
     set(relationships "")
+
+    _qt_internal_sbom_get_root_project_name_lower_case(repo_project_name_lowercase)
 
     foreach(source IN LISTS sources)
         # Filter out $<TARGET_OBJECTS: genexes>.
@@ -1464,10 +1585,25 @@ function(_qt_internal_sbom_add_source_files target spdx_id out_relationships)
             continue()
         endif()
 
-        set(source_entry
-"${spdx_id} GENERATED_FROM NOASSERTION\nRelationshipComment: ${CMAKE_CURRENT_SOURCE_DIR}/${source}"
+        # Filter out pkg-config. pc files.
+        if(source MATCHES "\.pc$")
+            continue()
+        endif()
+
+        # Filter out metatypes .json.gen files.
+        if(source MATCHES "\.json\.gen$")
+            continue()
+        endif()
+
+        _qt_internal_sbom_map_path_to_reproducible_relative_path(source_path
+            PATH "${source}"
+            REPO_PROJECT_NAME_LOWERCASE "${repo_project_name_lowercase}"
         )
-        set(source_non_empty "$<BOOL:${source}>")
+
+        set(source_entry
+"${spdx_id} GENERATED_FROM NOASSERTION\nRelationshipComment: ${source_path}"
+        )
+        set(source_non_empty "$<BOOL:${source_path}>")
         # Some sources are conditional on genexes, so we evaluate them.
         set(relationship "$<${source_non_empty}:$<GENEX_EVAL:${source_entry}>>")
         list(APPEND relationships "${relationship}")
@@ -1569,7 +1705,7 @@ function(_qt_internal_sbom_record_system_library_usage target)
     )
 
     get_cmake_property(sbom_repo_begin_called _qt_internal_sbom_repo_begin_called)
-    if(sbom_repo_begin_called)
+    if(sbom_repo_begin_called AND TARGET "${target}")
         _qt_internal_sbom_record_system_library_spdx_id(${target} ${spdx_options})
     else()
         set_property(GLOBAL PROPERTY
@@ -2005,6 +2141,11 @@ function(_qt_internal_sbom_handle_qt_attribution_files out_prefix_outer)
     set(file_index 0)
     set(first_attribution_processed FALSE)
     foreach(attribution_file_path IN LISTS attribution_files)
+        # Collect all processed attribution files to later create a configure-time dependency on
+        # them so that the SBOM is regenerated (and CMake is re-ran) if they are modified.
+        set_property(GLOBAL APPEND PROPERTY _qt_internal_project_attribution_files
+            "${attribution_file_path}")
+
         # Set a unique out_prefix that will not overlap when multiple entries are processed.
         set(out_prefix_file "${out_prefix_outer}_${file_index}")
 
@@ -3477,4 +3618,42 @@ function(_qt_internal_sbom_join_two_license_ids_with_op left_id op right_id out_
 
     set(value "(${left_id}) ${op} (${right_id})")
     set(${out_var} "${value}" PARENT_SCOPE)
+endfunction()
+
+# Returns the configure line used to configure the current repo or top-level build, by reading
+# the config.opt file that the configure script writes out.
+# Returns an empty string if configure was not called, but CMake was called directly.
+# If the build is reconfigured with bare CMake, the config.opt remains untouched, and thus
+# the previous contents is returned.
+function(_qt_internal_get_configure_line out_var)
+    set(content "")
+
+    if(QT_SUPERBUILD OR PROJECT_NAME STREQUAL "QtBase")
+        set(configure_script_name "qt6/configure")
+    elseif(PROJECT_NAME STREQUAL "QtBase")
+        set(configure_script_name "qtbase/configure")
+    else()
+        _qt_internal_sbom_get_root_project_name_lower_case(repo_project_name_lowercase)
+        set(configure_script_name "qt-configure-module <sources>/${repo_project_name_lowercase}")
+    endif()
+
+    if(QT_SUPERBUILD)
+        set(config_opt_path "${PROJECT_BINARY_DIR}/../config.opt")
+    else()
+        set(config_opt_path "${PROJECT_BINARY_DIR}/config.opt")
+    endif()
+
+    if(NOT EXISTS "${config_opt_path}")
+        message(DEBUG "Couldn't find config.opt file in ${config_opt} for argument extraction.")
+        set(${out_var} "${content}" PARENT_SCOPE)
+        return()
+    endif()
+
+    file(STRINGS "${config_opt_path}" args)
+    list(JOIN args " " joined_args)
+
+    set(content "${configure_script_name} ${joined_args}")
+    string(STRIP "${content}" content)
+
+    set(${out_var} "${content}" PARENT_SCOPE)
 endfunction()

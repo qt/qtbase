@@ -16,8 +16,8 @@ struct CustomType
     QString str;
     CustomType(const QString &str = QString()) : str(str) {}
     operator QString() const { return str; }
-    friend bool operator!=(const CustomType &a, const CustomType &b)
-    { return a.str != b.str; }
+    friend bool operator==(const CustomType &a, const CustomType &b)
+    { return a.str == b.str; }
 };
 
 Q_DECLARE_METATYPE(CustomType)
@@ -41,6 +41,7 @@ class tst_QMetaProperty : public Base
     Q_PROPERTY(QMap<int, int> map MEMBER map)
     Q_PROPERTY(CustomType custom MEMBER custom)
     Q_PROPERTY(int propWithInheritedSig READ propWithInheritedSig NOTIFY baseSignal)
+    Q_PROPERTY(QFlags<Qt::AlignmentFlag> qflags_value MEMBER qflags_value)
 
 private slots:
     void hasStdCppSet();
@@ -52,6 +53,7 @@ private slots:
     void conversion();
     void enumsFlags();
     void notifySignalIndex();
+    void qflags();
 
 public:
     enum EnumType { EnumType1 };
@@ -71,6 +73,7 @@ public:
     QString value7;
     QMap<int, int> map;
     CustomType custom;
+    QFlags<Qt::AlignmentFlag> qflags_value;
 };
 
 void tst_QMetaProperty::hasStdCppSet()
@@ -111,6 +114,16 @@ void tst_QMetaProperty::isFinal()
     QVERIFY(prop.isValid());
     QVERIFY(!prop.isFinal());
 }
+
+void tst_QMetaProperty::qflags()
+{
+    const QMetaObject *mo = metaObject();
+
+    QMetaProperty prop = mo->property(mo->indexOfProperty("qflags_value"));
+    QVERIFY(prop.isEnumType());
+    QVERIFY(prop.isFlagType());
+}
+
 
 class MyGadget {
     Q_GADGET

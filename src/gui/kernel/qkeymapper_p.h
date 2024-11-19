@@ -54,6 +54,15 @@ struct Q_GUI_EXPORT QEvdevKeyMapper
 };
 #endif
 
+#if QT_CONFIG(vxworksevdev) || defined(Q_QDOC)
+struct Q_GUI_EXPORT QVxKeyMapper
+{
+    QT_DECLARE_NATIVE_INTERFACE(QVxKeyMapper, 1, QKeyMapper)
+    virtual void loadKeymap(const QString &filename) = 0;
+    virtual void switchLang() = 0;
+};
+#endif
+
 } // QNativeInterface::Private
 
 

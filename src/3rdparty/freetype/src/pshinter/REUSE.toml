@@ -1,0 +1,20 @@
+version = 1
+
+[[annotations]]
+path = ["module.mk"]
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (C) 1996-2023 by David Turner, Robert Wilhelm, and Werner Lemberg."
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = ["pshalgo.c", "pshalgo.h", "pshglob.c", "pshglob.h", "pshinter.c",
+        "pshmod.c", "pshmod.h", "pshrec.c", "pshrec.h", "rules.mk"]
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (C) 2001-2023 by David Turner, Robert Wilhelm, and Werner Lemberg."
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"
+
+[[annotations]]
+path = ["pshnterr.h"]
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (C) 2003-2023 by David Turner, Robert Wilhelm, and Werner Lemberg."
+SPDX-License-Identifier = "FTL OR GPL-2.0-only"

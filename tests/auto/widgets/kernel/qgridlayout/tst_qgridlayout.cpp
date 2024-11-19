@@ -1,20 +1,18 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
+#include <QtTest/qtest.h>
 
-#include <QTest>
-#include <qlayout.h>
-#include <qapplication.h>
-#include <qwidget.h>
-#include <qproxystyle.h>
-#include <qsizepolicy.h>
-//#include <QtGui>
+#include <QtWidgets/qapplication.h>
+#include <QtWidgets/qlabel.h>
+#include <QtWidgets/qlayout.h>
+#include <QtWidgets/qlineedit.h>
+#include <QtWidgets/qproxystyle.h>
+#include <QtWidgets/qradiobutton.h>
+#include <QtWidgets/qsizepolicy.h>
+#include <QtWidgets/qstylefactory.h>
 
-#include <QtWidgets/QLabel>
-#include <QtWidgets/QLineEdit>
-#include <QtWidgets/QRadioButton>
-#include <QStyleFactory>
-#include <QSharedPointer>
+#include <QtCore/qsharedpointer.h>
 
 #include <QtTest/private/qtesthelpers_p.h>
 

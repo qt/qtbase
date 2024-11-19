@@ -52,6 +52,8 @@ public:
     bool hasChildrenDefault(const QModelIndex &parent) const;
     QModelIndex sibling(int row, int column, const QModelIndex &parent) const override;
     QModelIndex siblingDefault(int row, int column, const QModelIndex &parent);
+    bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
+    bool setDataDefault(const QModelIndex &index, const QVariant &value, int role);
 
     Q_REQUIRED_RESULT static QAbstractItemModel *
     nativeInstance(QtJniTypes::JQtAbstractItemModel itemModel);
@@ -201,6 +203,14 @@ public:
     static jobject jni_sibling(JNIEnv *env, jobject object, jint row, jint column,
                                  JQtModelIndex parent);
     Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(jni_sibling)
+
+    static void jni_dataChanged(JNIEnv *env, jobject object, JQtModelIndex topLeft,
+                                JQtModelIndex bottomRight, QJniArray<jint> roles);
+    Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(jni_dataChanged)
+
+    static jboolean jni_setData(JNIEnv *env, jobject object, JQtModelIndex index, jobject &value,
+                                jint role);
+    Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(jni_setData)
 
     static bool registerAbstractNatives(QJniEnvironment &env);
     static bool registerProxyNatives(QJniEnvironment &env);

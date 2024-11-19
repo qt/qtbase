@@ -1,0 +1,8 @@
+version = 1
+
+[[annotations]]
+path = ["qfontsubset_agl.cpp"]
+precedence = "closest"
+SPDX-FileCopyrightText = "Copyright 2002, 2003, 2005, 2006, 2008, 2010, 2015 Adobe Systems"
+SPDX-License-Identifier = "BSD-3-Clause"
+

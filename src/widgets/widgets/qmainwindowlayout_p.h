@@ -537,7 +537,7 @@ public:
     void splitDockWidget(QDockWidget *after,
                          QDockWidget *dockwidget,
                          Qt::Orientation orientation);
-    Qt::DockWidgetArea dockWidgetArea(QWidget* widget) const;
+    Qt::DockWidgetArea dockWidgetArea(const QWidget* widget) const;
     bool restoreDockWidget(QDockWidget *dockwidget);
 #if QT_CONFIG(tabbar)
     void tabifyDockWidget(QDockWidget *first, QDockWidget *second);

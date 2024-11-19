@@ -139,6 +139,7 @@ public:
     void populateSceneDragDropEvent(QGraphicsSceneDragDropEvent *dest,
                                     QDropEvent *source);
 
+    QTransform mapToViewTransform(const QGraphicsItem *item) const;
     QRect mapToViewRect(const QGraphicsItem *item, const QRectF &rect) const;
     QRegion mapToViewRegion(const QGraphicsItem *item, const QRectF &rect) const;
     QRegion dirtyRegion;

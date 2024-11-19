@@ -2596,9 +2596,7 @@ QString::QString(QChar ch)
 
 /*! \fn void QString::swap(QString &other)
     \since 4.8
-
-    Swaps string \a other with this string. This operation is very fast and
-    never fails.
+    \memberswap{string}
 */
 
 /*! \fn void QString::detach()
@@ -5428,7 +5426,7 @@ QString QString::sliced_helper(QString &str, qsizetype pos, qsizetype n)
     \note The behavior is undefined if \a pos < 0, \a n < 0,
     or \a pos + \a n > size().
 
-    \snippet qstring/main.cpp 86
+    \snippet qstring/main.cpp 97
 
     \sa sliced(), first(), last(), chopped(), chop(), truncate()
 */
@@ -9211,7 +9209,7 @@ typedef QVarLengthArray<Part, ExpectedParts> ParseResult;
 typedef QVarLengthArray<int, ExpectedParts/2> ArgIndexToPlaceholderMap;
 
 template <typename StringView>
-static ParseResult parseMultiArgFormatString(StringView s)
+static ParseResult parseMultiArgFormatString_impl(StringView s)
 {
     ParseResult result;
 
@@ -9240,6 +9238,11 @@ static ParseResult parseMultiArgFormatString(StringView s)
         result.push_back(Part{s.sliced(last, len - last)}); // trailing literal text
 
     return result;
+}
+
+static ParseResult parseMultiArgFormatString(QAnyStringView s)
+{
+    return s.visit([] (auto s) { return parseMultiArgFormatString_impl(s); });
 }
 
 static ArgIndexToPlaceholderMap makeArgIndexToPlaceholderMap(const ParseResult &parts)
@@ -9287,8 +9290,7 @@ static qsizetype resolveStringRefsAndReturnTotalSize(ParseResult &parts, const A
 
 } // unnamed namespace
 
-template <typename StringView>
-static QString argToQStringImpl(StringView pattern, size_t numArgs, const QtPrivate::ArgBase **args)
+QString QtPrivate::argToQString(QAnyStringView pattern, size_t numArgs, const ArgBase **args)
 {
     // Step 1-2 above
     ParseResult parts = parseMultiArgFormatString(pattern);
@@ -9338,16 +9340,6 @@ static QString argToQStringImpl(StringView pattern, size_t numArgs, const QtPriv
     result.truncate(out - result.cbegin());
 
     return result;
-}
-
-QString QtPrivate::argToQString(QStringView pattern, size_t n, const ArgBase **args)
-{
-    return argToQStringImpl(pattern, n, args);
-}
-
-QString QtPrivate::argToQString(QLatin1StringView pattern, size_t n, const ArgBase **args)
-{
-    return argToQStringImpl(pattern, n, args);
 }
 
 /*! \fn bool QString::isRightToLeft() const

@@ -25,6 +25,7 @@ namespace pmr = std::pmr;
 #else
 namespace pmr = std;
 #endif
+#include <tuple>
 
 using namespace std::chrono;
 using namespace q20::chrono;
@@ -34,6 +35,7 @@ static_assert(QTypeTraits::has_ostream_operator_v<QDebug, int>);
 static_assert(QTypeTraits::has_ostream_operator_v<QDebug, QMetaType>);
 static_assert(QTypeTraits::has_ostream_operator_v<QDebug, QList<int>>);
 static_assert(QTypeTraits::has_ostream_operator_v<QDebug, QMap<int, QString>>);
+static_assert(QTypeTraits::has_ostream_operator_v<QDebug, std::tuple<int, QString, QMap<int, QString>>>);
 struct NonStreamable {};
 static_assert(!QTypeTraits::has_ostream_operator_v<QDebug, NonStreamable>);
 static_assert(!QTypeTraits::has_ostream_operator_v<QDebug, QList<NonStreamable>>);
@@ -80,6 +82,8 @@ private slots:
     void qDebugQStringView() const;
     void qDebugQUtf8StringView() const;
     void qDebugQLatin1String() const;
+    void qDebugStdPair() const;
+    void qDebugStdTuple() const;
     void qDebugStdString() const;
     void qDebugStdStringView() const;
     void qDebugStdWString() const;
@@ -689,6 +693,83 @@ void tst_QDebug::qDebugQLatin1String() const
     QCOMPARE(s_msg, QString("\"\\nSm\\u00F8rg\\u00E5sbord\\\\\""));
 }
 
+void tst_QDebug::qDebugStdPair() const
+{
+    QByteArray file, function;
+    int line = 0;
+    MessageHandlerSetter mhs(myMessageHandler);
+    {
+        QDebug d = qDebug();
+        d << std::pair(42, u"foo"_s) << std::pair(u"barbaz"_s, 4.2);
+        d.nospace().noquote() << std::pair(u"baz"_s, -42);
+    }
+#ifndef QT_NO_MESSAGELOGCONTEXT
+    file = __FILE__; line = __LINE__ - 5; function = Q_FUNC_INFO;
+#endif
+    QCOMPARE(s_msgType, QtDebugMsg);
+    QCOMPARE(s_msg, R"(std::pair(42, "foo") std::pair("barbaz", 4.2) std::pair(baz, -42))"_L1);
+    QCOMPARE(s_file, file);
+    QCOMPARE(s_line, line);
+    QCOMPARE(s_function, function);
+
+    /* simpler tests from now on */
+    // nested:
+    qDebug() << std::pair(std::pair(std::pair(4.2, 42), ".42"), u"42"_s);
+    QCOMPARE(s_msg, R"(std::pair(std::pair(std::pair(4.2, 42), .42), "42"))"_L1);
+    // with references:
+    {
+        auto d = 4.2; auto i = 42;
+        qDebug() << std::pair<double &, const int &>(d, i);
+        QCOMPARE(s_msg, R"(std::pair(4.2, 42))"_L1);
+        s_msg.clear(); // avoid False Positives (next line outputs same as prior)
+        qDebug() << std::pair<const double &&, int &&>(std::move(d), std::move(i));
+        QCOMPARE(s_msg, R"(std::pair(4.2, 42))"_L1);
+    }
+}
+
+void tst_QDebug::qDebugStdTuple() const
+{
+    QByteArray file, function;
+    int line = 0;
+    MessageHandlerSetter mhs(myMessageHandler);
+    {
+        QDebug d = qDebug();
+        d << std::tuple(42, u"foo"_s, 4.2) << std::tuple(42);
+        d.nospace().noquote() << std::tuple(u"baz"_s);
+    }
+#ifndef QT_NO_MESSAGELOGCONTEXT
+    file = __FILE__; line = __LINE__ - 5; function = Q_FUNC_INFO;
+#endif
+    QCOMPARE(s_msgType, QtDebugMsg);
+    QCOMPARE(s_msg, R"(std::tuple(42, "foo", 4.2) std::tuple(42) std::tuple(baz))"_L1);
+    QCOMPARE(s_file, file);
+    QCOMPARE(s_line, line);
+    QCOMPARE(s_function, function);
+
+    /* simpler tests from now on */
+#ifndef Q_OS_QNX // QNX's stdlib doesn't appear to allow nesting tuples (at least not w/CTAD)...
+    // nested:
+    qDebug() << std::tuple(std::tuple(std::tuple(4.2, 42), ".42"), u"42"_s);
+    QCOMPARE(s_msg, R"(std::tuple(std::tuple(std::tuple(4.2, 42), .42), "42"))"_L1);
+#endif
+    // empty:
+    qDebug() << std::tuple<>();
+    QCOMPARE(s_msg, R"(std::tuple())"_L1);
+    // very long:
+    qDebug() << std::tuple(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+                           16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31);
+    QCOMPARE(s_msg, R"(std::tuple(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31))"_L1);
+    // with references:
+    {
+        auto d = 4.2; auto i = 42; auto s = u"foo"_s;
+        qDebug() << std::tie(d, i, s);
+        QCOMPARE(s_msg, R"(std::tuple(4.2, 42, "foo"))"_L1);
+        s_msg.clear(); // avoid False Positives (next line outputs same as prior)
+        qDebug() << std::forward_as_tuple(std::move(d), std::move(i), std::as_const(s));
+        QCOMPARE(s_msg, R"(std::tuple(4.2, 42, "foo"))"_L1);
+    }
+}
+
 void tst_QDebug::qDebugStdString() const
 {
     QString file, function;
@@ -1286,6 +1367,23 @@ void tst_QDebug::qDebugStdOptional() const
     QCOMPARE(QString::fromLatin1(s_file), file);
     QCOMPARE(s_line, line);
     QCOMPARE(QString::fromLatin1(s_function), function);
+
+    /* simpler tests from now on */
+    // const
+    qDebug() << std::optional<const int>(42) << std::optional<const int>(std::nullopt);
+    QCOMPARE(s_msg, R"(std::optional(42) nullopt)"_L1);
+    // nested
+    {
+        auto d = qDebug();
+        // the constructors would do the wrong thing (convert payload types), so use emplace()
+        std::optional<std::optional<int>> opt;
+        d << opt;
+        opt.emplace();
+        d << opt;
+        *opt = 42;
+        d << opt;
+    }
+    QCOMPARE(s_msg, R"(nullopt std::optional(nullopt) std::optional(std::optional(42)))"_L1);
 }
 
 void tst_QDebug::qDebugStdOrdering() const

@@ -181,7 +181,7 @@ orderingFlagsFor(T t) noexcept
         return comparesEqual(lhs, rhs); \
     }
 
-#define QT_DECLARE_3WAY_HELPER_STRONG(LeftType, RightType, Constexpr, Noexcept, ...) \
+#define QT_DECLARE_ORDERING_HELPER_STRONG(LeftType, RightType, Constexpr, Noexcept, ...) \
     __VA_ARGS__ \
     friend Constexpr std::strong_ordering \
     operator<=>(LeftType const &lhs, RightType const &rhs) Noexcept \
@@ -190,7 +190,7 @@ orderingFlagsFor(T t) noexcept
         return compareThreeWay(lhs, rhs); \
     }
 
-#define QT_DECLARE_3WAY_HELPER_WEAK(LeftType, RightType, Constexpr, Noexcept, ...) \
+#define QT_DECLARE_ORDERING_HELPER_WEAK(LeftType, RightType, Constexpr, Noexcept, ...) \
     __VA_ARGS__ \
     friend Constexpr std::weak_ordering \
     operator<=>(LeftType const &lhs, RightType const &rhs) Noexcept \
@@ -199,7 +199,7 @@ orderingFlagsFor(T t) noexcept
         return compareThreeWay(lhs, rhs); \
     }
 
-#define QT_DECLARE_3WAY_HELPER_PARTIAL(LeftType, RightType, Constexpr, Noexcept, ...) \
+#define QT_DECLARE_ORDERING_HELPER_PARTIAL(LeftType, RightType, Constexpr, Noexcept, ...) \
     __VA_ARGS__ \
     friend Constexpr std::partial_ordering \
     operator<=>(LeftType const &lhs, RightType const &rhs) Noexcept \
@@ -208,7 +208,7 @@ orderingFlagsFor(T t) noexcept
         return compareThreeWay(lhs, rhs); \
     }
 
-#define QT_DECLARE_3WAY_HELPER_AUTO(LeftType, RightType, Constexpr, Noexcept, ...) \
+#define QT_DECLARE_ORDERING_HELPER_AUTO(LeftType, RightType, Constexpr, Noexcept, ...) \
     __VA_ARGS__ \
     friend Constexpr auto \
     operator<=>(LeftType const &lhs, RightType const &rhs) Noexcept \
@@ -220,8 +220,8 @@ orderingFlagsFor(T t) noexcept
 #define QT_DECLARE_ORDERING_OPERATORS_HELPER(OrderingType, LeftType, RightType, Constexpr, \
                                              Noexcept, ...) \
     QT_DECLARE_EQUALITY_OPERATORS_HELPER(LeftType, RightType, Constexpr, Noexcept, __VA_ARGS__) \
-    QT_DECLARE_3WAY_HELPER_ ## OrderingType (LeftType, RightType, Constexpr, Noexcept, \
-                                             __VA_ARGS__)
+    QT_DECLARE_ORDERING_HELPER_ ## OrderingType (LeftType, RightType, Constexpr, Noexcept, \
+                                                 __VA_ARGS__)
 
 #ifdef Q_COMPILER_LACKS_THREE_WAY_COMPARE_SYMMETRY
 
@@ -232,8 +232,8 @@ orderingFlagsFor(T t) noexcept
     friend Constexpr bool operator==(RightType const &lhs, LeftType const &rhs) Noexcept \
     { return comparesEqual(rhs, lhs); }
 
-#define QT_DECLARE_REVERSED_3WAY_HELPER_STRONG(LeftType, RightType, Constexpr, \
-                                               Noexcept, ...) \
+#define QT_DECLARE_REVERSED_ORDERING_HELPER_STRONG(LeftType, RightType, Constexpr, \
+                                                   Noexcept, ...) \
     __VA_ARGS__ \
     friend Constexpr std::strong_ordering \
     operator<=>(RightType const &lhs, LeftType const &rhs) Noexcept \
@@ -242,8 +242,8 @@ orderingFlagsFor(T t) noexcept
         return QtOrderingPrivate::reversed(r); \
     }
 
-#define QT_DECLARE_REVERSED_3WAY_HELPER_WEAK(LeftType, RightType, Constexpr, \
-                                             Noexcept, ...) \
+#define QT_DECLARE_REVERSED_ORDERING_HELPER_WEAK(LeftType, RightType, Constexpr, \
+                                                 Noexcept, ...) \
     __VA_ARGS__ \
     friend Constexpr std::weak_ordering \
     operator<=>(RightType const &lhs, LeftType const &rhs) Noexcept \
@@ -252,8 +252,8 @@ orderingFlagsFor(T t) noexcept
         return QtOrderingPrivate::reversed(r); \
     }
 
-#define QT_DECLARE_REVERSED_3WAY_HELPER_PARTIAL(LeftType, RightType, Constexpr, \
-                                                Noexcept, ...) \
+#define QT_DECLARE_REVERSED_ORDERING_HELPER_PARTIAL(LeftType, RightType, Constexpr, \
+                                                    Noexcept, ...) \
     __VA_ARGS__ \
     friend Constexpr std::partial_ordering \
     operator<=>(RightType const &lhs, LeftType const &rhs) Noexcept \
@@ -262,7 +262,7 @@ orderingFlagsFor(T t) noexcept
         return QtOrderingPrivate::reversed(r); \
     }
 
-#define QT_DECLARE_REVERSED_3WAY_HELPER_AUTO(LeftType, RightType, Constexpr, Noexcept, ...) \
+#define QT_DECLARE_REVERSED_ORDERING_HELPER_AUTO(LeftType, RightType, Constexpr, Noexcept, ...) \
     __VA_ARGS__ \
     friend Constexpr auto \
     operator<=>(RightType const &lhs, LeftType const &rhs) Noexcept \
@@ -275,8 +275,8 @@ orderingFlagsFor(T t) noexcept
                                                       Constexpr, Noexcept, ...) \
     QT_DECLARE_EQUALITY_OPERATORS_REVERSED_HELPER(LeftType, RightType, Constexpr, \
                                                   Noexcept, __VA_ARGS__) \
-    QT_DECLARE_REVERSED_3WAY_HELPER_ ## OrderingString (LeftType, RightType, Constexpr, \
-                                                        Noexcept, __VA_ARGS__)
+    QT_DECLARE_REVERSED_ORDERING_HELPER_ ## OrderingString (LeftType, RightType, Constexpr, \
+                                                            Noexcept, __VA_ARGS__)
 
 #else
 
@@ -1188,6 +1188,42 @@ compareThreeWay(std::nullptr_t lhs, Qt::totally_ordered_wrapper<T*> rhs) noexcep
 
 template <typename P>
 class QTypeInfo<Qt::totally_ordered_wrapper<P>> : public QTypeInfo<P> {};
+
+namespace QtOrderingPrivate {
+
+namespace CompareThreeWayTester {
+
+using Qt::compareThreeWay;
+
+// Check if compareThreeWay is implemented for the (LT, RT) argument
+// pair.
+template <typename LT, typename RT, typename = void>
+constexpr inline bool hasCompareThreeWay = false;
+
+template <typename LT, typename RT>
+constexpr inline bool hasCompareThreeWay<
+        LT, RT, std::void_t<decltype(compareThreeWay(std::declval<LT>(), std::declval<RT>()))>
+    > = true;
+
+// Check if the operation is noexcept. We have two different overloads,
+// depending on the available compareThreeWay() implementation.
+// Both are declared, but not implemented. To be used only in unevaluated
+// context.
+
+template <typename LT, typename RT,
+          std::enable_if_t<hasCompareThreeWay<LT, RT>, bool> = true>
+constexpr bool compareThreeWayNoexcept() noexcept
+{ return noexcept(compareThreeWay(std::declval<LT>(), std::declval<RT>())); }
+
+template <typename LT, typename RT,
+          std::enable_if_t<!hasCompareThreeWay<LT, RT> && hasCompareThreeWay<RT, LT>,
+                           bool> = true>
+constexpr bool compareThreeWayNoexcept() noexcept
+{ return noexcept(compareThreeWay(std::declval<RT>(), std::declval<LT>())); }
+
+} // namespace CompareThreeWayTester
+
+} // namespace QtOrderingPrivate
 
 QT_END_NAMESPACE
 

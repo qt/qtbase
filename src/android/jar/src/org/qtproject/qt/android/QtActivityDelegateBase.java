@@ -10,35 +10,21 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
-import android.graphics.Rect;
 import android.os.Build;
-import android.util.DisplayMetrics;
-import android.util.Log;
-import android.util.TypedValue;
-import android.view.Display;
-import android.view.ViewTreeObserver;
-import android.view.animation.AccelerateInterpolator;
-import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
-import android.view.Menu;
-import android.view.View;
-import android.view.ViewConfiguration;
-import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowInsetsController;
-import android.widget.ImageView;
-import android.widget.PopupMenu;
+
+import org.qtproject.qt.android.QtInputDelegate.KeyboardVisibilityListener;
 
 import java.util.HashMap;
 
 abstract class QtActivityDelegateBase
 {
-    protected Activity m_activity;
-    protected HashMap<Integer, QtWindow> m_topLevelWindows;
-    protected QtDisplayManager m_displayManager = null;
-    protected QtInputDelegate m_inputDelegate = null;
+    protected final Activity m_activity;
+    protected final HashMap<Integer, QtWindow> m_topLevelWindows = new HashMap<>();
+    protected final QtDisplayManager m_displayManager;
+    protected final QtInputDelegate m_inputDelegate;
+    protected final QtAccessibilityDelegate m_accessibilityDelegate;
 
     private boolean m_membersInitialized = false;
     private boolean m_contextMenuVisible = false;
@@ -55,8 +41,10 @@ abstract class QtActivityDelegateBase
     QtActivityDelegateBase(Activity activity)
     {
         m_activity = activity;
-        // Set native context
         QtNative.setActivity(m_activity);
+        m_displayManager = new QtDisplayManager(m_activity);
+        m_inputDelegate = new QtInputDelegate(m_displayManager::updateFullScreen);
+        m_accessibilityDelegate = new QtAccessibilityDelegate();
     }
 
     QtDisplayManager displayManager() {
@@ -88,14 +76,9 @@ abstract class QtActivityDelegateBase
     void initMembers()
     {
         m_membersInitialized = true;
-        m_topLevelWindows = new HashMap<Integer, QtWindow>();
-
-        m_displayManager = new QtDisplayManager(m_activity);
+        m_topLevelWindows.clear();
         m_displayManager.registerDisplayListener();
-
-        QtInputDelegate.KeyboardVisibilityListener keyboardVisibilityListener =
-                () -> m_displayManager.updateFullScreen();
-        m_inputDelegate = new QtInputDelegate(m_activity, keyboardVisibilityListener);
+        m_inputDelegate.initInputMethodManager(m_activity);
 
         try {
             PackageManager pm = m_activity.getPackageManager();

@@ -6,8 +6,6 @@ package org.qtproject.qt.android;
 import android.content.Context;
 import android.content.ContextWrapper;
 
-import android.util.Log;
-
 class QtEmbeddedLoader extends QtLoader {
     private static final String TAG = "QtEmbeddedLoader";
 

@@ -507,7 +507,7 @@ void tst_QSet::begin()
         QVERIFY(i == j);
         QVERIFY(k == j);
         QVERIFY(!set3.isDetached());
-        QVERIFY(set4.isDetached());
+        QVERIFY(!set4.isDetached()); // d-ptr is null
     }
 
     set4.insert(1);

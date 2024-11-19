@@ -9,22 +9,16 @@
 //  W A R N I N G
 //  -------------
 //
-// This file is not part of the Qt API.  It exists for the convenience
-// of qapplication_*.cpp, qwidget*.cpp and qfiledialog.cpp.  This header
-// file may change from version to version without notice, or even be removed.
+// This file is not a normal header file.
+// It defines data tables for internal use by QRomanCalendar.
+// It may change from version to version without notice, or even be removed.
 //
 // We mean it.
 //
 
-#include <QtCore/private/qglobal_p.h>
-#include <QtCore/private/qcalendarbackend_p.h>
-
 QT_BEGIN_NAMESPACE
 
 namespace QtPrivate::Roman {
-
-QT_WARNING_PUSH // QTBUG-128930
-QT_WARNING_DISABLE_CLANG("-Wunused-const-variable")
 
 // GENERATED PART STARTS HERE
 
@@ -39,7 +33,7 @@ QT_WARNING_DISABLE_CLANG("-Wunused-const-variable")
     edited) CLDR data; see qtbase/util/locale_database/.
 */
 
-static constexpr QCalendarLocale locale_data[] = {
+static inline constexpr QCalendarLocale locale_data[] = {
      // lang   script terr  sLong  long sShrt short sNarw narow Sizes...
       {     1,     0,     0,    0,    0,   85,   85,  132,  155, 85, 85, 47, 47, 23, 26 },// C/AnyScript/AnyTerritory
       {     2,    27,    90,  181,  181,  278,  278,  336,  364, 97, 97, 58, 58, 28, 28 },// Abkhazian/Cyrillic/Georgia
@@ -717,7 +711,7 @@ static constexpr QCalendarLocale locale_data[] = {
       {     0,     0,     0,    0,    0,    0,    0,    0,    0,  0,  0,  0,  0,  0,  0 },// trailing zeros
 };
 
-static constexpr char16_t months_data[] = {
+static inline constexpr char16_t months_data[] = {
 0x4a, 0x61, 0x6e, 0x75, 0x61, 0x72, 0x79, 0x3b, 0x46, 0x65, 0x62, 0x72,
 0x75, 0x61, 0x72, 0x79, 0x3b, 0x4d, 0x61, 0x72, 0x63, 0x68, 0x3b, 0x41,
 0x70, 0x72, 0x69, 0x6c, 0x3b, 0x4d, 0x61, 0x79, 0x3b, 0x4a, 0x75, 0x6e,
@@ -5139,10 +5133,8 @@ static constexpr char16_t months_data[] = {
 };
 // GENERATED PART ENDS HERE
 
-QT_WARNING_POP // QTBUG-128930
-
 } // namespace QtPrivate::Roman
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QROMANCALENDAR_DATA_P_H

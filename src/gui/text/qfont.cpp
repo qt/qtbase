@@ -803,9 +803,7 @@ QFont &QFont::operator=(const QFont &font)
 /*!
     \fn void QFont::swap(QFont &other)
     \since 5.0
-
-    Swaps this font instance with \a other. This function is very fast
-    and never fails.
+    \memberswap{font instance}
 */
 
 /*!
@@ -3096,9 +3094,7 @@ QFontInfo &QFontInfo::operator=(const QFontInfo &fi)
 /*!
     \fn void QFontInfo::swap(QFontInfo &other)
     \since 5.0
-
-    Swaps this font info instance with \a other. This function is very
-    fast and never fails.
+    \memberswap{font info instance}
 */
 
 /*!

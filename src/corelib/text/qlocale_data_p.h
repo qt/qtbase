@@ -9,14 +9,13 @@
 //  W A R N I N G
 //  -------------
 //
-// This file is not part of the Qt API.  It exists for the convenience
-// of qapplication_*.cpp, qwidget*.cpp and qfiledialog.cpp.  This header
-// file may change from version to version without notice, or even be removed.
+// This file is not a normal header file.
+// It defines data tables for internal use by QLocale and related classes.
+// It may change incompatibly between versions, or even be removed.
 //
 // We mean it.
 //
 
-#include <QtCore/qendian.h>
 #include <QtCore/private/qlocale_p.h>
 
 #include <array>
@@ -24,33 +23,9 @@
 
 QT_BEGIN_NAMESPACE
 
-/* This part of the file isn't generated, but written by hand. Unicode CLDR's
-   information about measurement systems doesn't say which to use by default in
-   each locale. Even if it did, adding another entry in every locale's row of
-   locale_data[] would take up much more memory than the small table below.
-*/
-struct TerritoryLanguage
+// Storage for alpha codes, with length of up to 4, supporting efficient comparison.
+struct AlphaCode
 {
-    quint16 languageId;
-    quint16 territoryId;
-    QLocale::MeasurementSystem system;
-};
-
-QT_WARNING_PUSH // QTBUG-128930
-QT_WARNING_DISABLE_CLANG("-Wunused-const-variable")
-static constexpr TerritoryLanguage ImperialMeasurementSystems[] = {
-    { QLocale::English, QLocale::UnitedStates, QLocale::ImperialUSSystem },
-    { QLocale::English, QLocale::UnitedStatesMinorOutlyingIslands, QLocale::ImperialUSSystem },
-    { QLocale::Spanish, QLocale::UnitedStates, QLocale::ImperialUSSystem },
-    { QLocale::Hawaiian, QLocale::UnitedStates, QLocale::ImperialUSSystem },
-    { QLocale::English, QLocale::UnitedKingdom, QLocale::ImperialUKSystem }
-};
-QT_WARNING_POP // QTBUG-128930
-
-/*
-  Storage for alpha codes with length of up to 4 allowing efficient comparison.
-*/
-struct AlphaCode {
     constexpr AlphaCode(char c1 = 0, char c2 = 0, char c3 = 0)
         : c1(c2m(c1)), c2(c2m(c2)), c3(c2m(c3)), reserved(0) { }
 
@@ -61,8 +36,8 @@ struct AlphaCode {
     std::array<char, 4> decode() const { return {m2c(c1), m2c(c2), m2c(c3), 0}; }
 
 private:
-    static constexpr uint16_t c2m(char c) { return c ? c - 'a' + 1 : 0; }
-    static constexpr char m2c (uint16_t c) { return c ? c + 'a' - 1 : 0; }
+    static inline constexpr uint16_t c2m(char c) { return c ? c - 'a' + 1 : 0; }
+    static inline constexpr char m2c (uint16_t c) { return c ? c + 'a' - 1 : 0; }
 
     friend bool operator==(AlphaCode lhs, AlphaCode rhs) noexcept
     {
@@ -73,20 +48,18 @@ private:
     }
 };
 
-struct LanguageCodeEntry {
+struct LanguageCodeEntry
+{
     AlphaCode part1;
     AlphaCode part2B;
     AlphaCode part2T;
     AlphaCode part3;
 };
 
-QT_WARNING_PUSH // QTBUG-128930
-QT_WARNING_DISABLE_CLANG("-Wunused-const-variable")
-
 // GENERATED PART STARTS HERE
 
 /*
-    This part of the file was generated on 2024-05-31 from the
+    This part of the file was generated on 2024-10-09 from the
     Common Locale Data Repository v45
 
     http://www.unicode.org/cldr/
@@ -96,7 +69,7 @@ QT_WARNING_DISABLE_CLANG("-Wunused-const-variable")
     edited) CLDR data; see qtbase/util/locale_database/.
 */
 
-static constexpr QLocaleId likely_subtags[] = {
+static inline constexpr QLocaleId likely_subtags[] = {
     {   2,   0,   0 }, {   2,  27,  90 }, // ab -> ab_Cyrl_GE
     {   3,   0,   0 }, {   3,  66,  77 }, // aa -> aa_Latn_ET
     {   4,   0,   0 }, {   4,  66, 216 }, // af -> af_Latn_ZA
@@ -1060,7 +1033,7 @@ static constexpr QLocaleId likely_subtags[] = {
     {   0, 142,   0 }, { 339, 142, 161 }, // und_Rohg -> rhg_Rohg_MM
 };
 
-static constexpr quint16 locale_index[] = {
+static inline constexpr quint16 locale_index[] = {
      0, // AnyLanguage
      0, // C
      1, // Abkhazian
@@ -1409,7 +1382,7 @@ static constexpr quint16 locale_index[] = {
      0 // trailing 0
 };
 
-static constexpr QLocaleData locale_data[] = {
+static inline constexpr QLocaleData locale_data[] = {
    //  lang  script   terr lStrt lpMid lpEnd lPair lDelm  dec  group prcnt  zero minus plus   exp  qtOpn qtEnd altQO altQE lDFmt sDFmt lTFmt sTFmt slDay lDays ssDys sDays snDay nDays   am    pm   byte siQnt iecQn crSym crDsp crFmt crFNg ntLng ntTer                                                                                                                                                        currISO   curDgt curRnd dow1st  wknd+  wknd- grpTop grpMid grpEnd
     {      1,     0,     0,    0,    0,    0,    0,    6,    0,    1,    2,    3,    4,    5,    6,    7,    7,    8,    8,    0,   17,    0,    0,    0,    0,   56,   56,   83,   96,    0,    0,    0,    5,   22,    0,    0,    0,    0,    0,    0,  6,  6,  6,  6,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 10,  8, 56, 56, 27, 27, 13, 13,  2,  2,  5, 17, 23,  0,  0,  4,  0,  0,  0,    {0,0,0},      2,     1,     1,     6,     7,     1,     3,     3 }, // C/AnyScript/AnyTerritory
     {      2,    27,    90,    0,    0,    7,    7,    6,    1,    9,    2,    3,    4,    5,   10,   11,   12,   13,   14,   27,   49,   10,    0,  109,  109,  157,  157,  179,  179,    0,    0,    0,    5,   22,    0,    0,    4,    0,    0,    6,  6,  6,  9,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 22, 10, 13,  5, 48, 48, 22, 22, 15, 15,  2,  2,  4, 17, 23,  1,  0,  5,  0,  6,  9, {71,69,76},      2,     1,     1,     6,     7,     1,     3,     3 }, // Abkhazian/Cyrillic/Georgia
@@ -2087,7 +2060,7 @@ static constexpr QLocaleData locale_data[] = {
     {      0,     0,     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,    {0,0,0},      0,     0,     0,     0,     0,     0,     0,     0 } // trailing zeros
 };
 
-static constexpr char16_t list_pattern_part_data[] = {
+static inline constexpr char16_t list_pattern_part_data[] = {
 0x25, 0x31, 0x2c, 0x20, 0x25, 0x32, 0x3b, 0x25, 0x31, 0x2d, 0x438, 0x20,
 0x25, 0x32, 0x2d, 0x438, 0x25, 0x31, 0x20, 0x65, 0x6e, 0x20, 0x25, 0x32,
 0x25, 0x31, 0x20, 0x25, 0x32, 0x25, 0x31, 0x20, 0x64, 0x68, 0x65, 0x20,
@@ -2206,7 +2179,7 @@ static constexpr char16_t list_pattern_part_data[] = {
 0x32
 };
 
-static constexpr char16_t single_character_data[] = {
+static inline constexpr char16_t single_character_data[] = {
 0x2e, 0x2c, 0x25, 0x30, 0x2d, 0x2b, 0x65, 0x22, 0x27, 0xa0, 0x45, 0xab,
 0xbb, 0x201e, 0x201c, 0x201d, 0x2018, 0x2019, 0x201a, 0x2039, 0x203a, 0x66b, 0x66c, 0x66a,
 0x61c, 0x660, 0x61c, 0x2d, 0x61c, 0x2b, 0x623, 0x633, 0x200e, 0x25, 0x200e, 0x200e,
@@ -2217,7 +2190,7 @@ static constexpr char16_t single_character_data[] = {
 0x1c50, 0x415
 };
 
-static constexpr char16_t date_format_data[] = {
+static inline constexpr char16_t date_format_data[] = {
 0x64, 0x64, 0x64, 0x64, 0x2c, 0x20, 0x64, 0x20, 0x4d, 0x4d, 0x4d, 0x4d,
 0x20, 0x79, 0x79, 0x79, 0x79, 0x64, 0x20, 0x4d, 0x4d, 0x4d, 0x20, 0x79,
 0x79, 0x79, 0x79, 0x64, 0x64, 0x64, 0x64, 0x2c, 0x20, 0x64, 0x20, 0x4d,
@@ -2403,7 +2376,7 @@ static constexpr char16_t date_format_data[] = {
 0x79, 0x79
 };
 
-static constexpr char16_t time_format_data[] = {
+static inline constexpr char16_t time_format_data[] = {
 0x48, 0x48, 0x3a, 0x6d, 0x6d, 0x3a, 0x73, 0x73, 0x20, 0x74, 0x48, 0x48,
 0x3a, 0x6d, 0x6d, 0x3a, 0x73, 0x73, 0x20, 0x74, 0x74, 0x74, 0x74, 0x68,
 0x3a, 0x6d, 0x6d, 0x3a, 0x73, 0x73, 0x202f, 0x41, 0x70, 0x20, 0x74, 0x74,
@@ -2457,7 +2430,7 @@ static constexpr char16_t time_format_data[] = {
 0x6d, 0x20, 0x27, 0x68, 0x6f, 0x64, 0x17a, 0x27, 0x2e
 };
 
-static constexpr char16_t days_data[] = {
+static inline constexpr char16_t days_data[] = {
 0x53, 0x75, 0x6e, 0x64, 0x61, 0x79, 0x3b, 0x4d, 0x6f, 0x6e, 0x64, 0x61,
 0x79, 0x3b, 0x54, 0x75, 0x65, 0x73, 0x64, 0x61, 0x79, 0x3b, 0x57, 0x65,
 0x64, 0x6e, 0x65, 0x73, 0x64, 0x61, 0x79, 0x3b, 0x54, 0x68, 0x75, 0x72,
@@ -4819,7 +4792,7 @@ static constexpr char16_t days_data[] = {
 0xc35, 0xc30, 0xc3e
 };
 
-static constexpr char16_t byte_unit_data[] = {
+static inline constexpr char16_t byte_unit_data[] = {
 0x62, 0x79, 0x74, 0x65, 0x73, 0x6b, 0x42, 0x3b, 0x4d, 0x42, 0x3b, 0x47,
 0x42, 0x3b, 0x54, 0x42, 0x3b, 0x50, 0x42, 0x3b, 0x45, 0x42, 0x4b, 0x69,
 0x42, 0x3b, 0x4d, 0x69, 0x42, 0x3b, 0x47, 0x69, 0x42, 0x3b, 0x54, 0x69,
@@ -4938,7 +4911,7 @@ static constexpr char16_t byte_unit_data[] = {
 0x69, 0x74, 0x61
 };
 
-static constexpr char16_t am_data[] = {
+static inline constexpr char16_t am_data[] = {
 0x41, 0x4d, 0x76, 0x6d, 0x2e, 0x61, 0x2e, 0x67, 0x41, 0x4e, 0x65, 0x20,
 0x70, 0x61, 0x72, 0x61, 0x64, 0x69, 0x74, 0x65, 0x73, 0x1325, 0x12cb, 0x1275,
 0x635, 0x9aa, 0x9c2, 0x9f0, 0x9cd, 0x9ac, 0x9be, 0x9b9, 0x9cd, 0x9a8, 0x64, 0x65,
@@ -5017,7 +4990,7 @@ static constexpr char16_t am_data[] = {
 0x20, 0xc0e, 0xc2e, 0xc4d
 };
 
-static constexpr char16_t pm_data[] = {
+static inline constexpr char16_t pm_data[] = {
 0x50, 0x4d, 0x6e, 0x6d, 0x2e, 0x61, 0x2e, 0x6b, 0x45, 0x57, 0x65, 0x20,
 0x70, 0x61, 0x73, 0x64, 0x69, 0x74, 0x65, 0x73, 0x12a8, 0x1230, 0x12d3, 0x1275,
 0x645, 0x985, 0x9aa, 0x9f0, 0x9be, 0x9b9, 0x9cd, 0x9a8, 0x64, 0x65, 0x20, 0x6c,
@@ -5100,7 +5073,7 @@ static constexpr char16_t pm_data[] = {
 0xc0e, 0xc2e, 0xc4d
 };
 
-static constexpr char16_t currency_symbol_data[] = {
+static inline constexpr char16_t currency_symbol_data[] = {
 0x20be, 0x42, 0x72, 0x46, 0x64, 0x6a, 0x4e, 0x66, 0x6b, 0x52, 0x24, 0x46,
 0x43, 0x46, 0x41, 0x47, 0x48, 0x20b5, 0x4c, 0x65, 0x6b, 0xeb, 0x20ac, 0x64,
 0x65, 0x6e, 0x1265, 0x122d, 0x62c, 0x2e, 0x645, 0x2e, 0x200f, 0x62f, 0x2e, 0x62c,
@@ -5130,7 +5103,7 @@ static constexpr char16_t currency_symbol_data[] = {
 0x2e, 0x4e, 0x54, 0x24, 0xe3f, 0x73, 0x6f, 0x2bb, 0x6d, 0x441, 0x45e, 0x43c
 };
 
-static constexpr char16_t currency_display_name_data[] = {
+static inline constexpr char16_t currency_display_name_data[] = {
 0x53, 0x75, 0x69, 0x64, 0x2d, 0x41, 0x66, 0x72, 0x69, 0x6b, 0x61, 0x61,
 0x6e, 0x73, 0x65, 0x20, 0x72, 0x61, 0x6e, 0x64, 0x4e, 0x61, 0x6d, 0x69,
 0x62, 0x69, 0x65, 0x73, 0x65, 0x20, 0x64, 0x6f, 0x6c, 0x6c, 0x61, 0x72,
@@ -5615,7 +5588,7 @@ static constexpr char16_t currency_display_name_data[] = {
 0x72, 0x61, 0x74, 0x20, 0x74, 0x69, 0x20, 0x1e6d, 0x6e, 0x6b, 0x101
 };
 
-static constexpr char16_t currency_format_data[] = {
+static inline constexpr char16_t currency_format_data[] = {
 0x25, 0x31, 0x25, 0x32, 0x25, 0x31, 0xa0, 0x25, 0x32, 0x28, 0x25, 0x32,
 0x25, 0x31, 0x29, 0x25, 0x32, 0xa0, 0x25, 0x31, 0x28, 0x25, 0x31, 0xa0,
 0x25, 0x32, 0x29, 0x200f, 0x25, 0x31, 0xa0, 0x25, 0x32, 0x61c, 0x25, 0x31,
@@ -5629,7 +5602,7 @@ static constexpr char16_t currency_format_data[] = {
 0x25, 0x32
 };
 
-static constexpr char16_t endonyms_data[] = {
+static inline constexpr char16_t endonyms_data[] = {
 0x410, 0x525, 0x441, 0x448, 0x4d9, 0x430, 0x49a, 0x44b, 0x440, 0x4ad, 0x442, 0x4d9,
 0x44b, 0x43b, 0x430, 0x51, 0x61, 0x66, 0x61, 0x72, 0x4f, 0x74, 0x6f, 0x62,
 0x62, 0x69, 0x61, 0x59, 0x61, 0x62, 0x75, 0x75, 0x74, 0x69, 0x45, 0x72,
@@ -6238,7 +6211,7 @@ static constexpr char16_t endonyms_data[] = {
 0xc26, 0xc46, 0xc38, 0xc3e, 0xc02
 };
 
-static constexpr char language_name_list[] =
+static inline constexpr char language_name_list[] =
 "Default\0"
 "C\0"
 "Abkhazian\0"
@@ -6586,7 +6559,7 @@ static constexpr char language_name_list[] =
 "Kuvi\0"
 ;
 
-static constexpr quint16 language_name_index[] = {
+static inline constexpr quint16 language_name_index[] = {
      0, // AnyLanguage
      8, // C
     10, // Abkhazian
@@ -6932,828 +6905,6 @@ static constexpr quint16 language_name_index[] = {
   2897, // Kangri
   2904, // Venetian
   2913, // Kuvi
-};
-
-static constexpr char script_name_list[] =
-"Default\0"
-"Adlam\0"
-"Ahom\0"
-"Anatolian Hieroglyphs\0"
-"Arabic\0"
-"Armenian\0"
-"Avestan\0"
-"Balinese\0"
-"Bamum\0"
-"Bangla\0"
-"Bassa Vah\0"
-"Batak\0"
-"Bhaiksuki\0"
-"Bopomofo\0"
-"Brahmi\0"
-"Braille\0"
-"Buginese\0"
-"Buhid\0"
-"Unified Canadian Aboriginal Syllabics\0"
-"Carian\0"
-"Caucasian Albanian\0"
-"Chakma\0"
-"Cham\0"
-"Cherokee\0"
-"Coptic\0"
-"Sumero-Akkadian Cuneiform\0"
-"Cypriot\0"
-"Cyrillic\0"
-"Deseret\0"
-"Devanagari\0"
-"Duployan shorthand\0"
-"Egyptian hieroglyphs\0"
-"Elbasan\0"
-"Ethiopic\0"
-"Fraser\0"
-"Georgian\0"
-"Glagolitic\0"
-"Gothic\0"
-"Grantha\0"
-"Greek\0"
-"Gujarati\0"
-"Gurmukhi\0"
-"Hangul\0"
-"Han\0"
-"Hanunoo\0"
-"Han with Bopomofo\0"
-"Hatran\0"
-"Hebrew\0"
-"Hiragana\0"
-"Imperial Aramaic\0"
-"Inscriptional Pahlavi\0"
-"Inscriptional Parthian\0"
-"Jamo\0"
-"Japanese\0"
-"Javanese\0"
-"Kaithi\0"
-"Kannada\0"
-"Katakana\0"
-"Kayah Li\0"
-"Kharoshthi\0"
-"Khmer\0"
-"Khojki\0"
-"Khudawadi\0"
-"Korean\0"
-"Lanna\0"
-"Lao\0"
-"Latin\0"
-"Lepcha\0"
-"Limbu\0"
-"Linear A\0"
-"Linear B\0"
-"Lycian\0"
-"Lydian\0"
-"Mahajani\0"
-"Malayalam\0"
-"Mandaean\0"
-"Manichaean\0"
-"Marchen\0"
-"Meitei Mayek\0"
-"Mende\0"
-"Meroitic Cursive\0"
-"Meroitic\0"
-"Modi\0"
-"Mongolian\0"
-"Mro\0"
-"Multani\0"
-"Myanmar\0"
-"Nabataean\0"
-"Newa\0"
-"New Tai Lue\0"
-"N’Ko\0"
-"Odia\0"
-"Ogham\0"
-"Ol Chiki\0"
-"Old Hungarian\0"
-"Old Italic\0"
-"Old North Arabian\0"
-"Old Permic\0"
-"Old Persian\0"
-"Old South Arabian\0"
-"Orkhon\0"
-"Osage\0"
-"Osmanya\0"
-"Pahawh Hmong\0"
-"Palmyrene\0"
-"Pau Cin Hau\0"
-"Phags-pa\0"
-"Phoenician\0"
-"Pollard Phonetic\0"
-"Psalter Pahlavi\0"
-"Rejang\0"
-"Runic\0"
-"Samaritan\0"
-"Saurashtra\0"
-"Sharada\0"
-"Shavian\0"
-"Siddham\0"
-"SignWriting\0"
-"Simplified Han\0"
-"Sinhala\0"
-"Sora Sompeng\0"
-"Sundanese\0"
-"Syloti Nagri\0"
-"Syriac\0"
-"Tagalog\0"
-"Tagbanwa\0"
-"Tai Le\0"
-"Tai Viet\0"
-"Takri\0"
-"Tamil\0"
-"Tangut\0"
-"Telugu\0"
-"Thaana\0"
-"Thai\0"
-"Tibetan\0"
-"Tifinagh\0"
-"Tirhuta\0"
-"Traditional Han\0"
-"Ugaritic\0"
-"Vai\0"
-"Varang Kshiti\0"
-"Yi\0"
-"Hanifi Rohingya\0"
-;
-
-static constexpr quint16 script_name_index[] = {
-     0, // AnyScript
-     8, // Adlam
-    14, // Ahom
-    19, // Anatolian Hieroglyphs
-    41, // Arabic
-    48, // Armenian
-    57, // Avestan
-    65, // Balinese
-    74, // Bamum
-    80, // Bangla
-    87, // Bassa Vah
-    97, // Batak
-   103, // Bhaiksuki
-   113, // Bopomofo
-   122, // Brahmi
-   129, // Braille
-   137, // Buginese
-   146, // Buhid
-   152, // Canadian Aboriginal
-   190, // Carian
-   197, // Caucasian Albanian
-   216, // Chakma
-   223, // Cham
-   228, // Cherokee
-   237, // Coptic
-   244, // Cuneiform
-   270, // Cypriot
-   278, // Cyrillic
-   287, // Deseret
-   295, // Devanagari
-   306, // Duployan
-   325, // Egyptian hieroglyphs
-   346, // Elbasan
-   354, // Ethiopic
-   363, // Fraser
-   370, // Georgian
-   379, // Glagolitic
-   390, // Gothic
-   397, // Grantha
-   405, // Greek
-   411, // Gujarati
-   420, // Gurmukhi
-   429, // Hangul
-   436, // Han
-   440, // Hanunoo
-   448, // Han with Bopomofo
-   466, // Hatran
-   473, // Hebrew
-   480, // Hiragana
-   489, // Imperial Aramaic
-   506, // Inscriptional Pahlavi
-   528, // Inscriptional Parthian
-   551, // Jamo
-   556, // Japanese
-   565, // Javanese
-   574, // Kaithi
-   581, // Kannada
-   589, // Katakana
-   598, // Kayah Li
-   607, // Kharoshthi
-   618, // Khmer
-   624, // Khojki
-   631, // Khudawadi
-   641, // Korean
-   648, // Lanna
-   654, // Lao
-   658, // Latin
-   664, // Lepcha
-   671, // Limbu
-   677, // Linear A
-   686, // Linear B
-   695, // Lycian
-   702, // Lydian
-   709, // Mahajani
-   718, // Malayalam
-   728, // Mandaean
-   737, // Manichaean
-   748, // Marchen
-   756, // Meitei Mayek
-   769, // Mende
-   775, // Meroitic Cursive
-   792, // Meroitic
-   801, // Modi
-   806, // Mongolian
-   816, // Mro
-   820, // Multani
-   828, // Myanmar
-   836, // Nabataean
-   846, // Newa
-   851, // New Tai Lue
-   863, // Nko
-   870, // Odia
-   875, // Ogham
-   881, // Ol Chiki
-   890, // Old Hungarian
-   904, // Old Italic
-   915, // Old North Arabian
-   933, // Old Permic
-   944, // Old Persian
-   956, // Old South Arabian
-   974, // Orkhon
-   981, // Osage
-   987, // Osmanya
-   995, // Pahawh Hmong
-  1008, // Palmyrene
-  1018, // Pau Cin Hau
-  1030, // Phags-pa
-  1039, // Phoenician
-  1050, // Pollard Phonetic
-  1067, // Psalter Pahlavi
-  1083, // Rejang
-  1090, // Runic
-  1096, // Samaritan
-  1106, // Saurashtra
-  1117, // Sharada
-  1125, // Shavian
-  1133, // Siddham
-  1141, // SignWriting
-  1153, // Simplified Han
-  1168, // Sinhala
-  1176, // Sora Sompeng
-  1189, // Sundanese
-  1199, // Syloti Nagri
-  1212, // Syriac
-  1219, // Tagalog
-  1227, // Tagbanwa
-  1236, // Tai Le
-  1243, // Tai Viet
-  1252, // Takri
-  1258, // Tamil
-  1264, // Tangut
-  1271, // Telugu
-  1278, // Thaana
-  1285, // Thai
-  1290, // Tibetan
-  1298, // Tifinagh
-  1307, // Tirhuta
-  1315, // Traditional Han
-  1331, // Ugaritic
-  1340, // Vai
-  1344, // Varang Kshiti
-  1358, // Yi
-  1361, // Hanifi
-};
-
-static constexpr char territory_name_list[] =
-"Default\0"
-"Afghanistan\0"
-"Åland Islands\0"
-"Albania\0"
-"Algeria\0"
-"American Samoa\0"
-"Andorra\0"
-"Angola\0"
-"Anguilla\0"
-"Antarctica\0"
-"Antigua & Barbuda\0"
-"Argentina\0"
-"Armenia\0"
-"Aruba\0"
-"Ascension Island\0"
-"Australia\0"
-"Austria\0"
-"Azerbaijan\0"
-"Bahamas\0"
-"Bahrain\0"
-"Bangladesh\0"
-"Barbados\0"
-"Belarus\0"
-"Belgium\0"
-"Belize\0"
-"Benin\0"
-"Bermuda\0"
-"Bhutan\0"
-"Bolivia\0"
-"Bosnia & Herzegovina\0"
-"Botswana\0"
-"Bouvet Island\0"
-"Brazil\0"
-"British Indian Ocean Territory\0"
-"British Virgin Islands\0"
-"Brunei\0"
-"Bulgaria\0"
-"Burkina Faso\0"
-"Burundi\0"
-"Cambodia\0"
-"Cameroon\0"
-"Canada\0"
-"Canary Islands\0"
-"Cape Verde\0"
-"Caribbean Netherlands\0"
-"Cayman Islands\0"
-"Central African Republic\0"
-"Ceuta & Melilla\0"
-"Chad\0"
-"Chile\0"
-"China\0"
-"Christmas Island\0"
-"Clipperton Island\0"
-"Cocos (Keeling) Islands\0"
-"Colombia\0"
-"Comoros\0"
-"Congo - Brazzaville\0"
-"Congo - Kinshasa\0"
-"Cook Islands\0"
-"Costa Rica\0"
-"Croatia\0"
-"Cuba\0"
-"Curaçao\0"
-"Cyprus\0"
-"Czechia\0"
-"Denmark\0"
-"Diego Garcia\0"
-"Djibouti\0"
-"Dominica\0"
-"Dominican Republic\0"
-"Ecuador\0"
-"Egypt\0"
-"El Salvador\0"
-"Equatorial Guinea\0"
-"Eritrea\0"
-"Estonia\0"
-"Eswatini\0"
-"Ethiopia\0"
-"Europe\0"
-"European Union\0"
-"Falkland Islands\0"
-"Faroe Islands\0"
-"Fiji\0"
-"Finland\0"
-"France\0"
-"French Guiana\0"
-"French Polynesia\0"
-"French Southern Territories\0"
-"Gabon\0"
-"Gambia\0"
-"Georgia\0"
-"Germany\0"
-"Ghana\0"
-"Gibraltar\0"
-"Greece\0"
-"Greenland\0"
-"Grenada\0"
-"Guadeloupe\0"
-"Guam\0"
-"Guatemala\0"
-"Guernsey\0"
-"Guinea-Bissau\0"
-"Guinea\0"
-"Guyana\0"
-"Haiti\0"
-"Heard & McDonald Islands\0"
-"Honduras\0"
-"Hong Kong SAR China\0"
-"Hungary\0"
-"Iceland\0"
-"India\0"
-"Indonesia\0"
-"Iran\0"
-"Iraq\0"
-"Ireland\0"
-"Isle of Man\0"
-"Israel\0"
-"Italy\0"
-"Côte d’Ivoire\0" // Ivory Coast
-"Jamaica\0"
-"Japan\0"
-"Jersey\0"
-"Jordan\0"
-"Kazakhstan\0"
-"Kenya\0"
-"Kiribati\0"
-"Kosovo\0"
-"Kuwait\0"
-"Kyrgyzstan\0"
-"Laos\0"
-"Latin America\0"
-"Latvia\0"
-"Lebanon\0"
-"Lesotho\0"
-"Liberia\0"
-"Libya\0"
-"Liechtenstein\0"
-"Lithuania\0"
-"Luxembourg\0"
-"Macao SAR China\0"
-"North Macedonia\0"
-"Madagascar\0"
-"Malawi\0"
-"Malaysia\0"
-"Maldives\0"
-"Mali\0"
-"Malta\0"
-"Marshall Islands\0"
-"Martinique\0"
-"Mauritania\0"
-"Mauritius\0"
-"Mayotte\0"
-"Mexico\0"
-"Micronesia\0"
-"Moldova\0"
-"Monaco\0"
-"Mongolia\0"
-"Montenegro\0"
-"Montserrat\0"
-"Morocco\0"
-"Mozambique\0"
-"Myanmar (Burma)\0"
-"Namibia\0"
-"Nauru\0"
-"Nepal\0"
-"Netherlands\0"
-"New Caledonia\0"
-"New Zealand\0"
-"Nicaragua\0"
-"Nigeria\0"
-"Niger\0"
-"Niue\0"
-"Norfolk Island\0"
-"Northern Mariana Islands\0"
-"North Korea\0"
-"Norway\0"
-"Oman\0"
-"Outlying Oceania\0"
-"Pakistan\0"
-"Palau\0"
-"Palestinian Territories\0"
-"Panama\0"
-"Papua New Guinea\0"
-"Paraguay\0"
-"Peru\0"
-"Philippines\0"
-"Pitcairn Islands\0"
-"Poland\0"
-"Portugal\0"
-"Puerto Rico\0"
-"Qatar\0"
-"Réunion\0"
-"Romania\0"
-"Russia\0"
-"Rwanda\0"
-"St. Barthélemy\0"
-"St. Helena\0"
-"St. Kitts & Nevis\0"
-"St. Lucia\0"
-"St. Martin\0"
-"St. Pierre & Miquelon\0"
-"St. Vincent & Grenadines\0"
-"Samoa\0"
-"San Marino\0"
-"São Tomé & Príncipe\0"
-"Saudi Arabia\0"
-"Senegal\0"
-"Serbia\0"
-"Seychelles\0"
-"Sierra Leone\0"
-"Singapore\0"
-"Sint Maarten\0"
-"Slovakia\0"
-"Slovenia\0"
-"Solomon Islands\0"
-"Somalia\0"
-"South Africa\0"
-"South Georgia & South Sandwich Islands\0"
-"South Korea\0"
-"South Sudan\0"
-"Spain\0"
-"Sri Lanka\0"
-"Sudan\0"
-"Suriname\0"
-"Svalbard & Jan Mayen\0"
-"Sweden\0"
-"Switzerland\0"
-"Syria\0"
-"Taiwan\0"
-"Tajikistan\0"
-"Tanzania\0"
-"Thailand\0"
-"Timor-Leste\0"
-"Togo\0"
-"Tokelau\0"
-"Tonga\0"
-"Trinidad & Tobago\0"
-"Tristan da Cunha\0"
-"Tunisia\0"
-"Türkiye\0" // Turkey
-"Turkmenistan\0"
-"Turks & Caicos Islands\0"
-"Tuvalu\0"
-"Uganda\0"
-"Ukraine\0"
-"United Arab Emirates\0"
-"United Kingdom\0"
-"U.S. Outlying Islands\0"
-"United States\0"
-"U.S. Virgin Islands\0"
-"Uruguay\0"
-"Uzbekistan\0"
-"Vanuatu\0"
-"Vatican City\0"
-"Venezuela\0"
-"Vietnam\0"
-"Wallis & Futuna\0"
-"Western Sahara\0"
-"world\0"
-"Yemen\0"
-"Zambia\0"
-"Zimbabwe\0"
-;
-
-static constexpr quint16 territory_name_index[] = {
-     0, // AnyTerritory
-     8, // Afghanistan
-    20, // Aland Islands
-    35, // Albania
-    43, // Algeria
-    51, // American Samoa
-    66, // Andorra
-    74, // Angola
-    81, // Anguilla
-    90, // Antarctica
-   101, // Antigua and Barbuda
-   119, // Argentina
-   129, // Armenia
-   137, // Aruba
-   143, // Ascension Island
-   160, // Australia
-   170, // Austria
-   178, // Azerbaijan
-   189, // Bahamas
-   197, // Bahrain
-   205, // Bangladesh
-   216, // Barbados
-   225, // Belarus
-   233, // Belgium
-   241, // Belize
-   248, // Benin
-   254, // Bermuda
-   262, // Bhutan
-   269, // Bolivia
-   277, // Bosnia and Herzegovina
-   298, // Botswana
-   307, // Bouvet Island
-   321, // Brazil
-   328, // British Indian Ocean Territory
-   359, // British Virgin Islands
-   382, // Brunei
-   389, // Bulgaria
-   398, // Burkina Faso
-   411, // Burundi
-   419, // Cambodia
-   428, // Cameroon
-   437, // Canada
-   444, // Canary Islands
-   459, // Cape Verde
-   470, // Caribbean Netherlands
-   492, // Cayman Islands
-   507, // Central African Republic
-   532, // Ceuta and Melilla
-   548, // Chad
-   553, // Chile
-   559, // China
-   565, // Christmas Island
-   582, // Clipperton Island
-   600, // Cocos Islands
-   624, // Colombia
-   633, // Comoros
-   641, // Congo - Brazzaville
-   661, // Congo - Kinshasa
-   678, // Cook Islands
-   691, // Costa Rica
-   702, // Croatia
-   710, // Cuba
-   715, // Curacao
-   724, // Cyprus
-   731, // Czechia
-   739, // Denmark
-   747, // Diego Garcia
-   760, // Djibouti
-   769, // Dominica
-   778, // Dominican Republic
-   797, // Ecuador
-   805, // Egypt
-   811, // El Salvador
-   823, // Equatorial Guinea
-   841, // Eritrea
-   849, // Estonia
-   857, // Eswatini
-   866, // Ethiopia
-   875, // Europe
-   882, // European Union
-   897, // Falkland Islands
-   914, // Faroe Islands
-   928, // Fiji
-   933, // Finland
-   941, // France
-   948, // French Guiana
-   962, // French Polynesia
-   979, // French Southern Territories
-  1007, // Gabon
-  1013, // Gambia
-  1020, // Georgia
-  1028, // Germany
-  1036, // Ghana
-  1042, // Gibraltar
-  1052, // Greece
-  1059, // Greenland
-  1069, // Grenada
-  1077, // Guadeloupe
-  1088, // Guam
-  1093, // Guatemala
-  1103, // Guernsey
-  1112, // Guinea-Bissau
-  1126, // Guinea
-  1133, // Guyana
-  1140, // Haiti
-  1146, // Heard and McDonald Islands
-  1171, // Honduras
-  1180, // Hong Kong
-  1200, // Hungary
-  1208, // Iceland
-  1216, // India
-  1222, // Indonesia
-  1232, // Iran
-  1237, // Iraq
-  1242, // Ireland
-  1250, // Isle of Man
-  1262, // Israel
-  1269, // Italy
-  1275, // Ivory Coast
-  1292, // Jamaica
-  1300, // Japan
-  1306, // Jersey
-  1313, // Jordan
-  1320, // Kazakhstan
-  1331, // Kenya
-  1337, // Kiribati
-  1346, // Kosovo
-  1353, // Kuwait
-  1360, // Kyrgyzstan
-  1371, // Laos
-  1376, // Latin America
-  1390, // Latvia
-  1397, // Lebanon
-  1405, // Lesotho
-  1413, // Liberia
-  1421, // Libya
-  1427, // Liechtenstein
-  1441, // Lithuania
-  1451, // Luxembourg
-  1462, // Macao
-  1478, // Macedonia
-  1494, // Madagascar
-  1505, // Malawi
-  1512, // Malaysia
-  1521, // Maldives
-  1530, // Mali
-  1535, // Malta
-  1541, // Marshall Islands
-  1558, // Martinique
-  1569, // Mauritania
-  1580, // Mauritius
-  1590, // Mayotte
-  1598, // Mexico
-  1605, // Micronesia
-  1616, // Moldova
-  1624, // Monaco
-  1631, // Mongolia
-  1640, // Montenegro
-  1651, // Montserrat
-  1662, // Morocco
-  1670, // Mozambique
-  1681, // Myanmar
-  1697, // Namibia
-  1705, // Nauru
-  1711, // Nepal
-  1717, // Netherlands
-  1729, // New Caledonia
-  1743, // New Zealand
-  1755, // Nicaragua
-  1765, // Nigeria
-  1773, // Niger
-  1779, // Niue
-  1784, // Norfolk Island
-  1799, // Northern Mariana Islands
-  1824, // North Korea
-  1836, // Norway
-  1843, // Oman
-  1848, // Outlying Oceania
-  1865, // Pakistan
-  1874, // Palau
-  1880, // Palestinian Territories
-  1904, // Panama
-  1911, // Papua New Guinea
-  1928, // Paraguay
-  1937, // Peru
-  1942, // Philippines
-  1954, // Pitcairn
-  1971, // Poland
-  1978, // Portugal
-  1987, // Puerto Rico
-  1999, // Qatar
-  2005, // Reunion
-  2014, // Romania
-  2022, // Russia
-  2029, // Rwanda
-  2036, // Saint Barthelemy
-  2052, // Saint Helena
-  2063, // Saint Kitts and Nevis
-  2081, // Saint Lucia
-  2091, // Saint Martin
-  2102, // Saint Pierre and Miquelon
-  2124, // Saint Vincent and Grenadines
-  2149, // Samoa
-  2155, // San Marino
-  2166, // Sao Tome and Principe
-  2189, // Saudi Arabia
-  2202, // Senegal
-  2210, // Serbia
-  2217, // Seychelles
-  2228, // Sierra Leone
-  2241, // Singapore
-  2251, // Sint Maarten
-  2264, // Slovakia
-  2273, // Slovenia
-  2282, // Solomon Islands
-  2298, // Somalia
-  2306, // South Africa
-  2319, // South Georgia and South Sandwich Islands
-  2358, // South Korea
-  2370, // South Sudan
-  2382, // Spain
-  2388, // Sri Lanka
-  2398, // Sudan
-  2404, // Suriname
-  2413, // Svalbard and Jan Mayen
-  2434, // Sweden
-  2441, // Switzerland
-  2453, // Syria
-  2459, // Taiwan
-  2466, // Tajikistan
-  2477, // Tanzania
-  2486, // Thailand
-  2495, // Timor-Leste
-  2507, // Togo
-  2512, // Tokelau
-  2520, // Tonga
-  2526, // Trinidad and Tobago
-  2544, // Tristan da Cunha
-  2561, // Tunisia
-  2569, // Turkey
-  2578, // Turkmenistan
-  2591, // Turks and Caicos Islands
-  2614, // Tuvalu
-  2621, // Uganda
-  2628, // Ukraine
-  2636, // United Arab Emirates
-  2657, // United Kingdom
-  2672, // United States Outlying Islands
-  2694, // United States
-  2708, // United States Virgin Islands
-  2728, // Uruguay
-  2736, // Uzbekistan
-  2747, // Vanuatu
-  2755, // Vatican City
-  2768, // Venezuela
-  2778, // Vietnam
-  2786, // Wallis and Futuna
-  2802, // Western Sahara
-  2817, // world
-  2823, // Yemen
-  2829, // Zambia
-  2836, // Zimbabwe
 };
 
 constexpr std::array<LanguageCodeEntry, 345> languageCodeList {
@@ -8104,7 +7255,299 @@ constexpr std::array<LanguageCodeEntry, 345> languageCodeList {
     LanguageCodeEntry {{},         {},              {},              {'k', 'x', 'v'}}, // Kuvi
 };
 
-static constexpr unsigned char script_code_list[] =
+static inline constexpr char script_name_list[] =
+"Default\0"
+"Adlam\0"
+"Ahom\0"
+"Anatolian Hieroglyphs\0"
+"Arabic\0"
+"Armenian\0"
+"Avestan\0"
+"Balinese\0"
+"Bamum\0"
+"Bangla\0"
+"Bassa Vah\0"
+"Batak\0"
+"Bhaiksuki\0"
+"Bopomofo\0"
+"Brahmi\0"
+"Braille\0"
+"Buginese\0"
+"Buhid\0"
+"Unified Canadian Aboriginal Syllabics\0"
+"Carian\0"
+"Caucasian Albanian\0"
+"Chakma\0"
+"Cham\0"
+"Cherokee\0"
+"Coptic\0"
+"Sumero-Akkadian Cuneiform\0"
+"Cypriot\0"
+"Cyrillic\0"
+"Deseret\0"
+"Devanagari\0"
+"Duployan shorthand\0"
+"Egyptian hieroglyphs\0"
+"Elbasan\0"
+"Ethiopic\0"
+"Fraser\0"
+"Georgian\0"
+"Glagolitic\0"
+"Gothic\0"
+"Grantha\0"
+"Greek\0"
+"Gujarati\0"
+"Gurmukhi\0"
+"Hangul\0"
+"Han\0"
+"Hanunoo\0"
+"Han with Bopomofo\0"
+"Hatran\0"
+"Hebrew\0"
+"Hiragana\0"
+"Imperial Aramaic\0"
+"Inscriptional Pahlavi\0"
+"Inscriptional Parthian\0"
+"Jamo\0"
+"Japanese\0"
+"Javanese\0"
+"Kaithi\0"
+"Kannada\0"
+"Katakana\0"
+"Kayah Li\0"
+"Kharoshthi\0"
+"Khmer\0"
+"Khojki\0"
+"Khudawadi\0"
+"Korean\0"
+"Lanna\0"
+"Lao\0"
+"Latin\0"
+"Lepcha\0"
+"Limbu\0"
+"Linear A\0"
+"Linear B\0"
+"Lycian\0"
+"Lydian\0"
+"Mahajani\0"
+"Malayalam\0"
+"Mandaean\0"
+"Manichaean\0"
+"Marchen\0"
+"Meitei Mayek\0"
+"Mende\0"
+"Meroitic Cursive\0"
+"Meroitic\0"
+"Modi\0"
+"Mongolian\0"
+"Mro\0"
+"Multani\0"
+"Myanmar\0"
+"Nabataean\0"
+"Newa\0"
+"New Tai Lue\0"
+"N’Ko\0"
+"Odia\0"
+"Ogham\0"
+"Ol Chiki\0"
+"Old Hungarian\0"
+"Old Italic\0"
+"Old North Arabian\0"
+"Old Permic\0"
+"Old Persian\0"
+"Old South Arabian\0"
+"Orkhon\0"
+"Osage\0"
+"Osmanya\0"
+"Pahawh Hmong\0"
+"Palmyrene\0"
+"Pau Cin Hau\0"
+"Phags-pa\0"
+"Phoenician\0"
+"Pollard Phonetic\0"
+"Psalter Pahlavi\0"
+"Rejang\0"
+"Runic\0"
+"Samaritan\0"
+"Saurashtra\0"
+"Sharada\0"
+"Shavian\0"
+"Siddham\0"
+"SignWriting\0"
+"Simplified Han\0"
+"Sinhala\0"
+"Sora Sompeng\0"
+"Sundanese\0"
+"Syloti Nagri\0"
+"Syriac\0"
+"Tagalog\0"
+"Tagbanwa\0"
+"Tai Le\0"
+"Tai Viet\0"
+"Takri\0"
+"Tamil\0"
+"Tangut\0"
+"Telugu\0"
+"Thaana\0"
+"Thai\0"
+"Tibetan\0"
+"Tifinagh\0"
+"Tirhuta\0"
+"Traditional Han\0"
+"Ugaritic\0"
+"Vai\0"
+"Varang Kshiti\0"
+"Yi\0"
+"Hanifi Rohingya\0"
+;
+
+static inline constexpr quint16 script_name_index[] = {
+     0, // AnyScript
+     8, // Adlam
+    14, // Ahom
+    19, // Anatolian Hieroglyphs
+    41, // Arabic
+    48, // Armenian
+    57, // Avestan
+    65, // Balinese
+    74, // Bamum
+    80, // Bangla
+    87, // Bassa Vah
+    97, // Batak
+   103, // Bhaiksuki
+   113, // Bopomofo
+   122, // Brahmi
+   129, // Braille
+   137, // Buginese
+   146, // Buhid
+   152, // Canadian Aboriginal
+   190, // Carian
+   197, // Caucasian Albanian
+   216, // Chakma
+   223, // Cham
+   228, // Cherokee
+   237, // Coptic
+   244, // Cuneiform
+   270, // Cypriot
+   278, // Cyrillic
+   287, // Deseret
+   295, // Devanagari
+   306, // Duployan
+   325, // Egyptian hieroglyphs
+   346, // Elbasan
+   354, // Ethiopic
+   363, // Fraser
+   370, // Georgian
+   379, // Glagolitic
+   390, // Gothic
+   397, // Grantha
+   405, // Greek
+   411, // Gujarati
+   420, // Gurmukhi
+   429, // Hangul
+   436, // Han
+   440, // Hanunoo
+   448, // Han with Bopomofo
+   466, // Hatran
+   473, // Hebrew
+   480, // Hiragana
+   489, // Imperial Aramaic
+   506, // Inscriptional Pahlavi
+   528, // Inscriptional Parthian
+   551, // Jamo
+   556, // Japanese
+   565, // Javanese
+   574, // Kaithi
+   581, // Kannada
+   589, // Katakana
+   598, // Kayah Li
+   607, // Kharoshthi
+   618, // Khmer
+   624, // Khojki
+   631, // Khudawadi
+   641, // Korean
+   648, // Lanna
+   654, // Lao
+   658, // Latin
+   664, // Lepcha
+   671, // Limbu
+   677, // Linear A
+   686, // Linear B
+   695, // Lycian
+   702, // Lydian
+   709, // Mahajani
+   718, // Malayalam
+   728, // Mandaean
+   737, // Manichaean
+   748, // Marchen
+   756, // Meitei Mayek
+   769, // Mende
+   775, // Meroitic Cursive
+   792, // Meroitic
+   801, // Modi
+   806, // Mongolian
+   816, // Mro
+   820, // Multani
+   828, // Myanmar
+   836, // Nabataean
+   846, // Newa
+   851, // New Tai Lue
+   863, // Nko
+   870, // Odia
+   875, // Ogham
+   881, // Ol Chiki
+   890, // Old Hungarian
+   904, // Old Italic
+   915, // Old North Arabian
+   933, // Old Permic
+   944, // Old Persian
+   956, // Old South Arabian
+   974, // Orkhon
+   981, // Osage
+   987, // Osmanya
+   995, // Pahawh Hmong
+  1008, // Palmyrene
+  1018, // Pau Cin Hau
+  1030, // Phags-pa
+  1039, // Phoenician
+  1050, // Pollard Phonetic
+  1067, // Psalter Pahlavi
+  1083, // Rejang
+  1090, // Runic
+  1096, // Samaritan
+  1106, // Saurashtra
+  1117, // Sharada
+  1125, // Shavian
+  1133, // Siddham
+  1141, // SignWriting
+  1153, // Simplified Han
+  1168, // Sinhala
+  1176, // Sora Sompeng
+  1189, // Sundanese
+  1199, // Syloti Nagri
+  1212, // Syriac
+  1219, // Tagalog
+  1227, // Tagbanwa
+  1236, // Tai Le
+  1243, // Tai Viet
+  1252, // Takri
+  1258, // Tamil
+  1264, // Tangut
+  1271, // Telugu
+  1278, // Thaana
+  1285, // Thai
+  1290, // Tibetan
+  1298, // Tifinagh
+  1307, // Tirhuta
+  1315, // Traditional Han
+  1331, // Ugaritic
+  1340, // Vai
+  1344, // Varang Kshiti
+  1358, // Yi
+  1361, // Hanifi
+};
+
+static inline constexpr unsigned char script_code_list[] =
 "Zzzz" // AnyScript
 "Adlm" // Adlam
 "Ahom" // Ahom
@@ -8250,7 +7693,537 @@ static constexpr unsigned char script_code_list[] =
 "Rohg" // Hanifi
 ;
 
-static constexpr unsigned char territory_code_list[] =
+static inline constexpr char territory_name_list[] =
+"Default\0"
+"Afghanistan\0"
+"Åland Islands\0"
+"Albania\0"
+"Algeria\0"
+"American Samoa\0"
+"Andorra\0"
+"Angola\0"
+"Anguilla\0"
+"Antarctica\0"
+"Antigua & Barbuda\0"
+"Argentina\0"
+"Armenia\0"
+"Aruba\0"
+"Ascension Island\0"
+"Australia\0"
+"Austria\0"
+"Azerbaijan\0"
+"Bahamas\0"
+"Bahrain\0"
+"Bangladesh\0"
+"Barbados\0"
+"Belarus\0"
+"Belgium\0"
+"Belize\0"
+"Benin\0"
+"Bermuda\0"
+"Bhutan\0"
+"Bolivia\0"
+"Bosnia & Herzegovina\0"
+"Botswana\0"
+"Bouvet Island\0"
+"Brazil\0"
+"British Indian Ocean Territory\0"
+"British Virgin Islands\0"
+"Brunei\0"
+"Bulgaria\0"
+"Burkina Faso\0"
+"Burundi\0"
+"Cambodia\0"
+"Cameroon\0"
+"Canada\0"
+"Canary Islands\0"
+"Cape Verde\0"
+"Caribbean Netherlands\0"
+"Cayman Islands\0"
+"Central African Republic\0"
+"Ceuta & Melilla\0"
+"Chad\0"
+"Chile\0"
+"China\0"
+"Christmas Island\0"
+"Clipperton Island\0"
+"Cocos (Keeling) Islands\0"
+"Colombia\0"
+"Comoros\0"
+"Congo - Brazzaville\0"
+"Congo - Kinshasa\0"
+"Cook Islands\0"
+"Costa Rica\0"
+"Croatia\0"
+"Cuba\0"
+"Curaçao\0"
+"Cyprus\0"
+"Czechia\0"
+"Denmark\0"
+"Diego Garcia\0"
+"Djibouti\0"
+"Dominica\0"
+"Dominican Republic\0"
+"Ecuador\0"
+"Egypt\0"
+"El Salvador\0"
+"Equatorial Guinea\0"
+"Eritrea\0"
+"Estonia\0"
+"Eswatini\0"
+"Ethiopia\0"
+"Europe\0"
+"European Union\0"
+"Falkland Islands\0"
+"Faroe Islands\0"
+"Fiji\0"
+"Finland\0"
+"France\0"
+"French Guiana\0"
+"French Polynesia\0"
+"French Southern Territories\0"
+"Gabon\0"
+"Gambia\0"
+"Georgia\0"
+"Germany\0"
+"Ghana\0"
+"Gibraltar\0"
+"Greece\0"
+"Greenland\0"
+"Grenada\0"
+"Guadeloupe\0"
+"Guam\0"
+"Guatemala\0"
+"Guernsey\0"
+"Guinea-Bissau\0"
+"Guinea\0"
+"Guyana\0"
+"Haiti\0"
+"Heard & McDonald Islands\0"
+"Honduras\0"
+"Hong Kong SAR China\0"
+"Hungary\0"
+"Iceland\0"
+"India\0"
+"Indonesia\0"
+"Iran\0"
+"Iraq\0"
+"Ireland\0"
+"Isle of Man\0"
+"Israel\0"
+"Italy\0"
+"Côte d’Ivoire\0" // Ivory Coast
+"Jamaica\0"
+"Japan\0"
+"Jersey\0"
+"Jordan\0"
+"Kazakhstan\0"
+"Kenya\0"
+"Kiribati\0"
+"Kosovo\0"
+"Kuwait\0"
+"Kyrgyzstan\0"
+"Laos\0"
+"Latin America\0"
+"Latvia\0"
+"Lebanon\0"
+"Lesotho\0"
+"Liberia\0"
+"Libya\0"
+"Liechtenstein\0"
+"Lithuania\0"
+"Luxembourg\0"
+"Macao SAR China\0"
+"North Macedonia\0"
+"Madagascar\0"
+"Malawi\0"
+"Malaysia\0"
+"Maldives\0"
+"Mali\0"
+"Malta\0"
+"Marshall Islands\0"
+"Martinique\0"
+"Mauritania\0"
+"Mauritius\0"
+"Mayotte\0"
+"Mexico\0"
+"Micronesia\0"
+"Moldova\0"
+"Monaco\0"
+"Mongolia\0"
+"Montenegro\0"
+"Montserrat\0"
+"Morocco\0"
+"Mozambique\0"
+"Myanmar (Burma)\0"
+"Namibia\0"
+"Nauru\0"
+"Nepal\0"
+"Netherlands\0"
+"New Caledonia\0"
+"New Zealand\0"
+"Nicaragua\0"
+"Nigeria\0"
+"Niger\0"
+"Niue\0"
+"Norfolk Island\0"
+"Northern Mariana Islands\0"
+"North Korea\0"
+"Norway\0"
+"Oman\0"
+"Outlying Oceania\0"
+"Pakistan\0"
+"Palau\0"
+"Palestinian Territories\0"
+"Panama\0"
+"Papua New Guinea\0"
+"Paraguay\0"
+"Peru\0"
+"Philippines\0"
+"Pitcairn Islands\0"
+"Poland\0"
+"Portugal\0"
+"Puerto Rico\0"
+"Qatar\0"
+"Réunion\0"
+"Romania\0"
+"Russia\0"
+"Rwanda\0"
+"St. Barthélemy\0"
+"St. Helena\0"
+"St. Kitts & Nevis\0"
+"St. Lucia\0"
+"St. Martin\0"
+"St. Pierre & Miquelon\0"
+"St. Vincent & Grenadines\0"
+"Samoa\0"
+"San Marino\0"
+"São Tomé & Príncipe\0"
+"Saudi Arabia\0"
+"Senegal\0"
+"Serbia\0"
+"Seychelles\0"
+"Sierra Leone\0"
+"Singapore\0"
+"Sint Maarten\0"
+"Slovakia\0"
+"Slovenia\0"
+"Solomon Islands\0"
+"Somalia\0"
+"South Africa\0"
+"South Georgia & South Sandwich Islands\0"
+"South Korea\0"
+"South Sudan\0"
+"Spain\0"
+"Sri Lanka\0"
+"Sudan\0"
+"Suriname\0"
+"Svalbard & Jan Mayen\0"
+"Sweden\0"
+"Switzerland\0"
+"Syria\0"
+"Taiwan\0"
+"Tajikistan\0"
+"Tanzania\0"
+"Thailand\0"
+"Timor-Leste\0"
+"Togo\0"
+"Tokelau\0"
+"Tonga\0"
+"Trinidad & Tobago\0"
+"Tristan da Cunha\0"
+"Tunisia\0"
+"Türkiye\0" // Turkey
+"Turkmenistan\0"
+"Turks & Caicos Islands\0"
+"Tuvalu\0"
+"Uganda\0"
+"Ukraine\0"
+"United Arab Emirates\0"
+"United Kingdom\0"
+"U.S. Outlying Islands\0"
+"United States\0"
+"U.S. Virgin Islands\0"
+"Uruguay\0"
+"Uzbekistan\0"
+"Vanuatu\0"
+"Vatican City\0"
+"Venezuela\0"
+"Vietnam\0"
+"Wallis & Futuna\0"
+"Western Sahara\0"
+"world\0"
+"Yemen\0"
+"Zambia\0"
+"Zimbabwe\0"
+;
+
+static inline constexpr quint16 territory_name_index[] = {
+     0, // AnyTerritory
+     8, // Afghanistan
+    20, // Aland Islands
+    35, // Albania
+    43, // Algeria
+    51, // American Samoa
+    66, // Andorra
+    74, // Angola
+    81, // Anguilla
+    90, // Antarctica
+   101, // Antigua and Barbuda
+   119, // Argentina
+   129, // Armenia
+   137, // Aruba
+   143, // Ascension Island
+   160, // Australia
+   170, // Austria
+   178, // Azerbaijan
+   189, // Bahamas
+   197, // Bahrain
+   205, // Bangladesh
+   216, // Barbados
+   225, // Belarus
+   233, // Belgium
+   241, // Belize
+   248, // Benin
+   254, // Bermuda
+   262, // Bhutan
+   269, // Bolivia
+   277, // Bosnia and Herzegovina
+   298, // Botswana
+   307, // Bouvet Island
+   321, // Brazil
+   328, // British Indian Ocean Territory
+   359, // British Virgin Islands
+   382, // Brunei
+   389, // Bulgaria
+   398, // Burkina Faso
+   411, // Burundi
+   419, // Cambodia
+   428, // Cameroon
+   437, // Canada
+   444, // Canary Islands
+   459, // Cape Verde
+   470, // Caribbean Netherlands
+   492, // Cayman Islands
+   507, // Central African Republic
+   532, // Ceuta and Melilla
+   548, // Chad
+   553, // Chile
+   559, // China
+   565, // Christmas Island
+   582, // Clipperton Island
+   600, // Cocos Islands
+   624, // Colombia
+   633, // Comoros
+   641, // Congo - Brazzaville
+   661, // Congo - Kinshasa
+   678, // Cook Islands
+   691, // Costa Rica
+   702, // Croatia
+   710, // Cuba
+   715, // Curacao
+   724, // Cyprus
+   731, // Czechia
+   739, // Denmark
+   747, // Diego Garcia
+   760, // Djibouti
+   769, // Dominica
+   778, // Dominican Republic
+   797, // Ecuador
+   805, // Egypt
+   811, // El Salvador
+   823, // Equatorial Guinea
+   841, // Eritrea
+   849, // Estonia
+   857, // Eswatini
+   866, // Ethiopia
+   875, // Europe
+   882, // European Union
+   897, // Falkland Islands
+   914, // Faroe Islands
+   928, // Fiji
+   933, // Finland
+   941, // France
+   948, // French Guiana
+   962, // French Polynesia
+   979, // French Southern Territories
+  1007, // Gabon
+  1013, // Gambia
+  1020, // Georgia
+  1028, // Germany
+  1036, // Ghana
+  1042, // Gibraltar
+  1052, // Greece
+  1059, // Greenland
+  1069, // Grenada
+  1077, // Guadeloupe
+  1088, // Guam
+  1093, // Guatemala
+  1103, // Guernsey
+  1112, // Guinea-Bissau
+  1126, // Guinea
+  1133, // Guyana
+  1140, // Haiti
+  1146, // Heard and McDonald Islands
+  1171, // Honduras
+  1180, // Hong Kong
+  1200, // Hungary
+  1208, // Iceland
+  1216, // India
+  1222, // Indonesia
+  1232, // Iran
+  1237, // Iraq
+  1242, // Ireland
+  1250, // Isle of Man
+  1262, // Israel
+  1269, // Italy
+  1275, // Ivory Coast
+  1292, // Jamaica
+  1300, // Japan
+  1306, // Jersey
+  1313, // Jordan
+  1320, // Kazakhstan
+  1331, // Kenya
+  1337, // Kiribati
+  1346, // Kosovo
+  1353, // Kuwait
+  1360, // Kyrgyzstan
+  1371, // Laos
+  1376, // Latin America
+  1390, // Latvia
+  1397, // Lebanon
+  1405, // Lesotho
+  1413, // Liberia
+  1421, // Libya
+  1427, // Liechtenstein
+  1441, // Lithuania
+  1451, // Luxembourg
+  1462, // Macao
+  1478, // Macedonia
+  1494, // Madagascar
+  1505, // Malawi
+  1512, // Malaysia
+  1521, // Maldives
+  1530, // Mali
+  1535, // Malta
+  1541, // Marshall Islands
+  1558, // Martinique
+  1569, // Mauritania
+  1580, // Mauritius
+  1590, // Mayotte
+  1598, // Mexico
+  1605, // Micronesia
+  1616, // Moldova
+  1624, // Monaco
+  1631, // Mongolia
+  1640, // Montenegro
+  1651, // Montserrat
+  1662, // Morocco
+  1670, // Mozambique
+  1681, // Myanmar
+  1697, // Namibia
+  1705, // Nauru
+  1711, // Nepal
+  1717, // Netherlands
+  1729, // New Caledonia
+  1743, // New Zealand
+  1755, // Nicaragua
+  1765, // Nigeria
+  1773, // Niger
+  1779, // Niue
+  1784, // Norfolk Island
+  1799, // Northern Mariana Islands
+  1824, // North Korea
+  1836, // Norway
+  1843, // Oman
+  1848, // Outlying Oceania
+  1865, // Pakistan
+  1874, // Palau
+  1880, // Palestinian Territories
+  1904, // Panama
+  1911, // Papua New Guinea
+  1928, // Paraguay
+  1937, // Peru
+  1942, // Philippines
+  1954, // Pitcairn
+  1971, // Poland
+  1978, // Portugal
+  1987, // Puerto Rico
+  1999, // Qatar
+  2005, // Reunion
+  2014, // Romania
+  2022, // Russia
+  2029, // Rwanda
+  2036, // Saint Barthelemy
+  2052, // Saint Helena
+  2063, // Saint Kitts and Nevis
+  2081, // Saint Lucia
+  2091, // Saint Martin
+  2102, // Saint Pierre and Miquelon
+  2124, // Saint Vincent and Grenadines
+  2149, // Samoa
+  2155, // San Marino
+  2166, // Sao Tome and Principe
+  2189, // Saudi Arabia
+  2202, // Senegal
+  2210, // Serbia
+  2217, // Seychelles
+  2228, // Sierra Leone
+  2241, // Singapore
+  2251, // Sint Maarten
+  2264, // Slovakia
+  2273, // Slovenia
+  2282, // Solomon Islands
+  2298, // Somalia
+  2306, // South Africa
+  2319, // South Georgia and South Sandwich Islands
+  2358, // South Korea
+  2370, // South Sudan
+  2382, // Spain
+  2388, // Sri Lanka
+  2398, // Sudan
+  2404, // Suriname
+  2413, // Svalbard and Jan Mayen
+  2434, // Sweden
+  2441, // Switzerland
+  2453, // Syria
+  2459, // Taiwan
+  2466, // Tajikistan
+  2477, // Tanzania
+  2486, // Thailand
+  2495, // Timor-Leste
+  2507, // Togo
+  2512, // Tokelau
+  2520, // Tonga
+  2526, // Trinidad and Tobago
+  2544, // Tristan da Cunha
+  2561, // Tunisia
+  2569, // Turkey
+  2578, // Turkmenistan
+  2591, // Turks and Caicos Islands
+  2614, // Tuvalu
+  2621, // Uganda
+  2628, // Ukraine
+  2636, // United Arab Emirates
+  2657, // United Kingdom
+  2672, // United States Outlying Islands
+  2694, // United States
+  2708, // United States Virgin Islands
+  2728, // Uruguay
+  2736, // Uzbekistan
+  2747, // Vanuatu
+  2755, // Vatican City
+  2768, // Venezuela
+  2778, // Vietnam
+  2786, // Wallis and Futuna
+  2802, // Western Sahara
+  2817, // world
+  2823, // Yemen
+  2829, // Zambia
+  2836, // Zimbabwe
+};
+
+static inline constexpr unsigned char territory_code_list[] =
 "ZZ\0" // AnyTerritory
 "AF\0" // Afghanistan
 "AX\0" // Aland Islands
@@ -8517,8 +8490,6 @@ static constexpr unsigned char territory_code_list[] =
 
 // GENERATED PART ENDS HERE
 
-QT_WARNING_POP // QTBUG-128930
-
 QT_END_NAMESPACE
 
-#endif
+#endif // QLOCALE_DATA_P_H

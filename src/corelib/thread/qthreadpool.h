@@ -72,6 +72,9 @@ public:
     void reserveThread();
     void releaseThread();
 
+    void setServiceLevel(QThread::QualityOfService serviceLevel);
+    QThread::QualityOfService serviceLevel() const;
+
     QT_CORE_INLINE_SINCE(6, 8)
     bool waitForDone(int msecs);
     bool waitForDone(QDeadlineTimer deadline = QDeadlineTimer::Forever);

@@ -4,7 +4,7 @@
 /*!
     \example animation/easing
     \title Easing Curves Example
-    \examplecategory {Multimedia}
+    \examplecategory {Graphics}
 
     \brief The Easing Curves example shows how to use easing curves to
     control the speed of an animation.

@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
 /*!
-    \macro Q_GLOBAL_STATIC(Type, VariableName, ...)
+    \macro Q_GLOBAL_STATIC(Type, variableName, ...)
     \since 5.1
     \relates QGlobalStatic
 
-    Creates a global and static object of type \l QGlobalStatic, of name \a
-    VariableName and that behaves as a pointer to \a Type. The object created
-    by Q_GLOBAL_STATIC initializes itself on the first use, which means that it
+    Creates a global and static object of type \l QGlobalStatic, named \a
+    variableName.  It behaves as a pointer to \a Type. The object created by
+    Q_GLOBAL_STATIC initializes itself on the first use, which means that it
     will not increase the application or the library's load time. Additionally,
     the object is initialized in a thread-safe manner on all platforms.
 
@@ -18,10 +18,10 @@
     require an extra set of parentheses, unlike the older macro.
 
     The typical use of this macro is as follows, in a global context (that is,
-    outside of any function bodies):
+    not inside any function or class body):
 
     \code
-        Q_GLOBAL_STATIC(MyType, staticType)
+        Q_GLOBAL_STATIC(MyType, myGlobal)
     \endcode
 
     This macro is intended to replace global static objects that are not POD
@@ -29,59 +29,62 @@
     name. For example, the following C++ code creates a global static:
 
     \code
-        static MyType staticType;
+        static MyType myGlobal;
     \endcode
 
     Compared to Q_GLOBAL_STATIC, and assuming that \c MyType is a class or
     struct that has a constructor, a destructor, or is otherwise non-POD, the
-    above has the following drawbacks:
+    latter has the following drawbacks:
 
     \list
-        \li it requires load-time initialization of \c MyType (that is, the
-        default constructor for \c MyType is called when the library or
-        application is loaded);
+        \li it requires load-time initialization of \c myGlobal (that is, the
+            default constructor for \c MyType is called when the library or
+            application is loaded);
 
-        \li the type will be initialized even if it is never used;
+        \li the object will be initialized even if it is never used;
 
         \li the order of initialization and destruction among different
-        translation units is not determined, leading to possible uses before
-        initialization or after destruction;
+            translation units is not determined, leading to possible uses,
+            before initialization or after destruction, by the constructors or
+            destructors of other global variables.
     \endlist
 
-    The Q_GLOBAL_STATIC macro solves all of the above problems by guaranteeing
+    The Q_GLOBAL_STATIC macro solves all of these problems by guaranteeing
     thread-safe initialization on first use and allowing the user to query for
     whether the type has already been destroyed, to avoid the
-    use-after-destruction problem (see QGlobalStatic::isDestroyed()).
+    use-after-destruction problem (see \l QGlobalStatic::isDestroyed()).
 
     \section1 Constructor and Destructor
 
-    For Q_GLOBAL_STATIC, the type \c Type must be publicly
-    default-constructible and publicly destructible. For
-    Q_GLOBAL_STATIC_WITH_ARGS(), there must be a public constructor that
-    matches the arguments passed.
+    For Q_GLOBAL_STATIC, when only given a type and variable name, its \c Type
+    must be publicly default-constructible and publicly destructible.
+    Otherwise, \c Type must have a public constructor that accepts the remaining
+    arguments to the macro. For Q_GLOBAL_STATIC_WITH_ARGS(), there must be a
+    public constructor that accepts the macro's third argument as its list of
+    parameters.
 
-    It is not possible to use Q_GLOBAL_STATIC with types that have protected or
-    private default constructors or destructors (for Q_GLOBAL_STATIC_WITH_ARGS(),
-    a protected or private constructor matching the arguments). If the type in
-    question has those members as protected, it is possible to overcome the
-    issue by deriving from the type and creating public a constructor and
-    destructor. If the type has them as private, a friend declaration is
-    necessary before deriving.
+    It is not possible to use Q_GLOBAL_STATIC with a \a Type whose relevant
+    constructor or destructor is protected or private. If the type in question
+    declares those members protected, it is possible to overcome the issue by
+    deriving from the type and creating a public constructor and destructor. If
+    the type declares them private, a friend declaration is necessary before
+    deriving.
 
     For example, the following is enough to create \c MyType based on a
     previously-defined \c MyOtherType which has a protected default constructor
-    and/or a protected destructor (or has them as private, but that defines \c
-    MyType as a friend).
+    and/or a protected destructor (or declares them private, but also declares
+    \c MyType as a friend).
 
     \code
         class MyType : public MyOtherType { };
-        Q_GLOBAL_STATIC(MyType, staticType)
+        Q_GLOBAL_STATIC(MyType, myGlobal)
     \endcode
 
-    No body for \c MyType is required since the destructor is an implicit
-    member and so is the default constructor if no other constructors are
-    defined. For use with Q_GLOBAL_STATIC_WITH_ARGS(), however, a suitable
-    constructor body is necessary:
+    No body for \c MyType is required since the destructor is an implicit member
+    and so is the default constructor if no other constructors are defined. For
+    use with arguments after \a Type and \a variableName, or with
+    Q_GLOBAL_STATIC_WITH_ARGS(), however, a suitable constructor body is
+    necessary:
 
     \code
         class MyType : public MyOtherType
@@ -89,10 +92,11 @@
         public:
             MyType(int i) : MyOtherType(i) {}
         };
-        Q_GLOBAL_STATIC_WITH_ARGS(MyType, staticType, (42))
+        Q_GLOBAL_STATIC(MyType, myGlobal, 42)
    \endcode
 
-   Alternatively, if the compiler supports C++11 inheriting constructors, one could write:
+   Alternatively (since C++11 introduced inheriting constructors), one could
+   write:
 
     \code
         class MyType : public MyOtherType
@@ -100,19 +104,20 @@
         public:
             using MyOtherType::MyOtherType;
         };
-        Q_GLOBAL_STATIC_WITH_ARGS(MyType, staticType, (42))
+        Q_GLOBAL_STATIC_WITH_ARGS(MyType, myGlobal, (42))
     \endcode
 
     \section1 Placement
 
-    The Q_GLOBAL_STATIC macro creates a type that is necessarily static, at the
-    global scope. It is not possible to place the Q_GLOBAL_STATIC macro inside
-    a function (doing so will result in compilation errors).
+    The Q_GLOBAL_STATIC macro creates a type, and a variable of that type that
+    is necessarily static, at the global scope. It is not possible to place the
+    Q_GLOBAL_STATIC macro inside a function or the body of a class (doing so
+    will result in compilation errors).
 
     More importantly, this macro should be placed in source files, never in
-    headers. Since the resulting object is has static linkage, if the macro is
-    placed in a header and included by multiple source files, the object will
-    be defined multiple times and will not cause linking errors. Instead, each
+    headers. Since the resulting object has static linkage, if the macro is
+    placed in a header and included by multiple source files, the object will be
+    defined multiple times and will not cause linking errors. Instead, each
     translation unit will refer to a different object, which could lead to
     subtle and hard-to-track errors.
 
@@ -138,7 +143,7 @@
     of them will be woken up to attempt to initialize.
 
     The macro makes no guarantee about reentrancy from the same thread. If the
-    global static object is accessed directly or indirectly from inside the
+    global static object is accessed directly or indirectly from inside its own
     constructor, a deadlock will surely happen.
 
     In addition, if two Q_GLOBAL_STATIC objects are being initialized on two
@@ -155,8 +160,8 @@
     exit-time operation.
 
     If the object is created, it will be destroyed at exit-time, similar to the
-    C \c atexit function. On most systems, in fact, the destructor will also be
-    called if the library or plugin is unloaded from memory before exit.
+    C \c atexit() function. On most systems, in fact, the destructor will also
+    be called if the library or plugin is unloaded from memory before exit.
 
     Since the destruction is meant to happen at program exit, no thread-safety
     is provided. This includes the case of plugin or library unload. In
@@ -181,38 +186,37 @@
     The Qt 4 Q_GLOBAL_STATIC macro differed in behavior in the following ways:
 
     \list
-        \li the object created was not of type \l QGlobalStatic, but instead
-        it was a function that returned a pointer to \a Type; that means the
-        \l QGlobalStatic API was not present;
+        \li the object created was not of type \l QGlobalStatic, but instead it
+            was a function that returned a pointer to \a Type; that means the \l
+            QGlobalStatic API was not present;
 
-        \li the initialization was thread-safe, but not guaranteed to be
-        unique: instead, if N threads tried to initialize the object at the
-        same time, N objects would be created on the heap and N-1 would be
-        destroyed;
+        \li the initialization was thread-safe, but not guaranteed to be unique:
+            instead, if N threads tried to initialize the object at the same
+            time, N objects would be created on the heap and N-1 would be
+            destroyed;
 
         \li the object was always created on the heap.
     \endlist
 
     \section1 Implementation Details
 
-    Q_GLOBAL_STATIC is implemented by creating a type called \c Q_QGS_NAME
-    where \c NAME is the name of the variable the user passed to the macro,
-    inside an unnamed namespace, and a \c static variable of \l QGlobalStatic
-    type, named \c NAME. The use of unnamed namespaces forces the compiler to emit
+    Q_GLOBAL_STATIC is implemented by creating a type called \c Q_QGS_NAME where
+    \c NAME is the \a variableName the user passed to the macro, inside an
+    unnamed namespace, and a \c static variable of \l QGlobalStatic type, named
+    \a variableName. The use of unnamed namespaces forces the compiler to emit
     non-exported symbols, often local to the translation unit, and this
     propagates to the \l QGlobalStatic template instantiation that uses such
-    types. Additionally, because the type is used only for one variable,
-    there's effectively no difference between static and non-static data
-    members.
+    types. Additionally, because the type is used only for one variable, there's
+    effectively no difference between static and non-static data members.
 
-    The "QGS" type is a \c struct containing a \c typedef to \a TYPE and a
+    The "QGS" type is a \c struct containing a \c typedef to \a Type and a
     static member function that receives a pointer to storage suitable to hold
-    an instance of \a TYPE. It will initialize the storage using a placement \c
+    an instance of \a Type. It will initialize the storage using a placement \c
     new and the variadic arguments.
 
     The majority of the work is done by the public \l QGlobalStatic class and
     the private \c QtGlobalStatic::Holder class. The \c Holder union has a
-    single non-static member of type \a TYPE, but because this is a union, its
+    single non-static member of type \a Type, but because this is a union, its
     construction and destruction are explicitly controlled in the Holder's
     constructor and destructor. The constructor calls the "QGS" type's static
     member function with a pointer to this member so it can be initialized
@@ -235,7 +239,8 @@
         \li -1: object was initialized and is still valid;
         \li  0: object was not initialized yet;
         \li +1: object is being initialized and any threads encountering this
-        value must wait for completion (not used in the current implementation).
+                value must wait for completion (not used in the current
+                implementation).
     \endlist
 
     Collectively, all positive values indicate that the initialization is
@@ -246,7 +251,7 @@
 
     The QGlobalStatic::exists() and QGlobalStatic::isDestroyed() functions
     operate solely on the guard variable: the former returns \c true if the guard
-    is negative, whereas the latter returns \c true only if it is -2.
+    is -1, the latter returns \c true if it is -2.
 
     \endomit
 
@@ -254,36 +259,36 @@
 */
 
 /*!
-    \macro Q_GLOBAL_STATIC_WITH_ARGS(Type, VariableName, Arguments)
+    \macro Q_GLOBAL_STATIC_WITH_ARGS(Type, variableName, Arguments)
     \since 5.1
     \obsolete
     \relates QGlobalStatic
 
     Creates a global and static object of type \l QGlobalStatic, of name \a
-    VariableName, initialized by the arguments \a Arguments and that behaves as
+    variableName, initialized by the arguments \a Arguments and that behaves as
     a pointer to \a Type. The object created by Q_GLOBAL_STATIC_WITH_ARGS
     initializes itself on the first use, which means that it will not increase
     the application or the library's load time. Additionally, the object is
     initialized in a thread-safe manner on all platforms.
 
     The typical use of this macro is as follows, in a global context (that is,
-    outside of any function bodies):
+    not inside any function or class body):
 
     \code
-        Q_GLOBAL_STATIC_WITH_ARGS(MyType, staticType, (42, "Hello", "World"))
+        Q_GLOBAL_STATIC_WITH_ARGS(MyType, myGlobal, (42, "Hello", "World"))
     \endcode
 
-    The \a Arguments macro parameter must always include the parentheses or, if
-    C++11 uniform initialization is allowed, the braces. The above call is
+    The \a Arguments macro parameter must always be enclosed in parentheses or,
+    if C++11 uniform initialization is allowed, braces. The above call is
     equivalent to
 
     \code
-        Q_GLOBAL_STATIC(MyType, staticType, 42, "Hello", "World")
+        Q_GLOBAL_STATIC(MyType, myGlobal, 42, "Hello", "World")
     \endcode
 
-    Aside from the actual initialization of the contents with the supplied
-    arguments, this macro behaves identically to Q_GLOBAL_STATIC(). Please
-    see that macro's documentation for more information.
+    Aside from needing the supplied arguments enclosed, this macro behaves
+    identically to Q_GLOBAL_STATIC(). Please see that macro's documentation for
+    more information.
 
     \sa Q_GLOBAL_STATIC(), QGlobalStatic
 */
@@ -295,23 +300,23 @@
     \since 5.1
     \brief The QGlobalStatic class is used to implement a global static object.
 
-    The QGlobalStatic class is the front-end API exported when
-    Q_GLOBAL_STATIC() is used. See the documentation for the macro for a
-    discussion on when to use it and its requirements.
+    The QGlobalStatic class is the front-end API exported when \l
+    Q_GLOBAL_STATIC() is used. See the documentation of the macro for a
+    discussion of its requirements and when to use it.
 
     Normally, you will never use this class directly, but instead you will use
-    the Q_GLOBAL_STATIC() or Q_GLOBAL_STATIC_WITH_ARGS() macros, as
-    follows:
+    the Q_GLOBAL_STATIC() macro, as follows:
 
     \code
-        Q_GLOBAL_STATIC(MyType, staticType)
+        Q_GLOBAL_STATIC(MyType, myGlobal)
     \endcode
 
     The above example creates an object of type QGlobalStatic called \c
-    staticType. After the above declaration, the \c staticType object may be
-    used as if it were a pointer, guaranteed to be initialized exactly once. In
-    addition to the use as a pointer, the object offers two methods to
-    determine the current status of the global: exists() and isDestroyed().
+    myGlobal. After the above declaration, the \c myGlobal object may be used as
+    if it were a pointer to an object of type \a MyType, guaranteed to be
+    initialized exactly once. In addition to the use as a pointer, the object
+    offers two methods to determine the current status of the global: exists()
+    and isDestroyed().
 
     \sa Q_GLOBAL_STATIC(), Q_GLOBAL_STATIC_WITH_ARGS()
 */
@@ -329,8 +334,8 @@
 
     This function returns \c true if the global static object has already
     completed destruction (that is, if the destructor for the type has already
-    returned). In specific, note that this function returns \c false if
-    the destruction is still in progress.
+    returned). In particular, note that this function returns \c false if the
+    destruction is still in progress.
 
     Once this function has returned true once, it will never return
     false again until either the program is restarted or the plugin or library
@@ -359,12 +364,13 @@
 
     This function returns \c true if the global static object has already
     completed initialization (that is, if the constructor for the type has
-    already returned). In specific, note that this function returns \c false if
-    the initialization is still in progress.
+    already returned) and has not yet completed destruction. In particular, note
+    that this function returns \c false if the initialization is still in
+    progress.
 
     Once this function has returned true once, it will never return false again
-    until either the program is restarted or the plugin or library containing
-    the global static is unloaded and reloaded.
+    until the global static object is destroyed. The latter happens on program
+    exit or when the plugin or library containing the global static is unloaded.
 
     This function is safe to call at any point in the program execution: it
     cannot fail and cannot cause a deadlock. Additionally, it will not cause
@@ -422,15 +428,13 @@
         Q_GLOBAL_STATIC(MyType, globalState)
         QString someState()
         {
-            MyType *state = globalState;
-            if (!state) {
-                // we're in a post-destruction state
+            if (globalState::isDestroyed())
                 return QString();
-            }
+            MyType *state = globalState;
             if (state->condition)
-                return state->value1;
+                return state->value;
             else
-                return state->value2;
+                return state->worth;
         }
     \endcode
 
@@ -464,6 +468,8 @@
     will never return null. If this function is called after the object has
     been destroyed, it will return a dangling pointer that should not be
     dereferenced.
+
+    \sa exists(), isDestroyed()
 */
 
 /*!
@@ -476,4 +482,6 @@
     This function does not check if the contents have already been destroyed.
     If this function is called after the object has been destroyed, it will
     return an invalid reference that must not be used.
+
+    \sa exists(), isDestroyed()
 */

@@ -30,11 +30,17 @@ QT_BEGIN_NAMESPACE
 class QEglFSWindow;
 class QEglFSContext;
 class QFbVtHandler;
+#if QT_CONFIG(evdev)
 class QEvdevKeyboardManager;
+#elif QT_CONFIG(vxworksevdev)
+class QVxKeyboardManager;
+#endif
 
 class Q_EGLFS_EXPORT QEglFSIntegration : public QPlatformIntegration, public QPlatformNativeInterface
 #if QT_CONFIG(evdev)
     , public QNativeInterface::Private::QEvdevKeyMapper
+#elif QT_CONFIG(vxworksevdev)
+    , public QNativeInterface::Private::QVxKeyMapper
 #endif
 #ifndef QT_NO_OPENGL
     , public QNativeInterface::Private::QEGLIntegration
@@ -83,14 +89,18 @@ public:
     QPointer<QWindow> pointerWindow() { return m_pointerWindow; }
     void setPointerWindow(QWindow *pointerWindow) { m_pointerWindow = pointerWindow; }
 
-#if QT_CONFIG(evdev)
+#if QT_CONFIG(evdev) || QT_CONFIG(vxworksevdev)
     void loadKeymap(const QString &filename) override;
     void switchLang() override;
 #endif
 
 protected:
     virtual void createInputHandlers();
-    QEvdevKeyboardManager *m_kbdMgr;
+#if QT_CONFIG(evdev)
+    QEvdevKeyboardManager *m_kbdMgr = nullptr;
+#elif QT_CONFIG(vxworksevdev)
+    QVxKeyboardManager *m_kbdMgr = nullptr;
+#endif
 
 private:
     EGLNativeDisplayType nativeDisplay() const;

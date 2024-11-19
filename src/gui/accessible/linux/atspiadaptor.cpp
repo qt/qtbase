@@ -890,11 +890,10 @@ void AtSpiAdaptor::windowActivated(QObject* window, bool active)
     sendDBusSignal(path, ATSPI_DBUS_INTERFACE_EVENT_OBJECT ""_L1, "StateChanged"_L1, stateArgs);
 }
 
-QVariantList AtSpiAdaptor::packDBusSignalArguments(const QString &type, int data1, int data2, const QVariant &variantData) const
+QVariantList AtSpiAdaptor::packDBusSignalArguments(const QString &type, int data1, int data2, const QVariant &variantData)
 {
     QVariantList arguments;
-    arguments << type << data1 << data2 << variantData
-              << QVariant::fromValue(QSpiObjectReference(m_dbus->connection(), QDBusObjectPath(QSPI_OBJECT_PATH_ROOT)));
+    arguments << type << data1 << data2 << variantData << QMap<QString, QVariant>();
     return arguments;
 }
 

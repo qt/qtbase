@@ -85,8 +85,8 @@ public:
     mutable QSize sh;
     mutable QSize msh;
     QString text;
-    std::optional<QPixmap> pixmap;
-    std::optional<QPixmap> scaledpixmap;
+    std::optional<QIcon> icon;
+    QSize pixmapSize;
 #ifndef QT_NO_PICTURE
     std::optional<QPicture> picture;
 #endif

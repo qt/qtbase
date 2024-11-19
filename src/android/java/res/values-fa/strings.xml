@@ -1,5 +1,4 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="fatal_error_msg">خطایی اساسی در برنامه‌تان رخ داد و اجرای برنامه نمی‌تواند ادامه یابد.</string>
-    <string name="unsupported_android_version">این نسخه از Android پشتیبانی نمی شود</string>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="fatal_error_msg" tools:ignore="UnusedResources">خطایی اساسی در برنامه‌تان رخ داد و اجرای برنامه نمی‌تواند ادامه یابد.</string>
 </resources>

@@ -86,6 +86,8 @@ private slots:
     void hiddenDirs_hiddenFiles();
 #endif
 
+    void hasNextFalseNoCrash();
+
 private:
     QSharedPointer<QTemporaryDir> m_dataDir;
 };
@@ -641,6 +643,15 @@ void tst_QDirIterator::hiddenDirs_hiddenFiles()
     }
 }
 #endif // Q_OS_WIN
+
+void tst_QDirIterator::hasNextFalseNoCrash()
+{
+    QDirIterator iter(u"empty"_s, QDir::NoDotAndDotDot);
+    // QTBUG-130142
+    // No crash if you call next() after hasNext() returned false
+    QVERIFY(!iter.hasNext());
+    QVERIFY(iter.next().isEmpty());
+}
 
 QTEST_MAIN(tst_QDirIterator)
 

@@ -21,6 +21,7 @@
 #include <QScrollArea>
 #include <QVBoxLayout>
 #include <QSpinBox>
+#include <QToolTip>
 
 #include <QOpenGLWindow>
 #include <QOpenGLFunctions>
@@ -418,7 +419,8 @@ public:
         auto widget = std::make_shared<TestWidget>();
 
         widget->setWindowTitle("Dialog");
-        auto *spinBox = new TestSpinBox(widget.get());
+        auto spinBox = new TestSpinBox(widget.get());
+        spinBox->setToolTip(QString(u"A ToolTip"));
 
         widget->setMinimumSize(200, 200);
         widget->setMaximumSize(200, 200);
@@ -434,11 +436,18 @@ public:
         if (spinBox)
             spinBox->ShowContextMenu();
     }
+    void showToolTip(const std::string &name)
+    {
+        TestSpinBox *spinBox = findSpinBox(name);
+        if (spinBox)
+            QToolTip::showText(spinBox->mapToGlobal( QPoint( 0, 0 ) ), spinBox->toolTip());
+    }
     void makeNative(const std::string &name)
     {
         auto widget = std::make_shared<TestWidget>();
         widget->setWindowTitle("Dialog");
-        auto *spinBox = new TestSpinBox(widget.get());
+        auto spinBox = new TestSpinBox(widget.get());
+        spinBox->setToolTip(QString(u"A ToolTip"));
 
         widget->setMinimumSize(200, 200);
         widget->setMaximumSize(200, 200);
@@ -575,6 +584,11 @@ void createNativeWidget(const std::string &name)
 void showContextMenuWidget(const std::string &name)
 {
     WidgetStorage::getInstance()->showContextMenu(name);
+}
+
+void showToolTipWidget(const std::string &name)
+{
+    WidgetStorage::getInstance()->showToolTip(name);
 }
 
 void setWidgetNoFocusShow(const std::string &name)
@@ -759,6 +773,7 @@ EMSCRIPTEN_BINDINGS(qwasmwindow)
     emscripten::function("createWidget", &createWidget);
     emscripten::function("createNativeWidget", &createNativeWidget);
     emscripten::function("showContextMenuWidget", &showContextMenuWidget);
+    emscripten::function("showToolTipWidget", &showToolTipWidget);
     emscripten::function("setWidgetNoFocusShow", &setWidgetNoFocusShow);
     emscripten::function("showWidget", &showWidget);
     emscripten::function("activateWidget", &activateWidget);

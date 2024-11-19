@@ -1,0 +1,7 @@
+version = 1
+
+[[annotations]]
+path = ["**"]
+precedence = "closest"
+SPDX-FileCopyrightText = ["Copyright International Color Consortium, 2015"]
+SPDX-License-Identifier = "LicenseRef-ICC-License"

@@ -1,0 +1,7 @@
+version = 1
+
+[[annotations]]
+path = ["**.xml"]
+precedence = "closest"
+SPDX-FileCopyrightText = "Copyright © 2011-2018 The KDE community"
+SPDX-License-Identifier = "BSD-3-Clause"
