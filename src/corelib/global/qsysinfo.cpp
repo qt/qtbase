@@ -199,6 +199,8 @@ static const char *osVer_helper(QOperatingSystemVersion version = QOperatingSyst
             return "10";
         }
         // else: Server
+        if (osver.dwBuildNumber >= 26100)
+            return "Server 2025";
         if (osver.dwBuildNumber >= 20348)
             return "Server 2022";
         if (osver.dwBuildNumber >= 17763)
