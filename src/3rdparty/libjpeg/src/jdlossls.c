@@ -216,8 +216,16 @@ METHODDEF(void)
 simple_upscale(j_decompress_ptr cinfo,
                JDIFFROW diff_buf, _JSAMPROW output_buf, JDIMENSION width)
 {
-  do {
+   do {
+#if BITS_IN_JSAMPLE == 12
+    /* 12-bit is the only data precision for which the range of the sample data
+     * type exceeds the valid sample range.  Thus, we need to range-limit the
+     * samples, because other algorithms may try to use them as array indices.
+     */
+    *output_buf++ = (_JSAMPLE)((*diff_buf++ << cinfo->Al) & 0xFFF);
+#else
     *output_buf++ = (_JSAMPLE)(*diff_buf++ << cinfo->Al);
+#endif
   } while (--width);
 }
 
@@ -226,7 +234,11 @@ noscale(j_decompress_ptr cinfo,
         JDIFFROW diff_buf, _JSAMPROW output_buf, JDIMENSION width)
 {
   do {
+#if BITS_IN_JSAMPLE == 12
+    *output_buf++ = (_JSAMPLE)((*diff_buf++) & 0xFFF);
+#else
     *output_buf++ = (_JSAMPLE)(*diff_buf++);
+#endif
   } while (--width);
 }
 
