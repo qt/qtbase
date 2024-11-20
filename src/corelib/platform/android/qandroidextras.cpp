@@ -1160,6 +1160,10 @@ requestPermissionsInternal(const QStringList &permissions)
     Requests the \a permission and returns a QFuture representing the
     result of the request.
 
+    \note QPermission is the recommended API to use for requesting permissions.
+        If QPermission doesn't cover an Android permission you want to request,
+        this preliminary API can still used instead.
+
     \since 6.2
     \sa checkPermission()
 */
@@ -1182,6 +1186,10 @@ QtAndroidPrivate::requestPermissions(const QStringList &permissions)
     \preliminary
     Checks whether this process has the named \a permission and returns a QFuture
     representing the result of the check.
+
+    \note QPermission is the recommended API to use for requesting permissions.
+        If QPermission doesn't cover an Android permission you want to request,
+        this preliminary API can still used instead.
 
     \since 6.2
     \sa requestPermission()
