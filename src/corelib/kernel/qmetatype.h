@@ -1227,10 +1227,7 @@ namespace QtPrivate
 } // namespace QtPrivate
 
 template <typename T, int =
-    QtPrivate::IsPointerToTypeDerivedFromQObject<T>::Value ? QMetaType::PointerToQObject :
-    QtPrivate::IsRealGadget<T>::value                      ? QMetaType::IsGadget :
-    QtPrivate::IsPointerToGadgetHelper<T>::IsRealGadget    ? QMetaType::PointerToGadget :
-    QtPrivate::IsQEnumHelper<T>::Value                     ? QMetaType::IsEnumeration : 0>
+    QtPrivate::IsPointerToGadgetHelper<T>::IsRealGadget    ? QMetaType::PointerToGadget : 0>
 struct QMetaTypeIdQObject
 {
     enum {
@@ -1420,47 +1417,6 @@ inline int qRegisterMetaType(QMetaType meta)
 
 #ifndef QT_NO_QOBJECT
 template <typename T>
-struct QMetaTypeIdQObject<T*, QMetaType::PointerToQObject>
-{
-    enum {
-        Defined = 1
-    };
-
-    static int qt_metatype_id()
-    {
-        Q_CONSTINIT static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0);
-        if (const int id = metatype_id.loadAcquire())
-            return id;
-        const char *const cName = T::staticMetaObject.className();
-        QByteArray typeName;
-        typeName.reserve(strlen(cName) + 1);
-        typeName.append(cName).append('*');
-        const int newId = qRegisterNormalizedMetaType<T *>(typeName);
-        metatype_id.storeRelease(newId);
-        return newId;
-    }
-};
-
-template <typename T>
-struct QMetaTypeIdQObject<T, QMetaType::IsGadget>
-{
-    enum {
-        Defined = std::is_default_constructible<T>::value
-    };
-
-    static int qt_metatype_id()
-    {
-        Q_CONSTINIT static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0);
-        if (const int id = metatype_id.loadAcquire())
-            return id;
-        const char *const cName = T::staticMetaObject.className();
-        const int newId = qRegisterNormalizedMetaType<T>(cName);
-        metatype_id.storeRelease(newId);
-        return newId;
-    }
-};
-
-template <typename T>
 struct QMetaTypeIdQObject<T*, QMetaType::PointerToGadget>
 {
     enum {
@@ -1469,39 +1425,7 @@ struct QMetaTypeIdQObject<T*, QMetaType::PointerToGadget>
 
     static int qt_metatype_id()
     {
-        Q_CONSTINIT static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0);
-        if (const int id = metatype_id.loadAcquire())
-            return id;
-        const char *const cName = T::staticMetaObject.className();
-        QByteArray typeName;
-        typeName.reserve(strlen(cName) + 1);
-        typeName.append(cName).append('*');
-        const int newId = qRegisterNormalizedMetaType<T *>(typeName);
-        metatype_id.storeRelease(newId);
-        return newId;
-    }
-};
-
-template <typename T>
-struct QMetaTypeIdQObject<T, QMetaType::IsEnumeration>
-{
-    enum {
-        Defined = 1
-    };
-
-    static int qt_metatype_id()
-    {
-        Q_CONSTINIT static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0);
-        if (const int id = metatype_id.loadAcquire())
-            return id;
-        const char *eName = qt_getEnumName(T());
-        const char *cName = qt_getEnumMetaObject(T())->className();
-        QByteArray typeName;
-        typeName.reserve(strlen(cName) + 2 + strlen(eName));
-        typeName.append(cName).append("::").append(eName);
-        const int newId = qRegisterNormalizedMetaType<T>(typeName);
-        metatype_id.storeRelease(newId);
-        return newId;
+        return QMetaType::fromType<T *>().id();
     }
 };
 #endif
