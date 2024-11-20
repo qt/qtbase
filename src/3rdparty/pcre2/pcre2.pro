@@ -28,6 +28,7 @@ macos:contains(QT_ARCHS, "arm64"): QMAKE_CFLAGS += -Xarch_arm64 -DPCRE2_DISABLE_
 SOURCES += \
     $$PWD/src/pcre2_auto_possess.c \
     $$PWD/src/pcre2_chartables.c \
+    $$PWD/src/pcre2_chkdint.c \
     $$PWD/src/pcre2_compile.c \
     $$PWD/src/pcre2_config.c \
     $$PWD/src/pcre2_context.c \

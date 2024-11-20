@@ -46,6 +46,8 @@
 #include <private/qnoncontiguousbytedevice_p.h>
 
 #include <QtNetwork/qabstractsocket.h>
+
+#include <QtCore/private/qnumeric_p.h>
 #include <QtCore/qloggingcategory.h>
 #include <QtCore/qendian.h>
 #include <QtCore/qdebug.h>
@@ -124,8 +126,10 @@ std::vector<uchar> assemble_hpack_block(const std::vector<Http2::Frame> &frames)
     std::vector<uchar> hpackBlock;
 
     quint32 total = 0;
-    for (const auto &frame : frames)
-        total += frame.hpackBlockSize();
+    for (const auto &frame : frames) {
+        if (add_overflow(total, frame.hpackBlockSize(), &total))
+            return hpackBlock;
+    }
 
     if (!total)
         return hpackBlock;

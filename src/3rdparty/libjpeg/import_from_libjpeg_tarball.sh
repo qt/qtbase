@@ -160,7 +160,7 @@ FILES="
    jmemnobs.c
    jmemsys.h
    jmorecfg.h
-   jpeg_nbits_table.h
+   jpeg_nbits.h
    jquant1.c
    jquant2.c
    jsamplecomp.h

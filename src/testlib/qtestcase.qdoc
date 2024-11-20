@@ -237,7 +237,7 @@
 
    Example:
    \code
-   QTRY_VERIFY2_WITH_TIMEOUT(list.size() > 2, QByteArray::number(list.size()).constData());
+   QTRY_VERIFY2(list.size() > 2, QByteArray::number(list.size()).constData());
    \endcode
 
    \note This macro can only be used in a test function that is invoked
@@ -617,8 +617,8 @@
     this macro.
 
     Unlike QBENCHMARK, the contents of the contained code block is only run
-    once. The elapsed time will be reported as "0" if it's to short to
-    be measured by the selected backend. (Use)
+    once. The elapsed time will be reported as "0" if it's too short to
+    be measured by the selected backend.
 
     \sa {Qt Test Overview#Creating a Benchmark}{Creating a Benchmark},
     {Chapter 5: Writing a Benchmark}{Writing a Benchmark}

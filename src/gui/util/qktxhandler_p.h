@@ -68,7 +68,7 @@ public:
 
 private:
     bool checkHeader(const KTXHeader &header);
-    quint32 decode(quint32 val);
+    quint32 decode(quint32 val) const;
 
     bool inverseEndian = false;
 };

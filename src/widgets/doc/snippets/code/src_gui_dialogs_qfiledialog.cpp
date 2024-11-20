@@ -157,5 +157,5 @@ QFileDialog::getOpenFileContent("Images (*.png *.xpm *.jpg)",  fileContentReady)
 
 //! [16]
 QByteArray imageData; // obtained from e.g. QImage::save()
-QFileDialog::saveFile("myimage.png", imageData);
+QFileDialog::saveFileContent(imageData, "myimage.png");
 //! [16]
