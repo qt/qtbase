@@ -2005,7 +2005,11 @@ void QWindowsWindow::show_sys() const
             } // Qt::WindowMaximized
         } // !Qt::WindowMinimized
     }
-    if (type == Qt::Popup || type == Qt::ToolTip || type == Qt::Tool || testShowWithoutActivating(w))
+    if (type == Qt::Popup ||
+        type == Qt::ToolTip ||
+        type == Qt::Tool ||
+        (flags & Qt::WindowDoesNotAcceptFocus) ||
+        testShowWithoutActivating(w))
         sm = SW_SHOWNOACTIVATE;
 
     if (w->windowStates() & Qt::WindowMaximized)
