@@ -2410,9 +2410,10 @@ encoded in \1, and is converted to QString using the \2 function.
 /*! \fn QString QString::fromWCharArray(const wchar_t *string, qsizetype size)
     \since 4.2
 
-    Returns a copy of the \a string, where the encoding of \a string depends on
-    the size of wchar. If wchar is 4 bytes, the \a string is interpreted as
-    UCS-4, if wchar is 2 bytes it is interpreted as UTF-16.
+    Reads the first \a size code units of the \c wchar_t array to whose start
+    \a string points, converting them to Unicode and returning the result as
+    a QString. The encoding used by \c wchar_t is assumed to be UCS-4 if the
+    type's size is four bytes or UTF-16 if its size is two bytes.
 
     If \a size is -1 (default), the \a string must be '\\0'-terminated.
 
