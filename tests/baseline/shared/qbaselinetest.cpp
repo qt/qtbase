@@ -228,6 +228,23 @@ bool connectToBaselineServer(QByteArray *msg)
     return connect(msg ? msg : &dummyMsg, &dummy);
 }
 
+bool finalizeTesting(QByteArray *msg) {
+    QByteArray dummyMsg;
+    return proto.finalizeTesting(msg ? msg : &dummyMsg);
+}
+
+void finalizeAndDisconnect()
+{
+    if (QByteArray msg; finalizeTesting(&msg)) {
+        if (msg.isEmpty())
+            qInfo() << "No baseline server report produced.";
+        else
+            qInfo() << "Baseline server report:" << msg.data();
+    }
+
+    disconnectFromBaselineServer();
+}
+
 void setAutoMode(bool mode)
 {
     customInfo.setAdHocRun(!mode);
