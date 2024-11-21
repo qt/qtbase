@@ -670,6 +670,8 @@ QString schannelErrorToString(qint32 status)
         return QSslSocket::tr("Unexpected or badly-formatted message received");
     case SEC_E_ENCRYPT_FAILURE:
         return QSslSocket::tr("The data could not be encrypted");
+    case SEC_E_DECRYPT_FAILURE:
+        return QSslSocket::tr("The data could not be decrypted");
     case SEC_E_ALGORITHM_MISMATCH:
         return QSslSocket::tr("No cipher suites in common");
     case SEC_E_UNKNOWN_CREDENTIALS:
@@ -1944,6 +1946,13 @@ void TlsCryptographSchannel::transmit()
             disconnectFromHost();
             setErrorAndEmit(d, QAbstractSocket::SslInternalError,
                             schannelErrorToString(status));
+            break;
+        } else if (status == SEC_E_DECRYPT_FAILURE) {
+            // It's not documented as a possible return value for DecryptMessage,
+            // but we see that this may happen - supposed to be a bug in Schannel (with TLS 1.3?)
+            shutdown = true; // skips sending the shutdown alert
+            disconnectFromHost();
+            setErrorAndEmit(d, QAbstractSocket::SslInternalError, schannelErrorToString(status));
             break;
         } else if (status == SEC_I_CONTEXT_EXPIRED) {
             // 'remote' has initiated a shutdown
