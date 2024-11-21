@@ -48,15 +48,6 @@
 **
 ****************************************************************************/
 
-//! [0]
-double pi = 3.14;
-double e = 2.71;
-
-qSwap(pi, e);
-// pi == 2.71, e == 3.14
-//! [0]
-
-
 //! [1]
 QList<Employee *> list;
 list.append(new Employee("Blackpool", "Stephen"));

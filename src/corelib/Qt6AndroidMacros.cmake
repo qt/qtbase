@@ -38,7 +38,17 @@ function(qt6_android_generate_deployment_settings target)
     if (NOT target_output_name)
         set(target_output_name ${target})
     endif()
-    set(deploy_file "${target_binary_dir}/android-${target_output_name}-deployment-settings.json")
+
+    # QtCreator requires the file name of deployment settings has no config related suffixes
+    # to run androiddeployqt correctly. If we use multi-config generator for the first config
+    # in a list avoid adding any configuration-specific suffixes.
+    get_cmake_property(is_multi_config GENERATOR_IS_MULTI_CONFIG)
+    if(is_multi_config)
+        list(GET CMAKE_CONFIGURATION_TYPES 0 first_config_type)
+        set(config_suffix "$<$<NOT:$<CONFIG:${first_config_type}>>:-$<CONFIG>>")
+    endif()
+    set(deploy_file
+      "${target_binary_dir}/android-${target}-deployment-settings${config_suffix}.json")
 
     set(file_contents "{\n")
     # content begin

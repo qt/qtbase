@@ -788,7 +788,7 @@ void QDockWidgetPrivate::initDrag(const QPoint &pos, bool nca)
     state = new QDockWidgetPrivate::DragState;
     state->pressPos = pos;
     state->globalPressPos = q->mapToGlobal(pos);
-    state->widgetInitialPos = q->pos();
+    state->widgetInitialPos = q->isFloating() ? q->pos() : q->mapToGlobal(QPoint(0, 0));
     state->dragging = false;
     state->widgetItem = nullptr;
     state->ownWidgetItem = false;
@@ -908,11 +908,15 @@ Qt::DockWidgetArea QDockWidgetPrivate::toDockWidgetArea(QInternal::DockPosition 
 
 void QDockWidgetPrivate::setResizerActive(bool active)
 {
+#ifdef Q_OS_WINDOWS
+    Q_UNUSED(active);
+#else
     Q_Q(QDockWidget);
     if (active && !resizer)
         resizer = new QWidgetResizeHandler(q);
     if (resizer)
         resizer->setEnabled(active);
+#endif
 }
 
 bool QDockWidgetPrivate::isAnimating() const
@@ -1221,9 +1225,8 @@ void QDockWidgetPrivate::setWindowState(bool floating, bool unplug, const QRect 
 
     q->setWindowFlags(flags);
 
-
     if (!rect.isNull())
-            q->setGeometry(rect);
+        q->setGeometry(rect);
 
     updateButtons();
 

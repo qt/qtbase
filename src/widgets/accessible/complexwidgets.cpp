@@ -317,17 +317,19 @@ QAccessibleComboBox::QAccessibleComboBox(QWidget *w)
 */
 QComboBox *QAccessibleComboBox::comboBox() const
 {
-    return qobject_cast<QComboBox*>(object());
+    return qobject_cast<QComboBox *>(object());
 }
 
 QAccessibleInterface *QAccessibleComboBox::child(int index) const
 {
-    if (index == 0) {
-        QAbstractItemView *view = comboBox()->view();
-        //QWidget *parent = view ? view->parentWidget() : 0;
-        return QAccessible::queryAccessibleInterface(view);
-    } else if (index == 1 && comboBox()->isEditable()) {
-        return QAccessible::queryAccessibleInterface(comboBox()->lineEdit());
+    if (QComboBox *cBox = comboBox()) {
+        if (index == 0) {
+            QAbstractItemView *view = cBox->view();
+            //QWidget *parent = view ? view->parentWidget() : 0;
+            return QAccessible::queryAccessibleInterface(view);
+        } else if (index == 1 && cBox->isEditable()) {
+            return QAccessible::queryAccessibleInterface(cBox->lineEdit());
+        }
     }
     return nullptr;
 }
@@ -335,22 +337,28 @@ QAccessibleInterface *QAccessibleComboBox::child(int index) const
 int QAccessibleComboBox::childCount() const
 {
     // list and text edit
-    return comboBox()->isEditable() ? 2 : 1;
+    if (QComboBox *cBox = comboBox())
+        return (cBox->isEditable()) ? 2 : 1;
+    return 0;
 }
 
 QAccessibleInterface *QAccessibleComboBox::childAt(int x, int y) const
 {
-    if (comboBox()->isEditable() && comboBox()->lineEdit()->rect().contains(x, y))
-        return child(1);
+    if (QComboBox *cBox = comboBox()) {
+        if (cBox->isEditable() && cBox->lineEdit()->rect().contains(x, y))
+            return child(1);
+    }
     return nullptr;
 }
 
 int QAccessibleComboBox::indexOfChild(const QAccessibleInterface *child) const
 {
-    if (comboBox()->view() == child->object())
-        return 0;
-    if (comboBox()->isEditable() && comboBox()->lineEdit() == child->object())
-        return 1;
+    if (QComboBox *cBox = comboBox()) {
+        if (cBox->view() == child->object())
+            return 0;
+        if (cBox->isEditable() && cBox->lineEdit() == child->object())
+            return 1;
+    }
     return -1;
 }
 
@@ -359,8 +367,10 @@ QAccessibleInterface *QAccessibleComboBox::focusChild() const
     // The editable combobox is the focus proxy of its lineedit, so the
     // lineedit itself never gets focus. But it is the accessible focus
     // child of an editable combobox.
-    if (comboBox()->isEditable())
-        return child(1);
+    if (QComboBox *cBox = comboBox()) {
+        if (cBox->isEditable())
+            return child(1);
+    }
     return nullptr;
 }
 
@@ -368,29 +378,30 @@ QAccessibleInterface *QAccessibleComboBox::focusChild() const
 QString QAccessibleComboBox::text(QAccessible::Text t) const
 {
     QString str;
-
-    switch (t) {
-    case QAccessible::Name:
+    if (QComboBox *cBox = comboBox()) {
+        switch (t) {
+        case QAccessible::Name:
 #ifndef Q_OS_UNIX // on Linux we use relations for this, name is text (fall through to Value)
         str = QAccessibleWidget::text(t);
         break;
 #endif
-    case QAccessible::Value:
-        if (comboBox()->isEditable())
-            str = comboBox()->lineEdit()->text();
-        else
-            str = comboBox()->currentText();
-        break;
+        case QAccessible::Value:
+            if (cBox->isEditable())
+                str = cBox->lineEdit()->text();
+            else
+                str = cBox->currentText();
+            break;
 #ifndef QT_NO_SHORTCUT
-    case QAccessible::Accelerator:
-        str = QKeySequence(Qt::Key_Down).toString(QKeySequence::NativeText);
-        break;
+        case QAccessible::Accelerator:
+            str = QKeySequence(Qt::Key_Down).toString(QKeySequence::NativeText);
+            break;
 #endif
-    default:
-        break;
+        default:
+            break;
+        }
+        if (str.isEmpty())
+            str = QAccessibleWidget::text(t);
     }
-    if (str.isEmpty())
-        str = QAccessibleWidget::text(t);
     return str;
 }
 
@@ -398,9 +409,10 @@ QAccessible::State QAccessibleComboBox::state() const
 {
     QAccessible::State s = QAccessibleWidget::state();
 
-    s.expandable = true;
-    s.expanded = isValid() && comboBox()->view()->isVisible();
-
+    if (QComboBox *cBox = comboBox()) {
+        s.expandable = true;
+        s.expanded = isValid() && cBox->view()->isVisible();
+    }
     return s;
 }
 
@@ -418,26 +430,28 @@ QString QAccessibleComboBox::localizedActionDescription(const QString &actionNam
 
 void QAccessibleComboBox::doAction(const QString &actionName)
 {
-    if (actionName == showMenuAction() || actionName == pressAction()) {
-        if (comboBox()->view()->isVisible()) {
+    if (QComboBox *cBox = comboBox()) {
+        if (actionName == showMenuAction() || actionName == pressAction()) {
+            if (cBox->view()->isVisible()) {
 #if defined(Q_OS_ANDROID)
-            const auto list = child(0)->tableInterface();
-            if (list && list->selectedRowCount() > 0) {
-                comboBox()->setCurrentIndex(list->selectedRows().at(0));
-            }
-            comboBox()->setFocus();
+                const auto list = child(0)->tableInterface();
+                if (list && list->selectedRowCount() > 0) {
+                    cBox->setCurrentIndex(list->selectedRows().at(0));
+                }
+                cBox->setFocus();
 #endif
-            comboBox()->hidePopup();
-        } else {
-            comboBox()->showPopup();
+                cBox->hidePopup();
+            } else {
+                cBox->showPopup();
 #if defined(Q_OS_ANDROID)
-            const auto list = child(0)->tableInterface();
-            if (list && list->selectedRowCount() > 0) {
-                auto selectedCells = list->selectedCells();
-                QAccessibleEvent ev(selectedCells.at(0),QAccessible::Focus);
-                QAccessible::updateAccessibility(&ev);
-            }
+                const auto list = child(0)->tableInterface();
+                if (list && list->selectedRowCount() > 0) {
+                    auto selectedCells = list->selectedCells();
+                    QAccessibleEvent ev(selectedCells.at(0),QAccessible::Focus);
+                    QAccessible::updateAccessibility(&ev);
+                }
 #endif
+            }
         }
     }
 }

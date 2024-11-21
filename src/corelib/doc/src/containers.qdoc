@@ -433,16 +433,16 @@
     \l{QHash}.
 
     \row \li \l{QMap}<Key, T>
-    \li Similar to std::map<T>.
+    \li Similar to std::map<Key, T>.
 
     \row \li \l{QMultiMap}<Key, T>
-    \li Similar to std::multimap<T>.
+    \li Similar to std::multimap<Key, T>.
 
     \row \li \l{QHash}<Key, T>
-    \li Most similar to std::unordered_map<T>.
+    \li Most similar to std::unordered_map<Key, T>.
 
     \row \li \l{QMultiHash}<Key, T>
-    \li Most similar to std::unordered_multimap<T>.
+    \li Most similar to std::unordered_multimap<Key, T>.
 
     \endtable
 

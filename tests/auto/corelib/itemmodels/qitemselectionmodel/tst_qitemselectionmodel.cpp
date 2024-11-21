@@ -105,7 +105,11 @@ private slots:
 
     void QTBUG93305();
 
+    void testSignalsDisconnection();
+    void destroyModel();
+
 private:
+    static void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg);
     QAbstractItemModel *model;
     QItemSelectionModel *selection;
 };
@@ -2941,6 +2945,65 @@ void tst_QItemSelectionModel::QTBUG93305()
     QVERIFY(selection->hasSelection());
     QCOMPARE(spy.count(), 4);
 }
+
+static void (*oldMessageHandler)(QtMsgType, const QMessageLogContext&, const QString&) = nullptr;
+static bool signalError = false;
+static bool seenWarning = false;
+
+// detect disconnect warning:
+// qt.core.qobject.connect: QObject::disconnect: No such signal
+void tst_QItemSelectionModel::messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+{
+    Q_ASSERT(oldMessageHandler);
+
+    if (type == QtWarningMsg) {
+       seenWarning = true;
+       if (QString(context.category) == "qt.core.qobject.connect"
+           && msg.contains("No such")) {
+        signalError = true;
+       }
+    }
+
+    return oldMessageHandler(type, context, msg);
+}
+
+#define SETMSGHANDLER\
+    signalError = false;\
+    seenWarning = false;\
+    oldMessageHandler = qInstallMessageHandler(messageHandler);\
+    auto resetMessageHandler = qScopeGuard([] { qInstallMessageHandler(oldMessageHandler); })
+
+void tst_QItemSelectionModel::testSignalsDisconnection()
+{
+    SETMSGHANDLER;
+    auto *newModel = new QStandardItemModel(model);
+    selection->setModel(newModel);
+    QSignalSpy spy(newModel, &QObject::destroyed);
+    delete newModel;
+    QTRY_COMPARE(spy.count(), 1);
+    qDebug() << spy;
+    selection->setModel(nullptr);
+    QVERIFY(!signalError);
+}
+
+void tst_QItemSelectionModel::destroyModel()
+{
+    SETMSGHANDLER;
+    auto itemModel = std::make_unique<QStandardItemModel>(5, 5);
+    auto selectionModel = std::make_unique<QItemSelectionModel>();
+    selectionModel->setModel(itemModel.get());
+    selectionModel->select(itemModel->index(0, 0), QItemSelectionModel::Select);
+    QVERIFY(!selectionModel->selection().isEmpty());
+    selectionModel->setCurrentIndex(itemModel->index(1, 0), QItemSelectionModel::Select);
+    QVERIFY(selectionModel->currentIndex().isValid());
+
+    itemModel.reset();
+    QVERIFY(!seenWarning);
+    QVERIFY(!selectionModel->currentIndex().isValid());
+    QVERIFY(selectionModel->selection().isEmpty());
+}
+
+#undef SETMSGHANDLER
 
 QTEST_MAIN(tst_QItemSelectionModel)
 #include "tst_qitemselectionmodel.moc"

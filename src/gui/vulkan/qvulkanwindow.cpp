@@ -1909,7 +1909,7 @@ void QVulkanWindowPrivate::beginFrame()
     }
 
     if (frameGrabbing)
-        frameGrabTargetImage = QImage(swapChainImageSize, QImage::Format_RGBA8888);
+        frameGrabTargetImage = QImage(swapChainImageSize, QImage::Format_RGBA8888); // the format is as documented
 
     if (renderer) {
         framePending = true;
@@ -2696,6 +2696,12 @@ bool QVulkanWindow::supportsGrab() const
     incomplete image, that has the correct size but not the content yet. The
     content will be delivered via the frameGrabbed() signal in the latter case.
 
+    The returned QImage always has a format of QImage::Format_RGBA8888. If the
+    colorFormat() is \c VK_FORMAT_B8G8R8A8_UNORM, the red and blue channels are
+    swapped automatically since this format is commonly used as the default
+    choice for swapchain color buffers. With any other color buffer format,
+    there is no conversion performed by this function.
+
     \note This function should not be called when a frame is in progress
     (that is, frameReady() has not yet been called back by the application).
 
@@ -2723,6 +2729,9 @@ QImage QVulkanWindow::grab()
 
     d->frameGrabbing = true;
     d->beginFrame();
+
+    if (d->colorFormat == VK_FORMAT_B8G8R8A8_UNORM)
+        d->frameGrabTargetImage = d->frameGrabTargetImage.rgbSwapped();
 
     return d->frameGrabTargetImage;
 }

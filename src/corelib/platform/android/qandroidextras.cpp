@@ -695,6 +695,45 @@ QAndroidBinder* QAndroidService::onBind(const QAndroidIntent &/*intent*/)
     return nullptr;
 }
 
+static jboolean onTransact(JNIEnv */*env*/, jclass /*cls*/, jlong id, jint code, jobject data,
+                           jobject reply, jint flags)
+{
+    if (!id)
+        return false;
+
+    return reinterpret_cast<QAndroidBinder*>(id)->onTransact(
+            code, QAndroidParcel(data), QAndroidParcel(reply), QAndroidBinder::CallType(flags));
+}
+
+static void onServiceConnected(JNIEnv */*env*/, jclass /*cls*/, jlong id, jstring name,
+                               jobject service)
+{
+    if (!id)
+        return;
+
+    return reinterpret_cast<QAndroidServiceConnection *>(id)->onServiceConnected(
+            QJniObject(name).toString(), QAndroidBinder(service));
+}
+
+static void onServiceDisconnected(JNIEnv */*env*/, jclass /*cls*/, jlong id, jstring name)
+{
+    if (!id)
+        return;
+
+    return reinterpret_cast<QAndroidServiceConnection *>(id)->onServiceDisconnected(
+            QJniObject(name).toString());
+}
+
+bool QtAndroidPrivate::registerExtrasNatives(QJniEnvironment &env)
+{
+    static const JNINativeMethod methods[] = {
+        {"onTransact", "(JILandroid/os/Parcel;Landroid/os/Parcel;I)Z", (void *)onTransact},
+        {"onServiceConnected", "(JLjava/lang/String;Landroid/os/IBinder;)V", (void *)onServiceConnected},
+        {"onServiceDisconnected", "(JLjava/lang/String;)V", (void *)onServiceDisconnected}
+    };
+
+    return env.registerNativeMethods("org/qtproject/qt/android/extras/QtNative", methods, 3);
+}
 
 /*!
     \class QAndroidIntent
@@ -1311,7 +1350,7 @@ QtAndroidPrivate::checkPermission(QtAndroidPrivate::PermissionType permission)
     return future;
 }
 
-bool QtAndroidPrivate::registerPermissionNatives()
+bool QtAndroidPrivate::registerPermissionNatives(QJniEnvironment &env)
 {
     if (QtAndroidPrivate::androidSdkVersion() < 23)
         return true;
@@ -1321,7 +1360,6 @@ bool QtAndroidPrivate::registerPermissionNatives()
          reinterpret_cast<void *>(sendRequestPermissionsResult)
         }};
 
-    QJniEnvironment env;
     return env.registerNativeMethods(qtNativeClassName, methods, 1);
 }
 

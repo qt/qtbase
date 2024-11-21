@@ -702,7 +702,7 @@ QByteArray QByteArrayView::toByteArray() const
 }
 
 inline namespace QtLiterals {
-inline QByteArray operator"" _qba(const char *str, size_t size) noexcept
+inline QByteArray operator""_qba(const char *str, size_t size) noexcept
 {
     return QByteArray(QByteArrayData(nullptr, const_cast<char *>(str), qsizetype(size)));
 }

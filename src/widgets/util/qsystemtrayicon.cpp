@@ -206,7 +206,7 @@ void QSystemTrayIcon::setContextMenu(QMenu *menu)
     if (oldMenu != menu && d->qpa_sys) {
         // Show the QMenu-based menu for QPA plugins that do not provide native menus
         if (oldMenu && !oldMenu->platformMenu())
-            QObject::disconnect(d->qpa_sys, &QPlatformSystemTrayIcon::contextMenuRequested, menu, nullptr);
+            QObject::disconnect(d->qpa_sys, &QPlatformSystemTrayIcon::contextMenuRequested, oldMenu, nullptr);
         if (menu && !menu->platformMenu()) {
             QObject::connect(d->qpa_sys, &QPlatformSystemTrayIcon::contextMenuRequested,
                              menu,

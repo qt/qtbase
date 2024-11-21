@@ -99,7 +99,7 @@ bool Qt::mightBeRichText(const QString& text)
 {
     if (text.isEmpty())
         return false;
-    int start = 0;
+    qsizetype start = 0;
 
     while (start < text.length() && text.at(start).isSpace())
         ++start;
@@ -122,7 +122,7 @@ bool Qt::mightBeRichText(const QString& text)
 
     if (QStringView{text}.mid(start, 5).compare(QLatin1String("<!doc"), Qt::CaseInsensitive) == 0)
         return true;
-    int open = start;
+    qsizetype open = start;
     while (open < text.length() && text.at(open) != QLatin1Char('<')
             && text.at(open) != QLatin1Char('\n')) {
         if (text.at(open) == QLatin1Char('&') &&  QStringView{text}.mid(open + 1, 3) == QLatin1String("lt;"))
@@ -130,10 +130,10 @@ bool Qt::mightBeRichText(const QString& text)
         ++open;
     }
     if (open < text.length() && text.at(open) == QLatin1Char('<')) {
-        const int close = text.indexOf(QLatin1Char('>'), open);
+        const qsizetype close = text.indexOf(QLatin1Char('>'), open);
         if (close > -1) {
             QString tag;
-            for (int i = open+1; i < close; ++i) {
+            for (qsizetype i = open+1; i < close; ++i) {
                 if (text[i].isDigit() || text[i].isLetter())
                     tag += text[i];
                 else if (!tag.isEmpty() && text[i].isSpace())
@@ -165,12 +165,12 @@ bool Qt::mightBeRichText(const QString& text)
 */
 QString Qt::convertFromPlainText(const QString &plain, Qt::WhiteSpaceMode mode)
 {
-    int col = 0;
+    qsizetype col = 0;
     QString rich;
     rich += QLatin1String("<p>");
-    for (int i = 0; i < plain.length(); ++i) {
+    for (qsizetype i = 0; i < plain.length(); ++i) {
         if (plain[i] == QLatin1Char('\n')){
-            int c = 1;
+            qsizetype c = 1;
             while (i+1 < plain.length() && plain[i+1] == QLatin1Char('\n')) {
                 i++;
                 c++;
@@ -3402,7 +3402,7 @@ void QTextHtmlExporter::emitFrameStyle(const QTextFrameFormat &format, FrameType
 {
     QLatin1String styleAttribute(" style=\"");
     html += styleAttribute;
-    const int originalHtmlLength = html.length();
+    const qsizetype originalHtmlLength = html.length();
 
     if (frameType == TextFrame)
         html += QLatin1String("-qt-table-type: frame;");

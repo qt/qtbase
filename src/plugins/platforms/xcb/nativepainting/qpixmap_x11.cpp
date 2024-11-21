@@ -1350,7 +1350,7 @@ QBitmap QX11PlatformPixmap::mask() const
 #endif
     if (d == 1) {
         QX11PlatformPixmap *that = const_cast<QX11PlatformPixmap*>(this);
-        mask = QPixmap(that);
+        mask = QBitmap::fromPixmap(QPixmap(that));
     } else {
         mask = mask_to_bitmap(xinfo.screen());
     }

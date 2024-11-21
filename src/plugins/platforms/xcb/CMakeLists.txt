@@ -4,6 +4,11 @@
 ## XcbQpaPrivate Module:
 #####################################################################
 
+if(GCC)
+    # Work around GCC ABI issues
+    add_compile_options(-Wno-psabi)
+endif()
+
 qt_internal_add_module(XcbQpaPrivate
     CONFIG_MODULE_NAME xcb_qpa_lib
     INTERNAL_MODULE

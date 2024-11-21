@@ -28,6 +28,7 @@ sles-15
 # QTBUG-87668
 [showMinimizedKeepsFocus]
 android
+macos-14 ci
 [normalGeometry]
 android
 [saveRestoreGeometry]
@@ -54,3 +55,5 @@ android
 android
 [optimizedResize_topLevel]
 android
+[hoverPosition]
+macos-14 x86

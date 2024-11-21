@@ -108,8 +108,10 @@
 #  endif
 #  define Q_DECL_EXPORT __declspec(dllexport)
 #  define Q_DECL_IMPORT __declspec(dllimport)
-#  define QT_MAKE_UNCHECKED_ARRAY_ITERATOR(x) stdext::make_unchecked_array_iterator(x) // Since _MSC_VER >= 1800
-#  define QT_MAKE_CHECKED_ARRAY_ITERATOR(x, N) stdext::make_checked_array_iterator(x, size_t(N)) // Since _MSC_VER >= 1500
+#  if _MSC_VER < 1938 // stdext is deprecated since VS 2022 17.8
+#    define QT_MAKE_UNCHECKED_ARRAY_ITERATOR(x) stdext::make_unchecked_array_iterator(x) // Since _MSC_VER >= 1800
+#    define QT_MAKE_CHECKED_ARRAY_ITERATOR(x, N) stdext::make_checked_array_iterator(x, size_t(N)) // Since _MSC_VER >= 1500
+#  endif
 /* Intel C++ disguising as Visual C++: the `using' keyword avoids warnings */
 #  if defined(__INTEL_COMPILER)
 #    undef Q_CC_MSVC_ONLY
@@ -1054,6 +1056,11 @@
 #  undef Q_COMPILER_REF_QUALIFIERS
 // Also disable <atomic>, since it's clearly not there
 #  undef Q_COMPILER_ATOMICS
+# endif
+# if defined(Q_CC_CLANG) && defined(Q_OS_MAC) && defined(__cpp_lib_memory_resource) \
+   && ((defined(__MAC_OS_X_VERSION_MIN_REQUIRED)  && __MAC_OS_X_VERSION_MIN_REQUIRED  < 140000) \
+    || (defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && __IPHONE_OS_VERSION_MIN_REQUIRED < 170000))
+#  undef __cpp_lib_memory_resource // Only supported on macOS 14 and iOS 17
 # endif
 # if defined(Q_CC_CLANG) && defined(Q_CC_INTEL) && Q_CC_INTEL >= 1500
 // ICC 15.x and 16.0 have their own implementation of std::atomic, which is activated when in Clang mode

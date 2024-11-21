@@ -1001,19 +1001,18 @@ void QHttpNetworkConnectionPrivate::removeReply(QHttpNetworkReply *reply)
                return;
             }
         }
-#ifndef QT_NO_SSL
         // is the reply inside the H2 pipeline of this channel already?
-        QMultiMap<int, HttpMessagePair>::iterator it = channels[i].h2RequestsToSend.begin();
-        QMultiMap<int, HttpMessagePair>::iterator end = channels[i].h2RequestsToSend.end();
-        for (; it != end; ++it) {
-            if (it.value().second == reply) {
-                channels[i].h2RequestsToSend.remove(it.key());
-
-                QMetaObject::invokeMethod(q, "_q_startNextRequest", Qt::QueuedConnection);
-                return;
-            }
+        const auto foundReply = [reply](const HttpMessagePair &pair) {
+            return pair.second == reply;
+        };
+        auto &seq = channels[i].h2RequestsToSend;
+        const auto end = seq.cend();
+        auto it = std::find_if(seq.cbegin(), end, foundReply);
+        if (it != end) {
+            seq.erase(it);
+            QMetaObject::invokeMethod(q, "_q_startNextRequest", Qt::QueuedConnection);
+            return;
         }
-#endif
     }
     // remove from the high priority queue
     if (!highPriorityQueue.isEmpty()) {
@@ -1057,6 +1056,11 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
     //resend the necessary ones.
     for (int i = 0; i < activeChannelCount; ++i) {
         if (channels[i].resendCurrent && (channels[i].state != QHttpNetworkConnectionChannel::ClosingState)) {
+            if (!channels[i].socket
+                || channels[i].socket->state() == QAbstractSocket::UnconnectedState) {
+                if (!channels[i].ensureConnection())
+                    continue;
+            }
             channels[i].resendCurrent = false;
 
             // if this is not possible, error will be emitted and connection terminated

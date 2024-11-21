@@ -274,10 +274,14 @@ static constexpr const auto KeyTbl = qMakeArray(
         Xkb2Qt<XKB_KEY_dead_small_schwa,        Qt::Key_Dead_Small_Schwa>,
         Xkb2Qt<XKB_KEY_dead_capital_schwa,      Qt::Key_Dead_Capital_Schwa>,
         Xkb2Qt<XKB_KEY_dead_greek,              Qt::Key_Dead_Greek>,
+/* The following four XKB_KEY_dead keys got removed in libxkbcommon 1.6.0
+   The define check is kind of version check here. */
+#ifdef XKB_KEY_dead_lowline
         Xkb2Qt<XKB_KEY_dead_lowline,            Qt::Key_Dead_Lowline>,
         Xkb2Qt<XKB_KEY_dead_aboveverticalline,  Qt::Key_Dead_Aboveverticalline>,
         Xkb2Qt<XKB_KEY_dead_belowverticalline,  Qt::Key_Dead_Belowverticalline>,
         Xkb2Qt<XKB_KEY_dead_longsolidusoverlay, Qt::Key_Dead_Longsolidusoverlay>,
+#endif
 
         // Special keys from X.org - This include multimedia keys,
         // wireless/bluetooth/uwb keys, special launcher keys, etc.
@@ -765,6 +769,8 @@ xkb_keysym_t QXkbCommon::lookupLatinKeysym(xkb_state *state, xkb_keycode_t keyco
 {
     xkb_layout_index_t layout;
     xkb_keysym_t sym = XKB_KEY_NoSymbol;
+    if (!state)
+        return sym;
     xkb_keymap *keymap = xkb_state_get_keymap(state);
     const xkb_layout_index_t layoutCount = xkb_keymap_num_layouts_for_key(keymap, keycode);
     const xkb_layout_index_t currentLayout = xkb_state_key_get_layout(state, keycode);

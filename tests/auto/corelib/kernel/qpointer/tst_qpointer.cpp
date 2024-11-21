@@ -44,6 +44,7 @@ public:
 
 private slots:
     void constructors();
+    void ctad();
     void destructor();
     void assignment_operators();
     void equality_operators();
@@ -67,6 +68,47 @@ void tst_QPointer::constructors()
     QCOMPARE(p1, QPointer<QObject>(0));
     QCOMPARE(p2, QPointer<QObject>(this));
     QCOMPARE(p3, QPointer<QObject>(this));
+}
+
+void tst_QPointer::ctad()
+{
+
+    {
+        QObject o;
+        QPointer po = &o;
+        static_assert(std::is_same_v<decltype(po), QPointer<QObject>>);
+        QPointer poc = po;
+        static_assert(std::is_same_v<decltype(poc), QPointer<QObject>>);
+        QPointer pom = std::move(po);
+        static_assert(std::is_same_v<decltype(pom), QPointer<QObject>>);
+    }
+    {
+        const QObject co;
+        QPointer pco = &co;
+        static_assert(std::is_same_v<decltype(pco), QPointer<const QObject>>);
+        QPointer pcoc = pco;
+        static_assert(std::is_same_v<decltype(pcoc), QPointer<const QObject>>);
+        QPointer pcom = std::move(pco);
+        static_assert(std::is_same_v<decltype(pcom), QPointer<const QObject>>);
+    }
+    {
+        QFile f;
+        QPointer pf = &f;
+        static_assert(std::is_same_v<decltype(pf), QPointer<QFile>>);
+        QPointer pfc = pf;
+        static_assert(std::is_same_v<decltype(pfc), QPointer<QFile>>);
+        QPointer pfm = std::move(pf);
+        static_assert(std::is_same_v<decltype(pfm), QPointer<QFile>>);
+    }
+    {
+        const QFile cf;
+        QPointer pcf = &cf;
+        static_assert(std::is_same_v<decltype(pcf), QPointer<const QFile>>);
+        QPointer pcfc = pcf;
+        static_assert(std::is_same_v<decltype(pcfc), QPointer<const QFile>>);
+        QPointer pcfm = std::move(pcf);
+        static_assert(std::is_same_v<decltype(pcfm), QPointer<const QFile>>);
+    }
 }
 
 void tst_QPointer::destructor()

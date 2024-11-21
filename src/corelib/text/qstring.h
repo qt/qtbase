@@ -1543,7 +1543,7 @@ qsizetype erase_if(QString &s, Predicate pred)
 }
 
 inline namespace QtLiterals {
-inline QString operator"" _qs(const char16_t *str, size_t size) noexcept
+inline QString operator""_qs(const char16_t *str, size_t size) noexcept
 {
     return QString(QStringPrivate(nullptr, const_cast<char16_t *>(str), qsizetype(size)));
 }

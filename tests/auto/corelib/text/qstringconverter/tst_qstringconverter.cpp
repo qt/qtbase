@@ -1837,14 +1837,18 @@ void tst_QStringConverter::encodingForName_data()
     QTest::newRow("latin1") << QByteArray("latin1") << std::optional<QStringConverter::Encoding>(QStringConverter::Latin1);
     QTest::newRow("latin2") << QByteArray("latin2") << std::optional<QStringConverter::Encoding>();
     QTest::newRow("latin15") << QByteArray("latin15") << std::optional<QStringConverter::Encoding>();
+    QTest::newRow("<empty>") << QByteArray("") << std::optional<QStringConverter::Encoding>();
+    QTest::newRow("<nullptr>") << QByteArray(nullptr) << std::optional<QStringConverter::Encoding>();
 }
 
 void tst_QStringConverter::encodingForName()
 {
-    QFETCH(QByteArray, name);
-    QFETCH(std::optional<QStringConverter::Encoding>, encoding);
+    QFETCH(const QByteArray, name);
+    QFETCH(const std::optional<QStringConverter::Encoding>, encoding);
 
-    auto e = QStringConverter::encodingForName(name);
+    const auto *ptr = name.isNull() ? nullptr : name.data();
+
+    const auto e = QStringConverter::encodingForName(ptr);
     QCOMPARE(e, encoding);
 }
 
