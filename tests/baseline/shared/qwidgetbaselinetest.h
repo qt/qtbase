@@ -28,6 +28,7 @@ private slots:
     void initTestCase();
     void init();
     void cleanup();
+    void cleanupTestCase();
 
 protected:
     void makeVisible();

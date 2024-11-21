@@ -100,6 +100,11 @@ void QWidgetBaselineTest::cleanup()
     window = nullptr;
 }
 
+void QWidgetBaselineTest::cleanupTestCase()
+{
+    QBaselineTest::finalizeAndDisconnect();
+}
+
 void QWidgetBaselineTest::makeVisible()
 {
     Q_ASSERT(window);
