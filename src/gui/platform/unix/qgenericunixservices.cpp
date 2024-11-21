@@ -373,6 +373,9 @@ private:
 
 QGenericUnixServices::QGenericUnixServices()
 {
+    if (desktopEnvironment() == QByteArrayLiteral("UNKNOWN"))
+        return;
+
 #if QT_CONFIG(dbus)
     if (qEnvironmentVariableIntValue("QT_NO_XDG_DESKTOP_PORTAL") > 0) {
         return;
