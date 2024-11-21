@@ -387,10 +387,11 @@ void QMenuPrivate::updateActionRects(const QRect &screen) const
 #if QT_CONFIG(shortcut)
     const bool contextMenu = isContextMenu();
 #endif
+    const bool menuSupportsSections = q->style()->styleHint(QStyle::SH_Menu_SupportsSections, nullptr, q);
     for(int i = 0; i <= lastVisibleAction; i++) {
         QAction *action = actions.at(i);
         const bool isSection = action->isSeparator() && (!action->text().isEmpty() || !action->icon().isNull());
-        const bool isPlainSeparator = (isSection && !q->style()->styleHint(QStyle::SH_Menu_SupportsSections))
+        const bool isPlainSeparator = (isSection && !menuSupportsSections)
                                    || (action->isSeparator() && !isSection);
 
         if (!action->isVisible() ||
@@ -517,7 +518,7 @@ QRect QMenuPrivate::actionRect(QAction *act) const
 void QMenuPrivate::hideUpToMenuBar()
 {
     Q_Q(QMenu);
-    bool fadeMenus = q->style()->styleHint(QStyle::SH_Menu_FadeOutOnHide);
+    bool fadeMenus = q->style()->styleHint(QStyle::SH_Menu_FadeOutOnHide, nullptr, q);
     if (!tornoff) {
         QWidget *caused = causedPopup.widget;
         hideMenu(q); //hide after getting causedPopup
@@ -585,7 +586,7 @@ void QMenuPrivate::hideMenu(QMenu *menu)
 
     aboutToHide = true;
     // Flash item which is about to trigger (if any).
-    if (menu && menu->style()->styleHint(QStyle::SH_Menu_FlashTriggeredItem)
+    if (menu && menu->style()->styleHint(QStyle::SH_Menu_FlashTriggeredItem, nullptr, stillAlive)
         && currentAction && currentAction == actionAboutToTrigger
         && menu->actions().contains(currentAction)) {
         QEventLoop eventLoop;
