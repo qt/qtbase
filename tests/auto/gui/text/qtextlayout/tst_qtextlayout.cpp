@@ -137,6 +137,7 @@ private slots:
     void standaloneInlineObject_wrapping();
     void standaloneInlineObject_eliding();
 #endif
+    void drawCursorOnTranslucentTarget_qtbug109173();
 
 private:
     QFont testFont;
@@ -3103,6 +3104,43 @@ void tst_QTextLayout::standaloneInlineObject_eliding()
     QVERIFY(elided.contains(QChar(0x2026)) || elided.contains(QLatin1String("...")));
 }
 #endif
+
+void tst_QTextLayout::drawCursorOnTranslucentTarget_qtbug109173()
+{
+    // QTBUG-109173: on a paint target with an alpha channel the cursor must
+    // not leave invalid premultiplied pixels (rgb <= alpha).
+    QImage image(64, 24, QImage::Format_ARGB32_Premultiplied);
+    const QColor background(0, 0, 0, 155); // matches rgba(0,0,0,155) from the bug.
+    image.fill(background);
+    const QImage reference = image;
+
+    QTextLayout layout("abc", testFont);
+    layout.beginLayout();
+    QTextLine line = layout.createLine();
+    line.setLineWidth(image.width());
+    layout.endLayout();
+
+    {
+        QPainter p(&image);
+        p.setPen(Qt::white);
+        layout.drawCursor(&p, QPointF(0, 0), /*cursorPosition=*/1, /*width=*/1);
+    }
+
+    QVERIFY2(image != reference, "cursor was not drawn on the translucent target");
+
+    for (int y = 0; y < image.height(); ++y) {
+        const QRgb *scan = reinterpret_cast<const QRgb *>(image.constScanLine(y));
+        for (int x = 0; x < image.width(); ++x) {
+            const QRgb pixel = scan[x];
+            const int a = qAlpha(pixel);
+            QVERIFY2(qRed(pixel)   <= a
+                     && qGreen(pixel) <= a
+                     && qBlue(pixel)  <= a,
+                     qPrintable(QString::asprintf(
+                         "non-premultiplied pixel at (%d,%d): 0x%08x", x, y, pixel)));
+        }
+    }
+}
 
 QTEST_MAIN(tst_QTextLayout)
 #include "tst_qtextlayout.moc"

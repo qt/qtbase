@@ -9,6 +9,7 @@
 #include <qfont.h>
 #include <qmath.h>
 #include <qpainter.h>
+#include <qimage.h>
 #include <qvarlengtharray.h>
 #include <qtextformat.h>
 #include <qabstracttextdocumentlayout.h>
@@ -1361,7 +1362,16 @@ void QTextLayout::drawCursor(QPainter *p, const QPointF &pos, int cursorPosition
     if (toggleAntialiasing)
         p->setRenderHint(QPainter::Antialiasing);
     QPainter::CompositionMode origCompositionMode = p->compositionMode();
-    if (p->paintEngine()->hasFeature(QPaintEngine::RasterOpModes))
+    // Raster ops are bitwise and break the premultiplied-alpha invariant when
+    // the target has an alpha channel (e.g. QGraphicsEffect's offscreen buffer,
+    // or a translucent top-level backing store), making the cursor vanish or
+    // punch an opaque hole. Fall back to SourceOver with the pen color in that
+    // case (QTBUG-109173).
+    QPaintDevice *targetDevice = p->paintEngine()->paintDevice();
+    const bool targetHasAlphaChannel = targetDevice
+            && targetDevice->devType() == QInternal::Image
+            && static_cast<QImage *>(targetDevice)->hasAlphaChannel();
+    if (!targetHasAlphaChannel && p->paintEngine()->hasFeature(QPaintEngine::RasterOpModes))
         p->setCompositionMode(QPainter::RasterOp_NotDestination);
     const QTransform &deviceTransform = p->deviceTransform();
     const qreal xScale = deviceTransform.m11();
