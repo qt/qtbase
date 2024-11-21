@@ -564,7 +564,7 @@ public:
         Q_Q(QWidget);
         if (qApp->autoSipEnabled()) {
             QStyle::RequestSoftwareInputPanel behavior = QStyle::RequestSoftwareInputPanel(
-                    q->style()->styleHint(QStyle::SH_RequestSoftwareInputPanel));
+                    q->style()->styleHint(QStyle::SH_RequestSoftwareInputPanel, nullptr, q));
             if (!clickCausedFocus || behavior == QStyle::RSIP_OnMouseClick) {
                 QGuiApplication::inputMethod()->show();
             }

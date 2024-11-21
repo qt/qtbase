@@ -259,7 +259,7 @@ QAccessible::State QAccessibleMenuItem::state() const
             s.focused = true;
 #endif
     }
-    if (own && own->style()->styleHint(QStyle::SH_Menu_MouseTracking))
+    if (own && own->style()->styleHint(QStyle::SH_Menu_MouseTracking, nullptr, own))
         s.hotTracked = true;
     if (m_action->isSeparator() || !m_action->isEnabled())
         s.disabled = true;
