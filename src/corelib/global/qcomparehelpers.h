@@ -1201,19 +1201,22 @@ using WrappedType = std::conditional_t<std::is_pointer_v<T>, Qt::totally_ordered
 // Check if compareThreeWay is implemented for the (LT, RT) argument
 // pair.
 template <typename LT, typename RT, typename = void>
-constexpr inline bool hasCompareThreeWay = false;
+struct HasCompareThreeWay : std::false_type {};
 
 template <typename LT, typename RT>
-constexpr inline bool hasCompareThreeWay<
+struct HasCompareThreeWay<
         LT, RT, std::void_t<decltype(compareThreeWay(std::declval<LT>(), std::declval<RT>()))>
-    > = true;
+    > : std::true_type {};
 
 template <typename LT, typename RT>
-constexpr inline bool hasCompareThreeWay<
+struct HasCompareThreeWay<
         LT*, RT*,
         std::void_t<decltype(compareThreeWay(std::declval<WrappedType<LT>>(),
                                              std::declval<WrappedType<RT>>()))>
-    > = true;
+    > : std::true_type {};
+
+template <typename LT, typename RT>
+constexpr inline bool hasCompareThreeWay_v = HasCompareThreeWay<LT, RT>::value;
 
 // Check if the operation is noexcept. We have two different overloads,
 // depending on the available compareThreeWay() implementation.
@@ -1221,12 +1224,13 @@ constexpr inline bool hasCompareThreeWay<
 // context.
 
 template <typename LT, typename RT,
-          std::enable_if_t<hasCompareThreeWay<LT, RT>, bool> = true>
+          std::enable_if_t<hasCompareThreeWay_v<LT, RT>, bool> = true>
 constexpr bool compareThreeWayNoexcept() noexcept
 { return noexcept(compareThreeWay(std::declval<LT>(), std::declval<RT>())); }
 
 template <typename LT, typename RT,
-          std::enable_if_t<!hasCompareThreeWay<LT, RT> && hasCompareThreeWay<RT, LT>,
+          std::enable_if_t<std::conjunction_v<std::negation<HasCompareThreeWay<LT, RT>>,
+                                              HasCompareThreeWay<RT, LT>>,
                            bool> = true>
 constexpr bool compareThreeWayNoexcept() noexcept
 { return noexcept(compareThreeWay(std::declval<RT>(), std::declval<LT>())); }
@@ -1319,7 +1323,7 @@ auto lexicographicalCompareThreeWay(InputIt1 first1, InputIt1 last1,
         namespace Test = QtOrderingPrivate::CompareThreeWayTester;
         // Need this because the user might provide only
         // compareThreeWay(LT, RT), but not the reversed version.
-        if constexpr (Test::hasCompareThreeWay<WrapLT, WrapRT>)
+        if constexpr (Test::hasCompareThreeWay_v<WrapLT, WrapRT>)
             return compareThreeWay(WrapLT(lhs), WrapRT(rhs));
         else
             return QtOrderingPrivate::reversed(compareThreeWay(WrapRT(rhs), WrapLT(lhs)));
@@ -1333,9 +1337,10 @@ namespace Qt {
 
 template <typename T, typename U>
 using if_has_qt_compare_three_way =
-        std::enable_if_t<QtOrderingPrivate::CompareThreeWayTester::hasCompareThreeWay<T, U>
-                            || QtOrderingPrivate::CompareThreeWayTester::hasCompareThreeWay<U, T>,
-                         bool>;
+        std::enable_if_t<
+            std::disjunction_v<QtOrderingPrivate::CompareThreeWayTester::HasCompareThreeWay<T, U>,
+                               QtOrderingPrivate::CompareThreeWayTester::HasCompareThreeWay<U, T>>,
+        bool>;
 
 } // namespace Qt
 
