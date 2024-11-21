@@ -502,38 +502,38 @@ bool QWasmWindow::processKey(const KeyEvent &event)
 
 void QWasmWindow::handleKeyForInputContextEvent(const emscripten::val &event)
 {
-    QWasmInputContext *wasmInput = QWasmIntegration::get()->wasmInputContext();
+    //
+    // Things to consider:
+    //
+    // (Alt + '̃~') + a      -> compose('~', 'a')
+    // (Compose) + '\'' + e -> compose('\'', 'e')
+    // complex (i.e Chinese et al) input handling
+    // Multiline text edit backspace at start of line
+    //
+    const QWasmInputContext *wasmInput = QWasmIntegration::get()->wasmInputContext();
     if (wasmInput) {
         const auto keyString = QString::fromStdString(event["key"].as<std::string>());
         qCDebug(qLcQpaWasmInputContext) << "Key callback" << keyString << keyString.size();
-
         if (keyString == "Unidentified") {
             // Android makes a bunch of KeyEvents as "Unidentified"
             // They will be processed just in InputContext.
             return;
+        } else if (event["isComposing"].as<bool>()) {
+            // Handled by the input context
+            return;
         } else if (event["ctrlKey"].as<bool>()
                 || event["altKey"].as<bool>()
                 || event["metaKey"].as<bool>()) {
-            if (processKeyForInputContext(*KeyEvent::fromWebWithDeadKeyTranslation(event, m_deadKeySupport)))
-                event.call<void>("preventDefault");
-            event.call<void>("stopImmediatePropagation");
-            return;
+            // Not all platforms use 'isComposing' for '~' + 'a', in this
+            // case send the key with state ('ctrl', 'alt', or 'meta') to
+            // processKeyForInputContext
+
+            ; // fallthrough
         } else if (keyString.size() != 1) {
-            if (!wasmInput->preeditString().isEmpty()) {
-                if (keyString == "Process" || keyString == "Backspace" || keyString == "Dead") {
-                    // processed by InputContext
-                    // "Process" should be handled by InputContext but
-                    // QWasmInputContext's function is incomplete now
-                    // so, there will be some exceptions here.
-                    return;
-                } else if (keyString != "Shift"
-                         && keyString != "Meta"
-                         && keyString != "Alt"
-                         && keyString != "Control"
-                         && !keyString.startsWith("Arrow")) {
-                    wasmInput->commitPreeditAndClear();
-                }
-            }
+            // This is like; 'Shift','ArrowRight','AltGraph', ...
+            // send all of these to processKeyForInputContext
+
+            ; // fallthrough
         } else if (wasmInput->inputMethodAccepted()) {
             // processed in inputContext with skipping processKey
             return;
@@ -571,13 +571,6 @@ bool QWasmWindow::processKeyForInputContext(const KeyEvent &event)
 
 void QWasmWindow::handlePointerEvent(const emscripten::val &event)
 {
-    // Ideally it should not be happened but
-    // it takes place sometime with some reason
-    // without compositionend.
-    QWasmInputContext *wasmInput = QWasmIntegration::get()->wasmInputContext();
-    if (wasmInput && !wasmInput->preeditString().isEmpty())
-        wasmInput->commitPreeditAndClear();
-
     if (processPointer(*PointerEvent::fromWeb(event)))
         event.call<void>("preventDefault");
 }
