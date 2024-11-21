@@ -37,6 +37,8 @@ public:
     QWaylandGLContext();
     QWaylandGLContext(EGLDisplay eglDisplay, QWaylandDisplay *display, const QSurfaceFormat &format, QPlatformOpenGLContext *share);
     ~QWaylandGLContext();
+
+    void initialize() override;
     void swapBuffers(QPlatformSurface *surface) override;
 
     bool makeCurrent(QPlatformSurface *surface) override;

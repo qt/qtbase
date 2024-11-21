@@ -5,6 +5,7 @@
 #include "qeglconvenience_p.h"
 #include "qeglpbuffer_p.h"
 #include <qpa/qplatformwindow.h>
+#include <QtGui/qopengl.h>
 #include <QtGui/qopenglcontext.h>
 #include <QtCore/qdebug.h>
 
@@ -56,6 +57,26 @@ QT_BEGIN_NAMESPACE
 #ifndef EGL_CONTEXT_OPENGL_COMPATIBILITY_PROFILE_BIT_KHR
 #define EGL_CONTEXT_OPENGL_COMPATIBILITY_PROFILE_BIT_KHR 0x00000002
 #endif
+#ifndef EGL_CONTEXT_OPENGL_RESET_NOTIFICATION_STRATEGY_KHR
+#define EGL_CONTEXT_OPENGL_RESET_NOTIFICATION_STRATEGY_KHR 0x31BD
+#endif
+#ifndef EGL_LOSE_CONTEXT_ON_RESET_KHR
+#define EGL_LOSE_CONTEXT_ON_RESET_KHR 0x31BF
+#endif
+#ifndef EGL_CONTEXT_OPENGL_ROBUST_ACCESS_BIT_KHR
+#define EGL_CONTEXT_OPENGL_ROBUST_ACCESS_BIT_KHR 0x00000004
+#endif
+
+// Constants from EGL_EXT_create_context_robustness
+#ifndef EGL_CONTEXT_OPENGL_ROBUST_ACCESS_EXT
+#define EGL_CONTEXT_OPENGL_ROBUST_ACCESS_EXT 0x30BF
+#endif
+#ifndef EGL_CONTEXT_OPENGL_RESET_NOTIFICATION_STRATEGY_EXT
+#define EGL_CONTEXT_OPENGL_RESET_NOTIFICATION_STRATEGY_EXT 0x3138
+#endif
+#ifndef EGL_LOSE_CONTEXT_ON_RESET_EXT
+#define EGL_LOSE_CONTEXT_ON_RESET_EXT 0x31BF
+#endif
 
 // Constants for OpenGL which are not available in the ES headers.
 #ifndef GL_CONTEXT_FLAGS
@@ -76,6 +97,17 @@ QT_BEGIN_NAMESPACE
 #ifndef GL_CONTEXT_COMPATIBILITY_PROFILE_BIT
 #define GL_CONTEXT_COMPATIBILITY_PROFILE_BIT 0x00000002
 #endif
+#ifndef GL_RESET_NOTIFICATION_STRATEGY
+#define GL_RESET_NOTIFICATION_STRATEGY 0x8256
+#endif
+#ifndef GL_LOSE_CONTEXT_ON_RESET
+#define GL_LOSE_CONTEXT_ON_RESET 0x8252
+#endif
+
+// Constants from EGL_NV_robustness_video_memory_purge
+#ifndef EGL_GENERATE_RESET_ON_VIDEO_MEMORY_PURGE_NV
+#define EGL_GENERATE_RESET_ON_VIDEO_MEMORY_PURGE_NV 0x334C
+#endif
 
 QEGLPlatformContext::QEGLPlatformContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display,
                                          EGLConfig *config, Flags flags)
@@ -89,55 +121,6 @@ QEGLPlatformContext::QEGLPlatformContext(const QSurfaceFormat &format, QPlatform
     // m_format now has the renderableType() resolved (it cannot be Default anymore)
     // but does not yet contain version, profile, options.
     m_shareContext = share ? static_cast<QEGLPlatformContext *>(share)->m_eglContext : nullptr;
-
-    QList<EGLint> contextAttrs;
-    contextAttrs.append(EGL_CONTEXT_CLIENT_VERSION);
-    contextAttrs.append(format.majorVersion());
-    const bool hasKHRCreateContext = q_hasEglExtension(m_eglDisplay, "EGL_KHR_create_context");
-    if (hasKHRCreateContext) {
-        contextAttrs.append(EGL_CONTEXT_MINOR_VERSION_KHR);
-        contextAttrs.append(format.minorVersion());
-        int flags = 0;
-        // The debug bit is supported both for OpenGL and OpenGL ES.
-        if (format.testOption(QSurfaceFormat::DebugContext))
-            flags |= EGL_CONTEXT_OPENGL_DEBUG_BIT_KHR;
-        // The fwdcompat bit is only for OpenGL 3.0+.
-        if (m_format.renderableType() == QSurfaceFormat::OpenGL
-            && format.majorVersion() >= 3
-            && !format.testOption(QSurfaceFormat::DeprecatedFunctions))
-            flags |= EGL_CONTEXT_OPENGL_FORWARD_COMPATIBLE_BIT_KHR;
-        if (flags) {
-            contextAttrs.append(EGL_CONTEXT_FLAGS_KHR);
-            contextAttrs.append(flags);
-        }
-        // Profiles are OpenGL only and mandatory in 3.2+. The value is silently ignored for < 3.2.
-        if (m_format.renderableType() == QSurfaceFormat::OpenGL) {
-            contextAttrs.append(EGL_CONTEXT_OPENGL_PROFILE_MASK_KHR);
-            contextAttrs.append(format.profile() == QSurfaceFormat::CoreProfile
-                                ? EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT_KHR
-                                : EGL_CONTEXT_OPENGL_COMPATIBILITY_PROFILE_BIT_KHR);
-        }
-    }
-
-#ifdef EGL_EXT_protected_content
-    if (format.testOption(QSurfaceFormat::ProtectedContent)) {
-        if (q_hasEglExtension(m_eglDisplay, "EGL_EXT_protected_content")) {
-            contextAttrs.append(EGL_PROTECTED_CONTENT_EXT);
-            contextAttrs.append(EGL_TRUE);
-        } else {
-            m_format.setOption(QSurfaceFormat::ProtectedContent, false);
-        }
-    }
-#endif
-
-    // Special Options for OpenVG surfaces
-    if (m_format.renderableType() == QSurfaceFormat::OpenVG) {
-        contextAttrs.append(EGL_ALPHA_MASK_SIZE);
-        contextAttrs.append(8);
-    }
-
-    contextAttrs.append(EGL_NONE);
-    m_contextAttrs = contextAttrs;
 
     switch (m_format.renderableType()) {
     case QSurfaceFormat::OpenVG:
@@ -153,17 +136,28 @@ QEGLPlatformContext::QEGLPlatformContext(const QSurfaceFormat &format, QPlatform
         break;
     }
 
+    m_contextAttrs = buildContextAttributes(format);
+
     eglBindAPI(m_api);
-    m_eglContext = eglCreateContext(m_eglDisplay, m_eglConfig, m_shareContext, contextAttrs.constData());
+    m_eglContext = eglCreateContext(m_eglDisplay, m_eglConfig, m_shareContext, m_contextAttrs.constData());
+
+    if (m_eglContext == EGL_NO_CONTEXT && format.testOption(QSurfaceFormat::ResetNotification)) {
+        QSurfaceFormat formatWithoutResetNotification = format;
+        formatWithoutResetNotification.setOption(QSurfaceFormat::ResetNotification, false);
+        m_contextAttrs = buildContextAttributes(formatWithoutResetNotification);
+        m_eglContext = eglCreateContext(m_eglDisplay, m_eglConfig, m_shareContext, m_contextAttrs.constData());
+    }
     if (m_eglContext == EGL_NO_CONTEXT && m_shareContext != EGL_NO_CONTEXT) {
         m_shareContext = nullptr;
-        m_eglContext = eglCreateContext(m_eglDisplay, m_eglConfig, nullptr, contextAttrs.constData());
+        m_eglContext = eglCreateContext(m_eglDisplay, m_eglConfig, nullptr, m_contextAttrs.constData());
     }
 
     if (m_eglContext == EGL_NO_CONTEXT) {
         qWarning("QEGLPlatformContext: Failed to create context: %x", eglGetError());
         return;
     }
+
+    m_getGraphicsResetStatus = reinterpret_cast<GLenum (QOPENGLF_APIENTRYP)()>(getProcAddress("glGetGraphicsResetStatusARB"));
 
     static const bool printConfig = qEnvironmentVariableIntValue("QT_QPA_EGLFS_DEBUG");
     if (printConfig) {
@@ -188,6 +182,87 @@ QEGLPlatformContext::QEGLPlatformContext(const QSurfaceFormat &format, QPlatform
 
     // Cannot just call updateFormatFromGL() since it relies on virtuals. Defer it to initialize().
 }
+
+QList<EGLint> QEGLPlatformContext::buildContextAttributes(const QSurfaceFormat &format)
+{
+    QList<EGLint> contextAttrs;
+    contextAttrs.append(EGL_CONTEXT_CLIENT_VERSION);
+    contextAttrs.append(format.majorVersion());
+    const bool hasKHRCreateContext = q_hasEglExtension(m_eglDisplay, "EGL_KHR_create_context");
+    if (hasKHRCreateContext) {
+        contextAttrs.append(EGL_CONTEXT_MINOR_VERSION_KHR);
+        contextAttrs.append(format.minorVersion());
+        int flags = 0;
+        // The debug bit is supported both for OpenGL and OpenGL ES.
+        if (format.testOption(QSurfaceFormat::DebugContext))
+            flags |= EGL_CONTEXT_OPENGL_DEBUG_BIT_KHR;
+        // The fwdcompat bit is only for OpenGL 3.0+.
+        if (m_format.renderableType() == QSurfaceFormat::OpenGL
+            && format.majorVersion() >= 3
+            && !format.testOption(QSurfaceFormat::DeprecatedFunctions))
+            flags |= EGL_CONTEXT_OPENGL_FORWARD_COMPATIBLE_BIT_KHR;
+
+        // Profiles are OpenGL only and mandatory in 3.2+. The value is silently ignored for < 3.2.
+        if (m_format.renderableType() == QSurfaceFormat::OpenGL) {
+            contextAttrs.append(EGL_CONTEXT_OPENGL_PROFILE_MASK_KHR);
+            contextAttrs.append(format.profile() == QSurfaceFormat::CoreProfile
+                                ? EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT_KHR
+                                : EGL_CONTEXT_OPENGL_COMPATIBILITY_PROFILE_BIT_KHR);
+        }
+
+        if (format.testOption(QSurfaceFormat::ResetNotification)) {
+            const bool haveResetOnVideoMemoryPurge = q_hasEglExtension(m_eglDisplay, "EGL_NV_robustness_video_memory_purge");
+
+            if (m_format.renderableType() == QSurfaceFormat::OpenGL) {
+                flags |= EGL_CONTEXT_OPENGL_ROBUST_ACCESS_BIT_KHR;
+                contextAttrs.append(EGL_CONTEXT_OPENGL_RESET_NOTIFICATION_STRATEGY_KHR);
+                contextAttrs.append(EGL_LOSE_CONTEXT_ON_RESET_KHR);
+                if (haveResetOnVideoMemoryPurge) {
+                    contextAttrs.append(EGL_GENERATE_RESET_ON_VIDEO_MEMORY_PURGE_NV);
+                    contextAttrs.append(EGL_TRUE);
+                }
+            } else if (m_format.renderableType() == QSurfaceFormat::OpenGLES) {
+                if (q_hasEglExtension(m_eglDisplay, "EGL_EXT_create_context_robustness")) {
+                    contextAttrs.append(EGL_CONTEXT_OPENGL_ROBUST_ACCESS_EXT);
+                    contextAttrs.append(EGL_TRUE);
+                    contextAttrs.append(EGL_CONTEXT_OPENGL_RESET_NOTIFICATION_STRATEGY_EXT);
+                    contextAttrs.append(EGL_LOSE_CONTEXT_ON_RESET_EXT);
+                    if (haveResetOnVideoMemoryPurge) {
+                        contextAttrs.append(EGL_GENERATE_RESET_ON_VIDEO_MEMORY_PURGE_NV);
+                        contextAttrs.append(EGL_TRUE);
+                    }
+                }
+            }
+        }
+
+        if (flags) {
+            contextAttrs.append(EGL_CONTEXT_FLAGS_KHR);
+            contextAttrs.append(flags);
+        }
+    }
+
+#ifdef EGL_EXT_protected_content
+    if (format.testOption(QSurfaceFormat::ProtectedContent)) {
+        if (q_hasEglExtension(m_eglDisplay, "EGL_EXT_protected_content")) {
+            contextAttrs.append(EGL_PROTECTED_CONTENT_EXT);
+            contextAttrs.append(EGL_TRUE);
+        } else {
+            m_format.setOption(QSurfaceFormat::ProtectedContent, false);
+        }
+    }
+#endif
+
+    // Special Options for OpenVG surfaces
+    if (m_format.renderableType() == QSurfaceFormat::OpenVG) {
+        contextAttrs.append(EGL_ALPHA_MASK_SIZE);
+        contextAttrs.append(8);
+    }
+
+    contextAttrs.append(EGL_NONE);
+    return contextAttrs;
+}
+
+
 
 void QEGLPlatformContext::adopt(EGLContext context, EGLDisplay display, QPlatformOpenGLContext *share)
 {
@@ -267,6 +342,54 @@ void QEGLPlatformContext::runGLChecks()
     // queries needing a context.
 }
 
+#ifndef QT_NO_OPENGL
+bool QEGLPlatformContext::hasExtension(const char *name)
+{
+    // glGetString(GL_EXTENSIONS) is deprecated in OpenGL 3.
+    if (m_format.renderableType() == QSurfaceFormat::OpenGL && m_format.majorVersion() >= 3) {
+#ifdef QT_OPENGL_3
+        typedef const GLubyte *(QOPENGLF_APIENTRYP qt_glGetStringi)(GLenum, GLuint);
+        const auto glGetStringi = reinterpret_cast<qt_glGetStringi>(getProcAddress("glGetStringi"));
+        if (!glGetStringi) {
+            return false;
+        }
+
+        int extensionCount = 0;
+        glGetIntegerv(GL_NUM_EXTENSIONS, &extensionCount);
+
+        for (int i = 0; i < extensionCount; ++i) {
+            const char *extensionName = reinterpret_cast<const char *>(glGetStringi(GL_EXTENSIONS, i));
+            if (strcmp(extensionName, name) == 0) {
+                return true;
+            }
+        }
+#endif
+
+        return false;
+    }
+
+    const size_t extensionSize = strlen(name);
+    const char *availableExtensions = reinterpret_cast<const char *>(glGetString(GL_EXTENSIONS));
+    const char *availableExtensionsEnd = availableExtensions + strlen(availableExtensions);
+
+    for (const char *cursor = availableExtensions; cursor < availableExtensionsEnd;) {
+        if (*cursor == ' ') {
+            cursor++;
+            continue;
+        }
+
+        const size_t n = strcspn(cursor, " ");
+        if (extensionSize == n && strncmp(name, cursor, n) == 0) {
+            return true;
+        }
+
+        cursor += n;
+    }
+
+    return false;
+}
+#endif
+
 void QEGLPlatformContext::updateFormatFromGL()
 {
 #ifndef QT_NO_OPENGL
@@ -329,6 +452,12 @@ void QEGLPlatformContext::updateFormatFromGL()
                     }
                 }
             }
+            if (hasExtension("GL_ARB_robustness")) {
+                GLint value = 0;
+                glGetIntegerv(GL_RESET_NOTIFICATION_STRATEGY, &value);
+                if (value == GL_LOSE_CONTEXT_ON_RESET)
+                    m_format.setOption(QSurfaceFormat::ResetNotification);
+            }
         }
         runGLChecks();
         eglMakeCurrent(prevDisplay, prevSurfaceDraw, prevSurfaceRead, prevContext);
@@ -349,6 +478,9 @@ bool QEGLPlatformContext::makeCurrent(QPlatformSurface *surface)
     eglBindAPI(m_api);
 
     EGLSurface eglSurface = eglSurfaceForPlatformSurface(surface);
+
+    if (!checkGraphicsReset())
+        return false;
 
     // shortcut: on some GPUs, eglMakeCurrent is not a cheap operation
     if (eglGetCurrentContext() == m_eglContext &&
@@ -848,6 +980,16 @@ EGLDisplay QEGLPlatformContext::eglDisplay() const
 EGLConfig QEGLPlatformContext::eglConfig() const
 {
     return m_eglConfig;
+}
+
+bool QEGLPlatformContext::checkGraphicsReset()
+{
+    if (m_getGraphicsResetStatus && m_getGraphicsResetStatus() != GL_NO_ERROR) {
+        invalidateContext();
+        return false;
+    } else {
+        return true;
+    }
 }
 
 QT_END_NAMESPACE

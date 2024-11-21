@@ -87,10 +87,16 @@ protected:
     virtual EGLSurface createTemporaryOffscreenSurface();
     virtual void destroyTemporaryOffscreenSurface(EGLSurface surface);
     virtual void runGLChecks();
+    bool checkGraphicsReset();
 
 private:
+    QList<EGLint> buildContextAttributes(const QSurfaceFormat &format);
     void adopt(EGLContext context, EGLDisplay display, QPlatformOpenGLContext *shareContext);
     void updateFormatFromGL();
+
+#ifndef QT_NO_OPENGL
+    bool hasExtension(const char *name);
+#endif
 
     EGLContext m_eglContext;
     EGLContext m_shareContext;
@@ -106,6 +112,7 @@ private:
     QList<EGLint> m_contextAttrs;
 
     bool m_markedInvalid = false;
+    GLenum (QOPENGLF_APIENTRYP m_getGraphicsResetStatus)() = nullptr;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QEGLPlatformContext::Flags)
