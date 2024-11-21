@@ -367,7 +367,7 @@ QSize QPushButton::sizeHint() const
     // calculate contents size...
 #if !defined(QT_NO_ICON) && QT_CONFIG(dialogbuttonbox)
     bool showButtonBoxIcons = qobject_cast<QDialogButtonBox*>(parentWidget())
-                          && style()->styleHint(QStyle::SH_DialogButtonBox_ButtonsHaveIcons);
+                          && style()->styleHint(QStyle::SH_DialogButtonBox_ButtonsHaveIcons, nullptr, this);
 
     if (!icon().isNull() || showButtonBoxIcons) {
         int ih = opt.iconSize.height();

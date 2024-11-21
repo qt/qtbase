@@ -43,7 +43,7 @@ void QSliderPrivate::init()
     tickInterval = 0;
     tickPosition = QSlider::NoTicks;
     hoverControl = QStyle::SC_None;
-    q->setFocusPolicy(Qt::FocusPolicy(q->style()->styleHint(QStyle::SH_Button_FocusPolicy)));
+    q->setFocusPolicy(Qt::FocusPolicy(q->style()->styleHint(QStyle::SH_Button_FocusPolicy, nullptr, q)));
     QSizePolicy sp(QSizePolicy::Expanding, QSizePolicy::Fixed, QSizePolicy::Slider);
     if (orientation == Qt::Vertical)
         sp.transpose();
@@ -333,7 +333,7 @@ void QSlider::mousePressEvent(QMouseEvent *ev)
         setEditFocus(true);
 #endif
     ev->accept();
-    if ((ev->button() & style()->styleHint(QStyle::SH_Slider_AbsoluteSetButtons)) == ev->button()) {
+    if ((ev->button() & style()->styleHint(QStyle::SH_Slider_AbsoluteSetButtons, nullptr, this)) == ev->button()) {
         QStyleOptionSlider opt;
         initStyleOption(&opt);
         const QRect sliderRect = style()->subControlRect(QStyle::CC_Slider, &opt, QStyle::SC_SliderHandle, this);
@@ -345,7 +345,7 @@ void QSlider::mousePressEvent(QMouseEvent *ev)
         setRepeatAction(SliderNoAction);
         d->pressedControl = QStyle::SC_SliderHandle;
         update();
-    } else if ((ev->button() & style()->styleHint(QStyle::SH_Slider_PageSetButtons)) == ev->button()) {
+    } else if ((ev->button() & style()->styleHint(QStyle::SH_Slider_PageSetButtons, nullptr, this)) == ev->button()) {
         QStyleOptionSlider opt;
         initStyleOption(&opt);
         d->pressedControl = style()->hitTestComplexControl(QStyle::CC_Slider,

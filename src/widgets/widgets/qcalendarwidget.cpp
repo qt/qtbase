@@ -1462,7 +1462,8 @@ void QCalendarView::mouseDoubleClickEvent(QMouseEvent *event)
 
     QDate date = handleMouseEvent(event);
     validDateClicked = false;
-    if (date == calendarModel->m_date && !style()->styleHint(QStyle::SH_ItemView_ActivateItemOnSingleClick)) {
+    if (date == calendarModel->m_date &&
+        !style()->styleHint(QStyle::SH_ItemView_ActivateItemOnSingleClick, nullptr, this)) {
         emit editingFinished();
     }
 }
@@ -1539,7 +1540,7 @@ void QCalendarView::mouseReleaseEvent(QMouseEvent *event)
         if (date.isValid()) {
             emit changeDate(date, true);
             emit clicked(date);
-            if (style()->styleHint(QStyle::SH_ItemView_ActivateItemOnSingleClick))
+            if (style()->styleHint(QStyle::SH_ItemView_ActivateItemOnSingleClick, nullptr, this))
                 emit editingFinished();
         }
         validDateClicked = false;

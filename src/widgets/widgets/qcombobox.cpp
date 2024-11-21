@@ -2897,7 +2897,7 @@ void QComboBox::hidePopup()
     QItemSelectionModel *selectionModel = d->container->itemView()
                                         ? d->container->itemView()->selectionModel() : nullptr;
     // Flash selected/triggered item (if any) before hiding the popup.
-    if (style()->styleHint(QStyle::SH_Menu_FlashTriggeredItem) &&
+    if (style()->styleHint(QStyle::SH_Menu_FlashTriggeredItem, nullptr, this) &&
         selectionModel && selectionModel->hasSelection()) {
         const QItemSelection selection = selectionModel->selection();
 

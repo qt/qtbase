@@ -326,7 +326,7 @@ void QAbstractButtonPrivate::init()
 {
     Q_Q(QAbstractButton);
 
-    q->setFocusPolicy(Qt::FocusPolicy(q->style()->styleHint(QStyle::SH_Button_FocusPolicy)));
+    q->setFocusPolicy(Qt::FocusPolicy(q->style()->styleHint(QStyle::SH_Button_FocusPolicy, nullptr, q)));
     q->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed, controlType));
     q->setAttribute(Qt::WA_WState_OwnSizePolicy, false);
     q->setForegroundRole(QPalette::ButtonText);

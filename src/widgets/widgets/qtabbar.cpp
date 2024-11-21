@@ -1758,7 +1758,7 @@ bool QTabBar::event(QEvent *event)
             if (isTabEnabled(tabIndex) && d->switchTabCurrentIndex != tabIndex) {
                 d->switchTabCurrentIndex = tabIndex;
                 d->switchTabTimer.start(
-                    style()->styleHint(QStyle::SH_TabBar_ChangeCurrentDelay) * 1ms, this);
+                    style()->styleHint(QStyle::SH_TabBar_ChangeCurrentDelay, nullptr, this) * 1ms, this);
             }
             event->ignore();
         }
@@ -2378,7 +2378,7 @@ void QTabBar::keyPressEvent(QKeyEvent *event)
 void QTabBar::wheelEvent(QWheelEvent *event)
 {
     Q_D(QTabBar);
-    if (style()->styleHint(QStyle::SH_TabBar_AllowWheelScrolling)) {
+    if (style()->styleHint(QStyle::SH_TabBar_AllowWheelScrolling, nullptr, this)) {
         const bool wheelVertical = qAbs(event->angleDelta().y()) > qAbs(event->angleDelta().x());
         const bool tabsVertical = verticalTabs(d->shape);
         if (event->device()->capabilities().testFlag(QInputDevice::Capability::PixelScroll)) {
