@@ -1802,7 +1802,7 @@ void QListViewPrivate::prepareItemsLayout()
     layoutBounds = QRect(QPoint(), q->maximumViewportSize());
 
     int frameAroundContents = 0;
-    if (q->style()->styleHint(QStyle::SH_ScrollView_FrameOnlyAroundContents)) {
+    if (q->style()->styleHint(QStyle::SH_ScrollView_FrameOnlyAroundContents, nullptr, q)) {
         QStyleOption option;
         option.initFrom(q);
         frameAroundContents = q->style()->pixelMetric(QStyle::PM_DefaultFrameWidth, &option, q) * 2;
