@@ -58,6 +58,9 @@
 #endif
 #include <QtGui/qaccessible.h>
 #include <QtCore/qmetaobject.h>
+#ifdef Q_OS_WASM
+#include <QtCore/private/qstdweb_p.h>
+#endif
 
 #if QT_CONFIG(shortcut)
 #include "private/qapplication_p.h"
@@ -504,6 +507,13 @@ void QWidgetTextControlPrivate::setContent(Qt::TextFormat format, const QString 
 
 void QWidgetTextControlPrivate::startDrag()
 {
+
+#ifdef Q_OS_WASM
+    // QDrag::exec() will crash without asyncify; disable drag instead.
+    if (!qstdweb::haveAsyncify())
+        return;
+#endif
+
 #if QT_CONFIG(draganddrop)
     Q_Q(QWidgetTextControl);
     mousePressed = false;
