@@ -1936,21 +1936,17 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
     case CC_TitleBar:
         painter->save();
         if (const QStyleOptionTitleBar *titleBar = qstyleoption_cast<const QStyleOptionTitleBar *>(option)) {
-            const int buttonMargin = 5;
-            bool active = (titleBar->titleBarState & State_Active);
-            QRect fullRect = titleBar->rect;
+            constexpr auto buttonMargins = QMargins(5, 5, 5, 5);
+            const bool active = (titleBar->titleBarState & State_Active);
+            const QRect &fullRect = titleBar->rect;
             const QPalette &palette = option->palette;
             const QColor highlight = palette.highlight().color();
             const QColor outline = d->outline(palette);
-
-            QColor titleBarFrameBorder(active ? highlight.darker(180): outline.darker(110));
-            QColor titleBarHighlight(active ? highlight.lighter(120): palette.window().color().lighter(120));
-            QColor textColor(active ? 0xffffff : 0xff000000);
-            QColor textAlphaColor(active ? 0xffffff : 0xff000000 );
+            const QColor buttonPaintingsColor(active ? 0xffffff : 0xff000000);
 
             {
                 // Fill title bar gradient
-                QColor titlebarColor = QColor(active ? highlight: palette.window().color());
+                const QColor titlebarColor = active ? highlight : palette.window().color();
                 QLinearGradient gradient(option->rect.center().x(), option->rect.top(),
                                          option->rect.center().x(), option->rect.bottom());
 
@@ -1961,11 +1957,11 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                 painter->fillRect(option->rect.adjusted(1, 1, -1, 0), gradient);
 
                 // Frame and rounded corners
-                painter->setPen(titleBarFrameBorder);
+                painter->setPen(active ? highlight.darker(180) : outline.darker(110));
 
                 // top outline
-                painter->drawLine(fullRect.left() + 5, fullRect.top(), fullRect.right() - 5, fullRect.top());
-                painter->drawLine(fullRect.left(), fullRect.top() + 4, fullRect.left(), fullRect.bottom());
+                const QLine lines[2] = {{fullRect.left() + 5, fullRect.top(), fullRect.right() - 5, fullRect.top()},
+                                        {fullRect.left(), fullRect.top() + 4, fullRect.left(), fullRect.bottom()}};
                 const QPoint points[5] = {
                     QPoint(fullRect.left() + 4, fullRect.top() + 1),
                     QPoint(fullRect.left() + 3, fullRect.top() + 1),
@@ -1973,6 +1969,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                     QPoint(fullRect.left() + 1, fullRect.top() + 3),
                     QPoint(fullRect.left() + 1, fullRect.top() + 4)
                 };
+                painter->drawLines(lines, 2);
                 painter->drawPoints(points, 5);
 
                 painter->drawLine(fullRect.right(), fullRect.top() + 4, fullRect.right(), fullRect.bottom());
@@ -1989,98 +1986,74 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                 painter->drawLine(fullRect.right(), fullRect.bottom(), fullRect.left(), fullRect.bottom());
 
                 // top highlight
-                painter->setPen(titleBarHighlight);
+                painter->setPen(active ? highlight.lighter(120): palette.window().color().lighter(120));
                 painter->drawLine(fullRect.left() + 6, fullRect.top() + 1, fullRect.right() - 6, fullRect.top() + 1);
             }
             // draw title
-            QRect textRect = proxy()->subControlRect(CC_TitleBar, titleBar, SC_TitleBarLabel, widget);
+            const QRect textRect = proxy()->subControlRect(CC_TitleBar, titleBar, SC_TitleBarLabel, widget);
             painter->setPen(active ? palette.text().color().lighter(120) : palette.text().color());
             // Note workspace also does elliding but it does not use the correct font
-            QString title = painter->fontMetrics().elidedText(titleBar->text, Qt::ElideRight, textRect.width() - 14);
+            const QString title =
+                painter->fontMetrics().elidedText(titleBar->text, Qt::ElideRight, textRect.width() - 14);
             painter->drawText(textRect.adjusted(1, 1, 1, 1), title, QTextOption(Qt::AlignHCenter | Qt::AlignVCenter));
             painter->setPen(Qt::white);
             if (active)
                 painter->drawText(textRect, title, QTextOption(Qt::AlignHCenter | Qt::AlignVCenter));
+
+            const auto isHover = [option](SubControl sc)
+                { return (option->activeSubControls & sc) && (option->state & State_MouseOver); };
+            const auto isSunken = [option](SubControl sc)
+                { return (option->activeSubControls & sc) && (option->state & State_Sunken); };
             // min button
             if ((titleBar->subControls & SC_TitleBarMinButton) && (titleBar->titleBarFlags & Qt::WindowMinimizeButtonHint) &&
                     !(titleBar->titleBarState& Qt::WindowMinimized)) {
-                QRect minButtonRect = proxy()->subControlRect(CC_TitleBar, titleBar, SC_TitleBarMinButton, widget);
-                if (minButtonRect.isValid()) {
-                    bool hover = (titleBar->activeSubControls & SC_TitleBarMinButton) && (titleBar->state & State_MouseOver);
-                    bool sunken = (titleBar->activeSubControls & SC_TitleBarMinButton) && (titleBar->state & State_Sunken);
-                    qt_fusion_draw_mdibutton(painter, titleBar, minButtonRect, hover, sunken);
-                    QRect minButtonIconRect = minButtonRect.adjusted(buttonMargin ,buttonMargin , -buttonMargin, -buttonMargin);
-                    painter->setPen(textColor);
-                    painter->drawLine(minButtonIconRect.center().x() - 2, minButtonIconRect.center().y() + 3,
-                                      minButtonIconRect.center().x() + 3, minButtonIconRect.center().y() + 3);
-                    painter->drawLine(minButtonIconRect.center().x() - 2, minButtonIconRect.center().y() + 4,
-                                      minButtonIconRect.center().x() + 3, minButtonIconRect.center().y() + 4);
-                    painter->setPen(textAlphaColor);
-                    painter->drawLine(minButtonIconRect.center().x() - 3, minButtonIconRect.center().y() + 3,
-                                      minButtonIconRect.center().x() - 3, minButtonIconRect.center().y() + 4);
-                    painter->drawLine(minButtonIconRect.center().x() + 4, minButtonIconRect.center().y() + 3,
-                                      minButtonIconRect.center().x() + 4, minButtonIconRect.center().y() + 4);
+                const auto sc = SC_TitleBarMinButton;
+                const auto buttonRect = proxy()->subControlRect(CC_TitleBar, titleBar, sc, widget);
+                if (buttonRect.isValid()) {
+                    qt_fusion_draw_mdibutton(painter, titleBar, buttonRect, isHover(sc), isSunken(sc));
+
+                    const QRect rect = buttonRect.marginsRemoved(buttonMargins);
+                    const QLine lines[2] = {{rect.left(), rect.bottom(), rect.right() - 1, rect.bottom()},
+                                            {rect.left(), rect.bottom() - 1, rect.right() - 1, rect.bottom() - 1}};
+                    painter->setPen(buttonPaintingsColor);
+                    painter->drawLines(lines, 2);
                 }
             }
             // max button
             if ((titleBar->subControls & SC_TitleBarMaxButton) && (titleBar->titleBarFlags & Qt::WindowMaximizeButtonHint) &&
                     !(titleBar->titleBarState & Qt::WindowMaximized)) {
-                QRect maxButtonRect = proxy()->subControlRect(CC_TitleBar, titleBar, SC_TitleBarMaxButton, widget);
-                if (maxButtonRect.isValid()) {
-                    bool hover = (titleBar->activeSubControls & SC_TitleBarMaxButton) && (titleBar->state & State_MouseOver);
-                    bool sunken = (titleBar->activeSubControls & SC_TitleBarMaxButton) && (titleBar->state & State_Sunken);
-                    qt_fusion_draw_mdibutton(painter, titleBar, maxButtonRect, hover, sunken);
+                const auto sc = SC_TitleBarMaxButton;
+                const auto buttonRect = proxy()->subControlRect(CC_TitleBar, titleBar, sc, widget);
+                if (buttonRect.isValid()) {
+                    qt_fusion_draw_mdibutton(painter, titleBar, buttonRect, isHover(sc), isSunken(sc));
 
-                    QRect maxButtonIconRect = maxButtonRect.adjusted(buttonMargin, buttonMargin, -buttonMargin, -buttonMargin);
-
-                    painter->setPen(textColor);
-                    painter->drawRect(maxButtonIconRect.adjusted(0, 0, -1, -1));
-                    painter->drawLine(maxButtonIconRect.left() + 1, maxButtonIconRect.top() + 1,
-                                      maxButtonIconRect.right() - 1, maxButtonIconRect.top() + 1);
-                    painter->setPen(textAlphaColor);
-                    const QPoint points[4] = {
-                        maxButtonIconRect.topLeft(),
-                        maxButtonIconRect.topRight(),
-                        maxButtonIconRect.bottomLeft(),
-                        maxButtonIconRect.bottomRight()
-                    };
-                    painter->drawPoints(points, 4);
+                    const QRect rect = buttonRect.marginsRemoved(buttonMargins);
+                    const QLine lines[5] = {{rect.left(), rect.top(), rect.right(), rect.top()},
+                                            {rect.left(), rect.top() + 1, rect.right(), rect.top() + 1},
+                                            {rect.left(), rect.bottom(), rect.right(), rect.bottom()},
+                                            {rect.left(), rect.top(), rect.left(), rect.bottom()},
+                                            {rect.right(), rect.top(), rect.right(), rect.bottom()}};
+                    painter->setPen(buttonPaintingsColor);
+                    painter->drawLines(lines, 5);
                 }
             }
 
             // close button
             if ((titleBar->subControls & SC_TitleBarCloseButton) && (titleBar->titleBarFlags & Qt::WindowSystemMenuHint)) {
-                QRect closeButtonRect = proxy()->subControlRect(CC_TitleBar, titleBar, SC_TitleBarCloseButton, widget);
-                if (closeButtonRect.isValid()) {
-                    bool hover = (titleBar->activeSubControls & SC_TitleBarCloseButton) && (titleBar->state & State_MouseOver);
-                    bool sunken = (titleBar->activeSubControls & SC_TitleBarCloseButton) && (titleBar->state & State_Sunken);
-                    qt_fusion_draw_mdibutton(painter, titleBar, closeButtonRect, hover, sunken);
-                    QRect closeIconRect = closeButtonRect.adjusted(buttonMargin, buttonMargin, -buttonMargin, -buttonMargin);
-                    painter->setPen(textAlphaColor);
-                    const QLine lines[4] = {
-                        QLine(closeIconRect.left() + 1, closeIconRect.top(),
-                        closeIconRect.right(), closeIconRect.bottom() - 1),
-                        QLine(closeIconRect.left(), closeIconRect.top() + 1,
-                        closeIconRect.right() - 1, closeIconRect.bottom()),
-                        QLine(closeIconRect.right() - 1, closeIconRect.top(),
-                        closeIconRect.left(), closeIconRect.bottom() - 1),
-                        QLine(closeIconRect.right(), closeIconRect.top() + 1,
-                        closeIconRect.left() + 1, closeIconRect.bottom())
-                    };
-                    painter->drawLines(lines, 4);
-                    const QPoint points[4] = {
-                        closeIconRect.topLeft(),
-                        closeIconRect.topRight(),
-                        closeIconRect.bottomLeft(),
-                        closeIconRect.bottomRight()
-                    };
-                    painter->drawPoints(points, 4);
+                const auto sc = SC_TitleBarCloseButton;
+                const auto buttonRect = proxy()->subControlRect(CC_TitleBar, titleBar, sc, widget);
+                if (buttonRect.isValid()) {
+                    qt_fusion_draw_mdibutton(painter, titleBar, buttonRect, isHover(sc), isSunken(sc));
 
-                    painter->setPen(textColor);
-                    painter->drawLine(closeIconRect.left() + 1, closeIconRect.top() + 1,
-                                      closeIconRect.right() - 1, closeIconRect.bottom() - 1);
-                    painter->drawLine(closeIconRect.left() + 1, closeIconRect.bottom() - 1,
-                                      closeIconRect.right() - 1, closeIconRect.top() + 1);
+                    const QRect rect = buttonRect.marginsRemoved(buttonMargins);
+                    const QLine lines[6] = {{rect.left() + 1, rect.top(), rect.right(), rect.bottom() - 1},
+                                            {rect.left(), rect.top() + 1, rect.right() - 1, rect.bottom()},
+                                            {rect.right() - 1, rect.top(), rect.left(), rect.bottom() - 1},
+                                            {rect.right(), rect.top() + 1, rect.left() + 1, rect.bottom()},
+                                            {rect.left(), rect.top(), rect.right(), rect.bottom()},
+                                            {rect.left(), rect.bottom(), rect.right(), rect.top()}};
+                    painter->setPen(buttonPaintingsColor);
+                    painter->drawLines(lines, 6);
                 }
             }
 
@@ -2090,88 +2063,70 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                       (titleBar->titleBarState & Qt::WindowMinimized)) ||
                      ((titleBar->titleBarFlags & Qt::WindowMaximizeButtonHint) &&
                       (titleBar->titleBarState & Qt::WindowMaximized)))) {
-                QRect normalButtonRect = proxy()->subControlRect(CC_TitleBar, titleBar, SC_TitleBarNormalButton, widget);
-                if (normalButtonRect.isValid()) {
+                const auto sc = SC_TitleBarNormalButton;
+                const auto buttonRect = proxy()->subControlRect(CC_TitleBar, titleBar, sc, widget);
+                if (buttonRect.isValid()) {
+                    qt_fusion_draw_mdibutton(painter, titleBar, buttonRect, isHover(sc), isSunken(sc));
 
-                    bool hover = (titleBar->activeSubControls & SC_TitleBarNormalButton) && (titleBar->state & State_MouseOver);
-                    bool sunken = (titleBar->activeSubControls & SC_TitleBarNormalButton) && (titleBar->state & State_Sunken);
-                    QRect normalButtonIconRect = normalButtonRect.adjusted(buttonMargin, buttonMargin, -buttonMargin, -buttonMargin);
-                    qt_fusion_draw_mdibutton(painter, titleBar, normalButtonRect, hover, sunken);
-
-                    QRect frontWindowRect = normalButtonIconRect.adjusted(0, 3, -3, 0);
-                    painter->setPen(textColor);
-                    painter->drawRect(frontWindowRect.adjusted(0, 0, -1, -1));
-                    painter->drawLine(frontWindowRect.left() + 1, frontWindowRect.top() + 1,
-                                      frontWindowRect.right() - 1, frontWindowRect.top() + 1);
-                    painter->setPen(textAlphaColor);
-                    const QPoint points[4] = {
-                        frontWindowRect.topLeft(),
-                        frontWindowRect.topRight(),
-                        frontWindowRect.bottomLeft(),
-                        frontWindowRect.bottomRight()
-                    };
-                    painter->drawPoints(points, 4);
-
-                    QRect backWindowRect = normalButtonIconRect.adjusted(3, 0, 0, -3);
-                    QRegion clipRegion = backWindowRect;
-                    clipRegion -= frontWindowRect;
-                    painter->save();
-                    painter->setClipRegion(clipRegion);
-                    painter->setPen(textColor);
-                    painter->drawRect(backWindowRect.adjusted(0, 0, -1, -1));
-                    painter->drawLine(backWindowRect.left() + 1, backWindowRect.top() + 1,
-                                      backWindowRect.right() - 1, backWindowRect.top() + 1);
-                    painter->setPen(textAlphaColor);
-                    const QPoint points2[4] = {
-                        backWindowRect.topLeft(),
-                        backWindowRect.topRight(),
-                        backWindowRect.bottomLeft(),
-                        backWindowRect.bottomRight()
-                    };
-                    painter->drawPoints(points2, 4);
-                    painter->restore();
+                    QRect normalButtonIconRect = buttonRect.marginsRemoved(buttonMargins);
+                    painter->setPen(buttonPaintingsColor);
+                    {
+                        const QRect rect = normalButtonIconRect.adjusted(0, 3, -3, 0);
+                        const QLine lines[5] = {{rect.left(), rect.top(), rect.right(), rect.top()},
+                                                {rect.left(), rect.top() + 1, rect.right(), rect.top() + 1},
+                                                {rect.left(), rect.bottom(), rect.right(), rect.bottom()},
+                                                {rect.left(), rect.top(), rect.left(), rect.bottom()},
+                                                {rect.right(), rect.top(), rect.right(), rect.bottom()}};
+                        painter->drawLines(lines, 5);
+                    }
+                    {
+                        const QRect rect = normalButtonIconRect.adjusted(3, 0, 0, -3);
+                        const QLine lines[5] = {{rect.left(), rect.top(), rect.right(), rect.top()},
+                                                {rect.left(), rect.top() + 1, rect.right(), rect.top() + 1},
+                                                {rect.left(), rect.bottom(), rect.right(), rect.bottom()},
+                                                {rect.left(), rect.top(), rect.left(), rect.bottom()},
+                                                {rect.right(), rect.top(), rect.right(), rect.bottom()}};
+                        painter->drawLines(lines, 5);
+                    }
                 }
             }
 
             // context help button
             if (titleBar->subControls & SC_TitleBarContextHelpButton
                     && (titleBar->titleBarFlags & Qt::WindowContextHelpButtonHint)) {
-                QRect contextHelpButtonRect = proxy()->subControlRect(CC_TitleBar, titleBar, SC_TitleBarContextHelpButton, widget);
-                if (contextHelpButtonRect.isValid()) {
-                    bool hover = (titleBar->activeSubControls & SC_TitleBarContextHelpButton) && (titleBar->state & State_MouseOver);
-                    bool sunken = (titleBar->activeSubControls & SC_TitleBarContextHelpButton) && (titleBar->state & State_Sunken);
-                    qt_fusion_draw_mdibutton(painter, titleBar, contextHelpButtonRect, hover, sunken);
+                const auto sc = SC_TitleBarContextHelpButton;
+                const auto buttonRect = proxy()->subControlRect(CC_TitleBar, titleBar, sc, widget);
+                if (buttonRect.isValid()) {
+                    qt_fusion_draw_mdibutton(painter, titleBar, buttonRect, isHover(sc), isSunken(sc));
 #if QT_CONFIG(imageformat_xpm)
                     QImage image(qt_titlebar_context_help);
-                    QColor alpha = textColor;
+                    QColor alpha = buttonPaintingsColor;
                     alpha.setAlpha(128);
-                    image.setColor(1, textColor.rgba());
+                    image.setColor(1, buttonPaintingsColor.rgba());
                     image.setColor(2, alpha.rgba());
                     painter->setRenderHint(QPainter::SmoothPixmapTransform);
-                    painter->drawImage(contextHelpButtonRect.adjusted(4, 4, -4, -4), image);
+                    painter->drawImage(buttonRect.adjusted(4, 4, -4, -4), image);
 #endif
                 }
             }
 
             // shade button
             if (titleBar->subControls & SC_TitleBarShadeButton && (titleBar->titleBarFlags & Qt::WindowShadeButtonHint)) {
-                QRect shadeButtonRect = proxy()->subControlRect(CC_TitleBar, titleBar, SC_TitleBarShadeButton, widget);
-                if (shadeButtonRect.isValid()) {
-                    bool hover = (titleBar->activeSubControls & SC_TitleBarShadeButton) && (titleBar->state & State_MouseOver);
-                    bool sunken = (titleBar->activeSubControls & SC_TitleBarShadeButton) && (titleBar->state & State_Sunken);
-                    qt_fusion_draw_mdibutton(painter, titleBar, shadeButtonRect, hover, sunken);
-                    qt_fusion_draw_arrow(Qt::UpArrow, painter, option, shadeButtonRect.adjusted(5, 7, -5, -7), textColor);
+                const auto sc = SC_TitleBarShadeButton;
+                const auto buttonRect = proxy()->subControlRect(CC_TitleBar, titleBar, sc, widget);
+                if (buttonRect.isValid()) {
+                    qt_fusion_draw_mdibutton(painter, titleBar, buttonRect, isHover(sc), isSunken(sc));
+                    qt_fusion_draw_arrow(Qt::UpArrow, painter, option, buttonRect.adjusted(5, 7, -5, -7), buttonPaintingsColor);
                 }
             }
 
             // unshade button
             if (titleBar->subControls & SC_TitleBarUnshadeButton && (titleBar->titleBarFlags & Qt::WindowShadeButtonHint)) {
-                QRect unshadeButtonRect = proxy()->subControlRect(CC_TitleBar, titleBar, SC_TitleBarUnshadeButton, widget);
-                if (unshadeButtonRect.isValid()) {
-                    bool hover = (titleBar->activeSubControls & SC_TitleBarUnshadeButton) && (titleBar->state & State_MouseOver);
-                    bool sunken = (titleBar->activeSubControls & SC_TitleBarUnshadeButton) && (titleBar->state & State_Sunken);
-                    qt_fusion_draw_mdibutton(painter, titleBar, unshadeButtonRect, hover, sunken);
-                    qt_fusion_draw_arrow(Qt::DownArrow, painter, option, unshadeButtonRect.adjusted(5, 7, -5, -7), textColor);
+                const auto sc = SC_TitleBarUnshadeButton;
+                const auto buttonRect = proxy()->subControlRect(CC_TitleBar, titleBar, sc, widget);
+                if (buttonRect.isValid()) {
+                    qt_fusion_draw_mdibutton(painter, titleBar, buttonRect, isHover(sc), isSunken(sc));
+                    qt_fusion_draw_arrow(Qt::DownArrow, painter, option, buttonRect.adjusted(5, 7, -5, -7), buttonPaintingsColor);
                 }
             }
 
