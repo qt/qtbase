@@ -48,6 +48,44 @@
     between the classes. See the corresponding section in the
     \l {span-STL} {QSpan class documentation} for more details.
 
+    \section1 Three-way comparison operator
+
+    C++20 introduced \c {operator<=>()}, also known as the
+    \l {https://en.cppreference.com/w/cpp/language/operator_comparison#Three-way_comparison}
+    {three-way comparison operator}, and three ordering types to represent
+    the results of the comparison:
+
+    \list
+        \li \l {https://en.cppreference.com/w/cpp/utility/compare/strong_ordering}
+            {std::strong_ordering};
+        \li \l {https://en.cppreference.com/w/cpp/utility/compare/weak_ordering}
+            {std::weak_ordering};
+        \li \l {https://en.cppreference.com/w/cpp/utility/compare/partial_ordering}
+            {std::partial_ordering}.
+    \endlist
+
+    In Qt 6.8, many of the QtCore classes got support for \c {operator<=>()}.
+    To use the new operator, the user project must be compiled in C++20 mode.
+
+    However, starting from Qt 6.7, C++17 users can use
+    \l {Comparison types overview}{our own equivalents} of the std ordering
+    types.
+
+    As a C++20 language feature, backporting \c {operator<=>()} to C++17 is not
+    possible, but you can use the \l Qt::compareThreeWay() function, which acts
+    like a C++17 version of \c {operator<=>()} for built-in C++ types (such as
+    integers, floating-point, and enumeration types).
+
+    Qt also defines helper functions \c {compareThreeWay()} for various classes
+    in QtCore. These are all implemented as \l {https://wg21.link/p1601}
+    {hidden friends}. Users can implement their own \c {compareThreeWay()}
+    functions for custom types.
+
+    Finally, Qt provides a \l qCompareThreeWay() function template, which serves
+    as a generic three-way comparison implementation. It relies on
+    \l {Qt::compareThreeWay()} and the above-mentioned free
+    \c {compareThreeWay()} functions in its implementation.
+
     \section1 Additional important features
 
     Qt has also adopted a few more features from C++20, such as:
