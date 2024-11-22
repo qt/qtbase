@@ -1730,6 +1730,9 @@ bool QDockWidget::event(QEvent *event)
 
   The action's text is set to the dock widget's window title.
 
+  The QAction object is owned by the QDockWidget. It will be automatically
+  deleted when the QDockWidget is destroyed.
+
   \note The action can not be used to programmatically show or hide the dock
   widget. Use the \l visible property for that.
 
