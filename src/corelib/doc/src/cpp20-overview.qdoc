@@ -56,4 +56,18 @@
     implicitly converted into each other. However, there are some differences
     between the classes. See the corresponding section in the
     \l {span-STL} {QSpan class documentation} for more details.
+
+    \section1 Additional important features
+
+    Qt has also adopted a few more features from C++20, such as:
+
+    \list
+        \li \l Q_CONSTINIT macro that expands to the C++20 \c {constinit}
+            keyword, or to compiler-specific attributes if they are available
+        \li \l Q_NODISCARD_CTOR macro that expands to the \c {[[nodiscard]]}
+            attribute if the compiler supports \c {[[nodiscard]]} on
+            constructors
+        \li \l Q_NODISCARD_X and \l Q_NODISCARD_CTOR_X macros for
+            \c {[[nodiscard("reason")]]}
+    \endlist
 */
