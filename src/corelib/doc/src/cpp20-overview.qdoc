@@ -40,4 +40,20 @@
     facilities in place of platform-specific backends to access timezone
     information. This remains experimental in Qt 6.9 as some standard library
     implementations do not faithfully represent the IANA data for timezones.
+
+    \section1 QSpan - a Qt version of \c {std::span}
+
+    The \l {https://en.cppreference.com/w/cpp/container/span}{std::span} class
+    template is an addition to the standard library that provides a uniform
+    way to access a contiguous portion of any contiguous container.
+
+    Using \c {std::span} in the public APIs of Qt could provide significant
+    advantages. However, Qt 6 only requires C++17, meaning it cannot have C++20
+    types in the API and ABI.
+
+    Qt 6.7 introduced \l QSpan - a Qt version of \c {std::span}. The API of the
+    class is compatible with the std version. \l QSpan and \c {std::span} can be
+    implicitly converted into each other. However, there are some differences
+    between the classes. See the corresponding section in the
+    \l {span-STL} {QSpan class documentation} for more details.
 */
