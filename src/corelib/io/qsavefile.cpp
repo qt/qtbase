@@ -143,16 +143,15 @@ void QSaveFile::setFileName(const QString &name)
 }
 
 /*!
-    Opens the file using OpenMode \a mode, returning true if successful;
-    otherwise false.
+    Opens the file using \a mode flags. Returns \c true if successful;
+    otherwise returns \c false.
 
-    Important: the \a mode must include QIODevice::WriteOnly.
-    It may also have additional flags, such as QIODevice::Text and QIODevice::Unbuffered.
+    Important: The flags for \a mode must include \l QIODeviceBase::WriteOnly. Other
+    common flags you can use are \l Text and \l Unbuffered. Flags not supported at the
+    moment are \l ReadOnly (and therefore \l ReadWrite), \l Append, \l NewOnly and \l ExistingOnly;
+    they will generate a runtime warning.
 
-    QIODevice::ReadWrite, QIODevice::Append, QIODevice::NewOnly and
-    QIODevice::ExistingOnly are not supported at the moment.
-
-    \sa QIODevice::OpenMode, setFileName(), QT_USE_NODISCARD_FILE_OPEN
+    \sa setFileName(), QT_USE_NODISCARD_FILE_OPEN
 */
 bool QSaveFile::open(OpenMode mode)
 {
