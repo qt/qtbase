@@ -477,30 +477,22 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
     {
         QRect rect = option->rect;
         const int margin = 6;
+        const QColor col = option->palette.window().color();
+        painter->setPen(col.darker(110));
         if (option->state & State_Horizontal) {
-            const int offset = rect.width()/2;
-            painter->setPen(QPen(option->palette.window().color().darker(110)));
-            painter->drawLine(rect.bottomLeft().x() + offset,
-                              rect.bottomLeft().y() - margin,
-                              rect.topLeft().x() + offset,
-                              rect.topLeft().y() + margin);
-            painter->setPen(QPen(option->palette.window().color().lighter(110)));
-            painter->drawLine(rect.bottomLeft().x() + offset + 1,
-                              rect.bottomLeft().y() - margin,
-                              rect.topLeft().x() + offset + 1,
-                              rect.topLeft().y() + margin);
+            const int offset = rect.width() / 2;
+            painter->drawLine(rect.left() + offset, rect.bottom() - margin,
+                              rect.left() + offset, rect.top() + margin);
+            painter->setPen(col.lighter(110));
+            painter->drawLine(rect.left() + offset + 1, rect.bottom() - margin,
+                              rect.left() + offset + 1, rect.top() + margin);
         } else { //Draw vertical separator
-            const int offset = rect.height()/2;
-            painter->setPen(QPen(option->palette.window().color().darker(110)));
-            painter->drawLine(rect.topLeft().x() + margin ,
-                              rect.topLeft().y() + offset,
-                              rect.topRight().x() - margin,
-                              rect.topRight().y() + offset);
-            painter->setPen(QPen(option->palette.window().color().lighter(110)));
-            painter->drawLine(rect.topLeft().x() + margin ,
-                              rect.topLeft().y() + offset + 1,
-                              rect.topRight().x() - margin,
-                              rect.topRight().y() + offset + 1);
+            const int offset = rect.height() / 2;
+            painter->drawLine(rect.left() + margin, rect.top() + offset,
+                              rect.right() - margin, rect.top() + offset);
+            painter->setPen(col.lighter(110));
+            painter->drawLine(rect.left() + margin, rect.top() + offset + 1,
+                              rect.right() - margin, rect.top() + offset + 1);
         }
     }
         break;
