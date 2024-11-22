@@ -19,7 +19,7 @@ You can download jing from https://relaxng.org/jclark/jing.html if your
 package manager lacks the jing package.
 """
 
-from typing import Callable, Iterable, Iterator, NoReturn
+from typing import Any, Callable, Iterable, Iterator, NoReturn
 from xml.sax.saxutils import escape
 from xml.dom import minidom
 

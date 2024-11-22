@@ -19,8 +19,8 @@ struct LocaleListItem
 // GENERATED PART STARTS HERE
 
 /*
-    This part of the file was generated on 2024-05-31 from the
-    Common Locale Data Repository v45
+    This part of the file was generated on 2024-12-05 from the
+    Common Locale Data Repository v46
 
     http://www.unicode.org/cldr/
 
@@ -118,6 +118,7 @@ const LocaleListItem g_locale_list[] = {
     {     58,    50 }, // Chinese/China
     {     58,   107 }, // Chinese/Hong Kong
     {     58,   139 }, // Chinese/Macao
+    {     58,   143 }, // Chinese/Malaysia
     {     58,   210 }, // Chinese/Singapore
     {     58,   228 }, // Chinese/Taiwan
     {     59,   193 }, // Church/Russia
@@ -372,6 +373,7 @@ const LocaleListItem g_locale_list[] = {
     {    130,   110 }, // Kannada/India
     {    132,   110 }, // Kashmiri/India
     {    133,   123 }, // Kazakh/Kazakhstan
+    {    133,    50 }, // Kazakh/China
     {    134,    40 }, // Kenyang/Cameroon
     {    135,    39 }, // Khmer/Cambodia
     {    136,    99 }, // Kiche/Guatemala
@@ -664,6 +666,8 @@ const LocaleListItem g_locale_list[] = {
     {    342,   110 }, // Kangri/India
     {    343,   117 }, // Venetian/Italy
     {    344,   110 }, // Kuvi/India
+    {    345,   251 }, // Kara-Kalpak/Uzbekistan
+    {    346,    41 }, // Swampy Cree/Canada
 };
 
 // GENERATED PART ENDS HERE

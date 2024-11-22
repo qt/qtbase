@@ -51,7 +51,7 @@
     \note For the current keyboard input locale take a look at
     QInputMethod::locale().
 
-    QLocale's data is based on Common Locale Data Repository v45.
+    QLocale's data is based on Common Locale Data Repository v46.
 
     \section1 Matching combinations of language, script and territory
 
@@ -235,6 +235,7 @@
     \value [since 6.7] Kangri
     \value Kannada
     \value Kanuri
+    \value [since 6.9] KaraKalpak
     \value Kashmiri
     \value Kazakh
     \value [since 5.5] Kenyang
@@ -392,6 +393,7 @@
     \value [since 5.3] StandardMoroccanTamazight
     \value Sundanese
     \value Swahili
+    \value [since 6.9] SwampyCree
     \value Swati
     \value Swedish
     \value SwissGerman
