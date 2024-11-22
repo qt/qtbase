@@ -1074,7 +1074,6 @@ void tst_QTimeZone::windowsId()
     USA         "America/Chicago America/Indiana/Knox America/Indiana/Tell_City America/Menominee"
                 "America/North_Dakota/Beulah America/North_Dakota/Center"
                 "America/North_Dakota/New_Salem"
-    AnyTerritory  "CST6CDT"
 */
     QCOMPARE(QTimeZone::ianaIdToWindowsId("America/Chicago"),
              QByteArray("Central Standard Time"));
@@ -1094,7 +1093,7 @@ void tst_QTimeZone::windowsId()
     QCOMPARE(QTimeZone::windowsIdToDefaultIanaId("Central Standard Time", QLocale::Canada),
              QByteArray("America/Winnipeg"));
     QCOMPARE(QTimeZone::windowsIdToDefaultIanaId("Central Standard Time", QLocale::AnyTerritory),
-             QByteArray("CST6CDT"));
+             QByteArray());
     QCOMPARE(QTimeZone::windowsIdToDefaultIanaId(QByteArray()), QByteArray());
 
     {
@@ -1104,7 +1103,7 @@ void tst_QTimeZone::windowsId()
             "America/Matamoros", "America/Menominee", "America/North_Dakota/Beulah",
             "America/North_Dakota/Center", "America/North_Dakota/New_Salem",
             "America/Ojinaga", "America/Rankin_Inlet", "America/Resolute",
-            "America/Winnipeg", "CST6CDT"
+            "America/Winnipeg"
         };
         QCOMPARE(QTimeZone::windowsIdToIanaIds("Central Standard Time"), list);
     }
@@ -1140,7 +1139,7 @@ void tst_QTimeZone::windowsId()
                  list);
     }
     {
-        const QList<QByteArray> list = { "CST6CDT" };
+        const QList<QByteArray> list;
         QCOMPARE(QTimeZone::windowsIdToIanaIds("Central Standard Time", QLocale::AnyTerritory),
                  list);
     }

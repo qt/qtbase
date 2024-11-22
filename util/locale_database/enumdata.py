@@ -408,10 +408,13 @@ language_map = {
     343: ("Venetian",                    "vec"),
     # added in CLDR v45
     344: ("Kuvi",                        "kxv"),
+    # added in CLDR v46
+    345: ("Kara-Kalpak",                 "kaa"),
+    346: ("Swampy Cree",                 "csw"),
 }
 # Don't add languages just because they exist; check CLDR does provide
 # substantial data for locales using it; and check, once added, they
-# don't show up in cldr2qlocalexmo.py's unused listing. Do also check
+# don't show up in cldr2qlocalexml.py's unused listing. Do also check
 # the data's draft status; if it's (nearly) all unconfirmed, leave it.
 
 language_aliases = {

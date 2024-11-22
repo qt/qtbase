@@ -53,7 +53,7 @@
 
     \section1 Appropriateness of the formats
 
-    QLocale's data is based on Common Locale Data Repository v45.
+    QLocale's data is based on Common Locale Data Repository v46.
 
     This data is published by The Unicode Consortium, who aim to follow
     customary, common use by writers of each language, in each script, in each
@@ -251,6 +251,7 @@
     \value [since 6.7] Kangri
     \value Kannada
     \value Kanuri
+    \value [since 6.9] KaraKalpak
     \value Kashmiri
     \value Kazakh
     \value [since 5.5] Kenyang
@@ -408,6 +409,7 @@
     \value [since 5.3] StandardMoroccanTamazight
     \value Sundanese
     \value Swahili
+    \value [since 6.9] SwampyCree
     \value Swati
     \value Swedish
     \value SwissGerman

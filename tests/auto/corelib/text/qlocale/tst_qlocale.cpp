@@ -307,8 +307,8 @@ void tst_QLocale::ctor_data()
         << QLocale::lang << QLocale::text << QLocale::land \
         << QLocale::lang << QLocale::fixed << QLocale::land
 
-    FIXTEXT("zh_Latn_CN", Chinese, LatinScript, China, SimplifiedHanScript);
-    FIXTEXT("zh_Latn_TW", Chinese, LatinScript, Taiwan, TraditionalHanScript);
+    FIXTEXT("zh_Taml_CN", Chinese, TamilScript, China, SimplifiedHanScript);
+    FIXTEXT("zh_Taml_TW", Chinese, TamilScript, Taiwan, TraditionalHanScript);
 #undef FIXTEXT
 
     // No exact match, preserve language:
@@ -318,7 +318,7 @@ void tst_QLocale::ctor_data()
         << QLocale::lang << QLocale::fixtext << QLocale::fixland
 
     KEEPLANG("zh_US", Chinese, AnyScript, UnitedStates, SimplifiedHanScript, China);
-    KEEPLANG("zh_Latn_US", Chinese, LatinScript, UnitedStates, SimplifiedHanScript, China);
+    KEEPLANG("zh_Taml_US", Chinese, TamilScript, UnitedStates, SimplifiedHanScript, China);
 #undef KEEPLANG
 
     // Only territory - likely subtags imply language and script:
