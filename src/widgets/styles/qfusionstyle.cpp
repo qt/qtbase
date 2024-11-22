@@ -1300,14 +1300,21 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
                     painter->setPen(QPen(highlightedGradientStartColor, 9.0));
                     painter->setClipRect(progressBar.adjusted(1, 1, -1, -1));
 #if QT_CONFIG(animation)
-                if (QProgressStyleAnimation *animation = qobject_cast<QProgressStyleAnimation*>(d->animation(option->styleObject)))
-                    step = animation->animationStep() % 22;
-                else
-                    (const_cast<QFusionStylePrivate*>(d))->startAnimation(new QProgressStyleAnimation(d->animationFps, option->styleObject));
+                    if (QProgressStyleAnimation *animation =
+                        qobject_cast<QProgressStyleAnimation*>(d->animation(option->styleObject))) {
+                        step = animation->animationStep() % 22;
+                    } else {
+                        (const_cast<QFusionStylePrivate*>(d))->startAnimation(
+                                new QProgressStyleAnimation(d->animationFps, option->styleObject)
+                        );
+                    }
 #endif
-                for (int x = progressBar.left() - rect.height(); x < rect.right() ; x += 22)
-                    painter->drawLine(x + step, progressBar.bottom() + 1,
-                                      x + rect.height() + step, progressBar.top() - 2);
+                    QVarLengthArray<QLine, 40> lines;
+                    for (int x = progressBar.left() - rect.height(); x < rect.right() ; x += 22) {
+                        lines.emplace_back(x + step, progressBar.bottom() + 1,
+                                           x + rect.height() + step, progressBar.top() - 2);
+                    }
+                    painter->drawLines(lines.data(), lines.count());
                 }
             }
             if (!indeterminate && !complete) {
