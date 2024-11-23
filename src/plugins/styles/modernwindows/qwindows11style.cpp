@@ -593,48 +593,41 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
 
             QFont buttonFont = QFont(assetFont);
             buttonFont.setPointSize(8);
+            auto drawButton = [&](SubControl sc, const QString &str, QColor col = {}) {
+                const QRect buttonRect = proxy()->subControlRect(CC_TitleBar, option, sc, widget);
+                if (buttonRect.isValid()) {
+                    const bool hover = (option->activeSubControls & sc) &&
+                                       (option->state & State_MouseOver);
+                    if (hover) {
+                        if (!col.isValid())
+                            col = WINUI3Colors[colorSchemeIndex][subtleHighlightColor];
+                        painter->fillRect(buttonRect, col);
+                    }
+                    painter->setPen(hover ? option->palette.color(QPalette::Active, QPalette::WindowText)
+                                          : textColor);
+                    painter->setFont(buttonFont);
+                    painter->drawText(buttonRect, Qt::AlignVCenter | Qt::AlignHCenter, str);
+                }
+            };
+            auto shouldDrawButton = [titlebar](SubControl sc, Qt::WindowType flag) {
+                return (titlebar->subControls & sc) && (titlebar->titleBarFlags & flag);
+            };
+
             // min button
-            if ((titlebar->subControls & SC_TitleBarMinButton) && (titlebar->titleBarFlags & Qt::WindowMinimizeButtonHint) &&
-                !(titlebar->titleBarState& Qt::WindowMinimized)) {
-                const QRect minButtonRect = proxy()->subControlRect(CC_TitleBar, titlebar, SC_TitleBarMinButton, widget);
-                if (minButtonRect.isValid()) {
-                    bool hover = (titlebar->activeSubControls & SC_TitleBarMinButton) && (titlebar->state & State_MouseOver);
-                    if (hover)
-                        painter->fillRect(minButtonRect,WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
-                    const QString textToDraw("\uE921");
-                    painter->setPen(hover ? titlebar->palette.color(QPalette::Active, QPalette::WindowText) : textColor);
-                    painter->setFont(buttonFont);
-                    painter->drawText(minButtonRect, Qt::AlignVCenter | Qt::AlignHCenter, textToDraw);
-                }
+            if (shouldDrawButton(SC_TitleBarMinButton, Qt::WindowMinimizeButtonHint) &&
+                !(titlebar->titleBarState & Qt::WindowMinimized)) {
+                drawButton(SC_TitleBarMinButton, QStringLiteral("\uE921"));
             }
+
             // max button
-            if ((titlebar->subControls & SC_TitleBarMaxButton) && (titlebar->titleBarFlags & Qt::WindowMaximizeButtonHint) &&
+            if (shouldDrawButton(SC_TitleBarMaxButton, Qt::WindowMaximizeButtonHint) &&
                 !(titlebar->titleBarState & Qt::WindowMaximized)) {
-                const QRectF maxButtonRect = proxy()->subControlRect(CC_TitleBar, titlebar, SC_TitleBarMaxButton, widget);
-                if (maxButtonRect.isValid()) {
-                    bool hover = (titlebar->activeSubControls & SC_TitleBarMaxButton) && (titlebar->state & State_MouseOver);
-                    if (hover)
-                        painter->fillRect(maxButtonRect,WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
-                    const QString textToDraw("\uE922");
-                    painter->setPen(hover ? titlebar->palette.color(QPalette::Active, QPalette::WindowText) : textColor);
-                    painter->setFont(buttonFont);
-                    painter->drawText(maxButtonRect, Qt::AlignVCenter | Qt::AlignHCenter, textToDraw);
-                }
+                drawButton(SC_TitleBarMaxButton, QStringLiteral("\uE922"));
             }
 
             // close button
-            if ((titlebar->subControls & SC_TitleBarCloseButton) && (titlebar->titleBarFlags & Qt::WindowSystemMenuHint)) {
-                const QRect closeButtonRect = proxy()->subControlRect(CC_TitleBar, titlebar, SC_TitleBarCloseButton, widget);
-                if (closeButtonRect.isValid()) {
-                    bool hover = (titlebar->activeSubControls & SC_TitleBarCloseButton) && (titlebar->state & State_MouseOver);
-                    if (hover)
-                        painter->fillRect(closeButtonRect,shellCloseButtonColor);
-                    const QString textToDraw("\uE8BB");
-                    painter->setPen(QPen(hover ? titlebar->palette.highlightedText().color() : textColor));
-                    painter->setFont(buttonFont);
-                    painter->drawText(closeButtonRect, Qt::AlignVCenter | Qt::AlignHCenter, textToDraw);
-                }
-            }
+            if (shouldDrawButton(SC_TitleBarCloseButton, Qt::WindowSystemMenuHint))
+                drawButton(SC_TitleBarCloseButton, QStringLiteral("\uE8BB"), shellCloseButtonColor);
 
             // normalize button
             if ((titlebar->subControls & SC_TitleBarNormalButton) &&
@@ -642,63 +635,23 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                   (titlebar->titleBarState & Qt::WindowMinimized)) ||
                  ((titlebar->titleBarFlags & Qt::WindowMaximizeButtonHint) &&
                   (titlebar->titleBarState & Qt::WindowMaximized)))) {
-                const QRect normalButtonRect = proxy()->subControlRect(CC_TitleBar, titlebar, SC_TitleBarNormalButton, widget);
-                if (normalButtonRect.isValid()) {
-                    bool hover = (titlebar->activeSubControls & SC_TitleBarNormalButton) && (titlebar->state & State_MouseOver);
-                    if (hover)
-                        painter->fillRect(normalButtonRect,WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
-                    const QString textToDraw("\uE923");
-                    painter->setPen(hover ? titlebar->palette.color(QPalette::Active, QPalette::WindowText) : textColor);
-                    painter->setFont(buttonFont);
-                    painter->drawText(normalButtonRect, Qt::AlignVCenter | Qt::AlignHCenter, textToDraw);
-                }
+                drawButton(SC_TitleBarNormalButton, QStringLiteral("\uE923"));
             }
 
             // context help button
-            if (titlebar->subControls & SC_TitleBarContextHelpButton
-                && (titlebar->titleBarFlags & Qt::WindowContextHelpButtonHint)) {
-                const QRect contextHelpButtonRect = proxy()->subControlRect(CC_TitleBar, titlebar, SC_TitleBarContextHelpButton, widget);
-                if (contextHelpButtonRect.isValid()) {
-                    bool hover = (titlebar->activeSubControls & SC_TitleBarCloseButton) && (titlebar->state & State_MouseOver);
-                    if (hover)
-                        painter->fillRect(contextHelpButtonRect,WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
-                    const QString textToDraw("\uE897");
-                    painter->setPen(hover ? titlebar->palette.color(QPalette::Active, QPalette::WindowText) : textColor);
-                    painter->setFont(buttonFont);
-                    painter->drawText(contextHelpButtonRect, Qt::AlignVCenter | Qt::AlignHCenter, textToDraw);
-                }
-            }
+            if (shouldDrawButton(SC_TitleBarContextHelpButton, Qt::WindowContextHelpButtonHint))
+                drawButton(SC_TitleBarContextHelpButton, QStringLiteral("\uE897"));
 
             // shade button
-            if (titlebar->subControls & SC_TitleBarShadeButton && (titlebar->titleBarFlags & Qt::WindowShadeButtonHint)) {
-                const QRect shadeButtonRect = proxy()->subControlRect(CC_TitleBar, titlebar, SC_TitleBarShadeButton, widget);
-                if (shadeButtonRect.isValid()) {
-                    bool hover = (titlebar->activeSubControls & SC_TitleBarShadeButton) && (titlebar->state & State_MouseOver);
-                    if (hover)
-                        painter->fillRect(shadeButtonRect,WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
-                    const QString textToDraw("\uE96D");
-                    painter->setPen(hover ? titlebar->palette.color(QPalette::Active, QPalette::WindowText) : textColor);
-                    painter->setFont(buttonFont);
-                    painter->drawText(shadeButtonRect, Qt::AlignVCenter | Qt::AlignHCenter, textToDraw);
-                }
-            }
+            if (shouldDrawButton(SC_TitleBarShadeButton, Qt::WindowShadeButtonHint))
+                drawButton(SC_TitleBarShadeButton, QStringLiteral("\uE96D"));
 
              // unshade button
-            if (titlebar->subControls & SC_TitleBarUnshadeButton && (titlebar->titleBarFlags & Qt::WindowShadeButtonHint)) {
-                const QRect unshadeButtonRect = proxy()->subControlRect(CC_TitleBar, titlebar, SC_TitleBarUnshadeButton, widget);
-                if (unshadeButtonRect.isValid()) {
-                    bool hover = (titlebar->activeSubControls & SC_TitleBarUnshadeButton) && (titlebar->state & State_MouseOver);
-                    if (hover)
-                        painter->fillRect(unshadeButtonRect,WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
-                    const QString textToDraw("\uE96E");
-                    painter->setPen(textColor);
-                    painter->setFont(buttonFont);
-                    painter->drawText(unshadeButtonRect, Qt::AlignVCenter | Qt::AlignHCenter, textToDraw);
-                }
-            }
+            if (shouldDrawButton(SC_TitleBarUnshadeButton, Qt::WindowShadeButtonHint))
+                drawButton(SC_TitleBarUnshadeButton, QStringLiteral("\uE96E"));
 
             // window icon for system menu
-            if ((titlebar->subControls & SC_TitleBarSysMenu) && (titlebar->titleBarFlags & Qt::WindowSystemMenuHint)) {
+            if (shouldDrawButton(SC_TitleBarSysMenu, Qt::WindowSystemMenuHint)) {
                 const QRect iconRect = proxy()->subControlRect(CC_TitleBar, titlebar, SC_TitleBarSysMenu, widget);
                 if (iconRect.isValid()) {
                     if (!titlebar->icon.isNull()) {
