@@ -1935,8 +1935,9 @@ QRect QWindows11Style::subControlRect(ComplexControl control, const QStyleOption
                 break;
             case SC_TitleBarSysMenu:
                 if (titlebar->titleBarFlags & Qt::WindowSystemMenuHint) {
-                    ret.setRect(titlebar->rect.left() + controlWidthMargin + indent, titlebar->rect.top() + iconSize/2,
-                                iconSize, iconSize);
+                    const auto yOfs = titlebar->rect.top() + (titlebar->rect.height() - iconSize) / 2;
+                    ret.setRect(titlebar->rect.left() + controlWidthMargin + indent, yOfs, iconSize,
+                                iconSize);
                 }
                 break;
             default:
