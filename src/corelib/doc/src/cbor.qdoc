@@ -60,7 +60,7 @@
 
     The QCborMap class is used to hold an map of QCborValue objects. A
     QCborValue object can contain a QCborMap object. It has functions for
-    converting to and from QVariantMap, QVariantMap, and QJsonObject, but it
+    converting to and from QVariantMap, QVariantHash, and QJsonObject, but it
     can have keys of any type, not just QString.
 
     \section2 The QCborStreamReader Class
