@@ -478,7 +478,7 @@ LONG WINAPI WindowsFaultHandler::windowsFaultHandler(struct _EXCEPTION_POINTERS 
             fprintf(stderr, "Nearby symbol    : %s\n", exceptionSymbol.name);
             delete [] exceptionSymbol.name;
         }
-        void *stack[maxStackFrames];
+        Q_DECL_UNINITIALIZED void *stack[maxStackFrames];
         fputs("\nStack:\n", stderr);
         const unsigned frameCount = CaptureStackBackTrace(0, DWORD(maxStackFrames), stack, NULL);
         for (unsigned f = 0; f < frameCount; ++f)     {

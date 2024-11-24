@@ -2913,7 +2913,7 @@ bool QImage::allGray() const
         break;
     }
 
-    uint buffer[BufferSize];
+    Q_DECL_UNINITIALIZED uint buffer[BufferSize];
     const QPixelLayout *layout = &qPixelLayouts[d->format];
     const auto fetch = layout->fetchToARGB32PM;
     for (int j = 0; j < d->height; ++j) {

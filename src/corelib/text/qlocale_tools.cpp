@@ -510,7 +510,7 @@ QString qulltoBasicLatin(qulonglong number, int base, bool negative)
     // We do not need a terminator.
     const unsigned maxlen = 65;
     static_assert(CHAR_BIT * sizeof(number) + 1 <= maxlen);
-    char16_t buff[maxlen];
+    Q_DECL_UNINITIALIZED char16_t buff[maxlen];
     char16_t *const end = buff + maxlen, *p = end;
 
     qulltoString_helper<char16_t>(number, base, p);
@@ -526,7 +526,7 @@ QString qulltoa(qulonglong number, int base, const QStringView zero)
     // per digit. We do not need a terminator.
     const unsigned maxlen = 128;
     static_assert(CHAR_BIT * sizeof(number) <= maxlen);
-    char16_t buff[maxlen];
+    Q_DECL_UNINITIALIZED char16_t buff[maxlen];
     char16_t *const end = buff + maxlen, *p = end;
 
     if (base != 10 || zero == u"0") {

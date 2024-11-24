@@ -5595,7 +5595,7 @@ void QPainter::drawText(const QPointF &p, const QString &str, int tf, int justif
     if (!d->engine || str.isEmpty() || pen().style() == Qt::NoPen)
         return;
 
-    QStackTextEngine engine(str, d->state->font);
+    Q_DECL_UNINITIALIZED QStackTextEngine engine(str, d->state->font);
     engine.option.setTextDirection(d->state->layoutDirection);
     if (tf & (Qt::TextForceLeftToRight|Qt::TextForceRightToLeft)) {
         engine.ignoreBidi = true;
@@ -7227,7 +7227,7 @@ start_lengthVariant:
     qreal width = 0;
 
     QString finalText = text.mid(old_offset, length);
-    QStackTextEngine engine(finalText, fnt);
+    Q_DECL_UNINITIALIZED QStackTextEngine engine(finalText, fnt);
     if (option) {
         engine.option = *option;
     }

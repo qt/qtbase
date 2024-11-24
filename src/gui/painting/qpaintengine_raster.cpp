@@ -1410,7 +1410,7 @@ static void fillRect_normalized(const QRect &r, QSpanData *data,
     ProcessSpans blend = isUnclipped ? data->unclipped_blend : data->blend;
 
     const int nspans = 512;
-    QT_FT_Span spans[nspans];
+    Q_DECL_UNINITIALIZED QT_FT_Span spans[nspans];
 
     Q_ASSERT(data->blend);
     int y = y1;
@@ -3587,7 +3587,7 @@ void QRasterPaintEnginePrivate::rasterize(QT_FT_Outline *outline,
     // raster pool is changed for lower value, reallocations will
     // occur normally.
     int rasterPoolSize = MINIMUM_POOL_SIZE;
-    uchar rasterPoolOnStack[MINIMUM_POOL_SIZE + 0xf];
+    Q_DECL_UNINITIALIZED uchar rasterPoolOnStack[MINIMUM_POOL_SIZE + 0xf];
     uchar *rasterPoolBase = alignAddress(rasterPoolOnStack, 0xf);
     uchar *rasterPoolOnHeap = nullptr;
 
@@ -4077,7 +4077,7 @@ static void qt_span_fill_clipped(int spanCount, const QT_FT_Span *spans, void *u
     Q_ASSERT(fillData->blend && fillData->unclipped_blend);
 
     const int NSPANS = 512;
-    QT_FT_Span cspans[NSPANS];
+    Q_DECL_UNINITIALIZED QT_FT_Span cspans[NSPANS];
     int currentClip = 0;
     const QT_FT_Span *end = spans + spanCount;
     while (spans < end) {

@@ -174,7 +174,7 @@ void convert_generic(QImageData *dest, const QImageData *src, Qt::ImageConversio
     }
 
     auto convertSegment = [=](int yStart, int yEnd) {
-        uint buf[BufferSize];
+        Q_DECL_UNINITIALIZED uint buf[BufferSize];
         uint *buffer = buf;
         const uchar *srcData = src->data + src->bytes_per_line * yStart;
         uchar *destData = dest->data + dest->bytes_per_line * yStart;
@@ -236,7 +236,7 @@ void convert_generic_over_rgb64(QImageData *dest, const QImageData *src, Qt::Ima
     const ConvertAndStorePixelsFunc64 store = qStoreFromRGBA64PM[dest->format];
 
     auto convertSegment = [=](int yStart, int yEnd) {
-        QRgba64 buf[BufferSize];
+        Q_DECL_UNINITIALIZED QRgba64 buf[BufferSize];
         QRgba64 *buffer = buf;
         const uchar *srcData = src->data + yStart * src->bytes_per_line;
         uchar *destData = dest->data + yStart * dest->bytes_per_line;
@@ -290,7 +290,7 @@ void convert_generic_over_rgba32f(QImageData *dest, const QImageData *src, Qt::I
     const ConvertAndStorePixelsFuncFP store = qStoreFromRGBA32F[dest->format];
 
     auto convertSegment = [=](int yStart, int yEnd) {
-        QRgbaFloat32 buf[BufferSize];
+        Q_DECL_UNINITIALIZED QRgbaFloat32 buf[BufferSize];
         QRgbaFloat32 *buffer = buf;
         const uchar *srcData = src->data + yStart * src->bytes_per_line;
         uchar *destData = dest->data + yStart * dest->bytes_per_line;
@@ -392,7 +392,7 @@ bool convert_generic_inplace(QImageData *data, QImage::Format dst_format, Qt::Im
     }
 
     auto convertSegment = [=](int yStart, int yEnd) {
-        uint buf[BufferSize];
+        Q_DECL_UNINITIALIZED uint buf[BufferSize];
         uint *buffer = buf;
         uchar *srcData = data->data + data->bytes_per_line * yStart;
         uchar *destData = srcData; // This can be temporarily wrong if we doing a shrinking conversion
@@ -491,7 +491,7 @@ bool convert_generic_inplace_over_rgb64(QImageData *data, QImage::Format dst_for
     }
 
     auto convertSegment = [=](int yStart, int yEnd) {
-        QRgba64 buf[BufferSize];
+        Q_DECL_UNINITIALIZED QRgba64 buf[BufferSize];
         QRgba64 *buffer = buf;
         uchar *srcData = data->data + yStart * data->bytes_per_line;
         uchar *destData = srcData;
@@ -585,7 +585,7 @@ bool convert_generic_inplace_over_rgba32f(QImageData *data, QImage::Format dst_f
     }
 
     auto convertSegment = [=](int yStart, int yEnd) {
-        QRgbaFloat32 buf[BufferSize];
+        Q_DECL_UNINITIALIZED QRgbaFloat32 buf[BufferSize];
         QRgbaFloat32 *buffer = buf;
         uchar *srcData = data->data + yStart * data->bytes_per_line;
         uchar *destData = srcData;
@@ -1452,7 +1452,7 @@ static void convert_ARGB_to_gray16(QImageData *dest, const QImageData *src, Qt::
             ? QColorTransformPrivate::InputPremultiplied
             : QColorTransformPrivate::Unpremultiplied;
 
-    QRgba64 tmp_line[BufferSize];
+    Q_DECL_UNINITIALIZED QRgba64 tmp_line[BufferSize];
     for (int i = 0; i < src->height; ++i) {
         const QRgb *src_line = reinterpret_cast<const QRgb *>(src_data);
         quint16 *dest_line = reinterpret_cast<quint16 *>(dest_data);
@@ -1491,7 +1491,7 @@ static void convert_RGBA64_to_gray8(QImageData *dest, const QImageData *src, Qt:
             ? QColorTransformPrivate::InputPremultiplied
             : QColorTransformPrivate::Unpremultiplied;
 
-    quint16 gray_line[BufferSize];
+    Q_DECL_UNINITIALIZED quint16 gray_line[BufferSize];
     for (int i = 0; i < src->height; ++i) {
         const QRgba64 *src_line = reinterpret_cast<const QRgba64 *>(src_data);
         uchar *dest_line = dest_data;

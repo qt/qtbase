@@ -943,7 +943,7 @@ QString QCommonStylePrivate::calculateElidedText(const QString &text, const QTex
                     text.chop(1);
                 text += QChar(0x2026);
             }
-            const QStackTextEngine engine(text, font);
+            Q_DECL_UNINITIALIZED const QStackTextEngine engine(text, font);
             ret += engine.elidedText(textElideMode, textRect.width(), flags);
 
             // no newline for the last line (last visible or real)
