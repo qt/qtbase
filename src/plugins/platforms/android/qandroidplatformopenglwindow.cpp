@@ -81,12 +81,12 @@ void QAndroidPlatformOpenGLWindow::setGeometry(const QRect &rect)
         repaint(QRegion(rect));
 }
 
+// Called by QAndroidPlatformOpenGLContext::eglSurfaceForPlatformSurface(),
+// surface is already locked when calling this
 EGLSurface QAndroidPlatformOpenGLWindow::eglSurface(EGLConfig config)
 {
     if (QAndroidEventDispatcherStopper::stopped() || QGuiApplication::applicationState() == Qt::ApplicationSuspended)
         return m_eglSurface;
-
-    QMutexLocker lock(&m_surfaceMutex);
 
     if (m_nativeSurfaceId == -1) {
         AndroidDeadlockProtector protector;
@@ -98,17 +98,16 @@ EGLSurface QAndroidPlatformOpenGLWindow::eglSurface(EGLConfig config)
         m_surfaceWaitCondition.wait(&m_surfaceMutex);
     }
 
-    if (m_eglSurface == EGL_NO_SURFACE) {
-        m_surfaceMutex.unlock();
+    if (m_eglSurface == EGL_NO_SURFACE)
         checkNativeSurface(config);
-        m_surfaceMutex.lock();
-    }
+
     return m_eglSurface;
 }
 
 bool QAndroidPlatformOpenGLWindow::checkNativeSurface(EGLConfig config)
 {
-    QMutexLocker lock(&m_surfaceMutex);
+    // Either no surface created, or the m_eglSurface already wraps the active Surface
+    // -> makeCurrent is NOT needed.
     if (m_nativeSurfaceId == -1 || !m_androidSurfaceObject.isValid())
         return false; // makeCurrent is NOT needed.
 
