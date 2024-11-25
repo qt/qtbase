@@ -35,7 +35,7 @@ public:
 protected:
     void surfaceChanged(JNIEnv *jniEnv, jobject surface, int w, int h) override;
     void createEgl(EGLConfig config);
-    void clearEgl();
+    void clearSurface() override;
 
 private:
     EGLDisplay m_eglDisplay = EGL_NO_DISPLAY;
