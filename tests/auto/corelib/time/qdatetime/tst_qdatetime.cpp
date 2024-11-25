@@ -2537,6 +2537,31 @@ void tst_QDateTime::ordering_data()
     generateRow(epochEast1h, epochWest1h, Qt::weak_ordering::equivalent);
     if (epochTimeType == LocalTimeIsUtc)
         generateRow(epoch, local1970, Qt::weak_ordering::equivalent);
+
+#if QT_CONFIG(timezone)
+    // See qtimezone.h's comments on M(ax|in)UtcOffsetSecs:
+    QTimeZone alaska("America/Metlakatla"), phillip("Asia/Manila");
+    if (alaska.isValid() && phillip.isValid()) {
+        // Date Narciso Claveria ordered Manila's transition:
+        QDateTime edict(QDate(1844, 8, 16), QTime(8, 4), phillip); // GMT start of next day
+        // Backends may lack relevant data, so check:
+        const int alaskaOffset = edict.toTimeZone(alaska).offsetFromUtc();
+        const int manilaOffset = edict.toTimeZone(phillip).offsetFromUtc();
+        if (manilaOffset < 0 && alaskaOffset > 0) {
+            qint64 offsetGap = alaskaOffset - manilaOffset; // 31h 9m 42s
+            QDateTime equiv = edict.toTimeZone(alaska); // 15:13:42, on the next day.
+            QTest::newRow("extreme.equivalent")
+                << edict << equiv << Qt::weak_ordering::equivalent;
+            // Despite internal msecs values; edict's is offsetGap * 1000 less than equiv's.
+            // Even the least increase in that gap does imply less:
+            QTest::newRow("extreme.less")
+                << edict << equiv.addMSecs(1) << Qt::weak_ordering::less;
+            // Until offsetGap seconds later, edict's msecs doesn't catch up with equiv's:
+            QTest::newRow("extreme.greater")
+                << edict.addSecs(offsetGap - 1) << equiv << Qt::weak_ordering::greater;
+        }
+    }
+#endif
 }
 
 void tst_QDateTime::ordering()
