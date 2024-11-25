@@ -5668,7 +5668,16 @@ bool QD3D12GraphicsPipeline::create()
     }
 
     QD3D12RenderPassDescriptor *rpD = QRHI_RES(QD3D12RenderPassDescriptor, m_renderPassDesc);
-    const DXGI_SAMPLE_DESC sampleDesc = rhiD->effectiveSampleDesc(m_sampleCount, DXGI_FORMAT(rpD->colorFormat[0]));
+    DXGI_FORMAT format = DXGI_FORMAT_UNKNOWN;
+    if (rpD->colorAttachmentCount > 0) {
+        format = DXGI_FORMAT(rpD->colorFormat[0]);
+    } else if (rpD->hasDepthStencil) {
+        format = DXGI_FORMAT(rpD->dsFormat);
+    } else {
+        qWarning("Cannot create graphics pipeline state without color or depthStencil format");
+        return false;
+    }
+    const DXGI_SAMPLE_DESC sampleDesc = rhiD->effectiveSampleDesc(m_sampleCount, format);
 
     struct {
         QD3D12PipelineStateSubObject<ID3D12RootSignature *, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_ROOT_SIGNATURE> rootSig;
