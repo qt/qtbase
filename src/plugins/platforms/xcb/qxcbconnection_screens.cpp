@@ -489,10 +489,6 @@ void QXcbConnection::initializeScreensFromMonitor(xcb_screen_iterator_t *it, int
         virtualDesktop = new QXcbVirtualDesktop(this, xcbScreen, xcbScreenNumber);
         m_virtualDesktops.append(virtualDesktop);
     }
-
-    if (xcbScreenNumber != primaryScreenNumber())
-        return;
-
     QList<QPlatformScreen*> old = virtualDesktop->m_screens;
 
     QList<QPlatformScreen *> siblings;
@@ -525,12 +521,14 @@ void QXcbConnection::initializeScreensFromMonitor(xcb_screen_iterator_t *it, int
         siblings << screen;
 
         // similar logic with QXcbConnection::initializeScreensFromOutput()
-        if (!(*primaryScreen) || monitor_info->primary) {
-            if (*primaryScreen)
-                (*primaryScreen)->setPrimary(false);
-            *primaryScreen = screen;
-            (*primaryScreen)->setPrimary(true);
-            siblings.prepend(siblings.takeLast());
+        if (primaryScreenNumber() == xcbScreenNumber) {
+            if (!(*primaryScreen) || monitor_info->primary) {
+                if (*primaryScreen)
+                    (*primaryScreen)->setPrimary(false);
+                *primaryScreen = screen;
+                (*primaryScreen)->setPrimary(true);
+                siblings.prepend(siblings.takeLast());
+            }
         }
 
         xcb_randr_monitor_info_next(&monitor_iter);
@@ -553,8 +551,10 @@ void QXcbConnection::initializeScreensFromMonitor(xcb_screen_iterator_t *it, int
             qCDebug(lcQpaScreen) << "create a fake screen: " << screen;
         }
 
-        *primaryScreen = screen;
-        (*primaryScreen)->setPrimary(true);
+        if (primaryScreenNumber() == xcbScreenNumber) {
+            *primaryScreen = screen;
+            (*primaryScreen)->setPrimary(true);
+        }
 
         siblings << screen;
         m_screens << screen;
