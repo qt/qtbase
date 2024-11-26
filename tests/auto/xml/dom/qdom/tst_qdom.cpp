@@ -114,6 +114,7 @@ private slots:
     void QTBUG49113_dontCrashWithNegativeIndex() const;
     void standalone();
     void splitTextLeakMemory() const;
+    void noCrashOnDeepNesting() const;
 
     void cleanupTestCase() const;
 
@@ -2335,6 +2336,22 @@ void tst_QDom::splitTextLeakMemory() const
     // only the parent node and the document have a reference on the nodes
     QCOMPARE(text.impl->ref.loadRelaxed(), 2);
     QCOMPARE(end.impl->ref.loadRelaxed(), 2);
+}
+
+// The fix of QTBUG-131151 crash
+void tst_QDom::noCrashOnDeepNesting() const
+{
+    const QString prefix = QFINDTESTDATA("testdata/");
+    if (prefix.isEmpty())
+        QFAIL("Cannot find testdata directory!");
+
+    QFile file(prefix + "/deeply-nested.svg");
+    QVERIFY(file.open(QIODevice::ReadOnly));
+    QDomDocument doc;
+    doc.setContent(&file);
+    QByteArray array = doc.toByteArray();
+    QVERIFY(array.size());
+    file.close();
 }
 
 QTEST_MAIN(tst_QDom)
