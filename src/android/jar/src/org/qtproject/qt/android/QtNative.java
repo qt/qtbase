@@ -331,17 +331,15 @@ public class QtNative
 
     static void startApplication(String params, String mainLib)
     {
-        synchronized (m_mainActivityMutex) {
-            m_qtThread.run(() -> {
-                final String qtParams = mainLib + " " + params;
-                if (!startQtAndroidPlugin(qtParams))
-                    Log.e(QtTAG, "An error occurred while starting the Qt Android plugin");
-            });
-            m_qtThread.post(QtNative::startQtApplication);
-            waitForServiceSetup();
-            m_stateDetails.isStarted = true;
-            notifyAppStateDetailsChanged(m_stateDetails);
-        }
+        m_qtThread.run(() -> {
+            final String qtParams = mainLib + " " + params;
+            if (!startQtAndroidPlugin(qtParams))
+                Log.e(QtTAG, "An error occurred while starting the Qt Android plugin");
+        });
+        m_qtThread.post(QtNative::startQtApplication);
+        waitForServiceSetup();
+        m_stateDetails.isStarted = true;
+        notifyAppStateDetailsChanged(m_stateDetails);
     }
 
     static void quitApp()
