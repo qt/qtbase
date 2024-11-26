@@ -362,9 +362,24 @@ namespace QtAndroid
 
 } // namespace QtAndroid
 
+static bool initJavaReferences(QJniEnvironment &env);
+
 static jboolean startQtAndroidPlugin(JNIEnv *env, jobject /*object*/, jstring paramsString)
 {
     Q_UNUSED(env)
+    // Init all the Java refs, if they haven't already been initialized. They get initialized
+    // when the library is loaded, but in case Qt is terminated, they are cleared, and in case
+    // Qt is then started again JNI_OnLoad will not be called again, since the library is already
+    // loaded - in that case we need to init again here, hence the check.
+    // TODO QTBUG-130614 QtCore also inits some Java references in qjnihelpers - we probably
+    // want to reset those, too.
+    QJniEnvironment qEnv;
+    if (!qEnv.isValid()) {
+        __android_log_print(ANDROID_LOG_FATAL, "Qt", "Failed to initialize the JNI Environment");
+        return JNI_ERR;
+    }
+    if (!initJavaReferences(qEnv))
+        return false;
 
     m_androidPlatformIntegration = nullptr;
     m_androidAssetsFileEngineHandler = new AndroidAssetsFileEngineHandler();
@@ -486,6 +501,46 @@ static void quitQtAndroidPlugin(JNIEnv *env, jclass /*clazz*/)
     m_androidApkFileEngineHandler = nullptr;
 }
 
+static void clearJavaReferences(JNIEnv *env)
+{
+    if (m_applicationClass) {
+        env->DeleteGlobalRef(m_applicationClass);
+        m_applicationClass = nullptr;
+    }
+    if (m_resourcesObj) {
+        env->DeleteGlobalRef(m_resourcesObj);
+        m_resourcesObj = nullptr;
+    }
+    if (m_bitmapClass) {
+        env->DeleteGlobalRef(m_bitmapClass);
+        m_bitmapClass = nullptr;
+    }
+    if (m_ARGB_8888_BitmapConfigValue) {
+        env->DeleteGlobalRef(m_ARGB_8888_BitmapConfigValue);
+        m_ARGB_8888_BitmapConfigValue = nullptr;
+    }
+    if (m_RGB_565_BitmapConfigValue) {
+        env->DeleteGlobalRef(m_RGB_565_BitmapConfigValue);
+        m_RGB_565_BitmapConfigValue = nullptr;
+    }
+    if (m_bitmapDrawableClass) {
+        env->DeleteGlobalRef(m_bitmapDrawableClass);
+        m_bitmapDrawableClass = nullptr;
+    }
+    if (m_assets) {
+        env->DeleteGlobalRef(m_assets);
+        m_assets = nullptr;
+    }
+    if (m_qtActivityClass) {
+        env->DeleteGlobalRef(m_qtActivityClass);
+        m_qtActivityClass = nullptr;
+    }
+    if (m_qtServiceClass) {
+        env->DeleteGlobalRef(m_qtServiceClass);
+        m_qtServiceClass = nullptr;
+    }
+}
+
 static void terminateQt(JNIEnv *env, jclass /*clazz*/)
 {
     // QAndroidEventDispatcherStopper is stopped when the user uses the task manager to kill the application
@@ -500,23 +555,8 @@ static void terminateQt(JNIEnv *env, jclass /*clazz*/)
 
     sem_destroy(&m_terminateSemaphore);
 
-    env->DeleteGlobalRef(m_applicationClass);
-    if (m_resourcesObj)
-        env->DeleteGlobalRef(m_resourcesObj);
-    if (m_bitmapClass)
-        env->DeleteGlobalRef(m_bitmapClass);
-    if (m_ARGB_8888_BitmapConfigValue)
-        env->DeleteGlobalRef(m_ARGB_8888_BitmapConfigValue);
-    if (m_RGB_565_BitmapConfigValue)
-        env->DeleteGlobalRef(m_RGB_565_BitmapConfigValue);
-    if (m_bitmapDrawableClass)
-        env->DeleteGlobalRef(m_bitmapDrawableClass);
-    if (m_assets)
-        env->DeleteGlobalRef(m_assets);
-    if (m_qtActivityClass)
-        env->DeleteGlobalRef(m_qtActivityClass);
-    if (m_qtServiceClass)
-        env->DeleteGlobalRef(m_qtServiceClass);
+    clearJavaReferences(env);
+
     m_androidPlatformIntegration = nullptr;
     delete m_androidAssetsFileEngineHandler;
     m_androidAssetsFileEngineHandler = nullptr;
@@ -753,17 +793,9 @@ Q_DECLARE_JNI_CLASS(QtDisplayManager, "org/qtproject/qt/android/QtDisplayManager
 
 static bool registerNatives(QJniEnvironment &env)
 {
-    jclass clazz;
-    FIND_AND_CHECK_CLASS("org/qtproject/qt/android/QtNative");
-    m_applicationClass = static_cast<jclass>(env->NewGlobalRef(clazz));
-
-    if (!env.registerNativeMethods(m_applicationClass,
-                                   methods, sizeof(methods) / sizeof(methods[0]))) {
-        __android_log_print(ANDROID_LOG_FATAL,"Qt", "RegisterNatives failed");
-        return false;
-    }
-
-    bool success = env.registerNativeMethods(
+    bool success = env.registerNativeMethods(m_applicationClass,
+                   methods, sizeof(methods) / sizeof(methods[0]));
+    success &= env.registerNativeMethods(
             QtJniTypes::Traits<QtJniTypes::QtDisplayManager>::className(),
             {
                     Q_JNI_NATIVE_METHOD(setDisplayMetrics),
@@ -775,13 +807,34 @@ static bool registerNatives(QJniEnvironment &env)
                     Q_JNI_NATIVE_METHOD(handleUiDarkModeChanged)
             });
 
-    if (!success) {
-        qCritical() << "QtDisplayManager: registerNativeMethods() failed";
-        return JNI_FALSE;
-    }
+    success = success
+        && QtAndroidInput::registerNatives(env)
+        && QtAndroidMenu::registerNatives(env)
+        && QtAndroidAccessibility::registerNatives(env)
+        && QtAndroidDialogHelpers::registerNatives(env)
+        && QAndroidPlatformClipboard::registerNatives(env)
+        && QAndroidPlatformWindow::registerNatives(env)
+        && QtAndroidWindowEmbedding::registerNatives(env)
+        && AndroidBackendRegister::registerNatives()
+        && QAndroidModelIndexProxy::registerNatives(env)
+        && QAndroidItemModelProxy::registerAbstractNatives(env)
+        && QAndroidItemModelProxy::registerProxyNatives(env);
+
+    return success;
+}
+
+static bool initJavaReferences(QJniEnvironment &env)
+{
+    if (m_applicationClass)
+        return true;
+
+    jclass clazz;
+    FIND_AND_CHECK_CLASS("org/qtproject/qt/android/QtNative");
+    m_applicationClass = static_cast<jclass>(env->NewGlobalRef(clazz));
 
     jmethodID methodID;
     GET_AND_CHECK_STATIC_METHOD(methodID, m_applicationClass, "activity", "()Landroid/app/Activity;");
+
     jobject contextObject = env->CallStaticObjectMethod(m_applicationClass, methodID);
     if (!contextObject) {
         GET_AND_CHECK_STATIC_METHOD(methodID, m_applicationClass, "service", "()Landroid/app/Service;");
@@ -826,6 +879,11 @@ static bool registerNatives(QJniEnvironment &env)
     FIND_AND_CHECK_CLASS("org/qtproject/qt/android/QtServiceBase");
     m_qtServiceClass = static_cast<jclass>(env->NewGlobalRef(clazz));
 
+    // The current thread will be the Qt thread, name it accordingly
+    QThread::currentThread()->setObjectName("QtMainLoopThread");
+
+    QWindowSystemInterfacePrivate::TabletEvent::setPlatformSynthesizesMouse(false);
+
     return true;
 }
 
@@ -839,31 +897,21 @@ Q_DECL_EXPORT jint JNICALL JNI_OnLoad(JavaVM */*vm*/, void */*reserved*/)
     initialized = true;
 
     QT_USE_NAMESPACE
+
     QJniEnvironment env;
     if (!env.isValid()) {
         __android_log_print(ANDROID_LOG_FATAL, "Qt", "Failed to initialize the JNI Environment");
-        return -1;
+        return JNI_ERR;
     }
 
-    if (!registerNatives(env)
-            || !QtAndroidInput::registerNatives(env)
-            || !QtAndroidMenu::registerNatives(env)
-            || !QtAndroidAccessibility::registerNatives(env)
-            || !QtAndroidDialogHelpers::registerNatives(env)
-            || !QAndroidPlatformClipboard::registerNatives(env)
-            || !QAndroidPlatformWindow::registerNatives(env)
-            || !QtAndroidWindowEmbedding::registerNatives(env)
-            || !AndroidBackendRegister::registerNatives()
-            || !QAndroidModelIndexProxy::registerNatives(env)
-            || !QAndroidItemModelProxy::registerAbstractNatives(env)
-            || !QAndroidItemModelProxy::registerProxyNatives(env)) {
+    if (!initJavaReferences(env))
+        return JNI_ERR;
+
+    if (!registerNatives(env)) {
         __android_log_print(ANDROID_LOG_FATAL, "Qt", "registerNatives failed");
-        return -1;
+        return JNI_ERR;
     }
-    QWindowSystemInterfacePrivate::TabletEvent::setPlatformSynthesizesMouse(false);
 
-    // attach qt main thread data to this thread
-    QThread::currentThread()->setObjectName("QtMainLoopThread");
     __android_log_print(ANDROID_LOG_INFO, "Qt", "qt started");
     return JNI_VERSION_1_6;
 }
