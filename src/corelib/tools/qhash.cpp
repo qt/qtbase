@@ -1085,16 +1085,13 @@ void qSetGlobalQHashSeed(int newSeed)
 */
 uint qt_hash(QStringView key, uint chained) noexcept
 {
-    auto n = key.size();
-    auto p = key.utf16();
-
     uint h = chained;
 
-    while (n--) {
-        h = (h << 4) + *p++;
+    for (auto c: key) {
+        h = (h << 4) + c.unicode();
         h ^= (h & 0xf0000000) >> 23;
-        h &= 0x0fffffff;
     }
+    h &= 0x0fffffff;
     return h;
 }
 
