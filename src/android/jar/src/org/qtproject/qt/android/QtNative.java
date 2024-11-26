@@ -348,6 +348,9 @@ public class QtNative
 
     static void startApplication(String params, String mainLib)
     {
+        if (m_stateDetails.isStarted)
+            return;
+
         QtThread thread = getQtThread();
         thread.run(() -> {
             final String qtParams = mainLib + " " + params;
