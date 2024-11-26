@@ -49,14 +49,6 @@ namespace QtAndroid
     AAssetManager *assetManager();
     jclass applicationClass();
 
-    // Keep synchronized with flags in ActivityDelegate.java
-    enum SystemUiVisibility {
-        SYSTEM_UI_VISIBILITY_NORMAL = 0,
-        SYSTEM_UI_VISIBILITY_FULLSCREEN = 1,
-        SYSTEM_UI_VISIBILITY_TRANSLUCENT = 2
-    };
-    void setSystemUiVisibility(SystemUiVisibility uiVisibility);
-
     jobject createBitmap(QImage img, JNIEnv *env = nullptr);
     jobject createBitmap(int width, int height, QImage::Format format, JNIEnv *env);
     jobject createBitmapDrawable(jobject bitmap, JNIEnv *env = nullptr);

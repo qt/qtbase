@@ -16,6 +16,7 @@ QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcQpaWindow, "qt.qpa.window")
 
+Q_DECLARE_JNI_CLASS(QtWindowInterface, "org/qtproject/qt/android/QtWindowInterface")
 Q_DECLARE_JNI_CLASS(QtInputInterface, "org/qtproject/qt/android/QtInputInterface")
 Q_DECLARE_JNI_CLASS(QtInputConnectionListener,
                     "org/qtproject/qt/android/QtInputConnection$QtInputConnectionListener")
@@ -257,12 +258,16 @@ void QAndroidPlatformWindow::updateSystemUiVisibility()
     Qt::WindowFlags flags = window()->flags();
     bool isNonRegularWindow = flags & (Qt::Popup | Qt::Dialog | Qt::Sheet) & ~Qt::Window;
     if (!isNonRegularWindow) {
+        SystemUiVisibility visibility;
         if (m_windowState & Qt::WindowFullScreen)
-            QtAndroid::setSystemUiVisibility(QtAndroid::SYSTEM_UI_VISIBILITY_FULLSCREEN);
+            visibility = SYSTEM_UI_VISIBILITY_FULLSCREEN;
         else if (flags & Qt::MaximizeUsingFullscreenGeometryHint)
-            QtAndroid::setSystemUiVisibility(QtAndroid::SYSTEM_UI_VISIBILITY_TRANSLUCENT);
+            visibility = SYSTEM_UI_VISIBILITY_TRANSLUCENT;
         else
-            QtAndroid::setSystemUiVisibility(QtAndroid::SYSTEM_UI_VISIBILITY_NORMAL);
+            visibility = SYSTEM_UI_VISIBILITY_NORMAL;
+
+        QtAndroid::backendRegister()->callInterface<QtJniTypes::QtWindowInterface, void>(
+            "setSystemUiVisibility", jint(visibility));
     }
 }
 
