@@ -44,7 +44,8 @@ public class QtNative
     // a list containing all actions which could not be performed (e.g. the main activity is destroyed, etc.)
     private static final ArrayList<Runnable> m_lostActions = new ArrayList<>();
 
-    private static final QtThread m_qtThread = new QtThread();
+    private static QtThread m_qtThread = null;
+    private static final Object m_qtThreadLock = new Object();
     private static ClassLoader m_classLoader = null;
 
     private static final Runnable runPendingCppRunnablesRunnable = QtNative::runPendingCppRunnables;
@@ -193,7 +194,15 @@ public class QtNative
     }
 
     static QtThread getQtThread() {
-        return m_qtThread;
+        if (m_qtThread != null)
+            return m_qtThread;
+
+        synchronized (m_qtThreadLock) {
+            if (m_qtThread == null)
+                m_qtThread = new QtThread();
+
+            return m_qtThread;
+        }
     }
 
     interface AppStateDetailsListener {
@@ -331,12 +340,13 @@ public class QtNative
 
     static void startApplication(String params, String mainLib)
     {
-        m_qtThread.run(() -> {
+        QtThread thread = getQtThread();
+        thread.run(() -> {
             final String qtParams = mainLib + " " + params;
             if (!startQtAndroidPlugin(qtParams))
                 Log.e(QtTAG, "An error occurred while starting the Qt Android plugin");
         });
-        m_qtThread.post(QtNative::startQtApplication);
+        thread.post(QtNative::startQtApplication);
         waitForServiceSetup();
         m_stateDetails.isStarted = true;
         notifyAppStateDetailsChanged(m_stateDetails);
@@ -353,6 +363,17 @@ public class QtNative
             m_stateDetails.isStarted = false;
             notifyAppStateDetailsChanged(m_stateDetails);
         });
+    }
+
+    static void quitQt()
+    {
+        terminateQt();
+        m_stateDetails.isStarted = false;
+        notifyAppStateDetailsChanged(m_stateDetails);
+        getQtThread().exit();
+        synchronized (m_qtThreadLock) {
+            m_qtThread = null;
+        }
     }
 
     @UsedFromNativeCode
