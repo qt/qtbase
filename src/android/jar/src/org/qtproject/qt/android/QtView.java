@@ -155,14 +155,14 @@ abstract class QtView extends ViewGroup {
 
         loader.setMainLibraryName(appLibName);
         QtLoader.LoadingResult result = loader.loadQtLibraries();
-        if (result == QtLoader.LoadingResult.Succeeded) {
-            // Start Native Qt application
-            m_viewInterface.startQtApplication(loader.getApplicationParameters(),
-                                               loader.getMainLibraryPath());
-        } else if (result == QtLoader.LoadingResult.Failed) {
+        if (result == QtLoader.LoadingResult.Failed) {
             // If we weren't able to load the libraries, remove the delegate from the factory
             // as it's holding a reference to the Context, and we don't want it leaked
             QtEmbeddedViewInterfaceFactory.remove(getContext());
+        } else {
+            // Start Native Qt application
+            m_viewInterface.startQtApplication(loader.getApplicationParameters(),
+                                               loader.getMainLibraryPath());
         }
     }
 
