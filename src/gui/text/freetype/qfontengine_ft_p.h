@@ -152,8 +152,9 @@ private:
     QFixed emSquareSize() const override;
     bool supportsHorizontalSubPixelPositions() const override
     {
-        return default_hint_style == HintLight ||
-               default_hint_style == HintNone;
+        return !isColorFont()
+                && (default_hint_style == HintLight ||
+                    default_hint_style == HintNone);
     }
 
     bool supportsVerticalSubPixelPositions() const override

@@ -688,7 +688,8 @@ QImage QWindowsFontEngineDirectWrite::alphaMapForGlyph(glyph_t glyph,
 bool QWindowsFontEngineDirectWrite::supportsHorizontalSubPixelPositions() const
 {
     DWRITE_RENDERING_MODE renderMode = hintingPreferenceToRenderingMode(fontDef);
-    return  (renderMode != DWRITE_RENDERING_MODE_GDI_CLASSIC
+    return  (!isColorFont()
+            && renderMode != DWRITE_RENDERING_MODE_GDI_CLASSIC
             && renderMode != DWRITE_RENDERING_MODE_GDI_NATURAL
             && renderMode != DWRITE_RENDERING_MODE_ALIASED);
 }
