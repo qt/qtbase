@@ -55,8 +55,6 @@ using namespace Qt::StringLiterals;
     about the underlying files and directories related to items in the model.
     Directories can be created and removed using mkdir(), rmdir().
 
-    \note QFileSystemModel requires an instance of \l QApplication.
-
     \section1 Example Usage
 
     A directory model that displays the contents of a default directory
@@ -80,13 +78,15 @@ using namespace Qt::StringLiterals;
 
     \section1 Caching and Performance
 
-    QFileSystemModel will not fetch any files or directories until setRootPath()
-    is called.  This will prevent any unnecessary querying on the file system
-    until that point such as listing the drives on Windows.
+    QFileSystemModel uses a separate thread to populate itself, so it will not
+    cause the main thread to hang as the file system is being queried. Calls to
+    rowCount() will return \c 0 until the model populates a directory. The thread
+    in which the QFileSystemModel lives needs to run an event loop to process
+    the incoming data.
 
-    QFileSystemModel uses a separate thread to populate itself so it will not
-    cause the main thread to hang as the file system is being queried.
-    Calls to rowCount() will return 0 until the model populates a directory.
+    QFileSystemModel will not start populating itself until setRootPath() is
+    called. This prevents any unnecessary querying of the system's root file
+    system, such as enumerating the drives on Windows, until that point.
 
     QFileSystemModel keeps a cache with file information. The cache is
     automatically kept up to date using the QFileSystemWatcher.
@@ -1489,6 +1489,8 @@ QFile::Permissions QFileSystemModel::permissions(const QModelIndex &index) const
     modify the data available to views. In other words, the "root" of
     the model is \e not changed to include only files and directories
     within the directory specified by \a newPath in the file system.
+
+    \sa {QTreeView::setRootIndex()}, {QtQuick::}{TreeView::rootIndex}
   */
 QModelIndex QFileSystemModel::setRootPath(const QString &newPath)
 {
