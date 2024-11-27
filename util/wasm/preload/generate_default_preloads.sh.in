@@ -1,0 +1,19 @@
+#!/bin/bash
+
+TARGET_DIR="@TARGET_DIR@"
+SOURCE_DIR="@SOURCE_DIR@"
+QT_HOST_DIR="@QT_HOST_DIR@"
+QT_WASM_DIR="@QT_WASM_DIR@"
+QT_INSTALL_DIR="@QT_INSTALL_DIR@"
+
+python3 \
+    "$QT_WASM_DIR/libexec/preload_qt_plugins.py" \
+    "$QT_INSTALL_DIR" \
+    "$TARGET_DIR"
+
+python3 \
+    "$QT_WASM_DIR/libexec/preload_qml_imports.py" \
+    "$SOURCE_DIR" \
+    "$QT_HOST_DIR" \
+    "$QT_INSTALL_DIR" \
+    "$TARGET_DIR"
