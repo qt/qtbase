@@ -79,6 +79,11 @@ qt_internal_add_resource(QCocoaIntegrationPlugin "qcocoaresources"
         ${qcocoaresources_resource_files}
 )
 
+if(CMAKE_OSX_DEPLOYMENT_TARGET VERSION_GREATER_EQUAL 15.0)
+    message(FATAL_ERROR "QCocoaScreen uses APIs removed in 15.0. Please specify a
+        CMAKE_OSX_DEPLOYMENT_TARGET of 14.0 or lower")
+endif()
+
 ## Scopes:
 #####################################################################
 
