@@ -1178,7 +1178,7 @@ void QFileSystemModel::sort(int column, Qt::SortOrder order)
         newList.append(d->index(node, col));
 
     changePersistentIndexList(oldList, newList);
-    emit layoutChanged();
+    emit layoutChanged({}, VerticalSortHint);
 }
 
 /*!
