@@ -508,8 +508,7 @@ void QWidgetWindow::handleNonClientAreaMouseEvent(QMouseEvent *e)
 
 void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
 {
-    if (QApplicationPrivate::inPopupMode()) {
-        QPointer<QWidget> activePopupWidget = QApplication::activePopupWidget();
+    if (auto *activePopupWidget = QApplication::activePopupWidget()) {
         QPointF mapped = event->position();
         if (activePopupWidget != m_widget)
             mapped = activePopupWidget->mapFromGlobal(event->globalPosition());
@@ -685,7 +684,7 @@ void QWidgetWindow::handleTouchEvent(QTouchEvent *event)
     if (event->type() == QEvent::TouchCancel) {
         QApplicationPrivate::translateTouchCancel(event->pointingDevice(), event->timestamp());
         event->accept();
-    } else if (QApplicationPrivate::inPopupMode()) {
+    } else if (QApplication::activePopupWidget()) {
         // Ignore touch events for popups. This will cause QGuiApplication to synthesise mouse
         // events instead, which QWidgetWindow::handleMouseEvent will forward correctly:
         event->ignore();
@@ -700,8 +699,7 @@ void QWidgetWindow::handleKeyEvent(QKeyEvent *event)
         return;
 
     QObject *receiver = QWidget::keyboardGrabber();
-    if (!receiver && QApplicationPrivate::inPopupMode()) {
-        QWidget *popup = QApplication::activePopupWidget();
+    if (auto *popup = QApplication::activePopupWidget(); !receiver && popup) {
         QWidget *popupFocusWidget = popup->focusWidget();
         receiver = popupFocusWidget ? popupFocusWidget : popup;
     }
@@ -1140,8 +1138,7 @@ void QWidgetWindow::handleGestureEvent(QNativeGestureEvent *e)
 {
     // copy-pasted code to find correct widget follows:
     QObject *receiver = nullptr;
-    if (QApplicationPrivate::inPopupMode()) {
-        QWidget *popup = QApplication::activePopupWidget();
+    if (auto *popup = QApplication::activePopupWidget()) {
         QWidget *popupFocusWidget = popup->focusWidget();
         receiver = popupFocusWidget ? popupFocusWidget : popup;
     }
