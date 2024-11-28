@@ -157,7 +157,7 @@ public class QtActivityBase extends Activity
             m_delegate.displayManager().registerDisplayListener();
             QtNative.updateWindow();
             // Suspending the app clears the immersive mode, so we need to set it again.
-            m_delegate.displayManager().updateFullScreen();
+            m_delegate.displayManager().reinstateFullScreen();
         }
     }
 
@@ -290,8 +290,9 @@ public class QtActivityBase extends Activity
     {
         super.onRestoreInstanceState(savedInstanceState);
         QtNative.setStarted(savedInstanceState.getBoolean("Started"));
-        int savedSystemUiVisibility = savedInstanceState.getInt("SystemUiVisibility");
-        m_delegate.displayManager().setSystemUiVisibility(savedSystemUiVisibility);
+        boolean isFullScreen = savedInstanceState.getBoolean("isFullScreen");
+        boolean expandedToCutout = savedInstanceState.getBoolean("expandedToCutout");
+        m_delegate.displayManager().setSystemUiVisibility(isFullScreen, expandedToCutout);
         // FIXME restore all surfaces
     }
 
@@ -307,7 +308,8 @@ public class QtActivityBase extends Activity
     protected void onSaveInstanceState(Bundle outState)
     {
         super.onSaveInstanceState(outState);
-        outState.putInt("SystemUiVisibility", m_delegate.displayManager().systemUiVisibility());
+        outState.putBoolean("isFullScreen", m_delegate.displayManager().isFullScreen());
+        outState.putBoolean("expandedToCutout", m_delegate.displayManager().expandedToCutout());
         outState.putBoolean("Started", QtNative.getStateDetails().isStarted);
     }
 
@@ -316,7 +318,7 @@ public class QtActivityBase extends Activity
     {
         super.onWindowFocusChanged(hasFocus);
         if (hasFocus)
-            m_delegate.displayManager().updateFullScreen();
+            m_delegate.displayManager().reinstateFullScreen();
     }
 
     @Override

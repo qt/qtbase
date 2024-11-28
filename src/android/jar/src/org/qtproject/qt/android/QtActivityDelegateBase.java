@@ -60,7 +60,7 @@ abstract class QtActivityDelegateBase
         m_activity = activity;
         QtNative.setActivity(m_activity);
         m_displayManager = new QtDisplayManager(m_activity);
-        m_inputDelegate = new QtInputDelegate(m_displayManager::updateFullScreen);
+        m_inputDelegate = new QtInputDelegate(m_displayManager::reinstateFullScreen);
         m_accessibilityDelegate = new QtAccessibilityDelegate();
     }
 

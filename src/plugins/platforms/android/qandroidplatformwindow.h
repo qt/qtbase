@@ -31,13 +31,6 @@ public:
         TextureView
     };
 
-    // Keep synchronized with flags in ActivityDelegate.java
-    enum SystemUiVisibility {
-        SYSTEM_UI_VISIBILITY_NORMAL = 0,
-        SYSTEM_UI_VISIBILITY_FULLSCREEN = 1,
-        SYSTEM_UI_VISIBILITY_TRANSLUCENT = 2
-    };
-
     explicit QAndroidPlatformWindow(QWindow *window);
     void initialize() override;
 

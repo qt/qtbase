@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qandroidplatformwindow.h"
+#include "androidbackendregister.h"
 #include "qandroidplatformopenglcontext.h"
 #include "qandroidplatformscreen.h"
 
@@ -255,19 +256,13 @@ void QAndroidPlatformWindow::requestActivateWindow()
 
 void QAndroidPlatformWindow::updateSystemUiVisibility()
 {
-    Qt::WindowFlags flags = window()->flags();
-    bool isNonRegularWindow = flags & (Qt::Popup | Qt::Dialog | Qt::Sheet) & ~Qt::Window;
+    const int flags = window()->flags();
+    const bool isNonRegularWindow = flags & (Qt::Popup | Qt::Dialog | Qt::Sheet) & ~Qt::Window;
     if (!isNonRegularWindow) {
-        SystemUiVisibility visibility;
-        if (m_windowState & Qt::WindowFullScreen)
-            visibility = SYSTEM_UI_VISIBILITY_FULLSCREEN;
-        else if (flags & Qt::MaximizeUsingFullscreenGeometryHint)
-            visibility = SYSTEM_UI_VISIBILITY_TRANSLUCENT;
-        else
-            visibility = SYSTEM_UI_VISIBILITY_NORMAL;
-
+        const bool isFullScreen = (m_windowState & Qt::WindowFullScreen);
+        const bool expandedToCutout = (flags & Qt::MaximizeUsingFullscreenGeometryHint);
         QtAndroid::backendRegister()->callInterface<QtJniTypes::QtWindowInterface, void>(
-            "setSystemUiVisibility", jint(visibility));
+            "setSystemUiVisibility", isFullScreen, expandedToCutout);
     }
 }
 
