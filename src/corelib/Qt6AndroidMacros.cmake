@@ -443,10 +443,10 @@ function(qt6_android_add_apk_target target)
         "${apk_final_dir}/${target_file_copy_relative_path}"
     )
     add_custom_target(${target}_prepare_apk_dir ALL
-        DEPENDS ${target} ${extra_deps}
         COMMAND ${copy_command}
         COMMENT "Copying ${target} binary to apk folder"
     )
+    add_dependencies(${target}_prepare_apk_dir ${target} ${extra_deps})
 
     set(sign_apk "")
     if(QT_ANDROID_SIGN_APK)
@@ -514,7 +514,6 @@ function(qt6_android_add_apk_target target)
         add_custom_target(${target}_make_apk DEPENDS "${apk_final_file_path}")
     else()
         add_custom_target(${target}_make_apk
-            DEPENDS ${target}_prepare_apk_dir
             COMMAND  ${deployment_tool}
                 --input ${deployment_file}
                 --output ${apk_final_dir}
@@ -524,13 +523,13 @@ function(qt6_android_add_apk_target target)
             COMMENT "Creating APK for ${target}"
             VERBATIM
         )
+        add_dependencies(${target}_make_apk ${target}_prepare_apk_dir)
     endif()
 
     # Add target triggering AAB creation. Since the _make_aab target is not added to the ALL
     # set, we may avoid dependency check for it and admit that the target is "always out
     # of date".
     add_custom_target(${target}_make_aab
-        DEPENDS ${target}_prepare_apk_dir
         COMMAND  ${deployment_tool}
             --input ${deployment_file}
             --output ${apk_final_dir}
@@ -540,6 +539,7 @@ function(qt6_android_add_apk_target target)
             ${extra_args}
         COMMENT "Creating AAB for ${target}"
     )
+    add_dependencies(${target}_make_aab ${target}_prepare_apk_dir)
 
     if(QT_IS_ANDROID_MULTI_ABI_EXTERNAL_PROJECT)
         # When building per-ABI external projects we only need to copy ABI-specific libraries and
