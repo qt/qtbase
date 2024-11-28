@@ -101,8 +101,21 @@ void tst_QCommandLineParser::testPositionalArguments()
 {
     QCoreApplication app(empty_argc, empty_argv);
     QCommandLineParser parser;
+    const QString exeName = QCoreApplication::instance()->arguments().first(); // e.g. debug\tst_qcommandlineparser.exe on Windows
+    QString expectedNoPositional =
+            "Usage: " + exeName + "\n"
+            "\n";
+
+    QCOMPARE(parser.helpText(), expectedNoPositional);
     QVERIFY(parser.parse(QStringList() << "tst_qcommandlineparser" << "file.txt"));
     QCOMPARE(parser.positionalArguments(), QStringList() << QStringLiteral("file.txt"));
+
+    parser.addPositionalArgument("file", "File names", "<foobar>");
+    QString expected =
+            "Usage: " + exeName + " <foobar>\n"
+            "\n"
+            "Arguments:\n"
+            "  file File names\n";
 }
 
 void tst_QCommandLineParser::testBooleanOption_data()
@@ -159,7 +172,18 @@ void tst_QCommandLineParser::testOptionsAndPositional()
 
     QCoreApplication app(empty_argc, empty_argv);
     QCommandLineParser parser;
+    const QString exeName = QCoreApplication::instance()->arguments().first(); // e.g. debug\tst_qcommandlineparser.exe on Windows
+    const QString expectedHelpText =
+            "Usage: " + exeName + " [options] input\n"
+            "\n"
+            "Options:\n"
+            "  -b     a boolean option\n"
+            "\n"
+            "Arguments:\n"
+            "  input  File names\n";
+
     parser.setOptionsAfterPositionalArgumentsMode(parsingMode);
+    parser.addPositionalArgument("input", "File names");
     QVERIFY(parser.addOption(QCommandLineOption(QStringLiteral("b"), QStringLiteral("a boolean option"))));
     QVERIFY(parser.parse(args));
     QCOMPARE(parser.optionNames(), expectedOptionNames);
@@ -167,6 +191,7 @@ void tst_QCommandLineParser::testOptionsAndPositional()
     QTest::ignoreMessage(QtWarningMsg, "QCommandLineParser: option not expecting values: \"b\"");
     QCOMPARE(parser.values("b"), QStringList());
     QCOMPARE(parser.positionalArguments(), expectedPositionalArguments);
+    QCOMPARE(parser.helpText(), expectedHelpText);
 }
 
 void tst_QCommandLineParser::testMultipleNames_data()

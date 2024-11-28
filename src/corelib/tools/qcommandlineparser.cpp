@@ -1122,6 +1122,7 @@ QString QCommandLineParserPrivate::helpText(bool includeQtOptions) const
     text += nl;
     if (!options.isEmpty())
         text += QCommandLineParser::tr("Options:") + nl;
+
     QStringList optionNameList;
     optionNameList.reserve(options.size());
     qsizetype longestOptionNameString = 0;
@@ -1142,6 +1143,10 @@ QString QCommandLineParserPrivate::helpText(bool includeQtOptions) const
         optionNameList.append(optionNamesString);
         longestOptionNameString = qMax(longestOptionNameString, optionNamesString.size());
     }
+
+    for (const PositionalArgumentDefinition &arg : positionalArgumentDefinitions)
+        longestOptionNameString = qMax(longestOptionNameString, arg.name.size());
+
     ++longestOptionNameString;
     const int optionNameMaxWidth = qMin(50, int(longestOptionNameString));
     auto optionNameIterator = optionNameList.cbegin();
