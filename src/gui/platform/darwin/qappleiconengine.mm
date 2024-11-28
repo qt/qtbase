@@ -362,17 +362,23 @@ auto *configuredImage(const NSImage *image, const QColor &color)
     auto *config = [NSImageSymbolConfiguration configurationWithPointSize:48
                                                weight:NSFontWeightRegular
                                                scale:NSImageSymbolScaleLarge];
-    if (@available(macOS 12, *)) {
-        auto *primaryColor = [NSColor colorWithSRGBRed:color.redF()
-                                                 green:color.greenF()
-                                                  blue:color.blueF()
-                                                 alpha:color.alphaF()];
 
-        auto *colorConfig = [NSImageSymbolConfiguration configurationWithHierarchicalColor:primaryColor];
-        config = [config configurationByApplyingConfiguration:colorConfig];
-    }
+    NSImage *configuredImage = [image imageWithSymbolConfiguration:config];
 
-    return [image imageWithSymbolConfiguration:config];
+    auto *primaryColor = [NSColor colorWithSRGBRed:color.redF()
+                                             green:color.greenF()
+                                              blue:color.blueF()
+                                             alpha:color.alphaF()];
+
+    NSImage *tintedImage = [NSImage imageWithSize:configuredImage.size flipped:NO
+        drawingHandler:^BOOL(NSRect) {
+            [primaryColor set];
+            NSRect imageRect = {NSZeroPoint, configuredImage.size};
+            [configuredImage drawInRect:imageRect];
+            NSRectFillUsingOperation(imageRect, NSCompositingOperationSourceIn);
+            return YES;
+        }];
+    return tintedImage;
 }
 #elif defined(QT_PLATFORM_UIKIT)
 auto *configuredImage(const UIImage *image, const QColor &color)
@@ -381,16 +387,12 @@ auto *configuredImage(const UIImage *image, const QColor &color)
                                                weight:UIImageSymbolWeightRegular
                                                scale:UIImageSymbolScaleLarge];
 
-    if (@available(iOS 15, *)) {
-        auto *primaryColor = [UIColor colorWithRed:color.redF()
-                                             green:color.greenF()
-                                              blue:color.blueF()
-                                             alpha:color.alphaF()];
+    auto *primaryColor = [UIColor colorWithRed:color.redF()
+                                     green:color.greenF()
+                                      blue:color.blueF()
+                                     alpha:color.alphaF()];
 
-        auto *colorConfig = [UIImageSymbolConfiguration configurationWithHierarchicalColor:primaryColor];
-        config = [config configurationByApplyingConfiguration:colorConfig];
-    }
-    return [image imageByApplyingSymbolConfiguration:config];
+    return [[image imageByApplyingSymbolConfiguration:config] imageWithTintColor:primaryColor];
 }
 #endif
 }
