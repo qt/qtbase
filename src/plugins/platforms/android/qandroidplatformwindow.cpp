@@ -166,7 +166,7 @@ void QAndroidPlatformWindow::setVisible(bool visible)
         if (window()->isTopLevel()) {
             updateSystemUiVisibility();
             if ((m_windowState & Qt::WindowFullScreen)
-                    || ((m_windowState & Qt::WindowMaximized) && (window()->flags() & Qt::MaximizeUsingFullscreenGeometryHint))) {
+                || (window()->flags() & Qt::MaximizeUsingFullscreenGeometryHint)) {
                 setGeometry(platformScreen()->geometry());
             } else if (m_windowState & Qt::WindowMaximized) {
                 setGeometry(platformScreen()->availableGeometry());
