@@ -36,16 +36,22 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QMacAccessibilityElement);
 
     QMacAccessibilityElement *element = cache->elementForId(anId);
     if (!element) {
-        auto *a11yInterface = QAccessible::accessibleInterface(anId);
-        Q_ASSERT(a11yInterface);
-        auto *window = a11yInterface->window();
+        QWindow *window = nullptr;
+        auto *iface = QAccessible::accessibleInterface(anId);
+        while (iface) {
+            if ((window = iface->window()))
+                break;
+            iface = iface->parent();
+        }
+
         if (window && window->handle()) {
             auto *platformWindow = static_cast<QIOSWindow*>(window->handle());
             element = [[self alloc] initWithId:anId withAccessibilityContainer:platformWindow->view()];
             cache->insertElement(anId, element);
         } else {
-            qWarning() << "Could not create a11y element for" << window
-                << "with platform window" << (window ? window->handle() : nullptr);
+            qWarning() << "Could not create a11y element for" << iface
+                << "with window" << window
+                << "and platform window" << (window ? window->handle() : nullptr);
         }
     }
     return element;
