@@ -980,6 +980,11 @@ void tst_QTimeZone::availableTimeZoneIds()
         QCOMPARE_LT(list001.size(), listAll.size());
         QCOMPARE_LT(listUsa.size(), listAll.size());
         QCOMPARE_LT(listGmt.size(), listAll.size());
+        // And we do know CLDR data supplies some entries to each:
+        QCOMPARE_GT(listAll.size(), 0);
+        QCOMPARE_GT(list001.size(), 0);
+        QCOMPARE_GT(listUsa.size(), 0);
+        QCOMPARE_GT(listGmt.size(), 0);
     }
 }
 

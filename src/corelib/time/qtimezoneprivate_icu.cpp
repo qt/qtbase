@@ -425,6 +425,8 @@ QList<QByteArray> QIcuTimeZonePrivate::availableTimeZoneIds(QLocale::Territory t
     if (U_SUCCESS(status))
         result = uenumToIdList(uenum);
     uenum_close(uenum);
+    // We could merge in what matchingTimeZoneIds(territory) gives us, but
+    // hopefully that's redundant, as ICU packages CLDR.
     return result;
 }
 
@@ -439,6 +441,8 @@ QList<QByteArray> QIcuTimeZonePrivate::availableTimeZoneIds(int offsetFromUtc) c
     if (U_SUCCESS(status))
         result = uenumToIdList(uenum);
     uenum_close(uenum);
+    // We could merge in what matchingTimeZoneIds(offsetFromUtc) gives us, but
+    // hopefully that's redundant, as ICU packages CLDR.
     return result;
 #else
     return QTimeZonePrivate::availableTimeZoneIds(offsetFromUtc);

@@ -153,6 +153,12 @@ public:
         return QByteArrayLiteral("UTC");
     }
 
+protected:
+    // Zones CLDR data says match a condition.
+    // Use to filter what the backend has available.
+    QList<QByteArrayView> matchingTimeZoneIds(QLocale::Territory territory) const;
+    QList<QByteArrayView> matchingTimeZoneIds(int utcOffset) const;
+
 #if QT_CONFIG(timezone_locale)
 private:
     // Defined in qtimezonelocale.cpp
