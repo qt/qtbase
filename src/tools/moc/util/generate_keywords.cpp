@@ -121,6 +121,7 @@ static const Keyword keywords[] = {
     { "explicit", "EXPLICIT" },
     { "static", "STATIC" },
     { "const", "CONST" },
+    { "constexpr", "CONSTEXPR" },
     { "volatile", "VOLATILE" },
     { "operator", "OPERATOR" },
     { "sizeof", "SIZEOF" },

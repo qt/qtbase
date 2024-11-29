@@ -64,6 +64,7 @@ QT_BEGIN_NAMESPACE
     F(EXPLICIT) \
     F(STATIC) \
     F(CONST) \
+    F(CONSTEXPR) \
     F(VOLATILE) \
     F(OPERATOR) \
     F(SIZEOF) \
