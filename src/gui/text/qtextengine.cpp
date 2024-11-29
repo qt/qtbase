@@ -1747,7 +1747,8 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si,
             g.offsets[0].y = QFixed{};
             g.attributes[0].clusterStart = true;
             g.attributes[0].dontPrint = true;
-            log_clusters[0] = glyphs_shaped;
+            for (uint str_pos = 0; str_pos < item_length; ++str_pos)
+                log_clusters[str_pos] = glyphs_shaped;
         }
 
         if (Q_UNLIKELY(engineIdx != 0)) {
