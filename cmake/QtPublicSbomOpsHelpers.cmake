@@ -499,6 +499,25 @@ function(_qt_internal_sbom_generate_reuse_source_sbom)
     endif()
 
     set(source_sbom_path "\${QT_SBOM_OUTPUT_PATH_WITHOUT_EXT}.source.spdx")
+    file(TO_CMAKE_PATH "$ENV{QT_QA_LICENSE_TEST_DIR}/$ENV{QT_SOURCE_SBOM_TEST_SCRIPT}"
+        full_path_to_license_test)
+    set(verify_source_sbom "
+            if(res EQUAL 0)
+                message(STATUS \"Verifying source SBOM ${source_sbom_path} using qtqa tst_licenses.pl ${full_path_to_license_test}\")
+                if(NOT EXISTS \"${full_path_to_license_test}\")
+                    message(FATAL_ERROR \"Source SBOM check has failed: The tst_licenses.pl script could not be found at ${full_path_to_license_test}\")
+                endif()
+                execute_process(
+                    COMMAND perl \"\$ENV{QT_SOURCE_SBOM_TEST_SCRIPT}\" -sbomonly -sbom \"${source_sbom_path}\"
+                    WORKING_DIRECTORY \"\$ENV{QT_QA_LICENSE_TEST_DIR}\"
+                    RESULT_VARIABLE res
+                    COMMAND_ECHO STDOUT
+                )
+                if(NOT res EQUAL 0)
+                    message(FATAL_ERROR \"Source SBOM check has failed: \${res}\")
+                endif()
+            endif()
+")
 
     set(content "
         message(STATUS \"Generating source SBOM using reuse tool: ${source_sbom_path}\")
@@ -508,6 +527,9 @@ function(_qt_internal_sbom_generate_reuse_source_sbom)
             RESULT_VARIABLE res
         )
         ${handle_error}
+        if(\"\$ENV{VERIFY_SOURCE_SBOM}\")
+            ${verify_source_sbom}
+        endif()
 ")
 
     file(GENERATE OUTPUT "${file_op}" CONTENT "${content}")

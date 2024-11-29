@@ -1,6 +1,7 @@
 type: Group
 instructions:
   - !include "{{qt/qtbase}}/prepare_building_env.yaml"
+  - !include "{{qt/qtbase}}/prepare_source_sbom_check.yaml"
   - type: Group
     instructions:
       - type: Group

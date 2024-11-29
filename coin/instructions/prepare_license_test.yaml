@@ -1,0 +1,47 @@
+type: Group
+instructions:
+    - type: ChangeDirectory
+      directory: "{{.AgentWorkingDir}}"
+    - type: EnvironmentVariable
+      variableName: QTQA_LICHECK_BRANCH
+      variableValue: "{{ slice .Env.TESTED_MODULE_BRANCH_COIN 5 }}"
+      enable_if:
+        condition: runtime
+        env_var: TESTED_MODULE_BRANCH_COIN
+        contains_value: "tqtc/"
+    - type: EnvironmentVariable
+      variableName: QTQA_LICHECK_BRANCH
+      variableValue: "{{ .Env.TESTED_MODULE_BRANCH_COIN }}"
+      disable_if:
+        condition: runtime
+        env_var: TESTED_MODULE_BRANCH_COIN
+        contains_value: "tqtc/"
+
+    # The command must not have whitespace directly after any piping,
+    # as whitespace directly after pipes will be interpreted as part of the command.
+    - type: ExecuteCommand
+      command: ["bash", "-c", "git clone --depth=1 -b {{ .Env.QTQA_LICHECK_BRANCH }} git://{{.Env.QT_COIN_GIT_DAEMON}}/qt-project/qt/qtqa qt/qtqa-latest ||git clone --depth=1 -b dev git://{{.Env.QT_COIN_GIT_DAEMON}}/qt-project/qt/qtqa qt/qtqa-latest"]
+      maxTimeInSeconds: 600
+      maxTimeBetweenOutput: 600
+      userMessageOnFailure: >
+              Failed to clone qtqa sources. Please investigate why.
+      disable_if:
+        condition: property
+        property: host.os
+        equals_value: Windows
+    - type: ExecuteCommand
+      command: ["cmd.exe", "/C", "git clone --depth=1 -b {{ .Env.QTQA_LICHECK_BRANCH }} git://{{.Env.QT_COIN_GIT_DAEMON}}/qt-project/qt/qtqa qt/qtqa-latest ||git clone --depth=1 -b dev git://{{.Env.QT_COIN_GIT_DAEMON}}/qt-project/qt/qtqa qt/qtqa-latest"]
+      executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
+      maxTimeInSeconds: 600
+      maxTimeBetweenOutput: 600
+      userMessageOnFailure: >
+            Failed to clone qtqa sources. Please investigate why.
+      enable_if:
+        condition: property
+        property: host.os
+        equals_value: Windows
+    - type: EnvironmentVariable
+      variableName: QT_MODULE_TO_TEST
+      variableValue: "{{.SourceDir}}"
+      userMessageOnFailure: >
+              Failed to set QT_MODULE_TO_TEST environment variable. This should not happen.
