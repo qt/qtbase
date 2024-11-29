@@ -1,0 +1,52 @@
+type: Group
+instructions:
+    # need qemu toolchains update to have perl script verifying source SBOM
+    - type: Group
+      instructions:
+        - type: EnvironmentVariable
+          variableName: VERIFY_SOURCE_SBOM
+          variableValue: "OFF"
+      enable_if:
+        condition: and
+        conditions:
+        - condition: property
+          property: host.os
+          equals_value: Linux
+        - condition: property
+          property: target.arch
+          equals_value: MIPS64
+    - type: Group
+      instructions:
+        - type: EnvironmentVariable
+          variableName: VERIFY_SOURCE_SBOM
+          variableValue: "OFF"
+      enable_if:
+        condition: and
+        conditions:
+        - condition: property
+          property: host.os
+          equals_value: Windows
+        - condition: property
+          property: target.arch
+          equals_value: AARCH64
+    - type: Group
+      instructions:
+        - !include "{{qt/qtbase}}/prepare_license_test.yaml"
+        - type: Group
+          instructions:
+            - type: EnvironmentVariable
+              variableName: QT_QA_LICENSE_TEST_DIR
+              variableValue: "{{.AgentWorkingDir}}"
+            - type: EnvironmentVariable
+              variableName: QT_SOURCE_SBOM_TEST_SCRIPT
+              variableValue: "qt{{.Env.CI_PATH_SEP}}qtqa-latest{{.Env.CI_PATH_SEP}}tests{{.Env.CI_PATH_SEP}}prebuild{{.Env.CI_PATH_SEP}}license{{.Env.CI_PATH_SEP}}tst_licenses.pl"
+              userMessageOnFailure: >
+                Failed to set QT_SOURCE_SBOM_TEST_SCRIPT environment variable. This should not happen.
+      enable_if:
+        condition: property
+        property: features
+        contains_value: GenerateSBOM
+
+
+
+
