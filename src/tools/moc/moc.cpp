@@ -521,7 +521,7 @@ bool Moc::parseFunction(FunctionDef *def, bool inMacro)
 
 bool Moc::testForFunctionModifiers(FunctionDef *def)
 {
-    return test(EXPLICIT) || test(INLINE) ||
+    return test(EXPLICIT) || test(INLINE) || test(CONSTEXPR) ||
             (test(STATIC) && (def->isStatic = true)) ||
             (test(VIRTUAL) && (def->isVirtual = true));
 }
