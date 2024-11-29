@@ -1987,8 +1987,7 @@ void QTextEngine::itemize() const
     }
 
 #if !defined(QT_NO_EMOJISEGMENTER)
-    static const bool sDisableEmojiSegmenter = qEnvironmentVariableIntValue("QT_DISABLE_EMOJI_SEGMENTER") > 0;
-    const bool disableEmojiSegmenter = sDisableEmojiSegmenter || option.flags().testFlag(QTextOption::DisableEmojiParsing);
+    const bool disableEmojiSegmenter = QFontEngine::disableEmojiSegmenter() || option.flags().testFlag(QTextOption::DisableEmojiParsing);
 
     QVarLengthArray<CharacterCategory> categorizedString;
     if (!disableEmojiSegmenter) {

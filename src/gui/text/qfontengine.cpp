@@ -1627,6 +1627,16 @@ QFontEngine::GlyphCacheEntry &QFontEngine::GlyphCacheEntry::operator=(const Glyp
     return *this;
 }
 
+bool QFontEngine::disableEmojiSegmenter()
+{
+#if defined(QT_NO_EMOJISEGMENTER)
+    return true;
+#else
+    static const bool sDisableEmojiSegmenter = qEnvironmentVariableIntValue("QT_DISABLE_EMOJI_SEGMENTER") > 0;
+    return sDisableEmojiSegmenter;
+#endif
+}
+
 // ------------------------------------------------------------------
 // The box font engine
 // ------------------------------------------------------------------
@@ -1997,9 +2007,8 @@ int QFontEngineMulti::stringToCMap(const QChar *str, int len,
     int glyph_pos = 0;
     QStringIterator it(str, str + len);
 
-#if defined(QT_NO_EMOJISEGMENTER)
+    const bool enableVariationSelectorHack = disableEmojiSegmenter();
     char32_t previousUcs4 = 0;
-#endif
 
     int lastFallback = -1;
     while (it.hasNext()) {
@@ -2060,12 +2069,11 @@ int QFontEngineMulti::stringToCMap(const QChar *str, int len,
                 }
             }
 
-#if defined(QT_NO_EMOJISEGMENTER)
             // For variant-selectors, they are modifiers to the previous character. If we
             // end up with different font selections for the selector and the character it
             // modifies, we try applying the selector font to the preceding character as well
             const int variantSelectorBlock = 0xFE00;
-            if ((ucs4 & 0xFFF0) == variantSelectorBlock && glyph_pos > 0) {
+            if (enableVariationSelectorHack && (ucs4 & 0xFFF0) == variantSelectorBlock && glyph_pos > 0) {
                 int selectorFontEngine = glyphs->glyphs[glyph_pos] >> 24;
                 int precedingCharacterFontEngine = glyphs->glyphs[glyph_pos - 1] >> 24;
 
@@ -2099,15 +2107,12 @@ int QFontEngineMulti::stringToCMap(const QChar *str, int len,
                     }
                 }
             }
-#endif
         }
 
         it.advance();
         ++glyph_pos;
 
-#if defined(QT_NO_EMOJISEGMENTER)
         previousUcs4 = ucs4;
-#endif
     }
 
     *nglyphs = glyph_pos;

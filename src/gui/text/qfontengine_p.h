@@ -260,6 +260,8 @@ public:
     virtual bool hasUnreliableGlyphOutline() const;
     virtual bool expectsGammaCorrectedBlending() const;
 
+    static bool disableEmojiSegmenter();
+
     enum HintStyle {
         HintNone,
         HintLight,
