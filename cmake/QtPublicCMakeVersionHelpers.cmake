@@ -8,8 +8,18 @@ function(__qt_internal_get_supported_min_cmake_version_for_using_qt out_var)
 endfunction()
 
 function(__qt_internal_get_computed_min_cmake_version_for_using_qt out_var)
+    __qt_internal_force_allow_unsuitable_cmake_version_for_using_qt(allow_any_version)
+
+    # An explicit override for those that take it upon themselves to fix the build system
+    # when using a CMake version lower than the one officially supported.
+    # Also useful for build testing locally with different minimum versions to observe different
+    # policy behaviors.
+    if(allow_any_version)
+        # Just set some low version, the exact value is not really important.
+        set(computed_min_version "3.16")
+
     # Allow override when configuring user project.
-    if(QT_FORCE_MIN_CMAKE_VERSION_FOR_USING_QT)
+    elseif(QT_FORCE_MIN_CMAKE_VERSION_FOR_USING_QT)
         set(computed_min_version "${QT_FORCE_MIN_CMAKE_VERSION_FOR_USING_QT}")
 
     # Set in QtConfigExtras.cmake.
@@ -35,6 +45,29 @@ function(__qt_internal_warn_if_min_cmake_version_not_met)
                "Using Qt with this CMake version is not officially supported. Use at your own risk."
                )
     endif()
+endfunction()
+
+# Sets out_var to either TRUE or FALSE if dependning on whether there was a forceful request to
+# allow using the current cmake version to use Qt in projects.
+function(__qt_internal_force_allow_unsuitable_cmake_version_for_using_qt out_var)
+    set(allow_any_version FALSE)
+
+    # Temporarily allow any version when using Qt in Qt's CI, so we can decouple the provisioning
+    # of the minimum CMake version from the bump of the minimum CMake version.
+    # The COIN_UNIQUE_JOB_ID env var is set in Qt's CI for both build and test work items.
+    # Current state is that this check is disabled.
+    set(allow_any_version_in_ci FALSE)
+
+    if(allow_any_version_in_ci AND DEFINED ENV{COIN_UNIQUE_JOB_ID})
+        set(allow_any_version TRUE)
+    endif()
+
+    # An explicit opt in, for using any CMake version.
+    if(QT_FORCE_ANY_CMAKE_VERSION_FOR_USING_QT)
+        set(allow_any_version TRUE)
+    endif()
+
+    set(${out_var} "${allow_any_version}" PARENT_SCOPE)
 endfunction()
 
 function(__qt_internal_require_suitable_cmake_version_for_using_qt)
