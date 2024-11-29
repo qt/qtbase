@@ -22,7 +22,7 @@
 
     Unlike views such as QStringView, QLatin1StringView and QUtf8StringView,
     referenced data can be modified through a QSpan object. To prevent this,
-    construct a QSpan over a \c{const T}:
+    construct a QSpan over a \c{const T} (see \l{const-mutable-spans}):
 
     \code
     int numbers[] = {0, 1, 2};
@@ -59,6 +59,9 @@
     The opposite direction (variable-length into fixed-length) has the
     precondition that both span's sizes must match.
 
+    \section2 Const and Mutable Spans
+    \target const-mutable-spans
+
     Unlike with owning containers, \c{const} is \e{shallow} in QSpan: you can
     still modify the data through a const QSpan (but not through a
     \c{QSpan<const T>}), and begin() and end() are not overloaded on
@@ -72,6 +75,9 @@
     *span.begin() = 31;  // OK, numbers[0] == 31 now
     *span.cbegin() = -1; // ERROR: cannot assign through a const_iterator
     \endcode
+
+    \section2 Other Properties
+    \target other-span-properties
 
     QSpan should be passed by value, not by reference-to-const:
 
@@ -135,7 +141,7 @@
 
     This alias is provided for compatbility with the STL.
 
-    \sa value_type, pointer
+    \sa value_type, pointer, {const-mutable-spans}
 */
 
 /*!
@@ -145,7 +151,7 @@
 
     This alias is provided for compatbility with the STL.
 
-    \sa element_type
+    \sa element_type, {const-mutable-spans}
 */
 
 /*!
@@ -171,7 +177,7 @@
 
     This alias is provided for compatbility with the STL.
 
-    \sa element_type, const_pointer, reference, iterator
+    \sa element_type, const_pointer, reference, iterator, {const-mutable-spans}
 */
 
 /*!
@@ -181,7 +187,7 @@
 
     This alias is provided for compatbility with the STL.
 
-    \sa element_type, pointer, const_reference, const_iterator
+    \sa element_type, pointer, const_reference, const_iterator, {const-mutable-spans}
 */
 
 /*!
@@ -191,7 +197,7 @@
 
     This alias is provided for compatbility with the STL.
 
-    \sa element_type, const_reference, pointer
+    \sa element_type, const_reference, pointer, {const-mutable-spans}
 */
 
 /*!
@@ -201,7 +207,7 @@
 
     This alias is provided for compatbility with the STL.
 
-    \sa element_type, reference, const_pointer
+    \sa element_type, reference, const_pointer, {const-mutable-spans}
 */
 
 /*!
@@ -209,7 +215,7 @@
 
     An alias for \c{T*} and \c{pointer}, respectively. Includes the \c{const}, if any.
 
-    \sa pointer, const_iterator, reverse_iterator
+    \sa pointer, const_iterator, reverse_iterator, {const-mutable-spans}
 */
 
 /*!
@@ -217,7 +223,7 @@
 
     An alias for \c{const T*} and \c{const_pointer}, respectively.
 
-    \sa const_pointer, iterator, const_reverse_iterator
+    \sa const_pointer, iterator, const_reverse_iterator, {const-mutable-spans}
 */
 
 /*!
@@ -225,7 +231,7 @@
 
     An alias for \c{std::reverse_iterator<iterator>}. Includes the \c{const}, if any.
 
-    \sa iterator, const_reverse_iterator
+    \sa iterator, const_reverse_iterator, {const-mutable-spans}
 */
 
 /*!
@@ -233,7 +239,7 @@
 
     An alias for \c{std::reverse_iterator<const_iterator>}.
 
-    \sa const_iterator, reverse_iterator
+    \sa const_iterator, reverse_iterator, {const-mutable-spans}
 */
 
 /*!
@@ -351,6 +357,8 @@
     \note This constructor is \c{noexcept} only if \c{E} is \c{std::dynamic_extent}.
 
     \note If \c{E} is not \c{std::dynamic_extent} and the size of \a il is not \c{E}, the behavior is undefined.
+
+    \sa {const-mutable-spans}
 */
 
 //
@@ -398,7 +406,7 @@
     The index must be in range, that is, \a idx >= 0 and \a idx < size(),
     otherwise the behavior is undefined.
 
-    \sa front(), back(), size(), empty()
+    \sa front(), back(), size(), empty(), {const-mutable-spans}
 */
 
 /*!
@@ -408,7 +416,7 @@
 
     The span must not be empty, otherwise the behavior is undefined.
 
-    \sa operator[](), back(), size(), empty()
+    \sa operator[](), back(), size(), empty(), {const-mutable-spans}
 */
 
 /*!
@@ -418,7 +426,7 @@
 
     The span must not be empty, otherwise the behavior is undefined.
 
-    \sa operator[](), front(), size(), empty()
+    \sa operator[](), front(), size(), empty(), {const-mutable-spans}
 */
 
 /*!
@@ -428,7 +436,7 @@
 
     The same as calling begin().
 
-    \sa begin(), front()
+    \sa begin(), front(), {const-mutable-spans}
 */
 
 //
@@ -443,7 +451,7 @@
     Because QSpan iterators are just pointers, this is the same as calling
     data().
 
-    \sa end(), cbegin(), rbegin(), crbegin(), data()
+    \sa end(), cbegin(), rbegin(), crbegin(), data(), {const-mutable-spans}
 */
 
 /*!
@@ -454,7 +462,7 @@
     Because QSpan iterators are just pointers, this it the same as calling
     \c{data() + size()}.
 
-    \sa begin(), cend(), rend(), crend(), data(), size()
+    \sa begin(), cend(), rend(), crend(), data(), size(), {const-mutable-spans}
 */
 
 /*!
@@ -469,7 +477,7 @@
     *span.cbegin() = 42; // ERROR: cannot assign through a const_iterator
     \endcode
 
-    \sa cend(), begin(), crbegin(), rbegin(), data()
+    \sa cend(), begin(), crbegin(), rbegin(), data(), {const-mutable-spans}
 */
 
 /*!
@@ -477,7 +485,7 @@
 
     Returns a const_iterator pointing to one past the end of the span.
 
-    \sa cbegin(), end(), crend(), rend(), data(), size()
+    \sa cbegin(), end(), crend(), rend(), data(), size(), {const-mutable-spans}
 */
 
 /*!
@@ -485,7 +493,7 @@
 
     Returns a reverse_iterator pointing to the beginning of the reversed span.
 
-    \sa rend(), crbegin(), begin(), cbegin()
+    \sa rend(), crbegin(), begin(), cbegin(), {const-mutable-spans}
 */
 
 /*!
@@ -493,7 +501,7 @@
 
     Returns a reverse_iterator pointing to one past the end of the reversed span.
 
-    \sa rbegin(), crend(), end(), cend()
+    \sa rbegin(), crend(), end(), cend(), {const-mutable-spans}
 */
 
 /*!
@@ -501,7 +509,7 @@
 
     Returns a const_reverse_iterator pointing to the beginning of the reversed span.
 
-    \sa crend(), rbegin(), cbegin(), begin()
+    \sa crend(), rbegin(), cbegin(), begin(), {const-mutable-spans}
 */
 
 /*!
@@ -509,7 +517,7 @@
 
     Returns a const_reverse_iterator pointing to one past the end of the reversed span.
 
-    \sa crbegin(), rend(), cend(), end()
+    \sa crbegin(), rend(), cend(), end(), {const-mutable-spans}
 */
 
 //
@@ -660,7 +668,7 @@
     \note \c{q20::dynamic_extent} is a C++17 backport of C++20's
     \l{https://en.cppreference.com/w/cpp/container/span/dynamic_extent}{\c{std::dynamic_extent}}.
 
-    \sa as_writable_bytes(), size_bytes()
+    \sa as_writable_bytes(), size_bytes(), {const-mutable-spans}
 */
 
 /*!
@@ -679,5 +687,5 @@
     \note \c{q20::dynamic_extent} is a C++17 backport of C++20's
     \l{https://en.cppreference.com/w/cpp/container/span/dynamic_extent}{\c{std::dynamic_extent}}.
 
-    \sa as_bytes(), size_bytes()
+    \sa as_bytes(), size_bytes(), {const-mutable-spans}
 */
