@@ -33,6 +33,9 @@
     cspan[0] = 0; // ERROR: cspan[0] is read-only
     \endcode
 
+    \section2 Variable-Size and Fixed-Size Spans
+    \target variable-fixed-spans
+
     A QSpan can be \e{fixed-size} or \e{variable-sized}.
 
     A variable-sized span is formed by omitting the second template argument
@@ -246,7 +249,7 @@
     \variable QSpan::extent
 
     The second template argument of \c{QSpan<T, E>}, that is, \c{E}. This is
-    \c{std::dynamic_extent} for variable-sized spans.
+    \c{std::dynamic_extent} for \l{variable-fixed-spans}{variable-sized spans}.
 
     \note While all other sizes and indexes in QSpan use qsizetype, this
     variable, like \c{E}, is actually of type \c{size_t}, for compatibility with
@@ -268,7 +271,7 @@
     \c{std::dynamic_extent}. In other words: only fixed-zero-sized or variable-sized spans
     are default-constructible.
 
-    \sa extent
+    \sa extent, {variable-fixed-spans}
 */
 
 /*!
@@ -528,7 +531,8 @@
     \fn template <typename T, size_t E> template <std::size_t Count> auto QSpan<T, E>::first() const
     \keyword first-t
 
-    Returns a fixed-sized span of size \c{Count} referencing the first \c{Count} elements of \c{*this}.
+    Returns a \l{variable-fixed-spans}{fixed-sized} span of size \c{Count}
+    referencing the first \c{Count} elements of \c{*this}.
 
     The span must hold at least \c{Count} elements (\c{E} >= \c{Count} \e{and}
     size() >= \c{Count}), otherwise the behavior is undefined.
@@ -540,7 +544,8 @@
     \fn template <typename T, size_t E> template <std::size_t Count> auto QSpan<T, E>::last() const
     \keyword last-t
 
-    Returns a fixed-sized span of size \c{Count} referencing the last \c{Count} elements of \c{*this}.
+    Returns a \l{variable-fixed-spans}{fixed-sized} span of size \c{Count}
+    referencing the last \c{Count} elements of \c{*this}.
 
     The span must hold at least \c{Count} elements (\c{E} >= \c{Count} \e{and}
     size() >= \c{Count}), otherwise the behavior is undefined.
@@ -562,6 +567,7 @@
     size() >= \c{Offset}), otherwise the behavior is undefined.
 
     \sa subspan(QSpan<T,E>::size_type), subspan(), first(), last()
+    \sa {variable-fixed-spans}
 */
 
 /*!
@@ -579,6 +585,7 @@
     behavior is undefined.
 
     \sa subspan(QSpan<T,E>::size_type, QSpan<T,E>::size_type), subspan(), first(), last()
+    \sa {variable-fixed-spans}
 */
 
 //
@@ -589,7 +596,8 @@
     \fn template <typename T, size_t E> auto QSpan<T, E>::first(qsizetype n) const
     \keyword first-n
 
-    Returns a variable-sized span of size \a n referencing the first \a n elements of \c{*this}.
+    Returns a \l{variable-fixed-spans}{variable-sized} span of size \a n
+    referencing the first \a n elements of \c{*this}.
 
     \a n must be non-negative.
 
@@ -605,7 +613,8 @@
     \fn template <typename T, size_t E> auto QSpan<T, E>::last(qsizetype n) const
     \keyword last-n
 
-    Returns a variable-sized span of size \a n referencing the last \a n elements of \c{*this}.
+    Returns a \l{variable-fixed-spans}{variable-sized} span of size \a n
+    referencing the last \a n elements of \c{*this}.
 
     \a n must be non-negative.
 
@@ -621,8 +630,9 @@
     \fn template <typename T, size_t E> auto QSpan<T, E>::sliced(qsizetype pos) const
     \keyword subspan-n1
 
-    Returns a variable-sized span of size \c{size() - pos} referencing the
-    remainder of this span after dropping the first \a pos elements.
+    Returns a \l{variable-fixed-spans}{variable-sized} span of size \c{size() -
+    pos} referencing the remainder of this span after dropping the first \a pos
+    elements.
 
     \a pos must be non-negative.
 
@@ -640,8 +650,8 @@
     \fn template <typename T, size_t E> auto QSpan<T, E>::sliced(qsizetype pos, qsizetype n) const
     \keyword subspan-n2
 
-    Returns a variable-sized span of size \a n referencing the \a n elements of
-    this span starting at \a pos.
+    Returns a \l{variable-fixed-spans}{variable-sized} span of size \a n
+    referencing the \a n elements of this span starting at \a pos.
 
     Both \a pos and \a n must be non-negative.
 
