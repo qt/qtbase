@@ -630,12 +630,18 @@ QList<QByteArray> QTimeZonePrivate::availableTimeZoneIds(QLocale::Territory terr
 {
     // Default fall-back mode, use the zoneTable to find Region of know Zones
     QList<QByteArrayView> regions;
-
-    // First get all Zones in the Zones table belonging to the Region
-    for (const ZoneData &data : zoneDataTable) {
-        if (data.territory == territory) {
-            for (auto l1 : data.ids())
-                regions << QByteArrayView(l1.data(), l1.size());
+    // Get all Zones in the table associated with this territory:
+    if (territory == QLocale::World) {
+        // World names are filtered out of zoneDataTable to provide the defaults
+        // in windowsDataTable.
+        for (const WindowsData &data : windowsDataTable)
+            regions << data.ianaId();
+    } else {
+        for (const ZoneData &data : zoneDataTable) {
+            if (data.territory == territory) {
+                for (auto l1 : data.ids())
+                    regions << QByteArrayView(l1.data(), l1.size());
+            }
         }
     }
     return selectAvailable(std::move(regions), availableTimeZoneIds());
@@ -805,6 +811,8 @@ QByteArray QTimeZonePrivate::ianaIdToWindowsId(const QByteArray &id)
                 return toWindowsIdLiteral(data.windowsIdKey);
         }
     }
+    // If the IANA ID is the default for any Windows ID, it has already shown up
+    // as an ID for it in some territory; no need to search windowsDataTable[].
     return QByteArray();
 }
 
@@ -814,8 +822,7 @@ QByteArray QTimeZonePrivate::windowsIdToDefaultIanaId(const QByteArray &windowsI
                                        windowsId, earlierWindowsId);
     if (data != std::end(windowsDataTable) && data->windowsId() == windowsId) {
         QByteArrayView id = data->ianaId();
-        if (qsizetype cut = id.indexOf(' '); cut >= 0)
-            id = id.first(cut);
+        Q_ASSERT(id.indexOf(' ') == -1);
         return id.toByteArray();
     }
     return QByteArray();
@@ -839,6 +846,9 @@ QList<QByteArray> QTimeZonePrivate::windowsIdToIanaIds(const QByteArray &windows
         for (auto l1 : data->ids())
             list << QByteArray(l1.data(), l1.size());
     }
+    // The default, windowsIdToDefaultIanaId(windowsId), is always an entry for
+    // at least one territory: cldr.py asserts this, in readWindowsTimeZones().
+    // So we don't need to add it here.
 
     // Return the full list in alpha order
     std::sort(list.begin(), list.end());
@@ -849,16 +859,21 @@ QList<QByteArray> QTimeZonePrivate::windowsIdToIanaIds(const QByteArray &windows
                                                        QLocale::Territory territory)
 {
     QList<QByteArray> list;
-    const quint16 windowsIdKey = toWindowsIdKey(windowsId);
-    const qint16 land = static_cast<quint16>(territory);
-    for (auto data = zoneStartForWindowsId(windowsIdKey);
-         data != std::end(zoneDataTable) && data->windowsIdKey == windowsIdKey;
-         ++data) {
-        // Return the region matches in preference order
-        if (data->territory == land) {
-            for (auto l1 : data->ids())
-                list << QByteArray(l1.data(), l1.size());
-            break;
+    if (territory == QLocale::World) {
+        // World data are in windowsDataTable, not zoneDataTable.
+        list << windowsIdToDefaultIanaId(windowsId);
+    } else {
+        const quint16 windowsIdKey = toWindowsIdKey(windowsId);
+        const qint16 land = static_cast<quint16>(territory);
+        for (auto data = zoneStartForWindowsId(windowsIdKey);
+             data != std::end(zoneDataTable) && data->windowsIdKey == windowsIdKey;
+             ++data) {
+            // Return the region matches in preference order
+            if (data->territory == land) {
+                for (auto l1 : data->ids())
+                    list << QByteArray(l1.data(), l1.size());
+                break;
+            }
         }
     }
 

@@ -970,10 +970,16 @@ void tst_QTimeZone::availableTimeZoneIds()
         qDebug() << QTimeZone::availableTimeZoneIds(0);
         qDebug() << "";
     } else {
-        //Just test the calls work, we cannot know what any test machine has available
+        // Test the calls work:
         QList<QByteArray> listAll = QTimeZone::availableTimeZoneIds();
-        QList<QByteArray> listUs = QTimeZone::availableTimeZoneIds(QLocale::UnitedStates);
-        QList<QByteArray> listZero = QTimeZone::availableTimeZoneIds(0);
+        QList<QByteArray> list001 = QTimeZone::availableTimeZoneIds(QLocale::World);
+        QList<QByteArray> listUsa = QTimeZone::availableTimeZoneIds(QLocale::UnitedStates);
+        QList<QByteArray> listGmt = QTimeZone::availableTimeZoneIds(0);
+        // We cannot know what any test machine has available, so can't test contents.
+        // But we can do a consistency check:
+        QCOMPARE_LT(list001.size(), listAll.size());
+        QCOMPARE_LT(listUsa.size(), listAll.size());
+        QCOMPARE_LT(listGmt.size(), listAll.size());
     }
 }
 
@@ -1031,9 +1037,9 @@ void tst_QTimeZone::windowsId()
 /*
     Current Windows zones for "Central Standard Time":
     Region      IANA Id(s)
-    Default     "America/Chicago"
+    World       "America/Chicago" (the default)
     Canada      "America/Winnipeg America/Rankin_Inlet America/Resolute"
-    Mexico      "America/Matamoros"
+    Mexico      "America/Matamoros America/Ojinaga"
     USA         "America/Chicago America/Indiana/Knox America/Indiana/Tell_City America/Menominee"
                 "America/North_Dakota/Beulah America/North_Dakota/Center"
                 "America/North_Dakota/New_Salem"
@@ -1052,6 +1058,8 @@ void tst_QTimeZone::windowsId()
     // Check default value
     QCOMPARE(QTimeZone::windowsIdToDefaultIanaId("Central Standard Time"),
              QByteArray("America/Chicago"));
+    QCOMPARE(QTimeZone::windowsIdToDefaultIanaId("Central Standard Time", QLocale::World),
+             QByteArray("America/Chicago"));
     QCOMPARE(QTimeZone::windowsIdToDefaultIanaId("Central Standard Time", QLocale::Canada),
              QByteArray("America/Winnipeg"));
     QCOMPARE(QTimeZone::windowsIdToDefaultIanaId("Central Standard Time", QLocale::AnyTerritory),
@@ -1068,6 +1076,11 @@ void tst_QTimeZone::windowsId()
             "America/Winnipeg", "CST6CDT"
         };
         QCOMPARE(QTimeZone::windowsIdToIanaIds("Central Standard Time"), list);
+    }
+    {
+        const QList<QByteArray> list = { "America/Chicago" };
+        QCOMPARE(QTimeZone::windowsIdToIanaIds("Central Standard Time", QLocale::World),
+                 list);
     }
     {
         // Check country with no match returns empty list
