@@ -5,6 +5,7 @@ buildscript {
     }
 
     dependencies {
+        //noinspection AndroidGradlePluginVersion
         classpath 'com.android.tools.build:gradle:8.6.0'
     }
 }
