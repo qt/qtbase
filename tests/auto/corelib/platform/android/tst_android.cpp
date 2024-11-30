@@ -18,10 +18,12 @@ using namespace Qt::StringLiterals;
 
 Q_DECLARE_JNI_CLASS(Display, "android/view/Display")
 Q_DECLARE_JNI_CLASS(Point, "android/graphics/Point")
+Q_DECLARE_JNI_CLASS(Rect, "android/graphics/Rect")
 Q_DECLARE_JNI_CLASS(View, "android/view/View")
 Q_DECLARE_JNI_CLASS(Window, "android/view/Window")
 Q_DECLARE_JNI_CLASS(WindowInsets, "android/view/WindowInsets")
 Q_DECLARE_JNI_CLASS(WindowManager, "android/view/WindowManager")
+Q_DECLARE_JNI_CLASS(WindowMetrics, "android/view/WindowMetrics")
 
 class tst_Android : public QObject
 {
@@ -220,9 +222,20 @@ void tst_Android::testFullScreenDimensions()
     QJniObject display = windowManager.callMethod<QtJniTypes::Display>("getDefaultDisplay");
     QVERIFY(display.isValid());
 
-    QJniObject appSize(QtJniTypes::className<QtJniTypes::Point>());
-    QVERIFY(appSize.isValid());
-    display.callMethod<void>("getSize", appSize.object<QtJniTypes::Point>());
+    QSize appSize;
+    if (QNativeInterface::QAndroidApplication::sdkVersion() >= __ANDROID_API_R__) {
+        using namespace QtJniTypes;
+        auto windowMetrics = windowManager.callMethod<WindowMetrics>("getCurrentWindowMetrics");
+        auto bounds = windowMetrics.callMethod<Rect>("getBounds");
+        appSize.setWidth(bounds.callMethod<int>("width"));
+        appSize.setHeight(bounds.callMethod<int>("height"));
+    } else {
+        QJniObject jappSize(QtJniTypes::className<QtJniTypes::Point>());
+        QVERIFY(jappSize.isValid());
+        display.callMethod<void>("getSize", jappSize.object<QtJniTypes::Point>());
+        appSize.setWidth(jappSize.getField<jint>("x"));
+        appSize.setHeight(jappSize.getField<jint>("y"));
+    }
 
     QJniObject realSize(QtJniTypes::className<QtJniTypes::Point>());
     display.callMethod<void>("getRealSize", realSize.object<QtJniTypes::Point>());
@@ -253,10 +266,10 @@ void tst_Android::testFullScreenDimensions()
         int insetBottom = insets.callMethod<jint>("getSystemWindowInsetBottom");
         int insetsHeight = insetTop + insetBottom;
 
-        int expectedWidth = appSize.getField<jint>("x") - insetsWidth;
+        int expectedWidth = appSize.width() - insetsWidth;
         QTRY_COMPARE(screen->availableGeometry().width(), expectedWidth);
 
-        int expectedHeight = appSize.getField<jint>("y") - insetsHeight;
+        int expectedHeight = appSize.height() - insetsHeight;
         QTRY_COMPARE(screen->availableGeometry().height(), expectedHeight);
 
         QTRY_COMPARE(screen->geometry().width(), realSize.getField<jint>("x"));
