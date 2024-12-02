@@ -728,53 +728,81 @@ Relationship: ${arg_RELATIONSHIP}
     set_property(GLOBAL APPEND PROPERTY _qt_sbom_cmake_include_files "${file_sbom_to_install}")
 endfunction()
 
-# Helper to add info about an external reference to a different project spdx sbom file.
+# Helper to add a reference to an external SPDX document.
+#
+# EXTERNAL_DOCUMENT_SPDX_ID: The spdx id by which the external document should be referenced in
+# the current project SPDX document. This semantically serves as a pointer to the external document
+# URI.
+# e.g. DocumentRef-qtbase.
+#
+# EXTERNAL_DOCUMENT_FILE_PATH: The relative file path of the external sbom document.
+# e.g. "sbom/qtbase-6.9.0.spdx"
+#
+# Can contain generator expressions.
+# The file path is searched for in the directories specified by the
+# EXTERNAL_DOCUMENT_INSTALL_PREFIXES option during sbom generation, to compute the file checksum.
+# The file path is NOT embedded into the current project spdx document.
+# Only its spdx id and namespace is embedded. The namespace is extracted from the contents of the
+# referenced file.
+#
+# EXTERNAL_DOCUMENT_INSTALL_PREFIXES: A list of directories where the external document file path
+# is searched for. The first existing file is used. Additionally the following locations are
+# searched:
+# - QT6_INSTALL_PREFIX
+# - QT_ADDITIONAL_PACKAGES_PREFIX_PATH
+# - QT_ADDITIONAL_SBOM_DOCUMENT_PATHS
+#
+# EXTERNAL_PACKAGE_SPDX_ID: If set, and no RELATIONSHIP_STRING is provided, an automatic DEPENDS_ON
+# relationship is added from the current project spdx id to the package identified by
+# $EXTERNAL_DOCUMENT_SPDX_ID:$EXTERNAL_PACKAGE_SPDX_ID options.
+# This is mostly a beginner convenience.
+#
+# RELATIONSHIP_STRING: If set, it is used as the relationship string to add to the current project
+# relationships.
 function(_qt_internal_sbom_generate_add_external_reference)
-    set(opt_args
-        NO_AUTO_RELATIONSHIP
-    )
-    set(single_args
-        EXTERNAL
-        FILENAME
-        RENAME
-        SPDXID
-        RELATIONSHIP
+    if(NOT QT_GENERATE_SBOM)
+        return()
+    endif()
 
+    set(opt_args "")
+    set(single_args
+        EXTERNAL_DOCUMENT_FILE_PATH
+        EXTERNAL_DOCUMENT_SPDX_ID
+        EXTERNAL_PACKAGE_SPDX_ID
+        RELATIONSHIP_STRING
     )
     set(multi_args
-        INSTALL_PREFIXES
+        EXTERNAL_DOCUMENT_INSTALL_PREFIXES
     )
     cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
     _qt_internal_validate_all_args_are_parsed(arg)
 
-    qt_internal_sbom_set_default_option_value_and_error_if_empty(EXTERNAL "")
-    qt_internal_sbom_set_default_option_value_and_error_if_empty(FILENAME "")
+    qt_internal_sbom_set_default_option_value_and_error_if_empty(EXTERNAL_DOCUMENT_FILE_PATH "")
 
-    if(NOT arg_SPDXID)
+    if(NOT arg_EXTERNAL_DOCUMENT_SPDX_ID)
         get_property(spdx_id_count GLOBAL PROPERTY _qt_sbom_spdx_id_count)
-        set(arg_SPDXID "DocumentRef-${spdx_id_count}")
+        set(arg_EXTERNAL_DOCUMENT_SPDX_ID "DocumentRef-${spdx_id_count}")
         math(EXPR spdx_id_count "${spdx_id_count} + 1")
         set_property(GLOBAL PROPERTY _qt_sbom_spdx_id_count "${spdx_id_count}")
-    endif()
-
-    if(NOT "${arg_SPDXID}" MATCHES "^DocumentRef-[-a-zA-Z0-9]+$")
-        message(FATAL_ERROR "Invalid DocumentRef \"${arg_SPDXID}\"")
+    elseif(NOT "${arg_EXTERNAL_DOCUMENT_SPDX_ID}" MATCHES
+            "^DocumentRef-[a-zA-Z0-9]+[-a-zA-Z0-9]+$")
+        message(FATAL_ERROR "Invalid DocumentRef \"${arg_EXTERNAL_DOCUMENT_SPDX_ID}\"")
     endif()
 
     get_property(sbom_project_name GLOBAL PROPERTY _qt_sbom_project_name)
     if(NOT sbom_project_name)
         message(FATAL_ERROR "Call _qt_internal_sbom_begin_project() first")
     endif()
-    if(NOT arg_RELATIONSHIP)
-        if(NOT arg_NO_AUTO_RELATIONSHIP)
-            set(arg_RELATIONSHIP
-                "SPDXRef-${sbom_project_name} DEPENDS_ON ${arg_SPDXID}:${arg_EXTERNAL}")
-        else()
-            set(arg_RELATIONSHIP "")
+    if(arg_RELATIONSHIP_STRING STREQUAL "")
+        if(arg_EXTERNAL_PACKAGE_SPDX_ID)
+            set(external_package "${arg_EXTERNAL_DOCUMENT_SPDX_ID}:${arg_EXTERNAL_PACKAGE_SPDX_ID}")
+            set(arg_RELATIONSHIP_STRING
+                "SPDXRef-${sbom_project_name} DEPENDS_ON ${external_package}")
         endif()
     else()
         string(REPLACE
-            "@QT_SBOM_LAST_SPDXID@" "${arg_SPDXID}" arg_RELATIONSHIP "${arg_RELATIONSHIP}")
+            "@QT_SBOM_LAST_SPDXID@" "${arg_EXTERNAL_DOCUMENT_SPDX_ID}"
+            arg_RELATIONSHIP_STRING "${arg_RELATIONSHIP_STRING}")
     endif()
 
     _qt_internal_get_staging_area_spdx_file_path(staging_area_spdx_file)
@@ -786,8 +814,8 @@ function(_qt_internal_sbom_generate_add_external_reference)
     # can be overridden with cmake --install . --prefix <path>.
     list(APPEND install_prefixes "\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}")
 
-    if(arg_INSTALL_PREFIXES)
-        list(APPEND install_prefixes ${arg_INSTALL_PREFIXES})
+    if(arg_EXTERNAL_DOCUMENT_INSTALL_PREFIXES)
+        list(APPEND install_prefixes ${arg_EXTERNAL_DOCUMENT_INSTALL_PREFIXES})
     endif()
 
     if(QT6_INSTALL_PREFIX)
@@ -805,17 +833,16 @@ function(_qt_internal_sbom_generate_add_external_reference)
     list(REMOVE_DUPLICATES install_prefixes)
 
     set(relationship_content "")
-    if(arg_RELATIONSHIP)
+    if(arg_RELATIONSHIP_STRING)
         set(relationship_content "
         file(APPEND \"${staging_area_spdx_file}\"
-    \"
-    Relationship: ${arg_RELATIONSHIP}\")
+    \"Relationship: ${arg_RELATIONSHIP_STRING}\")
 ")
     endif()
 
-    # Filename may not exist yet, and it could be a generator expression.
+    # File path may not exist yet, and it could be a generator expression.
     set(content "
-        set(relative_file_name \"${arg_FILENAME}\")
+        set(relative_file_name \"${arg_EXTERNAL_DOCUMENT_FILE_PATH}\")
         set(document_dir_paths ${install_prefixes})
         list(JOIN document_dir_paths \"\\n\" document_dir_paths_per_line)
         foreach(document_dir_path IN LISTS document_dir_paths)
@@ -840,13 +867,13 @@ function(_qt_internal_sbom_generate_add_external_reference)
                 \"\\\\1\" ext_ns \"\${ext_content}\")
 
         list(APPEND QT_SBOM_EXTERNAL_DOC_REFS \"
-ExternalDocumentRef: ${arg_SPDXID} \${ext_ns} SHA1: \${ext_sha1}\")
+ExternalDocumentRef: ${arg_EXTERNAL_DOCUMENT_SPDX_ID} \${ext_ns} SHA1: \${ext_sha1}\")
 
         ${relationship_content}
 ")
 
     _qt_internal_get_current_project_sbom_dir(sbom_dir)
-    set(ext_ref_sbom "${sbom_dir}/${arg_SPDXID}.cmake")
+    set(ext_ref_sbom "${sbom_dir}/${arg_EXTERNAL_DOCUMENT_SPDX_ID}.cmake")
     file(GENERATE OUTPUT "${ext_ref_sbom}" CONTENT "${content}")
 
     set_property(GLOBAL APPEND PROPERTY _qt_sbom_cmake_end_include_files "${ext_ref_sbom}")

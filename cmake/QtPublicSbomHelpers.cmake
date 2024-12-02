@@ -1341,11 +1341,9 @@ function(_qt_internal_sbom_add_external_target_dependency
             set(external_document "${relative_installed_repo_document_path}")
 
             _qt_internal_sbom_generate_add_external_reference(
-                NO_AUTO_RELATIONSHIP
-                EXTERNAL "${dep_spdx_id}"
-                FILENAME "${external_document}"
-                SPDXID "${external_document_ref}"
-                INSTALL_PREFIXES ${install_prefixes}
+                EXTERNAL_DOCUMENT_FILE_PATH "${external_document}"
+                EXTERNAL_DOCUMENT_INSTALL_PREFIXES ${install_prefixes}
+                EXTERNAL_DOCUMENT_SPDX_ID "${external_document_ref}"
             )
 
             set_property(GLOBAL PROPERTY

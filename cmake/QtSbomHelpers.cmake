@@ -38,3 +38,7 @@ endfunction()
 function(qt_internal_sbom_add_cmake_include_step)
     _qt_internal_sbom_add_cmake_include_step(${ARGN})
 endfunction()
+
+function(qt_internal_sbom_add_external_reference)
+    _qt_internal_sbom_generate_add_external_reference(${ARGN})
+endfunction()
