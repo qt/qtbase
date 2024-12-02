@@ -1786,6 +1786,7 @@ void QTreeView::drawRow(QPainter *painter, const QStyleOptionViewItem &option,
         if (alternate) {
             opt.features.setFlag(QStyleOptionViewItem::Alternate, d->current & 1);
         }
+        opt.features &= ~QStyleOptionViewItem::IsDecoratedRootColumn;
 
         /* Prior to Qt 4.3, the background of the branch (in selected state and
            alternate row color was provided by the view. For backward compatibility,
@@ -1800,7 +1801,6 @@ void QTreeView::drawRow(QPainter *painter, const QStyleOptionViewItem &option,
                 painter->setClipRect(QRect(position, y, width, height));
             }
             // draw background for the branch (selection + alternate row)
-            opt.rect = branches;
 
             // We use showDecorationSelected both to store the style hint, and to indicate
             // that the entire row has to be selected (see overrides of the value if
@@ -1810,10 +1810,15 @@ void QTreeView::drawRow(QPainter *painter, const QStyleOptionViewItem &option,
             const bool oldShowDecorationSelected = opt.showDecorationSelected;
             opt.showDecorationSelected = style()->styleHint(QStyle::SH_ItemView_ShowDecorationSelected,
                                                             &opt, this);
-            opt.features |= QStyleOptionViewItem::HasDecoration;
             opt.rect = branches;
-            style()->drawPrimitive(QStyle::PE_PanelItemViewRow, &opt, painter, this);
-            opt.features &= ~QStyleOptionViewItem::HasDecoration;
+            if (opt.rect.width() > 0) {
+                // the root item also has a branch decoration
+                opt.features |= QStyleOptionViewItem::IsDecoratedRootColumn;
+                // we now want to draw the branch decoration
+                opt.features |= QStyleOptionViewItem::IsDecorationForRootColumn;
+                style()->drawPrimitive(QStyle::PE_PanelItemViewRow, &opt, painter, this);
+                opt.features &= ~QStyleOptionViewItem::IsDecorationForRootColumn;
+            }
 
             // draw background of the item (only alternate row). rest of the background
             // is provided by the delegate

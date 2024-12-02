@@ -403,7 +403,9 @@ public:
         Alternate = 0x02,
         HasCheckIndicator = 0x04,
         HasDisplay = 0x08,
-        HasDecoration = 0x10
+        HasDecoration = 0x10,
+        IsDecoratedRootColumn = 0x20,
+        IsDecorationForRootColumn = 0x40,
     };
     Q_DECLARE_FLAGS(ViewItemFeatures, ViewItemFeature)
 

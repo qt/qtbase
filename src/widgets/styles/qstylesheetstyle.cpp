@@ -4875,7 +4875,7 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
                 if (rule.background()->brush.color().alpha() != 1.0)
                     baseStyle()->drawPrimitive(pe, opt, p, w);
                 // Skip border for the branch and draw only the brackground
-                if (vopt->features & QStyleOptionViewItem::HasDecoration &&
+                if (vopt->features & QStyleOptionViewItem::IsDecorationForRootColumn &&
                     (vopt->viewItemPosition == QStyleOptionViewItem::Beginning ||
                      vopt->viewItemPosition == QStyleOptionViewItem::OnlyOne) && rule.hasBorder()) {
                     if (rule.hasDrawable()) {
