@@ -41,10 +41,11 @@ parser.add_argument('-a', '--adb', metavar='path', type=str, help='Path to adb e
 parser.add_argument('-b', '--build-path', metavar='path', type=str,
                     help='Path to the Android build directory.')
 parser.add_argument('-i', '--install', action='store_true', help='Install the APK.')
+parser.add_argument('-d', '--detached', action='store_true',
+                    help='Start the app detached without waiting for the logcat')
 parser.add_argument('-s', '--serial', type=str, metavar='serial',
                     help='Android device serial (override $ANDROID_SERIAL).')
 parser.add_argument('-p', '--apk', type=str, metavar='path', help='Path to the APK file.')
-
 
 args, remaining_args = parser.parse_known_args()
 
@@ -158,6 +159,9 @@ while pid is None:
         pid = pidof_output.decode().strip().split()[0]
     except subprocess.CalledProcessError:
         continue
+
+if args.detached:
+    sys.exit(0)
 
 # Add a signal handler to stop the app if the script is terminated
 interrupted = False
