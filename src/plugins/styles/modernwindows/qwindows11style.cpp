@@ -254,11 +254,8 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
             if (cp.needsPainting()) {
                 if (sb->frame && (sub & SC_SpinBoxFrame)) {
                     cp->save();
-                    QRegion clipRegion = option->rect;
-                    clipRegion -= option->rect.adjusted(2, 2, -2, -2);
-                    cp->setClipRegion(clipRegion);
-                    QColor lineColor = state & State_HasFocus ? option->palette.accent().color() : QColor(0,0,0);
-                    cp->setPen(QPen(lineColor));
+                    cp->setClipRect(option->rect.adjusted(-2, -2, 2, 2));
+                    cp->setPen(editSublineColor(option, colorSchemeIndex));
                     cp->drawLine(option->rect.bottomLeft() + QPointF(7, -0.5),
                                  option->rect.bottomRight() + QPointF(-7, -0.5));
                     cp->restore();
@@ -470,8 +467,7 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                 painter->drawText(rect, QStringLiteral(u"\uE70D"), Qt::AlignVCenter | Qt::AlignHCenter);
             }
             if (combobox->editable) {
-                QColor lineColor = state & State_HasFocus ? option->palette.accent().color() : QColor(0,0,0);
-                painter->setPen(QPen(lineColor));
+                painter->setPen(editSublineColor(option, colorSchemeIndex));
                 painter->drawLine(rect.bottomLeft() + QPoint(2,1), rect.bottomRight() + QPoint(-2,1));
                 if (state & State_HasFocus)
                     painter->drawLine(rect.bottomLeft() + QPoint(3,2), rect.bottomRight() + QPoint(-3,2));
@@ -969,11 +965,8 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
         painter->setBrush(Qt::NoBrush);
         painter->setPen(highContrastTheme == true ? option->palette.buttonText().color() : QPen(WINUI3Colors[colorSchemeIndex][frameColorLight]));
         painter->drawRoundedRect(option->rect, secondLevelRoundingRadius, secondLevelRoundingRadius);
-        QRegion clipRegion = option->rect;
-        clipRegion -= option->rect.adjusted(2, 2, -2, -2);
-        painter->setClipRegion(clipRegion);
-        QColor lineColor = state & State_HasFocus ? option->palette.accent().color() : QColor(0,0,0);
-        painter->setPen(QPen(lineColor));
+        painter->setClipRect(option->rect.adjusted(-2, -2, 2, 2));
+        painter->setPen(editSublineColor(option, colorSchemeIndex));
         painter->drawLine(option->rect.bottomLeft() + QPointF(1,0.5), option->rect.bottomRight() + QPointF(-1,0.5));
     }
         break;
@@ -2346,6 +2339,14 @@ QPen QWindows11Style::buttonLabelPen(const QStyleOption *option, int colorScheme
                          : option->palette.buttonText().color());
     return QPen(isOn ? WINUI3Colors[colorSchemeIndex][textOnAccentPrimary]
                      : option->palette.buttonText().color());
+}
+
+QColor QWindows11Style::editSublineColor(const QStyleOption *option, int colorSchemeIndex)
+{
+    const State state = option->state;
+    return state & State_HasFocus ? option->palette.accent().color()
+                                  : (colorSchemeIndex == 0 ? QColor(0x80, 0x80, 0x80)
+                                                           : QColor(0xa0, 0xa0, 0xa0));
 }
 
 #undef SET_IF_UNRESOLVED
