@@ -547,6 +547,7 @@ macro(_qt_internal_get_sbom_add_target_common_options opt_args single_args multi
         SBOM_DEPENDENCIES
         ATTRIBUTION_FILE_PATHS
         ATTRIBUTION_FILE_DIR_PATHS
+        SBOM_RELATIONSHIPS
     )
 
     _qt_internal_get_sbom_purl_add_target_options(
@@ -954,6 +955,10 @@ function(_qt_internal_sbom_add_target target)
 
     get_cmake_property(project_spdx_id _qt_internal_sbom_project_spdx_id)
     list(APPEND relationships "${project_spdx_id} CONTAINS ${package_spdx_id}")
+
+    if(arg_SBOM_RELATIONSHIPS)
+        list(APPEND relationships "${arg_SBOM_RELATIONSHIPS}")
+    endif()
 
     list(REMOVE_DUPLICATES relationships)
     list(JOIN relationships "\nRelationship: " relationships)

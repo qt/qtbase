@@ -250,6 +250,7 @@ Relationship: SPDXRef-DOCUMENT DESCRIBES ${project_spdx_id}
     set_property(GLOBAL APPEND PROPERTY _qt_sbom_cmake_include_files "${create_staging_file}")
 
     set_property(GLOBAL PROPERTY _qt_sbom_spdx_id_count 0)
+    set_property(GLOBAL PROPERTY _qt_sbom_relationship_counter 0)
 endfunction()
 
 # Handles the look up of Python, Python spdx dependencies and other various post-installation steps
@@ -1026,6 +1027,53 @@ Relationship: ${arg_RELATIONSHIP}
     file(GENERATE OUTPUT "${package_sbom}" CONTENT "${content}")
 
     set_property(GLOBAL APPEND PROPERTY _qt_sbom_cmake_include_files "${package_sbom}")
+endfunction()
+
+# Helper to add relationship entries to the current project SBOM document package.
+#
+# RELATIONSHIPS: A list of relationship strings to add to the current project relationships.
+#
+# Care must be taken to call the function right after project creation, before other targets are
+# created, otherwise the relationship strings might be added to the wrong package.
+# It doesn't seem to cause tooling to fail, but it's something to look out for.
+function(_qt_internal_sbom_generate_add_project_relationship)
+    if(NOT QT_GENERATE_SBOM)
+        return()
+    endif()
+
+    set(opt_args "")
+    set(single_args "")
+    set(multi_args
+        RELATIONSHIPS
+    )
+    cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    qt_internal_sbom_set_default_option_value_and_error_if_empty(RELATIONSHIPS "")
+
+    _qt_internal_get_staging_area_spdx_file_path(staging_area_spdx_file)
+
+    get_property(counter GLOBAL PROPERTY _qt_sbom_relationship_counter)
+    set(current_counter "${counter}")
+    math(EXPR counter "${counter} + 1")
+    set_property(GLOBAL PROPERTY _qt_sbom_relationship_counter "${counter}")
+
+    set(relationships "${arg_RELATIONSHIPS}")
+    list(REMOVE_DUPLICATES relationships)
+    list(JOIN relationships "\nRelationship: " relationships)
+
+    set(content "
+        # Custom relationship index: ${current_counter}
+        file(APPEND \"${staging_area_spdx_file}\"
+    \"
+Relationship: ${relationships}\")
+")
+
+    _qt_internal_get_current_project_sbom_dir(sbom_dir)
+    set(ext_ref_sbom "${sbom_dir}/relationship_${counter}.cmake")
+    file(GENERATE OUTPUT "${ext_ref_sbom}" CONTENT "${content}")
+
+    set_property(GLOBAL APPEND PROPERTY _qt_sbom_cmake_include_files "${ext_ref_sbom}")
 endfunction()
 
 # Adds a cmake include file to the sbom generation process at a specific step.
