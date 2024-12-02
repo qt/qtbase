@@ -46,3 +46,24 @@ endfunction()
 function(qt_internal_sbom_add_project_relationship)
     _qt_internal_sbom_generate_add_project_relationship(${ARGN})
 endfunction()
+
+function(qt_internal_sbom_generate_tag_value_spdx_document)
+    _qt_internal_sbom_generate_tag_value_spdx_document(${ARGN})
+
+    set(opt_args "")
+    set(single_args
+        OUT_VAR_OUTPUT_FILE_NAME
+        OUT_VAR_OUTPUT_ABSOLUTE_FILE_PATH
+    )
+    set(multi_args "")
+    cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
+
+    if(arg_OUT_VAR_OUTPUT_FILE_NAME)
+        set(${arg_OUT_VAR_OUTPUT_FILE_NAME} "${${arg_OUT_VAR_OUTPUT_FILE_NAME}}" PARENT_SCOPE)
+    endif()
+
+    if(arg_OUT_VAR_OUTPUT_ABSOLUTE_FILE_PATH)
+        set(${arg_OUT_VAR_OUTPUT_ABSOLUTE_FILE_PATH} "${${arg_OUT_VAR_OUTPUT_ABSOLUTE_FILE_PATH}}"
+            PARENT_SCOPE)
+    endif()
+endfunction()

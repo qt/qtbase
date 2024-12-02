@@ -182,6 +182,7 @@ Relationship: SPDXRef-DOCUMENT DESCRIBES ${project_spdx_id}
     # Create the directory that will contain all sbom related files.
     _qt_internal_get_current_project_sbom_dir(sbom_dir)
     file(MAKE_DIRECTORY "${sbom_dir}")
+    set_property(GLOBAL APPEND PROPERTY _qt_internal_sbom_dirs "${sbom_dir}")
 
     # Generate project document intro spdx file.
     _qt_internal_sbom_get_root_project_name_lower_case(repo_project_name_lowercase)
@@ -207,17 +208,17 @@ Relationship: SPDXRef-DOCUMENT DESCRIBES ${project_spdx_id}
 
     # In a super build, put all the build time sboms into the same dir in qtbase.
     if(QT_SUPERBUILD)
-        set(build_sbom_dir "${QtBase_BINARY_DIR}/qt_sbom")
+        set(build_sbom_root_dir "${QtBase_BINARY_DIR}/qt_sbom")
     else()
-        set(build_sbom_dir "${sbom_dir}")
+        set(build_sbom_root_dir "${sbom_dir}")
     endif()
 
     get_filename_component(output_relative_dir "${arg_OUTPUT_RELATIVE_PATH}" DIRECTORY)
 
-    set(build_sbom_path
-        "${build_sbom_dir}/${output_relative_dir}/${computed_sbom_file_name}")
+    set(build_sbom_dir "${build_sbom_root_dir}/${output_relative_dir}")
+    set(build_sbom_path "${build_sbom_dir}/${computed_sbom_file_name}")
     set(build_sbom_path_without_ext
-        "${build_sbom_dir}/${output_relative_dir}/${computed_sbom_file_name_without_ext}")
+        "${build_sbom_dir}/${computed_sbom_file_name_without_ext}")
 
     set(install_sbom_path "${arg_OUTPUT}")
 
@@ -242,10 +243,12 @@ Relationship: SPDXRef-DOCUMENT DESCRIBES ${project_spdx_id}
     set_property(GLOBAL PROPERTY _qt_sbom_build_output_path "${build_sbom_path}")
     set_property(GLOBAL PROPERTY _qt_sbom_build_output_path_without_ext
         "${build_sbom_path_without_ext}")
+    set_property(GLOBAL PROPERTY _qt_sbom_build_output_dir "${build_sbom_dir}")
 
     set_property(GLOBAL PROPERTY _qt_sbom_install_output_path "${install_sbom_path}")
     set_property(GLOBAL PROPERTY _qt_sbom_install_output_path_without_ext
         "${install_sbom_path_without_ext}")
+    set_property(GLOBAL PROPERTY _qt_sbom_install_output_dir "${install_sbom_dir}")
 
     set_property(GLOBAL APPEND PROPERTY _qt_sbom_cmake_include_files "${create_staging_file}")
 
@@ -348,10 +351,12 @@ function(_qt_internal_sbom_end_project_generate)
     get_property(sbom_build_output_path GLOBAL PROPERTY _qt_sbom_build_output_path)
     get_property(sbom_build_output_path_without_ext GLOBAL PROPERTY
         _qt_sbom_build_output_path_without_ext)
+    get_property(sbom_build_output_dir GLOBAL PROPERTY _qt_sbom_build_output_dir)
 
     get_property(sbom_install_output_path GLOBAL PROPERTY _qt_sbom_install_output_path)
     get_property(sbom_install_output_path_without_ext GLOBAL PROPERTY
         _qt_sbom_install_output_path_without_ext)
+    get_property(sbom_install_output_dir GLOBAL PROPERTY _qt_sbom_install_output_dir)
 
     if(NOT sbom_build_output_path)
         message(FATAL_ERROR "Call _qt_internal_sbom_begin_project() first")
@@ -406,8 +411,10 @@ function(_qt_internal_sbom_end_project_generate)
             set(QT_SBOM_BUILD_TIME TRUE)
         endif()
         if(NOT QT_SBOM_OUTPUT_PATH)
+            set(QT_SBOM_OUTPUT_DIR \"${sbom_build_output_dir}\")
             set(QT_SBOM_OUTPUT_PATH \"${sbom_build_output_path}\")
             set(QT_SBOM_OUTPUT_PATH_WITHOUT_EXT \"${sbom_build_output_path_without_ext}\")
+            file(MAKE_DIRECTORY \"${sbom_build_output_dir}\")
         endif()
         set(QT_SBOM_VERIFICATION_CODES \"\")
         ${includes}
@@ -527,8 +534,10 @@ function(_qt_internal_sbom_end_project_generate)
         ${extra_code_begin}
         if(QT_SBOM_INSTALLED_ALL_CONFIGS)
             set(QT_SBOM_BUILD_TIME FALSE)
+            set(QT_SBOM_OUTPUT_DIR \"${sbom_install_output_dir}\")
             set(QT_SBOM_OUTPUT_PATH \"${sbom_install_output_path}\")
             set(QT_SBOM_OUTPUT_PATH_WITHOUT_EXT \"${sbom_install_output_path_without_ext}\")
+            file(MAKE_DIRECTORY \"${sbom_install_output_dir}\")
             include(\"${assemble_sbom}\")
             ${before_checksum_includes}
             list(SORT QT_SBOM_VERIFICATION_CODES)
@@ -810,6 +819,18 @@ function(_qt_internal_sbom_generate_add_external_reference)
     _qt_internal_get_staging_area_spdx_file_path(staging_area_spdx_file)
 
     set(install_prefixes "")
+
+    # Add the current sbom build dirs as install prefixes, so that we can use ninja 'sbom'
+    # in top-level builds. This is needed because the external references will point
+    # to sbom docs in different build dirs, not just one.
+    # We also need it in case we are converting a json document to a tag/value format in the
+    # current build dir of the project, and want it to be found.
+    get_cmake_property(build_sbom_dirs _qt_internal_sbom_dirs)
+    if(build_sbom_dirs)
+        foreach(build_sbom_dir IN LISTS build_sbom_dirs)
+            list(APPEND install_prefixes "${build_sbom_dir}")
+        endforeach()
+    endif()
 
     # Always append the install time install prefix.
     # The variable is escaped, so it is evaluated during cmake install time, so that the value
@@ -1584,8 +1605,8 @@ function(_qt_internal_sbom_find_python_dependency_program)
     endif()
 endfunction()
 
-# Helper to generate a json file. This also implies some additional validity checks, useful
-# to ensure a proper sbom file.
+# Helper to generate a SPDX JSON file from a tag/value format file.
+# This also implies some additional validity checks, useful to ensure a proper sbom file.
 function(_qt_internal_sbom_generate_json)
     if(NOT QT_INTERNAL_SBOM_PYTHON_EXECUTABLE)
         message(FATAL_ERROR "Python interpreter not found for generating SBOM json file.")
@@ -1611,6 +1632,112 @@ function(_qt_internal_sbom_generate_json)
     file(GENERATE OUTPUT "${verify_sbom}" CONTENT "${content}")
 
     set_property(GLOBAL APPEND PROPERTY _qt_sbom_cmake_verify_include_files "${verify_sbom}")
+endfunction()
+
+# Helper to generate a tag/value SPDX file from a SPDX JSON format file.
+#
+# Will be used by WebEngine to convert the Chromium JSON file to a tag/value SPDX file.
+#
+# This conversion needs to happen before the document is referenced in the SBOM generation process,
+# so that the file already exists when it is parsed for its unique id and namespace.
+# It also needs to happen before verification codes are computed for the current document
+# that will depend on the target one, to ensure the the file exists and its checksum can be
+# computed.
+#
+# OPERATION_ID - a unique id for the operation, used to generate a unique cmake file name for
+# the SBOM generation process.
+#
+# INPUT_JSON_PATH - the absolute path to the input JSON file.
+#
+# OUTPUT_FILE_PATH - the absolute path where to create the output tag/value SPDX file.
+# Note that if the output file path is set, it is up to the caller to also copy / install the file
+# into the build and install directories where the build system expects to find all external
+# document references.
+#
+# OUTPUT_FILE_NAME - when OUTPUT_FILE_PATH is not specified, the output directory is automatically
+# set to the SBOM output directory. In this case OUTPUT_FILE_NAME can be used to override the
+# outout file name. If not specified, it will be derived from the input file name.
+#
+# OUT_VAR_OUTPUT_FILE_NAME - output variable where to store the output file.
+#
+# OUT_VAR_OUTPUT_ABSOLUTE_FILE_PATH - output variable where to store the output file path.
+# Note that the path will contain an unresolved '${QT_SBOM_OUTPUT_DIR}' which only has a value at
+# install time. So the path can't be used sensibly during configure time.
+function(_qt_internal_sbom_generate_tag_value_spdx_document)
+    if(NOT QT_GENERATE_SBOM)
+        return()
+    endif()
+
+    set(opt_args "")
+    set(single_args
+        OPERATION_ID
+        INPUT_JSON_FILE_PATH
+        OUTPUT_FILE_PATH
+        OUTPUT_FILE_NAME
+        OUT_VAR_OUTPUT_FILE_NAME
+        OUT_VAR_OUTPUT_ABSOLUTE_FILE_PATH
+    )
+    set(multi_args "")
+    cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    if(NOT QT_INTERNAL_SBOM_PYTHON_EXECUTABLE)
+        message(FATAL_ERROR "Python interpreter not found for generating tag/value file from JSON.")
+    endif()
+    if(NOT QT_INTERNAL_SBOM_DEPS_FOUND_FOR_GENERATE_JSON)
+        message(FATAL_ERROR
+            "Python dependencies not found for generating tag/value file from JSON.")
+    endif()
+
+    if(NOT arg_OPERATION_ID)
+        message(FATAL_ERROR "OPERATION_ID is required")
+    endif()
+
+    if(NOT arg_INPUT_JSON_FILE_PATH)
+        message(FATAL_ERROR "INPUT_JSON_FILE_PATH is required")
+    endif()
+
+    if(arg_OUTPUT_FILE_PATH)
+        set(output_path "${arg_OUTPUT_FILE_PATH}")
+    else()
+        if(arg_OUTPUT_FILE_NAME)
+            set(output_name "${arg_OUTPUT_FILE_NAME}")
+        else()
+            # Use the input file name without the last extension (without .json) as the output name.
+            get_filename_component(output_name "${arg_INPUT_JSON_FILE_PATH}" NAME_WLE)
+        endif()
+        set(output_path "\${QT_SBOM_OUTPUT_DIR}/${output_name}")
+    endif()
+
+    if(arg_OUT_VAR_OUTPUT_FILE_NAME)
+        get_filename_component(output_name_resolved "${output_path}" NAME)
+        set(${arg_OUT_VAR_OUTPUT_FILE_NAME} "${output_name_resolved}" PARENT_SCOPE)
+    endif()
+
+    if(arg_OUT_VAR_OUTPUT_ABSOLUTE_FILE_PATH)
+        set(${arg_OUT_VAR_OUTPUT_ABSOLUTE_FILE_PATH} "${output_path}" PARENT_SCOPE)
+    endif()
+
+    set(content "
+        message(STATUS
+            \"Generating tag/value SPDX document: ${output_path} from \"
+        \"${arg_INPUT_JSON_FILE_PATH}\")
+        execute_process(
+            COMMAND ${QT_INTERNAL_SBOM_PYTHON_EXECUTABLE} -m spdx_tools.spdx.clitools.pyspdxtools
+            -i \"${arg_INPUT_JSON_FILE_PATH}\" -o \"${output_path}\"
+            RESULT_VARIABLE res
+        )
+        if(NOT res EQUAL 0)
+            message(FATAL_ERROR \"SBOM conversion to tag/value failed: \${res}\")
+        endif()
+")
+
+    _qt_internal_get_current_project_sbom_dir(sbom_dir)
+    set(convert_sbom "${sbom_dir}/convert_to_tag_value_${arg_OPERATION_ID}.cmake")
+    file(GENERATE OUTPUT "${convert_sbom}" CONTENT "${content}")
+
+    set_property(GLOBAL APPEND PROPERTY _qt_sbom_cmake_include_files
+        "${convert_sbom}")
 endfunction()
 
 # Helper to verify the generated sbom is valid.
