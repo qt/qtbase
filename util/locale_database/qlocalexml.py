@@ -151,7 +151,9 @@ class QLocaleXmlReader (object):
         sub-tags mapping says language's default locale uses the given
         script and territory."""
         for have, give in self.__likely:
-            if have[1:] == ('AnyScript', 'AnyTerritory') and give[2] != 'AnyTerritory':
+            if (have[0] != 'AnyLanguage'
+                    and have[1:] == ('AnyScript', 'AnyTerritory')
+                    and give[2] != 'AnyTerritory'):
                 assert have[0] == give[0], (have, give)
                 yield ((self.__langByName[give[0]][0],
                         self.__textByName[give[1]][0]),
