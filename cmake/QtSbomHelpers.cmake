@@ -35,3 +35,6 @@ function(qt_internal_sbom_add_files)
     _qt_internal_sbom_add_files(${ARGN})
 endfunction()
 
+function(qt_internal_sbom_add_cmake_include_step)
+    _qt_internal_sbom_add_cmake_include_step(${ARGN})
+endfunction()

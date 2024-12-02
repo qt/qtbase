@@ -357,46 +357,37 @@ function(_qt_internal_sbom_end_project_generate)
 
     _qt_internal_get_staging_area_spdx_file_path(staging_area_spdx_file)
 
-    get_cmake_property(cmake_include_files _qt_sbom_cmake_include_files)
-    get_cmake_property(cmake_end_include_files _qt_sbom_cmake_end_include_files)
-    get_cmake_property(cmake_post_generation_include_files
-        _qt_sbom_cmake_post_generation_include_files)
-    get_cmake_property(cmake_verify_include_files _qt_sbom_cmake_verify_include_files)
+    _qt_internal_sbom_collect_cmake_include_files(includes
+        JOIN_WITH_NEWLINES
+        PROPERTIES _qt_sbom_cmake_include_files _qt_sbom_cmake_end_include_files
+    )
 
-    set(includes "")
-    if(cmake_include_files)
-        foreach(cmake_include_file IN LISTS cmake_include_files)
-            list(APPEND includes "include(\"${cmake_include_file}\")")
-        endforeach()
-    endif()
+    # Before checksum includes are included after the verification codes have been collected
+    # and before their merged checksum(s) has been computed.
+    _qt_internal_sbom_collect_cmake_include_files(before_checksum_includes
+        JOIN_WITH_NEWLINES
+        PROPERTIES _qt_sbom_cmake_before_checksum_include_files
+    )
 
-    if(cmake_end_include_files)
-        foreach(cmake_include_file IN LISTS cmake_end_include_files)
-            list(APPEND includes "include(\"${cmake_include_file}\")")
-        endforeach()
-    endif()
-
-    list(JOIN includes "\n" includes)
+    # After checksum includes are included after the checksum has been computed and written to the
+    # QT_SBOM_VERIFICATION_CODE variable.
+    _qt_internal_sbom_collect_cmake_include_files(after_checksum_includes
+        JOIN_WITH_NEWLINES
+        PROPERTIES _qt_sbom_cmake_after_checksum_include_files
+    )
 
     # Post generation includes are included for both build and install time sboms, after
     # sbom generation has finished.
-    set(post_generation_includes "")
-    if(cmake_post_generation_include_files)
-        foreach(cmake_include_file IN LISTS cmake_post_generation_include_files)
-            list(APPEND post_generation_includes "include(\"${cmake_include_file}\")")
-        endforeach()
-    endif()
-
-    list(JOIN post_generation_includes "\n" post_generation_includes)
+    _qt_internal_sbom_collect_cmake_include_files(post_generation_includes
+        JOIN_WITH_NEWLINES
+        PROPERTIES _qt_sbom_cmake_post_generation_include_files
+    )
 
     # Verification only makes sense on installation, where the checksums are present.
-    set(verify_includes "")
-    if(cmake_verify_include_files)
-        foreach(cmake_include_file IN LISTS cmake_verify_include_files)
-            list(APPEND verify_includes "include(\"${cmake_include_file}\")")
-        endforeach()
-    endif()
-    list(JOIN verify_includes "\n" verify_includes)
+    _qt_internal_sbom_collect_cmake_include_files(verify_includes
+        JOIN_WITH_NEWLINES
+        PROPERTIES _qt_sbom_cmake_verify_include_files
+    )
 
     get_cmake_property(is_multi_config GENERATOR_IS_MULTI_CONFIG)
     if(is_multi_config)
@@ -537,10 +528,12 @@ function(_qt_internal_sbom_end_project_generate)
             set(QT_SBOM_OUTPUT_PATH \"${sbom_install_output_path}\")
             set(QT_SBOM_OUTPUT_PATH_WITHOUT_EXT \"${sbom_install_output_path_without_ext}\")
             include(\"${assemble_sbom}\")
+            ${before_checksum_includes}
             list(SORT QT_SBOM_VERIFICATION_CODES)
             string(REPLACE \";\" \"\" QT_SBOM_VERIFICATION_CODES \"\${QT_SBOM_VERIFICATION_CODES}\")
             file(WRITE \"${sbom_dir}/verification.txt\" \"\${QT_SBOM_VERIFICATION_CODES}\")
             file(SHA1 \"${sbom_dir}/verification.txt\" QT_SBOM_VERIFICATION_CODE)
+            ${after_checksum_includes}
             message(STATUS \"Finalizing SBOM generation in install dir: \${QT_SBOM_OUTPUT_PATH}\")
             configure_file(\"${staging_area_spdx_file}\" \"\${QT_SBOM_OUTPUT_PATH}\")
             ${post_generation_includes}
@@ -560,8 +553,46 @@ function(_qt_internal_sbom_end_project_generate)
     # Clean up properties, so that they are empty for possible next repo in a top-level build.
     set_property(GLOBAL PROPERTY _qt_sbom_cmake_include_files "")
     set_property(GLOBAL PROPERTY _qt_sbom_cmake_end_include_files "")
+    set_property(GLOBAL PROPERTY _qt_sbom_cmake_before_checksum_include_files "")
+    set_property(GLOBAL PROPERTY _qt_sbom_cmake_after_checksum_include_files "")
     set_property(GLOBAL PROPERTY _qt_sbom_cmake_post_generation_include_files "")
     set_property(GLOBAL PROPERTY _qt_sbom_cmake_verify_include_files "")
+endfunction()
+
+# Gets a list of cmake include file paths, joins them as include() statements and returns the
+# output.
+function(_qt_internal_sbom_collect_cmake_include_files out_var)
+    set(opt_args
+        JOIN_WITH_NEWLINES
+    )
+    set(single_args "")
+    set(multi_args
+        PROPERTIES
+    )
+    cmake_parse_arguments(PARSE_ARGV 1 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    if(NOT arg_PROPERTIES)
+        message(FATAL_ERROR "PROPERTIES is required")
+    endif()
+
+    set(includes "")
+
+    foreach(property IN LISTS arg_PROPERTIES)
+        get_cmake_property(include_files "${property}")
+
+        if(include_files)
+            foreach(include_file IN LISTS include_files)
+                list(APPEND includes "include(\"${include_file}\")")
+            endforeach()
+        endif()
+    endforeach()
+
+    if(arg_JOIN_WITH_NEWLINES)
+        list(JOIN includes "\n" includes)
+    endif()
+
+    set(${out_var} "${includes}" PARENT_SCOPE)
 endfunction()
 
 # Helper to add info about a file to the sbom.
@@ -967,6 +998,69 @@ Relationship: ${arg_RELATIONSHIP}
     file(GENERATE OUTPUT "${package_sbom}" CONTENT "${content}")
 
     set_property(GLOBAL APPEND PROPERTY _qt_sbom_cmake_include_files "${package_sbom}")
+endfunction()
+
+# Adds a cmake include file to the sbom generation process at a specific step.
+# INCLUDE_PATH - path to the cmake file to include.
+# STEP - one of
+#        BEGIN
+#        END
+#        POST_GENERATION
+#        VERIFY
+#
+# BEGIN includes are included after the spdx staging file is created.
+#
+# END includes are included after the all the BEGIN ones are included.
+#
+# BEFORE_CHECKSUM includes are included after the verification codes have been collected
+# and before their merged checksum(s) has been computed. Only relevant for install time sboms.
+#
+# AFTER_CHECKSUM includes are included after the checksum has been computed and written to the
+# QT_SBOM_VERIFICATION_CODE variable. Only relevant for install time sboms.
+#
+# POST_GENERATION includes are included for both build and install time sboms, after
+# sbom generation has finished.
+# Currently used for adding reuse lint and reuse source steps, before VERIFY include are run.
+#
+# VERIFY includes only make sense on installation, where the checksums are present, so they are
+# only included during install time.
+# Used for generating a json sbom from the tag value one, for running ntia compliance check, etc.
+function(_qt_internal_sbom_add_cmake_include_step)
+    set(opt_args "")
+    set(single_args
+        STEP
+        INCLUDE_PATH
+    )
+    set(multi_args "")
+    cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
+
+    if(NOT arg_STEP)
+        message(FATAL_ERROR "STEP is required")
+    endif()
+
+    if(NOT arg_INCLUDE_PATH)
+        message(FATAL_ERROR "INCLUDE_PATH is required")
+    endif()
+
+    set(step "${arg_STEP}")
+
+    if(step STREQUAL "BEGIN")
+        set(property "_qt_sbom_cmake_include_files")
+    elseif(step STREQUAL "END")
+        set(property "_qt_sbom_cmake_end_include_files")
+    elseif(step STREQUAL "BEFORE_CHECKSUM")
+        set(property "_qt_sbom_cmake_before_checksum_include_files")
+    elseif(step STREQUAL "AFTER_CHECKSUM")
+        set(property "_qt_sbom_cmake_after_checksum_include_files")
+    elseif(step STREQUAL "POST_GENERATION")
+        set(property "_qt_sbom_cmake_post_generation_include_files")
+    elseif(step STREQUAL "VERIFY")
+        set(property "_qt_sbom_cmake_verify_include_files")
+    else()
+        message(FATAL_ERROR "Invalid SBOM cmake include step name: ${step}")
+    endif()
+
+    set_property(GLOBAL APPEND PROPERTY "${property}" "${arg_INCLUDE_PATH}")
 endfunction()
 
 # Helper to add a license text from a file or text into the sbom document.
