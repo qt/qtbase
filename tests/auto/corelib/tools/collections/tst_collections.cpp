@@ -178,8 +178,8 @@ struct NoCmpParamRecursiveMultiHashK : public QMultiHash<NoCmpParamRecursiveMult
 
 struct NoCmpRecursiveList : public QList<NoCmpRecursiveList>
 {
-    bool operator==(const RecursiveList &) const = delete;
-    bool operator<(const RecursiveList &) const = delete;
+    bool operator==(const NoCmpRecursiveList &) const = delete;
+    bool operator<(const NoCmpRecursiveList &) const = delete;
 };
 struct NoCmpRecursiveSet : public QSet<NoCmpRecursiveSet>
 {
