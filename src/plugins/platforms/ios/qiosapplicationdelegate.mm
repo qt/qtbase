@@ -20,42 +20,6 @@
 
 @implementation QIOSApplicationDelegate
 
-- (BOOL)application:(UIApplication *)application continueUserActivity:(NSUserActivity *)userActivity restorationHandler:(void (^)(NSArray<id<UIUserActivityRestoring>> *restorableObjects))restorationHandler
-{
-    Q_UNUSED(application);
-    Q_UNUSED(restorationHandler);
-
-    if (!QGuiApplication::instance())
-        return NO;
-
-    if ([userActivity.activityType isEqualToString:NSUserActivityTypeBrowsingWeb]) {
-        QIOSIntegration *iosIntegration = QIOSIntegration::instance();
-        Q_ASSERT(iosIntegration);
-
-        QIOSServices *iosServices = static_cast<QIOSServices *>(iosIntegration->services());
-
-        return iosServices->handleUrl(QUrl::fromNSURL(userActivity.webpageURL));
-    }
-
-    return NO;
-}
-
-- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey, id> *)options
-{
-    Q_UNUSED(application);
-    Q_UNUSED(options);
-
-    if (!QGuiApplication::instance())
-        return NO;
-
-    QIOSIntegration *iosIntegration = QIOSIntegration::instance();
-    Q_ASSERT(iosIntegration);
-
-    QIOSServices *iosServices = static_cast<QIOSServices *>(iosIntegration->services());
-
-    return iosServices->handleUrl(QUrl::fromNSURL(url));
-}
-
 - (UISceneConfiguration *)application:(UIApplication *)application
                           configurationForConnectingSceneSession:(UISceneSession *)connectingSceneSession
                           options:(UISceneConnectionOptions *)options
@@ -94,6 +58,35 @@
 
     window.rootViewController = [[[QIOSViewController alloc]
         initWithWindow:window andScreen:screen] autorelease];
+
+    if (connectionOptions.URLContexts.count > 0)
+        [self scene:scene openURLContexts:connectionOptions.URLContexts];
+}
+
+- (void)scene:(UIScene *)scene openURLContexts:(NSSet<UIOpenURLContext *> *)URLContexts
+{
+    qCDebug(lcQpaWindowScene) << "Handling openURLContexts for scene" << scene;
+
+    QIOSIntegration *iosIntegration = QIOSIntegration::instance();
+    Q_ASSERT(iosIntegration);
+
+    QIOSServices *iosServices = static_cast<QIOSServices *>(iosIntegration->services());
+
+    for (UIOpenURLContext *urlContext in URLContexts)
+        iosServices->handleUrl(QUrl::fromNSURL(urlContext.URL));
+}
+
+- (void)scene:(UIScene *)scene continueUserActivity:(NSUserActivity *)userActivity
+{
+    qCDebug(lcQpaWindowScene) << "Handling continueUserActivity for scene" << scene;
+
+    if ([userActivity.activityType isEqualToString:NSUserActivityTypeBrowsingWeb]) {
+        QIOSIntegration *iosIntegration = QIOSIntegration::instance();
+        Q_ASSERT(iosIntegration);
+
+        QIOSServices *iosServices = static_cast<QIOSServices *>(iosIntegration->services());
+        iosServices->handleUrl(QUrl::fromNSURL(userActivity.webpageURL));
+    }
 }
 
 @end
