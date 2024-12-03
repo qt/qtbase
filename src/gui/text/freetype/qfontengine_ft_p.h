@@ -242,10 +242,19 @@ private:
                             GlyphFormat format = Format_None,
                             bool fetchMetricsOnly = false,
                             bool disableOutlineDrawing = false) const
-    { return loadGlyph(cacheEnabled ? &defaultGlyphSet : nullptr, glyph, subPixelPosition, format, fetchMetricsOnly, disableOutlineDrawing); }
+    {
+        return loadGlyph(cacheEnabled ? &defaultGlyphSet : nullptr,
+                         glyph,
+                         subPixelPosition,
+                         QColor(),
+                         format,
+                         fetchMetricsOnly,
+                         disableOutlineDrawing);
+    }
     Glyph *loadGlyph(QGlyphSet *set,
                      uint glyph,
                      const QFixedPoint &subPixelPosition,
+                     QColor color,
                      GlyphFormat = Format_None,
                      bool fetchMetricsOnly = false,
                      bool disableOutlineDrawing = false) const;
@@ -253,6 +262,7 @@ private:
                         const QFixedPoint &subPixelPosition,
                         GlyphFormat format,
                         const QTransform &t,
+                        QColor color,
                         bool fetchBoundingBox = false,
                         bool disableOutlineDrawing = false);
 
