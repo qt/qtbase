@@ -22,8 +22,10 @@ if(NOT PROJECT_NAME STREQUAL "QtBase" AND NOT PROJECT_NAME STREQUAL "Qt")
         BuildInternals
         Core
         Sql
-     )
-    qt_prepare_standalone_project()
+    )
+    # Use qtbase license files for standalone builds.
+    set(QT_SBOM_LICENSE_DIRS "${PROJECT_SOURCE_DIR}/../../../LICENSES")
+    qt_build_repo_begin()
 else()
     qt_internal_upgrade_cmake_policies()
 endif()
@@ -77,5 +79,5 @@ if(QT_FEATURE_sql_mimer)
 endif()
 
 if(NOT CMAKE_PROJECT_NAME STREQUAL "QtBase" AND NOT CMAKE_PROJECT_NAME STREQUAL "Qt")
-    qt_print_feature_summary()
+    qt_build_repo_end()
 endif()

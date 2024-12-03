@@ -216,7 +216,29 @@ function(_qt_internal_sbom_begin_project)
     _qt_internal_get_current_project_sbom_dir(sbom_dir)
     set_property(GLOBAL APPEND PROPERTY _qt_internal_sbom_dirs "${sbom_dir}")
 
-    file(GLOB license_files "${PROJECT_SOURCE_DIR}/LICENSES/LicenseRef-*.txt")
+    # Collect project licenses.
+    set(license_dirs "")
+
+    if(EXISTS "${PROJECT_SOURCE_DIR}/LICENSES")
+        list(APPEND license_dirs "${PROJECT_SOURCE_DIR}/LICENSES")
+    endif()
+
+    # Allow specifying extra license dirs via a variable. Useful for standalone projects
+    # like sqldrivers.
+    if(QT_SBOM_LICENSE_DIRS)
+        foreach(license_dir IN LISTS QT_SBOM_LICENSE_DIRS)
+            if(EXISTS "${license_dir}")
+                list(APPEND license_dirs "${license_dir}")
+            endif()
+        endforeach()
+    endif()
+    list(REMOVE_DUPLICATES license_dirs)
+
+    set(license_file_wildcard "LicenseRef-*.txt")
+    list(TRANSFORM license_dirs APPEND "/${license_file_wildcard}" OUTPUT_VARIABLE license_globs)
+
+    file(GLOB license_files ${license_globs})
+
     foreach(license_file IN LISTS license_files)
         get_filename_component(license_id "${license_file}" NAME_WLE)
         _qt_internal_sbom_add_license(
