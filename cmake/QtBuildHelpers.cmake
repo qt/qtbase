@@ -213,6 +213,7 @@ function(qt_internal_get_qt_build_private_helpers out_var)
         QtToolchainHelpers
         QtUnityBuildHelpers
         QtWasmHelpers
+        QtWindowsHelpers
         QtWrapperScriptHelpers
         PARENT_SCOPE
     )
@@ -444,6 +445,7 @@ macro(qt_internal_setup_build_and_global_variables)
 
     qt_internal_check_macos_host_version()
     _qt_internal_check_apple_sdk_and_xcode_versions()
+    qt_internal_check_msvc_versions()
     qt_internal_check_host_path_set_for_cross_compiling()
     qt_internal_setup_android_platform_specifics()
     qt_internal_setup_find_host_info_package()
