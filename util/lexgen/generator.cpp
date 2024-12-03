@@ -157,7 +157,7 @@ QString Class::definition() const
 Generator::Generator(const DFA &_dfa, const Config &config)
      : dfa(_dfa), cfg(config)
 {
-    QList<InputType> lst = cfg.maxInputSet.toList();
+    QList<InputType> lst(cfg.maxInputSet.cbegin(), cfg.maxInputSet.cend());
     std::sort(lst.begin(), lst.end());
     minInput = lst.first();
     maxInput = lst.last();

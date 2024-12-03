@@ -40,7 +40,7 @@ public:
     ~LineStream()
     {
         if (!--shared->ref) {
-            (*shared->stream) << endl;
+            (*shared->stream) << Qt::endl;
             delete shared;
         }
     }
@@ -64,7 +64,7 @@ public:
     LineStream operator<<(const T &value)
     { stream << indentStr; stream << value; return LineStream(&stream); }
 
-    inline void addNewLine() { stream << endl; }
+    inline void addNewLine() { stream << Qt::endl; }
 
     inline QString toString() const { stream.flush(); return output; }
 
