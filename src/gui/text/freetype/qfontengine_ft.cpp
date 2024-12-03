@@ -56,6 +56,10 @@
 
 QT_BEGIN_NAMESPACE
 
+#if defined(QFONTENGINE_FT_SUPPORT_COLRV1)
+Q_STATIC_LOGGING_CATEGORY(lcColrv1, "qt.text.font.colrv1")
+#endif
+
 using namespace Qt::StringLiterals;
 
 #define FLOOR(x)    ((x) & -64)
@@ -1171,6 +1175,761 @@ static inline void transformBoundingBox(int *left, int *top, int *right, int *bo
     *bottom = b;
 }
 
+#if defined(QFONTENGINE_FT_SUPPORT_COLRV1)
+#define FROM_FIXED_16_16(value) (value / 65536.0)
+
+static inline QTransform FTAffineToQTransform(const FT_Affine23 &matrix)
+{
+    qreal m11 = FROM_FIXED_16_16(matrix.xx);
+    qreal m21 = -FROM_FIXED_16_16(matrix.xy);
+    qreal m12 = -FROM_FIXED_16_16(matrix.yx);
+    qreal m22 = FROM_FIXED_16_16(matrix.yy);
+    qreal dx = FROM_FIXED_16_16(matrix.dx);
+    qreal dy = -FROM_FIXED_16_16(matrix.dy);
+
+    return QTransform(m11, m12, m21, m22, dx, dy);
+}
+
+bool QFontEngineFT::traverseColr1(FT_OpaquePaint opaquePaint,
+                                  Colr1PaintInfo *paintInfo) const
+{
+    FT_Face face = freetype->face;
+
+    auto key = qMakePair(opaquePaint.p, opaquePaint.insert_root_transform);
+    if (paintInfo->loops.contains(key)) {
+        qCWarning(lcColrv1) << "Cycle detected in COLRv1 graph";
+        return false;
+    }
+
+    if (paintInfo->painter != nullptr)
+        paintInfo->painter->save();
+
+    QTransform oldTransform = paintInfo->transform;
+    QPainterPath oldPath = paintInfo->currentPath;
+    paintInfo->loops.insert(key);
+    auto cleanup = qScopeGuard([&paintInfo, &key, &oldTransform, &oldPath]() {
+        paintInfo->loops.remove(key);
+        paintInfo->transform = oldTransform;
+        paintInfo->currentPath = oldPath;
+
+        if (paintInfo->painter != nullptr)
+            paintInfo->painter->restore();
+    });
+
+    FT_COLR_Paint paint;
+    if (!FT_Get_Paint(face, opaquePaint, &paint))
+        return false;
+
+    if (paint.format == FT_COLR_PAINTFORMAT_COLR_LAYERS) {
+        qCDebug(lcColrv1).noquote().nospace()
+            << QByteArray().fill(' ', paintInfo->loops.size() * 2)
+            << "[layers]";
+
+        FT_OpaquePaint layerPaint;
+        layerPaint.p = nullptr;
+        while (FT_Get_Paint_Layers(face, &paint.u.colr_layers.layer_iterator, &layerPaint)) {
+            if (!traverseColr1(layerPaint, paintInfo))
+                return false;
+        }
+    } else if (paint.format == FT_COLR_PAINTFORMAT_TRANSFORM
+               || paint.format == FT_COLR_PAINTFORMAT_SCALE
+               || paint.format == FT_COLR_PAINTFORMAT_TRANSLATE
+               || paint.format == FT_COLR_PAINTFORMAT_ROTATE
+               || paint.format == FT_COLR_PAINTFORMAT_SKEW) {
+        QTransform xform;
+
+        FT_OpaquePaint nextPaint;
+        switch (paint.format) {
+        case FT_COLR_PAINTFORMAT_TRANSFORM:
+            xform = FTAffineToQTransform(paint.u.transform.affine);
+            nextPaint = paint.u.transform.paint;
+
+            qCDebug(lcColrv1).noquote().nospace()
+                << QByteArray().fill(' ', paintInfo->loops.size() * 2)
+                << "[transform " << xform << "]";
+
+            break;
+        case FT_COLR_PAINTFORMAT_SCALE:
+            {
+                qreal centerX = FROM_FIXED_16_16(paint.u.scale.center_x);
+                qreal centerY = -FROM_FIXED_16_16(paint.u.scale.center_y);
+                qreal scaleX = FROM_FIXED_16_16(paint.u.scale.scale_x);
+                qreal scaleY = FROM_FIXED_16_16(paint.u.scale.scale_y);
+
+                xform.translate(centerX, centerY);
+                xform.scale(scaleX, scaleY);
+                xform.translate(-centerX, -centerY);
+
+                nextPaint = paint.u.scale.paint;
+
+                qCDebug(lcColrv1).noquote().nospace()
+                    << QByteArray().fill(' ', paintInfo->loops.size() * 2)
+                    << "[scale " << xform << "]";
+
+                break;
+            }
+        case FT_COLR_PAINTFORMAT_ROTATE:
+            {
+                qreal centerX = FROM_FIXED_16_16(paint.u.rotate.center_x);
+                qreal centerY = -FROM_FIXED_16_16(paint.u.rotate.center_y);
+                qreal angle = -FROM_FIXED_16_16(paint.u.rotate.angle) * 180.0;
+
+                xform.translate(centerX, centerY);
+                xform.rotate(angle);
+                xform.translate(-centerX, -centerY);
+
+                nextPaint = paint.u.rotate.paint;
+
+                qCDebug(lcColrv1).noquote().nospace()
+                    << QByteArray().fill(' ', paintInfo->loops.size() * 2)
+                    << "[rotate " << xform << "]";
+
+                break;
+            }
+
+        case FT_COLR_PAINTFORMAT_SKEW:
+            {
+                qreal centerX = FROM_FIXED_16_16(paint.u.skew.center_x);
+                qreal centerY = -FROM_FIXED_16_16(paint.u.skew.center_y);
+                qreal angleX = FROM_FIXED_16_16(paint.u.skew.x_skew_angle) * M_PI;
+                qreal angleY = -FROM_FIXED_16_16(paint.u.skew.y_skew_angle) * M_PI;
+
+                xform.translate(centerX, centerY);
+                xform.shear(qTan(angleX), qTan(angleY));
+                xform.translate(-centerX, -centerY);
+
+                nextPaint = paint.u.rotate.paint;
+
+                qCDebug(lcColrv1).noquote().nospace()
+                    << QByteArray().fill(' ', paintInfo->loops.size() * 2)
+                    << "[skew " << xform << "]";
+
+                break;
+            }
+        case FT_COLR_PAINTFORMAT_TRANSLATE:
+            {
+                qreal dx = FROM_FIXED_16_16(paint.u.translate.dx);
+                qreal dy = -FROM_FIXED_16_16(paint.u.translate.dy);
+
+                xform.translate(dx, dy);
+                nextPaint = paint.u.rotate.paint;
+
+                qCDebug(lcColrv1).noquote().nospace()
+                    << QByteArray().fill(' ', paintInfo->loops.size() * 2)
+                    << "[translate " << xform << "]";
+
+                break;
+            }
+        default:
+                Q_UNREACHABLE();
+        };
+
+        paintInfo->transform = xform * paintInfo->transform;
+        if (!traverseColr1(nextPaint, paintInfo))
+            return false;
+    } else if (paint.format == FT_COLR_PAINTFORMAT_LINEAR_GRADIENT
+               || paint.format == FT_COLR_PAINTFORMAT_RADIAL_GRADIENT
+               || paint.format == FT_COLR_PAINTFORMAT_SWEEP_GRADIENT
+               || paint.format == FT_COLR_PAINTFORMAT_SOLID) {
+        QRect boundingRect = paintInfo->currentPath.boundingRect().toAlignedRect();
+        if (paintInfo->painter == nullptr) {
+            paintInfo->boundingRect = paintInfo->boundingRect.isValid()
+                                          ? paintInfo->boundingRect.united(boundingRect)
+                                          : boundingRect;
+        }
+
+        qCDebug(lcColrv1).noquote().nospace()
+            << QByteArray().fill(' ', paintInfo->loops.size() * 2)
+            << "[fill " << paint.format << "]";
+
+        if (paintInfo->painter != nullptr && !paintInfo->currentPath.isEmpty() && !boundingRect.isEmpty()) {
+            auto getPaletteColor = [&paintInfo](FT_UInt16 index, FT_F2Dot14 alpha) {
+                QColor color;
+                if (index < paintInfo->paletteCount) {
+                    const FT_Color &paletteColor = paintInfo->palette[index];
+                    color = qRgba(paletteColor.red,
+                                  paletteColor.green,
+                                  paletteColor.blue,
+                                  paletteColor.alpha);
+                } else if (index == 0xffff) {
+                    color = paintInfo->foregroundColor;
+                }
+
+                if (color.isValid())
+                    color.setAlphaF(color.alphaF() * (alpha / 16384.0));
+
+                return color;
+            };
+
+            auto gatherGradientStops = [&](FT_ColorStopIterator it) {
+                QGradientStops ret;
+                ret.resize(it.num_color_stops);
+
+                FT_ColorStop colorStop;
+                while (FT_Get_Colorline_Stops(face, &colorStop, &it)) {
+                    uint index = it.current_color_stop - 1;
+                    if (qsizetype(index) < ret.size()) {
+                        QGradientStop &gradientStop = ret[index];
+                        gradientStop.first = FROM_FIXED_16_16(colorStop.stop_offset);
+                        gradientStop.second = getPaletteColor(colorStop.color.palette_index,
+                                                              colorStop.color.alpha);
+                    }
+                }
+
+                return ret;
+            };
+
+            auto extendToSpread = [](FT_PaintExtend extend) {
+                switch (extend) {
+                case FT_COLR_PAINT_EXTEND_REPEAT:
+                    return QGradient::RepeatSpread;
+                case FT_COLR_PAINT_EXTEND_REFLECT:
+                    return QGradient::ReflectSpread;
+                default:
+                    return QGradient::PadSpread;
+                }
+            };
+
+            if (paint.format == FT_COLR_PAINTFORMAT_LINEAR_GRADIENT) {
+                const qreal p0x = FROM_FIXED_16_16(paint.u.linear_gradient.p0.x);
+                const qreal p0y = -FROM_FIXED_16_16(paint.u.linear_gradient.p0.y);
+
+                const qreal p1x = FROM_FIXED_16_16(paint.u.linear_gradient.p1.x);
+                const qreal p1y = -FROM_FIXED_16_16(paint.u.linear_gradient.p1.y);
+
+                const qreal p2x = FROM_FIXED_16_16(paint.u.linear_gradient.p2.x);
+                const qreal p2y = -FROM_FIXED_16_16(paint.u.linear_gradient.p2.y);
+
+                QPointF p0(p0x, p0y);
+                QPointF p1(p1x, p1y);
+                QPointF p2(p2x, p2y);
+
+                qCDebug(lcColrv1).noquote().nospace()
+                    << QByteArray().fill(' ', paintInfo->loops.size() * 2)
+                    << "[linear gradient " << p0 << ", " << p1 << ", " << p2 << "]";
+
+                // Calculate new start and end point for single vector gradient preferred by Qt
+                // Find vector perpendicular to p0p2 and project p0p1 onto this to find p3 (final
+                // stop)
+                // https://learn.microsoft.com/en-us/typography/opentype/spec/colr#linear-gradients
+                QVector2D p0p2 = QVector2D(p2 - p0);
+                if (qFuzzyIsNull(p0p2.lengthSquared())) {
+                    qCWarning(lcColrv1) << "Malformed linear gradient in COLRv1 graph. Points:"
+                                        << p0
+                                        << p1
+                                        << p2;
+                    return false;
+                }
+
+                // v is perpendicular to p0p2
+                QVector2D v = QVector2D(p0p2.y(), -p0p2.x());
+
+                // u is the vector from p0 to p1
+                QVector2D u = QVector2D(p1 - p0);
+                if (qFuzzyIsNull(u.lengthSquared())) {
+                    qCWarning(lcColrv1) << "Malformed linear gradient in COLRv1 graph. Points:"
+                                        << p0
+                                        << p1
+                                        << p2;
+                    return false;
+                }
+
+                // We find the projected point p3
+                QPointF p3 = (QVector2D(p0) + v * QVector2D::dotProduct(u, v) / v.lengthSquared()).toPointF();
+
+                p0 = paintInfo->transform.map(p0);
+                p3 = paintInfo->transform.map(p1);
+
+                // Convert to normalized object coordinates
+                QRectF brect = paintInfo->currentPath.boundingRect();
+                if (brect.isEmpty())
+                    return false;
+                p0 -= brect.topLeft();
+                p3 -= brect.topLeft();
+
+                p0.rx() /= brect.width();
+                p0.ry() /= brect.height();
+
+                p3.rx() /= brect.width();
+                p3.ry() /= brect.height();
+
+                QLinearGradient linearGradient(p0, p3);
+                linearGradient.setSpread(extendToSpread(paint.u.linear_gradient.colorline.extend));
+                linearGradient.setStops(gatherGradientStops(paint.u.linear_gradient.colorline.color_stop_iterator));
+                linearGradient.setCoordinateMode(QGradient::ObjectMode);
+
+                paintInfo->painter->setBrush(linearGradient);
+
+            } else if (paint.format == FT_COLR_PAINTFORMAT_RADIAL_GRADIENT) {
+                const qreal c0x = FROM_FIXED_16_16(paint.u.radial_gradient.c0.x);
+                const qreal c0y = -FROM_FIXED_16_16(paint.u.radial_gradient.c0.y);
+                const qreal r0 = FROM_FIXED_16_16(paint.u.radial_gradient.r0);
+                const qreal c1x = FROM_FIXED_16_16(paint.u.radial_gradient.c1.x);
+                const qreal c1y = -FROM_FIXED_16_16(paint.u.radial_gradient.c1.y);
+                const qreal r1 = FROM_FIXED_16_16(paint.u.radial_gradient.r1);
+
+                QPointF c0(c0x, c0y);
+                QPointF c1(c1x, c1y);
+                QPointF c0e(c0x + r0, c0y);
+                QPointF c1e(c1x + r1, c1y);
+
+                c0 = paintInfo->transform.map(c0);
+                c1 = paintInfo->transform.map(c1);
+
+                c0e = paintInfo->transform.map(c0e);
+                c1e = paintInfo->transform.map(c1e);
+
+                // Convert to normalized object coordinates
+                QRectF brect = paintInfo->currentPath.boundingRect();
+                if (brect.isEmpty())
+                    return false;
+
+                c0 -= brect.topLeft();
+                c1 -= brect.topLeft();
+
+                c0.rx() /= brect.width();
+                c0.ry() /= brect.height();
+
+                c1.rx() /= brect.width();
+                c1.ry() /= brect.height();
+
+                c0e -= brect.topLeft();
+                c1e -= brect.topLeft();
+
+                c0e.rx() /= brect.width();
+                c0e.ry() /= brect.height();
+
+                c1e.rx() /= brect.width();
+                c1e.ry() /= brect.height();
+
+                QVector2D d0 = QVector2D(c0e - c0);
+                QVector2D d1 = QVector2D(c1e - c1);
+
+                // c1 is center of gradient and c0 is the focal point
+                // https://learn.microsoft.com/en-us/typography/opentype/spec/colr#radial-gradients
+                QRadialGradient radialGradient(c1, d1.length(), c0, d0.length());
+                radialGradient.setSpread(extendToSpread(paint.u.radial_gradient.colorline.extend));
+                radialGradient.setStops(gatherGradientStops(paint.u.radial_gradient.colorline.color_stop_iterator));
+                radialGradient.setCoordinateMode(QGradient::ObjectMode);
+
+                qCDebug(lcColrv1).noquote().nospace()
+                    << QByteArray().fill(' ', paintInfo->loops.size() * 2)
+                    << "[radial gradient " << c0 << ", rad=" << r0 << ", " << c1 << ", rad=" << r1 << "]";
+
+                paintInfo->painter->setBrush(radialGradient);
+            } else if (paint.format == FT_COLR_PAINTFORMAT_SWEEP_GRADIENT) {
+                qreal centerX = FROM_FIXED_16_16(paint.u.sweep_gradient.center.x);
+                qreal centerY = -FROM_FIXED_16_16(paint.u.sweep_gradient.center.y);
+                qreal startAngle = 180.0 * FROM_FIXED_16_16(paint.u.sweep_gradient.start_angle);
+                qreal endAngle = 180.0 * FROM_FIXED_16_16(paint.u.sweep_gradient.end_angle);
+
+                qCDebug(lcColrv1).noquote().nospace()
+                    << QByteArray().fill(' ', paintInfo->loops.size() * 2)
+                    << "[sweep gradient " << "(" << centerX << ", " << centerY << ") range: " << startAngle << " to " << endAngle << "]";
+
+                QPointF center(centerX, centerY);
+                QRectF brect = paintInfo->currentPath.boundingRect();
+                if (brect.isEmpty())
+                    return false;
+
+                center -= brect.topLeft();
+                center.rx() /= brect.width();
+                center.ry() /= brect.height();
+
+                QConicalGradient conicalGradient(centerX, centerY, startAngle);
+                conicalGradient.setSpread(extendToSpread(paint.u.radial_gradient.colorline.extend));
+
+                // Adapt stops to actual span since Qt always assumes end angle of 360
+                // Note: This does not give accurate results for the colors outside the angle span.
+                // To do this correctly, we would have to insert stops at 0°, 360° and if the spread
+                // is reflect/repeat, also throughout the uncovered area to get the correct
+                // rendering. It might however be easier to support this in QConicalGradient itself.
+                // For now, this is left only semi-supported, as sweep gradients are currently rare.
+                const qreal multiplier = qFuzzyCompare(endAngle, startAngle)
+                                             ? 1.0
+                                             : (endAngle - startAngle) / 360.0;
+                QGradientStops stops = gatherGradientStops(paint.u.sweep_gradient.colorline.color_stop_iterator);
+
+                for (QGradientStop &stop : stops)
+                    stop.first *= multiplier;
+
+                conicalGradient.setStops(stops);
+                conicalGradient.setCoordinateMode(QGradient::ObjectMode);
+
+            } else if (paint.format == FT_COLR_PAINTFORMAT_SOLID) {
+                QColor color = getPaletteColor(paint.u.solid.color.palette_index,
+                                               paint.u.solid.color.alpha);
+
+                qCDebug(lcColrv1).noquote().nospace()
+                    << QByteArray().fill(' ', paintInfo->loops.size() * 2)
+                    << "[solid fill " << color << "]";
+
+                if (!color.isValid()) {
+                    qCWarning(lcColrv1) << "Invalid palette index in COLRv1 graph:"
+                                        << paint.u.solid.color.palette_index;
+                    return false;
+                }
+
+                paintInfo->painter->setBrush(color);
+            }
+
+            qCDebug(lcColrv1).noquote().nospace()
+                << QByteArray().fill(' ', paintInfo->loops.size() * 2)
+                << "[drawing path with " << paintInfo->transform << ", bounds == " << boundingRect << "]";
+
+            paintInfo->painter->drawPath(paintInfo->currentPath);
+        }
+    } else if (paint.format == FT_COLR_PAINTFORMAT_COMPOSITE) {
+        qCDebug(lcColrv1).noquote().nospace()
+            << QByteArray().fill(' ', paintInfo->loops.size() * 2)
+            << "[composite " << paint.u.composite.composite_mode << "]";
+
+        if (paintInfo->painter == nullptr) {
+            if (!traverseColr1(paint.u.composite.backdrop_paint, paintInfo))
+                return false;
+            if (!traverseColr1(paint.u.composite.source_paint, paintInfo))
+                return false;
+        } else {
+            Colr1PaintInfo compositePaintInfo;
+            compositePaintInfo.transform = paintInfo->transform;
+            compositePaintInfo.foregroundColor = paintInfo->foregroundColor;
+            compositePaintInfo.paletteCount = paintInfo->paletteCount;
+            compositePaintInfo.palette = paintInfo->palette;
+            compositePaintInfo.boundingRect = paintInfo->boundingRect;
+            compositePaintInfo.designCoordinateBoundingRect = paintInfo->designCoordinateBoundingRect;
+
+            QImage composedImage(compositePaintInfo.boundingRect.size(), QImage::Format_ARGB32_Premultiplied);
+            composedImage.fill(Qt::transparent);
+
+            QPainter compositePainter;
+            compositePainter.begin(&composedImage);
+            compositePainter.setRenderHint(QPainter::Antialiasing);
+            compositePainter.setPen(Qt::NoPen);
+            compositePainter.setBrush(Qt::NoBrush);
+
+            compositePainter.translate(-compositePaintInfo.boundingRect.left(),
+                                       -compositePaintInfo.boundingRect.top());
+            compositePainter.scale(fontDef.pixelSize / face->units_per_EM, fontDef.pixelSize / face->units_per_EM);
+            compositePaintInfo.painter = &compositePainter;
+
+            // First we draw the back drop onto the composed image
+            if (!traverseColr1(paint.u.composite.backdrop_paint, &compositePaintInfo))
+                return false;
+
+            QPainter::CompositionMode compositionMode = QPainter::CompositionMode_SourceOver;
+            switch (paint.u.composite.composite_mode) {
+            case FT_COLR_COMPOSITE_CLEAR:
+                compositionMode = QPainter::CompositionMode_Clear;
+                break;
+            case FT_COLR_COMPOSITE_SRC:
+                compositionMode = QPainter::CompositionMode_Source;
+                break;
+            case FT_COLR_COMPOSITE_DEST:
+                compositionMode = QPainter::CompositionMode_Destination;
+                break;
+            case FT_COLR_COMPOSITE_SRC_OVER:
+                compositionMode = QPainter::CompositionMode_SourceOver;
+                break;
+            case FT_COLR_COMPOSITE_DEST_OVER:
+                compositionMode = QPainter::CompositionMode_DestinationOver;
+                break;
+            case FT_COLR_COMPOSITE_SRC_IN:
+                compositionMode = QPainter::CompositionMode_SourceIn;
+                break;
+            case FT_COLR_COMPOSITE_DEST_IN:
+                compositionMode = QPainter::CompositionMode_DestinationIn;
+                break;
+            case FT_COLR_COMPOSITE_SRC_OUT:
+                compositionMode = QPainter::CompositionMode_SourceOut;
+                break;
+            case FT_COLR_COMPOSITE_DEST_OUT:
+                compositionMode = QPainter::CompositionMode_DestinationOut;
+                break;
+            case FT_COLR_COMPOSITE_SRC_ATOP:
+                compositionMode = QPainter::CompositionMode_SourceAtop;
+                break;
+            case FT_COLR_COMPOSITE_DEST_ATOP:
+                compositionMode = QPainter::CompositionMode_DestinationAtop;
+                break;
+            case FT_COLR_COMPOSITE_XOR:
+                compositionMode = QPainter::CompositionMode_Xor;
+                break;
+            case FT_COLR_COMPOSITE_PLUS:
+                compositionMode = QPainter::CompositionMode_Plus;
+                break;
+            case FT_COLR_COMPOSITE_SCREEN:
+                compositionMode = QPainter::CompositionMode_Screen;
+                break;
+            case FT_COLR_COMPOSITE_OVERLAY:
+                compositionMode = QPainter::CompositionMode_Overlay;
+                break;
+            case FT_COLR_COMPOSITE_DARKEN:
+                compositionMode = QPainter::CompositionMode_Darken;
+                break;
+            case FT_COLR_COMPOSITE_LIGHTEN:
+                compositionMode = QPainter::CompositionMode_Lighten;
+                break;
+            case FT_COLR_COMPOSITE_COLOR_DODGE:
+                compositionMode = QPainter::CompositionMode_ColorDodge;
+                break;
+            case FT_COLR_COMPOSITE_COLOR_BURN:
+                compositionMode = QPainter::CompositionMode_ColorBurn;
+                break;
+            case FT_COLR_COMPOSITE_HARD_LIGHT:
+                compositionMode = QPainter::CompositionMode_HardLight;
+                break;
+            case FT_COLR_COMPOSITE_SOFT_LIGHT:
+                compositionMode = QPainter::CompositionMode_SoftLight;
+                break;
+            case FT_COLR_COMPOSITE_DIFFERENCE:
+                compositionMode = QPainter::CompositionMode_Difference;
+                break;
+            case FT_COLR_COMPOSITE_EXCLUSION:
+                compositionMode = QPainter::CompositionMode_Exclusion;
+                break;
+            case FT_COLR_COMPOSITE_MULTIPLY:
+                compositionMode = QPainter::CompositionMode_Multiply;
+                break;
+            default:
+                qCWarning(lcColrv1) << "Unsupported COLRv1 composition mode" << paint.u.composite.composite_mode;
+                break;
+            };
+
+            // Then we composite the source_paint on top
+            compositePainter.setCompositionMode(compositionMode);
+            if (!traverseColr1(paint.u.composite.source_paint, &compositePaintInfo))
+                return false;
+            compositePainter.end();
+
+            // Finally, we draw the composed image
+            paintInfo->painter->drawImage(paintInfo->designCoordinateBoundingRect, composedImage);
+        }
+    } else if (paint.format == FT_COLR_PAINTFORMAT_GLYPH) {
+        FT_Error error = FT_Load_Glyph(face,
+                                       paint.u.glyph.glyphID,
+                                       FT_LOAD_DEFAULT | FT_LOAD_NO_BITMAP | FT_LOAD_NO_SVG | FT_LOAD_IGNORE_TRANSFORM | FT_LOAD_NO_HINTING | FT_LOAD_NO_AUTOHINT | FT_LOAD_BITMAP_METRICS_ONLY);
+        if (error) {
+            qCWarning(lcColrv1) << "Failed to load glyph"
+                                << paint.u.glyph.glyphID
+                                << "in COLRv1 graph. Error: " << error;
+            return false;
+        }
+
+        QPainterPath path;
+        QFreetypeFace::addGlyphToPath(face,
+                                      face->glyph,
+                                      QFixedPoint(0, 0),
+                                      &path,
+                                      face->units_per_EM << 6,
+                                      face->units_per_EM << 6);
+
+        qCDebug(lcColrv1).noquote().nospace()
+            << QByteArray().fill(' ', paintInfo->loops.size() * 2)
+                << "[glyph " << paint.u.glyph.glyphID << " bounds = " << path.boundingRect() << "; mapped = " << paintInfo->transform.mapRect(path.boundingRect()) << "]";
+
+        path = paintInfo->transform.map(path);
+
+        // For sequences of paths, merge them and fill them all once we reach the fill node
+        paintInfo->currentPath = paintInfo->currentPath.isEmpty() ? path : paintInfo->currentPath.united(path);
+        if (!traverseColr1(paint.u.glyph.paint, paintInfo))
+            return false;
+    } else if (paint.format == FT_COLR_PAINTFORMAT_COLR_GLYPH) {
+        qCDebug(lcColrv1).noquote().nospace()
+            << QByteArray().fill(' ', paintInfo->loops.size() * 2)
+            << "[colr glyph " << paint.u.colr_glyph.glyphID << "]";
+
+        FT_OpaquePaint otherOpaquePaint;
+        otherOpaquePaint.p = nullptr;
+        if (!FT_Get_Color_Glyph_Paint(face,
+                                      paint.u.colr_glyph.glyphID,
+                                      FT_COLOR_NO_ROOT_TRANSFORM,
+                                      &otherOpaquePaint)) {
+            qCWarning(lcColrv1) << "Failed to load color glyph"
+                                << paint.u.colr_glyph.glyphID
+                                << "in COLRv1 graph.";
+            return false;
+        }
+
+        if (!traverseColr1(otherOpaquePaint, paintInfo))
+            return false;
+    }
+
+    return true;
+}
+
+QFontEngineFT::Glyph *QFontEngineFT::loadColrv1Glyph(QGlyphSet *set,
+                                                     Glyph *g,
+                                                     uint glyph,
+                                                     const QColor &foregroundColor,
+                                                     bool fetchMetricsOnly) const
+{
+    FT_Face face = freetype->face;
+
+    GlyphInfo info;
+    memset(&info, 0, sizeof(info));
+
+    // Load advance metrics for glyph. As documented, these should come from the base
+    // glyph record.
+    FT_Load_Glyph(face, glyph, FT_LOAD_DEFAULT
+                                   | FT_LOAD_NO_BITMAP
+                                   | FT_LOAD_NO_SVG
+                                   | FT_LOAD_BITMAP_METRICS_ONLY);
+    info.linearAdvance = int(face->glyph->linearHoriAdvance >> 10);
+    info.xOff = short(TRUNC(ROUND(face->glyph->advance.x)));
+
+    FT_OpaquePaint opaquePaint;
+    opaquePaint.p = nullptr;
+    if (!FT_Get_Color_Glyph_Paint(face, glyph, FT_COLOR_INCLUDE_ROOT_TRANSFORM, &opaquePaint))
+        return nullptr;
+
+    // The scene graph is in design coordinate system, so we need to also get glyphs in this
+    // coordinate system. We then scale all painting to the requested pixel size
+    FT_Set_Char_Size(face, face->units_per_EM << 6, face->units_per_EM << 6, 0, 0);
+
+    FT_Matrix matrix;
+    FT_Vector delta;
+    FT_Get_Transform(face, &matrix, &delta);
+    QTransform originalXform(FROM_FIXED_16_16(matrix.xx), -FROM_FIXED_16_16(matrix.yx),
+                             -FROM_FIXED_16_16(matrix.xy), FROM_FIXED_16_16(matrix.yy),
+                             FROM_FIXED_16_16(delta.x), FROM_FIXED_16_16(delta.y));
+
+
+    // Also clear transform to ensure we operate in design metrics
+    FT_Set_Transform(face, nullptr, nullptr);
+
+    auto cleanup = qScopeGuard([&]() {
+        // Reset stuff we changed
+        FT_Set_Char_Size(face, xsize, ysize, 0, 0);
+        FT_Set_Transform(face, &matrix, &delta);
+    });
+
+    qCDebug(lcColrv1).noquote() << "================== Start collecting COLRv1 metrics for" << glyph;
+    QRect designCoordinateBounds;
+
+    // Getting metrics is done multiple times per glyph while entering it into the cache.
+    // Since this may need to be calculated, we cache the last one for sequential calls.
+    if (colrv1_bounds_cache_id == glyph) {
+        designCoordinateBounds = colrv1_bounds_cache;
+    } else {
+        // COLRv1 fonts can optionally have a clip box for quicker retrieval of metrics. We try
+        // to get this, and if there is none, we calculate the bounds by traversing the graph.
+        FT_ClipBox clipBox;
+        if (FT_Get_Color_Glyph_ClipBox(face, glyph, &clipBox) && true) {
+            FT_Pos left = qMin(clipBox.bottom_left.x, qMin(clipBox.bottom_right.x, qMin(clipBox.top_left.x, clipBox.top_right.x)));
+            FT_Pos right = qMax(clipBox.bottom_left.x, qMax(clipBox.bottom_right.x, qMax(clipBox.top_left.x, clipBox.top_right.x)));
+
+            FT_Pos top = qMin(-clipBox.bottom_left.y, qMin(-clipBox.bottom_right.y, qMin(-clipBox.top_left.y, -clipBox.top_right.y)));
+            FT_Pos bottom = qMax(-clipBox.bottom_left.y, qMax(-clipBox.bottom_right.y, qMax(-clipBox.top_left.y, -clipBox.top_right.y)));
+
+            qreal scale = 1.0 / 64.0;
+            designCoordinateBounds = QRect(QPoint(qFloor(left * scale), qFloor(top * scale)),
+                                           QPoint(qCeil(right * scale), qCeil(bottom * scale)));
+        } else {
+            // Do a pass over the graph to find the bounds
+            Colr1PaintInfo paintInfo;
+            if (!traverseColr1(opaquePaint, &paintInfo))
+                return nullptr;
+            designCoordinateBounds = paintInfo.boundingRect;
+        }
+
+        colrv1_bounds_cache_id = glyph;
+        colrv1_bounds_cache = designCoordinateBounds;
+    }
+
+    QTransform initialTransform;
+    initialTransform.scale(fontDef.pixelSize / face->units_per_EM,
+                           fontDef.pixelSize / face->units_per_EM);
+    QRect bounds = initialTransform.mapRect(designCoordinateBounds);
+    bounds = originalXform.mapRect(bounds);
+
+    info.x = bounds.left();
+    info.y = -bounds.top();
+    info.width = bounds.width();
+    info.height = bounds.height();
+
+    qCDebug(lcColrv1) << "Bounds of" << glyph << "==" << bounds;
+
+    // If requested, we now render the scene graph into an image using QPainter
+    QImage destinationImage;
+    if (!fetchMetricsOnly && !bounds.size().isEmpty()) {
+        FT_Palette_Data paletteData;
+        if (FT_Palette_Data_Get(face, &paletteData))
+            return nullptr;
+
+        Colr1PaintInfo paintInfo;
+        paintInfo.foregroundColor = foregroundColor;
+        paintInfo.designCoordinateBoundingRect = designCoordinateBounds;
+        paintInfo.boundingRect = bounds;
+
+        FT_Error error = FT_Palette_Select(face, 0, &paintInfo.palette);
+        if (error) {
+            qWarning("selecting palette for COLRv1 failed, err=%x face=%p, glyph=%d",
+                     error,
+                     face,
+                     glyph);
+        }
+
+        if (paintInfo.palette == nullptr)
+            return nullptr;
+
+        paintInfo.paletteCount = paletteData.num_palette_entries;
+
+        destinationImage = QImage(bounds.size(), QImage::Format_ARGB32_Premultiplied);
+        destinationImage.fill(Qt::transparent);
+
+        QPainter p;
+        p.begin(&destinationImage);
+        p.setRenderHint(QPainter::Antialiasing);
+        p.setPen(Qt::NoPen);
+        p.setBrush(Qt::NoBrush);
+
+        // Move origin to top left of image
+        p.translate(-bounds.left(), -bounds.top());
+
+        // Scale to pixel size since shape is processed in font units
+        p.scale(fontDef.pixelSize / face->units_per_EM, fontDef.pixelSize / face->units_per_EM);
+
+        // Apply the original transform that we temporarily cleared
+        p.setWorldTransform(originalXform, true);
+
+        paintInfo.painter = &p;
+
+        // Render
+        qCDebug(lcColrv1).noquote() << "================== Start rendering COLRv1 glyph" << glyph;
+        if (!traverseColr1(opaquePaint, &paintInfo))
+            return nullptr;
+
+        p.end();
+    }
+
+    if (fetchMetricsOnly || !destinationImage.isNull()) {
+        if (g == nullptr) {
+            g = new Glyph;
+            g->data = nullptr;
+            if (set != nullptr)
+                set->setGlyph(glyph, QFixedPoint{}, g);
+        }
+
+        g->linearAdvance = info.linearAdvance;
+        g->width = info.width;
+        g->height = info.height;
+        g->x = info.x;
+        g->y = info.y;
+        g->advance = info.xOff;
+        g->format = Format_ARGB;
+
+        if (!fetchMetricsOnly && !destinationImage.isNull()) {
+            g->data = new uchar[info.height * info.width * 4];
+            memcpy(g->data, destinationImage.constBits(), info.height * info.width * 4);
+        }
+
+        return g;
+    }
+
+    return nullptr;
+}
+#endif // QFONTENGINE_FT_SUPPORT_COLRV1
+
 QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
                                                const QFixedPoint &subPixelPosition,
                                                QColor color,
@@ -1224,6 +1983,19 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
 
     if (transform || obliquen || (format != Format_Mono && !isScalableBitmap()))
         load_flags |= FT_LOAD_NO_BITMAP;
+
+#if defined(QFONTENGINE_FT_SUPPORT_COLRV1)
+    if (FT_IS_SCALABLE(freetype->face)
+        && FT_HAS_COLOR(freetype->face)
+        && (load_flags & FT_LOAD_COLOR)) {
+        // Try loading COLRv1 glyph if possible.
+        Glyph *ret = loadColrv1Glyph(set, g, glyph, color, fetchMetricsOnly);
+        if (ret != nullptr)
+            return ret;
+    }
+#else
+    Q_UNUSED(color);
+#endif
 
     FT_Error err = FT_Load_Glyph(face, glyph, load_flags);
     if (err && (load_flags & FT_LOAD_NO_BITMAP)) {

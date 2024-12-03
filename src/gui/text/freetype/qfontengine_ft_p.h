@@ -21,6 +21,9 @@
 #include FT_FREETYPE_H
 #include FT_MULTIPLE_MASTERS_H
 
+#if defined(FT_COLOR_H)
+#  include FT_COLOR_H
+#endif
 
 #ifndef Q_OS_WIN
 #include <unistd.h>
@@ -29,11 +32,16 @@
 #include <qmutex.h>
 
 #include <string.h>
+#include <qpainterpath.h>
 
 QT_BEGIN_NAMESPACE
 
 class QFontEngineFTRawFont;
 class QFontconfigDatabase;
+
+#if defined(FT_COLOR_H) && (FREETYPE_MAJOR*10000 + FREETYPE_MINOR*100 + FREETYPE_PATCH) >= 21300
+#  define QFONTENGINE_FT_SUPPORT_COLRV1
+#endif
 
 /*
  * This class represents one font file on disk (like Arial.ttf) and is shared between all the font engines
@@ -316,6 +324,31 @@ private:
     bool shouldUseDesignMetrics(ShaperFlags flags) const;
     QFixed scaledBitmapMetrics(QFixed m) const;
     glyph_metrics_t scaledBitmapMetrics(const glyph_metrics_t &m, const QTransform &matrix) const;
+
+#if defined(QFONTENGINE_FT_SUPPORT_COLRV1)
+    Glyph *loadColrv1Glyph(QGlyphSet *set,
+                           Glyph *g,
+                           uint glyph,
+                           const QColor &color,
+                           bool fetchMetricsOnly) const;
+
+    struct Colr1PaintInfo {
+        QTransform transform;
+        QPainterPath currentPath;
+        QPainter *painter = nullptr;
+        FT_Color *palette = nullptr;
+        ushort paletteCount = 0;
+        QRect boundingRect;
+        QRect designCoordinateBoundingRect;
+        QSet<QPair<FT_Byte *, FT_Bool> > loops;
+        QColor foregroundColor;
+    };
+
+    bool traverseColr1(FT_OpaquePaint paint,
+                       Colr1PaintInfo *paintInfo) const;
+    mutable glyph_t colrv1_bounds_cache_id = 0;
+    mutable QRect colrv1_bounds_cache;
+#endif // QFONTENGINE_FT_SUPPORT_COLRV1
 
     GlyphFormat defaultFormat;
     FT_Matrix matrix;
