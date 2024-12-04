@@ -4050,8 +4050,6 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
 
 #if QT_CONFIG(combobox)
     case CE_ComboBoxLabel:
-        if (!rule.hasBox())
-            break;
         if (const QStyleOptionComboBox *cb = qstyleoption_cast<const QStyleOptionComboBox *>(opt)) {
             QRect editRect = subControlRect(CC_ComboBox, cb, SC_ComboBoxEditField, w);
             p->save();
