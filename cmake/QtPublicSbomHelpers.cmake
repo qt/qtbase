@@ -4,9 +4,16 @@
 # Starts repo sbom generation.
 # Should be called before any targets are added to the sbom.
 #
-# INSTALL_PREFIX should be passed a value like CMAKE_INSTALL_PREFIX or QT_STAGING_PREFIX
+# INSTALL_PREFIX should be passed a value like CMAKE_INSTALL_PREFIX or QT_STAGING_PREFIX.
+# The default value is \${CMAKE_INSTALL_PREFIX}, which is evaluated at install time, not configure
+# time.
+# This default value is the /preferred/ value, to ensure using cmake --install . --prefix <path>
+# works correctly for lookup of installed files during SBOM generation.
+#
 # INSTALL_SBOM_DIR should be passed a value like CMAKE_INSTALL_DATAROOTDIR or
-#   Qt's INSTALL_SBOMDIR
+#   Qt's INSTALL_SBOMDIR.
+# The default value is "sbom".
+#
 # SUPPLIER, SUPPLIER_URL, DOCUMENT_NAMESPACE, COPYRIGHTS are self-explanatory.
 function(_qt_internal_sbom_begin_project)
     # Allow opt out via an internal variable. Will be used in CI for repos like qtqa.
@@ -123,12 +130,28 @@ function(_qt_internal_sbom_begin_project)
         set(version_suffix "")
     endif()
 
+    if(arg_INSTALL_SBOM_DIR)
+        set(install_sbom_dir "${arg_INSTALL_SBOM_DIR}")
+    elseif(INSTALL_SBOMDIR)
+        set(install_sbom_dir "${INSTALL_SBOMDIR}")
+    else()
+        set(install_sbom_dir "sbom")
+    endif()
+
+    if(arg_INSTALL_PREFIX)
+        set(install_prefix "${arg_INSTALL_PREFIX}")
+    else()
+        # The variable is escaped, so it is evaluated during cmake install time, so that the value
+        # can be overridden with cmake --install . --prefix <path>.
+        set(install_prefix "\${CMAKE_INSTALL_PREFIX}")
+    endif()
+
     set(repo_spdx_relative_install_path
         "${arg_INSTALL_SBOM_DIR}/${repo_project_name_lowercase}${version_suffix}.spdx")
 
     # Prepend DESTDIR, to allow relocating installed sbom. Needed for CI.
     set(repo_spdx_install_path
-        "\$ENV{DESTDIR}${arg_INSTALL_PREFIX}/${repo_spdx_relative_install_path}")
+        "\$ENV{DESTDIR}${install_prefix}/${repo_spdx_relative_install_path}")
 
     if(arg_LICENSE_EXPRESSION)
         set(repo_license "${arg_LICENSE_EXPRESSION}")

@@ -65,7 +65,7 @@ function(_qt_internal_sbom_begin_project_generate)
     set(default_sbom_file_name
         "${arg_PROJECT}/${arg_PROJECT}-sbom-${QT_SBOM_GIT_VERSION_PATH}.spdx")
     set(default_install_sbom_path
-        "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATAROOTDIR}/${default_sbom_file_name}")
+        "\${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATAROOTDIR}/${default_sbom_file_name}")
 
     qt_internal_sbom_set_default_option_value(OUTPUT "${default_install_sbom_path}")
     qt_internal_sbom_set_default_option_value(OUTPUT_RELATIVE_PATH
@@ -636,7 +636,9 @@ FileCopyrightText: NOASSERTION"
     if(arg_INSTALL_PREFIX)
         set(install_prefix "${arg_INSTALL_PREFIX}")
     else()
-        set(install_prefix "${CMAKE_INSTALL_PREFIX}")
+        # The variable is escaped, so it is evaluated during cmake install time, so that the value
+        # can be overridden with cmake --install . --prefix <path>.
+        set(install_prefix "\${CMAKE_INSTALL_PREFIX}")
     endif()
 
     set(content "
@@ -728,18 +730,28 @@ function(_qt_internal_sbom_generate_add_external_reference)
     _qt_internal_get_staging_area_spdx_file_path(staging_area_spdx_file)
 
     set(install_prefixes "")
+
+    # Always append the install time install prefix.
+    # The variable is escaped, so it is evaluated during cmake install time, so that the value
+    # can be overridden with cmake --install . --prefix <path>.
+    list(APPEND install_prefixes "\${CMAKE_INSTALL_PREFIX}")
+
     if(arg_INSTALL_PREFIXES)
         list(APPEND install_prefixes ${arg_INSTALL_PREFIXES})
     endif()
+
     if(QT6_INSTALL_PREFIX)
         list(APPEND install_prefixes ${QT6_INSTALL_PREFIX})
     endif()
+
     if(QT_ADDITIONAL_PACKAGES_PREFIX_PATH)
         list(APPEND install_prefixes ${QT_ADDITIONAL_PACKAGES_PREFIX_PATH})
     endif()
+
     if(QT_ADDITIONAL_SBOM_DOCUMENT_PATHS)
         list(APPEND install_prefixes ${QT_ADDITIONAL_SBOM_DOCUMENT_PATHS})
     endif()
+
     list(REMOVE_DUPLICATES install_prefixes)
 
     set(relationship_content "")

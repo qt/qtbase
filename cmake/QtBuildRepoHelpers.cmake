@@ -352,7 +352,6 @@ macro(qt_build_repo_begin)
     endif()
 
     _qt_internal_sbom_begin_project(
-        INSTALL_PREFIX "${QT_STAGING_PREFIX}"
         INSTALL_SBOM_DIR "${INSTALL_SBOMDIR}"
         QT_CPE
     )
