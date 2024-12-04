@@ -13,6 +13,7 @@
 #include <QtGui/qpainter.h>
 #include <QtGui/qpainterpath.h>
 #include <QtGui/qpalette.h>
+#include <QtGui/qtextlayout.h>
 
 #include <QtGui/private/qfont_p.h>
 #include <QtGui/private/qfontengine_p.h>
@@ -167,6 +168,20 @@ glyph_t QFontIconEngine::glyph() const
         QFontEngine *engine = QFontPrivate::get(m_iconFont)->engineForScript(QChar::Script_Common);
         if (engine)
             m_glyph = engine->findGlyph(QLatin1StringView(m_iconName.toLatin1()));
+        if (!m_glyph) {
+            // May not be a named glyph, but there might be a ligature for the
+            // icon name.
+            QTextLayout layout(m_iconName, m_iconFont);
+            layout.beginLayout();
+            layout.createLine();
+            layout.endLayout();
+            const auto glyphRuns = layout.glyphRuns();
+            if (glyphRuns.size() == 1) {
+                const auto glyphIndexes = glyphRuns.first().glyphIndexes();
+                if (glyphIndexes.size() == 1)
+                    m_glyph = glyphIndexes.first();
+            }
+        }
     }
     return m_glyph;
 }
