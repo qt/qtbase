@@ -29,6 +29,7 @@
 #include <QtGui/qwindow.h>
 #include <QtGui/qregion.h>
 #include <QtGui/qopenglcontext.h>
+#include <QtGui/qpainterpath.h>
 #include <QtGui/private/qwindowsthemecache_p.h>
 #include <private/qwindow_p.h> // QWINDOWSIZE_MAX
 #include <private/qguiapplication_p.h>
@@ -3335,10 +3336,14 @@ bool QWindowsWindow::handleNonClientHitTest(const QPoint &globalPos, LRESULT *re
                       *result == HTCLIENT){
                     QWindow* wnd = window();
                     auto buttons = GetAsyncKeyState(VK_LBUTTON) != 0 ? Qt::LeftButton : Qt::NoButton;
-                    QMouseEvent event(QEvent::MouseButtonPress, localPos, globalPos, buttons, buttons, Qt::NoModifier);
-                    QGuiApplication::sendEvent(wnd, &event);
-                    if (!event.isAccepted())
-                        *result = HTCAPTION;
+                    if (buttons != Qt::NoButton) {
+                        QMouseEvent event(QEvent::MouseButtonPress, localPos, globalPos, buttons, buttons, Qt::NoModifier);
+                        QGuiApplication::sendEvent(wnd, &event);
+                        if (!event.isAccepted() && GetAsyncKeyState(VK_RBUTTON))
+                            *result = HTSYSMENU;
+                        else if (!event.isAccepted())
+                            *result = HTCAPTION;
+                    }
                 }
             }
         }
@@ -3371,6 +3376,11 @@ bool QWindowsWindow::handleNonClientHitTest(const QPoint &globalPos, LRESULT *re
         case HTSIZE:
             const_cast<QWindow *>(w)->showNormal();
             break;
+        case HTSYSMENU: {
+            HWND hwnd = reinterpret_cast<HWND>(w->winId());
+            HMENU sysMenu = GetSystemMenu(hwnd, false);
+            TrackPopupMenu(sysMenu, 0, globalPos.x(), globalPos.y(), 0, hwnd, nullptr);
+        }
         default:
             break;
         }
@@ -3440,18 +3450,17 @@ bool QWindowsWindow::handleNonClientHitTest(const QPoint &globalPos, LRESULT *re
     return false;
 }
 
-static void _q_drawCustomTitleBarButton(Gdiplus::Graphics& graphics, Gdiplus::RectF& r, Gdiplus::SolidBrush& brush)
+static void _q_drawCustomTitleBarButton(QPainter& p, const QRectF& r)
 {
-    r.Height += 1;
-    Gdiplus::GraphicsPath path;
-    Gdiplus::RectF Corner(r.X + r.Width - 4, r.Y, 2, 2);
-    path.Reset();
-    path.AddLine(r.X, r.Y, r.X + r.Width - 4.0f, r.Y);
-    path.AddArc(Corner, 90, 90);
-    path.AddLine(r.X + r.Width, r.Y + 4, r.X + r.Width, r.Y + r.Height - 2);
-    path.AddLine(r.X + r.Width, r.Y + r.Height - 2, r.X, r.Y + r.Height - 2);
-    path.CloseFigure();
-    graphics.FillPath(&brush, &path);
+    QPainterPath path(QPointF(r.x(), r.y()));
+    QRectF rightCorner(r.x() + r.width() - 2.0, r.y() + 4.0, 2, 2);
+    QRectF leftCorner(r.x(), r.y() + 4, 2, 2);
+    path.lineTo(r.x() + r.width() - 5.0f, r.y());
+    path.arcTo(rightCorner, 90, -90);
+    path.lineTo(r.x() + r.width(), r.y() + r.height() - 1);
+    path.lineTo(r.x(), r.y() + r.height() - 1);
+    path.closeSubpath();
+    p.drawPath(path);
 }
 
 void QWindowsWindow::updateCustomTitlebar()
@@ -3464,137 +3473,151 @@ void QWindowsWindow::updateCustomTitlebar()
 
     const int titleBarHeight = getTitleBarHeight_sys(savedDpi());
     const int titleButtonWidth = titleBarHeight * 1.5;
+    const qreal factor = QHighDpiScaling::factor(wnd);
     const int windowWidth = windowRect.right - windowRect.left;
 
     POINT localPos;
     GetCursorPos(&localPos);
     MapWindowPoints(HWND_DESKTOP, hwnd, &localPos, 1);
 
-    bool isDarkmode = QWindowsIntegration::instance()->darkModeHandling().testFlags(QWindowsApplication::DarkModeWindowFrames) &&
+    const bool isDarkmode = QWindowsIntegration::instance()->darkModeHandling().testFlags(QWindowsApplication::DarkModeWindowFrames) &&
             qApp->styleHints()->colorScheme() == Qt::ColorScheme::Dark;
-
     const bool isWindows11orAbove = QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows11;
-    const wchar_t *iconFontName = isWindows11orAbove ? L"Segoe Fluent Icons" : L"Segoe MDL2 Assets";
-    const std::wstring titleTextFontName = QWindowsIntegration::instance()->fontDatabase()->defaultFont().family().toStdWString();
-    Gdiplus::Bitmap softwareBitmap(windowWidth, titleBarHeight, PixelFormat32bppARGB);
-    Gdiplus::Graphics graphics(&softwareBitmap);
-    graphics.SetTextRenderingHint(Gdiplus::TextRenderingHintAntiAliasGridFit);
-    Gdiplus::SolidBrush iconBrush(isDarkmode ? Gdiplus::Color(255, 255, 255, 255) : Gdiplus::Color(255, 0, 0, 0));
-    Gdiplus::FontFamily titleFontFamily(titleTextFontName.data());
-    Gdiplus::Font titleFont(&titleFontFamily, 14, Gdiplus::FontStyleRegular, Gdiplus::UnitPixel);
-    Gdiplus::FontFamily iconFontFamily(iconFontName);
-    Gdiplus::Font iconFont(&iconFontFamily, 8, Gdiplus::FontStyleRegular, Gdiplus::UnitPixel);
 
-    Gdiplus::StringFormat titleFormat;
-    titleFormat.SetAlignment(Gdiplus::StringAlignmentNear);
-    titleFormat.SetLineAlignment(Gdiplus::StringAlignmentCenter);
-    Gdiplus::StringFormat buttonFormat;
-    buttonFormat.SetAlignment(Gdiplus::StringAlignmentCenter);
-    buttonFormat.SetLineAlignment(Gdiplus::StringAlignmentCenter);
+    const QBrush closeButtonBrush(QColor(0xC4, 0x2B, 0x1C, 255));
+    const QBrush minMaxButtonBrush = QBrush(isDarkmode ? QColor(0xFF, 0xFF, 0xFF, 0x40) : QColor(0x00, 0x00, 0x00, 0x20));
+    const QBrush titleBarBackgroundColor = QBrush(isDarkmode ? QColor(0x1F, 0x1F, 0x1F, 0xFF) : QColor(0xF3, 0xF3, 0xF3, 0xFF));
+    const QPen textPen = QPen(isDarkmode ? QColor(255, 255, 255, 255) : QColor(0, 0, 0, 255));
 
-    Gdiplus::SolidBrush closeButtonBrush(Gdiplus::Color(255, 255, 0, 0));
-    Gdiplus::SolidBrush minMaxButtonBrush = Gdiplus::SolidBrush(isDarkmode ? Gdiplus::Color(0x40, 0xFF, 0xFF, 0xFF) : Gdiplus::Color(0x20, 0x00, 0x00, 0x00));
+    QImage image(windowWidth, titleBarHeight, QImage::Format_ARGB32);
+    QPainter p(&image);
+    p.setCompositionMode(QPainter::CompositionMode_Clear);
+    p.fillRect(0, 0, windowWidth, titleBarHeight, Qt::transparent);
 
-    Gdiplus::Color titleBarBackgroundColor = isDarkmode ? Gdiplus::Color(0xFF, 0x1F, 0x1F, 0x1F) : Gdiplus::Color(0xFF, 0xF3, 0xF3, 0xF3);
-    Gdiplus::SolidBrush titleBarBackgroundBrush(titleBarBackgroundColor);
+    p.setCompositionMode(QPainter::CompositionMode_SourceOver);
 
-    int buttons = 1;
-    Gdiplus::RectF titleRect;
-
-    graphics.Clear(Gdiplus::Color(0x00, 0x00, 0x00, 0x00));
+    p.setBrush(titleBarBackgroundColor);
+    p.setPen(Qt::NoPen);
     if (!wnd->flags().testFlags(Qt::NoTitleBarBackgroundHint)) {
-        titleRect.Y = 1;
-        titleRect.X = 1;
-        titleRect.Width = windowWidth - 2;
-        titleRect.Height = titleBarHeight;
+        QRect titleRect;
+        titleRect.setY(1);
+        titleRect.setX(2);
+        titleRect.setWidth(windowWidth - 2);
+        titleRect.setHeight(titleBarHeight);
 
         if (isWindows11orAbove) {
-            Gdiplus::GraphicsPath path;
-            titleRect.Height += 1;
-            Gdiplus::RectF rightCorner(titleRect.X + titleRect.Width - 4, titleRect.Y, 2, 2);
-            Gdiplus::RectF leftCorner(titleRect.X, titleRect.Y + 4, 2, 2);
-            path.Reset();
-            path.AddLine(titleRect.X + 4.0f, titleRect.Y, titleRect.X + titleRect.Width - 4.0f, titleRect.Y);
-            path.AddArc(rightCorner, 90, 90);
-            path.AddLine(titleRect.X + titleRect.Width, titleRect.Y + 4, titleRect.X + titleRect.Width, titleRect.Y + titleRect.Height - 2);
-            path.AddLine(titleRect.X + titleRect.Width, titleRect.Y + titleRect.Height - 2, titleRect.X, titleRect.Y + titleRect.Height - 2);
-            path.AddLine(titleRect.X, titleRect.Y + titleRect.Height - 2, titleRect.X, titleRect.Y + 4.0f);
-            path.AddArc(leftCorner, -90, -90);
-            path.CloseFigure();
-            graphics.FillPath(&titleBarBackgroundBrush, &path);
+            QPainterPath path(QPointF(titleRect.x() + 4.0f, titleRect.y()));
+            QRectF rightCorner(titleRect.x() + titleRect.width() - 4.0, titleRect.y() + 4.0, 2, 2);
+            QRectF leftCorner(titleRect.x(), titleRect.y() + 4, 2, 2);
+            path.lineTo(titleRect.x() + titleRect.width() - 7.0f, titleRect.y());
+            path.arcTo(rightCorner, 90, -90);
+            path.lineTo(titleRect.x() + titleRect.width() - 2.0, titleRect.y() + titleRect.height() - 1);
+            path.lineTo(titleRect.x(), titleRect.y() + titleRect.height() - 1);
+            path.lineTo(titleRect.x(), titleRect.y() + 4.0f);
+            path.arcTo(leftCorner, -90, -90);
+            path.closeSubpath();
+            p.drawPath(path);
         } else {
-            graphics.FillRectangle(&titleBarBackgroundBrush, titleRect);
+            p.drawRect(titleRect);
         }
     }
+
     if (wnd->flags().testFlags(Qt::WindowTitleHint | Qt::CustomizeWindowHint) || !wnd->flags().testFlag(Qt::CustomizeWindowHint)) {
-        titleRect.Y = 1;
-        titleRect.X = 12;
-        titleRect.Width = windowWidth;
-        titleRect.Height = titleBarHeight;
+        QRect titleRect;
+        titleRect.setY(1);
+        titleRect.setX(12);
+        titleRect.setWidth(windowWidth);
+        titleRect.setHeight(titleBarHeight);
 
-        std::wstring titleString = wnd->title().toStdWString();
-        graphics.DrawString(titleString.c_str(), -1, &titleFont, titleRect, &titleFormat, &iconBrush);
+        const QIcon icon = wnd->icon();
+        if (!icon.isNull()) {
+            titleRect.adjust(factor * 4, 0, 0, 0);
+            QRect iconRect(titleRect.x(), titleRect.y() + factor * 8, factor * 16, factor * 16);
+            icon.paint(&p, iconRect);
+            titleRect.adjust(factor * 24, 0, 0, 0);
+        }
+
+        p.setPen(textPen);
+        QFont titleFont = QWindowsIntegration::instance()->fontDatabase()->defaultFont();
+        titleFont.setPointSize(factor * 9);
+        titleFont.setWeight(QFont::Thin);
+        titleFont.setHintingPreference(QFont::PreferFullHinting);
+        p.setFont(titleFont);
+        p.drawText(titleRect, wnd->title(), QTextOption(Qt::AlignVCenter));
     }
 
+    int buttons = 1;
+    const QString assetFontName = isWindows11orAbove ? QStringLiteral("Segoe Fluent Icons") : QStringLiteral("Segoe MDL2 Assets");
+    QFont assetFont = QFont(assetFontName, factor * 7);
+    assetFont.setWeight(QFont::Thin);
+    assetFont.setHintingPreference(QFont::PreferFullHinting);
+    p.setFont(assetFont);
+    p.setBrush(closeButtonBrush);
+    p.setPen(Qt::NoPen);
     if (wnd->flags().testFlags(Qt::WindowCloseButtonHint | Qt::CustomizeWindowHint) || !wnd->flags().testFlag(Qt::CustomizeWindowHint)) {
-        Gdiplus::RectF rect;
-        rect.Y = 1;
-        rect.X = windowWidth - titleButtonWidth * buttons;
-        rect.Width = titleButtonWidth - 1;
-        rect.Height = titleBarHeight;
+        QRectF rect;
+        rect.setY(1);
+        rect.setX(windowWidth - titleButtonWidth * buttons);
+        rect.setWidth(titleButtonWidth - 1);
+        rect.setHeight(titleBarHeight);
         if (localPos.x > (windowWidth - buttons * titleButtonWidth) &&
             localPos.x < (windowWidth - (buttons - 1) * titleButtonWidth) &&
-            localPos.y > rect.Y && localPos.y < rect.Y + rect.Height) {
-            if (isWindows11orAbove && buttons == 1) {
-                _q_drawCustomTitleBarButton(graphics, rect, closeButtonBrush);
-            } else {
-                graphics.FillRectangle(&closeButtonBrush, rect);
-            }
+            localPos.y > rect.y() && localPos.y < rect.y() + rect.height()) {
+            if (isWindows11orAbove && buttons == 1)
+                _q_drawCustomTitleBarButton(p, rect);
+            else
+                p.drawRect(rect);
         }
-        graphics.DrawString(L"\uE8BB", -1, &iconFont, rect, &buttonFormat, &iconBrush);
+        p.setPen(textPen);
+        p.drawText(rect,QStringLiteral("\uE8BB"), QTextOption(Qt::AlignVCenter | Qt::AlignHCenter));
         buttons++;
     }
 
+    p.setBrush(minMaxButtonBrush);
+    p.setPen(Qt::NoPen);
     if (wnd->flags().testFlags(Qt::WindowMaximizeButtonHint | Qt::CustomizeWindowHint) || !wnd->flags().testFlag(Qt::CustomizeWindowHint)) {
-        Gdiplus::RectF rect;
-        rect.Y = 1;
-        rect.X = windowWidth - titleButtonWidth * buttons;
-        rect.Width = titleButtonWidth - 1;
-        rect.Height = titleBarHeight;
+        QRectF rect;
+        rect.setY(1);
+        rect.setX(windowWidth - titleButtonWidth * buttons);
+        rect.setWidth(titleButtonWidth - 1);
+        rect.setHeight(titleBarHeight);
         if (localPos.x > (windowWidth - buttons * titleButtonWidth) &&
             localPos.x < (windowWidth - (buttons - 1) * titleButtonWidth) &&
-            localPos.y > rect.Y && localPos.y < rect.Y + rect.Height) {
-            if (isWindows11orAbove && buttons == 1) {
-                _q_drawCustomTitleBarButton(graphics, rect, minMaxButtonBrush);
-            } else {
-                graphics.FillRectangle(&minMaxButtonBrush, rect);
-            }
+            localPos.y > rect.y() && localPos.y < rect.y() + rect.height()) {
+            if (isWindows11orAbove && buttons == 1)
+                _q_drawCustomTitleBarButton(p, rect);
+            else
+                p.drawRect(rect);
         }
-        graphics.DrawString(L"\uE922", -1, &iconFont, rect, &buttonFormat, &iconBrush);
+        p.setPen(textPen);
+        p.drawText(rect,QStringLiteral("\uE922"), QTextOption(Qt::AlignVCenter | Qt::AlignHCenter));
         buttons++;
     }
 
+    p.setBrush(minMaxButtonBrush);
+    p.setPen(Qt::NoPen);
     if (wnd->flags().testFlags(Qt::WindowMinimizeButtonHint | Qt::CustomizeWindowHint) || !wnd->flags().testFlag(Qt::CustomizeWindowHint)) {
-        Gdiplus::RectF rect;
-        rect.Y = 1;
-        rect.X = windowWidth - titleButtonWidth * buttons;
-        rect.Width = titleButtonWidth - 1;
-        rect.Height = titleBarHeight;
+        QRectF rect;
+        rect.setY(1);
+        rect.setX(windowWidth - titleButtonWidth * buttons);
+        rect.setWidth(titleButtonWidth - 1);
+        rect.setHeight(titleBarHeight);
         if (localPos.x > (windowWidth - buttons * titleButtonWidth) &&
             localPos.x < (windowWidth - (buttons - 1) * titleButtonWidth) &&
-            localPos.y > rect.Y && localPos.y < rect.Y + rect.Height) {
-            if (isWindows11orAbove && buttons == 1) {
-                _q_drawCustomTitleBarButton(graphics, rect, minMaxButtonBrush);
-            } else {
-                graphics.FillRectangle(&minMaxButtonBrush, rect);
-            }
+            localPos.y > rect.y() && localPos.y < rect.y() + rect.height()) {
+            if (isWindows11orAbove && buttons == 1)
+                _q_drawCustomTitleBarButton(p, rect);
+            else
+                p.drawRect(rect);
         }
-        graphics.DrawString(L"\uE921", -1, &iconFont, rect, &buttonFormat, &iconBrush);
+        p.setPen(textPen);
+        p.drawText(rect,QStringLiteral("\uE921"), QTextOption(Qt::AlignVCenter | Qt::AlignHCenter));
         buttons++;
     }
 
-    HBITMAP bmp;
-    softwareBitmap.GetHBITMAP(Gdiplus::Color(0, 0, 0, 0), &bmp);
+    p.end();
+
+    HBITMAP bmp = image.toHBITMAP();
 
     HDC hdc = GetDC(hwnd);
 
