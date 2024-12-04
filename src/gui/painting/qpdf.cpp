@@ -1783,7 +1783,7 @@ void QPdfEnginePrivate::writeInfo(const QDateTime &date)
     write(formattedDate);
 
     write("\n/Trapped /False\n"
-          "2\n"
+          ">>\n"
           "endobj\n");
 }
 
