@@ -902,14 +902,14 @@ QFile::copy(const QString &fileName, const QString &newName)
 }
 
 /*!
-    Opens the file using OpenMode \a mode, returning true if successful;
-    otherwise false.
+    Opens the file using \a mode flags, returning \c true if successful;
+    otherwise returns \c false.
 
-    The \a mode must be QIODevice::ReadOnly, QIODevice::WriteOnly, or
-    QIODevice::ReadWrite. It may also have additional flags, such as
-    QIODevice::Text and QIODevice::Unbuffered.
+    The flags for \a mode must include \l QIODeviceBase::ReadOnly,
+    \l WriteOnly, or \l ReadWrite. It may also have additional flags,
+    such as \l Text and \l Unbuffered.
 
-    \note In \l{QIODevice::}{WriteOnly} or \l{QIODevice::}{ReadWrite}
+    \note In \l{WriteOnly} or \l{ReadWrite}
     mode, if the relevant file does not already exist, this function
     will try to create a new file before opening it. The file will be
     created with mode 0666 masked by the umask on POSIX systems, and
@@ -918,9 +918,7 @@ QFile::copy(const QString &fileName, const QString &newName)
     of the file name, otherwise, it won't be possible to create this
     non-existing file.
 
-    \sa QT_USE_NODISCARD_FILE_OPEN
-
-    \sa QIODevice::OpenMode, setFileName()
+    \sa QT_USE_NODISCARD_FILE_OPEN, setFileName()
 */
 bool QFile::open(OpenMode mode)
 {
