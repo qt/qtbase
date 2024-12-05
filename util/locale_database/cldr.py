@@ -38,8 +38,8 @@ class CldrReader (object):
         self.whitter, self.grumble = whitter, grumble
         self.root.checkEnumData(grumble)
 
-    def likelySubTags(self) -> Iterator[tuple[tuple[int, int, int, int],
-                                              tuple[int, int, int, int]]]:
+    def likelySubTags(self) -> Iterator[tuple[tuple[str, str, str, str],
+                                              tuple[str, str, str, str]]]:
         """Generator for likely subtag information.
 
         Yields pairs (have, give) of 4-tuples; if what you have
@@ -50,8 +50,8 @@ class CldrReader (object):
         skips = []
         for got, use in self.root.likelySubTags():
             try:
-                have: tuple[int, int, int, int] = self.__parseTags(got)
-                give: tuple[int, int, int, int] = self.__parseTags(use)
+                have: tuple[str, str, str, str] = self.__parseTags(got)
+                give: tuple[str, str, str, str] = self.__parseTags(use)
             except Error as e:
                 if ((use.startswith(got) or got.startswith('und_'))
                     and e.message.startswith('Unknown ') and ' code ' in e.message):
@@ -206,7 +206,7 @@ class CldrReader (object):
                               subsequent_indent=' ', width=80)) + '\n')
     del textwrap
 
-    def __parseTags(self, locale: str) -> tuple[int, int, int, int]:
+    def __parseTags(self, locale: str) -> tuple[str, str, str, str]:
         tags: Iterator[str] = self.__splitLocale(locale)
         language: str = next(tags)
         script = territory = variant = ''

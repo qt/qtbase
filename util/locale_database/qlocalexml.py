@@ -56,7 +56,7 @@ class QLocaleXmlReader (object):
         scripts = tuple(self.__loadMap('script', script_map))
         territories = tuple(self.__loadMap('territory', territory_map))
 
-        # as enum numeric values, tuple[tuple[int, int, int], tuple[int, int, int]]
+        # as enum members, tuple[tuple[str, str, str], tuple[str, str, str]]
         self.__likely = tuple(self.__likelySubtagsMap())
 
         # Mappings {ID: (enum name, code, en.xml name)}
@@ -74,7 +74,7 @@ class QLocaleXmlReader (object):
 
     def loadLocaleMap(self, calendars: Iterable[str], grumble = lambda text: None):
         kid: Callable[[minidom.Element, str], str] = self.__firstChildText
-        likely: dict[tuple[int, int, int], tuple[int, int, int]] = dict(self.__likely)
+        likely: dict[tuple[str, str, str], tuple[str, str, str]] = dict(self.__likely)
 
         for elt in self.__eachEltInGroup(self.root, 'localeList', 'locale'):
             locale: Locale = Locale.fromXmlData(lambda k: kid(elt, k), calendars)
@@ -91,7 +91,7 @@ class QLocaleXmlReader (object):
                     # http://www.unicode.org/reports/tr35/#Likely_Subtags
                     try:
                         try:
-                            to: tuple[int, int, int] = likely[(locale.language, 'AnyScript',
+                            to: tuple[str, str, str] = likely[(locale.language, 'AnyScript',
                                                                locale.territory)]
                         except KeyError:
                             to = likely[(locale.language, 'AnyScript', 'AnyTerritory')]
@@ -192,7 +192,7 @@ class QLocaleXmlReader (object):
             yield key, enum[key][0], kid(element, 'code'), kid(element, 'name')
 
     # Likely subtag management:
-    def __likelySubtagsMap(self) -> Iterator[tuple[tuple[int, int, int], tuple[int, int, int]]]:
+    def __likelySubtagsMap(self) -> Iterator[tuple[tuple[str, str, str], tuple[str, str, str]]]:
         def triplet(element: minidom.Element,
                     keys: tuple[str, str, str]=('language', 'script', 'territory'),
                     kid = self.__firstChildText) -> tuple[str, str, str]:
