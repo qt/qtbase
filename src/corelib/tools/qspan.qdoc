@@ -642,7 +642,7 @@
     These functions do the same thing: subspan() is provided for STL
     compatibility and sliced() is provided for Qt compatibility.
 
-    \sa subspan(), first(QSpan<T,E>::size_type), last(QSpan<T,E>::size_type), chopped()
+    \sa subspan(), first(QSpan<T,E>::size_type), last(QSpan<T,E>::size_type), chopped(), slice()
 */
 
 /*!
@@ -662,7 +662,7 @@
     These functions do the same thing: subspan() is provided for STL
     compatibility and sliced() is provided for Qt compatibility.
 
-    \sa subspan(), first(QSpan<T,E>::size_type), last(QSpan<T,E>::size_type), chopped()
+    \sa subspan(), first(QSpan<T,E>::size_type), last(QSpan<T,E>::size_type), chopped(), slice()
 */
 
 /*!
@@ -679,7 +679,40 @@
     This span must hold at least \a n elements (\c{E} >= \a n \e{and} size() >=
     \a n), otherwise the behavior is undefined.
 
-    \sa subspan(), first(QSpan<T,E>::size_type), last(QSpan<T,E>::size_type),
+    \sa subspan(), first(QSpan<T,E>::size_type), last(QSpan<T,E>::size_type), chop()
+*/
+
+/*!
+    \fn template <typename T, size_t E> void QSpan<T,E>::chop(qsizetype n)
+    \since 6.9
+
+    Same as \c{*this = chopped(}\a{n}\c{)}.
+
+    This function is only available on \l{variable-fixed-spans}{variable-sized spans}.
+
+    \sa chopped()
+*/
+
+/*!
+    \fn template <typename T, size_t E> void QSpan<T,E>::slice(qsizetype pos)
+    \since 6.9
+
+    Same as \c{*this = sliced(}\a{pos}\c{)}.
+
+    This function is only available on \l{variable-fixed-spans}{variable-sized spans}.
+
+    \sa sliced()
+*/
+
+/*!
+    \fn template <typename T, size_t E> void QSpan<T,E>::slice(qsizetype pos, qsizetype n)
+    \since 6.9
+
+    Same as \c{*this = sliced(}\a{pos}\c{, }\a{n}\c{)}.
+
+    This function is only available on \l{variable-fixed-spans}{variable-sized spans}.
+
+    \sa sliced()
 */
 
 /*!
