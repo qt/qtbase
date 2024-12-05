@@ -20,7 +20,7 @@
     allows you to establish a TCP connection and transfer streams of
     data. See the QAbstractSocket documentation for details.
 
-    \note TCP sockets cannot be opened in QIODevice::Unbuffered mode.
+    \note TCP sockets cannot be opened in \l QIODeviceBase::Unbuffered mode.
 
     \sa QTcpServer, QUdpSocket, QNetworkAccessManager,
     {Fortune Server}, {Fortune Client},

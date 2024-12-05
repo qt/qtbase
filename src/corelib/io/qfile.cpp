@@ -123,7 +123,7 @@ QAbstractFileEngine *QFilePrivate::engine() const
 
     \snippet file/file.cpp 0
 
-    The QIODevice::Text flag passed to open() tells Qt to convert
+    The \l{QIODeviceBase::}{Text} flag passed to open() tells Qt to convert
     Windows-style line terminators ("\\r\\n") into C++-style
     terminators ("\\n"). By default, QFile assumes binary, i.e. it
     doesn't perform any conversion on the bytes stored in the file.
