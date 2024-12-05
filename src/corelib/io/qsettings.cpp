@@ -3491,7 +3491,7 @@ void QSettings::setPath(Format format, Scope scope, const QString &path)
     The \a readFunc and \a writeFunc parameters are pointers to
     functions that read and write a set of key/value pairs. The
     QIODevice parameter to the read and write functions is always
-    opened in binary mode (i.e., without the QIODevice::Text flag).
+    opened in binary mode (i.e., without the \l QIODeviceBase::Text flag).
 
     The \a caseSensitivity parameter specifies whether keys are case
     sensitive or not. This makes a difference when looking up values

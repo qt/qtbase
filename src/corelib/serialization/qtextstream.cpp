@@ -2833,7 +2833,7 @@ QTextStream &center(QTextStream &stream)
     \snippet code/src_corelib_io_qtextstream.cpp 9
 
     Note: On Windows, all '\\n' characters are written as '\\r\\n' if
-    QTextStream's device or string is opened using the QIODevice::Text flag.
+    QTextStream's device or string is opened using the \l QIODeviceBase::Text flag.
 
     \since 5.14
 

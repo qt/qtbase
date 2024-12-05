@@ -352,7 +352,7 @@ QByteArray QImageWriter::format() const
     otherwise left unchanged.
 
     If the device is not already open, QImageWriter will attempt to
-    open the device in \l QIODevice::WriteOnly mode by calling
+    open the device in \l QIODeviceBase::WriteOnly mode by calling
     open(). Note that this does not work for certain devices, such as
     QProcess, QTcpSocket and QUdpSocket, where more logic is required
     to open the device.
