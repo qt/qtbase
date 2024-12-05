@@ -1450,13 +1450,6 @@ function(_qt_internal_sbom_handle_target_binary_files target)
         list(APPEND file_common_options INSTALL_PREFIX "${arg_INSTALL_PREFIX}")
     endif()
 
-    get_cmake_property(is_multi_config GENERATOR_IS_MULTI_CONFIG)
-    if(is_multi_config)
-        set(configs ${CMAKE_CONFIGURATION_TYPES})
-    else()
-        set(configs "${CMAKE_BUILD_TYPE}")
-    endif()
-
     set(path_suffix "$<TARGET_FILE_NAME:${target}>")
 
     if(arg_FRAMEWORK)
@@ -1577,12 +1570,6 @@ function(_qt_internal_sbom_add_binary_file target file_path)
     endif()
 
     get_cmake_property(is_multi_config GENERATOR_IS_MULTI_CONFIG)
-    if(is_multi_config)
-        set(configs ${CMAKE_CONFIGURATION_TYPES})
-    else()
-        set(configs "${CMAKE_BUILD_TYPE}")
-    endif()
-
     if(is_multi_config)
         set(spdx_id_suffix "${arg_CONFIG}")
         set(config_to_install_option CONFIG ${arg_CONFIG})
