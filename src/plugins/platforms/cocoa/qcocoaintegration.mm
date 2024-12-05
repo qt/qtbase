@@ -109,7 +109,6 @@ QCocoaIntegration::QCocoaIntegration(const QStringList &paramList)
 #endif
     , mCocoaDrag(new QCocoaDrag)
     , mNativeInterface(new QCocoaNativeInterface)
-    , mServices(new QCocoaServices)
     , mKeyboardMapper(new QAppleKeyMapper)
 {
     logVersionInformation();
@@ -394,6 +393,9 @@ QPlatformTheme *QCocoaIntegration::createPlatformTheme(const QString &name) cons
 
 QCocoaServices *QCocoaIntegration::services() const
 {
+    if (mServices.isNull())
+        mServices.reset(new QCocoaServices);
+
     return mServices.data();
 }
 

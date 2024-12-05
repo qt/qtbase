@@ -74,7 +74,6 @@ QEglFSIntegration::QEglFSIntegration()
       m_display(EGL_NO_DISPLAY),
       m_inputContext(nullptr),
       m_fontDb(new QGenericUnixFontDatabase),
-      m_services(new QGenericUnixServices),
       m_disableInputHandlers(false)
 {
     m_disableInputHandlers = qEnvironmentVariableIntValue("QT_QPA_EGLFS_DISABLE_INPUT");
@@ -129,6 +128,9 @@ QAbstractEventDispatcher *QEglFSIntegration::createEventDispatcher() const
 
 QPlatformServices *QEglFSIntegration::services() const
 {
+    if (m_services.isNull())
+        m_services.reset(new QGenericUnixServices);
+
     return m_services.data();
 }
 

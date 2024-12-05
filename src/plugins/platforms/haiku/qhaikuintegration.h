@@ -34,7 +34,7 @@ public:
 private:
     QHaikuClipboard *m_clipboard;
     QHaikuScreen *m_screen;
-    QHaikuServices *m_services;
+    mutable QHaikuServices *m_services = nullptr;
 };
 
 QT_END_NAMESPACE

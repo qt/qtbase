@@ -111,7 +111,7 @@ private:
 #endif
     QScopedPointer<QCocoaDrag> mCocoaDrag;
     QScopedPointer<QCocoaNativeInterface> mNativeInterface;
-    QScopedPointer<QCocoaServices> mServices;
+    mutable QScopedPointer<QCocoaServices> mServices;
     QScopedPointer<QAppleKeyMapper> mKeyboardMapper;
 
 #if QT_CONFIG(vulkan)

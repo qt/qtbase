@@ -45,8 +45,6 @@ QHaikuIntegration::QHaikuIntegration(const QStringList &parameters)
 
     m_screen = new QHaikuScreen;
 
-    m_services = new QHaikuServices;
-
     // notify system about available screen
     QWindowSystemInterface::handleScreenAdded(m_screen);
 }
@@ -78,6 +76,9 @@ QPlatformFontDatabase *QHaikuIntegration::fontDatabase() const
 
 QPlatformServices *QHaikuIntegration::services() const
 {
+    if (!m_services)
+        m_services = new QHaikuServices;
+
     return m_services;
 }
 

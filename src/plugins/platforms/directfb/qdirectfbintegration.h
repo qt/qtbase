@@ -47,7 +47,7 @@ protected:
     QScopedPointer<QDirectFbInput> m_input;
     QScopedPointer<QThread> m_inputRunner;
     QScopedPointer<QPlatformFontDatabase> m_fontDb;
-    QScopedPointer<QPlatformServices> m_services;
+    mutable QScopedPointer<QPlatformServices> m_services;
     QPlatformInputContext *m_inputContext;
 };
 
