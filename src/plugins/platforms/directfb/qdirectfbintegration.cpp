@@ -10,7 +10,6 @@
 
 #include <QtGui/private/qgenericunixfontdatabase_p.h>
 #include <QtGui/private/qgenericunixeventdispatcher_p.h>
-#include <QtGui/private/qgenericunixservices_p.h>
 
 #include <QtGui/private/qpixmap_blitter_p.h>
 #include <QtGui/private/qpixmap_raster_p.h>
@@ -21,6 +20,7 @@
 #include <QtCore/QAbstractEventDispatcher>
 #include <qpa/qplatforminputcontextfactory_p.h>
 #include <qpa/qwindowsysteminterface.h>
+#include <qpa/qplatformservices.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -125,7 +125,7 @@ QPlatformFontDatabase *QDirectFbIntegration::fontDatabase() const
 QPlatformServices *QDirectFbIntegration::services() const
 {
     if (m_services.isNull())
-        m_services.reset(new QGenericUnixServices);
+        m_services.reset(new QPlatformServices);
 
     return m_services.data();
 }

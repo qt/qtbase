@@ -32,13 +32,13 @@
 #endif
 
 #include <QtGui/private/qgenericunixfontdatabase_p.h>
-#include <QtGui/private/qgenericunixservices_p.h>
 #include <QtGui/private/qgenericunixthemes_p.h>
 #include <QtGui/private/qgenericunixeventdispatcher_p.h>
 #include <QtFbSupport/private/qfbvthandler_p.h>
 #ifndef QT_NO_OPENGL
 # include <QtOpenGL/private/qopenglcompositorbackingstore_p.h>
 #endif
+#include <qpa/qplatformservices.h>
 
 #if QT_CONFIG(libinput)
 #include <QtInputSupport/private/qlibinputhandler_p.h>
@@ -132,7 +132,7 @@ QAbstractEventDispatcher *QEglFSIntegration::createEventDispatcher() const
 QPlatformServices *QEglFSIntegration::services() const
 {
     if (m_services.isNull())
-        m_services.reset(new QGenericUnixServices);
+        m_services.reset(new QPlatformServices);
 
     return m_services.data();
 }

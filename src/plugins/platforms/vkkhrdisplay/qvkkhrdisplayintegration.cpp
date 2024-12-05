@@ -14,7 +14,7 @@
 #include <QtGui/private/qgenericunixeventdispatcher_p.h>
 #include <QtGui/private/qgenericunixfontdatabase_p.h>
 #include <QtGui/private/qgenericunixthemes_p.h>
-#include <QtGui/private/qgenericunixservices_p.h>
+#include <qpa/qplatformservices.h>
 
 #include <QtFbSupport/private/qfbvthandler_p.h>
 
@@ -195,7 +195,7 @@ QPlatformFontDatabase *QVkKhrDisplayIntegration::fontDatabase() const
 QPlatformServices *QVkKhrDisplayIntegration::services() const
 {
     if (!m_services)
-        m_services = new QGenericUnixServices;
+        m_services = new QPlatformServices;
 
     return m_services;
 }

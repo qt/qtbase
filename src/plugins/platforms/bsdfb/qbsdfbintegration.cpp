@@ -6,7 +6,6 @@
 #include "qbsdfbscreen.h"
 
 #include <QtGui/private/qgenericunixfontdatabase_p.h>
-#include <QtGui/private/qgenericunixservices_p.h>
 #include <QtGui/private/qgenericunixeventdispatcher_p.h>
 
 #include <QtFbSupport/private/qfbvthandler_p.h>
@@ -18,6 +17,7 @@
 #include <qpa/qplatforminputcontext.h>
 #include <qpa/qplatforminputcontextfactory_p.h>
 #include <qpa/qwindowsysteminterface.h>
+#include <qpa/qplatformservices.h>
 
 #if QT_CONFIG(tslib)
 #include <QtInputSupport/private/qtslib_p.h>
@@ -97,7 +97,7 @@ QPlatformFontDatabase *QBsdFbIntegration::fontDatabase() const
 QPlatformServices *QBsdFbIntegration::services() const
 {
     if (m_services.isNull())
-        m_services.reset(new QGenericUnixServices);
+        m_services.reset(new QPlatformServices);
 
     return m_services.data();
 }
