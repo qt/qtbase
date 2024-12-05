@@ -2123,7 +2123,7 @@ void QWidgetPrivate::clipToEffectiveMask(QRegion &region) const
     QPoint offset;
 
 #if QT_CONFIG(graphicseffect)
-    if (graphicsEffect) {
+    if (graphicsEffect && !w->isWindow()) {
         w = q->parentWidget();
         offset -= data.crect.topLeft();
     }
