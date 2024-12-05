@@ -39,7 +39,7 @@ namespace q20 {
 #endif
 } // namespace q20
 
-// like q20::iter_reference_t
+// like std::iter_reference_t
 namespace q20 {
 #ifdef __cpp_lib_ranges
     using std::iter_reference_t;
