@@ -1440,11 +1440,9 @@ private:
             detachGuard = *this;
             const bool resized = shouldInsert && d->shouldGrow();
             const size_t bucketIndex = bucket.toBucketIndex(d);
-            // Like reserve(), but unconditionally detaching if no need to grow:
-            if (isDetached())
-                d->rehash(d->size + 1);
-            else
-                d = Data::detached(d, d->size + (shouldInsert ? 1 : 0));
+
+            // Must detach from detachGuard
+            d = resized ? Data::detached(d, d->size + 1) : Data::detached(d);
             bucket = resized ? d->findBucket(key) : typename Data::Bucket(d, bucketIndex);
         }
         if (shouldInsert) {
