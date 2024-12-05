@@ -128,7 +128,7 @@ private:
     QQnxButtonEventNotifier *m_buttonsNotifier;
 #endif
     QPlatformInputContext *m_qpaInputContext;
-    QQnxServices *m_services;
+    mutable QQnxServices *m_services = nullptr;
     QPlatformFontDatabase *m_fontDatabase;
     mutable QAbstractEventDispatcher *m_eventDispatcher;
     QQnxNativeInterface *m_nativeInterface;

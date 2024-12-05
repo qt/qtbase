@@ -59,7 +59,6 @@ QIOSIntegration::QIOSIntegration()
     , m_clipboard(new QIOSClipboard)
 #endif
     , m_inputContext(0)
-    , m_platformServices(new QIOSServices)
     , m_accessibility(0)
     , m_optionalPlugins(new QFactoryLoader(QIosOptionalPluginInterface_iid, "/platforms/darwin"_L1))
 {
@@ -232,6 +231,9 @@ QPlatformInputContext *QIOSIntegration::inputContext() const
 
 QPlatformServices *QIOSIntegration::services() const
 {
+    if (!m_platformServices)
+        m_platformServices = new QIOSServices;
+
     return m_platformServices;
 }
 

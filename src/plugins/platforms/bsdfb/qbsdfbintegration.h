@@ -41,7 +41,7 @@ private:
     QScopedPointer<QBsdFbScreen> m_primaryScreen;
     QScopedPointer<QPlatformInputContext> m_inputContext;
     QScopedPointer<QPlatformFontDatabase> m_fontDb;
-    QScopedPointer<QPlatformServices> m_services;
+    mutable QScopedPointer<QPlatformServices> m_services;
     QScopedPointer<QFbVtHandler> m_vtHandler;
     QScopedPointer<QPlatformNativeInterface> m_nativeInterface;
 };
