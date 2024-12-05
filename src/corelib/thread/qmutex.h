@@ -15,7 +15,7 @@ QT_BEGIN_NAMESPACE
 
 #if QT_CONFIG(thread) || defined(Q_QDOC)
 
-#if defined(Q_OS_LINUX) || defined(Q_OS_WIN) // these platforms use futex
+#if defined(Q_OS_FREEBSD) || defined(Q_OS_LINUX) || defined(Q_OS_WIN) // these platforms use futex
 # define QT_MUTEX_LOCK_NOEXCEPT noexcept
 #else
 # define QT_MUTEX_LOCK_NOEXCEPT
