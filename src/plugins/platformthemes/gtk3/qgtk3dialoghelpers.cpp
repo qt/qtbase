@@ -14,7 +14,7 @@
 #include <qfileinfo.h>
 
 #include <private/qguiapplication_p.h>
-#include <private/qgenericunixservices_p.h>
+#include <private/qdesktopunixservices_p.h>
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformfontdatabase.h>
 
@@ -109,7 +109,7 @@ bool QGtk3Dialog::show(Qt::WindowFlags flags, Qt::WindowModality modality, QWind
         if (false) {
 #if defined(GDK_WINDOWING_WAYLAND) && GTK_CHECK_VERSION(3, 22, 0)
         } else if (GDK_IS_WAYLAND_WINDOW(gdkWindow)) {
-            const auto unixServices = dynamic_cast<QGenericUnixServices *>(
+            const auto unixServices = dynamic_cast<QDesktopUnixServices *>(
                     QGuiApplicationPrivate::platformIntegration()->services());
             if (unixServices) {
                 const auto handle = unixServices->portalWindowIdentifier(parent);

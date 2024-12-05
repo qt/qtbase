@@ -5,7 +5,7 @@
 #include "qdbusmenuregistrarproxy_p.h"
 
 #include <private/qguiapplication_p.h>
-#include <private/qgenericunixservices_p.h>
+#include <private/qdesktopunixservices_p.h>
 #include <qpa/qplatformintegration.h>
 
 QT_BEGIN_NAMESPACE
@@ -127,7 +127,7 @@ void QDBusMenuBar::registerMenuBar()
         connection.unregisterObject(m_objectPath);
         return;
     }
-    const auto unixServices = dynamic_cast<QGenericUnixServices *>(
+    const auto unixServices = dynamic_cast<QDesktopUnixServices *>(
             QGuiApplicationPrivate::platformIntegration()->services());
     unixServices->registerDBusMenuForWindow(m_window, connection.baseService(), m_objectPath);
 }
@@ -144,7 +144,7 @@ void QDBusMenuBar::unregisterMenuBar()
             qWarning("Failed to unregister window menu, reason: %s (\"%s\")",
                      qUtf8Printable(r.error().name()), qUtf8Printable(r.error().message()));
 
-        const auto unixServices = dynamic_cast<QGenericUnixServices *>(
+        const auto unixServices = dynamic_cast<QDesktopUnixServices *>(
             QGuiApplicationPrivate::platformIntegration()->services());
         unixServices->unregisterDBusMenuForWindow(m_window);
     }

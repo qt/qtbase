@@ -1,7 +1,7 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include "qgenericunixservices_p.h"
+#include "qdesktopunixservices_p.h"
 #include <QtGui/private/qtguiglobal_p.h>
 #include "qguiapplication.h"
 #include "qwindow.h"
@@ -371,7 +371,7 @@ private:
 
 #endif // QT_CONFIG(dbus)
 
-QGenericUnixServices::QGenericUnixServices()
+QDesktopUnixServices::QDesktopUnixServices()
 {
     if (desktopEnvironment() == QByteArrayLiteral("UNKNOWN"))
         return;
@@ -400,14 +400,14 @@ QGenericUnixServices::QGenericUnixServices()
 #endif
 }
 
-QGenericUnixServices::~QGenericUnixServices()
+QDesktopUnixServices::~QDesktopUnixServices()
 {
 #if QT_CONFIG(dbus)
     QObject::disconnect(m_watcherConnection);
 #endif
 }
 
-QPlatformServiceColorPicker *QGenericUnixServices::colorPicker(QWindow *parent)
+QPlatformServiceColorPicker *QDesktopUnixServices::colorPicker(QWindow *parent)
 {
 #if QT_CONFIG(dbus)
     // Make double sure that we are in a wayland environment. In particular check
@@ -424,7 +424,7 @@ QPlatformServiceColorPicker *QGenericUnixServices::colorPicker(QWindow *parent)
 #endif
 }
 
-QByteArray QGenericUnixServices::desktopEnvironment() const
+QByteArray QDesktopUnixServices::desktopEnvironment() const
 {
     static const QByteArray result = detectDesktopEnvironment();
     return result;
@@ -460,7 +460,7 @@ void runWithXdgActivationToken(F &&functionToCall)
 #endif
 }
 
-bool QGenericUnixServices::openUrl(const QUrl &url)
+bool QDesktopUnixServices::openUrl(const QUrl &url)
 {
     auto openUrlInternal = [this](const QUrl &url, const QString &xdgActivationToken) {
         if (url.scheme() == "mailto"_L1) {
@@ -509,7 +509,7 @@ bool QGenericUnixServices::openUrl(const QUrl &url)
     }
 }
 
-bool QGenericUnixServices::openDocument(const QUrl &url)
+bool QDesktopUnixServices::openDocument(const QUrl &url)
 {
     auto openDocumentInternal = [this](const QUrl &url, const QString &xdgActivationToken) {
 
@@ -544,29 +544,29 @@ bool QGenericUnixServices::openDocument(const QUrl &url)
 }
 
 #else
-QGenericUnixServices::QGenericUnixServices() = default;
-QGenericUnixServices::~QGenericUnixServices() = default;
+QDesktopUnixServices::QDesktopUnixServices() = default;
+QDesktopUnixServices::~QDesktopUnixServices() = default;
 
-QByteArray QGenericUnixServices::desktopEnvironment() const
+QByteArray QDesktopUnixServices::desktopEnvironment() const
 {
     return QByteArrayLiteral("UNKNOWN");
 }
 
-bool QGenericUnixServices::openUrl(const QUrl &url)
+bool QDesktopUnixServices::openUrl(const QUrl &url)
 {
     Q_UNUSED(url);
     qWarning("openUrl() not supported on this platform");
     return false;
 }
 
-bool QGenericUnixServices::openDocument(const QUrl &url)
+bool QDesktopUnixServices::openDocument(const QUrl &url)
 {
     Q_UNUSED(url);
     qWarning("openDocument() not supported on this platform");
     return false;
 }
 
-QPlatformServiceColorPicker *QGenericUnixServices::colorPicker(QWindow *parent)
+QPlatformServiceColorPicker *QDesktopUnixServices::colorPicker(QWindow *parent)
 {
     Q_UNUSED(parent);
     return nullptr;
@@ -574,27 +574,27 @@ QPlatformServiceColorPicker *QGenericUnixServices::colorPicker(QWindow *parent)
 
 #endif // QT_NO_MULTIPROCESS
 
-QString QGenericUnixServices::portalWindowIdentifier(QWindow *window)
+QString QDesktopUnixServices::portalWindowIdentifier(QWindow *window)
 {
     Q_UNUSED(window);
     return QString();
 }
 
 
-void QGenericUnixServices::registerDBusMenuForWindow(QWindow *window, const QString &service, const QString &path)
+void QDesktopUnixServices::registerDBusMenuForWindow(QWindow *window, const QString &service, const QString &path)
 {
     Q_UNUSED(window);
     Q_UNUSED(service);
     Q_UNUSED(path);
 }
 
-void QGenericUnixServices::unregisterDBusMenuForWindow(QWindow *window)
+void QDesktopUnixServices::unregisterDBusMenuForWindow(QWindow *window)
 {
     Q_UNUSED(window);
 }
 
 
-bool QGenericUnixServices::hasCapability(Capability capability) const
+bool QDesktopUnixServices::hasCapability(Capability capability) const
 {
     switch (capability) {
     case Capability::ColorPicking:
@@ -603,7 +603,7 @@ bool QGenericUnixServices::hasCapability(Capability capability) const
     return false;
 }
 
-void QGenericUnixServices::setApplicationBadge(qint64 number)
+void QDesktopUnixServices::setApplicationBadge(qint64 number)
 {
 #if QT_CONFIG(dbus)
     if (qGuiApp->desktopFileName().isEmpty()) {
@@ -636,4 +636,4 @@ void QGenericUnixServices::setApplicationBadge(qint64 number)
 
 QT_END_NAMESPACE
 
-#include "qgenericunixservices.moc"
+#include "qdesktopunixservices.moc"

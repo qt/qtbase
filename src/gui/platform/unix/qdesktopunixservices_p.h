@@ -1,8 +1,8 @@
 // Copyright (C) 2020 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#ifndef QGENERICUNIXDESKTOPSERVICES_H
-#define QGENERICUNIXDESKTOPSERVICES_H
+#ifndef QDESKTOPUNIXSERVICES_H
+#define QDESKTOPUNIXSERVICES_H
 
 //
 //  W A R N I N G
@@ -23,11 +23,11 @@ QT_BEGIN_NAMESPACE
 
 class QWindow;
 
-class Q_GUI_EXPORT QGenericUnixServices : public QPlatformServices
+class Q_GUI_EXPORT QDesktopUnixServices : public QPlatformServices
 {
 public:
-    QGenericUnixServices();
-    ~QGenericUnixServices();
+    QDesktopUnixServices();
+    ~QDesktopUnixServices();
 
     QByteArray desktopEnvironment() const override;
 
@@ -53,4 +53,4 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // QGENERICUNIXDESKTOPSERVICES_H
+#endif // QDESKTOPUNIXSERVICES_H

@@ -25,7 +25,7 @@
 #include <xcb/xcb.h>
 
 #include <QtGui/private/qgenericunixfontdatabase_p.h>
-#include <QtGui/private/qgenericunixservices_p.h>
+#include <QtGui/private/qdesktopunixservices_p.h>
 
 #include <stdio.h>
 
@@ -93,7 +93,7 @@ static bool runningUnderDebugger()
 #endif
 }
 
-class QXcbUnixServices : public QGenericUnixServices, public QXcbObject
+class QXcbUnixServices : public QDesktopUnixServices, public QXcbObject
 {
 public:
     QString portalWindowIdentifier(QWindow *window) override;
@@ -595,7 +595,7 @@ QPlatformVulkanInstance *QXcbIntegration::createPlatformVulkanInstance(QVulkanIn
 
 void QXcbIntegration::setApplicationBadge(qint64 number)
 {
-    auto unixServices = dynamic_cast<QGenericUnixServices *>(services());
+    auto unixServices = dynamic_cast<QDesktopUnixServices *>(services());
     unixServices->setApplicationBadge(number);
 }
 

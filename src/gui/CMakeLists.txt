@@ -1028,7 +1028,7 @@ qt_internal_extend_target(Gui CONDITION QT_FEATURE_glib AND UNIX
 
 qt_internal_extend_target(Gui CONDITION UNIX AND (QT_FEATURE_xcb OR NOT UIKIT)
     SOURCES
-        platform/unix/qgenericunixservices.cpp platform/unix/qgenericunixservices_p.h
+        platform/unix/qdesktopunixservices.cpp platform/unix/qdesktopunixservices_p.h
 )
 
 qt_internal_extend_target(Gui CONDITION UNIX AND (QT_FEATURE_xcb)

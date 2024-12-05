@@ -6,7 +6,7 @@
 #include "qvnc_p.h"
 
 #include <QtGui/private/qgenericunixfontdatabase_p.h>
-#include <QtGui/private/qgenericunixservices_p.h>
+#include <QtGui/private/qdesktopunixservices_p.h>
 #include <QtGui/private/qgenericunixeventdispatcher_p.h>
 
 #include <QtFbSupport/private/qfbbackingstore_p.h>
@@ -105,7 +105,7 @@ QPlatformFontDatabase *QVncIntegration::fontDatabase() const
 QPlatformServices *QVncIntegration::services() const
 {
     if (m_services.isNull())
-        m_services.reset(new QGenericUnixServices);
+        m_services.reset(new QDesktopUnixServices);
 
     return m_services.data();
 }
