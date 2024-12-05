@@ -1492,22 +1492,22 @@ void QProcess::setStandardInputFile(const QString &fileName)
 
     Redirects the process' standard output to the file \a
     fileName. When the redirection is in place, the standard output
-    read channel is closed: reading from it using read() will always
-    fail, as will readAllStandardOutput().
+    read channel is closed: reading from it using \l read() will always
+    fail, as will \l readAllStandardOutput().
 
-    To discard all standard output from the process, pass nullDevice()
+    To discard all standard output from the process, pass \l nullDevice()
     here. This is more efficient than simply never reading the standard
     output, as no QProcess buffers are filled.
 
-    If the file \a fileName doesn't exist at the moment start() is
+    If the file \a fileName doesn't exist at the moment \l start() is
     called, it will be created. If it cannot be created, the starting
     will fail.
 
-    If the file exists and \a mode is QIODevice::Truncate, the file
-    will be truncated. Otherwise (if \a mode is QIODevice::Append),
+    If the file exists and \a mode is \ QIODeviceBase::Truncate, the file
+    will be truncated. Otherwise (if \a mode is \l QIODeviceBase::Append),
     the file will be appended to.
 
-    Calling setStandardOutputFile() after the process has started has
+    Calling \l setStandardOutputFile() after the process has started has
     no effect.
 
     If \a fileName is an empty string, it stops redirecting the standard
