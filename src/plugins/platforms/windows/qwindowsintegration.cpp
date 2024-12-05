@@ -130,7 +130,7 @@ struct QWindowsIntegrationPrivate
 #if QT_CONFIG(accessibility)
    QWindowsUiaAccessibility m_accessibility;
 #endif
-    QWindowsServices m_services;
+    mutable QScopedPointer<QWindowsServices> m_services;
 };
 
 template <typename IntType>
@@ -643,7 +643,10 @@ QPlatformTheme *QWindowsIntegration::createPlatformTheme(const QString &name) co
 
 QPlatformServices *QWindowsIntegration::services() const
 {
-    return &d->m_services;
+    if (d->m_services.isNull())
+        d->m_services.reset(new QWindowsServices);
+
+    return d->m_services.data();
 }
 
 void QWindowsIntegration::beep() const

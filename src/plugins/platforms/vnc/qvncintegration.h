@@ -40,7 +40,7 @@ private:
     QVncScreen *m_primaryScreen;
     QPlatformInputContext *m_inputContext;
     QScopedPointer<QPlatformFontDatabase> m_fontDb;
-    QScopedPointer<QPlatformServices> m_services;
+    mutable QScopedPointer<QPlatformServices> m_services;
     QScopedPointer<QPlatformNativeInterface> m_nativeInterface;
 };
 
