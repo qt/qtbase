@@ -125,6 +125,8 @@ private slots:
     void inheritWidgetPalette_data();
     void inheritWidgetPalette();
 
+    void resetFont();
+
 private:
     static QColor COLOR(const QWidget &w)
     {
@@ -2526,6 +2528,28 @@ void tst_QStyleSheetStyle::inheritWidgetPalette()
     const QColor phColor = edit.palette().placeholderText().color();
 
     QCOMPARE(phColor, phColorPalette);
+}
+
+void tst_QStyleSheetStyle::resetFont()
+{
+    QDoubleSpinBox sb;
+    sb.setStyleSheet(R"(QDoubleSpinBox[changed="true"] {font: italic;})");
+
+    auto checkFont = [&sb](bool isItalic) {
+        sb.setProperty("changed", isItalic);
+        sb.style()->polish(&sb);
+        const auto children = sb.findChildren<QWidget *>();
+        for (const auto *w : children) {
+            auto diagnostics = qScopeGuard([&] {
+                qWarning() << "Failure with" << w << "should be italic:" << isItalic;
+            });
+            QCOMPARE(w->font().italic(), isItalic);
+            diagnostics.dismiss();
+        }
+    };
+    checkFont(false);
+    checkFont(true);
+    checkFont(false);
 }
 
 QTEST_MAIN(tst_QStyleSheetStyle)
