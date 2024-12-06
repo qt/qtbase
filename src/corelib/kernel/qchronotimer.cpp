@@ -249,7 +249,7 @@ void QChronoTimer::timerEvent(QTimerEvent *e)
 
     The default value for this property is \c false.
 
-    \sa interval, QChronoTimer::singleShot()
+    \sa interval
 */
 void QChronoTimer::setSingleShot(bool singleShot)
 {
