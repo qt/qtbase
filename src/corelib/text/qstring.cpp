@@ -6115,9 +6115,10 @@ QString QString::fromUcs4(const char32_t *unicode, qsizetype size)
     if (!unicode)
         return QString();
     if (size < 0) {
-        size = 0;
-        while (unicode[size] != 0)
-            ++size;
+        if constexpr (sizeof(char32_t) == sizeof(wchar_t))
+            size = wcslen(reinterpret_cast<const wchar_t *>(unicode));
+        else
+            size = std::char_traits<char32_t>::length(unicode);
     }
     QStringDecoder toUtf16(QStringDecoder::Utf32, QStringDecoder::Flag::Stateless);
     return toUtf16(QByteArrayView(reinterpret_cast<const char *>(unicode), size * 4));
