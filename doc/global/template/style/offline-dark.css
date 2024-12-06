@@ -692,6 +692,9 @@ Landing page
     vertical-align: top;
 }
 
+.landing {
+    display: flex;
+}
 
 .landing h2 {
     background-color: transparent;
@@ -706,19 +709,14 @@ Landing page
 }
 
 .col-1 {
-    display: inline-block;
     white-space: normal;
     width: 70%;
-    height: 100%;
-    float: left;
 }
 
 .col-2 {
-    display: inline-block;
     white-space: normal;
     width: 20%;
     margin-left: 5%;
-    position: relative;
     top: -20px;
 }
 
