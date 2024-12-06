@@ -6485,9 +6485,9 @@ void QStyleSheetStyle::updateStyleSheetFont(QWidget* w) const
         font.setResolveMask(wf.resolveMask() | rule.font.resolveMask());
 
         if ((!w->isWindow() || w->testAttribute(Qt::WA_WindowPropagation))
-            && isNaturalChild(w) && qobject_cast<QWidget *>(w->parent())) {
-
-            font = font.resolve(static_cast<QWidget *>(w->parent())->font());
+            && isNaturalChild(w) && w->parentWidget()) {
+            const auto parentFont = w->parentWidget()->font();
+            font = rule.hasFont ? font.resolve(parentFont) : parentFont;
         }
 
         if (wf.resolveMask() == font.resolveMask() && wf == font)
