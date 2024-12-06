@@ -2404,7 +2404,7 @@ encoded in \1, and is converted to QString using the \2 function.
 
     Reads the first \a size code units of the \c wchar_t array to whose start
     \a string points, converting them to Unicode and returning the result as
-    a QString. The encoding used by \c wchar_t is assumed to be UCS-4 if the
+    a QString. The encoding used by \c wchar_t is assumed to be UTF-32 if the
     type's size is four bytes or UTF-16 if its size is two bytes.
 
     If \a size is -1 (default), the \a string must be '\\0'-terminated.
@@ -2443,7 +2443,7 @@ qsizetype QString::toUcs4_helper(const char16_t *uc, qsizetype length, char32_t 
 
   Fills the \a array with the data contained in this QString object.
   The array is encoded in UTF-16 on platforms where
-  wchar_t is 2 bytes wide (e.g. windows) and in UCS-4 on platforms
+  wchar_t is 2 bytes wide (e.g. windows) and in UTF-32 on platforms
   where wchar_t is 4 bytes wide (most Unix systems).
 
   \a array has to be allocated by the caller and contain enough space to
@@ -5846,8 +5846,8 @@ static QList<uint> qt_convert_to_ucs4(QStringView string);
 
     Returns a UCS-4/UTF-32 representation of the string as a QList<uint>.
 
-    UCS-4 is a Unicode codec and therefore it is lossless. All characters from
-    this string will be encoded in UCS-4. Any invalid sequence of code units in
+    UTF-32 is a Unicode codec and therefore it is lossless. All characters from
+    this string will be encoded in UTF-32. Any invalid sequence of code units in
     this string is replaced by the Unicode's replacement character
     (QChar::ReplacementCharacter, which corresponds to \c{U+FFFD}).
 
@@ -5879,8 +5879,8 @@ static QList<uint> qt_convert_to_ucs4(QStringView string)
 
     Returns a UCS-4/UTF-32 representation of \a string as a QList<uint>.
 
-    UCS-4 is a Unicode codec and therefore it is lossless. All characters from
-    this string will be encoded in UCS-4. Any invalid sequence of code units in
+    UTF-32 is a Unicode codec and therefore it is lossless. All characters from
+    this string will be encoded in UTF-32. Any invalid sequence of code units in
     this string is replaced by the Unicode's replacement character
     (QChar::ReplacementCharacter, which corresponds to \c{U+FFFD}).
 
@@ -6103,7 +6103,7 @@ QString QString::fromUtf16(const char16_t *unicode, qsizetype size)
     \since 5.3
 
     Returns a QString initialized with the first \a size characters
-    of the Unicode string \a unicode (ISO-10646-UCS-4 encoded).
+    of the Unicode string \a unicode (encoded as UTF-32).
 
     If \a size is -1 (default), \a unicode must be \\0'-terminated.
 
@@ -9413,7 +9413,7 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 /*! \fn QString QString::fromStdU32String(const std::u32string &str)
     \since 5.5
 
-    \include qstring.cpp {from-std-string} {UCS-4} {fromUcs4()}
+    \include qstring.cpp {from-std-string} {UTF-32} {fromUcs4()}
 
     \sa fromUcs4(), fromStdWString(), fromStdU16String()
 */
