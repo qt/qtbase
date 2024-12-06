@@ -109,10 +109,7 @@ public:
             bool isEmpty() const { return loggers ? loggers->empty() : true; }
         };
 
-        const SharedLoggersContainer currentLoggers = load();
-        return LoggersRange{
-            std::move(currentLoggers),
-        };
+        return LoggersRange{ load() };
     }
 
 private:
