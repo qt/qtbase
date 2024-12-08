@@ -8,7 +8,7 @@
 
 version_maj=3
 version_min=47
-version_patch=0
+version_patch=2
 year=2024
 
 version=${version_maj}.${version_min}.${version_patch}
@@ -34,6 +34,7 @@ unzip ${fn}.zip
 cp ${fn}/sqlite3.c .
 cp ${fn}/sqlite3.h .
 
+sed -i qt_attribution.json -e "s#\"PURL\": .*\"#\"PURL\": \"pkg:github/sqlite/sqlite@version-${version}\"#"
 sed -i qt_attribution.json -e "s#\"Version\": \".*\"#\"Version\": \"${version}\"#"
 sed -i qt_attribution.json -e "s#\"DownloadLocation\": \".*\"#\"DownloadLocation\": \"${url}\"#"
 

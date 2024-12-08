@@ -1,6 +1,6 @@
 /******************************************************************************
 ** This file is an amalgamation of many separate C source files from SQLite
-** version 3.47.1.  By combining all the individual C code files into this
+** version 3.47.2.  By combining all the individual C code files into this
 ** single large file, the entire code can be compiled as a single translation
 ** unit.  This allows many compilers to do optimizations that would not be
 ** possible if the files were compiled separately.  Performance improvements
@@ -18,7 +18,7 @@
 ** separate file. This file contains only code for the core SQLite library.
 **
 ** The content in this amalgamation comes from Fossil check-in
-** b95d11e958643b969c47a8e5857f3793b9e6.
+** 2aabe05e2e8cae4847a802ee2daddc1d7413.
 */
 #define SQLITE_CORE 1
 #define SQLITE_AMALGAMATION 1
@@ -462,9 +462,9 @@ extern "C" {
 ** [sqlite3_libversion_number()], [sqlite3_sourceid()],
 ** [sqlite_version()] and [sqlite_source_id()].
 */
-#define SQLITE_VERSION        "3.47.1"
-#define SQLITE_VERSION_NUMBER 3047001
-#define SQLITE_SOURCE_ID      "2024-11-25 12:07:48 b95d11e958643b969c47a8e5857f3793b9e69700b8f1469371386369a26e577e"
+#define SQLITE_VERSION        "3.47.2"
+#define SQLITE_VERSION_NUMBER 3047002
+#define SQLITE_SOURCE_ID      "2024-12-07 20:39:59 2aabe05e2e8cae4847a802ee2daddc1d7413d8fc560254d93ee3e72c14685b6c"
 
 /*
 ** CAPI3REF: Run-Time Library Version Numbers
@@ -35697,8 +35697,8 @@ SQLITE_PRIVATE int sqlite3AtoF(const char *z, double *pResult, int length, u8 en
   int eValid = 1;  /* True exponent is either not used or is well-formed */
   int nDigit = 0;  /* Number of digits processed */
   int eType = 1;   /* 1: pure integer,  2+: fractional  -1 or less: bad UTF16 */
+  u64 s2;          /* round-tripped significand */
   double rr[2];
-  u64 s2;
 
   assert( enc==SQLITE_UTF8 || enc==SQLITE_UTF16LE || enc==SQLITE_UTF16BE );
   *pResult = 0.0;   /* Default return value, in case of an error */
@@ -35801,7 +35801,7 @@ do_atof_calc:
   e = (e*esign) + d;
 
   /* Try to adjust the exponent to make it smaller */
-  while( e>0 && s<(LARGEST_UINT64/10) ){
+  while( e>0 && s<((LARGEST_UINT64-0x7ff)/10) ){
     s *= 10;
     e--;
   }
@@ -35811,11 +35811,16 @@ do_atof_calc:
   }
 
   rr[0] = (double)s;
-  s2 = (u64)rr[0];
-#if defined(_MSC_VER) && _MSC_VER<1700
-  if( s2==0x8000000000000000LL ){ s2 = 2*(u64)(0.5*rr[0]); }
-#endif
-  rr[1] = s>=s2 ? (double)(s - s2) : -(double)(s2 - s);
+  assert( sizeof(s2)==sizeof(rr[0]) );
+  memcpy(&s2, &rr[0], sizeof(s2));
+  if( s2<=0x43efffffffffffffLL ){
+    s2 = (u64)rr[0];
+    rr[1] = s>=s2 ? (double)(s - s2) : -(double)(s2 - s);
+  }else{
+    rr[1] = 0.0;
+  }
+  assert( rr[1]<=1.0e-10*rr[0] );  /* Equal only when rr[0]==0.0 */
+
   if( e>0 ){
     while( e>=100  ){
       e -= 100;
@@ -147605,32 +147610,32 @@ static Expr *substExpr(
         if( pSubst->isOuterJoin ){
           ExprSetProperty(pNew, EP_CanBeNull);
         }
+        if( pNew->op==TK_TRUEFALSE ){
+          pNew->u.iValue = sqlite3ExprTruthValue(pNew);
+          pNew->op = TK_INTEGER;
+          ExprSetProperty(pNew, EP_IntValue);
+        }
+
+        /* Ensure that the expression now has an implicit collation sequence,
+        ** just as it did when it was a column of a view or sub-query. */
+        {
+          CollSeq *pNat = sqlite3ExprCollSeq(pSubst->pParse, pNew);
+          CollSeq *pColl = sqlite3ExprCollSeq(pSubst->pParse,
+                pSubst->pCList->a[iColumn].pExpr
+          );
+          if( pNat!=pColl || (pNew->op!=TK_COLUMN && pNew->op!=TK_COLLATE) ){
+            pNew = sqlite3ExprAddCollateString(pSubst->pParse, pNew,
+                (pColl ? pColl->zName : "BINARY")
+            );
+          }
+        }
+        ExprClearProperty(pNew, EP_Collate);
         if( ExprHasProperty(pExpr,EP_OuterON|EP_InnerON) ){
           sqlite3SetJoinExpr(pNew, pExpr->w.iJoin,
                              pExpr->flags & (EP_OuterON|EP_InnerON));
         }
         sqlite3ExprDelete(db, pExpr);
         pExpr = pNew;
-        if( pExpr->op==TK_TRUEFALSE ){
-          pExpr->u.iValue = sqlite3ExprTruthValue(pExpr);
-          pExpr->op = TK_INTEGER;
-          ExprSetProperty(pExpr, EP_IntValue);
-        }
-
-        /* Ensure that the expression now has an implicit collation sequence,
-        ** just as it did when it was a column of a view or sub-query. */
-        {
-          CollSeq *pNat = sqlite3ExprCollSeq(pSubst->pParse, pExpr);
-          CollSeq *pColl = sqlite3ExprCollSeq(pSubst->pParse,
-                pSubst->pCList->a[iColumn].pExpr
-          );
-          if( pNat!=pColl || (pExpr->op!=TK_COLUMN && pExpr->op!=TK_COLLATE) ){
-            pExpr = sqlite3ExprAddCollateString(pSubst->pParse, pExpr,
-                (pColl ? pColl->zName : "BINARY")
-            );
-          }
-        }
-        ExprClearProperty(pExpr, EP_Collate);
       }
     }
   }else{
@@ -254938,7 +254943,7 @@ static void fts5SourceIdFunc(
 ){
   assert( nArg==0 );
   UNUSED_PARAM2(nArg, apUnused);
-  sqlite3_result_text(pCtx, "fts5: 2024-11-25 12:07:48 b95d11e958643b969c47a8e5857f3793b9e69700b8f1469371386369a26e577e", -1, SQLITE_TRANSIENT);
+  sqlite3_result_text(pCtx, "fts5: 2024-12-07 20:39:59 2aabe05e2e8cae4847a802ee2daddc1d7413d8fc560254d93ee3e72c14685b6c", -1, SQLITE_TRANSIENT);
 }
 
 /*
