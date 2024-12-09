@@ -246,6 +246,7 @@ function(qt_internal_get_qt_build_private_files_to_install out_var)
         QtGenerateLibPri.cmake
         QtGenerateVersionScript.cmake
         QtModuleConfig.cmake.in
+        QtModuleConfigPrivate.cmake.in
         QtModuleDependencies.cmake.in
         QtModuleHeadersCheck.cmake
         QtModuleToolsConfig.cmake.in

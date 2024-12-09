@@ -691,6 +691,12 @@ function(qt_internal_add_module target)
     set(path_suffix "${INSTALL_CMAKE_NAMESPACE}${target}")
     qt_path_join(config_build_dir ${QT_CONFIG_BUILD_DIR} ${path_suffix})
     qt_path_join(config_install_dir ${QT_CONFIG_INSTALL_DIR} ${path_suffix})
+    if(NOT arg_NO_PRIVATE_MODULE)
+        set(path_suffix "${INSTALL_CMAKE_NAMESPACE}${target_private}")
+        qt_path_join(private_config_build_dir ${QT_CONFIG_BUILD_DIR} ${path_suffix})
+        qt_path_join(private_config_install_dir ${QT_CONFIG_INSTALL_DIR} ${path_suffix})
+    endif()
+    unset(path_suffix)
 
     set(extra_cmake_files)
     set(extra_cmake_includes)
@@ -781,10 +787,9 @@ set(QT_ALLOW_MISSING_TOOLS_PACKAGES TRUE)")
 
     qt_internal_get_min_new_policy_cmake_version(min_new_policy_version)
     qt_internal_get_max_new_policy_cmake_version(max_new_policy_version)
-    configure_package_config_file(
-        "${QT_CMAKE_DIR}/QtModuleConfig.cmake.in"
-        "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}Config.cmake"
-        INSTALL_DESTINATION "${config_install_dir}"
+    qt_internal_write_basic_module_package("${target}" "${target_private}"
+        CONFIG_BUILD_DIR ${config_build_dir}
+        CONFIG_INSTALL_DIR ${config_install_dir}
     )
 
     if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}BuildInternals.cmake")
@@ -794,38 +799,44 @@ set(QT_ALLOW_MISSING_TOOLS_PACKAGES TRUE)")
         list(APPEND extra_cmake_files "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}BuildInternals.cmake")
     endif()
 
-    write_basic_package_version_file(
-        "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}ConfigVersionImpl.cmake"
-        VERSION ${PROJECT_VERSION}
-        COMPATIBILITY AnyNewerVersion
-    )
-    qt_internal_write_qt_package_version_file(
-        "${INSTALL_CMAKE_NAMESPACE}${target}"
-        "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}ConfigVersion.cmake"
-    )
     qt_install(FILES
-        "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}Config.cmake"
-        "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}ConfigVersion.cmake"
-        "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}ConfigVersionImpl.cmake"
         ${extra_cmake_files}
         DESTINATION "${config_install_dir}"
         COMPONENT Devel
     )
 
-    file(COPY ${extra_cmake_files} DESTINATION "${config_build_dir}")
-    set(exported_targets ${target})
-    if(NOT ${arg_NO_PRIVATE_MODULE})
-        list(APPEND exported_targets ${target_private})
+    if(NOT arg_NO_PRIVATE_MODULE)
+        qt_internal_write_basic_module_package(${target} ${target_private}
+            PRIVATE
+            CONFIG_BUILD_DIR ${private_config_build_dir}
+            CONFIG_INSTALL_DIR ${private_config_install_dir}
+        )
     endif()
-    set(export_name "${INSTALL_CMAKE_NAMESPACE}${target}Targets")
 
-    qt_install(TARGETS ${exported_targets}
-        EXPORT ${export_name}
-        RUNTIME DESTINATION ${INSTALL_BINDIR}
-        LIBRARY DESTINATION ${INSTALL_LIBDIR}
-        ARCHIVE DESTINATION ${INSTALL_LIBDIR}
-        FRAMEWORK DESTINATION ${INSTALL_LIBDIR}
+    file(COPY ${extra_cmake_files} DESTINATION "${config_build_dir}")
+
+    set(targets_to_export ${target})
+    if(NOT ${arg_NO_PRIVATE_MODULE})
+        list(APPEND targets_to_export ${target_private})
+    endif()
+
+    _qt_internal_forward_function_args(
+        FORWARD_PREFIX arg
+        FORWARD_OUT_VAR export_module_args
+        FORWARD_OPTIONS NO_ADDITIONAL_TARGET_INFO
     )
+    qt_internal_export_module(${target}
+        ${export_module_args}
+        CONFIG_BUILD_DIR ${config_build_dir}
+        CONFIG_INSTALL_DIR ${config_install_dir}
+    )
+    if(NOT arg_NO_PRIVATE_MODULE)
+        qt_internal_export_module(${target_private}
+            ${export_module_args}
+            CONFIG_BUILD_DIR ${private_config_build_dir}
+            CONFIG_INSTALL_DIR ${private_config_install_dir}
+        )
+    endif()
 
     if(BUILD_SHARED_LIBS)
         qt_apply_rpaths(TARGET "${target}" INSTALL_PATH "${INSTALL_LIBDIR}" RELATIVE_RPATH)
@@ -838,29 +849,6 @@ set(QT_ALLOW_MISSING_TOOLS_PACKAGES TRUE)")
         set_target_properties(${target} PROPERTIES
             QT_ANDROID_MODULE_INSTALL_DIR ${INSTALL_LIBDIR})
     endif()
-
-    qt_install(EXPORT ${export_name}
-               NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE}::
-               DESTINATION ${config_install_dir})
-
-    if(NOT arg_NO_ADDITIONAL_TARGET_INFO)
-        qt_internal_export_additional_targets_file(
-            TARGETS ${exported_targets}
-            EXPORT_NAME_PREFIX ${INSTALL_CMAKE_NAMESPACE}${target}
-            CONFIG_INSTALL_DIR "${config_install_dir}")
-    endif()
-
-    qt_internal_export_modern_cmake_config_targets_file(
-        TARGETS ${exported_targets}
-        EXPORT_NAME_PREFIX ${INSTALL_CMAKE_NAMESPACE}${target}
-        CONFIG_BUILD_DIR "${config_build_dir}"
-        CONFIG_INSTALL_DIR "${config_install_dir}"
-    )
-
-    qt_internal_export_genex_properties(TARGETS ${target}
-        EXPORT_NAME_PREFIX ${INSTALL_CMAKE_NAMESPACE}${target}
-        CONFIG_INSTALL_DIR "${config_install_dir}"
-    )
 
     ### fixme: cmake is missing a built-in variable for this. We want to apply it only to modules and plugins
     # that belong to Qt.
@@ -984,6 +972,104 @@ set(QT_ALLOW_MISSING_TOOLS_PACKAGES TRUE)")
     endif()
 
     qt_add_list_file_finalizer(qt_finalize_module ${target} ${arg_INTERNAL_MODULE} ${arg_NO_PRIVATE_MODULE})
+endfunction()
+
+# Write and install the basic Qt6Foo and Qt6FooPrivate packages.
+#
+# If PRIVATE is specified, write Qt6FooPrivate.
+# Otherwise write its public counterpart.
+#
+# Note that this function is supposed to be called from qt_internal_add_module, and depends on
+# variables set in the scope of that function, e.g. target and target_private.
+function(qt_internal_write_basic_module_package)
+    set(no_value_options
+        PRIVATE
+    )
+    set(single_value_options
+        CONFIG_BUILD_DIR
+        CONFIG_INSTALL_DIR
+    )
+    set(multi_value_options "")
+    cmake_parse_arguments(PARSE_ARGV 0 arg
+        "${no_value_options}" "${single_value_options}" "${multi_value_options}"
+    )
+
+    if(arg_PRIVATE)
+        set(package_name "${INSTALL_CMAKE_NAMESPACE}${target_private}")
+        set(module_config_input_file "QtModuleConfigPrivate.cmake.in")
+    else()
+        set(package_name "${INSTALL_CMAKE_NAMESPACE}${target}")
+        set(module_config_input_file "QtModuleConfig.cmake.in")
+    endif()
+
+    configure_package_config_file(
+        "${QT_CMAKE_DIR}/${module_config_input_file}"
+        "${arg_CONFIG_BUILD_DIR}/${package_name}Config.cmake"
+        INSTALL_DESTINATION "${arg_CONFIG_INSTALL_DIR}"
+    )
+    write_basic_package_version_file(
+        "${arg_CONFIG_BUILD_DIR}/${package_name}ConfigVersionImpl.cmake"
+        VERSION ${PROJECT_VERSION}
+        COMPATIBILITY AnyNewerVersion
+    )
+    qt_internal_write_qt_package_version_file(
+        "${package_name}"
+        "${arg_CONFIG_BUILD_DIR}/${package_name}ConfigVersion.cmake"
+    )
+    qt_install(FILES
+        "${arg_CONFIG_BUILD_DIR}/${package_name}Config.cmake"
+        "${arg_CONFIG_BUILD_DIR}/${package_name}ConfigVersion.cmake"
+        "${arg_CONFIG_BUILD_DIR}/${package_name}ConfigVersionImpl.cmake"
+        DESTINATION "${arg_CONFIG_INSTALL_DIR}"
+        COMPONENT Devel
+    )
+endfunction()
+
+function(qt_internal_export_module target)
+    set(no_value_options
+        NO_ADDITIONAL_TARGET_INFO
+    )
+    set(single_value_options
+        CONFIG_BUILD_DIR
+        CONFIG_INSTALL_DIR
+    )
+    set(multi_value_options "")
+    cmake_parse_arguments(PARSE_ARGV 1 arg
+        "${no_value_options}" "${single_value_options}" "${multi_value_options}"
+    )
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    set(export_name "${INSTALL_CMAKE_NAMESPACE}${target}Targets")
+    qt_install(TARGETS ${target}
+        EXPORT ${export_name}
+        RUNTIME DESTINATION ${INSTALL_BINDIR}
+        LIBRARY DESTINATION ${INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${INSTALL_LIBDIR}
+        FRAMEWORK DESTINATION ${INSTALL_LIBDIR}
+    )
+
+    qt_install(EXPORT ${export_name}
+               NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE}::
+               DESTINATION ${arg_CONFIG_INSTALL_DIR})
+
+    if(NOT arg_NO_ADDITIONAL_TARGET_INFO)
+        qt_internal_export_additional_targets_file(
+            TARGETS ${target}
+            EXPORT_NAME_PREFIX ${INSTALL_CMAKE_NAMESPACE}${target}
+            CONFIG_INSTALL_DIR "${arg_CONFIG_INSTALL_DIR}")
+    endif()
+
+    qt_internal_export_modern_cmake_config_targets_file(
+        TARGETS ${target}
+        EXPORT_NAME_PREFIX ${INSTALL_CMAKE_NAMESPACE}${target}
+        CONFIG_BUILD_DIR "${arg_CONFIG_BUILD_DIR}"
+        CONFIG_INSTALL_DIR "${arg_CONFIG_INSTALL_DIR}"
+    )
+
+    qt_internal_export_genex_properties(TARGETS ${target}
+        EXPORT_NAME_PREFIX ${INSTALL_CMAKE_NAMESPACE}${target}
+        CONFIG_INSTALL_DIR "${arg_CONFIG_INSTALL_DIR}"
+    )
 endfunction()
 
 function(qt_internal_apply_apple_privacy_manifest target)

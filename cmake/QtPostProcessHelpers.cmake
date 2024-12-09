@@ -143,6 +143,15 @@ function(qt_internal_remove_qt_dependency_duplicates out_deps deps)
 endfunction()
 
 function(qt_internal_create_module_depends_file target)
+    set(no_value_options "")
+    set(single_value_options "")
+    set(multi_value_options
+        EXTRA_PACKAGE_DEPENDENCIES
+    )
+    cmake_parse_arguments(PARSE_ARGV 1 arg
+        "${no_value_options}" "${single_value_options}" "${multi_value_options}"
+    )
+
     get_target_property(target_type "${target}" TYPE)
     set(is_interface_lib FALSE)
     if(target_type STREQUAL "INTERFACE_LIBRARY")
@@ -172,6 +181,9 @@ function(qt_internal_create_module_depends_file target)
     endif()
     if(NOT extra_depends MATCHES "-NOTFOUND$")
         list(APPEND target_deps "${extra_depends}")
+    endif()
+    if(DEFINED arg_EXTRA_PACKAGE_DEPENDENCIES)
+        list(APPEND target_deps "${arg_EXTRA_PACKAGE_DEPENDENCIES}")
     endif()
 
     # Extra 3rd party targets who's packages should be considered dependencies.
@@ -467,6 +479,11 @@ function(qt_internal_create_depends_files)
 
     foreach (target ${repo_known_modules})
         qt_internal_create_module_depends_file(${target})
+        if(TARGET "${target}Private")
+            qt_internal_create_module_depends_file(${target}Private
+                EXTRA_PACKAGE_DEPENDENCIES "${INSTALL_CMAKE_NAMESPACE}${target};${PROJECT_VERSION}"
+            )
+        endif()
     endforeach()
 
     foreach (target ${QT_KNOWN_PLUGINS})
