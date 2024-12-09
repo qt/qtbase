@@ -67,3 +67,37 @@ function(qt_internal_sbom_generate_tag_value_spdx_document)
             PARENT_SCOPE)
     endif()
 endfunction()
+
+function(qt_internal_sbom_get_project_spdx_id out_var)
+    set(result "")
+
+    if(QT_GENERATE_SBOM)
+        get_cmake_property(project_spdx_id _qt_internal_sbom_project_spdx_id)
+        if(project_spdx_id)
+            set(result "${project_spdx_id}")
+        endif()
+    endif()
+
+    set(${out_var} "${result}" PARENT_SCOPE)
+endfunction()
+
+function(qt_internal_sbom_get_target_spdx_id target out_var)
+    set(result "")
+
+    if(QT_GENERATE_SBOM)
+        _qt_internal_sbom_get_spdx_id_for_target(${target} result)
+    endif()
+
+    set(${out_var} "${result}" PARENT_SCOPE)
+endfunction()
+
+function(qt_internal_sbom_get_external_document_ref_spdx_id project_name out_var)
+    set(result "")
+
+    if(QT_GENERATE_SBOM)
+        string(TOLOWER "${project_name}" project_name_lowercase)
+        _qt_internal_sbom_get_external_document_ref_spdx_id("${project_name_lowercase}" result)
+    endif()
+
+    set(${out_var} "${result}" PARENT_SCOPE)
+endfunction()
