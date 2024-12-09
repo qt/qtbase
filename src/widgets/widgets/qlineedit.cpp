@@ -1503,8 +1503,10 @@ void QLineEdit::mousePressEvent(QMouseEvent* e)
 
     if (d->sendMouseEventToInputContext(e))
         return;
-    if (e->button() == Qt::RightButton)
+    if (e->button() == Qt::RightButton) {
+        e->ignore();
         return;
+    }
 #ifdef QT_KEYPAD_NAVIGATION
     if (QApplication::QApplicationPrivate() && !hasEditFocus()) {
         setEditFocus(true);

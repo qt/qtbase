@@ -1364,6 +1364,7 @@ void QAbstractSpinBox::mousePressEvent(QMouseEvent *event)
 
     d->keyboardModifiers = event->modifiers();
     if (event->button() != Qt::LeftButton || d->buttonState != None) {
+        event->ignore();
         return;
     }
 

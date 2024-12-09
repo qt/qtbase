@@ -247,6 +247,7 @@ private slots:
     void taskQTBUG_4679_selectToStartEndOfBlock();
 #ifndef QT_NO_CONTEXTMENU
     void taskQTBUG_7902_contextMenuCrash();
+    void contextMenu();
 #endif
     void taskQTBUG_7395_readOnlyShortcut();
     void QTBUG697_paletteCurrentColorGroup();
@@ -4024,6 +4025,20 @@ void tst_QLineEdit::taskQTBUG_7902_contextMenuCrash()
 
     QTest::qWait(300);
     // No crash, it's allright.
+}
+
+void tst_QLineEdit::contextMenu() // QTBUG-132066
+{
+    QLineEdit le;
+    le.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&le));
+
+    // right-click: QLineEdit::mousePressEvent() should ignore the mouse press;
+    // QLineEdit::contextMenuEvent() should then be called to create and open a context menu
+    QTest::mouseClick(le.windowHandle(), Qt::RightButton, {}, le.rect().center());
+    QTRY_VERIFY(le.findChild<QMenu *>());
+
+    // This test could be extended to check and activate menu items.
 }
 #endif
 
