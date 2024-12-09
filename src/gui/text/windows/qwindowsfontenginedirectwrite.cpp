@@ -162,27 +162,39 @@ static DWRITE_MEASURING_MODE renderModeToMeasureMode(DWRITE_RENDERING_MODE rende
     }
 }
 
+static QFont::HintingPreference determineHinting(const QFontDef &fontDef)
+{
+    QFont::HintingPreference hintingPreference = QFont::HintingPreference(fontDef.hintingPreference);
+    if (hintingPreference == QFont::PreferDefaultHinting) {
+        if (!qFuzzyCompare(qApp->devicePixelRatio(), 1.0)) {
+            // Microsoft documentation recommends using asymmetric rendering for small fonts
+            // at pixel size 16 and less, and symmetric for larger fonts.
+            hintingPreference = fontDef.pixelSize > 16.0
+                                    ? QFont::PreferNoHinting
+                                    : QFont::PreferVerticalHinting;
+        } else {
+            hintingPreference = QFont::PreferFullHinting;
+        }
+    }
+
+    return hintingPreference;
+}
+
 DWRITE_RENDERING_MODE QWindowsFontEngineDirectWrite::hintingPreferenceToRenderingMode(const QFontDef &fontDef) const
 {
     if ((fontDef.styleStrategy & QFont::NoAntialias) && glyphFormat != QFontEngine::Format_ARGB)
         return DWRITE_RENDERING_MODE_ALIASED;
 
-    QFont::HintingPreference hintingPreference = QFont::HintingPreference(fontDef.hintingPreference);
-    if (!qFuzzyCompare(qApp->devicePixelRatio(), 1.0) && hintingPreference == QFont::PreferDefaultHinting) {
-        // Microsoft documentation recommends using asymmetric rendering for small fonts
-        // at pixel size 16 and less, and symmetric for larger fonts.
-        hintingPreference = fontDef.pixelSize > 16.0
-                ? QFont::PreferNoHinting
-                : QFont::PreferVerticalHinting;
-    }
-
+    QFont::HintingPreference hintingPreference = determineHinting(fontDef);
     switch (hintingPreference) {
     case QFont::PreferNoHinting:
         return DWRITE_RENDERING_MODE_CLEARTYPE_NATURAL_SYMMETRIC;
     case QFont::PreferVerticalHinting:
         return DWRITE_RENDERING_MODE_CLEARTYPE_NATURAL;
     default:
-        return DWRITE_RENDERING_MODE_CLEARTYPE_GDI_CLASSIC;
+        return fontDef.pixelSize > 16.0
+               ? DWRITE_RENDERING_MODE_NATURAL_SYMMETRIC
+               : DWRITE_RENDERING_MODE_GDI_CLASSIC;
     }
 }
 
@@ -496,15 +508,17 @@ void QWindowsFontEngineDirectWrite::recalcAdvances(QGlyphLayout *glyphs, QFontEn
     QVarLengthArray<DWRITE_GLYPH_METRICS> glyphMetrics(glyphIndices.size());
 
     HRESULT hr;
-    DWRITE_RENDERING_MODE renderMode = hintingPreferenceToRenderingMode(fontDef);
+    QFont::HintingPreference hint = determineHinting(fontDef);
     bool needsDesignMetrics = shaperFlags & QFontEngine::DesignMetrics;
-    if (!needsDesignMetrics && (renderMode == DWRITE_RENDERING_MODE_GDI_CLASSIC
-                             || renderMode == DWRITE_RENDERING_MODE_GDI_NATURAL
-                             || renderMode == DWRITE_RENDERING_MODE_ALIASED)) {
+    if (!needsDesignMetrics && hint == QFont::PreferFullHinting) {
+        const DWRITE_RENDERING_MODE renderMode = hintingPreferenceToRenderingMode(fontDef);
+        const bool needsNaturalMetrics = renderMode == DWRITE_RENDERING_MODE_NATURAL
+                                         || renderMode == DWRITE_RENDERING_MODE_NATURAL_SYMMETRIC;
+
         hr = m_directWriteFontFace->GetGdiCompatibleGlyphMetrics(float(fontDef.pixelSize),
                                                                  1.0f,
                                                                  NULL,
-                                                                 renderMode == DWRITE_RENDERING_MODE_GDI_NATURAL,
+                                                                 needsNaturalMetrics,
                                                                  glyphIndices.data(),
                                                                  glyphIndices.size(),
                                                                  glyphMetrics.data());
@@ -693,11 +707,10 @@ QImage QWindowsFontEngineDirectWrite::alphaMapForGlyph(glyph_t glyph,
 
 bool QWindowsFontEngineDirectWrite::supportsHorizontalSubPixelPositions() const
 {
-    DWRITE_RENDERING_MODE renderMode = hintingPreferenceToRenderingMode(fontDef);
+    QFont::HintingPreference hinting = determineHinting(fontDef);
     return  (!isColorFont()
-            && renderMode != DWRITE_RENDERING_MODE_GDI_CLASSIC
-            && renderMode != DWRITE_RENDERING_MODE_GDI_NATURAL
-            && renderMode != DWRITE_RENDERING_MODE_ALIASED);
+            && hinting != QFont::PreferFullHinting
+            && !(fontDef.styleStrategy & QFont::NoAntialias));
 }
 
 QFontEngine::Properties QWindowsFontEngineDirectWrite::properties() const
