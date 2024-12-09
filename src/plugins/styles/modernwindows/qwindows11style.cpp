@@ -2278,6 +2278,20 @@ static void populateLightSystemBasePalette(QPalette &result)
     oldStyleSheet = qApp->styleSheet();
 }
 
+static void populateDarkSystemBasePalette(QPalette &result)
+{
+    static QString oldStyleSheet;
+    const bool styleSheetChanged = oldStyleSheet != qApp->styleSheet();
+
+    const QColor alternateBase = QColor(0xFF,0xFF,0xFF,0x0F);
+
+    SET_IF_UNRESOLVED(QPalette::Active, QPalette::AlternateBase, alternateBase);
+
+    SET_IF_UNRESOLVED(QPalette::Inactive, QPalette::AlternateBase, alternateBase);
+
+    oldStyleSheet = qApp->styleSheet();
+}
+
 /*!
  \internal
  */
@@ -2288,6 +2302,8 @@ void QWindows11Style::polish(QPalette& result)
 
     if (!highContrastTheme && colorSchemeIndex == 0)
         populateLightSystemBasePalette(result);
+    else if (!highContrastTheme && colorSchemeIndex == 1)
+        populateDarkSystemBasePalette(result);
 
     const bool styleSheetChanged = false; // so the macro works
 
