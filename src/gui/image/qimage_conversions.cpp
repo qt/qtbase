@@ -396,7 +396,7 @@ bool convert_generic_inplace(QImageData *data, QImage::Format dst_format, Qt::Im
             !destLayout->hasAlphaChannel && destLayout->storeFromRGB32) {
         // Avoid unnecessary premultiply and unpremultiply when converting from unpremultiplied src format.
         fetch = qPixelLayouts[qt_toPremultipliedFormat(data->format)].fetchToARGB32PM;
-        if (data->format == QImage::Format_RGB32)
+        if (dst_format == QImage::Format_RGB32)
             store = storeRGB32FromARGB32;
         else
             store = destLayout->storeFromRGB32;
