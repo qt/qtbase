@@ -225,11 +225,18 @@ QKmsDevice *QEglFSKmsEglDeviceIntegration::createDevice()
     if (Q_UNLIKELY(!query_egl_device()))
         qFatal("Could not set up EGL device!");
 
-    const char *deviceName = m_funcs->query_device_string(m_egl_device, EGL_DRM_DEVICE_FILE_EXT);
-    if (Q_UNLIKELY(!deviceName))
-        qFatal("Failed to query device name from EGLDevice");
+    QString path = screenConfig()->devicePath();
+    if (!path.isEmpty()) {
+        qCDebug(qLcEglfsKmsDebug) << "EGLDevice: Using DRM device" << path
+                                  << "specified in config file";
+    } else {
+        path = QLatin1StringView(
+                m_funcs->query_device_string(m_egl_device, EGL_DRM_DEVICE_FILE_EXT));
+        if (Q_UNLIKELY(path.isEmpty()))
+            qFatal("Failed to query device name from EGLDevice");
+    }
 
-    return new QEglFSKmsEglDevice(this, screenConfig(), QLatin1StringView(deviceName));
+    return new QEglFSKmsEglDevice(this, screenConfig(), path);
 }
 
 bool QEglFSKmsEglDeviceIntegration::query_egl_device()
