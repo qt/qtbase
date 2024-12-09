@@ -176,6 +176,10 @@ public:
     constexpr QByteArrayView(const char (&data)[Size]) noexcept
         : QByteArrayView(data, lengthHelperCharArray(data, Size)) {}
 
+    template <typename Byte, if_compatible_byte<Byte> = true>
+    constexpr QByteArrayView(const Byte (&data)[]) noexcept
+        : QByteArrayView(&*data) {} // decay to pointer
+
 #ifdef Q_QDOC
     template <typename Byte, size_t Size>
 #else

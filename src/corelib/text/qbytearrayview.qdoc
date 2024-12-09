@@ -247,6 +247,21 @@
 */
 
 /*!
+    \fn template <typename Byte, QByteArrayView::if_compatible_byte<Byte>> QByteArrayView::QByteArrayView(const Byte (&data)[])
+    \since 6.9
+
+    Constructs a byte array view on \a data, an array of unknown size. The
+    length is determined by scanning for the first \c{Byte(0)}.
+
+    \a data must remain valid for the lifetime of this byte array view object.
+
+    This constructor only participates in overload resolution if \c Byte is a
+    compatible byte type.
+
+    \sa {Compatible Byte Types}
+*/
+
+/*!
     \fn template <size_t Size> QByteArrayView::QByteArrayView(const char (&data)[Size])
 
     Constructs a byte array view on the char array \a data.
@@ -264,6 +279,9 @@
     implicit constructor overload, we need to stop at the first
     \c{char(0)}. This is logical for a char array, but not
     for a \c{std::byte} array.
+    It is, however, inconsistent with the corresponding pointer (\c{Byte*}) and
+    unknown-length-array (\c{Byte[]}) constructors, and so might change in a
+    future version of Qt.
 
     \sa fromArray
 */

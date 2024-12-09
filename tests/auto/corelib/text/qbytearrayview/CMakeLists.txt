@@ -14,6 +14,8 @@ endif()
 qt_internal_add_test(tst_qbytearrayview
     SOURCES
         tst_qbytearrayview.cpp
+        ../qstringview/arrays_of_unknown_bounds.cpp
+        ../qstringview/arrays_of_unknown_bounds.h
 )
 
 if(QT_FEATURE_sanitize_undefined)

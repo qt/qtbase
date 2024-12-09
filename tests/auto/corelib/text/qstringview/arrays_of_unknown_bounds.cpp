@@ -11,6 +11,18 @@ const char8_t u8string_array[] = u8"abc\0def";
 const int u8string_array_size = 3;
 #endif
 
+const uchar ustring_array[] = "abc\0def";
+const int ustring_array_size = 3;
+
+const signed char sstring_array[] = "abc\0def";
+const int sstring_array_size = 3;
+
+const std::byte byte_array[] = {
+    std::byte{'a'}, std::byte{'b'}, std::byte{'c'}, std::byte{},
+    std::byte{'d'}, std::byte{'e'}, std::byte{'f'}
+};
+const int byte_array_size = 3;
+
 const char16_t u16string_array[] = u"abc\0def";
 const int u16string_array_size = 3;
 
