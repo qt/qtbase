@@ -251,12 +251,9 @@ Relationship: SPDXRef-DOCUMENT DESCRIBES ${project_spdx_id}
     set_property(GLOBAL PROPERTY _qt_sbom_spdx_id_count 0)
 endfunction()
 
-# Signals the end of recording sbom information for a project.
-# Creates an 'sbom' custom target to generate an incomplete sbom at build time (no checksums).
-# Creates install rules to install a complete (with checksums) sbom.
-# Also allows running various post-installation steps like NTIA validation, auditing, json
-# generation, etc
-function(_qt_internal_sbom_end_project_generate)
+# Handles the look up of Python, Python spdx dependencies and other various post-installation steps
+# like NTIA validation, auditing, json generation, etc.
+function(_qt_internal_sbom_setup_project_ops_generation)
     set(opt_args
         GENERATE_JSON
         GENERATE_JSON_REQUIRED
@@ -274,20 +271,6 @@ function(_qt_internal_sbom_end_project_generate)
     set(multi_args "")
     cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
     _qt_internal_validate_all_args_are_parsed(arg)
-
-    get_property(sbom_build_output_path GLOBAL PROPERTY _qt_sbom_build_output_path)
-    get_property(sbom_build_output_path_without_ext GLOBAL PROPERTY
-        _qt_sbom_build_output_path_without_ext)
-
-    get_property(sbom_install_output_path GLOBAL PROPERTY _qt_sbom_install_output_path)
-    get_property(sbom_install_output_path_without_ext GLOBAL PROPERTY
-        _qt_sbom_install_output_path_without_ext)
-
-    if(NOT sbom_build_output_path)
-        message(FATAL_ERROR "Call _qt_internal_sbom_begin_project() first")
-    endif()
-
-    _qt_internal_get_staging_area_spdx_file_path(staging_area_spdx_file)
 
     if(arg_GENERATE_JSON AND NOT QT_INTERNAL_NO_SBOM_PYTHON_OPS)
         set(op_args
@@ -354,6 +337,25 @@ function(_qt_internal_sbom_end_project_generate)
             BUILD_TIME_SCRIPT_PATH_OUT_VAR reuse_lint_script
         )
     endif()
+endfunction()
+
+# Signals the end of recording sbom information for a project.
+# Creates an 'sbom' custom target to generate an incomplete sbom at build time (no checksums).
+# Creates install rules to install a complete (with checksums) sbom.
+function(_qt_internal_sbom_end_project_generate)
+    get_property(sbom_build_output_path GLOBAL PROPERTY _qt_sbom_build_output_path)
+    get_property(sbom_build_output_path_without_ext GLOBAL PROPERTY
+        _qt_sbom_build_output_path_without_ext)
+
+    get_property(sbom_install_output_path GLOBAL PROPERTY _qt_sbom_install_output_path)
+    get_property(sbom_install_output_path_without_ext GLOBAL PROPERTY
+        _qt_sbom_install_output_path_without_ext)
+
+    if(NOT sbom_build_output_path)
+        message(FATAL_ERROR "Call _qt_internal_sbom_begin_project() first")
+    endif()
+
+    _qt_internal_get_staging_area_spdx_file_path(staging_area_spdx_file)
 
     get_cmake_property(cmake_include_files _qt_sbom_cmake_include_files)
     get_cmake_property(cmake_end_include_files _qt_sbom_cmake_end_include_files)
