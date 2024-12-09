@@ -39,11 +39,24 @@ Q_DECLARE_TYPEINFO(QLatin1StringContainer, Q_MOVABLE_TYPE);
 QT_END_NAMESPACE
 Q_DECLARE_METATYPE(QLatin1StringContainer)
 
+// QTBUG-112746
+namespace {
+extern const char string_array[];
+static void from_array_of_unknown_size()
+{
+    auto sv = QLatin1String{string_array};
+    QCOMPARE(sv.size(), 3);
+}
+const char string_array[] = "abc\0def";
+
+} // unnamed namespace
+
 class tst_QLatin1String : public QObject
 {
     Q_OBJECT
 
 private Q_SLOTS:
+    void fromArraysOfUnknownSize() { from_array_of_unknown_size(); }
     void at();
     void arg() const;
     void midLeftRight();
