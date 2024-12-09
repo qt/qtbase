@@ -284,6 +284,66 @@ function(_qt_internal_sbom_begin_project)
     _qt_internal_sbom_record_system_library_spdx_ids()
 
     set_property(GLOBAL PROPERTY _qt_internal_sbom_repo_begin_called TRUE)
+
+    _qt_internal_sbom_setup_project_ops()
+endfunction()
+
+# Check various internal options to decide which sbom generation operations should be setup.
+# Considered operations are generation of a JSON sbom, validation of the SBOM, NTIA checker, etc.
+function(_qt_internal_sbom_setup_project_ops)
+    set(options "")
+
+    if(QT_SBOM_GENERATE_JSON OR QT_INTERNAL_SBOM_GENERATE_JSON OR QT_INTERNAL_SBOM_DEFAULT_CHECKS)
+        list(APPEND options GENERATE_JSON)
+    endif()
+
+    # Tring to generate the JSON might fail if the python dependencies are not available.
+    # The user can explicitly request to fail the build if dependencies are not found.
+    # error out. For internal options that the CI uses, we always want to fail the build if the
+    # deps are not found.
+    if(QT_SBOM_REQUIRE_GENERATE_JSON OR QT_INTERNAL_SBOM_GENERATE_JSON
+            OR QT_INTERNAL_SBOM_DEFAULT_CHECKS)
+        list(APPEND options GENERATE_JSON_REQUIRED)
+    endif()
+
+    if(QT_SBOM_VERIFY OR QT_INTERNAL_SBOM_VERIFY OR QT_INTERNAL_SBOM_DEFAULT_CHECKS)
+        list(APPEND options VERIFY_SBOM)
+    endif()
+
+    # Do the same requirement check for SBOM verification.
+    if(QT_SBOM_REQUIRE_VERIFY OR QT_INTERNAL_SBOM_VERIFY OR QT_INTERNAL_SBOM_DEFAULT_CHECKS)
+        list(APPEND options VERIFY_SBOM_REQUIRED)
+    endif()
+
+    if(QT_INTERNAL_SBOM_VERIFY_NTIA_COMPLIANT OR QT_INTERNAL_SBOM_DEFAULT_CHECKS)
+        list(APPEND options VERIFY_NTIA_COMPLIANT)
+    endif()
+
+    if(QT_INTERNAL_SBOM_SHOW_TABLE OR QT_INTERNAL_SBOM_DEFAULT_CHECKS)
+        list(APPEND options SHOW_TABLE)
+    endif()
+
+    if(QT_INTERNAL_SBOM_AUDIT OR QT_INTERNAL_SBOM_AUDIT_NO_ERROR)
+        list(APPEND options AUDIT)
+    endif()
+
+    if(QT_INTERNAL_SBOM_AUDIT_NO_ERROR)
+        list(APPEND options AUDIT_NO_ERROR)
+    endif()
+
+    if(QT_GENERATE_SOURCE_SBOM)
+        list(APPEND options GENERATE_SOURCE_SBOM)
+    endif()
+
+    if(QT_LINT_SOURCE_SBOM)
+        list(APPEND options LINT_SOURCE_SBOM)
+    endif()
+
+    if(QT_INTERNAL_LINT_SOURCE_SBOM_NO_ERROR)
+        list(APPEND options LINT_SOURCE_SBOM_NO_ERROR)
+    endif()
+
+    _qt_internal_sbom_setup_project_ops_generation(${options})
 endfunction()
 
 # Ends repo sbom project generation.
@@ -312,61 +372,7 @@ function(_qt_internal_sbom_end_project)
         endforeach()
     endif()
 
-    set(end_project_options "")
-
-    if(QT_SBOM_GENERATE_JSON OR QT_INTERNAL_SBOM_GENERATE_JSON OR QT_INTERNAL_SBOM_DEFAULT_CHECKS)
-        list(APPEND end_project_options GENERATE_JSON)
-    endif()
-
-    # Tring to generate the JSON might fail if the python dependencies are not available.
-    # The user can explicitly request to fail the build if dependencies are not found.
-    # error out. For internal options that the CI uses, we always want to fail the build if the
-    # deps are not found.
-    if(QT_SBOM_REQUIRE_GENERATE_JSON OR QT_INTERNAL_SBOM_GENERATE_JSON
-            OR QT_INTERNAL_SBOM_DEFAULT_CHECKS)
-        list(APPEND end_project_options GENERATE_JSON_REQUIRED)
-    endif()
-
-    if(QT_SBOM_VERIFY OR QT_INTERNAL_SBOM_VERIFY OR QT_INTERNAL_SBOM_DEFAULT_CHECKS)
-        list(APPEND end_project_options VERIFY_SBOM)
-    endif()
-
-    # Do the same requirement check for SBOM verification.
-    if(QT_SBOM_REQUIRE_VERIFY OR QT_INTERNAL_SBOM_VERIFY OR QT_INTERNAL_SBOM_DEFAULT_CHECKS)
-        list(APPEND end_project_options VERIFY_SBOM_REQUIRED)
-    endif()
-
-    if(QT_INTERNAL_SBOM_VERIFY_NTIA_COMPLIANT OR QT_INTERNAL_SBOM_DEFAULT_CHECKS)
-        list(APPEND end_project_options VERIFY_NTIA_COMPLIANT)
-    endif()
-
-    if(QT_INTERNAL_SBOM_SHOW_TABLE OR QT_INTERNAL_SBOM_DEFAULT_CHECKS)
-        list(APPEND end_project_options SHOW_TABLE)
-    endif()
-
-    if(QT_INTERNAL_SBOM_AUDIT OR QT_INTERNAL_SBOM_AUDIT_NO_ERROR)
-        list(APPEND end_project_options AUDIT)
-    endif()
-
-    if(QT_INTERNAL_SBOM_AUDIT_NO_ERROR)
-        list(APPEND end_project_options AUDIT_NO_ERROR)
-    endif()
-
-    if(QT_GENERATE_SOURCE_SBOM)
-        list(APPEND end_project_options GENERATE_SOURCE_SBOM)
-    endif()
-
-    if(QT_LINT_SOURCE_SBOM)
-        list(APPEND end_project_options LINT_SOURCE_SBOM)
-    endif()
-
-    if(QT_INTERNAL_LINT_SOURCE_SBOM_NO_ERROR)
-        list(APPEND end_project_options LINT_SOURCE_SBOM_NO_ERROR)
-    endif()
-
-    _qt_internal_sbom_end_project_generate(
-        ${end_project_options}
-    )
+    _qt_internal_sbom_end_project_generate()
 
     # Clean up external document ref properties, because each repo needs to start from scratch
     # in a top-level build.
