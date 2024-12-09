@@ -897,6 +897,11 @@ static void test(QString) = delete;
 static void test(QStringView) {}
 }
 
+extern const QChar qcharArrayOfUnknownSize[];
+extern const char16_t char16ArrayOfUnknownSize[];
+[[maybe_unused]]
+extern const wchar_t wchartArrayOfUnknownSize[];
+
 // Compile-time only test: overload resolution prefers QStringView over QString
 void tst_QStringView::overloadResolution()
 {
@@ -905,6 +910,7 @@ void tst_QStringView::overloadResolution()
         QStringViewOverloadResolution::test(qcharArray);
         QChar *qcharPointer = qcharArray;
         QStringViewOverloadResolution::test(qcharPointer);
+        QStringViewOverloadResolution::test(qcharArrayOfUnknownSize);
     }
 
     {
@@ -919,6 +925,7 @@ void tst_QStringView::overloadResolution()
         wchar_t wchartArray[42] = {};
         QStringViewOverloadResolution::test(wchartArray);
         QStringViewOverloadResolution::test(L"test");
+        QStringViewOverloadResolution::test(wchartArrayOfUnknownSize);
     }
 #endif
 
@@ -927,6 +934,7 @@ void tst_QStringView::overloadResolution()
         QStringViewOverloadResolution::test(char16Array);
         char16_t *char16Pointer = char16Array;
         QStringViewOverloadResolution::test(char16Pointer);
+        QStringViewOverloadResolution::test(char16ArrayOfUnknownSize);
     }
 
     {
@@ -936,6 +944,10 @@ void tst_QStringView::overloadResolution()
         QStringViewOverloadResolution::test(std::move(string));
     }
 }
+
+const QChar qcharArrayOfUnknownSize[] = {u'a', u'b', u'c', u'\0', u'd', u'e', u'f'};
+const char16_t char16ArrayOfUnknownSize[] = u"abc\0def";
+const wchar_t wchartArrayOfUnknownSize[] = L"abc\0def";
 
 void tst_QStringView::std_stringview_conversion()
 {
