@@ -75,6 +75,8 @@ static_assert(!CanConvert<std::list<ushort>>::value);
 
 static_assert(!CanConvert<char16_t>::value);
 
+static_assert(CanConvert<char16_t[123]>::value);
+
 static_assert(CanConvert<      char16_t*>::value);
 static_assert(CanConvert<const char16_t*>::value);
 
@@ -110,6 +112,8 @@ constexpr bool CanConvertFromWCharT =
         ;
 
 static_assert(!CanConvert<wchar_t>::value);
+
+static_assert(CanConvert<wchar_t[123]>::value == CanConvertFromWCharT);
 
 static_assert(CanConvert<      wchar_t*>::value == CanConvertFromWCharT);
 static_assert(CanConvert<const wchar_t*>::value == CanConvertFromWCharT);
