@@ -2476,7 +2476,7 @@ qsizetype QString::toUcs4_helper(const char16_t *uc, qsizetype length, char32_t 
 
     If \a unicode is 0, a null string is constructed.
 
-    If \a size is negative, \a unicode is assumed to point to a \\0'-terminated
+    If \a size is negative, \a unicode is assumed to point to a '\\0'-terminated
     array and its length is determined dynamically. The terminating
     null character is not considered part of the string.
 
@@ -5848,10 +5848,10 @@ static QList<uint> qt_convert_to_ucs4(QStringView string);
 
     UTF-32 is a Unicode codec and therefore it is lossless. All characters from
     this string will be encoded in UTF-32. Any invalid sequence of code units in
-    this string is replaced by the Unicode's replacement character
+    this string is replaced by the Unicode replacement character
     (QChar::ReplacementCharacter, which corresponds to \c{U+FFFD}).
 
-    The returned list is not \\0'-terminated.
+    The returned list is not 0-terminated.
 
     \sa fromUtf8(), toUtf8(), toLatin1(), toLocal8Bit(), QStringEncoder,
         fromUcs4(), toWCharArray()
@@ -5881,10 +5881,10 @@ static QList<uint> qt_convert_to_ucs4(QStringView string)
 
     UTF-32 is a Unicode codec and therefore it is lossless. All characters from
     this string will be encoded in UTF-32. Any invalid sequence of code units in
-    this string is replaced by the Unicode's replacement character
+    this string is replaced by the Unicode replacement character
     (QChar::ReplacementCharacter, which corresponds to \c{U+FFFD}).
 
-    The returned list is not \\0'-terminated.
+    The returned list is not 0-terminated.
 
     \sa QString::toUcs4(), QStringView::toUcs4(), QtPrivate::convertToLatin1(),
     QtPrivate::convertToLocal8Bit(), QtPrivate::convertToUtf8()
@@ -6066,7 +6066,7 @@ QString QString::fromUtf8(QByteArrayView ba)
     Returns a QString initialized with the first \a size characters
     of the Unicode string \a unicode (ISO-10646-UTF-16 encoded).
 
-    If \a size is -1 (default), \a unicode must be \\0'-terminated.
+    If \a size is -1 (default), \a unicode must be '\\0'-terminated.
 
     This function checks for a Byte Order Mark (BOM). If it is missing,
     host byte order is assumed.
@@ -6105,7 +6105,7 @@ QString QString::fromUtf16(const char16_t *unicode, qsizetype size)
     Returns a QString initialized with the first \a size characters
     of the Unicode string \a unicode (encoded as UTF-32).
 
-    If \a size is -1 (default), \a unicode must be \\0'-terminated.
+    If \a size is -1 (default), \a unicode must be '\\0'-terminated.
 
     \sa toUcs4(), fromUtf16(), utf16(), setUtf16(), fromWCharArray(),
         fromStdU32String()
