@@ -70,7 +70,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QMacAccessibilityElement);
 - (NSString*)accessibilityLabel
 {
     QAccessibleInterface *iface = QAccessible::accessibleInterface(self.axid);
-    if (!iface) {
+    if (!iface || !iface->isValid()) {
         qWarning() << "invalid accessible interface for: " << self.axid;
         return @"";
     }
@@ -82,7 +82,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QMacAccessibilityElement);
 - (NSString*)accessibilityIdentifier
 {
     QAccessibleInterface *iface = QAccessible::accessibleInterface(self.axid);
-    if (!iface) {
+    if (!iface || !iface->isValid()) {
         qWarning() << "invalid accessible interface for: " << self.axid;
         return @"";
     }
@@ -92,7 +92,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QMacAccessibilityElement);
 - (NSString*)accessibilityHint
 {
     QAccessibleInterface *iface = QAccessible::accessibleInterface(self.axid);
-    if (!iface) {
+    if (!iface || !iface->isValid()) {
         qWarning() << "invalid accessible interface for: " << self.axid;
         return @"";
     }
@@ -102,7 +102,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QMacAccessibilityElement);
 - (NSString*)accessibilityValue
 {
     QAccessibleInterface *iface = QAccessible::accessibleInterface(self.axid);
-    if (!iface) {
+    if (!iface || !iface->isValid()) {
         qWarning() << "invalid accessible interface for: " << self.axid;
         return @"";
     }
@@ -127,7 +127,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QMacAccessibilityElement);
 - (CGRect)accessibilityFrame
 {
     QAccessibleInterface *iface = QAccessible::accessibleInterface(self.axid);
-    if (!iface) {
+    if (!iface || !iface->isValid()) {
         qWarning() << "invalid accessible interface for: " << self.axid;
         return CGRect();
     }
@@ -141,7 +141,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QMacAccessibilityElement);
     UIAccessibilityTraits traits = UIAccessibilityTraitNone;
 
     QAccessibleInterface *iface = QAccessible::accessibleInterface(self.axid);
-    if (!iface) {
+    if (!iface || !iface->isValid()) {
         qWarning() << "invalid accessible interface for: " << self.axid;
         return traits;
     }
@@ -183,6 +183,11 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QMacAccessibilityElement);
 - (BOOL)accessibilityActivate
 {
     QAccessibleInterface *iface = QAccessible::accessibleInterface(self.axid);
+    if (!iface || !iface->isValid()) {
+        qWarning() << "invalid accessible interface for: " << self.axid;
+        return NO;
+    }
+
     if (QAccessibleActionInterface *action = iface->actionInterface()) {
         if (action->actionNames().contains(QAccessibleActionInterface::pressAction())) {
             action->doAction(QAccessibleActionInterface::pressAction());
@@ -198,6 +203,11 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QMacAccessibilityElement);
 - (void)accessibilityIncrement
 {
     QAccessibleInterface *iface = QAccessible::accessibleInterface(self.axid);
+    if (!iface || !iface->isValid()) {
+        qWarning() << "invalid accessible interface for: " << self.axid;
+        return;
+    }
+
     if (QAccessibleActionInterface *action = iface->actionInterface())
         action->doAction(QAccessibleActionInterface::increaseAction());
 }
@@ -205,6 +215,11 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QMacAccessibilityElement);
 - (void)accessibilityDecrement
 {
     QAccessibleInterface *iface = QAccessible::accessibleInterface(self.axid);
+    if (!iface || !iface->isValid()) {
+        qWarning() << "invalid accessible interface for: " << self.axid;
+        return;
+    }
+
     if (QAccessibleActionInterface *action = iface->actionInterface())
         action->doAction(QAccessibleActionInterface::decreaseAction());
 }
@@ -212,6 +227,11 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QMacAccessibilityElement);
 - (BOOL)accessibilityScroll:(UIAccessibilityScrollDirection)direction
 {
     QAccessibleInterface *iface = QAccessible::accessibleInterface(self.axid);
+    if (!iface || !iface->isValid()) {
+        qWarning() << "invalid accessible interface for: " << self.axid;
+        return NO;
+    }
+
     QAccessibleActionInterface *action = iface->actionInterface();
     if (!action)
         return NO;
