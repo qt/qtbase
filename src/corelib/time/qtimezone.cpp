@@ -497,7 +497,7 @@ QTimeZone::QTimeZone(const QByteArray &ianaId)
 
     This constructor is only available when feature \c timezone is enabled. The
     returned instance is equivalent to the lightweight time representation
-    \c{QTimeZone::fromSecondsAfterUtc(offsetSeconds)}, albeit implemented as a
+    \c{QTimeZone::fromSecondsAheadOfUtc(offsetSeconds)}, albeit implemented as a
     time zone.
 
     \sa MinUtcOffsetSecs, MaxUtcOffsetSecs, id()
