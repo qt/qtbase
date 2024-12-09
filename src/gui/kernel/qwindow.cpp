@@ -2618,14 +2618,16 @@ bool QWindow::event(QEvent *ev)
     case QEvent::MouseButtonPress: {
         auto *me = static_cast<QMouseEvent*>(ev);
         mousePressEvent(me);
-        d->maybeSynthesizeContextMenuEvent(me);
+        if (!ev->isAccepted())
+            d->maybeSynthesizeContextMenuEvent(me);
         break;
     }
 
     case QEvent::MouseButtonRelease: {
         auto *me = static_cast<QMouseEvent*>(ev);
         mouseReleaseEvent(me);
-        d->maybeSynthesizeContextMenuEvent(me);
+        if (!ev->isAccepted())
+            d->maybeSynthesizeContextMenuEvent(me);
         break;
     }
 
@@ -2748,18 +2750,21 @@ bool QWindow::event(QEvent *ev)
 }
 
 /*! \internal
-    Synthesize and send a QContextMenuEvent if the given \a event is a suitable
-    mouse event (a right-button press or release, depending on
-    QStyleHints::contextMenuTrigger()) that was *not accepted* and *isn't*
-    exclusively grabbed. On most platforms, it's done on mouse release; on
+    Synthesize and send a QContextMenuEvent if the given \a event is a
+    suitable mouse event (a right-button press or release, depending on
+    QStyleHints::contextMenuTrigger()) that *isn't* exclusively grabbed.
+    On most platforms, it's done on mouse release; on
     Windows, it's done on press, because of the potential to support
     right-button clicks and drags to select or lasso items, and then still
     getting a context menu at the end of that gesture. (That is in conflict
     with supporting the press-drag-release gesture to select menu items on the
     context menus themselves. Context menus can be implemented that way by
     handling the separate press, move and release events.) Any time the
-    \a event was already handled in some way, it must be accepted, to avoid
-    synthesis of the QContextMenuEvent here.
+    \a event was already handled in some way, it *should* be accepted, to
+    indicate that it's not necessary to synthesize a QContextMenuEvent here.
+    However, there's enough legacy widget code that doesn't call ignore()
+    on unhandled mouse events, that in QWidgetWindow, we put off requiring
+    the event to be ignored. Hopefully we can begin requiring it in Qt 7.
 
     The QContextMenuEvent occurs at the scenePosition(). The position()
     was likely already "localized" during the previous delivery.
@@ -2779,12 +2784,13 @@ bool QWindow::event(QEvent *ev)
 void QWindowPrivate::maybeSynthesizeContextMenuEvent(QMouseEvent *event)
 {
 #ifndef QT_NO_CONTEXTMENU
-    if (!event->isAccepted() && !event->exclusivePointGrabber()
-        && event->button() == Qt::RightButton
+    if (!event->exclusivePointGrabber() && event->button() == Qt::RightButton
         && event->type() == QGuiApplicationPrivate::contextMenuEventType()) {
         QContextMenuEvent e(QContextMenuEvent::Mouse, event->scenePosition().toPoint(),
                             event->globalPosition().toPoint(), event->modifiers());
-        qCDebug(lcPopup) << "synthesized QContextMenuEvent after ignored" << event->type() << ":" << &e;
+        qCDebug(lcPopup) << "synthesized after"
+                         << (event->isAccepted() ? "ACCEPTED (legacy behavior)" : "ignored")
+                         << event->type() << ":" << &e;
         QGuiApplication::sendEvent(q_func(), &e);
     }
 #endif

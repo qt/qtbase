@@ -666,7 +666,13 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
         event->setAccepted(translated.isAccepted());
     }
 
-    d->maybeSynthesizeContextMenuEvent(event);
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+    if (
+#else
+    if (event->isAccepted() &&
+#endif
+            (event->type() == QEvent::MouseButtonPress || event->type() == QEvent::MouseButtonRelease))
+        d->maybeSynthesizeContextMenuEvent(event);
 }
 
 void QWidgetWindow::handleTouchEvent(QTouchEvent *event)
