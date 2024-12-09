@@ -1198,6 +1198,10 @@ Q_WEAK_OVERLOAD
 auto overload_s_bav(const QString &s) { return s; }
 auto overload_s_bav(QByteArrayView s) { return s; }
 
+Q_WEAK_OVERLOAD
+auto overload_ba_bav(const QByteArray &s) { return s; }
+auto overload_ba_bav(QByteArrayView s) { return s; }
+
 } // unnamed namespace
 
 template<typename T>
@@ -1267,6 +1271,15 @@ void tst_QStringApiSymmetry::overload()
         if constexpr (!std::is_array_v<T>) {
             overload_s_bav(T());
             overload_s_bav(CT());
+        }
+    }
+
+    if constexpr (std::is_convertible_v<T, QByteArray> || std::is_convertible_v<T, QByteArrayView>) {
+        overload_ba_bav(t);
+        overload_ba_bav(ct);
+        if constexpr (!std::is_array_v<T>) {
+            overload_ba_bav(T());
+            overload_ba_bav(CT());
         }
     }
     QT_WARNING_POP
