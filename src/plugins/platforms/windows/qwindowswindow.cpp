@@ -889,6 +889,13 @@ static inline bool shouldApplyDarkFrame(const QWindow *w)
          > windowPal.color(QPalette::Window).lightness();
 }
 
+static inline int getTitleBarHeight_sys(const UINT dpi)
+{
+    // According to MS design manual, it should be 32px when DPI is 96.
+    return getResizeBorderThickness(dpi) +
+           ::GetSystemMetricsForDpi(SM_CYCAPTION, dpi);
+}
+
 QWindowsWindowData
     WindowCreationData::create(const QWindow *w, const WindowData &data, QString title) const
 {
@@ -952,10 +959,12 @@ QWindowsWindowData
                                  parentHandle, nullptr, appinst, nullptr);
 
     if (w->flags().testFlags(Qt::ExpandedClientAreaHint)) {
+        const UINT dpi = ::GetDpiForWindow(result.hwnd);
+        const int titleBarHeight = getTitleBarHeight_sys(dpi);
         result.hwndTitlebar = CreateWindowEx(WS_EX_LAYERED | WS_EX_TRANSPARENT,
                                              classTitleBarNameUtf16, classTitleBarNameUtf16,
                                              WS_POPUP, 0, 0,
-                                             context->frameWidth, 32,
+                                             context->frameWidth, titleBarHeight,
                                              result.hwnd, nullptr, appinst, nullptr);
     }
 
@@ -2190,7 +2199,7 @@ QRect QWindowsWindow::normalGeometry() const
 QMargins QWindowsWindow::safeAreaMargins() const
 {
     if (m_data.flags.testFlags(Qt::ExpandedClientAreaHint)) {
-        const int titleBarHeight = SM_CYSIZEFRAME + SM_CYCAPTION;
+        const int titleBarHeight = getTitleBarHeight_sys(savedDpi());
 
         return QMargins(0, titleBarHeight, 0, 0);
     }
@@ -2407,7 +2416,8 @@ void QWindowsWindow::handleGeometryChange()
         transitionAnimatedCustomTitleBar();
     }
 
-    MoveWindow(m_data.hwndTitlebar, m_data.geometry.x(), m_data.geometry.y(), m_data.geometry.width(), 32, true);
+    const int titleBarHeight = getTitleBarHeight_sys(savedDpi());
+    MoveWindow(m_data.hwndTitlebar, m_data.geometry.x(), m_data.geometry.y(), m_data.geometry.width(), titleBarHeight, true);
     m_windowWasArranged = arranged;
 }
 
@@ -3295,8 +3305,8 @@ bool QWindowsWindow::handleNonClientHitTest(const QPoint &globalPos, LRESULT *re
         const int border = (IsZoomed(m_data.hwnd) || isFullScreen_sys()) ? 0 : getResizeBorderThickness(savedDpi());
         if (isCustomized || isDefaultTitleBar) {
             *result = HTCLIENT;
-            const int titleBarHeight = SM_CYSIZEFRAME + SM_CYCAPTION;;
-            const int titleButtonWidth = 46;
+            const int titleBarHeight = getTitleBarHeight_sys(savedDpi());
+            const int titleButtonWidth = titleBarHeight * 1.5;
             int buttons = 1;
             if (globalPos.y() < geom.top() + titleBarHeight) {
                 if (m_data.flags.testFlags(Qt::WindowCloseButtonHint) || isDefaultTitleBar) {
@@ -3452,8 +3462,8 @@ void QWindowsWindow::updateCustomTitlebar()
     RECT windowRect;
     GetWindowRect(hwnd, &windowRect);
 
-    const int titleBarHeight = SM_CYSIZEFRAME + SM_CYCAPTION;;
-    const int titleButtonWidth = 46;
+    const int titleBarHeight = getTitleBarHeight_sys(savedDpi());
+    const int titleButtonWidth = titleBarHeight * 1.5;
     const int windowWidth = windowRect.right - windowRect.left;
 
     POINT localPos;
