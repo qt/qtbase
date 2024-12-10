@@ -176,10 +176,13 @@ public:
     template <typename Char>
     constexpr QAnyStringView(const Char *str) noexcept;
 #else
-
     template <typename Pointer, if_compatible_pointer<Pointer> = true>
     constexpr QAnyStringView(const Pointer &str) noexcept
         : QAnyStringView{str, str ? lengthHelperPointer(str) : 0} {}
+
+    template <typename Char, if_compatible_char<Char> = true>
+    constexpr QAnyStringView(const Char (&str)[]) noexcept
+        : QAnyStringView{&*str} {} // decay to pointer
 #endif
 
     // defined in qstring.h
