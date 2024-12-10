@@ -72,7 +72,7 @@ static void verifyCharClassPattern(QString str, qulonglong pattern,
         };
         QVERIFY2(isSet == test,
                  qPrintable(QString("Character #%1: 0x%2, isSet: %3")
-                        .arg(i).arg(str[i].unicode(), 0, 16).arg(isSet)));
+                        .arg(i).arg(ushort{str[i].unicode()}, 0, 16).arg(isSet)));
     }
 }
 

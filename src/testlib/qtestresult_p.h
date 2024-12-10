@@ -114,7 +114,8 @@ public:
                                  const char *(*lhsFormatter)(const void *),
                                  const char *(*rhsFormatter)(const void *),
                                  const char *lhsExpression, const char *rhsExpression,
-                                 const char *(*orderFormatter)(const void *),
+                                 const char *(*actualOrderFormatter)(const void *),
+                                 const char *(*expectedOrderFormatter)(const void *),
                                  const void *actualOrder, const void *expectedOrder,
                                  const char *expectedExpression,
                                  const char *file, int line);

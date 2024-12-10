@@ -88,7 +88,10 @@ private:
     bool lockInternal(int timeout) QT_MUTEX_LOCK_NOEXCEPT;
 #endif
     void unlockInternal() noexcept;
+#if QT_CORE_REMOVED_SINCE(6, 9)
     void destroyInternal(QMutexPrivate *d);
+#endif
+    void destroyInternal(void *d);
 
     QBasicAtomicPointer<QMutexPrivate> d_ptr;
     static inline QMutexPrivate *dummyLocked() {

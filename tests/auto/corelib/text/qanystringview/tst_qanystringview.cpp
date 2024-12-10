@@ -1014,10 +1014,12 @@ void tst_QAnyStringView::arg() const
 #undef CHECK2
 #undef CHECK1
 
-    QCOMPARE_EQ(QAnyStringView(u8"ä %2 %2—%1 %3 ").arg(QLatin1Char('c'), QChar::CarriageReturn, u'C'),
-                u"ä \r \r—c C "_s);
-    QCOMPARE_EQ(QUtf8StringView(u8"ä %2 %2—%1 %3 ").arg(QLatin1Char('c'), QChar::CarriageReturn, u'C'),
-                u"ä \r \r—c C "_s);
+    QCOMPARE_EQ(QAnyStringView(u8"ä %2 %2—%1 %3 ").arg(QLatin1Char('c'), QChar::CarriageReturn, u8"Ç"),
+                u"ä \r \r—c Ç "_s);
+    QCOMPARE_EQ(QUtf8StringView(u8"ä %2 %2—%1 %3 ").arg(QLatin1Char('c'), QChar::CarriageReturn, "Ç"),
+                u"ä \r \r—c Ç "_s);
+    QCOMPARE_EQ(QUtf8StringView(u8"ä %2 %2—%1 %3 ").arg(QLatin1Char('c'), QChar::CarriageReturn, "Ç"_ba),
+                u"ä \r \r—c Ç "_s);
 }
 
 QTEST_APPLESS_MAIN(tst_QAnyStringView)

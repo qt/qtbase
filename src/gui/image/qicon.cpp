@@ -608,9 +608,14 @@ QFactoryLoader *qt_iconEngineFactoryLoader()
   The most convenient way to construct an icon is by using the
   \l{QIcon::}{fromTheme()} factory function. Qt implements access to
   the native icon library on platforms that support the
-  \l {Freedesktop Icon Theme Specification}. Since Qt 6.7, Qt also
-  provides access to the native icon library on macOS, iOS, and
-  Windows 10 and 11. On Android, Qt can access icons from the Material
+  \l {Freedesktop Icon Theme Specification}.
+
+  Applications can use the same theming specification to provide
+  their own icon library. See below for an example theme description
+  and the corresponding directory structure for the image files.
+
+  Since Qt 6.7, Qt also provides access to the native icon library on macOS,
+  iOS, and Windows 10 and 11. On Android, Qt can access icons from the Material
   design system as long as the
   \l{https://github.com/google/material-design-icons/tree/master/font}
   {MaterialIcons-Regular} font is available on the system, or bundled
@@ -619,11 +624,14 @@ QFactoryLoader *qt_iconEngineFactoryLoader()
 
   \snippet code/src_gui_image_qicon.cpp fromTheme
 
-  Applications can use the same theming specification to provide
-  their own icon library. See below for an example theme description
-  and the corresponding directory structure for the image files.
-  Icons from an application-provided theme take precedence over the
-  native icon library.
+  Since Qt 6.9, Qt can generate icons from named glyphs in an available icon
+  font. Set the \l{QIcon::themeName()}{theme name} to the family name of the
+  font, and use \l{QIcon::}{fromTheme()} with the name of the glyph.
+
+  \snippet code/src_gui_image_qicon.cpp iconFont
+
+  The icon font can be installed on the system, or bundled as an
+  \l{QFontDatabase::addApplicationFont()}{application font}.
 
   \section1 Icon Engines
 
@@ -647,7 +655,7 @@ QFactoryLoader *qt_iconEngineFactoryLoader()
   third parties to provide additional icon engines to those included
   with Qt.
 
-  \section1 Making Classes that Use QIcon
+  \section1 Using QIcon in the User Interface
 
   If you write your own widgets that have an option to set a small
   pixmap, consider allowing a QIcon to be set for that pixmap.  The
@@ -673,15 +681,22 @@ QFactoryLoader *qt_iconEngineFactoryLoader()
   selected item. If the widget can be toggled, the "On" mode might be
   used to draw a different icon.
 
+  QIcons generated from the native icon library, or from an icon font, use the
+  same glyph for both the \c On and \c Off states of the icon. Applications can
+  change the icon depending on the state of the respective UI control or action.
+  In a Qt Quick application, this can be done with a binding.
+
+  \snippet code/src_gui_image_qicon.qml iconFont
+
   \image icon.png QIcon
 
   \note QIcon needs a QGuiApplication instance before the icon is created.
 
   \section1 High DPI Icons
 
-  Icons that are provided by the native icon library are usually based
-  on vector graphics, and will automatically be rendered in the appropriate
-  resolution.
+  Icons that are provided by the native icon library, or generated from the
+  glyph in an icon font, are usually based on vector graphics, and will
+  automatically be rendered in the appropriate resolution.
 
   When providing your own image files via \l addFile(), then QIcon will
   use Qt's \l {High Resolution Versions of Images}{"@nx" high DPI syntax}.
@@ -1274,12 +1289,15 @@ void QIcon::setFallbackSearchPaths(const QStringList &paths)
 /*!
     Sets the current icon theme to \a name.
 
-    The theme will be will be looked up in themeSearchPaths().
+    If the theme matches the name of an installed font that provides named
+    glyphs, then QIcon::fromTheme calls that match one of the glyphs will
+    produce an icon for that glyph.
 
-    At the moment the only supported icon theme format is the
-    \l{Freedesktop Icon Theme Specification}. The \a name should
-    correspond to a directory name in the themeSearchPath()
-    containing an \c index.theme file describing its contents.
+    Otherwise, the theme will be looked up in themeSearchPaths(). At the moment
+    the only supported icon theme format is the \l{Freedesktop Icon Theme
+    Specification}. The \a name should correspond to a directory name in the
+    themeSearchPath() containing an \c index.theme file describing its
+    contents.
 
     \sa themeSearchPaths(), themeName(),
     {Freedesktop Icon Theme Specification}

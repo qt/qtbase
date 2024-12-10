@@ -5049,7 +5049,7 @@ void tst_QLineEdit::testQuickSelectionWithMouse()
     QVERIFY(lineEdit.selectedText().endsWith(suffix));
     QTest::mouseMove(lineEdit.windowHandle(), center + QPoint(20, 0));
     qCDebug(lcTests) << "Selected text:" << lineEdit.selectedText();
-#ifdef Q_PROCESSOR_ARM_32
+#if defined(Q_PROCESSOR_ARM_32) && !defined(Q_OS_VXWORKS)
     QEXPECT_FAIL("", "Currently fails on gcc-armv7, needs investigation.", Continue);
 #endif
     QCOMPARE(lineEdit.selectedText(), partialSelection);

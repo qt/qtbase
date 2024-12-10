@@ -337,11 +337,9 @@ void QLoggingRegistry::registerCategory(QLoggingCategory *cat, QtMsgType enableF
 {
     const auto locker = qt_scoped_lock(registryMutex);
 
-    const auto oldSize = categories.size();
-    auto &e = categories[cat];
-    if (categories.size() != oldSize) {
+    auto r = categories.tryEmplace(cat, enableForLevel);
+    if (r.inserted) {
         // new entry
-        e = enableForLevel;
         (*categoryFilter)(cat);
     }
 }

@@ -14,6 +14,8 @@ endif()
 qt_internal_add_test(tst_containerapisymmetry
     SOURCES
         tst_containerapisymmetry.cpp
+    LIBRARIES
+        Qt::TestPrivate
 )
 
 ## Scopes:

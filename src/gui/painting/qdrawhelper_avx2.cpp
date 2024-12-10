@@ -763,7 +763,7 @@ void QT_FASTCALL fetchTransformedBilinearARGB32PM_simple_scale_helper_avx2(uint 
     const int offset = (fx + adjust) >> 16;
     int x = offset;
 
-    IntermediateBuffer intermediate;
+    Q_DECL_UNINITIALIZED IntermediateBuffer intermediate;
     // count is the size used in the intermediate_buffer.
     int count = (qint64(length) * qAbs(fdx) + FixedScale - 1) / FixedScale + 2;
     // length is supposed to be <= BufferSize either because data->m11 < 1 or

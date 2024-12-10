@@ -427,14 +427,24 @@
 */
 
 /*!
+    \fn template <typename T> auto QList<T>::operator<=>(const QList<T> &lhs, const QList<T> &rhs)
+    \since 6.9
+
+    Compares the contents of \a lhs and \a rhs
+    \l {https://en.cppreference.com/w/cpp/algorithm/lexicographical_compare_three_way}
+    {lexicographically}. Returns the result of the strongest applicable category
+    type, that is \c {decltype(lhs[0] <=> rhs[0])} if \c {operator<=>()} is
+    available for type \c {T}; otherwise \c {std::weak_ordering}.
+
+    \note This operator is only available in C++20 mode, and when the underlying
+    type \c T models the \c {std::three_way_comparable} concept
+    or provides \c {operator<()}.
+*/
+
+/*!
     \fn template <typename T> size_t qHash(const QList<T> &key, size_t seed = 0)
     \since 5.6
-    \relates QList
-
-    Returns the hash value for \a key,
-    using \a seed to seed the calculation.
-
-    This function requires qHash() to be overloaded for the value type \c T.
+    \qhasholdT{QList}{T}
 */
 
 /*! \fn template <typename T> qsizetype QList<T>::size() const

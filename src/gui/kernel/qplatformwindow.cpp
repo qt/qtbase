@@ -785,6 +785,20 @@ bool QPlatformWindow::hasPendingUpdateRequest() const
 }
 
 /*!
+    Returns whether applications can render new frames from any thread
+    without co-ordination with the main thread.
+
+    Platform windows may set this to true during resize events for
+    more control over submitted frames.
+
+    This function may be called from any thread.
+*/
+bool QPlatformWindow::allowsIndependentThreadedRendering() const
+{
+    return true;
+}
+
+/*!
     Delivers an QEvent::UpdateRequest event to the window.
 
     QPlatformWindow subclasses can re-implement this function to

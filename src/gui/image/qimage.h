@@ -215,17 +215,27 @@ public:
     [[nodiscard]] QImage scaledToHeight(int h, Qt::TransformationMode mode = Qt::FastTransformation) const;
     [[nodiscard]] QImage transformed(const QTransform &matrix, Qt::TransformationMode mode = Qt::FastTransformation) const;
     static QTransform trueMatrix(const QTransform &, int w, int h);
-
+#if QT_DEPRECATED_SINCE(6, 10)
+    QT_DEPRECATED_VERSION_X_6_10("Use flipped(Qt::Orientations) instead")
     [[nodiscard]] QImage mirrored(bool horizontally = false, bool vertically = true) const &
     { return mirrored_helper(horizontally, vertically); }
+    QT_DEPRECATED_VERSION_X_6_10("Use flipped(Qt::Orientations) instead")
     [[nodiscard]] QImage mirrored(bool horizontally = false, bool vertically = true) &&
     { mirrored_inplace(horizontally, vertically); return std::move(*this); }
+    QT_DEPRECATED_VERSION_X_6_10("Use flip(Qt::Orientations) instead")
+    void mirror(bool horizontally = false, bool vertically = true)
+    { mirrored_inplace(horizontally, vertically); }
+#endif
     [[nodiscard]] QImage rgbSwapped() const &
     { return rgbSwapped_helper(); }
     [[nodiscard]] QImage rgbSwapped() &&
     { rgbSwapped_inplace(); return std::move(*this); }
-    void mirror(bool horizontally = false, bool vertically = true)
-    { mirrored_inplace(horizontally, vertically); }
+    [[nodiscard]] QImage flipped(Qt::Orientations orient = Qt::Vertical) const &
+    { return mirrored_helper(orient.testFlag(Qt::Horizontal), orient.testFlag(Qt::Vertical)); }
+    [[nodiscard]] QImage flipped(Qt::Orientations orient = Qt::Vertical) &&
+    { mirrored_inplace(orient.testFlag(Qt::Horizontal), orient.testFlag(Qt::Vertical)); return std::move(*this); }
+    void flip(Qt::Orientations orient = Qt::Vertical)
+    { mirrored_inplace(orient.testFlag(Qt::Horizontal), orient.testFlag(Qt::Vertical)); }
     void rgbSwap()
     { rgbSwapped_inplace(); }
     void invertPixels(InvertMode = InvertRgb);

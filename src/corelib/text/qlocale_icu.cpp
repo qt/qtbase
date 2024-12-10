@@ -54,21 +54,19 @@ static bool qt_u_strToCase(const QString &str, QString *out, const char *localeI
     return true;
 }
 
-QString QIcu::toUpper(const QByteArray &localeID, const QString &str, bool *ok)
+QString QLocalePrivate::toUpper(const QString &str, bool *ok) const
 {
+    Q_ASSERT(ok);
     QString out;
-    bool err = qt_u_strToCase(str, &out, localeID, u_strToUpper);
-    if (ok)
-        *ok = err;
+    *ok = qt_u_strToCase(str, &out, bcp47Name('_'), u_strToUpper);
     return out;
 }
 
-QString QIcu::toLower(const QByteArray &localeID, const QString &str, bool *ok)
+QString QLocalePrivate::toLower(const QString &str, bool *ok) const
 {
+    Q_ASSERT(ok);
     QString out;
-    bool err = qt_u_strToCase(str, &out, localeID, u_strToLower);
-    if (ok)
-        *ok = err;
+    *ok = qt_u_strToCase(str, &out, bcp47Name('_'), u_strToLower);
     return out;
 }
 

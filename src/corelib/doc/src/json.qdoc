@@ -19,7 +19,7 @@
     modify and save JSON data.
 
     More details about the JSON data format can be found at \l{http://json.org}{json.org}
-    and in \l {RFC 4627}.
+    and in \l {RFC 8259}.
 
     \section1 Overview
 

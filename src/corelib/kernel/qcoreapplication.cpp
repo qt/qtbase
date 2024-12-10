@@ -503,7 +503,7 @@ void QCoreApplicationPrivate::cleanupThreadData()
         const auto locker = qt_scoped_lock(thisThreadData->postEventList.mutex);
         for (const QPostEvent &pe : std::as_const(thisThreadData->postEventList)) {
             if (pe.event) {
-                --pe.receiver->d_func()->postedEvents;
+                pe.receiver->d_func()->postedEvents.fetchAndSubAcquire(1);
                 pe.event->m_posted = false;
                 delete pe.event;
             }
@@ -534,14 +534,6 @@ QThread *QCoreApplicationPrivate::mainThread()
 {
     Q_ASSERT(theMainThread.loadRelaxed() != nullptr);
     return theMainThread.loadRelaxed();
-}
-
-bool QCoreApplicationPrivate::threadRequiresCoreApplication()
-{
-    QThreadData *data = QThreadData::current(false);
-    if (!data)
-        return true;    // default setting
-    return data->requiresCoreApplication;
 }
 
 void QCoreApplicationPrivate::checkReceiverThread(QObject *receiver)
@@ -938,20 +930,14 @@ QCoreApplication::~QCoreApplication()
 #if QT_CONFIG(thread)
     // Synchronize and stop the global thread pool threads.
     QThreadPool *globalThreadPool = nullptr;
-    QThreadPool *guiThreadPool = nullptr;
     QT_TRY {
         globalThreadPool = QThreadPool::globalInstance();
-        guiThreadPool = QThreadPoolPrivate::qtGuiInstance();
     } QT_CATCH (...) {
         // swallow the exception, since destructors shouldn't throw
     }
     if (globalThreadPool) {
         globalThreadPool->waitForDone();
         delete globalThreadPool;
-    }
-    if (guiThreadPool) {
-        guiThreadPool->waitForDone();
-        delete guiThreadPool;
     }
 #endif
 
@@ -1107,7 +1093,13 @@ void QCoreApplication::setQuitLockEnabled(bool enabled)
 */
 bool QCoreApplication::notifyInternal2(QObject *receiver, QEvent *event)
 {
-    bool selfRequired = QCoreApplicationPrivate::threadRequiresCoreApplication();
+    // Qt enforces the rule that events can only be sent to objects in
+    // the current thread, so receiver->d_func()->threadData is
+    // equivalent to QThreadData::current(), just without the function
+    // call overhead.
+    QObjectPrivate *d = receiver->d_func();
+    QThreadData *threadData = d->threadData.loadAcquire();
+    bool selfRequired = threadData->requiresCoreApplication;
     if (selfRequired && !qApp)
         return false;
 
@@ -1119,12 +1111,6 @@ bool QCoreApplication::notifyInternal2(QObject *receiver, QEvent *event)
         return result;
     }
 
-    // Qt enforces the rule that events can only be sent to objects in
-    // the current thread, so receiver->d_func()->threadData is
-    // equivalent to QThreadData::current(), just without the function
-    // call overhead.
-    QObjectPrivate *d = receiver->d_func();
-    QThreadData *threadData = d->threadData.loadAcquire();
     QScopedScopeLevelCounter scopeLevelCounter(threadData);
     if (!selfRequired)
         return doNotify(receiver, event);
@@ -1674,7 +1660,7 @@ void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
     QThreadData *data = locker.threadData;
 
     // if this is one of the compressible events, do compression
-    if (receiver->d_func()->postedEvents
+    if (receiver->d_func()->postedEvents.loadAcquire()
         && self && self->compressEvent(event, receiver, &data->postEventList)) {
         Q_TRACE(QCoreApplication_postEvent_event_compressed, receiver, event);
         return;
@@ -1687,7 +1673,7 @@ void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
     data->postEventList.addEvent(QPostEvent(receiver, event, priority));
     Q_UNUSED(eventDeleter.release());
     event->m_posted = true;
-    ++receiver->d_func()->postedEvents;
+    receiver->d_func()->postedEvents.fetchAndAddRelease(1);
     data->canWait = false;
     locker.unlock();
 
@@ -1788,7 +1774,8 @@ void QCoreApplicationPrivate::sendPostedEvents(QObject *receiver, int event_type
     // events, canWait will be set to false.
     data->canWait = (data->postEventList.size() == 0);
 
-    if (data->postEventList.size() == 0 || (receiver && !receiver->d_func()->postedEvents)) {
+    if (data->postEventList.size() == 0
+            || (receiver && !receiver->d_func()->postedEvents.loadAcquire())) {
         --data->postEventList.recursion;
         return;
     }
@@ -1917,7 +1904,7 @@ void QCoreApplicationPrivate::sendPostedEvents(QObject *receiver, int event_type
         QEvent *e = pe.event;
         QObject * r = pe.receiver;
 
-        --r->d_func()->postedEvents;
+        r->d_func()->postedEvents.fetchAndSubAcquire(1);
         Q_ASSERT(r->d_func()->postedEvents >= 0);
 
         // next, update the data structure so that we're ready
@@ -1968,7 +1955,7 @@ void QCoreApplication::removePostedEvents(QObject *receiver, int eventType)
     // happen while the event loop is in the middle of posting events,
     // and when we get here, we may not have any more posted events
     // for this object.
-    if (receiver && !receiver->d_func()->postedEvents)
+    if (receiver && !receiver->d_func()->postedEvents.loadAcquire())
         return;
 
     //we will collect all the posted events for the QObject
@@ -1982,7 +1969,7 @@ void QCoreApplication::removePostedEvents(QObject *receiver, int eventType)
 
         if ((!receiver || pe.receiver == receiver)
             && (pe.event && (eventType == 0 || pe.event->type() == eventType))) {
-            --pe.receiver->d_func()->postedEvents;
+            pe.receiver->d_func()->postedEvents.fetchAndSubAcquire(1);
             pe.event->m_posted = false;
             events.append(pe.event);
             const_cast<QPostEvent &>(pe).event = nullptr;
@@ -2043,7 +2030,7 @@ void QCoreApplicationPrivate::removePostedEvent(QEvent * event)
                      pe.receiver->metaObject()->className(),
                      pe.receiver->objectName().toLocal8Bit().data());
 #endif
-            --pe.receiver->d_func()->postedEvents;
+            pe.receiver->d_func()->postedEvents.fetchAndSubAcquire(1);
             pe.event->m_posted = false;
             delete pe.event;
             const_cast<QPostEvent &>(pe).event = nullptr;

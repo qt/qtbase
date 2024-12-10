@@ -13,7 +13,16 @@ QT_END_NAMESPACE
 
 class PreviewWindow : public QRasterWindow
 {
+public:
+    PreviewWindow(QWindow *parent = nullptr);
+    void setVisualizeSafeAreas(bool enable)
+    {
+        m_visualizeSafeAreas = enable;
+    }
+
+protected:
     void paintEvent(QPaintEvent *event);
+    bool m_visualizeSafeAreas = false;
 };
 
 class PreviewWidget : public QWidget

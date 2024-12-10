@@ -28,6 +28,7 @@ class Writer
 public:
     static void objectToJson(const QCborContainerPrivate *o, QByteArray &json, int indent, bool compact = false);
     static void arrayToJson(const QCborContainerPrivate *a, QByteArray &json, int indent, bool compact = false);
+    static void valueToJson(const QCborValue &v, QByteArray &json, int indent, bool compact = false);
 };
 
 }

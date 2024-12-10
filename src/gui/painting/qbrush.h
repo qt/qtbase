@@ -49,6 +49,10 @@ public:
     inline void swap(QBrush &other) noexcept
     { d.swap(other.d); }
 
+    QBrush &operator=(Qt::BrushStyle style);
+    QBrush &operator=(QColor color);
+    QBrush &operator=(Qt::GlobalColor color) { return operator=(QColor(color)); }
+
     operator QVariant() const;
 
     inline Qt::BrushStyle style() const;
@@ -82,6 +86,32 @@ private:
     friend struct QSpanData;
     friend class QPainter;
     friend bool Q_GUI_EXPORT qHasPixmapTexture(const QBrush& brush);
+
+    friend bool comparesEqual(const QBrush &lhs, QColor rhs) noexcept
+    {
+        return lhs.color() == rhs && lhs.style() == Qt::SolidPattern
+            && lhs.transform().isIdentity();
+    }
+    Q_DECLARE_EQUALITY_COMPARABLE(QBrush, QColor)
+    Q_DECLARE_EQUALITY_COMPARABLE(QBrush, Qt::GlobalColor)
+
+    friend bool comparesEqual(const QBrush &lhs, Qt::BrushStyle rhs) noexcept
+    {
+        switch (rhs) {
+        case Qt::NoBrush:
+        case Qt::TexturePattern:
+        case Qt::LinearGradientPattern:
+        case Qt::RadialGradientPattern:
+        case Qt::ConicalGradientPattern:
+            // A brush constructed only from one of those styles will end up
+            // using NoBrush (see qbrush_check_type)
+            return lhs.style() == Qt::NoBrush;
+        default:
+            return lhs.style() == rhs && lhs.color() == QColor(0, 0, 0);
+        }
+    }
+    Q_DECLARE_EQUALITY_COMPARABLE(QBrush, Qt::BrushStyle)
+
     void detach(Qt::BrushStyle newStyle);
     void init(const QColor &color, Qt::BrushStyle bs);
     DataPtr d;

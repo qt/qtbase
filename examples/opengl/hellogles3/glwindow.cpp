@@ -144,7 +144,7 @@ void GLWindow::initializeGL()
     QImage img(":/qtlogo.png");
     Q_ASSERT(!img.isNull());
     delete m_texture;
-    m_texture = new QOpenGLTexture(img.scaled(32, 36).mirrored());
+    m_texture = new QOpenGLTexture(img.scaled(32, 36).flipped());
 
     delete m_program;
     m_program = new QOpenGLShaderProgram;

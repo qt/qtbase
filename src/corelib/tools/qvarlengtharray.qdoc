@@ -876,6 +876,21 @@
     of \c operator<().
 */
 
+/*! \fn template<typename T, qsizetype Prealloc1, qsizetype Prealloc2> auto operator<=>(const QVarLengthArray<T,Prealloc1> &lhs, const QVarLengthArray<T,Prealloc2> &rhs)
+    \since 6.9
+    \relates QVarLengthArray
+
+    Compares the contents of \a lhs and \a rhs
+    \l {https://en.cppreference.com/w/cpp/algorithm/lexicographical_compare_three_way}
+    {lexicographically}. Returns the result of the strongest applicable category
+    type, that is \c {decltype(lhs[0] <=> rhs[0])} if \c {operator<=>()} is
+    available for type \c {T}; otherwise \c {std::weak_ordering}.
+
+    \note This operator is only available in C++20 mode, and when the underlying
+    type \c T models the \c {std::three_way_comparable} concept
+    or provides \c {operator<()}.
+*/
+
 /*! \fn template<class T, qsizetype Prealloc> QVarLengthArray<T, Prealloc> &QVarLengthArray<T, Prealloc>::operator<<(const T &value)
 
     \since 4.8
@@ -950,11 +965,8 @@
 
 /*!
     \fn template <typename T, qsizetype Prealloc> size_t qHash(const QVarLengthArray<T, Prealloc> &key, size_t seed = 0)
-    \relates QVarLengthArray
+    \qhasholdT{QVarLengthArray}{T}
     \since 5.14
-
-    Returns the hash value for \a key, using \a seed to seed the
-    calculation.
 */
 
 /*! \fn template <typename T, qsizetype Prealloc> template <typename AT = T> qsizetype QVarLengthArray<T, Prealloc>::removeAll(const AT &t)

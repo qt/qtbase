@@ -224,7 +224,7 @@ void Window::customRender()
             fn = QFileInfo(fn).absoluteFilePath();
             qDebug("Saving into %s", qPrintable(fn));
             if (m_r->isYUpInFramebuffer())
-                image.mirrored().save(fn);
+                image.flipped().save(fn);
             else
                 image.save(fn);
         }

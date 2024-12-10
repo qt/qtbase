@@ -450,12 +450,8 @@ QDebug operator<<(QDebug dbg, const QPointF &p)
 #endif
 
 /*!
-    \fn size_t qHash(QPoint key, size_t seed = 0)
-    \relates QHash
+    \qhashold{QHash}
     \since 6.0
-
-    Returns the hash value for the \a key, using \a seed to seed the
-    calculation.
 */
 size_t qHash(QPoint key, size_t seed) noexcept
 {

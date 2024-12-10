@@ -64,6 +64,8 @@ qt_internal_add_plugin(QWindowsDirect2DIntegrationPlugin
         dxgi
         dxguid
         gdi32
+        gdiplus
+        uxtheme
         imm32
         ole32
         oleaut32
@@ -209,15 +211,11 @@ qt_internal_extend_target(QWindowsDirect2DIntegrationPlugin CONDITION QT_FEATURE
         ../windows/uiautomation/qwindowsuiawindowprovider.cpp ../windows/uiautomation/qwindowsuiawindowprovider.h
 )
 
-if(QT_FEATURE_accessibility)
-    find_library(UI_AUTOMATION_LIBRARY uiautomationcore)
-    if(UI_AUTOMATION_LIBRARY)
-        qt_internal_extend_target(QWindowsDirect2DIntegrationPlugin
-            LIBRARIES
-                ${UI_AUTOMATION_LIBRARY}
-        )
-    endif()
-endif()
+# This is loaded dynamically when using MINGW as its import library is incomplete
+qt_internal_extend_target(QWindowsDirect2DIntegrationPlugin CONDITION MSVC AND QT_FEATURE_accessibility
+    LIBRARIES
+        uiautomationcore
+)
 
 qt_internal_extend_target(QWindowsDirect2DIntegrationPlugin CONDITION MINGW AND QT_FEATURE_accessibility
     LIBRARIES

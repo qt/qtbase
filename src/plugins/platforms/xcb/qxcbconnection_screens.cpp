@@ -246,40 +246,6 @@ void QXcbConnection::destroyScreen(QXcbScreen *screen)
     }
 }
 
-void QXcbConnection::updateScreen_monitor(QXcbScreen *screen, xcb_randr_monitor_info_t *monitorInfo, xcb_timestamp_t timestamp)
-{
-    screen->setMonitor(monitorInfo, timestamp);
-
-    if (screen->isPrimary()) {
-        const int idx = m_screens.indexOf(screen);
-        if (idx > 0) {
-            std::as_const(m_screens).first()->setPrimary(false);
-            m_screens.swapItemsAt(0, idx);
-        }
-        screen->virtualDesktop()->setPrimaryScreen(screen);
-        QWindowSystemInterface::handlePrimaryScreenChanged(screen);
-    }
-    qCDebug(lcQpaScreen) << "updateScreen_monitor: update" << screen << "(Primary:" << screen->isPrimary() << ")";
-}
-
-QXcbScreen *QXcbConnection::createScreen_monitor(QXcbVirtualDesktop *virtualDesktop, xcb_randr_monitor_info_t *monitorInfo, xcb_timestamp_t timestamp)
-{
-    QXcbScreen *screen = new QXcbScreen(this, virtualDesktop, monitorInfo, timestamp);
-
-    if (screen->isPrimary()) {
-        if (!m_screens.isEmpty())
-            std::as_const(m_screens).first()->setPrimary(false);
-
-        m_screens.prepend(screen);
-    } else {
-        m_screens.append(screen);
-    }
-    qCDebug(lcQpaScreen) << "createScreen_monitor: adding" << screen << "(Primary:" << screen->isPrimary() << ")";
-    virtualDesktop->addScreen(screen);
-    QWindowSystemInterface::handleScreenAdded(screen, screen->isPrimary());
-    return screen;
-}
-
 QXcbVirtualDesktop *QXcbConnection::virtualDesktopForNumber(int n) const
 {
     for (QXcbVirtualDesktop *virtualDesktop : m_virtualDesktops) {
@@ -489,11 +455,8 @@ void QXcbConnection::initializeScreensFromMonitor(xcb_screen_iterator_t *it, int
         virtualDesktop = new QXcbVirtualDesktop(this, xcbScreen, xcbScreenNumber);
         m_virtualDesktops.append(virtualDesktop);
     }
-
-    if (xcbScreenNumber != primaryScreenNumber())
-        return;
-
-    QList<QPlatformScreen*> old = virtualDesktop->m_screens;
+    QList<QPlatformScreen *> old = virtualDesktop->m_screens;
+    QList<QXcbScreen *> newScreens;
 
     QList<QPlatformScreen *> siblings;
 
@@ -514,23 +477,26 @@ void QXcbConnection::initializeScreensFromMonitor(xcb_screen_iterator_t *it, int
         } else {
             screen = findScreenForMonitorInfo(old, monitor_info);
             if (!screen) {
-                screen = createScreen_monitor(virtualDesktop, monitor_info, monitors_r->timestamp);
+                screen = new QXcbScreen(this, virtualDesktop, monitor_info, monitors_r->timestamp);
+                newScreens.append(screen);
             } else {
-                updateScreen_monitor(screen, monitor_info, monitors_r->timestamp);
+                screen->setMonitor(monitor_info, monitors_r->timestamp);
                 old.removeAll(screen);
             }
         }
-        if (!m_screens.contains(screen))
-            m_screens << screen;
-        siblings << screen;
 
-        // similar logic with QXcbConnection::initializeScreensFromOutput()
-        if (!(*primaryScreen) || monitor_info->primary) {
-            if (*primaryScreen)
-                (*primaryScreen)->setPrimary(false);
-            *primaryScreen = screen;
-            (*primaryScreen)->setPrimary(true);
-            siblings.prepend(siblings.takeLast());
+        if (screen->isPrimary()) {
+            siblings.prepend (screen);
+            if (primaryScreenNumber() == xcbScreenNumber) {
+                if (*primaryScreen)
+                    (*primaryScreen)->setPrimary(false);
+                *primaryScreen = screen;
+                (*primaryScreen)->setPrimary(true);
+            } else { // Only screens on the main virtual desktop can be primary
+                screen->setPrimary(false);
+            }
+        } else {
+            siblings.append(screen);
         }
 
         xcb_randr_monitor_info_next(&monitor_iter);
@@ -553,18 +519,47 @@ void QXcbConnection::initializeScreensFromMonitor(xcb_screen_iterator_t *it, int
             qCDebug(lcQpaScreen) << "create a fake screen: " << screen;
         }
 
-        *primaryScreen = screen;
-        (*primaryScreen)->setPrimary(true);
-
         siblings << screen;
-        m_screens << screen;
+    }
+
+    if (primaryScreenNumber() == xcbScreenNumber) {
+        // If no screen was reported to be primary, use the first one
+        if (!*primaryScreen) {
+            (*primaryScreen) = static_cast<QXcbScreen *>(siblings.first());
+            (*primaryScreen)->setPrimary(true);
+        }
+
+        // Prepand the siblings to the current list of screens
+        QList<QXcbScreen *> new_m_screens;
+        new_m_screens.reserve( siblings.size() + m_screens.size() );
+        for (QPlatformScreen *ps:siblings) {
+            new_m_screens.append(static_cast<QXcbScreen *>(ps));
+        }
+        new_m_screens.append(std::move(m_screens));
+        m_screens = std::move(new_m_screens);
+    } else {
+        for (QPlatformScreen *ps:siblings) {
+            m_screens.append(static_cast<QXcbScreen *>(ps));
+        }
     }
 
     if (initialized) {
+        if (primaryScreenNumber() == xcbScreenNumber && !newScreens.contains(*primaryScreen)) {
+            qCDebug(lcQpaScreen) << "assigning screen as primary: " << *primaryScreen;
+            virtualDesktop->setPrimaryScreen(*primaryScreen);
+            QWindowSystemInterface::handlePrimaryScreenChanged(*primaryScreen);
+        }
+
+        for (QXcbScreen *screen: newScreens) {
+            qCDebug(lcQpaScreen) << "adding screen: " << screen << "(Primary:" << screen->isPrimary() << ")";
+            virtualDesktop->addScreen(screen);
+            QWindowSystemInterface::handleScreenAdded(screen, screen->isPrimary());
+        }
+
         for (QPlatformScreen *ps : old) {
-            virtualDesktop->removeScreen(ps);
             qCDebug(lcQpaScreen) << "destroy screen: " << ps;
             QWindowSystemInterface::handleScreenRemoved(ps);
+            virtualDesktop->removeScreen(ps);
         }
     }
 

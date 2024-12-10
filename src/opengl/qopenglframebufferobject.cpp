@@ -1418,30 +1418,31 @@ static QImage qt_gl_read_framebuffer(const QSize &size, GLenum internal_format, 
         if (error == GL_NO_ERROR || error == GL_CONTEXT_LOST)
             break;
     }
+    Qt::Orientations orient = flip ? Qt::Vertical : Qt::Orientations{};
     switch (internal_format) {
     case GL_RGB:
     case GL_RGB8:
-        return qt_gl_read_framebuffer_rgba8(size, false, ctx).mirrored(false, flip);
+        return qt_gl_read_framebuffer_rgba8(size, false, ctx).flipped(orient);
     case GL_RGB10:
-        return qt_gl_read_framebuffer_rgb10a2(size, false, ctx).mirrored(false, flip);
+        return qt_gl_read_framebuffer_rgb10a2(size, false, ctx).flipped(orient);
     case GL_RGB10_A2:
-        return qt_gl_read_framebuffer_rgb10a2(size, include_alpha, ctx).mirrored(false, flip);
+        return qt_gl_read_framebuffer_rgb10a2(size, include_alpha, ctx).flipped(orient);
     case GL_RGB16:
-        return qt_gl_read_framebuffer_rgba16(size, false, ctx).mirrored(false, flip);
+        return qt_gl_read_framebuffer_rgba16(size, false, ctx).flipped(orient);
     case GL_RGBA16:
-        return qt_gl_read_framebuffer_rgba16(size, include_alpha, ctx).mirrored(false, flip);
+        return qt_gl_read_framebuffer_rgba16(size, include_alpha, ctx).flipped(orient);
     case GL_RGB16F:
-        return qt_gl_read_framebuffer_rgba16f(size, false, ctx).mirrored(false, flip);
+        return qt_gl_read_framebuffer_rgba16f(size, false, ctx).flipped(orient);
     case GL_RGBA16F:
-        return qt_gl_read_framebuffer_rgba16f(size, include_alpha, ctx).mirrored(false, flip);
+        return qt_gl_read_framebuffer_rgba16f(size, include_alpha, ctx).flipped(orient);
     case GL_RGB32F:
-        return qt_gl_read_framebuffer_rgba32f(size, false, ctx).mirrored(false, flip);
+        return qt_gl_read_framebuffer_rgba32f(size, false, ctx).flipped(orient);
     case GL_RGBA32F:
-        return qt_gl_read_framebuffer_rgba32f(size, include_alpha, ctx).mirrored(false, flip);
+        return qt_gl_read_framebuffer_rgba32f(size, include_alpha, ctx).flipped(orient);
     case GL_RGBA:
     case GL_RGBA8:
     default:
-        return qt_gl_read_framebuffer_rgba8(size, include_alpha, ctx).mirrored(false, flip);
+        return qt_gl_read_framebuffer_rgba8(size, include_alpha, ctx).flipped(orient);
     }
 
     Q_UNREACHABLE_RETURN(QImage());

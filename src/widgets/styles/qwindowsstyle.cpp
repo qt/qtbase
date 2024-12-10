@@ -766,7 +766,7 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
             points[4] = { points[3].x(),                points[3].y() - 2 * scalev };
             points[5] = { points[4].x() - 4 * scaleh,   points[4].y() + 4 * scalev };
             p->setPen(QPen(opt->palette.text().color(), 0));
-            p->setBrush(opt->palette.text().color());
+            p->setBrush(opt->palette.text());
             p->drawPolygon(points.data(), static_cast<int>(points.size()));
         }
         if (doRestore)
@@ -824,18 +824,18 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
 
             p->setClipRegion(QRegion(topLeftPol));
             p->setPen(opt->palette.dark().color());
-            p->setBrush(opt->palette.dark().color());
+            p->setBrush(opt->palette.dark());
             p->drawPath(path1);
             p->setPen(opt->palette.shadow().color());
-            p->setBrush(opt->palette.shadow().color());
+            p->setBrush(opt->palette.shadow());
             p->drawPath(path2);
 
             p->setClipRegion(QRegion(bottomRightPol));
             p->setPen(opt->palette.light().color());
-            p->setBrush(opt->palette.light().color());
+            p->setBrush(opt->palette.light());
             p->drawPath(path1);
             p->setPen(opt->palette.midlight().color());
-            p->setBrush(opt->palette.midlight().color());
+            p->setBrush(opt->palette.midlight());
             p->drawPath(path2);
 
             QColor fillColor = ((opt->state & State_Sunken) || !(opt->state & State_Enabled)) ?

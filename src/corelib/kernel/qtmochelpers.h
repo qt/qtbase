@@ -34,17 +34,17 @@ static constexpr size_t MaxStringSize =
         (std::min)(size_t((std::numeric_limits<uint>::max)()),
                    size_t((std::numeric_limits<qsizetype>::max)()));
 
-template <uint... Nx> constexpr size_t stringDataSizeHelper(std::integer_sequence<uint, Nx...>)
+template <uint UCount, uint SCount, size_t SSize, uint MCount> struct MetaObjectContents
 {
-    // same as:
-    //   return (0 + ... + Nx);
-    // but not using the fold expression to avoid exceeding compiler limits
-    size_t total = 0;
-    uint sizes[] = { Nx... };
-    for (uint n : sizes)
-        total += n;
-    return total;
-}
+    struct StaticContent {
+        uint data[UCount];
+        uint stringdata[SCount];
+        char strings[SSize];
+    } staticData = {};
+    struct RelocatingContent {
+        const QtPrivate::QMetaTypeInterface *metaTypes[MCount];
+    } relocatingData = {};
+};
 
 template <int Count, size_t StringSize> struct StringData
 {
@@ -54,28 +54,58 @@ template <int Count, size_t StringSize> struct StringData
     constexpr StringData() = default;
 };
 
-template <uint... Nx> constexpr auto stringData(const char (&...strings)[Nx])
+template <typename... Strings> struct StringRefStorage
 {
-    constexpr size_t StringSize = stringDataSizeHelper<Nx...>({});
-    constexpr size_t Count = 2 * sizeof...(Nx);
-
-    StringData<Count, StringSize> result;
-    const char *inputs[] = { strings... };
-    uint sizes[] = { Nx... };
-
-    uint offset = 0;
-    char *output = result.stringdata0;
-    for (size_t i = 0; i < sizeof...(Nx); ++i) {
-        // copy the input string, including the terminating null
-        uint len = sizes[i];
-        for (uint j = 0; j < len; ++j)
-            output[offset + j] = inputs[i][j];
-        result.offsetsAndSizes[2 * i] = offset + sizeof(result.offsetsAndSizes);
-        result.offsetsAndSizes[2 * i + 1] = len - 1;
-        offset += len;
+    static constexpr size_t stringSizeHelper() noexcept
+    {
+        // same as:
+        //   return (0 + ... + std::extent_v<Strings>);
+        // but not using the fold expression to avoid exceeding compiler limits
+        size_t total = 0;
+        int sizes[] = { std::extent_v<Strings>... };
+        for (int n : sizes)
+            total += n;
+        return size_t(total);
     }
 
-    return result;
+    static constexpr int StringCount = sizeof...(Strings);
+    static constexpr size_t StringSize = stringSizeHelper();
+    static_assert(StringSize <= MaxStringSize, "Meta Object data is too big");
+    const char *inputs[StringCount];
+
+    constexpr StringRefStorage(const Strings &... strings) noexcept
+        : inputs{ strings... }
+    { }
+
+    constexpr void
+    writeTo(uint (&offsets)[2 * StringCount], char (&data)[StringSize]) const noexcept
+    {
+        int sizes[] = { std::extent_v<Strings>... };
+
+        uint offset = 0;
+        char *output = data;
+        for (size_t i = 0; i < sizeof...(Strings); ++i) {
+            // copy the input string, including the terminating null
+            int len = sizes[i];
+            for (int j = 0; j < len; ++j)
+                output[offset + j] = inputs[i][j];
+            offsets[2 * i] = offset + sizeof(offsets);
+            offsets[2 * i + 1] = len - 1;
+            offset += len;
+        }
+    }
+
+    constexpr auto create() const noexcept
+    {
+        StringData<2 * StringCount, StringSize>  result;
+        writeTo(result.offsetsAndSizes, result.stringdata0);
+        return result;
+    }
+};
+
+template <uint... Nx> constexpr auto stringData(const char (&...strings)[Nx])
+{
+    return StringRefStorage(strings...).create();
 }
 
 template <typename FuncType> inline bool indexOfMethod(void **_a, FuncType f, int index) noexcept
@@ -97,7 +127,6 @@ template <typename Prop, typename Value> inline bool setProperty(Prop &property,
 }
 
 struct NoType {};
-template <typename T> struct ForceCompleteMetaTypes {};
 
 namespace detail {
 template<typename Enum> constexpr int payloadSizeForEnum()
@@ -120,42 +149,28 @@ template <uint H, uint P> struct UintDataBlock
 
 // By default, we allow metatypes for incomplete types to be stored in the
 // metatype array, but we provide a way to require them to be complete by using
-// ForceCompleteMetaTypes in either the Unique type (used by moc if
-// --require-complete-types is passed or some internal heuristic for QML
-// matches) or in the type itself, used below for properties and enums.
-template <typename T> struct TypeMustBeComplete : std::false_type {};
-template <typename T> struct TypeMustBeComplete<ForceCompleteMetaTypes<T>> : std::true_type {};
-// template <> struct TypeMustBeComplete<void> : std::true_type {};
-
-template <typename Unique, typename T, typename RequireComplete = TypeMustBeComplete<Unique>>
-struct TryMetaTypeInterfaceForType
-{
-    static constexpr const QtPrivate::QMetaTypeInterface *type() noexcept
-    {
-        using namespace QtPrivate;
-        using Query = TypeAndForceComplete<T, RequireComplete>;
-        return qTryMetaTypeInterfaceForType<Unique, Query>();
-    }
+// void as the Unique type (used by moc if --require-complete-types is passed
+// or some internal heuristic for QML matches) or by using the enum below, for
+// properties and enums.
+enum TypeCompletenessForMetaType : bool {
+    TypeMayBeIncomplete = false,
+    TypeMustBeComplete = true,
 };
 
-template <typename Unique, typename T, typename RequireComplete>
-struct TryMetaTypeInterfaceForType<Unique, ForceCompleteMetaTypes<T>, RequireComplete> :
-        TryMetaTypeInterfaceForType<void, T, std::true_type>
-{};
-
-template <typename... T> struct MetaTypeList
+template <bool TypeMustBeComplete, typename... T> struct MetaTypeList
 {
     static constexpr int count() { return sizeof...(T); }
-    template <typename Result> static constexpr void copyTo(Result &result, uint &metatypeoffset)
+    template <typename Unique, typename Result> static constexpr void
+    copyTo(Result &result, uint &metatypeoffset)
     {
         if constexpr (count()) {
             using namespace QtPrivate;
-            using Unique = typename Result::UniqueType;
+            using U = std::conditional_t<TypeMustBeComplete, void, Unique>;
             const QMetaTypeInterface *metaTypes[] = {
-                TryMetaTypeInterfaceForType<Unique, T>::type()...
+                qTryMetaTypeInterfaceForType<U, T>()...
             };
             for (const QMetaTypeInterface *mt : metaTypes)
-                result.metaTypes[metatypeoffset++] = mt;
+                result.relocatingData.metaTypes[metatypeoffset++] = mt;
         }
     }
 };
@@ -164,7 +179,6 @@ template <int Idx, typename T> struct UintDataEntry
 {
     T entry;
     constexpr UintDataEntry(T &&entry_) : entry(std::move(entry_)) {}
-    static constexpr int metaTypeCount() { return decltype(T::metaTypes())::Count; }
 };
 
 // This storage type is designed similar to libc++'s std::tuple, in that it
@@ -190,19 +204,6 @@ template <int... Idx, typename... T> struct UintDataStorage<std::integer_sequenc
             invoke(static_cast<const UintDataEntry<Idx, T> &>(*this))...
         };
         (void) dummy;
-    }
-
-    static constexpr int metaTypeCount()
-    {
-        // same as:
-        //   return (0 + ... + UintDataEntry<Idx, T>::metaTypeCount());
-        // but not using the fold expression to avoid exceeding compiler limits
-        // (calculation done using int to get compile-time overflow checking)
-        int total = 0;
-        int counts[] = { 0, UintDataEntry<Idx, T>::metaTypeCount()... };
-        for (int n : counts)
-            total += n;
-        return total;
     }
 };
 } // namespace detail
@@ -246,10 +247,10 @@ template <typename... Block> struct UintData
         return total;
     }
 
-    template <typename Result>
-    constexpr void copyTo(Result &result, size_t dataoffset, uint &metatypeoffset) const
+    template <typename Unique, typename Result> constexpr void
+    copyTo(Result &result, size_t dataoffset, uint &metatypeoffset) const
     {
-        uint *ptr = result.data.data();
+        uint *ptr = result.staticData.data;
         size_t payloadoffset = dataoffset + headerSize();
         data.forEach([&](const auto &input) {
             // copy the uint data
@@ -258,7 +259,7 @@ template <typename... Block> struct UintData
             input.adjustOffsets(ptr, uint(dataoffset), uint(payloadoffset), metatypeoffset);
 
             // copy the metatypes
-            decltype(input.metaTypes())::copyTo(result, metatypeoffset);
+            decltype(input.metaTypes())::template copyTo<Unique>(result, metatypeoffset);
 
             dataoffset += input.headerSize();
             payloadoffset += input.payloadSize();
@@ -299,7 +300,7 @@ template <typename PropertyType> struct PropertyData : detail::UintDataBlock<5, 
     }
 
     static constexpr auto metaTypes()
-    { return detail::MetaTypeList<ForceCompleteMetaTypes<PropertyType>>{}; }
+    { return detail::MetaTypeList<detail::TypeMustBeComplete, PropertyType>{}; }
 
     static constexpr void adjustOffsets(uint *, uint, uint, uint) noexcept {}
 };
@@ -355,7 +356,7 @@ public:
     }
 
     static constexpr auto metaTypes()
-    { return detail::MetaTypeList<ForceCompleteMetaTypes<Enum>>{}; }
+    { return detail::MetaTypeList<detail::TypeMustBeComplete, Enum>{}; }
 
     static constexpr void
     adjustOffsets(uint *ptr, uint dataoffset, uint payloadoffset, uint metatypeoffset) noexcept
@@ -386,11 +387,11 @@ struct FunctionData<Ret (Args...), ExtraFlags>
                     "NoType return type used on a non-constructor");
             static_assert((ExtraFlags & MethodIsConst) == 0,
                     "Constructors cannot be const");
-            return detail::MetaTypeList<Args...>{};
+            return detail::MetaTypeList<detail::TypeMayBeIncomplete, Args...>{};
         } else {
             static_assert((ExtraFlags & MethodConstructor) != MethodConstructor,
                     "Constructors must use NoType as return type");
-            return detail::MetaTypeList<Ret, Args...>{};
+            return detail::MetaTypeList<detail::TypeMayBeIncomplete, Ret, Args...>{};
         }
     }
 
@@ -505,18 +506,11 @@ template <typename F> struct RevisionedConstructorData :
     {}
 };
 
-
-template <uint N, uint M, typename Unique = void> struct UintAndMetaTypeData
-{
-    std::array<uint, N> data;
-    std::array<const QtPrivate::QMetaTypeInterface *, M> metaTypes;
-    using UniqueType = Unique;
-};
-
-template <typename ObjectType, typename Unique,
+template <typename ObjectType, typename Unique, typename Strings,
           typename Methods, typename Properties, typename Enums,
           typename Constructors = UintData<>, typename ClassInfo = detail::UintDataBlock<0, 0>>
-constexpr auto metaObjectData(uint flags, const Methods &methods, const Properties &properties,
+constexpr auto metaObjectData(uint flags, const Strings &strings,
+                              const Methods &methods, const Properties &properties,
                               const Enums &enums, const Constructors &constructors = {},
                               const ClassInfo &classInfo = {})
 {
@@ -534,54 +528,57 @@ constexpr auto metaObjectData(uint flags, const Methods &methods, const Properti
             + Constructors::dataSize()
             + ClassInfo::headerSize() // + ClassInfo::payloadSize()
             + 1;    // empty EOD
-    UintAndMetaTypeData<TotalSize, MetaTypeCount, Unique> result = {};
+
+    MetaObjectContents<TotalSize, 2 * Strings::StringCount, Strings::StringSize,
+            MetaTypeCount> result = {};
+    strings.writeTo(result.staticData.stringdata, result.staticData.strings);
+
     uint dataoffset = HeaderSize;
     uint metatypeoffset = 0;
+    uint *data = result.staticData.data;
 
-    result.data[0] = QtMocConstants::OutputRevision;
-    result.data[1] = 0;     // class name index (it's always 0)
+    data[0] = QtMocConstants::OutputRevision;
+    data[1] = 0;     // class name index (it's always 0)
 
-    result.data[2] = ClassInfo::headerSize() / 2;
-    result.data[3] = ClassInfo::headerSize() ? dataoffset : 0;
-    q20::copy_n(classInfo.header, classInfo.headerSize(), result.data.data() + dataoffset);
+    data[2] = ClassInfo::headerSize() / 2;
+    data[3] = ClassInfo::headerSize() ? dataoffset : 0;
+    q20::copy_n(classInfo.header, classInfo.headerSize(), data + dataoffset);
     dataoffset += ClassInfo::headerSize();
 
-    result.data[6] = properties.count();
-    result.data[7] = properties.count() ? dataoffset : 0;
-    properties.copyTo(result, dataoffset, metatypeoffset);
+    data[6] = properties.count();
+    data[7] = properties.count() ? dataoffset : 0;
+    properties.template copyTo<Unique>(result, dataoffset, metatypeoffset);
     dataoffset += properties.dataSize();
 
-    result.data[8] = enums.count();
-    result.data[9] = enums.count() ? dataoffset : 0;
-    enums.copyTo(result, dataoffset, metatypeoffset);
+    data[8] = enums.count();
+    data[9] = enums.count() ? dataoffset : 0;
+    enums.template copyTo<Unique>(result, dataoffset, metatypeoffset);
     dataoffset += enums.dataSize();
 
     // the meta type referring to the object itself
-    result.metaTypes[metatypeoffset++] =
-            QtPrivate::qTryMetaTypeInterfaceForType<void,
-                QtPrivate::TypeAndForceComplete<ObjectType, std::true_type>>();
+    result.relocatingData.metaTypes[metatypeoffset++] = QMetaType::fromType<ObjectType>().iface();
 
-    result.data[4] = methods.count();
-    result.data[5] = methods.count() ? dataoffset : 0;
-    methods.copyTo(result, dataoffset, metatypeoffset);
+    data[4] = methods.count();
+    data[5] = methods.count() ? dataoffset : 0;
+    methods.template copyTo<Unique>(result, dataoffset, metatypeoffset);
     dataoffset += methods.dataSize();
 
-    result.data[10] = constructors.count();
-    result.data[11] = constructors.count() ? dataoffset : 0;
-    constructors.copyTo(result, dataoffset, metatypeoffset);
+    data[10] = constructors.count();
+    data[11] = constructors.count() ? dataoffset : 0;
+    constructors.template copyTo<Unique>(result, dataoffset, metatypeoffset);
     dataoffset += constructors.dataSize();
 
-    result.data[12] = flags;
+    data[12] = flags;
 
     // count the number of signals
     if constexpr (Methods::count()) {
         constexpr uint MethodHeaderSize = Methods::headerSize() / Methods::count();
-        const uint *ptr = &result.data[result.data[5]];
-        const uint *end = &result.data[result.data[5] + MethodHeaderSize * Methods::count()];
+        const uint *ptr = &data[data[5]];
+        const uint *end = &data[data[5] + MethodHeaderSize * Methods::count()];
         for ( ; ptr < end; ptr += MethodHeaderSize) {
             if ((ptr[4] & QtMocConstants::MethodSignal) == 0)
                 break;
-            ++result.data[13];
+            ++data[13];
         }
     }
 

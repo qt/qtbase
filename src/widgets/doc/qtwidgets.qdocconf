@@ -37,6 +37,7 @@ depends += \
     qtdesigner \
     qtquick \
     qmake \
+    qtnetwork \
     qtcmake \
     qtsvg \
     qtlinguist \

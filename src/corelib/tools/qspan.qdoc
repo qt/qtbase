@@ -22,7 +22,7 @@
 
     Unlike views such as QStringView, QLatin1StringView and QUtf8StringView,
     referenced data can be modified through a QSpan object. To prevent this,
-    construct a QSpan over a \c{const T}:
+    construct a QSpan over a \c{const T} (see \l{const-mutable-spans}):
 
     \code
     int numbers[] = {0, 1, 2};
@@ -32,6 +32,9 @@
     QSpan<const int> cspan = numbers;
     cspan[0] = 0; // ERROR: cspan[0] is read-only
     \endcode
+
+    \section2 Variable-Size and Fixed-Size Spans
+    \target variable-fixed-spans
 
     A QSpan can be \e{fixed-size} or \e{variable-sized}.
 
@@ -59,6 +62,9 @@
     The opposite direction (variable-length into fixed-length) has the
     precondition that both span's sizes must match.
 
+    \section2 Const and Mutable Spans
+    \target const-mutable-spans
+
     Unlike with owning containers, \c{const} is \e{shallow} in QSpan: you can
     still modify the data through a const QSpan (but not through a
     \c{QSpan<const T>}), and begin() and end() are not overloaded on
@@ -72,6 +78,9 @@
     *span.begin() = 31;  // OK, numbers[0] == 31 now
     *span.cbegin() = -1; // ERROR: cannot assign through a const_iterator
     \endcode
+
+    \section2 Other Properties
+    \target other-span-properties
 
     QSpan should be passed by value, not by reference-to-const:
 
@@ -135,7 +144,7 @@
 
     This alias is provided for compatbility with the STL.
 
-    \sa value_type, pointer
+    \sa value_type, pointer, {const-mutable-spans}
 */
 
 /*!
@@ -145,7 +154,7 @@
 
     This alias is provided for compatbility with the STL.
 
-    \sa element_type
+    \sa element_type, {const-mutable-spans}
 */
 
 /*!
@@ -171,7 +180,7 @@
 
     This alias is provided for compatbility with the STL.
 
-    \sa element_type, const_pointer, reference, iterator
+    \sa element_type, const_pointer, reference, iterator, {const-mutable-spans}
 */
 
 /*!
@@ -181,7 +190,7 @@
 
     This alias is provided for compatbility with the STL.
 
-    \sa element_type, pointer, const_reference, const_iterator
+    \sa element_type, pointer, const_reference, const_iterator, {const-mutable-spans}
 */
 
 /*!
@@ -191,7 +200,7 @@
 
     This alias is provided for compatbility with the STL.
 
-    \sa element_type, const_reference, pointer
+    \sa element_type, const_reference, pointer, {const-mutable-spans}
 */
 
 /*!
@@ -201,7 +210,7 @@
 
     This alias is provided for compatbility with the STL.
 
-    \sa element_type, reference, const_pointer
+    \sa element_type, reference, const_pointer, {const-mutable-spans}
 */
 
 /*!
@@ -209,7 +218,7 @@
 
     An alias for \c{T*} and \c{pointer}, respectively. Includes the \c{const}, if any.
 
-    \sa pointer, const_iterator, reverse_iterator
+    \sa pointer, const_iterator, reverse_iterator, {const-mutable-spans}
 */
 
 /*!
@@ -217,7 +226,7 @@
 
     An alias for \c{const T*} and \c{const_pointer}, respectively.
 
-    \sa const_pointer, iterator, const_reverse_iterator
+    \sa const_pointer, iterator, const_reverse_iterator, {const-mutable-spans}
 */
 
 /*!
@@ -225,7 +234,7 @@
 
     An alias for \c{std::reverse_iterator<iterator>}. Includes the \c{const}, if any.
 
-    \sa iterator, const_reverse_iterator
+    \sa iterator, const_reverse_iterator, {const-mutable-spans}
 */
 
 /*!
@@ -233,14 +242,14 @@
 
     An alias for \c{std::reverse_iterator<const_iterator>}.
 
-    \sa const_iterator, reverse_iterator
+    \sa const_iterator, reverse_iterator, {const-mutable-spans}
 */
 
 /*!
     \variable QSpan::extent
 
     The second template argument of \c{QSpan<T, E>}, that is, \c{E}. This is
-    \c{std::dynamic_extent} for variable-sized spans.
+    \c{std::dynamic_extent} for \l{variable-fixed-spans}{variable-sized spans}.
 
     \note While all other sizes and indexes in QSpan use qsizetype, this
     variable, like \c{E}, is actually of type \c{size_t}, for compatibility with
@@ -262,7 +271,7 @@
     \c{std::dynamic_extent}. In other words: only fixed-zero-sized or variable-sized spans
     are default-constructible.
 
-    \sa extent
+    \sa extent, {variable-fixed-spans}
 */
 
 /*!
@@ -351,6 +360,8 @@
     \note This constructor is \c{noexcept} only if \c{E} is \c{std::dynamic_extent}.
 
     \note If \c{E} is not \c{std::dynamic_extent} and the size of \a il is not \c{E}, the behavior is undefined.
+
+    \sa {const-mutable-spans}
 */
 
 //
@@ -398,7 +409,7 @@
     The index must be in range, that is, \a idx >= 0 and \a idx < size(),
     otherwise the behavior is undefined.
 
-    \sa front(), back(), size(), empty()
+    \sa front(), back(), size(), empty(), {const-mutable-spans}
 */
 
 /*!
@@ -408,7 +419,7 @@
 
     The span must not be empty, otherwise the behavior is undefined.
 
-    \sa operator[](), back(), size(), empty()
+    \sa operator[](), back(), size(), empty(), {const-mutable-spans}
 */
 
 /*!
@@ -418,7 +429,7 @@
 
     The span must not be empty, otherwise the behavior is undefined.
 
-    \sa operator[](), front(), size(), empty()
+    \sa operator[](), front(), size(), empty(), {const-mutable-spans}
 */
 
 /*!
@@ -428,7 +439,7 @@
 
     The same as calling begin().
 
-    \sa begin(), front()
+    \sa begin(), front(), {const-mutable-spans}
 */
 
 //
@@ -443,7 +454,7 @@
     Because QSpan iterators are just pointers, this is the same as calling
     data().
 
-    \sa end(), cbegin(), rbegin(), crbegin(), data()
+    \sa end(), cbegin(), rbegin(), crbegin(), data(), {const-mutable-spans}
 */
 
 /*!
@@ -454,7 +465,7 @@
     Because QSpan iterators are just pointers, this it the same as calling
     \c{data() + size()}.
 
-    \sa begin(), cend(), rend(), crend(), data(), size()
+    \sa begin(), cend(), rend(), crend(), data(), size(), {const-mutable-spans}
 */
 
 /*!
@@ -469,7 +480,7 @@
     *span.cbegin() = 42; // ERROR: cannot assign through a const_iterator
     \endcode
 
-    \sa cend(), begin(), crbegin(), rbegin(), data()
+    \sa cend(), begin(), crbegin(), rbegin(), data(), {const-mutable-spans}
 */
 
 /*!
@@ -477,7 +488,7 @@
 
     Returns a const_iterator pointing to one past the end of the span.
 
-    \sa cbegin(), end(), crend(), rend(), data(), size()
+    \sa cbegin(), end(), crend(), rend(), data(), size(), {const-mutable-spans}
 */
 
 /*!
@@ -485,7 +496,7 @@
 
     Returns a reverse_iterator pointing to the beginning of the reversed span.
 
-    \sa rend(), crbegin(), begin(), cbegin()
+    \sa rend(), crbegin(), begin(), cbegin(), {const-mutable-spans}
 */
 
 /*!
@@ -493,7 +504,7 @@
 
     Returns a reverse_iterator pointing to one past the end of the reversed span.
 
-    \sa rbegin(), crend(), end(), cend()
+    \sa rbegin(), crend(), end(), cend(), {const-mutable-spans}
 */
 
 /*!
@@ -501,7 +512,7 @@
 
     Returns a const_reverse_iterator pointing to the beginning of the reversed span.
 
-    \sa crend(), rbegin(), cbegin(), begin()
+    \sa crend(), rbegin(), cbegin(), begin(), {const-mutable-spans}
 */
 
 /*!
@@ -509,7 +520,7 @@
 
     Returns a const_reverse_iterator pointing to one past the end of the reversed span.
 
-    \sa crbegin(), rend(), cend(), end()
+    \sa crbegin(), rend(), cend(), end(), {const-mutable-spans}
 */
 
 //
@@ -520,7 +531,8 @@
     \fn template <typename T, size_t E> template <std::size_t Count> auto QSpan<T, E>::first() const
     \keyword first-t
 
-    Returns a fixed-sized span of size \c{Count} referencing the first \c{Count} elements of \c{*this}.
+    Returns a \l{variable-fixed-spans}{fixed-sized} span of size \c{Count}
+    referencing the first \c{Count} elements of \c{*this}.
 
     The span must hold at least \c{Count} elements (\c{E} >= \c{Count} \e{and}
     size() >= \c{Count}), otherwise the behavior is undefined.
@@ -532,7 +544,8 @@
     \fn template <typename T, size_t E> template <std::size_t Count> auto QSpan<T, E>::last() const
     \keyword last-t
 
-    Returns a fixed-sized span of size \c{Count} referencing the last \c{Count} elements of \c{*this}.
+    Returns a \l{variable-fixed-spans}{fixed-sized} span of size \c{Count}
+    referencing the last \c{Count} elements of \c{*this}.
 
     The span must hold at least \c{Count} elements (\c{E} >= \c{Count} \e{and}
     size() >= \c{Count}), otherwise the behavior is undefined.
@@ -554,6 +567,7 @@
     size() >= \c{Offset}), otherwise the behavior is undefined.
 
     \sa subspan(QSpan<T,E>::size_type), subspan(), first(), last()
+    \sa {variable-fixed-spans}
 */
 
 /*!
@@ -571,6 +585,7 @@
     behavior is undefined.
 
     \sa subspan(QSpan<T,E>::size_type, QSpan<T,E>::size_type), subspan(), first(), last()
+    \sa {variable-fixed-spans}
 */
 
 //
@@ -581,7 +596,8 @@
     \fn template <typename T, size_t E> auto QSpan<T, E>::first(qsizetype n) const
     \keyword first-n
 
-    Returns a variable-sized span of size \a n referencing the first \a n elements of \c{*this}.
+    Returns a \l{variable-fixed-spans}{variable-sized} span of size \a n
+    referencing the first \a n elements of \c{*this}.
 
     \a n must be non-negative.
 
@@ -590,14 +606,15 @@
 
     \sa {first-t}{first<N>()}, last(QSpan<T,E>::size_type), subspan(QSpan<T,E>::size_type),
         subspan(QSpan<T,E>::size_type, QSpan<T,E>::size_type)
-    \sa sliced()
+    \sa sliced(), chopped()
 */
 
 /*!
     \fn template <typename T, size_t E> auto QSpan<T, E>::last(qsizetype n) const
     \keyword last-n
 
-    Returns a variable-sized span of size \a n referencing the last \a n elements of \c{*this}.
+    Returns a \l{variable-fixed-spans}{variable-sized} span of size \a n
+    referencing the last \a n elements of \c{*this}.
 
     \a n must be non-negative.
 
@@ -605,7 +622,7 @@
     size() >= \a n), otherwise the behavior is undefined.
 
     \sa last(), first(QSpan<T,E>::size_type), subspan(QSpan<T,E>::size_type),
-        subspan(QSpan<T,E>::size_type, QSpan<T,E>::size_type), sliced()
+        subspan(QSpan<T,E>::size_type, QSpan<T,E>::size_type), sliced(), chopped()
 */
 
 /*!
@@ -613,8 +630,9 @@
     \fn template <typename T, size_t E> auto QSpan<T, E>::sliced(qsizetype pos) const
     \keyword subspan-n1
 
-    Returns a variable-sized span of size \c{size() - pos} referencing the
-    remainder of this span after dropping the first \a pos elements.
+    Returns a \l{variable-fixed-spans}{variable-sized} span of size \c{size() -
+    pos} referencing the remainder of this span after dropping the first \a pos
+    elements.
 
     \a pos must be non-negative.
 
@@ -624,7 +642,7 @@
     These functions do the same thing: subspan() is provided for STL
     compatibility and sliced() is provided for Qt compatibility.
 
-    \sa subspan(), first(QSpan<T,E>::size_type), last(QSpan<T,E>::size_type)
+    \sa subspan(), first(QSpan<T,E>::size_type), last(QSpan<T,E>::size_type), chopped()
 */
 
 /*!
@@ -632,8 +650,8 @@
     \fn template <typename T, size_t E> auto QSpan<T, E>::sliced(qsizetype pos, qsizetype n) const
     \keyword subspan-n2
 
-    Returns a variable-sized span of size \a n referencing the \a n elements of
-    this span starting at \a pos.
+    Returns a \l{variable-fixed-spans}{variable-sized} span of size \a n
+    referencing the \a n elements of this span starting at \a pos.
 
     Both \a pos and \a n must be non-negative.
 
@@ -644,7 +662,24 @@
     These functions do the same thing: subspan() is provided for STL
     compatibility and sliced() is provided for Qt compatibility.
 
-    \sa subspan(), first(QSpan<T,E>::size_type), last(QSpan<T,E>::size_type)
+    \sa subspan(), first(QSpan<T,E>::size_type), last(QSpan<T,E>::size_type), chopped()
+*/
+
+/*!
+    \fn template <typename T, size_t E> auto QSpan<T,E>::chopped(qsizetype n) const
+    \since 6.9
+
+    Returns a \l{variable-fixed-spans}{variable-sized} span of size size() - \a
+    n referencing the first size() - \a n elements of this span.
+
+    Same as \c{first(size() - n)}.
+
+    \a n must be non-negative.
+
+    This span must hold at least \a n elements (\c{E} >= \a n \e{and} size() >=
+    \a n), otherwise the behavior is undefined.
+
+    \sa subspan(), first(QSpan<T,E>::size_type), last(QSpan<T,E>::size_type),
 */
 
 /*!
@@ -660,7 +695,7 @@
     \note \c{q20::dynamic_extent} is a C++17 backport of C++20's
     \l{https://en.cppreference.com/w/cpp/container/span/dynamic_extent}{\c{std::dynamic_extent}}.
 
-    \sa as_writable_bytes(), size_bytes()
+    \sa as_writable_bytes(), size_bytes(), {const-mutable-spans}
 */
 
 /*!
@@ -679,5 +714,5 @@
     \note \c{q20::dynamic_extent} is a C++17 backport of C++20's
     \l{https://en.cppreference.com/w/cpp/container/span/dynamic_extent}{\c{std::dynamic_extent}}.
 
-    \sa as_bytes(), size_bytes()
+    \sa as_bytes(), size_bytes(), {const-mutable-spans}
 */

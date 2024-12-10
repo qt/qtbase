@@ -16,5 +16,6 @@ qt_internal_add_manual_test(tst_manual_windowflags
         controls.cpp # undef QT_NO_FOREACH
     LIBRARIES
         Qt::Gui
+        Qt::GuiPrivate
         Qt::Widgets
 )

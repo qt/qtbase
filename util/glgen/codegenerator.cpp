@@ -646,8 +646,8 @@ void CodeGenerator::writePublicClassImplementation(const QString &baseFileName,
     stream << QStringLiteral("{") << Qt::endl;
     stream << QStringLiteral("    Q_ASSERT(context);") << Qt::endl;
     stream << QStringLiteral("    QSurfaceFormat f = context->format();") << Qt::endl;
-    stream << QStringLiteral("    const QPair<int, int> v = qMakePair(f.majorVersion(), f.minorVersion());") << Qt::endl;
-    stream << QString(QStringLiteral("    if (v < qMakePair(%1, %2))"))
+    stream << QStringLiteral("    const auto v = std::pair(f.majorVersion(), f.minorVersion());") << Qt::endl;
+    stream << QString(QStringLiteral("    if (v < std::pair(%1, %2))"))
               .arg(versionProfile.version.major)
               .arg(versionProfile.version.minor) << Qt::endl;
     stream << QStringLiteral("        return false;") << Qt::endl << Qt::endl;

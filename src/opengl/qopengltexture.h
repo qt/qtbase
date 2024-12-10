@@ -486,7 +486,7 @@ public:
     void setMipMaxLevel(int maxLevel);
     int mipMaxLevel() const;
     void setMipLevelRange(int baseLevel, int maxLevel);
-    QPair<int, int> mipLevelRange() const;
+    std::pair<int, int> mipLevelRange() const;
 
     void setAutoMipMapGenerationEnabled(bool enabled);
     bool isAutoMipMapGenerationEnabled() const;
@@ -553,7 +553,7 @@ public:
     Filter magnificationFilter() const;
     void setMinMagFilters(Filter minificationFilter,
                           Filter magnificationFilter);
-    QPair<Filter, Filter> minMagFilters() const;
+    std::pair<Filter, Filter> minMagFilters() const;
     void setMaximumAnisotropy(float anisotropy);
     float maximumAnisotropy() const;
 
@@ -576,7 +576,7 @@ public:
     void setMaximumLevelOfDetail(float value);
     float maximumLevelOfDetail() const;
     void setLevelOfDetailRange(float min, float max);
-    QPair<float, float> levelOfDetailRange() const;
+    std::pair<float, float> levelOfDetailRange() const;
     void setLevelofDetailBias(float bias);
     float levelofDetailBias() const;
 

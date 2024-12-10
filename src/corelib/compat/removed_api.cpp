@@ -1274,7 +1274,56 @@ QByteArray QMetaEnum::valueToKeys(int value) const
 }
 
 
+#include "qmutex.h"
+
+#if QT_CONFIG(thread)
+void QBasicMutex::destroyInternal(QMutexPrivate *d)
+{
+    return destroyInternal(static_cast<void *>(d));
+}
+#endif
+
 #include "qstring.h"
+
+QString QString::arg(qlonglong a, int fieldWidth, int base, QChar fillChar) const
+{
+    return arg_impl(a, fieldWidth, base, fillChar);
+}
+
+QString QString::arg(qulonglong a, int fieldWidth, int base, QChar fillChar) const
+{
+    return arg_impl(a, fieldWidth, base, fillChar);
+}
+
+QString QString::arg(double a, int fieldWidth, char format, int precision, QChar fillChar) const
+{
+    return arg_impl(a, fieldWidth, format, precision, fillChar);
+}
+
+QString QString::arg(char a, int fieldWidth, QChar fillChar) const
+{
+    return arg_impl(QAnyStringView(a), fieldWidth, fillChar);
+}
+
+QString QString::arg(QChar a, int fieldWidth, QChar fillChar) const
+{
+    return arg_impl(QAnyStringView{a}, fieldWidth, fillChar);
+}
+
+QString QString::arg(const QString &a, int fieldWidth, QChar fillChar) const
+{
+    return arg_impl(qToAnyStringViewIgnoringNull(a), fieldWidth, fillChar);
+}
+
+QString QString::arg(QStringView a, int fieldWidth, QChar fillChar) const
+{
+    return arg_impl(QAnyStringView(a), fieldWidth, fillChar);
+}
+
+QString QString::arg(QLatin1StringView a, int fieldWidth, QChar fillChar) const
+{
+    return arg(QAnyStringView(a), fieldWidth, fillChar);
+}
 
 QString QtPrivate::argToQString(QStringView pattern, size_t n, const ArgBase **args)
 {

@@ -2,6 +2,9 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qandroidplatformiconengine.h"
+
+#ifndef QT_NO_ICON
+
 #include "androidjnimain.h"
 
 #include <QtCore/qdebug.h>
@@ -214,13 +217,45 @@ static QString fetchFont(const QString &query)
     triedFonts[query] = fontFamily;
     return fontFamily;
 }
+
+static QFont selectFont()
+{
+    QString fontFamily;
+    // The MaterialIcons-*.ttf and MaterialSymbols* font files are available from
+    // https://github.com/google/material-design-icons/tree/master. If one of them is
+    // packaged as a resource with the application, then we use it. We prioritize
+    // a variable font.
+    const QStringList fontCandidates = {
+        "MaterialSymbolsOutlined[FILL,GRAD,opsz,wght].ttf",
+        "MaterialSymbolsRounded[FILL,GRAD,opsz,wght].ttf",
+        "MaterialSymbolsSharp[FILL,GRAD,opsz,wght].ttf",
+        "MaterialIcons-Regular.ttf",
+        "MaterialIconsOutlined-Regular.otf",
+        "MaterialIconsRound-Regular.otf",
+        "MaterialIconsSharp-Regular.otf",
+        "MaterialIconsTwoTone-Regular.otf",
+    };
+    for (const auto &fontCandidate : fontCandidates) {
+        fontFamily = FontProvider::fetchFont(u":/qt-project.org/icons/%1"_s.arg(fontCandidate));
+        if (!fontFamily.isEmpty())
+            break;
+    }
+
+    // Otherwise we try to download the Outlined version of Material Symbols
+    const QString key = qEnvironmentVariable("QT_GOOGLE_FONTS_KEY");
+    if (fontFamily.isEmpty() && !key.isEmpty())
+        fontFamily = FontProvider::fetchFont(u"key=%1&name=Material+Symbols+Outlined"_s.arg(key));
+
+    // last resort - use any Material Icons
+    if (fontFamily.isEmpty())
+        fontFamily = u"Material Icons"_s;
+    return QFont(fontFamily);
 }
 
-QString QAndroidPlatformIconEngine::glyphs() const
-{
-    if (!QFontInfo(m_iconFont).exactMatch())
-        return {};
+} // namespace FontProvider
 
+static QString getGlyphs(QStringView iconName)
+{
     static constexpr std::pair<QLatin1StringView, QStringView> glyphMap[] = {
         {"address-book-new"_L1, u"\ue0e0"},
         {"application-exit"_L1, u"\ue5cd"},
@@ -477,139 +512,38 @@ QString QAndroidPlatformIconEngine::glyphs() const
         {"weather-storm"_L1, u"\uf070"},
     };
 
-    const auto it = std::find_if(std::begin(glyphMap), std::end(glyphMap), [this](const auto &c){
-        return c.first == m_iconName;
+    const auto it = std::find_if(std::begin(glyphMap),
+                                 std::end(glyphMap), [iconName](const auto &c){
+        return c.first == iconName;
     });
     return it != std::end(glyphMap) ? it->second.toString()
-                                    : (m_iconName.length() == 1 ? m_iconName : QString());
+                                    : (iconName.length() == 1 ? iconName.toString() : QString());
 }
 
 QAndroidPlatformIconEngine::QAndroidPlatformIconEngine(const QString &iconName)
-    : m_iconName(iconName)
-    , m_glyphs(glyphs())
+    : QFontIconEngine(iconName, FontProvider::selectFont())
+    , m_glyphs(getGlyphs(iconName))
 {
-    QString fontFamily;
-    // The MaterialIcons-*.ttf and MaterialSymbols* font files are available from
-    // https://github.com/google/material-design-icons/tree/master. If one of them is
-    // packaged as a resource with the application, then we use it. We prioritize
-    // a variable font.
-    const QStringList fontCandidates = {
-        "MaterialSymbolsOutlined[FILL,GRAD,opsz,wght].ttf",
-        "MaterialSymbolsRounded[FILL,GRAD,opsz,wght].ttf",
-        "MaterialSymbolsSharp[FILL,GRAD,opsz,wght].ttf",
-        "MaterialIcons-Regular.ttf",
-        "MaterialIconsOutlined-Regular.otf",
-        "MaterialIconsRound-Regular.otf",
-        "MaterialIconsSharp-Regular.otf",
-        "MaterialIconsTwoTone-Regular.otf",
-    };
-    for (const auto &fontCandidate : fontCandidates) {
-        fontFamily = FontProvider::fetchFont(u":/qt-project.org/icons/%1"_s.arg(fontCandidate));
-        if (!fontFamily.isEmpty())
-            break;
-    }
-
-    // Otherwise we try to download the Outlined version of Material Symbols
-    const QString key = qEnvironmentVariable("QT_GOOGLE_FONTS_KEY");
-    if (fontFamily.isEmpty() && !key.isEmpty())
-        fontFamily = FontProvider::fetchFont(u"key=%1&name=Material+Symbols+Outlined"_s.arg(key));
-
-    // last resort - use any Material Icons
-    if (fontFamily.isEmpty())
-        fontFamily = u"Material Icons"_s;
-    m_iconFont = QFont(fontFamily);
 }
 
-QAndroidPlatformIconEngine::~QAndroidPlatformIconEngine()
-{}
-
-QIconEngine *QAndroidPlatformIconEngine::clone() const
-{
-    return new QAndroidPlatformIconEngine(m_iconName);
-}
+QAndroidPlatformIconEngine::~QAndroidPlatformIconEngine() = default;
 
 QString QAndroidPlatformIconEngine::key() const
 {
     return u"QAndroidPlatformIconEngine"_s;
 }
 
-QString QAndroidPlatformIconEngine::iconName()
+QIconEngine *QAndroidPlatformIconEngine::clone() const
 {
-    return m_iconName;
+    QAndroidPlatformIconEngine *that = const_cast<QAndroidPlatformIconEngine *>(this);
+    return new QAndroidPlatformIconEngine(that->iconName());
 }
 
-bool QAndroidPlatformIconEngine::isNull()
+QString QAndroidPlatformIconEngine::string() const
 {
-    if (m_glyphs.isEmpty())
-        return true;
-    const QChar c0 = m_glyphs.at(0);
-    const QFontMetrics fontMetrics(m_iconFont);
-    if (c0.category() == QChar::Other_Surrogate && m_glyphs.size() > 1)
-        return !fontMetrics.inFontUcs4(QChar::surrogateToUcs4(c0, m_glyphs.at(1)));
-    return !fontMetrics.inFont(c0);
-}
-
-QList<QSize> QAndroidPlatformIconEngine::availableSizes(QIcon::Mode, QIcon::State)
-{
-    return {{16, 16}, {24, 24}, {48, 48}, {128, 128}};
-}
-
-QSize QAndroidPlatformIconEngine::actualSize(const QSize &size, QIcon::Mode mode, QIcon::State state)
-{
-    return QIconEngine::actualSize(size, mode, state);
-}
-
-QPixmap QAndroidPlatformIconEngine::pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state)
-{
-    return scaledPixmap(size, mode, state, 1.0);
-}
-
-QPixmap QAndroidPlatformIconEngine::scaledPixmap(const QSize &size, QIcon::Mode mode, QIcon::State state, qreal scale)
-{
-    const quint64 cacheKey = calculateCacheKey(mode, state);
-    if (cacheKey != m_cacheKey || m_pixmap.size() != size || m_pixmap.devicePixelRatio() != scale) {
-        m_pixmap = QPixmap(size * scale);
-        m_pixmap.fill(Qt::transparent);
-        m_pixmap.setDevicePixelRatio(scale);
-
-        if (!m_pixmap.isNull()) {
-            QPainter painter(&m_pixmap);
-            paint(&painter, QRect(QPoint(), size), mode, state);
-        }
-
-        m_cacheKey = cacheKey;
-    }
-
-    return m_pixmap;
-}
-
-void QAndroidPlatformIconEngine::paint(QPainter *painter, const QRect &rect, QIcon::Mode mode, QIcon::State state)
-{
-    Q_UNUSED(state);
-
-    painter->save();
-    QFont renderFont(m_iconFont);
-    renderFont.setPixelSize(rect.height());
-    painter->setFont(renderFont);
-
-    QPalette palette;
-    switch (mode) {
-    case QIcon::Active:
-        painter->setPen(palette.color(QPalette::Active, QPalette::Text));
-        break;
-    case QIcon::Normal:
-        painter->setPen(palette.color(QPalette::Active, QPalette::Text));
-        break;
-    case QIcon::Disabled:
-        painter->setPen(palette.color(QPalette::Disabled, QPalette::Text));
-        break;
-    case QIcon::Selected:
-        painter->setPen(palette.color(QPalette::Active, QPalette::HighlightedText));
-        break;
-    }
-
-    painter->drawText(rect, Qt::AlignCenter, m_glyphs);
-    painter->restore();
+    return m_glyphs;
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_ICON

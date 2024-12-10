@@ -431,6 +431,9 @@ void tst_QResourceEngine::checkStructure()
     QFETCH(qlonglong, contentsSize);
 
     bool directory = (containedDirs.size() + containedFiles.size() > 0);
+    const auto restoreLocale = qScopeGuard([prior = QLocale()]() {
+        QLocale::setDefault(prior);
+    });
     QLocale::setDefault(locale);
 
     QFileInfo fileInfo(pathName);
@@ -504,7 +507,6 @@ void tst_QResourceEngine::checkStructure()
         QByteArrayView bav(reinterpret_cast<const char *>(ptr), file.size());
         QCOMPARE(bav, contents);
     }
-    QLocale::setDefault(QLocale::system());
 }
 
 void tst_QResourceEngine::searchPath_data()
@@ -618,6 +620,9 @@ void tst_QResourceEngine::setLocale_data()
 void tst_QResourceEngine::setLocale()
 {
     QFETCH(QString, prefix);
+    const auto restoreLocale = qScopeGuard([prior = QLocale()]() {
+        QLocale::setDefault(prior);
+    });
     QLocale::setDefault(QLocale::c());
 
     // default constructed QResource gets the default locale
@@ -633,9 +638,6 @@ void tst_QResourceEngine::setLocale()
     // then explicitly set the locale on qresource
     resource.setLocale(QLocale("de_CH"));
     QVERIFY(resource.compressionAlgorithm() != QResource::NoCompression);
-
-    // the reset the default locale back
-    QLocale::setDefault(QLocale::system());
 }
 
 void tst_QResourceEngine::lastModified()

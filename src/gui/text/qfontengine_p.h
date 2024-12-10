@@ -233,6 +233,9 @@ public:
 
     virtual QList<QFontVariableAxis> variableAxes() const;
 
+    virtual QString glyphName(glyph_t index) const;
+    virtual glyph_t findGlyph(QLatin1StringView name) const;
+
     void *harfbuzzFont() const;
     void *harfbuzzFace() const;
     bool supportsScript(QChar::Script script) const;
@@ -476,6 +479,8 @@ public:
     virtual QList<QFontVariableAxis> variableAxes() const override;
 
     virtual bool canRender(const QChar *string, int len) const override;
+    QString glyphName(glyph_t glyph) const override;
+    glyph_t findGlyph(QLatin1StringView name) const override;
 
     inline int fallbackFamilyCount() const { return m_fallbackFamilies.size(); }
     inline QString fallbackFamilyAt(int at) const { return m_fallbackFamilies.at(at); }

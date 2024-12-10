@@ -219,7 +219,7 @@ QAbstractOpenGLFunctions *QOpenGLVersionFunctionsFactory::get(const QOpenGLVersi
         vp = QOpenGLVersionProfile(f);
 
     // Check that context is compatible with requested version
-    const QPair<int, int> v = qMakePair(f.majorVersion(), f.minorVersion());
+    const auto v = std::pair(f.majorVersion(), f.minorVersion());
     if (v < vp.version())
         return nullptr;
 

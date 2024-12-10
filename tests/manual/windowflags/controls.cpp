@@ -29,9 +29,11 @@ HintControl::HintControl(QWidget *parent)
     , windowShadeButtonCheckBox(new QCheckBox(tr("Window shade button")))
     , windowStaysOnTopCheckBox(new QCheckBox(tr("Window stays on top")))
     , windowStaysOnBottomCheckBox(new QCheckBox(tr("Window stays on bottom")))
-    , customizeWindowHintCheckBox(new QCheckBox(tr("Customize window")))
+    , customizeWindowGroup(new QGroupBox(tr("Customize window title bar controls")))
     , transparentForInputCheckBox(new QCheckBox(tr("Transparent for input")))
     , noDropShadowCheckBox(new QCheckBox(tr("No drop shadow")))
+    , expandedClientAreaCheckBox(new QCheckBox(tr("Expanded client area")))
+    , noTitleBarBackgroundCheckBox(new QCheckBox(tr("No titlebar background")))
 {
     connect(msWindowsFixedSizeDialogCheckBox, SIGNAL(clicked()), this, SLOT(slotCheckBoxChanged()));
     connect(x11BypassWindowManagerCheckBox, SIGNAL(clicked()), this, SLOT(slotCheckBoxChanged()));
@@ -46,29 +48,50 @@ HintControl::HintControl(QWidget *parent)
     connect(windowShadeButtonCheckBox, SIGNAL(clicked()), this, SLOT(slotCheckBoxChanged()));
     connect(windowStaysOnTopCheckBox, SIGNAL(clicked()), this, SLOT(slotCheckBoxChanged()));
     connect(windowStaysOnBottomCheckBox, SIGNAL(clicked()), this, SLOT(slotCheckBoxChanged()));
-    connect(customizeWindowHintCheckBox, SIGNAL(clicked()), this, SLOT(slotCheckBoxChanged()));
+    connect(customizeWindowGroup, SIGNAL(clicked()), this, SLOT(slotCheckBoxChanged()));
     connect(transparentForInputCheckBox, SIGNAL(clicked()), this, SLOT(slotCheckBoxChanged()));
     connect(noDropShadowCheckBox, SIGNAL(clicked()), this, SLOT(slotCheckBoxChanged()));
-    QGridLayout *layout = new QGridLayout(this);
+    connect(expandedClientAreaCheckBox, SIGNAL(clicked()), this, SLOT(slotCheckBoxChanged()));
+    connect(noTitleBarBackgroundCheckBox, SIGNAL(clicked()), this, SLOT(slotCheckBoxChanged()));
+
+    auto *layout = new QHBoxLayout(this);
     layout->setSpacing(0);
     layout->setContentsMargins(ControlLayoutMargin, ControlLayoutMargin,
                                ControlLayoutMargin, ControlLayoutMargin);
-    layout->addWidget(msWindowsFixedSizeDialogCheckBox, 0, 0);
-    layout->addWidget(x11BypassWindowManagerCheckBox, 1, 0);
-    layout->addWidget(framelessWindowCheckBox, 2, 0);
-    layout->addWidget(windowTitleCheckBox, 3, 0);
-    layout->addWidget(windowSystemMenuCheckBox, 4, 0);
-    layout->addWidget(windowMinimizeButtonCheckBox, 0, 1);
-    layout->addWidget(windowMaximizeButtonCheckBox, 1, 1);
-    layout->addWidget(windowFullscreenButtonCheckBox, 2, 1);
-    layout->addWidget(windowCloseButtonCheckBox, 3, 1);
-    layout->addWidget(windowContextHelpButtonCheckBox, 4, 1);
-    layout->addWidget(windowShadeButtonCheckBox, 5, 1);
-    layout->addWidget(windowStaysOnTopCheckBox, 6, 1);
-    layout->addWidget(windowStaysOnBottomCheckBox, 7, 1);
-    layout->addWidget(customizeWindowHintCheckBox, 5, 0);
-    layout->addWidget(transparentForInputCheckBox, 6, 0);
-    layout->addWidget(noDropShadowCheckBox, 7, 0);
+
+    auto *basicHintsLayout = new QVBoxLayout;
+    basicHintsLayout->setSpacing(0);
+    basicHintsLayout->setContentsMargins(ControlLayoutMargin, ControlLayoutMargin,
+                               ControlLayoutMargin, ControlLayoutMargin);
+
+    basicHintsLayout->addWidget(framelessWindowCheckBox);
+    basicHintsLayout->addWidget(noDropShadowCheckBox);
+    basicHintsLayout->addWidget(windowStaysOnTopCheckBox);
+    basicHintsLayout->addWidget(windowStaysOnBottomCheckBox);
+    basicHintsLayout->addWidget(transparentForInputCheckBox);
+    basicHintsLayout->addWidget(msWindowsFixedSizeDialogCheckBox);
+    basicHintsLayout->addWidget(x11BypassWindowManagerCheckBox);
+    basicHintsLayout->addWidget(expandedClientAreaCheckBox);
+    basicHintsLayout->addWidget(noTitleBarBackgroundCheckBox);
+    layout->addLayout(basicHintsLayout);
+
+    customizeWindowGroup->setCheckable(true);
+    customizeWindowGroup->setChecked(false);
+    auto *customizeWindowLayout = new QVBoxLayout(customizeWindowGroup);
+    customizeWindowLayout->setSpacing(0);
+    customizeWindowLayout->setContentsMargins(ControlLayoutMargin, ControlLayoutMargin,
+                               ControlLayoutMargin, ControlLayoutMargin);
+
+    customizeWindowLayout->addWidget(windowTitleCheckBox);
+    customizeWindowLayout->addWidget(windowSystemMenuCheckBox);
+    customizeWindowLayout->addWidget(windowMinimizeButtonCheckBox);
+    customizeWindowLayout->addWidget(windowShadeButtonCheckBox);
+    customizeWindowLayout->addWidget(windowMaximizeButtonCheckBox);
+    customizeWindowLayout->addWidget(windowFullscreenButtonCheckBox);
+    customizeWindowLayout->addWidget(windowCloseButtonCheckBox);
+    customizeWindowLayout->addWidget(windowContextHelpButtonCheckBox);
+
+    layout->addWidget(customizeWindowGroup);
 }
 
 Qt::WindowFlags HintControl::hints() const
@@ -100,12 +123,16 @@ Qt::WindowFlags HintControl::hints() const
         flags |= Qt::WindowStaysOnTopHint;
     if (windowStaysOnBottomCheckBox->isChecked())
         flags |= Qt::WindowStaysOnBottomHint;
-    if (customizeWindowHintCheckBox->isChecked())
+    if (customizeWindowGroup->isChecked())
         flags |= Qt::CustomizeWindowHint;
     if (transparentForInputCheckBox->isChecked())
         flags |= Qt::WindowTransparentForInput;
     if (noDropShadowCheckBox->isChecked())
         flags |= Qt::NoDropShadowWindowHint;
+    if (expandedClientAreaCheckBox->isChecked())
+        flags |= Qt::ExpandedClientAreaHint;
+    if (noTitleBarBackgroundCheckBox->isChecked())
+        flags |= Qt::NoTitleBarBackgroundHint;
     return flags;
 }
 
@@ -124,9 +151,11 @@ void HintControl::setHints(Qt::WindowFlags flags)
     windowShadeButtonCheckBox->setChecked(flags & Qt::WindowShadeButtonHint);
     windowStaysOnTopCheckBox->setChecked(flags & Qt::WindowStaysOnTopHint);
     windowStaysOnBottomCheckBox->setChecked(flags & Qt::WindowStaysOnBottomHint);
-    customizeWindowHintCheckBox->setChecked(flags & Qt::CustomizeWindowHint);
+    customizeWindowGroup->setChecked(flags & Qt::CustomizeWindowHint);
     transparentForInputCheckBox->setChecked(flags & Qt::WindowTransparentForInput);
     noDropShadowCheckBox->setChecked(flags & Qt::NoDropShadowWindowHint);
+    expandedClientAreaCheckBox->setChecked(flags & Qt::ExpandedClientAreaHint);
+    noTitleBarBackgroundCheckBox->setChecked(flags & Qt::NoTitleBarBackgroundHint);
 }
 
 void HintControl::slotCheckBoxChanged()

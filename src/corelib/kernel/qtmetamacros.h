@@ -95,8 +95,6 @@ QT_BEGIN_NAMESPACE
 #define QT_TR_FUNCTIONS
 #endif
 
-#define Q_DECL_HIDDEN_STATIC_METACALL Q_DECL_HIDDEN
-
 #if defined(Q_CC_CLANG)
 #  if Q_CC_CLANG >= 1100
 #    define Q_OBJECT_NO_OVERRIDE_WARNING    QT_WARNING_DISABLE_CLANG("-Winconsistent-missing-override") QT_WARNING_DISABLE_CLANG("-Wsuggest-override")
@@ -122,14 +120,14 @@ QT_BEGIN_NAMESPACE
     template <typename MetaObjectTagType> static constexpr inline auto          \
     qt_staticMetaObjectContent = qt_create_metaobjectdata<MetaObjectTagType>(); \
     template <typename MetaObjectTagType> static constexpr inline auto          \
-    qt_staticMetaObjectStaticContent = qt_staticMetaObjectContent<MetaObjectTagType>.data;      \
+    qt_staticMetaObjectStaticContent = qt_staticMetaObjectContent<MetaObjectTagType>.staticData;\
     template <typename MetaObjectTagType> static constexpr inline auto          \
-    qt_staticMetaObjectRelocatingContent = qt_staticMetaObjectContent<MetaObjectTagType>.metaTypes;
+    qt_staticMetaObjectRelocatingContent = qt_staticMetaObjectContent<MetaObjectTagType>.relocatingData;
 
 #define QT_OBJECT_GADGET_COMMON  \
     QT_META_OBJECT_VARS \
     Q_OBJECT_NO_ATTRIBUTES_WARNING \
-    Q_DECL_HIDDEN_STATIC_METACALL static void qt_static_metacall(QObject *, QMetaObject::Call, int, void **);
+    Q_DECL_HIDDEN static void qt_static_metacall(QObject *, QMetaObject::Call, int, void **);
 
 /* qmake ignore Q_OBJECT */
 #define Q_OBJECT \

@@ -99,6 +99,10 @@
 #include <private/qvulkandefaultinstance_p.h>
 #endif
 
+#if QT_CONFIG(thread)
+#include <QtCore/QThreadPool>
+#endif
+
 #include <qtgui_tracepoints_p.h>
 
 #include <private/qtools_p.h>
@@ -684,6 +688,20 @@ QGuiApplication::~QGuiApplication()
 
 #ifndef QT_NO_CURSOR
     d->cursor_list.clear();
+#endif
+
+#if QT_CONFIG(qtgui_threadpool)
+    // Synchronize and stop the gui thread pool threads.
+    QThreadPool *guiThreadPool = nullptr;
+    QT_TRY {
+        guiThreadPool = QGuiApplicationPrivate::qtGuiThreadPool();
+    } QT_CATCH (...) {
+        // swallow the exception, since destructors shouldn't throw
+    }
+    if (guiThreadPool) {
+        guiThreadPool->waitForDone();
+        delete guiThreadPool;
+    }
 #endif
 
     delete QGuiApplicationPrivate::app_icon;
@@ -2785,10 +2803,10 @@ void QGuiApplicationPrivate::processSafeAreaMarginsChangedEvent(QWindowSystemInt
     if (wse->window.isNull())
         return;
 
-    // Handle by forwarding directly to QWindowPrivate, instead of sending spontaneous
-    // QEvent like most other functions, as there's no QEvent type for the safe area
-    // change, and we don't want to add one until we know that this is a good API.
-    qt_window_private(wse->window)->processSafeAreaMarginsChanged();
+    emit wse->window->safeAreaMarginsChanged(wse->window->safeAreaMargins());
+
+    QEvent event(QEvent::SafeAreaMarginsChange);
+    QGuiApplication::sendSpontaneousEvent(wse->window, &event);
 }
 
 void QGuiApplicationPrivate::processThemeChanged(QWindowSystemInterfacePrivate::ThemeChangeEvent *tce)
@@ -4550,6 +4568,32 @@ QInputDeviceManager *QGuiApplicationPrivate::inputDeviceManager()
         m_inputDeviceManager = new QInputDeviceManager(QGuiApplication::instance());
 
     return m_inputDeviceManager;
+}
+
+/*!
+    Returns the QThreadPool instance for Qt Gui.
+    \internal
+*/
+QThreadPool *QGuiApplicationPrivate::qtGuiThreadPool()
+{
+#if QT_CONFIG(qtgui_threadpool)
+    Q_CONSTINIT static QPointer<QThreadPool> guiInstance;
+    Q_CONSTINIT static QBasicMutex theMutex;
+    const static bool runtime_disable = qEnvironmentVariableIsSet("QT_NO_GUI_THREADPOOL");
+    if (runtime_disable)
+        return nullptr;
+    const QMutexLocker locker(&theMutex);
+    if (guiInstance.isNull() && !QCoreApplication::closingDown()) {
+        guiInstance = new QThreadPool();
+        // Limit max thread to avoid too many parallel threads.
+        // We are not optimized for much more than 4 or 8 threads.
+        if (guiInstance && guiInstance->maxThreadCount() > 4)
+            guiInstance->setMaxThreadCount(qBound(4, guiInstance->maxThreadCount() / 2, 8));
+    }
+    return guiInstance;
+#else
+    return nullptr;
+#endif
 }
 
 /*!

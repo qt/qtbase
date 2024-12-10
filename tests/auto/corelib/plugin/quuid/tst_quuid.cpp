@@ -11,10 +11,14 @@
 
 #include <qcoreapplication.h>
 #include <quuid.h>
+#include <QtCore/private/quuid_p.h>
 
 #ifdef Q_OS_ANDROID
 #include <QStandardPaths>
 #endif
+
+using namespace std::chrono_literals;
+using namespace Qt::StringLiterals;
 
 class tst_QUuid : public QObject
 {
@@ -35,6 +39,9 @@ private slots:
     void id128();
     void uint128();
     void createUuidV3OrV5();
+    void createUuidV7_unique();
+    void createUuidV7_data();
+    void createUuidV7();
     void check_QDataStream();
     void isNull();
     void equal();
@@ -321,6 +328,51 @@ void tst_QUuid::createUuidV3OrV5()
 
     QT_TEST_EQUALITY_OPS(uuidD, QUuid::createUuidV5(uuidNS, QByteArray("www.widgets.com")), true);
     QT_TEST_EQUALITY_OPS(uuidD, QUuid::createUuidV5(uuidNS, QString("www.widgets.com")), true);
+}
+
+void tst_QUuid::createUuidV7_unique()
+{
+    const int count = 1000;
+    std::vector<QUuid> vec;
+    vec.reserve(count);
+    for (int i = 0; i < count; ++i) {
+        auto id = QUuid::createUuidV7();
+        QCOMPARE(id.version(), QUuid::UnixEpoch);
+        QCOMPARE(id.variant(), QUuid::DCE);
+        vec.push_back(id);
+    }
+
+    QVERIFY(std::unique(vec.begin(), vec.end()) == vec.end());
+}
+
+void tst_QUuid::createUuidV7_data()
+{
+    QTest::addColumn<QDateTime>("dt");
+    QTest::addColumn<QUuid>("expected");
+
+    // February 22, 2022 2:22:22.00 PM GMT-05:00, example from:
+    // https://datatracker.ietf.org/doc/html/rfc9562#name-example-of-a-uuidv7-value
+    QTest::newRow("feb2022")
+        << QDateTime::fromString("2022-02-22T14:22:22.00-05:00"_L1, Qt::ISODateWithMs)
+        << QUuid::fromString("017F22E2-79B0-7CC3-98C4-DC0C0C07398F"_L1);
+
+    QTest::newRow("jan2000")
+        << QDateTime::fromString("2000-01-02T14:22:22.00-05:00"_L1, Qt::ISODateWithMs)
+        << QUuid("00dc741e-35b0-7643-947d-0380e108ce80"_L1);
+}
+
+void tst_QUuid::createUuidV7()
+{
+    QFETCH(QDateTime, dt);
+    QFETCH(QUuid, expected);
+
+    QVERIFY(dt.isValid());
+
+    using namespace std::chrono;
+    auto extractTimestamp = [](const QUuid &id) { return (quint64(id.data1) << 16) | id.data2; };
+    const auto result =
+        createUuidV7_internal(time_point<system_clock, milliseconds>(dt.toMSecsSinceEpoch() * 1ms));
+    QCOMPARE_EQ(extractTimestamp(result), extractTimestamp(expected));
 }
 
 void tst_QUuid::check_QDataStream()
@@ -618,8 +670,8 @@ void tst_QUuid::versions_data()
     QTest::newRow("DCE-inv-less-than-Time->unknown")
             << QUuid(0, 0, 0b0000'1101'0101'1011, 0b1000'0000, 0, 0, 0, 0, 0, 0, 0)
             << QUuid::VerUnknown;
-    QTest::newRow("DCE-inv-greater-than-Sha1->unknown")
-            << QUuid(0, 0, 0b0111'1101'0101'1011, 0b1000'0000, 0, 0, 0, 0, 0, 0, 0)
+    QTest::newRow("DCE-inv-greater-than-UnixEpoch->unknown")
+            << QUuid(0, 0, 0b1000'1101'0101'1011, 0b1000'0000, 0, 0, 0, 0, 0, 0, 0)
             << QUuid::VerUnknown;
     QTest::newRow("NCS-Time->unknown")
             << QUuid(0, 0, 0b0001'0000'0000'0000, 0b0100'0000, 0, 0, 0, 0, 0, 0, 0)

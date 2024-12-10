@@ -57,6 +57,7 @@ class QActionPrivate;
 #if QT_CONFIG(shortcut)
 class QShortcutPrivate;
 #endif
+class QThreadPool;
 
 class Q_GUI_EXPORT QGuiApplicationPrivate : public QCoreApplicationPrivate
 {
@@ -336,6 +337,8 @@ public:
     static void updatePalette();
 
     static QEvent::Type contextMenuEventType();
+
+    static QThreadPool *qtGuiThreadPool();
 
 protected:
     virtual void handleThemeChanged();

@@ -5134,10 +5134,7 @@ emscripten::val QByteArray::toEcmaUint8Array()
 */
 
 /*!
-    \relates QByteArray::FromBase64Result
-
-    Returns the hash value for \a key, using
-    \a seed to seed the calculation.
+    \qhashold{QByteArray::FromBase64Result}
 */
 size_t qHash(const QByteArray::FromBase64Result &key, size_t seed) noexcept
 {

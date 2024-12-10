@@ -7,6 +7,7 @@
 #include <QtCore/qcborvalue.h>
 #include <QtCore/qcompare.h>
 #include <QtCore/qglobal.h>
+#include <QtCore/qjsonparseerror.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qshareddata.h>
 
@@ -32,6 +33,11 @@ public:
         Array = 0x4,
         Object = 0x5,
         Undefined = 0x80
+    };
+
+    enum JsonFormat {
+        Indented,
+        Compact,
     };
 
     QJsonValue(Type = Null);
@@ -67,6 +73,12 @@ public:
 
     static QJsonValue fromVariant(const QVariant &variant);
     QVariant toVariant() const;
+
+    static QJsonValue fromJson(QByteArrayView json, QJsonParseError *error = nullptr);
+
+#if !defined(QT_JSON_READONLY) || defined(Q_QDOC)
+    QByteArray toJson(JsonFormat format = JsonFormat::Indented) const;
+#endif
 
     Type type() const;
     inline bool isNull() const { return type() == Null; }

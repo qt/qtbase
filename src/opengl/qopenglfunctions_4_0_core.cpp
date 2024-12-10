@@ -180,8 +180,8 @@ bool QOpenGLFunctions_4_0_Core::isContextCompatible(QOpenGLContext *context)
 {
     Q_ASSERT(context);
     QSurfaceFormat f = context->format();
-    const QPair<int, int> v = qMakePair(f.majorVersion(), f.minorVersion());
-    if (v < qMakePair(4, 0))
+    const auto v = std::pair(f.majorVersion(), f.minorVersion());
+    if (v < std::pair(4, 0))
         return false;
 
     return true;

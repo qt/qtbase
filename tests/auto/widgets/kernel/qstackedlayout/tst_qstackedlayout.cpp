@@ -31,6 +31,7 @@ private slots:
     void keepFocusAfterSetCurrent();
     void heigthForWidth();
     void replaceWidget();
+    void widgetAdded();
 
 private:
     QWidget *testWidget;
@@ -352,6 +353,27 @@ void tst_QStackedLayout::replaceWidget()
     QCOMPARE(stackLayout->indexOf(replaceTo), 1);
     QCOMPARE(stackLayout->currentWidget(), replaceTo);
 }
+
+
+void tst_QStackedLayout::widgetAdded()
+{
+    QStackedLayout stackedLayout;
+    QSignalSpy addSpy(&stackedLayout, &QStackedLayout::widgetAdded);
+    QVERIFY(addSpy.isValid());
+
+    stackedLayout.addWidget(new QWidget);
+    QCOMPARE(addSpy.count(), 1);
+    QCOMPARE(addSpy.at(0).at(0).toInt(), 0);
+
+    stackedLayout.insertWidget(1, new QWidget);
+    QCOMPARE(addSpy.count(), 2);
+    QCOMPARE(addSpy.at(1).at(0).toInt(), 1);
+
+    stackedLayout.insertWidget(100, new QWidget);
+    QCOMPARE(addSpy.count(), 3);
+    QCOMPARE(addSpy.at(2).at(0).toInt(), 2);
+}
+
 
 QTEST_MAIN(tst_QStackedLayout)
 #include "tst_qstackedlayout.moc"

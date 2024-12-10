@@ -12,6 +12,8 @@
 #include "qstring.h"
 #include "qvarlengtharray.h"
 
+#include <private/qcomparisontesthelper_p.h>
+
 #include <algorithm>
 #include <functional>
 #include <iostream>
@@ -215,6 +217,20 @@ class VarLengthArray : public QVarLengthArray<T>
 {
 public:
     using QVarLengthArray<T>::QVarLengthArray;
+};
+
+// The class does not provide operator<=> in C++20 mode
+struct LessOnly
+{
+    float val;
+private:
+    friend auto compareThreeWay(LessOnly lhs, LessOnly rhs) noexcept
+    { return Qt::compareThreeWay(lhs.val, rhs.val); }
+
+    friend bool operator==(LessOnly lhs, LessOnly rhs) noexcept
+    { return lhs.val == rhs.val; }
+    friend bool operator<(LessOnly lhs, LessOnly rhs) noexcept
+    { return lhs.val < rhs.val; }
 };
 
 class tst_ContainerApiSymmetry : public QObject
@@ -447,6 +463,49 @@ private Q_SLOTS:
     void opEqNaN_QSet_Float() { opEqNaN_impl<QSet<float>>(); }
     void opEqNaN_QSet_Float16() { opEqNaN_impl<QSet<qfloat16>>(); }
     void opEqNaN_QSet_Double() { opEqNaN_impl<QSet<double>>(); }
+
+private:
+    template <typename Container>
+    void try_emplace_impl() const;
+
+private Q_SLOTS:
+    void try_emplace_QHash() { try_emplace_impl<QHash<int, int>>(); }
+    void try_emplace_unordered_map() { try_emplace_impl<std::unordered_map<int, int>>(); }
+
+private:
+    template <typename Container, typename Ordering>
+    void comparisonTest_impl();
+
+private Q_SLOTS:
+    void comparisonTest_QList_int()
+    { comparisonTest_impl<QList<int>, Qt::strong_ordering>(); }
+    void comparisonTest_QList_float()
+    { comparisonTest_impl<QList<float>, Qt::partial_ordering>(); }
+    void comparisonTest_QList_QDateTime()
+    { comparisonTest_impl<QList<QDateTime>, Qt::weak_ordering>(); }
+    void comparisonTest_QList_intptr()
+    { comparisonTest_impl<QList<const int *>, Qt::strong_ordering>(); }
+    void comparisonTest_QList_LessOnly()
+    { comparisonTest_impl<QList<LessOnly>, Qt::weak_ordering>(); }
+
+    void comparisonTest_QVarLengthArray_int()
+    { comparisonTest_impl<QVarLengthArray<int>, Qt::strong_ordering>(); }
+    void comparisonTest_QVarLengthArray_float()
+    { comparisonTest_impl<QVarLengthArray<float>, Qt::partial_ordering>(); }
+    void comparisonTest_QVarLengthArray_QDateTime()
+    { comparisonTest_impl<QVarLengthArray<QDateTime>, Qt::weak_ordering>(); }
+    void comparisonTest_QVarLengthArray_intptr()
+    { comparisonTest_impl<QVarLengthArray<const int *>, Qt::strong_ordering>(); }
+    void comparisonTest_QVarLengthArray_LessOnly()
+    { comparisonTest_impl<QVarLengthArray<LessOnly>, Qt::weak_ordering>(); }
+
+private:
+    template <typename Container>
+    void insert_or_assign_impl() const;
+
+private Q_SLOTS:
+    void insert_or_assign_QHash() { insert_or_assign_impl<QHash<int, int>>(); }
+    void insert_or_assign_unordered_map() { insert_or_assign_impl<std::unordered_map<int, int>>(); }
 };
 
 void tst_ContainerApiSymmetry::init()
@@ -1304,6 +1363,193 @@ void tst_ContainerApiSymmetry::opEqNaN_impl() const
     const Container rhs {std::numeric_limits<V>::quiet_NaN()};
 
     QCOMPARE_NE(lhs, rhs);
+}
+
+template <typename Container>
+void tst_ContainerApiSymmetry::try_emplace_impl() const
+{
+    using K = typename Container::key_type;
+    using V = typename Container::mapped_type;
+    Container c;
+    auto p = c.try_emplace(K(), V());
+    QVERIFY(p.second);
+    QCOMPARE(p.first->first, K());
+    QCOMPARE(p.first->second, V());
+
+    auto it = c.try_emplace(c.begin(), K(), V());
+    QCOMPARE(it->first, K());
+    QCOMPARE(it->second, V());
+
+    K k{};
+    V v{};
+    p = c.try_emplace(k, v);
+    QVERIFY(!p.second);
+    QCOMPARE(p.first->first, K());
+    QCOMPARE(p.first->second, V());
+
+    it = c.try_emplace(c.begin(), k, v);
+    QCOMPARE(it->first, K());
+    QCOMPARE(it->second, V());
+}
+
+template <typename ValueType, typename Ordering>
+std::vector<ValueType> makeComparisonData(Ordering)
+{ return {}; }
+
+template <>
+std::vector<int> makeComparisonData(Qt::strong_ordering order)
+{
+    if (order == Qt::strong_ordering::equivalent)
+        return {1, 2, 3, 4};
+    else if (order == Qt::strong_ordering::less)
+        return {1, 2, 1};
+    else /* greater */
+        return {1, 2, 4};
+}
+
+template <>
+std::vector<float> makeComparisonData(Qt::partial_ordering order)
+{
+    if (order == Qt::partial_ordering::equivalent)
+        return {1.f, 2.f, 3.f, 4.f};
+    else if (order == Qt::partial_ordering::less)
+        return {1.f, 2.f, 1.f};
+    else if (order == Qt::partial_ordering::greater)
+        return {1.f, 2.f, 4.f};
+    else /* unordered */
+        return {std::numeric_limits<float>::quiet_NaN(), 2.f, 3.f, 4.f};
+}
+
+template <>
+std::vector<QDateTime> makeComparisonData(Qt::weak_ordering order)
+{
+    using namespace std::chrono_literals;
+    QTimeZone utcPlusOne = QTimeZone::fromDurationAheadOfUtc(3600s);
+    // These two QDateTimes represent the same moment of time, but using
+    // different time zones. So, they are equivalent, but not equal.
+    QDateTime nullUtc = QDateTime::fromMSecsSinceEpoch(0, QTimeZone::UTC);
+    QDateTime nullUtcPlusOne = QDateTime::fromMSecsSinceEpoch(0, utcPlusOne);
+
+    if (order == Qt::weak_ordering::equivalent)
+        return {nullUtc, nullUtc.addDays(1), nullUtc.addDays(2), nullUtc.addDays(3)};
+    else if (order == Qt::weak_ordering::less)
+        return {nullUtcPlusOne, nullUtc.addDays(1), nullUtc};
+    else /* greater */
+        return {nullUtcPlusOne, nullUtc.addDays(1), nullUtc.addDays(3)};
+}
+
+static constexpr std::array<int, 4> intArray = {0, 0, 0, 0};
+
+template <>
+std::vector<const int *> makeComparisonData(Qt::strong_ordering order)
+{
+    if (order == Qt::strong_ordering::equivalent)
+        return {&intArray[0], &intArray[1], &intArray[2], &intArray[3]};
+    else if (order == Qt::strong_ordering::less)
+        return {&intArray[0], &intArray[1], &intArray[0]};
+    else /* greater */
+        return {&intArray[0], &intArray[1], &intArray[3]};
+}
+
+template <>
+std::vector<LessOnly> makeComparisonData(Qt::weak_ordering order)
+{
+    if (order == Qt::weak_ordering::equivalent)
+        return {LessOnly{1.f}, LessOnly{2.f}, LessOnly{3.f}, LessOnly{4.f}};
+    else if (order == Qt::weak_ordering::less)
+        return {LessOnly{1.f}, LessOnly{2.f}, LessOnly{1.f}};
+    else /* greater */
+        return {LessOnly{1.f}, LessOnly{2.f}, LessOnly{4.f}};
+}
+
+template<typename Container, typename Ordering>
+void tst_ContainerApiSymmetry::comparisonTest_impl()
+{
+    QTestPrivate::testAllComparisonOperatorsCompile<Container>();
+
+    using V = typename Container::value_type;
+    const auto eq_vec = makeComparisonData<V>(Ordering::equivalent);
+
+    Container lhs{eq_vec.begin(), eq_vec.end()};
+    Container rhs{eq_vec.begin(), eq_vec.end()};
+    QCOMPARE_EQ(compareThreeWay(lhs, rhs), Ordering::equivalent);
+    QT_TEST_ALL_COMPARISON_OPS(lhs, rhs, Ordering::equivalent);
+
+
+    const auto lt_vec = makeComparisonData<V>(Ordering::less);
+    rhs = {lt_vec.begin(), lt_vec.end()};
+    QCOMPARE_EQ(compareThreeWay(lhs, rhs), Ordering::greater);
+    QT_TEST_ALL_COMPARISON_OPS(lhs, rhs, Ordering::greater);
+
+    const auto gt_vec = makeComparisonData<V>(Ordering::greater);
+    rhs = {gt_vec.begin(), gt_vec.end()};
+    QCOMPARE_EQ(compareThreeWay(lhs, rhs), Ordering::less);
+    QT_TEST_ALL_COMPARISON_OPS(lhs, rhs, Ordering::less);
+
+    if constexpr (std::is_same_v<Ordering, Qt::partial_ordering>) {
+        const auto un_vec = makeComparisonData<V>(Ordering::unordered);
+        rhs = {un_vec.begin(), un_vec.end()};
+        QCOMPARE_EQ(compareThreeWay(lhs, rhs), Ordering::unordered);
+#ifdef __cpp_lib_three_way_comparison
+        QT_TEST_ALL_COMPARISON_OPS(lhs, rhs, Ordering::unordered);
+#else
+        // partial_ordering::unordered works incorrectly for containers in C++17
+        // mode, but that is in line with how std containers behave
+        QVERIFY(!(lhs == rhs));
+        QVERIFY(lhs != rhs);
+        QVERIFY(!(lhs < rhs));
+        QVERIFY(!(lhs > rhs));
+        // Behaves like this, because in C++17 op<=() and op>=() are calculated
+        // based on op<() and op==().
+        QVERIFY(lhs <= rhs);
+        QVERIFY(lhs >= rhs);
+#endif
+
+        // comparison with itself should still yield unordered
+        lhs = {un_vec.begin(), un_vec.end()};
+        QCOMPARE_EQ(compareThreeWay(lhs, rhs), Ordering::unordered);
+#ifdef __cpp_lib_three_way_comparison
+        QT_TEST_ALL_COMPARISON_OPS(lhs, rhs, Ordering::unordered);
+#else
+        // partial_ordering::unordered works incorrectly for containers in C++17
+        // mode, but that is in line with how std containers behave
+        QVERIFY(!(lhs == rhs));
+        QVERIFY(lhs != rhs);
+        QVERIFY(!(lhs < rhs));
+        QVERIFY(!(lhs > rhs));
+        // Behaves like this, because in C++17 op<=() and op>=() are calculated
+        // based on op<() and op==().
+        QVERIFY(lhs <= rhs);
+        QVERIFY(lhs >= rhs);
+#endif
+    }
+}
+
+template <typename Container>
+void tst_ContainerApiSymmetry::insert_or_assign_impl() const
+{
+    using K = typename Container::key_type;
+    using V = typename Container::mapped_type;
+    Container c;
+    auto p = c.insert_or_assign(K(), V());
+    QVERIFY(p.second);
+    QCOMPARE(p.first->first, K());
+    QCOMPARE(p.first->second, V());
+
+    auto it = c.insert_or_assign(c.begin(), K(), V() + 1);
+    QCOMPARE(it->first, K());
+    QCOMPARE(it->second, V() + 1);
+
+    K k{};
+    V v{};
+    p = c.insert_or_assign(k, v);
+    QVERIFY(!p.second);
+    QCOMPARE(p.first->first, K());
+    QCOMPARE(p.first->second, V());
+
+    it = c.insert_or_assign(c.begin(), k, v + 2);
+    QCOMPARE(it->first, K());
+    QCOMPARE(it->second, V() + 2);
 }
 
 QTEST_APPLESS_MAIN(tst_ContainerApiSymmetry)

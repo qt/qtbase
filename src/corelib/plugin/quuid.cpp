@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "quuid.h"
+#include "quuid_p.h"
 
 #include "qcryptographichash.h"
 #include "qdatastream.h"
@@ -543,7 +544,7 @@ QUuid QUuid::fromString(QAnyStringView text) noexcept
   \note In Qt versions prior to 6.8, this function took QByteArray, not
   QByteArrayView.
 
-  \sa variant(), version(), createUuidV5()
+  \sa variant(), version(), createUuidV5(), createUuidV7()
 */
 
 /*!
@@ -553,7 +554,7 @@ QUuid QUuid::fromString(QAnyStringView text) noexcept
   This function returns a new UUID with variant QUuid::DCE and version QUuid::Md5.
   \a ns is the namespace and \a baseData is the basic data as described by RFC 4122.
 
-  \sa variant(), version(), createUuidV5()
+  \sa variant(), version(), createUuidV5(), createUuidV7()
 */
 
 /*!
@@ -589,6 +590,25 @@ QUuid QUuid::createUuidV5(QUuid ns, QByteArrayView baseData) noexcept
 {
     return createFromName(ns, baseData, QCryptographicHash::Sha1, 5);
 }
+
+/*!
+    \since 6.9
+
+    This function returns a new UUID with variant QUuid::DCE and version
+    QUuid::UnixEpoch.
+
+    It uses a time-ordered value field derived from the number of milliseconds
+    since the UNIX Epoch as described by
+    \l {https://datatracker.ietf.org/doc/html/rfc9562#name-uuid-version-7}{RFC9562}.
+
+    \sa variant(), version(), createUuidV3(), createUuidV5()
+*/
+#ifndef QT_BOOTSTRAPPED
+QUuid QUuid::createUuidV7()
+{
+    return createUuidV7_internal(std::chrono::system_clock::now());
+}
+#endif // !defined(QT_BOOTSTRAPPED)
 
 /*!
   Creates a QUuid object from the binary representation of the UUID, as
@@ -861,7 +881,9 @@ QDataStream &operator>>(QDataStream &s, QUuid &id)
     \value Name Name-based, by using values from a name for all sections
     \value Md5 Alias for Name
     \value Random Random-based, by using random numbers for all sections
-    \value Sha1
+    \value Sha1      Name-based version that uses SHA-1 hashing
+    \value UnixEpoch Time-based UUID using the number of milliseconds since
+                     the UNIX epoch
 */
 
 /*!
@@ -970,9 +992,9 @@ QDebug operator<<(QDebug dbg, const QUuid &id)
 #endif
 
 /*!
+    \fn size_t qHash(const QUuid &key, size_t seed)
     \since 5.0
-    \relates QUuid
-    Returns a hash of the UUID \a uuid, using \a seed to seed the calculation.
+    \qhashold{QUuid}
 */
 size_t qHash(const QUuid &uuid, size_t seed) noexcept
 {

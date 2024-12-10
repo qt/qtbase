@@ -3616,10 +3616,8 @@ QList<QUrl> QUrl::fromStringList(const QStringList &urls, ParsingMode mode)
 */
 
 /*!
-    Returns the hash value for the \a url. If specified, \a seed is used to
-    initialize the hash.
-
-    \relates QHash
+    \fn size_t qHash(const QUrl &key, size_t seed)
+    \qhashold{QHash}
     \since 5.0
 */
 size_t qHash(const QUrl &url, size_t seed) noexcept

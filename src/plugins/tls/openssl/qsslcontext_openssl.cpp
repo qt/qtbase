@@ -772,8 +772,7 @@ void QSslContext::applyBackendConfig(QSslContext *sslContext)
             if (!i.value().canConvert(QMetaType(QMetaType::QByteArray))) {
                 sslContext->errorCode = QSslError::UnspecifiedError;
                 sslContext->errorStr = msgErrorSettingBackendConfig(
-                QSslSocket::tr("Expecting QByteArray for %1").arg(
-                               QString::fromUtf8(i.key())));
+                QSslSocket::tr("Expecting QByteArray for %1").arg(i.key()));
                 return;
             }
 
@@ -786,18 +785,16 @@ void QSslContext::applyBackendConfig(QSslContext *sslContext)
             switch (result) {
             case 0:
                 sslContext->errorStr = msgErrorSettingBackendConfig(
-                    QSslSocket::tr("An error occurred attempting to set %1 to %2").arg(
-                        QString::fromUtf8(i.key()), QString::fromUtf8(value)));
+                    QSslSocket::tr("An error occurred attempting to set %1 to %2")
+                            .arg(i.key(), value));
                 return;
             case 1:
                 sslContext->errorStr = msgErrorSettingBackendConfig(
-                    QSslSocket::tr("Wrong value for %1 (%2)").arg(
-                        QString::fromUtf8(i.key()), QString::fromUtf8(value)));
+                    QSslSocket::tr("Wrong value for %1 (%2)").arg(i.key(), value));
                 return;
             default:
                 sslContext->errorStr = msgErrorSettingBackendConfig(
-                    QSslSocket::tr("Unrecognized command %1 = %2").arg(
-                        QString::fromUtf8(i.key()), QString::fromUtf8(value)));
+                    QSslSocket::tr("Unrecognized command %1 = %2").arg(i.key(), value));
                 return;
             }
         }

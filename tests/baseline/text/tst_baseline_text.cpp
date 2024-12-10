@@ -19,6 +19,8 @@ private slots:
     void tst_render();
     void tst_differentScriptsBackgrounds();
     void tst_synthesizedObliqueAndRotation();
+    void tst_disableEmojiParsing_data();
+    void tst_disableEmojiParsing();
 
 private:
     QDir htmlDir;
@@ -126,6 +128,57 @@ void tst_Text::tst_synthesizedObliqueAndRotation()
     QBASELINE_CHECK(image, "tst_synthesizedObliqueAndRotation");
 }
 
+void tst_Text::tst_disableEmojiParsing_data()
+{
+    QTest::addColumn<QString>("html");
+
+    QStringList htmlFiles;
+    // first add generic test files
+    for (const auto &qssFile : htmlDir.entryList({QStringLiteral("emoji*.html")}, QDir::Files | QDir::Readable))
+        htmlFiles << htmlDir.absoluteFilePath(qssFile);
+
+    // then test-function specific files
+    const QString testFunction = QString(QTest::currentTestFunction()).remove("tst_").toLower();
+    if (htmlDir.cd(testFunction)) {
+        for (const auto &htmlFile : htmlDir.entryList({QStringLiteral("*.html")}, QDir::Files | QDir::Readable))
+            htmlFiles << htmlDir.absoluteFilePath(htmlFile);
+        htmlDir.cdUp();
+    }
+
+    for (const auto &htmlFile : htmlFiles) {
+        QFileInfo fileInfo(htmlFile);
+        QFile file(htmlFile);
+        QVERIFY(file.open(QFile::ReadOnly));
+        QString html = QString::fromUtf8(file.readAll());
+        QBaselineTest::newRow(fileInfo.baseName().toUtf8()) << html;
+    }
+}
+
+void tst_Text::tst_disableEmojiParsing()
+{
+    QFETCH(QString, html);
+
+    QTextDocument textDocument;
+    textDocument.setPageSize(QSizeF(800, 600));
+    textDocument.setHtml(html);
+
+    QTextOption opt = textDocument.defaultTextOption();
+    opt.setFlags(QTextOption::DisableEmojiParsing);
+    textDocument.setDefaultTextOption(opt);
+
+    QImage image(800, 600, QImage::Format_ARGB32);
+    image.fill(Qt::white);
+
+    {
+        QPainter painter(&image);
+
+        QAbstractTextDocumentLayout::PaintContext context;
+        context.palette.setColor(QPalette::Text, Qt::black);
+        textDocument.documentLayout()->draw(&painter, context);
+    }
+
+    QBASELINE_CHECK(image, "tst_disableEmojiParsing");
+}
 
 QBASELINETEST_MAIN(tst_Text)
 

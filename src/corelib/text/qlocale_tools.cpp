@@ -1,6 +1,7 @@
 // Copyright (C) 2021 The Qt Company Ltd.
 // Copyright (C) 2016 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// Qt-Security score:critical reason:data-parser
 
 #include "qlocale_tools_p.h"
 #include "qdoublescanprint_p.h"
@@ -510,7 +511,7 @@ QString qulltoBasicLatin(qulonglong number, int base, bool negative)
     // We do not need a terminator.
     const unsigned maxlen = 65;
     static_assert(CHAR_BIT * sizeof(number) + 1 <= maxlen);
-    char16_t buff[maxlen];
+    Q_DECL_UNINITIALIZED char16_t buff[maxlen];
     char16_t *const end = buff + maxlen, *p = end;
 
     qulltoString_helper<char16_t>(number, base, p);
@@ -526,7 +527,7 @@ QString qulltoa(qulonglong number, int base, const QStringView zero)
     // per digit. We do not need a terminator.
     const unsigned maxlen = 128;
     static_assert(CHAR_BIT * sizeof(number) <= maxlen);
-    char16_t buff[maxlen];
+    Q_DECL_UNINITIALIZED char16_t buff[maxlen];
     char16_t *const end = buff + maxlen, *p = end;
 
     if (base != 10 || zero == u"0") {

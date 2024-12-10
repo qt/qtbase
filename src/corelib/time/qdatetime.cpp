@@ -1,6 +1,7 @@
 // Copyright (C) 2022 The Qt Company Ltd.
 // Copyright (C) 2021 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// Qt-Security score:critical reason:data-parser
 
 #include "qdatetime.h"
 
@@ -3143,7 +3144,7 @@ static inline Qt::TimeSpec getSpec(const QDateTimeData &d)
 /* True if we *can cheaply determine* that a and b use the same offset.
    If they use different offsets or it would be expensive to find out, false.
    Calls to toMSecsSinceEpoch() are expensive, for these purposes.
-   See QDateTime's comparison operators.
+   See QDateTime's comparison operators and areFarEnoughApart().
 */
 static inline bool usesSameOffset(const QDateTimeData &a, const QDateTimeData &b)
 {
@@ -3168,6 +3169,26 @@ static inline bool usesSameOffset(const QDateTimeData &a, const QDateTimeData &b
         return a->m_offsetFromUtc == b->m_offsetFromUtc;
     }
     Q_UNREACHABLE_RETURN(false);
+}
+
+/* Even datetimes with different offset can be ordered by their getMSecs()
+   provided the difference is bigger than the largest difference in offset we're
+   prepared to believe in. Technically, it may be possible to construct a zone
+   with an offset outside the range and get wrong results - but the answer to
+   someone doing that is that their contrived timezone and its consequences are
+   their own responsibility.
+
+   If two datetimes' millis lie within the offset range of one another, we can't
+   take any short-cuts, even if they're in the same zone, because there may be a
+   zone transition between them. (The full 32-hour difference would only arise
+   before 1845, for one date-time in The Philippines, the other in Alaska.)
+*/
+bool areFarEnoughApart(qint64 leftMillis, qint64 rightMillis)
+{
+    constexpr qint64 UtcOffsetMillisRange
+        = (QTimeZone::MaxUtcOffsetSecs - QTimeZone::MinUtcOffsetSecs) * MSECS_PER_SEC;
+    qint64 gap = 0;
+    return qSubOverflow(leftMillis, rightMillis, &gap) || qAbs(gap) > UtcOffsetMillisRange;
 }
 
 // Refresh the LocalTime or TimeZone validity and offset
@@ -5202,8 +5223,10 @@ bool QDateTime::equals(const QDateTime &other) const
     if (!other.isValid())
         return false;
 
-    if (usesSameOffset(d, other.d))
-        return getMSecs(d) == getMSecs(other.d);
+    const qint64 thisMs = getMSecs(d);
+    const qint64 yourMs = getMSecs(other.d);
+    if (usesSameOffset(d, other.d) || areFarEnoughApart(thisMs, yourMs))
+        return thisMs == yourMs;
 
     // Convert to UTC and compare
     return toMSecsSinceEpoch() == other.toMSecsSinceEpoch();
@@ -5249,8 +5272,9 @@ Qt::weak_ordering compareThreeWay(const QDateTime &lhs, const QDateTime &rhs)
     if (!rhs.isValid())
         return Qt::weak_ordering::greater; // we know that lhs is valid here
 
-    if (usesSameOffset(lhs.d, rhs.d))
-        return Qt::compareThreeWay(getMSecs(lhs.d), getMSecs(rhs.d));
+    const qint64 lhms = getMSecs(lhs.d), rhms = getMSecs(rhs.d);
+    if (usesSameOffset(lhs.d, rhs.d) || areFarEnoughApart(lhms, rhms))
+        return Qt::compareThreeWay(lhms, rhms);
 
     // Convert to UTC and compare
     return Qt::compareThreeWay(lhs.toMSecsSinceEpoch(), rhs.toMSecsSinceEpoch());
@@ -6273,10 +6297,8 @@ QDebug operator<<(QDebug dbg, const QDateTime &date)
 #endif // debug_stream && datestring
 
 /*! \fn size_t qHash(const QDateTime &key, size_t seed = 0)
-    \relates QHash
+    \qhashold{QHash}
     \since 5.0
-
-    Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
 size_t qHash(const QDateTime &key, size_t seed)
 {
@@ -6288,10 +6310,8 @@ size_t qHash(const QDateTime &key, size_t seed)
 }
 
 /*! \fn size_t qHash(QDate key, size_t seed = 0)
-    \relates QHash
+    \qhashold{QHash}
     \since 5.0
-
-    Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
 size_t qHash(QDate key, size_t seed) noexcept
 {
@@ -6299,10 +6319,8 @@ size_t qHash(QDate key, size_t seed) noexcept
 }
 
 /*! \fn size_t qHash(QTime key, size_t seed = 0)
-    \relates QHash
+    \qhashold{QHash}
     \since 5.0
-
-    Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
 size_t qHash(QTime key, size_t seed) noexcept
 {

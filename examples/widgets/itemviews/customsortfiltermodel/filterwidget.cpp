@@ -46,7 +46,6 @@ FilterWidget::FilterWidget(QWidget *parent)
     optionsButton->setCursor(Qt::ArrowCursor);
 #endif
     optionsButton->setFocusPolicy(Qt::NoFocus);
-    optionsButton->setStyleSheet("* { border: none; }");
     optionsButton->setIcon(icon);
     optionsButton->setMenu(menu);
     optionsButton->setPopupMode(QToolButton::InstantPopup);

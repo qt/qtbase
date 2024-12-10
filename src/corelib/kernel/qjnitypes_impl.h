@@ -4,7 +4,7 @@
 #ifndef QJNITYPES_IMPL_H
 #define QJNITYPES_IMPL_H
 
-#include <QtCore/qglobal.h>
+#include <QtCore/qstring.h>
 #include <QtCore/q20type_traits.h>
 
 #if defined(Q_QDOC) || defined(Q_OS_ANDROID)
@@ -14,6 +14,22 @@ QT_BEGIN_NAMESPACE
 
 namespace QtJniTypes
 {
+
+namespace Detail
+{
+static inline jstring fromQString(const QString &string, JNIEnv *env)
+{
+    return env->NewString(reinterpret_cast<const jchar*>(string.constData()), string.length());
+}
+
+static inline QString toQString(jstring string, JNIEnv *env)
+{
+    const jsize length = env->GetStringLength(string);
+    QString res(length, Qt::Uninitialized);
+    env->GetStringRegion(string, 0, length, reinterpret_cast<jchar *>(res.data()));
+    return res;
+}
+} // namespace Detail
 
 // a constexpr type for string literals of any character width, aware of the length
 // of the string.

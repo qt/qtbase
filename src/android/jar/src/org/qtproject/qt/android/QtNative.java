@@ -437,10 +437,6 @@ public class QtNative
     static native boolean updateNativeActivity();
     // application methods
 
-    // window methods
-    static native void updateWindow();
-    // window methods
-
     // application methods
     static native void updateApplicationState(int state);
     static native void updateLocale();

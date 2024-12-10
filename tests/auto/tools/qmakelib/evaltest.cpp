@@ -2331,7 +2331,7 @@ void tst_qmakelib::addTestFunctions(const QString &qindir)
             << "jsontext = not good\n"
                "parseJson(jsontext, json): OK = 1"
             << "OK = UNDEF"
-            << "##:2: Error parsing JSON at 1:1: illegal value"
+            << "##:2: Error parsing JSON at 1:2: illegal value"
             << true;
 
     QTest::newRow("parseJson(): bad number of arguments")

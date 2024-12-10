@@ -794,9 +794,8 @@ bool operator==(const QShader &lhs, const QShader &rhs) noexcept
  */
 
 /*!
-    Returns the hash value for \a s, using \a seed to seed the calculation.
-
-    \relates QShader
+    \fn size_t qHash(const QShader &key, size_t seed)
+    \qhashold{QShader}
  */
 size_t qHash(const QShader &s, size_t seed) noexcept
 {
@@ -901,9 +900,8 @@ bool operator<(const QShaderKey &lhs, const QShaderKey &rhs) noexcept
  */
 
 /*!
-    Returns the hash value for \a k, using \a seed to seed the calculation.
-
-    \relates QShaderKey
+    \fn size_t qHash(const QShaderKey &key, size_t seed)
+    \qhashold{QShaderKey}
  */
 size_t qHash(const QShaderKey &k, size_t seed) noexcept
 {
@@ -934,9 +932,8 @@ bool operator==(const QShaderCode &lhs, const QShaderCode &rhs) noexcept
  */
 
 /*!
-    Returns the hash value for \a k, using \a seed to seed the calculation.
-
-    \relates QShaderCode
+    \fn size_t qHash(const QShaderCode &key, size_t seed)
+    \qhashold{QShaderCode}
  */
 size_t qHash(const QShaderCode &k, size_t seed) noexcept
 {

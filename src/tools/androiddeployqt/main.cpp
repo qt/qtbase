@@ -3765,18 +3765,17 @@ int generateJavaQmlComponents(const Options &options)
         return false;
 
     QTextStream outputStream;
-    std::unique_ptr<QFile> outputFile;
+    QFile outputFile;
 
     if (!leafEqualsLibname) {
-        outputFile.reset(new QFile("%1/%2.java"_L1.arg(outputDir, libClassname)));
-        if (outputFile->exists())
-            outputFile->remove();
-        if (!outputFile->open(QFile::ReadWrite)) {
-            fprintf(stderr, "Cannot open %s file to write.\n",
-                    qPrintable(outputFile->fileName()));
+        outputFile.setFileName("%1/%2.java"_L1.arg(outputDir, libClassname));
+        if (outputFile.exists())
+            outputFile.remove();
+        if (!outputFile.open(QFile::WriteOnly)) {
+            fprintf(stderr, "Cannot open %s file to write.\n", qPrintable(outputFile.fileName()));
             return false;
         }
-        outputStream.setDevice(outputFile.get());
+        outputStream.setDevice(&outputFile);
         createHeaderBlock(outputStream, javaPackage);
         beginLibraryBlock(outputStream, libClassname);
     }
@@ -3808,15 +3807,15 @@ int generateJavaQmlComponents(const Options &options)
                 outputStreamDevice->close();
             }
 
-            outputFile.reset(new QFile("%1/%2.java"_L1.arg(outputDir,moduleClassname)));
-            if (outputFile->exists() && !outputFile->remove())
+            outputFile.setFileName("%1/%2.java"_L1.arg(outputDir,moduleClassname));
+            if (outputFile.exists() && !outputFile.remove())
                 return false;
-            if (!outputFile->open(QFile::ReadWrite)) {
-                fprintf(stderr, "Cannot open %s file to write.\n", qPrintable(outputFile->fileName()));
+            if (!outputFile.open(QFile::WriteOnly)) {
+                fprintf(stderr, "Cannot open %s file to write.\n", qPrintable(outputFile.fileName()));
                 return false;
             }
 
-            outputStream.setDevice(outputFile.get());
+            outputStream.setDevice(&outputFile);
             createHeaderBlock(outputStream, javaPackage);
         }
 

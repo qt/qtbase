@@ -32,7 +32,7 @@ void NFA::addTransition(int from, InputType input, int to)
     assertValidState(from);
     assertValidState(to);
 
-    states[from].transitions.insertMulti(input, to);
+    states[from].transitions.insert(input, to);
 }
 
 void NFA::copyFrom(const NFA &other, int baseState)
@@ -449,12 +449,13 @@ DFA DFA::minimize() const
             }
     } while (!done);
 
-    QHash<int, int> statesToEliminate;
-    for (int i = 0; i < count(); ++i)
-        for (int j = 0; j < i; ++j)
-            if (!inequivalentStates[i * count() + j]) {
-                statesToEliminate.insertMulti(i, j);
-            }
+    QMultiHash<int, int> statesToEliminate;
+    for (int i = 0; i < count(); ++i) {
+        for (int j = 0; j < i; ++j) {
+            if (!inequivalentStates[i * count() + j])
+                statesToEliminate.insert(i, j);
+        }
+    }
 
     /*
     qDebug() << "states to eliminiate:" << statesToEliminate.count();

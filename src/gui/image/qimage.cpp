@@ -35,7 +35,7 @@
 #include <private/qimage_p.h>
 #include <private/qfont_p.h>
 
-#if QT_CONFIG(thread)
+#if QT_CONFIG(qtgui_threadpool)
 #include <qsemaphore.h>
 #include <qthreadpool.h>
 #include <private/qthreadpool_p.h>
@@ -2913,7 +2913,7 @@ bool QImage::allGray() const
         break;
     }
 
-    uint buffer[BufferSize];
+    Q_DECL_UNINITIALIZED uint buffer[BufferSize];
     const QPixelLayout *layout = &qPixelLayouts[d->format];
     const auto fetch = layout->fetchToARGB32PM;
     for (int j = 0; j < d->height; ++j) {
@@ -3293,6 +3293,7 @@ QImage QImage::createMaskFromColor(QRgb color, Qt::MaskMode mode) const
 /*!
     \fn QImage QImage::mirrored(bool horizontal = false, bool vertical = true) const &
     \fn QImage QImage::mirrored(bool horizontal = false, bool vertical = true) &&
+    \deprecated [6.9] Use flipped(Qt::Orientations) instead.
 
     Returns a mirror of the image, mirrored in the horizontal and/or
     the vertical direction depending on whether \a horizontal and \a
@@ -3306,11 +3307,35 @@ QImage QImage::createMaskFromColor(QRgb color, Qt::MaskMode mode) const
 /*!
     \fn void QImage::mirror(bool horizontal = false, bool vertical = true)
     \since 6.0
+    \deprecated [6.9] Use flip(Qt::Orientations) instead.
 
     Mirrors of the image in the horizontal and/or the vertical direction depending
     on whether \a horizontal and \a vertical are set to true or false.
 
     \sa mirrored(), {QImage#Image Transformations}{Image Transformations}
+*/
+
+/*!
+    \fn QImage QImage::flipped(Qt::Orientations orient) const &
+    \fn QImage QImage::flipped(Qt::Orientations orient) &&
+    \since 6.9
+
+    Returns a flipped or mirror version of the image, mirrored in the horizontal and/or
+    the vertical direction depending on \a orient.
+
+    Note that the original image is not changed.
+
+    \sa flip(Qt::Orientations), {QImage#Image Transformations}{Image Transformations}
+*/
+
+/*!
+    \fn void QImage::flip(Qt::Orientations orient)
+    \since 6.9
+
+    Flips or mirrors the image in the horizontal and/or the vertical direction depending
+    on \a orient.
+
+    \sa flipped(Qt::Orientations), {QImage#Image Transformations}{Image Transformations}
 */
 
 template<class T> inline void do_mirror_data(QImageData *dst, QImageData *src,
@@ -4739,7 +4764,7 @@ static QImage rotated180(const QImage &image)
 {
     const MemRotateFunc memrotate = qMemRotateFunctions[qPixelLayouts[image.format()].bpp][1];
     if (!memrotate)
-        return image.mirrored(true, true);
+        return image.flipped(Qt::Horizontal | Qt::Vertical);
 
     QImage out(image.width(), image.height(), image.format());
     if (out.isNull())
@@ -4883,17 +4908,17 @@ QImage Q_TRACE_INSTRUMENT(qtgui) QImage::transformed(const QTransform &matrix, Q
         }
         // Otherwise only use it when the scaling factor demands it, or the image is large enough to scale multi-threaded
         if (nonpaintable_scale_xform
-#if QT_CONFIG(thread) && !defined(Q_OS_WASM)
+#if QT_CONFIG(qtgui_threadpool)
             || (ws * hs) >= (1<<20)
 #endif
             ) {
             QImage scaledImage;
             if (mat.m11() < 0.0F && mat.m22() < 0.0F) { // horizontal/vertical flip
-                scaledImage = smoothScaled(wd, hd).mirrored(true, true);
+                scaledImage = smoothScaled(wd, hd).flipped(Qt::Horizontal | Qt::Vertical);
             } else if (mat.m11() < 0.0F) { // horizontal flip
-                scaledImage = smoothScaled(wd, hd).mirrored(true, false);
+                scaledImage = smoothScaled(wd, hd).flipped(Qt::Horizontal);
             } else if (mat.m22() < 0.0F) { // vertical flip
-                scaledImage = smoothScaled(wd, hd).mirrored(false, true);
+                scaledImage = smoothScaled(wd, hd).flipped(Qt::Vertical);
             } else { // no flipping
                 scaledImage = smoothScaled(wd, hd);
             }
@@ -5303,10 +5328,10 @@ void QImage::applyColorTransform(const QColorTransform &transform)
         };
     }
 
-#if QT_CONFIG(thread) && !defined(Q_OS_WASM)
+#if QT_CONFIG(qtgui_threadpool)
     int segments = (qsizetype(width()) * height()) >> 16;
     segments = std::min(segments, height());
-    QThreadPool *threadPool = QThreadPoolPrivate::qtGuiInstance();
+    QThreadPool *threadPool = QGuiApplicationPrivate::qtGuiThreadPool();
     if (segments > 1 && threadPool && !threadPool->contains(QThread::currentThread())) {
         QSemaphore semaphore;
         int y = 0;
@@ -5793,10 +5818,10 @@ QImage QImage::colorTransformed(const QColorTransform &transform, QImage::Format
         }
     }
 
-#if QT_CONFIG(thread) && !defined(Q_OS_WASM)
+#if QT_CONFIG(qtgui_threadpool)
     int segments = (qsizetype(width()) * height()) >> 16;
     segments = std::min(segments, height());
-    QThreadPool *threadPool = QThreadPoolPrivate::qtGuiInstance();
+    QThreadPool *threadPool = QGuiApplicationPrivate::qtGuiThreadPool();
     if (segments > 1 && threadPool && !threadPool->contains(QThread::currentThread())) {
         QSemaphore semaphore;
         int y = 0;
@@ -6440,6 +6465,16 @@ QImage::Format QImage::toImageFormat(QPixelFormat format) noexcept
     return Format_Invalid;
 }
 
+static inline Qt::Orientations toOrientations(QImageIOHandler::Transformations orient)
+{
+    Qt::Orientations orients = {};
+    if (orient.testFlag(QImageIOHandler::TransformationMirror))
+        orients |= Qt::Horizontal;
+    if (orient.testFlag(QImageIOHandler::TransformationFlip))
+        orients |= Qt::Vertical;
+    return orients;
+}
+
 Q_GUI_EXPORT void qt_imageTransform(QImage &src, QImageIOHandler::Transformations orient)
 {
     if (orient == QImageIOHandler::TransformationNone)
@@ -6447,8 +6482,7 @@ Q_GUI_EXPORT void qt_imageTransform(QImage &src, QImageIOHandler::Transformation
     if (orient == QImageIOHandler::TransformationRotate270) {
         src = rotated270(src);
     } else {
-        src = std::move(src).mirrored(orient & QImageIOHandler::TransformationMirror,
-                                  orient & QImageIOHandler::TransformationFlip);
+        src.flip(toOrientations(orient));
         if (orient & QImageIOHandler::TransformationRotate90)
             src = rotated90(src);
     }

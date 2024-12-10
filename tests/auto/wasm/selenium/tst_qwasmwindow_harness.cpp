@@ -474,6 +474,16 @@ public:
         widget->setAttribute(Qt::WA_NativeWindow);
     }
 
+    bool closeWidget(const std::string &name)
+    {
+        TestWidget *widget = findWidget(name);
+        if (!widget)
+            return false;
+
+        widget->close();
+        return true;
+    }
+
 private:
     using TestWidgetPtr = std::shared_ptr<TestWidget>;
 
@@ -621,6 +631,11 @@ void activateWidget(const std::string &name)
     auto w = WidgetStorage::getInstance()->findWidget(name);
     if (w)
         w->activateWindow();
+}
+
+bool closeWidget(const std::string &name)
+{
+    return WidgetStorage::getInstance()->closeWidget(name);
 }
 
 void clearWidgets()
@@ -776,6 +791,7 @@ EMSCRIPTEN_BINDINGS(qwasmwindow)
     emscripten::function("showToolTipWidget", &showToolTipWidget);
     emscripten::function("setWidgetNoFocusShow", &setWidgetNoFocusShow);
     emscripten::function("showWidget", &showWidget);
+    emscripten::function("closeWidget", &closeWidget);
     emscripten::function("activateWidget", &activateWidget);
     emscripten::function("hasWidgetFocus", &hasWidgetFocus);
     emscripten::function("clearWidgets", &clearWidgets);

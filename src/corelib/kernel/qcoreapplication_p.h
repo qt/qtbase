@@ -113,7 +113,6 @@ public:
     static QBasicAtomicPointer<QThread> theMainThread;
     static QBasicAtomicPointer<void> theMainThreadId;
     static QThread *mainThread();
-    static bool threadRequiresCoreApplication();
 
     static void sendPostedEvents(QObject *receiver, int event_type, QThreadData *data);
 

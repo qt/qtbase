@@ -158,8 +158,9 @@ private:
     QFixed emSquareSize() const override;
     bool supportsHorizontalSubPixelPositions() const override
     {
-        return default_hint_style == HintLight ||
-               default_hint_style == HintNone;
+        return !isColorFont()
+                && (default_hint_style == HintLight ||
+                    default_hint_style == HintNone);
     }
 
     bool supportsVerticalSubPixelPositions() const override
@@ -180,6 +181,7 @@ private:
     QFixed underlinePosition() const override;
 
     glyph_t glyphIndex(uint ucs4) const override;
+    QString glyphName(glyph_t index) const override;
     void doKerning(QGlyphLayout *, ShaperFlags) const override;
 
     void getUnscaledGlyph(glyph_t glyph, QPainterPath *path, glyph_metrics_t *metrics) override;

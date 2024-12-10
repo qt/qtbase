@@ -1519,7 +1519,7 @@ QSqlRecord QMYSQLDriver::record(const QString &tablename) const
     const auto len = mysql_real_escape_string_quote(d->mysql, tableNameQuoted.data(),
                                                     baTableName.data(), baTableName.size(), '\'');
 #endif
-    if (i.exec(stmt.arg(QString::fromUtf8(tableNameQuoted.data(), len)))) {
+    if (i.exec(stmt.arg(QUtf8StringView(tableNameQuoted.data(), len)))) {
         while (i.next()) {
             const auto colName = i.value(0).toString();
             const auto recordIdx = r.indexOf(colName);

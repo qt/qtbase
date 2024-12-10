@@ -162,7 +162,12 @@ Type Moc::parseType()
     }
 
     skipCxxAttributes();
-    test(ENUM) || test(CLASS) || test(STRUCT);
+    if (test(ENUM))
+        type.typeTag = TypeTag::HasEnum;
+    if (test(CLASS))
+        type.typeTag |= TypeTag::HasClass;
+    if (test(STRUCT))
+        type.typeTag |= TypeTag::HasStruct;
     for(;;) {
         skipCxxAttributes();
         switch (next()) {
@@ -522,7 +527,7 @@ bool Moc::parseFunction(FunctionDef *def, bool inMacro)
 
 bool Moc::testForFunctionModifiers(FunctionDef *def)
 {
-    return test(EXPLICIT) || test(INLINE) ||
+    return test(EXPLICIT) || test(INLINE) || test(CONSTEXPR) ||
             (test(STATIC) && (def->isStatic = true)) ||
             (test(VIRTUAL) && (def->isVirtual = true));
 }
@@ -1326,9 +1331,11 @@ void Moc::createPropertyDef(PropertyDef &propDef, int propertyIndex, Moc::Proper
     propDef.location = index;
     propDef.relativeIndex = propertyIndex;
 
-    QByteArray type = parseType().name;
+    Type t = parseType();
+    QByteArray type = t.name;
     if (type.isEmpty())
         error();
+    propDef.typeTag = t.typeTag;
     propDef.designable = propDef.scriptable = propDef.stored = "true";
     propDef.user = "false";
     /*

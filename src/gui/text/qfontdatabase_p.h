@@ -33,7 +33,7 @@ struct QtFontFallbacksCacheKey
     QString family;
     QFont::Style style;
     QFont::StyleHint styleHint;
-    QChar::Script script;
+    int script;
 };
 
 inline bool operator==(const QtFontFallbacksCacheKey &lhs, const QtFontFallbacksCacheKey &rhs) noexcept
@@ -155,6 +155,7 @@ struct Q_GUI_EXPORT QtFontFamily
         :
         populated(false),
         fixedPitch(false),
+        colorFont(false),
         name(n), count(0), foundries(nullptr)
     {
         memset(writingSystems, 0, sizeof(writingSystems));
@@ -167,6 +168,7 @@ struct Q_GUI_EXPORT QtFontFamily
 
     bool populated : 1;
     bool fixedPitch : 1;
+    bool colorFont : 1;
 
     QString name;
     QStringList aliases;
@@ -202,13 +204,21 @@ public:
         EnsurePopulated
     };
 
+    // Expands QChar::Script by adding a special "script" for emoji sequences
+    enum ExtendedScript {
+        Script_Common = QChar::Script_Common,
+        Script_Latin = QChar::Script_Latin,
+        Script_Emoji = QChar::ScriptCount,
+        ScriptCount
+    };
+
     QtFontFamily *family(const QString &f, FamilyRequestFlags flags = EnsurePopulated);
 
     int count;
     QtFontFamily **families;
     bool populated = false;
 
-    QHash<QChar::Script, QStringList> applicationFallbackFontFamilies;
+    QHash<ExtendedScript, QStringList> applicationFallbackFontFamiliesHash;
 
     QCache<QtFontFallbacksCacheKey, QStringList> fallbacksCache;
     struct ApplicationFont {
@@ -236,21 +246,30 @@ public:
     int addAppFont(const QByteArray &fontData, const QString &fileName);
     bool isApplicationFont(const QString &fileName);
 
+    void setApplicationFallbackFontFamilies(ExtendedScript script, const QStringList &familyNames);
+    QStringList applicationFallbackFontFamilies(ExtendedScript script);
+    bool removeApplicationFallbackFontFamily(ExtendedScript script, const QString &familyName);
+    void addApplicationFallbackFontFamily(ExtendedScript script, const QString &familyName);
+
     static QFontDatabasePrivate *instance();
 
     static void parseFontName(const QString &name, QString &foundry, QString &family);
     static QString resolveFontFamilyAlias(const QString &family);
     static QFontEngine *findFont(const QFontDef &request,
-                                 int script /* QChar::Script */,
+                                 int script /* QFontDatabasePrivate::ExtendedScript */,
                                  bool preferScriptOverFamily = false);
-    static void load(const QFontPrivate *d, int script /* QChar::Script */);
+    static void load(const QFontPrivate *d, int script /* QFontDatabasePrivate::ExtendedScript */);
     static QFontDatabasePrivate *ensureFontDatabase();
 
     void invalidate();
 
 private:
-    static int match(int script, const QFontDef &request, const QString &family_name,
-                     const QString &foundry_name, QtFontDesc *desc, const QList<int> &blacklistedFamilies,
+    static int match(int script,
+                     const QFontDef &request,
+                     const QString &family_name,
+                     const QString &foundry_name,
+                     QtFontDesc *desc,
+                     const QList<int> &blacklistedFamilies,
                      unsigned int *resultingScore = nullptr);
 
     static unsigned int bestFoundry(int script, unsigned int score, int styleStrategy,

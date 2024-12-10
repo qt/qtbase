@@ -108,6 +108,7 @@ struct QSystemLocalePrivate
 
     QVariant zeroDigit();
     QVariant decimalPoint();
+    QVariant groupingSizes();
     QVariant groupSeparator();
     QVariant negativeSign();
     QVariant positiveSign();
@@ -145,6 +146,7 @@ private:
     LCID lcid;
     SubstitutionType substitutionType = SUnknown;
     QString zero; // cached value for zeroDigit()
+    QLocaleData::GroupSizes sizes; // cached value for groupingSizes()
 
     int getLocaleInfo(LCTYPE type, LPWSTR data, int size);
     QVariant getLocaleInfo(LCTYPE type);
@@ -317,6 +319,46 @@ QVariant QSystemLocalePrivate::zeroDigit()
 QVariant QSystemLocalePrivate::decimalPoint()
 {
     return nullIfEmpty(getLocaleInfo(LOCALE_SDECIMAL).toString());
+}
+
+QVariant QSystemLocalePrivate::groupingSizes()
+{
+    if (sizes.higher == 0) {
+        wchar_t grouping[10];
+        /*
+         * Nine digits/semicolons plus a terminator.
+
+         * https://learn.microsoft.com/en-us/windows/win32/intl/locale-sgrouping
+         * "Sizes for each group of digits to the left of the decimal. The maximum
+         * number of characters allowed for this string is ten, including a
+         * terminating null character."
+         */
+        int dataSize = getLocaleInfo(LOCALE_SGROUPING, grouping, int(std::size(grouping)));
+        if (dataSize) {
+            // MS does not seem to include {first} so it will always be NAN.
+            QString sysGroupingStr = QString::fromWCharArray(grouping, dataSize);
+            auto tokenized = sysGroupingStr.tokenize(u";");
+            int width[2] = {0, 0};
+            int index = 0;
+            for (const auto tok : tokenized) {
+                bool ok = false;
+                int value = tok.toInt(&ok);
+                if (!ok || !value || index >= 2)
+                    break;
+                width[index++] = value;
+            }
+            // The MS docs allow patterns Qt doesn't support, so we treat "X;Y" as "X;Y;0"
+            // and "X" as "X;0" and ignore all but the first two widths. The MS API does
+            // not support an equivalent of sizes.first.
+            if (index > 1) {
+                sizes.least = width[0];
+                sizes.higher = width[1];
+            } else if (index) {
+                sizes.least = sizes.higher = width[0];
+            }
+        }
+    }
+    return QVariant::fromValue(sizes);
 }
 
 QVariant QSystemLocalePrivate::groupSeparator()
@@ -831,6 +873,8 @@ QVariant QSystemLocale::query(QueryType type, QVariant &&in) const
     switch(type) {
     case DecimalPoint:
         return d->decimalPoint();
+    case Grouping:
+        return d->groupingSizes();
     case GroupSeparator:
         return d->groupSeparator();
     case NegativeSign:
@@ -1176,5 +1220,42 @@ Q_CORE_EXPORT QLocale qt_localeFromLCID(LCID id)
 {
     return QLocale(QString::fromLatin1(getWinLocaleName(id)));
 }
+
+#if !QT_CONFIG(icu)
+
+static QString localeConvertString(const QString &localeID, const QString &str, bool *ok,
+                                   DWORD flags)
+{
+    Q_ASSERT(ok);
+    LCID lcid = LocaleNameToLCID(reinterpret_cast<const wchar_t *>(localeID.constData()), 0);
+    // First compute the size of the output string
+    const int size = LCMapStringW(lcid, flags, reinterpret_cast<const wchar_t *>(str.constData()),
+                                  str.size(), 0, 0);
+    QString buf(size, Qt::Uninitialized);
+    if (lcid == 0 || size == 0
+        || LCMapStringW(lcid, flags, reinterpret_cast<const wchar_t *>(str.constData()), str.size(),
+                        reinterpret_cast<wchar_t *>(buf.data()), buf.size()) == 0) {
+        *ok = false;
+        return QString();
+    }
+
+    *ok = true;
+
+    return buf;
+}
+
+QString QLocalePrivate::toLower(const QString &str, bool *ok) const
+{
+    return localeConvertString(QString::fromUtf8(bcp47Name()), str, ok,
+                               LCMAP_LOWERCASE | LCMAP_LINGUISTIC_CASING);
+}
+
+QString QLocalePrivate::toUpper(const QString &str, bool *ok) const
+{
+    return localeConvertString(QString::fromUtf8(bcp47Name()), str, ok,
+                               LCMAP_UPPERCASE | LCMAP_LINGUISTIC_CASING);
+}
+
+#endif
 
 QT_END_NAMESPACE

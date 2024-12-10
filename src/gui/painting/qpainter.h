@@ -156,6 +156,8 @@ public:
 
     void setBrush(const QBrush &brush);
     void setBrush(Qt::BrushStyle style);
+    void setBrush(QColor color);
+    void setBrush(Qt::GlobalColor color) { setBrush(QColor(color)); }
     const QBrush &brush() const;
 
     // attributes/modes

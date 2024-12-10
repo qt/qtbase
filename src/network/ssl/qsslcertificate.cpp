@@ -971,9 +971,8 @@ QString QSslCertificate::subjectDisplayName() const
 }
 
 /*!
-    Returns the hash value for the \a key, using \a seed to seed the calculation.
     \since 5.4
-    \relates QHash
+    \qhashold{QHash}
 */
 size_t qHash(const QSslCertificate &key, size_t seed) noexcept
 {

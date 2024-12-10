@@ -19,59 +19,54 @@ QT_BEGIN_NAMESPACE
 ClientArea::ClientArea(QWasmWindow *window, QWasmScreen *screen, emscripten::val element)
     : m_screen(screen), m_window(window), m_element(element)
 {
-    const auto callback = std::function([this](emscripten::val event) {
-        processPointer(*PointerEvent::fromWeb(event));
-        event.call<void>("preventDefault");
-        event.call<void>("stopPropagation");
-    });
+    m_pointerDownCallback = std::make_unique<qstdweb::EventCallback>(element, "pointerdown",
+        [this](emscripten::val event){ processPointer(PointerEvent(EventType::PointerDown, event)); }
+    );
+    m_pointerMoveCallback = std::make_unique<qstdweb::EventCallback>(element, "pointermove",
+        [this](emscripten::val event){ processPointer(PointerEvent(EventType::PointerMove, event)); }
+    );
+    m_pointerUpCallback = std::make_unique<qstdweb::EventCallback>(element, "pointerup",
+        [this](emscripten::val event){ processPointer(PointerEvent(EventType::PointerUp, event)); }
+    );
+    m_pointerCancelCallback = std::make_unique<qstdweb::EventCallback>(element, "pointercancel",
+        [this](emscripten::val event){ processPointer(PointerEvent(EventType::PointerCancel, event)); }
+    );
 
-    m_pointerDownCallback =
-            std::make_unique<qstdweb::EventCallback>(element, "pointerdown", callback);
-    m_pointerMoveCallback =
-            std::make_unique<qstdweb::EventCallback>(element, "pointermove", callback);
-    m_pointerUpCallback = std::make_unique<qstdweb::EventCallback>(element, "pointerup", callback);
-    m_pointerCancelCallback =
-            std::make_unique<qstdweb::EventCallback>(element, "pointercancel", callback);
-
-        element.call<void>("setAttribute", emscripten::val("draggable"), emscripten::val("true"));
-
-        m_dragStartCallback = std::make_unique<qstdweb::EventCallback>(
-                    element, "dragstart", [this](emscripten::val webEvent) {
-                            webEvent.call<void>("preventDefault");
-                            auto event = *DragEvent::fromWeb(webEvent, m_window->window());
-                            QWasmDrag::instance()->onNativeDragStarted(&event);
-                        });
-        m_dragOverCallback = std::make_unique<qstdweb::EventCallback>(
-                    element, "dragover", [this](emscripten::val webEvent) {
-                            webEvent.call<void>("preventDefault");
-                            auto event = *DragEvent::fromWeb(webEvent, m_window->window());
-                            QWasmDrag::instance()->onNativeDragOver(&event);
-                        });
-        m_dropCallback = std::make_unique<qstdweb::EventCallback>(
-                    element, "drop", [this](emscripten::val webEvent) {
-                            webEvent.call<void>("preventDefault");
-                            auto event = *DragEvent::fromWeb(webEvent, m_window->window());
-                            QWasmDrag::instance()->onNativeDrop(&event);
-                        });
-        m_dragEndCallback = std::make_unique<qstdweb::EventCallback>(
-                    element, "dragend", [this](emscripten::val webEvent) {
-                            webEvent.call<void>("preventDefault");
-                            auto event = *DragEvent::fromWeb(webEvent, m_window->window());
-                            QWasmDrag::instance()->onNativeDragFinished(&event);
-                        });
-
-        m_dragLeaveCallback = std::make_unique<qstdweb::EventCallback>(
-                    element, "dragleave", [this](emscripten::val webEvent) {
-                            webEvent.call<void>("preventDefault");
-                            auto event = *DragEvent::fromWeb(webEvent, m_window->window());
-                            QWasmDrag::instance()->onNativeDragLeave(&event);
-                        });
-
+    element.call<void>("setAttribute", emscripten::val("draggable"), emscripten::val("true"));
+    m_dragStartCallback = std::make_unique<qstdweb::EventCallback>(element, "dragstart",
+        [this](emscripten::val event) {
+            DragEvent dragEvent(EventType::DragStart, event, m_window->window());
+            QWasmDrag::instance()->onNativeDragStarted(&dragEvent);
+        }
+    );
+    m_dragOverCallback = std::make_unique<qstdweb::EventCallback>(element, "dragover",
+        [this](emscripten::val event) {
+            DragEvent dragEvent(EventType::DragOver, event, m_window->window());
+            QWasmDrag::instance()->onNativeDragOver(&dragEvent);
+        }
+    );
+    m_dropCallback = std::make_unique<qstdweb::EventCallback>(element, "drop",
+        [this](emscripten::val event) {
+            DragEvent dragEvent(EventType::Drop, event, m_window->window());
+            QWasmDrag::instance()->onNativeDrop(&dragEvent);
+        }
+    );
+    m_dragEndCallback = std::make_unique<qstdweb::EventCallback>(element, "dragend",
+        [this](emscripten::val event) {
+            DragEvent dragEvent(EventType::DragEnd, event, m_window->window());
+            QWasmDrag::instance()->onNativeDragFinished(&dragEvent);
+        }
+    );
+    m_dragLeaveCallback = std::make_unique<qstdweb::EventCallback>(element, "dragleave",
+        [this](emscripten::val event) {
+            DragEvent dragEvent(EventType::DragLeave, event, m_window->window());
+            QWasmDrag::instance()->onNativeDragLeave(&dragEvent);
+        }
+    );
 }
 
-bool ClientArea::processPointer(const PointerEvent &event)
+void ClientArea::processPointer(const PointerEvent &event)
 {
-
     switch (event.type) {
     case EventType::PointerDown:
         m_element.call<void>("setPointerCapture", event.pointerId);
@@ -90,7 +85,8 @@ bool ClientArea::processPointer(const PointerEvent &event)
     const bool eventAccepted = deliverEvent(event);
     if (!eventAccepted && event.type == EventType::PointerDown)
         QGuiApplicationPrivate::instance()->closeAllPopups();
-    return eventAccepted;
+    event.webEvent.call<void>("preventDefault");
+    event.webEvent.call<void>("stopPropagation");
 }
 
 bool ClientArea::deliverEvent(const PointerEvent &event)

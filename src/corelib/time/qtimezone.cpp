@@ -1529,10 +1529,11 @@ QList<QByteArray> QTimeZone::availableTimeZoneIds()
 /*!
     Returns a list of all available IANA time zone IDs for a given \a territory.
 
-    As a special case, a \a territory of \l {QLocale::}{AnyTerritory} selects
-    those time zones that have no known territorial association, such as UTC. If
-    you require a list of all time zone IDs for all territories then use the
-    standard availableTimeZoneIds() method.
+    As a special case, a \a territory of \l {QLocale::} {AnyTerritory} selects
+    those time zones that have a non-territorial association, such as UTC, while
+    \l {QLocale::}{World} selects those time-zones for which there is a global
+    default IANA ID. If you require a list of all time zone IDs for all
+    territories then use the standard availableTimeZoneIds() method.
 
     This method is only available when feature \c timezone is enabled.
 
@@ -1601,8 +1602,14 @@ QByteArray QTimeZone::windowsIdToDefaultIanaId(const QByteArray &windowsId)
     Because a Windows ID can cover several IANA IDs within a given territory,
     the most frequently used IANA ID in that territory is returned.
 
-    As a special case, \l{QLocale::}{AnyTerritory} returns the default of those
-    IANA IDs that have no known territorial association.
+    As a special case, \l {QLocale::} {AnyTerritory} returns the default of
+    those IANA IDs that have a non-territorial association, while \l {QLocale::}
+    {World} returns the default for the given \a windowsId in territories that
+    have no specific association with it.
+
+    If the return is empty, there is no IANA ID specific to the given \a
+    territory for this \a windowsId. It is reasonable, in this case, to fall
+    back to \c{windowsIdToDefaultIanaId(windowsId)}.
 
     This method is only available when feature \c timezone is enabled.
 
@@ -1633,8 +1640,10 @@ QList<QByteArray> QTimeZone::windowsIdToIanaIds(const QByteArray &windowsId)
 /*!
     Returns all the IANA IDs for a given \a windowsId and \a territory.
 
-    As a special case, \l{QLocale::}{AnyTerritory} selects those IANA IDs that
-    have no known territorial association.
+    As a special case, \l{QLocale::} {AnyTerritory} selects those IANA IDs that
+    have a non-territorial association, while \l {QLocale::} {World} selects the
+    default for the given \a windowsId in territories that have no specific
+    association with it.
 
     The returned list is in order of frequency of usage, i.e. larger zones
     within a territory are listed first.

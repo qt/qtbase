@@ -28,6 +28,7 @@ private:
     void registerClassInfoStrings();
     void registerFunctionStrings(const QList<FunctionDef> &list);
     void registerByteArrayVector(const QList<QByteArray> &list);
+    void addStrings(const QByteArrayList &strings);
     void addProperties();
     void addEnums();
     void addFunctions(const QList<FunctionDef> &list, const char *functype);

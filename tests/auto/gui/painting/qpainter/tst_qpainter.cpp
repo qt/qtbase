@@ -3864,7 +3864,7 @@ void tst_QPainter::linearGradientSymmetry()
     pb.fillRect(b.rect(), inverseGradient(gradient));
     pb.end();
 
-    b = b.mirrored(true);
+    b = b.flipped(Qt::Horizontal | Qt::Vertical);
     QCOMPARE(a, b);
 }
 

@@ -24,6 +24,12 @@ QT_BEGIN_NAMESPACE
 template <typename T> class QJniArray;
 template <typename T> struct QJniArrayMutableIterator;
 
+// forward declare here so that we don't have to include the private header
+namespace QtAndroidPrivate
+{
+    Q_CORE_EXPORT jclass findClass(const char *className, JNIEnv *env);
+}
+
 template <typename T>
 struct QJniArrayIterator
 {
@@ -735,9 +741,7 @@ public:
         } else if constexpr (std::is_same_v<QString, T>) {
             jstring string = static_cast<jstring>(env->GetObjectArrayElement(arrayObject(), i));
             if (string) {
-                const auto length = env->GetStringLength(string);
-                QString res(length, Qt::Uninitialized);
-                env->GetStringRegion(string, 0, length, reinterpret_cast<jchar *>(res.data()));
+                QString res = QtJniTypes::Detail::toQString(string, env);
                 env->DeleteLocalRef(string);
                 return res;
             } else {
@@ -817,6 +821,8 @@ public:
             for (auto element : *this) {
                 if constexpr (std::is_same_v<decltype(element), QString>)
                     container.emplace_back(element);
+                else if constexpr (std::is_same_v<decltype(element), jstring>)
+                    container.emplace_back(QtJniTypes::Detail::toQString(element, env));
                 else
                     container.emplace_back(QJniObject(element).toString());
             }
@@ -875,8 +881,11 @@ auto QJniArrayBase::makeArray(List &&list, NewFn &&newArray, SetFn &&setRegion)
     const size_type length = size_type(std::size(list));
     JNIEnv *env = QJniEnvironment::getJniEnv();
     auto localArray = (env->*newArray)(length);
-    if (QJniEnvironment::checkAndClearExceptions(env))
+    if (QJniEnvironment::checkAndClearExceptions(env)) {
+        if (localArray)
+            env->DeleteLocalRef(localArray);
         return QJniArray<ElementType>();
+    }
 
     if (length) {
         // can't use static_cast here because we have signed/unsigned mismatches
@@ -889,7 +898,7 @@ auto QJniArrayBase::makeArray(List &&list, NewFn &&newArray, SetFn &&setRegion)
                 (env->*setRegion)(localArray, i++, 1, reinterpret_cast<const ElementType *>(&e));
         }
     }
-    return QJniArray<ElementType>(localArray);
+    return QJniArray<ElementType>(QJniObject::fromLocalRef(localArray));
 };
 
 template <typename List>
@@ -912,13 +921,16 @@ auto QJniArrayBase::makeObjectArray(List &&list)
                                      std::is_base_of<QtJniTypes::JObjectBase, ElementType>>) {
         elementClass = std::begin(list)->objectClass();
     } else if constexpr (std::is_same_v<ElementType, QString>) {
-        elementClass = env->FindClass("java/lang/String");
+        elementClass = QtAndroidPrivate::findClass("java/lang/String", env);
     } else {
         elementClass = env->GetObjectClass(*std::begin(list));
     }
     auto localArray = env->NewObjectArray(length, elementClass, nullptr);
-    if (QJniEnvironment::checkAndClearExceptions(env))
+    if (QJniEnvironment::checkAndClearExceptions(env)) {
+        if (localArray)
+            env->DeleteLocalRef(localArray);
         return ResultType();
+    }
 
     // explicitly manage the frame for local references in chunks of 100
     QJniObject::LocalFrame frame(env);
@@ -937,7 +949,7 @@ auto QJniArrayBase::makeObjectArray(List &&list)
     }
     if (i)
         env->PopLocalFrame(nullptr);
-    return ResultType(localArray);
+    return ResultType(QJniObject::fromLocalRef(localArray));
 }
 
 namespace QtJniTypes

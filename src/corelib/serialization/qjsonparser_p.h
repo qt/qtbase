@@ -39,8 +39,9 @@ private:
     bool parseArray();
     bool parseMember();
     bool parseString();
-    bool parseValue();
-    bool parseNumber();
+    bool parseValueIntoContainer();
+    QCborValue parseValue();
+    QCborValue parseNumber();
     const char *head;
     const char *json;
     const char *end;

@@ -2286,7 +2286,7 @@ void tst_QRhi::renderToTextureTexturedQuad()
     // just happens to give correct results with our OpenGL-targeted vertex and
     // UV data.
     if (rhi->isYUpInFramebuffer() != rhi->isYUpInNDC())
-        result = std::move(result).mirrored();
+        result.flip();
 
     // check a few points that are expected to match regardless of the implementation
     QRgb white = qRgba(255, 255, 255, 255);
@@ -2412,7 +2412,7 @@ void tst_QRhi::renderToTextureSampleWithSeparateTextureAndSampler()
         return;
 
     if (rhi->isYUpInFramebuffer() != rhi->isYUpInNDC())
-        result = std::move(result).mirrored();
+        result.flip();
 
     QRgb white = qRgba(255, 255, 255, 255);
     QCOMPARE(result.pixel(79, 77), white);
@@ -2556,7 +2556,7 @@ void tst_QRhi::renderToTextureArrayOfTexturedQuad()
     // just happens to give correct results with our OpenGL-targeted vertex and
     // UV data.
     if (rhi->isYUpInFramebuffer() != rhi->isYUpInNDC())
-        result = std::move(result).mirrored();
+        result.flip();
 
     // we added the input image + red + green together, so red and green must be all 1
     for (int y = 0; y < result.height(); ++y) {
@@ -2721,8 +2721,8 @@ void tst_QRhi::renderToTextureTexturedQuadAndUniformBuffer()
     QVERIFY(!result1.isNull());
 
     if (rhi->isYUpInFramebuffer() != rhi->isYUpInNDC()) {
-        result0 = std::move(result0).mirrored();
-        result1 = std::move(result1).mirrored();
+        result0.flip();
+        result1.flip();
     }
 
     if (impl == QRhi::Null)
@@ -2928,8 +2928,8 @@ void tst_QRhi::renderToTextureTexturedQuadAllDynamicBuffers()
     QVERIFY(!result1.isNull());
 
     if (rhi->isYUpInFramebuffer() != rhi->isYUpInNDC()) {
-        result0 = std::move(result0).mirrored();
-        result1 = std::move(result1).mirrored();
+        result0.flip();
+        result1.flip();
     }
 
     if (impl == QRhi::Null)
@@ -3089,7 +3089,7 @@ void tst_QRhi::renderToTextureDeferredSrb()
         return;
 
     if (rhi->isYUpInFramebuffer() != rhi->isYUpInNDC())
-        result = std::move(result).mirrored();
+        result.flip();
 
     // opacity 0.5 (premultiplied)
     static const auto checkSemiWhite = [](const QRgb &c) {
@@ -3230,7 +3230,7 @@ void tst_QRhi::renderToTextureDeferredUpdateSamplerInSrb()
         return;
 
     if (rhi->isYUpInFramebuffer() != rhi->isYUpInNDC())
-        result = std::move(result).mirrored();
+        result.flip();
 
     // opacity 0.5 (premultiplied)
     static const auto checkSemiWhite = [](const QRgb &c) {
@@ -3393,7 +3393,7 @@ void tst_QRhi::renderToTextureMultipleUniformBuffersAndDynamicOffset()
         return;
 
     if (rhi->isYUpInFramebuffer() != rhi->isYUpInNDC())
-        result = std::move(result).mirrored();
+        result.flip();
 
     // opacity 0.5 (premultiplied)
     static const auto checkSemiWhite = [](const QRgb &c) {
@@ -3542,7 +3542,7 @@ void tst_QRhi::renderToTextureSrbReuse()
         return;
 
     if (rhi->isYUpInFramebuffer() != rhi->isYUpInNDC())
-        result = std::move(result).mirrored();
+        result.flip();
 
     // opacity 0.5 (premultiplied)
     static const auto checkSemiWhite = [](const QRgb &c) {
@@ -3848,13 +3848,13 @@ void tst_QRhi::renderToTextureArrayMultiView()
                             readResult[0].pixelSize.width(), readResult[0].pixelSize.height(),
                             QImage::Format_RGBA8888);
         if (rhi->isYUpInFramebuffer()) // note that we used clipSpaceCorrMatrix
-            image0 = image0.mirrored();
+            image0.flip();
 
         QImage image1 = QImage(reinterpret_cast<const uchar *>(readResult[1].data.constData()),
                             readResult[1].pixelSize.width(), readResult[1].pixelSize.height(),
                             QImage::Format_RGBA8888);
         if (rhi->isYUpInFramebuffer())
-            image1 = image1.mirrored();
+            image1.flip();
 
         QVERIFY(!image0.isNull());
         QVERIFY(!image1.isNull());
@@ -3964,7 +3964,7 @@ void tst_QRhi::renderToWindowSimple()
                 if (readResult.format == QRhiTexture::RGBA8)
                     wrapperImage = wrapperImage.rgbSwapped();
                 if (rhi->isYUpInFramebuffer() == rhi->isYUpInNDC())
-                    result = wrapperImage.mirrored();
+                    result = wrapperImage.flipped();
                 else
                     result = wrapperImage.copy();
             };
@@ -6069,7 +6069,7 @@ void tst_QRhi::renderToFloatTexture()
         return;
 
     if (rhi->isYUpInFramebuffer() != rhi->isYUpInNDC())
-        result = std::move(result).mirrored();
+        result.flip();
 
     // Now we have a red rectangle on blue background.
     const int y = 100;
@@ -6158,7 +6158,7 @@ void tst_QRhi::renderToRgb10Texture()
         return;
 
     if (rhi->isYUpInFramebuffer() != rhi->isYUpInNDC())
-        result = std::move(result).mirrored();
+        result.flip();
 
     // Now we have a red rectangle on blue background.
     const int y = 100;
@@ -6300,7 +6300,7 @@ void tst_QRhi::tessellation()
     rhi->endOffscreenFrame();
 
     if (rhi->isYUpInFramebuffer()) // we used clipSpaceCorrMatrix so this is different from many other tests
-        result = std::move(result).mirrored();
+        result.flip();
 
     QCOMPARE(result.size(), rt->pixelSize());
 
@@ -6490,7 +6490,7 @@ void tst_QRhi::tessellationInterfaceBlocks()
 
     if (rhi->isYUpInFramebuffer()) // we used clipSpaceCorrMatrix so this is different from many
                                    // other tests
-        result = std::move(result).mirrored();
+        result.flip();
 
     QCOMPARE(result.size(), rt->pixelSize());
 

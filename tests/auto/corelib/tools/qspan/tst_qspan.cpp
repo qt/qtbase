@@ -130,6 +130,8 @@ private Q_SLOTS:
     void fromInitList() const;
 
 private:
+    template <typename T, std::size_t N, typename S, std::size_t M>
+    void check_identical(QSpan<T, N> lhs, QSpan<S, M> rhs) const;
     template <typename T, std::size_t N>
     void check_nonempty_span(QSpan<T, N>, qsizetype expectedSize) const;
     template <typename T, std::size_t N>
@@ -191,6 +193,13 @@ void tst_QSpan::zeroExtentSpansMaintainADataPointer() const
     check_empty_span_incl_subspans(sdci);
 }
 
+template<typename T, std::size_t N, typename S, std::size_t M>
+void tst_QSpan::check_identical(QSpan<T, N> lhs, QSpan<S, M> rhs) const
+{
+    QCOMPARE_EQ(lhs.data(), rhs.data());
+    QCOMPARE_EQ(lhs.size(), rhs.size());
+}
+
 template <typename T, std::size_t N>
 void tst_QSpan::check_nonempty_span(QSpan<T, N> s, qsizetype expectedSize) const
 {
@@ -220,7 +229,19 @@ void tst_QSpan::check_nonempty_span(QSpan<T, N> s, qsizetype expectedSize) const
     QCOMPARE_EQ(std::addressof(s.back()), std::addressof(*s.crbegin()));
     QCOMPARE_EQ(std::addressof(s.back()), std::addressof(s[s.size() - 1]));
 
-    // ### more?
+    if constexpr (N == q20::dynamic_extent) {
+        auto sc = s;
+        sc.chop(1);
+        check_identical(sc, s.chopped(1));
+
+        auto ss = s;
+        ss.slice(1);
+        check_identical(ss, s.sliced(1));
+
+        auto s2 = s;
+        s2.slice(0, 1);
+        check_identical(s2, s.sliced(0, 1));
+    }
 
     if (expectedSize == 1) {
         // don't run into Mandates: Offset >= Extent
@@ -228,12 +249,14 @@ void tst_QSpan::check_nonempty_span(QSpan<T, N> s, qsizetype expectedSize) const
             check_empty_span_incl_subspans(s.template subspan<1>());
         }
         check_empty_span_incl_subspans(s.subspan(1));
+        check_empty_span_incl_subspans(s.chopped(1));
     } else {
         // don't run into Mandates: Offset >= Extent
         if constexpr (N > 1) { // incl. N == std::dynamic_extent
             check_nonempty_span(s.template subspan<1>(), expectedSize - 1);
         }
         check_nonempty_span(s.subspan(1), expectedSize - 1);
+        check_nonempty_span(s.chopped(1), expectedSize - 1);
     }
 }
 
@@ -296,6 +319,11 @@ void tst_QSpan::check_empty_span_incl_subspans(QSpan<T, N> s) const
         const auto ss = s.subspan(0, 0);
         check_empty_span(ss);
         QCOMPARE_EQ(ss.data(), s.data());
+    }
+    {
+        const auto cd = s.chopped(0);
+        check_empty_span(cd);
+        QCOMPARE_EQ(cd.data(), s.data());
     }
 }
 

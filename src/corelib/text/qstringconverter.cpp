@@ -1,6 +1,7 @@
 // Copyright (C) 2020 The Qt Company Ltd.
 // Copyright (C) 2020 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// Qt-Security score:critical reason:data-parser
 
 #include <qstringconverter.h>
 #include <private/qstringconverter_p.h>
@@ -1971,6 +1972,7 @@ static qsizetype toLatin1Len(qsizetype l) { return l + 1; }
     \brief The QStringConverter class provides a base class for encoding and decoding text.
     \reentrant
     \ingroup i18n
+    \ingroup string-processing
 
     Qt uses UTF-16 to store, draw and manipulate strings. In many
     situations you may wish to deal with data that uses a different
@@ -2705,6 +2707,7 @@ const char *QStringConverter::nameForEncoding(QStringConverter::Encoding e)
     \brief The QStringEncoder class provides a state-based encoder for text.
     \reentrant
     \ingroup i18n
+    \ingroup string-processing
 
     A text encoder converts text from Qt's internal representation into an encoded
     text format using a specific encoding.
@@ -2799,6 +2802,7 @@ const char *QStringConverter::nameForEncoding(QStringConverter::Encoding e)
     \brief The QStringDecoder class provides a state-based decoder for text.
     \reentrant
     \ingroup i18n
+    \ingroup string-processing
 
     A text decoder converts text an encoded text format that uses a specific encoding
     into Qt's internal representation.

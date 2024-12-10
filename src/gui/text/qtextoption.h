@@ -74,6 +74,7 @@ public:
         SuppressColors = 0x8,
         ShowDocumentTerminator = 0x10,
         ShowDefaultIgnorables = 0x20,
+        DisableEmojiParsing = 0x40,
         IncludeTrailingSpaces = 0x80000000,
     };
     Q_DECLARE_FLAGS(Flags, Flag)

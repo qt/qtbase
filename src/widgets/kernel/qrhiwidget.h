@@ -69,6 +69,8 @@ public:
     QImage grabFramebuffer() const;
 
 protected:
+    QRhiWidget(QRhiWidgetPrivate &dd, QWidget *parent = nullptr, Qt::WindowFlags f = {});
+
     bool isAutoRenderTargetEnabled() const;
     void setAutoRenderTarget(bool enabled);
 

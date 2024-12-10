@@ -230,6 +230,8 @@ Q_TRACE_POINT(qtcore, QEvent_dtor, QEvent *event, QEvent::Type type);
     \value WindowUnblocked                  The window is unblocked after a modal dialog exited.
     \value WinIdChange                      The window system identifier for this native widget has changed.
     \value ZOrderChange                     The widget's z-order has changed. This event is never sent to top level windows.
+    \value [since 6.9] SafeAreaMarginsChange
+                                            The window's safe area margins have changed.
 
     User events should have values between \c User and \c{MaxUser}:
 

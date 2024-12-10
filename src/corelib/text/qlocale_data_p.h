@@ -59,7 +59,7 @@ struct LanguageCodeEntry
 // GENERATED PART STARTS HERE
 
 /*
-    This part of the file was generated on 2024-10-09 from the
+    This part of the file was generated on 2024-12-02 from the
     Common Locale Data Repository v45
 
     http://www.unicode.org/cldr/
@@ -1031,6 +1031,7 @@ static inline constexpr QLocaleId likely_subtags[] = {
     {   0, 139,   0 }, { 308, 139, 134 }, // und_Vaii -> vai_Vaii_LR
     {   0, 141,   0 }, { 255, 141,  50 }, // und_Yiii -> ii_Yiii_CN
     {   0, 142,   0 }, { 339, 142, 161 }, // und_Rohg -> rhg_Rohg_MM
+    {   0,   0,   0 }, {  75,  66, 248 }, // und -> en_Latn_US
 };
 
 static inline constexpr quint16 locale_index[] = {

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include <QtCore/qt_windows.h>
+#include <QtGui/qstylehints.h>
 
 #include "qwindowswindow.h"
 #include "qwindowscontext.h"
@@ -33,12 +34,16 @@
 #include <private/qguiapplication_p.h>
 #include <private/qhighdpiscaling_p.h>
 #include <qpa/qwindowsysteminterface.h>
+#include <private/qsystemlibrary_p.h>
+#include <private/qwinregistry_p.h>
+
 
 #include <QtCore/qdebug.h>
 #include <QtCore/qlibraryinfo.h>
 #include <QtCore/qoperatingsystemversion.h>
 
 #include <dwmapi.h>
+#include <gdiplus.h>
 
 #if QT_CONFIG(vulkan)
 #include "qwindowsvulkaninstance.h"
@@ -47,6 +52,10 @@
 #include <shellscalingapi.h>
 
 #include <private/qdxgivsyncservice_p.h>
+
+#ifndef GWL_HWNDPARENT
+#    define GWL_HWNDPARENT (-8)
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -272,6 +281,39 @@ static inline RECT RECTfromQRect(const QRect &rect)
     const int y = rect.top();
     RECT result = { x, y, x + rect.width(), y + rect.height() };
     return result;
+}
+
+static LRESULT WINAPI WndProcTitleBar(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    HWND parentHwnd = reinterpret_cast<HWND>(GetWindowLongPtr(hwnd, GWL_HWNDPARENT));
+    QWindowsWindow* platformWindow = QWindowsContext::instance()->findPlatformWindow(parentHwnd);
+
+    switch (message) {
+    case WM_SHOWWINDOW:
+        ShowWindow(hwnd,SW_HIDE);
+        if ((BOOL)wParam == TRUE)
+            platformWindow->transitionAnimatedCustomTitleBar();
+        return 0;
+    case WM_SIZE: {
+        if (platformWindow)
+            platformWindow->updateCustomTitlebar();
+        break;
+    }
+    case WM_NCHITTEST:
+        return HTTRANSPARENT;
+    case WM_TIMER:
+        ShowWindow(hwnd, SW_SHOWNOACTIVATE);
+        platformWindow->updateCustomTitlebar();
+        break;
+    case WM_PAINT:
+    {
+        PAINTSTRUCT ps;
+        BeginPaint(hwnd, &ps);
+        EndPaint(hwnd, &ps);
+        return 0;
+    }
+    }
+    return DefWindowProc(hwnd, message, wParam, lParam);
 }
 
 
@@ -856,6 +898,7 @@ QWindowsWindowData
     const auto appinst = reinterpret_cast<HINSTANCE>(GetModuleHandle(nullptr));
 
     const QString windowClassName = QWindowsContext::instance()->registerWindowClass(w);
+    const QString windowTitlebarName = QWindowsContext::instance()->registerWindowClass(QStringLiteral("_q_titlebar"), WndProcTitleBar, CS_VREDRAW|CS_HREDRAW, nullptr, false);
 
     const QScreen *screen{};
     const QRect rect = QPlatformWindow::initialGeometry(w, data.geometry,
@@ -867,6 +910,7 @@ QWindowsWindowData
 
     const auto *titleUtf16 = reinterpret_cast<const wchar_t *>(title.utf16());
     const auto *classNameUtf16 = reinterpret_cast<const wchar_t *>(windowClassName.utf16());
+    const auto *classTitleBarNameUtf16 = reinterpret_cast<const wchar_t *>(windowTitlebarName.utf16());
 
     // Capture events before CreateWindowEx() returns. The context is cleared in
     // the QWindowsWindow constructor.
@@ -906,6 +950,15 @@ QWindowsWindowData
                                  pos.x(), pos.y(),
                                  context->frameWidth, context->frameHeight,
                                  parentHandle, nullptr, appinst, nullptr);
+
+    if (w->flags().testFlags(Qt::ExpandedClientAreaHint)) {
+        result.hwndTitlebar = CreateWindowEx(WS_EX_LAYERED | WS_EX_TRANSPARENT,
+                                             classTitleBarNameUtf16, classTitleBarNameUtf16,
+                                             WS_POPUP, 0, 0,
+                                             context->frameWidth, 32,
+                                             result.hwnd, nullptr, appinst, nullptr);
+    }
+
     qCDebug(lcQpaWindow).nospace()
         << "CreateWindowEx: returns " << w << ' ' << result.hwnd << " obtained geometry: "
         << context->obtainedPos << context->obtainedSize << ' ' << context->margins;
@@ -978,6 +1031,10 @@ void WindowCreationData::initialize(const QWindow *w, HWND hwnd, bool frameChang
                 EnableMenuItem(systemMenu, SC_CLOSE, MF_BYCOMMAND|MF_ENABLED);
             else
                 EnableMenuItem(systemMenu, SC_CLOSE, MF_BYCOMMAND|MF_GRAYED);
+        }
+        if (flags & Qt::ExpandedClientAreaHint) { // Gives us the rounded corners looks and the frame shadow
+            MARGINS margins = { -1, -1, -1, -1 };
+            DwmExtendFrameIntoClientArea(hwnd, &margins);
         }
         updateGLWindowSettings(w, hwnd, flags, opacityLevel);
     } else { // child.
@@ -1106,8 +1163,24 @@ QMargins QWindowsGeometryHint::frame(const QWindow *w, const QRect &geometry,
     return QWindowsGeometryHint::frame(w, style, exStyle, dpi);
 }
 
-bool QWindowsGeometryHint::handleCalculateSize(const QMargins &customMargins, const MSG &msg, LRESULT *result)
+bool QWindowsGeometryHint::handleCalculateSize(const QWindow *window, const QMargins &customMargins, const MSG &msg, LRESULT *result)
 {
+    // Return 0 to remove the window's border
+    const bool clientAreaExpanded = window->flags() & Qt::ExpandedClientAreaHint;
+    if (msg.wParam && clientAreaExpanded) {
+        // Prevent content from being cutoff by border for maximized, but not fullscreened windows.
+        if (IsZoomed(msg.hwnd) && window->visibility() != QWindow::FullScreen) {
+            auto *ncp = reinterpret_cast<NCCALCSIZE_PARAMS *>(msg.lParam);
+            RECT *clientArea = &ncp->rgrc[0];
+            const int border = getResizeBorderThickness(QWindowsWindow::windowsWindowOf(window)->savedDpi());
+            clientArea->top += border;
+            clientArea->bottom -= border;
+            clientArea->left += border;
+            clientArea->right -= border;
+        }
+        *result = 0;
+        return true;
+    }
     // NCCALCSIZE_PARAMS structure if wParam==TRUE
     if (!msg.wParam || customMargins.isNull())
         return false;
@@ -1730,6 +1803,21 @@ QWindow *QWindowsWindow::topLevelOf(QWindow *w)
     return w;
 }
 
+// Checks whether the Window is tiled with Aero snap
+bool QWindowsWindow::isWindowArranged(HWND hwnd)
+{
+    typedef BOOL(WINAPI* PIsWindowArranged)(HWND);
+    static PIsWindowArranged pIsWindowArranged = nullptr;
+    static bool resolved = false;
+    if (!resolved) {
+        resolved = true;
+        pIsWindowArranged = (PIsWindowArranged)QSystemLibrary::resolve(QLatin1String("user32.dll"), "IsWindowArranged");
+    }
+    if (pIsWindowArranged == nullptr)
+        return false;
+    return pIsWindowArranged(hwnd);
+}
+
 QWindowsWindowData
     QWindowsWindowData::create(const QWindow *w,
                                        const QWindowsWindowData &parameters,
@@ -1769,6 +1857,13 @@ void QWindowsWindow::setVisible(bool visible)
             else
                 hide_sys();
             fireExpose(QRegion());
+        }
+    }
+    if (m_data.hwndTitlebar) {
+        if (visible) {
+            SetWindowPos(m_data.hwndTitlebar, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+        } else {
+            ShowWindow(m_data.hwndTitlebar, SW_HIDE);
         }
     }
 }
@@ -1812,10 +1907,6 @@ QPoint QWindowsWindow::mapFromGlobal(const QPoint &pos) const
 // really exist on Windows, the relationship is set by passing a parent along with !WS_CHILD
 // to window creation or by setting the parent using  GWL_HWNDPARENT (as opposed to
 // SetParent, which would make it a real child).
-
-#ifndef GWL_HWNDPARENT
-#    define GWL_HWNDPARENT (-8)
-#endif
 
 void QWindowsWindow::updateTransientParent() const
 {
@@ -1911,6 +2002,10 @@ void QWindowsWindow::show_sys() const
         setFlag(WithinMaximize); // QTBUG-8361
 
     ShowWindow(m_data.hwnd, sm);
+    if (m_data.flags.testFlag(Qt::ExpandedClientAreaHint)) {
+        ShowWindow(m_data.hwndTitlebar, sm);
+        SetActiveWindow(m_data.hwnd);
+    }
 
     clearFlag(WithinMaximize);
 
@@ -2090,6 +2185,16 @@ QRect QWindowsWindow::normalGeometry() const
         ? QWindowsGeometryHint::frame(window(), handle(), m_savedStyle, 0)
         : fullFrameMargins();
     return frame.isValid() ? frame.marginsRemoved(margins) : frame;
+}
+
+QMargins QWindowsWindow::safeAreaMargins() const
+{
+    if (m_data.flags.testFlags(Qt::ExpandedClientAreaHint)) {
+        const int titleBarHeight = SM_CYSIZEFRAME + SM_CYCAPTION;
+
+        return QMargins(0, titleBarHeight, 0, 0);
+    }
+    return QMargins();
 }
 
 static QString msgUnableToSetGeometry(const QWindowsWindow *platformWindow,
@@ -2296,6 +2401,14 @@ void QWindowsWindow::handleGeometryChange()
     if (!wasSync)
         clearFlag(SynchronousGeometryChangeEvent);
     qCDebug(lcQpaEvents) << __FUNCTION__ << this << window() << m_data.geometry;
+
+    bool arranged = QWindowsWindow::isWindowArranged(m_data.hwnd);
+    if (arranged || (m_windowWasArranged && !arranged)) {
+        transitionAnimatedCustomTitleBar();
+    }
+
+    MoveWindow(m_data.hwndTitlebar, m_data.geometry.x(), m_data.geometry.y(), m_data.geometry.width(), 32, true);
+    m_windowWasArranged = arranged;
 }
 
 void QWindowsBaseWindow::setGeometry_sys(const QRect &rect) const
@@ -2474,6 +2587,7 @@ void QWindowsWindow::handleWindowStateChange(Qt::WindowStates state)
         handleHidden();
         QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents); // Tell QQuickWindow to stop rendering now.
     } else {
+        transitionAnimatedCustomTitleBar();
         if (state & Qt::WindowMaximized) {
             WINDOWPLACEMENT windowPlacement{};
             windowPlacement.length = sizeof(WINDOWPLACEMENT);
@@ -2568,6 +2682,18 @@ void QWindowsWindow::correctWindowPlacement(WINDOWPLACEMENT &windowPlacement)
             window()->setHeight(window()->height() - adjust);
             qCDebug(lcQpaWindow) << "Height shortened by" << adjust << "logical pixels.";
         }
+    }
+}
+
+void QWindowsWindow::transitionAnimatedCustomTitleBar()
+{
+    const QWinRegistryKey registry(HKEY_CURRENT_USER, LR"(Control Panel\Desktop\WindowMetrics)");
+    if (registry.isValid() && registry.value(LR"(MinAnimate)") == 1) {
+        ShowWindow(m_data.hwndTitlebar, SW_HIDE);
+        SetTimer(m_data.hwndTitlebar, 1, 200, nullptr);
+    } else {
+        ShowWindow(m_data.hwndTitlebar, SW_SHOWNOACTIVATE);
+        updateCustomTitlebar();
     }
 }
 
@@ -3157,6 +3283,118 @@ bool QWindowsWindow::handleNonClientHitTest(const QPoint &globalPos, LRESULT *re
 {
     // QTBUG-32663, suppress resize cursor for fixed size windows.
     const QWindow *w = window();
+    const QPoint localPos = w->mapFromGlobal(QHighDpi::fromNativePixels(globalPos, w));
+    const QRect geom = geometry();
+
+    if (m_data.flags.testFlags(Qt::ExpandedClientAreaHint)) {
+        bool isDefaultTitleBar = !w->flags().testFlag(Qt::CustomizeWindowHint);
+        bool isCustomized = w->flags().testFlags(Qt::CustomizeWindowHint) && w->flags().testAnyFlags(Qt::WindowTitleHint|
+                                                                                                     Qt::WindowMinimizeButtonHint|
+                                                                                                     Qt::WindowMaximizeButtonHint|
+                                                                                                     Qt::WindowCloseButtonHint);
+        const int border = (IsZoomed(m_data.hwnd) || isFullScreen_sys()) ? 0 : getResizeBorderThickness(savedDpi());
+        if (isCustomized || isDefaultTitleBar) {
+            *result = HTCLIENT;
+            const int titleBarHeight = SM_CYSIZEFRAME + SM_CYCAPTION;;
+            const int titleButtonWidth = 46;
+            int buttons = 1;
+            if (globalPos.y() < geom.top() + titleBarHeight) {
+                if (m_data.flags.testFlags(Qt::WindowCloseButtonHint) || isDefaultTitleBar) {
+                    if ((globalPos.x() > geom.right() - titleButtonWidth * buttons) && (globalPos.x() <= geom.right())) {
+                        if (GetAsyncKeyState(VK_LBUTTON))
+                            *result = HTCLOSE;
+                    }
+                    buttons++;
+                } if (m_data.flags.testFlags(Qt::WindowMaximizeButtonHint) || isDefaultTitleBar) {
+                    if ((globalPos.x() > geom.right() - titleButtonWidth * buttons) && (globalPos.x() <= geom.right() - titleButtonWidth * (buttons-1))){
+                        if (GetAsyncKeyState(VK_LBUTTON)) {
+                            if (IsZoomed(m_data.hwnd))
+                                *result = HTSIZE;
+                            else
+                                *result = HTMAXBUTTON;
+                        }
+                    }
+                    buttons++;
+                } if (m_data.flags.testFlags(Qt::WindowMinimizeButtonHint) || isDefaultTitleBar) {
+                    if ((globalPos.x() > geom.right() - titleButtonWidth * buttons) && (globalPos.x() <= geom.right() - titleButtonWidth * (buttons-1))){
+                        if (GetAsyncKeyState(VK_LBUTTON))
+                            *result = HTMINBUTTON;
+                    }
+                    buttons++;
+                } if ((isCustomized || isDefaultTitleBar) &&
+                      *result == HTCLIENT){
+                    QWindow* wnd = window();
+                    auto buttons = GetAsyncKeyState(VK_LBUTTON) != 0 ? Qt::LeftButton : Qt::NoButton;
+                    QMouseEvent event(QEvent::MouseButtonPress, localPos, globalPos, buttons, buttons, Qt::NoModifier);
+                    QGuiApplication::sendEvent(wnd, &event);
+                    if (!event.isAccepted())
+                        *result = HTCAPTION;
+                }
+            }
+        }
+        if (border != 0) {
+            const bool left   = (globalPos.x() >= geom.left()) && (globalPos.x() < geom.left() + border);
+            const bool right  = (globalPos.x() >  geom.right() - border) && (globalPos.x() <= geom.right());
+            const bool top    = (globalPos.y() >= geom.top()) && (globalPos.y() < geom.top() + border);
+            const bool bottom = (globalPos.y() >  geom.bottom() - border) && (globalPos.y() <= geom.bottom());
+
+            if (left || right || top || bottom) {
+                if (left)
+                    *result = top ? HTTOPLEFT : (bottom ? HTBOTTOMLEFT : HTLEFT);
+                else if (right)
+                    *result = top ? HTTOPRIGHT : (bottom ? HTBOTTOMRIGHT : HTRIGHT);
+                else
+                    *result = top ? HTTOP : HTBOTTOM;
+            }
+        }
+
+        switch (*result) {
+        case HTCLOSE:
+            const_cast<QWindow *>(w)->close();
+            break;
+        case HTMAXBUTTON:
+            const_cast<QWindow *>(w)->showMaximized();
+            break;
+        case HTMINBUTTON:
+            const_cast<QWindow *>(w)->showMinimized();
+            break;
+        case HTSIZE:
+            const_cast<QWindow *>(w)->showNormal();
+            break;
+        default:
+            break;
+        }
+        return true;
+    }
+
+    // QTBUG-32663, suppress resize cursor for fixed size windows.
+    if (m_data.flags & Qt::ExpandedClientAreaHint) {
+        const int border = (IsZoomed(m_data.hwnd) || isFullScreen_sys()) ? 0 : getResizeBorderThickness(savedDpi());
+        if (border == 0) {
+            *result = HTCLIENT;
+            return true;
+        }
+        const QRect rect = geom;
+        const bool left   = (globalPos.x() >= rect.left()) && (globalPos.x() < rect.left() + border);
+        const bool right  = (globalPos.x() >  rect.right() - border) && (globalPos.x() <= rect.right());
+        const bool top    = (globalPos.y() >= rect.top()) && (globalPos.y() < rect.top() + border);
+        const bool bottom = (globalPos.y() >  rect.bottom() - border) && (globalPos.y() <= rect.bottom());
+
+
+        if (left || right || top || bottom) {
+            if (left)
+                *result = top ? HTTOPLEFT : (bottom ? HTBOTTOMLEFT : HTLEFT);
+            else if (right)
+                *result = top ? HTTOPRIGHT : (bottom ? HTBOTTOMRIGHT : HTRIGHT);
+            else
+                *result = top ? HTTOP : HTBOTTOM;
+        } else {
+            *result = HTCLIENT;
+        }
+        return true;
+    }
+
+    // QTBUG-32663, suppress resize cursor for fixed size windows.
     if (!w->isTopLevel() // Task 105852, minimized windows need to respond to user input.
         || (m_windowState != Qt::WindowNoState)
         || !isActive()
@@ -3171,7 +3409,6 @@ bool QWindowsWindow::handleNonClientHitTest(const QPoint &globalPos, LRESULT *re
     const bool fixedHeight = minimumSize.height() == maximumSize.height();
     if (!fixedWidth && !fixedHeight)
         return false;
-    const QPoint localPos = w->mapFromGlobal(QHighDpi::fromNativePixels(globalPos, w));
     const QSize size = w->size();
     if (fixedHeight) {
         if (localPos.y() >= size.height()) {
@@ -3191,6 +3428,180 @@ bool QWindowsWindow::handleNonClientHitTest(const QPoint &globalPos, LRESULT *re
         return true;
     }
     return false;
+}
+
+static void _q_drawCustomTitleBarButton(Gdiplus::Graphics& graphics, Gdiplus::RectF& r, Gdiplus::SolidBrush& brush)
+{
+    r.Height += 1;
+    Gdiplus::GraphicsPath path;
+    Gdiplus::RectF Corner(r.X + r.Width - 4, r.Y, 2, 2);
+    path.Reset();
+    path.AddLine(r.X, r.Y, r.X + r.Width - 4.0f, r.Y);
+    path.AddArc(Corner, 90, 90);
+    path.AddLine(r.X + r.Width, r.Y + 4, r.X + r.Width, r.Y + r.Height - 2);
+    path.AddLine(r.X + r.Width, r.Y + r.Height - 2, r.X, r.Y + r.Height - 2);
+    path.CloseFigure();
+    graphics.FillPath(&brush, &path);
+}
+
+void QWindowsWindow::updateCustomTitlebar()
+{
+    HWND hwnd = m_data.hwndTitlebar;
+    QWindow *wnd = window();
+
+    RECT windowRect;
+    GetWindowRect(hwnd, &windowRect);
+
+    const int titleBarHeight = SM_CYSIZEFRAME + SM_CYCAPTION;;
+    const int titleButtonWidth = 46;
+    const int windowWidth = windowRect.right - windowRect.left;
+
+    POINT localPos;
+    GetCursorPos(&localPos);
+    MapWindowPoints(HWND_DESKTOP, hwnd, &localPos, 1);
+
+    bool isDarkmode = QWindowsIntegration::instance()->darkModeHandling().testFlags(QWindowsApplication::DarkModeWindowFrames) &&
+            qApp->styleHints()->colorScheme() == Qt::ColorScheme::Dark;
+
+    const bool isWindows11orAbove = QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows11;
+    const wchar_t *iconFontName = isWindows11orAbove ? L"Segoe Fluent Icons" : L"Segoe MDL2 Assets";
+    const std::wstring titleTextFontName = QWindowsIntegration::instance()->fontDatabase()->defaultFont().family().toStdWString();
+    Gdiplus::Bitmap softwareBitmap(windowWidth, titleBarHeight, PixelFormat32bppARGB);
+    Gdiplus::Graphics graphics(&softwareBitmap);
+    graphics.SetTextRenderingHint(Gdiplus::TextRenderingHintAntiAliasGridFit);
+    Gdiplus::SolidBrush iconBrush(isDarkmode ? Gdiplus::Color(255, 255, 255, 255) : Gdiplus::Color(255, 0, 0, 0));
+    Gdiplus::FontFamily titleFontFamily(titleTextFontName.data());
+    Gdiplus::Font titleFont(&titleFontFamily, 14, Gdiplus::FontStyleRegular, Gdiplus::UnitPixel);
+    Gdiplus::FontFamily iconFontFamily(iconFontName);
+    Gdiplus::Font iconFont(&iconFontFamily, 8, Gdiplus::FontStyleRegular, Gdiplus::UnitPixel);
+
+    Gdiplus::StringFormat titleFormat;
+    titleFormat.SetAlignment(Gdiplus::StringAlignmentNear);
+    titleFormat.SetLineAlignment(Gdiplus::StringAlignmentCenter);
+    Gdiplus::StringFormat buttonFormat;
+    buttonFormat.SetAlignment(Gdiplus::StringAlignmentCenter);
+    buttonFormat.SetLineAlignment(Gdiplus::StringAlignmentCenter);
+
+    Gdiplus::SolidBrush closeButtonBrush(Gdiplus::Color(255, 255, 0, 0));
+    Gdiplus::SolidBrush minMaxButtonBrush = Gdiplus::SolidBrush(isDarkmode ? Gdiplus::Color(0x40, 0xFF, 0xFF, 0xFF) : Gdiplus::Color(0x20, 0x00, 0x00, 0x00));
+
+    Gdiplus::Color titleBarBackgroundColor = isDarkmode ? Gdiplus::Color(0xFF, 0x1F, 0x1F, 0x1F) : Gdiplus::Color(0xFF, 0xF3, 0xF3, 0xF3);
+    Gdiplus::SolidBrush titleBarBackgroundBrush(titleBarBackgroundColor);
+
+    int buttons = 1;
+    Gdiplus::RectF titleRect;
+
+    graphics.Clear(Gdiplus::Color(0x00, 0x00, 0x00, 0x00));
+    if (!wnd->flags().testFlags(Qt::NoTitleBarBackgroundHint)) {
+        titleRect.Y = 1;
+        titleRect.X = 1;
+        titleRect.Width = windowWidth - 2;
+        titleRect.Height = titleBarHeight;
+
+        if (isWindows11orAbove) {
+            Gdiplus::GraphicsPath path;
+            titleRect.Height += 1;
+            Gdiplus::RectF rightCorner(titleRect.X + titleRect.Width - 4, titleRect.Y, 2, 2);
+            Gdiplus::RectF leftCorner(titleRect.X, titleRect.Y + 4, 2, 2);
+            path.Reset();
+            path.AddLine(titleRect.X + 4.0f, titleRect.Y, titleRect.X + titleRect.Width - 4.0f, titleRect.Y);
+            path.AddArc(rightCorner, 90, 90);
+            path.AddLine(titleRect.X + titleRect.Width, titleRect.Y + 4, titleRect.X + titleRect.Width, titleRect.Y + titleRect.Height - 2);
+            path.AddLine(titleRect.X + titleRect.Width, titleRect.Y + titleRect.Height - 2, titleRect.X, titleRect.Y + titleRect.Height - 2);
+            path.AddLine(titleRect.X, titleRect.Y + titleRect.Height - 2, titleRect.X, titleRect.Y + 4.0f);
+            path.AddArc(leftCorner, -90, -90);
+            path.CloseFigure();
+            graphics.FillPath(&titleBarBackgroundBrush, &path);
+        } else {
+            graphics.FillRectangle(&titleBarBackgroundBrush, titleRect);
+        }
+    }
+    if (wnd->flags().testFlags(Qt::WindowTitleHint | Qt::CustomizeWindowHint) || !wnd->flags().testFlag(Qt::CustomizeWindowHint)) {
+        titleRect.Y = 1;
+        titleRect.X = 12;
+        titleRect.Width = windowWidth;
+        titleRect.Height = titleBarHeight;
+
+        std::wstring titleString = wnd->title().toStdWString();
+        graphics.DrawString(titleString.c_str(), -1, &titleFont, titleRect, &titleFormat, &iconBrush);
+    }
+
+    if (wnd->flags().testFlags(Qt::WindowCloseButtonHint | Qt::CustomizeWindowHint) || !wnd->flags().testFlag(Qt::CustomizeWindowHint)) {
+        Gdiplus::RectF rect;
+        rect.Y = 1;
+        rect.X = windowWidth - titleButtonWidth * buttons;
+        rect.Width = titleButtonWidth - 1;
+        rect.Height = titleBarHeight;
+        if (localPos.x > (windowWidth - buttons * titleButtonWidth) &&
+            localPos.x < (windowWidth - (buttons - 1) * titleButtonWidth) &&
+            localPos.y > rect.Y && localPos.y < rect.Y + rect.Height) {
+            if (isWindows11orAbove && buttons == 1) {
+                _q_drawCustomTitleBarButton(graphics, rect, closeButtonBrush);
+            } else {
+                graphics.FillRectangle(&closeButtonBrush, rect);
+            }
+        }
+        graphics.DrawString(L"\uE8BB", -1, &iconFont, rect, &buttonFormat, &iconBrush);
+        buttons++;
+    }
+
+    if (wnd->flags().testFlags(Qt::WindowMaximizeButtonHint | Qt::CustomizeWindowHint) || !wnd->flags().testFlag(Qt::CustomizeWindowHint)) {
+        Gdiplus::RectF rect;
+        rect.Y = 1;
+        rect.X = windowWidth - titleButtonWidth * buttons;
+        rect.Width = titleButtonWidth - 1;
+        rect.Height = titleBarHeight;
+        if (localPos.x > (windowWidth - buttons * titleButtonWidth) &&
+            localPos.x < (windowWidth - (buttons - 1) * titleButtonWidth) &&
+            localPos.y > rect.Y && localPos.y < rect.Y + rect.Height) {
+            if (isWindows11orAbove && buttons == 1) {
+                _q_drawCustomTitleBarButton(graphics, rect, minMaxButtonBrush);
+            } else {
+                graphics.FillRectangle(&minMaxButtonBrush, rect);
+            }
+        }
+        graphics.DrawString(L"\uE922", -1, &iconFont, rect, &buttonFormat, &iconBrush);
+        buttons++;
+    }
+
+    if (wnd->flags().testFlags(Qt::WindowMinimizeButtonHint | Qt::CustomizeWindowHint) || !wnd->flags().testFlag(Qt::CustomizeWindowHint)) {
+        Gdiplus::RectF rect;
+        rect.Y = 1;
+        rect.X = windowWidth - titleButtonWidth * buttons;
+        rect.Width = titleButtonWidth - 1;
+        rect.Height = titleBarHeight;
+        if (localPos.x > (windowWidth - buttons * titleButtonWidth) &&
+            localPos.x < (windowWidth - (buttons - 1) * titleButtonWidth) &&
+            localPos.y > rect.Y && localPos.y < rect.Y + rect.Height) {
+            if (isWindows11orAbove && buttons == 1) {
+                _q_drawCustomTitleBarButton(graphics, rect, minMaxButtonBrush);
+            } else {
+                graphics.FillRectangle(&minMaxButtonBrush, rect);
+            }
+        }
+        graphics.DrawString(L"\uE921", -1, &iconFont, rect, &buttonFormat, &iconBrush);
+        buttons++;
+    }
+
+    HBITMAP bmp;
+    softwareBitmap.GetHBITMAP(Gdiplus::Color(0, 0, 0, 0), &bmp);
+
+    HDC hdc = GetDC(hwnd);
+
+    HDC memdc = CreateCompatibleDC(hdc);
+    HGDIOBJ original = SelectObject(memdc, bmp);
+
+
+    BLENDFUNCTION blend = {AC_SRC_OVER, 0, 255, AC_SRC_ALPHA};
+    POINT ptLocation = { windowRect.left, windowRect.top };
+    SIZE szWnd = { windowWidth, titleBarHeight };
+    POINT ptSrc = { 0, 0 };
+    UpdateLayeredWindow(hwnd, hdc, &ptLocation, &szWnd, memdc, &ptSrc, 0, &blend, ULW_ALPHA);
+    SelectObject(hdc, original);
+
+    DeleteObject(bmp);
+    DeleteObject(memdc);
+    ReleaseDC(hwnd,hdc);
 }
 
 #ifndef QT_NO_CURSOR

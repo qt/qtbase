@@ -75,7 +75,7 @@ void ControllerWidget::updateStateControl()
         statesControl->setStates(activePreview->windowStates());
 }
 
-void ControllerWidget::updatePreview(QWindow *preview)
+void ControllerWidget::updatePreview(PreviewWindow *preview)
 {
     activePreview = preview;
 
@@ -91,7 +91,10 @@ void ControllerWidget::updatePreview(QWindow *preview)
         parentWindow->hide();
     }
 
+    preview->setVisualizeSafeAreas(safeAreaCheckBox->isChecked());
+
     preview->setFlags(flags);
+    preview->update();
 
     if (fixedSizeWindowCheckBox->isChecked()) {
         preview->setMinimumSize(preview->size());
@@ -172,8 +175,10 @@ void ControllerWidget::createTypeGroupBox()
     l = new QHBoxLayout;
     modalWindowCheckBox = createCheckBox(tr("Modal window"));
     fixedSizeWindowCheckBox = createCheckBox(tr("Fixed size window"));
+    safeAreaCheckBox = createCheckBox(tr("Visualize safe areas"));
     l->addWidget(modalWindowCheckBox);
     l->addWidget(fixedSizeWindowCheckBox);
+    l->addWidget(safeAreaCheckBox);
     additionalOptionsGroupBox->setLayout(l);
 }
 

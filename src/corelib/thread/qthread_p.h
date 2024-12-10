@@ -301,17 +301,38 @@ public:
 class QThreadData
 {
 public:
-    QThreadData(int initialRefCount = 1);
+    QThreadData(int initialRefCount = 1)
+        : _ref(initialRefCount)
+    {
+        // fprintf(stderr, "QThreadData %p created\n", this);
+    }
     ~QThreadData();
 
-    static Q_AUTOTEST_EXPORT QThreadData *current(bool createIfNecessary = true);
+    static QThreadData *current()
+    {
+        if (QThreadData *data = currentThreadData()) Q_LIKELY_BRANCH
+            return data;
+        return createCurrentThreadData();
+    }
     static void clearCurrentThreadData();
     static QThreadData *get2(QThread *thread)
     { Q_ASSERT_X(thread != nullptr, "QThread", "internal error"); return thread->d_func()->data; }
 
-
-    void ref();
-    void deref();
+#if QT_CONFIG(thread)
+    void ref()
+    {
+        (void) _ref.ref();
+        Q_ASSERT(_ref.loadRelaxed() != 0);
+    }
+    void deref()
+    {
+        if (!_ref.deref())
+            delete this;
+    }
+#else
+    void ref() {}
+    void deref() {}
+#endif
     inline bool hasEventDispatcher() const
     { return eventDispatcher.loadRelaxed() != nullptr; }
     QAbstractEventDispatcher *createEventDispatcher();
@@ -329,13 +350,6 @@ public:
         return canWait;
     }
 
-private:
-    QAtomicInt _ref;
-
-public:
-    int loopLevel;
-    int scopeLevel;
-
     QStack<QEventLoop *> eventLoops;
     QPostEventList postEventList;
     QAtomicPointer<QThread> thread;
@@ -343,10 +357,21 @@ public:
     QAtomicPointer<QAbstractEventDispatcher> eventDispatcher;
     QList<void *> tls;
 
-    bool quitNow;
-    bool canWait;
-    bool isAdopted;
-    bool requiresCoreApplication;
+private:
+    QAtomicInt _ref;
+
+public:
+    int loopLevel = 0;
+    int scopeLevel = 0;
+
+    bool quitNow = false;
+    bool canWait = true;
+    bool isAdopted = false;
+    bool requiresCoreApplication = true;
+
+private:
+    static Q_AUTOTEST_EXPORT QThreadData *currentThreadData() noexcept Q_DECL_PURE_FUNCTION;
+    static Q_AUTOTEST_EXPORT QThreadData *createCurrentThreadData();
 };
 
 class QScopedScopeLevelCounter

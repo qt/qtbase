@@ -214,6 +214,7 @@ public:
         return bytesToSkip;
     }
 
+    Q_CORE_EXPORT qint64 readLineWithoutTerminatingNull(char *data, qint64 maxLength);
     Q_CORE_EXPORT qint64 readLine(char *data, qint64 maxLength);
 
     inline bool canReadLine() const {

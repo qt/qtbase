@@ -22,3 +22,12 @@ endfunction()
 function(qt_find_package_extend_sbom)
     _qt_find_package_extend_sbom(${ARGN})
 endfunction()
+
+function(qt_internal_sbom_begin_qt_repo_project)
+    _qt_internal_sbom_begin_qt_repo_project(${ARGN})
+endfunction()
+
+function(qt_internal_sbom_end_qt_repo_project)
+    _qt_internal_sbom_end_qt_repo_project(${ARGN})
+endfunction()
+

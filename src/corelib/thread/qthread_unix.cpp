@@ -124,7 +124,6 @@ int pthread_timedjoin_np(...) { return ENOSYS; }    // pretend
 // https://github.com/llvm/llvm-project/blob/llvmorg-19.1.0/libcxxabi/src/cxa_thread_atexit.cpp#L118-L120
 #endif // QT_CONFIG(broken_threadlocal_dtors)
 
-// Always access this through the {get,set,clear}_thread_data() functions.
 Q_CONSTINIT static thread_local QThreadData *currentThreadData = nullptr;
 
 static void destroy_current_thread_data(void *p)
@@ -176,13 +175,13 @@ static void destroy_main_thread_data()
 Q_DESTRUCTOR_FUNCTION(destroy_main_thread_data)
 #endif
 
-static void set_thread_data(QThreadData *data)
+static void set_thread_data(QThreadData *data) noexcept
 {
     if (data) {
         if constexpr (QT_CONFIG(broken_threadlocal_dtors)) {
             static pthread_key_t tls_key;
             struct TlsKey {
-                TlsKey() { pthread_key_create(&tls_key, destroy_current_thread_data); }
+                TlsKey() noexcept { pthread_key_create(&tls_key, destroy_current_thread_data); }
                 ~TlsKey() { pthread_key_delete(tls_key); }
             };
             static TlsKey currentThreadCleanup;
@@ -195,11 +194,6 @@ static void set_thread_data(QThreadData *data)
         }
     }
     currentThreadData = data;
-}
-
-static void clear_thread_data()
-{
-    set_thread_data(nullptr);
 }
 
 template <typename T>
@@ -228,27 +222,31 @@ static typename std::enable_if<std::is_pointer_v<T>, T>::type from_HANDLE(Qt::HA
 
 void QThreadData::clearCurrentThreadData()
 {
-    clear_thread_data();
+    set_thread_data(nullptr);
 }
 
-QThreadData *QThreadData::current(bool createIfNecessary)
+QThreadData *QThreadData::currentThreadData() noexcept
 {
-    QThreadData *data = get_thread_data();
-    if (!data && createIfNecessary) {
-        data = new QThreadData;
-        QT_TRY {
-            set_thread_data(data);
-            data->thread.storeRelease(new QAdoptedThread(data));
-        } QT_CATCH(...) {
-            clear_thread_data();
-            data->deref();
-            data = nullptr;
-            QT_RETHROW;
-        }
-    }
-    return data;
+    return get_thread_data();
 }
 
+QThreadData *QThreadData::createCurrentThreadData()
+{
+    Q_ASSERT(!currentThreadData());
+    std::unique_ptr data = std::make_unique<QThreadData>();
+
+    // This needs to be called prior to new QAdoptedThread() to avoid
+    // recursion (see qobject.cpp).
+    set_thread_data(data.get());
+
+    QT_TRY {
+        data->thread.storeRelease(new QAdoptedThread(data.get()));
+    } QT_CATCH(...) {
+        clearCurrentThreadData();
+        QT_RETHROW;
+    }
+    return data.release();
+}
 
 void QAdoptedThread::init()
 {

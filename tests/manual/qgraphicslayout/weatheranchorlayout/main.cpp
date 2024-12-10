@@ -123,7 +123,7 @@ public:
 
         // paint the image flipped
         p.setCompositionMode(QPainter::CompositionMode_DestinationOver);
-        p.drawPixmap(0, 0, QPixmap::fromImage(scaled.toImage().mirrored(false, true)));
+        p.drawPixmap(0, 0, QPixmap::fromImage(scaled.toImage().flipped()));
         p.end();
 
         painter->drawPixmap(reflection, tmp);

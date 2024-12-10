@@ -430,7 +430,7 @@
     // -------------- Status bar style and visbility ---------------
 
     UIStatusBarStyle oldStatusBarStyle = self.preferredStatusBarStyle;
-    if (focusWindow->flags() & Qt::MaximizeUsingFullscreenGeometryHint)
+    if (focusWindow->flags() & Qt::ExpandedClientAreaHint)
         self.preferredStatusBarStyle = UIStatusBarStyleDefault;
     else
         self.preferredStatusBarStyle = UIStatusBarStyleLightContent;

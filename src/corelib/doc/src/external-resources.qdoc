@@ -181,3 +181,13 @@
     \externalpage https://developer.android.com/develop/connectivity/bluetooth/bt-permissions
     \title Android Bluetooth Permissions
 */
+
+/*!
+    \externalpage https://developer.android.com/reference/android/util/Log
+    \title Android: Log
+*/
+
+/*!
+    \externalpage https://developer.android.com/ndk/reference/group/logging#__android_log_print
+    \title Android: log_print
+*/

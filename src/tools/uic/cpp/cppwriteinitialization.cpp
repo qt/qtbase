@@ -237,7 +237,7 @@ namespace {
             if (const DomResourceIcon *dri = p->elementIconSet()) {
                 if (!isIconFormat44(dri)) {
                     if (dri->text().isEmpty())  {
-                        const QString msg = QString::fromLatin1("%1: Warning: An invalid icon property '%2' was encountered.")
+                        const QString msg = "%1: Warning: An invalid icon property '%2' was encountered."_L1
                                             .arg(fileName, name);
                         qWarning("%s", qPrintable(msg));
                         return false;
@@ -248,7 +248,7 @@ namespace {
         case DomProperty::Pixmap:
             if (const DomResourcePixmap *drp = p->elementPixmap())
                 if (drp->text().isEmpty()) {
-                    const QString msg = QString::fromUtf8("%1: Warning: An invalid pixmap property '%2' was encountered.")
+                    const QString msg = "%1: Warning: An invalid pixmap property '%2' was encountered."_L1
                                         .arg(fileName, name);
                     qWarning("%s", qPrintable(msg));
                     return false;

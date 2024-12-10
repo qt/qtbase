@@ -29,29 +29,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class Q_AUTOTEST_EXPORT QColorSpacePrimaries
-{
-public:
-   QColorSpacePrimaries() = default;
-   QColorSpacePrimaries(QColorSpace::Primaries primaries);
-   QColorSpacePrimaries(QPointF whitePoint,
-                        QPointF redPoint,
-                        QPointF greenPoint,
-                        QPointF bluePoint)
-           : whitePoint(whitePoint)
-           , redPoint(redPoint)
-           , greenPoint(greenPoint)
-           , bluePoint(bluePoint)
-   { }
-
-   QColorMatrix toXyzMatrix() const;
-   bool areValid() const;
-
-   QPointF whitePoint;
-   QPointF redPoint;
-   QPointF greenPoint;
-   QPointF bluePoint;
-};
+bool qColorSpacePrimaryPointsAreValid(const QColorSpace::PrimaryPoints &primaries);
 
 class QColorSpacePrivate : public QSharedData
 {
@@ -60,9 +38,9 @@ public:
     QColorSpacePrivate(QColorSpace::NamedColorSpace namedColorSpace);
     QColorSpacePrivate(QColorSpace::Primaries primaries, QColorSpace::TransferFunction transferFunction, float gamma);
     QColorSpacePrivate(QColorSpace::Primaries primaries, const QList<uint16_t> &transferFunctionTable);
-    QColorSpacePrivate(const QColorSpacePrimaries &primaries, QColorSpace::TransferFunction transferFunction, float gamma);
-    QColorSpacePrivate(const QColorSpacePrimaries &primaries, const QList<uint16_t> &transferFunctionTable);
-    QColorSpacePrivate(const QColorSpacePrimaries &primaries,
+    QColorSpacePrivate(const QColorSpace::PrimaryPoints &primaries, QColorSpace::TransferFunction transferFunction, float gamma);
+    QColorSpacePrivate(const QColorSpace::PrimaryPoints &primaries, const QList<uint16_t> &transferFunctionTable);
+    QColorSpacePrivate(const QColorSpace::PrimaryPoints &primaries,
                        const QList<uint16_t> &redTransferFunctionTable,
                        const QList<uint16_t> &greenTransferFunctionTable,
                        const QList<uint16_t> &blueRransferFunctionTable);

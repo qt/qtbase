@@ -68,6 +68,8 @@ private slots:
     void ownerElementTask45192_data();
     void ownerElementTask45192();
     void domNodeMapAndList();
+    void domNodeListIterator();
+    void domNodeListReverseIterator();
 
     void nullDocument();
     void invalidName_data();
@@ -119,6 +121,7 @@ private slots:
     void testDomListComparisonCompiles();
     void testDomListComparison_data();
     void testDomListComparison();
+    void noCrashOnDeepNesting() const;
 
     void cleanupTestCase() const;
 
@@ -516,7 +519,9 @@ void tst_QDom::setGetAttributes()
     QDomElement rootNode = doc.createElement("Root");
     doc.appendChild(rootNode);
 
-    const QLocale oldLocale = QLocale();
+    const auto restoreDefault = qScopeGuard([prior = QLocale()]() {
+        QLocale::setDefault(prior);
+    });
     QLocale::setDefault(QLocale::German); // decimal separator != '.'
 
     const QString qstringVal("QString");
@@ -582,8 +587,6 @@ void tst_QDom::setGetAttributes()
     QVERIFY(nsNode.attributeNS("namespace", "doubleVal1").toDouble(&bOk) == doubleVal1 && bOk);
     QVERIFY(nsNode.attributeNS("namespace", "doubleVal2").toDouble(&bOk) == doubleVal2 && bOk);
     QVERIFY(nsNode.attributeNS("namespace", "doubleVal3").toDouble(&bOk) == doubleVal3 && bOk);
-
-    QLocale::setDefault(oldLocale);
 }
 
 
@@ -1310,6 +1313,102 @@ void tst_QDom::domNodeMapAndList()
     QDomNodeList list = doc.elementsByTagName("foo");
     QCOMPARE(list.item(0).nodeName(), QString("foo"));
     QCOMPARE(list.item(1).nodeName(), QString()); // Make sure we don't assert
+}
+
+void tst_QDom::domNodeListIterator()
+{
+    const auto xml = "<foo>"
+                       "<bar idx='0'></bar>"
+                       "<bar idx='1'></bar>"
+                       "<bar idx='2'></bar>"
+                     "</foo>"_L1;
+    QDomDocument doc;
+    QVERIFY(doc.setContent(xml));
+    QDomNodeList list = doc.elementsByTagName("bar");
+
+    QCOMPARE_EQ(list.begin(), list.begin());
+    QCOMPARE_EQ(list.end(), list.end());
+    QCOMPARE_NE(list.begin(), list.end());
+    QCOMPARE_LT(list.begin(), list.end());
+    QCOMPARE_GE(list.end(), list.begin());
+
+    auto it = list.begin();
+    it++;
+    ++it;
+    it++;
+    QVERIFY(it == list.end());
+    it--;
+    --it;
+    it--;
+    QVERIFY(it == list.begin());
+    it += 3;
+    QVERIFY(it == list.end());
+    it -= 3;
+    QVERIFY(it == list.begin());
+    it = it + 3;
+    QVERIFY(it == list.end());
+    it = it - 3;
+    QVERIFY(it == list.begin());
+    it = 3 + it;
+    QVERIFY(it == list.end());
+
+    QCOMPARE(list.size(), 3);
+
+    for (int i = 0; i < list.size(); ++i) {
+        QCOMPARE(list.item(i).attributes().item(0).nodeValue().toInt(), i);
+    }
+
+    int i = 0;
+    for (auto iter = list.begin(); iter != list.end(); ++iter)
+        QCOMPARE(iter->attributes().item(0).nodeValue().toInt(), i++);
+
+    int j = 0;
+    for (const auto &item : list)
+        QCOMPARE(item.attributes().item(0).nodeValue().toInt(), j++);
+}
+
+void tst_QDom::domNodeListReverseIterator()
+{
+    const auto xml = "<foo>"
+                       "<bar idx='0'></bar>"
+                       "<bar idx='1'></bar>"
+                       "<bar idx='2'></bar>"
+                     "</foo>"_L1;
+    QDomDocument doc;
+    QVERIFY(doc.setContent(xml));
+    QDomNodeList list = doc.elementsByTagName("bar");
+
+    QCOMPARE_EQ(list.rbegin(), list.rbegin());
+    QCOMPARE_EQ(list.rend(), list.rend());
+    QCOMPARE_NE(list.rbegin(), list.rend());
+    QCOMPARE_LT(list.rbegin(), list.rend());
+    QCOMPARE_GE(list.rend(), list.rbegin());
+
+    auto it = list.rbegin();
+    it++;
+    ++it;
+    it++;
+    QVERIFY(it == list.rend());
+    it--;
+    --it;
+    it--;
+    QVERIFY(it == list.rbegin());
+    it += 3;
+    QVERIFY(it == list.rend());
+    it -= 3;
+    QVERIFY(it == list.rbegin());
+    it = it + 3;
+    QVERIFY(it == list.rend());
+    it = it - 3;
+    QVERIFY(it == list.rbegin());
+    it = 3 + it;
+    QVERIFY(it == list.rend());
+
+#if __cplusplus >= 202002L // QTBUG-131933
+    int i = 2;
+    for (auto iter = list.rbegin(); iter != list.rend(); ++iter)
+        QCOMPARE(iter->attributes().item(0).nodeValue().toInt(), i--);
+#endif
 }
 
 // Verifies that a default-constructed QDomDocument is null, and that calling
@@ -2399,6 +2498,22 @@ void tst_QDom::testDomListComparison()
     QFETCH(const bool, result);
 
     QT_TEST_EQUALITY_OPS(lhs, rhs, result);
+}
+
+// The fix of QTBUG-131151 crash
+void tst_QDom::noCrashOnDeepNesting() const
+{
+    const QString prefix = QFINDTESTDATA("testdata/");
+    if (prefix.isEmpty())
+        QFAIL("Cannot find testdata directory!");
+
+    QFile file(prefix + "/deeply-nested.svg");
+    QVERIFY(file.open(QIODevice::ReadOnly));
+    QDomDocument doc;
+    doc.setContent(&file);
+    QByteArray array = doc.toByteArray();
+    QVERIFY(array.size());
+    file.close();
 }
 
 QTEST_MAIN(tst_QDom)

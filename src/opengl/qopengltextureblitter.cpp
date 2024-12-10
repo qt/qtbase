@@ -401,7 +401,7 @@ bool QOpenGLTextureBlitterPrivate::ensureProgram(ProgramIndex idx)
         return false;
 
     QSurfaceFormat format = currentContext->format();
-    if (format.profile() == QSurfaceFormat::CoreProfile && format.version() >= qMakePair(3,2)) {
+    if (format.profile() == QSurfaceFormat::CoreProfile && format.version() >= std::pair(3,2)) {
         if (idx == QOpenGLTextureBlitterPrivate::TEXTURE_RECTANGLE && q->supportsRectangleTarget()) {
             if (!buildProgram(idx, vertex_shader150, fragment_shader150_rectangle))
                 return false;
@@ -472,7 +472,7 @@ bool QOpenGLTextureBlitter::create()
     QSurfaceFormat format = currentContext->format();
     // Build the most common, 2D texture shader variant.
     // The other special ones are deferred and compiled only when first needed.
-    if (format.profile() == QSurfaceFormat::CoreProfile && format.version() >= qMakePair(3,2)) {
+    if (format.profile() == QSurfaceFormat::CoreProfile && format.version() >= std::pair(3,2)) {
         if (!d->buildProgram(QOpenGLTextureBlitterPrivate::TEXTURE_2D, vertex_shader150, fragment_shader150))
             return false;
     } else {
@@ -560,8 +560,8 @@ bool QOpenGLTextureBlitter::supportsRectangleTarget() const
         return true;
 
     QSurfaceFormat f = ctx->format();
-    const auto version = qMakePair(f.majorVersion(), f.minorVersion());
-    if (version >= qMakePair(3, 1))
+    const auto version = std::pair(f.majorVersion(), f.minorVersion());
+    if (version >= std::pair(3, 1))
         return true;
 
     return false;
@@ -674,7 +674,7 @@ void QOpenGLTextureBlitter::setOpacity(float opacity)
     \a texture corresponds to a texture attached to an FBO pass
     OriginBottomLeft. On the other hand, when \a texture is based on
     unflipped image data, pass OriginTopLeft. This is more efficient
-    than using QImage::mirrored().
+    than using QImage::flipped().
 
     \sa targetTransform(), Origin, bind()
  */

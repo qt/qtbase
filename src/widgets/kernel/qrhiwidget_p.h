@@ -22,7 +22,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QRhiWidgetPrivate : public QWidgetPrivate
+class Q_WIDGETS_EXPORT QRhiWidgetPrivate : public QWidgetPrivate
 {
     Q_DECLARE_PUBLIC(QRhiWidget)
 public:
@@ -32,6 +32,7 @@ public:
     void endCompose() override;
     QImage grabFramebuffer() override;
 
+    void init();
     void ensureRhi();
     void ensureTexture(bool *changed);
     bool invokeInitialize(QRhiCommandBuffer *cb);

@@ -253,6 +253,12 @@ public:
     {
         insertAt(elements.size(), v);
     }
+    void append(QCborValue &&v)
+    {
+        insertAt(elements.size(), v, MoveContainer);
+        v.container = nullptr;
+        v.t = QCborValue::Undefined;
+    }
 
     QByteArray byteArrayAt(qsizetype idx) const
     {

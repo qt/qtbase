@@ -114,18 +114,13 @@ void DragWidget::mousePressEvent(QMouseEvent *event)
     drag->setHotSpot(event->position().toPoint() - child->pos());
 //! [3]
 
-    QPixmap tempPixmap = pixmap;
-    QPainter painter;
-    painter.begin(&tempPixmap);
-    painter.fillRect(pixmap.rect(), QColor(127, 127, 127, 127));
-    painter.end();
-
-    child->setPixmap(tempPixmap);
+    child->setParent(nullptr);
 
     if (drag->exec(Qt::CopyAction | Qt::MoveAction, Qt::CopyAction) == Qt::MoveAction) {
-        child->close();
+        delete child;
     } else {
+        child->setParent(this);
+        child->move(event->position().toPoint() - drag->hotSpot());
         child->show();
-        child->setPixmap(pixmap);
     }
 }

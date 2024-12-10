@@ -17,6 +17,10 @@
 
 #include "qrhi_p.h"
 
+#ifdef Q_OS_WIN
+#include "qdxgihdrinfo_p.h"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QVulkanFunctions;
@@ -605,6 +609,7 @@ struct QVkSwapChain : public QRhiSwapChain
 
     QSize surfacePixelSize() override;
     bool isFormatSupported(Format f) override;
+    QRhiSwapChainHdrInfo hdrInfo() override;
 
     QRhiRenderPassDescriptor *newCompatibleRenderPassDescriptor() override;
     bool createOrResize() override;
@@ -894,6 +899,12 @@ public:
     VkDeviceSize texbufAlign;
     bool deviceLost = false;
     bool releaseCachedResourcesCalledBeforeFrameStart = false;
+
+#ifdef Q_OS_WIN
+    bool adapterLuidValid = false;
+    LUID adapterLuid;
+    QDxgiHdrInfo *dxgiHdrInfo = nullptr;
+#endif
 
 #ifdef VK_EXT_debug_utils
     PFN_vkSetDebugUtilsObjectNameEXT vkSetDebugUtilsObjectNameEXT = nullptr;

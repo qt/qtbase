@@ -109,6 +109,9 @@ void QWasmDrag::onNativeDragStarted(DragEvent *event)
 {
     Q_ASSERT_X(event->type == EventType::DragStart, Q_FUNC_INFO,
                "The event is not a DragStart event");
+
+    event->webEvent.call<void>("preventDefault");
+
     // It is possible for a drag start event to arrive from another window.
     if (!m_dragState || m_dragState->window != event->targetWindow) {
         event->cancelDragStart();
@@ -124,6 +127,8 @@ void QWasmDrag::onNativeDragStarted(DragEvent *event)
 
 void QWasmDrag::onNativeDragOver(DragEvent *event)
 {
+    event->webEvent.call<void>("preventDefault");
+
     auto mimeDataPreview = event->dataTransfer.toMimeDataPreview();
 
     const Qt::DropActions actions = m_dragState
@@ -144,6 +149,8 @@ void QWasmDrag::onNativeDragOver(DragEvent *event)
 
 void QWasmDrag::onNativeDrop(DragEvent *event)
 {
+    event->webEvent.call<void>("preventDefault");
+
     QWasmWindow *wasmWindow = QWasmWindow::fromWindow(event->targetWindow);
 
     const auto screenElementPos = dom::mapPoint(
@@ -183,12 +190,14 @@ void QWasmDrag::onNativeDrop(DragEvent *event)
 
 void QWasmDrag::onNativeDragFinished(DragEvent *event)
 {
+    event->webEvent.call<void>("preventDefault");
     m_dragState->dropAction = event->dropAction;
     m_dragState->quitEventLoopClosure();
 }
 
 void QWasmDrag::onNativeDragLeave(DragEvent *event)
 {
+    event->webEvent.call<void>("preventDefault");
     m_dragState->dropAction = event->dropAction;
     event->dataTransfer.setDropAction(Qt::DropAction::IgnoreAction);
 }

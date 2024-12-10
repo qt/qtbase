@@ -1017,6 +1017,8 @@ qt_feature("timezone_tzdb" PUBLIC
     LABEL "std::chrono::tzdb QTZ backend"
     PURPOSE "Provides support for a timezone backend using std::chrono."
     CONDITION TEST_chrono_tzdb
+    # See QTBUG-127598 for gcc's libstdc++'s deficiencies.
+    # Update src/corelib/doc/src/cpp20-overview.qdoc before enabling this:
     AUTODETECT OFF
 )
 qt_feature("datetimeparser" PRIVATE

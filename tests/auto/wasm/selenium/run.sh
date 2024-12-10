@@ -52,7 +52,7 @@ fi
 
 script_dir=`dirname ${BASH_SOURCE[0]}`
 cd "$script_dir"
-$python_command qtwasmserver.py -p 8001 > /dev/null 2>&1 &
+$python_command qtwasmserver.py --cross-origin-isolation -p 8001 > /dev/null 2>&1 &
 cleanupPid=$!
 
 $python_command qwasmwindow.py $@

@@ -384,6 +384,11 @@ bool BaselineProtocol::submitMismatch(const ImageItem &item, QByteArray *serverM
     return false;
 }
 
+bool BaselineProtocol::finalizeTesting(QByteArray *serverMsg)
+{
+    Command cmd;
+    return sendBlock(Command::FinalizeTesting, {}) && receiveBlock(&cmd, serverMsg) && cmd == Ack;
+}
 
 bool BaselineProtocol::sendItem(Command cmd, const ImageItem &item)
 {

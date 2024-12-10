@@ -4,6 +4,7 @@
 add_subdirectory(qabstracttextdocumentlayout)
 add_subdirectory(qfont)
 add_subdirectory(qfontdatabase)
+add_subdirectory(qfontengine)
 add_subdirectory(qfontmetrics)
 add_subdirectory(qglyphrun)
 add_subdirectory(qrawfont)

@@ -23,9 +23,17 @@
 #  undef max
 #endif
 
-#if defined(Q_CC_MSVC)
+//
+// SIMDe (SIMD Everywhere) can't be used if intrin.h has been included as many definitions
+// conflict.   Defining Q_NUMERIC_NO_INTRINSICS allows SIMDe users to use Qt, at the cost of
+// falling back to the prior implementations of qMulOverflow and qAddOverflow.
+//
+#if defined(Q_CC_MSVC) && !defined(Q_NUMERIC_NO_INTRINSICS)
 #  include <intrin.h>
 #  include <float.h>
+#  if defined(Q_PROCESSOR_X86) || defined(Q_PROCESSOR_X86_64)
+#    define Q_HAVE_ADDCARRY
+#  endif
 #  if defined(Q_PROCESSOR_X86_64) || defined(Q_PROCESSOR_ARM_64)
 #    define Q_INTRINSIC_MUL_OVERFLOW64
 #    define Q_UMULH(v1, v2) __umulh(v1, v2);
@@ -223,7 +231,7 @@ template <> inline bool qMulOverflow(int64_t v1, int64_t v2, int64_t *r)
 #    endif // OS_INTEGRITY ARM64
 #  endif // Q_INTRINSIC_MUL_OVERFLOW64
 
-#  if defined(Q_CC_MSVC) && defined(Q_PROCESSOR_X86)
+#  if defined(Q_HAVE_ADDCARRY) && defined(Q_PROCESSOR_X86)
 // We can use intrinsics for the unsigned operations with MSVC
 template <> inline bool qAddOverflow(unsigned v1, unsigned v2, unsigned *r)
 { return _addcarry_u32(0, v1, v2, r); }
@@ -242,7 +250,8 @@ template <> inline bool qAddOverflow(quint64 v1, quint64 v2, quint64 *r)
     return carry;
 #    endif // !x86-64
 }
-#  endif // MSVC X86
+#  endif // HAVE ADDCARRY
+#undef Q_HAVE_ADDCARRY
 #endif // !GCC
 
 // Implementations for addition, subtraction or multiplication by a

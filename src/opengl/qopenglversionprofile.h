@@ -8,7 +8,6 @@
 
 #include <QtGui/QSurfaceFormat>
 
-#include <QtCore/QPair>
 #include <QtCore/qhashfunctions.h>
 
 QT_BEGIN_NAMESPACE
@@ -26,7 +25,7 @@ public:
 
     QOpenGLVersionProfile &operator=(const QOpenGLVersionProfile &rhs);
 
-    QPair<int, int> version() const;
+    std::pair<int, int> version() const;
     void setVersion(int majorVersion, int minorVersion);
 
     QSurfaceFormat::OpenGLContextProfile profile() const;

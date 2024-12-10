@@ -19,7 +19,7 @@ defineTest(qtConfTest_emccVersion) {
     }
     contains(TEMPLATE, .*app) {
            !equals(QT_EMCC_VERSION, $$EMCC_VERSION)  {
-               warning("This Qt was built with Emscripten version $${QT_EMCC_VERSION}. You have $${EMCC_VERSION}. The difference may cause issues.")
+               error("This Qt was built with Emscripten version $${QT_EMCC_VERSION}. You have $${EMCC_VERSION}. Stopping configuration due to mismatch of Emscripten versions.")
            }
     }
 }

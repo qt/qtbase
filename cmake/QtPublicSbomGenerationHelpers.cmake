@@ -18,9 +18,25 @@ function(qt_internal_sbom_set_default_option_value_and_error_if_empty option_nam
     endif()
 endfunction()
 
+# Helper that returns the relative sbom build dir.
+# To accommodate multiple projects within a qt repo (like qtwebengine), we need to choose separate
+# build dirs for each project.
+function(_qt_internal_get_current_project_sbom_relative_dir out_var)
+    _qt_internal_sbom_get_root_project_name_lower_case(repo_project_name_lowercase)
+    _qt_internal_sbom_get_qt_repo_project_name_lower_case(real_qt_repo_project_name_lowercase)
+
+    if(repo_project_name_lowercase STREQUAL real_qt_repo_project_name_lowercase)
+        set(sbom_dir "qt_sbom")
+    else()
+        set(sbom_dir "qt_sbom/${repo_project_name_lowercase}")
+    endif()
+    set(${out_var} "${sbom_dir}" PARENT_SCOPE)
+endfunction()
+
 # Helper that returns the directory where the intermediate sbom files will be generated.
 function(_qt_internal_get_current_project_sbom_dir out_var)
-    set(sbom_dir "${PROJECT_BINARY_DIR}/qt_sbom")
+    _qt_internal_get_current_project_sbom_relative_dir(relative_dir)
+    set(sbom_dir "${PROJECT_BINARY_DIR}/${relative_dir}")
     set(${out_var} "${sbom_dir}" PARENT_SCOPE)
 endfunction()
 
@@ -65,7 +81,7 @@ function(_qt_internal_sbom_begin_project_generate)
     set(default_sbom_file_name
         "${arg_PROJECT}/${arg_PROJECT}-sbom-${QT_SBOM_GIT_VERSION_PATH}.spdx")
     set(default_install_sbom_path
-        "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATAROOTDIR}/${default_sbom_file_name}")
+        "\${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATAROOTDIR}/${default_sbom_file_name}")
 
     qt_internal_sbom_set_default_option_value(OUTPUT "${default_install_sbom_path}")
     qt_internal_sbom_set_default_option_value(OUTPUT_RELATIVE_PATH
@@ -414,6 +430,7 @@ function(_qt_internal_sbom_end_project_generate)
     endif()
 
     _qt_internal_sbom_get_root_project_name_lower_case(repo_project_name_lowercase)
+    _qt_internal_sbom_get_qt_repo_project_name_lower_case(real_qt_repo_project_name_lowercase)
 
     # Create a build target to create a build-time sbom (no verification codes or sha1s).
     set(repo_sbom_target "sbom_${repo_project_name_lowercase}")
@@ -427,7 +444,7 @@ function(_qt_internal_sbom_end_project_generate)
         USES_TERMINAL # To avoid running two configs of the command in parallel
     )
 
-    get_cmake_property(qt_repo_deps _qt_repo_deps_${repo_project_name_lowercase})
+    get_cmake_property(qt_repo_deps _qt_repo_deps_${real_qt_repo_project_name_lowercase})
     if(qt_repo_deps)
         foreach(repo_dep IN LISTS qt_repo_deps)
             set(repo_dep_sbom "sbom_${repo_dep}")
@@ -572,9 +589,14 @@ function(_qt_internal_sbom_generate_add_file)
     qt_internal_sbom_set_default_option_value_and_error_if_empty(FILENAME "")
     qt_internal_sbom_set_default_option_value_and_error_if_empty(FILETYPE "")
 
+    set(check_option "")
+    if(arg_SPDXID)
+        set(check_option "CHECK" "${arg_SPDXID}")
+    endif()
+
     _qt_internal_sbom_get_and_check_spdx_id(
         VARIABLE arg_SPDXID
-        CHECK "${arg_SPDXID}"
+        ${check_option}
         HINTS "SPDXRef-${arg_FILENAME}"
     )
 
@@ -631,7 +653,9 @@ FileCopyrightText: NOASSERTION"
     if(arg_INSTALL_PREFIX)
         set(install_prefix "${arg_INSTALL_PREFIX}")
     else()
-        set(install_prefix "${CMAKE_INSTALL_PREFIX}")
+        # The variable is escaped, so it is evaluated during cmake install time, so that the value
+        # can be overridden with cmake --install . --prefix <path>.
+        set(install_prefix "\${CMAKE_INSTALL_PREFIX}")
     endif()
 
     set(content "
@@ -723,18 +747,28 @@ function(_qt_internal_sbom_generate_add_external_reference)
     _qt_internal_get_staging_area_spdx_file_path(staging_area_spdx_file)
 
     set(install_prefixes "")
+
+    # Always append the install time install prefix.
+    # The variable is escaped, so it is evaluated during cmake install time, so that the value
+    # can be overridden with cmake --install . --prefix <path>.
+    list(APPEND install_prefixes "\${CMAKE_INSTALL_PREFIX}")
+
     if(arg_INSTALL_PREFIXES)
         list(APPEND install_prefixes ${arg_INSTALL_PREFIXES})
     endif()
+
     if(QT6_INSTALL_PREFIX)
         list(APPEND install_prefixes ${QT6_INSTALL_PREFIX})
     endif()
+
     if(QT_ADDITIONAL_PACKAGES_PREFIX_PATH)
         list(APPEND install_prefixes ${QT_ADDITIONAL_PACKAGES_PREFIX_PATH})
     endif()
+
     if(QT_ADDITIONAL_SBOM_DOCUMENT_PATHS)
         list(APPEND install_prefixes ${QT_ADDITIONAL_SBOM_DOCUMENT_PATHS})
     endif()
+
     list(REMOVE_DUPLICATES install_prefixes)
 
     set(relationship_content "")
@@ -750,6 +784,7 @@ function(_qt_internal_sbom_generate_add_external_reference)
     set(content "
         set(relative_file_name \"${arg_FILENAME}\")
         set(document_dir_paths ${install_prefixes})
+        list(JOIN document_dir_paths \"\\n\" document_dir_paths_per_line)
         foreach(document_dir_path IN LISTS document_dir_paths)
             set(document_file_path \"\${document_dir_path}/\${relative_file_name}\")
             if(EXISTS \"\${document_file_path}\")
@@ -758,7 +793,7 @@ function(_qt_internal_sbom_generate_add_external_reference)
         endforeach()
         if(NOT EXISTS \"\${document_file_path}\")
             message(FATAL_ERROR \"Could not find external SBOM document \${relative_file_name}\"
-                \" in any of the document dir paths: \${document_dir_paths} \"
+                \" in any of the document dir paths: \${document_dir_paths_per_line} \"
             )
         endif()
         file(SHA1 \"\${document_file_path}\" ext_sha1)
@@ -811,9 +846,14 @@ function(_qt_internal_sbom_generate_add_package)
 
     qt_internal_sbom_set_default_option_value_and_error_if_empty(PACKAGE "")
 
+    set(check_option "")
+    if(arg_SPDXID)
+        set(check_option "CHECK" "${arg_SPDXID}")
+    endif()
+
     _qt_internal_sbom_get_and_check_spdx_id(
         VARIABLE arg_SPDXID
-        CHECK "${arg_SPDXID}"
+        ${check_option}
         HINTS "SPDXRef-${arg_PACKAGE}"
     )
 
@@ -940,9 +980,14 @@ function(_qt_internal_sbom_generate_add_license)
 
     qt_internal_sbom_set_default_option_value_and_error_if_empty(LICENSE_ID "")
 
+    set(check_option "")
+    if(arg_SPDXID)
+        set(check_option "CHECK" "${arg_SPDXID}")
+    endif()
+
     _qt_internal_sbom_get_and_check_spdx_id(
         VARIABLE arg_SPDXID
-        CHECK "${arg_SPDXID}"
+        ${check_option}
         HINTS "SPDXRef-${arg_LICENSE_ID}"
     )
 

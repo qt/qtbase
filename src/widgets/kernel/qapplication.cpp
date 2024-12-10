@@ -3262,8 +3262,9 @@ bool QApplicationPrivate::notify_helper(QObject *receiver, QEvent * e)
     Q_TRACE_EXIT(QApplication_notify_exit, consumed, filtered);
 
     // send to all application event filters
-    if (threadRequiresCoreApplication()
-        && receiver->d_func()->threadData.loadRelaxed()->thread.loadAcquire() == mainThread()
+    QThreadData *threadData = receiver->d_func()->threadData.loadRelaxed();
+    if (threadData->requiresCoreApplication
+        && threadData->thread.loadAcquire() == mainThread()
         && sendThroughApplicationEventFilters(receiver, e)) {
         filtered = true;
         return filtered;

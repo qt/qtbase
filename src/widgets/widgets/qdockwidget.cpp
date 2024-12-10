@@ -1736,6 +1736,9 @@ bool QDockWidget::event(QEvent *event)
 
   The action's text is set to the dock widget's window title.
 
+  The QAction object is owned by the QDockWidget. It will be automatically
+  deleted when the QDockWidget is destroyed.
+
   \note The action can not be used to programmatically show or hide the dock
   widget. Use the \l visible property for that.
 
@@ -1794,6 +1797,7 @@ QAction * QDockWidget::toggleViewAction() const
     dock \a area, or is moved to a different location in its current
     dock area. This happens when the dock widget is moved
     programmatically or is dragged to a new location by the user.
+    \sa dockLocation(), setDockLocation()
 */
 
 /*!
@@ -1849,6 +1853,51 @@ void QDockWidget::setTitleBarWidget(QWidget *widget)
         d->setWindowState({QDockWidgetPrivate::WindowState::Floating,
                            QDockWidgetPrivate::WindowState::Unplug});
     }
+}
+
+/*!
+    \since 6.9
+    \brief QDockWidget::setDockLocation(): Assign dock widget to \a area.
+    If docked at another dock location, it will move to \a area.
+    If floating or part of floating tabs, the next call of setFloating(false)
+    will dock it at \a area.
+
+    \note
+    setDockLocation(Qt::NoDockLocation) is equivalent to setFloating(true).
+    \sa dockLocation(), dockLocationChanged()
+ */
+void QDockWidget::setDockLocation(Qt::DockWidgetArea area)
+{
+    if (area == Qt::NoDockWidgetArea && !isFloating()) {
+        setFloating(true);
+        return;
+    }
+
+    auto *mainWindow = const_cast<QMainWindow *>(mainwindow_from_dock(this));
+    Q_ASSERT(mainWindow);
+    mainWindow->addDockWidget(area, this);
+}
+
+/*!
+    \since 6.9
+    \brief QDockWidget::dockLocation()
+    \return the current dock location, or Qt::NoDockLocation if it's floating
+    and/or has no mainwindow parent.
+    \sa setDockLocation(), dockLocationChanged()
+ */
+Qt::DockWidgetArea QDockWidget::dockLocation() const
+{
+    // QDockWidgetPrivate::setWindowState() emits NoDockWidgetArea if
+    // the dock widget becomes floating.
+    // QMainWindowLayout::dockWidgetArea() always returns the area where
+    // the dock widget's item_list is kept.
+    if (isFloating())
+        return Qt::NoDockWidgetArea;
+
+    auto *mainWindow = mainwindow_from_dock(this);
+    Q_ASSERT(mainWindow);
+    // FIXME in Qt 7: Make dockWidgetArea take a const QDockWidget* argument
+    return mainWindow->dockWidgetArea(const_cast<QDockWidget *>(this));
 }
 
 /*!

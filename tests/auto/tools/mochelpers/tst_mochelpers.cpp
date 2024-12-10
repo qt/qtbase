@@ -86,12 +86,14 @@ void tst_MocHelpers::classinfoData()
     }
 }
 
-template <size_t N> static void checkClassInfos(const std::array<uint, N> &data)
+constexpr QtMocHelpers::StringRefStorage dummyStringData {"tst_QtMocHelpers"};
+
+template <size_t N> static void checkClassInfos(const uint (&data)[N])
 {
     QCOMPARE(data[2], 2U);
     QCOMPARE_GE(data[3], 14U);
 
-    const uint *classinfos = data.data() + data[3];
+    const uint *classinfos = data + data[3];
     QCOMPARE(classinfos[0], 1U);
     QCOMPARE(classinfos[1], 2U);
     QCOMPARE(classinfos[2], 3U);
@@ -100,22 +102,22 @@ template <size_t N> static void checkClassInfos(const std::array<uint, N> &data)
 
 void tst_MocHelpers::classinfoDataGroup()
 {
-    constexpr auto data = QtMocHelpers::metaObjectData<void, void>(0,
+    constexpr auto data = QtMocHelpers::metaObjectData<void, void>(0, dummyStringData,
             QtMocHelpers::UintData{}, QtMocHelpers::UintData{},
             QtMocHelpers::UintData{}, QtMocHelpers::UintData{},
             QtMocHelpers::ClassInfos({{1, 2}, {3, 4}}));
-    checkClassInfos(data.data);
+    checkClassInfos(data.staticData.data);
 }
 
 template <typename MetaTypeHolder> constexpr auto getMetaTypes(MetaTypeHolder)
 {
-    QtMocHelpers::UintAndMetaTypeData<0, MetaTypeHolder::count(), void> r = {};
+    QtMocHelpers::MetaObjectContents<1, 1, 1, MetaTypeHolder::count()> r = {};
     uint metatypeoffset = 0;
-    MetaTypeHolder::copyTo(r, metatypeoffset);
+    MetaTypeHolder::template copyTo<void>(r, metatypeoffset);
 
     std::array<QMetaType, MetaTypeHolder::count()> result;
     for (uint i = 0; i < result.size(); ++i)
-        result[i] = QMetaType(r.metaTypes[i]);
+        result[i] = QMetaType(r.relocatingData.metaTypes[i]);
 
     return result;
 }
@@ -227,14 +229,14 @@ template <typename Data> void testUintData(const Data &data)
     QCOMPARE(data.payloadSize(), payloadSize);
 }
 
-template <size_t N> static void
-checkEnums(const std::array<uint, N> &data, const QtPrivate::QMetaTypeInterface *const *metaTypes)
+static void
+checkEnums(const uint *data, const QtPrivate::QMetaTypeInterface *const *metaTypes)
 {
     using namespace QtMocConstants;
     QCOMPARE(data[8], 4U);
     QCOMPARE_NE(data[9], 0U);
 
-    const uint *header = data.data() + data[9];
+    const uint *header = data + data[9];
     metaTypes += data[6];          // property count
 
     // E1:
@@ -243,7 +245,7 @@ checkEnums(const std::array<uint, N> &data, const QtPrivate::QMetaTypeInterface 
     QCOMPARE(header[0 + 2], 0U);
     QCOMPARE(header[0 + 3], 1U);
     QCOMPARE_GE(header[0 + 4], 14U);
-    const uint *payload = data.data() + header[0 + 4];
+    const uint *payload = data + header[0 + 4];
     QCOMPARE(payload[0], 3U);
     QCOMPARE(payload[1], uint(E1::AnEnumValue));
     QCOMPARE(QMetaType(metaTypes[0]), QMetaType::fromType<E1>());
@@ -254,7 +256,7 @@ checkEnums(const std::array<uint, N> &data, const QtPrivate::QMetaTypeInterface 
     QCOMPARE(header[5 + 2], EnumIsFlag | EnumIsScoped | EnumIs64Bit);
     QCOMPARE(header[5 + 3], 2U);
     QCOMPARE_GE(header[5 + 4], 14U);
-    payload = data.data() + header[5 + 4];
+    payload = data + header[5 + 4];
     QCOMPARE(payload[0], 6U);
     QCOMPARE(payload[1], uint(E3::V));
     QCOMPARE(payload[2], 8U);
@@ -269,7 +271,7 @@ checkEnums(const std::array<uint, N> &data, const QtPrivate::QMetaTypeInterface 
     QCOMPARE(header[10 + 2], EnumIsFlag | EnumIsScoped);
     QCOMPARE(header[10 + 3], 2U);
     QCOMPARE_GE(header[10 + 4], 14U);
-    payload = data.data() + header[10 + 4];
+    payload = data + header[10 + 4];
     QCOMPARE(payload[0], 7U);
     QCOMPARE(payload[1], uint(E2::V0));
     QCOMPARE(payload[2], 10U);
@@ -282,7 +284,7 @@ checkEnums(const std::array<uint, N> &data, const QtPrivate::QMetaTypeInterface 
     QCOMPARE(header[15 + 2], EnumIsFlag);
     QCOMPARE(header[15 + 3], 1U);
     QCOMPARE_GE(header[15 + 4], 14U);
-    payload = data.data() + header[15 + 4];
+    payload = data + header[15 + 4];
     QCOMPARE(payload[0], 3U);
     QCOMPARE(payload[1], uint(E1::AnEnumValue));
     QCOMPARE(QMetaType(metaTypes[3]), QMetaType::fromType<QFlags<E1>>());
@@ -302,9 +304,9 @@ void tst_MocHelpers::enumUintGroup()
     };
     testUintData(enums);
 
-    constexpr auto data = QtMocHelpers::metaObjectData<void, void>(0,
+    constexpr auto data = QtMocHelpers::metaObjectData<void, void>(0, dummyStringData,
             QtMocHelpers::UintData{}, QtMocHelpers::UintData{}, enums);
-    checkEnums(data.data, data.metaTypes.data());
+    checkEnums(data.staticData.data, data.relocatingData.metaTypes);
 }
 
 void tst_MocHelpers::propertyUintData()
@@ -333,13 +335,13 @@ void tst_MocHelpers::propertyUintData()
     }
 }
 
-template <size_t N> static void
-checkProperties(const std::array<uint, N> &data, const QtPrivate::QMetaTypeInterface *const *metaTypes)
+static void
+checkProperties(const uint *data, const QtPrivate::QMetaTypeInterface *const *metaTypes)
 {
     QCOMPARE(data[6], 3U);
     QCOMPARE_NE(data[7], 0U);
 
-    const uint *header = data.data() + data[7];
+    const uint *header = data + data[7];
 
     QCOMPARE(header[0 + 0], 3U);
     QCOMPARE(header[0 + 1], uint(QMetaType::Int));
@@ -373,8 +375,9 @@ void tst_MocHelpers::propertyUintGroup()
     };
     testUintData(properties);
 
-    constexpr auto data = QtMocHelpers::metaObjectData<void, void>(0, QtMocHelpers::UintData{}, properties, QtMocHelpers::UintData{});
-    checkProperties(data.data, data.metaTypes.data());
+    constexpr auto data = QtMocHelpers::metaObjectData<void, void>(0, dummyStringData,
+            QtMocHelpers::UintData{}, properties, QtMocHelpers::UintData{});
+    checkProperties(data.staticData.data, data.relocatingData.metaTypes);
 }
 
 void tst_MocHelpers::methodUintData()
@@ -431,14 +434,14 @@ void tst_MocHelpers::methodUintData()
     }
 }
 
-template <size_t N> static void
-checkMethods(const std::array<uint, N> &data, const QtPrivate::QMetaTypeInterface *const *metaTypes)
+static void
+checkMethods(const uint *data, const QtPrivate::QMetaTypeInterface *const *metaTypes)
 {
     using namespace QtMocConstants;
     QCOMPARE(data[4], 3U);
     QCOMPARE_NE(data[5], 0U);
 
-    const uint *header = data.data() + data[5];
+    const uint *header = data + data[5];
     uint initialMetaTypeOffset = data[6] + data[8] + 1; // propcount + enumcount + object
 
     // signals: void signal()
@@ -448,7 +451,7 @@ checkMethods(const std::array<uint, N> &data, const QtPrivate::QMetaTypeInterfac
     QCOMPARE(header[3], 2U);
     QCOMPARE(header[4], AccessPublic | MethodSignal | MethodRevisioned);
     QCOMPARE(header[5], initialMetaTypeOffset);
-    const uint *payload = data.data() + header[2];
+    const uint *payload = data + header[2];
     QCOMPARE(payload[-1], 0x0509U);
     QCOMPARE(payload[0], uint(QMetaType::Void));
     QCOMPARE(QMetaType(metaTypes[header[5]]), QMetaType::fromType<void>());
@@ -461,7 +464,7 @@ checkMethods(const std::array<uint, N> &data, const QtPrivate::QMetaTypeInterfac
     QCOMPARE(header[3], 2U);
     QCOMPARE(header[4], AccessPublic | MethodSignal);
     QCOMPARE(header[5], initialMetaTypeOffset + 1);
-    payload = data.data() + header[2];
+    payload = data + header[2];
     QCOMPARE(payload[0], uint(QMetaType::Void));
     QCOMPARE(payload[1], 0x80000000U | 4);  // not a builtin type
     QCOMPARE(payload[2], 0x80000000U | 5);
@@ -479,7 +482,7 @@ checkMethods(const std::array<uint, N> &data, const QtPrivate::QMetaTypeInterfac
     QCOMPARE(header[3], 2U);
     QCOMPARE(header[4], AccessPublic | MethodSlot | MethodIsConst);
     QCOMPARE(header[5], initialMetaTypeOffset + 4);
-    payload = data.data() + header[2];
+    payload = data + header[2];
     QCOMPARE(payload[0], uint(QMetaType::Bool));
     QCOMPARE(payload[1], 0x80000000U | 10); // not a builtin type
     QCOMPARE(payload[2], 11U);
@@ -505,9 +508,9 @@ void tst_MocHelpers::methodUintGroup()
     testUintData(methods);
 
     constexpr auto data =
-            QtMocHelpers::metaObjectData<tst_MocHelpers, tst_MocHelpers>(0, methods, QtMocHelpers::UintData{},
-                                                                         QtMocHelpers::UintData{});
-    checkMethods(data.data, data.metaTypes.data());
+            QtMocHelpers::metaObjectData<tst_MocHelpers, tst_MocHelpers>(0, dummyStringData,
+                    methods, QtMocHelpers::UintData{}, QtMocHelpers::UintData{});
+    checkMethods(data.staticData.data, data.relocatingData.metaTypes);
 }
 
 void tst_MocHelpers::constructorUintData()
@@ -543,14 +546,14 @@ void tst_MocHelpers::constructorUintData()
     }
 }
 
-template <size_t N> static void
-checkConstructors(const std::array<uint, N> &data, const QtPrivate::QMetaTypeInterface *const *metaTypes)
+static void
+checkConstructors(const uint *data, const QtPrivate::QMetaTypeInterface *const *metaTypes)
 {
     using namespace QtMocConstants;
     QCOMPARE(data[10], 3U);
     QCOMPARE_NE(data[11], 0U);
 
-    const uint *header = data.data() + data[11];
+    const uint *header = data + data[11];
 
     // Constructor(QObject *)
     QCOMPARE(header[0], 0U);
@@ -559,7 +562,7 @@ checkConstructors(const std::array<uint, N> &data, const QtPrivate::QMetaTypeInt
     QCOMPARE(header[3], 1U);
     QCOMPARE(header[4], AccessPublic | MethodConstructor);
     QCOMPARE_GT(header[5], 0U);
-    const uint *payload = data.data() + header[2];
+    const uint *payload = data + header[2];
     QCOMPARE(payload[0], uint(QMetaType::UnknownType));
     QCOMPARE(payload[1], uint(QMetaType::QObjectStar));
     QCOMPARE(QMetaType(metaTypes[header[5]]), QMetaType::fromType<QObject *>());
@@ -572,7 +575,7 @@ checkConstructors(const std::array<uint, N> &data, const QtPrivate::QMetaTypeInt
     QCOMPARE(header[3], 1U);
     QCOMPARE(header[4], AccessPublic | MethodConstructor | MethodCloned);
     QCOMPARE_GT(header[5], 0U);
-    payload = data.data() + header[2];
+    payload = data + header[2];
     QCOMPARE(payload[0], uint(QMetaType::UnknownType));
     // no metatype stored for this constructor
 
@@ -584,7 +587,7 @@ checkConstructors(const std::array<uint, N> &data, const QtPrivate::QMetaTypeInt
     QCOMPARE(header[3], 1U);
     QCOMPARE(header[4], AccessPublic | MethodConstructor);
     QCOMPARE_GT(header[5], 0U);
-    payload = data.data() + header[2];
+    payload = data + header[2];
     QCOMPARE(payload[0], uint(QMetaType::UnknownType));
     QCOMPARE(payload[1], uint(QMetaType::QString));
     QCOMPARE(QMetaType(metaTypes[header[5]]), QMetaType::fromType<QString>());
@@ -607,15 +610,15 @@ void tst_MocHelpers::constructorUintGroup()
     };
     testUintData(constructors);
 
-    constexpr auto data = QtMocHelpers::metaObjectData<void, void>(0,
+    constexpr auto data = QtMocHelpers::metaObjectData<void, void>(0, dummyStringData,
             QtMocHelpers::UintData{}, QtMocHelpers::UintData{},
             QtMocHelpers::UintData{}, constructors);
-    checkConstructors(data.data, data.metaTypes.data());
+    checkConstructors(data.staticData.data, data.relocatingData.metaTypes);
 }
 
 struct Gadget {};
 
-template <size_t N> static void checkUintArrayGeneric(const std::array<uint, N> &data, uint flags = 0)
+template <size_t N> static void checkUintArrayGeneric(const uint (&data)[N], uint flags = 0)
 {
     using namespace QtMocConstants;
     QCOMPARE(data[0], uint(OutputRevision));
@@ -634,29 +637,33 @@ template <size_t N> static void checkUintArrayGeneric(const std::array<uint, N> 
 void tst_MocHelpers::emptyUintArray()
 {
     using namespace QtMocConstants;
-    constexpr auto data = QtMocHelpers::metaObjectData<Gadget, void>(MetaObjectFlag{},
+    constexpr auto mo = QtMocHelpers::metaObjectData<Gadget, void>(MetaObjectFlag{}, dummyStringData,
             QtMocHelpers::UintData{}, QtMocHelpers::UintData{}, QtMocHelpers::UintData{});
     QTest::setThrowOnFail(true);
-    checkUintArrayGeneric(data.data, MetaObjectFlag{});
+    checkUintArrayGeneric(mo.staticData.data, MetaObjectFlag{});
     QTest::setThrowOnFail(false);
 
-    // check it says nothing was added
-    QCOMPARE(data.data[2], 0U);     // classinfos
-    QCOMPARE(data.data[4], 0U);     // methods
-    QCOMPARE(data.data[6], 0U);     // properties
-    QCOMPARE(data.data[8], 0U);     // enums
-    QCOMPARE(data.data[10], 0U);    // constructors
-    QCOMPARE(data.data[13], 0U);    // signals
+    const uint *data = mo.staticData.data;
+    auto &metaTypes = mo.relocatingData.metaTypes;
 
-    QCOMPARE(data.metaTypes.size(), 1U);
-    QMetaType self(data.metaTypes[data.data[6] + data.data[8]]);
+    // check it says nothing was added
+    QCOMPARE(data[2], 0U);      // classinfos
+    QCOMPARE(data[4], 0U);      // methods
+    QCOMPARE(data[6], 0U);      // properties
+    QCOMPARE(data[8], 0U);      // enums
+    QCOMPARE(data[10], 0U);     // constructors
+    QCOMPARE(data[13], 0U);     // signals
+
+    QCOMPARE(std::size(metaTypes), 1U);
+    QMetaType self(metaTypes[data[6] + data[8]]);
     QCOMPARE(self, QMetaType::fromType<Gadget>());
 }
 
 void tst_MocHelpers::uintArrayNoMethods()
 {
     using namespace QtMocConstants;
-    constexpr auto data = QtMocHelpers::metaObjectData<Gadget, void>(PropertyAccessInStaticMetaCall,
+    constexpr auto mo = QtMocHelpers::metaObjectData<Gadget, Gadget>(PropertyAccessInStaticMetaCall,
+            dummyStringData,
             QtMocHelpers::UintData{},
             QtMocHelpers::UintData{
                 QtMocHelpers::PropertyData<int>(3, QMetaType::Int, 0x3, 13, 0x101),
@@ -671,16 +678,19 @@ void tst_MocHelpers::uintArrayNoMethods()
                 QtMocHelpers::EnumData<QFlags<E1>>(11, 1, EnumIsFlag).add({ { 3, E1::AnEnumValue } }),
             }, QtMocHelpers::UintData{}, QtMocHelpers::ClassInfos({{1, 2}, {3, 4}}));
 
+    auto &data = mo.staticData.data;
+    auto &metaTypes = mo.relocatingData.metaTypes;
+
     QTest::setThrowOnFail(true);
-    checkUintArrayGeneric(data.data, PropertyAccessInStaticMetaCall);
-    checkClassInfos(data.data);
-    checkProperties(data.data, data.metaTypes.data());
-    checkEnums(data.data, data.metaTypes.data());
+    checkUintArrayGeneric(data, PropertyAccessInStaticMetaCall);
+    checkClassInfos(data);
+    checkProperties(data, metaTypes);
+    checkEnums(data, metaTypes);
     QTest::setThrowOnFail(false);
-    QCOMPARE(data.data[4], 0U);     // methods
-    QCOMPARE(data.data[10], 0U);    // constructors
-    QCOMPARE(data.data[13], 0U);    // signals
-    QMetaType self(data.metaTypes[data.data[6] + data.data[8]]);
+    QCOMPARE(data[4], 0U);      // methods
+    QCOMPARE(data[10], 0U);     // constructors
+    QCOMPARE(data[13], 0U);     // signals
+    QMetaType self(metaTypes[data[6] + data[8]]);
     QCOMPARE(self, QMetaType::fromType<Gadget>());
 }
 
@@ -689,7 +699,8 @@ void tst_MocHelpers::uintArray()
     using Dummy = QString;
     using QtMocHelpers::NoType;
     using namespace QtMocConstants;
-    constexpr auto data = QtMocHelpers::metaObjectData<void, tst_MocHelpers>(PropertyAccessInStaticMetaCall,
+    constexpr auto mo = QtMocHelpers::metaObjectData<tst_MocHelpers, tst_MocHelpers>(PropertyAccessInStaticMetaCall,
+            dummyStringData,
             QtMocHelpers::UintData{
                 QtMocHelpers::RevisionedSignalData<void()>(1, 2, QtMocConstants::AccessPublic, 0x509,
                     QMetaType::Void, {{ }}
@@ -725,15 +736,18 @@ void tst_MocHelpers::uintArray()
                 )
             }, QtMocHelpers::ClassInfos({{1, 2}, {3, 4}}));
 
+    auto &data = mo.staticData.data;
+    auto &metaTypes = mo.relocatingData.metaTypes;
+
     QTest::setThrowOnFail(true);
-    checkUintArrayGeneric(data.data, PropertyAccessInStaticMetaCall);
-    checkClassInfos(data.data);
-    checkProperties(data.data, data.metaTypes.data());
-    checkEnums(data.data, data.metaTypes.data());
-    checkMethods(data.data, data.metaTypes.data());
-    checkConstructors(data.data, data.metaTypes.data());
-    QMetaType self(data.metaTypes[data.data[6] + data.data[8]]);
-    QCOMPARE(self, QMetaType::fromType<void>());
+    checkUintArrayGeneric(data, PropertyAccessInStaticMetaCall);
+    checkClassInfos(data);
+    checkProperties(data, metaTypes);
+    checkEnums(data, metaTypes);
+    checkMethods(data, metaTypes);
+    checkConstructors(data, metaTypes);
+    QMetaType self(metaTypes[data[6] + data[8]]);
+    QCOMPARE(self, QMetaType::fromType<tst_MocHelpers>());
 }
 
 QTEST_MAIN(tst_MocHelpers)

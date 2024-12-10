@@ -221,8 +221,7 @@ QT_END_INCLUDE_NAMESPACE
 /*!
     \fn size_t QPixmapCache::Key::qHash(const Key &key, size_t seed)
     \since 6.6
-
-    Returns the hash value for the \a key, using \a seed to seed the calculation.
+    \qhash{QPixmapCache::Key}
 */
 size_t QPixmapCache::Key::hash(size_t seed) const noexcept
 {

@@ -33,45 +33,47 @@ static void cleanupPredefinedColorspaces()
 
 Q_DESTRUCTOR_FUNCTION(cleanupPredefinedColorspaces)
 
-QColorSpacePrimaries::QColorSpacePrimaries(QColorSpace::Primaries primaries)
+QColorSpace::PrimaryPoints QColorSpace::PrimaryPoints::fromPrimaries(Primaries primaries)
 {
+    PrimaryPoints out;
     switch (primaries) {
-    case QColorSpace::Primaries::SRgb:
-        redPoint   = QPointF(0.640, 0.330);
-        greenPoint = QPointF(0.300, 0.600);
-        bluePoint  = QPointF(0.150, 0.060);
-        whitePoint = QColorVector::D65Chromaticity();
+    case Primaries::SRgb:
+        out.redPoint   = QPointF(0.640, 0.330);
+        out.greenPoint = QPointF(0.300, 0.600);
+        out.bluePoint  = QPointF(0.150, 0.060);
+        out.whitePoint = QColorVector::D65Chromaticity();
         break;
-    case QColorSpace::Primaries::DciP3D65:
-        redPoint   = QPointF(0.680, 0.320);
-        greenPoint = QPointF(0.265, 0.690);
-        bluePoint  = QPointF(0.150, 0.060);
-        whitePoint = QColorVector::D65Chromaticity();
+    case Primaries::DciP3D65:
+        out.redPoint   = QPointF(0.680, 0.320);
+        out.greenPoint = QPointF(0.265, 0.690);
+        out.bluePoint  = QPointF(0.150, 0.060);
+        out.whitePoint = QColorVector::D65Chromaticity();
         break;
-    case QColorSpace::Primaries::AdobeRgb:
-        redPoint   = QPointF(0.640, 0.330);
-        greenPoint = QPointF(0.210, 0.710);
-        bluePoint  = QPointF(0.150, 0.060);
-        whitePoint = QColorVector::D65Chromaticity();
+    case Primaries::AdobeRgb:
+        out.redPoint   = QPointF(0.640, 0.330);
+        out.greenPoint = QPointF(0.210, 0.710);
+        out.bluePoint  = QPointF(0.150, 0.060);
+        out.whitePoint = QColorVector::D65Chromaticity();
         break;
-    case QColorSpace::Primaries::ProPhotoRgb:
-        redPoint   = QPointF(0.7347, 0.2653);
-        greenPoint = QPointF(0.1596, 0.8404);
-        bluePoint  = QPointF(0.0366, 0.0001);
-        whitePoint = QColorVector::D50Chromaticity();
+    case Primaries::ProPhotoRgb:
+        out.redPoint   = QPointF(0.7347, 0.2653);
+        out.greenPoint = QPointF(0.1596, 0.8404);
+        out.bluePoint  = QPointF(0.0366, 0.0001);
+        out.whitePoint = QColorVector::D50Chromaticity();
         break;
-    case QColorSpace::Primaries::Bt2020:
-        redPoint   = QPointF(0.708, 0.292);
-        greenPoint = QPointF(0.170, 0.797);
-        bluePoint  = QPointF(0.131, 0.046);
-        whitePoint = QColorVector::D65Chromaticity();
+    case Primaries::Bt2020:
+        out.redPoint   = QPointF(0.708, 0.292);
+        out.greenPoint = QPointF(0.170, 0.797);
+        out.bluePoint  = QPointF(0.131, 0.046);
+        out.whitePoint = QColorVector::D65Chromaticity();
         break;
     default:
         Q_UNREACHABLE();
     }
+    return out;
 }
 
-bool QColorSpacePrimaries::areValid() const
+bool QColorSpace::PrimaryPoints::isValid() const noexcept
 {
     if (!QColorVector::isValidChromaticity(redPoint))
         return false;
@@ -84,17 +86,19 @@ bool QColorSpacePrimaries::areValid() const
     return true;
 }
 
-QColorMatrix QColorSpacePrimaries::toXyzMatrix() const
+QColorMatrix qColorSpacePrimaryPointsToXyzMatrix(const QColorSpace::PrimaryPoints &primaries)
 {
     // This converts to XYZ in some undefined scale.
-    QColorMatrix toXyz = { QColorVector::fromXYChromaticity(redPoint),
-                           QColorVector::fromXYChromaticity(greenPoint),
-                           QColorVector::fromXYChromaticity(bluePoint) };
+    QColorMatrix toXyz = {
+        QColorVector::fromXYChromaticity(primaries.redPoint),
+        QColorVector::fromXYChromaticity(primaries.greenPoint),
+        QColorVector::fromXYChromaticity(primaries.bluePoint)
+    };
 
     // Since the white point should be (1.0, 1.0, 1.0) in the
     // input, we can figure out the scale by using the
     // inverse conversion on the white point.
-    const auto wXyz = QColorVector::fromXYChromaticity(whitePoint);
+    const auto wXyz = QColorVector::fromXYChromaticity(primaries.whitePoint);
     QColorVector whiteScale = toXyz.inverted().map(wXyz);
 
     // Now we have scaled conversion to XYZ relative to the given whitepoint
@@ -169,7 +173,7 @@ QColorSpacePrivate::QColorSpacePrivate(QColorSpace::Primaries primaries, QColorS
     initialize();
 }
 
-QColorSpacePrivate::QColorSpacePrivate(const QColorSpacePrimaries &primaries,
+QColorSpacePrivate::QColorSpacePrivate(const QColorSpace::PrimaryPoints &primaries,
                                        QColorSpace::TransferFunction transferFunction,
                                        float gamma)
         : primaries(QColorSpace::Primaries::Custom)
@@ -178,8 +182,8 @@ QColorSpacePrivate::QColorSpacePrivate(const QColorSpacePrimaries &primaries,
         , gamma(gamma)
         , whitePoint(QColorVector::fromXYChromaticity(primaries.whitePoint))
 {
-    Q_ASSERT(primaries.areValid());
-    toXyz = primaries.toXyzMatrix();
+    Q_ASSERT(primaries.isValid());
+    toXyz = qColorSpacePrimaryPointsToXyzMatrix(primaries);
     chad = QColorMatrix::chromaticAdaptation(whitePoint);
     toXyz = chad * toXyz;
 
@@ -225,15 +229,15 @@ QColorSpacePrivate::QColorSpacePrivate(QColorSpace::Primaries primaries, const Q
     initialize();
 }
 
-QColorSpacePrivate::QColorSpacePrivate(const QColorSpacePrimaries &primaries, const QList<uint16_t> &transferFunctionTable)
+QColorSpacePrivate::QColorSpacePrivate(const QColorSpace::PrimaryPoints &primaries, const QList<uint16_t> &transferFunctionTable)
         : primaries(QColorSpace::Primaries::Custom)
         , transferFunction(QColorSpace::TransferFunction::Custom)
         , colorModel(QColorSpace::ColorModel::Rgb)
         , gamma(0)
         , whitePoint(QColorVector::fromXYChromaticity(primaries.whitePoint))
 {
-    Q_ASSERT(primaries.areValid());
-    toXyz = primaries.toXyzMatrix();
+    Q_ASSERT(primaries.isValid());
+    toXyz = qColorSpacePrimaryPointsToXyzMatrix(primaries);
     chad = QColorMatrix::chromaticAdaptation(whitePoint);
     toXyz = chad * toXyz;
     setTransferFunctionTable(transferFunctionTable);
@@ -241,7 +245,7 @@ QColorSpacePrivate::QColorSpacePrivate(const QColorSpacePrimaries &primaries, co
     initialize();
 }
 
-QColorSpacePrivate::QColorSpacePrivate(const QColorSpacePrimaries &primaries,
+QColorSpacePrivate::QColorSpacePrivate(const QColorSpace::PrimaryPoints &primaries,
                                        const QList<uint16_t> &redTransferFunctionTable,
                                        const QList<uint16_t> &greenTransferFunctionTable,
                                        const QList<uint16_t> &blueTransferFunctionTable)
@@ -250,8 +254,8 @@ QColorSpacePrivate::QColorSpacePrivate(const QColorSpacePrimaries &primaries,
         , colorModel(QColorSpace::ColorModel::Rgb)
         , gamma(0)
 {
-    Q_ASSERT(primaries.areValid());
-    toXyz = primaries.toXyzMatrix();
+    Q_ASSERT(primaries.isValid());
+    toXyz = qColorSpacePrimaryPointsToXyzMatrix(primaries);
     whitePoint = QColorVector::fromXYChromaticity(primaries.whitePoint);
     chad = QColorMatrix::chromaticAdaptation(whitePoint);
     toXyz = chad * toXyz;
@@ -353,8 +357,8 @@ void QColorSpacePrivate::setToXyzMatrix()
         whitePoint = QColorVector::D50();
         return;
     }
-    QColorSpacePrimaries colorSpacePrimaries(primaries);
-    toXyz = colorSpacePrimaries.toXyzMatrix();
+    auto colorSpacePrimaries = QColorSpace::PrimaryPoints::fromPrimaries(primaries);
+    toXyz = qColorSpacePrimaryPointsToXyzMatrix(colorSpacePrimaries);
     whitePoint = QColorVector::fromXYChromaticity(colorSpacePrimaries.whitePoint);
     chad = QColorMatrix::chromaticAdaptation(whitePoint);
     toXyz = chad * toXyz;
@@ -644,6 +648,29 @@ void QColorSpacePrivate::clearElementListProcessingForEdit()
 */
 
 /*!
+    \class QColorSpace::PrimaryPoints
+    \brief The PrimaryPoints struct contains four primary color space points.
+    \inmodule QtGui
+    \since 6.9
+
+    The four CIE XY color space points describing the gamut of an RGB color space; red, green, blue, and white.
+
+    \sa QColorSpace::Primaries
+*/
+
+/*!
+    \fn QColorSpace::PrimaryPoints QColorSpace::PrimaryPoints::fromPrimaries(QColorspace::Primaries primaries);
+
+    Returns the four primary points making up \a primaries.
+*/
+
+/*!
+    \fn QColorSpace::PrimaryPoints::isValid() const noexcept
+
+    Returns \c true if the primary points passes the sanity check used by methods consuming QColorSpace::PrimaryPoints.
+*/
+
+/*!
     \fn QColorSpace::QColorSpace()
 
     Creates a new colorspace object that represents an undefined and invalid colorspace.
@@ -728,19 +755,30 @@ QColorSpace::QColorSpace(QPointF whitePoint, const QList<uint16_t> &transferFunc
 }
 
 /*!
-    Creates a custom colorspace with a primaries based on the chromaticities of the primary colors \a whitePoint,
+    Creates a custom colorspace with primaries based on the chromaticities of the primary colors \a whitePoint,
     \a redPoint, \a greenPoint and \a bluePoint, and using the transfer function \a transferFunction and optionally \a gamma.
  */
 QColorSpace::QColorSpace(const QPointF &whitePoint, const QPointF &redPoint,
                          const QPointF &greenPoint, const QPointF &bluePoint,
                          QColorSpace::TransferFunction transferFunction, float gamma)
+        : QColorSpace({whitePoint, redPoint, greenPoint, bluePoint}, transferFunction, gamma)
 {
-    QColorSpacePrimaries primaries(whitePoint, redPoint, greenPoint, bluePoint);
-    if (!primaries.areValid()) {
-        qWarning() << "QColorSpace attempted constructed from invalid primaries:" << whitePoint << redPoint << greenPoint << bluePoint;
+}
+
+/*!
+    Creates a custom colorspace with primaries based on the chromaticities of the primary colors \a primaryPoints,
+    and using the transfer function \a transferFunction and optionally \a gamma.
+
+    \since 6.9
+ */
+QColorSpace::QColorSpace(const PrimaryPoints &primaryPoints, TransferFunction transferFunction, float gamma)
+{
+    if (!primaryPoints.isValid()) {
+        qWarning() << "QColorSpace attempted constructed from invalid primaries:"
+                   << primaryPoints.whitePoint << primaryPoints.redPoint << primaryPoints.greenPoint << primaryPoints.bluePoint;
         return;
     }
-    d_ptr = new QColorSpacePrivate(primaries, transferFunction, gamma);
+    d_ptr = new QColorSpacePrivate(primaryPoints, transferFunction, gamma);
 }
 
 /*!
@@ -987,22 +1025,32 @@ void QColorSpace::setPrimaries(QColorSpace::Primaries primariesId)
     Set primaries to the chromaticities of \a whitePoint, \a redPoint, \a greenPoint
     and \a bluePoint.
 
-    \sa primaries()
+    \sa primaries(), setPrimaryPoints()
 */
 void QColorSpace::setPrimaries(const QPointF &whitePoint, const QPointF &redPoint,
                                const QPointF &greenPoint, const QPointF &bluePoint)
 {
-    QColorSpacePrimaries primaries(whitePoint, redPoint, greenPoint, bluePoint);
-    if (!primaries.areValid())
+    setPrimaryPoints({whitePoint, redPoint, greenPoint, bluePoint});
+}
+
+/*!
+    Set all primaries to the chromaticities of \a primaryPoints.
+
+    \since 6.9
+    \sa primaries(), primaryPoints()
+*/
+void QColorSpace::setPrimaryPoints(const QColorSpace::PrimaryPoints &primaryPoints)
+{
+    if (!primaryPoints.isValid())
         return;
     if (!d_ptr) {
-        d_ptr = new QColorSpacePrivate(primaries, TransferFunction::Custom, 0.0f);
+        d_ptr = new QColorSpacePrivate(primaryPoints, TransferFunction::Custom, 0.0f);
         return;
     }
-    QColorMatrix toXyz = primaries.toXyzMatrix();
-    QColorMatrix chad = QColorMatrix::chromaticAdaptation(QColorVector::fromXYChromaticity(whitePoint));
+    QColorMatrix toXyz = qColorSpacePrimaryPointsToXyzMatrix(primaryPoints);
+    QColorMatrix chad = QColorMatrix::chromaticAdaptation(QColorVector::fromXYChromaticity(primaryPoints.whitePoint));
     toXyz = chad * toXyz;
-    if (QColorVector::fromXYChromaticity(primaries.whitePoint) == d_ptr->whitePoint
+    if (QColorVector::fromXYChromaticity(primaryPoints.whitePoint) == d_ptr->whitePoint
         && toXyz == d_ptr->toXyz && chad == d_ptr->chad)
         return;
     detach();
@@ -1014,8 +1062,25 @@ void QColorSpace::setPrimaries(const QPointF &whitePoint, const QPointF &redPoin
     d_ptr->colorModel = QColorSpace::ColorModel::Rgb;
     d_ptr->toXyz = toXyz;
     d_ptr->chad = chad;
-    d_ptr->whitePoint = QColorVector::fromXYChromaticity(primaries.whitePoint);
+    d_ptr->whitePoint = QColorVector::fromXYChromaticity(primaryPoints.whitePoint);
     d_ptr->identifyColorSpace();
+}
+
+/*!
+    Returns the primary chromaticities, if not defined, returns null points.
+
+    \since 6.9
+    \sa primaries(), setPrimaryPoints()
+*/
+QColorSpace::PrimaryPoints QColorSpace::primaryPoints() const
+{
+    if (Q_UNLIKELY(!d_ptr))
+        return {};
+    QColorMatrix rawToXyz = d_ptr->chad.inverted() * d_ptr->toXyz;
+    return PrimaryPoints{rawToXyz.r.toChromaticity(),
+                         rawToXyz.g.toChromaticity(),
+                         rawToXyz.b.toChromaticity(),
+                         d_ptr->whitePoint.toChromaticity()};
 }
 
 /*!

@@ -9,4 +9,4 @@ SOURCES       = controllerwindow.cpp \
                 main.cpp \
                 controls.cpp
 
-QT += widgets
+QT += widgets gui-private

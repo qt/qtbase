@@ -194,7 +194,7 @@ qt_internal_add_module(Core
         plugin/qfactoryloader.cpp plugin/qfactoryloader_p.h
         plugin/qplugin.h plugin/qplugin_p.h
         plugin/qpluginloader.cpp plugin/qpluginloader.h
-        plugin/quuid.cpp plugin/quuid.h
+        plugin/quuid.cpp plugin/quuid.h plugin/quuid_p.h
         serialization/qcborarray.h
         serialization/qcborcommon.cpp serialization/qcborcommon.h serialization/qcborcommon_p.h
         serialization/qcbordiagnostic.cpp
@@ -207,6 +207,7 @@ qt_internal_add_module(Core
         serialization/qjsoncbor.cpp
         serialization/qjsondocument.cpp serialization/qjsondocument.h
         serialization/qjsonobject.cpp serialization/qjsonobject.h
+        serialization/qjsonparseerror.h
         serialization/qjsonparser.cpp serialization/qjsonparser_p.h
         serialization/qjsonvalue.cpp serialization/qjsonvalue.h
         serialization/qjsonwriter.cpp serialization/qjsonwriter_p.h
@@ -310,7 +311,6 @@ qt_internal_add_module(Core
         tools/qsize.cpp tools/qsize.h
         tools/qsmallbytearray_p.h
         tools/qspan.h
-        tools/qspan_p.h
         tools/qstack.h
         tools/qtaggedpointer.h
         tools/qtools_p.h
@@ -490,6 +490,12 @@ qt_internal_extend_target(Core
     SOURCES ${core_version_tagging_files}
 )
 
+if(GCC OR CLANG)
+    # qglobal.cpp has #include moc_qnamespace.cpp, so increase the template
+    # depth for it due to the size of the Qt namespace
+    set_source_files_properties(global/qglobal.cpp PROPERTIES
+        COMPILE_OPTIONS "-ftemplate-depth=2048")
+endif()
 
 if(GCC)
     # Disable LTO, as the symbols disappear somehow under GCC
@@ -499,6 +505,7 @@ if(GCC)
     set_source_files_properties(${core_version_tagging_files}
         PROPERTIES COMPILE_OPTIONS "-fno-lto")
 endif()
+
 
 qt_internal_extend_target(Core
     CONDITION ( TEST_architecture_arch STREQUAL i386 ) OR
@@ -1407,6 +1414,8 @@ if(QT_FEATURE_mimetype AND QT_FEATURE_mimetype_database)
     qt_internal_extend_target(Core
         SOURCES ${qmimeprovider_db_output}
         INCLUDE_DIRECTORIES "${CMAKE_CURRENT_BINARY_DIR}/.rcc"
+        ATTRIBUTION_FILE_DIR_PATHS
+            mimetypes/3rdparty
     )
     set_source_files_properties(${qmimeprovider_db_output} PROPERTIES
         GENERATED TRUE
@@ -1417,6 +1426,7 @@ endif()
 qt_internal_extend_target(Core CONDITION WASM
     SOURCES
         platform/wasm/qstdweb.cpp platform/wasm/qstdweb_p.h
+        platform/wasm/qwasmsocket.cpp platform/wasm/qwasmsocket_p.h
         kernel/qeventdispatcher_wasm.cpp kernel/qeventdispatcher_wasm_p.h
 )
 

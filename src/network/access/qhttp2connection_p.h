@@ -244,7 +244,7 @@ public:
         return nullptr;
     }
 
-    void close() { sendGOAWAY(Http2::HTTP2_NO_ERROR); }
+    void close(Http2::Http2Error error = Http2::HTTP2_NO_ERROR) { sendGOAWAY(error); }
 
     bool isGoingAway() const noexcept { return m_goingAway; }
 
@@ -392,6 +392,8 @@ private:
     bool m_goingAway = false;
     bool pushPromiseEnabled = false;
     quint32 m_lastIncomingStreamID = Http2::connectionStreamID;
+
+    bool m_prefaceSent = false;
 
     // Server-side only:
     bool m_waitingForClientPreface = false;

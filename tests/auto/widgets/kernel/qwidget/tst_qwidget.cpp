@@ -219,6 +219,8 @@ private slots:
     void lower();
     void stackUnder();
     void testContentsPropagation();
+    void restoreGeometryFromInvalidArray_data();
+    void restoreGeometryFromInvalidArray();
     void saveRestoreGeometry();
     void restoreVersion1Geometry_data();
     void restoreVersion1Geometry();
@@ -891,6 +893,8 @@ void tst_QWidget::fontPropagation()
     QVERIFY(four->testAttribute(Qt::WA_SetFont));
 }
 
+// QPropagationTestWidget is not found in QApplicationPrivate::widgetPalettes
+// and therefore falls back to the system palette
 class QPropagationTestWidget : public QWidget
 {
     Q_OBJECT
@@ -4302,10 +4306,28 @@ void tst_QWidget::testContentsPropagation()
     saveGeometry() and restoreGeometry() works.
 */
 
+void tst_QWidget::restoreGeometryFromInvalidArray_data()
+{
+    QTest::addColumn<QByteArray>("array");
+    QTest::addRow("empty") << QByteArray();
+    QTest::addRow("one") << QByteArray("a");
+    QTest::addRow("two") << QByteArray("ab");
+    QTest::addRow("three") << QByteArray("abc");
+    QTest::addRow("four") << QByteArray("abca");
+    QTest::addRow("many") << QByteArray("lksdfkj938ao18lkjo8wqdfmkfsdfjlkm");
+}
+
+void tst_QWidget::restoreGeometryFromInvalidArray()
+{
+    QFETCH(const QByteArray, array);
+    QWidget widget;
+    QVERIFY(!widget.restoreGeometry(array));
+}
+
 void tst_QWidget::saveRestoreGeometry()
 {
 #ifdef Q_OS_MACOS
-    QSKIP("QTBUG-52974");
+    QSKIP("macOS fails to restore from fullscreen");
 #endif
 
     if (m_platform == QStringLiteral("wayland"))
@@ -4317,18 +4339,12 @@ void tst_QWidget::saveRestoreGeometry()
 
     {
         QWidget widget;
+        widget.setWindowFlags(Qt::X11BypassWindowManagerHint);
         widget.move(position);
         widget.resize(size);
         widget.showNormal();
         QVERIFY(QTest::qWaitForWindowExposed(&widget));
         QApplication::processEvents();
-
-
-    /* ---------------------------------------------------------------------
-     * This test function is likely to flake when debugged with Qt Creator.
-     * (29px offset making the following QTRY_VERIFY2 fail)
-     * ---------------------------------------------------------------------
-     */
 
         QTRY_VERIFY2(HighDpi::fuzzyCompare(widget.pos(), position, m_fuzz),
                      qPrintable(HighDpi::msgPointMismatch(widget.pos(), position)));
@@ -4338,26 +4354,12 @@ void tst_QWidget::saveRestoreGeometry()
 
     {
         QWidget widget;
-        widget.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
-
-        const QByteArray empty;
-        const QByteArray one("a");
-        const QByteArray two("ab");
-        const QByteArray three("abc");
-        const QByteArray four("abca");
-        const QByteArray garbage("abcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabc");
-
-        QVERIFY(!widget.restoreGeometry(empty));
-        QVERIFY(!widget.restoreGeometry(one));
-        QVERIFY(!widget.restoreGeometry(two));
-        QVERIFY(!widget.restoreGeometry(three));
-        QVERIFY(!widget.restoreGeometry(four));
-        QVERIFY(!widget.restoreGeometry(garbage));
+        widget.setWindowFlags(Qt::X11BypassWindowManagerHint);
+        widget.setWindowTitle(QTest::currentTestFunction());
 
         QVERIFY(widget.restoreGeometry(savedGeometry));
         widget.showNormal();
         QVERIFY(QTest::qWaitForWindowExposed(&widget));
-        QApplication::processEvents();
 
         QVERIFY2(HighDpi::fuzzyCompare(widget.pos(), position, m_fuzz),
                  qPrintable(HighDpi::msgPointMismatch(widget.pos(), position)));
@@ -4383,65 +4385,46 @@ void tst_QWidget::saveRestoreGeometry()
         geom = widget.geometry();
         widget.setWindowState(widget.windowState() | Qt::WindowFullScreen);
         QTRY_VERIFY((widget.windowState() & Qt::WindowFullScreen));
-        QTest::qWait(500);
         QVERIFY(widget.restoreGeometry(savedGeometry));
-        QTest::qWait(120);
-        QTRY_VERIFY(!(widget.windowState() & Qt::WindowFullScreen));
+        QTRY_VERIFY(!(widget.windowState() & Qt::WindowFullScreen)); // macOS fails here
         QTRY_COMPARE(widget.geometry(), geom);
 
         //Restore to full screen
         widget.setWindowState(widget.windowState() | Qt::WindowFullScreen);
-        QTest::qWait(120);
         QTRY_VERIFY((widget.windowState() & Qt::WindowFullScreen));
-        QTest::qWait(500);
         savedGeometry = widget.saveGeometry();
         geom = widget.geometry();
         widget.setWindowState(widget.windowState() ^ Qt::WindowFullScreen);
-        QTest::qWait(120);
         QTRY_VERIFY(!(widget.windowState() & Qt::WindowFullScreen));
-        QTest::qWait(400);
         QVERIFY(widget.restoreGeometry(savedGeometry));
-        QTest::qWait(120);
         QTRY_VERIFY((widget.windowState() & Qt::WindowFullScreen));
         QTRY_COMPARE(widget.geometry(), geom);
         QVERIFY((widget.windowState() & Qt::WindowFullScreen));
         widget.setWindowState(widget.windowState() ^ Qt::WindowFullScreen);
-        QTest::qWait(120);
         QTRY_VERIFY(!(widget.windowState() & Qt::WindowFullScreen));
-        QTest::qWait(120);
 
         //Restore from Maximised
         widget.move(position);
         widget.resize(size);
-        QTest::qWait(10);
         QTRY_COMPARE(widget.size(), size);
-        QTest::qWait(500);
         savedGeometry = widget.saveGeometry();
         geom = widget.geometry();
         widget.setWindowState(widget.windowState() | Qt::WindowMaximized);
-        QTest::qWait(120);
         QTRY_VERIFY((widget.windowState() & Qt::WindowMaximized));
-        QTRY_VERIFY(widget.geometry() != geom);
-        QTest::qWait(500);
+        QTRY_COMPARE_NE(widget.geometry(), geom);
         QVERIFY(widget.restoreGeometry(savedGeometry));
-        QTest::qWait(120);
         QTRY_COMPARE(widget.geometry(), geom);
 
         QVERIFY(!(widget.windowState() & Qt::WindowMaximized));
 
         //Restore to maximised
         widget.setWindowState(widget.windowState() | Qt::WindowMaximized);
-        QTest::qWait(120);
         QTRY_VERIFY((widget.windowState() & Qt::WindowMaximized));
-        QTest::qWait(500);
         geom = widget.geometry();
         savedGeometry = widget.saveGeometry();
         widget.setWindowState(widget.windowState() ^ Qt::WindowMaximized);
-        QTest::qWait(120);
         QTRY_VERIFY(!(widget.windowState() & Qt::WindowMaximized));
-        QTest::qWait(500);
         QVERIFY(widget.restoreGeometry(savedGeometry));
-        QTest::qWait(120);
         QTRY_VERIFY((widget.windowState() & Qt::WindowMaximized));
         QTRY_COMPARE(widget.geometry(), geom);
     }
@@ -8368,7 +8351,7 @@ void tst_QWidget::renderRTL()
     menu.setLayoutDirection(Qt::RightToLeft);
     QImage imageRTL(menu.size(), QImage::Format_ARGB32);
     menu.render(&imageRTL);
-    imageRTL = imageRTL.mirrored(true, false);
+    imageRTL.flip(Qt::Horizontal);
     //imageRTL.save("/tmp/rendered_2.png");
 
     QCOMPARE(imageLTR.height(), imageRTL.height());
@@ -9712,6 +9695,7 @@ void tst_QWidget::dumpObjectTree()
     Q_SET_OBJECT_NAME(w);
     w.move(100, 100);
     w.resize(200, 200);
+    QPoint pos = w.pos();
 
     QLineEdit le(&w);
     Q_SET_OBJECT_NAME(le);
@@ -9730,6 +9714,7 @@ void tst_QWidget::dumpObjectTree()
 
     QTestPrivate::androidCompatibleShow(&w);
     QVERIFY(QTest::qWaitForWindowActive(&w));
+    QTRY_COMPARE(w.pos(), pos);
 
     {
         const char * const expected[] = {

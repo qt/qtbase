@@ -6,9 +6,10 @@
 #include <private/qdrawhelper_x86_p.h>
 #include <private/qsimd_p.h>
 
-#if QT_CONFIG(thread) && !defined(Q_OS_WASM)
+#if QT_CONFIG(qtgui_threadpool)
 #include <qsemaphore.h>
 #include <qthreadpool.h>
+#include <private/qguiapplication_p.h>
 #include <private/qthreadpool_p.h>
 #endif
 
@@ -21,10 +22,10 @@ using namespace QImageScale;
 template<typename T>
 static inline void multithread_pixels_function(QImageScaleInfo *isi, int dh, const T &scaleSection)
 {
-#if QT_CONFIG(thread) && !defined(Q_OS_WASM)
+#if QT_CONFIG(qtgui_threadpool)
     int segments = (qsizetype(isi->sh) * isi->sw) / (1<<16);
     segments = std::min(segments, dh);
-    QThreadPool *threadPool = QThreadPoolPrivate::qtGuiInstance();
+    QThreadPool *threadPool = QGuiApplicationPrivate::qtGuiThreadPool();
     if (segments > 1 && threadPool && !threadPool->contains(QThread::currentThread())) {
         QSemaphore semaphore;
         int y = 0;

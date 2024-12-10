@@ -174,18 +174,36 @@ QRhiWidget::QRhiWidget(QWidget *parent, Qt::WindowFlags f)
     : QWidget(*(new QRhiWidgetPrivate), parent, f)
 {
     Q_D(QRhiWidget);
+    d->init();
+}
+
+/*!
+ *  \internal
+ */
+QRhiWidget::QRhiWidget(QRhiWidgetPrivate &dd, QWidget *parent, Qt::WindowFlags f)
+    : QWidget(dd, parent, f)
+{
+    Q_D(QRhiWidget);
+    d->init();
+}
+
+/*!
+ *  \internal
+ */
+void QRhiWidgetPrivate::init()
+{
     if (Q_UNLIKELY(!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::RhiBasedRendering)))
         qWarning("QRhiWidget: QRhi is not supported on this platform.");
     else
-        d->setRenderToTexture();
+        setRenderToTexture();
 
-    d->config.setEnabled(true);
+    config.setEnabled(true);
 #if defined(Q_OS_DARWIN)
-    d->config.setApi(QPlatformBackingStoreRhiConfig::Metal);
+    config.setApi(QPlatformBackingStoreRhiConfig::Metal);
 #elif defined(Q_OS_WIN)
-    d->config.setApi(QPlatformBackingStoreRhiConfig::D3D11);
+    config.setApi(QPlatformBackingStoreRhiConfig::D3D11);
 #else
-    d->config.setApi(QPlatformBackingStoreRhiConfig::OpenGL);
+    config.setApi(QPlatformBackingStoreRhiConfig::OpenGL);
 #endif
 }
 
@@ -420,7 +438,7 @@ QImage QRhiWidgetPrivate::grabFramebuffer()
                             imageFormat);
         QImage result;
         if (rhi->isYUpInFramebuffer())
-            result = wrapperImage.mirrored();
+            result = wrapperImage.flipped();
         else
             result = wrapperImage.copy();
         result.setDevicePixelRatio(q->devicePixelRatio());

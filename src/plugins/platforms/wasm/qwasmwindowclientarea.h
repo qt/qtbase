@@ -28,7 +28,7 @@ public:
     ClientArea(QWasmWindow *window, QWasmScreen *screen, emscripten::val element);
 
 private:
-    bool processPointer(const PointerEvent &event);
+    void processPointer(const PointerEvent &event);
     bool deliverEvent(const PointerEvent &event);
 
     std::unique_ptr<qstdweb::EventCallback> m_pointerDownCallback;

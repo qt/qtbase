@@ -1688,12 +1688,8 @@ public:
     bool insertIfNotContains(Key k, const T &f)
     {
         const QWriteLocker locker(&lock);
-        const qsizetype oldSize = map.size();
-        auto &e = map[k];
-        if (map.size() == oldSize) // already present
-            return false;
-        e = f;
-        return true;
+        auto r = map.tryEmplace(k, f);
+        return r.inserted;
     }
 
     const T *function(Key k) const
@@ -3277,11 +3273,10 @@ static const QtPrivate::QMetaTypeInterface *interfaceForType(int typeId)
 QMetaType::QMetaType(int typeId) : QMetaType(interfaceForType(typeId)) {}
 
 
-/*! \fn size_t qHash(QMetaType type, size_t seed = 0)
-    \relates QMetaType
+/*!
+    \fn size_t qHash(QMetaType key, size_t seed)
+    \qhashold{QMetaType}
     \since 6.4
-
-    Returns the hash value for the \a type, using \a seed to seed the calculation.
 */
 
 namespace QtPrivate {

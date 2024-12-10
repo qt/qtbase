@@ -801,12 +801,12 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
                 if (!(opt->state & State_Enabled)) {
                     const int ofs = qRound(1 * dpr);
                     imagePainter.translate(ofs, ofs);
-                    imagePainter.setBrush(opt->palette.light().color());
+                    imagePainter.setBrush(opt->palette.light());
                     imagePainter.setPen(opt->palette.light().color());
                     imagePainter.drawPolygon(poly.data(), int(poly.size()));
                     imagePainter.drawPoints(poly.data(), int(poly.size()));
                     imagePainter.translate(-ofs, -ofs);
-                    imagePainter.setBrush(opt->palette.mid().color());
+                    imagePainter.setBrush(opt->palette.mid());
                     imagePainter.setPen(opt->palette.mid().color());
                 }
                 imagePainter.drawPolygon(poly.data(), int(poly.size()));
@@ -938,7 +938,7 @@ QString QCommonStylePrivate::calculateElidedText(const QString &text, const QTex
                     text.chop(1);
                 text += QChar(0x2026);
             }
-            const QStackTextEngine engine(text, font);
+            Q_DECL_UNINITIALIZED const QStackTextEngine engine(text, font);
             ret += engine.elidedText(textElideMode, textRect.width(), flags);
 
             // no newline for the last line (last visible or real)
@@ -5545,7 +5545,7 @@ QPixmap QCommonStyle::standardPixmap(StandardPixmap sp, const QStyleOption *opti
     switch (sp) {
     case QStyle::SP_ToolBarHorizontalExtensionButton:
         if (d->rtl(option)) {
-            auto im = QImage(tb_extension_arrow_h_xpm).convertToFormat(QImage::Format_ARGB32).mirrored(true, false);
+            auto im = QImage(tb_extension_arrow_h_xpm).convertToFormat(QImage::Format_ARGB32).flipped(Qt::Horizontal);
             return QPixmap::fromImage(std::move(im));
         }
         return cachedPixmapFromXPM(tb_extension_arrow_h_xpm);

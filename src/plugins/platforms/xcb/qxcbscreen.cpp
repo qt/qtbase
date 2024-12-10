@@ -654,12 +654,16 @@ void QXcbScreen::setMonitor(xcb_randr_monitor_info_t *monitorInfo, xcb_timestamp
     if (m_crtcs.size() == 1) {
         auto crtc = Q_XCB_REPLY(xcb_randr_get_crtc_info,
                                 xcb_connection(), m_crtcs[0], timestamp);
-        m_singlescreen = (monitorGeometry == (QRect(crtc->x, crtc->y, crtc->width, crtc->height)));
-        if (m_singlescreen) {
-            if (crtc->mode) {
-                updateGeometry(QRect(crtc->x, crtc->y, crtc->width, crtc->height), crtc->rotation);
-                if (mode() != crtc->mode)
-                    updateRefreshRate(crtc->mode);
+        if (crtc == XCB_NONE) {
+            qCDebug(lcQpaScreen, "Didn't get crtc info when m_crtcs.size() == 1");
+        } else {
+            m_singlescreen = (monitorGeometry == (QRect(crtc->x, crtc->y, crtc->width, crtc->height)));
+            if (m_singlescreen) {
+                if (crtc->mode) {
+                    updateGeometry(QRect(crtc->x, crtc->y, crtc->width, crtc->height), crtc->rotation);
+                    if (mode() != crtc->mode)
+                        updateRefreshRate(crtc->mode);
+                }
             }
         }
     }

@@ -129,6 +129,7 @@ private slots:
     void min_maximumWidth();
     void negativeLineWidth();
     void embeddedImageLineHeight();
+    void unmatchedShapedSubstring();
 
 private:
     QFont testFont;
@@ -2808,6 +2809,31 @@ void tst_QTextLayout::embeddedImageLineHeight()
         QTextLine line = layout->lineAt(0);
         QCOMPARE(line.ascent() + line.descent(), s1Height);
     }
+}
+
+void tst_QTextLayout::unmatchedShapedSubstring()
+{
+    QString s;
+    s += QChar(9977);
+    s += QChar(65039);
+    s += QChar(8205);
+    s += QChar(9794);
+    s += QChar(65039);
+
+    QTextLayout lout;
+
+    QTextOption opt;
+    opt.setFlags(QTextOption::DisableEmojiParsing);
+    lout.setTextOption(opt);
+
+    // Note: Shaping of this string would previously assert on some platforms
+    lout.setText(s);
+    lout.beginLayout();
+    lout.createLine();
+    lout.endLayout();
+
+    QList<QGlyphRun> glyphRuns = lout.glyphRuns();
+    QVERIFY(glyphRuns.size() > 0);
 }
 
 QTEST_MAIN(tst_QTextLayout)

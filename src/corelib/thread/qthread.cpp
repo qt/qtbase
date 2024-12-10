@@ -42,14 +42,6 @@ void QPostEventList::addEvent(const QPostEvent &ev)
   QThreadData
 */
 
-QThreadData::QThreadData(int initialRefCount)
-    : _ref(initialRefCount), loopLevel(0), scopeLevel(0),
-      eventDispatcher(nullptr),
-      quitNow(false), canWait(true), isAdopted(false), requiresCoreApplication(true)
-{
-    // fprintf(stderr, "QThreadData %p created\n", this);
-}
-
 QThreadData::~QThreadData()
 {
 #if QT_CONFIG(thread)
@@ -73,32 +65,16 @@ QThreadData::~QThreadData()
     thread.storeRelease(nullptr);
     delete t;
 
-    for (int i = 0; i < postEventList.size(); ++i) {
+    for (qsizetype i = 0; i < postEventList.size(); ++i) {
         const QPostEvent &pe = postEventList.at(i);
         if (pe.event) {
-            --pe.receiver->d_func()->postedEvents;
+            pe.receiver->d_func()->postedEvents.fetchAndSubRelaxed(1);
             pe.event->m_posted = false;
             delete pe.event;
         }
     }
 
     // fprintf(stderr, "QThreadData %p destroyed\n", this);
-}
-
-void QThreadData::ref()
-{
-#if QT_CONFIG(thread)
-    (void) _ref.ref();
-    Q_ASSERT(_ref.loadRelaxed() != 0);
-#endif
-}
-
-void QThreadData::deref()
-{
-#if QT_CONFIG(thread)
-    if (!_ref.deref())
-        delete this;
-#endif
 }
 
 QAbstractEventDispatcher *QThreadData::createEventDispatcher()
@@ -572,6 +548,27 @@ uint QThread::stackSize() const
     QMutexLocker locker(&d->mutex);
     return d->stackSize;
 }
+
+/*!
+    \enum QThread::QualityOfService
+    \since 6.9
+
+    This enum describes the quality of service level of a thread, and provides
+    the scheduler with information about the kind of work that the thread
+    performs. On platforms with different CPU profiles, or with the ability to
+    clock certain cores of a CPU down, this allows the scheduler to select or
+    configure a CPU core with suitable performance and energy characteristics
+    for the thread.
+
+    \value Auto The default value, leaving it to the scheduler to decide which
+                CPU core to run the thread on.
+    \value High The scheduler should run this thread to a high-performance CPU
+                core.
+    \value Eco  The scheduler should run this thread to an energy-efficient CPU
+                core.
+
+    \sa Priority, serviceLevel()
+*/
 
 /*!
     \since 6.9
@@ -1143,12 +1140,16 @@ void QThread::setTerminationEnabled(bool)
 // No threads: so we can just use static variables
 Q_CONSTINIT static QThreadData *data = nullptr;
 
-QThreadData *QThreadData::current(bool createIfNecessary)
+QThreadData *QThreadData::currentThreadData() noexcept
 {
-    if (!data && createIfNecessary) {
-        data = new QThreadData;
-        data->thread = new QAdoptedThread(data);
-    }
+    return data;
+}
+
+QThreadData *QThreadData::createCurrentThreadData()
+{
+    Q_ASSERT(!currentThreadData());
+    data = new QThreadData;
+    data->thread = new QAdoptedThread(data);
     return data;
 }
 

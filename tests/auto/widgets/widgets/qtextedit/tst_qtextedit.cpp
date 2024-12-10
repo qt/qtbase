@@ -2328,7 +2328,7 @@ void tst_QTextEdit::noWrapBackgrounds()
     topLevel.show();
 
     const QImage img = edit.viewport()->grab().toImage();
-    QCOMPARE(img, img.mirrored(true, false));
+    QCOMPARE(img, img.flipped(Qt::Horizontal));
 }
 
 void tst_QTextEdit::preserveCharFormatAfterUnchangingSetPosition()

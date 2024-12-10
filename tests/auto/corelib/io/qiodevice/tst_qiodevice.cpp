@@ -32,6 +32,7 @@ private slots:
     void readLineInto_Checks();
 
     void readLineInto();
+    void readLineInto_qspan();
 
     void readAllKeepPosition();
     void writeInTextMode();
@@ -626,6 +627,75 @@ void tst_QIODevice::readLineInto()
     QCOMPARE(buffer.readLineInto(&l1), false); // End of buffer.
     QCOMPARE_EQ(l1.capacity(), cap_before);
     QCOMPARE(buffer.pos(), pos_before);
+}
+
+void tst_QIODevice::readLineInto_qspan()
+{
+    QByteArray data ("1st Line\r\nL2\r\nRead the rest");
+    QBuffer buffer(&data);
+
+    {
+        QVERIFY(buffer.open(QIODevice::ReadOnly));
+        QVERIFY(buffer.canReadLine());
+        buffer.seek(0);
+
+        QSpan<char> span; // zero-sized span
+        QTest::ignoreMessage(QtWarningMsg,
+                             "QIODevice::readLineInto (QBuffer): Called with maxSize < 1");
+        QCOMPARE(buffer.readLineInto(span), "");
+
+        char buffer1[1024];
+        QCOMPARE(buffer.readLineInto(buffer1), "1st Line\r\n");
+
+        uchar buffer2[4]; // length of the buffer is equal to the size of the line
+        QCOMPARE(buffer.readLineInto(buffer2), "L2\r\n");
+
+        std::byte buffer3[5]; // length of the buffer is less than the size of the line
+        QCOMPARE(buffer.readLineInto(buffer3), "Read ");
+        QCOMPARE(buffer.readLineInto(buffer1), "the rest"); // read the rest
+
+        QCOMPARE(buffer.readLineInto(span), ""); // No warning even thought maxSize < 1 because we
+                                                 // are at the end
+    }
+
+    {
+        QVERIFY(buffer.open(QIODevice::ReadOnly | QIODevice::Text)); // "\r\n" is translated to '\n'
+        QVERIFY(buffer.canReadLine());
+        buffer.seek(0);
+
+        QSpan<char> span; // zero-sized span
+        QTest::ignoreMessage(QtWarningMsg,
+                             "QIODevice::readLineInto (QBuffer): Called with maxSize < 1");
+        QCOMPARE(buffer.readLineInto(span), "");
+
+        char buffer1[1024];
+        QCOMPARE(buffer.readLineInto(buffer1), "1st Line\n");
+
+        uchar buffer2[3]; // length of the buffer is equal to the size of the line
+        QCOMPARE(buffer.readLineInto(buffer2), "L2\n");
+
+        std::byte buffer3[5]; // length of the buffer is less than the size of the line
+        QCOMPARE(buffer.readLineInto(buffer3), "Read ");
+        QCOMPARE(buffer.readLineInto(buffer1), "the rest"); // read the rest
+
+        QCOMPARE(buffer.readLineInto(span), ""); // No warning even thought maxSize < 1 because we
+                                                 // are at the end
+    }
+
+    {
+        // This test checks the behavior when !keepDataInBuffer and !buffer.isEmpty().
+        // 'buffer' was always empty in the previous tests and calling ungetChar() changes that.
+        QByteArray data2 ("Q");
+        QBuffer buffer2(&data2);
+        QVERIFY(buffer2.open(QIODevice::ReadOnly));
+        buffer2.seek(0);
+        buffer2.read(1);
+        buffer2.ungetChar('t'); // Make the buffer size equal to 1
+
+        char buf[1];
+        QCOMPARE(buffer2.readLineInto(buf), "t");
+        QCOMPARE(buffer2.readLineInto(buf), ""); // no more data to read
+    }
 }
 
 class SequentialReadBuffer : public QIODevice

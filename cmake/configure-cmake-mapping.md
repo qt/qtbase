@@ -179,3 +179,5 @@ The following table describes the mapping of configure options to CMake argument
 |                                       |                                                   | types: gzip, zstd, none.                                        |
 | -force-bundled-libs                   | -DFEATURE_force_bundled_libs=ON                   |                                                                 |
 | -force-system-libs                    | -DFEATURE_force_system_libs=ON                    |                                                                 |
+| -ffmpeg-dir                           | -DFFMPEG_DIR=<dir>                                | FFmpeg development libraries directory                          |
+| -ffmpeg-deploy                        | -DQT_DEPLOY_FFMPEG=ON                             | FFmpeg binaries will be copied to Qt's install directory        |

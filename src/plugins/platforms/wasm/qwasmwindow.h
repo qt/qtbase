@@ -126,7 +126,7 @@ private:
     bool processKey(const KeyEvent &event);
     void handleKeyForInputContextEvent(const emscripten::val &event);
     bool processKeyForInputContext(const KeyEvent &event);
-    void handlePointerEvent(const emscripten::val &event);
+    void handlePointerEvent(const PointerEvent &event);
     bool processPointer(const PointerEvent &event);
     void handleWheelEvent(const emscripten::val &event);
     bool processWheel(const WheelEvent &event);

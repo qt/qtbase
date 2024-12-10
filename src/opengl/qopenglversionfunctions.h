@@ -20,7 +20,6 @@
 #ifndef QT_NO_OPENGL
 
 #include <QtCore/qhashfunctions.h>
-#include <QtCore/qpair.h>
 #include <QtGui/qopengl.h>
 
 // MemoryBarrier is a macro on some architectures on Windows
@@ -57,7 +56,7 @@ struct QOpenGLVersionStatus
           status(functionStatus)
     {}
 
-    QPair<int, int> version;
+    std::pair<int, int> version;
     OpenGLStatus status;
 
     friend constexpr bool operator==(const QOpenGLVersionStatus &lhs, const QOpenGLVersionStatus &rhs) noexcept

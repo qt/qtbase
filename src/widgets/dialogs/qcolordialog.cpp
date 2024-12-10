@@ -1610,7 +1610,7 @@ void QColorDialogPrivate::pickScreenColor()
     Q_Q(QColorDialog);
 
     auto *platformServices = QGuiApplicationPrivate::platformIntegration()->services();
-    if (platformServices->hasCapability(QPlatformServices::Capability::ColorPicking)) {
+    if (platformServices && platformServices->hasCapability(QPlatformServices::Capability::ColorPicking)) {
         if (auto *colorPicker = platformServices->colorPicker(q->windowHandle())) {
             q->connect(colorPicker, &QPlatformServiceColorPicker::colorPicked, q,
                        [q, colorPicker](const QColor &color) {

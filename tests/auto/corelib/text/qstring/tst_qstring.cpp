@@ -740,7 +740,7 @@ QString verifyZeroTermination(const QString &str)
     if (QChar(u'\0') != strTerminator)
         return QString::fromLatin1(
             "*** Result ('%1') not null-terminated: 0x%2 ***").arg(str)
-                .arg(strTerminator.unicode(), 4, 16, QChar(u'0'));
+                .arg(ushort{strTerminator.unicode()}, 4, 16, QChar(u'0'));
 
     // Skip mutating checks on shared strings
     if (strDataPtr->isShared())
@@ -6609,6 +6609,7 @@ void tst_QString::arg()
     QCOMPARE(s4.arg(empty), "[]"_L1);
     QCOMPARE(s4.arg(QStringView()), "[]"_L1);
     QCOMPARE(s4.arg(QStringView(u"")), "[]"_L1);
+    QCOMPARE(s4.arg(u8""), "[]"_L1);
 
     QCOMPARE(s4.arg(foo), "[foo]"_L1);
     QCOMPARE( s5.arg(QLatin1String("foo")), QLatin1String("[foo]") );
@@ -6693,16 +6694,19 @@ void tst_QString::arg()
     QCOMPARE( s4.arg(Q_UINT64_C(9223372036854775808)), // LLONG_MAX + 1
              QLatin1String("[9223372036854775808]") );
 
+    // (unscoped) enums
+    enum : int { FooS = -1 };
+    enum : uint { FooU = 1 };
+    QCOMPARE(s4.arg(FooS), QLatin1String("[-1]"));
+    QCOMPARE(s4.arg(FooU), QLatin1String("[1]"));
+
     // FP overloads
     QCOMPARE(s4.arg(2.25), QLatin1String("[2.25]"));
     QCOMPARE(s4.arg(3.75f), QLatin1String("[3.75]"));
-#if !QFLOAT16_IS_NATIVE // QTBUG-126055
     QCOMPARE(s4.arg(qfloat16{4.125f}), QLatin1String("[4.125]"));
-#endif
 
     // char-ish overloads
     QCOMPARE(s4.arg('\xE4'), QStringView(u"[ä]"));
-    QEXPECT_FAIL("", "QTBUG-125588", Continue);
     QCOMPARE(s4.arg(u'ø'), QStringView(u"[ø]"));
 #ifdef Q_OS_WIN
     QCOMPARE(QLatin1String("[%1]").arg(L'ø'), QStringView(u"[ø]"));
@@ -6713,8 +6717,6 @@ void tst_QString::arg()
 #ifndef QT_NO_CAST_FROM_ASCII
     QCOMPARE(QLatin1String("[%1]").arg(u8'a'), QLatin1String("[a]"));
 #endif
-#else
-    QEXPECT_FAIL("", "QTBUG-126053", Continue);
 #endif
     QCOMPARE(s4.arg(u8'a'), QLatin1String("[a]"));
 
@@ -6743,12 +6745,14 @@ void tst_QString::arg()
     QCOMPARE(u"%2%1"_s.arg(QStringView()), "%2"_L1);
     QCOMPARE(u"%2%1"_s.arg(QStringView(u"")), "%2"_L1);
     QCOMPARE(u"%1"_s.arg(u"hello"_s, -10), "hello     "_L1);
+    QCOMPARE(u"%1"_s.arg(QUtf8StringView{u8"ä"}, -3), u"ä  ");
     QCOMPARE(u"%1"_s.arg("hello"_L1, -5), "hello"_L1);
     QCOMPARE(u"%1"_s.arg(u"hello", -2), "hello"_L1);
     QCOMPARE(u"%1"_s.arg(u"hello"_s, 0), "hello"_L1);
     QCOMPARE(u"%1"_s.arg("hello"_L1, 2), "hello"_L1);
     QCOMPARE(u"%1"_s.arg(u"hello", 5), "hello"_L1);
     QCOMPARE(u"%1"_s.arg(u"hello"_s, 10), "     hello"_L1);
+    QCOMPARE(u"%1"_s.arg(QUtf8StringView{u8"ä"}, 3), u"  ä");
     QCOMPARE(u"%1%1"_s.arg(u"hello"_s), "hellohello"_L1);
     QCOMPARE(u"%2%1"_s.arg(u"hello"_s), "%2hello"_L1);
 

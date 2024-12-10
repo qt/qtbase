@@ -348,12 +348,11 @@ void tst_QSpinBox::getSetCheck()
 
 tst_QSpinBox::tst_QSpinBox()
 {
+    QLocale::setDefault(QLocale::c());
 }
 
 void tst_QSpinBox::init()
 {
-    QLocale::setDefault(QLocale(QLocale::C));
-
 #if QT_CONFIG(cursor)
     // Ensure mouse cursor was not left by previous tests where widgets
     // will appear, as it could cause events and interfere with the tests.
@@ -894,8 +893,9 @@ void tst_QSpinBox::locale()
     QFETCH(QString, text);
     QFETCH(int, valFromText);
 
-    QLocale old;
-
+    const auto restoreDefault = qScopeGuard([prior = QLocale()]() {
+        QLocale::setDefault(prior);
+    });
     QLocale::setDefault(loc);
     SpinBox box;
     box.setMaximum(100000);
@@ -1323,6 +1323,9 @@ void tst_QSpinBox::setGroupSeparatorShown()
     QFETCH(QLocale::Language, lang);
     QFETCH(QLocale::Territory, country);
 
+    const auto restoreDefault = qScopeGuard([prior = QLocale()]() {
+        QLocale::setDefault(prior);
+    });
     QLocale loc(lang, country);
     QLocale::setDefault(loc);
     SpinBox spinBox;

@@ -327,6 +327,7 @@ struct FontDescription {
     QFont::Stretch stretch;
     qreal pointSize;
     bool fixedPitch;
+    bool colorFont;
     QSupportedWritingSystems writingSystems;
 };
 
@@ -359,6 +360,9 @@ static void getFontDescription(CTFontDescriptorRef font, FontDescription *fd)
     fd->style = QFont::StyleNormal;
     fd->stretch = QFont::Unstretched;
     fd->fixedPitch = false;
+    fd->colorFont = false;
+
+
 
     if (QCFType<CTFontRef> tempFont = CTFontCreateWithFontDescriptor(font, 0.0, 0)) {
         uint tag = QFont::Tag("OS/2").value();
@@ -393,6 +397,9 @@ static void getFontDescription(CTFontDescriptorRef font, FontDescription *fd)
         if (CFNumberRef symbolic = (CFNumberRef) CFDictionaryGetValue(styles, kCTFontSymbolicTrait)) {
             int d;
             if (CFNumberGetValue(symbolic, kCFNumberSInt32Type, &d)) {
+                if (d & kCTFontColorGlyphsTrait)
+                    fd->colorFont = true;
+
                 if (d & kCTFontMonoSpaceTrait)
                     fd->fixedPitch = true;
                 if (d & kCTFontExpandedTrait)
@@ -451,7 +458,7 @@ void QCoreTextFontDatabase::populateFromDescriptor(CTFontDescriptorRef font, con
     CFRetain(font);
     QPlatformFontDatabase::registerFont(family, fd.styleName, fd.foundryName, fd.weight, fd.style, fd.stretch,
             true /* antialiased */, true /* scalable */, 0 /* pixelSize, ignored as font is scalable */,
-            fd.fixedPitch, fd.writingSystems, (void *)font);
+            fd.fixedPitch, fd.colorFont, fd.writingSystems, (void *)font);
 }
 
 static NSString * const kQtFontDataAttribute = @"QtFontDataAttribute";
@@ -629,7 +636,18 @@ CTFontDescriptorRef descriptorForStyle(QFont::StyleHint styleHint)
     }
 }
 
-QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const
+QStringList QCoreTextFontDatabase::fallbacksForScript(QFontDatabasePrivate::ExtendedScript script) const
+{
+    if (script == QFontDatabasePrivate::Script_Emoji)
+        return QStringList{} << QStringLiteral(".Apple Color Emoji UI");
+    else
+        return QStringList{};
+}
+
+QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family,
+                                                      QFont::Style style,
+                                                      QFont::StyleHint styleHint,
+                                                      QFontDatabasePrivate::ExtendedScript script) const
 {
     Q_UNUSED(style);
 
@@ -639,7 +657,7 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFo
 
     QMacAutoReleasePool pool;
 
-    QStringList fallbackList;
+    QStringList fallbackList = fallbacksForScript(script);
 
     QCFType<CFArrayRef> fallbackFonts = fallbacksForFamily(family);
     if (!fallbackFonts || !CFArrayGetCount(fallbackFonts)) {
@@ -702,32 +720,34 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFo
         fallbackList.append(QStringLiteral("Apple Symbols"));
     // Some Noto* fonts are not automatically enumerated by system, despite being the main
     // fonts for their writing system.
-    QString hardcodedFont = m_hardcodedFallbackFonts.value(script);
-    if (!hardcodedFont.isEmpty() && !fallbackList.contains(hardcodedFont)) {
-        if (!isFamilyPopulated(hardcodedFont)) {
-            if (!m_privateFamilies.contains(hardcodedFont)) {
-                QCFType<CTFontDescriptorRef> familyDescriptor = descriptorForFamily(hardcodedFont);
-                QCFType<CFArrayRef> matchingFonts = CTFontDescriptorCreateMatchingFontDescriptors(familyDescriptor, nullptr);
-                if (matchingFonts) {
-                    const int numFonts = CFArrayGetCount(matchingFonts);
-                    for (int i = 0; i < numFonts; ++i)
-                        const_cast<QCoreTextFontDatabase *>(this)->populateFromDescriptor(CTFontDescriptorRef(CFArrayGetValueAtIndex(matchingFonts, i)),
-                                                                                          hardcodedFont);
+    if (script < int(QChar::ScriptCount)) {
+      QString hardcodedFont = m_hardcodedFallbackFonts.value(QChar::Script(script));
+      if (!hardcodedFont.isEmpty() && !fallbackList.contains(hardcodedFont)) {
+            if (!isFamilyPopulated(hardcodedFont)) {
+                if (!m_privateFamilies.contains(hardcodedFont)) {
+                    QCFType<CTFontDescriptorRef> familyDescriptor = descriptorForFamily(hardcodedFont);
+                    QCFType<CFArrayRef> matchingFonts = CTFontDescriptorCreateMatchingFontDescriptors(familyDescriptor, nullptr);
+                    if (matchingFonts) {
+                        const int numFonts = CFArrayGetCount(matchingFonts);
+                        for (int i = 0; i < numFonts; ++i)
+                            const_cast<QCoreTextFontDatabase *>(this)->populateFromDescriptor(CTFontDescriptorRef(CFArrayGetValueAtIndex(matchingFonts, i)),
+                                                                                            hardcodedFont);
 
-                    fallbackList.append(hardcodedFont);
+                        fallbackList.append(hardcodedFont);
+                    }
+
+                    // Register as private family even if the font is not found, in order to avoid
+                    // redoing the check later. In later calls, the font will then just be ignored.
+                    m_privateFamilies.insert(hardcodedFont);
                 }
-
-                // Register as private family even if the font is not found, in order to avoid
-                // redoing the check later. In later calls, the font will then just be ignored.
-                m_privateFamilies.insert(hardcodedFont);
+            } else {
+              fallbackList.append(hardcodedFont);
             }
-        } else {
-            fallbackList.append(hardcodedFont);
         }
     }
 #endif
 
-    extern QStringList qt_sort_families_by_writing_system(QChar::Script, const QStringList &);
+    extern QStringList qt_sort_families_by_writing_system(QFontDatabasePrivate::ExtendedScript, const QStringList &);
     fallbackList = qt_sort_families_by_writing_system(script, fallbackList);
 
     qCDebug(lcQpaFonts).nospace() << "Fallback families ordered by script " << script << ": " << fallbackList;

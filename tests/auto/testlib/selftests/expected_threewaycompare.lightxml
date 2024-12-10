@@ -16,7 +16,7 @@
       <Description><![CDATA[The result of operator<=>() is not what was expected
    Left     (lhs): 1
    Right    (rhs): 2
-   Actual   (lhs <=> rhs)  : Qt::strong_ordering::less
+   Actual   (lhs <=> rhs)  : std::strong_ordering::less
    Expected (expectedOrder): Qt::strong_ordering::equal]]></Description>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp" line="0">
@@ -24,7 +24,7 @@
       <Description><![CDATA[The result of operator<=>() is not what was expected
    Left     (lhs): 2
    Right    (rhs): 1
-   Actual   (lhs <=> rhs)  : Qt::strong_ordering::greater
+   Actual   (lhs <=> rhs)  : std::strong_ordering::greater
    Expected (expectedOrder): Qt::strong_ordering::equal]]></Description>
     </Incident>
     <Duration msecs="0"/>
@@ -35,7 +35,7 @@
       <Description><![CDATA[The result of operator<=>() is not what was expected
    Left     (lhs): 1
    Right    (rhs): 1
-   Actual   (lhs <=> rhs)  : Qt::partial_ordering::equivalent
+   Actual   (lhs <=> rhs)  : std::partial_ordering::equivalent
    Expected (expectedOrder): Qt::partial_ordering::less]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
@@ -46,7 +46,7 @@
       <Description><![CDATA[The result of operator<=>() is not what was expected
    Left     (lhs): 1.1
    Right    (rhs): 1
-   Actual   (lhs <=> rhs)  : Qt::partial_ordering::greater
+   Actual   (lhs <=> rhs)  : std::partial_ordering::greater
    Expected (expectedOrder): Qt::partial_ordering::less]]></Description>
     </Incident>
     <Duration msecs="0"/>
@@ -57,7 +57,7 @@
       <Description><![CDATA[The result of operator<=>() is not what was expected
    Left     (lhs): 0
    Right    (rhs): 0
-   Actual   (lhs <=> rhs)  : Qt::partial_ordering::equivalent
+   Actual   (lhs <=> rhs)  : std::partial_ordering::equivalent
    Expected (expectedOrder): Qt::partial_ordering::greater]]></Description>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp" line="0">
@@ -65,7 +65,7 @@
       <Description><![CDATA[The result of operator<=>() is not what was expected
    Left     (lhs): 0
    Right    (rhs): 0.1
-   Actual   (lhs <=> rhs)  : Qt::partial_ordering::less
+   Actual   (lhs <=> rhs)  : std::partial_ordering::less
    Expected (expectedOrder): Qt::partial_ordering::greater]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
@@ -82,7 +82,7 @@
       <Description><![CDATA[The result of operator<=>() is not what was expected
    Left     (lhs): 1
    Right    (rhs): 2
-   Actual   (lhs <=> rhs)  : Qt::strong_ordering::less
+   Actual   (lhs <=> rhs)  : std::strong_ordering::less
    Expected (expectedOrder): Qt::strong_ordering::equal]]></Description>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp" line="0">
@@ -90,7 +90,7 @@
       <Description><![CDATA[The result of operator<=>() is not what was expected
    Left     (lhs): 2
    Right    (rhs): 1
-   Actual   (lhs <=> rhs)  : Qt::strong_ordering::greater
+   Actual   (lhs <=> rhs)  : std::strong_ordering::greater
    Expected (expectedOrder): Qt::strong_ordering::equal]]></Description>
     </Incident>
     <Duration msecs="0"/>
@@ -104,7 +104,7 @@
       <Description><![CDATA[The result of operator<=>() is not what was expected
    Left     (lhs): "nullptr"
    Right    (rhs): 1
-   Actual   (lhs <=> rhs)  : Qt::strong_ordering::less
+   Actual   (lhs <=> rhs)  : std::strong_ordering::less
    Expected (expectedOrder): Qt::strong_ordering::equal]]></Description>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp" line="0">
@@ -112,7 +112,7 @@
       <Description><![CDATA[The result of operator<=>() is not what was expected
    Left     (lhs): 1
    Right    (rhs): "nullptr"
-   Actual   (lhs <=> rhs)  : Qt::strong_ordering::greater
+   Actual   (lhs <=> rhs)  : std::strong_ordering::greater
    Expected (expectedOrder): Qt::strong_ordering::equal]]></Description>
     </Incident>
     <Duration msecs="0"/>
@@ -123,7 +123,7 @@
       <Description><![CDATA[The result of operator<=>() is not what was expected
    Left     (lhs): 0
    Right    (rhs): 0
-   Actual   (lhs <=> rhs)  : Qt::strong_ordering::equal
+   Actual   (lhs <=> rhs)  : std::strong_ordering::equal
    Expected (expectedOrder): Qt::strong_ordering::less]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
@@ -134,7 +134,7 @@
       <Description><![CDATA[The result of operator<=>() is not what was expected
    Left     (lhs): 1
    Right    (rhs): 0
-   Actual   (lhs <=> rhs)  : Qt::strong_ordering::greater
+   Actual   (lhs <=> rhs)  : std::strong_ordering::greater
    Expected (expectedOrder): Qt::strong_ordering::less]]></Description>
     </Incident>
     <Duration msecs="0"/>
@@ -145,7 +145,7 @@
       <Description><![CDATA[The result of operator<=>() is not what was expected
    Left     (lhs): Monday
    Right    (rhs): Monday
-   Actual   (lhs <=> rhs)  : Qt::strong_ordering::equal
+   Actual   (lhs <=> rhs)  : std::strong_ordering::equal
    Expected (expectedOrder): Qt::strong_ordering::greater]]></Description>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp" line="0">
@@ -153,7 +153,7 @@
       <Description><![CDATA[The result of operator<=>() is not what was expected
    Left     (lhs): Monday
    Right    (rhs): Sunday
-   Actual   (lhs <=> rhs)  : Qt::strong_ordering::less
+   Actual   (lhs <=> rhs)  : std::strong_ordering::less
    Expected (expectedOrder): Qt::strong_ordering::greater]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
@@ -167,7 +167,7 @@
       <Description><![CDATA[The result of operator<=>() is not what was expected
    Left     (lhs): MyClass(1)
    Right    (rhs): MyClass(1)
-   Actual   (lhs <=> rhs)  : Qt::strong_ordering::equal
+   Actual   (lhs <=> rhs)  : std::strong_ordering::equal
    Expected (expectedOrder): Qt::strong_ordering::less]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
@@ -178,7 +178,7 @@
       <Description><![CDATA[The result of operator<=>() is not what was expected
    Left     (lhs): MyClass(2)
    Right    (rhs): MyClass(1)
-   Actual   (lhs <=> rhs)  : Qt::strong_ordering::greater
+   Actual   (lhs <=> rhs)  : std::strong_ordering::greater
    Expected (expectedOrder): Qt::strong_ordering::less]]></Description>
     </Incident>
     <Duration msecs="0"/>
@@ -374,7 +374,7 @@
       <Description><![CDATA[The result of operator<=>() is not what was expected
    Left     (june)     : 2012/06/20 14:33:02.500[CEST]
    Right    (juneLater): 2012/06/20 14:33:02.501[CEST]
-   Actual   (june <=> juneLater)        : Qt::weak_ordering::less
+   Actual   (june <=> juneLater)        : std::weak_ordering::less
    Expected (Qt::weak_ordering::greater): Qt::weak_ordering::greater]]></Description>
     </Incident>
     <Duration msecs="0"/>

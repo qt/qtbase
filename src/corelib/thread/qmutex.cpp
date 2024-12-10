@@ -101,8 +101,9 @@ static inline QMutexPrivate *dummyFutexValue()
 
     \warning Destroying a locked mutex may result in undefined behavior.
 */
-void QBasicMutex::destroyInternal(QMutexPrivate *d)
+void QBasicMutex::destroyInternal(void *ptr)
 {
+    auto d = static_cast<QMutexPrivate *>(ptr);
     if (!d)
         return;
     if (!futexAvailable()) {

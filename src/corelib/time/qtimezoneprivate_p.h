@@ -162,6 +162,11 @@ public:
     }
 
 protected:
+    // Zones CLDR data says match a condition.
+    // Use to filter what the backend has available.
+    QList<QByteArrayView> matchingTimeZoneIds(QLocale::Territory territory) const;
+    QList<QByteArrayView> matchingTimeZoneIds(int utcOffset) const;
+
 #if QT_CONFIG(timezone_locale)
     // Defined in qtimezonelocale.cpp
     QString localeName(qint64 atMSecsSinceEpoch, int offsetFromUtc,

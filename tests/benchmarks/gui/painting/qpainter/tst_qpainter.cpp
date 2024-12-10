@@ -200,6 +200,9 @@ private slots:
     void drawPathExceedingDevice_data();
     void drawPathExceedingDevice();
 
+    void setPen();
+    void setBrush();
+
 private:
     void setupBrushes();
     void createPrimitives();
@@ -1714,6 +1717,29 @@ void tst_QPainter::drawPathExceedingDevice()
         p.drawPath(path);
     }
 }
+
+void tst_QPainter::setPen()
+{
+    QImage img(20, 20, QImage::Format_RGB32);
+    QPainter p(&img);
+
+    QBENCHMARK {
+        p.setPen(Qt::black);
+        p.setPen(Qt::red);
+    }
+}
+
+void tst_QPainter::setBrush()
+{
+    QImage img(20, 20, QImage::Format_RGB32);
+    QPainter p(&img);
+
+    QBENCHMARK {
+        p.setBrush(Qt::black);
+        p.setBrush(Qt::red);
+    }
+}
+
 
 QTEST_MAIN(tst_QPainter)
 

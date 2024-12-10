@@ -447,30 +447,22 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
     {
         const QRect &rect = option->rect;
         const int margin = 6;
+        const QColor col = option->palette.window().color();
+        painter->setPen(col.darker(110));
         if (option->state & State_Horizontal) {
-            const int offset = rect.width()/2;
-            painter->setPen(QPen(option->palette.window().color().darker(110)));
-            painter->drawLine(rect.bottomLeft().x() + offset,
-                              rect.bottomLeft().y() - margin,
-                              rect.topLeft().x() + offset,
-                              rect.topLeft().y() + margin);
-            painter->setPen(QPen(option->palette.window().color().lighter(110)));
-            painter->drawLine(rect.bottomLeft().x() + offset + 1,
-                              rect.bottomLeft().y() - margin,
-                              rect.topLeft().x() + offset + 1,
-                              rect.topLeft().y() + margin);
+            const int offset = rect.width() / 2;
+            painter->drawLine(rect.left() + offset, rect.bottom() - margin,
+                              rect.left() + offset, rect.top() + margin);
+            painter->setPen(col.lighter(110));
+            painter->drawLine(rect.left() + offset + 1, rect.bottom() - margin,
+                              rect.left() + offset + 1, rect.top() + margin);
         } else { //Draw vertical separator
-            const int offset = rect.height()/2;
-            painter->setPen(QPen(option->palette.window().color().darker(110)));
-            painter->drawLine(rect.topLeft().x() + margin ,
-                              rect.topLeft().y() + offset,
-                              rect.topRight().x() - margin,
-                              rect.topRight().y() + offset);
-            painter->setPen(QPen(option->palette.window().color().lighter(110)));
-            painter->drawLine(rect.topLeft().x() + margin ,
-                              rect.topLeft().y() + offset + 1,
-                              rect.topRight().x() - margin,
-                              rect.topRight().y() + offset + 1);
+            const int offset = rect.height() / 2;
+            painter->drawLine(rect.left() + margin, rect.top() + offset,
+                              rect.right() - margin, rect.top() + offset);
+            painter->setPen(col.lighter(110));
+            painter->drawLine(rect.left() + margin, rect.top() + offset + 1,
+                              rect.right() - margin, rect.top() + offset + 1);
         }
     }
         break;
@@ -508,24 +500,6 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
     }
         painter->restore();
         break;
-    case PE_FrameDockWidget:
-
-        painter->save();
-    {
-        QColor softshadow = option->palette.window().color().darker(120);
-
-        const QRect &rect = option->rect;
-        painter->setPen(softshadow);
-        painter->drawRect(rect.adjusted(0, 0, -1, -1));
-        painter->setPen(QPen(option->palette.light(), 1));
-        painter->drawLine(QPoint(rect.left() + 1, rect.top() + 1), QPoint(rect.left() + 1, rect.bottom() - 1));
-        painter->setPen(QPen(option->palette.window().color().darker(120)));
-        painter->drawLine(QPoint(rect.left() + 1, rect.bottom() - 1), QPoint(rect.right() - 2, rect.bottom() - 1));
-        painter->drawLine(QPoint(rect.right() - 1, rect.top() + 1), QPoint(rect.right() - 1, rect.bottom() - 1));
-
-    }
-        painter->restore();
-        break;
     case PE_PanelButtonTool:
         painter->save();
         if ((option->state & State_Enabled || option->state & State_On) || !(option->state & State_AutoRaise)) {
@@ -546,23 +520,27 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
         proxy()->drawControl(CE_Splitter, &dockWidgetHandle, painter, widget);
     }
         break;
+    case PE_FrameDockWidget:
     case PE_FrameWindow:
-        painter->save();
     {
+        painter->save();
         const QRect &rect = option->rect;
-        painter->setPen(QPen(outline.darker(150)));
+        const QColor col = (elem == PE_FrameWindow) ? outline.darker(150)
+                                                    : option->palette.window().color().darker(120);
+        painter->setPen(col);
         painter->drawRect(rect.adjusted(0, 0, -1, -1));
         painter->setPen(QPen(option->palette.light(), 1));
-        painter->drawLine(QPoint(rect.left() + 1, rect.top() + 1),
-                          QPoint(rect.left() + 1, rect.bottom() - 1));
+        painter->drawLine(rect.left() + 1, rect.top() + 1,
+                          rect.left() + 1, rect.bottom() - 1);
         painter->setPen(QPen(option->palette.window().color().darker(120)));
-        painter->drawLine(QPoint(rect.left() + 1, rect.bottom() - 1),
-                          QPoint(rect.right() - 2, rect.bottom() - 1));
-        painter->drawLine(QPoint(rect.right() - 1, rect.top() + 1),
-                          QPoint(rect.right() - 1, rect.bottom() - 1));
-    }
+        const QLine lines[2] = {{rect.left() + 1, rect.bottom() - 1,
+                                 rect.right() - 2, rect.bottom() - 1},
+                                {rect.right() - 1, rect.top() + 1,
+                                 rect.right() - 1, rect.bottom() - 1}};
+        painter->drawLines(lines, 2);
         painter->restore();
         break;
+    }
     case PE_FrameLineEdit:
     {
         const QRect &r = option->rect;
@@ -1275,14 +1253,21 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
                     painter->setPen(QPen(highlightedGradientStartColor, 9.0));
                     painter->setClipRect(progressBar.adjusted(1, 1, -1, -1));
 #if QT_CONFIG(animation)
-                if (QProgressStyleAnimation *animation = qobject_cast<QProgressStyleAnimation*>(d->animation(option->styleObject)))
-                    step = animation->animationStep() % 22;
-                else
-                    (const_cast<QFusionStylePrivate*>(d))->startAnimation(new QProgressStyleAnimation(d->animationFps, option->styleObject));
+                    if (QProgressStyleAnimation *animation =
+                        qobject_cast<QProgressStyleAnimation*>(d->animation(option->styleObject))) {
+                        step = animation->animationStep() % 22;
+                    } else {
+                        (const_cast<QFusionStylePrivate*>(d))->startAnimation(
+                                new QProgressStyleAnimation(d->animationFps, option->styleObject)
+                        );
+                    }
 #endif
-                for (int x = progressBar.left() - rect.height(); x < rect.right() ; x += 22)
-                    painter->drawLine(x + step, progressBar.bottom() + 1,
-                                      x + rect.height() + step, progressBar.top() - 2);
+                    QVarLengthArray<QLine, 40> lines;
+                    for (int x = progressBar.left() - rect.height(); x < rect.right() ; x += 22) {
+                        lines.emplace_back(x + step, progressBar.bottom() + 1,
+                                           x + rect.height() + step, progressBar.top() - 2);
+                    }
+                    painter->drawLines(lines.data(), lines.count());
                 }
             }
             if (!indeterminate && !complete) {
@@ -1361,7 +1346,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
             bool dis = !(mbi->state & State_Enabled);
 
             if (act) {
-                painter->setBrush(option->palette.highlight().color());
+                painter->setBrush(option->palette.highlight());
                 painter->setPen(QPen(highlightOutline));
                 painter->drawRect(rect.adjusted(0, 0, -1, -1));
 
@@ -2687,6 +2672,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
             if (option->subControls & SC_SliderTickmarks) {
                 painter->save();
                 painter->translate(slider->rect.x(), slider->rect.y());
+                painter->setRenderHint(QPainter::Antialiasing, false);
                 painter->setPen(outline);
                 int tickSize = proxy()->pixelMetric(PM_SliderTickmarkOffset, option, widget);
                 int available = proxy()->pixelMetric(PM_SliderSpaceAvailable, slider, widget);
@@ -2870,6 +2856,9 @@ int QFusionStyle::pixelMetric(PixelMetric metric, const QStyleOption *option, co
     case PM_DockWidgetTitleBarButtonMargin:
         val = 2;
         break;
+    case PM_ButtonMargin:
+        val = 6;
+        break;
     case PM_TitleBarButtonSize:
         val = 19;
         break;
@@ -2927,6 +2916,8 @@ QSize QFusionStyle::sizeFromContents(ContentsType type, const QStyleOption *opti
     switch (type) {
     case CT_PushButton:
         if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(option)) {
+            const int horizontalMargin = pixelMetric(PM_ButtonMargin, btn);
+            newSize += QSize(horizontalMargin, 0);
             if (!btn->text.isEmpty() && newSize.width() < 80)
                 newSize.setWidth(80);
             if (!btn->icon.isNull() && btn->iconSize.height() > 16)

@@ -1710,6 +1710,10 @@ QRect QMainWindowLayout::dockWidgetAreaRect(const Qt::DockWidgetArea area, DockW
     return (size == Maximum) ? dl.gapRect(dockPosition) : dl.docks[dockPosition].rect;
 }
 
+/*!
+    \internal
+    Add \a dockwidget to \a area in \a orientation.
+ */
 void QMainWindowLayout::addDockWidget(Qt::DockWidgetArea area,
                                              QDockWidget *dockwidget,
                                              Qt::Orientation orientation)
@@ -1722,7 +1726,6 @@ void QMainWindowLayout::addDockWidget(Qt::DockWidgetArea area,
         endSeparatorMove(movingSeparatorPos);
 
     layoutState.dockAreaLayout.addDockWidget(toDockPos(area), dockwidget, orientation);
-    emit dockwidget->dockLocationChanged(area);
     invalidate();
 }
 

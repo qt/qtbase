@@ -649,22 +649,29 @@ void QDomNodeListPrivate::createList() const
     if (!node_impl)
         return;
 
+    list.clear();
     const QDomDocumentPrivate *const doc = node_impl->ownerDocument();
     if (doc && timestamp != doc->nodeListTime)
         timestamp = doc->nodeListTime;
+    forEachNode([&](QDomNodePrivate *p){ list.append(p); });
+}
+
+void QDomNodeListPrivate::forEachNode(qxp::function_ref<void(QDomNodePrivate*)> yield) const
+{
+    if (!node_impl)
+        return;
 
     QDomNodePrivate* p = node_impl->first;
 
-    list.clear();
     if (tagname.isNull()) {
         while (p) {
-            list.append(p);
+            yield(p);
             p = p->next;
         }
     } else if (nsURI.isNull()) {
         while (p && p != node_impl) {
             if (p->isElement() && p->nodeName() == tagname) {
-                list.append(p);
+                yield(p);
             }
             if (p->first)
                 p = p->first;
@@ -681,7 +688,7 @@ void QDomNodeListPrivate::createList() const
     } else {
         while (p && p != node_impl) {
             if (p->isElement() && p->name==tagname && p->namespaceURI==nsURI) {
-                list.append(p);
+                yield(p);
             }
             if (p->first)
                 p = p->first;
@@ -724,6 +731,13 @@ int QDomNodeListPrivate::length() const
         return 0;
 
     return list.size();
+}
+
+int QDomNodeListPrivate::noexceptLength() const noexcept
+{
+    int count = 0;
+    forEachNode([&](QDomNodePrivate*){ ++count; });
+    return count;
 }
 
 /**************************************************************
@@ -852,6 +866,16 @@ int QDomNodeList::length() const
 }
 
 /*!
+    Returns the number of nodes without creating the underlying QList.
+*/
+int QDomNodeList::noexceptLength() const noexcept
+{
+    if (!impl)
+        return 0;
+    return impl->noexceptLength();
+}
+
+/*!
     \fn bool QDomNodeList::isEmpty() const
 
     Returns \c true if the list contains no items; otherwise returns \c false.
@@ -879,6 +903,55 @@ int QDomNodeList::length() const
     If \a index is negative or if \a index >= length() then a null
     node is returned (i.e. a node for which QDomNode::isNull() returns
     true).
+*/
+
+/*!
+    \typedef QDomNodeList::const_iterator
+    \typedef QDomNodeList::const_reverse_iterator
+    \since 6.9
+
+    Typedefs for an opaque class that implements a (reverse) random-access
+    iterator over a QDomNodeList.
+
+    \note QDomNodeList does not support modifying nodes in-place, so
+    there is no mutable iterator.
+*/
+
+/*!
+    \typedef QDomNodeList::value_type
+    \typedef QDomNodeList::difference_type
+    \typedef QDomNodeList::size_type
+    \typedef QDomNodeList::reference
+    \typedef QDomNodeList::const_reference
+    \typedef QDomNodeList::pointer
+    \typedef QDomNodeList::const_pointer
+    \since 6.9
+
+    Provided for STL-compatibility.
+
+    \note QDomNodeList does not support modifying nodes in-place, so
+    reference and const_reference are the same type, as are pointer and
+    const_pointer.
+*/
+
+/*!
+    \fn QDomNodeList::begin() const
+    \fn QDomNodeList::end() const;
+    \fn QDomNodeList::rbegin() const
+    \fn QDomNodeList::rend() const;
+    \fn QDomNodeList::cbegin() const
+    \fn QDomNodeList::cend() const;
+    \fn QDomNodeList::crbegin() const
+    \fn QDomNodeList::crend() const;
+    \fn QDomNodeList::constBegin() const;
+    \fn QDomNodeList::constEnd() const;
+    \since 6.9
+
+    Returns a const_iterator or const_reverse_iterator, respectively, pointing
+    to the first or one past the last item in the list.
+
+    \note QDomNodeList does not support modifying nodes in-place, so
+    there is no mutable iterator.
 */
 
 /**************************************************************
@@ -1349,16 +1422,40 @@ void QDomNodePrivate::normalize()
     qNormalizeNode(this);
 }
 
-/*! \internal
-  \a depth is used for indentation, it seems.
- */
-void QDomNodePrivate::save(QTextStream& s, int depth, int indent) const
+void QDomNodePrivate::saveSubTree(const QDomNodePrivate *n, QTextStream &s,
+                                  int depth, int indent) const
 {
-    const QDomNodePrivate* n = first;
-    while (n) {
-        n->save(s, depth, indent);
-        n = n->next;
+    if (!n)
+        return;
+
+    const QDomNodePrivate *root = n->first;
+    n->save(s, depth, indent);
+    if (root) {
+        const int branchDepth = depth + 1;
+        int layerDepth = 0;
+        while (root) {
+            root->save(s, layerDepth + branchDepth, indent);
+            // A flattened (non-recursive) depth-first walk through the node tree.
+            if (root->first) {
+                layerDepth ++;
+                root = root->first;
+                continue;
+            }
+            root->afterSave(s, layerDepth + branchDepth, indent);
+            const QDomNodePrivate *prev = root;
+            root = root->next;
+            // Close QDomElementPrivate groups
+            while (!root && prev && (layerDepth > 0)) {
+                root = prev->parent();
+                layerDepth --;
+                root->afterSave(s, layerDepth + branchDepth, indent);
+                prev = root;
+                root = root->next;
+            }
+        }
+        Q_ASSERT(layerDepth == 0);
     }
+    n->afterSave(s, depth, indent);
 }
 
 void QDomNodePrivate::setLocation(int lineNumber, int columnNumber)
@@ -2146,7 +2243,7 @@ void QDomNode::save(QTextStream& stream, int indent, EncodingPolicy encodingPoli
     if (isDocument())
         static_cast<const QDomDocumentPrivate *>(impl)->saveDocument(stream, indent, encodingPolicy);
     else
-        IMPL->save(stream, 1, indent);
+        IMPL->saveSubTree(IMPL, stream, 1, indent);
 }
 
 /*!
@@ -3064,11 +3161,11 @@ void QDomDocumentTypePrivate::save(QTextStream& s, int, int indent) const
 
         auto it2 = notations->map.constBegin();
         for (; it2 != notations->map.constEnd(); ++it2)
-            it2.value()->save(s, 0, indent);
+            it2.value()->saveSubTree(it2.value(), s, 0, indent);
 
         auto it = entities->map.constBegin();
         for (; it != entities->map.constEnd(); ++it)
-            it.value()->save(s, 0, indent);
+            it.value()->saveSubTree(it.value(), s, 0, indent);
 
         s << ']';
     }
@@ -4121,13 +4218,25 @@ void QDomElementPrivate::save(QTextStream& s, int depth, int indent) const
             if (indent != -1)
                 s << Qt::endl;
         }
-        QDomNodePrivate::save(s, depth + 1, indent); if (!last->isText())
-            s << QString(indent < 1 ? 0 : depth * indent, u' ');
-
-        s << "</" << qName << '>';
     } else {
         s << "/>";
     }
+}
+
+void QDomElementPrivate::afterSave(QTextStream &s, int depth, int indent) const
+{
+    if (last) {
+        QString qName(name);
+
+        if (!prefix.isEmpty())
+            qName = prefix + u':' + name;
+
+        if (!last->isText())
+            s << QString(indent < 1 ? 0 : depth * indent, u' ');
+
+        s << "</" << qName << '>';
+    }
+
     if (!(next && next->isText())) {
         /* -1 disables new lines. */
         if (indent != -1)
@@ -5908,7 +6017,7 @@ void QDomDocumentPrivate::saveDocument(QTextStream& s, const int indent, QDomNod
                 type->save(s, 0, indent);
                 doc = true;
             }
-            n->save(s, 0, indent);
+            n->saveSubTree(n, s, 0, indent);
             n = n->next;
         }
     }
@@ -5935,8 +6044,8 @@ void QDomDocumentPrivate::saveDocument(QTextStream& s, const int indent, QDomNod
         }
 
         // Now we serialize all the nodes after the faked XML declaration(the PI).
-        while(startNode) {
-            startNode->save(s, 0, indent);
+        while (startNode) {
+            startNode->saveSubTree(startNode, s, 0, indent);
             startNode = startNode->next;
         }
     }

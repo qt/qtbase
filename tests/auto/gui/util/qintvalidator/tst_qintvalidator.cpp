@@ -205,6 +205,9 @@ void tst_QIntValidator::validate()
 
 void tst_QIntValidator::notifySignals()
 {
+    const auto restoreLocale = qScopeGuard([prior = QLocale()] {
+        QLocale::setDefault(prior);
+    });
     QLocale::setDefault(QLocale("C"));
 
     QIntValidator iv(0, 10, 0);

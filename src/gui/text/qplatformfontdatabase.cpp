@@ -24,7 +24,7 @@ Q_LOGGING_CATEGORY(lcQpaFonts, "qt.qpa.fonts")
 void qt_registerFont(const QString &familyname, const QString &stylename,
                      const QString &foundryname, int weight,
                      QFont::Style style, int stretch, bool antialiased,
-                     bool scalable, int pixelSize, bool fixedPitch,
+                     bool scalable, int pixelSize, bool fixedPitch, bool colorFont,
                      const QSupportedWritingSystems &writingSystems, void *hanlde);
 
 void qt_registerFontFamily(const QString &familyName);
@@ -55,7 +55,7 @@ bool qt_isFontFamilyPopulated(const QString &familyName);
 void QPlatformFontDatabase::registerFont(const QString &familyname, const QString &stylename,
                                          const QString &foundryname, QFont::Weight weight,
                                          QFont::Style style, QFont::Stretch stretch, bool antialiased,
-                                         bool scalable, int pixelSize, bool fixedPitch,
+                                         bool scalable, int pixelSize, bool fixedPitch, bool colorFont,
                                          const QSupportedWritingSystems &writingSystems, void *usrPtr)
 {
     if (scalable)
@@ -63,7 +63,7 @@ void QPlatformFontDatabase::registerFont(const QString &familyname, const QStrin
 
     qt_registerFont(familyname, stylename, foundryname, weight, style,
                     stretch, antialiased, scalable, pixelSize,
-                    fixedPitch, writingSystems, usrPtr);
+                    fixedPitch, colorFont, writingSystems, usrPtr);
 }
 
 /*!
@@ -271,7 +271,8 @@ void QPlatformFontDatabase::invalidate()
     option to fall back to the fonts given by \a fallbacks if \a fontEngine does not support
     a certain character.
 */
-QFontEngineMulti *QPlatformFontDatabase::fontEngineMulti(QFontEngine *fontEngine, QChar::Script script)
+QFontEngineMulti *QPlatformFontDatabase::fontEngineMulti(QFontEngine *fontEngine,
+                                                         QFontDatabasePrivate::ExtendedScript script)
 {
     return new QFontEngineMulti(fontEngine, script);
 }

@@ -10,6 +10,7 @@
 #include <qpushbutton.h>
 #include <QHBoxLayout>
 #include <qlineedit.h>
+#include <QSignalSpy>
 
 #include <QtWidgets/private/qapplication_p.h>
 
@@ -25,6 +26,7 @@ private slots:
     void getSetCheck();
     void testMinimumSize();
     void dynamicPages();
+    void widgetAdded();
 };
 
 tst_QStackedWidget::tst_QStackedWidget()
@@ -170,6 +172,25 @@ void tst_QStackedWidget::dynamicPages()
     sw->setCurrentIndex(0);
     QTRY_COMPARE(QApplication::focusWidget(), le11);
 
+}
+
+void tst_QStackedWidget::widgetAdded()
+{
+    QStackedWidget stackedWidget;
+    QSignalSpy addSpy(&stackedWidget, &QStackedWidget::widgetAdded);
+    QVERIFY(addSpy.isValid());
+
+    stackedWidget.addWidget(new QWidget);
+    QCOMPARE(addSpy.count(), 1);
+    QCOMPARE(addSpy.at(0).at(0).toInt(), 0);
+
+    stackedWidget.insertWidget(1, new QWidget);
+    QCOMPARE(addSpy.count(), 2);
+    QCOMPARE(addSpy.at(1).at(0).toInt(), 1);
+
+    stackedWidget.insertWidget(100, new QWidget);
+    QCOMPARE(addSpy.count(), 3);
+    QCOMPARE(addSpy.at(2).at(0).toInt(), 2);
 }
 
 QTEST_MAIN(tst_QStackedWidget)

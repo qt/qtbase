@@ -1272,6 +1272,12 @@
 #  endif
 #endif
 
+#if defined(__has_attribute) && __has_attribute(uninitialized)
+#  define Q_DECL_UNINITIALIZED __attribute__((uninitialized))
+#else
+#  define Q_DECL_UNINITIALIZED
+#endif
+
 
 /*
     Sanitize compiler feature availability

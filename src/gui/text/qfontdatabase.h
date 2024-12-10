@@ -117,6 +117,11 @@ public:
     static void setApplicationFallbackFontFamilies(QChar::Script, const QStringList &familyNames);
     static QStringList applicationFallbackFontFamilies(QChar::Script script);
 
+    static void addApplicationEmojiFontFamily(const QString &familyName);
+    static bool removeApplicationEmojiFontFamily(const QString &familyName);
+    static void setApplicationEmojiFontFamilies(const QStringList &familyNames);
+    static QStringList applicationEmojiFontFamilies();
+
     static QFont systemFont(SystemFont type);
 };
 

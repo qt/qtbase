@@ -15,6 +15,7 @@
 
 #include <initializer_list>
 #include <functional> // for std::hash
+#include <QtCore/q20type_traits.h>
 
 class tst_QHash; // for befriending
 
@@ -812,7 +813,12 @@ struct iterator {
     { return !(*this == other); }
 };
 
-
+template <typename HashKey, typename KeyArgument>
+using HeterogenousConstructProxy = std::conditional_t<
+        std::is_same_v<HashKey, q20::remove_cvref_t<KeyArgument>>,
+        KeyArgument, // HashKey == KeyArg w/ potential modifiers, so we keep modifiers
+        HashKey
+    >;
 
 } // namespace QHashPrivate
 
@@ -939,6 +945,8 @@ public:
 #endif // Q_QDOC
 
     inline qsizetype size() const noexcept { return d ? qsizetype(d->size) : 0; }
+
+    [[nodiscard]]
     inline bool isEmpty() const noexcept { return !d || d->size == 0; }
 
     inline qsizetype capacity() const noexcept { return d ? qsizetype(d->numBuckets >> 1) : 0; }
@@ -1090,21 +1098,9 @@ public:
 
     T &operator[](const Key &key)
     {
-        return operatorIndexImpl(key);
-    }
-private:
-    template <typename K> T &operatorIndexImpl(const K &key)
-    {
-        const auto copy = isDetached() ? QHash() : *this; // keep 'key' alive across the detach
-        detach();
-        auto result = d->findOrInsert(key);
-        Q_ASSERT(!result.it.atEnd());
-        if (!result.initialized)
-            Node::createInPlace(result.it.node(), Key(key), T());
-        return result.it.node()->value;
+        return *tryEmplace(key).iterator;
     }
 
-public:
     const T operator[](const Key &key) const noexcept
     {
         return value(key);
@@ -1255,6 +1251,30 @@ public:
     auto asKeyValueRange() && { return QtPrivate::QKeyValueRange(std::move(*this)); }
     auto asKeyValueRange() const && { return QtPrivate::QKeyValueRange(std::move(*this)); }
 
+    struct TryEmplaceResult
+    {
+        QHash::iterator iterator;
+        bool inserted;
+
+        TryEmplaceResult() = default;
+        // Generated SMFs are fine!
+        TryEmplaceResult(QHash::iterator it, bool b)
+            : iterator(it), inserted(b)
+        {
+        }
+
+        // Implicit conversion _from_ the return-type of try_emplace:
+        Q_IMPLICIT TryEmplaceResult(const std::pair<key_value_iterator, bool> &p)
+            : iterator(p.first.base()), inserted(p.second)
+        {
+        }
+        // Implicit conversion _to_ the return-type of try_emplace:
+        Q_IMPLICIT operator std::pair<key_value_iterator, bool>()
+        {
+            return { key_value_iterator(iterator), inserted };
+        }
+    };
+
     iterator erase(const_iterator it)
     {
         Q_ASSERT(it != constEnd());
@@ -1366,11 +1386,126 @@ public:
         return emplace_helper(std::move(key), std::forward<Args>(args)...);
     }
 
+    template <typename... Args>
+    TryEmplaceResult tryEmplace(const Key &key, Args &&...args)
+    {
+        return tryEmplace_impl(key, std::forward<Args>(args)...);
+    }
+    template <typename... Args>
+    TryEmplaceResult tryEmplace(Key &&key, Args &&...args)
+    {
+        return tryEmplace_impl(std::move(key), std::forward<Args>(args)...);
+    }
+
+    TryEmplaceResult tryInsert(const Key &key, const T &value)
+    {
+        return tryEmplace_impl(key, value);
+    }
+
+    template <typename... Args>
+    std::pair<key_value_iterator, bool> try_emplace(const Key &key, Args &&...args)
+    {
+        return tryEmplace_impl(key, std::forward<Args>(args)...);
+    }
+    template <typename... Args>
+    std::pair<key_value_iterator, bool> try_emplace(Key &&key, Args &&...args)
+    {
+        return tryEmplace_impl(std::move(key), std::forward<Args>(args)...);
+    }
+    template <typename... Args>
+    key_value_iterator try_emplace(const_iterator /*hint*/, const Key &key, Args &&...args)
+    {
+        return key_value_iterator(tryEmplace_impl(key, std::forward<Args>(args)...).iterator);
+    }
+    template <typename... Args>
+    key_value_iterator try_emplace(const_iterator /*hint*/, Key &&key, Args &&...args)
+    {
+        return key_value_iterator(tryEmplace_impl(std::move(key), std::forward<Args>(args)...).iterator);
+    }
+
+private:
+    template <typename K, typename... Args>
+    TryEmplaceResult tryEmplace_impl(K &&key, Args &&...args)
+    {
+        if (!d)
+            detach();
+        QHash detachGuard;
+
+        typename Data::Bucket bucket = d->findBucket(key);
+        const bool shouldInsert = bucket.isUnused();
+
+        // Even if we don't insert we may have to detach because we are
+        // returning a non-const iterator:
+        if (!isDetached() || (shouldInsert && d->shouldGrow())) {
+            detachGuard = *this;
+            const bool resized = shouldInsert && d->shouldGrow();
+            const size_t bucketIndex = bucket.toBucketIndex(d);
+            // Like reserve(), but unconditionally detaching if no need to grow:
+            if (isDetached())
+                d->rehash(d->size + 1);
+            else
+                d = Data::detached(d, d->size + (shouldInsert ? 1 : 0));
+            bucket = resized ? d->findBucket(key) : typename Data::Bucket(d, bucketIndex);
+        }
+        if (shouldInsert) {
+            Node *n = bucket.insert();
+            using ConstructProxy = typename QHashPrivate::HeterogenousConstructProxy<Key, K>;
+            Node::createInPlace(n, ConstructProxy(std::forward<K>(key)),
+                                std::forward<Args>(args)...);
+            ++d->size;
+        }
+        return {iterator(bucket.toIterator(d)), shouldInsert};
+    }
+public:
+    template <typename Value>
+    TryEmplaceResult insertOrAssign(const Key &key, Value &&value)
+    {
+        return insertOrAssign_impl(key, std::forward<Value>(value));
+    }
+    template <typename Value>
+    TryEmplaceResult insertOrAssign(Key &&key, Value &&value)
+    {
+        return insertOrAssign_impl(std::move(key), std::forward<Value>(value));
+    }
+    template <typename Value>
+    std::pair<key_value_iterator, bool> insert_or_assign(const Key &key, Value &&value)
+    {
+        return insertOrAssign_impl(key, std::forward<Value>(value));
+    }
+    template <typename Value>
+    std::pair<key_value_iterator, bool> insert_or_assign(Key &&key, Value &&value)
+    {
+        return insertOrAssign_impl(std::move(key), std::forward<Value>(value));
+    }
+    template <typename Value>
+    key_value_iterator insert_or_assign(const_iterator /*hint*/, const Key &key, Value &&value)
+    {
+        return key_value_iterator(insertOrAssign_impl(key, std::forward<Value>(value)).iterator);
+    }
+    template <typename Value>
+    key_value_iterator insert_or_assign(const_iterator /*hint*/, Key &&key, Value &&value)
+    {
+        return key_value_iterator(insertOrAssign_impl(std::move(key), std::forward<Value>(value)).iterator);
+    }
+
+private:
+    template <typename K, typename Value>
+    TryEmplaceResult insertOrAssign_impl(K &&key, Value &&value)
+    {
+        auto r = tryEmplace(std::forward<K>(key), std::forward<Value>(value));
+        if (!r.inserted)
+            *r.iterator = std::forward<Value>(value); // `value` is untouched if we get here
+        return r;
+    }
+
+public:
+
     float load_factor() const noexcept { return d ? d->loadFactor() : 0; }
     static float max_load_factor() noexcept { return 0.5; }
     size_t bucket_count() const noexcept { return d ? d->numBuckets : 0; }
     static size_t max_bucket_count() noexcept { return Data::maxNumBuckets(); }
 
+    [[nodiscard]]
     inline bool empty() const noexcept { return isEmpty(); }
 
 private:
@@ -1431,7 +1566,7 @@ public:
     template <typename K, if_heterogeneously_searchable<K> = true, if_key_constructible_from<K> = true>
     T &operator[](const K &key)
     {
-        return operatorIndexImpl(key);
+        return *tryEmplace(key).iterator;
     }
     template <typename K, if_heterogeneously_searchable<K> = true>
     const T operator[](const K &key) const noexcept
@@ -1464,6 +1599,41 @@ public:
     const_iterator constFind(const K &key) const noexcept
     {
         return find(key);
+    }
+    template <typename K, typename... Args, if_heterogeneously_searchable<K> = true, if_key_constructible_from<K> = true>
+    TryEmplaceResult tryEmplace(K &&key, Args &&...args)
+    {
+        return tryEmplace_impl(std::forward<K>(key), std::forward<Args>(args)...);
+    }
+    template <typename K, if_heterogeneously_searchable<K> = true, if_key_constructible_from<K> = true>
+    TryEmplaceResult tryInsert(K &&key, const T &value)
+    {
+        return tryEmplace_impl(std::forward<K>(key), value);
+    }
+    template <typename K, typename... Args, if_heterogeneously_searchable<K> = true, if_key_constructible_from<K> = true>
+    std::pair<key_value_iterator, bool> try_emplace(K &&key, Args &&...args)
+    {
+        return tryEmplace_impl(std::forward<K>(key), std::forward<Args>(args)...);
+    }
+    template <typename K, typename... Args, if_heterogeneously_searchable<K> = true, if_key_constructible_from<K> = true>
+    key_value_iterator try_emplace(const_iterator /*hint*/, K &&key, Args &&...args)
+    {
+        return key_value_iterator(tryEmplace_impl(std::forward<K>(key), std::forward<Args>(args)...).iterator);
+    }
+    template <typename K, typename Value, if_heterogeneously_searchable<K> = true, if_key_constructible_from<K> = true>
+    TryEmplaceResult insertOrAssign(K &&key, Value &&value)
+    {
+        return insertOrAssign_impl(std::forward<K>(key), std::forward<Value>(value));
+    }
+    template <typename K, typename Value, if_heterogeneously_searchable<K> = true, if_key_constructible_from<K> = true>
+    std::pair<key_value_iterator, bool> insert_or_assign(K &&key, Value &&value)
+    {
+        return insertOrAssign_impl(std::forward<K>(key), std::forward<Value>(value));
+    }
+    template <typename K, typename Value, if_heterogeneously_searchable<K> = true, if_key_constructible_from<K> = true>
+    key_value_iterator insert_or_assign(const_iterator /*hint*/, K &&key, Value &&value)
+    {
+        return key_value_iterator(insertOrAssign_impl(std::forward<K>(key), std::forward<Value>(value)).iterator);
     }
 };
 
@@ -1620,6 +1790,7 @@ public:
 
     inline qsizetype size() const noexcept { return m_size; }
 
+    [[nodiscard]]
     inline bool isEmpty() const noexcept { return !m_size; }
 
     inline qsizetype capacity() const noexcept { return d ? qsizetype(d->numBuckets >> 1) : 0; }
@@ -2129,6 +2300,7 @@ public:
     size_t bucket_count() const noexcept { return d ? d->numBuckets : 0; }
     static size_t max_bucket_count() noexcept { return Data::maxNumBuckets(); }
 
+    [[nodiscard]]
     inline bool empty() const noexcept { return isEmpty(); }
 
     inline iterator replace(const Key &key, const T &value)

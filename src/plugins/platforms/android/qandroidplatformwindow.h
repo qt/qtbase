@@ -20,6 +20,7 @@ QT_BEGIN_NAMESPACE
 Q_DECLARE_LOGGING_CATEGORY(lcQpaWindow)
 Q_DECLARE_JNI_CLASS(QtWindow, "org/qtproject/qt/android/QtWindow")
 Q_DECLARE_JNI_CLASS(Surface, "android/view/Surface")
+Q_DECLARE_JNI_CLASS(Insets, "android/graphics/Insets")
 
 class QAndroidPlatformScreen;
 
@@ -53,6 +54,7 @@ public:
     QAndroidPlatformScreen *platformScreen() const;
 
     QMargins safeAreaMargins() const override;
+    void setSafeAreaMargins(const QMargins safeMargins);
 
     void propagateSizeHints() override;
     void requestActivateWindow() override;
@@ -99,11 +101,15 @@ protected:
     QMutex m_surfaceMutex;
     QMutex m_destructionMutex;
 
+    QMargins m_safeAreaMargins;
+
 private:
     static void setSurface(JNIEnv *env, jobject obj, jint windowId, QtJniTypes::Surface surface);
     Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(setSurface)
     static void windowFocusChanged(JNIEnv *env, jobject object, jboolean focus, jint windowId);
     Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(windowFocusChanged)
+    static void safeAreaMarginsChanged(JNIEnv *env, jobject obj, QtJniTypes::Insets insets);
+    Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(safeAreaMarginsChanged)
 
     [[nodiscard]] QMutexLocker<QMutex> destructionGuard();
 };

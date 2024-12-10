@@ -77,7 +77,7 @@ void Window::customInit()
     d.ubuf->create();
     d.releasePool << d.ubuf;
 
-    QImage image = QImage(QLatin1String(":/qt256.png")).convertToFormat(QImage::Format_RGBA8888).mirrored();
+    QImage image = QImage(QLatin1String(":/qt256.png")).convertToFormat(QImage::Format_RGBA8888).flipped();
     d.tex = m_r->newTexture(QRhiTexture::RGBA8, QSize(image.width(), image.height()), 1, {});
     d.releasePool << d.tex;
     d.tex->create();

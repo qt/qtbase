@@ -1564,6 +1564,42 @@ CHECK(strong, equivalent);
 */
 
 /*!
+    \fn template <typename InputIt1, typename InputIt2> QtOrderingPrivate::lexicographicalCompareThreeWay(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2)
+    \internal
+    \relates <QtCompare>
+
+    \brief Three-way lexicographic comparison of ranges.
+
+    Checks how the range [ \a first1, \a last1 ) compares to the second range
+    [ \a first2, \a last2 ) and produces a result of the strongest applicable
+    category type.
+
+    This function can only be used if \c InputIt1::value_type and
+    \c InputIt2::value_type types provide a \c {compareThreeWay()} helper method
+    that returns one of the Qt ordering types.
+
+    \sa {Comparison types overview}
+*/
+
+/*!
+    \fn template <typename InputIt1, typename InputIt2, typename Comparator> QtOrderingPrivate::lexicographicalCompareThreeWay(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2, Comparator cmp)
+    \internal
+    \relates <QtCompare>
+    \overload
+
+    This overload takes a custom \c Comparator that is used to do the comparison.
+    The comparator should have the following signature:
+
+    \badcode
+    OrderingType cmp(const InputIt1::value_type &lhs, const InputIt2::value_type &rhs);
+    \endcode
+
+    where \c OrderingType is one of the Qt ordering types.
+
+    \sa {Comparison types overview}
+*/
+
+/*!
     \class Qt::totally_ordered_wrapper
     \inmodule QtCore
     \inheaderfile QtCompare

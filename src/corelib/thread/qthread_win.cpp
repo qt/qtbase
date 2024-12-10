@@ -72,7 +72,12 @@ static void destroy_current_thread_data(void *p)
     currentThreadData = nullptr;
 }
 
-static void set_thread_data(QThreadData *data)
+static QThreadData *get_thread_data()
+{
+    return currentThreadData;
+}
+
+static void set_thread_data(QThreadData *data) noexcept
 {
     if (data) {
         struct Cleanup {
@@ -91,24 +96,27 @@ void QThreadData::clearCurrentThreadData()
     set_thread_data(nullptr);
 }
 
-QThreadData *QThreadData::current(bool createIfNecessary)
+QThreadData *QThreadData::currentThreadData() noexcept
 {
-    QThreadData *threadData = currentThreadData;
-    if (!threadData && createIfNecessary) {
-        threadData = new QThreadData;
-        // This needs to be called prior to new AdoptedThread() to
-        // avoid recursion.
-        set_thread_data(threadData);
-        QT_TRY {
-            threadData->thread.storeRelease(new QAdoptedThread(threadData));
-        } QT_CATCH(...) {
-            set_thread_data(nullptr);
-            threadData->deref();
-            threadData = 0;
-            QT_RETHROW;
-        }
+    return get_thread_data();
+}
+
+QThreadData *QThreadData::createCurrentThreadData()
+{
+    Q_ASSERT(!currentThreadData());
+    std::unique_ptr data = std::make_unique<QThreadData>();
+
+    // This needs to be called prior to new QAdoptedThread() to avoid
+    // recursion (see qobject.cpp).
+    set_thread_data(data.get());
+
+    QT_TRY {
+        data->thread.storeRelease(new QAdoptedThread(data.get()));
+    } QT_CATCH(...) {
+        clearCurrentThreadData();
+        QT_RETHROW;
     }
-    return threadData;
+    return data.release();
 }
 
 void QAdoptedThread::init()

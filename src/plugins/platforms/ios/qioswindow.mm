@@ -268,7 +268,7 @@ void QIOSWindow::setWindowState(Qt::WindowStates state)
             QRect maximizedGeometry = fullscreenGeometry;
 
 #if !defined(Q_OS_VISIONOS)
-            if (!(window()->flags() & Qt::MaximizeUsingFullscreenGeometryHint)) {
+            if (!(window()->flags() & Qt::ExpandedClientAreaHint)) {
                 // If the safe area margins reflect the screen's outer edges,
                 // then reduce the maximized geometry accordingly. Otherwise
                 // leave it as is, and assume the client will take the safe

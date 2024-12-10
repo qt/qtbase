@@ -277,6 +277,13 @@ function(qt_internal_add_test_to_batch batch_name name)
                     # multiple batches.
                     ${QT_CMAKE_EXPORT_NAMESPACE}::Gui
         )
+        # TODO: QTBUG-131745
+        # Emscripten runs out of memory in CI after upgrade to 3.1.70 when linking test_batch.
+        # In future we will disable test batching and use JSPI instead.
+        # For now disable optimizations for test_batch target so it can run in CI.
+        if(WASM)
+            target_compile_options(${target} PRIVATE "-O0")
+        endif()
 
         set_property(TARGET ${target} PROPERTY _qt_has_exceptions ${arg_EXCEPTIONS})
         set_property(TARGET ${target} PROPERTY _qt_has_gui ${arg_GUI})

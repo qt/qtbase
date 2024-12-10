@@ -15,12 +15,14 @@ void setProject(const QString &projectName); // Selects server config settings a
 void setProjectImageKeys(const QStringList &keys); // Overrides the ItemPathKeys config setting
 void addClientProperty(const QString& key, const QString& value);
 bool connectToBaselineServer(QByteArray *msg = nullptr);
+bool finalizeTesting(QByteArray *msg = nullptr);
 bool checkImage(const QImage& img, const char *name, quint16 checksum, QByteArray *msg, bool *error, int manualdatatag = 0);
 bool testImage(const QImage& img, QByteArray *msg, bool *error);
 QTestData &newRow(const char *dataTag, quint16 checksum = 0);
 bool isCurrentItemBlacklisted();
 bool disconnectFromBaselineServer();
 bool shouldAbortIfUnstable();
+void finalizeAndDisconnect();
 }
 
 #define QBASELINE_CHECK_SUM(image, name, checksum)\

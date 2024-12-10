@@ -340,13 +340,21 @@ void QRingBuffer::append(QByteArray &&qba)
     bufferSize += qbaSize;
 }
 
-qint64 QRingBuffer::readLine(char *data, qint64 maxLength)
+qint64 QRingBuffer::readLineWithoutTerminatingNull(char *data, qint64 maxLength)
 {
-    Q_ASSERT(data != nullptr && maxLength > 1);
+    Q_ASSERT(data != nullptr && maxLength > 0);
 
-    --maxLength;
     qint64 i = indexOf('\n', maxLength);
     i = read(data, i >= 0 ? (i + 1) : maxLength);
+
+    return i;
+}
+
+qint64 QRingBuffer::readLine(char *data, qint64 maxLength)
+{
+    Q_ASSERT(maxLength > 1);
+
+    qint64 i = readLineWithoutTerminatingNull(data, maxLength - 1);
 
     // Terminate it.
     data[i] = '\0';

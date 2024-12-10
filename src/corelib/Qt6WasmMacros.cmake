@@ -121,7 +121,12 @@ function(_qt_internal_wasm_add_target_helpers target)
         if(_tmp_maximumMemory)
             set(QT_WASM_MAXIMUM_MEMORY "${_tmp_maximumMemory}")
         elseif(NOT DEFINED QT_WASM_MAXIMUM_MEMORY)
-            set(QT_WASM_MAXIMUM_MEMORY "4GB")
+            if(QT_FEATURE_wasm_jspi)
+                # Work around Emscripten >2GB and JSPI compatibility issue.
+                set(QT_WASM_MAXIMUM_MEMORY "2GB")
+            else()
+                set(QT_WASM_MAXIMUM_MEMORY "4GB")
+            endif()
         endif()
         target_link_options("${target}" PRIVATE "SHELL:-s MAXIMUM_MEMORY=${QT_WASM_MAXIMUM_MEMORY}")
 

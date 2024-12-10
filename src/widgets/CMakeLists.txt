@@ -916,8 +916,7 @@ if(IOS)
         "${CMAKE_CURRENT_SOURCE_DIR}/platform/ios/PrivacyInfo.xcprivacy")
 endif()
 
-# include the snippet projects for developer-builds
-if(QT_FEATURE_private_tests)
+if(QT_FEATURE_doc_snippets)
     add_subdirectory(doc/snippets/customviewstyle)
     if (QT_FEATURE_filedialog)
         add_subdirectory(doc/snippets/filedialogurls)

@@ -756,6 +756,12 @@ void tst_QDockWidget::updateTabBarOnVisibilityChanged()
 
 Q_DECLARE_METATYPE(Qt::DockWidgetArea)
 
+Qt::DockWidgetArea dockLocation(const QSignalSpy *spy)
+{
+    Q_ASSERT(spy);
+    return qvariant_cast<Qt::DockWidgetArea>(spy->at(0).at(0));
+}
+
 void tst_QDockWidget::dockLocationChanged()
 {
     qRegisterMetaType<Qt::DockWidgetArea>("Qt::DockWidgetArea");
@@ -763,61 +769,66 @@ void tst_QDockWidget::dockLocationChanged()
     QMainWindow mw;
     QDockWidget dw;
     dw.setObjectName("dock1");
-    QSignalSpy spy(&dw, SIGNAL(dockLocationChanged(Qt::DockWidgetArea)));
+    QSignalSpy spy(&dw, &QDockWidget::dockLocationChanged);
 
     mw.addDockWidget(Qt::LeftDockWidgetArea, &dw);
     QCOMPARE(spy.size(), 1);
-    QCOMPARE(qvariant_cast<Qt::DockWidgetArea>(spy.at(0).at(0)),
-                Qt::LeftDockWidgetArea);
+    QCOMPARE(dockLocation(&spy), Qt::LeftDockWidgetArea);
+
+    constexpr std::array<Qt::DockWidgetArea, 5> areas{Qt::LeftDockWidgetArea,
+                                                      Qt::TopDockWidgetArea,
+                                                      Qt::RightDockWidgetArea,
+                                                      Qt::BottomDockWidgetArea,
+                                                      Qt::NoDockWidgetArea};
+
+    for (const auto area : areas) {
+        spy.clear();
+        const int expectedCount = dw.dockLocation() == area ? 0 : 1;
+        dw.setDockLocation(area);
+
+        // Ensure signal is only fired on changes
+        QCOMPARE(spy.count(), expectedCount);
+        if (expectedCount)
+            QCOMPARE(dockLocation(&spy), area);
+
+        // Ensure getter reports correctly
+        QTRY_COMPARE(dw.dockLocation(), area);
+
+        // Ensure setting NoDockWidgetArea floats the dock widget
+        if (area == Qt::NoDockWidgetArea) {
+            QCOMPARE(dw.isFloating(), true);
+            dw.setFloating(false);
+        }
+    }
+
     spy.clear();
-
-    mw.addDockWidget(Qt::LeftDockWidgetArea, &dw);
-    QCOMPARE(spy.size(), 1);
-    QCOMPARE(qvariant_cast<Qt::DockWidgetArea>(spy.at(0).at(0)),
-                Qt::LeftDockWidgetArea);
-    spy.clear();
-
-    mw.addDockWidget(Qt::RightDockWidgetArea, &dw);
-    QCOMPARE(spy.size(), 1);
-    QCOMPARE(qvariant_cast<Qt::DockWidgetArea>(spy.at(0).at(0)),
-                Qt::RightDockWidgetArea);
-    spy.clear();
-
-    mw.removeDockWidget(&dw);
-    QCOMPARE(spy.size(), 0);
-
     QDockWidget dw2;
     dw2.setObjectName("dock2");
     mw.addDockWidget(Qt::TopDockWidgetArea, &dw2);
     mw.tabifyDockWidget(&dw2, &dw);
     QCOMPARE(spy.size(), 1);
-    QCOMPARE(qvariant_cast<Qt::DockWidgetArea>(spy.at(0).at(0)),
-                Qt::TopDockWidgetArea);
+    QCOMPARE(dockLocation(&spy), Qt::TopDockWidgetArea);
     spy.clear();
 
     mw.splitDockWidget(&dw2, &dw, Qt::Horizontal);
     QCOMPARE(spy.size(), 1);
-    QCOMPARE(qvariant_cast<Qt::DockWidgetArea>(spy.at(0).at(0)),
-                Qt::TopDockWidgetArea);
+    QCOMPARE(dockLocation(&spy), Qt::TopDockWidgetArea);
     spy.clear();
 
     dw.setFloating(true);
     QTRY_COMPARE(spy.size(), 1);
-    QCOMPARE(qvariant_cast<Qt::DockWidgetArea>(spy.at(0).at(0)),
-             Qt::NoDockWidgetArea);
+    QCOMPARE(dockLocation(&spy), Qt::NoDockWidgetArea);
     spy.clear();
 
     dw.setFloating(false);
     QTRY_COMPARE(spy.size(), 1);
-    QCOMPARE(qvariant_cast<Qt::DockWidgetArea>(spy.at(0).at(0)),
-             Qt::TopDockWidgetArea);
+    QCOMPARE(dockLocation(&spy), Qt::TopDockWidgetArea);
     spy.clear();
 
     QByteArray ba = mw.saveState();
     mw.restoreState(ba);
     QCOMPARE(spy.size(), 1);
-    QCOMPARE(qvariant_cast<Qt::DockWidgetArea>(spy.at(0).at(0)),
-             Qt::TopDockWidgetArea);
+    QCOMPARE(dockLocation(&spy), Qt::TopDockWidgetArea);
 }
 
 void tst_QDockWidget::setTitleBarWidget()

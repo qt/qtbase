@@ -62,8 +62,6 @@ class CldrReader (object):
                 else:
                     self.grumble(f'Skipping likelySubtag "{got}" -> "{use}" ({e})\n')
                 continue
-            if not any(have):
-                continue
 
             give = (give[0],
                     # Substitute according to http://www.unicode.org/reports/tr35/#Likely_Subtags
@@ -619,6 +617,12 @@ enumdata.py (keeping the old name as an alias):
                 defaults[wid] = ianas[0]
             else:
                 windows.append((wid, code, ' '.join(ianas)))
+
+        # For each Windows ID, its default zone is its zone for at
+        # least some territory:
+        assert all(any(True for w, code, seq in windows
+                       if w == wid and zone in seq.split())
+                   for wid, zone in defaults.items()), (defaults, windows)
 
         return defaults, windows
 

@@ -46,10 +46,7 @@ using namespace Qt::StringLiterals;
 
 QT_BEGIN_NAMESPACE
 
-static JavaVM *m_javaVM = nullptr;
 static jclass m_applicationClass  = nullptr;
-static jobject m_classLoaderObject = nullptr;
-static jmethodID m_loadClassMethodID = nullptr;
 static AAssetManager *m_assetManager = nullptr;
 static jobject m_assets = nullptr;
 static jobject m_resourcesObj = nullptr;
@@ -94,7 +91,6 @@ static const char m_methodErrorMsg[] = "Can't find method \"%s%s\"";
 
 Q_CONSTINIT static QBasicAtomicInt startQtAndroidPluginCalled = Q_BASIC_ATOMIC_INITIALIZER(0);
 
-Q_DECLARE_JNI_CLASS(QtWindowInterface, "org/qtproject/qt/android/QtWindowInterface")
 Q_DECLARE_JNI_CLASS(QtAccessibilityInterface, "org/qtproject/qt/android/QtAccessibilityInterface");
 
 namespace QtAndroid
@@ -168,11 +164,6 @@ namespace QtAndroid
         return m_density;
     }
 
-    JavaVM *javaVM()
-    {
-        return m_javaVM;
-    }
-
     AAssetManager *assetManager()
     {
         return m_assetManager;
@@ -181,14 +172,6 @@ namespace QtAndroid
     jclass applicationClass()
     {
         return m_applicationClass;
-    }
-
-    // TODO move calls from here to where they logically belong
-    void setSystemUiVisibility(SystemUiVisibility uiVisibility)
-    {
-        AndroidBackendRegister *reg = QtAndroid::backendRegister();
-        reg->callInterface<QtJniTypes::QtWindowInterface, void>("setSystemUiVisibility",
-                                                                jint(uiVisibility));
     }
 
     bool isQtApplication()
@@ -518,7 +501,6 @@ static void terminateQt(JNIEnv *env, jclass /*clazz*/)
     sem_destroy(&m_terminateSemaphore);
 
     env->DeleteGlobalRef(m_applicationClass);
-    env->DeleteGlobalRef(m_classLoaderObject);
     if (m_resourcesObj)
         env->DeleteGlobalRef(m_resourcesObj);
     if (m_bitmapClass)
@@ -580,26 +562,6 @@ static void setDisplayMetrics(JNIEnv * /*env*/, jclass /*clazz*/, jint screenWid
     }
 }
 Q_DECLARE_JNI_NATIVE_METHOD(setDisplayMetrics)
-
-static void updateWindow(JNIEnv */*env*/, jobject /*thiz*/)
-{
-    if (!m_androidPlatformIntegration)
-        return;
-
-    if (QGuiApplication::instance() != nullptr) {
-        const auto tlw = QGuiApplication::topLevelWindows();
-        for (QWindow *w : tlw) {
-
-            // Skip non-platform windows, e.g., offscreen windows.
-            if (!w->handle())
-                continue;
-
-            QRect availableGeometry = w->screen()->availableGeometry();
-            if (w->geometry().width() > 0 && w->geometry().height() > 0 && availableGeometry.width() > 0 && availableGeometry.height() > 0)
-                QWindowSystemInterface::handleExposeEvent(w, QRegion(QRect(QPoint(), w->geometry().size())));
-        }
-    }
-}
 
 static void updateApplicationState(JNIEnv */*env*/, jobject /*thiz*/, jint state)
 {
@@ -745,7 +707,6 @@ static JNINativeMethod methods[] = {
     { "quitQtCoreApplication", "()V", (void *)quitQtCoreApplication },
     { "terminateQt", "()V", (void *)terminateQt },
     { "waitForServiceSetup", "()V", (void *)waitForServiceSetup },
-    { "updateWindow", "()V", (void *)updateWindow },
     { "updateApplicationState", "(I)V", (void *)updateApplicationState },
     { "onActivityResult", "(IILandroid/content/Intent;)V", (void *)onActivityResult },
     { "onNewIntent", "(Landroid/content/Intent;)V", (void *)onNewIntent },
@@ -835,11 +796,6 @@ static bool registerNatives(QJniEnvironment &env)
         env->DeleteLocalRef(contextObject);
     });
 
-    GET_AND_CHECK_STATIC_METHOD(methodID, m_applicationClass, "classLoader", "()Ljava/lang/ClassLoader;");
-    m_classLoaderObject = env->NewGlobalRef(env->CallStaticObjectMethod(m_applicationClass, methodID));
-    clazz = env->GetObjectClass(m_classLoaderObject);
-    GET_AND_CHECK_METHOD(m_loadClassMethodID, clazz, "loadClass", "(Ljava/lang/String;)Ljava/lang/Class;");
-
     FIND_AND_CHECK_CLASS("android/content/ContextWrapper");
     GET_AND_CHECK_METHOD(methodID, clazz, "getAssets", "()Landroid/content/res/AssetManager;");
     m_assets = env->NewGlobalRef(env->CallObjectMethod(contextObject, methodID));
@@ -875,7 +831,7 @@ static bool registerNatives(QJniEnvironment &env)
 
 QT_END_NAMESPACE
 
-Q_DECL_EXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void */*reserved*/)
+Q_DECL_EXPORT jint JNICALL JNI_OnLoad(JavaVM */*vm*/, void */*reserved*/)
 {
     static bool initialized = false;
     if (initialized)
@@ -883,10 +839,8 @@ Q_DECL_EXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void */*reserved*/)
     initialized = true;
 
     QT_USE_NAMESPACE
-    m_javaVM = vm;
     QJniEnvironment env;
     if (!env.isValid()) {
-        m_javaVM = nullptr;
         __android_log_print(ANDROID_LOG_FATAL, "Qt", "Failed to initialize the JNI Environment");
         return -1;
     }

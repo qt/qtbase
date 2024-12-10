@@ -111,6 +111,8 @@ private slots:
 
     void abortOnEncrypted();
 
+    void limitedConcurrentStreamsAllowed();
+
 protected slots:
     // Slots to listen to our in-process server:
     void serverStarted(quint16 port);
@@ -1578,6 +1580,61 @@ void tst_Http2::abortOnEncrypted()
             500);
     QVERIFY(!res);
 #endif // QT_CONFIG(ssl)
+}
+
+/*
+    While the standard heavily recommends allowing at _least_ 100 streams, let's
+    test how we cope with a very small number of streams allowed.
+
+    Basically we are just testing how we would handle the situation where we are
+    up against the limit of active streams, which should be well-behaved to
+    avoid having the server to close the connection.
+*/
+void tst_Http2::limitedConcurrentStreamsAllowed()
+{
+    clearHTTP2State();
+    serverPort = 0;
+
+    H2Type connectionType = H2Type::h2Direct;
+    RawSettings oneConcurrentStream{ { Http2::Settings::MAX_CONCURRENT_STREAMS_ID, 1 } };
+    ServerPtr targetServer(newServer(oneConcurrentStream, connectionType));
+
+    QMetaObject::invokeMethod(targetServer.data(), "startServer", Qt::QueuedConnection);
+    runEventLoop();
+
+    QVERIFY(serverPort != 0);
+
+    constexpr qint32 TotalRequests = 3;
+    nRequests = TotalRequests;
+
+    const auto url = requestUrl(connectionType);
+    QNetworkRequest request(url);
+    request.setAttribute(QNetworkRequest::Http2DirectAttribute, true);
+
+    qint32 finishedCount = 0;
+    qint32 errorCount = 0;
+    const auto onFinished = [&](QNetworkReply *reply) {
+        ++finishedCount;
+        if (reply->error() == QNetworkReply::NoError)
+            replyFinished();
+        else
+            ++errorCount;
+    };
+
+    std::vector<QNetworkReply *> replies;
+
+    for (qint32 i = 0; i < TotalRequests; ++i) {
+        auto *reply = replies.emplace_back(manager->get(request));
+        reply->ignoreSslErrors();
+        connect(reply, &QNetworkReply::finished, reply, [&,reply](){ onFinished(reply); });
+    }
+
+    runEventLoop();
+    STOP_ON_FAILURE
+
+    QCOMPARE(nRequests, 0);
+    QCOMPARE(errorCount, 0);
+    QCOMPARE(finishedCount, TotalRequests);
 }
 
 void tst_Http2::serverStarted(quint16 port)

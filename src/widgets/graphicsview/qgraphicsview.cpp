@@ -3354,8 +3354,9 @@ void QGraphicsView::mouseReleaseEvent(QMouseEvent *event)
     else
         QCoreApplication::sendEvent(d->scene, &mouseEvent);
 
-    // Update the last mouse event selected state.
+    // Update the last and current mouse events' accepted state.
     d->lastMouseEvent.setAccepted(mouseEvent.isAccepted());
+    event->setAccepted(mouseEvent.isAccepted());
 
 #ifndef QT_NO_CURSOR
     if (mouseEvent.isAccepted() && mouseEvent.buttons() == 0 && viewport()->testAttribute(Qt::WA_SetCursor)) {

@@ -17,6 +17,7 @@
 
 #include <qlineedit.h>
 #include <qdebug.h>
+#include <qscopeguard.h>
 
 #include <QStyleOptionSpinBox>
 #include <QStyle>
@@ -113,7 +114,6 @@ public:
     virtual ~tst_QDoubleSpinBox();
 public slots:
     void initTestCase();
-    void init();
     void cleanup();
 
 private slots:
@@ -228,13 +228,12 @@ static QLatin1String modifierToName(Qt::KeyboardModifier modifier)
 }
 
 tst_QDoubleSpinBox::tst_QDoubleSpinBox()
-
 {
+    QLocale::setDefault(QLocale::c());
 }
 
 tst_QDoubleSpinBox::~tst_QDoubleSpinBox()
 {
-
 }
 
 void tst_QDoubleSpinBox::initTestCase()
@@ -243,14 +242,10 @@ void tst_QDoubleSpinBox::initTestCase()
         QSKIP("Wayland: This fails. Figure out why.");
 }
 
-void tst_QDoubleSpinBox::init()
-{
-    QLocale::setDefault(QLocale(QLocale::C));
-}
-
 void tst_QDoubleSpinBox::cleanup()
 {
     QTRY_VERIFY(QApplication::topLevelWidgets().isEmpty());
+    QCOMPARE(QLocale(), QLocale::c());
 }
 
 void tst_QDoubleSpinBox::setValue_data()
@@ -383,8 +378,6 @@ void tst_QDoubleSpinBox::setTracking_data()
 
 void tst_QDoubleSpinBox::setTracking()
 {
-    QLocale::setDefault(QLocale(QLocale::C));
-
     actualTexts.clear();
     QFETCH(int, decimals);
     QFETCH(QTestEventList, keys);
@@ -491,7 +484,6 @@ void tst_QDoubleSpinBox::setWrapping_data()
 
 void tst_QDoubleSpinBox::setWrapping()
 {
-    QLocale::setDefault(QLocale(QLocale::C));
     QFETCH(bool, wrapping);
     QFETCH(double, minimum);
     QFETCH(double, maximum);
@@ -820,6 +812,9 @@ void tst_QDoubleSpinBox::valueFromTextAndValidate()
     QFETCH(double, maxi);
     QFETCH(int, language);
     QFETCH(QString, expectedText);
+    const auto restoreDefault = qScopeGuard([prior = QLocale()]() {
+        QLocale::setDefault(prior);
+    });
     QLocale::setDefault(QLocale((QLocale::Language)language));
 
     DoubleSpinBox sb(0);
@@ -970,6 +965,9 @@ void tst_QDoubleSpinBox::task54433()
 
 void tst_QDoubleSpinBox::germanTest()
 {
+    const auto restoreDefault = qScopeGuard([prior = QLocale()]() {
+        QLocale::setDefault(prior);
+    });
     QLocale::setDefault(QLocale(QLocale::German));
     DoubleSpinBox spin;
     spin.show();
@@ -1211,6 +1209,9 @@ void tst_QDoubleSpinBox::setGroupSeparatorShown()
     QFETCH(QLocale::Language, lang);
     QFETCH(QLocale::Territory, country);
 
+    const auto restoreDefault = qScopeGuard([prior = QLocale()]() {
+        QLocale::setDefault(prior);
+    });
     QLocale loc(lang, country);
     QLocale::setDefault(loc);
     DoubleSpinBox spinBox;

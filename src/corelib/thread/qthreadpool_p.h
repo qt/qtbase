@@ -133,8 +133,6 @@ public:
     void stealAndRunRunnable(QRunnable *runnable);
     void deletePageIfFinished(QueuePage *page);
 
-    static QThreadPool *qtGuiInstance();
-
     mutable QMutex mutex;
     QSet<QThreadPoolThread *> allThreads;
     QQueue<QThreadPoolThread *> waitingThreads;

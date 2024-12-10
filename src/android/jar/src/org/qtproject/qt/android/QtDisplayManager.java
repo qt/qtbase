@@ -16,11 +16,18 @@ import android.view.Surface;
 import android.view.View;
 import android.view.WindowInsets;
 import android.view.WindowManager;
+import android.view.WindowManager.LayoutParams;
 import android.view.WindowMetrics;
+import android.view.WindowInsetsController;
+import android.view.Window;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import android.graphics.Color;
+import android.util.TypedValue;
+import android.content.res.Resources.Theme;
 
 class QtDisplayManager {
 
@@ -38,11 +45,8 @@ class QtDisplayManager {
     static native void handleScreenRemoved(int displayId);
     // screen methods
 
-    // Keep in sync with QtAndroid::SystemUiVisibility in androidjnimain.h
-    static final int SYSTEM_UI_VISIBILITY_NORMAL = 0;
-    static final int SYSTEM_UI_VISIBILITY_FULLSCREEN = 1;
-    static final int SYSTEM_UI_VISIBILITY_TRANSLUCENT = 2;
-    private int m_systemUiVisibility = SYSTEM_UI_VISIBILITY_NORMAL;
+    private boolean m_isFullScreen = false;
+    private boolean m_expandedToCutout = false;
 
     private static int m_previousRotation = -1;
 
@@ -123,62 +127,96 @@ class QtDisplayManager {
         displayManager.unregisterDisplayListener(m_displayListener);
     }
 
-    void setSystemUiVisibility(int systemUiVisibility)
+    void setSystemUiVisibility(boolean isFullScreen, boolean expandedToCutout)
     {
-        if (m_systemUiVisibility == systemUiVisibility)
+        if (m_isFullScreen == isFullScreen && m_expandedToCutout == expandedToCutout)
             return;
 
-        m_systemUiVisibility = systemUiVisibility;
+        m_isFullScreen = isFullScreen;
+        m_expandedToCutout = expandedToCutout;
+        Window window = m_activity.getWindow();
+        View decorView = window.getDecorView();
 
-        int systemUiVisibilityFlags = View.SYSTEM_UI_FLAG_VISIBLE;
-        switch (m_systemUiVisibility) {
-            case SYSTEM_UI_VISIBILITY_NORMAL:
-                m_activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-                m_activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                    m_activity.getWindow().getAttributes().layoutInDisplayCutoutMode =
-                            WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            int cutoutMode;
+            if (m_isFullScreen || m_expandedToCutout) {
+                window.setDecorFitsSystemWindows(false);
+                cutoutMode = LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+            } else {
+                window.setDecorFitsSystemWindows(true);
+                cutoutMode = LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT;
+            }
+            LayoutParams layoutParams = window.getAttributes();
+            layoutParams.layoutInDisplayCutoutMode = cutoutMode;
+            window.setAttributes(layoutParams);
+
+            final WindowInsetsController insetsControl = window.getInsetsController();
+            if (insetsControl != null) {
+                int sysBarsBehavior;
+                if (m_isFullScreen) {
+                    insetsControl.hide(WindowInsets.Type.systemBars());
+                    sysBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE;
+                } else {
+                    insetsControl.show(WindowInsets.Type.systemBars());
+                    sysBarsBehavior = WindowInsetsController.BEHAVIOR_DEFAULT;
                 }
-                break;
-            case SYSTEM_UI_VISIBILITY_FULLSCREEN:
-                m_activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-                m_activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-                systemUiVisibilityFlags = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                        | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                        | View.SYSTEM_UI_FLAG_FULLSCREEN
-                        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                        | View.INVISIBLE;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                    m_activity.getWindow().getAttributes().layoutInDisplayCutoutMode =
-                            WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT;
+                insetsControl.setSystemBarsBehavior(sysBarsBehavior);
+            }
+
+
+        } else {
+            int systemUiVisibility;
+
+            if (m_isFullScreen || m_expandedToCutout) {
+                systemUiVisibility =  View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
+                if (m_isFullScreen) {
+                    systemUiVisibility |=  View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                                        | View.SYSTEM_UI_FLAG_FULLSCREEN
+                                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                                        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
                 }
-                break;
-            case SYSTEM_UI_VISIBILITY_TRANSLUCENT:
-                m_activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN
-                        | WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION
-                        | WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-                m_activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    m_activity.getWindow().getAttributes().layoutInDisplayCutoutMode =
-                            WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
-                }
-                break;
+            } else {
+                systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE;
+            }
+
+            decorView.setSystemUiVisibility(systemUiVisibility);
         }
-        m_activity.getWindow().getDecorView().setSystemUiVisibility(systemUiVisibilityFlags);
+
+        // Handle transparent status and navigation bars
+        if (m_expandedToCutout) {
+            window.setStatusBarColor(Color.TRANSPARENT);
+            window.setNavigationBarColor(Color.TRANSPARENT);
+        } else {
+            // Restore theme's system bars colors
+            Theme theme = m_activity.getTheme();
+            TypedValue typedValue = new TypedValue();
+
+            theme.resolveAttribute(android.R.attr.statusBarColor, typedValue, true);
+            int defaultStatusBarColor = typedValue.data;
+            window.setStatusBarColor(defaultStatusBarColor);
+
+            theme.resolveAttribute(android.R.attr.navigationBarColor, typedValue, true);
+            int defaultNavigationBarColor = typedValue.data;
+            window.setNavigationBarColor(defaultNavigationBarColor);
+        }
     }
 
-    int systemUiVisibility()
+    boolean isFullScreen()
     {
-        return m_systemUiVisibility;
+        return m_isFullScreen;
     }
 
-    void updateFullScreen()
+    boolean expandedToCutout()
     {
-        if (m_systemUiVisibility == SYSTEM_UI_VISIBILITY_FULLSCREEN) {
-            m_systemUiVisibility = SYSTEM_UI_VISIBILITY_NORMAL;
-            setSystemUiVisibility(SYSTEM_UI_VISIBILITY_FULLSCREEN);
+        return m_expandedToCutout;
+    }
+
+    void reinstateFullScreen()
+    {
+        if (m_isFullScreen) {
+            m_isFullScreen = false;
+            setSystemUiVisibility(true, m_expandedToCutout);
         }
     }
 

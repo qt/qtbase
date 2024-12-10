@@ -1303,7 +1303,7 @@ void QWidgetPrivate::create()
 
 #if defined(QT_PLATFORM_UIKIT)
     if (q->testAttribute(Qt::WA_ContentsMarginsRespectsSafeArea))
-        flags |= Qt::MaximizeUsingFullscreenGeometryHint;
+        flags |= Qt::ExpandedClientAreaHint;
 #endif
 
     if (q->testAttribute(Qt::WA_ShowWithoutActivating))

@@ -142,7 +142,7 @@ int main(int argc, char **argv)
                      readbackResult.pixelSize.height(),
                      QImage::Format_RGBA8888_Premultiplied);
         if (rhi->isYUpInFramebuffer())
-            image = image.mirrored();
+            image.flip();
         image.save(QString::asprintf("frame%d.png", frame));
     }
 

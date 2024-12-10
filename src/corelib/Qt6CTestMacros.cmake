@@ -466,7 +466,6 @@ macro(_qt_internal_test_expect_pass _dir)
       COMMAND ${CMAKE_CTEST_COMMAND} ${ctest_command_args}
       COMMAND_ECHO STDOUT
       OUTPUT_FILE "${wrapper_file}"
-      WORKING_DIRECTORY "${build_dir}"
       PRE_RUN ${_qt_internal_skip_build_test_pre_run}
     )
 
@@ -695,7 +694,6 @@ list(APPEND CMAKE_PREFIX_PATH \"${__expect_fail_prefixes}\")
           --build-options ${option_list}
       COMMAND_ECHO STDOUT
       OUTPUT_FILE "${wrapper_file}"
-      WORKING_DIRECTORY "${build_dir}"
       PRE_RUN ${_qt_internal_skip_build_test_pre_run}
   )
 
@@ -819,7 +817,6 @@ function(_qt_internal_test_module_includes)
       --build-options ${option_list}
     COMMAND_ECHO STDOUT
     OUTPUT_FILE "${wrapper_file}"
-    WORKING_DIRECTORY "${build_dir}"
     PRE_RUN ${_qt_internal_skip_build_test_pre_run}
   )
 

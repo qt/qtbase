@@ -49,6 +49,7 @@ set(testdata_resource_files
     "LED_REAL.TTF"
     "QtTestLimitedFont-Regular.ttf"
     "QtTestFallbackFont-Regular.ttf"
+    "QtEmojiTestFont-Regular.ttf"
 )
 
 qt_internal_add_resource(tst_qfontdatabase "testdata"

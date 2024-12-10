@@ -220,3 +220,13 @@ void compareListToInitializerList()
  #undef ARG
 //! [35]
 }
+
+void withRestoredDefaultLocale()
+{
+//! [36]
+const auto restoreDefaultLocale = qScopeGuard([prior = QLocale()]() {
+    QLocale::setDefault(prior);
+});
+//! [36]
+QLocale::setDefault(QLocale::c());
+}

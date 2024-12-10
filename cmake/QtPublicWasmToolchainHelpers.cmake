@@ -98,9 +98,11 @@ function(_qt_test_emscripten_version)
     __qt_internal_get_qt_build_emsdk_version(qt_build_emcc_version)
 
     if(NOT "${qt_build_emcc_version}" STREQUAL "" AND NOT "${qt_build_emcc_version}" STREQUAL "${current_emsdk_ver}")
-        message("Qt Wasm built with Emscripten version: ${qt_build_emcc_version}")
-        message("You are using Emscripten version: ${current_emsdk_ver}")
-        message("The recommended version of Emscripten for this Qt is: ${_recommended_emver}")
-        message("This may not work correctly")
+        message(FATAL_ERROR
+            "Qt Wasm was built with Emscripten version: ${qt_build_emcc_version}\n"
+            "You are using Emscripten version: ${current_emsdk_ver}\n"
+            "The recommended version of Emscripten for this Qt is: ${_recommended_emver}\n"
+            "Stopping configuration due to mismatch of Emscripten versions."
+        )
     endif()
 endfunction()

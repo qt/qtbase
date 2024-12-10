@@ -13,6 +13,11 @@
 #include <utility>
 #include <variant>
 
+#if defined(__cpp_lib_three_way_comparison) && defined(__cpp_lib_concepts)
+#include <compare>
+#include <concepts>
+#endif
+
 #if 0
 #pragma qt_class(QtTypeTraits)
 #pragma qt_sync_stop_processing
@@ -215,7 +220,7 @@ struct expand_operator_less_than_tuple<std::tuple<T...>> : expand_operator_less_
 template<typename ...T>
 struct expand_operator_less_than_tuple<std::variant<T...>> : expand_operator_less_than_recursive<T...> {};
 
-}
+} // namespace detail
 
 template<typename T, typename = void>
 struct is_dereferenceable : std::false_type {};
@@ -254,6 +259,28 @@ using compare_lt_result = std::enable_if_t<std::conjunction_v<QTypeTraits::has_o
 
 template <typename Container, typename ...T>
 using compare_lt_result_container = std::enable_if_t<std::conjunction_v<QTypeTraits::has_operator_less_than_container<Container, T>...>, bool>;
+
+template<typename T>
+struct has_operator_compare_three_way : std::false_type {};
+template <typename T, typename U>
+struct has_operator_compare_three_way_with : std::false_type {};
+#if defined(__cpp_lib_three_way_comparison) && defined(__cpp_lib_concepts)
+template<std::three_way_comparable T>
+struct has_operator_compare_three_way<T> : std::true_type {};
+template <typename T, typename U>
+    requires std::three_way_comparable_with<T, U>
+struct has_operator_compare_three_way_with<T, U> : std::true_type {};
+#endif // __cpp_lib_three_way_comparison && __cpp_lib_concepts
+template<typename T>
+constexpr inline bool has_operator_compare_three_way_v = has_operator_compare_three_way<T>::value;
+template<typename T, typename U>
+constexpr inline bool has_operator_compare_three_way_with_v = has_operator_compare_three_way_with<T, U>::value;
+
+// Intentionally no 'has_operator_compare_three_way_container', because the
+// compilers fail to determine the proper return type in this case
+// template <typename Container, typename T>
+// using has_operator_compare_three_way_container =
+//         std::disjunction<std::is_base_of<Container, T>, has_operator_compare_three_way<T>>;
 
 namespace detail {
 

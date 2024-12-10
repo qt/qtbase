@@ -275,7 +275,7 @@ int main(int argc, char **argv)
             fn = QFileInfo(fn).absoluteFilePath();
             qDebug("Saving into %s", qPrintable(fn));
             if (r->isYUpInFramebuffer())
-                image.mirrored().save(fn);
+                image.flipped().save(fn);
             else
                 image.save(fn);
         } else {

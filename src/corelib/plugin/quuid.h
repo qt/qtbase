@@ -48,7 +48,8 @@ public:
         Md5                 = 3, // 0 0 1 1
         Name = Md5,
         Random                = 4,  // 0 1 0 0
-        Sha1                 = 5 // 0 1 0 1
+        Sha1            = 5, // 0 1 0 1
+        UnixEpoch       = 7, // 0 1 1 1
     };
 
     enum StringFormat {
@@ -277,6 +278,26 @@ public:
         return QUuid::createUuidV5(ns, qToByteArrayViewIgnoringNull(baseData.toUtf8()));
     }
 
+    static QUuid createUuidV7();
+
+private:
+    static constexpr bool isKnownVersion(Version v) noexcept
+    {
+        switch (v) {
+        case VerUnknown:
+            return false;
+        case Time:
+        case EmbeddedPOSIX:
+        case Md5:
+        case Random:
+        case Sha1:
+        case UnixEpoch:
+            return true;
+        }
+        return false;
+    }
+
+public:
 #if QT_CORE_REMOVED_SINCE(6, 9)
     QUuid::Variant variant() const noexcept;
     QUuid::Version version() const noexcept;
@@ -296,7 +317,7 @@ public:
         // Check the 4 MSB of data3
         const Version ver = Version(data3 >> 12);
         // Check that variant() == DCE and version is in a valid range
-        if (ver >= Time && ver <= Sha1 && (data4[0] & 0xC0) == 0x80)
+        if (isKnownVersion(ver) && (data4[0] & 0xC0) == 0x80)
             return ver;
         return VerUnknown;
     }

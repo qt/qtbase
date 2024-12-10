@@ -10,8 +10,6 @@ import time
 import signal
 import argparse
 
-from datetime import datetime
-
 def status(msg):
     print(f"\n-- {msg}")
 
@@ -43,10 +41,11 @@ parser.add_argument('-a', '--adb', metavar='path', type=str, help='Path to adb e
 parser.add_argument('-b', '--build-path', metavar='path', type=str,
                     help='Path to the Android build directory.')
 parser.add_argument('-i', '--install', action='store_true', help='Install the APK.')
+parser.add_argument('-d', '--detached', action='store_true',
+                    help='Start the app detached without waiting for the logcat')
 parser.add_argument('-s', '--serial', type=str, metavar='serial',
                     help='Android device serial (override $ANDROID_SERIAL).')
 parser.add_argument('-p', '--apk', type=str, metavar='path', help='Path to the APK file.')
-
 
 args, remaining_args = parser.parse_known_args()
 
@@ -69,10 +68,10 @@ try:
             serial = line.split('\t')[0]
             devices.append(serial)
     if not devices:
-        die(f"No devices are connected.")
+        die("No devices are connected.")
 
     if args.serial and not args.serial in devices:
-        die(f"No connected devices with the specified serial number.")
+        die("No connected devices with the specified serial number.")
 except Exception as e:
     die(f"Failed to check for running devices, received error: {e}")
 
@@ -161,6 +160,9 @@ while pid is None:
     except subprocess.CalledProcessError:
         continue
 
+if args.detached:
+    sys.exit(0)
+
 # Add a signal handler to stop the app if the script is terminated
 interrupted = False
 def terminate_app(signum, frame):
@@ -170,11 +172,12 @@ def terminate_app(signum, frame):
 signal.signal(signal.SIGINT, terminate_app)
 
 # Show app's logs
+logcat_process = None;
 try:
     format_arg = "-v brief -v color"
     time_arg = f"-T '{start_timestamp}'"
     # escape char and color followed with fatal tag
-    fatal_regex = f"-e $'^\x1b\\[[0-9]*mF/'"
+    fatal_regex = "-e $'^\x1b\\[[0-9]*mF/'"
     pid_regex = f"-e '([ ]*{pid}):'"
     logcat_cmd = f"{adb} shell \"logcat {time_arg} {format_arg} | grep {pid_regex} {fatal_regex}\""
     logcat_process = subprocess.Popen(logcat_cmd, shell=True)
@@ -195,7 +198,8 @@ try:
             status(f"The app \"{package_name}\" has exited")
             break
 finally:
-    logcat_process.terminate()
+    if logcat_process:
+        logcat_process.terminate()
 
 if interrupted:
     try:

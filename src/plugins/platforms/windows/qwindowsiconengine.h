@@ -4,44 +4,30 @@
 #ifndef QWINDOWSICONENGINE_H
 #define QWINDOWSICONENGINE_H
 
-#include <QtCore/qt_windows.h>
+#include <QtGui/private/qfonticonengine_p.h>
 
-#include <QtGui/qfont.h>
-#include <QtGui/qiconengine.h>
+#ifndef QT_NO_ICON
 
 QT_BEGIN_NAMESPACE
 
-class QWindowsIconEngine : public QIconEngine
+class QWindowsIconEngine : public QFontIconEngine
 {
 public:
     QWindowsIconEngine(const QString &iconName);
     ~QWindowsIconEngine();
-    QIconEngine *clone() const override;
-    QString key() const override;
-    QString iconName() override;
-    bool isNull() override;
 
-    QList<QSize> availableSizes(QIcon::Mode, QIcon::State) override;
-    QSize actualSize(const QSize &size, QIcon::Mode mode, QIcon::State state) override;
-    QPixmap pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state) override;
-    QPixmap scaledPixmap(const QSize &size, QIcon::Mode mode, QIcon::State state, qreal scale) override;
-    void paint(QPainter *painter, const QRect &rect, QIcon::Mode mode, QIcon::State state) override;
+    QString key() const override;
+    QIconEngine *clone() const override;
+
+protected:
+    QString string() const override;
 
 private:
-    static constexpr quint64 calculateCacheKey(QIcon::Mode mode, QIcon::State state)
-    {
-        return (quint64(mode) << 32) | state;
-    }
-
-    QString glyphs() const;
-
-    const QString m_iconName;
-    const QFont m_iconFont;
     const QString m_glyphs;
-    mutable QPixmap m_pixmap;
-    mutable quint64 m_cacheKey = {};
 };
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_ICON
 
 #endif // QWINDOWSICONENGINE_H

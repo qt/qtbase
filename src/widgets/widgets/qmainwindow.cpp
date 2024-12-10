@@ -1037,8 +1037,11 @@ void QMainWindow::addDockWidget(Qt::DockWidgetArea area, QDockWidget *dockwidget
     default:
         break;
     }
+    const Qt::DockWidgetArea oldArea = dockWidgetArea(dockwidget);
     d_func()->layout->removeWidget(dockwidget); // in case it was already in here
     addDockWidget(area, dockwidget, orientation);
+    if (oldArea != area)
+       emit dockwidget->dockLocationChanged(area);
 }
 
 /*!

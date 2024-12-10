@@ -2402,9 +2402,10 @@ encoded in \1, and is converted to QString using the \2 function.
 /*! \fn QString QString::fromWCharArray(const wchar_t *string, qsizetype size)
     \since 4.2
 
-    Returns a copy of the \a string, where the encoding of \a string depends on
-    the size of wchar. If wchar is 4 bytes, the \a string is interpreted as
-    UCS-4, if wchar is 2 bytes it is interpreted as UTF-16.
+    Reads the first \a size code units of the \c wchar_t array to whose start
+    \a string points, converting them to Unicode and returning the result as
+    a QString. The encoding used by \c wchar_t is assumed to be UCS-4 if the
+    type's size is four bytes or UTF-16 if its size is two bytes.
 
     If \a size is -1 (default), the \a string must be '\\0'-terminated.
 
@@ -5426,7 +5427,7 @@ QString QString::sliced_helper(QString &str, qsizetype pos, qsizetype n)
     \note The behavior is undefined if \a pos < 0, \a n < 0,
     or \a pos + \a n > size().
 
-    \snippet qstring/main.cpp 97
+    \snippet qstring/main.cpp slice97
 
     \sa sliced(), first(), last(), chopped(), chop(), truncate()
 */
@@ -8722,42 +8723,7 @@ static QString replaceArgEscapes(QStringView s, const ArgEscapeData &d, qsizetyp
 }
 
 /*!
-  Returns a copy of this string with the lowest numbered place marker
-  replaced by string \a a, i.e., \c %1, \c %2, ..., \c %99.
-
-  \a fieldWidth specifies the minimum amount of space that argument \a
-  a shall occupy. If \a a requires less space than \a fieldWidth, it
-  is padded to \a fieldWidth with character \a fillChar.  A positive
-  \a fieldWidth produces right-aligned text. A negative \a fieldWidth
-  produces left-aligned text.
-
-  This example shows how we might create a \c status string for
-  reporting progress while processing a list of files:
-
-  \snippet qstring/main.cpp 11
-
-  First, \c arg(i) replaces \c %1. Then \c arg(total) replaces \c
-  %2. Finally, \c arg(fileName) replaces \c %3.
-
-  One advantage of using arg() over asprintf() is that the order of the
-  numbered place markers can change, if the application's strings are
-  translated into other languages, but each arg() will still replace
-  the lowest numbered unreplaced place marker, no matter where it
-  appears. Also, if place marker \c %i appears more than once in the
-  string, the arg() replaces all of them.
-
-  If there is no unreplaced place marker remaining, a warning message
-  is output and the result is undefined. Place marker numbers must be
-  in the range 1 to 99.
-*/
-QString QString::arg(const QString &a, int fieldWidth, QChar fillChar) const
-{
-    return arg(qToStringViewIgnoringNull(a), fieldWidth, fillChar);
-}
-
-/*!
-    \overload
-    \since 5.10
+    \fn template <typename T, if_string_like<T> = true> QString QString::arg(const T &a, int fieldWidth, QChar fillChar) const
 
     Returns a copy of this string with the lowest-numbered place-marker
     replaced by string \a a, i.e., \c %1, \c %2, ..., \c %99.
@@ -8786,8 +8752,14 @@ QString QString::arg(const QString &a, int fieldWidth, QChar fillChar) const
     If there is no unreplaced place-marker remaining, a warning message
     is printed and the result is undefined. Place-marker numbers must be
     in the range 1 to 99.
+
+    \note In Qt versions prior to 6.9, this function was overloaded on
+    \c{char}, QChar, QString, QStringView, and QLatin1StringView and in some
+    cases, \c{wchar_t} and \c{char16_t} arguments would resolve to the integer
+    overloads. In Qt versions prior to 5.10, this function lacked the
+    QStringView and QLatin1StringView overloads.
 */
-QString QString::arg(QStringView a, int fieldWidth, QChar fillChar) const
+QString QString::arg_impl(QAnyStringView a, int fieldWidth, QChar fillChar) const
 {
     ArgEscapeData d = findArgEscapes(*this);
 
@@ -8796,40 +8768,28 @@ QString QString::arg(QStringView a, int fieldWidth, QChar fillChar) const
                   qUtf16Printable(a.toString()));
         return *this;
     }
-    return replaceArgEscapes(*this, d, fieldWidth, a, a, fillChar);
+    struct {
+        QVarLengthArray<char16_t> out;
+        QStringView operator()(QStringView in) noexcept { return in; }
+        QStringView operator()(QLatin1StringView in)
+        {
+            out.resize(in.size());
+            qt_from_latin1(out.data(), in.data(), size_t(in.size()));
+            return out;
+        }
+        QStringView operator()(QUtf8StringView in)
+        {
+            out.resize(in.size());
+            return QStringView{out.data(), QUtf8::convertToUnicode(out.data(), in)};
+        }
+    } convert;
+
+    QStringView sv = a.visit(std::ref(convert));
+    return replaceArgEscapes(*this, d, fieldWidth, sv, sv, fillChar);
 }
 
 /*!
-    \overload
-    \since 5.10
-
-    Returns a copy of this string with the lowest-numbered place-marker
-    replaced by the Latin-1 string viewed by \a a, i.e., \c %1, \c %2, ..., \c %99.
-
-    \a fieldWidth specifies the minimum amount of space that \a a
-    shall occupy. If \a a requires less space than \a fieldWidth, it
-    is padded to \a fieldWidth with character \a fillChar.  A positive
-    \a fieldWidth produces right-aligned text. A negative \a fieldWidth
-    produces left-aligned text.
-
-    One advantage of using arg() over asprintf() is that the order of the
-    numbered place markers can change, if the application's strings are
-    translated into other languages, but each arg() will still replace
-    the lowest-numbered unreplaced place-marker, no matter where it
-    appears. Also, if place-marker \c %i appears more than once in the
-    string, arg() replaces all of them.
-
-    If there is no unreplaced place-marker remaining, a warning message
-    is printed and the result is undefined. Place-marker numbers must be
-    in the range 1 to 99.
-*/
-QString QString::arg(QLatin1StringView a, int fieldWidth, QChar fillChar) const
-{
-    QVarLengthArray<char16_t> utf16 = qt_from_latin1_to_qvla(a);
-    return arg(QStringView(utf16.data(), utf16.size()), fieldWidth, fillChar);
-}
-
-/*! \fn QString QString::arg(int a, int fieldWidth, int base, QChar fillChar) const
+  \fn template <typename T, if_integral_non_char<T> = true> QString QString::arg(T a, int fieldWidth, int base, QChar fillChar) const
   \overload arg()
 
   The \a a argument is expressed in base \a base, which is 10 by
@@ -8850,73 +8810,13 @@ QString QString::arg(QLatin1StringView a, int fieldWidth, QChar fillChar) const
   \snippet qstring/main.cpp 12
   \snippet qstring/main.cpp 14
 
-  \sa {Number Formats}
-*/
-
-/*! \fn QString QString::arg(uint a, int fieldWidth, int base, QChar fillChar) const
-  \overload arg()
-
-  The \a base argument specifies the base to use when converting the
-  integer \a a into a string. The base must be between 2 and 36.
+  \note In Qt versions prior to 6.9, this function was overloaded on various
+  integral types and sometimes incorrectly accepted \c char and \c char16_t
+  arguments.
 
   \sa {Number Formats}
 */
-
-/*! \fn QString QString::arg(long a, int fieldWidth, int base, QChar fillChar) const
-  \overload arg()
-
-  \a fieldWidth specifies the minimum amount of space that \a a is
-  padded to and filled with the character \a fillChar. A positive
-  value produces right-aligned text; a negative value produces
-  left-aligned text.
-
-  The \a a argument is expressed in the given \a base, which is 10 by
-  default and must be between 2 and 36.
-
-  The '%' can be followed by an 'L', in which case the sequence is
-  replaced with a localized representation of \a a. The conversion
-  uses the default locale. The default locale is determined from the
-  system's locale settings at application startup. It can be changed
-  using QLocale::setDefault(). The 'L' flag is ignored if \a base is
-  not 10.
-
-  \snippet qstring/main.cpp 12
-  \snippet qstring/main.cpp 14
-
-  \sa {Number Formats}
-*/
-
-/*!
-  \fn QString QString::arg(ulong a, int fieldWidth, int base, QChar fillChar) const
-  \overload arg()
-
-  \a fieldWidth specifies the minimum amount of space that \a a is
-  padded to and filled with the character \a fillChar. A positive
-  value produces right-aligned text; a negative value produces
-  left-aligned text.
-
-  The \a base argument specifies the base to use when converting the
-  integer \a a to a string. The base must be between 2 and 36, with 8
-  giving octal, 10 decimal, and 16 hexadecimal numbers.
-
-  \sa {Number Formats}
-*/
-
-/*!
-  \overload arg()
-
-  \a fieldWidth specifies the minimum amount of space that \a a is
-  padded to and filled with the character \a fillChar. A positive
-  value produces right-aligned text; a negative value produces
-  left-aligned text.
-
-  The \a base argument specifies the base to use when converting the
-  integer \a a into a string. The base must be between 2 and 36, with
-  8 giving octal, 10 decimal, and 16 hexadecimal numbers.
-
-  \sa {Number Formats}
-*/
-QString QString::arg(qlonglong a, int fieldWidth, int base, QChar fillChar) const
+QString QString::arg_impl(qlonglong a, int fieldWidth, int base, QChar fillChar) const
 {
     ArgEscapeData d = findArgEscapes(*this);
 
@@ -8948,21 +8848,7 @@ QString QString::arg(qlonglong a, int fieldWidth, int base, QChar fillChar) cons
     return replaceArgEscapes(*this, d, fieldWidth, arg, localeArg, fillChar);
 }
 
-/*!
-  \overload arg()
-
-  \a fieldWidth specifies the minimum amount of space that \a a is
-  padded to and filled with the character \a fillChar. A positive
-  value produces right-aligned text; a negative value produces
-  left-aligned text.
-
-  The \a base argument specifies the base to use when converting the
-  integer \a a into a string. \a base must be between 2 and 36, with 8
-  giving octal, 10 decimal, and 16 hexadecimal numbers.
-
-  \sa {Number Formats}
-*/
-QString QString::arg(qulonglong a, int fieldWidth, int base, QChar fillChar) const
+QString QString::arg_impl(qulonglong a, int fieldWidth, int base, QChar fillChar) const
 {
     ArgEscapeData d = findArgEscapes(*this);
 
@@ -8995,57 +8881,7 @@ QString QString::arg(qulonglong a, int fieldWidth, int base, QChar fillChar) con
 }
 
 /*!
-  \overload arg()
-
-  \fn QString QString::arg(short a, int fieldWidth, int base, QChar fillChar) const
-
-  \a fieldWidth specifies the minimum amount of space that \a a is
-  padded to and filled with the character \a fillChar. A positive
-  value produces right-aligned text; a negative value produces
-  left-aligned text.
-
-  The \a base argument specifies the base to use when converting the
-  integer \a a into a string. The base must be between 2 and 36, with
-  8 giving octal, 10 decimal, and 16 hexadecimal numbers.
-
-  \sa {Number Formats}
-*/
-
-/*!
-  \fn QString QString::arg(ushort a, int fieldWidth, int base, QChar fillChar) const
-  \overload arg()
-
-  \a fieldWidth specifies the minimum amount of space that \a a is
-  padded to and filled with the character \a fillChar. A positive
-  value produces right-aligned text; a negative value produces
-  left-aligned text.
-
-  The \a base argument specifies the base to use when converting the
-  integer \a a into a string. The base must be between 2 and 36, with
-  8 giving octal, 10 decimal, and 16 hexadecimal numbers.
-
-  \sa {Number Formats}
-*/
-
-/*!
-    \overload arg()
-*/
-QString QString::arg(QChar a, int fieldWidth, QChar fillChar) const
-{
-    return arg(QStringView{&a, 1}, fieldWidth, fillChar);
-}
-
-/*!
-  \overload arg()
-
-  The \a a argument is interpreted as a Latin-1 character.
-*/
-QString QString::arg(char a, int fieldWidth, QChar fillChar) const
-{
-    return arg(QLatin1Char(a), fieldWidth, fillChar);
-}
-
-/*!
+  \fn template <typename T, if_floating_point<T> = true> QString QString::arg(T a, int fieldWidth, char format, int precision, QChar fillChar) const
   \overload arg()
 
   Argument \a a is formatted according to the specified \a format and
@@ -9058,9 +8894,12 @@ QString QString::arg(char a, int fieldWidth, QChar fillChar) const
 
   \snippet code/src_corelib_text_qstring.cpp 2
 
+  \note In Qt versions prior to 6.9, this function was a regular function
+  taking \c double.
+
   \sa QLocale::toString(), QLocale::FloatingPointPrecisionOption, {Number Formats}
 */
-QString QString::arg(double a, int fieldWidth, char format, int precision, QChar fillChar) const
+QString QString::arg_impl(double a, int fieldWidth, char format, int precision, QChar fillChar) const
 {
     ArgEscapeData d = findArgEscapes(*this);
 
@@ -9274,8 +9113,8 @@ static qsizetype resolveStringRefsAndReturnTotalSize(ParseResult &parts, const A
                 case ArgBase::L1:
                     part.reset(static_cast<const QLatin1StringArg&>(arg).string);
                     break;
-                case ArgBase::U8:
-                    Q_UNREACHABLE(); // waiting for QUtf8String...
+                case ArgBase::Any:
+                    part.reset(static_cast<const QAnyStringArg&>(arg).string);
                     break;
                 case ArgBase::U16:
                     part.reset(static_cast<const QStringViewArg&>(arg).string);

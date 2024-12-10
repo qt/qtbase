@@ -64,6 +64,12 @@ void QCupsPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &v
         break;
     case PPK_CupsOptions:
         d->cupsOptions = value.toStringList();
+        if (d->cupsOptions.size() % 2 == 1) {
+            qWarning("%s: malformed value for key = PPK_CupsOptions "
+                     "(odd number of elements in the string-list; "
+                     "appending an empty entry)", Q_FUNC_INFO);
+            d->cupsOptions.emplace_back();
+        }
         break;
     case PPK_QPageSize:
         d->setPageSize(qvariant_cast<QPageSize>(value));
@@ -179,41 +185,42 @@ void QCupsPrintEnginePrivate::closePrintDevice()
         }
 
         // Set up print options.
-        QList<QPair<QByteArray, QByteArray> > options;
+        QList<std::pair<QByteArray, QByteArray> > options;
         QList<cups_option_t> cupsOptStruct;
 
-        options.append(QPair<QByteArray, QByteArray>("media", m_pageLayout.pageSize().key().toLocal8Bit()));
+        options.emplace_back("media", m_pageLayout.pageSize().key().toLocal8Bit());
 
         if (copies > 1)
-            options.append(QPair<QByteArray, QByteArray>("copies", QString::number(copies).toLocal8Bit()));
+            options.emplace_back("copies", QString::number(copies).toLocal8Bit());
 
         if (copies > 1 && collate)
-            options.append(QPair<QByteArray, QByteArray>("Collate", "True"));
+            options.emplace_back("Collate", "True");
 
         switch (duplex) {
         case QPrint::DuplexNone:
-            options.append(QPair<QByteArray, QByteArray>("sides", "one-sided"));
+            options.emplace_back("sides", "one-sided");
             break;
         case QPrint::DuplexAuto:
             if (m_pageLayout.orientation() == QPageLayout::Portrait)
-                options.append(QPair<QByteArray, QByteArray>("sides", "two-sided-long-edge"));
+                options.emplace_back("sides", "two-sided-long-edge");
             else
-                options.append(QPair<QByteArray, QByteArray>("sides", "two-sided-short-edge"));
+                options.emplace_back("sides", "two-sided-short-edge");
             break;
         case QPrint::DuplexLongSide:
-            options.append(QPair<QByteArray, QByteArray>("sides", "two-sided-long-edge"));
+            options.emplace_back("sides", "two-sided-long-edge");
             break;
         case QPrint::DuplexShortSide:
-            options.append(QPair<QByteArray, QByteArray>("sides", "two-sided-short-edge"));
+            options.emplace_back("sides", "two-sided-short-edge");
             break;
         }
 
         if (m_pageLayout.orientation() == QPageLayout::Landscape)
-            options.append(QPair<QByteArray, QByteArray>("landscape", ""));
+            options.emplace_back("landscape", "");
 
         QStringList::const_iterator it = cupsOptions.constBegin();
+        Q_ASSERT(cupsOptions.size() % 2 == 0);
         while (it != cupsOptions.constEnd()) {
-            options.append(QPair<QByteArray, QByteArray>((*it).toLocal8Bit(), (*(it+1)).toLocal8Bit()));
+            options.emplace_back((*it).toLocal8Bit(), (*(it+1)).toLocal8Bit());
             it += 2;
         }
 

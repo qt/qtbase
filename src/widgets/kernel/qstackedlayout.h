@@ -57,6 +57,7 @@ public:
 Q_SIGNALS:
     void widgetRemoved(int index);
     void currentChanged(int index);
+    void widgetAdded(int index);
 
 public Q_SLOTS:
     void setCurrentIndex(int index);

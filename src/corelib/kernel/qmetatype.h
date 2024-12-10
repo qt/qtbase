@@ -766,9 +766,9 @@ public:
     static void unregisterMetaType(QMetaType type);
 
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
-    const QtPrivate::QMetaTypeInterface *iface() { return d_ptr; }
+    constexpr const QtPrivate::QMetaTypeInterface *iface() { return d_ptr; }
 #endif
-    const QtPrivate::QMetaTypeInterface *iface() const { return d_ptr; }
+    constexpr const QtPrivate::QMetaTypeInterface *iface() const { return d_ptr; }
 
 private:
     static bool isDefaultConstructible(const QtPrivate::QMetaTypeInterface *) noexcept Q_DECL_PURE_FUNCTION;
@@ -2602,29 +2602,20 @@ QT_FOR_EACH_STATIC_CORE_TEMPLATE(QT_METATYPE_DECLARE_EXTERN_TEMPLATE_ITER)
 #endif
 
 template<typename T>
-struct qRemovePointerLike
+struct QRemovePointerLike
 {
     using type = std::remove_pointer_t<T>;
 };
 
 #define Q_REMOVE_POINTER_LIKE_IMPL(Pointer) \
 template <typename T> \
-struct qRemovePointerLike<Pointer<T>> \
+struct QRemovePointerLike<Pointer<T>> \
 { \
     using type = T; \
 };
 
 QT_FOR_EACH_AUTOMATIC_TEMPLATE_SMART_POINTER(Q_REMOVE_POINTER_LIKE_IMPL)
-template<typename T>
-using qRemovePointerLike_t = typename qRemovePointerLike<T>::type;
 #undef Q_REMOVE_POINTER_LIKE_IMPL
-
-template<typename T, typename ForceComplete_>
-struct TypeAndForceComplete
-{
-    using type = T;
-    using ForceComplete = ForceComplete_;
-};
 
 template<typename T>
 constexpr const QMetaTypeInterface *qMetaTypeInterfaceForType()
@@ -2634,18 +2625,21 @@ constexpr const QMetaTypeInterface *qMetaTypeInterfaceForType()
     return &QMetaTypeInterfaceWrapper<Ty>::metaType;
 }
 
-template<typename Unique, typename TypeCompletePair>
+// Relaxed vesion of the above, used by moc-generated code to create the
+// metatype array without requiring types to be complete and allowing
+// references. Unique is passed to is_complete and must be a different unique
+// type; if it is void, this function is equal to qMetaTypeInterfaceForType()
+// above.
+template<typename Unique, typename T>
 constexpr const QMetaTypeInterface *qTryMetaTypeInterfaceForType()
 {
-    using T = typename TypeCompletePair::type;
-    using ForceComplete = typename TypeCompletePair::ForceComplete;
     using Ty = typename MetatypeDecay<T>::type;
-    using Tz = qRemovePointerLike_t<Ty>;
+    using Tz = typename QRemovePointerLike<Ty>::type;
 
     if constexpr (std::is_void_v<Tz>) {
         // early out to avoid expanding the rest of the templates
         return &QMetaTypeInterfaceWrapper<Ty>::metaType;
-    } else if constexpr (ForceComplete::value) {
+    } else if constexpr (std::is_void_v<Unique>) {
         checkTypeIsSuitableForMetaType<Ty>();
         return &QMetaTypeInterfaceWrapper<Ty>::metaType;
     } else if constexpr (std::is_reference_v<Tz>) {
@@ -2697,27 +2691,10 @@ constexpr const QMetaObject *QMetaType::metaObject() const
     return d_ptr && d_ptr->metaObjectFn ? d_ptr->metaObjectFn(d_ptr) : nullptr;
 }
 
-template<typename... T>
-constexpr const QtPrivate::QMetaTypeInterface *const qt_metaTypeArray[] = {
-    /*
-       Unique in qTryMetaTypeInterfaceForType does not have to be unique here
-       as we require _all_ types here to be actually complete.
-       We just want to have the additional type processing that exist in
-       QtPrivate::qTryMetaTypeInterfaceForType as opposed to the normal
-       QtPrivate::qMetaTypeInterfaceForType used in QMetaType::fromType
-    */
-    QtPrivate::qTryMetaTypeInterfaceForType<void, QtPrivate::TypeAndForceComplete<T, std::true_type>>()...
-};
-
 constexpr const char *QMetaType::name() const
 {
     return d_ptr ? d_ptr->name : nullptr;
 }
-
-template<typename Unique,typename... T>
-constexpr const QtPrivate::QMetaTypeInterface *const qt_incomplete_metaTypeArray[] = {
-    QtPrivate::qTryMetaTypeInterfaceForType<Unique, T>()...
-};
 
 inline size_t qHash(QMetaType type, size_t seed = 0)
 {

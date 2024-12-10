@@ -5849,7 +5849,16 @@ bool QD3D12GraphicsPipeline::create()
     }
 
     QD3D12RenderPassDescriptor *rpD = QRHI_RES(QD3D12RenderPassDescriptor, m_renderPassDesc);
-    const DXGI_SAMPLE_DESC sampleDesc = rhiD->effectiveSampleDesc(m_sampleCount, DXGI_FORMAT(rpD->colorFormat[0]));
+    DXGI_FORMAT format = DXGI_FORMAT_UNKNOWN;
+    if (rpD->colorAttachmentCount > 0) {
+        format = DXGI_FORMAT(rpD->colorFormat[0]);
+    } else if (rpD->hasDepthStencil) {
+        format = DXGI_FORMAT(rpD->dsFormat);
+    } else {
+        qWarning("Cannot create graphics pipeline state without color or depthStencil format");
+        return false;
+    }
+    const DXGI_SAMPLE_DESC sampleDesc = rhiD->effectiveSampleDesc(m_sampleCount, format);
 
     struct {
         QD3D12PipelineStateSubObject<ID3D12RootSignature *, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_ROOT_SIGNATURE> rootSig;
@@ -6400,11 +6409,8 @@ bool QD3D12SwapChain::isFormatSupported(Format f)
     }
 
     QRHI_RES_RHI(QRhiD3D12);
-    DXGI_OUTPUT_DESC1 desc1;
-    if (QRhiD3D::outputDesc1ForWindow(m_window, rhiD->activeAdapter, &desc1)) {
-        if (desc1.ColorSpace == DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020)
-            return f == QRhiSwapChain::HDRExtendedSrgbLinear || f == QRhiSwapChain::HDR10;
-    }
+    if (QDxgiHdrInfo(rhiD->activeAdapter).isHdrCapable(m_window))
+        return f == QRhiSwapChain::HDRExtendedSrgbLinear || f == QRhiSwapChain::HDR10;
 
     return false;
 }
@@ -6415,14 +6421,7 @@ QRhiSwapChainHdrInfo QD3D12SwapChain::hdrInfo()
     // Must use m_window, not window, given this may be called before createOrResize().
     if (m_window) {
         QRHI_RES_RHI(QRhiD3D12);
-        DXGI_OUTPUT_DESC1 hdrOutputDesc;
-        if (QRhiD3D::outputDesc1ForWindow(m_window, rhiD->activeAdapter, &hdrOutputDesc)) {
-            info.limitsType = QRhiSwapChainHdrInfo::LuminanceInNits;
-            info.limits.luminanceInNits.minLuminance = hdrOutputDesc.MinLuminance;
-            info.limits.luminanceInNits.maxLuminance = hdrOutputDesc.MaxLuminance;
-            info.luminanceBehavior = QRhiSwapChainHdrInfo::SceneReferred; // 1.0 = 80 nits
-            info.sdrWhiteLevel = QRhiD3D::sdrWhiteLevelInNits(hdrOutputDesc);
-        }
+        info = QDxgiHdrInfo(rhiD->activeAdapter).queryHdrInfo(m_window);
     }
     return info;
 }
@@ -6465,11 +6464,10 @@ void QD3D12SwapChain::chooseFormats()
     colorFormat = DEFAULT_FORMAT;
     srgbAdjustedColorFormat = m_flags.testFlag(sRGB) ? DEFAULT_SRGB_FORMAT : DEFAULT_FORMAT;
     hdrColorSpace = DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709; // SDR
-    DXGI_OUTPUT_DESC1 hdrOutputDesc;
     QRHI_RES_RHI(QRhiD3D12);
-    if (QRhiD3D::outputDesc1ForWindow(m_window, rhiD->activeAdapter, &hdrOutputDesc) && m_format != SDR) {
-        // https://docs.microsoft.com/en-us/windows/win32/direct3darticles/high-dynamic-range
-        if (hdrOutputDesc.ColorSpace == DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020) {
+    if (m_format != SDR) {
+        if (QDxgiHdrInfo(rhiD->activeAdapter).isHdrCapable(m_window)) {
+            // https://docs.microsoft.com/en-us/windows/win32/direct3darticles/high-dynamic-range
             switch (m_format) {
             case HDRExtendedSrgbLinear:
                 colorFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
@@ -6779,10 +6777,10 @@ bool QD3D12SwapChain::createOrResize()
 
     QDxgiVSyncService::instance()->registerWindow(window);
 
-    if (needsRegistration) {
+    if (needsRegistration || !rhiD->swapchains.contains(this))
         rhiD->swapchains.insert(this);
-        rhiD->registerResource(this);
-    }
+
+    rhiD->registerResource(this);
 
     return true;
 }

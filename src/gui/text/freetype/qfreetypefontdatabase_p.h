@@ -47,7 +47,7 @@ public:
     static void addNamedInstancesForFace(void *face, int faceIndex,
                                          const QString &family, const QString &styleName,
                                          QFont::Weight weight, QFont::Stretch stretch,
-                                         QFont::Style style, bool fixedPitch,
+                                         QFont::Style style, bool fixedPitch, bool isColor,
                                          const QSupportedWritingSystems &writingSystems,
                                          const QByteArray &fileName, const QByteArray &fontData);
 

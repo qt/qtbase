@@ -3629,7 +3629,7 @@ int QMetaEnum::Data::index(const QMetaObject *mobj) const
 
     \section1 Property Meta-Data
 
-    A property has a name() and a type(), as well as various
+    A property has a name() and a metaType(), as well as various
     attributes that specify its behavior: isReadable(), isWritable(),
     isDesignable(), isScriptable(), revision(), and isStored().
 

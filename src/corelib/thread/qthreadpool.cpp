@@ -475,28 +475,6 @@ QThreadPool *QThreadPool::globalInstance()
 }
 
 /*!
-    Returns the QThreadPool instance for Qt Gui.
-    \internal
-*/
-QThreadPool *QThreadPoolPrivate::qtGuiInstance()
-{
-    Q_CONSTINIT static QPointer<QThreadPool> guiInstance;
-    Q_CONSTINIT static QBasicMutex theMutex;
-    const static bool runtime_disable = qEnvironmentVariableIsSet("QT_NO_GUI_THREADPOOL");
-    if (runtime_disable)
-        return nullptr;
-    const QMutexLocker locker(&theMutex);
-    if (guiInstance.isNull() && !QCoreApplication::closingDown()) {
-        guiInstance = new QThreadPool();
-        // Limit max thread to avoid too many parallel threads.
-        // We are not optimized for much more than 4 or 8 threads.
-        if (guiInstance && guiInstance->maxThreadCount() > 4)
-            guiInstance->setMaxThreadCount(qBound(4, guiInstance->maxThreadCount() / 2, 8));
-    }
-    return guiInstance;
-}
-
-/*!
     Reserves a thread and uses it to run \a runnable, unless this thread will
     make the current thread count exceed maxThreadCount().  In that case,
     \a runnable is added to a run queue instead. The \a priority argument can

@@ -3798,20 +3798,12 @@ def write_jar(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> str:
         raise RuntimeError("Could not locate jar install path")
     install_dir = install_dir.replace("$$[QT_INSTALL_PREFIX]/", "")
 
-    android_sdk_jar = "${QT_ANDROID_JAR}"
-    android_api_level = scope.get_string("API_VERSION")
-    if android_api_level:
-        cm_fh.write(
-            f'{spaces(indent)}qt_get_android_sdk_jar_for_api("{android_api_level}" android_sdk)\n\n'
-        )
-        android_sdk_jar = "${android_sdk}"
-
     write_source_file_list(
         cm_fh, scope, "", ["JAVASOURCES"], indent=indent, header="set(java_sources\n", footer=")\n"
     )
 
     cm_fh.write(f"{spaces(indent)}qt_internal_add_jar({target}\n")
-    cm_fh.write(f"{spaces(indent+1)}INCLUDE_JARS {android_sdk_jar}\n")
+    cm_fh.write(f"{spaces(indent+1)}INCLUDE_JARS ${{QT_ANDROID_JAR}}\n")
     cm_fh.write(f"{spaces(indent+1)}SOURCES ${{java_sources}}\n")
     cm_fh.write(f'{spaces(indent+1)}OUTPUT_DIR "${{QT_BUILD_DIR}}/{install_dir}"\n')
     cm_fh.write(f"{spaces(indent)})\n\n")

@@ -36,7 +36,7 @@ void Window::customInit()
     float opacity = 1.0f;
     d.initialUpdates->updateDynamicBuffer(d.ubuf, 64, 4, &opacity);
 
-    QImage image = QImage(QLatin1String(":/qt256.png")).convertToFormat(QImage::Format_RGBA8888).mirrored();
+    QImage image = QImage(QLatin1String(":/qt256.png")).convertToFormat(QImage::Format_RGBA8888).flipped();
     d.tex = m_r->newTexture(QRhiTexture::RGBA8, QSize(image.width(), image.height()), 1, {});
     d.releasePool << d.tex;
     d.tex->create();

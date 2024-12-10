@@ -325,8 +325,8 @@ qint64 RCCFileInfo::writeDataBlob(RCCResourceLibrary &lib,
                                           CONSTANT_ZSTDCOMPRESSLEVEL_STORE);
                 }
                 if (ZSTD_isError(n)) {
-                    QString msg = QString::fromLatin1("%1: error: compression with zstd failed: %2\n")
-                            .arg(m_name, QString::fromUtf8(ZSTD_getErrorName(n)));
+                    QString msg = "%1: error: compression with zstd failed: %2\n"_L1
+                            .arg(m_name, ZSTD_getErrorName(n));
                     lib.m_errorDevice->write(msg.toUtf8());
                 } else if (lib.verbose()) {
                     QString msg = QString::fromLatin1("%1: note: compressed using zstd (%2 -> %3)\n")

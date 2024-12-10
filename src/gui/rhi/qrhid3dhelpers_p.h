@@ -17,8 +17,6 @@
 
 #include <rhi/qrhi.h>
 
-#include <QtGui/qwindow.h>
-
 #include <dxgi1_6.h>
 #include <dcomp.h>
 #include <d3dcompiler.h>
@@ -29,14 +27,11 @@
 #endif
 
 #include "qdxgivsyncservice_p.h"
+#include "qdxgihdrinfo_p.h"
 
 QT_BEGIN_NAMESPACE
 
 namespace QRhiD3D {
-
-bool output6ForWindow(QWindow *w, IDXGIAdapter1 *adapter, IDXGIOutput6 **result);
-bool outputDesc1ForWindow(QWindow *w, IDXGIAdapter1 *adapter, DXGI_OUTPUT_DESC1 *result);
-float sdrWhiteLevelInNits(const DXGI_OUTPUT_DESC1 &outputDesc);
 
 pD3DCompile resolveD3DCompile();
 

@@ -41,9 +41,6 @@ public:
 
     bool processEvents(QEventLoop::ProcessEventsFlags flags) override;
 
-    void registerSocketNotifier(QSocketNotifier *notifier) override;
-    void unregisterSocketNotifier(QSocketNotifier *notifier) override;
-
     void registerTimer(Qt::TimerId timerId, Duration interval, Qt::TimerType timerType,
                        QObject *object) override final;
     bool unregisterTimer(Qt::TimerId timerId) override final;
@@ -54,9 +51,12 @@ public:
     void interrupt() override;
     void wakeUp() override;
 
-    static void runOnMainThread(std::function<void(void)> fn);
+    void registerSocketNotifier(QSocketNotifier *notifier) override;
+    void unregisterSocketNotifier(QSocketNotifier *notifier) override;
     static void socketSelect(int timeout, int socket, bool waitForRead, bool waitForWrite,
                             bool *selectForRead, bool *selectForWrite, bool *socketDisconnect);
+
+    static void runOnMainThread(std::function<void(void)> fn);
 
     static void registerStartupTask();
     static void completeStarupTask();
@@ -80,20 +80,6 @@ private:
     void processTimers();
     void updateNativeTimer();
     static void callProcessTimers(void *eventDispatcher);
-
-    static void setEmscriptenSocketCallbacks();
-    static void clearEmscriptenSocketCallbacks();
-    static void socketError(int fd, int err, const char* msg, void *context);
-    static void socketOpen(int fd, void *context);
-    static void socketListen(int fd, void *context);
-    static void socketConnection(int fd, void *context);
-    static void socketMessage(int fd, void *context);
-    static void socketClose(int fd, void *context);
-
-    static void setSocketState(int socket, bool setReadyRead, bool setReadyWrite);
-    static void clearSocketState(int socket);
-    void waitForSocketState(int timeout, int socket, bool checkRead, bool checkWrite,
-                            bool *selectForRead, bool *selectForWrite, bool *socketDisconnect);
 
     static void run(std::function<void(void)> fn);
     static void runAsync(std::function<void(void)> fn);
@@ -124,16 +110,7 @@ private:
     // that eventdispatcher thread. The locking order is g_staticDataMutex first, then m_mutex.
 #endif
 
-    static std::multimap<int, QSocketNotifier *> g_socketNotifiers;
-
-    struct SocketReadyState {
-        QEventDispatcherWasm *waiter = nullptr;
-        bool waitForReadyRead = false;
-        bool waitForReadyWrite = false;
-        bool readyRead = false;
-        bool readyWrite = false;
-    };
-    static std::map<int, SocketReadyState> g_socketState;
+    friend class QWasmSocket;
 };
 
 #endif // QEVENTDISPATCHER_WASM_P_H

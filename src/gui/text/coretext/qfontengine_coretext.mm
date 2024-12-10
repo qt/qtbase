@@ -319,6 +319,24 @@ glyph_t QCoreTextFontEngine::glyphIndex(uint ucs4) const
     return glyphIndices[0];
 }
 
+QString QCoreTextFontEngine::glyphName(glyph_t index) const
+{
+    QString result = QCFString(CTFontCopyNameForGlyph(ctfont, index));
+    if (result.isEmpty())
+        result = QFontEngine::glyphName(index);
+    return result;
+}
+
+glyph_t QCoreTextFontEngine::findGlyph(QLatin1StringView name) const
+{
+    const QCFString cfName = CFStringCreateWithBytes(kCFAllocatorDefault,
+                                                     reinterpret_cast<const UInt8 *>(name.data()),
+                                                     name.size(), kCFStringEncodingASCII, false);
+    const glyph_t result = CTFontGetGlyphWithName(ctfont, cfName);
+
+    return result ? result : QFontEngine::findGlyph(name);
+}
+
 int QCoreTextFontEngine::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs,
                                       int *nglyphs, QFontEngine::ShaperFlags flags) const
 {

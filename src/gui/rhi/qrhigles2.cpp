@@ -6765,7 +6765,6 @@ void QGles2SwapChain::initSwapChainRenderTarget(QGles2SwapChainRenderTarget *rt)
 bool QGles2SwapChain::createOrResize()
 {
     // can be called multiple times due to window resizes
-    const bool needsRegistration = !surface || surface != m_window;
     if (surface && surface != m_window)
         destroy();
 
@@ -6798,8 +6797,7 @@ bool QGles2SwapChain::createOrResize()
     // The only reason to register this fairly fake gl swapchain
     // object with no native resources underneath is to be able to
     // implement a safe destroy().
-    if (needsRegistration)
-        rhiD->registerResource(this, false);
+    rhiD->registerResource(this, false);
 
     return true;
 }

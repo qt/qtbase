@@ -466,7 +466,7 @@ bool QPngHandlerPrivate::readPngHeader()
         png_get_gAMA(png_ptr, info_ptr, &file_gamma);
         fileGamma = file_gamma;
         if (fileGamma > 0.0f) {
-            QColorSpacePrimaries primaries;
+            QColorSpace::PrimaryPoints primaries;
             if (png_get_valid(png_ptr, info_ptr, PNG_INFO_cHRM)) {
                 double white_x, white_y, red_x, red_y;
                 double green_x, green_y, blue_x, blue_y;
@@ -478,7 +478,7 @@ bool QPngHandlerPrivate::readPngHeader()
                 primaries.greenPoint = QPointF(green_x, green_y);
                 primaries.bluePoint = QPointF(blue_x, blue_y);
             }
-            if (primaries.areValid()) {
+            if (primaries.isValid()) {
                 colorSpace = QColorSpace(primaries.whitePoint, primaries.redPoint, primaries.greenPoint, primaries.bluePoint,
                                          QColorSpace::TransferFunction::Gamma, 1.0f / fileGamma);
             } else {

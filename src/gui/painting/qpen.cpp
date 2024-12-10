@@ -199,8 +199,8 @@ QPenPrivate::QPenPrivate(const QBrush &_brush, qreal _width, Qt::PenStyle penSty
     joinStyle = _joinStyle;
 }
 
-static const Qt::PenCapStyle qpen_default_cap = Qt::SquareCap;
-static const Qt::PenJoinStyle qpen_default_join = Qt::BevelJoin;
+static constexpr Qt::PenCapStyle qpen_default_cap = Qt::SquareCap;
+static constexpr Qt::PenJoinStyle qpen_default_join = Qt::BevelJoin;
 
 class QPenDataHolder
 {
@@ -343,6 +343,47 @@ QPen &QPen::operator=(const QPen &p) noexcept
     \since 4.8
     \memberswap{pen}
 */
+
+/*!
+    \overload
+    \since 6.9
+
+    Makes this pen a solid pen with the given color, and default
+    cap and join styles, and returns a reference to \e this pen.
+*/
+QPen &QPen::operator=(QColor color)
+{
+    detach();
+    d->brush = color;
+    d->width = 1;
+    d->style = Qt::SolidLine;
+    d->capStyle = qpen_default_cap;
+    d->joinStyle = qpen_default_join;
+
+    return *this;
+}
+
+/*!
+    \overload
+    \since 6.9
+
+    Makes this pen a solid, black pen with default cap and join styles,
+    and returns a reference to \e this pen.
+*/
+QPen &QPen::operator=(Qt::PenStyle style)
+{
+    detach();
+    if (style == Qt::NoPen) {
+        d = nullPenInstance()->pen;
+    } else {
+        d->brush = Qt::black;
+        d->width = 1;
+        d->style = style;
+        d->capStyle = qpen_default_cap;
+        d->joinStyle = qpen_default_join;
+    }
+    return *this;
+}
 
 /*!
    Returns the pen as a QVariant.
@@ -769,7 +810,16 @@ void QPen::setCosmetic(bool cosmetic)
     d->cosmetic = cosmetic;
 }
 
-
+/*!
+    \internal
+*/
+bool QPen::isSolidDefaultLine() const noexcept
+{
+    return d->style == Qt::SolidLine && d->width == 1
+        && d->capStyle == qpen_default_cap && d->joinStyle == qpen_default_join
+        && qFuzzyCompare(d->dashOffset, 0) && qFuzzyCompare(d->miterLimit, 2)
+        && d->cosmetic == false;
+}
 
 /*!
     \fn bool QPen::operator!=(const QPen &pen) const

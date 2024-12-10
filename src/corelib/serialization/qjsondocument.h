@@ -5,6 +5,7 @@
 #define QJSONDOCUMENT_H
 
 #include <QtCore/qcompare.h>
+#include <QtCore/qjsonparseerror.h>
 #include <QtCore/qjsonvalue.h>
 #include <QtCore/qscopedpointer.h>
 
@@ -16,32 +17,6 @@ class QDebug;
 class QCborValue;
 
 namespace QJsonPrivate { class Parser; }
-
-struct Q_CORE_EXPORT QJsonParseError
-{
-    enum ParseError {
-        NoError = 0,
-        UnterminatedObject,
-        MissingNameSeparator,
-        UnterminatedArray,
-        MissingValueSeparator,
-        IllegalValue,
-        TerminationByNumber,
-        IllegalNumber,
-        IllegalEscapeSequence,
-        IllegalUTF8String,
-        UnterminatedString,
-        MissingObject,
-        DeepNesting,
-        DocumentTooLarge,
-        GarbageAtEnd
-    };
-
-    QString    errorString() const;
-
-    int        offset = -1;
-    ParseError error = NoError;
-};
 
 class QJsonDocumentPrivate;
 class Q_CORE_EXPORT QJsonDocument

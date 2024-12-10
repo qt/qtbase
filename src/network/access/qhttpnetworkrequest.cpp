@@ -21,6 +21,7 @@ QHttpNetworkRequestPrivate::QHttpNetworkRequestPrivate(const QHttpNetworkRequest
     : QHttpNetworkHeaderPrivate(other),
       operation(other.operation),
       customVerb(other.customVerb),
+      fullLocalServerName(other.fullLocalServerName),
       priority(other.priority),
       uploadByteDevice(other.uploadByteDevice),
       autoDecompress(other.autoDecompress),
@@ -46,6 +47,7 @@ bool QHttpNetworkRequestPrivate::operator==(const QHttpNetworkRequestPrivate &ot
 {
     return QHttpNetworkHeaderPrivate::operator==(other)
         && (operation == other.operation)
+        && (fullLocalServerName == other.fullLocalServerName)
         && (priority == other.priority)
         && (uploadByteDevice == other.uploadByteDevice)
         && (autoDecompress == other.autoDecompress)

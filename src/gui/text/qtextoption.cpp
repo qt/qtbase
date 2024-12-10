@@ -272,6 +272,9 @@ QList<QTextOption::Tab> QTextOption::tabs() const
   \value AddSpaceForLineAndParagraphSeparators While determining the line-break positions take into account the
             space added for drawing a separator character.
   \value SuppressColors Suppress all color changes in the character formats (except the main selection).
+  \value [since 6.9] DisableEmojiParsing By default, Qt will detect emoji sequences in input strings
+    and prioritize using color fonts to display them. This extra step can be disabled by setting the
+    DisableEmojiParsing flag if it is known in advance that it will not be needed.
 */
 
 /*!

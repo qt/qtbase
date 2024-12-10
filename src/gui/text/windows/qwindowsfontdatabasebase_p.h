@@ -75,6 +75,7 @@ public:
 
     static QString familyForStyleHint(QFont::StyleHint styleHint);
     static QStringList extraTryFontsForFamily(const QString &family);
+    static QStringList familiesForScript(QFontDatabasePrivate::ExtendedScript script);
 
     class FontTable{};
     class EmbeddedFont

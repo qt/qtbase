@@ -24,6 +24,7 @@
 #include "QtCore/qstringlist.h"
 #include <QtGui/qfontdatabase.h>
 #include "private/qfixed_p.h"
+#include "private/qfontdatabase_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -153,8 +154,7 @@ public:
     QAtomicInt ref;
     const int fontCacheId;
 
-    QFontEngine *engines[QChar::ScriptCount];
-
+    QFontEngine *engines[QFontDatabasePrivate::ScriptCount];
 private:
     Q_DISABLE_COPY_MOVE(QFontEngineData)
 };

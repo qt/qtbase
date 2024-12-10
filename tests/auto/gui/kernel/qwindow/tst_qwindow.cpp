@@ -633,6 +633,9 @@ void tst_QWindow::framePositioning()
     if (showBeforePositioning) {
         window.showNormal();
         QVERIFY(QTest::qWaitForWindowExposed(&window));
+        // Needed on OpenSuse. The window manager (KWin) sets the frame margins after exposure. See
+        // QTBUG-131368.
+        QVERIFY(QTest::qWaitFor([&window]{ return !window.frameMargins().isNull(); }));
         originalMargins = window.frameMargins();
         window.setFramePosition(screenCenter);
     } else {

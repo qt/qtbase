@@ -49,6 +49,11 @@ void wrapper1() {
 QIcon undoicon = QIcon::fromTheme(QIcon::ThemeIcon::EditUndo);
 //! [fromTheme]
 
+//! [iconFont]
+QIcon::setThemeName("Material Symbols Outlined");
+QIcon muteIcon = QIcon::fromTheme(u"volume_off"_s);
+//! [iconFont]
+
 } // wrapper1
 
 

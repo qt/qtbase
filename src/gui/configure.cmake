@@ -1271,6 +1271,14 @@ qt_feature("raster-fp" PRIVATE
     PURPOSE "Internal painting support for floating point rasterization."
     CONDITION NOT VXWORKS # QTBUG-115777
 )
+
+qt_feature("qtgui-threadpool" PRIVATE
+    SECTION "Painting"
+    LABEL "Multi-threaded image and painting helpers"
+    PURPOSE "Multi-threaded image transforms and QPainter fills."
+    CONDITION QT_FEATURE_thread AND NOT WASM
+)
+
 qt_feature("undocommand" PUBLIC
     SECTION "Utilities"
     LABEL "QUndoCommand"
@@ -1344,6 +1352,10 @@ qt_configure_add_summary_entry(ARGS "vulkan")
 qt_configure_add_summary_entry(ARGS "metal")
 qt_configure_add_summary_entry(ARGS "graphicsframecapture")
 qt_configure_add_summary_entry(ARGS "sessionmanager")
+qt_configure_add_summary_entry(
+    ARGS "qtgui-threadpool"
+    CONDITION QT_FEATURE_thread
+)
 qt_configure_end_summary_section() # end of "Qt Gui" section
 qt_configure_add_summary_section(NAME "Features used by QPA backends")
 qt_configure_add_summary_entry(ARGS "evdev")

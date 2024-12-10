@@ -6,9 +6,8 @@
 #include <QtCore/private/qabstracteventdispatcher_p.h> // for qGlobalPostedEventsCount()
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qthread.h>
-#include <QtCore/qsocketnotifier.h>
 #include <QtCore/private/qstdweb_p.h>
-#include <sys/ioctl.h>
+#include <QtCore/private/qwasmsocket_p.h>
 
 #include "emscripten.h"
 #include <emscripten/html5.h>
@@ -44,58 +43,14 @@ static bool useAsyncify()
     return qstdweb::haveAsyncify();
 }
 
-static bool useJspi()
-{
-    return qstdweb::haveJspi();
-}
-
 // clang-format off
-EM_ASYNC_JS(void, qt_jspi_suspend_js, (), {
-    ++Module.qtJspiSuspensionCounter;
-
-    await new Promise(resolve => {
-        Module.qtAsyncifyWakeUp.push(resolve);
-    });
-});
-
-EM_JS(bool, qt_jspi_resume_js, (), {
-    if (!Module.qtJspiSuspensionCounter)
-        return false;
-
-    --Module.qtJspiSuspensionCounter;
-
-    setTimeout(() => {
-        const wakeUp = (Module.qtAsyncifyWakeUp ?? []).pop();
-        if (wakeUp) wakeUp();
-    });
-    return true;
-});
-
-EM_JS(bool, qt_jspi_can_resume_js, (), {
-    return Module.qtJspiSuspensionCounter > 0;
-});
-
-EM_JS(void, init_jspi_support_js, (), {
-    Module.qtAsyncifyWakeUp = [];
-    Module.qtJspiSuspensionCounter = 0;
-});
-// clang-format on
-
-void initJspiSupport() {
-    init_jspi_support_js();
-}
-
-Q_CONSTRUCTOR_FUNCTION(initJspiSupport);
-
-// clang-format off
-EM_JS(void, qt_asyncify_suspend_js, (), {
+EM_ASYNC_JS(void, qt_asyncify_suspend_js, (), {
     if (Module.qtSuspendId === undefined)
         Module.qtSuspendId = 0;
-    let sleepFn = (wakeUp) => {
-        Module.qtAsyncifyWakeUp = wakeUp;
-    };
     ++Module.qtSuspendId;
-    return Asyncify.handleSleep(sleepFn);
+    await new Promise(resolve => {
+        Module.qtAsyncifyWakeUp = resolve;
+    });
 });
 
 EM_JS(void, qt_asyncify_resume_js, (), {
@@ -122,28 +77,6 @@ EM_JS(void, qt_asyncify_resume_js, (), {
 
 static bool useAsyncify()
 {
-    return false;
-}
-
-static bool useJspi()
-{
-    return false;
-}
-
-void qt_jspi_suspend_js()
-{
-    Q_UNREACHABLE();
-}
-
-bool qt_jspi_resume_js()
-{
-    Q_UNREACHABLE();
-    return false;
-}
-
-bool qt_jspi_can_resume_js()
-{
-    Q_UNREACHABLE();
     return false;
 }
 
@@ -190,9 +123,6 @@ Q_CONSTINIT std::mutex QEventDispatcherWasm::g_staticDataMutex;
 emscripten::ProxyingQueue QEventDispatcherWasm::g_proxyingQueue;
 pthread_t QEventDispatcherWasm::g_mainThread;
 #endif
-// ### dynamic initialization:
-std::multimap<int, QSocketNotifier *> QEventDispatcherWasm::g_socketNotifiers;
-std::map<int, QEventDispatcherWasm::SocketReadyState> QEventDispatcherWasm::g_socketState;
 
 QEventDispatcherWasm::QEventDispatcherWasm()
 {
@@ -248,19 +178,8 @@ QEventDispatcherWasm::~QEventDispatcherWasm()
     {
         if (m_timerId > 0)
             emscripten_clear_timeout(m_timerId);
-        if (!g_socketNotifiers.empty()) {
-            qWarning("QEventDispatcherWasm: main thread event dispatcher deleted with active socket notifiers");
-            clearEmscriptenSocketCallbacks();
-            g_socketNotifiers.clear();
-        }
+        QWasmSocket::clearSocketNotifiers();
         g_mainThreadEventDispatcher = nullptr;
-        if (!g_socketNotifiers.empty()) {
-            qWarning("QEventDispatcherWasm: main thread event dispatcher deleted with active socket notifiers");
-            clearEmscriptenSocketCallbacks();
-            g_socketNotifiers.clear();
-        }
-
-        g_socketState.clear();
     }
 }
 
@@ -328,40 +247,6 @@ bool QEventDispatcherWasm::processEvents(QEventLoop::ProcessEventsFlags flags)
     }
 
     return false;
-}
-
-void QEventDispatcherWasm::registerSocketNotifier(QSocketNotifier *notifier)
-{
-    LOCK_GUARD(g_staticDataMutex);
-
-    bool wasEmpty = g_socketNotifiers.empty();
-    g_socketNotifiers.insert({notifier->socket(), notifier});
-    if (wasEmpty)
-        runOnMainThread([] { setEmscriptenSocketCallbacks(); });
-
-    int count;
-    ioctl(notifier->socket(), FIONREAD, &count);
-
-    // message may have arrived already
-    if (count > 0 && notifier->type() == QSocketNotifier::Read) {
-        QCoreApplication::postEvent(notifier, new QEvent(QEvent::SockAct));
-    }
-}
-
-void QEventDispatcherWasm::unregisterSocketNotifier(QSocketNotifier *notifier)
-{
-    LOCK_GUARD(g_staticDataMutex);
-
-    auto notifiers = g_socketNotifiers.equal_range(notifier->socket());
-    for (auto it = notifiers.first; it != notifiers.second; ++it) {
-        if (it->second == notifier) {
-            g_socketNotifiers.erase(it);
-            break;
-        }
-    }
-
-    if (g_socketNotifiers.empty())
-        runOnMainThread([] { clearEmscriptenSocketCallbacks(); });
 }
 
 void QEventDispatcherWasm::registerTimer(Qt::TimerId timerId, Duration interval, Qt::TimerType timerType, QObject *object)
@@ -453,9 +338,8 @@ void QEventDispatcherWasm::wakeUp()
     // event loop. Make sure the thread is unblocked or make it
     // process events.
     bool wasBlocked = wakeEventDispatcherThread();
-    // JSPI does not need a scheduled call to processPostedEvents, as the stack is not unwound
-    // at startup.
-    if (!qstdweb::haveJspi() && !wasBlocked && isMainThreadEventDispatcher()) {
+
+    if (!wasBlocked && isMainThreadEventDispatcher()) {
         {
             LOCK_GUARD(m_mutex);
             if (m_pendingProcessEvents)
@@ -480,13 +364,37 @@ void QEventDispatcherWasm::handleApplicationExec()
     // using it for the one qApp exec().
     // When JSPI is used, awaited async calls are allowed to be nested, so we
     // proceed normally.
-    if (!qstdweb::haveJspi()) {
-        const bool simulateInfiniteLoop = true;
-        emscripten_set_main_loop([](){
-            emscripten_pause_main_loop();
-        }, 0, simulateInfiniteLoop);
-    }
+    const bool simulateInfiniteLoop = true;
+    emscripten_set_main_loop([](){
+        emscripten_pause_main_loop();
+    }, 0, simulateInfiniteLoop);
 }
+
+void QEventDispatcherWasm::registerSocketNotifier(QSocketNotifier *notifier)
+{
+    QWasmSocket::registerSocketNotifier(notifier);
+}
+
+void QEventDispatcherWasm::unregisterSocketNotifier(QSocketNotifier *notifier)
+{
+    QWasmSocket::unregisterSocketNotifier(notifier);
+}
+
+void QEventDispatcherWasm::socketSelect(int timeout, int socket, bool waitForRead, bool waitForWrite,
+                                        bool *selectForRead, bool *selectForWrite, bool *socketDisconnect)
+{
+    QEventDispatcherWasm *eventDispatcher = static_cast<QEventDispatcherWasm *>(
+        QAbstractEventDispatcher::instance(QThread::currentThread()));
+
+    if (!eventDispatcher) {
+        qWarning("QEventDispatcherWasm::socketSelect called without eventdispatcher instance");
+        return;
+    }
+
+    QWasmSocket::waitForSocketState(eventDispatcher, timeout, socket, waitForRead, waitForWrite,
+                                    selectForRead, selectForWrite, socketDisconnect);
+}
+
 
 void QEventDispatcherWasm::handleDialogExec()
 {
@@ -528,15 +436,12 @@ bool QEventDispatcherWasm::wait(int timeout)
         if (timeout > 0)
             qWarning() << "QEventDispatcherWasm asyncify wait with timeout is not supported; timeout will be ignored"; // FIXME
 
-        if (useJspi()) {
-            qt_jspi_suspend_js();
-        } else {
-            bool didSuspend = qt_asyncify_suspend();
-            if (!didSuspend) {
-                qWarning("QEventDispatcherWasm: current thread is already suspended; could not asyncify wait for events");
-                return false;
-            }
+        bool didSuspend = qt_asyncify_suspend();
+        if (!didSuspend) {
+            qWarning("QEventDispatcherWasm: current thread is already suspended; could not asyncify wait for events");
+            return false;
         }
+
         return true;
     } else {
         qWarning("QEventLoop::WaitForMoreEvents is not supported on the main thread without asyncify");
@@ -559,21 +464,9 @@ bool QEventDispatcherWasm::wakeEventDispatcherThread()
     }
 #endif
     Q_ASSERT(isMainThreadEventDispatcher());
-    if (useJspi()) {
-
-#if QT_CONFIG(thread)
-        return qstdweb::runTaskOnMainThread<bool>(
-                []() { return qt_jspi_can_resume_js() && qt_jspi_resume_js(); }, &g_proxyingQueue);
-#else
-        return qstdweb::runTaskOnMainThread<bool>(
-                []() { return qt_jspi_can_resume_js() && qt_jspi_resume_js(); });
-#endif
-
-    } else {
-        if (!g_is_asyncify_suspended)
-            return false;
-        runOnMainThread([]() { qt_asyncify_resume(); });
-    }
+    if (!g_is_asyncify_suspended)
+        return false;
+    runOnMainThread([]() { qt_asyncify_resume(); });
     return true;
 }
 
@@ -699,215 +592,6 @@ void QEventDispatcherWasm::callProcessTimers(void *context)
         eventDispatcher->wakeUp();
     }
 #endif
-}
-
-void QEventDispatcherWasm::setEmscriptenSocketCallbacks()
-{
-    qCDebug(lcEventDispatcher) << "setEmscriptenSocketCallbacks";
-
-    emscripten_set_socket_error_callback(nullptr, QEventDispatcherWasm::socketError);
-    emscripten_set_socket_open_callback(nullptr, QEventDispatcherWasm::socketOpen);
-    emscripten_set_socket_listen_callback(nullptr, QEventDispatcherWasm::socketListen);
-    emscripten_set_socket_connection_callback(nullptr, QEventDispatcherWasm::socketConnection);
-    emscripten_set_socket_message_callback(nullptr, QEventDispatcherWasm::socketMessage);
-    emscripten_set_socket_close_callback(nullptr, QEventDispatcherWasm::socketClose);
-}
-
-void QEventDispatcherWasm::clearEmscriptenSocketCallbacks()
-{
-    qCDebug(lcEventDispatcher) << "clearEmscriptenSocketCallbacks";
-
-    emscripten_set_socket_error_callback(nullptr, nullptr);
-    emscripten_set_socket_open_callback(nullptr, nullptr);
-    emscripten_set_socket_listen_callback(nullptr, nullptr);
-    emscripten_set_socket_connection_callback(nullptr, nullptr);
-    emscripten_set_socket_message_callback(nullptr, nullptr);
-    emscripten_set_socket_close_callback(nullptr, nullptr);
-}
-
-void QEventDispatcherWasm::socketError(int socket, int err, const char* msg, void *context)
-{
-    Q_UNUSED(err);
-    Q_UNUSED(msg);
-    Q_UNUSED(context);
-
-    // Emscripten makes socket callbacks while the main thread is busy-waiting for a mutex,
-    // which can cause deadlocks if the callback code also tries to lock the same mutex.
-    // This is most easily reproducible by adding print statements, where each print requires
-    // taking a mutex lock. Work around this by running the callback asynchronously, i.e. by using
-    // a native zero-timer, to make sure the main thread stack is completely unwond before calling
-    // the Qt handler.
-    // It is currently unclear if this problem is caused by code in Qt or in Emscripten, or
-    // if this completely fixes the problem.
-    runAsync([socket](){
-        auto notifiersRange = g_socketNotifiers.equal_range(socket);
-        std::vector<std::pair<int, QSocketNotifier *>> notifiers(notifiersRange.first, notifiersRange.second);
-        for (auto [_, notifier]: notifiers) {
-            QCoreApplication::postEvent(notifier, new QEvent(QEvent::SockAct));
-        }
-        setSocketState(socket, true, true);
-    });
-}
-
-void QEventDispatcherWasm::socketOpen(int socket, void *context)
-{
-    Q_UNUSED(context);
-
-    runAsync([socket](){
-        auto notifiersRange = g_socketNotifiers.equal_range(socket);
-        std::vector<std::pair<int, QSocketNotifier *>> notifiers(notifiersRange.first, notifiersRange.second);
-        for (auto [_, notifier]: notifiers) {
-            if (notifier->type() == QSocketNotifier::Write) {
-                QCoreApplication::postEvent(notifier, new QEvent(QEvent::SockAct));
-            }
-        }
-        setSocketState(socket, false, true);
-    });
-}
-
-void QEventDispatcherWasm::socketListen(int socket, void *context)
-{
-    Q_UNUSED(socket);
-    Q_UNUSED(context);
-}
-
-void QEventDispatcherWasm::socketConnection(int socket, void *context)
-{
-    Q_UNUSED(socket);
-    Q_UNUSED(context);
-}
-
-void QEventDispatcherWasm::socketMessage(int socket, void *context)
-{
-    Q_UNUSED(context);
-
-    runAsync([socket](){
-        auto notifiersRange = g_socketNotifiers.equal_range(socket);
-        std::vector<std::pair<int, QSocketNotifier *>> notifiers(notifiersRange.first, notifiersRange.second);
-        for (auto [_, notifier]: notifiers) {
-            if (notifier->type() == QSocketNotifier::Read) {
-                QCoreApplication::postEvent(notifier, new QEvent(QEvent::SockAct));
-            }
-        }
-        setSocketState(socket, true, false);
-    });
-}
-
-void QEventDispatcherWasm::socketClose(int socket, void *context)
-{
-    Q_UNUSED(context);
-
-    // Emscripten makes emscripten_set_socket_close_callback() calls to socket 0,
-    // which is not a valid socket. see https://github.com/emscripten-core/emscripten/issues/6596
-    if (socket == 0)
-        return;
-
-    runAsync([socket](){
-        auto notifiersRange = g_socketNotifiers.equal_range(socket);
-        std::vector<std::pair<int, QSocketNotifier *>> notifiers(notifiersRange.first, notifiersRange.second);
-        for (auto [_, notifier]: notifiers)
-            QCoreApplication::postEvent(notifier, new QEvent(QEvent::SockClose));
-
-        setSocketState(socket, true, true);
-        clearSocketState(socket);
-    });
-}
-
-void QEventDispatcherWasm::setSocketState(int socket, bool setReadyRead, bool setReadyWrite)
-{
-    LOCK_GUARD(g_staticDataMutex);
-    SocketReadyState &state = g_socketState[socket];
-
-    // Additively update socket ready state, e.g. if it
-    // was already ready read then it stays ready read.
-    state.readyRead |= setReadyRead;
-    state.readyWrite |= setReadyWrite;
-
-    // Wake any waiters for the given readiness. The waiter consumes
-    // the ready state, returning the socket to not-ready.
-    if (QEventDispatcherWasm *waiter = state.waiter)
-        if ((state.readyRead && state.waitForReadyRead) || (state.readyWrite && state.waitForReadyWrite))
-            waiter->wakeEventDispatcherThread();
-}
-
-void QEventDispatcherWasm::clearSocketState(int socket)
-{
-    LOCK_GUARD(g_staticDataMutex);
-    g_socketState.erase(socket);
-}
-
-void QEventDispatcherWasm::waitForSocketState(int timeout, int socket, bool checkRead, bool checkWrite,
-                                              bool *selectForRead, bool *selectForWrite, bool *socketDisconnect)
-{
-    // Loop until the socket becomes readyRead or readyWrite. Wait for
-    // socket activity if it currently is neither.
-    while (true) {
-        *selectForRead = false;
-        *selectForWrite = false;
-
-        {
-            LOCK_GUARD(g_staticDataMutex);
-
-            // Access or create socket state: we want to register that a thread is waitng
-            // even if we have not received any socket callbacks yet.
-            SocketReadyState &state = g_socketState[socket];
-            if (state.waiter) {
-                qWarning() << "QEventDispatcherWasm::waitForSocketState: a thread is already waiting";
-                break;
-            }
-
-            bool shouldWait = true;
-            if (checkRead && state.readyRead) {
-                shouldWait = false;
-                state.readyRead = false;
-                *selectForRead = true;
-            }
-            if (checkWrite && state.readyWrite) {
-                shouldWait = false;
-                state.readyWrite = false;
-                *selectForRead = true;
-            }
-            if (!shouldWait)
-                break;
-
-            state.waiter = this;
-            state.waitForReadyRead = checkRead;
-            state.waitForReadyWrite = checkWrite;
-        }
-
-        bool didTimeOut = !wait(timeout);
-        {
-            LOCK_GUARD(g_staticDataMutex);
-
-            // Missing socket state after a wakeup means that the socket has been closed.
-            auto it = g_socketState.find(socket);
-            if (it == g_socketState.end()) {
-                *socketDisconnect = true;
-                break;
-            }
-            it->second.waiter = nullptr;
-            it->second.waitForReadyRead = false;
-            it->second.waitForReadyWrite = false;
-        }
-
-        if (didTimeOut)
-            break;
-    }
-}
-
-void QEventDispatcherWasm::socketSelect(int timeout, int socket, bool waitForRead, bool waitForWrite,
-                                        bool *selectForRead, bool *selectForWrite, bool *socketDisconnect)
-{
-    QEventDispatcherWasm *eventDispatcher = static_cast<QEventDispatcherWasm *>(
-        QAbstractEventDispatcher::instance(QThread::currentThread()));
-
-    if (!eventDispatcher) {
-        qWarning("QEventDispatcherWasm::socketSelect called without eventdispatcher instance");
-        return;
-    }
-
-    eventDispatcher->waitForSocketState(timeout, socket, waitForRead, waitForWrite,
-                                        selectForRead, selectForWrite, socketDisconnect);
 }
 
 namespace {

@@ -64,6 +64,9 @@ function(qt_internal_setup_public_platform_target)
 
     qt_internal_add_sbom(Platform
         TYPE QT_MODULE
+        ATTRIBUTION_FILE_DIR_PATHS
+            "${PROJECT_SOURCE_DIR}/cmake/3rdparty/extra-cmake-modules"
+            "${PROJECT_SOURCE_DIR}/cmake/3rdparty/kwin"
         IMMEDIATE_FINALIZATION
     )
 endfunction()

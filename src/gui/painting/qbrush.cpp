@@ -598,19 +598,49 @@ void QBrush::detach(Qt::BrushStyle newStyle)
 
 
 /*!
-    \fn QBrush &QBrush::operator=(const QBrush &brush)
-
     Assigns the given \a brush to \e this brush and returns a
     reference to \e this brush.
 */
 
-QBrush &QBrush::operator=(const QBrush &b)
+QBrush &QBrush::operator=(const QBrush &brush)
 {
-    if (d == b.d)
+    if (d == brush.d)
         return *this;
 
-    b.d->ref.ref();
-    d.reset(b.d.get());
+    brush.d->ref.ref();
+    d.reset(brush.d.get());
+    return *this;
+}
+
+/*!
+    \fn QBrush &QBrush::operator=(QColor color)
+    \fn QBrush &QBrush::operator=(Qt::GlobalColor color)
+    \overload
+    \since 6.9
+
+    Makes this brush a solid pattern brush of the given \a color,
+    and returns a reference to \e this brush.
+*/
+QBrush &QBrush::operator=(QColor color)
+{
+    detach(Qt::SolidPattern);
+    d->color = color;
+    d->transform = {};
+    return *this;
+}
+
+/*!
+    \overload
+    \since 6.9
+
+    Makes this brush a black brush of the given \a style,
+    and returns a reference to \e this brush.
+*/
+QBrush &QBrush::operator=(Qt::BrushStyle style)
+{
+    detach(style);
+    d->color = Qt::black;
+    d->transform = {};
     return *this;
 }
 

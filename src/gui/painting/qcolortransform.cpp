@@ -1975,7 +1975,7 @@ void QColorTransformPrivate::apply(D *dst, const S *src, qsizetype count, Transf
     if (colorSpaceOut->isThreeComponentMatrix())
         updateLutsOut();
 
-    QUninitialized<QColorVector, WorkBlockSize> buffer;
+    Q_DECL_UNINITIALIZED QUninitialized<QColorVector, WorkBlockSize> buffer;
     qsizetype i = 0;
     while (i < count) {
         const qsizetype len = qMin(count - i, WorkBlockSize);

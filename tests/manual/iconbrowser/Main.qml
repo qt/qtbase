@@ -3,29 +3,50 @@
 
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Layouts
 
 Rectangle {
     anchors.fill: parent
-    Column {
-        Row {
-            ToolButton {
-                id: normalButton
-                icon.name: iconName.text
-            }
-            ToolButton {
-                id: disabledButton
-                enabled: false
-                icon.name: iconName.text
-            }
-            ToolButton {
-                id: checkedButton
-                checked: true
-                icon.name: iconName.text
+    ColumnLayout {
+        anchors.left: parent.left
+        anchors.right: parent.right
+        ToolBar {
+            RowLayout {
+                anchors.fill: parent
+                ToolButton {
+                    id: normalButton
+                    checkable: true
+                    icon.name: checked ? iconNameOn.text : iconNameOff.text
+                }
+                ToolButton {
+                    id: checkedButton
+                    checked: true
+                    checkable: true
+                    icon.name: checked ? iconNameOn.text : iconNameOff.text
+                }
+                ToolButton {
+                    id: disabledButton
+                    enabled: false
+                    icon.name: checked ? iconNameOn.text : iconNameOff.text
+                }
             }
         }
-        TextField {
-            id: iconName
-            text: "folder"
+
+        RowLayout {
+            Label {
+                text: "Off:"
+            }
+            TextField {
+                id: iconNameOff
+                text: "mail-mark-read"
+            }
+            Label {
+                text: "On:"
+            }
+            TextField {
+                id: iconNameOn
+                text: "mail-mark-unread"
+            }
         }
     }
 }

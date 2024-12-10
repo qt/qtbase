@@ -823,7 +823,7 @@ void tst_QColorSpace::primaries2_data()
 void tst_QColorSpace::primaries2()
 {
     QFETCH(QColorSpace::Primaries, primariesId);
-    QColorSpacePrimaries primaries(primariesId);
+    QColorSpace::PrimaryPoints primaries = QColorSpace::PrimaryPoints::fromPrimaries(primariesId);
 
     QColorSpace original(primariesId,  QColorSpace::TransferFunction::Linear);
     QColorSpace custom1(primaries.whitePoint, primaries.redPoint,

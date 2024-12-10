@@ -10,15 +10,28 @@
 #include <QPainter>
 #include <QLinearGradient>
 
+#include <QtGui/qpa/qplatformwindow.h>
+
 #include "previewwindow.h"
+
+PreviewWindow::PreviewWindow(QWindow *parent)
+    : QRasterWindow(parent)
+{
+    setTitle(tr("Preview <QWindow> Qt %1").arg(QLatin1StringView(QT_VERSION_STR)));
+    resize(400, 400);
+}
 
 void PreviewWindow::paintEvent(QPaintEvent *event)
 {
     QPainter painter(this);
-    QLinearGradient gradient(0, 0, width(), height());
-    gradient.setColorAt(0, QColor("#64b3f4"));
-    gradient.setColorAt(1, QColor("#c2e59c"));
-    painter.fillRect(QRect(0, 0, width(), height()), gradient);
+    QRect rect(0, 0, width(), height());
+    if (m_visualizeSafeAreas) {
+        painter.fillRect(rect, QGradient::WarmFlame);
+        QMargins safeAreaMargins = handle()->safeAreaMargins();
+        rect.adjust(safeAreaMargins.left(), safeAreaMargins.top(),
+            safeAreaMargins.right(), safeAreaMargins.bottom());
+    }
+    painter.fillRect(rect, QGradient::DustyGrass);
 }
 
 static void formatWindowFlags(QTextStream &str, Qt::WindowFlags flags)
@@ -86,8 +99,8 @@ static void formatWindowFlags(QTextStream &str, Qt::WindowFlags flags)
         str << "\n| Qt::WindowOverridesSystemGestures";
     if (flags & Qt::WindowDoesNotAcceptFocus)
         str << "\n| Qt::WindowDoesNotAcceptFocus";
-    if (flags & Qt::MaximizeUsingFullscreenGeometryHint)
-        str << "\n| Qt::MaximizeUsingFullscreenGeometryHint";
+    if (flags & Qt::ExpandedClientAreaHint)
+        str << "\n| Qt::ExpandedClientAreaHint";
     if (flags & Qt::NoDropShadowWindowHint)
         str << "\n| Qt::NoDropShadowWindowHint";
 }

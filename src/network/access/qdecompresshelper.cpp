@@ -20,6 +20,9 @@
 #include <array>
 
 QT_BEGIN_NAMESPACE
+
+using namespace Qt::StringLiterals;
+
 namespace {
 struct ContentEncodingMapping
 {
@@ -717,9 +720,9 @@ qsizetype QDecompressHelper::readBrotli(char *data, const qsizetype maxSize)
         switch (result) {
         Q_UNLIKELY_BRANCH
         case BROTLI_DECODER_RESULT_ERROR:
-            errorStr = QLatin1String("Brotli error: %1")
-                               .arg(QString::fromUtf8(BrotliDecoderErrorString(
-                                       BrotliDecoderGetErrorCode(brotliDecoderState))));
+            errorStr = QCoreApplication::translate("QHttp", "Brotli error: %1")
+                           .arg(QUtf8StringView{BrotliDecoderErrorString(
+                               BrotliDecoderGetErrorCode(brotliDecoderState))});
             return -1;
         case BROTLI_DECODER_RESULT_SUCCESS:
             BrotliDecoderDestroyInstance(brotliDecoderState);
@@ -765,9 +768,9 @@ qsizetype QDecompressHelper::readZstandard(char *data, const qsizetype maxSize)
     while (outBuf.pos < outBuf.size && (inBuf.pos < inBuf.size || decoderHasData)) {
         size_t retValue = ZSTD_decompressStream(zstdStream, &outBuf, &inBuf);
         if (ZSTD_isError(retValue)) Q_UNLIKELY_BRANCH {
-            errorStr = QLatin1String("ZStandard error: %1")
-                               .arg(QString::fromUtf8(ZSTD_getErrorName(retValue)));
-            return -1;
+            errorStr = QCoreApplication::translate("QHttp", "ZStandard error: %1")
+                            .arg(QUtf8StringView{ZSTD_getErrorName(retValue)});
+                return -1;
         }
         decoderHasData = false;
         bytesDecoded = outBuf.pos;

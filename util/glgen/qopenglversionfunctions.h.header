@@ -41,16 +41,16 @@ struct QOpenGLVersionStatus
     };
 
     QOpenGLVersionStatus()
-        : version(qMakePair(0, 0)),
+        : version(std::pair(0, 0)),
           status(InvalidStatus)
     {}
 
     QOpenGLVersionStatus(int majorVersion, int minorVersion, QOpenGLVersionStatus::OpenGLStatus functionStatus)
-        : version(qMakePair(majorVersion, minorVersion)),
+        : version(std::pair(majorVersion, minorVersion)),
           status(functionStatus)
     {}
 
-    QPair<int, int> version;
+    std::pair<int, int> version;
     OpenGLStatus status;
 };
 

@@ -153,7 +153,7 @@ QOpenGLTextureHelper::QOpenGLTextureHelper(QOpenGLContext *context)
     TextureView = 0;
 
     // OpenGL ES 3.1+ has TexStorage2DMultisample
-    if (ctx->format().version() >= qMakePair(3, 1)) {
+    if (ctx->format().version() >= std::pair(3, 1)) {
         QOpenGLExtraFunctionsPrivate *extra = static_cast<QOpenGLExtensions *>(context->extraFunctions())->d();
         TexStorage2DMultisample = extra->f.TexStorage2DMultisample;
     }

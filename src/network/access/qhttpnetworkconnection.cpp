@@ -16,7 +16,6 @@
 #include <private/qsocketabstraction_p.h>
 
 #include <qbuffer.h>
-#include <qpair.h>
 #include <qdebug.h>
 #include <qspan.h>
 #include <qvarlengtharray.h>

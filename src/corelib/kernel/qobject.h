@@ -90,9 +90,11 @@ public:
     QDynamicMetaObjectData *metaObject;
     QBindingStorage bindingStorage;
 
-    // ### Qt7: Make this return a const QMetaObject *. You should not mess with
-    //          the metaobjects of existing objects.
+#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0)
+    const QMetaObject *dynamicMetaObject() const;
+#else
     QMetaObject *dynamicMetaObject() const;
+#endif
 
 #ifdef QT_DEBUG
     enum { CheckForParentChildLoopsWarnDepth = 4096 };

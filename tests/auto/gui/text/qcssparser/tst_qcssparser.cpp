@@ -294,8 +294,12 @@ void tst_QCssParser::term_data()
     val.type = QCss::Value::Uri;
     val.variant = QString("www.kde.org");
     QTest::newRow("uri1") << true << "url(\"www.kde.org\")" << val;
-
     QTest::newRow("uri2") << true << "url(www.kde.org)" << val;
+
+    val.type = QCss::Value::Uri;
+    val.variant = QString("www.kde.org/test?key=value&v=123");
+    QTest::newRow("uri_query_quoted") << true << "url(\"www.kde.org/test?key=value&v=123\")" << val;
+    QTest::newRow("uri_query_unquoted") << true << "url(www.kde.org/test?key=value&v=123)" << val;
 
     val.type = QCss::Value::KnownIdentifier;
     val.variant = int(QCss::Value_Italic);
@@ -315,6 +319,7 @@ void tst_QCssParser::term()
     QCss::Parser parser(css);
     QCss::Value val;
     QVERIFY(parser.testTerm());
+    QEXPECT_FAIL("uri_query_unquoted", "QTBUG-131842", Abort);
     QCOMPARE(parser.parseTerm(&val), parseSuccess);
     if (parseSuccess) {
         QCOMPARE(int(val.type), int(expectedValue.type));
@@ -1411,6 +1416,12 @@ void tst_QCssParser::shorthandBackgroundProperty_data()
     QTest::newRow("multi") << "background: left url(blah.png) repeat-x" << QBrush() << QString("blah.png") << int(QCss::Repeat_X) << int(Qt::AlignLeft | Qt::AlignVCenter);
     QTest::newRow("multi2") << "background: url(blah.png) repeat-x top" << QBrush() << QString("blah.png") << int(QCss::Repeat_X) << int(Qt::AlignTop | Qt::AlignHCenter);
     QTest::newRow("multi3") << "background: url(blah.png) top right" << QBrush() << QString("blah.png") << int(QCss::Repeat_XY) << int(Qt::AlignTop | Qt::AlignRight);
+    QTest::newRow("url-query-quoted") << "background: url(\"https://placecats.com/300/200?fit=contain&position=top\")"
+                                                                    << QBrush() << QString("https://placecats.com/300/200?fit=contain&position=top")
+                                                                    << int(QCss::Repeat_XY) << int(Qt::AlignTop | Qt::AlignLeft);
+    QTest::newRow("url-query-unquoted") << "background: url(https://placecats.com/300/200?fit=contain&position=top)"
+                                                                    << QBrush() << QString("https://placecats.com/300/200?fit=contain&position=top")
+                                                                    << int(QCss::Repeat_XY) << int(Qt::AlignTop | Qt::AlignLeft);
 }
 
 void tst_QCssParser::shorthandBackgroundProperty()
@@ -1425,6 +1436,7 @@ void tst_QCssParser::shorthandBackgroundProperty()
 
     QCss::Parser parser(css);
     QCss::StyleSheet sheet;
+    QEXPECT_FAIL("url-query-unquoted", "QTBUG-131842", Abort);
     QVERIFY(parser.parse(&sheet));
 
     DomStyleSelector testSelector(doc, sheet);

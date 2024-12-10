@@ -352,16 +352,16 @@ void QWasmInputContext::setFocusObject(QObject *object)
     if (m_focusObject && !m_preeditString.isEmpty())
         commitPreeditAndClear();
 
-    if (inputMethodAccepted()) {
+    if (object) {
         m_inputElement.call<void>("focus");
-        m_usingTextInput = true;
-
+        m_usingTextInput = inputMethodAccepted();
         m_focusObject = object;
-    } else {
+    } else if (m_focusObject) {
         m_inputElement.call<void>("blur");
         m_usingTextInput = false;
-
         m_focusObject = nullptr;
+    } else {
+        m_usingTextInput = false;
     }
     QPlatformInputContext::setFocusObject(object);
 }

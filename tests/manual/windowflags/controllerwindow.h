@@ -35,7 +35,7 @@ private slots:
     void updateStateControl();
 
 private:
-    void updatePreview(QWindow *);
+    void updatePreview(PreviewWindow *);
     void updatePreview(QWidget *);
     void createTypeGroupBox();
     QCheckBox *createCheckBox(const QString &text);
@@ -43,7 +43,7 @@ private:
 
     QMainWindow *parentWindow;
 
-    QWindow *previewWindow;
+    PreviewWindow *previewWindow;
     PreviewWidget *previewWidget;
     PreviewDialog *previewDialog;
 
@@ -60,6 +60,7 @@ private:
     QRadioButton *previewDialogButton;
     QCheckBox *modalWindowCheckBox;
     QCheckBox *fixedSizeWindowCheckBox;
+    QCheckBox *safeAreaCheckBox;
 };
 
 class LogWidget : public QPlainTextEdit

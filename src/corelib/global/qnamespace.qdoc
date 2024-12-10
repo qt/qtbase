@@ -2345,14 +2345,18 @@
     \value WindowDoesNotAcceptFocus Informs the window system that this window should
            not receive the input focus.
 
-    \value MaximizeUsingFullscreenGeometryHint Informs the window system that when
-           maximizing the window it should use as much of the available screen geometry
-           as possible, including areas that may be covered by system UI such as status
-           bars or application launchers. This may result in the window being placed
-           under these system UIs, but does not guarantee it, depending on whether or
-           not the platform supports it. When the flag is enabled the user is responsible
-           for taking QScreen::availableGeometry() into account, so that any UI elements
-           in the application that require user interaction are not covered by system UI.
+    \value MaximizeUsingFullscreenGeometryHint Deprecated alias for Qt::ExpandedClientAreaHint
+
+    \value [since 6.9] ExpandedClientAreaHint Requests that the window's client area is
+           expanded to areas where it might be obscured by, or conflicting with other UI
+           elements, such as the window's titlebar controls or other system UIs. The
+           window's \l{QWindow::safeAreaMargins()}{safe area margins} will reflect any
+           areas that may have conflicting UI elements.
+
+    \value [since 6.9] NoTitleBarBackgroundHint Requests that the window's title bar is drawn
+           without a background color. This flag is useful in combination with
+           Qt::ExpandedClientAreaHint, to give the perception that the window's
+           client area seamlessly blends with the titlebar area and controls.
 
     \value WindowType_Mask  A mask for extracting the window type
                             part of the window flags.
@@ -3566,9 +3570,7 @@
 
 /*!
   \fn size_t qHash(QKeyCombination key, size_t seed = 0) noexcept
-  \relates QKeyCombination
-
-  Returns the hash value for the \a key, using \a seed to seed the calculation.
+  \qhashold{QKeyCombination}
 */
 
 #ifndef QT_NO_DEBUG_STREAM

@@ -41,6 +41,7 @@ public Q_SLOTS:
 Q_SIGNALS:
     void currentChanged(int);
     void widgetRemoved(int index);
+    void widgetAdded(int index);
 
 protected:
     bool event(QEvent *e) override;

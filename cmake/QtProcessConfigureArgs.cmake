@@ -1049,6 +1049,9 @@ if("${INPUT_ltcg}" STREQUAL "yes")
     endforeach()
 endif()
 
+translate_path_input(ffmpeg-dir FFMPEG_DIR)
+translate_boolean_input(ffmpeg-deploy QT_DEPLOY_FFMPEG)
+
 translate_list_input(device-option QT_QMAKE_DEVICE_OPTIONS)
 translate_list_input(defines QT_EXTRA_DEFINES)
 translate_list_input(fpaths QT_EXTRA_FRAMEWORKPATHS)

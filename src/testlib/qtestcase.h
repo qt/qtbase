@@ -520,7 +520,8 @@ namespace QTest
                                               const char *(*lhsFormatter)(const void*),
                                               const char *(*rhsFormatter)(const void*),
                                               const char *lhsStr, const char *rhsStr,
-                                              const char *(*orderFormatter)(const void *),
+                                              const char *(*actualOrderFormatter)(const void *),
+                                              const char *(*expectedOrderFormatter)(const void *),
                                               const void *actualOrderPtr,
                                               const void *expectedOrderPtr,
                                               const char *expectedExpression,
@@ -815,8 +816,10 @@ namespace QTest
                                    std::addressof(lhs), std::addressof(rhs),
                                    genericToString<DLHS>, genericToString<DRHS>,
                                    lhsExpression, rhsExpression,
+                                   genericToString<decltype(comparisonResult)>,
                                    genericToString<OrderingType>,
-                                   std::addressof(actualOrder), std::addressof(order),
+                                   std::addressof(comparisonResult),
+                                   std::addressof(order),
                                    resultExpression, file, line);
     }
 #else

@@ -978,8 +978,13 @@ bool QWindowsVistaStylePrivate::drawBackgroundThruNativeBuffer(QWindowsThemeData
             rotMatrix.rotate(themeData.rotate);
             imgCopy = imgCopy.transformed(rotMatrix);
         }
+        Qt::Orientations orient = {};
+        if (themeData.mirrorHorizontally)
+            orient |= Qt::Horizontal;
+        if (themeData.mirrorVertically)
+            orient |= Qt::Vertical;
         if (themeData.mirrorHorizontally || themeData.mirrorVertically)
-            imgCopy = imgCopy.mirrored(themeData.mirrorHorizontally, themeData.mirrorVertically);
+            imgCopy.flip(orient);
         painter->drawImage(themeData.rect, imgCopy);
     }
 

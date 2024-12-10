@@ -34,6 +34,12 @@
 #include <emscripten/threading.h>
 #endif  // #if QT_CONFIG(thread)
 
+#if QT_CONFIG(wasm_jspi)
+# define QT_WASM_EMSCRIPTEN_ASYNC ,emscripten::async()
+#else
+# define QT_WASM_EMSCRIPTEN_ASYNC
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QMimeData;

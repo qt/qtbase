@@ -38,13 +38,25 @@ void QAndroidSystemLocale::getLocaleFromJava() const
     }();
 
     const QString languageCode = javaLocaleObject.callMethod<QString>("getLanguage");
-    const QString countryCode = javaLocaleObject.callMethod<QString>("getCountry");
+    const QString extraCodes[3] = {
+        javaLocaleObject.callMethod<QString>("getScript"),
+        javaLocaleObject.callMethod<QString>("getCountry"),
+        javaLocaleObject.callMethod<QString>("getVariant"),
+    };
+    QString fullName = languageCode;
+    for (const QString &code : extraCodes) {
+        if (code.isEmpty())
+            continue;
+        if (!fullName.isEmpty())
+            fullName += u'_';
+        fullName += code;
+    }
 
     const bool is24HourFormat = DateFormat::callStaticMethod<bool>("is24HourFormat",
                                     QNativeInterface::QAndroidApplication::context());
 
     QWriteLocker locker(&m_lock);
-    m_locale = QLocale(languageCode + u'_' + countryCode);
+    m_locale = QLocale(fullName);
     m_24hFormat = is24HourFormat;
 }
 
@@ -98,6 +110,8 @@ QVariant QAndroidSystemLocale::query(QueryType type, QVariant &&in) const
     switch (type) {
     case DecimalPoint:
         return m_locale.decimalPoint();
+    case Grouping:
+        return QVariant::fromValue(localeData(m_locale)->m_data->groupSizes());
     case GroupSeparator:
         return m_locale.groupSeparator();
     case ZeroDigit:

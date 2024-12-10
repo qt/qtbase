@@ -271,7 +271,7 @@ void GLWindow::initializeGL()
     QImage img(":/Qt-logo-medium.png");
     Q_ASSERT(!img.isNull());
     delete m_texImageInput;
-    m_texImageInput = new QOpenGLTexture(img.convertToFormat(QImage::Format_RGBA8888).mirrored());
+    m_texImageInput = new QOpenGLTexture(img.convertToFormat(QImage::Format_RGBA8888).flipped());
 
     delete m_texImageTmp;
     m_texImageTmp = new QOpenGLTexture(QOpenGLTexture::Target2D);

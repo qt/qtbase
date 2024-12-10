@@ -20,6 +20,15 @@ QT_BEGIN_NAMESPACE
 
 struct QMetaObject;
 
+enum class TypeTag : uchar {
+    None,
+    HasStruct = 0x01,
+    HasClass = 0x02,
+    HasEnum = 0x04,
+};
+Q_DECLARE_FLAGS(TypeTags, TypeTag)
+Q_DECLARE_OPERATORS_FOR_FLAGS(TypeTags)
+
 struct Type
 {
     enum ReferenceType { NoReference, Reference, RValueReference, Pointer };
@@ -33,6 +42,7 @@ struct Type
     QByteArray rawName;
     uint isVolatile : 1;
     uint isScoped : 1;
+    TypeTags typeTag;
     Token firstToken;
     ReferenceType referenceType;
 };
@@ -116,6 +126,7 @@ struct PropertyDef
     enum Specification  { ValueSpec, ReferenceSpec, PointerSpec };
     Specification gspec = ValueSpec;
     int revision = 0;
+    TypeTags typeTag;
     bool constant = false;
     bool final = false;
     bool required = false;

@@ -42,7 +42,7 @@ class QtEmbeddedDelegate extends QtActivityDelegateBase
             public void onActivityResumed(Activity activity) {
                 if (m_activity == activity && m_stateDetails.isStarted) {
                     QtNative.setApplicationState(ApplicationActive);
-                    QtNative.updateWindow();
+                    QtWindow.updateWindows();
                 }
             }
 

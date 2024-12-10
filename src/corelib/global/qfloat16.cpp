@@ -375,9 +375,7 @@ Q_CORE_EXPORT void qFloatFromFloat16(float *out, const qfloat16 *in, qsizetype l
 /*!
     \fn size_t qfloat16::qHash(qfloat16 key, size_t seed)
     \since 6.5.3
-
-    Returns the hash value for the \a key, using \a seed to seed the
-    calculation.
+    \qhash{qfloat16}
 
     \note In Qt versions before 6.5, this operation was provided by the
     qHash(float) overload. In Qt versions 6.5.0 to 6.5.2, this functionality

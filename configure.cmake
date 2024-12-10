@@ -584,6 +584,11 @@ qt_feature("private_tests" PRIVATE
     LABEL "Developer build: private_tests"
     CONDITION QT_FEATURE_developer_build
 )
+qt_feature("doc_snippets" PRIVATE
+    LABEL "Developer build: doc_snippets"
+    AUTODETECT QT_FEATURE_developer_build
+    CONDITION QT_FEATURE_shared
+)
 qt_feature_definition("developer-build" "QT_BUILD_INTERNAL")
 qt_feature_config("developer-build" QMAKE_PUBLIC_QT_CONFIG
     NAME "private_tests"
@@ -979,6 +984,14 @@ qt_feature("wasm-exceptions" PUBLIC
 qt_feature_definition("wasm-exceptions" "QT_WASM_EXCEPTIONS" VALUE "1")
 qt_feature_config("wasm-exceptions" QMAKE_PRIVATE_CONFIG)
 
+qt_feature("wasm-jspi" PUBLIC
+    LABEL "WebAssembly JSPI"
+    PURPOSE "Enables WebAssembly JavaScript Promise Integration (JSPI)"
+    AUTODETECT OFF
+)
+qt_feature_definition("wasm-jspi" "QT_WASM_JSPI" VALUE "1")
+qt_feature_config("wasm-jspi" QMAKE_PRIVATE_CONFIG)
+
 qt_feature("localtime_r" PRIVATE
     LABEL "localtime_r()"
     CONDITION TEST_localtime_r
@@ -1309,6 +1322,10 @@ qt_configure_add_summary_entry(
     ARGS "wasm-exceptions"
     CONDITION ( TEST_architecture_arch STREQUAL wasm )
 )
+qt_configure_add_summary_entry(
+    ARGS "wasm-jspi"
+    CONDITION ( TEST_architecture_arch STREQUAL wasm )
+)
 qt_configure_add_summary_section(NAME "Target compiler supports")
 qt_configure_add_summary_entry(
     TYPE "featureList"
@@ -1455,9 +1472,15 @@ qt_configure_add_report_entry(
     CONDITION QT_FEATURE_thread AND WASM
 )
 qt_configure_add_report_entry(
-    TYPE WARNING
+    TYPE ERROR
     MESSAGE "You should use the recommended Emscripten version ${QT_EMCC_RECOMMENDED_VERSION} with this Qt. You have ${EMCC_VERSION}."
-    CONDITION WASM AND NOT ${EMCC_VERSION} MATCHES ${QT_EMCC_RECOMMENDED_VERSION}
+    CONDITION WASM AND ${EMCC_VERSION} VERSION_LESS ${QT_EMCC_RECOMMENDED_VERSION}
+)
+qt_configure_add_report_entry(
+    TYPE WARNING
+    MESSAGE "Using Emscripten version ${QT_EMCC_RECOMMENDED_VERSION} with this Qt
+    may have issues. You have ${EMCC_VERSION}."
+    CONDITION WASM AND ${EMCC_VERSION} VERSION_GREATER ${QT_EMCC_RECOMMENDED_VERSION}
 )
 qt_configure_add_report_entry(
     TYPE WARNING

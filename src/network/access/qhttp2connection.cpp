@@ -1,5 +1,6 @@
 // Copyright (C) 2023 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// Qt-Security score:critical reason:network-protocol
 
 #include "qhttp2connection_p.h"
 
@@ -817,17 +818,15 @@ QHttp2Connection *QHttp2Connection::createUpgradedConnection(QIODevice *socket,
     auto connection = std::unique_ptr<QHttp2Connection>(new QHttp2Connection(socket));
     connection->setH2Configuration(config);
     connection->m_connectionType = QHttp2Connection::Type::Client;
+    connection->m_upgradedConnection = true;
     // HTTP2 connection is already established and request was sent, so stream 1
     // is already 'active' and is closed for any further outgoing data.
     QHttp2Stream *stream = connection->createLocalStreamInternal().unwrap();
     Q_ASSERT(stream->streamID() == 1);
     stream->setState(QHttp2Stream::State::HalfClosedLocal);
-    connection->m_upgradedConnection = true;
 
-    if (!connection->sendClientPreface()) {
-        qCWarning(qHttp2ConnectionLog, "[%p] Failed to send client preface", connection.get());
+    if (!connection->m_prefaceSent) // Preface is sent as part of initial stream-creation.
         return nullptr;
-    }
 
     return connection.release();
 }
@@ -844,11 +843,6 @@ QHttp2Connection *QHttp2Connection::createDirectConnection(QIODevice *socket,
     auto connection = std::unique_ptr<QHttp2Connection>(new QHttp2Connection(socket));
     connection->setH2Configuration(config);
     connection->m_connectionType = QHttp2Connection::Type::Client;
-
-    if (!connection->sendClientPreface()) {
-        qCWarning(qHttp2ConnectionLog, "[%p] Failed to send client preface", connection.get());
-        return nullptr;
-    }
 
     return connection.release();
 }
@@ -909,10 +903,15 @@ QHttp2Stream *QHttp2Connection::createStreamInternal_impl(quint32 streamID)
 {
     Q_ASSERT(streamID > m_lastIncomingStreamID || streamID >= m_nextStreamID);
 
-    qsizetype numStreams = m_streams.size();
-    QPointer<QHttp2Stream> &stream = m_streams[streamID];
-    if (numStreams == m_streams.size()) // stream already existed
+    if (m_connectionType == Type::Client && !m_prefaceSent && !sendClientPreface()) {
+        qCWarning(qHttp2ConnectionLog, "[%p] Failed to send client preface", this);
         return nullptr;
+    }
+
+    auto result = m_streams.tryEmplace(streamID, nullptr);
+    if (!result.inserted)
+        return nullptr;
+    QPointer<QHttp2Stream> &stream = result.iterator.value();
     stream = new QHttp2Stream(this, streamID);
     stream->m_recvWindow = streamInitialReceiveWindowSize;
     stream->m_sendWindow = streamInitialSendWindowSize;
@@ -920,7 +919,8 @@ QHttp2Stream *QHttp2Connection::createStreamInternal_impl(quint32 streamID)
     connect(stream, &QHttp2Stream::uploadBlocked, this, [this, stream] {
         m_blockedStreams.insert(stream->streamID());
     });
-    return stream;
+    *result.iterator = stream;
+    return *result.iterator;
 }
 
 qsizetype QHttp2Connection::numActiveStreamsImpl(quint32 mask) const noexcept
@@ -1094,6 +1094,9 @@ void QHttp2Connection::handleReadyRead()
             socket->bytesAvailable());
 
     using namespace Http2;
+    if (!m_prefaceSent)
+        return;
+
     while (!m_goingAway || std::any_of(m_streams.cbegin(), m_streams.cend(), streamIsActive)) {
         const auto result = frameReader.read(*socket);
         if (result != FrameStatus::goodFrame)
@@ -1287,6 +1290,9 @@ bool QHttp2Connection::sendClientPreface()
         qCWarning(qHttp2ConnectionLog, "[%p] Failed to send SETTINGS", this);
         return false;
     }
+    m_prefaceSent = true;
+    if (socket->bytesAvailable()) // We ignore incoming data until preface is sent, so handle it now
+        QMetaObject::invokeMethod(this, &QHttp2Connection::handleReadyRead, Qt::QueuedConnection);
     return true;
 }
 
@@ -1298,6 +1304,7 @@ bool QHttp2Connection::sendServerPreface()
         qCWarning(qHttp2ConnectionLog, "[%p] Failed to send SETTINGS", this);
         return false;
     }
+    m_prefaceSent = true;
     return true;
 }
 

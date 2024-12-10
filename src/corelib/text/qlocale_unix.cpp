@@ -143,6 +143,8 @@ QVariant QSystemLocale::query(QueryType type, QVariant &&in) const
     switch (type) {
     case DecimalPoint:
         return lc_numeric.decimalPoint();
+    case Grouping:
+        return QVariant::fromValue(lc_numeric.d->m_data->groupSizes());
     case GroupSeparator:
         return lc_numeric.groupSeparator();
     case ZeroDigit:

@@ -789,18 +789,18 @@ static QString startFailureErrorMessage(ChildError &err, [[maybe_unused]] ssize_
     Q_ASSERT(bytesRead == sizeof(err));
 
     qsizetype len = qstrnlen(err.function, sizeof(err.function));
-    QString complement = QString::fromUtf8(err.function, len);
+    const QUtf8StringView complement(err.function, len);
     if (err.code == FakeErrnoForThrow)
         return QProcess::tr("Child process modifier threw an exception: %1")
-                .arg(std::move(complement));
+                .arg(complement);
     if (err.code == 0)
         return QProcess::tr("Child process modifier reported error: %1")
-                .arg(std::move(complement));
+                .arg(complement);
     if (err.code < 0)
         return QProcess::tr("Child process modifier reported error: %1: %2")
-                .arg(std::move(complement), qt_error_string(-err.code));
+                .arg(complement, qt_error_string(-err.code));
     return QProcess::tr("Child process set up failed: %1: %2")
-            .arg(std::move(complement), qt_error_string(err.code));
+            .arg(complement, qt_error_string(err.code));
 }
 
 Q_NORETURN void

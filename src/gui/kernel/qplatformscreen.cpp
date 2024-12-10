@@ -338,7 +338,7 @@ void QPlatformScreen::resizeMaximizedWindows()
         // QWindow and QScreen sizes.
         if (supportsMaximizeUsingFullscreen
                 && w->windowState() & Qt::WindowMaximized
-                && w->flags() & Qt::MaximizeUsingFullscreenGeometryHint) {
+                && w->flags() & Qt::ExpandedClientAreaHint) {
             w->handle()->setGeometry(newNativeGeometry);
         } else if (w->windowState() & Qt::WindowMaximized || w->geometry() == oldAvailableGeometry) {
             w->handle()->setGeometry(newNativeAvailableGeometry);

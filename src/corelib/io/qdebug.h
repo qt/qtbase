@@ -27,9 +27,12 @@
 #include <optional>
 #include <string>
 #include <string_view>
+#include <set>
 #include <tuple>
 #include <QtCore/q20type_traits.h>
 #include <utility>
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #if !defined(QT_LEAN_HEADERS) || QT_LEAN_HEADERS < 1
@@ -434,6 +437,30 @@ template <typename Key, typename T, typename Compare, typename Alloc>
 inline QDebugIfHasDebugStream<Key, T> operator<<(QDebug debug, const std::multimap<Key, T, Compare, Alloc> &map)
 {
     return QtPrivate::printSequentialContainer(std::move(debug), "std::multimap", map); // yes, sequential: *it is std::pair
+}
+
+template <typename Key, typename Compare, typename Alloc>
+inline QDebug operator<<(QDebug debug, const std::multiset<Key, Compare, Alloc> &multiset)
+{
+    return QtPrivate::printSequentialContainer(std::move(debug), "std::multiset", multiset);
+}
+
+template <typename Key, typename Compare, typename Alloc>
+inline QDebug operator<<(QDebug debug, const std::set<Key, Compare, Alloc>& set)
+{
+    return QtPrivate::printSequentialContainer(std::move(debug), "std::set", set);
+}
+
+template <typename Key, typename T, typename Hash, typename KeyEqual, typename Alloc>
+inline QDebug operator<<(QDebug debug, const std::unordered_map<Key, T, Hash, KeyEqual, Alloc> &unordered_map)
+{
+    return QtPrivate::printSequentialContainer(std::move(debug), "std::unordered_map", unordered_map); // yes, sequential: *it is std::pair
+}
+
+template <typename Key, typename Hash, typename KeyEqual, typename Alloc>
+inline QDebug operator<<(QDebug debug, const std::unordered_set<Key, Hash, KeyEqual, Alloc>& unordered_set)
+{
+    return QtPrivate::printSequentialContainer(std::move(debug), "std::unordered_set", unordered_set);
 }
 
 template <class Key, class T>

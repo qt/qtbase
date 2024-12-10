@@ -980,10 +980,7 @@
 
 /*!
     \fn template <class T> qHash(const QSharedPointer<T> &key, size_t seed)
-    \relates QSharedPointer
-
-    Returns the hash value for \a key, using \a seed to seed the calculation.
-
+    \qhashold{QSharedPointer}
     \since 5.0
 */
 

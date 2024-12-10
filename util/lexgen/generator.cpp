@@ -157,7 +157,7 @@ QString Class::definition() const
 Generator::Generator(const DFA &_dfa, const Config &config)
      : dfa(_dfa), cfg(config)
 {
-    QList<InputType> lst = cfg.maxInputSet.toList();
+    QList<InputType> lst(cfg.maxInputSet.cbegin(), cfg.maxInputSet.cend());
     std::sort(lst.begin(), lst.end());
     minInput = lst.first();
     maxInput = lst.last();
@@ -371,9 +371,9 @@ QString Generator::generate()
     Class klass(cfg.className);
 
     klass.addMember(Class::PublicMember, "QString input");
-    klass.addMember(Class::PublicMember, "int pos");
-    klass.addMember(Class::PublicMember, "int lexemStart");
-    klass.addMember(Class::PublicMember, "int lexemLength");
+    klass.addMember(Class::PublicMember, "qsizetype pos");
+    klass.addMember(Class::PublicMember, "qsizetype lexemStart");
+    klass.addMember(Class::PublicMember, "qsizetype lexemLength");
 
     {
         CodeBlock body;
@@ -388,9 +388,9 @@ QString Generator::generate()
         Function next("QChar", "next()");
         next.setInline(true);
         if (cfg.caseSensitivity == Qt::CaseSensitive)
-            next.addBody("return (pos < input.length()) ? input.at(pos++) : QChar();");
+            next.addBody("return (pos < input.size()) ? input.at(pos++) : QChar();");
         else
-            next.addBody("return (pos < input.length()) ? input.at(pos++).toLower() : QChar();");
+            next.addBody("return (pos < input.size()) ? input.at(pos++).toLower() : QChar();");
         klass.addMember(Class::PublicMember, next);
     }
 
@@ -417,8 +417,8 @@ QString Generator::generate()
     CodeBlock body;
     body << "lexemStart = pos;";
     body << "lexemLength = 0;";
-    body << "int lastAcceptingPos = -1;";
-    body << "int token = -1;";
+    body << "qsizetype lastAcceptingPos = -1;";
+    body << "qsizetype token = -1;";
     body << "QChar ch;";
     body.addNewLine();
 

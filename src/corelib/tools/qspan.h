@@ -429,6 +429,28 @@ public:
     // nullary first()/last() clash with first<>() and last<>(), so they're not provided for QSpan
     [[nodiscard]] constexpr QSpan<T> sliced(size_type pos) const { return subspan(pos); }
     [[nodiscard]] constexpr QSpan<T> sliced(size_type pos, size_type n) const { return subspan(pos, n); }
+    [[nodiscard]] constexpr QSpan<T> chopped(size_type n) const { verify(0, n); return first(size() - n); }
+
+#ifdef __cpp_concepts
+#  define QT_ONLY_IF_DYNAMIC_SPAN(DECL) \
+    DECL requires(E == q20::dynamic_extent)
+#else
+#  define QT_ONLY_IF_DYNAMIC_SPAN(DECL) \
+    template <size_t M = E, typename = std::enable_if_t<M == q20::dynamic_extent>> DECL
+#endif
+    QT_ONLY_IF_DYNAMIC_SPAN(
+    constexpr void slice(size_type pos)
+    )
+    { *this = sliced(pos); }
+    QT_ONLY_IF_DYNAMIC_SPAN(
+    constexpr void slice(size_type pos, size_type n)
+    )
+    { *this = sliced(pos, n); }
+    QT_ONLY_IF_DYNAMIC_SPAN(
+    constexpr void chop(size_type n)
+    )
+    { *this = chopped(n); }
+#undef QT_ONLY_IF_DYNAMIC_SPAN
 
 private:
     // [span.objectrep]

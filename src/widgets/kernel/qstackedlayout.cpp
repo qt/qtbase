@@ -114,6 +114,17 @@ QLayoutItem* QStackedLayoutPrivate::replaceAt(int idx, QLayoutItem *newitem)
 */
 
 /*!
+    \fn void QStackedLayout::widgetAdded(int index)
+
+    \since 6.9
+
+    This signal is emitted whenever a widget is added or inserted.
+    The widget's \a index is passed as parameter.
+
+    \sa addWidget(), insertWidget()
+*/
+
+/*!
     Constructs a QStackedLayout with no parent.
 
     This QStackedLayout must be installed on a widget later on to
@@ -204,6 +215,7 @@ int QStackedLayout::insertWidget(int index, QWidget *widget)
             widget->hide();
         widget->lower();
     }
+    emit widgetAdded(index);
     return index;
 }
 

@@ -9,6 +9,7 @@
 #pragma qt_sync_stop_processing
 #endif
 
+#include <QtCore/qcompare.h>
 #include <QtCore/qcontainerfwd.h>
 #include <QtCore/qglobal.h>
 #include <QtCore/qalgorithms.h>
@@ -625,7 +626,32 @@ public:
     friend inline bool operator<=(const QVarLengthArray<T, Prealloc1> &l, const QVarLengthArray<T, Prealloc2> &r);
     template <typename T, qsizetype Prealloc1, qsizetype Prealloc2>
     friend inline bool operator>=(const QVarLengthArray<T, Prealloc1> &l, const QVarLengthArray<T, Prealloc2> &r);
+    template <typename T, qsizetype Prealloc1, qsizetype Prealloc2>
+    friend inline auto operator<=>(const QVarLengthArray<T, Prealloc1> &l, const QVarLengthArray<T, Prealloc2> &r);
 #else
+private:
+    template <typename U = T, qsizetype Prealloc2 = Prealloc,
+              Qt::if_has_qt_compare_three_way<U, U> = true>
+    friend auto
+    compareThreeWay(const QVarLengthArray &lhs, const QVarLengthArray<T, Prealloc2> &rhs)
+    {
+        return QtOrderingPrivate::lexicographicalCompareThreeWay(lhs.begin(), lhs.end(),
+                                                                 rhs.begin(), rhs.end());
+    }
+
+#if defined(__cpp_lib_three_way_comparison) && defined(__cpp_lib_concepts)
+    template <typename U = T, qsizetype Prealloc2 = Prealloc,
+              QtOrderingPrivate::if_has_op_less_or_op_compare_three_way<QVarLengthArray, U> = true>
+    friend auto
+    operator<=>(const QVarLengthArray &lhs, const QVarLengthArray<T, Prealloc2> &rhs)
+    {
+        return std::lexicographical_compare_three_way(lhs.begin(), lhs.end(),
+                                                      rhs.begin(), rhs.end(),
+                                                      QtOrderingPrivate::synthThreeWay);
+    }
+#endif // __cpp_lib_three_way_comparison && __cpp_lib_concepts
+
+public:
     template <typename U = T, qsizetype Prealloc2 = Prealloc> friend
     QTypeTraits::compare_eq_result<U> operator==(const QVarLengthArray<T, Prealloc> &l, const QVarLengthArray<T, Prealloc2> &r)
     {
@@ -638,6 +664,7 @@ public:
         return !(l == r);
     }
 
+#ifndef __cpp_lib_three_way_comparison
     template <typename U = T, qsizetype Prealloc2 = Prealloc> friend
     QTypeTraits::compare_lt_result<U> operator<(const QVarLengthArray<T, Prealloc> &lhs, const QVarLengthArray<T, Prealloc2> &rhs)
         noexcept(noexcept(std::lexicographical_compare(lhs.begin(), lhs.end(),
@@ -666,7 +693,8 @@ public:
     {
         return !(lhs < rhs);
     }
-#endif
+#endif // __cpp_lib_three_way_comparison
+#endif // Q_QDOC
 
 private:
     template <typename U, qsizetype Prealloc2>

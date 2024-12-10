@@ -667,7 +667,7 @@ QString AtSpiAdaptor::introspect(const QString &path) const
         xml.append(tableCellIntrospection);
     if (interfaces.contains(ATSPI_DBUS_INTERFACE_VALUE ""_L1))
         xml.append(valueIntrospection);
-    if (path == QSPI_OBJECT_PATH_ROOT ""_L1)
+    if (path == ATSPI_DBUS_PATH_ROOT ""_L1)
         xml.append(applicationIntrospection);
 
     return xml;
@@ -913,7 +913,7 @@ bool AtSpiAdaptor::sendDBusSignal(const QString &path, const QString &interface,
 
 QAccessibleInterface *AtSpiAdaptor::interfaceFromPath(const QString& dbusPath) const
 {
-    if (dbusPath == QSPI_OBJECT_PATH_ROOT ""_L1)
+    if (dbusPath == ATSPI_DBUS_PATH_ROOT ""_L1)
         return QAccessible::queryAccessibleInterface(qApp);
 
     QStringList parts = dbusPath.split(u'/');
@@ -1537,11 +1537,11 @@ bool AtSpiAdaptor::applicationInterface(QAccessibleInterface *interface, const Q
 void AtSpiAdaptor::registerApplication()
 {
     OrgA11yAtspiSocketInterface *registry;
-    registry = new OrgA11yAtspiSocketInterface(QSPI_REGISTRY_NAME ""_L1,
-                                               QSPI_OBJECT_PATH_ROOT ""_L1, m_dbus->connection());
+    registry = new OrgA11yAtspiSocketInterface(ATSPI_DBUS_NAME_REGISTRY ""_L1,
+                                               ATSPI_DBUS_PATH_ROOT ""_L1, m_dbus->connection());
 
     QDBusPendingReply<QSpiObjectReference> reply;
-    QSpiObjectReference ref = QSpiObjectReference(m_dbus->connection(), QDBusObjectPath(QSPI_OBJECT_PATH_ROOT));
+    QSpiObjectReference ref = QSpiObjectReference(m_dbus->connection(), QDBusObjectPath(ATSPI_DBUS_PATH_ROOT));
     reply = registry->Embed(ref);
     reply.waitForFinished(); // TODO: make this async
     if (reply.isValid ()) {
@@ -1632,7 +1632,7 @@ bool AtSpiAdaptor::accessibleInterface(QAccessibleInterface *interface, const QS
         sendReply(connection, message, QVariant::fromValue(relationSet(interface, connection)));
     } else if (function == "GetApplication"_L1) {
         sendReply(connection, message, QVariant::fromValue(
-                      QSpiObjectReference(connection, QDBusObjectPath(QSPI_OBJECT_PATH_ROOT))));
+                      QSpiObjectReference(connection, QDBusObjectPath(ATSPI_DBUS_PATH_ROOT))));
     } else if (function == "GetChildren"_L1) {
         QSpiObjectReferenceArray children;
         const int numChildren = interface->childCount();
@@ -1749,7 +1749,7 @@ QString AtSpiAdaptor::pathForInterface(QAccessibleInterface *interface) const
     if (!interface || !interface->isValid())
         return u"" ATSPI_DBUS_PATH_NULL ""_s;
     if (interface->role() == QAccessible::Application)
-        return u"" QSPI_OBJECT_PATH_ROOT ""_s;
+        return u"" ATSPI_DBUS_PATH_ROOT ""_s;
 
     QAccessible::Id id = QAccessible::uniqueId(interface);
     Q_ASSERT((int)id < 0);

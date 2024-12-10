@@ -58,6 +58,7 @@
 #include <dbt.h>
 #include <wtsapi32.h>
 #include <shellscalingapi.h>
+#include <gdiplus.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -133,6 +134,7 @@ QWindowsContext *QWindowsContext::m_instance = nullptr;
 
 struct QWindowsContextPrivate {
     QWindowsContextPrivate();
+    ~QWindowsContextPrivate();
 
     unsigned m_systemInfo = 0;
     QSet<QString> m_registeredWindowClassNames;
@@ -147,6 +149,7 @@ struct QWindowsContextPrivate {
 #if QT_CONFIG(tabletevent)
     QScopedPointer<QWindowsTabletSupport> m_tabletSupport;
 #endif
+    ULONG_PTR m_gdiplusToken = 0;
     const HRESULT m_oleInitializeResult;
     QWindow *m_lastActiveWindow = nullptr;
     bool m_asyncExpose = false;
@@ -172,6 +175,14 @@ QWindowsContextPrivate::QWindowsContextPrivate()
        qWarning() << "QWindowsContext: OleInitialize() failed: "
            << QSystemError::windowsComString(m_oleInitializeResult);
     }
+
+    Gdiplus::GdiplusStartupInput gdiplusStartupInput;
+    Gdiplus::GdiplusStartup(&m_gdiplusToken, &gdiplusStartupInput, nullptr);
+}
+
+QWindowsContextPrivate::~QWindowsContextPrivate()
+{
+    Gdiplus::GdiplusShutdown(m_gdiplusToken);
 }
 
 QWindowsContext::QWindowsContext() :
@@ -1100,7 +1111,7 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
                 }
             return false;
         case QtWindows::CalculateSize:
-            return QWindowsGeometryHint::handleCalculateSize(d->m_creationContext->customMargins, msg, result);
+            return QWindowsGeometryHint::handleCalculateSize(d->m_creationContext->window, d->m_creationContext->customMargins, msg, result);
         case QtWindows::GeometryChangingEvent:
             return QWindowsWindow::handleGeometryChangingMessage(&msg, d->m_creationContext->window,
                                                                  d->m_creationContext->margins + d->m_creationContext->customMargins);
@@ -1165,9 +1176,13 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         platformWindow->getSizeHints(reinterpret_cast<MINMAXINFO *>(lParam));
         return true;// maybe available on some SDKs revisit WM_NCCALCSIZE
     case QtWindows::CalculateSize:
-        return QWindowsGeometryHint::handleCalculateSize(platformWindow->customMargins(), msg, result);
-    case QtWindows::NonClientHitTest:
+        return QWindowsGeometryHint::handleCalculateSize(platformWindow->window(), platformWindow->customMargins(), msg, result);
+    case QtWindows::NonClientHitTest: {
+        QWindow *window = platformWindow->window();
+        if (window->flags().testFlags(Qt::ExpandedClientAreaHint))
+            platformWindow->updateCustomTitlebar();
         return platformWindow->handleNonClientHitTest(QPoint(msg.pt.x, msg.pt.y), result);
+    }
     case QtWindows::GeometryChangingEvent:
         return platformWindow->handleGeometryChanging(&msg);
     case QtWindows::ExposeEvent:

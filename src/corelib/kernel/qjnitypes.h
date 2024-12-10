@@ -163,7 +163,7 @@ struct JNITypeForArgImpl<QString>
 
     static QString fromVarArg(Type t)
     {
-        return QJniObject(t).toString();
+        return QtJniTypes::Detail::toQString(t, QJniEnvironment::getJniEnv());
     }
 };
 

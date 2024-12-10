@@ -189,7 +189,7 @@ public:
     Q_DECLARE_FLAGS(RecreationReasons, RecreationReason)
     Q_FLAG(RecreationReasons)
 
-    bool inLiveResize() const override;
+    bool allowsIndependentThreadedRendering() const override;
 
 protected:
     void recreateWindowIfNeeded();
@@ -247,6 +247,8 @@ public: // for QNSView
     int m_registerTouchCount = 0;
     bool m_resizableTransientParent = false;
 
+    QMacKeyValueObserver m_safeAreaInsetsObserver;
+    void updateSafeAreaMarginsIfNeeded();
     QMargins m_lastReportedSafeAreaMargins;
 
     static const int NoAlertRequest;

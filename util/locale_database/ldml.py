@@ -684,12 +684,12 @@ class LocaleScanner (object):
     def __numberGrouping(self, system: str) -> tuple[int, int, int]:
         """Sizes of groups of digits within a number.
 
-        Returns a triple (least, higher, top) for which:
+        Returns a triple (least, higher, fist) for which:
           * least is the number of digits after the last grouping
             separator;
           * higher is the number of digits between grouping
             separators;
-          * top is the fewest digits that can appear before the first
+          * first is the fewest digits that can appear before the first
             grouping separator.
 
         Thus (4, 3, 2) would want 1e7 as 1000,0000 but 1e8 as 10,000,0000.
@@ -699,17 +699,17 @@ class LocaleScanner (object):
         is placement of the sign character anywhere but at the start
         of the number (some formats may place it at the end, possibly
         elsewhere)."""
-        top = int(self.find('numbers/minimumGroupingDigits'))
-        assert top < 4, top # We store it in a 2-bit field
+        first = int(self.find('numbers/minimumGroupingDigits'))
+        assert first < 4, first # We store it in a 2-bit field
         grouping: str | None = self.find(f'numbers/decimalFormats[numberSystem={system}]/'
                              'decimalFormatLength/decimalFormat/pattern')
         groups: list[str] = grouping.split('.')[0].split(',')[-3:]
         assert all(len(x) < 8 for x in groups[-2:]), grouping # we store them in 3-bit fields
         if len(groups) > 2:
-            return len(groups[-1]), len(groups[-2]), top
+            return len(groups[-1]), len(groups[-2]), first
 
         size = len(groups[-1]) if len(groups) == 2 else 3
-        return size, size, top
+        return size, size, first
 
     @staticmethod
     def __currencyFormats(patterns: str, plus: str, minus: str) -> Iterator[str]:

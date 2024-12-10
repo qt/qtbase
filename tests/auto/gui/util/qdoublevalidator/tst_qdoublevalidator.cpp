@@ -230,6 +230,9 @@ void tst_QDoubleValidator::validate()
     QFETCH(QValidator::State, scientific_state);
     QFETCH(QValidator::State, standard_state);
 
+    const auto restoreLocale = qScopeGuard([prior = QLocale()] {
+        QLocale::setDefault(prior);
+    });
     QLocale::setDefault(QLocale(localeName));
 
     QDoubleValidator dv(minimum, maximum, decimals, 0);
@@ -295,6 +298,9 @@ void tst_QDoubleValidator::zeroPaddedExponent()
 
 void tst_QDoubleValidator::notifySignals()
 {
+    const auto restoreLocale = qScopeGuard([prior = QLocale()] {
+        QLocale::setDefault(prior);
+    });
     QLocale::setDefault(QLocale("C"));
 
     QDoubleValidator dv(0.1, 0.9, 10, 0);
@@ -751,6 +757,9 @@ void tst_QDoubleValidator::validateIntEquiv()
     QFETCH(QString, input);
     QFETCH(QValidator::State, state);
 
+    const auto restoreLocale = qScopeGuard([prior = QLocale()] {
+        QLocale::setDefault(prior);
+    });
     QLocale::setDefault(QLocale("C"));
 
     QDoubleValidator dv(minimum, maximum, 0, 0);

@@ -810,10 +810,8 @@ qint64 QPointingDeviceUniqueId::numericId() const noexcept
 */
 
 /*!
-    \relates QPointingDeviceUniqueId
+    \qhashold{QPointingDeviceUniqueId}
     \since 5.8
-
-    Returns the hash value for \a key, using \a seed to seed the calculation.
 */
 size_t qHash(QPointingDeviceUniqueId key, size_t seed) noexcept
 {

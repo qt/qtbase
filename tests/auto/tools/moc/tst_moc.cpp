@@ -675,6 +675,7 @@ public:
     { return *this; }
     Q_INVOKABLE const QObject& myInvokableReturningConstRef() const
     { return *this; }
+    Q_INVOKABLE static int inline constexpr invokableWithConstexpr() { return 42; }
 
 
     // that one however should be fine

@@ -33,7 +33,7 @@ public:
 
     QStringList fallbacksForFamily(const QString &family, QFont::Style style,
                                    QFont::StyleHint styleHint,
-                                   QChar::Script script) const override;
+                                   QFontDatabasePrivate::ExtendedScript script) const override;
 
     QString fontDir() const override;
     QFont defaultFont() const override;

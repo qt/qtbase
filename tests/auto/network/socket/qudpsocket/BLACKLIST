@@ -49,3 +49,11 @@ vxworks
 vxworks
 [zeroLengthDatagram]
 vxworks
+[writeDatagramToNonExistingPeer]
+vxworks
+[multicastTtlOption]
+vxworks
+[multicastLoopbackOption]
+vxworks
+[readyRead]
+vxworks

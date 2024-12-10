@@ -413,10 +413,10 @@ qt_internal_extend_target(Network CONDITION WIN32
         socket/qnativesocketengine_win.cpp
 )
 
-# include the snippet projects for developer-builds
-if(QT_FEATURE_private_tests)
+if(QT_FEATURE_doc_snippets)
     add_subdirectory(doc/snippets/network)
 endif()
+
 qt_internal_extend_target(Network
     # Workaround for QTBUG-118229:
     # Function called by inline methods taking a pointer to a private class as a parameter

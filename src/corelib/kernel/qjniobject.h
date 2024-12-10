@@ -31,20 +31,20 @@ class Q_CORE_EXPORT QJniObject
             if (hasFrame)
                 env->PopLocalFrame(nullptr);
         }
+        bool ensureFrame()
+        {
+            if (!hasFrame)
+                hasFrame = jniEnv()->PushLocalFrame(sizeof...(Args)) == 0;
+            return hasFrame;
+        }
         template <typename T>
         auto newLocalRef(jobject object)
         {
-            if (!hasFrame) {
-                if (jniEnv()->PushLocalFrame(sizeof...(Args)) < 0)
-                    return T{}; // JVM is out of memory, avoid making matters worse
-                hasFrame = true;
+            if (!ensureFrame()) {
+                // if the JVM is out of memory, avoid making matters worse
+                return T{};
             }
             return static_cast<T>(jniEnv()->NewLocalRef(object));
-        }
-        template <typename T>
-        auto newLocalRef(const QJniObject &object)
-        {
-            return newLocalRef<T>(object.template object<T>());
         }
         JNIEnv *jniEnv() const
         {
@@ -870,7 +870,9 @@ auto QJniObject::LocalFrame<Args...>::convertToJni(T &&value)
 {
     using Type = q20::remove_cvref_t<T>;
     if constexpr (std::is_same_v<Type, QString>) {
-        return newLocalRef<jstring>(QJniObject::fromString(value));
+        if (ensureFrame()) // fromQString already returns a local reference
+            return QtJniTypes::Detail::fromQString(value, jniEnv());
+        return jstring{};
     } else if constexpr (QtJniTypes::IsJniArray<Type>::value) {
         return value.arrayObject();
     } else if constexpr (QtJniTypes::detail::isCompatibleSourceContainer<T>) {

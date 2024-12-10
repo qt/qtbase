@@ -61,7 +61,7 @@ using namespace QtMiscUtils;
     \value UnterminatedArray        The array is not correctly terminated with a closing square bracket
     \value MissingValueSeparator    A colon separating keys from values inside objects is missing
     \value IllegalValue             The value is illegal
-    \value TerminationByNumber      The input stream ended while parsing a number
+    \value TerminationByNumber      The input stream ended while parsing a number (as of 6.9, this is no longer returned)
     \value IllegalNumber            The number is not well formed
     \value IllegalEscapeSequence    An illegal escape sequence occurred in the input
     \value IllegalUTF8String        An illegal UTF8 sequence occurred in the input
@@ -161,21 +161,20 @@ class StashedContainer
 public:
     StashedContainer(QExplicitlySharedDataPointer<QCborContainerPrivate> *container,
                      QCborValue::Type type)
-        : type(type), stashed(std::move(*container)), current(container)
+        : type(type), stashed(std::move(*container))
     {
     }
 
-    ~StashedContainer()
+    QCborValue intoValue(QExplicitlySharedDataPointer<QCborContainerPrivate> *parent)
     {
-        stashed->append(QCborContainerPrivate::makeValue(type, -1, current->take(),
-                                                         QCborContainerPrivate::MoveContainer));
-        *current = std::move(stashed);
+        std::swap(stashed, *parent);
+        return QCborContainerPrivate::makeValue(type, -1, stashed.take(),
+                                                QCborContainerPrivate::MoveContainer);
     }
 
 private:
     QCborValue::Type type;
     QExplicitlySharedDataPointer<QCborContainerPrivate> stashed;
-    QExplicitlySharedDataPointer<QCborContainerPrivate> *current;
 };
 
 Parser::Parser(const char *json, int length)
@@ -281,25 +280,27 @@ char Parser::nextToken()
 QCborValue Parser::parse(QJsonParseError *error)
 {
     eatBOM();
-    char token = nextToken();
 
-    QCborValue data;
+    char token;
+    QCborValue value;
 
-    if (token == BeginArray) {
-        container = new QCborContainerPrivate;
-        if (!parseArray())
-            goto error;
-        data = QCborContainerPrivate::makeValue(QCborValue::Array, -1, container.take(),
-                                                QCborContainerPrivate::MoveContainer);
-    } else if (token == BeginObject) {
-        container = new QCborContainerPrivate;
-        if (!parseObject())
-            goto error;
-        data = QCborContainerPrivate::makeValue(QCborValue::Map, -1, container.take(),
-                                                QCborContainerPrivate::MoveContainer);
-    } else {
+    if (!eatSpace()) {
         lastError = QJsonParseError::IllegalValue;
         goto error;
+    }
+
+    token = *json;
+    if (token == Quote) {
+        container = new QCborContainerPrivate;
+        json++;
+        if (!parseString())
+            goto error;
+        value = QCborContainerPrivate::makeValue(QCborValue::String, 0, container.take(),
+                                                 QCborContainerPrivate::MoveContainer);
+    } else {
+        value = parseValue();
+        if (value.isUndefined())
+            goto error;
     }
 
     eatSpace();
@@ -314,7 +315,7 @@ QCborValue Parser::parse(QJsonParseError *error)
             error->error = QJsonParseError::NoError;
         }
 
-        return data;
+        return value;
     }
 
 error:
@@ -423,6 +424,20 @@ static void sortContainer(QCborContainerPrivate *container)
     container->elements.erase(result.elementsIterator(), container->elements.end());
 }
 
+bool Parser::parseValueIntoContainer()
+{
+    QCborValue value = parseValue();
+    switch (value.type()) {
+    case QCborValue::Undefined:
+        return false; // error while parsing
+    case QCborValue::String:
+        break; // strings were already added
+    default:
+        container->append(std::move(value));
+    }
+
+    return true;
+}
 
 /*
     object = begin-object [ member *( value-separator member ) ]
@@ -480,10 +495,8 @@ bool Parser::parseMember()
         lastError = QJsonParseError::UnterminatedObject;
         return false;
     }
-    if (!parseValue())
-        return false;
 
-    return true;
+    return parseValueIntoContainer();
 }
 
 /*
@@ -510,8 +523,10 @@ bool Parser::parseArray()
             }
             if (!container)
                 container = new QCborContainerPrivate;
-            if (!parseValue())
+
+            if (!parseValueIntoContainer())
                 return false;
+
             char token = nextToken();
             if (token == EndArray)
                 break;
@@ -535,82 +550,81 @@ value = false / null / true / object / array / number / string
 
 */
 
-bool Parser::parseValue()
+QCborValue Parser::parseValue()
 {
     switch (*json++) {
     case 'n':
-        if (end - json < 4) {
+        if (end - json < 3) {
             lastError = QJsonParseError::IllegalValue;
-            return false;
+            return QCborValue();
         }
         if (*json++ == 'u' &&
             *json++ == 'l' &&
             *json++ == 'l') {
-            container->append(QCborValue(QCborValue::Null));
-            return true;
+            return QCborValue(QCborValue::Null);
         }
         lastError = QJsonParseError::IllegalValue;
-        return false;
+        return QCborValue();
     case 't':
-        if (end - json < 4) {
+        if (end - json < 3) {
             lastError = QJsonParseError::IllegalValue;
-            return false;
+            return QCborValue();
         }
         if (*json++ == 'r' &&
             *json++ == 'u' &&
             *json++ == 'e') {
-            container->append(QCborValue(true));
-            return true;
+            return QCborValue(true);
         }
         lastError = QJsonParseError::IllegalValue;
-        return false;
+        return QCborValue();
     case 'f':
-        if (end - json < 5) {
+        if (end - json < 4) {
             lastError = QJsonParseError::IllegalValue;
-            return false;
+            return QCborValue();
         }
         if (*json++ == 'a' &&
             *json++ == 'l' &&
             *json++ == 's' &&
             *json++ == 'e') {
-            container->append(QCborValue(false));
-            return true;
+            return QCborValue(false);
         }
         lastError = QJsonParseError::IllegalValue;
-        return false;
+        return QCborValue();
     case Quote: {
-        if (!parseString())
-            return false;
-        return true;
+        if (parseString())
+            // strings are already added to the container
+            // callers must check for this type
+            return QCborValue(QCborValue::String);
+
+        return QCborValue();
     }
     case BeginArray: {
         StashedContainer stashedContainer(&container, QCborValue::Array);
-        if (!parseArray())
-            return false;
-        return true;
+        if (parseArray())
+            return stashedContainer.intoValue(&container);
+
+        return QCborValue();
     }
     case BeginObject: {
         StashedContainer stashedContainer(&container, QCborValue::Map);
-        if (!parseObject())
-            return false;
-        return true;
+        if (parseObject())
+            return stashedContainer.intoValue(&container);
+
+        return QCborValue();
     }
     case ValueSeparator:
         // Essentially missing value, but after a colon, not after a comma
         // like the other MissingObject errors.
         lastError = QJsonParseError::IllegalValue;
-        return false;
+        return QCborValue();
     case EndObject:
     case EndArray:
         lastError = QJsonParseError::MissingObject;
-        return false;
+        return QCborValue();
     default:
         --json;
-        if (!parseNumber())
-            return false;
+        return parseNumber();
     }
-
-    return true;
 }
 
 
@@ -631,7 +645,7 @@ bool Parser::parseValue()
 
 */
 
-bool Parser::parseNumber()
+QCborValue Parser::parseNumber()
 {
     const char *start = json;
     bool isInt = true;
@@ -667,19 +681,13 @@ bool Parser::parseNumber()
             ++json;
     }
 
-    if (json >= end) {
-        lastError = QJsonParseError::TerminationByNumber;
-        return false;
-    }
-
     const QByteArray number = QByteArray::fromRawData(start, json - start);
 
     if (isInt) {
         bool ok;
         qlonglong n = number.toLongLong(&ok);
         if (ok) {
-            container->append(QCborValue(n));
-            return true;
+            return QCborValue(n);
         }
     }
 
@@ -688,16 +696,13 @@ bool Parser::parseNumber()
 
     if (!ok) {
         lastError = QJsonParseError::IllegalNumber;
-        return false;
+        return QCborValue();
     }
 
     qint64 n;
     if (convertDoubleTo(d, &n))
-        container->append(QCborValue(n));
-    else
-        container->append(QCborValue(d));
-
-    return true;
+        return QCborValue(n);
+    return QCborValue(d);
 }
 
 /*
@@ -819,7 +824,7 @@ bool Parser::parseString()
             isAscii = false;
     }
     ++json;
-    if (json >= end) {
+    if (json > end) {
         lastError = QJsonParseError::UnterminatedString;
         return false;
     }
@@ -855,7 +860,7 @@ bool Parser::parseString()
     }
     ++json;
 
-    if (json >= end) {
+    if (json > end) {
         lastError = QJsonParseError::UnterminatedString;
         return false;
     }

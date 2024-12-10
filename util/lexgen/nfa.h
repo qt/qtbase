@@ -14,7 +14,7 @@
 
 #include "global.h"
 
-typedef QHash<InputType, int> TransitionMap;
+typedef QMultiHash<InputType, int> TransitionMap;
 
 struct State
 {

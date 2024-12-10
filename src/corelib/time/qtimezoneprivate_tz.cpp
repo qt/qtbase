@@ -41,6 +41,7 @@ using namespace Qt::StringLiterals;
 */
 
 struct QTzTimeZone {
+    // TODO: for zone1970.tab we'll need a set of territories:
     QLocale::Territory territory = QLocale::AnyTerritory;
     QByteArray comment;
 };
@@ -80,7 +81,7 @@ static bool openZoneInfo(const QString &name, QFile *file)
 
 // Parse zone.tab table for territory information, read directories to ensure we
 // find all installed zones (many are omitted from zone.tab; even more from
-// zone1970.tab).
+// zone1970.tab; see also QTBUG-64941).
 static QTzTimeZoneHash loadTzTimeZones()
 {
     QFile tzif;
@@ -1250,13 +1251,38 @@ QList<QByteArray> QTzTimeZonePrivate::availableTimeZoneIds() const
 
 QList<QByteArray> QTzTimeZonePrivate::availableTimeZoneIds(QLocale::Territory territory) const
 {
-    // TODO AnyTerritory
     QList<QByteArray> result;
     for (auto it = tzZones->cbegin(), end = tzZones->cend(); it != end; ++it) {
         if (it.value().territory == territory)
             result << it.key();
     }
     std::sort(result.begin(), result.end());
+
+    // Since zone.tab only knows about one territory per zone, and is somewhat
+    // incomplete, we may well miss some zones that CLDR associates with the
+    // territory. So merge with those from CLDR that we do support.
+    const auto unWantedZone = [territory](QByteArrayView id) {
+        // We only want to add zones if they are known and we don't already have them:
+        auto it = tzZones->constFind(id);
+        return it == tzZones->end() || it->territory == territory;
+    };
+    QList<QByteArrayView> cldrViews = matchingTimeZoneIds(territory);
+    std::sort(cldrViews.begin(), cldrViews.end());
+    const auto uniqueEnd = std::unique(cldrViews.begin(), cldrViews.end());
+    const auto prunedEnd = std::remove_if(cldrViews.begin(), uniqueEnd, unWantedZone);
+    const auto cldrSize = std::distance(cldrViews.begin(), prunedEnd);
+    if (cldrSize) {
+        QList<QByteArray> cldrList;
+        cldrList.reserve(cldrSize);
+        for (auto it = cldrViews.begin(); it != prunedEnd; ++it)
+            cldrList.emplace_back(it->toByteArray());
+        QList<QByteArray> joined;
+        joined.reserve(result.size() + cldrSize);
+        std::set_union(result.begin(), result.end(), cldrList.begin(), cldrList.end(),
+                       std::back_inserter(joined));
+        result = joined;
+    }
+
     return result;
 }
 

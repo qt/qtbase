@@ -11,6 +11,7 @@
 #include <qmenu.h>
 #include <qdebug.h>
 #include <qdatetime.h>
+#include <qscopeguard.h>
 #include <qtextformat.h>
 
 class tst_QCalendarWidget : public QObject
@@ -316,6 +317,9 @@ void tst_QCalendarWidget::firstDayOfWeek()
     QLocale locale;
     QCOMPARE(calendar.firstDayOfWeek(), locale.firstDayOfWeek());
 
+    const auto restoreDefault = qScopeGuard([locale]() {
+        QLocale::setDefault(locale);
+    });
     QLocale germanLocale(QLocale::German);
     QLocale::setDefault(germanLocale);
     QCalendarWidget germanLocaleCalendar;

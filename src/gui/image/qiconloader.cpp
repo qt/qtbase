@@ -9,6 +9,7 @@
 #include <QtGui/QIconEnginePlugin>
 #include <QtGui/QPixmapCache>
 #include <qpa/qplatformtheme.h>
+#include <QtGui/qfontdatabase.h>
 #include <QtGui/QPalette>
 #include <QtCore/qmath.h>
 #include <QtCore/QList>
@@ -21,6 +22,7 @@
 
 #include <private/qhexstring_p.h>
 #include <private/qfactoryloader_p.h>
+#include <private/qfonticonengine_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -665,8 +667,21 @@ QIconEngine *QIconLoader::iconEngine(const QString &iconName) const
     if (m_factory && *m_factory)
         iconEngine.reset(m_factory.value()->create(iconName));
 
-    if (hasUserTheme() && (!iconEngine || iconEngine->isNull()))
-        iconEngine.reset(new QIconLoaderEngine(iconName));
+    if (hasUserTheme()) {
+        if (!iconEngine || iconEngine->isNull()) {
+            if (QFontDatabase::families().contains(themeName())) {
+                QFont maybeIconFont(themeName());
+                maybeIconFont.setStyleStrategy(QFont::NoFontMerging);
+                qCDebug(lcIconLoader) << "Trying font icon engine.";
+                iconEngine.reset(new QFontIconEngine(iconName, maybeIconFont));
+            }
+        }
+        if (!iconEngine || iconEngine->isNull()) {
+            qCDebug(lcIconLoader) << "Trying loader engine for theme.";
+            iconEngine.reset(new QIconLoaderEngine(iconName));
+        }
+    }
+
     if (!iconEngine || iconEngine->isNull()) {
         qCDebug(lcIconLoader) << "Icon is not available from theme or fallback theme.";
         if (auto *platformTheme = QGuiApplicationPrivate::platformTheme()) {

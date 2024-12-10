@@ -390,7 +390,9 @@ QPixmap QCocoaTheme::standardPixmap(StandardPixmap sp, const QSizeF &size) const
         QT_IGNORE_DEPRECATIONS(GetIconRef(kOnSystemDisk, kSystemIconsCreator, iconType, &icon));
 
         if (icon) {
-            pixmap = qt_mac_convert_iconref(icon, size.width(), size.height());
+            const auto dpr = qGuiApp->devicePixelRatio(); // Highest in the system
+            pixmap = qt_mac_convert_iconref(icon, size.width() * dpr, size.height() * dpr);
+            pixmap.setDevicePixelRatio(dpr);
             QT_IGNORE_DEPRECATIONS(ReleaseIconRef(icon));
         }
 

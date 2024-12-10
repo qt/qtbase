@@ -107,11 +107,11 @@ bool QOpenGLTimerQueryPrivate::create()
 
     // Check to see if we also need to resolve the functions for EXT_timer_query
     QSurfaceFormat f = context->format();
-    if (f.version() <= qMakePair(3, 2)
+    if (f.version() <= std::pair(3, 2)
         && !context->hasExtension(QByteArrayLiteral("GL_ARB_timer_query"))
         && context->hasExtension(QByteArrayLiteral("GL_EXT_timer_query"))) {
         ext = new QExtTimerQueryHelper(context);
-    } else if (f.version() <= qMakePair(3, 2)
+    } else if (f.version() <= std::pair(3, 2)
                && !context->hasExtension(QByteArrayLiteral("GL_ARB_timer_query"))
                && !context->hasExtension(QByteArrayLiteral("GL_EXT_timer_query"))) {
         qWarning("QOpenGLTimerQuery requires one of:\n"
@@ -494,11 +494,11 @@ bool QOpenGLTimeMonitorPrivate::create()
 
     // Check to see if we also need to resolve the functions for EXT_timer_query
     QSurfaceFormat f = context->format();
-    if (f.version() <= qMakePair(3, 2)
+    if (f.version() <= std::pair(3, 2)
         && !context->hasExtension(QByteArrayLiteral("GL_ARB_timer_query"))
         && context->hasExtension(QByteArrayLiteral("GL_EXT_timer_query"))) {
         ext = new QExtTimerQueryHelper(context);
-    } else if (f.version() <= qMakePair(3, 2)
+    } else if (f.version() <= std::pair(3, 2)
                && !context->hasExtension(QByteArrayLiteral("GL_ARB_timer_query"))
                && !context->hasExtension(QByteArrayLiteral("GL_EXT_timer_query"))) {
         qWarning("QOpenGLTimeMonitor requires one of:\n"

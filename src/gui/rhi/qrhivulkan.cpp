@@ -968,6 +968,30 @@ bool QRhiVulkan::create(QRhi::Flags flags)
     }
 #endif
 
+    // On Windows, figure out the DXGI adapter LUID.
+#ifdef Q_OS_WIN
+    adapterLuidValid = false;
+    adapterLuid = {};
+#ifdef VK_VERSION_1_2
+    if (caps.apiVersion >= QVersionNumber(1, 2)) {
+        VkPhysicalDeviceVulkan11Properties v11props = {};
+        v11props.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_PROPERTIES;
+        VkPhysicalDeviceProperties2 props2 = {};
+        props2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+        props2.pNext = &v11props;
+        f->vkGetPhysicalDeviceProperties2(physDev, &props2);
+        if (v11props.deviceLUIDValid) {
+            const LUID *luid = reinterpret_cast<const LUID *>(v11props.deviceLUID);
+            memcpy(&adapterLuid, luid, VK_LUID_SIZE);
+            adapterLuidValid = true;
+            dxgiHdrInfo = new QDxgiHdrInfo(adapterLuid);
+            qCDebug(QRHI_LOG_INFO, "DXGI adapter LUID for physical device is %lu, %lu",
+                    adapterLuid.LowPart, adapterLuid.HighPart);
+        }
+    }
+#endif
+#endif
+
     if (!importedAllocator) {
         VmaVulkanFunctions funcs = {};
         funcs.vkGetInstanceProcAddr = wrap_vkGetInstanceProcAddr;
@@ -1046,6 +1070,11 @@ void QRhiVulkan::destroy()
 
     executeDeferredReleases(true);
     finishActiveReadbacks(true);
+
+#ifdef Q_OS_WIN
+    delete dxgiHdrInfo;
+    dxgiHdrInfo = nullptr;
+#endif
 
     if (ofr.cmdFence) {
         df->vkDestroyFence(dev, ofr.cmdFence, nullptr);
@@ -8551,6 +8580,18 @@ bool QVkSwapChain::isFormatSupported(Format f)
     return false;
 }
 
+QRhiSwapChainHdrInfo QVkSwapChain::hdrInfo()
+{
+    QRhiSwapChainHdrInfo info = QRhiSwapChain::hdrInfo();
+#ifdef Q_OS_WIN
+    QRHI_RES_RHI(QRhiVulkan);
+    // Must use m_window, not window, given this may be called before createOrResize().
+    if (m_window && rhiD->adapterLuidValid)
+        info = rhiD->dxgiHdrInfo->queryHdrInfo(m_window);
+#endif
+    return info;
+}
+
 QRhiRenderPassDescriptor *QVkSwapChain::newCompatibleRenderPassDescriptor()
 {
     // not yet built so cannot rely on data computed in createOrResize()
@@ -8671,7 +8712,7 @@ bool QVkSwapChain::createOrResize()
         return false;
     }
 
-    if (needsRegistration)
+    if (needsRegistration || !rhiD->swapchains.contains(this))
         rhiD->swapchains.insert(this);
 
     if (m_depthStencil && m_depthStencil->sampleCount() != m_sampleCount) {

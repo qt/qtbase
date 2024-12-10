@@ -495,7 +495,7 @@ void tst_QStringView::arg() const
 {
     // nullness checks
     QCOMPARE(QStringView().arg(QStringView()), "");
-    QCOMPARE(QStringView(u"%1").arg(QStringView()), "");
+    QCOMPARE(QStringView(u"%1").arg(nullptr), "");
 
 #define CHECK1(pattern, arg1, expected) \
     do { \

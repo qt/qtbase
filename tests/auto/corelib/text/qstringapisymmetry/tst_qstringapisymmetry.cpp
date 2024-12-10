@@ -550,7 +550,7 @@ private:
 
 private Q_SLOTS:
     // let Formats = {QString, QStringView, QLatin1String, QUtf8StringView, QAnyStringView}
-    // let Arguments = Formats ∪ {QByteArray, const char*, const char8_t*. const char16_t*, std::u16string, char, QChar, QLatin1Char, char16_t}
+    // let Arguments = Formats ∪ {QByteArray/View, const char*, const char8_t*, const char16_t*, std::u16string, char, QChar, QLatin1Char, char16_t}
     // test Formats × Arguments:
     void arg1_QString_QString_data() { arg1_data(); }
     void arg1_QString_QString() { arg1_impl<QString, QString>(); }
@@ -558,8 +558,18 @@ private Q_SLOTS:
     void arg1_QString_QStringView() { arg1_impl<QString, QStringView>(); }
     void arg1_QString_QLatin1StringView_data() { arg1_data(); }
     void arg1_QString_QLatin1StringView() { arg1_impl<QString, QLatin1StringView>(); }
+    void arg1_QString_QUtf8StringView_data() { arg1_data(); }
+    void arg1_QString_QUtf8StringView() { arg1_impl<QString, QUtf8StringView>(); }
+    void arg1_QString_QAnyStringViewUsingL1_data() { arg1_data(); }
+    void arg1_QString_QAnyStringViewUsingL1() { arg1_impl<QString, QAnyStringViewUsingL1>(); }
+    void arg1_QString_QAnyStringViewUsingU8_data() { arg1_data(); }
+    void arg1_QString_QAnyStringViewUsingU8() { arg1_impl<QString, QAnyStringViewUsingU8>(); }
+    void arg1_QString_QAnyStringViewUsingU16_data() { arg1_data(); }
+    void arg1_QString_QAnyStringViewUsingU16() { arg1_impl<QString, QAnyStringViewUsingU16>(); }
     void arg1_QString_QByteArray_data() { arg1_data(); }
     void arg1_QString_QByteArray() { arg1_impl<QString, QByteArray>(); }
+    void arg1_QString_QByteArrayView_data() { arg1_data(); }
+    void arg1_QString_QByteArrayView() { arg1_impl<QString, QByteArrayView>(); }
     void arg1_QString_const_char_star_data() { arg1_data(); }
     void arg1_QString_const_char_star() { arg1_impl<QString, const char*>(); }
     void arg1_QString_const_char8_t_star_data() { arg1_data(); }
@@ -576,8 +586,6 @@ private Q_SLOTS:
     void arg1_QString_QLatin1Char() { arg1_impl<QString, QLatin1Char>(); }
     void arg1_QString_char16_t_data() { arg1_data(false); }
     void arg1_QString_char16_t() {
-        QEXPECT_FAIL("%1/a", "QTBUG-125588", Continue);
-        QEXPECT_FAIL("%1/ä", "QTBUG-125588", Continue);
         arg1_impl<QString, char16_t>();
     }
 
@@ -587,8 +595,18 @@ private Q_SLOTS:
     void arg1_QStringView_QStringView() { arg1_impl<QStringView, QStringView>(); }
     void arg1_QStringView_QLatin1StringView_data() { arg1_data(); }
     void arg1_QStringView_QLatin1StringView() { arg1_impl<QStringView, QLatin1StringView>(); }
+    void arg1_QStringView_QUtf8StringView_data() { arg1_data(); }
+    void arg1_QStringView_QUtf8StringView() { arg1_impl<QStringView, QUtf8StringView>(); }
+    void arg1_QStringView_QAnyStringViewUsingL1_data() { arg1_data(); }
+    void arg1_QStringView_QAnyStringViewUsingL1() { arg1_impl<QStringView, QAnyStringViewUsingL1>(); }
+    void arg1_QStringView_QAnyStringViewUsingU8_data() { arg1_data(); }
+    void arg1_QStringView_QAnyStringViewUsingU8() { arg1_impl<QStringView, QAnyStringViewUsingU8>(); }
+    void arg1_QStringView_QAnyStringViewUsingU16_data() { arg1_data(); }
+    void arg1_QStringView_QAnyStringViewUsingU16() { arg1_impl<QStringView, QAnyStringViewUsingU16>(); }
     void arg1_QStringView_QByteArray_data() { arg1_data(); }
     void arg1_QStringView_QByteArray() { arg1_impl<QStringView, QByteArray>(); }
+    void arg1_QStringView_QByteArrayView_data() { arg1_data(); }
+    void arg1_QStringView_QByteArrayView() { arg1_impl<QStringView, QByteArrayView>(); }
     void arg1_QStringView_const_char_star_data() { arg1_data(); }
     void arg1_QStringView_const_char_star() { arg1_impl<QStringView, const char*>(); }
     void arg1_QStringView_const_char8_t_star_data() { arg1_data(); }
@@ -612,8 +630,18 @@ private Q_SLOTS:
     void arg1_QLatin1StringView_QStringView() { arg1_impl<QLatin1StringView, QStringView>(); }
     void arg1_QLatin1StringView_QLatin1StringView_data() { arg1_data(); }
     void arg1_QLatin1StringView_QLatin1StringView() { arg1_impl<QLatin1StringView, QLatin1StringView>(); }
+    void arg1_QLatin1StringView_QUtf8StringView_data() { arg1_data(); }
+    void arg1_QLatin1StringView_QUtf8StringView() { arg1_impl<QLatin1StringView, QUtf8StringView>(); }
+    void arg1_QLatin1StringView_QAnyStringViewUsingL1_data() { arg1_data(); }
+    void arg1_QLatin1StringView_QAnyStringViewUsingL1() { arg1_impl<QLatin1StringView, QAnyStringViewUsingL1>(); }
+    void arg1_QLatin1StringView_QAnyStringViewUsingU8_data() { arg1_data(); }
+    void arg1_QLatin1StringView_QAnyStringViewUsingU8() { arg1_impl<QLatin1StringView, QAnyStringViewUsingU8>(); }
+    void arg1_QLatin1StringView_QAnyStringViewUsingU16_data() { arg1_data(); }
+    void arg1_QLatin1StringView_QAnyStringViewUsingU16() { arg1_impl<QLatin1StringView, QAnyStringViewUsingU16>(); }
     void arg1_QLatin1StringView_QByteArray_data() { arg1_data(); }
     void arg1_QLatin1StringView_QByteArray() { arg1_impl<QLatin1StringView, QByteArray>(); }
+    void arg1_QLatin1StringView_QByteArrayView_data() { arg1_data(); }
+    void arg1_QLatin1StringView_QByteArrayView() { arg1_impl<QLatin1StringView, QByteArrayView>(); }
     void arg1_QLatin1StringView_const_char_star_data() { arg1_data(); }
     void arg1_QLatin1StringView_const_char_star() { arg1_impl<QLatin1StringView, const char*>(); }
     void arg1_QLatin1StringView_const_char8_t_star_data() { arg1_data(); }
@@ -637,8 +665,18 @@ private Q_SLOTS:
     void arg1_QUtf8StringView_QStringView() { arg1_impl<QUtf8StringView, QStringView>(); }
     void arg1_QUtf8StringView_QLatin1StringView_data() { arg1_data(); }
     void arg1_QUtf8StringView_QLatin1StringView() { arg1_impl<QUtf8StringView, QLatin1StringView>(); }
+    void arg1_QUtf8StringView_QUtf8StringView_data() { arg1_data(); }
+    void arg1_QUtf8StringView_QUtf8StringView() { arg1_impl<QUtf8StringView, QUtf8StringView>(); }
+    void arg1_QUtf8StringView_QAnyStringViewUsingL1_data() { arg1_data(); }
+    void arg1_QUtf8StringView_QAnyStringViewUsingL1() { arg1_impl<QUtf8StringView, QAnyStringViewUsingL1>(); }
+    void arg1_QUtf8StringView_QAnyStringViewUsingU8_data() { arg1_data(); }
+    void arg1_QUtf8StringView_QAnyStringViewUsingU8() { arg1_impl<QUtf8StringView, QAnyStringViewUsingU8>(); }
+    void arg1_QUtf8StringView_QAnyStringViewUsingU16_data() { arg1_data(); }
+    void arg1_QUtf8StringView_QAnyStringViewUsingU16() { arg1_impl<QUtf8StringView, QAnyStringViewUsingU16>(); }
     void arg1_QUtf8StringView_QByteArray_data() { arg1_data(); }
     void arg1_QUtf8StringView_QByteArray() { arg1_impl<QUtf8StringView, QByteArray>(); }
+    void arg1_QUtf8StringView_QByteArrayView_data() { arg1_data(); }
+    void arg1_QUtf8StringView_QByteArrayView() { arg1_impl<QUtf8StringView, QByteArrayView>(); }
     void arg1_QUtf8StringView_const_char_star_data() { arg1_data(); }
     void arg1_QUtf8StringView_const_char_star() { arg1_impl<QUtf8StringView, const char*>(); }
     void arg1_QUtf8StringView_const_char8_t_star_data() { arg1_data(); }
@@ -662,8 +700,18 @@ private Q_SLOTS:
     void arg1_QAnyStringViewUsingL1_QStringView() { arg1_impl<QAnyStringViewUsingL1, QStringView>(); }
     void arg1_QAnyStringViewUsingL1_QLatin1StringView_data() { arg1_data(); }
     void arg1_QAnyStringViewUsingL1_QLatin1StringView() { arg1_impl<QAnyStringViewUsingL1, QLatin1StringView>(); }
+    void arg1_QAnyStringViewUsingL1_QUtf8StringView_data() { arg1_data(); }
+    void arg1_QAnyStringViewUsingL1_QUtf8StringView() { arg1_impl<QAnyStringViewUsingL1, QUtf8StringView>(); }
+    void arg1_QAnyStringViewUsingL1_QAnyStringViewUsingL1_data() { arg1_data(); }
+    void arg1_QAnyStringViewUsingL1_QAnyStringViewUsingL1() { arg1_impl<QAnyStringViewUsingL1, QAnyStringViewUsingL1>(); }
+    void arg1_QAnyStringViewUsingL1_QAnyStringViewUsingU8_data() { arg1_data(); }
+    void arg1_QAnyStringViewUsingL1_QAnyStringViewUsingU8() { arg1_impl<QAnyStringViewUsingL1, QAnyStringViewUsingU8>(); }
+    void arg1_QAnyStringViewUsingL1_QAnyStringViewUsingU16_data() { arg1_data(); }
+    void arg1_QAnyStringViewUsingL1_QAnyStringViewUsingU16() { arg1_impl<QAnyStringViewUsingL1, QAnyStringViewUsingU16>(); }
     void arg1_QAnyStringViewUsingL1_QByteArray_data() { arg1_data(); }
     void arg1_QAnyStringViewUsingL1_QByteArray() { arg1_impl<QAnyStringViewUsingL1, QByteArray>(); }
+    void arg1_QAnyStringViewUsingL1_QByteArrayView_data() { arg1_data(); }
+    void arg1_QAnyStringViewUsingL1_QByteArrayView() { arg1_impl<QAnyStringViewUsingL1, QByteArrayView>(); }
     void arg1_QAnyStringViewUsingL1_const_char_star_data() { arg1_data(); }
     void arg1_QAnyStringViewUsingL1_const_char_star() { arg1_impl<QAnyStringViewUsingL1, const char*>(); }
     void arg1_QAnyStringViewUsingL1_const_char8_t_star_data() { arg1_data(); }
@@ -687,8 +735,18 @@ private Q_SLOTS:
     void arg1_QAnyStringViewUsingU8_QStringView() { arg1_impl<QAnyStringViewUsingU8, QStringView>(); }
     void arg1_QAnyStringViewUsingU8_QLatin1StringView_data() { arg1_data(); }
     void arg1_QAnyStringViewUsingU8_QLatin1StringView() { arg1_impl<QAnyStringViewUsingU8, QLatin1StringView>(); }
+    void arg1_QAnyStringViewUsingU8_QUtf8StringView_data() { arg1_data(); }
+    void arg1_QAnyStringViewUsingU8_QUtf8StringView() { arg1_impl<QAnyStringViewUsingU8, QUtf8StringView>(); }
+    void arg1_QAnyStringViewUsingU8_QAnyStringViewUsingL1_data() { arg1_data(); }
+    void arg1_QAnyStringViewUsingU8_QAnyStringViewUsingL1() { arg1_impl<QAnyStringViewUsingU8, QAnyStringViewUsingL1>(); }
+    void arg1_QAnyStringViewUsingU8_QAnyStringViewUsingU8_data() { arg1_data(); }
+    void arg1_QAnyStringViewUsingU8_QAnyStringViewUsingU8() { arg1_impl<QAnyStringViewUsingU8, QAnyStringViewUsingU8>(); }
+    void arg1_QAnyStringViewUsingU8_QAnyStringViewUsingU16_data() { arg1_data(); }
+    void arg1_QAnyStringViewUsingU8_QAnyStringViewUsingU16() { arg1_impl<QAnyStringViewUsingU8, QAnyStringViewUsingU16>(); }
     void arg1_QAnyStringViewUsingU8_QByteArray_data() { arg1_data(); }
     void arg1_QAnyStringViewUsingU8_QByteArray() { arg1_impl<QAnyStringViewUsingU8, QByteArray>(); }
+    void arg1_QAnyStringViewUsingU8_QByteArrayView_data() { arg1_data(); }
+    void arg1_QAnyStringViewUsingU8_QByteArrayView() { arg1_impl<QAnyStringViewUsingU8, QByteArrayView>(); }
     void arg1_QAnyStringViewUsingU8_const_char_star_data() { arg1_data(); }
     void arg1_QAnyStringViewUsingU8_const_char_star() { arg1_impl<QAnyStringViewUsingU8, const char*>(); }
     void arg1_QAnyStringViewUsingU8_const_char8_t_star_data() { arg1_data(); }
@@ -712,8 +770,18 @@ private Q_SLOTS:
     void arg1_QAnyStringViewUsingU16_QStringView() { arg1_impl<QAnyStringViewUsingU16, QStringView>(); }
     void arg1_QAnyStringViewUsingU16_QLatin1StringView_data() { arg1_data(); }
     void arg1_QAnyStringViewUsingU16_QLatin1StringView() { arg1_impl<QAnyStringViewUsingU16, QLatin1StringView>(); }
+    void arg1_QAnyStringViewUsingU16_QUtf8StringView_data() { arg1_data(); }
+    void arg1_QAnyStringViewUsingU16_QUtf8StringView() { arg1_impl<QAnyStringViewUsingU16, QUtf8StringView>(); }
+    void arg1_QAnyStringViewUsingU16_QAnyStringViewUsingL1_data() { arg1_data(); }
+    void arg1_QAnyStringViewUsingU16_QAnyStringViewUsingL1() { arg1_impl<QAnyStringViewUsingU16, QAnyStringViewUsingL1>(); }
+    void arg1_QAnyStringViewUsingU16_QAnyStringViewUsingU8_data() { arg1_data(); }
+    void arg1_QAnyStringViewUsingU16_QAnyStringViewUsingU8() { arg1_impl<QAnyStringViewUsingU16, QAnyStringViewUsingU8>(); }
+    void arg1_QAnyStringViewUsingU16_QAnyStringViewUsingU16_data() { arg1_data(); }
+    void arg1_QAnyStringViewUsingU16_QAnyStringViewUsingU16() { arg1_impl<QAnyStringViewUsingU16, QAnyStringViewUsingU16>(); }
     void arg1_QAnyStringViewUsingU16_QByteArray_data() { arg1_data(); }
     void arg1_QAnyStringViewUsingU16_QByteArray() { arg1_impl<QAnyStringViewUsingU16, QByteArray>(); }
+    void arg1_QAnyStringViewUsingU16_QByteArrayView_data() { arg1_data(); }
+    void arg1_QAnyStringViewUsingU16_QByteArrayView() { arg1_impl<QAnyStringViewUsingU16, QByteArrayView>(); }
     void arg1_QAnyStringViewUsingU16_const_char_star_data() { arg1_data(); }
     void arg1_QAnyStringViewUsingU16_const_char_star() { arg1_impl<QAnyStringViewUsingU16, const char*>(); }
     void arg1_QAnyStringViewUsingU16_const_char8_t_star_data() { arg1_data(); }

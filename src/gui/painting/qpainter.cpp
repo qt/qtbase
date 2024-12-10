@@ -3622,12 +3622,11 @@ void QPainter::setPen(const QColor &color)
         return;
     }
 
-    QPen pen(color.isValid() ? color : QColor(Qt::black));
-
-    if (d->state->pen == pen)
+    const QColor actualColor = color.isValid() ? color : QColor(Qt::black);
+    if (d->state->pen == actualColor)
         return;
 
-    d->state->pen = pen;
+    d->state->pen = actualColor;
     if (d->extended)
         d->extended->penChanged();
     else
@@ -3686,12 +3685,10 @@ void QPainter::setPen(Qt::PenStyle style)
         return;
     }
 
-    QPen pen = QPen(style);
-
-    if (d->state->pen == pen)
+    if (d->state->pen == style)
         return;
 
-    d->state->pen = pen;
+    d->state->pen = style;
 
     if (d->extended)
         d->extended->penChanged();
@@ -3766,9 +3763,7 @@ void QPainter::setBrush(Qt::BrushStyle style)
         qWarning("QPainter::setBrush: Painter not active");
         return;
     }
-    if (d->state->brush.style() == style &&
-        (style == Qt::NoBrush
-         || (style == Qt::SolidPattern && d->state->brush.color() == QColor(0, 0, 0))))
+    if (d->state->brush == style)
         return;
     d->state->brush = QBrush(Qt::black, style);
     if (d->extended)
@@ -3776,6 +3771,42 @@ void QPainter::setBrush(Qt::BrushStyle style)
     else
         d->state->dirtyFlags |= QPaintEngine::DirtyBrush;
 }
+
+/*!
+    \overload
+    \since 6.9
+
+    Sets the painter's brush to a solid brush with the specified
+    \a color.
+*/
+
+void QPainter::setBrush(QColor color)
+{
+    Q_D(QPainter);
+    if (!d->engine) {
+        qWarning("QPainter::setBrush: Painter not active");
+        return;
+    }
+
+    const QColor actualColor = color.isValid() ? color : QColor(Qt::black);
+    if (d->state->brush == actualColor)
+        return;
+    d->state->brush = actualColor;
+    if (d->extended)
+        d->extended->brushChanged();
+    else
+        d->state->dirtyFlags |= QPaintEngine::DirtyBrush;
+}
+
+/*!
+    \fn void QPainter::setBrush(Qt::GlobalColor color)
+    \overload
+    \since 6.9
+
+    Sets the painter's brush to a solid brush with the specified
+    \a color.
+*/
+
 
 /*!
     Returns the painter's current brush.
@@ -5597,7 +5628,7 @@ void QPainter::drawText(const QPointF &p, const QString &str, int tf, int justif
     if (!d->engine || str.isEmpty() || pen().style() == Qt::NoPen)
         return;
 
-    QStackTextEngine engine(str, d->state->font);
+    Q_DECL_UNINITIALIZED QStackTextEngine engine(str, d->state->font);
     engine.option.setTextDirection(d->state->layoutDirection);
     if (tf & (Qt::TextForceLeftToRight|Qt::TextForceRightToLeft)) {
         engine.ignoreBidi = true;
@@ -7229,7 +7260,7 @@ start_lengthVariant:
     qreal width = 0;
 
     QString finalText = text.mid(old_offset, length);
-    QStackTextEngine engine(finalText, fnt);
+    Q_DECL_UNINITIALIZED QStackTextEngine engine(finalText, fnt);
     if (option) {
         engine.option = *option;
     }

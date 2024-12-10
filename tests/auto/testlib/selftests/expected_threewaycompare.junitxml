@@ -11,7 +11,7 @@
     <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
       <![CDATA[   Left     (lhs): 1
    Right    (rhs): 2
-   Actual   (lhs <=> rhs)  : Qt::strong_ordering::less
+   Actual   (lhs <=> rhs)  : std::strong_ordering::less
    Expected (expectedOrder): Qt::strong_ordering::equal]]>
     </failure>
   </testcase>
@@ -19,7 +19,7 @@
     <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
       <![CDATA[   Left     (lhs): 2
    Right    (rhs): 1
-   Actual   (lhs <=> rhs)  : Qt::strong_ordering::greater
+   Actual   (lhs <=> rhs)  : std::strong_ordering::greater
    Expected (expectedOrder): Qt::strong_ordering::equal]]>
     </failure>
   </testcase>
@@ -27,7 +27,7 @@
     <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
       <![CDATA[   Left     (lhs): 1
    Right    (rhs): 1
-   Actual   (lhs <=> rhs)  : Qt::partial_ordering::equivalent
+   Actual   (lhs <=> rhs)  : std::partial_ordering::equivalent
    Expected (expectedOrder): Qt::partial_ordering::less]]>
     </failure>
   </testcase>
@@ -36,7 +36,7 @@
     <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
       <![CDATA[   Left     (lhs): 1.1
    Right    (rhs): 1
-   Actual   (lhs <=> rhs)  : Qt::partial_ordering::greater
+   Actual   (lhs <=> rhs)  : std::partial_ordering::greater
    Expected (expectedOrder): Qt::partial_ordering::less]]>
     </failure>
   </testcase>
@@ -44,7 +44,7 @@
     <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
       <![CDATA[   Left     (lhs): 0
    Right    (rhs): 0
-   Actual   (lhs <=> rhs)  : Qt::partial_ordering::equivalent
+   Actual   (lhs <=> rhs)  : std::partial_ordering::equivalent
    Expected (expectedOrder): Qt::partial_ordering::greater]]>
     </failure>
   </testcase>
@@ -52,7 +52,7 @@
     <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
       <![CDATA[   Left     (lhs): 0
    Right    (rhs): 0.1
-   Actual   (lhs <=> rhs)  : Qt::partial_ordering::less
+   Actual   (lhs <=> rhs)  : std::partial_ordering::less
    Expected (expectedOrder): Qt::partial_ordering::greater]]>
     </failure>
   </testcase>
@@ -62,7 +62,7 @@
     <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
       <![CDATA[   Left     (lhs): 1
    Right    (rhs): 2
-   Actual   (lhs <=> rhs)  : Qt::strong_ordering::less
+   Actual   (lhs <=> rhs)  : std::strong_ordering::less
    Expected (expectedOrder): Qt::strong_ordering::equal]]>
     </failure>
   </testcase>
@@ -70,7 +70,7 @@
     <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
       <![CDATA[   Left     (lhs): 2
    Right    (rhs): 1
-   Actual   (lhs <=> rhs)  : Qt::strong_ordering::greater
+   Actual   (lhs <=> rhs)  : std::strong_ordering::greater
    Expected (expectedOrder): Qt::strong_ordering::equal]]>
     </failure>
   </testcase>
@@ -79,7 +79,7 @@
     <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
       <![CDATA[   Left     (lhs): "nullptr"
    Right    (rhs): 1
-   Actual   (lhs <=> rhs)  : Qt::strong_ordering::less
+   Actual   (lhs <=> rhs)  : std::strong_ordering::less
    Expected (expectedOrder): Qt::strong_ordering::equal]]>
     </failure>
   </testcase>
@@ -87,7 +87,7 @@
     <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
       <![CDATA[   Left     (lhs): 1
    Right    (rhs): "nullptr"
-   Actual   (lhs <=> rhs)  : Qt::strong_ordering::greater
+   Actual   (lhs <=> rhs)  : std::strong_ordering::greater
    Expected (expectedOrder): Qt::strong_ordering::equal]]>
     </failure>
   </testcase>
@@ -95,7 +95,7 @@
     <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
       <![CDATA[   Left     (lhs): 0
    Right    (rhs): 0
-   Actual   (lhs <=> rhs)  : Qt::strong_ordering::equal
+   Actual   (lhs <=> rhs)  : std::strong_ordering::equal
    Expected (expectedOrder): Qt::strong_ordering::less]]>
     </failure>
   </testcase>
@@ -104,7 +104,7 @@
     <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
       <![CDATA[   Left     (lhs): 1
    Right    (rhs): 0
-   Actual   (lhs <=> rhs)  : Qt::strong_ordering::greater
+   Actual   (lhs <=> rhs)  : std::strong_ordering::greater
    Expected (expectedOrder): Qt::strong_ordering::less]]>
     </failure>
   </testcase>
@@ -112,7 +112,7 @@
     <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
       <![CDATA[   Left     (lhs): Monday
    Right    (rhs): Monday
-   Actual   (lhs <=> rhs)  : Qt::strong_ordering::equal
+   Actual   (lhs <=> rhs)  : std::strong_ordering::equal
    Expected (expectedOrder): Qt::strong_ordering::greater]]>
     </failure>
   </testcase>
@@ -120,7 +120,7 @@
     <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
       <![CDATA[   Left     (lhs): Monday
    Right    (rhs): Sunday
-   Actual   (lhs <=> rhs)  : Qt::strong_ordering::less
+   Actual   (lhs <=> rhs)  : std::strong_ordering::less
    Expected (expectedOrder): Qt::strong_ordering::greater]]>
     </failure>
   </testcase>
@@ -129,7 +129,7 @@
     <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
       <![CDATA[   Left     (lhs): MyClass(1)
    Right    (rhs): MyClass(1)
-   Actual   (lhs <=> rhs)  : Qt::strong_ordering::equal
+   Actual   (lhs <=> rhs)  : std::strong_ordering::equal
    Expected (expectedOrder): Qt::strong_ordering::less]]>
     </failure>
   </testcase>
@@ -138,7 +138,7 @@
     <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
       <![CDATA[   Left     (lhs): MyClass(2)
    Right    (rhs): MyClass(1)
-   Actual   (lhs <=> rhs)  : Qt::strong_ordering::greater
+   Actual   (lhs <=> rhs)  : std::strong_ordering::greater
    Expected (expectedOrder): Qt::strong_ordering::less]]>
     </failure>
   </testcase>
@@ -290,7 +290,7 @@
     <failure type="fail" message="The result of operator&lt;=&gt;() is not what was expected">
       <![CDATA[   Left     (june)     : 2012/06/20 14:33:02.500[CEST]
    Right    (juneLater): 2012/06/20 14:33:02.501[CEST]
-   Actual   (june <=> juneLater)        : Qt::weak_ordering::less
+   Actual   (june <=> juneLater)        : std::weak_ordering::less
    Expected (Qt::weak_ordering::greater): Qt::weak_ordering::greater]]>
     </failure>
   </testcase>

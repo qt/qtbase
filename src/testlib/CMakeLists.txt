@@ -169,8 +169,7 @@ qt_internal_add_docs(Test
 
 qt_internal_apply_testlib_coverage_options(Test)
 
-# include the snippet projects for developer-builds
-if(QT_FEATURE_private_tests)
+if(QT_FEATURE_doc_snippets)
     add_subdirectory(doc/snippets/code)
 endif()
 

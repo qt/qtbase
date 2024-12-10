@@ -202,6 +202,8 @@ public:
     QPoint framePosition() const;
     void setFramePosition(const QPoint &point);
 
+    QMargins safeAreaMargins() const;
+
     inline int width() const { return geometry().width(); }
     inline int height() const { return geometry().height(); }
     inline int x() const { return geometry().x(); }
@@ -308,6 +310,8 @@ Q_SIGNALS:
     void minimumHeightChanged(int arg);
     void maximumWidthChanged(int arg);
     void maximumHeightChanged(int arg);
+
+    void safeAreaMarginsChanged(QMargins arg);
 
     void visibleChanged(bool arg);
     Q_REVISION(2, 1) void visibilityChanged(QWindow::Visibility visibility);

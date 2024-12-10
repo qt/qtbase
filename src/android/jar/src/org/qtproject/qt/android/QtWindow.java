@@ -6,11 +6,18 @@ package org.qtproject.qt.android;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+
+import android.graphics.Insets;
+
+import android.view.DisplayCutout;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowInsets;
+
+import android.os.Build;
 
 import java.util.HashMap;
 
@@ -25,7 +32,9 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
     private final QtInputConnection.QtInputConnectionListener m_inputConnectionListener;
 
     private static native void setSurface(int windowId, Surface surface);
+    private static native void safeAreaMarginsChanged(Insets insets);
     static native void windowFocusChanged(boolean hasFocus, int id);
+    static native void updateWindows();
 
     QtWindow(Context context, boolean isForeignWindow, QtWindow parentWindow,
                     QtInputConnection.QtInputConnectionListener listener)
@@ -66,6 +75,46 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
                 });
             m_gestureDetector.setIsLongpressEnabled(true);
         });
+
+        if (getContext() instanceof QtActivityBase) {
+            View decorView = ((Activity) context).getWindow().getDecorView();
+            decorView.setOnApplyWindowInsetsListener((view, insets) -> {
+                Insets safeInsets;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    int types = WindowInsets.Type.displayCutout() | WindowInsets.Type.systemBars();
+                    safeInsets = insets.getInsets(types);
+                } else {
+                    int left = 0;
+                    int top = 0;
+                    int right = 0;
+                    int bottom = 0;
+
+                    int visibility = view.getSystemUiVisibility();
+                    if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
+                        left = insets.getSystemWindowInsetLeft();
+                        top = insets.getSystemWindowInsetTop();
+                        right = insets.getSystemWindowInsetRight();
+                        bottom = insets.getSystemWindowInsetBottom();
+                    }
+
+                    // Android 9 and 10 emulators don't seem to be able
+                    // to handle this, but let's have the logic here anyway
+                    DisplayCutout cutout = insets.getDisplayCutout();
+                    if (cutout != null) {
+                        left = Math.max(left, cutout.getSafeInsetLeft());
+                        top = Math.max(top, cutout.getSafeInsetTop());
+                        right = Math.max(right, cutout.getSafeInsetRight());
+                        bottom = Math.max(bottom, cutout.getSafeInsetBottom());
+                    }
+
+                    safeInsets = Insets.of(left, top, right, bottom);
+                }
+
+                safeAreaMarginsChanged(safeInsets);
+
+                return insets;
+            });
+        }
     }
 
     @UsedFromNativeCode

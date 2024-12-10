@@ -226,9 +226,6 @@ private:
     void initializeScreensWithoutXRandR(xcb_screen_iterator_t *it, int screenNumber, QXcbScreen **primaryScreen);
     void initializeScreensFromOutput(xcb_screen_iterator_t *it, int screenNumber, QXcbScreen **primaryScreen);
 
-    void updateScreen_monitor(QXcbScreen *screen, xcb_randr_monitor_info_t *monitorInfo, xcb_timestamp_t timestamp = XCB_NONE);
-    QXcbScreen *createScreen_monitor(QXcbVirtualDesktop *virtualDesktop,
-                                     xcb_randr_monitor_info_t *monitorInfo, xcb_timestamp_t timestamp = XCB_NONE);
     QXcbVirtualDesktop* virtualDesktopForNumber(int n) const;
     QXcbScreen* findScreenForMonitorInfo(const QList<QPlatformScreen *> &screens, xcb_randr_monitor_info_t *monitorInfo);
     void initializeScreensFromMonitor(xcb_screen_iterator_t *it, int screenNumber, QXcbScreen **primaryScreen, bool initialized);

@@ -7,7 +7,7 @@ not ok 3 - compareInts(Qt::strong_ordering::less)
   # The result of operator<=>() is not what was expected
    Left     (lhs): 1
    Right    (rhs): 2
-   Actual   (lhs <=> rhs)  : Qt::strong_ordering::less
+   Actual   (lhs <=> rhs)  : std::strong_ordering::less
    Expected (expectedOrder): Qt::strong_ordering::equal
   at: tst_ThreeWayCompare::compareInts() (qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp
@@ -18,7 +18,7 @@ not ok 4 - compareInts(Qt::strong_ordering::greater)
   # The result of operator<=>() is not what was expected
    Left     (lhs): 2
    Right    (rhs): 1
-   Actual   (lhs <=> rhs)  : Qt::strong_ordering::greater
+   Actual   (lhs <=> rhs)  : std::strong_ordering::greater
    Expected (expectedOrder): Qt::strong_ordering::equal
   at: tst_ThreeWayCompare::compareInts() (qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp
@@ -29,7 +29,7 @@ not ok 5 - compareFloats(Qt::partial_ordering::equivalent)
   # The result of operator<=>() is not what was expected
    Left     (lhs): 1
    Right    (rhs): 1
-   Actual   (lhs <=> rhs)  : Qt::partial_ordering::equivalent
+   Actual   (lhs <=> rhs)  : std::partial_ordering::equivalent
    Expected (expectedOrder): Qt::partial_ordering::less
   at: tst_ThreeWayCompare::compareFloats() (qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp
@@ -41,7 +41,7 @@ not ok 7 - compareFloats(Qt::partial_ordering::greater)
   # The result of operator<=>() is not what was expected
    Left     (lhs): 1.1
    Right    (rhs): 1
-   Actual   (lhs <=> rhs)  : Qt::partial_ordering::greater
+   Actual   (lhs <=> rhs)  : std::partial_ordering::greater
    Expected (expectedOrder): Qt::partial_ordering::less
   at: tst_ThreeWayCompare::compareFloats() (qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp
@@ -52,7 +52,7 @@ not ok 8 - compareDoubles(Qt::partial_ordering::equivalent)
   # The result of operator<=>() is not what was expected
    Left     (lhs): 0
    Right    (rhs): 0
-   Actual   (lhs <=> rhs)  : Qt::partial_ordering::equivalent
+   Actual   (lhs <=> rhs)  : std::partial_ordering::equivalent
    Expected (expectedOrder): Qt::partial_ordering::greater
   at: tst_ThreeWayCompare::compareDoubles() (qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp
@@ -63,7 +63,7 @@ not ok 9 - compareDoubles(Qt::partial_ordering::less)
   # The result of operator<=>() is not what was expected
    Left     (lhs): 0
    Right    (rhs): 0.1
-   Actual   (lhs <=> rhs)  : Qt::partial_ordering::less
+   Actual   (lhs <=> rhs)  : std::partial_ordering::less
    Expected (expectedOrder): Qt::partial_ordering::greater
   at: tst_ThreeWayCompare::compareDoubles() (qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp
@@ -76,7 +76,7 @@ not ok 12 - comparePointers(Qt::strong_ordering::less)
   # The result of operator<=>() is not what was expected
    Left     (lhs): 1
    Right    (rhs): 2
-   Actual   (lhs <=> rhs)  : Qt::strong_ordering::less
+   Actual   (lhs <=> rhs)  : std::strong_ordering::less
    Expected (expectedOrder): Qt::strong_ordering::equal
   at: tst_ThreeWayCompare::comparePointers() (qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp
@@ -87,7 +87,7 @@ not ok 13 - comparePointers(Qt::strong_ordering::greater)
   # The result of operator<=>() is not what was expected
    Left     (lhs): 2
    Right    (rhs): 1
-   Actual   (lhs <=> rhs)  : Qt::strong_ordering::greater
+   Actual   (lhs <=> rhs)  : std::strong_ordering::greater
    Expected (expectedOrder): Qt::strong_ordering::equal
   at: tst_ThreeWayCompare::comparePointers() (qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp
@@ -99,7 +99,7 @@ not ok 15 - compareToNullptr(Qt::strong_ordering::less)
   # The result of operator<=>() is not what was expected
    Left     (lhs): "nullptr"
    Right    (rhs): 1
-   Actual   (lhs <=> rhs)  : Qt::strong_ordering::less
+   Actual   (lhs <=> rhs)  : std::strong_ordering::less
    Expected (expectedOrder): Qt::strong_ordering::equal
   at: tst_ThreeWayCompare::compareToNullptr() (qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp
@@ -110,7 +110,7 @@ not ok 16 - compareToNullptr(Qt::strong_ordering::greater)
   # The result of operator<=>() is not what was expected
    Left     (lhs): 1
    Right    (rhs): "nullptr"
-   Actual   (lhs <=> rhs)  : Qt::strong_ordering::greater
+   Actual   (lhs <=> rhs)  : std::strong_ordering::greater
    Expected (expectedOrder): Qt::strong_ordering::equal
   at: tst_ThreeWayCompare::compareToNullptr() (qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp
@@ -121,7 +121,7 @@ not ok 17 - compareUnregisteredEnum(Qt::strong_ordering::equivalent)
   # The result of operator<=>() is not what was expected
    Left     (lhs): 0
    Right    (rhs): 0
-   Actual   (lhs <=> rhs)  : Qt::strong_ordering::equal
+   Actual   (lhs <=> rhs)  : std::strong_ordering::equal
    Expected (expectedOrder): Qt::strong_ordering::less
   at: tst_ThreeWayCompare::compareUnregisteredEnum() (qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp
@@ -133,7 +133,7 @@ not ok 19 - compareUnregisteredEnum(Qt::strong_ordering::greater)
   # The result of operator<=>() is not what was expected
    Left     (lhs): 1
    Right    (rhs): 0
-   Actual   (lhs <=> rhs)  : Qt::strong_ordering::greater
+   Actual   (lhs <=> rhs)  : std::strong_ordering::greater
    Expected (expectedOrder): Qt::strong_ordering::less
   at: tst_ThreeWayCompare::compareUnregisteredEnum() (qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp
@@ -144,7 +144,7 @@ not ok 20 - compareRegisteredEnum(Qt::strong_ordering::equivalent)
   # The result of operator<=>() is not what was expected
    Left     (lhs): Monday
    Right    (rhs): Monday
-   Actual   (lhs <=> rhs)  : Qt::strong_ordering::equal
+   Actual   (lhs <=> rhs)  : std::strong_ordering::equal
    Expected (expectedOrder): Qt::strong_ordering::greater
   at: tst_ThreeWayCompare::compareRegisteredEnum() (qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp
@@ -155,7 +155,7 @@ not ok 21 - compareRegisteredEnum(Qt::strong_ordering::less)
   # The result of operator<=>() is not what was expected
    Left     (lhs): Monday
    Right    (rhs): Sunday
-   Actual   (lhs <=> rhs)  : Qt::strong_ordering::less
+   Actual   (lhs <=> rhs)  : std::strong_ordering::less
    Expected (expectedOrder): Qt::strong_ordering::greater
   at: tst_ThreeWayCompare::compareRegisteredEnum() (qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp
@@ -167,7 +167,7 @@ not ok 23 - compareCustomTypes(Qt::strong_ordering::equivalent)
   # The result of operator<=>() is not what was expected
    Left     (lhs): MyClass(1)
    Right    (rhs): MyClass(1)
-   Actual   (lhs <=> rhs)  : Qt::strong_ordering::equal
+   Actual   (lhs <=> rhs)  : std::strong_ordering::equal
    Expected (expectedOrder): Qt::strong_ordering::less
   at: tst_ThreeWayCompare::compareCustomTypes() (qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp
@@ -179,7 +179,7 @@ not ok 25 - compareCustomTypes(Qt::strong_ordering::greater)
   # The result of operator<=>() is not what was expected
    Left     (lhs): MyClass(2)
    Right    (rhs): MyClass(1)
-   Actual   (lhs <=> rhs)  : Qt::strong_ordering::greater
+   Actual   (lhs <=> rhs)  : std::strong_ordering::greater
    Expected (expectedOrder): Qt::strong_ordering::less
   at: tst_ThreeWayCompare::compareCustomTypes() (qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp
@@ -385,7 +385,7 @@ not ok 51 - checkWeakComparison()
   # The result of operator<=>() is not what was expected
    Left     (june)     : 2012/06/20 14:33:02.500[CEST]
    Right    (juneLater): 2012/06/20 14:33:02.501[CEST]
-   Actual   (june <=> juneLater)        : Qt::weak_ordering::less
+   Actual   (june <=> juneLater)        : std::weak_ordering::less
    Expected (Qt::weak_ordering::greater): Qt::weak_ordering::greater
   at: tst_ThreeWayCompare::checkWeakComparison() (qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp

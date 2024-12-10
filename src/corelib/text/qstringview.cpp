@@ -163,6 +163,12 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn size_t qHash(QStringView key, size_t seed)
+    \since 5.10
+    \qhashold{QStringView}
+*/
+
+/*!
     \fn QStringView::QStringView()
 
     Constructs a null string view.
@@ -511,11 +517,12 @@ QT_BEGIN_NAMESPACE
     the \a args replaces the \c{%N} with the lowest \c{N} (all of them), the
     second of the \a args the \c{%N} with the next-lowest \c{N} etc.
 
-    \c Args can consist of anything that implicitly converts to QString,
-    QStringView or QLatin1StringView.
-
-    In addition, the following types are also supported: QChar, QLatin1Char.
+    \c Args can consist of anything that implicitly converts to QAnyStringView.
 //![qstring-multi-arg]
+
+    \note In Qt versions prior to 6.9, QAnyStringView and UTF-8 strings
+    (QUtf8StringView, QByteArray, QByteArrayView, \c{const char8_t*}, etc) were
+    not supported as \a args.
 
     \sa QString::arg()
 */

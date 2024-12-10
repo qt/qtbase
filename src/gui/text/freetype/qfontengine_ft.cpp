@@ -1749,6 +1749,22 @@ glyph_t QFontEngineFT::glyphIndex(uint ucs4) const
     return glyph;
 }
 
+QString QFontEngineFT::glyphName(glyph_t index) const
+{
+    QString result;
+    if (index >= glyph_t(glyphCount()))
+        return result;
+
+    FT_Face face = freetype->face;
+    if (face->face_flags & FT_FACE_FLAG_GLYPH_NAMES) {
+        char glyphName[128] = {};
+        if (FT_Get_Glyph_Name(face, index, glyphName, sizeof(glyphName)) == 0)
+            result = QString::fromUtf8(glyphName);
+    }
+
+    return result.isEmpty() ? QFontEngine::glyphName(index) : result;
+}
+
 int QFontEngineFT::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs,
                                  QFontEngine::ShaperFlags flags) const
 {

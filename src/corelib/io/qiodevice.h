@@ -12,6 +12,7 @@
 #include <QtCore/qobjectdefs.h>
 #include <QtCore/qscopedpointer.h>
 #endif
+#include <QtCore/qspan.h>
 #include <QtCore/qstring.h>
 
 #ifdef open
@@ -79,6 +80,13 @@ public:
     qint64 readLine(char *data, qint64 maxlen);
     QByteArray readLine(qint64 maxlen = 0);
     bool readLineInto(QByteArray *result, qint64 maxlen = 0);
+
+    QByteArrayView readLineInto(QSpan<char> buffer)
+    { return readLineInto(as_writable_bytes(buffer)); }
+    QByteArrayView readLineInto(QSpan<uchar> buffer)
+    { return readLineInto(as_writable_bytes(buffer)); }
+    QByteArrayView readLineInto(QSpan<std::byte> buffer);
+
     virtual bool canReadLine() const;
 
     void startTransaction();

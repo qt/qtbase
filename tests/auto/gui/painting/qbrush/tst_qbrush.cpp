@@ -90,6 +90,16 @@ void tst_QBrush::operator_eq_eq()
     QFETCH(QBrush, brush2);
     QFETCH(bool, isEqual);
     QCOMPARE(brush1 == brush2, isEqual);
+
+    // exercise operator== overloads
+    QCOMPARE(QBrush(brush1.color()), brush1.color());
+    QCOMPARE(QBrush(brush1.style()), brush1.style());
+    QCOMPARE(QBrush(Qt::black), Qt::black);
+
+    // exercise operator== overloads with implicit construction
+    const QGradient warmFlame = QGradient::WarmFlame;
+    QCOMPARE(QBrush(warmFlame), warmFlame);
+    QCOMPARE(QBrush(QImage()), QImage());
 }
 
 void tst_QBrush::stream_data()

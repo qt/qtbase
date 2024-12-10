@@ -86,6 +86,14 @@ static void checkWarnMessage(const QIODevice *device, const char *function, cons
         } \
     } while (0)
 
+#define CHECK_LINEMAXLEN_1(function, returnType) \
+    do { \
+        if (maxSize < 1) { \
+            checkWarnMessage(this, #function, "Called with maxSize < 1"); \
+            return returnType; \
+        } \
+    } while (0)
+
 #define CHECK_MAXBYTEARRAYSIZE(function) \
     do { \
         if (maxSize >= QByteArray::maxSize()) { \
@@ -1335,13 +1343,17 @@ qint64 QIODevice::readLine(char *data, qint64 maxSize)
 /*!
     \internal
 */
-qint64 QIODevicePrivate::readLine(char *data, qint64 maxSize)
+qint64 QIODevicePrivate::readLine(char *data, qint64 maxSize, ReadLineOption option)
 {
     Q_Q(QIODevice);
-    Q_ASSERT(maxSize >= 2);
+    const auto appendNullByte = option & ReadLineOption::NullTerminated;
 
-    // Leave room for a '\0'
-    --maxSize;
+    if (appendNullByte) {
+        Q_ASSERT(maxSize >= 2);
+        --maxSize; // Leave room for a '\0'
+    } else {
+        Q_ASSERT(maxSize >= 1);
+    }
 
     const bool sequential = isSequential();
     const bool keepDataInBuffer = sequential && transactionStarted;
@@ -1358,8 +1370,8 @@ qint64 QIODevicePrivate::readLine(char *data, qint64 maxSize)
                 q->readData(data, 0);
         }
     } else if (!buffer.isEmpty()) {
-        // QRingBuffer::readLine() terminates the line with '\0'
-        readSoFar = buffer.readLine(data, maxSize + 1);
+        // QRingBuffer::readLine() terminates the line with '\0' if requested
+        readSoFar = buffer.readLine(data, maxSize + (appendNullByte ? 1 : 0), option);
         if (buffer.isEmpty())
             q->readData(data, 0);
         if (!sequential)
@@ -1380,7 +1392,9 @@ qint64 QIODevicePrivate::readLine(char *data, qint64 maxSize)
                     data[readSoFar - 1] = '\n';
                 }
             }
-            data[readSoFar] = '\0';
+            if (appendNullByte)
+                data[readSoFar] = '\0';
+
             return readSoFar;
         }
     }
@@ -1401,7 +1415,8 @@ qint64 QIODevicePrivate::readLine(char *data, qint64 maxSize)
     }
 #endif
     if (readBytes < 0) {
-        data[readSoFar] = '\0';
+        if (appendNullByte)
+            data[readSoFar] = '\0';
         return readSoFar ? readSoFar : -1;
     }
     readSoFar += readBytes;
@@ -1411,12 +1426,14 @@ qint64 QIODevicePrivate::readLine(char *data, qint64 maxSize)
         // assume the device position is invalid and force a seek.
         devicePos = qint64(-1);
     }
-    data[readSoFar] = '\0';
+    if (appendNullByte)
+        data[readSoFar] = '\0';
 
     if (openMode & QIODevice::Text) {
         if (readSoFar > 1 && data[readSoFar - 1] == '\n' && data[readSoFar - 2] == '\r') {
             data[readSoFar - 2] = '\n';
-            data[readSoFar - 1] = '\0';
+            if (appendNullByte)
+                data[readSoFar - 1] = '\0';
             --readSoFar;
         }
     }
@@ -1525,6 +1542,64 @@ bool QIODevice::readLineInto(QByteArray *line, qint64 maxSize)
 
     emptyResultOnFailure.dismiss();
     return true;
+}
+
+/*!
+    \since 6.9
+
+    \fn QIODevice::readLineInto(QSpan<char> buffer);
+    \fn QIODevice::readLineInto(QSpan<uchar> buffer);
+    \fn QIODevice::readLineInto(QSpan<std::byte> buffer);
+
+    Reads a line from this device into \a buffer, and returns the subset of
+    \a buffer that contains the data read.
+
+    If \a buffer's size is smaller than the length of the line, only the
+    characters that fit within \a buffer are read and returned. In this case,
+    calling readLineInto() again will retrieve the remainder of the line.
+    To determine whether the entire line was read, first check if the device is
+    atEnd(), in case the last line didn't end with a newline. If not atEnd(),
+    verify whether the returned view ends with '\n'. Otherwise, another call to
+    readLineInto() is required.
+
+    The resulting line can have trailing end-of-line characters ("\n" or "\r\n"),
+    so calling QByteArrayView::trimmed() may be necessary.
+
+    In case an error occurred, this function returns a null QByteArrayView.
+    Otherwise it is a sub-span of \a buffer. If no data was currently
+    available for reading or the device is atEnd(), this function returns an
+    empty QByteArrayView.
+
+    Note that the return value is not null terminated. If you want
+    null-termination, you can pass \c{buffer.chopped(1)} and then insert '\\0'
+    at \c{buffer[result.size()]}.
+
+    \sa readLine()
+*/
+QByteArrayView QIODevice::readLineInto(QSpan<std::byte> buffer)
+{
+    Q_D(QIODevice);
+    qint64 maxSize = buffer.size();
+#if defined QIODEVICE_DEBUG
+    printf("%p QIODevice::readLineInto(%lld), d->pos = %lld, d->buffer.size() = %lld\n",
+           this, qlonglong(maxSize), qlonglong(d->pos), qlonglong(d->buffer.size()));
+#endif
+
+    CHECK_READABLE(readLineInto, {});
+
+    if (atEnd())
+        return buffer.first(0);
+
+    CHECK_LINEMAXLEN_1(readLineInto, {});
+    CHECK_MAXBYTEARRAYSIZE(readLineInto);
+
+    const qint64 readBytes = d->readLine(reinterpret_cast<char*>(buffer.data()), buffer.size(),
+                                         QIODevicePrivate::ReadLineOption::NotNullTerminated);
+
+    if (readBytes < 0)
+        return {};
+
+    return buffer.first(readBytes);
 }
 
 /*!

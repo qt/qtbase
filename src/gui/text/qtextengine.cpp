@@ -1409,8 +1409,8 @@ void QTextEngine::shapeText(int item) const
         QFont font = f.font();
 #  if QT_CONFIG(harfbuzz)
         kerningEnabled = font.kerning();
-        shapingEnabled = QFontEngine::scriptRequiresOpenType(QChar::Script(si.analysis.script))
-                || (font.styleStrategy() & QFont::PreferNoShaping) == 0;
+        shapingEnabled = (si.analysis.script < QChar::ScriptCount && QFontEngine::scriptRequiresOpenType(QChar::Script(si.analysis.script)))
+                         || (font.styleStrategy() & QFont::PreferNoShaping) == 0;
 #  endif
         wordSpacing = QFixed::fromReal(font.wordSpacing());
         letterSpacing = QFixed::fromReal(font.letterSpacing());
@@ -1422,8 +1422,8 @@ void QTextEngine::shapeText(int item) const
         QFont font = this->font(si);
 #if QT_CONFIG(harfbuzz)
         kerningEnabled = font.d->kerning;
-        shapingEnabled = QFontEngine::scriptRequiresOpenType(QChar::Script(si.analysis.script))
-                || (font.d->request.styleStrategy & QFont::PreferNoShaping) == 0;
+        shapingEnabled = (si.analysis.script < QChar::ScriptCount && QFontEngine::scriptRequiresOpenType(QChar::Script(si.analysis.script)))
+                         || (font.d->request.styleStrategy & QFont::PreferNoShaping) == 0;
 #endif
         letterSpacingIsAbsolute = font.d->letterSpacingIsAbsolute;
         letterSpacing = font.d->letterSpacing;
@@ -1619,7 +1619,9 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si,
 
     hb_segment_properties_t props = HB_SEGMENT_PROPERTIES_DEFAULT;
     props.direction = si.analysis.bidiLevel % 2 ? HB_DIRECTION_RTL : HB_DIRECTION_LTR;
-    QChar::Script script = QChar::Script(si.analysis.script);
+    QChar::Script script = si.analysis.script < QChar::ScriptCount
+                               ? QChar::Script(si.analysis.script)
+                               : QChar::Script_Common;
     props.script = hb_qt_script_to_script(script);
     // ### TODO get_default_for_script?
     props.language = hb_language_get_default(); // use default language from locale
@@ -1751,7 +1753,8 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si,
             g.offsets[0].y = QFixed{};
             g.attributes[0].clusterStart = true;
             g.attributes[0].dontPrint = true;
-            log_clusters[0] = glyphs_shaped;
+            for (uint str_pos = 0; str_pos < item_length; ++str_pos)
+                log_clusters[str_pos] = glyphs_shaped;
         }
 
         if (Q_UNLIKELY(engineIdx != 0)) {
@@ -1923,6 +1926,35 @@ void QTextEngine::validate() const
         layoutData->string.insert(specialData->preeditPosition, specialData->preeditText);
 }
 
+#if !defined(QT_NO_EMOJISEGMENTER)
+namespace {
+
+    enum CharacterCategory {
+        EMOJI = 0,
+        EMOJI_TEXT_PRESENTATION = 1,
+        EMOJI_EMOJI_PRESENTATION = 2,
+        EMOJI_MODIFIER_BASE = 3,
+        EMOJI_MODIFIER = 4,
+        EMOJI_VS_BASE = 5,
+        REGIONAL_INDICATOR = 6,
+        KEYCAP_BASE = 7,
+        COMBINING_ENCLOSING_KEYCAP = 8,
+        COMBINING_ENCLOSING_CIRCLE_BACKSLASH = 9,
+        ZWJ = 10,
+        VS15 = 11,
+        VS16 = 12,
+        TAG_BASE = 13,
+        TAG_SEQUENCE = 14,
+        TAG_TERM = 15,
+        OTHER = 16
+    };
+
+    typedef CharacterCategory *emoji_text_iter_t;
+
+    #include "../../3rdparty/emoji-segmenter/emoji_presentation_scanner.c"
+}
+#endif
+
 void QTextEngine::itemize() const
 {
     validate();
@@ -1954,9 +1986,79 @@ void QTextEngine::itemize() const
         }
     }
 
+#if !defined(QT_NO_EMOJISEGMENTER)
+    static const bool sDisableEmojiSegmenter = qEnvironmentVariableIntValue("QT_DISABLE_EMOJI_SEGMENTER") > 0;
+    const bool disableEmojiSegmenter = sDisableEmojiSegmenter || option.flags().testFlag(QTextOption::DisableEmojiParsing);
+
+    QVarLengthArray<CharacterCategory> categorizedString;
+    if (!disableEmojiSegmenter) {
+        // Parse emoji sequences
+        for (int i = 0; i < length; ++i) {
+            const QChar &c = string[i];
+            const bool isSurrogate = c.isHighSurrogate() && i < length - 1;
+            const char32_t ucs4 = isSurrogate
+                                    ? QChar::surrogateToUcs4(c, string[++i])
+                                    : c.unicode();
+            const QUnicodeTables::Properties *p = QUnicodeTables::properties(ucs4);
+
+            if (ucs4 == 0x20E3)
+                categorizedString.append(CharacterCategory::COMBINING_ENCLOSING_KEYCAP);
+            else if (ucs4 == 0x20E0)
+                categorizedString.append(CharacterCategory::COMBINING_ENCLOSING_CIRCLE_BACKSLASH);
+            else if (ucs4 == 0xFE0E)
+                categorizedString.append(CharacterCategory::VS15);
+            else if (ucs4 == 0xFE0F)
+                categorizedString.append(CharacterCategory::VS16);
+            else if (ucs4 == 0x200D)
+                categorizedString.append(CharacterCategory::ZWJ);
+            else if (ucs4 == 0x1F3F4)
+                categorizedString.append(CharacterCategory::TAG_BASE);
+            else if (ucs4 == 0xE007F)
+                categorizedString.append(CharacterCategory::TAG_TERM);
+            else if ((ucs4 >= 0xE0030 && ucs4 <= 0xE0039) || (ucs4 >= 0xE0061 && ucs4 <= 0xE007A))
+                categorizedString.append(CharacterCategory::TAG_SEQUENCE);
+            else if (ucs4 >= 0x1F1E6 && ucs4 <= 0x1F1FF)
+                categorizedString.append(CharacterCategory::REGIONAL_INDICATOR);
+            // emoji_keycap_sequence = [0-9#*] \x{FE0F 20E3}
+            else if ((ucs4 >= 0x0030 && ucs4 <= 0x0039) || ucs4 == 0x0023 || ucs4 == 0x002A)
+                categorizedString.append(CharacterCategory::KEYCAP_BASE);
+            else if (p->emojiFlags & uchar(QUnicodeTables::EmojiFlags::Emoji_Modifier_Base))
+                categorizedString.append(CharacterCategory::EMOJI_MODIFIER_BASE);
+            else if (p->emojiFlags & uchar(QUnicodeTables::EmojiFlags::Emoji_Modifier))
+                categorizedString.append(CharacterCategory::EMOJI_MODIFIER);
+            else if (p->emojiFlags & uchar(QUnicodeTables::EmojiFlags::Emoji_Presentation))
+                categorizedString.append(CharacterCategory::EMOJI_EMOJI_PRESENTATION);
+            // If it's in the emoji list and doesn't have the emoji presentation, it is text
+            // presentation.
+            else if (p->emojiFlags & uchar(QUnicodeTables::EmojiFlags::Emoji))
+                categorizedString.append(CharacterCategory::EMOJI_TEXT_PRESENTATION);
+            else
+                categorizedString.append(CharacterCategory::OTHER);
+        }
+    }
+#endif
+
     const ushort *uc = string;
     const ushort *e = uc + length;
+
+#if !defined(QT_NO_EMOJISEGMENTER)
+    const emoji_text_iter_t categoriesStart = categorizedString.data();
+    const emoji_text_iter_t categoriesEnd = categoriesStart + categorizedString.size();
+
+    emoji_text_iter_t categoryIt = categoriesStart;
+
+    bool isEmoji = false;
+    bool hasVs = false;
+    emoji_text_iter_t nextIt = categoryIt;
+#endif
+
     while (uc < e) {
+#if !defined(QT_NO_EMOJISEGMENTER)
+        // Find next emoji sequence
+        if (!disableEmojiSegmenter && categoryIt == nextIt)
+            nextIt = scan_emoji_presentation(categoryIt, categoriesEnd, &isEmoji, &hasVs);
+#endif
+
         switch (*uc) {
         case QChar::ObjectReplacementCharacter:
             {
@@ -1996,7 +2098,27 @@ void QTextEngine::itemize() const
         default:
             analysis->flags = QScriptAnalysis::None;
             break;
+        };
+
+#if !defined(QT_NO_EMOJISEGMENTER)
+        if (!disableEmojiSegmenter) {
+            if (isEmoji) {
+                static_assert(QChar::ScriptCount < USHRT_MAX);
+                analysis->script = QFontDatabasePrivate::Script_Emoji;
+            }
+
+            if (QChar::isHighSurrogate(*uc) && (uc + 1) < e && QChar::isLowSurrogate(*(uc + 1))) {
+                if (isEmoji)
+                    (analysis + 1)->script = QFontDatabasePrivate::Script_Emoji;
+
+                ++uc;
+                ++analysis;
+            }
+
+            ++categoryIt;
         }
+#endif
+
         ++uc;
         ++analysis;
     }

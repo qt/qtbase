@@ -183,7 +183,7 @@ QByteArray verifyZeroTermination(const QByteArray &ba)
     if ('\0' != baTerminator)
         return QString::fromUtf8(
             "*** Result ('%1') not null-terminated: 0x%2 ***").arg(QString::fromUtf8(ba))
-                .arg(baTerminator, 2, 16, QChar('0')).toUtf8();
+                .arg(int(baTerminator), 2, 16, QChar('0')).toUtf8();
 
     // Skip mutating checks on shared strings
     if (baDataPtr->isShared())

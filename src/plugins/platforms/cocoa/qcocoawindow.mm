@@ -132,6 +132,15 @@ void QCocoaWindow::initialize()
 
         setMask(QHighDpi::toNativeLocalRegion(window()->mask(), window()));
 
+        m_safeAreaInsetsObserver = QMacKeyValueObserver(
+            m_view, @"safeAreaInsets", [this] {
+                // Defer to next runloop pass, so that any changes to the
+                // margins during resizing have settled down.
+                QMetaObject::invokeMethod(this, [this]{
+                    updateSafeAreaMarginsIfNeeded();
+                }, Qt::QueuedConnection);
+            }, NSKeyValueObservingOptionNew);
+
     } else {
         // Pick up essential foreign window state
         QPlatformWindow::setGeometry(QRectF::fromCGRect(m_view.frame).toRect());
@@ -151,6 +160,8 @@ QCocoaWindow::~QCocoaWindow()
     QMacAutoReleasePool pool;
     [m_nsWindow makeFirstResponder:nil];
     [m_nsWindow setContentView:nil];
+
+    m_safeAreaInsetsObserver = {};
 
     // Remove from superview only if we have a Qt window parent,
     // as we don't want to affect window container foreign windows.
@@ -344,6 +355,14 @@ QMargins QCocoaWindow::safeAreaMargins() const
     };
 
     return (screenSafeAreaMargins | viewSafeAreaMargins).toMargins();
+}
+
+void QCocoaWindow::updateSafeAreaMarginsIfNeeded()
+{
+    if (safeAreaMargins() != m_lastReportedSafeAreaMargins) {
+        m_lastReportedSafeAreaMargins = safeAreaMargins();
+        QWindowSystemInterface::handleSafeAreaMarginsChanged(window());
+    }
 }
 
 bool QCocoaWindow::startSystemMove()
@@ -627,11 +646,12 @@ NSUInteger QCocoaWindow::windowStyleMask(Qt::WindowFlags flags)
     if (m_drawContentBorderGradient)
         styleMask |= NSWindowStyleMaskTexturedBackground;
 
+    if (flags & Qt::ExpandedClientAreaHint)
+        styleMask |= NSWindowStyleMaskFullSizeContentView;
+
     // Don't wipe existing states
     if (m_view.window.styleMask & NSWindowStyleMaskFullScreen)
         styleMask |= NSWindowStyleMaskFullScreen;
-    if (m_view.window.styleMask & NSWindowStyleMaskFullSizeContentView)
-        styleMask |= NSWindowStyleMaskFullSizeContentView;
 
     return styleMask;
 }
@@ -743,6 +763,9 @@ void QCocoaWindow::setWindowFlags(Qt::WindowFlags flags)
     bool ignoreMouse = flags & Qt::WindowTransparentForInput;
     if (m_view.window.ignoresMouseEvents != ignoreMouse)
         m_view.window.ignoresMouseEvents = ignoreMouse;
+
+    m_view.window.titlebarAppearsTransparent = (flags & Qt::NoTitleBarBackgroundHint)
+        || (m_view.window.styleMask & QT_IGNORE_DEPRECATIONS(NSWindowStyleMaskTexturedBackground));
 }
 
 // ----------------------- Window state -----------------------
@@ -1301,12 +1324,12 @@ void QCocoaWindow::windowWillStartLiveResize()
     m_inLiveResize = true;
 }
 
-bool QCocoaWindow::inLiveResize() const
+bool QCocoaWindow::allowsIndependentThreadedRendering() const
 {
     // Use member variable to track this instead of reflecting
     // NSView.inLiveResize directly, so it can be called from
     // non-main threads.
-    return m_inLiveResize;
+    return !m_inLiveResize;
 }
 
 void QCocoaWindow::windowDidEndLiveResize()
@@ -1517,10 +1540,7 @@ void QCocoaWindow::handleGeometryChange()
     QWindowSystemInterface::handleGeometryChange(window(), newGeometry);
 
     // Changing the window geometry may affect the safe area margins
-    if (safeAreaMargins() != m_lastReportedSafeAreaMargins) {
-        m_lastReportedSafeAreaMargins = safeAreaMargins();
-        QWindowSystemInterface::handleSafeAreaMarginsChanged(window());
-    }
+    updateSafeAreaMarginsIfNeeded();
 
     // Guard against processing window system events during QWindow::setGeometry
     // calls, which Qt and Qt applications do not expect.
@@ -2033,7 +2053,6 @@ void QCocoaWindow::applyContentBorderThickness(NSWindow *window)
     if (!m_drawContentBorderGradient) {
         window.styleMask = window.styleMask & ~NSWindowStyleMaskTexturedBackground;
         [window.contentView.superview setNeedsDisplay:YES];
-        window.titlebarAppearsTransparent = NO;
         return;
     }
 
@@ -2058,7 +2077,6 @@ void QCocoaWindow::applyContentBorderThickness(NSWindow *window)
     int effectiveBottomContentBorderThickness = 0;
 
     [window setStyleMask:[window styleMask] | NSWindowStyleMaskTexturedBackground];
-    window.titlebarAppearsTransparent = YES;
 
     // Setting titlebarAppearsTransparent to YES means that the border thickness has to account
     // for the title bar height as well, otherwise sheets will not be presented at the correct

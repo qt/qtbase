@@ -2216,7 +2216,7 @@ bool QOpenGL2PaintEngineEx::begin(QPaintDevice *pdev)
     // still tests for QGL-QOpenGL paint engine interoperability, so keep the
     // status quo for now, and avoid introducing a VAO in non-core contexts.
     const bool needsVAO = d->ctx->format().profile() == QSurfaceFormat::CoreProfile
-        && d->ctx->format().version() >= qMakePair(3, 2);
+        && d->ctx->format().version() >= std::pair(3, 2);
     if (needsVAO && !d->vao.isCreated()) {
         bool created = d->vao.create();
 

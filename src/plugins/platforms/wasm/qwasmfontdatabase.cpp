@@ -319,7 +319,7 @@ QFontEngine *QWasmFontDatabase::fontEngine(const QFontDef &fontDef, void *handle
 
 QStringList QWasmFontDatabase::fallbacksForFamily(const QString &family, QFont::Style style,
                                                     QFont::StyleHint styleHint,
-                                                    QChar::Script script) const
+                                                    QFontDatabasePrivate::ExtendedScript script) const
 {
     QStringList fallbacks
         = QFreeTypeFontDatabase::fallbacksForFamily(family, style, styleHint, script);

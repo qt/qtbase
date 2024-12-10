@@ -106,13 +106,6 @@ public:
 
     QRectF closestAcceptableGeometry(const QRectF &rect) const override;
 
-    void processSafeAreaMarginsChanged() override
-    {
-        Q_Q(QWidgetWindow);
-        if (QWidget *widget = q->widget())
-            QWidgetPrivate::get(widget)->updateContentsRect();
-    }
-
     bool participatesInLastWindowClosed() const override;
     bool treatAsVisible() const override;
 };
@@ -391,6 +384,10 @@ bool QWidgetWindow::event(QEvent *event)
         handleDevicePixelRatioChange();
         break;
 
+    case QEvent::SafeAreaMarginsChange:
+        QWidgetPrivate::get(m_widget)->updateContentsRect();
+        break;
+
     default:
         break;
     }
@@ -508,8 +505,8 @@ void QWidgetWindow::handleNonClientAreaMouseEvent(QMouseEvent *e)
 
 void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
 {
-    if (QApplicationPrivate::inPopupMode()) {
-        QPointer<QWidget> activePopupWidget = QApplication::activePopupWidget();
+    Q_D(QWidgetWindow);
+    if (auto *activePopupWidget = QApplication::activePopupWidget()) {
         QPointF mapped = event->position();
         if (activePopupWidget != m_widget)
             mapped = activePopupWidget->mapFromGlobal(event->globalPosition());
@@ -651,7 +648,7 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
     if (!receiver)
         return;
 
-    if (d_func()->isPopup() && receiver->window()->windowHandle() != this) {
+    if (d->isPopup() && receiver->window()->windowHandle() != this) {
         receiver = widget;
         mapped = event->position().toPoint();
     }
@@ -668,16 +665,8 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
                                             &qt_button_down, qt_last_mouse_receiver);
         event->setAccepted(translated.isAccepted());
     }
-#ifndef QT_NO_CONTEXTMENU
-    if (event->type() == QGuiApplicationPrivate::contextMenuEventType()
-        && event->button() == Qt::RightButton
-        && m_widget->rect().contains(event->position().toPoint())) {
-        QContextMenuEvent e(QContextMenuEvent::Mouse, mapped.toPoint(), event->globalPosition().toPoint(), event->modifiers());
-        QGuiApplication::forwardEvent(receiver, &e, event);
-        if (e.isAccepted())
-            event->accept();
-    }
-#endif
+
+    d->maybeSynthesizeContextMenuEvent(event);
 }
 
 void QWidgetWindow::handleTouchEvent(QTouchEvent *event)
@@ -685,7 +674,7 @@ void QWidgetWindow::handleTouchEvent(QTouchEvent *event)
     if (event->type() == QEvent::TouchCancel) {
         QApplicationPrivate::translateTouchCancel(event->pointingDevice(), event->timestamp());
         event->accept();
-    } else if (QApplicationPrivate::inPopupMode()) {
+    } else if (QApplication::activePopupWidget()) {
         // Ignore touch events for popups. This will cause QGuiApplication to synthesise mouse
         // events instead, which QWidgetWindow::handleMouseEvent will forward correctly:
         event->ignore();
@@ -700,8 +689,7 @@ void QWidgetWindow::handleKeyEvent(QKeyEvent *event)
         return;
 
     QObject *receiver = QWidget::keyboardGrabber();
-    if (!receiver && QApplicationPrivate::inPopupMode()) {
-        QWidget *popup = QApplication::activePopupWidget();
+    if (auto *popup = QApplication::activePopupWidget(); !receiver && popup) {
         QWidget *popupFocusWidget = popup->focusWidget();
         receiver = popupFocusWidget ? popupFocusWidget : popup;
     }
@@ -1154,8 +1142,7 @@ void QWidgetWindow::handleGestureEvent(QNativeGestureEvent *e)
 {
     // copy-pasted code to find correct widget follows:
     QObject *receiver = nullptr;
-    if (QApplicationPrivate::inPopupMode()) {
-        QWidget *popup = QApplication::activePopupWidget();
+    if (auto *popup = QApplication::activePopupWidget()) {
         QWidget *popupFocusWidget = popup->focusWidget();
         receiver = popupFocusWidget ? popupFocusWidget : popup;
     }
@@ -1171,28 +1158,36 @@ void QWidgetWindow::handleGestureEvent(QNativeGestureEvent *e)
 #ifndef QT_NO_CONTEXTMENU
 void QWidgetWindow::handleContextMenuEvent(QContextMenuEvent *e)
 {
-    // We are only interested in keyboard originating context menu events here,
-    // mouse originated context menu events for widgets are generated in mouse handling methods.
-    if (e->reason() != QContextMenuEvent::Keyboard)
-        return;
+    QWidget *receiver = qt_last_mouse_receiver.get();
+    QPoint pos = e->pos();
+    QPoint globalPos = e->globalPos();
 
-    QWidget *fw = QWidget::keyboardGrabber();
-    if (!fw) {
-        if (QApplication::activePopupWidget()) {
-            fw = (QApplication::activePopupWidget()->focusWidget()
-                  ? QApplication::activePopupWidget()->focusWidget()
-                  : QApplication::activePopupWidget());
-        } else if (QApplication::focusWidget()) {
-            fw = QApplication::focusWidget();
-        } else {
-            fw = m_widget;
+    // Keyboard-originating context menu events are delivered to the focus widget,
+    // independently of event position.
+    if (e->reason() == QContextMenuEvent::Keyboard) {
+        receiver = QWidget::keyboardGrabber();
+        if (!receiver) {
+            if (QApplication::activePopupWidget()) {
+                receiver = (QApplication::activePopupWidget()->focusWidget()
+                            ? QApplication::activePopupWidget()->focusWidget()
+                            : QApplication::activePopupWidget());
+            } else if (QApplication::focusWidget()) {
+                receiver = QApplication::focusWidget();
+            } else {
+                receiver = m_widget;
+            }
         }
+        if (Q_LIKELY(receiver)) {
+            pos = receiver->inputMethodQuery(Qt::ImCursorRectangle).toRect().center();
+            globalPos = receiver->mapToGlobal(pos);
+        }
+    } else if (Q_LIKELY(receiver)) {
+        pos = receiver->mapFromGlobal(e->globalPos());
     }
-    if (fw && fw->isEnabled()) {
-        QPoint pos = fw->inputMethodQuery(Qt::ImCursorRectangle).toRect().center();
-        QContextMenuEvent widgetEvent(QContextMenuEvent::Keyboard, pos, fw->mapToGlobal(pos),
-                                      e->modifiers());
-        QGuiApplication::forwardEvent(fw, &widgetEvent, e);
+
+    if (receiver && receiver->isEnabled()) {
+        QContextMenuEvent widgetEvent(e->reason(), pos, globalPos, e->modifiers());
+        QGuiApplication::forwardEvent(receiver, &widgetEvent, e);
     }
 }
 #endif // QT_NO_CONTEXTMENU

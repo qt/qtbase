@@ -41,6 +41,9 @@ public:
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QPen)
     void swap(QPen &other) noexcept { d.swap(other.d); }
 
+    QPen &operator=(QColor color);
+    QPen &operator=(Qt::PenStyle style);
+
     Qt::PenStyle style() const;
     void setStyle(Qt::PenStyle);
 
@@ -85,6 +88,22 @@ public:
 private:
     friend Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QPen &);
     friend Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QPen &);
+
+    bool isSolidDefaultLine() const noexcept;
+
+    friend bool comparesEqual(const QPen &lhs, QColor rhs) noexcept
+    {
+        return lhs.brush() == rhs && lhs.isSolidDefaultLine();
+    }
+    Q_DECLARE_EQUALITY_COMPARABLE(QPen, QColor)
+
+    friend bool comparesEqual(const QPen &lhs, Qt::PenStyle rhs)
+    {
+        if (rhs == Qt::NoPen)
+            return lhs.style() == Qt::NoPen;
+        return lhs == QPen(rhs); // allocates
+    }
+    Q_DECLARE_EQUALITY_COMPARABLE_NON_NOEXCEPT(QPen, Qt::PenStyle)
 
 public:
     using DataPtr = QExplicitlySharedDataPointer<QPenPrivate>;

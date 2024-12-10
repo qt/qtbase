@@ -66,6 +66,42 @@ private Q_SLOTS:
     void totallyOrderedWrapperBasics();
 
     void compareAutoReturnType();
+
+private:
+    template <typename LeftType, typename RightType, typename OrderingType>
+    void lexicographicalCompareThreeWayDataImpl();
+
+    template <typename LeftType, typename RightType, typename OrderingType>
+    void lexicographicalCompareThreeWayImpl();
+
+    template <typename LeftType, typename RightType, typename OrderingType>
+    void lexicographicalCompareThreeWayComparatorImpl();
+
+private slots:
+    void lexicographicalCompareThreeWay_ThreeWayCmp_Int_data();
+    void lexicographicalCompareThreeWay_ThreeWayCmp_Int();
+    void lexicographicalCompareThreeWay_ThreeWayCmp_Float_data();
+    void lexicographicalCompareThreeWay_ThreeWayCmp_Float();
+    void lexicographicalCompareThreeWay_ThreeWayCmp_Weak_data();
+    void lexicographicalCompareThreeWay_ThreeWayCmp_Weak();
+
+    void lexicographicalCompareThreeWay_Mixed_Int_data();
+    void lexicographicalCompareThreeWay_Mixed_Int();
+    void lexicographicalCompareThreeWay_Mixed_Float_data();
+    void lexicographicalCompareThreeWay_Mixed_Float();
+    void lexicographicalCompareThreeWay_Mixed_Weak_data();
+    void lexicographicalCompareThreeWay_Mixed_Weak();
+
+    void lexicographicalCompareThreeWay_Comparator_Int_data();
+    void lexicographicalCompareThreeWay_Comparator_Int();
+    void lexicographicalCompareThreeWay_Comparator_Float_data();
+    void lexicographicalCompareThreeWay_Comparator_Float();
+    void lexicographicalCompareThreeWay_Comparator_Weak_data();
+    void lexicographicalCompareThreeWay_Comparator_Weak();
+
+    void lexicographicalCompareThreeWay_Pointers();
+    void lexicographicalCompareThreeWay_NonCopyMove();
+    void lexicographicalCompareThreeWay_CustomPointerHelper();
 };
 
 #endif // TST_QCOMPAREHELPERS_H

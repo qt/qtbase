@@ -61,6 +61,9 @@ static const std::vector<std::string_view> getAllZoneIds(std::optional<int> offs
     // Each is sorted, so we can unite them; and the result shall be sorted.
     all.reserve(raw.size() + links.size());
     std::set_union(raw.begin(), raw.end(), links.begin(), links.end(), std::back_inserter(all));
+    // We could in principle merge in also such of matchingTimeZoneIds(offset)
+    // as are known zones - our CLDR data says those also have this offset - but
+    // hopefully that's redundant.
     return all;
 }
 

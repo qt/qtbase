@@ -89,6 +89,18 @@ public:
 */
 
 /*!
+    \fn void QStackedWidget::widgetAdded(int index)
+
+    \since 6.9
+
+    This signal is emitted whenever a widget is added or inserted.
+    The widget's \a index is passed as parameter.
+
+    \sa addWidget(), insertWidget()
+*/
+
+
+/*!
     Constructs a QStackedWidget with the given \a parent.
 
     \sa addWidget(), insertWidget()
@@ -102,6 +114,8 @@ QStackedWidget::QStackedWidget(QWidget *parent)
             this, &QStackedWidget::widgetRemoved);
     connect(d->layout, &QStackedLayout::currentChanged,
             this, &QStackedWidget::currentChanged);
+    connect(d->layout, &QStackedLayout::widgetAdded,
+            this, &QStackedWidget::widgetAdded);
 }
 
 /*!

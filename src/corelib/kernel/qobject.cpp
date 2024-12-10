@@ -152,6 +152,7 @@ void (*QAbstractDeclarativeData::setWidgetParent)(QObject *, QObject *) = nullpt
 
 QObjectData::~QObjectData() {}
 
+QT7_ONLY(const)
 QMetaObject *QObjectData::dynamicMetaObject() const
 {
     return metaObject->toDynamicMetaObject(q_ptr);
@@ -171,7 +172,7 @@ QObjectPrivate::QObjectPrivate(int version)
     isDeletingChildren = false;                 // set by deleteChildren()
     sendChildEvents = true;                     // if we should send ChildAdded and ChildRemoved events to parent
     receiveChildEvents = true;
-    postedEvents = 0;
+    postedEvents.storeRelaxed(0);
     extraData = nullptr;
     metaObject = nullptr;
     isWindow = false;
@@ -199,7 +200,7 @@ QObjectPrivate::~QObjectPrivate()
         }
     }
 
-    if (postedEvents)
+    if (postedEvents.loadRelaxed())
         QCoreApplication::removePostedEvents(q_ptr, 0);
 
     thisThreadData->deref();
@@ -1750,8 +1751,8 @@ void QObjectPrivate::setThreadData_helper(QThreadData *currentData, QThreadData 
     }
 
     // move posted events
-    int eventsMoved = 0;
-    for (int i = 0; i < currentData->postEventList.size(); ++i) {
+    qsizetype eventsMoved = 0;
+    for (qsizetype i = 0; i < currentData->postEventList.size(); ++i) {
         const QPostEvent &pe = currentData->postEventList.at(i);
         if (!pe.event)
             continue;

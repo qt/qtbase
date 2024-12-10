@@ -873,6 +873,14 @@ QFontEngine *QWindowsFontDatabaseBase::fontEngine(const QByteArray &fontData, qr
     return fontEngine;
 }
 
+QStringList QWindowsFontDatabaseBase::familiesForScript(QFontDatabasePrivate::ExtendedScript script)
+{
+    if (script == QFontDatabasePrivate::Script_Emoji)
+        return QStringList{} << QStringLiteral("Segoe UI Emoji");
+    else
+        return QStringList{};
+}
+
 QString QWindowsFontDatabaseBase::familyForStyleHint(QFont::StyleHint styleHint)
 {
     switch (styleHint) {
