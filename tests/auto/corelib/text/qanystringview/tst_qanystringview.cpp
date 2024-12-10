@@ -83,6 +83,7 @@ static_assert(!CanConvert<ImplicitlyConvertibleTo<QLatin1StringView>>);
 static_assert(CanConvert<QChar>);
 
 static_assert(CanConvert<QChar[123]>);
+static_assert(CanConvert<const QChar[123]>);
 
 static_assert(CanConvert<      QString >);
 static_assert(CanConvert<const QString >);
@@ -96,6 +97,7 @@ static_assert(CanConvert<const QString&>);
 static_assert(CanConvert<ushort>);
 
 static_assert(CanConvert<ushort[123]>);
+static_assert(CanConvert<const ushort[123]>);
 
 static_assert(CanConvert<      ushort*>);
 static_assert(CanConvert<const ushort*>);
@@ -114,6 +116,9 @@ static_assert(!CanConvert<std::list<ushort>>);
 //
 
 static_assert(CanConvert<char8_t>);
+
+static_assert(CanConvert<      char8_t[123]>);
+static_assert(CanConvert<const char8_t[123]>);
 
 static_assert(CanConvert<      char8_t*>);
 static_assert(CanConvert<const char8_t*>);
@@ -147,6 +152,9 @@ static_assert(!CanConvert<std::list<char8_t>>);
 
 static_assert(CanConvert<char16_t>);
 
+static_assert(CanConvert<      char16_t[123]>);
+static_assert(CanConvert<const char16_t[123]>);
+
 static_assert(CanConvert<      char16_t*>);
 static_assert(CanConvert<const char16_t*>);
 
@@ -176,6 +184,9 @@ static_assert(CanConvert<QtPrivate::XmlStringRef>);
 // Qt Policy: char32_t isn't supported
 
 static_assert(CanConvert<char32_t>); // ... except here
+
+static_assert(!CanConvert<      char32_t[123]>);
+static_assert(!CanConvert<const char32_t[123]>);
 
 static_assert(!CanConvert<      char32_t*>);
 static_assert(!CanConvert<const char32_t*>);
@@ -210,6 +221,9 @@ constexpr bool CanConvertFromWCharT =
         ;
 
 static_assert(CanConvert<wchar_t> == CanConvertFromWCharT); // ### FIXME: should work everywhere
+
+static_assert(CanConvert<      wchar_t[123]> == CanConvertFromWCharT);
+static_assert(CanConvert<const wchar_t[123]> == CanConvertFromWCharT);
 
 static_assert(CanConvert<      wchar_t*> == CanConvertFromWCharT);
 static_assert(CanConvert<const wchar_t*> == CanConvertFromWCharT);
