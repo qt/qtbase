@@ -4219,10 +4219,12 @@ QPointF QWidget::mapTo(const QWidget *parent, const QPointF &pos) const
     if (parent) {
         const QWidget * w = this;
         while (w != parent) {
-            Q_ASSERT_X(w, "QWidget::mapTo(const QWidget *parent, const QPointF &pos)",
-                       "parent must be in parent hierarchy");
             p = w->mapToParent(p);
             w = w->parentWidget();
+            if (!w) {
+                qWarning("QWidget::mapTo(): parent must be in parent hierarchy");
+                break;
+            }
         }
     }
     return p;
@@ -4251,11 +4253,12 @@ QPointF QWidget::mapFrom(const QWidget *parent, const QPointF &pos) const
     if (parent) {
         const QWidget * w = this;
         while (w != parent) {
-            Q_ASSERT_X(w, "QWidget::mapFrom(const QWidget *parent, const QPoint &pos)",
-                       "parent must be in parent hierarchy");
-
             p = w->mapFromParent(p);
             w = w->parentWidget();
+            if (!w) {
+                qWarning("QWidget::mapFrom(): parent must be in parent hierarchy");
+                break;
+            }
         }
     }
     return p;
