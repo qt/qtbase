@@ -174,6 +174,10 @@ public:
     constexpr QBasicUtf8StringView(const Pointer &str) noexcept
         : QBasicUtf8StringView(str,
             str ? std::char_traits<std::remove_cv_t<std::remove_pointer_t<Pointer>>>::length(str) : 0) {}
+
+    template <typename Char, if_compatible_char<Char> = true>
+    constexpr QBasicUtf8StringView(const Char (&str)[]) noexcept
+        : QBasicUtf8StringView(&*str) {} // decay to pointer
 #endif
 
 #ifdef Q_QDOC
