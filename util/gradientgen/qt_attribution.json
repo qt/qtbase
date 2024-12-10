@@ -11,7 +11,7 @@
         "PURL": "pkg:generic/webgradients?download_url=https://webgradients.com/",
         "License": "MIT License",
         "LicenseId": "MIT",
-        "LicenseFile": "WEBGRADIENTS_LICENSE.txt",
+        "LicenseFile": "LICENSE.WEBGRADIENTS.txt",
         "Copyright": "Copyright (c) 2017 itmeo"
     }
 ]

@@ -8,7 +8,7 @@
     "Description": "Allows Qt to integrate into Apple's Cocoa API.",
     "LicenseId": "BSD-3-Clause",
     "License": "BSD 3-clause \"New\" or \"Revised\" License",
-    "LicenseFile": "COCOA_LICENSE.txt",
+    "LicenseFile": "LICENSE.COCOA.txt",
     "Copyright": "Copyright (c) 2007-2008, Apple, Inc.",
     "Comment": "no relevant CPE or PURL found"
 }

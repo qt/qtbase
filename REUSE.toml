@@ -26,7 +26,7 @@ path = ["bin/*", "coin/**","libexec/*","**_clang-format", "**.cmake", "**.conf",
         "**.pro", "**.pri", "**.yaml", "cmake/**.in", "cmake/ios/LaunchScreen.storyboard",
         "cmake/**md", "**.yml", "**.dynlist", "cmake/**.plist",
         "src/corelib/global/qconfig.cpp.in", "src/corelib/Qt6CoreConfigureFileTemplate.in",
-        "**.cfg"]
+        "**.cfg", "**/Makefile", "**/CMakeLists.txt"]
 precedence = "closest"
 comment = "build system"
 SPDX-FileCopyrightText = "Copyright (C) 2024 The Qt Company Ltd."
@@ -45,8 +45,14 @@ SPDX-FileCopyrightText = "Copyright (C) 2024 The Qt Company Ltd."
 SPDX-License-Identifier = "BSD-3-Clause"
 
 [[annotations]]
-path = ["**/snippets/**", "**/doc/**/images/**", "examples/**"]
+path = ["**/snippets/**", "**/doc/**/images/**", "examples/**", "src/tools/qlalr/examples/**"]
 comment = "this must be after the build system table because example and snippets take precedence over build system"
+precedence = "closest"
+SPDX-FileCopyrightText = "Copyright (C) 2024 The Qt Company Ltd."
+SPDX-License-Identifier = "LicenseRef-Qt-Commercial OR BSD-3-Clause"
+
+[[annotations]]
+path = ["tests/manual/examples/**"]
 precedence = "closest"
 SPDX-FileCopyrightText = "Copyright (C) 2024 The Qt Company Ltd."
 SPDX-License-Identifier = "LicenseRef-Qt-Commercial OR BSD-3-Clause"
