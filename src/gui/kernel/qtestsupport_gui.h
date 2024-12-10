@@ -75,36 +75,36 @@ namespace QtGuiTest
 {
     Q_NAMESPACE_EXPORT(Q_GUI_EXPORT)
 
-    void setKeyboardModifiers(Qt::KeyboardModifiers modifiers);
-    void setCursorPosition(const QPoint &position);
-    void synthesizeExtendedKeyEvent(QEvent::Type type, int key, Qt::KeyboardModifiers modifiers,
+    Q_GUI_EXPORT void setKeyboardModifiers(Qt::KeyboardModifiers modifiers);
+    Q_GUI_EXPORT void setCursorPosition(const QPoint &position);
+    Q_GUI_EXPORT void synthesizeExtendedKeyEvent(QEvent::Type type, int key, Qt::KeyboardModifiers modifiers,
                                     quint32 nativeScanCode, quint32 nativeVirtualKey,
                                     const QString &text);
-    bool synthesizeKeyEvent(QWindow *window, QEvent::Type t, int k, Qt::KeyboardModifiers mods,
+    Q_GUI_EXPORT bool synthesizeKeyEvent(QWindow *window, QEvent::Type t, int k, Qt::KeyboardModifiers mods,
                             const QString & text = QString(), bool autorep = false,
                             ushort count = 1);
 
-    void synthesizeMouseEvent(const QPointF &position, Qt::MouseButtons state,
+    Q_GUI_EXPORT void synthesizeMouseEvent(const QPointF &position, Qt::MouseButtons state,
                               Qt::MouseButton button, QEvent::Type type,
                               Qt::KeyboardModifiers modifiers);
 
-    void synthesizeWheelEvent(int rollCount, Qt::KeyboardModifiers modifiers);
+    Q_GUI_EXPORT void synthesizeWheelEvent(int rollCount, Qt::KeyboardModifiers modifiers);
 
-    qint64 eventTimeElapsed();
+    Q_GUI_EXPORT qint64 eventTimeElapsed();
 
-    void postFakeWindowActivation(QWindow *window);
+    Q_GUI_EXPORT void postFakeWindowActivation(QWindow *window);
 
-    QPoint toNativePixels(const QPoint &value, const QWindow *window);
-    QRect toNativePixels(const QRect &value, const QWindow *window);
-    qreal scaleFactor(const QWindow *window);
+    Q_GUI_EXPORT QPoint toNativePixels(const QPoint &value, const QWindow *window);
+    Q_GUI_EXPORT QRect toNativePixels(const QRect &value, const QWindow *window);
+    Q_GUI_EXPORT qreal scaleFactor(const QWindow *window);
 
-    void setEventPointId(QEventPoint &p, int arg);
-    void setEventPointPressure(QEventPoint &p, qreal arg);
-    void setEventPointState(QEventPoint &p, QEventPoint::State arg);
-    void setEventPointPosition(QEventPoint &p, QPointF arg);
-    void setEventPointGlobalPosition(QEventPoint &p, QPointF arg);
-    void setEventPointScenePosition(QEventPoint &p, QPointF arg);
-    void setEventPointEllipseDiameters(QEventPoint &p, QSizeF arg);
+    Q_GUI_EXPORT void setEventPointId(QEventPoint &p, int arg);
+    Q_GUI_EXPORT void setEventPointPressure(QEventPoint &p, qreal arg);
+    Q_GUI_EXPORT void setEventPointState(QEventPoint &p, QEventPoint::State arg);
+    Q_GUI_EXPORT void setEventPointPosition(QEventPoint &p, QPointF arg);
+    Q_GUI_EXPORT void setEventPointGlobalPosition(QEventPoint &p, QPointF arg);
+    Q_GUI_EXPORT void setEventPointScenePosition(QEventPoint &p, QPointF arg);
+    Q_GUI_EXPORT void setEventPointEllipseDiameters(QEventPoint &p, QSizeF arg);
 } // namespace QtGuiTest
 
 #endif // #if QT_CONFIG(test_gui)
