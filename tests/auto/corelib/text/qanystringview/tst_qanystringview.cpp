@@ -1,6 +1,8 @@
 // Copyright (C) 2021 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
+#include "../qstringview/arrays_of_unknown_bounds.h"
+
 #include <QAnyStringView>
 #include <QChar>
 #include <QDebug>
@@ -84,6 +86,10 @@ static_assert(CanConvert<QChar>);
 
 static_assert(CanConvert<QChar[123]>);
 static_assert(CanConvert<const QChar[123]>);
+#ifndef Q_OS_INTEGRITY // ¯\_(ツ)_/¯
+static_assert(CanConvert<      QChar[]>);
+static_assert(CanConvert<const QChar[]>);
+#endif
 
 static_assert(CanConvert<      QString >);
 static_assert(CanConvert<const QString >);
@@ -98,6 +104,10 @@ static_assert(CanConvert<ushort>);
 
 static_assert(CanConvert<ushort[123]>);
 static_assert(CanConvert<const ushort[123]>);
+#ifndef Q_OS_INTEGRITY // ¯\_(ツ)_/¯
+static_assert(CanConvert<      ushort[]>);
+static_assert(CanConvert<const ushort[]>);
+#endif
 
 static_assert(CanConvert<      ushort*>);
 static_assert(CanConvert<const ushort*>);
@@ -119,6 +129,10 @@ static_assert(CanConvert<char8_t>);
 
 static_assert(CanConvert<      char8_t[123]>);
 static_assert(CanConvert<const char8_t[123]>);
+#ifndef Q_OS_INTEGRITY // ¯\_(ツ)_/¯
+static_assert(CanConvert<      char8_t[]>);
+static_assert(CanConvert<const char8_t[]>);
+#endif
 
 static_assert(CanConvert<      char8_t*>);
 static_assert(CanConvert<const char8_t*>);
@@ -154,6 +168,10 @@ static_assert(CanConvert<char16_t>);
 
 static_assert(CanConvert<      char16_t[123]>);
 static_assert(CanConvert<const char16_t[123]>);
+#ifndef Q_OS_INTEGRITY // ¯\_(ツ)_/¯
+static_assert(CanConvert<      char16_t[]>);
+static_assert(CanConvert<const char16_t[]>);
+#endif
 
 static_assert(CanConvert<      char16_t*>);
 static_assert(CanConvert<const char16_t*>);
@@ -187,6 +205,10 @@ static_assert(CanConvert<char32_t>); // ... except here
 
 static_assert(!CanConvert<      char32_t[123]>);
 static_assert(!CanConvert<const char32_t[123]>);
+#ifndef Q_OS_INTEGRITY // ¯\_(ツ)_/¯
+static_assert(!CanConvert<      char32_t[]>);
+static_assert(!CanConvert<const char32_t[]>);
+#endif
 
 static_assert(!CanConvert<      char32_t*>);
 static_assert(!CanConvert<const char32_t*>);
@@ -224,6 +246,10 @@ static_assert(CanConvert<wchar_t> == CanConvertFromWCharT); // ### FIXME: should
 
 static_assert(CanConvert<      wchar_t[123]> == CanConvertFromWCharT);
 static_assert(CanConvert<const wchar_t[123]> == CanConvertFromWCharT);
+#ifndef Q_OS_INTEGRITY // ¯\_(ツ)_/¯
+static_assert(CanConvert<      wchar_t[]>    == CanConvertFromWCharT);
+static_assert(CanConvert<const wchar_t[]>    == CanConvertFromWCharT);
+#endif
 
 static_assert(CanConvert<      wchar_t*> == CanConvertFromWCharT);
 static_assert(CanConvert<const wchar_t*> == CanConvertFromWCharT);
@@ -344,10 +370,22 @@ private Q_SLOTS:
     void fromQLatin1StringView() const { fromQStringOrByteArray<QLatin1StringView>(); }
 
     void fromCharArray() const { fromArray<char>(); }
+    void fromCharArrayOfUnknownSize() const
+    {
+        from_array_of_unknown_size<QAnyStringView>();
+        from_array_of_unknown_size<QUtf8StringView>();
+    }
     void fromChar8Array() const { ONLY_IF_CHAR_8_T(fromArray<char8_t>()); }
+    void fromChar8ArrayOfUnknownSize() const
+    {
+        ONLY_IF_CHAR_8_T(from_u8array_of_unknown_size<QAnyStringView>());
+        ONLY_IF_CHAR_8_T(from_u8array_of_unknown_size<QUtf8StringView>());
+    }
     void fromChar16Array() const { fromArray<char16_t>(); }
+    void fromChar16ArrayOfUnknownSize() const { from_u16array_of_unknown_size<QAnyStringView>(); }
     void fromQCharArray() const { fromArray<QChar>(); }
     void fromWCharTArray() const { ONLY_WIN(fromArray<wchar_t>()); }
+    void fromWCharTArrayOfUnknownSize() const { ONLY_WIN(from_warray_of_unknown_size<QAnyStringView>()); }
 
     void fromQCharStar() const
     {

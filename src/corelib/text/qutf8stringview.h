@@ -174,6 +174,10 @@ public:
     template <typename Pointer, if_compatible_pointer<Pointer> = true>
     constexpr QBasicUtf8StringView(const Pointer &str) noexcept
         : QBasicUtf8StringView(str, QtPrivate::lengthHelperPointer(str)) {}
+
+    template <typename Char, if_compatible_char<Char> = true>
+    constexpr QBasicUtf8StringView(const Char (&str)[]) noexcept
+        : QBasicUtf8StringView(&*str) {} // decay to pointer
 #endif
 
 #ifdef Q_QDOC
