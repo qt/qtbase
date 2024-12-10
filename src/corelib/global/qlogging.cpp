@@ -2314,7 +2314,7 @@ void qErrnoWarning(int code, const char *msg, ...)
     The default \a pattern is \c{%{if-category}%{category}: %{endif}%{message}}.
 
     \note On Android, the default \a pattern is \c{%{message}} because the category is used as
-    \l{Android: log_print}{tag} since Android logcat has has a dedicated field for the logging
+    \l{Android: log_print}{tag} since Android logcat has a dedicated field for the logging
     categories, see \l{Android: Log}{Android Logging}. If a custom \a pattern including the
     category is used, QCoreApplication::applicationName() is used as \l{Android: log_print}{tag}.
 
