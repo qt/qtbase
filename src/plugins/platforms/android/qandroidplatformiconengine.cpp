@@ -249,7 +249,9 @@ static QFont selectFont()
     // last resort - use any Material Icons
     if (fontFamily.isEmpty())
         fontFamily = u"Material Icons"_s;
-    return QFont(fontFamily);
+    QFont font(fontFamily);
+    font.setStyleStrategy(QFont::NoFontMerging);
+    return font;
 }
 
 } // namespace FontProvider

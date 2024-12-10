@@ -25,6 +25,8 @@ QFontIconEngine::QFontIconEngine(const QString &iconName, const QFont &font)
     : m_iconName(iconName)
     , m_iconFont(font)
 {
+    Q_ASSERT_X(font.styleStrategy() & QFont::NoFontMerging, "QFontIconEngine",
+                "Icon fonts must not use font merging");
 }
 
 QFontIconEngine::~QFontIconEngine() = default;

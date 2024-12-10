@@ -286,16 +286,18 @@ static QString getGlyphs(QStringView iconName)
 }
 
 namespace {
-static auto iconFontFamily()
+static auto iconFont()
 {
     static const bool isWindows11 = QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows11;
-    return isWindows11 ? u"Segoe Fluent Icons"_s
-                       : u"Segoe MDL2 Assets"_s;
+    QFont font(isWindows11 ? u"Segoe Fluent Icons"_s
+                           : u"Segoe MDL2 Assets"_s);
+    font.setStyleStrategy(QFont::NoFontMerging);
+    return font;
 }
 }
 
 QWindowsIconEngine::QWindowsIconEngine(const QString &iconName)
-    : QFontIconEngine(iconName, iconFontFamily())
+    : QFontIconEngine(iconName, iconFont())
     , m_glyphs(getGlyphs(iconName))
 {
 }
