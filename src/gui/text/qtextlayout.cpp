@@ -1862,6 +1862,8 @@ void QTextLine::layout_helper(int maxGlyphs)
     bool hasInlineObject = false;
     QFixed maxInlineObjectHeight = 0;
 
+    const bool includeTrailingSpaces = eng->option.flags() & QTextOption::IncludeTrailingSpaces;
+
     while (newItem < eng->layoutData->items.size()) {
         lbh.resetRightBearing();
         if (newItem != item) {
@@ -1963,6 +1965,10 @@ void QTextLine::layout_helper(int maxGlyphs)
 
         } else if (attributes[lbh.currentPosition].whiteSpace
                    && eng->layoutData->string.at(lbh.currentPosition).decompositionTag() != QChar::NoBreak) {
+            // If we are adding a space block, we save the last non-whitespace glyph for calculating
+            // the right bearing later
+            if (lbh.currentPosition > 0 && !attributes[lbh.currentPosition - 1].whiteSpace)
+                lbh.saveCurrentGlyph();
             lbh.whiteSpaceOrObject = true;
             while (lbh.currentPosition < end
                    && attributes[lbh.currentPosition].whiteSpace
@@ -1976,7 +1982,15 @@ void QTextLine::layout_helper(int maxGlyphs)
 
             lbh.whiteSpaceOrObject = false;
             bool sb_or_ws = false;
-            lbh.saveCurrentGlyph();
+            // We save the previous glyph so we can use it for calculating the right bearing
+            // later. If we are trimming trailing spaces, the previous glyph is whitespace
+            // and we have already recorded a non-whitespace glyph, we keep that one instead.
+            if (lbh.currentPosition == 0
+                || lbh.previousGlyph == 0
+                || includeTrailingSpaces
+                || !attributes[lbh.currentPosition - 1].whiteSpace) {
+                lbh.saveCurrentGlyph();
+            }
             QFixed accumulatedTextWidth;
             do {
                 addNextCluster(lbh.currentPosition, end, lbh.tmpData, lbh.glyphCount,
@@ -2137,9 +2151,7 @@ found:
            line.descent.toReal(), line.textWidth.toReal(), lbh.spaceData.width.toReal());
     LB_DEBUG("        : '%s'", eng->layoutData->string.mid(line.from, line.length).toUtf8().data());
 
-    const QFixed trailingSpace = (eng->option.flags() & QTextOption::IncludeTrailingSpaces
-                              ? lbh.spaceData.textWidth
-                              : QFixed(0));
+    const QFixed trailingSpace = (includeTrailingSpaces ? lbh.spaceData.textWidth : QFixed(0));
     if (eng->option.wrapMode() == QTextOption::WrapAtWordBoundaryOrAnywhere) {
         if ((lbh.maxGlyphs != INT_MAX && lbh.glyphCount > lbh.maxGlyphs)
             || (lbh.maxGlyphs == INT_MAX && line.textWidth > (line.width -  trailingSpace))) {
