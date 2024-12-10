@@ -16,7 +16,7 @@ instructions:
   Build:
     - type: EnvironmentVariable
       variableName: VERIFY_SOURCE_SBOM
-      variableValue: "OFF"
+      variableValue: "ON"
     - !include "{{qt/qtbase}}/coin_qtbase_build_template_v2.yaml"
 
   Test:

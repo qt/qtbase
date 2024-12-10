@@ -11,7 +11,7 @@
     "PURL": "pkg:github/d-bus/dbus@dbus-$<VERSION>",
     "LicenseId": "AFL-2.1 OR GPL-2.0-or-later",
     "License": "Academic Free License v2.1, or GNU General Public License v2.0 or later",
-    "LicenseFile": "LIBDBUS-1-LICENSE.txt",
+    "LicenseFile": "LICENSE.LIBDBUS-1.txt",
     "Comment": "Fragments from various upstream files, see comments in ...",
     "Files": "dbus_minimal_p.h",
     "Copyright": ["Copyright (C) 2002, 2003 CodeFactory AB",

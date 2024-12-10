@@ -12,7 +12,7 @@
         "PURL": "pkg:generic/khronos-opengl-headers?download_url=https://www.khronos.org/?revision=27684",
         "License": "MIT License",
         "LicenseId": "MIT",
-        "LicenseFile": "KHRONOS_LICENSE.txt",
+        "LicenseFile": "LICENSE.KHRONOS.txt",
         "Copyright": "Copyright (c) 2013-2014 The Khronos Group Inc.",
         "Comment": "no relevant CPE found"
     },
@@ -29,7 +29,7 @@
         "PURL": "pkg:generic/khronos-opengl-es2-headers?download_url=https://www.khronos.org/?revision=27673",
         "License": "MIT License",
         "LicenseId": "MIT",
-        "LicenseFile": "KHRONOS_LICENSE.txt",
+        "LicenseFile": "LICENSE.KHRONOS.txt",
         "Copyright": "Copyright (c) 2013-2014 The Khronos Group Inc.",
         "Comment": "no relevant CPE found"
     }

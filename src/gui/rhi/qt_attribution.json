@@ -12,7 +12,7 @@
         "PURL": "pkg:github/microsoft/DirectX-Graphics-Samples@$<VERSION>",
         "License": "MIT License",
         "LicenseId": "MIT",
-        "LicenseFile": "MiniEngine_LICENSE.txt",
+        "LicenseFile": "LICENSE.MiniEngine.txt",
         "Copyright": "Copyright (c) 2015 Microsoft",
         "Comment": "no relevant CPE found"
     }

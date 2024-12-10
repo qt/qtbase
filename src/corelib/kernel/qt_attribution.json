@@ -9,6 +9,6 @@
     "Description": "Implementation of QAbstractEventDispatcher for macOS.",
     "License": "BSD 3-clause \"New\" or \"Revised\" License",
     "LicenseId": "BSD-3-Clause",
-    "LicenseFile": "QEVENTDISPATCHER_CF_LICENSE.txt",
+    "LicenseFile": "LICENSE.QEVENTDISPATCHER_CF.txt",
     "Copyright": "Copyright (c) 2007-2008, Apple, Inc."
 }
