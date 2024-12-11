@@ -61,7 +61,6 @@ SOURCES += \
         kernel/qobject.cpp \
         kernel/qobjectcleanuphandler.cpp \
         kernel/qsignalmapper.cpp \
-        kernel/qsocketnotifier.cpp \
         kernel/qtimer.cpp \
         kernel/qtranslator.cpp \
         kernel/qvariant.cpp \
@@ -72,6 +71,11 @@ SOURCES += \
         kernel/qmath.cpp \
         kernel/qsystemerror.cpp \
         kernel/qtestsupport_core.cpp
+
+NO_PCH_SOURCES += \
+        kernel/qsocketnotifier.cpp
+
+false: SOURCES += $$NO_PCH_SOURCES # Hack for QtCreator
 
 win32 {
         SOURCES += \
