@@ -720,6 +720,7 @@ qsizetype QDecompressHelper::readBrotli(char *data, const qsizetype maxSize)
         switch (result) {
         Q_UNLIKELY_BRANCH
         case BROTLI_DECODER_RESULT_ERROR:
+            //: Brotli (compression algorithm) decoding error, e.g. corrupted input or memory allocation problem.
             errorStr = QCoreApplication::translate("QHttp", "Brotli error: %1")
                            .arg(QUtf8StringView{BrotliDecoderErrorString(
                                BrotliDecoderGetErrorCode(brotliDecoderState))});
