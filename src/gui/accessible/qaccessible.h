@@ -630,7 +630,8 @@ public:
 
     QString message() const { return m_message; }
     QAccessible::AnnouncementPoliteness politeness() const { return m_politeness; }
-    void setPoliteness(QAccessible::AnnouncementPoliteness politeness) { m_politeness = politeness; };
+    void setPoliteness(QAccessible::AnnouncementPoliteness politeness)
+    { m_politeness = politeness; }
 
 protected:
     QString m_message;

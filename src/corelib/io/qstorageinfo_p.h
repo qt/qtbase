@@ -45,7 +45,7 @@ public:
 #else
         return QStorageInfo(QStringLiteral("/"));
 #endif
-    };
+    }
 
 protected:
 #if defined(Q_OS_WIN)

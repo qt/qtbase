@@ -25,7 +25,7 @@ public:
         : QObject(parent), _timeout(false)
     {}
 
-    void enterLoopMSecs(int ms) { enterLoop(std::chrono::milliseconds{ms}); };
+    void enterLoopMSecs(int ms) { enterLoop(std::chrono::milliseconds{ms}); }
     void enterLoop(int secs) { enterLoop(std::chrono::seconds{secs}); }
     inline void enterLoop(std::chrono::milliseconds msecs);
 

@@ -49,12 +49,12 @@ class QLocalUnixSocket : public QTcpSocket
 public:
     QLocalUnixSocket() : QTcpSocket()
     {
-    };
+    }
 
     inline void setSocketState(QAbstractSocket::SocketState state)
     {
         QTcpSocket::setSocketState(state);
-    };
+    }
 
     inline void setErrorString(const QString &string)
     {
