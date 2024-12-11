@@ -7,10 +7,10 @@ function (qt_internal_setup_wasm_target_properties wasmTarget)
 
     target_link_options("${wasmTarget}" INTERFACE
     "SHELL:-s MAX_WEBGL_VERSION=2"
-    "SHELL:-s FETCH=1"
     "SHELL:-s WASM_BIGINT=1"
     "SHELL:-s STACK_SIZE=5MB")
 
+    set(executable_link_flags "-sFETCH")
     ## wasm64
     if (WASM64)
         target_compile_options("${wasmTarget}" INTERFACE "SHELL:-s MEMORY64=1" )
@@ -99,7 +99,7 @@ function (qt_internal_setup_wasm_target_properties wasmTarget)
         set(enable_side_module_if_needed
             "$<$<IN_LIST:$<TARGET_PROPERTY:TYPE>,${side_modules}>:SHELL:-s SIDE_MODULE=1>")
         set(enable_main_module_if_needed
-            "$<$<IN_LIST:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:SHELL:-s MAIN_MODULE=1>")
+            "$<$<IN_LIST:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:SHELL:-sMAIN_MODULE=1 ${executable_link_flags}>")
         set(set_shared_module_type_if_needed
             "${enable_side_module_if_needed}"
             "${enable_main_module_if_needed}"
@@ -115,7 +115,7 @@ function (qt_internal_setup_wasm_target_properties wasmTarget)
         target_link_options("${wasmTarget}" INTERFACE "${set_shared_module_type_if_needed}")
 
     else()
-        target_link_options("${wasmTarget}" INTERFACE "SHELL:-s ERROR_ON_UNDEFINED_SYMBOLS=1")
+        target_link_options("${wasmTarget}" INTERFACE "SHELL:-sERROR_ON_UNDEFINED_SYMBOLS=1 ${executable_link_flags}")
     endif()
 
     # Suppress warnings for known issues for developer builds
