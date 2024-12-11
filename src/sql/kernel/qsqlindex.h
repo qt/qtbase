@@ -33,7 +33,7 @@ public:
         cursor.swap(other.cursor);
         nm.swap(other.nm);
         sorts.swap(other.sorts);
-    };
+    }
 
     void setCursorName(const QString &cursorName);
     inline QString cursorName() const { return cursor; }
