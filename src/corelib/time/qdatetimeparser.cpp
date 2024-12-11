@@ -1312,7 +1312,9 @@ QDateTimeParser::scanString(const QDateTime &defaultValue, bool fixup) const
         if (year % 100 != year2digits && (isSet & YearSection2Digits)) {
             const QDate date = actualDate(isSet, calendar,
                                           year, year2digits, month, day, dayofweek);
-            if (!(isSet & YearSection)) {
+            if (!date.isValid()) {
+                state = Invalid;
+            } else if (!(isSet & YearSection)) {
                 year = date.year();
             } else {
                 conflicts = true;
