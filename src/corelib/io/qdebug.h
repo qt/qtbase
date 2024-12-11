@@ -450,25 +450,25 @@ inline QDebugIfHasDebugStream<Key, T> operator<<(QDebug debug, const std::multim
 }
 
 template <typename Key, typename Compare, typename Alloc>
-inline QDebug operator<<(QDebug debug, const std::multiset<Key, Compare, Alloc> &multiset)
+inline QDebugIfHasDebugStream<Key> operator<<(QDebug debug, const std::multiset<Key, Compare, Alloc> &multiset)
 {
     return QtPrivate::printSequentialContainer(std::move(debug), "std::multiset", multiset);
 }
 
 template <typename Key, typename Compare, typename Alloc>
-inline QDebug operator<<(QDebug debug, const std::set<Key, Compare, Alloc>& set)
+inline QDebugIfHasDebugStream<Key> operator<<(QDebug debug, const std::set<Key, Compare, Alloc> &set)
 {
     return QtPrivate::printSequentialContainer(std::move(debug), "std::set", set);
 }
 
 template <typename Key, typename T, typename Hash, typename KeyEqual, typename Alloc>
-inline QDebug operator<<(QDebug debug, const std::unordered_map<Key, T, Hash, KeyEqual, Alloc> &unordered_map)
+inline QDebugIfHasDebugStream<Key, T> operator<<(QDebug debug, const std::unordered_map<Key, T, Hash, KeyEqual, Alloc> &unordered_map)
 {
     return QtPrivate::printSequentialContainer(std::move(debug), "std::unordered_map", unordered_map); // yes, sequential: *it is std::pair
 }
 
 template <typename Key, typename Hash, typename KeyEqual, typename Alloc>
-inline QDebug operator<<(QDebug debug, const std::unordered_set<Key, Hash, KeyEqual, Alloc>& unordered_set)
+inline QDebugIfHasDebugStream<Key> operator<<(QDebug debug, const std::unordered_set<Key, Hash, KeyEqual, Alloc> &unordered_set)
 {
     return QtPrivate::printSequentialContainer(std::move(debug), "std::unordered_set", unordered_set);
 }
