@@ -70,7 +70,7 @@ public:
         : QSqlField(fieldName, QMetaType(type), tableName)
     {}
     QT_DEPRECATED_VERSION_X_6_0("Use metaType() instead")
-    QVariant::Type type() const { return QVariant::Type(metaType().id()); };
+    QVariant::Type type() const { return QVariant::Type(metaType().id()); }
     QT_DEPRECATED_VERSION_X_6_0("Use setMetaType() instead")
     void setType(QVariant::Type type) { setMetaType(QMetaType(int(type))); }
     QT_WARNING_POP
