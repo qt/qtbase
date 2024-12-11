@@ -64,6 +64,8 @@ struct IsContainerCompatibleWithQStringView<T, std::enable_if_t<std::conjunction
 
             // These need to be treated specially due to the empty vs null distinction
             std::negation<std::is_same<std::decay_t<T>, QString>>,
+#define QSTRINGVIEW_REFUSES_QSTRINGREF 1
+            std::negation<std::is_same<q20::remove_cvref_t<T>, QStringRef>>, // QStringRef::op QStringView()
 
             // Don't make an accidental copy constructor
             std::negation<std::is_same<std::decay_t<T>, QStringView>>

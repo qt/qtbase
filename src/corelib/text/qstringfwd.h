@@ -36,6 +36,7 @@ class QLatin1String;
 using QLatin1StringView = QLatin1String;
 #endif
 class QString;
+class QStringRef; // defined in qt5compat
 class QStringView;
 template <bool> class QBasicUtf8StringView;
 class QAnyStringView;
