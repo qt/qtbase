@@ -396,7 +396,7 @@ bool QSqlQuery::exec(const QString& query)
     }
     d->sqlResult->setQuery(query.trimmed());
     if (!driver()->isOpen() || driver()->isOpenError()) {
-        qCWarning(lcSqlQuery, "QSqlQuery::exec: database not open");
+        qCWarning(lcSqlQuery, "QSqlQuery::exec: database is not open");
         return false;
     }
     if (query.isEmpty()) {
@@ -993,7 +993,7 @@ bool QSqlQuery::prepare(const QString& query)
         return false;
     }
     if (!driver()->isOpen() || driver()->isOpenError()) {
-        qCWarning(lcSqlQuery, "QSqlQuery::prepare: database not open");
+        qCWarning(lcSqlQuery, "QSqlQuery::prepare: database is not open");
         return false;
     }
     if (query.isEmpty()) {

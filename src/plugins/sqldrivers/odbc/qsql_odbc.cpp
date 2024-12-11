@@ -2280,7 +2280,7 @@ bool QODBCDriver::beginTransaction()
 {
     Q_D(QODBCDriver);
     if (!isOpen()) {
-        qSqlWarning("QODBCDriver::beginTransaction: Database not open"_L1, d);
+        qSqlWarning("QODBCDriver::beginTransaction: Database is not open"_L1, d);
         return false;
     }
     SQLUINTEGER ac(SQL_AUTOCOMMIT_OFF);
@@ -2300,7 +2300,7 @@ bool QODBCDriver::commitTransaction()
 {
     Q_D(QODBCDriver);
     if (!isOpen()) {
-        qSqlWarning("QODBCDriver::commitTransaction: Database not open"_L1, d);
+        qSqlWarning("QODBCDriver::commitTransaction: Database is not open"_L1, d);
         return false;
     }
     SQLRETURN r = SQLEndTran(SQL_HANDLE_DBC,
@@ -2318,7 +2318,7 @@ bool QODBCDriver::rollbackTransaction()
 {
     Q_D(QODBCDriver);
     if (!isOpen()) {
-        qSqlWarning("QODBCDriver::rollbackTransaction: Database not open"_L1, d);
+        qSqlWarning("QODBCDriver::rollbackTransaction: Database is not open"_L1, d);
         return false;
     }
     SQLRETURN r = SQLEndTran(SQL_HANDLE_DBC,

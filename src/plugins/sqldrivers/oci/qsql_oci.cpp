@@ -2354,7 +2354,7 @@ bool QOCIDriver::beginTransaction()
 {
     Q_D(QOCIDriver);
     if (!isOpen()) {
-        qCWarning(lcOci, "QOCIDriver::beginTransaction: Database not open");
+        qCWarning(lcOci, "QOCIDriver::beginTransaction: Database is not open");
         return false;
     }
     int r = OCITransStart(d->svc,
@@ -2375,7 +2375,7 @@ bool QOCIDriver::commitTransaction()
 {
     Q_D(QOCIDriver);
     if (!isOpen()) {
-        qCWarning(lcOci, "QOCIDriver::commitTransaction: Database not open");
+        qCWarning(lcOci, "QOCIDriver::commitTransaction: Database is not open");
         return false;
     }
     int r = OCITransCommit(d->svc,
@@ -2395,7 +2395,7 @@ bool QOCIDriver::rollbackTransaction()
 {
     Q_D(QOCIDriver);
     if (!isOpen()) {
-        qCWarning(lcOci, "QOCIDriver::rollbackTransaction: Database not open");
+        qCWarning(lcOci, "QOCIDriver::rollbackTransaction: Database is not open");
         return false;
     }
     int r = OCITransRollback(d->svc,

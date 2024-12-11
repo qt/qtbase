@@ -1890,7 +1890,7 @@ bool QIBaseDriver::subscribeToNotification(const QString &name)
 {
     Q_D(QIBaseDriver);
     if (!isOpen()) {
-        qCWarning(lcIbase, "QIBaseDriver::subscribeFromNotificationImplementation: database not open.");
+        qCWarning(lcIbase, "QIBaseDriver::subscribeFromNotificationImplementation: database is not open.");
         return false;
     }
 
@@ -1937,7 +1937,7 @@ bool QIBaseDriver::unsubscribeFromNotification(const QString &name)
 {
     Q_D(QIBaseDriver);
     if (!isOpen()) {
-        qCWarning(lcIbase, "QIBaseDriver::unsubscribeFromNotificationImplementation: database not open.");
+        qCWarning(lcIbase, "QIBaseDriver::unsubscribeFromNotificationImplementation: database is not open.");
         return false;
     }
 

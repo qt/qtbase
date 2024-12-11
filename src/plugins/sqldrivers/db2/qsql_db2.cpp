@@ -1584,7 +1584,7 @@ bool QDB2Driver::hasFeature(DriverFeature f) const
 bool QDB2Driver::beginTransaction()
 {
     if (!isOpen()) {
-        qWarning("QDB2Driver::beginTransaction: Database not open");
+        qWarning("QDB2Driver::beginTransaction: Database is not open");
         return false;
     }
     return setAutoCommit(false);
@@ -1594,7 +1594,7 @@ bool QDB2Driver::commitTransaction()
 {
     Q_D(QDB2Driver);
     if (!isOpen()) {
-        qWarning("QDB2Driver::commitTransaction: Database not open");
+        qWarning("QDB2Driver::commitTransaction: Database is not open");
         return false;
     }
     SQLRETURN r = SQLEndTran(SQL_HANDLE_DBC,
@@ -1612,7 +1612,7 @@ bool QDB2Driver::rollbackTransaction()
 {
     Q_D(QDB2Driver);
     if (!isOpen()) {
-        qWarning("QDB2Driver::rollbackTransaction: Database not open");
+        qWarning("QDB2Driver::rollbackTransaction: Database is not open");
         return false;
     }
     SQLRETURN r = SQLEndTran(SQL_HANDLE_DBC,

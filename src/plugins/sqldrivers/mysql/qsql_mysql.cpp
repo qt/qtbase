@@ -1543,7 +1543,7 @@ bool QMYSQLDriver::beginTransaction()
 {
     Q_D(QMYSQLDriver);
     if (!isOpen()) {
-        qCWarning(lcMysql, "QMYSQLDriver::beginTransaction: Database not open");
+        qCWarning(lcMysql, "QMYSQLDriver::beginTransaction: Database is not open");
         return false;
     }
     if (mysql_query(d->mysql, "BEGIN WORK")) {
@@ -1558,7 +1558,7 @@ bool QMYSQLDriver::commitTransaction()
 {
     Q_D(QMYSQLDriver);
     if (!isOpen()) {
-        qCWarning(lcMysql, "QMYSQLDriver::commitTransaction: Database not open");
+        qCWarning(lcMysql, "QMYSQLDriver::commitTransaction: Database is not open");
         return false;
     }
     if (mysql_query(d->mysql, "COMMIT")) {
@@ -1573,7 +1573,7 @@ bool QMYSQLDriver::rollbackTransaction()
 {
     Q_D(QMYSQLDriver);
     if (!isOpen()) {
-        qCWarning(lcMysql, "QMYSQLDriver::rollbackTransaction: Database not open");
+        qCWarning(lcMysql, "QMYSQLDriver::rollbackTransaction: Database is not open");
         return false;
     }
     if (mysql_query(d->mysql, "ROLLBACK")) {
@@ -1610,7 +1610,7 @@ QString QMYSQLDriver::formatValue(const QSqlField &field, bool trimStrings) cons
                 r = u'\'' + QString::fromUtf8(buffer.data(), escapedSize) + u'\'';
                 break;
             } else {
-                qCWarning(lcMysql, "QMYSQLDriver::formatValue: Database not open");
+                qCWarning(lcMysql, "QMYSQLDriver::formatValue: Database is not open");
             }
             Q_FALLTHROUGH();
         case QMetaType::QDateTime:

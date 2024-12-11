@@ -1058,7 +1058,7 @@ bool QSQLiteDriver::subscribeToNotification(const QString &name)
 {
     Q_D(QSQLiteDriver);
     if (!isOpen()) {
-        qCWarning(lcSqlite, "QSQLiteDriver::subscribeToNotification: Database not open.");
+        qCWarning(lcSqlite, "QSQLiteDriver::subscribeToNotification: Database is not open.");
         return false;
     }
 
@@ -1080,7 +1080,7 @@ bool QSQLiteDriver::unsubscribeFromNotification(const QString &name)
 {
     Q_D(QSQLiteDriver);
     if (!isOpen()) {
-        qCWarning(lcSqlite, "QSQLiteDriver::unsubscribeFromNotification: Database not open.");
+        qCWarning(lcSqlite, "QSQLiteDriver::unsubscribeFromNotification: Database is not open.");
         return false;
     }
 

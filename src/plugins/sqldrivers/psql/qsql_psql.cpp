@@ -1243,7 +1243,7 @@ bool QPSQLDriver::beginTransaction()
 {
     Q_D(QPSQLDriver);
     if (!isOpen()) {
-        qCWarning(lcPsql, "QPSQLDriver::beginTransaction: Database not open.");
+        qCWarning(lcPsql, "QPSQLDriver::beginTransaction: Database is not open.");
         return false;
     }
     PGresult *res = d->exec("BEGIN");
@@ -1261,7 +1261,7 @@ bool QPSQLDriver::commitTransaction()
 {
     Q_D(QPSQLDriver);
     if (!isOpen()) {
-        qCWarning(lcPsql, "QPSQLDriver::commitTransaction: Database not open.");
+        qCWarning(lcPsql, "QPSQLDriver::commitTransaction: Database is not open.");
         return false;
     }
     PGresult *res = d->exec("COMMIT");
@@ -1290,7 +1290,7 @@ bool QPSQLDriver::rollbackTransaction()
 {
     Q_D(QPSQLDriver);
     if (!isOpen()) {
-        qCWarning(lcPsql, "QPSQLDriver::rollbackTransaction: Database not open.");
+        qCWarning(lcPsql, "QPSQLDriver::rollbackTransaction: Database is not open.");
         return false;
     }
     PGresult *res = d->exec("ROLLBACK");
@@ -1545,7 +1545,7 @@ bool QPSQLDriver::subscribeToNotification(const QString &name)
 {
     Q_D(QPSQLDriver);
     if (!isOpen()) {
-        qCWarning(lcPsql, "QPSQLDriver::subscribeToNotification: Database not open.");
+        qCWarning(lcPsql, "QPSQLDriver::subscribeToNotification: Database is not open.");
         return false;
     }
 
@@ -1586,7 +1586,7 @@ bool QPSQLDriver::unsubscribeFromNotification(const QString &name)
 {
     Q_D(QPSQLDriver);
     if (!isOpen()) {
-        qCWarning(lcPsql, "QPSQLDriver::unsubscribeFromNotification: Database not open.");
+        qCWarning(lcPsql, "QPSQLDriver::unsubscribeFromNotification: Database is not open.");
         return false;
     }
 

@@ -34,7 +34,7 @@ typedef QFlags<Enum> Flags;
 
 //! [4]
 if (!driver()->isOpen() || driver()->isOpenError()) {
-    qWarning("QSqlQuery::exec: database not open");
+    qWarning("QSqlQuery::exec: database is not open");
     return false;
 }
 //! [4]

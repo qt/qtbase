@@ -2916,14 +2916,14 @@ void tst_QSqlQuery::queryOnInvalidDatabase()
         QSqlDatabase db = QSqlDatabase::addDatabase("INVALID", "invalidConnection");
         QVERIFY(db.lastError().isValid());
 
-        QTest::ignoreMessage(QtWarningMsg, "QSqlQuery::exec: database not open");
+        QTest::ignoreMessage(QtWarningMsg, "QSqlQuery::exec: database is not open");
         QSqlQuery query("SELECT 1 AS ID", db);
         QVERIFY(query.lastError().isValid());
     }
 
     {
         QSqlDatabase db = QSqlDatabase::database("this connection does not exist");
-        QTest::ignoreMessage(QtWarningMsg, "QSqlQuery::exec: database not open");
+        QTest::ignoreMessage(QtWarningMsg, "QSqlQuery::exec: database is not open");
         QSqlQuery query("SELECT 1 AS ID", db);
         QVERIFY(query.lastError().isValid());
     }
