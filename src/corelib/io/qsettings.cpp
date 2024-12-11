@@ -1554,7 +1554,8 @@ bool QConfFileSettingsPrivate::readIniLine(QByteArrayView data, qsizetype &dataP
                                            qsizetype &lineStart, qsizetype &lineLen,
                                            qsizetype &equalsPos)
 {
-    using namespace SettingsImpl;
+    constexpr auto Space = SettingsImpl::Space;
+    constexpr auto Special = SettingsImpl::Special;
     qsizetype dataLen = data.size();
     bool inQuotes = false;
 
