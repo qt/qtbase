@@ -138,7 +138,7 @@ struct QMetaTypeCustomRegistry
         if (ti->legacyRegisterOp)
             ti->legacyRegisterOp();
         return ti->typeId.loadRelaxed();
-    };
+    }
 
     void unregisterDynamicType(int id)
     {

@@ -120,7 +120,7 @@ public:
         reference operator*() const { return dirEntry; }
         pointer operator->() const { return &dirEntry; }
         const_iterator &operator++() { dirEntry = next(dirEntry); return *this; }
-        void operator++(int) { ++*this; }; // [iterator.concept.winc]/14 not required to return sth
+        void operator++(int) { ++*this; } // [iterator.concept.winc]/14 not required to return sth
     private:
         bool atEnd() const noexcept { return dirEntry.dirListPtr == nullptr; }
         friend bool operator==(const const_iterator &lhs, sentinel) noexcept { return lhs.atEnd(); }
