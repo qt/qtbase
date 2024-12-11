@@ -108,7 +108,7 @@ public:
         FontDialog,
         MessageDialog
     };
-    Q_ENUM(DialogType);
+    Q_ENUM(DialogType)
 
     enum Palette {
         SystemPalette,

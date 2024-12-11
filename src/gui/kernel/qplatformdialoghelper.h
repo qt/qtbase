@@ -408,8 +408,8 @@ public:
     enum class Option {
         DontUseNativeDialog = 0x00000001,
     };
-    Q_DECLARE_FLAGS(Options, Option);
-    Q_FLAG(Options);
+    Q_DECLARE_FLAGS(Options, Option)
+    Q_FLAG(Options)
 
     // Keep in sync with QMessageBox::Icon
     enum StandardIcon { NoIcon, Information, Warning, Critical, Question };

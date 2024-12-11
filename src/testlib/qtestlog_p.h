@@ -47,7 +47,7 @@ public:
         , XCTest
 #endif
     };
-    Q_ENUM(LogMode);
+    Q_ENUM(LogMode)
 
     static void enterTestFunction(const char* function);
     static void leaveTestFunction();

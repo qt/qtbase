@@ -35,14 +35,14 @@ public:
         TextureAccess       = 0x04,
         HWCompositor        = 0x08
     };
-    Q_ENUM(AccessType);
-    Q_DECLARE_FLAGS(AccessTypes, AccessType);
+    Q_ENUM(AccessType)
+    Q_DECLARE_FLAGS(AccessTypes, AccessType)
 
     enum Origin {
         OriginBottomLeft,
         OriginTopLeft
     };
-    Q_ENUM(Origin);
+    Q_ENUM(Origin)
 
     ~QPlatformGraphicsBuffer();
 

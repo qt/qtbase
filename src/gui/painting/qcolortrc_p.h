@@ -115,7 +115,7 @@ public:
     Type m_type;
 
     friend inline bool comparesEqual(const QColorTrc &lhs, const QColorTrc &rhs);
-    Q_DECLARE_EQUALITY_COMPARABLE_NON_NOEXCEPT(QColorTrc);
+    Q_DECLARE_EQUALITY_COMPARABLE_NON_NOEXCEPT(QColorTrc)
 
     QColorTransferFunction m_fun;
     QColorTransferTable m_table;
