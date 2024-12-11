@@ -72,7 +72,7 @@ public:
         NM_STATE_CONNECTED_SITE = 60,
         NM_STATE_CONNECTED_GLOBAL = 70
     };
-    Q_ENUM(NMState);
+    Q_ENUM(NMState)
     // Matches 'NMConnectivityState' from
     // https://developer.gnome.org/NetworkManager/stable/nm-dbus-types.html#NMConnectivityState
     enum NMConnectivityState {
@@ -82,7 +82,7 @@ public:
         NM_CONNECTIVITY_LIMITED = 3,
         NM_CONNECTIVITY_FULL = 4,
     };
-    Q_ENUM(NMConnectivityState);
+    Q_ENUM(NMConnectivityState)
     // Matches 'NMDeviceType' from
     // https://developer-old.gnome.org/NetworkManager/stable/nm-dbus-types.html#NMDeviceType
     enum NMDeviceType {
