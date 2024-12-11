@@ -1461,6 +1461,8 @@ void tst_QDate::fromStringFormat_data()
             << u"05-00206-21"_s << u"MM-yyyy-dd"_s << 1900 << QDate();
     QTest::newRow("5digit year, back")
             << u"05-21-00206"_s << u"MM-dd-yyyy"_s << 1900 << QDate();
+    QTest::newRow("non-leap-feb-29") // QTBUG-132115: should fail but not assert
+            << u"290215"_s << u"ddMMyy"_s << 1900 << QDate();
 
     QTest::newRow("dash separator, no year at end")
             << u"05-21-"_s << u"dd-MM-yyyy"_s << 1900 << QDate();
