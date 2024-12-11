@@ -1445,7 +1445,7 @@ void QDomNodePrivate::saveSubTree(const QDomNodePrivate *n, QTextStream &s,
             const QDomNodePrivate *prev = root;
             root = root->next;
             // Close QDomElementPrivate groups
-            while (!root && prev && (layerDepth > 0)) {
+            while (!root && (layerDepth > 0)) {
                 root = prev->parent();
                 layerDepth --;
                 root->afterSave(s, layerDepth + branchDepth, indent);
