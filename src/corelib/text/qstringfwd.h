@@ -33,6 +33,7 @@ using QLatin1String = QLatin1StringView;
 class QLatin1String;
 using QLatin1StringView = QLatin1String;
 #endif
+class QString;
 class QStringView;
 template <bool> class QBasicUtf8StringView;
 class QAnyStringView;
