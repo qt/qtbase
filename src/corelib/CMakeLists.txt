@@ -336,6 +336,7 @@ qt_internal_add_module(Core
     NO_PCH_SOURCES
         compat/removed_api.cpp
         global/qsimd.cpp
+        kernel/qsocketnotifier.cpp # defines BUILDING_QSOCKETNOTIFIER
     DEFINES
         QT_NO_CONTEXTLESS_CONNECT
         QT_NO_FOREACH
