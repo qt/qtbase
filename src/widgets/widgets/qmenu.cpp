@@ -3363,8 +3363,11 @@ void QMenu::keyPressEvent(QKeyEvent *e)
     }
 
     if (!key_consumed) {                                // send to menu bar
-        if ((!e->modifiers() || e->modifiers() == Qt::AltModifier || e->modifiers() == Qt::ShiftModifier) &&
-           e->text().size()==1) {
+        const Qt::KeyboardModifiers modifiers = e->modifiers();
+        if ((!modifiers || modifiers == Qt::AltModifier || modifiers == Qt::ShiftModifier
+             || modifiers == Qt::KeypadModifier
+             || modifiers == (Qt::KeypadModifier | Qt::AltModifier))
+            && e->text().size() == 1) {
             bool activateAction = false;
             QAction *nextAction = nullptr;
             if (style()->styleHint(QStyle::SH_Menu_KeyboardSearch, nullptr, this) && !e->modifiers()) {
