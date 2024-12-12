@@ -12,6 +12,7 @@
 #include <QtCore/qcontainerfwd.h>
 #include <QtCore/qnamespace.h>
 #include <QtCore/qtversionchecks.h>
+#include <QtCore/qstringfwd.h>
 #include <QtCore/qstringview.h>
 
 #if 0
@@ -24,8 +25,7 @@ QT_BEGIN_NAMESPACE
 
 class QString;
 
-#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0) || defined(QT_BOOTSTRAPPED) || defined(Q_QDOC)
-#    define Q_L1S_VIEW_IS_PRIMARY
+#ifdef Q_L1S_VIEW_IS_PRIMARY
 class QLatin1StringView
 #else
 class QLatin1String
