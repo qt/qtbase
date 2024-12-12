@@ -301,8 +301,15 @@ void QPlainTestLogger::printBenchmarkResultsHeader(const QBenchmarkResult &resul
     buf.appendf("%s: %s::%s", QTest::benchmarkResult2String(),
                 QTestResult::currentTestObjectName(), result.context.slotName.toLatin1().data());
 
-    if (QByteArray tag = result.context.tag.toLocal8Bit(); !tag.isEmpty())
-        buf.appendf(":\"%s\":\n", tag.data());
+    QByteArray tag = QTestResult::currentDataTag();
+    QByteArray gtag = QTestResult::currentGlobalDataTag();
+
+    if (!gtag.isEmpty() && !tag.isEmpty())
+        buf.appendf(":\"%s:%s\":\n", gtag.constData(), tag.constData());
+    else if (!gtag.isEmpty())
+        buf.appendf(":\"%s\":\n", gtag.constData());
+    else if (!tag.isEmpty())
+        buf.appendf(":\"%s\":\n", tag.constData());
     else
         buf.append(":\n");
     outputMessage(buf);
