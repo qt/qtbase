@@ -42,7 +42,9 @@ class QChar;
 class QRegularExpression;
 class QRegularExpressionMatch;
 
-#ifndef Q_QDOC
+#ifdef Q_QDOC
+class QUtf8StringView;
+#else
 // ### Qt 7: remove the non-char8_t version of QUtf8StringView
 QT_BEGIN_NO_CHAR8_T_NAMESPACE
 using QUtf8StringView = QBasicUtf8StringView<false>;

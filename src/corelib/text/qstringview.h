@@ -8,6 +8,7 @@
 #include <QtCore/qcompare.h>
 #include <QtCore/qcontainerfwd.h>
 #include <QtCore/qbytearray.h>
+#include <QtCore/qstringfwd.h>
 #include <QtCore/qstringliteral.h>
 #include <QtCore/qstringalgorithms.h>
 
@@ -22,13 +23,8 @@ Q_FORWARD_DECLARE_OBJC_CLASS(NSString);
 
 QT_BEGIN_NAMESPACE
 
-class QString;
-class QStringView;
 class QRegularExpression;
 class QRegularExpressionMatch;
-#ifdef Q_QDOC
-class QUtf8StringView;
-#endif
 
 namespace QtPrivate {
 template <typename Char>
