@@ -133,6 +133,7 @@ private:
     QFixed m_maxAdvanceWidth;
     FaceId m_faceId;
     QString m_uniqueFamilyName;
+    DWRITE_PIXEL_GEOMETRY m_pixelGeometry = DWRITE_PIXEL_GEOMETRY_RGB;
 };
 
 QT_END_NAMESPACE
