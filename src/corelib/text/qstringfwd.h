@@ -1,7 +1,8 @@
 // Copyright (C) 2022 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial
 
-#include <QtCore/qglobal.h>
+#include <QtCore/qtconfigmacros.h>
+#include <QtCore/qtversionchecks.h>
 
 #ifndef QSTRINGFWD_H
 #define QSTRINGFWD_H
