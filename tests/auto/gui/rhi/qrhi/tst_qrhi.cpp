@@ -2079,6 +2079,13 @@ void tst_QRhi::renderToTextureTextureArray()
     QFETCH(QRhi::Implementation, impl);
     QFETCH(QRhiInitParams *, initParams);
 
+#ifdef Q_OS_ANDROID
+    if (impl == QRhi::OpenGLES2) {
+        QSKIP("This test fails with OpenGLES software rendering on Android emulators, "
+          "see QTBUG-132934.");
+    }
+#endif
+
     QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing rendering");

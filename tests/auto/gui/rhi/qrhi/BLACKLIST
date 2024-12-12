@@ -4,10 +4,6 @@ android
 # QTBUG-92211
 [renderPassDescriptorCompatibility]
 android
-# Same here, GLES 3.0 features seem hopeless
-[renderToTextureTextureArray]
-android
-# Ditto
 [renderToFloatTexture]
 android
 [tessellation vulkan]
