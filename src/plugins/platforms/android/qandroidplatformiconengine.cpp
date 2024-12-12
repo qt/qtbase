@@ -21,7 +21,7 @@
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
-Q_LOGGING_CATEGORY(lcIconEngineFontDownload, "qt.qpa.iconengine.fontdownload")
+Q_STATIC_LOGGING_CATEGORY(lcIconEngineFontDownload, "qt.qpa.iconengine.fontdownload")
 
 // the primary types to work with the FontRequest API
 Q_DECLARE_JNI_CLASS(FontRequest, "androidx/core/provider/FontRequest")
@@ -203,7 +203,13 @@ static QString fetchFont(const QString &query)
 
             int fd = fileDescriptor.callMethod<int>("detachFd");
             QFile file;
-            file.open(fd, QFile::OpenModeFlag::ReadOnly, QFile::FileHandleFlag::AutoCloseHandle);
+            if (!file.open(fd, QFile::OpenModeFlag::ReadOnly,
+                           QFile::FileHandleFlag::AutoCloseHandle)) {
+                qCWarning(lcIconEngineFontDownload, "Font file '%ls' cannot be opened: %ls",
+                          qUtf16Printable(fontUri.toString()),
+                          qUtf16Printable(file.errorString()));
+                continue;
+            }
             const QByteArray fontData = file.readAll();
             qCDebug(lcIconEngineFontDownload) << "Font file read:" << fontData.size() << "bytes";
             int fontId = QFontDatabase::addApplicationFontFromData(fontData);
