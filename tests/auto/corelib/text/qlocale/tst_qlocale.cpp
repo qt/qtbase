@@ -4094,6 +4094,8 @@ public:
                 return QVariant(QStringList{u"en-DK"_s, u"en-GB"_s, u"fo-FO"_s,
                                             u"da-FO"_s, u"da-DK"_s});
             }
+            if (m_name == u"en-NL-GB") // Netherlander at work for a GB-ish employer:
+                return QVariant(QStringList{u"en-NL"_s, u"nl-NL"_s, u"en-GB"_s});
             if (m_name == u"de-CA") { // Imagine a 2nd generation Canadian of de-AT ancestry ...
                 return QVariant(QStringList{u"en-CA"_s, u"fr-CA"_s, u"de-AT"_s,
                                             u"en-GB"_s, u"fr-FR"_s});
@@ -4152,11 +4154,18 @@ void tst_QLocale::mySystemLocale_data()
     QTest::addRow("no") // QTBUG-131127
         << u"no"_s << QLocale::NorwegianBokmal
         << QStringList{u"no"_s, u"nb-Latn-NO"_s, u"nb-NO"_s, u"en-US"_s, u"en-Latn-US"_s, u"en"_s,
-                       u"nb"_s, u"nb-Latn-NO"_s, u"nb-NO"_s, u"nb-Latn"_s, u"en-Latn"_s};
+                       u"nb"_s, u"nb-Latn"_s, u"en-Latn"_s};
     QTest::addRow("en-Latn") // Android crash
         << u"en-Latn"_s << QLocale::English
         << QStringList{u"en-Latn"_s, u"en-Latn-US"_s, u"en-US"_s, u"en"_s,
                        u"en-NO"_s, u"en-Latn-NO"_s};
+
+    QTest::addRow("anglo-dutch-GB")
+        << u"en-NL-GB"_s << QLocale::English
+        << QStringList{u"en-NL"_s, u"en-Latn-NL"_s,
+                       u"nl-NL"_s, u"nl-Latn-NL"_s, u"nl"_s,
+                       u"en-GB"_s, u"en-Latn-GB"_s,
+                       u"en-Latn"_s, u"en"_s, u"nl-Latn"_s};
 
     QTest::addRow("catalan")
         << u"ca"_s << QLocale::Catalan

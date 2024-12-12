@@ -27,6 +27,7 @@ QT_WARNING_DISABLE_GCC("-Wfree-nonheap-object") // false positive tracking
 #include "qcalendar.h"
 #include "qdatastream.h"
 #include "qdebug.h"
+#include "private/qduplicatetracker_p.h"
 #include "qhashfunctions.h"
 #include "qstring.h"
 #include "qlocale.h"
@@ -5047,24 +5048,6 @@ QStringList QLocale::uiLanguages(TagSeparator separator) const
         localeIds.append(d->m_data->id());
     }
 
-    // Warning: this processing is quadratic in the length of the final list.
-    // Hopefully that list isn't too long, though.
-    QStringList fallbacks;
-    auto gatherTruncations = [&fallbacks, cut = QLatin1Char(sep)](const QString &name) {
-        fallbacks.removeAll(name);
-        for (qsizetype at = name.indexOf(cut); at >= 0; at = name.indexOf(cut, at + 1)) {
-            Q_ASSERT(at > 1); // First sub-tag length is >= 2 (C is handled separately).
-            // We find shorter entries before fuller ones; we want the long ones
-            // earlier, the short ones later, but all before any entries from
-            // later in the localeIds list (already present in fallbacks because
-            // of the reverse traversal). However, that can still leave a
-            // shorter truncation of a long name before some truncations of
-            // shorter names of which the shorter one is a prefix; that's
-            // handled in the final appending to uiLanguages; see exclude.
-            fallbacks.insert(0, name.first(at));
-        }
-    };
-
     for (qsizetype i = localeIds.size(); i-- > 0; ) {
         QLocaleId id = localeIds.at(i);
         qsizetype j;
@@ -5094,23 +5077,17 @@ QStringList QLocale::uiLanguages(TagSeparator separator) const
         const QLocaleId min = max.withLikelySubtagsRemoved();
 
         // Include minimal version (last) unless it's what our locale is derived from:
-        if (const QByteArray name = min.name(sep); name != prior) {
-            QString sName = QString::fromLatin1(name);
-            uiLanguages.insert(j, sName);
-            gatherTruncations(sName);
-        } else if (!isSystem && min == id) {
+        if (const QByteArray name = min.name(sep); name != prior)
+            uiLanguages.insert(j, QString::fromLatin1(name));
+        else if (!isSystem && min == id)
             --j; // Put more specific forms *before* minimal entry.
-        }
 
         if (id.script_id) {
             // Include scriptless version if likely-equivalent and distinct:
             id.script_id = 0;
             if (id != min && id.withLikelySubtagsAdded() == max) {
-                if (const QByteArray name = id.name(sep); name != prior) {
-                    auto sName = QString::fromLatin1(name);
-                    uiLanguages.insert(j, sName);
-                    gatherTruncations(sName);
-                }
+                if (const QByteArray name = id.name(sep); name != prior)
+                    uiLanguages.insert(j, QString::fromLatin1(name));
             }
         }
 
@@ -5120,52 +5097,80 @@ QStringList QLocale::uiLanguages(TagSeparator separator) const
             // Include version with territory if likely-equivalent and distinct:
             id.territory_id = max.territory_id;
             if (id != max && id.withLikelySubtagsAdded() == max) {
-                if (const QByteArray name = id.name(sep); name != prior) {
-                    auto sName = QString::fromLatin1(name);
-                    uiLanguages.insert(j, sName);
-                    gatherTruncations(sName);
-                }
+                if (const QByteArray name = id.name(sep); name != prior)
+                    uiLanguages.insert(j, QString::fromLatin1(name));
             }
         }
-        gatherTruncations(QString::fromLatin1(prior)); // After trimmed forms, before max.
 
         // Include version with all likely sub-tags (first) if distinct from the rest:
         if (max != min && max != id) {
-            if (const QByteArray name = max.name(sep); name != prior) {
-                auto sName = QString::fromLatin1(name);
-                uiLanguages.insert(j, sName);
-                gatherTruncations(sName);
-            }
+            if (const QByteArray name = max.name(sep); name != prior)
+                uiLanguages.insert(j, QString::fromLatin1(name));
         }
     }
 
-    auto exclude = [fallbacks, cut = QLatin1Char(sep)](QStringList::const_iterator entry,
-                                                       const QStringList &uiLanguages) {
-        // If this entry in fallbacks reappears later, after one of which it is
-        // a prefix, that's not yet in uiLanguages, leave it for the later entry
-        // to take care of.
-        const QString &name = *entry;
-        // entry < constEnd(), so found < constEnd()
-        auto found = entry;
-        // Initial found < constEnd(), so found + 1 is at worst constEnd(), not beyond it.
-        while ((found = std::find(found + 1, fallbacks.constEnd(), name)) != fallbacks.constEnd()) {
-            // entry < returned found < constEnd()
-            // *found is a repeat of name
-            // entry < found, so found - 1 is at worst entry
-            const QString &prev = *(found - 1);
-            if (uiLanguages.contains(prev))
-                continue;
-            if (prev.size() > name.size() && prev.startsWith(name) && prev[name.size()] == cut)
-                return true;
-        }
-        return false;
-    };
-    for (auto it = fallbacks.constBegin(); it < fallbacks.constEnd(); ++it) {
-        const QString &name = *it;
-        if (uiLanguages.contains(name) || exclude(it, uiLanguages))
-            continue;
-        uiLanguages.append(name);
+    // Second pass: deduplicate.
+    QDuplicateTracker<QString> known(uiLanguages.size());
+    for (qsizetype i = 0; i < uiLanguages.size();) {
+        if (known.hasSeen(uiLanguages.at(i)))
+            uiLanguages.remove(i);
+        else
+            ++i;
     }
+
+    // Third pass: add truncations, when not already present.
+    // Cubic in list length, but hopefully that's at most a dozen or so.
+    const QLatin1Char cut(sep);
+    const auto hasPrefix = [cut](QStringView name, QStringView stem) {
+        // A prefix only counts if it's either full or followed by a separator.
+        return name.startsWith(stem)
+            && (name.size() == stem.size() || name.at(stem.size()) == cut);
+    };
+    for (qsizetype i = 0; i < uiLanguages.size(); ++i) {
+        const QString entry = uiLanguages.at(i);
+        if (hasPrefix(entry, u"C") || hasPrefix(entry, u"und"))
+            continue;
+        const qsizetype stopAt = uiLanguages.size();
+        QString prefix = entry;
+        qsizetype at = 0;
+        while ((at = prefix.lastIndexOf(cut)) > 0) {
+            prefix = prefix.first(at);
+            // Don't test with hasSeen() as we might defer adding to later, when
+            // we'll need known to see the later entry's offering of this prefix
+            // as a new entry.
+            bool found = known.contains(prefix);
+            for (qsizetype j = i + 1; !found && j < stopAt; ++j) {
+                QString later = uiLanguages.at(j);
+                if (!later.startsWith(prefix))
+                    continue;
+                // The duplicate tracker would already have spotted if equal:
+                Q_ASSERT(later.size() > prefix.size());
+                if (later.at(prefix.size()) == cut) {
+                    // Prefix match. Shall produce the same prefix, but possibly
+                    // after prefixes of other entries in the list. If later has
+                    // a longer prefix not yet in the list, we want that before
+                    // this shorter prefix, so leave this for later, otherwise,
+                    // we include this prefix right away.
+                    QStringView head{later};
+                    for (qsizetype as = head.lastIndexOf(cut);
+                         !found && as > prefix.size(); as = head.lastIndexOf(cut)) {
+                        head = head.first(as);
+                        bool seen = false;
+                        for (qsizetype k = j + 1; !seen && k < uiLanguages.size(); ++k)
+                            seen = uiLanguages.at(k) == head;
+                        if (!seen)
+                            found = true;
+                    }
+                }
+            }
+            if (found) // Don't duplicate.
+                break; // any further truncations of prefix would also be found.
+            // Now we're committed to adding it, get it into known:
+            (void) known.hasSeen(prefix);
+            uiLanguages.append(entry.first(prefix.size()));
+        }
+    }
+
     return uiLanguages;
 }
 
