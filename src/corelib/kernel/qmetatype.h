@@ -2504,12 +2504,6 @@ public:
     }
 };
 
-// Temporary until sources are updated
-template <typename T> struct QMetaTypeTypeFlags
-{
-    enum { Flags = QMetaTypeForType<T>::flags() };
-};
-
 template<typename T>
 struct QMetaTypeInterfaceWrapper
 {
