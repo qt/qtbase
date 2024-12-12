@@ -479,8 +479,10 @@ static void startQtApplication(JNIEnv */*env*/, jclass /*clazz*/)
             qWarning() << "dlclose failed:" << dlerror();
     }
 
-    if (m_applicationClass && QtAndroid::isQtApplication())
-        QJniObject::callStaticMethod<void>(m_applicationClass, "quitApp", "()V");
+    if (m_applicationClass) {
+        const auto quitMethodName = QtAndroid::isQtApplication() ? "quitApp" : "quitQt";
+        QJniObject::callStaticMethod<void>(m_applicationClass, quitMethodName);
+    }
 
     sem_post(&m_terminateSemaphore);
     sem_wait(&m_exitSemaphore);

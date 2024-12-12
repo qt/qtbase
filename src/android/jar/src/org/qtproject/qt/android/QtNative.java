@@ -388,13 +388,15 @@ public class QtNative
 
     static void quitQt()
     {
-        terminateQt();
-        m_stateDetails.isStarted = false;
-        notifyAppStateDetailsChanged(m_stateDetails);
-        getQtThread().exit();
-        synchronized (m_qtThreadLock) {
-            m_qtThread = null;
-        }
+        runAction(() -> {
+            terminateQt();
+            m_stateDetails.isStarted = false;
+            notifyAppStateDetailsChanged(m_stateDetails);
+            getQtThread().exit();
+            synchronized (m_qtThreadLock) {
+                m_qtThread = null;
+            }
+        });
     }
 
     @UsedFromNativeCode
