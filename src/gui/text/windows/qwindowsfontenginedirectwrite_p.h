@@ -136,6 +136,7 @@ private:
     FaceId m_faceId;
     QString m_uniqueFamilyName;
     QList<QFontVariableAxis> m_variableAxes;
+    DWRITE_PIXEL_GEOMETRY m_pixelGeometry = DWRITE_PIXEL_GEOMETRY_RGB;
 };
 
 QT_END_NAMESPACE

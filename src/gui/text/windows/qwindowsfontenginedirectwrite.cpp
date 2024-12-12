@@ -217,6 +217,12 @@ QWindowsFontEngineDirectWrite::QWindowsFontEngineDirectWrite(IDWriteFontFace *di
     m_fontEngineData->directWriteFactory->AddRef();
     m_directWriteFontFace->AddRef();
 
+    IDWriteRenderingParams *renderingParams = nullptr;
+    if (SUCCEEDED(m_fontEngineData->directWriteFactory->CreateRenderingParams(&renderingParams))) {
+        m_pixelGeometry = renderingParams->GetPixelGeometry();
+        renderingParams->Release();
+    }
+
     fontDef.pixelSize = pixelSize;
     collectMetrics();
     cache_cost = m_xHeight.toInt() * m_xHeight.toInt() * 2000;
@@ -1029,6 +1035,9 @@ void QWindowsFontEngineDirectWrite::renderGlyphRun(QImage *destination,
                         float blueAlpha = a * *src++ / 255.0;
                         float averageAlpha = (redAlpha + greenAlpha + blueAlpha) / 3.0;
 
+                        if (m_pixelGeometry == DWRITE_PIXEL_GEOMETRY_BGR)
+                            qSwap(redAlpha, blueAlpha);
+
                         QRgb currentRgb = dest[x];
                         dest[x] = qRgba(qRound(qRed(currentRgb) * (1.0 - averageAlpha) + averageAlpha * r),
                                         qRound(qGreen(currentRgb) * (1.0 - averageAlpha) + averageAlpha * g),
@@ -1052,10 +1061,14 @@ void QWindowsFontEngineDirectWrite::renderGlyphRun(QImage *destination,
                     BYTE *src = alphaValues + width * 3 * y;
 
                     for (int x = 0; x < width; ++x) {
-                        dest[x] = *(src + 0) << 16
-                                | *(src + 1) << 8
-                                | *(src + 2);
+                        BYTE redAlpha   = *(src + 0);
+                        BYTE greenAlpha = *(src + 1);
+                        BYTE blueAlpha  = *(src + 2);
 
+                        if (m_pixelGeometry == DWRITE_PIXEL_GEOMETRY_BGR)
+                            qSwap(redAlpha, blueAlpha);
+
+                        dest[x] = qRgb(redAlpha, greenAlpha, blueAlpha);
                         src += 3;
                     }
                 }
