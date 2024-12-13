@@ -67,9 +67,9 @@ public:
     Q_NORETURN void showHelp(int exitCode = 0);
     QString helpText() const;
 
-    enum MessageType {
+    enum MessageType : quint32 {
         InformationMessage,
-        ErrorMessage
+        ErrorMessage,
     };
     Q_NORETURN static void showMessageAndExit(const QString &message, MessageType type, int exitCode = 0);
 
