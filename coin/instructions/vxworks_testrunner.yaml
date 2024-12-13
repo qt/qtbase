@@ -10,7 +10,7 @@ instructions:
       testdir="$(dirname $1)"
       testexecutable="$1"
       echo RUNNING via serial: "$quoted_args"
-      echo "cmd rtp exec -p 200 -t 0x01000000 -u 1000000 $testexecutable -- $quoted_args" > /home/qt/work/vx.sh
+      echo "cmd rtp exec -p 200 -t 0x01000000 -u 0x1000000 $testexecutable -- $quoted_args" > /home/qt/work/vx.sh
       echo "cmd echo \"qtest_in_vxworks_complete: $?\"" >> /home/qt/work/vx.sh
       #rtp exec            Execute a process.
       #               -p : specify the initial task priority
