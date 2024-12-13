@@ -171,6 +171,8 @@ int runMoc(int argc, char **argv)
 {
     QCoreApplication app(argc, argv);
     QCoreApplication::setApplicationVersion(QString::fromLatin1(QT_VERSION_STR));
+    // let moc identify itself as moc, even if the binary has been renamed
+    QCoreApplication::setApplicationName(QString::fromLatin1("moc"));
 
     bool autoInclude = true;
     bool defaultInclude = true;
