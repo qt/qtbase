@@ -116,6 +116,8 @@ private slots:
     void propertyUpdateViaSignaledProperty();
 
     void derefFromObserver();
+
+    void changeSignalIsNotADependency();
 };
 
 namespace {
@@ -1759,6 +1761,11 @@ private:
 
 void tst_QProperty::compatPropertyNoDobuleNotification()
 {
+    QTest::ignoreMessage(
+            QtWarningMsg, "Property has a custom getter and also a change signal with arguments. "
+                          "This requires the getter to be called to retrieve the argument, "
+                          "possibly creating spurious binding dependencies");
+
     CompatPropertyTester tester;
     int counter = 0;
     QProperty<int> iprop {1};
@@ -1770,6 +1777,10 @@ void tst_QProperty::compatPropertyNoDobuleNotification()
 
 void tst_QProperty::compatPropertySignals()
 {
+    QTest::ignoreMessage(
+            QtWarningMsg, "Property has a custom getter and also a change signal with arguments. "
+                          "This requires the getter to be called to retrieve the argument, "
+                          "possibly creating spurious binding dependencies");
     CompatPropertyTester tester;
 
     // Compat property with signal. Signal has parameter.
@@ -2740,6 +2751,21 @@ void tst_QProperty::derefFromObserver()
     source = 26;
     QCOMPARE(triggered, 2);
     QCOMPARE(target, 8);
+}
+
+void tst_QProperty::changeSignalIsNotADependency()
+{
+    int counter = 0;
+    QObject foo;
+    QProperty<int> bar;
+    bar.setBinding([&]() {
+        foo.setObjectName("hello"_L1);
+        return ++counter;
+    });
+
+    QCOMPARE(bar.value(), 1);
+    foo.setObjectName("world"_L1);
+    QCOMPARE(bar.value(), 1);
 }
 
 QTEST_MAIN(tst_QProperty);
