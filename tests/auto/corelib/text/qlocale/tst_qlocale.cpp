@@ -4094,6 +4094,8 @@ public:
                 return QVariant(QStringList{u"en-DK"_s, u"en-GB"_s, u"fo-FO"_s,
                                             u"da-FO"_s, u"da-DK"_s});
             }
+            if (m_name == u"en-NL") // Anglophone in Netherlands:
+                return QVariant(QStringList{u"en-NL"_s, u"nl-NL"_s});
             if (m_name == u"en-NL-GB") // Netherlander at work for a GB-ish employer:
                 return QVariant(QStringList{u"en-NL"_s, u"nl-NL"_s, u"en-GB"_s});
             if (m_name == u"de-CA") { // Imagine a 2nd generation Canadian of de-AT ancestry ...
@@ -4161,6 +4163,12 @@ void tst_QLocale::mySystemLocale_data()
         << QStringList{u"en-Latn"_s, u"en-Latn-US"_s, u"en-US"_s, u"en"_s,
                        u"en-NO"_s, u"en-Latn-NO"_s};
 
+    QTest::addRow("anglo-dutch") // QTBUG-131894
+        << u"en-NL"_s << QLocale::English
+        << QStringList{u"en-NL"_s, u"en-Latn-NL"_s,
+                       // No later en-Latn-* or en-* in the list, so include truncations now:
+                       u"en-Latn"_s, u"en"_s,
+                       u"nl-NL"_s, u"nl-Latn-NL"_s, u"nl-Latn"_s, u"nl"_s};
     QTest::addRow("anglo-dutch-GB")
         << u"en-NL-GB"_s << QLocale::English
         << QStringList{u"en-NL"_s, u"en-Latn-NL"_s,
@@ -4218,9 +4226,8 @@ void tst_QLocale::mySystemLocale_data()
 
     QTest::newRow("en-Dsrt-GB")
         << u"en-Dsrt-GB"_s << QLocale::English
-        << QStringList{u"en-Dsrt-GB"_s, u"en-GB"_s, u"en-Latn-GB"_s,
-                       // Fallbacks - plain "en" last, not between the others:
-                       u"en-Dsrt"_s, u"en-Latn"_s, u"en"_s};
+        << QStringList{u"en-Dsrt-GB"_s, u"en-Dsrt"_s,
+                       u"en-GB"_s, u"en-Latn-GB"_s, u"en-Latn"_s, u"en"_s};
     QTest::newRow("en-mixed")
         << u"en-FO"_s << QLocale::English
         << QStringList{u"en-FO"_s, u"en-Latn-FO"_s, u"en-DK"_s, u"en-Latn-DK"_s,

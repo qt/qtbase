@@ -5150,7 +5150,7 @@ QStringList QLocale::uiLanguages(TagSeparator separator) const
     // Third pass: add truncations, when not already present.
     // Cubic in list length, but hopefully that's at most a dozen or so.
     const QLatin1Char cut(sep);
-    const auto hasPrefix = [cut](QStringView name, QStringView stem) {
+    const auto hasPrefix = [cut](auto name, QStringView stem) {
         // A prefix only counts if it's either full or followed by a separator.
         return name.startsWith(stem)
             && (name.size() == stem.size() || name.at(stem.size()) == cut);
@@ -5159,9 +5159,19 @@ QStringList QLocale::uiLanguages(TagSeparator separator) const
         const QString entry = uiLanguages.at(i);
         if (hasPrefix(entry, u"C") || hasPrefix(entry, u"und"))
             continue;
-        const qsizetype stopAt = uiLanguages.size();
+        const ushort script = QLocaleId::fromName(entry).withLikelySubtagsAdded().script_id;
+        qsizetype stopAt = uiLanguages.size();
         QString prefix = entry;
         qsizetype at = 0;
+        /* By default we append but if no later entry has this as a prefix and
+           the locale it implies would use the same script as entry, put it
+           after entry instead. Thus [en-NL, nl-NL, en-GB] will append en but
+           [en-NL, en-GB, nl-NL] will put it before nl-NL, for example. We
+           require a script match so we don't pick translations that the user
+           cannot read, despite knowing the language. (Ideally that would be
+           a constraint the caller can opt into / out of. See QTBUG-112765.)
+        */
+        bool justAfter = QLocaleId::fromName(prefix).withLikelySubtagsAdded().script_id == script;
         while ((at = prefix.lastIndexOf(cut)) > 0) {
             prefix = prefix.first(at);
             // Don't test with hasSeen() as we might defer adding to later, when
@@ -5170,11 +5180,19 @@ QStringList QLocale::uiLanguages(TagSeparator separator) const
             bool found = known.contains(prefix);
             for (qsizetype j = i + 1; !found && j < stopAt; ++j) {
                 QString later = uiLanguages.at(j);
-                if (!later.startsWith(prefix))
+                if (!later.startsWith(prefix)) {
+                    const QByteArray laterFull =
+                        QLocaleId::fromName(later.replace(cut, u'-')
+                            ).withLikelySubtagsAdded().name(sep);
+                    // When prefix matches a later entry's max, it belongs later.
+                    if (hasPrefix(QLatin1StringView(laterFull), prefix))
+                        justAfter = false;
                     continue;
+                }
                 // The duplicate tracker would already have spotted if equal:
                 Q_ASSERT(later.size() > prefix.size());
                 if (later.at(prefix.size()) == cut) {
+                    justAfter = false;
                     // Prefix match. Shall produce the same prefix, but possibly
                     // after prefixes of other entries in the list. If later has
                     // a longer prefix not yet in the list, we want that before
@@ -5196,7 +5214,12 @@ QStringList QLocale::uiLanguages(TagSeparator separator) const
                 break; // any further truncations of prefix would also be found.
             // Now we're committed to adding it, get it into known:
             (void) known.hasSeen(prefix);
-            uiLanguages.append(entry.first(prefix.size()));
+            if (justAfter) {
+                uiLanguages.insert(++i, prefix);
+                ++stopAt; // All later entries have moved one step later.
+            } else {
+                uiLanguages.append(prefix);
+            }
         }
     }
 
