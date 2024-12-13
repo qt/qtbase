@@ -2485,6 +2485,14 @@ void printMetaTypeMismatch(QMetaType actual, QMetaType expected)
                                   << "but got" << expected.name() << "instead.";
 }
 
+void printSignalArgumentsWithCustomGetter()
+{
+    qCWarning(lcQPropertyBinding)
+            << "Property has a custom getter and also a change signal with arguments."
+            << "This requires the getter to be called to retrieve the argument,"
+            << "possibly creating spurious binding dependencies";
+}
+
 } // namespace BindableWarnings end
 
 /*!

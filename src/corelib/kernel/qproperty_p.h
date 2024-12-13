@@ -31,6 +31,10 @@ QT_BEGIN_NAMESPACE
 namespace QtPrivate {
     Q_CORE_EXPORT bool isAnyBindingEvaluating();
     struct QBindingStatusAccessToken {};
+
+    namespace BindableWarnings {
+    Q_CORE_EXPORT void printSignalArgumentsWithCustomGetter();
+    }
 }
 
 
@@ -547,14 +551,37 @@ class QObjectCompatProperty : public QPropertyData<T>
             return (prop->owner()->*Getter)();
     }
 
+    inline static T getPropertyValueBypassingBindings(const QUntypedPropertyData *d) {
+        auto prop = static_cast<const ThisType *>(d);
+        if constexpr (std::is_null_pointer_v<decltype(Getter)>)
+            return prop->valueBypassingBindings();
+        else
+            return (prop->owner()->*Getter)();
+    }
+
+    inline static void warnIfSignalWithArgumentAndCustomGetter()
+    {
+        if constexpr (!std::is_null_pointer_v<decltype(Signal)>
+                      && SignalTakesValue::value
+                      && !std::is_null_pointer_v<decltype(Getter)>) {
+            QtPrivate::BindableWarnings::printSignalArgumentsWithCustomGetter();
+        }
+    }
+
 public:
     using value_type = typename QPropertyData<T>::value_type;
     using parameter_type = typename QPropertyData<T>::parameter_type;
     using arrow_operator_result = typename QPropertyData<T>::arrow_operator_result;
 
-    QObjectCompatProperty() = default;
-    explicit QObjectCompatProperty(const T &initialValue) : QPropertyData<T>(initialValue) {}
-    explicit QObjectCompatProperty(T &&initialValue) : QPropertyData<T>(std::move(initialValue)) {}
+    QObjectCompatProperty() { warnIfSignalWithArgumentAndCustomGetter(); }
+    explicit QObjectCompatProperty(const T &initialValue) : QPropertyData<T>(initialValue)
+    {
+        warnIfSignalWithArgumentAndCustomGetter();
+    }
+    explicit QObjectCompatProperty(T &&initialValue) : QPropertyData<T>(std::move(initialValue))
+    {
+        warnIfSignalWithArgumentAndCustomGetter();
+    }
 
     parameter_type value() const
     {
@@ -680,7 +707,7 @@ public:
         }
         if constexpr (!std::is_null_pointer_v<decltype(Signal)>) {
             if constexpr (SignalTakesValue::value)
-                (owner()->*Signal)(getPropertyValue(this));
+                (owner()->*Signal)(getPropertyValueBypassingBindings(this));
             else
                 (owner()->*Signal)();
         }
