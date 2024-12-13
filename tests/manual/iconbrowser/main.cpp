@@ -413,7 +413,8 @@ public:
             case Theme:
                 if (row >= themedIcons.size())
                     break;
-                return QIcon(QApplicationPrivate::platformTheme()->standardPixmap(QPlatformTheme::StandardPixmap(row), {64, 64}));
+                return QIcon(QApplicationPrivate::platformTheme()->standardPixmap(
+                    QPlatformTheme::StandardPixmap(row), QSize(64, 64) * qGuiApp->devicePixelRatio()));
             case Icon:
                 if (row < themedIcons.size())
                     return QIcon::fromTheme(themedIcons.at(row));

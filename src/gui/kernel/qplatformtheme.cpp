@@ -470,9 +470,16 @@ const QFont *QPlatformTheme::font(Font type) const
     return nullptr;
 }
 
-QPixmap QPlatformTheme::standardPixmap(StandardPixmap sp, const QSizeF &size) const
+/*!
+    \brief Return a pixmap for \a standardPixmap, at the given \a size.
+
+    The implementation should not take system DPR into account, and
+    always return a pixmap with a DPR of 1. It's up to the consumer
+    to account for DPR and request a pixmap of the right size.
+*/
+QPixmap QPlatformTheme::standardPixmap(StandardPixmap standardPixmap, const QSizeF &size) const
 {
-    Q_UNUSED(sp);
+    Q_UNUSED(standardPixmap);
     Q_UNUSED(size);
     // TODO Should return QCommonStyle pixmaps?
     return QPixmap();
