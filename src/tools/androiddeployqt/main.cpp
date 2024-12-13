@@ -799,7 +799,14 @@ GradleBuildConfigs gradleBuildConfigs(const QString &path)
         if (trimmedLine.contains("compileSdkVersion androidCompileSdkVersion.toInteger()")) {
             configs.usesIntegerCompileSdkVersion = true;
         } else if (trimmedLine.contains("namespace")) {
-            configs.appNamespace = QString::fromUtf8(extractValue(trimmedLine));
+            const QString value = QString::fromUtf8(extractValue(trimmedLine));
+            const bool singleQuoted = value.startsWith(u'\'') && value.endsWith(u'\'');
+            const bool doubleQuoted = value.startsWith(u'\"') && value.endsWith(u'\"');
+
+            if (singleQuoted || doubleQuoted)
+                configs.appNamespace = value.mid(1, value.length() - 2);
+            else
+                configs.appNamespace = value;
         }
     }
 
