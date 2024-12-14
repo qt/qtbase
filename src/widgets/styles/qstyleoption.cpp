@@ -2946,6 +2946,23 @@ QStyleOptionTitleBar::QStyleOptionTitleBar(int version)
 */
 
 /*!
+    \variable QStyleOptionViewItem::locale
+    \brief the locale to use for displaying text, numbers and dates.
+
+    This allows the style to display e.g. dates in a different locale than
+    the default locale of the application.
+*/
+
+/*!
+    \variable QStyleOptionViewItem::widget
+    \brief the parent widget of the item
+
+    This member contains the parent widget (itemview) of the item to
+    be able to e.g. access some properties within the QStyledItemDelegate
+    methods.
+*/
+
+/*!
     \variable QStyleOptionViewItem::textElideMode
     \brief where ellipsis should be added for text that is too long to fit
     into an item
