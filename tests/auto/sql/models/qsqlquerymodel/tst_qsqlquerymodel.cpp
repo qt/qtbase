@@ -694,11 +694,13 @@ void tst_QSqlQueryModel::refreshQueryWithBoundValues()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     QSqlQueryModel model;
 
-    QSqlQuery query(db);
-    query.prepare("SELECT name FROM " + qTableName("test", __FILE__, db) + " WHERE id = :id");
-    query.bindValue(":id", 1);
-    query.exec();
-    model.setQuery(query);
+    {
+        QSqlQuery query(db);
+        query.prepare("SELECT name FROM " + qTableName("test", __FILE__, db) + " WHERE id = :id");
+        query.bindValue(":id", 1);
+        query.exec();
+        model.setQuery(std::move(query));
+    }
 
     QCOMPARE(model.rowCount(), 1);
     QCOMPARE(model.data(model.index(0, 0)).toString(), QString("harry"));
