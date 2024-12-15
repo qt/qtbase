@@ -422,7 +422,7 @@ public:
     bool verticalScrollModeSet;
     bool horizontalScrollModeSet;
 
-    uint32_t updateThreshold;
+    int updateThreshold;
 
     virtual QRect visualRect(const QModelIndex &index) const { return q_func()->visualRect(index); }
 

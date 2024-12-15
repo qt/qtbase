@@ -3226,13 +3226,13 @@ int QAbstractItemView::sizeHintForColumn(int column) const
 
     \sa dataChanged()
 */
-uint32_t QAbstractItemView::updateThreshold() const
+int QAbstractItemView::updateThreshold() const
 {
     Q_D(const QAbstractItemView);
     return d->updateThreshold;
 }
 
-void QAbstractItemView::setUpdateThreshold(uint32_t threshold)
+void QAbstractItemView::setUpdateThreshold(int threshold)
 {
     Q_D(QAbstractItemView);
     if (d->updateThreshold == threshold)
@@ -3439,8 +3439,8 @@ void QAbstractItemView::dataChanged(const QModelIndex &topLeft, const QModelInde
                                      << "\n    topleft: " << topLeft
                                      << "\n    bottomRight:" << bottomRight;
                 d->viewport->update();
-            } else if ((bottomRight.row() - topLeft.row() + 1ULL) *
-                       (bottomRight.column() - topLeft.column() + 1ULL) > d->updateThreshold) {
+            } else if ((bottomRight.row() - topLeft.row() + 1LL) *
+                       (bottomRight.column() - topLeft.column() + 1LL) > d->updateThreshold) {
                 // too many indices to check - force full update
                 d->viewport->update();
             } else {
