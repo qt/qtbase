@@ -1788,7 +1788,7 @@ auto TlsCryptographSchannel::getNextEncryptedMessage() -> MessageBufferResult
            && fullMessage.size() < MessageBufferThreshold) {
         // Try to read 'cbMaximumMessage' bytes from buffer before encrypting.
         const int bodySize = int(std::min(writeBufferSize, qint64(streamSizes.cbMaximumMessage)));
-        auto messageSize = headerSize + bodySize + trailerSize;
+        const qsizetype messageSize = headerSize + bodySize + trailerSize;
         QSpan buffer = allocateMessage(messageSize);
         char *header = buffer.data();
         char *body = header + headerSize;
@@ -1815,6 +1815,7 @@ auto TlsCryptographSchannel::getNextEncryptedMessage() -> MessageBufferResult
             setErrorAndEmit(d, QAbstractSocket::SslInternalError,
                             QSslSocket::tr("Schannel failed to encrypt data: %1")
                                     .arg(schannelErrorToString(status)));
+            result.messageBuffer.chop(messageSize);
             return result;
         }
         // Data was encrypted successfully, so we free() what we peek()ed earlier
