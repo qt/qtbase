@@ -531,6 +531,23 @@ static inline bool displayMessageBox()
 #endif // Q_OS_WIN && !QT_BOOTSTRAPPED
 
 /*!
+    \enum QCommandLineParser::MessageType
+    \since 6.9
+
+    The enum is used to specify the type of the message and how it will be shown
+    to the users.
+
+    \value InformationMessage Used to show information messages. The message
+           will be printed to \c {stdout}.
+    \value ErrorMessage Used to show error messages. The message will be printed
+           to \c {stderr}.
+
+    \sa showMessageAndExit()
+*/
+
+/*!
+    \since 6.9
+
     Displays a \a message, and exits the application with the given \a exitCode.
 
     The \a message will usually be printed directly to \c{stdout} or \c{stderr} according
@@ -543,8 +560,7 @@ static inline bool displayMessageBox()
     options (\c{--version} if addVersionOption was called and \c{--help} / \c{--help-all}
     if addHelpOption was called).
 
-    \sa addVersionOption(), showHelp(), showVersion()
-    \since 6.9
+    \sa addVersionOption(), showHelp(), showVersion(), QCommandLineParser::MessageType
 */
 Q_NORETURN void QCommandLineParser::showMessageAndExit(const QString &message, MessageType type, int exitCode)
 {
