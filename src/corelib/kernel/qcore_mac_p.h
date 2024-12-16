@@ -504,6 +504,9 @@ public:
     QObjCWeakPointer &operator=(const QObjCWeakPointer &other)
     {
         QMacAutoReleasePool pool;
+#if !USE_OBJC_WEAK
+        objc_setAssociatedObject(m_object, this, nil, OBJC_ASSOCIATION_RETAIN);
+#endif
         m_object = other.m_object;
 #if !USE_OBJC_WEAK
         trackObjectLifetime();
