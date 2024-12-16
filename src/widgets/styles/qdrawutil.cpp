@@ -573,18 +573,19 @@ void qDrawWinPanel(QPainter *p, int x, int y, int w, int h,
 */
 
 void qDrawPlainRect(QPainter *p, int x, int y, int w, int h, const QColor &c,
-                     int lineWidth, const QBrush *fill)
+                    int lineWidth, const QBrush *fill)
 {
     if (w == 0 || h == 0)
         return;
     if (Q_UNLIKELY(w < 0 || h < 0 || lineWidth < 0)) {
         qWarning("qDrawPlainRect: Invalid parameters");
+        return;
     }
 
     PainterStateGuard painterGuard(p);
+    painterGuard.save();
     const qreal devicePixelRatio = QStyleHelper::getDpr(p);
     if (!qFuzzyCompare(devicePixelRatio, qreal(1))) {
-        painterGuard.save();
         const qreal inverseScale = qreal(1) / devicePixelRatio;
         p->scale(inverseScale, inverseScale);
         x = qRound(devicePixelRatio * x);
@@ -595,8 +596,6 @@ void qDrawPlainRect(QPainter *p, int x, int y, int w, int h, const QColor &c,
         p->translate(0.5, 0.5);
     }
 
-    QPen   oldPen   = p->pen();
-    QBrush oldBrush = p->brush();
     p->setPen(c);
     p->setBrush(Qt::NoBrush);
     for (int i=0; i<lineWidth; i++)
@@ -606,8 +605,6 @@ void qDrawPlainRect(QPainter *p, int x, int y, int w, int h, const QColor &c,
         p->setBrush(*fill);
         p->drawRect(x+lineWidth, y+lineWidth, w-lineWidth*2, h-lineWidth*2);
     }
-    p->setPen(oldPen);
-    p->setBrush(oldBrush);
 }
 
 /*!
@@ -639,19 +636,20 @@ void qDrawPlainRect(QPainter *p, int x, int y, int w, int h, const QColor &c,
 
 // ### Qt7: Pass QPen instead of QColor for frame drawing
 void qDrawPlainRoundedRect(QPainter *p, int x, int y, int w, int h,
-                    qreal rx, qreal ry, const QColor &c,
-                    int lineWidth, const QBrush *fill)
+                           qreal rx, qreal ry, const QColor &c,
+                           int lineWidth, const QBrush *fill)
 {
     if (w == 0 || h == 0)
         return;
     if (Q_UNLIKELY(w < 0 || h < 0 || lineWidth < 0)) {
         qWarning("qDrawPlainRect: Invalid parameters");
+        return;
     }
 
     PainterStateGuard painterGuard(p);
+    painterGuard.save();
     const qreal devicePixelRatio = QStyleHelper::getDpr(p);
     if (!qFuzzyCompare(devicePixelRatio, qreal(1))) {
-        painterGuard.save();
         const qreal inverseScale = qreal(1) / devicePixelRatio;
         p->scale(inverseScale, inverseScale);
         x = qRound(devicePixelRatio * x);
@@ -662,7 +660,6 @@ void qDrawPlainRoundedRect(QPainter *p, int x, int y, int w, int h,
         p->translate(0.5, 0.5);
     }
 
-    p->save();
     p->setPen(c);
     p->setBrush(Qt::NoBrush);
     for (int i=0; i<lineWidth; i++) {
@@ -675,7 +672,6 @@ void qDrawPlainRoundedRect(QPainter *p, int x, int y, int w, int h,
         p->setBrush(*fill);
         p->drawRoundedRect(x+lineWidth, y+lineWidth, w-lineWidth*2, h-lineWidth*2, rx, ry);
     }
-    p->restore();
 }
 
 /*****************************************************************************
