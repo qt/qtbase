@@ -477,6 +477,7 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
             const bool vertical = scrollbar->orientation == Qt::Vertical;
             const bool horizontal = scrollbar->orientation == Qt::Horizontal;
             const bool isMouseOver = state & State_MouseOver;
+            const bool isRtl = option->direction == Qt::RightToLeft;
 
             if (isMouseOver) {
                 QRectF rect = scrollbar->rect;
@@ -517,7 +518,8 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                     f.setPointSize(6);
                     painter->setFont(f);
                     painter->setPen(Qt::gray);
-                    const auto str = vertical ? QStringLiteral(u"\uEDDC") : QStringLiteral(u"\uEDDA");
+                    const auto str = vertical ? QStringLiteral(u"\uEDDC")
+                                              : (isRtl ? QStringLiteral(u"\uEDD9") : QStringLiteral(u"\uEDDA"));
                     painter->drawText(rect, str, Qt::AlignVCenter | Qt::AlignHCenter);
                 }
             }
@@ -528,7 +530,8 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                     f.setPointSize(6);
                     painter->setFont(f);
                     painter->setPen(Qt::gray);
-                    const auto str = vertical ? QStringLiteral(u"\uEDDB") : QStringLiteral(u"\uEDD9");
+                    const auto str = vertical ? QStringLiteral(u"\uEDDB")
+                                              : (isRtl ? QStringLiteral(u"\uEDDA") : QStringLiteral(u"\uEDD9"));
                     painter->drawText(rect, str, Qt::AlignVCenter | Qt::AlignHCenter);
                 }
             }
