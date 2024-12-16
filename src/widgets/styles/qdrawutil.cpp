@@ -540,27 +540,15 @@ void qDrawPlainRect(QPainter *p, int x, int y, int w, int h, const QColor &c,
     }
 
     QPainterStateGuard painterGuard(p);
-    const qreal devicePixelRatio = QStyleHelper::getDpr(p);
-    if (!qFuzzyCompare(devicePixelRatio, qreal(1))) {
-        const qreal inverseScale = qreal(1) / devicePixelRatio;
-        p->scale(inverseScale, inverseScale);
-        x = qRound(devicePixelRatio * x);
-        y = qRound(devicePixelRatio * y);
-        w = devicePixelRatio * w;
-        h = devicePixelRatio * h;
-        lineWidth = qRound(devicePixelRatio * lineWidth);
-        p->translate(0.5, 0.5);
-    }
-
-    p->setPen(c);
-    p->setBrush(Qt::NoBrush);
-    for (int i=0; i<lineWidth; i++)
-        p->drawRect(x+i, y+i, w-i*2 - 1, h-i*2 - 1);
-    if (fill) {                                // fill with fill color
-        p->setPen(Qt::NoPen);
-        p->setBrush(*fill);
-        p->drawRect(x+lineWidth, y+lineWidth, w-lineWidth*2, h-lineWidth*2);
-    }
+    if (lineWidth == 0 && !fill)
+        return;
+    if (lineWidth > 0)
+        p->setPen(QPen(c, lineWidth, Qt::SolidLine, Qt::SquareCap, Qt::MiterJoin));
+    p->setBrush(fill ? *fill : Qt::NoBrush);
+    const QRectF r(x, y, w, h);
+    const auto lw2 = lineWidth / 2.;
+    const QRectF rect = r.marginsRemoved(QMarginsF(lw2, lw2, lw2, lw2));
+    p->drawRect(rect);
 }
 
 /*!
@@ -603,30 +591,15 @@ void qDrawPlainRoundedRect(QPainter *p, int x, int y, int w, int h,
     }
 
     QPainterStateGuard painterGuard(p);
-    const qreal devicePixelRatio = QStyleHelper::getDpr(p);
-    if (!qFuzzyCompare(devicePixelRatio, qreal(1))) {
-        const qreal inverseScale = qreal(1) / devicePixelRatio;
-        p->scale(inverseScale, inverseScale);
-        x = qRound(devicePixelRatio * x);
-        y = qRound(devicePixelRatio * y);
-        w = devicePixelRatio * w;
-        h = devicePixelRatio * h;
-        lineWidth = qRound(devicePixelRatio * lineWidth);
-        p->translate(0.5, 0.5);
-    }
-
-    p->setPen(c);
-    p->setBrush(Qt::NoBrush);
-    for (int i=0; i<lineWidth; i++) {
-        QRectF rect(x+i, y+i, w-i*2 - 1, h-i*2 - 1);
-        rect.marginsRemoved(QMarginsF(0.5,0.5,0.5,0.5));
-        p->drawRoundedRect(rect, rx, ry);
-    }
-    if (fill) {                                // fill with fill color
-        p->setPen(Qt::NoPen);
-        p->setBrush(*fill);
-        p->drawRoundedRect(x+lineWidth, y+lineWidth, w-lineWidth*2, h-lineWidth*2, rx, ry);
-    }
+    if (lineWidth == 0 && !fill)
+        return;
+    if (lineWidth > 0)
+        p->setPen(QPen(c, lineWidth));
+    p->setBrush(fill ? *fill : Qt::NoBrush);
+    const QRectF r(x, y, w, h);
+    const auto lw2 = lineWidth / 2.;
+    const QRectF rect = r.marginsRemoved(QMarginsF(lw2, lw2, lw2, lw2));
+    p->drawRoundedRect(rect, rx, ry);
 }
 
 /*****************************************************************************
