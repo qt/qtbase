@@ -35,7 +35,8 @@ void QCocoaDrag::setLastInputEvent(NSEvent *event, NSView *view)
 {
     [m_lastEvent release];
     m_lastEvent = [event copy];
-    m_lastView = view;
+    if (view != m_lastView)
+        m_lastView = view;
 }
 
 QMimeData *QCocoaDrag::dragMimeData()
