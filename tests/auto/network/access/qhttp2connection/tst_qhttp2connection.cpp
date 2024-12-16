@@ -24,6 +24,7 @@ private slots:
     void testRSTServerSide();
     void testRSTClientSide();
     void testRSTReplyOnDATAEND();
+    void resetAfterClose();
     void testBadFrameSize_data();
     void testBadFrameSize();
     void testDataFrameAfterRSTIncoming();
@@ -418,6 +419,46 @@ void tst_QHttp2Connection::testRSTReplyOnDATAEND()
     QVERIFY(rstClientSpy.wait());
     QCOMPARE(rstServerSpy.count(), 0);
     QCOMPARE(errrorServerSpy.count(), 1);
+}
+
+void tst_QHttp2Connection::resetAfterClose()
+{
+    auto [client, server] = makeFakeConnectedSockets();
+    auto connection = makeHttp2Connection(client.get(), {}, Client);
+    auto serverConnection = makeHttp2Connection(server.get(), {}, Server);
+
+    QHttp2Stream *clientStream = connection->createStream().unwrap();
+    QVERIFY(clientStream);
+    QVERIFY(waitForSettingsExchange(connection, serverConnection));
+
+    QSignalSpy newIncomingStreamSpy{ serverConnection, &QHttp2Connection::newIncomingStream };
+
+    QSignalSpy clientHeaderReceivedSpy{ clientStream, &QHttp2Stream::headersReceived };
+    HPack::HttpHeader headers = getRequiredHeaders();
+    clientStream->sendHEADERS(headers, true);
+
+    QVERIFY(newIncomingStreamSpy.wait());
+    auto *serverStream = newIncomingStreamSpy.front().front().value<QHttp2Stream *>();
+    QCOMPARE(clientStream->streamID(), serverStream->streamID());
+
+    QSignalSpy errorSpy(clientStream, &QHttp2Stream::errorOccurred);
+
+    const HPack::HttpHeader StatusOKHeaders{ { ":status", "200" } };
+    serverStream->sendHEADERS(StatusOKHeaders, true);
+
+    // Write the RST_STREAM frame manually because we guard against sending RST_STREAM on closed
+    // streams
+    auto &frameWriter = serverConnection->frameWriter;
+    frameWriter.start(Http2::FrameType::RST_STREAM, Http2::FrameFlag::EMPTY,
+                      serverStream->streamID());
+    frameWriter.append(quint32(Http2::Http2Error::STREAM_CLOSED));
+    QVERIFY(frameWriter.write(*serverConnection->getSocket()));
+
+    QVERIFY(clientHeaderReceivedSpy.wait());
+    QCOMPARE(clientStream->state(), QHttp2Stream::State::Closed);
+
+    QTest::qWait(10); // Just needs to process events basically
+    QCOMPARE(errorSpy.count(), 0);
 }
 
 void tst_QHttp2Connection::testBadFrameSize_data()

@@ -708,6 +708,9 @@ void QHttp2Stream::handleHEADERS(Http2::FrameFlags frameFlags, const HPack::Http
 
 void QHttp2Stream::handleRST_STREAM(const Frame &inboundFrame)
 {
+    if (m_state == State::Closed) // The stream is already closed, we're not sending anything anyway
+        return;
+
     transitionState(StateTransition::RST);
     m_RST_STREAM_received = qFromBigEndian<quint32>(inboundFrame.dataBegin());
     if (isUploadingDATA()) {
