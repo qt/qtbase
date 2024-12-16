@@ -190,13 +190,19 @@ initial_setup(j_compress_ptr cinfo, boolean transcode_only)
   if ((long)jd_samplesperrow != samplesperrow)
     ERREXIT(cinfo, JERR_WIDTH_OVERFLOW);
 
+  /* Lossy JPEG images must have 8 or 12 bits per sample.  Lossless JPEG images
+   * can have 2 to 16 bits per sample.
+   */
 #ifdef C_LOSSLESS_SUPPORTED
-  if (cinfo->data_precision != 8 && cinfo->data_precision != 12 &&
-      cinfo->data_precision != 16)
-#else
-  if (cinfo->data_precision != 8 && cinfo->data_precision != 12)
+  if (cinfo->master->lossless) {
+    if (cinfo->data_precision < 2 || cinfo->data_precision > 16)
+      ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo->data_precision);
+  } else
 #endif
-    ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo->data_precision);
+  {
+    if (cinfo->data_precision != 8 && cinfo->data_precision != 12)
+      ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo->data_precision);
+  }
 
   /* Check that number of components won't exceed internal array sizes */
   if (cinfo->num_components > MAX_COMPONENTS)
@@ -731,6 +737,7 @@ jinit_c_master_control(j_compress_ptr cinfo, boolean transcode_only)
     cinfo->num_scans = 1;
   }
 
+#ifdef C_LOSSLESS_SUPPORTED
   /* Disable smoothing and subsampling in lossless mode, since those are lossy
    * algorithms.  Set the JPEG colorspace to the input colorspace.  Disable raw
    * (downsampled) data input, because it isn't particularly useful without
@@ -747,6 +754,7 @@ jinit_c_master_control(j_compress_ptr cinfo, boolean transcode_only)
          ci++, compptr++)
       compptr->h_samp_factor = compptr->v_samp_factor = 1;
   }
+#endif
 
   /* Validate parameters, determine derived values */
   initial_setup(cinfo, transcode_only);
