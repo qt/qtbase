@@ -401,6 +401,7 @@ bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &addr, quint16
             break;
         case ECONNREFUSED:
         case EINVAL:
+        case ENOENT:
             setError(QAbstractSocket::ConnectionRefusedError, ConnectionRefusedErrorString);
             socketState = QAbstractSocket::UnconnectedState;
             break;

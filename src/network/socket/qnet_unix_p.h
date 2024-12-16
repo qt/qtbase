@@ -109,6 +109,11 @@ static inline int qt_safe_connect(int sockfd, const struct sockaddr *addr, QT_SO
     int ret;
     // Solaris e.g. expects a non-const 2nd parameter
     QT_EINTR_LOOP(ret, QT_SOCKET_CONNECT(sockfd, const_cast<struct sockaddr *>(addr), addrlen));
+#ifdef Q_OS_WASM
+// ::connect on wasm returns 0 when it shouldn't so use errno instead
+   if (errno != 0)
+       ret = -1;
+#endif
     return ret;
 }
 #undef QT_SOCKET_CONNECT
