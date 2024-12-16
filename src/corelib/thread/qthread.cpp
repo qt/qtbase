@@ -567,7 +567,7 @@ uint QThread::stackSize() const
     \value Eco  The scheduler should run this thread to an energy-efficient CPU
                 core.
 
-    \sa Priority, serviceLevel()
+    \sa Priority, serviceLevel(), QThreadPool::serviceLevel()
 */
 
 /*!
@@ -581,7 +581,7 @@ uint QThread::stackSize() const
     The function call will complete successfully on other platforms but will
     not currently have any effect.
 
-    \sa serviceLevel()
+    \sa serviceLevel(), QThreadPool::setServiceLevel()
 */
 void QThread::setServiceLevel(QualityOfService serviceLevel)
 {
@@ -601,7 +601,7 @@ void QThread::setServiceLevel(QualityOfService serviceLevel)
 
     Return the current Quality of Service level of the thread.
 
-    \sa setServiceLevel()
+    \sa setServiceLevel(), QThreadPool::serviceLevel()
 */
 QThread::QualityOfService QThread::serviceLevel() const
 {
