@@ -562,7 +562,7 @@ static inline bool displayMessageBox()
 
     \sa addVersionOption(), showHelp(), showVersion(), QCommandLineParser::MessageType
 */
-Q_NORETURN void QCommandLineParser::showMessageAndExit(const QString &message, MessageType type, int exitCode)
+Q_NORETURN void QCommandLineParser::showMessageAndExit(MessageType type, const QString &message, int exitCode)
 {
 #if defined(Q_OS_WIN) && !defined(QT_BOOTSTRAPPED)
     if (displayMessageBox()) {
@@ -601,8 +601,9 @@ Q_NORETURN void QCommandLineParser::showMessageAndExit(const QString &message, M
 void QCommandLineParser::process(const QStringList &arguments)
 {
     if (!d->parse(arguments)) {
-        showMessageAndExit(QCoreApplication::applicationName() + ": "_L1 + errorText() + u'\n',
-                           ErrorMessage, EXIT_FAILURE);
+        showMessageAndExit(ErrorMessage,
+                           QCoreApplication::applicationName() + ": "_L1 + errorText() + u'\n',
+                           EXIT_FAILURE);
     }
 
     if (d->builtinVersionOption && isSet(QStringLiteral("version")))
@@ -1035,9 +1036,10 @@ QStringList QCommandLineParser::unknownOptionNames() const
 */
 Q_NORETURN void QCommandLineParser::showVersion()
 {
-    showMessageAndExit(QCoreApplication::applicationName() + u' '
+    showMessageAndExit(InformationMessage,
+                       QCoreApplication::applicationName() + u' '
                        + QCoreApplication::applicationVersion() + u'\n',
-                       InformationMessage, EXIT_SUCCESS);
+                       EXIT_SUCCESS);
 }
 
 /*!
@@ -1058,8 +1060,9 @@ Q_NORETURN void QCommandLineParser::showHelp(int exitCode)
 
 Q_NORETURN void QCommandLineParserPrivate::showHelp(int exitCode, bool includeQtOptions)
 {
-    QCommandLineParser::showMessageAndExit(helpText(includeQtOptions),
-                                           QCommandLineParser::InformationMessage, exitCode);
+    QCommandLineParser::showMessageAndExit(QCommandLineParser::InformationMessage,
+                                           helpText(includeQtOptions),
+                                           exitCode);
 }
 
 /*!
