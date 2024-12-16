@@ -432,7 +432,11 @@ const BlendType * QT_FASTCALL qt_fetch_radial_gradient_template(BlendType *buffe
         qreal delta_det = (b_delta_b + delta_bb + 4 * op->radial.a * (rx_plus_ry + delta_rxrxryry)) * inv_a;
         const qreal delta_delta_det = (delta_b_delta_b + 4 * op->radial.a * delta_rx_plus_ry) * inv_a;
 
-        RadialFetchFunc::fetch(buffer, end, op, data, det, delta_det, delta_delta_det, b, delta_b);
+        if (std::isfinite(float(det)) && std::isfinite(float(delta_det))
+            && std::isfinite(float(delta_delta_det)))
+            RadialFetchFunc::fetch(buffer, end, op, data, det, delta_det, delta_delta_det, b, delta_b);
+        else
+            RadialFetchFunc::memfill(buffer, RadialFetchFunc::null(), length);
     } else {
         qreal rw = data->m23 * (y + qreal(0.5))
                    + data->m33 + data->m13 * (x + qreal(0.5));

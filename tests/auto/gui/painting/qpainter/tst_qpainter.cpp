@@ -171,6 +171,7 @@ private slots:
 #endif
 
     void radialGradient_QTBUG120332_ubsan();
+    void radialGradient_QTBUG130992_crash();
     void fpe_pixmapTransform();
     void fpe_zeroLengthLines();
     void fpe_divByZero();
@@ -3925,6 +3926,19 @@ void tst_QPainter::radialGradient_QTBUG120332_ubsan()
     QRadialGradient gradient(center, 0.5, focal, 0.5);
     gradient.setColorAt(0, Qt::blue);
     gradient.setColorAt(1, Qt::red);
+    painter.fillRect(image.rect(), QBrush(gradient));
+}
+
+void tst_QPainter::radialGradient_QTBUG130992_crash()
+{
+    // Check if Radial Gradient will crash on extreme values
+    // The crash was found by oss-fuzz, see
+    // https://issues.oss-fuzz.com/issues/42533347
+    QImage image(8, 8, QImage::Format_ARGB32_Premultiplied);
+    QPainter painter(&image);
+
+    constexpr qreal hugeValue = 1.1E37;
+    QRadialGradient gradient(hugeValue, 0.5, 0.5, hugeValue, 0.5);
     painter.fillRect(image.rect(), QBrush(gradient));
 }
 
