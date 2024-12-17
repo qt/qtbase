@@ -4,6 +4,7 @@
 #include "qsql_psql_p.h"
 
 #include <qcoreapplication.h>
+#include <qanystringview.h>
 #include <qvariant.h>
 #include <qdatetime.h>
 #include <qloggingcategory.h>
@@ -16,6 +17,7 @@
 #include <qsocketnotifier.h>
 #include <qstringlist.h>
 #include <qlocale.h>
+#include <qvarlengtharray.h>
 #include <QtSql/private/qsqlresult_p.h>
 #include <QtSql/private/qsqldriver_p.h>
 #include <QtCore/private/qlocale_tools_p.h>
@@ -381,8 +383,12 @@ static QMetaType qDecodePSQLType(int t)
 void QPSQLResultPrivate::deallocatePreparedStmt()
 {
     if (drv_d_func()) {
+#if defined(LIBPQ_HAS_CLOSE_PREPARED)
+        PGresult *result = PQclosePrepared(drv_d_func()->connection, preparedStmtId.toUtf8());
+#else
         const QString stmt = QStringLiteral("DEALLOCATE ") + preparedStmtId;
         PGresult *result = drv_d_func()->exec(stmt);
+#endif
 
         if (PQresultStatus(result) != PGRES_COMMAND_OK) {
             const QString msg = QString::fromUtf8(PQerrorMessage(drv_d_func()->connection));
@@ -813,22 +819,23 @@ void QPSQLResult::virtual_hook(int id, void *data)
     QSqlResult::virtual_hook(id, data);
 }
 
-static QString qCreateParamString(const QList<QVariant> &boundValues, const QSqlDriver *driver)
+static QList<QByteArray> qCreateParamArray(const QList<QVariant> &boundValues, const QPSQLDriver *driver)
 {
     if (boundValues.isEmpty())
-        return QString();
+        return {};
 
-    QString params;
+    QList<QByteArray> params;
+    params.reserve(boundValues.size());
     QSqlField f;
     for (const QVariant &val : boundValues) {
-        f.setMetaType(val.metaType());
-        if (QSqlResultPrivate::isVariantNull(val))
-            f.clear();
-        else
+        QByteArray bval;
+        if (!QSqlResultPrivate::isVariantNull(val)) {
+            f.setMetaType(val.metaType());
             f.setValue(val);
-        if (!params.isNull())
-            params.append(", "_L1);
-        params.append(driver->formatValue(f));
+            if (QString strval = driver->formatValue<true>(f); !strval.isNull())
+                bval = strval.toUtf8();
+        }
+        params.append(bval);
     }
     return params;
 }
@@ -852,9 +859,8 @@ bool QPSQLResult::prepare(const QString &query)
         d->deallocatePreparedStmt();
 
     const QString stmtId = qMakePreparedStmtId();
-    const QString stmt = QStringLiteral("PREPARE %1 AS ").arg(stmtId).append(d->positionalToNamedBinding(query));
-
-    PGresult *result = d->drv_d_func()->exec(stmt);
+    PGresult *result = PQprepare(d->drv_d_func()->connection, stmtId.toUtf8(),
+                                 d->positionalToNamedBinding(query).toUtf8(), 0, nullptr);
 
     if (PQresultStatus(result) != PGRES_COMMAND_OK) {
         setLastError(qMakeError(QCoreApplication::translate("QPSQLResult",
@@ -877,24 +883,27 @@ bool QPSQLResult::exec()
 
     cleanup();
 
-    QString stmt;
-    const QString params = qCreateParamString(boundValues(), driver());
-    if (params.isEmpty())
-        stmt = QStringLiteral("EXECUTE %1").arg(d->preparedStmtId);
-    else
-        stmt = QStringLiteral("EXECUTE %1 (%2)").arg(d->preparedStmtId, params);
+    const QList<QByteArray> params = qCreateParamArray(boundValues(), static_cast<const QPSQLDriver *>(driver()));
+    QVarLengthArray<const char *> pgParams;
+    pgParams.reserve(params.size());
+    for (const QByteArray &param : params)
+        pgParams.emplace_back(param.constBegin());
 
-    d->stmtId = d->drv_d_func()->sendQuery(stmt);
-    if (d->stmtId == InvalidStatementId) {
+    d->result = PQexecPrepared(d->drv_d_func()->connection, d->preparedStmtId.toUtf8(), pgParams.size(),
+                               pgParams.data(), nullptr, nullptr, 0);
+
+    const auto status = PQresultStatus(d->result);
+    if (status != PGRES_COMMAND_OK && status != PGRES_TUPLES_OK) {
+        d->stmtId = InvalidStatementId;
         setLastError(qMakeError(QCoreApplication::translate("QPSQLResult",
-                                "Unable to send query"), QSqlError::StatementError, d->drv_d_func()));
+                                "Unable to send query"), QSqlError::StatementError, d->drv_d_func(), d->result));
         return false;
     }
+    d->stmtId = d->drv_d_func()->currentStmtId = d->drv_d_func()->generateStatementId();
 
     if (isForwardOnly())
         setForwardOnly(d->drv_d_func()->setSingleRowMode());
 
-    d->result = d->drv_d_func()->getResult(d->stmtId);
     if (!isForwardOnly()) {
         // Fetch all result sets right away
         while (PGresult *nextResultSet = d->drv_d_func()->getResult(d->stmtId))
@@ -1433,19 +1442,34 @@ QSqlRecord QPSQLDriver::record(const QString &tablename) const
     return info;
 }
 
-template <class FloatType>
+
+template <bool forPreparedStatement>
+inline QString autoQuoteResult(QAnyStringView str)
+{
+    return forPreparedStatement ? str.toString() : (u'\'' + str.toString() + u'\'');
+}
+
+template <bool forPreparedStatement, class FloatType>
 inline void assignSpecialPsqlFloatValue(FloatType val, QString *target)
 {
     if (qIsNaN(val))
-        *target = QStringLiteral("'NaN'");
+        *target = autoQuoteResult<forPreparedStatement>(u"NaN");
     else if (qIsInf(val))
-        *target = (val < 0) ? QStringLiteral("'-Infinity'") : QStringLiteral("'Infinity'");
+        *target = autoQuoteResult<forPreparedStatement>((val < 0) ? u"-Infinity" : u"Infinity");
 }
 
 QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
 {
+    return formatValue<false>(field, trimStrings);
+}
+
+template<bool forPreparedStatement>
+QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
+{
     Q_D(const QPSQLDriver);
-    const auto nullStr = [](){ return QStringLiteral("NULL"); };
+    const auto nullStr = [](){ return forPreparedStatement ?
+        QString{} : QStringLiteral("NULL"); };
+
     QString r;
     if (field.isNull()) {
         r = nullStr();
@@ -1454,11 +1478,10 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
         case QMetaType::QDateTime: {
             const auto dt = field.value().toDateTime();
             if (dt.isValid()) {
-                // even though the documentation (https://www.postgresql.org/docs/current/datatype-datetime.html)
-                // states that any time zone indication for 'timestamp without tz' columns will be ignored,
-                // it is stored as the correct utc timestamp - so we can pass the utc offset here
-                r = QStringLiteral("TIMESTAMP WITH TIME ZONE ") + u'\'' +
-                        dt.toOffsetFromUtc(dt.offsetFromUtc()).toString(Qt::ISODateWithMs) + u'\'';
+                // the datetime needs to be in UTC format
+                // Anyway the DB stores it that way for timestamptz
+                // for timestamp (without tz), we store as UTC too and the server will ignore the tz info
+                r = autoQuoteResult<forPreparedStatement>(dt.toUTC().toString(Qt::ISODateWithMs));
             } else {
                 r = nullStr();
             }
@@ -1467,15 +1490,19 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
         case QMetaType::QTime: {
             const auto t = field.value().toTime();
             if (t.isValid())
-                r = u'\'' + QLocale::c().toString(t, u"hh:mm:ss.zzz") + u'\'';
+                r = autoQuoteResult<forPreparedStatement>(t.toString(Qt::ISODateWithMs));
             else
                 r = nullStr();
             break;
         }
         case QMetaType::QString:
-            r = QSqlDriver::formatValue(field, trimStrings);
-            if (d->hasBackslashEscape)
-                r.replace(u'\\', "\\\\"_L1);
+            if (forPreparedStatement) {
+                r = field.value().toString();
+            } else {
+                r = QSqlDriver::formatValue(field, trimStrings);
+                if (d->hasBackslashEscape)
+                    r.replace(u'\\', "\\\\"_L1);
+            }
             break;
         case QMetaType::Bool:
             if (field.value().toBool())
@@ -1491,24 +1518,22 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
 #else
             unsigned char *data = PQescapeBytea((const unsigned char*)ba.constData(), ba.size(), &len);
 #endif
-            r += u'\'';
-            r += QLatin1StringView((const char*)data);
-            r += u'\'';
+            r = autoQuoteResult<forPreparedStatement>(QLatin1StringView((const char*)data));
             qPQfreemem(data);
             break;
         }
         case QMetaType::Float:
-            assignSpecialPsqlFloatValue(field.value().toFloat(), &r);
+            assignSpecialPsqlFloatValue<forPreparedStatement>(field.value().toFloat(), &r);
             if (r.isEmpty())
                 r = QSqlDriver::formatValue(field, trimStrings);
             break;
         case QMetaType::Double:
-            assignSpecialPsqlFloatValue(field.value().toDouble(), &r);
+            assignSpecialPsqlFloatValue<forPreparedStatement>(field.value().toDouble(), &r);
             if (r.isEmpty())
                 r = QSqlDriver::formatValue(field, trimStrings);
             break;
         case QMetaType::QUuid:
-            r = u'\'' + field.value().toString() + u'\'';
+            r = autoQuoteResult<forPreparedStatement>(field.value().toString());
             break;
         default:
             r = QSqlDriver::formatValue(field, trimStrings);

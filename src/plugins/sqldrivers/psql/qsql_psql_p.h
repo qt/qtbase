@@ -84,6 +84,9 @@ public:
     QString escapeIdentifier(const QString &identifier, IdentifierType type) const override;
     QString formatValue(const QSqlField &field, bool trimStrings) const override;
 
+    template <bool forPreparedStatement>
+    QString formatValue(const QSqlField &field, bool trimStrings = false) const;
+
     bool subscribeToNotification(const QString &name) override;
     bool unsubscribeFromNotification(const QString &name) override;
     QStringList subscribedToNotifications() const override;
