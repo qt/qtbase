@@ -443,7 +443,7 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
     case CC_ComboBox:
         if (const QStyleOptionComboBox *combobox = qstyleoption_cast<const QStyleOptionComboBox *>(option)) {
             QBrush fillColor = combobox->palette.brush(QPalette::Base);
-            QRectF rect = option->rect.adjusted(2,2,-2,-2);
+            QRectF rect = option->rect.marginsRemoved(QMargins(1, 1, 1, 1));
             painter->setBrush(fillColor);
             painter->setPen(Qt::NoPen);
             painter->drawRoundedRect(rect, secondLevelRoundingRadius, secondLevelRoundingRadius);
@@ -468,10 +468,9 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                 painter->drawText(rect, QStringLiteral(u"\uE70D"), Qt::AlignVCenter | Qt::AlignHCenter);
             }
             if (combobox->editable) {
+                const qreal sublineOffset = secondLevelRoundingRadius;
                 painter->setPen(editSublineColor(option, colorSchemeIndex));
-                painter->drawLine(rect.bottomLeft() + QPoint(2,1), rect.bottomRight() + QPoint(-2,1));
-                if (state & State_HasFocus)
-                    painter->drawLine(rect.bottomLeft() + QPoint(3,2), rect.bottomRight() + QPoint(-3,2));
+                painter->drawLine(rect.bottomLeft() + QPointF(sublineOffset, 1.0), rect.bottomRight() + QPointF(-sublineOffset, 1.0));
             }
         }
         break;
@@ -967,6 +966,8 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
         break;
     case PE_FrameLineEdit: {
         const qreal sublineOffset = secondLevelRoundingRadius + 1.5;
+        if (widget && widget->parent() && qobject_cast<QComboBox*>(widget->parent()))
+            break;
         QRectF rect = option->rect;
         rect.adjust(1.5, 1.5, -1.5, -1.5);
         painter->setBrush(Qt::NoBrush);
