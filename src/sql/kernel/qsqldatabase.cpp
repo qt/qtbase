@@ -110,8 +110,11 @@ QSqlDatabasePrivate::QSqlDatabasePrivate(const QSqlDatabasePrivate &other) : ref
     connOptions = other.connOptions;
     driver = other.driver;
     precisionPolicy = other.precisionPolicy;
-    if (driver)
+    if (driver) {
         driver->setNumericalPrecisionPolicy(other.driver->numericalPrecisionPolicy());
+        auto drvPriv = static_cast<QSqlDriverPrivate *>(QObjectPrivate::get(driver));
+        drvPriv->connectionName = connName;
+    }
 }
 
 QSqlDatabasePrivate::~QSqlDatabasePrivate()
@@ -169,6 +172,8 @@ void QSqlDatabasePrivate::addDatabase(const QSqlDatabase &db, const QString &nam
     }
     sqlGlobals->connections.insert(name, db);
     db.d->connName = name;
+    auto drvPriv = static_cast<QSqlDriverPrivate *>(QObjectPrivate::get(db.d->driver));
+    drvPriv->connectionName = name;
 }
 
 /*! \internal

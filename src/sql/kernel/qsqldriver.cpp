@@ -801,6 +801,18 @@ int QSqlDriver::maximumIdentifierLength(QSqlDriver::IdentifierType type) const
     return INT_MAX;
 }
 
+/*!
+    \since 6.9
+
+    Returns the database connection name the driver was created by with
+    QSqlDatabase::addDatabase()
+*/
+QString QSqlDriver::connectionName() const
+{
+    Q_D(const QSqlDriver);
+    return d->connectionName;
+}
+
 QT_END_NAMESPACE
 
 #include "moc_qsqldriver.cpp"

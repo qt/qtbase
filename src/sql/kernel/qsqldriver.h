@@ -25,6 +25,7 @@ class QVariant;
 class Q_SQL_EXPORT QSqlDriver : public QObject
 {
     friend class QSqlDatabase;
+    friend class QSqlDatabasePrivate;
     friend class QSqlResultPrivate;
     Q_OBJECT
     Q_PROPERTY(QSql::NumericalPrecisionPolicy numericalPrecisionPolicy READ numericalPrecisionPolicy WRITE setNumericalPrecisionPolicy)
@@ -98,6 +99,9 @@ public:
 
     DbmsType dbmsType() const;
     virtual int maximumIdentifierLength(IdentifierType type) const;
+
+    QString connectionName() const;
+
 public Q_SLOTS:
     virtual bool cancelQuery();
 

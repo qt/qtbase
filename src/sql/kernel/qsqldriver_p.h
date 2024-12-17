@@ -32,6 +32,7 @@ public:
         dbmsType(type)
     { }
 
+    QString connectionName;
     QSqlError error;
     QSql::NumericalPrecisionPolicy precisionPolicy = QSql::LowPrecisionDouble;
     QSqlDriver::DbmsType dbmsType;
