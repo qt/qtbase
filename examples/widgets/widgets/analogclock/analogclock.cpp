@@ -4,6 +4,7 @@
 #include "analogclock.h"
 
 #include <QPainter>
+#include <QPainterStateGuard>
 #include <QTime>
 #include <QTimer>
 
@@ -78,12 +79,12 @@ void AnalogClock::paintEvent(QPaintEvent *)
 //! [16]
 //! [18]
 
-//! [17]
-    painter.save();
-//! [17] //! [19]
-    painter.rotate(30.0 * ((time.hour() + time.minute() / 60.0)));
-    painter.drawConvexPolygon(hourHand, 4);
-    painter.restore();
+//! [19]
+    {
+        QPainterStateGuard guard(&painter);
+        painter.rotate(30.0 * ((time.hour() + time.minute() / 60.0)));
+        painter.drawConvexPolygon(hourHand, 4);
+    }
 //! [18] //! [19]
 
 //! [20]
@@ -97,10 +98,11 @@ void AnalogClock::paintEvent(QPaintEvent *)
     painter.setBrush(minuteColor);
 
 //! [22]
-    painter.save();
-    painter.rotate(6.0 * time.minute());
-    painter.drawConvexPolygon(minuteHand, 4);
-    painter.restore();
+    {
+        QPainterStateGuard guard(&painter);
+        painter.rotate(6.0 * time.minute());
+        painter.drawConvexPolygon(minuteHand, 4);
+    }
 //! [21] //! [22]
 
 
@@ -109,12 +111,13 @@ void AnalogClock::paintEvent(QPaintEvent *)
 //! [23]
 
 //! [24]
-    painter.save();
-    painter.rotate(6.0 * time.second());
-    painter.drawConvexPolygon(secondsHand, 4);
-    painter.drawEllipse(-3, -3, 6, 6);
-    painter.drawEllipse(-5, -68, 10, 10);
-    painter.restore();
+    {
+        QPainterStateGuard guard(&painter);
+        painter.rotate(6.0 * time.second());
+        painter.drawConvexPolygon(secondsHand, 4);
+        painter.drawEllipse(-3, -3, 6, 6);
+        painter.drawEllipse(-5, -68, 10, 10);
+    }
 //! [24]
 
 //! [25]

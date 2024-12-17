@@ -161,13 +161,11 @@
 
     \snippet painting/transformations/renderarea.cpp 6
 
-    Before we start to render the shape, we call the QPainter::save()
-    function.
-
-    QPainter::save() saves the current painter state (i.e. pushes the
-    state onto a stack) including the current coordinate system. The
-    rationale for saving the painter state is that the following call
-    to the \c transformPainter() function will transform the
+    Before we start to render the shape, we instantiate
+    a QPainterStateGuard to save the current painter state (i.e. push the
+    state onto a stack) including the current coordinate system while
+    in scope. The rationale for saving the painter state is that the
+    following call to the \c transformPainter() function will transform the
     coordinate system depending on the currently chosen transformation
     operations, and we need a way to get back to the original state to
     draw the outline.

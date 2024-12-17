@@ -106,11 +106,10 @@
     system counterclockwise by a number of degrees determined by the current
     hour and minute. This means that the hand will be shown rotated clockwise
     by the required amount.
-    We save and restore the transformation matrix before and after the
-    rotation because we want to place the minute hand without having to
-    take into account any previous rotations.
+    We save and restore the transformation matrix before and after the rotation
+    by instantiating a QPainterStateGuard because we want to place the minute
+    hand without having to take into account any previous rotations.
 
-    \snippet widgets/analogclock/analogclock.cpp 17
     \snippet widgets/analogclock/analogclock.cpp 19
 
     We draw markers around the edge of the clock for each hour in the same
@@ -123,7 +122,7 @@
 
     \snippet widgets/analogclock/analogclock.cpp 21
 
-    For the seconds hand we do the same and add two cicles as a visual highlight.
+    For the seconds hand we do the same and add two circles as a visual highlight.
 
     \snippet widgets/analogclock/analogclock.cpp 23
     \codeline

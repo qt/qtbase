@@ -5,6 +5,7 @@
 
 #include <QPainter>
 #include <QPainterPath>
+#include <QPainterStateGuard>
 
 //! [0]
 RenderArea::RenderArea(QWidget *parent)
@@ -106,7 +107,7 @@ void RenderArea::paintEvent(QPaintEvent * /* event */)
 //! [10]
     for (int x = 0; x < width(); x += 100) {
         for (int y = 0; y < height(); y += 100) {
-            painter.save();
+            QPainterStateGuard guard(&painter);
             painter.translate(x, y);
 //! [10] //! [11]
             if (transformed) {
@@ -161,7 +162,6 @@ void RenderArea::paintEvent(QPaintEvent * /* event */)
                 painter.drawPixmap(10, 10, pixmap);
             }
 //! [12] //! [13]
-            painter.restore();
         }
     }
 

@@ -7,6 +7,7 @@
 #include <QCoreApplication>
 #include <QMouseEvent>
 #include <QPainter>
+#include <QPainterStateGuard>
 #include <QTime>
 #include <QTimer>
 
@@ -93,10 +94,11 @@ void ShapedClock::paintEvent(QPaintEvent *)
     painter.setPen(Qt::NoPen);
     painter.setBrush(hourColor);
 
-    painter.save();
-    painter.rotate(30.0 * ((time.hour() + time.minute() / 60.0)));
-    painter.drawConvexPolygon(hourHand, 4);
-    painter.restore();
+    {
+        QPainterStateGuard guard(&painter);
+        painter.rotate(30.0 * ((time.hour() + time.minute() / 60.0)));
+        painter.drawConvexPolygon(hourHand, 4);
+    }
 
     for (int i = 0; i < 12; ++i) {
         painter.drawRect(73, -3, 16, 6);
@@ -105,19 +107,21 @@ void ShapedClock::paintEvent(QPaintEvent *)
 
     painter.setBrush(minuteColor);
 
-    painter.save();
-    painter.rotate(6.0 * time.minute());
-    painter.drawConvexPolygon(minuteHand, 4);
-    painter.restore();
+    {
+        QPainterStateGuard guard(&painter);
+        painter.rotate(6.0 * time.minute());
+        painter.drawConvexPolygon(minuteHand, 4);
+    }
 
     painter.setBrush(secondsColor);
 
-    painter.save();
-    painter.rotate(6.0 * time.second());
-    painter.drawConvexPolygon(secondsHand, 4);
-    painter.drawEllipse(-3, -3, 6, 6);
-    painter.drawEllipse(-5, -68, 10, 10);
-    painter.restore();
+    {
+        QPainterStateGuard guard(&painter);
+        painter.rotate(6.0 * time.second());
+        painter.drawConvexPolygon(secondsHand, 4);
+        painter.drawEllipse(-3, -3, 6, 6);
+        painter.drawEllipse(-5, -68, 10, 10);
+    }
 
     painter.setPen(minuteColor);
 

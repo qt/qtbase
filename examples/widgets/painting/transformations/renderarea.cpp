@@ -4,6 +4,7 @@
 #include "renderarea.h"
 
 #include <QPainter>
+#include <QPainterStateGuard>
 #include <QPaintEvent>
 
 //! [0]
@@ -61,10 +62,11 @@ void RenderArea::paintEvent(QPaintEvent *event)
 //! [5]
 
 //! [6]
-    painter.save();
-    transformPainter(painter);
-    drawShape(painter);
-    painter.restore();
+    {
+        QPainterStateGuard guard(&painter);
+        transformPainter(painter);
+        drawShape(painter);
+    }
 //! [6]
 
 //! [7]

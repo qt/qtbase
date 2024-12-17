@@ -6,6 +6,7 @@
 
 #include <QLayout>
 #include <QPainter>
+#include <QPainterStateGuard>
 #include <QPainterPath>
 
 const int alpha = 155;
@@ -76,7 +77,7 @@ void XFormView::resizeEvent(QResizeEvent *e)
 
 void XFormView::paint(QPainter *p)
 {
-    p->save();
+    QPainterStateGuard guard(p);
     p->setRenderHint(QPainter::Antialiasing);
     p->setRenderHint(QPainter::SmoothPixmapTransform);
     switch (m_type) {
@@ -90,7 +91,6 @@ void XFormView::paint(QPainter *p)
         drawTextType(p);
         break;
     }
-    p->restore();
 }
 
 void XFormView::updateControlPoints(const QPolygonF &points)

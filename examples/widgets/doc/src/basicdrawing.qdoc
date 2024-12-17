@@ -370,8 +370,8 @@
     RenderArea widget, and we calculate their positions using two \c
     for loops and the widgets height and width.
 
-    For each copy we first save the current painter state (pushes the
-    state onto a stack). Then we translate the coordinate system,
+    For each copy we first save the current painter state by instantiating
+    a QPainterStateGuard. Then we translate the coordinate system,
     using the QPainter::translate() function, to the position
     determined by the variables of the \c for loops. If we omit this
     translation of the coordinate system all the copies of the shape
@@ -420,9 +420,9 @@
 
     \snippet painting/basicdrawing/renderarea.cpp 13
 
-    Then, when we are finished rendering a copy of the shape we can
-    restore the original painter state, with its associated coordinate
-    system, using the QPainter::restore() function. In this way we
+    Then, when we are finished rendering a copy of the shape,
+    the original painter state is restored by QPainterStateGuard,
+    which calls the QPainter::restore() function. In this way, we
     ensure that the next shape copy will be rendered in the correct
     position.
 
