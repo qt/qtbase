@@ -253,14 +253,15 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                               sb, sb->rect.size());
             if (cp.needsPainting()) {
                 if (sb->frame && (sub & SC_SpinBoxFrame)) {
+                    const qreal sublineOffset = secondLevelRoundingRadius + 2.0;
                     cp->save();
                     cp->setClipRect(option->rect.adjusted(-2, -2, 2, 2));
                     cp->setPen(editSublineColor(option, colorSchemeIndex));
-                    cp->drawLine(option->rect.bottomLeft() + QPointF(7, -0.5),
-                                 option->rect.bottomRight() + QPointF(-7, -0.5));
+                    cp->drawLine(option->rect.bottomLeft() + QPointF(sublineOffset, 0.5),
+                                 option->rect.bottomRight() + QPointF(-sublineOffset, 0.5));
                     cp->restore();
                 }
-                const QRectF frameRect = QRectF(option->rect).adjusted(2.5, 2.5, -2.5, -2.5);
+                const QRectF frameRect = QRectF(option->rect).marginsRemoved(QMarginsF(1.5, 1.5, 1.5, 1.5));
                 const QBrush fillBrush = option->palette.brush(QPalette::Base);
                 cp->setBrush(fillBrush);
                 cp->setPen(QPen(highContrastTheme == true ? sb->palette.buttonText().color()
