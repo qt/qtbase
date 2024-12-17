@@ -473,29 +473,16 @@ void QSqlQueryModel::setQuery(const QString &query, const QSqlDatabase &db)
     \since 6.9
     Re-executes the current query to fetch the data from the same database connection.
 
-    \note \c refreshQuery() is not applicable when the query contains bound values.
+    \note \c refresh() is not applicable when the query contains bound values.
 
     \sa setQuery(QSqlQuery &&query), QSqlQuery::boundValue()
 */
-void QSqlQueryModel::refreshQuery()
+void QSqlQueryModel::refresh()
 {
     Q_D(QSqlQueryModel);
-    setQuery(d->query.executedQuery());
-}
-
-/*!
-    \overload
-    \since 6.9
-    Re-executes the current query to fetch the data from the given database connection \a db.
-
-    \note \c refreshQuery(const QSqlDatabase &db) is not applicable when the query contains bound values.
-
-    \sa setQuery(const QString &query, const QSqlDatabase &db), QSqlQuery::boundValue()
-*/
-void QSqlQueryModel::refreshQuery(const QSqlDatabase &db)
-{
-    Q_D(QSqlQueryModel);
-    setQuery(d->query.executedQuery(), db);
+    const auto connName = d->query.driver()
+        ? d->query.driver()->connectionName() : QString();
+    setQuery(d->query.executedQuery(), QSqlDatabase::database(connName));
 }
 
 /*!

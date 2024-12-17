@@ -46,8 +46,7 @@ public:
 #endif
     void setQuery(QSqlQuery &&query);
     void setQuery(const QString &query, const QSqlDatabase &db = QSqlDatabase());
-    void refreshQuery();
-    void refreshQuery(const QSqlDatabase &db);
+    void refresh();
 #if QT_SQL_REMOVED_SINCE(6, 5)
     QSqlQuery query() const;
 #endif

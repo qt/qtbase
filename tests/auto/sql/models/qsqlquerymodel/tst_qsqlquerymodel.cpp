@@ -59,10 +59,10 @@ private slots:
     void task_180617();
     void task_180617_data() { generic_data(); }
     void task_QTBUG_4963_setHeaderDataWithProxyModel();
-    void refreshQuery_data() { generic_data(); }
-    void refreshQuery();
-    void refreshQueryWithBoundValues_data() { generic_data(); }
-    void refreshQueryWithBoundValues();
+    void refresh_data() { generic_data(); }
+    void refresh();
+    void refreshWithBoundValues_data() { generic_data(); }
+    void refreshWithBoundValues();
 private:
     void generic_data(const QString &engine = QString());
     void dropTestTables(const QSqlDatabase &db);
@@ -663,7 +663,7 @@ void tst_QSqlQueryModel::task_QTBUG_4963_setHeaderDataWithProxyModel()
     // And it should not crash.
 }
 
-void tst_QSqlQueryModel::refreshQuery()
+void tst_QSqlQueryModel::refresh()
 {
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
@@ -677,7 +677,7 @@ void tst_QSqlQueryModel::refreshQuery()
 
     QSqlQuery(db).exec("UPDATE " + qTableName("test", __FILE__, QSqlDatabase::database(dbName))
                                                    + " SET name = 'updated_harry' WHERE id = 1");
-    model.refreshQuery(db);
+    model.refresh();
     QCOMPARE(model.rowCount(), 2);
     QCOMPARE(model.data(model.index(0, 0)).toInt(), 1);
     QCOMPARE(model.data(model.index(0, 1)).toString(), QString("updated_harry"));
@@ -688,7 +688,7 @@ void tst_QSqlQueryModel::refreshQuery()
                                                    + " SET name = 'harry' WHERE id = 1");
 }
 
-void tst_QSqlQueryModel::refreshQueryWithBoundValues()
+void tst_QSqlQueryModel::refreshWithBoundValues()
 {
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
@@ -707,7 +707,7 @@ void tst_QSqlQueryModel::refreshQueryWithBoundValues()
 
     QSqlQuery(db).exec("UPDATE " + qTableName("test", __FILE__, QSqlDatabase::database(dbName))
                                                    + " SET name = 'updated_harry' WHERE id = 1");
-    model.refreshQuery(db);
+    model.refresh();
     QCOMPARE(model.rowCount(), 0);
     QCOMPARE_NE(model.data(model.index(0, 0)).toString(), QString("updated_harry"));
     QCOMPARE(model.data(model.index(0, 0)).toString(), QString(""));
