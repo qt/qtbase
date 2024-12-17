@@ -50,6 +50,8 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn void QPainterStateGuard::restore()
     Calls QPainter::restore() if the internal save/restore counter is greater than zero.
+
+    \note This function asserts in debug builds if the counter has already reached zero.
 */
 
 QT_END_NAMESPACE
