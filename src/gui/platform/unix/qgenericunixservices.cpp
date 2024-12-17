@@ -134,27 +134,36 @@ static inline bool detectWebBrowser(const QByteArray &desktop,
 static inline bool launch(const QString &launcher, const QUrl &url,
                           const QString &xdgActivationToken)
 {
-    if (!xdgActivationToken.isEmpty()) {
-        qputenv("XDG_ACTIVATION_TOKEN", xdgActivationToken.toUtf8());
-    }
 
     const QString command = launcher + u' ' + QLatin1StringView(url.toEncoded());
     if (debug)
         qDebug("Launching %s", qPrintable(command));
 #if !QT_CONFIG(process)
+    if (!xdgActivationToken.isEmpty())
+        qputenv("XDG_ACTIVATION_TOKEN", xdgActivationToken.toUtf8());
     const bool ok = ::system(qPrintable(command + " &"_L1));
-#else
+    if (!xdgActivationToken.isEmpty())
+        qunsetenv("XDG_ACTIVATION_TOKEN");
+#  else
     QStringList args = QProcess::splitCommand(command);
     bool ok = false;
     if (!args.isEmpty()) {
         QString program = args.takeFirst();
-        ok = QProcess::startDetached(program, args);
+        QProcess process;
+        process.setProgram(program);
+        process.setArguments(args);
+
+        if (!xdgActivationToken.isEmpty()) {
+            auto env = QProcessEnvironment::systemEnvironment();
+            env.insert(u"XDG_ACTIVATION_TOKEN"_s, xdgActivationToken);
+            process.setEnvironment(env.toStringList());
+        }
+        ok = process.startDetached(nullptr);
     }
-#endif
+#  endif
     if (!ok)
         qWarning("Launch failed (%s)", qPrintable(command));
 
-    qunsetenv("XDG_ACTIVATION_TOKEN");
 
     return ok;
 }
