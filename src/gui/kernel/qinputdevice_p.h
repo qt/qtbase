@@ -60,9 +60,19 @@ public:
             return;
 
         availableVirtualGeometry = a;
-        capabilities |= QInputDevice::Capability::NormalizedPosition;
+        setCapabilities(capabilities | QInputDevice::Capability::NormalizedPosition);
         Q_Q(QInputDevice);
         Q_EMIT q->availableVirtualGeometryChanged(availableVirtualGeometry);
+    }
+
+    void setCapabilities(QInputDevice::Capabilities c)
+    {
+        if (c == capabilities)
+            return;
+
+        capabilities = c;
+        Q_Q(QInputDevice);
+        Q_EMIT q->capabilitiesChanged(capabilities);
     }
 
     inline static QInputDevicePrivate *get(QInputDevice *q)

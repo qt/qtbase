@@ -349,8 +349,10 @@ inline ulong getTimeStamp(UIEvent *event)
     QPointingDevice *touchDevice = QIOSIntegration::instance()->touchDevice();
     auto *devicePriv = QPointingDevicePrivate::get(touchDevice);
 
-    devicePriv->capabilities.setFlag(QPointingDevice::Capability::Pressure,
-                                     (self.traitCollection.forceTouchCapability == UIForceTouchCapabilityAvailable));
+    auto capabilities = touchDevice->capabilities();
+    capabilities.setFlag(QPointingDevice::Capability::Pressure,
+        (self.traitCollection.forceTouchCapability == UIForceTouchCapabilityAvailable));
+    devicePriv->setCapabilities(capabilities);
 }
 
 -(BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event

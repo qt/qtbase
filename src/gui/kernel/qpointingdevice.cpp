@@ -226,7 +226,7 @@ void QPointingDevice::setType(DeviceType devType)
 void QPointingDevice::setCapabilities(QInputDevice::Capabilities caps)
 {
     Q_D(QPointingDevice);
-    d->capabilities = caps;
+    d->setCapabilities(caps);
 }
 
 /*!

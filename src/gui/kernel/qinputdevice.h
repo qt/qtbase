@@ -19,7 +19,8 @@ class Q_GUI_EXPORT QInputDevice : public QObject
     Q_DECLARE_PRIVATE(QInputDevice)
     Q_PROPERTY(QString name READ name CONSTANT)
     Q_PROPERTY(DeviceType type READ type CONSTANT)
-    Q_PROPERTY(Capabilities capabilities READ capabilities)
+    Q_PROPERTY(Capabilities capabilities READ capabilities
+               NOTIFY capabilitiesChanged)
     Q_PROPERTY(qint64 systemId READ systemId CONSTANT)
     Q_PROPERTY(QString seatName READ seatName CONSTANT)
     Q_PROPERTY(QRect availableVirtualGeometry READ availableVirtualGeometry
@@ -82,6 +83,7 @@ public:
 
 Q_SIGNALS:
     void availableVirtualGeometryChanged(QRect area);
+    Q_REVISION(6, 9) void capabilitiesChanged(Capabilities capabilities);
 
 protected:
     QInputDevice(QInputDevicePrivate &d, QObject *parent);
