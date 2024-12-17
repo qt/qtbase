@@ -153,15 +153,6 @@ macro(_qt_internal_find_qt_dependencies target target_dep_list find_dependency_p
     endforeach()
 endmacro()
 
-
-# TODO: Remove once a dependency update completes and most developers have the Dependencies.cmake
-# files updated in their builds.
-# The name is too generic, it doesn't look for any kind of dependencies but only Qt package
-# dependencies.
-macro(_qt_internal_find_dependencies target_dep_list find_dependency_path_list)
-    _qt_internal_find_qt_dependencies("none" "${target_dep_list}" "${find_dependency_path_list}")
-endmacro()
-
 # If a dependency package was not found, provide some hints in the error message on how to debug
 # the issue.
 #
