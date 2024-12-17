@@ -908,7 +908,7 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
             else
                 painter->setPen(QPen(WINUI3Colors[colorSchemeIndex][controlStrokePrimary]));
             painter->setBrush(buttonFillBrush(option));
-            painter->drawRoundedRect(rect.marginsAdded(QMargins(0.5, 0.5, 0.5, 0.5)),
+            painter->drawRoundedRect(rect,
                                      secondLevelRoundingRadius, secondLevelRoundingRadius);
 
             painter->setPen(Qt::NoPen);
@@ -920,8 +920,9 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
                 painter->setBrush(option->palette.button());
             painter->drawRoundedRect(rect, secondLevelRoundingRadius, secondLevelRoundingRadius);
             if (isRaised) {
+                const qreal sublineOffset = secondLevelRoundingRadius - 0.5;
                 painter->setPen(QPen(WINUI3Colors[colorSchemeIndex][controlStrokeSecondary]));
-                painter->drawLine(rect.bottomLeft() + QPoint(2,1), rect.bottomRight() + QPoint(-2,1));
+                painter->drawLine(rect.bottomLeft() + QPointF(sublineOffset, 0.5), rect.bottomRight() + QPointF(-sublineOffset, 0.5));
             }
         }
         break;
