@@ -128,7 +128,6 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSViewMenuHelper);
     // Text
     QString m_composingText;
     QPointer<QObject> m_composingFocusObject;
-    NSDraggingContext m_lastSeenContext;
 }
 
 @synthesize colorSpace = m_colorSpace;
@@ -159,7 +158,6 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSViewMenuHelper);
         m_lastKeyDead = false;
         m_sendKeyEvent = false;
         m_currentlyInterpretedKeyEvent = nil;
-        m_lastSeenContext = NSDraggingContextWithinApplication;
 
         self.menuHelper = [[[QNSViewMenuHelper alloc] initWithView:self] autorelease];
     }
