@@ -250,20 +250,24 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
     case CC_SpinBox:
         if (const QStyleOptionSpinBox *sb = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
             if (sb->frame && (sub & SC_SpinBoxFrame)) {
+                const qreal sublineOffset = secondLevelRoundingRadius + 2.0;
                 painter->save();
                 painter->setClipRect(option->rect.adjusted(-2, -2, 2, 2));
                 painter->setPen(editSublineColor(option, colorSchemeIndex));
-                painter->drawLine(option->rect.bottomLeft() + QPointF(7,-0.5), option->rect.bottomRight() + QPointF(-7,-0.5));
+                painter->drawLine(option->rect.bottomLeft() + QPointF(sublineOffset, 0.5),
+                                  option->rect.bottomRight() + QPointF(-sublineOffset, 0.5));
                 painter->restore();
             }
-            const QRectF frameRect = QRectF(option->rect).adjusted(2.5, 2.5, -2.5, -2.5);
+            const QRectF frameRect = QRectF(option->rect).marginsRemoved(QMarginsF(1.5, 1.5, 1.5, 1.5));
             const QBrush fillBrush = option->palette.brush(QPalette::Base);
             painter->setBrush(fillBrush);
-            painter->setPen(QPen(highContrastTheme == true ? sb->palette.buttonText().color() : WINUI3Colors[colorSchemeIndex][frameColorLight]));
+            painter->setPen(QPen(highContrastTheme == true ? sb->palette.buttonText().color()
+                                                           : WINUI3Colors[colorSchemeIndex][frameColorLight]));
             painter->drawRoundedRect(frameRect, secondLevelRoundingRadius, secondLevelRoundingRadius);
             const QPoint mousePos = widget ? widget->mapFromGlobal(QCursor::pos()) : QPoint();
             if (sub & SC_SpinBoxEditField) {
-                const QRect rect = proxy()->subControlRect(CC_SpinBox, option, SC_SpinBoxEditField, widget).adjusted(0, 0, 0, 1);
+                const QRect rect = proxy()->subControlRect(CC_SpinBox, option, SC_SpinBoxEditField,
+                                                           widget).adjusted(0, 0, 0, 1);
                 if (!(state & State_HasFocus) && rect.contains(mousePos)) {
                     const QColor fillColor = WINUI3Colors[colorSchemeIndex][subtleHighlightColor];
                     painter->setPen(Qt::NoPen);
