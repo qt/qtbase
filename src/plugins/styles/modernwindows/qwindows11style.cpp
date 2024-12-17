@@ -932,8 +932,7 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
         if (widget && widget->objectName() == QStringLiteral(u"qt_spinbox_lineedit"))
             break;
         if (const auto *panel = qstyleoption_cast<const QStyleOptionFrame *>(option)) {
-            QRectF frameRect = option->rect;
-            frameRect.adjust(0.5,0.5,-0.5,-0.5);
+            QRectF frameRect = option->rect.marginsRemoved(QMargins(1, 1, 1, 1));
             QBrush fillColor = option->palette.brush(QPalette::Base);
             painter->setBrush(fillColor);
             painter->setPen(Qt::NoPen);
@@ -951,12 +950,14 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
         }
         break;
     case PE_FrameLineEdit: {
+        const qreal sublineOffset = secondLevelRoundingRadius + 1.5;
+        QRectF rect = option->rect;
+        rect.adjust(1.5, 1.5, -1.5, -1.5);
         painter->setBrush(Qt::NoBrush);
         painter->setPen(highContrastTheme == true ? option->palette.buttonText().color() : QPen(WINUI3Colors[colorSchemeIndex][frameColorLight]));
-        painter->drawRoundedRect(option->rect, secondLevelRoundingRadius, secondLevelRoundingRadius);
-        painter->setClipRect(option->rect.adjusted(-2, -2, 2, 2));
+        painter->drawRoundedRect(rect, secondLevelRoundingRadius, secondLevelRoundingRadius);
         painter->setPen(editSublineColor(option, colorSchemeIndex));
-        painter->drawLine(option->rect.bottomLeft() + QPointF(1,0.5), option->rect.bottomRight() + QPointF(-1,0.5));
+        painter->drawLine(option->rect.bottomLeft() + QPointF(sublineOffset, 0.5), option->rect.bottomRight() + QPointF(-sublineOffset, 0.5));
     }
         break;
     case PE_Frame: {
