@@ -30,10 +30,11 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QPainterStateGuard::QPainterStateGuard(QPainter *painter, InitialState state = Save)
+    \fn QPainterStateGuard::QPainterStateGuard(QPainter *painter, InitialState state = InitialState::Save)
     Constructs a QPainterStateGuard and calls save() on \a painter if \a state
-    is \c Save (which is the default). When QPainterStateGuard is destroyed, restore()
-    is called as often as save() was called to restore the QPainter's state.
+    is \c InitialState::Save (which is the default). When QPainterStateGuard is
+    destroyed, restore() is called as often as save() was called to restore the
+    QPainter's state.
 */
 
 /*!

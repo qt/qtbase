@@ -13,14 +13,13 @@ class QPainterStateGuard
 {
     Q_DISABLE_COPY_MOVE(QPainterStateGuard)
 public:
-    enum InitialState
-    {
+    enum class InitialState : quint8 {
         Save,
         NoSave,
     };
 
     Q_NODISCARD_CTOR
-    explicit QPainterStateGuard(QPainter *painter, InitialState state = Save)
+    explicit QPainterStateGuard(QPainter *painter, InitialState state = InitialState::Save)
         : m_painter(painter)
     {
         Q_ASSERT(painter);
