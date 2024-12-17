@@ -18,4 +18,8 @@ set(__qt_@target@_find_dependency_paths "@find_dependency_paths@")
 _qt_internal_find_qt_dependencies("@target@" __qt_@target@_target_deps
                                   __qt_@target@_find_dependency_paths)
 
-set(@target@_FOUND TRUE)
+if(__qt_${target}_missing_deps)
+    set(@target@_FOUND FALSE)
+else()
+    set(@target@_FOUND TRUE)
+endif()
