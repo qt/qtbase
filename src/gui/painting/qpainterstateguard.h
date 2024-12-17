@@ -11,12 +11,23 @@ QT_BEGIN_NAMESPACE
 
 class QPainterStateGuard
 {
-    Q_DISABLE_COPY_MOVE(QPainterStateGuard)
+    Q_DISABLE_COPY(QPainterStateGuard)
 public:
     enum class InitialState : quint8 {
         Save,
         NoSave,
     };
+
+    QPainterStateGuard(QPainterStateGuard &&other) noexcept
+        : m_painter(std::exchange(other.m_painter, nullptr))
+        , m_level(std::exchange(other.m_level, 0))
+    {}
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QPainterStateGuard)
+    void swap(QPainterStateGuard &other) noexcept
+    {
+        qt_ptr_swap(m_painter, other.m_painter);
+        std::swap(m_level, other.m_level);
+    }
 
     Q_NODISCARD_CTOR
     explicit QPainterStateGuard(QPainter *painter, InitialState state = InitialState::Save)

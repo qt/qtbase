@@ -38,6 +38,25 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn QPainterStateGuard::QPainterStateGuard(QPainterStateGuard &&other)
+
+    Move-constructs a painter state guard from \a other.
+*/
+
+/*!
+    \fn QPainterStateGuard &QPainterStateGuard::operator=(QPainterStateGuard &&other)
+
+    Move-assigns \a other to this painter state guard.
+*/
+
+/*!
+    \fn void QPainterStateGuard::swap(QPainterStateGuard &other)
+
+    Swaps the \a other with this painter state guard. This operation is very
+    fast and never fails.
+*/
+
+/*!
     \fn QPainterStateGuard::~QPainterStateGuard()
     Destroys the QPainterStateGuard instance and calls restore() as often as save()
     was called to restore the QPainter's state.
