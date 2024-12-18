@@ -182,25 +182,45 @@ namespace QT_NAMESPACE {}
 #endif
 
 #if QT_ENABLE_STRICT_MODE_UP_TO >= QT_VERSION_CHECK(6, 0, 0)
+# ifndef QT_NO_FOREACH
 #  define QT_NO_FOREACH
+# endif
+# ifndef QT_NO_CAST_FROM_ASCII
 #  define QT_NO_CAST_FROM_ASCII
+#endif
+# ifndef QT_NO_CAST_TO_ASCII
 #  define QT_NO_CAST_TO_ASCII
+# endif
+# ifndef QT_NO_CAST_FROM_BYTEARRAY
 #  define QT_NO_CAST_FROM_BYTEARRAY
+# endif
+# ifndef QT_NO_URL_CAST_FROM_STRING
 #  define QT_NO_URL_CAST_FROM_STRING
+# endif
+# ifndef QT_NO_NARROWING_CONVERSIONS_IN_CONNECT
 #  define QT_NO_NARROWING_CONVERSIONS_IN_CONNECT
+# endif
+# ifndef QT_NO_JAVA_STYLE_ITERATORS
 #  define QT_NO_JAVA_STYLE_ITERATORS
+# endif
 #endif // 6.0.0
 
 #if QT_ENABLE_STRICT_MODE_UP_TO >= QT_VERSION_CHECK(6, 6, 0)
+# ifndef QT_NO_QEXCHANGE
 #  define QT_NO_QEXCHANGE
+# endif
 #endif // 6.6.0
 
 #if QT_ENABLE_STRICT_MODE_UP_TO >= QT_VERSION_CHECK(6, 7, 0)
+# ifndef QT_NO_CONTEXTLESS_CONNECT
 #  define QT_NO_CONTEXTLESS_CONNECT
+# endif
 #endif // 6.7.0
 
 #if QT_ENABLE_STRICT_MODE_UP_TO >= QT_VERSION_CHECK(6, 8, 0)
+# ifndef QT_NO_QASCONST
 #  define QT_NO_QASCONST
+# endif
 #  if !defined(QT_USE_NODISCARD_FILE_OPEN) && !defined(QT_NO_USE_NODISCARD_FILE_OPEN)
 #    define QT_USE_NODISCARD_FILE_OPEN
 #  endif
