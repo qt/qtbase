@@ -14,6 +14,7 @@
 #include <QtCore/QDebug>
 
 #if QT_CONFIG(test_gui)
+#include <QtCore/qloggingcategory.h>
 #include <private/qinputdevicemanager_p.h>
 #include <private/qeventpoint_p.h>
 #include <private/qhighdpiscaling_p.h>
@@ -183,7 +184,7 @@ QEventPoint &QTouchEventSequence::pointOrPreviousPoint(int touchId)
 // We mean it.
 //
 #if QT_CONFIG(test_gui)
-Q_LOGGING_CATEGORY(lcQtGuiTest, "qt.gui.test");
+Q_STATIC_LOGGING_CATEGORY(lcQtGuiTest, "qt.gui.test");
 #define deb qCDebug(lcQtGuiTest)
 
 /*!

@@ -8,10 +8,6 @@
 #include <QtGui/qevent.h>
 #include <QtCore/qmap.h>
 
-#if QT_CONFIG(test_gui)
-#include <QtCore/qloggingcategory.h>
-#endif // #if QT_CONFIG(test_gui)
-
 QT_BEGIN_NAMESPACE
 
 class QWindow;
@@ -75,7 +71,6 @@ protected:
 //
 
 #if QT_CONFIG(test_gui)
-Q_DECLARE_LOGGING_CATEGORY(lcQtGuiTest)
 namespace QtGuiTest
 {
     Q_NAMESPACE_EXPORT(Q_GUI_EXPORT)
