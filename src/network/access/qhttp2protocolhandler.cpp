@@ -441,6 +441,16 @@ bool QHttp2ProtocolHandler::sendHEADERS(Stream &stream)
 
     // Compress in-place:
     BitOStream outputStream(frameWriter.outboundFrame().buffer);
+
+    // Possibly perform and notify of dynamic table size update:
+    for (auto &maybePendingTableSizeUpdate : pendingTableSizeUpdates) {
+        if (!maybePendingTableSizeUpdate)
+            break; // They are ordered, so if the first one is null, the other one is too.
+        encoder.setMaxDynamicTableSize(*maybePendingTableSizeUpdate);
+        encoder.encodeSizeUpdate(outputStream, *maybePendingTableSizeUpdate);
+        maybePendingTableSizeUpdate.reset();
+    }
+
     if (!encoder.encodeRequest(outputStream, headers))
         return false;
 
@@ -989,7 +999,15 @@ bool QHttp2ProtocolHandler::acceptSetting(Http2::Settings identifier, quint32 ne
             connectionError(PROTOCOL_ERROR, "SETTINGS invalid table size");
             return false;
         }
-        encoder.setMaxDynamicTableSize(newValue);
+        if (!pendingTableSizeUpdates[0] && encoder.dynamicTableCapacity() == newValue)
+            return true; // No change, no need to update.
+
+        if (pendingTableSizeUpdates[0].value_or(std::numeric_limits<quint32>::max()) >= newValue) {
+            pendingTableSizeUpdates[0] = newValue;
+            pendingTableSizeUpdates[1].reset(); // 0 is the latest _and_ smallest, so we don't need 1
+        } else {
+            pendingTableSizeUpdates[1] = newValue; // newValue was larger than 0, so it goes to 1
+        }
     }
 
     if (identifier == Settings::INITIAL_WINDOW_SIZE_ID) {
