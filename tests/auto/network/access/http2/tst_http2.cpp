@@ -111,6 +111,8 @@ private slots:
 
     void abortOnEncrypted();
 
+    void maxHeaderTableSize();
+
 protected slots:
     // Slots to listen to our in-process server:
     void serverStarted(quint16 port);
@@ -1565,6 +1567,55 @@ void tst_Http2::abortOnEncrypted()
             500);
     QVERIFY(!res);
 #endif // QT_CONFIG(ssl)
+}
+
+void tst_Http2::maxHeaderTableSize()
+{
+    clearHTTP2State();
+    serverPort = 0;
+
+    H2Type connectionType = H2Type::h2Direct;
+    RawSettings maxHeaderTableSize{ { Http2::Settings::HEADER_TABLE_SIZE_ID, 0 } };
+    ServerPtr targetServer(newServer(maxHeaderTableSize, connectionType));
+
+    QMetaObject::invokeMethod(targetServer.data(), "startServer", Qt::QueuedConnection);
+    runEventLoop();
+
+    QVERIFY(serverPort != 0);
+
+    nRequests = 1;
+
+    const auto url = requestUrl(connectionType);
+    QNetworkRequest request(url);
+    request.setAttribute(QNetworkRequest::Http2DirectAttribute, true);
+
+    constexpr int extraRequests = 5;
+    std::array<std::unique_ptr<QNetworkReply>, extraRequests> replies;
+    for (qint32 i = 0; i < 1 + extraRequests; ++i) {
+        for (qint32 j = 0; j < 100; ++j) {
+            request.setRawHeader("x-test" + QByteArray::number(j),
+                                 "Hello World" + QByteArray::number(i));
+        }
+        std::unique_ptr<QNetworkReply> reply{ manager->get(request) };
+        reply->ignoreSslErrors();
+        connect(reply.get(), &QNetworkReply::finished, this, &tst_Http2::replyFinished);
+
+        if (i == 0) {
+            runEventLoop();
+            STOP_ON_FAILURE
+            QCOMPARE(reply->error(), QNetworkReply::NoError);
+            nRequests = extraRequests;
+        } else {
+            replies[i - 1] = std::move(reply);
+        }
+    }
+
+    runEventLoop();
+    STOP_ON_FAILURE
+
+    QCOMPARE(nRequests, 0);
+    for (const auto &reply : replies)
+        QCOMPARE(reply->error(), QNetworkReply::NoError);
 }
 
 void tst_Http2::serverStarted(quint16 port)

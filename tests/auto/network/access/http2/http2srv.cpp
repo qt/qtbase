@@ -191,6 +191,9 @@ void Http2Server::sendServerSettings()
         writer.append(it.value());
         if (it.key() == Settings::INITIAL_WINDOW_SIZE_ID)
             streamRecvWindowSize = it.value();
+        if (it.key() == Settings::HEADER_TABLE_SIZE_ID) {
+            pendingMaxTableSizeUpdate = it.value();
+        }
     }
     writer.write(*socket);
     // Now, let's update our peer on a session recv window size:
@@ -667,6 +670,13 @@ void Http2Server::handleSETTINGS()
             connectionError = true;
             waitingClientAck = false;
             return;
+        }
+
+        // The client ACKed our setting, including the new decoder table size,
+        // so we can update it now:
+        if (pendingMaxTableSizeUpdate) {
+            decoder.setMaxDynamicTableSize(*pendingMaxTableSizeUpdate);
+            pendingMaxTableSizeUpdate.reset();
         }
 
         waitingClientAck = false;

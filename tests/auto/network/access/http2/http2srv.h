@@ -213,6 +213,8 @@ private:
 
     bool sendTrailingHEADERS = false;
     int informationalStatusCode = 0;
+
+    std::optional<quint32> pendingMaxTableSizeUpdate;
 protected slots:
     void ignoreErrorSlot();
 };
