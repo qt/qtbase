@@ -811,7 +811,7 @@ QString QXmlStreamReader::tokenString() const
  */
 static constexpr QLatin1StringView contextString(QXmlStreamReaderPrivate::XmlContext ctxt)
 {
-    return QLatin1StringView(QXmlStreamReader_XmlContextString.at(static_cast<int>(ctxt)));
+    return QLatin1StringView(QXmlStreamReader_XmlContextString.viewAt(static_cast<int>(ctxt)));
 }
 
 #endif // feature xmlstreamreader
