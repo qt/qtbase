@@ -37,6 +37,8 @@ public:
     Encoder(quint32 maxTableSize, bool compressStrings);
 
     quint32 dynamicTableSize() const;
+    quint32 dynamicTableCapacity() const;
+    quint32 maxDynamicTableCapacity() const;
 
     bool encodeRequest(class BitOStream &outputStream,
                        const HttpHeader &header);
@@ -92,6 +94,8 @@ public:
     }
 
     quint32 dynamicTableSize() const;
+    quint32 dynamicTableCapacity() const;
+    quint32 maxDynamicTableCapacity() const;
 
     void setMaxDynamicTableSize(quint32 size);
 
