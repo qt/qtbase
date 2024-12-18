@@ -153,7 +153,8 @@ bool tst_QHttp2Connection::waitForSettingsExchange(QHttp2Connection *client,
     client->handleReadyRead(); // handle incoming frames, send response
 
     bool success = QTest::qWaitFor([&]() {
-        return settingsFrameReceived && serverSettingsFrameReceived;
+        return settingsFrameReceived && serverSettingsFrameReceived
+                && !client->waitingForSettingsACK && !server->waitingForSettingsACK;
     });
 
     disconnect(c);
