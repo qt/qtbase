@@ -20,6 +20,7 @@ private slots:
     void construct();
     void constructStream();
     void testSETTINGSFrame();
+    void maxHeaderTableSize();
     void testPING();
     void testRSTServerSide();
     void testRSTClientSide();
@@ -268,6 +269,107 @@ void tst_QHttp2Connection::testSETTINGSFrame()
                                          QString::number(expectedSetting.value),
                                          QString::number(i))));
     }
+}
+
+void tst_QHttp2Connection::maxHeaderTableSize()
+{
+    auto [client, server] = makeFakeConnectedSockets();
+    auto connection = makeHttp2Connection(client.get(), {}, Client);
+    auto serverConnection = makeHttp2Connection(server.get(), {}, Server);
+
+    QSignalSpy incomingRequestSpy(serverConnection, &QHttp2Connection::newIncomingStream);
+
+    QHttp2Stream *clientStream = connection->createStream().unwrap();
+    QVERIFY(clientStream);
+    QVERIFY(waitForSettingsExchange(connection, serverConnection));
+
+    // Test defaults:
+    // encoder:
+    QCOMPARE(connection->encoder.dynamicTableSize(), 0u);
+    QCOMPARE(connection->encoder.maxDynamicTableCapacity(), 4096u);
+    QCOMPARE(connection->encoder.dynamicTableCapacity(), 4096u);
+    QCOMPARE(serverConnection->encoder.dynamicTableSize(), 0u);
+    QCOMPARE(serverConnection->encoder.maxDynamicTableCapacity(), 4096u);
+    QCOMPARE(serverConnection->encoder.dynamicTableCapacity(), 4096u);
+
+    // decoder:
+    QCOMPARE(connection->decoder.dynamicTableSize(), 0u);
+    QCOMPARE(connection->decoder.maxDynamicTableCapacity(), 4096u);
+    QCOMPARE(connection->decoder.dynamicTableCapacity(), 4096u);
+    QCOMPARE(serverConnection->decoder.dynamicTableSize(), 0u);
+    QCOMPARE(serverConnection->decoder.maxDynamicTableCapacity(), 4096u);
+    QCOMPARE(serverConnection->decoder.dynamicTableCapacity(), 4096u);
+
+    // Send a HEADER block with a custom header, to add something to the dynamic table:
+    HPack::HttpHeader headers = getRequiredHeaders();
+    headers.emplace_back("x-test", "test");
+    clientStream->sendHEADERS(headers, true);
+
+    QVERIFY(incomingRequestSpy.wait());
+
+    // Test that the size has been updated:
+    // encoder:
+    QCOMPARE_GT(connection->encoder.dynamicTableSize(), 0u); // now > 0
+    QCOMPARE(connection->encoder.maxDynamicTableCapacity(), 4096u);
+    QCOMPARE(connection->encoder.dynamicTableCapacity(), 4096u);
+    QCOMPARE(serverConnection->encoder.dynamicTableSize(), 0u);
+    QCOMPARE(serverConnection->encoder.maxDynamicTableCapacity(), 4096u);
+    QCOMPARE(serverConnection->encoder.dynamicTableCapacity(), 4096u);
+
+    // decoder:
+    QCOMPARE(connection->decoder.dynamicTableSize(), 0u);
+    QCOMPARE(connection->decoder.maxDynamicTableCapacity(), 4096u);
+    QCOMPARE(connection->decoder.dynamicTableCapacity(), 4096u);
+    QCOMPARE_GT(serverConnection->decoder.dynamicTableSize(), 0u); // now > 0
+    QCOMPARE(serverConnection->decoder.maxDynamicTableCapacity(), 4096u);
+    QCOMPARE(serverConnection->decoder.dynamicTableCapacity(), 4096u);
+
+    const quint32 initialTableSize = connection->encoder.dynamicTableSize();
+    QCOMPARE(initialTableSize, serverConnection->decoder.dynamicTableSize());
+
+    // Notify from server that we want a smaller size, reset to 0 first:
+    for (quint32 nextSize : {0, 2048}) {
+        // @note: currently we don't have an API for this so just do it by hand:
+        serverConnection->waitingForSettingsACK = true;
+        using namespace Http2;
+        FrameWriter builder(FrameType::SETTINGS, FrameFlag::EMPTY, connectionStreamID);
+        builder.append(Settings::HEADER_TABLE_SIZE_ID);
+        builder.append(nextSize);
+        builder.write(*server->out);
+
+        QVERIFY(QTest::qWaitFor([&]() { return !serverConnection->waitingForSettingsACK; }));
+    }
+
+    // Now we have to send another HEADER block without extra field, so we can see that the size of
+    // the dynamic table has decreased after we cleared it:
+    headers = getRequiredHeaders();
+    QHttp2Stream *clientStream2 = connection->createStream().unwrap();
+    clientStream2->sendHEADERS(headers, true);
+
+    QVERIFY(incomingRequestSpy.wait());
+
+    // Test that the size has been updated:
+    // encoder:
+    QCOMPARE_LT(connection->encoder.dynamicTableSize(), initialTableSize);
+
+    QCOMPARE(connection->encoder.maxDynamicTableCapacity(), 2048u);
+    QCOMPARE(connection->encoder.dynamicTableCapacity(), 2048u);
+    QCOMPARE(serverConnection->encoder.dynamicTableSize(), 0u);
+    QCOMPARE(serverConnection->encoder.maxDynamicTableCapacity(), 4096u);
+    QCOMPARE(serverConnection->encoder.dynamicTableCapacity(), 4096u);
+
+    // decoder:
+    QCOMPARE(connection->decoder.dynamicTableSize(), 0u);
+    QCOMPARE(connection->decoder.maxDynamicTableCapacity(), 4096u);
+    QCOMPARE(connection->decoder.dynamicTableCapacity(), 4096u);
+
+    QCOMPARE_LT(serverConnection->decoder.dynamicTableSize(), initialTableSize);
+    // If we add an API for this then this should also be updated at some stage:
+    QCOMPARE(serverConnection->decoder.maxDynamicTableCapacity(), 4096u);
+    QCOMPARE(serverConnection->decoder.dynamicTableCapacity(), 2048u);
+
+    quint32 newTableSize = connection->encoder.dynamicTableSize();
+    QCOMPARE(newTableSize, serverConnection->decoder.dynamicTableSize());
 }
 
 void tst_QHttp2Connection::testPING()
