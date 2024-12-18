@@ -216,6 +216,7 @@ QVariant QJsonDocument::toVariant() const
 #endif // !QT_NO_VARIANT
 
 /*!
+\if !defined(qt7)
     \enum QJsonDocument::JsonFormat
     \since 5.1
 
@@ -227,6 +228,12 @@ QVariant QJsonDocument::toVariant() const
 
     \value Compact Defines a compact output as follows:
         \snippet code/src_corelib_serialization_qjsondocument.cpp 1
+\else
+    \typealias QJsonDocument::JsonFormat
+    \since 5.1
+
+    Same as \l QJsonValue::JsonFormat.
+\endif
   */
 
 /*!
@@ -243,7 +250,8 @@ QByteArray QJsonDocument::toJson(JsonFormat format) const
         return json;
 
     return QJsonPrivate::Value::fromTrustedCbor(d->value).toJson(
-            format == JsonFormat::Compact ? QJsonValue::Compact : QJsonValue::Indented);
+            format == JsonFormat::Compact ? QJsonValue::JsonFormat::Compact
+                                          : QJsonValue::JsonFormat::Indented);
 }
 #endif
 
@@ -472,7 +480,8 @@ QDebug operator<<(QDebug dbg, const QJsonDocument &o)
         dbg << "QJsonDocument()";
         return dbg;
     }
-    QByteArray json = QJsonPrivate::Value::fromTrustedCbor(o.d->value).toJson(QJsonValue::Compact);
+    QByteArray json =
+        QJsonPrivate::Value::fromTrustedCbor(o.d->value).toJson(QJsonValue::JsonFormat::Compact);
     dbg.nospace() << "QJsonDocument("
                   << json.constData() // print as utf-8 string without extra quotation marks
                   << ')';

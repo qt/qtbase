@@ -1989,7 +1989,7 @@ void tst_QtJson::toJson()
         array.append(QLatin1String("\\\a\n\r\b\tabcABC\""));
         object.insert("Array", array);
 
-        QByteArray json = QJsonValue(object).toJson(QJsonValue::Compact);
+        QByteArray json = QJsonValue(object).toJson(QJsonValue::JsonFormat::Compact);
         QByteArray expected =
                 "{\"Array\":[true,999,\"string\",null,\"\\\\\\u0007\\n\\r\\b\\tabcABC\\\"\"],\"\\\\Key\\n\":\"Value\",\"null\":null}";
         QCOMPARE(json, expected);
@@ -2004,7 +2004,7 @@ void tst_QtJson::toJson()
         json = doc.toJson(QJsonDocument::Compact);
         expected = "[true,999,\"string\",null,\"\\\\\\u0007\\n\\r\\b\\tabcABC\\\"\"]";
         QCOMPARE(json, expected);
-        QCOMPARE(QJsonValue(array).toJson(QJsonValue::Compact), expected);
+        QCOMPARE(QJsonValue(array).toJson(QJsonValue::JsonFormat::Compact), expected);
     }
 }
 
@@ -2155,7 +2155,7 @@ void tst_QtJson::toJsonTopLevel()
     QFETCH(QByteArray, result);
 
     QCOMPARE(value.toJson(), result);
-    QCOMPARE(value.toJson(QJsonValue::Compact), result);
+    QCOMPARE(value.toJson(QJsonValue::JsonFormat::Compact), result);
 }
 
 void tst_QtJson::fromJson()
@@ -3213,7 +3213,7 @@ void tst_QtJson::makeEscapes()
     QByteArray resultStr = result;
 
     QJsonArray array = { input };
-    QByteArray json = QJsonValue(array).toJson(QJsonValue::Compact);
+    QByteArray json = QJsonValue(array).toJson(QJsonValue::JsonFormat::Compact);
     QCOMPARE(QJsonDocument(array).toJson(QJsonDocument::Compact), json);
     QByteArray jsonStr = QJsonValue(input).toJson();
 

@@ -6,8 +6,12 @@
 
 #include <QtCore/qcompare.h>
 #include <QtCore/qjsonparseerror.h>
+#if (QT_VERSION >= QT_VERSION_CHECK(7, 0, 0)) || defined(QT_BOOTSTRAPPED)
 #include <QtCore/qjsonvalue.h>
+#endif
+#include <QtCore/qlatin1stringview.h>
 #include <QtCore/qscopedpointer.h>
+#include <QtCore/qstringview.h>
 
 #include <memory>
 
@@ -15,6 +19,9 @@ QT_BEGIN_NAMESPACE
 
 class QDebug;
 class QCborValue;
+class QJsonArray;
+class QJsonObject;
+class QJsonValue;
 
 namespace QJsonPrivate { class Parser; }
 
@@ -49,15 +56,26 @@ public:
     static QJsonDocument fromVariant(const QVariant &variant);
     QVariant toVariant() const;
 
+#if (QT_VERSION < QT_VERSION_CHECK(7, 0, 0)) && !defined(QT_BOOTSTRAPPED)
     enum JsonFormat {
         Indented,
         Compact
     };
+#else
+    using JsonFormat = QJsonValue::JsonFormat;
+#  ifdef __cpp_using_enum
+    using enum QJsonValue::JsonFormat;
+#  else
+    // keep in sync with qjsonvalue.h
+    static constexpr auto Indented = JsonFormat::Indented;
+    static constexpr auto Compact = JsonFormat::Compact;
+#  endif
+#endif
 
     static QJsonDocument fromJson(const QByteArray &json, QJsonParseError *error = nullptr);
 
 #if !defined(QT_JSON_READONLY) || defined(Q_QDOC)
-    QByteArray toJson(JsonFormat format = Indented) const;
+    QByteArray toJson(JsonFormat format = JsonFormat::Indented) const;
 #endif
 
     bool isEmpty() const;

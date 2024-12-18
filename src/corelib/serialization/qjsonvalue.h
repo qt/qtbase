@@ -7,6 +7,9 @@
 #include <QtCore/qcborvalue.h>
 #include <QtCore/qcompare.h>
 #include <QtCore/qglobal.h>
+#if (QT_VERSION < QT_VERSION_CHECK(7, 0, 0)) && !defined(QT_BOOTSTRAPPED)
+#include <QtCore/qjsondocument.h>
+#endif
 #include <QtCore/qjsonparseerror.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qshareddata.h>
@@ -35,10 +38,14 @@ public:
         Undefined = 0x80
     };
 
-    enum JsonFormat {
+#if (QT_VERSION < QT_VERSION_CHECK(7, 0, 0)) && !defined(QT_BOOTSTRAPPED)
+    using JsonFormat = QJsonDocument::JsonFormat;
+#else
+    enum class JsonFormat {
         Indented,
         Compact,
     };
+#endif
 
     QJsonValue(Type = Null);
     QJsonValue(bool b);

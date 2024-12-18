@@ -616,6 +616,7 @@ QJsonValue QJsonValue::fromJson(QByteArrayView json, QJsonParseError *error)
 }
 
 /*!
+\if defined(qt7)
     \enum QJsonValue::JsonFormat
     \since 6.9
 
@@ -627,7 +628,13 @@ QJsonValue QJsonValue::fromJson(QByteArrayView json, QJsonParseError *error)
 
     \value Compact Defines a compact output as follows:
         \snippet code/src_corelib_serialization_qjsondocument.cpp 1
-  */
+\else
+    \typealias QJsonValue::JsonFormat
+    \since 6.9
+
+    Same as \l QJsonDocument::JsonFormat.
+\endif
+*/
 
 /*!
     \since 6.9
@@ -640,7 +647,7 @@ QByteArray QJsonValue::toJson(JsonFormat format) const
 {
     QByteArray json;
 
-    QJsonPrivate::Writer::valueToJson(value, json, 0, (format == Compact));
+    QJsonPrivate::Writer::valueToJson(value, json, 0, (format == JsonFormat::Compact));
 
     return json;
 }
