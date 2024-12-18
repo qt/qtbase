@@ -37,6 +37,10 @@
     \title Android: Configure the app module
 */
 /*!
+    \externalpage https://developer.android.com/ndk/guides/ndk-stack
+    \title Android: ndk-stack
+*/
+/*!
     \externalpage https://developer.apple.com/documentation/uikit/uiapplication/1622952-canopenurl
     \title iOS: canOpenURL:
 */
