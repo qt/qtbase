@@ -302,10 +302,15 @@ bool QSaveFile::commit()
     // Sync to disk if possible. Ignore errors (e.g. not supported).
     fe->syncToDisk();
 
+    // ensure we act on either a close()/flush() failure or a previous write()
+    // problem
+    if (d->error == QFileDevice::NoError)
+        d->error = d->writeError;
+    d->writeError = QFileDevice::NoError;
+
     if (d->useTemporaryFile) {
-        if (d->writeError != QFileDevice::NoError) {
+        if (d->error != QFileDevice::NoError) {
             fe->remove();
-            d->writeError = QFileDevice::NoError;
             return false;
         }
         // atomically replace old file with new file
@@ -317,7 +322,10 @@ bool QSaveFile::commit()
             return false;
         }
     }
-    return true;
+
+    // return true if all previous write() calls succeeded and if close() and
+    // flush() succeeded.
+    return d->error == QFileDevice::NoError;
 }
 
 /*!
