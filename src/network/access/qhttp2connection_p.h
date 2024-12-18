@@ -324,6 +324,13 @@ private:
     HPack::Decoder decoder = HPack::Decoder(HPack::FieldLookupTable::DefaultSize);
     HPack::Encoder encoder = HPack::Encoder(HPack::FieldLookupTable::DefaultSize, true);
 
+    // If we receive SETTINGS_HEADER_TABLE_SIZE in a SETTINGS frame we have to perform a dynamic
+    // table size update on the _next_ HEADER block we send.
+    // Because this only happens on the next block we may have multiple pending updates, so we must
+    // notify of the _smallest_ one followed by the _final_ one. We keep them sorted in that order.
+    // @future: keep in mind if we add support for sending PUSH_PROMISE because it is a HEADER block
+    std::array<std::optional<quint32>, 2> pendingTableSizeUpdates;
+
     QHttp2Configuration m_config;
     QHash<quint32, QPointer<QHttp2Stream>> m_streams;
     QSet<quint32> m_blockedStreams;

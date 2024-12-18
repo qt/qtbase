@@ -514,6 +514,18 @@ bool QHttp2Stream::sendHEADERS(const HPack::HttpHeader &headers, bool endStream,
 
     // Compress in-place:
     BitOStream outputStream(frameWriter.outboundFrame().buffer);
+
+    // Possibly perform and notify of dynamic table size update:
+    for (auto &maybePendingTableSizeUpdate : connection->pendingTableSizeUpdates) {
+        if (!maybePendingTableSizeUpdate)
+            break; // They are ordered, so if the first one is null, the other one is too.
+        qCDebug(qHttp2ConnectionLog, "[%p] stream %u, sending dynamic table size update of size %u",
+                connection, streamID(), *maybePendingTableSizeUpdate);
+        connection->encoder.setMaxDynamicTableSize(*maybePendingTableSizeUpdate);
+        connection->encoder.encodeSizeUpdate(outputStream, *maybePendingTableSizeUpdate);
+        maybePendingTableSizeUpdate.reset();
+    }
+
     if (connection->m_connectionType == QHttp2Connection::Type::Client) {
         if (!connection->encoder.encodeRequest(outputStream, headers))
             return false;
@@ -1881,7 +1893,22 @@ bool QHttp2Connection::acceptSetting(Http2::Settings identifier, quint32 newValu
             connectionError(PROTOCOL_ERROR, "SETTINGS invalid table size");
             return false;
         }
-        encoder.setMaxDynamicTableSize(newValue);
+        if (!pendingTableSizeUpdates[0] && encoder.dynamicTableCapacity() == newValue) {
+            qCDebug(qHttp2ConnectionLog,
+                    "[%p] Ignoring SETTINGS HEADER_TABLE_SIZE %d (same as current value)", this,
+                    newValue);
+            break;
+        }
+
+        if (pendingTableSizeUpdates[0].value_or(std::numeric_limits<quint32>::max()) >= newValue) {
+            pendingTableSizeUpdates[0] = newValue;
+            pendingTableSizeUpdates[1].reset(); // 0 is the latest _and_ smallest, so we don't need 1
+            qCDebug(qHttp2ConnectionLog, "[%p] Pending table size update to %u", this, newValue);
+        } else {
+            pendingTableSizeUpdates[1] = newValue; // newValue was larger than 0, so it goes to 1
+            qCDebug(qHttp2ConnectionLog, "[%p] Pending 2nd table size update to %u, smallest is %u",
+                    this, newValue, *pendingTableSizeUpdates[0]);
+        }
         break;
     }
     case Settings::INITIAL_WINDOW_SIZE_ID: {
