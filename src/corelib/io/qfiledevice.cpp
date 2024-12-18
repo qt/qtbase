@@ -338,7 +338,8 @@ void QFileDevice::close()
     // reset cached size
     d->cachedSize = 0;
 
-    // keep earlier error from flush
+    // If flush() succeeded but close() failed, copy its error condition;
+    // otherwise, keep the earlier flush() error.
     if (d->fileEngine->close() && flushed)
         unsetError();
     else if (flushed)

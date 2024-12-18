@@ -12,6 +12,9 @@
 #include <qset.h>
 
 #if defined(Q_OS_UNIX)
+#include <errno.h>
+#include <signal.h>
+#include <sys/resource.h>
 #include <unistd.h> // for geteuid
 #endif
 
@@ -64,6 +67,15 @@ private slots:
     void transactionalWriteErrorRenaming();
     void symlink();
     void directory();
+
+#ifdef Q_OS_UNIX
+    void writeFailToDevFull_data();
+    void writeFailToDevFull();
+#endif
+#if defined(RLIMIT_FSIZE) && (defined(Q_OS_LINUX) || defined(Q_OS_MACOS))
+    void writeFailResourceLimit_data();
+    void writeFailResourceLimit();
+#endif
 
 #ifdef Q_OS_WIN
     void alternateDataStream_data();
@@ -288,8 +300,8 @@ void tst_QSaveFile::transactionalWriteNoPermissionsOnDir()
         QVERIFY2(file.open(QIODevice::WriteOnly), msgCannotOpen(file).constData());
         QCOMPARE((int)file.error(), (int)QFile::NoError);
         QCOMPARE(file.write("W"), Q_INT64_C(1));
-        file.cancelWriting(); // no effect, as per the documentation
-        QVERIFY(file.commit());
+        file.cancelWriting();
+        QVERIFY(!file.commit());
 
         QVERIFY(reader.open(QIODevice::ReadOnly));
         QCOMPARE(QString::fromLatin1(reader.readAll()), QString::fromLatin1("W"));
@@ -524,6 +536,123 @@ void tst_QSaveFile::directory()
     }
 #endif
 }
+
+[[maybe_unused]] static void bufferedAndUnbuffered()
+{
+    QTest::addColumn<QIODevice::OpenMode>("mode");
+    QTest::newRow("unbuffered") << QIODevice::OpenMode(QIODevice::Unbuffered);
+    QTest::newRow("buffered") << QIODevice::OpenMode();
+}
+
+#ifdef Q_OS_UNIX
+void tst_QSaveFile::writeFailToDevFull_data()
+{
+    // check if /dev/full exists and is writable
+    if (access("/dev/full", W_OK) != 0)
+        QSKIP("/dev/full either does not exist or is not writable");
+    if (access("/dev", W_OK) == 0)
+        QSKIP("/dev is writable (running as root?): this test would replace /dev/full");
+
+    bufferedAndUnbuffered();
+}
+
+void tst_QSaveFile::writeFailToDevFull()
+{
+    QFETCH(QIODevice::OpenMode, mode);
+    mode |= QIODevice::WriteOnly;
+
+    QSaveFile saveFile("/dev/full");
+    saveFile.setDirectWriteFallback(true);
+
+    QVERIFY2(saveFile.open(mode), msgCannotOpen(saveFile).constData());
+
+    QByteArray data("abc");
+    qint64 written = saveFile.write(data);
+    if (mode & QIODevice::Unbuffered) {
+        // error reported immediately
+        QCOMPARE(written, -1);
+        QCOMPARE(saveFile.error(), QFile::ResourceError);
+        QCOMPARE(saveFile.errorString(), qt_error_string(ENOSPC));
+    } else {
+        // error reported only on .commit()
+        QCOMPARE(written, data.size());
+        QCOMPARE(saveFile.error(), QFile::NoError);
+    }
+    QVERIFY(!saveFile.commit());
+    QCOMPARE(saveFile.error(), QFile::ResourceError);
+}
+#endif // Q_OS_UNIX
+#if defined(RLIMIT_FSIZE) && (defined(Q_OS_LINUX) || defined(Q_OS_MACOS))
+// This test is only enabled on Linux and on macOS because we can verify that
+// those OSes do respect RLIMIT_FSIZE. We can also verify that some other Unix
+// OSes do not.
+
+void tst_QSaveFile::writeFailResourceLimit_data()
+{
+    bufferedAndUnbuffered();
+}
+
+void tst_QSaveFile::writeFailResourceLimit()
+{
+    // don't make it too small because stdout may be a log file!
+    static constexpr qint64 FileSizeLimit = 1024 * 1024;
+    struct RlimitChanger {
+        struct rlimit old;
+        RlimitChanger()
+        {
+            getrlimit(RLIMIT_FSIZE, &old);
+            struct rlimit newLimit = {};
+            newLimit.rlim_cur = FileSizeLimit;
+            newLimit.rlim_max = old.rlim_max;
+            if (setrlimit(RLIMIT_FSIZE, &newLimit) != 0)
+                old.rlim_cur = 0;
+
+            // ignore SIGXFSZ so we get EF2BIG when writing the file
+            signal(SIGXFSZ, SIG_IGN);
+        }
+        ~RlimitChanger()
+        {
+            if (old.rlim_cur)
+                setrlimit(RLIMIT_FSIZE, &old);
+        }
+    };
+
+    QFETCH(QIODevice::OpenMode, mode);
+    mode |= QIODevice::WriteOnly;
+
+    QTemporaryDir dir;
+    QVERIFY2(dir.isValid(), qPrintable(dir.errorString()));
+    const QString targetFile = dir.path() + QString::fromLatin1("/outfile");
+    QFile::remove(targetFile);
+    QSaveFile saveFile(targetFile);
+    QVERIFY2(saveFile.open(mode), msgCannotOpen(saveFile).constData());
+
+    RlimitChanger changer;
+    if (changer.old.rlim_cur == 0)
+        QSKIP("Could not set the file size resource limit");
+
+    QByteArray data(FileSizeLimit + 16, 'a');
+    qint64 written = 0, lastWrite;
+    do {
+        lastWrite = saveFile.write(data.constData() + written, data.size() - written);
+        if (lastWrite > 0)
+            written += lastWrite;
+    } while (lastWrite > 0 && written < data.size());
+    if (mode & QIODevice::Unbuffered) {
+        // error reported immediately
+        QCOMPARE_LT(written, data.size());
+        QCOMPARE(lastWrite, -1);
+        QCOMPARE(saveFile.error(), QFile::WriteError);
+        QCOMPARE(saveFile.errorString(), qt_error_string(EFBIG));
+    } else {
+        // error reported only on .commit()
+        QCOMPARE(written, data.size());
+        QCOMPARE(saveFile.error(), QFile::NoError);
+    }
+    QVERIFY(!saveFile.commit());
+    QCOMPARE(saveFile.error(), QFile::WriteError);
+}
+#endif // RLIMIT_FSIZE && (Linux or macOS)
 
 #ifdef Q_OS_WIN
 void tst_QSaveFile::alternateDataStream_data()
