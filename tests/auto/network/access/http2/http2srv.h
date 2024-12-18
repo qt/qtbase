@@ -210,6 +210,8 @@ private:
     int redirectCount = 0;
 
     bool sendTrailingHEADERS = false;
+
+    std::optional<quint32> pendingMaxTableSizeUpdate;
 protected slots:
     void ignoreErrorSlot();
 };
