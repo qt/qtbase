@@ -185,9 +185,6 @@ namespace QT_NAMESPACE {}
 # ifndef QT_NO_FOREACH
 #  define QT_NO_FOREACH
 # endif
-# ifndef QT_NO_CAST_FROM_ASCII
-#  define QT_NO_CAST_FROM_ASCII
-#endif
 # ifndef QT_NO_CAST_TO_ASCII
 #  define QT_NO_CAST_TO_ASCII
 # endif

@@ -351,7 +351,6 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     \table
     \header \li Version \li Disabled APIs
     \row \li 6.0.0 \li \l{foreach-keyword}{foreach} (see \l{QT_NO_FOREACH})
-    \row \li 6.0.0 \li QString constructors from \c{const char *} (see \l{QT_NO_CAST_FROM_ASCII})
     \row \li 6.0.0 \li QString conversions towards \c{const char *} / QByteArray (see \l{QT_NO_CAST_TO_ASCII})
     \row \li 6.0.0 \li QByteArray implicit conversions towards \c{const char *} (see \l{QT_NO_CAST_FROM_BYTEARRAY})
     \row \li 6.0.0 \li QUrl implicit conversions from QString (see \l{QT_NO_URL_CAST_FROM_STRING})
