@@ -1120,7 +1120,9 @@ void addCompletionHandlers(const std::shared_ptr<ContextType> &context, const st
     addCompletionHandlersImpl<size - 1, ContextType, Ts...>(context, t);
 }
 
-template<typename OutputSequence, typename InputIt, typename ValueType>
+template<typename OutputSequence, typename InputIt, typename ValueType,
+         std::enable_if_t<std::conjunction_v<IsForwardIterable<InputIt>, isQFuture<ValueType>>,
+                          bool> = true>
 QFuture<OutputSequence> whenAllImpl(InputIt first, InputIt last)
 {
     const qsizetype size = std::distance(first, last);
@@ -1156,7 +1158,9 @@ QFuture<OutputSequence> whenAllImpl(Futures &&... futures)
     return context->promise.future();
 }
 
-template<typename InputIt, typename ValueType>
+template<typename InputIt, typename ValueType,
+         std::enable_if_t<std::conjunction_v<IsForwardIterable<InputIt>, isQFuture<ValueType>>,
+                          bool> = true>
 QFuture<QtFuture::WhenAnyResult<typename Future<ValueType>::type>> whenAnyImpl(InputIt first,
                                                                                InputIt last)
 {
