@@ -68,6 +68,7 @@ private slots:
     void insertRow();
     void insertRows();
     void insertRowsItems();
+    void insertRowsWithChildItems();
     void insertRowInHierarcy();
     void insertColumn_data();
     void insertColumn();
@@ -295,6 +296,39 @@ void tst_QStandardItemModel::insertRowsItems()
         QCOMPARE(m->item(i)->model(), m_model);
     }
 }
+
+void tst_QStandardItemModel::insertRowsWithChildItems()
+{
+    QStandardItemModel model;
+    auto *top = new QStandardItem("top");
+    auto *mid = new QStandardItem("mid");
+    auto *btm = new QStandardItem("bottom");
+
+    model.appendRow(top);
+    mid->appendRow(btm);
+
+    QCOMPARE(top->model(), &model);
+    QCOMPARE(mid->model(), nullptr);
+    QCOMPARE(btm->model(), nullptr);
+
+    top->appendRow(mid);
+    QCOMPARE(top->model(), &model);
+    QCOMPARE(mid->model(), &model);
+    QCOMPARE(btm->model(), &model);
+
+    auto mid2 = top->takeChild(0);
+    top->removeRow(0);
+    QCOMPARE(mid, mid2);
+    QCOMPARE(top->model(), &model);
+    QCOMPARE(mid->model(), nullptr);
+    QCOMPARE(btm->model(), nullptr);
+
+    top->appendRows({mid}); // other codepath than appendRow() above
+    QCOMPARE(top->model(), &model);
+    QCOMPARE(mid->model(), &model);
+    QCOMPARE(btm->model(), &model);
+}
+
 
 void tst_QStandardItemModel::insertRowInHierarcy()
 {

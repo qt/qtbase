@@ -451,8 +451,7 @@ bool QStandardItemPrivate::insertRows(int row, const QList<QStandardItem*> &item
     }
     for (int i = 0; i < items.size(); ++i) {
         QStandardItem *item = items.at(i);
-        item->d_func()->model = model;
-        item->d_func()->parent = q;
+        item->d_func()->setParentAndModel(q, model);
         int index = childIndex(i + row, 0);
         children.replace(index, item);
         if (item)
