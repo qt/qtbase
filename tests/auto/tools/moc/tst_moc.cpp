@@ -107,8 +107,6 @@ enum FooItems
 Q_ENUM_NS(FooItems)
 }
 
-Q_DECLARE_METATYPE(const QMetaObject*);
-
 #define TESTEXPORTMACRO Q_DECL_EXPORT
 
 #if !defined(Q_MOC_RUN) && !defined(Q_NOREPLY)
@@ -913,8 +911,8 @@ signals:
     void sigWithDefaultArg(int i = 12);
 
 private:
-    bool user1() { return true; };
-    bool user2() { return false; };
+    bool user1() { return true; }
+    bool user2() { return false; }
     template <class T> void revisions_T();
     QString member2() const { return sMember; }
     void setMember3( const QString &sVal ) { sMember = sVal; }
@@ -1319,8 +1317,6 @@ void tst_Moc::structQObject()
 }
 
 #include "namespaced-flags.h"
-
-Q_DECLARE_METATYPE(QList<Foo::Bar::Flags>);
 
 void tst_Moc::namespacedFlags()
 {
@@ -2036,11 +2032,11 @@ struct const_ {};
 class QTBUG9354_constInName: public QObject
 { Q_OBJECT
 public slots:
-    void slotChooseScientificConst0(science_constant const &) {};
-    void foo(science_const const &) {};
-    void foo(constconst const &) {};
-    void foo(constconst *) {};
-    void foo(const_ *) {};
+    void slotChooseScientificConst0(science_constant const &) {}
+    void foo(science_const const &) {}
+    void foo(constconst const &) {}
+    void foo(constconst *) {}
+    void foo(const_ *) {}
 };
 
 
@@ -2157,7 +2153,7 @@ public:
     Q_INVOKABLE Q_REVISION(6, 0) void method60() {}
 
     enum TestEnum { One, Two };
-    Q_ENUM(TestEnum);
+    Q_ENUM(TestEnum)
 
 
 public slots:
@@ -2201,7 +2197,7 @@ public:
     Q_INVOKABLE Q_REVISION(6, 0) void method60() {}
 
     enum TestEnum { One, Two };
-    Q_ENUM(TestEnum);
+    Q_ENUM(TestEnum)
 
 public slots:
     void slot1() {}
@@ -3402,7 +3398,6 @@ public:
 Q_DECLARE_METATYPE(CustomQObject::Number)
 
 typedef CustomQObject* CustomQObjectStar;
-Q_DECLARE_METATYPE(CustomQObjectStar);
 
 namespace SomeNamespace {
 
@@ -3443,7 +3438,6 @@ public:
 Q_DECLARE_METATYPE(CustomQObject2::Number)
 
 typedef CustomQObject2* CustomQObject2Star;
-Q_DECLARE_METATYPE(CustomQObject2Star);
 
 namespace SomeNamespace2 {
 
@@ -3921,7 +3915,7 @@ namespace QTBUG32933_relatedObjectsDontIncludeItself {
             Q_PROPERTY(Obj::MyEnum p2 MEMBER member)
             Q_PROPERTY(NS::Obj::MyEnum p3 MEMBER member)
             Q_PROPERTY(QTBUG32933_relatedObjectsDontIncludeItself::NS::Obj::MyEnum p4 MEMBER member)
-            Q_ENUMS(MyEnum);
+            Q_ENUMS(MyEnum)
         public:
             enum MyEnum { Something, SomethingElse };
             MyEnum member;
@@ -4511,8 +4505,6 @@ void TestFwdProperties::setProp3(const FwdClass3 &v)
 }
 TestFwdProperties::~TestFwdProperties() {}
 
-Q_DECLARE_METATYPE(FwdClass1);
-
 void tst_Moc::mocInclude()
 {
     TestFwdProperties obj;
@@ -4556,7 +4548,8 @@ signals:
 
 public:
     QBindable<int> bindablePublicProperty() { return QBindable<int>(&publicProperty); }
-    Q_OBJECT_BINDABLE_PROPERTY(ClassWithQPropertyMembers, int, publicProperty, &ClassWithQPropertyMembers::publicPropertyChanged);
+    Q_OBJECT_BINDABLE_PROPERTY(ClassWithQPropertyMembers, int, publicProperty,
+                               &ClassWithQPropertyMembers::publicPropertyChanged)
     QProperty<int> notExposed;
 
 
@@ -4683,7 +4676,7 @@ public:
         ClassWithPrivateQPropertyShim *q = nullptr;
 
         void onTestPropertyChanged() { q->testPropertyChanged(); }
-        Q_OBJECT_BINDABLE_PROPERTY(Private, int, testProperty, &Private::onTestPropertyChanged);
+        Q_OBJECT_BINDABLE_PROPERTY(Private, int, testProperty, &Private::onTestPropertyChanged)
         QProperty<int> testProperty2;
     };
     Private priv{this};
