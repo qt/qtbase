@@ -136,7 +136,7 @@ inline const QDBusArgument &operator>>(const QDBusArgument &argument, QIBusEngin
 class QIBusPropTypeClientCommitPreedit
 {
 public:
-    QIBusPropTypeClientCommitPreedit() {};
+    QIBusPropTypeClientCommitPreedit() {}
 
     QIBusPropTypeClientCommitPreedit(bool inClientCommitPreedit);
 
@@ -153,7 +153,7 @@ inline const QDBusArgument &operator>>(const QDBusArgument &argument, QIBusPropT
 class QIBusPropTypeContentType
 {
 public:
-    QIBusPropTypeContentType() {};
+    QIBusPropTypeContentType() {}
 
     QIBusPropTypeContentType(unsigned int inPurpose, unsigned int inHint);
 

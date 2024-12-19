@@ -182,10 +182,10 @@ public:
         Source(const QBrush &brush) : sourceType(SourceType::Fixed)
         {
             fix.fixedBrush = brush;
-        };
+        }
 
         // Invalid constructor and getter
-        Source() : sourceType(SourceType::Invalid) {};
+        Source() : sourceType(SourceType::Invalid) {}
         bool isValid() const { return sourceType != SourceType::Invalid; }
 
         // Debug
@@ -204,11 +204,11 @@ public:
         // Generic constructor
         TargetBrush(QPalette::ColorGroup group, QPalette::ColorRole role,
                     Qt::ColorScheme scheme = Qt::ColorScheme::Unknown) :
-                    colorGroup(group), colorRole(role), colorScheme(scheme) {};
+                    colorGroup(group), colorRole(role), colorScheme(scheme) {}
 
         // Copy constructor with color scheme modifier for dark/light aware search
         TargetBrush(const TargetBrush &other, Qt::ColorScheme scheme) :
-            colorGroup(other.colorGroup), colorRole(other.colorRole), colorScheme(scheme) {};
+            colorGroup(other.colorGroup), colorRole(other.colorRole), colorScheme(scheme) {}
 
         // struct becomes key of a map, so operator< is needed
         bool operator<(const TargetBrush& other) const {
@@ -226,9 +226,9 @@ public:
     // Public getters
     const QPalette *palette(QPlatformTheme::Palette = QPlatformTheme::SystemPalette) const;
     QPixmap standardPixmap(QPlatformTheme::StandardPixmap standardPixmap, const QSizeF &size) const;
-    Qt::ColorScheme colorScheme() const { return m_colorScheme; };
+    Qt::ColorScheme colorScheme() const { return m_colorScheme; }
     static QPalette standardPalette();
-    const QString themeName() const { return m_interface ? m_interface->themeName() : QString(); };
+    const QString themeName() const { return m_interface ? m_interface->themeName() : QString(); }
     const QFont *font(QPlatformTheme::Font type) const;
     QIcon fileIcon(const QFileInfo &fileInfo) const;
 

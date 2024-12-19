@@ -33,7 +33,7 @@ public:
 #endif
 #if QT_CONFIG(xcb)
     Display *display() const override;
-    xcb_connection_t *connection() const override { return nullptr; };
+    xcb_connection_t *connection() const override { return nullptr; }
 #endif
     QScopedPointer<QOffscreenX11Connection> m_connection;
 };
