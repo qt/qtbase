@@ -38,7 +38,7 @@ class QGtk3Json
 {
     Q_GADGET
 private:
-    QGtk3Json(){};
+    QGtk3Json() {}
 
 public:
     // Convert enums to strings
