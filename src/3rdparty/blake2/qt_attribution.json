@@ -7,9 +7,9 @@
 
     "Description": "BLAKE2 is a cryptographic hash function faster than MD5, SHA-1, SHA-2, and SHA-3, yet is at least as secure as the latest standard SHA-3.",
     "Homepage": "https://blake2.net/",
-    "Version": "54f4faa4c16ea34bcd59d16e8da46a64b259fc07",
-    "DownloadLocation": "https://github.com/BLAKE2/BLAKE2/tree/54f4faa4c16ea34bcd59d16e8da46a64b259fc07",
-    "PURL": "pkg:github/BLAKE2/BLAKE2@54f4faa4c16ea34bcd59d16e8da46a64b259fc07",
+    "Version": "ed1974ea83433eba7b2d95c5dcd9ac33cb847913",
+    "DownloadLocation": "https://github.com/BLAKE2/BLAKE2/tree/ed1974ea83433eba7b2d95c5dcd9ac33cb847913",
+    "PURL": "pkg:github/BLAKE2/BLAKE2@ed1974ea83433eba7b2d95c5dcd9ac33cb847913",
     "CPE": "cpe:2.3:a:blake2:blake2:*:*:*:*:*:*:*:*",
     "License": "Creative Commons Zero v1.0 Universal or Apache License 2.0",
     "LicenseId": "CC0-1.0 OR Apache-2.0",

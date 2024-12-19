@@ -111,8 +111,13 @@ static inline int SHA384_512AddLength(SHA512Context *context, unsigned int lengt
 #if QT_CONFIG(system_libb2)
 #include <blake2.h>
 #else
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_CLANG("-Wunused-function")
+QT_WARNING_DISABLE_GCC("-Wunused-function")
+QT_WARNING_DISABLE_MSVC(4505)
 #include "../../3rdparty/blake2/src/blake2b-ref.c"
 #include "../../3rdparty/blake2/src/blake2s-ref.c"
+QT_WARNING_POP
 #endif
 #endif // QT_CRYPTOGRAPHICHASH_ONLY_SHA1
 
