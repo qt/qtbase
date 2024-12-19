@@ -394,6 +394,9 @@ void QFactoryLoader::update()
 #ifdef QT_SHARED
     Q_D(QFactoryLoader);
 
+    if (!d->extraSearchPath.isEmpty())
+        d->updateSinglePath(d->extraSearchPath);
+
     const QStringList paths = QCoreApplication::libraryPaths();
     for (const QString &pluginDir : paths) {
 #ifdef Q_OS_ANDROID
@@ -401,11 +404,8 @@ void QFactoryLoader::update()
 #else
         QString path = pluginDir + d->suffix;
 #endif
-
         d->updateSinglePath(path);
     }
-    if (!d->extraSearchPath.isEmpty())
-        d->updateSinglePath(d->extraSearchPath);
 #else
     Q_D(QFactoryLoader);
     qCDebug(lcFactoryLoader) << "ignoring" << d->iid
