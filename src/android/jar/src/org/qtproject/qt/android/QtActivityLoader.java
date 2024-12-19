@@ -86,10 +86,6 @@ class QtActivityLoader extends QtLoader {
             return;
         }
 
-        String intentArgs = intent.getStringExtra("applicationArguments");
-        if (intentArgs != null)
-            appendApplicationParameters(intentArgs);
-
         Bundle extras = intent.getExtras();
         if (extras == null) {
             Log.w(QtTAG, "Null extras from the Activity's intent.");

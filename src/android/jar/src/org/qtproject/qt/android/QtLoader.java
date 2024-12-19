@@ -8,6 +8,7 @@ package org.qtproject.qt.android;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Service;
+import android.content.Intent;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -111,6 +112,12 @@ abstract class QtLoader {
         setEnvironmentVariable("QT_BLOCK_EVENT_LOOPS_WHEN_SUSPENDED", isBackgroundRunningBlocked());
         setEnvironmentVariable("QTRACE_LOCATION", getMetaData("android.app.trace_location"));
         appendApplicationParameters(getMetaData("android.app.arguments"));
+
+        if (context instanceof Activity) {
+            Intent intent = ((Activity) context).getIntent();
+            if (intent != null)
+                appendApplicationParameters(intent.getStringExtra("applicationArguments"));
+        }
     }
 
     private String isBackgroundRunningBlocked() {

@@ -17,6 +17,8 @@ class QtEmbeddedLoader extends QtLoader {
         String stylePath = ExtractStyle.setup(context, "minimal", displayDensity);
         setEnvironmentVariable("ANDROID_STYLE_PATH", stylePath);
         setEnvironmentVariable("QT_ANDROID_NO_EXIT_CALL", String.valueOf(true));
+
+        extractContextMetaData(context);
     }
 
     static QtEmbeddedLoader getEmbeddedLoader(Context context) throws IllegalArgumentException {
