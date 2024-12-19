@@ -233,6 +233,7 @@ private slots:
     void getFutureInterface();
     void convertQMetaType();
 
+    void whenAllwhenAnyOverloadResolution();
     void whenAllIterators();
     void whenAllIteratorsWithCanceled();
     void whenAllIteratorsWithFailed();
@@ -4445,6 +4446,14 @@ void tst_QFuture::convertQMetaType()
     const auto voidFuture = variant.value<QFuture<void>>();
     QVERIFY(voidFuture.isValid());
     QVERIFY(voidFuture.isFinished());
+}
+
+void tst_QFuture::whenAllwhenAnyOverloadResolution()
+{
+    // Compile-only test. These could fail to compile due to picking a wrong
+    // overload of *Impl() methods. See QTBUG-131959
+    [[maybe_unused]] auto f = QtFuture::whenAll(QFuture<void>{}, QFuture<void>{});
+    [[maybe_unused]] auto ff = QtFuture::whenAny(QFuture<void>{}, QFuture<void>{});
 }
 
 template<class OutputContainer>
