@@ -47,6 +47,10 @@ QStringList QDeviceDiscoveryVxWorks::scanConnectedDevices()
         }
     }
 
+    if (m_types & Device_VideoMask) {
+        devices << QString::fromLatin1("/dev/dri/card0");
+    }
+
     return devices;
 }
 
