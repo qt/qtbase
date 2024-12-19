@@ -1,0 +1,67 @@
+From eb08d0a94e6f64c2ba78536c00c654102ed5cc41 Mon Sep 17 00:00:00 2001
+From: Thiago Macieira <thiago.macieira@intel.com>
+Date: Thu, 19 Dec 2024 14:02:08 -0300
+Subject: mark the API static so it can't be exported
+ from QtCore
+ 
+This affects static builds, where symbol visibility doesn't apply.
+---
+ src/3rdparty/blake2/src/blake2.h | 28 ++++++++++++++--------------
+ 1 file changed, 14 insertions(+), 14 deletions(-)
+
+diff --git a/src/3rdparty/blake2/src/blake2.h b/src/3rdparty/blake2/src/blake2.h
+index ca390305e60..0a90a9d2294 100644
+--- a/src/3rdparty/blake2/src/blake2.h
++++ b/src/3rdparty/blake2/src/blake2.h
+@@ -142,17 +142,17 @@ extern "C" {
+   };
+ 
+   /* Streaming API */
+-  int blake2s_init( blake2s_state *S, size_t outlen );
+-  int blake2s_init_key( blake2s_state *S, size_t outlen, const void *key, size_t keylen );
+-  int blake2s_init_param( blake2s_state *S, const blake2s_param *P );
+-  int blake2s_update( blake2s_state *S, const void *in, size_t inlen );
+-  int blake2s_final( blake2s_state *S, void *out, size_t outlen );
+-
+-  int blake2b_init( blake2b_state *S, size_t outlen );
+-  int blake2b_init_key( blake2b_state *S, size_t outlen, const void *key, size_t keylen );
+-  int blake2b_init_param( blake2b_state *S, const blake2b_param *P );
+-  int blake2b_update( blake2b_state *S, const void *in, size_t inlen );
+-  int blake2b_final( blake2b_state *S, void *out, size_t outlen );
++  static int blake2s_init( blake2s_state *S, size_t outlen );
++  static int blake2s_init_key( blake2s_state *S, size_t outlen, const void *key, size_t keylen );
++  static int blake2s_init_param( blake2s_state *S, const blake2s_param *P );
++  static int blake2s_update( blake2s_state *S, const void *in, size_t inlen );
++  static int blake2s_final( blake2s_state *S, void *out, size_t outlen );
++
++  static int blake2b_init( blake2b_state *S, size_t outlen );
++  static int blake2b_init_key( blake2b_state *S, size_t outlen, const void *key, size_t keylen );
++  static int blake2b_init_param( blake2b_state *S, const blake2b_param *P );
++  static int blake2b_update( blake2b_state *S, const void *in, size_t inlen );
++  static int blake2b_final( blake2b_state *S, void *out, size_t outlen );
+ 
+   int blake2sp_init( blake2sp_state *S, size_t outlen );
+   int blake2sp_init_key( blake2sp_state *S, size_t outlen, const void *key, size_t keylen );
+@@ -176,8 +176,8 @@ extern "C" {
+   int blake2xb_final(blake2xb_state *S, void *out, size_t outlen);
+ 
+   /* Simple API */
+-  int blake2s( void *out, size_t outlen, const void *in, size_t inlen, const void *key, size_t keylen );
+-  int blake2b( void *out, size_t outlen, const void *in, size_t inlen, const void *key, size_t keylen );
++  static int blake2s( void *out, size_t outlen, const void *in, size_t inlen, const void *key, size_t keylen );
++  static int blake2b( void *out, size_t outlen, const void *in, size_t inlen, const void *key, size_t keylen );
+ 
+   int blake2sp( void *out, size_t outlen, const void *in, size_t inlen, const void *key, size_t keylen );
+   int blake2bp( void *out, size_t outlen, const void *in, size_t inlen, const void *key, size_t keylen );
+@@ -186,7 +186,7 @@ extern "C" {
+   int blake2xb( void *out, size_t outlen, const void *in, size_t inlen, const void *key, size_t keylen );
+ 
+   /* This is simply an alias for blake2b */
+-  int blake2( void *out, size_t outlen, const void *in, size_t inlen, const void *key, size_t keylen );
++  static int blake2( void *out, size_t outlen, const void *in, size_t inlen, const void *key, size_t keylen );
+ 
+ #if defined(__cplusplus)
+ }
+-- 
+2.47.1
+

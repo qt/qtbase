@@ -1,7 +1,7 @@
 version = 1
 
 [[annotations]]
-path = ["src/blake2b-ref.c", "src/blake2s-ref.c", "src/blake2.h", "src/blake2-impl.h"]
+path = ["src/blake2b-ref.c", "src/blake2s-ref.c", "src/blake2.h", "src/blake2-impl.h", "0001-mark-the-API-static-so-it-cant-be-exported-from-QtCore.patch"]
 comment = "Copyright line mixed with other text."
 precedence = "override"
 SPDX-FileCopyrightText = "Copyright 2012, Samuel Neves <sneves@dei.uc.pt>"
