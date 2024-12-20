@@ -27,6 +27,7 @@ namespace q23 {
 // like std::is_scoped_enum
 #ifdef __cpp_lib_is_scoped_enum
 using std::is_scoped_enum;
+using std::is_scoped_enum_v;
 #else
 
 template <typename E, bool isEnum = std::is_enum_v<E>>
@@ -36,10 +37,10 @@ struct is_scoped_enum :  std::negation<std::is_convertible<E, std::underlying_ty
 template<typename T>
 struct is_scoped_enum<T, false> : std::false_type
 {};
-#endif // __cpp_lib_is_scoped_enum
 
 template <typename E>
 inline constexpr bool is_scoped_enum_v = is_scoped_enum<E>::value;
+#endif // __cpp_lib_is_scoped_enum
 }
 
 QT_END_NAMESPACE
