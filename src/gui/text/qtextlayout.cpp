@@ -1860,6 +1860,7 @@ void QTextLine::layout_helper(int maxGlyphs)
 
     bool manuallyWrapped = false;
     bool hasInlineObject = false;
+    bool reachedEndOfLine = false;
     QFixed maxInlineObjectHeight = 0;
 
     const bool includeTrailingSpaces = eng->option.flags() & QTextOption::IncludeTrailingSpaces;
@@ -2087,6 +2088,7 @@ void QTextLine::layout_helper(int maxGlyphs)
             newItem = item + 1;
     }
     LB_DEBUG("reached end of line");
+    reachedEndOfLine = true;
     lbh.checkFullOtherwiseExtend(line);
     line.textWidth += lbh.commitedSoftHyphenWidth;
 found:
@@ -2097,6 +2099,7 @@ found:
         lbh.calculateRightBearing();
 
     // Then apply any negative right bearing
+    const QFixed textWidthWithoutBearing = line.textWidth;
     line.textWidth += lbh.negativeRightBearing();
 
     if (line.length == 0) {
@@ -2168,7 +2171,11 @@ found:
         eng->maxWidth = qMax(eng->maxWidth, line.textWidth);
     } else {
         eng->minWidth = qMax(eng->minWidth, lbh.minw);
-        if (qAddOverflow(eng->layoutData->currentMaxWidth, line.textWidth, &eng->layoutData->currentMaxWidth))
+
+        const QFixed actualTextWidth = manuallyWrapped || reachedEndOfLine
+                                           ? line.textWidth
+                                           : textWidthWithoutBearing;
+        if (qAddOverflow(eng->layoutData->currentMaxWidth, actualTextWidth, &eng->layoutData->currentMaxWidth))
             eng->layoutData->currentMaxWidth = QFIXED_MAX;
         if (!manuallyWrapped) {
             if (qAddOverflow(eng->layoutData->currentMaxWidth, lbh.spaceData.textWidth, &eng->layoutData->currentMaxWidth))

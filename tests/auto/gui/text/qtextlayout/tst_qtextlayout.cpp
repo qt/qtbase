@@ -130,6 +130,7 @@ private slots:
     void negativeLineWidth();
     void embeddedImageLineHeight();
     void unmatchedShapedSubstring();
+    void maximumLayoutWidthInWrappedLayout();
 
 private:
     QFont testFont;
@@ -2834,6 +2835,44 @@ void tst_QTextLayout::unmatchedShapedSubstring()
 
     QList<QGlyphRun> glyphRuns = lout.glyphRuns();
     QVERIFY(glyphRuns.size() > 0);
+}
+
+void tst_QTextLayout::maximumLayoutWidthInWrappedLayout()
+{
+    QString s = QString::fromUtf8("Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n"
+                "Integer at ante dui Curabitur ante est, pulvinar quis adipiscing a, iaculis id ipsum. Nunc blandit\n"
+                "condimentum odio vel egestas. in ipsum lacinia sit amet\n"
+                "mattis orci interdum. Quisque vitae accumsan lectus. Ut nisi turpis,\n"
+                "sollicitudin ut dignissim id, fermentum ac est. Maecenas nec libero leo. Sed ac\n"
+                "mattis orci interdum. Quisque vitae accumsan lectus. Ut nisi turpis,\n"
+                "sollicitudin ut dignissim id, fermentum ac est. Maecenas nec libero leo. Sed ac\n"
+                "leo eget ipsum ultricies viverra sit amet eu orci. Praesent et tortor risus,\n"
+                "viverra accumsan sapien. Sed faucibus eleifend lectus, sed euismod urna porta\n"
+                "eu. Quisque vitae accumsan lectus.");
+    s.replace(QChar::LineFeed, QChar::LineSeparator);
+
+    QTextLayout reference;
+    reference.setText(s);
+    reference.beginLayout();
+    forever {
+        QTextLine line = reference.createLine();
+        if (!line.isValid())
+            break;
+    }
+    reference.endLayout();
+
+    QTextLayout breakByWidth;
+    breakByWidth.setText(s);
+    breakByWidth.beginLayout();
+    forever {
+        QTextLine line = breakByWidth.createLine();
+        if (!line.isValid())
+            break;
+        line.setLineWidth(100);
+    }
+    breakByWidth.endLayout();
+
+    QCOMPARE(reference.maximumWidth(), breakByWidth.maximumWidth());
 }
 
 QTEST_MAIN(tst_QTextLayout)
