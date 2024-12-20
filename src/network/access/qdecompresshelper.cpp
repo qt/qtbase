@@ -594,7 +594,7 @@ qsizetype QDecompressHelper::readZLib(char *data, const qsizetype maxSize)
         // also an error.
         // in the case where we get Z_DATA_ERROR this could be because we received raw deflate
         // compressed data.
-        if (ret == Z_DATA_ERROR && !triedRawDeflate) Q_UNLIKELY_BRANCH {
+        if (ret == Z_DATA_ERROR && !triedRawDeflate) { Q_UNLIKELY_BRANCH
             inflateEnd(inflateStream);
             triedRawDeflate = true;
             inflateStream->zalloc = Z_NULL;
@@ -768,7 +768,7 @@ qsizetype QDecompressHelper::readZstandard(char *data, const qsizetype maxSize)
     qsizetype bytesDecoded = 0;
     while (outBuf.pos < outBuf.size && (inBuf.pos < inBuf.size || decoderHasData)) {
         size_t retValue = ZSTD_decompressStream(zstdStream, &outBuf, &inBuf);
-        if (ZSTD_isError(retValue)) Q_UNLIKELY_BRANCH {
+        if (ZSTD_isError(retValue)) { Q_UNLIKELY_BRANCH
             errorStr = QCoreApplication::translate("QHttp", "ZStandard error: %1")
                             .arg(QUtf8StringView{ZSTD_getErrorName(retValue)});
                 return -1;
