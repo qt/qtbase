@@ -68,7 +68,31 @@ QList<QSize> QFontIconEngine::availableSizes(QIcon::Mode, QIcon::State)
 
 QSize QFontIconEngine::actualSize(const QSize &size, QIcon::Mode mode, QIcon::State state)
 {
-    return QIconEngine::actualSize(size, mode, state);
+    if (isNull())
+        return QIconEngine::actualSize(size, mode, state);
+
+    QFont renderFont(m_iconFont);
+    renderFont.setPixelSize(size.height());
+    QSizeF result;
+    if (const QString text = string(); !text.isEmpty()) {
+        const QFontMetricsF fm(renderFont);
+        result = fm.boundingRect(text).size();
+    } else if (glyph_t glyphIndex = glyph()) {
+        QFontEngine *engine = QFontPrivate::get(renderFont)->engineForScript(QChar::Script_Common);
+
+        const glyph_metrics_t gm = engine->boundingBox(glyphIndex);
+        const qreal glyph_x = gm.x.toReal();
+        const qreal glyph_y = gm.y.toReal();
+        const qreal glyph_width = (gm.x + gm.width).toReal() - glyph_x;
+        const qreal glyph_height = (gm.y + gm.height).toReal() - glyph_y;
+
+        if (glyph_width > .0 && glyph_height > .0)
+            result = {glyph_width, glyph_height};
+    }
+    if (!result.isValid())
+        return QIconEngine::actualSize(size, mode, state);
+
+    return result.scaled(size, Qt::KeepAspectRatio).toSize();
 }
 
 QPixmap QFontIconEngine::pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state)
@@ -79,15 +103,16 @@ QPixmap QFontIconEngine::pixmap(const QSize &size, QIcon::Mode mode, QIcon::Stat
 QPixmap QFontIconEngine::scaledPixmap(const QSize &size, QIcon::Mode mode, QIcon::State state, qreal scale)
 {
     const quint64 cacheKey = calculateCacheKey(mode, state);
-    if (cacheKey != m_pixmapCacheKey || m_pixmap.size() != size
+    const QSize fittingSize = actualSize(size, mode, state);
+    if (cacheKey != m_pixmapCacheKey || m_pixmap.deviceIndependentSize() != fittingSize
      || m_pixmap.devicePixelRatio() != scale) {
-        m_pixmap = QPixmap(size * scale);
+        m_pixmap = QPixmap(fittingSize * scale);
         m_pixmap.fill(Qt::transparent);
         m_pixmap.setDevicePixelRatio(scale);
 
         if (!m_pixmap.isNull()) {
             QPainter painter(&m_pixmap);
-            paint(&painter, QRect(QPoint(), size), mode, state);
+            paint(&painter, QRect(QPoint(), fittingSize), mode, state);
         }
 
         m_pixmapCacheKey = cacheKey;
@@ -135,9 +160,9 @@ void QFontIconEngine::paint(QPainter *painter, const QRect &rect, QIcon::Mode mo
         const int glyph_width = qCeil((gm.x + gm.width).toReal()) - glyph_x;
         const int glyph_height = qCeil((gm.y + gm.height).toReal()) - glyph_y;
 
-        QPainterPath path;
         if (glyph_width > 0 && glyph_height > 0) {
             QFixedPoint pt(QFixed(-glyph_x), QFixed(-glyph_y));
+            QPainterPath path;
             path.setFillRule(Qt::WindingFill);
             engine->addGlyphsToPath(&glyphIndex, &pt, 1, &path, {});
             // make the glyph fit tightly into rect
