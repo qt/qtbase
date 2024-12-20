@@ -118,7 +118,7 @@ public:
         label->setSizePolicy(sizePolicy2);
         label->setMinimumSize(QSize(0, 30));
 
-        formLayout->setWidget(0, QFormLayout::LabelRole, label);
+        formLayout->setWidget(0, QFormLayout::ItemRole::LabelRole, label);
 
         periodSpinBox = new QDoubleSpinBox(groupBox);
         periodSpinBox->setObjectName("periodSpinBox");
@@ -133,7 +133,7 @@ public:
         periodSpinBox->setSingleStep(0.100000000000000);
         periodSpinBox->setValue(-1.000000000000000);
 
-        formLayout->setWidget(0, QFormLayout::FieldRole, periodSpinBox);
+        formLayout->setWidget(0, QFormLayout::ItemRole::FieldRole, periodSpinBox);
 
         amplitudeSpinBox = new QDoubleSpinBox(groupBox);
         amplitudeSpinBox->setObjectName("amplitudeSpinBox");
@@ -143,13 +143,13 @@ public:
         amplitudeSpinBox->setSingleStep(0.100000000000000);
         amplitudeSpinBox->setValue(-1.000000000000000);
 
-        formLayout->setWidget(2, QFormLayout::FieldRole, amplitudeSpinBox);
+        formLayout->setWidget(2, QFormLayout::ItemRole::FieldRole, amplitudeSpinBox);
 
         label_3 = new QLabel(groupBox);
         label_3->setObjectName("label_3");
         label_3->setMinimumSize(QSize(0, 30));
 
-        formLayout->setWidget(4, QFormLayout::LabelRole, label_3);
+        formLayout->setWidget(4, QFormLayout::ItemRole::LabelRole, label_3);
 
         overshootSpinBox = new QDoubleSpinBox(groupBox);
         overshootSpinBox->setObjectName("overshootSpinBox");
@@ -159,13 +159,13 @@ public:
         overshootSpinBox->setSingleStep(0.100000000000000);
         overshootSpinBox->setValue(-1.000000000000000);
 
-        formLayout->setWidget(4, QFormLayout::FieldRole, overshootSpinBox);
+        formLayout->setWidget(4, QFormLayout::ItemRole::FieldRole, overshootSpinBox);
 
         label_2 = new QLabel(groupBox);
         label_2->setObjectName("label_2");
         label_2->setMinimumSize(QSize(0, 30));
 
-        formLayout->setWidget(2, QFormLayout::LabelRole, label_2);
+        formLayout->setWidget(2, QFormLayout::ItemRole::LabelRole, label_2);
 
 
         verticalLayout->addWidget(groupBox);

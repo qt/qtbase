@@ -63,28 +63,28 @@ public:
         label = new QLabel(qdesigner_internal__NewActionDialog);
         label->setObjectName("label");
 
-        formLayout->setWidget(0, QFormLayout::LabelRole, label);
+        formLayout->setWidget(0, QFormLayout::ItemRole::LabelRole, label);
 
         editActionText = new QLineEdit(qdesigner_internal__NewActionDialog);
         editActionText->setObjectName("editActionText");
         editActionText->setMinimumSize(QSize(255, 0));
 
-        formLayout->setWidget(0, QFormLayout::FieldRole, editActionText);
+        formLayout->setWidget(0, QFormLayout::ItemRole::FieldRole, editActionText);
 
         label_3 = new QLabel(qdesigner_internal__NewActionDialog);
         label_3->setObjectName("label_3");
 
-        formLayout->setWidget(1, QFormLayout::LabelRole, label_3);
+        formLayout->setWidget(1, QFormLayout::ItemRole::LabelRole, label_3);
 
         editObjectName = new QLineEdit(qdesigner_internal__NewActionDialog);
         editObjectName->setObjectName("editObjectName");
 
-        formLayout->setWidget(1, QFormLayout::FieldRole, editObjectName);
+        formLayout->setWidget(1, QFormLayout::ItemRole::FieldRole, editObjectName);
 
         label_2 = new QLabel(qdesigner_internal__NewActionDialog);
         label_2->setObjectName("label_2");
 
-        formLayout->setWidget(2, QFormLayout::LabelRole, label_2);
+        formLayout->setWidget(2, QFormLayout::ItemRole::LabelRole, label_2);
 
         horizontalLayout = new QHBoxLayout();
         horizontalLayout->setObjectName("horizontalLayout");
@@ -98,7 +98,7 @@ public:
         horizontalLayout->addItem(spacerItem);
 
 
-        formLayout->setLayout(2, QFormLayout::FieldRole, horizontalLayout);
+        formLayout->setLayout(2, QFormLayout::ItemRole::FieldRole, horizontalLayout);
 
 
         verticalLayout->addLayout(formLayout);

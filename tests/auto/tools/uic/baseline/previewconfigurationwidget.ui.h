@@ -47,17 +47,17 @@ public:
         m_styleLabel = new QLabel(PreviewConfigurationWidget);
         m_styleLabel->setObjectName("m_styleLabel");
 
-        formLayout->setWidget(0, QFormLayout::LabelRole, m_styleLabel);
+        formLayout->setWidget(0, QFormLayout::ItemRole::LabelRole, m_styleLabel);
 
         m_styleCombo = new QComboBox(PreviewConfigurationWidget);
         m_styleCombo->setObjectName("m_styleCombo");
 
-        formLayout->setWidget(0, QFormLayout::FieldRole, m_styleCombo);
+        formLayout->setWidget(0, QFormLayout::ItemRole::FieldRole, m_styleCombo);
 
         m_appStyleSheetLabel = new QLabel(PreviewConfigurationWidget);
         m_appStyleSheetLabel->setObjectName("m_appStyleSheetLabel");
 
-        formLayout->setWidget(1, QFormLayout::LabelRole, m_appStyleSheetLabel);
+        formLayout->setWidget(1, QFormLayout::ItemRole::LabelRole, m_appStyleSheetLabel);
 
         hboxLayout = new QHBoxLayout();
         hboxLayout->setObjectName("hboxLayout");
@@ -78,12 +78,12 @@ public:
         hboxLayout->addWidget(m_appStyleSheetClearButton);
 
 
-        formLayout->setLayout(1, QFormLayout::FieldRole, hboxLayout);
+        formLayout->setLayout(1, QFormLayout::ItemRole::FieldRole, hboxLayout);
 
         m_skinLabel = new QLabel(PreviewConfigurationWidget);
         m_skinLabel->setObjectName("m_skinLabel");
 
-        formLayout->setWidget(2, QFormLayout::LabelRole, m_skinLabel);
+        formLayout->setWidget(2, QFormLayout::ItemRole::LabelRole, m_skinLabel);
 
         hboxLayout1 = new QHBoxLayout();
         hboxLayout1->setObjectName("hboxLayout1");
@@ -98,7 +98,7 @@ public:
         hboxLayout1->addWidget(m_skinRemoveButton);
 
 
-        formLayout->setLayout(2, QFormLayout::FieldRole, hboxLayout1);
+        formLayout->setLayout(2, QFormLayout::ItemRole::FieldRole, hboxLayout1);
 
 
         retranslateUi(PreviewConfigurationWidget);

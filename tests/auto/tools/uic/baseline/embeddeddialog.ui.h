@@ -43,45 +43,45 @@ public:
         label = new QLabel(embeddedDialog);
         label->setObjectName("label");
 
-        formLayout->setWidget(0, QFormLayout::LabelRole, label);
+        formLayout->setWidget(0, QFormLayout::ItemRole::LabelRole, label);
 
         layoutDirection = new QComboBox(embeddedDialog);
         layoutDirection->addItem(QString());
         layoutDirection->addItem(QString());
         layoutDirection->setObjectName("layoutDirection");
 
-        formLayout->setWidget(0, QFormLayout::FieldRole, layoutDirection);
+        formLayout->setWidget(0, QFormLayout::ItemRole::FieldRole, layoutDirection);
 
         label_2 = new QLabel(embeddedDialog);
         label_2->setObjectName("label_2");
 
-        formLayout->setWidget(1, QFormLayout::LabelRole, label_2);
+        formLayout->setWidget(1, QFormLayout::ItemRole::LabelRole, label_2);
 
         fontComboBox = new QFontComboBox(embeddedDialog);
         fontComboBox->setObjectName("fontComboBox");
 
-        formLayout->setWidget(1, QFormLayout::FieldRole, fontComboBox);
+        formLayout->setWidget(1, QFormLayout::ItemRole::FieldRole, fontComboBox);
 
         label_3 = new QLabel(embeddedDialog);
         label_3->setObjectName("label_3");
 
-        formLayout->setWidget(2, QFormLayout::LabelRole, label_3);
+        formLayout->setWidget(2, QFormLayout::ItemRole::LabelRole, label_3);
 
         style = new QComboBox(embeddedDialog);
         style->setObjectName("style");
 
-        formLayout->setWidget(2, QFormLayout::FieldRole, style);
+        formLayout->setWidget(2, QFormLayout::ItemRole::FieldRole, style);
 
         label_4 = new QLabel(embeddedDialog);
         label_4->setObjectName("label_4");
 
-        formLayout->setWidget(3, QFormLayout::LabelRole, label_4);
+        formLayout->setWidget(3, QFormLayout::ItemRole::LabelRole, label_4);
 
         spacing = new QSlider(embeddedDialog);
         spacing->setObjectName("spacing");
         spacing->setOrientation(Qt::Horizontal);
 
-        formLayout->setWidget(3, QFormLayout::FieldRole, spacing);
+        formLayout->setWidget(3, QFormLayout::ItemRole::FieldRole, spacing);
 
 #if QT_CONFIG(shortcut)
         label->setBuddy(layoutDirection);

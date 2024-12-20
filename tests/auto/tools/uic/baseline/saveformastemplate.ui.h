@@ -56,14 +56,14 @@ public:
         label->setFrameShadow(QFrame::Plain);
         label->setTextFormat(Qt::AutoText);
 
-        formLayout->setWidget(0, QFormLayout::LabelRole, label);
+        formLayout->setWidget(0, QFormLayout::ItemRole::LabelRole, label);
 
         templateNameEdit = new QLineEdit(SaveFormAsTemplate);
         templateNameEdit->setObjectName("templateNameEdit");
         templateNameEdit->setMinimumSize(QSize(222, 0));
         templateNameEdit->setEchoMode(QLineEdit::Normal);
 
-        formLayout->setWidget(0, QFormLayout::FieldRole, templateNameEdit);
+        formLayout->setWidget(0, QFormLayout::ItemRole::FieldRole, templateNameEdit);
 
         label_2 = new QLabel(SaveFormAsTemplate);
         label_2->setObjectName("label_2");
@@ -71,12 +71,12 @@ public:
         label_2->setFrameShadow(QFrame::Plain);
         label_2->setTextFormat(Qt::AutoText);
 
-        formLayout->setWidget(1, QFormLayout::LabelRole, label_2);
+        formLayout->setWidget(1, QFormLayout::ItemRole::LabelRole, label_2);
 
         categoryCombo = new QComboBox(SaveFormAsTemplate);
         categoryCombo->setObjectName("categoryCombo");
 
-        formLayout->setWidget(1, QFormLayout::FieldRole, categoryCombo);
+        formLayout->setWidget(1, QFormLayout::ItemRole::FieldRole, categoryCombo);
 
 
         vboxLayout->addLayout(formLayout);

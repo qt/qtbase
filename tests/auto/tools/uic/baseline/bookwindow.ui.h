@@ -84,40 +84,40 @@ public:
         label_5 = new QLabel(groupBox_2);
         label_5->setObjectName("label_5");
 
-        formLayout->setWidget(0, QFormLayout::LabelRole, label_5);
+        formLayout->setWidget(0, QFormLayout::ItemRole::LabelRole, label_5);
 
         titleEdit = new QLineEdit(groupBox_2);
         titleEdit->setObjectName("titleEdit");
         titleEdit->setEnabled(true);
 
-        formLayout->setWidget(0, QFormLayout::FieldRole, titleEdit);
+        formLayout->setWidget(0, QFormLayout::ItemRole::FieldRole, titleEdit);
 
         label_2_2_2_2 = new QLabel(groupBox_2);
         label_2_2_2_2->setObjectName("label_2_2_2_2");
 
-        formLayout->setWidget(1, QFormLayout::LabelRole, label_2_2_2_2);
+        formLayout->setWidget(1, QFormLayout::ItemRole::LabelRole, label_2_2_2_2);
 
         authorEdit = new QComboBox(groupBox_2);
         authorEdit->setObjectName("authorEdit");
         authorEdit->setEnabled(true);
 
-        formLayout->setWidget(1, QFormLayout::FieldRole, authorEdit);
+        formLayout->setWidget(1, QFormLayout::ItemRole::FieldRole, authorEdit);
 
         label_3 = new QLabel(groupBox_2);
         label_3->setObjectName("label_3");
 
-        formLayout->setWidget(2, QFormLayout::LabelRole, label_3);
+        formLayout->setWidget(2, QFormLayout::ItemRole::LabelRole, label_3);
 
         genreEdit = new QComboBox(groupBox_2);
         genreEdit->setObjectName("genreEdit");
         genreEdit->setEnabled(true);
 
-        formLayout->setWidget(2, QFormLayout::FieldRole, genreEdit);
+        formLayout->setWidget(2, QFormLayout::ItemRole::FieldRole, genreEdit);
 
         label_4 = new QLabel(groupBox_2);
         label_4->setObjectName("label_4");
 
-        formLayout->setWidget(3, QFormLayout::LabelRole, label_4);
+        formLayout->setWidget(3, QFormLayout::ItemRole::LabelRole, label_4);
 
         yearEdit = new QSpinBox(groupBox_2);
         yearEdit->setObjectName("yearEdit");
@@ -125,18 +125,18 @@ public:
         yearEdit->setMaximum(2100);
         yearEdit->setMinimum(-1000);
 
-        formLayout->setWidget(3, QFormLayout::FieldRole, yearEdit);
+        formLayout->setWidget(3, QFormLayout::ItemRole::FieldRole, yearEdit);
 
         label = new QLabel(groupBox_2);
         label->setObjectName("label");
 
-        formLayout->setWidget(4, QFormLayout::LabelRole, label);
+        formLayout->setWidget(4, QFormLayout::ItemRole::LabelRole, label);
 
         ratingEdit = new QSpinBox(groupBox_2);
         ratingEdit->setObjectName("ratingEdit");
         ratingEdit->setMaximum(5);
 
-        formLayout->setWidget(4, QFormLayout::FieldRole, ratingEdit);
+        formLayout->setWidget(4, QFormLayout::ItemRole::FieldRole, ratingEdit);
 
 
         vboxLayout1->addWidget(groupBox_2);

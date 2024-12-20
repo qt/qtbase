@@ -1104,8 +1104,9 @@ void WriteInitialization::acceptSpacer(DomSpacer *node)
 static inline QString formLayoutRole(int column, int colspan)
 {
     if (colspan > 1)
-        return "QFormLayout::SpanningRole"_L1;
-    return column == 0 ? "QFormLayout::LabelRole"_L1 : "QFormLayout::FieldRole"_L1;
+        return "QFormLayout::ItemRole::SpanningRole"_L1;
+    return column == 0
+        ? "QFormLayout::ItemRole::LabelRole"_L1 : "QFormLayout::ItemRole::FieldRole"_L1;
 }
 
 static QString layoutAddMethod(DomLayoutItem::Kind kind, const QString &layoutClass)
