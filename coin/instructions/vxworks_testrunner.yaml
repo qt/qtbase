@@ -22,11 +22,17 @@ instructions:
 
       # qtest_in_vxworks_complete echo is used to detect test process completion as it will
       # be echoed after test process ends normally or crashes when normal log lines are not present.
+
       # Check that emulator is functioning
-      echo "cmd echo \"health check\"" > /tmp/guest.in
-      sleep 0.5
-      read -t 5 echoline</tmp/guest.out
-      read -t 1 testline</tmp/guest.out
+      ( echo "cmd echo \"health check\"" > /tmp/guest.in ) & pid=$!
+      ( sleep 5 && kill -HUP $pid ) 2>/dev/null & watcher=$!
+      wait $pid 2>/dev/null && pkill -HUP -P $watcher
+
+      if [[ "$?" -eq "0" ]]; then
+          read -t 5 echoline</tmp/guest.out
+          read -t 1 testline</tmp/guest.out
+      fi
+
       if [[ -z "$testline" ]]; then
           echo "Restarting  stuck emulator"
           pkill qemu-system
@@ -57,5 +63,17 @@ instructions:
               echo "$line"
               exitcode=$(echo "$line" | sed -nr 's/qtest_in_vxworks_complete: (-?[0-9]+)/\1/gp' | tr -d '\r')
               exit $exitcode
+          fi
+
+          # Handle crashes
+          if echo "$line" | /usr/bin/grep -qE "(SIGSEGV)|(SIGABRT)"
+          then
+              # Empty output pipe
+              while read -t 1 line; do
+                  echo $line
+              done < /tmp/guest.out
+              echo "Test crashed"
+              pkill qemu-system  # Kill emulator to force restart on next test start
+              exit 1
           fi
       done < /tmp/guest.out
