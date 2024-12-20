@@ -116,14 +116,22 @@ int pthread_timedjoin_np(...) { return ENOSYS; }    // pretend
 // Moreover, this can be racy and having our own thread_local early in
 // QThreadPrivate::start() made it even more so. See QTBUG-129846 for analysis.
 //
-// For the platforms where this C++11 feature is not properly implemented yet,
-// we fall back to a pthread_setspecific() call and do not perform late
-// clean-up, because then the order of registration of those pthread_specific_t
-// keys matters and Glib uses them too.
+// There's a good correlation between this C++11 feature and our ability to
+// call QThreadPrivate::cleanup() from destroy_thread_data().
 //
 // https://gcc.gnu.org/git/?p=gcc.git;a=blob;f=libstdc%2B%2B-v3/libsupc%2B%2B/atexit_thread.cc;hb=releases/gcc-14.2.0#l133
 // https://github.com/llvm/llvm-project/blob/llvmorg-19.1.0/libcxxabi/src/cxa_thread_atexit.cpp#L118-L120
-#endif // QT_CONFIG(broken_threadlocal_dtors)
+#endif
+//
+// However, we can't destroy the QThreadData for the thread that called
+// ::exit() that early, because a lot of existing content (including in Qt)
+// runs when the static destructors are run and they do depend on QThreadData
+// being extant. Likewise, we can't destroy it at global static destructor time
+// because it's too late: the event dispatcher is usually a class found in a
+// plugin and the plugin's destructors (as well as QtGui's) will have run. So
+// we strike a middle-ground and destroy at function-local static destructor
+// time (see set_thread_data()), because those run after the thread_local ones,
+// before the global ones, and in reverse order of creation.
 
 Q_CONSTINIT static thread_local QThreadData *currentThreadData = nullptr;
 
@@ -165,34 +173,21 @@ static QThreadData *get_thread_data()
     return currentThreadData;
 }
 
-#if QT_CONFIG(broken_threadlocal_dtors)
-// The destructors registered with pthread_key_create() below are NOT run from
-// exit(), so we must also use atexit().
-static void destroy_main_thread_data()
-{
-    if (QThreadData *d = get_thread_data())
-        destroy_current_thread_data(d);
-}
-Q_DESTRUCTOR_FUNCTION(destroy_main_thread_data)
-#endif
-
 static void set_thread_data(QThreadData *data) noexcept
 {
     if (data) {
-        if constexpr (QT_CONFIG(broken_threadlocal_dtors)) {
-            static pthread_key_t tls_key;
-            struct TlsKey {
-                TlsKey() noexcept { pthread_key_create(&tls_key, destroy_current_thread_data); }
-                ~TlsKey() { pthread_key_delete(tls_key); }
-            };
-            static TlsKey currentThreadCleanup;
-            pthread_setspecific(tls_key, data);
-        } else {
-            struct Cleanup {
-                ~Cleanup() { destroy_current_thread_data(currentThreadData); }
-            };
-            static thread_local Cleanup currentThreadCleanup;
-        }
+        static pthread_key_t tls_key;
+        struct TlsKey {
+            TlsKey() noexcept { pthread_key_create(&tls_key, destroy_current_thread_data); }
+            ~TlsKey()
+            {
+                if (QThreadData *data = currentThreadData)
+                    destroy_current_thread_data(data);
+                pthread_key_delete(tls_key);
+            }
+        };
+        static TlsKey currentThreadCleanup;
+        pthread_setspecific(tls_key, data);
     }
     currentThreadData = data;
 }

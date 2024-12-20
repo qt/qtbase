@@ -46,3 +46,11 @@ if (APPLE)
     set_property(TARGET tst_qguiapplication PROPERTY MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/Info.plist")
     set_property(TARGET tst_qguiapplication PROPERTY PROPERTY MACOSX_BUNDLE TRUE)
 endif()
+
+qt_internal_add_test(tst_static_qguiapplication
+    SOURCES
+        ../../../corelib/kernel/qcoreapplication/tst_static_qcoreapplication.cpp
+    LIBRARIES
+        Qt::CorePrivate
+        Qt::Gui
+)

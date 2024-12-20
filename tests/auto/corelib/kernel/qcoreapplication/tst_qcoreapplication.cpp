@@ -1065,27 +1065,6 @@ static void createQObjectOnDestruction()
     // QThread) after the last QObject has been destroyed (especially after
     // QCoreApplication has).
 
-#if defined(QT_QGUIAPPLICATIONTEST)
-    // If we've linked to QtGui, we make no representations about there being
-    // global static (not Q_GLOBAL_STATIC) variables that are QObject.
-#elif QT_CONFIG(broken_threadlocal_dtors)
-    // With broken thread-local destructors, we cannot guarantee the ordering
-    // between thread_local destructors and static-lifetime destructors (hence
-    // why they're broken).
-    //
-    // On Unix systems, we use a Q_DESTRUCTOR_FUNCTION in qthread_unix.cpp to
-    // work around the issue, but that means it cannot have run yet.
-    //
-    // On Windows, given the nature of how destructors are run in DLLs, they're
-    // always considered broken. In fact, we know the destructor in
-    // qthread_win.cpp hasn't run yet.
-#else
-    // The thread_local destructor in qthread_unix.cpp has run so the
-    // QAdoptedThread must have been cleaned up.
-    if (theMainThreadIsSet())
-        qFatal("theMainThreadIsSet() returned true; some QObject must have leaked");
-#endif
-
     // Before the fixes, this would cause a dangling pointer dereference. If
     // the problem comes back, it's possible that the following causes no
     // effect.

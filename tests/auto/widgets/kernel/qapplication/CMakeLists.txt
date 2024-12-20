@@ -15,3 +15,11 @@ add_dependencies(tst_qapplication
     desktopsettingsaware_helper
     modal_helper
 )
+
+qt_internal_add_test(tst_static_qapplication
+    SOURCES
+        ../../../corelib/kernel/qcoreapplication/tst_static_qcoreapplication.cpp
+    LIBRARIES
+        Qt::CorePrivate
+        Qt::Widgets
+)

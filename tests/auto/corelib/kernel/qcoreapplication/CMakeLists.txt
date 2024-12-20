@@ -37,3 +37,10 @@ endif()
 if (ANDROID)
     set_property(TARGET tst_qcoreapplication PROPERTY QT_ANDROID_VERSION_NAME ${target_version})
 endif()
+
+qt_internal_add_test(tst_static_qcoreapplication
+    SOURCES
+        tst_static_qcoreapplication.cpp
+    LIBRARIES
+        Qt::CorePrivate
+)
