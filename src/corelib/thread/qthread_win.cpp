@@ -11,6 +11,7 @@
 
 #include <private/qcoreapplication_p.h>
 #include <private/qeventdispatcher_win_p.h>
+#include "qloggingcategory.h"
 
 #include <qt_windows.h>
 
