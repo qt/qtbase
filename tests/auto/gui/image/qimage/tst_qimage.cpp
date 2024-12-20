@@ -2768,7 +2768,8 @@ void tst_QImage::mirrored_data()
     QTest::newRow("Format_MonoLSB, horizontal+vertical, non-aligned") << QImage::Format_MonoLSB << true << true << 21 << 16;
 }
 
-#if QT_DEPRECATED_SINCE(6, 10)
+#if QT_DEPRECATED_SINCE(6, 13)
+QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
 void tst_QImage::mirrored()
 {
     QFETCH(QImage::Format, format);
@@ -2826,7 +2827,8 @@ void tst_QImage::mirrored()
                 QCOMPARE(image.pixel(j,i), imageMirrored.pixel(j,i));
     }
 }
-#endif
+QT_WARNING_POP
+#endif // QT_DEPRECATED_SINCE(6, 13)
 
 void tst_QImage::flipped_data()
 {

@@ -3293,7 +3293,7 @@ QImage QImage::createMaskFromColor(QRgb color, Qt::MaskMode mode) const
 /*!
     \fn QImage QImage::mirrored(bool horizontal = false, bool vertical = true) const &
     \fn QImage QImage::mirrored(bool horizontal = false, bool vertical = true) &&
-    \deprecated [6.9] Use flipped(Qt::Orientations) instead.
+    \deprecated [6.13] Use flipped(Qt::Orientations) instead.
 
     Returns a mirror of the image, mirrored in the horizontal and/or
     the vertical direction depending on whether \a horizontal and \a
@@ -3307,7 +3307,7 @@ QImage QImage::createMaskFromColor(QRgb color, Qt::MaskMode mode) const
 /*!
     \fn void QImage::mirror(bool horizontal = false, bool vertical = true)
     \since 6.0
-    \deprecated [6.9] Use flip(Qt::Orientations) instead.
+    \deprecated [6.13] Use flip(Qt::Orientations) instead.
 
     Mirrors of the image in the horizontal and/or the vertical direction depending
     on whether \a horizontal and \a vertical are set to true or false.

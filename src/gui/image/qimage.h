@@ -215,14 +215,14 @@ public:
     [[nodiscard]] QImage scaledToHeight(int h, Qt::TransformationMode mode = Qt::FastTransformation) const;
     [[nodiscard]] QImage transformed(const QTransform &matrix, Qt::TransformationMode mode = Qt::FastTransformation) const;
     static QTransform trueMatrix(const QTransform &, int w, int h);
-#if QT_DEPRECATED_SINCE(6, 10)
-    QT_DEPRECATED_VERSION_X_6_10("Use flipped(Qt::Orientations) instead")
+#if QT_DEPRECATED_SINCE(6, 13)
+    QT_DEPRECATED_VERSION_X_6_13("Use flipped(Qt::Orientations) instead")
     [[nodiscard]] QImage mirrored(bool horizontally = false, bool vertically = true) const &
     { return mirrored_helper(horizontally, vertically); }
-    QT_DEPRECATED_VERSION_X_6_10("Use flipped(Qt::Orientations) instead")
+    QT_DEPRECATED_VERSION_X_6_13("Use flipped(Qt::Orientations) instead")
     [[nodiscard]] QImage mirrored(bool horizontally = false, bool vertically = true) &&
     { mirrored_inplace(horizontally, vertically); return std::move(*this); }
-    QT_DEPRECATED_VERSION_X_6_10("Use flip(Qt::Orientations) instead")
+    QT_DEPRECATED_VERSION_X_6_13("Use flip(Qt::Orientations) instead")
     void mirror(bool horizontally = false, bool vertically = true)
     { mirrored_inplace(horizontally, vertically); }
 #endif
