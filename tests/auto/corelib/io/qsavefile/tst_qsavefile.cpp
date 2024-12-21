@@ -64,7 +64,8 @@ private slots:
     void transactionalWriteNoPermissionsOnDir();
     void transactionalWriteNoPermissionsOnFile();
     void transactionalWriteCanceled();
-    void transactionalWriteErrorRenaming();
+    void transactionalWritePermissionsErrorRenaming();
+    void transactionalWriteTypeErrorRenaming();
     void symlink();
     void directory();
 
@@ -362,7 +363,7 @@ void tst_QSaveFile::transactionalWriteCanceled()
     QCOMPARE(file.fileName(), targetFile);
 }
 
-void tst_QSaveFile::transactionalWriteErrorRenaming()
+void tst_QSaveFile::transactionalWritePermissionsErrorRenaming()
 {
 #if defined(Q_OS_UNIX) && !defined(Q_OS_VXWORKS)
     if (::geteuid() == 0)
@@ -396,6 +397,33 @@ void tst_QSaveFile::transactionalWriteErrorRenaming()
     QVERIFY(!QFile::exists(targetFile)); // renaming failed
 #endif
     QCOMPARE(file.error(), QFile::RenameError);
+}
+
+void tst_QSaveFile::transactionalWriteTypeErrorRenaming()
+{
+    QTemporaryDir dir;
+    QVERIFY2(dir.isValid(), qPrintable(dir.errorString()));
+    const QString targetFile = dir.path() + QString::fromLatin1("/outfile");
+    QSaveFile file(targetFile);
+    QVERIFY2(file.open(QIODevice::WriteOnly), msgCannotOpen(file).constData());
+    QCOMPARE(file.write("Hello"), qint64(5));
+
+    QFileInfo target(targetFile);
+    QVERIFY(!target.exists(targetFile));
+
+    // create a directory with the target file name: one can't replace a
+    // directory with a file through a rename
+    QVERIFY(QDir(dir.path()).mkdir("outfile"));
+
+    // The saving should fail.
+    QVERIFY(!file.commit());
+    QCOMPARE(file.error(), QFile::RenameError);
+#ifdef Q_OS_UNIX
+    QCOMPARE(file.errorString(), qt_error_string(EISDIR));
+#endif
+
+    target.refresh();
+    QVERIFY(target.isDir());
 }
 
 void tst_QSaveFile::symlink()
