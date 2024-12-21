@@ -686,10 +686,6 @@ bool readConfiguration(const QFile &file)
         process(ch); // ERROR: ch is copied from deleted memory
 //! [as-const-4]
 
-//! [qterminate]
-    try { expr; } catch(...) { qTerminate(); }
-//! [qterminate]
-
 //! [qdecloverride]
     // generate error if this doesn't actually override anything:
     virtual void MyWidget::paintEvent(QPaintEvent*) override;

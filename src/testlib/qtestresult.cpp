@@ -43,7 +43,7 @@ namespace QTest
         }();
 
         if (failed && fatalFailure)
-            qTerminate();
+            std::terminate();
         Internal::failed = failed;
     }
 

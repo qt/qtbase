@@ -1248,6 +1248,15 @@ QUuid QUuid::createUuidV5(const QUuid &ns, const QByteArray &baseData) noexcept
 
 #include "qchar.h" // inlined API
 
+
+#include "qexceptionhandling.h"
+
+Q_NORETURN void qTerminate() noexcept
+{
+    std::terminate();
+}
+
+
 #include "qmetatype.h"
 
 bool QMetaType::isRegistered() const

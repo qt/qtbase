@@ -319,7 +319,7 @@ void terminate_on_exception(T &&t)
         throw;
 #endif // __GLIBCXX__
     } catch (...) {
-        qTerminate();
+        std::terminate();
     }
 #endif // QT_NO_EXCEPTIONS
 }
