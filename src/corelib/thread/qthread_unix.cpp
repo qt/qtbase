@@ -8,6 +8,7 @@
 
 #include <private/qcoreapplication_p.h>
 #include <private/qcore_unix_p.h>
+#include "qloggingcategory.h"
 #include <private/qtools_p.h>
 
 #if defined(Q_OS_DARWIN)
@@ -387,7 +388,6 @@ void QThreadPrivate::finish()
         d->priority = QThread::InheritPriority;
         locker.unlock();
         emit thr->finished(QThread::QPrivateSignal());
-        qCDebug(lcDeleteLater) << "Sending deferred delete events as part of finishing thread" << thr;
         QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
 
         void *data = &d->data->tls;

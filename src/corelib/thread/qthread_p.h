@@ -352,8 +352,11 @@ class QScopedScopeLevelCounter
 {
     QThreadData *threadData;
 public:
-    QScopedScopeLevelCounter(QThreadData *threadData);
-    ~QScopedScopeLevelCounter();
+    inline QScopedScopeLevelCounter(QThreadData *threadData)
+        : threadData(threadData)
+    { ++threadData->scopeLevel; }
+    inline ~QScopedScopeLevelCounter()
+    { --threadData->scopeLevel; }
 };
 
 // thread wrapper for the main() thread
