@@ -330,21 +330,26 @@ QWasmWindowTreeNode *QWasmScreen::parentNode()
     return nullptr;
 }
 
-QList<QWasmWindow *> QWasmScreen::allWindows()
+QList<QWasmWindow *> QWasmScreen::allWindows() const
 {
-    QList<QWasmWindow *> windows;
-    for (auto *child : childStack()) {
-        const QWindowList list = child->window()->findChildren<QWindow *>(Qt::FindChildrenRecursively);
-        for (auto child : list) {
-            auto handle = child->handle();
-            if (handle) {
-                auto wnd = static_cast<QWasmWindow *>(handle);
-                windows.push_back(wnd);
-            }
+    QList<QWasmWindow *> currentChildren;
+    QList<QWasmWindow *> result;
+
+    for (auto *w : childStack())
+        currentChildren << w;
+
+    while (!currentChildren.empty()) {
+        result << currentChildren;
+
+        QList<QWasmWindow *> toIterate;
+        currentChildren.swap(toIterate);
+
+        for (auto child : toIterate) {
+            for (auto *w : child->childStack())
+                currentChildren << w;
         }
-        windows.push_back(child);
     }
-    return windows;
+    return result;
 }
 
 QT_END_NAMESPACE

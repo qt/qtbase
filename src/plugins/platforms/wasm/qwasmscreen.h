@@ -43,7 +43,7 @@ public:
     QWasmCompositor *compositor();
     QWasmDeadKeySupport *deadKeySupport() { return m_deadKeySupport.get(); }
 
-    QList<QWasmWindow *> allWindows();
+    QList<QWasmWindow *> allWindows() const;
 
     QRect geometry() const override;
     int depth() const override;
