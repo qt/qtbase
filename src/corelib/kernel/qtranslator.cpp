@@ -19,6 +19,7 @@
 #include "qtranslator_p.h"
 #include "qlocale.h"
 #include "qlogging.h"
+#include "qloggingcategory.h"
 #include "qdebug.h"
 #include "qendian.h"
 #include "qresource.h"

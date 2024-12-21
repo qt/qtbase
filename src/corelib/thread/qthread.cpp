@@ -131,21 +131,6 @@ void QAdoptedThread::run()
 }
 #endif
 
-QScopedScopeLevelCounter::QScopedScopeLevelCounter(QThreadData *threadData)
-    : threadData(threadData)
-{
-    ++threadData->scopeLevel;
-    qCDebug(lcDeleteLater) << "Increased" << threadData->thread
-                      << "scope level to" << threadData->scopeLevel;
-}
-
-QScopedScopeLevelCounter::~QScopedScopeLevelCounter()
-{
-    --threadData->scopeLevel;
-    qCDebug(lcDeleteLater) << "Decreased" << threadData->thread
-                      << "scope level to" << threadData->scopeLevel;
-}
-
 #if QT_CONFIG(thread)
 /*
   QThreadPrivate
