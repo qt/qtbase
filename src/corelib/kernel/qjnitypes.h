@@ -127,29 +127,18 @@ QT_OVERLOADED_MACRO(Q_DECLARE_JNI_CLASS_SPECIALIZATION, __VA_ARGS__)
 
 namespace QtJniMethods {
 namespace Detail {
-// Various helpers to forward a call from a variadic argument function to
-// the real function with proper type conversion. This is needed because we
-// want to write functions that take QJniObjects (subclasses), while Java
-// can only call functions that take jobjects.
+// Various helpers to forward the call to the registered function (with JNI types
+// as arguments) to the real function with proper type conversion. This is needed
+// because we want to write functions that take QJniObjects (subclasses), while
+// Java can only call functions that take jobjects.
 
-// In Var-arg functions, any argument narrower than (unsigned) int or double
-// is promoted to (unsigned) int or double.
-template <typename Arg> struct PromotedType { using Type = Arg; };
-template <> struct PromotedType<bool> { using Type = int; };
-template <> struct PromotedType<char> { using Type = int; };
-template <> struct PromotedType<signed char> { using Type = int; };
-template <> struct PromotedType<unsigned char> { using Type = unsigned int; };
-template <> struct PromotedType<short> { using Type = int; };
-template <> struct PromotedType<unsigned short> { using Type = unsigned int; };
-template <> struct PromotedType<float> { using Type = double; };
-
-// Map any QJniObject type to jobject; that's what's on the va_list
+// Map any QJniObject type to jobject
 template <typename Arg>
 struct JNITypeForArgImpl
 {
     using Type = std::conditional_t<std::disjunction_v<std::is_base_of<QJniObject, Arg>,
                                                        std::is_base_of<QtJniTypes::JObjectBase, Arg>>,
-                                    jobject, typename PromotedType<Arg>::Type>;
+                                    jobject, Arg>;
     static Arg fromVarArg(Type t)
     {
         return static_cast<Arg>(t);
@@ -196,93 +185,60 @@ public:
 
 template <typename Arg>
 using JNITypeForArg = typename JNITypeForArgImpl<std::decay_t<Arg>>::Type;
-template <typename Arg, typename Type>
-static inline auto methodArgFromVarArg(Type t) // Type comes from a va_arg, so is always POD
-{
-    return JNITypeForArgImpl<std::decay_t<Arg>>::fromVarArg(t);
-}
-
-// Turn a va_list into a tuple of typed arguments
-template <typename ...Args>
-static constexpr auto makeTupleFromArgsHelper(va_list args)
-{
-    return std::tuple(methodArgFromVarArg<Args>(va_arg(args, JNITypeForArg<Args>))...);
-}
-
-template <typename Ret, typename ...Args>
-static constexpr auto makeTupleFromArgs(Ret (*)(JNIEnv *, jobject, Args...), va_list args)
-{
-    return makeTupleFromArgsHelper<Args...>(args);
-}
-template <typename Ret, typename ...Args>
-static constexpr auto makeTupleFromArgs(Ret (*)(JNIEnv *, jclass, Args...), va_list args)
-{
-    return makeTupleFromArgsHelper<Args...>(args);
-}
-
-template <typename>
-struct NativeFunctionReturnType {};
-
-template<typename Ret, typename... Args>
-struct NativeFunctionReturnType<Ret(Args...)>
-{
-  using type = Ret;
-};
-
 } // namespace Detail
 } // namespace QtJniMethods
 
-// A va_ variadic arguments function that we register with JNI as a proxy
-// for the function we have. This function uses the helpers to unpack the
-// variadic arguments into a tuple of typed arguments, which we then call
-// the actual function with. This then takes care of implicit conversions,
-// e.g. a jobject becomes a QJniObject.
-#define Q_DECLARE_JNI_NATIVE_METHOD_HELPER(Method)                              \
-static QtJniMethods::Detail::NativeFunctionReturnType<decltype(Method)>::type   \
-va_##Method(JNIEnv *env, jclass thiz, ...)                                      \
-{                                                                               \
-    va_list args;                                                               \
-    va_start(args, thiz);                                                       \
-    auto va_cleanup = qScopeGuard([&args]{ va_end(args); });                    \
-    auto argTuple = QtJniMethods::Detail::makeTupleFromArgs(Method, args);      \
-    return std::apply([env, thiz](auto &&... args) {                            \
-        return Method(env, thiz, args...);                                      \
-    }, argTuple);                                                               \
+// Declaring a JNI method results in a struct with a template function call() that
+// gets instantiated with the return type and arguments of the declared method,
+// and registered with JNI. That template is implemented to call the declared
+// method, with arguments explicitly converted to the types the declared method
+// expects (e.g. jobject becomes QJniObject, a QString, a QList etc).
+#define Q_DECLARE_JNI_NATIVE_METHOD_HELPER(Method, Postfix, Name)                           \
+struct Method##_##Postfix {                                                                 \
+template<typename Ret, typename JType, typename... Args>                                    \
+JNICALL static                                                                              \
+Ret call(JNIEnv *env, JType thiz, QtJniMethods::Detail::JNITypeForArg<Args> ...args)        \
+{                                                                                           \
+    return Method(env, thiz, QtJniMethods::Detail::JNITypeForArgImpl<                       \
+                                                std::decay_t<Args>>::fromVarArg(args)...    \
+                 );                                                                         \
+}                                                                                           \
+static constexpr auto signature = QtJniTypes::nativeMethodSignature(Method);                \
+template<typename Ret, typename JType, typename ...Args>                                    \
+static constexpr JNINativeMethod makeJNIMethod(Ret(*)(JNIEnv *, JType, Args...))            \
+{                                                                                           \
+    return JNINativeMethod {                                                                \
+        #Name, signature.data(),                                                            \
+        reinterpret_cast<void *>(&call<Ret, JType, Args...>)                                \
+    };                                                                                      \
+}                                                                                           \
+};                                                                                          \
+
+#define Q_DECLARE_JNI_NATIVE_METHOD(...)                                        \
+    QT_OVERLOADED_MACRO(QT_DECLARE_JNI_NATIVE_METHOD, __VA_ARGS__)              \
+
+#define QT_DECLARE_JNI_NATIVE_METHOD_2(Method, Name)                            \
+namespace QtJniMethods {                                                        \
+Q_DECLARE_JNI_NATIVE_METHOD_HELPER(Method, Helper, Name)                        \
 }                                                                               \
 
-#define Q_DECLARE_JNI_NATIVE_METHOD(...)                        \
-    QT_OVERLOADED_MACRO(QT_DECLARE_JNI_NATIVE_METHOD, __VA_ARGS__) \
+#define QT_DECLARE_JNI_NATIVE_METHOD_1(Method)                                  \
+    QT_DECLARE_JNI_NATIVE_METHOD_2(Method, Method)                              \
 
-#define QT_DECLARE_JNI_NATIVE_METHOD_2(Method, Name)            \
-namespace QtJniMethods {                                        \
-Q_DECLARE_JNI_NATIVE_METHOD_HELPER(Method)                      \
-static constexpr auto Method##_signature =                      \
-    QtJniTypes::nativeMethodSignature(Method);                  \
-static const JNINativeMethod Method##_method = {                \
-    #Name, Method##_signature.data(),                           \
-    reinterpret_cast<void *>(va_##Method)                       \
-};                                                              \
-}                                                               \
+#define Q_JNI_NATIVE_METHOD(Method)                                             \
+    QtJniMethods::Method##_Helper::makeJNIMethod(::Method)
 
-#define QT_DECLARE_JNI_NATIVE_METHOD_1(Method)                  \
-    QT_DECLARE_JNI_NATIVE_METHOD_2(Method, Method)              \
+#define Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(...)                                   \
+    QT_OVERLOADED_MACRO(QT_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE, __VA_ARGS__)         \
 
-#define Q_JNI_NATIVE_METHOD(Method) QtJniMethods::Method##_method
+#define QT_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE_2(Method, Name)                       \
+Q_DECLARE_JNI_NATIVE_METHOD_HELPER(Method, QtJniMethod, Name)                               \
 
-#define Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(...)                                        \
-    QT_OVERLOADED_MACRO(QT_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE, __VA_ARGS__)              \
+#define QT_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE_1(Method)                             \
+    QT_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE_2(Method, Method)                         \
 
-#define QT_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE_2(Method, Name)                            \
-    Q_DECLARE_JNI_NATIVE_METHOD_HELPER(Method)                                                   \
-    static inline constexpr auto Method##_signature = QtJniTypes::nativeMethodSignature(Method); \
-    static inline const JNINativeMethod Method##_method = {                                      \
-        #Name, Method##_signature.data(), reinterpret_cast<void *>(va_##Method)                  \
-    };
-
-#define QT_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE_1(Method)                                  \
-    QT_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE_2(Method, Method)                              \
-
-#define Q_JNI_NATIVE_SCOPED_METHOD(Method, Scope) Scope::Method##_method
+#define Q_JNI_NATIVE_SCOPED_METHOD(Method, Scope)                                           \
+    Scope::Method##_QtJniMethod::makeJNIMethod(Scope::Method)
 
 // Classes for value types
 Q_DECLARE_JNI_CLASS(String, "java/lang/String")
