@@ -2192,11 +2192,9 @@ void tst_QJniObject::callback()
         }));
         result = testObject.callMethod<int>("callMeBackWithFloat", 1.2345f);
         QVERIFY(calledWithFloat);
-        QEXPECT_FAIL("", "QTBUG-132410", Continue);
         QCOMPARE(calledWithFloat.value(), 1.2345f);
         result = testObject.callMethod<int>("callMeBackWithFloatStatic", 1.2345f);
         QVERIFY(calledWithFloatStatic);
-        QEXPECT_FAIL("", "QTBUG-132410", Continue);
         QCOMPARE(calledWithFloatStatic.value(), 1.2345f);
         break;
     case CallbackParameterType::JniArray: {
@@ -2257,7 +2255,6 @@ void tst_QJniObject::callback()
         }));
         result = testObject.callMethod<int>("callMeBackWithMany");
         QVERIFY(calledWithMany);
-        QEXPECT_FAIL("", "QTBUG-132410", Continue);
         QVERIFY(calledWithMany.value());
         break;
     }
