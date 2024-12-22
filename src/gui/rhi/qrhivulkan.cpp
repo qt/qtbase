@@ -4570,7 +4570,7 @@ void QRhiVulkan::finishActiveReadbacks(bool forced)
             if (readback.result->completed)
                 completedCallbacks.append(readback.result->completed);
 
-            activeTextureReadbacks.removeLast();
+            activeTextureReadbacks.remove(i);
         }
     }
 
@@ -4593,7 +4593,7 @@ void QRhiVulkan::finishActiveReadbacks(bool forced)
             if (readback.result->completed)
                 completedCallbacks.append(readback.result->completed);
 
-            activeBufferReadbacks.removeLast();
+            activeBufferReadbacks.remove(i);
         }
     }
 
