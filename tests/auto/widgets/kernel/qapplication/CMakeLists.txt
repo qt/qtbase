@@ -11,14 +11,27 @@ add_subdirectory(desktopsettingsaware)
 add_subdirectory(modal)
 add_subdirectory(test)
 
+qt_internal_add_executable(apphelper_widgets
+    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
+    SOURCES
+        ../../../corelib/kernel/qcoreapplication/apphelper.cpp
+        ../../../corelib/kernel/qcoreapplication/maybeshow.h
+    LIBRARIES
+        Qt::CorePrivate
+        Qt::Widgets
+)
+set_target_properties(apphelper_widgets PROPERTIES OUTPUT_NAME apphelper)
+
 add_dependencies(tst_qapplication
     desktopsettingsaware_helper
     modal_helper
+    apphelper_widgets
 )
 
 qt_internal_add_test(tst_static_qapplication
     SOURCES
         ../../../corelib/kernel/qcoreapplication/tst_static_qcoreapplication.cpp
+        ../../../corelib/kernel/qcoreapplication/maybeshow.h
     LIBRARIES
         Qt::CorePrivate
         Qt::Widgets

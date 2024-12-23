@@ -59,6 +59,7 @@ class tst_QApplication : public QObject
 {
 Q_OBJECT
 
+    void runHelperTest();
 private slots:
     void cleanup();
     void sendEventsOnProcessEvents(); // this must be the first test
@@ -99,6 +100,18 @@ private slots:
     void sendPostedEvents();
 #endif  // ifdef QT_BUILD_INTERNAL
 
+#if QT_CONFIG(process)
+    void exitFromEventLoop() { runHelperTest(); }
+    void exitFromThread() { runHelperTest(); }
+    void exitFromThreadedEventLoop() { runHelperTest(); }
+#  if defined(Q_OS_APPLE)
+    // QGuiApplication in a thread fails inside Apple libs:
+    // *** Assertion failure in -[NSMenu _setMenuName:], NSMenu.m:777
+    // *** Terminating app due to uncaught exception 'NSInternalInconsistencyException', reason: 'API misuse: setting the main menu on a non-main thread. Main menu contents should only be modified from the main thread.'
+#  else
+    void mainAppInAThread() { runHelperTest(); }
+#  endif
+#endif
     void thread();
     void desktopSettingsAware();
 
@@ -1195,6 +1208,29 @@ void tst_QApplication::sendPostedEvents()
     (void) QCoreApplication::exec();
     QVERIFY(p.isNull());
 }
+#endif
+
+#if QT_CONFIG(process)
+#if defined(Q_OS_WIN)
+#  define EXE ".exe"
+#else
+#  define EXE ""
+#endif
+void tst_QApplication::runHelperTest()
+{
+#  ifdef Q_OS_ANDROID
+    QSKIP("Skipped on Android: helper not present");
+#  endif
+    int argc = 0;
+    QCoreApplication app(argc, nullptr);
+    QProcess process;
+    process.start(QFINDTESTDATA("apphelper" EXE), { QTest::currentTestFunction() });
+    QVERIFY2(process.waitForFinished(5000), qPrintable(process.errorString()));
+    QCOMPARE(process.readAllStandardError(), QString());
+    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
+    QCOMPARE(process.exitCode(), 0);
+}
+#undef EXE
 #endif
 
 void tst_QApplication::thread()
