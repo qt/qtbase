@@ -303,10 +303,15 @@ public class QtJniObjectTestClass
     native public int callbackWithBoolean(boolean value);
     native public int callbackWithInt(int value);
     native public int callbackWithDouble(double value);
+    native public int callbackWithFloat(float value);
+    native public static int callbackWithFloatStatic(float value);
     native public int callbackWithJniArray(double[] value);
     native public int callbackWithRawArray(Object[] value);
     native public int callbackWithQList(double[] value);
     native public int callbackWithStringList(String[] value);
+    native public int callbackWithNull(String str);
+    native public int callbackWithMany(byte b, short s, int i, long l, float f, double d,
+                                       boolean bo, char c, String str);
 
     public int callMeBackWithObject(QtJniObjectTestClass that)
     {
@@ -342,6 +347,16 @@ public class QtJniObjectTestClass
     {
         return callbackWithDouble(value);
     }
+
+    public int callMeBackWithFloat(float value)
+    {
+        return callbackWithFloat(value);
+    }
+    public int callMeBackWithFloatStatic(float value)
+    {
+        return callbackWithFloatStatic(value);
+    }
+
     public int callMeBackWithJniArray(double[] value)
     {
         return callbackWithJniArray(value);
@@ -357,6 +372,16 @@ public class QtJniObjectTestClass
     public int callMeBackWithStringList(String[] value)
     {
         return callbackWithStringList(value);
+    }
+    public int callMeBackWithNull()
+    {
+        return callbackWithNull(null);
+    }
+    public int callMeBackWithMany()
+    {
+        return callbackWithMany(A_BYTE_VALUE, A_SHORT_VALUE, A_INT_VALUE, A_LONG_VALUE,
+                                A_FLOAT_VALUE, A_DOUBLE_VALUE, A_BOOLEAN_VALUE,
+                                A_CHAR_VALUE, A_STRING_OBJECT);
     }
 
     public Object callMethodThrowsException() throws Exception {
