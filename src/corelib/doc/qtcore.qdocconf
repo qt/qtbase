@@ -38,6 +38,7 @@ headerdirs  += ..
 
 sourcedirs  += .. \
                 ../../tools/androiddeployqt \
+                ../../tools/androidtestrunner \
                 ../../android/templates \
                 src/includes
 
