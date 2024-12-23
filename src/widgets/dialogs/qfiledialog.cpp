@@ -2612,6 +2612,16 @@ inline static QUrl _qt_get_directory(const QUrl &url, const QFileInfo &local)
     }
 }
 
+inline static void _qt_init_lastVisited() {
+#if QT_CONFIG(settings)
+    if (lastVisitedDir()->isEmpty()) {
+        QSettings settings(QSettings::UserScope, u"QtProject"_s);
+        const QString &lastVisisted = settings.value("FileDialog/lastVisited", QString()).toString();
+        *lastVisitedDir() = QUrl::fromLocalFile(lastVisisted);
+    }
+#endif
+}
+
 /*
     Initialize working directory and selection from \a url.
 */
@@ -2623,6 +2633,7 @@ QFileDialogArgs::QFileDialogArgs(const QUrl &url)
     if (!url.isEmpty())
         directory = _qt_get_directory(url, local);
     if (directory.isEmpty()) {
+        _qt_init_lastVisited();
         const QUrl lastVisited = *lastVisitedDir();
         if (lastVisited != url)
             directory = _qt_get_directory(lastVisited, QFileInfo());
@@ -2910,11 +2921,7 @@ void QFileDialogPrivate::init(const QFileDialogArgs &args)
     q->setFileMode(QFileDialog::AnyFile);
     if (!args.filter.isEmpty())
         q->setNameFilter(args.filter);
-    // QTBUG-70798, prevent the default blocking the restore logic.
-    const bool dontStoreDir = !args.directory.isValid() && !lastVisitedDir()->isValid();
     q->setDirectoryUrl(args.directory);
-    if (dontStoreDir)
-        lastVisitedDir()->clear();
     if (args.directory.isLocalFile())
         q->selectFile(args.selection);
     else
