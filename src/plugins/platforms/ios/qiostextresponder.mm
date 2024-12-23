@@ -424,6 +424,7 @@
 {
     self.inputView = 0;
     self.inputAccessoryView = 0;
+    [self.undoManager removeAllActions];
 
     [super dealloc];
 }
