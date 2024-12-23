@@ -41,6 +41,21 @@ endif()
 qt_internal_add_test(tst_static_qcoreapplication
     SOURCES
         tst_static_qcoreapplication.cpp
+        maybeshow.h
     LIBRARIES
         Qt::CorePrivate
+)
+
+qt_internal_add_executable(apphelper_core
+    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
+    SOURCES
+        apphelper.cpp
+        maybeshow.h
+    LIBRARIES
+        Qt::CorePrivate
+)
+set_target_properties(apphelper_core PROPERTIES OUTPUT_NAME apphelper)
+
+add_dependencies(tst_qcoreapplication
+    apphelper_core
 )

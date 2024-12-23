@@ -15,6 +15,8 @@ using App = QGuiApplication;
 using App = QCoreApplication;
 #endif
 
+#include "maybeshow.h"
+
 class tst_Static_QCoreApplication : public QObject
 {
     Q_OBJECT
@@ -31,6 +33,7 @@ void tst_Static_QCoreApplication::staticApplication()
     static int argc = 1;
     const char *argv[] = { staticMetaObject.className(), nullptr };
     static App app(argc, const_cast<char **>(argv));
+    [[maybe_unused]] static auto w = maybeShowSomething();
 }
 
 struct HookManager
