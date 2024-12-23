@@ -1955,11 +1955,13 @@ enum class CallbackParameterType
     Boolean,
     Int,
     Double,
+    Float,
     JniArray,
     RawArray,
     QList,
     QStringList,
     Null,
+    Many,
 };
 
 static std::optional<TestClass> calledWithObject;
@@ -2016,6 +2018,22 @@ static int callbackWithDouble(JNIEnv *, jobject, double value)
 }
 Q_DECLARE_JNI_NATIVE_METHOD(callbackWithDouble)
 
+static std::optional<float> calledWithFloat;
+static int callbackWithFloat(JNIEnv *, jobject, float value)
+{
+    calledWithFloat.emplace(value);
+    return int(CallbackParameterType::Float);
+}
+Q_DECLARE_JNI_NATIVE_METHOD(callbackWithFloat)
+
+static std::optional<float> calledWithFloatStatic;
+static int callbackWithFloatStatic(JNIEnv *, jclass, float value)
+{
+    calledWithFloatStatic.emplace(value);
+    return int(CallbackParameterType::Float);
+}
+Q_DECLARE_JNI_NATIVE_METHOD(callbackWithFloatStatic)
+
 static std::optional<QJniArray<jdouble>> calledWithJniArray;
 static int callbackWithJniArray(JNIEnv *, jobject, const QJniArray<jdouble> &value)
 {
@@ -2056,6 +2074,33 @@ static int callbackWithNull(JNIEnv *, jobject, const QString &str)
 }
 Q_DECLARE_JNI_NATIVE_METHOD(callbackWithNull)
 
+static std::optional<bool> calledWithMany;
+static int callbackWithMany(JNIEnv *, jobject, jbyte byte_val, short short_val, int int_val,
+                            jlong long_val, float float_val, double double_val, bool bool_val,
+                            jchar char_val, QString string_val)
+{
+    auto diagnose = qScopeGuard([=]{
+        qCritical() << "Received values: "
+                    << byte_val << short_val << int_val << long_val
+                    << float_val << double_val << bool_val
+                    << char_val << string_val;
+    });
+    calledWithMany.emplace(TestClass::getStaticField<jbyte>("A_BYTE_VALUE") == byte_val
+                        && TestClass::getStaticField<short>("A_SHORT_VALUE") == short_val
+                        && TestClass::getStaticField<int>("A_INT_VALUE") == int_val
+                        && TestClass::getStaticField<jlong>("A_LONG_VALUE") == long_val
+                        && TestClass::getStaticField<float>("A_FLOAT_VALUE") == float_val
+                        && TestClass::getStaticField<double>("A_DOUBLE_VALUE") == double_val
+                        && TestClass::getStaticField<bool>("A_BOOLEAN_VALUE") == bool_val
+                        && TestClass::getStaticField<jchar>("A_CHAR_VALUE") == char_val
+                        && TestClass::getStaticField<QString>("A_STRING_OBJECT") == string_val
+    );
+    if (*calledWithMany)
+        diagnose.dismiss();
+    return int(CallbackParameterType::Many);
+}
+Q_DECLARE_JNI_NATIVE_METHOD(callbackWithMany)
+
 void tst_QJniObject::callback_data()
 {
     QTest::addColumn<CallbackParameterType>("parameterType");
@@ -2067,11 +2112,13 @@ void tst_QJniObject::callback_data()
     QTest::addRow("Boolean")    << CallbackParameterType::Boolean;
     QTest::addRow("Int")        << CallbackParameterType::Int;
     QTest::addRow("Double")     << CallbackParameterType::Double;
+    QTest::addRow("Float")      << CallbackParameterType::Float;
     QTest::addRow("JniArray")   << CallbackParameterType::JniArray;
     QTest::addRow("RawArray")   << CallbackParameterType::RawArray;
     QTest::addRow("QList")      << CallbackParameterType::QList;
     QTest::addRow("QStringList") << CallbackParameterType::QStringList;
     QTest::addRow("Null")       << CallbackParameterType::Null;
+    QTest::addRow("More than 8") << CallbackParameterType::Many;
 }
 
 void tst_QJniObject::callback()
@@ -2138,6 +2185,20 @@ void tst_QJniObject::callback()
         QVERIFY(calledWithDouble);
         QCOMPARE(calledWithDouble.value(), 1.2345);
         break;
+    case CallbackParameterType::Float:
+        QVERIFY(TestClass::registerNativeMethods({
+            Q_JNI_NATIVE_METHOD(callbackWithFloat),
+            Q_JNI_NATIVE_METHOD(callbackWithFloatStatic),
+        }));
+        result = testObject.callMethod<int>("callMeBackWithFloat", 1.2345f);
+        QVERIFY(calledWithFloat);
+        QEXPECT_FAIL("", "QTBUG-132410", Continue);
+        QCOMPARE(calledWithFloat.value(), 1.2345f);
+        result = testObject.callMethod<int>("callMeBackWithFloatStatic", 1.2345f);
+        QVERIFY(calledWithFloatStatic);
+        QEXPECT_FAIL("", "QTBUG-132410", Continue);
+        QCOMPARE(calledWithFloatStatic.value(), 1.2345f);
+        break;
     case CallbackParameterType::JniArray: {
         QVERIFY(TestClass::registerNativeMethods({
             Q_JNI_NATIVE_METHOD(callbackWithJniArray)
@@ -2188,6 +2249,16 @@ void tst_QJniObject::callback()
         result = testObject.callMethod<int>("callMeBackWithNull");
         QVERIFY(calledWithNull);
         QCOMPARE(calledWithNull.value(), QString());
+        break;
+    }
+    case CallbackParameterType::Many: {
+        QVERIFY(TestClass::registerNativeMethods({
+            Q_JNI_NATIVE_METHOD(callbackWithMany)
+        }));
+        result = testObject.callMethod<int>("callMeBackWithMany");
+        QVERIFY(calledWithMany);
+        QEXPECT_FAIL("", "QTBUG-132410", Continue);
+        QVERIFY(calledWithMany.value());
         break;
     }
     }
