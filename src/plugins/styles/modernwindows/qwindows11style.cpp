@@ -1433,8 +1433,9 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
         break;
     case CE_PushButtonBevel:
         if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(option))  {
+            QRectF rect = btn->rect.marginsRemoved(QMargins(2, 2, 2, 2));
+            painter->setPen(Qt::NoPen);
             if (btn->features.testFlag(QStyleOptionButton::Flat)) {
-                painter->setPen(Qt::NoPen);
                 painter->setBrush(btn->palette.button());
                 painter->drawRoundedRect(rect, secondLevelRoundingRadius, secondLevelRoundingRadius);
                 if (flags & (State_Sunken | State_On)) {
@@ -1445,8 +1446,6 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                 }
                 painter->drawRoundedRect(rect, secondLevelRoundingRadius, secondLevelRoundingRadius);
             } else {
-                QRectF rect = btn->rect.marginsRemoved(QMargins(2,2,2,2));
-                painter->setPen(Qt::NoPen);
                 if (flags & (State_Sunken))
                     painter->setBrush(flags & State_On ? option->palette.accent().color().lighter(120) : WINUI3Colors[colorSchemeIndex][controlFillTertiary]);
                 else if (flags & State_MouseOver)
