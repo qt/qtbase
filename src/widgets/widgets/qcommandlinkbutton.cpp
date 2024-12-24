@@ -276,6 +276,12 @@ QCommandLinkButton::~QCommandLinkButton()
 /*! \reimp */
 bool QCommandLinkButton::event(QEvent *e)
 {
+    if (e->type() == QEvent::StyleChange) {
+        QStyleOptionButton opt;
+        initStyleOption(&opt);
+        setIcon(style()->standardIcon(QStyle::SP_CommandLink, &opt, this));
+    }
+
     return QPushButton::event(e);
 }
 
