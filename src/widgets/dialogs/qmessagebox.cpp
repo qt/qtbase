@@ -1924,8 +1924,7 @@ void QMessageBox::about(QWidget *parent, const QString &title, const QString &te
     );
     msgBox->setAttribute(Qt::WA_DeleteOnClose);
     QIcon icon = msgBox->windowIcon();
-    QSize size = icon.actualSize(QSize(64, 64));
-    msgBox->setIconPixmap(icon.pixmap(size));
+    msgBox->setIconPixmap(icon.pixmap(QSize(64, 64), msgBox->devicePixelRatio()));
 
     // should perhaps be a style hint
 #ifdef Q_OS_MAC

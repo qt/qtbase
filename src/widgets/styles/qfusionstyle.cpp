@@ -2182,7 +2182,8 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                         titleBar->icon.paint(painter, iconRect);
                     } else {
                         QStyleOption tool = *titleBar;
-                        QPixmap pm = proxy()->standardIcon(SP_TitleBarMenuButton, &tool, widget).pixmap(16, 16);
+                        QPixmap pm = proxy()->standardIcon(SP_TitleBarMenuButton, &tool, widget)
+                                        .pixmap(QSize(16, 16), QStyleHelper::getDpr(painter));
                         tool.rect = iconRect;
                         painter->save();
                         proxy()->drawItemPixmap(painter, iconRect, Qt::AlignCenter, pm);

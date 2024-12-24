@@ -520,7 +520,7 @@ QBalloonTip::QBalloonTip(const QIcon &icon, const QString &title,
 #if QT_CONFIG(label)
     if (!icon.isNull()) {
         QLabel *iconLabel = new QLabel;
-        iconLabel->setPixmap(icon.pixmap(iconSize, iconSize));
+        iconLabel->setPixmap(icon.pixmap(QSize(iconSize, iconSize), devicePixelRatio()));
         iconLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
         iconLabel->setMargin(2);
         layout->addWidget(iconLabel, 0, 0);

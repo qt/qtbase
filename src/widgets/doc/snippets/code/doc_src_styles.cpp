@@ -78,7 +78,9 @@
     QPixmap pix;
     QRect textRect = btn->rect;
     if (!btn->icon.isNull()) {
-        pix = btn->icon.pixmap(btn->iconSize, btn->state & State_Enabled ? QIcon::Normal : QIcon::Disabled);
+        const auto dpr = p->device()->devicePixelRatio();
+        pix = btn->icon.pixmap(btn->iconSize, dpr,
+                               btn->state & State_Enabled ? QIcon::Normal : QIcon::Disabled);
         drawItemPixmap(p, btn->rect, alignment, pix);
         if (btn->direction == Qt::RightToLeft)
             textRect.setRight(textRect.right() - btn->iconSize.width() - 4);
