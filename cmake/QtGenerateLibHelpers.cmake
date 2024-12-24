@@ -10,7 +10,8 @@ function(qt_get_library_name_without_prefix_and_suffix out_var file_path)
     if(NOT file_path MATCHES "^-") # not a linker flag
         get_filename_component(basename "${file_path}" NAME_WE)
         get_filename_component(ext "${file_path}" EXT)
-        if(NOT ext) # seems like a library name without prefix and suffix
+        if(NOT ext AND NOT IS_ABSOLUTE "${file_path}")
+            # seems like a library name without prefix and suffix
             set(${out_var} "${file_path}" PARENT_SCOPE)
             return()
         endif()
