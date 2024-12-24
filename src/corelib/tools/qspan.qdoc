@@ -104,6 +104,7 @@
     \list
     \li QSpan is using the signed qsizetype as \c{size_type}
         whereas \c{std::span} uses \c{size_t}.
+    \li (since Qt 6.9) \c{QSpan<const T>} doesn't detach Qt containers, \c{std::span} does.
     \li All QSpan constructors are implicit;
         many \c{std::span} ones are \c{explicit}.
     \li QSpan can be constructed from rvalue owning containers, \c{std::span} can not.

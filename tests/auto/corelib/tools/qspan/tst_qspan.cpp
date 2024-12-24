@@ -478,7 +478,6 @@ void tst_QSpan::constQSpansDontDetachQtContainers() const
         [[maybe_unused]] const QList copy = li;
         QVERIFY(!li.isDetached());
         [[maybe_unused]] QSpan<const int> cvspan = li; // should not detach (QTBUG-132133)
-        QEXPECT_FAIL("", "QTBUG-132133", Continue);
         QVERIFY(!li.isDetached());
         [[maybe_unused]] QSpan<int> mvspan = li; // this _has_ to detach, though
         QVERIFY(li.isDetached());
@@ -489,7 +488,6 @@ void tst_QSpan::constQSpansDontDetachQtContainers() const
         [[maybe_unused]] const QList copy = li;
         QVERIFY(!li.isDetached());
         [[maybe_unused]] QSpan<const int, 4> cfspan = li; // should not detach (QTBUG-132133)
-        QEXPECT_FAIL("", "QTBUG-132133", Continue);
         QVERIFY(!li.isDetached());
         [[maybe_unused]] QSpan<int, 4> mfspan = li; // this _has_ to detach, though
         QVERIFY(li.isDetached());

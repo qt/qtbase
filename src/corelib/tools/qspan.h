@@ -44,6 +44,10 @@ QT_END_INCLUDE_NAMESPACE
 
 namespace QSpanPrivate {
 
+template <typename From, typename To>
+std::conditional_t<std::is_const_v<From>, const To &, To &> // like [forward]/6.1 COPY_CONST
+const_propagated(To &in) { return in; }
+
 template <typename T, std::size_t E> class QSpanBase;
 
 template <typename T>
@@ -208,7 +212,7 @@ public:
 
     template <typename Range, typename Base::template if_compatible_range<Range> = true>
     Q_IMPLICIT constexpr QSpanBase(Range &&r)
-        : QSpanBase(QSpanPrivate::adl_data(r),  // no forward<>() here (std doesn't have it, either)
+        : QSpanBase(QSpanPrivate::adl_data(QSpanPrivate::const_propagated<T>(r)), // no forward<>() here (std doesn't have it, either)
                     qsizetype(QSpanPrivate::adl_size(r))) // ditto, no forward<>()
     {}
 
@@ -280,7 +284,7 @@ public:
 
     template <typename Range, typename Base::template if_compatible_range<Range> = true>
     Q_IMPLICIT constexpr QSpanBase(Range &&r)
-        : QSpanBase(QSpanPrivate::adl_data(r),  // no forward<>() here (std doesn't have it, either)
+        : QSpanBase(QSpanPrivate::adl_data(QSpanPrivate::const_propagated<T>(r)), // no forward<>() here (std doesn't have it, either)
                     qsizetype(QSpanPrivate::adl_size(r))) // ditto, no forward<>()
     {}
 
