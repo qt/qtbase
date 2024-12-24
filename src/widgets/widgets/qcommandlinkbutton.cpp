@@ -321,14 +321,12 @@ void QCommandLinkButton::paintEvent(QPaintEvent *)
 {
     Q_D(QCommandLinkButton);
     QStylePainter p(this);
-    p.save();
 
     QStyleOptionButton option;
     initStyleOption(&option);
 
     option.text = QString();
     option.icon = QIcon(); //we draw this ourselves
-    QSize pixmapSize = icon().actualSize(iconSize());
 
     const int vOffset = isDown()
         ? style()->pixelMetric(QStyle::PM_ButtonShiftVertical, &option, this) : 0;
@@ -337,10 +335,14 @@ void QCommandLinkButton::paintEvent(QPaintEvent *)
 
     //Draw icon
     p.drawControl(QStyle::CE_PushButton, option);
-    if (!icon().isNull())
-        p.drawPixmap(d->leftMargin() + hOffset, d->topMargin() + vOffset,
-        icon().pixmap(pixmapSize, isEnabled() ? QIcon::Normal : QIcon::Disabled,
-                                  isChecked() ? QIcon::On : QIcon::Off));
+    if (!icon().isNull()) {
+        const auto size = icon().actualSize(iconSize());
+        const auto mode = isEnabled() ? QIcon::Normal : QIcon::Disabled;
+        const auto state = isChecked() ? QIcon::On : QIcon::Off;
+        const auto rect = QRect(d->leftMargin() + hOffset, d->topMargin() + vOffset,
+                                size.width(), size.height());
+        icon().paint(&p, rect, Qt::AlignCenter, mode, state);
+    }
 
     //Draw title
     QColor textColor = palette().buttonText().color();
@@ -366,7 +368,6 @@ void QCommandLinkButton::paintEvent(QPaintEvent *)
     p.setFont(d->descriptionFont());
     p.drawItemText(d->descriptionRect().translated(hOffset, vOffset), textflags,
                     option.palette, isEnabled(), description(), QPalette::ButtonText);
-    p.restore();
 }
 
 void QCommandLinkButton::setDescription(const QString &description)
