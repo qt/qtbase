@@ -60,6 +60,8 @@ private:
     QMutex m_registerMutex;
     QMap<QString, QJniObject> m_register;
 
+    static jboolean isNull(JNIEnv *, jclass);
+    Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(isNull)
     static void registerBackend(JNIEnv *, jclass, jclass interfaceClass, jobject interface);
     Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(registerBackend)
     static void unregisterBackend(JNIEnv *, jclass, jclass interfaceClass);
