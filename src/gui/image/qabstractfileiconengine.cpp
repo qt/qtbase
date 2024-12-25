@@ -44,7 +44,7 @@ QPixmap QAbstractFileIconEngine::scaledPixmap(const QSize &size, QIcon::Mode mod
     if (key.isEmpty())
         return filePixmap(size * scale, mode, state);
 
-    key += u'_' + QString::number(size.width());
+    key += u'_' + QString::number(size.width() * scale);
 
     QPixmap result;
     if (!QPixmapCache::find(key, &result)) {
