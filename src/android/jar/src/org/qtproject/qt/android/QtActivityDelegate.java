@@ -59,7 +59,7 @@ class QtActivityDelegate extends QtActivityDelegateBase
 
     void registerBackends()
     {
-        if (!m_backendsRegistered) {
+        if (!m_backendsRegistered && !BackendRegister.isNull()) {
             m_backendsRegistered = true;
             BackendRegister.registerBackend(QtWindowInterface.class,
                                             (QtWindowInterface)QtActivityDelegate.this);
@@ -76,6 +76,10 @@ class QtActivityDelegate extends QtActivityDelegateBase
     {
         if (m_backendsRegistered) {
             m_backendsRegistered = false;
+
+            if (BackendRegister.isNull())
+                return;
+
             BackendRegister.unregisterBackend(QtWindowInterface.class);
             BackendRegister.unregisterBackend(QtAccessibilityInterface.class);
             BackendRegister.unregisterBackend(QtMenuInterface.class);

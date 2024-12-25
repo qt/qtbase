@@ -14,8 +14,14 @@ Q_DECLARE_JNI_CLASS(BackendRegister, "org/qtproject/qt/android/BackendRegister")
 bool AndroidBackendRegister::registerNatives()
 {
     return QtJniTypes::BackendRegister::registerNativeMethods(
-            { Q_JNI_NATIVE_SCOPED_METHOD(registerBackend, AndroidBackendRegister),
+            { Q_JNI_NATIVE_SCOPED_METHOD(isNull, AndroidBackendRegister),
+              Q_JNI_NATIVE_SCOPED_METHOD(registerBackend, AndroidBackendRegister),
               Q_JNI_NATIVE_SCOPED_METHOD(unregisterBackend, AndroidBackendRegister) });
+}
+
+jboolean AndroidBackendRegister::isNull(JNIEnv *, jclass)
+{
+    return QtAndroid::backendRegister() == nullptr;
 }
 
 void AndroidBackendRegister::registerBackend(JNIEnv *, jclass, jclass interfaceClass,
