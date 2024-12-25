@@ -208,7 +208,7 @@ public:
                                 JQtModelIndex bottomRight, QJniArray<jint> roles);
     Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(jni_dataChanged)
 
-    static jboolean jni_setData(JNIEnv *env, jobject object, JQtModelIndex index, jobject &value,
+    static jboolean jni_setData(JNIEnv *env, jobject object, JQtModelIndex index, jobject value,
                                 jint role);
     Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(jni_setData)
 

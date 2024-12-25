@@ -373,7 +373,7 @@ jobject QAndroidItemModelProxy::jni_sibling(JNIEnv *env, jobject object, jint ro
 }
 
 jboolean QAndroidItemModelProxy::jni_setData(JNIEnv *env, jobject object, JQtModelIndex index,
-                                             jobject &value, jint role)
+                                             jobject value, jint role)
 {
     const QModelIndex nativeIndex = QAndroidModelIndexProxy::qInstance(index);
     const QVariant qValue = QAndroidTypeConverter::toQVariant(QJniObject(value));
