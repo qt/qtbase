@@ -3539,7 +3539,6 @@ int QFusionStyle::styleHint(StyleHint hint, const QStyleOption *option, const QW
     case SH_ComboBox_ListMouseTracking:
     case SH_Slider_StopMouseOverSlider:
     case SH_ScrollBar_MiddleClickAbsolutePosition:
-    case SH_EtchDisabledText:
     case SH_TitleBar_AutoRaise:
     case SH_TitleBar_NoBorder:
     case SH_ItemView_ShowDecorationSelected:
@@ -3555,6 +3554,7 @@ int QFusionStyle::styleHint(StyleHint hint, const QStyleOption *option, const QW
         return 1;
 #endif
 
+    case SH_EtchDisabledText:
     case SH_ToolBox_SelectedPageTitleBold:
     case SH_ScrollView_FrameOnlyAroundContents:
     case SH_Menu_AllowActiveAndDisabled:
