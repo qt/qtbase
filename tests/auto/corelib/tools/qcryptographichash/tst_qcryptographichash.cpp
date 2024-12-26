@@ -212,6 +212,9 @@ void tst_QCryptographicHash::static_hash()
 
     std::byte buffer[1024];
     QCOMPARE(QCryptographicHash::hashInto(buffer, first, _algo), hash_first);
+
+    // Too small buffer
+    QVERIFY(QCryptographicHash::hashInto(QSpan{buffer}.first(5), first, _algo).isNull());
 }
 
 
