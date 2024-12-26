@@ -1132,13 +1132,15 @@ QByteArrayView QCryptographicHash::hashInto(QSpan<std::byte> buffer,
                                             QSpan<const QByteArrayView> data,
                                             Algorithm method) noexcept
 {
+    if (buffer.size() < hashLengthInternal(method))
+        return {}; // buffer too small
+
     QCryptographicHashPrivate hash(method);
     for (QByteArrayView part : data)
         hash.addData(part);
     hash.finalizeUnchecked(); // no mutex needed: no-one but us has access to 'hash'
     auto result = hash.resultView();
-    if (buffer.size() < result.size())
-        return {}; // buffer too small
+    Q_ASSERT(buffer.size() >= result.size());
     // ### optimize: have the method directly write into `buffer`
     memcpy(buffer.data(), result.data(), result.size());
     return buffer.first(result.size());
