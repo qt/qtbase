@@ -23,6 +23,12 @@ qt_internal_add_test(tst_qcryptographichash
     TESTDATA ${test_data}
 )
 
+qt_internal_add_test(tst_qcryptographichash_bigdata
+    SOURCES
+        tst_qcryptographichash_bigdata.cpp
+    TESTDATA ${test_data}
+)
+
 if(QT_FEATURE_sanitize_address)
     set_property(TEST tst_qcryptographichash APPEND PROPERTY ENVIRONMENT "QTEST_FUNCTION_TIMEOUT=900000")
 endif()
