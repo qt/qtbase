@@ -235,6 +235,8 @@ public:
     // when not called from the static hash() function, this function needs to be
     // called with finalizeMutex held (finalize() will do that):
     void finalizeUnchecked() noexcept;
+    QSpan<uchar> finalizeUnchecked(QSpan<uchar> buffer) noexcept;
+
     // END functions that need to be called with finalizeMutex held
     QByteArrayView resultView() const noexcept { return result.toByteArrayView(); }
     static bool supportsAlgorithm(QCryptographicHash::Algorithm method);
@@ -268,7 +270,7 @@ public:
 
         explicit EVP(QCryptographicHash::Algorithm method);
         void reset() noexcept;
-        void finalizeUnchecked(HashResult &result) noexcept;
+        void finalizeUnchecked(QSpan<uchar> buffer) noexcept;
     };
 #endif
 
@@ -281,7 +283,7 @@ public:
 
         void reset(QCryptographicHash::Algorithm method) noexcept;
         void addData(QCryptographicHash::Algorithm method, QByteArrayView data) noexcept;
-        void finalizeUnchecked(QCryptographicHash::Algorithm method, HashResult &result) noexcept;
+        void finalizeUnchecked(QCryptographicHash::Algorithm method, QSpan<uchar> buffer) noexcept;
 
         Sha1State sha1Context;
 #ifdef USING_OPENSSL30
@@ -297,7 +299,7 @@ public:
         SHA3Context sha3Context;
 
         enum class Sha3Variant { Sha3, Keccak };
-        static void sha3Finish(SHA3Context &ctx, HashResult &result, Sha3Variant sha3Variant);
+        static void sha3Finish(SHA3Context &ctx, QSpan<uchar> result, Sha3Variant sha3Variant);
         blake2b_state blake2bContext;
         blake2s_state blake2sContext;
     } state;
@@ -308,7 +310,7 @@ public:
     const QCryptographicHash::Algorithm method;
 };
 
-void QCryptographicHashPrivate::State::sha3Finish(SHA3Context &ctx, HashResult &result,
+void QCryptographicHashPrivate::State::sha3Finish(SHA3Context &ctx, QSpan<uchar> result,
                                                   Sha3Variant sha3Variant)
 {
     /*
@@ -981,9 +983,23 @@ void QCryptographicHashPrivate::finalizeUnchecked() noexcept
     state.finalizeUnchecked(method, result);
 }
 
+/*!
+    \internal
+
+    Must be called with finalizeMutex held, except when called from the static
+    hash() function, where no sharing can take place.
+*/
+QSpan<uchar> QCryptographicHashPrivate::finalizeUnchecked(QSpan<uchar> buffer) noexcept
+{
+    buffer = buffer.first(hashLengthInternal(method));
+    state.finalizeUnchecked(method, buffer);
+    Q_ASSERT(result.size() == 0); // internal buffer wasn't used
+    return buffer;
+}
+
 #ifdef USING_OPENSSL30
 void QCryptographicHashPrivate::State::finalizeUnchecked(QCryptographicHash::Algorithm method,
-                                                         HashResult &result) noexcept
+                                                         QSpan<uchar> result) noexcept
 {
     switch (method) {
     case QCryptographicHash::Keccak_224:
@@ -1030,7 +1046,7 @@ void QCryptographicHashPrivate::State::finalizeUnchecked(QCryptographicHash::Alg
     }
 }
 
-void QCryptographicHashPrivate::EVP::finalizeUnchecked(HashResult &result) noexcept
+void QCryptographicHashPrivate::EVP::finalizeUnchecked(QSpan<uchar> result) noexcept
 {
     if (!initializationFailed) {
         EVP_MD_CTX_ptr copy = EVP_MD_CTX_ptr(EVP_MD_CTX_new());
@@ -1043,7 +1059,7 @@ void QCryptographicHashPrivate::EVP::finalizeUnchecked(HashResult &result) noexc
 #else // USING_OPENSSL30
 
 void QCryptographicHashPrivate::State::finalizeUnchecked(QCryptographicHash::Algorithm method,
-                                                         HashResult &result) noexcept
+                                                         QSpan<uchar> result) noexcept
 {
     switch (method) {
     case QCryptographicHash::Sha1: {
@@ -1166,12 +1182,8 @@ QByteArrayView QCryptographicHash::hashInto(QSpan<std::byte> buffer,
     QCryptographicHashPrivate hash(method);
     for (QByteArrayView part : data)
         hash.addData(part);
-    hash.finalizeUnchecked(); // no mutex needed: no-one but us has access to 'hash'
-    auto result = hash.resultView();
-    Q_ASSERT(buffer.size() >= result.size());
-    // ### optimize: have the method directly write into `buffer`
-    memcpy(buffer.data(), result.data(), result.size());
-    return buffer.first(result.size());
+    auto span = QSpan{reinterpret_cast<uchar *>(buffer.data()), buffer.size()};
+    return hash.finalizeUnchecked(span); // no mutex needed: no-one but us has access to 'hash'
 }
 
 /*!
