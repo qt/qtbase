@@ -2134,8 +2134,6 @@ QFileSystemModelPrivate::~QFileSystemModelPrivate()
 */
 void QFileSystemModelPrivate::init()
 {
-    Q_Q(QFileSystemModel);
-
     delayedSortTimer.setSingleShot(true);
 
     qRegisterMetaType<QList<std::pair<QString, QFileInfo>>>();
@@ -2146,6 +2144,7 @@ void QFileSystemModelPrivate::init()
                             this, &QFileSystemModelPrivate::fileSystemChanged);
     QObjectPrivate::connect(fileInfoGatherer.get(), &QFileInfoGatherer::nameResolved,
                             this, &QFileSystemModelPrivate::resolvedName);
+    Q_Q(QFileSystemModel);
     q->connect(fileInfoGatherer.get(), &QFileInfoGatherer::directoryLoaded,
                q, &QFileSystemModel::directoryLoaded);
 #endif // filesystemwatcher
