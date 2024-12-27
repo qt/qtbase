@@ -1,7 +1,7 @@
 # Copyright (C) 2024 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-set(@target@_FOUND FALSE)
+set(@target@_FOUND TRUE)
 
 # note: _third_party_deps example: "ICU\\;FALSE\\;1.0\\;i18n uc data;ZLIB\\;FALSE\\;\\;"
 set(__qt_@target@_third_party_deps "@third_party_deps@")
@@ -20,6 +20,4 @@ _qt_internal_find_qt_dependencies("@target@" __qt_@target@_target_deps
 
 if(__qt_${target}_missing_deps)
     set(@target@_FOUND FALSE)
-else()
-    set(@target@_FOUND TRUE)
 endif()
