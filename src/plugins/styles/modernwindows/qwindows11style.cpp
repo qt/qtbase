@@ -1283,6 +1283,8 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
             const qreal progressBarThickness = 3;
             const qreal progressBarHalfThickness = progressBarThickness / 2.0;
             QRectF rect = subElementRect(SE_ProgressBarContents, progbaropt, widget);
+            painter->translate(rect.topLeft());
+            rect.moveTo(QPoint(0, 0));
             QRectF originalRect = rect;
             QPointF center = rect.center();
             bool isIndeterminate = progbaropt->maximum == 0 && progbaropt->minimum == 0;
