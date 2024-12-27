@@ -5320,9 +5320,9 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
 #if QT_CONFIG(spinbox)
     case CT_SpinBox:
         if (const QStyleOptionSpinBox *spinbox = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
-            if (rule.baseStyleCanDraw())
-                return baseStyle()->sizeFromContents(ct, opt, sz, w);
-            if (spinbox->buttonSymbols != QAbstractSpinBox::NoButtons) {
+            if (rule.baseStyleCanDraw()) {
+                sz = baseStyle()->sizeFromContents(ct, opt, sz, w);
+            } else if (spinbox->buttonSymbols != QAbstractSpinBox::NoButtons) {
                 // Add some space for the up/down buttons
                 QRenderRule subRule = renderRule(w, opt, PseudoElement_SpinBoxUpButton);
                 if (subRule.hasDrawable()) {
