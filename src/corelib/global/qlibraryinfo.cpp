@@ -269,8 +269,6 @@ QVersionNumber QLibraryInfo::version() noexcept
 
 static QString prefixFromAppDirHelper()
 {
-    QString appDir;
-
     if (QCoreApplication::instance()) {
 #ifdef Q_OS_DARWIN
         CFBundleRef bundleRef = CFBundleGetMainBundle();
@@ -289,12 +287,10 @@ static QString prefixFromAppDirHelper()
         }
 #endif // Q_OS_DARWIN
         // We make the prefix path absolute to the executable's directory.
-        appDir = QCoreApplication::applicationDirPath();
+        return QCoreApplication::applicationDirPath();
     } else {
-        appDir = QDir::currentPath();
+        return QDir::currentPath();
     }
-
-    return appDir;
 }
 
 #if QT_CONFIG(relocatable)
