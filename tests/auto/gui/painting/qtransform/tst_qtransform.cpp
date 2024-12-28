@@ -35,6 +35,7 @@ private slots:
     void mapInt();
     void mapPathWithPoint();
     void mapRectToPolygon(); // QTBUG-127723
+    void quadToQuad(); // QTBUG-21329
 
 private:
     void mapping_data();
@@ -712,6 +713,14 @@ void tst_QTransform::mapRectToPolygon()
     if (polygon2.size() > 4)
         polygon2.removeLast();
     QCOMPARE(polygon1, polygon2);
+}
+
+void tst_QTransform::quadToQuad() // QTBUG-21329
+{
+    QTransform result;
+    QVERIFY(QTransform::quadToQuad(QRectF(0, 0, 1, 1), QRectF(0, 0, 1, 1), result));
+    QPolygonF trapezoid({{0, 0}, {10, 0}, {11, 11}, {0, 10}});
+    QVERIFY(QTransform::quadToQuad(trapezoid, trapezoid.boundingRect(), result));
 }
 
 QTEST_APPLESS_MAIN(tst_QTransform)
