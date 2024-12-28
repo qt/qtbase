@@ -92,7 +92,7 @@ public:
 
 private:
     Q_DISABLE_COPY_MOVE(QJniEnvironment)
-    QScopedPointer<QJniEnvironmentPrivate> d;
+    std::unique_ptr<QJniEnvironmentPrivate> d;
 };
 
 QT_END_NAMESPACE

@@ -19,6 +19,8 @@
 #include "qfilesystemiterator_p.h"
 #include "qdir.h"
 
+#include <memory>
+
 #ifndef QT_NO_FILESYSTEMITERATOR
 
 QT_BEGIN_NAMESPACE
@@ -37,7 +39,7 @@ public:
     QFileInfo currentFileInfo() const override;
 
 private:
-    mutable QScopedPointer<QFileSystemIterator> nativeIterator;
+    mutable std::unique_ptr<QFileSystemIterator> nativeIterator;
 };
 
 QT_END_NAMESPACE

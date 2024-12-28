@@ -13,6 +13,8 @@
 #include <QtCore/qscopedpointer.h>
 #include <QtCore/qstring.h>
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 namespace QtPrivate {
@@ -361,7 +363,7 @@ private:
 
     Q_DISABLE_COPY(QXmlStreamReader)
     Q_DECLARE_PRIVATE(QXmlStreamReader)
-    QScopedPointer<QXmlStreamReaderPrivate> d_ptr;
+    std::unique_ptr<QXmlStreamReaderPrivate> d_ptr;
 
 };
 #endif // feature xmlstreamreader
@@ -461,7 +463,7 @@ public:
 private:
     Q_DISABLE_COPY(QXmlStreamWriter)
     Q_DECLARE_PRIVATE(QXmlStreamWriter)
-    QScopedPointer<QXmlStreamWriterPrivate> d_ptr;
+    std::unique_ptr<QXmlStreamWriterPrivate> d_ptr;
 };
 #endif // feature xmlstreamwriter
 

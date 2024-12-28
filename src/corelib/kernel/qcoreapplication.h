@@ -218,7 +218,7 @@ protected:
     QCoreApplication(QCoreApplicationPrivate &p);
 
 #ifdef QT_NO_QOBJECT
-    QScopedPointer<QCoreApplicationPrivate> d_ptr;
+    std::unique_ptr<QCoreApplicationPrivate> d_ptr;
 #endif
 
 private:

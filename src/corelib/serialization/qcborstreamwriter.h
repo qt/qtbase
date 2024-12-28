@@ -13,6 +13,8 @@
 #include <QtCore/qfloat16.h>
 #endif
 
+#include <memory>
+
 QT_REQUIRE_CONFIG(cborstreamwriter);
 
 /* X11 headers use these values too, but as defines */
@@ -81,7 +83,7 @@ public:
     // no API for encoding chunked strings
 
 private:
-    QScopedPointer<QCborStreamWriterPrivate> d;
+    std::unique_ptr<QCborStreamWriterPrivate> d;
 };
 
 QT_END_NAMESPACE

@@ -1914,7 +1914,7 @@ void QCoreApplicationPrivate::sendPostedEvents(QObject *receiver, int event_type
         locker.unlock();
         const auto relocker = qScopeGuard([&locker] { locker.lock(); });
 
-        QScopedPointer<QEvent> event_deleter(e); // will delete the event (with the mutex unlocked)
+        const std::unique_ptr<QEvent> event_deleter(e); // will delete the event (with the mutex unlocked)
 
         // after all that work, it's time to deliver the event.
         QCoreApplication::sendEvent(r, e);

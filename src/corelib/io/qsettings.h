@@ -31,7 +31,7 @@ class Q_CORE_EXPORT QSettings
 #ifndef QT_NO_QOBJECT
     Q_OBJECT
 #else
-    QScopedPointer<QSettingsPrivate> d_ptr;
+    std::unique_ptr<QSettingsPrivate> d_ptr;
 #endif
     Q_DECLARE_PRIVATE(QSettings)
 

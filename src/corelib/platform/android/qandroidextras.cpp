@@ -489,7 +489,7 @@ public:
 
     static QAndroidActivityResultReceiverPrivate *get(QAndroidActivityResultReceiver *publicObject)
     {
-        return publicObject->d.data();
+        return publicObject->d.get();
     }
 };
 
@@ -513,7 +513,7 @@ QAndroidActivityResultReceiver::QAndroidActivityResultReceiver()
     : d(new QAndroidActivityResultReceiverPrivate)
 {
     d->q = this;
-    QtAndroidPrivate::registerActivityResultListener(d.data());
+    QtAndroidPrivate::registerActivityResultListener(d.get());
 }
 
 /*!
@@ -521,7 +521,7 @@ QAndroidActivityResultReceiver::QAndroidActivityResultReceiver()
 */
 QAndroidActivityResultReceiver::~QAndroidActivityResultReceiver()
 {
-    QtAndroidPrivate::unregisterActivityResultListener(d.data());
+    QtAndroidPrivate::unregisterActivityResultListener(d.get());
 }
 
 /*!

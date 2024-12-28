@@ -9,6 +9,8 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qscopedpointer.h>
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 #if QT_CONFIG(systemsemaphore)
@@ -65,7 +67,7 @@ public:
 
 private:
     Q_DISABLE_COPY(QSystemSemaphore)
-    QScopedPointer<QSystemSemaphorePrivate> d;
+    std::unique_ptr<QSystemSemaphorePrivate> d;
 };
 
 #endif // QT_CONFIG(systemsemaphore)

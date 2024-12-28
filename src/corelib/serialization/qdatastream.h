@@ -11,6 +11,7 @@
 #include <QtCore/qttypetraits.h>
 
 #include <iterator>         // std::distance(), std::next()
+#include <memory>
 
 #ifdef Status
 #error qdatastream.h must be included before any header file that defines Status
@@ -216,7 +217,7 @@ public:
 private:
     Q_DISABLE_COPY(QDataStream)
 
-    QScopedPointer<QDataStreamPrivate> d;
+    std::unique_ptr<QDataStreamPrivate> d;
 
     QIODevice *dev = nullptr;
     bool owndev = false;

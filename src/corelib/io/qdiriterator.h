@@ -6,6 +6,8 @@
 
 #include <QtCore/qdir.h>
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 class QDirIteratorPrivate;
@@ -44,7 +46,7 @@ public:
 private:
     Q_DISABLE_COPY(QDirIterator)
 
-    QScopedPointer<QDirIteratorPrivate> d;
+    std::unique_ptr<QDirIteratorPrivate> d;
     friend class QDir;
 };
 

@@ -19,6 +19,8 @@
 #error qiodevice.h must be included before any header file that defines open
 #endif
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 
@@ -137,7 +139,7 @@ protected:
     void setErrorString(const QString &errorString);
 
 #ifdef QT_NO_QOBJECT
-    QScopedPointer<QIODevicePrivate> d_ptr;
+    std::unique_ptr<QIODevicePrivate> d_ptr;
 #endif
 
 private:

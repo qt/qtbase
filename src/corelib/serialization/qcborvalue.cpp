@@ -1785,7 +1785,7 @@ static QCborValue taggedValueFromCbor(QCborStreamReader &reader, int remainingRe
 extern void qt_cbor_stream_set_error(QCborStreamReaderPrivate *d, QCborError error);
 inline void QCborContainerPrivate::setErrorInReader(QCborStreamReader &reader, QCborError error)
 {
-    qt_cbor_stream_set_error(reader.d.data(), error);
+    qt_cbor_stream_set_error(reader.d.get(), error);
 }
 
 extern QCborStreamReader::StringResultCode qt_cbor_append_string_chunk(QCborStreamReader &reader, QByteArray *data);
