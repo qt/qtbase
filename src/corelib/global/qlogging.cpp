@@ -1130,18 +1130,29 @@ static const char ifFatalTokenC[] = "%{if-fatal}";
 static const char endifTokenC[] = "%{endif}";
 static const char emptyTokenC[] = "";
 
-#ifdef Q_OS_ANDROID
-static const char defaultPattern[] = "%{message}";
-#else
-static const char defaultPattern[] = "%{if-category}%{category}: %{endif}%{message}";
-#endif
-
 struct QMessagePattern
 {
     QMessagePattern();
     ~QMessagePattern();
 
     void setPattern(const QString &pattern);
+    void setDefaultPattern()
+    {
+        const char *const defaultTokens[] = {
+#ifndef Q_OS_ANDROID
+            // "%{if-category}%{category}: %{endif}%{message}"
+            ifCategoryTokenC,
+            categoryTokenC,
+            ": ",   // won't point to literals[] but that's ok
+            endifTokenC,
+#endif
+            messageTokenC,
+        };
+
+        // std::make_unique() value-initializes, so we have a nullptr at the end
+        tokens = std::make_unique<const char *[]>(std::size(defaultTokens) + 1);
+        std::copy(std::begin(defaultTokens), std::end(defaultTokens), tokens.get());
+    }
 
     // 0 terminated arrays of literal tokens / literal or placeholder tokens
     std::unique_ptr<std::unique_ptr<const char[]>[]> literals;
@@ -1188,7 +1199,7 @@ QMessagePattern::QMessagePattern()
 #endif
     const QString envPattern = qEnvironmentVariable("QT_MESSAGE_PATTERN");
     if (envPattern.isEmpty()) {
-        setPattern(QLatin1StringView(defaultPattern));
+        setDefaultPattern();
         fromEnvironment = false;
     } else {
         setPattern(envPattern);
