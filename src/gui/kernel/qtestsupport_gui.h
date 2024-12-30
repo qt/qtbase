@@ -96,7 +96,7 @@ namespace QtGuiTest
 
     QPoint toNativePixels(const QPoint &value, const QWindow *window);
     QRect toNativePixels(const QRect &value, const QWindow *window);
-    qreal factor(const QWindow *window);
+    qreal scaleFactor(const QWindow *window);
 
     void setEventPointId(QEventPoint &p, int arg);
     void setEventPointPressure(QEventPoint &p, qreal arg);

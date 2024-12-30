@@ -426,7 +426,7 @@ QRect QtGuiTest::toNativePixels(const QRect &value, const QWindow *window)
    \internal
    \return scaling factor of \a window relative to Qt.
 */
-qreal QtGuiTest::factor(const QWindow *window)
+qreal QtGuiTest::scaleFactor(const QWindow *window)
 {
     Q_ASSERT_X(window,
                Q_FUNC_INFO,
