@@ -276,6 +276,9 @@ QWindows11Style::QWindows11Style() : QWindows11Style(*new QWindows11StylePrivate
 */
 QWindows11Style::QWindows11Style(QWindows11StylePrivate &dd) : QWindowsVistaStyle(dd)
 {
+    Q_D(QWindows11Style);
+    d->assetFont = QFont("Segoe Fluent Icons");
+    d->assetFont.setStyleStrategy(QFont::NoFontMerging);
     highContrastTheme = QGuiApplicationPrivate::styleHints->colorScheme() == Qt::ColorScheme::Unknown;
     colorSchemeIndex = QGuiApplicationPrivate::styleHints->colorScheme() == Qt::ColorScheme::Light ? 0 : 1;
 }
@@ -412,7 +415,7 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                         drawRoundedRect(cp.painter(), rect.adjusted(1, 1, -1, -2), Qt::NoPen,
                                         winUI3Color(subtleHighlightColor));
 
-                    cp->setFont(assetFont);
+                    cp->setFont(d->assetFont);
                     cp->setPen(sb->palette.buttonText().color());
                     cp->setBrush(Qt::NoBrush);
                     cp->drawText(rect, Qt::AlignCenter, isUp ? ChevronUp : ChevronDown);
@@ -577,7 +580,7 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
 
             if (sub & SC_ComboBoxArrow) {
                 QRectF rect = proxy()->subControlRect(CC_ComboBox, option, SC_ComboBoxArrow, widget).adjusted(4, 0, -4, 1);
-                painter->setFont(assetFont);
+                painter->setFont(d->assetFont);
                 painter->setPen(combobox->palette.text().color());
                 painter->drawText(rect, Qt::AlignCenter, ChevronDownMed);
             }
@@ -640,7 +643,7 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                 if (sub & SC_ScrollBarAddLine) {
                     if (isMouseOver) {
                         const QRectF rect = proxy()->subControlRect(CC_ScrollBar, option, SC_ScrollBarAddLine, widget);
-                        QFont f = QFont(assetFont);
+                        QFont f = QFont(d->assetFont);
                         f.setPointSize(6);
                         cp->setFont(f);
                         cp->setPen(Qt::gray);
@@ -652,7 +655,7 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                 if (sub & SC_ScrollBarSubLine) {
                     if (isMouseOver) {
                         const QRectF rect = proxy()->subControlRect(CC_ScrollBar, option, SC_ScrollBarSubLine, widget);
-                        QFont f = QFont(assetFont);
+                        QFont f = QFont(d->assetFont);
                         f.setPointSize(6);
                         cp->setFont(f);
                         cp->setPen(Qt::gray);
@@ -665,7 +668,7 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
         }
         break;
     case CC_MdiControls:{
-            QFont buttonFont = QFont(assetFont);
+            QFont buttonFont = QFont(d->assetFont);
             buttonFont.setPointSize(8);
             painter->setFont(buttonFont);
             drawTitleBarCloseButton(CC_MdiControls, SC_MdiCloseButton, ChromeClose);
@@ -688,7 +691,7 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
             QString title = painter->fontMetrics().elidedText(titlebar->text, Qt::ElideRight, textRect.width() - 14);
             painter->drawText(textRect.adjusted(1, 1, -1, -1), title, QTextOption(Qt::AlignHCenter | Qt::AlignVCenter));
 
-            QFont buttonFont = QFont(assetFont);
+            QFont buttonFont = QFont(d->assetFont);
             buttonFont.setPointSize(8);
             painter->setFont(buttonFont);
             auto shouldDrawButton = [titlebar](SubControl sc, Qt::WindowType flag) {
@@ -848,7 +851,7 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
         break;
     case PE_IndicatorHeaderArrow:
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(option)) {
-            QFont f(assetFont);
+            QFont f(d->assetFont);
             f.setPointSize(6);
             painter->setFont(f);
             painter->setPen(header->palette.text().color());
@@ -875,10 +878,10 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
                             controlFillBrush(option, ControlType::ControlAlt));
 
             if (isOn) {
-                painter->setFont(assetFont);
+                painter->setFont(d->assetFont);
                 painter->setPen(controlTextColor(option, QPalette::Window));
                 qreal clipWidth = 1.0;
-                QFontMetrics fm(assetFont);
+                QFontMetrics fm(d->assetFont);
                 QRectF clipRect = fm.boundingRect(AcceptMedium);
                 if (d->transitionsEnabled() && option->styleObject) {
                     QNumberStyleAnimation *animation = qobject_cast<QNumberStyleAnimation *>(
@@ -892,7 +895,7 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
                 clipRect.setWidth(clipWidth * clipRect.width());
                 painter->drawText(clipRect, Qt::AlignVCenter | Qt::AlignLeft, AcceptMedium);
             } else if (isPartial) {
-                painter->setFont(assetFont);
+                painter->setFont(d->assetFont);
                 painter->setPen(controlTextColor(option, QPalette::Window));
                 painter->drawText(rect, Qt::AlignCenter, Dash12);
             }
@@ -902,7 +905,7 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
             if (option->state & State_Children) {
                 const bool isReverse = option->direction == Qt::RightToLeft;
                 const bool isOpen = option->state & QStyle::State_Open;
-                QFont f(assetFont);
+                QFont f(d->assetFont);
                 f.setPointSize(6);
                 painter->setFont(f);
                 painter->setPen(option->palette.color(isOpen ? QPalette::Active : QPalette::Disabled,
@@ -1425,7 +1428,7 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                 QLineF menuSplitter;
                 QRectF indicatorRect;
                 painter->save();
-                painter->setFont(assetFont);
+                painter->setFont(d->assetFont);
 
                 if (btn->direction == Qt::LeftToRight) {
                     indicatorRect = QRect(textRect.x() + textRect.width() - indicatorSize - 4, textRect.y(),2 * 4 + indicatorSize, textRect.height());
@@ -1614,7 +1617,7 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                 painter->save();
                 if (dis)
                     painter->setPen(menuitem->palette.text().color());
-                painter->setFont(assetFont);
+                painter->setFont(d->assetFont);
                 const int text_flags = Qt::AlignVCenter | Qt::AlignHCenter | Qt::TextDontClip | Qt::TextSingleLine;
                 painter->setPen(option->palette.text().color());
                 painter->drawText(vCheckRect, text_flags, CheckMark);
@@ -1675,7 +1678,7 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                     newMI.palette.setColor(QPalette::ButtonText,
                                            newMI.palette.highlightedText().color());
                 painter->save();
-                painter->setFont(assetFont);
+                painter->setFont(d->assetFont);
                 int text_flags = Qt::AlignVCenter | Qt::TextShowMnemonic | Qt::TextDontClip | Qt::TextSingleLine;
                 if (!proxy()->styleHint(SH_UnderlineShortcut, menuitem, widget))
                     text_flags |= Qt::TextHideMnemonic;

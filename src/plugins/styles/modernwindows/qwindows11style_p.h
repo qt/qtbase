@@ -109,11 +109,12 @@ private:
 
     bool highContrastTheme = false;
     int colorSchemeIndex = 0;
-    const QFont assetFont = QFont("Segoe Fluent Icons"); //Font to load icons from
 };
 
 class QWindows11StylePrivate : public QWindowsVistaStylePrivate {
     Q_DECLARE_PUBLIC(QWindows11Style)
+protected:
+    QFont assetFont;
 };
 
 QT_END_NAMESPACE
