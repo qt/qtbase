@@ -708,7 +708,11 @@ function(qt_internal_add_test name)
             set(browser "chrome")
         endif()
         list(APPEND extra_test_args "--browser=${browser}")
-        list(APPEND extra_test_args "--browser_args=\"--password-store=basic\"")
+        if(DEFINED ENV{HEADLESS_CHROME_FOR_TESTING})
+            list(APPEND extra_test_args "--browser_args=\"--password-store=basic --headless\"")
+        else()
+            list(APPEND extra_test_args "--browser_args=\"--password-store=basic\"")
+        endif()
         list(APPEND extra_test_args "--kill_exit")
 
         # Tests may require asyncify if they use exec(). Enable asyncify for
