@@ -383,16 +383,13 @@ void QAndroidPlatformWindow::windowFocusChanged(JNIEnv *env, jobject object,
     }
 }
 
-void QAndroidPlatformWindow::safeAreaMarginsChanged(JNIEnv *env, jobject object, QtJniTypes::Insets insets)
+void QAndroidPlatformWindow::safeAreaMarginsChanged(JNIEnv *env, jobject object,
+                                                    QtJniTypes::Insets insets, jint id)
 {
     Q_UNUSED(env)
     Q_UNUSED(object)
 
     if (!qGuiApp)
-        return;
-
-    const auto tlw = qGuiApp->topLevelWindows();
-    if (tlw.isEmpty())
         return;
 
     QMargins safeMargins;
@@ -404,17 +401,17 @@ void QAndroidPlatformWindow::safeAreaMarginsChanged(JNIEnv *env, jobject object,
             insets.getField<int>("bottom"));
     }
 
-    for (QWindow *window : qGuiApp->topLevelWindows()) {
+    for (QWindow *window : qGuiApp->allWindows()) {
         if (!window->handle())
             continue;
-
-        auto *pWindow = static_cast<QAndroidPlatformWindow *>(window->handle());
-        if (!pWindow)
-            return;
+        QAndroidPlatformWindow *pWindow = static_cast<QAndroidPlatformWindow *>(window->handle());
+        if (pWindow->nativeViewId() != id)
+            continue;
 
         if (safeMargins != pWindow->safeAreaMargins()) {
             pWindow->setSafeAreaMargins(safeMargins);
             QWindowSystemInterface::handleSafeAreaMarginsChanged(window);
+            break;
         }
     }
 }

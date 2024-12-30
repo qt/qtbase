@@ -32,7 +32,7 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
     private final QtInputConnection.QtInputConnectionListener m_inputConnectionListener;
 
     private static native void setSurface(int windowId, Surface surface);
-    private static native void safeAreaMarginsChanged(Insets insets);
+    private static native void safeAreaMarginsChanged(Insets insets, int id);
     static native void windowFocusChanged(boolean hasFocus, int id);
     static native void updateWindows();
 
@@ -77,8 +77,7 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
         });
 
         if (getContext() instanceof QtActivityBase) {
-            View decorView = ((Activity) context).getWindow().getDecorView();
-            decorView.setOnApplyWindowInsetsListener((view, insets) -> {
+            setOnApplyWindowInsetsListener((view, insets) -> {
                 Insets safeInsets;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                     int types = WindowInsets.Type.displayCutout() | WindowInsets.Type.systemBars();
@@ -110,10 +109,12 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
                     safeInsets = Insets.of(left, top, right, bottom);
                 }
 
-                safeAreaMarginsChanged(safeInsets);
+                QtNative.runAction(() -> safeAreaMarginsChanged(safeInsets, getId()));
 
                 return insets;
             });
+
+            QtNative.runAction(() -> requestApplyInsets());
         }
     }
 

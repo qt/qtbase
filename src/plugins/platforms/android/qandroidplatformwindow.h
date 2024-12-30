@@ -108,7 +108,7 @@ private:
     Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(setSurface)
     static void windowFocusChanged(JNIEnv *env, jobject object, jboolean focus, jint windowId);
     Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(windowFocusChanged)
-    static void safeAreaMarginsChanged(JNIEnv *env, jobject obj, QtJniTypes::Insets insets);
+    static void safeAreaMarginsChanged(JNIEnv *env, jobject obj, QtJniTypes::Insets insets, jint  id);
     Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(safeAreaMarginsChanged)
 
     [[nodiscard]] QMutexLocker<QMutex> destructionGuard();
