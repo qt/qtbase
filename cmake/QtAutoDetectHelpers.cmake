@@ -152,7 +152,12 @@ function(qt_auto_detect_android)
 endfunction()
 
 function(qt_auto_detect_vcpkg)
-    if(QT_USE_VCPKG AND DEFINED ENV{VCPKG_ROOT})
+    if(QT_USE_VCPKG)
+        if(NOT DEFINED ENV{VCPKG_ROOT})
+            message(FATAL_ERROR
+                "Usage of vcpkg was requested but the environment variable VCPKG_ROOT is not set."
+            )
+        endif()
         set(vcpkg_toolchain_file "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake")
         get_filename_component(vcpkg_toolchain_file "${vcpkg_toolchain_file}" ABSOLUTE)
 
