@@ -74,9 +74,7 @@ public:
 
     static QJsonDocument fromJson(const QByteArray &json, QJsonParseError *error = nullptr);
 
-#if !defined(QT_JSON_READONLY) || defined(Q_QDOC)
     QByteArray toJson(JsonFormat format = JsonFormat::Indented) const;
-#endif
 
     bool isEmpty() const;
     bool isArray() const;
@@ -113,7 +111,7 @@ private:
 
 Q_DECLARE_SHARED(QJsonDocument)
 
-#if !defined(QT_NO_DEBUG_STREAM) && !defined(QT_JSON_READONLY)
+#if !defined(QT_NO_DEBUG_STREAM)
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QJsonDocument &);
 #endif
 

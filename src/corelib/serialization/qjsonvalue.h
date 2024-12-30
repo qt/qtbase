@@ -83,9 +83,7 @@ public:
 
     static QJsonValue fromJson(QByteArrayView json, QJsonParseError *error = nullptr);
 
-#if !defined(QT_JSON_READONLY) || defined(Q_QDOC)
     QByteArray toJson(JsonFormat format = JsonFormat::Indented) const;
-#endif
 
     Type type() const;
     inline bool isNull() const { return type() == Null; }
@@ -333,7 +331,7 @@ inline QJsonValue QCborValueConstRef::toJsonValue() const
 
 Q_CORE_EXPORT size_t qHash(const QJsonValue &value, size_t seed = 0);
 
-#if !defined(QT_NO_DEBUG_STREAM) && !defined(QT_JSON_READONLY)
+#if !defined(QT_NO_DEBUG_STREAM)
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QJsonValue &);
 #endif
 

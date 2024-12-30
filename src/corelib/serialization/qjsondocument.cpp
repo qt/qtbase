@@ -242,7 +242,6 @@ QVariant QJsonDocument::toVariant() const
 
     \sa fromJson(), JsonFormat
  */
-#if !defined(QT_JSON_READONLY) || defined(Q_QDOC)
 QByteArray QJsonDocument::toJson(JsonFormat format) const
 {
     QByteArray json;
@@ -253,7 +252,6 @@ QByteArray QJsonDocument::toJson(JsonFormat format) const
             format == JsonFormat::Compact ? QJsonValue::JsonFormat::Compact
                                           : QJsonValue::JsonFormat::Indented);
 }
-#endif
 
 /*!
  Parses \a json as a UTF-8 encoded JSON document, and creates a QJsonDocument
@@ -472,7 +470,7 @@ bool QJsonDocument::isNull() const
     return (d == nullptr);
 }
 
-#if !defined(QT_NO_DEBUG_STREAM) && !defined(QT_JSON_READONLY)
+#if !defined(QT_NO_DEBUG_STREAM)
 QDebug operator<<(QDebug dbg, const QJsonDocument &o)
 {
     QDebugStateSaver saver(dbg);

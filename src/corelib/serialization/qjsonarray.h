@@ -325,7 +325,7 @@ inline QJsonValueConstRef::QJsonValueConstRef(QJsonArray *a, qsizetype idx)
 
 Q_CORE_EXPORT size_t qHash(const QJsonArray &array, size_t seed = 0);
 
-#if !defined(QT_NO_DEBUG_STREAM) && !defined(QT_JSON_READONLY)
+#if !defined(QT_NO_DEBUG_STREAM)
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QJsonArray &);
 #endif
 

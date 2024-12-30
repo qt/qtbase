@@ -642,7 +642,6 @@ QJsonValue QJsonValue::fromJson(QByteArrayView json, QJsonParseError *error)
 
     \sa fromJson(), JsonFormat
  */
-#if !defined(QT_JSON_READONLY) || defined(Q_QDOC)
 QByteArray QJsonValue::toJson(JsonFormat format) const
 {
     QByteArray json;
@@ -651,7 +650,6 @@ QByteArray QJsonValue::toJson(JsonFormat format) const
 
     return json;
 }
-#endif
 
 /*!
     Returns the type of the value.
@@ -1168,7 +1166,7 @@ size_t qHash(const QJsonValue &value, size_t seed)
     Q_UNREACHABLE_RETURN(0);
 }
 
-#if !defined(QT_NO_DEBUG_STREAM) && !defined(QT_JSON_READONLY)
+#if !defined(QT_NO_DEBUG_STREAM)
 QDebug operator<<(QDebug dbg, const QJsonValue &o)
 {
     QDebugStateSaver saver(dbg);
