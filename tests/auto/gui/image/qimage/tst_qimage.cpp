@@ -3506,7 +3506,7 @@ void tst_QImage::colorSpaceCmykConversion()
 
     QImage image(16, 16, QImage::Format_CMYK8888);
     QFile iccProfile(m_prefix +"CGATS001Compat-v2-micro.icc");
-    iccProfile.open(QIODevice::ReadOnly);
+    QVERIFY2(iccProfile.open(QIODevice::ReadOnly), qPrintable(iccProfile.errorString()));
     image.setColorSpace(QColorSpace::fromIccProfile(iccProfile.readAll()));
     QVERIFY(image.colorSpace().isValid());
 
@@ -3565,7 +3565,7 @@ void tst_QImage::colorSpaceFromGrayConversion_data()
     };
 
     QFile iccProfile(m_prefix + "VideoHD.icc");
-    iccProfile.open(QIODevice::ReadOnly);
+    QVERIFY2(iccProfile.open(QIODevice::ReadOnly), qPrintable(iccProfile.errorString()));
     colorSpaces.append(QColorSpace::fromIccProfile(iccProfile.readAll()));
 
     for (auto fromFormat : formats) {
