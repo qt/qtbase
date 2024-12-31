@@ -21,11 +21,6 @@ QSqlConnectionDialog::QSqlConnectionDialog(QWidget *parent)
         m_ui->dbCheckBox->setEnabled(false);
 
     m_ui->comboDriver->addItems(drivers);
-
-    connect(m_ui->okButton, &QPushButton::clicked,
-            this, &QSqlConnectionDialog::onOkButton);
-    connect(m_ui->cancelButton, &QPushButton::clicked,
-            this, &QSqlConnectionDialog::reject);
 }
 
 QSqlConnectionDialog::~QSqlConnectionDialog()
@@ -68,13 +63,13 @@ bool QSqlConnectionDialog::useInMemoryDatabase() const
     return m_ui->dbCheckBox->isChecked();
 }
 
-void QSqlConnectionDialog::onOkButton()
+void QSqlConnectionDialog::accept()
 {
     if (m_ui->comboDriver->currentText().isEmpty()) {
         QMessageBox::information(this, tr("No database driver selected"),
                                  tr("Please select a database driver"));
         m_ui->comboDriver->setFocus();
     } else {
-        accept();
+        QDialog::accept();
     }
 }

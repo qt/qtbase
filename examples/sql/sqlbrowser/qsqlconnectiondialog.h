@@ -28,8 +28,7 @@ public:
     int port() const;
     bool useInMemoryDatabase() const;
 
-private slots:
-    void onOkButton();
+    void accept() override;
 
 private:
     Ui::QSqlConnectionDialogUi *m_ui;
