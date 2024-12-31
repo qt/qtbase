@@ -11,7 +11,7 @@
 
 QSqlConnectionDialog::QSqlConnectionDialog(QWidget *parent)
     : QDialog(parent)
-    , m_ui(new Ui::QSqlConnectionDialogUi)
+    , m_ui{std::make_unique<Ui::QSqlConnectionDialogUi>()}
 {
     m_ui->setupUi(this);
 
@@ -24,9 +24,7 @@ QSqlConnectionDialog::QSqlConnectionDialog(QWidget *parent)
 }
 
 QSqlConnectionDialog::~QSqlConnectionDialog()
-{
-    delete m_ui;
-}
+    = default;
 
 QString QSqlConnectionDialog::driverName() const
 {

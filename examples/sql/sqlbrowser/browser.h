@@ -7,6 +7,8 @@
 #include <QWidget>
 #include <QSqlTableModel>
 
+#include <memory>
+
 QT_FORWARD_DECLARE_CLASS(QSqlError)
 
 QT_BEGIN_NAMESPACE
@@ -50,7 +52,7 @@ signals:
     void statusMessage(const QString &message);
 
 private:
-    Ui::Browser *m_ui;
+    const std::unique_ptr<Ui::Browser> m_ui;
 };
 
 class CustomModel : public QSqlTableModel
