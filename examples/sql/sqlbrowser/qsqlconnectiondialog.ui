@@ -27,13 +27,7 @@
      <property name="title" >
       <string>Connection settings</string>
      </property>
-     <layout class="QGridLayout" >
-      <property name="margin" >
-       <number>8</number>
-      </property>
-      <property name="spacing" >
-       <number>6</number>
-      </property>
+     <layout class="QFormLayout" name="formLayout">
       <item row="0" column="1" >
        <widget class="QComboBox" name="comboDriver" />
       </item>
