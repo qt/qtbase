@@ -6,6 +6,8 @@
 
 #include <QDialog>
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 namespace Ui
 {
@@ -31,7 +33,7 @@ public:
     void accept() override;
 
 private:
-    Ui::QSqlConnectionDialogUi *m_ui;
+    const std::unique_ptr<Ui::QSqlConnectionDialogUi> m_ui;
 };
 
 #endif

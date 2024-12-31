@@ -18,7 +18,7 @@
 
 Browser::Browser(QWidget *parent)
     : QWidget(parent)
-    , m_ui(new Ui::Browser)
+    , m_ui{std::make_unique<Ui::Browser>()}
 {
     m_ui->setupUi(this);
 
@@ -60,9 +60,7 @@ Browser::Browser(QWidget *parent)
 }
 
 Browser::~Browser()
-{
-    delete m_ui;
-}
+    = default;
 
 void Browser::exec()
 {
