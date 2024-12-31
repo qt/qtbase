@@ -126,8 +126,9 @@ QString qEnvironmentVariable(const char *varName, const QString &defaultValue)
     buffer.chop(1);
     return buffer;
 #else
-    QByteArray value = qgetenv(varName);
-    if (value.isNull())
+    const auto locker = qt_scoped_lock(environmentMutex);
+    const char *value = ::getenv(varName);
+    if (!value)
         return defaultValue;
 // duplicated in qfile.h (QFile::decodeName)
 #if defined(Q_OS_DARWIN)
