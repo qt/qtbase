@@ -34,9 +34,7 @@ ConnectionWidget::ConnectionWidget(QWidget *parent)
 }
 
 ConnectionWidget::~ConnectionWidget()
-{
-}
-
+    = default;
 
 void ConnectionWidget::refresh()
 {
