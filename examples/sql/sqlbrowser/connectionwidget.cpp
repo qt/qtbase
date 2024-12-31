@@ -14,6 +14,7 @@ ConnectionWidget::ConnectionWidget(QWidget *parent)
     , tree(new QTreeWidget(this))
 {
     QVBoxLayout *layout = new QVBoxLayout(this);
+    layout->setContentsMargins({});
     tree->setHeaderLabels(QStringList(tr("Database")));
     tree->header()->setStretchLastSection(true);
     QAction *refreshAction = new QAction(tr("Refresh"), tree);
