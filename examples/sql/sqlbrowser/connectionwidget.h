@@ -14,8 +14,8 @@ class ConnectionWidget : public QWidget
 {
     Q_OBJECT
 public:
-    ConnectionWidget(QWidget *parent = nullptr);
-    ~ConnectionWidget();
+    explicit ConnectionWidget(QWidget *parent = nullptr);
+    ~ConnectionWidget() override;
 
     QSqlDatabase currentDatabase() const;
 

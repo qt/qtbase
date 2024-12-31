@@ -19,8 +19,8 @@ class QSqlConnectionDialog : public QDialog
 {
     Q_OBJECT
 public:
-    QSqlConnectionDialog(QWidget *parent = nullptr);
-    ~QSqlConnectionDialog();
+    explicit QSqlConnectionDialog(QWidget *parent = nullptr);
+    ~QSqlConnectionDialog() override;
 
     QString driverName() const;
     QString databaseName() const;

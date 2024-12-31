@@ -22,8 +22,8 @@ class Browser : public QWidget
 {
     Q_OBJECT
 public:
-    Browser(QWidget *parent = nullptr);
-    ~Browser();
+    explicit Browser(QWidget *parent = nullptr);
+    ~Browser() override;
 
     QSqlError addConnection(const QString &driver, const QString &dbName, const QString &host,
                             const QString &user, const QString &passwd, int port);
