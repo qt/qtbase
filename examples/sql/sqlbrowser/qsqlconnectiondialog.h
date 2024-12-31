@@ -30,7 +30,6 @@ public:
 
 private slots:
     void onOkButton();
-    void onDbCheckBox();
 
 private:
     Ui::QSqlConnectionDialogUi *m_ui;

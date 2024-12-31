@@ -220,5 +220,22 @@
   <tabstop>cancelButton</tabstop>
  </tabstops>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>dbCheckBox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>connGroupBox</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>165</x>
+     <y>248</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>107</x>
+     <y>221</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

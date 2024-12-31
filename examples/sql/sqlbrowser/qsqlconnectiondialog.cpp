@@ -26,8 +26,6 @@ QSqlConnectionDialog::QSqlConnectionDialog(QWidget *parent)
             this, &QSqlConnectionDialog::onOkButton);
     connect(m_ui->cancelButton, &QPushButton::clicked,
             this, &QSqlConnectionDialog::reject);
-    connect(m_ui->dbCheckBox, &QCheckBox::stateChanged,
-            this, &QSqlConnectionDialog::onDbCheckBox);
 }
 
 QSqlConnectionDialog::~QSqlConnectionDialog()
@@ -79,9 +77,4 @@ void QSqlConnectionDialog::onOkButton()
     } else {
         accept();
     }
-}
-
-void QSqlConnectionDialog::onDbCheckBox()
-{
-    m_ui->connGroupBox->setEnabled(!m_ui->dbCheckBox->isChecked());
 }
