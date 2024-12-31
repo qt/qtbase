@@ -646,7 +646,7 @@ CGSize QSizeF::toCGSize() const noexcept
 }
 
 /*!
-    \brief Creates a QRectF from \a size.
+    \brief Creates a QSizeF from \a size.
 
     \since 5.8
     \ingroup platform-type-conversions
