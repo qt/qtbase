@@ -638,6 +638,7 @@ void QRecursiveMutex::unlock() noexcept
 /*!
     \internal helper for lock()
  */
+Q_NEVER_INLINE
 void QBasicMutex::lockInternal() QT_MUTEX_LOCK_NOEXCEPT
 {
     if (futexAvailable()) {
@@ -671,6 +672,7 @@ bool QBasicMutex::lockInternal(int timeout) QT_MUTEX_LOCK_NOEXCEPT
 /*!
     \internal helper for tryLock(QDeadlineTimer)
  */
+Q_NEVER_INLINE
 bool QBasicMutex::lockInternal(QDeadlineTimer deadlineTimer) QT_MUTEX_LOCK_NOEXCEPT
 {
     if (deadlineTimer.hasExpired())
@@ -810,6 +812,7 @@ bool QBasicMutex::lockInternal(QDeadlineTimer deadlineTimer) QT_MUTEX_LOCK_NOEXC
 /*!
     \internal
 */
+Q_NEVER_INLINE
 void QBasicMutex::unlockInternal() noexcept
 {
     QMutexPrivate *copy = d_ptr.loadAcquire();
