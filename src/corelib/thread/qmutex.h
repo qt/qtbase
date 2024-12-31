@@ -15,12 +15,6 @@ QT_BEGIN_NAMESPACE
 
 #if QT_CONFIG(thread) || defined(Q_QDOC)
 
-#if defined(Q_OS_FREEBSD) || defined(Q_OS_LINUX) || defined(Q_OS_WIN) // these platforms use futex
-# define QT_MUTEX_LOCK_NOEXCEPT noexcept
-#else
-# define QT_MUTEX_LOCK_NOEXCEPT
-#endif
-
 class QMutex;
 class QRecursiveMutex;
 class QMutexPrivate;
@@ -28,13 +22,22 @@ class QMutexPrivate;
 class Q_CORE_EXPORT QBasicMutex
 {
     Q_DISABLE_COPY_MOVE(QBasicMutex)
+protected:
+    static constexpr bool FutexAlwaysAvailable =
+#if defined(Q_OS_FREEBSD) || defined(Q_OS_LINUX) || defined(Q_OS_WIN) // these platforms use futex
+            true
+#else
+            false
+#endif
+            ;
+
 public:
     constexpr QBasicMutex()
         : d_ptr(nullptr)
     {}
 
     // BasicLockable concept
-    inline void lock() QT_MUTEX_LOCK_NOEXCEPT {
+    inline void lock() noexcept(FutexAlwaysAvailable) {
         QtTsan::mutexPreLock(this, 0u);
 
         if (!fastTryLock())
@@ -82,10 +85,10 @@ private:
         return d_ptr.testAndSetRelease(dummyLocked(), nullptr);
     }
 
-    void lockInternal() QT_MUTEX_LOCK_NOEXCEPT;
-    bool lockInternal(QDeadlineTimer timeout) QT_MUTEX_LOCK_NOEXCEPT;
+    void lockInternal() noexcept(FutexAlwaysAvailable);
+    bool lockInternal(QDeadlineTimer timeout) noexcept(FutexAlwaysAvailable);
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
-    bool lockInternal(int timeout) QT_MUTEX_LOCK_NOEXCEPT;
+    bool lockInternal(int timeout) noexcept(FutexAlwaysAvailable);
 #endif
     void unlockInternal() noexcept;
 #if QT_CORE_REMOVED_SINCE(6, 9)
@@ -114,7 +117,7 @@ public:
     }
 
 #ifdef Q_QDOC
-    inline void lock() QT_MUTEX_LOCK_NOEXCEPT;
+    inline void lock() noexcept(FutexAlwaysAvailable);
     inline void unlock() noexcept;
     bool tryLock() noexcept;
 #endif
@@ -124,12 +127,12 @@ public:
 
 
     using QBasicMutex::tryLock;
-    bool tryLock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
+    bool tryLock(int timeout) noexcept(FutexAlwaysAvailable)
     {
         return tryLock(QDeadlineTimer(timeout));
     }
 
-    bool tryLock(QDeadlineTimer timeout) QT_MUTEX_LOCK_NOEXCEPT
+    bool tryLock(QDeadlineTimer timeout) noexcept(FutexAlwaysAvailable)
     {
         unsigned tsanFlags = QtTsan::TryLock;
         QtTsan::mutexPreLock(this, tsanFlags);
@@ -174,6 +177,7 @@ class Q_CORE_EXPORT QRecursiveMutex
     // only ever accessed from the thread that owns 'mutex':
     uint count = 0;
     QMutex mutex;
+    static constexpr bool LockIsNoexcept = noexcept(std::declval<QMutex>().lock());
 
 public:
     constexpr QRecursiveMutex() = default;
@@ -181,16 +185,16 @@ public:
 
 
     // BasicLockable concept
-    void lock() QT_MUTEX_LOCK_NOEXCEPT
+    void lock() noexcept(LockIsNoexcept)
     { tryLock(QDeadlineTimer(QDeadlineTimer::Forever)); }
     QT_CORE_INLINE_SINCE(6, 6)
-    bool tryLock(int timeout) QT_MUTEX_LOCK_NOEXCEPT;
-    bool tryLock(QDeadlineTimer timer = {}) QT_MUTEX_LOCK_NOEXCEPT;
+    bool tryLock(int timeout) noexcept(LockIsNoexcept);
+    bool tryLock(QDeadlineTimer timer = {}) noexcept(LockIsNoexcept);
     // BasicLockable concept
     void unlock() noexcept;
 
     // Lockable concept
-    bool try_lock() QT_MUTEX_LOCK_NOEXCEPT { return tryLock(); }
+    bool try_lock() noexcept(LockIsNoexcept) { return tryLock(); }
 
     // TimedLockable concept
     template <class Rep, class Period>
@@ -208,7 +212,7 @@ public:
 };
 
 #if QT_CORE_INLINE_IMPL_SINCE(6, 6)
-bool QRecursiveMutex::tryLock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
+bool QRecursiveMutex::tryLock(int timeout) noexcept(LockIsNoexcept)
 {
     return tryLock(QDeadlineTimer(timeout));
 }
@@ -217,9 +221,15 @@ bool QRecursiveMutex::tryLock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
 template <typename Mutex>
 class QMutexLocker
 {
+#ifdef Q_CC_GHS
+    // internal compiler error otherwise
+    static constexpr bool LockIsNoexcept = false;
+#else
+    static constexpr bool LockIsNoexcept = noexcept(std::declval<Mutex>().lock());
+#endif
 public:
     Q_NODISCARD_CTOR
-    inline explicit QMutexLocker(Mutex *mutex) QT_MUTEX_LOCK_NOEXCEPT
+    inline explicit QMutexLocker(Mutex *mutex) noexcept(LockIsNoexcept)
     {
         m_mutex = mutex;
         if (Q_LIKELY(mutex)) {
@@ -254,7 +264,7 @@ public:
         m_isLocked = false;
     }
 
-    inline void relock() QT_MUTEX_LOCK_NOEXCEPT
+    inline void relock() noexcept(LockIsNoexcept)
     {
         Q_ASSERT(!m_isLocked);
         m_mutex->lock();

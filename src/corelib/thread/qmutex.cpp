@@ -332,7 +332,7 @@ QRecursiveMutex::~QRecursiveMutex()
 
     \sa lock(), unlock()
 */
-bool QRecursiveMutex::tryLock(QDeadlineTimer timeout) QT_MUTEX_LOCK_NOEXCEPT
+bool QRecursiveMutex::tryLock(QDeadlineTimer timeout) noexcept(LockIsNoexcept)
 {
     unsigned tsanFlags = QtTsan::MutexWriteReentrant | QtTsan::TryLock;
     QtTsan::mutexPreLock(this, tsanFlags);
@@ -639,7 +639,7 @@ void QRecursiveMutex::unlock() noexcept
     \internal helper for lock()
  */
 Q_NEVER_INLINE
-void QBasicMutex::lockInternal() QT_MUTEX_LOCK_NOEXCEPT
+void QBasicMutex::lockInternal() noexcept(FutexAlwaysAvailable)
 {
     if (futexAvailable()) {
         // note we must set to dummyFutexValue because there could be other threads
@@ -660,7 +660,7 @@ void QBasicMutex::lockInternal() QT_MUTEX_LOCK_NOEXCEPT
     \internal helper for lock(int)
  */
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
-bool QBasicMutex::lockInternal(int timeout) QT_MUTEX_LOCK_NOEXCEPT
+bool QBasicMutex::lockInternal(int timeout) noexcept(FutexAlwaysAvailable)
 {
     if (timeout == 0)
         return false;
@@ -673,7 +673,7 @@ bool QBasicMutex::lockInternal(int timeout) QT_MUTEX_LOCK_NOEXCEPT
     \internal helper for tryLock(QDeadlineTimer)
  */
 Q_NEVER_INLINE
-bool QBasicMutex::lockInternal(QDeadlineTimer deadlineTimer) QT_MUTEX_LOCK_NOEXCEPT
+bool QBasicMutex::lockInternal(QDeadlineTimer deadlineTimer) noexcept(FutexAlwaysAvailable)
 {
     if (deadlineTimer.hasExpired())
         return false;
