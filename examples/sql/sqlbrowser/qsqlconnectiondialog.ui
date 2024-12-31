@@ -163,47 +163,11 @@
     </layout>
    </item>
    <item>
-    <layout class="QHBoxLayout" >
-     <property name="margin" >
-      <number>0</number>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
      </property>
-     <property name="spacing" >
-      <number>6</number>
-     </property>
-     <item>
-      <spacer>
-       <property name="orientation" >
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeType" >
-        <enum>QSizePolicy::Expanding</enum>
-       </property>
-       <property name="sizeHint" >
-        <size>
-         <width>20</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="QPushButton" name="okButton" >
-       <property name="text" >
-        <string>&amp;OK</string>
-       </property>
-       <property name="default" >
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="cancelButton" >
-       <property name="text" >
-        <string>&amp;Cancel</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
+    </widget>
    </item>
   </layout>
  </widget>
@@ -216,8 +180,6 @@
   <tabstop>editHostname</tabstop>
   <tabstop>portSpinBox</tabstop>
   <tabstop>dbCheckBox</tabstop>
-  <tabstop>okButton</tabstop>
-  <tabstop>cancelButton</tabstop>
  </tabstops>
  <resources/>
  <connections>
@@ -234,6 +196,38 @@
     <hint type="destinationlabel">
      <x>107</x>
      <y>221</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>QSqlConnectionDialogUi</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>19</x>
+     <y>278</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>244</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>QSqlConnectionDialogUi</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>58</x>
+     <y>276</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>58</x>
+     <y>258</y>
     </hint>
    </hints>
   </connection>
