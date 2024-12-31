@@ -5,6 +5,6 @@ package org.qtproject.qt.android;
 class BackendRegister
 {
     static native boolean isNull();
-    static native void registerBackend(Class interfaceType, Object interfaceObject);
-    static native void unregisterBackend(Class interfaceType);
+    static native void registerBackend(Class<?> interfaceType, Object interfaceObject);
+    static native void unregisterBackend(Class<?> interfaceType);
 }
