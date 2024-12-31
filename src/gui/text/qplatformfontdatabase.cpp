@@ -360,7 +360,7 @@ void QPlatformFontDatabase::releaseHandle(void *handle)
 */
 QString QPlatformFontDatabase::fontDir() const
 {
-    QString fontpath = QString::fromLocal8Bit(qgetenv("QT_QPA_FONTDIR"));
+    QString fontpath = qEnvironmentVariable("QT_QPA_FONTDIR");
     if (fontpath.isEmpty())
         fontpath = QLibraryInfo::path(QLibraryInfo::LibrariesPath) + "/fonts"_L1;
 

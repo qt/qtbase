@@ -105,10 +105,10 @@ static inline bool detectWebBrowser(const QByteArray &desktop,
         return true;
 
     if (checkBrowserVariable) {
-        QByteArray browserVariable = qgetenv("DEFAULT_BROWSER");
+        QString browserVariable = qEnvironmentVariable("DEFAULT_BROWSER");
         if (browserVariable.isEmpty())
-            browserVariable = qgetenv("BROWSER");
-        if (!browserVariable.isEmpty() && checkExecutable(QString::fromLocal8Bit(browserVariable), browser))
+            browserVariable = qEnvironmentVariable("BROWSER");
+        if (!browserVariable.isEmpty() && checkExecutable(browserVariable, browser))
             return true;
     }
 

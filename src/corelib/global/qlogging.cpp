@@ -1186,7 +1186,7 @@ QMessagePattern::QMessagePattern()
 #ifndef QT_BOOTSTRAPPED
     timer.start();
 #endif
-    const QString envPattern = QString::fromLocal8Bit(qgetenv("QT_MESSAGE_PATTERN"));
+    const QString envPattern = qEnvironmentVariable("QT_MESSAGE_PATTERN");
     if (envPattern.isEmpty()) {
         setPattern(QLatin1StringView(defaultPattern));
         fromEnvironment = false;

@@ -282,9 +282,8 @@ void QLoggingRegistry::initializeRules()
     }
     QList<QLoggingRule> er, qr, cr;
     // get rules from environment
-    const QByteArray rulesFilePath = qgetenv("QT_LOGGING_CONF");
-    if (!rulesFilePath.isEmpty())
-        er = loadRulesFromFile(QFile::decodeName(rulesFilePath));
+    if (QString rulesFilePath = qEnvironmentVariable("QT_LOGGING_CONF"); !rulesFilePath.isEmpty())
+        er = loadRulesFromFile(rulesFilePath);
 
     if (qtLoggingDebug())
         debugMsg("Checking %s environment variable", "QT_LOGGING_RULES");

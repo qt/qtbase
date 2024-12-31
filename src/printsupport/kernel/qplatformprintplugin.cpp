@@ -54,7 +54,7 @@ QPlatformPrinterSupport *QPlatformPrinterSupportPlugin::get()
         const QMultiMap<int, QString> keyMap = loader()->keyMap();
         QMultiMap<int, QString>::const_iterator it = keyMap.cbegin();
         if (!qEnvironmentVariableIsEmpty("QT_PRINTER_MODULE")) {
-            QString module = QString::fromLocal8Bit(qgetenv("QT_PRINTER_MODULE"));
+            QString module = qEnvironmentVariable("QT_PRINTER_MODULE");
             QMultiMap<int, QString>::const_iterator it2 = std::find_if(keyMap.cbegin(), keyMap.cend(), [module](const QString &value){ return value == module; });
             if (it2 == keyMap.cend())
                 qWarning() << "Unable to load printer plugin" << module;

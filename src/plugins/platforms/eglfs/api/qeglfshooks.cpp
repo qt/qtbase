@@ -50,29 +50,25 @@ DeviceIntegration::DeviceIntegration()
             }
         }
 
-        QByteArray requested;
-
         // The environment variable can override everything.
-        if (qEnvironmentVariableIsSet("QT_QPA_EGLFS_INTEGRATION")) {
-            requested = qgetenv("QT_QPA_EGLFS_INTEGRATION");
-        } else {
+        QString requested = qEnvironmentVariable("QT_QPA_EGLFS_INTEGRATION");
+        if (requested.isNull()) {
             // Device-specific makespecs may define a preferred plugin.
 #ifdef EGLFS_PREFERRED_PLUGIN
 #define DEFAULT_PLUGIN EGLFS_PREFERRED_PLUGIN
 #define STR(s) #s
 #define STRQ(s) STR(s)
-            requested = STRQ(DEFAULT_PLUGIN);
+            requested = QStringLiteral(STRQ(DEFAULT_PLUGIN));
 #endif
         }
 
         // Treat "none" as special. There has to be a way to indicate
         // that plugins must be ignored when the device is known to be
         // functional with the default, non-specialized integration.
-        if (requested != QByteArrayLiteral("none")) {
+        if (requested != QStringLiteral("none")) {
             if (!requested.isEmpty()) {
-                QString reqStr = QString::fromLocal8Bit(requested);
-                pluginKeys.removeOne(reqStr);
-                pluginKeys.prepend(reqStr);
+                pluginKeys.removeOne(requested);
+                pluginKeys.prepend(requested);
             }
             qCDebug(qLcEglDevDebug) << "EGL device integration plugin keys (sorted):" << pluginKeys;
             while (!m_integration && !pluginKeys.isEmpty()) {

@@ -1204,11 +1204,11 @@ QPlatformTheme *QKdeTheme::createKdeTheme()
     // - fallback to /etc/kde<version>
 
     QStringList kdeDirs;
-    const QString kdeHomePathVar = QFile::decodeName(qgetenv("KDEHOME"));
+    const QString kdeHomePathVar = qEnvironmentVariable("KDEHOME");
     if (!kdeHomePathVar.isEmpty())
         kdeDirs += kdeHomePathVar;
 
-    const QString kdeDirsVar = QFile::decodeName(qgetenv("KDEDIRS"));
+    const QString kdeDirsVar = qEnvironmentVariable("KDEDIRS");
     if (!kdeDirsVar.isEmpty())
         kdeDirs += kdeDirsVar.split(u':', Qt::SkipEmptyParts);
 

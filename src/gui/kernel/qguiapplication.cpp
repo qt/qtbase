@@ -1499,7 +1499,7 @@ void QGuiApplicationPrivate::createPlatformIntegration()
     QHighDpiScaling::initHighDpiScaling();
 
     // Load the platform integration
-    QString platformPluginPath = QString::fromLocal8Bit(qgetenv("QT_QPA_PLATFORM_PLUGIN_PATH"));
+    QString platformPluginPath = qEnvironmentVariable("QT_QPA_PLATFORM_PLUGIN_PATH");
 
 
     QByteArray platformName;

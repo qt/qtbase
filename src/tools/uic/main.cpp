@@ -187,7 +187,7 @@ int runUic(int argc, char *argv[])
         if (parser.isSet(pythonPathOption))
             pythonPaths = parser.value(pythonPathOption);
         else if (qEnvironmentVariableIsSet(pythonPathVar))
-            pythonPaths = QString::fromUtf8(qgetenv(pythonPathVar));
+            pythonPaths = qEnvironmentVariable(pythonPathVar);
         driver.option().pythonRoot = pythonRoot(pythonPaths, inputFile);
     }
 

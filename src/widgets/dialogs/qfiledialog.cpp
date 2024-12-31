@@ -3995,11 +3995,11 @@ QString QFileDialogPrivate::getEnvironmentVariable(const QString &string)
 {
 #ifdef Q_OS_UNIX
     if (string.size() > 1 && string.startsWith(u'$')) {
-        return QString::fromLocal8Bit(qgetenv(QStringView{string}.mid(1).toLatin1().constData()));
+        return qEnvironmentVariable(QStringView{string}.mid(1).toLatin1().constData());
     }
 #else
     if (string.size() > 2 && string.startsWith(u'%') && string.endsWith(u'%')) {
-        return QString::fromLocal8Bit(qgetenv(QStringView{string}.mid(1, string.size() - 2).toLatin1().constData()));
+        return qEnvironmentVariable(QStringView{string}.mid(1, string.size() - 2).toLatin1().constData());
     }
 #endif
     return string;

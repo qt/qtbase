@@ -52,19 +52,19 @@ void QOutputMapping::set(QOutputMapping *mapping)
 
 bool QDefaultOutputMapping::load()
 {
-    static QByteArray configFile = qgetenv("QT_QPA_EGLFS_KMS_CONFIG");
+    static QString configFile = qEnvironmentVariable("QT_QPA_EGLFS_KMS_CONFIG");
     if (configFile.isEmpty())
         return false;
 
-    QFile file(QString::fromUtf8(configFile));
+    QFile file(configFile);
     if (!file.open(QFile::ReadOnly)) {
-        qWarning("touch input support: Failed to open %s", configFile.constData());
+        qWarning("touch input support: Failed to open %ls", qUtf16Printable(configFile));
         return false;
     }
 
     const QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
     if (!doc.isObject()) {
-        qWarning("touch input support: Failed to parse %s", configFile.constData());
+        qWarning("touch input support: Failed to parse %ls", qUtf16Printable(configFile));
         return false;
     }
 

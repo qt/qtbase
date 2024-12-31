@@ -24,7 +24,7 @@ QEvdevMouseManager::QEvdevMouseManager(const QString &key, const QString &specif
 {
     Q_UNUSED(key);
 
-    QString spec = QString::fromLocal8Bit(qgetenv("QT_QPA_EVDEV_MOUSE_PARAMETERS"));
+    QString spec = qEnvironmentVariable("QT_QPA_EVDEV_MOUSE_PARAMETERS");
 
     if (spec.isEmpty())
         spec = specification;

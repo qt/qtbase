@@ -731,11 +731,9 @@ QString QIBusPlatformInputContextPrivate::getSocketPath()
     QByteArray displayNumber = "0";
     bool isWayland = false;
 
-    if (qEnvironmentVariableIsSet("IBUS_ADDRESS_FILE")) {
-        QByteArray path = qgetenv("IBUS_ADDRESS_FILE");
-        return QString::fromLocal8Bit(path);
-    } else  if (qEnvironmentVariableIsSet("WAYLAND_DISPLAY")) {
-        display = qgetenv("WAYLAND_DISPLAY");
+    if (QString path = qEnvironmentVariable("IBUS_ADDRESS_FILE"); !path.isNull()) {
+        return path;
+    } else if (display = qgetenv("WAYLAND_DISPLAY"); !display.isEmpty()) {
         isWayland = true;
     } else {
         display = qgetenv("DISPLAY");

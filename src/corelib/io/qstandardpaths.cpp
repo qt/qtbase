@@ -6,6 +6,7 @@
 
 #include <qdir.h>
 #include <qfileinfo.h>
+#include <qvarlengtharray.h>
 
 #ifndef QT_BOOTSTRAPPED
 #include <qobject.h>
@@ -424,6 +425,28 @@ QStringList QStandardPaths::locateAll(StandardLocation type, const QString &file
     return result;
 }
 
+static Q_DECL_COLD_FUNCTION QString fallbackPathVariable()
+{
+#if defined(_PATH_DEFPATH)
+    // BSD API.
+    return QString::fromLocal8Bit(_PATH_DEFPATH);
+#endif
+#if defined(_CS_PATH)
+    // POSIX API.
+    size_t n = confstr(_CS_PATH, nullptr, 0);
+    if (n) {
+        // n includes the terminating null
+        QVarLengthArray<char, 1024> rawpath(n);
+        confstr(_CS_PATH, rawpath.data(), n);
+        return QString::fromLocal8Bit(QByteArrayView(rawpath.data(), n - 1));
+    }
+#else
+    // Windows SDK's execvpe() does not have a fallback, so we won't
+    // apply one either.
+#endif
+    return {};
+}
+
 #ifdef Q_OS_WIN
 static QStringList executableExtensions()
 {
@@ -490,30 +513,16 @@ QString QStandardPaths::findExecutable(const QString &executableName, const QStr
 
     QStringList searchPaths = paths;
     if (paths.isEmpty()) {
-        QByteArray pEnv = qgetenv("PATH");
+        QString pEnv = qEnvironmentVariable("PATH");
         if (Q_UNLIKELY(pEnv.isNull())) {
             // Get a default path. POSIX.1 does not actually require this, but
             // most Unix libc fall back to confstr(_CS_PATH) if the PATH
             // environment variable isn't set. Let's try to do the same.
-#if defined(_PATH_DEFPATH)
-            // BSD API.
-            pEnv = _PATH_DEFPATH;
-#elif defined(_CS_PATH)
-            // POSIX API.
-            size_t n = confstr(_CS_PATH, nullptr, 0);
-            if (n) {
-                pEnv.resize(n);
-                // size()+1 is ok because QByteArray always has an extra NUL-terminator
-                confstr(_CS_PATH, pEnv.data(), pEnv.size() + 1);
-            }
-#else
-            // Windows SDK's execvpe() does not have a fallback, so we won't
-            // apply one either.
-#endif
+            pEnv = fallbackPathVariable();
         }
 
         // Remove trailing slashes, which occur on Windows.
-        const QStringList rawPaths = QString::fromLocal8Bit(pEnv.constData()).split(
+        const QStringList rawPaths = pEnv.split(
             QDir::listSeparator(), Qt::SkipEmptyParts);
         searchPaths.reserve(rawPaths.size());
         for (const QString &rawPath : rawPaths) {

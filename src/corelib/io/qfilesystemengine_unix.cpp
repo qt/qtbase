@@ -1783,7 +1783,7 @@ bool QFileSystemEngine::setFileTime(int fd, const QDateTime &newDate, QFile::Fil
 
 QString QFileSystemEngine::homePath()
 {
-    QString home = QFile::decodeName(qgetenv("HOME"));
+    QString home = qEnvironmentVariable("HOME");
     if (home.isEmpty())
         home = rootPath();
     return QDir::cleanPath(home);
@@ -1799,7 +1799,7 @@ QString QFileSystemEngine::tempPath()
 #ifdef QT_UNIX_TEMP_PATH_OVERRIDE
     return QT_UNIX_TEMP_PATH_OVERRIDE ""_L1;
 #else
-    QString temp = QFile::decodeName(qgetenv("TMPDIR"));
+    QString temp = qEnvironmentVariable("TMPDIR");
     if (temp.isEmpty()) {
         if (false) {
 #if defined(Q_OS_DARWIN) && !defined(QT_BOOTSTRAPPED)

@@ -185,7 +185,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
             xdgCacheHome = QDir::homePath() + "/.qttest/cache"_L1;
         } else {
             // http://standards.freedesktop.org/basedir-spec/basedir-spec-0.6.html
-            xdgCacheHome = QFile::decodeName(qgetenv("XDG_CACHE_HOME"));
+            xdgCacheHome = qEnvironmentVariable("XDG_CACHE_HOME");
             if (!xdgCacheHome.startsWith(u'/'))
                 xdgCacheHome.clear(); // spec says relative paths should be ignored
 
@@ -204,7 +204,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
             xdgStateHome = QDir::homePath() + "/.qttest/state"_L1;
         } else {
             // http://standards.freedesktop.org/basedir-spec/basedir-spec-0.8.html
-            xdgStateHome = QFile::decodeName(qgetenv("XDG_STATE_HOME"));
+            xdgStateHome = qEnvironmentVariable("XDG_STATE_HOME");
             if (!xdgStateHome.startsWith(u'/'))
                 xdgStateHome.clear(); // spec says relative paths should be ignored
 
@@ -223,7 +223,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
         if (isTestModeEnabled()) {
             xdgDataHome = QDir::homePath() + "/.qttest/share"_L1;
         } else {
-            xdgDataHome = QFile::decodeName(qgetenv("XDG_DATA_HOME"));
+            xdgDataHome = qEnvironmentVariable("XDG_DATA_HOME");
             if (!xdgDataHome.startsWith(u'/'))
                 xdgDataHome.clear(); // spec says relative paths should be ignored
 
@@ -243,7 +243,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
             xdgConfigHome = QDir::homePath() + "/.qttest/config"_L1;
         } else {
             // http://standards.freedesktop.org/basedir-spec/latest/
-            xdgConfigHome = QFile::decodeName(qgetenv("XDG_CONFIG_HOME"));
+            xdgConfigHome = qEnvironmentVariable("XDG_CONFIG_HOME");
             if (!xdgConfigHome.startsWith(u'/'))
                 xdgConfigHome.clear(); // spec says relative paths should be ignored
 
@@ -256,7 +256,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
     }
     case RuntimeLocation:
     {
-        QString xdgRuntimeDir = QFile::decodeName(qgetenv("XDG_RUNTIME_DIR"));
+        QString xdgRuntimeDir = qEnvironmentVariable("XDG_RUNTIME_DIR");
         if (!xdgRuntimeDir.startsWith(u'/'))
             xdgRuntimeDir.clear(); // spec says relative paths should be ignored
 
@@ -285,7 +285,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
 
 #if QT_CONFIG(regularexpression)
     // http://www.freedesktop.org/wiki/Software/xdg-user-dirs
-    QString xdgConfigHome = QFile::decodeName(qgetenv("XDG_CONFIG_HOME"));
+    QString xdgConfigHome = qEnvironmentVariable("XDG_CONFIG_HOME");
     if (!xdgConfigHome.startsWith(u'/'))
         xdgConfigHome.clear(); // spec says relative paths should be ignored
 
@@ -390,7 +390,7 @@ static QStringList dirsList(const QString &xdgEnvVar)
 static QStringList xdgDataDirs()
 {
     // http://standards.freedesktop.org/basedir-spec/latest/
-    QString xdgDataDirsEnv = QFile::decodeName(qgetenv("XDG_DATA_DIRS"));
+    QString xdgDataDirsEnv = qEnvironmentVariable("XDG_DATA_DIRS");
 
     QStringList dirs = dirsList(xdgDataDirsEnv);
     if (dirs.isEmpty())
@@ -402,7 +402,7 @@ static QStringList xdgDataDirs()
 static QStringList xdgConfigDirs()
 {
     // http://standards.freedesktop.org/basedir-spec/latest/
-    const QString xdgConfigDirs = QFile::decodeName(qgetenv("XDG_CONFIG_DIRS"));
+    const QString xdgConfigDirs = qEnvironmentVariable("XDG_CONFIG_DIRS");
 
     QStringList dirs = dirsList(xdgConfigDirs);
     if (dirs.isEmpty())

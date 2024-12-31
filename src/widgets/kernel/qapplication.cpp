@@ -363,8 +363,8 @@ QWidget *qt_desktopWidget = nullptr;                // root window widgets
 */
 void QApplicationPrivate::process_cmdline()
 {
-    if (styleOverride.isEmpty() && qEnvironmentVariableIsSet("QT_STYLE_OVERRIDE"))
-        styleOverride = QString::fromLocal8Bit(qgetenv("QT_STYLE_OVERRIDE"));
+    if (styleOverride.isEmpty())
+        styleOverride = qEnvironmentVariable("QT_STYLE_OVERRIDE");
 
     // process platform-indep command line
     if (qt_is_tty_app || !argc)
@@ -1404,8 +1404,8 @@ QString QApplicationPrivate::desktopStyleKey()
 {
 #if defined(QT_BUILD_INTERNAL)
     // Allow auto-tests to override the desktop style
-    if (qEnvironmentVariableIsSet("QT_DESKTOP_STYLE_KEY"))
-        return QString::fromLocal8Bit(qgetenv("QT_DESKTOP_STYLE_KEY"));
+    if (QString env = qEnvironmentVariable("QT_DESKTOP_STYLE_KEY"); !env.isNull())
+        return env;
 #endif
 
     // The platform theme might return a style that is not available, find

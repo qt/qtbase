@@ -51,7 +51,7 @@ void QBasicPlatformVulkanInstance::loadVulkanLibrary(const QString &defaultLibra
     // embedded systems without a Vulkan loader and possibly with custom vendor
     // library names.
     if (qEnvironmentVariableIsSet("QT_VULKAN_LIB"))
-        loadList.append({ QString::fromUtf8(qgetenv("QT_VULKAN_LIB")), -1 });
+        loadList.append({ qEnvironmentVariable("QT_VULKAN_LIB"), -1 });
 
     // Then what the platform specified. On Linux the version is likely 1, thus
     // preferring libvulkan.so.1 over libvulkan.so.

@@ -531,7 +531,7 @@ QByteArray QXcbIntegration::wmClass() const
         if (m_instanceName)
             name = QString::fromLocal8Bit(m_instanceName);
         if (name.isEmpty() && qEnvironmentVariableIsSet(resourceNameVar))
-            name = QString::fromLocal8Bit(qgetenv(resourceNameVar));
+            name = qEnvironmentVariable(resourceNameVar);
         if (name.isEmpty())
             name = argv0BaseName();
 

@@ -23,7 +23,7 @@ QEvdevTabletManager::QEvdevTabletManager(const QString &key, const QString &spec
     if (qEnvironmentVariableIsSet("QT_QPA_EVDEV_DEBUG"))
         const_cast<QLoggingCategory &>(qLcEvdevTablet()).setEnabled(QtDebugMsg, true);
 
-    QString spec = QString::fromLocal8Bit(qgetenv("QT_QPA_EVDEV_TABLET_PARAMETERS"));
+    QString spec = qEnvironmentVariable("QT_QPA_EVDEV_TABLET_PARAMETERS");
 
     if (spec.isEmpty())
         spec = specification;

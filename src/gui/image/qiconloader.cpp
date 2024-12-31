@@ -50,9 +50,8 @@ QIconLoader::QIconLoader() :
 
 static inline QString systemThemeName()
 {
-    const auto override = qgetenv("QT_QPA_SYSTEM_ICON_THEME");
-    if (!override.isEmpty())
-        return QString::fromLocal8Bit(override);
+    if (QString override = qEnvironmentVariable("QT_QPA_SYSTEM_ICON_THEME"); !override.isEmpty())
+        return override;
     if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
         const QVariant themeHint = theme->themeHint(QPlatformTheme::SystemIconThemeName);
         if (themeHint.isValid())
