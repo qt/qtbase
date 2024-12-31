@@ -597,7 +597,7 @@ CGSize QSizeF::toCGSize() const noexcept
 /*!
     \since 5.8
 
-    Creates a QRectF from \a size.
+    Creates a QSizeF from \a size.
 
     \sa toCGSize()
 */
