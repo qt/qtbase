@@ -6,6 +6,8 @@
 #include "qlocalsocket.h"
 #include "qlocalsocket_p.h"
 
+#include <QtCore/qdebug.h>
+
 QT_BEGIN_NAMESPACE
 
 /*!

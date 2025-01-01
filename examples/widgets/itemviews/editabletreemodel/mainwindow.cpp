@@ -4,6 +4,7 @@
 #include "mainwindow.h"
 #include "treemodel.h"
 
+#include <QDebug>
 #include <QFile>
 
 using namespace Qt::StringLiterals;

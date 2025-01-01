@@ -15,6 +15,7 @@
 #include "qcborstreamwriter.h"
 #endif
 
+#include <QtCore/qdebug.h>
 #include <qendian.h>
 #include <qlocale.h>
 #include <qdatetime.h>

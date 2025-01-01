@@ -4,6 +4,7 @@
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDeadlineTimer>
+#include <QtCore/qdebug.h>
 #include <QtCore/QDir>
 #include <QtCore/QHash>
 #include <QtCore/QProcess>

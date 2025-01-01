@@ -6,6 +6,7 @@
 #define QSSLERROR_H
 
 #include <QtNetwork/qtnetworkglobal.h>
+#include <QtCore/qdebug.h>
 #include <QtCore/qvariant.h>
 #include <QtNetwork/qsslcertificate.h>
 

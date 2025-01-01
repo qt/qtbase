@@ -6,6 +6,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QPainter>
 #include <QStyleOptionGraphicsItem>
+#include <QVarLengthArray>
 
 Chip::Chip(const QColor &color, int x, int y)
 {

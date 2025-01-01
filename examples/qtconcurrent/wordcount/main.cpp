@@ -3,9 +3,11 @@
 
 #include <QtWidgets/qfiledialog.h>
 #include <QtWidgets/qapplication.h>
+#include <QtCore/qdebug.h>
 #include <QtCore/qmimedatabase.h>
 #include <QtCore/qelapsedtimer.h>
 #include <QtConcurrent/qtconcurrentmap.h>
+#include <QtCore/qtextstream.h>
 
 typedef QMap<QString, int> WordCount;
 

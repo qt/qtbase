@@ -6,10 +6,6 @@
 
 #include <sys/keycodes.h>
 
-#if defined(QQNXEVENTTHREAD_DEBUG)
-#include <QtCore/QDebug>
-#endif
-
 QT_BEGIN_NAMESPACE
 
 int qtKeyForPrivateUseQnxKey( int key )
@@ -79,7 +75,7 @@ int qtKeyForPrivateUseQnxKey( int key )
 
     default:
 #if defined(QQNXEVENTTHREAD_DEBUG)
-        qDebug() << "QQNX: unknown key for translation:" << key;
+        qDebug("QQNX: unknown key for translation: %d", key);
 #endif
         break;
     }

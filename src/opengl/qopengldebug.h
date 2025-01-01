@@ -12,7 +12,6 @@
 #include <QtCore/qflags.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qmetatype.h>
-#include <QtCore/qdebug.h>
 #include <QtGui/qopenglcontext.h>
 
 #if defined(Q_QDOC)
@@ -22,6 +21,7 @@ typedef unsigned int GLuint;
 
 QT_BEGIN_NAMESPACE
 
+class QDebug;
 class QOpenGLDebugLogger;
 class QOpenGLDebugLoggerPrivate;
 class QOpenGLDebugMessagePrivate;

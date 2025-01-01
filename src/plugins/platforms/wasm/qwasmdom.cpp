@@ -3,6 +3,7 @@
 
 #include "qwasmdom.h"
 
+#include <QtCore/qdebug.h>
 #include <QtCore/qdir.h>
 #include <QtCore/qfile.h>
 #include <QtCore/qpoint.h>

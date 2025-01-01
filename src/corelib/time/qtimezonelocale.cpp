@@ -245,8 +245,9 @@ const MetaZoneData *metaZoneDataFor(const MetaZoneData *from, QLocale::Territory
         // Fall back to World (if territory itself isn't World).
     } while (std::exchange(land, QLocale::World) != QLocale::World);
 
-    qWarning() << "Metazone" << from->metaZoneId() << "lacks World data for"
-               << QLocale::territoryToString(territory);
+    qWarning("Metazone %s lacks World data for %ls",
+             from->metaZoneId().constData(),
+             qUtf16Printable(QLocale::territoryToString(territory)));
     return nullptr;
 }
 

@@ -4,6 +4,7 @@
 #include "qhttpmultipart.h"
 #include "qhttpmultipart_p.h"
 #include "QtCore/qdatetime.h" // for initializing the random number generator with QTime
+#include <QtCore/qdebug.h>
 #include "QtCore/qmutex.h"
 #include "QtCore/qrandom.h"
 

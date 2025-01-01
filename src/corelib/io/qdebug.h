@@ -11,6 +11,7 @@
 
 #include <QtCore/qcompare.h>
 #include <QtCore/qcontainerfwd.h>
+#include <QtCore/qfloat16.h>
 #include <QtCore/qtextstream.h>
 #include <QtCore/qttypetraits.h>
 #include <QtCore/qtypes.h>

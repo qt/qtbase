@@ -13,12 +13,10 @@
 #endif
 #include <QtCore/qiodevice.h>
 #include <QtCore/qobject.h>
-#ifndef QT_NO_DEBUG_STREAM
-#include <QtCore/qdebug.h>
-#endif
 
 QT_BEGIN_NAMESPACE
 
+class QDebug;
 
 class QHostAddress;
 #ifndef QT_NO_NETWORKPROXY

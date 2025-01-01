@@ -18,6 +18,7 @@
 #include <QtCore/qcborcommon.h>
 #include <QtCore/qcbormap.h>
 #include <QtCore/qcborvalue.h>
+#include <QtCore/qdebug.h>
 #include <QtCore/qdatetime.h>
 #include <QtCore/qmetaobject.h>
 #include <QtCore/qmetatype.h>

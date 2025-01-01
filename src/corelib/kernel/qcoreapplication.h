@@ -15,9 +15,6 @@
 #include <QtCore/qscopedpointer.h>
 #endif
 #include <QtCore/qnativeinterface.h>
-#ifndef QT_NO_DEBUGSTREAM
-#include <QtCore/qdebug.h>
-#endif
 
 #ifndef QT_NO_QOBJECT
 #if defined(Q_OS_WIN) && !defined(tagMSG)
@@ -29,6 +26,7 @@ QT_BEGIN_NAMESPACE
 
 
 class QCoreApplicationPrivate;
+class QDebug;
 class QTranslator;
 class QPostEventList;
 class QAbstractEventDispatcher;

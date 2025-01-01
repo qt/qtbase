@@ -6,7 +6,6 @@
 
 #include <QtCore/qobjectdefs.h>
 #include <QtCore/qmetatype.h>
-#include <QtCore/qdebug.h>
 
 #if 0
 #pragma qt_class(QtCborCommon)
@@ -19,6 +18,8 @@
 #endif
 
 QT_BEGIN_NAMESPACE
+
+class QDebug;
 
 enum class QCborSimpleType : quint8 {
     False = 20,

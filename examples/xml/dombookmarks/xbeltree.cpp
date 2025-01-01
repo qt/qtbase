@@ -14,6 +14,7 @@
 #  include <QContextMenuEvent>
 #endif
 
+#include <QTextStream>
 #include <QUrl>
 
 using namespace Qt::StringLiterals;

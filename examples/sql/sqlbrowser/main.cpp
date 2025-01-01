@@ -4,6 +4,7 @@
 #include "browser.h"
 
 #include <QApplication>
+#include <QDebug>
 #include <QMainWindow>
 #include <QMenu>
 #include <QMenuBar>

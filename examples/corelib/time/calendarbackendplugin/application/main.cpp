@@ -7,6 +7,7 @@
 #include <QCalendar>
 #include <QCalendarWidget>
 #include <QCommandLineParser>
+#include <QDebug>
 #include <QPluginLoader>
 
 int main(int argc, char *argv[])

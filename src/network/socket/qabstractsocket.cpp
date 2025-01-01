@@ -435,6 +435,7 @@
 #include "private/qhostinfo_p.h"
 
 #include <qabstracteventdispatcher.h>
+#include <QtCore/qdebug.h>
 #include <qhostaddress.h>
 #include <qhostinfo.h>
 #include <qmetaobject.h>

@@ -48,13 +48,14 @@ typedef int VkDebugReportObjectTypeEXT;
 #if __has_include(<vulkan/vulkan.h>) || defined(Q_QDOC)
 
 #include <QtCore/qbytearraylist.h>
-#include <QtCore/qdebug.h>
 #include <QtCore/qhashfunctions.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qscopedpointer.h>
 #include <QtCore/qversionnumber.h>
 
 QT_BEGIN_NAMESPACE
+
+class QDebug;
 
 class QVulkanInstancePrivate;
 class QPlatformVulkanInstance;

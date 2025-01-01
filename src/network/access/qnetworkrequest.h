@@ -13,6 +13,8 @@
 
 #include <QtCore/q26numeric.h>
 
+#include <chrono>
+
 QT_BEGIN_NAMESPACE
 
 class QSslConfiguration;

@@ -8,14 +8,11 @@
 #include <QtCore/qiodevice.h>
 #include <QtNetwork/qabstractsocket.h>
 
-#ifndef QT_NO_DEBUG_STREAM
-#include <QtCore/qdebug.h>
-#endif
-
 QT_REQUIRE_CONFIG(localserver);
 
 QT_BEGIN_NAMESPACE
 
+class QDebug;
 class QLocalSocketPrivate;
 
 class Q_NETWORK_EXPORT QLocalSocket : public QIODevice
