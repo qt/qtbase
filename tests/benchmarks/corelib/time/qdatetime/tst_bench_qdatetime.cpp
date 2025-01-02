@@ -127,7 +127,7 @@ void tst_QDateTime::create()
 {
     QFETCH(const qint64, startJd);
     QFETCH(const qint64, stopJd);
-    const QTime noon = QTime::fromMSecsSinceStartOfDay(43200);
+    const QTime noon = QTime::fromMSecsSinceStartOfDay(43200 * 1000);
     QBENCHMARK {
         for (int jd = startJd; jd < stopJd; ++jd) {
             QDateTime test(QDate::fromJulianDay(jd), noon);
