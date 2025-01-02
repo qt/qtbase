@@ -257,6 +257,7 @@ void tst_QGestureRecognizer::swipeGesture()
     const Qt::GestureType gestureType = Qt::SwipeGesture;
     TestWidget widget(GestureTypeVector(1, gestureType));
     widget.setWindowTitle(QTest::currentTestFunction());
+    widget.setWindowFlag(Qt::FramelessWindowHint);
     widget.show();
     QVERIFY(QTest::qWaitForWindowExposed(&widget));
 
