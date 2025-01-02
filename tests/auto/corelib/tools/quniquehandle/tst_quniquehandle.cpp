@@ -186,7 +186,7 @@ private slots:
         QCOMPARE_EQ(valid.get(), resource);
     }
 
-    void reset_resetsPreviousValueAndTakesOwnership() const
+    void reset_resetsPreviousValueAndTakesOwnership_whenCalledWithHandle() const
     {
         const auto resource0 = GlobalResource::open();
         const auto resource1 = GlobalResource::open();
@@ -196,6 +196,25 @@ private slots:
 
         QVERIFY(!GlobalResource::isOpen(resource0));
         QVERIFY(GlobalResource::isOpen(resource1));
+    }
+
+    void reset_resetsOwningHandleToInvalid_whenCalledWithNoArguments() const
+    {
+        const auto resource0 = GlobalResource::open();
+
+        Handle h{ resource0 };
+        h.reset();
+
+        QVERIFY(!GlobalResource::isOpen(resource0));
+        QVERIFY(!h);
+    }
+
+    void reset_doesNothing_whenCalledOnInvalidHandle() const
+    {
+        Handle h{ };
+        h.reset();
+
+        QVERIFY(!h);
     }
 
     void release_returnsInvalidResource_whenCalledOnInvalidHandle() const
