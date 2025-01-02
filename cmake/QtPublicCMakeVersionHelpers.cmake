@@ -55,9 +55,8 @@ function(__qt_internal_force_allow_unsuitable_cmake_version_for_using_qt out_var
     # Temporarily allow any version when using Qt in Qt's CI, so we can decouple the provisioning
     # of the minimum CMake version from the bump of the minimum CMake version.
     # The COIN_UNIQUE_JOB_ID env var is set in Qt's CI for both build and test work items.
-    # Current state is that this check is enabled.
-    # TODO: Disable it once provisioning is merged.
-    set(allow_any_version_in_ci TRUE)
+    # Current state is that this check is disabled.
+    set(allow_any_version_in_ci FALSE)
 
     if(allow_any_version_in_ci AND DEFINED ENV{COIN_UNIQUE_JOB_ID})
         set(allow_any_version TRUE)
