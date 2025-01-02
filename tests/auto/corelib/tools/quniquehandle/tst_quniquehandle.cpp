@@ -353,6 +353,48 @@ QT_WARNING_POP
         QCOMPARE_EQ(Handle{ }, Handle{ });
     }
 
+    void comparison_behavesAsPointer_whenHandleTypeIsPointer_data() const
+    {
+        QTest::addColumn<int*>("lhs");
+        QTest::addColumn<int*>("rhs");
+
+        QTest::addRow("lhs == rhs") << reinterpret_cast<int*>(2) << reinterpret_cast<int*>(2);
+        QTest::addRow("lhs < rhs") << reinterpret_cast<int*>(1) << reinterpret_cast<int*>(2);
+        QTest::addRow("lhs > rhs") << reinterpret_cast<int*>(2) << reinterpret_cast<int*>(1);
+    }
+
+    void comparison_behavesAsPointer_whenHandleTypeIsPointer() const
+    {
+        struct IntPtrTraits
+        {
+            using Type = int*;
+
+            static bool close(Type)
+            {
+                return true;
+            }
+
+            static Type invalidValue() noexcept
+            {
+                return nullptr;
+            }
+        };
+
+        using Handle = QUniqueHandle<IntPtrTraits>;
+
+        QFETCH(int*, lhs);
+        QFETCH(int*, rhs);
+
+        QCOMPARE_EQ(Handle{ lhs } == Handle{ rhs }, lhs == rhs);
+        QCOMPARE_EQ(Handle{ lhs } != Handle{ rhs }, lhs != rhs);
+        QCOMPARE_EQ(Handle{ lhs } < Handle{ rhs }, lhs < rhs);
+        QCOMPARE_EQ(Handle{ lhs } <= Handle{ rhs }, lhs <= rhs);
+        QCOMPARE_EQ(Handle{ lhs } > Handle{ rhs }, lhs > rhs);
+        QCOMPARE_EQ(Handle{ lhs } >= Handle{ rhs },  lhs >= rhs);
+
+        QCOMPARE_EQ(Handle{ }, Handle{ });
+    }
+
     void sort_sortsHandles() const
     {
         const auto resource0 = GlobalResource::open();

@@ -17,6 +17,7 @@
 
 #include <QtCore/qtconfigmacros.h>
 #include <QtCore/qassert.h>
+#include <QtCore/qcompare.h>
 #include <QtCore/qswap.h>
 #include <QtCore/qtclasshelpermacros.h>
 
@@ -198,37 +199,24 @@ public:
         m_handle = HandleTraits::invalidValue();
     }
 
-    [[nodiscard]] friend bool operator==(const QUniqueHandle &lhs, const QUniqueHandle &rhs) noexcept
+private:
+    friend bool comparesEqual(const QUniqueHandle& lhs, const QUniqueHandle& rhs) noexcept
     {
         return lhs.get() == rhs.get();
     }
 
-    [[nodiscard]] friend bool operator!=(const QUniqueHandle &lhs, const QUniqueHandle &rhs) noexcept
+    friend Qt::strong_ordering compareThreeWay(const QUniqueHandle& lhs,
+                                               const QUniqueHandle& rhs) noexcept
     {
-        return lhs.get() != rhs.get();
+        if constexpr (std::is_pointer_v<Type>)
+            return qCompareThreeWay(Qt::totally_ordered_wrapper{ lhs.get() },
+                                    Qt::totally_ordered_wrapper{ rhs.get() });
+        else
+            return qCompareThreeWay(lhs.get(), rhs.get());
     }
 
-    [[nodiscard]] friend bool operator<(const QUniqueHandle &lhs, const QUniqueHandle &rhs) noexcept
-    {
-        return lhs.get() < rhs.get();
-    }
+    Q_DECLARE_STRONGLY_ORDERED(QUniqueHandle)
 
-    [[nodiscard]] friend bool operator<=(const QUniqueHandle &lhs, const QUniqueHandle &rhs) noexcept
-    {
-        return lhs.get() <= rhs.get();
-    }
-
-    [[nodiscard]] friend bool operator>(const QUniqueHandle &lhs, const QUniqueHandle &rhs) noexcept
-    {
-        return lhs.get() > rhs.get();
-    }
-
-    [[nodiscard]] friend bool operator>=(const QUniqueHandle &lhs, const QUniqueHandle &rhs) noexcept
-    {
-        return lhs.get() >= rhs.get();
-    }
-
-private:
     Type m_handle{ HandleTraits::invalidValue() };
 };
 
