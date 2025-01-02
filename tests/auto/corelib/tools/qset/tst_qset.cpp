@@ -1282,11 +1282,9 @@ void tst_QSet::setOperationsPickEquivalentElementsFromLHSContainer_impl()
 
 
         QVERIFY(rhsCopy.contains(OneR));
-        QEXPECT_FAIL("", "QTBUG-132536", Continue);
         QCOMPARE(rhsCopy.find(OneR)->id, OneR.id);
 
         QVERIFY(rhsCopy.contains(TwoR));
-        QEXPECT_FAIL("", "QTBUG-132536", Continue);
         QCOMPARE(rhsCopy.find(TwoR)->id, TwoR.id);
 
         QVERIFY(!rhsCopy.contains(ThreeR));
