@@ -151,7 +151,7 @@ public:
         return m_handle;
     }
 
-    void reset(const Type& handle) noexcept
+    void reset(const Type& handle = HandleTraits::invalidValue()) noexcept
     {
         if (handle == m_handle)
             return;
