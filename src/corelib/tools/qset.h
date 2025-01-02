@@ -209,6 +209,8 @@ public:
     QList<T> values() const;
 
 private:
+    static inline QSet intersected_helper(const QSet &lhs, const QSet &rhs);
+
     Hash q_hash;
 };
 
@@ -242,21 +244,49 @@ Q_INLINE_TEMPLATE QSet<T> &QSet<T>::unite(const QSet<T> &other)
 template <class T>
 Q_INLINE_TEMPLATE QSet<T> &QSet<T>::intersect(const QSet<T> &other)
 {
-    QSet<T> copy1;
-    QSet<T> copy2;
-    if (size() <= other.size()) {
-        copy1 = *this;
-        copy2 = other;
+    if (q_hash.isSharedWith(other.q_hash)) {
+        // nothing to do
+    } else if (isEmpty() || other.isEmpty()) {
+        // any set intersected with the empty set is the empty set
+        clear();
+    } else if (q_hash.isDetached()) {
+        // do it in-place:
+        removeIf([&other] (const T &e) { return !other.contains(e); });
     } else {
-        copy1 = other;
-        copy2 = *this;
-        *this = copy1;
-    }
-    for (const auto &e : std::as_const(copy1)) {
-        if (!copy2.contains(e))
-            remove(e);
+        // don't detach *this just to remove some items; create a new set
+        *this = intersected_helper(*this, other);
     }
     return *this;
+}
+
+template <class T>
+// static
+auto QSet<T>::intersected_helper(const QSet &lhs, const QSet &rhs) -> QSet
+{
+    QSet r;
+
+    const auto l_size = lhs.size();
+    const auto r_size = rhs.size();
+    r.reserve((std::min)(l_size, r_size));
+
+    // Iterate the smaller of the two sets, but always take from lhs, for
+    // consistency with insert():
+
+    if (l_size <= r_size) {
+        // lhs is not larger
+        for (const auto &e : lhs) {
+            if (rhs.contains(e))
+                r.insert(e);
+        }
+    } else {
+        // rhs is smaller
+        for (const auto &e : rhs) {
+            if (const auto it = lhs.find(e); it != lhs.end())
+                r.insert(*it);
+        }
+    }
+
+    return r;
 }
 
 template <class T>
