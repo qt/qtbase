@@ -52,6 +52,12 @@ private slots:
     void intersects();
     void find();
     void values();
+    void setOperationsPickEquivalentElementsFromLHSContainer_data();
+    void setOperationsPickEquivalentElementsFromLHSContainer();
+
+private:
+    template <bool RhsRValue>
+    void setOperationsPickEquivalentElementsFromLHSContainer_impl();
 };
 
 struct IdentityTracker {
@@ -1215,6 +1221,139 @@ void tst_QSet::values()
     set.remove(5);
 
     QCOMPARE(sorted(set.values()), QList<int>({ 1, 2, 10 }));
+}
+
+void tst_QSet::setOperationsPickEquivalentElementsFromLHSContainer_data()
+{
+    QTest::addColumn<bool>("lhsShared");
+    QTest::addColumn<bool>("rhsShared");
+    QTest::addColumn<bool>("rhsRValue");
+
+    for (bool lhs : {true, false}) {
+        for (bool rhs : {true, false}) {
+            for (bool rv : {true, false}) {
+                QTest::addRow("lhs %sshared, rhs %sshared %cvalue",
+                              lhs ? "" : "not ", rhs ? "" : "not ", rv ? 'r' : 'l')
+                    << lhs << rhs << rv;
+            }
+        }
+    }
+}
+
+void tst_QSet::setOperationsPickEquivalentElementsFromLHSContainer()
+{
+    QFETCH(const bool, rhsRValue);
+
+    if (rhsRValue)
+        setOperationsPickEquivalentElementsFromLHSContainer_impl<true>();
+    else
+        setOperationsPickEquivalentElementsFromLHSContainer_impl<false>();
+}
+
+template <bool RhsRValue>
+void tst_QSet::setOperationsPickEquivalentElementsFromLHSContainer_impl()
+{
+    QFETCH(const bool, lhsShared);
+    QFETCH(const bool, rhsShared);
+
+    //
+    // GIVEN: Two equivalent QSets:
+    //
+    constexpr IdentityTracker OneL{1, 1}, TwoL{2, 1}, ThreeL{3, 1};
+    constexpr IdentityTracker OneR{1, 2}, TwoR{2, 2}, ThreeR{3, 2};
+
+    // by construction:
+    QCOMPARE(OneL, OneR);
+    QCOMPARE(qHash(OneL), qHash(OneR));
+
+    const QSet<IdentityTracker> lhs = {OneL, TwoL};
+    const QSet<IdentityTracker> rhs = {OneR, TwoR, ThreeR};
+
+    auto maybeDetach = [](auto set, bool shared) {
+        if (!shared)
+            set.detach();
+        return set;
+    };
+
+    {
+        //
+        // WHEN: intersect()ing the two
+        //
+        auto lhsCopy = maybeDetach(lhs, lhsShared);
+        auto rhsCopy = maybeDetach(rhs, rhsShared);
+
+        if constexpr (RhsRValue) {
+            lhsCopy.intersect(maybeDetach(rhs, rhsShared));
+            rhsCopy.intersect(maybeDetach(lhs, lhsShared));
+        } else {
+            lhsCopy.intersect(rhs);
+            rhsCopy.intersect(lhs);
+        }
+
+        //
+        // THEN: equivalent elements are picked from the LHS container:
+        //       (unlike other Qt containers, QSet's insertion behavior is STL-compliant):
+        //
+        QVERIFY(lhsCopy.contains(OneL));
+        QCOMPARE(lhsCopy.find(OneL)->id, OneL.id);
+
+        QVERIFY(lhsCopy.contains(TwoL));
+        QCOMPARE(lhsCopy.find(TwoL)->id, TwoL.id);
+
+        QVERIFY(!lhsCopy.contains(ThreeR));
+
+
+        QVERIFY(rhsCopy.contains(OneR));
+        QEXPECT_FAIL("", "QTBUG-132536", Continue);
+        QCOMPARE(rhsCopy.find(OneR)->id, OneR.id);
+
+        QVERIFY(rhsCopy.contains(TwoR));
+        QEXPECT_FAIL("", "QTBUG-132536", Continue);
+        QCOMPARE(rhsCopy.find(TwoR)->id, TwoR.id);
+
+        QVERIFY(!rhsCopy.contains(ThreeR));
+    }
+
+    {
+        //
+        // WHEN: unite()ing the two
+        //
+        auto lhsCopy = maybeDetach(lhs, lhsShared);
+        auto rhsCopy = maybeDetach(rhs, rhsShared);
+
+        if constexpr (RhsRValue) {
+            lhsCopy.unite(maybeDetach(rhs, rhsShared));
+            rhsCopy.unite(maybeDetach(lhs, lhsShared));
+        } else {
+            lhsCopy.unite(rhs);
+            rhsCopy.unite(lhs);
+        }
+
+        //
+        // THEN: equivalent elements are picked from the LHS container:
+        //       (unlike other Qt containers, QSet's insertion behavior is STL-compliant):
+        //
+        QVERIFY(lhsCopy.contains(OneL));
+        QEXPECT_FAIL("", "QTBUG-132500", Continue);
+        QCOMPARE(lhsCopy.find(OneL)->id, OneL.id);
+
+        QVERIFY(lhsCopy.contains(TwoL));
+        QEXPECT_FAIL("", "QTBUG-132500", Continue);
+        QCOMPARE(lhsCopy.find(TwoL)->id, TwoL.id);
+
+        QVERIFY(lhsCopy.contains(ThreeL));
+        QCOMPARE(lhsCopy.find(ThreeL)->id, ThreeR.id); // element was not contained in lhs
+
+
+        QVERIFY(rhsCopy.contains(OneR));
+        QCOMPARE(rhsCopy.find(OneR)->id, OneR.id);
+
+        QVERIFY(rhsCopy.contains(TwoR));
+        QCOMPARE(rhsCopy.find(TwoR)->id, TwoR.id);
+
+        QVERIFY(rhsCopy.contains(ThreeR));
+        QCOMPARE(rhsCopy.find(ThreeR)->id, ThreeR.id);
+    }
 }
 
 QTEST_APPLESS_MAIN(tst_QSet)
