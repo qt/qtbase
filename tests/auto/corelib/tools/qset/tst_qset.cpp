@@ -920,7 +920,7 @@ void tst_QSet::setOperationsOnEmptySet()
 
         empty.unite(nonEmpty);
         QCOMPARE(empty, nonEmpty);
-        QVERIFY(!empty.isDetached());
+        QVERIFY(empty.isDetached());
     }
 }
 
@@ -1334,11 +1334,9 @@ void tst_QSet::setOperationsPickEquivalentElementsFromLHSContainer_impl()
         //       (unlike other Qt containers, QSet's insertion behavior is STL-compliant):
         //
         QVERIFY(lhsCopy.contains(OneL));
-        QEXPECT_FAIL("", "QTBUG-132500", Continue);
         QCOMPARE(lhsCopy.find(OneL)->id, OneL.id);
 
         QVERIFY(lhsCopy.contains(TwoL));
-        QEXPECT_FAIL("", "QTBUG-132500", Continue);
         QCOMPARE(lhsCopy.find(TwoL)->id, TwoL.id);
 
         QVERIFY(lhsCopy.contains(ThreeL));
