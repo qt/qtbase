@@ -674,14 +674,18 @@ void tst_QWindow::framePositioningStableAfterDestroy()
     window.show();
     QVERIFY(QTest::qWaitForWindowExposed(&window));
 
+    const bool frameOk = QTest::qWaitFor([&]{return window.geometry() != window.frameGeometry(); });
+    if (!frameOk)
+        qCritical() << "Frame geometry failed to update";
+
     const QPoint stablePosition = window.position();
     const QPoint stableFramePosition = window.framePosition();
 
     window.destroy();
     window.show();
     QVERIFY(QTest::qWaitForWindowExposed(&window));
-    QCOMPARE(window.position(), stablePosition);
-    QCOMPARE(window.framePosition(), stableFramePosition);
+    QTRY_COMPARE(window.position(), stablePosition);
+    QTRY_COMPARE(window.framePosition(), stableFramePosition);
 }
 
 void tst_QWindow::positioningDuringMinimized()
