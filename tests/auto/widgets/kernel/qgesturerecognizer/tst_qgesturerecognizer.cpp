@@ -158,6 +158,7 @@ void tst_QGestureRecognizer::panGesture()
     const Qt::GestureType gestureType = Qt::PanGesture;
     TestWidget widget(GestureTypeVector(1, gestureType));
     widget.setWindowTitle(QTest::currentTestFunction());
+    widget.setWindowFlag(Qt::FramelessWindowHint);
     widget.show();
     QVERIFY(QTest::qWaitForWindowExposed(&widget));
 
