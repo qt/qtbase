@@ -98,7 +98,7 @@
         \li Not Supported
     \row
         \li Forward Iterator
-        \li std::slist
+        \li std::forward_list
         \li Supported
     \row
         \li Bidirectional Iterator
