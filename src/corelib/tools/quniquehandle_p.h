@@ -17,6 +17,8 @@
 
 #include <QtCore/qtconfigmacros.h>
 #include <QtCore/qassert.h>
+#include <QtCore/qswap.h>
+#include <QtCore/qtclasshelpermacros.h>
 
 #include <memory>
 #include <utility>
@@ -139,13 +141,12 @@ public:
         close();
     }
 
-    QUniqueHandle& operator=(QUniqueHandle &&rhs) noexcept
+    void swap(QUniqueHandle &other) noexcept
     {
-        if (this != std::addressof(rhs))
-            reset(rhs.release());
-
-        return *this;
+        qSwap(m_handle, other.m_handle);
     }
+
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QUniqueHandle)
 
     QUniqueHandle(const QUniqueHandle &) = delete;
     QUniqueHandle &operator=(const QUniqueHandle &) = delete;
@@ -232,6 +233,13 @@ private:
 };
 
 // clang-format on
+
+template <typename Trait>
+void swap(QUniqueHandle<Trait> &lhs, QUniqueHandle<Trait> &rhs) noexcept
+{
+    lhs.swap(rhs);
+}
+
 
 QT_END_NAMESPACE
 
