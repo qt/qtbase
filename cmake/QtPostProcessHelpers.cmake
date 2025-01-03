@@ -29,7 +29,7 @@ macro(qt_collect_third_party_deps target)
     endif()
     unset(_target_is_static)
 
-    foreach(dep ${${depends_var}} ${optional_public_depends} ${extra_third_party_deps})
+    foreach(dep ${${depends_var}} ${extra_third_party_deps})
         # Gather third party packages that should be found when using the Qt module.
         # Also handle nolink target dependencies.
         string(REGEX REPLACE "_nolink$" "" base_dep "${dep}")
@@ -48,9 +48,6 @@ macro(qt_collect_third_party_deps target)
             if(dep_seen EQUAL -1 AND package_name)
                 list(APPEND third_party_deps_seen ${dep})
                 get_target_property(package_is_optional ${dep} INTERFACE_QT_PACKAGE_IS_OPTIONAL)
-                if(NOT package_is_optional AND dep IN_LIST optional_public_depends)
-                    set(package_is_optional TRUE)
-                endif()
                 get_target_property(package_version ${dep} INTERFACE_QT_PACKAGE_VERSION)
                 if(NOT package_version)
                     set(package_version "")
@@ -164,11 +161,6 @@ function(qt_internal_create_module_depends_file target)
     endif()
 
     get_target_property(public_depends "${target}" INTERFACE_LINK_LIBRARIES)
-
-    unset(optional_public_depends)
-    if(TARGET "${target}Private")
-        get_target_property(optional_public_depends "${target}Private" INTERFACE_LINK_LIBRARIES)
-    endif()
 
     # Used for collecting Qt module dependencies that should be find_package()'d in
     # ModuleDependencies.cmake.
@@ -349,7 +341,6 @@ function(qt_internal_create_plugin_depends_file target)
     get_target_property(depends "${target}" LINK_LIBRARIES)
     get_target_property(public_depends "${target}" INTERFACE_LINK_LIBRARIES)
     get_target_property(target_deps "${target}" _qt_target_deps)
-    unset(optional_public_depends)
     set(target_deps_seen "")
 
 
@@ -410,7 +401,6 @@ function(qt_internal_create_qt6_dependencies_file)
     set(actual_target Platform)
     get_target_property(public_depends "${actual_target}" INTERFACE_LINK_LIBRARIES)
     unset(depends)
-    unset(optional_public_depends)
 
     set(third_party_deps "")
     set(third_party_deps_seen "")
