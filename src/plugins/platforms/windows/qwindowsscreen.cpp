@@ -122,12 +122,12 @@ namespace {
 struct DiRegKeyHandleTraits
 {
     using Type = HKEY;
-    static Type invalidValue()
+    static Type invalidValue() noexcept
     {
         // The setupapi.h functions return INVALID_HANDLE_VALUE when failing to open a registry key
         return reinterpret_cast<HKEY>(INVALID_HANDLE_VALUE);
     }
-    static bool close(Type handle) { return RegCloseKey(handle) == ERROR_SUCCESS; }
+    static bool close(Type handle) noexcept { return RegCloseKey(handle) == ERROR_SUCCESS; }
 };
 
 using DiRegKeyHandle = QUniqueHandle<DiRegKeyHandleTraits>;
@@ -135,11 +135,11 @@ using DiRegKeyHandle = QUniqueHandle<DiRegKeyHandleTraits>;
 struct DevInfoHandleTraits
 {
     using Type = HDEVINFO;
-    static Type invalidValue()
+    static Type invalidValue() noexcept
     {
         return reinterpret_cast<HDEVINFO>(INVALID_HANDLE_VALUE);
     }
-    static bool close(Type handle) { return SetupDiDestroyDeviceInfoList(handle) == TRUE; }
+    static bool close(Type handle) noexcept { return SetupDiDestroyDeviceInfoList(handle) == TRUE; }
 };
 
 using DevInfoHandle = QUniqueHandle<DevInfoHandleTraits>;
