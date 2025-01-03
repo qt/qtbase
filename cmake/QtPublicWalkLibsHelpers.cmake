@@ -172,11 +172,15 @@ function(__qt_internal_walk_libs
             if(lib MATCHES "^\\$<TARGET_OBJECTS:")
                 # Skip object files.
                 continue()
-            elseif(lib MATCHES "^\\$<LINK_ONLY:(.*)>$")
-                set(lib_target ${CMAKE_MATCH_1})
-            else()
-                set(lib_target ${lib})
             endif()
+
+            set(lib_target "${lib}")
+
+            # Unwrap targets like $<LINK_ONLY:$<BUILD_INTERFACE:Qt6::CorePrivate>>
+            while(lib_target
+                    MATCHES "^\\$<(LINK_ONLY|BUILD_INTERFACE|BUILD_LOCAL_INTERFACE):(.*)>$")
+                set(lib_target ${CMAKE_MATCH_2})
+            endwhile()
 
             # Skip CMAKE_DIRECTORY_ID_SEP. If a target_link_libraries is applied to a target
             # that was defined in a different scope, CMake appends and prepends a special directory

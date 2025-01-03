@@ -20,6 +20,20 @@ if(NOT DEFINED "@INSTALL_CMAKE_NAMESPACE@@target_private@_FOUND")
     set("@INSTALL_CMAKE_NAMESPACE@@target_private@_FOUND" TRUE)
 endif()
 
+if(NOT __qt_@target@_always_load_private_module
+        AND NOT DEFINED QT_REPO_MODULE_VERSION
+        AND NOT QT_NO_PRIVATE_MODULE_WARNING
+        AND NOT __qt_private_module_@target_private@_warning_shown)
+    message(WARNING
+        "This project is using headers of the @target_private@ module and will therefore be tied "
+        "to this specific Qt module build version. "
+        "Running this project against other versions of the Qt modules may crash at any arbitrary "
+        "point. This is not a bug, but a result of using Qt internals. You have been warned! "
+        "\nYou can disable this warning by setting QT_NO_PRIVATE_MODULE_WARNING to ON."
+    )
+    set(__qt_private_module_@target_private@_warning_shown TRUE)
+endif()
+
 if(NOT QT_NO_CREATE_TARGETS AND @INSTALL_CMAKE_NAMESPACE@@target_private@_FOUND)
     include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@@target_private@Targets.cmake")
     include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@@target_private@AdditionalTargetInfo.cmake")

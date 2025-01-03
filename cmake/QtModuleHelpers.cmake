@@ -327,7 +327,7 @@ function(qt_internal_add_module target)
         set_target_properties(${target_private} PROPERTIES
             _qt_config_module_name ${arg_CONFIG_MODULE_NAME}_private
             _qt_package_version "${PROJECT_VERSION}"
-            _qt_package_name "${INSTALL_CMAKE_NAMESPACE}${target}"
+            _qt_package_name "${INSTALL_CMAKE_NAMESPACE}${target}Private"
             _qt_is_private_module TRUE
             _qt_public_module_target_name "${target}"
         )
@@ -790,7 +790,14 @@ set(QT_ALLOW_MISSING_TOOLS_PACKAGES TRUE)")
 
     qt_internal_get_min_new_policy_cmake_version(min_new_policy_version)
     qt_internal_get_max_new_policy_cmake_version(max_new_policy_version)
+
+    if(is_static_lib)
+        set(write_basic_module_package_args IS_STATIC_LIB)
+    else()
+        set(write_basic_module_package_args "")
+    endif()
     qt_internal_write_basic_module_package("${target}" "${target_private}"
+        ${write_basic_module_package_args}
         CONFIG_BUILD_DIR ${config_build_dir}
         CONFIG_INSTALL_DIR ${config_install_dir}
     )
@@ -809,7 +816,8 @@ set(QT_ALLOW_MISSING_TOOLS_PACKAGES TRUE)")
     )
 
     if(NOT arg_NO_PRIVATE_MODULE)
-        qt_internal_write_basic_module_package(${target} ${target_private}
+        qt_internal_write_basic_module_package("${target}" "${target_private}"
+            ${write_basic_module_package_args}
             PRIVATE
             CONFIG_BUILD_DIR ${private_config_build_dir}
             CONFIG_INSTALL_DIR ${private_config_install_dir}
@@ -981,11 +989,9 @@ endfunction()
 #
 # If PRIVATE is specified, write Qt6FooPrivate.
 # Otherwise write its public counterpart.
-#
-# Note that this function is supposed to be called from qt_internal_add_module, and depends on
-# variables set in the scope of that function, e.g. target and target_private.
-function(qt_internal_write_basic_module_package)
+function(qt_internal_write_basic_module_package target target_private)
     set(no_value_options
+        IS_STATIC_LIB
         PRIVATE
     )
     set(single_value_options
@@ -1003,6 +1009,23 @@ function(qt_internal_write_basic_module_package)
     else()
         set(package_name "${INSTALL_CMAKE_NAMESPACE}${target}")
         set(module_config_input_file "QtModuleConfig.cmake.in")
+    endif()
+
+    if(arg_IS_STATIC_LIB AND NOT arg_PRIVATE AND CMAKE_VERSION VERSION_LESS "3.26")
+        # We auto-load the private module package from the public module package if we have a static
+        # Qt module and CMake's version is < 3.26. This is needed for the case "Qt6Foo links against
+        # Qt6BarPrivate", because CMake generates a check for the target Qt6::BarPrivate in
+        # Qt6FooTargets.cmake. Once we can require CMake 3.26, we can simply link against
+        # $<BUILD_LOCAL_INTERFACE:Qt6BarPrivate> in qt_internal_extend_target.
+        #
+        # For older CMake versions, we create an additional CMake file that's optionally included by
+        # Qt6FooConfig.cmake to work around the lack of BUILD_LOCAL_INTERFACE.
+        file(CONFIGURE
+            OUTPUT "${arg_CONFIG_BUILD_DIR}/${package_name}-build.cmake"
+            CONTENT "# This file marks this directory as part of Qt's build tree.
+set(__qt_${target}_always_load_private_module ON)
+"
+        )
     endif()
 
     configure_package_config_file(

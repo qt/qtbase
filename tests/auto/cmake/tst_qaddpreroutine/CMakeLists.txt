@@ -22,7 +22,7 @@ project(tst_qaddpreroutine
 find_package(Qt6 COMPONENTS Core BuildInternals CONFIG REQUIRED)
 qt_prepare_standalone_project()
 
-find_package(Qt6 COMPONENTS Gui Test CONFIG REQUIRED)
+find_package(Qt6 COMPONENTS GuiPrivate Test CONFIG REQUIRED)
 
 qt_internal_add_plugin(QTBUG_90341ThemePlugin
     NO_UNITY_BUILD
