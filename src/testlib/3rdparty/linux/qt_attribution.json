@@ -19,7 +19,7 @@
         "Description": "Allows access to the Linux kernel's performance events.",
         "Homepage": "https://www.kernel.org",
         "Version": "6.0",
-        "PURL": "pkg:github/torvalds/linux@v6.0#include/uapi/linux/perf_event.h",
+        "PURL": "pkg:github/torvalds/linux@v$<VERSION>#include/uapi/linux/perf_event.h",
         "License": "GNU General Public License v2.0 only with Linux Syscall Note",
         "LicenseId": "GPL-2.0-only WITH Linux-syscall-note",
         "LicenseFile": "LICENSE.txt",

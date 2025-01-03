@@ -9,7 +9,7 @@
     "Homepage": "https://blake2.net/",
     "Version": "ed1974ea83433eba7b2d95c5dcd9ac33cb847913",
     "DownloadLocation": "https://github.com/BLAKE2/BLAKE2/tree/ed1974ea83433eba7b2d95c5dcd9ac33cb847913",
-    "PURL": "pkg:github/BLAKE2/BLAKE2@ed1974ea83433eba7b2d95c5dcd9ac33cb847913",
+    "PURL": "pkg:github/BLAKE2/BLAKE2@$<VERSION>",
     "CPE": "cpe:2.3:a:blake2:blake2:*:*:*:*:*:*:*:*",
     "License": "Creative Commons Zero v1.0 Universal or Apache License 2.0",
     "LicenseId": "CC0-1.0 OR Apache-2.0",

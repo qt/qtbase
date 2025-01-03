@@ -8,7 +8,7 @@
 
         "Homepage": "https://github.com/GPUOpen-LibrariesAndSDKs/D3D12MemoryAllocator",
         "Version": "f128d39b7a95b4235bd228d231646278dc6c24b2",
-        "PURL": "pkg:github/GPUOpen-LibrariesAndSDKs/D3D12MemoryAllocator@f128d39b7a95b4235bd228d231646278dc6c24b2",
+        "PURL": "pkg:github/GPUOpen-LibrariesAndSDKs/D3D12MemoryAllocator@$<VERSION>",
         "License": "MIT License",
         "LicenseId": "MIT",
         "LicenseFile": "LICENSE.txt",

@@ -20,7 +20,7 @@
         "Description": "Allows to access the CPU's cycle counters.",
         "Homepage": "http://fftw.org/",
         "Version": "3.3.10",
-        "PURL": "pkg:github/FFTW/fftw3@fftw-3.3.10",
+        "PURL": "pkg:github/FFTW/fftw3@fftw-$<VERSION>",
         "License": "MIT License",
         "LicenseId": "MIT",
         "LicenseFile": "LICENSE.txt",
