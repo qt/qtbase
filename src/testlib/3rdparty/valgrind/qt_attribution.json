@@ -12,7 +12,7 @@
         "Description": "An instrumentation framework for building dynamic analysis tools.",
         "Homepage": "http://valgrind.org/",
         "Version": "3.23.0",
-        "PURL": "pkg:generic/valgrind@3.23.0?download_url=https://valgrind.org/",
+        "PURL": "pkg:generic/valgrind@$<VERSION>?download_url=https://valgrind.org/",
         "License": "BSD 4-clause \"Original\" or \"Old\" License",
         "LicenseId": "BSD-4-Clause",
         "LicenseFile": "LICENSE.txt",

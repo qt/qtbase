@@ -9,7 +9,7 @@
 
     "Homepage": "https://dejavu-fonts.github.io/",
     "Version": "2.37",
-    "PURL": "pkg:generic/dejayvu@2.37?download_url=https://dejavu-fonts.github.io/",
+    "PURL": "pkg:generic/dejayvu@$<VERSION>?download_url=https://dejavu-fonts.github.io/",
     "License": "Bitstream Vera Font License",
     "LicenseId": "Bitstream-Vera",
     "LicenseFile": "DEJAVU-LICENSE",

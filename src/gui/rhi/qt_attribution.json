@@ -9,7 +9,7 @@
 
         "Homepage": "https://github.com/microsoft/DirectX-Graphics-Samples",
         "Version": "0aa79bad78992da0b6a8279ddb9002c1753cb849",
-        "PURL": "pkg:github/microsoft/DirectX-Graphics-Samples@0aa79bad78992da0b6a8279ddb9002c1753cb849",
+        "PURL": "pkg:github/microsoft/DirectX-Graphics-Samples@$<VERSION>",
         "License": "MIT License",
         "LicenseId": "MIT",
         "LicenseFile": "MiniEngine_LICENSE.txt",
