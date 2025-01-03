@@ -259,16 +259,51 @@ private slots:
 
     void swap_swapsOwnership() const
     {
-        const auto resource0 = GlobalResource::open();
-        const auto resource1 = GlobalResource::open();
+         { // Swapping valid and invalid handle
+            Handle h0{ GlobalResource::open() };
+            Handle h1;
 
-        Handle h0{ resource0 };
-        Handle h1{ resource1 };
+            h0.swap(h1);
 
-        std::swap(h0, h1);
+            QVERIFY(!h0.isValid());
+            QVERIFY(h1.isValid());
+        }
+        { // Swapping valid handles
+            const auto resource0 = GlobalResource::open();
+            const auto resource1 = GlobalResource::open();
 
-        QCOMPARE_EQ(h0.get(), resource1);
-        QCOMPARE_EQ(h1.get(), resource0);
+            Handle h0{ resource0 };
+            Handle h1{ resource1 };
+
+            h0.swap(h1);
+
+            QCOMPARE_EQ(h0.get(), resource1);
+            QCOMPARE_EQ(h1.get(), resource0);
+        }
+        { // std::swap
+            const auto resource0 = GlobalResource::open();
+            const auto resource1 = GlobalResource::open();
+
+            Handle h0{ resource0 };
+            Handle h1{ resource1 };
+
+            std::swap(h0, h1);
+
+            QCOMPARE_EQ(h0.get(), resource1);
+            QCOMPARE_EQ(h1.get(), resource0);
+        }
+        { // swap
+            const auto resource0 = GlobalResource::open();
+            const auto resource1 = GlobalResource::open();
+
+            Handle h0{ resource0 };
+            Handle h1{ resource1 };
+
+            swap(h0, h1);
+
+            QCOMPARE_EQ(h0.get(), resource1);
+            QCOMPARE_EQ(h1.get(), resource0);
+        }
     }
 
     void comparison_behavesAsInt_whenHandleTypeIsInt_data() const
