@@ -936,6 +936,7 @@ auto QJniArrayBase::makeObjectArray(List &&list)
 
     // explicitly manage the frame for local references in chunks of 100
     QJniObject::LocalFrame frame(env);
+    frame.hasFrame = true;
     constexpr jint frameCapacity = 100;
     qsizetype i = 0;
     for (const auto &element : std::as_const(list)) {
@@ -951,6 +952,7 @@ auto QJniArrayBase::makeObjectArray(List &&list)
     }
     if (i)
         env->PopLocalFrame(nullptr);
+    frame.hasFrame = false;
     return ResultType(QJniObject::fromLocalRef(localArray));
 }
 
