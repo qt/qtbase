@@ -855,7 +855,12 @@ function(_qt_internal_sbom_add_target target)
     endif()
 
     if(qa_cpes)
-        list(APPEND cpe_args CPE "${qa_cpes}")
+        _qt_internal_sbom_replace_qa_placeholders(
+            VALUES ${qa_cpes}
+            VERSION "${package_version}"
+            OUT_VAR qa_cpes_replaced
+        )
+        list(APPEND cpe_args CPE "${qa_cpes_replaced}")
     endif()
 
     # Add the qt-specific CPE if the target is a Qt entity type, or if it's a 3rd party entity type
@@ -898,7 +903,13 @@ function(_qt_internal_sbom_add_target target)
     endif()
 
     if(qa_purls)
-        list(APPEND purl_args PURL_3RDPARTY_UPSTREAM_VALUES "${qa_purls}")
+        _qt_internal_sbom_replace_qa_placeholders(
+            VALUES ${qa_purls}
+            VERSION "${package_version}"
+            OUT_VAR qa_purls_replaced
+        )
+
+        list(APPEND purl_args PURL_3RDPARTY_UPSTREAM_VALUES "${qa_purls_replaced}")
     endif()
     list(APPEND purl_args OUT_VAR purl_package_options)
 
@@ -4323,6 +4334,51 @@ function(_qt_internal_sbom_join_two_license_ids_with_op left_id op right_id out_
 
     set(value "(${left_id}) ${op} (${right_id})")
     set(${out_var} "${value}" PARENT_SCOPE)
+endfunction()
+
+# Replaces placeholders in CPE and PURL strings read from qt_attribution.json files.
+#
+# VALUES - list of CPE or PURL strings
+# OUT_VAR - variable to store the replaced values
+# VERSION - version to replace in the placeholders
+
+# Known placeholders:
+# $<VERSION> - Replaces occurrences of the placeholder with the value passed to the VERSION option.
+# $<VERSION_DASHED> - Replaces occurrences of the placeholder with the value passed to the VERSION
+# option, but with dots replaced by dashes.
+function(_qt_internal_sbom_replace_qa_placeholders)
+    set(opt_args "")
+    set(single_args
+        OUT_VAR
+        VERSION
+    )
+    set(multi_args
+        VALUES
+    )
+
+    cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    if(NOT arg_OUT_VAR)
+        message(FATAL_ERROR "OUT_VAR must be set")
+    endif()
+
+    set(result "")
+
+    if(arg_VERSION)
+        string(REPLACE "." "-" dashed_version "${arg_VERSION}")
+    endif()
+
+    foreach(value IN LISTS arg_VALUES)
+        if(arg_VERSION)
+            string(REPLACE "$<VERSION>" "${arg_VERSION}" value "${value}")
+            string(REPLACE "$<VERSION_DASHED>" "${dashed_version}" value "${value}")
+        endif()
+
+        list(APPEND result "${value}")
+    endforeach()
+
+    set(${arg_OUT_VAR} "${result}" PARENT_SCOPE)
 endfunction()
 
 # Returns the configure line used to configure the current repo or top-level build, by reading
