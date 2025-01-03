@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 #include "cppgenerator.h"
 
@@ -44,7 +44,7 @@ QString CppGenerator::copyrightHeader() const
 {
   return
     "// " QT_COPYRIGHT "\n"
-    "// SPDX-License-Identifier: LicenseRef-Qt-Commercial\n"
+    "// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0\n"
     "\n"_L1;
 }
 
