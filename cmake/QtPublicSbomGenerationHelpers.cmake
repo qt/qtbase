@@ -751,7 +751,7 @@ function(_qt_internal_sbom_generate_add_external_reference)
     # Always append the install time install prefix.
     # The variable is escaped, so it is evaluated during cmake install time, so that the value
     # can be overridden with cmake --install . --prefix <path>.
-    list(APPEND install_prefixes "\${CMAKE_INSTALL_PREFIX}")
+    list(APPEND install_prefixes "\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}")
 
     if(arg_INSTALL_PREFIXES)
         list(APPEND install_prefixes ${arg_INSTALL_PREFIXES})
