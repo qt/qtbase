@@ -1959,6 +1959,7 @@ enum class CallbackParameterType
     RawArray,
     QList,
     QStringList,
+    Null,
 };
 
 static std::optional<TestClass> calledWithObject;
@@ -2047,6 +2048,14 @@ static int callbackWithStringList(JNIEnv *, jobject, const QStringList &value)
 }
 Q_DECLARE_JNI_NATIVE_METHOD(callbackWithStringList)
 
+static std::optional<QString> calledWithNull;
+static int callbackWithNull(JNIEnv *, jobject, const QString &str)
+{
+    calledWithNull.emplace(str);
+    return int(CallbackParameterType::Null);
+}
+Q_DECLARE_JNI_NATIVE_METHOD(callbackWithNull)
+
 void tst_QJniObject::callback_data()
 {
     QTest::addColumn<CallbackParameterType>("parameterType");
@@ -2062,6 +2071,7 @@ void tst_QJniObject::callback_data()
     QTest::addRow("RawArray")   << CallbackParameterType::RawArray;
     QTest::addRow("QList")      << CallbackParameterType::QList;
     QTest::addRow("QStringList") << CallbackParameterType::QStringList;
+    QTest::addRow("Null")       << CallbackParameterType::Null;
 }
 
 void tst_QJniObject::callback()
@@ -2169,6 +2179,15 @@ void tst_QJniObject::callback()
         result = testObject.callMethod<int>("callMeBackWithStringList", strings);
         QVERIFY(calledWithStringList);
         QCOMPARE(calledWithStringList.value(), strings);
+        break;
+    }
+    case CallbackParameterType::Null: {
+        QVERIFY(TestClass::registerNativeMethods({
+            Q_JNI_NATIVE_METHOD(callbackWithNull)
+        }));
+        result = testObject.callMethod<int>("callMeBackWithNull");
+        QVERIFY(calledWithNull);
+        QCOMPARE(calledWithNull.value(), QString());
         break;
     }
     }

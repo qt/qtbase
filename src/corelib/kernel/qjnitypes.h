@@ -163,7 +163,7 @@ struct JNITypeForArgImpl<QString>
 
     static QString fromVarArg(Type t)
     {
-        return QtJniTypes::Detail::toQString(t, QJniEnvironment::getJniEnv());
+        return t ? QtJniTypes::Detail::toQString(t, QJniEnvironment::getJniEnv()) : QString();
     }
 };
 
@@ -190,7 +190,7 @@ public:
 
     static QList<T> fromVarArg(Type t)
     {
-        return QJniArray<ElementType>(t).toContainer();
+        return t ? QJniArray<ElementType>(t).toContainer() : QList<T>{};
     }
 };
 

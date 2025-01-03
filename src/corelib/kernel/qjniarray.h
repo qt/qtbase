@@ -819,12 +819,14 @@ public:
             container.reserve(sz);
         if constexpr (std::is_same_v<typename ContainerType::value_type, QString>) {
             for (auto element : *this) {
-                if constexpr (std::is_same_v<decltype(element), QString>)
+                if constexpr (std::is_same_v<decltype(element), QString>) {
                     container.emplace_back(element);
-                else if constexpr (std::is_same_v<decltype(element), jstring>)
-                    container.emplace_back(QtJniTypes::Detail::toQString(element, env));
-                else
+                } else if constexpr (std::is_same_v<decltype(element), jstring>) {
+                    container.emplace_back(element ? QtJniTypes::Detail::toQString(element, env)
+                                                   : QString{});
+                } else {
                     container.emplace_back(QJniObject(element).toString());
+                }
             }
         } else if constexpr (std::is_base_of_v<std::remove_pointer_t<jobject>, std::remove_pointer_t<T>>) {
             for (auto element : *this)

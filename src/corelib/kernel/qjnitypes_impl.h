@@ -24,6 +24,7 @@ static inline jstring fromQString(const QString &string, JNIEnv *env)
 
 static inline QString toQString(jstring string, JNIEnv *env)
 {
+    Q_ASSERT(string);
     const jsize length = env->GetStringLength(string);
     QString res(length, Qt::Uninitialized);
     env->GetStringRegion(string, 0, length, reinterpret_cast<jchar *>(res.data()));

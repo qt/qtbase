@@ -307,6 +307,7 @@ public class QtJniObjectTestClass
     native public int callbackWithRawArray(Object[] value);
     native public int callbackWithQList(double[] value);
     native public int callbackWithStringList(String[] value);
+    native public int callbackWithNull(String str);
 
     public int callMeBackWithObject(QtJniObjectTestClass that)
     {
@@ -357,6 +358,10 @@ public class QtJniObjectTestClass
     public int callMeBackWithStringList(String[] value)
     {
         return callbackWithStringList(value);
+    }
+    public int callMeBackWithNull()
+    {
+        return callbackWithNull(null);
     }
 
     public Object callMethodThrowsException() throws Exception {
