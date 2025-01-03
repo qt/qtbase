@@ -656,8 +656,105 @@ void QDomNodeListPrivate::createList() const
     forEachNode([&](QDomNodePrivate *p){ list.append(p); });
 }
 
+/*! \internal
+
+    Checks if a node is valid and fulfills the requirements set during the
+    generation of this list, i.e. matching tag and matching URI.
+ */
+bool QDomNodeListPrivate::checkNode(QDomNodePrivate *p) const {
+    if (nsURI.isNull())
+        return p->isElement() && p->nodeName() == tagname;
+    else
+        return p->isElement() && p->name==tagname && p->namespaceURI==nsURI;
+};
+
+/*! \internal
+
+    Returns the next node item in the list. If the tagname or the URI are set,
+    the function iterates through the dom tree and returns node that match them.
+    If neither tag nor URI are set, the function iterates through a single level
+    in the tree and returns all nodes.
+
+    \sa forEachNode(), findPrevInOrder()
+ */
+QDomNodePrivate *QDomNodeListPrivate::findNextInOrder(QDomNodePrivate *p) const
+{
+    if (!p)
+        return p;
+
+    if (tagname.isNull()) {
+        if (p == node_impl)
+            return p->first;
+        else if (p && p->next)
+            return p->next;
+    }
+
+    if (p == node_impl) {
+        p = p->first;
+        if (checkNode(p))
+            return p;
+    }
+    while (p && p != node_impl) {
+        if (p->first) { // go down in the tree
+            p = p->first;
+        } else if (p->next) { // traverse the tree
+            p = p->next;
+        } else { // go up in the tree
+            p = p->parent();
+            while (p && p != node_impl && !p->next)
+                p = p->parent();
+            if (p && p != node_impl)
+                p = p->next;
+        }
+        if (checkNode(p))
+            return p;
+    }
+    return node_impl;
+}
+
+/*! \internal
+
+    Similar as findNextInOrder() but iterarating in the opposite order.
+
+    \sa forEachNode(), findNextInOrder()
+ */
+QDomNodePrivate *QDomNodeListPrivate::findPrevInOrder(QDomNodePrivate *p) const
+{
+    if (!p)
+        return p;
+
+    if (tagname.isNull() && p == node_impl)
+        return p->last;
+    if (tagname.isNull())
+        return p->prev;
+
+    // We end all the way down in the tree
+    // so that is where we have to start
+    if (p == node_impl) {
+        while (p->last)
+            p = p->last;
+        if (checkNode(p))
+            return p;
+    }
+
+    while (p) {
+        if (p->prev) {// traverse the tree backwards
+            p = p->prev;
+            // go mmediately down if an item has children
+            while (p->last)
+                p = p->last;
+        } else { // go up in the tree
+            p = p->parent();
+        }
+        if (checkNode(p))
+            return p;
+    }
+    return node_impl;
+}
+
 void QDomNodeListPrivate::forEachNode(qxp::function_ref<void(QDomNodePrivate*)> yield) const
 {
+    //TODO: simplify with findNextInList
     if (!node_impl)
         return;
 
@@ -910,8 +1007,8 @@ int QDomNodeList::noexceptLength() const noexcept
     \typedef QDomNodeList::const_reverse_iterator
     \since 6.9
 
-    Typedefs for an opaque class that implements a (reverse) random-access
-    iterator over a QDomNodeList.
+    Typedefs for an opaque class that implements a bidirectional iterator over
+    a QDomNodeList.
 
     \note QDomNodeList does not support modifying nodes in-place, so
     there is no mutable iterator.
@@ -920,7 +1017,6 @@ int QDomNodeList::noexceptLength() const noexcept
 /*!
     \typedef QDomNodeList::value_type
     \typedef QDomNodeList::difference_type
-    \typedef QDomNodeList::size_type
     \typedef QDomNodeList::reference
     \typedef QDomNodeList::const_reference
     \typedef QDomNodeList::pointer
@@ -953,6 +1049,27 @@ int QDomNodeList::noexceptLength() const noexcept
     \note QDomNodeList does not support modifying nodes in-place, so
     there is no mutable iterator.
 */
+
+QDomNodeList::It::It(const QDomNodeListPrivate *lp, bool start) noexcept
+    : parent(lp)
+{
+    if (!lp || !lp->node_impl)
+        current = nullptr;
+    else if (start)
+        current = lp->findNextInOrder(lp->node_impl);
+    else
+        current = lp->node_impl;
+}
+
+QDomNodePrivate *QDomNodeList::It::findNextInOrder(const QDomNodeListPrivate *parent, QDomNodePrivate *current)
+{
+    return parent->findNextInOrder(current);
+}
+
+QDomNodePrivate *QDomNodeList::It::findPrevInOrder(const QDomNodeListPrivate *parent, QDomNodePrivate *current)
+{
+    return parent->findPrevInOrder(current);
+}
 
 /**************************************************************
  *

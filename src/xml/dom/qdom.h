@@ -244,74 +244,39 @@ private:
 
     class It
     {
-        const QDomNodeList *list;
-        int i;
+        const QDomNodeListPrivate *parent;
+        QDomNodePrivate *current;
 
         friend class QDomNodeList;
-        explicit constexpr It(const QDomNodeList *lp, int ii) noexcept : list(lp), i(ii) {}
+        friend class QDomNodeListPrivate;
+        Q_XML_EXPORT It(const QDomNodeListPrivate *lp, bool start) noexcept;
 
         friend constexpr bool comparesEqual(const It &lhs, const It &rhs)
-        { Q_ASSERT(lhs.list == rhs.list); return lhs.i == rhs.i; }
-        friend constexpr Qt::strong_ordering compareThreeWay(const It &lhs, const It &rhs)
-        { Q_ASSERT(lhs.list == rhs.list); return Qt::compareThreeWay(lhs.i, rhs.i); }
-        // macro variant does not exist: Q_DECLARE_STRONGLY_ORDERED_LITERAL_TYPE_NON_NOEXCEPT(It)
-        friend constexpr bool operator==(It lhs, It rhs) {
-            return comparesEqual(lhs, rhs);
-        }
-#ifdef __cpp_lib_three_way_comparison
-        friend constexpr std::strong_ordering operator<=>(It lhs, It rhs) {
-            return compareThreeWay(lhs, rhs);
-        }
-#else
-        friend constexpr bool operator!=(It lhs, It rhs) {
-            return !comparesEqual(lhs, rhs);
-        }
-        friend constexpr bool operator<(It lhs, It rhs) {
-            return is_lt(compareThreeWay(lhs, rhs));
-        }
-        friend constexpr bool operator<=(It lhs, It rhs) {
-            return is_lteq(compareThreeWay(lhs, rhs));
-        }
-        friend constexpr bool operator>(It lhs, It rhs) {
-            return is_gt(compareThreeWay(lhs, rhs));
-        }
-        friend constexpr bool operator>=(It lhs, It rhs) {
-            return is_gteq(compareThreeWay(lhs, rhs));
-        }
-#endif
+        { Q_ASSERT(lhs.parent == rhs.parent); return lhs.current == rhs.current; }
+        Q_DECLARE_EQUALITY_COMPARABLE_NON_NOEXCEPT(It);
+
+        Q_XML_EXPORT static QDomNodePrivate *findNextInOrder(const QDomNodeListPrivate *parent, QDomNodePrivate *current);
+        Q_XML_EXPORT static QDomNodePrivate *findPrevInOrder(const QDomNodeListPrivate *parent, QDomNodePrivate *current);
 
     public:
         // Rule Of Zero applies
         It() = default;
 
-        using iterator_category = std::random_access_iterator_tag;
+        using iterator_category = std::bidirectional_iterator_tag;
         using value_type = QDomNode;
         using element_type = const QDomNode;
         using difference_type = qptrdiff; // difference to [container.reqmts]
-        using size_type = int;            // difference to [container.reqmts]
         using reference = value_type;     // difference to [container.reqmts]
         using pointer = QtPrivate::ArrowProxy<reference>;
 
-        reference operator*() const { return list->item(i); }
+        reference operator*() const { return QDomNode(current); }
         pointer operator->() const { return { **this }; }
 
-        It &operator++() { ++i; return *this; }
+        It &operator++() { current = findNextInOrder(parent, current); return *this; }
         It operator++(int) { auto copy = *this; ++*this; return copy; }
 
-        It &operator--() { --i; return *this; }
+        It &operator--() { current = findPrevInOrder(parent, current); return *this; }
         It operator--(int) { auto copy = *this; --*this; return copy; }
-
-        It &operator+=(difference_type n) { i += n; return *this; }
-        friend It operator+(It it, difference_type n) { it += n; return it; }
-        friend It operator+(difference_type n, It it) { return it + n; }
-
-        It &operator-=(difference_type n) { i -= n; return *this; }
-        friend It operator-(It it, difference_type n) { it -= n; return it; }
-
-        friend difference_type operator-(It lhs, It rhs)
-        { Q_ASSERT(lhs.list == rhs.list); return lhs.i - rhs.i; }
-
-        reference operator[](difference_type n) const { return *(*this + n); }
     };
 
 public:
@@ -320,14 +285,13 @@ public:
 
     using value_type = It::value_type;
     using difference_type = It::difference_type;
-    using size_type = It::size_type;
     using reference = It::reference;
     using const_reference = reference;
     using pointer = It::pointer;
     using const_pointer = pointer;
 
-    [[nodiscard]] const_iterator begin()  const noexcept { return It{this, 0}; }
-    [[nodiscard]] const_iterator end()    const noexcept { return It{this, noexceptLength()}; }
+    [[nodiscard]] const_iterator begin()  const noexcept { return It{impl, true}; }
+    [[nodiscard]] const_iterator end()    const noexcept { return It{impl, false}; }
     [[nodiscard]] const_iterator cbegin() const noexcept { return begin(); }
     [[nodiscard]] const_iterator cend()   const noexcept { return end(); }
 
@@ -346,6 +310,7 @@ private:
     friend class QDomNode;
     friend class QDomElement;
     friend class QDomDocument;
+    friend class ::tst_QDom;
 };
 
 class Q_XML_EXPORT QDomDocumentType : public QDomNode
@@ -372,6 +337,7 @@ private:
     friend class QDomImplementation;
     friend class QDomDocument;
     friend class QDomNode;
+    friend class ::tst_QDom;
 };
 
 class Q_XML_EXPORT QDomDocument : public QDomNode

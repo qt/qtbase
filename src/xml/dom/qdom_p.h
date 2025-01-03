@@ -148,6 +148,9 @@ public:
     bool operator==(const QDomNodeListPrivate &) const noexcept;
 
     void createList() const;
+    bool checkNode(QDomNodePrivate* p) const;
+    QDomNodePrivate *findNextInOrder(QDomNodePrivate* p) const;
+    QDomNodePrivate *findPrevInOrder(QDomNodePrivate* p) const;
     void forEachNode(qxp::function_ref<void(QDomNodePrivate*)> yield) const;
     bool maybeCreateList() const;
     QDomNodePrivate *item(int index);
