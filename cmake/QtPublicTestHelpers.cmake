@@ -121,3 +121,35 @@ endfunction()
 function(_qt_internal_test_batch_target_name out)
     set(${out} "test_batch" PARENT_SCOPE)
 endfunction()
+
+# Create a *_check target of the ctest execution for alternative execution
+# Arguments:
+# : CTEST_TEST_NAME: (default: ${testname})
+#     name of the ctest test used
+function(_qt_internal_make_check_target testname)
+    set(options "")
+    set(singleOpts CTEST_TEST_NAME)
+    set(multiOpts "")
+
+    cmake_parse_arguments(PARSE_ARGV 0 arg
+            "${options}" "${singleOpts}" "${multiOpts}"
+    )
+    if(NOT arg_CTEST_TEST_NAME)
+        set(arg_CTEST_TEST_NAME ${testname})
+    endif()
+
+    set(test_config_options "")
+    get_cmake_property(is_multi_config GENERATOR_IS_MULTI_CONFIG)
+    if(is_multi_config)
+        set(test_config_options -C $<CONFIG>)
+    endif()
+    # Note: By default the working directory here is CMAKE_CURRENT_BINARY_DIR, which will
+    #   work as long as this is called anywhere up or down the path where the equivalent
+    #   `add_test` is called (not down a different branch path).
+    add_custom_target(${testname}_check
+        VERBATIM
+        COMMENT "Running ctest -V -R \"^${arg_CTEST_TEST_NAME}$\" ${test_config_options}"
+        COMMAND
+            "${CMAKE_CTEST_COMMAND}" -V -R "^${arg_CTEST_TEST_NAME}$" ${test_config_options}
+    )
+endfunction()

@@ -482,6 +482,7 @@ macro(_qt_internal_test_expect_pass _dir)
       )
     endif()
     set_tests_properties(${testname} PROPERTIES ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
+    _qt_internal_make_check_target(${testname})
 
     if(_ARGS_BINARY)
         set(run_env_args "")
@@ -703,6 +704,7 @@ list(APPEND CMAKE_PREFIX_PATH \"${__expect_fail_prefixes}\")
   add_test(${testname} "${CMAKE_COMMAND}" "-P" "${wrapper_file}")
   set_tests_properties(${testname} PROPERTIES
         SKIP_REGULAR_EXPRESSION "${_qt_internal_skip_build_test_regex}")
+  _qt_internal_make_check_target(${testname})
 
   unset(__expect_fail_prefixes)
 endmacro()
@@ -826,4 +828,5 @@ function(_qt_internal_test_module_includes)
   add_test(module_includes "${CMAKE_COMMAND}" "-P" "${wrapper_file}")
   set_tests_properties(module_includes PROPERTIES
       SKIP_REGULAR_EXPRESSION "${_qt_internal_skip_build_test_regex}")
+  _qt_internal_make_check_target(module_includes)
 endfunction()
