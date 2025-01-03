@@ -20,6 +20,7 @@
 
 #include <memory>
 #include <utility>
+#include <type_traits>
 
 QT_BEGIN_NAMESPACE
 
@@ -109,6 +110,19 @@ class QUniqueHandle
 {
 public:
     using Type = typename HandleTraits::Type;
+    static_assert(std::is_nothrow_default_constructible_v<Type>);
+    static_assert(std::is_nothrow_constructible_v<Type>);
+    static_assert(std::is_nothrow_copy_constructible_v<Type>);
+    static_assert(std::is_nothrow_move_constructible_v<Type>);
+    static_assert(std::is_nothrow_copy_assignable_v<Type>);
+    static_assert(std::is_nothrow_move_assignable_v<Type>);
+    static_assert(std::is_nothrow_destructible_v<Type>);
+    static_assert(noexcept(std::declval<Type>() == std::declval<Type>()));
+    static_assert(noexcept(std::declval<Type>() != std::declval<Type>()));
+    static_assert(noexcept(std::declval<Type>() < std::declval<Type>()));
+    static_assert(noexcept(std::declval<Type>() <= std::declval<Type>()));
+    static_assert(noexcept(std::declval<Type>() > std::declval<Type>()));
+    static_assert(noexcept(std::declval<Type>() >= std::declval<Type>()));
 
     QUniqueHandle() = default;
 
