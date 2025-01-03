@@ -146,6 +146,15 @@ private slots:
         QVERIFY(GlobalResource::isOpen(dest.get()));
     }
 
+    void moveAssignment_maintainsOwnershipWhenSelfAssigning() const
+    {
+        Handle resource{ GlobalResource::open() };
+        resource = std::move(resource);  // NOLINT(clang-diagnostic-self-move)
+
+        QVERIFY(resource.isValid());
+        QVERIFY(GlobalResource::isOpen(resource.get()));
+    }
+
     void isValid_returnsFalse_onlyWhenHandleIsInvalid() const
     {
         const Handle invalid;
@@ -207,6 +216,17 @@ private slots:
 
         QVERIFY(!GlobalResource::isOpen(resource0));
         QVERIFY(!h);
+    }
+
+    void reset_maintainsOwnership_whenCalledWithOwnedHandle() const
+    {
+        const auto resource = GlobalResource::open();
+
+        Handle h{ resource };
+        h.reset(resource);
+
+        QVERIFY(GlobalResource::isOpen(resource));
+        QVERIFY(h);
     }
 
     void reset_doesNothing_whenCalledOnInvalidHandle() const
