@@ -33,14 +33,14 @@ struct InvalidHandleTraits
     {
         return Qt::HANDLE(-1); // AKA INVALID_HANDLE_VALUE
     }
-    Q_CORE_EXPORT static bool close(Type handle);
+    Q_CORE_EXPORT static bool close(Type handle) noexcept;
 };
 
 struct NullHandleTraits
 {
     using Type = Qt::HANDLE;
     static Type invalidValue() noexcept { return nullptr; }
-    Q_CORE_EXPORT static bool close(Type handle);
+    Q_CORE_EXPORT static bool close(Type handle) noexcept;
 };
 
 #endif

@@ -19,12 +19,12 @@ namespace QtUniqueHandleTraits {
 
 #ifdef Q_OS_WIN
 
-bool InvalidHandleTraits::close(Type handle)
+bool InvalidHandleTraits::close(Type handle) noexcept
 {
     return ::CloseHandle(handle);
 }
 
-bool NullHandleTraits::close(Type handle)
+bool NullHandleTraits::close(Type handle) noexcept
 {
     return ::CloseHandle(handle);
 }
@@ -33,11 +33,13 @@ bool NullHandleTraits::close(Type handle)
 
 bool FileDescriptorHandleTraits::close(Type handle)
 {
+    // not noexcept because close() is a POSIX cancellation point
     return QT_CLOSE(handle) == 0;
 }
 
 bool FILEHandleTraits::close(Type handle)
 {
+    // not noexcept because fclose() is a POSIX cancellation point
     return ::fclose(handle);
 }
 
