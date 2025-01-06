@@ -361,7 +361,7 @@ protected:
     QFuture<ParentResultType> parentFuture;
     QThreadPool *threadPool = nullptr;
     QRunnable *runObj = nullptr;
-    Type type;
+    const Type type;
 };
 
 #ifndef QT_NO_EXCEPTIONS
