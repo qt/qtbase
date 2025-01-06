@@ -39,9 +39,9 @@ function(qt6_add_dbus_interface _sources _interface _relativename)
         VERBATIM
     )
 
-    set_source_files_properties("${_impl}" "${_header}" PROPERTIES
-        SKIP_AUTOMOC TRUE
-        SKIP_AUTOUIC TRUE
+    _qt_internal_set_source_file_generated(
+        SOURCES "${_impl}" "${_header}"
+        SKIP_AUTOGEN
     )
 
     qt6_generate_moc("${_header}" "${_moc}")
@@ -182,11 +182,11 @@ function(qt6_add_dbus_adaptor _sources _xml_file _include) # _optionalParentClas
         )
     endif()
 
-    qt6_generate_moc("${_header}" "${_moc}")
-    set_source_files_properties("${_impl}" "${_header}" PROPERTIES
-        SKIP_AUTOMOC TRUE
-        SKIP_AUTOUIC TRUE
+    _qt_internal_set_source_file_generated(
+        SOURCES "${_impl}" "${_header}"
+        SKIP_AUTOGEN
     )
+    qt6_generate_moc("${_header}" "${_moc}")
     macro_add_file_dependencies("${_impl}" "${_moc}")
 
     list(APPEND ${_sources} "${_impl}" "${_header}")

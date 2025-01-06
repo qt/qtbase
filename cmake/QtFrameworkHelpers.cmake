@@ -170,7 +170,7 @@ function(qt_internal_generate_fake_framework_header target)
     file(GENERATE OUTPUT "${fake_header}" CONTENT "// ignore this file\n"
         CONDITION "$<CONFIG:${main_config}>")
     target_sources(${target} PRIVATE "${fake_header}")
-    set_source_files_properties("${fake_header}" PROPERTIES GENERATED ON)
+    _qt_internal_set_source_file_generated(SOURCES "${fake_header}")
     set_property(TARGET ${target} APPEND PROPERTY PUBLIC_HEADER "${fake_header}")
 endfunction()
 

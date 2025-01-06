@@ -248,10 +248,7 @@ function(__qt_internal_add_static_plugin_init_object_library
         CONTENT "${import_content}"
     )
 
-    # CMake versions earlier than 3.18.0 can't find the generated file for some reason,
-    # failing at generation phase.
-    # Explicitly marking the file as GENERATED fixes the issue.
-    set_source_files_properties("${generated_qt_plugin_file_name}" PROPERTIES GENERATED TRUE)
+    _qt_internal_set_source_file_generated(SOURCES "${generated_qt_plugin_file_name}")
 
     __qt_internal_get_static_plugin_init_target_name("${plugin_target}" plugin_init_target)
 

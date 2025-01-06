@@ -31,10 +31,12 @@ function(qt6_wrap_ui outfiles )
           ARGS ${ui_options} -o ${outfile} ${infile}
           MAIN_DEPENDENCY ${infile} VERBATIM)
         set_source_files_properties(${infile} PROPERTIES SKIP_AUTOUIC ON)
-        set_source_files_properties(${outfile} PROPERTIES SKIP_AUTOMOC ON)
-        set_source_files_properties(${outfile} PROPERTIES SKIP_AUTOUIC ON)
         list(APPEND ${outfiles} ${outfile})
     endforeach()
+    _qt_internal_set_source_file_generated(
+        SOURCES ${${outfiles}}
+        SKIP_AUTOGEN
+    )
     set(${outfiles} ${${outfiles}} PARENT_SCOPE)
 endfunction()
 
@@ -197,13 +199,6 @@ function(qt6_add_ui target)
         endif()
         set_source_files_properties(${infile} PROPERTIES SKIP_AUTOUIC ON)
 
-        macro(_qt_internal_set_output_file_properties file)
-            set_source_files_properties(${file} PROPERTIES
-                SKIP_AUTOMOC TRUE
-                SKIP_AUTOUIC TRUE
-                SKIP_LINTING TRUE)
-        endmacro()
-
         set(outfile "${output_directory}/ui_${outfile}.h")
         # Before CMake 3.27, there was a bug when using $<CONFIG> in a generated
         # file with Ninja Multi-Config generator. To avoid this issue, we need
@@ -220,12 +215,17 @@ function(qt6_add_ui target)
             foreach(config ${CMAKE_CONFIGURATION_TYPES})
                 string(REPLACE "$<CONFIG>" "${config}" outfile_with_config
                     "${outfile}")
-                    _qt_internal_set_output_file_properties(
-                        ${outfile_with_config})
+                _qt_internal_set_source_file_generated(
+                    SOURCES ${outfile_with_config}
+                    SKIP_AUTOGEN
+                )
                 target_sources(${target} PRIVATE ${outfile_with_config})
             endforeach()
         else()
-            _qt_internal_set_output_file_properties(${outfile})
+            _qt_internal_set_source_file_generated(
+                SOURCES ${outfile}
+                SKIP_AUTOGEN
+            )
             target_sources(${target} PRIVATE ${outfile})
         endif()
         # remove double slashes

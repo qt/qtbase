@@ -251,10 +251,9 @@ function(qt_internal_add_module target)
     set(module_config_private_header "qt${arg_CONFIG_MODULE_NAME}-config_p.h")
     # qt<module>-config.h/-config_p.h header files are not marked as GENERATED automatically
     # for old CMake versions. Set the property explicitly here.
-    set_source_files_properties("${module_config_header}" "${module_config_private_header}"
-        PROPERTIES
-            GENERATED TRUE
-            SKIP_AUTOGEN TRUE
+    _qt_internal_set_source_file_generated(
+        SOURCES "${module_config_header}" "${module_config_private_header}"
+        SKIP_AUTOGEN
     )
 
     # Module define needs to take into account the config module name.
@@ -445,7 +444,7 @@ function(qt_internal_add_module target)
 
         set(module_depends_header
             "${module_build_interface_include_dir}/${module_include_name}Depends")
-        set_source_files_properties("${module_depends_header}" PROPERTIES GENERATED TRUE)
+        _qt_internal_set_source_file_generated(SOURCES "${module_depends_header}")
         set_target_properties(${target} PROPERTIES _qt_module_depends_header
             "${module_depends_header}")
         if(NOT arg_HEADER_MODULE)
@@ -1496,6 +1495,11 @@ function(qt_internal_generate_cpp_global_exports target module_define_infix)
 
     set(${out_public_header} "${generated_header_path}" PARENT_SCOPE)
     target_sources(${target} PRIVATE "${generated_header_path}")
+    _qt_internal_set_source_file_generated(
+        SOURCES "${generated_header_path}"
+        CONFIGURE_GENERATED
+    )
+    # `GENERATED` property is set in order to be processed by `qt_internal_collect_module_headers`
     set_source_files_properties("${generated_header_path}" PROPERTIES GENERATED TRUE)
 endfunction()
 

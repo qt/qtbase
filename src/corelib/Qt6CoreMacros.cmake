@@ -142,12 +142,7 @@ function(_qt_internal_create_moc_command infile outfile moc_flags moc_options
                        ${_moc_working_dir}
                        VERBATIM)
     set_source_files_properties(${infile} PROPERTIES SKIP_AUTOMOC ON)
-    set_source_files_properties(${outfile} PROPERTIES SKIP_AUTOMOC ON
-                                                      SKIP_AUTOUIC ON
-    )
-    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.27")
-        set_source_files_properties(${outfile} PROPERTIES SKIP_LINTING ON)
-    endif()
+    _qt_internal_set_source_file_generated(SOURCES ${outfile} ${extra_output_files} SKIP_AUTOGEN)
 endfunction()
 
 function(qt6_generate_moc infile outfile )
@@ -439,9 +434,9 @@ function(qt6_add_resources outfiles )
                                MAIN_DEPENDENCY ${infile}
                                DEPENDS ${_rc_depends} "${_out_depends}" ${QT_CMAKE_EXPORT_NAMESPACE}::rcc
                                VERBATIM)
-            set_source_files_properties(${outfile} PROPERTIES SKIP_AUTOMOC ON
-                                                              SKIP_AUTOUIC ON
-                                                              SKIP_UNITY_BUILD_INCLUSION ON
+
+            _qt_internal_set_source_file_generated(SOURCES "${outfile}" SKIP_AUTOGEN)
+            set_source_files_properties(${outfile} PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON
                                                               SKIP_PRECOMPILE_HEADERS ON
                                                               )
             list(APPEND ${outfiles} ${outfile})
@@ -526,15 +521,13 @@ function(qt6_add_big_resources outfiles )
 
         _qt6_parse_qrc_file(${infile} _out_depends _rc_depends)
         set_source_files_properties(${infile} PROPERTIES SKIP_AUTOGEN ON)
-        if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.27")
-            set_source_files_properties(${tmpoutfile} PROPERTIES SKIP_LINTING ON)
-        endif()
         add_custom_command(OUTPUT ${tmpoutfile}
                            COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::rcc ${rcc_options} --name ${outfilename} --pass 1 --output ${tmpoutfile} ${infile}
                            DEPENDS ${infile} ${_rc_depends} "${out_depends}" ${QT_CMAKE_EXPORT_NAMESPACE}::rcc
                            COMMENT "Running rcc pass 1 for resource ${outfilename}"
                            VERBATIM)
         add_custom_target(big_resources_${outfilename} ALL DEPENDS ${tmpoutfile})
+        _qt_internal_set_source_file_generated(SOURCES ${tmpoutfile} SKIP_AUTOGEN)
         _qt_internal_add_rcc_pass2(
             RESOURCE_NAME ${outfilename}
             RCC_OPTIONS ${rcc_options}
@@ -1357,8 +1350,8 @@ function(qt6_extract_metatypes target)
                 # The content shouldn't be empty so we don't trigger AUTOMOC warnings about it.
                 file(GENERATE OUTPUT "${dummy_out_file}" CONTENT "//")
                 set_source_files_properties("${dummy_out_file}" PROPERTIES
-                    GENERATED TRUE
                     SKIP_AUTOGEN OFF)
+                _qt_internal_set_source_file_generated(SOURCES "${dummy_out_file}")
                 target_sources("${target}" PRIVATE "${dummy_out_file}")
             endif()
 
@@ -1483,13 +1476,9 @@ function(qt6_extract_metatypes target)
         )
     endif()
 
-    # We can't rely on policy CMP0118 since user project controls it
-    set(scope_args)
-    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.18")
-        set(scope_args TARGET_DIRECTORY ${target})
-    endif()
-    set_source_files_properties(${metatypes_file_gen} ${metatypes_file}  ${scope_args}
-        PROPERTIES GENERATED TRUE
+    _qt_internal_set_source_file_generated(
+        SOURCES ${metatypes_file_gen} ${metatypes_file}
+        TARGET_DIRECTORY ${target}
     )
 
     # We still need to add this file as a source of the target, otherwise the file
@@ -1768,11 +1757,6 @@ END
             target_link_libraries(${target} PRIVATE $<TARGET_OBJECTS:${target}_rc>)
         endif()
 
-        set(scope_args)
-        if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.18")
-            set(scope_args TARGET_DIRECTORY ${end_target})
-        endif()
-
         while(outputs)
             list(POP_FRONT cfgs cfg)
             list(POP_FRONT outputs output)
@@ -1782,10 +1766,14 @@ END
                 COMMAND ${CMAKE_COMMAND} -E copy_if_different "${input}" "${output}"
                 VERBATIM
             )
-            # We can't rely on policy CMP0118 since user project controls it
-            set_source_files_properties(${output} ${scope_args} PROPERTIES
-                GENERATED TRUE
-                COMPILE_FLAGS "${extra_rc_flags}"
+            _qt_internal_set_source_file_generated(
+                    SOURCES ${output}
+                    TARGET_DIRECTORY ${end_target}
+            )
+            set_source_files_properties(${output}
+                TARGET_DIRECTORY ${end_target}
+                PROPERTIES
+                    COMPILE_FLAGS "${extra_rc_flags}"
             )
             target_sources(${end_target} PRIVATE "$<$<CONFIG:${cfg}>:${output}>")
         endwhile()
@@ -1828,11 +1816,8 @@ function(_qt_internal_generate_longpath_win32_rc_file_and_manifest target)
     endif()
     list(APPEND outputs "${mn_file_output}")
 
-    foreach(output IN LISTS outputs)
-        # Needed for CMake versions < 3.19
-        set_source_files_properties(${output} PROPERTIES GENERATED TRUE)
-        target_sources(${target} PRIVATE "${output}")
-    endforeach()
+    target_sources(${target} PRIVATE ${outputs})
+    _qt_internal_set_source_file_generated(SOURCES ${outputs})
 endfunction()
 
 function(__qt_get_relative_resource_path_for_file output_alias file)
@@ -2107,14 +2092,16 @@ function(__qt_internal_generate_init_resource_source_file out_var target resourc
 
     configure_file("${template_file}" "${resource_init_path}" @ONLY)
 
-    set(scope_args "")
-    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.18")
-        set(scope_args TARGET_DIRECTORY ${target})
-    endif()
-    set_source_files_properties(${resource_init_path} ${scope_args} PROPERTIES
-        SKIP_AUTOGEN TRUE
-        SKIP_UNITY_BUILD_INCLUSION TRUE
-        SKIP_PRECOMPILE_HEADERS TRUE
+    _qt_internal_set_source_file_generated(
+        SOURCES ${resource_init_path}
+        TARGET_DIRECTORY ${target}
+        SKIP_AUTOGEN CONFIGURE_GENERATED
+    )
+    set_source_files_properties(${resource_init_path}
+        TARGET_DIRECTORY ${target}
+        PROPERTIES
+            SKIP_UNITY_BUILD_INCLUSION TRUE
+            SKIP_PRECOMPILE_HEADERS TRUE
     )
 
     set(${out_var} "${resource_init_path}" PARENT_SCOPE)
@@ -2494,21 +2481,17 @@ function(_qt_internal_process_resource target resourceName)
         return()
     endif()
 
-    # We can't rely on policy CMP0118 since user project controls it.
-    # We also want SKIP_AUTOGEN known in the target's scope, where we can.
-    set(scope_args)
-    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.18")
-        set(scope_args TARGET_DIRECTORY ${target})
-    endif()
-    set_source_files_properties(${generatedOutfile} ${scope_args} PROPERTIES
-        SKIP_AUTOGEN TRUE
-        GENERATED TRUE
-        SKIP_UNITY_BUILD_INCLUSION TRUE
-        SKIP_PRECOMPILE_HEADERS TRUE
+    _qt_internal_set_source_file_generated(
+        SOURCES ${generatedOutfile}
+        TARGET_DIRECTORY ${target}
+        SKIP_AUTOGEN
     )
-    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.27")
-        set_source_files_properties(${generatedOutfile} ${scope_args} PROPERTIES SKIP_LINTING ON)
-    endif()
+    set_source_files_properties(${generatedOutfile}
+        TARGET_DIRECTORY ${target}
+        PROPERTIES
+            SKIP_UNITY_BUILD_INCLUSION TRUE
+            SKIP_PRECOMPILE_HEADERS TRUE
+    )
 
     get_target_property(target_source_dir ${target} SOURCE_DIR)
     if(NOT target_source_dir STREQUAL CMAKE_CURRENT_SOURCE_DIR)
