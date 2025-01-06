@@ -131,7 +131,7 @@ function(_qt_internal_make_check_target testname)
     set(singleOpts CTEST_TEST_NAME)
     set(multiOpts "")
 
-    cmake_parse_arguments(PARSE_ARGV 0 arg
+    cmake_parse_arguments(PARSE_ARGV 1 arg
             "${options}" "${singleOpts}" "${multiOpts}"
     )
     if(NOT arg_CTEST_TEST_NAME)
