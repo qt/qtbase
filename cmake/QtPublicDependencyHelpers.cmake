@@ -86,14 +86,14 @@ macro(_qt_internal_find_tool_dependencies target target_dep_list)
              "${_qt_additional_host_packages_root_paths}")
     endif()
 
+    unset(__qt_${target}_find_package_args)
+    if(${CMAKE_FIND_PACKAGE_NAME}_FIND_QUIETLY)
+        list(APPEND __qt_${target}_find_package_args QUIET)
+    endif()
+
     foreach(__qt_${target}_target_dep IN LISTS ${target_dep_list})
         list(GET __qt_${target}_target_dep 0 __qt_${target}_pkg)
         list(GET __qt_${target}_target_dep 1 __qt_${target}_version)
-
-        unset(__qt_${target}_find_package_args)
-        if(${CMAKE_FIND_PACKAGE_NAME}_FIND_QUIETLY)
-            list(APPEND __qt_${target}_find_package_args QUIET)
-        endif()
 
         _qt_internal_save_find_package_context_for_debugging(${target})
 
