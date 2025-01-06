@@ -304,9 +304,9 @@ public:
         : Storage{std::forward<F>(func)}, promise(std::move(p)), parentFuture(f),
           threadPool(pool), type(Type::Async)
     {
-        runObj = QRunnable::create([this] {
-            this->runFunction();
-            delete this;
+        runObj = QRunnable::create([continuation = this] {
+            continuation->runFunction();
+            delete continuation;
         });
         runObj->setAutoDelete(false);
     }
