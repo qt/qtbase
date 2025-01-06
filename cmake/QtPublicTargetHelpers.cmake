@@ -424,3 +424,93 @@ function(_qt_internal_warn_about_example_add_subdirectory)
         )
     endif()
 endfunction()
+
+# Mark source files as generated.
+#
+# This sets `GENERATED` property to TRUE, along with other Qt relevant properties,
+# e.g. `SKIP_LINTING`.
+#
+# Synopsis
+#
+#   _qt_internal_set_source_file_generated(SOURCE <src1> ...
+#       [CONFIGURE_GENERATED]
+#       [SKIP_AUTOGEN]
+#       [DIRECTORY <dirs> ...]
+#       [TARGET_DIRECTORY <targets> ...]
+#   )
+#
+# Arguments
+#
+# `SOURCES`
+#   Source files that are generated.
+#
+#   Equivalent to `set_source_files_properties(<files>)`.
+#
+# `DIRECTORY`
+#   Equivalent to `set_source_files_properties(DIRECTORY)`.
+#
+# `TARGET_DIRECTORY`
+#   Equivalent to `set_source_files_properties(TARGET_DIRECTORY)`.
+#
+# `SKIP_AUTOGEN`
+#   Set SKIP_AUTOGEN property to True as well.
+#
+# `CONFIGURE_GENERATED`
+#   Files are generated with `configure_file`.
+#   Does not set `GENERATED TRUE` property. This is needed to avoid removing the file when
+#   running the clean target.
+function(_qt_internal_set_source_file_generated)
+    set(option_args
+        SKIP_AUTOGEN
+        CONFIGURE_GENERATED
+    )
+    set(single_args "")
+    set(multi_args
+        SOURCES
+        DIRECTORY
+        TARGET_DIRECTORY
+    )
+
+    cmake_parse_arguments(PARSE_ARGV 0 arg
+            "${option_args}" "${single_args}" "${multi_args}"
+    )
+    # Parse required variables
+    if(NOT arg_SOURCES AND QT_FEATURE_developer_build)
+        message(WARNING
+            "Unexpected call _qt_internal_set_source_file_generated with empty `SOURCES`."
+        )
+    endif()
+    # Prepend again the appropriate keywords to pass to `set_source_files_properties`
+    if(arg_DIRECTORY)
+        list(PREPEND arg_DIRECTORY DIRECTORY)
+    endif()
+    if(arg_TARGET_DIRECTORY)
+        list(PREPEND arg_TARGET_DIRECTORY TARGET_DIRECTORY)
+    endif()
+
+    # Construct the properties list
+    set(properties "")
+    if(NOT arg_CONFIGURE_GENERATED)
+        list(APPEND properties
+            GENERATED TRUE
+        )
+    endif()
+    if(arg_SKIP_AUTOGEN)
+        list(APPEND properties
+            SKIP_AUTOGEN TRUE
+        )
+    endif()
+    # Add SKIP_LINTING if possible. We do not add it unconditionally here to avoid
+    # confusion when CMake ignores this variable.
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.27" AND NOT QT_FEATURE_lint_generated_code)
+        list(APPEND properties
+            SKIP_LINTING TRUE
+        )
+    endif()
+
+    set_source_files_properties(${arg_SOURCES}
+        ${arg_DIRECTORY}
+        ${arg_TARGET_DIRECTORY}
+        PROPERTIES ${properties}
+    )
+endfunction()

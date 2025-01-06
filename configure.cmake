@@ -580,6 +580,10 @@ qt_feature("no-prefix"
     AUTODETECT NOT QT_WILL_INSTALL
     CONDITION NOT QT_WILL_INSTALL
 )
+qt_feature("lint_generated_code"
+    LABEL "Lint qt-generated code"
+    AUTODETECT QT_FEATURE_developer_build
+)
 qt_feature("private_tests" PRIVATE
     LABEL "Developer build: private_tests"
     CONDITION QT_FEATURE_developer_build
