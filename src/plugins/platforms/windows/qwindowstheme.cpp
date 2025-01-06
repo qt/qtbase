@@ -903,19 +903,18 @@ QPixmap QWindowsTheme::standardPixmap(StandardPixmap sp, const QSizeF &pixmapSiz
         break;
     }
 
-   // Even with SHGSI_LINKOVERLAY flag set, loaded Icon with SHDefExtractIcon doesn't have
-   // any overlay, so we avoid SHGSI_LINKOVERLAY flag and draw it manually (QTBUG-131843)
-    const auto drawLinkOverlayIcon = [](StandardPixmap sp, QPixmap &pixmap, QSizeF pixmapSize) {
+    // Even with SHGSI_LINKOVERLAY flag set, loaded Icon with SHDefExtractIcon doesn't have
+    // any overlay, so we avoid SHGSI_LINKOVERLAY flag and draw it manually (QTBUG-131843)
+    const auto drawLinkOverlayIconIfNeeded = [](StandardPixmap sp, QPixmap &pixmap, QSizeF pixmapSize) {
         if (sp == FileLinkIcon || sp == DirLinkIcon || sp == DirLinkOpenIcon) {
             QPainter painter(&pixmap);
             const QSizeF linkSize = pixmapSize / (pixmapSize.height() >= 48 ? 3 : 2);
-            const QPixmap link = loadIconFromShell32(16769, linkSize.toSize()); // 16769 = LinkOverlayIcon
+            static constexpr auto LinkOverlayIconId = 16769;
+            const QPixmap link = loadIconFromShell32(LinkOverlayIconId, linkSize.toSize());
             const int yPos = pixmap.height() - link.size().height();
             painter.drawPixmap(0, yPos, int(linkSize.width()), int(linkSize.height()), link);
         }
     };
-
-    const auto dpr = qGuiApp->devicePixelRatio(); // Highest in the system
 
     if (stockId != SIID_INVALID) {
         SHSTOCKICONINFO iconInfo;
@@ -927,12 +926,11 @@ QPixmap QWindowsTheme::standardPixmap(StandardPixmap sp, const QSizeF &pixmapSiz
             HICON icon;
             if (SHDefExtractIcon(iconInfo.szPath, iconInfo.iIcon, 0, &icon, nullptr, iconSize) == S_OK) {
                 QPixmap pixmap = qt_pixmapFromWinHICON(icon);
-                if (!pixmap.isNull()) {
-                    drawLinkOverlayIcon(sp, pixmap, pixmap.size());
-                    pixmap.setDevicePixelRatio(dpr);
-                }
                 DestroyIcon(icon);
-                return pixmap;
+                if (!pixmap.isNull()) {
+                    drawLinkOverlayIconIfNeeded(sp, pixmap, pixmap.size());
+                    return pixmap;
+                }
             }
         }
     }
@@ -940,8 +938,7 @@ QPixmap QWindowsTheme::standardPixmap(StandardPixmap sp, const QSizeF &pixmapSiz
     if (resourceId != -1) {
         QPixmap pixmap = loadIconFromShell32(resourceId, pixmapSize);
         if (!pixmap.isNull()) {
-            drawLinkOverlayIcon(sp, pixmap, pixmapSize);
-            pixmap.setDevicePixelRatio(dpr);
+            drawLinkOverlayIconIfNeeded(sp, pixmap, pixmapSize);
             return pixmap;
         }
     }
