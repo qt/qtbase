@@ -17,6 +17,8 @@
 #include <QtCore/qt_windows.h>
 #endif
 
+Q_LOGGING_CATEGORY(lcTests, "qt.tests." QT_STRINGIFY(tst_QCoreApplication))
+
 typedef QCoreApplication TestApplication;
 
 class EventSpy : public QObject
@@ -210,6 +212,213 @@ void tst_QCoreApplication::argc()
         QCOMPARE(app.arguments().size(), 1);
     }
 }
+
+#if QT_CONFIG(library)
+static char argv0name[] =
+#ifdef QT_GUI_LIB
+        "tst_qguiapplication"
+#else
+        "tst_qcoreapplication"
+#endif
+        ;
+static char *argv0 = argv0name;
+
+static bool isPathListIncluded(const QStringList &l, const QStringList &r)
+{
+    int size = r.size();
+    if (size > l.size())
+        return false;
+#if defined (Q_OS_WIN)
+    Qt::CaseSensitivity cs = Qt::CaseInsensitive;
+#else
+    Qt::CaseSensitivity cs = Qt::CaseSensitive;
+#endif
+    int i = 0, j = 0;
+    for ( ; i < l.size() && j < r.size(); ++i) {
+        if (QDir::toNativeSeparators(l[i]).compare(QDir::toNativeSeparators(r[j]), cs) == 0) {
+            ++j;
+            i = -1;
+        }
+    }
+    return j == r.size();
+}
+
+void tst_QCoreApplication::libraryPaths()
+{
+    const QString testDir = QFileInfo(QFINDTESTDATA("CMakeLists.txt")).absolutePath();
+    QVERIFY(!testDir.isEmpty());
+    {
+        QCoreApplication::setLibraryPaths(QStringList() << testDir);
+        QCOMPARE(QCoreApplication::libraryPaths(), (QStringList() << testDir));
+
+        // creating QCoreApplication adds the applicationDirPath to the libraryPath
+        int argc = 1;
+        QCoreApplication app(argc, &argv0);
+        QString appDirPath = QDir(QCoreApplication::applicationDirPath()).canonicalPath();
+
+        QStringList actual = QCoreApplication::libraryPaths();
+        actual.sort();
+        QStringList expected;
+        expected << testDir << appDirPath;
+        expected = QSet<QString>(expected.constBegin(), expected.constEnd()).values();
+        expected.sort();
+
+        QVERIFY2(isPathListIncluded(actual, expected),
+                 qPrintable("actual:\n - " + actual.join("\n - ") +
+                            "\nexpected:\n - " + expected.join("\n - ")));
+    }
+    {
+        // creating QCoreApplication adds the applicationDirPath and plugin install path to the libraryPath
+        int argc = 1;
+        QCoreApplication app(argc, &argv0);
+        QString appDirPath = QCoreApplication::applicationDirPath();
+        QString installPathPlugins =  QLibraryInfo::path(QLibraryInfo::PluginsPath);
+
+        QStringList actual = QCoreApplication::libraryPaths();
+        actual.sort();
+
+        QStringList expected;
+        expected << installPathPlugins << appDirPath;
+        expected = QSet<QString>(expected.constBegin(), expected.constEnd()).values();
+        expected.sort();
+
+#if defined(Q_OS_VXWORKS)
+        QEXPECT_FAIL("", "QTBUG-130736: Actual paths on VxWorks differ from expected", Abort);
+#endif
+        QVERIFY2(isPathListIncluded(actual, expected),
+                 qPrintable("actual:\n - " + actual.join("\n - ") +
+                            "\nexpected:\n - " + expected.join("\n - ")));
+
+        // setting the library paths overrides everything
+        QCoreApplication::setLibraryPaths(QStringList() << testDir);
+        QVERIFY2(isPathListIncluded(QCoreApplication::libraryPaths(), (QStringList() << testDir)),
+                 qPrintable("actual:\n - " + QCoreApplication::libraryPaths().join("\n - ") +
+                            "\nexpected:\n - " + testDir));
+    }
+    {
+        qCDebug(lcTests) << "Initial library path:" << QCoreApplication::libraryPaths();
+
+        int count = QCoreApplication::libraryPaths().size();
+#if 0
+        QCOMPARE(count, 1); // before creating QCoreApplication, only the PluginsPath is in the libraryPaths()
+#endif
+        QString installPathPlugins =  QLibraryInfo::path(QLibraryInfo::PluginsPath);
+        QCoreApplication::addLibraryPath(installPathPlugins);
+        qCDebug(lcTests) << "installPathPlugins" << installPathPlugins;
+        qCDebug(lcTests) << "After adding plugins path:" << QCoreApplication::libraryPaths();
+        QCOMPARE(QCoreApplication::libraryPaths().size(), count);
+        QCoreApplication::addLibraryPath(testDir);
+        QCOMPARE(QCoreApplication::libraryPaths().size(), count + 1);
+
+        // creating QCoreApplication adds the applicationDirPath to the libraryPath
+        int argc = 1;
+        QCoreApplication app(argc, &argv0);
+        QString appDirPath = QCoreApplication::applicationDirPath();
+        qCDebug(lcTests) << QCoreApplication::libraryPaths();
+        // On Windows CE these are identical and might also be the case for other
+        // systems too
+        if (appDirPath != installPathPlugins)
+            QCOMPARE(QCoreApplication::libraryPaths().size(), count + 2);
+    }
+    {
+        int argc = 1;
+        QCoreApplication app(argc, &argv0);
+
+        qCDebug(lcTests) << "Initial library path:" << QCoreApplication::libraryPaths();
+        int count = QCoreApplication::libraryPaths().size();
+        QString installPathPlugins =  QLibraryInfo::path(QLibraryInfo::PluginsPath);
+        QCoreApplication::addLibraryPath(installPathPlugins);
+        qCDebug(lcTests) << "installPathPlugins" << installPathPlugins;
+        qCDebug(lcTests) << "After adding plugins path:" << QCoreApplication::libraryPaths();
+        QCOMPARE(QCoreApplication::libraryPaths().size(), count);
+
+        QString appDirPath = QCoreApplication::applicationDirPath();
+
+        QCoreApplication::addLibraryPath(appDirPath);
+        QCoreApplication::addLibraryPath(appDirPath + "/..");
+        qCDebug(lcTests) << "appDirPath" << appDirPath;
+        qCDebug(lcTests) << "After adding appDirPath && appDirPath + /..:" << QCoreApplication::libraryPaths();
+        QCOMPARE(QCoreApplication::libraryPaths().size(), count + 1);
+#ifdef Q_OS_MACOS
+        QCoreApplication::addLibraryPath(appDirPath + "/../MacOS");
+#else
+        QCoreApplication::addLibraryPath(appDirPath + "/tmp/..");
+#endif
+        qCDebug(lcTests) << "After adding appDirPath + /tmp/..:" << QCoreApplication::libraryPaths();
+        QCOMPARE(QCoreApplication::libraryPaths().size(), count + 1);
+    }
+}
+
+void tst_QCoreApplication::libraryPaths_qt_plugin_path()
+{
+    int argc = 1;
+
+    QCoreApplication app(argc, &argv0);
+    QString appDirPath = QCoreApplication::applicationDirPath();
+
+    // Our hook into libraryPaths() initialization: Set the QT_PLUGIN_PATH environment variable
+    QString installPathPluginsDeCanon = appDirPath + QString::fromLatin1("/tmp/..");
+    QByteArray ascii = QFile::encodeName(installPathPluginsDeCanon);
+    qputenv("QT_PLUGIN_PATH", ascii);
+
+    QVERIFY(!QCoreApplication::libraryPaths().contains(appDirPath + QString::fromLatin1("/tmp/..")));
+}
+
+void tst_QCoreApplication::libraryPaths_qt_plugin_path_2()
+{
+#ifdef Q_OS_UNIX
+    QByteArray validPath = QDir("/tmp").canonicalPath().toLatin1();
+    QByteArray nonExistentPath = "/nonexistent";
+    QByteArray pluginPath = validPath + ':' + nonExistentPath;
+#elif defined(Q_OS_WIN)
+    QByteArray validPath = "C:\\windows";
+    QByteArray nonExistentPath = "Z:\\nonexistent";
+    QByteArray pluginPath = validPath + ';' + nonExistentPath;
+#endif
+
+    {
+        // Our hook into libraryPaths() initialization: Set the QT_PLUGIN_PATH environment variable
+        qputenv("QT_PLUGIN_PATH", pluginPath);
+
+        int argc = 1;
+
+        QCoreApplication app(argc, &argv0);
+
+        // library path list should contain the default plus the one valid path
+        QStringList expected =
+            QStringList()
+            << QLibraryInfo::path(QLibraryInfo::PluginsPath)
+            << QDir(QCoreApplication::applicationDirPath()).canonicalPath()
+            << QDir(QDir::fromNativeSeparators(QString::fromLatin1(validPath))).canonicalPath();
+
+#if defined(Q_OS_VXWORKS)
+        QEXPECT_FAIL("", "QTBUG-130736: Actual paths on VxWorks differ from expected", Abort);
+#endif
+        QVERIFY2(isPathListIncluded(QCoreApplication::libraryPaths(), expected),
+                 qPrintable("actual:\n - " + QCoreApplication::libraryPaths().join("\n - ") +
+                            "\nexpected:\n - " + expected.join("\n - ")));
+    }
+
+    {
+        int argc = 1;
+
+        QCoreApplication app(argc, &argv0);
+
+        // library paths are initialized by the QCoreApplication, setting
+        // the environment variable here doesn't work
+        qputenv("QT_PLUGIN_PATH", pluginPath);
+
+        // library path list should contain the default
+        QStringList expected =
+            QStringList()
+            << QLibraryInfo::path(QLibraryInfo::PluginsPath)
+            << QCoreApplication::applicationDirPath();
+        QVERIFY(isPathListIncluded(QCoreApplication::libraryPaths(), expected));
+
+        qputenv("QT_PLUGIN_PATH", nullptr);
+    }
+}
+#endif
 
 class EventGenerator : public QObject
 {

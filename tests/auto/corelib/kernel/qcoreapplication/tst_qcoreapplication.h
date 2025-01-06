@@ -18,6 +18,11 @@ private slots:
     void qAppName();
     void qAppVersion();
     void argc();
+#if QT_CONFIG(library)
+    void libraryPaths();
+    void libraryPaths_qt_plugin_path();
+    void libraryPaths_qt_plugin_path_2();
+#endif
     void postEvent();
     void removePostedEvents();
 #if QT_CONFIG(thread)
