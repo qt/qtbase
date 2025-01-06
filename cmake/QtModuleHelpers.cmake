@@ -340,6 +340,9 @@ function(qt_internal_add_module target)
         )
         set_property(TARGET "${target_private}" APPEND PROPERTY
                      EXPORT_PROPERTIES "${export_properties}")
+
+        # Let find_package(Qt6FooPrivate) also find_package(Qt6Foo).
+        qt_register_target_dependencies("${target_private}" "Qt::${target}" "")
     endif()
 
     # FIXME: This workaround is needed because the deployment logic
