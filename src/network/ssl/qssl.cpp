@@ -84,8 +84,8 @@ Q_LOGGING_CATEGORY(lcSsl, "qt.network.ssl");
     \value DtlsV1_0OrLater DTLSv1.0 and later versions.
     \value DtlsV1_2 DTLSv1.2
     \value DtlsV1_2OrLater DTLSv1.2 and later versions.
-    \value TlsV1_3 TLSv1.3. (Since Qt 5.12)
-    \value TlsV1_3OrLater TLSv1.3 and later versions. (Since Qt 5.12)
+    \value [since 5.12] TlsV1_3 TLSv1.3.
+    \value [since 5.12] TlsV1_3OrLater TLSv1.3 and later versions.
     \value UnknownProtocol The cipher's protocol cannot be determined.
     \value AnyProtocol Any supported protocol. This value is used by QSslSocket only.
     \value SecureProtocols The default option, using protocols known to be secure.
