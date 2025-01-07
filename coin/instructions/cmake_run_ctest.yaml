@@ -141,6 +141,16 @@ instructions:
         maxTimeBetweenOutput: 14400
         userMessageOnFailure: >
           Failed to run tests.
+      - type: ExecuteCommand
+        command: >
+          cmake -E copy
+            Testing{{.Env.CI_PATH_SEP}}Temporary{{.Env.CI_PATH_SEP}}LastTest.log
+            {{.Env.COIN_CTEST_RESULTSDIR}}{{.Env.CI_PATH_SEP}}CTest.log
+        executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
+        ignoreExitCode: false
+        userMessageOnFailure: >
+          Failed to copy LastTest.log to testresults directory.
+        executeOn: always
   - type: Group
     enable_if:
       condition: runtime
@@ -155,16 +165,13 @@ instructions:
         maxTimeBetweenOutput: 14400
         userMessageOnFailure: >
           Failed to run tests.
-
-  - type: Group
-    instructions:
       - type: ExecuteCommand
         command: >
           cmake -E copy
             Testing{{.Env.CI_PATH_SEP}}Temporary{{.Env.CI_PATH_SEP}}LastTest.log
             {{.Env.COIN_CTEST_RESULTSDIR}}{{.Env.CI_PATH_SEP}}CTest.log
         executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
-        ignoreExitCode: false
+        ignoreExitCode: true
         userMessageOnFailure: >
           Failed to copy LastTest.log to testresults directory.
         executeOn: always
