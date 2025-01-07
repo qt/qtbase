@@ -873,6 +873,20 @@ function(qt_internal_add_test name)
         endif()
     endif()
 
+    if(MACOS AND NOT CMAKE_GENERATOR STREQUAL "Xcode")
+        # Add com.apple.security.get-task-allow entitlement to each
+        # test binary, so we can hook into the Swift crash handling.
+        if(NOT arg_QMLTEST AND arg_SOURCES)
+            set(entitlements_file
+                "${__qt_internal_cmake_apple_support_files_path}/test.entitlements.plist")
+            add_custom_command(TARGET "${name}"
+                POST_BUILD COMMAND codesign --sign -
+                    --entitlements "${entitlements_file}"
+                    "$<TARGET_FILE:${name}>"
+                )
+        endif()
+    endif()
+
     qt_internal_add_test_finalizers("${name}")
 endfunction()
 

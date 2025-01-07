@@ -24,7 +24,7 @@ SPDX-License-Identifier = "LicenseRef-Qt-Commercial OR GPL-3.0-only"
 path = ["bin/*", "coin/**","libexec/*","**_clang-format", "**.cmake", "**.conf", "**.cmake.in",
         "**.prf", "libexec/qt-internal-configure-*", "config.tests/.qmake.conf",
         "**.pro", "**.pri", "**.yaml", "cmake/**.in", "cmake/ios/LaunchScreen.storyboard",
-        "cmake/**md", "**.yml", "**.dynlist",
+        "cmake/**md", "**.yml", "**.dynlist", "cmake/**.plist",
         "src/corelib/global/qconfig.cpp.in", "src/corelib/Qt6CoreConfigureFileTemplate.in",
         "**.cfg", "src/3rdparty/CMakeLists.txt", "src/plugins/sqldrivers/mimer/CMakeLists.txt"]
 precedence = "closest"
