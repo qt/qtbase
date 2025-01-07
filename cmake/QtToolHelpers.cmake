@@ -168,7 +168,10 @@ function(qt_internal_add_tool target_name)
                  APPEND PROPERTY
                  EXPORT_PROPERTIES "_qt_package_version")
 
-    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.19.0" AND QT_FEATURE_debug_and_release)
+    get_cmake_property(is_multi_config GENERATOR_IS_MULTI_CONFIG)
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.19.0"
+            AND QT_FEATURE_debug_and_release
+            AND is_multi_config)
         set_property(TARGET "${target_name}"
             PROPERTY EXCLUDE_FROM_ALL "$<NOT:$<CONFIG:${QT_MULTI_CONFIG_FIRST_CONFIG}>>")
     endif()
