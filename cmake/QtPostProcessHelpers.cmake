@@ -167,8 +167,11 @@ function(qt_internal_create_module_depends_file target)
     set(qt_module_dependencies "")
 
     if(NOT is_interface_lib)
+        # TODO: deprecated code path. QT_EXTRA_PACKAGE_DEPENDENCIES shouldn't be used for the Qt
+        # packages.
         get_target_property(extra_depends "${target}" QT_EXTRA_PACKAGE_DEPENDENCIES)
     endif()
+
     if(NOT extra_depends MATCHES "-NOTFOUND$")
         list(APPEND target_deps "${extra_depends}")
     endif()

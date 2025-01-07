@@ -387,6 +387,8 @@ endfunction()
 # dep_target_name = EntryPointPrivate
 # This is just a convenience function that deals with Qt targets and their associated packages
 # instead of raw package names.
+#
+# Deprecated since 6.9.
 function(qt_record_extra_qt_package_dependency main_target_name dep_target_name
                                                                 dep_package_version)
     # EntryPointPrivate -> Qt6EntryPointPrivate.
@@ -571,17 +573,26 @@ function(qt_internal_get_package_name_of_target target package_name_out_var)
     set(${package_name_out_var} "${package_name}" PARENT_SCOPE)
 endfunction()
 
-# This function stores the list of Qt targets a library depend on,
-# along with their version info, for usage in ${target}Depends.cmake file
-function(qt_register_target_dependencies target public_libs private_libs)
+# This function collects the list of Qt targets a library depend on,
+# along with their version info, for usage in ${target}Dependencies.cmake file
+# Multi-value Arguments:
+#   PUBLIC
+#     public dependencies
+#   PRIVATE
+#     private dependencies
+function(qt_internal_register_target_dependencies target)
+    cmake_parse_arguments(PARSE_ARGV 1 arg "" "" "PUBLIC;PRIVATE")
     get_target_property(target_deps "${target}" _qt_target_deps)
     if(NOT target_deps)
         set(target_deps "")
     endif()
 
-    get_target_property(target_type ${target} TYPE)
-    set(lib_list ${public_libs})
+    set(lib_list "")
+    if(arg_PUBLIC)
+        set(lib_list "${arg_PUBLIC}")
+    endif()
 
+    get_target_property(target_type ${target} TYPE)
     set(target_is_shared FALSE)
     set(target_is_static FALSE)
     if(target_type STREQUAL "SHARED_LIBRARY")
@@ -595,8 +606,8 @@ function(qt_register_target_dependencies target public_libs private_libs)
     #
     # Private static library dependencies will become $<LINK_ONLY:> dependencies in
     # INTERFACE_LINK_LIBRARIES.
-    if(target_is_static)
-        list(APPEND lib_list ${private_libs})
+    if(target_is_static AND arg_PRIVATE)
+        list(APPEND lib_list ${arg_PRIVATE})
     endif()
 
     foreach(lib IN LISTS lib_list)
@@ -622,8 +633,8 @@ function(qt_register_target_dependencies target public_libs private_libs)
     # See QTBUG-86533 for some details.
     # We filter out static libraries and common platform targets, but include both SHARED and
     # INTERFACE libraries. INTERFACE libraries in most cases will be FooPrivate libraries.
-    if(target_is_shared AND private_libs)
-        foreach(lib IN LISTS private_libs)
+    if(target_is_shared AND arg_PRIVATE)
+        foreach(lib IN LISTS arg_PRIVATE)
             set(lib_namespaced "${lib}")
             if("${lib}" MATCHES "^Qt::(.*)")
                 set(lib "${CMAKE_MATCH_1}")

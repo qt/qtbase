@@ -266,10 +266,18 @@ function(qt_internal_extend_target target)
                 "Ensure the target exists or remove the option.")
             message(AUTHOR_WARNING "${warning_message}")
         endif()
-        qt_register_target_dependencies("${target}"
-                                        "${arg_PUBLIC_LIBRARIES};${arg_PRIVATE_MODULE_INTERFACE}"
-                                        "${qt_libs_private};${arg_LIBRARIES}")
 
+        set(qt_register_target_dependencies_args "")
+        if(arg_PUBLIC_LIBRARIES OR arg_PRIVATE_MODULE_INTERFACE)
+            list(APPEND qt_register_target_dependencies_args
+                PUBLIC ${arg_PUBLIC_LIBRARIES} ${arg_PRIVATE_MODULE_INTERFACE})
+        endif()
+        if(qt_libs_private OR arg_LIBRARIES)
+            list(APPEND qt_register_target_dependencies_args
+                PRIVATE ${qt_libs_private} ${arg_LIBRARIES})
+        endif()
+        qt_internal_register_target_dependencies("${target}"
+            ${qt_register_target_dependencies_args})
 
         qt_autogen_tools(${target}
                          ENABLE_AUTOGEN_TOOLS ${arg_ENABLE_AUTOGEN_TOOLS}

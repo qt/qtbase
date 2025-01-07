@@ -337,7 +337,15 @@ function(qt_internal_add_plugin target)
         endif()
     endforeach()
 
-    qt_register_target_dependencies("${target}" "${arg_PUBLIC_LIBRARIES}" "${qt_libs_private}")
+    set(qt_register_target_dependencies_args "")
+    if(arg_PUBLIC_LIBRARIES)
+        list(APPEND qt_register_target_dependencies_args PUBLIC ${arg_PUBLIC_LIBRARIES})
+    endif()
+    if(qt_libs_private)
+        list(APPEND qt_register_target_dependencies_args PRIVATE ${qt_libs_private})
+    endif()
+    qt_internal_register_target_dependencies("${target}"
+        ${qt_register_target_dependencies_args})
 
     if(target_type STREQUAL STATIC_LIBRARY)
         if(qt_module_target)

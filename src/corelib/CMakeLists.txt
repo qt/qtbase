@@ -1459,8 +1459,8 @@ qt_internal_apply_gc_binaries_conditional(Core PUBLIC)
 if(WIN32 OR UIKIT)
     # find_package(Qt6Core) should call find_package(Qt6EntryPointPrivate) so that we can
     # link against EntryPointPrivate. Normally this is handled automatically for deps, but
-    # for some reason it doesn't work for the EntryPointPrivate, so we need to add it manually.
-    qt_record_extra_qt_package_dependency(Core EntryPointPrivate "${PROJECT_VERSION}")
+    # it doesn't work for EntryPointPrivate since its linker line contains the generator expression.
+    qt_internal_register_target_dependencies(Core PUBLIC Qt6::EntryPointPrivate)
 
     set(entrypoint_conditions "$<NOT:$<BOOL:$<TARGET_PROPERTY:qt_no_entrypoint>>>")
     list(APPEND entrypoint_conditions "$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>")
