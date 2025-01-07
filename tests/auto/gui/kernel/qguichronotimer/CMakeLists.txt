@@ -25,7 +25,7 @@ endfunction()
 addGuiChronoTimerTest(tst_qguichronotimer)
 qt_internal_extend_target(tst_qguichronotimer
     DEFINES
-        tst_Qtimer=tst_QGuiChronoTimer
+        tst_QChronoTimer=tst_QGuiChronoTimer
 )
 
 if(QT_FEATURE_glib AND UNIX)
@@ -33,6 +33,6 @@ if(QT_FEATURE_glib AND UNIX)
     qt_internal_extend_target(tst_qguichronotimer_no_glib
         DEFINES
             DISABLE_GLIB
-            tst_QTimer=tst_QGuiChronoTimer_no_glib # Class name in the unittest
+            tst_QChronoTimer=tst_QGuiChronoTimer_no_glib # Class name in the unittest
     )
 endif()

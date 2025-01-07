@@ -25,7 +25,7 @@ endfunction()
 addGuiTimerTest(tst_qguitimer)
 qt_internal_extend_target(tst_qguitimer
     DEFINES
-        tst_Qtimer=tst_QGuiTimer
+        tst_QTimer=tst_QGuiTimer
 )
 
 if(QT_FEATURE_glib AND UNIX)
