@@ -180,6 +180,7 @@ void tst_QTemporaryFile::fileTemplate_data()
     QTest::newRow("constructor with XXXXX prefix") << "qt_XXXXX" << "qt_XXXXX." << "" << "";
     QTest::newRow("constructor with XXXX  prefix and suffix") << "qt_XXXX_XXXXXX_XXXX" << "qt_XXXX_" << "_XXXX" << "";
     QTest::newRow("constructor with XXXXX prefix and suffix") << "qt_XXXXX_XXXXXX_XXXXX" << "qt_XXXXX_" << "_XXXXX" << "";
+    QTest::newRow("constructor with two placeholders") << "qt_XXXXXX_XXXXXX_" << "qt_XXXXXX_" << "_" << "";
 
     QTest::newRow("set template, no suffix") << "" << "foo" << "" << "foo";
     QTest::newRow("set template, with lowercase XXXXXX") << "" << "qt_" << "xxxxxx" << "qt_XXXXXXxxxxxx";
