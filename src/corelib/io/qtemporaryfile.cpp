@@ -635,6 +635,7 @@ QString QTemporaryFilePrivate::defaultTemplateName()
     auto-generated portion of the filename. Note that the template is
     case sensitive. If the template is not present in the filename,
     QTemporaryFile appends the generated part to the filename given.
+    Only the last occurrence of \c {"XXXXXX"} will be considered.
 
     \note On Linux, QTemporaryFile will attempt to create unnamed temporary
     files. If that succeeds, open() will return true but exists() will be
