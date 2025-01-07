@@ -1504,9 +1504,12 @@ void WriteInitialization::writeProperties(const QString &varName,
             const QString paletteName = m_driver->unique("palette"_L1);
             m_output << m_indent << language::stackVariable("QPalette", paletteName)
                 << language::eol;
-            writeColorGroup(pal->elementActive(), "QPalette::Active"_L1, paletteName);
-            writeColorGroup(pal->elementInactive(), "QPalette::Inactive"_L1, paletteName);
-            writeColorGroup(pal->elementDisabled(), "QPalette::Disabled"_L1, paletteName);
+            writeColorGroup(pal->elementActive(),
+                            "QPalette::ColorGroup::Active"_L1, paletteName);
+            writeColorGroup(pal->elementInactive(),
+                            "QPalette::ColorGroup::Inactive"_L1, paletteName);
+            writeColorGroup(pal->elementDisabled(),
+                            "QPalette::ColorGroup::Disabled"_L1, paletteName);
 
             propertyValue = paletteName;
             break;
@@ -2054,7 +2057,8 @@ void WriteInitialization::writeColorGroup(DomColorGroup *colorGroup, const QStri
         const DomColor *color = colors.at(i);
 
         m_output << m_indent << paletteName << ".setColor(" << group
-            << ", QPalette" << language::qualifier << language::paletteColorRole(i)
+            << ", QPalette" << language::qualifier << "ColorRole"
+            << language::qualifier << language::paletteColorRole(i)
             << ", " << domColor2QString(color)
             << ")" << language::eol;
     }
@@ -2073,8 +2077,8 @@ void WriteInitialization::writeColorGroup(DomColorGroup *colorGroup, const QStri
             }
             m_output << m_indent << paletteName << ".setBrush("
                 << language::enumValue(group) << ", "
-                << "QPalette" << language::qualifier << roleName
-                << ", " << brushName << ")" << language::eol;
+                << "QPalette" << language::qualifier << "ColorRole"
+                << language::qualifier << roleName << ", " << brushName << ')' << language::eol;
             if (!versionAdded.isNull())
                 m_output << "#endif\n";
         }
@@ -2143,13 +2147,13 @@ void WriteInitialization::writeBrush(const DomBrush *brush, const QString &brush
         }
 
         m_output << m_indent << gradientName << ".setSpread(QGradient"
-            << language::qualifier << gradient->attributeSpread()
+            << language::qualifier << "Spread" << language::qualifier << gradient->attributeSpread()
             << ')' << language::eol;
 
         if (gradient->hasAttributeCoordinateMode()) {
             m_output << m_indent << gradientName << ".setCoordinateMode(QGradient"
-                << language::qualifier << gradient->attributeCoordinateMode()
-                << ')' << language::eol;
+                << language::qualifier << "CoordinateMode" << language::qualifier
+                << gradient->attributeCoordinateMode() << ')' << language::eol;
         }
 
        const auto &stops = gradient->elementGradientStop();
@@ -2176,7 +2180,8 @@ void WriteInitialization::writeBrush(const DomBrush *brush, const QString &brush
             << domColor2QString(color) << ')' << language::eol;
 
         m_output << m_indent << brushName << ".setStyle("
-            << language::qtQualifier << style << ')' << language::eol;
+            << language::qtQualifier << "BrushStyle" << language::qualifier
+            << style << ')' << language::eol;
     }
 }
 
