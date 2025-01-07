@@ -366,7 +366,15 @@ if(APPLE)
         DESTINATION "${__GlobalConfig_build_dir}/${platform_shortname}"
     )
 
-    if(IOS)
+    if(MACOS)
+        # Test entitlements
+        qt_copy_or_install(FILES "cmake/${platform_shortname}/test.entitlements.plist"
+            DESTINATION "${__GlobalConfig_install_dir}/${platform_shortname}"
+        )
+        file(COPY "cmake/${platform_shortname}/test.entitlements.plist"
+            DESTINATION "${__GlobalConfig_build_dir}/${platform_shortname}"
+        )
+    elseif(IOS)
         qt_copy_or_install(FILES "cmake/ios/LaunchScreen.storyboard"
             DESTINATION "${__GlobalConfig_install_dir}/ios"
         )
