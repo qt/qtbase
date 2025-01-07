@@ -610,7 +610,7 @@ QString QTemporaryFilePrivate::defaultTemplateName()
     (at least six upper case \c "X" characters), which will be replaced with
     the auto-generated portion of the file name. If the file name doesn't
     contain \c {"XXXXXX"}, QTemporaryFile will append the generated part to the
-    file name. Only the first occurrence of \c {"XXXXXX"} will be considered.
+    file name. Only the last occurrence of \c {"XXXXXX"} will be considered.
 
     \note On Linux, QTemporaryFile will attempt to create unnamed temporary
     files. If that succeeds, open() will return true but exists() will be

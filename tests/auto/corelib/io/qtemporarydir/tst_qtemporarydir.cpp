@@ -185,6 +185,7 @@ void tst_QTemporaryDir::fileTemplate_data()
     QTest::newRow("4Xsuffix") << "qt_XXXXXX_XXXX" << "qt_" << "_XXXX";
     QTest::newRow("4Xprefix") << "qt_XXXX" << "qt_XXXX" << "";
     QTest::newRow("5Xprefix") << "qt_XXXXX" << "qt_XXXXX" << "";
+    QTest::newRow("two placeholders") << "qt_XXXXXX_XXXXXX_" << "qt_XXXXXX_" << "_";
     if (QTestPrivate::canHandleUnicodeFileNames()) {
         // Test Umlauts (contained in Latin1)
         QString prefix = "qt_" + umlautTestText();
