@@ -1,6 +1,6 @@
 [
     {
-        "Id": "VulkanMemoryAllocator",
+        "Id": "vulkanmemoryallocator",
         "Name": "Vulkan Memory Allocator",
         "QDocModule": "qtgui",
         "Description": "Vulkan Memory Allocator",

@@ -1,6 +1,6 @@
 [
     {
-        "Id": "D3D12MemoryAllocator",
+        "Id": "d3d12memoryallocator",
         "Name": "D3D12 Memory Allocator",
         "QDocModule": "qtgui",
         "Description": "D3D12 Memory Allocator",
