@@ -276,7 +276,7 @@
 
 QT_BEGIN_NAMESPACE
 
-static bool isConfigFunction(QEasingCurve::Type type)
+static constexpr bool isConfigFunction(QEasingCurve::Type type)
 {
     return (type >= QEasingCurve::InElastic
             && type <= QEasingCurve::OutInBounce) ||
@@ -1493,13 +1493,30 @@ QDebug operator<<(QDebug debug, const QEasingCurve &item)
     Writes the given \a easing curve to the given \a stream and returns a
     reference to the stream.
 
+    \warning Writing easing curves of QEasingCurve::Custom type
+    (that is, curves with a custom easing function) is not supported.
+
     \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator<<(QDataStream &stream, const QEasingCurve &easing)
 {
+    if (easing.d_ptr->type == QEasingCurve::Custom) {
+        qWarning("QEasingCurve: Cannot serialize an easing curve with a custom easing function");
+
+        // Backwards compatibility: stream _something_ out.
+        // Deliberately choose a curve that uses a config and not a
+        // easing function. If this curve is deserialized from old
+        // code, it will ignore the function pointer (cf.
+        // QTBUG-132575).
+        static_assert(isConfigFunction(QEasingCurve::InElastic));
+        stream << QEasingCurve(QEasingCurve::InElastic);
+        return stream;
+    }
+
     stream << quint8(easing.d_ptr->type);
-    stream << quint64(quintptr(easing.d_ptr->func));
+    // Unused; for backwards compatibility
+    stream << quint64(0);
 
     bool hasConfig = easing.d_ptr->config;
     stream << hasConfig;
@@ -1525,11 +1542,16 @@ QDataStream &operator>>(QDataStream &stream, QEasingCurve &easing)
     quint8 int_type;
     stream >> int_type;
     type = static_cast<QEasingCurve::Type>(int_type);
+    if (type == QEasingCurve::Custom) {
+        qWarning("QEasingCurve: Cannot deserialize an easing curve with a custom easing function");
+        stream.setStatus(QDataStream::ReadCorruptData);
+        type = QEasingCurve::Linear;
+    }
     easing.setType(type);
 
-    quint64 ptr_func;
+    // Unused; for backwards compatibility
+    [[maybe_unused]] quint64 ptr_func;
     stream >> ptr_func;
-    easing.d_ptr->func = QEasingCurve::EasingFunction(quintptr(ptr_func));
 
     bool hasConfig;
     stream >> hasConfig;
