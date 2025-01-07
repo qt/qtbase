@@ -882,8 +882,8 @@ QDataStream &operator>>(QDataStream &s, QUuid &id)
     \value Md5 Alias for Name
     \value Random Random-based, by using random numbers for all sections
     \value Sha1      Name-based version that uses SHA-1 hashing
-    \value UnixEpoch Time-based UUID using the number of milliseconds since
-                     the UNIX epoch
+    \value UnixEpoch [since 6.9] Time-based UUID using the number of
+                     milliseconds since the UNIX epoch
 */
 
 /*!
