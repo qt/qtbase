@@ -21,7 +21,10 @@ QT_BEGIN_NAMESPACE
 class Q_CORE_EXPORT QException : public std::exception
 {
 public:
+    QException() = default;
     ~QException() noexcept;
+    QException(const QException &) = default;
+    QException &operator=(const QException &) = default;
     virtual void raise() const;
     virtual QException *clone() const;
 };
