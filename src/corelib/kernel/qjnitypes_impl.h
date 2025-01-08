@@ -5,7 +5,10 @@
 #define QJNITYPES_IMPL_H
 
 #include <QtCore/qstring.h>
+
+#include <QtCore/q26numeric.h>
 #include <QtCore/q20type_traits.h>
+#include <QtCore/q20utility.h>
 
 #if defined(Q_QDOC) || defined(Q_OS_ANDROID)
 #include <jni.h>
@@ -19,7 +22,10 @@ namespace Detail
 {
 static inline jstring fromQString(const QString &string, JNIEnv *env)
 {
-    return env->NewString(reinterpret_cast<const jchar*>(string.constData()), string.length());
+    if (!q20::in_range<jsize>(string.size()))
+        qWarning("String is too large for a Java string and will be truncated");
+    const jsize length = q26::saturate_cast<jsize>(string.size());
+    return env->NewString(reinterpret_cast<const jchar*>(string.constData()), length);
 }
 
 static inline QString toQString(jstring string, JNIEnv *env)

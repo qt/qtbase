@@ -11,8 +11,9 @@
 #include <QtCore/qjniobject.h>
 
 #include <iterator>
-#include <utility>
+#include <QtCore/q26numeric.h>
 #include <QtCore/q20type_traits.h>
+#include <QtCore/q20utility.h>
 
 #if defined(Q_QDOC)
 using jsize = qint32;
@@ -479,9 +480,8 @@ public:
     template <typename Container, if_compatible_source_container<Container> = true>
     static auto fromContainer(Container &&container)
     {
-        Q_ASSERT_X(size_t(std::size(container)) <= size_t((std::numeric_limits<size_type>::max)()),
-                   "QJniArray::fromContainer", "Container is too large for a Java array");
-
+        if (!q20::in_range<size_type>(std::size(container)))
+            qWarning("QJniArray::fromContainer: Container is too large for Java and will be truncated!");
         using ElementType = typename std::remove_reference_t<Container>::value_type;
         if constexpr (std::is_base_of_v<std::remove_pointer_t<jobject>,
                                         std::remove_pointer_t<ElementType>>) {
@@ -915,7 +915,7 @@ auto QJniArrayBase::makeObjectArray(List &&list)
         return ResultType();
 
     JNIEnv *env = QJniEnvironment::getJniEnv();
-    const size_type length = size_type(std::size(list));
+    const size_type length = q26::saturate_cast<size_type>(std::size(list));
 
     // this assumes that all objects in the list have the same class
     jclass elementClass = nullptr;
