@@ -1687,20 +1687,24 @@ static QString formatLogMessage(QtMsgType type, const QMessageLogContext &contex
 #endif
         } else if (token == timeTokenC) {
             using namespace std::chrono;
+            auto formatElapsedTime = [](steady_clock::duration time) {
+                // we assume time > 0
+                auto ms = duration_cast<milliseconds>(time);
+                auto sec = duration_cast<seconds>(ms);
+                ms -= sec;
+                return QString::asprintf("%6lld.%03u", qint64(sec.count()), uint(ms.count()));
+            };
             QString timeFormat = pattern->timeArgs.at(timeArgsIdx);
             timeArgsIdx++;
             if (timeFormat == "process"_L1) {
-                auto elapsed = steady_clock::now() - pattern->appStartTime;
-                quint64 ms = duration_cast<milliseconds>(elapsed).count();
-                message.append(QString::asprintf("%6d.%03d", uint(ms / 1000), uint(ms % 1000)));
+                message += formatElapsedTime(steady_clock::now() - pattern->appStartTime);
             } else if (timeFormat == "boot"_L1) {
                 // just print the milliseconds since the elapsed timer reference
                 // like the Linux kernel does
-                qint64 ms = duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count();
-                message.append(QString::asprintf("%6d.%03d", uint(ms / 1000), uint(ms % 1000)));
+                message += formatElapsedTime(steady_clock::now().time_since_epoch());
 #if QT_CONFIG(datestring)
             } else if (timeFormat.isEmpty()) {
-                    message.append(QDateTime::currentDateTime().toString(Qt::ISODate));
+                message.append(QDateTime::currentDateTime().toString(Qt::ISODate));
             } else {
                 message.append(QDateTime::currentDateTime().toString(timeFormat));
 #endif // QT_CONFIG(datestring)
