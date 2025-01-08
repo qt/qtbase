@@ -15,7 +15,5 @@ android
 android
 [renderToFloatTexture]
 android
-[renderToRgb10Texture]
-android
 [tessellation vulkan]
 android
