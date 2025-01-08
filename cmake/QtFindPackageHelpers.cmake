@@ -404,23 +404,6 @@ function(qt_record_extra_package_dependency main_target_name dep_package_name de
     endif()
 endfunction()
 
-# This function records a dependency between ${main_target_name} and ${dep_target_name}
-# at the CMake package level.
-# E.g. Qt6CoreConfig.cmake needs to find_package(Qt6EntryPointPrivate).
-# main_target_name = Core
-# dep_target_name = EntryPointPrivate
-# This is just a convenience function that deals with Qt targets and their associated packages
-# instead of raw package names.
-#
-# Deprecated since 6.9.
-function(qt_record_extra_qt_package_dependency main_target_name dep_target_name
-                                                                dep_package_version)
-    # EntryPointPrivate -> Qt6EntryPointPrivate.
-    qt_internal_qtfy_target(qtfied_target_name "${dep_target_name}")
-    qt_record_extra_package_dependency("${main_target_name}"
-        "${qtfied_target_name_versioned}" "${dep_package_version}")
-endfunction()
-
 # This function records a 'QtFooTools' package dependency for the ${main_target_name} target
 # onto the ${dep_package_name} tools package.
 # E.g. The QtWaylandCompositor package needs to call find_package(QtWaylandScannerTools).
