@@ -121,8 +121,6 @@ qt_internal_extend_target(Bootstrap CONDITION WIN32
         ../../corelib/io/qfsfileengine_win.cpp
         ../../corelib/io/qstandardpaths_win.cpp
         ../../corelib/kernel/qcoreapplication_win.cpp
-        ../../corelib/kernel/qwinregistry.cpp
-        ../../corelib/plugin/qsystemlibrary.cpp
         ../../corelib/kernel/qfunctions_win.cpp
     PUBLIC_LIBRARIES
         advapi32
