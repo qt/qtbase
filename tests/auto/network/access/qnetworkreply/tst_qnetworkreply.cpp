@@ -84,7 +84,8 @@ Q_DECLARE_METATYPE(QSharedPointer<char>)
 #include <time.h>
 
 #include "../../../network-settings.h"
-#include "../../../network-helpers.h"
+
+#include <QtTest/private/qtesthelpers_p.h>
 
 #ifdef Q_OS_INTEGRITY
 #include "qplatformdefs.h"
@@ -5617,7 +5618,7 @@ void tst_QNetworkReply::ioPostToHttpsUploadProgress()
 {
     //QFile sourceFile(testDataDir + "/bigfile");
     //QVERIFY(sourceFile.open(QIODevice::ReadOnly));
-    if (QtNetworkTestHelpers::isSecureTransportBlockingTest())
+    if (QTestPrivate::isSecureTransportBlockingTest())
         QSKIP("SecureTransport: temporary keychain is not working on this version of macOS");
 
     qint64 wantedSize = 2*1024*1024; // 2 MB
@@ -5697,7 +5698,7 @@ void tst_QNetworkReply::ioGetFromBuiltinHttp()
     QFETCH(bool, https);
     QFETCH(int, bufferSize);
 
-    if (https && QtNetworkTestHelpers::isSecureTransportBlockingTest())
+    if (https && QTestPrivate::isSecureTransportBlockingTest())
         QSKIP("SecureTransport: temporary keychain is not working on this version of macOS");
 
     QByteArray testData;
@@ -6461,7 +6462,7 @@ void tst_QNetworkReply::httpProxyCommands_data()
         << QByteArray("HTTP/1.0 200 OK\r\nProxy-Connection: close\r\nContent-Length: 1\r\n\r\n1")
         << "GET http://0.0.0.0:4443/http-request HTTP/1.";
 #if QT_CONFIG(ssl)
-    if (QtNetworkTestHelpers::isSecureTransportBlockingTest())
+    if (QTestPrivate::isSecureTransportBlockingTest())
         QSKIP("SecureTransport: temporary keychain is not working on this version of macOS");
 
     QTest::newRow("https")
@@ -6690,7 +6691,7 @@ void tst_QNetworkReply::httpConnectionCount_data()
     QTest::addRow("http/1.1") << false << false;
     QTest::addRow("http/2") << true << false;
 #if QT_CONFIG(ssl)
-    if (!QtNetworkTestHelpers::isSecureTransportBlockingTest()) {
+    if (!QTestPrivate::isSecureTransportBlockingTest()) {
         QTest::addRow("https/1.1") << false << true;
         QTest::addRow("https/2") << true << true;
     }
@@ -7051,7 +7052,7 @@ void tst_QNetworkReply::encrypted()
 
 void tst_QNetworkReply::abortOnEncrypted()
 {
-    if (QtNetworkTestHelpers::isSecureTransportBlockingTest())
+    if (QTestPrivate::isSecureTransportBlockingTest())
         QSKIP("SecureTransport: temporary keychain is not working on this version of macOS");
 
     SslServer server;
@@ -9149,7 +9150,7 @@ void tst_QNetworkReply::ioHttpRedirectErrors()
     QFETCH(QNetworkReply::NetworkError, error);
 
     QUrl localhost(url);
-    if (localhost.scheme() == QLatin1String("https") && QtNetworkTestHelpers::isSecureTransportBlockingTest())
+    if (localhost.scheme() == QLatin1String("https") && QTestPrivate::isSecureTransportBlockingTest())
         QSKIP("SecureTransport: temporary keychain is not working on this version of macOS");
 
     MiniHttpServer server("", localhost.scheme() == QLatin1String("https"));
@@ -9228,7 +9229,7 @@ void tst_QNetworkReply::ioHttpRedirectPolicy()
     QFETCH(const QNetworkRequest::RedirectPolicy, policy);
 
     QFETCH(const bool, ssl);
-    if (ssl && QtNetworkTestHelpers::isSecureTransportBlockingTest())
+    if (ssl && QTestPrivate::isSecureTransportBlockingTest())
         QSKIP("SecureTransport: temporary keychain is not working on this version of macOS");
 
     QFETCH(const int, redirectCount);
@@ -9312,7 +9313,7 @@ void tst_QNetworkReply::ioHttpRedirectPolicyErrors()
     QVERIFY(policy != QNetworkRequest::ManualRedirectPolicy);
 
     QFETCH(const bool, ssl);
-    if (ssl && QtNetworkTestHelpers::isSecureTransportBlockingTest())
+    if (ssl && QTestPrivate::isSecureTransportBlockingTest())
         QSKIP("SecureTransport: temporary keychain is not working on this version of macOS");
     QFETCH(const QString, location);
     QFETCH(const int, maxRedirects);
@@ -9899,7 +9900,7 @@ public slots:
 
 void tst_QNetworkReply::putWithServerClosingConnectionImmediately()
 {
-    if (QtNetworkTestHelpers::isSecureTransportBlockingTest())
+    if (QTestPrivate::isSecureTransportBlockingTest())
         QSKIP("SecureTransport: temporary keychain is not working on this version of macOS");
 
     const int numUploads = 40;
