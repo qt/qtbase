@@ -86,7 +86,7 @@ public:
         ++that.m_index;
         return that;
     }
-    friend QJniArrayIterator operator++(QJniArrayIterator &that, difference_type) noexcept
+    friend QJniArrayIterator operator++(QJniArrayIterator &that, int) noexcept
     {
         auto copy = that;
         ++that;
@@ -110,7 +110,7 @@ public:
         --that.m_index;
         return that;
     }
-    friend QJniArrayIterator operator--(QJniArrayIterator &that, difference_type) noexcept
+    friend QJniArrayIterator operator--(QJniArrayIterator &that, int) noexcept
     {
         auto copy = that;
         --that;
@@ -228,7 +228,7 @@ public:
         ++that.m_index;
         return that;
     }
-    friend QJniArrayMutableIterator operator++(QJniArrayMutableIterator &that, difference_type) noexcept
+    friend QJniArrayMutableIterator operator++(QJniArrayMutableIterator &that, int) noexcept
     {
         auto copy = that;
         ++that;
@@ -252,7 +252,7 @@ public:
         --that.m_index;
         return that;
     }
-    friend QJniArrayMutableIterator operator--(QJniArrayMutableIterator &that, difference_type) noexcept
+    friend QJniArrayMutableIterator operator--(QJniArrayMutableIterator &that, int) noexcept
     {
         auto copy = that;
         --that;
