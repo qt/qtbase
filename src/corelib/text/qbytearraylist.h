@@ -37,7 +37,12 @@ template <> struct QListSpecialMethods<QByteArray> : QListSpecialMethodsBase<QBy
 {
 #ifndef Q_QDOC
 protected:
+    QListSpecialMethods() = default;
     ~QListSpecialMethods() = default;
+    QListSpecialMethods(const QListSpecialMethods &) = default;
+    QListSpecialMethods(QListSpecialMethods &&) = default;
+    QListSpecialMethods &operator=(const QListSpecialMethods &) = default;
+    QListSpecialMethods &operator=(QListSpecialMethods &&) = default;
 #endif
 public:
     using QListSpecialMethodsBase<QByteArray>::indexOf;
