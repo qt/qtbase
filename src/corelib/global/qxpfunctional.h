@@ -73,6 +73,10 @@ class function_ref_base
 {
 protected:
     ~function_ref_base() = default;
+    function_ref_base(const function_ref_base &) = default;
+    function_ref_base(function_ref_base &&) = default;
+    function_ref_base &operator=(const function_ref_base &) = default;
+    function_ref_base &operator=(function_ref_base &&) = default;
 
     using BoundEntityType = detail::BoundEntityType<Const>;
 
