@@ -13,7 +13,5 @@ android
 # Ditto
 [renderToFloatTexture]
 android
-[renderToRgb10Texture]
-android
 [tessellation vulkan]
 android
