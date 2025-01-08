@@ -16,8 +16,6 @@
 #include <QtCore/private/qlocking_p.h>
 #include "qloggingcategory.h"
 #ifndef QT_BOOTSTRAPPED
-#include "qelapsedtimer.h"
-#include "qdeadlinetimer.h"
 #include "qdatetime.h"
 #include "qcoreapplication.h"
 #include "qthread.h"
@@ -121,6 +119,7 @@ static QT_PREPEND_NAMESPACE(qint64) qt_gettid()
 
 #include <cstdlib>
 #include <algorithm>
+#include <chrono>
 #include <memory>
 #include <vector>
 
@@ -1165,7 +1164,7 @@ struct QMessagePattern
     std::unique_ptr<const char *[]> tokens;
     QList<QString> timeArgs; // timeFormats in sequence of %{time
 #ifndef QT_BOOTSTRAPPED
-    QElapsedTimer timer;
+    std::chrono::steady_clock::time_point appStartTime = std::chrono::steady_clock::now();
 #endif
 #ifdef QLOGGING_HAVE_BACKTRACE
     struct BacktraceParams
@@ -1200,9 +1199,6 @@ Q_CONSTINIT QBasicMutex QMessagePattern::mutex;
 
 QMessagePattern::QMessagePattern()
 {
-#ifndef QT_BOOTSTRAPPED
-    timer.start();
-#endif
     const QString envPattern = qEnvironmentVariable("QT_MESSAGE_PATTERN");
     if (envPattern.isEmpty()) {
         setDefaultPattern();
@@ -1690,15 +1686,17 @@ static QString formatLogMessage(QtMsgType type, const QMessageLogContext &contex
             message.append(formatBacktraceForLogMessage(backtraceParams, context));
 #endif
         } else if (token == timeTokenC) {
+            using namespace std::chrono;
             QString timeFormat = pattern->timeArgs.at(timeArgsIdx);
             timeArgsIdx++;
             if (timeFormat == "process"_L1) {
-                quint64 ms = pattern->timer.elapsed();
+                auto elapsed = steady_clock::now() - pattern->appStartTime;
+                quint64 ms = duration_cast<milliseconds>(elapsed).count();
                 message.append(QString::asprintf("%6d.%03d", uint(ms / 1000), uint(ms % 1000)));
             } else if (timeFormat == "boot"_L1) {
                 // just print the milliseconds since the elapsed timer reference
                 // like the Linux kernel does
-                qint64 ms = QDeadlineTimer::current().deadline();
+                qint64 ms = duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count();
                 message.append(QString::asprintf("%6d.%03d", uint(ms / 1000), uint(ms % 1000)));
 #if QT_CONFIG(datestring)
             } else if (timeFormat.isEmpty()) {
