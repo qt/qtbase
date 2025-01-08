@@ -88,7 +88,7 @@ function(_qt_internal_sbom_begin_project_generate)
         "${default_sbom_file_name}")
 
     qt_internal_sbom_set_default_option_value(LICENSE "NOASSERTION")
-    qt_internal_sbom_set_default_option_value(PROJECT_FOR_SPDX "${PROJECT_NAME}")
+    qt_internal_sbom_set_default_option_value(PROJECT_FOR_SPDX_ID "Package-${arg_PROJECT}")
     qt_internal_sbom_set_default_option_value_and_error_if_empty(SUPPLIER "")
     qt_internal_sbom_set_default_option_value(COPYRIGHT "${current_year} ${arg_SUPPLIER}")
     qt_internal_sbom_set_default_option_value_and_error_if_empty(SUPPLIER_URL
@@ -237,6 +237,7 @@ Relationship: SPDXRef-DOCUMENT DESCRIBES ${project_spdx_id}
     file(GENERATE OUTPUT "${create_staging_file}" CONTENT "${content}")
 
     set_property(GLOBAL PROPERTY _qt_sbom_project_name "${arg_PROJECT}")
+    set_property(GLOBAL PROPERTY _qt_sbom_project_spdx_id "${project_spdx_id}")
 
     set_property(GLOBAL PROPERTY _qt_sbom_build_output_path "${build_sbom_path}")
     set_property(GLOBAL PROPERTY _qt_sbom_build_output_path_without_ext
@@ -636,12 +637,12 @@ function(_qt_internal_sbom_generate_add_file)
     qt_internal_sbom_set_default_option_value(LICENSE "NOASSERTION")
     qt_internal_sbom_set_default_option_value(COPYRIGHT "NOASSERTION")
 
-    get_property(sbom_project_name GLOBAL PROPERTY _qt_sbom_project_name)
-    if(NOT sbom_project_name)
+    get_property(sbom_project_spdx_id GLOBAL PROPERTY _qt_sbom_project_spdx_id)
+    if(NOT sbom_project_spdx_id)
         message(FATAL_ERROR "Call _qt_internal_sbom_begin_project() first")
     endif()
     if(NOT arg_RELATIONSHIP)
-        set(arg_RELATIONSHIP "SPDXRef-${sbom_project_name} CONTAINS ${arg_SPDXID}")
+        set(arg_RELATIONSHIP "${sbom_project_spdx_id} CONTAINS ${arg_SPDXID}")
     else()
         string(REPLACE
             "@QT_SBOM_LAST_SPDXID@" "${arg_SPDXID}" arg_RELATIONSHIP "${arg_RELATIONSHIP}")
@@ -789,15 +790,15 @@ function(_qt_internal_sbom_generate_add_external_reference)
         message(FATAL_ERROR "Invalid DocumentRef \"${arg_EXTERNAL_DOCUMENT_SPDX_ID}\"")
     endif()
 
-    get_property(sbom_project_name GLOBAL PROPERTY _qt_sbom_project_name)
-    if(NOT sbom_project_name)
+    get_property(sbom_project_spdx_id GLOBAL PROPERTY _qt_sbom_project_spdx_id)
+    if(NOT sbom_project_spdx_id)
         message(FATAL_ERROR "Call _qt_internal_sbom_begin_project() first")
     endif()
     if(arg_RELATIONSHIP_STRING STREQUAL "")
         if(arg_EXTERNAL_PACKAGE_SPDX_ID)
             set(external_package "${arg_EXTERNAL_DOCUMENT_SPDX_ID}:${arg_EXTERNAL_PACKAGE_SPDX_ID}")
             set(arg_RELATIONSHIP_STRING
-                "SPDXRef-${sbom_project_name} DEPENDS_ON ${external_package}")
+                "${sbom_project_spdx_id} DEPENDS_ON ${external_package}")
         endif()
     else()
         string(REPLACE
@@ -995,12 +996,12 @@ ExternalRef: SECURITY cpe23Type ${cpe}"
         )
     endforeach()
 
-    get_property(sbom_project_name GLOBAL PROPERTY _qt_sbom_project_name)
-    if(NOT sbom_project_name)
+    get_property(sbom_project_spdx_id GLOBAL PROPERTY _qt_sbom_project_spdx_id)
+    if(NOT sbom_project_spdx_id)
         message(FATAL_ERROR "Call _qt_internal_sbom_begin_project() first")
     endif()
     if(NOT arg_RELATIONSHIP)
-        set(arg_RELATIONSHIP "SPDXRef-${sbom_project_name} CONTAINS ${arg_SPDXID}")
+        set(arg_RELATIONSHIP "${sbom_project_spdx_id} CONTAINS ${arg_SPDXID}")
     else()
         string(REPLACE "@QT_SBOM_LAST_SPDXID@" "${arg_SPDXID}" arg_RELATIONSHIP "${arg_RELATIONSHIP}")
     endif()
