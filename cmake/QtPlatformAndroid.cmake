@@ -23,33 +23,6 @@ if (NOT IS_DIRECTORY "${ANDROID_SDK_ROOT}")
     message(FATAL_ERROR "Could not find ANDROID_SDK_ROOT or path is not a directory: ${ANDROID_SDK_ROOT}")
 endif()
 
-function(qt_internal_sort_android_platforms out_var)
-    if(CMAKE_VERSION GREATER_EQUAL 3.18)
-        set(platforms ${ARGN})
-        list(SORT platforms COMPARE NATURAL)
-    else()
-        # Simulate natural sorting:
-        # - prepend every platform with its version as three digits, zero-padded
-        # - regular sort
-        # - remove the padded version prefix
-        set(platforms)
-        foreach(platform IN LISTS ARGN)
-            set(version "000")
-            if(platform MATCHES ".*-([0-9]+)$")
-                set(version ${CMAKE_MATCH_1})
-                string(LENGTH "${version}" version_length)
-                math(EXPR padding_length "3 - ${version_length}")
-                string(REPEAT "0" ${padding_length} padding)
-                string(PREPEND version ${padding})
-            endif()
-            list(APPEND platforms "${version}~${platform}")
-        endforeach()
-        list(SORT platforms)
-        list(TRANSFORM platforms REPLACE "^.*~" "")
-    endif()
-    set("${out_var}" "${platforms}" PARENT_SCOPE)
-endfunction()
-
 # This variable specifies the API level used for building Java code, it can be the same as Qt for
 # Android's maximum supported Android version or higher.
 if(NOT QT_ANDROID_API_USED_FOR_JAVA)
