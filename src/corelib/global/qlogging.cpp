@@ -1149,9 +1149,15 @@ struct QMessagePattern
             messageTokenC,
         };
 
-        // std::make_unique() value-initializes, so we have a nullptr at the end
-        tokens = std::make_unique<const char *[]>(std::size(defaultTokens) + 1);
-        std::copy(std::begin(defaultTokens), std::end(defaultTokens), tokens.get());
+        // we don't attempt to free the pointers, so only call from the ctor
+        Q_ASSERT(!tokens);
+        Q_ASSERT(!literals);
+
+        auto ptr = new const char *[std::size(defaultTokens) + 1];
+        auto end = std::copy(std::begin(defaultTokens), std::end(defaultTokens), ptr);
+        *end = nullptr;
+        tokens.release();
+        tokens.reset(ptr);
     }
 
     // 0 terminated arrays of literal tokens / literal or placeholder tokens
