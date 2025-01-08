@@ -967,16 +967,9 @@ template <typename T> struct Traits<QJniArray<T>> {
         return CTString("[") + Traits<T>::signature();
     }
 };
-template <typename T> struct Traits<QJniArrayMutableValueRef<T>> {
-    static constexpr auto className()
-    {
-        return Traits<T>::className();
-    }
-    static constexpr auto signature()
-    {
-        return Traits<T>::signature();
-    }
-};
+
+template <typename T> struct Traits<QJniArrayMutableValueRef<T>> : public Traits<T> {};
+
 template <typename T> struct Traits<QList<T>> {
     template <IfValidFieldType<T> = true>
     static constexpr auto signature()
