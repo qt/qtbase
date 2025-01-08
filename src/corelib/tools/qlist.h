@@ -30,7 +30,12 @@ namespace QtPrivate {
 template <typename T> struct QListSpecialMethodsBase
 {
 protected:
+    QListSpecialMethodsBase() = default;
     ~QListSpecialMethodsBase() = default;
+    QListSpecialMethodsBase(const QListSpecialMethodsBase &) = default;
+    QListSpecialMethodsBase(QListSpecialMethodsBase &&) = default;
+    QListSpecialMethodsBase &operator=(const QListSpecialMethodsBase &) = default;
+    QListSpecialMethodsBase &operator=(QListSpecialMethodsBase &&) = default;
 
     using Self = QList<T>;
     Self *self() { return static_cast<Self *>(this); }
@@ -51,7 +56,13 @@ public:
 template <typename T> struct QListSpecialMethods : QListSpecialMethodsBase<T>
 {
 protected:
+    QListSpecialMethods() = default;
     ~QListSpecialMethods() = default;
+    QListSpecialMethods(const QListSpecialMethods &) = default;
+    QListSpecialMethods(QListSpecialMethods &&) = default;
+    QListSpecialMethods &operator=(const QListSpecialMethods &) = default;
+    QListSpecialMethods &operator=(QListSpecialMethods &&) = default;
+
 public:
     using QListSpecialMethodsBase<T>::indexOf;
     using QListSpecialMethodsBase<T>::lastIndexOf;
