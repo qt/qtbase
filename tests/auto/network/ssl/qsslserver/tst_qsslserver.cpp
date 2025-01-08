@@ -10,7 +10,7 @@
 #include <QtNetwork/QSslKey>
 #include "private/qtlsbackend_p.h"
 
-#include "../../../network-helpers.h"
+#include <QtTest/private/qtesthelpers_p.h>
 
 class tst_QSslServer : public QObject
 {
@@ -127,7 +127,7 @@ QSslConfiguration tst_QSslServer::createQSslConfiguration(QString keyFileName,
 
 void tst_QSslServer::testOneSuccessfulConnection()
 {
-    if (QtNetworkTestHelpers::isSecureTransportBlockingTest())
+    if (QTestPrivate::isSecureTransportBlockingTest())
         QSKIP("SecureTransport will block this test while requesting keychain access");
     // Setup server
     QSslConfiguration serverConfiguration = selfSignedServerQSslConfiguration();
@@ -208,7 +208,7 @@ void tst_QSslServer::testOneSuccessfulConnection()
 
 void tst_QSslServer::testSelfSignedCertificateRejectedByServer()
 {
-    if (QtNetworkTestHelpers::isSecureTransportBlockingTest())
+    if (QTestPrivate::isSecureTransportBlockingTest())
         QSKIP("SecureTransport will block this test while requesting keychain access");
     // Set up server that verifies client
     QSslConfiguration serverConfiguration = selfSignedServerQSslConfiguration();
@@ -263,7 +263,7 @@ void tst_QSslServer::testSelfSignedCertificateRejectedByServer()
 
 void tst_QSslServer::testSelfSignedCertificateRejectedByClient()
 {
-    if (QtNetworkTestHelpers::isSecureTransportBlockingTest())
+    if (QTestPrivate::isSecureTransportBlockingTest())
         QSKIP("SecureTransport will block this test while requesting keychain access");
     // Set up server without verification of client
     QSslConfiguration serverConfiguration = selfSignedServerQSslConfiguration();
@@ -498,7 +498,7 @@ void tst_QSslServer::quietClient()
 
 void tst_QSslServer::twoGoodAndManyBadClients()
 {
-    if (QtNetworkTestHelpers::isSecureTransportBlockingTest())
+    if (QTestPrivate::isSecureTransportBlockingTest())
         QSKIP("SecureTransport will block this test while requesting keychain access");
 
     QSslConfiguration serverConfiguration = selfSignedServerQSslConfiguration();

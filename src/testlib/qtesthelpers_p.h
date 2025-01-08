@@ -30,6 +30,14 @@
 #include <QtWidgets/QWidget>
 #endif
 
+#ifdef QT_NETWORK_LIB
+#if QT_CONFIG(ssl)
+#include <QtCore/qoperatingsystemversion.h>
+#include <QtCore/qsystemdetection.h>
+#include <QtNetwork/qsslsocket.h>
+#endif // QT_CONFIG(ssl)
+#endif // QT_NETWORK_LIB
+
 QT_BEGIN_NAMESPACE
 
 namespace QTestPrivate {
@@ -82,6 +90,31 @@ static inline void androidCompatibleShow(QWidget *widget)
 #endif
 }
 #endif // QT_WIDGETS_LIB
+
+#ifdef QT_NETWORK_LIB
+inline bool isSecureTransportBlockingTest()
+{
+#ifdef Q_OS_MACOS
+#if QT_CONFIG(ssl)
+    if (QSslSocket::activeBackend() == QLatin1String("securetransport")) {
+#if QT_MACOS_IOS_PLATFORM_SDK_EQUAL_OR_ABOVE(150000, 180000)
+        // Starting from macOS 15 our temporary keychain is ignored.
+        // We have to use kSecImportToMemoryOnly/kCFBooleanTrue key/value
+        // instead. This way we don't have to use QT_SSL_USE_TEMPORARY_KEYCHAIN anymore.
+        return false;
+#else
+        if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSSequoia) {
+            // We were built with SDK below 15, and running on/above 15, but file-based
+            // keychains are not working anymore on macOS 15, blocking the test execution.
+            return true;
+        }
+#endif // Platform SDK.
+    }
+#endif // QT_CONFIG(ssl)
+#endif // Q_OS_MACOS
+    return false;
+}
+#endif // QT_NETWORK_LIB
 
 } // namespace QTestPrivate
 
