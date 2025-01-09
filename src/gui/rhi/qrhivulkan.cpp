@@ -23,6 +23,7 @@ QT_WARNING_POP
 #include <qmath.h>
 #include <QVulkanFunctions>
 #include <QtGui/qwindow.h>
+#include <private/qvulkandefaultinstance_p.h>
 #include <optional>
 
 QT_BEGIN_NAMESPACE
@@ -407,6 +408,15 @@ QRhiVulkan::QRhiVulkan(QRhiVulkanInitParams *params, QRhiVulkanNativeHandles *im
     : ofr(this)
 {
     inst = params->inst;
+    if (!inst) {
+        // This builds on the fact that Qt Quick also uses QVulkanDefaultInstance. While
+        // this way we can support a null inst, it has consequences, so only do it with a
+        // warning. (e.g. if Qt Quick initializes afterwards, its attempt to set flags on
+        // QVulkanDefaultInstance will be futile)
+        qWarning("QRhi for Vulkan attempted to be initialized without a QVulkanInstance; using QVulkanDefaultInstance.");
+        inst = QVulkanDefaultInstance::instance();
+    }
+
     maybeWindow = params->window; // may be null
     requestedDeviceExtensions = params->deviceExtensions;
 
