@@ -398,7 +398,7 @@ void tst_QSaveFile::symlink()
         QSaveFile saveFile(linkFile);
         QVERIFY(saveFile.open(QIODevice::WriteOnly));
         QCOMPARE(saveFile.write(someData), someData.size());
-        saveFile.commit();
+        QVERIFY(saveFile.commit());
 
         //Check that the linkFile is still a link and still has the same canonical path
         QFileInfo info(linkFile);
@@ -417,7 +417,7 @@ void tst_QSaveFile::symlink()
         QSaveFile saveFile(linkFile);
         QVERIFY(saveFile.open(QIODevice::WriteOnly));
         QCOMPARE(saveFile.write(someData), someData.size());
-        saveFile.commit();
+        QVERIFY(saveFile.commit());
 
         QFileInfo info(linkFile);
         QVERIFY(info.isSymLink());
@@ -443,7 +443,7 @@ void tst_QSaveFile::symlink()
         QSaveFile saveFile(linkFile2);
         QVERIFY(saveFile.open(QIODevice::WriteOnly));
         QCOMPARE(saveFile.write(someData), someData.size());
-        saveFile.commit();
+        QVERIFY(saveFile.commit());
 
         QFile file(targetFile);
         QVERIFY2(file.open(QIODevice::ReadOnly), msgCannotOpen(file).constData());
@@ -457,7 +457,7 @@ void tst_QSaveFile::symlink()
         QSaveFile saveFile(cyclicLink);
         QVERIFY(saveFile.open(QIODevice::WriteOnly));
         QCOMPARE(saveFile.write(someData), someData.size());
-        saveFile.commit();
+        QVERIFY(saveFile.commit());
 
         QFile file(cyclicLink);
         QVERIFY2(file.open(QIODevice::ReadOnly), msgCannotOpen(file).constData());
@@ -472,7 +472,7 @@ void tst_QSaveFile::symlink()
         QSaveFile saveFile(cyclicLink + QLatin1Char('1'));
         QVERIFY(saveFile.open(QIODevice::WriteOnly));
         QCOMPARE(saveFile.write(someData), someData.size());
-        saveFile.commit();
+        QVERIFY(saveFile.commit());
 
         // the explicit file becomes a file instead of a link
         QVERIFY(!QFileInfo(cyclicLink + QLatin1Char('1')).isSymLink());
