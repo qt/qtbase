@@ -17,9 +17,11 @@ QVulkanDefaultInstance::Flags QVulkanDefaultInstance::flags()
     return s_vulkanInstanceFlags;
 }
 
-// As always, calling this when hasInstance() is already true has no effect. (unless cleanup() is called)
 void QVulkanDefaultInstance::setFlag(Flag flag, bool on)
 {
+    if (hasInstance())
+        qWarning("QVulkanDefaultInstance::setFlag called when Vulkan instance is already created; this has no effect");
+
     s_vulkanInstanceFlags.setFlag(flag, on);
 }
 
