@@ -17,19 +17,19 @@ QT_BEGIN_NAMESPACE
 namespace {
 
 // Convert TimeType and NameType into ICU UCalendarDisplayNameType
-constexpr UCalendarDisplayNameType ucalDisplayNameType(QTimeZone::TimeType timeType,
-                                                       QTimeZone::NameType nameType)
+UCalendarDisplayNameType ucalDisplayNameType(QTimeZone::TimeType timeType,
+                                             QTimeZone::NameType nameType)
 {
     // TODO ICU C UCalendarDisplayNameType does not support full set of C++ TimeZone::EDisplayType
     // For now, treat Generic as Standard
     switch (nameType) {
-    case QTimeZone::OffsetName:
-        Q_UNREACHABLE(); // Callers of ucalTimeZoneDisplayName() should take care of OffsetName.
     case QTimeZone::ShortName:
         return timeType == QTimeZone::DaylightTime ? UCAL_SHORT_DST : UCAL_SHORT_STANDARD;
     case QTimeZone::DefaultName:
     case QTimeZone::LongName:
         return timeType == QTimeZone::DaylightTime ? UCAL_DST : UCAL_STANDARD;
+    case QTimeZone::OffsetName:
+        Q_UNREACHABLE(); // Callers of ucalTimeZoneDisplayName() should take care of OffsetName.
     }
     Q_UNREACHABLE_RETURN(UCAL_STANDARD);
 }
