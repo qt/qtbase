@@ -140,6 +140,12 @@ static void destroy_current_thread_data(void *p)
     QThreadData *data = static_cast<QThreadData *>(p);
     QThread *thread = data->thread.loadAcquire();
 
+#ifdef Q_OS_APPLE
+    // apparent runtime bug: the trivial has been cleared and we end up
+    // recreating the QThreadData
+    currentThreadData = data;
+#endif
+
     if (data->isAdopted) {
         // If this is an adopted thread, then QThreadData owns the QThread and
         // this is very likely the last reference. These pointers cannot be
@@ -173,21 +179,32 @@ static QThreadData *get_thread_data()
     return currentThreadData;
 }
 
+namespace {
+struct PThreadTlsKey
+{
+    pthread_key_t key;
+    PThreadTlsKey() noexcept { pthread_key_create(&key, destroy_current_thread_data); }
+    ~PThreadTlsKey() { pthread_key_delete(key); }
+};
+}
+#if QT_SUPPORTS_INIT_PRIORITY
+Q_DECL_INIT_PRIORITY(10)
+#endif
+static PThreadTlsKey pthreadTlsKey; // intentional non-trivial init & destruction
+
 static void set_thread_data(QThreadData *data) noexcept
 {
     if (data) {
-        static pthread_key_t tls_key;
-        struct TlsKey {
-            TlsKey() noexcept { pthread_key_create(&tls_key, destroy_current_thread_data); }
-            ~TlsKey()
-            {
-                if (QThreadData *data = currentThreadData)
+        // As noted above: one global static for the thread that called
+        // ::exit() (which may not be a Qt thread) and the pthread_key_t for
+        // all others.
+        static struct Cleanup {
+            ~Cleanup() {
+                if (QThreadData *data = get_thread_data())
                     destroy_current_thread_data(data);
-                pthread_key_delete(tls_key);
             }
-        };
-        static TlsKey currentThreadCleanup;
-        pthread_setspecific(tls_key, data);
+        } currentThreadCleanup;
+        pthread_setspecific(pthreadTlsKey.key, data);
     }
     currentThreadData = data;
 }
