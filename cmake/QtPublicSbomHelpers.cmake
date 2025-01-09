@@ -3805,7 +3805,7 @@ function(_qt_internal_sbom_handle_purl_values target)
         # If handling another entity type, handle based on whether any of the purl arguments are
         # set.
         set(known_purl_variants QT MIRROR 3RDPARTY_UPSTREAM)
-        foreach(known_purl_variant IN_LIST known_purl_variants)
+        foreach(known_purl_variant IN LISTS known_purl_variants)
             if(arg_PURL_${known_purl_variant}_ARGS)
                 list(APPEND purl_variants ${known_purl_variant})
             endif()
