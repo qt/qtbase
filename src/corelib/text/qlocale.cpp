@@ -5082,19 +5082,48 @@ QStringList QLocale::uiLanguages(TagSeparator separator) const
         else if (!isSystem && min == id)
             --j; // Put more specific forms *before* minimal entry.
 
+        // Include various stripped-down versions when likely-equivalent and distinct:
         if (id.script_id) {
-            // Include scriptless version if likely-equivalent and distinct:
+            if (const ushort land = id.territory_id) {
+                // Keep script, omit territory:
+                id.territory_id = 0;
+                if (id != min && id.withLikelySubtagsAdded() == max) {
+                    if (const QByteArray name = id.name(sep); name != prior)
+                        uiLanguages.insert(j, QString::fromLatin1(name));
+                }
+                id.territory_id = land;
+            }
+            // Omit script (keep territory if present):
             id.script_id = 0;
-            if (id != min && id.withLikelySubtagsAdded() == max) {
+            // Belongs before script-without-territory, even if it duplicates min:
+            if (id.withLikelySubtagsAdded() == max) {
                 if (const QByteArray name = id.name(sep); name != prior)
                     uiLanguages.insert(j, QString::fromLatin1(name));
             }
+        } else {
+            id.script_id = max.script_id;
+            if (const ushort land = id.territory_id) {
+                // Supply script and omit territory:
+                id.territory_id = 0;
+                if (id != min && id.withLikelySubtagsAdded() == max) {
+                    if (const QByteArray name = id.name(sep); name != prior)
+                        uiLanguages.insert(j, QString::fromLatin1(name));
+                }
+                id.territory_id = land;
+            }
+            // Supply script (keep territory, if present):
+            if (id != max && id.withLikelySubtagsAdded() == max) {
+                if (const QByteArray name = id.name(sep); name != prior)
+                    uiLanguages.insert(j, QString::fromLatin1(name));
+            }
+            // Restore to clear:
+            id.script_id = 0;
         }
 
         if (!id.territory_id) {
+            // Supply territory, omit script:
             Q_ASSERT(!min.territory_id);
             Q_ASSERT(!id.script_id); // because we just cleared it.
-            // Include version with territory if likely-equivalent and distinct:
             id.territory_id = max.territory_id;
             if (id != max && id.withLikelySubtagsAdded() == max) {
                 if (const QByteArray name = id.name(sep); name != prior)
