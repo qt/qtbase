@@ -285,7 +285,7 @@ public:
     int keysToValue(const char *keys, bool *ok = nullptr) const;
     std::optional<quint64> keyToValue64(const char *key) const;
     std::optional<quint64> keysToValue64(const char *keys) const;
-#if QT_CORE_REMOVED_SINCE(6, 8)
+#if QT_CORE_REMOVED_SINCE(6, 9)
     const char *valueToKey(int value) const;
     QByteArray valueToKeys(int value) const;
 #endif
