@@ -444,7 +444,7 @@ void tst_QSaveFile::symlink()
 
     QVERIFY(QFile::link(targetFile, linkFile));
 
-    QString canonical = QFileInfo(linkFile).canonicalFilePath();
+    const QString canonical = QFileInfo(linkFile).canonicalFilePath();
     QCOMPARE(canonical, QFileInfo(targetFile).canonicalFilePath());
 
     // Try saving into it
