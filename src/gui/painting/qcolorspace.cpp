@@ -659,7 +659,7 @@ void QColorSpacePrivate::clearElementListProcessingForEdit()
 */
 
 /*!
-    \fn QColorSpace::PrimaryPoints QColorSpace::PrimaryPoints::fromPrimaries(QColorspace::Primaries primaries);
+    \fn QColorSpace::PrimaryPoints QColorSpace::PrimaryPoints::fromPrimaries(QColorSpace::Primaries primaries);
 
     Returns the four primary points making up \a primaries.
 */
