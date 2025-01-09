@@ -90,6 +90,7 @@ QSaveFile::QSaveFile(const QString &name)
 
 /*!
     Constructs a new file object with the given \a parent.
+    You need to call setFileName() before open().
 */
 QSaveFile::QSaveFile(QObject *parent)
     : QFileDevice(*new QSaveFilePrivate, parent)
