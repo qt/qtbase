@@ -1428,7 +1428,7 @@ QRect QTreeViewPrivate::intersectedRect(const QRect rect, const QModelIndex &top
                 if (idxRect.isNull())
                     continue;
                 // early exit when complete row is out of viewport
-                if (idxRect.top() > rect.bottom() && idxRect.bottom() < rect.top())
+                if (idxRect.top() > rect.bottom() || idxRect.bottom() < rect.top())
                     break;
                 if (!idxRect.intersects(rect))
                     continue;
@@ -1436,8 +1436,10 @@ QRect QTreeViewPrivate::intersectedRect(const QRect rect, const QModelIndex &top
                 if (rowRect.left() < rect.left() && rowRect.right() > rect.right())
                     break;
             }
-            left = std::min(left, rowRect.left());
-            right = std::max(right, rowRect.right());
+            if (rowRect.isValid()) {
+                left = std::min(left, rowRect.left());
+                right = std::max(right, rowRect.right());
+            }
         }
         updateRect = updateRect.united(rowRect);
         if (updateRect.contains(rect))  // already full rect covered?
