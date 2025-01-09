@@ -201,11 +201,9 @@
 #  define Q_DECL_PURE_FUNCTION __attribute__((pure))
 #  define Q_DECL_CONST_FUNCTION __attribute__((const))
 #  define Q_DECL_COLD_FUNCTION __attribute__((cold))
-#  if !defined(QT_MOC_CPP)
-#    define Q_PACKED __attribute__ ((__packed__))
-#    ifndef __ARM_EABI__
-#      define QT_NO_ARM_EABI
-#    endif
+#  define Q_PACKED __attribute__ ((__packed__))
+#  ifndef __ARM_EABI__
+#    define QT_NO_ARM_EABI
 #  endif
 #  if Q_CC_GNU >= 403 && !defined(Q_CC_CLANG)
 #      define Q_ALLOC_SIZE(x) __attribute__((alloc_size(x)))

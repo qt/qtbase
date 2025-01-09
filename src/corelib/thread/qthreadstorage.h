@@ -27,9 +27,6 @@ public:
     int id;
 };
 
-#if !defined(QT_MOC_CPP)
-// MOC_SKIP_BEGIN
-
 // pointer specialization
 template <typename T>
 inline
@@ -85,10 +82,6 @@ template <typename T>
 inline
 void qThreadStorage_deleteData(void *d, T *)
 { delete static_cast<T *>(d); }
-
-
-// MOC_SKIP_END
-#endif
 
 template <class T>
 class QThreadStorage
