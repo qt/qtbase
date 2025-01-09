@@ -56,6 +56,10 @@ private:
     QByteArray tagString() const { return tag().toString(); }
     void detach();
 
+#ifndef QT_NO_DEBUG_STREAM
+    Q_GUI_EXPORT friend QDebug operator<<(QDebug debug, const QFontVariableAxis &axis);
+#endif
+
     QExplicitlySharedDataPointer<QFontVariableAxisPrivate> d_ptr;
 };
 

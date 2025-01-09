@@ -3,6 +3,8 @@
 
 #include "qfontvariableaxis.h"
 
+#include <QtCore/qdebug.h>
+
 QT_BEGIN_NAMESPACE
 
 class QFontVariableAxisPrivate : public QSharedData
@@ -222,5 +224,25 @@ void QFontVariableAxis::detach()
 {
     d_ptr.detach();
 }
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug debug, const QFontVariableAxis &axis)
+{
+    QDebugStateSaver save(debug);
+
+    debug.nospace().noquote();
+    const QString name = axis.name();
+    if (!name.isEmpty())
+        debug << name << '(';
+
+    debug << axis.tag();
+    if (!name.isEmpty())
+        debug << ')';
+    debug << '[' << axis.minimumValue() << "..." << axis.maximumValue()
+          << "; default=" << axis.defaultValue() << ']';
+
+    return debug;
+}
+#endif
 
 QT_END_NAMESPACE
