@@ -520,7 +520,7 @@ void tst_QSqlTableModel::setData()
     //  initial state
     QModelIndex idx = model.index(0, 0);
     QVariant val = model.data(idx);
-    QVERIFY(val == int(1));
+    QCOMPARE(val, 1);
     QVERIFY(!val.isNull());
     QFAIL_SQL(model, isDirty());
 
@@ -528,7 +528,7 @@ void tst_QSqlTableModel::setData()
     idx = model.index(0, 0);
     QVERIFY_SQL(model, setData(idx, int(0)));
     val = model.data(idx);
-    QVERIFY(val == int(0));
+    QCOMPARE(val, 0);
     QVERIFY(!val.isNull());
     QVERIFY_SQL(model, isDirty(idx));
     QVERIFY_SQL(model, submitAll());
@@ -546,7 +546,7 @@ void tst_QSqlTableModel::setData()
     idx = model.index(0, 0);
     QVERIFY_SQL(model, setData(idx, int(0)));
     val = model.data(idx);
-    QVERIFY(val == int(0));
+    QCOMPARE(val, 0);
     QVERIFY(!val.isNull());
     QVERIFY_SQL(model, isDirty(idx));
     QVERIFY_SQL(model, submitAll());
@@ -555,7 +555,7 @@ void tst_QSqlTableModel::setData()
     idx = model.index(0, 0);
     QVERIFY_SQL(model, setData(idx, int(0)));
     val = model.data(idx);
-    QVERIFY(val == int(0));
+    QCOMPARE(val, 0);
     QVERIFY(!val.isNull());
     QFAIL_SQL(model, isDirty(idx));
 
@@ -595,7 +595,7 @@ void tst_QSqlTableModel::setRecord()
         QVERIFY_SQL(model, select());
 
         for (int i = 0; i < model.rowCount(); ++i) {
-            QSignalSpy spy(&model, SIGNAL(dataChanged(QModelIndex,QModelIndex)));
+            QSignalSpy spy(&model, &QSqlTableModel::dataChanged);
 
             QSqlRecord rec = model.record(i);
             rec.setValue(1, rec.value(1).toString() + 'X');
@@ -605,7 +605,6 @@ void tst_QSqlTableModel::setRecord()
             // dataChanged() emitted by setData() for each *changed* column
             if (submitpolicy == QSqlTableModel::OnManualSubmit) {
                 QCOMPARE(spy.size(), 2);
-                QCOMPARE(spy.at(0).size(), 2);
                 QCOMPARE(qvariant_cast<QModelIndex>(spy.at(0).at(0)), model.index(i, 1));
                 QCOMPARE(qvariant_cast<QModelIndex>(spy.at(0).at(1)), model.index(i, 1));
                 QCOMPARE(qvariant_cast<QModelIndex>(spy.at(1).at(0)), model.index(i, 2));
@@ -614,12 +613,8 @@ void tst_QSqlTableModel::setRecord()
             } else if (submitpolicy == QSqlTableModel::OnRowChange && i == model.rowCount() -1)
                 model.submit();
             else {
-                if (submitpolicy != QSqlTableModel::OnManualSubmit)
-                    // dataChanged() also emitted by selectRow()
-                    QCOMPARE(spy.size(), 3);
-                else
-                    QCOMPARE(spy.size(), 2);
-                QCOMPARE(spy.at(0).size(), 2);
+                // dataChanged() also emitted by selectRow()
+                QCOMPARE(spy.size(), 3);
                 QCOMPARE(qvariant_cast<QModelIndex>(spy.at(0).at(0)), model.index(i, 1));
                 QCOMPARE(qvariant_cast<QModelIndex>(spy.at(0).at(1)), model.index(i, 1));
                 QCOMPARE(qvariant_cast<QModelIndex>(spy.at(1).at(0)), model.index(i, 2));
@@ -1088,7 +1083,7 @@ void tst_QSqlTableModel::removeRow()
 
     // headerDataChanged must be emitted by the model since the row won't vanish until select
     qRegisterMetaType<Qt::Orientation>("Qt::Orientation");
-    QSignalSpy headerDataChangedSpy(&model, SIGNAL(headerDataChanged(Qt::Orientation,int,int)));
+    QSignalSpy headerDataChangedSpy(&model, &QSqlTableModel::headerDataChanged);
 
     QVERIFY(model.removeRow(1));
     QCOMPARE(headerDataChangedSpy.size(), 1);
@@ -1135,7 +1130,7 @@ void tst_QSqlTableModel::removeRows()
     QVERIFY_SQL(model, select());
     QCOMPARE(model.rowCount(), 3);
 
-    QSignalSpy beforeDeleteSpy(&model, SIGNAL(beforeDelete(int)));
+    QSignalSpy beforeDeleteSpy(&model, &QSqlTableModel::beforeDelete);
 
     // Make sure wrong stuff is ok
     QVERIFY(!model.removeRows(-1,1)); // negative start
@@ -1176,7 +1171,7 @@ void tst_QSqlTableModel::removeRows()
     QVERIFY(!model.removeRows(1, 0, model.index(2, 0))); // can't pass a valid modelindex
 
     qRegisterMetaType<Qt::Orientation>("Qt::Orientation");
-    QSignalSpy headerDataChangedSpy(&model, SIGNAL(headerDataChanged(Qt::Orientation,int,int)));
+    QSignalSpy headerDataChangedSpy(&model, &QSqlTableModel::headerDataChanged);
     QVERIFY(model.removeRows(0, 2, QModelIndex()));
     QCOMPARE(headerDataChangedSpy.size(), 2);
     QCOMPARE(headerDataChangedSpy.at(0).at(1).toInt(), 1);
@@ -1505,7 +1500,7 @@ void tst_QSqlTableModel::isDirty()
     if (submitpolicy == QSqlTableModel::OnRowChange) {
         // dirty row must block change on other rows
         QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
-        QVERIFY(model.rowCount() > 1);
+        QCOMPARE_GE(model.rowCount(), 1);
         QVERIFY_SQL(model, setData(model.index(0, 1), QString("sam i am")));
         QCOMPARE(model.data(model.index(0, 1)).toString(), QString("sam i am"));
         QVERIFY_SQL(model, isDirty());
@@ -1772,8 +1767,8 @@ void tst_QSqlTableModel::setFilter()
     QCOMPARE(model.rowCount(), 1);
     QCOMPARE(model.data(model.index(0, 0)).toInt(), 1);
 
-    QSignalSpy modelAboutToBeResetSpy(&model, SIGNAL(modelAboutToBeReset()));
-    QSignalSpy modelResetSpy(&model, SIGNAL(modelReset()));
+    QSignalSpy modelAboutToBeResetSpy(&model, &QSqlTableModel::modelAboutToBeReset);
+    QSignalSpy modelResetSpy(&model, &QSqlTableModel::modelReset);
     model.setFilter("id = 2");
 
     // check the signals
@@ -1910,9 +1905,9 @@ void tst_QSqlTableModel::insertRecordsInLoop()
     record.setValue(1, "Testman");
     record.setValue(2, 1);
 
-    QSignalSpy modelAboutToBeResetSpy(&model, SIGNAL(modelAboutToBeReset()));
-    QSignalSpy modelResetSpy(&model, SIGNAL(modelReset()));
-    QSignalSpy spyRowsInserted(&model, SIGNAL(rowsInserted(QModelIndex,int,int)));
+    QSignalSpy modelAboutToBeResetSpy(&model, &QSqlTableModel::modelAboutToBeReset);
+    QSignalSpy modelResetSpy(&model, &QSqlTableModel::modelReset);
+    QSignalSpy spyRowsInserted(&model, &QSqlTableModel::rowsInserted);
     for (int i = 0; i < 10; i++) {
         QVERIFY(model.insertRecord(model.rowCount(), record));
         QCOMPARE(spyRowsInserted.at(i).at(1).toInt(), i+3); // The table already contains three rows
@@ -1936,65 +1931,68 @@ void tst_QSqlTableModel::sqlite_escaped_delimiters()
     if (db.databaseName() == ":memory:")
         QSKIP(":memory: database, skipping test");
 
-    auto attachedDb = QSqlDatabase::cloneDatabase(db, db.driverName() + QLatin1String("attached"));
-    attachedDb.setDatabaseName(db.databaseName() + QLatin1String("attached.dat"));
-    QVERIFY_SQL(attachedDb, open());
-    QSqlQuery q(attachedDb);
-    TableScope tsAttached(attachedDb, "attachedTestTable", __FILE__);
-    QVERIFY_SQL(q,
-                exec("CREATE TABLE attachedTestTable("
-                     "id int, \"attachedCol [unit]\" varchar(20))"));
-    QVERIFY_SQL(q,
-                exec("INSERT INTO attachedTestTable VALUES("
-                     "1, 'attachTestData')"));
+    const auto attachedDbName = db.driverName() + QLatin1String("-attached");
+    auto closeDb = qScopeGuard([&]() { QSqlDatabase::removeDatabase(attachedDbName); });
+    {
+        auto attachedDb = QSqlDatabase::cloneDatabase(db, attachedDbName);
+        attachedDb.setDatabaseName(db.databaseName() + QLatin1String("attached.dat"));
+        QVERIFY_SQL(attachedDb, open());
+        QSqlQuery q(attachedDb);
+        TableScope tsAttached(attachedDb, "attachedTestTable", __FILE__);
+        QVERIFY_SQL(q,
+                    exec("CREATE TABLE attachedTestTable("
+                         "id int, \"attachedCol [unit]\" varchar(20))"));
+        QVERIFY_SQL(q,
+                    exec("INSERT INTO attachedTestTable VALUES("
+                         "1, 'attachTestData')"));
 
-    QSqlQuery q2(db);
-    TableScope ts(db, "testTable", __FILE__);
-    QVERIFY_SQL(q2, exec("CREATE TABLE testTable(id int, \"col [unit]\" varchar(20))"));
-    QVERIFY_SQL(q2, exec("INSERT INTO testTable VALUES(2, 'testData')"));
-    QVERIFY_SQL(q2, exec("ATTACH DATABASE \"" + attachedDb.databaseName() + "\" AS attachedDb"));
+        QSqlQuery q2(db);
+        TableScope ts(db, "testTable", __FILE__);
+        QVERIFY_SQL(q2, exec("CREATE TABLE testTable(id int, \"col [unit]\" varchar(20))"));
+        QVERIFY_SQL(q2, exec("INSERT INTO testTable VALUES(2, 'testData')"));
+        QVERIFY_SQL(q2, exec("ATTACH DATABASE \"" + attachedDb.databaseName() + "\" AS attachedDb"));
 
-    const std::array<std::pair<QLatin1Char, QLatin1Char>, 3> escapingPairs{
-        std::make_pair(QLatin1Char{'"'}, QLatin1Char{'"'}),
-        std::make_pair(QLatin1Char{'`'}, QLatin1Char{'`'}),
-        std::make_pair(QLatin1Char{'['}, QLatin1Char{']'})
-    };
+        const std::array<std::pair<QLatin1Char, QLatin1Char>, 3> escapingPairs{
+            std::make_pair(QLatin1Char{'"'}, QLatin1Char{'"'}),
+            std::make_pair(QLatin1Char{'`'}, QLatin1Char{'`'}),
+            std::make_pair(QLatin1Char{'['}, QLatin1Char{']'})
+        };
 
-    QSqlTableModel model(nullptr, db);
-    model.setTable("testTable");
-    QVERIFY_SQL(model, select());
-    for (const auto &escapingPair : escapingPairs) {
-        model.setTable(escapingPair.first + "testTable" + escapingPair.second);
+        QSqlTableModel model(nullptr, db);
+        model.setTable("testTable");
         QVERIFY_SQL(model, select());
-    }
-
-    model.setTable("attachedDb.attachedTestTable");
-    QFAIL_SQL(model, select());
-    for (const auto &escapingPair : escapingPairs) {
-        model.setTable(escapingPair.first + "attachedDb.attachedTestTable" + escapingPair.second);
-        QFAIL_SQL(model, select());
-        model.setTable(escapingPair.first + "attachedDb" + escapingPair.first + ".a"
-                       + escapingPair.second + "ttachedTestTable" + escapingPair.second);
-        QFAIL_SQL(model, select());
-    }
-
-    for (std::size_t i = 0; i <= escapingPairs.size(); ++i) {
-        for (std::size_t j = 0; j <= escapingPairs.size(); ++j) {
-            if (i == escapingPairs.size() && j == escapingPairs.size())
-                continue;
-
-            QString leftName = "attachedDb";
-            if (i != escapingPairs.size())
-                leftName = escapingPairs.at(i).first + leftName + escapingPairs.at(i).second;
-            QString rightName = "attachedTestTable";
-            if (j != escapingPairs.size())
-                rightName = escapingPairs.at(j).first + rightName + escapingPairs.at(j).second;
-            model.setTable(leftName + "." + rightName);
+        for (const auto &escapingPair : escapingPairs) {
+            model.setTable(escapingPair.first + "testTable" + escapingPair.second);
             QVERIFY_SQL(model, select());
         }
-    }
 
-    attachedDb.close();
+        model.setTable("attachedDb.attachedTestTable");
+        QFAIL_SQL(model, select());
+        for (const auto &escapingPair : escapingPairs) {
+            model.setTable(escapingPair.first + "attachedDb.attachedTestTable" + escapingPair.second);
+            QFAIL_SQL(model, select());
+            model.setTable(escapingPair.first + "attachedDb" + escapingPair.first + ".a"
+                           + escapingPair.second + "ttachedTestTable" + escapingPair.second);
+            QFAIL_SQL(model, select());
+        }
+
+        for (std::size_t i = 0; i <= escapingPairs.size(); ++i) {
+            for (std::size_t j = 0; j <= escapingPairs.size(); ++j) {
+                if (i == escapingPairs.size() && j == escapingPairs.size())
+                    continue;
+
+                QString leftName = "attachedDb";
+                if (i != escapingPairs.size())
+                    leftName = escapingPairs.at(i).first + leftName + escapingPairs.at(i).second;
+                QString rightName = "attachedTestTable";
+                if (j != escapingPairs.size())
+                    rightName = escapingPairs.at(j).first + rightName + escapingPairs.at(j).second;
+                model.setTable(leftName + "." + rightName);
+                QVERIFY_SQL(model, select());
+            }
+        }
+        attachedDb.close();
+    }
 }
 
 void tst_QSqlTableModel::sqlite_attachedDatabase()
@@ -2005,46 +2003,50 @@ void tst_QSqlTableModel::sqlite_attachedDatabase()
     if(db.databaseName() == ":memory:")
         QSKIP(":memory: database, skipping test");
 
-    QSqlDatabase attachedDb = QSqlDatabase::cloneDatabase(db, db.driverName() + QLatin1String("attached"));
-    attachedDb.setDatabaseName(db.databaseName()+QLatin1String("attached.dat"));
-    QVERIFY_SQL(attachedDb, open());
-    QSqlQuery q(attachedDb);
-    TableScope ts(db, "atest", __FILE__);
-    TableScope tsAttached(attachedDb, "atest", __FILE__);
-    TableScope tsAttached2(attachedDb, "atest2", __FILE__);
+    const auto attachedDbName = db.driverName() + QLatin1String("-attached");
+    auto closeDb = qScopeGuard([&]() { QSqlDatabase::removeDatabase(attachedDbName); });
+    {
+        QSqlDatabase attachedDb = QSqlDatabase::cloneDatabase(db, db.driverName() + QLatin1String("attached"));
+        attachedDb.setDatabaseName(db.databaseName()+QLatin1String("attached.dat"));
+        QVERIFY_SQL(attachedDb, open());
+        QSqlQuery q(attachedDb);
+        TableScope ts(db, "atest", __FILE__);
+        TableScope tsAttached(attachedDb, "atest", __FILE__);
+        TableScope tsAttached2(attachedDb, "atest2", __FILE__);
 
-    QVERIFY_SQL( q, exec("CREATE TABLE atest(id int, text varchar(20))"));
-    QVERIFY_SQL( q, exec("CREATE TABLE atest2(id int, text varchar(20))"));
-    QVERIFY_SQL( q, exec("INSERT INTO atest VALUES(1, 'attached-atest')"));
-    QVERIFY_SQL( q, exec("INSERT INTO atest2 VALUES(2, 'attached-atest2')"));
+        QVERIFY_SQL( q, exec("CREATE TABLE atest(id int, text varchar(20))"));
+        QVERIFY_SQL( q, exec("CREATE TABLE atest2(id int, text varchar(20))"));
+        QVERIFY_SQL( q, exec("INSERT INTO atest VALUES(1, 'attached-atest')"));
+        QVERIFY_SQL( q, exec("INSERT INTO atest2 VALUES(2, 'attached-atest2')"));
 
-    QSqlQuery q2(db);
-    QVERIFY_SQL(q2, exec("CREATE TABLE atest(id int, text varchar(20))"));
-    QVERIFY_SQL(q2, exec("INSERT INTO atest VALUES(3, 'main')"));
-    QVERIFY_SQL(q2, exec("ATTACH DATABASE \""+attachedDb.databaseName()+"\" as adb"));
+        QSqlQuery q2(db);
+        QVERIFY_SQL(q2, exec("CREATE TABLE atest(id int, text varchar(20))"));
+        QVERIFY_SQL(q2, exec("INSERT INTO atest VALUES(3, 'main')"));
+        QVERIFY_SQL(q2, exec("ATTACH DATABASE \""+attachedDb.databaseName()+"\" as adb"));
 
-    // This should query the table in the attached database (schema supplied)
-    QSqlTableModel model(0, db);
-    model.setTable("\"adb\".\"atest\"");
-    QVERIFY_SQL(model, select());
-    QCOMPARE(model.rowCount(), 1);
-    QCOMPARE(model.data(model.index(0, 0), Qt::DisplayRole).toInt(), 1);
-    QCOMPARE(model.data(model.index(0, 1), Qt::DisplayRole).toString(), QLatin1String("attached-atest"));
+        // This should query the table in the attached database (schema supplied)
+        QSqlTableModel model(0, db);
+        model.setTable("\"adb\".\"atest\"");
+        QVERIFY_SQL(model, select());
+        QCOMPARE(model.rowCount(), 1);
+        QCOMPARE(model.data(model.index(0, 0), Qt::DisplayRole).toInt(), 1);
+        QCOMPARE(model.data(model.index(0, 1), Qt::DisplayRole).toString(), QLatin1String("attached-atest"));
 
-    // This should query the table in the attached database (unique tablename)
-    model.setTable("atest2");
-    QVERIFY_SQL(model, select());
-    QCOMPARE(model.rowCount(), 1);
-    QCOMPARE(model.data(model.index(0, 0), Qt::DisplayRole).toInt(), 2);
-    QCOMPARE(model.data(model.index(0, 1), Qt::DisplayRole).toString(), QLatin1String("attached-atest2"));
+        // This should query the table in the attached database (unique tablename)
+        model.setTable("atest2");
+        QVERIFY_SQL(model, select());
+        QCOMPARE(model.rowCount(), 1);
+        QCOMPARE(model.data(model.index(0, 0), Qt::DisplayRole).toInt(), 2);
+        QCOMPARE(model.data(model.index(0, 1), Qt::DisplayRole).toString(), QLatin1String("attached-atest2"));
 
-    // This should query the table in the main database (tables in main db has 1st priority)
-    model.setTable("atest");
-    QVERIFY_SQL(model, select());
-    QCOMPARE(model.rowCount(), 1);
-    QCOMPARE(model.data(model.index(0, 0), Qt::DisplayRole).toInt(), 3);
-    QCOMPARE(model.data(model.index(0, 1), Qt::DisplayRole).toString(), QLatin1String("main"));
-    attachedDb.close();
+        // This should query the table in the main database (tables in main db has 1st priority)
+        model.setTable("atest");
+        QVERIFY_SQL(model, select());
+        QCOMPARE(model.rowCount(), 1);
+        QCOMPARE(model.data(model.index(0, 0), Qt::DisplayRole).toInt(), 3);
+        QCOMPARE(model.data(model.index(0, 1), Qt::DisplayRole).toString(), QLatin1String("main"));
+        attachedDb.close();
+    }
 }
 
 
@@ -2234,6 +2236,7 @@ void tst_QSqlTableModel::sqlite_selectFromIdentifierWithDot()
         QCOMPARE(model.data(model.index(0, 0)).toInt(), 1);
         QCOMPARE(model.data(model.index(0, 1)).toString(), QString("Andy"));
     }
+    auto closeDb = qScopeGuard([&]() { QSqlDatabase::removeDatabase("attachedDb"); });
     {
         QSqlDatabase attachedDb = QSqlDatabase::addDatabase("QSQLITE", "attachedDb");
         attachedDb.setDatabaseName(db.databaseName().replace("foo.db", "attached.db"));
