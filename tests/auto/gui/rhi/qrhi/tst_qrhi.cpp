@@ -5262,6 +5262,13 @@ void tst_QRhi::threeDimTexture()
     QFETCH(QRhi::Implementation, impl);
     QFETCH(QRhiInitParams *, initParams);
 
+#ifdef Q_OS_ANDROID
+    if (impl == QRhi::OpenGLES2) {
+        QSKIP("This test fails with OpenGLES software rendering on Android emulators, "
+          "see QTBUG-132934.");
+    }
+#endif
+
     QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams));
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing 3D textures");
