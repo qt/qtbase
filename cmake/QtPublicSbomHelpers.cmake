@@ -1079,7 +1079,7 @@ function(_qt_internal_sbom_handle_target_dependencies target)
     if(target_type IN_LIST valid_target_types)
         get_target_property(link_libraries "${target}" LINK_LIBRARIES)
         if(link_libraries)
-            list(APPEND libraries ${link_Libraries})
+            list(APPEND libraries ${link_libraries})
         endif()
     endif()
 
