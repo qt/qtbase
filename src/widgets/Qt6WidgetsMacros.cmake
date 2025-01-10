@@ -130,13 +130,10 @@ function(qt6_add_ui target)
                 "${raw_include_prefix_to_compare}")
         endif()
 
-        file(RELATIVE_PATH normalized_include_prefix
-            "${dummy_path_for_relative_calculation}"
-            "${raw_include_prefix_to_compare}")
-
-        # if normalized_include_prefix ends with `/` remove it
-        string(REGEX REPLACE "/$" "" normalized_include_prefix
-            "${normalized_include_prefix}")
+        _qt_internal_relative_path(raw_include_prefix_to_compare
+            BASE_DIRECTORY "${dummy_path_for_relative_calculation}"
+            OUTPUT_VARIABLE normalized_include_prefix
+        )
 
         _qt_internal_generate_dash_path_from_input("${normalized_include_prefix}"
             additional_path)
