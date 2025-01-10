@@ -29,6 +29,12 @@ function(_qt_internal_sbom_handle_target_binary_files target)
         return()
     endif()
 
+    if(QT_SBOM_SKIP_BINARY_FILES)
+        message(DEBUG "Skipping sbom target file processing ${target} because "
+            "QT_SBOM_SKIP_BINARY_FILES is set")
+        return()
+    endif()
+
     set(supported_types
         QT_MODULE
         QT_PLUGIN
@@ -265,9 +271,14 @@ function(_qt_internal_sbom_add_binary_file target file_path)
     set(relationships "${arg_PACKAGE_SPDX_ID} CONTAINS ${spdx_id}")
 
     # Add source file relationships from which the binary file was generated.
-    _qt_internal_sbom_add_target_source_files("${target}" "${spdx_id}" source_relationships)
-    if(source_relationships)
-        list(APPEND relationships "${source_relationships}")
+    if(NOT QT_SBOM_SKIP_SOURCE_FILES)
+        _qt_internal_sbom_add_target_source_files("${target}" "${spdx_id}" source_relationships)
+        if(source_relationships)
+            list(APPEND relationships "${source_relationships}")
+        endif()
+    else()
+        message(DEBUG "Skipping sbom source file processing for file '${file_path}' because "
+            "QT_SBOM_SKIP_SOURCE_FILES is set")
     endif()
 
     set(glue "\nRelationship: ")
@@ -362,6 +373,12 @@ function(_qt_internal_sbom_handle_target_custom_files target)
     if(arg_NO_INSTALL)
         message(DEBUG "Skipping sbom custom file processing for ${target} because NO_INSTALL is "
             "set")
+        return()
+    endif()
+
+    if(QT_SBOM_SKIP_CUSTOM_FILES)
+        message(DEBUG "Skipping sbom custom file processing ${target} because "
+            "QT_SBOM_SKIP_BINARY_FILES is set")
         return()
     endif()
 
@@ -639,11 +656,17 @@ function(_qt_internal_sbom_add_custom_file target installed_file_relative_path)
         set(sources_option SOURCES ${arg_SOURCE_FILES})
     endif()
 
-    _qt_internal_sbom_add_source_files(
-        ${sources_option}
-        SPDX_ID "${spdx_id}"
-        OUT_RELATIONSHIPS_VAR source_relationships
-    )
+    # Add source file relationships from which the binary file was generated.
+    if(NOT QT_SBOM_SKIP_SOURCE_FILES)
+        _qt_internal_sbom_add_source_files(
+            ${sources_option}
+            SPDX_ID "${spdx_id}"
+            OUT_RELATIONSHIPS_VAR source_relationships
+        )
+    else()
+        message(DEBUG "Skipping sbom source file processing for file "
+            "'${installed_file_relative_path}' because QT_SBOM_SKIP_SOURCE_FILES is set")
+    endif()
 
     if(source_relationships)
         list(APPEND relationships "${source_relationships}")
