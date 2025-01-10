@@ -76,7 +76,7 @@ function(_qt_internal_sbom_handle_target_dependencies target)
     list(REMOVE_DUPLICATES all_direct_libraries)
 
     set(spdx_dependencies "")
-    set(relationships "")
+    set(external_spdx_dependencies "")
 
     # Go through each direct linked lib.
     foreach(direct_lib IN LISTS all_direct_libraries)
@@ -84,63 +84,13 @@ function(_qt_internal_sbom_handle_target_dependencies target)
             continue()
         endif()
 
-        # Some targets are Qt modules, even though they are not prefixed with Qt::, targets
-        # like Bootstrap and QtLibraryInfo. We use the property to differentiate them.
-        get_target_property(is_marked_as_qt_module "${direct_lib}" _qt_sbom_is_qt_module)
+        # Check for Qt-specific system library targets. These are marked via qt_find_package calls.
+        get_target_property(is_system_library "${direct_lib}" _qt_internal_sbom_is_system_library)
+        if(is_system_library)
 
-        # Custom sbom targets created by _qt_internal_create_sbom_target are always imported, so we
-        # need to differentiate them via this property.
-        get_target_property(is_custom_sbom_target "${direct_lib}" _qt_sbom_is_custom_sbom_target)
-
-        if("${direct_lib}" MATCHES "^(Qt::.*)|(${QT_CMAKE_EXPORT_NAMESPACE}::.*)")
-            set(is_qt_prefixed TRUE)
-        else()
-            set(is_qt_prefixed FALSE)
-        endif()
-
-        # is_qt_dependency is not strictly only a qt dependency, it applies to custom sbom
-        # targets as well. But I'm having a hard time to come up with a better name.
-        if(is_marked_as_qt_module OR is_custom_sbom_target OR is_qt_prefixed)
-            set(is_qt_dependency TRUE)
-        else()
-            set(is_qt_dependency FALSE)
-        endif()
-
-        # Regular Qt dependency, depend on the relevant package, either within the current
-        # document or via an external document.
-        if(is_qt_dependency)
-            _qt_internal_sbom_is_external_target_dependency("${direct_lib}"
-                OUT_VAR is_dependency_in_external_document
-            )
-
-            if(is_dependency_in_external_document)
-                # External document case.
-                _qt_internal_sbom_add_external_target_dependency(
-                    "${package_spdx_id}" "${direct_lib}"
-                    extra_spdx_dependencies
-                    extra_spdx_relationships
-                )
-                if(extra_spdx_dependencies)
-                    list(APPEND spdx_dependencies "${extra_spdx_dependencies}")
-                endif()
-                if(extra_spdx_relationships)
-                    list(APPEND relationships "${extra_spdx_relationships}")
-                endif()
-            else()
-                # Dependency is part of current repo build.
-                _qt_internal_sbom_get_spdx_id_for_target("${direct_lib}" dep_spdx_id)
-                if(dep_spdx_id)
-                    list(APPEND spdx_dependencies "${dep_spdx_id}")
-                else()
-                    message(DEBUG "Could not add target dependency on ${direct_lib} "
-                        "because no spdx id could be found")
-                endif()
-            endif()
-        else()
-            # If it's not a Qt dependency, then it's most likely a 3rd party dependency.
-            # If we are looking at a FindWrap dependency, we need to depend on either
-            # the system or vendored lib, whichever one the FindWrap script points to.
-            # If we are looking at a non-Wrap dependency, it's 99% a system lib.
+            # We need to check if the dependency is a FindWrap dependency that points either to a
+            # system library or a vendored / bundled library. We need to depend on whichever one
+            # the FindWrap script points to.
             __qt_internal_walk_libs(
                 "${direct_lib}"
                 lib_walked_targets
@@ -162,50 +112,59 @@ function(_qt_internal_sbom_handle_target_dependencies target)
                         set(bundled_targets_found TRUE)
                     endif()
                 endforeach()
+
+                if(bundled_targets_found)
+                    # If we handled a bundled target, we can move on to process the next direct_lib.
+                    continue()
+                endif()
             endif()
 
-            # If no bundled libs were found as a result of walking the Wrap lib, we consider this
-            # a system lib, and add a dependency on it directly.
             if(NOT bundled_targets_found)
-                _qt_internal_sbom_get_spdx_id_for_target("${direct_lib}" lib_spdx_id)
-                _qt_internal_sbom_is_external_target_dependency("${direct_lib}"
-                    SYSTEM_LIBRARY
-                    OUT_VAR is_dependency_in_external_document
+                # If we haven't found a bundled target, then it's a regular system library
+                # dependency. Make sure to mark the system library as consumed, so that we later
+                # generate an sbom for it.
+                # Also fall through to the code that actually adds the dependency on the target.
+                _qt_internal_append_to_cmake_property_without_duplicates(
+                    _qt_internal_sbom_consumed_system_library_targets
+                    "${direct_lib}"
                 )
+            endif()
+        endif()
 
-                if(lib_spdx_id)
-                    if(NOT is_dependency_in_external_document)
-                        list(APPEND spdx_dependencies "${lib_spdx_id}")
+        # Get the spdx id of the dependency.
+        _qt_internal_sbom_get_spdx_id_for_target("${direct_lib}" lib_spdx_id)
+        if(NOT lib_spdx_id)
+            message(DEBUG "Could not add target dependency on target ${direct_lib} "
+                "because no spdx id for it could be found.")
+            continue()
+        endif()
 
-                        # Mark the system library is used, so that we later generate an sbom for it.
-                        _qt_internal_append_to_cmake_property_without_duplicates(
-                            _qt_internal_sbom_consumed_system_library_targets
-                            "${direct_lib}"
-                        )
-                    else()
-                        # Refer to the package in the external document. This can be the case
-                        # in a top-level build, where a system library is reused across repos.
-                        _qt_internal_sbom_add_external_target_dependency(
-                            "${package_spdx_id}" "${direct_lib}"
-                            extra_spdx_dependencies
-                            extra_spdx_relationships
-                        )
-                        if(extra_spdx_dependencies)
-                            list(APPEND spdx_dependencies "${extra_spdx_dependencies}")
-                        endif()
-                        if(extra_spdx_relationships)
-                            list(APPEND relationships "${extra_spdx_relationships}")
-                        endif()
-                    endif()
-                else()
-                    message(DEBUG "Could not add target dependency on system library ${direct_lib} "
-                        "because no spdx id could be found")
-                endif()
+        # Check if the target sbom is defined in an external document.
+
+        _qt_internal_sbom_is_external_target_dependency("${direct_lib}"
+            OUT_VAR is_dependency_in_external_document
+        )
+
+        if(NOT is_dependency_in_external_document)
+            # If the target is not in the external document, it must be one built as part of the
+            # current project.
+            list(APPEND spdx_dependencies "${lib_spdx_id}")
+        else()
+            # Refer to the package in the external document. This can be the case
+            # in a top-level build, where a system library is reused across repos, or for any
+            # regular dependency that was built as part of a different project.
+            _qt_internal_sbom_add_external_target_dependency("${direct_lib}"
+                extra_spdx_dependencies
+            )
+            if(extra_spdx_dependencies)
+                list(APPEND external_spdx_dependencies ${extra_spdx_dependencies})
             endif()
         endif()
     endforeach()
 
-    foreach(dep_spdx_id IN LISTS spdx_dependencies)
+    set(relationships "")
+    # Keep the external dependencies first, so they are neatly ordered.
+    foreach(dep_spdx_id IN LISTS external_spdx_dependencies spdx_dependencies)
         set(relationship
             "${package_spdx_id} DEPENDS_ON ${dep_spdx_id}"
         )
@@ -242,41 +201,22 @@ function(_qt_internal_sbom_is_external_target_dependency target)
         set(part_of_other_repo FALSE)
     endif()
 
-    # A target is in an external document if
-    # 1) it is imported, and not a custom sbom target, and not a system library
-    # 2) it was created as part of another repo in a top-level build
-    if((is_imported AND NOT is_custom_sbom_target AND NOT arg_SYSTEM_LIBRARY)
-            OR part_of_other_repo)
-        set(is_dependency_in_external_document TRUE)
-    else()
-        set(is_dependency_in_external_document FALSE)
-    endif()
-
-    set(${arg_OUT_VAR} "${is_dependency_in_external_document}" PARENT_SCOPE)
+    set(${arg_OUT_VAR} "${part_of_other_repo}" PARENT_SCOPE)
 endfunction()
 
 # Handles generating an external document reference SDPX element for each target package that is
 # located in a different spdx document.
-function(_qt_internal_sbom_add_external_target_dependency
-        current_package_spdx_id
-        target_dep
-        out_spdx_dependencies
-        out_spdx_relationships
-    )
-    set(target "${target_dep}")
-
+function(_qt_internal_sbom_add_external_target_dependency target out_spdx_dependencies)
     _qt_internal_sbom_get_spdx_id_for_target("${target}" dep_spdx_id)
 
     if(NOT dep_spdx_id)
         message(DEBUG "Could not add external target dependency on ${target} "
             "because no spdx id could be found")
         set(${out_spdx_dependencies} "" PARENT_SCOPE)
-        set(${out_spdx_relationships} "" PARENT_SCOPE)
         return()
     endif()
 
     set(spdx_dependencies "")
-    set(spdx_relationships "")
 
     # Get the external document path and the repo it belongs to for the given target.
     get_property(relative_installed_repo_document_path TARGET ${target}
@@ -292,10 +232,9 @@ function(_qt_internal_sbom_add_external_target_dependency
         get_cmake_property(known_external_document
             _qt_known_external_documents_${external_document_ref})
 
-        set(relationship
-            "${current_package_spdx_id} DEPENDS_ON ${external_document_ref}:${dep_spdx_id}")
+        set(dependency "${external_document_ref}:${dep_spdx_id}")
 
-        list(APPEND spdx_relationships "${relationship}")
+        list(APPEND spdx_dependencies "${dependency}")
 
         # Only add a reference to the external document package, if we haven't done so already.
         if(NOT known_external_document)
@@ -318,10 +257,9 @@ function(_qt_internal_sbom_add_external_target_dependency
                 _qt_known_external_documents "${external_document_ref}")
         endif()
     else()
-        message(WARNING "Missing spdx document path for external ref: "
-            "package_name_for_spdx_id ${package_name_for_spdx_id} direct_lib ${direct_lib}")
+        message(AUTHOR_WARNING
+            "Missing spdx document path for external target dependency: ${target}")
     endif()
 
     set(${out_spdx_dependencies} "${spdx_dependencies}" PARENT_SCOPE)
-    set(${out_spdx_relationships} "${spdx_relationships}" PARENT_SCOPE)
 endfunction()
