@@ -697,3 +697,57 @@ function(_qt_internal_add_transitive_property target type property)
             APPEND PROPERTY TRANSITIVE_${type}_PROPERTIES ${property})
     endif()
 endfunction()
+
+# Compatibility of `cmake_path(RELATIVE_PATH)`
+#
+# In order to be compatible with `file(RELATIVE_PATH)`, path normalization of the result is
+# always performed, with the trailing slash stripped.
+#
+# Synopsis
+#
+#   _qt_internal_relative_path(<path-var>
+#       [BASE_DIRECTORY <input>]
+#       [OUTPUT_VARIABLE <out-var>]
+#   )
+#
+# Arguments
+#
+# `path-var`
+#   Equivalent to `cmake_path(RELATIVE_PATH <path-var>)`.
+#
+# `BASE_DIRECTORY`
+#   Equivalent to `cmake_path(RELATIVE_PATH BASE_DIRECTORY)`.
+#
+# `OUTPUT_VARIABLE`
+#   Equivalent to `cmake_path(RELATIVE_PATH OUTPUT_VARIABLE)`.
+function(_qt_internal_relative_path path_var)
+    set(option_args "")
+    set(single_args
+        BASE_DIRECTORY
+        OUTPUT_VARIABLE
+    )
+    set(multi_args "")
+    cmake_parse_arguments(PARSE_ARGV 1 arg "${option_args}" "${single_args}" "${multi_args}")
+
+    if(NOT arg_BASE_DIRECTORY)
+        set(arg_BASE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+    endif()
+    if(NOT arg_OUTPUT_VARIABLE)
+        set(arg_OUTPUT_VARIABLE ${path_var})
+    endif()
+
+    if(CMAKE_VERSION VERSION_LESS 3.20)
+        file(RELATIVE_PATH ${arg_OUTPUT_VARIABLE}
+            "${arg_BASE_DIRECTORY}"
+            "${${path_var}}")
+    else()
+        cmake_path(RELATIVE_PATH ${path_var}
+            BASE_DIRECTORY "${arg_BASE_DIRECTORY}"
+            OUTPUT_VARIABLE ${arg_OUTPUT_VARIABLE}
+        )
+        cmake_path(NORMAL_PATH ${arg_OUTPUT_VARIABLE})
+        string(REGEX REPLACE "/$" "" ${arg_OUTPUT_VARIABLE}
+                "${${arg_OUTPUT_VARIABLE}}")
+    endif()
+    set(${arg_OUTPUT_VARIABLE} "${${arg_OUTPUT_VARIABLE}}" PARENT_SCOPE)
+endfunction()
