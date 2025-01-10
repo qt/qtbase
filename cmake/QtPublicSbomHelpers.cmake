@@ -529,6 +529,7 @@ macro(_qt_internal_get_sbom_add_target_common_options opt_args single_args multi
     set(${single_args}
         PACKAGE_VERSION
         FRIENDLY_PACKAGE_NAME
+        SUPPLIER
         CPE_VENDOR
         CPE_PRODUCT
         LICENSE_EXPRESSION
@@ -800,7 +801,9 @@ function(_qt_internal_sbom_add_target target)
     endif()
 
     set(supplier "")
-    if((is_qt_entity_type OR is_qt_3rd_party_entity_type)
+    if(arg_SUPPLIER)
+        set(supplier "${arg_SUPPLIER}")
+    elseif((is_qt_entity_type OR is_qt_3rd_party_entity_type)
             AND NOT arg_NO_DEFAULT_QT_SUPPLIER)
         _qt_internal_sbom_get_default_supplier(supplier)
     endif()
