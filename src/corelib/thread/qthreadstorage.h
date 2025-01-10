@@ -6,6 +6,10 @@
 
 #include <QtCore/qglobal.h>
 
+#if !QT_CONFIG(thread)
+#include <QtCore/qscopedpointer.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 #if QT_CONFIG(thread)
@@ -114,10 +118,6 @@ public:
 };
 
 #else // !QT_CONFIG(thread)
-
-#include <QtCore/qscopedpointer.h>
-
-#include <type_traits>
 
 template <typename T, typename U>
 inline bool qThreadStorage_hasLocalData(const QScopedPointer<T, U> &data)
