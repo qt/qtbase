@@ -101,3 +101,7 @@ function(qt_internal_sbom_get_external_document_ref_spdx_id project_name out_var
 
     set(${out_var} "${result}" PARENT_SCOPE)
 endfunction()
+
+macro(qt_internal_sbom_get_git_version_vars)
+    _qt_internal_sbom_get_git_version_vars()
+endmacro()

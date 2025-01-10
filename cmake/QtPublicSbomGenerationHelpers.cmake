@@ -78,6 +78,8 @@ function(_qt_internal_sbom_begin_project_generate)
 
     qt_internal_sbom_set_default_option_value(PROJECT "${PROJECT_NAME}")
 
+    _qt_internal_sbom_get_git_version_vars()
+
     set(default_sbom_file_name
         "${arg_PROJECT}/${arg_PROJECT}-sbom-${QT_SBOM_GIT_VERSION_PATH}.spdx")
     set(default_install_sbom_path
