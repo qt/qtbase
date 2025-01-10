@@ -187,6 +187,7 @@ public:
     void retranslateStrings();
 
     void setVisible(bool visible) override;
+    bool canBeNativeDialog() const override;
 
     static int showOldMessageBox(QWidget *parent, QMessageBox::Icon icon,
                                  const QString &title, const QString &text,
@@ -864,12 +865,6 @@ void QMessageBox::addButton(QAbstractButton *button, ButtonRole role)
         }
     }
 
-    // Add button to native dialog helper, unless it's the details button,
-    // since we don't do any plumbing for the button's action in that case.
-    if (button != d->detailsButton) {
-        d->options->addButton(button->text(),
-            static_cast<QPlatformDialogHelper::ButtonRole>(role), button);
-    }
     d->buttonBox->addButton(button, (QDialogButtonBox::ButtonRole)role);
     d->customButtonList.append(button);
     d->autoAddOkButton = false;
@@ -1571,6 +1566,11 @@ void QMessageBoxPrivate::setVisible(bool visible)
     if (q->testAttribute(Qt::WA_WState_ExplicitShowHide) && q->testAttribute(Qt::WA_WState_Hidden) != visible)
         return;
 
+    // Last minute setup
+    if (autoAddOkButton)
+        q->addButton(QMessageBox::Ok);
+    detectEscapeButton();
+
     if (canBeNativeDialog())
         setNativeDialogVisible(visible);
 
@@ -1615,13 +1615,7 @@ QMessageBox::ButtonRole QMessageBox::buttonRole(QAbstractButton *button) const
 void QMessageBox::showEvent(QShowEvent *e)
 {
     Q_D(QMessageBox);
-    if (d->autoAddOkButton) {
-        addButton(Ok);
-    }
-    if (d->detailsButton)
-        addButton(d->detailsButton, QMessageBox::ActionRole);
     d->clickedButton = nullptr;
-    d->detectEscapeButton();
     d->updateSize();
 
 #if QT_CONFIG(accessibility)
@@ -2718,6 +2712,32 @@ static QPlatformDialogHelper::StandardButtons helperStandardButtons(QMessageBox 
     return buttons;
 }
 
+bool QMessageBoxPrivate::canBeNativeDialog() const
+{
+    // Don't use Q_Q here! This function is called from ~QDialog,
+    // so Q_Q calling q_func() invokes undefined behavior (invalid cast in q_func()).
+    const QDialog * const q = static_cast<const QMessageBox*>(q_ptr);
+    if (nativeDialogInUse)
+        return true;
+    if (QCoreApplication::testAttribute(Qt::AA_DontUseNativeDialogs)
+        || q->testAttribute(Qt::WA_DontShowOnScreen)) {
+        return false;
+    }
+
+    if (strcmp(QMessageBox::staticMetaObject.className(), q->metaObject()->className()) != 0)
+        return false;
+
+    for (auto *customButton : buttonBox->buttons()) {
+        if (QPushButton *pushButton = qobject_cast<QPushButton *>(customButton)) {
+            // We can't support buttons with menus in native dialogs (yet)
+            if (pushButton->menu())
+                return false;
+        }
+    }
+
+    return QDialogPrivate::canBeNativeDialog();
+}
+
 void QMessageBoxPrivate::helperPrepareShow(QPlatformDialogHelper *)
 {
     Q_Q(QMessageBox);
@@ -2729,7 +2749,55 @@ void QMessageBoxPrivate::helperPrepareShow(QPlatformDialogHelper *)
 #endif
     options->setIcon(helperIcon(q->icon()));
     options->setIconPixmap(q->iconPixmap());
-    options->setStandardButtons(helperStandardButtons(q));
+
+    // Clear up front, since we might have prepared earlier
+    options->clearCustomButtons();
+
+    // Add standard buttons and resolve default/escape button
+    auto standardButtons = helperStandardButtons(q);
+    for (int button = QDialogButtonBox::StandardButton::FirstButton;
+             button <= QDialogButtonBox::StandardButton::LastButton; button <<= 1) {
+        auto *standardButton = buttonBox->button(QDialogButtonBox::StandardButton(button));
+        if (!standardButton)
+            continue;
+
+        if (auto *platformTheme = QGuiApplicationPrivate::platformTheme()) {
+            if (standardButton->text() != platformTheme->standardButtonText(button)) {
+                // The standard button has been customized, so add it as
+                // a custom button instead.
+                const auto buttonRole = buttonBox->buttonRole(standardButton);
+                options->addButton(standardButton->text(),
+                    static_cast<QPlatformDialogHelper::ButtonRole>(buttonRole),
+                    standardButton, button);
+                standardButtons &= ~QPlatformDialogHelper::StandardButton(button);
+            }
+        }
+
+        if (standardButton == defaultButton)
+            options->setDefaultButton(button);
+        else if (standardButton == detectedEscapeButton)
+            options->setEscapeButton(button);
+    }
+    options->setStandardButtons(standardButtons);
+
+    // Add custom buttons and resolve default/escape button
+    for (auto *customButton : customButtonList) {
+        // Unless it's the details button, since we don't do any
+        // plumbing for the button's action in that case.
+        if (customButton == detailsButton)
+            continue;
+
+        const auto buttonRole = buttonBox->buttonRole(customButton);
+        const int buttonId = options->addButton(customButton->text(),
+            static_cast<QPlatformDialogHelper::ButtonRole>(buttonRole),
+            customButton);
+
+        if (customButton == defaultButton)
+            options->setDefaultButton(buttonId);
+        else if (customButton == detectedEscapeButton)
+            options->setEscapeButton(buttonId);
+    }
+
     if (checkbox)
         options->setCheckBox(checkbox->text(), checkbox->checkState());
 }

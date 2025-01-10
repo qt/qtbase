@@ -159,8 +159,16 @@ Ran out of cabbage!
   ...
 ok 13 - testFailOnWarningsThenSkip() # SKIP My cabbage! :(
 ok 14 - testFailOnWarningsAndIgnoreWarnings()
-ok 15 - cleanupTestCase()
-1..15
-# tests 15
+not ok 15 - testFailOnTemporaryObjectDestruction()
+  ---
+  # Received a warning that resulted in a failure:
+Running low on toothpaste!
+  at: tst_Warnings::testFailOnTemporaryObjectDestruction() (qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp
+  line: 0
+  ...
+ok 16 - cleanupTestCase()
+1..16
+# tests 16
 # pass 5
-# fail 10
+# fail 11

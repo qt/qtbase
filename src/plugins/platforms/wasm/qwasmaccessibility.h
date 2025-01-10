@@ -4,6 +4,9 @@
 #ifndef QWASMACCESIBILITY_H
 #define QWASMACCESIBILITY_H
 
+#include <QtCore/qtconfigmacros.h>
+#include <QtGui/qtguiglobal.h>
+
 #if QT_CONFIG(accessibility)
 
 #include <QtCore/qhash.h>

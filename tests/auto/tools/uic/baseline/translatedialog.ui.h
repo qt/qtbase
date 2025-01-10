@@ -58,7 +58,7 @@ public:
         if (TranslateDialog->objectName().isEmpty())
             TranslateDialog->setObjectName("TranslateDialog");
         TranslateDialog->resize(407, 145);
-        QSizePolicy sizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);
+        QSizePolicy sizePolicy(QSizePolicy::Policy::Preferred, QSizePolicy::Policy::Maximum);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(TranslateDialog->sizePolicy().hasHeightForWidth());
@@ -117,7 +117,7 @@ public:
 
         vboxLayout1->addWidget(ckMarkFinished);
 
-        spacerItem = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        spacerItem = new QSpacerItem(20, 40, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
 
         vboxLayout1->addItem(spacerItem);
 
@@ -152,7 +152,7 @@ public:
 
         vboxLayout2->addWidget(cancel);
 
-        spacerItem1 = new QSpacerItem(20, 51, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        spacerItem1 = new QSpacerItem(20, 51, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
 
         vboxLayout2->addItem(spacerItem1);
 

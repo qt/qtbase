@@ -298,7 +298,11 @@ QList<QSslCertificate> QSchannelBackend::systemCaCertificatesImplementation()
     // Similar to non-Darwin version found in qtlsbackend_openssl.cpp,
     // QTlsPrivate::systemCaCertificates function.
     QList<QSslCertificate> systemCerts;
-    auto hSystemStore = QHCertStorePointer(CertOpenSystemStore(0, L"ROOT"));
+
+    auto hSystemStore = QHCertStorePointer(
+            CertOpenStore(CERT_STORE_PROV_SYSTEM, 0, 0,
+                          CERT_STORE_READONLY_FLAG | CERT_SYSTEM_STORE_CURRENT_USER, L"ROOT"));
+
     if (hSystemStore) {
         PCCERT_CONTEXT pc = nullptr;
         while ((pc = CertFindCertificateInStore(hSystemStore.get(), X509_ASN_ENCODING, 0,
@@ -718,6 +722,8 @@ bool TlsCryptographSchannel::sendToken(void *token, unsigned long tokenLength, b
     Q_ASSERT(d);
     auto *plainSocket = d->plainTcpSocket();
     Q_ASSERT(plainSocket);
+    if (plainSocket->state() == QAbstractSocket::UnconnectedState || !plainSocket->isValid())
+        return false;
 
     const qint64 written = plainSocket->write(static_cast<const char *>(token), tokenLength);
     if (written != qint64(tokenLength)) {
@@ -1112,7 +1118,7 @@ bool TlsCryptographSchannel::performHandshake()
     auto *plainSocket = d->plainTcpSocket();
     Q_ASSERT(plainSocket);
 
-    if (plainSocket->state() == QAbstractSocket::UnconnectedState) {
+    if (plainSocket->state() == QAbstractSocket::UnconnectedState || !plainSocket->isValid()) {
         setErrorAndEmit(d, QAbstractSocket::RemoteHostClosedError,
                         QSslSocket::tr("The TLS/SSL connection has been closed"));
         return false;
@@ -1482,7 +1488,7 @@ void TlsCryptographSchannel::transmit()
         return; // This function should not have been called
 
     // Can happen if called through QSslSocket::abort->QSslSocket::close->QSslSocket::flush->here
-    if (plainSocket->state() == QAbstractSocket::SocketState::UnconnectedState)
+    if (plainSocket->state() == QAbstractSocket::UnconnectedState || !plainSocket->isValid())
         return;
 
     if (schannelState != SchannelState::Done) {
@@ -1635,8 +1641,12 @@ void TlsCryptographSchannel::transmit()
             qCWarning(lcTlsBackendSchannel, "The internal SSPI handle is invalid!");
             Q_UNREACHABLE();
         } else if (status == SEC_E_INVALID_TOKEN) {
-            qCWarning(lcTlsBackendSchannel, "Got SEC_E_INVALID_TOKEN!");
-            Q_UNREACHABLE(); // Happened once due to a bug, but shouldn't generally happen(?)
+            // Supposedly we have an invalid token, it's under-documented what
+            // this means, so to be safe we disconnect.
+            shutdown = true;
+            disconnectFromHost();
+            setErrorAndEmit(d, QAbstractSocket::SslInternalError, schannelErrorToString(status));
+            break;
         } else if (status == SEC_E_MESSAGE_ALTERED) {
             // The message has been altered, disconnect now.
             shutdown = true; // skips sending the shutdown alert
@@ -1992,7 +2002,10 @@ bool TlsCryptographSchannel::verifyCertContext(CERT_CONTEXT *certContext)
         // the Ca list, not just included during verification.
         // That being said, it's not trivial to add the root certificates (if and only if they
         // came from the system root store). And I don't see this mentioned in our documentation.
-        auto rootStore = QHCertStorePointer(CertOpenSystemStore(0, L"ROOT"));
+        auto rootStore = QHCertStorePointer(
+                CertOpenStore(CERT_STORE_PROV_SYSTEM, 0, 0,
+                              CERT_STORE_READONLY_FLAG | CERT_SYSTEM_STORE_CURRENT_USER, L"ROOT"));
+
         if (!rootStore) {
 #ifdef QSSLSOCKET_DEBUG
             qCWarning(lcTlsBackendSchannel, "Failed to open the system root CA certificate store!");
@@ -2131,6 +2144,15 @@ bool TlsCryptographSchannel::verifyCertContext(CERT_CONTEXT *certContext)
     for (DWORD i = 0; i < verifyDepth; i++) {
         CERT_CHAIN_ELEMENT *element = chain->rgpElement[i];
         QSslCertificate certificate = getCertificateFromChainElement(element);
+        if (certificate.isNull()) {
+            const auto &previousCert = !peerCertificateChain.isEmpty() ? peerCertificateChain.last()
+                                                                       : QSslCertificate();
+            auto error = QSslError(QSslError::SslError::UnableToGetIssuerCertificate, previousCert);
+            sslErrors += error;
+            emit q->peerVerifyError(error);
+            if (previousCert.isNull() || q->state() != QAbstractSocket::ConnectedState)
+                return false;
+        }
         const QList<QSslCertificateExtension> extensions = certificate.extensions();
 
 #ifdef QSSLSOCKET_DEBUG

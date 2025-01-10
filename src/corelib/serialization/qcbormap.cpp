@@ -48,8 +48,8 @@ using namespace QtCbor;
     will not undo.
 
     \sa QCborArray, QCborValue, QJsonDocument, QVariantMap,
-        {Parsing and displaying CBOR data}, {Convert Example},
-        {JSON Save Game Example}
+        {Parsing and displaying CBOR data}, {Serialization Converter},
+        {Saving and Loading a Game}
  */
 
 /*!

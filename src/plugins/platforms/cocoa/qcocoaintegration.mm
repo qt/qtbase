@@ -141,16 +141,6 @@ QCocoaIntegration::QCocoaIntegration(const QStringList &paramList)
         // wants to be foreground applications so change the process type. (But
         // see the function implementation for exceptions.)
         qt_mac_transformProccessToForegroundApplication();
-
-        // Move the application window to front to make it take focus, also when launching
-        // from the terminal. On 10.12+ this call has been moved to applicationDidFinishLauching
-        // to work around issues with loss of focus at startup.
-        if (QOperatingSystemVersion::current() < QOperatingSystemVersion::MacOSSierra) {
-            // Ignoring other apps is necessary (we must ignore the terminal), but makes
-            // Qt apps play slightly less nice with other apps when lanching from Finder
-            // (See the activateIgnoringOtherApps docs.)
-            [cocoaApplication activateIgnoringOtherApps : YES];
-        }
     }
 
     // Qt 4 also does not set the application delegate, so that behavior

@@ -5,6 +5,7 @@
 #define QWASMDOM_H
 
 #include <QtCore/qtconfigmacros.h>
+#include <QtCore/QPointF>
 
 #include <emscripten/val.h>
 

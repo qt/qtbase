@@ -176,6 +176,16 @@ private slots:
 
     void encodingForHtml_data();
     void encodingForHtml();
+
+#ifdef Q_OS_WIN
+    // On all other systems local 8-bit encoding is UTF-8
+    void fromLocal8Bit_data();
+    void fromLocal8Bit();
+    void fromLocal8Bit_special_cases();
+    void toLocal8Bit_data();
+    void toLocal8Bit();
+    void toLocal8Bit_special_cases();
+#endif
 };
 
 void tst_QStringConverter::constructByName()
@@ -2181,14 +2191,18 @@ void tst_QStringConverter::encodingForName_data()
     QTest::newRow("latin1") << QByteArray("latin1") << std::optional<QStringConverter::Encoding>(QStringConverter::Latin1);
     QTest::newRow("latin2") << QByteArray("latin2") << std::optional<QStringConverter::Encoding>();
     QTest::newRow("latin15") << QByteArray("latin15") << std::optional<QStringConverter::Encoding>();
+    QTest::newRow("<empty>") << QByteArray("") << std::optional<QStringConverter::Encoding>();
+    QTest::newRow("<nullptr>") << QByteArray(nullptr) << std::optional<QStringConverter::Encoding>();
 }
 
 void tst_QStringConverter::encodingForName()
 {
-    QFETCH(QByteArray, name);
-    QFETCH(std::optional<QStringConverter::Encoding>, encoding);
+    QFETCH(const QByteArray, name);
+    QFETCH(const std::optional<QStringConverter::Encoding>, encoding);
 
-    auto e = QStringConverter::encodingForName(name);
+    const auto *ptr = name.isNull() ? nullptr : name.data();
+
+    const auto e = QStringConverter::encodingForName(ptr);
     QCOMPARE(e, encoding);
 }
 
@@ -2441,6 +2455,197 @@ void tst_QStringConverter::threadSafety()
     for (auto b : res)
         QCOMPARE(b, QString::fromLatin1("abcdefghijklmonpqrstufvxyz"));
 }
+
+#ifdef Q_OS_WIN
+void tst_QStringConverter::fromLocal8Bit_data()
+{
+    QTest::addColumn<QByteArray>("eightBit");
+    QTest::addColumn<QString>("utf16");
+    QTest::addColumn<quint32>("codePage");
+
+    constexpr uint WINDOWS_1252 = 1252u;
+    QTest::newRow("windows-1252") << "Hello, world!"_ba << u"Hello, world!"_s << WINDOWS_1252;
+    constexpr uint SHIFT_JIS = 932u;
+    // Mostly two byte characters, but the comma is a single byte character (0xa4)
+    QTest::newRow("shiftJIS")
+            << "\x82\xb1\x82\xf1\x82\xc9\x82\xbf\x82\xcd\xa4\x90\xa2\x8a\x45\x81\x49"_ba
+            << u"こんにちは､世界！"_s << SHIFT_JIS;
+
+    constexpr uint GB_18030 = 54936u;
+    QTest::newRow("GB-18030") << "\xc4\xe3\xba\xc3\xca\xc0\xbd\xe7\xa3\xa1"_ba << u"你好世界！"_s
+                              << GB_18030;
+}
+
+void tst_QStringConverter::fromLocal8Bit()
+{
+    QFETCH(const QByteArray, eightBit);
+    QFETCH(const QString, utf16);
+    QFETCH(const quint32, codePage);
+
+    QStringConverter::State state;
+
+    QString result = QLocal8Bit::convertToUnicode_sys(eightBit, codePage, &state);
+    QCOMPARE(result, utf16);
+    QCOMPARE(state.remainingChars, 0);
+
+    result.clear();
+    state.clear();
+    for (char c : eightBit)
+        result += QLocal8Bit::convertToUnicode_sys({&c, 1}, codePage, &state);
+    QCOMPARE(result, utf16);
+    QCOMPARE(state.remainingChars, 0);
+
+    result.clear();
+    state.clear();
+    // Decode the full string again, this time without state
+    state.flags |= QStringConverter::Flag::Stateless;
+    result = QLocal8Bit::convertToUnicode_sys(eightBit, codePage, &state);
+    QCOMPARE(result, utf16);
+    QCOMPARE(state.remainingChars, 0);
+}
+
+void tst_QStringConverter::fromLocal8Bit_special_cases()
+{
+    QStringConverter::State state;
+    constexpr uint SHIFT_JIS = 932u;
+    // Decode a 2-octet character, but only provide 1 octet at first:
+    QString result = QLocal8Bit::convertToUnicode_sys("\x82", SHIFT_JIS, &state);
+    QCOMPARE(result, QString());
+    QVERIFY(result.isNull());
+    QCOMPARE_GT(state.remainingChars, 0);
+    // Then provide the second octet:
+    result = QLocal8Bit::convertToUnicode_sys("\xb1", SHIFT_JIS, &state);
+    QCOMPARE(result, u"こ");
+    QCOMPARE(state.remainingChars, 0);
+
+    // And without state:
+    result.clear();
+    QStringConverter::State statelessState;
+    statelessState.flags |= QStringConverter::Flag::Stateless;
+    result = QLocal8Bit::convertToUnicode_sys("\x82", SHIFT_JIS, &statelessState);
+    result += QLocal8Bit::convertToUnicode_sys("\xb1", SHIFT_JIS, &statelessState);
+    // 0xb1 is a valid single-octet character in Shift-JIS, so the output
+    // isn't really what you would expect:
+    QCOMPARE(result, QString(QChar::ReplacementCharacter) + u'ｱ');
+    QCOMPARE(statelessState.remainingChars, 0);
+
+    // Now try a 3-octet UTF-8 sequence:
+    result.clear();
+    state.clear();
+    constexpr uint UTF8 = 65001u;
+    // First the first 2 octets:
+    result = QLocal8Bit::convertToUnicode_sys("\xe4\xbd", UTF8, &state);
+    QCOMPARE(result, QString());
+    QVERIFY(result.isNull());
+    QCOMPARE_GT(state.remainingChars, 0);
+    // Then provide the remaining octet:
+    result = QLocal8Bit::convertToUnicode_sys("\xa0", UTF8, &state);
+    QCOMPARE(result, u"你");
+    QCOMPARE(state.remainingChars, 0);
+
+    // Now try a 4-octet GB 18030 sequence:
+    result.clear();
+    state.clear();
+    constexpr uint GB_18030 = 54936u;
+    const char sequence[] = "\x95\x32\x90\x31";
+    // Repeat the sequence multiple times to test handling of exhaustion of
+    // internal buffer
+    QByteArray repeated = QByteArray(sequence).repeated(2049);
+    QByteArrayView octets = QByteArrayView(repeated);
+    result = QLocal8Bit::convertToUnicode_sys(octets.first(2), GB_18030, &state);
+    QCOMPARE(result, QString());
+    QVERIFY(result.isNull());
+    QCOMPARE_GT(state.remainingChars, 0);
+    // Then provide one more octet:
+    result = QLocal8Bit::convertToUnicode_sys(octets.sliced(2, 1), GB_18030, &state);
+    QCOMPARE(result, QString());
+    QVERIFY(result.isNull());
+    QCOMPARE_GT(state.remainingChars, 0);
+    // Then provide the last octet + the rest of the string
+    result = QLocal8Bit::convertToUnicode_sys(octets.sliced(3), GB_18030, &state);
+    QCOMPARE(result.first(2), u"𠂇");
+    QCOMPARE(state.remainingChars, 0);
+}
+
+void tst_QStringConverter::toLocal8Bit_data()
+{
+    fromLocal8Bit_data();
+}
+
+void tst_QStringConverter::toLocal8Bit()
+{
+    QFETCH(const QByteArray, eightBit);
+    QFETCH(const QString, utf16);
+    QFETCH(const quint32, codePage);
+
+    QStringConverter::State state;
+
+    QByteArray result = QLocal8Bit::convertFromUnicode_sys(utf16, codePage, &state);
+    QCOMPARE(result, eightBit);
+    QCOMPARE(state.remainingChars, 0);
+
+    result.clear();
+    state.clear();
+    for (QChar c : utf16)
+        result += QLocal8Bit::convertFromUnicode_sys(QStringView(&c, 1), codePage, &state);
+    QCOMPARE(result, eightBit);
+    QCOMPARE(state.remainingChars, 0);
+
+    result.clear();
+    state.clear();
+    // Decode the full string again, this time without state
+    state.flags |= QStringConverter::Flag::Stateless;
+    result = QLocal8Bit::convertFromUnicode_sys(utf16, codePage, &state);
+    QCOMPARE(result, eightBit);
+    QCOMPARE(state.remainingChars, 0);
+}
+
+void tst_QStringConverter::toLocal8Bit_special_cases()
+{
+    QStringConverter::State state;
+    // Normally utf8 goes through a different code path, but we can force it here
+    constexpr uint UTF8 = 65001u;
+    // Decode a 2-code unit character, but only provide 1 code unit at first:
+    const char16_t a[] = u"𬽦";
+    QStringView codeUnits = a;
+    QByteArray result = QLocal8Bit::convertFromUnicode_sys(codeUnits.first(1), UTF8, &state);
+    QCOMPARE(result, QString());
+    QVERIFY(result.isNull());
+    QCOMPARE_GT(state.remainingChars, 0);
+    // Then provide the second code unit:
+    result = QLocal8Bit::convertFromUnicode_sys(codeUnits.sliced(1), UTF8, &state);
+    QCOMPARE(result, "\xf0\xac\xbd\xa6"_ba);
+    QCOMPARE(state.remainingChars, 0);
+
+    // Retain compat with the behavior for toLocal8Bit:
+    QCOMPARE(codeUnits.first(1).toLocal8Bit(), "?");
+
+    // QString::toLocal8Bit is already stateless, but test stateless handling
+    // explicitly anyway:
+    result.clear();
+    QStringConverter::State statelessState;
+    statelessState.flags |= QStringConverter::Flag::Stateless;
+    result = QLocal8Bit::convertFromUnicode_sys(codeUnits.first(1), UTF8, &statelessState);
+    result += QLocal8Bit::convertFromUnicode_sys(codeUnits.sliced(1), UTF8, &statelessState);
+    // Windows uses the replacement character for invalid characters:
+    QCOMPARE(result, "\ufffd\ufffd");
+
+    // Now do the same, but the second time we feed in a character, we also
+    // provide many more so the internal stack buffer is not large enough.
+    result.clear();
+    state.clear();
+    QString str = QStringView(a).toString().repeated(2048);
+    codeUnits = str;
+    result = QLocal8Bit::convertFromUnicode_sys(codeUnits.first(1), UTF8, &state);
+    QCOMPARE(result, QString());
+    QVERIFY(result.isNull());
+    QCOMPARE_GT(state.remainingChars, 0);
+    // Then we provide the rest of the string:
+    result = QLocal8Bit::convertFromUnicode_sys(codeUnits.sliced(1), UTF8, &state);
+    QCOMPARE(result.first(4), "\xf0\xac\xbd\xa6"_ba);
+    QCOMPARE(state.remainingChars, 0);
+}
+#endif // Q_OS_WIN
 
 struct DontCrashAtExit {
     ~DontCrashAtExit() {

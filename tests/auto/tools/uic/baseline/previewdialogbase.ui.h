@@ -71,7 +71,7 @@ public:
 
         paperSizeCombo = new QComboBox(PreviewDialogBase);
         paperSizeCombo->setObjectName("paperSizeCombo");
-        QSizePolicy sizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
+        QSizePolicy sizePolicy(QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Fixed);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(paperSizeCombo->sizePolicy().hasHeightForWidth());
@@ -91,7 +91,7 @@ public:
 
         hboxLayout->addWidget(paperOrientationCombo);
 
-        spacerItem = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        spacerItem = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         hboxLayout->addItem(spacerItem);
 
@@ -116,7 +116,7 @@ public:
 
         previewArea = new QScrollArea(PreviewDialogBase);
         previewArea->setObjectName("previewArea");
-        QSizePolicy sizePolicy1(QSizePolicy::Preferred, QSizePolicy::Preferred);
+        QSizePolicy sizePolicy1(QSizePolicy::Policy::Preferred, QSizePolicy::Policy::Preferred);
         sizePolicy1.setHorizontalStretch(1);
         sizePolicy1.setVerticalStretch(0);
         sizePolicy1.setHeightForWidth(previewArea->sizePolicy().hasHeightForWidth());
@@ -136,7 +136,7 @@ public:
         progressBar = new QProgressBar(PreviewDialogBase);
         progressBar->setObjectName("progressBar");
         progressBar->setEnabled(false);
-        QSizePolicy sizePolicy2(QSizePolicy::Expanding, QSizePolicy::Fixed);
+        QSizePolicy sizePolicy2(QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Fixed);
         sizePolicy2.setHorizontalStretch(1);
         sizePolicy2.setVerticalStretch(0);
         sizePolicy2.setHeightForWidth(progressBar->sizePolicy().hasHeightForWidth());

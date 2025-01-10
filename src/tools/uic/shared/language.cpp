@@ -83,19 +83,19 @@ QTextStream &operator<<(QTextStream &str, const closeQtConfig &c)
 struct EnumLookup
 {
     int value;
-    const char *valueString;
+    QLatin1StringView valueString;
 };
 
 template <int N>
-const char *lookupEnum(const EnumLookup(&array)[N], int value, int defaultIndex = 0)
+QLatin1StringView lookupEnum(const EnumLookup(&array)[N], int value, int defaultIndex = 0)
 {
     for (int i = 0; i < N; ++i) {
         if (value == array[i].value)
             return array[i].valueString;
     }
-    const char *defaultValue = array[defaultIndex].valueString;
+    auto defaultValue = array[defaultIndex].valueString;
     qWarning("uic: Warning: Invalid enumeration value %d, defaulting to %s",
-             value, defaultValue);
+             value, defaultValue.data());
     return defaultValue;
 }
 
@@ -106,74 +106,74 @@ QString fixClassName(QString className)
     return className;
 }
 
-const char *toolbarArea(int v)
+QLatin1StringView toolbarArea(int v)
 {
     static const EnumLookup toolBarAreas[] =
     {
-        {0,   "NoToolBarArea"},
-        {0x1, "LeftToolBarArea"},
-        {0x2, "RightToolBarArea"},
-        {0x4, "TopToolBarArea"},
-        {0x8, "BottomToolBarArea"},
-        {0xf, "AllToolBarAreas"}
+        {0,   "NoToolBarArea"_L1},
+        {0x1, "LeftToolBarArea"_L1},
+        {0x2, "RightToolBarArea"_L1},
+        {0x4, "TopToolBarArea"_L1},
+        {0x8, "BottomToolBarArea"_L1},
+        {0xf, "AllToolBarAreas"_L1}
     };
     return lookupEnum(toolBarAreas, v);
 }
 
-const char *sizePolicy(int v)
+QLatin1StringView sizePolicy(int v)
 {
     static const EnumLookup sizePolicies[] =
     {
-        {0,   "Fixed"},
-        {0x1, "Minimum"},
-        {0x4, "Maximum"},
-        {0x5, "Preferred"},
-        {0x3, "MinimumExpanding"},
-        {0x7, "Expanding"},
-        {0xD, "Ignored"}
+        {0,   "Fixed"_L1},
+        {0x1, "Minimum"_L1},
+        {0x4, "Maximum"_L1},
+        {0x5, "Preferred"_L1},
+        {0x3, "MinimumExpanding"_L1},
+        {0x7, "Expanding"_L1},
+        {0xD, "Ignored"_L1}
     };
     return lookupEnum(sizePolicies, v, 3);
 }
 
-const char *dockWidgetArea(int v)
+QLatin1StringView dockWidgetArea(int v)
 {
     static const EnumLookup dockWidgetAreas[] =
     {
-        {0,   "NoDockWidgetArea"},
-        {0x1, "LeftDockWidgetArea"},
-        {0x2, "RightDockWidgetArea"},
-        {0x4, "TopDockWidgetArea"},
-        {0x8, "BottomDockWidgetArea"},
-        {0xf, "AllDockWidgetAreas"}
+        {0,   "NoDockWidgetArea"_L1},
+        {0x1, "LeftDockWidgetArea"_L1},
+        {0x2, "RightDockWidgetArea"_L1},
+        {0x4, "TopDockWidgetArea"_L1},
+        {0x8, "BottomDockWidgetArea"_L1},
+        {0xf, "AllDockWidgetAreas"_L1}
     };
     return lookupEnum(dockWidgetAreas, v);
 }
 
-const char *paletteColorRole(int v)
+QLatin1StringView paletteColorRole(int v)
 {
     static const EnumLookup colorRoles[] =
     {
-        {0, "WindowText"},
-        {1, "Button"},
-        {2, "Light"},
-        {3, "Midlight"},
-        {4, "Dark"},
-        {5, "Mid"},
-        {6, "Text"},
-        {7, "BrightText"},
-        {8, "ButtonText"},
-        {9, "Base"},
-        {10, "Window"},
-        {11, "Shadow"},
-        {12, "Highlight"},
-        {13, "HighlightedText"},
-        {14, "Link"},
-        {15, "LinkVisited"},
-        {16, "AlternateBase"},
-        {17, "NoRole"},
-        {18, "ToolTipBase"},
-        {19, "ToolTipText"},
-        {20, "PlaceholderText"},
+        {0, "WindowText"_L1},
+        {1, "Button"_L1},
+        {2, "Light"_L1},
+        {3, "Midlight"_L1},
+        {4, "Dark"_L1},
+        {5, "Mid"_L1},
+        {6, "Text"_L1},
+        {7, "BrightText"_L1},
+        {8, "ButtonText"_L1},
+        {9, "Base"_L1},
+        {10, "Window"_L1},
+        {11, "Shadow"_L1},
+        {12, "Highlight"_L1},
+        {13, "HighlightedText"_L1},
+        {14, "Link"_L1},
+        {15, "LinkVisited"_L1},
+        {16, "AlternateBase"_L1},
+        {17, "NoRole"_L1},
+        {18, "ToolTipBase"_L1},
+        {19, "ToolTipText"_L1},
+        {20, "PlaceholderText"_L1},
     };
     return lookupEnum(colorRoles, v);
 }

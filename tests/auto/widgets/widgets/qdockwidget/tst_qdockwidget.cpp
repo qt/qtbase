@@ -1529,6 +1529,7 @@ void tst_QDockWidget::closeAndDelete()
         QSKIP("Test skipped on Wayland.");
 #ifdef QT_BUILD_INTERNAL
     // Create a mainwindow with a central widget and two dock widgets
+    QObject localContext;
     QPointer<QDockWidget> d1;
     QPointer<QDockWidget> d2;
     QPointer<QWidget> cent;
@@ -1555,7 +1556,7 @@ void tst_QDockWidget::closeAndDelete()
 
     // Close everything with a single shot. Expected behavior: Event loop stops
     bool eventLoopStopped = true;
-    QTimer::singleShot(0, this, [mainWindow, d1, d2] {
+    QTimer::singleShot(0, &localContext, [mainWindow, d1, d2] {
         mainWindow->close();
         QTRY_VERIFY(!mainWindow->isVisible());
         QTRY_VERIFY(d1->isVisible());
@@ -1567,7 +1568,7 @@ void tst_QDockWidget::closeAndDelete()
     });
 
     // Fallback timer to report event loop still running
-    QTimer::singleShot(100, this, [&eventLoopStopped] {
+    QTimer::singleShot(100, &localContext, [&eventLoopStopped] {
         qCDebug(lcTestDockWidget) << "Last dock widget hasn't shout down event loop!";
         eventLoopStopped = false;
         QApplication::quit();

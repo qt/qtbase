@@ -19,6 +19,7 @@
 #include <functional>
 #include <QtCore/private/qglobal_p.h>
 #include <QtCore/qcoreapplication_platform.h>
+#include <QtCore/QJniEnvironment>
 
 QT_BEGIN_NAMESPACE
 
@@ -79,8 +80,9 @@ namespace QtAndroidPrivate
     jobject classLoader();
     Q_CORE_EXPORT jint androidSdkVersion();
 
-    bool registerPermissionNatives();
-    bool registerNativeInterfaceNatives();
+    bool registerPermissionNatives(QJniEnvironment &env);
+    bool registerNativeInterfaceNatives(QJniEnvironment &env);
+    bool registerExtrasNatives(QJniEnvironment &env);
 
     Q_CORE_EXPORT void handleActivityResult(jint requestCode, jint resultCode, jobject data);
     Q_CORE_EXPORT void registerActivityResultListener(ActivityResultListener *listener);

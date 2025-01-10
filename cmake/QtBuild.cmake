@@ -281,7 +281,7 @@ qt_setup_tool_path_command()
 # Platform define path, etc.
 if(WIN32)
     set(QT_DEFAULT_PLATFORM_DEFINITIONS WIN32 _ENABLE_EXTENDED_ALIGNED_STORAGE)
-    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    if(QT_64BIT)
         list(APPEND QT_DEFAULT_PLATFORM_DEFINITIONS WIN64 _WIN64)
     endif()
 
@@ -434,7 +434,7 @@ set(QT_TOP_LEVEL_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 # Prevent warnings about object files without any symbols. This is a common
 # thing in Qt as we tend to build files unconditionally, and then use ifdefs
 # to compile out parts that are not relevant.
-if(CMAKE_HOST_APPLE AND APPLE)
+if(CMAKE_CXX_COMPILER_ID MATCHES "AppleClang")
     foreach(lang ASM C CXX)
         # We have to tell 'ar' to not run ranlib by itself, by passing the 'S' option
         set(CMAKE_${lang}_ARCHIVE_CREATE "<CMAKE_AR> qcS <TARGET> <LINK_FLAGS> <OBJECTS>")
@@ -560,6 +560,7 @@ endif()
 # Helpers that are available in public projects and while building Qt itself.
 include(QtPublicAppleHelpers)
 include(QtPublicCMakeHelpers)
+include(QtPublicExternalProjectHelpers)
 include(QtPublicPluginHelpers)
 include(QtPublicTargetHelpers)
 include(QtPublicWalkLibsHelpers)
@@ -576,11 +577,6 @@ endif()
 
 _qt_internal_determine_if_host_info_package_needed(__qt_build_requires_host_info_package)
 _qt_internal_find_host_info_package("${__qt_build_requires_host_info_package}")
-
-# Create tool script wrapper if necessary.
-# TODO: Remove once all direct usages of QT_TOOL_COMMAND_WRAPPER_PATH are replaced with function
-# calls.
-_qt_internal_generate_tool_command_wrapper()
 
 # This sets up the poor man's scope finalizer mechanism.
 # For newer CMake versions, we use cmake_language(DEFER CALL) instead.

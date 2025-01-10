@@ -67,7 +67,7 @@ public:
         hboxLayout->setObjectName("hboxLayout");
         hboxLayout->setObjectName(QString::fromUtf8("unnamed"));
         hboxLayout->setContentsMargins(0, 0, 0, 0);
-        Horizontal_Spacing2 = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        Horizontal_Spacing2 = new QSpacerItem(20, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         hboxLayout->addItem(Horizontal_Spacing2);
 

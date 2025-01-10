@@ -74,7 +74,6 @@ hb_subset_input_t::hb_subset_input_t ()
     HB_TAG ('p', 'r', 'e', 'p'),
     HB_TAG ('V', 'D', 'M', 'X'),
     HB_TAG ('D', 'S', 'I', 'G'),
-    HB_TAG ('M', 'V', 'A', 'R'),
   };
   sets.no_subset_tables->add_array (default_no_subset_tables,
 					 ARRAY_LENGTH (default_no_subset_tables));
@@ -123,6 +122,12 @@ hb_subset_input_t::hb_subset_input_t ()
 
     //justify
     HB_TAG ('j', 'a', 'l', 't'), // HarfBuzz doesn't use; others might
+
+    //East Asian spacing
+    HB_TAG ('c', 'h', 'w', 's'),
+    HB_TAG ('v', 'c', 'h', 'w'),
+    HB_TAG ('h', 'a', 'l', 't'),
+    HB_TAG ('v', 'h', 'a', 'l'),
 
     //private
     HB_TAG ('H', 'a', 'r', 'f'),

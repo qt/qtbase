@@ -109,7 +109,7 @@ public:
         hboxLayout->setContentsMargins(0, 0, 0, 0);
         ButtonGroup1 = new QGroupBox(Config);
         ButtonGroup1->setObjectName("ButtonGroup1");
-        QSizePolicy sizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+        QSizePolicy sizePolicy(QSizePolicy::Policy::Preferred, QSizePolicy::Policy::Preferred);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(ButtonGroup1->sizePolicy().hasHeightForWidth());
@@ -155,7 +155,7 @@ public:
         hboxLayout1->setContentsMargins(0, 0, 0, 0);
         size_custom = new QRadioButton(ButtonGroup1);
         size_custom->setObjectName("size_custom");
-        QSizePolicy sizePolicy1(QSizePolicy::Fixed, QSizePolicy::Fixed);
+        QSizePolicy sizePolicy1(QSizePolicy::Policy::Fixed, QSizePolicy::Policy::Fixed);
         sizePolicy1.setHorizontalStretch(0);
         sizePolicy1.setVerticalStretch(0);
         sizePolicy1.setHeightForWidth(size_custom->sizePolicy().hasHeightForWidth());
@@ -262,7 +262,7 @@ public:
         skin = new QComboBox(Config);
         skin->addItem(QString());
         skin->setObjectName("skin");
-        QSizePolicy sizePolicy2(QSizePolicy::Expanding, QSizePolicy::Fixed);
+        QSizePolicy sizePolicy2(QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Fixed);
         sizePolicy2.setHorizontalStretch(0);
         sizePolicy2.setVerticalStretch(0);
         sizePolicy2.setHeightForWidth(skin->sizePolicy().hasHeightForWidth());
@@ -283,7 +283,7 @@ public:
 
         vboxLayout->addWidget(lcdScreen);
 
-        spacerItem = new QSpacerItem(20, 10, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        spacerItem = new QSpacerItem(20, 10, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
 
         vboxLayout->addItem(spacerItem);
 
@@ -651,7 +651,7 @@ public:
         hboxLayout3->setSpacing(6);
         hboxLayout3->setObjectName("hboxLayout3");
         hboxLayout3->setContentsMargins(0, 0, 0, 0);
-        spacerItem1 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        spacerItem1 = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         hboxLayout3->addItem(spacerItem1);
 

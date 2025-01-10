@@ -54,16 +54,6 @@ Converter::Directions TextConverter::directions() const
     return Direction::InOut;
 }
 
-Converter::Options TextConverter::outputOptions() const
-{
-    return {};
-}
-
-const char *TextConverter::optionsHelp() const
-{
-    return nullptr;
-}
-
 bool TextConverter::probeFile(QIODevice *f) const
 {
     if (QFile *file = qobject_cast<QFile *>(f))
@@ -98,9 +88,8 @@ void TextConverter::saveFile(QIODevice *f, const QVariant &contents,
                              const QStringList &options) const
 {
     if (!options.isEmpty()) {
-        fprintf(stderr, "Unknown option '%s' to text output. This format has no options.\n",
-                qPrintable(options.first()));
-        exit(EXIT_FAILURE);
+        qFatal("Unknown option '%s' to text output. This format has no options.",
+               qPrintable(options.first()));
     }
 
     QTextStream out(f);

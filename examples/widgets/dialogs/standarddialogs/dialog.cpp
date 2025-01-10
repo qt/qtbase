@@ -454,13 +454,15 @@ void Dialog::warningMessage()
                               tr("Delete the only copy of your movie manuscript?"), { }, this);
     msgBox.setInformativeText(tr("You've been working on this manuscript for 738 days now. Hang in there!"));
     msgBox.setDetailedText("\"A long time ago in a galaxy far, far away....\"");
-    msgBox.addButton(tr("&Keep"), QMessageBox::AcceptRole);
-    msgBox.addButton(tr("Delete"), QMessageBox::DestructiveRole);
-    if (msgBox.exec() == QMessageBox::AcceptRole)
+    auto *keepButton = msgBox.addButton(tr("&Keep"), QMessageBox::AcceptRole);
+    auto *deleteButton = msgBox.addButton(tr("Delete"), QMessageBox::DestructiveRole);
+    msgBox.exec();
+    if (msgBox.clickedButton() == keepButton)
         warningLabel->setText(tr("Keep"));
-    else
+    else if (msgBox.clickedButton() == deleteButton)
         warningLabel->setText(tr("Delete"));
-
+    else
+        warningLabel->setText("");
 }
 
 void Dialog::errorMessage()

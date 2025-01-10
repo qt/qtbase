@@ -274,6 +274,7 @@ qt_internal_add_module(Core
         tools/qduplicatetracker_p.h
         tools/qflatmap_p.h
         tools/qfreelist.cpp tools/qfreelist_p.h
+        tools/quniquehandle_p.h
         tools/qhashfunctions.h
         tools/qiterator.h
         tools/qline.cpp tools/qline.h
@@ -519,6 +520,7 @@ qt_internal_extend_target(Core CONDITION WIN32
         kernel/qwinregistry.cpp kernel/qwinregistry_p.h
         plugin/qsystemlibrary.cpp plugin/qsystemlibrary_p.h
         thread/qthread_win.cpp
+        platform/windows/qcomobject_p.h
     LIBRARIES
         advapi32
         authz

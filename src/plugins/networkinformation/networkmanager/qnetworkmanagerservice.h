@@ -136,6 +136,8 @@ public:
     NMDeviceType deviceType() const;
     NMMetered meteredState() const;
 
+    bool isValid() const { return QDBusAbstractInterface::isValid() && validDBusConnection; }
+
 Q_SIGNALS:
     void stateChanged(NMState);
     void connectivityChanged(NMConnectivityState);
@@ -155,6 +157,7 @@ private:
     std::optional<QDBusObjectPath> primaryConnectionDevicePath() const;
 
     QVariantMap propertyMap;
+    bool validDBusConnection = true;
 };
 
 class PropertiesDBusInterface : public QDBusAbstractInterface

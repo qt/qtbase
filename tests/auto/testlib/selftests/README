@@ -50,6 +50,13 @@ You can choose a specific subtest by passing the -c option:
         -c "Given: The QTestLog::Plain logger" \
         -c 'And given: The "skip" subtest'
 
+Note that on Windows, when using cmd.exe, you cannot use single
+quotes, so the command above becomes:
+
+    ❯ ./tst_selftests "Scenario: Test output of the loggers is as expected" \
+        -c "Given: The QTestLog::Plain logger" \
+        -c "And given: The ""skip"" subtest"
+
 It's possible to pass only the first -c options, to e.g. run all
 tests with the Plain logger, but it's unfortunately not possible
 to pass only the last -c option, to run the 'skip' subtest with

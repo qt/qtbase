@@ -6,31 +6,19 @@
 
 #include <QIODevice>
 #include <QList>
-#include <QPair>
+#include <QStringList>
 #include <QVariant>
-#include <QVariantMap>
 
-class VariantOrderedMap : public QList<QPair<QVariant, QVariant>>
-{
-public:
-    VariantOrderedMap() = default;
-    VariantOrderedMap(const QVariantMap &map)
-    {
-        reserve(map.size());
-        for (auto it = map.begin(); it != map.end(); ++it)
-            append({it.key(), it.value()});
-    }
-};
-using Map = VariantOrderedMap;
-Q_DECLARE_METATYPE(Map)
-
+//! [0]
 class Converter
 {
+    static QList<const Converter *> &converters();
 protected:
     Converter();
+    static bool isNull(const Converter *converter); // in nullconverter.cpp
 
 public:
-    static Converter *null;
+    static const QList<const Converter *> &allConverters();
 
     enum class Direction { In = 1, Out = 2, InOut = In | Out };
     Q_DECLARE_FLAGS(Directions, Direction)
@@ -42,15 +30,16 @@ public:
 
     virtual QString name() const = 0;
     virtual Directions directions() const = 0;
-    virtual Options outputOptions() const = 0;
-    virtual const char *optionsHelp() const = 0;
-    virtual bool probeFile(QIODevice *f) const = 0;
-    virtual QVariant loadFile(QIODevice *f, const Converter *&outputConverter) const = 0;
+    virtual Options outputOptions() const;
+    virtual const char *optionsHelp() const;
+    virtual bool probeFile(QIODevice *f) const;
+    virtual QVariant loadFile(QIODevice *f, const Converter *&outputConverter) const;
     virtual void saveFile(QIODevice *f, const QVariant &contents,
                           const QStringList &options) const = 0;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(Converter::Directions)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Converter::Options)
+//! [0]
 
 #endif // CONVERTER_H

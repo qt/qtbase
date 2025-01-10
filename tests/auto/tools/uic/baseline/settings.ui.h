@@ -56,7 +56,7 @@ public:
         hboxLayout->setObjectName("hboxLayout");
         label = new QLabel(Dialog);
         label->setObjectName("label");
-        QSizePolicy sizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
+        QSizePolicy sizePolicy(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Preferred);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(label->sizePolicy().hasHeightForWidth());
@@ -68,7 +68,7 @@ public:
 
         deviceCombo = new QComboBox(Dialog);
         deviceCombo->setObjectName("deviceCombo");
-        QSizePolicy sizePolicy1(QSizePolicy::Minimum, QSizePolicy::Fixed);
+        QSizePolicy sizePolicy1(QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Fixed);
         sizePolicy1.setHorizontalStretch(0);
         sizePolicy1.setVerticalStretch(0);
         sizePolicy1.setHeightForWidth(deviceCombo->sizePolicy().hasHeightForWidth());
@@ -137,7 +137,7 @@ public:
 
         hboxLayout3->addWidget(label_3);
 
-        spacerItem = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        spacerItem = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         hboxLayout3->addItem(spacerItem);
 
@@ -147,7 +147,7 @@ public:
 
         hboxLayout3->addWidget(label_5);
 
-        spacerItem1 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        spacerItem1 = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         hboxLayout3->addItem(spacerItem1);
 

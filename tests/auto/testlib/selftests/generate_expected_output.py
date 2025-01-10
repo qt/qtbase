@@ -201,9 +201,9 @@ class Scanner (object):
 
 del re
 
-# Keep in sync with tst_selftests.cpp's processEnvironment():
+# Keep in sync with tst_selftests.cpp's testEnvironment():
 def baseEnv(platname=None,
-            keep=('PATH', 'QT_QPA_PLATFORM'),
+            keep=('PATH', 'QT_QPA_PLATFORM', 'ASAN_OPTIONS'),
             posix=('HOME', 'USER', 'QEMU_SET_ENV', 'QEMU_LD_PREFIX'),
             nonapple=('DISPLAY', 'XAUTHORITY', 'XAUTHLOCALHOSTNAME'), # and XDG_*
             # Don't actually know how to test for QNX, so this is ignored:

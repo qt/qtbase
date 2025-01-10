@@ -39,13 +39,13 @@ public:
         InputPage->resize(417, 242);
         gridLayout = new QGridLayout(InputPage);
         gridLayout->setObjectName("gridLayout");
-        spacerItem = new QSpacerItem(20, 20, QSizePolicy::Minimum, QSizePolicy::Fixed);
+        spacerItem = new QSpacerItem(20, 20, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Fixed);
 
         gridLayout->addItem(spacerItem, 0, 2, 1, 1);
 
         label = new QLabel(InputPage);
         label->setObjectName("label");
-        QSizePolicy sizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
+        QSizePolicy sizePolicy(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Preferred);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(label->sizePolicy().hasHeightForWidth());
@@ -69,7 +69,7 @@ public:
 
         gridLayout->addLayout(hboxLayout, 1, 1, 1, 2);
 
-        spacerItem1 = new QSpacerItem(20, 31, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        spacerItem1 = new QSpacerItem(20, 31, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
 
         gridLayout->addItem(spacerItem1, 2, 1, 1, 1);
 

@@ -17,6 +17,7 @@ private slots:
     void valueChanged();
     void sliderMoved();
     void wrappingCheck();
+    void minEqualMaxValueOutsideRange();
 
     void notchSize_data();
     void notchSize();
@@ -170,6 +171,15 @@ void tst_QDial::wrappingCheck()
         QTest::keyPress(&dial, Qt::Key_Down);
         QCOMPARE( dial.value(), -22);
     }
+}
+
+// QTBUG-104641
+void tst_QDial::minEqualMaxValueOutsideRange()
+{
+    QDial dial;
+    dial.setRange(30, 30);
+    dial.setWrapping(true);
+    dial.setValue(45);
 }
 
 /*

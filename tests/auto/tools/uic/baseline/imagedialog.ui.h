@@ -86,7 +86,7 @@ public:
         colorDepthCombo = new QComboBox(dialog);
         colorDepthCombo->setObjectName("colorDepthCombo");
         colorDepthCombo->setGeometry(QRect(74, 83, 227, 22));
-        QSizePolicy sizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+        QSizePolicy sizePolicy(QSizePolicy::Policy::Preferred, QSizePolicy::Policy::Fixed);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(colorDepthCombo->sizePolicy().hasHeightForWidth());
@@ -98,7 +98,7 @@ public:
         nameLineEdit = new QLineEdit(dialog);
         nameLineEdit->setObjectName("nameLineEdit");
         nameLineEdit->setGeometry(QRect(74, 83, 227, 22));
-        QSizePolicy sizePolicy1(QSizePolicy::Preferred, QSizePolicy::Fixed);
+        QSizePolicy sizePolicy1(QSizePolicy::Policy::Preferred, QSizePolicy::Policy::Fixed);
         sizePolicy1.setHorizontalStretch(1);
         sizePolicy1.setVerticalStretch(0);
         sizePolicy1.setHeightForWidth(nameLineEdit->sizePolicy().hasHeightForWidth());
@@ -152,7 +152,7 @@ public:
 
         vboxLayout->addLayout(gridLayout);
 
-        spacerItem = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        spacerItem = new QSpacerItem(0, 0, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
 
         vboxLayout->addItem(spacerItem);
 
@@ -163,7 +163,7 @@ public:
         hboxLayout->setContentsMargins(1, 1, 1, 1);
         hboxLayout->setObjectName("hboxLayout");
         hboxLayout->setObjectName(QString::fromUtf8(""));
-        spacerItem1 = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        spacerItem1 = new QSpacerItem(0, 0, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         hboxLayout->addItem(spacerItem1);
 

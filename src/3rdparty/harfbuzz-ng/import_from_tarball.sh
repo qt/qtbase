@@ -45,7 +45,6 @@ copy_file_or_dir() {
 
 FILES=(AUTHORS
        COPYING
-       NEWS
        README.md
        THANKS
        )

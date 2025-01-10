@@ -337,9 +337,10 @@ if(QT_FEATURE_opengl)
         target_link_libraries(Gui PUBLIC GLESv2::GLESv2)
 
         if(INTEGRITY AND _qt_igy_gui_libs)
-            find_package(IntegrityPlatformGraphics)
-            target_link_libraries(Gui
-                INTERFACE $<LINK_ONLY:IntegrityPlatformGraphics::IntegrityPlatformGraphics>)
+            qt_internal_extend_target(Gui
+                LIBRARIES
+                    IntegrityPlatformGraphics::IntegrityPlatformGraphics
+            )
         endif()
 
     elseif(NOT QT_FEATURE_opengl_dynamic)
@@ -533,7 +534,10 @@ qt_internal_extend_target(Gui CONDITION QT_FEATURE_png
         WrapPNG::WrapPNG
 )
 
-qt_internal_extend_target(Gui CONDITION ((QT_FEATURE_png) AND (WIN32 AND MINGW)) AND (GCC_VERSION___equals___8.1.0)
+qt_internal_extend_target(Gui
+    CONDITION
+        QT_FEATURE_png AND WIN32 AND MINGW AND
+        (CMAKE_CXX_COMPILER_VESION VERSION_EQUAL "8.1.0")
     COMPILE_OPTIONS
         -fno-reorder-blocks-and-partition
 )

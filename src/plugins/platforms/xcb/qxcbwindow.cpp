@@ -60,6 +60,7 @@ QT_BEGIN_NAMESPACE
 using namespace Qt::StringLiterals;
 
 Q_LOGGING_CATEGORY(lcQpaWindow, "qt.qpa.window");
+Q_LOGGING_CATEGORY(lcQpaXcbWindow, "qt.qpa.xcb.window");
 
 Q_DECLARE_TYPEINFO(xcb_rectangle_t, Q_PRIMITIVE_TYPE);
 
@@ -95,7 +96,7 @@ const quint32 XEMBED_VERSION = 0;
 
 QXcbScreen *QXcbWindow::parentScreen()
 {
-    return parent() ? static_cast<QXcbWindow*>(parent())->parentScreen() : xcbScreen();
+    return QPlatformWindow::parent() ? static_cast<QXcbWindow*>(QPlatformWindow::parent())->parentScreen() : xcbScreen();
 }
 
 QXcbScreen *QXcbWindow::initialScreen() const
@@ -224,6 +225,7 @@ enum : quint32 {
 
 void QXcbWindow::create()
 {
+    xcb_window_t old_m_window = m_window;
     destroy();
 
     m_windowState = Qt::WindowNoState;
@@ -232,8 +234,8 @@ void QXcbWindow::create()
     Qt::WindowType type = window()->type();
 
     QXcbScreen *currentScreen = xcbScreen();
-    QXcbScreen *platformScreen = parent() ? parentScreen() : initialScreen();
-    QRect rect = parent()
+    QXcbScreen *platformScreen = QPlatformWindow::parent() ? parentScreen() : initialScreen();
+    QRect rect = QPlatformWindow::parent()
         ? QHighDpi::toNativeLocalPosition(window()->geometry(), platformScreen)
         : QHighDpi::toNativePixels(window()->geometry(), platformScreen);
 
@@ -273,11 +275,11 @@ void QXcbWindow::create()
         QWindowSystemInterface::handleWindowScreenChanged(window(), platformScreen->QPlatformScreen::screen());
 
     xcb_window_t xcb_parent_id = platformScreen->root();
-    if (parent()) {
-        xcb_parent_id = static_cast<QXcbWindow *>(parent())->xcb_window();
-        m_embedded = parent()->isForeignWindow();
+    if (QPlatformWindow::parent()) {
+        xcb_parent_id = static_cast<QXcbWindow *>(QPlatformWindow::parent())->xcb_window();
+        m_embedded = QPlatformWindow::parent()->isForeignWindow();
 
-        QSurfaceFormat parentFormat = parent()->window()->requestedFormat();
+        QSurfaceFormat parentFormat = QPlatformWindow::parent()->window()->requestedFormat();
         if (window()->surfaceType() != QSurface::OpenGLSurface && parentFormat.hasAlpha()) {
             window()->setFormat(parentFormat);
         }
@@ -295,16 +297,16 @@ void QXcbWindow::create()
             qWarning() << "Failed to use requested visual id.";
     }
 
-    if (parent()) {
+    if (QPlatformWindow::parent()) {
         // When using a Vulkan QWindow via QWidget::createWindowContainer() we
         // must make sure the visuals are compatible. Now, the parent will be
         // of RasterGLSurface which typically chooses a GLX/EGL compatible
         // visual which may not be what the Vulkan window would choose.
         // Therefore, take the parent's visual.
         if (window()->surfaceType() == QSurface::VulkanSurface
-                && parent()->window()->surfaceType() != QSurface::VulkanSurface)
+                && QPlatformWindow::parent()->window()->surfaceType() != QSurface::VulkanSurface)
         {
-            visual = platformScreen->visualForId(static_cast<QXcbWindow *>(parent())->visualId());
+            visual = platformScreen->visualForId(static_cast<QXcbWindow *>(QPlatformWindow::parent())->visualId());
         }
     }
 
@@ -491,6 +493,17 @@ void QXcbWindow::create()
 
     if (m_trayIconWindow)
         m_embedded = requestSystemTrayWindowDock();
+
+    if (m_window != old_m_window) {
+        if (!m_wmTransientForChildren.isEmpty()) {
+            QList<QPointer<QXcbWindow>> transientChildren = m_wmTransientForChildren;
+            m_wmTransientForChildren.clear();
+            for (auto transientChild : transientChildren) {
+                if (transientChild)
+                    transientChild->updateWmTransientFor();
+            }
+        }
+    }
 }
 
 QXcbWindow::~QXcbWindow()
@@ -548,7 +561,7 @@ void QXcbWindow::setGeometry(const QRect &rect)
     propagateSizeHints();
 
     QXcbScreen *currentScreen = xcbScreen();
-    QXcbScreen *newScreen = parent() ? parentScreen() : static_cast<QXcbScreen*>(screenForGeometry(rect));
+    QXcbScreen *newScreen = QPlatformWindow::parent() ? parentScreen() : static_cast<QXcbScreen*>(screenForGeometry(rect));
 
     if (!newScreen)
         newScreen = xcbScreen();
@@ -667,6 +680,44 @@ void QXcbWindow::setVisible(bool visible)
         hide();
 }
 
+void QXcbWindow::updateWmTransientFor()
+{
+    xcb_window_t transientXcbParent = XCB_NONE;
+    if (isTransient(window())) {
+        QWindow *tp = window()->transientParent();
+        if (tp && tp->handle()) {
+            QXcbWindow *handle = static_cast<QXcbWindow *>(tp->handle());
+            transientXcbParent = tp->handle()->winId();
+            if (transientXcbParent) {
+                handle->registerWmTransientForChild(this);
+                qCDebug(lcQpaXcbWindow) << Q_FUNC_INFO << static_cast<QPlatformWindow *>(handle)
+                    << " registerWmTransientForChild " << static_cast<QPlatformWindow *>(this);
+            }
+        }
+        // Default to client leader if there is no transient parent, else modal dialogs can
+        // be hidden by their parents.
+        if (!transientXcbParent)
+            transientXcbParent = connection()->clientLeader();
+        if (transientXcbParent) { // ICCCM 4.1.2.6
+            xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
+                                XCB_ATOM_WM_TRANSIENT_FOR, XCB_ATOM_WINDOW, 32,
+                                1, &transientXcbParent);
+            qCDebug(lcQpaXcbWindow, "0x%x added XCB_ATOM_WM_TRANSIENT_FOR 0x%x", m_window, transientXcbParent);
+        }
+    }
+    if (!transientXcbParent)
+        xcb_delete_property(xcb_connection(), m_window, XCB_ATOM_WM_TRANSIENT_FOR);
+}
+
+void QXcbWindow::registerWmTransientForChild(QXcbWindow *child)
+{
+    if (!child)
+        return;
+
+    if (!m_wmTransientForChildren.contains(child))
+        m_wmTransientForChildren.append(child);
+}
+
 void QXcbWindow::show()
 {
     if (window()->isTopLevel()) {
@@ -680,23 +731,7 @@ void QXcbWindow::show()
         propagateSizeHints();
 
         // update WM_TRANSIENT_FOR
-        xcb_window_t transientXcbParent = 0;
-        if (isTransient(window())) {
-            const QWindow *tp = window()->transientParent();
-            if (tp && tp->handle())
-                transientXcbParent = tp->handle()->winId();
-            // Default to client leader if there is no transient parent, else modal dialogs can
-            // be hidden by their parents.
-            if (!transientXcbParent)
-                transientXcbParent = connection()->clientLeader();
-            if (transientXcbParent) { // ICCCM 4.1.2.6
-                xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
-                                    XCB_ATOM_WM_TRANSIENT_FOR, XCB_ATOM_WINDOW, 32,
-                                    1, &transientXcbParent);
-            }
-        }
-        if (!transientXcbParent)
-            xcb_delete_property(xcb_connection(), m_window, XCB_ATOM_WM_TRANSIENT_FOR);
+        updateWmTransientFor();
 
         // update _NET_WM_STATE
         setNetWmStateOnUnmappedWindow();
@@ -1117,18 +1152,21 @@ void QXcbWindow::setWindowState(Qt::WindowStates state)
     if (state == m_windowState)
         return;
 
+    Qt::WindowStates unsetState = m_windowState & ~state;
+    Qt::WindowStates newState =  state & ~m_windowState;
+
     // unset old state
-    if (m_windowState & Qt::WindowMinimized)
+    if (unsetState & Qt::WindowMinimized)
         xcb_map_window(xcb_connection(), m_window);
-    if (m_windowState & Qt::WindowMaximized)
+    if (unsetState & Qt::WindowMaximized)
         setNetWmState(false,
                       atom(QXcbAtom::Atom_NET_WM_STATE_MAXIMIZED_HORZ),
                       atom(QXcbAtom::Atom_NET_WM_STATE_MAXIMIZED_VERT));
-    if (m_windowState & Qt::WindowFullScreen)
+    if (unsetState & Qt::WindowFullScreen)
         setNetWmState(false, atom(QXcbAtom::Atom_NET_WM_STATE_FULLSCREEN));
 
     // set new state
-    if (state & Qt::WindowMinimized) {
+    if (newState & Qt::WindowMinimized) {
         {
             xcb_client_message_event_t event;
 
@@ -1149,13 +1187,8 @@ void QXcbWindow::setWindowState(Qt::WindowStates state)
         }
         m_minimized = true;
     }
-    if (state & Qt::WindowMaximized)
-        setNetWmState(true,
-                      atom(QXcbAtom::Atom_NET_WM_STATE_MAXIMIZED_HORZ),
-                      atom(QXcbAtom::Atom_NET_WM_STATE_MAXIMIZED_VERT));
-    if (state & Qt::WindowFullScreen)
-        setNetWmState(true, atom(QXcbAtom::Atom_NET_WM_STATE_FULLSCREEN));
 
+    // set Maximized && FullScreen state if need
     setNetWmState(state);
 
     xcb_get_property_cookie_t cookie = xcb_icccm_get_wm_hints_unchecked(xcb_connection(), m_window);
@@ -1741,7 +1774,7 @@ void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *
 {
     bool fromSendEvent = (event->response_type & 0x80);
     QPoint pos(event->x, event->y);
-    if (!parent() && !fromSendEvent) {
+    if (!QPlatformWindow::parent() && !fromSendEvent) {
         // Do not trust the position, query it instead.
         auto reply = Q_XCB_REPLY(xcb_translate_coordinates, xcb_connection(),
                                  xcb_window(), xcbScreen()->root(), 0, 0);
@@ -1752,7 +1785,7 @@ void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *
     }
 
     const QRect actualGeometry = QRect(pos, QSize(event->width, event->height));
-    QPlatformScreen *newScreen = parent() ? parent()->screen() : screenForGeometry(actualGeometry);
+    QPlatformScreen *newScreen = QPlatformWindow::parent() ? QPlatformWindow::parent()->screen() : screenForGeometry(actualGeometry);
     if (!newScreen)
         return;
 
@@ -1862,7 +1895,7 @@ void QXcbWindow::handleButtonPressEvent(int event_x, int event_y, int root_x, in
 
     if (m_embedded && !m_trayIconWindow) {
         if (window() != QGuiApplication::focusWindow()) {
-            const QXcbWindow *container = static_cast<const QXcbWindow *>(parent());
+            const QXcbWindow *container = static_cast<const QXcbWindow *>(QPlatformWindow::parent());
             Q_ASSERT(container != nullptr);
 
             sendXEmbedMessage(container->xcb_window(), XEMBED_REQUEST_FOCUS);
@@ -2311,7 +2344,7 @@ bool QXcbWindow::windowEvent(QEvent *event)
             case Qt::BacktabFocusReason:
                 {
                 const QXcbWindow *container =
-                    static_cast<const QXcbWindow *>(parent());
+                    static_cast<const QXcbWindow *>(QPlatformWindow::parent());
                 sendXEmbedMessage(container->xcb_window(),
                                   focusEvent->reason() == Qt::TabFocusReason ?
                                   XEMBED_FOCUS_NEXT : XEMBED_FOCUS_PREV);

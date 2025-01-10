@@ -54,7 +54,7 @@ public:
         if (Calculator->objectName().isEmpty())
             Calculator->setObjectName("Calculator");
         Calculator->resize(314, 301);
-        QSizePolicy sizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+        QSizePolicy sizePolicy(QSizePolicy::Policy::Fixed, QSizePolicy::Policy::Fixed);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(Calculator->sizePolicy().hasHeightForWidth());

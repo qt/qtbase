@@ -18,10 +18,8 @@ static const char jsonOptionHelp[] = "compact=no|yes              Use compact JS
 static QJsonDocument convertFromVariant(const QVariant &v)
 {
     QJsonDocument doc = QJsonDocument::fromVariant(v);
-    if (!doc.isObject() && !doc.isArray()) {
-        fprintf(stderr, "Could not convert contents to JSON.\n");
-        exit(EXIT_FAILURE);
-    }
+    if (!doc.isObject() && !doc.isArray())
+        qFatal("Could not convert contents to JSON.");
     return doc;
 }
 
@@ -33,11 +31,6 @@ QString JsonConverter::name() const
 Converter::Directions JsonConverter::directions() const
 {
     return Direction::InOut;
-}
-
-Converter::Options JsonConverter::outputOptions() const
-{
-    return {};
 }
 
 const char *JsonConverter::optionsHelp() const
@@ -75,11 +68,10 @@ QVariant JsonConverter::loadFile(QIODevice *f, const Converter *&outputConverter
     if (doc.isNull())
         doc = QJsonDocument::fromJson(f->readAll(), &error);
     if (error.error) {
-        fprintf(stderr, "Could not parse JSON content: offset %d: %s",
-                error.offset, qPrintable(error.errorString()));
-        exit(EXIT_FAILURE);
+        qFatal("Could not parse JSON content: offset %d: %s",
+               error.offset, qPrintable(error.errorString()));
     }
-    if (outputConverter == null)
+    if (isNull(outputConverter))
         return QVariant();
     return doc.toVariant();
 }
@@ -94,9 +86,8 @@ void JsonConverter::saveFile(QIODevice *f, const QVariant &contents,
         } else if (s == "compact=yes"_L1) {
             format = QJsonDocument::Compact;
         } else {
-            fprintf(stderr, "Unknown option '%s' to JSON output. Valid options are:\n%s",
-                    qPrintable(s), jsonOptionHelp);
-            exit(EXIT_FAILURE);
+            qFatal("Unknown option '%s' to JSON output. Valid options are:\n%s",
+                   qPrintable(s), jsonOptionHelp);
         }
     }
 

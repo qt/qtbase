@@ -486,15 +486,15 @@ QTimeZone::QTimeZone(int offsetSeconds)
 /*!
     Creates a custom time zone instance at fixed offset from UTC.
 
-    The returned time zone has an ID of \a ianaId and an offset from UTC of \a
+    The returned time zone has an ID of \a zoneId and an offset from UTC of \a
     offsetSeconds.  The \a name will be the name used by displayName() for the
     LongName, the \a abbreviation will be used by displayName() for the
     ShortName and by abbreviation(), and the optional \a territory will be used
     by territory().  The \a comment is an optional note that may be displayed in
     a GUI to assist users in selecting a time zone.
 
-    The \a ianaId must not be one of the available system IDs returned by
-    availableTimeZoneIds().  The \a offsetSeconds from UTC must be in the range
+    The \a zoneId \e{must not} be one of the available system IDs returned by
+    availableTimeZoneIds(). The \a offsetSeconds from UTC must be in the range
     -14 hours to +14 hours.
 
     If the custom time zone does not have a specific territory then set it to the
@@ -505,10 +505,12 @@ QTimeZone::QTimeZone(int offsetSeconds)
     \sa id(), offsetFromUtc(), displayName(), abbreviation(), territory(), comment()
 */
 
-QTimeZone::QTimeZone(const QByteArray &ianaId, int offsetSeconds, const QString &name,
+QTimeZone::QTimeZone(const QByteArray &zoneId, int offsetSeconds, const QString &name,
                      const QString &abbreviation, QLocale::Territory territory, const QString &comment)
-    : d(isTimeZoneIdAvailable(ianaId) ? nullptr // Don't let client code hijack a real zone name.
-        : new QUtcTimeZonePrivate(ianaId, offsetSeconds, name, abbreviation, territory, comment))
+    : d(QUtcTimeZonePrivate().isTimeZoneIdAvailable(zoneId)
+        || global_tz->backend->isTimeZoneIdAvailable(zoneId)
+        ? nullptr // Don't let client code hijack a real zone name.
+        : new QUtcTimeZonePrivate(zoneId, offsetSeconds, name, abbreviation, territory, comment))
 {
 }
 
@@ -1361,8 +1363,9 @@ bool QTimeZone::isTimeZoneIdAvailable(const QByteArray &ianaId)
     // IDs as availableTimeZoneIds() may be slow
     if (!QTimeZonePrivate::isValidId(ianaId))
         return false;
-    return QUtcTimeZonePrivate().isTimeZoneIdAvailable(ianaId) ||
-           global_tz->backend->isTimeZoneIdAvailable(ianaId);
+    return QUtcTimeZonePrivate().isTimeZoneIdAvailable(ianaId)
+        || QUtcTimeZonePrivate::offsetFromUtcString(ianaId) != QTimeZonePrivate::invalidSeconds()
+        || global_tz->backend->isTimeZoneIdAvailable(ianaId);
 }
 
 static QList<QByteArray> set_union(const QList<QByteArray> &l1, const QList<QByteArray> &l2)

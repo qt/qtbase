@@ -5,78 +5,152 @@
     \example serialization/convert
     \examplecategory {Data Processing & I/O}
     \meta tag {network}
-    \title Convert Example
+    \title Serialization Converter
 
-    \brief The Convert example demonstrates how to convert between different
-    serialization formats.
+    \brief How to convert between different serialization formats.
 
-    The Convert example converts between the serialization formats JSON, CBOR,
-    XML, QDataStream and text. It can also auto detect the format being used.
-    Not all formats support both input and output, and they have different
-    sets of which types they support. QDataStream and XML are the richest,
-    followed by CBOR, then JSON, and then the plain text one.
+    This example converts between JSON, CBOR, XML, QDataStream and some simple
+    text formats. It can auto-detect the format being used, or be told which
+    format to use. Not all formats support both input and output, and they have
+    different sets of which content datatypes they support. QDataStream and XML
+    are the richest, followed by CBOR, then JSON, and then the plain text
+    formats. Conversion via the less capable formats is apt to lose structure
+    from the data.
 
     \image convert.png
 
+    \sa {Parsing and displaying CBOR data}, {JSON Save Game}
+
     \section1 The Converter Class
 
-    The Converter class is the abstract superclass for all the converters to
-    and from all the formats. They all convert to and from the QVariant class,
-    which is used to represent all the datastructures internally.
+    The Converter class is the abstract superclass for all the converters to and
+    from all the formats. They all convert from or to the QVariant class, which
+    is used to represent all the datastructures internally.
+
+    \snippet serialization/convert/converter.h 0
+
+    The Converter constructor and destructor manage a list of available
+    converters used by the main program so that it knows what converters are
+    available. Each converter type defines a static instance that ensures it is
+    constructed and thus available to the main program via this list. The \c
+    allConverters() method provides \c main()'s code with access to the list.
+
+    \snippet serialization/convert/converter.cpp 0
+
     The name() function returns the name of the converter. The directions()
     function is used to determine if a converter can be used for input, output,
-    or both. The outputOptions() and optionsHelp() functions are used to get
-    and query which options are used by the different converters. The
-    probeFile() function is used to determine if a file has the same file
-    format as the converter. The loadFile() function deserializes the given
-    file, while the saveFile() serializes to the given file.
+    or both. These enable the main program to report what converters are
+    available in its help text for the command-line options to select input and
+    output formats.
 
-    \section1 The CborConverter Class
+    \snippet serialization/convert/main.cpp 0
 
-    The CborConverter class shows how to serialize to and from the CBOR-format.
+    The optionsHelp() function is used to report the various command-line
+    options supported by the available formats, when queried using its \c
+    {--format-options <format>} command-line option.
+
+    \snippet serialization/convert/main.cpp 1
+
+    The outputOptions() function reports the output capabilities of a converter.
+    At present the only optional feature is support for arbitrary keys in
+    mappings from keys to values. An input converter's loadFile() can use this
+    information to tailor the form in which it presents the data it has read, to
+    be as faithfully represented by the output converter as its capabilities
+    permit.
+
+    The probeFile() function is used to determine if a file matches the format
+    of the converter. The main program uses this to determine what format to use
+    when reading or writing a file, based on its name and potentially content,
+    when the user has not specified the format to use on the command-line.
+
+    The loadFile() function deserializes data. The caller tells loadFile() which
+    serializer it intends to use, so that loadFile() can query its
+    outputOptions() to determine the form in which to represent the loaded data.
+    If the caller hasn't settled on a choice of output converter, loadFile()
+    supplies it with a default output converter suitable to the data it is
+    returning.
+
+    The saveFile() function serializes data. It is passed options from the
+    command-line, as described by loadHelp(), that can tune the details of how
+    it represents the data when saving to file.
+
+    Both loadFile() and saveFile() can be used with an arbitrary \l QIODevice.
+    This means that a Converter could also be used with a network socket or
+    other source of data, to read from or write to. In the present program, the
+    main program always passes a \l QFile, accessing either a file on disk or
+    one of the standard streams of the process.
+
+    \section2 The Available Converters
+
+    Several converters are supported, illustrating how the converter program
+    could be adapted to other formats, should the need arise. See the source
+    code for each for its details. The CBOR converters serve as a relatively
+    full-featured illustration of the ways converters can work, that we'll look
+    into in more detail below. This table summarizes the available converters:
+
+    \table
+      \header \li Class \li mode \li format
+      \row \li CborConverter \li In/Out \li CBOR
+      \row \li CborDiagnosticDumper \li Out \li CBOR diagnostic
+      \row \li DataStreamConverter \li In/Out \li QDataStream
+      \row \li DebugTextDumper \li Out \li Lossless, non-standard, human-readable
+      \row \li JsonConverter \li In/Out \li JSON
+      \row \li NullConverter \li Out \li No output
+      \row \li TextConverter \li In/Out \li Structured plain text
+      \row \li XmlConverter \li In/Out \li XML
+    \endtable
+
+    Those that support input use themselves as loadFile()'s fallback converter,
+    except for the CBOR and QDataStream converters, which use their respective
+    output-only dumper companion classes. The null converter can be used as
+    output converter when running the program for the sake of any validation or
+    verification that an input converter may perform.
+
+    \section2 The CborConverter and CborDiagnosticDumper Classes
+
+    The CborConverter class supports serializing to and from the CBOR format.
+    It supports various options to configure the output of floating point values
+    and a \c{signature} option to determine whether to start its output with a
+    CBOR tag that serves as a file header, identifying the file as containing
+    CBOR data.
+
     There is also a CborDiagnosticDumper class to output in CBOR diagnostic
-    notation. That is similar to JSON, but not exactly, because it allows
-    displaying the contents of a CBOR stream losslessly, while a conversion
-    to JSON is lossy.
+    notation. It does not support loading data. The form of its output can be
+    configured using two options. One selects whether to use the (more verbose)
+    extended CBOR diagnostic format. The other control whether each CBOR value
+    appears on a separate line.
 
-    The convertCborValue() function is used to convert a QCborValue to a
-    QVariant. It uses the helper functions convertCborMap() and
-    convertCborArray().
+    The plain diagnostic notation is similar to JSON, but not exactly, because
+    it supports displaying the contents of a CBOR stream losslessly, while a
+    conversion to JSON can be lossy. CborConverter's loadFile() uses
+    CborDiagnosticDumper for the fallback output converter, if its caller hasn't
+    determined the output format for itself.
+
+    The convertCborValue(), convertCborMap() and convertCborArray() helper
+    functions are used to convert a QCborValue to a QVariant, for the benefit of
+    CborConverter::loadFile().
+
     \snippet serialization/convert/cborconverter.cpp 0
 
-    A CBOR-file is read using loadFile() function.
-    \snippet serialization/convert/cborconverter.cpp 2
-
     The convertFromVariant() function is used to convert a QVariant to a
-    QCborValue.
-    \snippet serialization/convert/cborconverter.cpp 1
+    QCborValue for output by the \c saveFile() of either class.
 
-    A CBOR-file is written using the saveFile() function.
-    \snippet serialization/convert/cborconverter.cpp 3
-    \snippet serialization/convert/cborconverter.cpp 4
+    \snippet serialization/convert/cborconverter.cpp 1
 
     \sa {CBOR Support in Qt}
 
-    \section1 The DataStreamConverter Class
+    \section1 The convert program
 
-    The DataStreamConverter class is used to serialize to and from the
-    QDataStream format. There is also the DebugTextDumper class for outputting
-    the data lossless in a non-standardized human readable format.
+    The \c main() function sets up a \l QApplication and a \l QCommandLineParser
+    to make sense of the options the user has specified and provide help if the
+    user asks for it. It uses the values obtained for the various \l
+    QCommandLineOption instances describing the user's choices, plus the
+    positional arguments for file names, to prepare the converters it will use.
 
-    \section1 The JsonConverter Class
+    It then uses its input converter to load data (and possibly resolve its
+    choice of output converter, if it hasn't selected one yet) and its output
+    converter to serialize that data, taking account of any output options the
+    user has supplied on the command-line.
 
-    The JsonConverter class is used to serialize to and from the JSON-format.
-    \sa {JSON Support in Qt}
-
-    \section1 The XmlConverter Class
-
-    The XmlConverter class is used to serialize to and from the XML-format.
-
-    \section1 The TextConverter Class
-
-    The TextConverter class is used to serialize to and from a text format.
-
-    \section1 The NullConverter Class
-
-    The NullConverter class is an output serializer that does nothing.
+    \snippet serialization/convert/main.cpp 2
 */

@@ -722,8 +722,13 @@ static QPoint positionMenu(const QToolButton *q, bool horizontal,
             }
         }
     }
+
+    // QTBUG-118695 Force point inside the current screen. If the returned point
+    // is not found inside any screen, QMenu's positioning logic kicks in without
+    // taking the QToolButton's screen into account. This can cause the menu to
+    // end up on primary monitor, even if the QToolButton is on a non-primary monitor.
     p.rx() = qMax(screen.left(), qMin(p.x(), screen.right() - sh.width()));
-    p.ry() += 1;
+    p.ry() = qMax(screen.top(), qMin(p.y() + 1, screen.bottom()));
     return p;
 }
 

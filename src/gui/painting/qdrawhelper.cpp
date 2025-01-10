@@ -513,9 +513,8 @@ static DestFetchProcFP destFetchProcFP[QImage::NImageFormats] =
 */
 static inline QRgb findNearestColor(QRgb color, QRasterBuffer *rbuf)
 {
-    QRgb color_0 = qPremultiply(rbuf->destColor0);
-    QRgb color_1 = qPremultiply(rbuf->destColor1);
-    color = qPremultiply(color);
+    const QRgb color_0 = rbuf->destColor0;
+    const QRgb color_1 = rbuf->destColor1;
 
     int r = qRed(color);
     int g = qGreen(color);
@@ -3779,7 +3778,8 @@ static void spanfill_from_first(QRasterBuffer *rasterBuffer, QPixelLayout::BPP b
 #define QT_THREAD_PARALLEL_FILLS(function) \
     const int segments = (count + 32) / 64; \
     QThreadPool *threadPool = QThreadPoolPrivate::qtGuiInstance(); \
-    if (segments > 1 && threadPool && !threadPool->contains(QThread::currentThread())) { \
+    if (segments > 1 && qPixelLayouts[data->rasterBuffer->format].bpp >= QPixelLayout::BPP8 \
+             && threadPool && !threadPool->contains(QThread::currentThread())) { \
         QSemaphore semaphore; \
         int c = 0; \
         for (int i = 0; i < segments; ++i) { \

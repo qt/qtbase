@@ -10,15 +10,10 @@
 RenderThread::RenderThread(QObject *parent)
     : QThread(parent)
 {
-    m_abort = false;
 }
 
 RenderThread::~RenderThread()
 {
-    mutex.lock();
-    m_abort = true;
-    mutex.unlock();
-
     wait();
 }
 
@@ -29,7 +24,6 @@ void RenderThread::processImage(const QImage &image)
         return;
 
     m_image = image;
-    m_abort = false;
     start();
 }
 
@@ -60,17 +54,10 @@ void RenderThread::run()
             const Block block(QRect(x1, y1, x2 - x1 + 1, y2 - y1 + 1),
                         QColor(red/n, green/n, blue/n));
             emit sendBlock(block);
-            if (m_abort)
+            if (isInterruptionRequested())
                 return;
             msleep(10);
         }
     }
 }
 //![processing the image (finish)]
-
-void RenderThread::stopProcess()
-{
-    mutex.lock();
-    m_abort = true;
-    mutex.unlock();
-}

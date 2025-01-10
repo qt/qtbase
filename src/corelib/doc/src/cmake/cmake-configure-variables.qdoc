@@ -368,7 +368,10 @@ To disable this behavior, set this variable to \c TRUE.
 
 When cross-compiling, this variable must be set to the install location of Qt for the host
 platform. It is used to locate tools to be run on the host (\l{moc}, \l{rcc},
-\l{androiddeployqt}, and so on).
+\l{androiddeployqt}, and so on). It's possible to reuse pre-installed tools
+when compiling Qt for host systems too, by using \c QT_HOST_PATH that points to
+a pre-installed host Qt and setting the \c QT_FORCE_FIND_TOOLS to \c ON. The Qt
+versions should match in this case.
 */
 
 /*!

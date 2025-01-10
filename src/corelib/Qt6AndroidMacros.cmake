@@ -640,7 +640,8 @@ function(_qt_internal_collect_apk_dependencies)
 
     get_property(apk_targets GLOBAL PROPERTY _qt_apk_targets)
 
-    _qt_internal_collect_buildsystem_shared_libraries(libs "${CMAKE_SOURCE_DIR}")
+    _qt_internal_collect_buildsystem_targets(libs
+        "${CMAKE_SOURCE_DIR}" INCLUDE SHARED_LIBRARY MODULE_LIBRARY)
     list(REMOVE_DUPLICATES libs)
 
     if(NOT TARGET qt_internal_plugins)
@@ -667,28 +668,6 @@ function(_qt_internal_collect_apk_dependencies)
     set_target_properties(_qt_internal_apk_dependencies PROPERTIES
         _qt_android_extra_library_dirs "${extra_library_dirs}"
     )
-endfunction()
-
-# This function recursively walks the current directory and its subdirectories to collect shared
-# library targets built in those directories.
-function(_qt_internal_collect_buildsystem_shared_libraries out_var subdir)
-    set(result "")
-    get_directory_property(buildsystem_targets DIRECTORY ${subdir} BUILDSYSTEM_TARGETS)
-    foreach(buildsystem_target IN LISTS buildsystem_targets)
-        if(buildsystem_target AND TARGET ${buildsystem_target})
-            get_target_property(target_type ${buildsystem_target} TYPE)
-            if(target_type STREQUAL "SHARED_LIBRARY" OR target_type STREQUAL "MODULE_LIBRARY")
-                list(APPEND result ${buildsystem_target})
-            endif()
-        endif()
-    endforeach()
-
-    get_directory_property(subdirs DIRECTORY "${subdir}" SUBDIRECTORIES)
-    foreach(dir IN LISTS subdirs)
-        _qt_internal_collect_buildsystem_shared_libraries(result_inner "${dir}")
-    endforeach()
-    list(APPEND result ${result_inner})
-    set(${out_var} "${result}" PARENT_SCOPE)
 endfunction()
 
 # This function collects all imported shared libraries that might be dependencies for

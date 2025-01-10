@@ -81,7 +81,7 @@ public:
 
         vboxLayout1->addWidget(downButton);
 
-        spacerItem = new QSpacerItem(20, 99, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        spacerItem = new QSpacerItem(20, 99, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
 
         vboxLayout1->addItem(spacerItem);
 

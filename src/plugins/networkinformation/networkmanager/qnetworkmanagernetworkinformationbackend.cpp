@@ -167,6 +167,8 @@ private:
 
 QNetworkManagerNetworkInformationBackend::QNetworkManagerNetworkInformationBackend()
 {
+    if (!iface.isValid())
+        return;
     auto updateReachability = [this](QNetworkManagerInterface::NMState newState) {
         setReachability(reachabilityFromNMState(newState));
     };

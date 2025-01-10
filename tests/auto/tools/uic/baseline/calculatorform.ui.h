@@ -45,7 +45,7 @@ public:
         if (CalculatorForm->objectName().isEmpty())
             CalculatorForm->setObjectName("CalculatorForm");
         CalculatorForm->resize(276, 98);
-        QSizePolicy sizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+        QSizePolicy sizePolicy(QSizePolicy::Policy::Preferred, QSizePolicy::Policy::Preferred);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(CalculatorForm->sizePolicy().hasHeightForWidth());
@@ -154,11 +154,11 @@ public:
 
         gridLayout->addLayout(hboxLayout, 0, 0, 1, 1);
 
-        spacerItem = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        spacerItem = new QSpacerItem(20, 40, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
 
         gridLayout->addItem(spacerItem, 1, 0, 1, 1);
 
-        spacerItem1 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        spacerItem1 = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         gridLayout->addItem(spacerItem1, 0, 1, 1, 1);
 

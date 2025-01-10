@@ -10,6 +10,7 @@
 #include "private/qstringiterator_p.h"
 #include "private/qtools_p.h"
 #include "qbytearraymatcher.h"
+#include "qcontainertools_impl.h"
 
 #if QT_CONFIG(icu)
 #include <unicode/ucnv.h>
@@ -22,8 +23,11 @@
 #include <qt_windows.h>
 #ifndef QT_BOOTSTRAPPED
 #include <QtCore/qvarlengtharray.h>
+#include <QtCore/q20iterator.h>
 #endif // !QT_BOOTSTRAPPED
 #endif
+
+#include <array>
 
 #if __has_include(<bit>) && __cplusplus > 201703L
 #include <bit>
@@ -1253,60 +1257,13 @@ int QLocal8Bit::checkUtf8()
     return GetACP() == CP_UTF8 ? 1 : -1;
 }
 
-static QString convertToUnicodeCharByChar(QByteArrayView in, QStringConverter::State *state)
+QString QLocal8Bit::convertToUnicode_sys(QByteArrayView in, QStringConverter::State *state)
 {
-    qsizetype length = in.size();
-    const char *chars = in.data();
-
-    Q_ASSERT(state);
-    if (state->flags & QStringConverter::Flag::Stateless) // temporary
-        state = nullptr;
-
-    if (!chars || !length)
-        return QString();
-
-    qsizetype copyLocation = 0;
-    qsizetype extra = 2;
-    if (state && state->remainingChars) {
-        copyLocation = state->remainingChars;
-        extra += copyLocation;
-    }
-    qsizetype newLength = length + extra;
-    char *mbcs = new char[newLength];
-    //ensure that we have a NULL terminated string
-    mbcs[newLength-1] = 0;
-    mbcs[newLength-2] = 0;
-    memcpy(&(mbcs[copyLocation]), chars, length);
-    if (copyLocation) {
-        //copy the last character from the state
-        mbcs[0] = (char)state->state_data[0];
-        state->remainingChars = 0;
-    }
-    const char *mb = mbcs;
-    const char *next = 0;
-    QString s;
-    while ((next = CharNextExA(CP_ACP, mb, 0)) != mb) {
-        wchar_t wc[2] ={0};
-        int charlength = int(next - mb); // always just a few bytes
-        int len = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED|MB_ERR_INVALID_CHARS, mb, charlength, wc, 2);
-        if (len>0) {
-            s.append(QChar(wc[0]));
-        } else {
-            int r = GetLastError();
-            //check if the character being dropped is the last character
-            if (r == ERROR_NO_UNICODE_TRANSLATION && mb == (mbcs+newLength -3) && state) {
-                state->remainingChars = 1;
-                state->state_data[0] = (char)*mb;
-            }
-        }
-        mb = next;
-    }
-    delete [] mbcs;
-    return s;
+    return convertToUnicode_sys(in, CP_ACP, state);
 }
 
-
-QString QLocal8Bit::convertToUnicode_sys(QByteArrayView in, QStringConverter::State *state)
+QString QLocal8Bit::convertToUnicode_sys(QByteArrayView in, quint32 codePage,
+                                         QStringConverter::State *state)
 {
     qsizetype length = in.size();
 
@@ -1314,94 +1271,128 @@ QString QLocal8Bit::convertToUnicode_sys(QByteArrayView in, QStringConverter::St
     const char *mb = in.data();
     int mblen = length;
 
+    if (state && state->flags & QStringConverter::Flag::Stateless)
+        state = nullptr;
+
     if (!mb || !mblen)
         return QString();
 
-    QVarLengthArray<wchar_t, 4096> wc(4096);
-    int len;
-    QString sp;
-    bool prepend = false;
-    char state_data = 0;
-    int remainingChars = 0;
+    std::array<wchar_t, 4096> buf;
+    wchar_t *out = buf.data();
+    qsizetype outlen = buf.size();
 
-    //save the current state information
-    if (state) {
-        state_data = (char)state->state_data[0];
-        remainingChars = state->remainingChars;
-    }
+    int len = 0;
+    QString sp;
 
     //convert the pending character (if available)
-    if (state && remainingChars) {
-        char prev[3] = {0};
-        prev[0] = state_data;
-        prev[1] = mb[0];
-        remainingChars = 0;
-        len = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED,
-                                    prev, 2, wc.data(), wc.length());
+    if (state && state->remainingChars) {
+        // Use at most 6 characters as a guess for the longest encoded character
+        // in any multibyte encoding.
+        // Even with a total of 2 bytes of overhead that would leave around
+        // 2^(4 * 8) possible characters
+        std::array<char, 6> prev = {0};
+        Q_ASSERT(state->remainingChars <= q20::ssize(state->state_data));
+        int remainingChars = state->remainingChars;
+        for (int i = 0; i < remainingChars; ++i)
+            prev[i] = state->state_data[i];
+        do {
+            prev[remainingChars] = *mb;
+            ++mb;
+            --mblen;
+            ++remainingChars;
+            len = MultiByteToWideChar(codePage, MB_ERR_INVALID_CHARS, prev.data(),
+                                      remainingChars, out, int(outlen));
+        } while (!len && mblen && remainingChars < int(prev.size()));
         if (len) {
-            sp.append(QChar(wc[0]));
-            if (mblen == 1) {
-                state->remainingChars = 0;
-                return sp;
-            }
-            prepend = true;
-            mb++;
-            mblen--;
-            wc[0] = 0;
+            state->remainingChars = 0;
+            if (mblen == 0)
+                return QStringView(out, len).toString();
+            out += len;
+            outlen -= len;
+        } else if (mblen == 0 && remainingChars <= q20::ssize(state->state_data)) {
+            // Update the state, maybe we're lucky next time
+            for (int i = state->remainingChars; i < remainingChars; ++i)
+                state->state_data[i] = prev[i];
+            state->remainingChars = remainingChars;
+            return QString();
+        } else {
+            // Reset the pointer and length, since we used none of it.
+            mb = in.data();
+            mblen = in.length();
+
+            // We couldn't decode any of the characters in the saved state,
+            // so output replacement characters
+            for (int i = 0; i < state->remainingChars; ++i)
+                out[i] = QChar::ReplacementCharacter;
+            out += state->remainingChars;
+            outlen -= state->remainingChars;
+            state->remainingChars = 0;
         }
     }
 
-    while (!(len=MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED|MB_ERR_INVALID_CHARS,
-                mb, mblen, wc.data(), wc.length()))) {
+    Q_ASSERT(mblen > 0);
+    Q_ASSERT(!state || state->remainingChars == 0);
+
+    while (!(len = MultiByteToWideChar(codePage, MB_ERR_INVALID_CHARS, mb, mblen, out,
+                                          int(outlen)))) {
         int r = GetLastError();
         if (r == ERROR_INSUFFICIENT_BUFFER) {
-                const int wclen = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED,
-                                    mb, mblen, 0, 0);
-                wc.resize(wclen);
-        } else if (r == ERROR_NO_UNICODE_TRANSLATION) {
-            //find the last non NULL character
-            while (mblen > 1  && !(mb[mblen-1]))
-                mblen--;
-            //check whether,  we hit an invalid character in the middle
-            if ((mblen <= 1) || (remainingChars && state_data))
-                return convertToUnicodeCharByChar(in, state);
-            //Remove the last character and try again...
-            state_data = mb[mblen-1];
-            remainingChars = 1;
-            mblen--;
+            Q_ASSERT(QtPrivate::q_points_into_range(out, buf.data(), buf.data() + buf.size()));
+            const int wclen = MultiByteToWideChar(codePage, 0, mb, mblen, 0, 0);
+            const qsizetype offset = qsizetype(out - buf.data());
+            sp.resize(offset + wclen);
+            auto it = reinterpret_cast<wchar_t *>(sp.data());
+            it = std::copy_n(buf.data(), offset, it);
+            out = it;
+            outlen = wclen;
+        } else if (r == ERROR_NO_UNICODE_TRANSLATION && state
+                   && state->remainingChars < q20::ssize(state->state_data)) {
+            ++state->remainingChars;
+            --mblen;
+            for (qsizetype i = 0; i < state->remainingChars; ++i)
+                state->state_data[i] = mb[mblen + i];
+            if (mblen == 0)
+                break;
         } else {
             // Fail.
             qWarning("MultiByteToWideChar: Cannot convert multibyte text");
             break;
         }
     }
+    out += len;
+    if (len)
+        mblen = 0;
 
-    if (len <= 0)
-        return QString();
-
-    if (wc[len-1] == 0) // len - 1: we don't want terminator
-        --len;
-
-    //save the new state information
-    if (state) {
-        state->state_data[0] = (char)state_data;
-        state->remainingChars = remainingChars;
+    if (sp.isEmpty()) {
+        // We must have only used the stack buffer
+        if (out != buf.data()) // else: we return null-string
+            sp = QStringView(buf.data(), out).toString();
+    } else{
+        const auto begin = reinterpret_cast<wchar_t *>(sp.data());
+        sp.truncate(std::distance(begin, out));
     }
-    QString s((QChar*)wc.data(), len);
-    if (prepend) {
-        return sp+s;
-    }
-    return s;
+
+    if (sp.size() && sp.back().isNull())
+        sp.chop(1);
+
+    if (!state && mblen > 0) // We have trailing characters that should be converted
+        sp.resize(sp.size() + mblen, QChar::ReplacementCharacter);
+    return sp;
 }
 
 QByteArray QLocal8Bit::convertFromUnicode_sys(QStringView in, QStringConverter::State *state)
 {
-    const QChar *ch = in.data();
+    return convertFromUnicode_sys(in, CP_ACP, state);
+}
+
+QByteArray QLocal8Bit::convertFromUnicode_sys(QStringView in, quint32 codePage,
+                                              QStringConverter::State *state)
+{
+    const wchar_t *ch = reinterpret_cast<const wchar_t *>(in.data());
     qsizetype uclen = in.size();
 
     Q_ASSERT(uclen < INT_MAX); // ### FIXME
     Q_ASSERT(state);
-    Q_UNUSED(state); // ### Fixme
     if (state->flags & QStringConverter::Flag::Stateless) // temporary
         state = nullptr;
 
@@ -1409,30 +1400,75 @@ QByteArray QLocal8Bit::convertFromUnicode_sys(QStringView in, QStringConverter::
         return QByteArray();
     if (uclen == 0)
         return QByteArray("");
-    BOOL used_def;
-    QByteArray mb(4096, 0);
-    int len;
-    while (!(len=WideCharToMultiByte(CP_ACP, 0, (const wchar_t*)ch, uclen,
-                mb.data(), mb.size()-1, 0, &used_def)))
-    {
+
+    std::array<char, 4096> buf;
+    char *out = buf.data();
+    qsizetype outlen = buf.size();
+    QByteArray mb;
+
+    if (state && state->remainingChars > 0) {
+        Q_ASSERT(state->remainingChars == 1);
+        // Let's try to decode the pending character
+        wchar_t wc[2] = { wchar_t(state->state_data[0]), ch[0] };
+        int len = WideCharToMultiByte(codePage, 0, wc, int(std::size(wc)), out, outlen, nullptr,
+                                      nullptr);
+        if (!len)
+            return {}; // Cannot recover, and I refuse to believe it was a size limitation
+        out += len;
+        outlen -= len;
+        ++ch;
+        --uclen;
+        state->remainingChars = 0;
+        state->state_data[0] = 0;
+        if (uclen == 0)
+            return QByteArrayView(buf.data(), len).toByteArray();
+    }
+
+    if (state && QChar::isHighSurrogate(ch[uclen - 1])) {
+        // We can handle a missing low surrogate at the end of the string,
+        // so if there is one, exclude it now and store it in the state.
+        state->remainingChars = 1;
+        state->state_data[0] = ch[uclen - 1];
+        --uclen;
+        if (uclen == 0)
+            return QByteArray();
+    }
+
+    Q_ASSERT(uclen > 0);
+
+    int len = 0;
+    while (!(len = WideCharToMultiByte(codePage, 0, ch, int(uclen), out, int(outlen), nullptr,
+                                       nullptr))) {
         int r = GetLastError();
         if (r == ERROR_INSUFFICIENT_BUFFER) {
-            mb.resize(1+WideCharToMultiByte(CP_ACP, 0,
-                                (const wchar_t*)ch, uclen,
-                                0, 0, 0, &used_def));
-                // and try again...
+            Q_ASSERT(mb.isEmpty());
+            int neededLength = WideCharToMultiByte(codePage, 0, ch, int(uclen), nullptr, 0, nullptr,
+                                                   nullptr);
+            const qsizetype currentLength = out - buf.data();
+            mb.resize(currentLength + neededLength);
+            memcpy(mb.data(), out, currentLength * sizeof(*out));
+            out = mb.data() + currentLength;
+            outlen = neededLength;
+            // and try again...
         } else {
             // Fail.  Probably can't happen in fact (dwFlags is 0).
 #ifndef QT_NO_DEBUG
             // Can't use qWarning(), as it'll recurse to handle %ls
-            fprintf(stderr,
-                    "WideCharToMultiByte: Cannot convert multibyte text (error %d): %ls\n",
-                    r, reinterpret_cast<const wchar_t*>(QString(ch, uclen).utf16()));
+            fprintf(stderr, "WideCharToMultiByte: Cannot convert multibyte text (error %d): %ls\n",
+                    r,
+                    reinterpret_cast<const wchar_t *>(QStringView(ch, uclen).toString().utf16()));
 #endif
             break;
         }
     }
-    mb.resize(len);
+    out += len;
+    if (mb.isEmpty()) {
+        // We must have only used the stack buffer
+        if (out != buf.data()) // else: we return null-array
+            mb = QByteArrayView(buf.data(), out).toByteArray();
+    } else {
+        mb.truncate(std::distance(mb.data(), out));
+    }
     return mb;
 }
 #endif
@@ -2059,6 +2095,8 @@ const char *QStringConverter::name() const noexcept
 */
 std::optional<QStringConverter::Encoding> QStringConverter::encodingForName(const char *name) noexcept
 {
+    if (!name)
+        return std::nullopt;
     for (qsizetype i = 0; i < LastEncoding + 1; ++i) {
         if (nameMatch(encodingInterfaces[i].name, name))
             return QStringConverter::Encoding(i);

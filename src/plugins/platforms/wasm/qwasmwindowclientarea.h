@@ -6,6 +6,7 @@
 
 #include <QtCore/qnamespace.h>
 #include <qpa/qwindowsysteminterface.h>
+#include <QtCore/QMap>
 
 #include <emscripten/val.h>
 

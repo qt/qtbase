@@ -44,7 +44,7 @@ public:
         gridLayout->setObjectName("gridLayout");
         label_2 = new QLabel(PathPage);
         label_2->setObjectName("label_2");
-        QSizePolicy sizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
+        QSizePolicy sizePolicy(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Preferred);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(label_2->sizePolicy().hasHeightForWidth());
@@ -57,7 +57,7 @@ public:
 
         gridLayout->addWidget(filterLineEdit, 0, 1, 1, 2);
 
-        spacerItem = new QSpacerItem(20, 10, QSizePolicy::Minimum, QSizePolicy::Fixed);
+        spacerItem = new QSpacerItem(20, 10, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Fixed);
 
         gridLayout->addItem(spacerItem, 1, 1, 1, 1);
 
@@ -73,7 +73,7 @@ public:
 
         addButton = new QPushButton(PathPage);
         addButton->setObjectName("addButton");
-        QSizePolicy sizePolicy1(QSizePolicy::Maximum, QSizePolicy::Fixed);
+        QSizePolicy sizePolicy1(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Fixed);
         sizePolicy1.setHorizontalStretch(0);
         sizePolicy1.setVerticalStretch(0);
         sizePolicy1.setHeightForWidth(addButton->sizePolicy().hasHeightForWidth());
@@ -88,11 +88,11 @@ public:
 
         gridLayout->addWidget(removeButton, 4, 3, 1, 1);
 
-        spacerItem1 = new QSpacerItem(20, 51, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        spacerItem1 = new QSpacerItem(20, 51, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
 
         gridLayout->addItem(spacerItem1, 5, 3, 1, 1);
 
-        spacerItem2 = new QSpacerItem(20, 31, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        spacerItem2 = new QSpacerItem(20, 31, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
 
         gridLayout->addItem(spacerItem2, 6, 2, 1, 1);
 

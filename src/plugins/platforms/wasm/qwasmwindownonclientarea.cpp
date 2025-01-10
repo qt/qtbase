@@ -408,9 +408,15 @@ bool TitleBar::onDoubleClick()
 
 QPointF TitleBar::clipPointWithScreen(const QPointF &pointInTitleBarCoords) const
 {
-    auto *screen = m_window->platformScreen();
-    return screen->clipPoint(screen->mapFromLocal(
-            dom::mapPoint(m_element, screen->element(), pointInTitleBarCoords)));
+    auto containerRect =
+            QRectF::fromDOMRect(m_window->parentNode()->containerElement().call<emscripten::val>(
+                    "getBoundingClientRect"));
+    const auto p = dom::mapPoint(m_element, m_window->parentNode()->containerElement(),
+                                 pointInTitleBarCoords);
+
+    auto result = QPointF(qBound(0., qreal(p.x()), containerRect.width()),
+                          qBound(0., qreal(p.y()), containerRect.height()));
+    return m_window->parent() ? result : m_window->platformScreen()->mapFromLocal(result).toPoint();
 }
 
 NonClientArea::NonClientArea(QWasmWindow *window, emscripten::val qtWindowElement)

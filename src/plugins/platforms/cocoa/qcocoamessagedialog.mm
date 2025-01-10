@@ -91,15 +91,25 @@ bool QCocoaMessageDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality w
     if (!options())
         return false;
 
+    // NSAlert doesn't have a section for detailed text
+    if (!options()->detailedText().isEmpty()) {
+        qCWarning(lcQpaDialogs, "Message box contains detailed text");
+        return false;
+    }
+
+    if (Qt::mightBeRichText(options()->text()) ||
+        Qt::mightBeRichText(options()->informativeText())) {
+        // Let's fallback to non-native message box,
+        // we only have plain NSString/text in NSAlert.
+        qCDebug(lcQpaDialogs, "Message box contains text in rich text format");
+        return false;
+    }
 
     Q_ASSERT(!m_alert);
     m_alert = [NSAlert new];
     m_alert.window.title = options()->windowTitle().toNSString();
 
-    QString text = toPlainText(options()->text());
-    QString details = toPlainText(options()->detailedText());
-    if (!details.isEmpty())
-        text += u"\n\n"_s + details;
+    const QString text = toPlainText(options()->text());
     m_alert.messageText = text.toNSString();
     m_alert.informativeText = toPlainText(options()->informativeText()).toNSString();
 
@@ -127,8 +137,8 @@ bool QCocoaMessageDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality w
         break;
     }
 
-    bool defaultButtonAdded = false;
-    bool cancelButtonAdded = false;
+    auto defaultButton = options()->defaultButton();
+    auto escapeButton = options()->escapeButton();
 
     const auto addButton = [&](auto title, auto tag, auto role) {
         title = QPlatformTheme::removeMnemonics(title);
@@ -138,17 +148,27 @@ bool QCocoaMessageDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality w
         // and going toward the left/bottom. By default, the first button has a key equivalent of
         // Return, any button with a title of "Cancel" has a key equivalent of Escape, and any button
         // with the title "Don't Save" has a key equivalent of Command-D (but only if it's not the first
-        // button). Unfortunately QMessageBox does not currently plumb setDefaultButton/setEscapeButton
-        // through the dialog options, so we can't forward this information directly. The closest we
-        // can get right now is to use the role to set the button's key equivalent.
+        // button). If an explicit default or escape button has been set, we respect these,
+        // and otherwise we fall back to role-based default and escape buttons.
 
-        if (role == AcceptRole && !defaultButtonAdded) {
+        qCDebug(lcQpaDialogs).verbosity(0) << "Adding button" << title << "with" << role;
+
+        if (!defaultButton && role == AcceptRole)
+            defaultButton = tag;
+
+        if (tag == defaultButton)
             button.keyEquivalent = @"\r";
-            defaultButtonAdded = true;
-        } else if (role == RejectRole && !cancelButtonAdded) {
+        else if ([button.keyEquivalent isEqualToString:@"\r"])
+            button.keyEquivalent = @"";
+
+        if (!escapeButton && role == RejectRole)
+            escapeButton = tag;
+
+        // Don't override default button with escape button, to match AppKit default
+        if (tag == escapeButton && ![button.keyEquivalent isEqualToString:@"\r"])
             button.keyEquivalent = @"\e";
-            cancelButtonAdded = true;
-        }
+        else if ([button.keyEquivalent isEqualToString:@"\e"])
+            button.keyEquivalent = @"";
 
         if (@available(macOS 11, *))
             button.hasDestructiveAction = role == DestructiveRole;
@@ -168,29 +188,68 @@ bool QCocoaMessageDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality w
         button.tag = tag;
     };
 
+    // Resolve all dialog buttons from the options, both standard and custom
+
+    struct Button { QString title; int identifier; ButtonRole role; };
+    std::vector<Button> buttons;
+
     const auto *platformTheme = QGuiApplicationPrivate::platformTheme();
     if (auto standardButtons = options()->standardButtons()) {
-        for (int standardButton = FirstButton; standardButton < LastButton; standardButton <<= 1) {
+        for (int standardButton = FirstButton; standardButton <= LastButton; standardButton <<= 1) {
             if (standardButtons & standardButton) {
                 auto title = platformTheme->standardButtonText(standardButton);
-                addButton(title, standardButton, buttonRole(StandardButton(standardButton)));
+                buttons.push_back({
+                    title, standardButton, buttonRole(StandardButton(standardButton))
+                });
             }
         }
     }
-
     const auto customButtons = options()->customButtons();
     for (auto customButton : customButtons)
-        addButton(customButton.label, customButton.id, customButton.role);
+        buttons.push_back({customButton.label, customButton.id, customButton.role});
 
+    // Sort them according to the QPlatformDialogHelper::ButtonLayout for macOS
 
-    // QMessageDialog's logic for adding a fallback OK button if no other buttons
-    // are added depends on QMessageBox::showEvent(), which is too late when
-    // native dialogs are in use. To ensure there's always an OK button with a tag
-    // we recognize we add it explicitly here as a fallback.
-    if (!m_alert.buttons.count) {
-        addButton(platformTheme->standardButtonText(StandardButton::Ok),
-            StandardButton::Ok, ButtonRole::AcceptRole);
+    // The ButtonLayout adds one additional role, AlternateRole, which is used
+    // for any AcceptRole beyond the first one, and should be ordered before the
+    // AcceptRole. Set this up by fixing the roles up front.
+    bool seenAccept = false;
+    for (auto &button : buttons) {
+        if (button.role == AcceptRole) {
+            if (!seenAccept)
+                seenAccept = true;
+            else
+                button.role = AlternateRole;
+        }
     }
+
+    std::vector<Button> orderedButtons;
+    const int *layoutEntry = buttonLayout(Qt::Horizontal, ButtonLayout::MacLayout);
+    while (*layoutEntry != QPlatformDialogHelper::EOL) {
+        const auto role = ButtonRole(*layoutEntry & ~ButtonRole::Reverse);
+        const bool reverse = *layoutEntry & ButtonRole::Reverse;
+
+        auto addButton = [&](const Button &button) {
+            if (button.role == role)
+                orderedButtons.push_back(button);
+        };
+
+        if (reverse)
+            std::for_each(std::crbegin(buttons), std::crend(buttons), addButton);
+        else
+            std::for_each(std::cbegin(buttons), std::cend(buttons), addButton);
+
+        ++layoutEntry;
+    }
+
+    // Add them to the alert in reverse order, since buttons are added right to left
+    for (auto button = orderedButtons.crbegin(); button != orderedButtons.crend(); ++button)
+        addButton(button->title, button->identifier, button->role);
+
+    // If we didn't find a an explicit or implicit default button above
+    // we restore the AppKit behavior of making the first button default.
+    if (!defaultButton)
+        m_alert.buttons.firstObject.keyEquivalent = @"\r";
 
     if (auto checkBoxLabel = options()->checkBoxLabel(); !checkBoxLabel.isNull()) {
         checkBoxLabel = QPlatformTheme::removeMnemonics(checkBoxLabel);

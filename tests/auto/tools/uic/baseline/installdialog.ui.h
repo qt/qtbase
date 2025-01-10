@@ -73,7 +73,7 @@ public:
 
         gridLayout->addWidget(closeButton, 3, 4, 1, 1);
 
-        spacerItem = new QSpacerItem(20, 56, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        spacerItem = new QSpacerItem(20, 56, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
 
         gridLayout->addItem(spacerItem, 4, 4, 1, 1);
 

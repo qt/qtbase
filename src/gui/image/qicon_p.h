@@ -84,7 +84,7 @@ public:
     QList<QSize> availableSizes(QIcon::Mode mode, QIcon::State state) override;
     void addPixmap(const QPixmap &pixmap, QIcon::Mode mode, QIcon::State state) override;
     void addFile(const QString &fileName, const QSize &size, QIcon::Mode mode, QIcon::State state) override;
-
+    bool isNull() override;
 
     QString key() const override;
     QIconEngine *clone() const override;

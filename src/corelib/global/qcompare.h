@@ -107,7 +107,7 @@ private:
 
     // instead of the exposition only is_ordered member in [cmp.partialord],
     // use a private function
-    constexpr bool isOrdered() noexcept
+    constexpr bool isOrdered() const noexcept
     { return m_order != static_cast<QtPrivate::CompareUnderlyingType>(QtPrivate::Uncomparable::Unordered); }
 
     QtPrivate::CompareUnderlyingType m_order;

@@ -3,6 +3,7 @@
 
 #include "datastreamconverter.h"
 #include "debugtextdumper.h"
+#include "variantorderedmap.h"
 
 #include <QDataStream>
 
@@ -79,10 +80,8 @@ QVariant DataStreamConverter::loadFile(QIODevice *f, const Converter *&outputCon
         outputConverter = &debugTextDumper;
 
     char c;
-    if (f->read(sizeof(signature) - 1) != signature || !f->getChar(&c) || (c != 'l' && c != 'B')) {
-        fprintf(stderr, "Could not load QDataStream file: invalid signature.\n");
-        exit(EXIT_FAILURE);
-    }
+    if (f->read(sizeof(signature) - 1) != signature || !f->getChar(&c) || (c != 'l' && c != 'B'))
+        qFatal("Could not load QDataStream file: invalid signature.");
 
     QDataStream ds(f);
     ds.setByteOrder(c == 'l' ? QDataStream::LittleEndian : QDataStream::BigEndian);
@@ -124,15 +123,13 @@ void DataStreamConverter::saveFile(QIODevice *f, const QVariant &contents,
                     continue;
                 }
 
-                fprintf(stderr, "Invalid version number '%s': must be a number from 1 to %d.\n",
-                        qPrintable(pair.last()), QDataStream::Qt_DefaultCompiledVersion);
-                exit(EXIT_FAILURE);
+                qFatal("Invalid version number '%s': must be a number from 1 to %d.",
+                       qPrintable(pair.last()), QDataStream::Qt_DefaultCompiledVersion);
             }
         }
 
-        fprintf(stderr, "Unknown QDataStream formatting option '%s'. Available options are:\n%s",
+        qFatal("Unknown QDataStream formatting option '%s'. Available options are:\n%s",
                 qPrintable(option), dataStreamOptionHelp);
-        exit(EXIT_FAILURE);
     }
 
     char c = order == QDataStream::LittleEndian ? 'l' : 'B';

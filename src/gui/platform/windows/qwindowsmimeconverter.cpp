@@ -25,6 +25,22 @@ QT_BEGIN_NAMESPACE
     conversions between Windows Clipboard and MIME formats, you can convert
     proprietary clipboard formats to MIME formats.
 
+    Construct an instance of your converter implementation after instantiating
+    QGuiApplication:
+
+    \code
+    int main(int argc, char **argv)
+    {
+        QGuiApplication app(argc, argv);
+        JsonMimeConverter jsonConverter;
+    }
+    \endcode
+
+    Destroying the instance will unregister the converter and remove support
+    for the conversion. It is also valid to heap-allocate the converter
+    instance; Qt takes ownership and will delete the converter object during
+    QGuiApplication shut-down.
+
     Qt has predefined support for the following Windows Clipboard formats:
 
     \table
@@ -112,6 +128,8 @@ QT_BEGIN_NAMESPACE
 
     The instance is automatically registered, and will be called to convert data during
     clipboard or drag'n'drop operations.
+
+    Call this constructor after QGuiApplication has been created.
 */
 QWindowsMimeConverter::QWindowsMimeConverter()
 {

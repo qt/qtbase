@@ -1997,7 +1997,8 @@ bool QGuiApplication::notify(QObject *object, QEvent *event)
 */
 bool QGuiApplication::event(QEvent *e)
 {
-    if (e->type() == QEvent::LanguageChange) {
+    switch (e->type()) {
+    case QEvent::LanguageChange:
         // if the layout direction was set explicitly, then don't override it here
         if (layout_direction == Qt::LayoutDirectionAuto)
             setLayoutDirection(layout_direction);
@@ -2005,13 +2006,15 @@ bool QGuiApplication::event(QEvent *e)
             if (topLevelWindow->flags() != Qt::Desktop)
                 postEvent(topLevelWindow, new QEvent(QEvent::LanguageChange));
         }
-    } else if (e->type() == QEvent::ApplicationFontChange ||
-               e->type() == QEvent::ApplicationPaletteChange) {
+        break;
+    case QEvent::ApplicationFontChange:
+    case QEvent::ApplicationPaletteChange:
         for (auto *topLevelWindow : QGuiApplication::topLevelWindows()) {
             if (topLevelWindow->flags() != Qt::Desktop)
                 postEvent(topLevelWindow, new QEvent(e->type()));
         }
-    } else if (e->type() == QEvent::Quit) {
+        break;
+    case QEvent::Quit:
         // Close open windows. This is done in order to deliver de-expose
         // events while the event loop is still running.
         for (QWindow *topLevelWindow : QGuiApplication::topLevelWindows()) {
@@ -2023,8 +2026,9 @@ bool QGuiApplication::event(QEvent *e)
                 return true;
             }
         }
+    default:
+        break;
     }
-
     return QCoreApplication::event(e);
 }
 
@@ -2248,12 +2252,14 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
             qAbs(globalPoint.y() - pressPos.y()) > doubleClickDistance)
             mousePressButton = Qt::NoButton;
     } else {
+        static unsigned long lastPressTimestamp = 0;
         mouse_buttons = e->buttons;
         if (mousePress) {
             ulong doubleClickInterval = static_cast<ulong>(QGuiApplication::styleHints()->mouseDoubleClickInterval());
-            doubleClick = e->timestamp - persistentEPD->eventPoint.pressTimestamp()
+            doubleClick = e->timestamp - lastPressTimestamp
                         < doubleClickInterval && button == mousePressButton;
             mousePressButton = button;
+            lastPressTimestamp = e ->timestamp;
         }
     }
 

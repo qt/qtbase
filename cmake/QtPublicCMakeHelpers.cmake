@@ -91,3 +91,40 @@ function(__qt_internal_prefix_paths_to_roots out_var prefix_paths)
     endforeach()
     set("${out_var}" "${result}" PARENT_SCOPE)
 endfunction()
+
+# This function gets all targets below this directory
+#
+# Multi-value Arguments:
+#     EXCLUDE list of target types that should be filtered from resulting list.
+#
+#     INCLUDE list of target types that should be filtered from resulting list.
+#             EXCLUDE has higher priority than INCLUDE.
+function(_qt_internal_collect_buildsystem_targets result dir)
+    cmake_parse_arguments(arg "" "" "EXCLUDE;INCLUDE" ${ARGN})
+
+    set(forward_args "")
+    if(arg_EXCLUDE)
+        set(forward_args APPEND EXCLUDE ${arg_EXCLUDE})
+    endif()
+
+    if(arg_INCLUDE)
+        set(forward_args APPEND INCLUDE ${arg_INCLUDE})
+    endif()
+
+    get_property(subdirs DIRECTORY "${dir}" PROPERTY SUBDIRECTORIES)
+    foreach(subdir IN LISTS subdirs)
+        _qt_internal_collect_buildsystem_targets(${result} "${subdir}" ${forward_args})
+    endforeach()
+    get_property(sub_targets DIRECTORY "${dir}" PROPERTY BUILDSYSTEM_TARGETS)
+    set(real_targets "")
+    if(sub_targets)
+        foreach(target IN LISTS sub_targets)
+            get_target_property(target_type ${target} TYPE)
+            if((NOT arg_INCLUDE OR target_type IN_LIST arg_INCLUDE) AND
+                (NOT arg_EXCLUDE OR (NOT target_type IN_LIST arg_EXCLUDE)))
+                list(APPEND real_targets ${target})
+            endif()
+        endforeach()
+    endif()
+    set(${result} ${${result}} ${real_targets} PARENT_SCOPE)
+endfunction()

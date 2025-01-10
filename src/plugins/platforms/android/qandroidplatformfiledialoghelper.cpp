@@ -146,12 +146,15 @@ void QAndroidPlatformFileDialogHelper::setMimeTypes()
 {
     QStringList mimeTypes = options()->mimeTypeFilters();
     const QStringList nameFilters = options()->nameFilters();
-    const QString nameFilter = nameFilters.isEmpty() ? QString() : nameFilters.first();
 
-    if (!nameFilter.isEmpty()) {
+    if (!nameFilters.isEmpty()) {
         QMimeDatabase db;
-        for (const QString &filter : nameFilterExtensions(nameFilter))
-            mimeTypes.append(db.mimeTypeForFile(filter, QMimeDatabase::MatchExtension).name());
+        for (auto filter : nameFilters) {
+            if (!filter.isEmpty()) {
+                for (const QString &filter : nameFilterExtensions(filter))
+                    mimeTypes.append(db.mimeTypeForFile(filter, QMimeDatabase::MatchExtension).name());
+            }
+        }
     }
 
     const QString initialType = mimeTypes.size() == 1 ? mimeTypes.at(0) : "*/*"_L1;

@@ -84,7 +84,7 @@ public:
         plantComboBox->addItem(QString());
         plantComboBox->addItem(QString());
         plantComboBox->setObjectName("plantComboBox");
-        QSizePolicy sizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+        QSizePolicy sizePolicy(QSizePolicy::Policy::Preferred, QSizePolicy::Policy::Fixed);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(plantComboBox->sizePolicy().hasHeightForWidth());
@@ -92,7 +92,7 @@ public:
 
         gridLayout->addWidget(plantComboBox, 0, 1, 1, 3);
 
-        spacerItem = new QSpacerItem(67, 16, QSizePolicy::Minimum, QSizePolicy::Fixed);
+        spacerItem = new QSpacerItem(67, 16, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Fixed);
 
         gridLayout->addItem(spacerItem, 1, 0, 1, 1);
 
@@ -106,7 +106,7 @@ public:
 
         gridLayout->addWidget(temperatureCheckBox, 3, 1, 1, 3);
 
-        spacerItem1 = new QSpacerItem(16, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
+        spacerItem1 = new QSpacerItem(16, 20, QSizePolicy::Policy::Fixed, QSizePolicy::Policy::Minimum);
 
         gridLayout->addItem(spacerItem1, 4, 1, 1, 1);
 
@@ -119,7 +119,7 @@ public:
 
         gridLayout->addWidget(temperatureSpinBox, 4, 2, 1, 1);
 
-        spacerItem2 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        spacerItem2 = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         gridLayout->addItem(spacerItem2, 4, 3, 1, 1);
 
@@ -128,7 +128,7 @@ public:
 
         gridLayout->addWidget(rainCheckBox, 5, 1, 1, 3);
 
-        spacerItem3 = new QSpacerItem(16, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
+        spacerItem3 = new QSpacerItem(16, 20, QSizePolicy::Policy::Fixed, QSizePolicy::Policy::Minimum);
 
         gridLayout->addItem(spacerItem3, 6, 1, 1, 1);
 
@@ -139,11 +139,11 @@ public:
 
         gridLayout->addWidget(rainSpinBox, 6, 2, 1, 1);
 
-        spacerItem4 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        spacerItem4 = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         gridLayout->addItem(spacerItem4, 6, 3, 1, 1);
 
-        spacerItem5 = new QSpacerItem(20, 20, QSizePolicy::Minimum, QSizePolicy::Fixed);
+        spacerItem5 = new QSpacerItem(20, 20, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Fixed);
 
         gridLayout->addItem(spacerItem5, 7, 2, 1, 1);
 
@@ -195,11 +195,11 @@ public:
 
         gridLayout->addWidget(filterCheckBox, 11, 1, 1, 2);
 
-        spacerItem6 = new QSpacerItem(20, 10, QSizePolicy::Minimum, QSizePolicy::Fixed);
+        spacerItem6 = new QSpacerItem(20, 10, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Fixed);
 
         gridLayout->addItem(spacerItem6, 12, 0, 1, 1);
 
-        spacerItem7 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        spacerItem7 = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         gridLayout->addItem(spacerItem7, 4, 4, 1, 1);
 
@@ -208,7 +208,7 @@ public:
 
         gridLayout1 = new QGridLayout();
         gridLayout1->setObjectName("gridLayout1");
-        spacerItem8 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        spacerItem8 = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         gridLayout1->addItem(spacerItem8, 0, 1, 1, 1);
 

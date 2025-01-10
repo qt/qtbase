@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
 #include "debugtextdumper.h"
+#include "variantorderedmap.h"
 
 #include <QDebug>
 #include <QTextStream>
@@ -58,29 +59,13 @@ Converter::Options DebugTextDumper::outputOptions() const
     return SupportsArbitraryMapKeys;
 }
 
-const char *DebugTextDumper::optionsHelp() const
-{
-    return nullptr;
-}
-
-bool DebugTextDumper::probeFile(QIODevice *f) const
-{
-    Q_UNUSED(f);
-    return false;
-}
-
-QVariant DebugTextDumper::loadFile(QIODevice *f, const Converter *&outputConverter) const
-{
-    Q_UNREACHABLE();
-    Q_UNUSED(f);
-    Q_UNUSED(outputConverter);
-    return QVariant();
-}
-
 void DebugTextDumper::saveFile(QIODevice *f, const QVariant &contents,
                                const QStringList &options) const
 {
-    Q_UNUSED(options);
+    if (!options.isEmpty()) {
+        qFatal("Unknown option '%s' to debug text output. This format has no options.",
+               qPrintable(options.first()));
+    }
     QString s = dumpVariant(contents);
     s[s.size() - 1] = u'\n'; // replace the comma with newline
 

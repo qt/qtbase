@@ -739,20 +739,20 @@ bool QWindowsPointerHandler::translateMouseEvent(QWindow *window,
 {
     *result = 0;
 
-    QPoint eventPos(GET_X_LPARAM(msg.lParam), GET_Y_LPARAM(msg.lParam));
-    if ((et & QtWindows::NonClientEventFlag) == 0 && QWindowsBaseWindow::isRtlLayout(hwnd))  {
-        RECT clientArea;
-        GetClientRect(hwnd, &clientArea);
-        eventPos.setX(clientArea.right - eventPos.x());
-    }
-
     QPoint localPos;
     QPoint globalPos;
+    QPoint eventPos(GET_X_LPARAM(msg.lParam), GET_Y_LPARAM(msg.lParam));
 
     if ((et == QtWindows::MouseWheelEvent) || (et & QtWindows::NonClientEventFlag)) {
         globalPos = eventPos;
         localPos = QWindowsGeometryHint::mapFromGlobal(hwnd, eventPos);
     } else {
+        if (QWindowsBaseWindow::isRtlLayout(hwnd))  {
+            RECT clientArea;
+            GetClientRect(hwnd, &clientArea);
+            eventPos.setX(clientArea.right - eventPos.x());
+        }
+
         globalPos = QWindowsGeometryHint::mapToGlobal(hwnd, eventPos);
         auto targetHwnd = hwnd;
         if (auto *pw = window->handle())

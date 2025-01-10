@@ -831,14 +831,9 @@ void QTabBarPrivate::refresh()
             pressedIndex = -1;
     }
 
-    if (!q->isVisible()) {
-        layoutDirty = true;
-    } else {
-        layoutTabs();
-        makeVisible(currentIndex);
+    layoutDirty = true;
+    if (q->isVisible())
         q->update();
-        q->updateGeometry();
-    }
 }
 
 /*!
@@ -2427,7 +2422,7 @@ void QTabBarPrivate::setCurrentNextEnabledIndex(int offset)
 {
     Q_Q(QTabBar);
     for (int index = currentIndex + offset; validIndex(index); index += offset) {
-        if (tabList.at(index)->enabled) {
+        if (tabList.at(index)->enabled && tabList.at(index)->visible) {
             q->setCurrentIndex(index);
             break;
         }

@@ -362,6 +362,15 @@ void QCocoaMenuBar::insertWindowMenu()
     winMenuItem.hidden = YES;
 
     winMenuItem.submenu = [[[NSMenu alloc] initWithTitle:@"QtWindowMenu"] autorelease];
+
+    // AppKit has a bug in [NSApplication setWindowsMenu:] where it will resolve
+    // the last item of the window menu's itemArray, but not account for the array
+    // being empty, resulting in a lookup of itemAtIndex:-1. To work around this,
+    // we insert a hidden dummy item into the menu. See FB13369198.
+    auto *dummyItem = [[NSMenuItem alloc] initWithTitle:@"" action:nil keyEquivalent:@""];
+    dummyItem.hidden = YES;
+    [winMenuItem.submenu addItem:[dummyItem autorelease]];
+
     [mainMenu insertItem:winMenuItem atIndex:mainMenu.itemArray.count];
     app.windowsMenu = winMenuItem.submenu;
 

@@ -43,7 +43,7 @@ QT_BEGIN_NAMESPACE
 
     You can convert the object to and from text based JSON through QJsonDocument.
 
-    \sa {JSON Support in Qt}, {JSON Save Game Example}
+    \sa {JSON Support in Qt}, {Saving and Loading a Game}
 */
 
 /*!
@@ -223,7 +223,7 @@ QVariantHash QJsonObject::toVariantHash() const
 /*!
     Returns a list of all keys in this object.
 
-    The list is sorted lexographically.
+    The list is sorted alphabetically.
  */
 QStringList QJsonObject::keys() const
 {
@@ -851,7 +851,7 @@ QJsonObject::const_iterator QJsonObject::constFindImpl(T key) const
     Multiple iterators can be used on the same object. Existing iterators will however
     become dangling once the object gets modified.
 
-    \sa QJsonObject::const_iterator, {JSON Support in Qt}, {JSON Save Game Example}
+    \sa QJsonObject::const_iterator, {JSON Support in Qt}, {Saving and Loading a Game}
 */
 
 /*! \typedef QJsonObject::iterator::difference_type
@@ -1121,7 +1121,7 @@ QJsonObject::const_iterator QJsonObject::constFindImpl(T key) const
     Multiple iterators can be used on the same object. Existing iterators
     will however become dangling if the object gets modified.
 
-    \sa QJsonObject::iterator, {JSON Support in Qt}, {JSON Save Game Example}
+    \sa QJsonObject::iterator, {JSON Support in Qt}, {Saving and Loading a Game}
 */
 
 /*! \typedef QJsonObject::const_iterator::difference_type

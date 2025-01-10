@@ -64,7 +64,7 @@ public:
         gridLayout->setContentsMargins(0, 0, 0, 0);
         qrcFileList = new QListWidget(layoutWidget);
         qrcFileList->setObjectName("qrcFileList");
-        QSizePolicy sizePolicy(QSizePolicy::Ignored, QSizePolicy::Expanding);
+        QSizePolicy sizePolicy(QSizePolicy::Policy::Ignored, QSizePolicy::Policy::Expanding);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(qrcFileList->sizePolicy().hasHeightForWidth());
@@ -82,7 +82,7 @@ public:
 
         gridLayout->addWidget(removeQrcButton, 1, 2, 1, 1);
 
-        spacerItem = new QSpacerItem(21, 20, QSizePolicy::Ignored, QSizePolicy::Minimum);
+        spacerItem = new QSpacerItem(21, 20, QSizePolicy::Policy::Ignored, QSizePolicy::Policy::Minimum);
 
         gridLayout->addItem(spacerItem, 1, 3, 1, 1);
 
@@ -117,7 +117,7 @@ public:
 
         gridLayout1->addWidget(removeResourceButton, 1, 2, 1, 1);
 
-        horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         gridLayout1->addItem(horizontalSpacer, 1, 3, 1, 1);
 

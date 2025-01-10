@@ -60,7 +60,16 @@ imagedirs   += images \
 
 navigation.landingpage = "Qt Widgets"
 navigation.cppclassespage = "Qt Widgets C++ Classes"
-manifestmeta.highlighted.names = "QtWidgets/Qt Widgets - Application Example"
+
+# Highlighted examples for User Interface Components category
+manifestmeta.highlighted.names = \
+    "QtWidgets/Editable Tree Model Example" \
+    "QtWidgets/Menus Example"
+
+# Highlighted examples for Desktop category
+manifestmeta.highlighted.names += \
+    "QtWidgets/System Tray Icon Example" \
+    "QtWidgets/Taking a Screenshot"
 
 # Fail the documentation build if there are more warnings than the limit
 warninglimit = 0

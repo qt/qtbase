@@ -99,7 +99,7 @@ public:
 
         sendButton = new QPushButton(centralwidget);
         sendButton->setObjectName("sendButton");
-        QSizePolicy sizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
+        QSizePolicy sizePolicy(QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Fixed);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(sendButton->sizePolicy().hasHeightForWidth());

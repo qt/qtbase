@@ -478,7 +478,7 @@ struct graph_t
     for (int i = vertices_.length - 1; i >= 0; i--)
     {
       const auto& v = vertices_[i];
-      printf("%d: %lu [", i, v.table_size());
+      printf("%d: %u [", i, (unsigned int)v.table_size());
       for (const auto &l : v.obj.real_links) {
         printf("%u, ", l.objidx);
       }
@@ -566,7 +566,8 @@ struct graph_t
 
     update_distances ();
 
-    hb_priority_queue_t queue;
+    hb_priority_queue_t<int64_t> queue;
+    queue.alloc (vertices_.length);
     hb_vector_t<vertex_t> &sorted_graph = vertices_scratch_;
     if (unlikely (!check_success (sorted_graph.resize (vertices_.length)))) return;
     hb_vector_t<unsigned> id_map;
@@ -1369,7 +1370,8 @@ struct graph_t
       vertices_.arrayZ[i].distance = hb_int_max (int64_t);
     vertices_.tail ().distance = 0;
 
-    hb_priority_queue_t queue;
+    hb_priority_queue_t<int64_t> queue;
+    queue.alloc (count);
     queue.insert (0, vertices_.length - 1);
 
     hb_vector_t<bool> visited;

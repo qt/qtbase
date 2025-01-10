@@ -60,6 +60,8 @@ private slots:
 
     void staticFunctions();
 
+    void topLevelAt();
+
     void settableStyleHints_data();
     void settableStyleHints(); // Needs to run last as it changes style hints.
 };
@@ -1313,6 +1315,37 @@ void tst_QGuiApplication::staticFunctions()
 
     QTest::ignoreMessage(QtWarningMsg, "QPixmap: QGuiApplication must be created before calling defaultDepth().");
     QPixmap::defaultDepth();
+}
+
+void tst_QGuiApplication::topLevelAt()
+{
+    int argc = 1;
+    char *argv[] = { const_cast<char*>("tst_qguiapplication") };
+    QGuiApplication app(argc, argv);
+
+    QWindow bottom;
+    bottom.setObjectName("Bottom");
+    bottom.setFlag(Qt::FramelessWindowHint);
+    bottom.setGeometry(200, 200, 200, 200);
+    bottom.showNormal();
+    QVERIFY(QTest::qWaitForWindowExposed(&bottom));
+    QTRY_COMPARE(app.topLevelAt(QPoint(300, 300)), &bottom);
+
+    QWindow top;
+    top.setObjectName("Top");
+    top.setFlag(Qt::FramelessWindowHint);
+    top.setGeometry(200, 200, 200, 200);
+    top.showNormal();
+    QVERIFY(QTest::qWaitForWindowExposed(&top));
+    top.raise();
+    QTRY_COMPARE(app.topLevelAt(QPoint(300, 300)), &top);
+
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowMasks))
+        QSKIP("QWindow::setMask() is not supported.");
+
+    top.setMask(QRect(0, 0, 50, 50));
+    QTRY_COMPARE(app.topLevelAt(QPoint(300, 300)), &bottom);
+    QTRY_COMPARE(app.topLevelAt(QPoint(225, 225)), &top);
 }
 
 void tst_QGuiApplication::settableStyleHints_data()

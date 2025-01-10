@@ -13,8 +13,8 @@
         "License": "BSD 4-clause \"Original\" or \"Old\" License",
         "LicenseId": "BSD-4-Clause",
         "LicenseFile": "VALGRIND_LICENSE.txt",
-        "Copyright": "Copyright (C) 2000-2017 Julian Seward
-Copyright (C) 2003-2017 Josef Weidendorfer."
+        "Copyright": ["Copyright (C) 2000-2017 Julian Seward",
+        "Copyright (C) 2003-2017 Josef Weidendorfer."]
     },
     {
         "Id": "cycle",
@@ -27,8 +27,8 @@ Copyright (C) 2003-2017 Josef Weidendorfer."
         "License": "MIT License",
         "LicenseId": "MIT",
         "LicenseFile": "CYCLE_LICENSE.txt",
-        "Copyright": "Copyright (c) 2003, 2006 Matteo Frigo
-Copyright (c) 2003, 2006 Massachusetts Institute of Technology"
+        "Copyright": ["Copyright (c) 2003, 2006 Matteo Frigo",
+        "Copyright (c) 2003, 2006 Massachusetts Institute of Technology"]
     },
     {
         "Id": "linuxperf",
@@ -43,8 +43,8 @@ Copyright (c) 2003, 2006 Massachusetts Institute of Technology"
         "License": "GNU General Public License v2.0 only with Linux Syscall Note",
         "LicenseId": "GPL-2.0-only WITH Linux-syscall-note",
         "LicenseFile": "LINUX_LICENSE.txt",
-        "Copyright": "Copyright (C) 2008-2009, Thomas Gleixner <tglx@linutronix.de>
-Copyright (C) 2008-2011, Red Hat, Inc., Ingo Molnar
-Copyright (C) 2008-2011, Red Hat, Inc., Peter Zijlstra"
+        "Copyright": ["Copyright (C) 2008-2009, Thomas Gleixner <tglx@linutronix.de>",
+        "Copyright (C) 2008-2011, Red Hat, Inc., Ingo Molnar",
+        "Copyright (C) 2008-2011, Red Hat, Inc., Peter Zijlstra"]
     }
 ]

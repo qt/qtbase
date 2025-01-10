@@ -8,7 +8,7 @@ instructions:
     enable_if:
       condition: runtime
       env_var: TESTED_MODULE_COIN
-      equals_value: qtbase
+      contains_value: qtbase
     userMessageOnFailure: >
       Failed to install package.
   - type: ExecuteCommand
@@ -19,6 +19,6 @@ instructions:
     disable_if:
       condition: runtime
       env_var: TESTED_MODULE_COIN
-      equals_value: qtbase
+      contains_value: qtbase
     userMessageOnFailure: >
       Failed to install package.

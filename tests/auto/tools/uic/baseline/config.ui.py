@@ -44,7 +44,7 @@ class Ui_Config(object):
         self.hboxLayout.setContentsMargins(0, 0, 0, 0)
         self.ButtonGroup1 = QGroupBox(Config)
         self.ButtonGroup1.setObjectName(u"ButtonGroup1")
-        sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.ButtonGroup1.sizePolicy().hasHeightForWidth())
@@ -90,7 +90,7 @@ class Ui_Config(object):
         self.hboxLayout1.setContentsMargins(0, 0, 0, 0)
         self.size_custom = QRadioButton(self.ButtonGroup1)
         self.size_custom.setObjectName(u"size_custom")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         sizePolicy1.setHorizontalStretch(0)
         sizePolicy1.setVerticalStretch(0)
         sizePolicy1.setHeightForWidth(self.size_custom.sizePolicy().hasHeightForWidth())
@@ -197,7 +197,7 @@ class Ui_Config(object):
         self.skin = QComboBox(Config)
         self.skin.addItem("")
         self.skin.setObjectName(u"skin")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         sizePolicy2.setHorizontalStretch(0)
         sizePolicy2.setVerticalStretch(0)
         sizePolicy2.setHeightForWidth(self.skin.sizePolicy().hasHeightForWidth())
@@ -218,7 +218,7 @@ class Ui_Config(object):
 
         self.vboxLayout.addWidget(self.lcdScreen)
 
-        self.spacerItem = QSpacerItem(20, 10, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.spacerItem = QSpacerItem(20, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.vboxLayout.addItem(self.spacerItem)
 
@@ -586,7 +586,7 @@ class Ui_Config(object):
         self.hboxLayout3.setSpacing(6)
         self.hboxLayout3.setObjectName(u"hboxLayout3")
         self.hboxLayout3.setContentsMargins(0, 0, 0, 0)
-        self.spacerItem1 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.spacerItem1 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.hboxLayout3.addItem(self.spacerItem1)
 

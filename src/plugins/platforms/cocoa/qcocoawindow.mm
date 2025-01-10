@@ -306,6 +306,31 @@ void QCocoaWindow::setVisible(bool visible)
 {
     qCDebug(lcQpaWindow) << "QCocoaWindow::setVisible" << window() << visible;
 
+    // Our implementation of setVisible below is not idempotent, as for
+    // modal windows it calls beginSheet/endSheet or starts/ends modal
+    // sessions. However we can't simply guard for m_view.hidden already
+    // having the right state, as the behavior of this function differs
+    // based on whether the window has been initialized or not, as
+    // handleGeometryChange will bail out if the window is still
+    // initializing. Since we know we'll get a second setVisible
+    // call after creation, we can check for that case specifically,
+    // which means we can then safely guard on m_view.hidden changing.
+
+    if (!m_initialized) {
+        qCDebug(lcQpaWindow) << "Window still initializing, skipping setting visibility";
+        return; // We'll get another setVisible call after create is done
+    }
+
+    if (visible == !m_view.hidden) {
+        qCDebug(lcQpaWindow) << "No change in visible status. Ignoring.";
+        return;
+    }
+
+    if (m_inSetVisible) {
+        qCWarning(lcQpaWindow) << "Already setting window visible!";
+        return;
+    }
+
     QScopedValueRollback<bool> rollback(m_inSetVisible, true);
 
     QMacAutoReleasePool pool;
@@ -412,6 +437,24 @@ void QCocoaWindow::setVisible(bool visible)
                 if (mainWindow && [mainWindow canBecomeKeyWindow])
                     [mainWindow makeKeyWindow];
             }
+        }
+
+        // AppKit will in some cases set up the key view loop for child views, even if we
+        // don't set autorecalculatesKeyViewLoop, nor call recalculateKeyViewLoop ourselves.
+        // When a child window is promoted to a top level, AppKit will maintain the key view
+        // loop between the views, even if these views now cross NSWindows, even after we
+        // explicitly call recalculateKeyViewLoop. When the top level is then hidden, AppKit
+        // will complain when -[NSView _setHidden:setNeedsDisplay:] tries to transfer first
+        // responder by reading the nextValidKeyView, and it turns out to live in a different
+        // window. We mitigate this by a last second reset of the first responder, which is
+        // what AppKit also falls back to. It's unclear if the original situation of views
+        // having their nextKeyView pointing to views in other windows is kosher or not.
+        if (m_view.window.firstResponder == m_view && m_view.nextValidKeyView
+            && m_view.nextValidKeyView.window != m_view.window) {
+            qCDebug(lcQpaWindow) << "Detected nextValidKeyView" << m_view.nextValidKeyView
+                << "in different window" << m_view.nextValidKeyView.window
+                << "Resetting" << m_view.window << "first responder to nil.";
+            [m_view.window makeFirstResponder:nil];
         }
 
         m_view.hidden = YES;
@@ -1280,8 +1323,14 @@ void QCocoaWindow::windowDidOrderOffScreen()
 
 void QCocoaWindow::windowDidChangeOcclusionState()
 {
+    // Note, we don't take the view's hiddenOrHasHiddenAncestor state into
+    // account here, but instead leave that up to handleExposeEvent, just
+    // like all the other signals that could potentially change the exposed
+    // state of the window.
     bool visible = m_view.window.occlusionState & NSWindowOcclusionStateVisible;
-    qCDebug(lcQpaWindow) << "QCocoaWindow::windowDidChangeOcclusionState" << window() << "is now" << (visible ? "visible" : "occluded");
+    qCDebug(lcQpaWindow) << "Occlusion state of" << m_view.window << "for"
+        << window() << "changed to" << (visible ? "visible" : "occluded");
+
     if (visible)
         [m_view setNeedsDisplay:YES];
     else
@@ -1955,8 +2004,21 @@ bool QCocoaWindow::shouldRefuseKeyWindowAndFirstResponder()
     if (window()->flags() & (Qt::WindowDoesNotAcceptFocus | Qt::WindowTransparentForInput))
         return true;
 
-    if (QWindowPrivate::get(window())->blockedByModalWindow)
-        return true;
+    // For application modal windows, as well as direct parent windows
+    // of window modal windows, AppKit takes care of blocking interaction.
+    // The Qt expectation however, is that all transient parents of a
+    // window modal window is blocked, as reflected by QGuiApplication.
+    // We reflect this by returning false from this function for transient
+    // parents blocked by a modal window, but limit it to the cases not
+    // covered by AppKit to avoid potential unwanted side effects.
+    QWindow *modalWindow = nullptr;
+    if (QGuiApplicationPrivate::instance()->isWindowBlocked(window(), &modalWindow)) {
+        if (modalWindow->modality() == Qt::WindowModal && modalWindow->transientParent() != window()) {
+            qCDebug(lcQpaWindow) << "Refusing key window for" << this << "due to being"
+                << "blocked by" << modalWindow;
+            return true;
+        }
+    }
 
     if (m_inSetVisible) {
         QVariant showWithoutActivating = window()->property("_q_showWithoutActivating");

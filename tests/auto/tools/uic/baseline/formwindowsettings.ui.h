@@ -219,7 +219,7 @@ public:
 
         gridLayout->addLayout(hboxLayout1, 3, 1, 1, 1);
 
-        spacerItem = new QSpacerItem(111, 115, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        spacerItem = new QSpacerItem(111, 115, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
 
         gridLayout->addItem(spacerItem, 4, 1, 1, 1);
 

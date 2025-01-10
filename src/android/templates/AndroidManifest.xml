@@ -16,7 +16,6 @@
         android:hardwareAccelerated="true"
         android:label="-- %%INSERT_APP_NAME%% --"
         android:requestLegacyExternalStorage="true"
-        android:allowNativeHeapPointerTagging="false"
         android:allowBackup="true"
         android:fullBackupOnly="false">
         <activity

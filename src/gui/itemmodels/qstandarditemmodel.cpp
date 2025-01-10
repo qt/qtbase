@@ -868,9 +868,15 @@ QStandardItem *QStandardItem::parent() const
     Sets the item's data for the given \a role to the specified \a value.
 
     If you subclass QStandardItem and reimplement this function, your
-    reimplementation should call emitDataChanged() if you do not call
-    the base implementation of setData(). This will ensure that e.g.
-    views using the model are notified of the changes.
+    reimplementation should:
+    \list
+    \li call emitDataChanged() if you do not call the base implementation of
+        setData(). This will ensure that e.g. views using the model are notified
+        of the changes
+    \li call the base implementation for roles you don't handle, otherwise
+        setting flags, e.g. by calling setFlags(), setCheckable(), setEditable()
+        etc., will not work.
+    \endlist
 
     \note The default implementation treats Qt::EditRole and Qt::DisplayRole
     as referring to the same data.
@@ -923,6 +929,11 @@ void QStandardItem::clearData()
 /*!
     Returns the item's data for the given \a role, or an invalid
     QVariant if there is no data for the role.
+
+    If you reimplement this function, your reimplementation should call
+    the base implementation for roles you don't handle, otherwise getting
+    flags, e.g. by calling flags(), isCheckable(), isEditable() etc.,
+    will not work.
 
     \note The default implementation treats Qt::EditRole and Qt::DisplayRole
     as referring to the same data.
@@ -1858,28 +1869,30 @@ QStandardItem *QStandardItem::takeChild(int row, int column)
     if (index != -1) {
         QModelIndex changedIdx;
         item = d->children.at(index);
-        if (item && d->model) {
+        if (item) {
             QStandardItemPrivate *const item_d = item->d_func();
-            const int savedRows = item_d->rows;
-            const int savedCols = item_d->columns;
-            const QVector<QStandardItem*> savedChildren = item_d->children;
-            if (savedRows > 0) {
-                d->model->d_func()->rowsAboutToBeRemoved(item, 0, savedRows - 1);
-                item_d->rows = 0;
-                item_d->children = QVector<QStandardItem*>(); //slightly faster than clear
-                d->model->d_func()->rowsRemoved(item, 0, savedRows);
-            }
-            if (savedCols > 0) {
-                d->model->d_func()->columnsAboutToBeRemoved(item, 0, savedCols - 1);
-                item_d->columns = 0;
-                if (!item_d->children.isEmpty())
+            if (d->model) {
+                QStandardItemModelPrivate *const model_d = d->model->d_func();
+                const int savedRows = item_d->rows;
+                const int savedCols = item_d->columns;
+                const QVector<QStandardItem*> savedChildren = item_d->children;
+                if (savedRows > 0) {
+                    model_d->rowsAboutToBeRemoved(item, 0, savedRows - 1);
+                    item_d->rows = 0;
                     item_d->children = QVector<QStandardItem*>(); //slightly faster than clear
-                d->model->d_func()->columnsRemoved(item, 0, savedCols);
+                    model_d->rowsRemoved(item, 0, savedRows);
+                }
+                if (savedCols > 0) {
+                    model_d->columnsAboutToBeRemoved(item, 0, savedCols - 1);
+                    item_d->columns = 0;
+                    item_d->children = QVector<QStandardItem*>(); //slightly faster than clear
+                    model_d->columnsRemoved(item, 0, savedCols);
+                }
+                item_d->rows = savedRows;
+                item_d->columns = savedCols;
+                item_d->children = savedChildren;
+                changedIdx = d->model->indexFromItem(item);
             }
-            item_d->rows = savedRows;
-            item_d->columns = savedCols;
-            item_d->children = savedChildren;
-            changedIdx = d->model->indexFromItem(item);
             item_d->setParentAndModel(nullptr, nullptr);
         }
         d->children.replace(index, nullptr);
@@ -3099,13 +3112,13 @@ QStringList QStandardItemModel::mimeTypes() const
 */
 QMimeData *QStandardItemModel::mimeData(const QModelIndexList &indexes) const
 {
-    QMimeData *data = QAbstractItemModel::mimeData(indexes);
+    std::unique_ptr<QMimeData> data(QAbstractItemModel::mimeData(indexes));
     if (!data)
         return nullptr;
 
     const QString format = qStandardItemModelDataListMimeType();
     if (!mimeTypes().contains(format))
-        return data;
+        return data.release();
     QByteArray encoded;
     QDataStream stream(&encoded, QIODevice::WriteOnly);
 
@@ -3157,7 +3170,7 @@ QMimeData *QStandardItemModel::mimeData(const QModelIndexList &indexes) const
     }
 
     data->setData(format, encoded);
-    return data;
+    return data.release();
 }
 
 

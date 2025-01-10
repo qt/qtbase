@@ -57,7 +57,7 @@ public:
         gridLayout->setObjectName("gridLayout");
         easingCurvePicker = new QListWidget(Form);
         easingCurvePicker->setObjectName("easingCurvePicker");
-        QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+        QSizePolicy sizePolicy(QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Preferred);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(easingCurvePicker->sizePolicy().hasHeightForWidth());
@@ -101,7 +101,7 @@ public:
 
         groupBox = new QGroupBox(Form);
         groupBox->setObjectName("groupBox");
-        QSizePolicy sizePolicy1(QSizePolicy::Fixed, QSizePolicy::Preferred);
+        QSizePolicy sizePolicy1(QSizePolicy::Policy::Fixed, QSizePolicy::Policy::Preferred);
         sizePolicy1.setHorizontalStretch(0);
         sizePolicy1.setVerticalStretch(0);
         sizePolicy1.setHeightForWidth(groupBox->sizePolicy().hasHeightForWidth());
@@ -111,7 +111,7 @@ public:
         formLayout->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
         label = new QLabel(groupBox);
         label->setObjectName("label");
-        QSizePolicy sizePolicy2(QSizePolicy::Preferred, QSizePolicy::Preferred);
+        QSizePolicy sizePolicy2(QSizePolicy::Policy::Preferred, QSizePolicy::Policy::Preferred);
         sizePolicy2.setHorizontalStretch(0);
         sizePolicy2.setVerticalStretch(0);
         sizePolicy2.setHeightForWidth(label->sizePolicy().hasHeightForWidth());
@@ -123,7 +123,7 @@ public:
         periodSpinBox = new QDoubleSpinBox(groupBox);
         periodSpinBox->setObjectName("periodSpinBox");
         periodSpinBox->setEnabled(false);
-        QSizePolicy sizePolicy3(QSizePolicy::Minimum, QSizePolicy::Fixed);
+        QSizePolicy sizePolicy3(QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Fixed);
         sizePolicy3.setHorizontalStretch(0);
         sizePolicy3.setVerticalStretch(0);
         sizePolicy3.setHeightForWidth(periodSpinBox->sizePolicy().hasHeightForWidth());
@@ -170,7 +170,7 @@ public:
 
         verticalLayout->addWidget(groupBox);
 
-        verticalSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        verticalSpacer = new QSpacerItem(20, 40, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
 
         verticalLayout->addItem(verticalSpacer);
 
@@ -179,7 +179,7 @@ public:
 
         graphicsView = new QGraphicsView(Form);
         graphicsView->setObjectName("graphicsView");
-        QSizePolicy sizePolicy4(QSizePolicy::Expanding, QSizePolicy::Expanding);
+        QSizePolicy sizePolicy4(QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Expanding);
         sizePolicy4.setHorizontalStretch(0);
         sizePolicy4.setVerticalStretch(0);
         sizePolicy4.setHeightForWidth(graphicsView->sizePolicy().hasHeightForWidth());

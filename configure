@@ -163,6 +163,6 @@ if [ -n "$CFG_TOPLEVEL" ]; then
     cd ..
 fi
 
-cmake "-DOPTFILE=${optfilepath}" ${top_level_arg} ${fresh_requested_arg} -P "${relpath}/cmake/QtProcessConfigureArgs.cmake"
+exec cmake "-DOPTFILE=${optfilepath}" ${top_level_arg} ${fresh_requested_arg} -P "${relpath}/cmake/QtProcessConfigureArgs.cmake"
 
 IFS=$SAVED_IFS

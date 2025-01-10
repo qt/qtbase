@@ -51,9 +51,21 @@ instructions:
       condition: property
       property: host.os
       equals_value: Windows
+
   - type: EnvironmentVariable
     variableName: CTEST_ARGS
     variableValue: "-V"
+    # Keep the testrun quiet for ASAN testruns, since there are FAILs happening all over the place
+    disable_if:
+      condition: property
+      property: features
+      contains_value: UseAddressSanitizer
+
+    # Always print the output from a failing test, even when ctest is not in verbose mode
+  - type: EnvironmentVariable
+    variableName: CTEST_OUTPUT_ON_FAILURE
+    variableValue: "1"
+
   - type: AppendToEnvironmentVariable
     variableName: CTEST_ARGS
     variableValue: " --stop-on-failure"
@@ -61,12 +73,37 @@ instructions:
       condition: property
       property: features
       contains_value: AbortTestingOnFirstFailure
+
+    # Enable CTest's JUnit XML summary only for recent versions
+  - type: AppendToEnvironmentVariable
+    variableName: CTEST_ARGS
+    variableValue: " --output-junit {{.Env.COIN_CTEST_RESULTSDIR}}{{.Env.CI_PATH_SEP}}test_summary.ctest_junit_xml"
+    enable_if:
+      condition: runtime
+      env_var: CMAKE_MIN_SUPPORTED_BIN_PATH
+      equals_value: null
+
+  - type: EnvironmentVariable
+    variableName: COIN_COMMAND_OUTPUT_TIMEOUT
+    variableValue: "900"
+    disable_if:
+      condition: property
+      property: features
+      contains_value: UseAddressSanitizer
+  - type: EnvironmentVariable
+    variableName: COIN_COMMAND_OUTPUT_TIMEOUT
+    variableValue: "10800"
+    enable_if:
+      condition: property
+      property: features
+      contains_value: UseAddressSanitizer
+
   - type: ExecuteCommand
     command: "{{.Env.TESTS_ENV_PREFIX}} ctest {{.Env.CTEST_ARGS}}"
     executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
     ignoreExitCode: false
     maxTimeInSeconds: 10800
-    maxTimeBetweenOutput: 900
+    maxTimeBetweenOutput: "{{.Env.COIN_COMMAND_OUTPUT_TIMEOUT}}"
     userMessageOnFailure: >
       Failed to run tests.
 

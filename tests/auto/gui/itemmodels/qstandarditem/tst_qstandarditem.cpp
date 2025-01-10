@@ -1006,6 +1006,32 @@ public:
 
     using QStandardItem::clone;
     using QStandardItem::emitDataChanged;
+
+    void setData(const QVariant &value, int role) override
+    {
+        switch (role) {
+        case Qt::DisplayRole:
+            QStandardItem::setData(value, role);
+            break;
+        default:
+            // setFlags() uses "UserRole - 1" to store the flags, which is an
+            // implementation detail not exposed in the docs.
+            QStandardItem::setData(value, role);
+            break;
+        }
+    }
+
+    QVariant data(int role) const override
+    {
+        switch (role) {
+        case Qt::DisplayRole:
+            return QStandardItem::data(role);
+        default:
+            // flags() uses "UserRole - 1" to get the flags, which is an implementation
+            // detail not exposed in the docs.
+            return QStandardItem::data(role);
+        }
+    }
 };
 
 Q_DECLARE_METATYPE(QStandardItem*)
@@ -1041,6 +1067,12 @@ void tst_QStandardItem::subclassing()
     QCOMPARE(item->child(0), child2);
     QCOMPARE(item->child(1), child0);
     QCOMPARE(item->child(2), child1);
+
+    item->setFlags(Qt::ItemFlags{0});
+    QCOMPARE(item->flags(), Qt::ItemFlags{0});
+
+    item->setFlags(Qt::ItemFlags{Qt::ItemIsEditable | Qt::ItemIsSelectable});
+    QCOMPARE(item->flags(), Qt::ItemFlags{Qt::ItemIsEditable | Qt::ItemIsSelectable});
 }
 
 void tst_QStandardItem::lessThan()
