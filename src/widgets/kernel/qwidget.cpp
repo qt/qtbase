@@ -2686,7 +2686,7 @@ void QWidgetPrivate::setStyle_helper(QStyle *newStyle, bool propagate)
     extra->style = newStyle;
 
     // repolish
-    if (polished && q->windowType() != Qt::Desktop) {
+    if (polished && q->windowType() != Qt::Desktop && oldStyle != q->style()) {
         oldStyle->unpolish(q);
         q->style()->polish(q);
     }
