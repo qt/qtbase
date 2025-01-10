@@ -14,9 +14,9 @@ QT_BEGIN_NAMESPACE
 class QFontVariableAxisPrivate;
 QT_DECLARE_QESDP_SPECIALIZATION_DTOR_WITH_EXPORT(QFontVariableAxisPrivate, Q_GUI_EXPORT)
 
-class Q_GUI_EXPORT QFontVariableAxis
+class QFontVariableAxis
 {
-    Q_GADGET
+    Q_GADGET_EXPORT(Q_GUI_EXPORT)
     Q_DECLARE_PRIVATE(QFontVariableAxis)
 
     Q_PROPERTY(QByteArray tag READ tagString CONSTANT)
@@ -25,32 +25,32 @@ class Q_GUI_EXPORT QFontVariableAxis
     Q_PROPERTY(qreal maximumValue READ maximumValue CONSTANT)
     Q_PROPERTY(qreal defaultValue READ defaultValue CONSTANT)
 public:
-    QFontVariableAxis();
+    Q_GUI_EXPORT QFontVariableAxis();
     QFontVariableAxis(QFontVariableAxis &&other) noexcept = default;
-    QFontVariableAxis(const QFontVariableAxis &axis);
-    ~QFontVariableAxis();
+    Q_GUI_EXPORT QFontVariableAxis(const QFontVariableAxis &axis);
+    Q_GUI_EXPORT ~QFontVariableAxis();
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QFontVariableAxis)
     void swap(QFontVariableAxis &other) noexcept
     {
         d_ptr.swap(other.d_ptr);
     }
 
-    QFontVariableAxis &operator=(const QFontVariableAxis &axis);
+    Q_GUI_EXPORT QFontVariableAxis &operator=(const QFontVariableAxis &axis);
 
-    QFont::Tag tag() const;
-    void setTag(QFont::Tag tag);
+    Q_GUI_EXPORT QFont::Tag tag() const;
+    Q_GUI_EXPORT void setTag(QFont::Tag tag);
 
-    QString name() const;
-    void setName(const QString &name);
+    Q_GUI_EXPORT QString name() const;
+    Q_GUI_EXPORT void setName(const QString &name);
 
-    qreal minimumValue() const;
-    void setMinimumValue(qreal minimumValue);
+    Q_GUI_EXPORT qreal minimumValue() const;
+    Q_GUI_EXPORT void setMinimumValue(qreal minimumValue);
 
-    qreal maximumValue() const;
-    void setMaximumValue(qreal maximumValue);
+    Q_GUI_EXPORT qreal maximumValue() const;
+    Q_GUI_EXPORT void setMaximumValue(qreal maximumValue);
 
-    qreal defaultValue() const;
-    void setDefaultValue(qreal defaultValue);
+    Q_GUI_EXPORT qreal defaultValue() const;
+    Q_GUI_EXPORT void setDefaultValue(qreal defaultValue);
 
 private:
     QByteArray tagString() const { return tag().toString(); }
