@@ -98,6 +98,8 @@ function(_qt_internal_sbom_handle_purl_values target)
     # List of purl variants to process.
     set(purl_variants "")
 
+    _qt_internal_sbom_get_git_version_vars()
+
     set(third_party_types
         QT_THIRD_PARTY_MODULE
         QT_THIRD_PARTY_SOURCES

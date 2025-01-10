@@ -115,12 +115,11 @@ function(_qt_internal_sbom_begin_project)
         endif()
     endif()
 
-    # Set the variables in the outer scope, so they can be accessed by the generation functions
-    # in QtPublicSbomGenerationHelpers.cmake
-    set(QT_SBOM_GIT_VERSION "${QT_SBOM_GIT_VERSION}" PARENT_SCOPE)
-    set(QT_SBOM_GIT_VERSION_PATH "${QT_SBOM_GIT_VERSION_PATH}" PARENT_SCOPE)
-    set(QT_SBOM_GIT_HASH "${QT_SBOM_GIT_HASH}" PARENT_SCOPE)
-    set(QT_SBOM_GIT_HASH_SHORT "${QT_SBOM_GIT_HASH_SHORT}" PARENT_SCOPE)
+    # Save the variables in a global property to later query them in other functions.
+    set_property(GLOBAL PROPERTY QT_SBOM_GIT_VERSION "${QT_SBOM_GIT_VERSION}")
+    set_property(GLOBAL PROPERTY QT_SBOM_GIT_VERSION_PATH "${QT_SBOM_GIT_VERSION_PATH}")
+    set_property(GLOBAL PROPERTY QT_SBOM_GIT_HASH "${QT_SBOM_GIT_HASH}")
+    set_property(GLOBAL PROPERTY QT_SBOM_GIT_HASH_SHORT "${QT_SBOM_GIT_HASH_SHORT}")
 
     if(arg_DOCUMENT_NAMESPACE)
         set(repo_spdx_namespace "${arg_DOCUMENT_NAMESPACE}")
@@ -1659,10 +1658,25 @@ endfunction()
 function(_qt_internal_sbom_get_qt_repo_source_download_location out_var)
     _qt_internal_sbom_get_root_project_name_lower_case(repo_project_name_lowercase)
     set(download_location "git://code.qt.io/qt/${repo_project_name_lowercase}.git")
+
+    _qt_internal_sbom_get_git_version_vars()
     if(QT_SBOM_GIT_HASH)
         string(APPEND download_location "@${QT_SBOM_GIT_HASH}")
     endif()
     set(${out_var} "${download_location}" PARENT_SCOPE)
+endfunction()
+
+# Queries the current project git version variables and sets them in the parent scope.
+function(_qt_internal_sbom_get_git_version_vars)
+    get_cmake_property(QT_SBOM_GIT_VERSION QT_SBOM_GIT_VERSION)
+    get_cmake_property(QT_SBOM_GIT_VERSION_PATH QT_SBOM_GIT_VERSION_PATH)
+    get_cmake_property(QT_SBOM_GIT_HASH QT_SBOM_GIT_HASH)
+    get_cmake_property(QT_SBOM_GIT_HASH_SHORT QT_SBOM_GIT_HASH_SHORT)
+
+    set(QT_SBOM_GIT_VERSION "${QT_SBOM_GIT_VERSION}" PARENT_SCOPE)
+    set(QT_SBOM_GIT_VERSION_PATH "${QT_SBOM_GIT_VERSION_PATH}" PARENT_SCOPE)
+    set(QT_SBOM_GIT_HASH "${QT_SBOM_GIT_HASH}" PARENT_SCOPE)
+    set(QT_SBOM_GIT_HASH_SHORT "${QT_SBOM_GIT_HASH_SHORT}" PARENT_SCOPE)
 endfunction()
 
 # Returns the configure line used to configure the current repo or top-level build, by reading
