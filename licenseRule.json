@@ -32,6 +32,11 @@
                 "file type" : "build system",
                 "spdx" : ["MIT AND BSD-3-Clause"]
             },
+            "cmake/QtPublicSbomOpsHelpers.cmake" : {
+                "comment" : "MIT licensed copied parts",
+                "file type" : "build system",
+                "spdx" : ["MIT AND BSD-3-Clause"]
+            },
             "tests/auto/cmake/test_plugin_shared_static_flavor\\.cmake" : {
                 "comment" : "Exception. This is a test file.",
                 "file type" : "test",
