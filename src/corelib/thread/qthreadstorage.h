@@ -6,6 +6,10 @@
 
 #include <QtCore/qglobal.h>
 
+#if !QT_CONFIG(thread)
+#include <memory>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 #if QT_CONFIG(thread)
@@ -114,9 +118,6 @@ public:
 };
 
 #else // !QT_CONFIG(thread)
-
-#include <memory>
-#include <type_traits>
 
 template <typename T, typename U>
 inline bool qThreadStorage_hasLocalData(const std::unique_ptr<T, U> &data)
