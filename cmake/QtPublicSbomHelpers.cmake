@@ -665,6 +665,18 @@ function(_qt_internal_sbom_add_target target)
         string(APPEND package_comment "${arg_SBOM_PACKAGE_COMMENT}\n")
     endif()
 
+    string(APPEND package_comment "CMake target name: ${target}\n")
+
+    get_target_property(qt_package_name "${target}" _qt_package_name)
+    if(qt_package_name)
+        get_target_property(qt_module_interface_name "${target}" _qt_module_interface_name)
+        set(namespaced_target_name "${QT_CMAKE_EXPORT_NAMESPACE}::${qt_module_interface_name}")
+
+        string(APPEND package_comment
+            "CMake exported target name: ${namespaced_target_name}\n")
+        string(APPEND package_comment "Contained in CMake package: ${qt_package_name}\n")
+    endif()
+
     # Record the target spdx id right now, so we can refer to it in later attribution targets
     # if needed.
     _qt_internal_sbom_record_target_spdx_id(${target}
