@@ -18,10 +18,11 @@
 #include <QtGui/qtguiglobal.h>
 #include <QSharedDataPointer>
 #include <QLoggingCategory>
-#include <QDebug>
 #include <private/qglobal_p.h>
 
 QT_BEGIN_NAMESPACE
+
+class QDebug;
 
 Q_DECLARE_LOGGING_CATEGORY(lcQtGuiTextureIO)
 
