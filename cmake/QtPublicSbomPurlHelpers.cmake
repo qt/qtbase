@@ -100,45 +100,23 @@ function(_qt_internal_sbom_handle_purl_values target)
 
     _qt_internal_sbom_get_git_version_vars()
 
-    set(third_party_types
-        QT_THIRD_PARTY_MODULE
-        QT_THIRD_PARTY_SOURCES
-    )
-
-    if(arg_IS_QT_ENTITY_TYPE)
-        # Qt entities have two purls by default, a QT generic one and a MIRROR hosted on github.
-        list(APPEND purl_variants MIRROR QT)
-    elseif(arg_TYPE IN_LIST third_party_types)
-        # Third party libraries vendored in Qt also have at least two purls, like regular Qt
-        # libraries, but might also have an upstream one.
-
-        # The order in which the purls are generated matters for tools that consume the SBOM. Some
-        # tools can only handle one PURL per package, so the first one should be the important one.
-        # For now, I deem that the upstream one if present. Otherwise the github mirror.
-        if(arg_PURL_3RDPARTY_UPSTREAM_ARGS)
-            list(APPEND purl_variants 3RDPARTY_UPSTREAM)
-        endif()
-
-        list(APPEND purl_variants MIRROR QT)
-    else()
-        # If handling another entity type, handle based on whether any of the purl arguments are
-        # set.
-        set(known_purl_variants QT MIRROR 3RDPARTY_UPSTREAM)
-        foreach(known_purl_variant IN LISTS known_purl_variants)
-            if(arg_PURL_${known_purl_variant}_ARGS)
-                list(APPEND purl_variants ${known_purl_variant})
-            endif()
-        endforeach()
-    endif()
-
-    if(arg_IS_QT_ENTITY_TYPE
-            OR arg_TYPE STREQUAL "QT_THIRD_PARTY_MODULE"
-            OR arg_TYPE STREQUAL "QT_THIRD_PARTY_SOURCES"
+    if(arg___QT_INTERNAL_HANDLE_QT_ENTITY_TYPE_PURL)
+        _qt_internal_sbom_forward_purl_handling_options(purl_handling_args)
+        _qt_internal_sbom_handle_qt_entity_purl_variants(${purl_handling_args}
+            OUT_VAR_VARIANTS qt_purl_variants
+            OUT_VAR_IS_QT_PURL_ENTITY_TYPE is_qt_purl_entity_type
         )
-        set(is_qt_purl_entity_type TRUE)
-    else()
-        set(is_qt_purl_entity_type FALSE)
+        if(qt_purl_variants)
+            list(APPEND purl_variants "${qt_purl_variants}")
+        endif()
     endif()
+
+    set(known_purl_variants QT MIRROR 3RDPARTY_UPSTREAM)
+    foreach(known_purl_variant IN LISTS known_purl_variants)
+        if(arg_PURL_${known_purl_variant}_ARGS AND NOT known_purl_variant IN_LIST purl_variants)
+            list(APPEND purl_variants ${known_purl_variant})
+        endif()
+    endforeach()
 
     _qt_internal_get_sbom_purl_parsing_options(purl_opt_args purl_single_args purl_multi_args)
 
@@ -161,7 +139,12 @@ function(_qt_internal_sbom_handle_purl_values target)
         # We want to create a purl either if it's one of Qt's entities and one of it's default
         # purl types, or if custom args were specified.
         set(consider_purl_processing FALSE)
-        if((purl_args_available OR is_qt_purl_entity_type) AND NOT arg_NO_PURL)
+
+        if(arg___QT_INTERNAL_HANDLE_QT_ENTITY_TYPE_PURL AND is_qt_purl_entity_type)
+            set(purl_args_available TRUE)
+        endif()
+
+        if(purl_args_available AND NOT arg_NO_PURL)
             set(consider_purl_processing TRUE)
         endif()
 
@@ -191,48 +174,18 @@ function(_qt_internal_sbom_handle_purl_values target)
             )
 
             # Qt entity types get special treatment purl.
-            if(is_qt_purl_entity_type AND NOT arg_NO_DEFAULT_QT_PURL AND
-                    (purl_variant STREQUAL "QT" OR purl_variant STREQUAL "MIRROR"))
-                _qt_internal_sbom_get_root_project_name_lower_case(repo_project_name_lowercase)
-
-                # Add a vcs_url to the generic QT variant.
-                if(purl_variant STREQUAL "QT")
-                    set(entity_vcs_url_version_option "")
-                    # Can be empty.
-                    if(QT_SBOM_GIT_HASH_SHORT)
-                        set(entity_vcs_url_version_option VERSION "${QT_SBOM_GIT_HASH_SHORT}")
-                    endif()
-
-                    _qt_internal_sbom_get_qt_entity_vcs_url(${target}
-                        REPO_NAME "${repo_project_name_lowercase}"
-                        ${entity_vcs_url_version_option}
-                        OUT_VAR vcs_url)
-                    list(APPEND purl_args PURL_QUALIFIERS "vcs_url=${vcs_url}")
+            if(arg___QT_INTERNAL_HANDLE_QT_ENTITY_TYPE_PURL)
+                _qt_internal_sbom_forward_purl_handling_options(purl_handling_args)
+                if(is_qt_purl_entity_type)
+                    list(APPEND purl_handling_args IS_QT_PURL_ENTITY_TYPE)
                 endif()
-
-                # Add the subdirectory path where the target was created as a custom qualifier.
-                _qt_internal_sbom_get_qt_entity_repo_source_dir(${target} OUT_VAR sub_path)
-                if(sub_path)
-                    list(APPEND purl_args PURL_SUBPATH "${sub_path}")
-                endif()
-
-                # Add the target name as a custom qualifer.
-                list(APPEND purl_args PURL_QUALIFIERS "library_name=${target}")
-
-                # Can be empty.
-                if(QT_SBOM_GIT_HASH_SHORT)
-                    list(APPEND purl_args VERSION "${QT_SBOM_GIT_HASH_SHORT}")
-                endif()
-
-                # Get purl args the Qt entity type, taking into account defaults.
-                _qt_internal_sbom_get_qt_entity_purl_args(${target}
-                    NAME "${repo_project_name_lowercase}-${target}"
-                    REPO_NAME "${repo_project_name_lowercase}"
-                    SUPPLIER "${arg_SUPPLIER}"
+                _qt_internal_sbom_handle_qt_entity_purl("${target}" ${purl_handling_args}
                     PURL_VARIANT "${purl_variant}"
-                    ${purl_args}
-                    OUT_VAR purl_args
+                    OUT_PURL_ARGS qt_purl_args
                 )
+                if(qt_purl_args)
+                    list(APPEND purl_args "${qt_purl_args}")
+                endif()
             endif()
 
             _qt_internal_sbom_assemble_purl(${target}
