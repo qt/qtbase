@@ -73,8 +73,13 @@ function(_qt_internal_sbom_begin_project_generate)
     cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
     _qt_internal_validate_all_args_are_parsed(arg)
 
-    string(TIMESTAMP current_utc UTC)
-    string(TIMESTAMP current_year "%Y" UTC)
+    if(QT_SBOM_FAKE_TIMESTAMP)
+        set(current_utc "2590-01-01T11:33:55Z")
+        set(current_year "2590")
+    else()
+        string(TIMESTAMP current_utc UTC)
+        string(TIMESTAMP current_year "%Y" UTC)
+    endif()
 
     _qt_internal_sbom_set_default_option_value(PROJECT "${PROJECT_NAME}")
 
@@ -438,7 +443,7 @@ function(_qt_internal_sbom_end_project_generate)
 
     # Allow skipping checksum computation for testing purposes, while installing just the sbom
     # documents, without requiring to build and install all the actual files.
-    if(QT_INTERNAL_SBOM_FAKE_CHECKSUM)
+    if(QT_SBOM_FAKE_CHECKSUM)
         string(APPEND extra_code_begin "
             set(QT_SBOM_FAKE_CHECKSUM TRUE)")
     endif()

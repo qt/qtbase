@@ -25,6 +25,8 @@ function(_qt_internal_sbom_begin_project)
         return()
     endif()
 
+    _qt_internal_sbom_setup_fake_deterministic_build()
+
     set(opt_args
         QT_CPE
     )
@@ -453,6 +455,25 @@ endfunction()
 
 function(_qt_internal_sbom_end_qt_repo_project)
     _qt_internal_sbom_end_project()
+endfunction()
+
+
+# Enables a fake deterministic SBOM build, for easier inter-diffs between sbom files. Useful
+# for local development.
+function(_qt_internal_sbom_setup_fake_deterministic_build)
+    if(NOT DEFINED QT_SBOM_FAKE_DETERMINISTIC_BUILD)
+        return()
+    endif()
+
+    if(QT_SBOM_FAKE_DETERMINISTIC_BUILD)
+        set(value "ON")
+    elseif()
+        set(value "OFF")
+    endif()
+
+    set(QT_SBOM_FAKE_GIT_VERSION "${value}" CACHE BOOL "SBOM fake git version")
+    set(QT_SBOM_FAKE_TIMESTAMP "${value}" CACHE BOOL "SBOM fake timestamp")
+    set(QT_SBOM_FAKE_CHECKSUM "${value}" CACHE BOOL "SBOM fake checksums")
 endfunction()
 
 # Helper to get purl parsing options.
