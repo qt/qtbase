@@ -143,7 +143,7 @@ Q_CORE_EXPORT int qstrnicmp(const char *, qsizetype, const char *, qsizetype = -
 #define QSNPF_DEPR(vsn) \
     QT_DEPRECATED_VERSION_X_6_9("Use C++11 std::" #vsn "printf() instead, taking care to " \
                                 "ensure that you didn't rely on QString::asprintf() " \
-                                "ideosyncrasies that q" #vsn "printf might, but " \
+                                "idiosyncrasies that q" #vsn "printf might, but " \
                                 "std::" #vsn "printf() does not, support.")
 // implemented in qvsnprintf.cpp
 QSNPF_DEPR(vsn)
