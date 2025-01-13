@@ -131,6 +131,9 @@ int main(int argc, char **argv)
     // "+[IMKClient subclass]: chose IMKClient_Legacy"
     if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSSequoia)
         qputenv("CFLOG_FORCE_DISABLE_STDERR", "1");
+
+    // Don't steal app focus from main test
+    qputenv("QT_MAC_DISABLE_FOREGROUND_APPLICATION_TRANSFORM", "1");
 #  endif
 
     std::string_view subtest(argv[1]);
