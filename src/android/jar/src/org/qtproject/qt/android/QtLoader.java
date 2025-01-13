@@ -375,7 +375,12 @@ abstract class QtLoader {
      **/
     private String getApkNativeLibrariesDir()
     {
-        return QtApkFileEngine.getAppApkFilePath() + "!/lib/" + Build.SUPPORTED_ABIS[0] + "/";
+        if (m_preferredAbi == null) {
+            // Workaround: getLocalLibrariesList() will call preferredAbiLibs()
+            // with valid library names which will assign m_preferredAbi.
+            getLocalLibrariesList();
+        }
+        return QtApkFileEngine.getAppApkFilePath() + "!/lib/" + m_preferredAbi + "/";
     }
 
     /**
