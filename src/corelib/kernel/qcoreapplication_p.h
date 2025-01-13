@@ -135,12 +135,6 @@ public:
 #endif
     void appendApplicationPathToLibraryPaths(void);
 
-#ifndef QT_NO_TRANSLATION
-    QTranslatorList translators;
-    QReadWriteLock translateMutex;
-    static bool isTranslatorInstalled(QTranslator *translator);
-#endif
-
     Type application_type = Tty;
 
     QString cachedApplicationDirPath;
@@ -158,6 +152,11 @@ public:
     static QAbstractEventDispatcher *eventDispatcher;
     static bool is_app_running;
     static bool is_app_closing;
+#endif
+#ifndef QT_NO_TRANSLATION
+    QTranslatorList translators;
+    QReadWriteLock translateMutex;
+    static bool isTranslatorInstalled(QTranslator *translator);
 #endif
 
     static bool setuidAllowed;
