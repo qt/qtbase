@@ -447,8 +447,7 @@ function(_qt_internal_sbom_auto_end_qt_repo_project)
     _qt_internal_sbom_end_qt_repo_project()
 endfunction()
 
-# Endssbom generation for a qt git repo or qt-git-repo-sub-project.
-
+# Ends sbom generation for a qt git repo or qt-git-repo-sub-project.
 function(_qt_internal_sbom_end_qt_repo_project)
     _qt_internal_sbom_end_project()
 endfunction()
