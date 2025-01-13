@@ -18,6 +18,8 @@
 #include <QtGui/private/qbasicvulkanplatforminstance_p.h>
 #include <QtCore/qsize.h>
 
+#include <climits> // For UINT_MAX
+
 QT_BEGIN_NAMESPACE
 
 class QVkKhrDisplayVulkanInstance : public QBasicPlatformVulkanInstance
