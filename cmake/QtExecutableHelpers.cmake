@@ -257,23 +257,6 @@ function(qt_internal_add_executable name)
         qt_internal_install_pdb_files(${name} "${arg_INSTALL_DIRECTORY}")
     endif()
 
-    if(QT_GENERATE_SBOM)
-        set(sbom_args "")
-        _qt_internal_forward_function_args(
-            FORWARD_APPEND
-            FORWARD_PREFIX arg
-            FORWARD_OUT_VAR sbom_args
-            FORWARD_OPTIONS
-                ${__qt_internal_sbom_optional_args}
-            FORWARD_SINGLE
-                ${__qt_internal_sbom_single_args}
-            FORWARD_MULTI
-                ${__qt_internal_sbom_multi_args}
-        )
-
-        _qt_internal_extend_sbom(${name} ${sbom_args})
-    endif()
-
     qt_add_list_file_finalizer(qt_internal_finalize_executable "${name}")
 endfunction()
 
