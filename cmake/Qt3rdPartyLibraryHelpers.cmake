@@ -379,7 +379,7 @@ function(qt_internal_add_3rdparty_library target)
                 ${__qt_internal_sbom_multi_args}
         )
 
-        _qt_internal_extend_sbom(${target} ${sbom_args})
+        qt_internal_extend_qt_entity_sbom(${target} ${sbom_args})
     endif()
 
     qt_add_list_file_finalizer(qt_internal_finalize_3rdparty_library ${target})

@@ -166,6 +166,24 @@ function(_qt_internal_sbom_handle_qt_attribution_files out_prefix_outer)
 
                 set(sbom_args "")
 
+                # Always propagate the package supplier, because we assume the supplier for 3rd
+                # party libs is the same as the current project supplier.
+                # Also propagate the internal qt entity type values like CPE, supplier, PURL
+                # handling options, attribution file values, if set.
+                _qt_internal_forward_function_args(
+                    FORWARD_APPEND
+                    FORWARD_PREFIX arg
+                    FORWARD_OUT_VAR sbom_args
+                    FORWARD_OPTIONS
+                        USE_ATTRIBUTION_FILES
+                        __QT_INTERNAL_HANDLE_QT_ENTITY_TYPE_CPE
+                        __QT_INTERNAL_HANDLE_QT_ENTITY_TYPE_SUPPLIER
+                        __QT_INTERNAL_HANDLE_QT_ENTITY_TYPE_PURL
+                        __QT_INTERNAL_HANDLE_QT_ENTITY_ATTRIBUTION_FILES
+                    FORWARD_SINGLE
+                        SUPPLIER
+                )
+
                 if(propagate_sbom_options_to_new_attribution_targets)
                     # Filter out the attributtion options, they will be passed mnaually
                     # depending on which file and index is currently being processed.

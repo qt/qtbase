@@ -979,7 +979,7 @@ set(QT_ALLOW_MISSING_TOOLS_PACKAGES TRUE)")
                 ${__qt_internal_sbom_multi_args}
         )
 
-        _qt_internal_extend_sbom(${target} ${sbom_args})
+        qt_internal_extend_qt_entity_sbom(${target} ${sbom_args})
     endif()
 
     qt_add_list_file_finalizer(qt_finalize_module ${target} ${arg_INTERNAL_MODULE} ${arg_NO_PRIVATE_MODULE})

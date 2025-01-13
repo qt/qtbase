@@ -306,7 +306,7 @@ function(qt_internal_add_tool target_name)
                 ${__qt_internal_sbom_multi_args}
         )
 
-        _qt_internal_extend_sbom(${target_name} ${sbom_args})
+        qt_internal_extend_qt_entity_sbom(${target_name} ${sbom_args})
     endif()
 
     qt_add_list_file_finalizer(qt_internal_finalize_tool ${target_name})
