@@ -12,6 +12,8 @@
 #include <private/qthreadpool_p.h>
 #include <private/qobject_p.h>
 
+#include <climits> // For INT_MAX
+
 // GCC 12 gets confused about QFutureInterfaceBase::state, for some non-obvious
 // reason
 //  warning: ‘unsigned int __atomic_or_fetch_4(volatile void*, unsigned int, int)’ writing 4 bytes into a region of size 0 overflows the destination [-Wstringop-overflow=]

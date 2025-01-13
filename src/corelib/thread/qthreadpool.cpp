@@ -9,6 +9,7 @@
 #include <QtCore/qpointer.h>
 
 #include <algorithm>
+#include <climits> // For INT_MAX
 #include <memory>
 
 using namespace std::chrono_literals;
