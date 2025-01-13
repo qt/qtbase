@@ -43,7 +43,7 @@ struct QLatin1
     }
 
     static QChar *convertToUnicode(QChar *dst, QByteArrayView in,
-                                   [[maybe_unused]] QStringConverterBase::State *state) noexcept
+                                   [[maybe_unused]] QStringConverter::State *state) noexcept
     {
         Q_ASSERT(state);
 
@@ -321,7 +321,7 @@ struct QUtf8
     static char16_t *convertToUnicode(char16_t *dst, QByteArrayView in, QStringConverter::State *state);
 
     Q_CORE_EXPORT static QByteArray convertFromUnicode(QStringView in);
-    Q_CORE_EXPORT static QByteArray convertFromUnicode(QStringView in, QStringConverterBase::State *state);
+    Q_CORE_EXPORT static QByteArray convertFromUnicode(QStringView in, QStringConverter::State *state);
     static char *convertFromUnicode(char *out, QStringView in, QStringConverter::State *state);
     Q_CORE_EXPORT static char *convertFromLatin1(char *out, QLatin1StringView in);
     struct ValidUtf8Result {

@@ -26,7 +26,11 @@ class QChar;
 class QByteArrayView;
 class QStringView;
 
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(Q_QDOC) && !defined(QT_BOOTSTRAPPED)
 class QStringConverterBase
+#else
+class QStringConverter
+#endif
 {
 public:
     enum class Flag {
@@ -80,17 +84,19 @@ public:
     private:
         Q_DISABLE_COPY(State)
     };
+
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(Q_QDOC) && !defined(QT_BOOTSTRAPPED)
 protected:
     QStringConverterBase() = default;
     ~QStringConverterBase() = default;
     QStringConverterBase(QStringConverterBase &&) = default;
     QStringConverterBase &operator=(QStringConverterBase &&) = default;
 };
-Q_DECLARE_OPERATORS_FOR_FLAGS(QStringConverterBase::Flags)
 
 class QStringConverter : public QStringConverterBase
 {
 public:
+#endif // Qt 6 compat for QStringConverterBase
 
     enum Encoding {
         Utf8,
@@ -106,18 +112,6 @@ public:
         System,
         LastEncoding = System
     };
-#ifdef Q_QDOC
-    // document the flags here
-    enum class Flag {
-        Default = 0,
-        Stateless = 0x1,
-        ConvertInvalidToNull = 0x2,
-        WriteBom = 0x4,
-        ConvertInitialBom = 0x8,
-        UsesIcu = 0x10,
-    };
-    Q_DECLARE_FLAGS(Flags, Flag)
-#endif
 
 protected:
 
@@ -181,6 +175,8 @@ protected:
 private:
     Q_CORE_EXPORT static const Interface encodingInterfaces[Encoding::LastEncoding + 1];
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QStringConverter::Flags)
 
 QT_END_NAMESPACE
 

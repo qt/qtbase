@@ -707,7 +707,7 @@ QByteArray QUtf8::convertFromUnicode(QStringView in)
     return result;
 }
 
-QByteArray QUtf8::convertFromUnicode(QStringView in, QStringConverterBase::State *state)
+QByteArray QUtf8::convertFromUnicode(QStringView in, QStringConverter::State *state)
 {
     QByteArray ba(3*in.size() +3, Qt::Uninitialized);
     char *end = convertFromUnicode(ba.data(), in, state);
@@ -1960,13 +1960,6 @@ static qsizetype toLatin1Len(qsizetype l) { return l + 1; }
 
 
 /*!
-  \class QStringConverterBase
-  \internal
-
-  Just a common base class for QStringConverter and QTextCodec
-*/
-
-/*!
     \class QStringConverter
     \inmodule QtCore
     \brief The QStringConverter class provides a base class for encoding and decoding text.
@@ -2159,7 +2152,7 @@ static bool nameMatch(const char *a, QAnyStringView b)
 // only derives from QStringConverter to get access to protected types
 struct QStringConverterICU : QStringConverter
 {
-    static void clear_function(QStringConverterBase::State *state) noexcept
+    static void clear_function(QStringConverter::State *state) noexcept
     {
         ucnv_close(static_cast<UConverter *>(state->d[0]));
         state->d[0] = nullptr;
@@ -2375,11 +2368,11 @@ struct QStringConverterICU : QStringConverter
     { return name.visit([](auto name) { return nul_terminate_impl(name); }); }
 
     static const QStringConverter::Interface *
-    make_icu_converter(QStringConverterBase::State *state, QAnyStringView name)
+    make_icu_converter(QStringConverter::State *state, QAnyStringView name)
     { return make_icu_converter(state, nul_terminate(name).data()); }
 
     static const QStringConverter::Interface *make_icu_converter(
-            QStringConverterBase::State *state,
+            QStringConverter::State *state,
             const char *name)
     {
         UErrorCode status = U_ZERO_ERROR;
@@ -2397,7 +2390,7 @@ struct QStringConverterICU : QStringConverter
         }
         state->d[1] = const_cast<char *>(persistentName);
         state->d[0] = conv;
-        state->flags |= QStringConverterBase::Flag::UsesIcu;
+        state->flags |= QStringConverter::Flag::UsesIcu;
         qsizetype maxCharSize = ucnv_getMaxCharSize(conv);
         state->clearFn = QStringConverterICU::clear_function;
         if (maxCharSize > 8 || maxCharSize < 1) {
