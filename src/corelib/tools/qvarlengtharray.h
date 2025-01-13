@@ -33,7 +33,8 @@ class QVLAStorage
 {
     template <size_t> class print;
 protected:
-    ~QVLAStorage() = default;
+    QVLAStorage() = default;
+    QT_DECLARE_RO5_SMF_AS_DEFAULTED(QVLAStorage)
 
     alignas(Align) char array[Prealloc * (Align > Size ? Align : Size)];
     QT_WARNING_PUSH
@@ -48,7 +49,8 @@ protected:
 class QVLABaseBase
 {
 protected:
-    ~QVLABaseBase() = default;
+    QVLABaseBase() = default;
+    QT_DECLARE_RO5_SMF_AS_DEFAULTED(QVLABaseBase)
 
     qsizetype a;      // capacity
     qsizetype s;      // size
@@ -80,7 +82,8 @@ template<class T>
 class QVLABase : public QVLABaseBase
 {
 protected:
-    ~QVLABase() = default;
+    QVLABase() = default;
+    QT_DECLARE_RO5_SMF_AS_DEFAULTED(QVLABase)
 
 public:
     T *data() noexcept { return static_cast<T *>(ptr); }
