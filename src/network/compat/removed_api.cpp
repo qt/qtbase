@@ -67,6 +67,9 @@ QList<QNetworkCookie> QNetworkCookie::parseCookies(const QByteArray &cookieStrin
 
 #ifndef QT_NO_DEBUG_STREAM
 #if QT_CONFIG(ssl)
+
+#include "qdebug.h"
+
 QDebug operator<<(QDebug debug, const QSslError::SslError &error)
 {
     return print(std::move(debug), error);
