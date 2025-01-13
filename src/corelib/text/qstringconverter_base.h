@@ -80,7 +80,10 @@ public:
         Q_DISABLE_COPY(State)
     };
 protected:
+    QStringConverterBase() = default;
     ~QStringConverterBase() = default;
+    QStringConverterBase(QStringConverterBase &&) = default;
+    QStringConverterBase &operator=(QStringConverterBase &&) = default;
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QStringConverterBase::Flags)
 
