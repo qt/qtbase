@@ -126,6 +126,13 @@ int main(int argc, char **argv)
     // remove some environment options that cause Qt to print warnings
     qunsetenv("QT_SCALE_FACTOR_ROUNDING_POLICY");
 
+#  if defined(Q_OS_MACOS)
+    // Work around system framework spamming logs with
+    // "+[IMKClient subclass]: chose IMKClient_Legacy"
+    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSSequoia)
+        qputenv("CFLOG_FORCE_DISABLE_STDERR", "1");
+#  endif
+
     std::string_view subtest(argv[1]);
     if (subtest == "exitFromEventLoop")
         return exitFromEventLoop(argc - 1, argv + 1);
