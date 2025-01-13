@@ -407,7 +407,7 @@ endfunction()
 # options are the same as in _qt_internal_sbom_handle_target_custom_files, and are actually
 # forwarded from that function, because they might be set at the target level.
 #
-# In addition, more options can be passed when called via qt_internal_sbom_add_custom_files:
+# In addition, more options can be passed when called via qt_internal_sbom_add_files:
 #
 # They are:
 #
