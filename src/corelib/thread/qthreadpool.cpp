@@ -7,6 +7,7 @@
 #include "qcoreapplication.h"
 
 #include <algorithm>
+#include <climits> // For INT_MAX
 #include <memory>
 
 QT_BEGIN_NAMESPACE
