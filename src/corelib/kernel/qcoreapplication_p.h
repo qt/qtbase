@@ -127,8 +127,8 @@ public:
     int &argc;
     char **argv;
 #if defined(Q_OS_WIN)
-    int origArgc;
-    char **origArgv; // store unmodified arguments for QCoreApplication::arguments()
+    int origArgc = 0;
+    char **origArgv = nullptr; // store unmodified arguments for QCoreApplication::arguments()
     bool consoleAllocated = false;
 #endif
     void appendApplicationPathToLibraryPaths(void);
@@ -139,7 +139,7 @@ public:
     static bool isTranslatorInstalled(QTranslator *translator);
 #endif
 
-    QCoreApplicationPrivate::Type application_type;
+    Type application_type = Tty;
 
     QString cachedApplicationDirPath;
     static QString *cachedApplicationFilePath;
@@ -149,9 +149,9 @@ public:
 #ifndef QT_NO_QOBJECT
     void execCleanup();
 
-    bool in_exec;
-    bool aboutToQuitEmitted;
-    bool threadData_clean;
+    bool in_exec = false;
+    bool aboutToQuitEmitted = false;
+    bool threadData_clean = false;
 
     static QAbstractEventDispatcher *eventDispatcher;
     static bool is_app_running;
@@ -167,7 +167,7 @@ public:
     inline QString qmljsDebugArgumentsString() const { return qmljs_debug_arguments; }
 
 #ifdef QT_NO_QOBJECT
-    QCoreApplication *q_ptr;
+    QCoreApplication *q_ptr = nullptr;
 #endif
 };
 

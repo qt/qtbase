@@ -425,24 +425,7 @@ static inline bool contains(int argc, char **argv, const char *needle)
 #endif // Q_OS_WIN
 
 QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv)
-    :
-#ifndef QT_NO_QOBJECT
-      QObjectPrivate(),
-#endif
-      argc(aargc)
-    , argv(aargv)
-#if defined(Q_OS_WIN)
-    , origArgc(0)
-    , origArgv(nullptr)
-#endif
-    , application_type(QCoreApplicationPrivate::Tty)
-#ifndef QT_NO_QOBJECT
-    , in_exec(false)
-    , aboutToQuitEmitted(false)
-    , threadData_clean(false)
-#else
-    , q_ptr(nullptr)
-#endif
+    : argc(aargc), argv(aargv)
 {
     static const char *const empty = "";
     if (argc == 0 || argv == nullptr) {
