@@ -562,7 +562,7 @@ static inline bool displayMessageBox()
 
     \sa addVersionOption(), showHelp(), showVersion(), QCommandLineParser::MessageType
 */
-Q_NORETURN void QCommandLineParser::showMessageAndExit(MessageType type, const QString &message, int exitCode)
+[[noreturn]] void QCommandLineParser::showMessageAndExit(MessageType type, const QString &message, int exitCode)
 {
 #if defined(Q_OS_WIN) && !defined(QT_BOOTSTRAPPED)
     if (displayMessageBox()) {

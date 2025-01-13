@@ -71,7 +71,7 @@ public:
         InformationMessage,
         ErrorMessage,
     };
-    Q_NORETURN static void showMessageAndExit(MessageType type, const QString &message, int exitCode = 0);
+    [[noreturn]] static void showMessageAndExit(MessageType type, const QString &message, int exitCode = 0);
 
 private:
     Q_DISABLE_COPY(QCommandLineParser)
