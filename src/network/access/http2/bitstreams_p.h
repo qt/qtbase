@@ -17,7 +17,9 @@
 //
 
 #include <QtCore/private/qtcoreglobal_p.h>
-#include <QtCore/qdebug.h>
+#include <QtCore/qassert.h>
+#include <QtCore/qtclasshelpermacros.h>
+#include <QtCore/qtypes.h>
 
 #include <type_traits>
 #include <algorithm>
@@ -26,6 +28,7 @@
 QT_BEGIN_NAMESPACE
 
 class QByteArray;
+class QByteArrayView;
 
 namespace HPack
 {

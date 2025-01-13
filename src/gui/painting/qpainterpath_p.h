@@ -22,8 +22,6 @@
 #include "QtCore/qshareddata.h"
 #include "QtCore/qvarlengtharray.h"
 
-#include <qdebug.h>
-
 #include <private/qvectorpath_p.h>
 #include <private/qstroker_p.h>
 

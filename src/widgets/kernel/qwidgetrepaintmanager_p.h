@@ -16,7 +16,6 @@
 //
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
-#include <QDebug>
 #include <QtWidgets/qwidget.h>
 #include <private/qwidget_p.h>
 #include <QtGui/qbackingstore.h>

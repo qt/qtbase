@@ -23,7 +23,6 @@
 #include <QtCore/QList>
 #include <QtCore/QMap>
 #include <QtCore/QSet>
-#include <QtCore/QDebug>
 #include "private/qabstractitemview_p.h"
 
 #include <array>

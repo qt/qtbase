@@ -19,7 +19,6 @@
 #include <QtCore/QHash>
 #include <QtCore/QQueue>
 #include <QtCore/QString>
-#include <QtCore/QDebug>
 #include <QtCore/QSet>
 
 #include <functional> // for std::less

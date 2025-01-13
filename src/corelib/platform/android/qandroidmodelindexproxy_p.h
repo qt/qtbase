@@ -10,7 +10,6 @@
 #include <QtCore/qjniobject.h>
 #include <QtCore/qjnienvironment.h>
 #include <QtCore/qjnitypes.h>
-#include <QDebug>
 
 //
 //  W A R N I N G

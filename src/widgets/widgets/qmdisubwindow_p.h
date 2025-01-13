@@ -28,7 +28,6 @@
 #endif
 #include <QBasicTimer>
 #include <QPointer>
-#include <QDebug>
 #include <private/qwidget_p.h>
 
 QT_REQUIRE_CONFIG(mdiarea);

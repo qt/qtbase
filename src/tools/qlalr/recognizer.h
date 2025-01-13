@@ -8,7 +8,6 @@
 
 #include "lalr.h"
 
-#include <QtCore/qdebug.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qfile.h>
 #include <QtCore/qtextstream.h>

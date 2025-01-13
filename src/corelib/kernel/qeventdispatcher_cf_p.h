@@ -19,7 +19,6 @@
 #include <QtCore/private/qtimerinfo_unix_p.h>
 #include <QtCore/private/qcfsocketnotifier_p.h>
 #include <QtCore/private/qcore_mac_p.h>
-#include <QtCore/qdebug.h>
 #include <QtCore/qloggingcategory.h>
 
 #include <CoreFoundation/CoreFoundation.h>

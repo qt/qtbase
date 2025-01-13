@@ -22,7 +22,6 @@
 #include "QtGui/qtextoption.h"
 #include "QtGui/qtextlayout.h"
 
-#include "QtCore/qdebug.h"
 #include "QtCore/qlist.h"
 #include "QtCore/qnamespace.h"
 #include "QtCore/qset.h"

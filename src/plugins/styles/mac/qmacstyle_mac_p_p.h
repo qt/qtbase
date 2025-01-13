@@ -7,7 +7,6 @@
 
 #include "qmacstyle_mac_p.h"
 
-#include <QtCore/qdebug.h>
 #include <QtCore/qhash.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qmap.h>

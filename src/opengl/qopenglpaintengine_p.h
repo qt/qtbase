@@ -15,8 +15,6 @@
 // We mean it.
 //
 
-#include <QDebug>
-
 #include <qopenglpaintdevice.h>
 
 #include <private/qpaintengineex_p.h>

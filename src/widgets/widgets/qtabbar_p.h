@@ -22,7 +22,6 @@
 #include <qicon.h>
 #include <qtoolbutton.h>
 #include <qbasictimer.h>
-#include <qdebug.h>
 #if QT_CONFIG(animation)
 #include <qvariantanimation.h>
 #endif

@@ -19,7 +19,6 @@
 #include <rhi/qshader.h>
 #include <QtCore/QAtomicInt>
 #include <QtCore/QMap>
-#include <QtCore/QDebug>
 
 QT_BEGIN_NAMESPACE
 

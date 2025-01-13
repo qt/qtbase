@@ -34,7 +34,6 @@
 #include "QtWidgets/qcompleter.h"
 #endif
 #include "QtGui/qevent.h"
-#include "QtCore/qdebug.h"
 
 #include <limits.h>
 

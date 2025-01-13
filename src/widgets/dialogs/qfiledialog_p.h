@@ -38,7 +38,6 @@
 #include <qcompleter.h>
 #endif
 #include <qpointer.h>
-#include <qdebug.h>
 #include "qsidebar_p.h"
 #if QT_CONFIG(fscompleter)
 #include "qfscompleter_p.h"
