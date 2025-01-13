@@ -174,6 +174,7 @@ void tst_QTranslator::loadLocale_data()
     QTest::addRow("Australia")
                             << QLocale("en-AU")
                             << QStringList{"en-Latn-AU", "en-AU", "en"};
+    QTest::addRow("Taiwan") << QLocale("zh-TW") << QStringList{"zh-TW", "zh"};
 
     // This produces a QLocale::uiLanguages list of
     // {"en-NO", "en-Latn-NO", "nb-NO", "nb-Latn-NO", "nb",
@@ -181,6 +182,10 @@ void tst_QTranslator::loadLocale_data()
     QTest::addRow("System, mixed languages")
                             << QLocale::system()
                             << QStringList{"en-NO", "nb-NO", "de-DE", "zh-Hant-NO"};
+    QTest::addRow("System, mixed dialects")
+                            << QLocale::system()
+                            << QStringList{"en-AU", "en-NZ", "de-DE", "en-GB"};
+    QTest::addRow("System, Taiwan") << QLocale::system() << QStringList{"zh-TW", "zh"};
 }
 
 void tst_QTranslator::loadLocale()

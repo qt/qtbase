@@ -3711,6 +3711,9 @@ void tst_QLocale::uiLanguages_data()
     QTest::newRow("zh_Hant")
         << QLocale("zh_Hant")
         << QStringList{QString("zh-Hant-TW"), QString("zh-TW")};
+    QTest::newRow("zh_TW")
+        << QLocale("zh_TW")
+        << QStringList{u"zh-Hant-TW"_s, u"zh-TW"_s};
 
     QTest::newRow("zh_Hans_CN")
         << QLocale(QLocale::Chinese, QLocale::SimplifiedHanScript, QLocale::China)
@@ -4143,6 +4146,9 @@ void tst_QLocale::mySystemLocale_data()
     QTest::addRow("chinese-full")
         << QString("zh-Hans-CN") << QLocale::Chinese
         << QStringList{QStringLiteral("zh-Hans-CN"), QStringLiteral("zh-CN"), QStringLiteral("zh")};
+    QTest::addRow("chinese-taiwan")
+        << u"zh-TW"_s << QLocale::Chinese
+        << QStringList{u"zh-TW"_s, u"zh-Hant-TW"_s};
 
     // For C, it should preserve what the system gave us but only add "C", never anything more:
     QTest::addRow("C") << QString("C") << QLocale::C << QStringList{QStringLiteral("C")};
