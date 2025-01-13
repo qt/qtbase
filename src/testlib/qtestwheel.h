@@ -19,8 +19,6 @@
 #include <QtGui/qevent.h>
 #include <QtGui/qwindow.h>
 
-#include <QtCore/QDebug>
-
 QT_BEGIN_NAMESPACE
 
 Q_GUI_EXPORT void qt_handleWheelEvent(QWindow *window, const QPointF &local,

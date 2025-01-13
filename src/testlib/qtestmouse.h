@@ -24,8 +24,6 @@
 #include <QtWidgets/qwidget.h>
 #endif
 
-#include <QtCore/QDebug>
-
 QT_BEGIN_NAMESPACE
 
 Q_GUI_EXPORT void qt_handleMouseEvent(QWindow *window, const QPointF &local, const QPointF &global,

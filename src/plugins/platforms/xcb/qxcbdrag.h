@@ -16,8 +16,6 @@
 #include <qrect.h>
 #include <qxcbobject.h>
 
-#include <QtCore/QDebug>
-
 QT_REQUIRE_CONFIG(draganddrop);
 
 QT_BEGIN_NAMESPACE

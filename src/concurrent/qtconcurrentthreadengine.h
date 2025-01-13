@@ -10,7 +10,6 @@
 
 #include <QtCore/qthreadpool.h>
 #include <QtCore/qfuture.h>
-#include <QtCore/qdebug.h>
 #include <QtCore/qexception.h>
 #include <QtCore/qwaitcondition.h>
 #include <QtCore/qatomic.h>

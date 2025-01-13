@@ -6,7 +6,6 @@
 #define SYMBOLS_H
 
 #include "token.h"
-#include <qdebug.h>
 #include <qhashfunctions.h>
 #include <qlist.h>
 #include <qstack.h>
