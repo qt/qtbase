@@ -216,11 +216,12 @@ QSqlQuery::~QSqlQuery()
         delete d;
 }
 
-#if QT_DEPRECATED_SINCE(6, 2)
+#if QT_REMOVAL_QT7_DEPRECATED_SINCE(6, 2)
 /*!
     Constructs a copy of \a other.
 
-    \deprecated QSqlQuery cannot be meaningfully copied. Prepared
+    \deprecated [6.2] QSqlQuery cannot be meaningfully copied, and
+    therefore will no longer be copiable in Qt 7. Prepared
     statements, bound values and so on will not work correctly, depending
     on your database driver (for instance, changing the copy will affect
     the original). Treat QSqlQuery as a move-only type instead.
@@ -235,7 +236,8 @@ QSqlQuery::QSqlQuery(const QSqlQuery& other)
 /*!
     Assigns \a other to this object.
 
-    \deprecated QSqlQuery cannot be meaningfully copied. Prepared
+    \deprecated [6.2] QSqlQuery cannot be meaningfully copied, and
+    therefore will no longer be copiable in Qt 7. Prepared
     statements, bound values and so on will not work correctly, depending
     on your database driver (for instance, changing the copy will affect
     the original). Treat QSqlQuery as a move-only type instead.

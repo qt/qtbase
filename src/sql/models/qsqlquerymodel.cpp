@@ -379,9 +379,11 @@ void QSqlQueryModel::queryChange()
     // do nothing
 }
 
-#if QT_DEPRECATED_SINCE(6, 2)
+#if QT_REMOVAL_QT7_DEPRECATED_SINCE(6, 2)
 /*!
     \deprecated [6.2] Use the \c{setQuery(QSqlQuery &&query)} overload instead.
+    This overload will be removed in Qt 7.
+
     \overload
 */
 void QSqlQueryModel::setQuery(const QSqlQuery &query)
@@ -389,7 +391,7 @@ void QSqlQueryModel::setQuery(const QSqlQuery &query)
     QT_IGNORE_DEPRECATIONS(QSqlQuery copy = query;)
     setQuery(std::move(copy));
 }
-#endif // QT_DEPRECATED_SINCE(6, 2)
+#endif // QT_REMOVAL_QT7_DEPRECATED_SINCE(6, 2)
 
 /*!
     Resets the model and sets the data provider to be the given \a
