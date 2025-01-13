@@ -149,7 +149,12 @@ private slots:
     void moveAssignment_maintainsOwnershipWhenSelfAssigning() const
     {
         Handle resource{ GlobalResource::open() };
-        resource = std::move(resource);  // NOLINT(clang-diagnostic-self-move)
+
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_GCC("-Wself-move")
+QT_WARNING_DISABLE_CLANG("-Wself-move")
+        resource = std::move(resource);
+QT_WARNING_POP
 
         QVERIFY(resource.isValid());
         QVERIFY(GlobalResource::isOpen(resource.get()));
