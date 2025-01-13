@@ -127,8 +127,10 @@ public:
     int &argc;
     char **argv;
 #if defined(Q_OS_WIN)
+    // store unmodified arguments for QCoreApplication::arguments()
     int origArgc = 0;
-    char **origArgv = nullptr; // store unmodified arguments for QCoreApplication::arguments()
+    std::unique_ptr<char *[]> origArgv;
+
     bool consoleAllocated = false;
 #endif
     void appendApplicationPathToLibraryPaths(void);
