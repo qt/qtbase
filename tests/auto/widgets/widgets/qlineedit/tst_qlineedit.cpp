@@ -4971,7 +4971,7 @@ void tst_QLineEdit::QTBUG59957_clearButtonLeftmostAction()
 
 bool tst_QLineEdit::unselectingWithLeftOrRightChangesCursorPosition()
 {
-#if defined Q_OS_WIN || defined Q_OS_QNX || defined Q_OS_VXWORKS //Windows, QNX and VxWorks do not jump to the beginning of the selection
+#if defined Q_OS_WIN || defined Q_OS_QNX || defined Q_OS_VXWORKS || defined Q_OS_ANDROID // Android, Windows, QNX and VxWorks do not jump to the beginning of the selection
     return true;
 #endif
     // Platforms minimal/offscreen also need left after unselecting with right

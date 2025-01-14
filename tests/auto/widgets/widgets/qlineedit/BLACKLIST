@@ -1,8 +1,4 @@
 # QTBUG-87417
-[undo_keypressevents]
-android
-[leftKeyOnSelectedText]
-android
 [textMargin]
 android
 [testQuickSelectionWithMouse]
