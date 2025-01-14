@@ -5075,18 +5075,18 @@ QStringList QLocale::uiLanguages(TagSeparator separator) const
             continue;
         }
 
-        const auto prior = QString::fromLatin1(id.name(sep));
+        const QByteArray prior = id.name(sep);
         if (isSystem && i < uiLanguages.size()) {
             // Adding likely-adjusted forms to system locale's list.
-            Q_ASSERT(uiLanguages.at(i) == prior
+            Q_ASSERT(uiLanguages.at(i) == QLatin1StringView(prior)
                      // A legacy code may get mapped to an ID with a different name:
-                     || QLatin1String(QLocaleId::fromName(uiLanguages.at(i)).name(sep)) == prior);
+                     || QLocaleId::fromName(uiLanguages.at(i)).name(sep) == prior);
             // Insert just after the entry we're supplementing:
             j = i + 1;
         } else {
             // Plain locale or empty system uiLanguages; just append.
-            if (!uiLanguages.contains(prior))
-                uiLanguages.append(prior);
+            if (!uiLanguages.contains(QLatin1StringView(prior)))
+                uiLanguages.append(QString::fromLatin1(prior));
             j = uiLanguages.size();
         }
 
@@ -5094,9 +5094,10 @@ QStringList QLocale::uiLanguages(TagSeparator separator) const
         const QLocaleId min = max.withLikelySubtagsRemoved();
 
         // Include minimal version (last) unless it's what our locale is derived from:
-        if (auto name = QString::fromLatin1(min.name(sep)); name != prior) {
-            uiLanguages.insert(j, name);
-            gatherTruncations(name);
+        if (const QByteArray name = min.name(sep); name != prior) {
+            QString sName = QString::fromLatin1(name);
+            uiLanguages.insert(j, sName);
+            gatherTruncations(sName);
         } else if (!isSystem && min == id) {
             --j; // Put more specific forms *before* minimal entry.
         }
@@ -5105,9 +5106,10 @@ QStringList QLocale::uiLanguages(TagSeparator separator) const
             // Include scriptless version if likely-equivalent and distinct:
             id.script_id = 0;
             if (id != min && id.withLikelySubtagsAdded() == max) {
-                if (auto name = QString::fromLatin1(id.name(sep)); name != prior) {
-                    uiLanguages.insert(j, name);
-                    gatherTruncations(name);
+                if (const QByteArray name = id.name(sep); name != prior) {
+                    auto sName = QString::fromLatin1(name);
+                    uiLanguages.insert(j, sName);
+                    gatherTruncations(sName);
                 }
             }
         }
@@ -5118,19 +5120,21 @@ QStringList QLocale::uiLanguages(TagSeparator separator) const
             // Include version with territory if likely-equivalent and distinct:
             id.territory_id = max.territory_id;
             if (id != max && id.withLikelySubtagsAdded() == max) {
-                if (auto name = QString::fromLatin1(id.name(sep)); name != prior) {
-                    uiLanguages.insert(j, name);
-                    gatherTruncations(name);
+                if (const QByteArray name = id.name(sep); name != prior) {
+                    auto sName = QString::fromLatin1(name);
+                    uiLanguages.insert(j, sName);
+                    gatherTruncations(sName);
                 }
             }
         }
-        gatherTruncations(prior); // After trimmed forms, before max.
+        gatherTruncations(QString::fromLatin1(prior)); // After trimmed forms, before max.
 
         // Include version with all likely sub-tags (first) if distinct from the rest:
         if (max != min && max != id) {
-            if (auto name = QString::fromLatin1(max.name(sep)); name != prior) {
-                uiLanguages.insert(j, name);
-                gatherTruncations(name);
+            if (const QByteArray name = max.name(sep); name != prior) {
+                auto sName = QString::fromLatin1(name);
+                uiLanguages.insert(j, sName);
+                gatherTruncations(sName);
             }
         }
     }
