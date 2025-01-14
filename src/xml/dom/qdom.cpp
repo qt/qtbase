@@ -754,51 +754,13 @@ QDomNodePrivate *QDomNodeListPrivate::findPrevInOrder(QDomNodePrivate *p) const
 
 void QDomNodeListPrivate::forEachNode(qxp::function_ref<void(QDomNodePrivate*)> yield) const
 {
-    //TODO: simplify with findNextInList
     if (!node_impl)
         return;
 
-    QDomNodePrivate* p = node_impl->first;
-
-    if (tagname.isNull()) {
-        while (p) {
-            yield(p);
-            p = p->next;
-        }
-    } else if (nsURI.isNull()) {
-        while (p && p != node_impl) {
-            if (p->isElement() && p->nodeName() == tagname) {
-                yield(p);
-            }
-            if (p->first)
-                p = p->first;
-            else if (p->next)
-                p = p->next;
-            else {
-                p = p->parent();
-                while (p && p != node_impl && !p->next)
-                    p = p->parent();
-                if (p && p != node_impl)
-                    p = p->next;
-            }
-        }
-    } else {
-        while (p && p != node_impl) {
-            if (p->isElement() && p->name==tagname && p->namespaceURI==nsURI) {
-                yield(p);
-            }
-            if (p->first)
-                p = p->first;
-            else if (p->next)
-                p = p->next;
-            else {
-                p = p->parent();
-                while (p && p != node_impl && !p->next)
-                    p = p->parent();
-                if (p && p != node_impl)
-                    p = p->next;
-            }
-        }
+    QDomNodePrivate *current = findNextInOrder(node_impl);
+    while (current && current != node_impl) {
+        yield(current);
+        current = findNextInOrder(current);
     }
 }
 
