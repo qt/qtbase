@@ -975,12 +975,13 @@ private:
         if (isEmpty()) // prevents detaching shared null
             return false;
         auto it = d->findBucket(key);
+        if (it.isUnused())
+            return false;
+
         size_t bucket = it.toBucketIndex(d);
         detach();
         it = typename Data::Bucket(d, bucket); // reattach in case of detach
 
-        if (it.isUnused())
-            return false;
         d->erase(it);
         return true;
     }

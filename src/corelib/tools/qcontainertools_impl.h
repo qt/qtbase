@@ -398,12 +398,13 @@ template <typename T, typename Predicate>
 qsizetype qset_erase_if(QSet<T> &set, Predicate &pred)
 {
     qsizetype result = 0;
-    auto it = set.begin();
-    const auto e = set.end();
+    auto it = set.cbegin();
+    auto e = set.cend(); // stable across detach (QHash::end() is a stateless sentinel)...
     while (it != e) {
         if (pred(*it)) {
             ++result;
             it = set.erase(it);
+            e = set.cend(); // ...but re-set nonetheless, in case at some point it won't be
         } else {
             ++it;
         }
