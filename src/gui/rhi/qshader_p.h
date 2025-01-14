@@ -15,6 +15,7 @@
 // We mean it.
 //
 
+#include <QtGui/private/qtguiglobal_p.h>
 #include <rhi/qshader.h>
 #include <QtCore/QAtomicInt>
 #include <QtCore/QMap>

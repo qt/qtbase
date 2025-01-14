@@ -16,6 +16,7 @@
 // We mean it.
 //
 
+#include <QtCore/private/qtcoreglobal_p.h>
 #include <QtCore/qdebug.h>
 
 #include <type_traits>
