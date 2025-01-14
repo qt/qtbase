@@ -402,17 +402,9 @@ void tst_QSet::removeOnlyDetachesIfSomethingGetsRemoved()
     QVERIFY(!copy.isDetached());
 
     QVERIFY(!copy.remove(42));
-    QEXPECT_FAIL("", "QTBUG-132831", Continue);
-    QVERIFY(!copy.isDetached());
-
-    copy = set;
     QVERIFY(!copy.isDetached());
 
     QCOMPARE(copy.removeIf([] (auto) { return false; }), 0);
-    QEXPECT_FAIL("", "QTBUG-132831", Continue);
-    QVERIFY(!copy.isDetached());
-
-    copy = set;
     QVERIFY(!copy.isDetached());
 
     QVERIFY(copy.remove(4));
