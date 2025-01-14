@@ -92,11 +92,9 @@ void tst_QResourceEngine::initTestCase()
 void tst_QResourceEngine::cleanupTestCase()
 {
 #if defined(Q_OS_VXWORKS)
-    // This fails for not yet known reason: resource `m_runtimeResourceRcc` exists, but its failed
-    // to be removed due to refernce count of QDynamicFileResourceRoot instance equals to 46
-    // (regardless of how many test cases were executed), which causes
-    // `QResource::unregisterResource` to remove false.
-    QEXPECT_FAIL("", "QTBUG-130069: reference count of resource isn't getting down to 0", Abort);
+    // Due to bug in patched std::optional on VxWorks, which is not running destructor for contained object, this tests leaks memory.
+    // Once unpatched optional version from VxWorks 24.03 will be used on CI, below skip will be removed.
+    QSKIP("QTBUG-130069: reference count of resource isn't getting down to 0");
 #endif
     // make sure we don't leak memory
     QVERIFY(QResource::unregisterResource(m_runtimeResourceRcc));
