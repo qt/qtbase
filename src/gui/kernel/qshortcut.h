@@ -71,6 +71,7 @@ public:
               const QObject *context2, FunctorAmbiguous functorAmbiguous,
               Qt::ShortcutContext shortcutContext = Qt::WindowShortcut);
 #else
+#ifndef QT_NO_CONTEXTLESS_CONNECT
     template<typename Func1>
     QShortcut(const QKeySequence &key, QObject *parent,
               Func1 slot1,
@@ -79,6 +80,7 @@ public:
     {
         connect(this, &QShortcut::activated, std::move(slot1));
     }
+#endif
     template<class Obj1, typename Func1>
     QShortcut(const QKeySequence &key, QObject *parent,
               const Obj1 *object1, Func1 slot1,
