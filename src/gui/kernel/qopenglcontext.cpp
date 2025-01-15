@@ -743,13 +743,13 @@ bool QOpenGLContext::makeCurrent(QSurface *surface)
 void QOpenGLContext::doneCurrent()
 {
     Q_D(QOpenGLContext);
-    if (!isValid())
-        return;
 
-    if (QOpenGLContext::currentContext() == this)
-        d->shareGroup->d_func()->deletePendingResources(this);
+    if (isValid()) {
+        if (QOpenGLContext::currentContext() == this)
+            d->shareGroup->d_func()->deletePendingResources(this);
+        d->platformGLContext->doneCurrent();
+    }
 
-    d->platformGLContext->doneCurrent();
     QOpenGLContextPrivate::setCurrentContext(nullptr);
 
     d->surface = nullptr;

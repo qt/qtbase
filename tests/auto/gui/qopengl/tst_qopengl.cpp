@@ -84,6 +84,9 @@ private slots:
     void bufferCreate();
     void bufferMapRange();
     void defaultQGLCurrentBuffer();
+#if QT_CONFIG(egl)
+    void dontCrashOnInvalidContextThreadTeardown();
+#endif
 };
 
 struct SharedResourceTracker
@@ -1750,6 +1753,31 @@ void tst_QOpenGL::clipRect()
     // Enable this once QTBUG-85286 is fixed
     //QCOMPARE(fb.pixelColor(clipRect.right(), clipRect.top() + 1), QColor(Qt::red));
 }
+
+#if QT_CONFIG(egl)
+void tst_QOpenGL::dontCrashOnInvalidContextThreadTeardown()
+{
+    class Thread : public QThread
+    {
+        void run() override
+        {
+            auto context = std::make_unique<QOpenGLContext>();
+            QVERIFY(context->create());
+            QScopedPointer<QSurface> surface(createSurface(int(QSurface::Window)));
+            QVERIFY(context->makeCurrent(surface.data()));
+            auto eglContext = context->nativeInterface<QNativeInterface::QEGLContext>();
+            if (!eglContext) {
+                QSKIP("Need an egl context for this test");
+            }
+            eglContext->invalidateContext();
+            context->doneCurrent();
+        }
+    };
+    Thread thread;
+    thread.start();
+    thread.wait();
+}
+#endif
 
 QTEST_MAIN(tst_QOpenGL)
 
