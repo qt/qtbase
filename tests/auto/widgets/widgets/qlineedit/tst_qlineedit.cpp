@@ -3555,8 +3555,10 @@ void tst_QLineEdit::textMargin()
     // resizing by the window system.
     QWidget tlw;
     QLineEdit testWidget(&tlw);
-    testWidget.setGeometry(100, 100, 100, 30);
     testWidget.setText("MMM MMM MMM");
+    QFontMetrics metrics(testWidget.font());
+    const int minimumWidth =  metrics.horizontalAdvance(testWidget.text());
+    testWidget.setGeometry(100, 100, qMax(minimumWidth,  100) , 30);
     testWidget.setCursorPosition(6);
 
     QSize sizeHint = testWidget.sizeHint();
