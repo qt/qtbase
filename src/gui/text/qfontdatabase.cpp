@@ -544,7 +544,7 @@ void qt_registerFont(const QString &familyName, const QString &stylename,
 {
     auto *d = QFontDatabasePrivate::instance();
     qCDebug(lcFontDb) << "Adding font: familyName" << familyName << "stylename" << stylename << "weight" << weight
-        << "style" << style << "pixelSize" << pixelSize << "antialiased" << antialiased << "fixed" << fixedPitch;
+                      << "style" << style << "pixelSize" << pixelSize << "antialiased" << antialiased << "fixed" << fixedPitch << "colorFont" << colorFont;
     QtFontStyle::Key styleKey;
     styleKey.style = style;
     styleKey.weight = weight;
@@ -2681,12 +2681,16 @@ QFontEngine *QFontDatabasePrivate::findFont(const QFontDef &req,
     // algorithm has determined that we should use a color font. If the selected font is not
     // a color font, we use the fall back mechanism to find one, since we want to prefer *any* color
     // font over a non-color font in this case.
+    qCDebug(lcFontMatch, "Family name match pass: Looking for family name '%s'%s", qPrintable(family_name),
+            script == QFontDatabasePrivate::Script_Emoji ? " (color font required)" : "");
     int index = match(multi && script != QFontDatabasePrivate::Script_Emoji ? QChar::Script_Common : script, request, family_name, foundry_name, &desc, blackListed, &score);
 
     // 2.
     // If no font was found or it was not a perfect match, we let the database populate family
     // aliases and try again.
     if (score > 0 && QGuiApplicationPrivate::platformIntegration()->fontDatabase()->populateFamilyAliases(family_name)) {
+        qCDebug(lcFontMatch, "Alias match pass: Imperfect result and aliases populated, so trying again%s",
+                script == QFontDatabasePrivate::Script_Emoji ? " (color font required)" : "");
         // We populated family aliases (e.g. localized families), so try again
         index = match(multi && script != QFontDatabasePrivate::Script_Emoji ? QChar::Script_Common : script, request, family_name, foundry_name, &desc, blackListed);
     }
@@ -2696,8 +2700,10 @@ QFontEngine *QFontDatabasePrivate::findFont(const QFontDef &req,
     // not support the script.
     //
     // (we do this at the end to prefer foundries that support the script if they exist)
-    if (index < 0 && !multi && !preferScriptOverFamily)
+    if (index < 0 && !multi && !preferScriptOverFamily) {
+        qCDebug(lcFontMatch, "NoFontMerging pass: Font not found with requested script, but we try to load it anyway");
         index = match(QChar::Script_Common, request, family_name, foundry_name, &desc, blackListed);
+    }
 
     if (index >= 0) {
         QFontDef fontDef = request;
@@ -2708,10 +2714,13 @@ QFontEngine *QFontDatabasePrivate::findFont(const QFontDef &req,
 
         engine = loadEngine(script, fontDef, desc.family, desc.foundry, desc.style, desc.size);
 
-        if (engine)
+        if (engine) {
             initFontDef(desc, request, &engine->fontDef, multi);
-        else
+        } else {
+            qCDebug(lcFontMatch, "Failed to create font engine for font '%s'. Blacklisting %d",
+                    qPrintable(desc.family->name), index);
             blackListed.append(index);
+        }
     } else {
         qCDebug(lcFontMatch, "  NO MATCH FOUND\n");
     }
@@ -2722,6 +2731,7 @@ QFontEngine *QFontDatabasePrivate::findFont(const QFontDef &req,
     // is not.
     if (!engine) {
         if (!requestFamily.isEmpty()) {
+            qCDebug(lcFontMatch, "Fallbacks pass: Looking for a fallback matching script %d", script);
             QFont::StyleHint styleHint = QFont::StyleHint(request.styleHint);
             if (styleHint == QFont::AnyStyle && request.fixedPitch)
                 styleHint = QFont::TypeWriter;
@@ -2767,10 +2777,13 @@ QFontEngine *QFontDatabasePrivate::findFont(const QFontDef &req,
                                                     desc.foundry,
                                                     desc.style,
                                                     desc.size);
-                                if (engine)
+                                if (engine) {
                                     initFontDef(desc, loadDef, &engine->fontDef, multi);
-                                else
+                                } else {
+                                    qCDebug(lcFontMatch, "Failed to create font engine for fallback %d (%s). Blacklisting %d",
+                                            i, qPrintable(desc.family->name), index);
                                     blackListed.append(index);
+                                }
                             }
                         } while (index >= 0 && !engine);
                     }
@@ -2787,8 +2800,10 @@ QFontEngine *QFontDatabasePrivate::findFont(const QFontDef &req,
             // If we are looking for a color font and there are no color fonts on the system,
             // we will end up here, for one final pass. This is a rare occurrence so we accept
             // and extra pass on the fallbacks for this.
-            if (!engine && script == QFontDatabasePrivate::Script_Emoji)
+            if (!engine && script == QFontDatabasePrivate::Script_Emoji) {
+                qCDebug(lcFontMatch, "No color fonts found on system. Doing final fallback match.");
                 engine = findMatchingFallback(QChar::Script_Common, script);
+            }
         }
 
         if (!engine) {
