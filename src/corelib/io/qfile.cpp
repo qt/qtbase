@@ -635,6 +635,13 @@ QFile::rename(const QString &newName)
             return true;
         }
 
+        // Engine was unable to rename and the fallback will delete the original file,
+        // so we have to back out here on case-insensitive file systems:
+        if (changingCase) {
+            d->setError(QFile::RenameError, d->fileEngine->errorString());
+            return false;
+        }
+
         if (isSequential()) {
             d->setError(QFile::RenameError, tr("Will not rename sequential file using block copy"));
             return false;
