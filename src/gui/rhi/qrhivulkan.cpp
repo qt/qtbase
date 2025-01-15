@@ -2029,9 +2029,6 @@ bool QRhiVulkan::recreateSwapChain(QRhiSwapChain *swapChain)
         frame.imageAcquired = false;
         frame.imageSemWaitable = false;
 
-        df->vkCreateFence(dev, &fenceInfo, nullptr, &frame.imageFence);
-        frame.imageFenceWaitable = true; // fence was created in signaled state
-
         df->vkCreateSemaphore(dev, &semInfo, nullptr, &frame.imageSem);
         df->vkCreateSemaphore(dev, &semInfo, nullptr, &frame.drawSem);
 
@@ -2066,13 +2063,6 @@ void QRhiVulkan::releaseSwapChainResources(QRhiSwapChain *swapChain)
             df->vkDestroyFence(dev, frame.cmdFence, nullptr);
             frame.cmdFence = VK_NULL_HANDLE;
             frame.cmdFenceWaitable = false;
-        }
-        if (frame.imageFence) {
-            if (frame.imageFenceWaitable)
-                df->vkWaitForFences(dev, 1, &frame.imageFence, VK_TRUE, UINT64_MAX);
-            df->vkDestroyFence(dev, frame.imageFence, nullptr);
-            frame.imageFence = VK_NULL_HANDLE;
-            frame.imageFenceWaitable = false;
         }
         if (frame.imageSem) {
             df->vkDestroySemaphore(dev, frame.imageSem, nullptr);
@@ -2155,24 +2145,26 @@ QRhi::FrameOpResult QRhiVulkan::beginFrame(QRhiSwapChain *swapChain, QRhi::Begin
 
     inst->handle()->beginFrame(swapChainD->window);
 
-    if (!frame.imageAcquired) {
-        // Wait if we are too far ahead, i.e. the thread gets throttled based on the presentation rate
-        // (note that we are using FIFO mode -> vsync)
-        if (frame.imageFenceWaitable) {
-            df->vkWaitForFences(dev, 1, &frame.imageFence, VK_TRUE, UINT64_MAX);
-            df->vkResetFences(dev, 1, &frame.imageFence);
-            frame.imageFenceWaitable = false;
-        }
+    // Make sure the previous commands for the same frame slot have finished.
+    //
+    // Do this also for any other swapchain's commands with the same frame slot
+    // While this reduces concurrency, it keeps resource usage safe: swapchain
+    // A starting its frame 0, followed by swapchain B starting its own frame 0
+    // will make B wait for A's frame 0 commands, so if a resource is written
+    // in B's frame or when B checks for pending resource releases, that won't
+    // mess up A's in-flight commands (as they are not in flight anymore).
+    waitCommandCompletion(frameResIndex);
 
+    if (!frame.imageAcquired) {
         // move on to next swapchain image
         uint32_t imageIndex = 0;
         VkResult err = vkAcquireNextImageKHR(dev, swapChainD->sc, UINT64_MAX,
-                                             frame.imageSem, frame.imageFence, &imageIndex);
+                                             frame.imageSem, VK_NULL_HANDLE, &imageIndex);
+
         if (err == VK_SUCCESS || err == VK_SUBOPTIMAL_KHR) {
             swapChainD->currentImageIndex = imageIndex;
             frame.imageSemWaitable = true;
             frame.imageAcquired = true;
-            frame.imageFenceWaitable = true;
         } else if (err == VK_ERROR_OUT_OF_DATE_KHR) {
             return QRhi::FrameOpSwapChainOutOfDate;
         } else {
@@ -2185,18 +2177,6 @@ QRhi::FrameOpResult QRhiVulkan::beginFrame(QRhiSwapChain *swapChain, QRhi::Begin
             return QRhi::FrameOpError;
         }
     }
-
-    // Make sure the previous commands for the same image have finished. (note
-    // that this is based on the fence from the command buffer submit, nothing
-    // to do with the Present)
-    //
-    // Do this also for any other swapchain's commands with the same frame slot
-    // While this reduces concurrency, it keeps resource usage safe: swapchain
-    // A starting its frame 0, followed by swapchain B starting its own frame 0
-    // will make B wait for A's frame 0 commands, so if a resource is written
-    // in B's frame or when B checks for pending resource releases, that won't
-    // mess up A's in-flight commands (as they are not in flight anymore).
-    waitCommandCompletion(frameResIndex);
 
     currentFrameSlot = int(swapChainD->currentFrameSlot);
     currentSwapChain = swapChainD;

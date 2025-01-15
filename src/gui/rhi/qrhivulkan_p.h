@@ -625,8 +625,6 @@ struct QVkSwapChain : public QRhiSwapChain
     QVarLengthArray<ImageResources, EXPECTED_MAX_BUFFER_COUNT> imageRes;
 
     struct FrameResources {
-        VkFence imageFence = VK_NULL_HANDLE;
-        bool imageFenceWaitable = false;
         VkSemaphore imageSem = VK_NULL_HANDLE;
         VkSemaphore drawSem = VK_NULL_HANDLE;
         bool imageAcquired = false;
