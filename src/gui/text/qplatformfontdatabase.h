@@ -89,6 +89,7 @@ public:
     virtual QList<int> standardSizes() const;
 
     virtual bool supportsVariableApplicationFonts() const;
+    virtual bool supportsColrv0Fonts() const;
 
     // helper
     static QSupportedWritingSystems writingSystemsFromTrueTypeBits(quint32 unicodeRange[4], quint32 codePageRange[2]);

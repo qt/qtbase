@@ -478,7 +478,7 @@ static void populateFromPattern(FcPattern *pattern,
 
     FcBool colorFont = false;
 #ifdef FC_COLOR
-    FcPatternGetBool(pattern, FC_COLOR, 1, &colorFont);
+    FcPatternGetBool(pattern, FC_COLOR, 0, &colorFont);
 #endif
 
     // Note: stretch should really be an int but registerFont incorrectly uses an enum
@@ -576,6 +576,9 @@ void QFontconfigDatabase::populateFontDatabase()
             FC_WIDTH, FC_FAMILYLANG,
 #if FC_VERSION >= 20297
             FC_CAPABILITY,
+#endif
+#if defined(FC_COLOR)
+            FC_COLOR,
 #endif
             (const char *)nullptr
         };

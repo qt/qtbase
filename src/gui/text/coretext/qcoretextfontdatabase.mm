@@ -1032,6 +1032,11 @@ QList<int> QCoreTextFontDatabase::standardSizes() const
     return ret;
 }
 
+bool QCoreTextFontDatabase::supportsColrv0Fonts() const
+{
+    return true;
+}
+
 bool QCoreTextFontDatabase::supportsVariableApplicationFonts() const
 {
     return true;

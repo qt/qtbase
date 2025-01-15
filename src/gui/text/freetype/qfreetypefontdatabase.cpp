@@ -355,6 +355,15 @@ QStringList QFreeTypeFontDatabase::addTTFile(const QByteArray &fontData, const Q
     return families;
 }
 
+bool QFreeTypeFontDatabase::supportsColrv0Fonts() const
+{
+#if (FREETYPE_MAJOR*10000 + FREETYPE_MINOR*100 + FREETYPE_PATCH) >= 21000
+    return true;
+#else
+    return false;
+#endif
+}
+
 bool QFreeTypeFontDatabase::supportsVariableApplicationFonts() const
 {
 #if (FREETYPE_MAJOR*10000 + FREETYPE_MINOR*100 + FREETYPE_PATCH) >= 20900

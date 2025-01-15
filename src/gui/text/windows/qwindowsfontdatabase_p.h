@@ -46,6 +46,7 @@ public:
     void populateFontDatabase() override;
     void invalidate() override;
     void removeApplicationFonts();
+    bool supportsColrv0Fonts() const override;
 
     void populateFamily(const QString &familyName) override;
     bool populateFamilyAliases(const QString &missingFamily) override;

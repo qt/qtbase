@@ -43,6 +43,7 @@ public:
     QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName, QFontDatabasePrivate::ApplicationFont *applicationFont = nullptr) override;
     void releaseHandle(void *handle) override;
     bool supportsVariableApplicationFonts() const override;
+    bool supportsColrv0Fonts() const override;
 
     static void addNamedInstancesForFace(void *face, int faceIndex,
                                          const QString &family, const QString &styleName,

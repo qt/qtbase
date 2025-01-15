@@ -1292,4 +1292,9 @@ bool QWindowsFontDatabase::isPrivateFontFamily(const QString &family) const
     return m_eudcFonts.contains(family) || QPlatformFontDatabase::isPrivateFontFamily(family);
 }
 
+bool QWindowsFontDatabase::supportsColrv0Fonts() const
+{
+    return true;
+}
+
 QT_END_NAMESPACE

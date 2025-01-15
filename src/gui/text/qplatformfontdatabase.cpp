@@ -657,6 +657,15 @@ bool QPlatformFontDatabase::supportsVariableApplicationFonts() const
     return false;
 }
 
+/*!
+    Returns true if this font database supports loading color fonts in the COLRv0 format.
+
+    \since 6.9
+*/
+bool QPlatformFontDatabase::supportsColrv0Fonts() const
+{
+    return false;
+}
 
 /*!
     \class QPlatformFontDatabase

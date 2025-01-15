@@ -769,6 +769,12 @@ void tst_QFontDatabase::addApplicationFontFallback()
 
 void tst_QFontDatabase::addApplicationEmojiFontFamily()
 {
+    {
+        QPlatformFontDatabase *pfdb = QGuiApplicationPrivate::platformIntegration()->fontDatabase();
+        if (!pfdb->supportsColrv0Fonts())
+            QSKIP("This test depends on COLRv0 support.");
+    }
+
     int id = -1;
     auto cleanup = qScopeGuard([&id] {
         if (id >= 0)
