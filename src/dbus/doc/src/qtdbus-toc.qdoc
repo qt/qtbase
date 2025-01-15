@@ -1,0 +1,26 @@
+// Copyright (C) 2024 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page qtdbus-toc.html
+    \title Qt D-Bus module topics
+
+    The following list has links to all the individual topics (HTML files)
+    in the Qt D-Bus module.
+
+    \list
+    \li \l {Qt D-Bus Overview}
+    \li \l {Using Qt D-Bus Adaptors}
+        \list
+            \li \l{Declaring Slots in D-Bus Adaptors}
+            \li \l{Declaring Signals in D-Bus Adaptors}
+            \li \l{The Qt D-Bus Type System}
+        \endlist
+    \li \l {Qt D-Bus XML compiler (qdbusxml2cpp)}
+    \li \l {Qt D-Bus Viewer}
+    \li \l {CMake Commands in Qt6 DBus}
+    \li \l {CMake Source File Properties in Qt6 DBus}
+    \li \l {Changes to Qt D-Bus}{Upgrading from Qt 5}
+    \endlist
+
+*/
