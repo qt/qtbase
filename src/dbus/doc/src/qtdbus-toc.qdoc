@@ -17,7 +17,7 @@
             \li \l{The Qt D-Bus Type System}
         \endlist
     \li \l {Qt D-Bus XML compiler (qdbusxml2cpp)}
-    \li \l {D-Bus Viewer}
+    \li \l {Qt D-Bus Viewer}
     \li \l {CMake Commands in Qt6 DBus}
     \li \l {CMake Source File Properties in Qt6 DBus}
     \li \l {Changes to Qt D-Bus}{Upgrading from Qt 5}

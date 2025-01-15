@@ -44,7 +44,7 @@
       \li \l {Using Qt D-Bus Adaptors}
       \li \l {The Qt D-Bus Type System}
       \li \l {Qt D-Bus XML compiler (qdbusxml2cpp)}
-      \li \l{D-Bus Viewer}
+      \li \l {Qt D-Bus Viewer}
     \endlist
 
     \section1 Examples
@@ -81,7 +81,7 @@
 
 /*!
   \page qdbusviewer.html
-  \title D-Bus Viewer
+  \title Qt D-Bus Viewer
   \keyword qdbusviewer
 
   The Qt D-Bus Viewer (\c {qdbusviewer}) is a tool that lets you introspect D-Bus objects and messages. You can
@@ -93,4 +93,14 @@
 
   Right-click on a signal to connect to it. All emitted signals including their parameters
   are output in the message view on the lower side of the window.
+
+  \section1 Running Qt D-Bus Viewer
+
+  To run Qt D-Bus Viewer, execute the \c qdbusviewer tool in the installation
+  directory of the respective Qt version. For the Qt \QtVersion Linux/X11
+  installation using the \QOI, the tool is at:
+
+  \badcode \QtVersion
+  <INSTALL_DIR>/\1/gcc_64/bin/qdbusviewer
+  \endcode
 */
