@@ -694,7 +694,12 @@ static constexpr QLatin1StringView settingsPrefix(QKdeThemePrivate::KdeSettingTy
     case QKdeThemePrivate::KdeSettingType::ToolBarStyle:
         return QLatin1StringView("Toolbar style/");
     }
-    Q_UNREACHABLE_RETURN(QLatin1StringView());
+    // GCC 8.x does not treat __builtin_unreachable() as constexpr
+#  if !defined(Q_CC_GNU_ONLY) || (Q_CC_GNU >= 900)
+    // NOLINTNEXTLINE(qt-use-unreachable-return): Triggers on Clang, breaking GCC 8
+    Q_UNREACHABLE();
+#  endif
+    return {};
 }
 
 static constexpr QKdeThemePrivate::KdeSettingType settingsType(QKdeThemePrivate::KdeSetting setting)
@@ -733,7 +738,12 @@ static constexpr QKdeThemePrivate::KdeSettingType settingsType(QKdeThemePrivate:
     CASE(TooltipBackground, Colors);
     CASE(TooltipForeground, Colors);
     };
-    Q_UNREACHABLE_RETURN(QKdeThemePrivate::KdeSettingType::Root);
+    // GCC 8.x does not treat __builtin_unreachable() as constexpr
+#  if !defined(Q_CC_GNU_ONLY) || (Q_CC_GNU >= 900)
+    // NOLINTNEXTLINE(qt-use-unreachable-return): Triggers on Clang, breaking GCC 8
+    Q_UNREACHABLE();
+#  endif
+    return QKdeThemePrivate::KdeSettingType::Root;
 }
 #undef CASE
 
@@ -799,7 +809,12 @@ static constexpr QLatin1StringView settingsKey(QKdeThemePrivate::KdeSetting sett
     case QKdeThemePrivate::KdeSetting::TooltipForeground:
         return QLatin1StringView("Tooltip/ForegroundNormal");
     };
-    Q_UNREACHABLE_RETURN(QLatin1StringView());
+    // GCC 8.x does not treat __builtin_unreachable() as constexpr
+#  if !defined(Q_CC_GNU_ONLY) || (Q_CC_GNU >= 900)
+    // NOLINTNEXTLINE(qt-use-unreachable-return): Triggers on Clang, breaking GCC 8
+    Q_UNREACHABLE();
+#  endif
+    return {};
 }
 
 void QKdeThemePrivate::refresh()
