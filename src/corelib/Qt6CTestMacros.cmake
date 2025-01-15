@@ -142,6 +142,13 @@ function(_qt_internal_get_cmake_test_configure_options out_var)
         list(APPEND option_list "-DQT_BUILD_DIR=${QT_BUILD_DIR}")
     endif()
 
+    # Forward whatever hints were used in find_package(Qt6) to the ctest configure
+    foreach(hint IN ITEMS Qt6_ROOT QT6_ROOT)
+        if(DEFINED ${hint})
+            list(APPEND option_list "-D${hint}=${${hint}}")
+        endif()
+    endforeach()
+
     # Pass a variable that can serve as a marker for cmake build tests in other build system code.
     list(APPEND option_list "-DQT_INTERNAL_IS_CMAKE_BUILD_TEST=ON")
 
