@@ -1783,6 +1783,8 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
 int QWindows11Style::styleHint(StyleHint hint, const QStyleOption *opt,
               const QWidget *widget, QStyleHintReturn *returnData) const {
     switch (hint) {
+    case QStyle::SH_Menu_AllowActiveAndDisabled:
+        return 0;
     case SH_GroupBox_TextLabelColor:
         if (opt!=nullptr && widget!=nullptr)
             return opt->palette.text().color().rgba();
