@@ -370,9 +370,7 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     \sa QT_DISABLE_DEPRECATED_UP_TO, QT_NO_KEYWORDS, QT_VERSION_CHECK
 */
 
-namespace QtPrivate {
 Q_LOGGING_CATEGORY(lcNativeInterface, "qt.nativeinterface")
-}
 
 QT_END_NAMESPACE
 

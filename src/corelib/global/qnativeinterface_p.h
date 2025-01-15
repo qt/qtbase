@@ -20,9 +20,7 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace QtPrivate {
 QT_DECLARE_EXPORTED_QT_LOGGING_CATEGORY(lcNativeInterface, Q_CORE_EXPORT)
-}
 
 // Provides a definition for the interface destructor
 #define QT_DEFINE_NATIVE_INTERFACE_2(Namespace, InterfaceClass)                                    \
@@ -35,7 +33,6 @@ QT_DECLARE_EXPORTED_QT_LOGGING_CATEGORY(lcNativeInterface, Q_CORE_EXPORT)
 
 #define QT_NATIVE_INTERFACE_RETURN_IF(NativeInterface, baseType)                                   \
     {                                                                                              \
-        using QtPrivate::lcNativeInterface;                                                        \
         using QNativeInterface::Private::TypeInfo;                                                 \
         qCDebug(lcNativeInterface, "Comparing requested interface name %s with available %s",      \
                 name, TypeInfo<NativeInterface>::name());                                          \
