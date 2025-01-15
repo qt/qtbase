@@ -16,6 +16,7 @@
 #include <QtCore/QDebug>
 #include <QtCore/QMetaType>
 #include <QtCore/QScopeGuard>
+#include <QtCore/qoperatingsystemversion.h>
 #include <QtNetwork/QHostInfo>
 
 #include <qplatformdefs.h>
@@ -1680,13 +1681,22 @@ void tst_QProcess::terminateInChildProcessModifier()
     QCOMPARE(process.readAllStandardOutput(), QByteArray());
 
     // some environments print extra stuff to stderr when we crash
-#ifndef Q_OS_QNX
-    if (!QTestPrivate::isRunningArmOnX86()) {
-        QByteArray standardError = process.readAllStandardError();
-        QVERIFY2(standardError.isEmpty() == stderrIsEmpty,
-                 "stderr was: " + standardError);
+
+#if defined(Q_OS_QNX)
+    return;
+#elif defined(Q_OS_MACOS)
+    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSSequoia) {
+        if (qEnvironmentVariableIsSet("SWIFT_BACKTRACE"))
+            return; // Swift's crash reporting is printed to stderr
     }
+#else
+    if (QTestPrivate::isRunningArmOnX86())
+        return;
 #endif
+
+    QByteArray standardError = process.readAllStandardError();
+    QVERIFY2(standardError.isEmpty() == stderrIsEmpty,
+             "stderr was: " + standardError);
 }
 
 void tst_QProcess::raiseInChildProcessModifier()
