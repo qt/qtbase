@@ -2802,6 +2802,11 @@ QFontEngine *QFontDatabasePrivate::findFont(const QFontDef &req,
             // and extra pass on the fallbacks for this.
             if (!engine && script == QFontDatabasePrivate::Script_Emoji) {
                 qCDebug(lcFontMatch, "No color fonts found on system. Doing final fallback match.");
+
+                // Since we no longer require color fonts, we need to retry to check if the
+                // actual requested font is available as a non-color font.
+                if (!requestFamily.isEmpty())
+                    fallbacks.prepend(requestFamily);
                 engine = findMatchingFallback(QChar::Script_Common, script);
             }
         }
