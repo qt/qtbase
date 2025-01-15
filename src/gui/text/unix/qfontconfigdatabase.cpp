@@ -620,9 +620,9 @@ void QFontconfigDatabase::populateFontDatabase()
 
     while (f->qtname) {
         QString familyQtName = QString::fromLatin1(f->qtname);
-        registerFont(familyQtName,QString(),QString(),QFont::Normal,QFont::StyleNormal,QFont::Unstretched,true,true,false,0,f->fixed,ws,nullptr);
-        registerFont(familyQtName,QString(),QString(),QFont::Normal,QFont::StyleItalic,QFont::Unstretched,true,true,false,0,f->fixed,ws,nullptr);
-        registerFont(familyQtName,QString(),QString(),QFont::Normal,QFont::StyleOblique,QFont::Unstretched,true,true,false,0,f->fixed,ws,nullptr);
+        registerFont(familyQtName,QString(),QString(),QFont::Normal,QFont::StyleNormal,QFont::Unstretched,true,true,0,f->fixed,false,ws,nullptr);
+        registerFont(familyQtName,QString(),QString(),QFont::Normal,QFont::StyleItalic,QFont::Unstretched,true,true,0,f->fixed,false,ws,nullptr);
+        registerFont(familyQtName,QString(),QString(),QFont::Normal,QFont::StyleOblique,QFont::Unstretched,true,true,0,f->fixed,false,ws,nullptr);
         ++f;
     }
 
