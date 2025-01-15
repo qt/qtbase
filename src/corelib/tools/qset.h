@@ -64,7 +64,7 @@ public:
 
     inline void clear() { q_hash.clear(); }
 
-    inline bool remove(const T &value) { return q_hash.remove(value) != 0; }
+    bool remove(const T &value) { return q_hash.remove(value); }
 
     template <typename Pred>
     inline qsizetype removeIf(Pred predicate)
