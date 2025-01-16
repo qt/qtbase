@@ -85,11 +85,6 @@
 */
 
 /*!
-    \externalpage https://datatracker.ietf.org/doc/html/rfc4627
-    \title RFC 4627
-*/
-
-/*!
     \externalpage https://datatracker.ietf.org/doc/html/rfc4648
     \title RFC 4648
 */
@@ -172,6 +167,11 @@
 /*!
     \externalpage https://datatracker.ietf.org/doc/html/rfc8152
     \title RFC 8152
+*/
+
+/*!
+    \externalpage https://datatracker.ietf.org/doc/html/rfc8259
+    \title RFC 8259
 */
 
 /*!
