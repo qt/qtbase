@@ -1216,7 +1216,7 @@ QDebug &QDebug::putTupleLikeImplImpl(const char *ns, const char *what,
 */
 
 /*!
-    \fn template <typename Key, typename T, typename Hash, typename KeyEqual, typename Alloc> QDebug operator<<(QDebug debug, const std::unordered_map<Key, T, Compare, Alloc> &unordered_map)
+    \fn template <typename Key, typename T, typename Hash, typename KeyEqual, typename Alloc> QDebug operator<<(QDebug debug, const std::unordered_map<Key, T, Hash, KeyEqual, Alloc> &map)
     \relates QDebug
     \since 6.9
 

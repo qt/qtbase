@@ -569,6 +569,18 @@ QDebug operator<<(QDebug debug, const std::pair<T1, T2> &pair);
 template <typename T>
 QDebug operator<<(QDebug debug, const QContiguousCache<T> &cache);
 
+template <typename Key, typename Compare, typename Alloc>
+QDebug operator<<(QDebug debug, const std::multiset<Key, Compare, Alloc> &multiset);
+
+template <typename Key, typename Compare, typename Alloc>
+QDebug operator<<(QDebug debug, const std::set<Key, Compare, Alloc> &set);
+
+template <typename Key, typename T, typename Hash, typename KeyEqual, typename Alloc>
+QDebug operator<<(QDebug debug, const std::unordered_map<Key, T, Hash, KeyEqual, Alloc> &unordered_map);
+
+template <typename Key, typename Hash, typename KeyEqual, typename Alloc>
+QDebug operator<<(QDebug debug, const std::unordered_set<Key, Hash, KeyEqual, Alloc> &unordered_set);
+
 #endif // Q_QDOC
 
 template <class T>
