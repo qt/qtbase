@@ -1147,6 +1147,15 @@ QDebug &QDebug::putTupleLikeImplImpl(const char *ns, const char *what,
 */
 
 /*!
+    \fn template <typename T, std::size_t N> QDebug operator<<(QDebug debug, const std::array<T, N> &array)
+    \relates QDebug
+    \since 6.9
+
+    Writes the contents of \a array to \a debug. \c T needs to
+    support streaming into QDebug.
+*/
+
+/*!
     \fn template <typename T> QDebug operator<<(QDebug debug, const QSet<T> &set)
     \relates QDebug
 
