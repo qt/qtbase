@@ -13,6 +13,7 @@
 #include <QtCore/qjnitypes.h>
 #include <QtCore/qstring.h>
 #include <QSignalSpy>
+#include <QAbstractItemModelTester>
 
 using namespace Qt::Literals;
 
@@ -40,6 +41,7 @@ private slots:
     void initTestCase_data();
     void init();
     void cleanup();
+    void nonDestructiveChecks();
     void addRow();
     void addColumn();
     void removeRow();
@@ -75,6 +77,21 @@ void tst_AndroidItemModel::init()
 void tst_AndroidItemModel::cleanup()
 {
     resetModel();
+}
+
+void tst_AndroidItemModel::nonDestructiveChecks()
+{
+    QFETCH_GLOBAL(bool, isList);
+
+    for (int i = 0; i < 10; ++i)
+        jModel.callMethod<void>("addRow");
+
+    if (!isList) {
+        for (int i = 0; i < 10; ++i)
+            jModel.callMethod<void>("addCol");
+    }
+
+    QAbstractItemModelTester tester(qProxy);
 }
 
 void tst_AndroidItemModel::addRow()
