@@ -457,6 +457,7 @@ macro(_qt_internal_test_expect_pass _dir)
       )
     endif()
     set_tests_properties(${testname} PROPERTIES ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
+    _qt_internal_make_check_target(${testname})
 
     if(_ARGS_BINARY)
         set(run_env_args "")
@@ -663,6 +664,9 @@ list(APPEND CMAKE_PREFIX_PATH \"${__expect_fail_prefixes}\")
     --build-project "${_dir}"
     --build-options ${option_list}
   )
+
+  _qt_internal_make_check_target(${testname})
+
   unset(__expect_fail_prefixes)
 endmacro()
 
@@ -776,4 +780,6 @@ function(_qt_internal_test_module_includes)
     --build-project module_includes
     --build-options ${option_list}
   )
+
+  _qt_internal_make_check_target(module_includes)
 endfunction()

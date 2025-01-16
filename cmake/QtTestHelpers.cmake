@@ -765,18 +765,10 @@ function(qt_internal_add_test name)
             )
         endif()
 
-        # Add a ${target}/check makefile target, to more easily test one test.
-
-        set(test_config_options "")
-        get_cmake_property(is_multi_config GENERATOR_IS_MULTI_CONFIG)
-        if(is_multi_config)
-            set(test_config_options -C $<CONFIG>)
-        endif()
-        add_custom_target("${testname}_check"
-            VERBATIM
-            COMMENT "Running ${CMAKE_CTEST_COMMAND} -V -R \"^${name}$\" ${test_config_options}"
-            COMMAND "${CMAKE_CTEST_COMMAND}" -V -R "^${name}$" ${test_config_options}
-        )
+        # Add a ${target}_check makefile target, to more easily test one test.
+        # TODO: Note in batch mode testname tests would execute all batched tests defined in name
+        _qt_internal_make_check_target(${testname} CTEST_TEST_NAME ${name})
+        # Add appropriate dependencies to the targets as needed
         if(TARGET "${name}")
             add_dependencies("${testname}_check" "${name}")
             if(ANDROID)
