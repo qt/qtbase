@@ -537,9 +537,9 @@ static inline bool displayMessageBox()
     The enum is used to specify the type of the message and how it will be shown
     to the users.
 
-    \value InformationMessage Used to show information messages. The message
+    \value Information Used to show information messages. The message
            will be printed to \c {stdout}.
-    \value ErrorMessage Used to show error messages. The message will be printed
+    \value Error Used to show error messages. The message will be printed
            to \c {stderr}.
 
     \sa showMessageAndExit()
@@ -567,7 +567,7 @@ static inline bool displayMessageBox()
 #if defined(Q_OS_WIN) && !defined(QT_BOOTSTRAPPED)
     if (displayMessageBox()) {
         const UINT flags = MB_OK | MB_TOPMOST | MB_SETFOREGROUND
-            | (type == InformationMessage ? MB_ICONINFORMATION : MB_ICONERROR);
+            | (type == MessageType::Information ? MB_ICONINFORMATION : MB_ICONERROR);
         QString title;
         if (QCoreApplication::instance())
             title = QCoreApplication::instance()->property("applicationDisplayName").toString();
@@ -579,7 +579,7 @@ static inline bool displayMessageBox()
         ::exit(exitCode);
     }
 #endif // Q_OS_WIN && !QT_BOOTSTRAPPED
-    fputs(qPrintable(message), type == InformationMessage ? stdout : stderr);
+    fputs(qPrintable(message), type == MessageType::Information ? stdout : stderr);
     qt_call_post_routines();
     ::exit(exitCode);
 }
@@ -601,7 +601,7 @@ static inline bool displayMessageBox()
 void QCommandLineParser::process(const QStringList &arguments)
 {
     if (!d->parse(arguments)) {
-        showMessageAndExit(ErrorMessage,
+        showMessageAndExit(MessageType::Error,
                            QCoreApplication::applicationName() + ": "_L1 + errorText() + u'\n',
                            EXIT_FAILURE);
     }
@@ -1036,7 +1036,7 @@ QStringList QCommandLineParser::unknownOptionNames() const
 */
 Q_NORETURN void QCommandLineParser::showVersion()
 {
-    showMessageAndExit(InformationMessage,
+    showMessageAndExit(MessageType::Information,
                        QCoreApplication::applicationName() + u' '
                        + QCoreApplication::applicationVersion() + u'\n',
                        EXIT_SUCCESS);
@@ -1060,7 +1060,7 @@ Q_NORETURN void QCommandLineParser::showHelp(int exitCode)
 
 Q_NORETURN void QCommandLineParserPrivate::showHelp(int exitCode, bool includeQtOptions)
 {
-    QCommandLineParser::showMessageAndExit(QCommandLineParser::InformationMessage,
+    QCommandLineParser::showMessageAndExit(QCommandLineParser::MessageType::Information,
                                            helpText(includeQtOptions),
                                            exitCode);
 }
