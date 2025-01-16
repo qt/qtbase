@@ -822,8 +822,10 @@ int main(int argc, char *argv[])
         return EXIT_ERROR;
     }
 
-    if (!execCommand(g_options.makeCommand, nullptr, true)) {
-        qCritical("The build command \"%s\" failed", qPrintable(g_options.makeCommand));
+    QByteArray buildOutput;
+    if (!execCommand(g_options.makeCommand, &buildOutput, true)) {
+        qCritical("The APK build command \"%s\" failed\n\n%s",
+            qPrintable(g_options.makeCommand), buildOutput.constData());
         return EXIT_ERROR;
     }
 
