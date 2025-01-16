@@ -651,7 +651,7 @@ void QBasicMutex::lockInternal() QT_MUTEX_LOCK_NOEXCEPT
         }
         Q_ASSERT(d_ptr.loadRelaxed());
     } else {
-        lockInternal(-1);
+        lockInternal(QDeadlineTimer::Forever);
     }
 }
 
