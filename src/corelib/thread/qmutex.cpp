@@ -652,7 +652,7 @@ void QBasicMutex::lockInternal() noexcept(FutexAlwaysAvailable)
         }
         Q_ASSERT(d_ptr.loadRelaxed());
     } else {
-        lockInternal(-1);
+        lockInternal(QDeadlineTimer::Forever);
     }
 }
 
