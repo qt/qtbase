@@ -213,13 +213,6 @@ QString QMimeType::comment() const
         QString comm = localeComments.value(lang);
         if (!comm.isEmpty())
             return comm;
-        const qsizetype cut = lang.indexOf(u'_');
-        // If "de_CH" is missing, check for "de" (and similar):
-        if (cut != -1) {
-            comm = localeComments.value(lang.left(cut));
-            if (!comm.isEmpty())
-                return comm;
-        }
     }
 
     // Use the mimetype name as fallback
