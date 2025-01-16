@@ -75,6 +75,8 @@ public:
     void windowPosted();
     void handleActivationEvent();
 
+    void setWindowTitle(const QString &title);
+
 protected:
     virtual int pixelFormat() const = 0;
     virtual void resetBuffers() = 0;
@@ -95,6 +97,7 @@ private:
     void setFocus(screen_window_t newFocusWindow);
     bool showWithoutActivating() const;
     bool focusable() const;
+    void notifyManager(const QString &msg);
 
     void addContextPermission();
     void removeContextPermission();
@@ -119,6 +122,13 @@ private:
 
     bool m_isTopLevel;
     bool m_firstActivateHandled;
+    int m_desktopNotify;
+
+    enum {
+        DesktopNotifyTitle = 0x1,
+        DesktopNotifyPosition = 0x2,
+        DesktopNotifyVisible = 0x2
+    };
 };
 
 QT_END_NAMESPACE

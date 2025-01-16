@@ -191,6 +191,10 @@ bool QQnxScreenEventHandler::handleEvent(screen_event_t event, int qnxType)
         handlePropertyEvent(event);
         break;
 
+    case SCREEN_EVENT_MANAGER:
+        handleManagerEvent(event);
+        break;
+
     default:
         // event ignored
         qCDebug(lcQpaScreenEvents) << Q_FUNC_INFO << "Unknown event" << qnxType;
@@ -697,6 +701,11 @@ void QQnxScreenEventHandler::handlePropertyEvent(screen_event_t event)
     if (Q_UNLIKELY(screen_get_event_property_pv(event, SCREEN_PROPERTY_WINDOW, (void**)&window) != 0))
         qFatal("QQnx: failed to query window property, errno=%d", errno);
 
+    if (window == 0) {
+        qCDebug(lcQpaScreenEvents) << "handlePositionEvent on NULL window";
+        return;
+    }
+
     errno = 0;
     int property;
     if (Q_UNLIKELY(screen_get_event_property_iv(event, SCREEN_PROPERTY_NAME, &property) != 0))
@@ -770,5 +779,31 @@ void QQnxScreenEventHandler::timerEvent(QTimerEvent *event)
 }
 
 QT_END_NAMESPACE
+
+void QQnxScreenEventHandler::handleManagerEvent(screen_event_t event)
+{
+    errno = 0;
+    int subtype;
+    Q_SCREEN_CHECKERROR(
+            screen_get_event_property_iv(event, SCREEN_PROPERTY_SUBTYPE, &subtype),
+            "Failed to query object type property");
+
+    errno = 0;
+    screen_window_t window = 0;
+    if (screen_get_event_property_pv(event, SCREEN_PROPERTY_WINDOW, (void**)&window) != 0)
+        qFatal("QQnx: failed to query window property, errno=%d", errno);
+
+    switch (subtype) {
+    case SCREEN_EVENT_CLOSE: {
+        QWindow *closeWindow = QQnxIntegration::instance()->window(window);
+        closeWindow->close();
+        break;
+    }
+
+    default:
+        // event ignored
+        qCDebug(lcQpaScreenEvents) << "Ignore manager event for subtype: " << subtype;
+    }
+}
 
 #include "moc_qqnxscreeneventhandler.cpp"

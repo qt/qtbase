@@ -53,6 +53,7 @@ private:
     void handlePropertyEvent(screen_event_t event);
     void handleKeyboardFocusPropertyEvent(screen_window_t window);
     void handleGeometryPropertyEvent(screen_window_t window);
+    void handleManagerEvent(screen_event_t event);
 
 private:
     enum {

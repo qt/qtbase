@@ -93,6 +93,10 @@ static inline QQnxIntegration::Options parseOptions(const QStringList &paramList
         options |= QQnxIntegration::SurfacelessEGLContext;
     }
 
+    if (paramList.contains("desktop"_L1)) {
+        options |= QQnxIntegration::Desktop;
+    }
+
     return options;
 }
 
