@@ -1988,7 +1988,7 @@ void QWindow::setFramePosition(const QPoint &point)
     \endcode
 
     \since 6.9
-    \sa geometry()
+    \sa geometry(), safeAreaMarginsChanged()
 */
 QMargins QWindow::safeAreaMargins() const
 {
@@ -1997,6 +1997,14 @@ QMargins QWindow::safeAreaMargins() const
         return QHighDpi::fromNativePixels(d->platformWindow->safeAreaMargins(), this);
     return {};
 }
+
+/*!
+    \fn void safeAreaMarginsChanged(QMargins margins)
+
+    This signal is emitted when the safe area margins changed to \a margins.
+
+    \sa safeAreaMargins()
+*/
 
 /*!
     \brief set the position of the window on the desktop to \a pt

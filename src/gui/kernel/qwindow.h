@@ -311,7 +311,7 @@ Q_SIGNALS:
     void maximumWidthChanged(int arg);
     void maximumHeightChanged(int arg);
 
-    void safeAreaMarginsChanged(QMargins arg);
+    Q_REVISION(6, 9) void safeAreaMarginsChanged(QMargins arg);
 
     void visibleChanged(bool arg);
     Q_REVISION(2, 1) void visibilityChanged(QWindow::Visibility visibility);
