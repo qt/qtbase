@@ -6,15 +6,10 @@
 
     "Description": "SQLite is a small C library that implements a self-contained, embeddable, zero-configuration SQL database engine.",
     "Homepage": "https://www.sqlite.org/",
-<<<<<<< HEAD   (c5e4c2 tst_QButtonGroup: fix memleak in task209485_removeFromGroupI)
-    "Version": "3.47.1",
-    "DownloadLocation": "https://www.sqlite.org/2024/sqlite-amalgamation-3470100.zip",
-=======
-    "Version": "3.47.2",
-    "PURL": "pkg:github/sqlite/sqlite@version-3.47.2",
-    "CPE": "cpe:2.3:a:sqlite:sqlite:3.47.1:*:*:*:*:*:*:*",
-    "DownloadLocation": "https://www.sqlite.org/2024/sqlite-amalgamation-3470200.zip",
->>>>>>> CHANGE (1cc555 SQLite: Update SQLite to v3.47.2)
+    "Version": "3.48.0",
+    "PURL": "pkg:github/sqlite/sqlite@version-$<VERSION>",
+    "CPE": "cpe:2.3:a:sqlite:sqlite:$<VERSION>:*:*:*:*:*:*:*",
+    "DownloadLocation": "https://www.sqlite.org/2025/sqlite-amalgamation-3480000.zip",
     "License": "SQLite Blessing",
     "LicenseId": "blessing",
     "LicenseFile": "blessing.txt",

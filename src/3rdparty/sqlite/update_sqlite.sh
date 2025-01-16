@@ -1,5 +1,3 @@
-<<<<<<< HEAD   (c5e4c2 tst_QButtonGroup: fix memleak in task209485_removeFromGroupI)
-=======
 #!/bin/bash
 
 # Copyright (C) 2024 Christian Ehrlicher <ch.ehrlicher@gmx.de>
@@ -9,9 +7,9 @@
 # sqlite.c and sqlite.h and updates qt_attribution.json
 
 version_maj=3
-version_min=47
-version_patch=2
-year=2024
+version_min=48
+version_patch=0
+year=2025
 
 version=${version_maj}.${version_min}.${version_patch}
 version_str=$(printf "%d%02d%02d00" ${version_maj} ${version_min} ${version_patch})
@@ -43,4 +41,3 @@ sed -i qt_attribution.json -e "s#\"DownloadLocation\": \".*\"#\"DownloadLocation
 #cleanup
 rm -rf ${fn}
 rm -rf ${fn}.zip
->>>>>>> CHANGE (1cc555 SQLite: Update SQLite to v3.47.2)
