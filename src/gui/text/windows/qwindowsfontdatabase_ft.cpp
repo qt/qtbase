@@ -133,6 +133,23 @@ static const FontKey *findFontKey(const QString &name, int *indexIn = nullptr)
      return nullptr;
 }
 
+static bool detectColorFont(const QByteArray &filename)
+{
+#if defined(FT_HAS_COLOR)
+    FT_Library library = qt_getFreetype();
+
+    FT_Face face;
+    if (FT_New_Face(library, filename.constData(), 0, &face) == FT_Err_Ok) {
+        bool hasColor = FT_HAS_COLOR(face);
+        FT_Done_Face(face);
+        return hasColor;
+    }
+#else
+    Q_UNUSED(filename);
+#endif
+    return false;
+}
+
 static bool addFontToDatabase(QString familyName,
                               QString styleName,
                               const QString &fullName,
@@ -242,25 +259,27 @@ static bool addFontToDatabase(QString familyName,
     if (!QDir::isAbsolutePath(value))
         value.prepend(QFile::decodeName(qgetenv("windir") + "\\Fonts\\"));
 
+    const bool color = detectColorFont(value.toLocal8Bit());
+
     QPlatformFontDatabase::registerFont(familyName, styleName, foundryName, weight, style, stretch,
-        antialias, scalable, size, fixed, false, writingSystems, createFontFile(value, index));
+        antialias, scalable, size, fixed, color, writingSystems, createFontFile(value, index));
 
     // add fonts windows can generate for us:
     if (weight <= QFont::DemiBold && styleName.isEmpty())
         QPlatformFontDatabase::registerFont(familyName, QString(), foundryName, QFont::Bold, style, stretch,
-                                            antialias, scalable, size, fixed, false, writingSystems, createFontFile(value, index));
+                                            antialias, scalable, size, fixed, color, writingSystems, createFontFile(value, index));
 
     if (style != QFont::StyleItalic && styleName.isEmpty())
         QPlatformFontDatabase::registerFont(familyName, QString(), foundryName, weight, QFont::StyleItalic, stretch,
-                                            antialias, scalable, size, fixed, false, writingSystems, createFontFile(value, index));
+                                            antialias, scalable, size, fixed, color, writingSystems, createFontFile(value, index));
 
     if (weight <= QFont::DemiBold && style != QFont::StyleItalic && styleName.isEmpty())
         QPlatformFontDatabase::registerFont(familyName, QString(), foundryName, QFont::Bold, QFont::StyleItalic, stretch,
-                                            antialias, scalable, size, fixed, false, writingSystems, createFontFile(value, index));
+                                            antialias, scalable, size, fixed, color, writingSystems, createFontFile(value, index));
 
     if (!subFamilyName.isEmpty() && familyName != subFamilyName) {
         QPlatformFontDatabase::registerFont(subFamilyName, subFamilyStyle, foundryName, weight,
-                                            style, stretch, antialias, scalable, size, fixed, false, writingSystems, createFontFile(value, index));
+                                            style, stretch, antialias, scalable, size, fixed, color, writingSystems, createFontFile(value, index));
     }
 
     if (!englishName.isEmpty() && englishName != familyName)
