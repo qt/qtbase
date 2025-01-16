@@ -125,7 +125,7 @@ QModelIndex QAndroidItemModelProxy::sibling(int row, int column, const QModelInd
 {
     Q_ASSERT(jInstance.isValid());
     const QMutexLocker<QRecursiveMutex> lock = getMutexLocker(this);
-    return QAndroidModelIndexProxy::qInstance(jInstance.callMethod<jobject>(
+    return QAndroidModelIndexProxy::qInstance(jInstance.callMethod<JQtModelIndex>(
             "sibling", row, column, QAndroidModelIndexProxy::jInstance(parent)));
 }
 
