@@ -781,5 +781,11 @@ function(_qt_internal_test_module_includes)
     --build-options ${option_list}
   )
 
-  _qt_internal_make_check_target(module_includes)
+  # We need a unique name for the targets
+  # TODO: CTest name clash would make multiple tests be run as long as they are
+  #  defined in nested folders
+  string(TOLOWER "${PROJECT_NAME}" project_name_lower)
+  _qt_internal_make_check_target(${project_name_lower}_module_includes
+      CTEST_TEST_NAME module_includes
+  )
 endfunction()
