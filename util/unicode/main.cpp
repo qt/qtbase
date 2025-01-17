@@ -1297,10 +1297,8 @@ static void readUnicodeData()
     };
 
     QFile f("data/UnicodeData.txt");
-    if (!f.exists())
-        qFatal("Couldn't find UnicodeData.txt");
-
-    f.open(QFile::ReadOnly);
+    if (!f.open(QFile::ReadOnly))
+        qFatal() << "Couldn't open UnicodeData.txt:" << f.errorString();
 
     while (!f.atEnd()) {
         QByteArray line;
@@ -1439,10 +1437,8 @@ static void readBidiMirroring()
     qDebug("Reading BidiMirroring.txt");
 
     QFile f("data/BidiMirroring.txt");
-    if (!f.exists())
-        qFatal("Couldn't find BidiMirroring.txt");
-
-    f.open(QFile::ReadOnly);
+    if (!f.open(QFile::ReadOnly))
+        qFatal() << "Couldn't open BidiMirroring.txt:" << f.errorString();
 
     while (!f.atEnd()) {
         QByteArray line;
@@ -1491,10 +1487,8 @@ static void readArabicShaping()
     }
 
     QFile f("data/ArabicShaping.txt");
-    if (!f.exists())
-        qFatal("Couldn't find ArabicShaping.txt");
-
-    f.open(QFile::ReadOnly);
+    if (!f.open(QFile::ReadOnly))
+        qFatal() << "Couldn't open ArabicShaping.txt:" << f.errorString();
 
     while (!f.atEnd()) {
         QByteArray line;
@@ -1548,10 +1542,8 @@ static void readDerivedAge()
     qDebug("Reading DerivedAge.txt");
 
     QFile f("data/DerivedAge.txt");
-    if (!f.exists())
-        qFatal("Couldn't find DerivedAge.txt");
-
-    f.open(QFile::ReadOnly);
+    if (!f.open(QFile::ReadOnly))
+        qFatal() << "Couldn't open DerivedAge.txt:" << f.errorString();
 
     while (!f.atEnd()) {
         QByteArray line;
@@ -1600,8 +1592,8 @@ static void readEastAsianWidth()
     qDebug("Reading EastAsianWidth.txt");
 
     QFile f("data/EastAsianWidth.txt");
-    if (!f.exists() || !f.open(QFile::ReadOnly))
-        qFatal("Couldn't find or read EastAsianWidth.txt");
+    if (!f.open(QFile::ReadOnly))
+        qFatal() << "Couldn't open EastAsianWidth.txt:" << f.errorString();
 
     while (!f.atEnd()) {
         QByteArray line = f.readLine().trimmed();
@@ -1646,10 +1638,8 @@ static void readDerivedNormalizationProps()
     qDebug("Reading DerivedNormalizationProps.txt");
 
     QFile f("data/DerivedNormalizationProps.txt");
-    if (!f.exists())
-        qFatal("Couldn't find DerivedNormalizationProps.txt");
-
-    f.open(QFile::ReadOnly);
+    if (!f.open(QFile::ReadOnly))
+        qFatal() << "Couldn't open DerivedNormalizationProps.txt:" << f.errorString();
 
     while (!f.atEnd()) {
         QByteArray line;
@@ -1756,10 +1746,8 @@ static QByteArray createNormalizationCorrections()
     qDebug("Reading NormalizationCorrections.txt");
 
     QFile f("data/NormalizationCorrections.txt");
-    if (!f.exists())
-        qFatal("Couldn't find NormalizationCorrections.txt");
-
-    f.open(QFile::ReadOnly);
+    if (!f.open(QFile::ReadOnly))
+        qFatal() << "Couldn't open NormalizationCorrections.txt:" << f.errorString();
 
     QByteArray out
          = "struct NormalizationCorrection {\n"
@@ -1826,10 +1814,8 @@ static void readLineBreak()
     qDebug("Reading LineBreak.txt");
 
     QFile f("data/LineBreak.txt");
-    if (!f.exists())
-        qFatal("Couldn't find LineBreak.txt");
-
-    f.open(QFile::ReadOnly);
+    if (!f.open(QFile::ReadOnly))
+        qFatal() << "Couldn't open LineBreak.txt:" << f.errorString();
 
     while (!f.atEnd()) {
         QByteArray line;
@@ -1877,10 +1863,8 @@ static void readSpecialCasing()
     qDebug("Reading SpecialCasing.txt");
 
     QFile f("data/SpecialCasing.txt");
-    if (!f.exists())
-        qFatal("Couldn't find SpecialCasing.txt");
-
-    f.open(QFile::ReadOnly);
+    if (!f.open(QFile::ReadOnly))
+        qFatal() << "Couldn't open SpecialCasing.txt:" << f.errorString();
 
     while (!f.atEnd()) {
         QByteArray line;
@@ -1965,10 +1949,8 @@ static void readCaseFolding()
     qDebug("Reading CaseFolding.txt");
 
     QFile f("data/CaseFolding.txt");
-    if (!f.exists())
-        qFatal("Couldn't find CaseFolding.txt");
-
-    f.open(QFile::ReadOnly);
+    if (!f.open(QFile::ReadOnly))
+        qFatal() << "Couldn't open CaseFolding.txt:" << f.errorString();
 
     while (!f.atEnd()) {
         QByteArray line;
@@ -2035,10 +2017,8 @@ static void readGraphemeBreak()
     qDebug("Reading GraphemeBreakProperty.txt");
 
     QFile f("data/GraphemeBreakProperty.txt");
-    if (!f.exists())
-        qFatal("Couldn't find GraphemeBreakProperty.txt");
-
-    f.open(QFile::ReadOnly);
+    if (!f.open(QFile::ReadOnly))
+        qFatal() << "Couldn't open GraphemeBreakProperty.txt:" << f.errorString();
 
     while (!f.atEnd()) {
         QByteArray line;
@@ -2087,7 +2067,7 @@ static void readEmojiData()
 
     QFile f("data/emoji-data.txt");
     if (!f.open(QFile::ReadOnly))
-        qFatal("Couldn't find emoji-data.txt");
+        qFatal() << "Couldn't open emoji-data.txt:" << f.errorString();
 
     while (!f.atEnd()) {
         QByteArray line;
@@ -2142,10 +2122,8 @@ static void readWordBreak()
     qDebug("Reading WordBreakProperty.txt");
 
     QFile f("data/WordBreakProperty.txt");
-    if (!f.exists())
-        qFatal("Couldn't find WordBreakProperty.txt");
-
-    f.open(QFile::ReadOnly);
+    if (!f.open(QFile::ReadOnly))
+        qFatal() << "Couldn't open WordBreakProperty.txt:" << f.errorString();
 
     while (!f.atEnd()) {
         QByteArray line;
@@ -2202,10 +2180,8 @@ static void readSentenceBreak()
     qDebug("Reading SentenceBreakProperty.txt");
 
     QFile f("data/SentenceBreakProperty.txt");
-    if (!f.exists())
-        qFatal("Couldn't find SentenceBreakProperty.txt");
-
-    f.open(QFile::ReadOnly);
+    if (!f.open(QFile::ReadOnly))
+        qFatal() << "Couldn't open SentenceBreakProperty.txt:" << f.errorString();
 
     while (!f.atEnd()) {
         QByteArray line;
@@ -2393,10 +2369,8 @@ static void readBlocks()
     qDebug("Reading Blocks.txt");
 
     QFile f("data/Blocks.txt");
-    if (!f.exists())
-        qFatal("Couldn't find Blocks.txt");
-
-    f.open(QFile::ReadOnly);
+    if (!f.open(QFile::ReadOnly))
+        qFatal() << "Couldn't open Blocks.txt:" << f.errorString();
 
     while (!f.atEnd()) {
         QByteArray line = f.readLine();
@@ -2445,10 +2419,8 @@ static void readScripts()
     qDebug("Reading Scripts.txt");
 
     QFile f("data/Scripts.txt");
-    if (!f.exists())
-        qFatal("Couldn't find Scripts.txt");
-
-    f.open(QFile::ReadOnly);
+    if (!f.open(QFile::ReadOnly))
+        qFatal() << "Couldn't open Scripts.txt:" << f.errorString();
 
     while (!f.atEnd()) {
         QByteArray line = f.readLine();
@@ -2499,8 +2471,8 @@ static void readIdnaMappingTable()
     qDebug("Reading IdnaMappingTable.txt");
 
     QFile f("data/IdnaMappingTable.txt");
-    if (!f.exists() || !f.open(QFile::ReadOnly))
-        qFatal("Couldn't find or read IdnaMappingTable.txt");
+    if (!f.open(QFile::ReadOnly))
+        qFatal() << "Couldn't open IdnaMappingTable.txt:" << f.errorString();
 
     while (!f.atEnd()) {
         QByteArray line = f.readLine().trimmed();
@@ -3691,7 +3663,8 @@ int main(int, char **)
         "//\n\n";
 
     QFile f("../../src/corelib/text/qunicodetables.cpp");
-    f.open(QFile::WriteOnly|QFile::Truncate);
+    if (!f.open(QFile::WriteOnly|QFile::Truncate))
+        qFatal() << "Cannot open output file" << f.fileName() << "error:" << f.errorString();
     f.write(header);
     f.write(note);
     f.write("#include \"qunicodetables_p.h\"\n\n");
@@ -3710,7 +3683,8 @@ int main(int, char **)
     f.close();
 
     f.setFileName("../../src/corelib/text/qunicodetables_p.h");
-    f.open(QFile::WriteOnly | QFile::Truncate);
+    if (!f.open(QFile::WriteOnly | QFile::Truncate))
+        qFatal() << "Cannot open output file" << f.fileName() << "error:" << f.errorString();
     f.write(header);
     f.write(note);
     f.write(warning);
