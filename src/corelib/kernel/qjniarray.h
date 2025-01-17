@@ -480,8 +480,7 @@ public:
     template <typename Container, if_compatible_source_container<Container> = true>
     static auto fromContainer(Container &&container)
     {
-        if (!q20::in_range<size_type>(std::size(container)))
-            qWarning("QJniArray::fromContainer: Container is too large for Java and will be truncated!");
+        verifySize(std::size(container));
         using ElementType = typename std::remove_reference_t<Container>::value_type;
         if constexpr (std::is_base_of_v<std::remove_pointer_t<jobject>,
                                         std::remove_pointer_t<ElementType>>) {
@@ -605,6 +604,13 @@ protected:
     void swap(QJniArrayBase &other) noexcept { m_object.swap(other.m_object); }
 
 private:
+    template <typename container_size_type>
+    static void verifySize(container_size_type size)
+    {
+        if (!q20::in_range<size_type>(size))
+            qWarning("QJniArray::fromContainer: Container is too large for Java and will be truncated!");
+    }
+
     QJniObject m_object;
 };
 
