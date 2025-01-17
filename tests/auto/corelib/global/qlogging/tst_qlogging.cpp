@@ -11,6 +11,11 @@
 #include <QtTest/QTest>
 #include <QList>
 #include <QMap>
+#include <QScopeGuard>
+
+#ifdef Q_OS_UNIX
+#  include <signal.h>
+#endif
 
 class tst_qmessagehandler : public QObject
 {
@@ -37,6 +42,9 @@ private slots:
     void qMessagePattern_data();
     void qMessagePattern();
     void setMessagePattern();
+
+    void fatalWarnings_data();
+    void fatalWarnings();
 
     void formatLogMessage_data();
     void formatLogMessage();
@@ -914,6 +922,78 @@ void tst_qmessagehandler::setMessagePattern()
     output.replace("\r\n", "\n");
 #endif
     QCOMPARE(QString::fromLatin1(output), QString::fromLatin1(expected));
+#endif // QT_CONFIG(process)
+}
+
+void tst_qmessagehandler::fatalWarnings_data()
+{
+    QTest::addColumn<QString>("varName");
+    QTest::addColumn<QString>("varValue");
+    QTest::addColumn<QByteArray>("presentOutput");
+    QTest::addColumn<QByteArray>("absentOutput");
+
+    QTest::newRow("QT_FATAL_WARNINGS=1")
+            << "QT_FATAL_WARNINGS" << "1"
+            << QByteArray("[warning] qWarning") << QByteArray("[critical] qCritical");
+    QTest::newRow("QT_FATAL_CRITICALS=1")
+            << "QT_FATAL_CRITICALS" << "1"
+            << QByteArray("[critical] qCritical") << QByteArray("[warning] qDebug with category");
+    QTest::newRow("QT_FATAL_WARNINGS=2")
+            << "QT_FATAL_WARNINGS" << "2"
+            << QByteArray("[warning] qDebug with category") << QByteArray("[debug] qDebug2");
+
+#if !QT_CONFIG(process)
+    QSKIP("This test requires QProcess support");
+#endif
+}
+
+void tst_qmessagehandler::fatalWarnings()
+{
+#ifdef Q_OS_ANDROID
+    QSKIP("This test is disabled on Android");
+#endif
+#if QT_CONFIG(process)
+    QFETCH(QString, varName);
+    QFETCH(QString, varValue);
+    QFETCH(QByteArray, presentOutput);
+    QFETCH(QByteArray, absentOutput);
+
+    QProcess process;
+    const QString appExe(backtraceHelperPath());
+
+    //
+    // test QT_FATAL_WARNINGS / QT_FATAL_CRITICALS
+    //
+    QProcessEnvironment environment = m_baseEnvironment;
+    environment.insert(varName, varValue);
+    process.setProcessEnvironment(environment);
+
+    process.start(appExe, {}, QIODevice::Text | QIODevice::ReadWrite);
+    QVERIFY2(process.waitForStarted(), qPrintable(
+        QString::fromLatin1("Could not start %1: %2").arg(appExe, process.errorString())));
+    process.waitForFinished();
+
+    QCOMPARE(process.exitStatus(), QProcess::CrashExit);
+#  ifdef Q_OS_UNIX
+    QCOMPARE(process.exitCode(), SIGABRT);
+#  elif defined(Q_CC_MSVC)
+    // __fastfail produces STATUS_STACK_BUFFER_OVERRUN
+    QCOMPARE(process.exitCode(), int(0xc0000409));
+#  else
+    // RaiseFastFail produces STATUS_FAIL_FAST_EXCEPTION
+    QCOMPARE(process.exitCode(), int(0xc0000602));
+#  endif
+
+    QList<QByteArray> lines = process.readAllStandardError().split('\n');
+    auto outputOnError = qScopeGuard([&lines] {
+        qDebug("Output was:\n");
+        for (const QByteArray &line : lines)
+            qDebug() << line;
+    });
+
+    QVERIFY2(lines.contains(presentOutput), presentOutput);
+    QVERIFY2(!lines.contains(absentOutput), absentOutput);
+    outputOnError.dismiss();
 #endif // QT_CONFIG(process)
 }
 
