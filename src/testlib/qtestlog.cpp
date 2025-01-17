@@ -113,7 +113,7 @@ public:
     }
 
 private:
-#if __cpp_lib_atomic_shared_ptr
+#ifdef __cpp_lib_atomic_shared_ptr
     SharedLoggersContainer load() const { return loggers.load(std::memory_order_relaxed); }
     void store(SharedLoggersContainer newLoggers)
     {
