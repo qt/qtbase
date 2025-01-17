@@ -474,52 +474,75 @@ namespace LB {
 
 namespace NS { // Number Sequence
 
-// LB25 recommends to not break lines inside numbers of the form
-// described by the following regular expression:
-//  (PR|PO)?(OP|HY)?NU(NU|SY|IS)*(CL|CP)?(PR|PO)?
+// This namespace is used to implement LB25 which, as of Unicode 16, has this
+// definition:
+// NU ( SY | IS )* CL × PO
+// NU ( SY | IS )* CP × PO
+// NU ( SY | IS )* CL × PR
+// NU ( SY | IS )* CP × PR
+// NU ( SY | IS )* × PO
+// NU ( SY | IS )* × PR
+// PO × OP NU
+// PO × OP IS NU
+// PO × NU
+// PR × OP NU
+// PR × OP IS NU
+// PR × NU
+// HY × NU
+// IS × NU
+// NU ( SY | IS )* × NU
 
 enum Action {
     None,
     Start,
     Continue,
-    Break
+    Break,
+    NeedOPNU, // Like Start, but must be followed by sequence `(OP (IS)?)? NU`
+    // These are 'synthetic' actions and are not used in the table but are
+    // tracked otherwise in the code for LB25, to track the state of specific
+    // sequences:
+    CNeedNU, // Like Continue, but must be followed by NU
+    CNeedISNU, // Like Continue, but must be followed by IS? NU
 };
 
 enum Class {
     XX,
     PRPO,
-    OPHY,
+    OP,
+    HY,
     NU,
-    SYIS,
+    SY,
+    IS,
     CLCP
 };
 
 static const uchar actionTable[CLCP + 1][CLCP + 1] = {
-//     XX       PRPO      OPHY       NU       SYIS      CLCP
-    { None    , Start   , Start   , Start   , None    , None     }, // XX
-    { None    , Start   , Continue, Continue, None    , None     }, // PRPO
-    { None    , Start   , Start   , Continue, None    , None     }, // OPHY
-    { Break   , Break   , Break   , Continue, Continue, Continue }, // NU
-    { Break   , Break   , Break   , Continue, Continue, Continue }, // SYIS
-    { Break   , Continue, Break   , Break   , Break   , Break    }, // CLCP
+//     XX       PRPO      OP        HY        NU        SY        IS        CLCP
+    { None    , NeedOPNU, Start   , None    , Start   , None    , None    , None     }, // XX
+    { None    , NeedOPNU, Continue, Break   , Start   , None    , None    , None     }, // PRPO
+    { None    , Start   , Start   , Break   , Continue, None    , Continue, None     }, // OP
+    { None    , None    , None    , Start   , Continue, None    , None    , None     }, // HY
+    { Break   , Break   , Break   , Break   , Continue, Continue, Continue, Continue }, // NU
+    { Break   , Break   , Break   , Break   , Continue, Continue, Continue, Continue }, // SY
+    { Break   , Break   , Break   , Break   , Continue, Continue, Continue, Continue }, // IS
+    { Break   , Continue, Break   , Break   , Break   , Break   , Break   , Break    }, // CLCP
 };
 
-inline Class toClass(QUnicodeTables::LineBreakClass lbc, QChar::Category category)
+inline Class toClass(QUnicodeTables::LineBreakClass lbc)
 {
     switch (lbc) {
-    case QUnicodeTables::LineBreak_AL:// case QUnicodeTables::LineBreak_AI:
-        // resolve AI math symbols in numerical context to IS
-        if (category == QChar::Symbol_Math)
-            return SYIS;
-        break;
     case QUnicodeTables::LineBreak_PR: case QUnicodeTables::LineBreak_PO:
         return PRPO;
-    case QUnicodeTables::LineBreak_OP: case QUnicodeTables::LineBreak_HY:
-        return OPHY;
+    case QUnicodeTables::LineBreak_OP:
+        return OP;
+    case QUnicodeTables::LineBreak_HY:
+        return HY;
     case QUnicodeTables::LineBreak_NU:
         return NU;
-    case QUnicodeTables::LineBreak_SY: case QUnicodeTables::LineBreak_IS:
-        return SYIS;
+    case QUnicodeTables::LineBreak_SY:
+        return SY;
+    case QUnicodeTables::LineBreak_IS:
+        return IS;
     case QUnicodeTables::LineBreak_CL: case QUnicodeTables::LineBreak_CP:
         return CLCP;
     default:
@@ -530,24 +553,72 @@ inline Class toClass(QUnicodeTables::LineBreakClass lbc, QChar::Category categor
 
 } // namespace NS
 
-/* In order to support the tailored implementation of LB25 properly
-   the following changes were made in the pair table to allow breaks
-   where the numeric expression doesn't match the template (i.e. [^NU](IS|SY)NU):
-   (CL)(PO) from IB to DB
-   (CP)(PO) from IB to DB
-   (CL)(PR) from IB to DB
-   (CP)(PR) from IB to DB
-   (PO)(OP) from IB to DB
-   (PR)(OP) from IB to DB
-   (IS)(NU) from IB to DB
-   (SY)(NU) from IB to DB
-*/
+namespace BRS { // Brahmic Sequence, used to implement LB28a
+    constexpr char32_t DottedCircle = U'\u25CC';
 
-/* In order to implementat LB21a properly a special rule HH has been introduced and
-   the following changes were made in the pair table to disallow breaks after Hebrew + Hyphen:
-   (HL)(HY|BA) from IB to CI
-   (HY|BA)(!CB) from DB to HH
-*/
+    // The LB28a_{n} value maps to the 'regex' on the nth line in LB28a
+    // The only special case is LB28a_2VI which is a direct match to the 2nd
+    // line, but it also leads to LB28a_3VIAK, the 3rd line.
+    enum State {
+        None,
+        Start, // => Have: `(AK | [◌] | AS)`
+        LB28a_2VF, // => Have: `(AK | [◌] | AS) VF`
+        LB28a_2VI, // => Have: `(AK | [◌] | AS) VI` May find: `(AK | [◌])`
+        LB28a_3VIAK, // => Have: `(AK | [◌] | AS) VI (AK | [◌])`
+        LB28a_4, // => Have: `(AK | [◌] | AS) (AK | [◌] | AS)` May find: `VF`
+        LB28a_4VF, // => Have: `(AK | [◌] | AS) (AK | [◌] | AS) VF`
+        Restart,
+    };
+    struct LinebreakUnit {
+        QUnicodeTables::LineBreakClass lbc;
+        char32_t ucs4;
+    };
+    struct ParseState {
+        State state = None;
+        qsizetype start = 0;
+    };
+    State updateState(State state, LinebreakUnit lb)
+    {
+        using LBC = QUnicodeTables::LineBreakClass;
+        if (lb.lbc == LBC::LineBreak_CM)
+            return state;
+
+        switch (state) {
+        case Start:
+            if (lb.lbc == LBC::LineBreak_VF)
+                return LB28a_2VF;
+            if (lb.lbc == LBC::LineBreak_VI)
+                return LB28a_2VI;
+            if (lb.ucs4 == DottedCircle || lb.lbc == LBC::LineBreak_AK
+                || lb.lbc == LBC::LineBreak_AS)
+                return LB28a_4;
+            break;
+        case LB28a_2VI:
+            if (lb.ucs4 == DottedCircle || lb.lbc == LBC::LineBreak_AK)
+                return LB28a_3VIAK;
+            break;
+        case LB28a_4:
+            if (lb.lbc == LBC::LineBreak_VF)
+                return LB28a_4VF;
+            // Had (AK | [◌] | AS) (AK | [◌] | AS), which could mean the 2nd capture is the start
+            // of a new sequence, so we need to check if it makes sense.
+            return Restart;
+        case None:
+            if (Q_UNLIKELY(lb.ucs4 == DottedCircle || lb.lbc == LBC::LineBreak_AK
+                           || lb.lbc == LBC::LineBreak_AS)) {
+                return Start;
+            }
+            break;
+        case LB28a_2VF:
+        case LB28a_4VF:
+        case LB28a_3VIAK:
+        case Restart:
+            // These are all terminal states, so no need to update
+            Q_UNREACHABLE();
+        }
+        return None;
+    }
+}
 
 enum Action {
     ProhibitedBreak, PB = ProhibitedBreak,
@@ -557,51 +628,61 @@ enum Action {
     CombiningProhibitedBreak, CP = CombiningProhibitedBreak,
     ProhibitedBreakAfterHebrewPlusHyphen, HH = ProhibitedBreakAfterHebrewPlusHyphen,
     IndirectBreakIfNarrow, IN = IndirectBreakIfNarrow, // For LB30
+    DirectBreakOutsideNumericSequence, DN = DirectBreakOutsideNumericSequence, // For LB25
 };
 
 // See https://www.unicode.org/reports/tr14/tr14-37.html for the information
 // about the table. It was removed in the later versions of the standard.
 static const uchar breakTable[QUnicodeTables::LineBreak_ZWJ][QUnicodeTables::LineBreak_ZWJ] = {
-/* 1↓ 2→   OP  CL  CP  QU  +Pi +Pf GL  NS  EX  SY  IS  PR  PO  NU  AL  HL  ID  IN  HY  BA  BB  B2  ZW  CM  WJ  H2  H3  JL  JV  JT  RI  CB  EB  EM*/
-/* OP */ { PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, CP, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB },
-/* CL */ { DB, PB, PB, IB, IB, PB, IB, PB, PB, PB, PB, DB, DB, DB, DB, DB, DB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
-/* CP */ { DB, PB, PB, IB, IB, PB, IB, PB, PB, PB, PB, DB, DB, IB, IB, IB, DB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
-/* QU */ { IB, PB, PB, IB, IB, PB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, PB, CI, PB, IB, IB, IB, IB, IB, IB, IB, IB, IB },
-/* +Pi*/ { PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, CP, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB },
-/* +Pf*/ { IB, PB, PB, IB, IB, PB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, PB, CI, PB, IB, IB, IB, IB, IB, IB, IB, IB, IB },
-/* GL */ { IB, PB, PB, IB, IB, PB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, PB, CI, PB, IB, IB, IB, IB, IB, IB, IB, IB, IB },
-/* NS */ { DB, PB, PB, IB, IB, PB, IB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
-/* EX */ { DB, PB, PB, IB, IB, PB, IB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
-/* SY */ { DB, PB, PB, IB, IB, PB, IB, IB, PB, PB, PB, DB, DB, DB, DB, IB, DB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
-/* IS */ { DB, PB, PB, IB, IB, PB, IB, IB, PB, PB, PB, DB, DB, DB, IB, IB, DB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
-/* PR */ { DB, PB, PB, IB, IB, PB, IB, IB, PB, PB, PB, DB, DB, IB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, IB, IB, IB, IB, IB, DB, DB, IB, IB },
-/* PO */ { DB, PB, PB, IB, IB, PB, IB, IB, PB, PB, PB, DB, DB, IB, IB, IB, DB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
-/* NU */ { IN, PB, PB, IB, IB, PB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, DB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
-/* AL */ { IN, PB, PB, IB, IB, PB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, DB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
-/* HL */ { IN, PB, PB, IB, IB, PB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, DB, IB, CI, CI, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
-/* ID */ { DB, PB, PB, IB, IB, PB, IB, IB, PB, PB, PB, DB, IB, DB, DB, DB, DB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
-/* IN */ { DB, PB, PB, IB, IB, PB, IB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
-/* HY */ { HH, PB, PB, IB, IB, PB, HH, IB, PB, PB, PB, HH, HH, IB, HH, HH, HH, IB, IB, IB, HH, HH, PB, CI, PB, HH, HH, HH, HH, HH, HH, DB, DB, DB },
-/* BA */ { HH, PB, PB, IB, IB, PB, HH, IB, PB, PB, PB, HH, HH, HH, HH, HH, HH, IB, IB, IB, HH, HH, PB, CI, PB, HH, HH, HH, HH, HH, HH, DB, DB, DB },
-/* BB */ { IB, PB, PB, IB, IB, PB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, PB, CI, PB, IB, IB, IB, IB, IB, IB, DB, IB, IB },
-/* B2 */ { DB, PB, PB, IB, IB, PB, IB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, IB, IB, IB, DB, PB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
-/* ZW */ { DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
-/* CM */ { IB, PB, PB, IB, IB, PB, IB, IB, PB, PB, PB, DB, DB, IB, IB, IB, DB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
-/* WJ */ { IB, PB, PB, IB, IB, PB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, PB, CI, PB, IB, IB, IB, IB, IB, IB, IB, IB, IB },
-/* H2 */ { DB, PB, PB, IB, IB, PB, IB, IB, PB, PB, PB, DB, IB, DB, DB, DB, DB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, IB, IB, DB, DB, DB, DB },
-/* H3 */ { DB, PB, PB, IB, IB, PB, IB, IB, PB, PB, PB, DB, IB, DB, DB, DB, DB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, IB, DB, DB, DB, DB },
-/* JL */ { DB, PB, PB, IB, IB, PB, IB, IB, PB, PB, PB, DB, IB, DB, DB, DB, DB, IB, IB, IB, DB, DB, PB, CI, PB, IB, IB, IB, IB, DB, DB, DB, DB, DB },
-/* JV */ { DB, PB, PB, IB, IB, PB, IB, IB, PB, PB, PB, DB, IB, DB, DB, DB, DB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, IB, IB, DB, DB, DB, DB },
-/* JT */ { DB, PB, PB, IB, IB, PB, IB, IB, PB, PB, PB, DB, IB, DB, DB, DB, DB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, IB, DB, DB, DB, DB },
-/* RI */ { DB, PB, PB, IB, IB, PB, IB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, IB, DB, DB, DB },
-/* CB */ { DB, PB, PB, IB, IB, PB, IB, DB, PB, PB, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
-/* EB */ { DB, PB, PB, IB, IB, PB, IB, IB, PB, PB, PB, DB, IB, DB, DB, DB, DB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, IB },
-/* EM */ { DB, PB, PB, IB, IB, PB, IB, IB, PB, PB, PB, DB, IB, DB, DB, DB, DB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* 1↓ 2→   OP  CL  CP  QU  +Pi +Pf +19 GL  NS  EX  SY  IS  PR  PO  NU  AL  HL  ID  IN  HY  +WS BA +WS HYBA BB  B2  ZW  CM  WJ  H2  H3  JL  JV  JT  RI  CB  EB  EM  AK  AP  AS  VI  VF*/
+/* OP */ { PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, CP, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB },
+/* CL */ { DB, PB, PB, IB, IB, PB, IB, IB, PB, PB, PB, PB, DB, DB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* CP */ { DB, PB, PB, IB, IB, PB, IB, IB, PB, PB, PB, PB, DB, DB, IB, IB, IB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* QU */ { IB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, DB, IB, IB, IB, IB, IB, IB, IB, IB, PB, CI, PB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB },
+/* +Pi*/ { PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, CP, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB },
+/* +Pf*/ { IB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, PB, CI, PB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB },
+/* +19*/ { IB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, PB, CI, PB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB },
+/* GL */ { IB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, PB, CI, PB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB },
+/* NS */ { DB, PB, PB, DB, IB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* EX */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* SY */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, DB, IB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* IS */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DN, DB, IB, IB, IB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* PR */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, DB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, IB, IB, IB, IB, IB, DB, DB, IB, IB, DB, DB, DB, DB, DB },
+/* PO */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, DB, IB, IB, IB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* NU */ { IN, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* AL */ { IN, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* HL */ { IN, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, DB, IB, IB, CI, CI, CI, CI, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* ID */ { DB, PB, PB, DB, IB, PB, IB, IB, IB, PB, PB, PB, DB, IB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* IN */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* HY */ { HH, PB, PB, IB, IB, PB, IB, HH, IB, PB, PB, PB, HH, HH, IB, HH, HH, HH, IB, IB, IB, IB, IB, IB, HH, HH, PB, CI, PB, HH, HH, HH, HH, HH, HH, DB, DB, DB, HH, HH, HH, HH, HH },
+/* +WS*/ { HH, PB, PB, IB, IB, PB, IB, HH, IB, PB, PB, PB, HH, HH, IB, IB, HH, HH, IB, IB, IB, IB, IB, IB, HH, HH, PB, CI, PB, HH, HH, HH, HH, HH, HH, DB, DB, DB, HH, HH, HH, HH, HH },
+/* BA */ { HH, PB, PB, IB, IB, PB, IB, HH, IB, PB, PB, PB, HH, HH, HH, HH, HH, HH, IB, IB, IB, IB, IB, IB, HH, HH, PB, CI, PB, HH, HH, HH, HH, HH, HH, DB, DB, DB, HH, HH, HH, HH, HH },
+/* +WS*/ { HH, PB, PB, IB, IB, PB, IB, HH, IB, PB, PB, PB, HH, HH, HH, IB, HH, HH, IB, IB, IB, IB, IB, IB, HH, HH, PB, CI, PB, HH, HH, HH, HH, HH, HH, DB, DB, DB, HH, HH, HH, HH, HH },
+/*HYBA*/ { PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, DB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB },
+/* BB */ { IB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, PB, CI, PB, IB, IB, IB, IB, IB, IB, DB, IB, IB, IB, IB, IB, IB, IB },
+/* B2 */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, DB, PB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* ZW */ { DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* CM */ { IB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, DB, IB, IB, IB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* WJ */ { IB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, PB, CI, PB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB },
+/* H2 */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, IB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, IB, IB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* H3 */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, IB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, IB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* JL */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, IB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, IB, IB, IB, IB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* JV */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, IB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, IB, IB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* JT */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, IB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, IB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* RI */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, IB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* CB */ { DB, PB, PB, IB, IB, PB, IB, IB, DB, PB, PB, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* EB */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, IB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, IB, DB, DB, DB, DB, DB },
+/* EM */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, IB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* AK */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, DB, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, IB, IB },
+/* AP */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, DB, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, IB, DB, IB, DB, DB },
+/* AS */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, DB, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, IB, IB },
+/* VI */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, DB, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* VF */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, DB, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
 };
 
 // The following line break classes are not treated by the pair table
 // and must be resolved outside:
-//  AI, AK, AP, AS, BK, CB, CJ, CR, LF, NL, SA, SG, SP, VF, VI, XX, ZWJ
+//  AI, BK, CB, CJ, CR, LF, NL, SA, SG, SP, XX, ZWJ
 
 } // namespace LB
 
@@ -609,10 +690,18 @@ static void getLineBreaks(const char16_t *string, qsizetype len, QCharAttributes
 {
     qsizetype nestart = 0;
     LB::NS::Class nelast = LB::NS::XX;
+    LB::NS::Action neactlast = LB::NS::None;
+
+    LB::BRS::ParseState brsState;
 
     QUnicodeTables::LineBreakClass lcls = QUnicodeTables::LineBreak_LF; // to meet LB10
     QUnicodeTables::LineBreakClass cls = lcls;
     const QUnicodeTables::Properties *lastProp = QUnicodeTables::properties(U'\n');
+
+    constexpr static auto isEastAsian = [](QUnicodeTables::EastAsianWidth eaw) {
+        using EAW = QUnicodeTables::EastAsianWidth;
+        return eaw == EAW::W || eaw == EAW::F || eaw == EAW::H;
+    };
 
     for (qsizetype i = 0; i != len; ++i) {
         qsizetype pos = i;
@@ -645,11 +734,6 @@ static void getLineBreaks(const char16_t *string, qsizetype len, QCharAttributes
                     static const int test = FLAG(QChar::Mark_NonSpacing) | FLAG(QChar::Mark_SpacingCombining);
                     if (FLAG(prop->category) & test)
                         ncls = QUnicodeTables::LineBreak_CM;
-                }
-                if (Q_UNLIKELY(ncls == QUnicodeTables::LineBreak_CM)) {
-                    // LB10: treat CM that follows SP, BK, CR, LF, NL, or ZW as AL
-                    if (lcls == QUnicodeTables::LineBreak_ZW || lcls >= QUnicodeTables::LineBreak_SP)
-                        ncls = QUnicodeTables::LineBreak_AL;
                 }
             }
         }
@@ -691,7 +775,7 @@ static void getLineBreaks(const char16_t *string, qsizetype len, QCharAttributes
 
                 if (i + 1 < len) {
                     char32_t c = string[i + 1];
-                    if (QChar::isHighSurrogate(c) && i + 2 != len) {
+                    if (QChar::isHighSurrogate(c) && i + 2 < len) {
                         ushort low = string[i + 2];
                         if (QChar::isLowSurrogate(low))
                             c = QChar::surrogateToUcs4(c, low);
@@ -716,14 +800,190 @@ static void getLineBreaks(const char16_t *string, qsizetype len, QCharAttributes
             }
         }
 
+        if (Q_UNLIKELY((lcls >= QUnicodeTables::LineBreak_SP || lcls == QUnicodeTables::LineBreak_ZW
+                        || lcls == QUnicodeTables::LineBreak_GL
+                        || lcls == QUnicodeTables::LineBreak_CB)
+                       && (ncls == QUnicodeTables::LineBreak_HY || ucs4 == u'\u2010'))) {
+            // LB20a: Do not break after a word-initial hyphen.
+            // ( sot | BK | CR | LF | NL | SP | ZW | CB | GL ) ( HY | [\u2010] ) × AL
+
+            // Remap to the synthetic class WS_* (whitespace+*), which is just
+            // like the current respective linebreak class but with an IB action
+            // if the next class is AL.
+            if (ucs4 == u'\u2010')
+                ncls = QUnicodeTables::LineBreak_WS_BA;
+            else
+                ncls = QUnicodeTables::LineBreak_WS_HY;
+        }
+
+        if (Q_UNLIKELY(cls == QUnicodeTables::LineBreak_AP && ucs4 == LB::BRS::DottedCircle)) {
+            // LB28a: Do not break inside the orthographic syllables of Brahmic scripts
+            // AP × (AK | [◌] | AS)
+            // @note: AP × (AK | AS) is checked by the breakTable
+            goto next;
+        }
+        while (true) { // May need to recheck once.
+            // LB28a cont'd
+            LB::BRS::State oldState = brsState.state;
+            brsState.state = LB::BRS::updateState(brsState.state, {ncls, ucs4});
+            if (Q_LIKELY(brsState.state == oldState))
+                break;
+            switch (brsState.state) {
+            case LB::BRS::Start:
+                brsState.start = i;
+                break;
+            case LB::BRS::LB28a_2VI: // Wait for more characters, but also valid sequence
+                // We may get another character, but this is already a complete
+                // sequence that should not have any breaks:
+                for (qsizetype j = brsState.start + 1; j < i; ++j)
+                    attributes[j].lineBreak = false;
+                // No need to mark this sequence again later, so move 'start'
+                // up to the current position:
+                brsState.start = i;
+                goto next;
+            case LB::BRS::Restart:
+                // The previous character was possibly the start of a new sequence
+                brsState.state = LB::BRS::Start;
+                brsState.start = pos - 1;
+                continue; // Doing the loop again!
+            case LB::BRS::LB28a_2VF:
+            case LB::BRS::LB28a_4VF:
+            case LB::BRS::LB28a_3VIAK:
+                for (qsizetype j = brsState.start + 1; j < i; ++j)
+                    attributes[j].lineBreak = false;
+                if (brsState.state == LB::BRS::LB28a_3VIAK) {
+                    // This might be the start of a new sequence
+                    brsState.state = LB::BRS::Start;
+                    brsState.start = i;
+                } else {
+                    brsState.state = LB::BRS::None;
+                }
+                goto next;
+            case LB::BRS::LB28a_4: // Wait for more characters
+            case LB::BRS::None: // Nothing to do
+                break;
+            }
+            break;
+        }
+
+        if (Q_UNLIKELY(ncls == QUnicodeTables::LineBreak_IS)) {
+            // LB15c Break before a decimal mark that follows a space, for instance, in
+            // ‘subtract .5’.
+            if (Q_UNLIKELY(lcls == QUnicodeTables::LineBreak_SP)) {
+                if (i + 1 < len) {
+                    char32_t ch = string[i + 1];
+                    if (QChar::isHighSurrogate(ch) && i + 2 < len) {
+                        ushort low = string[i + 2];
+                        if (QChar::isLowSurrogate(low))
+                            ch = QChar::surrogateToUcs4(ch, low);
+                    }
+                    if (QUnicodeTables::properties(ch)->lineBreakClass
+                        == QUnicodeTables::LineBreak_NU) {
+                        attributes[pos].lineBreak = true;
+                        goto next;
+                    }
+                }
+            }
+        }
+
+        if (Q_UNLIKELY(lcls == QUnicodeTables::LineBreak_HL)) {
+            // LB21a Do not break after the hyphen in Hebrew + Hyphen + non-Hebrew
+            // HL (HY | [ BA - $EastAsian ]) × [^HL]
+            auto eaw = QUnicodeTables::EastAsianWidth(prop->eastAsianWidth);
+            const bool isNonEaBA = ncls == QUnicodeTables::LineBreak_BA && !isEastAsian(eaw);
+            if (isNonEaBA || ncls == QUnicodeTables::LineBreak_HY) {
+                // Remap to synthetic HYBA class which handles the next
+                // character. Generally (LB21) there are no breaks before
+                // HY or BA, so we can skip ahead to the next character.
+                ncls = QUnicodeTables::LineBreak_HYBA;
+                goto next;
+            }
+        }
+
+        // LB25: do not break lines inside numbers
+        {
+            LB::NS::Class necur = LB::NS::toClass(ncls);
+            LB::NS::Action neact = LB::NS::Action(LB::NS::actionTable[nelast][necur]);
+            if (Q_UNLIKELY(neactlast == LB::NS::CNeedNU && necur != LB::NS::NU)) {
+                neact = LB::NS::None;
+            } else if (Q_UNLIKELY(neactlast == LB::NS::NeedOPNU)) {
+                if (necur == LB::NS::OP)
+                    neact = LB::NS::CNeedISNU;
+                else if (necur == LB::NS::NU)
+                    neact = LB::NS::Continue;
+                else // Anything else and we ignore the sequence
+                    neact = LB::NS::None;
+            } else if (Q_UNLIKELY(neactlast == LB::NS::CNeedISNU)) {
+                if (necur == LB::NS::IS)
+                    neact = LB::NS::CNeedNU;
+                else if (necur == LB::NS::NU)
+                    neact = LB::NS::Continue;
+                else // Anything else and we ignore the sequence
+                    neact = LB::NS::None;
+            }
+            switch (neact) {
+            case LB::NS::Break:
+                // do not change breaks before and after the expression
+                for (qsizetype j = nestart + 1; j < pos; ++j)
+                    attributes[j].lineBreak = false;
+                Q_FALLTHROUGH();
+            case LB::NS::None:
+                nelast = LB::NS::XX; // reset state
+                break;
+            case LB::NS::NeedOPNU:
+            case LB::NS::Start:
+                if (neactlast == LB::NS::Start || neactlast == LB::NS::Continue) {
+                    // Apply the linebreaks for the previous stretch; we need to start a new one
+                    for (qsizetype j = nestart + 1; j < pos; ++j)
+                        attributes[j].lineBreak = false;
+                }
+                nestart = i;
+                Q_FALLTHROUGH();
+            case LB::NS::CNeedNU:
+            case LB::NS::CNeedISNU:
+            case LB::NS::Continue:
+                nelast = necur;
+                break;
+            }
+            neactlast = neact;
+        }
+
+        // LB19a Unless surrounded by East Asian characters, do not break either side of any
+        // unresolved quotation marks
+        if (Q_UNLIKELY(ncls == QUnicodeTables::LineBreak_QU
+                       && lcls != QUnicodeTables::LineBreak_SP
+                       && lcls != QUnicodeTables::LineBreak_ZW)) {
+            using EAW = QUnicodeTables::EastAsianWidth;
+            constexpr static auto nextCharNonEastAsian = [](const char16_t *string, qsizetype len) {
+                if (len > 0) {
+                    char32_t nch = string[0];
+                    if (QChar::isHighSurrogate(nch) && len > 1) {
+                        char16_t low = string[1];
+                        if (QChar::isLowSurrogate(low))
+                            nch = QChar::surrogateToUcs4(char16_t(nch), low);
+                    }
+                    const auto *nextProp = QUnicodeTables::properties(nch);
+                    QUnicodeTables::LineBreakClass nncls = QUnicodeTables::LineBreakClass(
+                            nextProp->lineBreakClass);
+                    QUnicodeTables::EastAsianWidth neaw = EAW(nextProp->eastAsianWidth);
+                    return nncls != QUnicodeTables::LineBreak_CM
+                            && nncls <= QUnicodeTables::LineBreak_SP
+                            && !isEastAsian(neaw);
+                }
+                return true; // end-of-text counts as non-East-Asian
+            };
+            if (Q_UNLIKELY(!isEastAsian(EAW(lastProp->eastAsianWidth))
+                           || nextCharNonEastAsian(string + i + 1, len - i - 1))) {
+                // Remap to the synthetic QU_19 class which has indirect breaks
+                // for most following classes.
+                ncls = QUnicodeTables::LineBreak_QU_19;
+            }
+        }
+
         if (Q_UNLIKELY(lcls >= QUnicodeTables::LineBreak_CR)) {
             // LB4: BK!, LB5: (CRxLF|CR|LF|NL)!
             if (lcls > QUnicodeTables::LineBreak_CR || ncls != QUnicodeTables::LineBreak_LF)
                 attributes[pos].lineBreak = attributes[pos].mandatoryBreak = true;
-            if (Q_UNLIKELY(ncls == QUnicodeTables::LineBreak_CM || ncls == QUnicodeTables::LineBreak_ZWJ)) {
-                cls = QUnicodeTables::LineBreak_AL;
-                goto next_no_cls_update;
-            }
             goto next;
         }
 
@@ -731,6 +991,21 @@ static void getLineBreaks(const char16_t *string, qsizetype len, QCharAttributes
             if (ncls > QUnicodeTables::LineBreak_SP)
                 goto next; // LB6: x(BK|CR|LF|NL)
             goto next_no_cls_update; // LB7: xSP
+        }
+
+        // LB19 - do not break before non-initial unresolved quotation marks, or after non-final
+        // unresolved quotation marks
+        if (Q_UNLIKELY(((ncls == QUnicodeTables::LineBreak_QU
+                         || ncls == QUnicodeTables::LineBreak_QU_19)
+                        && prop->category != QChar::Punctuation_InitialQuote)
+                       || (cls == QUnicodeTables::LineBreak_QU
+                           && lastProp->category != QChar::Punctuation_FinalQuote))) {
+            // Make sure the previous character is not one that we have to break after.
+            // Also skip if ncls is CM so it can be treated as lcls (LB9)
+            if (lcls != QUnicodeTables::LineBreak_SP && lcls != QUnicodeTables::LineBreak_ZW
+                && ncls != QUnicodeTables::LineBreak_CM) {
+                goto next;
+            }
         }
 
         if (Q_UNLIKELY(ncls == QUnicodeTables::LineBreak_CM || ncls == QUnicodeTables::LineBreak_ZWJ)) {
@@ -743,27 +1018,6 @@ static void getLineBreaks(const char16_t *string, qsizetype len, QCharAttributes
         if (Q_UNLIKELY(lcls == QUnicodeTables::LineBreak_ZWJ)) {
             // LB8a: ZWJ x
             goto next;
-        }
-
-        // LB25: do not break lines inside numbers
-        {
-            LB::NS::Class necur = LB::NS::toClass(ncls, (QChar::Category)prop->category);
-            switch (LB::NS::actionTable[nelast][necur]) {
-            case LB::NS::Break:
-                // do not change breaks before and after the expression
-                for (qsizetype j = nestart + 1; j < pos; ++j)
-                    attributes[j].lineBreak = false;
-                Q_FALLTHROUGH();
-            case LB::NS::None:
-                nelast = LB::NS::XX; // reset state
-                break;
-            case LB::NS::Start:
-                nestart = i;
-                Q_FALLTHROUGH();
-            default:
-                nelast = necur;
-                break;
-            }
         }
 
         if (Q_UNLIKELY(ncls == QUnicodeTables::LineBreak_RI && lcls == QUnicodeTables::LineBreak_RI)) {
@@ -786,9 +1040,19 @@ static void getLineBreaks(const char16_t *string, qsizetype len, QCharAttributes
             cls = QUnicodeTables::LineBreak_AL;
 
         tcls = cls;
-        if (tcls == QUnicodeTables::LineBreak_CM || tcls == QUnicodeTables::LineBreak_ZWJ)
-            // LB10
-            tcls = QUnicodeTables::LineBreak_AL;
+
+        constexpr static auto remapToAL = [](QUnicodeTables::LineBreakClass &c, auto &property) {
+            if (Q_UNLIKELY(c == QUnicodeTables::LineBreak_CM
+                           || c == QUnicodeTables::LineBreak_ZWJ)) {
+                c = QUnicodeTables::LineBreak_AL;
+                property = QUnicodeTables::properties(U'\u0041');
+            }
+        };
+        // LB10 Treat any remaining combining mark or ZWJ as AL,
+        // as if it had the properties of U+0041 A LATIN CAPITAL LETTER
+        remapToAL(tcls, lastProp);
+        remapToAL(ncls, prop);
+
         switch (LB::breakTable[tcls][ncls < QUnicodeTables::LineBreak_ZWJ ? ncls : QUnicodeTables::LineBreak_AL]) {
         case LB::DirectBreak:
             attributes[pos].lineBreak = true;
@@ -811,7 +1075,8 @@ static void getLineBreaks(const char16_t *string, qsizetype len, QCharAttributes
                 attributes[pos].lineBreak = true;
             break;
         case LB::IndirectBreakIfNarrow:
-            switch (static_cast<QUnicodeTables::EastAsianWidth>(prop->eastAsianWidth)) {
+            using EAW = QUnicodeTables::EastAsianWidth;
+            switch (EAW(prop->eastAsianWidth)) {
             default:
                 if (lcls != QUnicodeTables::LineBreak_SP)
                     break;
@@ -823,6 +1088,10 @@ static void getLineBreaks(const char16_t *string, qsizetype len, QCharAttributes
                 break;
             }
             break;
+        case LB::DirectBreakOutsideNumericSequence:
+            if (neactlast == LB::NS::None || neactlast > LB::NS::Break)
+                attributes[pos].lineBreak = true;
+            break;
         case LB::ProhibitedBreak:
             // nothing to do
         default:
@@ -830,8 +1099,10 @@ static void getLineBreaks(const char16_t *string, qsizetype len, QCharAttributes
         }
 
     next:
-        cls = ncls;
-        lastProp = prop;
+        if (ncls != QUnicodeTables::LineBreak_CM && ncls != QUnicodeTables::LineBreak_ZWJ) {
+            cls = ncls;
+            lastProp = prop;
+        }
     next_no_cls_update:
         lcls = ncls;
     }
