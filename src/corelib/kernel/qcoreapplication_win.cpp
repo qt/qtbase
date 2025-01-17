@@ -20,6 +20,9 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
+// By default, we get the path to the host .exe. ActiveQt can override this
+// with the component's DLL.
+Q_CONSTINIT void *QCoreApplicationPrivate::mainInstanceHandle = nullptr;
 QString qAppFileName()                // get application file name
 {
     /*
@@ -45,7 +48,8 @@ QString qAppFileName()                // get application file name
     do {
         size += MAX_PATH;
         space.resize(int(size));
-        v = GetModuleFileName(NULL, space.data(), DWORD(space.size()));
+        auto hInstance = reinterpret_cast<HINSTANCE>(QCoreApplicationPrivate::mainInstanceHandle);
+        v = GetModuleFileName(hInstance, space.data(), DWORD(space.size()));
     } while (Q_UNLIKELY(v >= size));
 
     return QString::fromWCharArray(space.data(), v);
