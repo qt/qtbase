@@ -10,7 +10,7 @@ endif()
 qt_internal_add_executable(qlogging_helper
     NO_INSTALL
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-    SOURCES qlogging_helper.cpp
+    SOURCES qlogging_helper.cpp ../../../../shared/disablecoredumps.cpp
     DEFINES QT_MESSAGELOGCONTEXT
     LIBRARIES Qt::Core)
 
