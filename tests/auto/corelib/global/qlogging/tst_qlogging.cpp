@@ -45,6 +45,7 @@ private slots:
 
     void fatalWarnings_data();
     void fatalWarnings();
+    void fatalWarningsRaceCondition();
 
     void formatLogMessage_data();
     void formatLogMessage();
@@ -995,6 +996,32 @@ void tst_qmessagehandler::fatalWarnings()
     QVERIFY2(!lines.contains(absentOutput), absentOutput);
     outputOnError.dismiss();
 #endif // QT_CONFIG(process)
+}
+
+void tst_qmessagehandler::fatalWarningsRaceCondition()
+{
+#if !QT_CONFIG(process)
+    QSKIP("This test requires QProcess support");
+#elif !defined(Q_OS_UNIX)
+    QSKIP("This test only works on Unix systems (need a SIGABRT handler)");
+#elif defined(Q_OS_ANDROID)
+    QSKIP("No helper for this");
+#else
+    QProcess process;
+    const QString appExe(QCoreApplication::applicationDirPath() + "/qlogging_race_helper");
+
+    QProcessEnvironment environment = m_baseEnvironment;
+    environment.insert("QT_FATAL_WARNINGS", "1");
+    process.setProcessEnvironment(environment);
+
+    process.start(appExe, {}, QIODevice::Text | QIODevice::ReadWrite);
+    QVERIFY2(process.waitForStarted(), qPrintable(
+        QString::fromLatin1("Could not start %1: %2").arg(appExe, process.errorString())));
+    process.waitForFinished();
+
+    QCOMPARE(process.exitStatus(), QProcess::CrashExit);
+    QCOMPARE(process.exitCode(), SIGABRT);
+#endif
 }
 
 Q_DECLARE_METATYPE(QtMsgType)
