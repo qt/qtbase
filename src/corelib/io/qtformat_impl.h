@@ -12,10 +12,6 @@
 #include <QtCore/qsystemdetection.h>
 #include <QtCore/qtconfigmacros.h>
 
-#if __has_include(<version>)
-#  include <version>
-#endif
-
 // Users can disable std::format support in their
 // projects by using this definition.
 #if !defined(QT_NO_STD_FORMAT_SUPPORT) && defined(__cpp_lib_format) && __cpp_lib_format >= 202106L
