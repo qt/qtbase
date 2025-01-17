@@ -14024,9 +14024,13 @@ void tst_QWidget::contextMenuTrigger()
     {
     public:
         int events = 0;
+        bool spontaneous = false;
 
     protected:
-        void contextMenuEvent(QContextMenuEvent *) override { ++events; }
+        void contextMenuEvent(QContextMenuEvent *ev) override {
+            ++events;
+            spontaneous = ev->spontaneous();
+        }
     };
 
     const Qt::ContextMenuTrigger wasTrigger = QGuiApplication::styleHints()->contextMenuTrigger();
@@ -14043,6 +14047,7 @@ void tst_QWidget::contextMenuTrigger()
     QGuiApplication::styleHints()->setContextMenuTrigger(Qt::ContextMenuTrigger::Press);
     QTest::mousePress(window, Qt::RightButton);
     QCOMPARE(widget.events, 1);
+    QCOMPARE(widget.spontaneous, true); // QTBUG-132873: Squish expects it
     QTest::mouseRelease(window, Qt::RightButton);
     QCOMPARE(widget.events, 1);
     QGuiApplication::styleHints()->setContextMenuTrigger(Qt::ContextMenuTrigger::Release);
@@ -14050,6 +14055,7 @@ void tst_QWidget::contextMenuTrigger()
     QCOMPARE(widget.events, 1);
     QTest::mouseRelease(window, Qt::RightButton);
     QCOMPARE(widget.events, 2);
+    QCOMPARE(widget.spontaneous, true);
 }
 #endif
 
