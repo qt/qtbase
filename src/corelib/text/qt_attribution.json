@@ -17,7 +17,7 @@
         "Version": [ "Don't use the Unicode standard version;",
                      "UCD has its own 'Revision' numbers",
                      "see the 'UAX #44, UCD' page (https://www.unicode.org/reports/tr44/)" ]},
-    "Version": "32",
+    "Version": "34",
     "License": "Unicode License Agreement - Data Files and Software (2016)",
     "LicenseId": "Unicode-3.0",
     "Copyright": "Copyright (C) 1991-2022 Unicode, Inc."

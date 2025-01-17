@@ -247,6 +247,13 @@ static const char specialLanguages[][6] = {
     "", // Vithkuqi
     "", // Kawi
     "", // NagMundari
+    "", // Garay
+    "", // GurungKhema
+    "", // KiratRai
+    "", // OlOnal
+    "", // Sunuwar
+    "", // Todhri
+    "", // TuluTigalari
 };
 static_assert(sizeof specialLanguages / sizeof *specialLanguages == QChar::ScriptCount);
 

@@ -15,8 +15,8 @@
 #include <private/qunicodetables_p.h>
 #endif
 
-#define DATA_VERSION_S "15.1"
-#define DATA_VERSION_STR "QChar::Unicode_15_1"
+#define DATA_VERSION_S "16.0"
+#define DATA_VERSION_STR "QChar::Unicode_16_0"
 
 
 static QHash<QByteArray, QChar::UnicodeVersion> age_map;
@@ -53,6 +53,7 @@ static void initAgeMap()
         { QChar::Unicode_14_0,   "14.0" }, // UCD Revision 28
         { QChar::Unicode_15_0,   "15.0" }, // UCD Revision 30
         { QChar::Unicode_15_1,   "15.1" }, // UCD Revision 32
+        { QChar::Unicode_16_0,   "16.0" }, // UCD Revision 34
         { QChar::Unicode_Unassigned, 0 }
     };
     AgeMap *d = ageMap;
@@ -530,17 +531,26 @@ static void initSentenceBreak()
 
 static const char *line_break_class_string =
     "// see http://www.unicode.org/reports/tr14/tr14-30.html\n"
-    "// we don't use the XX, AK, AP, AS and AI classes and map them to AL instead.\n"
+    "// we don't use the XX and AI classes but map them to AL instead.\n"
     "// VI and VF classes are mapped to CM.\n"
     "enum LineBreakClass {\n"
     "    LineBreak_OP, LineBreak_CL, LineBreak_CP,\n"
-    "    LineBreak_QU, LineBreak_QU_Pi, LineBreak_QU_Pf, LineBreak_GL,\n"
-    "    LineBreak_NS, LineBreak_EX, LineBreak_SY, LineBreak_IS, LineBreak_PR,\n"
+    "    LineBreak_QU, LineBreak_QU_Pi, LineBreak_QU_Pf, LineBreak_QU_19,\n"
+    "    LineBreak_GL, LineBreak_NS, LineBreak_EX, LineBreak_SY,\n"
+    "    LineBreak_IS, LineBreak_PR,\n"
     "    LineBreak_PO, LineBreak_NU, LineBreak_AL, LineBreak_HL, LineBreak_ID,\n"
-    "    LineBreak_IN, LineBreak_HY, LineBreak_BA, LineBreak_BB, LineBreak_B2,\n"
+    "    LineBreak_IN, LineBreak_HY, LineBreak_WS_HY,\n"
+    "    LineBreak_BA, LineBreak_WS_BA,\n"
+    "    LineBreak_HYBA,\n"
+    "    LineBreak_BB, LineBreak_B2,\n"
     "    LineBreak_ZW, LineBreak_CM, LineBreak_WJ, LineBreak_H2, LineBreak_H3,\n"
     "    LineBreak_JL, LineBreak_JV, LineBreak_JT, LineBreak_RI, LineBreak_CB,\n"
-    "    LineBreak_EB, LineBreak_EM, LineBreak_ZWJ,\n"
+    "    LineBreak_EB, LineBreak_EM,\n"
+    "\n"
+    "    LineBreak_AK, LineBreak_AP, LineBreak_AS,\n"
+    "    LineBreak_VI, LineBreak_VF,\n"
+    "\n"
+    "    LineBreak_ZWJ,\n"
     "    LineBreak_SA, LineBreak_SG, LineBreak_SP,\n"
     "    LineBreak_CR, LineBreak_LF, LineBreak_BK,\n"
     "\n"
@@ -549,13 +559,22 @@ static const char *line_break_class_string =
 
 enum LineBreakClass {
     LineBreak_OP, LineBreak_CL, LineBreak_CP,
-    LineBreak_QU, LineBreak_QU_Pi, LineBreak_QU_Pf, LineBreak_GL,
-    LineBreak_NS, LineBreak_EX, LineBreak_SY, LineBreak_IS, LineBreak_PR,
+    LineBreak_QU, LineBreak_QU_Pi, LineBreak_QU_Pf, LineBreak_QU_19,
+    LineBreak_GL, LineBreak_NS, LineBreak_EX, LineBreak_SY,
+    LineBreak_IS, LineBreak_PR,
     LineBreak_PO, LineBreak_NU, LineBreak_AL, LineBreak_HL, LineBreak_ID,
-    LineBreak_IN, LineBreak_HY, LineBreak_BA, LineBreak_BB, LineBreak_B2,
+    LineBreak_IN, LineBreak_HY, LineBreak_WS_HY,
+    LineBreak_BA, LineBreak_WS_BA,
+    LineBreak_HYBA,
+    LineBreak_BB, LineBreak_B2,
     LineBreak_ZW, LineBreak_CM, LineBreak_WJ, LineBreak_H2, LineBreak_H3,
     LineBreak_JL, LineBreak_JV, LineBreak_JT, LineBreak_RI, LineBreak_CB,
-    LineBreak_EB, LineBreak_EM, LineBreak_ZWJ,
+    LineBreak_EB, LineBreak_EM,
+
+    LineBreak_AK, LineBreak_AP, LineBreak_AS,
+    LineBreak_VI, LineBreak_VF,
+
+    LineBreak_ZWJ,
     LineBreak_SA, LineBreak_SG, LineBreak_SP,
     LineBreak_CR, LineBreak_LF, LineBreak_BK,
 
@@ -617,11 +636,11 @@ static void initLineBreak()
         { LineBreak_EB, "EB" },
         { LineBreak_EM, "EM" },
         { LineBreak_ZWJ, "ZWJ" },
-        { LineBreak_AL, "AK" },
-        { LineBreak_AL, "AP" },
-        { LineBreak_AL, "AS" },
-        { LineBreak_CM, "VI" },
-        { LineBreak_CM, "VF" },
+        { LineBreak_AK, "AK" },
+        { LineBreak_AP, "AP" },
+        { LineBreak_AS, "AS" },
+        { LineBreak_VI, "VI" },
+        { LineBreak_VF, "VF" },
         { LineBreak_Unassigned, 0 }
     };
     LineBreakList *d = breaks;
@@ -823,6 +842,15 @@ static void initScriptMap()
         // 15.0
         { QChar::Script_Kawi,                   "Kawi"},
         { QChar::Script_NagMundari,             "NagMundari"},
+
+        // 16.0
+        { QChar::Script_Garay,                   "Garay"},
+        { QChar::Script_GurungKhema,             "GurungKhema"},
+        { QChar::Script_KiratRai,                "KiratRai"},
+        { QChar::Script_OlOnal,                  "OlOnal"},
+        { QChar::Script_Sunuwar,                 "Sunuwar"},
+        { QChar::Script_Todhri,                  "Todhri"},
+        { QChar::Script_TuluTigalari,            "TuluTigalari"},
 
         // unhandled
         { QChar::Script_Unknown,                0 }
@@ -1194,9 +1222,14 @@ struct UnicodeData {
         //     [U+3400..U+4DBF, U+4E00..U+9FFF, U+F900..U+FAFF, U+20000..U+2A6DF, U+2A700..U+2B73F, U+2B740..U+2B81F, U+2B820..U+2CEAF, U+2F800..U+2FA1F]
         // and any other reserved code points on
         //     [U+20000..U+2FFFD, U+30000..U+3FFFD]
+        // and some unassigned ranges in Plane 1:
+        //    [1F000..1F7FF, 1F900..1FAFF, 1FC00..1FFFD]
         if ((codepoint >= 0x3400 && codepoint <= 0x4DBF)
             || (codepoint >= 0x4E00 && codepoint <= 0x9FFF)
             || (codepoint >= 0xF900 && codepoint <= 0xFAFF)
+            || (codepoint >= 0x1F000 && codepoint <= 0x1F7FF)
+            || (codepoint >= 0x1F900 && codepoint <= 0x1FAFF)
+            || (codepoint >= 0x1FC00 && codepoint <= 0x1FFFD)
             || (codepoint >= 0x20000 && codepoint <= 0x2A6DF)
             || (codepoint >= 0x2A700 && codepoint <= 0x2B73F)
             || (codepoint >= 0x2B740 && codepoint <= 0x2B81F)
@@ -3402,7 +3435,7 @@ static QByteArray createLigatureInfo()
     const int BMP_BLOCKSIZE = 32;
     const int BMP_SHIFT = 5;
     const int BMP_END = 0x3100;
-    const int SMP_END = 0x12000;
+    const int SMP_END = 0x1FC00; // https://www.unicode.org/roadmaps/smp/
     const int SMP_BLOCKSIZE = 256;
     const int SMP_SHIFT = 8;
 
