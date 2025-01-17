@@ -1259,7 +1259,7 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &, QFileSystemEnt
 }
 #else
 /*
-    Implementing as per https://specifications.freedesktop.org/trash-spec/trashspec-1.0.html
+    Implementing as per https://specifications.freedesktop.org/trash-spec/1.0/
 */
 //static
 bool QFileSystemEngine::supportsMoveFileToTrash()
