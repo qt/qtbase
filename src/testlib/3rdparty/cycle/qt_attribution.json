@@ -17,7 +17,7 @@
                    },
         "Files": "cycle_p.h",
 
-        "Description": "Allows to access the CPU's cycle counters.",
+        "Description": "Enables access to the CPU's cycle counters.",
         "Homepage": "http://fftw.org/",
         "Version": "3.3.10",
         "PURL": "pkg:github/FFTW/fftw3@fftw-$<VERSION>",
