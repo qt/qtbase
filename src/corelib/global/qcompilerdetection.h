@@ -460,12 +460,6 @@
 #  define QT_ASAN_ENABLED
 #endif
 
-#ifdef __cplusplus
-# if __has_include(<version>) /* remove this check once Integrity, QNX have caught up */
-#  include <version>
-# endif
-#endif
-
 /*
  * C++11 support
  *
