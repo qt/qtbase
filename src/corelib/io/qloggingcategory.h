@@ -106,7 +106,7 @@ template <> const bool QLoggingCategoryMacroHolder<QtWarningMsg>::IsOutputEnable
 #define QT_DECLARE_EXPORTED_QT_LOGGING_CATEGORY(name, export_macro) \
     inline namespace QtPrivateLogging { export_macro const QLoggingCategory &name(); }
 
-#if QT_BUILDING_QT
+#ifdef QT_BUILDING_QT
 #define Q_DECLARE_LOGGING_CATEGORY(name) \
     inline namespace QtPrivateLogging { const QLoggingCategory &name(); }
 
