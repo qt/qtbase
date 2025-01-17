@@ -2587,7 +2587,7 @@ bool QXRenderGlyphCache::addGlyphs(const QTextItemInt &ti,
             }
         }
 
-        glyph = ft->loadGlyphFor(glyphs[i], spp, glyphFormat(), transform());
+        glyph = ft->loadGlyphFor(glyphs[i], spp, glyphFormat(), transform(), QColor());
 
         if (glyph == 0 || glyph->format != glyphFormat())
             return false;
