@@ -2324,6 +2324,12 @@ void tst_QRhi::renderToTextureSampleWithSeparateTextureAndSampler()
     QFETCH(QRhi::Implementation, impl);
     QFETCH(QRhiInitParams *, initParams);
 
+#ifdef Q_OS_ANDROID
+    if (impl == QRhi::Vulkan) {
+        QSKIP("This function fails with Vulkan on Android, see QTQAINFRA-6926 for more info.");
+    }
+#endif
+
     QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing rendering");
