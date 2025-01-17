@@ -190,7 +190,7 @@ static bool is_fatal_count_down(QAtomicInt &n)
     // otherwise decrement if it's non-zero
 
     int v = n.loadRelaxed();
-    while (v != 0 && !n.testAndSetRelaxed(v, v - 1, v))
+    while (v > 1 && !n.testAndSetRelaxed(v, v - 1, v))
         qYieldCpu();
     return v == 1; // we exited the loop, so either v == 0 or CAS succeeded to set n from v to v-1
 }
