@@ -8,6 +8,12 @@
 #  pragma qt_sync_stop_processing
 #endif
 
+#ifdef __cplusplus
+# if __has_include(<version>) /* remove this check once Integrity, QNX have caught up */
+#  include <version>
+# endif
+#endif
+
 #include <QtCore/qconfig.h>
 
 #ifdef QT_BOOTSTRAPPED
