@@ -3562,17 +3562,14 @@ int generateJavaQmlComponents(const Options &options)
                              const QString &qmlFile,
                              const QStringList &otherImportPaths) -> QJsonObject {
         QByteArray domInfo;
-        QString importFlags;
-        for (auto &importPath : otherImportPaths)
-            importFlags.append(" -I %1"_L1.arg(shellQuote(importPath)));
-
-        const QString qmlDomCmd = "%1 -d -D required -f +:propertyInfos %2 %3"_L1.arg(
-                shellQuote(qmlDomExecPath), importFlags,
-                shellQuote("%1/%2"_L1.arg(qmldirPath, qmlFile)));
 #if QT_CONFIG(process)
-        const QStringList qmlDomCmdParts = QProcess::splitCommand(qmlDomCmd);
+        QStringList qmlDomArgs {"-d"_L1, "-D"_L1, "required"_L1, "-f"_L1, "+:propertyInfos"_L1 };
+        for (auto &importPath : otherImportPaths)
+            qmlDomArgs << "-I"_L1 << importPath;
+        qmlDomArgs << "%1/%2"_L1.arg(qmldirPath, qmlFile);
+        const QString qmlDomCmd = "%1 %2"_L1.arg(qmlDomExecPath, qmlDomArgs.join(u' '));
         QProcess process;
-        process.start(qmlDomCmdParts.first(), qmlDomCmdParts.sliced(1));
+        process.start(qmlDomExecPath, qmlDomArgs);
         if (!process.waitForStarted()) {
             fprintf(stderr, "Cannot execute command %s\n", qPrintable(qmlDomCmd));
             return QJsonObject();
