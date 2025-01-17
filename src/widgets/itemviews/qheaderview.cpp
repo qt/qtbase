@@ -130,16 +130,16 @@ static const int maxSizeSection = 1048575; // since section size is in a bitfiel
 
     \section1 Special consideration for huge models
 
-    The headerview uses 8 to 16 bytes of memory per section.
-    However, since Qt 6.9 this section memory is only used if one
-    or more sections are resized or reordered. This means that it's possible
-    for a model to have millions of sections without QHeaderView consuming a proportional,
-    and therefore huge, amount of memory, as long as there are \e no calls to
-    \l swapSections, \l resizeSection, \l hideSection, \l moveSection,
-    and \l stretchLastSection (enabling it).
-    In order to avoid such calls by user actions the \l resizeMode
-    should be fixed (without specifying it for any indexes as
-    that will do the opposite). The user should also be prevented from
+    The headerview uses 8 to 16 bytes of memory per section. However, since Qt
+    6.9 this section memory is only used if one or more sections are resized or
+    reordered. This means that it's possible for a model to have millions of
+    sections without QHeaderView consuming a proportional, and therefore huge,
+    amount of memory, as long as there are \e no calls to \l swapSections, \l
+    resizeSection, \l hideSection, \l moveSection, and \l stretchLastSection
+    (enabling it). In order to avoid such calls by user actions the
+    \l{QHeaderView::sectionResizeMode}{resize mode} should be
+    \l{QHeaderView::ResizeMode}{Fixed} (without specifying it for any indexes,
+    as that will do the opposite). The user should also be prevented from
     moving sections by keeping \l sectionsMovable disabled.
 */
 
