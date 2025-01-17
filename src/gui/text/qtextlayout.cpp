@@ -1121,6 +1121,11 @@ void QTextLayout::draw(QPainter *p, const QPointF &pos, const QList<FormatRange>
     QPainterPath textDoneRegion;
     for (int i = 0; i < selections.size(); ++i) {
         FormatRange selection = selections.at(i);
+        // Don't clip the selection region when it has an outline pen,
+        // because clipping creates artificial edges that get stroked (QTBUG-115232)
+        const QPen pen = selection.format.penProperty(QTextFormat::OutlinePen);
+        const bool hasOutline = (pen.style() != Qt::NoPen && pen.widthF() > 0);
+        const QRectF selectionClip = hasOutline ? QRectF() : clip;
         QPainterPath region;
         region.setFillRule(Qt::WindingFill);
 
@@ -1144,9 +1149,9 @@ void QTextLayout::draw(QPainter *p, const QPointF &pos, const QList<FormatRange>
             const bool selectionEndInLine = selection.start + selection.length < sl.from + sl_length;
 
             if (sl.length && (selectionStartInLine || selectionEndInLine)) {
-                addSelectedRegionsToPath(d, line, position, &selection, &region, clipIfValid(lineRect, clip));
+                addSelectedRegionsToPath(d, line, position, &selection, &region, clipIfValid(lineRect, selectionClip));
             } else {
-                region.addRect(clipIfValid(lineRect, clip));
+                region.addRect(clipIfValid(lineRect, selectionClip));
             }
 
             if (selection.format.boolProperty(QTextFormat::FullWidthSelection)) {
@@ -1159,17 +1164,17 @@ void QTextLayout::draw(QPainter *p, const QPointF &pos, const QList<FormatRange>
 
                 if (!selectionEndInLine) {
                     region.addRect(clipIfValid(rightToLeft ? QRectF(fullLineRect.topLeft(), lineRect.bottomLeft())
-                                                           : QRectF(lineRect.topRight(), fullLineRect.bottomRight()), clip));
+                                                           : QRectF(lineRect.topRight(), fullLineRect.bottomRight()), selectionClip));
                 }
                 if (!selectionStartInLine) {
                     region.addRect(clipIfValid(rightToLeft ? QRectF(lineRect.topRight(), fullLineRect.bottomRight())
-                                                           : QRectF(fullLineRect.topLeft(), lineRect.bottomLeft()), clip));
+                                                           : QRectF(fullLineRect.topLeft(), lineRect.bottomLeft()), selectionClip));
                 }
             } else if (!selectionEndInLine
                 && isLastLineInBlock
                 &&!(d->option.flags() & QTextOption::ShowLineAndParagraphSeparators)) {
                 region.addRect(clipIfValid(QRectF(lineRect.right(), lineRect.top(),
-                                                  lineRect.height()/4, lineRect.height()), clip));
+                                                  lineRect.height()/4, lineRect.height()), selectionClip));
             }
 
         }
@@ -1177,12 +1182,20 @@ void QTextLayout::draw(QPainter *p, const QPointF &pos, const QList<FormatRange>
             const QPen oldPen = p->pen();
             const QBrush oldBrush = p->brush();
 
+            if (hasOutline) {
+                p->save();
+                p->setClipRect(clip, Qt::IntersectClip);
+            }
+
             p->setPen(selection.format.penProperty(QTextFormat::OutlinePen));
             p->setBrush(selection.format.brushProperty(QTextFormat::BackgroundBrush));
             p->drawPath(region);
 
             p->setPen(oldPen);
             p->setBrush(oldBrush);
+
+            if (hasOutline)
+                p->restore();
         }
 
 

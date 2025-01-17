@@ -200,6 +200,8 @@ private slots:
 
     void dontCrashWithCss();
 
+    void linkSelectionArtifact();
+
 private:
     void createSelection();
     int blockCount() const;
@@ -3055,6 +3057,92 @@ void tst_QTextEdit::dontCrashWithCss()
     qApp->setStyleSheet(QString());
 }
 
+class CountingTextEdit : public QTextEdit {
+public:
+    using QTextEdit::QTextEdit;
+    int paintCount = 0;
+protected:
+    void paintEvent(QPaintEvent *e) override {
+        ++paintCount;
+        QTextEdit::paintEvent(e);
+    }
+};
+
+void tst_QTextEdit::linkSelectionArtifact()
+{
+    // QTBUG-115232: Clicking a link in QTextEdit shows a dotted focus
+    // outline. Cursor blink triggers partial repaints whose dirty rect
+    // clips the selection region, creating an extra outline edge inside
+    // the link area (visible as a double vertical line).
+
+    CountingTextEdit e;
+    e.resize(800, 600);
+
+    QPalette pal = e.palette();
+    pal.setColor(QPalette::Base, Qt::white);
+    e.setPalette(pal);
+
+    e.setTextInteractionFlags(Qt::TextEditorInteraction |
+                              Qt::TextSelectableByMouse |
+                              Qt::LinksAccessibleByMouse);
+
+    QTextCursor c = e.textCursor();
+    QTextCharFormat fmt;
+    fmt.setAnchor(true);
+    fmt.setAnchorHref("http://example.com");
+    fmt.setForeground(Qt::transparent);
+    c.setCharFormat(fmt);
+    c.insertText("Google");
+
+    e.setFont(QFont(e.font().family(), 30));
+    e.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&e));
+
+    // Find the link boundaries
+    QTextCursor startCur(e.document());
+    startCur.movePosition(QTextCursor::Start);
+    const QRect startRect = e.cursorRect(startCur);
+    QTextCursor endCur(e.document());
+    endCur.movePosition(QTextCursor::End);
+    const QRect endRect = e.cursorRect(endCur);
+
+    // Click the link to activate the focus outline
+    const QPoint clickPos((startRect.left() + endRect.left()) / 2,
+                          startRect.center().y());
+    QTest::mouseClick(e.viewport(), Qt::LeftButton, Qt::NoModifier, clickPos);
+
+    // Wait for cursor blink to trigger a partial repaint (the artifact
+    // only appears after a partial repaint clips the selection region)
+    const int countAfterClick = e.paintCount;
+    QTRY_VERIFY(e.paintCount > countAfterClick + 1);
+
+    // Check the interior of the selection outline, inset to avoid the
+    // outline's own borders. With transparent text and white background,
+    // any non-white pixel here is the artifact.
+    const int inset = 3;
+    const QRect checkRect(startRect.left() + inset, startRect.top() + inset,
+                          endRect.left() - startRect.left() - 2 * inset,
+                          startRect.height() - 2 * inset);
+
+    // Grab the screen without triggering a repaint — viewport()->grab()
+    // would do a full repaint and wipe the artifact from the backing store.
+    const QRect globalRect(e.viewport()->mapToGlobal(checkRect.topLeft()),
+                           e.viewport()->mapToGlobal(checkRect.bottomRight()));
+    const QPixmap grabbed = e.screen()->grabWindow(0,
+                                                   globalRect.x(), globalRect.y(),
+                                                   globalRect.width(), globalRect.height());
+    const QImage image = grabbed.toImage();
+
+    for (int y = 0; y < image.height(); ++y) {
+        for (int x = 0; x < image.width(); ++x) {
+            const QRgb pixel = image.pixel(x, y);
+            QVERIFY2(qRed(pixel) > 240 && qGreen(pixel) > 240 && qBlue(pixel) > 240,
+                     qPrintable(QString("Artifact pixel at (%1, %2): rgb(%3, %4, %5)")
+                                .arg(x).arg(y)
+                                .arg(qRed(pixel)).arg(qGreen(pixel)).arg(qBlue(pixel))));
+        }
+    }
+}
 
 QTEST_MAIN(tst_QTextEdit)
 #include "tst_qtextedit.moc"
