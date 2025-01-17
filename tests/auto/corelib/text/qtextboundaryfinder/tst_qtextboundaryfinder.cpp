@@ -170,7 +170,10 @@ static void doTestData(const QString &testString, const QList<int> &expectedBrea
             if (boundaryFinder.boundaryReasons() & reasons)
                 actualBreakPositions.append(boundaryFinder.position());
         } while (boundaryFinder.toNextBoundary() != -1);
-        QCOMPARE(actualBreakPositions, expectedBreakPositions);
+        QString comment;
+        QDebug format(&comment);
+        format << actualBreakPositions << "vs" << expectedBreakPositions;
+        QVERIFY2(actualBreakPositions == expectedBreakPositions, qPrintable(comment));
     }
     QCOMPARE(boundaryFinder.position(), -1);
     QVERIFY(!boundaryFinder.isAtBoundary());

@@ -163,6 +163,7 @@ QT_BEGIN_NAMESPACE
     \value [since 6.3] Unicode_14_0 Version 14.0
     \value [since 6.5] Unicode_15_0 Version 15.0
     \value [since 6.8] Unicode_15_1 Version 15.1
+    \value [since 6.9] Unicode_16_0 Version 16.0
     \value Unicode_Unassigned  The value is not assigned to any character
                                in version 8.0 of Unicode.
 
@@ -300,6 +301,7 @@ QT_BEGIN_NAMESPACE
     \value [since 5.5] Script_Elbasan
     \value [since 5.15] Script_Elymaic
     \value Script_Ethiopic
+    \value [since 6.9] Script_Garay
     \value Script_Georgian
     \value Script_Glagolitic
     \value Script_Gothic
@@ -308,6 +310,7 @@ QT_BEGIN_NAMESPACE
     \value Script_Gujarati
     \value [since 5.15] Script_GunjalaGondi
     \value Script_Gurmukhi
+    \value [since 6.9] Script_GurungKhema
     \value Script_Han
     \value Script_Hangul
     \value [since 5.15] Script_HanifiRohingya
@@ -329,6 +332,7 @@ QT_BEGIN_NAMESPACE
     \value Script_Khmer
     \value [since 5.5] Script_Khojki
     \value [since 5.5] Script_Khudawadi
+    \value [since 6.9] Script_KiratRai
     \value Script_Lao
     \value Script_Latin
     \value Script_Lepcha
@@ -366,6 +370,7 @@ QT_BEGIN_NAMESPACE
     \value [since 5.15] Script_NyiakengPuachueHmong
     \value Script_Ogham
     \value Script_OlChiki
+    \value [since 6.9] Script_OlOnal
     \value [since 5.6] Script_OldHungarian
     \value Script_OldItalic
     \value [since 5.5] Script_OldNorthArabian
@@ -397,6 +402,7 @@ QT_BEGIN_NAMESPACE
     \value Script_SoraSompeng
     \value [since 5.11] Script_Soyombo
     \value Script_Sundanese
+    \value [since 6.9] Script_Sunuwar
     \value Script_SylotiNagri
     \value Script_Syriac
     \value Script_Tagalog
@@ -414,7 +420,9 @@ QT_BEGIN_NAMESPACE
     \value Script_Tibetan
     \value Script_Tifinagh
     \value [since 5.5] Script_Tirhuta
+    \value [since 6.9] Script_Todhri
     \value [since 6.3] Script_Toto
+    \value [since 6.9] Script_TuluTigalari
     \value Script_Ugaritic
     \value Script_Vai
     \value [since 6.3] Script_Vithkuqi

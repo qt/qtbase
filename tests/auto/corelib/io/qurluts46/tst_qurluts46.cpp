@@ -34,9 +34,15 @@ const QSet<QByteArray> tst_QUrlUts46::fatalErrors = {
 
 /**
  * Replace \uXXXX escapes in test case fields.
+ * Turn "" into empty string, and empty string into null.
  */
-static QString unescapeField(const QString &field)
+static QString postProcessField(const QString &field)
 {
+    if (field == u"\"\"")
+        return QString{u""}; // Empty, but not null
+    if (field == u"")
+        return {}; // Null
+
     static const QRegularExpression re(R"(\\u([[:xdigit:]]{4}))");
 
     QString result;
@@ -100,15 +106,15 @@ void tst_QUrlUts46::idnaTestV2_data()
         Q_ASSERT(fields.size() == 7);
 
         for (auto &field : fields)
-            field = unescapeField(field.trimmed()).toUtf8();
+            field = postProcessField(field.trimmed()).toUtf8();
 
         const QString &source = fields[0];
-        QString toUnicode = fields[1].isEmpty() ? source : fields[1];
-        bool toUnicodeOk = fields[2].isEmpty();
+        QString toUnicode = fields[1].isNull() ? source : fields[1];
+        bool toUnicodeOk = fields[2].isNull();
         bool toUnicodeOkForAscii = isToAsciiOk(fields[2], true);
-        QString toAsciiN = fields[3].isEmpty() ? toUnicode : fields[3];
+        QString toAsciiN = fields[3].isNull() ? toUnicode : fields[3];
         bool toAsciiNOk = isToAsciiOk(fields[4], toUnicodeOkForAscii);
-        QString toAsciiT = fields[5].isEmpty() ? toAsciiN : fields[5];
+        QString toAsciiT = fields[5].isNull() ? toAsciiN : fields[5];
         bool toAsciiTOk = isToAsciiOk(fields[6], toAsciiNOk);
 
         QTest::addRow("line %u", lineNo) << source << toUnicode << toUnicodeOk << toAsciiN
@@ -126,7 +132,17 @@ void tst_QUrlUts46::idnaTestV2()
     QFETCH(QString, toAsciiT);
     QFETCH(bool, toAsciiTOk);
 
+#define TEST_TRAILING_EMPTY_ROOT(x)                                                               \
+    do {                                                                                          \
+        if ((x).endsWith(u".")) {                                                                 \
+            QEXPECT_FAIL("", "Qt doesn't yet reject domain names with trailing empty root label", \
+                         Abort);                                                                  \
+        }                                                                                         \
+    } while (false)
+
     QString toAceN = QUrl::toAce(source);
+    TEST_TRAILING_EMPTY_ROOT(toAceN);
+
     if (toUnicodeOk && toAsciiNOk)
         QCOMPARE(toAceN, toAsciiN);
     else if (toAsciiNOk)
@@ -135,6 +151,8 @@ void tst_QUrlUts46::idnaTestV2()
         QCOMPARE(toAceN, QString());
 
     QString toAceT = QUrl::toAce(source, QUrl::AceTransitionalProcessing);
+    TEST_TRAILING_EMPTY_ROOT(toAceT);
+
     if (toUnicodeOk && toAsciiTOk)
         QCOMPARE(toAceT, toAsciiT);
     else if (toAsciiTOk)
