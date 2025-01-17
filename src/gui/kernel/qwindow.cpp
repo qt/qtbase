@@ -1999,7 +1999,8 @@ QMargins QWindow::safeAreaMargins() const
 }
 
 /*!
-    \fn void safeAreaMarginsChanged(QMargins margins)
+    \fn void QWindow::safeAreaMarginsChanged(QMargins margins)
+    \since 6.9
 
     This signal is emitted when the safe area margins changed to \a margins.
 
