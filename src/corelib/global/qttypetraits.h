@@ -7,16 +7,15 @@
 #include <QtCore/qtconfigmacros.h>
 #include <QtCore/qtdeprecationmarkers.h>
 
+#if defined(__cpp_lib_three_way_comparison) && defined(__cpp_lib_concepts)
+#include <compare>
+#include <concepts>
+#endif
 #include <optional>
 #include <tuple>
 #include <type_traits>
 #include <utility>
 #include <variant>
-
-#if defined(__cpp_lib_three_way_comparison) && defined(__cpp_lib_concepts)
-#include <compare>
-#include <concepts>
-#endif
 
 #if 0
 #pragma qt_class(QtTypeTraits)
