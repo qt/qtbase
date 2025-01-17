@@ -14,6 +14,13 @@ qt_internal_add_executable(qlogging_helper
     DEFINES QT_MESSAGELOGCONTEXT
     LIBRARIES Qt::Core)
 
+qt_internal_add_executable(qlogging_race_helper
+    NO_INSTALL
+    OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    SOURCES qlogging_race_helper.cpp ../../../../shared/disablecoredumps.cpp
+    LIBRARIES Qt::Core
+)
+
 # Fixes required for the backtrace stack to be correct
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" AND NOT MINGW)
     target_link_options(qlogging_helper PRIVATE -rdynamic)
@@ -25,7 +32,7 @@ qt_internal_add_test(tst_qlogging SOURCES tst_qlogging.cpp
         QT_MESSAGELOGCONTEXT
 )
 
-add_dependencies(tst_qlogging qlogging_helper)
+add_dependencies(tst_qlogging qlogging_helper qlogging_race_helper)
 
 qt_internal_add_test(tst_qmessagelogger SOURCES tst_qmessagelogger.cpp
     DEFINES
