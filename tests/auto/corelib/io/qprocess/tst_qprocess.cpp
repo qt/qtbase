@@ -1677,9 +1677,6 @@ void tst_QProcess::terminateInChildProcessModifier()
     QFETCH(QProcess::ExitStatus, exitStatus);
     QFETCH(bool, stderrIsEmpty);
 
-    // temporarily disable QTest's crash logger
-    DisableCrashLogger disableCrashLogging;
-
     // testForwardingHelper prints to both stdout and stderr, so if we fail to
     // fail we should be able to tell too
     QProcess process;
