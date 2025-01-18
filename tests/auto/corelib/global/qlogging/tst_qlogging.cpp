@@ -838,7 +838,7 @@ void tst_qmessagehandler::qMessagePattern()
     QSKIP("This test requires QProcess support");
 #else
 #ifdef Q_OS_ANDROID
-    QSKIP("This test crashes on Android");
+    QSKIP("This test is disabled on Android");
 #endif
     QFETCH(QString, pattern);
     QFETCH(bool, valid);
@@ -884,7 +884,7 @@ void tst_qmessagehandler::setMessagePattern()
     QSKIP("This test requires QProcess support");
 #else
 #ifdef Q_OS_ANDROID
-    QSKIP("This test crashes on Android");
+    QSKIP("This test is disabled on Android");
 #endif
 
     //
@@ -980,8 +980,8 @@ void tst_qmessagehandler::formatLogMessage()
 QString tst_qmessagehandler::backtraceHelperPath()
 {
 #ifdef Q_OS_ANDROID
-    QString appExe(QCoreApplication::applicationDirPath()
-                   + QLatin1String("/lib" BACKTRACE_HELPER_NAME ".so"));
+    qFatal("Launching the helper (which does exist) produces 'No such file or directory'.");
+    QString appExe;
 #else
     QString appExe(QCoreApplication::applicationDirPath()
                    + QLatin1String("/" BACKTRACE_HELPER_NAME));
