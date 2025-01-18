@@ -5,37 +5,11 @@
 #if defined(_MSC_VER)
 #  include <intrin.h>
 #endif
-#if __has_include(<signal.h>)
-#  include <signal.h>
-#endif
-#if __has_include(<sys/resource.h>)
-#  include <sys/resource.h>
-#endif
-
 #ifndef __has_builtin
 #  define __has_builtin(x)  0
 #endif
 
 namespace tst_QProcessCrash {
-struct NoCoreDumps
-{
-#if defined(RLIMIT_CORE)
-    struct rlimit rlim;
-    NoCoreDumps()
-    {
-        if (getrlimit(RLIMIT_CORE, &rlim) == 0 && rlim.rlim_cur != 0) {
-            struct rlimit newrlim = rlim;
-            newrlim.rlim_cur = 0;
-            setrlimit(RLIMIT_CORE, &newrlim);
-        }
-    }
-    ~NoCoreDumps()
-    {
-        setrlimit(RLIMIT_CORE, &rlim);
-    }
-#endif // RLIMIT_CORE
-};
-
 void crashFallback(volatile int *ptr = nullptr)
 {
     *ptr = 0;

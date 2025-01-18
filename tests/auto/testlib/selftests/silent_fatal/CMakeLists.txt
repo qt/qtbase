@@ -7,6 +7,7 @@ qt_internal_add_executable(silent_fatal
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     SOURCES
         tst_silent_fatal.cpp
+        ../../../../shared/disablecoredumps.cpp
     LIBRARIES
         Qt::TestPrivate
 )

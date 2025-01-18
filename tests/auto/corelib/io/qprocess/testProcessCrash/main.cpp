@@ -7,8 +7,6 @@ using namespace tst_QProcessCrash;
 
 int main()
 {
-    [[maybe_unused]] // NoCoreDumps may be an empty struct, not a RAII class
-    NoCoreDumps disableCoreDumps;
     crash();
     return 0;
 }
