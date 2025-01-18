@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
             // let's see if we can find the process that would be holding this
             // still open
 #ifdef Q_OS_LINUX
-            static const char *ss_args[] = {
+            static const char *const ss_args[] = {
                 "ss", "-nap", "sport", "=", argv[1], nullptr
             };
             dup2(STDERR_FILENO, STDOUT_FILENO);
