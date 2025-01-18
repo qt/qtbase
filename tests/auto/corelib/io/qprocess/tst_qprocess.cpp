@@ -22,6 +22,7 @@
 #include <qplatformdefs.h>
 #ifdef Q_OS_UNIX
 #  include <private/qcore_unix_p.h>
+#  include <sys/resource.h>
 #  include <sys/wait.h>
 #endif
 
@@ -1491,8 +1492,25 @@ void tst_QProcess::createProcessArgumentsModifier()
 static constexpr int sigs[] = { SIGABRT, SIGILL, SIGSEGV };
 struct DisableCrashLogger
 {
+#if defined(RLIMIT_CORE)
     // disable core dumps too
-    tst_QProcessCrash::NoCoreDumps disableCoreDumps {};
+    struct NoCoreDumps {
+        struct rlimit rlim;
+        NoCoreDumps()
+        {
+            if (getrlimit(RLIMIT_CORE, &rlim) == 0 && rlim.rlim_cur != 0) {
+                struct rlimit newrlim = rlim;
+                newrlim.rlim_cur = 0;
+                setrlimit(RLIMIT_CORE, &newrlim);
+            }
+        }
+        ~NoCoreDumps()
+        {
+            setrlimit(RLIMIT_CORE, &rlim);
+        }
+    } disableCoreDumps;
+#endif // RLIMIT_CORE
+
     std::array<struct sigaction, std::size(sigs)> oldhandlers;
     DisableCrashLogger()
     {

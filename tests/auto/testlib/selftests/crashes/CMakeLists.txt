@@ -11,6 +11,7 @@ qt_internal_add_executable(crashes
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     SOURCES
         tst_crashes.cpp
+        ../../../../shared/disablecoredumps.cpp
     LIBRARIES
         Qt::Test
 )

@@ -10,4 +10,5 @@ qt_internal_add_executable(testProcessCrash
     CORE_LIBRARY None
     SOURCES
         main.cpp
+        ../../../../../shared/disablecoredumps.cpp
 )
