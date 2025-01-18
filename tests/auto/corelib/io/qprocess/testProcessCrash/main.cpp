@@ -7,7 +7,6 @@ using namespace tst_QProcessCrash;
 
 int main()
 {
-    NoCoreDumps disableCoreDumps;
     crash();
     return 0;
 }
