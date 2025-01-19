@@ -146,9 +146,9 @@ public:
     constexpr QStringView(const Char *str, qsizetype len)
 #if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0) || defined(QT_BOOTSTRAPPED)
         : m_data(castHelper(str)),
-          m_size((Q_ASSERT(len >= 0), Q_ASSERT(str || !len), len))
+          m_size((Q_PRE(len >= 0), Q_PRE(str || !len), len))
 #else
-        : m_size((Q_ASSERT(len >= 0), Q_ASSERT(str || !len), len)),
+        : m_size((Q_PRE(len >= 0), Q_PRE(str || !len), len)),
           m_data(castHelper(str))
 #endif
     {}
@@ -202,7 +202,7 @@ public:
     [[nodiscard]] constexpr const storage_type *utf16() const noexcept { return m_data; }
 
     [[nodiscard]] constexpr QChar operator[](qsizetype n) const
-    { return Q_ASSERT(n >= 0), Q_ASSERT(n < size()), QChar(m_data[n]); }
+    { return Q_PRE(n >= 0), Q_PRE(n < size()), QChar(m_data[n]); }
 
     //
     // QString API
@@ -238,20 +238,20 @@ public:
     }
 
     [[nodiscard]] constexpr QStringView first(qsizetype n) const noexcept
-    { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); return QStringView(m_data, n); }
+    { Q_PRE(n >= 0); Q_PRE(n <= size()); return QStringView(m_data, n); }
     [[nodiscard]] constexpr QStringView last(qsizetype n) const noexcept
-    { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); return QStringView(m_data + size() - n, n); }
+    { Q_PRE(n >= 0); Q_PRE(n <= size()); return QStringView(m_data + size() - n, n); }
     [[nodiscard]] constexpr QStringView sliced(qsizetype pos) const noexcept
-    { Q_ASSERT(pos >= 0); Q_ASSERT(pos <= size()); return QStringView(m_data + pos, size() - pos); }
+    { Q_PRE(pos >= 0); Q_PRE(pos <= size()); return QStringView(m_data + pos, size() - pos); }
     [[nodiscard]] constexpr QStringView sliced(qsizetype pos, qsizetype n) const noexcept
-    { Q_ASSERT(pos >= 0); Q_ASSERT(n >= 0); Q_ASSERT(size_t(pos) + size_t(n) <= size_t(size())); return QStringView(m_data + pos, n); }
+    { Q_PRE(pos >= 0); Q_PRE(n >= 0); Q_PRE(size_t(pos) + size_t(n) <= size_t(size())); return QStringView(m_data + pos, n); }
     [[nodiscard]] constexpr QStringView chopped(qsizetype n) const noexcept
-    { return Q_ASSERT(n >= 0), Q_ASSERT(n <= size()), QStringView(m_data, m_size - n); }
+    { return Q_PRE(n >= 0), Q_PRE(n <= size()), QStringView(m_data, m_size - n); }
 
     constexpr void truncate(qsizetype n) noexcept
-    { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); m_size = n; }
+    { Q_PRE(n >= 0); Q_PRE(n <= size()); m_size = n; }
     constexpr void chop(qsizetype n) noexcept
-    { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); m_size -= n; }
+    { Q_PRE(n >= 0); Q_PRE(n <= size()); m_size -= n; }
 
     [[nodiscard]] QStringView trimmed() const noexcept { return QtPrivate::trimmed(*this); }
 
@@ -415,8 +415,8 @@ public:
     [[nodiscard]] const_reverse_iterator crend()   const noexcept { return rend(); }
 
     [[nodiscard]] constexpr bool empty() const noexcept { return size() == 0; }
-    [[nodiscard]] constexpr QChar front() const { return Q_ASSERT(!empty()), QChar(m_data[0]); }
-    [[nodiscard]] constexpr QChar back()  const { return Q_ASSERT(!empty()), QChar(m_data[m_size - 1]); }
+    [[nodiscard]] constexpr QChar front() const { return Q_PRE(!empty()), QChar(m_data[0]); }
+    [[nodiscard]] constexpr QChar back()  const { return Q_PRE(!empty()), QChar(m_data[m_size - 1]); }
 
     //
     // Qt compatibility API:
