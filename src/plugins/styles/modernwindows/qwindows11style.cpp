@@ -34,7 +34,6 @@ QT_BEGIN_NAMESPACE
 
 static constexpr int topLevelRoundingRadius    = 8; //Radius for toplevel items like popups for round corners
 static constexpr int secondLevelRoundingRadius = 4; //Radius for second level items like hovered menu item round corners
-static constexpr QLatin1StringView originalWidthProperty("_q_windows11_style_original_width");
 
 enum WINUI3Color {
     subtleHighlightColor,             //Subtle highlight based on alpha used for hovered elements
@@ -2173,13 +2172,6 @@ void QWindows11Style::polish(QWidget* widget)
         pal.setColor(QPalette::ButtonText, pal.text().color());
         pal.setColor(QPalette::BrightText, pal.text().color());
         widget->setPalette(pal);
-    } else if (widget->inherits("QAbstractSpinBox")) {
-        const int minWidth = 2 * 24 + 40;
-        const int originalWidth = widget->size().width();
-        if (originalWidth < minWidth) {
-            widget->resize(minWidth, widget->size().height());
-            widget->setProperty(originalWidthProperty.constData(), originalWidth);
-        }
     } else if (widget->inherits("QAbstractButton") || widget->inherits("QToolButton")) {
         widget->setAutoFillBackground(false);
         auto pal = widget->palette();
@@ -2229,13 +2221,6 @@ void QWindows11Style::unpolish(QWidget *widget)
         const QPalette pal = scrollarea->viewport()->property("_q_original_background_palette").value<QPalette>();
         scrollarea->viewport()->setPalette(pal);
         scrollarea->viewport()->setProperty("_q_original_background_palette", QVariant());
-    }
-    if (widget->inherits("QAbstractSpinBox")) {
-        const QVariant originalWidth = widget->property(originalWidthProperty.constData());
-        if (originalWidth.isValid()) {
-            widget->resize(originalWidth.toInt(), widget->size().height());
-            widget->setProperty(originalWidthProperty.constData(), QVariant());
-        }
     }
 }
 
