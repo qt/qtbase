@@ -382,7 +382,7 @@ static QMetaType qDecodePSQLType(int t)
 
 void QPSQLResultPrivate::deallocatePreparedStmt()
 {
-    if (drv_d_func()) {
+    if (drv_d_func() && !preparedStmtId.isEmpty()) {
 #if defined(LIBPQ_HAS_CLOSE_PREPARED)
         PGresult *result = PQclosePrepared(drv_d_func()->connection, preparedStmtId.toUtf8());
 #else
@@ -411,8 +411,7 @@ QPSQLResult::~QPSQLResult()
     Q_D(QPSQLResult);
     cleanup();
 
-    if (d->preparedQueriesEnabled && !d->preparedStmtId.isNull())
-        d->deallocatePreparedStmt();
+    d->deallocatePreparedStmt();
 }
 
 QVariant QPSQLResult::handle() const
@@ -855,8 +854,7 @@ bool QPSQLResult::prepare(const QString &query)
 
     cleanup();
 
-    if (!d->preparedStmtId.isEmpty())
-        d->deallocatePreparedStmt();
+    d->deallocatePreparedStmt();
 
     const QString stmtId = qMakePreparedStmtId();
     PGresult *result = PQprepare(d->drv_d_func()->connection, stmtId.toUtf8(),
