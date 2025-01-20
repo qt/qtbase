@@ -1546,7 +1546,7 @@ void AtSpiAdaptor::registerApplication()
     reply.waitForFinished(); // TODO: make this async
     if (reply.isValid ()) {
         const QSpiObjectReference &socket = reply.value();
-        accessibilityRegistry = QSpiObjectReference(socket);
+        m_accessibilityRegistry = QSpiObjectReference(socket);
     } else {
         qCWarning(lcAccessibilityAtspi) << "Error in contacting registry:"
                    << reply.error().name()
@@ -1582,6 +1582,12 @@ bool AtSpiAdaptor::accessibleInterface(QAccessibleInterface *interface, const QS
         QString path;
         QAccessibleInterface * parent = interface->parent();
         if (!parent) {
+            if (interface->object() == qApp) {
+                sendReply(connection, message,
+                          QVariant::fromValue(QDBusVariant(QVariant::fromValue(m_accessibilityRegistry))));
+                return true;
+            }
+
             path = ATSPI_DBUS_PATH_NULL ""_L1;
         } else if (parent->role() == QAccessible::Application) {
             path = ATSPI_DBUS_PATH_ROOT ""_L1;

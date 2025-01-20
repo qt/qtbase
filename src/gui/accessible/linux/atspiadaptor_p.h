@@ -113,7 +113,7 @@ private:
     static bool inheritsQAction(QObject *object);
 
     // private vars
-    QSpiObjectReference accessibilityRegistry;
+    QSpiObjectReference m_accessibilityRegistry;
     QAtSpiDBusConnection *m_dbus;
     QSpiApplicationAdaptor *m_applicationAdaptor;
 
