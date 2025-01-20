@@ -28,6 +28,14 @@ class tst_AndroidItemModel : public QObject
     QAbstractItemModel *qProxy;
     void resetModel();
 
+    enum DataRole{
+        ROLE_STRING = Qt::UserRole,
+        ROLE_BOOLEAN,
+        ROLE_INTEGER,
+        ROLE_DOUBLE,
+        ROLE_LONG
+    };
+
 private slots:
     void initTestCase_data();
     void init();
@@ -115,11 +123,11 @@ void tst_AndroidItemModel::removeColumn()
 
 void tst_AndroidItemModel::roleNames()
 {
-    const static QHash<int, QByteArray> expectedRoles = { { 0, "stringRole" },
-                                                          { 1, "booleanRole" },
-                                                          { 2, "integerRole" },
-                                                          { 3, "doubleRole" },
-                                                          { 4, "longRole" } };
+    const static QHash<int, QByteArray> expectedRoles = { { ROLE_STRING, "stringRole" },
+                                                          { ROLE_BOOLEAN, "booleanRole" },
+                                                          { ROLE_INTEGER, "integerRole" },
+                                                          { ROLE_DOUBLE, "doubleRole" },
+                                                          { ROLE_LONG, "longRole" } };
     QCOMPARE(qProxy->roleNames(), expectedRoles);
 }
 
@@ -161,11 +169,11 @@ void tst_AndroidItemModel::hasIndex()
 
 void tst_AndroidItemModel::data()
 {
-    const static QHash<int, QMetaType::Type> roleToType = { { 0, QMetaType::QString },
-                                                            { 1, QMetaType::Bool },
-                                                            { 2, QMetaType::Int },
-                                                            { 3, QMetaType::Double },
-                                                            { 4, QMetaType::Long } };
+    const static QHash<int, QMetaType::Type> roleToType = { { ROLE_STRING, QMetaType::QString },
+                                                            { ROLE_BOOLEAN, QMetaType::Bool },
+                                                            { ROLE_INTEGER, QMetaType::Int },
+                                                            { ROLE_DOUBLE, QMetaType::Double },
+                                                            { ROLE_LONG, QMetaType::Long } };
     QFETCH_GLOBAL(int, columnCount);
     QFETCH_GLOBAL(bool, isList);
 
@@ -185,20 +193,20 @@ void tst_AndroidItemModel::data()
                 const QVariant data = qProxy->data(index, role);
                 QCOMPARE_EQ(data.typeId(), roleToType[role]);
                 switch (role) {
-                case 0:
+                case ROLE_STRING:
                     QCOMPARE(data.toString(),
                              "r%1/c%2"_L1.arg(QString::number(r), QString::number(c)));
                     break;
-                case 1:
+                case ROLE_BOOLEAN:
                     QCOMPARE(data.toBool(), ((r + c) % 2) == 0);
                     break;
-                case 2:
+                case ROLE_INTEGER:
                     QCOMPARE(data.toInt(), (c << 8) + r);
                     break;
-                case 3:
+                case ROLE_DOUBLE:
                     QVERIFY(qFuzzyCompare(data.toDouble(), (1.0 + r) / (1.0 + c)));
                     break;
-                case 4:
+                case ROLE_LONG:
                     QCOMPARE(data.toULongLong(), ((c << 8) * (r << 8)));
                     break;
                 }
@@ -213,9 +221,9 @@ void tst_AndroidItemModel::setData_data()
     QTest::addColumn<int>("column");
     QTest::addColumn<int>("role");
 
-    QTest::newRow("role0") << 0 << 0 << 0;
-    QTest::newRow("role1") << 0 << 0 << 1;
-    QTest::newRow("role2") << 0 << 0 << 2;
+    QTest::newRow("role0") << 0 << 0 << int(ROLE_STRING);
+    QTest::newRow("role1") << 0 << 0 << int(ROLE_BOOLEAN);
+    QTest::newRow("role2") << 0 << 0 << int(ROLE_INTEGER);
 }
 
 void tst_AndroidItemModel::setData()

@@ -13,6 +13,13 @@ import org.qtproject.qt.android.QtModelIndex;
 public class TestQtAbstractListModel
         extends QtAbstractListModel implements QtAbstractListModel.OnDataChangedListener
 {
+    static final int QT_USER_ROLE = 0x100;
+    static final int ROLE_STRING = QT_USER_ROLE;
+    static final int ROLE_BOOLEAN = QT_USER_ROLE + 1;
+    static final int ROLE_INTEGER = QT_USER_ROLE + 2;
+    static final int ROLE_DOUBLE = QT_USER_ROLE + 3;
+    static final int ROLE_LONG = QT_USER_ROLE + 4;
+
     int m_rows = 0;
     int m_dataChangedCount = 0;
 
@@ -29,15 +36,15 @@ public class TestQtAbstractListModel
             return null;
 
         switch (role) {
-        case 0:
+        case ROLE_STRING:
             return String.format("r%d/c%d", r, c);
-        case 1:
+        case ROLE_BOOLEAN:
             return new Boolean(((r + c) % 2) == 0);
-        case 2:
+        case ROLE_INTEGER:
             return new Integer((c << 8) + r);
-        case 3:
+        case ROLE_DOUBLE:
             return new Double((r + 1.0) / (c + 1.0));
-        case 4:
+        case ROLE_LONG:
             return new Long((c << 8) * (r << 8));
         default:
             return null;
@@ -49,11 +56,11 @@ public class TestQtAbstractListModel
     @Override public HashMap<Integer, String> roleNames()
     {
         final HashMap<Integer, String> roles = new HashMap<Integer, String>();
-        roles.put(0, "stringRole");
-        roles.put(1, "booleanRole");
-        roles.put(2, "integerRole");
-        roles.put(3, "doubleRole");
-        roles.put(4, "longRole");
+        roles.put(ROLE_STRING, "stringRole");
+        roles.put(ROLE_BOOLEAN, "booleanRole");
+        roles.put(ROLE_INTEGER, "integerRole");
+        roles.put(ROLE_DOUBLE, "doubleRole");
+        roles.put(ROLE_LONG, "longRole");
         return roles;
     }
 
