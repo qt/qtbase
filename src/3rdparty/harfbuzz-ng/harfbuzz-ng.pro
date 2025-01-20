@@ -66,7 +66,7 @@ SOURCES += \
     $$PWD/src/hb-subset-instancer-iup.cc \
     $$PWD/src/hb-subset-instancer-solver.cc \
     $$PWD/src/hb-subset-plan.cc \
-    $$PWD/src/hb-subset-repacker.cc \
+    $$PWD/src/hb-subset-serialize.cc \
     $$PWD/src/hb-unicode.cc \
     $$PWD/src/hb-buffer-verify.cc
 
@@ -95,7 +95,7 @@ HEADERS += \
     $$PWD/src/hb-string-array.hh \
     $$PWD/src/hb-subset-instancer-iup.hh \
     $$PWD/src/hb-subset-plan-member-list.hh \
-    $$PWD/src/hb-subset-repacker.h \
+    $$PWD/src/hb-subset-serialize.h \
     $$PWD/src/hb-unicode.hh
 
 HEADERS += \
