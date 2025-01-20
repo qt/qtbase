@@ -12,13 +12,15 @@
                          "New feature in QtTest needs something in a newer version",
                          "or if a Linux port to some new architecture omits old API"
                      ],
+                     "SPDX": ["The upstream's GPL-2.0 is a deprecated identifier",
+                              "Prefer our GPL-2.0-only, which is an equivalent replacement"],
                      "General": "no relevant CPE found"
                    },
         "Files": "perf_event_p.h",
 
         "Description": "Allows access to the Linux kernel's performance events.",
         "Homepage": "https://www.kernel.org",
-        "Version": "6.0",
+        "Version": "6.13",
         "PURL": "pkg:github/torvalds/linux@v$<VERSION>#include/uapi/linux/perf_event.h",
         "License": "GNU General Public License v2.0 only with Linux Syscall Note",
         "LicenseId": "GPL-2.0-only WITH Linux-syscall-note",
