@@ -61,7 +61,7 @@ qt_internal_add_3rdparty_library(BundledHarfbuzz
         src/hb-subset-instancer-solver.cc
         src/hb-subset-plan.cc
         src/hb-subset-plan-member-list.hh
-        src/hb-subset-repacker.cc src/hb-subset-repacker.h
+        src/hb-subset-serialize.cc src/hb-subset-serialize.h
         src/hb-unicode.cc src/hb-unicode.h src/hb-unicode.hh
         src/hb-utf.hh
         src/hb-version.h
