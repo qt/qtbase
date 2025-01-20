@@ -199,7 +199,7 @@ Q_LOGGING_CATEGORY(lcPermissions, "qt.permissions", QtWarningMsg);
 
     \code
     qApp->requestPermission(QCameraPermission{}, [](const QPermission &permission) {
-        if (permission.status() == Qt::PermissionStatus:Granted)
+        if (permission.status() == Qt::PermissionStatus::Granted)
             takePhoto();
     });
     \endcode
@@ -216,7 +216,7 @@ Q_LOGGING_CATEGORY(lcPermissions, "qt.permissions", QtWarningMsg);
     \code
     void LocationWidget::permissionUpdated(const QPermission &permission)
     {
-        if (permission.status() != Qt::PermissionStatus:Granted)
+        if (permission.status() != Qt::PermissionStatus::Granted)
             return;
         auto locationPermission = permission.value<QLocationPermission>();
         if (!locationPermission || locationPermission->accuracy() != QLocationPermission::Precise)
