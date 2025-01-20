@@ -506,6 +506,11 @@ void QWidgetWindow::handleNonClientAreaMouseEvent(QMouseEvent *e)
 void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
 {
     Q_D(QWidgetWindow);
+
+    // Event delivery can potentially result in window re-creation (QTBUG-132912)
+    // so we need QPointer to avoid a dangling d below
+    QPointer<QWidgetWindow> self = this;
+
     if (auto *activePopupWidget = QApplication::activePopupWidget()) {
         QPointF mapped = event->position();
         if (activePopupWidget != m_widget)
@@ -665,6 +670,9 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
                                             &qt_button_down, qt_last_mouse_receiver);
         event->setAccepted(translated.isAccepted());
     }
+
+    if (self.isNull())
+        return;
 
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
     if (
