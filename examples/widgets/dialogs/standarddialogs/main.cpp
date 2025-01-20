@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
     QTranslator translator;
     if (translator.load(QLocale::system(), u"qtbase"_s, u"_"_s,
                         QLibraryInfo::path(QLibraryInfo::TranslationsPath))) {
-        app.installTranslator(&translator);
+        QCoreApplication::installTranslator(&translator);
     }
 #endif
 
@@ -35,5 +35,5 @@ int main(int argc, char *argv[])
     }
     dialog.show();
 
-    return app.exec();
+    return QCoreApplication::exec();
 }
