@@ -94,6 +94,11 @@ public:
     {
         return !set.insert(std::move(s)).second;
     }
+    // For when you want to know, but aren't *yet* sure you'll add it:
+    [[nodiscard]] bool contains(const T &s) const
+    {
+        return set.find(s) != set.end(); // TODO C++20: can use set.contains()
+    }
 
     template <typename C>
     void appendTo(C &c) const &
