@@ -96,13 +96,15 @@ void tst_QDuplicateTracker::clear()
     QVERIFY(!tracker.hasSeen(1));
     QVERIFY(tracker.hasSeen(1));
 
-    tracker.clear();
-    QVERIFY(!tracker.contains(0));
-    QVERIFY(!tracker.hasSeen(0));
-    QVERIFY(tracker.hasSeen(0));
-    QVERIFY(!tracker.hasSeen(1));
-    QVERIFY(tracker.hasSeen(1));
-    QVERIFY(tracker.contains(1));
+    for (int i = 0; i < 100; ++i) {
+        tracker.clear();
+        QVERIFY(!tracker.contains(0));
+        QVERIFY(!tracker.hasSeen(0));
+        QVERIFY(tracker.hasSeen(0));
+        QVERIFY(!tracker.hasSeen(1));
+        QVERIFY(tracker.hasSeen(1));
+        QVERIFY(tracker.contains(1));
+    }
 }
 
 void tst_QDuplicateTracker::appendTo()
