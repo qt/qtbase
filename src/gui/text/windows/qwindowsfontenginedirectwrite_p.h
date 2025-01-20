@@ -22,7 +22,8 @@ QT_REQUIRE_CONFIG(directwrite);
 
 #include <QtGui/private/qfontengine_p.h>
 #include <QtCore/QSharedPointer>
-#include <dwrite.h>
+
+#include <dwrite_2.h>
 
 struct IDWriteFont;
 struct IDWriteFontFace;
@@ -31,6 +32,7 @@ struct IDWriteFactory;
 struct IDWriteBitmapRenderTarget;
 struct IDWriteGdiInterop;
 struct IDWriteGlyphRunAnalysis;
+struct IDWriteColorGlyphRunEnumerator;
 
 QT_BEGIN_NAMESPACE
 
@@ -105,6 +107,23 @@ public:
     QList<QFontVariableAxis> variableAxes() const override;
 
 private:
+    QRect alphaTextureBounds(glyph_t glyph, const DWRITE_MATRIX &transform);
+    QRect colorBitmapBounds(glyph_t glyph, const DWRITE_MATRIX &transform);
+    bool renderColr0GlyphRun(QImage *image,
+                             const DWRITE_COLOR_GLYPH_RUN *colorGlyphRun,
+                             const DWRITE_MATRIX &transform,
+                             DWRITE_RENDERING_MODE renderMode,
+                             DWRITE_MEASURING_MODE measureMode,
+                             DWRITE_GRID_FIT_MODE gridFitMode,
+                             QColor color,
+                             QRect boundingRect) const;
+    QImage renderColorGlyph(DWRITE_GLYPH_RUN *glyphRun,
+                            const DWRITE_MATRIX &transform,
+                            DWRITE_RENDERING_MODE renderMode,
+                            DWRITE_MEASURING_MODE measureMode,
+                            DWRITE_GRID_FIT_MODE gridFitMode,
+                            QColor color,
+                            QRect boundingRect) const;
     QImage imageForGlyph(glyph_t t,
                          const QFixedPoint &subPixelPosition,
                          int margin,
@@ -118,7 +137,7 @@ private:
                         float a,
                         IDWriteGlyphRunAnalysis *glyphAnalysis,
                         const QRect &boundingRect,
-                        DWRITE_RENDERING_MODE renderMode);
+                        DWRITE_RENDERING_MODE renderMode) const;
     static QString filenameFromFontFile(IDWriteFontFile *fontFile);
     DWRITE_RENDERING_MODE hintingPreferenceToRenderingMode(const QFontDef &fontDef) const;
 
