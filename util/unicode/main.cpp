@@ -1047,14 +1047,14 @@ struct PropertyFlags {
     }
     // from UnicodeData.txt
     uchar combiningClass : 8;
-    QChar::Category category : 5;
-    QChar::Direction direction : 5;
+    uchar category : 5; // QChar::Category, but unsigned
+    uchar direction : 5; // QChar::Direction, but unsigned
     // from emoji-data.txt
     uchar emojiFlags : 5;
     // from ArabicShaping.txt
-    QChar::JoiningType joining : 3;
+    uchar joining : 3; // QChar::JoiningType, but unsigned
     // from DerivedAge.txt
-    QChar::UnicodeVersion age : 5;
+    uchar age : 5; // QChar::UnicodeVersion, but unsigned
     // From EastAsianWidth.txt
     EastAsianWidth eastAsianWidth = EastAsianWidth::N;
     int digitValue = -1;
