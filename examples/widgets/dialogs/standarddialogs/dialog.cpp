@@ -20,6 +20,8 @@
 #include <QGuiApplication>
 #include <QStyleHints>
 
+using namespace Qt::StringLiterals;
+
 class DialogOptionsWidget : public QGroupBox
 {
 public:
@@ -279,7 +281,7 @@ void Dialog::setDouble()
                                        tr("Amount:"), 37.56, -10000, 10000, 2, &ok,
                                        Qt::WindowFlags(), 1);
     if (ok)
-        doubleLabel->setText(QString("$%1").arg(d));
+        doubleLabel->setText(QStringLiteral("$%1").arg(d));
 //! [1]
 }
 
@@ -313,7 +315,7 @@ void Dialog::setMultiLineText()
 //! [4]
     bool ok{};
     QString text = QInputDialog::getMultiLineText(this, tr("QInputDialog::getMultiLineText()"),
-                                                  tr("Address:"), "John Doe\nFreedom Street", &ok);
+                                                  tr("Address:"), "John Doe\nFreedom Street"_L1, &ok);
     if (ok && !text.isEmpty())
         multiLineTextLabel->setText(text);
 //! [4]
@@ -322,7 +324,7 @@ void Dialog::setMultiLineText()
 void Dialog::setColor()
 {
     const QColorDialog::ColorDialogOptions options = QFlag(colorDialogOptionsWidget->value());
-    const QColor color = QColorDialog::getColor(Qt::green, this, "Select Color", options);
+    const QColor color = QColorDialog::getColor(Qt::green, this, tr("Select Color"), options);
 
     if (color.isValid()) {
         colorLabel->setText(color.name());
@@ -341,7 +343,7 @@ void Dialog::setFont()
         defaultFont.fromString(description);
 
     bool ok{};
-    QFont font = QFontDialog::getFont(&ok, defaultFont, this, "Select Font", options);
+    QFont font = QFontDialog::getFont(&ok, defaultFont, this, tr("Select Font"), options);
     if (ok) {
         fontLabel->setText(font.key());
         fontLabel->setFont(font);
@@ -386,7 +388,7 @@ void Dialog::setOpenFileNames()
                                 options);
     if (!files.isEmpty()) {
         openFilesPath = files.constFirst();
-        openFileNamesLabel->setText(QString("[%1]").arg(files.join(", ")));
+        openFileNamesLabel->setText(u'[' + files.join(", "_L1) + u']');
     }
 }
 
@@ -459,7 +461,7 @@ void Dialog::warningMessage()
     QMessageBox msgBox(QMessageBox::Warning, tr("QMessageBox::warning()"),
                               tr("Delete the only copy of your movie manuscript?"), { }, this);
     msgBox.setInformativeText(tr("You've been working on this manuscript for 738 days now. Hang in there!"));
-    msgBox.setDetailedText("\"A long time ago in a galaxy far, far away....\"");
+    msgBox.setDetailedText("\"A long time ago in a galaxy far, far away....\""_L1);
     auto *keepButton = msgBox.addButton(tr("&Keep"), QMessageBox::AcceptRole);
     auto *deleteButton = msgBox.addButton(tr("Delete"), QMessageBox::DestructiveRole);
     msgBox.exec();
@@ -468,7 +470,7 @@ void Dialog::warningMessage()
     else if (msgBox.clickedButton() == deleteButton)
         warningLabel->setText(tr("Delete"));
     else
-        warningLabel->setText("");
+        warningLabel->setText({});
 }
 
 void Dialog::errorMessage()
