@@ -818,25 +818,25 @@ void QPSQLResult::virtual_hook(int id, void *data)
     QSqlResult::virtual_hook(id, data);
 }
 
-static QList<QByteArray> qCreateParamArray(const QList<QVariant> &boundValues, const QPSQLDriver *driver)
+static auto qCreateParam(QSqlField &f, const QVariant &boundValue, const QPSQLDriver *driver)
 {
-    if (boundValues.isEmpty())
-        return {};
-
-    QList<QByteArray> params;
-    params.reserve(boundValues.size());
-    QSqlField f;
-    for (const QVariant &val : boundValues) {
-        QByteArray bval;
-        if (!QSqlResultPrivate::isVariantNull(val)) {
-            f.setMetaType(val.metaType());
-            f.setValue(val);
-            if (QString strval = driver->formatValue<true>(f); !strval.isNull())
-                bval = strval.toUtf8();
+    std::pair<QByteArray, bool /*binary*/> param;
+    if (!QSqlResultPrivate::isVariantNull(boundValue)) {
+        // in this switch we define faster ways to convert string, ideally we could use binary formats for more types
+        switch (boundValue.metaType().id()) {
+            case QMetaType::QByteArray:
+                param = {boundValue.toByteArray(), true};
+                break;
+            default: {
+                f.setMetaType(boundValue.metaType());
+                f.setValue(boundValue);
+                const QString strval = driver->formatValue<true>(f);
+                param = {strval.isNull() ? QByteArray{} : strval.toUtf8(), false};
+                break;
+            }
         }
-        params.append(bval);
     }
-    return params;
+    return param;
 }
 
 QString qMakePreparedStmtId()
@@ -881,14 +881,25 @@ bool QPSQLResult::exec()
 
     cleanup();
 
-    const QList<QByteArray> params = qCreateParamArray(boundValues(), static_cast<const QPSQLDriver *>(driver()));
     QVarLengthArray<const char *> pgParams;
-    pgParams.reserve(params.size());
-    for (const QByteArray &param : params)
-        pgParams.emplace_back(param.constBegin());
+    QVarLengthArray<int> pgParamLengths;
+    QVarLengthArray<int> pgParamFormats;
+    QVarLengthArray<QByteArray> _refsToKeep;
+
+    if (const QVariantList values = boundValues(); !values.isEmpty()) {
+        QSqlField f;
+        for (const QVariant &value : values) {
+            auto [param, binary] = qCreateParam(f, value, static_cast<const QPSQLDriver *>(driver()));
+            pgParams.emplace_back(param.constBegin());
+            pgParamLengths.emplace_back(param.size());
+            pgParamFormats.emplace_back(binary);
+            if (!param.isNull())
+                _refsToKeep.emplace_back(std::move(param));
+        }
+    }
 
     d->result = PQexecPrepared(d->drv_d_func()->connection, d->preparedStmtId.toUtf8(), pgParams.size(),
-                               pgParams.data(), nullptr, nullptr, 0);
+                               pgParams.data(), pgParamLengths.data(), pgParamFormats.data(), 0);
 
     const auto status = PQresultStatus(d->result);
     if (status != PGRES_COMMAND_OK && status != PGRES_TUPLES_OK) {
