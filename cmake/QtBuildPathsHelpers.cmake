@@ -202,6 +202,15 @@ macro(qt_internal_setup_configure_install_paths)
                               "Module description files directory")
     qt_configure_process_path(INSTALL_SBOMDIR "${INSTALL_ARCHDATADIR}/sbom"
         "SBOM [PREFIX/sbom]")
+
+    # INSTALL_PUBLICBINDIR is processed only if it is not empty
+    # See usage in qt_internal_generate_user_facing_tools_info
+    if(NOT "${INSTALL_PUBLICBINDIR}" STREQUAL "")
+        # A default value is not needed because it is always manually defined
+        # but as per the documentation it is typically `bin`
+        qt_configure_process_path(INSTALL_PUBLICBINDIR "bin"
+                "Symlinked user-facing executables")
+    endif()
 endmacro()
 
 macro(qt_internal_set_cmake_install_libdir)

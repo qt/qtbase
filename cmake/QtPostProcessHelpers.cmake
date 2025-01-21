@@ -587,6 +587,11 @@ function(qt_generate_install_prefixes out_var)
         INSTALL_PLUGINSDIR INSTALL_LIBEXECDIR INSTALL_QMLDIR INSTALL_DATADIR INSTALL_DOCDIR
         INSTALL_TRANSLATIONSDIR INSTALL_SYSCONFDIR INSTALL_EXAMPLESDIR INSTALL_TESTSDIR
         INSTALL_DESCRIPTIONSDIR INSTALL_SBOMDIR)
+    # INSTALL_PUBLICBINDIR is processed only if it is not empty
+    # See usage in qt_internal_generate_user_facing_tools_info
+    if(NOT "${INSTALL_PUBLICBINDIR}" STREQUAL "")
+        list(APPEND vars INSTALL_PUBLICBINDIR)
+    endif()
 
     foreach(var ${vars})
         get_property(docstring CACHE "${var}" PROPERTY HELPSTRING)
