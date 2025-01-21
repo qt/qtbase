@@ -4,6 +4,7 @@ HEADERS +=  \
 	global/qglobal.h \
         global/qoperatingsystemversion.h \
         global/qoperatingsystemversion_p.h \
+        global/qstdlibdetection.h \
         global/qsystemdetection.h \
         global/qcompilerdetection.h \
         global/qprocessordetection.h \
