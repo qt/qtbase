@@ -677,6 +677,11 @@ qt_internal_extend_target(Core CONDITION QCC AND (CMAKE_CXX_COMPILER_VERSION VER
     PUBLIC_COMPILE_OPTIONS $<$<COMPILE_LANGUAGE:CXX>:-Wno-invalid-offsetof>
 )
 
+qt_internal_extend_target(Core CONDITION QNX AND QT_FEATURE_fsnotify
+    LIBRARIES
+        fsnotify
+)
+
 qt_internal_extend_target(Core CONDITION LINUX AND QT_BUILD_SHARED_LIBS
     SOURCES
         global/minimum-linux_p.h
