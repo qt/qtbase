@@ -650,6 +650,11 @@ inline QDebug operator<<(QDebug debug, Flags flags)
     }
 }
 
+#ifdef Q_QDOC
+template <typename T>
+QDebug operator<<(QDebug debug, const QFlags<T> &flags);
+#endif // Q_QDOC
+
 #if !defined(QT_NO_QOBJECT) && !defined(Q_QDOC)
 // Debugging of plain enums. There are three cases:
 //  1) the enum is part of a Q_DECLARE_FLAGS and there's a Q_FLAG for that
