@@ -126,17 +126,10 @@ function(_qt_internal_sbom_begin_project)
     if(arg_DOCUMENT_NAMESPACE)
         set(repo_spdx_namespace "${arg_DOCUMENT_NAMESPACE}")
     else()
-        # Used in external refs, either URI + UUID or URI + checksum. We use git version for now
-        # which is probably not conformat to spec.
-        set(repo_name_and_version "${repo_project_name_lowercase}-${QT_SBOM_GIT_VERSION}")
-        set(repo_spdx_namespace
-            "${repo_supplier_url}/spdxdocs/${repo_name_and_version}")
-    endif()
-
-    if(non_git_version)
-        set(version_suffix "-${non_git_version}")
-    else()
-        set(version_suffix "")
+        _qt_internal_sbom_compute_project_namespace(repo_spdx_namespace
+            PROJECT_NAME "${repo_project_name_lowercase}"
+            SUPPLIER_URL "${repo_supplier_url}"
+        )
     endif()
 
     if(arg_INSTALL_SBOM_DIR)
@@ -155,8 +148,13 @@ function(_qt_internal_sbom_begin_project)
         set(install_prefix "\${CMAKE_INSTALL_PREFIX}")
     endif()
 
+    _qt_internal_sbom_compute_project_file_name(repo_project_file_name
+        PROJECT_NAME "${repo_project_name_lowercase}"
+        VERSION_SUFFIX "${non_git_version}"
+    )
+
     set(repo_spdx_relative_install_path
-        "${arg_INSTALL_SBOM_DIR}/${repo_project_name_lowercase}${version_suffix}.spdx")
+        "${arg_INSTALL_SBOM_DIR}/${repo_project_file_name}")
 
     # Prepend DESTDIR, to allow relocating installed sbom. Needed for CI.
     set(repo_spdx_install_path
@@ -1750,4 +1748,85 @@ function(_qt_internal_get_configure_line out_var)
     string(STRIP "${content}" content)
 
     set(${out_var} "${content}" PARENT_SCOPE)
+endfunction()
+
+function(_qt_internal_sbom_compute_project_namespace out_var)
+    set(opt_args "")
+    set(single_args
+        SUPPLIER_URL
+        PROJECT_NAME
+        VERSION_SUFFIX
+    )
+    set(multi_args "")
+
+    cmake_parse_arguments(PARSE_ARGV 1 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    if(NOT arg_PROJECT_NAME)
+        message(FATAL_ERROR "PROJECT_NAME must be set")
+    endif()
+
+    if(NOT arg_SUPPLIER_URL)
+        message(FATAL_ERROR "SUPPLIER_URL must be set")
+    endif()
+
+    string(TOLOWER "${arg_PROJECT_NAME}" project_name_lowercase)
+
+    set(version_suffix "")
+
+    if(arg_VERSION_SUFFIX)
+        set(version_suffix "-${arg_VERSION_SUFFIX}")
+    else()
+        _qt_internal_sbom_get_git_version_vars()
+        if(QT_SBOM_GIT_VERSION)
+            set(version_suffix "-${QT_SBOM_GIT_VERSION}")
+        endif()
+    endif()
+
+    # Used in external refs, it should be either aa URI + UUID or a URI + checksum.
+    # We currently use a URI + git version, which is probably not conformant to the spec.
+    set(repo_name_and_version "${project_name_lowercase}${version_suffix}")
+    set(repo_spdx_namespace
+        "${arg_SUPPLIER_URL}/spdxdocs/${repo_name_and_version}")
+
+    set(${out_var} "${repo_spdx_namespace}" PARENT_SCOPE)
+endfunction()
+
+function(_qt_internal_sbom_compute_project_file_name out_var)
+    set(opt_args
+        EXTENSION_JSON
+    )
+    set(single_args
+        PROJECT_NAME
+        VERSION_SUFFIX
+    )
+    set(multi_args "")
+
+    cmake_parse_arguments(PARSE_ARGV 1 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    if(NOT arg_PROJECT_NAME)
+        message(FATAL_ERROR "PROJECT_NAME must be set")
+    endif()
+
+    string(TOLOWER "${arg_PROJECT_NAME}" project_name_lowercase)
+
+    set(version_suffix "")
+
+    if(arg_VERSION_SUFFIX)
+        set(version_suffix "-${arg_VERSION_SUFFIX}")
+    elseif(QT_REPO_MODULE_VERSION)
+        set(version_suffix "-${QT_REPO_MODULE_VERSION}")
+    endif()
+
+    if(arg_EXTENSION_JSON)
+        set(extension "spdx.json")
+    else()
+        set(extension "spdx")
+    endif()
+
+    set(result
+        "${project_name_lowercase}${version_suffix}.${extension}")
+
+    set(${out_var} "${result}" PARENT_SCOPE)
 endfunction()

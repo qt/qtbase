@@ -105,3 +105,33 @@ endfunction()
 macro(qt_internal_sbom_get_git_version_vars)
     _qt_internal_sbom_get_git_version_vars()
 endmacro()
+
+function(qt_internal_sbom_get_project_supplier out_var)
+    get_property(result GLOBAL PROPERTY _qt_sbom_project_supplier)
+    set(${out_var} "${result}" PARENT_SCOPE)
+endfunction()
+
+function(qt_internal_sbom_get_project_supplier_url out_var)
+    get_property(result GLOBAL PROPERTY _qt_sbom_project_supplier_url)
+    set(${out_var} "${result}" PARENT_SCOPE)
+endfunction()
+
+function(qt_internal_sbom_get_project_namespace out_var)
+    get_property(result GLOBAL PROPERTY _qt_sbom_project_namespace)
+    set(${out_var} "${result}" PARENT_SCOPE)
+endfunction()
+
+function(qt_internal_sbom_compute_project_namespace out_var)
+    _qt_internal_sbom_compute_project_namespace(result ${ARGN})
+    set(${out_var} "${result}" PARENT_SCOPE)
+endfunction()
+
+function(qt_internal_sbom_compute_project_file_name out_var)
+    _qt_internal_sbom_compute_project_file_name(result ${ARGN})
+    set(${out_var} "${result}" PARENT_SCOPE)
+endfunction()
+
+function(qt_internal_sbom_get_sanitized_spdx_id out_var hint)
+    _qt_internal_sbom_get_sanitized_spdx_id(result "${hint}")
+    set(${out_var} "${result}" PARENT_SCOPE)
+endfunction()

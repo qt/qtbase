@@ -244,6 +244,11 @@ Relationship: SPDXRef-DOCUMENT DESCRIBES ${project_spdx_id}
 ")
     file(GENERATE OUTPUT "${create_staging_file}" CONTENT "${content}")
 
+
+    set_property(GLOBAL PROPERTY _qt_sbom_project_supplier "${arg_SUPPLIER}")
+    set_property(GLOBAL PROPERTY _qt_sbom_project_supplier_url "${arg_SUPPLIER_URL}")
+    set_property(GLOBAL PROPERTY _qt_sbom_project_namespace "${arg_NAMESPACE}")
+
     set_property(GLOBAL PROPERTY _qt_sbom_project_name "${arg_PROJECT}")
     set_property(GLOBAL PROPERTY _qt_sbom_project_spdx_id "${project_spdx_id}")
 
