@@ -628,10 +628,10 @@ void qt_QMetaEnum_flagDebugOperator(QDebug &debug, size_t sizeofT, Int value)
 }
 
 template <class Flags,
-          typename = std::enable_if_t<QtPrivate::IsQFlags<Flags>::value, void>,
-          typename T = typename Flags::enum_type>
+          std::enable_if_t<QtPrivate::IsQFlags<Flags>::value, bool> = true>
 inline QDebug operator<<(QDebug debug, Flags flags)
 {
+    using T = typename Flags::enum_type;
     using UInt = typename QIntegerForSizeof<T>::Unsigned;
 #if !defined(QT_NO_QOBJECT)
     if constexpr (QtPrivate::IsQEnumHelper<T>::Value || QtPrivate::IsQEnumHelper<Flags>::Value) {
