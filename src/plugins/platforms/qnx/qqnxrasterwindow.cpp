@@ -58,6 +58,7 @@ void QQnxRasterWindow::post(const QRegion &dirty)
         qCDebug(lcQpaWindow) << Q_FUNC_INFO << "window = " << window();
         QQnxBuffer &currentBuffer = m_buffers[m_currentBufferIndex];
 
+#if defined(QQNX_INCREMENTAL_RASTER_UPDATE)
         // Copy unmodified region from old render buffer to new render buffer;
         // required to allow partial updates
         QRegion preserve = m_previousDirty - dirty - m_scrolled;
@@ -72,6 +73,12 @@ void QQnxRasterWindow::post(const QRegion &dirty)
         Q_SCREEN_CHECKERROR(
                 screen_post_window(nativeHandle(), currentBuffer.nativeBuffer(), 1, dirtyRect, 0),
                 "Failed to post window");
+#else
+        // Update the display with contents of render buffer
+        Q_SCREEN_CHECKERROR(
+                screen_post_window(nativeHandle(), currentBuffer.nativeBuffer(), 0, NULL, 0),
+                "Failed to post window");
+#endif
 
         // Advance to next nender buffer
         m_previousBufferIndex = m_currentBufferIndex++;
@@ -79,7 +86,7 @@ void QQnxRasterWindow::post(const QRegion &dirty)
             m_currentBufferIndex = 0;
 
         // Save modified region and clear scrolled region
-        m_previousDirty = dirty;
+        m_previousDirty = QRect(QPoint(0, 0), window()->size());
         m_scrolled = QRegion();
 
         windowPosted();
@@ -149,6 +156,7 @@ int QQnxRasterWindow::pixelFormat() const
 void QQnxRasterWindow::resetBuffers()
 {
     // Buffers were destroyed; reacquire them
+    m_previousBufferIndex = -1;
     m_currentBufferIndex = -1;
     m_previousDirty = QRegion();
     m_scrolled = QRegion();
