@@ -273,7 +273,7 @@ public:
         return that;
     }
     friend difference_type operator-(const QJniArrayMutableIterator &lhs,
-                                     const QJniArrayMutableIterator &rhs) noexcept
+                                     const QJniArrayMutableIterator &rhs)
     {
         Q_ASSERT(lhs.m_array == rhs.m_array);
         return lhs.m_index - rhs.m_index;
@@ -286,31 +286,31 @@ public:
 
 private:
     friend constexpr bool comparesEqual(const QJniArrayMutableIterator &lhs,
-                                        const QJniArrayMutableIterator &rhs) noexcept
+                                        const QJniArrayMutableIterator &rhs)
     {
         Q_ASSERT(lhs.m_array == rhs.m_array);
         return lhs.m_index == rhs.m_index;
     }
     friend constexpr bool comparesEqual(const QJniArrayMutableIterator &lhs,
-                                        const QJniArrayIterator<const T> &rhs) noexcept
+                                        const QJniArrayIterator<const T> &rhs)
     {
         Q_ASSERT(lhs.m_array == rhs.m_array);
         return lhs.m_index == rhs.m_index;
     }
     friend constexpr Qt::strong_ordering compareThreeWay(const QJniArrayMutableIterator &lhs,
-                                                         const QJniArrayMutableIterator &rhs) noexcept
+                                                         const QJniArrayMutableIterator &rhs)
     {
         Q_ASSERT(lhs.m_array == rhs.m_array);
         return Qt::compareThreeWay(lhs.m_index, rhs.m_index);
     }
     friend constexpr Qt::strong_ordering compareThreeWay(const QJniArrayMutableIterator &lhs,
-                                                         const QJniArrayIterator<const T> &rhs) noexcept
+                                                         const QJniArrayIterator<const T> &rhs)
     {
         Q_ASSERT(lhs.m_array == rhs.m_array);
         return Qt::compareThreeWay(lhs.m_index, rhs.m_index);
     }
-    Q_DECLARE_STRONGLY_ORDERED(QJniArrayMutableIterator)
-    Q_DECLARE_STRONGLY_ORDERED(QJniArrayMutableIterator, QJniArrayIterator<const T>)
+    Q_DECLARE_STRONGLY_ORDERED_NON_NOEXCEPT(QJniArrayMutableIterator)
+    Q_DECLARE_STRONGLY_ORDERED_NON_NOEXCEPT(QJniArrayMutableIterator, QJniArrayIterator<const T>)
 
     using VT = std::remove_const_t<T>;
     friend class QJniArray<VT>;
