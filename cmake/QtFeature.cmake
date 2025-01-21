@@ -304,6 +304,15 @@ function(qt_feature_check_and_save_user_provided_value
         set("FEATURE_${feature}" "${result}" CACHE BOOL "${label}")
     endif()
 
+    # Check for potential typo
+    get_property(original_name GLOBAL PROPERTY "QT_FEATURE_ORIGINAL_NAME_${feature}")
+    if(NOT original_name STREQUAL feature AND DEFINED "FEATURE_${original_name}")
+        unset("FEATURE_${original_name}" CACHE)
+        qt_configure_add_report_error(
+            "FEATURE_${original_name} does not exist. Consider using: FEATURE_${feature}"
+        )
+    endif()
+
     set("${resultVar}" "${result}" PARENT_SCOPE)
 endfunction()
 
