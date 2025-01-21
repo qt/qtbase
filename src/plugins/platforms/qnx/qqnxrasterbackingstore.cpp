@@ -7,6 +7,7 @@
 #include "qqnxglobal.h"
 
 #include <QtCore/QDebug>
+#include <QtGui/QBackingStore>
 
 #include <errno.h>
 
@@ -74,7 +75,14 @@ bool QQnxRasterBackingStore::scroll(const QRegion &area, int dx, int dy)
     m_needsPosting = true;
 
     if (!m_scrolled) {
+#if defined(QQNX_INCREMENTAL_RASTER_UPDATE)
         platformWindow()->scroll(area, dx, dy, true);
+#else
+        platformWindow()->scroll(area, dx, dy, false);
+        QRegion remainder = QRect(QPoint(0, 0), backingStore()->size());
+        remainder -= area.translated(dx, dy);
+        platformWindow()->scroll(remainder, 0, 0, true);
+#endif
         m_scrolled = true;
         return true;
     }
@@ -90,6 +98,7 @@ void QQnxRasterBackingStore::beginPaint(const QRegion &region)
 
     platformWindow()->adjustBufferSize();
 
+#if defined(QQNX_INCREMENTAL_RASTER_UPDATE)
     if (window()->requestedFormat().alphaBufferSize() > 0) {
         auto platformScreen = static_cast<QQnxScreen *>(platformWindow()->screen());
         for (const QRect &r : region) {
@@ -109,6 +118,10 @@ void QQnxRasterBackingStore::beginPaint(const QRegion &region)
         Q_SCREEN_CHECKERROR(screen_flush_blits(platformScreen->nativeContext(),
                     SCREEN_WAIT_IDLE), "failed to flush blits");
     }
+#else
+    if (!m_scrolled)
+        platformWindow()->scroll(QRect(QPoint(0, 0), backingStore()->size()), 0, 0, true);
+#endif
 }
 
 void QQnxRasterBackingStore::endPaint()
