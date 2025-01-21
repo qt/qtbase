@@ -1493,22 +1493,26 @@ QFileInfoList QDir::entryInfoList(const QStringList &nameFilters, Filters filter
 #endif // !QT_BOOTSTRAPPED
 
 /*!
-    Creates a sub-directory called \a dirName.
+    Creates a sub-directory called \a dirName with the given \a permissions.
 
-    Returns \c true on success; otherwise returns \c false.
+    Returns \c true on success; returns \c false if the operation failed or
+    the directory already existed.
 
-    If the directory already exists when this function is called, it will return \c false.
+//! [dir-creation-mode-bits-unix]
+    On POSIX systems \a permissions are modified by the
+    \l{https://pubs.opengroup.org/onlinepubs/9799919799/functions/umask.html}{\c umask}
+    (file creation mask) of the current process, which means some permission
+    bits might be disabled.
+//! [dir-creation-mode-bits-unix]
 
-    The permissions of the created directory are set to \a{permissions}.
+    On Windows, by default, a new directory inherits its permissions from its
+    parent directory. \a permissions are emulated using ACLs. These ACLs may
+    be in non-canonical order when the group is granted less permissions than
+    others. Files and directories with such permissions will generate warnings
+    when the Security tab of the Properties dialog is opened. Granting the
+    group all permissions granted to others avoids such warnings.
 
-    On POSIX systems the permissions are influenced by the value of \c umask.
-
-    On Windows the permissions are emulated using ACLs. These ACLs may be in non-canonical
-    order when the group is granted less permissions than others. Files and directories with
-    such permissions will generate warnings when the Security tab of the Properties dialog
-    is opened. Granting the group all permissions granted to others avoids such warnings.
-
-    \sa rmdir()
+    \sa rmdir(), mkpath(), rmpath()
 
     \since 6.3
 */
@@ -1529,10 +1533,22 @@ bool QDir::mkdir(const QString &dirName, QFile::Permissions permissions) const
 
 /*!
     \overload
-    Creates a sub-directory called \a dirName with default permissions.
+    Creates a sub-directory called \a dirName with the platform-specific
+    default permissions.
 
-    On POSIX systems the default is to grant all permissions allowed by \c umask.
-    On Windows, the new directory inherits its permissions from its parent directory.
+    Returns \c true on success; returns \c false if the operation failed or
+    the directory already existed.
+
+//! [windows-permissions-acls]
+    On Windows, by default, a new directory inherits its permissions from its
+    parent directory. Permissions are emulated using ACLs. These ACLs may be
+    in non-canonical order when the group is granted less permissions than
+    others. Files and directories with such permissions will generate warnings
+    when the Security tab of the Properties dialog is opened. Granting the
+    group all permissions granted to others avoids such warnings.
+//! [windows-permissions-acls]
+
+    \sa rmdir(), mkpath(), rmpath()
 */
 bool QDir::mkdir(const QString &dirName) const
 {
@@ -1575,16 +1591,17 @@ bool QDir::rmdir(const QString &dirName) const
 }
 
 /*!
-    Creates the directory path \a dirPath.
+    Creates a directory named \a dirPath.
 
-    The function will create all parent directories necessary to
-    create the directory.
+    If \a dirPath doesn't already exist, this method will create it - along with
+    any nonexistent parent directories - with the default permissions.
 
-    Returns \c true if successful; otherwise returns \c false.
+    Returns \c true on success or if \a dirPath already existed; otherwise
+    returns \c false.
 
-    If the path already exists when this function is called, it will return true.
+    \include qdir.cpp windows-permissions-acls
 
-    \sa rmpath()
+    \sa rmpath(), mkdir(), rmdir()
 */
 bool QDir::mkpath(const QString &dirPath) const
 {
