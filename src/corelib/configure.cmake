@@ -260,6 +260,26 @@ inotify_rm_watch(0, 1);
 }
 ")
 
+# fsnotify
+qt_config_compile_test(fsnotify
+    LABEL "libfsnotify"
+    LIBRARIES fsnotify
+    CODE
+"#include <sys/inotify.h>
+
+int main(void)
+{
+    /* BEGIN TEST: */
+    int fd = inotify_init();
+    if (fd >= 0) {
+        inotify_add_watch(fd, \"foobar\", IN_ACCESS);
+        inotify_rm_watch(fd, 1);
+    }
+    /* END TEST: */
+    return 0;
+}
+")
+
 qt_config_compile_test(sysv_shm
     LABEL "System V/XSI shared memory"
     CODE
@@ -647,7 +667,11 @@ qt_feature("icu" PRIVATE
 )
 qt_feature("inotify" PUBLIC PRIVATE
     LABEL "inotify"
-    CONDITION TEST_inotify
+    CONDITION TEST_inotify OR TEST_fsnotify
+)
+qt_feature("fsnotify"
+    LABEL "fsnotify"
+    CONDITION TEST_fsnotify
 )
 qt_feature_definition("inotify" "QT_NO_INOTIFY" NEGATE VALUE "1")
 qt_feature("ipc_posix"
