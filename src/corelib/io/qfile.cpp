@@ -667,8 +667,8 @@ QFile::rename(const QString &newName)
         }
 
         QFile out(newName);
-        if (open(QIODevice::ReadOnly)) {
-            if (out.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        if (open(QIODevice::ReadOnly | QIODevice::Unbuffered)) {
+            if (out.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Unbuffered)) {
                 bool error = false;
                 char block[4096];
                 qint64 bytes;
@@ -812,7 +812,7 @@ QFile::copy(const QString &newName)
             return true;
         } else {
             bool error = false;
-            if (!open(QFile::ReadOnly)) {
+            if (!open(QFile::ReadOnly | QFile::Unbuffered)) {
                 error = true;
                 d->setError(QFile::CopyError, tr("Cannot open %1 for input").arg(d->fileName));
             } else {
@@ -837,6 +837,7 @@ QFile::copy(const QString &newName)
                     if (!d->engine()->cloneTo(out.d_func()->engine())) {
                         char block[4096];
                         qint64 totalRead = 0;
+                        out.setOpenMode(ReadWrite | Unbuffered);
                         while (!atEnd()) {
                             qint64 in = read(block, sizeof(block));
                             if (in <= 0)
