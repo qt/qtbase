@@ -32,6 +32,8 @@
 #  include "QtCore/private/qlibrary_p.h"
 #endif
 
+#include <optional>
+
 QT_BEGIN_NAMESPACE
 
 class QJsonObject;
@@ -74,7 +76,7 @@ private:
         mutable QMutex mutex;
         mutable QList<QtPluginInstanceFunction> usedStaticInstances;
 #if QT_CONFIG(library)
-        QDuplicateTracker<QString> loadedPaths;
+        std::optional<QDuplicateTracker<QString>> loadedPaths{std::in_place};
         std::vector<QLibraryPrivate::UniquePtr> libraries;
         mutable QList<bool> loadedLibraries;
         std::map<QString, QLibraryPrivate*> keyMap;
