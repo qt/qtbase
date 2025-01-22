@@ -2219,6 +2219,47 @@ function(_qt_internal_expose_deferred_files_to_ide target)
 endfunction()
 
 #
+# Takes a string, and writes its XML escaped form into output_variable
+# If SUBSET is given, only the characters in it will be escaped.
+# No validation is done whether the characters in SUBSET are actually
+# characters that need to be replaced
+function(_qt_internal_escape_xml_characters input output_variable)
+    set(no_value_options "")
+    set(single_value_options SUBSET)
+    set(multi_value_options "")
+    cmake_parse_arguments(PARSE_ARGV 2 arg
+        "${no_value_options}"
+        "${single_value_options}"
+        "${multi_value_options}"
+    )
+    set(escaped "${input}")
+    # it is vital to start with &
+    # as later replacements add new &
+    set(chars & [["]] [[']] < >)
+    set(replacements &amp &quot &apos &lt &gt)
+    if (NOT arg_SUBSET)
+        set(subset [[&"'<>]])
+    else()
+        set(subset "${arg_SUBSET}")
+    endif()
+    foreach(i RANGE 4)
+        list(GET chars ${i} char)
+        list(GET replacements ${i} replacement)
+        string(FIND "${subset}" "${char}" pos)
+        if (${pos} EQUAL -1)
+            continue()
+        endif()
+        string(REGEX REPLACE
+             "${char}"
+             "${replacement};"
+             escaped
+             "${escaped}"
+        )
+    endforeach()
+    set(${output_variable} "${escaped}" PARENT_SCOPE)
+endfunction()
+
+#
 # Process resources via file path instead of QRC files. Behind the
 # scenes, it will generate a qrc file.
 #
@@ -2314,8 +2355,12 @@ function(_qt_internal_process_resource target resourceName)
 
     # <RCC><qresource ...>
     set(qrcContents "<RCC>\n  <qresource")
-    string(APPEND qrcContents " prefix=\"${rcc_PREFIX}\"")
+    _qt_internal_escape_xml_characters("${rcc_PREFIX}" escaped_rcc_PREFIX SUBSET [[&<"]])
 
+    string(APPEND qrcContents " prefix=\"${escaped_rcc_PREFIX}\"")
+
+    # we assume that a valid language can't contain a character which needs
+    # XML escaping
     if (rcc_LANG)
         string(APPEND qrcContents " lang=\"${rcc_LANG}\"")
     endif()
@@ -2331,13 +2376,24 @@ function(_qt_internal_process_resource target resourceName)
 
         get_property(is_empty SOURCE ${file} PROPERTY QT_DISCARD_FILE_CONTENTS)
 
-        ### FIXME: escape file paths to be XML conform
         # <file ...>...</file>
-        string(APPEND qrcContents "    <file alias=\"${file_resource_path}\"")
+        # We need XML escaping; alias is a quote enclosed attribute, file is text
+        _qt_internal_escape_xml_characters(
+            "${file_resource_path}"
+            escaped_file_resource_path
+            SUBSET [[&<"]]
+        )
+        _qt_internal_escape_xml_characters(
+            "${file}"
+            escaped_file
+            SUBSET [[&<]]
+        )
+
+        string(APPEND qrcContents "    <file alias=\"${escaped_file_resource_path}\"")
         if(is_empty)
             string(APPEND qrcContents " empty=\"true\"")
         endif()
-        string(APPEND qrcContents ">${file}</file>\n")
+        string(APPEND qrcContents ">${escaped_file}</file>\n")
         list(APPEND files "${file}")
 
         set(scope_args)

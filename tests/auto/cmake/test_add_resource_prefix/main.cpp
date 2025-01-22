@@ -10,6 +10,7 @@ class TestAddResourcePrefix : public QObject
 private slots:
     void resourceInDefaultPathExists();
     void resourceInGivenPathExists();
+    void xmlEscaping();
 };
 
 void TestAddResourcePrefix::resourceInDefaultPathExists()
@@ -20,6 +21,12 @@ void TestAddResourcePrefix::resourceInDefaultPathExists()
 void TestAddResourcePrefix::resourceInGivenPathExists()
 {
     QVERIFY(QFile::exists(":/resources/resource_file.txt"));
+}
+
+
+void TestAddResourcePrefix::xmlEscaping()
+{
+    QVERIFY(QFile::exists(":/&\"'<>/&\"'<>.alias"));
 }
 
 QTEST_MAIN(TestAddResourcePrefix)
