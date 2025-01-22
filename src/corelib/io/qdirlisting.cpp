@@ -212,7 +212,7 @@ public:
 #endif
 
     // Loop protection
-    QDuplicateTracker<QString> visitedLinks;
+    std::optional<QDuplicateTracker<QString>> visitedLinks{std::in_place};
 
 private:
     bool matchesFilters(const QFileInfo &fileInfo) const;
@@ -252,7 +252,7 @@ void QDirListingPrivate::beginIterating()
     nativeIterators.clear();
 #endif
     fileEngineIterators.clear();
-    visitedLinks.clear();
+    visitedLinks.emplace();
     pushDirectory(initialEntryInfo);
 }
 
@@ -269,7 +269,7 @@ void QDirListingPrivate::pushDirectory(QDirEntryInfo &entryInfo)
 
     if (iteratorFlags.testAnyFlags(QDirListing::IteratorFlag::FollowDirSymlinks)) {
         // Stop link loops
-        if (visitedLinks.hasSeen(entryInfo.canonicalFilePath()))
+        if (visitedLinks->hasSeen(entryInfo.canonicalFilePath()))
             return;
     }
 
