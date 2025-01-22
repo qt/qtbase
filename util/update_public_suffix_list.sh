@@ -63,6 +63,9 @@ run_or_die "$MAKE_DAFSA" --output-format=binary "$INPUT" "$PUBLIC_SUFFIX_LIST_DA
 # update the first Version line in qt_attribution.json with the new SHA1 and date:
 run_or_die sed -i -e "1,/\"Version\":/{ /\"Version\":/ {  s/[0-9a-fA-F]\{40\}/$GITSHA1/;   s/[0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}/$TODAY/ } }" "$ATTRIBUTION_JSON"
 
+# update the first "PURL" line with the new SHA1:
+run_or_die sed -i -e "1,/\"PURL\":/{ /\"PURL\":/ { s/[0-9a-fA-F]\{40\}/$GITSHA1/; } }" "$ATTRIBUTION_JSON"
+
 run_or_die git add "$PSL_DATA_CPP"
 run_or_die git add "$PUBLIC_SUFFIX_LIST_DAFSA"
 run_or_die git add "$ATTRIBUTION_JSON"
