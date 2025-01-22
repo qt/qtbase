@@ -854,14 +854,14 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
         break;
     case PE_IndicatorRadioButton:
         {
-            if (option->styleObject->property("_q_end_radius").isNull())
-                option->styleObject->setProperty("_q_end_radius", option->state & State_On ? 4.0f :7.0f);
-            QNumberStyleAnimation* animation = qobject_cast<QNumberStyleAnimation*>(d->animation(option->styleObject));
-            if (animation != nullptr)
-                option->styleObject->setProperty("_q_inner_radius", animation->currentValue());
-            else
-                option->styleObject->setProperty("_q_inner_radius", option->styleObject->property("_q_end_radius"));
-            int innerRadius = option->styleObject->property("_q_inner_radius").toFloat();
+            qreal innerRadius = option->state & State_On ? 4.0f :7.0f;
+            if (option->styleObject) {
+                if (option->styleObject->property("_q_end_radius").isNull())
+                    option->styleObject->setProperty("_q_end_radius", innerRadius);
+                QNumberStyleAnimation *animation = qobject_cast<QNumberStyleAnimation *>(d->animation(option->styleObject));
+                innerRadius = animation ? animation->currentValue() : option->styleObject->property("_q_end_radius").toFloat();
+                option->styleObject->setProperty("_q_inner_radius", innerRadius);
+            }
 
             QPainterPath path;
             QRectF rect = option->rect;
