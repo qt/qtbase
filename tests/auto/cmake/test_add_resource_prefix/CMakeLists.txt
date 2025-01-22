@@ -22,4 +22,17 @@ qt_add_resources(test_add_resource_prefix "resources_with_prefix"
     PREFIX "/resources"
     FILES resource_file.txt)
 
+# Test that we handle prefixes with XML meta-character's.
+# Also use the opportunity to cover testing of the file path itself
+# and of aliases, too
+
+set_source_files_properties([[&'.txt]]
+    PROPERTIES QT_RESOURCE_ALIAS [[&"'<>.alias]]
+)
+
+qt_add_resources(test_add_resource_prefix "resources_with_tricky_xml"
+    PREFIX [[/&"'<>]]
+    ALIAS [[&"'<>.alias]]
+    FILES [[&'.txt]])
+
 target_link_libraries(test_add_resource_prefix PRIVATE Qt::Core Qt::Test)
