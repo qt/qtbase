@@ -466,15 +466,17 @@ static bool applyBlurBehindWindow(HWND hwnd)
     return result;
 }
 
+static bool shouldShowTitlebarButton(Qt::WindowFlags flags, Qt::WindowFlags button)
+{
+    return !flags.testFlag(Qt::CustomizeWindowHint) || flags.testFlags(Qt::CustomizeWindowHint | button);
+}
+
 // from qwidget_win.cpp, pass flags separately in case they have been "autofixed".
 static bool shouldShowMaximizeButton(const QWindow *w, Qt::WindowFlags flags)
 {
-    if ((flags & Qt::MSWindowsFixedSizeDialogHint) || !(flags & Qt::WindowMaximizeButtonHint))
-        return false;
-    // if the user explicitly asked for the maximize button, we try to add
-    // it even if the window has fixed size.
-    return (flags & Qt::CustomizeWindowHint) ||
-        w->maximumSize() == QSize(QWINDOWSIZE_MAX, QWINDOWSIZE_MAX);
+    return !flags.testFlag(Qt::MSWindowsFixedSizeDialogHint) &&
+            (shouldShowTitlebarButton(flags, Qt::WindowMaximizeButtonHint) ||
+            w->maximumSize() == QSize(QWINDOWSIZE_MAX, QWINDOWSIZE_MAX));
 }
 
 bool QWindowsWindow::hasNoNativeFrame(HWND hwnd, Qt::WindowFlags flags)
@@ -805,6 +807,7 @@ void WindowCreationData::fromWindow(const QWindow *w, const Qt::WindowFlags flag
 
     if (topLevel) {
         if ((type == Qt::Window || dialog || tool)) {
+            const bool defaultTitlebar = !flags.testFlag(Qt::CustomizeWindowHint);
             if (!(flags & Qt::FramelessWindowHint)) {
                 style |= WS_POPUP;
                 if (flags & Qt::MSWindowsFixedSizeDialogHint) {
@@ -812,16 +815,16 @@ void WindowCreationData::fromWindow(const QWindow *w, const Qt::WindowFlags flag
                 } else {
                     style |= WS_THICKFRAME;
                 }
-                if (flags & Qt::WindowTitleHint)
+                if (defaultTitlebar || flags.testFlags(Qt::CustomizeWindowHint | Qt::WindowTitleHint))
                     style |= WS_CAPTION; // Contains WS_DLGFRAME
             }
-            if (flags & Qt::WindowSystemMenuHint)
+            if (defaultTitlebar || flags.testFlags(Qt::CustomizeWindowHint | Qt::WindowSystemMenuHint))
                 style |= WS_SYSMENU;
-            else if (dialog && (flags & Qt::WindowCloseButtonHint) && !(flags & Qt::FramelessWindowHint)) {
+            else if (dialog && (defaultTitlebar || flags.testFlags(Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint)) && !(flags & Qt::FramelessWindowHint)) {
                 style |= WS_SYSMENU | WS_BORDER; // QTBUG-2027, dialogs without system menu.
                 exStyle |= WS_EX_DLGMODALFRAME;
             }
-            const bool showMinimizeButton = flags & Qt::WindowMinimizeButtonHint;
+            const bool showMinimizeButton = shouldShowTitlebarButton(flags, Qt::WindowMinimizeButtonHint);
             if (showMinimizeButton)
                 style |= WS_MINIMIZEBOX;
             const bool showMaximizeButton = shouldShowMaximizeButton(w, flags);
