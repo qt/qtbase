@@ -34,9 +34,16 @@ struct IDWriteGdiInterop;
 struct IDWriteGlyphRunAnalysis;
 struct IDWriteColorGlyphRunEnumerator;
 
+#if QT_CONFIG(directwritecolrv1)
+struct IDWriteFontFace7;
+struct IDWritePaintReader;
+struct DWRITE_PAINT_ELEMENT;
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QWindowsFontEngineData;
+class QColrPaintGraphRenderer;
 
 class Q_GUI_EXPORT QWindowsFontEngineDirectWrite : public QFontEngine
 {
@@ -102,11 +109,25 @@ public:
     void initializeHeightMetrics() const override;
 
     Properties properties() const override;
+
+    QPainterPath unscaledGlyph(glyph_t glyph) const;
     void getUnscaledGlyph(glyph_t glyph, QPainterPath *path, glyph_metrics_t *metrics) override;
 
     QList<QFontVariableAxis> variableAxes() const override;
 
 private:
+#if QT_CONFIG(directwritecolrv1)
+    bool traverseColr1(IDWritePaintReader *paintReader,
+                       IDWriteFontFace7 *face7,
+                       const DWRITE_PAINT_ELEMENT *paintElement,
+                       QColrPaintGraphRenderer *graphRenderer) const;
+    bool renderColr1GlyphRun(QImage *image,
+                             const DWRITE_GLYPH_RUN *glyphRun,
+                             const DWRITE_MATRIX &transform,
+                             QColor color) const;
+#endif
+
+    QRect paintGraphBounds(glyph_t glyph, const DWRITE_MATRIX &transform) const;
     QRect alphaTextureBounds(glyph_t glyph, const DWRITE_MATRIX &transform);
     QRect colorBitmapBounds(glyph_t glyph, const DWRITE_MATRIX &transform);
     bool renderColr0GlyphRun(QImage *image,

@@ -623,6 +623,22 @@ int main(int, char **)
 }
 ")
 
+# directwritecolrv1
+qt_config_compile_test(directwritecolrv1
+    LABEL "WINDOWS directwritecolrv1"
+    LIBRARIES
+        dwrite
+    CODE
+"#include <dwrite_3.h>
+int main(int, char **)
+{
+    IUnknown *factory = nullptr;
+    // Just check that the API is available for the build
+    DWRITE_PAINT_ELEMENT paintElement;
+    return 0;
+}
+")
+
 qt_config_compile_test(d2d1
     LABEL "WINDOWS Direct2D"
     LIBRARIES
@@ -689,6 +705,11 @@ qt_feature("directwrite" PRIVATE
 qt_feature("directwrite3" PRIVATE
     LABEL "DirectWrite 3"
     CONDITION QT_FEATURE_directwrite AND TEST_directwrite3
+    EMIT_IF WIN32
+)
+qt_feature("directwritecolrv1" PRIVATE
+    LABEL "DirectWrite COLRv1 Support"
+    CONDITION QT_FEATURE_directwrite3 AND TEST_directwritecolrv1
     EMIT_IF WIN32
 )
 qt_feature("direct2d" PRIVATE
@@ -1413,6 +1434,7 @@ qt_configure_add_summary_entry(ARGS "direct2d")
 qt_configure_add_summary_entry(ARGS "direct2d1_1")
 qt_configure_add_summary_entry(ARGS "directwrite")
 qt_configure_add_summary_entry(ARGS "directwrite3")
+qt_configure_add_summary_entry(ARGS "directwritecolrv1")
 qt_configure_end_summary_section() # end of "Windows" section
 qt_configure_end_summary_section() # end of "QPA backends" section
 qt_configure_add_report_entry(

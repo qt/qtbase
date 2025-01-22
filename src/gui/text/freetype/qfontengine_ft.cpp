@@ -56,10 +56,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#if defined(QFONTENGINE_FT_SUPPORT_COLRV1)
-Q_STATIC_LOGGING_CATEGORY(lcColrv1, "qt.text.font.colrv1")
-#endif
-
 using namespace Qt::StringLiterals;
 
 #define FLOOR(x)    ((x) & -64)

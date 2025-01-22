@@ -28,6 +28,8 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_LOGGING_CATEGORY(lcColrv1, "qt.text.font.colrv1")
+
 using namespace Qt::StringLiterals;
 
 static inline bool qtransform_equals_no_translate(const QTransform &a, const QTransform &b)

@@ -15,6 +15,8 @@
 #include <qpa/qplatformintegration.h>
 #include <QtGui/qpainterpath.h>
 
+#include <private/qcolrpaintgraphrenderer_p.h>
+
 #if QT_CONFIG(directwrite3)
 #  include "qwindowsdirectwritefontdatabase_p.h"
 #  include <dwrite_3.h>
@@ -582,16 +584,16 @@ void QWindowsFontEngineDirectWrite::recalcAdvances(QGlyphLayout *glyphs, QFontEn
     }
 }
 
-void QWindowsFontEngineDirectWrite::getUnscaledGlyph(glyph_t glyph,
-                                                     QPainterPath *path,
-                                                     glyph_metrics_t *metric)
+QPainterPath QWindowsFontEngineDirectWrite::unscaledGlyph(glyph_t glyph) const
 {
     float advance = 0.0f;
     UINT16 g = glyph;
     DWRITE_GLYPH_OFFSET offset;
     offset.advanceOffset = 0;
     offset.ascenderOffset = 0;
-    GeometrySink geometrySink(path);
+
+    QPainterPath ret;
+    GeometrySink geometrySink(&ret);
     HRESULT hr = m_directWriteFontFace->GetGlyphRunOutline(m_unitsPerEm,
                                                            &g,
                                                            &advance,
@@ -600,13 +602,21 @@ void QWindowsFontEngineDirectWrite::getUnscaledGlyph(glyph_t glyph,
                                                            false,
                                                            false,
                                                            &geometrySink);
-    if (FAILED(hr)) {
+    if (FAILED(hr))
         qErrnoWarning("%s: GetGlyphRunOutline failed", __FUNCTION__);
-        return;
-    }
 
+    return ret;
+}
+
+void QWindowsFontEngineDirectWrite::getUnscaledGlyph(glyph_t glyph,
+                                                     QPainterPath *path,
+                                                     glyph_metrics_t *metric)
+{
+    *path = unscaledGlyph(glyph);
+
+    UINT16 g = glyph;
     DWRITE_GLYPH_METRICS glyphMetrics;
-    hr = m_directWriteFontFace->GetDesignGlyphMetrics(&g, 1, &glyphMetrics);
+    HRESULT hr = m_directWriteFontFace->GetDesignGlyphMetrics(&g, 1, &glyphMetrics);
     if (FAILED(hr)) {
         qErrnoWarning("%s: GetDesignGlyphMetrics failed", __FUNCTION__);
         return;
@@ -838,6 +848,515 @@ bool QWindowsFontEngineDirectWrite::renderColr0GlyphRun(QImage *image,
     return true;
 }
 
+#if QT_CONFIG(directwritecolrv1)
+static inline QTransform matrixToTransform(const DWRITE_MATRIX &matrix,
+                                           int unitsPerEm = 1)
+{
+    return QTransform(matrix.m11, matrix.m12,
+                      matrix.m21, matrix.m22,
+                      matrix.dx * unitsPerEm, matrix.dy * unitsPerEm);
+}
+
+static inline QColor colorToColor(const DWRITE_COLOR_F &color, float alphaMultiplier = 1.0)
+{
+    return QColor::fromRgbF(color.r, color.g, color.b, color.a * alphaMultiplier);
+}
+
+static inline QGradient::Spread extendToSpread(UINT32 extendMode)
+{
+    switch (extendMode) {
+    case D2D1_EXTEND_MODE_WRAP: return QGradient::RepeatSpread;
+    case D2D1_EXTEND_MODE_MIRROR: return QGradient::ReflectSpread;
+    default: return QGradient::PadSpread;
+    };
+}
+
+static inline QPainter::CompositionMode compositeToCompositionMode(DWRITE_COLOR_COMPOSITE_MODE mode)
+{
+    switch (mode) {
+    case DWRITE_COLOR_COMPOSITE_CLEAR:
+        return QPainter::CompositionMode_Clear;
+
+    case DWRITE_COLOR_COMPOSITE_SRC:
+        return QPainter::CompositionMode_Source;
+
+    case DWRITE_COLOR_COMPOSITE_DEST:
+        return QPainter::CompositionMode_Destination;
+
+    case DWRITE_COLOR_COMPOSITE_SRC_OVER:
+        return QPainter::CompositionMode_SourceOver;
+
+    case DWRITE_COLOR_COMPOSITE_DEST_OVER:
+        return QPainter::CompositionMode_DestinationOver;
+
+    case DWRITE_COLOR_COMPOSITE_SRC_IN:
+        return QPainter::CompositionMode_SourceIn;
+
+    case DWRITE_COLOR_COMPOSITE_DEST_IN:
+        return QPainter::CompositionMode_DestinationIn;
+
+    case DWRITE_COLOR_COMPOSITE_SRC_OUT:
+        return QPainter::CompositionMode_SourceOut;
+
+    case DWRITE_COLOR_COMPOSITE_DEST_OUT:
+        return QPainter::CompositionMode_DestinationOut;
+
+    case DWRITE_COLOR_COMPOSITE_SRC_ATOP:
+        return QPainter::CompositionMode_SourceAtop;
+
+    case DWRITE_COLOR_COMPOSITE_DEST_ATOP:
+        return QPainter::CompositionMode_DestinationAtop;
+
+    case DWRITE_COLOR_COMPOSITE_XOR:
+        return QPainter::CompositionMode_Xor;
+
+    case DWRITE_COLOR_COMPOSITE_PLUS:
+        return QPainter::CompositionMode_Plus;
+
+    case DWRITE_COLOR_COMPOSITE_SCREEN:
+        return QPainter::CompositionMode_Screen;
+
+    case DWRITE_COLOR_COMPOSITE_OVERLAY:
+        return QPainter::CompositionMode_Overlay;
+
+    case DWRITE_COLOR_COMPOSITE_DARKEN:
+        return QPainter::CompositionMode_Darken;
+
+    case DWRITE_COLOR_COMPOSITE_LIGHTEN:
+        return QPainter::CompositionMode_Lighten;
+
+    case DWRITE_COLOR_COMPOSITE_COLOR_DODGE:
+        return QPainter::CompositionMode_ColorDodge;
+
+    case DWRITE_COLOR_COMPOSITE_COLOR_BURN:
+        return QPainter::CompositionMode_ColorBurn;
+
+    case DWRITE_COLOR_COMPOSITE_HARD_LIGHT:
+        return QPainter::CompositionMode_HardLight;
+
+    case DWRITE_COLOR_COMPOSITE_SOFT_LIGHT:
+        return QPainter::CompositionMode_SoftLight;
+
+    case DWRITE_COLOR_COMPOSITE_DIFFERENCE:
+        return QPainter::CompositionMode_Difference;
+
+    case DWRITE_COLOR_COMPOSITE_EXCLUSION:
+        return QPainter::CompositionMode_Exclusion;
+
+    case DWRITE_COLOR_COMPOSITE_MULTIPLY:
+        return QPainter::CompositionMode_Multiply;
+
+    default:
+        qCWarning(lcColrv1) << "Unhandled color composite mode:" << mode;
+        return QPainter::CompositionMode_SourceOver;
+    };
+}
+#endif // QT_CONFIG(directwritecolrv1)
+
+QRect QWindowsFontEngineDirectWrite::paintGraphBounds(glyph_t glyph,
+                                                      const DWRITE_MATRIX &matrix) const
+{
+#if QT_CONFIG(directwritecolrv1)
+    ComPtr<IDWriteFontFace7> face7;
+    HRESULT hr = m_directWriteFontFace->QueryInterface(__uuidof(IDWriteFontFace7),
+                                                       &face7);
+    if (SUCCEEDED(hr)) {
+        DWRITE_PAINT_FEATURE_LEVEL featureLevel = face7->GetPaintFeatureLevel(DWRITE_GLYPH_IMAGE_FORMATS_COLR_PAINT_TREE);
+        if (featureLevel != DWRITE_PAINT_FEATURE_LEVEL_COLR_V1)
+            return QRect{};
+
+        ComPtr<IDWritePaintReader> paintReader;
+        hr = face7->CreatePaintReader(DWRITE_GLYPH_IMAGE_FORMATS_COLR_PAINT_TREE,
+                                      featureLevel,
+                                      &paintReader);
+        if (FAILED(hr)) {
+            qErrnoWarning(hr, "%s: CreatePaintReader failed", __FUNCTION__);
+            return QRect{};
+        }
+
+        DWRITE_PAINT_ELEMENT paintElement;
+        D2D_RECT_F clipBox;
+        hr = paintReader->SetCurrentGlyph(glyph,
+                                          &paintElement,
+                                          sizeof(paintElement),
+                                          &clipBox,
+                                          nullptr);
+
+        if (FAILED(hr)) {
+            qErrnoWarning(hr, "%s: SetCurrentGlyph failed", __FUNCTION__);
+            return QRect{};
+        }
+
+        if (paintElement.paintType == DWRITE_PAINT_TYPE_NONE)
+            return QRect{};
+
+        QRectF boundingRect = QRectF(QPointF(clipBox.left, clipBox.top),
+                                     QPointF(clipBox.right, clipBox.bottom));
+        if (boundingRect.isNull()) {
+            QColrPaintGraphRenderer boundingRectCalculator;
+            boundingRectCalculator.beginCalculateBoundingBox();
+            if (traverseColr1(paintReader.Get(), face7.Get(), &paintElement, &boundingRectCalculator))
+                boundingRect = boundingRectCalculator.boundingRect();
+        }
+
+        QTransform initialTransform;
+        initialTransform.scale(fontDef.pixelSize, fontDef.pixelSize);
+        boundingRect = initialTransform.mapRect(boundingRect);
+
+        QTransform originalXform = matrixToTransform(matrix);
+        boundingRect = originalXform.mapRect(boundingRect);
+
+        return boundingRect.toAlignedRect();
+    } else {
+        qCDebug(lcColrv1) << "Font face does not support IDWriteFontFace7 interface";
+    }
+#else
+    Q_UNUSED(glyph);
+    Q_UNUSED(matrix);
+#endif
+
+    return QRect{};
+}
+
+#if QT_CONFIG(directwritecolrv1)
+bool QWindowsFontEngineDirectWrite::traverseColr1(IDWritePaintReader *paintReader,
+                                                  IDWriteFontFace7 *face7,
+                                                  const DWRITE_PAINT_ELEMENT *paintElement,
+                                                  QColrPaintGraphRenderer *paintGraphRenderer) const
+{
+    paintGraphRenderer->save();
+    auto cleanup = qScopeGuard([&paintGraphRenderer]() {
+        paintGraphRenderer->restore();
+    });
+
+    auto traverseChildren = [&](quint32 childCount) {
+        DWRITE_PAINT_ELEMENT childPaintElement;
+        if (FAILED(paintReader->MoveToFirstChild(&childPaintElement)))
+            return false;
+
+        while (childCount-- > 0) {
+            traverseColr1(paintReader, face7, &childPaintElement, paintGraphRenderer);
+            if (childCount > 0) {
+                if (FAILED(paintReader->MoveToNextSibling(&childPaintElement))) {
+                    return false;
+                }
+            }
+        }
+
+        return SUCCEEDED(paintReader->MoveToParent());
+    };
+
+    auto collectStops = [&paintReader](int stopCount) {
+        QGradientStops ret;
+
+        QVarLengthArray<D2D1_GRADIENT_STOP> stops(stopCount);
+        HRESULT hr = paintReader->GetGradientStops(0, stopCount, stops.data());
+        if (FAILED(hr))
+            return ret;
+
+        for (int i = 0; i < stopCount; ++i) {
+            const D2D1_GRADIENT_STOP &stop = stops[i];
+            QColor color = QColor::fromRgbF(stop.color.r, stop.color.g, stop.color.b, stop.color.a);
+            ret.append(qMakePair(stop.position, color));
+        }
+
+        return ret;
+    };
+
+    switch (paintElement->paintType) {
+    case DWRITE_PAINT_TYPE_LAYERS:
+        {
+            if (!traverseChildren(paintElement->paint.layers.childCount))
+                return false;
+
+            break;
+        }
+
+    case DWRITE_PAINT_TYPE_SOLID_GLYPH:
+        {
+            QPainterPath glyphPath = unscaledGlyph(paintElement->paint.solidGlyph.glyphIndex);
+
+            QColor color = colorToColor(paintElement->paint.solidGlyph.color.value);
+            paintGraphRenderer->setPath(glyphPath);
+            paintGraphRenderer->setSolidColor(color);
+            paintGraphRenderer->drawCurrentPath();
+
+            break;
+        }
+
+    case DWRITE_PAINT_TYPE_SOLID:
+        {
+            QColor color = colorToColor(paintElement->paint.solid.value,
+                                        paintElement->paint.solid.alphaMultiplier);
+            paintGraphRenderer->setSolidColor(color);
+            paintGraphRenderer->drawCurrentPath();
+            break;
+        }
+
+    case DWRITE_PAINT_TYPE_COMPOSITE:
+        {
+            if (!paintGraphRenderer->isRendering()) {
+                traverseChildren(2);
+            } else {
+                DWRITE_PAINT_ELEMENT childElement;
+
+                HRESULT hr = paintReader->MoveToFirstChild(&childElement);
+                if (FAILED(hr)) {
+                    qErrnoWarning(hr, "%s: Cannot move to first child of composite node",
+                                  __FUNCTION__);
+                    return false;
+                }
+
+                // First draw back drop which is the second child
+                hr = paintReader->MoveToNextSibling(&childElement);
+                if (FAILED(hr)) {
+                    qErrnoWarning(hr, "%s: Cannot move to second child of composite node",
+                                  __FUNCTION__);
+                    return false;
+                }
+
+                DWRITE_COLOR_COMPOSITE_MODE compositeMode = paintElement->paint.composite.mode;
+
+                QColrPaintGraphRenderer compositeRenderer;
+                compositeRenderer.setBoundingRect(paintGraphRenderer->boundingRect());
+                compositeRenderer.beginRender(fontDef.pixelSize / m_unitsPerEm,
+                                              paintGraphRenderer->currentTransform());
+                if (!traverseColr1(paintReader, face7, &childElement, &compositeRenderer))
+                    return false;
+
+                // Then draw source which is the first child
+                hr = paintReader->MoveToParent();
+                if (FAILED(hr)) {
+                    qErrnoWarning(hr, "%s: Cannot move back to parent composite node",
+                                  __FUNCTION__);
+                    return false;
+                }
+
+                hr = paintReader->MoveToFirstChild(&childElement);
+                if (FAILED(hr)) {
+                    qErrnoWarning(hr, "%s: Cannot move to first child of composite node",
+                                  __FUNCTION__);
+                    return false;
+                }
+
+                compositeRenderer.setCompositionMode(compositeToCompositionMode(compositeMode));
+                if (!traverseColr1(paintReader, face7, &childElement, &compositeRenderer))
+                    return false;
+
+                hr = paintReader->MoveToParent();
+                if (FAILED(hr)) {
+                    qErrnoWarning(hr, "%s: Cannot move back to parent composite node",
+                                  __FUNCTION__);
+                    return false;
+                }
+
+                paintGraphRenderer->drawImage(compositeRenderer.endRender());
+            }
+
+            break;
+        }
+
+    case DWRITE_PAINT_TYPE_RADIAL_GRADIENT:
+        {
+            const QPointF c0(paintElement->paint.radialGradient.x0 * m_unitsPerEm,
+                             paintElement->paint.radialGradient.y0 * m_unitsPerEm);
+            const QPointF c1(paintElement->paint.radialGradient.x1 * m_unitsPerEm,
+                             paintElement->paint.radialGradient.y1 * m_unitsPerEm);
+            const qreal r0 = paintElement->paint.radialGradient.radius0 * m_unitsPerEm;
+            const qreal r1 = paintElement->paint.radialGradient.radius1 * m_unitsPerEm;
+
+            const QGradient::Spread spread
+                = extendToSpread(paintElement->paint.radialGradient.extendMode);
+
+            const QGradientStops gradientStops
+                = collectStops(paintElement->paint.radialGradient.gradientStopCount);
+
+            paintGraphRenderer->setRadialGradient(c0, r0, c1, r1, spread, gradientStops);
+            paintGraphRenderer->drawCurrentPath();
+            break;
+        }
+
+    case DWRITE_PAINT_TYPE_SWEEP_GRADIENT:
+        {
+            const QPointF center(paintElement->paint.sweepGradient.centerX * m_unitsPerEm,
+                                 paintElement->paint.sweepGradient.centerY * m_unitsPerEm);
+            const qreal startAngle = paintElement->paint.sweepGradient.startAngle;
+            const qreal endAngle = paintElement->paint.sweepGradient.endAngle;
+
+            const QGradient::Spread spread
+                = extendToSpread(paintElement->paint.radialGradient.extendMode);
+            const QGradientStops gradientStops
+                = collectStops(paintElement->paint.radialGradient.gradientStopCount);
+
+            paintGraphRenderer->setConicalGradient(center,
+                                                   startAngle,
+                                                   endAngle,
+                                                   spread,
+                                                   gradientStops);
+            paintGraphRenderer->drawCurrentPath();
+            break;
+        }
+
+    case DWRITE_PAINT_TYPE_LINEAR_GRADIENT:
+        {
+            const QPointF p0(paintElement->paint.linearGradient.x0 * m_unitsPerEm,
+                             paintElement->paint.linearGradient.y0 * m_unitsPerEm);
+            const QPointF p1(paintElement->paint.linearGradient.x1 * m_unitsPerEm,
+                             paintElement->paint.linearGradient.y1 * m_unitsPerEm);
+            const QPointF p2(paintElement->paint.linearGradient.x2 * m_unitsPerEm,
+                             paintElement->paint.linearGradient.y2 * m_unitsPerEm);
+
+            const QGradient::Spread spread
+                = extendToSpread(paintElement->paint.linearGradient.extendMode);
+            const QGradientStops gradientStops
+                = collectStops(paintElement->paint.linearGradient.gradientStopCount);
+
+            paintGraphRenderer->setLinearGradient(p0, p1, p2, spread, gradientStops);
+            paintGraphRenderer->drawCurrentPath();
+            break;
+        }
+
+    case DWRITE_PAINT_TYPE_GLYPH:
+        {
+            QPainterPath glyphPath = unscaledGlyph(paintElement->paint.glyph.glyphIndex);
+            paintGraphRenderer->appendPath(glyphPath);
+            if (!traverseChildren(1))
+                return false;
+            break;
+        }
+
+    case DWRITE_PAINT_TYPE_COLOR_GLYPH:
+    {
+        D2D_RECT_F rect = paintElement->paint.colorGlyph.clipBox;
+        QRect clipBox = QRectF(QPointF(rect.left, rect.top),
+                               QPointF(rect.right, rect.bottom)).toAlignedRect();
+        if (!clipBox.isEmpty()) {
+            QTransform coordinatesTransform;
+            coordinatesTransform.scale(m_unitsPerEm, m_unitsPerEm);
+            clipBox = coordinatesTransform.mapRect(clipBox);
+
+            paintGraphRenderer->setClip(clipBox);
+        }
+
+        DWRITE_PAINT_ELEMENT childElement;
+        if (FAILED(paintReader->MoveToFirstChild(&childElement)))
+            return false;
+
+        if (!traverseColr1(paintReader, face7, &childElement, paintGraphRenderer))
+            return false;
+
+        if (FAILED(paintReader->MoveToParent()))
+            return false;
+
+        break;
+    }
+
+    case DWRITE_PAINT_TYPE_TRANSFORM:
+    {
+        QTransform transform = matrixToTransform(paintElement->paint.transform, m_unitsPerEm);
+        paintGraphRenderer->prependTransform(transform);
+        if (!traverseChildren(1))
+            return false;
+
+        break;
+    }
+
+    default:
+        qCDebug(lcColrv1) << "Unhandled paint graph node type" << paintElement->paintType;
+        break;
+    };
+
+    return true;
+}
+
+bool QWindowsFontEngineDirectWrite::renderColr1GlyphRun(QImage *image,
+                                                        const DWRITE_GLYPH_RUN *glyphRun,
+                                                        const DWRITE_MATRIX &matrix,
+                                                        QColor color) const
+{
+    qCDebug(lcColrv1) << "renderColr1GlyphRun,"
+                      << "families:" << fontDef.families;
+    ComPtr<IDWriteFontFace7> face7;
+    HRESULT hr = m_directWriteFontFace->QueryInterface(__uuidof(IDWriteFontFace7),
+                                                       &face7);
+    if (SUCCEEDED(hr)) {
+        DWRITE_PAINT_FEATURE_LEVEL featureLevel =
+            face7->GetPaintFeatureLevel(DWRITE_GLYPH_IMAGE_FORMATS_COLR_PAINT_TREE);
+        if (featureLevel != DWRITE_PAINT_FEATURE_LEVEL_COLR_V1) {
+            qCDebug(lcColrv1) << "Unsupported feature level:" << featureLevel;
+            return true;
+        }
+
+        ComPtr<IDWritePaintReader> paintReader;
+        hr = face7->CreatePaintReader(DWRITE_GLYPH_IMAGE_FORMATS_COLR_PAINT_TREE,
+                                      featureLevel,
+                                      &paintReader);
+        if (FAILED(hr)) {
+            qErrnoWarning(hr, "%s: CreatePaintReader failed", __FUNCTION__);
+            return false;
+        }
+
+        Q_ASSERT(glyphRun->glyphCount == 1);
+        DWRITE_PAINT_ELEMENT paintElement;
+        D2D_RECT_F clipBox;
+        hr = paintReader->SetCurrentGlyph(glyphRun->glyphIndices[0],
+                                          &paintElement,
+                                          &clipBox,
+                                          nullptr);
+        if (FAILED(hr)) {
+            qErrnoWarning(hr, "%s: SetCurrentGlyph failed", __FUNCTION__);
+            return false;
+        }
+
+        if (paintElement.paintType == DWRITE_PAINT_TYPE_NONE) {
+            qCDebug(lcColrv1) << "Glyph" << glyphRun->glyphIndices[0]
+                              << "does not have a paint graph";
+            return false;
+        }
+
+        DWRITE_COLOR_F dwColor;
+        dwColor.r = color.redF();
+        dwColor.g = color.greenF();
+        dwColor.b = color.blueF();
+        dwColor.a = color.alphaF();
+        paintReader->SetTextColor(dwColor);
+
+        QRectF boundingRect = QRectF(QPointF(clipBox.left, clipBox.top),
+                                     QPointF(clipBox.right, clipBox.bottom));
+        if (boundingRect.isNull()) {
+            QColrPaintGraphRenderer boundingRectCalculator;
+            boundingRectCalculator.beginCalculateBoundingBox();
+            if (traverseColr1(paintReader.Get(), face7.Get(), &paintElement, &boundingRectCalculator))
+                boundingRect = boundingRectCalculator.boundingRect();
+        }
+
+        QTransform initialTransform;
+        initialTransform.scale(fontDef.pixelSize, fontDef.pixelSize);
+        boundingRect = initialTransform.mapRect(boundingRect);
+
+        QTransform originalXform = matrixToTransform(matrix);
+        boundingRect = originalXform.mapRect(boundingRect);
+
+        qCDebug(lcColrv1).noquote() << "Bounds of"
+                                    << glyphRun->glyphIndices[0]
+                                    << " in device coordinates:"
+                                    << boundingRect;
+
+        QColrPaintGraphRenderer graphRenderer;
+        graphRenderer.setBoundingRect(boundingRect);
+        graphRenderer.beginRender(fontDef.pixelSize / m_unitsPerEm, matrixToTransform(matrix));
+        if (!traverseColr1(paintReader.Get(), face7.Get(), &paintElement, &graphRenderer))
+            return false;
+
+        *image = graphRenderer.endRender();
+    } else {
+        qCDebug(lcColrv1) << "Font face does not support IDWriteFontFace7 interface";
+    }
+
+    return true;
+}
+#endif // QT_CONFIG(directwritecolrv1)
+
 QImage QWindowsFontEngineDirectWrite::renderColorGlyph(DWRITE_GLYPH_RUN *glyphRun,
                                                        const DWRITE_MATRIX &transform,
                                                        DWRITE_RENDERING_MODE renderMode,
@@ -848,124 +1367,130 @@ QImage QWindowsFontEngineDirectWrite::renderColorGlyph(DWRITE_GLYPH_RUN *glyphRu
 {
     QImage ret;
 
+#if QT_CONFIG(directwritecolrv1)
+    // Start by trying COLRv1 glyph, where we need to get the paint nodes ourselves and render
+    // them.
+    renderColr1GlyphRun(&ret, glyphRun, transform, color);
+#endif // QT_CONFIG(directwritecolrv1)
+
 #if QT_CONFIG(directwrite3)
-    ComPtr<IDWriteFactory4> factory4;
-    HRESULT hr = m_fontEngineData->directWriteFactory->QueryInterface(__uuidof(IDWriteFactory4),
-                                                                      &factory4);
-    if (SUCCEEDED(hr)) {
-        const DWRITE_GLYPH_IMAGE_FORMATS supportedBitmapFormats =
-            DWRITE_GLYPH_IMAGE_FORMATS(DWRITE_GLYPH_IMAGE_FORMATS_PNG
-                                        | DWRITE_GLYPH_IMAGE_FORMATS_JPEG
-                                        | DWRITE_GLYPH_IMAGE_FORMATS_TIFF);
+    // If not successful, we try the modern API that supports both embedded pixmaps or COLRv0
+    // glyphs, or a combination.
+    if (ret.isNull()) {
+        ComPtr<IDWriteFactory4> factory4;
+        HRESULT hr = m_fontEngineData->directWriteFactory->QueryInterface(__uuidof(IDWriteFactory4),
+                                                                          &factory4);
+        if (SUCCEEDED(hr)) {
+            const DWRITE_GLYPH_IMAGE_FORMATS supportedBitmapFormats =
+                DWRITE_GLYPH_IMAGE_FORMATS(DWRITE_GLYPH_IMAGE_FORMATS_PNG
+                                           | DWRITE_GLYPH_IMAGE_FORMATS_JPEG
+                                           | DWRITE_GLYPH_IMAGE_FORMATS_TIFF);
 
-        const DWRITE_GLYPH_IMAGE_FORMATS glyphFormats =
-            DWRITE_GLYPH_IMAGE_FORMATS(DWRITE_GLYPH_IMAGE_FORMATS_COLR
-                                        | supportedBitmapFormats
-                                        | DWRITE_GLYPH_IMAGE_FORMATS_TRUETYPE
-                                        | DWRITE_GLYPH_IMAGE_FORMATS_CFF);
+            const DWRITE_GLYPH_IMAGE_FORMATS glyphFormats =
+                DWRITE_GLYPH_IMAGE_FORMATS(DWRITE_GLYPH_IMAGE_FORMATS_COLR
+                                           | supportedBitmapFormats
+                                           | DWRITE_GLYPH_IMAGE_FORMATS_TRUETYPE
+                                           | DWRITE_GLYPH_IMAGE_FORMATS_CFF);
 
-        ComPtr<IDWriteColorGlyphRunEnumerator1> enumerator;
-        hr = factory4->TranslateColorGlyphRun(D2D1::Point2F(0.0f, 0.0f),
-                                              glyphRun,
-                                              NULL,
-                                              glyphFormats,
-                                              measureMode,
-                                              NULL,
-                                              0,
-                                              &enumerator);
-        if (FAILED(hr)) {
-            qErrnoWarning(hr, "%s: TranslateGlyphRun failed", __FUNCTION__);
-            return ret;
-        }
+            ComPtr<IDWriteColorGlyphRunEnumerator1> enumerator;
+            hr = factory4->TranslateColorGlyphRun(D2D1::Point2F(0.0f, 0.0f),
+                                                  glyphRun,
+                                                  NULL,
+                                                  glyphFormats,
+                                                  measureMode,
+                                                  NULL,
+                                                  0,
+                                                  &enumerator);
+            BOOL ok = true;
+            while (SUCCEEDED(hr) && ok) {
+                hr = enumerator->MoveNext(&ok);
+                if (!ok)
+                    break;
 
-        BOOL ok = true;
-        while (SUCCEEDED(hr) && ok) {
-            hr = enumerator->MoveNext(&ok);
-            if (!ok)
-                break;
-
-            const DWRITE_COLOR_GLYPH_RUN1 *colorGlyphRun = nullptr;
-            hr = enumerator->GetCurrentRun(&colorGlyphRun);
-            if (FAILED(hr)) {
-                qErrnoWarning(hr, "%s: IDWriteColorGlyphRunEnumerator::GetCurrentRun failed", __FUNCTION__);
-                return QImage{};
-            }
-
-            if (colorGlyphRun->glyphImageFormat == DWRITE_GLYPH_IMAGE_FORMATS_NONE) {
-                break;
-            } else if (colorGlyphRun->glyphImageFormat & DWRITE_GLYPH_IMAGE_FORMATS_COLR) {
-                if (ret.isNull()) {
-                    ret = QImage(boundingRect.width() - 1,
-                                 boundingRect.height() - 1,
-                                 QImage::Format_ARGB32_Premultiplied);
-                    ret.fill(0);
-                }
-
-                if (!renderColr0GlyphRun(&ret,
-                                         reinterpret_cast<const DWRITE_COLOR_GLYPH_RUN *>(colorGlyphRun), // Broken inheritance in MinGW
-                                         transform,
-                                         renderMode,
-                                         measureMode,
-                                         gridFitMode,
-                                         color,
-                                         boundingRect)) {
+                const DWRITE_COLOR_GLYPH_RUN1 *colorGlyphRun = nullptr;
+                hr = enumerator->GetCurrentRun(&colorGlyphRun);
+                if (FAILED(hr)) {
+                    qErrnoWarning(hr, "%s: IDWriteColorGlyphRunEnumerator::GetCurrentRun failed", __FUNCTION__);
                     return QImage{};
                 }
-            } else if (colorGlyphRun->glyphImageFormat & supportedBitmapFormats) {
-                ComPtr<IDWriteFontFace4> face4;
-                if (SUCCEEDED(m_directWriteFontFace->QueryInterface(__uuidof(IDWriteFontFace4),
-                                                                    &face4))) {
-                    DWRITE_GLYPH_IMAGE_DATA data;
-                    void *ctx;
-                    Q_ASSERT(glyphRun->glyphCount == 1);
-                    HRESULT hr = face4->GetGlyphImageData(glyphRun->glyphIndices[0],
-                                                          fontDef.pixelSize,
-                                                          DWRITE_GLYPH_IMAGE_FORMATS(colorGlyphRun->glyphImageFormat & supportedBitmapFormats),
-                                                          &data,
-                                                          &ctx);
-                    if (FAILED(hr)) {
-                        qErrnoWarning("%s: GetGlyphImageData failed", __FUNCTION__);
-                        return QImage{};
+
+                if (colorGlyphRun->glyphImageFormat == DWRITE_GLYPH_IMAGE_FORMATS_NONE) {
+                    break;
+                } else if (colorGlyphRun->glyphImageFormat == DWRITE_GLYPH_IMAGE_FORMATS_COLR) {
+                    if (ret.isNull()) {
+                        ret = QImage(boundingRect.width() - 1,
+                                     boundingRect.height() - 1,
+                                     QImage::Format_ARGB32_Premultiplied);
+                        ret.fill(0);
                     }
 
-                    const char *format;
-                    switch (colorGlyphRun->glyphImageFormat) {
-                    case DWRITE_GLYPH_IMAGE_FORMATS_JPEG:
-                        format = "JPEG";
-                        break;
-                    case DWRITE_GLYPH_IMAGE_FORMATS_TIFF:
-                        format = "TIFF";
-                        break;
-                    default:
-                        format = "PNG";
-                        break;
-                    };
+                    if (!renderColr0GlyphRun(&ret,
+                                             reinterpret_cast<const DWRITE_COLOR_GLYPH_RUN *>(colorGlyphRun), // Broken inheritance in MinGW
+                                             transform,
+                                             renderMode,
+                                             measureMode,
+                                             gridFitMode,
+                                             color,
+                                             boundingRect)) {
+                        return QImage{};
+                    }
+                } else if (colorGlyphRun->glyphImageFormat & supportedBitmapFormats) {
+                    ComPtr<IDWriteFontFace4> face4;
+                    if (SUCCEEDED(m_directWriteFontFace->QueryInterface(__uuidof(IDWriteFontFace4),
+                                                                        &face4))) {
+                        DWRITE_GLYPH_IMAGE_DATA data;
+                        void *ctx;
+                        Q_ASSERT(glyphRun->glyphCount == 1);
+                        HRESULT hr = face4->GetGlyphImageData(glyphRun->glyphIndices[0],
+                                                              fontDef.pixelSize,
+                                                              DWRITE_GLYPH_IMAGE_FORMATS(colorGlyphRun->glyphImageFormat & supportedBitmapFormats),
+                                                              &data,
+                                                              &ctx);
+                        if (FAILED(hr)) {
+                            qErrnoWarning("%s: GetGlyphImageData failed", __FUNCTION__);
+                            return QImage{};
+                        }
 
-                    ret = QImage::fromData(reinterpret_cast<const uchar *>(data.imageData),
-                                           data.imageDataSize,
-                                           format);
+                        const char *format;
+                        switch (colorGlyphRun->glyphImageFormat) {
+                        case DWRITE_GLYPH_IMAGE_FORMATS_JPEG:
+                            format = "JPEG";
+                            break;
+                        case DWRITE_GLYPH_IMAGE_FORMATS_TIFF:
+                            format = "TIFF";
+                            break;
+                        default:
+                            format = "PNG";
+                            break;
+                        };
 
-                    QTransform matrix(transform.m11, transform.m12,
-                                      transform.m21, transform.m22,
-                                      transform.dx, transform.dy);
+                        ret = QImage::fromData(reinterpret_cast<const uchar *>(data.imageData),
+                                               data.imageDataSize,
+                                               format);
 
-                    const qreal scale = fontDef.pixelSize / data.pixelsPerEm;
-                    matrix.scale(scale, scale);
+                        QTransform matrix(transform.m11, transform.m12,
+                                          transform.m21, transform.m22,
+                                          transform.dx, transform.dy);
 
-                    if (!matrix.isIdentity())
-                        ret = ret.transformed(matrix, Qt::SmoothTransformation);
+                        const qreal scale = fontDef.pixelSize / data.pixelsPerEm;
+                        matrix.scale(scale, scale);
 
-                    face4->ReleaseGlyphImageData(ctx);
+                        if (!matrix.isIdentity())
+                            ret = ret.transformed(matrix, Qt::SmoothTransformation);
+
+                        face4->ReleaseGlyphImageData(ctx);
+                    }
+
+                } else {
+                    qCDebug(lcQpaFonts) << "Found glyph run with unsupported format"
+                                        << colorGlyphRun->glyphImageFormat;
                 }
-
-            } else {
-                qCDebug(lcQpaFonts) << "Found glyph run with unsupported format"
-                                    << colorGlyphRun->glyphImageFormat;
             }
         }
     }
 #endif // QT_CONFIG(directwrite3)
 
+    // If all else fails, we go through the pre-dwrite3 version, which just supports COLRv0.
     if (ret.isNull()) {
         ComPtr<IDWriteFactory2> factory2;
         HRESULT hr = m_fontEngineData->directWriteFactory->QueryInterface(__uuidof(IDWriteFactory2),
@@ -1092,7 +1617,9 @@ QImage QWindowsFontEngineDirectWrite::imageForGlyph(glyph_t t,
     }
 
     if (SUCCEEDED(hr)) {
-        QRect rect = alphaTextureBounds(t, transform);
+        QRect rect = paintGraphBounds(t, transform);
+        if (rect.isEmpty())
+            rect = alphaTextureBounds(t, transform);
         if (rect.isEmpty())
             rect = colorBitmapBounds(t, transform);
 
@@ -1467,8 +1994,12 @@ glyph_metrics_t QWindowsFontEngineDirectWrite::alphaMapBoundingBox(glyph_t glyph
     transform.m21 = matrix.m21();
     transform.m22 = matrix.m22();
 
-    // Try general approach first (works with regular truetype glyphs as well as COLRv0)
-    QRect rect = alphaTextureBounds(glyph, transform);
+    // Try COLRv1 approach first
+    QRect rect = paintGraphBounds(glyph, transform);
+
+    // Then try general approach (works with regular truetype glyphs as well as COLRv0)
+    if (rect.isEmpty())
+        rect = alphaTextureBounds(glyph, transform);
 
     // If this fails, we check if it is an embedded color bitmap
     if (rect.isEmpty())

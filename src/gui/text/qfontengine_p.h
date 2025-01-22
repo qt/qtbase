@@ -42,6 +42,8 @@ enum HB_Compat_Error {
 typedef void (*qt_destroy_func_t) (void *user_data);
 typedef bool (*qt_get_font_table_func_t) (void *user_data, uint tag, uchar *buffer, uint *length);
 
+Q_DECLARE_LOGGING_CATEGORY(lcColrv1)
+
 class Q_GUI_EXPORT QFontEngine
 {
 public:

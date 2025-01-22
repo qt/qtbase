@@ -234,6 +234,7 @@ qt_internal_add_module(Gui
         rhi/qshader.cpp rhi/qshader.h rhi/qshader_p.h
         rhi/qshaderdescription.cpp rhi/qshaderdescription.h rhi/qshaderdescription_p.h
         text/qabstracttextdocumentlayout.cpp text/qabstracttextdocumentlayout.h text/qabstracttextdocumentlayout_p.h
+        text/qcolrpaintgraphrenderer.cpp text/qcolrpaintgraphrenderer_p.h
         text/qdistancefield.cpp text/qdistancefield_p.h
         text/qfont.cpp text/qfont.h text/qfont_p.h
         text/qfontdatabase.cpp text/qfontdatabase.h text/qfontdatabase_p.h
