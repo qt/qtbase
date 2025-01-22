@@ -34,10 +34,20 @@ endfunction()
 # DEFINES - extra environment variable assignments of the form ENV_VAR=VALUE, which should be set
 # during qdoc execution.
 #
+# QDOC_EXTRA_ARGS - extra command-line arguments to pass to qdoc in both prepare and generate
+# phases.
+#
+# QDOC_PREPARE_EXTRA_ARGS - extra command-line arguments to pass to qdoc in the prepare phase.
+#
+# QDOC_GENERATE_EXTRA_ARGS - extra command-line arguments to pass to qdoc in the generate phase.
+#
 # Additional environment variables considered:
 # QT_INSTALL_DOCS - directory path where the qt docs were expected to be installed, used for
 # linking to other built docs. If not set, defaults to the qtbase or qt5 build directory, or the
 # install directory extracted from the BuildInternals package.
+#
+# QT_QDOC_EXTRA_ARGS, QT_QDOC_PREPARE_EXTRA_ARGS, QT_QDOC_GENERATE_EXTRA_ARGS - same as the options
+# but can be set as either environment or cmake variables.
 function(qt_internal_add_docs)
     if(NOT QT_BUILD_DOCS)
         return()
@@ -67,6 +77,9 @@ function(qt_internal_add_docs)
     set(multi_args
         INDEX_DIRECTORIES
         DEFINES
+        QDOC_EXTRA_ARGS
+        QDOC_PREPARE_EXTRA_ARGS
+        QDOC_GENERATE_EXTRA_ARGS
     )
     cmake_parse_arguments(PARSE_ARGV 2 arg "${opt_args}" "${single_args}" "${multi_args}")
     _qt_internal_validate_all_args_are_parsed(arg)
@@ -80,6 +93,18 @@ function(qt_internal_add_docs)
         foreach(index_directory ${arg_INDEX_DIRECTORIES})
             list(APPEND qdoc_extra_args "--indexdir" ${index_directory})
         endforeach()
+    endif()
+
+    if(arg_QDOC_EXTRA_ARGS)
+        list(APPEND qdoc_extra_args ${arg_QDOC_EXTRA_ARGS})
+    endif()
+
+    if(QT_QDOC_EXTRA_ARGS)
+        list(APPEND qdoc_extra_args ${QT_QDOC_EXTRA_ARGS})
+    endif()
+
+    if(DEFINED ENV{QT_QDOC_EXTRA_ARGS})
+        list(APPEND qdoc_extra_args $ENV{QT_QDOC_EXTRA_ARGS})
     endif()
 
     # If a target is not built (which can happen for tools when crosscompiling), we shouldn't try
@@ -186,6 +211,18 @@ function(qt_internal_add_docs)
         )
     endif()
 
+    if(arg_QDOC_PREPARE_EXTRA_ARGS)
+        list(APPEND prepare_qdoc_args ${arg_QDOC_PREPARE_EXTRA_ARGS})
+    endif()
+
+    if(QT_QDOC_PREPARE_EXTRA_ARGS)
+        list(APPEND prepare_qdoc_args ${QT_QDOC_PREPARE_EXTRA_ARGS})
+    endif()
+
+    if(DEFINED ENV{QT_QDOC_PREPARE_EXTRA_ARGS})
+        list(APPEND prepare_qdoc_args $ENV{QT_QDOC_PREPARE_EXTRA_ARGS})
+    endif()
+
     if(DEFINED ENV{QT_INSTALL_DOCS})
         if(NOT EXISTS "$ENV{QT_INSTALL_DOCS}")
             message(FATAL_ERROR
@@ -238,6 +275,18 @@ function(qt_internal_add_docs)
             -installdir "${QT_INSTALL_DIR}/${INSTALL_DOCDIR}"
             ${qdoc_extra_args}
         )
+    endif()
+
+    if(arg_QDOC_GENERATE_EXTRA_ARGS)
+        list(APPEND generate_qdoc_args ${arg_QDOC_GENERATE_EXTRA_ARGS})
+    endif()
+
+    if(QT_QDOC_GENERATE_EXTRA_ARGS)
+        list(APPEND generate_qdoc_args ${QT_QDOC_GENERATE_EXTRA_ARGS})
+    endif()
+
+    if(DEFINED ENV{QT_QDOC_GENERATE_EXTRA_ARGS})
+        list(APPEND generate_qdoc_args $ENV{QT_QDOC_GENERATE_EXTRA_ARGS})
     endif()
 
     foreach(target_prefix generate_top_level_docs generate_repo_docs generate_docs)
