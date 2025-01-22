@@ -11,7 +11,7 @@
 
 QT_BEGIN_NAMESPACE
 
-
+class QDataStream;
 class QString;
 
 struct QLatin1Char

@@ -12,7 +12,6 @@
 
 QT_BEGIN_NAMESPACE
 
-class QDataStream;
 template<typename Enum> class QFlags;
 
 class QFlag
@@ -206,10 +205,6 @@ private:
         return (it == end ? Int(0) : (Int(*it) | initializer_list_helper(it + 1, end)));
     }
 
-#ifndef QT_NO_DATASTREAM
-    template <typename E> friend QDataStream &operator<<(QDataStream &, QFlags<E>);
-    template <typename E> friend QDataStream &operator>>(QDataStream &, QFlags<E> &);
-#endif
     using Base::i;
 };
 

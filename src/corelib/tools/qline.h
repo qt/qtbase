@@ -8,6 +8,7 @@
 
 QT_BEGIN_NAMESPACE
 
+class QDataStream;
 class QLineF;
 
 /*******************************************************************************
