@@ -41,6 +41,8 @@ endfunction()
 #
 # QDOC_GENERATE_EXTRA_ARGS - extra command-line arguments to pass to qdoc in the generate phase.
 #
+# SHOW_INTERNAL - if set, the --showinternal option is passed to qdoc.
+#
 # Additional environment variables considered:
 # QT_INSTALL_DOCS - directory path where the qt docs were expected to be installed, used for
 # linking to other built docs. If not set, defaults to the qtbase or qt5 build directory, or the
@@ -48,6 +50,9 @@ endfunction()
 #
 # QT_QDOC_EXTRA_ARGS, QT_QDOC_PREPARE_EXTRA_ARGS, QT_QDOC_GENERATE_EXTRA_ARGS - same as the options
 # but can be set as either environment or cmake variables.
+#
+# QT_QDOC_SHOW_INTERNAL - same as the option but can be set as either an environment or
+# cmake variable.
 function(qt_internal_add_docs)
     if(NOT QT_BUILD_DOCS)
         return()
@@ -72,7 +77,9 @@ function(qt_internal_add_docs)
     set(target ${ARGV0})
     set(qdoc_conf_path ${ARGV1})
 
-    set(opt_args "")
+    set(opt_args
+        SHOW_INTERNAL
+    )
     set(single_args "")
     set(multi_args
         INDEX_DIRECTORIES
@@ -93,6 +100,14 @@ function(qt_internal_add_docs)
         foreach(index_directory ${arg_INDEX_DIRECTORIES})
             list(APPEND qdoc_extra_args "--indexdir" ${index_directory})
         endforeach()
+    endif()
+
+    set(show_internal_env FALSE)
+    if(DEFINED ENV{QT_QDOC_SHOW_INTERNAL})
+        set(show_internal_env $ENV{QT_QDOC_SHOW_INTERNAL})
+    endif()
+    if(arg_SHOW_INTERNAL OR QT_QDOC_SHOW_INTERNAL OR show_internal_env)
+        list(APPEND qdoc_extra_args "--showinternal")
     endif()
 
     if(arg_QDOC_EXTRA_ARGS)
