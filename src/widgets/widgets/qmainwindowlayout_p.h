@@ -289,7 +289,7 @@ QList<int> QMainWindowLayoutSeparatorHelper<Layout>::findSeparator(const QPoint 
     Layout *layout = const_cast<Layout*>(this->layout());
 #if QT_CONFIG(toolbar)
     QToolBarAreaLayout *toolBarAreaLayout = layout->toolBarAreaLayout();
-    if (!toolBarAreaLayout->isEmpty()) {
+    if (toolBarAreaLayout && !toolBarAreaLayout->isEmpty()) {
         // We might have a toolbar that is currently expanded, covering
         // parts of the dock area, in which case we don't want the dock
         // area layout to treat mouse events for the expanded toolbar as
