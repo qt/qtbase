@@ -38,6 +38,7 @@ QT_BEGIN_NAMESPACE
 
 class QFontEngineFTRawFont;
 class QFontconfigDatabase;
+class QColrPaintGraphRenderer;
 
 #if defined(FT_COLOR_H) && (FREETYPE_MAJOR*10000 + FREETYPE_MINOR*100 + FREETYPE_PATCH) >= 21300
 #  define QFONTENGINE_FT_SUPPORT_COLRV1
@@ -332,20 +333,12 @@ private:
                            const QColor &color,
                            bool fetchMetricsOnly) const;
 
-    struct Colr1PaintInfo {
-        QTransform transform;
-        QPainterPath currentPath;
-        QPainter *painter = nullptr;
-        FT_Color *palette = nullptr;
-        ushort paletteCount = 0;
-        QRect boundingRect;
-        QRect designCoordinateBoundingRect;
-        QSet<QPair<FT_Byte *, FT_Bool> > loops;
-        QColor foregroundColor;
-    };
-
     bool traverseColr1(FT_OpaquePaint paint,
-                       Colr1PaintInfo *paintInfo) const;
+                       QSet<QPair<FT_Byte *, FT_Bool> > *loops,
+                       QColor foregroundColor,
+                       FT_Color *palette,
+                       ushort paletteCount,
+                       QColrPaintGraphRenderer *paintGraphRenderer) const;
     mutable glyph_t colrv1_bounds_cache_id = 0;
     mutable QRect colrv1_bounds_cache;
 #endif // QFONTENGINE_FT_SUPPORT_COLRV1
