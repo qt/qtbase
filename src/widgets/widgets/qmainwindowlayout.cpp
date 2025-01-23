@@ -277,8 +277,7 @@ public:
 #if QT_CONFIG(toolbar)
     QToolBarAreaLayout *toolBarAreaLayout()
     {
-        auto *mainWindow = static_cast<QMainWindow*>(parentWidget());
-        return qt_mainwindow_layout(mainWindow)->toolBarAreaLayout();
+        return nullptr; // QDockWidgetGroupWindow doesn't have toolbars
     }
 #endif
 
