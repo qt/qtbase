@@ -3419,8 +3419,11 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
         case QGles2CommandBuffer::Command::BindFramebuffer:
         {
             QVarLengthArray<GLenum, 8> bufs;
-            if (cmd.args.bindFramebuffer.fbo) {
-                f->glBindFramebuffer(GL_FRAMEBUFFER, cmd.args.bindFramebuffer.fbo);
+            GLuint fbo = cmd.args.bindFramebuffer.fbo;
+            if (!fbo)
+                fbo = ctx->defaultFramebufferObject();
+            f->glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+            if (fbo) {
                 const int colorAttCount = cmd.args.bindFramebuffer.colorAttCount;
                 bufs.append(colorAttCount > 0 ? GL_COLOR_ATTACHMENT0 : GL_NONE);
                 if (caps.maxDrawBuffers > 1) {
@@ -3428,7 +3431,6 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                         bufs.append(GL_COLOR_ATTACHMENT0 + uint(i));
                 }
             } else {
-                f->glBindFramebuffer(GL_FRAMEBUFFER, ctx->defaultFramebufferObject());
                 if (cmd.args.bindFramebuffer.stereo && cmd.args.bindFramebuffer.stereoTarget == QRhiSwapChain::RightBuffer)
                     bufs.append(GL_BACK_RIGHT);
                 else
