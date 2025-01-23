@@ -1317,9 +1317,14 @@ static_assert(!std::is_convertible_v<std::nullptr_t, bool>,
 
 #if defined(QT_BOOTSTRAPPED) || defined(QT_USE_PROTECTED_VISIBILITY) || !defined(__ELF__) || defined(__PIC__)
 // this is fine
+#elif defined(__PIE__)
+#  error "-fPIE is not sufficient if Qt was configured with the -DFEATURE_reduce_relocations=ON "\
+         "CMake option. Compile your code with -fPIC and without -fPIE or compile Qt with "\
+         "-DFEATURE_no_direct_extern_access=ON."
 #elif defined(QT_REDUCE_RELOCATIONS)
-#  error "You must build your code with position independent code if Qt was configured with -reduce-relocations. "\
-         "Compile your code with -fPIC (and not with -fPIE)."
+#  error "You must build your code with position independent code if Qt was configured with the "\
+         "-DFEATURE_reduce_relocations=ON CMake option. Compile your code with -fPIC and "\
+         "without -fPIE or compile Qt with -DFEATURE_no_direct_extern_access=ON."
 #endif
 
 #ifdef Q_PROCESSOR_X86_32
