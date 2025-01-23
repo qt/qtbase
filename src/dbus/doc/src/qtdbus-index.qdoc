@@ -84,7 +84,7 @@
   \title D-Bus Viewer
   \keyword qdbusviewer
 
-  The Qt D-Bus Viewer is a tool that lets you introspect D-Bus objects and messages. You can
+  The Qt D-Bus Viewer (\c {qdbusviewer}) is a tool that lets you introspect D-Bus objects and messages. You can
   choose between the system bus and the session bus. Click on any service on the list
   on the left side to see all the exported objects.
 

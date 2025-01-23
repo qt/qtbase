@@ -20,7 +20,7 @@
     \li \l {D-Bus Viewer}
     \li \l {CMake Commands in Qt6 DBus}
     \li \l {CMake Source File Properties in Qt6 DBus}
-    \li \l {Changes to Qt D-Bus}{Upgrading to Qt 5}
+    \li \l {Changes to Qt D-Bus}{Upgrading from Qt 5}
     \endlist
 
 */
