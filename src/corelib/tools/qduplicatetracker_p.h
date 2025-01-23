@@ -76,7 +76,7 @@ public:
             false
         #endif
             ;
-    QDuplicateTracker() = default;
+    QDuplicateTracker() {} // don't `= default`, lest we value-initialize `buffer`
     explicit QDuplicateTracker(qsizetype n)
 #ifdef __cpp_lib_memory_resource
         : set{size_t(n), &res}
