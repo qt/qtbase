@@ -51,7 +51,7 @@
     \note For the current keyboard input locale take a look at
     QInputMethod::locale().
 
-    QLocale's data is based on Common Locale Data Repository v46.
+    QLocale's data is based on Common Locale Data Repository v46.1.
 
     \section1 Matching combinations of language, script and territory
 
