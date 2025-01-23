@@ -258,7 +258,12 @@ enum KnownValue {
     Value_Link,
     Value_LinkVisited,
     Value_AlternateBase,
-    Value_LastColorRole = Value_AlternateBase,
+    Value_NoRole,
+    Value_ToolTipBase,
+    Value_ToolTipText,
+    Value_PlaceholderText,
+    Value_Accent,
+    Value_LastColorRole = Value_Accent,
 
     Value_Disabled,
     Value_Active,
