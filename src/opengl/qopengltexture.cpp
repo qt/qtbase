@@ -4441,7 +4441,8 @@ void QOpenGLTexture::setWrapMode(QOpenGLTexture::WrapMode mode)
 }
 
 /*!
-    Holds the texture dimension \a direction.
+    Sets the wrap (or repeat mode) for the texture dimension \a direction
+    to \a mode.
     \overload
 */
 void QOpenGLTexture::setWrapMode(QOpenGLTexture::CoordinateDirection direction, QOpenGLTexture::WrapMode mode)
