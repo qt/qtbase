@@ -481,7 +481,7 @@ class LocaleScanner (object):
                 elif tag in ('long', 'short'):
                     data[tag] = self.__zoneNames(child, data.get(tag, {}))
                 # Ignore any other child nodes.
-        yield 'zoneNaming', {k: self.__cleanZone(v) for k, v in zones.items() if v}
+        yield 'zoneNaming', self.__cleanZoneMap(zones)
 
         metazones: dict[str, dict[str, str]] = {}
         for elt in self.__find(f'{stem}/metazone', allDull=True, mustFind=False):
@@ -494,7 +494,7 @@ class LocaleScanner (object):
                 if tag in ('long', 'short'):
                     data[tag] = self.__zoneNames(child, data.get(tag, {}))
                 # Ignore any other child nodes.
-        yield 'metaZoneNaming', {k: self.__cleanZone(v) for k, v in metazones.items() if v}
+        yield 'metaZoneNaming', self.__cleanZoneMap(metazones)
 
     # Implementation details
     __nameForms = (
@@ -603,13 +603,32 @@ class LocaleScanner (object):
 
         return data
 
+    @classmethod
+    def __cleanZoneMap(cls, zoneMap: dict[str, dict[str, str|dict[str, str]]]
+                       ) -> dict[str, dict[str, str|tuple[str|None, str|None, str|None]]]:
+        # In v46.1, tk.xml's Acre metazone merely inherited a generic
+        # long name; but root provides no metazone data for it to
+        # inherit. So it ended up with {'long': (None, None, None)}
+        # for metaZoneNaming['Acre'].
+        return {k: v # Discard any keys for which __cleanZone() empties v:
+                for k, v in ((k, cls.__cleanZone(v)) for k, v in zoneMap.items())
+                if v}
+
     @staticmethod
     def __cleanZone(data: dict[str, str|dict[str, str]], keys = ('generic', 'standard', 'daylight')
                     ) -> dict[str, str|tuple[str|None, str|None, str|None]]:
         if 'long' in data:
-            data['long'] = tuple(data['long'].get(k) for k in keys)
+            triad = tuple(data['long'].get(k) for k in keys)
+            if any(triad):
+                data['long'] = triad
+            else:
+                del data['long']
         if 'short' in data:
-            data['short'] = tuple(data['short'].get(k) for k in keys)
+            triad = tuple(data['short'].get(k) for k in keys)
+            if any(triad):
+                data['short'] = triad
+            else:
+                del data['short']
         # Leave any other keys alone.
         return data
 
