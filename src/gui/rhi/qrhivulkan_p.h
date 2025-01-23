@@ -1079,6 +1079,7 @@ public:
 #endif
 
     QVarLengthArray<VkSemaphore, 4> waitSemaphoresForQueueSubmit;
+    QVarLengthArray<VkPipelineStageFlags, 4> semaphoresWaitMasksForQueueSubmit;
     QVarLengthArray<VkSemaphore, 4> signalSemaphoresForQueueSubmit;
     QVarLengthArray<VkSemaphore, 4> waitSemaphoresForPresent;
 };

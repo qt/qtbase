@@ -2789,17 +2789,16 @@ QRhi::FrameOpResult QRhiVulkan::endAndSubmitPrimaryCommandBuffer(VkCommandBuffer
     if (signalSem)
         signalSemaphoresForQueueSubmit.append(*signalSem);
 
+    submitInfo.waitSemaphoreCount = uint32_t(waitSemaphoresForQueueSubmit.count());
     if (!waitSemaphoresForQueueSubmit.isEmpty()) {
-        submitInfo.waitSemaphoreCount = uint32_t(waitSemaphoresForQueueSubmit.count());
         submitInfo.pWaitSemaphores = waitSemaphoresForQueueSubmit.constData();
+        semaphoresWaitMasksForQueueSubmit.resize(waitSemaphoresForQueueSubmit.count(), VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+        submitInfo.pWaitDstStageMask = semaphoresWaitMasksForQueueSubmit.constData();
     }
+    submitInfo.signalSemaphoreCount = uint32_t(signalSemaphoresForQueueSubmit.count());
     if (!signalSemaphoresForQueueSubmit.isEmpty()) {
-        submitInfo.signalSemaphoreCount = uint32_t(signalSemaphoresForQueueSubmit.count());
         submitInfo.pSignalSemaphores = signalSemaphoresForQueueSubmit.constData();
     }
-
-    VkPipelineStageFlags psf = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    submitInfo.pWaitDstStageMask = &psf;
 
     err = df->vkQueueSubmit(gfxQueue, 1, &submitInfo, cmdFence);
 
