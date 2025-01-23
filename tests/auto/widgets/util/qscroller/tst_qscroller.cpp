@@ -7,6 +7,8 @@
 #include <QtWidgets/qscroller.h>
 #include <QtWidgets/qwidget.h>
 
+#include "private/qscroller_p.h"
+
 #include <QtGui/qevent.h>
 #include <QtGui/qpointingdevice.h>
 #include <QtGui/qstylehints.h>
@@ -467,6 +469,26 @@ void tst_QScroller::overshoot()
     sp1.setScrollMetric(QScrollerProperties::HorizontalOvershootPolicy, QVariant::fromValue(QScrollerProperties::OvershootAlwaysOff));
     s1->setScrollerProperties(sp1);
     kineticScrollNoTest(sw.data(), QPointF(500, 500), QPoint(0, 0), QPoint(400, 0), QPoint(490, 0));
+
+    QTRY_COMPARE(s1->state(), QScroller::Inactive);
+
+    QVERIFY(qFuzzyCompare(sw->currentPos.x(), 0));
+    QVERIFY(qFuzzyCompare(sw->currentPos.y(), 500));
+    QCOMPARE(sw->receivedOvershoot, false);
+
+    // -- try to scroll with overshoot (always off, slow)
+    sw->reset();
+    sw->scrollArea = QRectF(0, 0, 1000, 1000);
+
+    sp1.setScrollMetric(QScrollerProperties::HorizontalOvershootPolicy, QVariant::fromValue(QScrollerProperties::OvershootAlwaysOff));
+    s1->setScrollerProperties(sp1);
+    kineticScrollNoTest(sw.data(), QPointF(500, 500), QPoint(0, 0), QPoint(200, 0), QPoint(215, 0));
+
+    // Check that segment parameters are consistent
+    QScrollerPrivate* priv = s1->d_func();
+    QVERIFY(priv->xSegments.size() == 1);
+    auto& segment = priv->xSegments.head();
+    QVERIFY(segment.startPos + segment.deltaPos < segment.stopPos);
 
     QTRY_COMPARE(s1->state(), QScroller::Inactive);
 

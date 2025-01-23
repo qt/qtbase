@@ -9,6 +9,8 @@
 #include <QtCore/QPointF>
 #include <QtWidgets/QScrollerProperties>
 
+class tst_QScroller;
+
 QT_REQUIRE_CONFIG(scroller);
 
 QT_BEGIN_NAMESPACE
@@ -106,6 +108,7 @@ private:
     Q_DISABLE_COPY(QScroller)
     Q_DECLARE_PRIVATE(QScroller)
 
+    friend class ::tst_QScroller;
 #ifndef QT_NO_GESTURES
     friend class QFlickGestureRecognizer;
 #endif
