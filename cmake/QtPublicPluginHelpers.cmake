@@ -488,6 +488,20 @@ function(__qt_internal_apply_plugin_imports_finalizer_mode target)
     set_target_properties(${target} PROPERTIES _qt_plugin_finalizer_imports_processed TRUE)
 endfunction()
 
+# TODO: Figure out how to do this more reliably, instead of parsing the file name to get
+# the target name.
+function(__qt_internal_get_target_name_from_plugin_config_file_name
+        config_file_path
+        package_prefix_regex
+        out_var)
+    string(REGEX REPLACE
+        "^.*/${QT_CMAKE_EXPORT_NAMESPACE}(${package_prefix_regex})Config.cmake$"
+        "\\1"
+        target "${config_file_path}")
+
+    set(${out_var} "${target}" PARENT_SCOPE)
+endfunction()
+
 # Include CMake plugin packages that belong to the Qt module ${target} and initialize automatic
 # linkage of the plugins in static builds.
 # The variables inside the macro have to be named unique to the module because an included Plugin
@@ -511,11 +525,14 @@ macro(__qt_internal_include_plugin_packages target)
     file(GLOB __qt_${target}_plugin_config_files
         "${CMAKE_CURRENT_LIST_DIR}/${QT_CMAKE_EXPORT_NAMESPACE}*PluginConfig.cmake")
     foreach(__qt_${target}_plugin_config_file ${__qt_${target}_plugin_config_files})
-        string(REGEX REPLACE
-            "^.*/${QT_CMAKE_EXPORT_NAMESPACE}(.*Plugin)Config.cmake$"
-            "\\1"
-            __qt_${target}_qt_plugin "${__qt_${target}_plugin_config_file}")
         include("${__qt_${target}_plugin_config_file}")
+
+        __qt_internal_get_target_name_from_plugin_config_file_name(
+            "${__qt_${target}_plugin_config_file}"
+            "(.*Plugin)"
+            __qt_${target}_qt_plugin
+        )
+
         if(TARGET "${QT_CMAKE_EXPORT_NAMESPACE}::${__qt_${target}_qt_plugin}")
             list(APPEND __qt_${target}_plugins ${__qt_${target}_qt_plugin})
         endif()
@@ -639,6 +656,24 @@ macro(__qt_internal_include_qml_plugin_packages)
         # For the second round of inclusions, check and bail out early if there are errors.
         foreach(__qt_qml_plugin_config_file ${__qt_qml_plugins_config_file_list})
             include(${__qt_qml_plugin_config_file})
+
+            __qt_internal_get_target_name_from_plugin_config_file_name(
+                "${__qt_qml_plugin_config_file}"
+                "(.*)"
+                __qt_qml_plugin_target
+            )
+            set(__qt_qml_plugin_target_versioned
+                "${QT_CMAKE_EXPORT_NAMESPACE}::${__qt_qml_plugin_target}")
+
+            if(TARGET "${__qt_qml_plugin_target_versioned}"
+                AND NOT "${__qt_qml_plugin_target}"
+                    IN_LIST QT_ALL_QML_PLUGINS_FOUND_VIA_FIND_PACKAGE)
+                list(APPEND QT_ALL_QML_PLUGINS_FOUND_VIA_FIND_PACKAGE "${__qt_qml_plugin_target}")
+                list(APPEND QT_ALL_QML_PLUGINS_VERSIONED_FOUND_VIA_FIND_PACKAGE
+                    "${__qt_qml_plugin_target_versioned}")
+            endif()
+            unset(__qt_qml_plugin_target)
+            unset(__qt_qml_plugin_target_versioned)
 
             if(${CMAKE_FIND_PACKAGE_NAME}_NOT_FOUND_MESSAGE)
                 string(APPEND ${CMAKE_FIND_PACKAGE_NAME}_NOT_FOUND_MESSAGE
