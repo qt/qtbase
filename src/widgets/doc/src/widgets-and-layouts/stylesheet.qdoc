@@ -3451,8 +3451,11 @@
               | \c link-visited \br
               | \c mid \br
               | \c midlight \br
+              | \c placeholder-text \br
               | \c shadow \br
               | \c text \br
+              | \c tooltip-base \br
+              | \c tooltip-text \br
               | \c window \br
               | \c window-text \br
         \li These values correspond the \l{QPalette::ColorRole}{Color roles}

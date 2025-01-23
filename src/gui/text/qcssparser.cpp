@@ -161,6 +161,7 @@ static const QCssKnownValue properties[NumProperties - 1] = {
 };
 
 static const QCssKnownValue values[NumKnownValues - 1] = {
+    { "accent", Value_Accent },
     { "active", Value_Active },
     { "alternate-base", Value_AlternateBase },
     { "always", Value_Always },
@@ -204,6 +205,7 @@ static const QCssKnownValue values[NumKnownValues - 1] = {
     { "midlight", Value_Midlight },
     { "miterjoin", Value_MiterJoin},
     { "native", Value_Native },
+    { "no-role", Value_NoRole },
     { "none", Value_None },
     { "normal", Value_Normal },
     { "nowrap", Value_NoWrap },
@@ -212,6 +214,7 @@ static const QCssKnownValue values[NumKnownValues - 1] = {
     { "on", Value_On },
     { "outset", Value_Outset },
     { "overline", Value_Overline },
+    { "placeholder-text", Value_PlaceholderText },
     { "pre", Value_Pre },
     { "pre-line", Value_PreLine },
     { "pre-wrap", Value_PreWrap },
@@ -230,6 +233,8 @@ static const QCssKnownValue values[NumKnownValues - 1] = {
     { "super", Value_Super },
     { "svgmiterjoin", Value_SvgMiterJoin},
     { "text", Value_Text },
+    { "tooltip-base", Value_ToolTipBase },
+    { "tooltip-text", Value_ToolTipText },
     { "top", Value_Top },
     { "transparent", Value_Transparent },
     { "underline", Value_Underline },
@@ -244,10 +249,10 @@ static const QCssKnownValue values[NumKnownValues - 1] = {
 };
 
 //Map id to strings as they appears in the 'values' array above
-static const short indexOfId[NumKnownValues] = { 0, 44, 51, 45, 52, 53, 60, 37, 28, 78, 79, 27, 46, 6, 71, 50,
-    31, 65, 66, 29, 55, 69, 7, 11, 42, 62, 20, 14, 18, 19, 21, 23, 54, 26, 49, 75, 39, 3, 2, 43, 70, 17, 12,
-    63, 15, 34, 72, 35, 73, 61, 74, 36, 64, 22, 56, 41, 5, 57, 67, 77, 9, 30, 40, 13, 38, 68, 8, 10, 4, 76,
-    59, 24, 25, 32, 33, 1, 16, 0, 58, 48, 47 };
+static const short indexOfId[NumKnownValues] = { 0, 46, 54, 47, 55, 56, 63, 38, 29, 83, 84, 28, 48, 7, 76, 52,
+    32, 68, 69, 30, 58, 74, 8, 12, 43, 65, 21, 15, 19, 20, 22, 24, 57, 27, 51, 80, 40, 4, 3, 45, 75, 18, 13,
+    66, 16, 35, 77, 36, 78, 64, 79, 37, 67, 23, 59, 42, 6, 60, 70, 82, 10, 31, 41, 14, 39, 71, 9, 11, 5, 81,
+    62, 25, 26, 33, 34, 2, 44, 72, 73, 53, 0, 17, 1, 61, 50, 49 };
 
 QString Value::toString() const
 {
@@ -731,6 +736,8 @@ static ColorData parseColorValue(QCss::Value v)
 
     const QString &identifier = lst.at(0);
     if ((identifier.compare("palette"_L1, Qt::CaseInsensitive)) == 0) {
+        static_assert((Value_LastColorRole - Value_FirstColorRole + 1) == QPalette::ColorRole::NColorRoles);
+
         int role = findKnownValue(lst.at(1).trimmed(), values, NumKnownValues);
         if (role >= Value_FirstColorRole && role <= Value_LastColorRole)
             return (QPalette::ColorRole)(role-Value_FirstColorRole);
