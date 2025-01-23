@@ -1029,6 +1029,13 @@ void QWidgetWindow::handleExposeEvent(QExposeEvent *event)
     QWidgetPrivate *wPriv = m_widget->d_func();
     const bool exposed = isExposed();
 
+    // We might get an expose event from the platform as part of
+    // closing the window from ~QWidget, to support animated close
+    // transitions. But at that point we no longer have a widget
+    // subclass to draw a new frame, so skip the expose event.
+    if (exposed && wPriv->data.in_destructor)
+        return;
+
     if (wPriv->childrenHiddenByWState) {
         // If widgets has been previously hidden by window state change event
         // and they aren't yet shown...
