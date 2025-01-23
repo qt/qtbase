@@ -581,10 +581,34 @@ macro(__qt_internal_include_plugin_packages target)
             continue()
         endif()
 
-        list(APPEND "QT_ALL_PLUGINS_FOUND_BY_FIND_PACKAGE_${__plugin_type}" "${plugin_target}")
+        set(plugin_target_versioned "${QT_CMAKE_EXPORT_NAMESPACE}::${plugin_target}")
+
+        if(NOT "${plugin_target}"
+                IN_LIST QT_ALL_PLUGINS_FOUND_VIA_FIND_PACKAGE)
+
+            # Old compatibility name.
+            # TODO: Remove once all usages are ported.
+            list(APPEND QT_ALL_PLUGINS_FOUND_BY_FIND_PACKAGE "${plugin_target}")
+
+            # New name consistent with other such variables.
+            list(APPEND QT_ALL_PLUGINS_FOUND_VIA_FIND_PACKAGE "${plugin_target}")
+            list(APPEND QT_ALL_PLUGINS_VERSIONED_FOUND_VIA_FIND_PACKAGE
+                "${plugin_target_versioned}")
+        endif()
+
+        if(NOT "${plugin_target}" IN_LIST QT_ALL_PLUGINS_FOUND_VIA_FIND_PACKAGE_${__plugin_type})
+            # Old compatibility name.
+            # TODO: Remove once all usages are ported.
+            list(APPEND QT_ALL_PLUGINS_FOUND_BY_FIND_PACKAGE_${__plugin_type} "${plugin_target}")
+
+            # New name consistent with other such variables.
+            list(APPEND QT_ALL_PLUGINS_FOUND_VIA_FIND_PACKAGE_${__plugin_type} "${plugin_target}")
+            list(APPEND
+                QT_ALL_PLUGINS_VERSIONED_FOUND_VIA_FIND_PACKAGE_${__plugin_type}
+                "${plugin_target_versioned}")
+        endif()
 
         # Auto-linkage should be set up only for static plugins.
-        set(plugin_target_versioned "${QT_CMAKE_EXPORT_NAMESPACE}::${plugin_target}")
         get_target_property(type "${plugin_target_versioned}" TYPE)
         if(type STREQUAL STATIC_LIBRARY)
             __qt_internal_add_static_plugin_linkage(
