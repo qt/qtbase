@@ -597,6 +597,45 @@ function(_qt_internal_remove_args out_var)
     set(${out_var} "${result}" PARENT_SCOPE)
 endfunction()
 
+function(__qt_internal_handle_find_all_qt_module_packages out_var)
+    set(opt_args "")
+    set(single_args "")
+    set(multi_args
+        COMPONENTS
+    )
+    cmake_parse_arguments(PARSE_ARGV 1 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    if(NOT arg_COMPONENTS)
+        return()
+    endif()
+
+    set(components ${arg_COMPONENTS})
+
+    if("ALL_QT_MODULES" IN_LIST components)
+        list(FIND components "ALL_QT_MODULES" all_qt_modules_index)
+        list(REMOVE_AT components ${all_qt_modules_index})
+
+        # Find the path to dir with module.json files. # We consider each file name to be a
+        # Qt package (component) name that contains a target with the same name.
+        set(json_modules_path "${QT6_INSTALL_PREFIX}/${QT6_INSTALL_DESCRIPTIONSDIR}")
+        file(GLOB json_modules "${json_modules_path}/*.json")
+
+        set(all_qt_modules "")
+
+        foreach(json_module IN LISTS json_modules)
+            get_filename_component(module_name "${json_module}" NAME_WE)
+            list(APPEND all_qt_modules ${module_name})
+        endforeach()
+
+        if(all_qt_modules)
+            list(INSERT components "${all_qt_modules_index}" ${all_qt_modules})
+        endif()
+    endif()
+
+    set(${out_var} "${components}" PARENT_SCOPE)
+endfunction()
+
 # Append ${ARGN} to ${target}'s ${property_name} property, removing duplicates.
 function(_qt_internal_append_to_target_property_without_duplicates target property_name)
     get_target_property(property "${target}" "${property_name}")

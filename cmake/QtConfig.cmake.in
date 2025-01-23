@@ -115,7 +115,12 @@ if(QT_DISABLE_NO_DEFAULT_PATH_IN_QT_PACKAGES)
     set(__qt_use_no_default_path_for_qt_packages "")
 endif()
 
-foreach(module ${@INSTALL_CMAKE_NAMESPACE@_FIND_COMPONENTS})
+set(__qt_umbrella_find_components ${@INSTALL_CMAKE_NAMESPACE@_FIND_COMPONENTS})
+__qt_internal_handle_find_all_qt_module_packages(__qt_umbrella_find_components
+    COMPONENTS ${__qt_umbrella_find_components}
+)
+
+foreach(module ${__qt_umbrella_find_components})
     if(NOT "${QT_HOST_PATH}" STREQUAL ""
        AND "${module}" MATCHES "Tools$"
        AND NOT "${module}" MATCHES "UiTools$"
