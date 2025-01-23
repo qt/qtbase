@@ -373,7 +373,7 @@ private:
 
 QDesktopUnixServices::QDesktopUnixServices()
 {
-    if (desktopEnvironment() == QByteArrayLiteral("UNKNOWN"))
+    if (detectDesktopEnvironment() == QByteArrayLiteral("UNKNOWN"))
         return;
 
 #if QT_CONFIG(dbus)
