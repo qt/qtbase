@@ -14,6 +14,8 @@
 #endif
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_GCC("-Wsuggest-override")
+QT_WARNING_DISABLE_GCC("-Wundef")
+QT_WARNING_DISABLE_CLANG("-Wundef")
 #if defined(Q_CC_CLANG) && Q_CC_CLANG >= 1100
 QT_WARNING_DISABLE_CLANG("-Wdeprecated-copy")
 #endif
