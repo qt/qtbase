@@ -47,7 +47,6 @@
 # include <UniformTypeIdentifiers/UTType.h>
 # include <UniformTypeIdentifiers/UTCoreTypes.h>
 # include <Foundation/Foundation.h>
-# include <sys/clonefile.h>
 # include <copyfile.h>
 #endif
 
@@ -1617,18 +1616,10 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
 //static
 bool QFileSystemEngine::copyFile(const QFileSystemEntry &source, const QFileSystemEntry &target, QSystemError &error)
 {
-#if defined(Q_OS_DARWIN)
-    if (::clonefile(source.nativeFilePath().constData(),
-                    target.nativeFilePath().constData(), 0) == 0)
-        return true;
-    error = QSystemError(errno, QSystemError::StandardLibraryError);
-    return false;
-#else
     Q_UNUSED(source);
     Q_UNUSED(target);
     error = QSystemError(ENOSYS, QSystemError::StandardLibraryError); //Function not implemented
     return false;
-#endif
 }
 
 //static
