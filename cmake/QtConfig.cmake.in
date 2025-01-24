@@ -39,9 +39,15 @@ if(TARGET @INSTALL_CMAKE_NAMESPACE@::PlatformCommonInternal)
     if(NOT _qt_platform_internal_common_target)
         set(_qt_platform_internal_common_target @INSTALL_CMAKE_NAMESPACE@::PlatformCommonInternal)
     endif()
+    set(_qt_internal_clang_msvc_frontend FALSE)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND
+        CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+        set(_qt_internal_clang_msvc_frontend TRUE)
+    endif()
     set_target_properties(${_qt_platform_internal_common_target}
         PROPERTIES
             _qt_internal_cmake_generator "${CMAKE_GENERATOR}"
+            _qt_internal_clang_msvc_frontend "${_qt_internal_clang_msvc_frontend}"
     )
     unset(_qt_platform_internal_common_target)
 endif()

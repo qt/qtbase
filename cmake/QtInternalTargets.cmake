@@ -3,85 +3,116 @@
 
 
 function(qt_internal_set_warnings_are_errors_flags target target_scope)
-    set(flags "")
-    if (CLANG AND NOT MSVC)
-        list(APPEND flags -Werror -Wno-error=\#warnings -Wno-error=deprecated-declarations)
-        if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") # as in: not AppleClang
-            if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "10.0.0")
-                # We do mixed enum arithmetic all over the place:
-                list(APPEND flags -Wno-error=deprecated-enum-enum-conversion)
-            endif()
-            if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "14.0.0")
-                # Clang 14 introduced these two but we are not clean for it.
-                list(APPEND flags -Wno-error=deprecated-copy-with-user-provided-copy)
-                list(APPEND flags -Wno-error=unused-but-set-variable)
-            endif()
-        endif()
-    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-        # using GCC
-        list(APPEND flags -Werror -Wno-error=cpp -Wno-error=deprecated-declarations)
-
-        # GCC prints this bogus warning, after it has inlined a lot of code
-        # error: assuming signed overflow does not occur when assuming that (X + c) < X is always false
-        list(APPEND flags -Wno-error=strict-overflow)
-
-        # GCC 7 includes -Wimplicit-fallthrough in -Wextra, but Qt is not yet free of implicit fallthroughs.
-        if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "7.0.0")
-            list(APPEND flags -Wno-error=implicit-fallthrough)
-        endif()
-
-        if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "9.0.0")
-            # GCC 9 introduced these but we are not clean for it.
-            list(APPEND flags -Wno-error=deprecated-copy -Wno-error=redundant-move -Wno-error=init-list-lifetime)
-            # GCC 9 introduced -Wformat-overflow in -Wall, but it is buggy:
-            list(APPEND flags -Wno-error=format-overflow)
-        endif()
-
-        if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "10.0.0")
-            # GCC 10 has a number of bugs in -Wstringop-overflow. Do not make them an error.
-            # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=92955
-            # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=94335
-            # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=101134
-            list(APPEND flags -Wno-error=stringop-overflow)
-        endif()
-
-        if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "11.0.0")
-            # Ditto
-            list(APPEND flags -Wno-error=stringop-overread)
-
-            # We do mixed enum arithmetic all over the place:
-            list(APPEND flags -Wno-error=deprecated-enum-enum-conversion -Wno-error=deprecated-enum-float-conversion)
-        endif()
-
-        if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "11.0.0" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "11.2.0")
-            # GCC 11.1 has a regression in the integrated preprocessor, so disable it as a workaround (QTBUG-93360)
-            # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=100796
-            # This in turn triggers a fallthrough warning in cborparser.c, so we disable this warning.
-            list(APPEND flags -no-integrated-cpp -Wno-implicit-fallthrough)
-        endif()
-
-        # Work-around for bug https://code.google.com/p/android/issues/detail?id=58135
-        if (ANDROID)
-            list(APPEND flags -Wno-error=literal-suffix)
-        endif()
-    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-        # Only enable for versions of MSVC that are known to work
-        # 1941 is Visual Studio 2022 version 17.11
-        if(MSVC_VERSION LESS_EQUAL 1941)
-            list(APPEND flags /WX)
-        endif()
-    endif()
-    set(warnings_are_errors_enabled_genex
-        "$<NOT:$<BOOL:$<TARGET_PROPERTY:QT_SKIP_WARNINGS_ARE_ERRORS>>>")
-
+    # Gate everything by the target property
+    set(common_conditions "$<NOT:$<BOOL:$<TARGET_PROPERTY:QT_SKIP_WARNINGS_ARE_ERRORS>>>")
     # Apparently qmake only adds -Werror to CXX and OBJCXX files, not C files. We have to do the
     # same otherwise MinGW builds break when building 3rdparty\md4c\md4c.c (and probably on other
     # platforms too).
-    set(cxx_only_genex "$<COMPILE_LANGUAGE:CXX,OBJCXX>")
-    set(final_condition_genex "$<AND:${warnings_are_errors_enabled_genex},${cxx_only_genex}>")
-    set(flags_generator_expression "$<${final_condition_genex}:${flags}>")
-
-    target_compile_options("${target}" ${target_scope} "${flags_generator_expression}")
+    set(language_args LANGUAGES CXX OBJCXX)
+    # This property is set to True only if we are using Clang and frontend is MSVC
+    # Currently we do not set any error flags
+    set(clang_msvc_frontend_args
+        "$<NOT:$<BOOL:$<TARGET_PROPERTY:Qt6::PlatformCommonInternal,_qt_internal_clang_msvc_frontend>>>"
+    )
+    if(GCC OR CLANG OR WIN32)
+        # Note: the if check is included to mimic the previous selective gating. These need to
+        # balance reducing unnecessary compile flags that are evaluated by the genex, and making
+        # sure the developer has appropriate Werror flags enabled when building a module with
+        # different environment
+        qt_internal_add_compiler_dependent_flags("${target}" ${target_scope}
+            COMPILERS CLANG AppleClang
+                    OPTIONS
+                    -Werror -Wno-error=\#warnings -Wno-error=deprecated-declarations
+            COMPILERS CLANG
+                CONDITIONS VERSION_GREATER_EQUAL 10
+                    OPTIONS
+                    # We do mixed enum arithmetic all over the place:
+                    -Wno-error=deprecated-enum-enum-conversion
+                CONDITIONS VERSION_GREATER_EQUAL 14
+                    OPTIONS
+                    # Clang 14 introduced these two but we are not clean for it.
+                    -Wno-error=deprecated-copy-with-user-provided-copy
+                    -Wno-error=unused-but-set-variable
+            COMMON_CONDITIONS
+                ${common_conditions}
+                ${clang_msvc_frontend_args}
+            ${language_args}
+        )
+        qt_internal_add_compiler_dependent_flags("${target}" ${target_scope}
+            COMPILERS GNU
+                    OPTIONS
+                    -Werror -Wno-error=cpp -Wno-error=deprecated-declarations
+                    # GCC prints this bogus warning, after it has inlined a lot of code
+                    # error: assuming signed overflow does not occur when assuming that (X + c) < X
+                    #        is always false
+                    -Wno-error=strict-overflow
+                CONDITIONS VERSION_GREATER_EQUAL 7
+                    OPTIONS
+                    # GCC 7 includes -Wimplicit-fallthrough in -Wextra, but Qt is not yet free of
+                    # implicit fallthroughs.
+                    -Wno-error=implicit-fallthrough
+                CONDITIONS VERSION_GREATER_EQUAL 9
+                    OPTIONS
+                    # GCC 9 introduced these but we are not clean for it.
+                    -Wno-error=deprecated-copy
+                    -Wno-error=redundant-move
+                    -Wno-error=init-list-lifetime
+                    # GCC 9 introduced -Wformat-overflow in -Wall, but it is buggy:
+                    -Wno-error=format-overflow
+                CONDITIONS VERSION_GREATER_EQUAL 10
+                    OPTIONS
+                    # GCC 10 has a number of bugs in -Wstringop-overflow. Do not make them an error.
+                    # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=92955
+                    # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=94335
+                    # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=101134
+                    -Wno-error=stringop-overflow
+                CONDITIONS VERSION_GREATER_EQUAL 11
+                    OPTIONS
+                    # Ditto
+                    -Wno-error=stringop-overread
+                    # We do mixed enum arithmetic all over the place:
+                    -Wno-error=deprecated-enum-enum-conversion
+                    -Wno-error=deprecated-enum-float-conversion
+                CONDITIONS VERSION_GREATER_EQUAL 11.0 AND VERSION_LESS 11.2
+                    OPTIONS
+                    # GCC 11.1 has a regression in the integrated preprocessor, so disable it as a
+                    # workaround (QTBUG-93360)
+                    # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=100796
+                    # This in turn triggers a fallthrough warning in cborparser.c, so we disable
+                    # this warning.
+                    -no-integrated-cpp -Wno-implicit-fallthrough
+            COMMON_CONDITIONS
+                ${common_conditions}
+            ${language_args}
+        )
+    endif()
+    # Other options are gated at compile time that are not likely to change between different build
+    # environments of other modules.
+    if(ANDROID)
+        qt_internal_add_compiler_dependent_flags("${target}" ${target_scope}
+            COMPILERS GNU
+                CONDITIONS $<PLATFORM_ID:ANDROID>
+                    OPTIONS
+                    # Work-around for bug https://code.google.com/p/android/issues/detail?id=58135
+                    -Wno-error=literal-suffix
+            COMMON_CONDITIONS
+                ${common_conditions}
+            ${language_args}
+        )
+    endif()
+    if(WIN32)
+        qt_internal_add_compiler_dependent_flags("${target}" ${target_scope}
+            COMPILERS MSVC
+                # Only enable for versions of MSVC that are known to work
+                # 1941 is Visual Studio 2022 version 17.11
+                CONDITIONS VERSION_LESS_EQUAL 17.11
+                    OPTIONS
+                    /WX
+            COMMON_CONDITIONS
+                ${common_conditions}
+            ${language_args}
+        )
+    endif()
 endfunction()
 
 # The function adds a global 'definition' to the platform internal targets and the target
@@ -309,6 +340,16 @@ if (MSVC AND NOT CLANG)
         $<$<NOT:$<CONFIG:Debug>>:-OPT:REF -OPT:ICF -GUARD:CF>
     )
 endif()
+
+set(_qt_internal_clang_msvc_frontend False)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND
+    CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+    set(_qt_internal_clang_msvc_frontend True)
+endif()
+set_target_properties(PlatformCommonInternal
+    PROPERTIES
+        _qt_internal_clang_msvc_frontend "${_qt_internal_clang_msvc_frontend}"
+)
 
 if(MINGW)
     target_compile_options(PlatformCommonInternal INTERFACE -Wa,-mbig-obj)
