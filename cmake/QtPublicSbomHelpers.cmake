@@ -478,14 +478,14 @@ function(_qt_internal_sbom_setup_fake_deterministic_build)
     set(QT_SBOM_FAKE_CHECKSUM "${value}" CACHE BOOL "SBOM fake checksums")
 endfunction()
 
-# Helper to get purl parsing options.
+# Helper to get purl entry-specific options.
 macro(_qt_internal_get_sbom_purl_parsing_options opt_args single_args multi_args)
     set(${opt_args}
-        NO_PURL
         NO_DEFAULT_QT_PURL
         PURL_USE_PACKAGE_VERSION
     )
     set(${single_args}
+        PURL_ID
         PURL_TYPE
         PURL_NAMESPACE
         PURL_NAME
@@ -498,7 +498,7 @@ macro(_qt_internal_get_sbom_purl_parsing_options opt_args single_args multi_args
     )
 endmacro()
 
-# Helper to get the purl variant option names that should be recongized by sbom functions like
+# Helper to get the purl options that should be recongized by sbom functions like
 # _qt_internal_sbom_add_target.
 macro(_qt_internal_get_sbom_purl_add_target_options opt_args single_args multi_args)
     set(${opt_args}
@@ -506,25 +506,19 @@ macro(_qt_internal_get_sbom_purl_add_target_options opt_args single_args multi_a
     )
     set(${single_args} "")
     set(${multi_args}
-        PURL_QT_ARGS
-        PURL_3RDPARTY_UPSTREAM_ARGS
-        PURL_MIRROR_ARGS
-        PURL_QT_VALUES
-        PURL_3RDPARTY_UPSTREAM_VALUES
-        PURL_MIRROR_VALUES
+        PURLS
+        PURL_VALUES
     )
 endmacro()
 
 # Helper to get purl options that should be forwarded from _qt_internal_sbom_add_target to
 # _qt_internal_sbom_handle_purl_values.
 macro(_qt_internal_get_sbom_purl_handling_options opt_args single_args multi_args)
-    set(${opt_args}
-        IS_QT_ENTITY_TYPE
-    )
+    set(${opt_args} "")
     set(${single_args}
         SUPPLIER
         TYPE
-        VERSION
+        PACKAGE_VERSION
     )
     set(${multi_args} "")
 
@@ -947,11 +941,7 @@ function(_qt_internal_sbom_add_target target)
     endif()
 
     if(package_version)
-        list(APPEND purl_args VERSION "${package_version}")
-    endif()
-
-    if(is_qt_entity_type)
-        list(APPEND purl_args IS_QT_ENTITY_TYPE)
+        list(APPEND purl_args PACKAGE_VERSION "${package_version}")
     endif()
 
     if(arg_USE_ATTRIBUTION_FILES AND qa_purls)
@@ -965,7 +955,7 @@ function(_qt_internal_sbom_add_target target)
             OUT_VAR qa_purls_replaced
         )
 
-        list(APPEND purl_args PURL_3RDPARTY_UPSTREAM_VALUES "${qa_purls_replaced}")
+        list(APPEND purl_args PURL_VALUES ${qa_purls_replaced})
     endif()
     list(APPEND purl_args OUT_VAR purl_package_options)
 
