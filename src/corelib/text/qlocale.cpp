@@ -1211,10 +1211,13 @@ QLocale::QLocale(QStringView name)
 */
 
 QLocale::QLocale()
-    : d(*defaultLocalePrivate)
+    : d(c_private())
 {
-    // Make sure system data is up to date:
-    systemData();
+    if (!defaultLocalePrivate.isDestroyed()) {
+        // Make sure system data is up to date:
+        systemData();
+        d = *defaultLocalePrivate;
+    }
 }
 
 /*!
