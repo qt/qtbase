@@ -317,11 +317,11 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
 
                 if (slider->orientation == Qt::Horizontal) {
                     rect = QRect(slrect.left(), rect.center().y() - 2, slrect.width() - 5, 4);
-                    leftRect = QRect(rect.left(), rect.top(), (handlePos.x() - rect.left()), rect.height());
+                    leftRect = QRect(rect.left() + 1, rect.top(), (handlePos.x() - rect.left()), rect.height());
                     rightRect = QRect(handlePos.x(), rect.top(), (rect.width() - handlePos.x()), rect.height());
                 } else {
                     rect = QRect(rect.center().x() - 2, slrect.top(), 4, slrect.height() - 5);
-                    rightRect = QRect(rect.left(), rect.top(), rect.width(), (handlePos.y() - rect.top()));
+                    rightRect = QRect(rect.left(), rect.top() + 1, rect.width(), (handlePos.y() - rect.top()));
                     leftRect = QRect(rect.left(), handlePos.y(), rect.width(), (rect.height() - handlePos.y()));
                 }
 
