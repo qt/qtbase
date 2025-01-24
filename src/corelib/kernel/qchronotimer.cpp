@@ -33,8 +33,8 @@ QT_BEGIN_NAMESPACE
     its timeout() signal to the appropriate slots, and call start(). From then
     on, it will emit the timeout() signal at constant intervals. For example:
 
-    \snippet timers/timers.cpp timer-interval-in-ctor
-    \snippet timers/timers.cpp timer-setinterval
+    \snippet timers/timers.cpp qchronotimer-interval-in-ctor
+    \snippet timers/timers.cpp qchronotimer-setinterval
 
     You can set a timer to time out only once by calling setSingleShot(true).
 

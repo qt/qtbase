@@ -5,7 +5,8 @@
 
 #include "analogclock.h"
 
-// QTimer
+//! [analogclock-qtimer]
+
 //! [0]
 AnalogClock::AnalogClock(QWidget *parent)
 //! [0] //! [2]
@@ -26,20 +27,7 @@ AnalogClock::AnalogClock(QWidget *parent)
 }
 //! [7]
 
-//! [analogclock-qchronotimer]
-AnalogClock::AnalogClock(QWidget *parent)
-
-    : QWidget(parent)
-{
-    auto *timer = new QChronoTimer(1s, this);
-    connect(timer, &QTimer::timeout, this, QOverload<>::of(&AnalogClock::update));
-    timer->start();
-    ...
-    ...
-    setWindowTitle(tr("Analog Clock"));
-    resize(200, 200);
-}
-//! [analogclock-qchronotimer]
+//! [analogclock-qtimer]
 
 void AnalogClock::paintEvent(QPaintEvent *)
 {
