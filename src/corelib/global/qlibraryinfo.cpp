@@ -6,6 +6,7 @@
 #include "qstringlist.h"
 #include "qfile.h"
 #if QT_CONFIG(settings)
+#include "qresource.h"
 #include "qsettings.h"
 #endif
 #include "qlibraryinfo.h"
@@ -103,7 +104,7 @@ static std::unique_ptr<QSettings> findConfiguration()
         return std::make_unique<QSettings>(*qtconfManualPath, QSettings::IniFormat);
 
     QString qtconfig = QStringLiteral(":/qt/etc/qt.conf");
-    if (QFile::exists(qtconfig))
+    if (QResource(qtconfig, QLocale::c()).isValid())
         return std::make_unique<QSettings>(qtconfig, QSettings::IniFormat);
 #ifdef Q_OS_DARWIN
     CFBundleRef bundleRef = CFBundleGetMainBundle();
