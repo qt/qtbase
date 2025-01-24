@@ -77,7 +77,7 @@ function(qt_internal_set_warnings_are_errors_flags target target_scope)
     # Apparently qmake only adds -Werror to CXX and OBJCXX files, not C files. We have to do the
     # same otherwise MinGW builds break when building 3rdparty\md4c\md4c.c (and probably on other
     # platforms too).
-    set(cxx_only_genex "$<OR:$<COMPILE_LANGUAGE:CXX>,$<COMPILE_LANGUAGE:OBJCXX>>")
+    set(cxx_only_genex "$<COMPILE_LANGUAGE:CXX,OBJCXX>")
     set(final_condition_genex "$<AND:${warnings_are_errors_enabled_genex},${cxx_only_genex}>")
     set(flags_generator_expression "$<${final_condition_genex}:${flags}>")
 
