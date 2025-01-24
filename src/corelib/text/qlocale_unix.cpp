@@ -127,6 +127,8 @@ QLocale QSystemLocale::fallbackLocale() const
 QVariant QSystemLocale::query(QueryType type, QVariant &&in) const
 {
     QSystemLocaleData *d = qSystemLocaleData();
+    if (!d)
+        return QVariant();
 
     if (type == LocaleChanged) {
         d->readEnvironment();

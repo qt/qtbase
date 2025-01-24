@@ -828,6 +828,8 @@ QLocale QSystemLocale::fallbackLocale() const
 QVariant QSystemLocale::query(QueryType type, QVariant &&in) const
 {
     QSystemLocalePrivate *d = systemLocalePrivate();
+    if (!d)
+        return QVariant();
     switch(type) {
     case DecimalPoint:
         return d->decimalPoint();
