@@ -4429,28 +4429,28 @@ bool QRhiRenderBuffer::createFrom(NativeRenderBuffer src)
 
     \value UnknownFormat Not a valid format. This cannot be passed to setFormat().
 
-    \value RGBA8 Four component, unsigned normalized 8 bit per component. Always supported.
+    \value RGBA8 Four components, unsigned normalized 8-bit per component. Always supported. (32 bits total)
 
-    \value BGRA8 Four component, unsigned normalized 8 bit per component.
+    \value BGRA8 Four components, unsigned normalized 8-bit per component. (32 bits total)
 
-    \value R8 One component, unsigned normalized 8 bit.
+    \value R8 One component, unsigned normalized 8-bit. (8 bits total)
 
-    \value RG8 Two components, unsigned normalized 8 bit.
+    \value RG8 Two components, unsigned normalized 8-bit. (16 bits total)
 
-    \value R16 One component, unsigned normalized 16 bit.
+    \value R16 One component, unsigned normalized 16-bit. (16 bits total)
 
-    \value RG16 Two component, unsigned normalized 16 bit.
+    \value RG16 Two components, unsigned normalized 16-bit. (32 bits total)
 
     \value RED_OR_ALPHA8 Either same as R8, or is a similar format with the component swizzled to alpha,
-    depending on \l{QRhi::RedOrAlpha8IsRed}{RedOrAlpha8IsRed}.
+    depending on \l{QRhi::RedOrAlpha8IsRed}{RedOrAlpha8IsRed}. (8 bits total)
 
-    \value RGBA16F Four components, 16-bit float per component.
+    \value RGBA16F Four components, 16-bit float. (64 bits total)
 
-    \value RGBA32F Four components, 32-bit float per component.
+    \value RGBA32F Four components, 32-bit float. (128 bits total)
 
-    \value R16F One component, 16-bit float.
+    \value R16F One component, 16-bit float. (16 bits total)
 
-    \value R32F One component, 32-bit float.
+    \value R32F One component, 32-bit float. (32 bits total)
 
     \value RGB10A2 Four components, unsigned normalized 10 bit R, G, and B,
     2-bit alpha. This is a packed format so native endianness applies. Note
@@ -4460,6 +4460,7 @@ bool QRhiRenderBuffer::createFrom(NativeRenderBuffer src)
     GL_RGB10_A2/GL_RGB/GL_UNSIGNED_INT_2_10_10_10_REV on OpenGL (ES). This is
     the only universally supported RGB30 option. The corresponding QImage
     formats are QImage::Format_BGR30 and QImage::Format_A2BGR30_Premultiplied.
+    (32 bits total)
 
     \value D16 16-bit depth (normalized unsigned integer)
 
@@ -4469,8 +4470,8 @@ bool QRhiRenderBuffer::createFrom(NativeRenderBuffer src)
 
     \value D32F 32-bit depth (32-bit float)
 
-    \value D32FS8 32-bit depth (32-bit float), 8 bits of stencil, 24 bits unused
-    (64 bits total) This enum value is introduced in Qt 6.9.
+    \value [since 6.9] D32FS8 32-bit depth (32-bit float), 8 bits of stencil, 24 bits unused
+    (64 bits total)
 
     \value BC1
     \value BC2
@@ -4499,10 +4500,10 @@ bool QRhiRenderBuffer::createFrom(NativeRenderBuffer src)
     \value ASTC_12x10
     \value ASTC_12x12
 
-    \value R8UI One component, unsigned 8 bit.
-    \value R32UI One component, unsigned 32 bit.
-    \value RG32UI Two component, unsigned 32 bit.
-    \value RGBA32UI Four component, unsigned 32 bit.
+    \value [since 6.9] R8UI One component, unsigned 8-bit. (8 bits total)
+    \value [since 6.9] R32UI One component, unsigned 32-bit. (32 bits total)
+    \value [since 6.9] RG32UI Two components, unsigned 32-bit. (64 bits total)
+    \value [since 6.9] RGBA32UI Four components, unsigned 32-bit. (128 bits total)
  */
 
 /*!
