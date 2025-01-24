@@ -16,7 +16,7 @@ import java.util.Objects;
 
 // Base class for embedding QWindow into native Android view hierarchy. Extend to implement
 // the creation of appropriate window to embed.
-abstract class QtView extends ViewGroup {
+abstract class QtView extends ViewGroup implements QtNative.AppStateDetailsListener {
     private final static String TAG = "QtView";
 
     interface QtWindowListener {
@@ -49,7 +49,7 @@ abstract class QtView extends ViewGroup {
    **/
     QtView(Context context) {
         super(context);
-
+        QtNative.registerAppStateListener(this);
         m_viewInterface = QtEmbeddedViewInterfaceFactory.create(context);
         addOnLayoutChangeListener(
                 (v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
@@ -204,5 +204,14 @@ abstract class QtView extends ViewGroup {
 
     QtWindow getQtWindow() {
         return m_window;
+    }
+
+    @Override
+    public void onAppStateDetailsChanged(QtNative.ApplicationStateDetails details) {
+        if (!details.isStarted) {
+            ViewGroup parent = (ViewGroup)getParent();
+            if (parent != null)
+                parent.removeView(this);
+        }
     }
 }
