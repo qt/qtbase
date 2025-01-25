@@ -2203,23 +2203,6 @@ void QWindows11Style::polish(QWidget* widget)
         pal.setColor(QPalette::ButtonText, pal.text().color());
         pal.setColor(QPalette::BrightText, pal.text().color());
         widget->setPalette(pal);
-    } else if (widget->inherits("QAbstractButton") || widget->inherits("QToolButton")) {
-        widget->setAutoFillBackground(false);
-        auto pal = widget->palette();
-        if (QPushButton *btn = qobject_cast<QPushButton*>(widget)) {
-            if (btn->isFlat() && !pal.isBrushSet(QPalette::Active, QPalette::Button))
-                pal.setColor(QPalette::Active, QPalette::Button, pal.window().color());
-        }
-        if (colorSchemeIndex == 0) {
-            pal.setColor(QPalette::Disabled, QPalette::ButtonText, QColor(0x00,0x00,0x00,0x5C));
-            pal.setColor(QPalette::Disabled, QPalette::Button, QColor(0xF9,0xF9,0xF9,0x4D));
-        }
-        else {
-            pal.setColor(QPalette::Disabled, QPalette::ButtonText, QColor(0xFF,0xFF,0xFF,0x87));
-            pal.setColor(QPalette::Disabled, QPalette::Button, QColor(0xFF,0xFF,0xFF,0x6B));
-        }
-        widget->setPalette(pal);
-
     } else if (qobject_cast<QGraphicsView *>(widget) && !qobject_cast<QTextEdit *>(widget)) {
         QPalette pal = widget->palette();
         pal.setColor(QPalette::Base, pal.window().color());
