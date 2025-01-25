@@ -26,7 +26,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>25</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -94,7 +94,7 @@
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionNew">
    <property name="icon">
-    <iconset resource="notepad.qrc">
+    <iconset theme="QIcon::ThemeIcon::DocumentNew" resource="notepad.qrc">
      <normaloff>:/images/new.png</normaloff>:/images/new.png</iconset>
    </property>
    <property name="text">
@@ -109,7 +109,7 @@
   </action>
   <action name="actionOpen">
    <property name="icon">
-    <iconset resource="notepad.qrc">
+    <iconset theme="QIcon::ThemeIcon::DocumentOpen" resource="notepad.qrc">
      <normaloff>:/images/open.png</normaloff>:/images/open.png</iconset>
    </property>
    <property name="text">
@@ -124,7 +124,7 @@
   </action>
   <action name="actionSave">
    <property name="icon">
-    <iconset resource="notepad.qrc">
+    <iconset theme="QIcon::ThemeIcon::DocumentSave" resource="notepad.qrc">
      <normaloff>:/images/save.png</normaloff>:/images/save.png</iconset>
    </property>
    <property name="text">
@@ -139,7 +139,7 @@
   </action>
   <action name="actionSave_as">
    <property name="icon">
-    <iconset resource="notepad.qrc">
+    <iconset theme="QIcon::ThemeIcon::DocumentSaveAs" resource="notepad.qrc">
      <normaloff>:/images/save_as.png</normaloff>:/images/save_as.png</iconset>
    </property>
    <property name="text">
@@ -154,7 +154,7 @@
   </action>
   <action name="actionPrint">
    <property name="icon">
-    <iconset resource="notepad.qrc">
+    <iconset theme="QIcon::ThemeIcon::DocumentPrint" resource="notepad.qrc">
      <normaloff>:/images/print.png</normaloff>:/images/print.png</iconset>
    </property>
    <property name="text">
@@ -169,7 +169,7 @@
   </action>
   <action name="actionExit">
    <property name="icon">
-    <iconset theme="exit.png" resource="notepad.qrc">
+    <iconset theme="QIcon::ThemeIcon::ApplicationExit" resource="notepad.qrc">
      <normaloff>:/images/exit.png</normaloff>:/images/exit.png</iconset>
    </property>
    <property name="text">
@@ -181,7 +181,7 @@
   </action>
   <action name="actionCopy">
    <property name="icon">
-    <iconset resource="notepad.qrc">
+    <iconset theme="QIcon::ThemeIcon::EditCopy" resource="notepad.qrc">
      <normaloff>:/images/copy.png</normaloff>:/images/copy.png</iconset>
    </property>
    <property name="text">
@@ -193,7 +193,7 @@
   </action>
   <action name="actionCut">
    <property name="icon">
-    <iconset resource="notepad.qrc">
+    <iconset theme="QIcon::ThemeIcon::EditCut" resource="notepad.qrc">
      <normaloff>:/images/cut.png</normaloff>:/images/cut.png</iconset>
    </property>
    <property name="text">
@@ -205,7 +205,7 @@
   </action>
   <action name="actionPaste">
    <property name="icon">
-    <iconset resource="notepad.qrc">
+    <iconset theme="QIcon::ThemeIcon::EditPaste" resource="notepad.qrc">
      <normaloff>:/images/paste.png</normaloff>:/images/paste.png</iconset>
    </property>
    <property name="text">
@@ -217,7 +217,7 @@
   </action>
   <action name="actionUndo">
    <property name="icon">
-    <iconset resource="notepad.qrc">
+    <iconset theme="QIcon::ThemeIcon::EditUndo" resource="notepad.qrc">
      <normaloff>:/images/edit_undo.png</normaloff>:/images/edit_undo.png</iconset>
    </property>
    <property name="text">
@@ -229,7 +229,7 @@
   </action>
   <action name="actionRedo">
    <property name="icon">
-    <iconset resource="notepad.qrc">
+    <iconset theme="QIcon::ThemeIcon::EditRedo" resource="notepad.qrc">
      <normaloff>:/images/edit_redo.png</normaloff>:/images/edit_redo.png</iconset>
    </property>
    <property name="text">
@@ -256,7 +256,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="notepad.qrc">
+    <iconset theme="QIcon::ThemeIcon::FormatTextItalic" resource="notepad.qrc">
      <normaloff>:/images/italic.png</normaloff>:/images/italic.png</iconset>
    </property>
    <property name="text">
@@ -274,7 +274,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="notepad.qrc">
+    <iconset theme="QIcon::ThemeIcon::FormatTextBold" resource="notepad.qrc">
      <normaloff>:/images/bold.png</normaloff>:/images/bold.png</iconset>
    </property>
    <property name="text">
@@ -292,7 +292,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="notepad.qrc">
+    <iconset theme="QIcon::ThemeIcon::FormatTextUnderline" resource="notepad.qrc">
      <normaloff>:/images/underline.png</normaloff>:/images/underline.png</iconset>
    </property>
    <property name="text">
@@ -307,7 +307,7 @@
   </action>
   <action name="actionAbout">
    <property name="icon">
-    <iconset resource="notepad.qrc">
+    <iconset theme="QIcon::ThemeIcon::HelpAbout" resource="notepad.qrc">
      <normaloff>:/images/info.png</normaloff>:/images/info.png</iconset>
    </property>
    <property name="text">
