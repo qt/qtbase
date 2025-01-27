@@ -20,8 +20,7 @@ if(NOT DEFINED "@INSTALL_CMAKE_NAMESPACE@@target_private@_FOUND")
     set("@INSTALL_CMAKE_NAMESPACE@@target_private@_FOUND" TRUE)
 endif()
 
-if(NOT __qt_@target@_always_load_private_module
-        AND NOT DEFINED QT_REPO_MODULE_VERSION
+if(NOT DEFINED QT_REPO_MODULE_VERSION
         AND NOT QT_NO_PRIVATE_MODULE_WARNING
         AND NOT __qt_private_module_@target_private@_warning_shown)
     message(WARNING

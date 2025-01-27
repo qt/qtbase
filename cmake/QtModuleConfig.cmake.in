@@ -35,7 +35,11 @@ if (NOT QT_NO_CREATE_TARGETS AND @INSTALL_CMAKE_NAMESPACE@@target@_FOUND)
 endif()
 
 # Find the private module counterpart.
-set(__qt_@target@_always_load_private_module OFF)
+# For now, always load the private module. In a future Qt version we plan to require users to
+# find_package the private module explicitly.
+set(__qt_@target@_always_load_private_module ON)
+set(__qt_@target@_save_QT_NO_PRIVATE_MODULE_WARNING ${QT_NO_PRIVATE_MODULE_WARNING})
+set(QT_NO_PRIVATE_MODULE_WARNING ON)
 include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@@target@-build.cmake" OPTIONAL)
 if (@INSTALL_CMAKE_NAMESPACE@@target@_FOUND
         AND NOT @INSTALL_CMAKE_NAMESPACE@@target_private@_FOUND
@@ -80,6 +84,8 @@ if (@INSTALL_CMAKE_NAMESPACE@@target@_FOUND
         endif()
     endif()
 endif()
+set(QT_NO_PRIVATE_MODULE_WARNING ${__qt_@target@_save_QT_NO_PRIVATE_MODULE_WARNING})
+unset(__qt_@target@_save_QT_NO_PRIVATE_MODULE_WARNING)
 unset(__qt_@target@_always_load_private_module)
 
 if (NOT QT_NO_CREATE_TARGETS AND @INSTALL_CMAKE_NAMESPACE@@target@_FOUND)
