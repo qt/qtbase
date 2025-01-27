@@ -8,7 +8,7 @@ if(NOT ANDROID)
     message(FATAL_ERROR "Example only works on Android")
 endif()
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Widgets CorePrivate)
 
 qt_standard_project_setup()
 

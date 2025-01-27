@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION 3.16)
 project(simplerhiwidget LANGUAGES CXX)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Core GuiPrivate Widgets)
 
 qt_standard_project_setup()
 

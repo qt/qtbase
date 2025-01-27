@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION 3.16)
 project(JulianGregorianCalendar VERSION 0.1 LANGUAGES CXX)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Widgets)
+find_package(Qt6 REQUIRED COMPONENTS CorePrivate Widgets)
 
 qt_standard_project_setup()
 
