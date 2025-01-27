@@ -162,6 +162,8 @@ private slots:
     void smallRects() const;
     void toRect();
     void span();
+
+    void debug();
 };
 
 // Used to work around some floating point precision problems.
@@ -4497,6 +4499,34 @@ void tst_QRect::span()
     QCOMPARE(QRect::span(QPoint(10,  1), QPoint(0,  9)), QRect(QPoint(0, 1), QPoint(10,  9)));
 
     QCOMPARE(QRect::span(QPoint( 1, 10), QPoint(9,  0)), QRect(QPoint(1, 0), QPoint( 9, 10)));
+}
+
+void tst_QRect::debug()
+{
+    QString str;
+    QDebug debug(&str);
+
+    debug.nospace();
+
+    str.clear();
+    debug << QRect();
+    QCOMPARE(str, "QRect(0,0 0x0)");
+
+    str.clear();
+    debug << QRect(10, 20, 30, 40);
+    QCOMPARE(str, "QRect(10,20 30x40)");
+
+    str.clear();
+    debug << QRect(-10, -20, 30, 40);
+    QCOMPARE(str, "QRect(-10,-20 30x40)");
+
+    str.clear();
+    debug << QRect(-10, -20, -30, -40);
+    QCOMPARE(str, "QRect(-10,-20 -30x-40)");
+
+    str.clear();
+    debug << QRect(QPoint(INT_MIN, INT_MIN), QPoint(INT_MAX, INT_MAX));
+    QCOMPARE(str, "QRect(-2147483648,-2147483648 4294967296x4294967296)");
 }
 
 QTEST_MAIN(tst_QRect)
