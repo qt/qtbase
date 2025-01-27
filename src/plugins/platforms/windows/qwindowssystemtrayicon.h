@@ -91,6 +91,7 @@ private:
     QString m_toolTip;
     HWND m_hwnd = nullptr;
     HICON m_hIcon = nullptr;
+    HICON m_hMessageIcon = nullptr;
     mutable QPointer<QWindowsPopupMenu> m_menu;
     bool m_ignoreNextMouseRelease = false;
     bool m_visible = false;

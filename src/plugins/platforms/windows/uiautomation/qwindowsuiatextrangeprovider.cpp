@@ -343,14 +343,14 @@ HRESULT QWindowsUiaTextRangeProvider::Move(TextUnit unit, int count, int *pRetVa
 
     int len = textInterface->characterCount();
 
-    if (len < 1)
+    if (len < 1 || count == 0)  // MSDN: "Zero has no effect."
         return S_OK;
 
     if (unit == TextUnit_Character) {
         // Moves the start point, ensuring it lies within the bounds.
-        int start = qBound(0, m_startOffset + count, len - 1);
+        int start = qBound(0, m_startOffset + count, len);
         // If range was initially empty, leaves it as is; otherwise, normalizes it to one char.
-        m_endOffset = (m_endOffset > m_startOffset) ? start + 1 : start;
+        m_endOffset = (m_endOffset > m_startOffset) ? qMin(start + 1, len) : start;
         *pRetVal = start - m_startOffset; // Returns the actually moved distance.
         m_startOffset = start;
     } else {
@@ -421,7 +421,7 @@ HRESULT QWindowsUiaTextRangeProvider::MoveEndpointByUnit(TextPatternRangeEndpoin
 
     if (unit == TextUnit_Character) {
         if (endpoint == TextPatternRangeEndpoint_Start) {
-            int boundedValue = qBound(0, m_startOffset + count, len - 1);
+            int boundedValue = qBound(0, m_startOffset + count, len);
             *pRetVal = boundedValue - m_startOffset;
             m_startOffset = boundedValue;
             m_endOffset = qBound(m_startOffset, m_endOffset, len);

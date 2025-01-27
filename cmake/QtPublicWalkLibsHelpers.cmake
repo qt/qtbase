@@ -186,7 +186,7 @@ function(__qt_internal_walk_libs
                     # namespace. Which one is preferred doesn't really matter. This code exists to
                     # avoid ending up with both, Qt::Foo and Foo in our dependencies.
                     set(namespaceless_lib_target "${CMAKE_MATCH_1}")
-                    if(TARGET namespaceless_lib_target)
+                    if(TARGET "${namespaceless_lib_target}")
                         set(lib_target ${namespaceless_lib_target})
                     endif()
                 endif()

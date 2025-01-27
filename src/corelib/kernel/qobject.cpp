@@ -2224,6 +2224,9 @@ void QObjectPrivate::setParent_helper(QObject *o)
     If multiple event filters are installed on a single object, the
     filter that was installed last is activated first.
 
+    If \a filterObj has already been installed for this object,
+    this function moves it so it acts as if it was installed last.
+
     Here's a \c KeyPressEater class that eats the key presses of its
     monitored objects:
 

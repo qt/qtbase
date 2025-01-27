@@ -448,8 +448,8 @@ if (__qt_qml_plugins_config_file_list AND NOT QT_SKIP_AUTO_QML_PLUGIN_INCLUSION)
 endif()")
         endif()
 
-        get_target_property(qt_plugins "${QT_MODULE}" QT_PLUGINS)
-        if(qt_plugins OR QT_MODULE_PLUGIN_INCLUDES)
+        get_target_property(module_plugin_types "${QT_MODULE}" MODULE_PLUGIN_TYPES)
+        if(module_plugin_types OR QT_MODULE_PLUGIN_INCLUDES)
             list(APPEND modules_with_plugins "${QT_MODULE}")
             configure_file(
                 "${QT_CMAKE_DIR}/QtPlugins.cmake.in"

@@ -1001,13 +1001,18 @@ void tst_Http2::authenticationRequired_data()
 {
     QTest::addColumn<bool>("success");
     QTest::addColumn<bool>("responseHEADOnly");
+    QTest::addColumn<bool>("withChallenge");
 
-    QTest::addRow("failed-auth") << false << true;
-    QTest::addRow("successful-auth") << true << true;
+    QTest::addRow("failed-auth") << false << true << true;
+    QTest::addRow("successful-auth") << true << true << true;
     // Include a DATA frame in the response from the remote server. An example would be receiving a
     // JSON response on a request along with the 401 error.
-    QTest::addRow("failed-auth-with-response") << false << false;
-    QTest::addRow("successful-auth-with-response") << true << false;
+    QTest::addRow("failed-auth-with-response") << false << false << true;
+    QTest::addRow("successful-auth-with-response") << true << false << true;
+
+    // Don't provide a challenge header. This is valid if you are actually just
+    // denied access for whatever reason.
+    QTest::addRow("no-challenge") << false << false << false;
 }
 
 void tst_Http2::authenticationRequired()
@@ -1018,10 +1023,15 @@ void tst_Http2::authenticationRequired()
     POSTResponseHEADOnly = responseHEADOnly;
 
     QFETCH(const bool, success);
+    QFETCH(const bool, withChallenge);
 
     ServerPtr targetServer(newServer(defaultServerSettings, defaultConnectionType()));
-    targetServer->setResponseBody("Hello");
-    targetServer->setAuthenticationHeader("Basic realm=\"Shadow\"");
+    QByteArray responseBody = "Hello";
+    targetServer->setResponseBody(responseBody);
+    if (withChallenge)
+        targetServer->setAuthenticationHeader("Basic realm=\"Shadow\"");
+    else
+        targetServer->setAuthenticationRequired(true);
 
     QMetaObject::invokeMethod(targetServer.data(), "startServer", Qt::QueuedConnection);
     runEventLoop();
@@ -1056,24 +1066,30 @@ void tst_Http2::authenticationRequired()
                     receivedBody += body;
             });
 
-    if (success)
+    if (success) {
         connect(reply.get(), &QNetworkReply::finished, this, &tst_Http2::replyFinished);
-    else
-        connect(reply.get(), &QNetworkReply::errorOccurred, this, &tst_Http2::replyFinishedWithError);
+    } else {
+        // Use queued connection so that the finished signal can be emitted and the isFinished
+        // property can be set.
+        connect(reply.get(), &QNetworkReply::errorOccurred, this,
+                &tst_Http2::replyFinishedWithError, Qt::QueuedConnection);
+    }
     // Since we're using self-signed certificates,
     // ignore SSL errors:
     reply->ignoreSslErrors();
 
     runEventLoop();
     STOP_ON_FAILURE
+    QVERIFY2(reply->isFinished(),
+             "The reply should error out if authentication fails, or finish if it succeeds");
 
     if (!success)
         QCOMPARE(reply->error(), QNetworkReply::AuthenticationRequiredError);
     // else: no error (is checked in tst_Http2::replyFinished)
 
-    QVERIFY(authenticationRequested);
+    QVERIFY(authenticationRequested || !withChallenge);
 
-    const auto isAuthenticated = [](QByteArray bv) {
+    const auto isAuthenticated = [](const QByteArray &bv) {
         return bv == "Basic YWRtaW46YWRtaW4="; // admin:admin
     };
     // Get the "authorization" header out from the server and make sure it's as expected:
@@ -1081,6 +1097,16 @@ void tst_Http2::authenticationRequired()
     QCOMPARE(isAuthenticated(reqAuthHeader), success);
     if (success)
         QCOMPARE(receivedBody, expectedBody);
+    if (responseHEADOnly) {
+        const QVariant contentLenHeader = reply->header(QNetworkRequest::ContentLengthHeader);
+        QVERIFY2(!contentLenHeader.isValid(), "We expect no DATA frames to be received");
+        QCOMPARE(reply->readAll(), QByteArray());
+    } else {
+        const qint32 contentLen = reply->header(QNetworkRequest::ContentLengthHeader).toInt();
+        QCOMPARE(contentLen, responseBody.length());
+        QCOMPARE(reply->bytesAvailable(), responseBody.length());
+        QCOMPARE(reply->readAll(), QByteArray("Hello"));
+    }
     // In the `!success` case we need to wait for the server to emit this or it might cause issues
     // in the next test running after this. In the `success` case we anyway expect it to have been
     // received.

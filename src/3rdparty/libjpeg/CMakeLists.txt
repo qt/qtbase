@@ -61,7 +61,8 @@ set(JPEG_SOURCES
     src/jerror.c
     src/jfdctflt.c
     src/jmemmgr.c
-    src/jmemnobs.c)
+    src/jmemnobs.c
+    src/jpeg_nbits.c)
 
 qt_internal_add_3rdparty_library(BundledLibjpeg16bits
     STATIC

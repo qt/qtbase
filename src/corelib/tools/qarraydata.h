@@ -43,6 +43,7 @@
 
 #include <QtCore/qpair.h>
 #include <QtCore/qatomic.h>
+#include <QtCore/qflags.h>
 #include <string.h>
 
 QT_BEGIN_NAMESPACE

@@ -319,9 +319,9 @@ void QTabBar::initStyleOption(QStyleOptionTab *option, int tabIndex) const
     returns the visual geometry of a single tab.
 
     \table 100%
-    \row \li \inlineimage fusion-tabbar.png Screenshot of a Fusion style tab bar
+    \row \li \inlineimage {fusion-tabbar.png} {Screenshot of a Fusion style tab bar}
          \li A tab bar shown in the \l{Qt Widget Gallery}{Fusion widget style}.
-    \row \li \inlineimage fusion-tabbar-truncated.png Screenshot of a truncated Fusion tab bar
+    \row \li \inlineimage {fusion-tabbar-truncated.png} {Screenshot of a truncated Fusion tab bar}
          \li A truncated tab bar shown in the Fusion widget style.
     \endtable
 

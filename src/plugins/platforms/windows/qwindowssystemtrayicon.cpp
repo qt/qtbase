@@ -208,8 +208,6 @@ void QWindowsSystemTrayIcon::cleanup()
 void QWindowsSystemTrayIcon::updateIcon(const QIcon &icon)
 {
     qCDebug(lcQpaTrayIcon) << __FUNCTION__ << '(' << icon << ')' << this;
-    if (icon.cacheKey() == m_icon.cacheKey())
-        return;
     m_icon = icon;
     const HICON hIconToDestroy = createIcon(icon);
     if (ensureInstalled())
@@ -273,6 +271,10 @@ void QWindowsSystemTrayIcon::showMessage(const QString &title, const QString &me
         size = largeIcon;
     }
     QPixmap pm = icon.pixmap(size);
+    if (m_hMessageIcon) {
+        DestroyIcon(m_hMessageIcon);
+        m_hMessageIcon = nullptr;
+    }
     if (pm.isNull()) {
         tnd.dwInfoFlags = NIIF_INFO;
     } else {
@@ -281,7 +283,8 @@ void QWindowsSystemTrayIcon::showMessage(const QString &title, const QString &me
                       pm.size().width(), pm.size().height(), size.width(), size.height());
             pm = pm.scaled(size, Qt::IgnoreAspectRatio);
         }
-        tnd.hBalloonIcon = qt_pixmapToWinHICON(pm);
+        m_hMessageIcon = qt_pixmapToWinHICON(pm);
+        tnd.hBalloonIcon = m_hMessageIcon;
     }
     tnd.hWnd = m_hwnd;
     tnd.uTimeout = msecsIn <= 0 ?  UINT(10000) : UINT(msecsIn); // 10s default
@@ -339,7 +342,10 @@ void QWindowsSystemTrayIcon::ensureCleanup()
     }
     if (m_hIcon != nullptr)
         DestroyIcon(m_hIcon);
+    if (m_hMessageIcon != nullptr)
+        DestroyIcon(m_hMessageIcon);
     m_hIcon = nullptr;
+    m_hMessageIcon = nullptr;
     m_menu = nullptr; // externally owned
     m_toolTip.clear();
 }

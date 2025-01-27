@@ -130,6 +130,8 @@ private slots:
     void smoothScaleAlpha();
     void smoothScaleFormats_data();
     void smoothScaleFormats();
+    void smoothScaleNoConversion_data();
+    void smoothScaleNoConversion();
 
     void transformed_data();
     void transformed();
@@ -2060,6 +2062,24 @@ void tst_QImage::smoothScaleFormats()
     transform.rotate(45);
     QImage rotated = src.transformed(transform);
     QVERIFY(rotated.hasAlphaChannel());
+}
+
+void tst_QImage::smoothScaleNoConversion_data()
+{
+    QTest::addColumn<QImage::Format>("format");
+    QTest::addRow("Mono") <<  QImage::Format_Mono;
+    QTest::addRow("MonoLSB") <<  QImage::Format_MonoLSB;
+    QTest::addRow("Indexed8") <<  QImage::Format_Indexed8;
+}
+
+void tst_QImage::smoothScaleNoConversion()
+{
+    QFETCH(QImage::Format, format);
+    QImage img(128, 128, format);
+    img.fill(1);
+    img.setColorTable(QList<QRgb>() << qRgba(255,0,0,255) << qRgba(0,0,0,0));
+    img = img.scaled(QSize(48, 48), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    QVERIFY(img.hasAlphaChannel());
 }
 
 static int count(const QImage &img, int x, int y, int dx, int dy, QRgb pixel)

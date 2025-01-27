@@ -955,12 +955,6 @@ int QFont::pointSize() const
     \li No hinting
     \endtable
 
-    \note Please be aware that altering the hinting preference on Windows is available through
-    the DirectWrite font engine. This is available on Windows Vista after installing the platform
-    update, and on Windows 7. In order to use this extension, configure Qt using -directwrite.
-    The target application will then depend on the availability of DirectWrite on the target
-    system.
-
 */
 
 /*!

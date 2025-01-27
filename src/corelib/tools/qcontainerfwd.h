@@ -57,7 +57,8 @@ using QPair = std::pair<T1, T2>;
 template <typename T> class QQueue;
 template <typename T> class QSet;
 template <typename T> class QStack;
-template <typename T, qsizetype Prealloc = 256> class QVarLengthArray;
+constexpr qsizetype QVarLengthArrayDefaultPrealloc = 256;
+template <typename T, qsizetype Prealloc = QVarLengthArrayDefaultPrealloc> class QVarLengthArray;
 template <typename T> class QList;
 #ifndef Q_CLANG_QDOC
 template<typename T> using QVector = QList<T>;

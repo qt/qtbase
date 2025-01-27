@@ -480,8 +480,8 @@ QT_BEGIN_NAMESPACE
     The template parameter \c T must be a C++ integer type:
     \list
        \li 8-bit: char, signed char, unsigned char, qint8, quint8
-       \li 16-bit: short, unsigned short, qint16, quint16, char16_t (C++11)
-       \li 32-bit: int, unsigned int, qint32, quint32, char32_t (C++11)
+       \li 16-bit: short, unsigned short, qint16, quint16, char16_t
+       \li 32-bit: int, unsigned int, qint32, quint32, char32_t
        \li 64-bit: long long, unsigned long long, qint64, quint64
        \li platform-specific size: long, unsigned long
        \li pointer size: qintptr, quintptr, qptrdiff

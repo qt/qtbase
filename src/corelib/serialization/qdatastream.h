@@ -45,6 +45,8 @@
 #include <QtCore/qcontainerfwd.h>
 #include <QtCore/qnamespace.h>
 
+#include <iterator>         // std::distance(), std::next()
+
 #ifdef Status
 #error qdatastream.h must be included before any header file that defines Status
 #endif

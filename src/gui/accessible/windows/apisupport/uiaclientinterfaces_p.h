@@ -52,6 +52,7 @@
 //
 
 #include <unknwn.h>
+#include "uiatypes_p.h"
 
 #ifndef __IUIAutomationElement_INTERFACE_DEFINED__
 
@@ -66,6 +67,8 @@ struct IUIAutomationFocusChangedEventHandler;
 struct IUIAutomationProxyFactory;
 struct IUIAutomationProxyFactoryEntry;
 struct IUIAutomationProxyFactoryMapping;
+struct IUIAutomationTextRangeArray;
+struct IUIAutomationTextRange;
 #ifndef __IAccessible_FWD_DEFINED__
 #define __IAccessible_FWD_DEFINED__
 struct IAccessible;
@@ -260,6 +263,59 @@ public:
 __CRT_UUID_DECL(IUIAutomationTreeWalker, 0x4042c624, 0x389c, 0x4afc, 0xa6,0x30, 0x9d,0xf8,0x54,0xa5,0x41,0xfc)
 #endif
 #endif
+
+
+#ifndef __IUIAutomationTextPattern_INTERFACE_DEFINED__
+#define __IUIAutomationTextPattern_INTERFACE_DEFINED__
+DEFINE_GUID(IID_IUIAutomationTextPattern, 0x32eba289, 0x3583, 0x42c9, 0x9c,0x59, 0x3b, 0x6d, 0x9a, 0x1e, 0x9b, 0x6a);
+MIDL_INTERFACE("32eba289-3583-42c9-9c59-3b6d9a1e9b6a")
+IUIAutomationTextPattern : public IUnknown
+{
+public:
+    virtual HRESULT STDMETHODCALLTYPE RangeFromPoint(POINT pt, __RPC__deref_out_opt IUIAutomationTextRange **range) = 0;
+    virtual HRESULT STDMETHODCALLTYPE RangeFromChild(__RPC__in_opt IUIAutomationElement *child, __RPC__deref_out_opt IUIAutomationTextRange **range) = 0;
+    virtual HRESULT STDMETHODCALLTYPE GetSelection(__RPC__deref_out_opt IUIAutomationTextRangeArray **ranges) = 0;
+    virtual HRESULT STDMETHODCALLTYPE GetVisibleRanges(__RPC__deref_out_opt IUIAutomationTextRangeArray **ranges) = 0;
+    virtual HRESULT STDMETHODCALLTYPE get_DocumentRange(__RPC__deref_out_opt IUIAutomationTextRange **range) = 0;
+    virtual HRESULT STDMETHODCALLTYPE get_SupportedTextSelection(__RPC__out enum SupportedTextSelection *supportedTextSelection) = 0;
+};
+#ifdef __CRT_UUID_DECL
+__CRT_UUID_DECL(IUIAutomationTextPattern, 0x32eba289, 0x3583, 0x42c9, 0x9c,0x59, 0x3b, 0x6d, 0x9a, 0x1e, 0x9b, 0x6a)
+#endif
+#endif
+
+
+#ifndef __IUIAutomationTextRange_INTERFACE_DEFINED__
+#define __IUIAutomationTextRange_INTERFACE_DEFINED__
+DEFINE_GUID(IID_IUIAutomationTextRange, 0xa543cc6a, 0xf4ae, 0x494b, 0x82,0x39, 0xc8, 0x14, 0x48, 0x11, 0x87, 0xa8);
+MIDL_INTERFACE("a543cc6a-f4ae-494b-8239-c814481187a8")
+IUIAutomationTextRange : public IUnknown
+{
+public:
+    virtual HRESULT STDMETHODCALLTYPE Clone(__RPC__deref_out_opt IUIAutomationTextRange **clonedRange) = 0;
+    virtual HRESULT STDMETHODCALLTYPE Compare(__RPC__in_opt IUIAutomationTextRange *range, __RPC__out BOOL *areSame) = 0;
+    virtual HRESULT STDMETHODCALLTYPE CompareEndpoints(enum TextPatternRangeEndpoint srcEndPoint, __RPC__in_opt IUIAutomationTextRange *range, enum TextPatternRangeEndpoint targetEndPoint, __RPC__out int *compValue) = 0;
+    virtual HRESULT STDMETHODCALLTYPE ExpandToEnclosingUnit(enum TextUnit textUnit) = 0;
+    virtual HRESULT STDMETHODCALLTYPE FindAttribute(TEXTATTRIBUTEID attr, VARIANT val, BOOL backward, __RPC__deref_out_opt IUIAutomationTextRange **found) = 0;
+    virtual HRESULT STDMETHODCALLTYPE FindText(__RPC__in BSTR text, BOOL backward, BOOL ignoreCase, __RPC__deref_out_opt IUIAutomationTextRange **found) = 0;
+    virtual HRESULT STDMETHODCALLTYPE GetAttributeValue(TEXTATTRIBUTEID attr, __RPC__out VARIANT *value) = 0;
+    virtual HRESULT STDMETHODCALLTYPE GetBoundingRectangles(__RPC__deref_out_opt SAFEARRAY * *boundingRects) = 0;
+    virtual HRESULT STDMETHODCALLTYPE GetEnclosingElement(__RPC__deref_out_opt IUIAutomationElement **enclosingElement) = 0;
+    virtual HRESULT STDMETHODCALLTYPE GetText(int maxLength, __RPC__deref_out_opt BSTR *text) = 0;
+    virtual HRESULT STDMETHODCALLTYPE Move(enum TextUnit unit, int count, __RPC__out int *moved) = 0;
+    virtual HRESULT STDMETHODCALLTYPE MoveEndpointByUnit(enum TextPatternRangeEndpoint endpoint, enum TextUnit unit, int count, __RPC__out int *moved) = 0;
+    virtual HRESULT STDMETHODCALLTYPE MoveEndpointByRange(enum TextPatternRangeEndpoint srcEndPoint, __RPC__in_opt IUIAutomationTextRange *range, enum TextPatternRangeEndpoint targetEndPoint) = 0;
+    virtual HRESULT STDMETHODCALLTYPE Select( void) = 0;
+    virtual HRESULT STDMETHODCALLTYPE AddToSelection( void) = 0;
+    virtual HRESULT STDMETHODCALLTYPE RemoveFromSelection( void) = 0;
+    virtual HRESULT STDMETHODCALLTYPE ScrollIntoView(BOOL alignToTop) = 0;
+    virtual HRESULT STDMETHODCALLTYPE GetChildren(__RPC__deref_out_opt IUIAutomationElementArray **children) = 0;
+};
+#ifdef __CRT_UUID_DECL
+__CRT_UUID_DECL(IUIAutomationTextRange, 0xa543cc6a, 0xf4ae, 0x494b, 0x82,0x39, 0xc8, 0x14, 0x48, 0x11, 0x87, 0xa8)
+#endif
+#endif
+
 
 DEFINE_GUID(CLSID_CUIAutomation, 0xff48dba4, 0x60ef, 0x4201, 0xaa,0x87, 0x54,0x10,0x3e,0xef,0x59,0x4e);
 

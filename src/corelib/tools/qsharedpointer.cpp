@@ -211,7 +211,7 @@
     last QSharedPointer instance had.
 
     This class is never instantiated directly: the constructors and
-    destructor are private and, in C++11, deleted. Only the create() function
+    destructor are deleted. Only the create() function
     may be called to return an object of this type. See below for construction
     details.
 
@@ -250,8 +250,7 @@
 
     Like ExternalRefCountWithCustomDeleter, this class is never instantiated
     directly. This class also provides a create() member that returns the
-    pointer, and hides its constructors and destructor. With C++11, they're
-    deleted.
+    pointer, and deletes its constructors and destructor.
 
     The size of this class depends on the size of \tt T.
 

@@ -64,8 +64,8 @@ public:
 
     void swap(QBitArray &other) noexcept { d.swap(other.d); }
 
-    inline qsizetype size() const { return (d.size() << 3) - *d.constData(); }
-    inline qsizetype count() const { return (d.size() << 3) - *d.constData(); }
+    qsizetype size() const { return qsizetype((size_t(d.size()) << 3) - *d.constData()); }
+    qsizetype count() const { return size(); }
     qsizetype count(bool on) const;
 
     inline bool isEmpty() const { return d.isEmpty(); }
@@ -77,15 +77,15 @@ public:
     inline bool isDetached() const { return d.isDetached(); }
     inline void clear() { d.clear(); }
 
-    bool testBit(qsizetype i) const;
-    void setBit(qsizetype i);
-    void setBit(qsizetype i, bool val);
-    void clearBit(qsizetype i);
-    bool toggleBit(qsizetype i);
+    inline bool testBit(qsizetype i) const;
+    inline void setBit(qsizetype i);
+    inline void setBit(qsizetype i, bool val);
+    inline void clearBit(qsizetype i);
+    inline bool toggleBit(qsizetype i);
 
-    bool at(qsizetype i) const;
-    QBitRef operator[](qsizetype i);
-    bool operator[](qsizetype i) const;
+    inline bool at(qsizetype i) const;
+    inline QBitRef operator[](qsizetype i);
+    inline bool operator[](qsizetype i) const;
 
     QBitArray &operator&=(const QBitArray &);
     QBitArray &operator|=(const QBitArray &);
@@ -110,35 +110,35 @@ public:
     inline DataPtr &data_ptr() { return d.data_ptr(); }
 };
 
-inline bool QBitArray::fill(bool aval, qsizetype asize)
+bool QBitArray::fill(bool aval, qsizetype asize)
 { *this = QBitArray((asize < 0 ? this->size() : asize), aval); return true; }
 
 Q_CORE_EXPORT QBitArray operator&(const QBitArray &, const QBitArray &);
 Q_CORE_EXPORT QBitArray operator|(const QBitArray &, const QBitArray &);
 Q_CORE_EXPORT QBitArray operator^(const QBitArray &, const QBitArray &);
 
-inline bool QBitArray::testBit(qsizetype i) const
+bool QBitArray::testBit(qsizetype i) const
 { Q_ASSERT(size_t(i) < size_t(size()));
  return (*(reinterpret_cast<const uchar*>(d.constData())+1+(i>>3)) & (1 << (i & 7))) != 0; }
 
-inline void QBitArray::setBit(qsizetype i)
+void QBitArray::setBit(qsizetype i)
 { Q_ASSERT(size_t(i) < size_t(size()));
  *(reinterpret_cast<uchar*>(d.data())+1+(i>>3)) |= uchar(1 << (i & 7)); }
 
-inline void QBitArray::clearBit(qsizetype i)
+void QBitArray::clearBit(qsizetype i)
 { Q_ASSERT(size_t(i) < size_t(size()));
  *(reinterpret_cast<uchar*>(d.data())+1+(i>>3)) &= ~uchar(1 << (i & 7)); }
 
-inline void QBitArray::setBit(qsizetype i, bool val)
+void QBitArray::setBit(qsizetype i, bool val)
 { if (val) setBit(i); else clearBit(i); }
 
-inline bool QBitArray::toggleBit(qsizetype i)
+bool QBitArray::toggleBit(qsizetype i)
 { Q_ASSERT(size_t(i) < size_t(size()));
  uchar b = uchar(1<<(i&7)); uchar* p = reinterpret_cast<uchar*>(d.data())+1+(i>>3);
  uchar c = uchar(*p&b); *p^=b; return c!=0; }
 
-inline bool QBitArray::operator[](qsizetype i) const { return testBit(i); }
-inline bool QBitArray::at(qsizetype i) const { return testBit(i); }
+bool QBitArray::operator[](qsizetype i) const { return testBit(i); }
+bool QBitArray::at(qsizetype i) const { return testBit(i); }
 
 class Q_CORE_EXPORT QBitRef
 {
@@ -155,7 +155,7 @@ public:
     QBitRef &operator=(bool val) { a.setBit(i, val); return *this; }
 };
 
-inline QBitRef QBitArray::operator[](qsizetype i)
+QBitRef QBitArray::operator[](qsizetype i)
 { Q_ASSERT(i >= 0); return QBitRef(*this, i); }
 
 #ifndef QT_NO_DATASTREAM

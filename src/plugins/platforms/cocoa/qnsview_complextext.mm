@@ -529,6 +529,32 @@
     return NSNotFound;
 }
 
+/*
+    Returns the window level of the text input.
+
+    This allows the input method to place its input panel
+    above the text input.
+*/
+- (NSInteger)windowLevel
+{
+    // The default level assumed by input methods is NSFloatingWindowLevel,
+    // but our NSWindow level could be higher than that for many reasons,
+    // including being set via QWindow::setFlags() or directly on the
+    // NSWindow, or because we're embedded into a native view hierarchy.
+    // Return the actual window level to account for this.
+    auto level = m_platformWindow ? m_platformWindow->nativeWindow().level
+                                  : NSNormalWindowLevel;
+
+    // The logic above only covers our own window though. In some cases,
+    // such as when a completer is active, the text input has a lower
+    // window level than another window that's also visible, and we don't
+    // want the input panel to be sandwiched between these two windows.
+    // Account for this by explicitly using NSPopUpMenuWindowLevel as
+    // the minimum window level, which corresponds to the highest level
+    // one can get via QWindow::setFlags(), except for Qt::ToolTip.
+    return qMax(level, NSPopUpMenuWindowLevel);
+}
+
 // ------------- Helper functions -------------
 
 /*

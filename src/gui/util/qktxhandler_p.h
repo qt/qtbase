@@ -53,6 +53,8 @@
 
 #include "qtexturefilehandler_p.h"
 
+#include <optional>
+
 QT_BEGIN_NAMESPACE
 
 struct KTXHeader;
@@ -68,7 +70,7 @@ public:
 
 private:
     bool checkHeader(const KTXHeader &header);
-    QMap<QByteArray, QByteArray> decodeKeyValues(QByteArrayView view) const;
+    std::optional<QMap<QByteArray, QByteArray>> decodeKeyValues(QByteArrayView view) const;
     quint32 decode(quint32 val) const;
 
     bool inverseEndian = false;

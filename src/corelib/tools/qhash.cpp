@@ -702,6 +702,7 @@ size_t qHash(QStringView key, size_t seed) noexcept
     return qHashBits(key.data(), key.size()*sizeof(QChar), seed);
 }
 
+#ifndef QT_BOOTSTRAPPED
 size_t qHash(const QBitArray &bitArray, size_t seed) noexcept
 {
     qsizetype m = bitArray.d.size() - 1;
@@ -714,6 +715,7 @@ size_t qHash(const QBitArray &bitArray, size_t seed) noexcept
         result = ((result << 4) + bitArray.d.at(m)) & ((1 << n) - 1);
     return result;
 }
+#endif
 
 size_t qHash(QLatin1String key, size_t seed) noexcept
 {
@@ -2739,9 +2741,6 @@ size_t qHash(long double key, size_t seed) noexcept
 
     Constructs a multi-hash with a copy of each of the elements in the
     initializer list \a list.
-
-    This function is only available if the program is being
-    compiled in C++11 mode.
 */
 
 /*! \fn template <class Key, class T> QMultiHash<Key, T>::QMultiHash(const QHash<Key, T> &other)
