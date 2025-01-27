@@ -314,7 +314,7 @@ void QWasmWindow::setVisible(bool visible)
 
     m_compositor->requestUpdateWindow(this, QRect(QPoint(0, 0), geometry().size()), QWasmCompositor::ExposeEventDelivery);
     m_decoratedWindow["style"].set("display", visible ? "block" : "none");
-    if (window()->isActive())
+    if (window() == QGuiApplication::focusWindow())
         m_canvas.call<void>("focus");
     if (visible)
         applyWindowState();
