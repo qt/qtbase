@@ -5031,7 +5031,7 @@ QStringList QLocale::uiLanguages(TagSeparator separator) const
         // first. (Known issue, QTBUG-104930, on some macOS versions when in
         // locale en_DE.) Our translation system might have a translation for a
         // locale the platform doesn't believe in.
-        const QString name = bcp47Name(separator);
+        const QString name = QString::fromLatin1(d->m_data->id().name(sep)); // Raw name
         if (!name.isEmpty() && language() != C && !uiLanguages.contains(name)) {
             // That uses contains(name) as a cheap pre-test, but there may be an
             // entry that matches this on purging likely subtags.
@@ -5052,8 +5052,8 @@ QStringList QLocale::uiLanguages(TagSeparator separator) const
     }
 
     for (qsizetype i = localeIds.size(); i-- > 0; ) {
-        QLocaleId id = localeIds.at(i);
-        qsizetype j;
+        const QLocaleId id = localeIds.at(i);
+        Q_ASSERT(id.language_id);
         if (id.language_id == C) {
             if (!uiLanguages.contains(u"C"_s))
                 uiLanguages.append(u"C"_s);
@@ -5061,10 +5061,13 @@ QStringList QLocale::uiLanguages(TagSeparator separator) const
             continue;
         }
 
+        qsizetype j;
         const QByteArray prior = id.name(sep);
+        bool faithful = true; // prior matches uiLanguages.at(j - 1)
         if (isSystem && i < uiLanguages.size()) {
             // Adding likely-adjusted forms to system locale's list.
-            Q_ASSERT(uiLanguages.at(i) == QLatin1StringView(prior)
+            faithful = uiLanguages.at(i) == QLatin1StringView(prior);
+            Q_ASSERT(faithful
                      // A legacy code may get mapped to an ID with a different name:
                      || QLocaleId::fromName(uiLanguages.at(i)).name(sep) == prior);
             // Insert just after the entry we're supplementing:
@@ -5077,67 +5080,41 @@ QStringList QLocale::uiLanguages(TagSeparator separator) const
         }
 
         const QLocaleId max = id.withLikelySubtagsAdded();
-        const QLocaleId min = max.withLikelySubtagsRemoved();
+        Q_ASSERT(max.language_id);
+        Q_ASSERT(max.language_id == id.language_id);
+        // We can't say the same for script or territory, though.
 
-        // Include minimal version (last) unless it's what our locale is derived from:
-        if (const QByteArray name = min.name(sep); name != prior)
-            uiLanguages.insert(j, QString::fromLatin1(name));
-        else if (!isSystem && min == id)
-            --j; // Put more specific forms *before* minimal entry.
-
-        // Include various stripped-down versions when likely-equivalent and distinct:
-        if (id.script_id) {
-            if (const ushort land = id.territory_id) {
-                // Keep script, omit territory:
-                id.territory_id = 0;
-                if (id != min && id.withLikelySubtagsAdded() == max) {
-                    if (const QByteArray name = id.name(sep); name != prior)
-                        uiLanguages.insert(j, QString::fromLatin1(name));
-                }
-                id.territory_id = land;
-            }
-            // Omit script (keep territory if present):
-            id.script_id = 0;
-            // Belongs before script-without-territory, even if it duplicates min:
-            if (id.withLikelySubtagsAdded() == max) {
-                if (const QByteArray name = id.name(sep); name != prior)
+        // We have various candidates to consider.
+        const auto addIfEquivalent = [&j, &uiLanguages, max, sep, prior, faithful](QLocaleId cid) {
+            if (cid.withLikelySubtagsAdded() == max) {
+                if (const QByteArray name = cid.name(sep); name != prior)
                     uiLanguages.insert(j, QString::fromLatin1(name));
+                else if (faithful) // Later candidates are more specific, so go before.
+                    --j;
             }
-        } else {
-            id.script_id = max.script_id;
-            if (const ushort land = id.territory_id) {
-                // Supply script and omit territory:
-                id.territory_id = 0;
-                if (id != min && id.withLikelySubtagsAdded() == max) {
-                    if (const QByteArray name = id.name(sep); name != prior)
-                        uiLanguages.insert(j, QString::fromLatin1(name));
-                }
-                id.territory_id = land;
-            }
-            // Supply script (keep territory, if present):
-            if (id != max && id.withLikelySubtagsAdded() == max) {
-                if (const QByteArray name = id.name(sep); name != prior)
-                    uiLanguages.insert(j, QString::fromLatin1(name));
-            }
-            // Restore to clear:
-            id.script_id = 0;
-        }
-
-        if (!id.territory_id) {
-            // Supply territory, omit script:
-            Q_ASSERT(!min.territory_id);
-            Q_ASSERT(!id.script_id); // because we just cleared it.
-            id.territory_id = max.territory_id;
-            if (id != max && id.withLikelySubtagsAdded() == max) {
-                if (const QByteArray name = id.name(sep); name != prior)
-                    uiLanguages.insert(j, QString::fromLatin1(name));
-            }
-        }
-
-        // Include version with all likely sub-tags (first) if distinct from the rest:
-        if (max != min && max != id) {
-            if (const QByteArray name = max.name(sep); name != prior)
-                uiLanguages.insert(j, QString::fromLatin1(name));
+        };
+        // language
+        addIfEquivalent({ max.language_id, 0, 0 });
+        // language-script
+        if (max.script_id)
+            addIfEquivalent({ max.language_id, max.script_id, 0 });
+        if (id.script_id && id.script_id != max.script_id)
+            addIfEquivalent({ id.language_id, id.script_id, 0 });
+        // language-territory
+        if (max.territory_id)
+            addIfEquivalent({ max.language_id, 0, max.territory_id });
+        if (id.territory_id && id.territory_id != max.territory_id)
+            addIfEquivalent({ id.language_id, 0, id.territory_id });
+        // full
+        if (max.territory_id && max.script_id)
+            addIfEquivalent(max);
+        if (max.territory_id && id.script_id && id.script_id != max.script_id)
+            addIfEquivalent({ id.language_id, id.script_id, max.territory_id });
+        if (max.script_id && id.territory_id && id.territory_id != max.territory_id)
+            addIfEquivalent({ id.language_id, max.script_id, id.territory_id });
+        if (id.territory_id && id.territory_id != max.territory_id
+            && id.script_id && id.script_id != max.script_id) {
+            addIfEquivalent(id);
         }
     }
 
@@ -5158,30 +5135,59 @@ QStringList QLocale::uiLanguages(TagSeparator separator) const
         return name.startsWith(stem)
             && (name.size() == stem.size() || name.at(stem.size()) == cut);
     };
-    for (qsizetype i = 0; i < uiLanguages.size(); ++i) {
+    // As we now forward-traverse the list, we need to keep track of the
+    // positions just after (a) the block of things added above that are
+    // equivalent to the current entry and (b) the block of truncations (if any)
+    // added just after this block. All truncations of entries in (a) belong at
+    // the end of (b); once i advances to the end of (a) it must jump to just
+    // after (b). The more specific entries in (a) may well have truncations
+    // that can also arise from less specific ones later in (a); for the
+    // purposes of determining whether such truncations go at the end of (b) or
+    // the end of the list, we thus need to ignore these matches.
+    qsizetype afterEquivs = 0;
+    qsizetype afterTruncs = 0;
+    // From here onwards, we only have the truncations we're adding, whose
+    // truncations should all have been included already.
+    // If advancing i brings us to the end of block (a), jump to the end of (b):
+    for (qsizetype i = 0; i < uiLanguages.size(); ++i >= afterEquivs && (i = afterTruncs)) {
         const QString entry = uiLanguages.at(i);
+        const QLocaleId max = QLocaleId::fromName(entry).withLikelySubtagsAdded();
+        // Keep track of our two blocks:
+        if (i >= afterEquivs) {
+            Q_ASSERT(i >= afterTruncs); // i.e. we just skipped past the end of a block
+            afterEquivs = i + 1;
+            // Advance past equivalents of entry:
+            while (afterEquivs < uiLanguages.size()
+                   && QLocaleId::fromName(uiLanguages.at(afterEquivs))
+                           .withLikelySubtagsAdded() == max) {
+                ++afterEquivs;
+            }
+            // We'll add any truncations starting there:
+            afterTruncs = afterEquivs;
+        }
         if (hasPrefix(entry, u"C") || hasPrefix(entry, u"und"))
             continue;
-        const ushort script = QLocaleId::fromName(entry).withLikelySubtagsAdded().script_id;
         qsizetype stopAt = uiLanguages.size();
         QString prefix = entry;
         qsizetype at = 0;
         /* By default we append but if no later entry has this as a prefix and
            the locale it implies would use the same script as entry, put it
-           after entry instead. Thus [en-NL, nl-NL, en-GB] will append en but
-           [en-NL, en-GB, nl-NL] will put it before nl-NL, for example. We
-           require a script match so we don't pick translations that the user
-           cannot read, despite knowing the language. (Ideally that would be
-           a constraint the caller can opt into / out of. See QTBUG-112765.)
+           after the block of consecutive equivalents of which entry is a part
+           instead. Thus [en-NL, nl-NL, en-GB] will append en but [en-NL, en-GB,
+           nl-NL] will put it before nl-NL, for example. We require a script
+           match so we don't pick translations that the user cannot read,
+           despite knowing the language. (Ideally that would be a constraint the
+           caller can opt into / out of. See QTBUG-112765.)
         */
-        bool justAfter = QLocaleId::fromName(prefix).withLikelySubtagsAdded().script_id == script;
+        bool justAfter
+            = QLocaleId::fromName(prefix).withLikelySubtagsAdded().script_id == max.script_id;
         while ((at = prefix.lastIndexOf(cut)) > 0) {
             prefix = prefix.first(at);
             // Don't test with hasSeen() as we might defer adding to later, when
             // we'll need known to see the later entry's offering of this prefix
             // as a new entry.
             bool found = known.contains(prefix);
-            for (qsizetype j = i + 1; !found && j < stopAt; ++j) {
+            for (qsizetype j = afterTruncs; !found && j < stopAt; ++j) {
                 QString later = uiLanguages.at(j);
                 if (!later.startsWith(prefix)) {
                     const QByteArray laterFull =
@@ -5218,7 +5224,7 @@ QStringList QLocale::uiLanguages(TagSeparator separator) const
             // Now we're committed to adding it, get it into known:
             (void) known.hasSeen(prefix);
             if (justAfter) {
-                uiLanguages.insert(++i, prefix);
+                uiLanguages.insert(afterTruncs++, prefix);
                 ++stopAt; // All later entries have moved one step later.
             } else {
                 uiLanguages.append(prefix);

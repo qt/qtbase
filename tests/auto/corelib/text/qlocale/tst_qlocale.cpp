@@ -3712,13 +3712,17 @@ void tst_QLocale::uiLanguages_data()
         << QLocale(QLocale::Chinese, QLocale::SimplifiedHanScript, QLocale::China)
         << QStringList{u"zh-Hans-CN"_s, u"zh-CN"_s, u"zh-Hans"_s, u"zh"_s};
 
-    // GB has no native Punjabi locales, so is eliminated by likely subtag rules:
     QTest::newRow("pa_IN")
         << QLocale("pa_IN") << QStringList{u"pa-Guru-IN"_s, u"pa-IN"_s, u"pa-Guru"_s, u"pa"_s};
-    QTest::newRow("pa_GB")
-        << QLocale("pa_GB") << QStringList{u"pa-Guru-IN"_s, u"pa-IN"_s, u"pa-Guru"_s, u"pa"_s};
+    QTest::newRow("pa_Guru")
+        << QLocale("pa_Guru") << QStringList{u"pa-Guru-IN"_s, u"pa-IN"_s, u"pa-Guru"_s, u"pa"_s};
     QTest::newRow("pa_PK")
         << QLocale("pa_PK") << QStringList{u"pa-Arab-PK"_s, u"pa-PK"_s, u"pa-Arab"_s, u"pa"_s};
+    QTest::newRow("pa_Arab")
+        << QLocale("pa_Arab") << QStringList{u"pa-Arab-PK"_s, u"pa-PK"_s, u"pa-Arab"_s, u"pa"_s};
+    // GB has no native Punjabi locales, so GB is eliminated by likely subtag rules:
+    QTest::newRow("pa_GB")
+        << QLocale("pa_GB") << QStringList{u"pa-Guru-IN"_s, u"pa-IN"_s, u"pa-Guru"_s, u"pa"_s};
     QTest::newRow("pa_Arab_GB")
         << QLocale("pa_Arab_GB") << QStringList{u"pa-Arab-PK"_s, u"pa-PK"_s, u"pa-Arab"_s, u"pa"_s};
 
@@ -4151,67 +4155,70 @@ void tst_QLocale::mySystemLocale_data()
 
     QTest::addRow("empty")
         << u"no-US"_s << QLocale::NorwegianBokmal
-        << QStringList{u"nb-US"_s, u"nb-Latn-US"_s,
+        << QStringList{u"nb-Latn-US"_s, u"nb-US"_s,
                        u"nb-Latn-NO"_s, u"nb-NO"_s, u"nb-Latn"_s, u"nb"_s};
     QTest::addRow("no") // QTBUG-131127
         << u"no"_s << QLocale::NorwegianBokmal
         << QStringList{u"no"_s, u"nb-Latn-NO"_s, u"nb-NO"_s, u"nb-Latn"_s,
-                       u"en-US"_s, u"en-Latn-US"_s, u"en-Latn"_s, u"en"_s,
+                       u"en-Latn-US"_s, u"en-US"_s, u"en-Latn"_s, u"en"_s,
                        u"nb"_s};
     QTest::addRow("en-Latn") // Android crash
         << u"en-Latn"_s << QLocale::English
-        << QStringList{u"en-Latn"_s, u"en-Latn-US"_s, u"en-US"_s, u"en"_s,
-                       u"en-NO"_s, u"en-Latn-NO"_s};
+        << QStringList{u"en-Latn-US"_s, u"en-US"_s, u"en-Latn"_s, u"en"_s,
+                       u"en-Latn-NO"_s, u"en-NO"_s};
 
     QTest::addRow("anglo-dutch") // QTBUG-131894
         << u"en-NL"_s << QLocale::English
-        << QStringList{u"en-NL"_s, u"en-Latn-NL"_s,
+        << QStringList{u"en-Latn-NL"_s, u"en-NL"_s,
                        // No later en-Latn-* or en-* in the list, so include truncations now:
                        u"en-Latn"_s, u"en"_s,
-                       u"nl-NL"_s, u"nl-Latn-NL"_s, u"nl-Latn"_s, u"nl"_s};
+                       u"nl-Latn-NL"_s, u"nl-NL"_s, u"nl-Latn"_s, u"nl"_s};
     QTest::addRow("anglo-dutch-GB")
         << u"en-NL-GB"_s << QLocale::English
-        << QStringList{u"en-NL"_s, u"en-Latn-NL"_s,
-                       u"nl-NL"_s, u"nl-Latn-NL"_s, u"nl-Latn"_s, u"nl"_s,
-                       u"en-GB"_s, u"en-Latn-GB"_s, u"en-Latn"_s, u"en"_s};
+        << QStringList{u"en-Latn-NL"_s, u"en-NL"_s,
+                       u"nl-Latn-NL"_s, u"nl-NL"_s, u"nl-Latn"_s, u"nl"_s,
+                       u"en-Latn-GB"_s, u"en-GB"_s, u"en-Latn"_s, u"en"_s};
 
     QTest::addRow("catalan")
         << u"ca"_s << QLocale::Catalan
-        << QStringList{u"ca"_s, u"ca-Latn-ES"_s, u"ca-ES"_s, u"ca-Latn"_s};
+        << QStringList{u"ca-Latn-ES"_s, u"ca-ES"_s, u"ca-Latn"_s, u"ca"_s};
     QTest::addRow("catalan-spain")
         << u"ca-ES"_s << QLocale::Catalan
-        << QStringList{u"ca-ES"_s, u"ca-Latn-ES"_s, u"ca-Latn"_s, u"ca"_s};
+        << QStringList{u"ca-Latn-ES"_s, u"ca-ES"_s, u"ca-Latn"_s, u"ca"_s};
     QTest::addRow("catalan-latin")
         << u"ca-Latn"_s << QLocale::Catalan
-        << QStringList{u"ca-Latn"_s, u"ca-Latn-ES"_s, u"ca-ES"_s, u"ca"_s};
+        << QStringList{u"ca-Latn-ES"_s, u"ca-ES"_s, u"ca-Latn"_s, u"ca"_s};
     QTest::addRow("ukrainian")
         << u"uk"_s << QLocale::Ukrainian
-        << QStringList{u"uk"_s, u"uk-Cyrl-UA"_s, u"uk-UA"_s, u"uk-Cyrl"_s};
+        << QStringList{u"uk-Cyrl-UA"_s, u"uk-UA"_s, u"uk-Cyrl"_s, u"uk"_s};
 
     QTest::addRow("english-germany")
         << u"en-DE"_s << QLocale::English
         // First two were missed out before fix to QTBUG-104930:
-        << QStringList{u"en-DE"_s, u"en-Latn-DE"_s,
-                       u"en-GB"_s, u"en-Latn-GB"_s,
-                       u"de-DE"_s, u"de-Latn-DE"_s, u"de-Latn"_s, u"de"_s,
+        << QStringList{u"en-Latn-DE"_s, u"en-DE"_s,
+                       u"en-Latn-GB"_s, u"en-GB"_s,
+                       u"de-Latn-DE"_s, u"de-DE"_s, u"de-Latn"_s, u"de"_s,
                        // Fallbacks implied by those:
                        u"en-Latn"_s, u"en"_s};
 
     QTest::addRow("german")
         << u"de"_s << QLocale::German
-        << QStringList{u"de"_s, u"de-Latn-DE"_s, u"de-DE"_s, u"de-Latn"_s};
+        << QStringList{u"de-Latn-DE"_s, u"de-DE"_s, u"de-Latn"_s, u"de"_s};
     QTest::addRow("german-britain")
         << u"de-GB"_s << QLocale::German
-        << QStringList{u"de-GB"_s, u"de-Latn-GB"_s, u"de-Latn"_s, u"de"_s};
+        << QStringList{u"de-Latn-GB"_s, u"de-GB"_s, u"de-Latn"_s, u"de"_s};
     QTest::addRow("chinese-min")
         << u"zh"_s << QLocale::Chinese
-        << QStringList{u"zh"_s, u"zh-Hans-CN"_s, u"zh-CN"_s, u"zh-Hans"_s};
+        << QStringList{u"zh-Hans-CN"_s, u"zh-CN"_s, u"zh-Hans"_s, u"zh"_s};
     QTest::addRow("chinese-full")
         << u"zh-Hans-CN"_s << QLocale::Chinese
         << QStringList{u"zh-Hans-CN"_s, u"zh-CN"_s, u"zh-Hans"_s, u"zh"_s};
     QTest::addRow("chinese-taiwan")
         << u"zh-TW"_s << QLocale::Chinese
-        << QStringList{u"zh-TW"_s, u"zh-Hant-TW"_s, u"zh-Hant"_s, u"zh"_s};
+        << QStringList{u"zh-Hant-TW"_s, u"zh-TW"_s, u"zh-Hant"_s, u"zh"_s};
+    QTest::addRow("chinese-trad")
+        << u"zh-Hant"_s << QLocale::Chinese
+        << QStringList{u"zh-Hant-TW"_s, u"zh-TW"_s, u"zh-Hant"_s, u"zh"_s};
 
     // For C, it should preserve what the system gave us but only add "C", never anything more:
     QTest::addRow("C") << u"C"_s << QLocale::C << QStringList{u"C"_s};
@@ -4227,22 +4234,22 @@ void tst_QLocale::mySystemLocale_data()
     QTest::newRow("en-Dsrt-GB")
         << u"en-Dsrt-GB"_s << QLocale::English
         << QStringList{u"en-Dsrt-GB"_s, u"en-Dsrt"_s,
-                       u"en-GB"_s, u"en-Latn-GB"_s, u"en-Latn"_s, u"en"_s};
+                       u"en-Latn-GB"_s, u"en-GB"_s, u"en-Latn"_s, u"en"_s};
     QTest::newRow("en-mixed")
         << u"en-FO"_s << QLocale::English
-        << QStringList{u"en-FO"_s, u"en-Latn-FO"_s, u"en-DK"_s, u"en-Latn-DK"_s,
-                       u"en-GB"_s, u"en-Latn-GB"_s,
-                       u"fo-FO"_s, u"fo-Latn-FO"_s, u"fo-Latn"_s, u"fo"_s,
-                       u"da-FO"_s, u"da-Latn-FO"_s,
-                       u"da-DK"_s, u"da-Latn-DK"_s, u"da-Latn"_s, u"da"_s,
+        << QStringList{u"en-Latn-FO"_s, u"en-FO"_s, u"en-Latn-DK"_s, u"en-DK"_s,
+                       u"en-Latn-GB"_s, u"en-GB"_s,
+                       u"fo-Latn-FO"_s, u"fo-FO"_s, u"fo-Latn"_s, u"fo"_s,
+                       u"da-Latn-FO"_s, u"da-FO"_s,
+                       u"da-Latn-DK"_s, u"da-DK"_s, u"da-Latn"_s, u"da"_s,
                        // Fallbacks implied by those:
                        u"en-Latn"_s, u"en"_s};
     QTest::newRow("polylingual-CA")
         << u"de-CA"_s << QLocale::German
-        << QStringList{u"de-CA"_s, u"de-Latn-CA"_s, u"en-CA"_s, u"en-Latn-CA"_s,
-                       u"fr-CA"_s, u"fr-Latn-CA"_s, u"de-AT"_s, u"de-Latn-AT"_s,
-                       u"en-GB"_s, u"en-Latn-GB"_s,
-                       u"fr-FR"_s, u"fr-Latn-FR"_s, u"fr-Latn"_s, u"fr"_s,
+        << QStringList{u"de-Latn-CA"_s, u"de-CA"_s, u"en-Latn-CA"_s, u"en-CA"_s,
+                       u"fr-Latn-CA"_s, u"fr-CA"_s, u"de-Latn-AT"_s, u"de-AT"_s,
+                       u"en-Latn-GB"_s, u"en-GB"_s,
+                       u"fr-Latn-FR"_s, u"fr-FR"_s, u"fr-Latn"_s, u"fr"_s,
                        // Fallbacks:
                        u"de-Latn"_s, u"de"_s, u"en-Latn"_s, u"en"_s};
 
