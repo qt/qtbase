@@ -713,6 +713,356 @@ function(qt_internal_remove_compiler_flags flags)
     endforeach()
 endfunction()
 
+# Add a series of compile options as generator expressions
+#
+# Each condition and compiler requirement are glued by $<AND:> genex.
+#
+# Synopsis
+#
+#   qt_internal_add_compiler_dependent_flags(<target> <INTERFACE|PUBLIC|PRIVATE>
+#       COMPILERS <compiler> ...
+#         [ CONDITIONS <condition> ... ]
+#               OPTIONS <items> ...
+#         [ CONDITIONS <condition> ...
+#               OPTIONS <items> ...    ]
+#     [ COMPILERS ...                  ]
+#
+#     [LANGUAGES <lang> ...]
+#     [COMMON_CONDITIONS <condition_genex> ...]
+#   )
+#
+# Example
+#   qt_internal_add_compiler_dependent_flags(tgt PUBLIC
+#       COMPILERS ALL
+#               OPTIONS -Werror
+#           CONDITIONS $<TARGET_PROPERTY:foo> OR $<TARGET_PROPERTY:bar>
+#               OPTIONS -bar -baz
+#       COMPILERS GNU
+#           CONDITIONS VERSION_GREATER_EQUAL 10
+#               OPTIONS -baz
+#   )
+#
+#   Is equivalent to:
+#
+#   target_compile_options(tgt PUBLIC
+#       $<$<AND:$<COMPILE_LANGUAGE:CXX>>:-Werror>
+#       $<$<AND:$<COMPILE_LANGUAGE:CXX>,$<OR:$<TARGET_PROPERTY:foo>,$<TARGET_PROPERTY:bar>>>:-bar;-baz>
+#       $<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CXX_COMPILER_ID:GNU>,$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,10>>:-baz>
+#   )
+#
+# Arguments
+#
+# `<target>`
+#   Equivalent to `target_compile_options(<target>)`.
+#
+# `<INTERFACE|PUBLIC|PRIVATE>`
+#   Equivalent to `target_compile_options(<INTERFACE|PUBLIC|PRIVATE>)`.
+#
+#   Unlike `target_compile_options`, only one set of target scope is implemented.
+#
+# `COMPILERS`
+#   Starts a new set of compiler specific set of options gated by `$<${lang}_COMPILER_ID>`.
+#   See `LANGUAGES` for how `${lang}` is determined.
+#
+#   Can be any value defined in `CMAKE_<LANG>_COMPILER_ID`, or one of the following shortcuts
+#     - `ALL`: drops the compiler specific condition
+#     - `CLANG`: `Clang` and `IntelLLVM` (does not include `AppleClang`)
+#
+#   At least one `COMPILERS` set *must* be defined.
+#
+# `CONDITIONS`
+#   Starts a new set of `<condition>` gated options.
+#
+#   `<condition>` can be one of:
+#   - `VERSION_* <version>`: Equivalent to `$<VERSION_*:$<${lang}_COMPILER_VERSION:>,<version>>`
+#     See `LANGUAGES` for how `${lang}` is determined.
+#   - Any genex matching regex: `\$<.*>`
+#
+#   You can use `AND` and `OR` as well as parenthesis `()` to join multiple `<condition>`.
+#
+#   If no `<condition>` is added, the current set only checks for compiler condition and the
+#   `COMMON_CONDITIONS`.
+#
+# `OPTIONS`
+#   Starts the list of compiler options for the current set of `COMPILERS` and `CONDITIONS`
+#
+#   Equivalent to `target_compile_options(<items>)`.
+#
+#   At least one `COMPILERS` set *must* be defined.
+#
+# `LANGUAGES`
+#   Language conditions applied to all options.
+#
+#   - If no `LANGUAGES` is passed `$<CXX_COMPILER_*>` is used to compute compiler-dependent
+#     variables such as `$<CXX_COMPILER_VERSION>`
+#   - If exactly 1 `LANGUAGES` is passed, this language is used in `$<${lang}_COMPILER_>` like
+#     variables
+#
+# `COMMON_CONDITIONS`
+#   Additional genex conditions to include for all compiler flags.
+function(qt_internal_add_compiler_dependent_flags target target_scope)
+    # We cannot use `cmake_parse_arguments` to parse all the other arguments. We use a special
+    # parsing for that with the remaining `arg_UNPARSED_ARGUMENTS`
+    set(option_args "")
+    set(single_args "")
+    set(multi_args
+        LANGUAGES
+        COMMON_CONDITIONS
+    )
+    cmake_parse_arguments(PARSE_ARGV 2 arg
+        "${option_args}" "${single_args}" "${multi_args}"
+    )
+
+    # For debugging purposes we save the original list of arg_UNPARSED_ARGUMENTS
+    set(arg_UNPARSED_ARGUMENTS_original ${arg_UNPARSED_ARGUMENTS})
+    # Set the language for the compiler checks
+    set(lang CXX)
+    list(LENGTH arg_LANGUAGES arg_LANGUAGES_length)
+    if(arg_LANGUAGES_length EQUAL 1)
+        set(lang ${arg_LANGUAGES})
+    endif()
+    # Always add a language genex
+    set(lang_ex "$<COMPILE_LANGUAGE:${lang}>")
+    if(arg_LANGUAGES_length GREATER 1)
+        list(JOIN arg_LANGUAGES "," arg_LANGUAGES_comma_list)
+        set(lang_ex "$<COMPILE_LANGUAGE:${arg_LANGUAGES_comma_list}>")
+    endif()
+
+    # Helper debugging function
+    function(_qt_internal_add_compiler_dependent_flags_error msg)
+        # If you are hitting such a function, something must have gone wrong with
+        # `qt_internal_add_compiler_flags` implementation.
+        message(FATAL_ERROR
+            "${msg}\n"
+            "  curr_arg = ${curr_arg}\n"
+            "  arg_UNPARSED_ARGUMENTS = ${arg_UNPARSED_ARGUMENTS}\n"
+            "  arg_UNPARSED_ARGUMENTS_original = ${arg_UNPARSED_ARGUMENTS_original}"
+        )
+    endfunction()
+
+    # Helper function finalizing each keyword set
+    # COMPILERS
+    function(_qt_internal_add_compiler_dependent_flags_do_COMPILERS)
+        set(compiler_ex "")
+        if(NOT curr_COMPILERS)
+            _qt_internal_add_compiler_dependent_flags_error(
+                "COMPILERS set cannot be empty"
+            )
+        endif()
+        # If ALL compilers is passed, we can ignore the compiler check
+        if(NOT "ALL" IN_LIST curr_COMPILERS)
+            # Check for other aliases
+            if("CLANG" IN_LIST curr_COMPILERS)
+                list(REMOVE_ITEM curr_COMPILERS CLANG)
+                list(APPEND curr_COMPILERS Clang IntelLLVM)
+            endif()
+            # Create compiler genex
+            list(REMOVE_DUPLICATES curr_COMPILERS)
+            list(JOIN curr_COMPILERS "," compilers)
+            set(compiler_ex "$<${lang}_COMPILER_ID:${compilers}>" PARENT_SCOPE)
+        endif()
+    endfunction()
+    # CONDITIONS
+    function(_qt_internal_add_compiler_dependent_flags_do_CONDITIONS)
+        function(_qt_internal_add_compiler_dependent_flags_do_CONDITIONS_end_stack
+            stack_in stack_out
+        )
+            # Resolve the current stack into a genex list
+            set(stack_conditions_ex)
+            set(prev_glue_word)
+            set(glue_word)
+            list(POP_FRONT ${stack_in} stack_conditions_ex)
+            while(${stack_in})
+                list(POP_FRONT ${stack_in} glue_word)
+                if(NOT (glue_word STREQUAL "AND" OR glue_word STREQUAL "OR"))
+                    _qt_internal_add_compiler_dependent_flags_error(
+                        "Expected AND/OR glue word, instead got: ${glue_word}"
+                    )
+                endif()
+                list(POP_FRONT ${stack_in} next_condition)
+                if(NOT next_condition)
+                    _qt_internal_add_compiler_dependent_flags_error(
+                        "No other condition provided after ${glue_word}"
+                    )
+                endif()
+                if(prev_glue_word STREQUAL glue_word)
+                    # If the glue words are the same, we just add to current genex $<${glue_word}:>
+                    # First trim the last `>` character
+                    string(LENGTH "${stack_conditions_ex}" stack_conditions_ex_length)
+                    math(EXPR stack_conditions_ex_length "${stack_conditions_ex_length} - 1")
+                    string(SUBSTRING "${stack_conditions_ex}" 0 ${stack_conditions_ex_length}
+                        stack_conditions_ex
+                    )
+                    set(stack_conditions_ex "${stack_conditions_ex},${next_condition}>")
+                else()
+                    # Otherwise create a new $<${glue_word}:>
+                    set(stack_conditions_ex
+                        "$<${glue_word}:${stack_conditions_ex},${next_condition}>"
+                    )
+                endif()
+                set(prev_glue_word "${glue_word}")
+            endwhile()
+            if(NOT stack_conditions_ex)
+                _qt_internal_add_compiler_dependent_flags_error(
+                    "Empty parenthesis stack"
+                )
+            endif()
+            # Add the current
+            list(APPEND ${stack_out} "${stack_conditions_ex}")
+            set(${stack_out} "${${stack_out}}" PARENT_SCOPE)
+        endfunction()
+        set(conditions_ex "")
+        set(stack_level 0)
+        set(stack_0)
+        while(curr_CONDITIONS)
+            list(POP_FRONT curr_CONDITIONS condition_kw)
+            # Parenthesis evaluation
+            if(condition_kw MATCHES "^\\((.*)")
+                # Start a new stack
+                math(EXPR stack_level "${stack_level} + 1")
+                set(stack_${stack_level})
+                # Check if the parenthesis was glued to another keyword
+                # Resolve the remaining keyword in the next loop
+                if(CMAKE_MATCH_1)
+                    list(PREPEND curr_CONDITIONS "${CMAKE_MATCH_1}")
+                endif()
+                continue()
+            elseif(condition_kw MATCHES "(.*)\\)$")
+                # Check if the parenthesis was glued to another keyword
+                # Separate them and evaluate each one individually
+                if(CMAKE_MATCH_1)
+                    set(condition_kw "${CMAKE_MATCH_1}")
+                    list(PREPEND curr_CONDITIONS "${CMAKE_MATCH_1}" ")")
+                endif()
+                # Finalize the current stack making it a genex for the next loop
+                set(curr_stack stack_${stack_level})
+                math(EXPR stack_level "${stack_level} - 1")
+                set(prev_stack stack_${stack_level})
+                _qt_internal_add_compiler_dependent_flags_do_CONDITIONS_end_stack(
+                    ${curr_stack} ${prev_stack}
+                )
+                if(stack_level LESS 0)
+                    _qt_internal_add_compiler_dependent_flags_error(
+                        "Unbalanced parenthesis."
+                    )
+                endif()
+                continue()
+            endif()
+            # Glue word evaluation
+            if(condition_kw STREQUAL "AND" OR condition_kw STREQUAL "OR")
+                # Insert the operator
+                list(APPEND stack_${stack_level} "${condition_kw}")
+                continue()
+            endif()
+            # Main condition keyword evaluation
+            if(condition_kw MATCHES "^VERSION_.*")
+                # Shortcut for VERSION_* keyword
+                list(POP_FRONT curr_CONDITIONS version)
+                list(APPEND stack_${stack_level}
+                    "$<${condition_kw}:$<${lang}_COMPILER_VERSION>,${version}>"
+                )
+                continue()
+            elseif(condition_kw MATCHES "^\\$<.*>$")
+                # genex expression are added as-is
+                list(APPEND stack_${stack_level} "${condition_kw}")
+                continue()
+            else()
+                # All other unrecognized forms we do not know how to deal with
+                _qt_internal_add_compiler_dependent_flags_error(
+                    "Unrecognized condition form: ${condition_kw}"
+                )
+            endif()
+        endwhile()
+        # Finalize the top-level stack and put it in `conditions_ex`
+        if(NOT stack_level EQUAL 0)
+            _qt_internal_add_compiler_dependent_flags_error(
+                "Unbalanced parenthesis."
+            )
+        endif()
+        _qt_internal_add_compiler_dependent_flags_do_CONDITIONS_end_stack(stack_0 conditions_ex)
+        set(conditions_ex "${conditions_ex}" PARENT_SCOPE)
+    endfunction()
+    # OPTIONS
+    function(_qt_internal_add_compiler_dependent_flags_do_OPTIONS)
+        # Check for required keywords
+        foreach(required_keyword IN ITEMS OPTIONS COMPILERS)
+            if(curr_${required_keyword} STREQUAL "MISSING")
+                _qt_internal_add_compiler_dependent_flags_error(
+                    "${required_keyword} keyword was not passed"
+                )
+            endif()
+        endforeach()
+        # Only handle the current set if the OPTIONS did not evaluate to empty, otherwise
+        # it is considered a no-op
+        if(curr_OPTIONS)
+            # No need to check the length of `all_conditions_ex` because `lang_ex` is
+            # always defined.
+            list(JOIN curr_OPTIONS ";" options)
+            # Combine all conditions in an `AND` statement
+            set(all_conditions_ex "")
+            list(APPEND all_conditions_ex
+                ${arg_COMMON_CONDITIONS}
+                ${lang_ex}
+                ${compiler_ex}
+                ${conditions_ex}
+            )
+            list(JOIN all_conditions_ex "," all_conditions_ex)
+            list(APPEND flags
+                "$<$<AND:${all_conditions_ex}>:${options}>"
+            )
+        endif()
+        # Reset all loop variables
+        # curr_COMPILERS is inherited from the last loop
+        set(curr_CONDITIONS "" PARENT_SCOPE)
+        set(curr_OPTIONS "MISSING" PARENT_SCOPE)
+        set(conditions_ex "" PARENT_SCOPE)
+        set(flags "${flags}" PARENT_SCOPE)
+    endfunction()
+
+    # Set initial loop variables
+    set(compiler_ex "")
+    set(conditions_ex "")
+    set(flags "")
+    # We set (REQUIRED) curr_* loop variables to a special keyword MISSING to identify when
+    # the keyword was not passed
+    set(curr_COMPILERS "MISSING")
+    set(curr_CONDITIONS "")
+    set(curr_OPTIONS "MISSING")
+    set(curr_keyword "")
+    # Parse the remaining arguments
+    while(arg_UNPARSED_ARGUMENTS)
+        list(POP_FRONT arg_UNPARSED_ARGUMENTS curr_arg)
+        # Check for separator keywords
+        if(curr_arg MATCHES "^(COMPILERS|CONDITIONS|OPTIONS)$")
+            # Resolve the previous keyword set
+            # Implicitly we skip the initial loop where curr_keyword == ""
+            if(curr_keyword STREQUAL "COMPILERS")
+                _qt_internal_add_compiler_dependent_flags_do_COMPILERS()
+            elseif(curr_keyword STREQUAL "CONDITIONS")
+                _qt_internal_add_compiler_dependent_flags_do_CONDITIONS()
+            elseif(curr_keyword STREQUAL "OPTIONS")
+                _qt_internal_add_compiler_dependent_flags_do_OPTIONS()
+            endif()
+            # Set the new keyword to accumulate the current `curr_*` variable
+            set(curr_keyword "${curr_arg}")
+            set(curr_${curr_keyword} "")
+            continue()
+        endif()
+        # If no separator keyword is passed, add the current values to `curr_*` loop variable
+        # and move on to the next loop
+        if(NOT curr_keyword)
+            _qt_internal_add_compiler_dependent_flags_error(
+                "No keyword was passed: COMPILERS/CONDITIONS/OPTIONS"
+            )
+        endif()
+        list(APPEND curr_${curr_keyword} "${curr_arg}")
+    endwhile()
+    # finalize the last set
+    _qt_internal_add_compiler_dependent_flags_do_OPTIONS()
+    # Finally add all of the flags to `target_compile_options`
+    target_compile_options("${target}" ${target_scope} ${flags})
+endfunction()
+
 # Adds compiler flags for the given CONFIGS in the calling scope. Can also update the cache
 # if asked to do so. The flag variables are always updated in the calling scope, even if they
 # did not exist beforehand.
