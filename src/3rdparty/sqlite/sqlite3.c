@@ -1,6 +1,6 @@
 /******************************************************************************
 ** This file is an amalgamation of many separate C source files from SQLite
-** version 3.44.2.  By combining all the individual C code files into this
+** version 3.44.1.  By combining all the individual C code files into this
 ** single large file, the entire code can be compiled as a single translation
 ** unit.  This allows many compilers to do optimizations that would not be
 ** possible if the files were compiled separately.  Performance improvements
@@ -18,7 +18,7 @@
 ** separate file. This file contains only code for the core SQLite library.
 **
 ** The content in this amalgamation comes from Fossil check-in
-** ebead0e7230cd33bcec9f95d2183069565b9.
+** d295f48e8f367b066b881780c98bdf980a1d.
 */
 #define SQLITE_CORE 1
 #define SQLITE_AMALGAMATION 1
@@ -459,9 +459,9 @@ extern "C" {
 ** [sqlite3_libversion_number()], [sqlite3_sourceid()],
 ** [sqlite_version()] and [sqlite_source_id()].
 */
-#define SQLITE_VERSION        "3.44.2"
-#define SQLITE_VERSION_NUMBER 3044002
-#define SQLITE_SOURCE_ID      "2023-11-24 11:41:44 ebead0e7230cd33bcec9f95d2183069565b9e709bf745c9b5db65cc0cbf92c0f"
+#define SQLITE_VERSION        "3.44.1"
+#define SQLITE_VERSION_NUMBER 3044001
+#define SQLITE_SOURCE_ID      "2023-11-22 14:18:12 d295f48e8f367b066b881780c98bdf980a1d550397d5ba0b0e49842c95b3e8b4"
 
 /*
 ** CAPI3REF: Run-Time Library Version Numbers
@@ -84183,11 +84183,10 @@ static int growOpArray(Vdbe *v, int nOp){
 **   sqlite3CantopenError(lineno)
 */
 static void test_addop_breakpoint(int pc, Op *pOp){
-  static u64 n = 0;
+  static int n = 0;
   (void)pc;
   (void)pOp;
   n++;
-  if( n==LARGEST_UINT64 ) abort(); /* so that n is used, preventing a warning */
 }
 #endif
 
@@ -92331,12 +92330,11 @@ SQLITE_API int sqlite3_found_count = 0;
 **   sqlite3CantopenError(lineno)
 */
 static void test_trace_breakpoint(int pc, Op *pOp, Vdbe *v){
-  static u64 n = 0;
+  static int n = 0;
   (void)pc;
   (void)pOp;
   (void)v;
   n++;
-  if( n==LARGEST_UINT64 ) abort(); /* So that n is used, preventing a warning */
 }
 #endif
 
@@ -143614,8 +143612,7 @@ SQLITE_PRIVATE void sqlite3SubqueryColumnTypes(
   NameContext sNC;
 
   assert( pSelect!=0 );
-  testcase( (pSelect->selFlags & SF_Resolved)==0 );
-  assert( (pSelect->selFlags & SF_Resolved)!=0 || IN_RENAME_OBJECT );
+  assert( (pSelect->selFlags & SF_Resolved)!=0 );
   assert( pTab->nCol==pSelect->pEList->nExpr || pParse->nErr>0 );
   assert( aff==SQLITE_AFF_NONE || aff==SQLITE_AFF_BLOB );
   if( db->mallocFailed || IN_RENAME_OBJECT ) return;
@@ -241509,24 +241506,18 @@ static void fts5DoSecureDelete(
 
   iOff = iStart;
 
-  /* If the position-list for the entry being removed flows over past
-  ** the end of this page, delete the portion of the position-list on the
-  ** next page and beyond.
-  **
-  ** Set variable bLastInDoclist to true if this entry happens
-  ** to be the last rowid in the doclist for its term.  */
-  if( iNextOff>=iPgIdx ){
-    int pgno = pSeg->iLeafPgno+1;
-    fts5SecureDeleteOverflow(p, pSeg->pSeg, pgno, &bLastInDoclist);
-    iNextOff = iPgIdx;
-  }
-
+  /* Set variable bLastInDoclist to true if this entry happens to be
+  ** the last rowid in the doclist for its term.  */
   if( pSeg->bDel==0 ){
-    if( iNextOff!=iPgIdx ){
+    if( iNextOff>=iPgIdx ){
+      int pgno = pSeg->iLeafPgno+1;
+      fts5SecureDeleteOverflow(p, pSeg->pSeg, pgno, &bLastInDoclist);
+      iNextOff = iPgIdx;
+    }else{
       /* Loop through the page-footer. If iNextOff (offset of the
       ** entry following the one we are removing) is equal to the
       ** offset of a key on this page, then the entry is the last
-      ** in its doclist. */
+      ** in its doclist.  */
       int iKeyOff = 0;
       for(iIdx=0; iIdx<nIdx; /* no-op */){
         u32 iVal = 0;
@@ -247621,7 +247612,7 @@ static void fts5SourceIdFunc(
 ){
   assert( nArg==0 );
   UNUSED_PARAM2(nArg, apUnused);
-  sqlite3_result_text(pCtx, "fts5: 2023-11-24 11:41:44 ebead0e7230cd33bcec9f95d2183069565b9e709bf745c9b5db65cc0cbf92c0f", -1, SQLITE_TRANSIENT);
+  sqlite3_result_text(pCtx, "fts5: 2023-11-22 14:18:12 d295f48e8f367b066b881780c98bdf980a1d550397d5ba0b0e49842c95b3e8b4", -1, SQLITE_TRANSIENT);
 }
 
 /*
