@@ -114,6 +114,14 @@ namespace QtSharedPointer {
 
         void destroy() { destroyer(this); }
 
+        bool isShared() const noexcept {
+            return strongref.loadRelaxed() != 1;
+        }
+
+        bool needsDetach() const noexcept {
+            return strongref.loadRelaxed() > 1;
+        }
+
 #ifndef QT_NO_QOBJECT
         Q_CORE_EXPORT static ExternalRefCountData *getAndRef(const QObject *);
         QT6_ONLY(
@@ -463,6 +471,11 @@ public:
     size_t owner_hash() const noexcept
     { return std::hash<Data *>()(d); }
 
+    bool isShared() const noexcept
+    { return !d || d->isShared(); }
+    bool needsDetach() const noexcept
+    { return !d || d->needsDetach(); }
+
 private:
     Q_NODISCARD_CTOR
     explicit QSharedPointer(Qt::Initialization) {}
@@ -716,6 +729,11 @@ public:
 
     size_t owner_hash() const noexcept
     { return std::hash<Data *>()(d); }
+
+    bool isShared() const noexcept
+    { return !d || d->isShared(); }
+    bool needsDetach() const noexcept
+    { return !d || d->needsDetach(); }
 
 private:
     friend struct QtPrivate::EnableInternalData;
