@@ -1,0 +1,6 @@
+version = 1
+[[annotations]]
+path = ["**"]
+precedence = "closest"
+SPDX-FileCopyrightText = "Copyright 2000-2025 Kitware, Inc. and Contributors"
+SPDX-License-Identifier = "BSD-3-Clause"

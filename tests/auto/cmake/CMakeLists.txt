@@ -75,7 +75,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32 AND CMAKE_CROSSCOMPILING AND NOT QT_ENABLE_C
     return()
 endif()
 
-set(required_packages Core Network Xml Sql Test)
+set(required_packages Core Network Xml Sql Test TestInternalsPrivate)
 set(optional_packages DBus Gui Widgets PrintSupport OpenGL Concurrent)
 
 # Setup the test when called as a completely standalone project.
@@ -465,3 +465,5 @@ if(NOT QNX AND NOT WASM AND NOT (WIN32 AND QT_BUILD_MINIMAL_STATIC_TESTS)
     _qt_internal_test_expect_pass(test_qt_add_ui_11)
 endif()
 
+# Add all tests using CMake's RunCMake test module
+add_subdirectory(RunCMake)

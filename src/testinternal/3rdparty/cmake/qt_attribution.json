@@ -1,0 +1,15 @@
+{
+    "Id": "cmake-runcmake-test-modules",
+    "Name": "cmake-runcmake-test-modules",
+    "QDocModule": "qttestinternals_private",
+    "QtUsage": "Used as part of the build system.",
+
+    "Description": "CMake helpers for running CMake tests.",
+    "Homepage": "https://cmake.org/",
+    "Version": "3.31.5",
+
+    "License": "BSD 3-Clause \"New\" or \"Revised\" License",
+    "LicenseId": "BSD-3-Clause",
+    "LicenseFile": "Copyright.txt",
+    "Copyright": "Copyright © 2000-2024 Kitware, Inc. and Contributors"
+}
