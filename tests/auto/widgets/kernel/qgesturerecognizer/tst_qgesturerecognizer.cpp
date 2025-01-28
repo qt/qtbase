@@ -12,6 +12,7 @@
 #include <QtCore/QString>
 #include <QtCore/QHash>
 #include <QtCore/QDebug>
+#include <memory>
 
 class tst_QGestureRecognizer : public QObject
 {
@@ -33,7 +34,7 @@ private Q_SLOTS:
 
 private:
     const int m_fingerDistance;
-    QPointingDevice *m_touchDevice;
+    std::unique_ptr<QPointingDevice> m_touchDevice;
 };
 
 tst_QGestureRecognizer::tst_QGestureRecognizer()
@@ -164,7 +165,7 @@ void tst_QGestureRecognizer::panGesture()
     for (int i = 0; i < panPoints; ++i)
         points.append(QPoint(10 + i *20, 10 + i *20));
 
-    QTest::QTouchEventWidgetSequence panSequence = QTest::touchEvent(&widget, m_touchDevice);
+    QTest::QTouchEventWidgetSequence panSequence = QTest::touchEvent(&widget, m_touchDevice.get());
     pressSequence(panSequence, points, &widget);
     linearSequence(5, QPoint(20, 20), panSequence, points, &widget);
     releaseSequence(panSequence, points, &widget);
@@ -207,7 +208,7 @@ void tst_QGestureRecognizer::pinchGesture()
     points.append(widget.rect().center());
     points.append(points.front() + QPoint(0, 20));
 
-    QTest::QTouchEventWidgetSequence pinchSequence = QTest::touchEvent(&widget, m_touchDevice);
+    QTest::QTouchEventWidgetSequence pinchSequence = QTest::touchEvent(&widget, m_touchDevice.get());
     pressSequence(pinchSequence, points, &widget);
 
     for (int s = 0; s < 5; ++s) {
@@ -264,7 +265,7 @@ void tst_QGestureRecognizer::swipeGesture()
     for (int i = 0; i < swipePoints - 1; ++i)
         points.append(fingerDistance + i * fingerDistance);
 
-    QTest::QTouchEventWidgetSequence swipeSequence = QTest::touchEvent(&widget, m_touchDevice);
+    QTest::QTouchEventWidgetSequence swipeSequence = QTest::touchEvent(&widget, m_touchDevice.get());
     pressSequence(swipeSequence, points, &widget);
 
     // Press point #3
@@ -315,8 +316,8 @@ void tst_QGestureRecognizer::touchReplay()
 
     QWindow* windowHandle = parent.window()->windowHandle();
     const QPoint globalPos = QPoint(42, 16);
-    QTest::touchEvent(windowHandle, m_touchDevice).press(1, globalPos);
-    QTest::touchEvent(windowHandle, m_touchDevice).release(1, globalPos);
+    QTest::touchEvent(windowHandle, m_touchDevice.get()).press(1, globalPos);
+    QTest::touchEvent(windowHandle, m_touchDevice.get()).release(1, globalPos);
 
     QVERIFY(widget.gestureReceived(gestureType));
 }
