@@ -424,7 +424,9 @@ void QWindowContainer::parentWasChanged(QWidget *parent)
 void QWindowContainer::parentWasMoved(QWidget *parent)
 {
     if (QWindowContainerPrivate *d = QWindowContainerPrivate::get(parent)) {
-        if (d->window->parent())
+        if (!d->window)
+            return;
+        else if (d->window->parent())
             d->updateGeometry();
     }
     qwindowcontainer_traverse(parent, parentWasMoved);
@@ -433,7 +435,9 @@ void QWindowContainer::parentWasMoved(QWidget *parent)
 void QWindowContainer::parentWasRaised(QWidget *parent)
 {
     if (QWindowContainerPrivate *d = QWindowContainerPrivate::get(parent)) {
-        if (d->window->parent())
+        if (!d->window)
+            return;
+        else if (d->window->parent())
             d->window->raise();
     }
     qwindowcontainer_traverse(parent, parentWasRaised);
@@ -442,7 +446,9 @@ void QWindowContainer::parentWasRaised(QWidget *parent)
 void QWindowContainer::parentWasLowered(QWidget *parent)
 {
     if (QWindowContainerPrivate *d = QWindowContainerPrivate::get(parent)) {
-        if (d->window->parent())
+        if (!d->window)
+            return;
+        else if (d->window->parent())
             d->window->lower();
     }
     qwindowcontainer_traverse(parent, parentWasLowered);
