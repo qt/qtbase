@@ -3182,10 +3182,10 @@ static inline bool usesSameOffset(const QDateTimeData &a, const QDateTimeData &b
 */
 bool areFarEnoughApart(qint64 leftMillis, qint64 rightMillis)
 {
-    constexpr qint64 UtcOffsetMillisRange
-        = (QTimeZone::MaxUtcOffsetSecs - QTimeZone::MinUtcOffsetSecs) * MSECS_PER_SEC;
+    constexpr quint64 UtcOffsetMillisRange
+        = quint64(QTimeZone::MaxUtcOffsetSecs - QTimeZone::MinUtcOffsetSecs) * MSECS_PER_SEC;
     qint64 gap = 0;
-    return qSubOverflow(leftMillis, rightMillis, &gap) || qAbs(gap) > UtcOffsetMillisRange;
+    return qSubOverflow(leftMillis, rightMillis, &gap) || QtPrivate::qUnsignedAbs(gap) > UtcOffsetMillisRange;
 }
 
 // Refresh the LocalTime or TimeZone validity and offset
