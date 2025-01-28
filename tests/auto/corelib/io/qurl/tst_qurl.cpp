@@ -3477,7 +3477,7 @@ void tst_QUrl::effectiveTLDs_data()
     QTest::newRow("yes10") << QUrl::fromEncoded("http://www.com.evje-og-hornnes.no") << ".evje-og-hornnes.no";
     QTest::newRow("yes11") << QUrl::fromEncoded("http://www.bla.kamijima.ehime.jp") << ".kamijima.ehime.jp";
     QTest::newRow("yes12") << QUrl::fromEncoded("http://www.bla.kakuda.miyagi.jp") << ".kakuda.miyagi.jp";
-    QTest::newRow("yes13") << QUrl::fromEncoded("http://mypage.betainabox.com") << ".betainabox.com";
+    QTest::newRow("yes13") << QUrl::fromEncoded("http://mypage.betainabox.com") << ".com"; // betainabox.com removed from the list on 2024-11-19
     QTest::newRow("yes14") << QUrl::fromEncoded("http://mypage.rhcloud.com") << ".rhcloud.com";
     QTest::newRow("yes15") << QUrl::fromEncoded("http://mypage.int.az") << ".int.az";
     QTest::newRow("yes16") << QUrl::fromEncoded("http://anything.pagespeedmobilizer.com") << ".pagespeedmobilizer.com";
@@ -3494,7 +3494,7 @@ void tst_QUrl::effectiveTLDs_data()
         << QUrl::fromEncoded("http://test.app.os.stg.fedoraproject.org")
         << ".app.os.stg.fedoraproject.org";
     QTest::newRow("development.run") << QUrl::fromEncoded("http://test.development.run") << ".development.run";
-    QTest::newRow("crafting.xyz") << QUrl::fromEncoded("http://test.crafting.xyz") << ".crafting.xyz";
+    QTest::newRow("crafting.xyz") << QUrl::fromEncoded("http://test.crafting.xyz") << ".xyz"; // crafting.xyz removed from the list on 2024-09-10
     QTest::newRow("nym.ie") << QUrl::fromEncoded("http://shamus.nym.ie") << ".ie";
     QTest::newRow("vapor.cloud") << QUrl::fromEncoded("http://test.vapor.cloud") << ".vapor.cloud";
     QTest::newRow("official.academy") << QUrl::fromEncoded("http://acredited.official.academy") << ".official.academy";
