@@ -11,6 +11,7 @@
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qcompare_impl.h>
+#include <QtCore/qstdlibdetection.h>
 
 #ifdef __cpp_lib_bit_cast
 #include <bit>
@@ -37,21 +38,23 @@ enum class Ordering : CompareUnderlyingType
 enum class Uncomparable : CompareUnderlyingType
 {
     Unordered =
-        #if defined(_LIBCPP_VERSION) // libc++
+        #if   defined(Q_STL_LIBCPP)
                 -127
-        #elif defined(__GLIBCXX__)   // libstdc++
+        #elif defined(Q_STL_LIBSTDCPP)
                    2
-        #elif defined(_MSVC_STL_VERSION) // MS-STL
+        #elif defined(Q_STL_MSSTL)
                 -128
-        #elif defined(Q_CC_GHS) // INTEGRITY does not have a C++20 stdlib,
-                                // but is going to use libc++ in the future,
-                                // so stay compatible for now.
-                -127
-        #elif defined(Q_OS_VXWORKS) // VxWorks does not have a C++20 stdlib,
-                                    // so we wont't promise BC there.
-                   2
+        #elif defined(Q_STL_DINKUMWARE) || \
+              defined(Q_STL_ROGUEWAVE)  || \
+              defined(Q_STL_STLPORT)    || \
+              defined(Q_STL_SGI)
+                QtPrivate::LegacyUncomparableValue
+        // We haven't seen C++20 of these libraries, so we don't promise BC there.
+        # ifdef __cpp_lib_three_way_comparison
+        #  error Please report the numeric value of std::partial_ordering::unordered in your STL in a bug report.
+        # endif
         #else
-        #   error "Unsupported C++ Standard Library implementation. Please submit a bug report."
+        #   error Please handle any newly-added Q_STL_ checks in the above ifdef-ery.
         #endif
 };
 
