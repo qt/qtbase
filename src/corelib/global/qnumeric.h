@@ -336,6 +336,16 @@ template <auto V2, typename T> bool qMulOverflow(T v1, T *r)
 template <typename T>
 constexpr inline T qAbs(const T &t) { return t >= 0 ? t : -t; }
 
+namespace QtPrivate {
+template <typename T,
+          typename std::enable_if_t<std::is_integral_v<T>, bool> = true>
+constexpr inline auto qUnsignedAbs(T t)
+{
+    using U = std::make_unsigned_t<T>;
+    return (t >= 0) ? U(t) : U(~U(t) + U(1));
+}
+} // namespace QtPrivate
+
 // gcc < 10 doesn't have __has_builtin
 #if defined(Q_PROCESSOR_ARM_64) && (__has_builtin(__builtin_round) || defined(Q_CC_GNU)) && !defined(Q_CC_CLANG)
 // ARM64 has a single instruction that can do C++ rounding with conversion to integer.

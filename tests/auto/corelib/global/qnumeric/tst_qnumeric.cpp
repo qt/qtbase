@@ -9,6 +9,7 @@
 
 #include <math.h>
 #include <float.h>
+#include <limits.h>
 
 #include <QtCore/q26numeric.h>
 
@@ -788,6 +789,51 @@ static_assert(q26::saturate_cast<unsigned>(min<qint64>) == 0);
 static_assert(q26::saturate_cast<quint64>(min<qint64>) == 0);
 
 } // namespace SaturateCastTest
+
+namespace UnsignedAbsTest {
+using QtPrivate::qUnsignedAbs;
+
+static_assert(std::is_same_v<decltype(qUnsignedAbs((char)0)), unsigned char>);
+static_assert(std::is_same_v<decltype(qUnsignedAbs((signed char)0)), unsigned char>);
+static_assert(std::is_same_v<decltype(qUnsignedAbs((unsigned char)0)), unsigned char>);
+static_assert(std::is_same_v<decltype(qUnsignedAbs((short)0)), unsigned short>);
+static_assert(std::is_same_v<decltype(qUnsignedAbs((unsigned short)0)), unsigned short>);
+static_assert(std::is_same_v<decltype(qUnsignedAbs((int)0)), unsigned int>);
+static_assert(std::is_same_v<decltype(qUnsignedAbs((unsigned int)0)), unsigned int>);
+static_assert(std::is_same_v<decltype(qUnsignedAbs((long)0)), unsigned long>);
+static_assert(std::is_same_v<decltype(qUnsignedAbs((unsigned long)0)), unsigned long>);
+static_assert(std::is_same_v<decltype(qUnsignedAbs((long long)0)), unsigned long long>);
+static_assert(std::is_same_v<decltype(qUnsignedAbs((unsigned long long)0)), unsigned long long>);
+
+template <typename T> constexpr bool isEqual(T a, T b) { return a == b; }
+
+#define TEST_TYPE(type, utype, minimal, maximal) \
+    static_assert(isEqual(qUnsignedAbs(type(minimal)), (utype)((utype)(maximal) + (utype)1))); \
+    static_assert(isEqual(qUnsignedAbs(type(0)), (utype)(0))); \
+    static_assert(isEqual(qUnsignedAbs(type(1)), (utype)(1))); \
+    static_assert(isEqual(qUnsignedAbs(type(-1)), (utype)(1))); \
+    static_assert(isEqual(qUnsignedAbs(type(10)), (utype)(10))); \
+    static_assert(isEqual(qUnsignedAbs(type(-10)), (utype)(10))); \
+    static_assert(isEqual(qUnsignedAbs(type(maximal)), (utype)(maximal))); \
+
+using schar = signed char;
+using uchar = unsigned char;
+using ushort = unsigned short;
+using uint = unsigned int;
+using ulong = unsigned long;
+
+#if CHAR_MAX == 127
+// char is signed
+TEST_TYPE(char, uchar, CHAR_MIN, CHAR_MAX)
+#endif
+TEST_TYPE(schar, uchar, SCHAR_MIN, SCHAR_MAX)
+TEST_TYPE(short, ushort, SHRT_MIN, SHRT_MAX)
+TEST_TYPE(int, uint, INT_MIN, INT_MAX)
+TEST_TYPE(long, ulong, LONG_MIN, LONG_MAX)
+TEST_TYPE(qlonglong, qulonglong, LLONG_MIN, LLONG_MAX)
+
+#undef TEST_TYPE
+} // namespace UnsignedAbsTest
 
 QTEST_APPLESS_MAIN(tst_QNumeric)
 #include "tst_qnumeric.moc"
