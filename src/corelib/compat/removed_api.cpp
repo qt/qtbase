@@ -1288,7 +1288,7 @@ QByteArray QMetaEnum::valueToKeys(int value) const
 #if QT_CONFIG(thread)
 void QBasicMutex::destroyInternal(QMutexPrivate *d)
 {
-    return destroyInternal(static_cast<void *>(d));
+    destroyInternal(static_cast<void *>(d));
 }
 #endif
 
