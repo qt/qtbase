@@ -233,6 +233,19 @@ static inline ResourceList *resourceList()
     itself will be unmapped from memory when the last QResource that points
     to it is destroyed.
 
+    \section2 Corruption and Security
+
+    The QResource class performs some checks on the file passed to determine
+    whether it is supported by the current version of Qt. Those tests are only
+    to check the file header does not request features (such as Zstandard
+    decompression) that have not been compiled in or that the file is not of a
+    future version of Qt. They do not confirm the validity of the entire file.
+
+    QResource should not be used on files whose provenance cannot be trusted.
+    Applications should be designed to attempt to load only resource files
+    whose provenance is at least as trustworthy as that of the application
+    itself or its plugins.
+
     \sa {The Qt Resource System}, QFile, QDir, QFileInfo
 */
 

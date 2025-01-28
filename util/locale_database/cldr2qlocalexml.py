@@ -3,16 +3,21 @@
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 """Convert CLDR data to QLocaleXML
 
-The CLDR data can be downloaded from CLDR_, which has a sub-directory
-for each version; you need the ``core.zip`` file for your version of
-choice (typically the latest). This script has had updates to cope up
-to v38.1; for later versions, we may need adaptations. Unpack the
-downloaded ``core.zip`` and check it has a common/main/ sub-directory:
-pass the path of that root of the download to this script as its first
-command-line argument. Pass the name of the file in which to write
-output as the second argument; either omit it or use '-' to select the
-standard output. This file is the input needed by
-``./qlocalexml2cpp.py``
+The CLDR data can be downloaded as a zip-file from CLDR_, which has a
+sub-directory for each version; you need the ``core.zip`` file for
+your version of choice (typically the latest), which you should then
+unpack. Alternatively, you can clone the git repo from github_, which
+has a tag for each release and a maint/maint-$ver branch for each
+major version. Either way, the CLDR top-level directory should have a
+subdirectory called common/ which contains (among other things)
+subdirectories main/ and supplemental/.
+
+This script has had updates to cope up to v44.1; for later versions,
+we may need adaptations. Pass the path of the CLDR top-level directory
+to this script as its first command-line argument. Pass the name of
+the file in which to write output as the second argument; either omit
+it or use '-' to select the standard output. This file is the input
+needed by ``./qlocalexml2cpp.py``
 
 When you update the CLDR data, be sure to also update
 src/corelib/text/qt_attribution.json's entry for unicode-cldr. Check
@@ -28,6 +33,7 @@ time zone names; see cldr2qtimezone.py for details.
 All the scripts mentioned support --help to tell you how to use them.
 
 .. _CLDR: https://unicode.org/Public/cldr/
+.. _github: https://github.com/unicode-org/cldr
 """
 
 from pathlib import Path

@@ -105,6 +105,12 @@ void Http2Server::setAuthenticationHeader(const QByteArray &authentication)
     authenticationHeader = authentication;
 }
 
+void Http2Server::setAuthenticationRequired(bool enable)
+{
+    Q_ASSERT(!enable || authenticationHeader.isEmpty());
+    authenticationRequired = enable;
+}
+
 void Http2Server::setRedirect(const QByteArray &url, int count)
 {
     redirectUrl = url;
@@ -864,7 +870,8 @@ void Http2Server::sendResponse(quint32 streamID, bool emptyBody)
     } else if (!authenticationHeader.isEmpty() && !hasAuth) {
         header.push_back({ ":status", "401" });
         header.push_back(HPack::HeaderField("www-authenticate", authenticationHeader));
-        authenticationHeader.clear();
+    } else if (authenticationRequired) {
+        header.push_back({ ":status", "401" });
     } else {
         header.push_back({":status", "200"});
     }

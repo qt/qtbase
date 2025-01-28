@@ -54,7 +54,7 @@ static inline void qt_poll_examine_ready_read(struct pollfd &pfd)
     int res;
     char data;
 
-    EINTR_LOOP(res, ::recv(pfd.fd, &data, sizeof(data), MSG_PEEK));
+    QT_EINTR_LOOP(res, ::recv(pfd.fd, &data, sizeof(data), MSG_PEEK));
     const int error = (res < 0) ? errno : 0;
 
     if (res == 0) {
@@ -109,7 +109,7 @@ static inline bool qt_poll_is_bad_fd(int fd)
 #endif
 
     int ret;
-    EINTR_LOOP(ret, fcntl(fd, F_GETFD));
+    QT_EINTR_LOOP(ret, fcntl(fd, F_GETFD));
     return (ret == -1 && errno == EBADF);
 }
 

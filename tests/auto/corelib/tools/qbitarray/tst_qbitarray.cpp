@@ -7,6 +7,9 @@
 
 #include "qbitarray.h"
 
+#include <QtCore/qelapsedtimer.h>
+#include <QtCore/qscopeguard.h>
+
 /**
  * Helper function to initialize a bitarray from a string
  */
@@ -30,6 +33,7 @@ class tst_QBitArray : public QObject
 {
     Q_OBJECT
 private slots:
+    void canHandleIntMaxBits();
     void size_data();
     void size();
     void countBits_data();
@@ -65,6 +69,54 @@ private slots:
     void toUInt32_data();
     void toUInt32();
 };
+
+void tst_QBitArray::canHandleIntMaxBits()
+{
+    QElapsedTimer timer;
+    timer.start();
+    const auto print = qScopeGuard([&] {
+        qDebug("Function took %lldms", qlonglong(timer.elapsed()));
+    });
+
+    try {
+        constexpr qsizetype Size1 = sizeof(void*) > sizeof(int) ? qsizetype(INT_MAX) + 2 :
+                                                                  INT_MAX - 2;
+        constexpr qsizetype Size2 = Size1 + 2;
+
+        QBitArray ba(Size1, true);
+        QCOMPARE(ba.size(), Size1);
+        QCOMPARE(ba.at(Size1 - 1), true);
+
+        ba.resize(Size2);
+        QCOMPARE(ba.size(), Size2);
+        QCOMPARE(ba.at(Size1 - 1), true);
+        QCOMPARE(ba.at(Size1),     false);
+        QCOMPARE(ba.at(Size2 - 1), false);
+
+        QByteArray serialized;
+        if constexpr (sizeof(void*) > sizeof(int)) {
+            QDataStream ds(&serialized, QIODevice::WriteOnly);
+            ds.setVersion(QDataStream::Qt_5_15);
+            ds << ba;
+            QCOMPARE(ds.status(), QDataStream::Status::WriteFailed); // ### SizeLimitExceeded
+            serialized.clear();
+        }
+        {
+            QDataStream ds(&serialized, QIODevice::WriteOnly);
+            ds << ba;
+            QCOMPARE(ds.status(), QDataStream::Status::Ok);
+        }
+        {
+            QDataStream ds(serialized);
+            QBitArray ba2;
+            ds >> ba2;
+            QCOMPARE(ds.status(), QDataStream::Status::Ok);
+            QCOMPARE(ba, ba2);
+        }
+    } catch (const std::bad_alloc &) {
+        QSKIP("Failed to allocate sufficient memory");
+    }
+}
 
 void tst_QBitArray::size_data()
 {

@@ -30,6 +30,7 @@ public:
     QPixmap pixmap(const QSize &size, QIcon::Mode mode, QIcon::State) override;
     QPixmap scaledPixmap(const QSize &size, QIcon::Mode mode, QIcon::State, qreal scale) override;
     QSize actualSize(const QSize &size, QIcon::Mode mode, QIcon::State state) override;
+    bool isNull() override { return false; }
 
     QFileInfo fileInfo() const { return m_fileInfo; }
     QPlatformTheme::IconOptions options() const { return m_options; }

@@ -25,6 +25,7 @@
 #include <qstyle.h>
 #include <qdebug.h>
 #include <qpainter.h>
+#include <qmimedata.h>
 
 #include <private/qwidget_p.h>
 #if QT_CONFIG(toolbar)
@@ -36,6 +37,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 class QMainWindowPrivate : public QWidgetPrivate
 {
     Q_DECLARE_PUBLIC(QMainWindow)
@@ -46,7 +49,7 @@ public:
             , useUnifiedToolBar(false)
 #endif
     { }
-    QMainWindowLayout *layout;
+    QPointer<QMainWindowLayout> layout;
     QSize iconSize;
     bool explicitIconSize;
     Qt::ToolButtonStyle toolButtonStyle;
@@ -57,7 +60,7 @@ public:
 
     static inline QMainWindowLayout *mainWindowLayout(const QMainWindow *mainWindow)
     {
-        return mainWindow ? mainWindow->d_func()->layout : static_cast<QMainWindowLayout *>(nullptr);
+        return mainWindow ? mainWindow->d_func()->layout.data() : static_cast<QMainWindowLayout *>(nullptr);
     }
 };
 
@@ -121,6 +124,7 @@ void QMainWindowPrivate::init()
     const int metric = q->style()->pixelMetric(QStyle::PM_ToolBarIconSize, nullptr, q);
     iconSize = QSize(metric, metric);
     q->setAttribute(Qt::WA_Hover);
+    q->setAcceptDrops(true);
 }
 
 /*
@@ -1287,13 +1291,6 @@ bool QMainWindow::event(QEvent *event)
             return true;
 #endif // QT_CONFIG(statustip)
 
-#if QT_CONFIG(dockwidget)
-        case QEvent::Show:
-            Q_ASSERT(d->layout);
-            d->layout->showDockWidgets();
-            break;
-#endif // QT_CONFIG(dockwidget)
-
         case QEvent::StyleChange:
 #if QT_CONFIG(dockwidget)
             Q_ASSERT(d->layout);
@@ -1302,6 +1299,22 @@ bool QMainWindow::event(QEvent *event)
             if (!d->explicitIconSize)
                 setIconSize(QSize());
             break;
+#if QT_CONFIG(draganddrop)
+        case QEvent::DragEnter:
+        case QEvent::Drop:
+            if (!d->layout->draggingWidget)
+                break;
+            event->accept();
+            return true;
+        case QEvent::DragMove: {
+            if (!d->layout->draggingWidget)
+                break;
+            auto dragMoveEvent = static_cast<QDragMoveEvent *>(event);
+            d->layout->hover(d->layout->draggingWidget, dragMoveEvent->position().toPoint());
+            event->accept();
+            return true;
+        }
+#endif
         default:
             break;
     }

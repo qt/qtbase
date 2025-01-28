@@ -300,6 +300,17 @@ QPlatformBackingStore *QCocoaIntegration::createPlatformBackingStore(QWindow *wi
     case QSurface::MetalSurface:
     case QSurface::OpenGLSurface:
     case QSurface::VulkanSurface:
+        // If the window is a widget window, we know that the QWidgetRepaintManager
+        // will explicitly use rhiFlush() for the window owning the backingstore,
+        // and any child window with the same surface format. This means we can
+        // safely return a QCALayerBackingStore here, to ensure that any plain
+        // flush() for child windows that don't have a matching surface format
+        // will still work, by setting the layer's contents property.
+        if (window->inherits("QWidgetWindow"))
+            return new QCALayerBackingStore(window);
+
+        // Otherwise we return a QRhiBackingStore, that implements flush() in
+        // terms of rhiFlush().
         return new QRhiBackingStore(window);
     default:
         return nullptr;

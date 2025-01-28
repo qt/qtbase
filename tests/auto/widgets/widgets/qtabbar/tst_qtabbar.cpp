@@ -102,6 +102,7 @@ private slots:
     void changeTabTextKeepsScroll();
     void settingCurrentTabBeforeShowDoesntScroll();
     void checkPositionsAfterShapeChange();
+    void checkScrollOffsetAfterTabRemoval();
 
 private:
     void checkPositions(const TabBar &tabbar, const QList<int> &positions);
@@ -1541,6 +1542,58 @@ void tst_QTabBar::checkPositionsAfterShapeChange()
     QStyleOptionTab opt;
     tabBar->initStyleOption(&opt, 2);
     QVERIFY(opt.rect.top() > 0);
+}
+
+void tst_QTabBar::checkScrollOffsetAfterTabRemoval()
+{
+    QTabWidget tabWidget;
+    QTabBar *tabBar = tabWidget.tabBar();
+    for (int i = 0; i < 10; ++i)
+        tabWidget.addTab(new QWidget, u"Tab %1"_s.arg(i));
+    tabWidget.setTabPosition(QTabWidget::North);
+    tabWidget.resize(300, 300);
+    tabWidget.setCurrentIndex(0);
+    tabWidget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&tabWidget));
+
+    auto *rightButton = tabBar->findChild<QAbstractButton *>(u"ScrollRightButton"_s);
+    auto *leftButton = tabBar->findChild<QAbstractButton *>(u"ScrollLeftButton"_s);
+    QVERIFY(leftButton);
+    QVERIFY(rightButton);
+    QVERIFY(rightButton->isEnabled());
+    QVERIFY(!leftButton->isEnabled());
+    // scroll to the right
+    tabBar->setCurrentIndex(9);
+    QVERIFY(!rightButton->isEnabled());
+    QVERIFY(leftButton->isEnabled());
+    // scroll to the center
+    tabBar->setCurrentIndex(2);
+    QVERIFY(rightButton->isEnabled());
+    QVERIFY(leftButton->isEnabled());
+
+    const auto getScrollOffset = [&]() -> int {
+        return static_cast<QTabBarPrivate *>(QObjectPrivate::get(tabBar))->scrollOffset;
+    };
+    // the scroll offset should not change when a tab right outside
+    // the scroll rect is removed
+    auto oldOffset = getScrollOffset();
+    tabWidget.removeTab(9);
+    QCOMPARE(getScrollOffset(), oldOffset);
+    // the scroll offset must change when a tab left outside
+    // the scroll rect is removed
+    oldOffset = getScrollOffset();
+    tabWidget.removeTab(0);
+    QVERIFY(getScrollOffset() < oldOffset);
+
+    // the scroll offset must change when there is empty
+    // place in the right after tab removal
+    oldOffset = getScrollOffset();
+    QVERIFY(oldOffset > 0);
+    for (int i : { 7, 6, 5, 4, 3 })
+        tabWidget.removeTab(i);
+    QCOMPARE(getScrollOffset(), 0);
+    QVERIFY(!rightButton->isVisible());
+    QVERIFY(!leftButton->isVisible());
 }
 
 QTEST_MAIN(tst_QTabBar)

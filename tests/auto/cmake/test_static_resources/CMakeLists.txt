@@ -22,4 +22,5 @@ add_subdirectory(mock_static_resources1)
 add_subdirectory(test_init_resources_static_plugin)
 add_subdirectory(test_static_resources_propagation)
 
+qt_build_repo_post_process()
 qt_build_repo_end()

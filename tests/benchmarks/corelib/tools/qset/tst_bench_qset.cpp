@@ -9,11 +9,21 @@ class tst_QSet : public QObject
     Q_OBJECT
 
 private slots:
+    void initTestCase();
     void intersect_int_data();
     void intersect_int();
     void intersect_complexType_data();
     void intersect_complexType();
+    void unite_int_data();
+    void unite_int();
+    void contains_then_insert_int_data();
+    void contains_then_insert_int();
 };
+
+void tst_QSet::initTestCase()
+{
+    QHashSeed::setDeterministicGlobalSeed();
+}
 
 void tst_QSet::intersect_int_data()
 {
@@ -95,6 +105,70 @@ void tst_QSet::intersect_complexType()
 
     QBENCHMARK {
         lhs.intersect(rhs);
+    }
+}
+
+void tst_QSet::unite_int_data()
+{
+    QTest::addColumn<int>("lhsSize");
+    QTest::addColumn<int>("rhsSize");
+    QTest::addColumn<int>("overlap");
+
+    QTest::newRow("1000000.unite(1000) - 0 overlap") << 1000000 << 1000 << 0;
+    QTest::newRow("1000000.unite(1000) - 100 overlap") << 1000000 << 1000 << 100;
+    QTest::newRow("1000000.unite(1000) - 1000 overlap") << 1000000 << 1000 << 1000;
+    QTest::newRow("1000.unite(1000000) - 0 overlap") << 1000 << 1000000 << 0;
+    QTest::newRow("1000.unite(1000000) - 100 overlap") << 1000 << 1000000 << 100;
+    QTest::newRow("1000.unite(1000000) - 1000 overlap") << 1000 << 1000000 << 1000;
+}
+
+auto build_sets(int lhsSize, int rhsSize, int overlap)
+{
+    QSet<int> lhs;
+    for (int i = 0; i < lhsSize; ++i)
+        lhs.insert(i);
+
+    QSet<int> rhs;
+    for (int i = lhsSize - overlap; i < rhsSize + lhsSize - overlap; ++i)
+        rhs.insert(i);
+
+    return std::make_pair(lhs, rhs);
+}
+
+void tst_QSet::unite_int()
+{
+    QFETCH(int, lhsSize);
+    QFETCH(int, rhsSize);
+    QFETCH(int, overlap);
+
+    auto [lhs, rhs] = build_sets(lhsSize, rhsSize, overlap);
+
+    QBENCHMARK {
+        QSet united = QSet(lhs).unite(rhs);
+        QCOMPARE(united.size(), lhsSize + rhsSize - overlap);
+    }
+}
+
+void tst_QSet::contains_then_insert_int_data()
+{
+    unite_int_data();
+}
+
+void tst_QSet::contains_then_insert_int()
+{
+    QFETCH(int, lhsSize);
+    QFETCH(int, rhsSize);
+    QFETCH(int, overlap);
+
+    auto [lhs, rhs] = build_sets(lhsSize, rhsSize, overlap);
+
+    QBENCHMARK {
+        QSet copy(lhs);
+        for (auto i : rhs) {
+            if (!copy.contains(i))
+                copy.insert(i);
+        }
+        QCOMPARE(copy.size(), lhsSize + rhsSize - overlap);
     }
 }
 

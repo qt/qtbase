@@ -5,87 +5,88 @@
 # Android specific functions/macros/properties required for building Qt Modules
 #
 
-define_property(TARGET
-    PROPERTY
-        QT_ANDROID_MODULE_INSTALL_DIR
-    BRIEF_DOCS
-        "Recorded install location for a Qt Module."
-    FULL_DOCS
-        "Recorded install location for a Qt Module. Used by qt_internal_android_dependencies()."
-)
+macro(qt_internal_setup_android_target_properties)
+    define_property(TARGET
+        PROPERTY
+            QT_ANDROID_MODULE_INSTALL_DIR
+        BRIEF_DOCS
+            "Recorded install location for a Qt Module."
+        FULL_DOCS
+            "Recorded install location for a Qt Module. Used by qt_internal_android_dependencies()."
+    )
 
+    define_property(TARGET
+        PROPERTY
+            QT_ANDROID_JAR_DEPENDENCIES
+        BRIEF_DOCS
+            "Qt Module Jar dependencies list."
+        FULL_DOCS
+            "Qt Module Jar dependencies list."
+    )
 
-define_property(TARGET
-    PROPERTY
-        QT_ANDROID_JAR_DEPENDENCIES
-    BRIEF_DOCS
-        "Qt Module Jar dependencies list."
-    FULL_DOCS
-        "Qt Module Jar dependencies list."
-)
+    define_property(TARGET
+        PROPERTY
+            QT_ANDROID_BUNDLED_JAR_DEPENDENCIES
+        BRIEF_DOCS
+            "Qt Module Jars that should be bundled with it during packing."
+        FULL_DOCS
+            "Qt Module Jars that should be bundled with it during packing."
+    )
 
-define_property(TARGET
-    PROPERTY
-        QT_ANDROID_BUNDLED_JAR_DEPENDENCIES
-    BRIEF_DOCS
-        "Qt Module Jars that should be bundled with it during packing."
-    FULL_DOCS
-        "Qt Module Jars that should be bundled with it during packing."
-)
+    define_property(TARGET
+        PROPERTY
+            QT_ANDROID_LIB_DEPENDENCIES
+        BRIEF_DOCS
+            "Qt Module C++ libraries that should be bundled with it during packing."
+        FULL_DOCS
+            "Qt Module C++ libraries that should be bundled with it during packing."
+    )
 
-define_property(TARGET
-    PROPERTY
-        QT_ANDROID_LIB_DEPENDENCIES
-    BRIEF_DOCS
-        "Qt Module C++ libraries that should be bundled with it during packing."
-    FULL_DOCS
-        "Qt Module C++ libraries that should be bundled with it during packing."
-)
+    define_property(TARGET
+        PROPERTY
+            QT_ANDROID_LIB_DEPENDENCY_REPLACEMENTS
+        BRIEF_DOCS
+            "Qt Module C++ libraries that can replace libraries declared with the QT_ANDROID_LIB_DEPENDENCIES property."
+        FULL_DOCS
+            "Qt Module C++ libraries that can replace libraries declared with the QT_ANDROID_LIB_DEPENDENCIES property."
+    )
 
-define_property(TARGET
-    PROPERTY
-        QT_ANDROID_LIB_DEPENDENCY_REPLACEMENTS
-    BRIEF_DOCS
-        "Qt Module C++ libraries that can replace libraries declared with the QT_ANDROID_LIB_DEPENDENCIES property."
-    FULL_DOCS
-        "Qt Module C++ libraries that can replace libraries declared with the QT_ANDROID_LIB_DEPENDENCIES property."
-)
+    define_property(TARGET
+        PROPERTY
+            QT_ANDROID_BUNDLED_FILES
+        BRIEF_DOCS
+            "Qt Module files that need to be bundled during packing."
+        FULL_DOCS
+            "Qt Module files that need to be bundled during packing."
+    )
 
-define_property(TARGET
-    PROPERTY
-        QT_ANDROID_BUNDLED_FILES
-    BRIEF_DOCS
-        "Qt Module files that need to be bundled during packing."
-    FULL_DOCS
-        "Qt Module files that need to be bundled during packing."
-)
+    define_property(TARGET
+        PROPERTY
+            QT_ANDROID_PERMISSIONS
+        BRIEF_DOCS
+            "Qt Module android permission list."
+        FULL_DOCS
+            "Qt Module android permission list."
+    )
 
-define_property(TARGET
-    PROPERTY
-        QT_ANDROID_PERMISSIONS
-    BRIEF_DOCS
-        "Qt Module android permission list."
-    FULL_DOCS
-        "Qt Module android permission list."
-)
+    define_property(TARGET
+        PROPERTY
+            QT_ANDROID_FEATURES
+        BRIEF_DOCS
+            "Qt Module android feature list."
+        FULL_DOCS
+            "Qt Module android feature list."
+    )
 
-define_property(TARGET
-    PROPERTY
-        QT_ANDROID_FEATURES
-    BRIEF_DOCS
-        "Qt Module android feature list."
-    FULL_DOCS
-        "Qt Module android feature list."
-)
-
-define_property(TARGET
-    PROPERTY
-        QT_ANDROID_ABIS
-    BRIEF_DOCS
-        "List of ABIs that the target packages are built with."
-    FULL_DOCS
-        "List of ABIs that the target packages are built with."
-)
+    define_property(TARGET
+        PROPERTY
+            QT_ANDROID_ABIS
+        BRIEF_DOCS
+            "List of ABIs that the target packages are built with."
+        FULL_DOCS
+            "List of ABIs that the target packages are built with."
+    )
+endmacro()
 
 function(qt_internal_android_dependencies_content target file_content_out)
     get_target_property(arg_JAR_DEPENDENCIES ${target} QT_ANDROID_JAR_DEPENDENCIES)

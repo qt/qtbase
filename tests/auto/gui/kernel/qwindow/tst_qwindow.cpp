@@ -90,6 +90,7 @@ private slots:
     void qobject_castOnDestruction();
     void touchToMouseTranslationByPopup();
     void stateChangeSignal();
+    void windowExposedAfterReparent();
 
 private:
     QPoint m_availableTopLeft;
@@ -2916,6 +2917,25 @@ void tst_QWindow::stateChangeSignal()
     QWindowSystemInterface::handleWindowStateChanged(&w, Qt::WindowMinimized, w.windowState());
     ++signalCount;
     CHECK_SIGNAL(Qt::WindowMinimized);
+}
+
+void tst_QWindow::windowExposedAfterReparent()
+{
+    QWindow parent;
+    QWindow child(&parent);
+    child.show();
+    parent.show();
+
+    QVERIFY(QTest::qWaitForWindowExposed(&parent));
+    QVERIFY(QTest::qWaitForWindowExposed(&child));
+
+    child.setParent(nullptr);
+    QCoreApplication::processEvents();
+    QVERIFY(QTest::qWaitForWindowExposed(&child));
+
+    child.setParent(&parent);
+    QCoreApplication::processEvents();
+    QVERIFY(QTest::qWaitForWindowExposed(&child));
 }
 
 #include <tst_qwindow.moc>

@@ -7,9 +7,6 @@
 #include <QtWidgets>
 #include <QtSql>
 
-#include "ui_bookwindow.h"
-
-
 class BookWindow: public QMainWindow
 {
     Q_OBJECT
@@ -21,11 +18,29 @@ private slots:
 
 private:
     void showError(const QSqlError &err);
-    Ui::BookWindow ui;
     QSqlRelationalTableModel *model = nullptr;
     int authorIdx = 0, genreIdx = 0;
 
+    void createLayout();
+    void createModel();
+    void configureWidgets();
+    void createMappings();
     void createMenuBar();
+
+    QWidget *window = nullptr;
+
+    QGridLayout *gridLayout = nullptr;
+    QTableView *tableView = nullptr;
+    QLabel *titleLabel = nullptr;
+    QLineEdit *titleLineEdit = nullptr;
+    QLabel *authorLabel = nullptr;
+    QComboBox *authorComboBox = nullptr;
+    QLabel *genreLabel = nullptr;
+    QComboBox *genreComboBox = nullptr;
+    QLabel *yearLabel = nullptr;
+    QSpinBox *yearSpinBox = nullptr;
+    QLabel *ratingLabel = nullptr;
+    QComboBox *ratingComboBox = nullptr;
 };
 
 #endif

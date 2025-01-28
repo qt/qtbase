@@ -5,23 +5,33 @@ android
 # QDockWidget::isFloating() is flaky after state change on these OS
 [closeAndDelete]
 macos
-[floatingTabs]
+qnx
+b2qt
+arm
+android
+
 # QTBUG-103091
+[floatingTabs]
+arm
+android
 qnx
 macos
-[closeAndDelete]
 b2qt
-[floatingTabs]
-macos b2qt arm android
-[closeAndDelete]
+
+# QTBUG-103091
+[hoverWithoutDrop]
+arm
+android
+qnx
+macos
 b2qt
-[floatingTabs]
+
+# OSes are flaky because of unplugging and plugging requires
+# precise calculation of the title bar area for mouse emulation
+# That's not possible for floating dock widgets.
+[deleteFloatingTabWithSingleDockWidget]
+qnx
+b2qt
 arm
-[closeAndDelete]
-macos b2qt arm android
-[floatingTabs]
-arm
-[closeAndDelete]
 android
-[floatingTabs]
-android
+macos

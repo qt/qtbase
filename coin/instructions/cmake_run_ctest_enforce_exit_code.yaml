@@ -83,21 +83,6 @@ instructions:
       env_var: CMAKE_MIN_SUPPORTED_BIN_PATH
       equals_value: null
 
-  - type: EnvironmentVariable
-    variableName: COIN_COMMAND_OUTPUT_TIMEOUT
-    variableValue: "900"
-    disable_if:
-      condition: property
-      property: features
-      contains_value: UseAddressSanitizer
-  - type: EnvironmentVariable
-    variableName: COIN_COMMAND_OUTPUT_TIMEOUT
-    variableValue: "10800"
-    enable_if:
-      condition: property
-      property: features
-      contains_value: UseAddressSanitizer
-
   - type: ExecuteCommand
     command: "{{.Env.TESTS_ENV_PREFIX}} ctest {{.Env.CTEST_ARGS}}"
     executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution

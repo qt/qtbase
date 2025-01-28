@@ -8,8 +8,8 @@
 #include <qobject.h>
 #include <qmetaobject.h>
 #include <qjsondocument.h>
-#include <qversionnumber.h>
 #include <qregularexpression.h>
+#include <qtyperevision.h>
 
 #include "using-namespaces.h"
 #include "assign-namespace.h"
@@ -819,6 +819,14 @@ private:
 
 };
 
+#define VERIFY_NO_ERRORS(proc) do { \
+        auto &&p = proc; \
+        const QByteArray stderr = p.readAllStandardError(); \
+        QVERIFY2(stderr.isEmpty(), stderr.data()); \
+        QCOMPARE(p.exitCode(), 0); \
+    } while (false)
+
+
 void tst_Moc::initTestCase()
 {
     QString binpath = QLibraryInfo::path(QLibraryInfo::BinariesPath);
@@ -833,10 +841,9 @@ void tst_Moc::initTestCase()
     QProcess proc;
     proc.start(qtpaths, QStringList() << "-query" << "QT_INSTALL_HEADERS");
     QVERIFY(proc.waitForFinished());
-    QCOMPARE(proc.exitCode(), 0);
+    VERIFY_NO_ERRORS(proc);
     QByteArray output = proc.readAllStandardOutput();
     QVERIFY(!output.isEmpty());
-    QCOMPARE(proc.readAllStandardError(), QByteArray());
     qtIncludePath = QString::fromLocal8Bit(output).trimmed();
     QFileInfo fi(qtIncludePath);
     QVERIFY(fi.exists());
@@ -871,10 +878,9 @@ void tst_Moc::oldStyleCasts()
     QProcess proc;
     proc.start(m_moc, QStringList(m_sourceDirectory + QStringLiteral("/oldstyle-casts.h")));
     QVERIFY(proc.waitForFinished());
-    QCOMPARE(proc.exitCode(), 0);
+    VERIFY_NO_ERRORS(proc);
     QByteArray mocOut = proc.readAllStandardOutput();
     QVERIFY(!mocOut.isEmpty());
-    QCOMPARE(proc.readAllStandardError(), QByteArray());
 
     QStringList args;
     args << "-c" << "-x" << "c++" << "-Wold-style-cast" << "-I" << "."
@@ -885,8 +891,7 @@ void tst_Moc::oldStyleCasts()
     proc.closeWriteChannel();
 
     QVERIFY(proc.waitForFinished());
-    QCOMPARE(QString::fromLocal8Bit(proc.readAllStandardError()), QString());
-    QCOMPARE(proc.exitCode(), 0);
+    VERIFY_NO_ERRORS(proc);
 #else
     QSKIP("Only tested on linux/gcc");
 #endif
@@ -943,10 +948,9 @@ void tst_Moc::inputFileNameWithDotsButNoExtension()
     proc.setWorkingDirectory(m_sourceDirectory + QStringLiteral("/task71021"));
     proc.start(m_moc, QStringList("../Header"));
     QVERIFY(proc.waitForFinished());
-    QCOMPARE(proc.exitCode(), 0);
+    VERIFY_NO_ERRORS(proc);
     QByteArray mocOut = proc.readAllStandardOutput();
     QVERIFY(!mocOut.isEmpty());
-    QCOMPARE(proc.readAllStandardError(), QByteArray());
 
     QStringList args;
     args << "-c" << "-x" << "c++" << "-I" << ".."
@@ -957,8 +961,7 @@ void tst_Moc::inputFileNameWithDotsButNoExtension()
     proc.closeWriteChannel();
 
     QVERIFY(proc.waitForFinished());
-    QCOMPARE(QString::fromLocal8Bit(proc.readAllStandardError()), QString());
-    QCOMPARE(proc.exitCode(), 0);
+    VERIFY_NO_ERRORS(proc);
 #else
     QSKIP("Only tested on linux/gcc");
 #endif
@@ -1235,11 +1238,7 @@ void tst_Moc::ignoreOptionClashes()
     if (!finished)
         qWarning("waitForFinished failed. QProcess error: %d", (int)proc.error());
     QVERIFY(finished);
-    if (proc.exitCode() != 0) {
-        qDebug() << proc.readAllStandardError();
-    }
-    QCOMPARE(proc.exitCode(), 0);
-    QCOMPARE(proc.readAllStandardError(), QByteArray());
+    VERIFY_NO_ERRORS(proc);
     QByteArray mocOut = proc.readAllStandardOutput();
 
     // If -pthread wasn't ignored, it was parsed as a prefix of "thread/", which breaks compilation.
@@ -1253,7 +1252,7 @@ void tst_Moc::ignoreOptionClashes()
     proc.closeWriteChannel();
 
     QVERIFY(proc.waitForFinished());
-    QCOMPARE(QString::fromLocal8Bit(proc.readAllStandardError()), QString());
+    VERIFY_NO_ERRORS(proc);
 #else
     QSKIP("Only tested on linux/gcc");
 #endif
@@ -1358,11 +1357,7 @@ void tst_Moc::frameworkSearchPath()
     if (!finished)
         qWarning("waitForFinished failed. QProcess error: %d", (int)proc.error());
     QVERIFY(finished);
-    if (proc.exitCode() != 0) {
-        qDebug() << proc.readAllStandardError();
-    }
-    QCOMPARE(proc.exitCode(), 0);
-    QCOMPARE(proc.readAllStandardError(), QByteArray());
+    VERIFY_NO_ERRORS(proc);
 #else
     QSKIP("Only tested/relevant on unixy platforms");
 #endif
@@ -1394,11 +1389,9 @@ void tst_Moc::templateGtGt()
     QProcess proc;
     proc.start(m_moc, QStringList(m_sourceDirectory + QStringLiteral("/template-gtgt.h")));
     QVERIFY(proc.waitForFinished());
-    QCOMPARE(proc.exitCode(), 0);
+    VERIFY_NO_ERRORS(proc);
     QByteArray mocOut = proc.readAllStandardOutput();
     QVERIFY(!mocOut.isEmpty());
-    QString mocWarning = QString::fromLocal8Bit(proc.readAllStandardError());
-    QVERIFY(mocWarning.isEmpty());
 #else
     QSKIP("Only tested on unix/gcc");
 #endif
@@ -1415,8 +1408,7 @@ void tst_Moc::defineMacroViaCmdline()
 
     proc.start(m_moc, args);
     QVERIFY(proc.waitForFinished());
-    QCOMPARE(proc.exitCode(), 0);
-    QCOMPARE(proc.readAllStandardError(), QByteArray());
+    VERIFY_NO_ERRORS(proc);
     QByteArray mocOut = proc.readAllStandardOutput();
     QVERIFY(!mocOut.isEmpty());
 #else
@@ -1435,8 +1427,7 @@ void tst_Moc::defineMacroViaForcedInclude()
 
     proc.start(m_moc, args);
     QVERIFY(proc.waitForFinished());
-    QCOMPARE(proc.exitCode(), 0);
-    QCOMPARE(proc.readAllStandardError(), QByteArray());
+    VERIFY_NO_ERRORS(proc);
     QByteArray mocOut = proc.readAllStandardOutput();
     QVERIFY(!mocOut.isEmpty());
 #else
@@ -1455,8 +1446,7 @@ void tst_Moc::defineMacroViaForcedIncludeRelative()
 
     proc.start(m_moc, args);
     QVERIFY(proc.waitForFinished());
-    QCOMPARE(proc.exitCode(), 0);
-    QCOMPARE(proc.readAllStandardError(), QByteArray());
+    VERIFY_NO_ERRORS(proc);
     QByteArray mocOut = proc.readAllStandardOutput();
     QVERIFY(!mocOut.isEmpty());
 #else
@@ -1501,8 +1491,7 @@ void tst_Moc::environmentIncludePaths()
     proc.setProcessEnvironment(env);
     proc.start(m_moc, args);
     QVERIFY(proc.waitForFinished());
-    QCOMPARE(proc.exitCode(), 0);
-    QCOMPARE(proc.readAllStandardError(), QByteArray());
+    VERIFY_NO_ERRORS(proc);
     QByteArray mocOut = proc.readAllStandardOutput();
     QVERIFY(!mocOut.isEmpty());
 #else
@@ -1909,11 +1898,10 @@ void tst_Moc::notifyError()
     const QString header = m_sourceDirectory + QStringLiteral("/error-on-wrong-notify.h");
     proc.start(m_moc, QStringList(header));
     QVERIFY(proc.waitForFinished());
-    QCOMPARE(proc.exitCode(), 0);
+    VERIFY_NO_ERRORS(proc);
     QCOMPARE(proc.exitStatus(), QProcess::NormalExit);
     QByteArray mocOut = proc.readAllStandardOutput();
     QVERIFY(!mocOut.isEmpty());
-    QCOMPARE(proc.readAllStandardError(), QByteArray());
 
     QStringList args;
     args << "-c" << "-x" << "c++" << "-I" << "."
@@ -3637,10 +3625,9 @@ void tst_Moc::preprocessorOnly()
     QProcess proc;
     proc.start(m_moc, QStringList() << "-E" << m_sourceDirectory + QStringLiteral("/pp-dollar-signs.h"));
     QVERIFY(proc.waitForFinished());
-    QCOMPARE(proc.exitCode(), 0);
+    VERIFY_NO_ERRORS(proc);
     QByteArray mocOut = proc.readAllStandardOutput();
     QVERIFY(!mocOut.isEmpty());
-    QCOMPARE(proc.readAllStandardError(), QByteArray());
 
     QVERIFY(mocOut.contains("$$ = parser->createFoo()"));
 #else
@@ -4141,6 +4128,8 @@ void tst_Moc::mocJsonOutput()
             return "Error waiting for diff process to finish.";
         return diffProc.readAllStandardOutput();
 #else
+        Q_UNUSED(actual);
+        Q_UNUSED(expected);
         return "Cannot launch diff. Please check allmocs.json and allmocs_baseline.json on disk.";
 #endif
     };

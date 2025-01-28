@@ -175,6 +175,16 @@ public:
         cleanupCallbacks.append(callback);
     }
 
+    void addCleanupCallback(const void *key, const QRhi::CleanupCallback &callback)
+    {
+        keyedCleanupCallbacks[key] = callback;
+    }
+
+    void removeCleanupCallback(const void *key)
+    {
+        keyedCleanupCallbacks.remove(key);
+    }
+
     void addGpuFrameTimeCallback(const QRhi::GpuFrameTimeCallback &callback)
     {
         gpuFrameTimeCallbacks.append(callback);
@@ -219,6 +229,8 @@ public:
     QRhiVertexInputAttribute::Format shaderDescVariableFormatToVertexInputFormat(QShaderDescription::VariableType type) const;
     quint32 byteSizePerVertexForVertexInputFormat(QRhiVertexInputAttribute::Format format) const;
 
+    int effectiveSampleCount(int sampleCount) const;
+
     QRhi *q;
 
     static const int MAX_SHADER_CACHE_ENTRIES = 128;
@@ -236,6 +248,7 @@ private:
     QHash<QRhiResource *, bool> resources;
     QSet<QRhiResource *> pendingDeleteResources;
     QVarLengthArray<QRhi::CleanupCallback, 4> cleanupCallbacks;
+    QHash<const void *, QRhi::CleanupCallback> keyedCleanupCallbacks;
     QVarLengthArray<QRhi::GpuFrameTimeCallback, 4> gpuFrameTimeCallbacks;
     QElapsedTimer pipelineCreationTimer;
     qint64 accumulatedPipelineCreationTime = 0;

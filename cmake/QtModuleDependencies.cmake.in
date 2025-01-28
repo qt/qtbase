@@ -16,10 +16,10 @@ set(${CMAKE_FIND_PACKAGE_NAME}_FIND_REQUIRED FALSE)
 if(NOT @INSTALL_CMAKE_NAMESPACE@_FOUND)
     find_dependency(@INSTALL_CMAKE_NAMESPACE@ @main_qt_package_version@
         PATHS
+            ${QT_BUILD_CMAKE_PREFIX_PATH}
             "${CMAKE_CURRENT_LIST_DIR}/.."
             "${_qt_cmake_dir}"
             ${_qt_additional_packages_prefix_paths}
-            ${QT_EXAMPLES_CMAKE_PREFIX_PATH}
         ${__qt_use_no_default_path_for_qt_packages}
     )
 endif()

@@ -46,7 +46,7 @@
     \li QMap<Key, T>
     \li QMargins
     \li QMatrix4x4
-    \li QPair<T1, T2>
+    \li std::pair<T1, T2>
     \li QPalette
     \li QPen
     \li QPicture

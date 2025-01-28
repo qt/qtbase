@@ -10,6 +10,7 @@
 #include "private/qmainwindowlayout_p.h"
 #include <QAbstractButton>
 #include <qlineedit.h>
+#include <QtGui/qpa/qplatformwindow.h>
 #include <qtabbar.h>
 #include <QScreen>
 #include <QTimer>
@@ -67,6 +68,11 @@ private slots:
 
     // test floating tabs, item_tree and window title consistency
     void floatingTabs();
+    void hoverWithoutDrop();
+
+    // floating tab gets removed, when last child goes away
+    void deleteFloatingTabWithSingleDockWidget_data();
+    void deleteFloatingTabWithSingleDockWidget();
 
     // test hide & show
     void hideAndShow();
@@ -81,8 +87,14 @@ private slots:
 private:
     // helpers and consts for dockPermissions, hideAndShow, closeAndDelete
 #ifdef QT_BUILD_INTERNAL
-    void createTestWidgets(QMainWindow* &MainWindow, QPointer<QWidget> &cent, QPointer<QDockWidget> &d1, QPointer<QDockWidget> &d2) const;
+    void createTestWidgets(QMainWindow* &MainWindow, QPointer<QWidget> &cent,
+                           QPointer<QDockWidget> &d1, QPointer<QDockWidget> &d2) const;
+
     void unplugAndResize(QMainWindow* MainWindow, QDockWidget* dw, QPoint home, QSize size) const;
+
+    void createFloatingTabs(QMainWindow* &MainWindow, QPointer<QWidget> &cent,
+                            QPointer<QDockWidget> &d1, QPointer<QDockWidget> &d2,
+                            QList<int> &path1, QList<int> &path2) const;
 
     static inline QPoint dragPoint(QDockWidget* dockWidget);
     static inline QPoint home1(QMainWindow* MainWindow)
@@ -103,13 +115,26 @@ private:
     bool checkFloatingTabs(QMainWindow* MainWindow, QPointer<QDockWidgetGroupWindow> &ftabs, const QList<QDockWidget*> &dwList = {}) const;
 
     // move a dock widget
-    void moveDockWidget(QDockWidget* dw, QPoint to, QPoint from = QPoint()) const;
+    enum class MoveDockWidgetRule {
+        Drop,
+        Abort
+    };
+
+    void moveDockWidget(QDockWidget* dw, QPoint to, QPoint from, MoveDockWidgetRule rule) const;
 
 #ifdef QT_BUILD_INTERNAL
     // Message handling for xcb error QTBUG 82059
     static void xcbMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg);
+
+    enum class ChildRemovalReason {
+        Destroyed,
+        Closed,
+        Reparented
+    };
+
 public:
     bool xcbError = false;
+    bool platformSupportingRaise = true;
 #endif
 private:
 
@@ -1185,7 +1210,7 @@ QPoint tst_QDockWidget::dragPoint(QDockWidget* dockWidget)
     return dockWidget->mapToGlobal(dwlayout->titleArea().center());
 }
 
-void tst_QDockWidget::moveDockWidget(QDockWidget* dw, QPoint to, QPoint from) const
+void tst_QDockWidget::moveDockWidget(QDockWidget* dw, QPoint to, QPoint from, MoveDockWidgetRule rule) const
 {
     Q_ASSERT(dw);
 
@@ -1202,12 +1227,22 @@ void tst_QDockWidget::moveDockWidget(QDockWidget* dw, QPoint to, QPoint from) co
     QTest::mouseMove(dw, target);
     qCDebug(lcTestDockWidget) << "Move" << dw->objectName() << "to" << target;
     qCDebug(lcTestDockWidget) << "Move" << dw->objectName() << "to" << to;
-    QTest::mouseRelease(dw, Qt::LeftButton, Qt::KeyboardModifiers(), target);
-    QTest::qWait(waitingTime);
+    if (rule == MoveDockWidgetRule::Drop) {
+        QTest::mouseRelease(dw, Qt::LeftButton, Qt::KeyboardModifiers(), target);
+        QTest::qWait(waitingTime);
 
-    // Verify WindowActive only for floating dock widgets
-    if (dw->isFloating())
-        QTRY_VERIFY(QTest::qWaitForWindowActive(dw));
+        // Verify WindowActive only for floating dock widgets
+        if (dw->isFloating())
+            QTRY_VERIFY(QTest::qWaitForWindowActive(dw));
+        return;
+    }
+    qCDebug(lcTestDockWidget) << "Aborting move and dropping at origin";
+
+    // Give animations some time
+    QTest::qWait(waitingTime);
+    QTest::mouseMove(dw, from);
+    QTest::mouseRelease(dw, Qt::LeftButton, Qt::KeyboardModifiers(), from);
+    QTest::qWait(waitingTime);
 }
 
 void tst_QDockWidget::unplugAndResize(QMainWindow* mainWindow, QDockWidget* dw, QPoint home, QSize size) const
@@ -1255,7 +1290,7 @@ void tst_QDockWidget::unplugAndResize(QMainWindow* mainWindow, QDockWidget* dw, 
     QPoint pos1 = dw->mapToGlobal(dw->rect().center());
     pos1.rx() += mx;
     pos1.ry() += my;
-    moveDockWidget(dw, pos1, dw->mapToGlobal(dw->rect().center()));
+    moveDockWidget(dw, pos1, dw->mapToGlobal(dw->rect().center()), MoveDockWidgetRule::Drop);
     QTRY_VERIFY(dw->isFloating());
 
     // Unplugged object's size may differ max. by 2x frame size
@@ -1317,6 +1352,71 @@ bool tst_QDockWidget::checkFloatingTabs(QMainWindow* mainWindow, QPointer<QDockW
     return true;
 }
 
+#ifdef QT_BUILD_INTERNAL
+// Statics for xcb error, raise() suppert / msg handler
+static tst_QDockWidget *qThis = nullptr;
+static void (*oldMessageHandler)(QtMsgType, const QMessageLogContext &, const QString &);
+#define QXCBVERIFY(cond) do { if (xcbError) QSKIP("Test skipped due to XCB error"); QVERIFY(cond); } while (0)
+
+// detect xcb error and missing raise() support
+// qt.qpa.xcb: internal error:  void QXcbWindow::setNetWmStateOnUnmappedWindow() called on mapped window
+void tst_QDockWidget::xcbMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+{
+    Q_ASSERT(oldMessageHandler);
+
+    if (type == QtWarningMsg) {
+        Q_ASSERT(qThis);
+        if (QString(context.category) == "qt.qpa.xcb" && msg.contains("internal error"))
+            qThis->xcbError = true;
+        if (msg.contains("does not support raise"))
+            qThis->platformSupportingRaise = false;
+    }
+
+    return oldMessageHandler(type, context, msg);
+}
+#endif
+
+void tst_QDockWidget::createFloatingTabs(QMainWindow* &mainWindow, QPointer<QWidget> &cent,
+                                         QPointer<QDockWidget> &d1, QPointer<QDockWidget> &d2,
+                                         QList<int> &path1, QList<int> &path2) const
+{
+    createTestWidgets(mainWindow, cent, d1, d2);
+
+#ifdef QT_BUILD_INTERNAL
+    qThis = const_cast<tst_QDockWidget *>(this);
+    oldMessageHandler = qInstallMessageHandler(xcbMessageHandler);
+    auto resetMessageHandler = qScopeGuard([] { qInstallMessageHandler(oldMessageHandler); });
+#endif
+
+    // Test will fail if platform doesn't support raise.
+    mainWindow->windowHandle()->handle()->raise();
+    if (!platformSupportingRaise)
+        QSKIP("Platform not supporting raise(). Floating tab based tests will fail.");
+
+    // remember paths to d1 and d2
+    QMainWindowLayout* layout = qobject_cast<QMainWindowLayout *>(mainWindow->layout());
+    path1 = layout->layoutState.indexOf(d1);
+    path2 = layout->layoutState.indexOf(d2);
+
+    // unplug and resize both dock widgets
+    unplugAndResize(mainWindow, d1, home1(mainWindow), size1(mainWindow));
+    unplugAndResize(mainWindow, d2, home2(mainWindow), size2(mainWindow));
+
+    // docks must be parented to the main window, no group window must exist
+    QCOMPARE(d1->parentWidget(), mainWindow);
+    QCOMPARE(d2->parentWidget(), mainWindow);
+    QVERIFY(mainWindow->findChildren<QDockWidgetGroupWindow *>().isEmpty());
+
+    // Test plugging
+    qCDebug(lcTestDockWidget) << "*** move d1 dock over d2 dock ***";
+    qCDebug(lcTestDockWidget) << "**********(test plugging)*************";
+    qCDebug(lcTestDockWidget) << "Move d1 over d2";
+    moveDockWidget(d1, d2->mapToGlobal(d2->rect().center()), QPoint(), MoveDockWidgetRule::Drop);
+
+    // Now MainWindow has to have a floatingTab child
+    QPointer<QDockWidgetGroupWindow> ftabs;
+    QTRY_VERIFY(checkFloatingTabs(mainWindow, ftabs, QList<QDockWidget *>() << d1 << d2));
+}
 #endif // QT_BUILD_INTERNAL
 
 // test floating tabs and item_tree consistency
@@ -1333,7 +1433,9 @@ void tst_QDockWidget::floatingTabs()
     QPointer<QDockWidget> d2;
     QPointer<QWidget> cent;
     QMainWindow* mainWindow;
-    createTestWidgets(mainWindow, cent, d1, d2);
+    QList<int> path1;
+    QList<int> path2;
+    createFloatingTabs(mainWindow, cent, d1, d2, path1, path2);
     std::unique_ptr<QMainWindow> up_mainWindow(mainWindow);
 
     /*
@@ -1341,22 +1443,6 @@ void tst_QDockWidget::floatingTabs()
      * expected behavior: QDOckWidgetGroupWindow with both widgets is created
      */
 
-    // remember paths to d1 and d2
-    QMainWindowLayout* layout = qobject_cast<QMainWindowLayout*>(mainWindow->layout());
-    const QList<int> path1 = layout->layoutState.indexOf(d1);
-    const QList<int> path2 = layout->layoutState.indexOf(d2);
-
-    // unplug and resize both dock widgets
-    unplugAndResize(mainWindow, d1, home1(mainWindow), size1(mainWindow));
-    unplugAndResize(mainWindow, d2, home2(mainWindow), size2(mainWindow));
-
-    // Test plugging
-    qCDebug(lcTestDockWidget) << "*** move d1 dock over d2 dock ***";
-    qCDebug(lcTestDockWidget) << "**********(test plugging)*************";
-    qCDebug(lcTestDockWidget) << "Move d1 over d2";
-    moveDockWidget(d1, d2->mapToGlobal(d2->rect().center()));
-
-    // Both dock widgets must no longer be floating
     // disabled due to flakiness on macOS and Windows
     if (d1->isFloating())
         qWarning("OS flakiness: D1 is docked and reports being floating");
@@ -1407,10 +1493,9 @@ void tst_QDockWidget::floatingTabs()
     // Plug back into dock areas
     qCDebug(lcTestDockWidget) << "*** test plugging back to dock areas ***";
     qCDebug(lcTestDockWidget) << "Move d1 to left dock";
-    //moveDockWidget(d1, d1->mapFrom(MainWindow, dockPoint(MainWindow, Qt::LeftDockWidgetArea)));
-    moveDockWidget(d1, dockPoint(mainWindow, Qt::LeftDockWidgetArea));
+    moveDockWidget(d1, dockPoint(mainWindow, Qt::LeftDockWidgetArea), QPoint(), MoveDockWidgetRule::Drop);
     qCDebug(lcTestDockWidget) << "Move d2 to right dock";
-    moveDockWidget(d2, dockPoint(mainWindow, Qt::RightDockWidgetArea));
+    moveDockWidget(d2, dockPoint(mainWindow, Qt::RightDockWidgetArea), QPoint(), MoveDockWidgetRule::Drop);
 
     qCDebug(lcTestDockWidget) << "Waiting" << waitBeforeClose << "ms before plugging back.";
     QTest::qWait(waitBeforeClose);
@@ -1424,38 +1509,99 @@ void tst_QDockWidget::floatingTabs()
     QTRY_VERIFY(ftabs.isNull());
 
     // Check if paths are consistent
+    QMainWindowLayout* layout = qobject_cast<QMainWindowLayout *>(mainWindow->layout());
     qCDebug(lcTestDockWidget) << "Checking path consistency" << layout->layoutState.indexOf(d1) << layout->layoutState.indexOf(d2);
 
-    // Path1 must be identical
-    QTRY_COMPARE(path1, layout->layoutState.indexOf(d1));
-
-    // d1 must have a gap item due to size change
-    QTRY_COMPARE(layout->layoutState.indexOf(d2), QList<int>() << path2 << 0);
+    // Paths must be identical
+    QTRY_COMPARE(layout->layoutState.indexOf(d1), path1);
+    QTRY_COMPARE(layout->layoutState.indexOf(d2), path2);
 #else
     QSKIP("test requires -developer-build option");
 #endif // QT_BUILD_INTERNAL
 }
 
-#ifdef QT_BUILD_INTERNAL
-// Statics for xcb error / msg handler
-static tst_QDockWidget *qThis = nullptr;
-static void (*oldMessageHandler)(QtMsgType, const QMessageLogContext&, const QString&);
-#define QXCBVERIFY(cond) do { if (xcbError) QSKIP("Test skipped due to XCB error"); QVERIFY(cond); } while (0)
-
-// detect xcb error
-// qt.qpa.xcb: internal error:  void QXcbWindow::setNetWmStateOnUnmappedWindow() called on mapped window
-void tst_QDockWidget::xcbMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+void tst_QDockWidget::deleteFloatingTabWithSingleDockWidget_data()
 {
-    Q_ASSERT(oldMessageHandler);
+#ifdef QT_BUILD_INTERNAL
+    QTest::addColumn<int>("reason");
+    QTest::addRow("Delete child") << static_cast<int>(ChildRemovalReason::Destroyed);
+    QTest::addRow("Close child") << static_cast<int>(ChildRemovalReason::Closed);
+    QTest::addRow("Reparent child") << static_cast<int>(ChildRemovalReason::Reparented);
+#endif
+}
 
-    if (type == QtWarningMsg && QString(context.category) == "qt.qpa.xcb" && msg.contains("internal error")) {
-        Q_ASSERT(qThis);
-        qThis->xcbError = true;
+void tst_QDockWidget::deleteFloatingTabWithSingleDockWidget()
+{
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Test skipped on Wayland.");
+#ifdef Q_OS_WIN
+    QSKIP("Test skipped on Windows platforms");
+#endif // Q_OS_WIN
+#ifdef QT_BUILD_INTERNAL
+
+    QFETCH(int, reason);
+    const ChildRemovalReason removalReason = static_cast<ChildRemovalReason>(reason);
+
+    QPointer<QDockWidget> d1;
+    QPointer<QDockWidget> d2;
+    QPointer<QWidget> cent;
+    QMainWindow* mainWindow;
+    QList<int> path1;
+    QList<int> path2;
+    createFloatingTabs(mainWindow, cent, d1, d2, path1, path2);
+    std::unique_ptr<QMainWindow> up_mainWindow(mainWindow);
+
+    switch (removalReason) {
+    case ChildRemovalReason::Destroyed:
+        delete d1;
+        break;
+    case ChildRemovalReason::Closed:
+        d1->close();
+        break;
+    case ChildRemovalReason::Reparented:
+        // This will create an invalid state, because setParent() doesn't fix the item_list.
+        // Testing this case anyway, because setParent() includig item_list fixup is executed,
+        // when the 2nd last dock widget is dragged out of a floating tab.
+        // => despite of the broken state, the group window has to be gone.
+        d1->setParent(mainWindow);
+        break;
     }
 
-    return oldMessageHandler(type, context, msg);
-}
+    QTRY_VERIFY(!qobject_cast<QDockWidgetGroupWindow *>(d2->parentWidget()));
+    QTRY_VERIFY(mainWindow->findChildren<QDockWidgetGroupWindow *>().isEmpty());
 #endif // QT_BUILD_INTERNAL
+}
+
+void tst_QDockWidget::hoverWithoutDrop()
+{
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Test skipped on Wayland.");
+#ifdef QT_BUILD_INTERNAL
+
+    QPointer<QDockWidget> d1;
+    QPointer<QDockWidget> d2;
+    QPointer<QWidget> cent;
+    QMainWindow* mainWindow;
+    createTestWidgets(mainWindow, cent, d1, d2);
+    std::unique_ptr<QMainWindow> up_mainWindow(mainWindow);
+
+    // unplug and resize both dock widgets
+    unplugAndResize(mainWindow, d1, home1(mainWindow), size1(mainWindow));
+    unplugAndResize(mainWindow, d2, home2(mainWindow), size2(mainWindow));
+
+    // Test plugging
+    qCDebug(lcTestDockWidget) << "*** move d1 dock over d2 dock ***";
+    qCDebug(lcTestDockWidget) << "*******(test hovering)***********";
+    qCDebug(lcTestDockWidget) << "Move d1 over d2, wait and return to origin";
+    const QPoint source = d1->mapToGlobal(d1->rect().center());
+    const QPoint target = d2->mapToGlobal(d2->rect().center());
+    moveDockWidget(d1, target, source, MoveDockWidgetRule::Abort);
+    auto *groupWindow = mainWindow->findChild<QDockWidgetGroupWindow *>();
+    QCOMPARE(groupWindow, nullptr);
+#else
+    QSKIP("test requires -developer-build option");
+#endif // QT_BUILD_INTERNAL
+}
 
 // test hide & show
 void tst_QDockWidget::hideAndShow()
@@ -1529,7 +1675,6 @@ void tst_QDockWidget::closeAndDelete()
         QSKIP("Test skipped on Wayland.");
 #ifdef QT_BUILD_INTERNAL
     // Create a mainwindow with a central widget and two dock widgets
-    QObject localContext;
     QPointer<QDockWidget> d1;
     QPointer<QDockWidget> d2;
     QPointer<QWidget> cent;
@@ -1543,7 +1688,7 @@ void tst_QDockWidget::closeAndDelete()
 
     // Create a floating tab and unplug it again
     qCDebug(lcTestDockWidget) << "Move d1 over d2";
-    moveDockWidget(d1, d2->mapToGlobal(d2->rect().center()));
+    moveDockWidget(d1, d2->mapToGlobal(d2->rect().center()), QPoint(), MoveDockWidgetRule::Drop);
 
     // Both dock widgets must no longer be floating
     // disabled due to flakiness on macOS and Windows
@@ -1555,8 +1700,10 @@ void tst_QDockWidget::closeAndDelete()
         qWarning("OS flakiness: D2 is docked and reports being floating");
 
     // Close everything with a single shot. Expected behavior: Event loop stops
-    bool eventLoopStopped = true;
-    QTimer::singleShot(0, &localContext, [mainWindow, d1, d2] {
+    QSignalSpy closeSpy(qApp, &QApplication::lastWindowClosed);
+    QObject localContext;
+
+    QTimer::singleShot(0, &localContext, [&](){
         mainWindow->close();
         QTRY_VERIFY(!mainWindow->isVisible());
         QTRY_VERIFY(d1->isVisible());
@@ -1565,18 +1712,11 @@ void tst_QDockWidget::closeAndDelete()
         d2->close();
         QTRY_VERIFY(!d1->isVisible());
         QTRY_VERIFY(!d2->isVisible());
-    });
-
-    // Fallback timer to report event loop still running
-    QTimer::singleShot(100, &localContext, [&eventLoopStopped] {
-        qCDebug(lcTestDockWidget) << "Last dock widget hasn't shout down event loop!";
-        eventLoopStopped = false;
+        QTRY_COMPARE(closeSpy.count(), 1);
         QApplication::quit();
     });
 
     QApplication::exec();
-
-    QTRY_VERIFY(eventLoopStopped);
 
     // Check heap cleanup
     qCDebug(lcTestDockWidget) << "Deleting mainWindow";
@@ -1653,16 +1793,16 @@ void tst_QDockWidget::dockPermissions()
 
     // Move d2 to non allowed dock areas and verify it remains floating
     qCDebug(lcTestDockWidget) << "Move d2 to top dock";
-    moveDockWidget(d2, dockPoint(mainWindow, Qt::TopDockWidgetArea));
+    moveDockWidget(d2, dockPoint(mainWindow, Qt::TopDockWidgetArea), QPoint(), MoveDockWidgetRule::Drop);
     QTRY_VERIFY(d2->isFloating());
 
     qCDebug(lcTestDockWidget) << "Move d2 to left dock";
     //moveDockWidget(d2, d2->mapFrom(MainWindow, dockPoint(MainWindow, Qt::LeftDockWidgetArea)));
-    moveDockWidget(d2, dockPoint(mainWindow, Qt::LeftDockWidgetArea));
+    moveDockWidget(d2, dockPoint(mainWindow, Qt::LeftDockWidgetArea), QPoint(), MoveDockWidgetRule::Drop);
     QTRY_VERIFY(d2->isFloating());
 
     qCDebug(lcTestDockWidget) << "Move d2 to bottom dock";
-    moveDockWidget(d2, dockPoint(mainWindow, Qt::BottomDockWidgetArea));
+    moveDockWidget(d2, dockPoint(mainWindow, Qt::BottomDockWidgetArea), QPoint(), MoveDockWidgetRule::Drop);
     QTRY_VERIFY(d2->isFloating());
 
     qCDebug(lcTestDockWidget) << "Waiting" << waitBeforeClose << "ms before closing.";

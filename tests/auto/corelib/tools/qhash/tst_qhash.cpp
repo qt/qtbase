@@ -3,8 +3,10 @@
 
 #include <QTest>
 
+#include <qdebug.h>
 #include <qhash.h>
 #include <qmap.h>
+#include <qscopeguard.h>
 #include <qset.h>
 
 #include <algorithm>
@@ -62,6 +64,7 @@ private slots:
     void eraseValidIteratorOnSharedHash();
     void equal_range();
     void insert_hash();
+    void multiHashStoresInReverseInsertionOrder();
 
     void emplace();
 
@@ -2481,6 +2484,24 @@ void tst_QHash::insert_hash()
         QCOMPARE(hash[0], 7);
         QCOMPARE(hash[2], 5);
         QCOMPARE(hash[7], 55);
+    }
+}
+
+void tst_QHash::multiHashStoresInReverseInsertionOrder()
+{
+    const QString strings[] = {
+        u"zero"_s,
+        u"null"_s,
+        u"nada"_s,
+    };
+    {
+        QMultiHash<int, QString> hash;
+        for (const QString &string : strings)
+            hash.insert(0, string);
+        auto printOnFailure = qScopeGuard([&] { qDebug() << hash; });
+        QVERIFY(std::equal(hash.begin(), hash.end(),
+                           std::rbegin(strings), std::rend(strings)));
+        printOnFailure.dismiss();
     }
 }
 

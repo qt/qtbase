@@ -1430,7 +1430,8 @@ void QXcbWindow::propagateSizeHints()
                                           qMin(XCOORD_MAX, maximumSize.height()));
 
     if (sizeIncrement.width() > 0 || sizeIncrement.height() > 0) {
-        xcb_icccm_size_hints_set_base_size(&hints, baseSize.width(), baseSize.height());
+        if (!baseSize.isNull() && baseSize.isValid())
+            xcb_icccm_size_hints_set_base_size(&hints, baseSize.width(), baseSize.height());
         xcb_icccm_size_hints_set_resize_inc(&hints, sizeIncrement.width(), sizeIncrement.height());
     }
 
@@ -1448,11 +1449,14 @@ void QXcbWindow::requestActivateWindow()
         return;
     }
 
-    if (!m_mapped) {
-        m_deferredActivation = true;
-        return;
+    {
+        QMutexLocker locker(&m_mappedMutex);
+        if (!m_mapped) {
+            m_deferredActivation = true;
+            return;
+        }
+        m_deferredActivation = false;
     }
-    m_deferredActivation = false;
 
     updateNetWmUserTime(connection()->time());
     QWindow *focusWindow = QGuiApplication::focusWindow();
@@ -1861,8 +1865,11 @@ QPoint QXcbWindow::mapFromGlobal(const QPoint &pos) const
 void QXcbWindow::handleMapNotifyEvent(const xcb_map_notify_event_t *event)
 {
     if (event->window == m_window) {
+        m_mappedMutex.lock();
         m_mapped = true;
-        if (m_deferredActivation)
+        const bool deferredActivation = m_deferredActivation;
+        m_mappedMutex.unlock();
+        if (deferredActivation)
             requestActivateWindow();
 
         QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(), geometry().size()));
@@ -1872,7 +1879,9 @@ void QXcbWindow::handleMapNotifyEvent(const xcb_map_notify_event_t *event)
 void QXcbWindow::handleUnmapNotifyEvent(const xcb_unmap_notify_event_t *event)
 {
     if (event->window == m_window) {
+        m_mappedMutex.lock();
         m_mapped = false;
+        m_mappedMutex.unlock();
         QWindowSystemInterface::handleExposeEvent(window(), QRegion());
     }
 }
@@ -1960,10 +1969,15 @@ static inline bool doCheckUnGrabAncestor(QXcbConnection *conn)
     return true;
 }
 
-static bool ignoreLeaveEvent(quint8 mode, quint8 detail, QXcbConnection *conn = nullptr)
+static bool windowContainsGlobalPoint(QXcbWindow *window, int x, int y)
+{
+    return window ? window->geometry().contains(window->mapFromGlobal(QPoint(x, y))) : false;
+}
+
+static bool ignoreLeaveEvent(quint8 mode, quint8 detail, QXcbConnection *conn)
 {
     return ((doCheckUnGrabAncestor(conn)
-             && mode == XCB_NOTIFY_MODE_GRAB && detail == XCB_NOTIFY_DETAIL_ANCESTOR)
+            && mode == XCB_NOTIFY_MODE_GRAB && detail == XCB_NOTIFY_DETAIL_ANCESTOR)
             || (mode == XCB_NOTIFY_MODE_UNGRAB && detail == XCB_NOTIFY_DETAIL_INFERIOR)
             || detail == XCB_NOTIFY_DETAIL_VIRTUAL
             || detail == XCB_NOTIFY_DETAIL_NONLINEAR_VIRTUAL);
@@ -1983,14 +1997,13 @@ void QXcbWindow::handleEnterNotifyEvent(int event_x, int event_y, int root_x, in
 {
     connection()->setTime(timestamp);
 
-    const QPoint global = QPoint(root_x, root_y);
-
     if (ignoreEnterEvent(mode, detail, connection()) || connection()->mousePressWindow())
         return;
 
     // Updates scroll valuators, as user might have done some scrolling outside our X client.
     connection()->xi2UpdateScrollingDevices();
 
+    const QPoint global = QPoint(root_x, root_y);
     const QPoint local(event_x, event_y);
     QWindowSystemInterface::handleEnterEvent(window(), local, global);
 }
@@ -2000,8 +2013,11 @@ void QXcbWindow::handleLeaveNotifyEvent(int root_x, int root_y,
 {
     connection()->setTime(timestamp);
 
-    if (ignoreLeaveEvent(mode, detail, connection()) || connection()->mousePressWindow())
+    QXcbWindow *mousePressWindow = connection()->mousePressWindow();
+    if (ignoreLeaveEvent(mode, detail, connection())
+        || (mousePressWindow && windowContainsGlobalPoint(mousePressWindow, root_x, root_y))) {
         return;
+    }
 
     // check if enter event is buffered
     auto event = connection()->eventQueue()->peek([](xcb_generic_event_t *event, int type) {
@@ -2019,6 +2035,8 @@ void QXcbWindow::handleLeaveNotifyEvent(int root_x, int root_y,
         QWindowSystemInterface::handleEnterLeaveEvent(enterWindow->window(), window(), local, global);
     } else {
         QWindowSystemInterface::handleLeaveEvent(window());
+        if (!windowContainsGlobalPoint(this, root_x, root_y))
+            connection()->setMousePressWindow(nullptr);
     }
 
     free(enter);

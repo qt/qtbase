@@ -61,7 +61,7 @@
 
     The protocol is based on QDataStream, so we set the stream device to the
     newly created socket. We then explicitly set the protocol version of the
-    stream to QDataStream::Qt_4_0 to ensure that we're using the same version
+    stream to QDataStream::Qt_6_5 to ensure that we're using the same version
     as the fortune server, no matter which version of Qt the client and
     server use.
 

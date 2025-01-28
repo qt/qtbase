@@ -30,7 +30,8 @@ public:
                           const QModelIndex &index) const override;
 
 private:
-    QPixmap star;
+    const int cellPadding = 6;
+    const int iconDimension = 24;
 };
 
 #endif

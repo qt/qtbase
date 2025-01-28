@@ -118,7 +118,7 @@ bool QSystemSemaphorePrivate::modifySemaphore(int count)
                 // rollback changes to preserve the SysV semaphore behavior
                 for ( ; cnt < count; ++cnt) {
                     int res;
-                    EINTR_LOOP(res, ::sem_wait(semaphore));
+                    QT_EINTR_LOOP(res, ::sem_wait(semaphore));
                 }
                 return false;
             }
@@ -126,7 +126,7 @@ bool QSystemSemaphorePrivate::modifySemaphore(int count)
         } while (cnt > 0);
     } else {
         int res;
-        EINTR_LOOP(res, ::sem_wait(semaphore));
+        QT_EINTR_LOOP(res, ::sem_wait(semaphore));
         if (res == -1) {
             // If the semaphore was removed be nice and create it and then modifySemaphore again
             if (errno == EINVAL || errno == EIDRM) {

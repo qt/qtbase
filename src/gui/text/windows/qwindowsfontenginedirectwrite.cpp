@@ -212,7 +212,7 @@ QWindowsFontEngineDirectWrite::QWindowsFontEngineDirectWrite(IDWriteFontFace *di
 
     fontDef.pixelSize = pixelSize;
     collectMetrics();
-    cache_cost = (m_ascent.toInt() + m_descent.toInt()) * m_xHeight.toInt() * 2000;
+    cache_cost = m_xHeight.toInt() * m_xHeight.toInt() * 2000;
 }
 
 QWindowsFontEngineDirectWrite::~QWindowsFontEngineDirectWrite()

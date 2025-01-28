@@ -2213,7 +2213,7 @@ void QTextEdit::insertFromMimeData(const QMimeData *source)
 bool QTextEdit::isReadOnly() const
 {
     Q_D(const QTextEdit);
-    return !(d->control->textInteractionFlags() & Qt::TextEditable);
+    return !d->control || !(d->control->textInteractionFlags() & Qt::TextEditable);
 }
 
 void QTextEdit::setReadOnly(bool ro)

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include <QDir>
+#include <QLocale>
 
 #include "qandroidplatformfontdatabase.h"
 
@@ -47,6 +48,38 @@ QStringList QAndroidPlatformFontDatabase::fallbacksForFamily(const QString &fami
                                                              QChar::Script script) const
 {
     QStringList result;
+
+    // Prepend CJK fonts by the locale.
+    QLocale locale = QLocale::system();
+    switch (locale.language()) {
+    case QLocale::Chinese: {
+        switch (locale.territory()) {
+        case QLocale::China:
+        case QLocale::Singapore:
+            result.append(QStringLiteral("Noto Sans Mono CJK SC"));
+            break;
+        case QLocale::Taiwan:
+        case QLocale::HongKong:
+        case QLocale::Macao:
+            result.append(QStringLiteral("Noto Sans Mono CJK TC"));
+            break;
+        default:
+            // no modifications.
+            break;
+        }
+        break;
+    }
+    case QLocale::Japanese:
+        result.append(QStringLiteral("Noto Sans Mono CJK JP"));
+        break;
+    case QLocale::Korean:
+        result.append(QStringLiteral("Noto Sans Mono CJK KR"));
+        break;
+    default:
+        // no modifications.
+        break;
+    }
+
     if (styleHint == QFont::Monospace || styleHint == QFont::Courier)
         result.append(QString(qgetenv("QT_ANDROID_FONTS_MONOSPACE")).split(u';'));
     else if (styleHint == QFont::Serif)

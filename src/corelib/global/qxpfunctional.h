@@ -108,6 +108,23 @@ public:
         class F,
         std::enable_if_t<std::conjunction_v<
             std::negation<std::is_same<q20::remove_cvref_t<F>, function_ref_base>>,
+#ifdef Q_OS_VXWORKS
+            // The VxWorks compiler is trying to match this ctor against
+            // qxp::function_ref in lieu of using the copy-constructor, so ban
+            // matching against the equivalent qxp::function_ref here.
+            // This doesn't change anything on other platforms, so to save
+            // on compile-speed, enable it only for VxWorks:
+            std::negation<
+                std::is_same<
+                    q20::remove_cvref_t<F>,
+                    std::conditional_t<
+                        std::is_const_v<Const>,
+                        qxp::function_ref<R(ArgTypes...) const noexcept(noex)>,
+                        qxp::function_ref<R(ArgTypes...) noexcept(noex)>
+                    >
+                >
+            >,
+#endif // Q_OS_VXWORKS
             std::negation<std::is_member_pointer<std::remove_reference_t<F>>>,
             is_invocable_using<copy_const_t<Const, std::remove_reference_t<F>>&>
         >, bool> = true
@@ -124,9 +141,11 @@ public:
 protected:
     template <
         class T,
-        std::enable_if_t<std::conjunction_v<
-            std::negation<std::is_same<q20::remove_cvref_t<T>, function_ref_base>>,
-            std::negation<std::is_pointer<T>>
+        std::enable_if_t<std::negation_v<
+            std::disjunction<
+                std::is_same<T, function_ref_base>,
+                std::is_pointer<T>
+            >
         >, bool> = true
     >
     function_ref_base& operator=(T) = delete;
@@ -165,7 +184,7 @@ QT_SPECIALIZE_FUNCTION_REF(const, true );
 
 template <
     class F,
-    std::enable_if_t<std::is_function_v<F>, bool> = true
+    detail::if_function<F> = true
 >
 function_ref(F*) -> function_ref<F>;
 

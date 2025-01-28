@@ -413,7 +413,7 @@
 
    Example:
    \code
-   QTRY_VERIFY2_WITH_TIMEOUT(list.size() > 2, QByteArray::number(list.size()).constData());
+   QTRY_VERIFY2(list.size() > 2, QByteArray::number(list.size()).constData());
    \endcode
 
    \note This macro can only be used in a test function that is invoked
@@ -782,7 +782,8 @@
    failure will be reported.
 
    If a \l QVERIFY() or \l QCOMPARE() is marked as an expected failure,
-   but passes instead, an unexpected pass (XPASS) is written to the test log.
+   but passes instead, an unexpected pass (XPASS) is written to the test log
+   and will be counted as a test failure.
 
    The parameter \a dataIndex describes for which entry in the test data the
    failure is expected. Pass an empty string (\c{""}) if the failure
@@ -1363,13 +1364,6 @@
 */
 
 /*!
-    \fn template <typename T1, typename T2> char *QTest::toString(const QPair<T1, T2> &pair)
-    \overload
-    \since 5.11
-    Returns a textual representation of the \a pair.
-*/
-
-/*!
     \fn template <typename T1, typename T2> char *QTest::toString(const std::pair<T1, T2> &pair)
     \overload
     \since 5.11
@@ -1622,22 +1616,16 @@
 */
 
 /*!
-    \fn template <typename Tuple, int... I> char *QTest::toString(const Tuple &tuple, QtPrivate::IndexesList<I...> )
-    \internal
-    \since 5.12
-*/
-
-/*!
     \fn QPointingDevice * QTest::createTouchDevice(QInputDevice::DeviceType devType = QInputDevice::DeviceType::TouchScreen, QInputDevice::Capabilities caps = QInputDevice::Capability::Position)
     \since 5.8
 
     Creates a dummy touch device of type \a devType with capabilities \a caps for
     simulation of touch events.
 
-    The touch device will be registered with the QPA window system interface,
-    and deleted automatically when the QCoreApplication is deleted. So you
-    should typically use createTouchDevice() to initialize a QPointingDevice
-    member variable in your test case class, and use the same instance for all tests.
+    The touch device will be registered with the Qt window system interface.
+    You should typically use createTouchDevice() to initialize a QPointingDevice
+    member variable in your test case class, use the same instance for all tests and
+    delete it when no longer needed.
 
     \sa QTest::QTouchEventSequence, touchEvent()
 */

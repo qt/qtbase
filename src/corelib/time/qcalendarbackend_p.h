@@ -59,8 +59,10 @@ class Q_CORE_EXPORT QCalendarBackend
 {
     friend class QCalendar;
     friend class QtPrivate::QCalendarRegistry;
+    Q_DISABLE_COPY_MOVE(QCalendarBackend)
 
 public:
+    QCalendarBackend() = default;
     virtual ~QCalendarBackend();
     virtual QString name() const = 0;
 

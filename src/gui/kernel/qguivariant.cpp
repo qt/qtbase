@@ -56,7 +56,8 @@ QT_BEGIN_NAMESPACE
 
 namespace {
 
-static const struct : QMetaTypeModuleHelper
+// NOLINTNEXTLINE(cppcoreguidelines-virtual-class-destructor): this is not a base class
+static constexpr struct : QMetaTypeModuleHelper
 {
 #define QT_IMPL_METATYPEINTERFACE_GUI_TYPES(MetaTypeName, MetaTypeId, RealName) \
     QT_METATYPE_INTERFACE_INIT(RealName),

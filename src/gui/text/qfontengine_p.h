@@ -152,6 +152,8 @@ public:
         return subPixelPositionFor(QFixedPoint(x, 0)).x;
     }
 
+    bool isColorFont() const { return glyphFormat == Format_ARGB; }
+
     virtual QFixed emSquareSize() const { return ascent(); }
 
     /* returns 0 as glyph index for non existent glyphs */

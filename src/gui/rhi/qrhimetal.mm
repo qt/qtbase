@@ -610,17 +610,6 @@ QVector<int> QRhiMetal::supportedSampleCounts() const
     return caps.supportedSampleCounts;
 }
 
-int QRhiMetal::effectiveSampleCount(int sampleCount) const
-{
-    // Stay compatible with QSurfaceFormat and friends where samples == 0 means the same as 1.
-    const int s = qBound(1, sampleCount, 64);
-    if (!supportedSampleCounts().contains(s)) {
-        qWarning("Attempted to set unsupported sample count %d", sampleCount);
-        return 1;
-    }
-    return s;
-}
-
 QRhiSwapChain *QRhiMetal::createSwapChain()
 {
     return new QMetalSwapChain(this);
@@ -5516,6 +5505,7 @@ void QMetalSwapChain::destroy()
     }
 
     d->layer = nullptr;
+    m_proxyData = {};
 
     [d->curDrawable release];
     d->curDrawable = nil;

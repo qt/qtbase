@@ -31,6 +31,41 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
+// Shared interpretation of %LANG%
+static auto scanLangEnv()
+{
+    struct R
+    {
+        QByteArray name; // empty means unknown; lookup from id may work
+        LCID id = 0; // 0 means unknown; lookup from name may work
+    } result;
+    const QByteArray lang = qgetenv("LANG");
+    if (lang.size() && (lang == "C" || qt_splitLocaleName(QString::fromLocal8Bit(lang)))) {
+        // See if we have a Windows locale code instead of a locale name:
+        const auto [id, used] = qstrntoll(lang.data(), lang.size(), 0);
+        if (used > 0 && id && INT_MIN <= id && id <= INT_MAX)
+            return R {QByteArray(), static_cast<LCID>(id)};
+        return R {lang, 0};
+    }
+    return R{};
+}
+
+static auto getDefaultWinId()
+{
+    const auto [name, id] = scanLangEnv();
+    if (id)
+        return id;
+
+    if (!name.isEmpty()) {
+        LCID id = LocaleNameToLCID(static_cast<LPCWSTR>(
+                                       QString::fromUtf8(name).toStdWString().data()), 0);
+        if (id)
+            return id;
+    }
+
+    return GetUserDefaultLCID();
+}
+
 static QByteArray getWinLocaleName(LCID id = LOCALE_USER_DEFAULT);
 static QString winIso639LangName(LCID id = LOCALE_USER_DEFAULT);
 static QString winIso3116CtryName(LCID id = LOCALE_USER_DEFAULT);
@@ -111,7 +146,7 @@ private:
 
     // cached values:
     LCID lcid;
-    SubstitutionType substitutionType;
+    SubstitutionType substitutionType = SUnknown;
     QString zero; // cached value for zeroDigit()
 
     int getLocaleInfo(LCTYPE type, LPWSTR data, int size);
@@ -132,9 +167,8 @@ private:
 Q_GLOBAL_STATIC(QSystemLocalePrivate, systemLocalePrivate)
 
 QSystemLocalePrivate::QSystemLocalePrivate()
-    : substitutionType(SUnknown)
+    : lcid(getDefaultWinId())
 {
-    lcid = GetUserDefaultLCID();
 }
 
 inline int QSystemLocalePrivate::getCurrencyFormat(DWORD flags, LPCWSTR value, const CURRENCYFMTW *format, LPWSTR data, int size)
@@ -729,7 +763,7 @@ QVariant QSystemLocalePrivate::nativeTerritoryName()
 
 void QSystemLocalePrivate::update()
 {
-    lcid = GetUserDefaultLCID();
+    lcid = getDefaultWinId();
     substitutionType = SUnknown;
     zero.resize(0);
 }
@@ -1132,20 +1166,15 @@ static QByteArray getWinLocaleName(LCID id)
 {
     QByteArray result;
     if (id == LOCALE_USER_DEFAULT) {
-        static const QByteArray langEnvVar = qgetenv("LANG");
-        result = langEnvVar;
-        if (result == "C"
-            || (!result.isEmpty() && qt_splitLocaleName(QString::fromLocal8Bit(result)))) {
-            // See if we have a Windows locale code instead of a locale name:
-            auto [id, used] = qstrntoll(result.data(), result.size(), 0);
-            if (used <= 0 || id == 0 || id < INT_MIN || id > INT_MAX) // Assume real locale name
-                return result;
-            return winLangCodeToIsoName(int(id));
-        }
+        const auto [name, lcid] = scanLangEnv();
+        if (!name.isEmpty())
+            return name;
+        if (lcid)
+            return winLangCodeToIsoName(lcid);
+
+        id = GetUserDefaultLCID();
     }
 
-    if (id == LOCALE_USER_DEFAULT)
-        id = GetUserDefaultLCID();
     QString resultusage = winIso639LangName(id);
     QString country = winIso3116CtryName(id);
     if (!country.isEmpty())

@@ -63,10 +63,8 @@ qt_copy_or_install(
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/QtBuildInternals/${__build_internals_standalone_test_template_dir}/CMakeLists.txt")
 
-include(QtToolchainHelpers)
 qt_internal_create_toolchain_file()
 
-include(QtWrapperScriptHelpers)
 qt_internal_create_wrapper_scripts()
 
 ## Library to hold global features:
@@ -134,7 +132,6 @@ target_include_directories(GlobalConfigPrivate INTERFACE
 )
 add_library(Qt::GlobalConfigPrivate ALIAS GlobalConfigPrivate)
 
-include(QtPlatformTargetHelpers)
 qt_internal_setup_public_platform_target()
 
 # defines PlatformCommonInternal PlatformModuleInternal PlatformPluginInternal PlatformToolInternal
@@ -172,6 +169,11 @@ qt_internal_get_computed_min_cmake_version_for_using_qt(computed_min_version_for
 qt_internal_get_min_new_policy_cmake_version(min_new_policy_version)
 qt_internal_get_max_new_policy_cmake_version(max_new_policy_version)
 
+# Get the list of public helper files that should be automatically included in Qt6Config.cmake.
+# Used in QtConfig.cmake.in template and further down for installation purposes.
+qt_internal_get_qt_build_public_helpers(__qt_cmake_public_helpers)
+list(JOIN __qt_cmake_public_helpers "\n    " QT_PUBLIC_FILES_TO_INCLUDE)
+
 # Generate and install Qt6 config file. Make sure it happens after the global feature evaluation so
 # they can be accessed in the Config file if needed.
 configure_package_config_file(
@@ -179,6 +181,8 @@ configure_package_config_file(
     "${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}Config.cmake"
     INSTALL_DESTINATION "${__GlobalConfig_install_dir}"
 )
+
+_qt_internal_export_apple_sdk_and_xcode_version_requirements(QT_CONFIG_EXTRAS_CODE)
 
 configure_file(
     "${PROJECT_SOURCE_DIR}/cmake/QtConfigExtras.cmake.in"
@@ -205,92 +209,22 @@ qt_install(FILES
     COMPONENT Devel
 )
 
+qt_internal_get_qt_build_private_helpers(__qt_cmake_private_helpers)
+list(TRANSFORM __qt_cmake_private_helpers PREPEND "cmake/")
+list(TRANSFORM __qt_cmake_private_helpers APPEND ".cmake")
+
+qt_internal_get_qt_build_private_files_to_install(__qt_private_files_to_install)
+list(TRANSFORM __qt_private_files_to_install PREPEND "cmake/")
+
 # Install internal CMake files.
 # The functions defined inside can not be used in public projects.
 # They can only be used while building Qt itself.
+set(__private_files
+    ${__qt_cmake_private_helpers}
+    ${__qt_private_files_to_install}
+)
 qt_copy_or_install(FILES
-                   cmake/ModuleDescription.json.in
-                   cmake/PkgConfigLibrary.pc.in
-                   cmake/Qt3rdPartyLibraryConfig.cmake.in
-                   cmake/Qt3rdPartyLibraryHelpers.cmake
-                   cmake/QtAndroidHelpers.cmake
-                   cmake/QtAppHelpers.cmake
-                   cmake/QtAutogenHelpers.cmake
-                   cmake/QtBuild.cmake
-                   cmake/QtBuildInformation.cmake
-                   cmake/QtCMakeHelpers.cmake
-                   cmake/QtCMakeVersionHelpers.cmake
-                   cmake/QtCMakePackageVersionFile.cmake.in
-                   cmake/QtCompilerFlags.cmake
-                   cmake/QtCompilerOptimization.cmake
-                   cmake/QtConfigDependencies.cmake.in
-                   cmake/QtConfigureTimeExecutableCMakeLists.txt.in
-                   cmake/QtDeferredDependenciesHelpers.cmake
-                   cmake/QtDbusHelpers.cmake
-                   cmake/QtDocsHelpers.cmake
-                   cmake/QtExecutableHelpers.cmake
-                   cmake/QtFileConfigure.txt.in
-                   cmake/QtFindPackageHelpers.cmake
-                   cmake/QtFindWrapConfigExtra.cmake.in
-                   cmake/QtFindWrapHelper.cmake
-                   cmake/QtFinishPkgConfigFile.cmake
-                   cmake/QtFinishPrlFile.cmake
-                   cmake/QtFlagHandlingHelpers.cmake
-                   cmake/QtFrameworkHelpers.cmake
-                   cmake/QtGenerateExtPri.cmake
-                   cmake/QtGenerateLibHelpers.cmake
-                   cmake/QtGenerateLibPri.cmake
-                   cmake/QtGenerateVersionScript.cmake
-                   cmake/QtGlobalStateHelpers.cmake
-                   cmake/QtHeadersClean.cmake
-                   cmake/QtInstallHelpers.cmake
-                   cmake/QtJavaHelpers.cmake
-                   cmake/QtLalrHelpers.cmake
-                   cmake/QtModuleConfig.cmake.in
-                   cmake/QtModuleDependencies.cmake.in
-                   cmake/QtModuleHeadersCheck.cmake
-                   cmake/QtModuleHelpers.cmake
-                   cmake/QtModuleToolsConfig.cmake.in
-                   cmake/QtModuleToolsDependencies.cmake.in
-                   cmake/QtModuleToolsVersionlessTargets.cmake.in
-                   cmake/QtNoLinkTargetHelpers.cmake
-                   cmake/QtPkgConfigHelpers.cmake
-                   cmake/QtPlatformAndroid.cmake
-                   cmake/QtPlatformSupport.cmake
-                   cmake/QtPluginConfig.cmake.in
-                   cmake/QtPluginDependencies.cmake.in
-                   cmake/QtPluginHelpers.cmake
-                   cmake/QtPlugins.cmake.in
-                   cmake/QtPostProcess.cmake
-                   cmake/QtPostProcessHelpers.cmake
-                   cmake/QtPrecompiledHeadersHelpers.cmake
-                   cmake/QtUnityBuildHelpers.cmake
-                   cmake/QtPriHelpers.cmake
-                   cmake/QtPrlHelpers.cmake
-                   cmake/QtPlatformTargetHelpers.cmake
-                   cmake/QtProcessConfigureArgs.cmake
-                   cmake/QtQmakeHelpers.cmake
-                   cmake/QtResourceHelpers.cmake
-                   cmake/QtRpathHelpers.cmake
-                   cmake/QtSanitizerHelpers.cmake
-                   cmake/QtScopeFinalizerHelpers.cmake
-                   cmake/QtSeparateDebugInfo.Info.plist.in
-                   cmake/QtSeparateDebugInfo.cmake
-                   cmake/QtSetup.cmake
-                   cmake/QtSimdHelpers.cmake
-                   cmake/QtSingleRepoTargetSetBuildHelpers.cmake
-                   cmake/QtStandaloneTestsConfig.cmake.in
-                   cmake/QtSyncQtHelpers.cmake
-                   cmake/QtTargetHelpers.cmake
-                   cmake/QtTestHelpers.cmake
-                   cmake/QtToolchainHelpers.cmake
-                   cmake/QtToolHelpers.cmake
-                   cmake/QtWasmHelpers.cmake
-                   cmake/QtWrapperScriptHelpers.cmake
-                   cmake/QtWriteArgsFile.cmake
-                   cmake/modulecppexports.h.in
-                   cmake/modulecppexports_p.h.in
-                   cmake/qbatchedtestrunner.in.cpp
+                   ${__private_files}
     DESTINATION "${__GlobalConfig_install_dir}"
 )
 
@@ -324,39 +258,29 @@ if(QT_WILL_INSTALL)
     endforeach()
 endif()
 
+# Wrap previously queried helpers file.
+list(TRANSFORM __qt_cmake_public_helpers PREPEND "cmake/")
+list(TRANSFORM __qt_cmake_public_helpers APPEND ".cmake")
+
+qt_internal_get_qt_build_public_files_to_install(__qt_public_files_to_install)
+list(TRANSFORM __qt_public_files_to_install PREPEND "cmake/")
+
 # Install public CMake files.
 # The functions defined inside can be used in both public projects and while building Qt.
 # Usually we put such functions into Qt6CoreMacros.cmake, but that's getting bloated.
 # These files will be included by Qt6Config.cmake.
-set(__public_cmake_helpers
-    cmake/QtCopyFileIfDifferent.cmake
-    cmake/QtFeature.cmake
-    cmake/QtFeatureCommon.cmake
-    cmake/QtPublicAppleHelpers.cmake
-    cmake/QtPublicCMakeHelpers.cmake
-    cmake/QtPublicCMakeVersionHelpers.cmake
-    cmake/QtPublicExternalProjectHelpers.cmake
-    cmake/QtPublicFinalizerHelpers.cmake
-    cmake/QtPublicPluginHelpers.cmake
-    cmake/QtPublicTargetHelpers.cmake
-    cmake/QtPublicTestHelpers.cmake
-    cmake/QtPublicToolHelpers.cmake
-    cmake/QtPublicWalkLibsHelpers.cmake
-    cmake/QtPublicFindPackageHelpers.cmake
-    cmake/QtPublicDependencyHelpers.cmake
-
-    # Public CMake files that are installed next Qt6Config.cmake, but are NOT included by it.
-    # Instead they are included by the generated CMake toolchain file.
-    cmake/QtPublicWasmToolchainHelpers.cmake
+set(__public_files
+    ${__qt_cmake_public_helpers}
+    ${__qt_public_files_to_install}
 )
 
-qt_copy_or_install(FILES ${__public_cmake_helpers} DESTINATION "${__GlobalConfig_install_dir}")
+qt_copy_or_install(FILES ${__public_files} DESTINATION "${__GlobalConfig_install_dir}")
 
 # In prefix builds we also need to copy the files into the build config directory, so that the
 # build-dir Qt6Config.cmake finds the files when building examples in-tree.
 if(QT_WILL_INSTALL)
-    foreach(_public_cmake_helper ${__public_cmake_helpers})
-        file(COPY "${_public_cmake_helper}" DESTINATION "${__GlobalConfig_build_dir}")
+    foreach(_public_file ${__public_files})
+        file(COPY "${_public_file}" DESTINATION "${__GlobalConfig_build_dir}")
     endforeach()
 endif()
 

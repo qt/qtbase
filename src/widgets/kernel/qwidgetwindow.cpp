@@ -51,6 +51,17 @@ public:
                 widget->setAttribute(Qt::WA_WState_ExplicitShowHide, wasExplicitShowHide);
                 widget->setAttribute(Qt::WA_WState_Hidden, wasHidden);
             }
+
+            // The call to QWidgetPrivate::setVisible() above will normally
+            // recurse back into QWidgetWindow::setNativeWindowVisibility()
+            // to update the QWindow state, but during QWidget::destroy()
+            // this is not the case, as Qt::WA_WState_Created has been
+            // unset by the time we check if we should call hide_helper().
+            // We don't want to change the QWidget logic, as that has
+            // other side effects, so as a targeted fix we sync up the
+            // visibility here if needed.
+            if (q->isVisible() != visible)
+                QWindowPrivate::setVisible(visible);
         } else {
             QWindowPrivate::setVisible(visible);
         }
@@ -134,6 +145,21 @@ QWidgetWindow::QWidgetWindow(QWidget *widget)
 
 QWidgetWindow::~QWidgetWindow()
 {
+    if (!m_widget)
+        return;
+
+    QTLWExtra *topData = QWidgetPrivate::get(m_widget)->topData();
+    Q_ASSERT(topData);
+
+    // The QPlaformBackingStore may hold a reference to the window,
+    // so the backingstore needs to be deleted first.
+    topData->repaintManager.reset(nullptr);
+    delete topData->backingStore;
+    topData->backingStore = nullptr;
+    topData->widgetTextures.clear();
+
+    // Too late to do anything beyond this point
+    topData->window = nullptr;
 }
 
 #if QT_CONFIG(accessibility)

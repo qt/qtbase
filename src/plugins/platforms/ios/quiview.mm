@@ -263,6 +263,9 @@ inline ulong getTimeStamp(UIEvent *event)
     Q_UNUSED(layer);
     Q_ASSERT(layer == self.layer);
 
+    if (!self.platformWindow)
+        return;
+
     [self sendUpdatedExposeEvent];
 }
 
@@ -304,7 +307,7 @@ inline ulong getTimeStamp(UIEvent *event)
         // blocked by this guard.
         FirstResponderCandidate firstResponderCandidate(self);
 
-        qImDebug() << "self:" << self << "first:" << [UIResponder currentFirstResponder];
+        qImDebug() << "self:" << self << "first:" << [UIResponder qt_currentFirstResponder];
 
         if (![super becomeFirstResponder]) {
             qImDebug() << self << "was not allowed to become first responder";
@@ -343,7 +346,7 @@ inline ulong getTimeStamp(UIEvent *event)
 
 - (BOOL)resignFirstResponder
 {
-    qImDebug() << "self:" << self << "first:" << [UIResponder currentFirstResponder];
+    qImDebug() << "self:" << self << "first:" << [UIResponder qt_currentFirstResponder];
 
     if (![super resignFirstResponder])
         return NO;
@@ -366,7 +369,7 @@ inline ulong getTimeStamp(UIEvent *event)
     if ([self isFirstResponder])
         return YES;
 
-    UIResponder *firstResponder = [UIResponder currentFirstResponder];
+    UIResponder *firstResponder = [UIResponder qt_currentFirstResponder];
     if ([firstResponder isKindOfClass:[QIOSTextInputResponder class]]
         && [firstResponder nextResponder] == self)
         return YES;

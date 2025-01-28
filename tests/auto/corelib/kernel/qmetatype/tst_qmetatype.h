@@ -118,6 +118,7 @@ private slots:
     void typesWithInaccessibleDTors();
     void voidIsNotUnknown();
     void typeNameNormalization();
+    void typeNameInQtPrivate();
 
     // Tests for deprecated APIs
 #if QT_DEPRECATED_SINCE(6, 0)

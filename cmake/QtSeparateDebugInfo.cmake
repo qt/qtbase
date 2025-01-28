@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-include(CMakeFindBinUtils)
-
 if(CMAKE_VERSION VERSION_LESS 3.17.0)
 set(CMAKE_CURRENT_FUNCTION_LIST_DIR ${CMAKE_CURRENT_LIST_DIR})
 endif()

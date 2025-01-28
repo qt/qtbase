@@ -123,14 +123,14 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QUrlQuery::QUrlQuery(std::initializer_list<QPair<QString, QString>> list)
+    \fn QUrlQuery::QUrlQuery(std::initializer_list<std::pair<QString, QString>> list)
 
     \since 5.13
 
     Constructs a QUrlQuery object from the \a list of key/value pair.
 */
 
-typedef QList<QPair<QString, QString> > Map;
+typedef QList<std::pair<QString, QString> > Map;
 
 class QUrlQueryPrivate : public QSharedData
 {
@@ -146,7 +146,7 @@ public:
     void setQuery(const QString &query);
 
     void addQueryItem(const QString &key, const QString &value)
-    { itemList.append(qMakePair(recodeFromUser(key), recodeFromUser(value))); }
+    { itemList.append(std::make_pair(recodeFromUser(key), recodeFromUser(value))); }
     int findRecodedKey(const QString &key, int from = 0) const
     {
         for (int i = from; i < itemList.size(); ++i)
@@ -290,17 +290,17 @@ void QUrlQueryPrivate::setQuery(const QString &query)
 
         if (delimiter == pos) {
             // the value delimiter wasn't found, store a null value
-            itemList.append(qMakePair(key, QString()));
+            itemList.append(std::make_pair(key, QString()));
         } else if (delimiter + 1 == pos) {
             // if the delimiter was found but the value is empty, store empty-but-not-null
-            itemList.append(qMakePair(key, QString(0, Qt::Uninitialized)));
+            itemList.append(std::make_pair(key, QString(0, Qt::Uninitialized)));
         } else {
             QString value;
             if (!qt_urlRecode(value, QStringView{delimiter + 1, pos},
                               QUrl::DecodeReserved,
                               prettyDecodedActions))
                 value = QString(delimiter + 1, pos - delimiter - 1);
-            itemList.append(qMakePair(key, value));
+            itemList.append(std::make_pair(key, value));
         }
 
         if (pos != end)
@@ -613,14 +613,14 @@ QChar QUrlQuery::queryPairDelimiter() const
 
     \sa queryItems(), isEmpty()
 */
-void QUrlQuery::setQueryItems(const QList<QPair<QString, QString> > &query)
+void QUrlQuery::setQueryItems(const QList<std::pair<QString, QString> > &query)
 {
     clear();
     if (query.isEmpty())
         return;
 
     QUrlQueryPrivate *dd = d;
-    QList<QPair<QString, QString> >::const_iterator it = query.constBegin(),
+    QList<std::pair<QString, QString> >::const_iterator it = query.constBegin(),
             end = query.constEnd();
     for ( ; it != end; ++it)
         dd->addQueryItem(it->first, it->second);
@@ -634,20 +634,20 @@ void QUrlQuery::setQueryItems(const QList<QPair<QString, QString> > &query)
 
     \sa setQueryItems(), {encoding}{Encoding}
 */
-QList<QPair<QString, QString> > QUrlQuery::queryItems(QUrl::ComponentFormattingOptions encoding) const
+QList<std::pair<QString, QString> > QUrlQuery::queryItems(QUrl::ComponentFormattingOptions encoding) const
 {
     if (!d)
-        return QList<QPair<QString, QString> >();
+        return QList<std::pair<QString, QString> >();
     if (idempotentRecodeToUser(encoding))
         return d->itemList;
 
-    QList<QPair<QString, QString> > result;
+    QList<std::pair<QString, QString> > result;
     Map::const_iterator it = d->itemList.constBegin();
     Map::const_iterator end = d->itemList.constEnd();
     result.reserve(d->itemList.size());
     for ( ; it != end; ++it)
-        result << qMakePair(d->recodeToUser(it->first, encoding),
-                            d->recodeToUser(it->second, encoding));
+        result << std::make_pair(d->recodeToUser(it->first, encoding),
+                                 d->recodeToUser(it->second, encoding));
     return result;
 }
 
@@ -766,7 +766,7 @@ void QUrlQuery::removeAllQueryItems(const QString &key)
     if (d.constData()) {
         auto *p = d.data();
         const QString encodedKey = p->recodeFromUser(key);
-        auto firstEqualsEncodedKey = [&encodedKey](const QPair<QString, QString> &item) {
+        auto firstEqualsEncodedKey = [&encodedKey](const std::pair<QString, QString> &item) {
             return item.first == encodedKey;
         };
         p->itemList.removeIf(firstEqualsEncodedKey);

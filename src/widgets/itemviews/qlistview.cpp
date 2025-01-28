@@ -3408,7 +3408,7 @@ void QListView::currentChanged(const QModelIndex &current, const QModelIndex &pr
     QAbstractItemView::currentChanged(current, previous);
 #if QT_CONFIG(accessibility)
     if (QAccessible::isActive()) {
-        if (current.isValid()) {
+        if (current.isValid() && hasFocus()) {
             int entry = visualIndex(current);
             QAccessibleEvent event(this, QAccessible::Focus);
             event.setChild(entry);

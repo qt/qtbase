@@ -212,7 +212,9 @@ public:
     QVariant(QChar qchar) noexcept;
     QVariant(QDate date) noexcept;
     QVariant(QTime time) noexcept;
+#ifndef QT_BOOTSTRAPPED
     QVariant(const QBitArray &bitarray) noexcept;
+#endif
     QVariant(const QByteArray &bytearray) noexcept;
     QVariant(const QDateTime &datetime) noexcept;
     QVariant(const QHash<QString, QVariant> &hash) noexcept;
@@ -321,7 +323,9 @@ public:
     float toFloat(bool *ok = nullptr) const;
     qreal toReal(bool *ok = nullptr) const;
     QByteArray toByteArray() const;
+#ifndef QT_BOOTSTRAPPED
     QBitArray toBitArray() const;
+#endif
     QString toString() const;
     QStringList toStringList() const;
     QChar toChar() const;

@@ -385,7 +385,34 @@ function(qt6_android_add_apk_target target)
     set(deployment_tool "${QT_HOST_PATH}/${QT6_HOST_INFO_BINDIR}/androiddeployqt")
     # No need to use genex for the BINARY_DIR since it's read-only.
     get_target_property(target_binary_dir ${target} BINARY_DIR)
-    set(apk_final_dir "${target_binary_dir}/android-build")
+
+    if($CACHE{QT_USE_TARGET_ANDROID_BUILD_DIR})
+        set(apk_final_dir "${target_binary_dir}/android-build-${target}")
+    else()
+        if(QT_USE_TARGET_ANDROID_BUILD_DIR)
+            message(WARNING "QT_USE_TARGET_ANDROID_BUILD_DIR needs to be set in CACHE")
+        endif()
+
+        get_property(known_android_build GLOBAL PROPERTY _qt_internal_known_android_build_dir)
+        get_property(already_warned GLOBAL PROPERTY _qt_internal_already_warned_android_build_dir)
+        set(apk_final_dir "${target_binary_dir}/android-build")
+        if(NOT QT_SKIP_ANDROID_BUILD_DIR_CHECK AND "${apk_final_dir}" IN_LIST known_android_build
+            AND NOT "${apk_final_dir}" IN_LIST already_warned)
+            message(WARNING "${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt contains multiple"
+                " Qt Android executable targets. This can lead to mixing of deployment artifacts"
+                " of targets defined there. Setting QT_USE_TARGET_ANDROID_BUILD_DIR=TRUE"
+                " allows building multiple executable targets within a single CMakeLists.txt."
+                " Note: This option is not supported by Qt Creator versions older than 13."
+                " Set QT_SKIP_ANDROID_BUILD_DIR_CHECK=TRUE to suppress this warning."
+            )
+            set_property(GLOBAL APPEND PROPERTY _qt_internal_already_warned_android_build_dir
+                "${apk_final_dir}")
+        else()
+            set_property(GLOBAL APPEND PROPERTY
+                _qt_internal_known_android_build_dir "${apk_final_dir}")
+        endif()
+    endif()
+
     set(apk_file_name "${target}.apk")
     set(dep_file_name "${target}.d")
     set(apk_final_file_path "${apk_final_dir}/${apk_file_name}")
@@ -877,7 +904,7 @@ endfunction()
 # It doesn't overwrite public properties, but instead writes formatted values to internal
 # properties.
 function(_qt_internal_android_format_deployment_paths target)
-    if(QT_BUILD_STANDALONE_TESTS OR QT_BUILDING_QT)
+    if(QT_BUILD_STANDALONE_TESTS OR QT_BUILDING_QT OR QT_INTERNAL_IS_STANDALONE_TEST)
         # When building standalone tests or Qt itself we obligate developers to not use
         # windows paths when setting QT_* properties below, so their values are used as is when
         # generating deployment settings.
@@ -977,7 +1004,7 @@ function(_qt_internal_get_android_abi_cmake_dir_path out_path abi)
     else()
         _qt_internal_get_android_abi_prefix_path(prefix_path ${abi})
         if((PROJECT_NAME STREQUAL "QtBase" OR QT_SUPERBUILD) AND QT_BUILDING_QT AND
-            NOT QT_BUILD_STANDALONE_TESTS)
+            NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_INTERNAL_IS_STANDALONE_TEST)
             set(cmake_dir "${QT_CONFIG_BUILD_DIR}")
         else()
             set(cmake_dir "${prefix_path}/${QT6_INSTALL_LIBS}/cmake")
@@ -1323,3 +1350,6 @@ function(_qt_internal_expose_android_package_source_dir_to_ide target)
         endforeach()
     endif()
 endfunction()
+
+set(QT_INTERNAL_ANDROID_TARGET_BUILD_DIR_SUPPORT ON CACHE INTERNAL
+    "Indicates that Qt supports per-target Android build directories")

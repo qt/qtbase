@@ -43,6 +43,9 @@ private slots:
     void emptyMovie();
     void bindings();
     void automatedBindings();
+#ifndef QT_NO_ICO
+    void multiFrameImage();
+#endif
 };
 
 // Testing get/set functions
@@ -258,6 +261,33 @@ void tst_QMovie::automatedBindings()
         return;
     }
 }
+
+#ifndef QT_NO_ICO
+/*! \internal
+    Test behavior of QMovie with image formats that are multi-frame,
+    but not normally intended as animation formats (such as tiff and ico).
+*/
+void tst_QMovie::multiFrameImage()
+{
+    QMovie movie(QFINDTESTDATA("multiframe/Obj_N2_Internal_Mem.ico"));
+    const int expectedFrameCount = 9;
+
+    QCOMPARE(movie.frameCount(), expectedFrameCount);
+    QVERIFY(movie.isValid());
+    movie.setSpeed(1000); // speed up the test: play at 10 FPS (1000% of normal)
+    QElapsedTimer playTimer;
+    QSignalSpy frameChangedSpy(&movie, &QMovie::frameChanged);
+    QSignalSpy errorSpy(&movie, &QMovie::error);
+    QSignalSpy finishedSpy(&movie, &QMovie::finished);
+    playTimer.start();
+    movie.start();
+    QTRY_COMPARE(finishedSpy.size(), 1);
+    QCOMPARE_GE(playTimer.elapsed(), 100 * expectedFrameCount);
+    QCOMPARE(movie.nextFrameDelay(), 100);
+    QCOMPARE(errorSpy.size(), 0);
+    QCOMPARE(frameChangedSpy.size(), expectedFrameCount);
+}
+#endif
 
 QTEST_MAIN(tst_QMovie)
 #include "tst_qmovie.moc"

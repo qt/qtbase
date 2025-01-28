@@ -275,9 +275,9 @@ void QTabBar::initStyleOption(QStyleOptionTab *option, int tabIndex) const
     returns the visual geometry of a single tab.
 
     \table 100%
-    \row \li \inlineimage fusion-tabbar.png Screenshot of a Fusion style tab bar
+    \row \li \inlineimage {fusion-tabbar.png} {Screenshot of a Fusion style tab bar}
          \li A tab bar shown in the \l{Qt Widget Gallery}{Fusion widget style}.
-    \row \li \inlineimage fusion-tabbar-truncated.png Screenshot of a truncated Fusion tab bar
+    \row \li \inlineimage {fusion-tabbar-truncated.png} {Screenshot of a truncated Fusion tab bar}
          \li A truncated tab bar shown in the Fusion widget style.
     \endtable
 
@@ -680,7 +680,10 @@ void QTabBarPrivate::makeVisible(int index)
     const int scrolledTabBarStart = qMax(1, scrollRect.left() + scrollOffset);
     const int scrolledTabBarEnd = qMin(lastTabEnd - 1, scrollRect.right() + scrollOffset);
 
-    if (tabStart < scrolledTabBarStart) {
+     if (available >= lastTabEnd) {
+        // the entire tabbar fits, reset scroll
+        scrollOffset = 0;
+    } else if (tabStart < scrolledTabBarStart) {
         // Tab is outside on the left, so scroll left.
         scrollOffset = tabStart - scrollRect.left();
     } else if (tabEnd > scrolledTabBarEnd) {
@@ -689,9 +692,6 @@ void QTabBarPrivate::makeVisible(int index)
     } else if (scrollOffset + entireScrollRect.width() > lastTabEnd + 1) {
         // fill any free space on the right without overshooting
         scrollOffset = qMax(0, lastTabEnd - entireScrollRect.width() + 1);
-    } else if (available >= lastTabEnd) {
-        // the entire tabbar fits, reset scroll
-        scrollOffset = 0;
     }
 
     leftB->setEnabled(scrollOffset > -scrollRect.left());
@@ -831,9 +831,14 @@ void QTabBarPrivate::refresh()
             pressedIndex = -1;
     }
 
-    layoutDirty = true;
-    if (q->isVisible())
+    if (!q->isVisible()) {
+        layoutDirty = true;
+    } else {
+        layoutTabs();
+        makeVisible(currentIndex);
         q->update();
+        q->updateGeometry();
+    }
 }
 
 /*!

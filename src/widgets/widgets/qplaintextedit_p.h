@@ -128,8 +128,8 @@ public:
     uint centerOnScroll : 1;
     uint inDrag : 1;
     uint clickCausedFocus : 1;
-    uint placeholderVisible : 1;
     uint pageUpDownLastCursorYIsValid : 1;
+    uint placeholderTextShown : 1;
 
     void setTopLine(int visualTopLine, int dx = 0);
     void setTopBlock(int newTopBlock, int newTopLine, int dx = 0);
@@ -144,6 +144,11 @@ public:
 
     void _q_cursorPositionChanged();
     void _q_modificationChanged(bool);
+    inline bool placeHolderTextToBeShown() const
+    {
+        Q_Q(const QPlainTextEdit);
+        return q->document()->isEmpty() && !q->placeholderText().isEmpty();
+    }
 };
 
 QT_END_NAMESPACE

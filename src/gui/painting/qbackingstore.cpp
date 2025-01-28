@@ -230,7 +230,8 @@ void QBackingStore::flush(const QRegion &region, QWindow *window, const QPoint &
 void QBackingStore::resize(const QSize &size)
 {
     d_ptr->size = size;
-    handle()->resize(QHighDpi::scale(size, d_ptr->deviceIndependentToNativeFactor()), d_ptr->staticContents);
+    const qreal factor = d_ptr->deviceIndependentToNativeFactor();
+    handle()->resize(QHighDpi::scale(size, factor), QHighDpi::scale(d_ptr->staticContents, factor));
 }
 
 /*!

@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial
 
 #ifndef MOC_H
 #define MOC_H
@@ -7,11 +7,10 @@
 #include "parser.h"
 #include <qstringlist.h>
 #include <qmap.h>
-#include <qpair.h>
 #include <qjsondocument.h>
 #include <qjsonarray.h>
 #include <qjsonobject.h>
-#include <qversionnumber.h>
+#include <qtyperevision.h>
 #include <stdio.h>
 
 #include <private/qtools_p.h>
@@ -152,8 +151,15 @@ struct BaseDef {
     qsizetype end = 0;
 };
 
+struct SuperClass {
+    QByteArray classname;
+    QByteArray qualified;
+    FunctionDef::Access access;
+};
+Q_DECLARE_TYPEINFO(SuperClass, Q_RELOCATABLE_TYPE);
+
 struct ClassDef : BaseDef {
-    QList<QPair<QByteArray, FunctionDef::Access>> superclassList;
+    QList<SuperClass> superclassList;
 
     struct Interface
     {
@@ -228,6 +234,8 @@ public:
     inline bool inNamespace(const NamespaceDef *def) const {
         return index > def->begin && index < def->end - 1;
     }
+
+    const QByteArray &toFullyQualified(const QByteArray &name) const noexcept;
 
     void prependNamespaces(BaseDef &def, const QList<NamespaceDef> &namespaceList) const;
 

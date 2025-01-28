@@ -153,6 +153,34 @@ function(_qt_internal_get_rpath_origin out_var)
     set(${out_var} ${rpath_origin} PARENT_SCOPE)
 endfunction()
 
+# Add a function to the list of deployment hooks.
+# The hooks are run at the end of _qt_internal_generic_deployqt.
+#
+# Every hook is passed the parameters of _qt_internal_generic_deployqt plus the following:
+# RESOLVED_DEPENDENCIES: list of resolved dependencies that were installed.
+function(_qt_internal_add_deployment_hook function_name)
+    set_property(GLOBAL APPEND PROPERTY QT_INTERNAL_DEPLOYMENT_HOOKS "${function_name}")
+endfunction()
+
+# Run all registered deployment hooks.
+function(_qt_internal_run_deployment_hooks)
+    get_property(hooks GLOBAL PROPERTY QT_INTERNAL_DEPLOYMENT_HOOKS)
+    foreach(hook IN LISTS hooks)
+        if(NOT COMMAND "${hook}")
+            message(AUTHOR_WARNING "'${hook}' is not a command but was added as deployment hook.")
+            continue()
+        endif()
+        if(CMAKE_VERSION GREATER_EQUAL "3.19")
+            cmake_language(CALL "${hook}" ${ARGV})
+        else()
+            set(temp_file ".qt-run-deploy-hook.cmake")
+            file(WRITE "${temp_file}" "${hook}(${ARGV})")
+            include(${temp_file})
+            file(REMOVE "${temp_file}")
+        endif()
+    endforeach()
+endfunction()
+
 function(_qt_internal_generic_deployqt)
     set(no_value_options
         NO_TRANSLATIONS
@@ -273,6 +301,8 @@ function(_qt_internal_generic_deployqt)
     if(NOT arg_NO_TRANSLATIONS)
         qt6_deploy_translations()
     endif()
+
+    _qt_internal_run_deployment_hooks(${ARGV} RESOLVED_DEPENDENCIES ${resolved})
 endfunction()
 
 function(qt6_deploy_runtime_dependencies)
@@ -393,6 +423,7 @@ function(qt6_deploy_runtime_dependencies)
             --dir       .
             --libdir    "${arg_BIN_DIR}"     # NOTE: Deliberately not arg_LIB_DIR
             --plugindir "${arg_PLUGINS_DIR}"
+            --qml-deploy-dir "${arg_QML_DIR}"
         )
         if(NOT arg_NO_OVERWRITE)
             list(APPEND tool_options --force)
@@ -403,6 +434,13 @@ function(qt6_deploy_runtime_dependencies)
         if(arg_NO_COMPILER_RUNTIME)
             list(APPEND tool_options --no-compiler-runtime)
         endif()
+
+        # Specify path to target Qt's qtpaths .exe or .bat file, so windeployqt deploys the correct
+        # libraries when cross-compiling from x86_64 to arm64 windows.
+        if(__QT_DEPLOY_TARGET_QT_PATHS_PATH)
+            list(APPEND tool_options --qtpaths "${__QT_DEPLOY_TARGET_QT_PATHS_PATH}")
+        endif()
+
     elseif(__QT_DEPLOY_SYSTEM_NAME STREQUAL Darwin)
         set(extra_binaries_option "-executable=")
         if(NOT arg_NO_APP_STORE_COMPLIANCE)

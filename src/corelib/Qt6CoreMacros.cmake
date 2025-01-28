@@ -568,6 +568,21 @@ function(qt6_add_executable target)
     endif()
 endfunction()
 
+# Just like for qt_add_resources, we should disable zstd compression when cross-compiling to a
+# target that doesn't support zstd decompression, even if the host tool supports it.
+# Allow an opt out via a QT_NO_AUTORCC_ZSTD variable.
+function(_qt_internal_disable_autorcc_zstd_when_not_supported target)
+    if(TARGET "${target}"
+            AND DEFINED QT_FEATURE_zstd
+            AND NOT QT_FEATURE_zstd
+            AND NOT QT_NO_AUTORCC_ZSTD)
+        get_target_property(target_type ${target} TYPE)
+        if(NOT target_type STREQUAL "INTERFACE_LIBRARY")
+            set_property(TARGET "${target}" APPEND PROPERTY AUTORCC_OPTIONS "--no-zstd")
+        endif()
+    endif()
+endfunction()
+
 function(_qt_internal_create_executable target)
     if(ANDROID)
         list(REMOVE_ITEM ARGN "WIN32" "MACOSX_BUNDLE")
@@ -588,6 +603,7 @@ function(_qt_internal_create_executable target)
         add_executable("${target}" ${ARGN})
     endif()
 
+    _qt_internal_disable_autorcc_zstd_when_not_supported("${target}")
     _qt_internal_set_up_static_runtime_library("${target}")
 endfunction()
 
@@ -660,6 +676,26 @@ function(_qt_internal_finalize_executable target)
     endif()
 endfunction()
 
+function(_cat IN_FILE OUT_FILE)
+  file(READ ${IN_FILE} CONTENTS)
+  file(APPEND ${OUT_FILE} "${CONTENTS}\n")
+endfunction()
+
+function(_qt_internal_finalize_batch name)
+    find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS Core)
+
+    set(generated_blacklist_file "${CMAKE_CURRENT_BINARY_DIR}/BLACKLIST")
+    get_target_property(blacklist_files "${name}" _qt_blacklist_files)
+    file(WRITE "${generated_blacklist_file}" "")
+    foreach(blacklist_file ${blacklist_files})
+        _cat("${blacklist_file}" "${generated_blacklist_file}")
+    endforeach()
+    qt_internal_add_resource(${name} "batch_blacklist"
+        PREFIX "/"
+        FILES "${CMAKE_CURRENT_BINARY_DIR}/BLACKLIST"
+        BASE ${CMAKE_CURRENT_BINARY_DIR})
+endfunction()
+
 # If a task needs to run before any targets are finalized in the current directory
 # scope, call this function and pass the ID of that task as the argument.
 function(_qt_internal_delay_finalization_until_after defer_id)
@@ -707,6 +743,20 @@ function(qt6_finalize_target target)
 
     if(target_type STREQUAL "EXECUTABLE" OR is_android_executable)
         _qt_internal_finalize_executable(${ARGV})
+    endif()
+
+    if(APPLE)
+        # Tell CMake to generate run-scheme for the executable when generating
+        # Xcode projects. This avoids Xcode auto-generating default schemes for
+        # all targets, which includes internal and build-only targets.
+        get_target_property(generate_scheme "${target}" XCODE_GENERATE_SCHEME)
+        if(generate_scheme MATCHES "-NOTFOUND" AND (
+            target_type STREQUAL "EXECUTABLE" OR
+            target_type STREQUAL "SHARED_LIBRARY" OR
+            target_type STREQUAL "STATIC_LIBRARY" OR
+            target_type STREQUAL "MODULE_LIBRARY"))
+            set_property(TARGET "${target}" PROPERTY XCODE_GENERATE_SCHEME TRUE)
+        endif()
     endif()
 
     set_target_properties(${target} PROPERTIES _qt_is_finalized TRUE)
@@ -1108,7 +1158,7 @@ function(qt6_extract_metatypes target)
         VERBATIM
     )
 
-    if(CMAKE_GENERATOR MATCHES "Unix Makefiles")
+    if(CMAKE_GENERATOR MATCHES " Makefiles" OR CMAKE_GENERATOR MATCHES "^Visual Studio")
         # Work around https://gitlab.kitware.com/cmake/cmake/-/issues/19005 to trigger the command
         # that generates ${metatypes_file}.
         add_custom_command(
@@ -1670,6 +1720,11 @@ function(__qt_propagate_generated_resource target resource_name generated_source
 
         set(resource_target "${target}_resources_${resource_count}")
         add_library("${resource_target}" OBJECT "${generated_source_code}")
+        set_target_properties(${resource_target} PROPERTIES
+            AUTOMOC FALSE
+            AUTOUIC FALSE
+            AUTORCC FALSE
+        )
         target_compile_definitions("${resource_target}" PRIVATE
             "$<TARGET_PROPERTY:${QT_CMAKE_EXPORT_NAMESPACE}::Core,INTERFACE_COMPILE_DEFINITIONS>"
         )
@@ -2301,6 +2356,7 @@ function(_qt_internal_add_library target)
     endif()
 
     add_library(${target} ${type_to_create} ${arg_UNPARSED_ARGUMENTS})
+    _qt_internal_disable_autorcc_zstd_when_not_supported("${target}")
     _qt_internal_set_up_static_runtime_library(${target})
 
     if(NOT type_to_create STREQUAL "INTERFACE" AND NOT type_to_create STREQUAL "OBJECT")
@@ -2598,6 +2654,20 @@ function(_qt_internal_setup_deploy_support)
         endif()
     endif()
 
+    # Generate path to the target (not host) qtpaths file. Needed for windeployqt when
+    # cross-compiling from an x86_64 host to an arm64 target, so it knows which architecture
+    # libraries should be deployed.
+    if(CMAKE_HOST_WIN32)
+        if(CMAKE_CROSSCOMPILING)
+            set(qt_paths_ext ".bat")
+        else()
+            set(qt_paths_ext ".exe")
+        endif()
+    else()
+        set(qt_paths_ext "")
+    endif()
+    set(target_qtpaths_path "${QT6_INSTALL_PREFIX}/${QT6_INSTALL_BINS}/qtpaths${qt_paths_ext}")
+
     file(GENERATE OUTPUT "${QT_DEPLOY_SUPPORT}" CONTENT
 "cmake_minimum_required(VERSION 3.16...3.21)
 
@@ -2642,8 +2712,11 @@ set(__QT_DEFAULT_MAJOR_VERSION \"${QT_DEFAULT_MAJOR_VERSION}\")
 set(__QT_DEPLOY_QT_ADDITIONAL_PACKAGES_PREFIX_PATH \"${QT_ADDITIONAL_PACKAGES_PREFIX_PATH}\")
 set(__QT_DEPLOY_QT_INSTALL_PREFIX \"${QT6_INSTALL_PREFIX}\")
 set(__QT_DEPLOY_QT_INSTALL_BINS \"${QT6_INSTALL_BINS}\")
+set(__QT_DEPLOY_QT_INSTALL_DATA \"${QT6_INSTALL_DATA}\")
+set(__QT_DEPLOY_QT_INSTALL_LIBEXECS \"${QT6_INSTALL_LIBEXECS}\")
 set(__QT_DEPLOY_QT_INSTALL_PLUGINS \"${QT6_INSTALL_PLUGINS}\")
 set(__QT_DEPLOY_QT_INSTALL_TRANSLATIONS \"${QT6_INSTALL_TRANSLATIONS}\")
+set(__QT_DEPLOY_TARGET_QT_PATHS_PATH \"${target_qtpaths_path}\")
 set(__QT_DEPLOY_PLUGINS \"\")
 set(__QT_DEPLOY_MUST_ADJUST_PLUGINS_RPATH \"${must_adjust_plugins_rpath}\")
 set(__QT_DEPLOY_USE_PATCHELF \"${QT_DEPLOY_USE_PATCHELF}\")
