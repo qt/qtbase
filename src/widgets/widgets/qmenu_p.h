@@ -326,7 +326,7 @@ public:
 
     //selection
     static QMenu *mouseDown;
-    QPoint mousePopupPos;
+    QPointF mousePopupPos;
 
     QAction *currentAction = nullptr;
 #ifdef QT_KEYPAD_NAVIGATION
