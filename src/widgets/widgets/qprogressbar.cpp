@@ -111,7 +111,7 @@ bool QProgressBarPrivate::repaintRequired() const
     if (value == lastPaintedValue)
         return false;
 
-    const int valueDifference = qAbs(value - lastPaintedValue);
+    const qint64 valueDifference = qAbs(qint64(value) - qint64(lastPaintedValue));
 
     if (value == minimum || value == maximum)
         return true;
