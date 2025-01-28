@@ -91,8 +91,8 @@ check_or_die input -r "$INPUT"
 check_or_die output -w "$QURLTLDS_P_H"
 
 GITSHA1=$(cd "$PUBLIC_SUFFIX_LIST_DAT_DIR" && git log -1 --format=format:%H)
-TODAY=$(date +%Y-%m-%d)
-msg "Using $INPUT @ $GITSHA1, fetched on $TODAY"
+GITDATE=$(cd "$PUBLIC_SUFFIX_LIST_DAT_DIR" && git log -1 --format=format:%cs)
+msg "Using $INPUT @ $GITSHA1, fetched on $GITDATE"
 
 OUTPUT="$(mktemp)"
 trap "rm $OUTPUT" EXIT
@@ -107,7 +107,7 @@ q
 EOF
 
 # update the first Version line in qt_attribution.json with the new SHA1 and date:
-run_or_die sed -i -e "1,/\"Version\":/{ /\"Version\":/ {  s/[0-9a-fA-F]\{40\}/$GITSHA1/;   s/[0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}/$TODAY/ } }" "$ATTRIBUTION_JSON"
+run_or_die sed -i -e "1,/\"Version\":/{ /\"Version\":/ {  s/[0-9a-fA-F]\{40\}/$GITSHA1/;   s/[0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}/$GITDATE/ } }" "$ATTRIBUTION_JSON"
 
 run_or_die git add "$QURLTLDS_P_H"
 run_or_die git add "$ATTRIBUTION_JSON"
@@ -115,7 +115,7 @@ run_or_die git add "$ATTRIBUTION_JSON"
 run_or_die git commit -m "Update public suffix list
 
 Version $GITSHA1, fetched on
-$TODAY.
+$GITDATE.
 
 
 [ChangeLog][Third-Party Code] Updated the public suffix list to upstream
