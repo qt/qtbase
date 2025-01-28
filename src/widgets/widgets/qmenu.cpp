@@ -2457,8 +2457,10 @@ void QMenuPrivate::popup(const QPoint &p, QAction *atAction, PositionFunction po
         return;
     }
 
+    // Note that QGuiApplicationPrivate::lastCursorPosition isn't a QPointF,
+    // so these two statements can't be simplified...
     const QPoint mouse = QGuiApplicationPrivate::lastCursorPosition.toPoint();
-    mousePopupPos = mouse;
+    mousePopupPos = QGuiApplicationPrivate::lastCursorPosition;
     const bool snapToMouse = !causedPopup.widget && (QRect(p.x() - 3, p.y() - 3, 6, 6).contains(mouse));
 
     if (adjustToDesktop) {
