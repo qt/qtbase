@@ -26,6 +26,7 @@ QT_BEGIN_NAMESPACE
 
 class QDBusPendingCallWatcher;
 class QWindow;
+class QDBusServiceWatcher;
 
 class Q_GUI_EXPORT QDesktopUnixServices : public QPlatformServices
 {
@@ -51,6 +52,7 @@ private:
     QString m_documentLauncher;
 #if QT_CONFIG(dbus)
     QPointer<QDBusPendingCallWatcher> m_watcher = nullptr;
+    std::unique_ptr<QDBusServiceWatcher> m_portalWatcher;
 #endif
     bool m_hasScreenshotPortalWithColorPicking = false;
 };

@@ -29,6 +29,7 @@
 #include <QtCore/QUrlQuery>
 
 #include <QtDBus/QDBusConnection>
+#include <QtDBus/QDBusServiceWatcher>
 #include <QtDBus/QDBusMessage>
 #include <QtDBus/QDBusPendingCall>
 #include <QtDBus/QDBusPendingCallWatcher>
@@ -373,6 +374,34 @@ private Q_SLOTS:
 private:
     const QString m_parentWindowId;
 };
+
+void registerWithHostPortal()
+{
+    static bool registered = false;
+    if (registered) {
+        return;
+    }
+
+    auto message = QDBusMessage::createMethodCall(
+            "org.freedesktop.portal.Desktop"_L1, "/org/freedesktop/portal/desktop"_L1,
+            "org.freedesktop.host.portal.Registry"_L1, "Register"_L1);
+    message.setArguments({ QGuiApplication::desktopFileName(), QVariantMap() });
+    auto watcher =
+            new QDBusPendingCallWatcher(QDBusConnection::sessionBus().asyncCall(message), qGuiApp);
+    QObject::connect(watcher, &QDBusPendingCallWatcher::finished, watcher, [watcher] {
+        watcher->deleteLater();
+        if (watcher->isError()) {
+            // Expected error when running against an older portal
+            if (watcher->error().type() == QDBusError::UnknownInterface || watcher->error().type() == QDBusError::UnknownMethod)
+                qCInfo(lcQpaServices) << "Failed to register with host portal" << watcher->error();
+            else
+                qCWarning(lcQpaServices) << "Failed to register with host portal" << watcher->error();
+        } else {
+            qCDebug(lcQpaServices) << "Successfully registered with host portal as" << QGuiApplication::desktopFileName();
+            registered = true;
+        }
+    });
+}
 } // namespace
 
 #endif // QT_CONFIG(dbus)
@@ -395,7 +424,7 @@ QDesktopUnixServices::QDesktopUnixServices()
     QDBusPendingCall pendingCall = QDBusConnection::sessionBus().asyncCall(message);
     auto watcher = new QDBusPendingCallWatcher(pendingCall);
     m_watcher = watcher;
-            QObject::connect(watcher, &QDBusPendingCallWatcher::finished, watcher,
+    QObject::connect(watcher, &QDBusPendingCallWatcher::finished, watcher,
                      [this](QDBusPendingCallWatcher *watcher) {
                          watcher->deleteLater();
                          QDBusPendingReply<QVariant> reply = *watcher;
@@ -403,6 +432,31 @@ QDesktopUnixServices::QDesktopUnixServices()
                              m_hasScreenshotPortalWithColorPicking = true;
                      });
 
+    if (checkNeedPortalSupport()) {
+        return;
+    }
+
+    // The program might only set the desktopfilename after creating the app
+    // try again when it's running
+    if (!QGuiApplication::desktopFileName().isEmpty()) {
+        registerWithHostPortal();
+    } else {
+        QMetaObject::invokeMethod(
+                qGuiApp,
+                [] {
+                    if (QGuiApplication::desktopFileName().isEmpty()) {
+                        qCInfo(lcQpaServices) << "QGuiApplication::desktopFileName not set. Unable to register application with portal registry";
+                        return;
+                    }
+                    registerWithHostPortal();
+                },
+                Qt::QueuedConnection);
+    }
+    m_portalWatcher = std::make_unique<QDBusServiceWatcher>(
+            "org.freedesktop.portal.Desktop"_L1, QDBusConnection::sessionBus(),
+            QDBusServiceWatcher::WatchForRegistration);
+    QObject::connect(m_portalWatcher.get(), &QDBusServiceWatcher::serviceRegistered,
+                     m_portalWatcher.get(), &registerWithHostPortal);
 #endif
 }
 
