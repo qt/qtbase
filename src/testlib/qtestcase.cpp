@@ -427,7 +427,6 @@ static int eventDelay = -1;
 static int timeout = -1;
 #endif
 static int repetitions = 1;
-static bool repeatForever = false;
 static bool skipBlacklisted = false;
 
 namespace Internal {
@@ -611,7 +610,6 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
     const char *logFilename = nullptr;
 
     repetitions = 1;
-    repeatForever = false;
 
     QTest::testFunctions.clear();
     QTest::testTags.clear();
@@ -835,7 +833,6 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
                 exit(1);
             } else {
                 repetitions = qToInt(argv[++i]);
-                repeatForever = repetitions < 0;
             }
         } else if (strcmp(argv[i], "-nocrashhandler") == 0) {
             QTest::Internal::noCrashHandler = true;
@@ -1971,7 +1968,9 @@ int QTest::qRun()
         }
         TestMethods test(currentTestObject, std::move(commandLineMethods));
 
-        while (QTestLog::failCount() == 0 && (repeatForever || repetitions-- > 0)) {
+        int remainingRepetitions = repetitions;
+        const bool repeatForever = repetitions < 0;
+        while (QTestLog::failCount() == 0 && (repeatForever || remainingRepetitions-- > 0)) {
             QTestTable::globalTestTable();
             test.invokeTests(currentTestObject);
             QTestTable::clearGlobalTestTable();
