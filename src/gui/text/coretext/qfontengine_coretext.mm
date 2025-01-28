@@ -529,8 +529,9 @@ glyph_metrics_t QCoreTextFontEngine::alphaMapBoundingBox(glyph_t glyph, const QF
     if (br.height < 0)
         br.height = -br.height;
 
-    if (format == QFontEngine::Format_A8 || format == QFontEngine::Format_A32) {
-        // Drawing a glyph at x-position 0 with anti-aliasing enabled
+    if (format == QFontEngine::Format_A8 || format == QFontEngine::Format_A32 || format == QFontEngine::Format_ARGB) {
+        // Drawing a vector based glyph with anti-aliasing enabled, or a
+        // bitmap based glyph with pre-baked anti-aliasing, at x = 0,
         // will potentially fill the pixel to the left of 0, as the
         // coordinates are not aligned to the center of pixels. To
         // prevent clipping of this pixel we need to shift the glyph
