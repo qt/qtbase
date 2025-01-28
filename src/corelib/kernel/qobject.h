@@ -90,10 +90,10 @@ public:
     QDynamicMetaObjectData *metaObject;
     QBindingStorage bindingStorage;
 
-#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0)
-    const QMetaObject *dynamicMetaObject() const;
-#else
+#if QT_CORE_REMOVED_SINCE(6, 9) && defined(Q_COMPILER_MANGLES_RETURN_TYPE)
     QMetaObject *dynamicMetaObject() const;
+#else
+    const QMetaObject *dynamicMetaObject() const;
 #endif
 
 #ifdef QT_DEBUG

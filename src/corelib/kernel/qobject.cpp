@@ -152,9 +152,9 @@ void (*QAbstractDeclarativeData::setWidgetParent)(QObject *, QObject *) = nullpt
 
 QObjectData::~QObjectData() {}
 
-QT7_ONLY(const)
-QMetaObject *QObjectData::dynamicMetaObject() const
+const QMetaObject *QObjectData::dynamicMetaObject() const
 {
+    // ### keep in sync with removed_api.cpp version
     return metaObject->toDynamicMetaObject(q_ptr);
 }
 

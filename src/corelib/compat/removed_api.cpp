@@ -1292,6 +1292,18 @@ void QBasicMutex::destroyInternal(QMutexPrivate *d)
 }
 #endif
 
+
+#include "qobject.h"
+
+#ifdef Q_COMPILER_MANGLES_RETURN_TYPE
+QMetaObject *QObjectData::dynamicMetaObject() const
+{
+    // ### keep in sync with the master version in qobject.cpp
+    return metaObject->toDynamicMetaObject(q_ptr);
+}
+#endif // Q_COMPILER_MANGLES_RETURN_TYPE
+
+
 #include "qstring.h"
 
 QString QString::arg(qlonglong a, int fieldWidth, int base, QChar fillChar) const
