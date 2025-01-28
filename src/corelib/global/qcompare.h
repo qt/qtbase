@@ -23,6 +23,7 @@ QT_BEGIN_NAMESPACE
 
 namespace QtPrivate {
 using CompareUnderlyingType = qint8;
+constexpr CompareUnderlyingType LegacyUncomparableValue = -127; // historic Qt value
 
 // [cmp.categories.pre] / 1
 enum class Ordering : CompareUnderlyingType
@@ -675,7 +676,7 @@ auto qCompareThreeWay(const LT &lhs, const RT &rhs)
 namespace QtPrivate {
 enum class LegacyUncomparable : CompareUnderlyingType
 {
-    Unordered = -127
+    Unordered = QtPrivate::LegacyUncomparableValue
 };
 }
 
