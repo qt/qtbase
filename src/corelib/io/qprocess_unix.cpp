@@ -43,10 +43,6 @@
 #if __has_include(<paths.h>)
 #  include <paths.h>
 #endif
-#if __has_include(<linux/close_range.h>)
-// FreeBSD's is in <unistd.h>
-#  include <linux/close_range.h>
-#endif
 
 #if QT_CONFIG(process)
 #include <forkfd.h>
@@ -846,10 +842,13 @@ static const char *applyProcessParameters(const QProcess::UnixProcessParameters 
     if (params.flags.testFlag(QProcess::UnixProcessFlag::CloseFileDescriptors)) {
         int r = -1;
         int fd = qMax(STDERR_FILENO + 1, params.lowestFileDescriptorToClose);
-#if QT_CONFIG(close_range)
+#ifdef CLOSE_RANGE_CLOEXEC
+        // Mark the file descriptors for closing upon execve() - we delay
+        // closing so we don't close the ones QProcess needs for itself.
         // On FreeBSD, this probably won't fail.
-        // On Linux, this will fail with ENOSYS before kernel 5.9.
-        r = close_range(fd, INT_MAX, 0);
+        // On Linux, this will fail with ENOSYS before kernel 5.9 and EINVAL
+        // before 5.11.
+        r = close_range(fd, INT_MAX, CLOSE_RANGE_CLOEXEC);
 #endif
         if (r == -1) {
             // We *could* read /dev/fd to find out what file descriptors are
@@ -860,7 +859,7 @@ static const char *applyProcessParameters(const QProcess::UnixProcessParameters 
             if (struct rlimit limit; getrlimit(RLIMIT_NOFILE, &limit) == 0)
                 max_fd = limit.rlim_cur;
             for ( ; fd < max_fd; ++fd)
-                close(fd);
+                fcntl(fd, F_SETFD, FD_CLOEXEC);
         }
     }
 
