@@ -180,6 +180,15 @@ QIOSScreen::QIOSScreen(UIScreen *screen)
     m_displayLink.paused = YES; // Enabled when clients call QWindow::requestUpdate()
     [m_displayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSDefaultRunLoopMode];
 
+    // We're pausing the display link if the application moves out of the active state,
+    // so make sure to deliver to any windows that need it once the app becomes active.
+    QObject::connect(qGuiApp, &QGuiApplication::applicationStateChanged, this, [this](auto newState) {
+        if (newState == Qt::ApplicationActive) {
+            qCDebug(lcQpaApplication) << "Attempting update request delivery after becoming active";
+            deliverUpdateRequests();
+        }
+    });
+
 #endif // !defined(Q_OS_VISIONOS))
 
     updateProperties();
@@ -264,6 +273,17 @@ void QIOSScreen::setUpdatesPaused(bool paused)
 void QIOSScreen::deliverUpdateRequests() const
 {
     bool pauseUpdates = true;
+
+    if (QGuiApplication::applicationState() != Qt::ApplicationActive) {
+        // The applicationWillResignActive documentation describes that the app
+        // should "use this method to pause ongoing tasks, disable timers, and
+        // throttle down OpenGL ES frame rates", so we skip update request
+        // delivery if the app is not active. Once it becomes active again
+        // we re-try the update request delivery (see QIOSScreen constructor).
+        qCDebug(lcQpaApplication) << "Skipping update request delivery and pausing display link";
+        m_displayLink.paused = true;
+        return;
+    }
 
     QList<QWindow*> windows = QGuiApplication::allWindows();
     for (int i = 0; i < windows.size(); ++i) {
