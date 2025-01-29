@@ -65,9 +65,10 @@ function run_or_die() {
 }
 
 INPUT="$PUBLIC_SUFFIX_LIST_DAT_DIR/public_suffix_list.dat"
+TOOL_SRC=$TOOL_DIR/main.cpp
 
-if [ ! -x "$TOOL" ] ; then
-    msg "$TOOL not found, trying to build it (you will need a working qmake in PATH)"
+if [ ! -x "$TOOL" -o "$TOOL_SRC" -nt "$TOOL" ] ; then
+    msg "$TOOL not found or outdated, trying to build it (you will need a working qmake in PATH)"
     check_or_die tool_dir -d "$TOOL_DIR"
     pushd "$TOOL_DIR"
     run_or_die qmake .
