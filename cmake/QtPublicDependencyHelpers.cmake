@@ -127,6 +127,11 @@ endmacro()
 # contain preformed dependencies. See foreach block for reference.
 # The same applies for find_dependency_path_list.
 macro(_qt_internal_find_qt_dependencies target target_dep_list find_dependency_path_list)
+    set(__qt_${target}_find_qt_dependencies_save_QT_NO_PRIVATE_MODULE_WARNING
+        ${QT_NO_PRIVATE_MODULE_WARNING}
+    )
+    set(QT_NO_PRIVATE_MODULE_WARNING ON)
+
     foreach(__qt_${target}_target_dep IN LISTS ${target_dep_list})
         list(GET __qt_${target}_target_dep 0 __qt_${target}_pkg)
         list(GET __qt_${target}_target_dep 1 __qt_${target}_version)
@@ -146,6 +151,11 @@ macro(_qt_internal_find_qt_dependencies target target_dep_list find_dependency_p
             endif()
         endif()
     endforeach()
+
+    set(QT_NO_PRIVATE_MODULE_WARNING
+        ${__qt_${target}_find_qt_dependencies_save_QT_NO_PRIVATE_MODULE_WARNING}
+    )
+    unset(__qt_${target}_find_qt_dependencies_save_QT_NO_PRIVATE_MODULE_WARNING)
 endmacro()
 
 # If a dependency package was not found, provide some hints in the error message on how to debug
@@ -312,3 +322,23 @@ macro(_qt_internal_setup_qt_host_path
         endif()
     endif()
 endmacro()
+
+function(_qt_internal_show_private_module_warning module)
+    if(DEFINED QT_REPO_MODULE_VERSION OR QT_NO_PRIVATE_MODULE_WARNING)
+        return()
+    endif()
+
+    get_cmake_property(warning_shown __qt_private_module_${module}_warning_shown)
+    if(warning_shown)
+        return()
+    endif()
+
+    message(WARNING
+        "This project is using headers of the ${module} module and will therefore be tied "
+        "to this specific Qt module build version. "
+        "Running this project against other versions of the Qt modules may crash at any arbitrary "
+        "point. This is not a bug, but a result of using Qt internals. You have been warned! "
+        "\nYou can disable this warning by setting QT_NO_PRIVATE_MODULE_WARNING to ON."
+    )
+    set_property(GLOBAL PROPERTY __qt_private_module_${module}_warning_shown TRUE)
+endfunction()
