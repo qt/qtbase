@@ -581,7 +581,7 @@ QPlatformServiceColorPicker *QDesktopUnixServices::colorPicker(QWindow *parent)
     return nullptr;
 }
 
-#endif // QT_NO_MULTIPROCESS
+#endif // QT_CONFIG(multiprocess)
 
 QString QDesktopUnixServices::portalWindowIdentifier(QWindow *window)
 {
