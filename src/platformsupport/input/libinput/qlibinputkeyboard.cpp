@@ -16,8 +16,10 @@
 
 QT_BEGIN_NAMESPACE
 
+#if QT_CONFIG(xkbcommon)
 const int REPEAT_DELAY = 500;
 const int REPEAT_RATE = 100;
+#endif
 
 QLibInputKeyboard::QLibInputKeyboard()
 {
