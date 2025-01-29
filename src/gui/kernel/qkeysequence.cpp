@@ -189,11 +189,8 @@ void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemoni
     When creating key sequences for non-standard shortcuts, you should use
     human-readable strings in preference to hard-coded integer values.
 
-    QKeySequence objects can be cast to a QString to obtain a human-readable
-    translated version of the sequence. Similarly, the toString() function
-    produces human-readable strings for use in menus. On Apple platforms, the
-    appropriate symbols are used to describe keyboard shortcuts using special
-    keys on the Macintosh keyboard.
+    QKeySequence object can be serialized to human-readable strings with the
+    toString() function.
 
     An alternative way to specify hard-coded key codes is to use the Unicode
     code point of the character; for example, 'A' gives the same key sequence
