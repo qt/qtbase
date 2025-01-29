@@ -367,6 +367,11 @@ namespace QTest
         return toString(static_cast<const char *>(arg));
     }
 
+    template <> inline const char *genericToString<std::nullptr_t>(const void *)
+    {
+        return QTest::toString(nullptr);
+    }
+
     template <typename T> const char *pointerToString(const void *arg)
     {
         using QTest::toString;

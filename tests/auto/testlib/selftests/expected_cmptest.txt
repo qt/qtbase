@@ -63,6 +63,14 @@ FAIL!  : tst_Cmptest::compareQObjects() Compared QObject pointers are not the sa
    Actual   (&object1): QObject/"object1"
    Expected (&object2): QObject/"object2"
    Loc: [qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)]
+FAIL!  : tst_Cmptest::compareQObjects() Compared QObject pointers are not the same
+   Actual   (&object1): QObject/"object1"
+   Expected (nullptr) : "nullptr"
+   Loc: [qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)]
+FAIL!  : tst_Cmptest::compareQObjects() Compared QObject pointers are not the same
+   Actual   (nullptr) : "nullptr"
+   Expected (&object2): QObject/"object2"
+   Loc: [qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)]
 PASS   : tst_Cmptest::compareQStringLists(empty lists)
 PASS   : tst_Cmptest::compareQStringLists(equal lists)
 FAIL!  : tst_Cmptest::compareQStringLists(last item different) Compared lists differ at index 2.

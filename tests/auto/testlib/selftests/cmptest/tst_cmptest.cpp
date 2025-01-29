@@ -281,10 +281,10 @@ void tst_Cmptest::compareQObjects()
     object1.setObjectName(QStringLiteral("object1"));
     QObject object2;
     object2.setObjectName(QStringLiteral("object2"));
-    QCOMPARE(&object1, &object1);
-    QCOMPARE(&object1, &object2);
-    QCOMPARE(&object1, nullptr);
-    QCOMPARE(nullptr, &object2);
+    [&] { QCOMPARE(&object1, &object1); }();
+    [&] { QCOMPARE(&object1, &object2); }();
+    [&] { QCOMPARE(&object1, nullptr); }();
+    [&] { QCOMPARE(nullptr, &object2); }();
 }
 
 struct PhonyClass

@@ -172,6 +172,30 @@ not ok 21 - compareQObjects()
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
+not ok 21 - compareQObjects()
+  ---
+  type: QCOMPARE
+  message: Compared QObject pointers are not the same
+  wanted: "nullptr" (nullptr)
+  found: QObject/"object1" (&object1)
+  expected: "nullptr" (nullptr)
+  actual: QObject/"object1" (&object1)
+  at: tst_Cmptest::compareQObjects() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
+  line: 0
+  ...
+not ok 21 - compareQObjects()
+  ---
+  type: QCOMPARE
+  message: Compared QObject pointers are not the same
+  wanted: QObject/"object2" (&object2)
+  found: "nullptr" (nullptr)
+  expected: QObject/"object2" (&object2)
+  actual: "nullptr" (nullptr)
+  at: tst_Cmptest::compareQObjects() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
+  line: 0
+  ...
 ok 22 - compareQStringLists(empty lists)
 ok 23 - compareQStringLists(equal lists)
 not ok 24 - compareQStringLists(last item different)

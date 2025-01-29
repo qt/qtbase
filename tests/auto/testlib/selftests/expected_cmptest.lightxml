@@ -131,6 +131,16 @@
    Actual   (&object1): QObject/"object1"
    Expected (&object2): QObject/"object2"]]></Description>
     </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
+      <Description><![CDATA[Compared QObject pointers are not the same
+   Actual   (&object1): QObject/"object1"
+   Expected (nullptr) : "nullptr"]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
+      <Description><![CDATA[Compared QObject pointers are not the same
+   Actual   (nullptr) : "nullptr"
+   Expected (&object2): QObject/"object2"]]></Description>
+    </Incident>
     <Duration msecs="0"/>
   </TestFunction>
   <TestFunction name="compareQStringLists">
