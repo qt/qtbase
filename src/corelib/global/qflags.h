@@ -71,6 +71,7 @@ protected:
 
     Int i = 0;
 
+    QT_DECLARE_RO5_SMF_AS_DEFAULTED(QFlagsStorage)
 public:
     constexpr inline QFlagsStorage() noexcept = default;
     constexpr inline explicit QFlagsStorage(std::in_place_t, Int v) : i(v) {}
@@ -80,6 +81,8 @@ template <typename Enum, int Size = sizeof(QFlagsStorage<Enum>)>
 struct QFlagsStorageHelper : QFlagsStorage<Enum>
 {
     using QFlagsStorage<Enum>::QFlagsStorage;
+protected:
+    QT_DECLARE_RO5_SMF_AS_DEFAULTED(QFlagsStorageHelper)
 };
 template <typename Enum> struct QFlagsStorageHelper<Enum, sizeof(int)> : QFlagsStorage<Enum>
 {
@@ -94,6 +97,8 @@ template <typename Enum> struct QFlagsStorageHelper<Enum, sizeof(int)> : QFlagsS
 #ifdef QT_TYPESAFE_FLAGS
     constexpr inline explicit operator QFlag() const noexcept { return QFlag(this->i); }
 #endif
+protected:
+    QT_DECLARE_RO5_SMF_AS_DEFAULTED(QFlagsStorageHelper)
 };
 } // namespace QtPrivate
 
