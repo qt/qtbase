@@ -17,8 +17,10 @@ QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(qLcLibInput)
 
+#if QT_CONFIG(xkbcommon)
 const int REPEAT_DELAY = 500;
 const int REPEAT_RATE = 100;
+#endif
 
 QLibInputKeyboard::QLibInputKeyboard()
 {
