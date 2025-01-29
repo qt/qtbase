@@ -91,17 +91,17 @@ private:
 
     bool isSolidDefaultLine() const noexcept;
 
+    bool doCompareEqualColor(QColor rhs) const noexcept;
     friend bool comparesEqual(const QPen &lhs, QColor rhs) noexcept
     {
-        return lhs.brush() == rhs && lhs.isSolidDefaultLine();
+        return lhs.doCompareEqualColor(rhs);
     }
     Q_DECLARE_EQUALITY_COMPARABLE(QPen, QColor)
 
+    bool doCompareEqualStyle(Qt::PenStyle rhs) const;
     friend bool comparesEqual(const QPen &lhs, Qt::PenStyle rhs)
     {
-        if (rhs == Qt::NoPen)
-            return lhs.style() == Qt::NoPen;
-        return lhs == QPen(rhs); // allocates
+        return lhs.doCompareEqualStyle(rhs);
     }
     Q_DECLARE_EQUALITY_COMPARABLE_NON_NOEXCEPT(QPen, Qt::PenStyle)
 

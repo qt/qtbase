@@ -856,6 +856,23 @@ bool QPen::operator==(const QPen &p) const
             && p.d->cosmetic == d->cosmetic);
 }
 
+/*!
+    \internal
+*/
+bool QPen::doCompareEqualColor(QColor rhs) const noexcept
+{
+    return d->brush == rhs && isSolidDefaultLine();
+}
+
+/*!
+    \internal
+*/
+bool QPen::doCompareEqualStyle(Qt::PenStyle rhs) const
+{
+    if (rhs == Qt::NoPen)
+        return style() == Qt::NoPen;
+    return *this == QPen(rhs); // ### optimize (allocates)
+}
 
 /*!
     \fn bool QPen::isDetached()

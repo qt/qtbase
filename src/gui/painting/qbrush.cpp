@@ -974,6 +974,33 @@ bool QBrush::operator==(const QBrush &b) const
     }
 }
 
+/*!
+    \internal
+*/
+bool QBrush::doCompareEqualColor(QColor rhs) const noexcept
+{
+    return style() == Qt::SolidPattern && color() == rhs && d->transform.isIdentity();
+}
+
+/*!
+    \internal
+*/
+bool QBrush::doCompareEqualStyle(Qt::BrushStyle rhs) const noexcept
+{
+    switch (rhs) {
+    case Qt::NoBrush:
+    case Qt::TexturePattern:
+    case Qt::LinearGradientPattern:
+    case Qt::RadialGradientPattern:
+    case Qt::ConicalGradientPattern:
+        // A brush constructed only from one of those styles will end up
+        // using NoBrush (see qbrush_check_type)
+        return style() == Qt::NoBrush;
+    default:
+        return style() == rhs && color() == QColor(0, 0, 0);
+    }
+}
+
 #ifndef QT_NO_DEBUG_STREAM
 /*!
   \internal

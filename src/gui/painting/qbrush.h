@@ -86,28 +86,18 @@ private:
     friend class QPainter;
     friend bool Q_GUI_EXPORT qHasPixmapTexture(const QBrush& brush);
 
+    bool doCompareEqualColor(QColor rhs) const noexcept;
     friend bool comparesEqual(const QBrush &lhs, QColor rhs) noexcept
     {
-        return lhs.color() == rhs && lhs.style() == Qt::SolidPattern
-            && lhs.transform().isIdentity();
+        return lhs.doCompareEqualColor(rhs);
     }
     Q_DECLARE_EQUALITY_COMPARABLE(QBrush, QColor)
     Q_DECLARE_EQUALITY_COMPARABLE(QBrush, Qt::GlobalColor)
 
+    bool doCompareEqualStyle(Qt::BrushStyle rhs) const noexcept;
     friend bool comparesEqual(const QBrush &lhs, Qt::BrushStyle rhs) noexcept
     {
-        switch (rhs) {
-        case Qt::NoBrush:
-        case Qt::TexturePattern:
-        case Qt::LinearGradientPattern:
-        case Qt::RadialGradientPattern:
-        case Qt::ConicalGradientPattern:
-            // A brush constructed only from one of those styles will end up
-            // using NoBrush (see qbrush_check_type)
-            return lhs.style() == Qt::NoBrush;
-        default:
-            return lhs.style() == rhs && lhs.color() == QColor(0, 0, 0);
-        }
+        return lhs.doCompareEqualStyle(rhs);
     }
     Q_DECLARE_EQUALITY_COMPARABLE(QBrush, Qt::BrushStyle)
 
