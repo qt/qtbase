@@ -66,7 +66,7 @@ instructions:
           fi
 
           # Handle crashes
-          if echo "$line" | /usr/bin/grep -qE "(SIGSEGV)|(SIGABRT)"
+          if echo "$line" | /usr/bin/grep -qE "(SIGSEGV)|(SIGABRT)|(S_rtpLib_[A-Z_]+)"
           then
               # Empty output pipe
               while read -t 1 line; do
