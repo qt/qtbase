@@ -21,6 +21,7 @@ import android.view.Menu;
 import android.view.View;
 
 import java.lang.ref.WeakReference;
+import java.lang.UnsatisfiedLinkError;
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -67,6 +68,13 @@ public class QtNative
     {
         synchronized (m_mainActivityMutex) {
             m_activity = new WeakReference<>(qtMainActivity);
+            try {
+                updateNativeActivity();
+            } catch (UnsatisfiedLinkError ignored) {
+                // No-op - this happens in certain e.g. QtQuick for Android cases when we set the
+                // Activity for the first time, before Qt native libraries have been loaded. The
+                // C++ side will update its reference when the library is loaded.
+            }
         }
     }
 
