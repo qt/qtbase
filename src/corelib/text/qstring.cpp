@@ -9538,7 +9538,7 @@ QDataStream &operator>>(QDataStream &in, QString &str)
             qsizetype allocated = 0;
 
             while (allocated < len) {
-                int blockSize = qMin(Step, len - allocated);
+                qsizetype blockSize = qMin(Step, len - allocated);
                 str.resize(allocated + blockSize);
                 if (in.readRawData(reinterpret_cast<char *>(str.data()) + allocated * 2,
                                    blockSize * 2) != blockSize * 2) {
