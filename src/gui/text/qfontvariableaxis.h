@@ -12,7 +12,7 @@
 QT_BEGIN_NAMESPACE
 
 class QFontVariableAxisPrivate;
-QT_DECLARE_QESDP_SPECIALIZATION_DTOR_WITH_EXPORT(QFontVariableAxisPrivate, Q_GUI_EXPORT)
+QT_DECLARE_QESDP_SPECIALIZATION_DTOR(QFontVariableAxisPrivate)
 
 class QFontVariableAxis
 {
