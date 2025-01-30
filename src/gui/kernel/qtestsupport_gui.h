@@ -73,8 +73,6 @@ protected:
 #if QT_CONFIG(test_gui)
 namespace QtGuiTest
 {
-    Q_NAMESPACE_EXPORT(Q_GUI_EXPORT)
-
     Q_GUI_EXPORT void setKeyboardModifiers(Qt::KeyboardModifiers modifiers);
     Q_GUI_EXPORT void setCursorPosition(const QPoint &position);
     Q_GUI_EXPORT void synthesizeExtendedKeyEvent(QEvent::Type type, int key, Qt::KeyboardModifiers modifiers,
