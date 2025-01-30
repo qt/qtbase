@@ -51,7 +51,11 @@
 // We mean it.
 //
 
-#include <QtCore/qglobal.h>
+#include <QtGui/qbrush.h>
+
+#include <QtCore/private/qglobal_p.h>
+#include <QtCore/qlist.h>
+#include <QtCore/qnamespace.h>
 
 QT_BEGIN_NAMESPACE
 
