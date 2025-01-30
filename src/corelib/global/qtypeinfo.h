@@ -168,7 +168,7 @@ public: \
         isIntegral [[deprecated("Use std::is_integral instead")]] = std::is_integral< TYPE >::value, \
         isValueInitializationBitwiseZero = QtPrivate::qIsValueInitializationBitwiseZero<TYPE>, \
     }; \
-    static_assert(!isRelocatable || \
+    static_assert(!QTypeInfo<TYPE>::isRelocatable || \
                   std::is_copy_constructible_v<TYPE > || \
                   std::is_move_constructible_v<TYPE >, \
                   #TYPE " is neither copy- nor move-constructible, so cannot be Q_RELOCATABLE_TYPE"); \
