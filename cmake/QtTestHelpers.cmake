@@ -232,6 +232,7 @@ function(qt_internal_get_test_arg_definitions optional_args single_value_args mu
         QML_IMPORTPATH
         TESTDATA
         QT_TEST_SERVER_LIST
+        ANDROID_TESTRUNNER_PRE_TEST_ADB_COMMANDS
         ${__default_private_args}
         ${__default_public_args}
         PARENT_SCOPE
@@ -456,6 +457,8 @@ endfunction()
 #       The option forces adding the provided TESTDATA to resources.
 #    MANUAL
 #       The option indicates that the test is a manual test.
+#    ANDROID_TESTRUNNER_PRE_TEST_ADB_COMMANDS
+#       Passes --pre-test-adb-command <command> to androidTestRunner. Android specific argument.
 function(qt_internal_add_test name)
     qt_internal_get_test_arg_definitions(optional_args single_value_args multi_value_args)
 
@@ -684,6 +687,13 @@ function(qt_internal_add_test name)
         if(QT_ENABLE_VERBOSE_DEPLOYMENT OR build_environment STREQUAL "ci")
             list(APPEND extra_test_args "--verbose")
         endif()
+
+        if(arg_ANDROID_TESTRUNNER_PRE_TEST_ADB_COMMANDS)
+            foreach(command IN LISTS arg_ANDROID_TESTRUNNER_PRE_TEST_ADB_COMMANDS)
+                list(APPEND extra_test_args "--pre-test-adb-command" "${command}")
+            endforeach()
+        endif()
+
         set(test_working_dir "${CMAKE_CURRENT_BINARY_DIR}")
     elseif(QNX)
         set(test_working_dir "")

@@ -106,6 +106,8 @@
         \li \c {--ndk-stack <command-path>}: Specifies the path to the
             \l {Android: ndk-stack}{ndk-stack} tool for symbolizing crash stack
             traces. Defaults to the tool path found under \c $ANDROID_NDK_ROOT.
+        \li \c {--pre-test-adb-command <command>}: call the adb <command> after
+            installation and before the test run.
         \li \c {-- <arguments>}: Passes anything after the dashes as test arguments.
         \li \c --verbose: Prints verbose output.
         \li \c --help: Displays the help information.
