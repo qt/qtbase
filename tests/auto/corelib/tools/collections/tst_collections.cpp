@@ -2831,8 +2831,8 @@ void instantiateContainer()
     container.clear();
     container.contains(value);
     container.size();
-    container.empty();
-    container.isEmpty();
+    Q_UNUSED(container.empty());
+    Q_UNUSED(container.isEmpty());
     container.size();
 
     Q_UNUSED((container != constContainer));
