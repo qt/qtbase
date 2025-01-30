@@ -33,7 +33,7 @@ public:
     explicit QPainterStateGuard(QPainter *painter, InitialState state = InitialState::Save)
         : m_painter(painter)
     {
-        Q_ASSERT(painter);
+        verifyPainter();
         if (state == InitialState::Save)
             save();
     }
@@ -46,18 +46,25 @@ public:
 
     void save()
     {
+        verifyPainter();
         m_painter->save();
         ++m_level;
     }
 
     void restore()
     {
+        verifyPainter();
         Q_ASSERT(m_level > 0);
         --m_level;
         m_painter->restore();
     }
 
 private:
+    void verifyPainter()
+    {
+        Q_ASSERT(m_painter);
+    }
+
     QPainter *m_painter;
     int m_level = 0;
 };
