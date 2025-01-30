@@ -56,7 +56,6 @@ is listed before its dependencies, it will fail to load on some devices.
 \summary {Extra libraries to deploy with the target.}
 
 \cmakepropertysince 6.0
-\preliminarycmakeproperty
 \cmakepropertyandroidonly
 
 A list of external libraries that will be copied into your application's
@@ -129,7 +128,6 @@ set_target_properties(MyApp PROPERTIES
 \summary {Extra Qt plugins to deploy with the target.}
 
 \cmakepropertysince 6.0
-\preliminarycmakeproperty
 \cmakepropertyandroidonly
 
 Specifies a path to C++ plugins or resources that your application has to bundle
@@ -161,7 +159,6 @@ mangling is applied to the plugin library.
 \summary {Minimum Android SDK version.}
 
 \cmakepropertysince 6.1
-\preliminarycmakeproperty
 \cmakepropertyandroidonly
 
 Specifies the minimum Android API level for the target.
@@ -181,7 +178,6 @@ Specifies the minimum Android API level for the target.
 \summary {Path to a custom Android package template.}
 
 \cmakepropertysince 6.0
-\preliminarycmakeproperty
 \cmakepropertyandroidonly
 
 Specifies the path for a custom Android package template. The Android package
@@ -215,7 +211,6 @@ then place this directly into the directory specified by this variable.
 \summary {Android target SDK version.}
 
 \cmakepropertysince 6.1
-\preliminarycmakeproperty
 \cmakepropertyandroidonly
 
 Specifies the target Android API level for the target.
@@ -272,7 +267,6 @@ set_target_properties(${target} PROPERTIES
 \summary {Revision of Android build tools to use.}
 
 \cmakepropertysince 6.0
-\preliminarycmakeproperty
 \cmakepropertyandroidonly
 
 Specifies the Android SDK build tools revision to use. If this is not set then
@@ -422,7 +416,6 @@ set_target_properties(${target} PROPERTIES
 \summary {Internal Android app version.}
 
 \cmakepropertysince 6.1
-\preliminarycmakeproperty
 \cmakepropertyandroidonly
 
 Specifies the app's version number. This is usually a number that
@@ -445,7 +438,6 @@ For more information, see \l{Android: App Versioning}{Android App Versioning}.
 \summary {Human-readable Android app version.}
 
 \cmakepropertysince 6.1
-\preliminarycmakeproperty
 \cmakepropertyandroidonly
 
 Specifies the app's version as a human readable string, usually three
@@ -468,7 +460,6 @@ For more information, see \l{Android: App Versioning}{Android App Versioning}.
 \summary {List of ABIs that packages of a single target are built for.}
 
 \cmakepropertysince 6.3
-\preliminarycmakeproperty
 \cmakepropertyandroidonly
 
 By setting the \c{QT_ANDROID_ABIS} property for a target, it's possible to control
@@ -555,7 +546,6 @@ and overwritten by that command.
 
 \summary {Specifies the location of Qt libraries on the target device.}
 
-\preliminarycmakeproperty
 \cmakepropertyandroidonly
 
 This property can be set to provide a path to Qt libraries on the target device,
@@ -573,7 +563,6 @@ when those libraries are installed outside app's native (JNI) library directory.
 
 \summary {Whether Qt shared libraries are packaged in the APK on Android.}
 
-\preliminarycmakeproperty
 \cmakepropertyandroidonly
 
 This property can be set to not package Qt shared libraries inside the APK when
