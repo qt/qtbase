@@ -2345,6 +2345,8 @@
     \value WindowDoesNotAcceptFocus Informs the window system that this window should
            not receive the input focus.
 
+    \note On Windows, this prevents the window from appearing in the taskbar.
+
     \value MaximizeUsingFullscreenGeometryHint Deprecated alias for Qt::ExpandedClientAreaHint
 
     \value [since 6.9] ExpandedClientAreaHint Requests that the window's client area is

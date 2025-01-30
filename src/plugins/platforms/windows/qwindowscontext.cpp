@@ -1217,6 +1217,8 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     case QtWindows::PointerEvent:
         return sessionManagerInteractionBlocked() || d->m_pointerHandler.translatePointerEvent(platformWindow->window(), hwnd, et, msg, result);
     case QtWindows::FocusInEvent: // see QWindowsWindow::requestActivateWindow().
+        if (platformWindow->window()->flags() & Qt::WindowDoesNotAcceptFocus)
+            return false;
     case QtWindows::FocusOutEvent:
         handleFocusEvent(et, platformWindow);
         return true;

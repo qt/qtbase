@@ -819,6 +819,9 @@ void WindowCreationData::fromWindow(const QWindow *w, const Qt::WindowFlags flag
 
     style |= WS_CLIPSIBLINGS | WS_CLIPCHILDREN ;
 
+    if (flags & Qt::WindowDoesNotAcceptFocus)
+        exStyle |= WS_EX_NOACTIVATE;
+
     if (topLevel) {
         if ((type == Qt::Window || dialog || tool)) {
             if (!(flags & Qt::FramelessWindowHint)) {
