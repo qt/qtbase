@@ -48,6 +48,7 @@ struct Options
     QStringList amStarttestArgs;
     QString apkPath;
     QString ndkStackPath;
+    QList<QStringList> preTestRunAdbCommands;
     bool showLogcatOutput = false;
     std::optional<QProcess> stdoutLogger;
 };
@@ -168,6 +169,12 @@ static bool parseOptions()
             g_options.helpRequested = true;
         } else if (argument.compare("--verbose"_L1, Qt::CaseInsensitive) == 0) {
             g_options.verbose = true;
+        } else if (argument.compare("--pre-test-adb-command"_L1, Qt::CaseInsensitive) == 0) {
+            if (i + 1 == arguments.size())
+                g_options.helpRequested = true;
+            else {
+                g_options.preTestRunAdbCommands += QProcess::splitCommand(arguments.at(++i));
+            }
         } else if (argument.compare("--"_L1, Qt::CaseInsensitive) == 0) {
             ++i;
             break;
@@ -242,6 +249,9 @@ static void printHelp()
                     "    -- Arguments that will be passed to the test application.\n"
                     "\n"
                     "    --verbose: Prints out information during processing.\n"
+                    "\n"
+                    "    --pre-test-adb-command <command>: call the adb <command> after\n"
+                    "       installation and before the test run.\n"
                     "\n"
                     "    --help: Displays this information.\n",
                     qPrintable(QCoreApplication::arguments().at(0))
@@ -862,6 +872,16 @@ int main(int argc, char *argv[])
     g_testInfo.isPackageInstalled.store(execAdbCommand(installArgs, nullptr));
     if (!g_testInfo.isPackageInstalled)
         return EXIT_ERROR;
+
+    // Call additional adb command if set after installation and before starting the test
+    for (const auto &command : g_options.preTestRunAdbCommands) {
+        QByteArray output;
+        if (!execAdbCommand(command, &output)) {
+            qCritical("The pre test ADB command \"%s\" failed with output:\n%s",
+                  qUtf8Printable(command.join(u' ')), output.constData());
+            return EXIT_ERROR;
+        }
+    }
 
     // Pre test start
     const QString formattedStartTime = getCurrentTimeString();
