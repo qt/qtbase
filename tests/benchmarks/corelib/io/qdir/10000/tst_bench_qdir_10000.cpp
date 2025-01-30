@@ -29,7 +29,7 @@ public slots:
 
         for (uint i=0; i<10000; ++i) {
             QFile file(testdir.absolutePath() + "/testfile_" + QString::number(i));
-            file.open(QIODevice::WriteOnly);
+            QVERIFY2(file.open(QIODevice::WriteOnly), qPrintable(file.fileName()));
         }
     }
     void cleanupTestCase()

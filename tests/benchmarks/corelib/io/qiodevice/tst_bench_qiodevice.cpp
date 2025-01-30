@@ -41,7 +41,7 @@ void tst_QIODevice::read_old()
 
     {
         QFile file(name);
-        file.open(QIODevice::WriteOnly);
+        Q_UNUSED(file.open(QIODevice::WriteOnly));
         file.seek(size);
         file.write("x", 1);
         file.close();
@@ -49,7 +49,7 @@ void tst_QIODevice::read_old()
 
     QBENCHMARK {
         QFile file(name);
-        file.open(QIODevice::ReadOnly);
+        Q_UNUSED(file.open(QIODevice::ReadOnly));
         QByteArray ba;
         qint64 s = size - 1024;
         file.seek(512);
@@ -70,7 +70,7 @@ void tst_QIODevice::peekAndRead()
 
     {
         QFile file(name);
-        file.open(QIODevice::WriteOnly);
+        Q_UNUSED(file.open(QIODevice::WriteOnly));
         file.seek(size);
         file.write("x", 1);
         file.close();
@@ -78,7 +78,7 @@ void tst_QIODevice::peekAndRead()
 
     QBENCHMARK {
         QFile file(name);
-        file.open(QIODevice::ReadOnly);
+        Q_UNUSED(file.open(QIODevice::ReadOnly));
 
         QByteArray ba(size / 1024, Qt::Uninitialized);
         while (!file.atEnd()) {
