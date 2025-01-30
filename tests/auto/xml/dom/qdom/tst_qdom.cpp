@@ -70,6 +70,9 @@ private slots:
     void domNodeMapAndList();
     void domNodeListIterator();
     void domNodeListReverseIterator();
+    void domNodeListIteratorListFilteredByTag();
+    void domNodeListReverseIteratorListFilteredByTag();
+    void domNodeListIteratorEmptyList();
 
     void nullDocument();
     void invalidName_data();
@@ -1320,11 +1323,23 @@ void tst_QDom::domNodeListIterator()
     const auto xml = "<foo>"
                        "<bar idx='0'></bar>"
                        "<bar idx='1'></bar>"
-                       "<bar idx='2'></bar>"
+                       "<bar idx='2'>"
+                        "<bar idx='3'></bar>"
+                        "<bar idx='4'>"
+                          "<bar idx='5'></bar>"
+                        "</bar>"
+                        "<bar idx='6'></bar>"
+                        "<foo idx='-1'></foo>"
+                        "<bar idx='7'></bar>"
+                        "<foo idx='-1'></foo>"
+                       "</bar>"
                      "</foo>"_L1;
     QDomDocument doc;
     QVERIFY(doc.setContent(xml));
-    QDomNodeList list = doc.elementsByTagName("bar");
+    QDomNodeList list = doc.childNodes().at(0).childNodes();
+
+    auto listSize = list.size();
+    QCOMPARE(listSize, 3);
 
     QCOMPARE_EQ(list.begin(), list.begin());
     QCOMPARE_EQ(list.end(), list.end());
@@ -1333,38 +1348,43 @@ void tst_QDom::domNodeListIterator()
     QCOMPARE_GE(list.end(), list.begin());
 
     auto it = list.begin();
-    it++;
-    ++it;
-    it++;
+    it += listSize;
     QVERIFY(it == list.end());
-    it--;
-    --it;
-    it--;
+    it -= listSize;
     QVERIFY(it == list.begin());
-    it += 3;
+    it = it + listSize;
     QVERIFY(it == list.end());
-    it -= 3;
+    it = it - listSize;
     QVERIFY(it == list.begin());
-    it = it + 3;
-    QVERIFY(it == list.end());
-    it = it - 3;
-    QVERIFY(it == list.begin());
-    it = 3 + it;
+    it = listSize + it;
     QVERIFY(it == list.end());
 
-    QCOMPARE(list.size(), 3);
+    it = list.begin();
+    for (int i = 0; i < listSize; i++, it++)
+        QVERIFY(*it == list.item(i));
+    QVERIFY(it == list.end());
 
-    for (int i = 0; i < list.size(); ++i) {
-        QCOMPARE(list.item(i).attributes().item(0).nodeValue().toInt(), i);
+    it = list.begin();
+    for (int i = 0; i < listSize; i++, ++it)
+        QVERIFY(*it == list.item(i));
+    QVERIFY(it == list.end());
+
+    it = list.end();
+    for (int i = 0; i < listSize; i++) {
+        it--;
+        QVERIFY(*it == list.item(listSize - 1 - i));
+    }
+
+    it = list.end();
+    for (int i = 0; i < listSize; i++) {
+        --it;
+        QVERIFY(*it == list.item(listSize - 1 - i));
     }
 
     int i = 0;
-    for (auto iter = list.begin(); iter != list.end(); ++iter)
-        QCOMPARE(iter->attributes().item(0).nodeValue().toInt(), i++);
-
-    int j = 0;
-    for (const auto &item : list)
-        QCOMPARE(item.attributes().item(0).nodeValue().toInt(), j++);
+    for (const auto &node : list)
+        QVERIFY(node == list.item(i++));
+    QVERIFY(i == listSize);
 }
 
 void tst_QDom::domNodeListReverseIterator()
@@ -1372,11 +1392,23 @@ void tst_QDom::domNodeListReverseIterator()
     const auto xml = "<foo>"
                        "<bar idx='0'></bar>"
                        "<bar idx='1'></bar>"
-                       "<bar idx='2'></bar>"
+                       "<bar idx='2'>"
+                        "<bar idx='3'></bar>"
+                        "<bar idx='4'>"
+                          "<bar idx='5'></bar>"
+                        "</bar>"
+                        "<bar idx='6'></bar>"
+                        "<foo idx='-1'></foo>"
+                        "<bar idx='7'></bar>"
+                        "<foo idx='-1'></foo>"
+                       "</bar>"
                      "</foo>"_L1;
     QDomDocument doc;
     QVERIFY(doc.setContent(xml));
-    QDomNodeList list = doc.elementsByTagName("bar");
+    QDomNodeList list = doc.childNodes().at(0).childNodes();
+
+    auto listSize = list.size();
+    QCOMPARE(listSize, 3);
 
     QCOMPARE_EQ(list.rbegin(), list.rbegin());
     QCOMPARE_EQ(list.rend(), list.rend());
@@ -1385,30 +1417,174 @@ void tst_QDom::domNodeListReverseIterator()
     QCOMPARE_GE(list.rend(), list.rbegin());
 
     auto it = list.rbegin();
-    it++;
-    ++it;
-    it++;
+    it += listSize;
     QVERIFY(it == list.rend());
-    it--;
-    --it;
-    it--;
+    it -= listSize;
     QVERIFY(it == list.rbegin());
-    it += 3;
+    it = it + listSize;
     QVERIFY(it == list.rend());
-    it -= 3;
+    it = it - listSize;
     QVERIFY(it == list.rbegin());
-    it = it + 3;
-    QVERIFY(it == list.rend());
-    it = it - 3;
-    QVERIFY(it == list.rbegin());
-    it = 3 + it;
+    it = listSize + it;
     QVERIFY(it == list.rend());
 
+    it = list.rbegin();
+    for (int i = 0; i < listSize; i++, it++)
+        QVERIFY(*it == list.item(listSize - 1 - i));
+    QVERIFY(it == list.rend());
+
+    it = list.rbegin();
+    for (int i = 0; i < listSize; i++, ++it)
+        QVERIFY(*it == list.item(listSize - 1 - i));
+    QVERIFY(it == list.rend());
+
+    it = list.rend();
+    for (int i = 0; i < listSize; i++) {
+        it--;
+        QVERIFY(*it == list.item(i));
+    }
+
+    it = list.rend();
+    for (int i = 0; i < listSize; i++) {
+        --it;
+        QVERIFY(*it == list.item(i));
+    }
+}
+
+void tst_QDom::domNodeListIteratorListFilteredByTag()
+{
+    const auto xml = "<foo>"
+                       "<bar idx='0'></bar>"
+                       "<bar idx='1'></bar>"
+                       "<bar idx='2'>"
+                        "<bar idx='3'></bar>"
+                        "<bar idx='4'>"
+                          "<bar idx='5'></bar>"
+                        "</bar>"
+                        "<bar idx='6'></bar>"
+                        "<foo idx='-1'></foo>"
+                        "<bar idx='7'></bar>"
+                        "<foo idx='-1'></foo>"
+                       "</bar>"
+                     "</foo>"_L1;
+    QDomDocument doc;
+    QVERIFY(doc.setContent(xml));
+    QDomNodeList list = doc.elementsByTagName("bar");
+
+    auto listSize = list.size();
+    QCOMPARE(listSize, 8);
+
+    QCOMPARE_EQ(list.begin(), list.begin());
+    QCOMPARE_EQ(list.end(), list.end());
+    QCOMPARE_NE(list.begin(), list.end());
+
+    auto it = list.begin();
+    for (int i = 0; i < listSize; i++, it++)
+        QVERIFY(*it == list.item(i));
+    QVERIFY(it == list.end());
+
+    it = list.begin();
+    for (int i = 0; i < listSize; i++, ++it)
+        QVERIFY(*it == list.item(i));
+    QVERIFY(it == list.end());
+
+    for (int i = 0; i < listSize; i++) {
+        it--;
+        QVERIFY(*it == list.item(listSize - 1 - i));
+    }
+    QVERIFY(it == list.begin());
+
+    it = list.end();
+    for (int i = 0; i < listSize; i++) {
+        --it;
+        QVERIFY(*it == list.item(listSize - 1 - i));
+    }
+    QVERIFY(it == list.begin());
+
+    for (int i = 0; i < listSize; ++i)
+        QCOMPARE(list.item(i).attributes().item(0).nodeValue().toInt(), i);
+
+    int i = 0;
+    for (auto iter = list.begin(); iter != list.end(); ++iter)
+        QCOMPARE(iter->attributes().item(0).nodeValue().toInt(), i++);
+    QVERIFY(i == listSize);
+
+    int j = 0;
+    for (const auto &item : list)
+        QCOMPARE(item.attributes().item(0).nodeValue().toInt(), j++);
+    QVERIFY(j == listSize);
+}
+
+void tst_QDom::domNodeListReverseIteratorListFilteredByTag()
+{
+    const auto xml = "<foo>"
+                       "<bar idx='0'></bar>"
+                       "<bar idx='1'></bar>"
+                       "<bar idx='2'>"
+                        "<bar idx='3'></bar>"
+                        "<bar idx='4'>"
+                          "<bar idx='5'></bar>"
+                        "</bar>"
+                        "<bar idx='6'></bar>"
+                        "<foo idx='8'></foo>"
+                        "<bar idx='7'></bar>"
+                       "</bar>"
+                     "</foo>"_L1;
+    QDomDocument doc;
+    QVERIFY(doc.setContent(xml));
+    QDomNodeList list = doc.elementsByTagName("bar");
+
+    auto listSize = list.size();
+    QCOMPARE(listSize, 8);
+
+    QCOMPARE_EQ(list.rbegin(), list.rbegin());
+    QCOMPARE_EQ(list.rend(), list.rend());
+    QCOMPARE_NE(list.rbegin(), list.rend());
+
+    auto it = list.rbegin();
+    for (int i = 0; i < listSize; i++, it++)
+        QVERIFY(*it == list.item(listSize - 1 - i));
+    QVERIFY(it == list.rend());
+
+    it = list.rbegin();
+    for (int i = 0; i < listSize; i++, ++it)
+        QVERIFY(*it == list.item(listSize - 1 - i));
+    QVERIFY(it == list.rend());
+
+    for (int i = 0; i < listSize; i++) {
+        it--;
+        QVERIFY(*it == list.item(i));
+    }
+    QVERIFY(it == list.rbegin());
+
+    it = list.rend();
+    for (int i = 0; i < listSize; i++) {
+        --it;
+        QVERIFY(*it == list.item(i));
+    }
+    QVERIFY(it == list.rbegin());
+
 #if __cplusplus >= 202002L // QTBUG-131933
-    int i = 2;
+    int i = 0;
+    for (auto iter = list.rbegin(); iter != list.rend(); ++iter) {
+        QCOMPARE(iter->attributes().item(0).nodeValue().toInt(), listSize - ++i);
+    }
+    QVERIFY(i == listSize);
+
+    i = listSize - 1;
     for (auto iter = list.rbegin(); iter != list.rend(); ++iter)
         QCOMPARE(iter->attributes().item(0).nodeValue().toInt(), i--);
 #endif
+}
+
+void tst_QDom::domNodeListIteratorEmptyList()
+{
+    QDomNodeList list;
+    QCOMPARE(list.begin(), list.end());
+
+    QDomDocument doc;
+    list = doc.elementsByTagName("bar");
+    QCOMPARE(list.begin(), list.end());
 }
 
 // Verifies that a default-constructed QDomDocument is null, and that calling
