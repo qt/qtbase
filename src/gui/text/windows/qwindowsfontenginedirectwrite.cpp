@@ -1031,13 +1031,13 @@ bool QWindowsFontEngineDirectWrite::traverseColr1(IDWritePaintReader *paintReade
 
     auto traverseChildren = [&](quint32 childCount) {
         DWRITE_PAINT_ELEMENT childPaintElement;
-        if (FAILED(paintReader->MoveToFirstChild(&childPaintElement)))
+        if (FAILED(paintReader->MoveToFirstChild(&childPaintElement, sizeof(DWRITE_PAINT_ELEMENT))))
             return false;
 
         while (childCount-- > 0) {
             traverseColr1(paintReader, face7, &childPaintElement, paintGraphRenderer);
             if (childCount > 0) {
-                if (FAILED(paintReader->MoveToNextSibling(&childPaintElement))) {
+                if (FAILED(paintReader->MoveToNextSibling(&childPaintElement, sizeof(DWRITE_PAINT_ELEMENT)))) {
                     return false;
                 }
             }
@@ -1100,7 +1100,7 @@ bool QWindowsFontEngineDirectWrite::traverseColr1(IDWritePaintReader *paintReade
             } else {
                 DWRITE_PAINT_ELEMENT childElement;
 
-                HRESULT hr = paintReader->MoveToFirstChild(&childElement);
+                HRESULT hr = paintReader->MoveToFirstChild(&childElement, sizeof(DWRITE_PAINT_ELEMENT));
                 if (FAILED(hr)) {
                     qErrnoWarning(hr, "%s: Cannot move to first child of composite node",
                                   __FUNCTION__);
@@ -1108,7 +1108,7 @@ bool QWindowsFontEngineDirectWrite::traverseColr1(IDWritePaintReader *paintReade
                 }
 
                 // First draw back drop which is the second child
-                hr = paintReader->MoveToNextSibling(&childElement);
+                hr = paintReader->MoveToNextSibling(&childElement, sizeof(DWRITE_PAINT_ELEMENT));
                 if (FAILED(hr)) {
                     qErrnoWarning(hr, "%s: Cannot move to second child of composite node",
                                   __FUNCTION__);
@@ -1132,7 +1132,7 @@ bool QWindowsFontEngineDirectWrite::traverseColr1(IDWritePaintReader *paintReade
                     return false;
                 }
 
-                hr = paintReader->MoveToFirstChild(&childElement);
+                hr = paintReader->MoveToFirstChild(&childElement, sizeof(DWRITE_PAINT_ELEMENT));
                 if (FAILED(hr)) {
                     qErrnoWarning(hr, "%s: Cannot move to first child of composite node",
                                   __FUNCTION__);
@@ -1239,7 +1239,7 @@ bool QWindowsFontEngineDirectWrite::traverseColr1(IDWritePaintReader *paintReade
         }
 
         DWRITE_PAINT_ELEMENT childElement;
-        if (FAILED(paintReader->MoveToFirstChild(&childElement)))
+        if (FAILED(paintReader->MoveToFirstChild(&childElement, sizeof(DWRITE_PAINT_ELEMENT))))
             return false;
 
         if (!traverseColr1(paintReader, face7, &childElement, paintGraphRenderer))
@@ -1301,6 +1301,7 @@ bool QWindowsFontEngineDirectWrite::renderColr1GlyphRun(QImage *image,
         D2D_RECT_F clipBox;
         hr = paintReader->SetCurrentGlyph(glyphRun->glyphIndices[0],
                                           &paintElement,
+                                          sizeof(DWRITE_PAINT_ELEMENT),
                                           &clipBox,
                                           nullptr);
         if (FAILED(hr)) {

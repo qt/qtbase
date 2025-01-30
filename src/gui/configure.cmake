@@ -635,6 +635,20 @@ int main(int, char **)
     IUnknown *factory = nullptr;
     // Just check that the API is available for the build
     DWRITE_PAINT_ELEMENT paintElement;
+
+    if (false) {
+        DWRITE_COLOR_F dwColor;
+        dwColor.r = 0;
+        dwColor.g = 0;
+        dwColor.b = 0;
+        dwColor.a = 0;
+        IDWritePaintReader *paintReader = nullptr;
+        // Some versions of MinGW has a dwrite_3.h header with buggy generated APIs. One of these
+        // is that the SetTextColor() function takes a pointer instead of a const-ref. We check
+        // for this to disable the COLRv1 feature for broken headers.
+        paintReader->SetTextColor(dwColor);
+    }
+
     return 0;
 }
 ")
