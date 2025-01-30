@@ -39,6 +39,7 @@ private slots:
     void typoLineMetrics();
     void defaultIgnorableHorizontalAdvance_data();
     void defaultIgnorableHorizontalAdvance();
+    void hugeFontMetrics();
 };
 
 void tst_QFontMetrics::same()
@@ -509,6 +510,22 @@ void tst_QFontMetrics::defaultIgnorableHorizontalAdvance()
 
     QCOMPARE_GT(withSupportWithoutIgnorablesAdvance, 0);
     QCOMPARE_GT(withSupportWithIgnorablesAdvance, withSupportWithoutIgnorablesAdvance);
+}
+
+void tst_QFontMetrics::hugeFontMetrics()
+{
+    QFont bigFont;
+    bigFont.setPixelSize(10000);
+
+    QFont hugeFont;
+    hugeFont.setPixelSize(32000);
+
+    QFont hugeFontWithTypoLineMetrics;
+    hugeFontWithTypoLineMetrics.setStyleStrategy(QFont::PreferTypoLineMetrics);
+    hugeFontWithTypoLineMetrics.setPixelSize(30000);
+
+    QVERIFY(QFontMetricsF(bigFont).height() < QFontMetricsF(hugeFont).height());
+    QVERIFY(QFontMetricsF(bigFont).height() < QFontMetricsF(hugeFontWithTypoLineMetrics).height());
 }
 
 QTEST_MAIN(tst_QFontMetrics)
