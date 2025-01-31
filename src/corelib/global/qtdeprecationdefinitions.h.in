@@ -4,6 +4,8 @@
 #ifndef QTDEPRECATIONDEFINITIONS_H
 #define QTDEPRECATIONDEFINITIONS_H
 
+#include <QtCore/qcompilerdetection.h>
+
 #ifndef QT_DISABLE_DEPRECATED_UP_TO
 #  ifdef QT_DISABLE_DEPRECATED_BEFORE // If the deprecated macro is defined, use its value
 #    define QT_DISABLE_DEPRECATED_UP_TO QT_DISABLE_DEPRECATED_BEFORE
@@ -12,7 +14,7 @@
 #  endif
 #endif
 
-#if QT_DISABLE_DEPRECATED_UP_TO < @QT_DISABLE_DEPRECATED_UP_TO@
+#if QT_DISABLE_DEPRECATED_UP_TO < @QT_DISABLE_DEPRECATED_UP_TO@ && defined(Q_CC_GNU)
 #  warning QT_DISABLE_DEPRECATED_UP_TO is set to the version that is lower than the version that \
            Qt was built with. This may lead to linking issues.
 #endif
