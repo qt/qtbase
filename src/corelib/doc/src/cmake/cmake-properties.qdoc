@@ -546,6 +546,7 @@ and overwritten by that command.
 
 \summary {Specifies the location of Qt libraries on the target device.}
 
+\cmakepropertysince 6.4
 \cmakepropertyandroidonly
 
 This property can be set to provide a path to Qt libraries on the target device,
@@ -563,6 +564,7 @@ when those libraries are installed outside app's native (JNI) library directory.
 
 \summary {Whether Qt shared libraries are packaged in the APK on Android.}
 
+\cmakepropertysince 6.4
 \cmakepropertyandroidonly
 
 This property can be set to not package Qt shared libraries inside the APK when
