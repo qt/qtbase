@@ -37,7 +37,7 @@
 #   \endtabcontent
 # \endif
 
-macro.tab.HTML = "<input type=\"radio\" name=\"tabs_\1\" id=\"\2\" \4/><label for=\"\2\">\3</label><style>#\2:checked ~ .\2{display: block;}</style>"
+macro.tab.HTML = "<input type=\"radio\" name=\"tabs_\1\" id=\"\2\" \4/><label for=\"\2\">\3</label>\n<style>#\2:checked ~ .\2{display: block;}</style>\n"
 macro.tabcontent = "\\div {class=\"tabcontent \1\"}"
 macro.endtabcontent = "\\enddiv"
 
