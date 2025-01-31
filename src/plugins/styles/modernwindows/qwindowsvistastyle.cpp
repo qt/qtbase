@@ -1908,10 +1908,10 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
                 // we try to check if this lineedit is a delegate on a QAbstractItemView-derived class.
                 QPen oldPen = painter->pen();
                 // Inner white border
-                painter->setPen(QPen(option->palette.base().color(), 1));
+                painter->setPen(option->palette.base().color());
                 painter->drawRect(option->rect.adjusted(1, 1, -2, -2));
                 // Outer dark border
-                painter->setPen(QPen(option->palette.shadow().color(), 1));
+                painter->setPen(option->palette.shadow().color());
                 painter->drawRect(option->rect.adjusted(0, 0, -1, -1));
                 painter->setPen(oldPen);
                 return;

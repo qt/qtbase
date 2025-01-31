@@ -54,7 +54,7 @@ protected:
 
 private:
     static inline QBrush buttonFillBrush(const QStyleOption *option);
-    static inline QPen buttonLabelPen(const QStyleOption *option, int colorSchemeIndex);
+    static inline QColor buttonLabelColor(const QStyleOption *option, int colorSchemeIndex);
     static inline QColor editSublineColor(const QStyleOption *option, int colorSchemeIndex);
 
 private:
