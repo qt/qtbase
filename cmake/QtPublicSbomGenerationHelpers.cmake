@@ -213,9 +213,10 @@ Relationship: SPDXRef-DOCUMENT DESCRIBES ${project_spdx_id}
     set(computed_sbom_file_name_without_ext "${output_file_name_without_ext}${multi_config_suffix}")
     set(computed_sbom_file_name "${output_file_name_without_ext}${output_file_ext}")
 
-    # In a super build, put all the build time sboms into the same dir in qtbase.
-    if(QT_SUPERBUILD)
-        set(build_sbom_root_dir "${QtBase_BINARY_DIR}/qt_sbom")
+    # In a super build and in a no-prefix build, put all the build time sboms into the same dir in,
+    # in the qtbase build dir.
+    if(QT_BUILDING_QT AND (QT_SUPERBUILD OR (NOT QT_WILL_INSTALL)))
+        set(build_sbom_root_dir "${QT_BUILD_DIR}")
     else()
         set(build_sbom_root_dir "${sbom_dir}")
     endif()
