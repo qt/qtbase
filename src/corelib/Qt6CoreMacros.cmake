@@ -3704,7 +3704,7 @@ function(qt6_generate_deploy_script)
     set(${arg_OUTPUT_SCRIPT} "${deploy_script}" PARENT_SCOPE)
 
     _qt_internal_get_i18n_catalogs_for_modules(catalogs ${QT_ALL_MODULES_FOUND_VIA_FIND_PACKAGE})
-    set(boiler_plate "include(${QT_DEPLOY_SUPPORT})
+    set(boiler_plate "include(\"${QT_DEPLOY_SUPPORT}\")
 include(\"\${CMAKE_CURRENT_LIST_DIR}/${arg_TARGET}-plugins${config_infix}.cmake\" OPTIONAL)
 set(__QT_DEPLOY_I18N_CATALOGS \"${catalogs}\")
 ")
