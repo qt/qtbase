@@ -578,12 +578,12 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
             QPen oldPen = p->pen();
             if (opt->state & State_Horizontal){
                 const int offset = rect.width()/2;
-                p->setPen(QPen(opt->palette.dark().color()));
+                p->setPen(opt->palette.dark().color());
                 p->drawLine(rect.bottomLeft().x() + offset,
                             rect.bottomLeft().y() - margin,
                             rect.topLeft().x() + offset,
                             rect.topLeft().y() + margin);
-                p->setPen(QPen(opt->palette.light().color()));
+                p->setPen(opt->palette.light().color());
                 p->drawLine(rect.bottomLeft().x() + offset + 1,
                             rect.bottomLeft().y() - margin,
                             rect.topLeft().x() + offset + 1,
@@ -591,12 +591,12 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
             }
             else{ //Draw vertical separator
                 const int offset = rect.height()/2;
-                p->setPen(QPen(opt->palette.dark().color()));
+                p->setPen(opt->palette.dark().color());
                 p->drawLine(rect.topLeft().x() + margin ,
                             rect.topLeft().y() + offset,
                             rect.topRight().x() - margin,
                             rect.topRight().y() + offset);
-                p->setPen(QPen(opt->palette.light().color()));
+                p->setPen(opt->palette.light().color());
                 p->drawLine(rect.topLeft().x() + margin ,
                             rect.topLeft().y() + offset + 1,
                             rect.topRight().x() - margin,
@@ -1002,7 +1002,7 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
         if (widget && qobject_cast<const QMainWindow *>(widget->parentWidget())) {
             p->fillRect(opt->rect, opt->palette.button());
             QPen oldPen = p->pen();
-            p->setPen(QPen(opt->palette.dark().color()));
+            p->setPen(opt->palette.dark().color());
             p->drawLine(opt->rect.bottomLeft(), opt->rect.bottomRight());
             p->setPen(oldPen);
         }
@@ -1547,34 +1547,22 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
 
 
             //draw top border
-            p->setPen(QPen(opt->palette.light().color()));
-            p->drawLine(rect.topLeft().x(),
-                        rect.topLeft().y(),
-                        rect.topRight().x(),
-                        rect.topRight().y());
+            p->setPen(opt->palette.light().color());
+            p->drawLine(rect.topLeft(), rect.topRight());
 
             if (paintLeftBorder){
-                p->setPen(QPen(opt->palette.light().color()));
-                p->drawLine(rect.topLeft().x(),
-                            rect.topLeft().y(),
-                            rect.bottomLeft().x(),
-                            rect.bottomLeft().y());
+                p->setPen(opt->palette.light().color());
+                p->drawLine(rect.topLeft(), rect.bottomLeft());
             }
 
             if (paintRightBorder){
-                p->setPen(QPen(opt->palette.dark().color()));
-                p->drawLine(rect.topRight().x(),
-                            rect.topRight().y(),
-                            rect.bottomRight().x(),
-                            rect.bottomRight().y());
+                p->setPen(opt->palette.dark().color());
+                p->drawLine(rect.topRight(), rect.bottomRight());
             }
 
             if (paintBottomBorder){
-                p->setPen(QPen(opt->palette.dark().color()));
-                p->drawLine(rect.bottomLeft().x(),
-                            rect.bottomLeft().y(),
-                            rect.bottomRight().x(),
-                            rect.bottomRight().y());
+                p->setPen(opt->palette.dark().color());
+                p->drawLine(rect.bottomLeft(), rect.bottomRight());
             }
         }
         break;

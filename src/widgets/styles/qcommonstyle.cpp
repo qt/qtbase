@@ -2059,22 +2059,22 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
         if (corner == Qt::BottomLeftCorner) {
             sx = x + sw;
             for (int i = 0; i < 4; ++i) {
-                p->setPen(QPen(opt->palette.light().color(), 1));
+                p->setPen(opt->palette.light().color());
                 p->drawLine(x, sy - 1 , sx + 1, sw);
-                p->setPen(QPen(opt->palette.dark().color(), 1));
+                p->setPen(opt->palette.dark().color());
                 p->drawLine(x, sy, sx, sw);
-                p->setPen(QPen(opt->palette.dark().color(), 1));
+                p->setPen(opt->palette.dark().color());
                 p->drawLine(x, sy + 1, sx - 1, sw);
                 sx -= s;
                 sy += s;
             }
         } else if (corner == Qt::BottomRightCorner) {
             for (int i = 0; i < 4; ++i) {
-                p->setPen(QPen(opt->palette.light().color(), 1));
+                p->setPen(opt->palette.light().color());
                 p->drawLine(sx - 1, sw, sw, sy - 1);
-                p->setPen(QPen(opt->palette.dark().color(), 1));
+                p->setPen(opt->palette.dark().color());
                 p->drawLine(sx, sw, sw, sy);
-                p->setPen(QPen(opt->palette.dark().color(), 1));
+                p->setPen(opt->palette.dark().color());
                 p->drawLine(sx + 1, sw, sw, sy + 1);
                 sx += s;
                 sy += s;
@@ -2082,22 +2082,22 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
         } else if (corner == Qt::TopRightCorner) {
             sy = y + sw;
             for (int i = 0; i < 4; ++i) {
-                p->setPen(QPen(opt->palette.light().color(), 1));
+                p->setPen(opt->palette.light().color());
                 p->drawLine(sx - 1, y, sw, sy + 1);
-                p->setPen(QPen(opt->palette.dark().color(), 1));
+                p->setPen(opt->palette.dark().color());
                 p->drawLine(sx, y, sw, sy);
-                p->setPen(QPen(opt->palette.dark().color(), 1));
+                p->setPen(opt->palette.dark().color());
                 p->drawLine(sx + 1, y, sw, sy - 1);
                 sx += s;
                 sy -= s;
             }
         } else if (corner == Qt::TopLeftCorner) {
             for (int i = 0; i < 4; ++i) {
-                p->setPen(QPen(opt->palette.light().color(), 1));
+                p->setPen(opt->palette.light().color());
                 p->drawLine(x, sy - 1, sx - 1, y);
-                p->setPen(QPen(opt->palette.dark().color(), 1));
+                p->setPen(opt->palette.dark().color());
                 p->drawLine(x, sy, sx, y);
-                p->setPen(QPen(opt->palette.dark().color(), 1));
+                p->setPen(opt->palette.dark().color());
                 p->drawLine(x, sy + 1, sx + 1, y);
                 sx += s;
                 sy += s;
@@ -3726,9 +3726,9 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 p->drawEllipse(br);
                 p->setBrush(Qt::NoBrush);
             }
-            p->setPen(QPen(pal.dark().color()));
+            p->setPen(pal.dark().color());
             p->drawArc(br, 60 * 16, 180 * 16);
-            p->setPen(QPen(pal.light().color()));
+            p->setPen(pal.light().color());
             p->drawArc(br, 240 * 16, 180 * 16);
 
             qreal a;

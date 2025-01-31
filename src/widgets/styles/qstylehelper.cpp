@@ -305,7 +305,7 @@ void drawDial(const QStyleOptionSlider *option, QPainter *painter)
             p->setBrush(Qt::NoBrush);
         }
 
-        p->setPen(QPen(buttonColor.darker(280)));
+        p->setPen(buttonColor.darker(280));
         p->drawEllipse(br);
         p->setBrush(Qt::NoBrush);
         p->setPen(buttonColor.lighter(110));
