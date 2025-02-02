@@ -550,6 +550,13 @@ public:
     inline bool isLocalFile() const { return flags & IsLocalFile; }
     QString toLocalFile(QUrl::FormattingOptions options) const;
 
+    bool normalizePathSegments(QString *path) const
+    {
+        QDirPrivate::PathNormalizations mode = QDirPrivate::UrlNormalizationMode;
+        if (!isLocalFile())
+            mode |= QDirPrivate::RemotePath;
+        return qt_normalizePathSegments(path, mode);
+    }
     QString mergePaths(const QString &relativePath) const;
 
     QAtomicInt ref;
@@ -910,11 +917,8 @@ inline void QUrlPrivate::appendPassword(QString &appendTo, QUrl::FormattingOptio
 inline void QUrlPrivate::appendPath(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const
 {
     QString thePath = path;
-    if (options & QUrl::NormalizePathSegments) {
-        qt_normalizePathSegments(
-                &thePath,
-                isLocalFile() ? QDirPrivate::DefaultNormalization : QDirPrivate::RemotePath);
-    }
+    if (options & QUrl::NormalizePathSegments)
+        normalizePathSegments(&thePath);
 
     QStringView thePathView(thePath);
     if (options & QUrl::RemoveFilename) {
@@ -2714,9 +2718,7 @@ QUrl QUrl::resolved(const QUrl &relative) const
     else
         t.d->sectionIsPresent &= ~QUrlPrivate::Fragment;
 
-    qt_normalizePathSegments(
-            &t.d->path,
-            isLocalFile() ? QDirPrivate::DefaultNormalization : QDirPrivate::RemotePath);
+    t.d->normalizePathSegments(&t.d->path);
     if (!t.d->hasAuthority()) {
         if (t.d->isLocalFile() && t.d->path.startsWith(u'/'))
             t.d->sectionIsPresent |= QUrlPrivate::Host;

@@ -29,6 +29,7 @@ class QDirPrivate : public QSharedData
 public:
     enum PathNormalization {
         DefaultNormalization = 0x00,
+        UrlNormalizationMode = 0x01,
         RemotePath = 0x02,
     };
     Q_DECLARE_FLAGS(PathNormalizations, PathNormalization)
