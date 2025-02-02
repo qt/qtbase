@@ -61,6 +61,8 @@ private slots:
     void fromLocalFile();
     void fromLocalFileNormalize_data();
     void fromLocalFileNormalize();
+    void fromLocalFileNormalizeNonRoundtrip_data();
+    void fromLocalFileNormalizeNonRoundtrip();
     void macTypes();
     void relative();
     void compat_legacy();
@@ -1424,6 +1426,10 @@ void tst_QUrl::fromLocalFile_data()
     // Windows absolute details
     QTest::newRow("windows-drive") << QString::fromLatin1("c:/a.txt") << QString::fromLatin1("file:///c:/a.txt") << QString::fromLatin1("/c:/a.txt");
 
+    // Handling of Windows roots with relative - note, no normalization!
+    QTest::newRow("windows-drive-above-root")
+            << QString::fromLatin1("c:/../a.txt") << QString::fromLatin1("file:///c:/../a.txt") << QString::fromLatin1("/c:/../a.txt");
+
     // Windows UNC paths
     for (const char *suffix : { "", "/", "/somedir/somefile" }) {
         const char *pathDescription =
@@ -1522,6 +1528,69 @@ void tst_QUrl::fromLocalFileNormalize()
     QCOMPARE(url.toString(QUrl::DecodeReserved), theUrl);
     QCOMPARE(url.toLocalFile(), theFile); // roundtrip
     QCOMPARE(url.path(), theFile); // works as well as long as we don't test windows paths
+    QCOMPARE(url.toString(QUrl::NormalizePathSegments), urlWithNormalizedPath);
+}
+
+void tst_QUrl::fromLocalFileNormalizeNonRoundtrip_data()
+{
+#ifdef Q_OS_WIN32
+    static constexpr bool IsWindows = true;
+#else
+    static constexpr bool IsWindows = false;
+#endif
+
+    QTest::addColumn<QString>("input");
+    QTest::addColumn<QString>("theUrl");
+    QTest::addColumn<QString>("thePath");
+    QTest::addColumn<QString>("urlWithNormalizedPath");
+
+    QTest::newRow("server") << u"//server"_s << u"file://server"_s << QString() << u"file://server"_s;
+    QTest::newRow("server/..") << u"//server/.."_s << u"file://server/.."_s << u"/.."_s << u"file://server/.."_s;
+    QTest::newRow("server/share") << u"//server/share"_s << u"file://server/share"_s << u"/share"_s << u"file://server/share"_s;
+    QTest::newRow("server/share/..") << u"//server/share/.."_s << u"file://server/share/.."_s << u"/share/.."_s << u"file://server/"_s;
+
+    auto addAbsoluteWindowsPathRow = [](const char *name, const QString &input,
+            const QString &unixNormalized, const QString &windowsNormalized) {
+        QString thePath = '/' + input;        // fromPercentEncoding, but works for now
+        QString theUrl = "file://" + thePath;
+        const QString &normalized = IsWindows ? windowsNormalized : unixNormalized;
+        QTest::newRow(name) << input << theUrl << thePath << normalized;
+    };
+    addAbsoluteWindowsPathRow("relative-drive", "c:", "file:///c:", "file:///c:");
+    addAbsoluteWindowsPathRow("absolute-drive", "c:/", "file:///c:/", "file:///c:/");
+    addAbsoluteWindowsPathRow("relative-drive/path", "c:autoexec.bat",
+                              "file:///c:autoexec.bat", "file:///c:autoexec.bat");
+    addAbsoluteWindowsPathRow("absolute-drive/path", "c:/config.sys",
+                              "file:///c:/config.sys", "file:///c:/config.sys");
+    addAbsoluteWindowsPathRow("absolute-drive/path/..", "c:/dos/..",
+                              "file:///c:/", "file:///c:/");
+    addAbsoluteWindowsPathRow("absolute-drive/path/../", "c:/dos/../",
+                              "file:///c:/", "file:///c:/");
+
+    // The drive root should remain for the normalized URLs on Windows
+    addAbsoluteWindowsPathRow("absolute-drive/..", "c:/..",
+                              "file:///", "file:///c:/..");
+    addAbsoluteWindowsPathRow("relative-drive/path/..", "c:dos/..",
+                              "file:///", "file:///c:");
+    addAbsoluteWindowsPathRow("relative-drive/path/../", "c:dos/../",
+                              "file:///", "file:///c:");   // Note: trailing / would change meaning!
+    addAbsoluteWindowsPathRow("relative-drive/path/../..", "c:dos/../..",
+                              "file:///..", "file:///c:..");
+    addAbsoluteWindowsPathRow("relative-drive/path/../../", "c:dos/../../",
+                              "file:///../", "file:///c:../");
+}
+
+void tst_QUrl::fromLocalFileNormalizeNonRoundtrip()
+{
+    QFETCH(QString, input);
+    QFETCH(QString, theUrl);
+    QFETCH(QString, thePath);
+    QFETCH(QString, urlWithNormalizedPath);
+
+    QUrl url = QUrl::fromLocalFile(input);
+
+    QCOMPARE(url.toString(QUrl::DecodeReserved), theUrl);
+    QCOMPARE(url.path(), thePath);
     QCOMPARE(url.toString(QUrl::NormalizePathSegments), urlWithNormalizedPath);
 }
 

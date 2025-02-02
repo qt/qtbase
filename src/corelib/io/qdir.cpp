@@ -52,23 +52,40 @@ static QString driveSpec(const QString &path)
 #endif
 
 // Return the length of the root part of an absolute path, for use by cleanPath(), cd().
-static qsizetype rootLength(QStringView name)
+static qsizetype rootLength(QStringView name, QDirPrivate::PathNormalizations flags)
 {
+    constexpr bool UseWindowsRules = false // So we don't #include <QOperatingSystemVersion>
 #if defined(Q_OS_WIN)
-    const qsizetype len = name.size();
-    // Handle possible UNC paths which start with double slash
-    if (name.startsWith("//"_L1)) {
-        // Server name '//server/path' is part of the prefix.
-        const qsizetype nextSlash = name.indexOf(u'/', 2);
-        return nextSlash >= 0 ? nextSlash + 1 : len;
-    }
-    if (len >= 2 && name.at(1) == u':') {
-        // Handle a possible drive letter
-        return len > 2 && name.at(2) == u'/' ? 3 : 2;
-    }
+            || true
 #endif
+            ;
+    const qsizetype len = name.size();
+    char16_t firstChar = len > 0 ? name.at(0).unicode() : u'\0';
+    char16_t secondChar = len > 1 ? name.at(1).unicode() : u'\0';
+    if constexpr (UseWindowsRules) {
+        // Handle possible UNC paths which start with double slash
+        bool urlMode = flags.testAnyFlags(QDirPrivate::UrlNormalizationMode);
+        if (firstChar == u'/' && secondChar == u'/' && !urlMode) {
+            // Server name '//server/path' is part of the prefix.
+            const qsizetype nextSlash = name.indexOf(u'/', 2);
+            return nextSlash >= 0 ? nextSlash + 1 : len;
+        }
 
-    return name.startsWith(u'/') ? 1 : 0;
+        // Handle a possible drive letter
+        qsizetype driveLength = 2;
+        if (firstChar == u'/' && urlMode && len > 2 && name.at(2) == u':') {
+            // Drive-in-URL-Path mode, e.g. "/c:" or "/c:/autoexec.bat"
+            ++driveLength;
+            secondChar = u':';
+        }
+        if (secondChar == u':') {
+            if (len > driveLength && name.at(driveLength) == u'/')
+                return driveLength + 1;     // absolute drive path, e.g. "c:/config.sys"
+            return driveLength;             // relative drive path, e.g. "c:" or "d:swapfile.sys"
+        }
+    }
+
+    return firstChar == u'/' ? 1 : 0;
 }
 
 //************* QDirPrivate
@@ -2217,7 +2234,7 @@ bool QDir::match(const QString &filter, const QString &fileName)
 bool qt_normalizePathSegments(QString *path, QDirPrivate::PathNormalizations flags)
 {
     const bool isRemote = flags.testAnyFlag(QDirPrivate::RemotePath);
-    const qsizetype prefixLength = rootLength(*path);
+    const qsizetype prefixLength = rootLength(*path, flags);
 
     // RFC 3986 says: "The input buffer is initialized with the now-appended
     // path components and the output buffer is initialized to the empty
