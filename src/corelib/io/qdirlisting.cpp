@@ -76,12 +76,14 @@
         links to directories will be excluded too.
 
     \value ExcludeSpecial
-        Don't list special system files:
+        Don't list file system entries that are \e not directories, regular files,
+        nor symbolic links.
         \list
-            \li On Unix: an entry that is not a directory, regular file or
-                symbolic link (including broken symlinks). That is, FIFO,
-                socket, character device, or block device.
-            \li On Windows: \c {.lnk}.
+            \li On Unix, an example of a special file system entry is a FIFO, socket,
+                character device, or block device. For more details on Linux, see the
+                \l{https://www.man7.org/linux/man-pages/man2/mknod.2.html}{mknod manual page}.
+            \li On Windows (for historical reasons) \c .lnk files are considered special
+                file system entries.
         \endlist
 
     \value ResolveSymlinks
