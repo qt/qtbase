@@ -7,7 +7,5 @@ android
 # Skip 3D textures with Android emulator, the sw-based GL there is no good
 [threeDimTexture]
 android
-[renderToFloatTexture]
-android
 [tessellation vulkan]
 android
