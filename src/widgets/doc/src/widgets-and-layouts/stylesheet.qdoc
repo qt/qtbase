@@ -877,7 +877,7 @@
            Use the \l{#item-sub}{::item} subcontrol for more fine grained
            control over the items in the QListView.
 
-           See \l{qabstractscrollarea-widget}{QAbsractScrollArea} to
+           See \l{qabstractscrollarea-widget}{QAbstractScrollArea} to
            style scrollable backgrounds.
 
            See \l{Qt Style Sheets Examples#Customizing QListView}
@@ -1183,7 +1183,7 @@
            The color of the grid can be specified using the
            \l{#gridline-color-prop}{gridline-color} property.
 
-           See \l{qabstractscrollarea-widget}{QAbsractScrollArea} to
+           See \l{qabstractscrollarea-widget}{QAbstractScrollArea} to
            style scrollable backgrounds.
 
            See \l{Qt Style Sheets Examples#Customizing QTableView}
@@ -1205,7 +1205,7 @@
            The color of the placeholder text can be set using the
            \l{#placeholder-text-color-prop}{placeholder-text-color} property.
 
-           See \l{qabstractscrollarea-widget}{QAbsractScrollArea} to
+           See \l{qabstractscrollarea-widget}{QAbstractScrollArea} to
            style scrollable backgrounds.
 
     \row
@@ -1309,7 +1309,7 @@
            Use the \l{#item-sub}{::item} subcontrol for more fine grained
            control over the items in the QTreeView.
 
-           See \l{qabstractscrollarea-widget}{QAbsractScrollArea} to
+           See \l{qabstractscrollarea-widget}{QAbstractScrollArea} to
            style scrollable backgrounds.
 
            See \l{Qt Style Sheets Examples#Customizing QTreeView}{Customizing QTreeView}
