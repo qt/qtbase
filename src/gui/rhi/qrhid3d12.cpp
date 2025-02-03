@@ -1900,57 +1900,57 @@ QRhi::FrameOpResult QRhiD3D12::endOffscreenFrame(QRhi::EndFrameFlags flags)
 
 QRhi::FrameOpResult QRhiD3D12::finish()
 {
-    if (!inFrame)
-        return QRhi::FrameOpSuccess;
-
     QD3D12CommandBuffer *cbD = nullptr;
-    if (offscreenActive) {
-        Q_ASSERT(!currentSwapChain);
-        cbD = offscreenCb[currentFrameSlot];
-    } else {
-        Q_ASSERT(currentSwapChain);
-        cbD = &currentSwapChain->cbWrapper;
+    if (inFrame) {
+        if (offscreenActive) {
+            Q_ASSERT(!currentSwapChain);
+            cbD = offscreenCb[currentFrameSlot];
+        } else {
+            Q_ASSERT(currentSwapChain);
+            cbD = &currentSwapChain->cbWrapper;
+        }
+        if (!cbD)
+            return QRhi::FrameOpError;
+
+        Q_ASSERT(cbD->recordingPass == QD3D12CommandBuffer::NoPass);
+
+        D3D12GraphicsCommandList *cmdList = cbD->cmdList;
+        HRESULT hr = cmdList->Close();
+        if (FAILED(hr)) {
+            qWarning("Failed to close command list: %s",
+                    qPrintable(QSystemError::windowsComString(hr)));
+            return QRhi::FrameOpError;
+        }
+
+        ID3D12CommandList *execList[] = { cmdList };
+        cmdQueue->ExecuteCommandLists(1, execList);
+
+        releaseQueue.activatePendingDeferredReleaseRequests(currentFrameSlot);
     }
-    if (!cbD)
-        return QRhi::FrameOpError;
-
-    Q_ASSERT(cbD->recordingPass == QD3D12CommandBuffer::NoPass);
-
-    D3D12GraphicsCommandList *cmdList = cbD->cmdList;
-    HRESULT hr = cmdList->Close();
-    if (FAILED(hr)) {
-        qWarning("Failed to close command list: %s",
-                 qPrintable(QSystemError::windowsComString(hr)));
-        return QRhi::FrameOpError;
-    }
-
-    ID3D12CommandList *execList[] = { cmdList };
-    cmdQueue->ExecuteCommandLists(1, execList);
-
-    releaseQueue.activatePendingDeferredReleaseRequests(currentFrameSlot);
 
     // full blocking wait for everything, frame slots do not matter now
     waitGpu();
 
-    hr = cmdAllocators[currentFrameSlot]->Reset();
-    if (FAILED(hr)) {
-        qWarning("Failed to reset command allocator: %s",
-                 qPrintable(QSystemError::windowsComString(hr)));
-        return QRhi::FrameOpError;
+    if (inFrame) {
+        HRESULT hr = cmdAllocators[currentFrameSlot]->Reset();
+        if (FAILED(hr)) {
+            qWarning("Failed to reset command allocator: %s",
+                    qPrintable(QSystemError::windowsComString(hr)));
+            return QRhi::FrameOpError;
+        }
+
+        if (!startCommandListForCurrentFrameSlot(&cbD->cmdList))
+            return QRhi::FrameOpError;
+
+        cbD->resetState();
+
+        shaderVisibleCbvSrvUavHeap.perFrameHeapSlice[currentFrameSlot].head = 0;
+        smallStagingAreas[currentFrameSlot].head = 0;
+
+        bindShaderVisibleHeaps(cbD);
     }
 
-    if (!startCommandListForCurrentFrameSlot(&cmdList))
-        return QRhi::FrameOpError;
-
-    cbD->resetState();
-
-    shaderVisibleCbvSrvUavHeap.perFrameHeapSlice[currentFrameSlot].head = 0;
-    smallStagingAreas[currentFrameSlot].head = 0;
-
-    bindShaderVisibleHeaps(cbD);
-
-    releaseQueue.executeDeferredReleases(currentFrameSlot);
-
+    releaseQueue.releaseAll();
     finishActiveReadbacks(true);
 
     return QRhi::FrameOpSuccess;
