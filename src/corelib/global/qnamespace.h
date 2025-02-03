@@ -235,7 +235,7 @@ namespace Qt {
         WindowTransparentForInput = 0x00080000,
         WindowOverridesSystemGestures = 0x00100000,
         WindowDoesNotAcceptFocus = 0x00200000,
-#if QT_DEPRECATED_SINCE(6, 9)
+#if QT_DEPRECATED_SINCE(6, 13)
         MaximizeUsingFullscreenGeometryHint Q_DECL_ENUMERATOR_DEPRECATED_X(
             "Use Qt::ExpandedClientAreaHint instead") = 0x00400000,
 #endif
