@@ -3633,7 +3633,7 @@ void QRhiD3D12::finishActiveReadbacks(bool forced)
             if (readback.result->completed)
                 completedCallbacks.append(readback.result->completed);
 
-            activeReadbacks.removeLast();
+            activeReadbacks.remove(i);
         }
     }
 
