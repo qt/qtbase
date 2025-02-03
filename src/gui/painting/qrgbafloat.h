@@ -99,7 +99,7 @@ public:
             return QRgbaFloat{};    // default-initialization: zeroes
         if (a >= F{1.0f})
             return *this;
-        const FastType ia = 1.0f / a;
+        const FastType ia = FastType(1.0f) / FastType(a);
         return QRgbaFloat{F(r * ia), F(g * ia), F(b * ia), F(a)};
     }
     constexpr bool operator==(QRgbaFloat f) const
