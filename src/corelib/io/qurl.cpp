@@ -208,12 +208,12 @@
     \value RemovePassword  Any password in the URL is removed.
     \value RemoveUserInfo  Any user information in the URL is removed.
     \value RemovePort      Any specified port is removed from the URL.
-    \value RemoveAuthority
+    \value RemoveAuthority  Remove user name, password, host and port.
     \value RemovePath   The URL's path is removed, leaving only the scheme,
                         host address, and port (if present).
     \value RemoveQuery  The query part of the URL (following a '?' character)
                         is removed.
-    \value RemoveFragment
+    \value RemoveFragment The fragment part of the URL (including the '#' character) is removed.
     \value RemoveFilename The filename (i.e. everything after the last '/' in the path) is removed.
             The trailing '/' is kept, unless StripTrailingSlash is set.
             Only valid if RemovePath is not set.
