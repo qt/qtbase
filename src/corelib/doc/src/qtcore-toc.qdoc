@@ -36,6 +36,7 @@
             \li \l {Serializing Qt Data Types}
         \endlist
     \li \l {Container Classes}
+    \li \l {C++20 Overview}
     \li \l {Creating Custom Qt Types}
     \li \l {Qt's foreach Keyword}
     \li \l {Java-style Iterators in Qt}
