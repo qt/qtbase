@@ -39,15 +39,17 @@ public:
 
     void insertText(QString inputStr, bool replace = false);
 
-    bool usingTextInput() { return m_usingTextInput; }
-    void setUsingTextInput(bool enable) { m_usingTextInput = enable; }
+    bool usingTextInput() const { return m_inputMethodAccepted; }
     void setFocusObject(QObject *object) override;
+
+private:
+    void setInputText();
 
 private:
     QString m_preeditString;
     int m_replaceSize = 0;
 
-    bool m_usingTextInput = false;
+    bool m_inputMethodAccepted = false;
     QObject *m_focusObject = nullptr;
 };
 
