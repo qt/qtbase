@@ -2468,6 +2468,11 @@ void tst_QRhi::renderToTextureArrayOfTexturedQuad()
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing rendering");
 
+    if (isAndroidOpenGLSwiftShader(impl, rhi.get())) {
+        QSKIP("SwiftShader software acceleration is used which does not support this OpenGLES "
+              "feature. See QTBUG-132934");
+    }
+
     QImage inputImage;
     inputImage.load(QLatin1String(":/data/qt256.png"));
     QVERIFY(!inputImage.isNull());
