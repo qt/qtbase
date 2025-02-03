@@ -161,6 +161,7 @@ private slots:
 
 private:
     void setWindowType(QWindow *window, QRhi::Implementation impl);
+    bool isAndroidOpenGLSwiftShader(QRhi::Implementation impl, const QRhi *rhi);
 
     struct {
         QRhiNullInitParams null;
@@ -255,6 +256,15 @@ void tst_QRhi::rhiTestData()
 #ifdef TST_MTL
     QTest::newRow("Metal") << QRhi::Metal << static_cast<QRhiInitParams *>(&initParams.mtl);
 #endif
+}
+
+bool tst_QRhi::isAndroidOpenGLSwiftShader(QRhi::Implementation impl, const QRhi *rhi)
+{
+#ifdef Q_OS_ANDROID
+    if (impl == QRhi::OpenGLES2 && rhi->driverInfo().deviceName.contains("SwiftShader"))
+        return true;
+#endif
+    return false;
 }
 
 void tst_QRhi::create_data()
@@ -6038,6 +6048,11 @@ void tst_QRhi::renderToFloatTexture()
     if (!rhi->isTextureFormatSupported(QRhiTexture::RGBA16F))
         QSKIP("RGBA16F is not supported, skipping test");
 
+    if (isAndroidOpenGLSwiftShader(impl, rhi.get())) {
+        QSKIP("SwiftShader software acceleration is used which does not support this OpenGLES "
+              "feature. See QTBUG-132934");
+    }
+
     const QSize outputSize(1920, 1080);
     QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA16F, outputSize, 1,
                                                         QRhiTexture::RenderTarget | QRhiTexture::UsedAsTransferSource));
@@ -6127,12 +6142,10 @@ void tst_QRhi::renderToRgb10Texture()
     if (!rhi->isTextureFormatSupported(QRhiTexture::RGB10A2))
         QSKIP("RGB10A2 is not supported, skipping test");
 
-#ifdef Q_OS_ANDROID
-    if (impl == QRhi::OpenGLES2) {
-        if (rhi->driverInfo().deviceName.contains("SwiftShader"))
-            QSKIP("SwiftShader software acceleration is used which does not support this OpenGLES feature. See QTBUG-132934");
+    if (isAndroidOpenGLSwiftShader(impl, rhi.get())) {
+        QSKIP("SwiftShader software acceleration is used which does not support this OpenGLES "
+              "feature. See QTBUG-132934");
     }
-#endif
 
     const QSize outputSize(1920, 1080);
     QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGB10A2, outputSize, 1,

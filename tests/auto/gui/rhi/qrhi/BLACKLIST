@@ -4,7 +4,5 @@ android
 # QTBUG-92211
 [renderPassDescriptorCompatibility]
 android
-[renderToFloatTexture]
-android
 [tessellation vulkan]
 android
