@@ -774,7 +774,7 @@ void QIBusPlatformInputContextPrivate::createConnection()
     if (!file.open(QFile::ReadOnly))
         return;
 
-    QByteArrayView address;
+    QByteArray address;
     int pid = -1;
     QByteArray lineArray;
 
@@ -784,7 +784,7 @@ void QIBusPlatformInputContextPrivate::createConnection()
             continue;
 
         if (line.startsWith("IBUS_ADDRESS="))
-            address = line.mid(sizeof("IBUS_ADDRESS=") - 1);
+            address = line.mid(sizeof("IBUS_ADDRESS=") - 1).toByteArray();
         if (line.startsWith("IBUS_DAEMON_PID="))
             pid = line.mid(sizeof("IBUS_DAEMON_PID=") - 1).toInt();
     }
