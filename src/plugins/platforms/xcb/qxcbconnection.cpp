@@ -1067,7 +1067,8 @@ void QXcbConnection::processXcbEvents(QEventLoop::ProcessEventsFlags flags)
     int connection_error = xcb_connection_has_error(xcb_connection());
     if (connection_error) {
         qWarning("The X11 connection broke (error %d). Did the X11 server die?", connection_error);
-        exit(1);
+        qGuiApp->exit(connection_error);
+        return;
     }
 
     m_eventQueue->flushBufferedEvents();
