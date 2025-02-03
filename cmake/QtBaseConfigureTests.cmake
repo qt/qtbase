@@ -187,7 +187,7 @@ function(qt_run_config_test_architecture)
     list(APPEND QT_BASE_CONFIGURE_TESTS_VARS_TO_EXPORT TEST_buildAbi)
     set(QT_BASE_CONFIGURE_TESTS_VARS_TO_EXPORT ${QT_BASE_CONFIGURE_TESTS_VARS_TO_EXPORT} CACHE INTERNAL "Test variables that should be exported")
 
-    list(JOIN _sub_architecture " " subarch_summary)
+    list(JOIN sub_architecture_${first_arch} " " subarch_summary)
     set_property(GLOBAL PROPERTY qt_configure_subarch_summary "${subarch_summary}")
 endfunction()
 
