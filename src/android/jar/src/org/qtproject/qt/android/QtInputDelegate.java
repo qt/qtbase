@@ -517,7 +517,7 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
     // pointer methods
     static native void mouseDown(int winId, int x, int y, int mouseButtonState);
     static native void mouseUp(int winId, int x, int y, int mouseButtonState);
-    static native void mouseMove(int winId, int x, int y);
+    static native void mouseMove(int winId, int x, int y, int mouseButtonState);
     static native void mouseWheel(int winId, int x, int y, float hDelta, float vDelta);
     static native void touchBegin(int winId);
     static native void touchAdd(int winId, int pointerId, int action, boolean primary,
@@ -643,12 +643,12 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
             case MotionEvent.ACTION_HOVER_MOVE:
             case MotionEvent.ACTION_MOVE:
                 if (event.getToolType(0) == MotionEvent.TOOL_TYPE_MOUSE) {
-                    mouseMove(id, (int) event.getX(), (int) event.getY());
+                    mouseMove(id, (int) event.getX(), (int) event.getY(), event.getButtonState());
                 } else {
                     int dx = (int) (event.getX() - m_oldX);
                     int dy = (int) (event.getY() - m_oldY);
                     if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
-                        mouseMove(id, (int) event.getX(), (int) event.getY());
+                        mouseMove(id, (int) event.getX(), (int) event.getY(), event.getButtonState());
                         m_oldX = (int) event.getX();
                         m_oldY = (int) event.getY();
                     }
