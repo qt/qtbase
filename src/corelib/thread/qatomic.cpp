@@ -398,7 +398,7 @@
     Atomic test-and-set.
 
     \note If you use this function in a loop, consider using the overload with the
-    additional \c{T &currentValue} argument instead, which avoids the extra load() on
+    additional \c{T &currentValue} argument instead, which avoids the extra loadRelaxed() on
     failure.
 
     If the current value of this QAtomicInteger is the \a expectedValue,
@@ -420,7 +420,7 @@
     Atomic test-and-set.
 
     \note If you use this function in a loop, consider using the overload with the
-    additional \c{T &currentValue} argument instead, which avoids the extra load() on
+    additional \c{T &currentValue} argument instead, which avoids the extra loadAcquire() on
     failure.
 
     If the current value of this QAtomicInteger is the \a expectedValue,
@@ -442,7 +442,7 @@
     Atomic test-and-set.
 
     \note If you use this function in a loop, consider using the overload with the
-    additional \c{T &currentValue} argument instead, which avoids the extra load() on
+    additional \c{T &currentValue} argument instead, which avoids the extra loadRelaxed() on
     failure.
 
     If the current value of this QAtomicInteger is the \a expectedValue,
@@ -464,7 +464,7 @@
     Atomic test-and-set.
 
     \note If you use this function in a loop, consider using the overload with the
-    additional \c{T &currentValue} argument instead, which avoids the extra load() on
+    additional \c{T &currentValue} argument instead, which avoids the extra loadAcquire() on
     failure.
 
     If the current value of this QAtomicInteger is the \a expectedValue,
@@ -1060,7 +1060,7 @@
 
     This macro is defined when only certain generations of the
     processor support atomic reference counting. Use the
-    QAtomicInteger<T>::isReferenceCountingNative() function to check what
+    QAtomicInteger::isReferenceCountingNative() function to check what
     your processor supports.
 
     \e{nn} is the size of the integer, in bits (8, 16, 32 or 64).
@@ -1103,7 +1103,7 @@
 
     This macro is defined when only certain generations of the
     processor support atomic test-and-set on integers. Use the
-    QAtomicInteger<T>::isTestAndSetNative() function to check what your
+    QAtomicInteger::isTestAndSetNative() function to check what your
     processor supports.
 
     \e{nn} is the size of the integer, in bits (8, 16, 32 or 64).
@@ -1146,7 +1146,7 @@
 
     This macro is defined when only certain generations of the
     processor support atomic fetch-and-store on integers. Use the
-    QAtomicInteger<T>::isFetchAndStoreNative() function to check what your
+    QAtomicInteger::isFetchAndStoreNative() function to check what your
     processor supports.
 
     \e{nn} is the size of the integer, in bits (8, 16, 32 or 64).
@@ -1189,7 +1189,7 @@
 
     This macro is defined when only certain generations of the
     processor support atomic fetch-and-add on integers. Use the
-    QAtomicInteger<T>::isFetchAndAddNative() function to check what your
+    QAtomicInteger::isFetchAndAddNative() function to check what your
     processor supports.
 
     \e{nn} is the size of the integer, in bits (8, 16, 32 or 64).
