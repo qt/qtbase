@@ -286,7 +286,7 @@ static constexpr auto idn_whitelist = qOffsetStringArray(
     "fi",
     "gr",
     "hu",
-    "il", "info", "io", "is", "ir",
+    "il", "info", "io", "ir", "is",
     "jp",
     "kr",
     "li", "lt", "lu", "lv",
