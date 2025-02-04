@@ -592,6 +592,29 @@ function(_qt_internal_generate_ios_info_plist target)
     set_target_properties("${target}" PROPERTIES MACOSX_BUNDLE_INFO_PLIST "${info_plist_out}")
 endfunction()
 
+function(_qt_internal_plist_buddy plist_file)
+    cmake_parse_arguments(PARSE_ARGV 1 arg
+        "" "OUTPUT_VARIABLE;ERROR_VARIABLE;EXTRA_ARGS" "COMMANDS")
+    foreach(command ${arg_COMMANDS})
+        execute_process(COMMAND "/usr/libexec/PlistBuddy"
+                                ${arg_EXTRA_ARGS} -c "${command}" "${plist_file}"
+                    OUTPUT_VARIABLE plist_buddy_output
+                    ERROR_VARIABLE plist_buddy_error)
+        string(STRIP "${plist_buddy_output}" plist_buddy_output)
+        if(arg_OUTPUT_VARIABLE)
+            list(APPEND ${arg_OUTPUT_VARIABLE} ${plist_buddy_output})
+            set(${arg_OUTPUT_VARIABLE} ${${arg_OUTPUT_VARIABLE}} PARENT_SCOPE)
+        endif()
+        if(arg_ERROR_VARIABLE)
+            list(APPEND ${arg_ERROR_VARIABLE} ${plist_buddy_error})
+            set(${arg_ERROR_VARIABLE} ${${arg_ERROR_VARIABLE}} PARENT_SCOPE)
+        endif()
+        if(plist_buddy_error)
+            return()
+        endif()
+    endforeach()
+endfunction()
+
 function(_qt_internal_set_ios_simulator_arch target)
     if(CMAKE_XCODE_ATTRIBUTE_ARCHS
         OR QT_NO_SET_XCODE_ARCHS)
