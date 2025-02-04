@@ -519,15 +519,16 @@ qt_feature("android-style-assets" PRIVATE
     LABEL "Android Style Assets"
     CONDITION ANDROID
 )
-qt_feature("shared" PUBLIC
+qt_feature_alias("shared" PUBLIC
     LABEL "Building shared libraries"
-    CONDITION BUILD_SHARED_LIBS
+    ALIAS_OF_CACHE BUILD_SHARED_LIBS
 )
 qt_feature_definition("shared" "QT_STATIC" NEGATE PREREQUISITE "!defined(QT_SHARED) && !defined(QT_STATIC)")
 qt_feature_config("shared" QMAKE_PUBLIC_QT_CONFIG)
 qt_feature_config("shared" QMAKE_PUBLIC_CONFIG)
-qt_feature("static" PUBLIC
-    CONDITION NOT QT_FEATURE_shared
+qt_feature_alias("static"
+    ALIAS_OF_FEATURE "shared"
+    NEGATE
 )
 qt_feature_config("static" QMAKE_PUBLIC_QT_CONFIG)
 qt_feature_config("static" QMAKE_PUBLIC_CONFIG)
