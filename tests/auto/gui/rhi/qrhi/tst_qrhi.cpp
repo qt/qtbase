@@ -2089,19 +2089,17 @@ void tst_QRhi::renderToTextureTextureArray()
     QFETCH(QRhi::Implementation, impl);
     QFETCH(QRhiInitParams *, initParams);
 
-#ifdef Q_OS_ANDROID
-    if (impl == QRhi::OpenGLES2) {
-        QSKIP("This test fails with OpenGLES software rendering on Android emulators, "
-          "see QTBUG-132934.");
-    }
-#endif
-
     QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing rendering");
 
     if (!rhi->isFeatureSupported(QRhi::TextureArrays))
         QSKIP("TextureArrays is not supported with this backend, skipping test");
+
+    if (isAndroidOpenGLSwiftShader(impl, rhi.get())) {
+        QSKIP("SwiftShader software acceleration is used which does not support this OpenGLES "
+              "feature. See QTBUG-132934");
+    }
 
     const QSize outputSize(512, 256);
     const int ARRAY_SIZE = 8;
@@ -5284,19 +5282,17 @@ void tst_QRhi::threeDimTexture()
     QFETCH(QRhi::Implementation, impl);
     QFETCH(QRhiInitParams *, initParams);
 
-#ifdef Q_OS_ANDROID
-    if (impl == QRhi::OpenGLES2) {
-        QSKIP("This test fails with OpenGLES software rendering on Android emulators, "
-          "see QTBUG-132934.");
-    }
-#endif
-
     QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams));
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing 3D textures");
 
     if (!rhi->isFeatureSupported(QRhi::ThreeDimensionalTextures))
         QSKIP("Skipping testing 3D textures because they are reported as unsupported");
+
+    if (isAndroidOpenGLSwiftShader(impl, rhi.get())) {
+        QSKIP("SwiftShader software acceleration is used which does not support this OpenGLES "
+            "feature. See QTBUG-132934");
+    }
 
     const int WIDTH = 512;
     const int HEIGHT = 256;
