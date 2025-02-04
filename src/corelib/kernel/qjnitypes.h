@@ -226,13 +226,13 @@ Q_DECLARE_JNI_NATIVE_METHOD_HELPER(Method, Helper, Name)                        
     QT_DECLARE_JNI_NATIVE_METHOD_2(Method, Method)                              \
 
 #define Q_JNI_NATIVE_METHOD(Method)                                             \
-    QtJniMethods::Method##_Helper::makeJNIMethod(::Method)
+    QtJniMethods::Method##_Helper::makeJNIMethod(QT_PREPEND_NAMESPACE(Method))
 
 #define Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(...)                                   \
     QT_OVERLOADED_MACRO(QT_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE, __VA_ARGS__)         \
 
 #define QT_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE_2(Method, Name)                       \
-Q_DECLARE_JNI_NATIVE_METHOD_HELPER(Method, QtJniMethod, Name)                               \
+    Q_DECLARE_JNI_NATIVE_METHOD_HELPER(Method, QtJniMethod, Name)                           \
 
 #define QT_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE_1(Method)                             \
     QT_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE_2(Method, Method)                         \
