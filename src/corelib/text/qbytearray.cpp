@@ -2730,12 +2730,12 @@ static qsizetype lastIndexOfHelper(const char *haystack, qsizetype l, const char
                                    qsizetype ol, qsizetype from)
 {
     auto delta = l - ol;
-    if (from < 0)
-        from = delta;
-    if (from < 0 || from > l)
+    if (from > l)
         return -1;
-    if (from > delta)
+    if (from < 0 || from > delta)
         from = delta;
+    if (from < 0)
+        return -1;
 
     const char *end = haystack;
     haystack += from;

@@ -2621,6 +2621,9 @@ void tst_QByteArray::indexOf_data()
     QTest::newRow("found_char_star_0x80") << haystack << ByteArrayOrChar("\x80"_ba) << 12 << 0;
     QTest::newRow("found_char_0x80") << haystack << ByteArrayOrChar('\x80') << 12 << 0;
     QTest::newRow("found_char_0x81") << haystack << ByteArrayOrChar('\x81') << 20 << 0;
+
+    // Make the needle sufficiently large to try to potentially trip boundary guards:
+    QTest::newRow("needle_larger_than_haystack") << "b"_ba << ByteArrayOrChar(":"_ba.repeated(4096)) << -1 << 0;
 }
 
 void tst_QByteArray::indexOf()
@@ -2664,6 +2667,9 @@ void tst_QByteArray::lastIndexOf_data()
     QTest::newRow("found_char_star_0x80") << haystack << ByteArrayOrChar("\x80"_ba) << 12 << -1;
     QTest::newRow("found_char_0x80") << haystack << ByteArrayOrChar('\x80') << 12 << -1;
     QTest::newRow("found_char_0x81") << haystack << ByteArrayOrChar('\x81') << 20 << -1;
+
+    // Make the needle sufficiently large to try to potentially trip boundary guards:
+    QTest::newRow("needle_larger_than_haystack") << "b"_ba << ByteArrayOrChar(":"_ba.repeated(4096)) << -1 << 0;
 }
 
 void tst_QByteArray::lastIndexOf()
