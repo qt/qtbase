@@ -1150,6 +1150,7 @@ void tst_QTextStream::octTest_data()
     QTest::addColumn<QByteArray>("data");
 
     QTest::newRow("0") << 0 << QByteArray("00");
+    QTest::newRow("40") << 40 << QByteArray("050");
 }
 
 // ------------------------------------------------------------------------------
@@ -2742,7 +2743,6 @@ void tst_QTextStream::manipulators()
     stream << textData;
     stream.flush();
 
-    QEXPECT_FAIL("hex-negative", "Discovered while fixing QTBUG-133269", Continue);
     QCOMPARE(buffer.data(), result);
 }
 
