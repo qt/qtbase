@@ -470,18 +470,15 @@ static QList<QVariantMap> provisioningTeams()
     const QSettings xcodeSettings(
         QDir::homePath() + QLatin1String("/Library/Preferences/com.apple.dt.Xcode.plist"),
         QSettings::NativeFormat);
-    const QVariantMap teamMap = xcodeSettings.value(QLatin1String("IDEProvisioningTeams")).toMap();
-    QList<QVariantMap> flatTeams;
-    for (QVariantMap::const_iterator it = teamMap.begin(), end = teamMap.end(); it != end; ++it) {
-        const QString emailAddress = it.key();
-        const QVariantList emailTeams = it.value().toList();
 
-        for (QVariantList::const_iterator teamIt = emailTeams.begin(),
-             teamEnd = emailTeams.end(); teamIt != teamEnd; ++teamIt) {
-            QVariantMap team = teamIt->toMap();
-            team[QLatin1String("emailAddress")] = emailAddress;
-            flatTeams.append(team);
-        }
+    QVariantMap teamMap = xcodeSettings.value(QLatin1String("IDEProvisioningTeamByIdentifier")).toMap();
+    if (teamMap.isEmpty())
+        teamMap = xcodeSettings.value(QLatin1String("IDEProvisioningTeams")).toMap();
+
+    QList<QVariantMap> flatTeams;
+    for (const auto &[accountIdentifier, associatedTeams] : teamMap.asKeyValueRange()) {
+        for (const auto &team : associatedTeams.toList())
+            flatTeams.append(team.toMap());
     }
 
     // Sort teams so that Free Provisioning teams come last
