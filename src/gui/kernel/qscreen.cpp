@@ -280,6 +280,10 @@ qreal QScreen::logicalDotsPerInch() const
     Common values are 1.0 on normal displays and 2.0 on "retina" displays.
     Higher values are also possible.
 
+    \note On some platforms the devicePixelRatio of a window and the screen it is on can
+    be different. Use this function only when you don't know which window you are targeting.
+    If you do know the target window, use QWindow::devicePixelRatio() instead.
+
     \sa QWindow::devicePixelRatio(), QGuiApplication::devicePixelRatio()
 */
 qreal QScreen::devicePixelRatio() const
