@@ -31,11 +31,7 @@ template <typename T> struct QListSpecialMethodsBase
 {
 protected:
     QListSpecialMethodsBase() = default;
-    ~QListSpecialMethodsBase() = default;
-    QListSpecialMethodsBase(const QListSpecialMethodsBase &) = default;
-    QListSpecialMethodsBase(QListSpecialMethodsBase &&) = default;
-    QListSpecialMethodsBase &operator=(const QListSpecialMethodsBase &) = default;
-    QListSpecialMethodsBase &operator=(QListSpecialMethodsBase &&) = default;
+    QT_DECLARE_RO5_SMF_AS_DEFAULTED(QListSpecialMethodsBase)
 
     using Self = QList<T>;
     Self *self() { return static_cast<Self *>(this); }
@@ -57,11 +53,7 @@ template <typename T> struct QListSpecialMethods : QListSpecialMethodsBase<T>
 {
 protected:
     QListSpecialMethods() = default;
-    ~QListSpecialMethods() = default;
-    QListSpecialMethods(const QListSpecialMethods &) = default;
-    QListSpecialMethods(QListSpecialMethods &&) = default;
-    QListSpecialMethods &operator=(const QListSpecialMethods &) = default;
-    QListSpecialMethods &operator=(QListSpecialMethods &&) = default;
+    QT_DECLARE_RO5_SMF_AS_DEFAULTED(QListSpecialMethods)
 
 public:
     using QListSpecialMethodsBase<T>::indexOf;

@@ -75,6 +75,31 @@ QT_BEGIN_NAMESPACE
     }
 
 /*
+    This macro defines the RO5 special member functions (destructor,
+    copy+move constructors and assignment operators) as defaulted.
+
+    Normally we don't use this macro if we're fine with these functions
+    to be public; we instead leave a comment in the class declaration,
+    something like:
+
+    // compiler-generated special member functions are fine!
+
+    In some cases a class may need to redeclare these functions, for
+    instance if it wants to change their accessibility. Since
+    defaulting all five is boilerplate, use this macro instead.
+
+    Note that the default constructor is not covered, and this macro
+    will prevented its automatic generation.
+*/
+
+#define QT_DECLARE_RO5_SMF_AS_DEFAULTED(Class) \
+    ~Class() = default; \
+    Class(const Class &) = default; \
+    Class(Class &&) = default; \
+    Class &operator=(const Class &) = default; \
+    Class &operator=(Class &&) = default;
+
+/*
     These macros can be used to define tag structs in the preferred way (ie.
     with explicit default ctor).
 

@@ -72,11 +72,7 @@ template <bool noex, class Const, class R, class... ArgTypes>
 class function_ref_base
 {
 protected:
-    ~function_ref_base() = default;
-    function_ref_base(const function_ref_base &) = default;
-    function_ref_base(function_ref_base &&) = default;
-    function_ref_base &operator=(const function_ref_base &) = default;
-    function_ref_base &operator=(function_ref_base &&) = default;
+    QT_DECLARE_RO5_SMF_AS_DEFAULTED(function_ref_base)
 
     using BoundEntityType = detail::BoundEntityType<Const>;
 
