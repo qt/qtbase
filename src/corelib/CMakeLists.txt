@@ -143,7 +143,6 @@ qt_internal_add_module(Core
         io/qstorageinfo.cpp io/qstorageinfo.h io/qstorageinfo_p.h
         io/qtemporarydir.cpp io/qtemporarydir.h
         io/qtemporaryfile.cpp io/qtemporaryfile.h io/qtemporaryfile_p.h
-        io/qtformat_impl.h
         io/qurl.cpp io/qurl.h io/qurl_p.h
         io/qurlidna.cpp
         io/qurlquery.cpp io/qurlquery.h
@@ -242,6 +241,7 @@ qt_internal_add_module(Core
         text/qstringtokenizer.cpp text/qstringtokenizer.h
         text/qstringview.cpp text/qstringview.h
         text/qtextboundaryfinder.cpp text/qtextboundaryfinder.h
+        text/qtformat_impl.h
         text/qunicodetables_p.h
         text/qunicodetools.cpp text/qunicodetools_p.h
         text/qutf8stringview.h
