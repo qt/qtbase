@@ -26,7 +26,8 @@ namespace QtPrivate {
 template <typename T> struct QListSpecialMethodsBase
 {
 protected:
-    ~QListSpecialMethodsBase() = default;
+    QListSpecialMethodsBase() = default;
+    QT_DECLARE_RO5_SMF_AS_DEFAULTED(QListSpecialMethodsBase)
 
     using Self = QList<T>;
     Self *self() { return static_cast<Self *>(this); }
@@ -47,7 +48,9 @@ public:
 template <typename T> struct QListSpecialMethods : QListSpecialMethodsBase<T>
 {
 protected:
-    ~QListSpecialMethods() = default;
+    QListSpecialMethods() = default;
+    QT_DECLARE_RO5_SMF_AS_DEFAULTED(QListSpecialMethods)
+
 public:
     using QListSpecialMethodsBase<T>::indexOf;
     using QListSpecialMethodsBase<T>::lastIndexOf;
