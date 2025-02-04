@@ -116,10 +116,24 @@ function(_qt_internal_find_apple_development_team_id out_var)
 
     # Extract the first account name (email) from the user's Xcode preferences
     message(DEBUG "Trying to extract an Xcode development team id from '${xcode_preferences_path}'")
-    execute_process(COMMAND "/usr/libexec/PlistBuddy"
-                            -x -c "print IDEProvisioningTeams" "${xcode_preferences_path}"
-                    OUTPUT_VARIABLE teams_xml
-                    ERROR_VARIABLE plist_error)
+
+    # Try Xcode 16.2 format first
+    _qt_internal_plist_buddy("${xcode_preferences_path}"
+        COMMANDS "print IDEProvisioningTeamByIdentifier"
+        EXTRA_ARGS -x
+        OUTPUT_VARIABLE teams_xml
+        ERROR_VARIABLE plist_error
+    )
+
+    # Then fall back to older format
+    if(plist_error OR NOT teams_xml)
+        _qt_internal_plist_buddy("${xcode_preferences_path}"
+            COMMANDS "print IDEProvisioningTeams"
+            EXTRA_ARGS -x
+            OUTPUT_VARIABLE teams_xml
+            ERROR_VARIABLE plist_error
+        )
+    endif()
 
     # Parsing state.
     set(is_free "")
@@ -149,6 +163,16 @@ function(_qt_internal_find_apple_development_team_id out_var)
     #            <true/>
     #            <key>teamID</key>
     #            <string>BBB</string>
+    #            ...
+    #        </dict>
+    #    </array>
+    #    <key>AAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE</key>
+    #    <array>
+    #        <dict>
+    #            <key>isFreeProvisioningTeam</key>
+    #            <false/>
+    #            <key>teamID</key>
+    #            <string>CCC</string>
     #            ...
     #        </dict>
     #    </array>
