@@ -1566,14 +1566,18 @@ QWidget *QApplication::activeWindow()
     return QApplicationPrivate::active_window;
 }
 
-#if QT_DEPRECATED_SINCE(6,0)
 /*!
-    \deprecated Use the QFontMetricsF constructor instead.
-    Returns display (screen) font metrics for the application font.
+    \fn QFontMetrics QApplication::fontMetrics()
+    \deprecated [6.0] Use QFontMetricsF(qApp->font()) instead.
+
+    Returns display (screen) font metrics for the application font. For more
+    information about the difference between \l QFontMetrics and \l QFontMetricsF,
+    see the detailed description of \l QFontMetrics.
 
     \sa font(), setFont(), QWidget::fontMetrics(), QPainter::fontMetrics()
 */
 
+#if QT_DEPRECATED_SINCE(6,0)
 QFontMetrics QApplication::fontMetrics()
 {
     return QApplicationPrivate::desktop()->fontMetrics();

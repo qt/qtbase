@@ -66,7 +66,7 @@ public:
     static void setFont(const QFont &, const char* className = nullptr);
 
 #if QT_DEPRECATED_SINCE(6,0)
-    QT_DEPRECATED_VERSION_X_6_0("Use the QFontMetricsF constructor instead.")
+    QT_DEPRECATED_VERSION_X_6_0("Use QFontMetricsF(qApp->font()) instead.")
     static QFontMetrics fontMetrics();
 #endif
 
