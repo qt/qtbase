@@ -132,6 +132,7 @@ endfunction()
 #
 #   qt_feature_alias(<alias_feature>
 #       ALIAS_OF <real_feature>
+#       [NEGATE]
 #   )
 #
 # Arguments
@@ -141,8 +142,13 @@ endfunction()
 #
 # `ALIAS_OF`
 #   The true canonical feature to consider.
+#
+# `NEGATE`
+#   Populate the main FEATURE variable with the opposite of the alias's value
 function(qt_feature_alias alias_feature)
-    set(option_args "")
+    set(option_args
+        NEGATE
+    )
     set(single_args ALIAS_OF)
     set(multi_args "")
 
@@ -165,6 +171,9 @@ function(qt_feature_alias alias_feature)
 
     set(forward_args "")
     list(APPEND forward_args ALIAS_OF "${arg_ALIAS_OF}")
+    if(arg_NEGATE)
+        list(APPEND forward_args ALIAS_NEGATE)
+    endif()
 
     set(_QT_FEATURE_DEFINITION_${alias_feature} ${forward_args} PARENT_SCOPE)
     set(_QT_FEATURE_ALIASES_${arg_ALIAS_OF} "${_QT_FEATURE_ALIASES_${arg_ALIAS_OF}}" PARENT_SCOPE)
@@ -365,9 +374,17 @@ function(_qt_feature_evaluate_alias out_var alias)
         # If the alias was not defined, don't set value
         return()
     endif()
+    # Check if we need to negate the value to be set or not
+    set(not_kw)
+    _qt_internal_parse_feature_definition("${alias}")
+    if(arg_ALIAS_NEGATE)
+        set(not_kw "NOT")
+    endif()
     # Evaluate the value and return it
-    qt_set01(${out_var} FEATURE_${alias})
+    qt_set01(${out_var} ${not_kw} FEATURE_${alias})
     set(${out_var} "${${out_var}}" PARENT_SCOPE)
+    # Also set `not_kw` since it would be reused by the caller
+    set(not_kw "${not_kw}" PARENT_SCOPE)
 endfunction()
 
 # Check that the feature value is consistent with any of its aliases.
@@ -383,7 +400,7 @@ function(_qt_feature_check_feature_alias feature)
             if(DEFINED alias_value)
                 if(NOT expected_value EQUAL alias_value)
                     string(CONCAT msg
-                        "Alias FEATURE_${alias}(${FEATURE_${alias}}) is an alias of "
+                        "Alias FEATURE_${alias}(${FEATURE_${alias}}) is an alias of ${not_kw} "
                         "FEATURE_${feature}(${FEATURE_${alias}}), and their values conflict"
                     )
                     qt_configure_add_report_error(${msg})
@@ -396,12 +413,14 @@ function(_qt_feature_check_feature_alias feature)
     # Otherwise try to set the `feature` value from the aliases
     set(aliases_set "")
     set(expected_value "")
+    set(alias_not_kws "")
     unset(value)
     foreach(alias IN LISTS _QT_FEATURE_ALIASES_${feature})
         _qt_feature_evaluate_alias(value ${alias})
         if(DEFINED value)
             list(APPEND aliases_set "${alias}")
             list(APPEND expected_value "${value}")
+            list(APPEND alias_not_kws "${not_kw}")
             unset(value)
         endif()
     endforeach()
@@ -419,9 +438,10 @@ function(_qt_feature_check_feature_alias feature)
         )
         while(aliases_set)
             list(POP_FRONT aliases_set alias)
+            list(POP_FRONT alias_not_kws not_kw)
             string(CONCAT msg
                 "${msg}\n"
-                "  - FEATURE_${alias}(${FEATURE_${alias}})"
+                "  - ${not_kw} FEATURE_${alias}(${FEATURE_${alias}})"
             )
         endwhile()
         qt_configure_add_report_error(${msg})
@@ -439,8 +459,16 @@ function(_qt_feature_save_alias feature)
         # We only need to set the alias values if they were not explicitly set. The consistency
         # check for those was done prior to this function call.
         if(NOT DEFINED FEATURE_${alias})
+            # Evaluate the alias value based on the original
+            set(not_kw)
+            _qt_internal_parse_feature_definition("${alias}")
+            if(arg_ALIAS_NEGATE)
+                set(not_kw "NOT")
+            endif()
+            qt_set01(value ${not_kw} FEATURE_${feature})
+            qt_evaluate_to_boolean(value)
             # Set the values based on the main feature's value
-            set(FEATURE_${alias} ${FEATURE_${feature}} CACHE BOOL
+            set(FEATURE_${alias} ${value} CACHE BOOL
                 # Using a temporary docstring that should be overwritten if everything works well
                 "(temporarily set by _qt_feature_save_alias)"
             )
@@ -557,7 +585,7 @@ endmacro()
 
 macro(_qt_internal_parse_feature_definition feature)
     cmake_parse_arguments(arg
-        "PRIVATE;PUBLIC"
+        "PRIVATE;PUBLIC;ALIAS_NEGATE"
         "LABEL;PURPOSE;SECTION;ALIAS_OF"
         "AUTODETECT;CONDITION;ENABLE;DISABLE;EMIT_IF"
         ${_QT_FEATURE_DEFINITION_${feature}})
@@ -646,7 +674,11 @@ function(qt_evaluate_feature feature)
 
     set(actual_label "${arg_LABEL}")
     if(arg_ALIAS_OF)
-        string(APPEND actual_label " (alias of ${arg_ALIAS_OF})")
+        set(not_kw)
+        if(arg_ALIAS_NEGATE)
+            set(not_kw "NOT")
+        endif()
+        string(APPEND actual_label " (alias of ${not_kw} ${arg_ALIAS_OF})")
     endif()
 
     # Warn about a feature which is not emitted, but the user explicitly provided a value for it.
