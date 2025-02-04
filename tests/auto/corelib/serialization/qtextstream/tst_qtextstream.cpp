@@ -2649,46 +2649,54 @@ void tst_QTextStream::useCase2()
 void tst_QTextStream::manipulators_data()
 {
     QTest::addColumn<int>("base");
-    QTest::addColumn<int>("alignFlag");
-    QTest::addColumn<int>("numberFlag");
+    QTest::addColumn<QTextStream::FieldAlignment>("alignFlag");
+    QTest::addColumn<QTextStream::NumberFlags>("numberFlag");
     QTest::addColumn<int>("width");
     QTest::addColumn<double>("realNumber");
-    QTest::addColumn<int>("intNumber");
+    QTest::addColumn<qlonglong>("intNumber");
     QTest::addColumn<QString>("textData");
     QTest::addColumn<QByteArray>("result");
 
     QTest::newRow("no flags")
-        << 10 << 0 << 0 << 0  << 5.0 << 5 << QString("five") << QByteArray("55five");
+        << 10 << QTextStream::AlignLeft << QTextStream::NumberFlags{}
+        << 0  << 5.0 << 5LL << QString("five") << QByteArray("55five");
     QTest::newRow("rightadjust")
-        << 10 << int(QTextStream::AlignRight) << 0 << 10 << 5.0 << 5 << QString("five")
-        << QByteArray("         5         5      five");
+        << 10 << QTextStream::AlignRight << QTextStream::NumberFlags{}
+        << 10 << 5.0 << 5LL << QString("five") << QByteArray("         5         5      five");
     QTest::newRow("leftadjust")
-        << 10 << int(QTextStream::AlignLeft) << 0 << 10 << 5.0 << 5 << QString("five")
-        << QByteArray("5         5         five      ");
+        << 10 << QTextStream::AlignLeft << QTextStream::NumberFlags{}
+        << 10 << 5.0 << 5LL << QString("five") << QByteArray("5         5         five      ");
     QTest::newRow("showpos-wide")
-        << 10 << int(QTextStream::AlignRight) << int(QTextStream::ForceSign) << 10 << 5.0 << 5 <<
-        QString("five") << QByteArray("        +5        +5      five");
+        << 10 << QTextStream::AlignRight << QTextStream::NumberFlags{QTextStream::ForceSign}
+        << 10 << 5.0 << 5LL << QString("five") << QByteArray("        +5        +5      five");
     QTest::newRow("showpos-pi")
-        << 10 << int(QTextStream::AlignRight) << int(QTextStream::ForceSign) << 5 << 3.14 << -5 <<
-        QString("five") << QByteArray("+3.14   -5 five");
+        << 10 << QTextStream::AlignRight << QTextStream::NumberFlags{QTextStream::ForceSign}
+        << 5 << 3.14 << -5LL << QString("five") << QByteArray("+3.14   -5 five");
+    QTest::newRow("min-value")
+        << 10 << QTextStream::AlignRight << QTextStream::NumberFlags{} << 5
+        << 3.14 << (std::numeric_limits<qlonglong>::min)()
+        << QString("five") << QByteArray(" 3.14-9223372036854775808 five");
     QTest::newRow("hex-lower")
-        << 16 << int(QTextStream::AlignRight) << int(QTextStream::ShowBase) << 5 << 3.14 << -5 <<
-        QString("five") << QByteArray(" 3.14 -0x5 five");
+        << 16 << QTextStream::AlignRight << QTextStream::NumberFlags{QTextStream::ShowBase}
+        << 5 << 3.14 << -5LL << QString("five") << QByteArray(" 3.14 -0x5 five");
     QTest::newRow("hex-upper")
-        << 16 << int(QTextStream::AlignRight)
-        << int(QTextStream::ShowBase | QTextStream::UppercaseBase)
-        << 5 << 3.14 << -5 << QString("five") << QByteArray(" 3.14 -0X5 five");
+        << 16 << QTextStream::AlignRight
+        << (QTextStream::ShowBase | QTextStream::UppercaseBase)
+        << 5 << 3.14 << -5LL << QString("five") << QByteArray(" 3.14 -0X5 five");
+    QTest::newRow("hex-negative")
+        << 16 << QTextStream::AlignRight << (QTextStream::ShowBase | QTextStream::ForceSign)
+        << 5 << 3.14 << -5LL << QString("five") << QByteArray("+3.14 -0x5 five");
 }
 
 // ------------------------------------------------------------------------------
 void tst_QTextStream::manipulators()
 {
     QFETCH(int, base);
-    QFETCH(int, alignFlag);
-    QFETCH(int, numberFlag);
+    QFETCH(QTextStream::FieldAlignment, alignFlag);
+    QFETCH(QTextStream::NumberFlags, numberFlag);
     QFETCH(int, width);
     QFETCH(double, realNumber);
-    QFETCH(int, intNumber);
+    QFETCH(qlonglong, intNumber);
     QFETCH(QString, textData);
     QFETCH(QByteArray, result);
 
@@ -2700,14 +2708,15 @@ void tst_QTextStream::manipulators()
     stream.setAutoDetectUnicode(true);
 
     stream.setIntegerBase(base);
-    stream.setFieldAlignment(QTextStream::FieldAlignment(alignFlag));
-    stream.setNumberFlags(QTextStream::NumberFlag(numberFlag));
+    stream.setFieldAlignment(alignFlag);
+    stream.setNumberFlags(numberFlag);
     stream.setFieldWidth(width);
     stream << realNumber;
     stream << intNumber;
     stream << textData;
     stream.flush();
 
+    QEXPECT_FAIL("hex-negative", "Discovered while fixing QTBUG-133269", Continue);
     QCOMPARE(buffer.data(), result);
 }
 
