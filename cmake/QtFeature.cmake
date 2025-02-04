@@ -126,12 +126,14 @@ endfunction()
 #
 # TODO: See how to move this into the main `qt_feature` definition flow.
 # TODO: How to add `CONDITION` and how does it interact with the main feature's `EMIT_IF`
-# TODO: Include or forward other options: LABEL, SECTION
 #
 # Synopsis
 #
 #   qt_feature_alias(<alias_feature>
 #       ALIAS_OF <real_feature>
+#       [LABEL <string>]
+#       [PURPOSE <string>]
+#       [SECTION <string>]
 #       [NEGATE]
 #   )
 #
@@ -145,11 +147,19 @@ endfunction()
 #
 # `NEGATE`
 #   Populate the main FEATURE variable with the opposite of the alias's value
+#
+# `LABEL`, `PURPOSE`, `SECTION`
+#   Same as in `qt_feature`
 function(qt_feature_alias alias_feature)
     set(option_args
         NEGATE
     )
-    set(single_args ALIAS_OF)
+    set(single_args
+        ALIAS_OF
+        LABEL
+        PURPOSE
+        SECTION
+    )
     set(multi_args "")
 
     cmake_parse_arguments(PARSE_ARGV 1 arg "${option_args}" "${single_args}" "${multi_args}")
@@ -173,6 +183,15 @@ function(qt_feature_alias alias_feature)
     list(APPEND forward_args ALIAS_OF "${arg_ALIAS_OF}")
     if(arg_NEGATE)
         list(APPEND forward_args ALIAS_NEGATE)
+    endif()
+    if(arg_LABEL)
+        list(APPEND forward_args LABEL "${arg_LABEL}")
+    endif()
+    if(arg_PURPOSE)
+        list(APPEND forward_args PURPOSE "${arg_PURPOSE}")
+    endif()
+    if(arg_SECTION)
+        list(APPEND forward_args SECTION "${arg_SECTION}")
     endif()
 
     set(_QT_FEATURE_DEFINITION_${alias_feature} ${forward_args} PARENT_SCOPE)
