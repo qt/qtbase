@@ -635,10 +635,10 @@ endfunction()
 
 function(_qt_internal_plist_buddy plist_file)
     cmake_parse_arguments(PARSE_ARGV 1 arg
-        "" "OUTPUT_VARIABLE;ERROR_VARIABLE" "COMMANDS")
+        "" "OUTPUT_VARIABLE;ERROR_VARIABLE;EXTRA_ARGS" "COMMANDS")
     foreach(command ${arg_COMMANDS})
         execute_process(COMMAND "/usr/libexec/PlistBuddy"
-                                -c "${command}" "${plist_file}"
+                                ${arg_EXTRA_ARGS} -c "${command}" "${plist_file}"
                     OUTPUT_VARIABLE plist_buddy_output
                     ERROR_VARIABLE plist_buddy_error)
         string(STRIP "${plist_buddy_output}" plist_buddy_output)
