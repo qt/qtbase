@@ -904,3 +904,44 @@ function(_qt_internal_get_moc_compiler_flavor_flags out_var)
 
     set(${out_var} "${flags}" PARENT_SCOPE)
 endfunction()
+
+# Compatibility of `cmake_path(IS_PREFIX)`
+#
+# NORMALIZE keyword is not supported
+#
+# Synopsis
+#
+#   _qt_internal_path_is_prefix(<path-var> <input> <out-var>)
+#
+# Arguments
+#
+# `path-var`
+#   Equivalent to `cmake_path(IS_PREFIX <path-var>)`.
+#
+# `input`
+#   Equivalent to `cmake_path(IS_PREFIX <input>)`.
+#
+# `out-var`
+#   Equivalent to `cmake_path(IS_PREFIX <out-var>)`.
+function(_qt_internal_path_is_prefix path_var input out_var)
+
+    # Make sure the path ends with `/`
+    if(NOT ${path_var} MATCHES "/$")
+        set(${path_var} "${${path_var}}/")
+    endif()
+    # For the case input == path_var, we need to also include a trailing `/` to match the
+    # previous change. We discard the actual path for input so we can add it unconditionally
+    set(input "${input}/")
+    if(CMAKE_VERSION VERSION_LESS 3.20)
+        string(FIND "${input}" "${${path_var}}" find_pos)
+        if(find_pos EQUAL 0)
+            # input starts_with path_var
+            set(${out_var} ON)
+        else()
+            set(${out_var} OFF)
+        endif()
+    else()
+        cmake_path(IS_PREFIX ${path_var} ${input} ${out_var})
+    endif()
+    set(${out_var} "${${out_var}}" PARENT_SCOPE)
+endfunction()
