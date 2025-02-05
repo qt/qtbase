@@ -801,10 +801,11 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
         break;
     case PE_IndicatorCheckBox:
         {
+            const bool isRtl = option->direction == Qt::RightToLeft;
             QNumberStyleAnimation* animation = qobject_cast<QNumberStyleAnimation*>(d->animation(option->styleObject));
             QFontMetrics fm(assetFont);
 
-            QRectF rect = option->rect;
+            QRectF rect = isRtl ? option->rect.adjusted(0, 0, -2, 0) : option->rect.adjusted(2, 0, 0, 0);
             QPointF center = QPointF(rect.x() + rect.width() / 2, rect.y() + rect.height() / 2);
             rect.setWidth(15);
             rect.setHeight(15);
@@ -851,6 +852,7 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
         break;
     case PE_IndicatorRadioButton:
         {
+            const bool isRtl = option->direction == Qt::RightToLeft;
             qreal innerRadius = option->state & State_On ? 4.0f :7.0f;
             if (option->styleObject) {
                 if (option->styleObject->property("_q_end_radius").isNull())
@@ -861,7 +863,7 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
             }
 
             QPainterPath path;
-            QRectF rect = option->rect;
+            QRectF rect = isRtl ? option->rect.adjusted(0, 0, -2, 0) : option->rect.adjusted(2, 0, 0, 0);
             QPointF center = QPoint(rect.x() + rect.width() / 2, rect.y() + rect.height() / 2);
             rect.setWidth(15);
             rect.setHeight(15);
