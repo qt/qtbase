@@ -7,6 +7,8 @@
 # into 3rdparty/pcre2/ , following the instructions found in the NON-AUTOTOOLS-BUILD
 # file. Documentation, tests, demos etc. are not imported.
 
+set -e
+
 if [ $# -ne 2 ]; then
     echo "Usage: $0 pcre2_tarball_dir/ \$QTDIR/src/3rdparty/pcre2/"
     exit 1
@@ -44,12 +46,14 @@ copy_file "src/pcre2.h.generic" "src/pcre2.h"
 copy_file "src/pcre2_chartables.c.dist" "src/pcre2_chartables.c"
 
 FILES="
-    AUTHORS
-    LICENCE
+    AUTHORS.md
+    LICENCE.md
 
     src/pcre2_auto_possess.c
     src/pcre2_chkdint.c
     src/pcre2_compile.c
+    src/pcre2_compile.h
+    src/pcre2_compile_class.c
     src/pcre2_config.c
     src/pcre2_context.c
     src/pcre2_dfa_match.c
@@ -69,6 +73,7 @@ FILES="
     src/pcre2_pattern_info.c
     src/pcre2_script_run.c
     src/pcre2_serialize.c
+    src/pcre2_jit_char_inc.h
     src/pcre2_jit_neon_inc.h
     src/pcre2_jit_simd_inc.h
     src/pcre2_string_utils.c
@@ -79,41 +84,42 @@ FILES="
     src/pcre2_ucd.c
     src/pcre2_ucp.h
     src/pcre2_ucptables.c
+    src/pcre2_util.h
     src/pcre2_valid_utf.c
     src/pcre2_xclass.c
-    src/sljit/sljitConfigCPU.h
-    src/sljit/sljitConfig.h
-    src/sljit/sljitConfigInternal.h
-    src/sljit/sljitLir.c
-    src/sljit/sljitLir.h
-    src/sljit/sljitNativeARM_32.c
-    src/sljit/sljitNativeARM_64.c
-    src/sljit/sljitNativeARM_T2_32.c
-    src/sljit/sljitNativeLOONGARCH_64.c
-    src/sljit/sljitNativeMIPS_32.c
-    src/sljit/sljitNativeMIPS_64.c
-    src/sljit/sljitNativeMIPS_common.c
-    src/sljit/sljitNativePPC_32.c
-    src/sljit/sljitNativePPC_64.c
-    src/sljit/sljitNativePPC_common.c
-    src/sljit/sljitNativeRISCV_32.c
-    src/sljit/sljitNativeRISCV_64.c
-    src/sljit/sljitNativeRISCV_common.c
-    src/sljit/sljitNativeS390X.c
-    src/sljit/sljitNativeX86_32.c
-    src/sljit/sljitNativeX86_64.c
-    src/sljit/sljitNativeX86_common.c
-    src/sljit/sljitSerialize.c
-    src/sljit/sljitUtils.c
-    src/sljit/allocator_src/sljitExecAllocatorPosix.c
-    src/sljit/allocator_src/sljitProtExecAllocatorPosix.c
-    src/sljit/allocator_src/sljitWXExecAllocatorPosix.c
-    src/sljit/allocator_src/sljitProtExecAllocatorNetBSD.c
-    src/sljit/allocator_src/sljitExecAllocatorWindows.c
-    src/sljit/allocator_src/sljitExecAllocatorFreeBSD.c
-    src/sljit/allocator_src/sljitExecAllocatorApple.c
-    src/sljit/allocator_src/sljitWXExecAllocatorWindows.c
-    src/sljit/allocator_src/sljitExecAllocatorCore.c
+    deps/sljit/sljit_src/sljitConfigCPU.h
+    deps/sljit/sljit_src/sljitConfig.h
+    deps/sljit/sljit_src/sljitConfigInternal.h
+    deps/sljit/sljit_src/sljitLir.c
+    deps/sljit/sljit_src/sljitLir.h
+    deps/sljit/sljit_src/sljitNativeARM_32.c
+    deps/sljit/sljit_src/sljitNativeARM_64.c
+    deps/sljit/sljit_src/sljitNativeARM_T2_32.c
+    deps/sljit/sljit_src/sljitNativeLOONGARCH_64.c
+    deps/sljit/sljit_src/sljitNativeMIPS_32.c
+    deps/sljit/sljit_src/sljitNativeMIPS_64.c
+    deps/sljit/sljit_src/sljitNativeMIPS_common.c
+    deps/sljit/sljit_src/sljitNativePPC_32.c
+    deps/sljit/sljit_src/sljitNativePPC_64.c
+    deps/sljit/sljit_src/sljitNativePPC_common.c
+    deps/sljit/sljit_src/sljitNativeRISCV_32.c
+    deps/sljit/sljit_src/sljitNativeRISCV_64.c
+    deps/sljit/sljit_src/sljitNativeRISCV_common.c
+    deps/sljit/sljit_src/sljitNativeS390X.c
+    deps/sljit/sljit_src/sljitNativeX86_32.c
+    deps/sljit/sljit_src/sljitNativeX86_64.c
+    deps/sljit/sljit_src/sljitNativeX86_common.c
+    deps/sljit/sljit_src/sljitSerialize.c
+    deps/sljit/sljit_src/sljitUtils.c
+    deps/sljit/sljit_src/allocator_src/sljitExecAllocatorPosix.c
+    deps/sljit/sljit_src/allocator_src/sljitProtExecAllocatorPosix.c
+    deps/sljit/sljit_src/allocator_src/sljitWXExecAllocatorPosix.c
+    deps/sljit/sljit_src/allocator_src/sljitProtExecAllocatorNetBSD.c
+    deps/sljit/sljit_src/allocator_src/sljitExecAllocatorWindows.c
+    deps/sljit/sljit_src/allocator_src/sljitExecAllocatorFreeBSD.c
+    deps/sljit/sljit_src/allocator_src/sljitExecAllocatorApple.c
+    deps/sljit/sljit_src/allocator_src/sljitWXExecAllocatorWindows.c
+    deps/sljit/sljit_src/allocator_src/sljitExecAllocatorCore.c
 "
 
 for i in $FILES; do
