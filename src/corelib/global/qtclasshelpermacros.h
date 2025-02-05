@@ -98,7 +98,7 @@ QT_BEGIN_NAMESPACE
     defaulting all five is boilerplate, use this macro instead.
 
     Note that the default constructor is not covered, and this macro
-    will prevented its automatic generation.
+    will prevent its automatic generation.
 */
 
 #define QT_DECLARE_RO5_SMF_AS_DEFAULTED(Class) \
