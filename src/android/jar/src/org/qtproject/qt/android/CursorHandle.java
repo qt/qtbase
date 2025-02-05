@@ -133,7 +133,15 @@ class CursorHandle implements ViewTreeObserver.OnPreDrawListener
         initOverlay();
 
         final int[] layoutLocation = new int[2];
-        m_layout.getLocationOnScreen(layoutLocation);
+
+        // m_layout is QtEditText. Since it doesn't match the QtWindow size, we should use its
+        // parent for cursorHandle positioning. However, there may be cases where the parent is
+        // not set. In such cases, we need to use QtEditText instead.
+        View positioningView = (View) m_layout.getParent();
+        if (positioningView == null)
+            positioningView = m_layout;
+
+        positioningView.getLocationOnScreen(layoutLocation);
 
         // These values are used for handling split screen case
         final int[] activityLocation = new int[2];
@@ -156,7 +164,7 @@ class CursorHandle implements ViewTreeObserver.OnPreDrawListener
             m_popup.update(x2, y2, -1, -1);
             m_cursorView.adjusted(x - m_posX, y - m_posY);
         } else {
-            m_popup.showAtLocation(m_layout, 0, x2, y2);
+            m_popup.showAtLocation(positioningView, 0, x2, y2);
         }
 
         m_posX = x;
