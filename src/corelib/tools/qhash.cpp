@@ -2825,7 +2825,7 @@ size_t qHash(long double key, size_t seed) noexcept
 
 /*! \class QMultiHash
     \inmodule QtCore
-    \brief The QMultiHash class is a convenience QHash subclass that provides multi-valued hashes.
+    \brief The QMultiHash class provides a multi-valued hash table.
 
     \ingroup tools
     \ingroup shared
@@ -2833,10 +2833,7 @@ size_t qHash(long double key, size_t seed) noexcept
     \reentrant
 
     QMultiHash\<Key, T\> is one of Qt's generic \l{container classes}.
-    It inherits QHash and extends it with a few convenience functions
-    that make it more suitable than QHash for storing multi-valued
-    hashes. A multi-valued hash is a hash that allows multiple values
-    with the same key.
+    It provides a hash table that allows multiple values for the same key.
 
     QMultiHash mostly mirrors QHash's API. For example, you can use isEmpty() to test
     whether the hash is empty, and you can traverse a QMultiHash using
@@ -2846,7 +2843,7 @@ size_t qHash(long double key, size_t seed) noexcept
     QHash::insert(). It also provides convenient operator+() and
     operator+=().
 
-    Unlike QMultiMap, QMultiHash does not provide and ordering of the
+    Unlike QMultiMap, QMultiHash does not provide ordering of the
     inserted items. The only guarantee is that items that
     share the same key will appear consecutively, from the most
     recently to the least recently inserted value.
