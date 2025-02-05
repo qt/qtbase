@@ -16,33 +16,31 @@ IIntermediate : public IUnknown{};
 MIDL_INTERFACE("65a29ce9-191c-4182-9185-06dd70aafc5d")
 IDirect : public IIntermediate{};
 
-class ComImplementation : public QComObject<IDirect>
-{
-};
-
 MIDL_INTERFACE("d05397e0-da7f-4055-8563-a5b80f095e6c")
 IMultipleA : public IUnknown{};
 
 MIDL_INTERFACE("67e298c5-ec5f-4c45-a779-bfba2484e142")
 IMultipleB : public IUnknown{};
 
-class MultipleComImplementation : public QComObject<IMultipleA, IMultipleB>
-{
-};
-
 MIDL_INTERFACE("b8278a1b-0c3b-4bbd-99db-1e8a141483fa")
 IOther : public IUnknown{};
 
-#  ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(IIntermediate, 0x878fab04, 0x7da0, 0x41ea, 0x9c, 0x49, 0x05, 0x8c, 0x7f, 0xa0, 0xd8,
-                0x0a)
-__CRT_UUID_DECL(IDirect, 0x65a29ce9, 0x191c, 0x4182, 0x91, 0x85, 0x06, 0xdd, 0x70, 0xaa, 0xfc, 0x5d)
-__CRT_UUID_DECL(IMultipleA, 0xd05397e0, 0xda7f, 0x4055, 0x85, 0x63, 0xa5, 0xb8, 0x0f, 0x09, 0x5e,
-                0x6c)
-__CRT_UUID_DECL(IMultipleB, 0x67e298c5, 0xec5f, 0x4c45, 0xa7, 0x79, 0xbf, 0xba, 0x24, 0x84, 0xe1,
-                0x42)
-__CRT_UUID_DECL(IOther, 0xb8278a1b, 0x0c3b, 0x4bbd, 0x99, 0xdb, 0x1e, 0x8a, 0x14, 0x14, 0x83, 0xfa)
-#  endif
+QT_END_NAMESPACE
+
+#ifdef __CRT_UUID_DECL
+__CRT_UUID_DECL(QT_PREPEND_NAMESPACE(IIntermediate), 0x878fab04, 0x7da0, 0x41ea, 0x9c, 0x49, 0x05,
+                0x8c, 0x7f, 0xa0, 0xd8, 0x0a)
+__CRT_UUID_DECL(QT_PREPEND_NAMESPACE(IDirect), 0x65a29ce9, 0x191c, 0x4182, 0x91, 0x85, 0x06, 0xdd,
+                0x70, 0xaa, 0xfc, 0x5d)
+__CRT_UUID_DECL(QT_PREPEND_NAMESPACE(IMultipleA), 0xd05397e0, 0xda7f, 0x4055, 0x85, 0x63, 0xa5,
+                0xb8, 0x0f, 0x09, 0x5e, 0x6c)
+__CRT_UUID_DECL(QT_PREPEND_NAMESPACE(IMultipleB), 0x67e298c5, 0xec5f, 0x4c45, 0xa7, 0x79, 0xbf,
+                0xba, 0x24, 0x84, 0xe1, 0x42)
+__CRT_UUID_DECL(QT_PREPEND_NAMESPACE(IOther), 0xb8278a1b, 0x0c3b, 0x4bbd, 0x99, 0xdb, 0x1e, 0x8a,
+                0x14, 0x14, 0x83, 0xfa)
+#endif
+
+QT_BEGIN_NAMESPACE
 
 namespace QtPrivate {
 
@@ -56,6 +54,15 @@ struct QComObjectTraits<IDirect>
 };
 
 } // namespace QtPrivate
+
+class ComImplementation : public QComObject<IDirect>
+{
+};
+
+class MultipleComImplementation : public QComObject<IMultipleA, IMultipleB>
+{
+};
+
 QT_END_NAMESPACE
 
 class tst_QComObject : public QObject
@@ -249,6 +256,6 @@ void tst_QComObject::Release_decrementsReferenceCountByOne()
 }
 
 QTEST_MAIN(tst_QComObject)
-#  include "tst_qcomobject.moc"
+#include "tst_qcomobject.moc"
 
 #endif // Q_OS_WIN
