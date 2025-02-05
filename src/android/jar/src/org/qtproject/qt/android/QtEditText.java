@@ -269,7 +269,7 @@ class QtEditText extends View
             break;
         case CursorHandleShowNormal:
             if (m_cursorHandle == null) {
-                m_cursorHandle = new CursorHandle((Activity) getContext(), (View) getParent(),
+                m_cursorHandle = new CursorHandle((Activity) getContext(), this,
                         CursorHandle.IdCursorHandle,
                         android.R.attr.textSelectHandle, false);
             }
