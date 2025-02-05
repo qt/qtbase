@@ -71,7 +71,7 @@ using namespace Qt::StringLiterals;
 // or, for older Linuxes, read out 'cmdline'.
 static bool runningUnderDebugger()
 {
-#if defined(QT_DEBUG) && defined(Q_OS_LINUX)
+#if defined(Q_OS_LINUX)
     const QString parentProc = "/proc/"_L1 + QString::number(getppid());
     const QFileInfo parentProcExe(parentProc + "/exe"_L1);
     if (parentProcExe.isSymLink())
@@ -157,12 +157,10 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters, int &argc, char 
         doGrabArg = false;
     }
 
-#if defined(QT_DEBUG)
     if (!noGrabArg && !doGrabArg && underDebugger) {
         qCDebug(lcQpaXcb, "Qt: gdb: -nograb added to command-line options.\n"
                 "\t Use the -dograb option to enforce grabbing.");
     }
-#endif
     m_canGrab = (!underDebugger && !noGrabArg) || (underDebugger && doGrabArg);
 
     static bool canNotGrabEnv = qEnvironmentVariableIsSet("QT_XCB_NO_GRAB_SERVER");
