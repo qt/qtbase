@@ -32,15 +32,14 @@ QT_BEGIN_NAMESPACE
         use(*it);
     \endcode
 
-    \note You should never, ever, name the template arguments of a
+    \note You should never name the template arguments of a
     QStringTokenizer explicitly. You may write
-    \c{QStringTokenizer{string, separator}} (without template
-    arguments), or use the qTokenize() function, or the
-    QStringView::split() or QLatin1StringView::split() member functions
-    and store the return value only in \c{auto} variables:
+    \c{QStringTokenizer{string, separator}} (without template arguments),
+    or use either QStringView::tokenize() or QLatin1StringView::tokenize(),
+    then store the return value only in an \c{auto} variable:
 
     \code
-    auto result = string.split(sep);
+    auto result = strview.tokenize(sep);
     \endcode
 
     This is because the template arguments of QStringTokenizer have a
