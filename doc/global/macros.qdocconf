@@ -147,6 +147,11 @@ macro.youtube.DocBook = "<db:mediaobject>\n" \
                         "</db:imageobject>\n" \
                         "</db:mediaobject>\n"
 
+#
+# C++ constrained function templates
+#
+macro.constraints               = "\\section1 Constraints\n\nParticipates in overload resolution only if "
+
 macro.excludefromcreator = "\\meta tag broken"
 
 macro.preliminarycmakecommand  = "\\note This command is in technology preview and may change in future releases."

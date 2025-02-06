@@ -249,8 +249,7 @@
     This function converts the \a degrees in double to radians;
     the angle is casted to a double before the conversion.
 
-    This function participates in overload resolution if and only if
-    \c Integral is an integral type.
+    \constraints \c Integral is an integral type.
 
     \sa qRadiansToDegrees()
 */

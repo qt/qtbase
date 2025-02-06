@@ -1287,9 +1287,6 @@ CHECK(strong, equivalent);
 
     Implements three-way comparison of integral types.
 
-    \note This function participates in overload resolution only if both
-    \c LeftInt and \c RightInt are built-in integral types.
-
     Returns \c {lhs <=> rhs}, provided \c LeftInt and \c RightInt are built-in
     integral types. Unlike \c {operator<=>()}, this function template is also
     available in C++17. See
@@ -1315,6 +1312,9 @@ CHECK(strong, equivalent);
 
     Returns an instance of \l Qt::strong_ordering that represents the relation
     between \a lhs and \a rhs.
+
+    \constraints both
+    \c LeftInt and \c RightInt are built-in integral types.
 */
 
 /*!
@@ -1324,9 +1324,6 @@ CHECK(strong, equivalent);
     \overload
 
     Implements three-way comparison of floating point types.
-
-    \note This function participates in overload resolution only if both
-    \c LeftFloat and \c RightFloat are built-in floating-point types.
 
     Returns \c {lhs <=> rhs}, provided \c LeftFloat and \c RightFloat are
     built-in floating-point types. Unlike \c {operator<=>()}, this function
@@ -1354,6 +1351,9 @@ CHECK(strong, equivalent);
     Returns an instance of \l Qt::partial_ordering that represents the relation
     between \a lhs and \a rhs. If \a lhs or \a rhs is not a number (NaN),
     \l Qt::partial_ordering::unordered is returned.
+
+    \constraints both
+    \c LeftFloat and \c RightFloat are built-in floating-point types.
 */
 
 /*!
@@ -1364,16 +1364,16 @@ CHECK(strong, equivalent);
 
     Implements three-way comparison of integral and floating point types.
 
-    \note This function participates in overload resolution only if \c IntType
-    is a built-in integral type and \c FloatType is a built-in floating-point
-    type.
-
     This function converts \a lhs to \c FloatType and calls the overload for
     floating-point types.
 
     Returns an instance of \l Qt::partial_ordering that represents the relation
     between \a lhs and \a rhs. If \a rhs is not a number (NaN),
     \l Qt::partial_ordering::unordered is returned.
+
+    \constraints \c IntType
+    is a built-in integral type and \c FloatType is a built-in floating-point
+    type.
 */
 
 /*!
@@ -1384,16 +1384,16 @@ CHECK(strong, equivalent);
 
     Implements three-way comparison of floating point and integral types.
 
-    \note This function participates in overload resolution only if \c FloatType
-    is a built-in floating-point type and \c IntType is a built-in integral
-    type.
-
     This function converts \a rhs to \c FloatType and calls the overload for
     floating-point types.
 
     Returns an instance of \l Qt::partial_ordering that represents the relation
     between \a lhs and \a rhs. If \a lhs is not a number (NaN),
     \l Qt::partial_ordering::unordered is returned.
+
+    \constraints \c FloatType
+    is a built-in floating-point type and \c IntType is a built-in integral
+    type.
 */
 
 #if QT_DEPRECATED_SINCE(6, 8)
@@ -1407,12 +1407,12 @@ CHECK(strong, equivalent);
 
     Implements three-way comparison of pointers.
 
-    \note This function participates in overload resolution if \c LeftType and
-    \c RightType are the same type, or base and derived types. It is also used
-    to compare any pointer to \c {std::nullptr_t}.
-
     Returns an instance of \l Qt::strong_ordering that represents the relation
     between \a lhs and \a rhs.
+
+    \constraints \c LeftType and
+    \c RightType are the same type, or base and derived types. It is also used
+    to compare any pointer to \c {std::nullptr_t}.
 */
 #endif // QT_DEPRECATED_SINCE(6, 8)
 
@@ -1424,14 +1424,13 @@ CHECK(strong, equivalent);
 
     Implements three-way comparison of enum types.
 
-    \note This function participates in overload resolution only if \c Enum
-    is an enum type.
-
     This function converts \c Enum to its underlying type and calls the
     overload for integral types.
 
     Returns an instance of \l Qt::strong_ordering that represents the relation
     between \a lhs and \a rhs.
+
+    \constraints \c Enum is an enum type.
 */
 
 /*!
@@ -1445,11 +1444,10 @@ CHECK(strong, equivalent);
     \l {https://en.cppreference.com/w/cpp/language/operator_comparison#Pointer_total_order}
     {strict total order over pointers} when doing the comparison.
 
-    \note This function participates in overload resolution if \c T and \c U
-    are the same type, or base and derived types.
-
     Returns an instance of \l Qt::strong_ordering that represents the relation
     between \a lhs and \a rhs.
+
+    \constraints \c T and \c U are the same type, or base and derived types.
 */
 
 /*!
@@ -1463,11 +1461,10 @@ CHECK(strong, equivalent);
     \l {https://en.cppreference.com/w/cpp/language/operator_comparison#Pointer_total_order}
     {strict total order over pointers} when doing the comparison.
 
-    \note This function participates in overload resolution if \c T and \c U
-    are the same type, or base and derived types.
-
     Returns an instance of \l Qt::strong_ordering that represents the relation
     between \a lhs and \a rhs.
+
+    \constraints \c T and \c U are the same type, or base and derived types.
 */
 
 /*!
@@ -1481,11 +1478,10 @@ CHECK(strong, equivalent);
     \l {https://en.cppreference.com/w/cpp/language/operator_comparison#Pointer_total_order}
     {strict total order over pointers} when doing the comparison.
 
-    \note This function participates in overload resolution if \c T and \c U
-    are the same type, or base and derived types.
-
     Returns an instance of \l Qt::strong_ordering that represents the relation
     between \a lhs and \a rhs.
+
+    \constraints \c T and \c U are the same type, or base and derived types.
 */
 
 /*!

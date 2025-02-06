@@ -145,8 +145,7 @@ QT_BEGIN_NAMESPACE
 
     The behavior is undefined if \a len is negative or, when positive, if \a str is \nullptr.
 
-    This constructor only participates in overload resolution if \c Char is a compatible
-    character type.
+    \constraints \c Char is a compatible character type.
 
     \sa isNull(), {Compatible Character Types}
 */
@@ -165,8 +164,7 @@ QT_BEGIN_NAMESPACE
     The behavior is undefined if \a last precedes \a first, or \a first
     is \nullptr and \a last is not.
 
-    This constructor only participates in overload resolution if \c Char
-    is a compatible character type.
+    \constraints \c Char is a compatible character type.
 
     \sa isNull(), {Compatible Character Types}
 */
@@ -181,9 +179,8 @@ QT_BEGIN_NAMESPACE
 
     Passing \nullptr as \a str is safe and results in a null string view.
 
-    This constructor only participates in overload resolution if \a
-    str is not an array and if \c Char is a compatible character
-    type.
+    \constraints \a str is not an array and \c Char is a
+    compatible character type.
 
     \sa isNull(), {Compatible Character Types}
 */
@@ -199,7 +196,7 @@ QT_BEGIN_NAMESPACE
     \a string must remain valid for the lifetime of this string view
     object.
 
-    This constructor only participates in overload resolution if \a
+    \constraints \a
     string is an actual array and \c Char is a compatible character
     type.
 
@@ -233,12 +230,12 @@ QT_BEGIN_NAMESPACE
 
     \c{std::data(str)} must remain valid for the lifetime of this string view object.
 
-    This constructor only participates in overload resolution if \c Container is a
-    container with a compatible character type as \c{value_type}.
-
     The string view will be empty if and only if \c{std::size(str) == 0}. It is unspecified
     whether this constructor can result in a null string view (\c{std::data(str)} would
     have to return \nullptr for this).
+
+    \constraints \c Container is a
+    container with a compatible character type as \c{value_type}.
 
     \sa isNull(), isEmpty()
 */

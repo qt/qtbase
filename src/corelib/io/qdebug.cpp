@@ -992,8 +992,7 @@ QDebug &QDebug::resetFormat()
     \since 6.9
     Prints the Qt or std ordering value \a t to the \a debug object.
 
-    \note This function only participates in overload resolution if \c T
-    is one of <Qt/Std>::<weak/partial/strong>_ordering.
+    \constraints \c T is one of <Qt/Std>::<weak/partial/strong>_ordering.
 */
 
 /*!

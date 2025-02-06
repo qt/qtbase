@@ -243,8 +243,8 @@ Q_LOGGING_CATEGORY(lcPermissions, "qt.permissions", QtWarningMsg);
     You do not need to construct this type explicitly, as the type is automatically
     used when checking or requesting permissions.
 
-    This constructor participates in overload resolution only if \c T is one of
-    the \l{typed permission} classes:
+    \constraints
+    \c T is one of the \l{typed permission} classes:
 
     \annotatedlist permissions
 */
@@ -257,8 +257,8 @@ Q_LOGGING_CATEGORY(lcPermissions, "qt.permissions", QtWarningMsg);
 
     Use type() for dynamically choosing which typed permission to request.
 
-    This function participates in overload resolution only if \c T is one of
-    the \l{typed permission} classes:
+    \constraints
+    \c T is one of the \l{typed permission} classes:
 
     \annotatedlist permissions
 */

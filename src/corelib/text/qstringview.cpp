@@ -196,7 +196,7 @@ QT_BEGIN_NAMESPACE
     The behavior is undefined if \a len is negative or, when positive, if \a str is \nullptr.
 
 //! [compatible-char-types]
-    This constructor only participates in overload resolution if \c Char is a compatible
+    \constraints \c Char is a compatible
     character type. The compatible character types are: \c QChar, \c ushort, \c char16_t and
     (on platforms, such as Windows, where it is a 16-bit type) \c wchar_t.
 //! [compatible-char-types]
@@ -265,14 +265,14 @@ QT_BEGIN_NAMESPACE
 
     \c{std::data(str)} must remain valid for the lifetime of this string view object.
 
-    This constructor only participates in overload resolution if \c Container is a
-    container with a compatible character type as \c{value_type}. The
-    compatible character types are: \c QChar, \c ushort, \c char16_t and
-    (on platforms, such as Windows, where it is a 16-bit type) \c wchar_t.
-
     The string view will be empty if and only if \c{std::size(str) == 0}. It is unspecified
     whether this constructor can result in a null string view (\c{std::data(str)} would
     have to return \nullptr for this).
+
+    \constraints \c Container is a
+    container with a compatible character type as \c{value_type}. The
+    compatible character types are: \c QChar, \c ushort, \c char16_t and
+    (on platforms, such as Windows, where it is a 16-bit type) \c wchar_t.
 
     \sa isNull(), isEmpty()
 */

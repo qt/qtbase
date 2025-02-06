@@ -105,11 +105,11 @@
 
     Constructs an array with the contents in the iterator range [\a first, \a last).
 
-    This constructor only participates in overload resolution if
+    The value type of \c InputIterator must be convertible to \c T.
+
+    \constraints
     \c InputIterator meets the requirements of an
     \l {https://en.cppreference.com/w/cpp/named_req/InputIterator} {LegacyInputIterator}.
-
-    The value type of \c InputIterator must be convertible to \c T.
 */
 
 
@@ -1040,11 +1040,11 @@
     range [\a first, \a last). This function will only allocate memory if the
     number of elements in the range exceeds the capacity of the container.
 
-    This function overload only participates in overload resolution if
+    The behavior is undefined if either argument is an iterator into *this.
+
+    \constraints
     \c InputIterator meets the requirements of an
     \l {https://en.cppreference.com/w/cpp/named_req/InputIterator} {LegacyInputIterator}.
-
-    The behavior is undefined if either argument is an iterator into *this.
 */
 
 /*! \fn template <class T, qsizetype Prealloc> QVarLengthArray<T, Prealloc>& QVarLengthArray<T, Prealloc>::assign(std::initializer_list<T> list)

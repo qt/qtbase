@@ -204,8 +204,7 @@
 
     The behavior is undefined if \a len is negative or, when positive, if \a data is \nullptr.
 
-    This constructor only participates in overload resolution if \c Byte is a compatible
-    byte type.
+    \constraints \c Byte is a compatible byte type.
 
     \sa {Compatible Byte Types}
 */
@@ -224,8 +223,7 @@
     The behavior is undefined if \a last precedes \a first, or \a first
     is \nullptr and \a last is not.
 
-    This constructor only participates in overload resolution if \c Byte is
-    a compatible byte type.
+    \constraints \c Byte is a compatible byte type.
 
     \sa {Compatible Byte Types}
 */
@@ -240,8 +238,8 @@
 
     Passing \nullptr as \a data is safe and results in a null byte array view.
 
-    This constructor only participates in overload resolution if \a data is not
-    an array and if \c Byte is a compatible byte type.
+    \constraints \a data is not an array and \c Byte is a
+    compatible byte type.
 
     \sa {Compatible Byte Types}
 */
@@ -255,8 +253,7 @@
 
     \a data must remain valid for the lifetime of this byte array view object.
 
-    This constructor only participates in overload resolution if \c Byte is a
-    compatible byte type.
+    \constraints \c Byte is a compatible byte type.
 
     \sa {Compatible Byte Types}
 */
@@ -304,7 +301,7 @@
 
     The container's data must remain valid for the lifetime of this byte array view object.
 
-    This constructor participates in overload resolution if \a c is any contiguous
+    \constraints \a c is any contiguous
     container with elements of a compatible byte type.
 
     \sa {Compatible Byte Types}
