@@ -2052,6 +2052,7 @@ void QCocoaWindow::applyContentBorderThickness(NSWindow *window)
 
     if (!m_drawContentBorderGradient) {
         window.styleMask = window.styleMask & ~NSWindowStyleMaskTexturedBackground;
+        setWindowFlags(QPlatformWindow::window()->flags());
         [window.contentView.superview setNeedsDisplay:YES];
         return;
     }
@@ -2077,6 +2078,7 @@ void QCocoaWindow::applyContentBorderThickness(NSWindow *window)
     int effectiveBottomContentBorderThickness = 0;
 
     [window setStyleMask:[window styleMask] | NSWindowStyleMaskTexturedBackground];
+    setWindowFlags(QPlatformWindow::window()->flags());
 
     // Setting titlebarAppearsTransparent to YES means that the border thickness has to account
     // for the title bar height as well, otherwise sheets will not be presented at the correct
