@@ -518,7 +518,7 @@ QString QSysInfo::buildCpuArchitecture()
 
     Values returned by this function are mostly stable: an attempt will be made
     to ensure that they stay constant over time and match the values returned
-    by QSysInfo::builldCpuArchitecture(). However, due to the nature of the
+    by buildCpuArchitecture(). However, due to the nature of the
     operating system functions being used, there may be discrepancies.
 
     Typical returned values are (note: list not exhaustive):
