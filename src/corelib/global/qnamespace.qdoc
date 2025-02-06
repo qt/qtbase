@@ -1074,13 +1074,13 @@
     by QWidget::setGeometry().
 
     \value WA_NoChildEventsForParent Indicates that the widget does
-    not want ChildAdded or ChildRemoved events sent to its
+    not want \l{QEvent::}{ChildAdded} or \l{QEvent::}{ChildRemoved} events sent to its
     parent. This is rarely necessary but can help to avoid automatic
     insertion widgets like splitters and layouts. This is set by a
     widget's author.
 
     \value WA_NoChildEventsFromChildren Indicates that the widget does
-    not want to receive ChildAdded or ChildRemoved events sent from its
+    not want to receive \l{QEvent::}{ChildAdded} or \l{QEvent::}{ChildRemoved} events sent from its
     children. This is set by a widget's author.
 
     \value WA_NoMouseReplay Used for pop-up widgets. Indicates that the most
@@ -1328,7 +1328,7 @@
     QQuickWidget to be drawn last, on top of other widgets. Ignored for other
     type of widgets. Setting this attribute breaks the stacking order, but
     allows having a semi-transparent OpenGL widget with other widgets visible
-    underneath. It is strongly recommended to call update() on the widget's
+    underneath. It is strongly recommended to call \l{QWidget::}{update()} on the widget's
     top-level window after enabling or disabling this attribute.
 
     \value WA_ContentsMarginsRespectsSafeArea A QWidget respects the safe
@@ -1412,7 +1412,7 @@
                           On Windows keyboards, this key is mapped to the
                           Windows key.
     \value Key_Alt
-    \value Key_AltGr      On Windows, when the KeyDown event for this key is
+    \value Key_AltGr      On Windows, when the \c KeyDown event for this key is
                           sent, the Ctrl+Alt modifiers are also set.
     \value Key_CapsLock
     \value Key_NumLock
@@ -2400,7 +2400,7 @@
     \enum Qt::SplitBehaviorFlags
     \since 5.14
 
-    This enum specifies how the split() functions should behave with
+    This enum specifies how the QString::split() functions should behave with
     respect to empty strings.
 
     \value KeepEmptyParts  If a field is empty, keep it in the result.
@@ -2499,7 +2499,7 @@
     This enum is used in widgets that can display both plain text and
     rich text, for example QLabel. It is used for deciding whether a text
     string should be interpreted as one or the other. This is normally
-    done by passing one of the enum values to a QTextEdit::setTextFormat()
+    done by passing one of the enum values to a QStaticText::setTextFormat()
     function.
 
     \value PlainText  The text string is interpreted as a plain text
@@ -3349,7 +3349,7 @@
   This enum describes the possible High-DPI scale factor rounding policies, which
   decide how non-integer scale factors (such as Windows 150%) are handled.
 
-  The active policy is set by calling QGuiApplication::setHighDdpiScaleFactorRoundingPolicy() before
+  The active policy is set by calling QGuiApplication::setHighDpiScaleFactorRoundingPolicy() before
   the application object is created.
 
   \sa QGuiApplication::setHighDpiScaleFactorRoundingPolicy()
