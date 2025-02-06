@@ -52,8 +52,8 @@ if(QT_USE_VCPKG OR (NOT DEFINED QT_USE_VCPKG AND __qt_initially_configured_use_v
             )
         endif()
 
-        if(NOT VCPKG_CHAINLOAD_TOOLCHAIN_FILE AND QT_CHAINLOAD_TOOLCHAIN_FILE)
-            set(VCPKG_CHAINLOAD_TOOLCHAIN_FILE "${QT_CHAINLOAD_TOOLCHAIN_FILE}" CACHE STRING "")
+        if(NOT VCPKG_CHAINLOAD_TOOLCHAIN_FILE AND __qt_chainload_toolchain_file)
+            set(VCPKG_CHAINLOAD_TOOLCHAIN_FILE "${__qt_chainload_toolchain_file}" CACHE STRING "")
         endif()
 
         set(__qt_chainload_toolchain_file "${__qt_vcpkg_toolchain_file}")
