@@ -1220,7 +1220,7 @@ void tst_QTextStream::stillOpenWhenAtEnd()
 
     QTcpSocket socket;
     socket.connectToHost(QtNetworkSettings::serverName(), 143);
-    QVERIFY(socket.waitForReadyRead(5000));
+    QTRY_VERIFY_WITH_TIMEOUT(socket.bytesAvailable() > 0, 20000);
 
     QTextStream stream2(&socket);
     while (!stream2.readLine().isNull()) {}
