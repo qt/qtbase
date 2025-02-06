@@ -1509,18 +1509,18 @@ void QRhiMetal::setGraphicsPipeline(QRhiCommandBuffer *cb, QRhiGraphicsPipeline 
     cbD->currentComputePipeline = nullptr;
     cbD->currentPipelineGeneration = psD->generation;
 
-    if (!psD->d->tess.enabled && !psD->d->tess.failed) {
+    if (!psD->d->tess.enabled && !psD->d->tess.failed)
         psD->makeActiveForCurrentRenderPassEncoder(cbD);
-    } else {
-        // mark work buffers that can now be safely reused as reusable
-        for (QMetalBuffer *workBuf : psD->d->extraBufMgr.deviceLocalWorkBuffers) {
-            if (workBuf && workBuf->lastActiveFrameSlot == currentFrameSlot)
-                workBuf->lastActiveFrameSlot = -1;
-        }
-        for (QMetalBuffer *workBuf : psD->d->extraBufMgr.hostVisibleWorkBuffers) {
-            if (workBuf && workBuf->lastActiveFrameSlot == currentFrameSlot)
-                workBuf->lastActiveFrameSlot = -1;
-        }
+
+    // mark work buffers that can now be safely reused as reusable
+    // NOTE: These are  usually empty unless tessellation or mutiview is used.
+    for (QMetalBuffer *workBuf : psD->d->extraBufMgr.deviceLocalWorkBuffers) {
+        if (workBuf && workBuf->lastActiveFrameSlot == currentFrameSlot)
+            workBuf->lastActiveFrameSlot = -1;
+    }
+    for (QMetalBuffer *workBuf : psD->d->extraBufMgr.hostVisibleWorkBuffers) {
+        if (workBuf && workBuf->lastActiveFrameSlot == currentFrameSlot)
+            workBuf->lastActiveFrameSlot = -1;
     }
 
     psD->lastActiveFrameSlot = currentFrameSlot;
