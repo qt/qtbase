@@ -381,16 +381,37 @@
 */
 
 /*!
+    \typedef QJniArray::iterator
+
+    A random-access iterator for QJniArray.
+/*
+
+/*!
     \typedef QJniArray::const_iterator
 
     A random-access, const iterator for QJniArray.
 */
 
 /*!
+    \typedef QJniArray::reverse_iterator
+
+    A reverse iterator for QJniArray, synonym for
+    \c{std::reverse_iterator<iterator>}.
+
+//! [reverse_iterator-operator->]
+    \note Accessing the element of the reverse iterator using \c{operator->()}
+    requires C++20, as the C++17 reverse_iterator does not support iterators that
+    return a proxy object.
+//! [reverse_iterator-operator->]
+/*
+
+/*!
     \typedef QJniArray::const_reverse_iterator
 
     A reverse iterator for the QJniArray, synonym for
     \c{std::reverse_iterator<const_iterator>}.
+
+    \include qjniarray.qdoc reverse_iterator-operator->
 */
 
 /*!
@@ -431,6 +452,8 @@
     If the array is \l{QJniArrayBase::isValid()}{invalid}, then this will return
     the same iterator as the corresponding rend() function.
 
+    \include qjniarray.qdoc reverse_iterator-operator->
+
     \sa rend(), begin()
 */
 
@@ -441,6 +464,8 @@
 
     Returns an \l{STL-style iterators}{STL-style reverse iterator} pointing just
     after the last item in the list, in reverse order.
+
+    \include qjniarray.qdoc reverse_iterator-operator->
 
     \sa rbegin(), end()
 */
