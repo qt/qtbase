@@ -655,7 +655,7 @@ QMetaCallEvent* QMetaCallEvent::create_impl(QtPrivate::SlotObjUniquePtr slotObj,
     \reentrant
 
     QSignalBlocker can be used wherever you would otherwise use a
-    pair of calls to blockSignals(). It blocks signals in its
+    pair of calls to QObject::blockSignals(). It blocks signals in its
     constructor and in the destructor it resets the state to what
     it was before the constructor ran.
 

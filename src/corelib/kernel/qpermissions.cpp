@@ -577,7 +577,7 @@ QT_PERMISSION_IMPL_COMMON(QContactsPermission)
 {}
 
 /*!
-    Sets whether the request is for read-write (\a mode == AccessMode::ReadOnly) or
+    Sets whether the request is for read-write (\a mode == AccessMode::ReadWrite) or
     read-only (\a mode == AccessMode::ReadOnly) access to the contacts.
 */
 void QContactsPermission::setAccessMode(AccessMode mode)
@@ -634,7 +634,7 @@ QT_PERMISSION_IMPL_COMMON(QCalendarPermission)
 {}
 
 /*!
-    Sets whether the request is for read-write (\a mode == AccessMode::ReadOnly) or
+    Sets whether the request is for read-write (\a mode == AccessMode::ReadWrite) or
     read-only (\a mode == AccessMode::ReadOnly) access to the calendar.
 */
 void QCalendarPermission::setAccessMode(AccessMode mode)

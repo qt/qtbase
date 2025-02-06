@@ -460,7 +460,7 @@ QMetaType QMetaObject::metaType() const
 
     The offset is the sum of all the methods in the class's
     superclasses (which is always positive since QObject has the
-    deleteLater() slot and a destroyed() signal).
+    \l{QObject::}{deleteLater()} slot and a \l{QObject::}{destroyed()} signal).
 
     \sa method(), methodCount(), indexOfMethod()
 */
@@ -503,7 +503,7 @@ int QMetaObject::enumeratorOffset() const
 
     The offset is the sum of all the properties in the class's
     superclasses (which is always positive since QObject has the
-    name() property).
+    \l{QObject::}{objectName} property).
 
     \sa property(), propertyCount(), indexOfProperty()
 */
