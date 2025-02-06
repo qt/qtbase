@@ -82,18 +82,31 @@ private:
     constexpr static float m_hlg_b = 1.f - (4.f * m_hlg_a);
     constexpr static float m_hlg_c = 0.55991073f; // 0.5 - a * ln(4 * a)
 
+    // BT.2100-2 Reference PQ EOTF and inverse (see Table 4)
     // PQ to linear [0-1] -> [0-64]
-    static float pqToLinear(float x)
+    static float pqToLinear(float e)
     {
-        x = std::pow(x, 1.f / m_pq_m2);
-        return std::pow((m_pq_c1 - x) / (m_pq_c3 * x - m_pq_c2), (1.f / m_pq_m1)) * m_pq_f;
+        // m2-th root of E'
+        const float eRoot = std::pow(e, 1.f / m_pq_m2);
+        // rational transform
+        const float yBase = (std::max)(eRoot - m_pq_c1, 0.0f) / (m_pq_c2 - m_pq_c3 * eRoot);
+        // calculate Y = yBase^(1/m1)
+        const float y = std::pow(yBase, 1.f / m_pq_m1);
+        // scale Y to Fd
+        return y * m_pq_f;
     }
 
     // PQ from linear [0-64] -> [0-1]
-    static float pqFromLinear(float x)
+    static float pqFromLinear(float fd)
     {
-        x = std::pow(x * (1.f / m_pq_f), m_pq_m1);
-        return std::pow((m_pq_c1 + m_pq_c2 * x) / (1.f + m_pq_c3 * x), m_pq_m2);
+        // scale Fd to Y
+        const float y = fd * (1.f / m_pq_f);
+        // yRoot = Y^m1 -- "root" because m1 is <1
+        const float yRoot = std::pow(y, m_pq_m1);
+        // rational transform
+        const float eBase = (m_pq_c1 + m_pq_c2 * yRoot) / (1.f + m_pq_c3 * yRoot);
+        // calculate E' = eBase^m2
+        return std::pow(eBase, m_pq_m2);
     }
 
     constexpr static float m_pq_c1 =  107.f / 128.f; // c3 - c2 + 1
