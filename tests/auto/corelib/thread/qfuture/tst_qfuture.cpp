@@ -276,6 +276,13 @@ private:
     QtPrivate::ResultStoreBase &store;
 };
 
+static void suppressContinuationOverrideWarning()
+{
+    QTest::ignoreMessage(QtWarningMsg,
+                         "Adding a continuation to a future which already has a continuation. "
+                         "The existing continuation is overwritten.");
+}
+
 void tst_QFuture::compareCompiles()
 {
     QTestPrivate::testEqualityOperatorsCompile<QFuture<int>::const_iterator>();
@@ -4560,6 +4567,7 @@ void tst_QFuture::whenAllIteratorsWithFailed()
                                QCOMPARE(results.size(), 2);
                                QCOMPARE(results[1].result(), 1);
                                // A shorter way of handling the exception
+                               suppressContinuationOverrideWarning();
                                results[0].onFailed([&](const QException &) {
                                    finished = true;
                                    return 0;
@@ -4715,6 +4723,7 @@ void tst_QFuture::whenAllDifferentTypesWithFailed()
                                                           QVERIFY(f.isFinished());
                                                           bool failed = false;
                                                           // A shorter way of handling the exception
+                                                          suppressContinuationOverrideWarning();
                                                           f.onFailed([&](const QException &) {
                                                               failed = true;
                                                               return -1;
@@ -4969,9 +4978,7 @@ void tst_QFuture::continuationOverride()
     bool firstExecuted = false;
     bool secondExecuted = false;
 
-    QTest::ignoreMessage(QtWarningMsg,
-                         "Adding a continuation to a future which already has a continuation. "
-                         "The existing continuation is overwritten.");
+    suppressContinuationOverrideWarning();
 
     QFuture<int> f1 = p.future();
     f1.then([&firstExecuted](int) {
