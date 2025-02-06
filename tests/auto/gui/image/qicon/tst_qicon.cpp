@@ -10,7 +10,7 @@
 #include <QProcess>
 #endif
 #include <qicon.h>
-#include <qiconengine.h>
+#include <private/qabstractfileiconengine_p.h>
 
 #include <algorithm>
 
@@ -34,6 +34,8 @@ private slots:
     void detach();
     void addFile();
     void pixmap();
+    void pixmapByDprFromEngine_data();
+    void pixmapByDprFromEngine();
     void paint();
     void availableSizes();
     void name();
@@ -445,6 +447,67 @@ void tst_QIcon::pixmap()
     QVERIFY(icon.pixmap(QSize(16, 16)).size().width() >= 16);
     QVERIFY(icon.pixmap(QSize(16, 16), 1).size().width() == 16);
     QVERIFY(icon.pixmap(QSize(16, 16), -1).size().width() >= 16);
+}
+
+void tst_QIcon::pixmapByDprFromEngine_data()
+{
+    QTest::addColumn<int>("engineSize");
+    QTest::addColumn<int>("requestedSize");
+    QTest::addColumn<qreal>("requestedDpr");
+    QTest::addColumn<int>("expectedSize");
+    QTest::addColumn<qreal>("expectedDpr");
+
+    QTest::newRow("engine 16x16, request 32x32, dpr = 1")
+        << 16 << 32 << 1.0 << 16 << 1.0;    // no upscaling is done
+    QTest::newRow("engine 16x16, request 32x32, dpr = 2")
+        << 16 << 32 << 2.0 << 16 << 1.0;    // no upscaling is done
+    QTest::newRow("engine 32x32, request 32x32, dpr = 1")
+        << 32 << 32 << 1.0 << 32 << 1.0;
+    QTest::newRow("engine 32x32, request 32x32, dpr = 2")
+        << 32 << 32 << 2.0 << 32 << 1.0;    // no upscaling is done
+    QTest::newRow("engine 32x32, request 16x16, dpr = 1")
+        << 32 << 16 << 1.0 << 32 << 2.0;    // downscaling done by increasing dpr
+    QTest::newRow("engine 32x32, request 16x16, dpr = 2")
+        << 32 << 16 << 2.0 << 32 << 2.0;
+    QTest::newRow("engine 32x32, request 8x8, dpr = 1")
+        << 32 << 8 << 1.0 << 32 << 4.0;     // downscaling done by increasing dpr
+    QTest::newRow("engine 32x32, request 8x8, dpr = 2")
+        << 32 << 8 << 2.0 << 32 << 4.0;     // downscaling done by increasing dpr
+}
+
+void tst_QIcon::pixmapByDprFromEngine()
+{
+    QFETCH(int, engineSize);
+    QFETCH(int, requestedSize);
+    QFETCH(qreal, requestedDpr);
+    QFETCH(int, expectedSize);
+    QFETCH(qreal, expectedDpr);
+
+    class TestEngine : public QPixmapIconEngine
+    {
+    public:
+        using QPixmapIconEngine::QPixmapIconEngine;
+        QSize size;
+
+        QPixmap pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state) override
+        {
+            return scaledPixmap(size, mode, state, 1.0f);
+        }
+        QPixmap scaledPixmap(const QSize &, QIcon::Mode, QIcon::State, qreal) override
+        {
+            // simulate an icon engine which does no scaling (= only has fixed size icons)
+            QPixmap pm(size);
+            pm.fill(Qt::red);
+            return pm;
+        }
+    };
+
+    auto testEngine = new TestEngine;
+    QIcon ico(testEngine);
+    testEngine->size = QSize(engineSize, engineSize);
+    auto pm = ico.pixmap(QSize(requestedSize, requestedSize), requestedDpr);
+    QCOMPARE(pm.size(), QSize(expectedSize, expectedSize));
+    QCOMPARE(pm.devicePixelRatio(), expectedDpr);
 }
 
 void tst_QIcon::paint()

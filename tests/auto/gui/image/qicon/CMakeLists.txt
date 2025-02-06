@@ -44,6 +44,7 @@ qt_internal_add_test(tst_qicon
         tst_qicon.cpp
     LIBRARIES
         Qt::Gui
+        Qt::GuiPrivate
         TestIconPlugin
     TESTDATA ${test_data}
 )

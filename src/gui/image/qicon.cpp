@@ -917,6 +917,8 @@ QPixmap QIcon::pixmap(const QSize &size, Mode mode, State state) const
   might be smaller than requested, but never larger, unless the device-pixel ratio
   of the returned pixmap is larger than 1.
 
+  \note The requested devicePixelRatio might not match the returned one. This delays the
+  scaling of the QPixmap until it is drawn later on.
   \note Prior to Qt 6.8 this function wronlgy passed the device dependent pixmap size to
   QIconEngine::scaledPixmap(), since Qt 6.8 it's the device independent size (not scaled
   with the \a devicePixelRatio).
@@ -932,15 +934,10 @@ QPixmap QIcon::pixmap(const QSize &size, qreal devicePixelRatio, Mode mode, Stat
     if (devicePixelRatio == -1)
         devicePixelRatio = qApp->devicePixelRatio();
 
-    // Handle the simple normal-dpi case
-    if (!(devicePixelRatio > 1.0)) {
-        QPixmap pixmap = d->engine->pixmap(size, mode, state);
-        pixmap.setDevicePixelRatio(1.0);
-        return pixmap;
-    }
-
-    // Try get a pixmap that is big enough to be displayed at device pixel resolution.
     QPixmap pixmap = d->engine->scaledPixmap(size, mode, state, devicePixelRatio);
+    // even though scaledPixmap() should return a pixmap with an appropriate size, we
+    // can not rely on it. Therefore we simply set the dpr to a correct size to make
+    // sure the pixmap is not larger than requested.
     pixmap.setDevicePixelRatio(d->pixmapDevicePixelRatio(devicePixelRatio, size, pixmap.size()));
     return pixmap;
 }
