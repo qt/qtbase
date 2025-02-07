@@ -39,6 +39,7 @@
         \li \l{Platform Notes}
         \li \l{qmake Language}
         \li \l{Advanced Usage}
+        \li \l{Using Third-Party Libraries}
         \li \l{Using Precompiled Headers}
         \li \l{Configuring qmake}
         \li \l{Reference}
@@ -71,7 +72,7 @@
     the information in each project file to a Makefile that executes the necessary
     commands for compiling and linking.
 
-    \section1 Describing a Project
+    \section1 Describing a project
 
     Projects are described by the contents of project (\c .pro) files. qmake
     uses the information within the files to generate Makefiles that contain
@@ -109,7 +110,7 @@
     projects. However, it might be useful, or even necessary, to use some
     platform-specific variables. For more information, see \l{Platform Notes}.
 
-    \section1 Building a Project
+    \section1 Building a project
 
     For simple projects, you only need to run qmake in the top level directory
     of your project to generate a Makefile. You can then run your platform's
@@ -121,12 +122,12 @@
     \note Add your project build directory to the list of excluded directories
       of any anti-virus application that runs on your system.
 
-    \section1 Using Third Party Libraries
+    \section1 Adding third-party libraries
 
-    The guide to \l{Third Party Libraries} shows you how to use simple third
+    The guide to \l{Using Third-Party Libraries} shows you how to use simple third
     party libraries in your Qt project.
 
-    \section1 Precompiling Headers
+    \section1 Precompiling headers
 
     In large projects, it is possible to take advantage of precompiled
     header files to speed up the build process. For more information, see
@@ -5669,4 +5670,132 @@
     the build target when building in debug mode. An \c else clause could be
     added to the scope to do the same for release mode. Left as it is, the
     target name remains unmodified.
+*/
+
+/*!
+    \page qmake-third-party-libraries.html
+    \title Using Third-Party Libraries
+    \brief A guide to using third party libraries with Qt and qmake
+
+    qmake allows you to use third-party libraries with Qt. Suppose you know
+    of a cross-platform library that accepts audio samples of a cat's meows and
+    translates them into English words. This library is named \c CatWhisperer,
+    and has several files that it provides as part of its library.
+    Your project, \c MyQtApp, stores these files in a folder named \c 3rdparty:
+
+    \list
+    \li MyQtApp/
+        \list
+        \li MyQtApp.pro
+        \li src/
+            \list
+            \li main.cpp
+            \endlist
+        \li 3rdparty/
+            \list
+            \li CatWhisperer
+                \list
+                \li include/
+                    \list
+                    \li CatWhisperer.h
+                    \endlist
+                \li lib/
+                    \list
+                    \li libCatWhisperer.so
+                    \li CatWhisperer.lib
+                    \endlist
+                \li bin/
+                    \list
+                    \li CatWhisperer.dll
+                    \endlist
+                \endlist
+            \endlist
+        \endlist
+    \endlist
+
+    To use the \c CatWhisperer library in \c MyQtApp, \c qmake requires the
+    location and names of the \c CatWhisperer libraries.
+    Optionally, you can also:
+
+    \list
+    \li Provide the location of the \c CatWhisperer source code so that you
+    don't have to type out the full path to each file when you include them
+    in your own code.
+    \li Choose the destination in which the \c MyQtApp executable will be
+    created.
+    \endlist
+
+    The information above is provided in the \c .pro file, so that \c qmake can
+    parse it and produce makefiles. Makefiles contain all the information
+    needed by your compiler and linker to produce output, whether it is an
+    executable, another library file, etc. The next sections explain the syntax
+    with which \c qmake expects you to provide this information.
+
+    \section1 Source Code
+
+    To be able to write
+
+    \code
+    #include <CatWhisperer.h>
+    \endcode
+
+    instead of
+
+    \code
+    #include <3rdparty/CatWhisperer/include/CatWhisperer.h>
+    \endcode
+
+    you can provide the path to the \c CatWhisperer \c include directory,
+    using the \l{qmake Variable Reference#INCLUDEPATH}{INCLUDEPATH} variable:
+
+    \code
+    INCLUDEPATH += 3rdparty/CatWhisperer/include
+    \endcode
+
+    \section1 Library Files
+
+    To let \c qmake know where to find the \c CatWhisperer library files,
+    use the \l{qmake Variable Reference#LIBS}{LIBS} variable:
+
+    \code
+    LIBS += -L"3rdparty/CatWhisperer/lib" -lCatWhisperer
+    \endcode
+
+    The first part of the expression lets the linker know in which directory
+    it should look for the library files. The double quotes are only necessary
+    when the path contains spaces, so we could have omitted them in this
+    example.
+
+    The second part tells the linker which libraries to link against. We have
+    two different library files for UNIX platforms and Windows, respectively:
+    \c libCatWhisperer.so and \c CatWhisperer.lib. It is not necessary
+    to specify the \c .lib extension, nor the \c lib prefix
+    (on UNIX platforms).
+
+    \section1 Destination Directory
+
+    By default, \c qmake creates the executable in the same directory as the
+    \c .pro file. We can choose our own directory using the
+    \l{qmake Variable Reference#DESTDIR}{DESTDIR} variable:
+
+    \code
+    DESTDIR = bin
+    \endcode
+
+    That's it! You can now use the \c CatWhisperer library in your project.
+    The final \c .pro file looks like this:
+
+    \code
+    TARGET = MyQtApp
+
+    TEMPLATE = app
+
+    INCLUDEPATH += 3rdparty/CatWhisperer/include
+
+    SOURCES += src/main.cpp
+
+    LIBS += -L"3rdparty/CatWhisperer/lib" -lCatWhisperer
+    \endcode
+
+    \sa {\QC: Add libraries to qmake projects}
 */

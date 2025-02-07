@@ -17,6 +17,7 @@
         \li \l{Platform Notes}
         \li \l{qmake Language}
         \li \l{Advanced Usage}
+        \li \l{Using Third-Party Libraries}
         \li \l{Using Precompiled Headers}
         \li \l{Configuring qmake}
         \li \l{Reference}
