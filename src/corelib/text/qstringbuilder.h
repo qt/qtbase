@@ -253,7 +253,7 @@ template <> struct QConcatenable<QString> : private QAbstractConcatenable
     {
         const qsizetype n = a.size();
         if (n)
-            memcpy(out, reinterpret_cast<const char*>(a.constData()), sizeof(QChar) * n);
+            memcpy(out, a.data(), sizeof(QChar) * n);
         out += n;
     }
 };
