@@ -827,6 +827,7 @@ void QFutureInterfaceBase::setContinuation(std::function<void(const QFutureInter
     // If the state is ready, run continuation immediately,
     // otherwise save it for later.
     if (isFinished()) {
+        d->continuationExecuted = true;
         lock.unlock();
         func(*this);
         lock.relock();
@@ -858,10 +859,11 @@ void QFutureInterfaceBase::cleanContinuation()
 void QFutureInterfaceBase::runContinuation() const
 {
     QMutexLocker lock(&d->continuationMutex);
-    if (d->continuation) {
+    if (d->continuation && !d->continuationExecuted) {
         // Save the continuation in a local function, to avoid calling
         // a null std::function below, in case cleanContinuation() is
         // called from some other thread right after unlock() below.
+        d->continuationExecuted = true;
         auto fn = std::move(d->continuation);
         lock.unlock();
         fn(*this);
