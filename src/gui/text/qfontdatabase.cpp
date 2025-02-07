@@ -2828,7 +2828,8 @@ void QFontDatabasePrivate::load(const QFontPrivate *d, int script)
         req.pixelSize = std::floor(((req.pointSize * d->dpi) / 72) * 100 + 0.5) / 100;
         req.pixelSize = qRound(req.pixelSize);
     }
-    if (req.pointSize < 0)
+
+    if (req.pointSize < 0 && d->dpi > 0)
         req.pointSize = req.pixelSize*72.0/d->dpi;
 
     // respect the fallback families that might be passed through the request
