@@ -410,17 +410,17 @@ private Q_SLOTS:
     void fromChar16T() const { fromCharacter(u'ä', 1); }
     void fromUShort() const { fromCharacter(ushort(0xE4), 1); }
     void fromChar32T() const {
-        fromCharacter(U'ä', 1);
-        fromCharacter(U'\x1F0A0', 2); // U+1F0A0: PLAYING CARD BACK
+        fromCharacter(U'ä', 1, true);
+        fromCharacter(U'\x1F0A0', 2, true); // U+1F0A0: PLAYING CARD BACK
     }
     void fromWCharT() const {
         ONLY_WIN(fromCharacter(L'ä', 1)); // should work on Unix, too (char32_t does)
     }
     void fromQChar() const { fromCharacter(QChar(u'ä'), 1); }
-    void fromQLatin1Char() const { fromCharacter(QLatin1Char('\xE4'), 1); }
+    void fromQLatin1Char() const { fromCharacter(QLatin1Char('\xE4'), 1, true); }
     void fromQCharSpecialCharacter() const {
-        fromCharacter(QChar::ReplacementCharacter, 1);
-        fromCharacter(QChar::LastValidCodePoint, 1);
+        fromCharacter(QChar::ReplacementCharacter, 1, true);
+        fromCharacter(QChar::LastValidCodePoint, 1, true);
     }
     void fromCharacterSpecial() const;
 
@@ -461,7 +461,7 @@ private:
     template <typename Char>
     void fromLiteral(const Char *arg) const;
     template <typename Char>
-    void fromCharacter(Char arg, qsizetype expectedSize) const;
+    void fromCharacter(Char arg, qsizetype expectedSize, bool expectConversion = false) const;
     template <typename Char>
     void fromRange() const;
     template <typename Char, typename Container>
@@ -741,8 +741,11 @@ void tst_QAnyStringView::fromLiteral(const Char *arg) const
     conversion_tests(arg);
 }
 
+template <typename T>
+const void *as_const_void_star(T *p) { return p; }
+
 template<typename Char>
-void tst_QAnyStringView::fromCharacter(Char arg, qsizetype expectedSize) const
+void tst_QAnyStringView::fromCharacter(Char arg, qsizetype expectedSize, bool expectConversion) const
 {
     // Need to re-create a new QASV(arg) each time, QASV(Char).data() dangles
     // after the end of the Full Expression:
@@ -751,6 +754,11 @@ void tst_QAnyStringView::fromCharacter(Char arg, qsizetype expectedSize) const
                   "If this fails, we may be creating a temporary QString/QByteArray");
 
     QCOMPARE(QAnyStringView(arg).size(), expectedSize);
+
+    if (expectConversion)
+        QCOMPARE_NE(QAnyStringView(arg).data(), as_const_void_star(std::addressof(arg)));
+    else
+        QCOMPARE_EQ(QAnyStringView(arg).data(), as_const_void_star(std::addressof(arg)));
 
     // QCOMPARE(QAnyStringView(arg), arg); // not all pairs compile, so do it manually:
 
