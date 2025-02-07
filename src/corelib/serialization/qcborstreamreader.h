@@ -111,6 +111,7 @@ public:
     bool isFloat16() const          { return type() == Float16; }
     bool isFloat() const            { return type() == Float; }
     bool isDouble() const           { return type() == Double; }
+    bool isNumber() const           { return isInteger() || isFloat16() || isFloat() || isDouble(); }
     bool isInvalid() const          { return type() == Invalid; }
 
     bool isSimpleType(QCborSimpleType st) const { return isSimpleType() && toSimpleType() == st; }
@@ -155,6 +156,22 @@ public:
         if (isNegativeInteger())
             return -v - 1;
         return v;
+    }
+    double toNumber() const
+    {
+        Q_ASSERT(isNumber());
+        if (isDouble())
+            return _toFloatingPoint<double>();
+        if (isFloat())
+            return _toFloatingPoint<float>();
+        if (isFloat16())
+            return _toFloatingPoint<qfloat16>();
+
+        // integer
+        double val = value64;
+        if (isNegativeInteger())
+            return -val - 1;
+        return val;
     }
     QString readAllString()
     {

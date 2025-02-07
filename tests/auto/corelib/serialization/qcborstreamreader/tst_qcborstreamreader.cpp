@@ -20,6 +20,8 @@ private Q_SLOTS:
     void clear();
     void integers_data();
     void integers();
+    void floatingPoint_data();
+    void floatingPoint();
     void fixed_data();
     void fixed();
     void strings_data();
@@ -133,6 +135,7 @@ void tst_QCborStreamReader::basics()
     QVERIFY(!reader.isFloat16());
     QVERIFY(!reader.isFloat());
     QVERIFY(!reader.isDouble());
+    QVERIFY(!reader.isNumber());
     QVERIFY(!reader.isValid());
     QVERIFY(reader.isInvalid());
 
@@ -175,6 +178,7 @@ void tst_QCborStreamReader::basics()
     QVERIFY(!reader.isFloat());
     QVERIFY(!reader.isDouble());
     QVERIFY(!reader.isValid());
+    QVERIFY(!reader.isNumber());
     QVERIFY(reader.isInvalid());
 
     QVERIFY(reader.isLengthKnown());    // well, it's not unknown
@@ -258,13 +262,70 @@ void tst_QCborStreamReader::integers()
     QCOMPARE(reader.bytesAvailable(), data.size());
     QCOMPARE(reader.lastError(), QCborError::NoError);
     QVERIFY(reader.isInteger());
+    QVERIFY(reader.isNumber());
 
-    if (inInt64Range)
+    if (inInt64Range) {
         QCOMPARE(reader.toInteger(), expectedValue);
+        QCOMPARE_EQ(reader.toNumber(), double(expectedValue));
+    }
     if (isNegative)
         QCOMPARE(quint64(reader.toNegativeInteger()), absolute);
     else
         QCOMPARE(reader.toUnsignedInteger(), absolute);
+    if (isNegative && absolute == 0) {
+        // Special case of representation of -2^64 that fits neither qint64
+        // nor absolute value in quint64.
+        QCOMPARE_EQ(reader.toNumber(), -0x1p64);
+    } else {
+        QCOMPARE_EQ(qAbs(reader.toNumber()), absolute);
+        QCOMPARE(reader.toNumber() < 0, isNegative);
+    }
+}
+
+void tst_QCborStreamReader::floatingPoint_data()
+{
+    addFloatingPoint();
+}
+
+void tst_QCborStreamReader::floatingPoint()
+{
+    QFETCH_GLOBAL(bool, useDevice);
+    QFETCH(QByteArray, data);
+    QFETCH(CborType, expectedType);
+    QFETCH(double, expectedValue);
+    bool isNaN = std::isnan(expectedValue);
+
+    QBuffer buffer(&data);
+    QCborStreamReader reader(useDevice ? QByteArray() : data);
+    if (useDevice) {
+        buffer.open(QIODevice::ReadOnly);
+        reader.setDevice(&buffer);
+    }
+    QVERIFY(reader.isValid());
+    QCOMPARE(reader.bytesAvailable(), data.size());
+    QCOMPARE(reader.lastError(), QCborError::NoError);
+    QCOMPARE(reader.type(), QCborStreamReader::Type(expectedType));
+
+    if (reader.type() == QCborStreamReader::Float16) {
+        QVERIFY(reader.isFloat16());
+        QCOMPARE(reader.toFloat16().isNaN(), isNaN);
+        if (!isNaN)
+            QCOMPARE_EQ(reader.toFloat16(), qfloat16(expectedValue));
+    } else if (reader.type() == QCborStreamReader::Float) {
+        QVERIFY(reader.isFloat());
+        QCOMPARE(std::isnan(reader.toFloat()), isNaN);
+        if (!isNaN)
+            QCOMPARE_EQ(reader.toFloat(), float(expectedValue));
+    } else if (reader.type() == QCborStreamReader::Double) {
+        QVERIFY(reader.isDouble());
+        QCOMPARE(std::isnan(reader.toDouble()), isNaN);
+        if (!isNaN)
+            QCOMPARE_EQ(reader.toDouble(), expectedValue);
+    }
+    QVERIFY(reader.isNumber());
+    QCOMPARE(std::isnan(reader.toNumber()), isNaN);
+    if (!isNaN)
+        QCOMPARE(reader.toNumber(), expectedValue);
 }
 
 void escapedAppendTo(QString &result, const QByteArray &data)

@@ -261,7 +261,8 @@ static_assert(int(QCborStreamReader::Invalid) == CborInvalidType);
    is if type() returns QCborStreamReader::UnsignedInteger). If this function
    returns true, you may call toUnsignedInteger() or toInteger() to read that value.
 
-   \sa type(), toUnsignedInteger(), toInteger(), isInteger(), isNegativeInteger()
+   \sa type(), toUnsignedInteger(), toInteger(), isInteger(), isNegativeInteger(),
+       isNumber()
  */
 
 /*!
@@ -271,7 +272,8 @@ static_assert(int(QCborStreamReader::Invalid) == CborInvalidType);
    is if type() returns QCborStreamReader::NegativeInteger). If this function
    returns true, you may call toNegativeInteger() or toInteger() to read that value.
 
-   \sa type(), toNegativeInteger(), toInteger(), isInteger(), isUnsignedInteger()
+   \sa type(), toNegativeInteger(), toInteger(), isInteger(), isUnsignedInteger(),
+       isNumber()
  */
 
 /*!
@@ -284,7 +286,7 @@ static_assert(int(QCborStreamReader::Invalid) == CborInvalidType);
    value.
 
    \sa type(), toInteger(), toUnsignedInteger(), toNegativeInteger(),
-   isUnsignedInteger(), isNegativeInteger()
+   isUnsignedInteger(), isNegativeInteger(), isNumber()
  */
 
 /*!
@@ -382,7 +384,7 @@ static_assert(int(QCborStreamReader::Invalid) == CborInvalidType);
    QCborStreamReader::Float16). If this function returns true, you may call
    toFloat16() to read that data.
 
-   \sa type(), toFloat16(), isFloat(), isDouble()
+   \sa type(), toFloat16(), isFloat(), isDouble(), isNumber()
  */
 
 /*!
@@ -393,7 +395,7 @@ static_assert(int(QCborStreamReader::Invalid) == CborInvalidType);
    QCborStreamReader::Float). If this function returns true, you may call
    toFloat() to read that data.
 
-   \sa type(), toFloat(), isFloat16(), isDouble()
+   \sa type(), toFloat(), isFloat16(), isDouble(), isNumber()
  */
 
 /*!
@@ -404,7 +406,18 @@ static_assert(int(QCborStreamReader::Invalid) == CborInvalidType);
    QCborStreamReader::Double). If this function returns true, you may call
    toDouble() to read that data.
 
-   \sa type(), toDouble(), isFloat16(), isFloat()
+   \sa type(), toDouble(), isFloat16(), isFloat(), isNumber()
+ */
+
+/*!
+   \fn bool QCborStreamReader::isNumber() const
+
+   Returns true if the type of the current element is one of CBOR number types:
+   either an integer (that is, isInteger() returns \c{true}) or an IEEE 754
+   floating point of half-, single- or double-precision. If this function
+   returns true, you may call toNumber() to read that data.
+
+   \sa toNumber(), isInteger(), isFloat16(), isFloat(), isDouble()
  */
 
 /*!
@@ -1208,7 +1221,7 @@ bool QCborStreamReader::leaveContainer()
    This function may be used to obtain numbers beyond the range of the return
    type of toInteger().
 
-   \sa type(), toInteger(), isUnsignedInteger(), isNegativeInteger()
+   \sa type(), toInteger(), isUnsignedInteger(), isNegativeInteger(), toNumber()
  */
 
 /*!
@@ -1227,7 +1240,7 @@ bool QCborStreamReader::leaveContainer()
    type of toInteger(). However, use of negative numbers smaller than -2\sup{63}
    is extremely discouraged.
 
-   \sa type(), toInteger(), isNegativeInteger(), isUnsignedInteger()
+   \sa type(), toInteger(), isNegativeInteger(), isUnsignedInteger(), toNumber()
  */
 
 /*!
@@ -1239,11 +1252,12 @@ bool QCborStreamReader::leaveContainer()
    sign. If handling those values is required, use toUnsignedInteger() or
    toNegativeInteger() instead.
 
-   This function does not perform any type conversions, including from boolean
-   or CBOR tag. Therefore, it may only be called if isInteger() is true;
-   calling it in any other condition is an error.
+   This function converts only from unsigned or negative integers, but not from
+   booleans, CBOR tags or floating point values. Therefore, it may only be
+   called if isInteger() is true; calling it in any other condition is an
+   error.
 
-   \sa isInteger(), toUnsignedInteger(), toNegativeInteger()
+   \sa isInteger(), toUnsignedInteger(), toNegativeInteger(), toNumber()
  */
 
 /*!
@@ -1268,7 +1282,7 @@ bool QCborStreamReader::leaveContainer()
    called if isFloat16() is true; calling it in any other condition is an
    error.
 
-   \sa isFloat16(), toFloat(), toDouble()
+   \sa isFloat16(), toFloat(), toDouble(), toNumber()
  */
 
 /*!
@@ -1281,7 +1295,7 @@ bool QCborStreamReader::leaveContainer()
    floating point types or from integer values. Therefore, it may only be
    called if isFloat() is true; calling it in any other condition is an error.
 
-   \sa isFloat(), toFloat16(), toDouble()
+   \sa isFloat(), toFloat16(), toDouble(), toNumber()
  */
 
 /*!
@@ -1294,7 +1308,26 @@ bool QCborStreamReader::leaveContainer()
    floating point types or from integer values. Therefore, it may only be
    called if isDouble() is true; calling it in any other condition is an error.
 
-   \sa isDouble(), toFloat16(), toFloat()
+   \sa isDouble(), toFloat16(), toFloat(), toNumber()
+ */
+
+/*!
+   \fn double QCborStreamReader::toNumber() const
+
+   Returns a 64-bit double-precision floating point representation of the
+   current element.
+
+   Unlike most other extracting functions in QCborStreamReader, this function
+   \b does perform conversions from the other integer and floating point types
+   (but not booleans or CBOR tags) and returns the value as converted. It may
+   be called if isNumber() returned true.
+
+   Note that this function may produce a loss in precision for integer values
+   outside the range of [-2⁵³, +2⁵³]. If precision is important, check if
+   isInteger() is true and use toInteger(). There is no loss of precision if
+   the data was transmitted in floating-point format.
+
+   \sa isNumber(), toInteger(), toFloat16(), toFloat(), toDouble()
  */
 
 /*!
