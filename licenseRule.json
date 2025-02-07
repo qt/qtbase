@@ -12,7 +12,7 @@
         "file_pattern_ending" : ["CMakeLists.txt", ".cmake", ".pro", ".pri", ".prf",
                      "configure", "configure.bat", "cmake.in", "plist.in", "CMakeLists.txt.in",
                      ".gitignore", ".gitattributes", "Makefile", ".conf", ".yml", ".cfg", ".yaml",
-                     ".tag", ".dynlist"],
+                     ".tag", ".dynlist", ".qrc"],
         "location" : {
             "" : {
                 "comment" : "Default",
@@ -48,6 +48,13 @@
                 "comment" : "Default",
                 "file type" : "build system",
                 "spdx"      : ["BSD-3-Clause"]
+            },
+            "tests/auto/tools/rcc/data/legal/legal.qrc" : {
+                "comment" : ["In file licensing not related. Relicensed with reuse.",
+                             "License test can't see the relicensing",
+                             "need first spdx entry to keep in-file license test from failing"],
+                "file type" : "build system",
+                "spdx"      : ["LicenseRef-Qt-Commercial OR GPL-3.0-only","BSD-3-Clause"]
             }
         }
     },
@@ -428,15 +435,15 @@
                 "file type" : "module and plugin",
                 "spdx" : ["BSD-3-Clause"]
             },
-            "(src|qmake).*/doc/images/" : {
-                "comment" : "This is example and snippets",
-                "file type" : "examples and snippets",
-                "spdx" : ["LicenseRef-Qt-Commercial OR BSD-3-Clause"]
+            "(src|qmake|examples|tests).*/doc/images/" : {
+                "comment" : "Default",
+                "file type" : "documentation",
+                "spdx" : ["LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only"]
             },
-            "doc/.*/images/" : {
-                "comment" : "This is example and snippets",
-                "file type" : "examples and snippets",
-                "spdx" : ["LicenseRef-Qt-Commercial OR BSD-3-Clause"]
+            ".*/doc/(snippets|.*).*/images/" : {
+                "comment" : "Default",
+                "file type" : "documentation",
+                "spdx" : ["LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only"]
             },
             "tests/testserver/apache2/testdata/www/htdocs/rfcs/rfc2616\\.html" : {
                 "comment" : "The Internet Society",

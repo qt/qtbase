@@ -26,7 +26,7 @@ path = ["bin/*", "coin/**","libexec/*","**_clang-format", "**.cmake", "**.conf",
         "**.pro", "**.pri", "**.yaml", "cmake/**.in", "cmake/ios/LaunchScreen.storyboard",
         "cmake/**md", "**.yml", "**.dynlist", "cmake/**.plist",
         "src/corelib/global/qconfig.cpp.in", "src/corelib/Qt6CoreConfigureFileTemplate.in",
-        "**.cfg", "**/Makefile", "**/CMakeLists.txt"]
+        "**.cfg", "**/Makefile", "**/CMakeLists.txt", "**.qrc"]
 precedence = "closest"
 comment = "build system"
 SPDX-FileCopyrightText = "Copyright (C) 2024 The Qt Company Ltd."
@@ -45,14 +45,14 @@ SPDX-FileCopyrightText = "Copyright (C) 2024 The Qt Company Ltd."
 SPDX-License-Identifier = "BSD-3-Clause"
 
 [[annotations]]
-path = ["**/snippets/**", "**/doc/**/images/**", "examples/**", "src/tools/qlalr/examples/**"]
+path = ["**/snippets/**", "examples/**", "src/tools/qlalr/examples/**"]
 comment = "this must be after the build system table because example and snippets take precedence over build system"
 precedence = "closest"
 SPDX-FileCopyrightText = "Copyright (C) 2024 The Qt Company Ltd."
 SPDX-License-Identifier = "LicenseRef-Qt-Commercial OR BSD-3-Clause"
 
 [[annotations]]
-path = ["tests/manual/examples/**"]
+path = ["tests/manual/examples/**", "**/snippets/**"]
 precedence = "closest"
 SPDX-FileCopyrightText = "Copyright (C) 2024 The Qt Company Ltd."
 SPDX-License-Identifier = "LicenseRef-Qt-Commercial OR BSD-3-Clause"
@@ -62,11 +62,18 @@ path = ["**/README*", "src/plugins/**/README*", "examples/**/README*", "tests/**
         "src/widgets/doc/snippets/common-table-model/README", "cmake/README.md",
         "lib/README", "coin/instructions/README.md", "src/3rdparty/README",
         "**.qdocconf", "**.qdocinc", "config_help.txt",
-        "doc/global/template/style/*"]
+        "doc/global/template/style/*", "**/doc/**/images/**"]
 comment = "documentation"
 precedence = "closest"
 SPDX-FileCopyrightText = "Copyright (C) 2024 The Qt Company Ltd."
 SPDX-License-Identifier = "LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only"
+
+[[annotations]]
+path = ["src/gui/doc/snippets/textdocument-images/images.qrc"]
+precedence = "closest"
+comment = "falls under **/doc/**/images/**, which is wrong"
+SPDX-FileCopyrightText = "Copyright (C) 2024 The Qt Company Ltd."
+SPDX-License-Identifier = "LicenseRef-Qt-Commercial OR BSD-3-Clause"
 
 [[annotations]]
 path = ["src/assets/icons/**.png", "src/assets/icons/**.svg", "src/android/**.xml",
@@ -78,6 +85,13 @@ path = ["src/assets/icons/**.png", "src/assets/icons/**.svg", "src/android/**.xm
 precedence = "closest"
 SPDX-FileCopyrightText = "Copyright (C) 2024 The Qt Company Ltd."
 SPDX-License-Identifier = "LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only"
+
+[[annotations]]
+path = ["tests/auto/tools/rcc/data/legal/legal.qrc"]
+precedence = "override"
+comment = "license in file not referring to the file itself"
+SPDX-FileCopyrightText = "Copyright (C) 2024 The Qt Company Ltd."
+SPDX-License-Identifier = "BSD-3-Clause"
 
 [[annotations]]
 path = ["**/qt_attribution.json"]
