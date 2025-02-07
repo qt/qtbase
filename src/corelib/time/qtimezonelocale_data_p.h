@@ -58,8 +58,8 @@ namespace QtTimeZoneLocale {
 // GENERATED PART STARTS HERE
 
 /*
-    This part of the file was generated on 2025-01-13 from the
-    Common Locale Data Repository v46
+    This part of the file was generated on 2025-02-07 from the
+    Common Locale Data Repository v46.1
 
     http://www.unicode.org/cldr/
 
@@ -51631,6 +51631,7 @@ static inline constexpr LocaleZoneExemplar localeZoneExemplarTable[] = {
     {  681, 7211,     467,  7, }, // Indian/Reunion
     {  681, 3157,     474,  5, }, // Pacific/Chuuk
     {  681, 3096,     479,  7, }, // Pacific/Pohnpei
+    {  682,    0,       0,  0, } // Terminal row
 }; // Exemplar city table
 
 // Sorted by locale index, then iana name
@@ -52492,6 +52493,7 @@ static inline constexpr LocaleZoneNames localeZoneNameTable[] = {
     {  678, 2501,       0,       0,    8483,    0,    0,    0,  0,  0, 19,  0,  0,  0, }, // Europe/London
     {  679, 2455,       0,       0,       0,    0,    0,    0,  0,  0,  0,  0,  3,  0, }, // Etc/UTC Kara-Kalpak/Cyrillic/Uzbekistan
     {  681, 2455,       0,       0,       0,    0,    0,    0,  0,  0,  0,  0,  3,  0, }, // Etc/UTC Swampy Cree/Canadian Aboriginal/Canada
+    {  682,    0,       0,       0,       0,    0,    0,    0,  0,  0,  0,  0,  0,  0, } // Terminal row
 }; // Zone naming table
 
 // Sorted by locale index, then meta key
@@ -79720,6 +79722,7 @@ static inline constexpr LocaleMetaZoneLongNames localeMetaZoneLongNameTable[] = 
     {  678, 1862,  787179,  787194,  787219, 15, 25, 21, }, // Yakutsk
     {  678, 1870,  787240,  787260,  787290, 20, 30, 26, }, // Yekaterinburg
     {  681,  788,       0,  979873,       0,  0, 20,  0, }, // GMT Swampy Cree/Canadian Aboriginal/Canada
+    {  682,    0,       0,       0,       0,  0,  0,  0, } // Terminal row
 }; // Metazone long name table
 
 // Sorted by locale index, then meta key
@@ -81366,6 +81369,7 @@ static inline constexpr LocaleMetaZoneShortNames localeMetaZoneShortNameTable[] 
     {  656,  135,  153,  153,  156,  3,  3,  4, }, // Amazon
     {  656,  437,  376,  376,  379,  3,  3,  4, }, // Brasilia
     {  672,  788,    0, 1868,    0,  0,  2,  0, }, // GMT Anii/Latin/Benin
+    {  682,    0,    0,    0,    0,  0,  0,  0, } // Terminal Row
 }; // Metazone short name table
 
 // Indexing matches that of locale_data in qlocale_data_p.h

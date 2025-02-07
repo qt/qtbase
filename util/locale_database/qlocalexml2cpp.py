@@ -401,6 +401,10 @@ class LocaleZoneDataWriter (LocaleSourceEditor):
 
     def localeData(self, locales: dict[tuple[int, int, int], Locale],
                    names: list[tuple[int, int, int]]) -> None:
+        assert len(names) == len(locales), 'Names should just be a sorted list of locale.keys()'
+        # Tables need a terminal row whose localeIndex is len(names) for the
+        # sake of an assertion in QTZL.cpp's findTableEntryFor(); the end() of
+        # each locale's range of rows must be a valid row.
         out: Callable[[str], int] = self.writer.write
 
         out('// Sorted by locale index, then iana name\n')
@@ -425,7 +429,8 @@ class LocaleZoneDataWriter (LocaleSourceEditor):
                        if index == locale.exemplarStart else f', // {name}\n')
                     )
                 index += 1
-        out('}; // Exemplar city table\n')
+        out(formatLine(len(names), 0, 0, 0) + ' // Terminal row\n'
+            + '}; // Exemplar city table\n')
         if index >= (1 << 32):
             raise Error(f'Exemplar table has too many ({index}) entries')
         exemplarRowCount: int = index
@@ -462,7 +467,8 @@ class LocaleZoneDataWriter (LocaleSourceEditor):
                        if index == locale.zoneStart else f', // {name}\n')
                     )
                 index += 1
-        out('}; // Zone naming table\n')
+        out(formatLine(*((len(names), 0) + (0, 0) * 6)) + ' // Terminal row\n'
+            + '}; // Zone naming table\n')
         if index >= (1 << 16):
             raise Error(f'Zone naming table has too many ({index}) entries')
         localeNameCount: int = index
@@ -504,7 +510,8 @@ class LocaleZoneDataWriter (LocaleSourceEditor):
                        if index == locale.metaZoneLongStart else f', // {meta}\n')
                     )
                 index += 1
-        out('}; // Metazone long name table\n')
+        out(formatLine(*((len(names), 0) + (0, 0) * 3)) + ' // Terminal row\n'
+            + '}; // Metazone long name table\n')
         if index >= (1 << 32):
             raise Error(f'Metazone long name table has too many ({index}) entries')
         metaLongCount: int = index
@@ -540,7 +547,8 @@ class LocaleZoneDataWriter (LocaleSourceEditor):
                        if index == locale.metaZoneShortStart else f', // {meta}\n')
                     )
                 index += 1
-        out('}; // Metazone short name table\n')
+        out(formatLine(*((len(names), 0) + (0, 0) * 3)) + ' // Terminal Row\n'
+            + '}; // Metazone short name table\n')
         if index >= (1 << 16):
             raise Error(f'Metazone short name table has too many ({index}) entries')
         metaShortCount: int = index
