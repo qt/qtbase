@@ -243,7 +243,7 @@ void QPropertyAnimation::updateCurrentValue(const QVariant &value)
 /*!
     \reimp
 
-    If the startValue is not defined when the state of the animation changes from Stopped to Running,
+    If the \l{QVariantAnimation::}{startValue} is not defined when the state of the animation changes from Stopped to Running,
     the current property value is used as the initial value for the animation.
 */
 void QPropertyAnimation::updateState(QAbstractAnimation::State newState,

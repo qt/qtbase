@@ -338,7 +338,7 @@ QVariantAnimation::~QVariantAnimation()
     elastic effect on the values of the interpolated variant.
 
     QVariantAnimation will use the QEasingCurve::valueForProgress() to
-    transform the "normalized progress" (currentTime / totalDuration)
+    transform the "normalized progress" (currentTime() / totalDuration())
     of the animation into the effective progress actually
     used by the animation. It is this effective progress that will be
     the progress when interpolated() is called. Also, the steps in the

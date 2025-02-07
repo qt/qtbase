@@ -1276,7 +1276,7 @@ int QAbstractAnimation::currentLoopTime() const
     \brief the current time and progress of the animation
 
     This property describes the animation's current time. You can change the
-    current time by calling setCurrentTime, or you can call start() and let
+    current time by calling setCurrentTime(), or you can call start() and let
     the animation run, setting the current time automatically as the animation
     progresses.
 
@@ -1428,8 +1428,7 @@ void QAbstractAnimation::pause()
 
 /*!
     Resumes the animation after it was paused. When the animation is resumed,
-    it emits the resumed() and stateChanged() signals. The currenttime is not
-    changed.
+    it emits the stateChanged() signal. The currentTime property is not changed.
 
     \sa start(), pause(), state()
  */
