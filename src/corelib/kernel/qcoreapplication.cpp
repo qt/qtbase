@@ -466,6 +466,11 @@ QCoreApplicationPrivate::~QCoreApplicationPrivate()
     QCoreApplicationPrivate::clearApplicationFilePath();
 }
 
+bool QCoreApplicationPrivate::isAlive() noexcept
+{
+    return qApp != nullptr;
+}
+
 #ifndef QT_NO_QOBJECT
 
 void QCoreApplicationPrivate::cleanupThreadData()
