@@ -304,12 +304,10 @@ void QLoggingRegistry::initializeRules()
 
     const QString configFileName = QStringLiteral("qtlogging.ini");
 
-#if !defined(QT_BOOTSTRAPPED)
     // get rules from Qt data configuration path
     const QString qtConfigPath
             = QDir(QLibraryInfo::path(QLibraryInfo::DataPath)).absoluteFilePath(configFileName);
     qr = loadRulesFromFile(qtConfigPath);
-#endif
 
     // get rules from user's/system configuration
     const QString envPath = QStandardPaths::locate(QStandardPaths::GenericConfigLocation,
