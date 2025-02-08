@@ -371,6 +371,8 @@ void QResourcePrivate::ensureInitialized() const
 {
     if (!related.isEmpty())
         return;
+    if (resourceGlobalData.isDestroyed())
+        return;
     QResourcePrivate *that = const_cast<QResourcePrivate *>(this);
     if (fileName == ":"_L1)
         that->fileName += u'/';
