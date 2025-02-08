@@ -3,6 +3,7 @@
 
 #include "qthreadstorage.h"
 
+#include "private/qcoreapplication_p.h"
 #include "qthread.h"
 #include "qthread_p.h"
 #include "qmutex.h"
@@ -156,9 +157,9 @@ void QThreadStorageData::finish(void **p)
         locker.unlock();
 
         if (!destructor) {
-            if (QThread::currentThread())
-                qWarning("QThreadStorage: Thread %p exited after QThreadStorage %d destroyed",
-                         QThread::currentThread(), i);
+            if (QCoreApplicationPrivate::isAlive())
+                qWarning("QThreadStorage: entry %d destroyed before end of thread %p",
+                         i, QThread::currentThread());
             continue;
         }
         destructor(q); //crash here might mean the thread exited after qthreadstorage was destroyed
