@@ -217,7 +217,7 @@ ProcessReaper::ProcessReaper()
 
 ProcessReaper::~ProcessReaper()
 {
-    if (QThread::currentThread() != qApp->thread())
+    if (!QThread::isMainThread())
         qWarning() << "Destructing process reaper from non-main thread.";
 
     instance()->m_private->waitForFinished();

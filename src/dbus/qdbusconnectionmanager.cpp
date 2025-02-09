@@ -33,7 +33,7 @@ QDBusConnectionPrivate *QDBusConnectionManager::busConnection(QDBusConnection::B
 
     // we'll start in suspended delivery mode if we're in the main thread
     // (the event loop will resume delivery)
-    bool suspendedDelivery = qApp && qApp->thread() == QThread::currentThread();
+    bool suspendedDelivery = QThread::isMainThread();
 
     const auto locker = qt_scoped_lock(defaultBusMutex);
     if (defaultBuses[type])

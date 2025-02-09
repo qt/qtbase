@@ -95,7 +95,7 @@ template<>
 template<typename EventType, typename ...Args>
 bool QWindowSystemHelper<QWindowSystemInterface::SynchronousDelivery>::handleEvent(Args ...args)
 {
-    if (QThread::currentThread() == QGuiApplication::instance()->thread()) {
+    if (QThread::isMainThread()) {
         EventType event(args...);
         // Process the event immediately on the Gui thread and return the accepted state
         if (QWindowSystemInterfacePrivate::eventHandler) {

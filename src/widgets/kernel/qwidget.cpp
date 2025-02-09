@@ -955,7 +955,7 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
 
 #if QT_CONFIG(thread)
     if (!parent) {
-        Q_ASSERT_X(q->thread() == qApp->thread(), "QWidget",
+        Q_ASSERT_X(QThread::isMainThread(), "QWidget",
                    "Widgets must be created in the GUI thread.");
     }
 #endif

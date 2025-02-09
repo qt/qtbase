@@ -121,7 +121,7 @@ void QOffscreenSurface::create()
         d->platformOffscreenSurface = QGuiApplicationPrivate::platformIntegration()->createPlatformOffscreenSurface(this);
         // No platform offscreen surface, fallback to an invisible window
         if (!d->platformOffscreenSurface) {
-            if (QThread::currentThread() != qGuiApp->thread())
+            if (!QThread::isMainThread())
                 qWarning("Attempting to create QWindow-based QOffscreenSurface outside the gui thread. Expect failures.");
             d->offscreenWindow = new QWindow(d->screen);
             // Make the window frameless to prevent Windows from enlarging it, should it

@@ -2840,7 +2840,7 @@ void QWindowPrivate::maybeSynthesizeContextMenuEvent(QMouseEvent *event)
 */
 void QWindow::requestUpdate()
 {
-    Q_ASSERT_X(QThread::currentThread() == QCoreApplication::instance()->thread(),
+    Q_ASSERT_X(QThread::isMainThread(),
         "QWindow", "Updates can only be scheduled from the GUI (main) thread");
 
     Q_D(QWindow);
