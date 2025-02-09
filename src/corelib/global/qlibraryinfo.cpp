@@ -14,7 +14,7 @@
 
 #include "qcoreapplication.h"
 
-#include "private/qglobal_p.h"
+#include "private/qfilesystementry_p.h"
 #include "archdetect.cpp"
 #include "qconfig.cpp"
 
@@ -122,11 +122,11 @@ static std::unique_ptr<QSettings> findConfiguration()
     }
 #endif
     if (QCoreApplication::instance()) {
-        QDir pwd(QCoreApplication::applicationDirPath());
-        qtconfig = pwd.filePath(u"qt" QT_STRINGIFY(QT_VERSION_MAJOR) ".conf"_s);
+        QString pwd = QCoreApplication::applicationDirPath();
+        qtconfig = pwd + u"/qt" QT_STRINGIFY(QT_VERSION_MAJOR) ".conf"_s;
         if (QFile::exists(qtconfig))
             return std::make_unique<QSettings>(qtconfig, QSettings::IniFormat);
-        qtconfig = pwd.filePath("qt.conf"_L1);
+        qtconfig = pwd + u"/qt.conf";
         if (QFile::exists(qtconfig))
             return std::make_unique<QSettings>(qtconfig, QSettings::IniFormat);
     }
@@ -604,22 +604,26 @@ static QVariant libraryPathToValue(QLibraryInfo::LibraryPath loc)
 QStringList QLibraryInfoPrivate::paths(QLibraryInfo::LibraryPath p,
                                        UsageMode usageMode)
 {
+    using FromInternalPath = QFileSystemEntry::FromInternalPath;
     const QLibraryInfo::LibraryPath loc = p;
     QList<QString> ret;
     bool fromConf = false;
+    bool pathsAreAbsolute = true;
 #if QT_CONFIG(settings)
     if (havePaths()) {
         fromConf = true;
 
         QVariant value = libraryPathToValue(loc);
         if (value.isValid()) {
-
             if (auto *asList = get_if<QList<QString>>(&value))
                 ret = std::move(*asList);
             else
                 ret = QList<QString>({ std::move(value).toString()});
-            for (qsizetype i = 0, end = ret.size(); i < end; ++i)
+            for (qsizetype i = 0, end = ret.size(); i < end; ++i) {
                 ret[i] = normalizePath(ret[i]);
+                pathsAreAbsolute = pathsAreAbsolute
+                    && QFileSystemEntry(ret[i], FromInternalPath{}).isAbsolute();
+            }
         }
     }
 #endif // settings
@@ -640,10 +644,13 @@ QStringList QLibraryInfoPrivate::paths(QLibraryInfo::LibraryPath p,
             noConfResult = QString::fromLocal8Bit(path);
 #endif
         }
-        if (!noConfResult.isEmpty())
+        if (!noConfResult.isEmpty()) {
+            pathsAreAbsolute = pathsAreAbsolute
+                && QFileSystemEntry(noConfResult, FromInternalPath{}).isAbsolute();
             ret.push_back(std::move(noConfResult));
+        }
     }
-    if (ret.isEmpty())
+    if (ret.isEmpty() || pathsAreAbsolute)
         return ret;
 
     QString baseDir;
@@ -654,7 +661,7 @@ QStringList QLibraryInfoPrivate::paths(QLibraryInfo::LibraryPath p,
         baseDir = QLibraryInfoPrivate::path(QLibraryInfo::PrefixPath, usageMode);
     }
     for (qsizetype i = 0, end = ret.size(); i < end; ++i)
-        if (QDir::isRelativePath(ret[i]))
+        if (QFileSystemEntry(ret[i], FromInternalPath{}).isRelative())
             ret[i] = QDir::cleanPath(baseDir + u'/' +  std::move(ret[i]));
     return ret;
 }
