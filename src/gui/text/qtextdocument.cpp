@@ -2333,7 +2333,7 @@ QVariant QTextDocument::loadResource(int type, const QUrl &name)
 
     if (!r.isNull()) {
         if (type == ImageResource && r.userType() == QMetaType::QByteArray) {
-            if (qApp->thread() != QThread::currentThread()) {
+            if (!QThread::isMainThread()) {
                 // must use images in non-GUI threads
                 QImage image;
                 image.loadFromData(r.toByteArray());

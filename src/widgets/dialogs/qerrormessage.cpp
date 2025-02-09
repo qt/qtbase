@@ -210,7 +210,7 @@ static void jump(QtMsgType t, const QMessageLogContext &context, const QString &
         rich.chop(4);
 
     if (!metFatal) {
-        if (QThread::currentThread() == qApp->thread()) {
+        if (QThread::isMainThread()) {
             qtMessageHandler->showMessage(rich);
         } else {
             QMetaObject::invokeMethod(qtMessageHandler,

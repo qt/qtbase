@@ -53,7 +53,7 @@ static bool qt_pixmap_thread_test()
         return false;
     }
     if (QGuiApplicationPrivate::instance()
-        && qApp->thread() != QThread::currentThread()
+        && !QThread::isMainThread()
         && !QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ThreadedPixmaps)) {
         qWarning("QPixmap: It is not safe to use pixmaps outside the GUI thread on this platform");
         return false;

@@ -2029,7 +2029,7 @@ public:
         // if this call is running on the main thread, we have a much lower
         // tolerance for delay because any long-term delay will wreck user
         // interactivity.
-        if (qApp && qApp->thread() == QThread::currentThread())
+        if (QThread::isMainThread())
             m_maxCallTimeoutMs = mainThreadWarningAmount;
         else
             m_maxCallTimeoutMs = otherThreadWarningAmount;

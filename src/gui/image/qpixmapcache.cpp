@@ -70,7 +70,7 @@ static inline qsizetype cost(const QPixmap &pixmap)
 
 static inline bool qt_pixmapcache_thread_test()
 {
-    if (Q_LIKELY(QCoreApplication::instance() && QThread::currentThread() == QCoreApplication::instance()->thread()))
+    if (Q_LIKELY(QThread::isMainThread()))
         return true;
 
     return false;

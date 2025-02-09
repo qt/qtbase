@@ -2153,7 +2153,7 @@ void QVulkanWindowPrivate::endFrame()
  */
 void QVulkanWindow::frameReady()
 {
-    Q_ASSERT_X(QThread::currentThread() == QCoreApplication::instance()->thread(),
+    Q_ASSERT_X(QThread::isMainThread(),
         "QVulkanWindow", "frameReady() can only be called from the GUI (main) thread");
 
     Q_D(QVulkanWindow);
