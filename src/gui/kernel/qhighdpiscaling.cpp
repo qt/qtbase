@@ -690,7 +690,7 @@ QScreen *QHighDpiScaling::screenForPosition(QHighDpiScaling::Point position, QSc
     return nullptr;
 }
 
-QVector<QHighDpiScaling::ScreenFactor> QHighDpiScaling::parseScreenScaleFactorsSpec(const QStringView &screenScaleFactors)
+QList<QHighDpiScaling::ScreenFactor> QHighDpiScaling::parseScreenScaleFactorsSpec(QStringView screenScaleFactors)
 {
     QVector<QHighDpiScaling::ScreenFactor> screenFactors;
 
