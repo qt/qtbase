@@ -11,6 +11,8 @@
 #include <QtCore/qscopedpointer.h>
 #include <qpa/qplatformscreen.h>
 #include <QtGui/qscreen_platform.h>
+#include <QtGui/qcolorspace.h>
+#include <private/qwinregistry_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -40,6 +42,8 @@ struct QWindowsScreenData
     QString deviceName;
     QString devicePath;
     std::optional<int> deviceIndex = std::nullopt;
+    QColorSpace colorSpace;
+
 };
 
 class QWindowsScreen : public QPlatformScreen, public QNativeInterface::QWindowsScreen
@@ -65,6 +69,7 @@ public:
     QString model() const override { return m_data.model; }
     QString serialNumber() const override { return m_data.serialNumber; }
     Qt::ScreenOrientation orientation() const override { return m_data.orientation; }
+    QColorSpace colorSpace() const override { return m_data.colorSpace; }
     QList<QPlatformScreen *> virtualSiblings() const override;
     QWindow *topLevelAt(const QPoint &point) const override;
     static QWindow *windowAt(const QPoint &point, unsigned flags);
@@ -126,6 +131,8 @@ private:
     const QWindowsScreen *screenForMonitor(HMONITOR monitor) const;
 
     HWND m_displayChangeObserver = nullptr;
+    std::unique_ptr<QWinRegistryNotifier> m_perUserColorProfileAssociationNotifier;
+    std::unique_ptr<QWinRegistryNotifier> m_systemWideColorProfileAssociationNotifier;
     WindowsScreenList m_screens;
 };
 

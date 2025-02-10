@@ -83,6 +83,7 @@ qt_internal_add_plugin(QWindowsDirect2DIntegrationPlugin
         comdlg32
         d3d9
         runtimeobject
+        mscms
 )
 
 # Resources:

@@ -17,6 +17,7 @@
 #include <QtGui/qguiapplication.h>
 #include <qpa/qwindowsysteminterface.h>
 #include <QtCore/private/qsystemerror_p.h>
+#include <QtCore/private/qsystemlibrary_p.h>
 #include <QtGui/private/qedidparser_p.h>
 #include <private/qwindowsfontdatabasebase_p.h>
 #include <private/qpixmap_win_p.h>
@@ -32,10 +33,67 @@
 #include <cfgmgr32.h>
 #include <setupapi.h>
 #include <shellscalingapi.h>
+#include <icm.h>
+
+#if QT_CONFIG(cpp_winrt)
+#  include <QtCore/private/qt_winrtbase_p.h>
+#  include <winrt/Windows.Foundation.h>
+#  include <winrt/Windows.Graphics.Display.h>
+#  include <windows.graphics.display.interop.h>
+#endif
+
+#ifndef WCS_ICCONLY
+#define WCS_ICCONLY 0x00010000L
+#endif
 
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
+
+struct WindowsColorSpaceFunctions
+{
+    WindowsColorSpaceFunctions()
+    {
+        HMODULE lib = QSystemLibrary::load(L"Mscms");
+        if (!lib)
+            return;
+
+        colorProfileGetDisplayDefault = reinterpret_cast<DisplayDefaultSignature>(
+            reinterpret_cast<QFunctionPointer>(
+                ::GetProcAddress(lib, "ColorProfileGetDisplayDefault")));
+        colorProfileGetDisplayUserScope = reinterpret_cast<DisplayUserScopeSignature>(
+            reinterpret_cast<QFunctionPointer>(
+                ::GetProcAddress(lib, "ColorProfileGetDisplayUserScope")));
+    }
+
+    HRESULT getDisplayDefault(WCS_PROFILE_MANAGEMENT_SCOPE scope, LUID targetAdapterID,
+            UINT32 sourceID, COLORPROFILETYPE profileType,
+            COLORPROFILESUBTYPE profileSubType, LPWSTR *profileName)
+    {
+        if (!colorProfileGetDisplayDefault)
+            return E_NOTIMPL;
+        return colorProfileGetDisplayDefault(scope, targetAdapterID, sourceID,
+                profileType, profileSubType, profileName);
+    }
+
+    HRESULT getDisplayUserScope(LUID targetAdapterID, UINT32 sourceID,
+            WCS_PROFILE_MANAGEMENT_SCOPE *scope)
+    {
+        if (!colorProfileGetDisplayUserScope)
+            return E_NOTIMPL;
+        return colorProfileGetDisplayUserScope(targetAdapterID, sourceID, scope);
+    }
+
+private:
+    using DisplayDefaultSignature = HRESULT (WINAPI *)(WCS_PROFILE_MANAGEMENT_SCOPE,
+            LUID, UINT32, COLORPROFILETYPE, COLORPROFILESUBTYPE, LPWSTR *);
+    using DisplayUserScopeSignature = HRESULT (WINAPI *)(LUID, UINT32,
+            WCS_PROFILE_MANAGEMENT_SCOPE *);
+
+    DisplayDefaultSignature colorProfileGetDisplayDefault = nullptr;
+    DisplayUserScopeSignature colorProfileGetDisplayUserScope = nullptr;
+};
+Q_GLOBAL_STATIC(WindowsColorSpaceFunctions, windowsColorSpaceFunctions)
 
 static inline QDpi deviceDPI(HDC hdc)
 {
@@ -281,6 +339,118 @@ static void setMonitorDataFromSetupApi(QWindowsScreenData &data,
     data.serialNumber = serialNumbers.join(u"|"_s);
 }
 
+static QColorSpace resolveColorSpace(HMONITOR hMonitor,
+    const MONITORINFOEX &info,
+    const std::vector<DISPLAYCONFIG_PATH_INFO> &pathGroup)
+{
+    qCDebug(lcQpaScreen) << "Resolving color space for" << QString::fromWCharArray(info.szDevice);
+
+    LPWSTR profileName = [&]() -> LPWSTR {
+        if (!pathGroup.empty()) {
+            const auto &sourceInfo = pathGroup[0].sourceInfo;
+            WCS_PROFILE_MANAGEMENT_SCOPE scope = WCS_PROFILE_MANAGEMENT_SCOPE_SYSTEM_WIDE;
+            if (SUCCEEDED(windowsColorSpaceFunctions->getDisplayUserScope(
+                    sourceInfo.adapterId, sourceInfo.id, &scope))) {
+                LPWSTR profileName = nullptr;
+                if (SUCCEEDED(windowsColorSpaceFunctions->getDisplayDefault(
+                        scope, sourceInfo.adapterId, sourceInfo.id, CPT_ICC,
+                        CPST_RGB_WORKING_SPACE, &profileName))) {
+                    return profileName;
+                } else {
+                    return nullptr;
+                }
+            }
+        }
+
+        if (const HDC hdc = CreateDC(info.szDevice, nullptr, nullptr, nullptr)) {
+            const auto freeHdc = qScopeGuard([&]{ DeleteDC(hdc); });
+            DWORD colorProfilePathLength = MAX_PATH;
+            LPWSTR profileName = reinterpret_cast<LPWSTR>(LocalAlloc(LPTR, MAX_PATH * sizeof(WCHAR)));
+            if (GetICMProfile(hdc, &colorProfilePathLength, profileName))
+                return profileName;
+        }
+
+        return nullptr;
+    }();
+
+    if (profileName) {
+        qCDebug(lcQpaScreen) << "Found color profile" << QString::fromWCharArray(profileName);
+        const auto freeProfile = qScopeGuard([&]{ LocalFree(profileName); });
+
+        PROFILE profile;
+        profile.dwType = PROFILE_FILENAME;
+        profile.pProfileData = profileName;
+        profile.cbDataSize = DWORD(wcslen(profileName) * sizeof(wchar_t));
+        if (HPROFILE hProfile = OpenColorProfile(&profile, PROFILE_READ, FILE_SHARE_READ, OPEN_EXISTING)) {
+            const auto closeProfile = qScopeGuard([&]{ CloseColorProfile(hProfile); });
+
+            // Qt can only read ICC profiles, so convert from WCS profile if needed
+            if (HPROFILE wcsProfile = WcsCreateIccProfile(hProfile, WCS_ICCONLY)) {
+                CloseColorProfile(hProfile);
+                hProfile = wcsProfile;
+            }
+
+            DWORD iccDataSize = 0;
+            GetColorProfileFromHandle(hProfile, nullptr, &iccDataSize);
+            QByteArray iccData(iccDataSize, Qt::Uninitialized);
+            if (GetColorProfileFromHandle(hProfile,
+                reinterpret_cast<BYTE*>(iccData.data()), &iccDataSize))
+                return QColorSpace::fromIccProfile(iccData);
+        }
+    } else {
+        // No profile is associated with the screen, or Advanced Color is active,
+        // in which case any calls to the color profile management APIs to get the
+        // profile for a display will return "no profile", regardless of what
+        // profiles are actually installed.
+
+#if QT_CONFIG(cpp_winrt)
+        // Try to to resolve what color space the Windows compositor (DWM) is
+        // working in, and reflect that as the screen's preferred color space.
+
+        // https://learn.microsoft.com/nb-no/windows/win32/api/windows.graphics.display.interop
+        if (static bool haveInterop = QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows11_22H2; haveInterop) {
+            using namespace winrt::Windows::Foundation;
+            using namespace winrt::Windows::Graphics::Display;
+
+            try {
+                DisplayInformation displayInfo = nullptr;
+                auto factory = winrt::get_activation_factory<DisplayInformation, IDisplayInformationStaticsInterop>();
+                if (SUCCEEDED(factory->GetForMonitor(hMonitor, winrt::guid_of<DisplayInformation>(), winrt::put_abi(displayInfo)))) {
+                    qCDebug(lcQpaScreen) << "Checking Advanced Color preferences";
+                    AdvancedColorInfo advancedColorInfo = displayInfo.GetAdvancedColorInfo();
+                    switch (advancedColorInfo.CurrentAdvancedColorKind()) {
+                    case AdvancedColorKind::StandardDynamicRange:
+                        // The display only supports standard dynamic range. In this case, it is safe to assume
+                        // that OS composition is being done using an RGB:8 surface encoded as sRGB gamma.
+                        return QColorSpace::SRgb;
+                    case AdvancedColorKind::WideColorGamut:
+                        // The display supports Wide Color Gamut. In this case, it is safe to assume that OS
+                        // composition is being done using an RGB:FP16 surface encoded as scRGB gamma.
+                        return QColorSpace::SRgbLinear;
+                    case AdvancedColorKind::HighDynamicRange:
+                        // The display supports high dynamic range. In this case, it is safe to assume that OS
+                        // composition is being done using an RGB:FP16 surface encoded as scRGB gamma.
+                        return QColorSpace::SRgbLinear;
+                    }
+                }
+            } catch (const std::exception &ex) {
+                qCWarning(lcQpaScreen) << "Failed to query for advanced color info" << ex.what();
+            }
+        }
+#else
+        Q_UNUSED(hMonitor);
+#endif
+
+        // If we can't figure out the Advanced Color color-space above, we fall back to sRGB
+        qCDebug(lcQpaScreen) << "No color profile or advanced color preference. Falling back to sRGB";
+        return QColorSpace::SRgb;
+    }
+
+    // We hit an error condition that didn't result in falling back to sRGB,
+    // so we conservatively report that we don't know the color space.
+    return QColorSpace();
+}
+
 static bool monitorData(HMONITOR hMonitor, QWindowsScreenData *data)
 {
     MONITORINFOEX info;
@@ -349,6 +519,10 @@ static bool monitorData(HMONITOR hMonitor, QWindowsScreenData *data)
                           ? Qt::PortraitOrientation
                           : Qt::LandscapeOrientation;
     }
+
+    data->colorSpace = resolveColorSpace(hMonitor, info, pathGroup);
+    qCDebug(lcQpaScreen) << "Resolved" << data->colorSpace;
+
     // EnumDisplayMonitors (as opposed to EnumDisplayDevices) enumerates only
     // virtual desktop screens.
     data->flags |= QWindowsScreenData::VirtualDesktop;
@@ -406,7 +580,8 @@ static QDebug operator<<(QDebug dbg, const QWindowsScreenData &d)
         << d.physicalSizeMM.height() << " DPI: " << d.dpi.first << 'x' << d.dpi.second
         << " Depth: " << d.depth << " Format: " << d.format << " hMonitor: " << d.hMonitor
         << " device name: " << d.deviceName << " manufacturer: " << d.manufacturer
-        << " model: " << d.model << " serial number: " << d.serialNumber;
+        << " model: " << d.model << " serial number: " << d.serialNumber
+        << " color space: " << d.colorSpace;
     if (d.flags & QWindowsScreenData::PrimaryScreen)
         dbg << " primary";
     if (d.flags & QWindowsScreenData::VirtualDesktop)
@@ -580,6 +755,7 @@ void QWindowsScreen::handleChanges(const QWindowsScreenData &newData)
     const bool primaryChanged = (newData.flags & QWindowsScreenData::PrimaryScreen)
             && !(m_data.flags & QWindowsScreenData::PrimaryScreen);
     const bool refreshRateChanged = m_data.refreshRateHz != newData.refreshRateHz;
+
     m_data.dpi = newData.dpi;
     m_data.orientation = newData.orientation;
     m_data.geometry = newData.geometry;
@@ -587,6 +763,7 @@ void QWindowsScreen::handleChanges(const QWindowsScreenData &newData)
     m_data.flags = (m_data.flags & ~QWindowsScreenData::PrimaryScreen)
             | (newData.flags & QWindowsScreenData::PrimaryScreen);
     m_data.refreshRateHz = newData.refreshRateHz;
+    m_data.colorSpace = newData.colorSpace;
 
     if (dpiChanged) {
         QWindowSystemInterface::handleScreenLogicalDotsPerInchChange(screen(),
@@ -740,6 +917,16 @@ void QWindowsScreenManager::initialize()
     Q_ASSERT(m_displayChangeObserver);
 
     qCDebug(lcQpaScreen) << "Created display change observer" << m_displayChangeObserver;
+
+    // https://learn.microsoft.com/en-us/windows/win32/wcs/wcs-registry-keys
+    m_perUserColorProfileAssociationNotifier.reset(new QWinRegistryNotifier(HKEY_CURRENT_USER,
+        LR"(Software\Microsoft\Windows NT\CurrentVersion\ICM\ProfileAssociations\Display\{4d36e96e-e325-11ce-bfc1-08002be10318})"));
+    QObject::connect(m_perUserColorProfileAssociationNotifier.get(),
+        &QWinRegistryNotifier::valueChanged, [this] { handleScreenChanges(); });
+    m_systemWideColorProfileAssociationNotifier.reset(new QWinRegistryNotifier(HKEY_LOCAL_MACHINE,
+        LR"(SYSTEM\CurrentControlSet\Control\Class\{4d36e96e-e325-11ce-bfc1-08002be10318})"));
+    QObject::connect(m_systemWideColorProfileAssociationNotifier.get(),
+        &QWinRegistryNotifier::valueChanged, [this] { handleScreenChanges(); });
 
     handleScreenChanges();
 }
