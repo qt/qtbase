@@ -38,10 +38,8 @@ public:
     static void setFilterRules(const QString &rules);
 
 private:
-    void init(const char *category, QtMsgType severityLevel);
-
-    Q_DECL_UNUSED_MEMBER void *d; // reserved for future use
-    const char *name;
+    Q_DECL_UNUSED_MEMBER void *d = nullptr; // reserved for future use
+    const char *name = nullptr;
 
     struct AtomicBools {
         QBasicAtomicInteger<bool> enabledDebug;
