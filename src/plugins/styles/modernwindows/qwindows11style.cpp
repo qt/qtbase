@@ -1032,7 +1032,8 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
                     isLast = !isLast;
                 }
 
-                painter->setBrush(WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
+                const QAbstractItemView *view = qobject_cast<const QAbstractItemView *>(widget);
+                painter->setBrush(view->alternatingRowColors() ? vopt->palette.highlight() : WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
                 painter->setPen(Qt::NoPen);
                 if (isFirst) {
                     painter->save();
@@ -1718,7 +1719,8 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                 }
 
                 if (vopt->state.testAnyFlags(State_Selected | State_MouseOver)) {
-                    painter->setBrush(WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
+                    const QAbstractItemView *view = qobject_cast<const QAbstractItemView *>(widget);
+                    painter->setBrush(view->alternatingRowColors() ? vopt->palette.highlight() : WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
                     QWidget *editorWidget = view ? view->indexWidget(view->currentIndex()) : nullptr;
                     if (editorWidget) {
                         QPalette pal = editorWidget->palette();
