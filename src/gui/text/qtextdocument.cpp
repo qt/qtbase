@@ -3691,6 +3691,45 @@ QString QTextDocument::toMarkdown(QTextDocument::MarkdownFeatures features) cons
 
 /*!
     \since 5.14
+    \enum QTextDocument::MarkdownFeature
+
+    This enum selects the supported feature set when reading or writing Markdown.
+
+    \value MarkdownNoHTML
+        Any HTML tags in the Markdown text will be discarded
+    \value MarkdownDialectCommonMark
+        Only the features standardized by \l {https://spec.commonmark.org/0.31.2/}{CommonMark}
+    \value MarkdownDialectGitHub
+        Most features from the
+        \l {https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax}
+        {GitHub dialect}
+
+    Specifically, the supported subset of the GitHub dialect includes
+    everything from CommonMark, plus:
+
+    \list
+    \li recognizing URLs, www and email addresses and turning them into links
+    \li strikethrough
+    \li underline (distinct from italics; in CommonMark it's the same)
+    \li tables
+    \li task lists
+    \li \l {QTextDocument::metaInformation()}{front matter}
+    \endlist
+
+    "Front matter" is often metadata in YAML format. Qt does not currently
+    include a parser for that; but you may choose a third-party parser, call
+    QTextDocument::metaInformation() to get the whole block, and invoke your
+    own parser after Qt has parsed the Markdown file.
+
+    \note The Markdown output from toMarkdown() currently may include GitHub
+    features even if you attempt to disable them by specifying another enum
+    value. This may be fixed in a future version of Qt.
+
+    \sa toMarkdown(), setMarkdown()
+*/
+
+/*!
+    \since 5.14
     Replaces the entire contents of the document with the given
     Markdown-formatted text in the \a markdown string, with the given
     \a features supported.  By default, all supported GitHub-style
@@ -3706,16 +3745,7 @@ QString QTextDocument::toMarkdown(QTextDocument::MarkdownFeatures features) cons
     not supported.
 
     Some features of the parser can be enabled or disabled via the \a features
-    argument:
-
-    \value MarkdownNoHTML
-           Any HTML tags in the Markdown text will be discarded
-    \value MarkdownDialectCommonMark
-           The parser supports only the features standardized by CommonMark
-    \value MarkdownDialectGitHub
-           The parser supports the GitHub dialect
-
-    The default is \c MarkdownDialectGitHub.
+    argument. The default is \c MarkdownDialectGitHub.
 
     The undo/redo history is reset when this function is called.
 */
