@@ -2039,6 +2039,8 @@ static inline QVersionNumber colorRoleVersionAdded(const QString &roleName)
 {
     if (roleName == "PlaceholderText"_L1)
         return {5, 12, 0};
+    if (roleName == "Accent"_L1)
+        return {6, 6, 0};
     return {};
 }
 
