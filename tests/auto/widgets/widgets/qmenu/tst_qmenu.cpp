@@ -2175,11 +2175,8 @@ void tst_QMenu::invisibleActions()
         action->setVisible(false);
 
     contextMenu.popup(globalPos);
-    QCOMPARE(contextMenu.isVisible(), contextMenu.sizeHint().isValid());
-
-    // if it wasn't shown previously, then exec() shouldn't do anything either
-    if (!contextMenu.isVisible())
-        QVERIFY(!contextMenu.exec());
+    QVERIFY(!contextMenu.isVisible());
+    QVERIFY(!contextMenu.exec());
 }
 
 #if QT_CONFIG(shortcut) && !defined(Q_OS_DARWIN)
