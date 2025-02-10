@@ -173,11 +173,6 @@ QLoggingCategory::QLoggingCategory(const char *category, QtMsgType enableForLeve
     : d(nullptr),
       name(nullptr)
 {
-    init(category, enableForLevel);
-}
-
-void QLoggingCategory::init(const char *category, QtMsgType severityLevel)
-{
     enabled.storeRelaxed(0x01010101);   // enabledDebug = enabledWarning = enabledCritical = true;
 
     if (category)
@@ -186,7 +181,7 @@ void QLoggingCategory::init(const char *category, QtMsgType severityLevel)
         name = qtDefaultCategoryName;
 
     if (QLoggingRegistry *reg = QLoggingRegistry::instance())
-        reg->registerCategory(this, severityLevel);
+        reg->registerCategory(this, enableForLevel);
 }
 
 /*!
