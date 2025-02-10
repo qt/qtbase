@@ -2251,7 +2251,7 @@ void QStandardItemModel::setItemRoleNames(const QHash<int,QByteArray> &roleNames
 }
 
 /*!
-  reimp
+  \reimp
 */
 QHash<int, QByteArray> QStandardItemModel::roleNames() const
 {

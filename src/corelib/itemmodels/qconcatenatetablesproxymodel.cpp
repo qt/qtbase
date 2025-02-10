@@ -540,6 +540,23 @@ void QConcatenateTablesProxyModel::removeSourceModel(QAbstractItemModel *sourceM
     d->updateColumnCount();
 }
 
+/*!
+    \since 6.9.0
+    \reimp
+    Returns the union of the roleNames() of the underlying models.
+
+    In case source models associate different names to the same role,
+    the name used in last source model overrides the name used in earlier models.
+*/
+QHash<int, QByteArray> QConcatenateTablesProxyModel::roleNames() const
+{
+    Q_D(const QConcatenateTablesProxyModel);
+    QHash<int, QByteArray> ret = QAbstractItemModel::roleNames();
+    for (const auto &[model, _] : d->m_models)
+        ret.insert(model->roleNames());
+    return ret;
+}
+
 void QConcatenateTablesProxyModelPrivate::slotRowsAboutToBeInserted(const QModelIndex &parent,
                                                                     int start, int end)
 {

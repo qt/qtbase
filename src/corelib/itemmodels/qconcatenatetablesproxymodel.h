@@ -42,6 +42,7 @@ public:
     bool canDropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) const override;
     bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) override;
     QSize span(const QModelIndex &index) const override;
+    QHash<int, QByteArray> roleNames() const override;
 
 private:
     Q_DECLARE_PRIVATE(QConcatenateTablesProxyModel)
