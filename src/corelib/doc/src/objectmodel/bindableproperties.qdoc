@@ -172,7 +172,7 @@
 
     The following illustrates this approach.
 
-    \badcode
+    \code
     void DerivedClass::setValue(int val)
     {
         // do something
@@ -247,7 +247,7 @@
     be called for the current value of the property, register your callback using
     subscribe() instead.
 
-    \section1 Interaction with Q_PROPERTYs
+    \section1 Interaction with Q_PROPERTY
 
     A \l {The Property System}{Q_PROPERTY} that defines \c BINDABLE can be bound and
     used in binding expressions. You can implement such properties using \l {QProperty},
