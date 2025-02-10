@@ -47,7 +47,7 @@
     The framework further provides the QVariantAnimation and
     QAnimationGroup classes, which build on their base case, QAbstractAnimation.
     Next in the hierarchy is QPropertyAnimation, which is derived from
-    QVariantAnmiation, and it lets you animate a Qt property of a widget or
+    QVariantAnimation, and it lets you animate a Qt property of a widget or
     QObject. The class performs interpolation on the property value using an
     easing curve. With these in place, you just need a QObject class with a
     Qt property value that you can animate.
@@ -100,7 +100,7 @@
     It uses the linear interpolation method to control the speed of
     animation between the start and end values. Try adding another value
     in--between the start and end value to see how they are interpolated.
-    This time use the QPropertyAnimation::setKeyValueAt function to add
+    This time use the QPropertyAnimation::setKeyValueAt() function to add
     these values:
 
     \code
