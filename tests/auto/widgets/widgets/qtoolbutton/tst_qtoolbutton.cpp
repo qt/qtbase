@@ -35,6 +35,7 @@ private slots:
     void qtbug_34759_sizeHintResetWhenSettingMenu();
     void defaultActionSynced();
     void deleteInHandler();
+    void emptyMenu();
 
 protected slots:
     void sendMouseClick();
@@ -336,6 +337,28 @@ void tst_QToolButton::deleteInHandler()
 
     QTest::mouseClick(tb, Qt::LeftButton);
     QVERIFY(!tb);
+}
+
+void tst_QToolButton::emptyMenu()
+{
+
+    QToolButton tb;
+    auto menu = new QMenu(&tb);
+    tb.setMenu(menu);
+    tb.showMenu(); // calls exec(), but since the fix for QTBUG-129108, we don't show an empty menu
+
+    // see triggered() test
+    QTest::mouseMove(tb.windowHandle(), tb.mapFromGlobal(QPoint(0, 0)));
+
+    // But if we now put something in the menu, it should show up
+    auto act = menu->addAction("an action");
+    QSignalSpy triggeredSpy(act, &QAction::triggered);
+    // In 200ms, click on the action so that exec() returns
+    QTimer::singleShot(200, menu, [&]() {
+        QTest::mouseClick(menu, Qt::LeftButton, {}, menu->rect().center());
+    });
+    tb.showMenu(); // calls exec(), which only returns in 200ms
+    QTRY_COMPARE(triggeredSpy.size(), 1);
 }
 
 QTEST_MAIN(tst_QToolButton)

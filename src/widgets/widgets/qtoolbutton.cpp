@@ -788,6 +788,11 @@ void QToolButtonPrivate::popupTimerDone()
 
     QObjectPrivate::disconnect(actualMenu, &QMenu::aboutToHide,
                                this, &QToolButtonPrivate::updateButtonDown);
+    if (menuButtonDown) {
+        // The menu was empty, it didn't actually show up, so it was never hidden either
+        updateButtonDown();
+    }
+
     if (mustDeleteActualMenu) {
         delete actualMenu;
     } else {
