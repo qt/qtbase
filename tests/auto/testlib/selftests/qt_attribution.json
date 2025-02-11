@@ -5,10 +5,9 @@
         "QDocModule": "qttestlib",
         "QtUsage": "Used for testing of the Qt Test module.",
         "Files": "catch_p_p.h",
-            "Generator": "scripts/generateSingleHeader.py",
+        "Comment": {
             "General": "no relevant CPE found"
         },
-
         "Description": "Catch2 is a multi-paradigm test framework for C++.",
         "Homepage": "https://github.com/catchorg/Catch2",
         "Version": "2.13.10",
