@@ -22,8 +22,7 @@ endmacro()
 # Create a Qt6*.pc file intended for pkg-config consumption.
 function(qt_internal_generate_pkg_config_file module)
     # TODO: PkgConfig is supported under MSVC with pkgconf (github.com/pkgconf/pkgconf)
-    if((NOT UNIX OR QT_FEATURE_framework)
-        AND NOT MINGW OR CMAKE_VERSION VERSION_LESS "3.20" OR ANDROID)
+    if(NOT UNIX AND NOT MINGW OR CMAKE_VERSION VERSION_LESS "3.20" OR ANDROID)
         return()
     endif()
     if(NOT BUILD_SHARED_LIBS)
@@ -34,7 +33,6 @@ function(qt_internal_generate_pkg_config_file module)
     set(pkgconfig_name "${QT_CMAKE_EXPORT_NAMESPACE} ${module}")
     set(pkgconfig_description "Qt ${module} module")
     set(target "${QT_CMAKE_EXPORT_NAMESPACE}::${module}")
-    set(is_interface_library "$<STREQUAL:$<TARGET_PROPERTY:${target},TYPE>,INTERFACE_LIBRARY>")
     # The flags macro expanded this variables so it's better to set them at
     # their corresponding PkgConfig string.
     set(includedir "\${includedir}")
@@ -50,6 +48,12 @@ function(qt_internal_generate_pkg_config_file module)
     get_target_property(loose_include_dirs ${target} INTERFACE_INCLUDE_DIRECTORIES)
     list(TRANSFORM loose_include_dirs REPLACE "${INSTALL_INCLUDEDIR}" "\${includedir}")
     list(TRANSFORM loose_include_dirs REPLACE "${INSTALL_MKSPECSDIR}" "\${mkspecsdir}")
+    if(QT_FEATURE_framework)
+        # Update the include path for framework headers which are located in INSTALL_LIBDIR,
+        # e.g. this results in -I${libdir}/Qt*.framework/Headers for Qt6*.pc file.
+        set(libdir "\${libdir}")
+        list(TRANSFORM loose_include_dirs REPLACE "${INSTALL_LIBDIR}" "\${libdir}")
+    endif()
 
     # Remove genex wrapping around gc_sections flag because we can't evaluate genexes like
     # $<CXX_COMPILER_ID> in file(GENERATE). And given that .pc files don't support dynamic
@@ -67,6 +71,17 @@ function(qt_internal_generate_pkg_config_file module)
     qt_internal_set_pkg_config_cpp_flags(include_dirs "${loose_include_dirs}" -I)
     if("${include_dirs}" MATCHES "\\${mkspecsdir}")
         set(contains_mkspecs TRUE)
+    endif()
+
+    get_target_property(type ${target} TYPE)
+    if(NOT type STREQUAL "INTERFACE_LIBRARY")
+        get_target_property(is_framework ${target} FRAMEWORK)
+        if(is_framework)
+            qt_internal_get_framework_info(fw ${target})
+            string(PREPEND link_options "-F\${libdir} -framework ${fw_name} ")
+        else()
+            string(PREPEND link_options "-L\${libdir} -l${pkgconfig_file} ")
+        endif()
     endif()
 
     # TODO: Handle macOS framework builds

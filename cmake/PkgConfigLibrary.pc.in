@@ -9,6 +9,6 @@ $<1: >
 Name: @pkgconfig_name@
 Description: @pkgconfig_description@
 Version: @PROJECT_VERSION@
-Libs: $<$<NOT:@is_interface_library@>:-L${libdir} -l@pkgconfig_file@> @link_options@
+Libs: @link_options@
 Cflags: @include_dirs@ @compile_defs@
 Requires: $<JOIN:$<REMOVE_DUPLICATES:@target_requires@>, >
