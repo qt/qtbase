@@ -695,7 +695,11 @@ void tst_QByteArrayView::fromContainers() const
     fromContainer<Char, QVector<Char>>();
     fromContainer<Char, QVarLengthArray<Char>>();
     fromContainer<Char, std::vector<Char>>();
-    fromContainer<Char, std::basic_string<Char>>();
+    if constexpr (std::is_same_v<Char, char>) {
+        // std::basic_string only supports a few specific types
+        // (std::char_traits requirement)
+        fromContainer<Char, std::basic_string<Char>>();
+    }
 }
 
 void tst_QByteArrayView::comparison() const
