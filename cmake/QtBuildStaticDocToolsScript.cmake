@@ -178,6 +178,10 @@ function(qt_internal_configure_qt)
             -skip qtactiveqt,qtimageformats,qtlanguageserver,qtsvg
             --
             -DWARNINGS_ARE_ERRORS=OFF
+            # When 6.x.y version bumps are not merged in DAG-dependency order, this avoids
+            # blocking integrations due to mismatch of qtools package version and any of its
+            # dependencies.
+            -DQT_NO_PACKAGE_VERSION_INCOMPATIBLE_WARNING=ON
             --log-level STATUS
             --fresh
             -GNinja
