@@ -660,13 +660,13 @@ void QDomNodeListPrivate::createList() const
 
     Checks if a node is valid and fulfills the requirements set during the
     generation of this list, i.e. matching tag and matching URI.
- */
-bool QDomNodeListPrivate::checkNode(QDomNodePrivate *p) const {
-    if (nsURI.isNull())
-        return p->isElement() && p->nodeName() == tagname;
-    else
-        return p->isElement() && p->name==tagname && p->namespaceURI==nsURI;
-};
+*/
+bool QDomNodeListPrivate::checkNode(QDomNodePrivate *p) const
+{
+    return p && p->isElement() && (nsURI.isNull()
+                                   ? p->nodeName() == tagname
+                                   : p->name == tagname && p->namespaceURI == nsURI);
+}
 
 /*! \internal
 
