@@ -697,4 +697,23 @@ QDebug operator<<(QDebug d, QAnyStringView s)
 }
 
 
+/*!
+    \fn template <typename Char, size_t Size, QAnyStringView::if_compatible_char<Char>> QAnyStringView QAnyStringView::fromArray(const Char (&string)[Size])
+
+    Constructs a string view on the full character string literal \a string,
+    including any trailing \c{Char(0)}. If you don't want the
+    null-terminator included in the view then you can chop() it off
+    when you are certain it is at the end. Alternatively you can use
+    the constructor overload taking an array literal which will create
+    a view up to, but not including, the first null-terminator in the data.
+
+    \a string must remain valid for the lifetime of this string view
+    object.
+
+    This function will work with any array literal if \c Char is a
+    compatible character type. The compatible character types are: \c QChar, \c ushort, \c
+    char16_t and (on platforms, such as Windows, where it is a 16-bit
+    type) \c wchar_t.
+*/
+
 QT_END_NAMESPACE
