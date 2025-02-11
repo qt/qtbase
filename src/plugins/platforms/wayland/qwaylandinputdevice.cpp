@@ -863,6 +863,7 @@ void QWaylandInputDevice::Pointer::invalidateFocus()
 void QWaylandInputDevice::Pointer::releaseButtons()
 {
     setFrameEvent(new ReleaseEvent(nullptr, mParent->mTime, mSurfacePos, mGlobalPos, Qt::NoButton, Qt::NoButton, mParent->modifiers()));
+    flushFrameEvent();
 }
 
 void QWaylandInputDevice::Pointer::leavePointers()
