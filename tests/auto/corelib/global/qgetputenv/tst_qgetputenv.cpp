@@ -163,19 +163,27 @@ void tst_QGetPutEnv::intValue_data()
     ROW(-1, -1, true);
     ROW(-010, -8, true);
     ROW(-000000000000000000000000000000000000000000000000001, 0, false);
-    ROW(2147483648, 0, false);
     // ROW(0xffffffff, -1, true); // could be expected, but not how QByteArray::toInt() works
     ROW(0xffffffff, 0, false);
-    const int bases[] = {10, 8, 16};
-    for (size_t i = 0; i < sizeof bases / sizeof *bases; ++i) {
-        QTest::addRow("INT_MAX, base %d", bases[i])
-                << QByteArray::number(INT_MAX) << INT_MAX << true;
-        QTest::addRow("INT_MAX+1, base %d", bases[i])
-                << QByteArray::number(qlonglong(INT_MAX) + 1) << 0 << false;
-        QTest::addRow("INT_MIN, base %d", bases[i])
-                << QByteArray::number(INT_MIN) << INT_MIN << true;
-        QTest::addRow("INT_MIN-1, base %d", bases[i])
-                << QByteArray::number(qlonglong(INT_MIN) - 1) << 0 << false;
+
+    auto addNumWithBase = [](qlonglong num, int base) {
+        QByteArray text;
+        {
+            QTextStream s(&text);
+            s.setIntegerBase(base);
+            s << Qt::showbase << num;
+        }
+        QTestData &row = QTest::addRow("%s", text.constData()) << text;
+        if (num == int(num))
+            row << int(num) << true;
+        else
+            row << 0 << false;
+    };
+    for (int base : {10, 8, 16}) {
+        addNumWithBase(INT_MAX, base);
+        addNumWithBase(qlonglong(INT_MAX) + 1, base);
+        addNumWithBase(INT_MIN, base);
+        addNumWithBase(qlonglong(INT_MIN) - 1 , base);
     };
 }
 
