@@ -87,7 +87,7 @@
     The prefix \c{++} operator (\c{++i}) advances the iterator to the
     next item in the container and returns the iterator.
 
-    \note Advancing the iterator past its container's end() constitutes
+    \note Advancing the iterator past its container's \l{iterator-end}{end()} constitutes
     undefined behavior.
 
     \sa operator--()
@@ -100,7 +100,7 @@
     The postfix \c{++} operator (\c{i++}) advances the iterator to the
     next item in the container and returns the iterator's prior value.
 
-    \note Advancing the iterator past its container's end() constitutes
+    \note Advancing the iterator past its container's \l{iterator-end}{end()} constitutes
     undefined behavior.
 */
 
@@ -109,7 +109,7 @@
     The prefix c{--} operator (\c{--i}) backs the iterator up to the previous item
     in the container and returns the iterator.
 
-    \note Backing up an iterator to before its container's begin() constitutes
+    \note Backing up an iterator to before its container's \l{iterator-begin}{begin()} constitutes
     undefined behavior.
 
     \sa operator++()
@@ -122,7 +122,7 @@
     The postfix c{--} operator (\c{i--}) backs the iterator up to the previous item
     in the container and returns the iterator's prior value.
 
-    \note Backing up an iterator to before its container's begin() constitutes
+    \note Backing up an iterator to before its container's \l{iterator-begin}{begin()} constitutes
     undefined behavior.
 */
 

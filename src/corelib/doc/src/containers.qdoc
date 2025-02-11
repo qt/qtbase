@@ -221,6 +221,8 @@
     from \l{Implicit Sharing}{implicitly shared copies} due to a call
     to a non-const member function.
 
+    \target iterator-begin
+    \target iterator-end
     \section3 STL-Style Iterators
 
     STL-style iterators have been available since the release of Qt
