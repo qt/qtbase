@@ -177,9 +177,9 @@ bool QDesktopServices::openUrl(const QUrl &url)
         qWarning("The platform plugin does not support services.");
         return false;
     }
-    // We only use openDocument if there is no fragment for the URL to
+    // We only use openDocument if there is no fragment or query for the URL to
     // avoid it being lost when using openDocument
-    if (url.isLocalFile() && !url.hasFragment())
+    if (url.isLocalFile() && !url.hasFragment() && !url.hasQuery())
         return platformServices->openDocument(url);
     return platformServices->openUrl(url);
 }
