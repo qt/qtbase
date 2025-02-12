@@ -419,6 +419,12 @@ QNetworkInformationBackendFactory::~QNetworkInformationBackendFactory()
     If you destroy and re-create the QCoreApplication object you must call
     load() again.
 
+    \note Because the class is a singleton while also relying on
+    QCoreApplication, QNetworkInformation should always first be loaded
+    in the same thread as the QCoreApplication object. This is because the
+    object will also be destroyed in this thread, and various backend-specific
+    components may rely on being destroyed in the same thread as it is created.
+
     \sa QNetworkInformation::Feature
 */
 
