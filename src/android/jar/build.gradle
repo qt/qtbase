@@ -23,7 +23,7 @@ repositories {
 }
 
 android {
-    compileSdk 34
+    compileSdk 35
     namespace "org.qtproject.qt.android"
 
     defaultConfig {
