@@ -143,7 +143,7 @@ translate 150 0
 save
   setPen black
   setFont "sansserif" 16 normal
-  drawGlyphRun 0 40 "e😃m😇o😍j😜i😸!"
+  drawGlyphRun 0 40 "e😃m👩️‍⚕️o😍j😜i😸!"
 restore
 
 translate 0 55

@@ -159,6 +159,7 @@ public:
                || ucs4 == QChar::LineFeed
                || ucs4 == QChar::CarriageReturn
                || ucs4 == QChar::ParagraphSeparator
+               || (!disableEmojiSegmenter() && (ucs4 & 0xFFF0) == 0xFE00)
                || QChar::category(ucs4) == QChar::Other_Control;
     }
 
