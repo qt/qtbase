@@ -225,8 +225,6 @@ function(qt_internal_add_plugin target)
             set_property(TARGET "${qt_module_target}" APPEND PROPERTY _qt_plugins "${target}")
         endif()
 
-        set(plugin_target_versioned "${QT_CMAKE_EXPORT_NAMESPACE}::${target}")
-        get_target_property(type "${plugin_target_versioned}" TYPE)
         qt_internal_add_autogen_sync_header_dependencies(${target} ${qt_module_target})
     endif()
 
