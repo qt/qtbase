@@ -173,12 +173,27 @@ void testAllComparisonOperatorsCompile()
     \endcode
 */
 template <typename LeftType, typename RightType>
-void testEqualityOperators(LeftType lhs, RightType rhs, bool expectedEqual)
+void testEqualityOperators(LeftType lhs, RightType rhs, bool expectedEqual,
+                           const char *lhsExpr, const char *rhsExpr, const char *expected,
+                           const char *file, int line)
 {
+    if (expectedEqual) {
+        if (!QTest::qCompareOp<QTest::ComparisonOperation::Equal>(lhs, rhs, lhsExpr, rhsExpr, file, line))
+            QTEST_FAIL_ACTION;
+    } else {
+        if (!QTest::qCompareOp<QTest::ComparisonOperation::NotEqual>(lhs, rhs, lhsExpr, rhsExpr, file, line))
+            QTEST_FAIL_ACTION;
+    }
+
+    auto report = qScopeGuard([=] {
+        qDebug("testEqualityOperators(%s,%s,%s) failed in %s on line %d", lhsExpr, rhsExpr,
+               expected, file, line);
+    });
     CHECK_RUNTIME_CREF(CHECK_RUNTIME_LR, lhs, rhs, ==, expectedEqual);
     CHECK_RUNTIME_CREF(CHECK_RUNTIME_LR, lhs, rhs, !=, !expectedEqual);
     CHECK_RUNTIME_CREF(CHECK_RUNTIME_LR, rhs, lhs, ==, expectedEqual);
     CHECK_RUNTIME_CREF(CHECK_RUNTIME_LR, rhs, lhs, !=, !expectedEqual);
+    report.dismiss();
 }
 
 /*!
@@ -327,14 +342,10 @@ void testAllComparisonOperators(LeftType lhs, RightType rhs, OrderingType expect
 */
 #define QT_TEST_EQUALITY_OPS(Left, Right, Expected) \
     do { \
-        auto report = qScopeGuard([] { \
-            qDebug("testEqualityOperators(" #Left ", " #Right ", " #Expected ") " \
-                   "failed in " __FILE__ " on line %d", __LINE__); \
-        }); \
-        QTestPrivate::testEqualityOperators(Left, Right, Expected); \
+        QTestPrivate::testEqualityOperators(Left, Right, Expected, #Left, #Right, #Expected, \
+                                            __FILE__, __LINE__); \
         if (QTest::currentTestFailed()) \
             return; \
-        report.dismiss(); \
     } while (false)
 
 /*!
