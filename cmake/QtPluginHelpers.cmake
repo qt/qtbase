@@ -229,8 +229,6 @@ function(qt_internal_add_plugin target)
             __qt_internal_add_interface_plugin_target(${qt_module_target} ${target})
         endif()
 
-        set(plugin_target_versioned "${QT_CMAKE_EXPORT_NAMESPACE}::${target}")
-        get_target_property(type "${plugin_target_versioned}" TYPE)
         qt_internal_add_autogen_sync_header_dependencies(${target} ${qt_module_target})
     endif()
 
