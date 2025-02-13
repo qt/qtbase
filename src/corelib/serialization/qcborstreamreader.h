@@ -203,9 +203,4 @@ private:
 
 QT_END_NAMESPACE
 
-#if defined(QT_X11_DEFINES_FOUND)
-#  define True  1
-#  define False 0
-#endif
-
 #endif // QCBORSTREAMREADER_H

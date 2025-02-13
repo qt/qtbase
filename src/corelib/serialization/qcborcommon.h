@@ -118,11 +118,4 @@ QT_END_NAMESPACE
 
 QT_DECL_METATYPE_EXTERN(QCborTag, Q_CORE_EXPORT)
 
-// To avoid changing namespace we need to reinstate defines, even though our .cpp
-// will then have to remove them again.
-#if defined(QT_X11_DEFINES_FOUND)
-#  define True  1
-#  define False 0
-#endif
-
 #endif // QCBORSTREAM_H
