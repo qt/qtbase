@@ -9,6 +9,11 @@
 #include <QtCore/qjnitypes_impl.h>
 #include <QtCore/qjniobject.h>
 
+#if 0
+// This is needed for generating the QtJniTypes forward header
+#pragma qt_class(QtJniTypes)
+#endif
+
 QT_BEGIN_NAMESPACE
 
 // QT_TECH_PREVIEW_API
