@@ -194,15 +194,28 @@ function(_qt_internal_sbom_find_and_handle_sbom_op_dependencies)
     endif()
 endfunction()
 
+function(_qt_internal_sbom_assert_python_interpreter_available error_message_prefix)
+    if(NOT QT_INTERNAL_SBOM_PYTHON_EXECUTABLE)
+        message(FATAL_ERROR ${error_message_prefix}
+            " QT_INTERNAL_SBOM_PYTHON_EXECUTABLE is missing a valid path to a python interpreter ")
+    endif()
+endfunction()
+
+function(_qt_internal_sbom_assert_python_dependency_available key dep error_message_prefix)
+    if(NOT QT_INTERNAL_SBOM_DEPS_FOUND_FOR_${key})
+        message(FATAL_ERROR ${error_message_prefix} " Required Python dependencies not found: "
+            ${dep}
+        )
+    endif()
+endfunction()
+
 # Helper to generate a SPDX JSON file from a tag/value format file.
 # This also implies some additional validity checks, useful to ensure a proper sbom file.
 function(_qt_internal_sbom_generate_json)
-    if(NOT QT_INTERNAL_SBOM_PYTHON_EXECUTABLE)
-        message(FATAL_ERROR "Python interpreter not found for generating SBOM json file.")
-    endif()
-    if(NOT QT_INTERNAL_SBOM_DEPS_FOUND_FOR_GENERATE_JSON)
-        message(FATAL_ERROR "Python dependencies not found for generating SBOM json file.")
-    endif()
+    set(error_message_prefix "Failed to generate an SBOM json file.")
+    _qt_internal_sbom_assert_python_interpreter_available("${error_message_prefix}")
+    _qt_internal_sbom_assert_python_dependency_available(GENERATE_JSON
+        "spdx_tools.spdx.clitools.pyspdxtools" ${error_message_prefix})
 
     set(content "
         message(STATUS \"Generating JSON: \${QT_SBOM_OUTPUT_PATH}.json\")
@@ -270,13 +283,10 @@ function(_qt_internal_sbom_generate_tag_value_spdx_document)
     cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
     _qt_internal_validate_all_args_are_parsed(arg)
 
-    if(NOT QT_INTERNAL_SBOM_PYTHON_EXECUTABLE)
-        message(FATAL_ERROR "Python interpreter not found for generating tag/value file from JSON.")
-    endif()
-    if(NOT QT_INTERNAL_SBOM_DEPS_FOUND_FOR_GENERATE_JSON)
-        message(FATAL_ERROR
-            "Python dependencies not found for generating tag/value file from JSON.")
-    endif()
+    set(error_message_prefix "Failed to generate a tag/value SBOM file from a json SBOM file.")
+    _qt_internal_sbom_assert_python_interpreter_available("${error_message_prefix}")
+    _qt_internal_sbom_assert_python_dependency_available(GENERATE_JSON
+        "spdx_tools.spdx.clitools.pyspdxtools" ${error_message_prefix})
 
     if(NOT arg_OPERATION_ID)
         message(FATAL_ERROR "OPERATION_ID is required")
@@ -331,13 +341,10 @@ endfunction()
 
 # Helper to verify the generated sbom is valid.
 function(_qt_internal_sbom_verify_valid)
-    if(NOT QT_INTERNAL_SBOM_PYTHON_EXECUTABLE)
-        message(FATAL_ERROR "Python interpreter not found for verifying SBOM file.")
-    endif()
-
-    if(NOT QT_INTERNAL_SBOM_DEPS_FOUND_FOR_VERIFY_SBOM)
-        message(FATAL_ERROR "Python dependencies not found for verifying SBOM file")
-    endif()
+    set(error_message_prefix "Failed to verify SBOM file syntax.")
+    _qt_internal_sbom_assert_python_interpreter_available("${error_message_prefix}")
+    _qt_internal_sbom_assert_python_dependency_available(VERIFY_SBOM
+        "spdx_tools.spdx.clitools.pyspdxtools" ${error_message_prefix})
 
     set(content "
         message(STATUS \"Verifying: \${QT_SBOM_OUTPUT_PATH}\")
@@ -360,13 +367,10 @@ endfunction()
 
 # Helper to verify the generated sbom is NTIA compliant.
 function(_qt_internal_sbom_verify_ntia_compliant)
-    if(NOT QT_INTERNAL_SBOM_PYTHON_EXECUTABLE)
-        message(FATAL_ERROR "Python interpreter not found for verifying SBOM file.")
-    endif()
-
-    if(NOT QT_INTERNAL_SBOM_DEPS_FOUND_FOR_RUN_NTIA)
-        message(FATAL_ERROR "Python dependencies not found for running the SBOM NTIA checker.")
-    endif()
+    set(error_message_prefix "Failed to run NTIA checker on SBOM file.")
+    _qt_internal_sbom_assert_python_interpreter_available("${error_message_prefix}")
+    _qt_internal_sbom_assert_python_dependency_available(RUN_NTIA
+        "ntia_conformance_checker.main" ${error_message_prefix})
 
     set(content "
         message(STATUS \"Checking for NTIA compliance: \${QT_SBOM_OUTPUT_PATH}\")
