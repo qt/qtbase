@@ -153,6 +153,13 @@ function(_qt_internal_sbom_find_and_handle_sbom_op_dependencies)
         _qt_internal_sbom_find_python_and_dependency_helper_lambda()
     endif()
 
+    # Always save the python interpreter path if it is found, even if the dependencies are not
+    # found. This improves the error message workflow.
+    if(python_found AND NOT QT_INTERNAL_SBOM_PYTHON_EXECUTABLE)
+        set(QT_INTERNAL_SBOM_PYTHON_EXECUTABLE "${python_path}" CACHE INTERNAL
+            "Python interpeter used for SBOM generation.")
+    endif()
+
     if(NOT everything_found)
         if(arg_REQUIRED)
             set(message_type "FATAL_ERROR")
@@ -176,11 +183,6 @@ function(_qt_internal_sbom_find_and_handle_sbom_op_dependencies)
         endif()
     else()
         message(DEBUG "Using Python ${python_path} for running SBOM ops.")
-
-        if(NOT QT_INTERNAL_SBOM_PYTHON_EXECUTABLE)
-            set(QT_INTERNAL_SBOM_PYTHON_EXECUTABLE "${python_path}" CACHE INTERNAL
-                "Python interpeter used for SBOM generation.")
-        endif()
 
         set(QT_INTERNAL_SBOM_DEPS_FOUND_FOR_${arg_OP_KEY} "TRUE" CACHE INTERNAL
             "All dependencies found to run SBOM OP ${arg_OP_KEY}")
