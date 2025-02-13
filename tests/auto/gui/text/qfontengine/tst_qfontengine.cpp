@@ -79,6 +79,7 @@ private:
     QByteArray platformArgument;
     QList<const char *> theArguments;
     std::unique_ptr<QGuiApplication> theApp;
+    int argc = -1;
 
     int QtsSpecialTestFont = -1;
     int QtBidiTestFont = -1;
@@ -159,7 +160,7 @@ void tst_QFontEngine::setupApplication()
     }
 
     theArguments = arguments;
-    int argc = arguments.size();
+    argc = arguments.size();
     theApp = std::make_unique<QGuiApplication>(argc, const_cast<char **>(theArguments.data()));
 }
 
