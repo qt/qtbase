@@ -2508,6 +2508,9 @@ QByteArray &QByteArray::replace(QByteArrayView before, QByteArrayView after)
     const char *a = after.data();
     qsizetype asize = after.size();
 
+    if (bsize == 1 && asize == 1)
+        return replace(*b, *a); // use the fast char-char algorithm
+
     if (isNull() || (b == a && bsize == asize))
         return *this;
 
