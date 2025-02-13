@@ -2626,8 +2626,18 @@ QByteArray &QByteArray::replace(char before, char after)
 {
     if (before != after) {
         if (const auto pos = indexOf(before); pos >= 0) {
-            const auto detachedData = data();
-            std::replace(detachedData + pos, detachedData + size(), before, after);
+            if (d.needsDetach()) {
+                QByteArray tmp(size(), Qt::Uninitialized);
+                auto dst = tmp.d.data();
+                dst = std::copy(d.data(), d.data() + pos, dst);
+                *dst++ = after;
+                std::replace_copy(d.data() + pos + 1, d.end(), dst, before, after);
+                swap(tmp);
+            } else {
+                // in-place
+                d.data()[pos] = after;
+                std::replace(d.data() + pos + 1, d.end(), before, after);
+            }
         }
     }
     return *this;
