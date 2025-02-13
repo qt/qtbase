@@ -59,6 +59,7 @@ function(qt_internal_sbom_generate_tag_value_spdx_document)
     set(single_args
         OUT_VAR_OUTPUT_FILE_NAME
         OUT_VAR_OUTPUT_ABSOLUTE_FILE_PATH
+        OUT_VAR_DEPS_FOUND
     )
     set(multi_args "")
     cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
@@ -70,6 +71,10 @@ function(qt_internal_sbom_generate_tag_value_spdx_document)
     if(arg_OUT_VAR_OUTPUT_ABSOLUTE_FILE_PATH)
         set(${arg_OUT_VAR_OUTPUT_ABSOLUTE_FILE_PATH} "${${arg_OUT_VAR_OUTPUT_ABSOLUTE_FILE_PATH}}"
             PARENT_SCOPE)
+    endif()
+
+    if(arg_OUT_VAR_DEPS_FOUND)
+        set(${arg_OUT_VAR_DEPS_FOUND} "${${arg_OUT_VAR_DEPS_FOUND}}" PARENT_SCOPE)
     endif()
 endfunction()
 

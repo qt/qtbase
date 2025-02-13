@@ -265,12 +265,20 @@ endfunction()
 # OUT_VAR_OUTPUT_ABSOLUTE_FILE_PATH - output variable where to store the output file path.
 # Note that the path will contain an unresolved '${QT_SBOM_OUTPUT_DIR}' which only has a value at
 # install time. So the path can't be used sensibly during configure time.
+#
+# OPTIONAL - whether the operation should return early, if the required python dependencies are
+# not found. OUT_VAR_DEPS_FOUND is still set in that case.
+#
+# OUT_VAR_DEPS_FOUND - output variable where to store whether the python dependencies for the
+# operation were found, and thus the conversion will be attempted.
 function(_qt_internal_sbom_generate_tag_value_spdx_document)
     if(NOT QT_GENERATE_SBOM)
         return()
     endif()
 
-    set(opt_args "")
+    set(opt_args
+        OPTIONAL
+    )
     set(single_args
         OPERATION_ID
         INPUT_JSON_FILE_PATH
@@ -278,15 +286,39 @@ function(_qt_internal_sbom_generate_tag_value_spdx_document)
         OUTPUT_FILE_NAME
         OUT_VAR_OUTPUT_FILE_NAME
         OUT_VAR_OUTPUT_ABSOLUTE_FILE_PATH
+        OUT_VAR_DEPS_FOUND
     )
     set(multi_args "")
     cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
     _qt_internal_validate_all_args_are_parsed(arg)
 
-    set(error_message_prefix "Failed to generate a tag/value SBOM file from a json SBOM file.")
-    _qt_internal_sbom_assert_python_interpreter_available("${error_message_prefix}")
-    _qt_internal_sbom_assert_python_dependency_available(GENERATE_JSON
-        "spdx_tools.spdx.clitools.pyspdxtools" ${error_message_prefix})
+    # First try to find dependencies, because they might not have been found yet.
+    _qt_internal_sbom_find_and_handle_sbom_op_dependencies(
+        OP_KEY "GENERATE_JSON"
+        OUT_VAR_DEPS_FOUND deps_found
+    )
+
+    if(arg_OPTIONAL)
+        set(deps_are_required FALSE)
+    else()
+        set(deps_are_required TRUE)
+    endif()
+
+    # If the operation has to succeed, then the deps are required. Assert they are available.
+    if(deps_are_required)
+        set(error_message_prefix "Failed to generate a tag/value SBOM file from a json SBOM file.")
+        _qt_internal_sbom_assert_python_interpreter_available("${error_message_prefix}")
+        _qt_internal_sbom_assert_python_dependency_available(GENERATE_JSON
+            "spdx_tools.spdx.clitools.pyspdxtools" ${error_message_prefix})
+
+    # If the operation is optional, don't error out if the deps are not found, but silently return
+    # and mention that the deps are not found.
+    elseif(NOT deps_found)
+        set(${arg_OUT_VAR_DEPS_FOUND} "${deps_found}" PARENT_SCOPE)
+        return()
+    endif()
+
+    set(${arg_OUT_VAR_DEPS_FOUND} "${deps_found}" PARENT_SCOPE)
 
     if(NOT arg_OPERATION_ID)
         message(FATAL_ERROR "OPERATION_ID is required")
