@@ -74,6 +74,7 @@ private slots:
     void mapMutateWithCopies();
     void mapStringValues();
     void mapStringKeys();
+    void mapStringKeysNonAscii();
     void mapValueRef_data() { basics_data(); }
     void mapValueRef();
     void mapInsertRemove_data() { basics_data(); }
@@ -1529,6 +1530,47 @@ void tst_QCborValue::mapStringKeys()
     QVERIFY(m2.value(QCborValue(QByteArray("foo"))).isUndefined());
     QVERIFY(m.value(QCborValue(QLatin1String("foo"))).isUndefined());
     QCOMPARE(m.value(QCborValue(QByteArray("foo"))).toString(), "bar");
+
+    m.insert(u"World"_s, QCborValue(3));    // replaces
+    QCOMPARE(m.size(), 3);
+    QCOMPARE(m.value(u"World"_s), QCborValue(3));
+    QCOMPARE(m.value("World"_L1), QCborValue(3));
+
+    m.insert(u"Hello"_s, QCborValue(4));    // replaces (must match Latin1)
+    QCOMPARE(m.size(), 3);
+    QCOMPARE(m.value(u"Hello"_s), QCborValue(4));
+    QCOMPARE(m.value("Hello"_L1), QCborValue(4));
+}
+
+void tst_QCborValue::mapStringKeysNonAscii()
+{
+    {
+        QCborMap m;
+        m["a"_L1] = 1;          // US-ASCII: 1 UTF-8 & UTF-16 code unit
+        m["\xE9"_L1] = 2;       // Latin-1: 2 UTF-8 code units, 1 UTF-16
+        m[u"ü"_s] = 3;          // ditto, but inserted as UTF-16
+        m[u"♭"_s] = 4;          // BMP over U+07FF: 3 UTF-8 code units, 1 UTF-16
+        m[u"\U00010000"_s] = 5; // non-BMP: 4 UTF-8 code units, 2 UTF-16
+
+        QCOMPARE(m.size(), 5);
+        QCOMPARE(m.value(u"a"_s), 1);
+        QCOMPARE(m.value(u"é"_s), 2);
+        QCOMPARE(m.value("\xFC"_L1), 3);
+
+        QCOMPARE(m.value(u"k♭"_s), QCborValue());
+        QCOMPARE(m.value("foo"_L1), QCborValue());
+    }
+    {
+        QCborMap m;
+        m[u"k♭"_s] = 1;
+        m[u"a"_s] = 2;
+        m[u"\U00010000"_s] = 3;
+
+        QCOMPARE(m.size(), 3);
+        QCOMPARE(m.value(u"b"_s), QCborValue());
+        QCOMPARE(m.value(u"♭"_s), QCborValue());
+        QCOMPARE(m.value("foo"_L1), QCborValue());
+    }
 }
 
 void tst_QCborValue::mapInsertRemove()
