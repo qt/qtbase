@@ -41,6 +41,7 @@ private Q_SLOTS:
     void testObjectTakeDetach();
     void testObjectSmallKeys();
     void testObjectInsertCopies();
+    void testObjectInsertNonAscii();
     void testArraySimple();
     void testArrayInsertCopies();
     void testValueObject();
@@ -711,6 +712,22 @@ void tst_QtJson::testObjectInsertCopies()
         QCOMPARE(obj.value("prop2"), "TEST");
         QCOMPARE(obj2.size(), 1);
         QCOMPARE(obj2.value("value"), "TEST");
+    }
+}
+
+void tst_QtJson::testObjectInsertNonAscii()
+{
+    {
+        QJsonObject myObject;
+        myObject.insert("k♭", "First key");
+        myObject.insert("a", "Second key");
+        QCOMPARE(myObject.begin().key(), "a");
+    }
+    {
+        QJsonObject myObject;
+        myObject.insert("a", "Second key");
+        myObject.insert("k♭", "First key");
+        QCOMPARE(myObject.begin().key(), "a");
     }
 }
 

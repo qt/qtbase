@@ -362,8 +362,8 @@ public:
 
         if (e.flags & QtCbor::Element::StringIsUtf16) {
             if (mode == QtCbor::Comparison::ForEquality)
-                return QtPrivate::equalStrings(b->asStringView(), s) ? 0 : 1;
-            return QtPrivate::compareStrings(b->asStringView(), s);
+                return b->asStringView() == s ? 0 : 1;
+            return b->asStringView().compare(s);
         }
         return compareUtf8(b, s);
     }
