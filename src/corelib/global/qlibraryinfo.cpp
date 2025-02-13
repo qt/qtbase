@@ -601,10 +601,24 @@ static QVariant libraryPathToValue(QLibraryInfo::LibraryPath loc)
 }
 #endif // settings
 
+// TODO: There apparently are paths that are both absolute and relative for QFileSystemEntry.
+//       In particular on windows.
+
+static bool pathIsRelative(const QString &path)
+{
+    using FromInternalPath = QFileSystemEntry::FromInternalPath;
+    return !path.startsWith(':'_L1) && QFileSystemEntry(path, FromInternalPath{}).isRelative();
+}
+
+static bool pathIsAbsolute(const QString &path)
+{
+    using FromInternalPath = QFileSystemEntry::FromInternalPath;
+    return path.startsWith(':'_L1) || QFileSystemEntry(path, FromInternalPath{}).isAbsolute();
+}
+
 QStringList QLibraryInfoPrivate::paths(QLibraryInfo::LibraryPath p,
                                        UsageMode usageMode)
 {
-    using FromInternalPath = QFileSystemEntry::FromInternalPath;
     const QLibraryInfo::LibraryPath loc = p;
     QList<QString> ret;
     bool fromConf = false;
@@ -621,8 +635,7 @@ QStringList QLibraryInfoPrivate::paths(QLibraryInfo::LibraryPath p,
                 ret = QList<QString>({ std::move(value).toString()});
             for (qsizetype i = 0, end = ret.size(); i < end; ++i) {
                 ret[i] = normalizePath(ret[i]);
-                pathsAreAbsolute = pathsAreAbsolute
-                    && QFileSystemEntry(ret[i], FromInternalPath{}).isAbsolute();
+                pathsAreAbsolute = pathsAreAbsolute && pathIsAbsolute(ret[i]);
             }
         }
     }
@@ -645,8 +658,7 @@ QStringList QLibraryInfoPrivate::paths(QLibraryInfo::LibraryPath p,
 #endif
         }
         if (!noConfResult.isEmpty()) {
-            pathsAreAbsolute = pathsAreAbsolute
-                && QFileSystemEntry(noConfResult, FromInternalPath{}).isAbsolute();
+            pathsAreAbsolute = pathsAreAbsolute && pathIsAbsolute(noConfResult);
             ret.push_back(std::move(noConfResult));
         }
     }
@@ -661,7 +673,7 @@ QStringList QLibraryInfoPrivate::paths(QLibraryInfo::LibraryPath p,
         baseDir = QLibraryInfoPrivate::path(QLibraryInfo::PrefixPath, usageMode);
     }
     for (qsizetype i = 0, end = ret.size(); i < end; ++i)
-        if (QFileSystemEntry(ret[i], FromInternalPath{}).isRelative())
+        if (pathIsRelative(ret[i]))
             ret[i] = QDir::cleanPath(baseDir + u'/' +  std::move(ret[i]));
     return ret;
 }

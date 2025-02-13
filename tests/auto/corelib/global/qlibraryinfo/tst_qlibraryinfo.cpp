@@ -79,6 +79,12 @@ void tst_QLibraryInfo::paths()
     QCOMPARE(values[1], "/path/to/anotherdoc");
     QString baseDir = QCoreApplication::applicationDirPath();
     QCOMPARE(values[2], baseDir + "/relativePath");
+
+    const QStringList qmlImportPaths = QLibraryInfo::paths(QLibraryInfo::QmlImportsPath);
+    const QStringList expected = {
+        ":/a/resource/path", ":a/broken/path", baseDir + "/a/relative/path"
+    };
+    QCOMPARE(qmlImportPaths, expected);
 }
 
 void tst_QLibraryInfo::merge()
