@@ -9,16 +9,30 @@
 #include <string>
 
 Q_DECLARE_METATYPE(Qt::SplitBehavior)
+
 namespace {
 class tst_QStringTokenizer : public QObject
 {
     Q_OBJECT
+
+public:
+    enum class Content : bool { Null, Empty };
+    Q_ENUM(Content)
 
 private Q_SLOTS:
     void constExpr() const;
     void basics_data() const;
     void basics() const;
     void toContainer() const;
+
+    void emptyResult_L1_data() const { emptyResult_data_impl(); }
+    void emptyResult_L1() const { emptyResult_impl<QLatin1StringView>(); }
+    void emptyResult_U16_data() const { emptyResult_data_impl(); }
+    void emptyResult_U16() const { emptyResult_impl<QStringView>(); }
+private:
+    template <typename View>
+    void emptyResult_impl() const;
+    void emptyResult_data_impl() const;
 };
 
 static QStringList skipped(const QStringList &sl)
@@ -133,6 +147,70 @@ void tst_QStringTokenizer::toContainer() const
         QStringList result;
         qTokenize(QLatin1String{"a,b,c"}, u',').toContainer(result);
         QCOMPARE(result, QStringList({"a", "b", "c"}));
+    }
+}
+
+void tst_QStringTokenizer::emptyResult_data_impl() const
+{
+    // try really hard to get an empty result...
+
+    QTest::addColumn<Content>("haystack");
+    QTest::addColumn<Content>("needle");
+    QTest::addColumn<Qt::SplitBehavior>("behavior");
+
+    const auto str = [] (auto e) {
+        using E = decltype(e);
+        const auto me = QMetaEnum::fromType<E>();
+        if constexpr (std::is_enum_v<E>)
+            return me.valueToKey(qToUnderlying(e));
+        else
+            return me.valueToKey(e.toInt()); // QFlags
+    };
+
+    for (auto haystack : {Content::Null, Content::Empty}) {
+        for (auto needle : {Content::Null, Content::Empty}) {
+            for (auto behavior : {Qt::KeepEmptyParts, Qt::SkipEmptyParts}) {
+                QTest::addRow("%s/%s (%s)",
+                              str(haystack),
+                              str(needle),
+                              str(Qt::SplitBehavior{behavior}))
+                        << haystack << needle << Qt::SplitBehavior{behavior};
+            }
+        }
+    }
+}
+
+template <typename View>
+void tst_QStringTokenizer::emptyResult_impl() const
+{
+    QFETCH(const Content, haystack);
+    QFETCH(const Content, needle);
+    QFETCH(const Qt::SplitBehavior, behavior);
+
+    auto select = [](Content c, View null, View empty) {
+        switch (c) {
+        case Content::Empty: return empty;
+        case Content::Null:  return null;
+        }
+        Q_UNREACHABLE_RETURN(null);
+    };
+
+    const auto null = View{nullptr};
+    QVERIFY(null.isNull());
+
+    using Char = typename View::value_type;
+    const Char ch{0};
+    const auto empty = View{&ch, qsizetype{0}};
+    QVERIFY(empty.isEmpty());
+
+    {
+        const auto tok = qTokenize(select(haystack, null, empty),
+                                   select(needle, null, empty),
+                                   behavior);
+        if (behavior & Qt::SkipEmptyParts)
+            QCOMPARE_EQ(tok.begin(), tok.end()); // iow: empty
+        else
+            QCOMPARE_NE(tok.begin(), tok.end()); // iow: not empty
     }
 }
 
