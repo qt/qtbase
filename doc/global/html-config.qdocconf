@@ -7,8 +7,6 @@ HTML.tocdepth = 2
 HTML.extraimages += template/images/arrow_bc.png \
                     template/images/home.png \
                     template/images/ico_out.png \
-                    template/images/ico_note.png \
-                    template/images/ico_note_attention.png \
                     template/images/btn_prev.png \
                     template/images/btn_next.png \
                     template/images/bullet_dn.png \
@@ -22,8 +20,6 @@ HTML.extraimages += template/images/arrow_bc.png \
                     images/arrow_bc.png \
                     images/home.png \
                     images/ico_out.png \
-                    images/ico_note.png \
-                    images/ico_note_attention.png \
                     images/btn_prev.png \
                     images/btn_next.png \
                     images/bullet_dn.png \
