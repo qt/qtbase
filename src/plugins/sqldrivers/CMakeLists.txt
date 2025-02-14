@@ -78,6 +78,6 @@ if(QT_FEATURE_sql_mimer)
     add_subdirectory(mimer)
 endif()
 
-if(NOT CMAKE_PROJECT_NAME STREQUAL "QtBase" AND NOT CMAKE_PROJECT_NAME STREQUAL "Qt")
+if(NOT PROJECT_NAME STREQUAL "QtBase" AND NOT PROJECT_NAME STREQUAL "Qt")
     qt_build_repo_end()
 endif()
