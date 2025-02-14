@@ -93,12 +93,11 @@ handle_type(cpp EXTENSIONS .c .cc .cpp .cxx .h .hh .hxx .hpp MODULES Core TEMPLA
 handle_type(qml EXTENSIONS .qml .js .mjs MODULES Gui Qml Quick TEMPLATE
 "\n\nqt_add_qml_module(${project_name}
     URI ${project_name}
-    OUTPUT_DIRECTORY qml
-    VERSION 1.0
-    RESOURCE_PREFIX /qt/qml
     QML_FILES
         @files@
-)"
+)
+set_property(TARGET ${project_name} PROPERTY RUNTIME_OUTPUT_NAME \"${project_name}app\")
+"
 )
 
 handle_type(ui EXTENSIONS .ui MODULES Gui Widgets DEPENDS cpp TEMPLATE
@@ -162,7 +161,7 @@ set(content
 project(${project_name} LANGUAGES CXX)
 
 find_package(Qt6 REQUIRED COMPONENTS ${packages_string})
-qt_standard_project_setup()"
+qt_standard_project_setup(REQUIRES 6.8)"
 )
 
 set(has_useful_sources FALSE)
