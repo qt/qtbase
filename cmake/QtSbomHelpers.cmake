@@ -78,6 +78,27 @@ function(qt_internal_sbom_generate_tag_value_spdx_document)
     endif()
 endfunction()
 
+function(qt_internal_sbom_verify_deps_for_generate_tag_value_spdx_document)
+    _qt_internal_sbom_verify_deps_for_generate_tag_value_spdx_document(${ARGN})
+
+    set(opt_args "")
+    set(single_args
+        OUT_VAR_DEPS_FOUND
+        OUT_VAR_REASON_FAILURE_MESSAGE
+    )
+    set(multi_args "")
+    cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
+
+    if(arg_OUT_VAR_DEPS_FOUND)
+        set(${arg_OUT_VAR_DEPS_FOUND} "${${arg_OUT_VAR_DEPS_FOUND}}" PARENT_SCOPE)
+    endif()
+
+    if(arg_OUT_VAR_REASON_FAILURE_MESSAGE)
+        set(${arg_OUT_VAR_REASON_FAILURE_MESSAGE}
+            "${${arg_OUT_VAR_REASON_FAILURE_MESSAGE}}" PARENT_SCOPE)
+    endif()
+endfunction()
+
 function(qt_internal_sbom_get_project_spdx_id out_var)
     set(result "")
 

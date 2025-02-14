@@ -194,18 +194,174 @@ function(_qt_internal_sbom_find_and_handle_sbom_op_dependencies)
     endif()
 endfunction()
 
-function(_qt_internal_sbom_assert_python_interpreter_available error_message_prefix)
-    if(NOT QT_INTERNAL_SBOM_PYTHON_EXECUTABLE)
-        message(FATAL_ERROR ${error_message_prefix}
-            " QT_INTERNAL_SBOM_PYTHON_EXECUTABLE is missing a valid path to a python interpreter ")
+# Helper that checks a variable for truthiness, and sets the OUT_VAR_DEPS_FOUND and
+# OUT_VAR_REASON_FAILURE_MESSAGE variables based on what was passed in.
+function(_qt_internal_sbom_handle_sbom_op_missing_dependency)
+    set(opt_args "")
+    set(single_args
+        VAR_TO_CHECK
+        OUT_VAR_DEPS_FOUND
+        OUT_VAR_REASON_FAILURE_MESSAGE
+    )
+    set(multi_args
+        FAILURE_MESSAGE
+    )
+    cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    if(NOT arg_VAR_TO_CHECK)
+        message(FATAL_ERROR "VAR_TO_CHECK is required")
+    endif()
+
+    set(reason "")
+    set(value "${${arg_VAR_TO_CHECK}}")
+    if(NOT value)
+        if(arg_FAILURE_MESSAGE)
+            list(JOIN arg_FAILURE_MESSAGE " " reason)
+        endif()
+        set(deps_found FALSE)
+    else()
+        set(deps_found TRUE)
+    endif()
+
+    if(arg_OUT_VAR_DEPS_FOUND)
+        set(${arg_OUT_VAR_DEPS_FOUND} "${deps_found}" PARENT_SCOPE)
+    endif()
+    if(arg_OUT_VAR_REASON_FAILURE_MESSAGE)
+        set(${arg_OUT_VAR_REASON_FAILURE_MESSAGE} "${reason}" PARENT_SCOPE)
     endif()
 endfunction()
 
+# Helper to query whether the sbom python interpreter is available, and also the error message if it
+# is not available.
+function(_qt_internal_sbom_check_python_interpreter_available)
+    set(opt_args "")
+    set(single_args
+        OUT_VAR_DEPS_FOUND
+        OUT_VAR_REASON_FAILURE_MESSAGE
+    )
+    set(multi_args
+        FAILURE_MESSAGE_PREFIX
+    )
+    cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    set(failure_message
+        "QT_INTERNAL_SBOM_PYTHON_EXECUTABLE is missing a valid path to a python interpreter")
+
+    if(arg_FAILURE_MESSAGE_PREFIX)
+        list(PREPEND failure_message ${arg_FAILURE_MESSAGE_PREFIX})
+    endif()
+
+    _qt_internal_sbom_handle_sbom_op_missing_dependency(
+        VAR_TO_CHECK QT_INTERNAL_SBOM_PYTHON_EXECUTABLE
+        FAILURE_MESSAGE ${failure_message}
+        OUT_VAR_DEPS_FOUND deps_found
+        OUT_VAR_REASON_FAILURE_MESSAGE reason
+    )
+
+    if(arg_OUT_VAR_DEPS_FOUND)
+        set(${arg_OUT_VAR_DEPS_FOUND} "${deps_found}" PARENT_SCOPE)
+    endif()
+    if(arg_OUT_VAR_REASON_FAILURE_MESSAGE)
+        set(${arg_OUT_VAR_REASON_FAILURE_MESSAGE} "${reason}" PARENT_SCOPE)
+    endif()
+endfunction()
+
+# Helper to assert that the python interpreter is available.
+function(_qt_internal_sbom_assert_python_interpreter_available error_message_prefix)
+    _qt_internal_sbom_check_python_interpreter_available(
+        FAILURE_MESSAGE_PREFIX ${error_message_prefix}
+        OUT_VAR_DEPS_FOUND deps_found
+        OUT_VAR_REASON_FAILURE_MESSAGE reason
+    )
+
+    if(NOT deps_found)
+        message(FATAL_ERROR ${reason})
+    endif()
+endfunction()
+
+# Helper to query whether an sbom python dependency is available, and also the error message if it
+# is not available.
+function(_qt_internal_sbom_check_python_dependency_available)
+    set(opt_args "")
+    set(single_args
+        OUT_VAR_DEPS_FOUND
+        OUT_VAR_REASON_FAILURE_MESSAGE
+        VAR_TO_CHECK
+    )
+    set(multi_args
+        FAILURE_MESSAGE_PREFIX
+        FAILURE_MESSAGE_SUFFIX
+    )
+    cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    set(failure_message
+        "Required Python dependencies not found: ")
+
+    if(arg_FAILURE_MESSAGE_PREFIX)
+        list(PREPEND failure_message ${arg_FAILURE_MESSAGE_PREFIX})
+    endif()
+
+    if(arg_FAILURE_MESSAGE_SUFFIX)
+        list(APPEND failure_message ${arg_FAILURE_MESSAGE_SUFFIX})
+    endif()
+
+    _qt_internal_sbom_handle_sbom_op_missing_dependency(
+        VAR_TO_CHECK ${arg_VAR_TO_CHECK}
+        FAILURE_MESSAGE ${failure_message}
+        OUT_VAR_DEPS_FOUND deps_found
+        OUT_VAR_REASON_FAILURE_MESSAGE reason
+    )
+
+    if(arg_OUT_VAR_DEPS_FOUND)
+        set(${arg_OUT_VAR_DEPS_FOUND} "${deps_found}" PARENT_SCOPE)
+    endif()
+    if(arg_OUT_VAR_REASON_FAILURE_MESSAGE)
+        set(${arg_OUT_VAR_REASON_FAILURE_MESSAGE} "${reason}" PARENT_SCOPE)
+    endif()
+endfunction()
+
+# Helper to assert that an sbom python dependency is available.
 function(_qt_internal_sbom_assert_python_dependency_available key dep error_message_prefix)
-    if(NOT QT_INTERNAL_SBOM_DEPS_FOUND_FOR_${key})
-        message(FATAL_ERROR ${error_message_prefix} " Required Python dependencies not found: "
-            ${dep}
-        )
+    _qt_internal_sbom_check_python_dependency_available(
+        VAR_TO_CHECK QT_INTERNAL_SBOM_DEPS_FOUND_FOR_${key}
+        FAILURE_MESSAGE_PREFIX ${error_message_prefix}
+        FAILURE_MESSAGE_SUFFIX ${dep}
+        OUT_VAR_DEPS_FOUND deps_found
+        OUT_VAR_REASON_FAILURE_MESSAGE reason
+    )
+
+    if(NOT deps_found)
+        message(FATAL_ERROR ${reason})
+    endif()
+endfunction()
+
+# Helper to query whether the json sbom generation dependency is available, and also the error
+# message if it is not available.
+function(_qt_internal_sbom_check_generate_json_dependency_available)
+    set(opt_args "")
+    set(single_args
+        OUT_VAR_DEPS_FOUND
+        OUT_VAR_REASON_FAILURE_MESSAGE
+    )
+    set(multi_args "")
+    cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    _qt_internal_sbom_check_python_dependency_available(
+        VAR_TO_CHECK QT_INTERNAL_SBOM_DEPS_FOUND_FOR_GENERATE_JSON
+        FAILURE_MESSAGE_SUFFIX "spdx_tools.spdx.clitools.pyspdxtools"
+        OUT_VAR_DEPS_FOUND deps_found
+        OUT_VAR_REASON_FAILURE_MESSAGE reason
+    )
+
+    if(arg_OUT_VAR_DEPS_FOUND)
+        set(${arg_OUT_VAR_DEPS_FOUND} "${deps_found}" PARENT_SCOPE)
+    endif()
+    if(arg_OUT_VAR_REASON_FAILURE_MESSAGE)
+        set(${arg_OUT_VAR_REASON_FAILURE_MESSAGE} "${reason}" PARENT_SCOPE)
     endif()
 endfunction()
 
@@ -234,6 +390,50 @@ function(_qt_internal_sbom_generate_json)
     file(GENERATE OUTPUT "${verify_sbom}" CONTENT "${content}")
 
     set_property(GLOBAL APPEND PROPERTY _qt_sbom_cmake_verify_include_files "${verify_sbom}")
+endfunction()
+
+# Helper to query whether the all required dependencies are available to generate a tag / value
+# document from a json one.
+function(_qt_internal_sbom_verify_deps_for_generate_tag_value_spdx_document)
+    set(opt_args "")
+    set(single_args
+        OUT_VAR_DEPS_FOUND
+        OUT_VAR_REASON_FAILURE_MESSAGE
+    )
+    set(multi_args "")
+    cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    # First try to find dependencies, because they might not have been found yet.
+    _qt_internal_sbom_find_and_handle_sbom_op_dependencies(
+        OP_KEY "GENERATE_JSON"
+    )
+
+    _qt_internal_sbom_check_python_interpreter_available(
+        OUT_VAR_DEPS_FOUND python_found
+        OUT_VAR_REASON_FAILURE_MESSAGE python_error
+    )
+    _qt_internal_sbom_check_generate_json_dependency_available(
+        OUT_VAR_DEPS_FOUND dep_found
+        OUT_VAR_REASON_FAILURE_MESSAGE dep_error
+    )
+
+    set(reasons "")
+    if(python_error)
+        string(APPEND reasons "${python_error}\n")
+    endif()
+    if(dep_error)
+        string(APPEND reasons "${dep_error}\n")
+    endif()
+
+    if(python_found AND dep_found)
+        set(deps_found "TRUE")
+    else()
+        set(deps_found "FALSE")
+    endif()
+
+    set(${arg_OUT_VAR_DEPS_FOUND} "${deps_found}" PARENT_SCOPE)
+    set(${arg_OUT_VAR_REASON_FAILURE_MESSAGE} "${reasons}" PARENT_SCOPE)
 endfunction()
 
 # Helper to generate a tag/value SPDX file from a SPDX JSON format file.
