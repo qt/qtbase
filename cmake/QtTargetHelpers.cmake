@@ -232,6 +232,9 @@ function(qt_internal_extend_target target)
             )
         endif()
 
+        set(all_libraries ${arg_LIBRARIES} ${arg_PUBLIC_LIBRARIES})
+        qt_internal_work_around_autogen_discarded_dependencies(${target} ${all_libraries})
+
         if(QT_GENERATE_SBOM)
             set(sbom_args "")
             _qt_internal_forward_function_args(
