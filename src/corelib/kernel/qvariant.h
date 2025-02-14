@@ -124,9 +124,8 @@ public:
         const void *storage() const
         { return is_shared ? data.shared->data() : &data.data; }
 
-        // determine internal storage at compile time
         template<typename T> const T &get() const
-        { return *static_cast<const T *>(CanUseInternalSpace<T> ? &data.data : data.shared->data()); }
+        { return *static_cast<const T *>(storage()); }
 
         inline const QtPrivate::QMetaTypeInterface *typeInterface() const
         {
@@ -771,7 +770,7 @@ template<typename T> inline T qvariant_cast(QVariant &&v)
 {
     QMetaType targetType = QMetaType::fromType<T>();
     if (v.d.type() == targetType) {
-        if constexpr (QVariant::Private::CanUseInternalSpace<T>) {
+        if (!v.d.is_shared) {
             return std::move(*reinterpret_cast<T *>(v.d.data.data));
         } else {
             if (v.d.data.shared->ref.loadRelaxed() == 1)
