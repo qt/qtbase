@@ -11,8 +11,6 @@ defines                  += offlinedocs
 HTML.stylesheets = template/style/offline.css \
                    template/style/offline-dark.css
 HTML.extraimages += template/images/ico_out.png \
-                    template/images/ico_note.png \
-                    template/images/ico_note_attention.png \
                     template/images/btn_prev.png \
                     template/images/btn_next.png \
                     template/images/bullet_dn.png \
@@ -25,8 +23,6 @@ sourcedirs += includes
 qhp.extraFiles +=   style/offline.css \
                     style/offline-dark.css \
                     images/ico_out.png \
-                    images/ico_note.png \
-                    images/ico_note_attention.png \
                     images/btn_prev.png \
                     images/btn_next.png \
                     images/bullet_dn.png \
@@ -35,8 +31,6 @@ qhp.extraFiles +=   style/offline.css \
 
 DocBook.extraimages += \
                     images/ico_out.png \
-                    images/ico_note.png \
-                    images/ico_note_attention.png \
                     images/btn_prev.png \
                     images/btn_next.png \
                     images/bullet_dn.png \

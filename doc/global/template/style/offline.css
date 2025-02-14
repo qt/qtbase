@@ -120,11 +120,11 @@ NOTE styles
 }
 
 .admonition.note, .admonition.important {
-    background: #f2f2f2 3px 6px no-repeat url(../images/ico_note.png);
+    background: #f2f2f2 3px 6px no-repeat;
 }
 
 .admonition.warning {
-    background: #f2f2f2 3px 6px no-repeat url(../images/ico_note_attention.png);
+    background: #f2f2f2 3px 6px no-repeat;
 }
 /*
 -------------------------------
