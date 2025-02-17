@@ -546,7 +546,7 @@ static quint64 rawReadValue(int fd)
     while (nread < sizeof results) {
         char *ptr = reinterpret_cast<char *>(&results);
         qint64 r = qt_safe_read(fd, ptr + nread, sizeof results - nread);
-        if (r == -1) {
+        if (r < 0) {
             perror("QBenchmarkPerfEventsMeasurer::readValue: reading the results");
             exit(1);
         }
