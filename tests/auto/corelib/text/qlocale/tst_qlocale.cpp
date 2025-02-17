@@ -3539,9 +3539,7 @@ void tst_QLocale::formattedDataSize_data()
             ROWQ("IEC-1235k", 2, 1234567, "1", "18 Mi");
             ROWQ("IEC-1374k", 2, 1374744, "1", "31 Mi");
             ROWQ("IEC-1234M", 2, 1234567890, "1", "15 Gi");
-            if (false) { // hits UB
             ROWQ("IEC-min", 2, min64, "-8", "00 Ei");
-            }
             ROWQ("IEC-max", 2, max64, "8", "00 Ei");
         }
         {
@@ -3555,9 +3553,7 @@ void tst_QLocale::formattedDataSize_data()
             ROWQ("Trad--1235k", 2, -1234567, "-1", "18 M");
             ROWQ("Trad-1374k", 2, 1374744, "1", "31 M");
             ROWQ("Trad-1234M", 2, 1234567890, "1", "15 G");
-            if (false) { // hits UB
             ROWQ("Trad-min", 2, min64, "-8", "00 E");
-            }
             ROWQ("Trad-max", 2, max64, "8", "00 E");
         }
         {
@@ -3570,9 +3566,7 @@ void tst_QLocale::formattedDataSize_data()
             ROWQ("Decimal-1374k", 2, 1374744, "1", "37 M");
             ROWQ("Decimal-1234M", 2, 1234567890, "1", "23 G");
             ROWQ("Decimal--1234M", 2, -1234567890, "-1", "23 G");
-            if (false) { // hits UB
             ROWQ("Decimal-min", 2, min64, "-9", "22 E");
-            }
             ROWQ("Decimal-max", 2, max64, "9", "22 E");
         }
 #undef ROWQ
