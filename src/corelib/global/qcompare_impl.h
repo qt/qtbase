@@ -12,6 +12,8 @@
 #include <QtCore/qtconfigmacros.h>
 #include <QtCore/qcompilerdetection.h>
 
+#include <type_traits>
+
 QT_BEGIN_NAMESPACE
 
 namespace QtPrivate {
