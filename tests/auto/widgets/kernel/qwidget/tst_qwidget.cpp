@@ -13618,7 +13618,7 @@ void tst_QWidget::setVisibleOverrideIsCalled()
 {
     struct WidgetPrivate : public QWidgetPrivate
     {
-        void setVisible(bool visible) override
+        void setVisible(bool) override
         {
             wasCalled = true;
         }
