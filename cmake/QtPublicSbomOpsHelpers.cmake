@@ -757,11 +757,33 @@ function(_qt_internal_sbom_generate_reuse_source_sbom)
             endif()
 ")
 
+    set(extra_reuse_args "")
+
+    get_property(project_supplier GLOBAL PROPERTY _qt_sbom_project_supplier)
+    if(project_supplier)
+        get_property(project_supplier_url GLOBAL PROPERTY _qt_sbom_project_supplier_url)
+
+        # Add the supplier url if available. Add it in parenthesis to stop reuse from adding its
+        # own empty parenthesis.
+        if(project_supplier_url)
+            set(project_supplier "${project_supplier} (${project_supplier_url})")
+        endif()
+
+        # Unfortunately there's no way to silence the addition of the 'Creator: Person' field,
+        # even though 'Creator: Organization' is supplied.
+        list(APPEND extra_reuse_args --creator-organization "${project_supplier}")
+    endif()
+
     set(content "
         message(STATUS \"Generating source SBOM using reuse tool: ${source_sbom_path}\")
+        set(extra_reuse_args \"${extra_reuse_args}\")
         execute_process(
-            COMMAND ${QT_SBOM_PROGRAM_REUSE} --root \"${PROJECT_SOURCE_DIR}\" spdx
-                    -o ${source_sbom_path}
+            COMMAND
+                ${QT_SBOM_PROGRAM_REUSE}
+                --root \"${PROJECT_SOURCE_DIR}\"
+                spdx
+                -o ${source_sbom_path}
+                \${extra_reuse_args}
             RESULT_VARIABLE res
         )
         ${handle_error}
