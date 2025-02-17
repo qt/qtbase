@@ -154,9 +154,7 @@ static qreal progressForValue(const QEasingCurve &curve, qreal value)
 class QScrollTimer : public QAbstractAnimation
 {
 public:
-    QScrollTimer(QScrollerPrivate *_d)
-        : QAbstractAnimation(_d), d(_d), ignoreUpdate(false), skip(0)
-    { }
+    QScrollTimer(QScrollerPrivate *_d) : QAbstractAnimation(_d), d(_d), skip(0) {}
 
     int duration() const override
     {
@@ -165,28 +163,21 @@ public:
 
     void start()
     {
-        // QAbstractAnimation::start() will immediately call
-        // updateCurrentTime(), but our state is not set correctly yet
-        ignoreUpdate = true;
         QAbstractAnimation::start();
-        ignoreUpdate = false;
         skip = 0;
     }
 
 protected:
     void updateCurrentTime(int /*currentTime*/) override
    {
-        if (!ignoreUpdate) {
-            if (++skip >= d->frameRateSkip()) {
-                skip = 0;
-                d->timerTick();
-            }
+        if (++skip >= d->frameRateSkip()) {
+            skip = 0;
+            d->timerTick();
         }
     }
 
 private:
     QScrollerPrivate *d;
-    bool ignoreUpdate;
     int skip;
 };
 #endif // animation
@@ -1658,6 +1649,7 @@ void QScrollerPrivate::setState(QScroller::State newstate)
 {
     Q_Q(QScroller);
     bool sendLastScroll = false;
+    bool startTimer = false;
 
     if (state == newstate)
         return;
@@ -1690,19 +1682,24 @@ void QScrollerPrivate::setState(QScroller::State newstate)
         dragDistance = QPointF(0, 0);
 #if QT_CONFIG(animation)
         if (state == QScroller::Pressed)
-            scrollTimer->start();
+            startTimer = true;
 #endif
         break;
 
     case QScroller::Scrolling:
 #if QT_CONFIG(animation)
-        scrollTimer->start();
+        startTimer = true;
 #endif
         break;
     }
 
     qSwap(state, newstate);
 
+#if QT_CONFIG(animation)
+    // Only start the timer after the state has been changed
+    if (startTimer)
+        scrollTimer->start();
+#endif
     if (sendLastScroll) {
         QScrollEvent se(contentPosition, overshootPosition, QScrollEvent::ScrollFinished);
         sendEvent(target, &se);
