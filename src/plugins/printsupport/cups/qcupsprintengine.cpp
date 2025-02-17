@@ -215,7 +215,7 @@ void QCupsPrintEnginePrivate::closePrintDevice()
         }
 
         if (m_pageLayout.orientation() == QPageLayout::Landscape)
-            options.emplace_back("landscape", "");
+            options.emplace_back("landscape", "true");
 
         QStringList::const_iterator it = cupsOptions.constBegin();
         Q_ASSERT(cupsOptions.size() % 2 == 0);
