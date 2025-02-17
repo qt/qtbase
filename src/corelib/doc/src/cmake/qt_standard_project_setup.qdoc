@@ -32,7 +32,8 @@ qt_standard_project_setup(
 This command simplifies the task of setting up a typical Qt application.
 It would usually be called immediately after the first \c{find_package(Qt6)}
 call, normally in the top level \c{CMakeLists.txt} file and before any targets
-have been defined. It does the following things:
+have been defined. If you call it later, it does not apply to any targets
+defined before, with possibly confusing results. It does the following things:
 
 \list
 \li The standard CMake variables \c{CMAKE_AUTOMOC} and \c{CMAKE_AUTOUIC}
