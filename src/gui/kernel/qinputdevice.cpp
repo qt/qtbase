@@ -356,6 +356,9 @@ void QInputDevicePrivate::registerDevice(const QInputDevice *dev)
 */
 void QInputDevicePrivate::unregisterDevice(const QInputDevice *dev)
 {
+    if (deviceList.isDestroyed())
+        return;     // nothing to remove!
+
     QMutexLocker lock(&devicesMutex);
     deviceList()->removeOne(dev);
     qCInfo(lcQpaInputDevices) << "Unregistered" << dev;
