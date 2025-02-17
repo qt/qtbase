@@ -315,7 +315,8 @@ void QWasmWindow::setVisible(bool visible)
     m_compositor->requestUpdateWindow(this, QRect(QPoint(0, 0), geometry().size()), QWasmCompositor::ExposeEventDelivery);
     m_decoratedWindow["style"].set("display", visible ? "block" : "none");
     if (window() == QGuiApplication::focusWindow())
-        m_canvas.call<void>("focus");
+        focus();
+
     if (visible)
         applyWindowState();
 }
@@ -706,9 +707,13 @@ void QWasmWindow::requestActivateWindow()
     setAsActiveNode();
 
     if (!QWasmIntegration::get()->inputContext())
-        m_canvas.call<void>("focus");
-
+        focus();
     QPlatformWindow::requestActivateWindow();
+}
+
+void QWasmWindow::focus()
+{
+    m_canvas.call<void>("focus");
 }
 
 bool QWasmWindow::setMouseGrabEnabled(bool grab)
