@@ -43,12 +43,13 @@ public:
     void setFocusObject(QObject *object) override;
 
 private:
-    void setInputText();
+    void updateInputElement();
 
 private:
     QString m_preeditString;
     int m_replaceSize = 0;
 
+    bool m_visibleInputPanel = false;
     bool m_inputMethodAccepted = false;
     QObject *m_focusObject = nullptr;
 };

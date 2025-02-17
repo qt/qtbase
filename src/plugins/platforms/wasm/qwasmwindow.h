@@ -85,6 +85,7 @@ public:
     bool windowEvent(QEvent *event) final;
     void setMask(const QRegion &region) final;
     void setParent(const QPlatformWindow *window) final;
+    void focus();
 
     QWasmScreen *platformScreen() const;
     void setBackingStore(QWasmBackingStore *store) { m_backingStore = store; }
