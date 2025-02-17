@@ -4933,9 +4933,11 @@ QString QLocale::formattedDataSize(qint64 bytes, int precision, DataSizeFormats 
     if (!bytes) {
         power = 0;
     } else if (format & DataSizeBase1000) {
-        power = int(std::log10(QtPrivate::qUnsignedAbs(bytes)) / 3);
-    } else { // Compute log2(bytes) / 10:
-        power = int((63 - qCountLeadingZeroBits(QtPrivate::qUnsignedAbs(bytes))) / 10);
+        constexpr auto log10_1000 = 3; // std::log10(1000U)
+        power = int(std::log10(QtPrivate::qUnsignedAbs(bytes))) / log10_1000;
+    } else {
+        constexpr auto log2_1024 = 10; // QtPrivate::log2i(1024U);
+        power = QtPrivate::log2i(QtPrivate::qUnsignedAbs(bytes)) / log2_1024;
         base = 1024;
     }
     // Only go to doubles if we'll be using a quantifier:
