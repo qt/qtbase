@@ -19,10 +19,7 @@
 
     Unlike the window managers for top-level windows, all window flags
     (Qt::WindowFlags) are supported by QMdiArea as long as the flags
-    are supported by the current widget style. If a specific flag is
-    not supported by the style (e.g., the
-    \l{Qt::}{WindowShadeButtonHint}), you can still shade the window
-    with showShaded().
+    are supported by the current widget style.
 
     Subwindows in QMdiArea are instances of QMdiSubWindow. They
     are added to an MDI area with addSubWindow(). It is common to pass
