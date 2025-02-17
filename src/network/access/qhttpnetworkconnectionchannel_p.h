@@ -61,7 +61,7 @@ class QByteArray;
 typedef QPair<QHttpNetworkRequest, QHttpNetworkReply*> HttpMessagePair;
 #endif
 
-class QHttpNetworkConnectionChannel : public QObject {
+class QHttpNetworkConnectionChannel final : public QObject {
     Q_OBJECT
 public:
     // TODO: Refactor this to add an EncryptingState (and remove pendingEncrypt).
