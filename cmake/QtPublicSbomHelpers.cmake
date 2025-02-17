@@ -900,9 +900,13 @@ function(_qt_internal_sbom_add_target target)
     endif()
 
     if(arg_USE_ATTRIBUTION_FILES AND qa_cpes)
+        set(placeholder_args "")
+        if(package_version)
+            list(APPEND placeholder_args VERSION "${package_version}")
+        endif()
         _qt_internal_sbom_replace_qa_placeholders(
             VALUES ${qa_cpes}
-            VERSION "${package_version}"
+            ${placeholder_args}
             OUT_VAR qa_cpes_replaced
         )
         list(APPEND cpe_values "${qa_cpes_replaced}")
@@ -951,9 +955,13 @@ function(_qt_internal_sbom_add_target target)
     endif()
 
     if(arg_USE_ATTRIBUTION_FILES AND qa_purls)
+        set(placeholder_args "")
+        if(package_version)
+            list(APPEND placeholder_args VERSION "${package_version}")
+        endif()
         _qt_internal_sbom_replace_qa_placeholders(
             VALUES ${qa_purls}
-            VERSION "${package_version}"
+            ${placeholder_args}
             OUT_VAR qa_purls_replaced
         )
 
