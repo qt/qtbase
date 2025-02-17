@@ -3499,7 +3499,7 @@ void tst_QLocale::formattedDataSize_data()
     QTest::addColumn<QLocale::Language>("language");
     QTest::addColumn<int>("decimalPlaces");
     QTest::addColumn<QLocale::DataSizeFormats>("units");
-    QTest::addColumn<int>("bytes");
+    QTest::addColumn<qint64>("bytes");
     QTest::addColumn<QString>("output");
 
     struct {
@@ -3514,45 +3514,66 @@ void tst_QLocale::formattedDataSize_data()
         { "C", QLocale::C, "bytes", 'B', '.' }
     };
 
+    constexpr auto min64 = (std::numeric_limits<qint64>::min)();
+    constexpr auto max64 = (std::numeric_limits<qint64>::max)();
+
     for (const auto row : data) {
 #define ROWB(id, deci, num, text)                 \
         QTest::addRow("%s-%s", row.name, id)      \
             << row.lang << deci << format         \
-            << num << (QString(text) + QChar(' ') + QString(row.bytes))
+            << qint64{num} << (QString(text) + QChar(' ') + QString(row.bytes))
 #define ROWQ(id, deci, num, head, tail)           \
         QTest::addRow("%s-%s", row.name, id)      \
             << row.lang << deci << format         \
-            << num << (QString(head) + QChar(row.sep) + QString(tail) + QChar(row.abbrev))
+            << qint64{num} << (QString(head) + QChar(row.sep) + QString(tail) + QChar(row.abbrev))
 
         // Metatype system fails to handle raw enum members as format; needs variable
         {
             const QLocale::DataSizeFormats format = QLocale::DataSizeIecFormat;
             ROWB("IEC-0", 2, 0, "0");
             ROWB("IEC-10", 2, 10, "10");
+            ROWB("IEC--10", 2, -10, "-10");
             ROWQ("IEC-12Ki", 2, 12345, "12", "06 Ki");
             ROWQ("IEC-16Ki", 2, 16384, "16", "00 Ki");
+            ROWQ("IEC--16Ki", 2, -16384, "-16", "00 Ki");
             ROWQ("IEC-1235k", 2, 1234567, "1", "18 Mi");
             ROWQ("IEC-1374k", 2, 1374744, "1", "31 Mi");
             ROWQ("IEC-1234M", 2, 1234567890, "1", "15 Gi");
+            if (false) { // hits UB
+            ROWQ("IEC-min", 2, min64, "-8", "00 Ei");
+            }
+            ROWQ("IEC-max", 2, max64, "8", "00 Ei");
         }
         {
             const QLocale::DataSizeFormats format = QLocale::DataSizeTraditionalFormat;
             ROWB("Trad-0", 2, 0, "0");
             ROWB("Trad-10", 2, 10, "10");
+            ROWB("Trad--10", 2, -10, "-10");
             ROWQ("Trad-12Ki", 2, 12345, "12", "06 k");
             ROWQ("Trad-16Ki", 2, 16384, "16", "00 k");
             ROWQ("Trad-1235k", 2, 1234567, "1", "18 M");
+            ROWQ("Trad--1235k", 2, -1234567, "-1", "18 M");
             ROWQ("Trad-1374k", 2, 1374744, "1", "31 M");
             ROWQ("Trad-1234M", 2, 1234567890, "1", "15 G");
+            if (false) { // hits UB
+            ROWQ("Trad-min", 2, min64, "-8", "00 E");
+            }
+            ROWQ("Trad-max", 2, max64, "8", "00 E");
         }
         {
             const QLocale::DataSizeFormats format = QLocale::DataSizeSIFormat;
             ROWB("Decimal-0", 2, 0, "0");
             ROWB("Decimal-10", 2, 10, "10");
+            ROWB("Decimal--10", 2, -10, "-10");
             ROWQ("Decimal-16Ki", 2, 16384, "16", "38 k");
             ROWQ("Decimal-1234k", 2, 1234567, "1", "23 M");
             ROWQ("Decimal-1374k", 2, 1374744, "1", "37 M");
             ROWQ("Decimal-1234M", 2, 1234567890, "1", "23 G");
+            ROWQ("Decimal--1234M", 2, -1234567890, "-1", "23 G");
+            if (false) { // hits UB
+            ROWQ("Decimal-min", 2, min64, "-9", "22 E");
+            }
+            ROWQ("Decimal-max", 2, max64, "9", "22 E");
         }
 #undef ROWQ
 #undef ROWB
@@ -3565,29 +3586,29 @@ void tst_QLocale::formattedDataSize_data()
     const QLocale::DataSizeFormats siFormat = QLocale::DataSizeSIFormat;
     const QLocale::Language lang = QLocale::Russian;
 
-    QTest::newRow("Russian-IEC-0") << lang << 2 << iecFormat << 0 << QString("0 \u0431\u0430\u0439\u0442\u044B");
-    QTest::newRow("Russian-IEC-10") << lang << 2 << iecFormat << 10 << QString("10 \u0431\u0430\u0439\u0442\u044B");
+    QTest::newRow("Russian-IEC-0") << lang << 2 << iecFormat << 0LL << QString("0 \u0431\u0430\u0439\u0442\u044B");
+    QTest::newRow("Russian-IEC-10") << lang << 2 << iecFormat << 10LL << QString("10 \u0431\u0430\u0439\u0442\u044B");
     // CLDR doesn't provide IEC prefixes (yet?) so they aren't getting translated
-    QTest::newRow("Russian-IEC-12Ki") << lang << 2 << iecFormat << 12345 << QString("12,06 KiB");
-    QTest::newRow("Russian-IEC-16Ki") << lang << 2 << iecFormat << 16384 << QString("16,00 KiB");
-    QTest::newRow("Russian-IEC-1235k") << lang << 2 << iecFormat << 1234567 << QString("1,18 MiB");
-    QTest::newRow("Russian-IEC-1374k") << lang << 2 << iecFormat << 1374744 << QString("1,31 MiB");
-    QTest::newRow("Russian-IEC-1234M") << lang << 2 << iecFormat << 1234567890 << QString("1,15 GiB");
+    QTest::newRow("Russian-IEC-12Ki") << lang << 2 << iecFormat << 12345LL << QString("12,06 KiB");
+    QTest::newRow("Russian-IEC-16Ki") << lang << 2 << iecFormat << 16384LL << QString("16,00 KiB");
+    QTest::newRow("Russian-IEC-1235k") << lang << 2 << iecFormat << 1234567LL << QString("1,18 MiB");
+    QTest::newRow("Russian-IEC-1374k") << lang << 2 << iecFormat << 1374744LL << QString("1,31 MiB");
+    QTest::newRow("Russian-IEC-1234M") << lang << 2 << iecFormat << 1234567890LL << QString("1,15 GiB");
 
-    QTest::newRow("Russian-Trad-0") << lang << 2 << traditionalFormat << 0 << QString("0 \u0431\u0430\u0439\u0442\u044B");
-    QTest::newRow("Russian-Trad-10") << lang << 2 << traditionalFormat << 10 << QString("10 \u0431\u0430\u0439\u0442\u044B");
-    QTest::newRow("Russian-Trad-12Ki") << lang << 2 << traditionalFormat << 12345 << QString("12,06 \u043A\u0411");
-    QTest::newRow("Russian-Trad-16Ki") << lang << 2 << traditionalFormat << 16384 << QString("16,00 \u043A\u0411");
-    QTest::newRow("Russian-Trad-1235k") << lang << 2 << traditionalFormat << 1234567 << QString("1,18 \u041C\u0411");
-    QTest::newRow("Russian-Trad-1374k") << lang << 2 << traditionalFormat << 1374744 << QString("1,31 \u041C\u0411");
-    QTest::newRow("Russian-Trad-1234M") << lang << 2 << traditionalFormat << 1234567890 << QString("1,15 \u0413\u0411");
+    QTest::newRow("Russian-Trad-0") << lang << 2 << traditionalFormat << 0LL << QString("0 \u0431\u0430\u0439\u0442\u044B");
+    QTest::newRow("Russian-Trad-10") << lang << 2 << traditionalFormat << 10LL << QString("10 \u0431\u0430\u0439\u0442\u044B");
+    QTest::newRow("Russian-Trad-12Ki") << lang << 2 << traditionalFormat << 12345LL << QString("12,06 \u043A\u0411");
+    QTest::newRow("Russian-Trad-16Ki") << lang << 2 << traditionalFormat << 16384LL << QString("16,00 \u043A\u0411");
+    QTest::newRow("Russian-Trad-1235k") << lang << 2 << traditionalFormat << 1234567LL << QString("1,18 \u041C\u0411");
+    QTest::newRow("Russian-Trad-1374k") << lang << 2 << traditionalFormat << 1374744LL << QString("1,31 \u041C\u0411");
+    QTest::newRow("Russian-Trad-1234M") << lang << 2 << traditionalFormat << 1234567890LL << QString("1,15 \u0413\u0411");
 
-    QTest::newRow("Russian-Decimal-0") << lang << 2 << siFormat << 0 << QString("0 \u0431\u0430\u0439\u0442\u044B");
-    QTest::newRow("Russian-Decimal-10") << lang << 2 << siFormat << 10 << QString("10 \u0431\u0430\u0439\u0442\u044B");
-    QTest::newRow("Russian-Decimal-16Ki") << lang << 2 << siFormat << 16384 << QString("16,38 \u043A\u0411");
-    QTest::newRow("Russian-Decimal-1234k") << lang << 2 << siFormat << 1234567 << QString("1,23 \u041C\u0411");
-    QTest::newRow("Russian-Decimal-1374k") << lang << 2 << siFormat << 1374744 << QString("1,37 \u041C\u0411");
-    QTest::newRow("Russian-Decimal-1234M") << lang << 2 << siFormat << 1234567890 << QString("1,23 \u0413\u0411");
+    QTest::newRow("Russian-Decimal-0") << lang << 2 << siFormat << 0LL << QString("0 \u0431\u0430\u0439\u0442\u044B");
+    QTest::newRow("Russian-Decimal-10") << lang << 2 << siFormat << 10LL << QString("10 \u0431\u0430\u0439\u0442\u044B");
+    QTest::newRow("Russian-Decimal-16Ki") << lang << 2 << siFormat << 16384LL << QString("16,38 \u043A\u0411");
+    QTest::newRow("Russian-Decimal-1234k") << lang << 2 << siFormat << 1234567LL << QString("1,23 \u041C\u0411");
+    QTest::newRow("Russian-Decimal-1374k") << lang << 2 << siFormat << 1374744LL << QString("1,37 \u041C\u0411");
+    QTest::newRow("Russian-Decimal-1234M") << lang << 2 << siFormat << 1234567890LL << QString("1,23 \u0413\u0411");
 }
 
 void tst_QLocale::formattedDataSize()
@@ -3595,7 +3616,7 @@ void tst_QLocale::formattedDataSize()
     QFETCH(QLocale::Language, language);
     QFETCH(int, decimalPlaces);
     QFETCH(QLocale::DataSizeFormats, units);
-    QFETCH(int, bytes);
+    QFETCH(const qint64, bytes);
     QFETCH(QString, output);
     QCOMPARE(QLocale(language).formattedDataSize(bytes, decimalPlaces, units), output);
 }
