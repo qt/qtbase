@@ -552,7 +552,6 @@ struct LigatureSubtable
 	    {
 	      DEBUG_MSG (APPLY, nullptr, "Skipping ligature component");
 	      if (unlikely (!buffer->move_to (match_positions[--match_length % ARRAY_LENGTH (match_positions)]))) return;
-	      buffer->cur().unicode_props() |= UPROPS_MASK_IGNORABLE;
 	      if (unlikely (!buffer->replace_glyph (DELETED_GLYPH))) return;
 	    }
 

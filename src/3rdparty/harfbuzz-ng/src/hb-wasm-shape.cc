@@ -240,7 +240,7 @@ acquire_shape_plan (hb_face_t *face,
     goto fail;
   }
 
-  func = wasm_runtime_lookup_function (module_inst, "shape_plan_create");
+  func = wasm_runtime_lookup_function (module_inst, "shape_plan_create", nullptr);
   if (func)
   {
     wasm_val_t results[1];
@@ -297,7 +297,7 @@ release_shape_plan (const hb_wasm_face_data_t *face_data,
   if (plan->wasm_shape_planptr)
   {
 
-    auto *func = wasm_runtime_lookup_function (module_inst, "shape_plan_destroy");
+    auto *func = wasm_runtime_lookup_function (module_inst, "shape_plan_destroy", nullptr);
     if (func)
     {
       wasm_val_t arguments[1];
@@ -395,7 +395,7 @@ retry:
     goto fail;
   }
 
-  func = wasm_runtime_lookup_function (module_inst, "shape");
+  func = wasm_runtime_lookup_function (module_inst, "shape", nullptr);
   if (unlikely (!func))
   {
     DEBUG_MSG (WASM, module_inst, "Shape function not found.");

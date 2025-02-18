@@ -256,10 +256,7 @@ _solve (Triple tent, Triple axisLimit, bool negative = false)
      */
     float newUpper = peak + (1 - gain) * (upper - peak);
     assert (axisMax <= newUpper);  // Because outGain > gain
-    /* Disabled because ots doesn't like us:
-     * https://github.com/fonttools/fonttools/issues/3350 */
-    
-    if (false && (newUpper <= axisDef + (axisMax - axisDef) * 2))
+    if (newUpper <= axisDef + (axisMax - axisDef) * 2)
     {
       upper = newUpper;
       if (!negative && axisDef + (axisMax - axisDef) * MAX_F2DOT14 < upper)

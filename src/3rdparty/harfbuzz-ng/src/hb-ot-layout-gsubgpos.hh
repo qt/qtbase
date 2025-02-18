@@ -708,8 +708,8 @@ struct hb_ot_apply_context_t :
   recurse_func_t recurse_func = nullptr;
   const GDEF &gdef;
   const GDEF::accelerator_t &gdef_accel;
-  const ItemVariationStore &var_store;
-  ItemVariationStore::cache_t *var_store_cache;
+  const VariationStore &var_store;
+  VariationStore::cache_t *var_store_cache;
   hb_set_digest_t digest;
 
   hb_direction_t direction;
@@ -723,6 +723,7 @@ struct hb_ot_apply_context_t :
   bool auto_zwj = true;
   bool per_syllable = false;
   bool random = false;
+  uint32_t random_state = 1;
   unsigned new_syllables = (unsigned) -1;
 
   signed last_base = -1; // GPOS uses
@@ -765,7 +766,7 @@ struct hb_ot_apply_context_t :
   ~hb_ot_apply_context_t ()
   {
 #ifndef HB_NO_VAR
-    ItemVariationStore::destroy_cache (var_store_cache);
+    VariationStore::destroy_cache (var_store_cache);
 #endif
   }
 
@@ -787,8 +788,8 @@ struct hb_ot_apply_context_t :
   uint32_t random_number ()
   {
     /* http://www.cplusplus.com/reference/random/minstd_rand/ */
-    buffer->random_state = buffer->random_state * 48271 % 2147483647;
-    return buffer->random_state;
+    random_state = random_state * 48271 % 2147483647;
+    return random_state;
   }
 
   bool match_properties_mark (hb_codepoint_t  glyph,

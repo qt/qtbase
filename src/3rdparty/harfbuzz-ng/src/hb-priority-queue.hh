@@ -163,7 +163,7 @@ struct hb_priority_queue_t
     goto repeat;
   }
 
-  void swap (unsigned a, unsigned b) noexcept
+  void swap (unsigned a, unsigned b)
   {
     assert (a < heap.length);
     assert (b < heap.length);

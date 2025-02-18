@@ -101,15 +101,10 @@ struct glyph_variations_t
         continue;
       }
 
-      bool is_composite_glyph = false;
-#ifdef HB_EXPERIMENTAL_API
-      is_composite_glyph = plan->composite_new_gids.has (new_gid);
-#endif
       if (!p->decompile_tuple_variations (all_contour_points->length, true /* is_gvar */,
                                           iterator, &(plan->axes_old_index_tag_map),
                                           shared_indices, shared_tuples,
-                                          tuple_vars, /* OUT */
-                                          is_composite_glyph))
+                                          tuple_vars /* OUT */))
         return false;
       glyph_variations.push (std::move (tuple_vars));
     }
@@ -119,17 +114,13 @@ struct glyph_variations_t
   bool instantiate (const hb_subset_plan_t *plan)
   {
     unsigned count = plan->new_to_old_gid_list.length;
-    bool iup_optimize = false;
-#ifdef HB_EXPERIMENTAL_API
-    iup_optimize = plan->flags & HB_SUBSET_FLAGS_OPTIMIZE_IUP_DELTAS;
-#endif
     for (unsigned i = 0; i < count; i++)
     {
       hb_codepoint_t new_gid = plan->new_to_old_gid_list[i].first;
       contour_point_vector_t *all_points;
       if (!plan->new_gid_contour_points_map.has (new_gid, &all_points))
         return false;
-      if (!glyph_variations[i].instantiate (plan->axes_location, plan->axes_triple_distances, all_points, iup_optimize))
+      if (!glyph_variations[i].instantiate (plan->axes_location, plan->axes_triple_distances, all_points))
         return false;
     }
     return true;
@@ -349,8 +340,7 @@ struct gvar
                   const glyph_variations_t& glyph_vars,
                   Iterator it,
                   unsigned axis_count,
-                  unsigned num_glyphs,
-                  bool force_long_offsets) const
+                  unsigned num_glyphs) const
   {
     TRACE_SERIALIZE (this);
     gvar *out = c->allocate_min<gvar> ();
@@ -362,7 +352,7 @@ struct gvar
     out->glyphCountX = hb_min (0xFFFFu, num_glyphs);
 
     unsigned glyph_var_data_size = glyph_vars.compiled_byte_size ();
-    bool long_offset = glyph_var_data_size & ~0xFFFFu || force_long_offsets;
+    bool long_offset = glyph_var_data_size & ~0xFFFFu;
     out->flags = long_offset ? 1 : 0;
 
     HBUINT8 *glyph_var_data_offsets = c->allocate_size<HBUINT8> ((long_offset ? 4 : 2) * (num_glyphs + 1), false);
@@ -403,12 +393,7 @@ struct gvar
     unsigned axis_count = c->plan->axes_index_map.get_population ();
     unsigned num_glyphs = c->plan->num_output_glyphs ();
     auto it = hb_iter (c->plan->new_to_old_gid_list);
-
-    bool force_long_offsets = false;
-#ifdef HB_EXPERIMENTAL_API
-    force_long_offsets = c->plan->flags & HB_SUBSET_FLAGS_IFTB_REQUIREMENTS;
-#endif
-    return_trace (serialize (c->serializer, glyph_vars, it, axis_count, num_glyphs, force_long_offsets));
+    return_trace (serialize (c->serializer, glyph_vars, it, axis_count, num_glyphs));
   }
 
   bool subset (hb_subset_context_t *c) const
@@ -444,7 +429,7 @@ struct gvar
     }
 
     bool long_offset = (subset_data_size & ~0xFFFFu);
-#ifdef HB_EXPERIMENTAL_API
+ #ifdef HB_EXPERIMENTAL_API
     long_offset = long_offset || (c->plan->flags & HB_SUBSET_FLAGS_IFTB_REQUIREMENTS);
 #endif
     out->flags = long_offset ? 1 : 0;
