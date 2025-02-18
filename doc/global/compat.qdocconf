@@ -7,4 +7,5 @@ macro.relatesto                 = "\\relates"
 
 spurious                        = "Missing comma in .*" \
                                   "Missing pattern .*" \
-                                  "Unable to parse (QML|JavaScript).*"
+                                  "Unable to parse (QML|JavaScript).*" \
+                                  "Unknown base .*"
