@@ -754,6 +754,25 @@ function(_qt_internal_set_ios_simulator_arch target)
         "x86_64")
 endfunction()
 
+function(_qt_internal_set_xcode_entrypoint_attribute target entrypoint)
+    if(CMAKE_XCODE_ATTRIBUTE_LD_ENTRY_POINT
+        OR QT_NO_SET_XCODE_LD_ENTRY_POINT)
+        return()
+    endif()
+
+    get_target_property(existing_entrypoint
+        "${target}" XCODE_ATTRIBUTE_LD_ENTRY_POINT)
+    if(NOT existing_entrypoint MATCHES "-NOTFOUND")
+        return()
+    endif()
+
+    set_target_properties("${target}"
+        PROPERTIES
+        "XCODE_ATTRIBUTE_LD_ENTRY_POINT"
+        "${entrypoint}")
+endfunction()
+
+
 # Export Apple platform sdk and xcode version requirements to Qt6ConfigExtras.cmake.
 # Always exported, even on non-Apple platforms, so that we can use them when building
 # documentation.
@@ -1022,6 +1041,8 @@ function(_qt_internal_finalize_ios_app target)
     _qt_internal_set_xcode_targeted_device_family("${target}")
     _qt_internal_set_xcode_bitcode_enablement("${target}")
     _qt_internal_set_ios_simulator_arch("${target}")
+
+    _qt_internal_set_xcode_entrypoint_attribute("${target}" "_qt_main_wrapper")
 endfunction()
 
 function(_qt_internal_finalize_macos_app target)
