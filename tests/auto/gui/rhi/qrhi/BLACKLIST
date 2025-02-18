@@ -1,5 +1,2 @@
-# QTBUG-92211
-[renderPassDescriptorCompatibility]
-android
 [tessellation vulkan]
 android
