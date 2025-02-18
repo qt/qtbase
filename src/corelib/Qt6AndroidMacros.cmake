@@ -662,11 +662,8 @@ function(qt6_android_add_apk_target target)
             )
         endif()
     else()
-        if(TARGET ${target}_copy_apk_dependencies)
-            add_dependencies(${target}_make_apk ${target}_copy_apk_dependencies)
-            add_dependencies(${target}_make_aab ${target}_copy_apk_dependencies)
-            add_dependencies(${target}_make_aar ${target}_copy_apk_dependencies)
-        endif()
+        add_dependencies(${target}_prepare_apk_dir
+            ${target}_copy_apk_dependencies)
     endif()
 
     set_property(GLOBAL APPEND PROPERTY _qt_apk_targets ${target})
