@@ -735,9 +735,17 @@ set(QT_ALLOW_MISSING_TOOLS_PACKAGES TRUE)")
     endif()
 
     foreach(cmake_file IN LISTS arg_EXTRA_CMAKE_FILES)
-        get_filename_component(basename ${cmake_file} NAME)
-        file(COPY ${cmake_file} DESTINATION ${config_build_dir})
-        list(APPEND extra_cmake_files "${config_build_dir}/${basename}")
+        get_source_file_property(install_path ${cmake_file} QT_INSTALL_PATH)
+        if(NOT install_path)
+            # Sanitize the install_path from `NOTFOUND` to ""
+            set(install_path "")
+        endif()
+        file(COPY ${cmake_file} DESTINATION "${config_build_dir}/${install_path}")
+        qt_install(FILES
+            ${cmake_file}
+            DESTINATION "${config_install_dir}/${install_path}"
+            COMPONENT Devel
+        )
 
         # Make sure touched extra cmake files cause a reconfigure, so they get re-copied.
         set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${cmake_file}")
