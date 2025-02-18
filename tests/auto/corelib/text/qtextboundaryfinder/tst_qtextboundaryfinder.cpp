@@ -263,10 +263,7 @@ void tst_QTextBoundaryFinder::sentenceBoundariesDefault()
 
 void tst_QTextBoundaryFinder::lineBoundariesDefault_data()
 {
-    // QTBUG-121907: Indic line breaking is not supported
-    QSet<QString> skipSet = {u"AK"_s, u"AP"_s, u"AS"_s, u"VI"_s, u"VF"_s};
-
-    generateDataFromFile("data/LineBreakTest.txt", skipSet);
+    generateDataFromFile("data/LineBreakTest.txt", {});
 }
 
 void tst_QTextBoundaryFinder::lineBoundariesDefault()
