@@ -217,7 +217,13 @@ The auto-detected paths can be customized using one of \c{QT_PATH_ANDROID_ABI_<A
 
 The variable is set to \c FALSE by default.
 
-\sa{QT_PATH_ANDROID_ABI_<ABI>}
+\note The multi-ABI project build process does not offer a generic way to
+forward the CMake cache variables that are specified either in the command line
+or in another similar way. Use QT_ANDROID_MULTI_ABI_FORWARD_VARS to specify the
+list of CMake variables to forward from the main ABI project to ABI-specific
+subprojects.
+
+\sa{QT_PATH_ANDROID_ABI_<ABI>},{QT_ANDROID_MULTI_ABI_FORWARD_VARS}
 */
 
 /*!
