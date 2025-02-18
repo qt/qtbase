@@ -884,3 +884,11 @@ function(_qt_internal_configure_file mode)
 
     configure_file("${input_file}" "${arg_OUTPUT}" @ONLY)
 endfunction()
+
+function(qt_set01 result)
+    if (${ARGN})
+        set("${result}" 1 PARENT_SCOPE)
+    else()
+        set("${result}" 0 PARENT_SCOPE)
+    endif()
+endfunction()
