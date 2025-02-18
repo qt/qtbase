@@ -48,6 +48,12 @@ macx-xcode {
         QMAKE_MAC_XCODE_SETTINGS += supported_platforms
     }
 
+    # Override the entry point explicitly, in case a Swift file is
+    # added to the Xcode project
+    ld_entry_point.name = LD_ENTRY_POINT
+    ld_entry_point.value = _qt_main_wrapper
+    QMAKE_MAC_XCODE_SETTINGS += ld_entry_point
+
     # In a simulator specific build the device config will set the SDK
     # to the simulator SDK, but for Xcode we always want the SDKROOT
     # to be the device SDK.
