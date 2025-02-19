@@ -796,7 +796,7 @@ QNetworkReply *QNetworkAccessManager::get(const QNetworkRequest &request)
    \note A GET request with a message body is not cached.
 
    \note If the request is redirected, the message body will be kept only if the status code is
-   307 or 308.
+   308.
 */
 
 QNetworkReply *QNetworkAccessManager::get(const QNetworkRequest &request, QIODevice *data)
@@ -814,7 +814,7 @@ QNetworkReply *QNetworkAccessManager::get(const QNetworkRequest &request, QIODev
    \note A GET request with a message body is not cached.
 
    \note If the request is redirected, the message body will be kept only if the status code is
-   307 or 308.
+   308.
 */
 
 QNetworkReply *QNetworkAccessManager::get(const QNetworkRequest &request, const QByteArray &data)
