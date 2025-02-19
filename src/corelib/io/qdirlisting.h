@@ -12,7 +12,7 @@
 #include <QtCore/qdatetime.h>
 
 #include <iterator>
-#include <memory>
+#include <utility>
 
 QT_BEGIN_NAMESPACE
 
