@@ -33,6 +33,7 @@
 
 #include <algorithm>
 #include <QtCore/q26numeric.h>
+#include <string>
 
 #ifdef Q_OS_WIN
 #  if !defined(QT_BOOTSTRAPPED) && (defined(QT_NO_CAST_FROM_ASCII) || defined(QT_NO_CAST_FROM_BYTEARRAY))
@@ -2514,7 +2515,7 @@ QByteArray &QByteArray::replace(QByteArrayView before, QByteArrayView after)
         return *this;
 
     // protect against before or after being part of this
-    QVarLengthArray<char> pinnedNeedle, pinnedReplacement;
+    std::string pinnedNeedle, pinnedReplacement;
     if (QtPrivate::q_points_into_range(a, d)) {
         pinnedReplacement.assign(a, a + asize);
         a = pinnedReplacement.data();
