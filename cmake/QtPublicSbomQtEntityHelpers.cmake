@@ -203,34 +203,6 @@ function(_qt_internal_sbom_handle_qt_entity_cpe target)
     endif()
 endfunction()
 
-# Helper macro to prepare forwarding all set purl options to some other function.
-# Expects the options names to be set in the parent scope by calling
-# _qt_internal_get_sbom_add_target_options(opt_args single_args multi_args)
-macro(_qt_internal_sbom_forward_purl_handling_options args_var_name)
-    if(NOT opt_args)
-        message(FATAL_ERROR
-            "Expected opt_args to be set by _qt_internal_get_sbom_purl_handling_options")
-    endif()
-    if(NOT single_args)
-        message(FATAL_ERROR
-            "Expected single_args to be set by _qt_internal_get_sbom_purl_handling_options")
-    endif()
-    if(NOT multi_args)
-        message(FATAL_ERROR
-            "Expected multi_args to be set by _qt_internal_get_sbom_purl_handling_options")
-    endif()
-    _qt_internal_forward_function_args(
-        FORWARD_PREFIX arg
-        FORWARD_OUT_VAR ${args_var_name}
-        FORWARD_OPTIONS
-            ${opt_args}
-        FORWARD_SINGLE
-            ${single_args}
-        FORWARD_MULTI
-            ${multi_args}
-    )
-endmacro()
-
 # Returns a vcs url where for purls where qt entities of the current repo are hosted.
 function(_qt_internal_sbom_get_qt_entity_vcs_url target)
     set(opt_args "")

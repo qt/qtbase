@@ -11,6 +11,34 @@ macro(_qt_internal_sbom_parse_purl_variant_options prefix arguments_var_name)
     _qt_internal_validate_all_args_are_parsed(arg)
 endmacro()
 
+# Helper macro to prepare forwarding all set purl options to some other function.
+# Expects the options names to be set in the parent scope by calling
+# _qt_internal_get_sbom_add_target_options(opt_args single_args multi_args)
+macro(_qt_internal_sbom_forward_purl_handling_options args_var_name)
+    if(NOT opt_args)
+        message(FATAL_ERROR
+            "Expected opt_args to be set by _qt_internal_get_sbom_purl_handling_options")
+    endif()
+    if(NOT single_args)
+        message(FATAL_ERROR
+            "Expected single_args to be set by _qt_internal_get_sbom_purl_handling_options")
+    endif()
+    if(NOT multi_args)
+        message(FATAL_ERROR
+            "Expected multi_args to be set by _qt_internal_get_sbom_purl_handling_options")
+    endif()
+    _qt_internal_forward_function_args(
+        FORWARD_PREFIX arg
+        FORWARD_OUT_VAR ${args_var_name}
+        FORWARD_OPTIONS
+            ${opt_args}
+        FORWARD_SINGLE
+            ${single_args}
+        FORWARD_MULTI
+            ${multi_args}
+    )
+endmacro()
+
 # Handles purl arguments specified to functions like qt_internal_add_sbom.
 # Currently accepts arguments for 3 variants of purls, each of which will generate a separate purl.
 # If no arguments are specified, for qt entity types, default values will be chosen.
