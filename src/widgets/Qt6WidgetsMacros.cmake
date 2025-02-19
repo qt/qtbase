@@ -31,12 +31,12 @@ function(qt6_wrap_ui outfiles )
           ARGS ${ui_options} -o ${outfile} ${infile}
           MAIN_DEPENDENCY ${infile} VERBATIM)
         set_source_files_properties(${infile} PROPERTIES SKIP_AUTOUIC ON)
+        _qt_internal_set_source_file_generated(
+            SOURCES ${outfile}
+            SKIP_AUTOGEN
+        )
         list(APPEND ${outfiles} ${outfile})
     endforeach()
-    _qt_internal_set_source_file_generated(
-        SOURCES ${${outfiles}}
-        SKIP_AUTOGEN
-    )
     set(${outfiles} ${${outfiles}} PARENT_SCOPE)
 endfunction()
 

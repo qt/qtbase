@@ -527,7 +527,7 @@ function(qt6_add_big_resources outfiles )
                            COMMENT "Running rcc pass 1 for resource ${outfilename}"
                            VERBATIM)
         add_custom_target(big_resources_${outfilename} ALL DEPENDS ${tmpoutfile})
-        _qt_internal_set_source_file_generated(SOURCES ${tmpoutfile} SKIP_AUTOGEN)
+        _qt_internal_set_source_file_generated(SOURCES ${tmpoutfile})
         _qt_internal_add_rcc_pass2(
             RESOURCE_NAME ${outfilename}
             RCC_OPTIONS ${rcc_options}
