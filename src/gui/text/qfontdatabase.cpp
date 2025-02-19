@@ -559,7 +559,8 @@ void qt_registerFont(const QString &familyName, const QString &stylename,
     }
 
     QtFontFoundry *foundry = f->foundry(foundryname, true);
-    QtFontStyle *fontStyle = foundry->style(styleKey, stylename, true);
+    QtFontStyle *fontStyle = foundry->style(styleKey, QString{}, true);
+    fontStyle->styleName = stylename;
     fontStyle->smoothScalable = scalable;
     fontStyle->antialiased = antialiased;
     QtFontSize *size = fontStyle->pixelSize(pixelSize ? pixelSize : SMOOTH_SCALABLE, true);
