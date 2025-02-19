@@ -2310,7 +2310,7 @@ void tst_QNetworkReply::getWithBodyRedirected()
     QVERIFY(validateRedirectedResponseHeaders(reply));
 
     // Verify that the message body has arrived to the server
-    if (status > 302) {
+    if (status > 307) {
         QVERIFY(server2.contentLength != 0);
         QCOMPARE(server2.contentLength, dataFromClientToServer.size());
         QCOMPARE(server2.receivedData.right(dataFromClientToServer.size()), dataFromClientToServer);

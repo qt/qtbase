@@ -1259,10 +1259,10 @@ void QNetworkReplyHttpImplPrivate::onRedirected(const QUrl &redirectUrl, int htt
         return;
     }
 
-    // If the original operation was a GET with a body and the status code is either
-    // 307 or 308 then keep the message body
+    // If the original operation was a GET with a body and the status code is
+    // 308 then keep the message body
     const bool getOperationKeepsBody = (operation == QNetworkAccessManager::GetOperation)
-                          && (httpStatus == 307 || httpStatus == 308);
+                                    && httpStatus == 308;
 
     redirectRequest = createRedirectRequest(originalRequest, url, maxRedirectsRemaining);
     operation = getRedirectOperation(operation, httpStatus);
