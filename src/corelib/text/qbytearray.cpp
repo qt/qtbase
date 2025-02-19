@@ -33,6 +33,7 @@
 #include <stdlib.h>
 
 #include <algorithm>
+#include <string>
 
 #define IS_RAW_DATA(d) ((d)->flags() & QArrayData::RawDataType)
 
@@ -2391,7 +2392,7 @@ QByteArray &QByteArray::replace(QByteArrayView before, QByteArrayView after)
         return *this;
 
     // protect against before or after being part of this
-    QVarLengthArray<char> pinnedNeedle, pinnedReplacement;
+    std::string pinnedNeedle, pinnedReplacement;
     if (QtPrivate::q_points_into_range(a, d)) {
         pinnedReplacement.append(a, asize);
         a = pinnedReplacement.data();
