@@ -50,6 +50,7 @@ The following table describes the mapping of configure options to CMake argument
 | -sbom-json-required                   | -DQT_SBOM_REQUIRE_GENERATE_JSON=ON                | Fails the build if Python deps are not found                    |
 | -sbom-verify                          | -DQT_SBOM_VERIFY=ON                               | Enables verification of generated SBOMs                         |
 | -sbom-verify-required                 | -DQT_SBOM_REQUIRE_VERIFY=ON                       | Fails the build if Python deps are not found                    |
+| -sbomdir <dir>                        | -DINSTALL_SBOMDIR=<dir>                           | Installation location of SBOM files.                            |
 | -qtinlinenamespace                    | -DQT_INLINE_NAMESPACE=ON                          | Make the namespace specified by -qtnamespace an inline one.     |
 | -qtnamespace <name>                   | -DQT_NAMESPACE=<name>                             |                                                                 |
 | -qtlibinfix <infix>                   | -DQT_LIBINFIX=<infix>                             |                                                                 |
