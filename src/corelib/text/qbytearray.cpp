@@ -2264,13 +2264,12 @@ QByteArray &QByteArray::remove(qsizetype pos, qsizetype len)
     if (pos + len > d->size)
         len = d->size - pos;
 
-    auto begin = d.begin();
+    const auto toRemove_start = d.begin() + pos;
     if (!d->isShared()) {
-        d->erase(begin + pos, len);
+        d->erase(toRemove_start, len);
         d.data()[d.size] = '\0';
     } else {
         QByteArray copy{size() - len, Qt::Uninitialized};
-        const auto toRemove_start = d.begin() + pos;
         copy.d->copyRanges({{d.begin(), toRemove_start},
                            {toRemove_start + len, d.end()}});
         swap(copy);
