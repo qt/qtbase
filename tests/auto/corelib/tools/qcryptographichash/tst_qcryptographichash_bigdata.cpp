@@ -54,8 +54,17 @@ void tst_QCryptographicHashBigData::moreThan4GiBOfData_data()
     // these are reasonably fast (O(secs))
     row(QCryptographicHash::Md4);
     row(QCryptographicHash::Md5);
-    row(QCryptographicHash::Sha1);
-    if (!qgetenv("QTEST_ENVIRONMENT").split(' ').contains("ci")) {
+    const bool runsOnCI = qgetenv("QTEST_ENVIRONMENT").split(' ').contains("ci");
+    const bool runsUnderASan =
+        #ifdef QT_ASAN_ENABLED
+            true
+        #else
+            false
+        #endif
+            ;
+    if (!runsOnCI || !runsUnderASan)
+        row(QCryptographicHash::Sha1);
+    if (!runsOnCI) {
         // This is important but so slow (O(minute)) that, on CI, it tends to time out.
         // Retain it for manual runs, all the same, as most dev machines will be fast enough.
         row(QCryptographicHash::Sha512);
