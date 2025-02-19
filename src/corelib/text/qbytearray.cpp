@@ -2512,13 +2512,14 @@ QByteArray &QByteArray::replace(QByteArrayView before, QByteArrayView after)
         return *this;
 
     // protect against before or after being part of this
+    QVarLengthArray<char> pinnedNeedle, pinnedReplacement;
     if (QtPrivate::q_points_into_range(a, d)) {
-        QVarLengthArray copy(a, a + asize);
-        return replace(before, QByteArrayView{copy});
+        pinnedReplacement.assign(a, a + asize);
+        a = pinnedReplacement.data();
     }
     if (QtPrivate::q_points_into_range(b, d)) {
-        QVarLengthArray copy(b, b + bsize);
-        return replace(QByteArrayView{copy}, after);
+        pinnedNeedle.assign(b, b + bsize);
+        b = pinnedNeedle.data();
     }
 
     QByteArrayMatcher matcher(b, bsize);
