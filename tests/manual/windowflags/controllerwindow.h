@@ -61,6 +61,7 @@ private:
     QCheckBox *modalWindowCheckBox;
     QCheckBox *fixedSizeWindowCheckBox;
     QCheckBox *safeAreaCheckBox;
+    QCheckBox *recreateCheckbox;
 };
 
 class LogWidget : public QPlainTextEdit
