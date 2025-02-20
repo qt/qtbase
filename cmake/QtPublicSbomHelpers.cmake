@@ -847,9 +847,7 @@ function(_qt_internal_sbom_add_target target)
         endif()
     endif()
 
-    if(arg_USE_ATTRIBUTION_FILES
-            AND (arg_TYPE STREQUAL "QT_THIRD_PARTY_MODULE"
-                OR arg_TYPE STREQUAL "QT_THIRD_PARTY_SOURCES"))
+    if(arg_USE_ATTRIBUTION_FILES)
         if(qa_download_location)
             set(download_location "${qa_download_location}")
         elseif(qa_homepage)
