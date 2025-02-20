@@ -74,6 +74,8 @@ private slots:
     void replace_data();
     void replace();
     void replaceWithSpecifiedLength();
+    void replaceWithEmptyNeedleInsertsBeforeEachChar_data();
+    void replaceWithEmptyNeedleInsertsBeforeEachChar();
 
     void number();
     void number_double_data();
@@ -1496,6 +1498,107 @@ void tst_QByteArray::replaceWithSpecifiedLength()
     const char _expected[] = "zxc\0vbcdefghjk";
     QByteArray expected(_expected,sizeof(_expected)-1);
     QCOMPARE(ba,expected);
+}
+
+void tst_QByteArray::replaceWithEmptyNeedleInsertsBeforeEachChar_data()
+{
+    QTest::addColumn<QByteArray>("haystack");
+    QTest::addColumn<QByteArray>("needle");
+    QTest::addColumn<QByteArray>("replacement");
+    QTest::addColumn<QByteArray>("result");
+
+    const QByteArray null;
+    const QByteArray empty = "";
+    const QByteArray a = "a";
+    const QByteArray aa = "aa";
+    const QByteArray b = "b";
+    const QByteArray bab = "bab";
+
+    auto row = [](const QByteArray &haystack, const QByteArray &needle,
+                  const QByteArray &replacement, const QByteArray &result)
+    {
+        auto protect = [](const QByteArray &ba) { return ba.isNull() ? "<null>" : ba.data(); };
+        QTest::addRow("/%s/%s/%s/", protect(haystack), protect(needle), protect(replacement))
+                << haystack << needle << replacement << result;
+    };
+    row(null,  null,  a, a);
+    row(null,  empty, a, a);
+    row(null,  a,     a, null);
+    row(empty, null,  a, a);
+    row(empty, empty, a, a);
+    row(empty, a,     a, empty);
+    row(a,     null,  b, bab);
+    row(a,     empty, b, bab);
+    row(a,     a,     b, b);
+}
+
+void tst_QByteArray::replaceWithEmptyNeedleInsertsBeforeEachChar()
+{
+    QFETCH(const QByteArray, haystack);
+    QFETCH(const QByteArray, needle);
+    QFETCH(const QByteArray, replacement);
+    QFETCH(const QByteArray, result);
+
+    const auto check = [](auto haystack, auto needle, auto replacement, auto result) {
+        constexpr bool isByteArray = std::is_same_v<decltype(haystack), QByteArray>;
+        {
+            // shared
+            auto copy = haystack;
+            copy.replace(needle, replacement);
+            if (isByteArray) {
+                QEXPECT_FAIL("/<null>/<null>/a/", "QTBUG-134079", Continue);
+                QEXPECT_FAIL("/<null>//a/",       "QTBUG-134079", Continue);
+            }
+            QCOMPARE(copy.isNull(), result.isNull());
+            if (isByteArray) {
+                QEXPECT_FAIL("/<null>/<null>/a/", "QTBUG-134079", Continue);
+                QEXPECT_FAIL("/<null>//a/",       "QTBUG-134079", Continue);
+            }
+            QCOMPARE(copy, result);
+        }
+        {
+            // unshared
+            auto copy = haystack;
+            copy.detach();
+            copy.replace(needle, replacement);
+            // isNull() check pointless, as copy is never isNull() after detach()
+            QCOMPARE(copy, result);
+        }
+    };
+
+    check(haystack, needle, replacement, result);
+    if (QTest::currentTestFailed())
+        return;
+
+    {
+        // compared with QString::replace()
+        const auto h = QString(haystack);
+        QCOMPARE(h.isNull(), haystack.isNull());
+        const auto n = QString(needle);
+        QCOMPARE(n.isNull(), needle.isNull());
+        const auto rep = QString(replacement);
+        QCOMPARE(rep.isNull(), replacement.isNull());
+        const auto res = QString(result);
+        QCOMPARE(res.isNull(), result.isNull());
+
+        check(h, n, rep, res);
+        if (QTest::currentTestFailed())
+            return;
+    }
+
+    {
+        // compared with QStringTokenizer
+        QByteArray alt;
+        for (auto part : qTokenize(QLatin1StringView{haystack}, QLatin1StringView{needle})) {
+            alt += QByteArrayView{part};
+            alt += replacement;
+        }
+        if (!alt.isEmpty())
+            alt.chop(replacement.size()); // this destroys null'ness
+        else
+            QCOMPARE(alt.isNull(), result.isNull()); // so this only makes sense if we didn't chop
+        QCOMPARE(alt, result);
+    }
 }
 
 void tst_QByteArray::number()
