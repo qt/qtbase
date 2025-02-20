@@ -174,6 +174,7 @@ private slots:
     void unixLocaleName();
     void testNames_data();
     void testNames();
+    void debugOutput();
 private:
     QString m_decimal, m_thousand, m_sdate, m_ldate, m_time;
     QString m_sysapp;
@@ -3127,6 +3128,34 @@ void tst_QLocale::testNames()
         QCOMPARE(QLocale(lang).language(), language);
         QCOMPARE(QLocale(lang + QLatin1String("@foo")).language(), language);
         QCOMPARE(QLocale(lang + QLatin1String(".foo")).language(), language);
+    }
+}
+
+void tst_QLocale::debugOutput()
+{
+    // Test operator<<(QDebug, const QLocale &) works as intended:
+    QTest::failOnWarning();
+    {
+        const QLocale en(QLocale::English, QLocale::LatinScript, QLocale::UnitedStates);
+        QTest::ignoreMessage(QtMsgType::QtWarningMsg,
+                             "QLocale(English, Latin, United States)");
+        qWarning() << en;
+    }
+    {
+        const auto params = [](const QLocale &loc) {
+            return (QLocale::languageToString(loc.language())
+                    + u", " + QLocale::scriptToString(loc.script())
+                    + u", " + QLocale::territoryToString(loc.territory())).toLatin1();
+        };
+        const QLocale sys = QLocale::system();
+        QTest::ignoreMessage(QtMsgType::QtWarningMsg,
+                             ("QLocale::system()/* " + params(sys) + " */").constData());
+        // QTBUG-133922: system and its CLDR counterpart should differ.
+        qWarning() << sys;
+        const QLocale match(sys.language(), sys.script(), sys.territory());
+        QTest::ignoreMessage(QtMsgType::QtWarningMsg,
+                             ("QLocale(" + params(match) + ')').constData());
+        qWarning() << match;
     }
 }
 

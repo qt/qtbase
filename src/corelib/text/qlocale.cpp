@@ -5318,10 +5318,12 @@ QString QLocale::nativeCountryName() const
 QDebug operator<<(QDebug dbg, const QLocale &l)
 {
     QDebugStateSaver saver(dbg);
+    const bool isSys = l == QLocale::system();
     dbg.nospace().noquote()
-        << "QLocale(" << QLocale::languageToString(l.language())
-        << ", " << QLocale::scriptToString(l.script())
-        << ", " << QLocale::territoryToString(l.territory()) << ')';
+        << (isSys ? "QLocale::system()/* " : "QLocale(")
+        << QLocale::languageToString(l.language()) << ", "
+        << QLocale::scriptToString(l.script()) << ", "
+        << QLocale::territoryToString(l.territory()) << (isSys ? " */" : ")");
     return dbg;
 }
 #endif
