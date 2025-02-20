@@ -2044,16 +2044,14 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                 const auto buttonRect = proxy()->subControlRect(CC_TitleBar, titleBar, sc, widget);
                 if (buttonRect.isValid()) {
                     qt_fusion_draw_mdibutton(painter, titleBar, buttonRect, isHover(sc), isSunken(sc));
-
-                    const QRect rect = buttonRect.marginsRemoved(buttonMargins);
-                    const QLine lines[6] = {{rect.left() + 1, rect.top(), rect.right(), rect.bottom() - 1},
-                                            {rect.left(), rect.top() + 1, rect.right() - 1, rect.bottom()},
-                                            {rect.right() - 1, rect.top(), rect.left(), rect.bottom() - 1},
-                                            {rect.right(), rect.top() + 1, rect.left() + 1, rect.bottom()},
-                                            {rect.left(), rect.top(), rect.right(), rect.bottom()},
-                                            {rect.left(), rect.bottom(), rect.right(), rect.top()}};
-                    painter->setPen(buttonPaintingsColor);
-                    painter->drawLines(lines, 6);
+                    QRect rect = buttonRect.marginsRemoved(buttonMargins);
+                    rect.setWidth((rect.width() / 2) * 2 + 1);
+                    rect.setHeight((rect.height() / 2) * 2 + 1);
+                    const QLine lines[2] = { { rect.topLeft(), rect.bottomRight() },
+                                             { rect.topRight(), rect.bottomLeft() }, };
+                    const auto pen = QPen(buttonPaintingsColor, 2);
+                    painter->setPen(pen);
+                    painter->drawLines(lines, 2);
                 }
             }
 
