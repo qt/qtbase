@@ -2517,7 +2517,7 @@ QUrl QFileDialog::getSaveFileUrl(QWidget *parent,
     native file dialog and not a QFileDialog. However, the native Windows file
     dialog does not support displaying files in the directory chooser. You need
     to pass the \l{QFileDialog::}{DontUseNativeDialog} option, or set the global
-    \\l{Qt::}{AA_DontUseNativeDialogs} application attribute to display files using a
+    \l{Qt::}{AA_DontUseNativeDialogs} application attribute to display files using a
     QFileDialog.
 
     Note that the \macos native file dialog does not show a title bar.
