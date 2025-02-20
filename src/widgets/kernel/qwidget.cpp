@@ -103,6 +103,9 @@ static inline bool qRectIntersects(const QRect &r1, const QRect &r2)
 
 extern bool qt_sendSpontaneousEvent(QObject*, QEvent*); // qapplication.cpp
 
+static void setAttribute_internal(Qt::WidgetAttribute attribute,
+    bool on, QWidgetData *data, QWidgetPrivate *d);
+
 QWidgetPrivate::QWidgetPrivate(int version)
     : QObjectPrivate(version)
       , focus_next(nullptr)
@@ -978,7 +981,6 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
     q->setAttribute(Qt::WA_QuitOnClose); // might be cleared in adjustQuitOnCloseAttribute()
     adjustQuitOnCloseAttribute();
 
-    q->setAttribute(Qt::WA_ContentsMarginsRespectsSafeArea);
     q->setAttribute(Qt::WA_WState_Hidden);
 
     //give potential windows a bigger "pre-initial" size; create() will give them a new size later
@@ -1204,6 +1206,15 @@ void QWidget::create(WId window, bool initializeWindow, bool destroyOldWindow)
 
     if (QApplicationPrivate::testAttribute(Qt::AA_NativeWindows))
         setAttribute(Qt::WA_NativeWindow);
+
+    if (isWindow()) {
+        // Make top levels automatically respect safe areas by default
+        auto *topExtra = d->maybeTopData();
+        if (!topExtra || !topExtra->explicitContentsMarginsRespectsSafeArea) {
+            setAttribute_internal(Qt::WA_ContentsMarginsRespectsSafeArea,
+                true, data, d);
+        }
+    }
 
     d->updateIsOpaque();
 
@@ -1623,6 +1634,7 @@ void QWidgetPrivate::createTLExtra()
         x->posIncludesFrame = 0;
         x->sizeAdjusted = false;
         x->embedded = 0;
+        x->explicitContentsMarginsRespectsSafeArea = 0;
         x->window = nullptr;
         x->initialScreen = nullptr;
 
@@ -11367,10 +11379,18 @@ void QWidgetPrivate::macUpdateSizeAttribute()
 */
 void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
 {
+    Q_D(QWidget);
+
+    if (attribute == Qt::WA_ContentsMarginsRespectsSafeArea) {
+        if (isWindow()) {
+            auto *topExtra = d->topData();
+            topExtra->explicitContentsMarginsRespectsSafeArea = true;
+        }
+    }
+
     if (testAttribute(attribute) == on)
         return;
 
-    Q_D(QWidget);
     static_assert(sizeof(d->high_attributes)*8 >= (Qt::WA_AttributeCount - sizeof(uint)*8),
                       "QWidget::setAttribute(WidgetAttribute, bool): "
                       "QWidgetPrivate::high_attributes[] too small to contain all attributes in WidgetAttribute");

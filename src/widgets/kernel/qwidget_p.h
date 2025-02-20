@@ -118,6 +118,7 @@ struct QTLWExtra {
     uint posIncludesFrame : 1;
     uint sizeAdjusted : 1;
     uint embedded : 1;
+    uint explicitContentsMarginsRespectsSafeArea: 1;
 };
 
 struct QWExtra {
