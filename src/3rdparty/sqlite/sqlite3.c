@@ -1,6 +1,6 @@
 /******************************************************************************
 ** This file is an amalgamation of many separate C source files from SQLite
-** version 3.49.0.  By combining all the individual C code files into this
+** version 3.49.1.  By combining all the individual C code files into this
 ** single large file, the entire code can be compiled as a single translation
 ** unit.  This allows many compilers to do optimizations that would not be
 ** possible if the files were compiled separately.  Performance improvements
@@ -18,7 +18,7 @@
 ** separate file. This file contains only code for the core SQLite library.
 **
 ** The content in this amalgamation comes from Fossil check-in
-** 4a7dd425dc2a0e5082a9049c9b4a9d4f199a with changes in files:
+** 873d4e274b4988d260ba8354a9718324a1c2 with changes in files:
 **
 **    
 */
@@ -465,9 +465,9 @@ extern "C" {
 ** [sqlite3_libversion_number()], [sqlite3_sourceid()],
 ** [sqlite_version()] and [sqlite_source_id()].
 */
-#define SQLITE_VERSION        "3.49.0"
-#define SQLITE_VERSION_NUMBER 3049000
-#define SQLITE_SOURCE_ID      "2025-02-06 11:55:18 4a7dd425dc2a0e5082a9049c9b4a9d4f199a71583d014c24b4cfe276c5a77cde"
+#define SQLITE_VERSION        "3.49.1"
+#define SQLITE_VERSION_NUMBER 3049001
+#define SQLITE_SOURCE_ID      "2025-02-18 13:38:58 873d4e274b4988d260ba8354a9718324a1c26187a4ab4c1cc0227c03d0f10e70"
 
 /*
 ** CAPI3REF: Run-Time Library Version Numbers
@@ -131067,7 +131067,7 @@ static void concatFuncCore(
   for(i=0; i<argc; i++){
     n += sqlite3_value_bytes(argv[i]);
   }
-  n += (argc-1)*nSep;
+  n += (argc-1)*(i64)nSep;
   z = sqlite3_malloc64(n+1);
   if( z==0 ){
     sqlite3_result_error_nomem(context);
@@ -182305,7 +182305,7 @@ SQLITE_API int sqlite3_config(int op, ...){
 static int setupLookaside(sqlite3 *db, void *pBuf, int sz, int cnt){
 #ifndef SQLITE_OMIT_LOOKASIDE
   void *pStart;
-  sqlite3_int64 szAlloc = sz*(sqlite3_int64)cnt;
+  sqlite3_int64 szAlloc;
   int nBig;   /* Number of full-size slots */
   int nSm;    /* Number smaller LOOKASIDE_SMALL-byte slots */
 
@@ -182324,7 +182324,9 @@ static int setupLookaside(sqlite3 *db, void *pBuf, int sz, int cnt){
   */
   sz = ROUNDDOWN8(sz);  /* IMP: R-33038-09382 */
   if( sz<=(int)sizeof(LookasideSlot*) ) sz = 0;
+  if( sz>65528 ) sz = 65528;
   if( cnt<0 ) cnt = 0;
+  szAlloc = (i64)sz*(i64)cnt;
   if( sz==0 || cnt==0 ){
     sz = 0;
     pStart = 0;
@@ -182339,10 +182341,10 @@ static int setupLookaside(sqlite3 *db, void *pBuf, int sz, int cnt){
 #ifndef SQLITE_OMIT_TWOSIZE_LOOKASIDE
   if( sz>=LOOKASIDE_SMALL*3 ){
     nBig = szAlloc/(3*LOOKASIDE_SMALL+sz);
-    nSm = (szAlloc - sz*nBig)/LOOKASIDE_SMALL;
+    nSm = (szAlloc - (i64)sz*(i64)nBig)/LOOKASIDE_SMALL;
   }else if( sz>=LOOKASIDE_SMALL*2 ){
     nBig = szAlloc/(LOOKASIDE_SMALL+sz);
-    nSm = (szAlloc - sz*nBig)/LOOKASIDE_SMALL;
+    nSm = (szAlloc - (i64)sz*(i64)nBig)/LOOKASIDE_SMALL;
   }else
 #endif /* SQLITE_OMIT_TWOSIZE_LOOKASIDE */
   if( sz>0 ){
@@ -255872,7 +255874,7 @@ static void fts5SourceIdFunc(
 ){
   assert( nArg==0 );
   UNUSED_PARAM2(nArg, apUnused);
-  sqlite3_result_text(pCtx, "fts5: 2025-02-06 11:55:18 4a7dd425dc2a0e5082a9049c9b4a9d4f199a71583d014c24b4cfe276c5a77cde", -1, SQLITE_TRANSIENT);
+  sqlite3_result_text(pCtx, "fts5: 2025-02-18 13:38:58 873d4e274b4988d260ba8354a9718324a1c26187a4ab4c1cc0227c03d0f10e70", -1, SQLITE_TRANSIENT);
 }
 
 /*
