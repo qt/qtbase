@@ -37,8 +37,6 @@ private slots:
     void swap();
 private:
     void all_methods(bool includingNumAlgorithms) const;
-    void ensureLargeData();
-    std::vector<char> large;
 };
 
 void tst_QCryptographicHash::repeated_result_data()
