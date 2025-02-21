@@ -35,9 +35,6 @@ private slots:
     void addDataAcceptsNullByteArrayView();
     void move();
     void swap();
-private:
-    void ensureLargeData();
-    std::vector<char> large;
 };
 
 void tst_QCryptographicHash::repeated_result_data()
