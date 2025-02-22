@@ -18,6 +18,7 @@ private Q_SLOTS:
 #if QT_CONFIG(timezone)
     void isTimeZoneIdAvailable();
     void systemTimeZone();
+    void utc();
     void zoneByName_data();
     void zoneByName();
     void displayName_data();
@@ -72,6 +73,14 @@ void tst_QTimeZone::systemTimeZone()
         QTimeZone::systemTimeZone();
     }
 }
+
+void tst_QTimeZone::utc()
+{
+    QBENCHMARK {
+        QTimeZone::utc();
+    }
+}
+
 void tst_QTimeZone::zoneByName_data()
 {
     QTest::addColumn<QByteArray>("name");
