@@ -1263,6 +1263,12 @@ void QAbstractItemView::doItemsLayout()
     \l{EditTrigger}, combined using the OR
     operator. The view will only initiate the editing of an item if the
     action performed is set in this property.
+
+    The default value is:
+    \list
+    \li for QTableView: DoubleClicked|AnyKeyPressed
+    \li for all other views: DoubleClicked|EditKeyPressed
+    \endlist
 */
 void QAbstractItemView::setEditTriggers(EditTriggers actions)
 {
