@@ -980,8 +980,16 @@ QUtcTimeZonePrivate::QUtcTimeZonePrivate(qint32 offsetSeconds)
     if (data != std::end(utcDataTable) && data->offsetFromUtc == offsetSeconds) {
         QByteArrayView ianaId = data->id();
         qsizetype cut = ianaId.indexOf(' ');
-        id = (cut < 0 ? ianaId : ianaId.first(cut)).toByteArray();
-        name = QString::fromUtf8(id);
+        QByteArrayView cutId = (cut < 0 ? ianaId : ianaId.first(cut));
+        if (cutId == utcQByteArray()) {
+            // optimize: reuse interned strings for the common case
+            id = utcQByteArray();
+            name = utcQString();
+        } else {
+            // fallback to allocate new strings otherwise
+            id = cutId.toByteArray();
+            name = QString::fromUtf8(id);
+        }
         Q_ASSERT(!name.isEmpty());
     } else { // Fall back to a UTC-offset name:
         name = isoOffsetFormat(offsetSeconds, QTimeZone::ShortName);
