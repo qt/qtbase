@@ -43,6 +43,7 @@ class tst_QTimeZone : public QObject
 private Q_SLOTS:
     void isTimeZoneIdAvailable();
     void systemTimeZone();
+    void utc();
     void zoneByName_data();
     void zoneByName();
     void displayName_data();
@@ -95,6 +96,13 @@ void tst_QTimeZone::systemTimeZone()
 {
     QBENCHMARK {
         QTimeZone::systemTimeZone();
+    }
+}
+
+void tst_QTimeZone::utc()
+{
+    QBENCHMARK {
+        QTimeZone::utc();
     }
 }
 
