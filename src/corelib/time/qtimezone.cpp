@@ -1451,7 +1451,7 @@ QTimeZone QTimeZone::systemTimeZone()
 */
 QTimeZone QTimeZone::utc()
 {
-    return QTimeZone(QTimeZonePrivate::utcQByteArray());
+    return QTimeZone(0);
 }
 
 /*!
