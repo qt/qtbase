@@ -653,8 +653,6 @@ function(_qt_internal_sbom_add_target target)
 
     set(project_package_options "")
 
-    _qt_internal_sbom_is_qt_entity_type("${arg_TYPE}" is_qt_entity_type)
-
     if(arg_FRIENDLY_PACKAGE_NAME)
         set(package_name_for_spdx_id "${arg_FRIENDLY_PACKAGE_NAME}")
     else()
@@ -763,10 +761,18 @@ function(_qt_internal_sbom_add_target target)
 
     if(license_expression)
         list(APPEND project_package_options LICENSE_CONCLUDED "${license_expression}")
+    endif()
 
-        # For qt entities we know the license we provide, so we mark it as declared as well.
-        if(arg___QT_INTERNAL_HANDLE_QT_ENTITY_TYPE_LICENSE AND is_qt_entity_type)
-            list(APPEND project_package_options LICENSE_DECLARED "${license_expression}")
+    if(license_expression AND
+            arg___QT_INTERNAL_HANDLE_QT_ENTITY_TYPE_LICENSE)
+        _qt_internal_sbom_forward_sbom_add_target_options(sbom_add_target_args)
+        _qt_internal_sbom_handle_qt_entity_license_declared_expression(${target}
+            ${sbom_add_target_args}
+            LICENSE_CONCLUDED_EXPRESSION "${license_expression}"
+            OUT_VAR qt_entity_license_declared_expression)
+        if(qt_entity_license_declared_expression)
+            list(APPEND project_package_options
+                LICENSE_DECLARED "${qt_entity_license_declared_expression}")
         endif()
     endif()
 
