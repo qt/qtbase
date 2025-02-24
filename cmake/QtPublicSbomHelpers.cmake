@@ -654,7 +654,6 @@ function(_qt_internal_sbom_add_target target)
     set(project_package_options "")
 
     _qt_internal_sbom_is_qt_entity_type("${arg_TYPE}" is_qt_entity_type)
-    _qt_internal_sbom_is_qt_3rd_party_entity_type("${arg_TYPE}" is_qt_3rd_party_entity_type)
 
     if(arg_FRIENDLY_PACKAGE_NAME)
         set(package_name_for_spdx_id "${arg_FRIENDLY_PACKAGE_NAME}")
@@ -698,10 +697,6 @@ function(_qt_internal_sbom_add_target target)
         set(attribution_args
             ATTRIBUTION_PARENT_TARGET "${target}"
         )
-
-        if(is_qt_entity_type AND arg___QT_INTERNAL_HANDLE_QT_ENTITY_ATTRIBUTION_FILES)
-            list(APPEND attribution_args CREATE_SBOM_FOR_EACH_ATTRIBUTION)
-        endif()
 
         # Forward the sbom specific options when handling attribution files because those might
         # create other sbom targets that need to inherit the parent ones.
