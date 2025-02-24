@@ -81,7 +81,6 @@ endfunction()
 # Options:
 #   NO_ADDITIONAL_TARGET_INFO
 #     Don't generate a Qt6*AdditionalTargetInfo.cmake file.
-#     The caller is responsible for creating one.
 #
 #   MODULE_INTERFACE_NAME
 #     The custom name of the module interface. This name is used as a part of the include paths
