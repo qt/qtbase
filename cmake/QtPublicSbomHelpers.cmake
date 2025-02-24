@@ -571,6 +571,7 @@ macro(_qt_internal_get_sbom_add_target_common_options opt_args single_args multi
         SBOM_DEPENDENCIES
         ATTRIBUTION_FILE_PATHS
         ATTRIBUTION_FILE_DIR_PATHS
+        ATTRIBUTION_IDS
         SBOM_RELATIONSHIPS
     )
 
