@@ -154,6 +154,27 @@ function(_qt_internal_sbom_handle_qt_entity_license_expression target)
     endif()
 endfunction()
 
+# Helper function to add a default license declared expression for a qt entity type.
+function(_qt_internal_sbom_handle_qt_entity_license_declared_expression target)
+    _qt_internal_get_sbom_add_target_options(opt_args single_args multi_args)
+    list(APPEND single_args OUT_VAR LICENSE_CONCLUDED_EXPRESSION)
+    cmake_parse_arguments(PARSE_ARGV 1 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    _qt_internal_sbom_is_qt_entity_type("${arg_TYPE}" is_qt_entity_type)
+
+    set(license_expression "")
+
+    # For qt entities we know the license we provide, so we mark it as declared as well.
+    if(is_qt_entity_type AND arg_LICENSE_CONCLUDED_EXPRESSION)
+        set(license_expression "${arg_LICENSE_CONCLUDED_EXPRESSION}")
+    endif()
+
+    if(license_expression)
+        set(${arg_OUT_VAR} "${license_expression}" PARENT_SCOPE)
+    endif()
+endfunction()
+
 # Get the default qt copyright.
 function(_qt_internal_sbom_get_default_qt_copyright_header out_var)
     set(${out_var}
