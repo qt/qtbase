@@ -3500,9 +3500,8 @@ void QWindowsWindow::updateCustomTitlebar()
     p.setPen(Qt::NoPen);
     if (!wnd->flags().testFlags(Qt::NoTitleBarBackgroundHint)) {
         QRect titleRect;
-        titleRect.setY(1);
         titleRect.setX(2);
-        titleRect.setWidth(windowWidth - 2);
+        titleRect.setWidth(windowWidth);
         titleRect.setHeight(titleBarHeight);
 
         if (isWindows11orAbove) {
@@ -3529,13 +3528,19 @@ void QWindowsWindow::updateCustomTitlebar()
         titleRect.setWidth(windowWidth);
         titleRect.setHeight(titleBarHeight);
 
-        const QIcon icon = wnd->icon();
-        if (!icon.isNull()) {
-            titleRect.adjust(factor * 4, 0, 0, 0);
-            QRect iconRect(titleRect.x(), titleRect.y() + factor * 8, factor * 16, factor * 16);
-            icon.paint(&p, iconRect);
-            titleRect.adjust(factor * 24, 0, 0, 0);
+        titleRect.adjust(factor * 4, 0, 0, 0);
+        QRect iconRect(titleRect.x(), titleRect.y() + factor * 8, factor * 16, factor * 16);
+        if (wnd->icon().isNull()) {
+            static QIcon defaultIcon;
+            if (defaultIcon.isNull()) {
+                const QImage defaultIconImage = QImage::fromHICON(LoadIcon(0, IDI_APPLICATION));
+                defaultIcon =  QIcon(QPixmap::fromImage(defaultIconImage));
+            }
+            defaultIcon.paint(&p, iconRect);
+        } else {
+            wnd->icon().paint(&p, iconRect);
         }
+        titleRect.adjust(factor * 24, 0, 0, 0);
 
         p.setPen(textPen);
         QFont titleFont = QWindowsIntegration::instance()->fontDatabase()->defaultFont();
