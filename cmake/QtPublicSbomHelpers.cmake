@@ -967,18 +967,6 @@ function(_qt_internal_sbom_add_target target)
     endif()
 
     if(arg_USE_ATTRIBUTION_FILES)
-        if(qa_attribution_name)
-            string(APPEND package_comment "    Name: ${qa_attribution_name}\n")
-        endif()
-
-        if(qa_description)
-            string(APPEND package_comment "    Description: ${qa_description}\n")
-        endif()
-
-        if(qa_qt_usage)
-            string(APPEND package_comment "    Qt usage: ${qa_qt_usage}\n")
-        endif()
-
         if(qa_chosen_attribution_file_path)
             _qt_internal_sbom_map_path_to_reproducible_relative_path(relative_attribution_path
                 PATH "${qa_chosen_attribution_file_path}"
@@ -990,6 +978,22 @@ function(_qt_internal_sbom_add_target target)
         if(NOT "${qa_chosen_attribution_entry_index}" STREQUAL "")
             string(APPEND package_comment
                 "    Entry index: ${qa_chosen_attribution_entry_index}\n")
+        endif()
+
+        if(qa_attribution_id)
+            string(APPEND package_comment "    Id: ${qa_attribution_id}\n")
+        endif()
+
+        if(qa_attribution_name)
+            string(APPEND package_comment "    Name: ${qa_attribution_name}\n")
+        endif()
+
+        if(qa_description)
+            string(APPEND package_comment "    Description: ${qa_description}\n")
+        endif()
+
+        if(qa_qt_usage)
+            string(APPEND package_comment "    Qt usage: ${qa_qt_usage}\n")
         endif()
     endif()
 
