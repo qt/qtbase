@@ -963,12 +963,7 @@ function(_qt_internal_sbom_add_target target)
         list(APPEND project_package_options ${purl_package_options})
     endif()
 
-    if(arg_USE_ATTRIBUTION_FILES
-            AND (is_qt_3rd_party_entity_type
-                OR arg_TYPE STREQUAL "SYSTEM_LIBRARY"
-                OR arg_TYPE STREQUAL "THIRD_PARTY_LIBRARY"
-                OR arg_TYPE STREQUAL "THIRD_PARTY_LIBRARY_WITH_FILES")
-        )
+    if(arg_USE_ATTRIBUTION_FILES)
         if(qa_attribution_name)
             string(APPEND package_comment "    Name: ${qa_attribution_name}\n")
         endif()
