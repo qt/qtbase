@@ -357,11 +357,6 @@ function(_qt_internal_sbom_handle_qt_entity_purl_entries)
     cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
     _qt_internal_validate_all_args_are_parsed(arg)
 
-    set(third_party_types
-        QT_THIRD_PARTY_MODULE
-        QT_THIRD_PARTY_SOURCES
-    )
-
     set(purl_ids "")
 
     _qt_internal_sbom_is_qt_entity_type("${arg_TYPE}" is_qt_entity_type)
