@@ -226,6 +226,11 @@ function(qt_internal_work_around_autogen_discarded_dependencies target)
         return()
     endif()
 
+    get_target_property(type "${target}" TYPE)
+    if(type STREQUAL "INTERFACE_LIBRARY")
+        return()
+    endif()
+
     set(libraries ${ARGN})
     set(final_libraries "")
 
