@@ -164,6 +164,11 @@ function(_qt_internal_sbom_handle_qt_attribution_files out_prefix_outer)
                     string(APPEND attribution_target "${${out_prefix}_attribution_id}")
                 endif()
 
+                # Sanitize the target name, to avoid issues with slashes and other unsupported chars
+                # in target names.
+                string(REGEX REPLACE "[^a-zA-Z0-9_-]" "_"
+                    attribution_target "${attribution_target}")
+
                 set(sbom_args "")
 
                 # Always propagate the package supplier, because we assume the supplier for 3rd
