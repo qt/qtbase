@@ -120,7 +120,7 @@ list(APPEND CMAKE_REQUIRED_LIBRARIES "${EGL_LIBRARY}")
 list(APPEND CMAKE_REQUIRED_INCLUDES "${EGL_INCLUDE_DIR}")
 list(APPEND CMAKE_REQUIRED_DEFINITIONS "${EGL_DEFINITIONS}")
 
-find_package(PlatformGraphics)
+find_package(PlatformGraphics QUIET)
 if(TARGET PlatformGraphics::PlatformGraphics)
     platform_graphics_extend_check_cxx_source_required_variables()
 endif()
