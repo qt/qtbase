@@ -16,7 +16,7 @@
                   QLatin1StringView
     \endcompareswith
     \compareswith strong {const char *} QByteArray QByteArrayView
-    The contents of byte arrays is interpreted as utf-8.
+    The contents of byte arrays is interpreted as UTF-8.
     \endcompareswith
 
     A QUtf8StringView references a contiguous portion of a UTF-8

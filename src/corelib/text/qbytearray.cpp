@@ -835,7 +835,7 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
     \endcompareswith
     \compareswith strong QChar char16_t QString QStringView QLatin1StringView \
                   QUtf8StringView
-    When comparing with string types, the content is interpreted as utf-8.
+    When comparing with string types, the content is interpreted as UTF-8.
     \endcompareswith
 
     QByteArray can be used to store both raw bytes (including '\\0's)
