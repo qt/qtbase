@@ -21,7 +21,7 @@ else()
     set(_includes "${CMAKE_REQUIRED_INCLUDES}")
     list(APPEND CMAKE_REQUIRED_INCLUDES "${GLESv2_INCLUDE_DIR}")
 
-    find_package(PlatformGraphics)
+    find_package(PlatformGraphics QUIET)
     if(TARGET PlatformGraphics::PlatformGraphics)
         platform_graphics_extend_check_cxx_source_required_variables()
     endif()
