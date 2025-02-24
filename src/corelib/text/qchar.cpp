@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
     \compareswith strong char16_t QString QStringView QLatin1StringView QUtf8StringView
     \endcompareswith
     \compareswith strong {const char *} QByteArray QByteArrayView
-    The contents of the byte array is interpreted as utf-8.
+    The contents of the byte array is interpreted as UTF-8.
     \endcompareswith
 
     In Qt, Unicode characters are 16-bit entities without any markup
