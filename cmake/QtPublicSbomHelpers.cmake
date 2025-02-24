@@ -545,6 +545,7 @@ macro(_qt_internal_get_sbom_add_target_common_options opt_args single_args multi
         SBOM_INCOMPLETE_3RD_PARTY_DEPENDENCIES
         IS_QT_3RD_PARTY_HEADER_MODULE
         USE_ATTRIBUTION_FILES
+        CREATE_SBOM_FOR_EACH_ATTRIBUTION
         __QT_INTERNAL_HANDLE_QT_ENTITY_TYPE_PACKAGE_VERSION
         __QT_INTERNAL_HANDLE_QT_ENTITY_TYPE_SUPPLIER
         __QT_INTERNAL_HANDLE_QT_ENTITY_TYPE_DOWNLOAD_LOCATION
@@ -563,6 +564,7 @@ macro(_qt_internal_get_sbom_add_target_common_options opt_args single_args multi
         QT_LICENSE_ID
         DOWNLOAD_LOCATION
         ATTRIBUTION_ENTRY_INDEX
+        ATTRIBUTION_PARENT_TARGET
         SBOM_PACKAGE_COMMENT
     )
     set(${multi_args}
@@ -694,7 +696,7 @@ function(_qt_internal_sbom_add_target target)
 
     if(arg_USE_ATTRIBUTION_FILES)
         set(attribution_args
-            PARENT_TARGET "${target}"
+            ATTRIBUTION_PARENT_TARGET "${target}"
         )
 
         if(is_qt_entity_type AND arg___QT_INTERNAL_HANDLE_QT_ENTITY_ATTRIBUTION_FILES)

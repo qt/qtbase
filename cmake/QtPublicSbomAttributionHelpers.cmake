@@ -25,12 +25,8 @@ function(_qt_internal_sbom_handle_qt_attribution_files out_prefix_outer)
         return()
     endif()
 
-    set(opt_args
-        CREATE_SBOM_FOR_EACH_ATTRIBUTION
-    )
-    set(single_args
-        PARENT_TARGET
-    )
+    set(opt_args "")
+    set(single_args "")
     set(multi_args "")
 
     _qt_internal_get_sbom_specific_options(sbom_opt_args sbom_single_args sbom_multi_args)
@@ -64,8 +60,8 @@ function(_qt_internal_sbom_handle_qt_attribution_files out_prefix_outer)
     set(propagate_sbom_options_to_new_attribution_targets TRUE)
     if(arg_CREATE_SBOM_FOR_EACH_ATTRIBUTION)
         set(propagate_sbom_options_to_new_attribution_targets FALSE)
-        if(NOT arg_PARENT_TARGET)
-            message(FATAL_ERROR "PARENT_TARGET must be set")
+        if(NOT arg_ATTRIBUTION_PARENT_TARGET)
+            message(FATAL_ERROR "ATTRIBUTION_PARENT_TARGET must be set")
         endif()
     endif()
 
@@ -185,7 +181,7 @@ function(_qt_internal_sbom_handle_qt_attribution_files out_prefix_outer)
 
                 # If no Id was retrieved, just add a numeric one, to make the sbom target
                 # unique.
-                set(attribution_target "${arg_PARENT_TARGET}_Attribution_")
+                set(attribution_target "${arg_ATTRIBUTION_PARENT_TARGET}_Attribution_")
                 if(NOT ${out_prefix}_attribution_id)
                     string(APPEND attribution_target "${file_index}_${entry_index}")
                 else()
@@ -222,7 +218,10 @@ function(_qt_internal_sbom_handle_qt_attribution_files out_prefix_outer)
                     # depending on which file and index is currently being processed.
                     _qt_internal_get_sbom_specific_options(
                         sbom_opt_args sbom_single_args sbom_multi_args)
-                    list(REMOVE_ITEM sbom_opt_args NO_CURRENT_DIR_ATTRIBUTION)
+                    list(REMOVE_ITEM sbom_opt_args
+                        NO_CURRENT_DIR_ATTRIBUTION
+                        CREATE_SBOM_FOR_EACH_ATTRIBUTION
+                    )
                     list(REMOVE_ITEM sbom_single_args ATTRIBUTION_ENTRY_INDEX)
                     list(REMOVE_ITEM sbom_multi_args
                         ATTRIBUTION_IDS
@@ -259,7 +258,7 @@ function(_qt_internal_sbom_handle_qt_attribution_files out_prefix_outer)
                     ${sbom_args}
                 )
 
-                _qt_internal_extend_sbom_dependencies(${arg_PARENT_TARGET}
+                _qt_internal_extend_sbom_dependencies(${arg_ATTRIBUTION_PARENT_TARGET}
                     SBOM_DEPENDENCIES ${attribution_target}
                 )
             endif()
