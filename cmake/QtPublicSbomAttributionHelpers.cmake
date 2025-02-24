@@ -53,11 +53,18 @@ function(_qt_internal_sbom_handle_qt_attribution_files out_prefix_outer)
         math(EXPR attribution_file_count "${attribution_file_count} + 1")
     endforeach()
 
-    # If CREATE_SBOM_FOR_EACH_ATTRIBUTION is set, that means the parent target was a qt entity,
-    # and not a 3rd party library.
+    # If CREATE_SBOM_FOR_EACH_ATTRIBUTION is set, that means the parent target is likely not a
+    # 3rd party library, so each attribution entry should create a separate attribution target.
     # In which case we don't want to proagate options like CPE to the child attribution targets,
     # because the CPE is meant for the parent target.
     set(propagate_sbom_options_to_new_attribution_targets TRUE)
+    if(arg___QT_INTERNAL_HANDLE_QT_ENTITY_ATTRIBUTION_FILES)
+        _qt_internal_sbom_is_qt_entity_type("${arg_TYPE}" is_qt_entity_type)
+        if(is_qt_entity_type)
+            set(arg_CREATE_SBOM_FOR_EACH_ATTRIBUTION TRUE)
+        endif()
+    endif()
+
     if(arg_CREATE_SBOM_FOR_EACH_ATTRIBUTION)
         set(propagate_sbom_options_to_new_attribution_targets FALSE)
         if(NOT arg_ATTRIBUTION_PARENT_TARGET)
@@ -249,9 +256,15 @@ function(_qt_internal_sbom_handle_qt_attribution_files out_prefix_outer)
                 # Create another sbom target with the id as a hint for the target name,
                 # the attribution file passed, and make the new target a dependency of the
                 # parent one.
+                if(arg___QT_INTERNAL_HANDLE_QT_ENTITY_ATTRIBUTION_FILES)
+                    set(attribution_entity_type QT_THIRD_PARTY_SOURCES)
+                else()
+                    set(attribution_entity_type THIRD_PARTY_SOURCES)
+                endif()
+
                 _qt_internal_add_sbom("${attribution_target}"
                     IMMEDIATE_FINALIZATION
-                    TYPE QT_THIRD_PARTY_SOURCES
+                    TYPE "${attribution_entity_type}"
                     ATTRIBUTION_FILE_PATHS "${attribution_file_path}"
                     ATTRIBUTION_ENTRY_INDEX "${entry_index}"
                     NO_CURRENT_DIR_ATTRIBUTION
