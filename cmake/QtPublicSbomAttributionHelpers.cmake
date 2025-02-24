@@ -76,6 +76,12 @@ function(_qt_internal_sbom_handle_qt_attribution_files out_prefix_outer)
         )
     endif()
 
+    set(ids_to_add "")
+    set(ids_found "")
+    if(arg_ATTRIBUTION_IDS)
+        set(ids_to_add ${arg_ATTRIBUTION_IDS})
+    endif()
+
     set(file_index 0)
     set(first_attribution_processed FALSE)
     foreach(attribution_file_path IN LISTS attribution_files)
@@ -118,6 +124,17 @@ function(_qt_internal_sbom_handle_qt_attribution_files out_prefix_outer)
                     FILE_PATH "${attribution_file_path}"
                 )
 
+                # Check if we need to filter for specific ids.
+                if(ids_to_add AND ${out_prefix}_attribution_id)
+                    if("${${out_prefix}_attribution_id}" IN_LIST ids_to_add)
+                        list(APPEND ids_found "${${out_prefix}_attribution_id}")
+                    else()
+                        # Skip to next entry.
+                        math(EXPR entry_index "${entry_index} + 1")
+                        continue()
+                    endif()
+                endif()
+
                 # Propagate the values to the outer scope.
                 foreach(variable_name IN LISTS variable_names)
                     set(${out_prefix}_${variable_name} "${${out_prefix}_${variable_name}}"
@@ -154,6 +171,17 @@ function(_qt_internal_sbom_handle_qt_attribution_files out_prefix_outer)
                     ENTRY_INDEX "${entry_index}"
                     FILE_PATH "${attribution_file_path}"
                 )
+
+                # Check if we need to filter for specific ids
+                if(ids_to_add AND ${out_prefix}_attribution_id)
+                    if("${${out_prefix}_attribution_id}" IN_LIST ids_to_add)
+                        list(APPEND ids_found "${${out_prefix}_attribution_id}")
+                    else()
+                        # Skip to next entry.
+                        math(EXPR entry_index "${entry_index} + 1")
+                        continue()
+                    endif()
+                endif()
 
                 # If no Id was retrieved, just add a numeric one, to make the sbom target
                 # unique.
@@ -197,6 +225,7 @@ function(_qt_internal_sbom_handle_qt_attribution_files out_prefix_outer)
                     list(REMOVE_ITEM sbom_opt_args NO_CURRENT_DIR_ATTRIBUTION)
                     list(REMOVE_ITEM sbom_single_args ATTRIBUTION_ENTRY_INDEX)
                     list(REMOVE_ITEM sbom_multi_args
+                        ATTRIBUTION_IDS
                         ATTRIBUTION_FILE_PATHS
                         ATTRIBUTION_FILE_DIR_PATHS
                     )
@@ -240,6 +269,22 @@ function(_qt_internal_sbom_handle_qt_attribution_files out_prefix_outer)
 
         math(EXPR file_index "${file_index} + 1")
     endforeach()
+
+    # Show an error if an id is unaccounted for, it might be it has moved to a different file, that
+    # is not referenced.
+    if(ids_to_add)
+        set(attribution_ids_diff ${ids_to_add})
+        list(REMOVE_ITEM attribution_ids_diff ${ids_found})
+        if(attribution_ids_diff)
+            set(error_message
+                "The following required attribution ids were not found in the attribution files")
+            if(arg_ATTRIBUTION_PARENT_TARGET)
+                string(APPEND error_message " for target: ${arg_ATTRIBUTION_PARENT_TARGET}")
+            endif()
+            string(APPEND error_message " ids: ${attribution_ids_diff}")
+            message(FATAL_ERROR "${error_message}")
+        endif()
+    endif()
 endfunction()
 
 # Helper to parse a qt_attribution.json file and do various operations:
@@ -361,6 +406,7 @@ function(_qt_internal_sbom_read_qt_attribution out_prefix)
         # Some calls are currently commented out, to save on json parsing time because we don't have
         # a usage for them yet.
         # _qt_internal_sbom_get_attribution_key(License license)
+        _qt_internal_sbom_get_attribution_key(Id attribution_id "${out_prefix}")
         _qt_internal_sbom_get_attribution_key(LicenseId license_id "${out_prefix}")
         _qt_internal_sbom_get_attribution_key(Version version "${out_prefix}")
         _qt_internal_sbom_get_attribution_key(Homepage homepage "${out_prefix}")
