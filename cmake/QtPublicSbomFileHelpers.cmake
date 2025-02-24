@@ -51,6 +51,7 @@ function(_qt_internal_sbom_handle_target_binary_files target)
         # This will be meant for user projects, and are not currently used by Qt's sbom.
         THIRD_PARTY_LIBRARY
         THIRD_PARTY_LIBRARY_WITH_FILES
+        THIRD_PARTY_SOURCES
         EXECUTABLE
         LIBRARY
         TRANSLATIONS
@@ -71,6 +72,7 @@ function(_qt_internal_sbom_handle_target_binary_files target)
         QT_CUSTOM_NO_INFIX
         SYSTEM_LIBRARY
         THIRD_PARTY_LIBRARY
+        THIRD_PARTY_SOURCES
         TRANSLATIONS
         RESOURCES
         CUSTOM
