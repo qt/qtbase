@@ -25,4 +25,6 @@ qt_internal_add_test(tst_qurl
 qt_internal_extend_target(tst_qurl CONDITION APPLE
     SOURCES
         tst_qurl_mac.mm
+    LIBRARIES
+        Qt::CorePrivate
 )
