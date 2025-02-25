@@ -81,7 +81,7 @@ macro.AndroidMaxApiVer    = "35"
 macro.AndroidMinVer       = "8.0"
 macro.AndroidMaxVer       = "15"
 macro.AndroidPlatformVer  = "35"
-macro.AndroidBuildToolsVer = "35.0.0"
+macro.AndroidBuildToolsVer = "35.0.1"
 macro.GradleVer           = "8.10"
 macro.AGPVer              = "8.5.2"
 
