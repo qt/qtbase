@@ -69,11 +69,10 @@ struct HookManager
 #if !defined(QT_GUI_LIB) && !defined(Q_OS_WIN)
         // Only tested for QtCore/QCoreApplication on Unix. QtGui has statics
         // with QObject that haven't been cleaned up.
-        if (int c = objectCount.loadRelaxed())
+        // For QtCore, we expect exactly one object: the QAdoptedThread for
+        // represents the main thread.
+        if (int c = objectCount.loadRelaxed(); c > 1)
             qFatal("%d objects still alive", c);
-
-        if (void *id = QCoreApplicationPrivate::theMainThreadId.loadRelaxed())
-            qFatal("QCoreApplicationPrivate::theMainThreadId is still set - %p", id);
 #endif
     }
 };
