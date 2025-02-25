@@ -369,6 +369,22 @@ instructions:
         variableValue: "{{.Env.VXWORKS_HOME}}/wrenv.linux"
 
   # QNX variables
+  - type: EnvironmentVariable
+    variableName: QNX_ACTIVE
+    variableValue: "{{.Env.QNX_710}}"
+    enable_if:
+      condition: property
+      property: target.osVersion
+      equals_value: QNX_710
+
+  - type: EnvironmentVariable
+    variableName: QNX_ACTIVE
+    variableValue: "{{.Env.QNX_800}}"
+    enable_if:
+      condition: property
+      property: target.osVersion
+      equals_value: QNX_800
+
   - type: Group
     enable_if:
       condition: and
@@ -381,9 +397,6 @@ instructions:
           equals_value: QNX
     instructions:
     - type: EnvironmentVariable
-      variableName: QNX_TARGET
-      variableValue: "{{.Env.QNX_710}}/target/qnx7"
-    - type: EnvironmentVariable
       variableName: QNX_CONFIGURATION_EXCLUSIVE
       variableValue: "{{.Env.HOME}}/.qnx"
     - type: EnvironmentVariable
@@ -391,52 +404,37 @@ instructions:
       variableValue: "{{.Env.HOME}}/.qnx"
     - type: PrependToEnvironmentVariable
       variableName: PATH
-      variableValue: "{{.Env.QNX_710}}/host/linux/x86_64/usr/bin:"
-    - type: PrependToEnvironmentVariable
-      variableName: PATH
-      variableValue: "{{.Env.QNX_710}}/host/common/bin:"
-    - type: PrependToEnvironmentVariable
-      variableName: PATH
       variableValue: "{{.Env.HOME}}/.qnx:"
-    - type: EnvironmentVariable
-      variableName: QNX_HOST
-      variableValue: "{{.Env.QNX_710}}/host/linux/x86_64"
     - type: AppendToEnvironmentVariable
       variableName: PATH
       variableValue: ":{{.Env.QEMUARMV7_TOOLCHAIN_SYSROOT}}/../x86_64-pokysdk-linux/usr/bin:"
+    - type: EnvironmentVariable
+      variableName: QNX_TARGET
+      variableValue: "{{.Env.QNX_ACTIVE}}/target/qnx7"
+    - type: PrependToEnvironmentVariable
+      variableName: PATH
+      variableValue: "{{.Env.QNX_ACTIVE}}/host/linux/x86_64/usr/bin:"
+    - type: PrependToEnvironmentVariable
+      variableName: PATH
+      variableValue: "{{.Env.QNX_ACTIVE}}/host/common/bin:"
+    - type: EnvironmentVariable
+      variableName: QNX_HOST
+      variableValue: "{{.Env.QNX_ACTIVE}}/host/linux/x86_64"
 
-  - type: Group
+  - type: SetEnvironmentFromScript
+    command: "{{.Env.QNX_ACTIVE}}\\qnxsdp-env.bat"
+    userMessageOnFailure: "Failed to set QNX environment"
+    maxTimeInSeconds: 60
+    maxTimeBetweenOutput: 60
     enable_if:
       condition: and
       conditions:
         - condition: property
-          property: host.os
-          equals_value: Windows
+          property: target.osVersion
+          contains_value: QNX
         - condition: property
-          property: target.os
-          equals_value: QNX
-    instructions:
-    - type: EnvironmentVariable
-      variableName: QNX_TARGET
-      variableValue: "{{.Env.QNX_710_CMAKE}}/target/qnx7"
-    - type: EnvironmentVariable
-      variableName: QNX_CONFIGURATION_EXCLUSIVE
-      variableValue: "{{.Env.HOMEPATH}}\\.qnx"
-    - type: EnvironmentVariable
-      variableName: QNX_CONFIGURATION
-      variableValue: "{{.Env.HOMEPATH}}\\.qnx"
-    - type: PrependToEnvironmentVariable
-      variableName: PATH
-      variableValue: "{{.Env.QNX_710}}\\host\\win64\\x86_64\\usr\\bin;"
-    - type: PrependToEnvironmentVariable
-      variableName: PATH
-      variableValue: "{{.Env.QNX_710}}\\host\\common\\bin;"
-    - type: PrependToEnvironmentVariable
-      variableName: PATH
-      variableValue: "{{.Env.HOMEPATH}}\\.qnx;"
-    - type: EnvironmentVariable
-      variableName: QNX_HOST
-      variableValue: "{{.Env.QNX_710}}\\host\\win64\\x86_64"
+          property: host.os
+          contains_value: Windows
 
   # Enable warnings are errors
   - type: Group

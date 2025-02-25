@@ -73,8 +73,8 @@ instructions:
       condition: and
       conditions:
         - condition: property
-          property: target.osVersion
-          equals_value: QNX_710
+          property: target.os
+          equals_value: QNX
         - condition: property
           property: features
           not_contains_value: DisableTests
