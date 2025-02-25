@@ -63,6 +63,7 @@ private slots:
     void fromLocalFileNormalize();
     void fromLocalFileNormalizeNonRoundtrip_data();
     void fromLocalFileNormalizeNonRoundtrip();
+    void macTypes_data();
     void macTypes();
     void relative();
     void compat_legacy();
@@ -1594,13 +1595,21 @@ void tst_QUrl::fromLocalFileNormalizeNonRoundtrip()
     QCOMPARE(url.toString(QUrl::NormalizePathSegments), urlWithNormalizedPath);
 }
 
-void tst_QUrl::macTypes()
+void tst_QUrl::macTypes_data()
 {
 #ifndef Q_OS_DARWIN
     QSKIP("This is a Mac-only test");
 #else
-    extern void tst_QUrl_mactypes(); // in tst_qurl_mac.mm
-    void tst_QUrl_mactypes();
+    extern void tst_QUrl_mactypes_data();
+    tst_QUrl_mactypes_data();
+#endif
+}
+
+void tst_QUrl::macTypes()
+{
+#ifdef Q_OS_DARWIN
+    extern void tst_QUrl_mactypes();
+    tst_QUrl_mactypes();
 #endif
 }
 
