@@ -70,3 +70,15 @@ set_target_properties(apphelper_gui PROPERTIES OUTPUT_NAME apphelper)
 add_dependencies(tst_qguiapplication
     apphelper_gui
 )
+
+if(QT_FEATURE_library)
+    qt_internal_add_cmake_library(apphelper_gui_plugin
+        MODULE
+        SOURCES
+            ../../../corelib/kernel/qcoreapplication/apphelper_plugin.cpp
+        LIBRARIES
+            Qt::Gui
+    )
+    qt_autogen_tools_initial_setup(apphelper_gui_plugin)
+    add_dependencies(apphelper_gui apphelper_gui_plugin)
+endif()

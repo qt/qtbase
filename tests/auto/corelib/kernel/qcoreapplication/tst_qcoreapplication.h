@@ -53,6 +53,7 @@ private slots:
     void exitFromEventLoop() { QCoreApplicationTestHelper::run(); }
     void exitFromThread() { QCoreApplicationTestHelper::run(); }
     void exitFromThreadedEventLoop() { QCoreApplicationTestHelper::run(); }
+    void exitWithPlugins() { QCoreApplicationTestHelper::run(); }
     void mainAppInAThread() { QCoreApplicationTestHelper::run(); }
 
     void testTrWithPercantegeAtTheEnd();

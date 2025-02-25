@@ -123,21 +123,38 @@ int pthread_timedjoin_np(...) { return ENOSYS; }    // pretend
 // https://github.com/llvm/llvm-project/blob/llvmorg-19.1.0/libcxxabi/src/cxa_thread_atexit.cpp#L118-L120
 #endif
 //
-// However, we can't destroy the QThreadData for the thread that called
-// ::exit() that early, because a lot of existing content (including in Qt)
-// runs when the static destructors are run and they do depend on QThreadData
-// being extant. Likewise, we can't destroy it at global static destructor time
-// because it's too late: the event dispatcher is usually a class found in a
-// plugin and the plugin's destructors (as well as QtGui's) will have run. So
-// we strike a middle-ground and destroy at function-local static destructor
-// time (see set_thread_data()), because those run after the thread_local ones,
-// before the global ones, and in reverse order of creation.
+// Thus, the destruction of QThreadData is split into 3 steps:
+// - finish()
+// - cleanup()
+// - deref & delete
+//
+// The reason for the first split is that user content may run as a result of
+// the finished() signal, in thread_local destructors or similar, so we don't
+// want to destroy the event dispatcher too soon. If we did, the event
+// dispatcher could get recreated.
+//
+// For auxiliary threads started with QThread, finish() is run as soon as run()
+// returns, while cleanup() and the deref happen at pthread_set_specific
+// destruction time (except for broken_threadlocal_dtors, see above).
+//
+// For auxiliary threads started with something else and adopted as a
+// QAdoptedThread, there's only one choice: all three steps happen at at
+// pthread_set_specific destruction time.
+//
+// Finally, for the thread that called ::exit() (which in most cases happens by
+// returning from the main() function), finish() and cleanup() happen at
+// function-local static destructor time, and the deref & delete happens later,
+// at global static destruction time. This is important so QLibraryStore can
+// unload plugins between those two steps: it is also destroyed by a global
+// static destructor, but with a lower priority than ours. The order needs to
+// be this way so we delete the event dispatcher before plugins unload, as
+// often the dispatcher for the main thread is provided by a QPA plugin, but
+// the QThreadData object must still be alive when the plugins do unload.
 
 Q_CONSTINIT static thread_local QThreadData *currentThreadData = nullptr;
 
-static void destroy_current_thread_data(void *p)
+static void destroy_current_thread_data(QThreadData *data)
 {
-    QThreadData *data = static_cast<QThreadData *>(p);
     QThread *thread = data->thread.loadAcquire();
 
 #ifdef Q_OS_APPLE
@@ -164,13 +181,23 @@ static void destroy_current_thread_data(void *p)
         // We may be racing the QThread destructor in another thread and it may
         // have begun destruction; we must not dereference the QThread pointer.
     }
+}
 
+static void deref_current_thread_data(QThreadData *data)
+{
     // the QThread object may still have a reference, so this may not delete
     data->deref();
 
     // ... but we must reset it to zero before returning so we aren't
     // leaving a dangling pointer.
     currentThreadData = nullptr;
+}
+
+static void destroy_auxiliary_thread_data(void *p)
+{
+    auto data = static_cast<QThreadData *>(p);
+    destroy_current_thread_data(data);
+    deref_current_thread_data(data);
 }
 
 // Utility functions for getting, setting and clearing thread specific data.
@@ -180,17 +207,35 @@ static QThreadData *get_thread_data()
 }
 
 namespace {
-struct PThreadTlsKey
+struct QThreadDataDestroyer
 {
     pthread_key_t key;
-    PThreadTlsKey() noexcept { pthread_key_create(&key, destroy_current_thread_data); }
-    ~PThreadTlsKey() { pthread_key_delete(key); }
+    QThreadDataDestroyer() noexcept
+    {
+        pthread_key_create(&key, &destroy_auxiliary_thread_data);
+    }
+    ~QThreadDataDestroyer()
+    {
+        // running global static destructors upon ::exit()
+        if (QThreadData *data = get_thread_data())
+            deref_current_thread_data(data);
+        pthread_key_delete(key);
+    }
+
+    struct EarlyMainThread {
+        ~EarlyMainThread()
+        {
+            // running function-local destructors upon ::exit()
+            if (QThreadData *data = get_thread_data())
+                destroy_current_thread_data(data);
+        }
+    };
 };
 }
 #if QT_SUPPORTS_INIT_PRIORITY
 Q_DECL_INIT_PRIORITY(10)
 #endif
-static PThreadTlsKey pthreadTlsKey; // intentional non-trivial init & destruction
+static QThreadDataDestroyer threadDataDestroyer; // intentional non-trivial init & destruction
 
 static void set_thread_data(QThreadData *data) noexcept
 {
@@ -198,13 +243,8 @@ static void set_thread_data(QThreadData *data) noexcept
         // As noted above: one global static for the thread that called
         // ::exit() (which may not be a Qt thread) and the pthread_key_t for
         // all others.
-        static struct Cleanup {
-            ~Cleanup() {
-                if (QThreadData *data = get_thread_data())
-                    destroy_current_thread_data(data);
-            }
-        } currentThreadCleanup;
-        pthread_setspecific(pthreadTlsKey.key, data);
+        QThreadDataDestroyer::EarlyMainThread currentThreadCleanup;
+        pthread_setspecific(threadDataDestroyer.key, data);
     }
     currentThreadData = data;
 }
