@@ -3598,6 +3598,7 @@ ID3D11UnorderedAccessView *QD3D11Texture::unorderedAccessViewForLevel(int level)
     } else if (is3D) {
         desc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE3D;
         desc.Texture3D.MipSlice = UINT(level);
+        desc.Texture3D.WSize = UINT(m_depth);
     } else {
         desc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE2D;
         desc.Texture2D.MipSlice = UINT(level);
