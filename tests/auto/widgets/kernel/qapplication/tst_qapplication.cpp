@@ -96,13 +96,7 @@ private slots:
     void exitFromEventLoop() { runHelperTest(); }
     void exitFromThread() { runHelperTest(); }
     void exitFromThreadedEventLoop() { runHelperTest(); }
-#  if defined(Q_OS_APPLE)
-    // QGuiApplication in a thread fails inside Apple libs:
-    // *** Assertion failure in -[NSMenu _setMenuName:], NSMenu.m:777
-    // *** Terminating app due to uncaught exception 'NSInternalInconsistencyException', reason: 'API misuse: setting the main menu on a non-main thread. Main menu contents should only be modified from the main thread.'
-#  else
     void mainAppInAThread() { runHelperTest(); }
-#  endif
 #endif
     void thread();
     void desktopSettingsAware();
@@ -1015,6 +1009,9 @@ void tst_QApplication::runHelperTest()
     QProcess process;
     process.start(QFINDTESTDATA("apphelper" EXE), { QTest::currentTestFunction() });
     QVERIFY2(process.waitForFinished(5000), qPrintable(process.errorString()));
+    if (qint8(process.exitCode()) == -1)
+        QSKIP("Process requested skip: " + process.readAllStandardOutput().trimmed());
+
     QCOMPARE(process.readAllStandardError(), QString());
     QCOMPARE(process.exitStatus(), QProcess::NormalExit);
     QCOMPARE(process.exitCode(), 0);

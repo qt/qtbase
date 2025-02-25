@@ -52,13 +52,7 @@ private slots:
     void exitFromEventLoop() { runHelperTest(); }
     void exitFromThread() { runHelperTest(); }
     void exitFromThreadedEventLoop() { runHelperTest(); }
-#  if defined(Q_OS_APPLE) && defined(QT_GUI_LIB)
-    // QGuiApplication in a thread fails inside Apple libs:
-    // *** Assertion failure in -[NSMenu _setMenuName:], NSMenu.m:777
-    // *** Terminating app due to uncaught exception 'NSInternalInconsistencyException', reason: 'API misuse: setting the main menu on a non-main thread. Main menu contents should only be modified from the main thread.'
-#  else
     void mainAppInAThread() { runHelperTest(); }
-#  endif
 #endif
     void testTrWithPercantegeAtTheEnd();
 #if QT_CONFIG(library)
