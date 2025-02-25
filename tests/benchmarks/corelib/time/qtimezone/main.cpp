@@ -95,14 +95,16 @@ void tst_QTimeZone::isTimeZoneIdAvailable()
 void tst_QTimeZone::systemTimeZone()
 {
     QBENCHMARK {
-        QTimeZone::systemTimeZone();
+        const auto r = QTimeZone::systemTimeZone();
+        Q_UNUSED(r);
     }
 }
 
 void tst_QTimeZone::utc()
 {
     QBENCHMARK {
-        QTimeZone::utc();
+        const auto r = QTimeZone::utc();
+        Q_UNUSED(r);
     }
 }
 
