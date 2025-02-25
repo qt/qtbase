@@ -67,7 +67,7 @@ instructions:
       conditions:
         - condition: property
           property: target.osVersion
-          in_values: [Android_ANY, QEMU, IOS_ANY, QNX_710, WebAssembly, INTEGRITY, VxWorks]
+          in_values: [Android_ANY, QEMU, IOS_ANY, QNX_710, QNX_800, WebAssembly, INTEGRITY, VxWorks]
         - condition: and
           conditions:
             - condition: property

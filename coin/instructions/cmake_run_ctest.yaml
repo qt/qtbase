@@ -21,8 +21,8 @@ instructions:
     variableValue: " {{.SourceDir}}/coin_qnx_qemu_runner.sh"
     enable_if:
       condition: property
-      property: target.osVersion
-      in_values: [QNX_710]
+      property: target.os
+      equals_value: QNX
   - type: AppendToEnvironmentVariable
     variableName: TESTRUNNER
     variableValue: " {{.AgentWorkingDir}}/coin_vxworks_qemu_runner.sh"

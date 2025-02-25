@@ -22,7 +22,7 @@ instructions:
               equals_property: target.os
             - condition: property
               property: target.osVersion
-              in_values: [QEMU, QNX_710, IOS_ANY]
+              in_values: [QEMU, QNX_710, QNX_800, IOS_ANY]
             - condition: property
               property: features
               contains_value: AndroidTestRun

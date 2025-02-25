@@ -18,7 +18,7 @@ instructions:
           equals_property: target.os
         - condition: property
           property: target.osVersion
-          not_in_values: [QEMU, QNX_710, VxWorks]
+          not_in_values: [QEMU, QNX_710, QNX_800, VxWorks]
   - type: Group
     instructions:
       - type: EnvironmentVariable
@@ -32,7 +32,7 @@ instructions:
           equals_property: target.os
         - condition: property
           property: target.osVersion
-          not_in_values: [QEMU, QNX_710, VxWorks]
+          not_in_values: [QEMU, QNX_710, QNX_800, VxWorks]
   - type: Group
     instructions:
       - !include "{{qt/qtbase}}/cmake_setup_running_qnxqemu_tests_env_vars.yaml"
@@ -40,8 +40,8 @@ instructions:
       condition: and
       conditions:
         - condition: property
-          property: target.osVersion
-          equals_value: QNX_710
+          property: target.os
+          equals_value: QNX
         - condition: property
           property: features
           not_contains_value: DisableTests
