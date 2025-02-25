@@ -74,6 +74,13 @@ static int exitFromThreadedEventLoop(int argc, char **argv)
 // see QTBUG-130895
 static int mainAppInAThread(int argc, char **argv)
 {
+#if defined(Q_OS_APPLE) && defined(QT_GUI_LIB)
+    // *** Assertion failure in -[NSMenu _setMenuName:], NSMenu.m:777
+    // *** Terminating app due to uncaught exception 'NSInternalInconsistencyException', reason: 'API misuse: setting the main menu on a non-main thread. Main menu contents should only be modified from the main thread.'
+    puts("QGuiApplication in a thread fails inside Apple libs");
+    return -1;
+#endif
+
     // note: when using std::thread in MinGW, we exercise different code paths
     // from QThread (winpthreads vs native)
     auto callable = [](int argc, char **argv) {
