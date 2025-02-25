@@ -434,7 +434,10 @@ endfunction()
 # _qt_internal_sbom_get_spdx_v2_3_file_type_for_file().
 # Some examples are QT_TRANSLATION, QT_TRANSLATIONS_CATALOG, QT_RESOURCE.
 #
-# FILES - a list of file paths to include in the SBOM. Only the file name is currently used.
+# FILES - a list of file paths to include in the SBOM.
+#
+# DIRECTORIES - a list of directories which will be file(GLOB_RECURSE)d to find files to include in
+# the SBOM.
 #
 # SOURCE_FILES - which source files were used to generate the custom files. All source files apply
 # to each input file.
@@ -464,6 +467,7 @@ function(_qt_internal_sbom_handle_target_custom_file_set target)
     set(multi_args
         COPYRIGHTS
         FILES
+        DIRECTORIES
         SOURCE_FILES
         SOURCE_FILES_PER_INPUT_FILE
     )
@@ -478,16 +482,19 @@ function(_qt_internal_sbom_handle_target_custom_file_set target)
     _qt_internal_validate_all_args_are_parsed(arg)
 
     # No custom files to process.
-    if(NOT arg_FILES)
+    if(NOT arg_FILES AND NOT arg_DIRECTORIES)
         return()
     endif()
 
-    # Don't forward the FILES option.
+    # Don't forward the FILES and DIRECTORIES options.
     set(multi_args_without_files "${multi_args}")
-    list(REMOVE_ITEM multi_args_without_files FILES)
+    list(REMOVE_ITEM multi_args_without_files FILES DIRECTORIES)
 
     # Handle the case where we have one source file per input file.
     if(arg_SOURCE_FILES_PER_INPUT_FILE)
+        if(NOT arg_FILES)
+            message(FATAL_ERROR "SOURCE_FILES_PER_INPUT_FILE can only be set if FILES is set.")
+        endif()
         list(LENGTH arg_FILES files_count)
         list(LENGTH arg_SOURCE_FILES_PER_INPUT_FILE source_files_count)
         if(NOT files_count EQUAL source_files_count)
@@ -508,15 +515,44 @@ function(_qt_internal_sbom_handle_target_custom_file_set target)
             ${multi_args_without_files}
     )
 
-    set(file_index 0)
-    foreach(file_path IN LISTS arg_FILES)
-        set(per_file_forward_args "")
+    set(files "")
+    if(arg_FILES)
+        list(APPEND files ${arg_FILES})
+    endif()
 
-        # We don't currently use the file path for anything other than getting the file name, to
-        # embed it into the spdx document entry.
-        # What matters in the end is the location where the file is installed, which is handled
-        # by the PATH_KIND option.
-        get_filename_component(file_name "${file_path}" NAME)
+    set(directories "")
+    if(arg_DIRECTORIES)
+        list(APPEND directories ${arg_DIRECTORIES})
+    endif()
+
+    set(relative_file_paths "")
+
+    # For each file in FILES, we only add the file name as a suffix, and not the path relative to
+    # the current source dir, because that's how install(FILES) behaves. The final installed
+    # destination is ${arg_INSTALL_PATH}/${file_name}.
+    foreach(file_path IN LISTS files)
+        get_filename_component(relative_file_path "${file_path}" NAME)
+        list(APPEND relative_file_paths "${relative_file_path}")
+    endforeach()
+
+    # For each file globbed in DIRECTORIES, we add the file path relative to the current source dir
+    # + all components of the given DIRECTORY except for the last one.
+    # That's how install(DIRECTORY) behaves.
+    # So the final installed destination is
+    # ${arg_INSTALL_PATH}/${directory_without_last_component}/${path_to_file}.
+    foreach(directory IN LISTS directories)
+        file(GLOB_RECURSE files_in_directory "${directory}/*")
+        set(directory_abs_path "${CMAKE_CURRENT_SOURCE_DIR}/${directory}")
+        get_filename_component(parent_dir "${directory_abs_path}" DIRECTORY)
+        foreach(file_path IN LISTS files_in_directory)
+            file(RELATIVE_PATH relative_file_path "${parent_dir}" "${file_path}")
+            list(APPEND relative_file_paths "${relative_file_path}")
+        endforeach()
+    endforeach()
+
+    set(file_index 0)
+    foreach(relative_file_path IN LISTS relative_file_paths)
+        set(per_file_forward_args "")
 
         if(arg_SOURCE_FILES_PER_INPUT_FILE)
             list(GET arg_SOURCE_FILES_PER_INPUT_FILE "${file_index}" source_file)
@@ -531,7 +567,7 @@ function(_qt_internal_sbom_handle_target_custom_file_set target)
         # the parsing gets confused by what's the option and what's the value.
         _qt_internal_sbom_handle_multi_config_custom_file(${target}
             PATH_KIND "INSTALL_PATH"
-            PATH_SUFFIX "${file_name}"
+            PATH_SUFFIX "${relative_file_path}"
             OPTIONS
                 ${forward_args}
                 ${per_file_forward_args}
