@@ -55,13 +55,7 @@ instructions:
   - type: Group
     instructions:
       - !include "{{qt/qtbase}}/cmake_cross_compilation_module_build_instructions.yaml"
-      - type: Group
-        instructions:
-          - !include "{{qt/qtbase}}/cmake_build_and_upload_test_artifacts_target.yaml"
-        enable_if:
-          condition: property
-          property: target.osVersion
-          in_values: [Android_ANY, QEMU, IOS_ANY, QNX_710, WebAssembly, INTEGRITY, VxWorks]
+      - !include "{{qt/qtbase}}/cmake_build_and_upload_test_artifacts_target.yaml"
     enable_if:
       condition: or
       conditions:

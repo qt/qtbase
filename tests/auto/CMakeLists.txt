@@ -7,7 +7,7 @@
 set(run_dbus_tests OFF)
 if (QT_FEATURE_dbus)
     set(run_dbus_tests ON)
-    if(NOT CMAKE_CROSSCOMPILING AND TARGET Qt::DBus)
+    if((NOT CMAKE_CROSSCOMPILING OR WIN32) AND TARGET Qt::DBus)
         execute_process(COMMAND dbus-send --session --type=signal / local.AutotestCheck.Hello
             TIMEOUT 5
             RESULT_VARIABLE dbus_session_test
