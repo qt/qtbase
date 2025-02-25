@@ -232,15 +232,8 @@ void QTextOdfWriter::writeFrame(QXmlStreamWriter &writer, const QTextFrame *fram
                 if (cell.rowSpan() > 1)
                     writer.writeAttribute(tableNS, QString::fromLatin1("number-rows-spanned"), QString::number(cell.rowSpan()));
                 if (cell.format().isTableCellFormat()) {
-                    if (m_cellFormatsInTablesWithBorders.contains(cell.tableCellFormatIndex()) ) {
-                        // writing table:style-name tag in <table:table-cell> element
-                        writer.writeAttribute(tableNS, QString::fromLatin1("style-name"),
-                                              QString::fromLatin1("TB%1.%2").arg(table->formatIndex())
-                                              .arg(cell.tableCellFormatIndex()));
-                    } else {
-                        writer.writeAttribute(tableNS, QString::fromLatin1("style-name"),
-                                              QString::fromLatin1("T%1").arg(cell.tableCellFormatIndex()));
-                    }
+                    writer.writeAttribute(tableNS, "style-name"_L1,
+                                          QString::fromLatin1("T%1").arg(cell.tableCellFormatIndex()));
                 }
             }
             writeBlock(writer, block);
@@ -520,7 +513,7 @@ void QTextOdfWriter::writeFormats(QXmlStreamWriter &writer, const QSet<int> &for
     writer.writeEndElement(); // automatic-styles
 }
 
-void QTextOdfWriter::writeBlockFormat(QXmlStreamWriter &writer, QTextBlockFormat format, int formatIndex) const
+void QTextOdfWriter::writeBlockFormat(QXmlStreamWriter &writer, const QTextBlockFormat &format, int formatIndex) const
 {
     writer.writeStartElement(styleNS, QString::fromLatin1("style"));
     writer.writeAttribute(styleNS, QString::fromLatin1("name"), QString::fromLatin1("p%1").arg(formatIndex));
@@ -629,7 +622,7 @@ void QTextOdfWriter::writeBlockFormat(QXmlStreamWriter &writer, QTextBlockFormat
     writer.writeEndElement(); // style
 }
 
-void QTextOdfWriter::writeCharacterFormat(QXmlStreamWriter &writer, QTextCharFormat format, int formatIndex) const
+void QTextOdfWriter::writeCharacterFormat(QXmlStreamWriter &writer, const QTextCharFormat &format, int formatIndex) const
 {
     writer.writeStartElement(styleNS, QString::fromLatin1("style"));
     writer.writeAttribute(styleNS, QString::fromLatin1("name"), QString::fromLatin1("c%1").arg(formatIndex));
@@ -799,7 +792,7 @@ void QTextOdfWriter::writeCharacterFormat(QXmlStreamWriter &writer, QTextCharFor
     writer.writeEndElement(); // style
 }
 
-void QTextOdfWriter::writeListFormat(QXmlStreamWriter &writer, QTextListFormat format, int formatIndex) const
+void QTextOdfWriter::writeListFormat(QXmlStreamWriter &writer, const QTextListFormat &format, int formatIndex) const
 {
     writer.writeStartElement(textNS, QString::fromLatin1("list-style"));
     writer.writeAttribute(styleNS, QString::fromLatin1("name"), QString::fromLatin1("L%1").arg(formatIndex));
@@ -836,7 +829,7 @@ void QTextOdfWriter::writeListFormat(QXmlStreamWriter &writer, QTextListFormat f
     writer.writeEndElement(); // list-style
 }
 
-void QTextOdfWriter::writeFrameFormat(QXmlStreamWriter &writer, QTextFrameFormat format, int formatIndex) const
+void QTextOdfWriter::writeFrameFormat(QXmlStreamWriter &writer, const QTextFrameFormat &format, int formatIndex) const
 {
     writer.writeStartElement(styleNS, QString::fromLatin1("style"));
     writer.writeAttribute(styleNS, QString::fromLatin1("name"), QString::fromLatin1("s%1").arg(formatIndex));
@@ -864,7 +857,7 @@ void QTextOdfWriter::writeFrameFormat(QXmlStreamWriter &writer, QTextFrameFormat
 // PageBreakFlags   pageBreakPolicy () const
 }
 
-void QTextOdfWriter::writeTableFormat(QXmlStreamWriter &writer, QTextTableFormat format, int formatIndex) const
+void QTextOdfWriter::writeTableFormat(QXmlStreamWriter &writer, const QTextTableFormat &format, int formatIndex) const
 {
     // start writing table style element
     writer.writeStartElement(styleNS, QString::fromLatin1("style"));
@@ -928,8 +921,8 @@ void QTextOdfWriter::writeTableFormat(QXmlStreamWriter &writer, QTextTableFormat
     }
 }
 
-void QTextOdfWriter::writeTableCellFormat(QXmlStreamWriter &writer, QTextTableCellFormat format,
-                                          int formatIndex, QList<QTextFormat> &styles) const
+void QTextOdfWriter::writeTableCellFormat(QXmlStreamWriter &writer, const QTextTableCellFormat &format,
+                                          int formatIndex, const QList<QTextFormat> &styles) const
 {
     // check for all table cells here if they are in a table with border
     if (m_cellFormatsInTablesWithBorders.contains(formatIndex)) {
@@ -938,26 +931,21 @@ void QTextOdfWriter::writeTableCellFormat(QXmlStreamWriter &writer, QTextTableCe
             const auto &tmpStyle = styles.at(tableId);
             if (tmpStyle.isTableFormat()) {
                 QTextTableFormat tableFormatTmp = tmpStyle.toTableFormat();
-                tableCellStyleElement(writer, formatIndex, format, true, tableId, tableFormatTmp);
+                tableCellStyleElement(writer, formatIndex, format, true, tableFormatTmp);
             } else {
                 qDebug("QTextOdfWriter::writeTableCellFormat: ERROR writing table border format");
             }
         }
+    } else {
+        tableCellStyleElement(writer, formatIndex, format, false);
     }
-    tableCellStyleElement(writer, formatIndex, format, false);
 }
 
-void QTextOdfWriter::tableCellStyleElement(QXmlStreamWriter &writer, const int &formatIndex,
-                                           const QTextTableCellFormat &format,
-                                           bool hasBorder, int tableId,
-                                           const QTextTableFormat tableFormatTmp) const {
+void QTextOdfWriter::tableCellStyleElement(QXmlStreamWriter &writer, int formatIndex,
+                                           const QTextTableCellFormat &format, bool hasBorder,
+                                           const QTextTableFormat &tableFormatTmp) const {
     writer.writeStartElement(styleNS, QString::fromLatin1("style"));
-    if (hasBorder) {
-        writer.writeAttribute(styleNS, QString::fromLatin1("name"),
-                              QString::fromLatin1("TB%1.%2").arg(tableId).arg(formatIndex));
-    } else {
-        writer.writeAttribute(styleNS, QString::fromLatin1("name"), QString::fromLatin1("T%1").arg(formatIndex));
-    }
+    writer.writeAttribute(styleNS, QString::fromLatin1("name"), QString::fromLatin1("T%1").arg(formatIndex));
     writer.writeAttribute(styleNS, QString::fromLatin1("family"), QString::fromLatin1("table-cell"));
     writer.writeEmptyElement(styleNS, QString::fromLatin1("table-cell-properties"));
     if (hasBorder) {

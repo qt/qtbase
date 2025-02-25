@@ -615,7 +615,7 @@ void tst_QTextOdfWriter::testWriteTableCellStyleElement_data()
     QTest::newRow("cellStyleElement1")
             << ttf << ttcf
             << QString::fromLatin1(
-                       R"(<style:style style:name="TB0.0" style:family="table-cell">)"
+                       R"(<style:style style:name="T0" style:family="table-cell">)"
                        R"(<style:table-cell-properties fo:border="3.75pt outset #808080" fo:padding="18pt"/>)"
                        R"(</style:style>)");
 
@@ -627,7 +627,7 @@ void tst_QTextOdfWriter::testWriteTableCellStyleElement_data()
     QTest::newRow("cellStyleElement2")
             << ttf << ttcf
             << QString::fromLatin1(
-                       R"(<style:style style:name="TB0.0" style:family="table-cell">)"
+                       R"(<style:style style:name="T0" style:family="table-cell">)"
                        R"(<style:table-cell-properties fo:border="3.75pt outset #808080" fo:padding-top="10.5pt" fo:padding-bottom="18pt" fo:padding-left="18pt" fo:padding-right="18pt"/>)"
                        R"(</style:style>)");
 }
@@ -638,7 +638,7 @@ void tst_QTextOdfWriter::testWriteTableCellStyleElement()
     QFETCH(QTextTableCellFormat, ttcf);
     QFETCH(QString, xml);
 
-    odfWriter->tableCellStyleElement(*xmlWriter, 0, ttcf, true, 0, ttf);
+    odfWriter->tableCellStyleElement(*xmlWriter, 0, ttcf, true, ttf);
     QCOMPARE(getContentFromXml(), xml);
 }
 
