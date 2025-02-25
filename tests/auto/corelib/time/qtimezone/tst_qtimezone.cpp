@@ -1326,9 +1326,22 @@ void tst_QTimeZone::utcTest()
     QCOMPARE(tzp.hasDaylightTime(), false);
     QCOMPARE(tzp.hasTransitions(), false);
 
+    // Test UTC accessor
+    const QDateTime now = QDateTime::currentDateTime();
+    auto tz = QTimeZone::utc();
+    QCOMPARE(tz.isValid(), true);
+    QCOMPARE(tz.id(), QByteArrayLiteral("UTC"));
+    QCOMPARE(tz.territory(), QLocale::AnyTerritory);
+    QCOMPARE(tz.abbreviation(now), QStringLiteral("UTC"));
+    QCOMPARE(tz.displayName(QTimeZone::StandardTime, QTimeZone::LongName, QLocale()), QStringLiteral("UTC"));
+    QCOMPARE(tz.offsetFromUtc(now), 0);
+    QCOMPARE(tz.standardTimeOffset(now), 0);
+    QCOMPARE(tz.daylightTimeOffset(now), 0);
+    QCOMPARE(tz.hasDaylightTime(), false);
+    QCOMPARE(tz.hasTransitions(), false);
+
     // Test create from UTC Offset:
-    QDateTime now = QDateTime::currentDateTime();
-    QTimeZone tz(36000);
+    tz = QTimeZone(36000);
     QVERIFY(tz.isValid());
     QCOMPARE(tz.id(), QByteArray("UTC+10:00"));
     QCOMPARE(tz.offsetFromUtc(now), 36000);
