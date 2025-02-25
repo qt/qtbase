@@ -1016,11 +1016,11 @@
 #endif
 
 #ifndef Q_DECL_EQ_DELETE_X
-// Clang advertises the feature-testing macro but issues a warning
+// Clang < 20 advertises the feature-testing macro but issues a warning
 // if one isn't also using C++26,
 // https://github.com/llvm/llvm-project/issues/109311
 #  if defined(__cpp_deleted_function) && __cpp_deleted_function >= 202403L \
-    && (!defined(Q_CC_CLANG_ONLY) || __cplusplus > 202302L) // C++26
+    && (!defined(Q_CC_CLANG_ONLY) || Q_CC_CLANG_ONLY >= 2000 || __cplusplus > 202302L) // C++26
 #    define Q_DECL_EQ_DELETE_X(reason) = delete(reason)
 #  else
 #    define Q_DECL_EQ_DELETE_X(reason) = delete
