@@ -677,7 +677,12 @@ function(_qt_internal_sbom_add_custom_file target installed_file_relative_path)
         set(file_type "OTHER")
     endif()
 
+    # Append a short hash based on the installed relative path of the file, to avoid spdx id
+    # clashes for files with the same name installed into different dirs.
     get_filename_component(file_name "${installed_file_relative_path}" NAME)
+    string(SHA1 rel_path_hash "${installed_file_relative_path}")
+    string(SUBSTRING "${rel_path_hash}" 0 4 short_hash)
+    set(file_name "${file_name}-${short_hash}")
 
     _qt_internal_sbom_get_package_infix("${arg_PACKAGE_TYPE}" package_infix)
 
