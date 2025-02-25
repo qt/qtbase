@@ -96,6 +96,7 @@ private slots:
     void exitFromEventLoop() { runHelperTest(); }
     void exitFromThread() { runHelperTest(); }
     void exitFromThreadedEventLoop() { runHelperTest(); }
+    void exitWithPlugins() { runHelperTest(); }
     void mainAppInAThread() { runHelperTest(); }
 #endif
     void thread();

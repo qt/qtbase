@@ -5,6 +5,10 @@
 #include <qthread.h>
 #include <qtimer.h>
 
+#if QT_CONFIG(library)
+#  include <qpluginloader.h>
+#endif
+
 #include <string_view>
 #include <thread>
 
@@ -89,6 +93,45 @@ static int exitFromThreadedEventLoop(int argc, char **argv)
     Q_UNREACHABLE_RETURN(EXIT_FAILURE);
 }
 
+// see QTBUG-134080
+static int exitWithPlugins(int argc, char **argv)
+{
+#if defined(Q_OS_QNX)
+    // The plugin loading fails: "The shared library was not found".
+    puts("Plugin doesn't get deployed.");
+    return -1;
+#elif defined(Q_OS_WIN)
+    puts("Not possible on Windows: DLL destruction order does not follow C++ Standard.");
+    return -1;
+#elif QT_CONFIG(library)
+    TestApplication app(argc, argv);
+
+    QString pluginName = app.applicationDirPath() + "/apphelper_"
+#if defined(QT_WIDGETS_LIB)
+            "widgets"
+#elif defined(QT_GUI_LIB)
+            "gui"
+#else
+            "core"
+#endif
+            "_plugin";
+
+    QPluginLoader loader(pluginName);
+    QObject *instance = loader.instance();
+    if (!instance) {
+        fprintf(stderr, "Did not get an instance from the plugin: %s\n",
+                qPrintable(loader.errorString()));
+    }
+
+    [[maybe_unused]] auto w = maybeShowSomething();
+    QTimer::singleShot(200, &app, &TestApplication::quit);
+    return app.exec();
+#else
+    puts("Qt built without plugin support")
+    return -1;
+#endif
+}
+
 // see QTBUG-130895
 static int mainAppInAThread(int argc, char **argv)
 {
@@ -168,6 +211,8 @@ int main(int argc, char **argv)
         return exitFromThread(argc - 1, argv + 1);
     if (subtest == "exitFromThreadedEventLoop")
         return exitFromThreadedEventLoop(argc - 1, argv + 1);
+    if (subtest == "exitWithPlugins")
+        return exitWithPlugins(argc - 1, argv + 1);
     if (subtest == "mainAppInAThread")
         return mainAppInAThread(argc - 1, argv + 1);
 
