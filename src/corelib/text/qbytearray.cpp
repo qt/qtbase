@@ -2551,7 +2551,7 @@ QByteArray &QByteArray::replace(QByteArrayView before, QByteArrayView after)
             } else {
                 to = index;
             }
-            if (asize) {
+            if (asize > 0) {
                 memcpy(d + to, a, asize);
                 to += asize;
             }
