@@ -75,6 +75,7 @@ HEADERS += \
     $$PWD/src/hb-buffer-deserialize-text-glyphs.hh \
     $$PWD/src/hb-buffer-deserialize-text-unicode.hh \
     $$PWD/src/hb-debug.hh \
+    $$PWD/src/hb-decycler.hh \
     $$PWD/src/hb-face.hh \
     $$PWD/src/hb-mutex.hh \
     $$PWD/src/hb-ot-cmap-table.hh \
