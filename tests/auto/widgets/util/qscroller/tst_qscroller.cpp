@@ -488,7 +488,7 @@ void tst_QScroller::overshoot()
     QScrollerPrivate* priv = s1->d_func();
     QVERIFY(priv->xSegments.size() == 1);
     auto& segment = priv->xSegments.head();
-    QVERIFY(segment.startPos + segment.deltaPos < segment.stopPos);
+    QCOMPARE_LT(segment.startPos + segment.deltaPos, segment.stopPos);
 
     QTRY_COMPARE(s1->state(), QScroller::Inactive);
 
