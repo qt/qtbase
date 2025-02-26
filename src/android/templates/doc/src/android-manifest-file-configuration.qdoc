@@ -3,7 +3,7 @@
 
 /*!
 \page android-manifest-file-configuration.html
-\title Qt Android Manifest File Configuration
+\title \Q4A Manifest File Configuration
 \ingroup androidplatform
 \brief Provides details on the AndroidManifest.xml configuration.
 \previouspage android-openssl-support.html
@@ -14,7 +14,7 @@ app configuration for different settings and features that the app uses, as well
 as details on the app itself, such as, package name, app name, version, etc.
 Permissions and hardware features can also be set from the manifest.
 
-Qt for Android maintains a version of \c {AndroidManifest.xml} with default
+\Q4A maintains a version of \c {AndroidManifest.xml} with default
 configuration that include features, permissions and other configuration
 used by the build system which are needed for building and running Qt apps
 on Android.
