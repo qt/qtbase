@@ -19,7 +19,8 @@
         \list
             \li \l {Event Classes}
         \endlist
-    \li \l{Implicit Sharing}
+    \li \l {Classes for string data}
+    \li \l {Implicit Sharing}
         \list
             \li \l {Implicitly Shared Classes}
         \endlist
