@@ -5810,8 +5810,8 @@ bool QGles2Texture::create()
                         rhiD->glTexImage1D(target, level, GLint(glintformat), mipSize.width(), 0,
                                            glformat, gltype, nullptr);
                 }
-            } else if (is3D || isArray) {
-                const int layerCount = is3D ? qMax(1, m_depth) : qMax(0, m_arraySize);
+            } else if (isArray) {
+                const int layerCount = qMax(0, m_arraySize);
                 if (hasMipMaps) {
                     for (int level = 0; level != mipLevelCount; ++level) {
                         const QSize mipSize = rhiD->q->sizeForMipLevel(level, size);
@@ -5820,6 +5820,19 @@ bool QGles2Texture::create()
                     }
                 } else {
                     rhiD->f->glTexImage3D(target, 0, GLint(glintformat), size.width(), size.height(), layerCount,
+                                          0, glformat, gltype, nullptr);
+                }
+            } else if (is3D) {
+                if (hasMipMaps) {
+                    const int depth = qMax(1, m_depth);
+                    for (int level = 0; level != mipLevelCount; ++level) {
+                        const QSize mipSize = rhiD->q->sizeForMipLevel(level, size);
+                        const int mipDepth = rhiD->q->sizeForMipLevel(level, QSize(depth, depth)).width();
+                        rhiD->f->glTexImage3D(target, level, GLint(glintformat), mipSize.width(), mipSize.height(), mipDepth,
+                                              0, glformat, gltype, nullptr);
+                    }
+                } else {
+                    rhiD->f->glTexImage3D(target, 0, GLint(glintformat), size.width(), size.height(), qMax(1, m_depth),
                                           0, glformat, gltype, nullptr);
                 }
             } else if (hasMipMaps || isCube) {
