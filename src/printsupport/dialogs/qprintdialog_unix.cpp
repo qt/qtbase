@@ -785,10 +785,8 @@ void QPrintDialogPrivate::setupPrinter()
 #if QT_CONFIG(cups)
     if (options.pagesRadioButton->isChecked()) {
         const QPageRanges ranges = QPageRanges::fromString(options.pagesLineEdit->text());
-        if (!ranges.isEmpty()) {
-            p->setPrintRange(QPrinter::PageRange);
-            p->setPageRanges(ranges);
-        }
+        p->setPrintRange(QPrinter::AllPages);
+        p->setPageRanges(QPageRanges());
 
         // server-side page filtering
         QCUPSSupport::setPageRange(p, ranges.toString());
