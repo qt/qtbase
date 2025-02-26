@@ -1066,7 +1066,7 @@
 
     The path specified by this variable can contain custom Java classes under
     \c src directory. By default, the \l androiddeployqt tool copies the
-    application template from the Qt for Android installation path into your
+    application template from the \Q4A installation path into your
     project's build directory, then it copies the contents of the path specified
     by this variable on top of that, overwriting any existing files. For
     instance, you can make a custom \c {AndroidManifest.xml} for your application,

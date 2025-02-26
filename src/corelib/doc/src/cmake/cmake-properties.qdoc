@@ -190,7 +190,7 @@ template contains:
 
 The path specified by this variable can contain custom Java classes under
 \c src directory. By default, the \l androiddeployqt tool copies the
-application template from the Qt for Android installation path into your
+application template from the \Q4A installation path into your
 project's build directory, then it copies the contents of the path specified
 by this variable on top of that, overwriting any existing files. For
 instance, you can make a custom \c {AndroidManifest.xml} for your application,
@@ -317,7 +317,7 @@ illegal characters or is appended to illegal words.
         long, strictfp, volatile, const, float, native, super, while.
 \endlist
 
-The default package name for Qt for Android apps is \c org.qtproject.example.<target_name>.
+The default package name for \Q4A apps is \c org.qtproject.example.<target_name>.
 
 \note Setting the package name manually in \c build.gradle (via
 \c namespace property) takes precedence over \c AndroidManifest.xml
