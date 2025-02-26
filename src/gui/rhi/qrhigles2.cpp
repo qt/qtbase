@@ -4348,7 +4348,10 @@ void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
         {
             QGles2Texture *texD = QRHI_RES(QGles2Texture, b->u.simage.tex);
             Q_ASSERT(texD->m_flags.testFlag(QRhiTexture::UsedWithLoadStore));
-            const bool layered = texD->m_flags.testFlag(QRhiTexture::CubeMap);
+            // arrays, cubemaps, and 3D textures expose the whole texture with all layers/slices
+            const bool layered = texD->m_flags.testFlag(QRhiTexture::CubeMap)
+                                 || texD->m_flags.testFlag(QRhiTexture::ThreeDimensional)
+                                 || texD->m_flags.testFlag(QRhiTexture::TextureArray);
             GLenum access = GL_READ_WRITE;
             if (b->type == QRhiShaderResourceBinding::ImageLoad)
                 access = GL_READ_ONLY;
