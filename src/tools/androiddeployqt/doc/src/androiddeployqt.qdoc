@@ -113,7 +113,7 @@
             Android NDK, and Android toolchains.
         \li \c{ANDROID_NDK_ROOT}: specifies the path to the Android NDK used to
             build the application. It is not recommended to hard-code this path,
-            since different Qt for Android versions can depend on different
+            since different \Q4A versions can depend on different
             Android NDK versions.
     \endlist
 
