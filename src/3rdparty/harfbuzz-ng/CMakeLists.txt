@@ -23,6 +23,7 @@ qt_internal_add_3rdparty_library(BundledHarfbuzz
         src/hb-cache.hh
         src/hb-common.h
         src/hb-debug.hh
+        src/hb-decycler.hh
         src/hb-deprecated.h
         src/hb-draw.cc src/hb-draw.h src/hb-draw.hh
         src/hb-face.cc src/hb-face.h src/hb-face.hh
