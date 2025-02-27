@@ -37,13 +37,16 @@
 
 #if QT_CONFIG(qqnx_pps)
 #  include "qqnxbuttoneventnotifier.h"
-#  include "qqnxclipboard.h"
 #endif
 
 #if QT_CONFIG(qqnx_imf)
 #  include "qqnxinputcontext_imf.h"
 #else
 #  include "qqnxinputcontext_noimf.h"
+#endif
+
+#if !defined(QT_NO_CLIPBOARD)
+#  include "qqnxclipboard.h"
 #endif
 
 #include <qpa/qplatforminputcontextfactory_p.h>
@@ -464,11 +467,9 @@ QPlatformNativeInterface *QQnxIntegration::nativeInterface() const
 QPlatformClipboard *QQnxIntegration::clipboard() const
 {
     qCDebug(lcQpaQnx) << Q_FUNC_INFO;
-
-#if QT_CONFIG(qqnx_pps)
     if (!m_clipboard)
         m_clipboard = new QQnxClipboard;
-#endif
+
     return m_clipboard;
 }
 #endif

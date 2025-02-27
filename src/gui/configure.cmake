@@ -1334,7 +1334,7 @@ qt_feature("clipboard" PUBLIC
     SECTION "Kernel"
     LABEL "QClipboard"
     PURPOSE "Provides cut and paste operations."
-    CONDITION NOT INTEGRITY AND NOT QNX AND NOT rtems
+    CONDITION NOT INTEGRITY AND NOT rtems
 )
 qt_feature_definition("clipboard" "QT_NO_CLIPBOARD" NEGATE VALUE "1")
 qt_feature("wheelevent" PUBLIC
