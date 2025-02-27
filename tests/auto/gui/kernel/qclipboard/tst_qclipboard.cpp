@@ -74,6 +74,21 @@ void tst_QClipboard::init()
     const QString testdataDir = QFileInfo(QFINDTESTDATA("copier")).absolutePath();
     QVERIFY2(QDir::setCurrent(testdataDir), qPrintable("Could not chdir to " + testdataDir));
 #endif
+#if defined(Q_OS_QNX)
+    QDir clipboardDir("clipboard");
+
+    if (!clipboardDir.exists()) {
+        QVERIFY2(clipboardDir.mkpath("."), "Failed to create clipboard directory");
+    }
+
+    QFile file("clipboard/.qnxclipboard");
+    if (!file.exists()) {
+        QVERIFY2(file.open(QIODevice::WriteOnly), "Failed to create .qnxclipboard");
+        file.close();
+    }
+
+    qputenv("QQNX_CLIPBOARD", QFile::encodeName(clipboardDir.absolutePath()));
+#endif
 }
 
 Q_DECLARE_METATYPE(QClipboard::Mode)
@@ -218,6 +233,9 @@ static bool runHelper(const QString &program, const QStringList &arguments, QByt
 #if QT_CONFIG(process)
     QProcess process;
     process.setProcessChannelMode(QProcess::ForwardedChannels);
+    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+    env.insert(QStringLiteral("QT_QPA_PLATFORM"), QGuiApplication::platformName());
+    process.setProcessEnvironment(env);
     process.start(program, arguments);
     if (!process.waitForStarted()) {
         *errorMessage = "Unable to start '" + program.toLocal8Bit() + " ': "
@@ -267,6 +285,8 @@ void tst_QClipboard::copy_exit_paste()
     // ### It's still possible to test copy/paste - just keep the apps running
     if (!PlatformClipboard::isAvailable())
         QSKIP("Native clipboard not working in this setup");
+    if (QGuiApplication::platformName().startsWith(QLatin1String("offscreen"), Qt::CaseInsensitive))
+        QSKIP("Offscreen platform does not support cross-process clipboard");
     const QString stringArgument(QStringLiteral("Test string."));
     QByteArray errorMessage;
     QVERIFY2(runHelper(QStringLiteral("copier/copier"), QStringList(stringArgument), &errorMessage),
@@ -287,6 +307,8 @@ void tst_QClipboard::copyImage()
 #if QT_CONFIG(process)
     if (!PlatformClipboard::isAvailable())
         QSKIP("Native clipboard not working in this setup");
+    if (QGuiApplication::platformName().startsWith(QLatin1String("offscreen"), Qt::CaseInsensitive))
+        QSKIP("Offscreen platform does not support cross-process clipboard");
     QImage image(100, 100, QImage::Format_ARGB32);
     image.fill(QColor(Qt::transparent));
     image.setPixel(QPoint(1, 0), QColor(Qt::blue).rgba());

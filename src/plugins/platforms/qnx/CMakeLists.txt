@@ -66,11 +66,9 @@ qt_internal_extend_target(QQnxIntegrationPlugin CONDITION QT_FEATURE_qqnx_pps
         PPS::PPS
 )
 
-qt_internal_extend_target(QQnxIntegrationPlugin CONDITION QT_FEATURE_clipboard AND QT_FEATURE_qqnx_pps
+qt_internal_extend_target(QQnxIntegrationPlugin CONDITION QT_FEATURE_clipboard
     SOURCES
         qqnxclipboard.cpp qqnxclipboard.h
-    LIBRARIES
-        clipboard
 )
 
 qt_internal_extend_target(QQnxIntegrationPlugin CONDITION QT_FEATURE_qqnx_imf AND QT_FEATURE_qqnx_pps
