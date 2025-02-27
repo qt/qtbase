@@ -6,6 +6,8 @@ package org.qtproject.qt.android;
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
+import android.os.Build;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 
 import java.io.FileInputStream;
@@ -16,6 +18,7 @@ import java.util.zip.ZipFile;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Comparator;
 
@@ -138,7 +141,20 @@ class QtApkFileEngine {
         try {
             Context context = QtNative.getContext();
             PackageManager pm = context.getPackageManager();
-            m_appApkPath = pm.getApplicationInfo(context.getPackageName(), 0).sourceDir;
+            ApplicationInfo applicationInfo = pm.getApplicationInfo(context.getPackageName(), 0);
+            if (applicationInfo.splitSourceDirs != null) {
+                m_appApkPath = Arrays.stream(applicationInfo.splitSourceDirs)
+                    .filter(file -> Arrays.stream(Build.SUPPORTED_ABIS)
+                        .anyMatch(abi -> file.endsWith(abi.replace('-', '_') + ".apk")))
+                    .findFirst()
+                    .orElse(null);
+
+                if (m_appApkPath == null)
+                    Log.d(QtTAG, "No ABI specific split APK found, defaulting to the main APK.");
+            }
+
+            if (m_appApkPath == null)
+                m_appApkPath = applicationInfo.sourceDir;
         } catch (PackageManager.NameNotFoundException e) {
             Log.e(QtTAG, "Failed to get the app APK path with " + e);
             return null;
