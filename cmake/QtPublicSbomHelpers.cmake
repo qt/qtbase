@@ -996,6 +996,14 @@ function(_qt_internal_sbom_add_target target)
         if(qa_qt_usage)
             string(APPEND package_comment "    Qt usage: ${qa_qt_usage}\n")
         endif()
+
+        if(qa_license)
+            string(APPEND package_comment "    License: ${qa_license}\n")
+        endif()
+
+        if(qa_license_file)
+            string(APPEND package_comment "    License file: ${qa_license_file}\n")
+        endif()
     endif()
 
     if(package_comment)

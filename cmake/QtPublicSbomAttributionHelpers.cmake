@@ -415,11 +415,10 @@ function(_qt_internal_sbom_read_qt_attribution out_prefix)
     endif()
 
     if(arg_GET_DEFAULT_KEYS)
-        # Some calls are currently commented out, to save on json parsing time because we don't have
-        # a usage for them yet.
-        # _qt_internal_sbom_get_attribution_key(License license)
         _qt_internal_sbom_get_attribution_key(Id attribution_id "${out_prefix}")
         _qt_internal_sbom_get_attribution_key(LicenseId license_id "${out_prefix}")
+        _qt_internal_sbom_get_attribution_key(License license "${out_prefix}")
+        _qt_internal_sbom_get_attribution_key(LicenseFile license_file "${out_prefix}")
         _qt_internal_sbom_get_attribution_key(Version version "${out_prefix}")
         _qt_internal_sbom_get_attribution_key(Homepage homepage "${out_prefix}")
         _qt_internal_sbom_get_attribution_key(Name attribution_name "${out_prefix}")
