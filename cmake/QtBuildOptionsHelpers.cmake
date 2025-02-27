@@ -344,17 +344,9 @@ endfunction()
 macro(qt_internal_setup_sbom)
     qt_internal_compute_sbom_default(_qt_generate_sbom_default)
 
-    option(QT_GENERATE_SBOM "Generate SBOM documents in SPDX v2.3 tag:value format."
-        "${_qt_generate_sbom_default}")
-
-    option(QT_SBOM_GENERATE_JSON
-        "Generate SBOM documents in SPDX v2.3 JSON format if dependencies are available" ON)
-    option(QT_SBOM_REQUIRE_GENERATE_JSON
-        "Error out if JSON SBOM generation dependencies are not found." OFF)
-
-    option(QT_SBOM_VERIFY "Verify generated SBOM documents." ON)
-    option(QT_SBOM_REQUIRE_VERIFY
-        "Error out if SBOM verification dependencies are not found." OFF)
+    _qt_internal_setup_sbom(
+        GENERATE_SBOM_DEFAULT "${_qt_generate_sbom_default}"
+    )
 endmacro()
 
 macro(qt_internal_setup_build_examples)
