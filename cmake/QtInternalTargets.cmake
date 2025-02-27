@@ -136,7 +136,7 @@ endfunction()
 #            APP - set the definition for all Qt applications
 #        TODO: Add a tests specific platform target and the definition scope for it.
 function(qt_internal_add_global_definition definition)
-    set(optional_args)
+    set(optional_args "")
     set(single_value_args VALUE)
     set(multi_value_args SCOPE)
     cmake_parse_arguments(arg
