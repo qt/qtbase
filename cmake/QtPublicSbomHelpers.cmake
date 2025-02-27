@@ -346,6 +346,46 @@ function(_qt_internal_sbom_setup_project_ops)
     _qt_internal_sbom_setup_project_ops_generation(${options})
 endfunction()
 
+# Sets up SBOM generation and verification options.
+# By default SBOM generation is disabled.
+# By default JSON generation and SBOM verification are enabled by default, if the dependencies
+# are present, otherwise they will be silently skipped. Unless the user explicitly requests to
+# fail the build if the dependencies are not found.
+#
+# The QT_GENERATE_SBOM_DEFAULT option can be set by a project to change the default value.
+function(_qt_internal_setup_sbom)
+    set(opt_args "")
+    set(single_args
+        GENERATE_SBOM_DEFAULT
+    )
+    set(multi_args "")
+
+    cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    set(default_value "OFF")
+    if(NOT "${arg_GENERATE_SBOM_DEFAULT}" STREQUAL "")
+        set(default_value "${arg_GENERATE_SBOM_DEFAULT}")
+    endif()
+
+    option(QT_GENERATE_SBOM "Generate SBOM documents in SPDX v2.3 tag:value format."
+        "${default_value}")
+
+    string(CONCAT help_string
+        "Generate SBOM documents in SPDX v2.3 JSON format if required python dependency "
+        "spdx-tools is available"
+    )
+
+    option(QT_SBOM_GENERATE_JSON
+        "${help_string}" ON)
+    option(QT_SBOM_REQUIRE_GENERATE_JSON
+        "Error out if JSON SBOM generation depdendency is not found." OFF)
+
+    option(QT_SBOM_VERIFY "Verify generated SBOM documents using python spdx-tools package." ON)
+    option(QT_SBOM_REQUIRE_VERIFY
+        "Error out if SBOM verification dependencies are not found." OFF)
+endfunction()
+
 # Ends repo sbom project generation.
 # Should be called after all relevant targets are added to the sbom.
 # Handles registering sbom info for recorded system libraries and then creates the sbom build
