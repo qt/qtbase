@@ -306,9 +306,11 @@ translate 20 450
 drawText 0 0 "Zero length lines:"
 
 translate 0 20
-drawText 100 10 "Square cap"
+drawText 220 10 "Square cap"
 save
 begin_block points
+setPen 0x000000 .5 solidline squarecap
+drawLine -4 0 -4 0
 setPen 0x000000 1 solidline squarecap
 drawLine 0 0 0 0
 setPen 0x000000 2 solidline squarecap
@@ -329,6 +331,20 @@ setPen 0x000000 9 solidline squarecap
 drawLine 67 0 67 0
 setPen 0x000000 10 solidline squarecap
 drawLine 78 0 78 0
+save
+translate 95 0
+save
+rotate 30
+drawLine 0 0 0 0
+restore
+setPen 0x000000 3 solidline squarecap
+translate 30 0
+scale 3 3
+drawLine 0 0 0 0
+translate 20 0
+rotate 30
+drawLine 0 0 0 0
+restore
 end_block points
 restore
 
@@ -338,9 +354,11 @@ repeat_block points
 setRenderHint Antialiasing
 
 translate 0 20
-drawText 100 10 "Round cap"
+drawText 220 10 "Round cap"
 save
 begin_block points2
+setPen 0x000000 .5 solidline roundcap
+drawLine -4 0 -4 0
 setPen 0x000000 1 solidline roundcap
 drawLine 0 0 0 0
 setPen 0x000000 2 solidline roundcap
@@ -361,6 +379,20 @@ setPen 0x000000 9 solidline roundcap
 drawLine 67 0 67 0
 setPen 0x000000 10 solidline roundcap
 drawLine 78 0 78 0
+save
+translate 95 0
+save
+rotate 30
+drawLine 0 0 0 0
+restore
+setPen 0x000000 3 solidline roundcap
+translate 30 0
+scale 3 3
+drawLine 0 0 0 0
+translate 20 0
+rotate 30
+drawLine 0 0 0 0
+restore
 end_block points2
 restore
 
@@ -370,9 +402,11 @@ repeat_block points2
 setRenderHint Antialiasing
 
 translate 0 20
-drawText 100 10 "Flat cap"
+drawText 220 10 "Flat cap"
 save
 begin_block points3
+setPen 0x000000 .5 solidline flatcap
+drawLine -4 0 -4 0
 setPen 0x000000 1 solidline flatcap
 drawLine 0 0 0 0
 setPen 0x000000 2 solidline flatcap
@@ -393,6 +427,20 @@ setPen 0x000000 9 solidline flatcap
 drawLine 67 0 67 0
 setPen 0x000000 10 solidline flatcap
 drawLine 78 0 78 0
+save
+translate 95 0
+save
+rotate 30
+drawLine 0 0 0 0
+restore
+setPen 0x000000 3 solidline flatcap
+translate 30 0
+scale 3 3
+drawLine 0 0 0 0
+translate 20 0
+rotate 30
+drawLine 0 0 0 0
+restore
 end_block points3
 restore
 
