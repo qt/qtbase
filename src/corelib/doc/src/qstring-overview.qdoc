@@ -15,13 +15,13 @@
     The following instructions for efficient use are aimed at experienced
     developers working on performance-critical code that contains considerable
     amounts of string processing. This is, for example, a parser or a text file
-    generator. \e {Generally, \l QString can be used in everywhere and it will
+    generator. \e {Generally, \l QString can be used everywhere and it will
     perform fine.} It also provides APIs for handling several encodings (for
-    example \l{QString::fromLatin1}). For many applications and especially when
+    example \l{QString::fromLatin1()}). For many applications and especially when
     string-processing plays an insignificant role for performance, \l QString
     will be a simple and sufficient solution. Some Qt functions return a \l
     QStringView. It can be converted to a QString with
-    \l{QStringView::}{toString()} if required.
+    \l{QStringView::toString()} if required.
 
     \section2 Impactful tips
 
@@ -35,13 +35,14 @@
 
     \li All strings that only contain ASCII characters (for example log
     messages) can be encoded with Latin-1. Use the
-    \l{StringLiterals::operator""_L1}{string literal} \c{"foo"_L1}. Without
-    this suffix, strings literals in source code are assumed to be UTF-8
+    \l{Qt::Literals::StringLiterals::operator""_L1}{string literal}
+    \c{"foo"_L1}. Without
+    this suffix, string literals in source code are assumed to be UTF-8
     encoded and processing them will be slower. Generally, try to use the
     tightest encoding, which is Latin-1 in many cases.
 
     \li User-visible strings are usually translated and thus passed through the
-    \l {QObject::tr} function. This function takes a string literal (const char
+    \l {QObject::tr()} function. This function takes a string literal (const char
     array) and returns a \l QString with UTF-16 encoding as demanded by all UI
     elements. If the translation infrastructure is not used, you should use
     UTF-16 encoding throughout the whole application. Use the string literal
@@ -77,7 +78,7 @@
       \li UTF-8 is a variable-length character encoding that encodes all
           characters using one to four bytes. It is backwards compatible to
           US-ASCII and it is the common encoding for source code and similar
-          files.
+          files. Qt assumes that source code is encoded in UTF-8.
       \li UTF-16 is a variable-length encoding that uses two or four bytes per
           character. It is the common encoding for user-exposed text in Qt.
     \endlist
@@ -85,7 +86,7 @@
     more information.
 
     Other encodings are supported in the form of single functions like
-    \l{QString::fromUcs4} or of the \l{QStringConverter} classes. Furthermore,
+    \l{QString::fromUcs4()} or of the \l{QStringConverter} classes. Furthermore,
     Qt provides an encoding-agnostic container for data, \l QByteArray, that is
     well-suited to storing binary data. \l QAnyStringView keeps track of the
     encoding of the underlying string and can thus carry a view onto strings
@@ -156,9 +157,10 @@
     suffix after the closing quote. The encoding remains determined by the
     prefix, but the resulting literal is used to construct an object of some
     user-defined type. Qt thus defines these for some of its own string types:
-    \c{u"foo"_s} for \c QString, \c{"foo"_L1} for \c QLatin1StringView and
-    \c{u"foo"_ba} for \c QByteArray. These are provided by using the
-    \l{StringLiterals Namespace}. A plain C++ string literal \c{"foo"} will be
+    \c{u"foo"_s} for \l QString, \c{"foo"_L1} for \l QLatin1StringView and
+    \c{u"foo"_ba} for \l QByteArray. These are provided by using the
+    \l{Qt::Literals::StringLiterals}{StringLiterals Namespace}. A plain C++
+    string literal \c{"foo"} will be
     understood as UTF-8 and conversion to QString and thus UTF-16 will be
     expensive. When you have string literals in plain ASCII, use \c{"foo"_L1}
     to interpret it as Latin-1, gaining the various benefits outlined above.
@@ -203,10 +205,10 @@
         \li \l QStringView
     \row
         \li Binary/None
-        \li ""
-        \li ""_ba
         \li -
+        \li ""_ba
         \li std::byte
+        \li -
         \li \l QByteArray
         \li \l QByteArrayView
     \row
@@ -236,8 +238,8 @@
     \list
 
     \li \l QStringLiteral is a macro which is identical to \c{u"foo"_s} and
-    available without the \l{StringLiterals Namespace}. Preferably you should
-    use the modern string literal.
+    available without the \l{Qt::Literals::StringLiterals}{StringLiterals
+    Namespace}. Preferably you should use the modern string literal.
 
     \li \l QLatin1String is a synonym for \l QLatin1StringView and exists for
     backwards compatibility. It is not an owning string and might be removed in
@@ -271,8 +273,8 @@
         \li \l QRegularExpression, \l QRegularExpressionMatch and
             \l QRegularExpressionMatchIterator to work with pattern matching
             and regular expressions.
-        \li \l QLocale to convert numbers and data to string with respect to
-            the user's language and country.
+        \li \l QLocale to convert numbers and data to and from strings in a
+            manner appropriate to the user's language and culture.
         \li \l QCollator and \l QCollatorSortKey to compare strings with
             respect to the users language, script or territory.
         \li \l QTextBoundaryFinder to break up text ready for typesetting
@@ -331,7 +333,7 @@
     UTF-16 encoded. Therefore it is most effective to use \l
     {QString}{QStrings}, \l {QStringView}{QStringViews} and \l
     {QStringLiteral}{QStringLiterals} throughout the life-time of a
-    user-visible string. The \l QObject::tr function provides the correct
+    user-visible string. The \l QObject::tr() function provides the correct
     encoding and type. \l QByteArray should be used if encoding does not play a
     role, for example to store binary data, or if the encoding is unknown.
 
@@ -349,7 +351,7 @@
 
     Function arguments should be string views of a suitable encoding in most
     cases. \l QAnyStringView can be used as a parameter to support more than
-    one encoding and \l QAnyStringView::visit can be used internally to fork
+    one encoding and \l QAnyStringView::visit() can be used internally to fork
     off into per-encoding functions. If the function is limited to a single
     encoding, \l QLatin1StringView, \l QUtf8StringView, \l QStringView or \l
     QByteArrayView should be used.
@@ -376,7 +378,7 @@
 
     Parts of existing strings can be returned efficiently with a string view
     of the appropriate encoding, for an example see \l
-    QRegularExpressionMatch::capturedView which returns a \l QStringView.
+    QRegularExpressionMatch::capturedView() which returns a \l QStringView.
 
     \section2 String class for using API
 
@@ -386,7 +388,7 @@
     types. If you are limited in your choice, Qt will conduct various
     conversions: Owning strings are implicitly converted to non-owning
     strings, non-owning strings can create their owning counter parts,
-    see for example \l QStringView::toString. Encoding conversions are
+    see for example \l QStringView::toString(). Encoding conversions are
     conducted implicitly in many cases but this should be avoided if possible.
     To avoid accidental implicit conversion from UTF-8 you can activate the
     macro \l QT_NO_CAST_FROM_ASCII.
