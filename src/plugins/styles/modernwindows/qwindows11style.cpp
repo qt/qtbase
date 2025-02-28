@@ -2252,12 +2252,9 @@ void QWindows11Style::polish(QWidget* widget)
             QLineEdit *le = cb->lineEdit();
             le->setFrame(false);
         }
-    } else if (qobject_cast<QGraphicsView *>(widget) && !qobject_cast<QTextEdit *>(widget)) {
-        QPalette pal = widget->palette();
-        pal.setColor(QPalette::Base, pal.window().color());
-        widget->setPalette(pal);
     } else if (const auto *scrollarea = qobject_cast<QAbstractScrollArea *>(widget);
                scrollarea
+               && !qobject_cast<QGraphicsView *>(widget)
 #if QT_CONFIG(mdiarea)
                && !qobject_cast<QMdiArea *>(widget)
 #endif
