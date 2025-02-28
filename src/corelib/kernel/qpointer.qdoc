@@ -125,8 +125,7 @@
     Conversion assignment operator. Makes this guarded pointer guard the
     same object guarded by \a other.
 
-    \note This operator participates  in overload resolution only if \c{X*}
-    is convertible to \c{T*}.
+    \constraints \c{X*} is convertible to \c{T*}.
 */
 
 /*!
@@ -136,8 +135,7 @@
     Conversion move-assignment operator. Makes this guarded pointer guard the
     same object guarded by \a other and resets \a other to nullptr.
 
-    \note This operator participates in overload resolution only if \c{X*}
-    is convertible to \c{T*}.
+    \constraints \c{X*} is convertible to \c{T*}.
 */
 
 /*!

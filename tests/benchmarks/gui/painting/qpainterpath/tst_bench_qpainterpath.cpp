@@ -22,7 +22,8 @@ private slots:
     void percentAtLength();
     void pointAtPercent_data() { general_data(); }
     void pointAtPercent();
-
+    void trimmed_data() { general_data(); }
+    void trimmed();
 };
 
 tst_QPainterPath::tst_QPainterPath()
@@ -108,6 +109,21 @@ void tst_QPainterPath::pointAtPercent()
 
     QBENCHMARK {
         path.pointAtPercent(t);
+    }
+}
+
+void tst_QPainterPath::trimmed()
+{
+    QFETCH_GLOBAL(QPainterPath, path);
+    QFETCH(bool, caching);
+    path.setCachingEnabled(caching);
+
+    const qreal fromF = 0.47;
+    const qreal toF = 0.77;
+
+    QBENCHMARK {
+        (void)path.trimmed(fromF, toF);
+        (void)path.trimmed(fromF, toF, 0.4);
     }
 }
 

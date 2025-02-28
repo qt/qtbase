@@ -2843,7 +2843,7 @@ bool QPainterPath::isCachingEnabled() const
     Disabling caching will release any allocated cache memory.
 
     \since 6.10
-    \sa isCachingEnabled(), length(), percentAtLength(), pointAtPercent()
+    \sa isCachingEnabled(), length(), percentAtLength(), pointAtPercent(), trimmed()
 */
 void QPainterPath::setCachingEnabled(bool enabled)
 {
@@ -3187,6 +3187,173 @@ qreal QPainterPath::slopeAtPercent(qreal t) const
 
     return slope;
 }
+
+/*!
+  \since 6.10
+
+  Returns the section of the path between the length fractions \a f1 and \a f2. The effective range
+  of the fractions are from 0, denoting the start point of the path, to 1, denoting its end point.
+  The fractions are linear with respect to path length, in contrast to the percentage \e t values.
+
+  The value of \a offset will be added to the fraction values. If that causes an over- or underflow
+  of the [0, 1] range, the values will be wrapped around, as will the resulting path. The effective
+  range of the offset is between -1 and 1.
+
+  Repeated calls to this function can be optimized by {enabling caching}{setCachingEnabled()}.
+
+  \sa length(), percentAtLength(), setCachingEnabled()
+*/
+
+QPainterPath QPainterPath::trimmed(qreal f1, qreal f2, qreal offset) const
+{
+    if (isEmpty())
+        return *this;
+
+    f1 = qBound(qreal(0), f1, qreal(1));
+    f2 = qBound(qreal(0), f2, qreal(1));
+    if (f1 > f2)
+        qSwap(f1, f2);
+    if (qFuzzyCompare(f2 - f1, qreal(1)))  // Shortcut for no trimming
+        return *this;
+
+    QPainterPath res;
+    if (qFuzzyCompare(f1, f2))
+        return res;
+    res.setFillRule(fillRule());
+
+    // We need length caching enabled for the calulations.
+    QPainterPath copy(*this); // At most meta data will be copied; path element list unchanged
+    copy.setCachingEnabled(true); // noop if caching already enabled on *this
+    QPainterPathPrivate *d = copy.d_func();
+
+    if (offset) {
+        qreal dummy;
+        offset = modf(offset, &dummy); // Use only the fractional part of offset, range <-1, 1>
+
+        qreal of1 = f1 + offset;
+        qreal of2 = f2 + offset;
+        if (offset < 0) {
+            f1 = of1 < 0 ? of1 + 1 : of1;
+            f2 = of2 + 1 > 1 ? of2 : of2 + 1;
+        } else if (offset > 0) {
+            f1 = of1 - 1 < 0 ? of1 : of1 - 1;
+            f2 = of2 > 1 ? of2 - 1 : of2;
+        }
+    }
+    const bool wrapping = (f1 > f2);
+    //qDebug() << "ADJ:" << f1 << f2 << wrapping << "(" << of1 << of2 << ")";
+
+    if (d->dirtyRunLengths)
+        d->computeRunLengths();
+    const qreal totalLength = d->m_runLengths.last();
+    if (qFuzzyIsNull(totalLength))
+        return res;
+
+    const qreal l1 = f1 * totalLength;
+    const qreal l2 = f2 * totalLength;
+    const int e1 = d->elementAtLength(l1);
+    const bool mustTrimE1 = !qFuzzyCompare(d->m_runLengths.at(e1), l1);
+    const int e2 = d->elementAtLength(l2);
+    const bool mustTrimE2 = !qFuzzyCompare(d->m_runLengths.at(e2), l2);
+
+    //qDebug() << "Trim [" << f1 << f2 << "] e1:" << e1 << mustTrimE1 << "e2:" << e2 << mustTrimE2 << "wrapping:" << wrapping;
+    if (e1 == e2 && !wrapping && mustTrimE1 && mustTrimE2) {
+        // Entire result is one element, clipped in both ends
+        d->appendSliceOfElement(&res, e1, l1, l2);
+    } else {
+        // Add partial start element (or just its end point, being the start of the next)
+        if (mustTrimE1)
+            d->appendEndOfElement(&res, e1, l1);
+        else
+            res.moveTo(d->endPointOfElement(e1));
+
+        // Add whole elements between start and end
+        int firstWholeElement = e1 + 1;
+        int lastWholeElement = (mustTrimE2 ? e2 - 1 : e2);
+        if (!wrapping) {
+            d->appendElementRange(&res, firstWholeElement, lastWholeElement);
+        } else {
+            int lastIndex = d->elements.size() - 1;
+            d->appendElementRange(&res, firstWholeElement, lastIndex);
+            bool isClosed = (QPointF(d->elements.at(0)) == QPointF(d->elements.at(lastIndex)));
+            // If closed we can skip the initial moveto
+            d->appendElementRange(&res, (isClosed ? 1 : 0), lastWholeElement);
+        }
+
+        // Partial end element
+        if (mustTrimE2)
+            d->appendStartOfElement(&res, e2, l2);
+    }
+
+    return res;
+}
+
+void QPainterPathPrivate::appendTrimmedElement(QPainterPath *to, int elemIdx, int trimFlags,
+                                               qreal startLen, qreal endLen)
+{
+    Q_ASSERT(cacheEnabled);
+    Q_ASSERT(!dirtyRunLengths);
+
+    if (elemIdx <= 0 || elemIdx >= elements.size())
+        return;
+
+    const qreal prevLen = m_runLengths.at(elemIdx - 1);
+    const qreal elemLen = m_runLengths.at(elemIdx) - prevLen;
+    const qreal len1 = startLen - prevLen;
+    const qreal len2 = endLen - prevLen;
+    if (qFuzzyIsNull(elemLen))
+        return;
+
+    const QPointF pp = elements.at(elemIdx - 1);
+    const QPainterPath::Element e = elements.at(elemIdx);
+    if (e.isLineTo()) {
+        QLineF l(pp, e);
+        QPointF p1 = (trimFlags & TrimStart) ? l.pointAt(len1 / elemLen) : pp;
+        QPointF p2 = (trimFlags & TrimEnd) ? l.pointAt(len2 / elemLen) : e;
+        if (to->isEmpty())
+            to->moveTo(p1);
+        to->lineTo(p2);
+    } else if (e.isCurveTo()) {
+        Q_ASSERT(elemIdx < elements.size() - 2);
+        QBezier b = QBezier::fromPoints(pp, e, elements.at(elemIdx + 1), elements.at(elemIdx + 2));
+        qreal t1 = (trimFlags & TrimStart) ? b.tAtLength(len1) : 0.0;  // or simply len1/elemLen to trim by t instead of len
+        qreal t2 = (trimFlags & TrimEnd) ? b.tAtLength(len2) : 1.0;
+        QBezier c = b.getSubRange(t1, t2);
+        if (to->isEmpty())
+            to->moveTo(c.pt1());
+        to->cubicTo(c.pt2(), c.pt3(), c.pt4());
+    } else {
+        Q_UNREACHABLE();
+    }
+}
+
+void QPainterPathPrivate::appendElementRange(QPainterPath *to, int first, int last)
+{
+    if (first < 0 || first >= elements.size() || last < 0 || last >= elements.size())
+        return;
+
+    // (Could optimize by direct copy of elements, but must ensure correct state flags)
+    for (int i = first; i <= last; i++) {
+        const QPainterPath::Element &e = elements.at(i);
+        switch (e.type) {
+        case QPainterPath::MoveToElement:
+            to->moveTo(e);
+            break;
+        case QPainterPath::LineToElement:
+            to->lineTo(e);
+            break;
+        case QPainterPath::CurveToElement:
+            Q_ASSERT(i < elements.size() - 2);
+            to->cubicTo(e, elements.at(i + 1), elements.at(i + 2));
+            i += 2;
+            break;
+        default:
+            // 'first' may point to CurveToData element, just skip it
+            break;
+        }
+    }
+}
+
 
 /*!
   \since 4.4

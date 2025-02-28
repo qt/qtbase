@@ -1163,12 +1163,11 @@
     results of type \c ContainedType initialized from the values of the
     \a container.
 
-    \note This overload only participates in overload resolution if the
-    \c Container has input iterators.
-
     \snippet code/src_corelib_thread_qfuture.cpp 32
     \dots
     \snippet code/src_corelib_thread_qfuture.cpp 34
+
+    \constraints the \c Container has input iterators.
 
     \sa QFuture, QtFuture::makeReadyVoidFuture(),
     QtFuture::makeReadyValueFuture(), QtFuture::makeExceptionalFuture()

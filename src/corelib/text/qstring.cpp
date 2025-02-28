@@ -3374,7 +3374,10 @@ QString &QString::append(QChar ch)
     resulting string, exceeds the capacity of this string, or if this string is
     shared.
 
-    \note This function overload only participates in overload resolution if
+    \note The behavior is undefined if either argument is an iterator into *this or
+    [\a first, \a last) is not a valid range.
+
+    \constraints
     \c InputIterator meets the requirements of a
     \l {https://en.cppreference.com/w/cpp/named_req/InputIterator} {LegacyInputIterator}
     and the \c{value_type} of \c InputIterator is one of the following character types:
@@ -3389,9 +3392,6 @@ QString &QString::append(QChar ch)
     \li (on platforms, such as Windows, where it is a 16-bit type) \c wchar_t
     \li \c char32_t
     \endlist
-
-    \note The behavior is undefined if either argument is an iterator into *this or
-    [\a first, \a last) is not a valid range.
 */
 
 QString &QString::assign(QAnyStringView s)

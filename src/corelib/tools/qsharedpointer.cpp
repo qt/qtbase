@@ -469,8 +469,7 @@
     Move-constructs a QSharedPointer instance, making it point at the same
     object that \a other was pointing to.
 
-    This constructor participates in overload resolution only if \c{X*}
-    implicitly converts to \c{T*}.
+    \constraints \c{X*} implicitly converts to \c{T*}.
 
     \since 5.6
 */
@@ -480,8 +479,7 @@
 
     Move-assigns \a other to this QSharedPointer instance.
 
-    This assignment operator participates in overload resolution only if \c{X*}
-    implicitly converts to \c{T*}.
+    \constraints \c{X*} implicitly converts to \c{T*}.
 
     \since 5.6
 */

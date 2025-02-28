@@ -35,7 +35,7 @@ manifestmeta.highlighted.attributes =   isHighlighted:true
 manifestmeta.android.names          =   "Qt3D/Qt 3D: Basic Shapes C++ Example" \
                                         "Qt3D/Qt 3D: Planets QML Example" \
                                         "Qt3D/Qt 3D: Simple Custom Material QML Example" \
-                                        "QtCore/Qt Android Notifier" \
+                                        "QtCore/Qt for Android Notifier" \
                                         "QtBluetooth/Bluetooth Low Energy Scanner Example" \
                                         "QtBluetooth/Bluetooth Scanner Example" \
                                         "QtBluetooth/QML Bluetooth Scanner Example" \

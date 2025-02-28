@@ -22,7 +22,7 @@
     QJniArray instance that wraps it.
 
 //! [forward-iterable-containers]
-    This function only participates in overload resolution if \c{Container}
+    \constraints \c{Container}
     is a container that stores elements of a \l{JNI types}{JNI type} or equivalent
     C++ type, and provides a forward iterator.
 
@@ -275,7 +275,7 @@
     Constructs a QJniArray by copying \a other. Both QJniArray objects will
     reference the same Java array object.
 
-    This constructor only participates in overload resolution if the element
+    \constraints the element
     type \c{Other} of \a other is convertible to the element type \c{T} of the
     QJniArray being constructed. However, no actual conversion takes place.
 */
@@ -286,7 +286,7 @@
     Constructs a QJniArray by moving from \a other. The \a other array becomes
     \l{QJniArrayBase::isValid}{invalid}.
 
-    This constructor only participates in overload resolution if the element
+    \constraints the element
     type \c{Other} of \a other is convertible to the element type \c{T} of the
     QJniArray being constructed. However, no actual conversion takes place.
 */
@@ -297,7 +297,7 @@
     Assigns \a other to this QJniArray, and returns a reference to this. Both
     QJniArray objects will reference the same Java array object.
 
-    This operator only participates in overload resolution if the element
+    \constraints the element
     type \c{Other} of \a other is convertible to the element type \c{T} of this
     QJniArray. However, no actual conversion takes place.
 */
@@ -308,7 +308,7 @@
     Moves \a other into this QJniArray, and returns a reference to this. The
     \a other array becomes \l{QJniArrayBase::isValid}{invalid}.
 
-    This operator only participates in overload resolution if the element
+    \constraints the element
     type \c{Other} of \a other is convertible to the element type \c{T} of this
     QJniArray. However, no actual conversion takes place.
 */

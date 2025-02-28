@@ -4,6 +4,9 @@
 # Includes QtSetup and friends for private CMake API.
 set(QT_INTERNAL_IS_STANDALONE_TEST TRUE)
 
+# Make find_package(Qt6 COMPONENTS Foo) pull in FooPrivate too.
+set(QT_FIND_PRIVATE_MODULES TRUE)
+
 # Checks minimum CMake version and upgrades policies.
 qt_internal_project_setup()
 

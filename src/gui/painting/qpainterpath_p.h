@@ -155,10 +155,30 @@ public:
     inline void close();
     inline void maybeMoveTo();
     inline void clear();
+    QPointF endPointOfElement(int elemIdx) const;
     void computeRunLengths();
+    int elementAtLength(qreal len);
     int elementAtT(qreal t);
     QBezier bezierAtT(const QPainterPath &path, qreal t, qreal *startingLength,
                       qreal *bezierLength) const;
+    enum TrimFlags {
+        TrimStart = 0x01,
+        TrimEnd = 0x02
+    };
+    void appendTrimmedElement(QPainterPath *to, int elemIdx, int trimFlags, qreal startLen, qreal endLen);
+    void appendStartOfElement(QPainterPath *to, int elemIdx, qreal len)
+    {
+        appendTrimmedElement(to, elemIdx, TrimEnd, 0, len);
+    }
+    void appendEndOfElement(QPainterPath *to, int elemIdx, qreal len)
+    {
+        appendTrimmedElement(to, elemIdx, TrimStart, len, 0);
+    }
+    void appendSliceOfElement(QPainterPath *to, int elemIdx, qreal fromLen, qreal toLen)
+    {
+        appendTrimmedElement(to, elemIdx, TrimStart | TrimEnd, fromLen, toLen);
+    }
+    void appendElementRange(QPainterPath *to, int first, int last);
 
     const QVectorPath &vectorPath() {
         if (!pathConverter)
@@ -285,14 +305,30 @@ inline void QPainterPathPrivate::clear()
     pathConverter.reset();
 }
 
+inline QPointF QPainterPathPrivate::endPointOfElement(int elemIdx) const
+{
+    const QPainterPath::Element &e = elements.at(elemIdx);
+    if (e.isCurveTo())
+        return elements.at(elemIdx + 2);
+    else
+        return e;
+}
+
+inline int QPainterPathPrivate::elementAtLength(qreal len)
+{
+    Q_ASSERT(cacheEnabled);
+    Q_ASSERT(!dirtyRunLengths);
+    const auto it = std::lower_bound(m_runLengths.constBegin(), m_runLengths.constEnd(), len);
+    return (it == m_runLengths.constEnd()) ? m_runLengths.size() - 1 : int(it - m_runLengths.constBegin());
+}
+
 inline int QPainterPathPrivate::elementAtT(qreal t)
 {
     Q_ASSERT(cacheEnabled);
     if (dirtyRunLengths)
         computeRunLengths();
     qreal len = t * m_runLengths.constLast();
-    const auto it = std::lower_bound(m_runLengths.constBegin(), m_runLengths.constEnd(), len);
-    return (it == m_runLengths.constEnd()) ? m_runLengths.size() - 1 : int(it - m_runLengths.constBegin());
+    return elementAtLength(len);
 }
 
 #define KAPPA qreal(0.5522847498)

@@ -66,6 +66,8 @@ public:
                              QAbstractItemModel *model,
                              const QStyleOptionViewItem &option,
                              const QModelIndex &index);
+    // for widget editors
+    bool handleEditorEvent(QObject *object, QEvent *event);
 
     virtual bool helpEvent(QHelpEvent *event,
                            QAbstractItemView *view,
@@ -81,6 +83,7 @@ Q_SIGNALS:
 
 protected:
     QAbstractItemDelegate(QObjectPrivate &, QObject *parent = nullptr);
+
 private:
     Q_DECLARE_PRIVATE(QAbstractItemDelegate)
     Q_DISABLE_COPY(QAbstractItemDelegate)

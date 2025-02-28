@@ -33,6 +33,7 @@
 
 #include <algorithm>
 #include <QtCore/q26numeric.h>
+#include <string>
 
 #ifdef Q_OS_WIN
 #  if !defined(QT_BOOTSTRAPPED) && (defined(QT_NO_CAST_FROM_ASCII) || defined(QT_NO_CAST_FROM_BYTEARRAY))
@@ -2234,12 +2235,11 @@ QByteArray& QByteArray::append(char ch)
     This function will only allocate memory if the number of elements in the
     range exceeds the capacity of this byte array or this byte array is shared.
 
-    \note This function overload only participates in overload resolution if
-    \c InputIterator meets the requirements of a
-    \l {https://en.cppreference.com/w/cpp/named_req/InputIterator} {LegacyInputIterator}.
-
     \note The behavior is undefined if either argument is an iterator into *this or
     [\a first, \a last) is not a valid range.
+
+    \constraints \c InputIterator meets the requirements of a
+    \l {https://en.cppreference.com/w/cpp/named_req/InputIterator} {LegacyInputIterator}.
 */
 
 QByteArray &QByteArray::assign(QByteArrayView v)
@@ -2539,7 +2539,7 @@ QByteArray &QByteArray::replace(QByteArrayView before, QByteArrayView after)
         return *this;
 
     // protect against before or after being part of this
-    QVarLengthArray<char> pinnedNeedle, pinnedReplacement;
+    std::string pinnedNeedle, pinnedReplacement;
     if (QtPrivate::q_points_into_range(a, d)) {
         pinnedReplacement.assign(a, a + asize);
         a = pinnedReplacement.data();

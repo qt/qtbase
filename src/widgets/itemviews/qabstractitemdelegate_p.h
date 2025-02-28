@@ -32,7 +32,7 @@ class Q_AUTOTEST_EXPORT QAbstractItemDelegatePrivate : public QObjectPrivate
 public:
     explicit QAbstractItemDelegatePrivate();
 
-    bool editorEventFilter(QObject *object, QEvent *event);
+    bool handleEditorEvent(QObject *object, QEvent *event);
     bool tryFixup(QWidget *editor);
     QString textForRole(Qt::ItemDataRole role, const QVariant &value, const QLocale &locale, int precision = 6) const;
     void _q_commitDataAndCloseEditor(QWidget *editor);

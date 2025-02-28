@@ -81,6 +81,7 @@ macro.QQV                 = "Qt QML Viewer"
 macro.QtAA                = "Qt for Android Automotive"
 macro.QUL                 = "Qt Quick Ultralite"
 macro.QtTAS               = "Qt Tools for Android Studio"
+macro.Q4A                 = "Qt for Android"
 
 # The following macros are used for various Android docs. The purpose is to keep
 # it as simple as updating these instead of updating multiple lines in scattered locations.
@@ -145,6 +146,11 @@ macro.youtube.DocBook = "<db:mediaobject>\n" \
                         "</db:imagedata>\n" \
                         "</db:imageobject>\n" \
                         "</db:mediaobject>\n"
+
+#
+# C++ constrained function templates
+#
+macro.constraints               = "\\section1 Constraints\n\nParticipates in overload resolution only if "
 
 macro.excludefromcreator = "\\meta tag broken"
 

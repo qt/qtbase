@@ -512,11 +512,11 @@ void QThreadPool::start(QRunnable *runnable, int priority)
     \a callableToRun is added to a run queue instead. The \a priority argument can
     be used to control the run queue's order of execution.
 
-    \note This function participates in overload resolution only if \c Callable
-    is a function or function object which can be called with zero arguments.
-
     \note In Qt version prior to 6.6, this function took std::function<void()>,
     and therefore couldn't handle move-only callables.
+
+    \constraints \c Callable
+    is a function or function object which can be called with zero arguments.
 */
 
 /*!
@@ -558,11 +558,11 @@ bool QThreadPool::tryStart(QRunnable *runnable)
     does nothing and returns \c false.  Otherwise, \a callableToRun is run immediately
     using one available thread and this function returns \c true.
 
-    \note This function participates in overload resolution only if \c Callable
-    is a function or function object which can be called with zero arguments.
-
     \note In Qt version prior to 6.6, this function took std::function<void()>,
     and therefore couldn't handle move-only callables.
+
+    \constraints \c Callable
+    is a function or function object which can be called with zero arguments.
 */
 
 /*! \property QThreadPool::expiryTimeout
@@ -820,11 +820,11 @@ void QThreadPool::startOnReservedThread(QRunnable *runnable)
     Releases a thread previously reserved with reserveThread() and uses it
     to run \a callableToRun.
 
-    \note This function participates in overload resolution only if \c Callable
-    is a function or function object which can be called with zero arguments.
-
     \note In Qt version prior to 6.6, this function took std::function<void()>,
     and therefore couldn't handle move-only callables.
+
+    \constraints \c Callable
+    is a function or function object which can be called with zero arguments.
 */
 
 /*!

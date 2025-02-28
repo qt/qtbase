@@ -24,23 +24,19 @@ typedef struct tagMSG MSG;
 
 QT_BEGIN_NAMESPACE
 
-
-class QCoreApplicationPrivate;
+class QAbstractEventDispatcher;
+class QAbstractNativeEventFilter;
 class QDebug;
-class QTranslator;
+class QEventLoopLocker;
+class QPermission;
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
 class QPostEventList;
 #endif
-class QAbstractEventDispatcher;
-class QAbstractNativeEventFilter;
-class QEventLoopLocker;
-
-#if QT_CONFIG(permissions) || defined(Q_QDOC)
-class QPermission;
-#endif
+class QTranslator;
 
 #define qApp QCoreApplication::instance()
 
+class QCoreApplicationPrivate;
 class Q_CORE_EXPORT QCoreApplication
 #ifndef QT_NO_QOBJECT
     : public QObject
@@ -142,7 +138,7 @@ public:
                            const typename QtPrivate::ContextTypeForFunctor<Functor>::ContextType *receiver,
                            Functor &&func)
     {
-        requestPermission(permission,
+        requestPermissionImpl(permission,
                           QtPrivate::makeCallableObject<RequestPermissionPrototype>(std::forward<Functor>(func)),
                           receiver);
     }
@@ -164,11 +160,12 @@ public:
     }
 #endif // QT_NO_CONTEXTLESS_CONNECT
 
+#if QT_CORE_REMOVED_SINCE(6, 10)
 private:
-    // ### Qt 7: rename to requestPermissionImpl to avoid ambiguity
     void requestPermission(const QPermission &permission,
         QtPrivate::QSlotObjectBase *slotObj, const QObject *context);
 public:
+#endif
 
 #endif // QT_CONFIG(permission)
 
@@ -230,6 +227,9 @@ private:
     static bool sendSpontaneousEvent(QObject *receiver, QEvent *event);
     static bool notifyInternal2(QObject *receiver, QEvent *);
     static bool forwardEvent(QObject *receiver, QEvent *event, QEvent *originatingEvent = nullptr);
+
+    void requestPermissionImpl(const QPermission &permission, QtPrivate::QSlotObjectBase *slotObj,
+                               const QObject *context);
 #endif
 
 #if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0)

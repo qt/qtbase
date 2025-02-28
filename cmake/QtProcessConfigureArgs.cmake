@@ -230,6 +230,11 @@ function(qt_feature feature)
     set_property(GLOBAL PROPERTY COMMANDLINE_FEATURE_SECTION_${feature} "${arg_SECTION}")
 endfunction()
 
+function(qt_feature_alias feature)
+    set_property(GLOBAL APPEND PROPERTY COMMANDLINE_KNOWN_FEATURES "${feature}")
+    # TODO: Alias features are not listed, but neither are features without PURPOSE.
+endfunction()
+
 function(find_package)
     message(FATAL_ERROR "find_package must not be used directly in configure.cmake. "
         "Use qt_find_package or guard the call with an if(NOT QT_CONFIGURE_RUNNING) block.")

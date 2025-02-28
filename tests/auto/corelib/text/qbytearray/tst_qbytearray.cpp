@@ -79,6 +79,7 @@ private slots:
     void replaceWithSpecifiedLength();
     void replaceWithEmptyNeedleInsertsBeforeEachChar_data();
     void replaceWithEmptyNeedleInsertsBeforeEachChar();
+    void replaceDoesNotReplaceTheTerminatingNull();
 
     void number();
     void number_double_data();
@@ -1643,6 +1644,23 @@ void tst_QByteArray::replaceWithEmptyNeedleInsertsBeforeEachChar()
             QCOMPARE(alt.isNull(), result.isNull()); // so this only makes sense if we didn't chop
         QCOMPARE(alt, result);
     }
+}
+
+void tst_QByteArray::replaceDoesNotReplaceTheTerminatingNull()
+{
+    // Try really hard to replace the implicit terminating '\0' byte:
+    constexpr char content[] = "Hello, World!";
+#define CHECK(...) do { \
+        QByteArray ba(content); \
+        QCOMPARE(std::as_const(ba).data()[ba.size()], '\0'); \
+        ba.replace(__VA_ARGS__); \
+        QCOMPARE(ba, content); \
+        QCOMPARE(std::as_const(ba).data()[ba.size()], '\0'); \
+    } while (false)
+    CHECK('\0', 'a');
+    CHECK(QByteArrayView{"!", 2}, // including \0, matches end of `ba`
+          QByteArrayView{"!!"});
+#undef CHECK
 }
 
 void tst_QByteArray::number()

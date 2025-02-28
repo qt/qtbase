@@ -547,12 +547,11 @@ QVariant::QVariant(const QVariant &p)
     value is is initialized with the arguments
     \c{std::forward<Args>(args)...}.
 
-    This overload only participates in overload resolution if \c T can be
-    constructed from \a args.
-
     This constructor is provided for STL/std::any compatibility.
 
     \overload
+
+    \constraints \c T can be constructed from \a args.
  */
 
 /*!

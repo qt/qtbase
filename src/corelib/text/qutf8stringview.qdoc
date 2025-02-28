@@ -235,7 +235,7 @@
 
     The behavior is undefined if \a len is negative or, when positive, if \a str is \nullptr.
 
-    This constructor only participates in overload resolution if \c Char is a compatible
+    \constraints \c Char is a compatible
     character type. The compatible character types are: \c char8_t, \c char, \c{signed char} and
     \c{unsigned char}.
 */
@@ -254,7 +254,7 @@
     The behavior is undefined if \a last precedes \a first, or \a first
     is \nullptr and \a last is not.
 
-    This constructor only participates in overload resolution if \c Char is a compatible
+    \constraints \c Char is a compatible
     character type. The compatible character types are: \c char8_t, \c char, \c{signed char} and
     \c{unsigned char}.
 */
@@ -269,7 +269,7 @@
 
     Passing \nullptr as \a str is safe and results in a null string view.
 
-    This constructor only participates in overload resolution if \a str
+    \constraints \a str
     is not an array and if \c Char is a compatible character type. The
     compatible character types are: \c char8_t, \c char, \c{signed char} and
     \c{unsigned char}.
@@ -286,7 +286,7 @@
     \a string must remain valid for the lifetime of this string view
     object.
 
-    This constructor only participates in overload resolution if \a string
+    \constraints \a string
     is an actual array and if \c Char is a compatible character type. The
     compatible character types are: \c char8_t, \c char, \c{signed char} and
     \c{unsigned char}.
@@ -301,14 +301,14 @@
 
     \c{std::data(str)} must remain valid for the lifetime of this string view object.
 
-    This constructor only participates in overload resolution if \c Container is a
-    container with a compatible character type as \c{value_type}. The
-    compatible character types are: \c char8_t, \c char, \c{signed char} and
-    \c{unsigned char}.
-
     The string view will be empty if and only if \c{std::size(str) == 0}. It is unspecified
     whether this constructor can result in a null string view (\c{std::data(str)} would
     have to return \nullptr for this).
+
+    \constraints \c Container is a
+    container with a compatible character type as \c{value_type}. The
+    compatible character types are: \c char8_t, \c char, \c{signed char} and
+    \c{unsigned char}.
 
     \sa isNull(), isEmpty()
 */

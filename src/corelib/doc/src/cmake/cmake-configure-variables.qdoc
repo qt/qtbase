@@ -194,13 +194,13 @@ finalization occurs automatically when using CMake 3.19 or later.
 \title QT_ANDROID_BUILD_ALL_ABIS
 \target cmake-variable-QT_ANDROID_BUILD_ALL_ABIS
 
-\summary {Enables building multi-ABI packages using the autodetected Qt for Android SDK list.}
+\summary {Enables building multi-ABI packages using the autodetected \Q4A SDK list.}
 
 \cmakevariablesince 6.3
 \preliminarycmakevariable
 \cmakevariableandroidonly
 
-Automatically detects available ABIs of Qt for Android and uses them to
+Automatically detects available ABIs of \Q4A and uses them to
 build a package. The automatic detection expects the default directory structure
 supplied by the Qt installer, with the corresponding naming of the directories.
 \include cmake-android-supported-abis.qdocinc
@@ -242,8 +242,8 @@ subprojects.
 
 Specifies a list of ABIs to be used to build the project packages.
 \include cmake-android-supported-abis.qdocinc
-Each ABI should have the corresponding Qt for Android either installed or
-user-built. To specify the path to the Qt for Android ABI, use
+Each ABI should have the corresponding \Q4A either installed or
+user-built. To specify the path to the \Q4A ABI, use
 the corresponding \c{QT_PATH_ANDROID_ABI_<ABI>} variable.
 
 \note \c{QT_ANDROID_BUILD_ALL_ABIS} has the higher priority and ignores the
@@ -259,13 +259,13 @@ QT_ANDROID_ABIS logic.
 \title QT_PATH_ANDROID_ABI_<ABI>
 \target cmake-variable-QT_PATH_ANDROID_ABI_<ABI>
 
-\summary {Set of variables to specify the path to Qt for Android for the corresponding ABI.}
+\summary {Set of variables to specify the path to \Q4A for the corresponding ABI.}
 
 \cmakevariablesince 6.3
 \preliminarycmakevariable
 \cmakevariableandroidonly
 
-Each variable can be used to specify the path to Qt for Android for the corresponding ABI.
+Each variable can be used to specify the path to \Q4A for the corresponding ABI.
 \include cmake-android-supported-abis.qdocinc
 
 \sa{cmake-variable-QT_ANDROID_ABIS}{QT_ANDROID_ABIS}

@@ -1380,6 +1380,16 @@ QUuid::Version QUuid::version() const noexcept
 
 #if QT_CORE_REMOVED_SINCE(6, 10)
 
+#include "qcoreapplication.h"
+
+#if QT_CONFIG(permissions)
+void QCoreApplication::requestPermission(const QPermission &requestedPermission,
+    QtPrivate::QSlotObjectBase *slotObjRaw, const QObject *context)
+{
+    return requestPermissionImpl(requestedPermission, slotObjRaw, context);
+}
+#endif
+
 #include "qdir.h"
 
 bool QDir::mkdir(const QString &dirName) const

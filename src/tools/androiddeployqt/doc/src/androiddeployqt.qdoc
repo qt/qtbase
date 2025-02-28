@@ -22,7 +22,7 @@
 
     To prepare the environment for androiddeployqt, configure your project in
     a separate directory than your source directory. For more information on
-    configuring your project, see \l {Building Qt for Android Projects from Command Line}.
+    configuring your project, see \l {Building \Q4A Projects from Command Line}.
 
     \section1 Command Line Arguments
 
@@ -90,6 +90,6 @@
     and intuitive user interfaces to specify various options. For more information,
     see \l{\QC: Android Deploy Configuration}.
 
-    For more information about customizing and deploying a Qt for Android app,
+    For more information about customizing and deploying a \Q4A app,
     see \l {Deploying an Application on Android}.
 */

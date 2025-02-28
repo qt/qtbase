@@ -307,11 +307,11 @@
 
     Constructs a list with the contents in the iterator range [\a first, \a last).
 
-    \note This constructor only participates in overload resolution if
+    The value type of \c InputIterator must be convertible to \c T.
+
+    \constraints
     \c InputIterator meets the requirements of a
     \l {https://en.cppreference.com/w/cpp/named_req/InputIterator} {LegacyInputIterator}.
-
-    The value type of \c InputIterator must be convertible to \c T.
 */
 
 /*! \fn template <typename T> QList<T>::~QList()
@@ -1618,12 +1618,12 @@
     This function will only allocate memory if the number of elements in the
     range exceeds the capacity of this list or this list is shared.
 
-    \note This function overload only participates in overload resolution if
-    \c InputIterator meets the requirements of a
-    \l {https://en.cppreference.com/w/cpp/named_req/InputIterator} {LegacyInputIterator}.
-
     \note The behavior is undefined if either argument is an iterator into
     *this.
+
+    \constraints
+    \c InputIterator meets the requirements of a
+    \l {https://en.cppreference.com/w/cpp/named_req/InputIterator} {LegacyInputIterator}.
 */
 
 /*! \fn template <typename T> QList<T>& QList<T>::assign(std::initializer_list<T> l)

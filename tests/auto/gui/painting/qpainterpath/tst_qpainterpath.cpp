@@ -57,6 +57,8 @@ private slots:
     void pointAtPercent();
     void lengths_data();
     void lengths();
+    void trimmed_data();
+    void trimmed();
     void angleAtPercent();
 
     void arcWinding_data();
@@ -1210,6 +1212,57 @@ void tst_QPainterPath::lengths()
     QVERIFY2(pathFuzzyCompare(path.percentAtLength(lenAt50), qreal(0.50)), "caching");
     QVERIFY2(pathFuzzyCompare(path.percentAtLength(lenAt75), qreal(0.75)), "caching");
     QVERIFY2(pathFuzzyCompare(path.percentAtLength(length), qreal(1)), "caching");
+}
+
+void tst_QPainterPath::trimmed_data()
+{
+    QTest::addColumn<QPainterPath>("p");
+    QTest::addColumn<bool>("caching");
+
+    QPainterPath p;
+    p.addEllipse(50, 50, 200, 100);
+    QTest::newRow("ellipse") << p << false;
+    QTest::newRow("ellipse, caching") << p << true;
+
+    p.clear();
+    p.addRect(-50, -100, 200, 150);
+    QTest::newRow("rect") << p << false;
+    QTest::newRow("rect, caching") << p << true;
+}
+
+void tst_QPainterPath::trimmed()
+{
+    QFETCH(QPainterPath, p);
+    QFETCH(bool, caching);
+    p.setCachingEnabled(caching);
+
+    {
+        QPainterPath tp = p.trimmed(0, 0.5);
+        QCOMPARE(tp.pointAtPercent(0), p.pointAtPercent(0));
+        QCOMPARE(tp.pointAtPercent(1), p.pointAtPercent(0.5));
+        QCOMPARE(tp.length(), p.length() / 2);
+    }
+
+    {
+        QPainterPath tp = p.trimmed(0, 0.5, -0.25);
+        QCOMPARE(tp.pointAtPercent(0), p.pointAtPercent(0.75));
+        QCOMPARE(tp.pointAtPercent(1), p.pointAtPercent(0.25));
+        QCOMPARE(tp.length(), p.length() / 2);
+    }
+
+    {
+        QPainterPath tp = p.trimmed(0.5, 1);
+        QCOMPARE(tp.pointAtPercent(0), p.pointAtPercent(0.5));
+        QCOMPARE(tp.pointAtPercent(1), p.pointAtPercent(1));
+        QCOMPARE(tp.length(), p.length() / 2);
+    }
+
+    {
+        QPainterPath tp = p.trimmed(0.5, 1, 0.25);
+        QCOMPARE(tp.pointAtPercent(0), p.pointAtPercent(0.75));
+        QCOMPARE(tp.pointAtPercent(1), p.pointAtPercent(0.25));
+        QCOMPARE(tp.length(), p.length() / 2);
+    }
 }
 
 void tst_QPainterPath::setElementPositionAt()

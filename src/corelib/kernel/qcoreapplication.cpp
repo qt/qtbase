@@ -2862,7 +2862,7 @@ Qt::PermissionStatus QCoreApplication::checkPermission(const QPermission &permis
     Calls the functor encapsulated in the \a slotObjRaw in the given \a context
     (which may be \c nullptr).
 */
-void QCoreApplication::requestPermission(const QPermission &requestedPermission,
+void QCoreApplication::requestPermissionImpl(const QPermission &requestedPermission,
     QtPrivate::QSlotObjectBase *slotObjRaw, const QObject *context)
 {
     QtPrivate::SlotObjUniquePtr slotObj{slotObjRaw}; // adopts

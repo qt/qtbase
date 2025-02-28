@@ -511,42 +511,14 @@ void QStyledItemDelegate::setItemEditorFactory(QItemEditorFactory *factory)
     d->factory = factory;
 }
 
-
 /*!
-    \fn bool QStyledItemDelegate::eventFilter(QObject *editor, QEvent *event)
+    \reimp
 
-    Returns \c true if the given \a editor is a valid QWidget and the
-    given \a event is handled; otherwise returns \c false. The following
-    key press events are handled by default:
-
-    \list
-        \li \uicontrol Tab
-        \li \uicontrol Backtab
-        \li \uicontrol Enter
-        \li \uicontrol Return
-        \li \uicontrol Esc
-    \endlist
-
-    If the \a editor's type is QTextEdit or QPlainTextEdit then \uicontrol Tab,
-    \uicontrol Backtab, \uicontrol Enter and \uicontrol Return keys are \e not
-    handled.
-
-    In the case of \uicontrol Tab, \uicontrol Backtab, \uicontrol Enter and \uicontrol Return
-    key press events, the \a editor's data is committed to the model
-    and the editor is closed. If the \a event is a \uicontrol Tab key press
-    the view will open an editor on the next item in the
-    view. Likewise, if the \a event is a \uicontrol Backtab key press the
-    view will open an editor on the \e previous item in the view.
-
-    If the event is a \uicontrol Esc key press event, the \a editor is
-    closed \e without committing its data.
-
-    \sa commitData(), closeEditor()
+    See details in QAbstractItemDelegate::handleEditorEvent().
 */
 bool QStyledItemDelegate::eventFilter(QObject *object, QEvent *event)
 {
-    Q_D(QStyledItemDelegate);
-    return d->editorEventFilter(object, event);
+    return handleEditorEvent(object, event);
 }
 
 /*!
