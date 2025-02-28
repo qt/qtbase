@@ -54,6 +54,10 @@ void DomUI::read(QXmlStreamReader &reader)
             setAttributeIdbasedtr(attribute.value() == u"true"_s);
             continue;
         }
+        if (name == u"label"_s) {
+            setAttributeLabel(attribute.value().toString());
+            continue;
+        }
         if (name == u"connectslotsbyname"_s) {
             setAttributeConnectslotsbyname(attribute.value() == u"true"_s);
             continue;
@@ -191,6 +195,9 @@ void DomUI::write(QXmlStreamWriter &writer, const QString &tagName) const
 
     if (hasAttributeIdbasedtr())
         writer.writeAttribute(u"idbasedtr"_s, (attributeIdbasedtr() ? u"true"_s : u"false"_s));
+
+    if (hasAttributeLabel())
+        writer.writeAttribute(u"label"_s, attributeLabel());
 
     if (hasAttributeConnectslotsbyname())
         writer.writeAttribute(u"connectslotsbyname"_s, (attributeConnectslotsbyname() ? u"true"_s : u"false"_s));
