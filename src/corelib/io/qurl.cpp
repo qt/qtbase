@@ -748,6 +748,32 @@ static const ushort * const pathInIsolation = userNameInIsolation + 5;
 static const ushort * const queryInIsolation = userNameInIsolation + 6;
 static const ushort * const fragmentInIsolation = userNameInIsolation + 7;
 
+static const ushort localPathFromUser[] = {
+    // we force-decode some of the gen-delims, because
+    //    pchar         = unreserved / pct-encoded / sub-delims / ":" / "@"
+    // the gen-delim lines are leave() in qt_urlRecode, so we don't need to
+    // repeat them if we want to keep them decoded
+    // decode(':'), // allowed
+    // decode('@'), // allowed
+    encode(']'),
+    encode('['),
+    // decode('/'), // special and allowed
+    // decode('?'), // handled by path() and others
+    // decode('#'), // ditto
+
+    // the rest is like pathInIsolation above
+    decode('"'),
+    decode('<'),
+    decode('>'),
+    decode('^'),
+    decode('\\'),
+    decode('|'),
+    decode('{'),
+    decode('}'),
+
+    0
+};
+
 static const ushort userNameInUserInfo[] =  {
     encode(':'), // 0
     decode('@'), // 1
@@ -3360,7 +3386,11 @@ QUrl QUrl::fromLocalFile(const QString &localFile)
     }
 
     url.setScheme(scheme);
-    url.setPath(deslashified, DecodedMode);
+
+    // not directly using setPath here, as we do a few more transforms
+    parseDecodedComponent(deslashified);
+    if (!qt_urlRecode(url.d->path, deslashified, {}, localPathFromUser))
+        url.d->path = deslashified;
 
     return url;
 }
