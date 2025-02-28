@@ -88,7 +88,7 @@ public:
     struct Glyph {
         Glyph() = default;
         ~Glyph() { delete [] data; }
-        short linearAdvance = 0;
+        int linearAdvance = 0;
         unsigned short width = 0;
         unsigned short height = 0;
         short x = 0;
