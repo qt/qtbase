@@ -1,9 +1,7 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
   viewBox="-410 -30 540 540"
   version="1.1"
-  xmlns="http://www.w3.org/2000/svg"
-  xmlns:svg="http://www.w3.org/2000/svg">
+  xmlns="http://www.w3.org/2000/svg">
   <defs>
     <path id="raute"
       fill="#cfe7f5"
@@ -52,13 +50,13 @@
   </defs>
 
   <g id="start" transform="translate(-160, 0)">
-    <use href="#lozenge_small" />
+    <use href="#lozenge" />
     <text
       font-size="12" fill="black"
       text-anchor="middle" dominant-baseline="middle"
       transform="translate(0, -6)">
-      <tspan x="0" dy="0em">String class for</tspan>
-      <tspan x="0" dy="1.2em">calling Qt functions</tspan>
+      <tspan x="0" dy="0em">Choosing a string class</tspan>
+      <tspan x="0" dy="1.2em">for calling Qt functions</tspan>
     </text>
   </g>
 
@@ -81,7 +79,7 @@
        text-anchor="middle" dominant-baseline="middle"
        transform="translate(0, -6)">
        <tspan x="0" dy="0em">Is the parameter a</tspan>
-       <tspan x="0" dy="1.2em">QString or a *View?</tspan>
+       <tspan x="0" dy="1.2em">QString or a Q*View?</tspan>
   </text>
   </g>
 
@@ -92,8 +90,8 @@
        font-size="12" fill="black"
        text-anchor="middle" dominant-baseline="middle"
        transform="translate(0, -6)">
-       <tspan x="0" dy="0em">Do you know the</tspan>
-       <tspan x="0" dy="1.2em">preferred encoding?</tspan>
+       <tspan x="0" dy="0em">Has the parameter a</tspan>
+       <tspan x="0" dy="1.2em">preferred² encoding?</tspan>
   </text>
   </g>
 
@@ -115,8 +113,8 @@
       font-size="12" fill="black"
       text-anchor="middle" dominant-baseline="middle"
       transform="translate(0, -4)" >
-      <tspan x="0" dy="0em">QString</tspan>
-      <tspan font-size="8" x="0" dy="1.4em">or what is already existing</tspan>
+      <tspan x="0" dy="0em">QString¹</tspan>
+      <tspan font-size="8" x="0" dy="1.4em">or any other owning string</tspan>
     </text>
   </g>
 
@@ -127,7 +125,7 @@
       text-anchor="middle" dominant-baseline="middle"
       transform="translate(0, -4)" >
       <tspan x="0" dy="0em">QStringLiteral</tspan>
-      <tspan font-size="8" x="0" dy="1.4em">same as u""_s</tspan>
+      <tspan font-size="8" x="0" dy="1.4em">same as u"foo"_s</tspan>
     </text>
   </g>
 
@@ -138,7 +136,7 @@
       text-anchor="middle" dominant-baseline="middle"
       transform="translate(0, -4)" >
       <tspan x="0" dy="0em">QLatin1StringView</tspan>
-      <tspan font-size="8" x="0" dy="1.4em">same as u""_s</tspan>
+      <tspan font-size="8" x="0" dy="1.4em">create with "foo"_L1</tspan>
     </text>
   </g>
 
@@ -149,7 +147,7 @@
       text-anchor="middle" dominant-baseline="middle"
       transform="translate(0, -4)" >
       <tspan x="0" dy="0em">QStringView</tspan>
-      <tspan font-size="8" x="0" dy="1.4em">create with u""</tspan>
+      <tspan font-size="8" x="0" dy="1.4em">create with u"foo"</tspan>
     </text>f
   </g>
 
@@ -162,7 +160,7 @@
       transform="translate(0, -8)" >
       <tspan x="0" dy="0em">Q*StringView</tspan>
       <tspan font-size="8" x="0" dy="1.4em">of the preferred encoding,</tspan>
-      <tspan font-size="8" x="0" dy="1.2em">create with u"", u8"" or ""_L1</tspan>
+      <tspan font-size="8" x="0" dy="1.2em">create with u"foo", u8"foo" or "foo"_L1</tspan>
     </text>
   </g>
 
@@ -214,7 +212,7 @@
     <text x="5" y="20"
       font-size="12" fill="black"
       text-anchor="left" dominant-baseline="middle">
-      *View
+      Q*View
     </text>
   </g>
 
@@ -263,4 +261,22 @@
     </text>
   </g>
 
+  <g transform="translate(-400, 465)">
+    <text x="5" y="5"
+      font-size="9" fill="black"
+      text-anchor="left" dominant-baseline="middle">
+      <tspan x="0" dy="0em">1:</tspan>
+      <tspan x="1em" dy="0em">An owning string is required to assemble or store
+        a string at runtime, if it is not known at compile time. This can be
+        QString or any other</tspan>
+      <tspan x="1em" dy="1.2em">owning string, such as std::string. The correct
+        choice depends on the required encoding.</tspan>
+      <tspan x="0" dy="1.4em">2:</tspan>
+      <tspan x="1em" dy="0em">Some functions are more effective when using the
+        preferred encoding. For example, QUtf8StringView::compare is fastest
+        with</tspan>
+      <tspan x="1em" dy="1.2em">QUtf8StringView. If you are unsure, proceed as
+        if there were no preferred encoding.</tspan>
+    </text>
+  </g>
 </svg>
