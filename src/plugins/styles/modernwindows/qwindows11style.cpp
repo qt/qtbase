@@ -2186,7 +2186,8 @@ int QWindows11Style::pixelMetric(PixelMetric metric, const QStyleOption *option,
 
 void QWindows11Style::polish(QWidget* widget)
 {
-    QWindowsVistaStyle::polish(widget);
+    if (!qobject_cast<QCommandLinkButton *>(widget))
+        QWindowsVistaStyle::polish(widget);
     const bool isScrollBar = qobject_cast<QScrollBar *>(widget);
     if (isScrollBar || qobject_cast<QMenu *>(widget) || widget->inherits("QComboBoxPrivateContainer")) {
         bool wasCreated = widget->testAttribute(Qt::WA_WState_Created);
@@ -2214,12 +2215,6 @@ void QWindows11Style::polish(QWidget* widget)
             QLineEdit *le = cb->lineEdit();
             le->setFrame(false);
         }
-    } else if (qobject_cast<QCommandLinkButton *>(widget)) {
-        widget->setProperty("_qt_usingVistaStyle",false);
-        QPalette pal = widget->palette();
-        pal.setColor(QPalette::ButtonText, pal.text().color());
-        pal.setColor(QPalette::BrightText, pal.text().color());
-        widget->setPalette(pal);
     } else if (qobject_cast<QGraphicsView *>(widget) && !qobject_cast<QTextEdit *>(widget)) {
         QPalette pal = widget->palette();
         pal.setColor(QPalette::Base, pal.window().color());
@@ -2242,7 +2237,8 @@ void QWindows11Style::polish(QWidget* widget)
 
 void QWindows11Style::unpolish(QWidget *widget)
 {
-    QWindowsVistaStyle::unpolish(widget);
+    if (!qobject_cast<QCommandLinkButton *>(widget))
+        QWindowsVistaStyle::unpolish(widget);
     if (const auto *scrollarea = qobject_cast<QAbstractScrollArea *>(widget);
         scrollarea
 #if QT_CONFIG(mdiarea)
