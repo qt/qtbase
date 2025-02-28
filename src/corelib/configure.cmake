@@ -441,11 +441,18 @@ poll(&pfd, 1, 0);
 ")
 
 # pthread_clockjoin
+# As of GCC 15, TSAN does not support pthread_clockjoin_np,
+# so disable it in a TSAN build. Unfortunately there doesn't
+# seem to be a version check possible, just check the
+# TSAN_INTERCEPT macros into tsan_interceptors_posix.cpp.
 qt_config_compile_test(pthread_clockjoin
     LABEL "pthread_clockjoin()"
     LIBRARIES Threads::Threads
     CODE
 "#include <pthread.h>
+#if __has_feature(thread_sanitizer) || defined(__SANITIZE_THREAD__)
+#error
+#endif
 int main()
 {
     void *ret;
