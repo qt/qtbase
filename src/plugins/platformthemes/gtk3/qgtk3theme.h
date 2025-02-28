@@ -19,6 +19,7 @@ public:
     virtual QString gtkFontName() const override;
 
     Qt::ColorScheme colorScheme() const override;
+    void requestColorScheme(Qt::ColorScheme scheme) override;
 
     bool usePlatformNativeDialog(DialogType type) const override;
     QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const override;
@@ -31,6 +32,7 @@ public:
 
     static const char *name;
 private:
+    Qt::ColorScheme m_requestedColorScheme = Qt::ColorScheme::Unknown;
     static bool useNativeFileDialog();
     std::unique_ptr<QGtk3Storage> m_storage;
 };
