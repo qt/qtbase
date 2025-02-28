@@ -143,6 +143,11 @@ public:
     inline void setAttributeIdbasedtr(bool a) { m_attr_idbasedtr = a; m_has_attr_idbasedtr = true; }
     inline void clearAttributeIdbasedtr() { m_has_attr_idbasedtr = false; }
 
+    inline bool hasAttributeLabel() const { return m_has_attr_label; }
+    inline QString attributeLabel() const { return m_attr_label; }
+    inline void setAttributeLabel(const QString &a) { m_attr_label = a; m_has_attr_label = true; }
+    inline void clearAttributeLabel() { m_attr_label.clear(); }
+
     inline bool hasAttributeConnectslotsbyname() const { return m_has_attr_connectslotsbyname; }
     inline bool attributeConnectslotsbyname() const { return m_attr_connectslotsbyname; }
     inline void setAttributeConnectslotsbyname(bool a) { m_attr_connectslotsbyname = a; m_has_attr_connectslotsbyname = true; }
@@ -263,6 +268,9 @@ private:
 
     bool m_attr_idbasedtr = false;
     bool m_has_attr_idbasedtr = false;
+
+    QString m_attr_label;
+    bool m_has_attr_label = false;
 
     bool m_attr_connectslotsbyname = false;
     bool m_has_attr_connectslotsbyname = false;
