@@ -1369,6 +1369,8 @@ void tst_QUrl::toLocalFile_data()
     QTest::newRow("FILE:/") << QString::fromLatin1("FILE:/a.txt") << QString::fromLatin1("/a.txt");
 
     QTest::newRow("path-delimiter") << QString::fromLatin1("file:///Mambo <%235>.mp3") << QString::fromLatin1("/Mambo <#5>.mp3");
+    QTest::newRow("path-brackets-encoded") << u"file:///tmp/%5Btest%5D.txt"_s << u"/tmp/[test].txt"_s;
+    QTest::newRow("path-brackets-decoded") << u"file:///tmp/[test].txt"_s << u"/tmp/[test].txt"_s;
     QTest::newRow("path-percent") << QString::fromLatin1("file:///a%25.txt") << QString::fromLatin1("/a%.txt");
     QTest::newRow("path-percent-percent") << QString::fromLatin1("file:///a%25%25.txt") << QString::fromLatin1("/a%%.txt");
     QTest::newRow("path-percent-a-percent") << QString::fromLatin1("file:///a%25a%25.txt") << QString::fromLatin1("/a%a%.txt");
@@ -1410,6 +1412,16 @@ void tst_QUrl::toLocalFile()
     QUrl url(theUrl);
     QCOMPARE(url.toLocalFile(), theFile);
     QCOMPARE(url.isLocalFile(), !theFile.isEmpty());
+
+    // set the path to the same (encoded) thing - nothing should change
+    url.setPath(url.path(QUrl::FullyEncoded), QUrl::TolerantMode);
+    QCOMPARE(url.toLocalFile(), theFile);
+    QCOMPARE(url.isLocalFile(), !theFile.isEmpty());
+
+    // QUrl::PrettyDecoded is still URL-encoded and lossless
+    url.setPath(url.path(QUrl::PrettyDecoded), QUrl::TolerantMode);
+    QCOMPARE(url.toLocalFile(), theFile);
+    QCOMPARE(url.isLocalFile(), !theFile.isEmpty());
 }
 
 void tst_QUrl::fromLocalFile_data()
@@ -1423,6 +1435,7 @@ void tst_QUrl::fromLocalFile_data()
     QTest::newRow("absolute-two-path") << QString::fromLatin1("/a/b.txt") << QString::fromLatin1("file:///a/b.txt") << QString::fromLatin1("/a/b.txt");
     QTest::newRow("path-delimiters") << QString::fromLatin1("/Mambo <#5>.mp3") << QString::fromLatin1("file:///Mambo <%235>.mp3")
                                      << QString::fromLatin1("/Mambo <#5>.mp3");
+    QTest::newRow("path-brackets") << u"/tmp/[test].txt"_s << u"file:///tmp/%5Btest%5D.txt"_s << u"/tmp/[test].txt"_s;
 
     // Windows absolute details
     QTest::newRow("windows-drive") << QString::fromLatin1("c:/a.txt") << QString::fromLatin1("file:///c:/a.txt") << QString::fromLatin1("/c:/a.txt");
@@ -1483,6 +1496,16 @@ void tst_QUrl::fromLocalFile()
 
     QUrl url = QUrl::fromLocalFile(theFile);
 
+    QCOMPARE(url.toString(QUrl::DecodeReserved), theUrl);
+    QCOMPARE(url.path(), thePath);
+
+    // set the path to the same (encoded) thing - nothing should change
+    url.setPath(url.path(QUrl::FullyEncoded), QUrl::TolerantMode);
+    QCOMPARE(url.toString(QUrl::DecodeReserved), theUrl);
+    QCOMPARE(url.path(), thePath);
+
+    // QUrl::PrettyDecoded is still URL-encoded and lossless
+    url.setPath(url.path(QUrl::PrettyDecoded), QUrl::TolerantMode);
     QCOMPARE(url.toString(QUrl::DecodeReserved), theUrl);
     QCOMPARE(url.path(), thePath);
 }
