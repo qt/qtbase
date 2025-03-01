@@ -187,7 +187,7 @@ static int checked_var_value(const char *varname)
 
     bool ok;
     int value = str.toInt(&ok, 0);
-    return ok ? value : 1;
+    return (ok && value >= 0) ? value : 1;
 }
 
 static bool is_fatal_count_down(QAtomicInt &n)
