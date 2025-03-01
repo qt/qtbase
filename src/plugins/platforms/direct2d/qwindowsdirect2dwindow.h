@@ -5,7 +5,7 @@
 #define QWINDOWSDIRECT2DWINDOW_H
 
 #include "qwindowswindow.h"
-#include <wrl.h>
+#include <QtCore/private/qcomptr_p.h>
 
 struct IDXGISwapChain1;
 struct ID2D1DeviceContext;
@@ -34,8 +34,8 @@ private:
     void setupBitmap();
 
 private:
-    Microsoft::WRL::ComPtr<IDXGISwapChain1> m_swapChain;
-    Microsoft::WRL::ComPtr<ID2D1DeviceContext> m_deviceContext;
+    ComPtr<IDXGISwapChain1> m_swapChain;
+    ComPtr<ID2D1DeviceContext> m_deviceContext;
     QScopedPointer<QWindowsDirect2DBitmap> m_bitmap;
     QScopedPointer<QPixmap> m_pixmap;
     bool m_needsFullFlush = true;

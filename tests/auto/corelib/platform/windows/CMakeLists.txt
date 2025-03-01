@@ -3,4 +3,5 @@
 
 add_subdirectory(qcomobject)
 add_subdirectory(qbstr)
+add_subdirectory(qcomptr)
 add_subdirectory(qcomvariant)

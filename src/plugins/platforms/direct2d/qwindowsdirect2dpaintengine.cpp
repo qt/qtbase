@@ -15,6 +15,7 @@
 #include <QtCore/qmath.h>
 #include <QtCore/qstack.h>
 #include <QtCore/qsettings.h>
+#include <QtCore/private/qcomptr_p.h>
 #include <QtGui/private/qpaintengine_p.h>
 #include <QtGui/private/qtextengine_p.h>
 #include <QtGui/private/qfontengine_p.h>
@@ -22,9 +23,6 @@
 
 #include <d2d1_1.h>
 #include <dwrite_1.h>
-#include <wrl.h>
-
-using Microsoft::WRL::ComPtr;
 
 QT_BEGIN_NAMESPACE
 

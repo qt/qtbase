@@ -16,7 +16,7 @@
 #include <objbase.h>
 #include <ocidl.h>
 #include <netlistmgr.h>
-#include <wrl/client.h>
+#include <QtCore/private/qcomptr_p.h>
 #include <wrl/wrappers/corewrappers.h>
 
 #if QT_CONFIG(cpp_winrt)

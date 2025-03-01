@@ -24,8 +24,8 @@
 #include <QtCore/QAbstractEventDispatcher>
 #include <QtCore/QElapsedTimer>
 #include <QtCore/qt_windows.h>
+#include <QtCore/private/qcomptr_p.h>
 
-#include <wrl.h>
 #include <windows.foundation.h>
 
 // Convenience macros for handling HRESULT values
@@ -68,10 +68,10 @@ enum AwaitStyle
 using EarlyExitConditionFunction = std::function<bool(void)>;
 
 template<typename T>
-static inline HRESULT _await_impl(const Microsoft::WRL::ComPtr<T> &asyncOp, AwaitStyle awaitStyle,
-                                  uint timeout, EarlyExitConditionFunction func)
+static inline HRESULT _await_impl(const ComPtr<T> &asyncOp, AwaitStyle awaitStyle, uint timeout,
+                                  EarlyExitConditionFunction func)
 {
-    Microsoft::WRL::ComPtr<ABI::Windows::Foundation::IAsyncInfo> asyncInfo;
+    ComPtr<ABI::Windows::Foundation::IAsyncInfo> asyncInfo;
     HRESULT hr = asyncOp.As(&asyncInfo);
     if (FAILED(hr))
         return hr;
@@ -127,9 +127,8 @@ static inline HRESULT _await_impl(const Microsoft::WRL::ComPtr<T> &asyncOp, Awai
 }
 
 template<typename T>
-static inline HRESULT await(const Microsoft::WRL::ComPtr<T> &asyncOp,
-                            AwaitStyle awaitStyle = YieldThread, uint timeout = 0,
-                            EarlyExitConditionFunction func = nullptr)
+static inline HRESULT await(const ComPtr<T> &asyncOp, AwaitStyle awaitStyle = YieldThread,
+                            uint timeout = 0, EarlyExitConditionFunction func = nullptr)
 {
     HRESULT hr = _await_impl(asyncOp, awaitStyle, timeout, func);
     if (FAILED(hr))
@@ -139,7 +138,7 @@ static inline HRESULT await(const Microsoft::WRL::ComPtr<T> &asyncOp,
 }
 
 template<typename T, typename U>
-static inline HRESULT await(const Microsoft::WRL::ComPtr<T> &asyncOp, U *results,
+static inline HRESULT await(const ComPtr<T> &asyncOp, U *results,
                             AwaitStyle awaitStyle = YieldThread, uint timeout = 0,
                             EarlyExitConditionFunction func = nullptr)
 {
