@@ -18,6 +18,7 @@ class QTextOdfWriterTest : public QTextOdfWriter
 public:
     using QTextOdfWriter::QTextOdfWriter;
     using QTextOdfWriter::tableCellStyleElement;
+    using QTextOdfWriter::mergeFormats;
 };
 
 class tst_QTextOdfWriter : public QObject
@@ -603,34 +604,67 @@ void tst_QTextOdfWriter::testWriteTableCellStyleElement_data()
     QTest::addColumn<QTextTableFormat>("ttf");
     QTest::addColumn<QTextTableCellFormat>("ttcf");
     QTest::addColumn<QString>("xml");
+    QTest::addColumn<bool>("tableHasBorderStyle");
+    // tableHasBorderStyle = true  --> padding is sum of ttf and ttcf, border gets merged with ttf
+    // tableHasBorderStyle = false --> padding is sum of ttf and ttcf, border gets merged with default QTextTableFormat
 
     QTextTableFormat ttf;
-    ttf.setCellPadding(4);  // pixel2point: 3.00
-    ttf.setBorder(5);       // pixel2point: 3.75
+    ttf.setCellPadding(4);  // 3.00pt
+    ttf.setBorder(5);       // 3.75pt
     ttf.setBorderCollapse(true);
     QTextTableCellFormat ttcf;
-    ttcf.setBorder(18);     // pixel2point: 13.50
-    ttcf.setPadding(20);    // pixel2point: 15.00
-    // padding: ttf.cellPadding() + ttcf.padding() = 18pt
-    // border should be 13.50 but currently is 3.75 -> bug
-    QTest::newRow("cellStyleElement1")
+    ttcf.setBorder(18);     // 13.50pt
+    ttcf.setPadding(20);    // 15.00pt
+    QTest::newRow("cellStyleElement_table_has_border")
             << ttf << ttcf
             << QString::fromLatin1(
                        R"(<style:style style:name="T0" style:family="table-cell">)"
-                       R"(<style:table-cell-properties fo:border="3.75pt outset #808080" fo:padding="18pt"/>)"
-                       R"(</style:style>)");
+                       R"(<style:table-cell-properties fo:border="13.5pt outset #808080" fo:padding="18pt"/>)"
+                       R"(</style:style>)")
+            << true;
 
+    QTest::newRow("cellStyleElement_table_has_border_no_ttcf")
+            << ttf << QTextTableCellFormat()
+            << QString::fromLatin1(
+                       R"(<style:style style:name="T0" style:family="table-cell">)"
+                       R"(<style:table-cell-properties fo:border="3.75pt outset #808080" fo:padding="3pt"/>)"
+                       R"(</style:style>)")
+            << true;
 
-    ttcf.setTopPadding(10); // pixel2point: 7.50
-    // top padding: ttf.cellPadding() + ttcf.topPadding() = 4 + 10 = 10.5pt
-    // padding: ttf.cellPadding() + ttcf.padding() = 4 + 20 = 18pt
-    // border should be 13.50 but currently is 3.75 -> bug
-    QTest::newRow("cellStyleElement2")
+    QTest::newRow("cellStyleElement_table_has_no_border")
             << ttf << ttcf
             << QString::fromLatin1(
                        R"(<style:style style:name="T0" style:family="table-cell">)"
-                       R"(<style:table-cell-properties fo:border="3.75pt outset #808080" fo:padding-top="10.5pt" fo:padding-bottom="18pt" fo:padding-left="18pt" fo:padding-right="18pt"/>)"
-                       R"(</style:style>)");
+                       R"(<style:table-cell-properties fo:padding="18pt"/>)"
+                       R"(</style:style>)")
+            << false;
+
+    ttcf.setTopPadding(10); // 7.50pt
+    QTest::newRow("cellStyleElement_table_has_border_ttcf_padding")
+            << ttf << ttcf
+            << QString::fromLatin1(
+                       R"(<style:style style:name="T0" style:family="table-cell">)"
+                       R"(<style:table-cell-properties fo:border="13.5pt outset #808080" fo:padding-top="10.5pt" fo:padding-bottom="18pt" fo:padding-left="18pt" fo:padding-right="18pt"/>)"
+                       R"(</style:style>)")
+            << true;
+
+    QTest::newRow("cellStyleElement_table_no_border_ttcf_padding")
+            << ttf << ttcf
+            << QString::fromLatin1(
+                       R"(<style:style style:name="T0" style:family="table-cell">)"
+                       R"(<style:table-cell-properties fo:padding-top="10.5pt" fo:padding-bottom="18pt" fo:padding-left="18pt" fo:padding-right="18pt"/>)"
+                       R"(</style:style>)")
+            << false;
+
+    ttcf.setPadding(20);    // reset
+    ttcf.setLeftBorder(8);  // 6pt
+    QTest::newRow("cellStyleElement_table_has_border_ttcf_left_border")
+            << ttf << ttcf
+            << QString::fromLatin1(
+                       R"(<style:style style:name="T0" style:family="table-cell">)"
+                       R"(<style:table-cell-properties fo:border-top="13.5pt outset #808080" fo:border-right="13.5pt outset #808080" fo:border-bottom="13.5pt outset #808080" fo:border-left="6pt outset #808080" fo:padding="18pt"/>)"
+                       R"(</style:style>)")
+            << true;
 }
 
 void tst_QTextOdfWriter::testWriteTableCellStyleElement()
@@ -638,8 +672,10 @@ void tst_QTextOdfWriter::testWriteTableCellStyleElement()
     QFETCH(QTextTableFormat, ttf);
     QFETCH(QTextTableCellFormat, ttcf);
     QFETCH(QString, xml);
+    QFETCH(bool, tableHasBorderStyle);
 
-    odfWriter->tableCellStyleElement(*xmlWriter, 0, ttcf, true, ttf);
+    const auto fmt = odfWriter->mergeFormats(ttcf, tableHasBorderStyle ? ttf : QTextTableFormat());
+    odfWriter->tableCellStyleElement(*xmlWriter, 0, fmt, tableHasBorderStyle);
     QCOMPARE(getContentFromXml(), xml);
 }
 

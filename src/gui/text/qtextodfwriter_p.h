@@ -65,10 +65,9 @@ public:
     const int defaultImageResolution = 11811; // 11811 dots per meter = (about) 300 dpi
 
 protected:
+    static QTextTableCellFormat mergeFormats(const QTextTableCellFormat &cell, const QTextTableFormat &table);
     void tableCellStyleElement(QXmlStreamWriter &writer, int formatIndex,
-                               const QTextTableCellFormat &format,
-                               bool hasBorder,
-                               const QTextTableFormat &tableFormatTmp = QTextTableFormat()) const;
+                               const QTextTableCellFormat &format, bool hasBorder) const;
 
 private:
     const QTextDocument *m_document;
