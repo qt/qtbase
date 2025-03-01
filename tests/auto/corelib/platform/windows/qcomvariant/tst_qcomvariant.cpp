@@ -5,7 +5,7 @@
 
 #include <private/qcomvariant_p.h>
 #include <private/qcomobject_p.h>
-#include <wrl/client.h>
+#include <QtCore/private/qcomptr_p.h>
 
 using Microsoft::WRL::ComPtr;
 

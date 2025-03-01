@@ -6,14 +6,13 @@
 #include "qwindowsdirect2dhelpers.h"
 #include "qwindowsdirect2dintegration.h"
 
+#include <QtCore/private/qcomptr_p.h>
+
 #include <d3d11_1.h>
 #include <d2d1_1.h>
 #include <d2d1_1helper.h>
 #include <dxgi1_2.h>
-#include <wrl.h>
 #include <dwrite.h>
-
-using Microsoft::WRL::ComPtr;
 
 QT_BEGIN_NAMESPACE
 

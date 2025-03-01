@@ -50,8 +50,7 @@
 
 #include <QtCore/qoperatingsystemversion.h>
 #include <QtCore/private/qfunctions_win_p.h>
-
-#include <wrl.h>
+#include <QtCore/private/qcomptr_p.h>
 
 #include <limits.h>
 
@@ -720,8 +719,6 @@ void QWindowsIntegration::setApplicationBadge(qint64 number)
 void QWindowsIntegration::setApplicationBadge(const QImage &image)
 {
     QComHelper comHelper;
-
-    using Microsoft::WRL::ComPtr;
 
     ComPtr<ITaskbarList3> taskbarList;
     CoCreateInstance(CLSID_TaskbarList, nullptr,

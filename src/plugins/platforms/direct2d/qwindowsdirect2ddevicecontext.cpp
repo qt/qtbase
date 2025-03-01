@@ -5,9 +5,7 @@
 #include "qwindowsdirect2dhelpers.h"
 #include "qwindowsdirect2ddevicecontext.h"
 
-#include <wrl.h>
-
-using Microsoft::WRL::ComPtr;
+#include <QtCore/private/qcomptr_p.h>
 
 QT_BEGIN_NAMESPACE
 

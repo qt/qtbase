@@ -6,12 +6,9 @@
 #include "qwindowsdirect2dhelpers.h"
 #include "qwindowsdirect2ddevicecontext.h"
 
+#include <QtCore/private/qcomptr_p.h>
 #include <QtGui/qimage.h>
 #include <QtGui/qcolor.h>
-
-#include <wrl.h>
-
-using Microsoft::WRL::ComPtr;
 
 QT_BEGIN_NAMESPACE
 

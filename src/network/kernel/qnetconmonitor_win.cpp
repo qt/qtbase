@@ -15,7 +15,7 @@
 
 #include <objbase.h>
 #include <netlistmgr.h>
-#include <wrl/client.h>
+#include <QtCore/private/qcomptr_p.h>
 #include <wrl/wrappers/corewrappers.h>
 #include <iphlpapi.h>
 
