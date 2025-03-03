@@ -9,6 +9,7 @@
 #include <QtCore/qstringbuilder.h>
 #include <QtGui/qaccessible.h>
 #include <QtGui/qpainter.h>
+#include <QtGui/qguiapplication.h>
 #include <QtWidgets/qwidget.h>
 
 #ifndef QSTYLEHELPER_P_H
