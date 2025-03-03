@@ -83,6 +83,7 @@ private Q_SLOTS:
     void shouldPropagateDropBetweenItemsAtModelBoundary();
     void shouldPropagateDropAfterLastRow_data();
     void shouldPropagateDropAfterLastRow();
+    void addModelWithFilterOnTop();
     void qtbug91788();
     void qtbug91878();
     void createPersistentOnLayoutAboutToBeChanged();
@@ -862,6 +863,39 @@ void tst_QConcatenateTablesProxyModel::shouldPropagateDropAfterLastRow()
     QCOMPARE(extractRowTexts(&pm, 2), QStringLiteral("DEF"));
     QCOMPARE(extractRowTexts(&pm, 3), QStringLiteral("456"));
 
+}
+
+class RefuseRowsProxy : public QSortFilterProxyModel
+{
+public:
+    bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const override
+    {
+        Q_UNUSED(source_row)
+        Q_UNUSED(source_parent)
+        return false;
+    }
+};
+
+void tst_QConcatenateTablesProxyModel::addModelWithFilterOnTop() // QTBUG-134210
+{
+    // Given a QSFPM -> QConcatenateTablesProxyModel and a QStandardItemModel
+    QStandardItemModel sim;
+    sim.appendRow(new QStandardItem("ITEM"));
+
+    QConcatenateTablesProxyModel concat;
+    RefuseRowsProxy proxyFilter;
+    proxyFilter.setSourceModel(&concat);
+    proxyFilter.setRecursiveFilteringEnabled(true);
+
+    // When adding the QStandardItemModel as source model
+    concat.addSourceModel(&sim);
+
+    // Then the item should be filtered out
+    // (without hitting an assert in QConcat::index() nor an infinite recursion in QSFPM)
+    QCOMPARE(concat.rowCount(), 1);
+    QCOMPARE(concat.columnCount(), 1);
+    QCOMPARE(proxyFilter.rowCount(), 0);
+    QCOMPARE(proxyFilter.columnCount(), 1);
 }
 
 void tst_QConcatenateTablesProxyModel::qtbug91788()

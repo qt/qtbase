@@ -434,6 +434,10 @@ bool QSortFilterProxyModelPrivate::recursiveChildAcceptsRow(int source_row, cons
 {
     Q_Q(const QSortFilterProxyModel);
 
+    const int colCount = model->columnCount(source_parent);
+    if (colCount == 0) // don't call index(row, 0) if there's no such column
+        return false;
+
     const QModelIndex index = model->index(source_row, 0, source_parent);
     const int count = model->rowCount(index);
 
