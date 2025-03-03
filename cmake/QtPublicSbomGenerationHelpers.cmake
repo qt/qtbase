@@ -814,7 +814,7 @@ function(_qt_internal_sbom_generate_add_external_reference)
         string(REGEX REPLACE \"^.*[\\r\\n]DocumentNamespace:[ \\t]*([^#\\r\\n]*).*$\"
                 \"\\\\1\" ext_ns \"\${ext_content}\")
 
-        list(APPEND QT_SBOM_EXTERNAL_DOC_REFS \"
+        string(APPEND QT_SBOM_EXTERNAL_DOC_REFS \"
 ExternalDocumentRef: ${arg_EXTERNAL_DOCUMENT_SPDX_ID} \${ext_ns} SHA1: \${ext_sha1}\")
 
         ${relationship_content}
