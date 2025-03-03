@@ -573,9 +573,7 @@ function(qt6_android_add_apk_target target)
 
     set(extra_deps "")
 
-    if(QT_ENABLE_VERBOSE_DEPLOYMENT)
-       set(uses_terminal USES_TERMINAL)
-    endif()
+    _qt_internal_android_get_use_terminal_for_deployment(uses_terminal)
 
     # Plugins still might be added after creating the deployment targets.
     if(NOT TARGET qt_internal_plugins)
@@ -1781,6 +1779,15 @@ function(_qt_internal_expose_android_package_source_dir_to_ide target)
         foreach(f IN LISTS android_package_sources)
             _qt_internal_expose_source_file_to_ide(${target} "${f}")
         endforeach()
+    endif()
+endfunction()
+
+# Enables the terminal usage for the add_custom_command calls when verbose deployment is enabled.
+function(_qt_internal_android_get_use_terminal_for_deployment out_var)
+    if(QT_ENABLE_VERBOSE_DEPLOYMENT)
+        set(${out_var} USES_TERMINAL PARENT_SCOPE)
+    else()
+        set(${out_var} "" PARENT_SCOPE)
     endif()
 endfunction()
 
