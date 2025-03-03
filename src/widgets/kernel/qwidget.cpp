@@ -853,14 +853,8 @@ struct QWidgetExceptionCleaner
     \sa windowFlags
 */
 QWidget::QWidget(QWidget *parent, Qt::WindowFlags f)
-    : QObject(*new QWidgetPrivate, nullptr), QPaintDevice()
+    : QWidget(*new QWidgetPrivate, parent, f)
 {
-    QT_TRY {
-        d_func()->init(parent, f);
-    } QT_CATCH(...) {
-        QWidgetExceptionCleaner::cleanup(this, d_func());
-        QT_RETHROW;
-    }
 }
 
 
