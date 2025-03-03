@@ -7,10 +7,11 @@
 
 #include <QtCore/QtCore>
 
+#include "apphelper.h"
+
 class tst_QCoreApplication: public QObject
 {
     Q_OBJECT
-    void runHelperTest();
 
 private slots:
     void sendEventsOnProcessEvents(); // this must be the first test
@@ -47,13 +48,13 @@ private slots:
     void applicationEventFilters_auxThread();
     void threadedEventDelivery_data();
     void threadedEventDelivery();
-#if QT_CONFIG(process)
+
     // also add to tst_qapplication.cpp
-    void exitFromEventLoop() { runHelperTest(); }
-    void exitFromThread() { runHelperTest(); }
-    void exitFromThreadedEventLoop() { runHelperTest(); }
-    void mainAppInAThread() { runHelperTest(); }
-#endif
+    void exitFromEventLoop() { QCoreApplicationTestHelper::run(); }
+    void exitFromThread() { QCoreApplicationTestHelper::run(); }
+    void exitFromThreadedEventLoop() { QCoreApplicationTestHelper::run(); }
+    void mainAppInAThread() { QCoreApplicationTestHelper::run(); }
+
     void testTrWithPercantegeAtTheEnd();
 #if QT_CONFIG(library)
     void addRemoveLibPaths();
