@@ -1240,7 +1240,7 @@ uint qt_hash(QStringView key, uint chained) noexcept
 */
 
 /*!
-    \fn template <typname T, std::enable_if_t<std::is_same_v<T, bool>, bool> = true> size_t qHash(T key, size_t seed)
+    \fn template <typename T, std::enable_if_t<std::is_same_v<T, bool>, bool> = true> size_t qHash(T key, size_t seed)
     \since 6.9
 
     \qhashbuiltin
@@ -2339,7 +2339,7 @@ size_t qHash(long double key, size_t seed) noexcept
 /*!
     \fn template <class Key, class T> template <typename... Args> QHash<Key, T>::TryEmplaceResult QHash<Key, T>::tryEmplace(const Key &key, Args &&...args)
     \fn template <class Key, class T> template <typename... Args> QHash<Key, T>::TryEmplaceResult QHash<Key, T>::tryEmplace(Key &&key, Args &&...args)
-    \fn template <class Key, class T> template <typename K, typename... Args, if_heterogeneously_searchable<K> = true, if_key_constructible_from<K> = true> QHash<Key, T>::TryEmplaceResult QHash<Key, T>::tryEmplace(K &&key, Args &&...args)
+    \fn template <class Key, class T> template <typename K, typename... Args, QHash<Key, T>::if_heterogeneously_searchable<K> = true, QHash<Key, T>::if_key_constructible_from<K> = true> QHash<Key, T>::TryEmplaceResult QHash<Key, T>::tryEmplace(K &&key, Args &&...args)
     \since 6.9
 
     Inserts a new item with the \a key and a value constructed from \a args.
@@ -2382,7 +2382,7 @@ size_t qHash(long double key, size_t seed) noexcept
 
 /*!
     \fn template <class Key, class T> QHash<Key, T>::TryEmplaceResult QHash<Key, T>::tryInsert(const Key &key, const T &value)
-    \fn template <class Key, class T> template <typename K, if_heterogeneously_searchable<K> = true, if_key_constructible_from<K> = true> QHash<Key, T>::TryEmplaceResult QHash<Key, T>::tryInsert(K &&key, const T &value)
+    \fn template <class Key, class T> template <typename K, QHash<Key, T>::if_heterogeneously_searchable<K> = true, QHash<Key, T>::if_key_constructible_from<K> = true> QHash<Key, T>::TryEmplaceResult QHash<Key, T>::tryInsert(K &&key, const T &value)
     \since 6.9
 
     Inserts a new item with the \a key and a value of \a value.
@@ -2397,7 +2397,7 @@ size_t qHash(long double key, size_t seed) noexcept
 */
 
 /*!
-    \fn template <class Key, class T> template <typename K, typename... Args, if_heterogeneously_searchable<K> = true, if_key_constructible_from<K> = true> QHash<Key, T>::try_emplace(const_iterator hint, K &&key, Args &&...args)
+    \fn template <class Key, class T> template <typename K, typename... Args, QHash<Key, T>::if_heterogeneously_searchable<K> = true, QHash<Key, T>::if_key_constructible_from<K> = true> iterator QHash<Key, T>::try_emplace(const_iterator hint, K &&key, Args &&...args)
     \fn template <class Key, class T> template <typename... Args> iterator QHash<Key, T>::try_emplace(const_iterator hint, const Key &key, Args &&...args)
     \fn template <class Key, class T> template <typename... Args> iterator QHash<Key, T>::try_emplace(const_iterator hint, Key &&key, Args &&...args)
     \since 6.9
@@ -2418,7 +2418,7 @@ size_t qHash(long double key, size_t seed) noexcept
 /*!
     \fn template <class Key, class T> template <typename... Args> std::pair<iterator, bool> QHash<Key, T>::try_emplace(const Key &key, Args &&...args)
     \fn template <class Key, class T> template <typename... Args> std::pair<iterator, bool> QHash<Key, T>::try_emplace(Key &&key, Args &&...args)
-    \fn template <class Key, class T> template <typename K, typename... Args, if_heterogeneously_searchable<K> = true, if_key_constructible_from<K> = true> QHash<Key, T>::try_emplace(K &&key, Args &&...args)
+    \fn template <class Key, class T> template <typename K, typename... Args, QHash<Key, T>::if_heterogeneously_searchable<K> = true, QHash<Key, T>::if_key_constructible_from<K> = true> std::pair<iterator, bool> QHash<Key, T>::try_emplace(K &&key, Args &&...args)
     \since 6.9
 
     Inserts a new item with the \a key and a value constructed from \a args.
@@ -2436,7 +2436,7 @@ size_t qHash(long double key, size_t seed) noexcept
 /*!
     \fn template <class Key, class T> template <typename Value> QHash<Key, T>::TryEmplaceResult QHash<Key, T>::insertOrAssign(const Key &key, Value &&value)
     \fn template <class Key, class T> template <typename Value> QHash<Key, T>::TryEmplaceResult QHash<Key, T>::insertOrAssign(Key &&key, Value &&value)
-    \fn template <class Key, class T> template <typename K, typename Value, if_heterogeneously_searchable<K> = true, if_key_constructible_from<K> = true> QHash<Key, T>::TryEmplaceResult QHash<Key, T>::insertOrAssign(K &&key, Value &&value)
+    \fn template <class Key, class T> template <typename K, typename Value, QHash<Key, T>::if_heterogeneously_searchable<K> = true, QHash<Key, T>::if_key_constructible_from<K> = true> QHash<Key, T>::TryEmplaceResult QHash<Key, T>::insertOrAssign(K &&key, Value &&value)
     \since 6.9
 
     Attempts to insert an item with the \a key and \a value.
@@ -2453,7 +2453,7 @@ size_t qHash(long double key, size_t seed) noexcept
 /*!
     \fn template <class Key, class T> template <typename Value> std::pair<QHash<Key, T>::key_value_iterator, bool> QHash<Key, T>::insert_or_assign(const Key &key, Value &&value)
     \fn template <class Key, class T> template <typename Value> std::pair<QHash<Key, T>::key_value_iterator, bool>  QHash<Key, T>::insert_or_assign(Key &&key, Value &&value)
-    \fn template <class Key, class T> template <typename K, typename Value, if_heterogeneously_searchable<K> = true, if_key_constructible_from<K> = true> std::pair<QHash<Key, T>::key_value_iterator, bool> QHash<Key, T>::insert_or_assign(K &&key, Value &&value)
+    \fn template <class Key, class T> template <typename K, typename Value, QHash<Key, T>::if_heterogeneously_searchable<K> = true, QHash<Key, T>::if_key_constructible_from<K> = true> std::pair<QHash<Key, T>::key_value_iterator, bool> QHash<Key, T>::insert_or_assign(K &&key, Value &&value)
     \since 6.9
 
     Attempts to insert an item with the \a key and \a value.
@@ -2471,7 +2471,7 @@ size_t qHash(long double key, size_t seed) noexcept
 /*!
     \fn template <class Key, class T> template <typename Value> std::pair<QHash<Key, T>::key_value_iterator, bool> QHash<Key, T>::insert_or_assign(const_iterator hint, const Key &key, Value &&value)
     \fn template <class Key, class T> template <typename Value> std::pair<QHash<Key, T>::key_value_iterator, bool>  QHash<Key, T>::insert_or_assign(const_iterator hint, Key &&key, Value &&value)
-    \fn template <class Key, class T> template <typename K, typename Value, if_heterogeneously_searchable<K> = true, if_key_constructible_from<K> = true> std::pair<QHash<Key, T>::key_value_iterator, bool> QHash<Key, T>::insert_or_assign(const_iterator hint, K &&key, Value &&value)
+    \fn template <class Key, class T> template <typename K, typename Value, QHash<Key, T>::if_heterogeneously_searchable<K> = true, QHash<Key, T>::if_key_constructible_from<K> = true> std::pair<QHash<Key, T>::key_value_iterator, bool> QHash<Key, T>::insert_or_assign(const_iterator hint, K &&key, Value &&value)
     \since 6.9
 
     Attempts to insert an item with the \a key and \a value.

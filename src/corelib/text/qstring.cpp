@@ -8738,7 +8738,7 @@ static QString replaceArgEscapes(QStringView s, const ArgEscapeData &d, qsizetyp
 }
 
 /*!
-    \fn template <typename T, if_string_like<T> = true> QString QString::arg(const T &a, int fieldWidth, QChar fillChar) const
+    \fn template <typename T, QString::if_string_like<T> = true> QString QString::arg(const T &a, int fieldWidth, QChar fillChar) const
 
     Returns a copy of this string with the lowest-numbered place-marker
     replaced by string \a a, i.e., \c %1, \c %2, ..., \c %99.
@@ -8804,7 +8804,7 @@ QString QString::arg_impl(QAnyStringView a, int fieldWidth, QChar fillChar) cons
 }
 
 /*!
-  \fn template <typename T, if_integral_non_char<T> = true> QString QString::arg(T a, int fieldWidth, int base, QChar fillChar) const
+  \fn template <typename T, QString::if_integral_non_char<T> = true> QString QString::arg(T a, int fieldWidth, int base, QChar fillChar) const
   \overload arg()
 
   The \a a argument is expressed in base \a base, which is 10 by
@@ -8896,7 +8896,7 @@ QString QString::arg_impl(qulonglong a, int fieldWidth, int base, QChar fillChar
 }
 
 /*!
-  \fn template <typename T, if_floating_point<T> = true> QString QString::arg(T a, int fieldWidth, char format, int precision, QChar fillChar) const
+  \fn template <typename T, QString::if_floating_point<T> = true> QString QString::arg(T a, int fieldWidth, char format, int precision, QChar fillChar) const
   \overload arg()
 
   Argument \a a is formatted according to the specified \a format and
