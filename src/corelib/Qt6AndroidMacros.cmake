@@ -21,6 +21,22 @@ function(_qt_internal_android_get_sdk_build_tools_revision out_var)
     set(${out_var} "${android_build_tools_latest}" PARENT_SCOPE)
 endfunction()
 
+# Returns the target specific Android SDK tools revision. The function falls
+# back to the calculated value if the QT_ANDROID_SDK_BUILD_TOOLS_REVISION
+# target property is not set.
+function(_qt_internal_android_get_target_sdk_build_tools_revision out_var target)
+    _qt_internal_android_get_sdk_build_tools_revision(android_sdk_build_tools)
+    set(android_sdk_build_tools_genex "")
+    string(APPEND android_sdk_build_tools_genex
+        "$<IF:$<BOOL:$<TARGET_PROPERTY:${target},QT_ANDROID_SDK_BUILD_TOOLS_REVISION>>,"
+            "$<TARGET_PROPERTY:${target},QT_ANDROID_SDK_BUILD_TOOLS_REVISION>,"
+            "${android_sdk_build_tools}"
+        ">"
+    )
+
+    set(${out_var} "${android_sdk_build_tools_genex}" PARENT_SCOPE)
+endfunction()
+
 # The function appends to the 'out_var' a 'json_property' that contains the 'tool' path. If 'tool'
 # target or its IMPORTED_LOCATION are not found the function displays warning, but is not failing
 # at the project configuring phase.
@@ -179,14 +195,9 @@ function(qt6_android_generate_deployment_settings target)
         "   \"sdk\": \"${android_sdk_root_native}\",\n")
 
     # Android SDK Build Tools Revision
-    _qt_internal_android_get_sdk_build_tools_revision(android_sdk_build_tools)
-    set(android_sdk_build_tools_genex "")
-    string(APPEND android_sdk_build_tools_genex
-        "$<IF:$<BOOL:$<TARGET_PROPERTY:${target},QT_ANDROID_SDK_BUILD_TOOLS_REVISION>>,"
-            "$<TARGET_PROPERTY:${target},QT_ANDROID_SDK_BUILD_TOOLS_REVISION>,"
-            "${android_sdk_build_tools}"
-        ">"
-    )
+    _qt_internal_android_get_target_sdk_build_tools_revision(android_sdk_build_tools_genex
+        ${target})
+
     string(APPEND file_contents
         "   \"sdkBuildToolsRevision\": \"${android_sdk_build_tools_genex}\",\n")
 
