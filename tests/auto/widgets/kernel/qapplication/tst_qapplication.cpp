@@ -46,6 +46,8 @@
 #include <private/qevent_p.h>
 #include <private/qhighdpiscaling_p.h>
 
+#include "../../../corelib/kernel/qcoreapplication/apphelper.h"
+
 #include <algorithm>
 
 Q_LOGGING_CATEGORY(lcTests, "qt.widgets.tests")
@@ -59,7 +61,6 @@ class tst_QApplication : public QObject
 {
 Q_OBJECT
 
-    void runHelperTest();
 private slots:
     void cleanup();
     void sendEventsOnProcessEvents(); // this must be the first test
@@ -100,12 +101,11 @@ private slots:
     void sendPostedEvents();
 #endif  // ifdef QT_BUILD_INTERNAL
 
-#if QT_CONFIG(process)
-    void exitFromEventLoop() { runHelperTest(); }
-    void exitFromThread() { runHelperTest(); }
-    void exitFromThreadedEventLoop() { runHelperTest(); }
-    void mainAppInAThread() { runHelperTest(); }
-#endif
+    void exitFromEventLoop() { QCoreApplicationTestHelper::run(); }
+    void exitFromThread() { QCoreApplicationTestHelper::run(); }
+    void exitFromThreadedEventLoop() { QCoreApplicationTestHelper::run(); }
+    void mainAppInAThread() { QCoreApplicationTestHelper::run(); }
+
     void thread();
     void desktopSettingsAware();
 
@@ -1196,32 +1196,6 @@ void tst_QApplication::sendPostedEvents()
     (void) QCoreApplication::exec();
     QVERIFY(p.isNull());
 }
-#endif
-
-#if QT_CONFIG(process)
-#if defined(Q_OS_WIN)
-#  define EXE ".exe"
-#else
-#  define EXE ""
-#endif
-void tst_QApplication::runHelperTest()
-{
-#  ifdef Q_OS_ANDROID
-    QSKIP("Skipped on Android: helper not present");
-#  endif
-    int argc = 0;
-    QCoreApplication app(argc, nullptr);
-    QProcess process;
-    process.start(QFINDTESTDATA("apphelper" EXE), { QTest::currentTestFunction() });
-    QVERIFY2(process.waitForFinished(5000), qPrintable(process.errorString()));
-    if (qint8(process.exitCode()) == -1)
-        QSKIP("Process requested skip: " + process.readAllStandardOutput().trimmed());
-
-    QCOMPARE(process.readAllStandardError(), QString());
-    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
-    QCOMPARE(process.exitCode(), 0);
-}
-#undef EXE
 #endif
 
 void tst_QApplication::thread()
