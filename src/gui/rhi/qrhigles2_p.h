@@ -279,6 +279,7 @@ struct QGles2GraphicsPipeline : public QRhiGraphicsPipeline
     QGles2UniformState uniformState[QGles2UniformState::MAX_TRACKED_LOCATION + 1];
     QRhiShaderResourceBindings *currentSrb = nullptr;
     uint currentSrbGeneration = 0;
+    uint lastUsedInFrameNo = 0;
     uint generation = 0;
     friend class QRhiGles2;
 };
@@ -296,6 +297,7 @@ struct QGles2ComputePipeline : public QRhiComputePipeline
     QGles2UniformState uniformState[QGles2UniformState::MAX_TRACKED_LOCATION + 1];
     QRhiShaderResourceBindings *currentSrb = nullptr;
     uint currentSrbGeneration = 0;
+    uint lastUsedInFrameNo = 0;
     uint generation = 0;
     friend class QRhiGles2;
 };
@@ -754,7 +756,6 @@ struct QGles2SwapChain : public QRhiSwapChain
     QGles2SwapChainRenderTarget rtLeft;
     QGles2SwapChainRenderTarget rtRight;
     QGles2CommandBuffer cb;
-    int frameCount = 0;
     QGles2SwapChainTimestamps timestamps;
     int currentTimestampPairIndex = 0;
 };
@@ -1096,6 +1097,7 @@ public:
     QRhiGles2NativeHandles nativeHandlesStruct;
     QRhiDriverInfo driverInfoStruct;
     mutable bool contextLost = false;
+    uint frameNo = 0;
 
     struct DeferredReleaseEntry {
         enum Type {
