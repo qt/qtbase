@@ -9,23 +9,58 @@
 
 #include <uiautomation.h>
 
-#if defined(__MINGW32__) || defined(__MINGW64__)
+#ifndef Q_CC_MSVC
+// MinGW's headers were missing these, but have since added an incomplete set
+// of the constants and structures from the .idl file. Fortunately, their IDL
+// processor generates #define's for the constants, so we can check if they are
+// present.
 
-#define UIA_SelectionPattern2Id                  10034
+#ifndef UIA_IsReadOnlyAttributeId
 #define UIA_IsReadOnlyAttributeId                40015
+#endif
+#ifndef UIA_StrikethroughStyleAttributeId
 #define UIA_StrikethroughStyleAttributeId        40026
+#endif
+#ifndef UIA_StyleIdAttributeId
 #define UIA_StyleIdAttributeId                   40034
+#endif
+#ifndef UIA_CaretPositionAttributeId
 #define UIA_CaretPositionAttributeId             40038
+#endif
 
+#ifndef StyleId_Heading1
 #define StyleId_Heading1    70001
+#endif
+#ifndef StyleId_Heading2
 #define StyleId_Heading2    70002
+#endif
+#ifndef StyleId_Heading3
 #define StyleId_Heading3    70003
+#endif
+#ifndef StyleId_Heading4
 #define StyleId_Heading4    70004
+#endif
+#ifndef StyleId_Heading5
 #define StyleId_Heading5    70005
+#endif
+#ifndef StyleId_Heading6
 #define StyleId_Heading6    70006
+#endif
+#ifndef StyleId_Heading7
 #define StyleId_Heading7    70007
+#endif
+#ifndef StyleId_Heading8
 #define StyleId_Heading8    70008
+#endif
+#ifndef StyleId_Heading9
 #define StyleId_Heading9    70009
+#endif
+
+#if !defined(UIA_SelectionPattern2Id)
+#define UIA_SelectionPattern2Id                  10034
+
+// Unfortunately, there's no way to detect the definition of enums, so we are
+// guessing their presence from a constant that is also missing.
 
 enum CaretPosition {
     CaretPosition_Unknown           = 0,
@@ -54,6 +89,7 @@ enum TextDecorationLineStyle {
     TextDecorationLineStyle_ThickLongDash = 18,
     TextDecorationLineStyle_Other = -1
 };
+#endif // UIA_SelectionPattern2Id
 
 BOOL WINAPI UiaClientsAreListening();
 
@@ -74,7 +110,7 @@ __CRT_UUID_DECL(ISelectionProvider2,  0x14f68475, 0xee1c, 0x44f6, 0xa8, 0x69, 0x
 #endif
 #endif // __ISelectionProvider2_INTERFACE_DEFINED__
 
-#endif // defined(__MINGW32__) || defined(__MINGW64__)
+#endif // !Q_CC_MSVC
 
 #endif // QT_CONFIG(accessibility)
 
