@@ -869,6 +869,7 @@ void Moc::parse()
             continue;
         ClassDef def;
         if (parseClassHead(&def)) {
+            Symbol qmlRegistrationMacroSymbol = {};
             prependNamespaces(def, namespaceList);
 
             FunctionDef::Access access = FunctionDef::Private;
@@ -984,6 +985,17 @@ void Moc::parse()
                 case SEMIC:
                 case COLON:
                     break;
+                case IDENTIFIER:
+                {
+                    const QByteArray lex = lexem();
+                    if (lex.startsWith("QML_")) {
+                        if (   lex == "QML_ELEMENT" || lex == "QML_NAMED_ELEMENT"
+                            || lex == "QML_ANONYMOUS" || lex == "QML_VALUE_TYPE") {
+                            qmlRegistrationMacroSymbol = symbol();
+                        }
+                    }
+                }
+                Q_FALLTHROUGH();
                 default:
                     FunctionDef funcDef;
                     funcDef.access = access;
@@ -1023,6 +1035,17 @@ void Moc::parse()
             }
 
             next(RBRACE);
+
+            /* if the header is available, moc will see a Q_CLASSINFO entry; the
+               token is only visible if the header is missing
+               To avoid false positives, we only warn when encountering the token in a QObject or gadget
+            */
+            if ((def.hasQObject || def.hasQGadget) && qmlRegistrationMacroSymbol.token != NOTOKEN) {
+                QByteArray msg("Potential QML registration macro was found, but no header containing it was included.\n"
+                               "This might cause runtime errors in QML applications\n"
+                               "Include <QtQmlIntegration/qqmlintegration.h> or <QtQml/qqmlregistration.h> to fix this.");
+                warning(qmlRegistrationMacroSymbol, msg.constData());
+            }
 
             if (!def.hasQObject && !def.hasQGadget && def.signalList.isEmpty() && def.slotList.isEmpty()
                 && def.propertyList.isEmpty() && def.enumDeclarations.isEmpty())

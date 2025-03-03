@@ -786,6 +786,7 @@ private slots:
 
     void dontStripNamespaces();
     void oldStyleCasts();
+    void faultyQmlRegistration();
     void warnOnExtraSignalSlotQualifiaction();
     void uLongLong();
     void inputFileNameWithDotsButNoExtension();
@@ -1017,6 +1018,23 @@ void tst_Moc::oldStyleCasts()
     VERIFY_NO_ERRORS(proc);
 #else
     QSKIP("Only tested on linux/gcc");
+#endif
+}
+
+void tst_Moc::faultyQmlRegistration()
+{
+#ifdef MOC_CROSS_COMPILED
+    QSKIP("Not tested when cross-compiled");
+#endif
+#if QT_CONFIG(process)
+    QProcess proc;
+    proc.start(m_moc, QStringList(m_sourceDirectory + QStringLiteral("/faulty_qml_registration/faulty_registration.h")));
+    QVERIFY(proc.waitForFinished());
+    QCOMPARE(proc.exitCode(), 0);
+    QByteArray errorMsg = proc.readAllStandardError();
+    QVERIFY2(errorMsg.contains("QML registration macro"), errorMsg.constData());
+#else
+    QSKIP("Requires QProcess");
 #endif
 }
 
