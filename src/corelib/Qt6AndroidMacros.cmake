@@ -1713,7 +1713,7 @@ function(qt_internal_android_app_runner_arguments target out_runner_path out_arg
     set(runner_dir "${QT_HOST_PATH}/${QT6_HOST_INFO_LIBEXECDIR}")
     set(${out_runner_path} "${runner_dir}/qt-android-runner.py" PARENT_SCOPE)
 
-    _qt_internal_android_get_target_android_build_dir(${target} android_build_dir)
+    _qt_internal_android_get_target_android_build_dir(android_build_dir ${target})
     set(${out_arguments}
         "--adb" "${ANDROID_SDK_ROOT}/platform-tools/adb"
         "--build-path" "${android_build_dir}"
@@ -1722,7 +1722,7 @@ function(qt_internal_android_app_runner_arguments target out_runner_path out_arg
     )
 endfunction()
 
-function(_qt_internal_android_get_target_android_build_dir target out_build_dir)
+function(_qt_internal_android_get_target_android_build_dir out_build_dir target)
     get_target_property(target_binary_dir ${target} BINARY_DIR)
     if(QT_USE_TARGET_ANDROID_BUILD_DIR)
         set(${out_build_dir} "${target_binary_dir}/android-build-${target}" PARENT_SCOPE)
