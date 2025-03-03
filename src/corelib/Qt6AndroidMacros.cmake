@@ -37,6 +37,23 @@ function(_qt_internal_android_get_target_sdk_build_tools_revision out_var target
     set(${out_var} "${android_sdk_build_tools_genex}" PARENT_SCOPE)
 endfunction()
 
+# Returns the path to androiddeployqt.
+function(_qt_internal_android_get_deployment_tool out_var)
+    if(TARGET ${QT_CMAKE_EXPORT_NAMESPACE}::androiddeployqt)
+        set(${out_var} ${QT_CMAKE_EXPORT_NAMESPACE}::androiddeployqt PARENT_SCOPE)
+    else()
+        set(fall_back_absolute_path "${QT_HOST_PATH}/${QT6_HOST_INFO_BINDIR}/androiddeployqt")
+        if(NOT EXISTS "${fall_back_absolute_path}")
+            message(FATAL_ERROR "Unable to detect androiddeployqt in system installation."
+                " Please reinstall Qt."
+                " If the issue persists, please report a bug at https://bugreports.qt.io."
+            )
+        endif()
+
+        set(${out_var} "${fall_back_absolute_path}" PARENT_SCOPE)
+    endif()
+endfunction()
+
 # The function appends to the 'out_var' a 'json_property' that contains the 'tool' path. If 'tool'
 # target or its IMPORTED_LOCATION are not found the function displays warning, but is not failing
 # at the project configuring phase.
@@ -512,7 +529,8 @@ function(qt6_android_add_apk_target target)
         _qt_internal_create_global_apk_all_target_if_needed()
     endif()
 
-    set(deployment_tool "${QT_HOST_PATH}/${QT6_HOST_INFO_BINDIR}/androiddeployqt")
+    _qt_internal_android_get_deployment_tool(deployment_tool)
+
     # No need to use genex for the BINARY_DIR since it's read-only.
     get_target_property(target_binary_dir ${target} BINARY_DIR)
 
