@@ -173,7 +173,7 @@ QSocketNotifier::~QSocketNotifier()
 
 
 /*!
-    \fn void QSocketNotifier::activated(int socket)
+    \fn void QSocketNotifier::activated(int socket, QPrivateSignal)
     \deprecated To avoid unintended truncation of the descriptor, use
     the QSocketDescriptor overload of this function. If you need
     compatibility with versions older than 5.15 you need to change
