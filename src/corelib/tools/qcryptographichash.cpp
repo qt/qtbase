@@ -322,7 +322,7 @@ public:
         SHA3Context sha3Context;
 
         enum class Sha3Variant { Sha3, Keccak };
-        static void sha3Finish(SHA3Context &ctx, HashResult &result, int bitCount, Sha3Variant sha3Variant);
+        static void sha3Finish(SHA3Context &ctx, HashResult &result, Sha3Variant sha3Variant);
         blake2b_state blake2bContext;
         blake2s_state blake2sContext;
 #endif
@@ -336,7 +336,7 @@ public:
 
 #ifndef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
 void QCryptographicHashPrivate::State::sha3Finish(SHA3Context &ctx, HashResult &result,
-                                                  int bitCount, Sha3Variant sha3Variant)
+                                                  Sha3Variant sha3Variant)
 {
     /*
         FIPS 202 §6.1 defines SHA-3 in terms of calculating the Keccak function
@@ -359,8 +359,6 @@ void QCryptographicHashPrivate::State::sha3Finish(SHA3Context &ctx, HashResult &
         and for an unsigned char this gives us 0b10'00'00'00, or 0x80.
     */
     static const unsigned char sha3FinalSuffix = 0x80;
-
-    result.resizeForOverwrite(bitCount / 8);
 
     switch (sha3Variant) {
     case Sha3Variant::Sha3:
@@ -954,6 +952,7 @@ void QCryptographicHashPrivate::finalize() noexcept
 */
 void QCryptographicHashPrivate::finalizeUnchecked() noexcept
 {
+    result.resizeForOverwrite(hashLengthInternal(method));
     state.finalizeUnchecked(method, result);
 }
 
@@ -966,20 +965,18 @@ void QCryptographicHashPrivate::State::finalizeUnchecked(QCryptographicHash::Alg
         method == QCryptographicHash::Keccak_384 ||
         method == QCryptographicHash::Keccak_512) {
         SHA3Context copy = sha3Context;
-        sha3Finish(copy, result, 8 * hashLengthInternal(method), Sha3Variant::Keccak);
+        sha3Finish(copy, result, Sha3Variant::Keccak);
     } else if (method == QCryptographicHash::Blake2b_160 ||
                method == QCryptographicHash::Blake2b_256 ||
                method == QCryptographicHash::Blake2b_384) {
         const auto length = hashLengthInternal(method);
         blake2b_state copy = blake2bContext;
-        result.resizeForOverwrite(length);
         blake2b_final(&copy, result.data(), length);
     } else if (method == QCryptographicHash::Blake2s_128 ||
                method == QCryptographicHash::Blake2s_160 ||
                method == QCryptographicHash::Blake2s_224) {
         const auto length = hashLengthInternal(method);
         blake2s_state copy = blake2sContext;
-        result.resizeForOverwrite(length);
         blake2s_final(&copy, result.data(), length);
     } else {
         evp.finalizeUnchecked(result);
@@ -991,7 +988,7 @@ void QCryptographicHashPrivate::EVP::finalizeUnchecked(HashResult &result) noexc
     if (!initializationFailed) {
         EVP_MD_CTX_ptr copy = EVP_MD_CTX_ptr(EVP_MD_CTX_new());
         EVP_MD_CTX_copy_ex(copy.get(), context.get());
-        result.resizeForOverwrite(EVP_MD_get_size(algorithm.get()));
+        Q_ASSERT(result.size() == EVP_MD_get_size(algorithm.get()));
         EVP_DigestFinal_ex(copy.get(), result.data(), nullptr);
     }
 }
@@ -1004,7 +1001,6 @@ void QCryptographicHashPrivate::State::finalizeUnchecked(QCryptographicHash::Alg
     switch (method) {
     case QCryptographicHash::Sha1: {
         Sha1State copy = sha1Context;
-        result.resizeForOverwrite(20);
         sha1FinalizeState(&copy);
         sha1ToHash(&copy, result.data());
         break;
@@ -1017,37 +1013,31 @@ void QCryptographicHashPrivate::State::finalizeUnchecked(QCryptographicHash::Alg
 #else
     case QCryptographicHash::Md4: {
         md4_context copy = md4Context;
-        result.resizeForOverwrite(MD4_RESULTLEN);
         md4_final(&copy, result.data());
         break;
     }
     case QCryptographicHash::Md5: {
         MD5Context copy = md5Context;
-        result.resizeForOverwrite(16);
         MD5Final(&copy, result.data());
         break;
     }
     case QCryptographicHash::Sha224: {
         SHA224Context copy = sha224Context;
-        result.resizeForOverwrite(SHA224HashSize);
         SHA224Result(&copy, result.data());
         break;
     }
     case QCryptographicHash::Sha256: {
         SHA256Context copy = sha256Context;
-        result.resizeForOverwrite(SHA256HashSize);
         SHA256Result(&copy, result.data());
         break;
     }
     case QCryptographicHash::Sha384: {
         SHA384Context copy = sha384Context;
-        result.resizeForOverwrite(SHA384HashSize);
         SHA384Result(&copy, result.data());
         break;
     }
     case QCryptographicHash::Sha512: {
         SHA512Context copy = sha512Context;
-        result.resizeForOverwrite(SHA512HashSize);
         SHA512Result(&copy, result.data());
         break;
     }
@@ -1056,7 +1046,7 @@ void QCryptographicHashPrivate::State::finalizeUnchecked(QCryptographicHash::Alg
     case QCryptographicHash::RealSha3_384:
     case QCryptographicHash::RealSha3_512: {
         SHA3Context copy = sha3Context;
-        sha3Finish(copy, result, 8 * hashLengthInternal(method), Sha3Variant::Sha3);
+        sha3Finish(copy, result, Sha3Variant::Sha3);
         break;
     }
     case QCryptographicHash::Keccak_224:
@@ -1064,7 +1054,7 @@ void QCryptographicHashPrivate::State::finalizeUnchecked(QCryptographicHash::Alg
     case QCryptographicHash::Keccak_384:
     case QCryptographicHash::Keccak_512: {
         SHA3Context copy = sha3Context;
-        sha3Finish(copy, result, 8 * hashLengthInternal(method), Sha3Variant::Keccak);
+        sha3Finish(copy, result, Sha3Variant::Keccak);
         break;
     }
     case QCryptographicHash::Blake2b_160:
@@ -1073,7 +1063,6 @@ void QCryptographicHashPrivate::State::finalizeUnchecked(QCryptographicHash::Alg
     case QCryptographicHash::Blake2b_512: {
         const auto length = hashLengthInternal(method);
         blake2b_state copy = blake2bContext;
-        result.resizeForOverwrite(length);
         blake2b_final(&copy, result.data(), length);
         break;
     }
@@ -1083,7 +1072,6 @@ void QCryptographicHashPrivate::State::finalizeUnchecked(QCryptographicHash::Alg
     case QCryptographicHash::Blake2s_256: {
         const auto length = hashLengthInternal(method);
         blake2s_state copy = blake2sContext;
-        result.resizeForOverwrite(length);
         blake2s_final(&copy, result.data(), length);
         break;
     }
