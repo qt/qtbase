@@ -860,6 +860,7 @@ QWidget::QWidget(QWidget *parent, Qt::WindowFlags f)
 */
 QWidget::QWidget(QWidgetPrivate &dd, QWidget* parent, Qt::WindowFlags f)
     : QObject(dd, nullptr), QPaintDevice()
+    , data(&dd.data)
 {
     Q_D(QWidget);
     QT_TRY {
@@ -942,8 +943,6 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
     Q_ASSERT(allWidgets);
     if (allWidgets)
         allWidgets->insert(q);
-
-    q->data = &data;
 
 #if QT_CONFIG(thread)
     if (!parent) {
