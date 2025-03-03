@@ -404,21 +404,21 @@ T QMaxHeap<T>::pop()
 //                                 QInt64Hash                                 //
 //============================================================================//
 
-// Copied from qhash.cpp
-static const uchar prime_deltas[] = {
-    0,  0,  1,  3,  1,  5,  3,  3,  1,  9,  7,  5,  3, 17, 27,  3,
-    1, 29,  3, 21,  7, 17, 15,  9, 43, 35, 15,  0,  0,  0,  0,  0
-};
-
-// Copied from qhash.cpp
-static inline int primeForNumBits(int numBits)
-{
-    return (1 << numBits) + prime_deltas[numBits];
-}
-
 static inline int primeForCount(int count)
 {
     Q_ASSERT(count >= 0); // Q_PRE
+
+    // Copied from Qt 5 qhash.cpp
+    constexpr auto primeForNumBits = [](int numBits) -> int
+    {
+        constexpr uchar prime_deltas[] = {
+            0,  0,  1,  3,  1,  5,  3,  3,  1,  9,  7,  5,  3, 17, 27,  3,
+            1, 29,  3, 21,  7, 17, 15,  9, 43, 35, 15,  0,  0,  0,  0,  0
+        };
+
+        return (1 << numBits) + prime_deltas[numBits];
+    };
+
     int low = 0;
     int high = 32;
     for (int i = 0; i < 5; ++i) {
