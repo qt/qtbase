@@ -587,25 +587,8 @@ function(qt6_android_add_apk_target target)
         list(APPEND extra_args "--verbose")
     endif()
 
-    if(QT_ANDROID_DEPLOY_RELEASE)
-        message(WARNING "QT_ANDROID_DEPLOY_RELEASE is not a valid Qt variable."
-            " Please set QT_ANDROID_DEPLOYMENT_TYPE to RELEASE instead.")
-    endif()
-    # Setting QT_ANDROID_DEPLOYMENT_TYPE to a value other than Release disables
-    # release package signing regardless of the build type.
-    if(QT_ANDROID_DEPLOYMENT_TYPE)
-        string(TOUPPER "${QT_ANDROID_DEPLOYMENT_TYPE}" deployment_type_upper)
-        if("${deployment_type_upper}" STREQUAL "RELEASE")
-            list(APPEND extra_args "--release")
-        endif()
-    elseif(NOT QT_BUILD_TESTS)
-    # Workaround for tests: do not set automatically --release flag if QT_BUILD_TESTS is set.
-    # Release package need to be signed. Signing is currently not supported by CI.
-    # What is more, also androidtestrunner is not working on release APKs,
-    # For example running "adb shell run-as" on release APK will finish with the error:
-    #    run-as: Package '[PACKAGE-NAME]' is not debuggable
-        list(APPEND extra_args $<$<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>,$<CONFIG:MinSizeRel>>:--release>)
-    endif()
+    _qt_internal_android_get_deployment_type_option(android_deployment_type_option "--release" "")
+    list(APPEND extra_args "${android_deployment_type_option}")
 
     _qt_internal_check_depfile_support(has_depfile_support)
 
@@ -1769,6 +1752,41 @@ function(_qt_internal_expose_android_package_source_dir_to_ide target)
         foreach(f IN LISTS android_package_sources)
             _qt_internal_expose_source_file_to_ide(${target} "${f}")
         endforeach()
+    endif()
+endfunction()
+
+# Return the one of the deployment flags either release or debug depending on
+# the preferred config. The returned "flags" are wrapped into generator
+# expression so only usable at the generator stage.
+function(_qt_internal_android_get_deployment_type_option out_var release_flag debug_flag)
+    if(QT_ANDROID_DEPLOY_RELEASE)
+        message(WARNING "QT_ANDROID_DEPLOY_RELEASE is not a valid Qt variable."
+            " Please set QT_ANDROID_DEPLOYMENT_TYPE to RELEASE instead.")
+    endif()
+    # Setting QT_ANDROID_DEPLOYMENT_TYPE to a value other than Release disables
+    # release package signing regardless of the build type.
+    if(QT_ANDROID_DEPLOYMENT_TYPE)
+        string(TOUPPER "${QT_ANDROID_DEPLOYMENT_TYPE}" deployment_type_upper)
+        if("${deployment_type_upper}" STREQUAL "RELEASE")
+            set(${out_var} "${release_flag}" PARENT_SCOPE)
+        else()
+            set(${out_var} "${debug_flag}" PARENT_SCOPE)
+        endif()
+    elseif(NOT QT_BUILD_TESTS)
+        # Workaround for tests: do not set automatically --release flag if QT_BUILD_TESTS is set.
+        # Release package need to be signed. Signing is currently not supported by CI.
+        # What is more, also androidtestrunner is not working on release APKs,
+        # For example running "adb shell run-as" on release APK will finish with the error:
+        #    run-as: Package '[PACKAGE-NAME]' is not debuggable
+        string(JOIN "" ${out_var}
+            "$<IF:$<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>,$<CONFIG:MinSizeRel>>,"
+                "${release_flag},"
+                "${debug_flag}"
+            ">"
+        )
+        set(${out_var} "${${out_var}}" PARENT_SCOPE)
+    else()
+        set(${out_var} "${debug_flag}" PARENT_SCOPE)
     endif()
 endfunction()
 
