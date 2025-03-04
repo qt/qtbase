@@ -3152,7 +3152,7 @@ bool QRhiVulkan::ensurePipelineCache(const void *initialData, size_t initialData
     return true;
 }
 
-void QRhiVulkan::updateShaderResourceBindings(QRhiShaderResourceBindings *srb, int descSetIdx)
+void QRhiVulkan::updateShaderResourceBindings(QRhiShaderResourceBindings *srb)
 {
     QVkShaderResourceBindings *srbD = QRHI_RES(QVkShaderResourceBindings, srb);
 
@@ -3162,143 +3162,138 @@ void QRhiVulkan::updateShaderResourceBindings(QRhiShaderResourceBindings *srb, i
     QVarLengthArray<VkWriteDescriptorSet, 12> writeInfos;
     QVarLengthArray<QPair<int, int>, 12> infoIndices;
 
-    const bool updateAll = descSetIdx < 0;
-    int frameSlot = updateAll ? 0 : descSetIdx;
-    while (frameSlot < (updateAll ? QVK_FRAMES_IN_FLIGHT : descSetIdx + 1)) {
-        for (int i = 0, ie = srbD->sortedBindings.size(); i != ie; ++i) {
-            const QRhiShaderResourceBinding::Data *b = shaderResourceBindingData(srbD->sortedBindings.at(i));
-            QVkShaderResourceBindings::BoundResourceData &bd(srbD->boundResourceData[frameSlot][i]);
+    for (int i = 0, ie = srbD->sortedBindings.size(); i != ie; ++i) {
+        const QRhiShaderResourceBinding::Data *b = shaderResourceBindingData(srbD->sortedBindings.at(i));
+        QVkShaderResourceBindings::BoundResourceData &bd(srbD->boundResourceData[currentFrameSlot][i]);
 
-            VkWriteDescriptorSet writeInfo = {};
-            writeInfo.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            writeInfo.dstSet = srbD->descSets[frameSlot];
-            writeInfo.dstBinding = uint32_t(b->binding);
-            writeInfo.descriptorCount = 1;
+        VkWriteDescriptorSet writeInfo = {};
+        writeInfo.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        writeInfo.dstSet = srbD->descSets[currentFrameSlot];
+        writeInfo.dstBinding = uint32_t(b->binding);
+        writeInfo.descriptorCount = 1;
 
-            int bufferInfoIndex = -1;
-            int imageInfoIndex = -1;
+        int bufferInfoIndex = -1;
+        int imageInfoIndex = -1;
 
-            switch (b->type) {
-            case QRhiShaderResourceBinding::UniformBuffer:
-            {
-                writeInfo.descriptorType = b->u.ubuf.hasDynamicOffset ? VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC
-                                                                      : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-                QRhiBuffer *buf = b->u.ubuf.buf;
-                QVkBuffer *bufD = QRHI_RES(QVkBuffer, buf);
-                bd.ubuf.id = bufD->m_id;
-                bd.ubuf.generation = bufD->generation;
-                VkDescriptorBufferInfo bufInfo;
-                bufInfo.buffer = bufD->m_type == QRhiBuffer::Dynamic ? bufD->buffers[frameSlot] : bufD->buffers[0];
-                bufInfo.offset = b->u.ubuf.offset;
-                bufInfo.range = b->u.ubuf.maybeSize ? b->u.ubuf.maybeSize : bufD->m_size;
-                // be nice and assert when we know the vulkan device would die a horrible death due to non-aligned reads
-                Q_ASSERT(aligned(bufInfo.offset, ubufAlign) == bufInfo.offset);
-                bufferInfoIndex = bufferInfos.size();
-                bufferInfos.append(bufInfo);
+        switch (b->type) {
+        case QRhiShaderResourceBinding::UniformBuffer:
+        {
+            writeInfo.descriptorType = b->u.ubuf.hasDynamicOffset ? VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC
+                                                                    : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            QRhiBuffer *buf = b->u.ubuf.buf;
+            QVkBuffer *bufD = QRHI_RES(QVkBuffer, buf);
+            bd.ubuf.id = bufD->m_id;
+            bd.ubuf.generation = bufD->generation;
+            VkDescriptorBufferInfo bufInfo;
+            bufInfo.buffer = bufD->m_type == QRhiBuffer::Dynamic ? bufD->buffers[currentFrameSlot] : bufD->buffers[0];
+            bufInfo.offset = b->u.ubuf.offset;
+            bufInfo.range = b->u.ubuf.maybeSize ? b->u.ubuf.maybeSize : bufD->m_size;
+            // be nice and assert when we know the vulkan device would die a horrible death due to non-aligned reads
+            Q_ASSERT(aligned(bufInfo.offset, ubufAlign) == bufInfo.offset);
+            bufferInfoIndex = bufferInfos.size();
+            bufferInfos.append(bufInfo);
+        }
+            break;
+        case QRhiShaderResourceBinding::SampledTexture:
+        {
+            const QRhiShaderResourceBinding::Data::TextureAndOrSamplerData *data = &b->u.stex;
+            writeInfo.descriptorCount = data->count; // arrays of combined image samplers are supported
+            writeInfo.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            ArrayOfImageDesc imageInfo(data->count);
+            for (int elem = 0; elem < data->count; ++elem) {
+                QVkTexture *texD = QRHI_RES(QVkTexture, data->texSamplers[elem].tex);
+                QVkSampler *samplerD = QRHI_RES(QVkSampler, data->texSamplers[elem].sampler);
+                bd.stex.d[elem].texId = texD->m_id;
+                bd.stex.d[elem].texGeneration = texD->generation;
+                bd.stex.d[elem].samplerId = samplerD->m_id;
+                bd.stex.d[elem].samplerGeneration = samplerD->generation;
+                imageInfo[elem].sampler = samplerD->sampler;
+                imageInfo[elem].imageView = texD->imageView;
+                imageInfo[elem].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             }
-                break;
-            case QRhiShaderResourceBinding::SampledTexture:
-            {
-                const QRhiShaderResourceBinding::Data::TextureAndOrSamplerData *data = &b->u.stex;
-                writeInfo.descriptorCount = data->count; // arrays of combined image samplers are supported
-                writeInfo.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                ArrayOfImageDesc imageInfo(data->count);
-                for (int elem = 0; elem < data->count; ++elem) {
-                    QVkTexture *texD = QRHI_RES(QVkTexture, data->texSamplers[elem].tex);
-                    QVkSampler *samplerD = QRHI_RES(QVkSampler, data->texSamplers[elem].sampler);
-                    bd.stex.d[elem].texId = texD->m_id;
-                    bd.stex.d[elem].texGeneration = texD->generation;
-                    bd.stex.d[elem].samplerId = samplerD->m_id;
-                    bd.stex.d[elem].samplerGeneration = samplerD->generation;
-                    imageInfo[elem].sampler = samplerD->sampler;
-                    imageInfo[elem].imageView = texD->imageView;
-                    imageInfo[elem].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                }
-                bd.stex.count = data->count;
-                imageInfoIndex = imageInfos.size();
-                imageInfos.append(imageInfo);
+            bd.stex.count = data->count;
+            imageInfoIndex = imageInfos.size();
+            imageInfos.append(imageInfo);
+        }
+            break;
+        case QRhiShaderResourceBinding::Texture:
+        {
+            const QRhiShaderResourceBinding::Data::TextureAndOrSamplerData *data = &b->u.stex;
+            writeInfo.descriptorCount = data->count; // arrays of (separate) images are supported
+            writeInfo.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+            ArrayOfImageDesc imageInfo(data->count);
+            for (int elem = 0; elem < data->count; ++elem) {
+                QVkTexture *texD = QRHI_RES(QVkTexture, data->texSamplers[elem].tex);
+                bd.stex.d[elem].texId = texD->m_id;
+                bd.stex.d[elem].texGeneration = texD->generation;
+                bd.stex.d[elem].samplerId = 0;
+                bd.stex.d[elem].samplerGeneration = 0;
+                imageInfo[elem].sampler = VK_NULL_HANDLE;
+                imageInfo[elem].imageView = texD->imageView;
+                imageInfo[elem].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             }
-                break;
-            case QRhiShaderResourceBinding::Texture:
-            {
-                const QRhiShaderResourceBinding::Data::TextureAndOrSamplerData *data = &b->u.stex;
-                writeInfo.descriptorCount = data->count; // arrays of (separate) images are supported
-                writeInfo.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-                ArrayOfImageDesc imageInfo(data->count);
-                for (int elem = 0; elem < data->count; ++elem) {
-                    QVkTexture *texD = QRHI_RES(QVkTexture, data->texSamplers[elem].tex);
-                    bd.stex.d[elem].texId = texD->m_id;
-                    bd.stex.d[elem].texGeneration = texD->generation;
-                    bd.stex.d[elem].samplerId = 0;
-                    bd.stex.d[elem].samplerGeneration = 0;
-                    imageInfo[elem].sampler = VK_NULL_HANDLE;
-                    imageInfo[elem].imageView = texD->imageView;
-                    imageInfo[elem].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                }
-                bd.stex.count = data->count;
-                imageInfoIndex = imageInfos.size();
-                imageInfos.append(imageInfo);
-            }
-                break;
-            case QRhiShaderResourceBinding::Sampler:
-            {
-                QVkSampler *samplerD = QRHI_RES(QVkSampler, b->u.stex.texSamplers[0].sampler);
-                writeInfo.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
-                bd.stex.d[0].texId = 0;
-                bd.stex.d[0].texGeneration = 0;
-                bd.stex.d[0].samplerId = samplerD->m_id;
-                bd.stex.d[0].samplerGeneration = samplerD->generation;
+            bd.stex.count = data->count;
+            imageInfoIndex = imageInfos.size();
+            imageInfos.append(imageInfo);
+        }
+            break;
+        case QRhiShaderResourceBinding::Sampler:
+        {
+            QVkSampler *samplerD = QRHI_RES(QVkSampler, b->u.stex.texSamplers[0].sampler);
+            writeInfo.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
+            bd.stex.d[0].texId = 0;
+            bd.stex.d[0].texGeneration = 0;
+            bd.stex.d[0].samplerId = samplerD->m_id;
+            bd.stex.d[0].samplerGeneration = samplerD->generation;
+            ArrayOfImageDesc imageInfo(1);
+            imageInfo[0].sampler = samplerD->sampler;
+            imageInfo[0].imageView = VK_NULL_HANDLE;
+            imageInfo[0].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+            imageInfoIndex = imageInfos.size();
+            imageInfos.append(imageInfo);
+        }
+            break;
+        case QRhiShaderResourceBinding::ImageLoad:
+        case QRhiShaderResourceBinding::ImageStore:
+        case QRhiShaderResourceBinding::ImageLoadStore:
+        {
+            QVkTexture *texD = QRHI_RES(QVkTexture, b->u.simage.tex);
+            VkImageView view = texD->perLevelImageViewForLoadStore(b->u.simage.level);
+            if (view) {
+                writeInfo.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+                bd.simage.id = texD->m_id;
+                bd.simage.generation = texD->generation;
                 ArrayOfImageDesc imageInfo(1);
-                imageInfo[0].sampler = samplerD->sampler;
-                imageInfo[0].imageView = VK_NULL_HANDLE;
+                imageInfo[0].sampler = VK_NULL_HANDLE;
+                imageInfo[0].imageView = view;
                 imageInfo[0].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
                 imageInfoIndex = imageInfos.size();
                 imageInfos.append(imageInfo);
             }
-                break;
-            case QRhiShaderResourceBinding::ImageLoad:
-            case QRhiShaderResourceBinding::ImageStore:
-            case QRhiShaderResourceBinding::ImageLoadStore:
-            {
-                QVkTexture *texD = QRHI_RES(QVkTexture, b->u.simage.tex);
-                VkImageView view = texD->perLevelImageViewForLoadStore(b->u.simage.level);
-                if (view) {
-                    writeInfo.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-                    bd.simage.id = texD->m_id;
-                    bd.simage.generation = texD->generation;
-                    ArrayOfImageDesc imageInfo(1);
-                    imageInfo[0].sampler = VK_NULL_HANDLE;
-                    imageInfo[0].imageView = view;
-                    imageInfo[0].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
-                    imageInfoIndex = imageInfos.size();
-                    imageInfos.append(imageInfo);
-                }
-            }
-                break;
-            case QRhiShaderResourceBinding::BufferLoad:
-            case QRhiShaderResourceBinding::BufferStore:
-            case QRhiShaderResourceBinding::BufferLoadStore:
-            {
-                QVkBuffer *bufD = QRHI_RES(QVkBuffer, b->u.sbuf.buf);
-                writeInfo.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-                bd.sbuf.id = bufD->m_id;
-                bd.sbuf.generation = bufD->generation;
-                VkDescriptorBufferInfo bufInfo;
-                bufInfo.buffer = bufD->m_type == QRhiBuffer::Dynamic ? bufD->buffers[frameSlot] : bufD->buffers[0];
-                bufInfo.offset = b->u.ubuf.offset;
-                bufInfo.range = b->u.ubuf.maybeSize ? b->u.ubuf.maybeSize : bufD->m_size;
-                bufferInfoIndex = bufferInfos.size();
-                bufferInfos.append(bufInfo);
-            }
-                break;
-            default:
-                continue;
-            }
-
-            writeInfos.append(writeInfo);
-            infoIndices.append({ bufferInfoIndex, imageInfoIndex });
         }
-        ++frameSlot;
+            break;
+        case QRhiShaderResourceBinding::BufferLoad:
+        case QRhiShaderResourceBinding::BufferStore:
+        case QRhiShaderResourceBinding::BufferLoadStore:
+        {
+            QVkBuffer *bufD = QRHI_RES(QVkBuffer, b->u.sbuf.buf);
+            writeInfo.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+            bd.sbuf.id = bufD->m_id;
+            bd.sbuf.generation = bufD->generation;
+            VkDescriptorBufferInfo bufInfo;
+            bufInfo.buffer = bufD->m_type == QRhiBuffer::Dynamic ? bufD->buffers[currentFrameSlot] : bufD->buffers[0];
+            bufInfo.offset = b->u.ubuf.offset;
+            bufInfo.range = b->u.ubuf.maybeSize ? b->u.ubuf.maybeSize : bufD->m_size;
+            bufferInfoIndex = bufferInfos.size();
+            bufferInfos.append(bufInfo);
+        }
+            break;
+        default:
+            continue;
+        }
+
+        writeInfos.append(writeInfo);
+        infoIndices.append({ bufferInfoIndex, imageInfoIndex });
     }
 
     for (int i = 0, writeInfoCount = writeInfos.size(); i < writeInfoCount; ++i) {
@@ -5133,8 +5128,7 @@ void QRhiVulkan::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBin
     }
 
     QVkShaderResourceBindings *srbD = QRHI_RES(QVkShaderResourceBindings, srb);
-    const int descSetIdx = srbD->hasSlottedResource ? currentFrameSlot : 0;
-    auto &descSetBd(srbD->boundResourceData[descSetIdx]);
+    auto &descSetBd(srbD->boundResourceData[currentFrameSlot]);
     bool rewriteDescSet = false;
 
     // Do host writes and mark referenced shader resources as in-use.
@@ -5271,11 +5265,11 @@ void QRhiVulkan::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBin
 
     // write descriptor sets, if needed
     if (rewriteDescSet)
-        updateShaderResourceBindings(srb, descSetIdx);
+        updateShaderResourceBindings(srb);
 
     // make sure the descriptors for the correct slot will get bound.
     // also, dynamic offsets always need a bind.
-    const bool forceRebind = (srbD->hasSlottedResource && cbD->currentDescSetSlot != descSetIdx) || srbD->hasDynamicOffset;
+    const bool forceRebind = cbD->currentDescSetSlot != currentFrameSlot || srbD->hasDynamicOffset;
 
     const bool srbChanged = gfxPsD ? (cbD->currentGraphicsSrb != srb) : (cbD->currentComputeSrb != srb);
 
@@ -5306,7 +5300,7 @@ void QRhiVulkan::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBin
             df->vkCmdBindDescriptorSets(cbD->activeSecondaryCbStack.last(),
                                         gfxPsD ? VK_PIPELINE_BIND_POINT_GRAPHICS : VK_PIPELINE_BIND_POINT_COMPUTE,
                                         gfxPsD ? gfxPsD->layout : compPsD->layout,
-                                        0, 1, &srbD->descSets[descSetIdx],
+                                        0, 1, &srbD->descSets[currentFrameSlot],
                                         uint32_t(dynOfs.size()),
                                         dynOfs.size() ? dynOfs.constData() : nullptr);
         } else {
@@ -5315,7 +5309,7 @@ void QRhiVulkan::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBin
             cmd.args.bindDescriptorSet.bindPoint = gfxPsD ? VK_PIPELINE_BIND_POINT_GRAPHICS
                                                           : VK_PIPELINE_BIND_POINT_COMPUTE;
             cmd.args.bindDescriptorSet.pipelineLayout = gfxPsD ? gfxPsD->layout : compPsD->layout;
-            cmd.args.bindDescriptorSet.descSet = srbD->descSets[descSetIdx];
+            cmd.args.bindDescriptorSet.descSet = srbD->descSets[currentFrameSlot];
             cmd.args.bindDescriptorSet.dynamicOffsetCount = dynOfs.size();
             cmd.args.bindDescriptorSet.dynamicOffsetIndex = cbD->pools.dynamicOffset.size();
             cbD->pools.dynamicOffset.append(dynOfs.constData(), dynOfs.size());
@@ -5329,7 +5323,7 @@ void QRhiVulkan::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBin
             cbD->currentComputeSrb = srb;
         }
         cbD->currentSrbGeneration = srbD->generation;
-        cbD->currentDescSetSlot = descSetIdx;
+        cbD->currentDescSetSlot = currentFrameSlot;
     }
 
     srbD->lastActiveFrameSlot = currentFrameSlot;
@@ -7405,13 +7399,10 @@ bool QVkShaderResourceBindings::create()
     std::copy(m_bindings.cbegin(), m_bindings.cend(), std::back_inserter(sortedBindings));
     std::sort(sortedBindings.begin(), sortedBindings.end(), QRhiImplementation::sortedBindingLessThan);
 
-    hasSlottedResource = false;
     hasDynamicOffset = false;
     for (const QRhiShaderResourceBinding &binding : std::as_const(sortedBindings)) {
         const QRhiShaderResourceBinding::Data *b = QRhiImplementation::shaderResourceBindingData(binding);
         if (b->type == QRhiShaderResourceBinding::UniformBuffer && b->u.ubuf.buf) {
-            if (QRHI_RES(QVkBuffer, b->u.ubuf.buf)->type() == QRhiBuffer::Dynamic)
-                hasSlottedResource = true;
             if (b->u.ubuf.hasDynamicOffset)
                 hasDynamicOffset = true;
         }

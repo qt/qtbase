@@ -233,7 +233,6 @@ struct QVkShaderResourceBindings : public QRhiShaderResourceBindings
     void updateResources(UpdateFlags flags) override;
 
     QVarLengthArray<QRhiShaderResourceBinding, 8> sortedBindings;
-    bool hasSlottedResource = false;
     bool hasDynamicOffset = false;
     int poolIndex = -1;
     VkDescriptorSetLayout layout = VK_NULL_HANDLE;
@@ -825,7 +824,7 @@ public:
                             VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage,
                             int startLayer, int layerCount,
                             int startLevel, int levelCount);
-    void updateShaderResourceBindings(QRhiShaderResourceBindings *srb, int descSetIdx = -1);
+    void updateShaderResourceBindings(QRhiShaderResourceBindings *srb);
     void ensureCommandPoolForNewFrame();
     double elapsedSecondsFromTimestamp(quint64 timestamp[2], bool *ok);
     void printExtraErrorInfo(VkResult err);
