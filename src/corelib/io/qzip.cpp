@@ -91,7 +91,7 @@ static void writeMSDosDate(uchar *dest, const QDateTime& dt)
 
 static int inflate(Bytef *dest, ulong *destLen, const Bytef *source, ulong sourceLen)
 {
-    z_stream stream;
+    z_stream stream = {};
     int err;
 
     stream.next_in = const_cast<Bytef*>(source);
@@ -103,9 +103,6 @@ static int inflate(Bytef *dest, ulong *destLen, const Bytef *source, ulong sourc
     stream.avail_out = (uInt)*destLen;
     if ((uLong)stream.avail_out != *destLen)
         return Z_BUF_ERROR;
-
-    stream.zalloc = (alloc_func)nullptr;
-    stream.zfree = (free_func)nullptr;
 
     err = inflateInit2(&stream, -MAX_WBITS);
     if (err != Z_OK)
