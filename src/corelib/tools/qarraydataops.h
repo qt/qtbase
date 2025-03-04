@@ -640,7 +640,12 @@ public:
         qsizetype nInserts = 0;
         qsizetype bytes;
 
-        Inserter(QArrayDataPointer<T> *d) : data(d) { }
+        void verifyPost(T *where)
+        { Q_ASSERT(where == displaceTo); }
+
+        explicit Inserter(QArrayDataPointer<T> *d, qsizetype pos, qsizetype n)
+            : data(d)
+        { displace(pos, n); }
         ~Inserter() {
             if constexpr (!std::is_nothrow_copy_constructible_v<T>) {
                 if (displaceFrom != displaceTo) {
@@ -664,9 +669,9 @@ public:
             return insertionPoint;
         }
 
-        void insert(qsizetype pos, const T *source, qsizetype n)
+        void insertRange(const T *source, qsizetype n)
         {
-            T *where = displace(pos, n);
+            T *where = displaceFrom;
 
             while (n--) {
                 new (where) T(*source);
@@ -674,25 +679,27 @@ public:
                 ++source;
                 ++displaceFrom;
             }
+            verifyPost(where);
         }
 
-        void insert(qsizetype pos, const T &t, qsizetype n)
+        void insertFill(const T &t, qsizetype n)
         {
-            T *where = displace(pos, n);
+            T *where = displaceFrom;
 
             while (n--) {
                 new (where) T(t);
                 ++where;
                 ++displaceFrom;
             }
+            verifyPost(where);
         }
 
-        void insertOne(qsizetype pos, T &&t)
+        void insertOne(T &&t)
         {
-            T *where = displace(pos, 1);
+            T *where = displaceFrom;
             new (where) T(std::move(t));
             ++displaceFrom;
-            Q_ASSERT(displaceFrom == displaceTo);
+            verifyPost(++where);
         }
 
     };
@@ -718,7 +725,7 @@ public:
                 ++this->size;
             }
         } else {
-            Inserter(this).insert(i, data, n);
+            Inserter(this, i, n).insertRange(data, n);
         }
     }
 
@@ -742,7 +749,7 @@ public:
                 ++this->size;
             }
         } else {
-            Inserter(this).insert(i, copy, n);
+            Inserter(this, i, n).insertFill(copy, n);
         }
     }
 
@@ -774,7 +781,7 @@ public:
             --this->ptr;
             ++this->size;
         } else {
-            Inserter(this).insertOne(i, std::move(tmp));
+            Inserter(this, i, 1).insertOne(std::move(tmp));
         }
     }
 
