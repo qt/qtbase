@@ -908,6 +908,15 @@
     \since 5.6
 
     Moves the item at index position \a from to index position \a to.
+
+    \c from and \c to must be within bounds.
+
+    For example, to move the first item to the end of the list:
+    \code
+    QList<int> list = {1, 2, 3};
+    list.move(0, list.size() - 1);
+    qDebug() << list; // Prints "QList(2, 3, 1)"
+    \endcode
 */
 
 /*! \fn template <typename T> void QList<T>::removeFirst()
