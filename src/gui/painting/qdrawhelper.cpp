@@ -3793,6 +3793,7 @@ static inline Operator getOperator(const QSpanData *data, const QT_FT_Span *span
     switch(data->type) {
     case QSpanData::Solid:
         solidSource = data->solidColor.alphaF() >= 1.0f;
+        op.noGradient = {};
         op.srcFetch = nullptr;
         op.srcFetch64 = nullptr;
         op.srcFetchFP = nullptr;
@@ -3821,6 +3822,7 @@ static inline Operator getOperator(const QSpanData *data, const QT_FT_Span *span
         break;
     case QSpanData::ConicalGradient:
         solidSource = !data->gradient.alphaColor;
+        op.noGradient = {}; // sic!
         op.srcFetch = qt_fetch_conical_gradient;
 #if QT_CONFIG(raster_64bit)
         op.srcFetch64 = qt_fetch_conical_gradient_rgb64;
@@ -3831,6 +3833,7 @@ static inline Operator getOperator(const QSpanData *data, const QT_FT_Span *span
         break;
     case QSpanData::Texture:
         solidSource = !data->texture.hasAlpha;
+        op.noGradient = {};
         op.srcFetch = getSourceFetch(getBlendType(data), data->texture.format);
 #if QT_CONFIG(raster_64bit)
         op.srcFetch64 = getSourceFetch64(getBlendType(data), data->texture.format);
