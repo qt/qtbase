@@ -634,11 +634,11 @@ public:
 
     struct Inserter
     {
-        QArrayDataPointer<T> *data;
+        QArrayDataPointer<T> * const data;
         T *displaceFrom;
-        T *displaceTo;
-        qsizetype nInserts = 0;
-        size_t bytes;
+        T * const displaceTo;
+        const qsizetype nInserts = 0;
+        const size_t bytes;
 
         void verifyPost(T *where)
         { Q_ASSERT(where == displaceTo); }
@@ -653,13 +653,14 @@ public:
             ::memmove(static_cast<void *>(displaceTo), static_cast<void *>(displaceFrom), bytes);
         }
         ~Inserter() {
+            auto inserts = nInserts;
             if constexpr (!std::is_nothrow_copy_constructible_v<T>) {
                 if (displaceFrom != displaceTo) {
                     ::memmove(static_cast<void *>(displaceFrom), static_cast<void *>(displaceTo), bytes);
-                    nInserts -= qAbs(displaceFrom - displaceTo);
+                    inserts -= qAbs(displaceFrom - displaceTo);
                 }
             }
-            data->size += nInserts;
+            data->size += inserts;
         }
         Q_DISABLE_COPY(Inserter)
 
