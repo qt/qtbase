@@ -638,14 +638,20 @@ public:
         T *displaceFrom;
         T *displaceTo;
         qsizetype nInserts = 0;
-        qsizetype bytes;
+        size_t bytes;
 
         void verifyPost(T *where)
         { Q_ASSERT(where == displaceTo); }
 
         explicit Inserter(QArrayDataPointer<T> *d, qsizetype pos, qsizetype n)
-            : data(d)
-        { displace(pos, n); }
+            : data{d},
+              displaceFrom{d->ptr + pos},
+              displaceTo{displaceFrom + n},
+              nInserts{n},
+              bytes{(data->size - pos) * sizeof(T)}
+        {
+            ::memmove(static_cast<void *>(displaceTo), static_cast<void *>(displaceFrom), bytes);
+        }
         ~Inserter() {
             if constexpr (!std::is_nothrow_copy_constructible_v<T>) {
                 if (displaceFrom != displaceTo) {
@@ -656,18 +662,6 @@ public:
             data->size += nInserts;
         }
         Q_DISABLE_COPY(Inserter)
-
-        T *displace(qsizetype pos, qsizetype n)
-        {
-            nInserts = n;
-            T *insertionPoint = data->ptr + pos;
-            displaceFrom = data->ptr + pos;
-            displaceTo = displaceFrom + n;
-            bytes = data->size - pos;
-            bytes *= sizeof(T);
-            ::memmove(static_cast<void *>(displaceTo), static_cast<void *>(displaceFrom), bytes);
-            return insertionPoint;
-        }
 
         void insertRange(const T *source, qsizetype n)
         {
