@@ -7,6 +7,9 @@
 #if QT_CONFIG(combobox)
 #include <qcombobox.h>
 #endif
+#if QT_CONFIG(draganddrop)
+#include <qdrag.h>
+#endif
 #include <qevent.h>
 #include <qlayout.h>
 #include <qmainwindow.h>
@@ -14,6 +17,7 @@
 #if QT_CONFIG(menubar)
 #include <qmenubar.h>
 #endif
+#include <qmimedata.h>
 #if QT_CONFIG(rubberband)
 #include <qrubberband.h>
 #endif
@@ -39,6 +43,8 @@
 #define POPUP_TIMER_INTERVAL 500
 
 QT_BEGIN_NAMESPACE
+
+using namespace Qt::StringLiterals;
 
 // qmainwindow.cpp
 extern QMainWindowLayout *qt_mainwindow_layout(const QMainWindow *window);
@@ -105,7 +111,9 @@ void QToolBarPrivate::updateWindowFlags(bool floating, bool unplug)
 
     flags |= Qt::FramelessWindowHint;
 
-    if (unplug)
+    // If we are performing a platform drag the flag is not needed and we want to avoid recreating
+    // the platform window when it would be removed later
+    if (unplug && !QMainWindowLayout::needsPlatformDrag())
         flags |= Qt::X11BypassWindowManagerHint;
 
     q->setWindowFlags(flags);
@@ -116,8 +124,6 @@ void QToolBarPrivate::setWindowState(bool floating, bool unplug, const QRect &re
     Q_Q(QToolBar);
     bool visible = !q->isHidden();
     bool wasFloating = q->isFloating(); // ...is also currently using popup menus
-
-    q->hide();
 
     updateWindowFlags(floating, unplug);
 
@@ -172,12 +178,27 @@ void QToolBarPrivate::startDrag(bool moving)
     QMainWindowLayout *layout = qt_mainwindow_layout(win);
     Q_ASSERT(layout != nullptr);
 
+    const bool wasFloating = q->isFloating();
+
     if (!moving) {
-        state->widgetItem = layout->unplug(q);
+        state->widgetItem = layout->unplug(q, QDockWidgetPrivate::DragScope::Group);
         Q_ASSERT(state->widgetItem != nullptr);
     }
     state->dragging = !moving;
     state->moving = moving;
+
+#if QT_CONFIG(draganddrop)
+    if (QMainWindowLayout::needsPlatformDrag() && state->dragging) {
+        auto result = layout->performPlatformWidgetDrag(state->widgetItem, state->pressPos);
+        if (result == Qt::IgnoreAction && !wasFloating) {
+            layout->revert(state->widgetItem);
+            delete state;
+            state = nullptr;
+        } else {
+            endDrag();
+        }
+    }
+#endif
 }
 
 void QToolBarPrivate::endDrag()
@@ -243,6 +264,11 @@ bool QToolBarPrivate::mousePressEvent(QMouseEvent *event)
 
 bool QToolBarPrivate::mouseReleaseEvent(QMouseEvent*)
 {
+    // if we are peforming a platform drag ignore the release here and  end the drag when the actual
+    // drag ends.
+    if (QMainWindowLayout::needsPlatformDrag())
+        return false;
+
     if (state != nullptr) {
         endDrag();
         return true;
@@ -291,6 +317,11 @@ bool QToolBarPrivate::mouseMoveEvent(QMouseEvent *event)
             startDrag(moving);
             if (!moving && !wasDragging)
                 q->grabMouse();
+    }
+
+    if (!state) {
+        q->releaseMouse();
+        return true;
     }
 
     if (state->dragging) {

@@ -108,6 +108,8 @@ private slots:
     void smoothScaleAlpha();
     void smoothScaleFormats_data();
     void smoothScaleFormats();
+    void smoothScaleNoConversion_data();
+    void smoothScaleNoConversion();
 
     void transformed_data();
     void transformed();
@@ -229,6 +231,7 @@ private slots:
     void largeRasterScale();
 
     void metadataChangeWithReadOnlyPixels();
+    void scaleIndexed();
 
 #if defined(Q_OS_WIN)
     void toWinHBITMAP_data();
@@ -2056,6 +2059,24 @@ void tst_QImage::smoothScaleFormats()
     transform.rotate(45);
     QImage rotated = src.transformed(transform);
     QVERIFY(rotated.hasAlphaChannel());
+}
+
+void tst_QImage::smoothScaleNoConversion_data()
+{
+    QTest::addColumn<QImage::Format>("format");
+    QTest::addRow("Mono") <<  QImage::Format_Mono;
+    QTest::addRow("MonoLSB") <<  QImage::Format_MonoLSB;
+    QTest::addRow("Indexed8") <<  QImage::Format_Indexed8;
+}
+
+void tst_QImage::smoothScaleNoConversion()
+{
+    QFETCH(QImage::Format, format);
+    QImage img(128, 128, format);
+    img.fill(1);
+    img.setColorTable(QList<QRgb>() << qRgba(255,0,0,255) << qRgba(0,0,0,0));
+    img = img.scaled(QSize(48, 48), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    QVERIFY(img.hasAlphaChannel());
 }
 
 static int count(const QImage &img, int x, int y, int dx, int dy, QRgb pixel)
@@ -4077,6 +4098,16 @@ void tst_QImage::metadataChangeWithReadOnlyPixels()
     // image metadata forces pixel detach (remove this sub-test if that ever changes).
     QVERIFY(image2.constBits() != (const uchar *)data);
     QCOMPARE(image.constBits(), (const uchar *)data);
+}
+
+void tst_QImage::scaleIndexed()
+{
+    QImage image(10, 10, QImage::Format_Indexed8);
+    image.setColor(0, qRgb(0,0,0));
+    image.setColor(1, qRgb(1,1,1));
+    image.fill(1);
+    image.setDevicePixelRatio(2);
+    QImage image2 = image.scaled(20, 20, Qt::KeepAspectRatio, Qt::SmoothTransformation); // do not crash
 }
 
 #if defined(Q_OS_WIN)

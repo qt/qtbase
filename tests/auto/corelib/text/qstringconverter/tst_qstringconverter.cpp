@@ -14,6 +14,21 @@
 
 using namespace Qt::StringLiterals;
 
+QT_BEGIN_NAMESPACE
+namespace QTest {
+template <typename T>
+char *toString(const std::optional<T> &opt)
+{
+    if (opt)
+        return QTest::toString(*opt);
+    else
+        return qstrdup("std::nullopt");
+}
+} // namespace QTest
+QT_END_NAMESPACE
+
+using QTest::toString;
+
 static constexpr bool IsBigEndian = QSysInfo::ByteOrder == QSysInfo::BigEndian;
 enum CodecLimitation {
     AsciiOnly,
@@ -182,9 +197,11 @@ private slots:
     void fromLocal8Bit_data();
     void fromLocal8Bit();
     void fromLocal8Bit_special_cases();
+    void fromLocal8Bit_2GiB();
     void toLocal8Bit_data();
     void toLocal8Bit();
     void toLocal8Bit_special_cases();
+    void toLocal8Bit_2GiB();
 #endif
 };
 
@@ -2180,19 +2197,32 @@ void tst_QStringConverter::encodingForName_data()
     QTest::addColumn<QByteArray>("name");
     QTest::addColumn<std::optional<QStringConverter::Encoding>>("encoding");
 
-    QTest::newRow("UTF-8") << QByteArray("UTF-8") << std::optional<QStringConverter::Encoding>(QStringConverter::Utf8);
-    QTest::newRow("utf8") << QByteArray("utf8") << std::optional<QStringConverter::Encoding>(QStringConverter::Utf8);
-    QTest::newRow("Utf-8") << QByteArray("Utf-8") << std::optional<QStringConverter::Encoding>(QStringConverter::Utf8);
-    QTest::newRow("UTF-16") << QByteArray("UTF-16") << std::optional<QStringConverter::Encoding>(QStringConverter::Utf16);
-    QTest::newRow("UTF-16le") << QByteArray("UTF-16le") << std::optional<QStringConverter::Encoding>(QStringConverter::Utf16LE);
-    QTest::newRow("ISO-8859-1") << QByteArray("ISO-8859-1") << std::optional<QStringConverter::Encoding>(QStringConverter::Latin1);
-    QTest::newRow("ISO8859-1") << QByteArray("ISO8859-1") << std::optional<QStringConverter::Encoding>(QStringConverter::Latin1);
-    QTest::newRow("iso8859-1") << QByteArray("iso8859-1") << std::optional<QStringConverter::Encoding>(QStringConverter::Latin1);
-    QTest::newRow("latin1") << QByteArray("latin1") << std::optional<QStringConverter::Encoding>(QStringConverter::Latin1);
-    QTest::newRow("latin2") << QByteArray("latin2") << std::optional<QStringConverter::Encoding>();
-    QTest::newRow("latin15") << QByteArray("latin15") << std::optional<QStringConverter::Encoding>();
-    QTest::newRow("<empty>") << QByteArray("") << std::optional<QStringConverter::Encoding>();
-    QTest::newRow("<nullptr>") << QByteArray(nullptr) << std::optional<QStringConverter::Encoding>();
+    auto row = [](const char *name, std::optional<QStringConverter::Encoding> expected = std::nullopt) {
+        auto protect = [](auto p) { return p ? *p ? p : "<empty>" : "<nullptr>"; };
+        QTest::addRow("%s", protect(name)) << QByteArray(name) << expected;
+    };
+
+    row("UTF-8",       QStringConverter::Utf8);
+    row("utf8",        QStringConverter::Utf8);
+    row("Utf-8",       QStringConverter::Utf8);
+    row("UTF-16",      QStringConverter::Utf16);
+    row("UTF-16le",    QStringConverter::Utf16LE);
+    row("ISO-8859-1",  QStringConverter::Latin1);
+    row("ISO8859-1",   QStringConverter::Latin1);
+    row("iso8859-1",   QStringConverter::Latin1);
+    row("latin1",      QStringConverter::Latin1);
+    row("latin-1_-",   QStringConverter::Latin1);
+    row("latin_1-_",   QStringConverter::Latin1);
+    row("-_latin-1",   QStringConverter::Latin1);
+    row("_-latin_1",   QStringConverter::Latin1);
+
+    // failures:
+    row(nullptr);
+    row("");
+    row("latin2");
+    row("latin42");
+    row(" latin1");    // spaces are significant
+    row("\tlatin1");   // HTs are significant
 }
 
 void tst_QStringConverter::encodingForName()
@@ -2567,6 +2597,41 @@ void tst_QStringConverter::fromLocal8Bit_special_cases()
     QCOMPARE(state.remainingChars, 0);
 }
 
+void tst_QStringConverter::fromLocal8Bit_2GiB()
+{
+#if QT_POINTER_SIZE == 4
+    QSKIP("This test is only relevant for 64-bit builds");
+#else
+    qsizetype size = qsizetype(std::numeric_limits<int>::max()) + 3;
+    QByteArray input;
+    QT_TRY {
+        input.reserve(size);
+    } QT_CATCH (const std::bad_alloc &) {
+        QSKIP("Out of memory");
+    }
+    // fill with '､' - a single octet character in Shift-JIS
+    input.fill('\xa4', std::numeric_limits<int>::max() - 1);
+    // then append 'こ' - a two octet character in Shift-JIS
+    // which is now straddling the 2 GiB boundary
+    input += "\x82\xb1";
+    // then append another two '､', so that our output is also crossing the
+    // 2 GiB boundary
+    input += "\xa4\xa4";
+    QCOMPARE(input.size(), input.capacity());
+    constexpr uint SHIFT_JIS = 932u;
+    QStringConverter::State state;
+    QString result;
+    QT_TRY {
+        result = QLocal8Bit::convertToUnicode_sys(input, SHIFT_JIS, &state);
+    } QT_CATCH (const std::bad_alloc &) {
+        QSKIP("Out of memory");
+    }
+    QCOMPARE(result.size(), size - 1); // The 2-octet character is only 1 code unit in UTF-16
+    QCOMPARE(result.last(4), u"､こ､､"); // Check we correctly decoded it
+    QCOMPARE(state.remainingChars, 0); // and there is nothing left in the state
+#endif
+}
+
 void tst_QStringConverter::toLocal8Bit_data()
 {
     fromLocal8Bit_data();
@@ -2644,6 +2709,39 @@ void tst_QStringConverter::toLocal8Bit_special_cases()
     result = QLocal8Bit::convertFromUnicode_sys(codeUnits.sliced(1), UTF8, &state);
     QCOMPARE(result.first(4), "\xf0\xac\xbd\xa6"_ba);
     QCOMPARE(state.remainingChars, 0);
+}
+
+void tst_QStringConverter::toLocal8Bit_2GiB()
+{
+#if QT_POINTER_SIZE == 4
+    QSKIP("This test is only relevant for 64-bit builds");
+#else
+    constexpr qsizetype TwoGiB = qsizetype(std::numeric_limits<int>::max());
+    QString input;
+    QT_TRY {
+        input.reserve(TwoGiB + 1);
+    } QT_CATCH (const std::bad_alloc &) {
+        QSKIP("Out of memory");
+    }
+    // Fill with a single code unit character
+    input.fill(u'.', TwoGiB - 1);
+    // Then append a 2 code unit character, so that the input straddles the 2 GiB
+    // boundary
+    input += u"🙂";
+    QCOMPARE(input.size(), input.capacity());
+    constexpr uint UTF8 = 65001u;
+    QStringConverter::State state;
+    QByteArray result;
+    QT_TRY {
+        result = QLocal8Bit::convertFromUnicode_sys(input, UTF8, &state);
+    } QT_CATCH (const std::bad_alloc &) {
+        QSKIP("Out of memory");
+    }
+    QUtf8StringView rView = result;
+    QCOMPARE(rView.size(), TwoGiB + 3); // The 2 code unit smiley is 4 code units in UTF-8
+    QCOMPARE(rView.last(7), u8"...🙂"); // Check we correctly decoded it
+    QCOMPARE(state.remainingChars, 0); // and there is nothing left in the state
+#endif
 }
 #endif // Q_OS_WIN
 

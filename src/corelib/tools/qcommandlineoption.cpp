@@ -116,8 +116,7 @@ QCommandLineOption::QCommandLineOption(const QStringList &names)
     The default value for the option is set to \a defaultValue.
 
     In Qt versions before 5.4, this constructor was \c explicit. In Qt 5.4
-    and later, it no longer is and can be used for C++11-style uniform
-    initialization:
+    and later, it no longer is and can be used for uniform initialization:
 
     \snippet code/src_corelib_tools_qcommandlineoption.cpp cxx11-init
 
@@ -152,8 +151,7 @@ QCommandLineOption::QCommandLineOption(const QString &name, const QString &descr
     The default value for the option is set to \a defaultValue.
 
     In Qt versions before 5.4, this constructor was \c explicit. In Qt 5.4
-    and later, it no longer is and can be used for C++11-style uniform
-    initialization:
+    and later, it no longer is and can be used for uniform initialization:
 
     \snippet code/src_corelib_tools_qcommandlineoption.cpp cxx11-init-list
 

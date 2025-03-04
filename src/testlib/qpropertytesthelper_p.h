@@ -201,7 +201,7 @@ void testReadWritePropertyBasics(
         QCOMPARE(spy->size(), 4);
 
     // test binding loop
-    if (std::unique_ptr<TestedClass> helperObj = std::move(helperConstructor())) {
+    if (std::unique_ptr<TestedClass> helperObj = helperConstructor()) {
         // Reset to 'initial', so that the binding loop test could check the
         // 'changed' value, because some tests already rely on the 'instance' to
         // have the 'changed' value once this test passes
@@ -338,7 +338,7 @@ void testWriteOncePropertyBasics(
     // Create a binding that sets the 'changed' value to the property.
     // This also tests binding loops.
     QVERIFY(!bindable.hasBinding());
-    std::unique_ptr<TestedClass> helperObj(std::move(helperConstructor()));
+    std::unique_ptr<TestedClass> helperObj = helperConstructor();
     QProperty<PropertyType> propSetter(changed); // if the helperConstructor() returns nullptr
     const QPropertyBinding<PropertyType> binding = helperObj
             ? Qt::makePropertyBinding([&]() {

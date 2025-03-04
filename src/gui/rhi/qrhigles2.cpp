@@ -7,6 +7,7 @@
 #include <QtCore/qmap.h>
 #include <QtGui/private/qopenglextensions_p.h>
 #include <QtGui/private/qopenglprogrambinarycache_p.h>
+#include <QtGui/private/qwindow_p.h>
 #include <qpa/qplatformopenglcontext.h>
 #include <qmath.h>
 
@@ -781,8 +782,8 @@ bool QRhiGles2::create(QRhi::Flags flags)
         caps.maxDrawBuffers = 1;
         caps.hasDrawBuffersFunc = false;
         // This does not mean MSAA is not supported, just that we cannot query
-        // the supported sample counts.
-        caps.maxSamples = 1;
+        // the supported sample counts. Assume that 4x is always supported.
+        caps.maxSamples = 4;
     }
 
     caps.msaaRenderBuffer = f->hasOpenGLExtension(QOpenGLExtensions::FramebufferMultisample)
@@ -1032,17 +1033,6 @@ QList<int> QRhiGles2::supportedSampleCounts() const
             supportedSampleCountList.append(i);
     }
     return supportedSampleCountList;
-}
-
-int QRhiGles2::effectiveSampleCount(int sampleCount) const
-{
-    // Stay compatible with QSurfaceFormat and friends where samples == 0 means the same as 1.
-    const int s = qBound(1, sampleCount, 64);
-    if (!supportedSampleCounts().contains(s)) {
-        qWarning("Attempted to set unsupported sample count %d", sampleCount);
-        return 1;
-    }
-    return s;
 }
 
 QRhiSwapChain *QRhiGles2::createSwapChain()
@@ -2155,17 +2145,15 @@ void QRhiGles2::enqueueSubresUpload(QGles2Texture *texD, QGles2CommandBuffer *cb
     const GLenum effectiveTarget = faceTargetBase + (isCubeMap ? uint(layer) : 0u);
     const QPoint dp = subresDesc.destinationTopLeft();
     const QByteArray rawData = subresDesc.data();
-    if (!subresDesc.image().isNull()) {
-        QImage img = subresDesc.image();
-        QSize size = img.size();
+
+    auto setCmdByNotCompressedData = [&](const void* data, QSize size, quint32 dataStride)
+    {
+        quint32 bytesPerLine = 0;
+        quint32 bytesPerPixel = 0;
+        textureFormatInfo(texD->m_format, size, &bytesPerLine, nullptr, &bytesPerPixel);
+
         QGles2CommandBuffer::Command &cmd(cbD->commands.get());
         cmd.cmd = QGles2CommandBuffer::Command::SubImage;
-        if (!subresDesc.sourceSize().isEmpty() || !subresDesc.sourceTopLeft().isNull()) {
-            const QPoint sp = subresDesc.sourceTopLeft();
-            if (!subresDesc.sourceSize().isEmpty())
-                size = subresDesc.sourceSize();
-            img = img.copy(sp.x(), sp.y(), size.width(), size.height());
-        }
         cmd.args.subImage.target = texD->target;
         cmd.args.subImage.texture = texD->texture;
         cmd.args.subImage.faceTarget = effectiveTarget;
@@ -2177,9 +2165,27 @@ void QRhiGles2::enqueueSubresUpload(QGles2Texture *texD, QGles2CommandBuffer *cb
         cmd.args.subImage.h = size.height();
         cmd.args.subImage.glformat = texD->glformat;
         cmd.args.subImage.gltype = texD->gltype;
-        cmd.args.subImage.rowStartAlign = 4;
-        cmd.args.subImage.rowLength = 0;
-        cmd.args.subImage.data = cbD->retainImage(img);
+
+        if (dataStride == 0)
+            dataStride = bytesPerLine;
+
+        cmd.args.subImage.rowStartAlign = (dataStride & 3) ? 1 : 4;
+        cmd.args.subImage.rowLength = bytesPerPixel ? dataStride / bytesPerPixel : 0;
+
+        cmd.args.subImage.data = data;
+    };
+
+    if (!subresDesc.image().isNull()) {
+        QImage img = subresDesc.image();
+        QSize size = img.size();
+        if (!subresDesc.sourceSize().isEmpty() || !subresDesc.sourceTopLeft().isNull()) {
+            const QPoint sp = subresDesc.sourceTopLeft();
+            if (!subresDesc.sourceSize().isEmpty())
+                size = subresDesc.sourceSize();
+            img = img.copy(sp.x(), sp.y(), size.width(), size.height());
+        }
+
+        setCmdByNotCompressedData(cbD->retainImage(img), size, img.bytesPerLine());
     } else if (!rawData.isEmpty() && isCompressed) {
         if ((texD->flags().testFlag(QRhiTexture::UsedAsCompressedAtlas) || is3D || isArray)
                 && !texD->zeroInitialized)
@@ -2246,31 +2252,8 @@ void QRhiGles2::enqueueSubresUpload(QGles2Texture *texD, QGles2CommandBuffer *cb
     } else if (!rawData.isEmpty()) {
         const QSize size = subresDesc.sourceSize().isEmpty() ? q->sizeForMipLevel(level, texD->m_pixelSize)
                                                              : subresDesc.sourceSize();
-        quint32 bytesPerLine = 0;
-        quint32 bytesPerPixel = 0;
-        textureFormatInfo(texD->m_format, size, &bytesPerLine, nullptr, &bytesPerPixel);
-        QGles2CommandBuffer::Command &cmd(cbD->commands.get());
-        cmd.cmd = QGles2CommandBuffer::Command::SubImage;
-        cmd.args.subImage.target = texD->target;
-        cmd.args.subImage.texture = texD->texture;
-        cmd.args.subImage.faceTarget = effectiveTarget;
-        cmd.args.subImage.level = level;
-        cmd.args.subImage.dx = dp.x();
-        cmd.args.subImage.dy = is1D && isArray ? layer : dp.y();
-        cmd.args.subImage.dz = is3D || isArray ? layer : 0;
-        cmd.args.subImage.w = size.width();
-        cmd.args.subImage.h = size.height();
-        cmd.args.subImage.glformat = texD->glformat;
-        cmd.args.subImage.gltype = texD->gltype;
-        // Default unpack alignment (row start alignment
-        // requirement) is 4. QImage guarantees 4 byte aligned
-        // row starts, but our raw data here does not.
-        cmd.args.subImage.rowStartAlign = (bytesPerLine & 3) ? 1 : 4;
-        if (subresDesc.dataStride() && bytesPerPixel)
-            cmd.args.subImage.rowLength = subresDesc.dataStride() / bytesPerPixel;
-        else
-            cmd.args.subImage.rowLength = 0;
-        cmd.args.subImage.data = cbD->retainData(rawData);
+
+        setCmdByNotCompressedData(cbD->retainData(rawData), size, subresDesc.dataStride());
     } else {
         qWarning("Invalid texture upload for %p layer=%d mip=%d", texD, layer, level);
     }
@@ -5964,7 +5947,12 @@ QRhiRenderTarget *QGles2SwapChain::currentFrameRenderTarget(StereoTargetBuffer t
 QSize QGles2SwapChain::surfacePixelSize()
 {
     Q_ASSERT(m_window);
-    return m_window->size() * m_window->devicePixelRatio();
+    if (QPlatformWindow *platformWindow = m_window->handle())
+        // Prefer using QPlatformWindow geometry and DPR in order to avoid
+        // errors due to rounded QWindow geometry.
+        return platformWindow->geometry().size() * platformWindow->devicePixelRatio();
+    else
+        return m_window->size() * m_window->devicePixelRatio();
 }
 
 bool QGles2SwapChain::isFormatSupported(Format f)

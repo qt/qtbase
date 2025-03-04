@@ -278,7 +278,7 @@ bool QCocoaMessageDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality w
         // but also make sure that if the user returns to the main runloop
         // we'll run the modal dialog from there.
         QTimer::singleShot(0, this, [this]{
-            if (m_alert && NSApp.modalWindow != m_alert.window) {
+            if (m_alert && !m_alert.window.visible) {
                 qCDebug(lcQpaDialogs) << "Running deferred modal" << m_alert;
                 QCocoaEventDispatcher::clearCurrentThreadCocoaEventDispatcherInterruptFlag();
                 processResponse(runModal());

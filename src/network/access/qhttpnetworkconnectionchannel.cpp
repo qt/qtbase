@@ -856,6 +856,8 @@ void QHttpNetworkConnectionChannel::_q_connected()
                 connection->d_func()->networkLayerState = QHttpNetworkConnectionPrivate::IPv6;
         }
         connection->d_func()->networkLayerDetected(networkLayerPreference);
+        if (connection->d_func()->activeChannelCount > 1 && !connection->d_func()->encrypt)
+            QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
     } else {
         bool anyProtocol = networkLayerPreference == QAbstractSocket::AnyIPProtocol;
         if (((connection->d_func()->networkLayerState == QHttpNetworkConnectionPrivate::IPv4)
@@ -1242,7 +1244,6 @@ void QHttpNetworkConnectionChannel::_q_encrypted()
             emit pair.second->encrypted();
             // In case our peer has sent us its settings (window size, max concurrent streams etc.)
             // let's give _q_receiveReply a chance to read them first ('invokeMethod', QueuedConnection).
-            QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
         }
     } else { // HTTP
         if (!reply)
@@ -1255,6 +1256,7 @@ void QHttpNetworkConnectionChannel::_q_encrypted()
         if (reply)
             sendRequestDelayed();
     }
+    QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
 }
 
 void QHttpNetworkConnectionChannel::requeueHttp2Requests()

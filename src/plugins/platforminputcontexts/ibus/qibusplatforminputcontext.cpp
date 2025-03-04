@@ -51,6 +51,13 @@ class QIBusPlatformInputContextPrivate
 {
     Q_DISABLE_COPY_MOVE(QIBusPlatformInputContextPrivate)
 public:
+    // This enum might be synced with IBusPreeditFocusMode
+    // in ibustypes.h of IBUS project
+    enum PreeditFocusMode {
+        PREEDIT_CLEAR   = 0,
+        PREEDIT_COMMIT  = 1,
+    };
+
     QIBusPlatformInputContextPrivate();
     ~QIBusPlatformInputContextPrivate()
     {
@@ -80,6 +87,7 @@ public:
     QList<QInputMethodEvent::Attribute> attributes;
     bool needsSurroundingText;
     QLocale locale;
+    PreeditFocusMode preeditFocusMode = PREEDIT_COMMIT; // for backward compatibility
 };
 
 
@@ -171,10 +179,18 @@ void QIBusPlatformInputContext::commit()
         return;
     }
 
-    if (!d->predit.isEmpty()) {
-        QInputMethodEvent event;
-        event.setCommitString(d->predit);
-        QCoreApplication::sendEvent(input, &event);
+    if (d->preeditFocusMode == QIBusPlatformInputContextPrivate::PREEDIT_COMMIT) {
+        if (!d->predit.isEmpty()) {
+            QInputMethodEvent event;
+            event.setCommitString(d->predit);
+            QCoreApplication::sendEvent(input, &event);
+        }
+    } else {
+        if (!d->predit.isEmpty()) {
+            // Clear the existing preedit
+            QInputMethodEvent event;
+            QCoreApplication::sendEvent(input, &event);
+        }
     }
 
     d->context->Reset();
@@ -316,6 +332,15 @@ void QIBusPlatformInputContext::updatePreeditText(const QDBusVariant &text, uint
     QCoreApplication::sendEvent(input, &event);
 
     d->predit = t.text;
+}
+
+void QIBusPlatformInputContext::updatePreeditTextWithMode(const QDBusVariant &text, uint cursorPos, bool visible, uint mode)
+{
+    updatePreeditText(text, cursorPos, visible);
+    if (mode > 0)
+        d->preeditFocusMode = QIBusPlatformInputContextPrivate::PreeditFocusMode::PREEDIT_COMMIT;
+    else
+        d->preeditFocusMode = QIBusPlatformInputContextPrivate::PreeditFocusMode::PREEDIT_CLEAR;
 }
 
 void QIBusPlatformInputContext::forwardKeyEvent(uint keyval, uint keycode, uint state)
@@ -587,6 +612,7 @@ void QIBusPlatformInputContext::connectToContextSignals()
     if (d->context) {
         connect(d->context.get(), SIGNAL(CommitText(QDBusVariant)), SLOT(commitText(QDBusVariant)));
         connect(d->context.get(), SIGNAL(UpdatePreeditText(QDBusVariant,uint,bool)), this, SLOT(updatePreeditText(QDBusVariant,uint,bool)));
+        connect(d->context.get(), SIGNAL(UpdatePreeditTextWithMode(QDBusVariant,uint,bool,uint)), this, SLOT(updatePreeditTextWithMode(QDBusVariant,uint,bool,uint)));
         connect(d->context.get(), SIGNAL(ForwardKeyEvent(uint,uint,uint)), this, SLOT(forwardKeyEvent(uint,uint,uint)));
         connect(d->context.get(), SIGNAL(DeleteSurroundingText(int,uint)), this, SLOT(deleteSurroundingText(int,uint)));
         connect(d->context.get(), SIGNAL(RequireSurroundingText()), this, SLOT(surroundingTextRequired()));
@@ -691,6 +717,8 @@ void QIBusPlatformInputContextPrivate::createBusProxy()
         IBUS_CAP_SURROUNDING_TEXT   = 1 << 5
     };
     context->SetCapabilities(IBUS_CAP_PREEDIT_TEXT|IBUS_CAP_FOCUS|IBUS_CAP_SURROUNDING_TEXT);
+
+    context->setClientCommitPreedit(QIBusPropTypeClientCommitPreedit(true));
 
     if (debug)
         qDebug(">>>> bus connected!");

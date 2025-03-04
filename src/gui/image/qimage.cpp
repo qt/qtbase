@@ -4862,14 +4862,24 @@ QImage Q_TRACE_INSTRUMENT(qtgui) QImage::transformed(const QTransform &matrix, Q
             || (ws * hs) >= (1<<20)
 #endif
             ) {
+            QImage scaledImage;
             if (mat.m11() < 0.0F && mat.m22() < 0.0F) { // horizontal/vertical flip
-                return smoothScaled(wd, hd).mirrored(true, true).convertToFormat(format());
+                scaledImage = smoothScaled(wd, hd).mirrored(true, true);
             } else if (mat.m11() < 0.0F) { // horizontal flip
-                return smoothScaled(wd, hd).mirrored(true, false).convertToFormat(format());
+                scaledImage = smoothScaled(wd, hd).mirrored(true, false);
             } else if (mat.m22() < 0.0F) { // vertical flip
-                return smoothScaled(wd, hd).mirrored(false, true).convertToFormat(format());
+                scaledImage = smoothScaled(wd, hd).mirrored(false, true);
             } else { // no flipping
-                return smoothScaled(wd, hd).convertToFormat(format());
+                scaledImage = smoothScaled(wd, hd);
+            }
+
+            switch (format()) {
+            case QImage::Format_Mono:
+            case QImage::Format_MonoLSB:
+            case QImage::Format_Indexed8:
+                return scaledImage;
+            default:
+                return scaledImage.convertToFormat(format());
             }
         }
     }
@@ -4911,7 +4921,14 @@ QImage Q_TRACE_INSTRUMENT(qtgui) QImage::transformed(const QTransform &matrix, Q
 
     if (target_format >= QImage::Format_RGB32) {
         // Prevent QPainter from applying devicePixelRatio corrections
-        const QImage sImage = (devicePixelRatio() != 1) ? QImage(constBits(), width(), height(), format()) : *this;
+        QImage sImage = (devicePixelRatio() != 1) ? QImage(constBits(), width(), height(), format()) : *this;
+        if (sImage.d != d
+            && (d->format == QImage::Format_MonoLSB
+             || d->format == QImage::Format_Mono
+             || d->format == QImage::Format_Indexed8)) {
+            sImage.d->colortable = d->colortable;
+            sImage.d->has_alpha_clut = d->has_alpha_clut;
+        }
 
         Q_ASSERT(sImage.devicePixelRatio() == 1);
         Q_ASSERT(sImage.devicePixelRatio() == dImage.devicePixelRatio());

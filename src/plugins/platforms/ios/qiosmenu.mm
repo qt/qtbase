@@ -491,7 +491,7 @@ QIOSMenuItemList QIOSMenu::filterFirstResponderActions(const QIOSMenuItemList &m
     // In case of QIOSTextResponder, edit actions will be converted to key events that ends up
     // triggering the shortcuts of the filtered menu items.
     QIOSMenuItemList filteredMenuItems;
-    UIResponder *responder = [UIResponder currentFirstResponder];
+    UIResponder *responder = [UIResponder qt_currentFirstResponder];
 
     for (int i = 0; i < menuItems.count(); ++i) {
         QIOSMenuItem *menuItem = menuItems.at(i);

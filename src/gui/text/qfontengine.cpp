@@ -1181,7 +1181,7 @@ const uchar *QFontEngine::getCMap(const uchar *table, uint tableSize, bool *isSy
     int tableToUse = -1;
     int score = Invalid;
     for (int n = 0; n < numTables; ++n) {
-        quint16 platformId;
+        quint16 platformId = 0;
         if (!qSafeFromBigEndian(maps + 8 * n, endPtr, &platformId))
             return nullptr;
 
@@ -1311,7 +1311,7 @@ resolveTable:
 quint32 QFontEngine::getTrueTypeGlyphIndex(const uchar *cmap, int cmapSize, uint unicode)
 {
     const uchar *end = cmap + cmapSize;
-    quint16 format;
+    quint16 format = 0;
     if (!qSafeFromBigEndian(cmap, end, &format))
         return 0;
 
@@ -1328,7 +1328,7 @@ quint32 QFontEngine::getTrueTypeGlyphIndex(const uchar *cmap, int cmapSize, uint
         if (unicode >= 0xffff)
             return 0;
 
-        quint16 segCountX2;
+        quint16 segCountX2 = 0;
         if (!qSafeFromBigEndian(cmap + 6, end, &segCountX2))
             return 0;
 
@@ -1336,7 +1336,7 @@ quint32 QFontEngine::getTrueTypeGlyphIndex(const uchar *cmap, int cmapSize, uint
 
         int i = 0;
         for (; i < segCountX2/2; ++i) {
-            quint16 codePoint;
+            quint16 codePoint = 0;
             if (!qSafeFromBigEndian(ends + 2 * i, end, &codePoint))
                 return 0;
             if (codePoint >= unicode)
@@ -1345,7 +1345,7 @@ quint32 QFontEngine::getTrueTypeGlyphIndex(const uchar *cmap, int cmapSize, uint
 
         const unsigned char *idx = ends + segCountX2 + 2 + 2*i;
 
-        quint16 startIndex;
+        quint16 startIndex = 0;
         if (!qSafeFromBigEndian(idx, end, &startIndex))
             return 0;
         if (startIndex > unicode)
@@ -1353,20 +1353,20 @@ quint32 QFontEngine::getTrueTypeGlyphIndex(const uchar *cmap, int cmapSize, uint
 
         idx += segCountX2;
 
-        quint16 tmp;
+        quint16 tmp = 0;
         if (!qSafeFromBigEndian(idx, end, &tmp))
             return 0;
         qint16 idDelta = qint16(tmp);
 
         idx += segCountX2;
 
-        quint16 idRangeoffset_t;
+        quint16 idRangeoffset_t = 0;
         if (!qSafeFromBigEndian(idx, end, &idRangeoffset_t))
             return 0;
 
-        quint16 glyphIndex;
+        quint16 glyphIndex = 0;
         if (idRangeoffset_t) {
-            quint16 id;
+            quint16 id = 0;
             if (!qSafeFromBigEndian(idRangeoffset_t + 2 * (unicode - startIndex) + idx, end, &id))
                 return 0;
 
@@ -1379,17 +1379,17 @@ quint32 QFontEngine::getTrueTypeGlyphIndex(const uchar *cmap, int cmapSize, uint
         }
         return glyphIndex;
     } else if (format == 6) {
-        quint16 tableSize;
+        quint16 tableSize = 0;
         if (!qSafeFromBigEndian(cmap + 2, end, &tableSize))
             return 0;
 
-        quint16 firstCode6;
+        quint16 firstCode6 = 0;
         if (!qSafeFromBigEndian(cmap + 6, end, &firstCode6))
             return 0;
         if (unicode < firstCode6)
             return 0;
 
-        quint16 entryCount6;
+        quint16 entryCount6 = 0;
         if (!qSafeFromBigEndian(cmap + 8, end, &entryCount6))
             return 0;
         if (entryCount6 * 2 + 10 > tableSize)
@@ -1405,7 +1405,7 @@ quint32 QFontEngine::getTrueTypeGlyphIndex(const uchar *cmap, int cmapSize, uint
         qSafeFromBigEndian(cmap + 10 + (entryIndex6 * 2), end, &index);
         return index;
     } else if (format == 12) {
-        quint32 nGroups;
+        quint32 nGroups = 0;
         if (!qSafeFromBigEndian(cmap + 12, end, &nGroups))
             return 0;
 
@@ -1415,19 +1415,19 @@ quint32 QFontEngine::getTrueTypeGlyphIndex(const uchar *cmap, int cmapSize, uint
         while (left <= right) {
             int middle = left + ( ( right - left ) >> 1 );
 
-            quint32 startCharCode;
+            quint32 startCharCode = 0;
             if (!qSafeFromBigEndian(cmap + 12 * middle, end, &startCharCode))
                 return 0;
 
             if (unicode < startCharCode)
                 right = middle - 1;
             else {
-                quint32 endCharCode;
+                quint32 endCharCode = 0;
                 if (!qSafeFromBigEndian(cmap + 12 * middle + 4, end, &endCharCode))
                     return 0;
 
                 if (unicode <= endCharCode) {
-                    quint32 index;
+                    quint32 index = 0;
                     if (!qSafeFromBigEndian(cmap + 12 * middle + 8, end, &index))
                         return 0;
 
@@ -1905,17 +1905,32 @@ bool QFontEngineMulti::stringToCMap(const QChar *str, int len,
                 int precedingCharacterFontEngine = glyphs->glyphs[glyph_pos - 1] >> 24;
 
                 if (selectorFontEngine != precedingCharacterFontEngine) {
-                    QFontEngine *engine = m_engines.at(selectorFontEngine);
-                    glyph_t glyph = engine->glyphIndex(previousUcs4);
-                    if (glyph != 0) {
-                        glyphs->glyphs[glyph_pos - 1] = glyph;
-                        if (!(flags & GlyphIndicesOnly)) {
-                            QGlyphLayout g = glyphs->mid(glyph_pos - 1, 1);
-                            engine->recalcAdvances(&g, flags);
-                        }
+                    // Emoji variant selectors are specially handled and should affect font
+                    // selection. If VS-16 is used, then this means we want to select a color
+                    // font. If the selected font is already a color font, we do not need search
+                    // again. If the VS-15 is used, then this means we want to select a non-color
+                    // font. If the selected font is not a color font, we don't do anything.
+                    const QFontEngine *selectedEngine = m_engines.at(precedingCharacterFontEngine);
+                    const bool colorFont = selectedEngine->isColorFont();
+                    const char32_t vs15 = 0xFE0E;
+                    const char32_t vs16 = 0xFE0F;
+                    bool adaptVariantSelector = ucs4 < vs15
+                                                || (ucs4 == vs15 && colorFont)
+                                                || (ucs4 == vs16 && !colorFont);
 
-                        // set the high byte to indicate which engine the glyph came from
-                        glyphs->glyphs[glyph_pos - 1] |= (selectorFontEngine << 24);
+                    if (adaptVariantSelector) {
+                        QFontEngine *engine = m_engines.at(selectorFontEngine);
+                        glyph_t glyph = engine->glyphIndex(previousUcs4);
+                        if (glyph != 0) {
+                            glyphs->glyphs[glyph_pos - 1] = glyph;
+                            if (!(flags & GlyphIndicesOnly)) {
+                                QGlyphLayout g = glyphs->mid(glyph_pos - 1, 1);
+                                engine->recalcAdvances(&g, flags);
+                            }
+
+                            // set the high byte to indicate which engine the glyph came from
+                            glyphs->glyphs[glyph_pos - 1] |= (selectorFontEngine << 24);
+                        }
                     }
                 }
             }

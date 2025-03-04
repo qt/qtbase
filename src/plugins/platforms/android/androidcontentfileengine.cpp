@@ -608,7 +608,7 @@ DocumentFilePtr DocumentFile::parseFromAnyUri(const QString &fileName)
     const QString encodedUri = QUrl(fileName).toEncoded();
     const QJniObject uri = parseUri(encodedUri);
 
-    if (DocumentsContract::isDocumentUri(uri))
+    if (DocumentsContract::isDocumentUri(uri) || !DocumentsContract::isTreeUri(uri))
         return fromSingleUri(uri);
 
     const QString documentType = "/document/"_L1;

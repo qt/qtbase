@@ -1,6 +1,6 @@
 // Copyright (C) 2019 BogDan Vatra <bogdan@kde.org>
 // Copyright (C) 2022 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial
 
 #include <QCoreApplication>
 #include <QDir>
@@ -10,9 +10,19 @@
 #include <QXmlStreamReader>
 
 #include <algorithm>
-#include <chrono>
 #include <functional>
-#include <thread>
+#include <atomic>
+#include <csignal>
+
+#if defined(Q_OS_WIN32)
+#include <process.h>
+#else
+#include <unistd.h>
+#endif
+
+#include <QtCore/QDeadlineTimer>
+#include <QtCore/QThread>
+#include <QtCore/QProcessEnvironment>
 
 #include <shellquote_shared.h>
 
@@ -115,7 +125,7 @@ struct Options
     bool helpRequested = false;
     bool verbose = false;
     bool skipAddInstallRoot = false;
-    std::chrono::seconds timeout{480}; // 8 minutes
+    int timeoutSecs = 600; // 10 minutes
     QString buildPath;
     QString adbCommand{QStringLiteral("adb")};
     QString makeCommand;
@@ -125,6 +135,7 @@ struct Options
     QHash<QString, QString> outFiles;
     QString testArgs;
     QString apkPath;
+    QString ndkStackPath;
     int sdkVersion = -1;
     int pid = -1;
     bool showLogcatOutput = false;
@@ -201,11 +212,16 @@ static bool parseOptions()
             g_options.skipAddInstallRoot = true;
         } else if (argument.compare(QStringLiteral("--show-logcat"), Qt::CaseInsensitive) == 0) {
             g_options.showLogcatOutput = true;
+        } else if (argument.compare("--ndk-stack"_L1, Qt::CaseInsensitive) == 0) {
+            if (i + 1 == arguments.size())
+                g_options.helpRequested = true;
+            else
+                g_options.ndkStackPath = arguments.at(++i);
         } else if (argument.compare(QStringLiteral("--timeout"), Qt::CaseInsensitive) == 0) {
             if (i + 1 == arguments.size())
                 g_options.helpRequested = true;
             else
-                g_options.timeout = std::chrono::seconds{arguments.at(++i).toInt()};
+                g_options.timeoutSecs = arguments.at(++i).toInt();
         } else if (argument.compare(QStringLiteral("--help"), Qt::CaseInsensitive) == 0) {
             g_options.helpRequested = true;
         } else if (argument.compare(QStringLiteral("--verbose"), Qt::CaseInsensitive) == 0) {
@@ -226,6 +242,14 @@ static bool parseOptions()
     QString serial = qEnvironmentVariable("ANDROID_DEVICE_SERIAL");
     if (!serial.isEmpty())
         g_options.adbCommand += QStringLiteral(" -s %1").arg(serial);
+
+    if (g_options.ndkStackPath.isEmpty()) {
+        const QString ndkPath = qEnvironmentVariable("ANDROID_NDK_ROOT");
+        const QString ndkStackPath = ndkPath + QDir::separator() + "ndk-stack"_L1;
+        if (QFile::exists(ndkStackPath))
+            g_options.ndkStackPath = ndkStackPath;
+    }
+
     return true;
 }
 
@@ -253,11 +277,14 @@ static void printHelp()
                     "    --activity <acitvity>: The Activity to run. If missing the first\n"
                     "       activity from AndroidManifest.qml file will be used.\n"
                     "\n"
-                    "    --timeout <seconds>: Timeout to run the test. Default is 5 minutes.\n"
+                    "    --timeout <seconds>: Timeout to run the test. Default is 10 minutes.\n"
                     "\n"
                     "    --skip-install-root: Do not append INSTALL_ROOT=... to the make command.\n"
                     "\n"
                     "    --show-logcat: Print Logcat output to stdout.\n"
+                    "\n"
+                    "    --ndk-stack: Path to ndk-stack tool that symbolizes crash stacktraces.\n"
+                    "       By default, ANDROID_NDK_ROOT env var is used to deduce the tool path.\n"
                     "\n"
                     "    -- Arguments that will be passed to the test application.\n"
                     "\n"
@@ -347,64 +374,92 @@ static bool parseTestArgs()
 
     g_options.testArgs += unhandledArgs.join(u' ');
 
-    g_options.testArgs = QStringLiteral("shell am start -e applicationArguments \"%1\" -n %2/%3")
-            .arg(shellQuote(g_options.testArgs.trimmed()))
-            .arg(g_options.package)
-            .arg(g_options.activity);
+    // Pass over any testlib env vars if set
+    QString testEnvVars;
+    const QStringList envVarsList = QProcessEnvironment::systemEnvironment().toStringList();
+    for (const QString &var : envVarsList) {
+        if (var.startsWith("QTEST_"_L1))
+            testEnvVars += "%1 "_L1.arg(var);
+    }
+
+    if (!testEnvVars.isEmpty()) {
+        testEnvVars = QString::fromUtf8(testEnvVars.trimmed().toUtf8().toBase64());
+        testEnvVars = "-e extraenvvars \"%4\""_L1.arg(testEnvVars);
+    }
+
+    g_options.testArgs = "shell am start -n %1/%2 -e applicationArguments \"%3\" %4"_L1
+                                 .arg(g_options.package)
+                                 .arg(g_options.activity)
+                                 .arg(shellQuote(g_options.testArgs.trimmed()))
+                                 .arg(testEnvVars)
+                                 .trimmed();
+
+    return true;
+}
+
+static bool obtainPid() {
+    QByteArray output;
+    const auto psCmd = "%1 shell \"ps | grep ' %2'\""_L1.arg(g_options.adbCommand,
+                                                            shellQuote(g_options.package));
+    if (!execCommand(psCmd, &output))
+        return false;
+
+    const QList<QByteArray> lines = output.split(u'\n');
+    if (lines.size() < 1)
+        return false;
+
+    QList<QByteArray> columns = lines.first().simplified().replace(u'\t', u' ').split(u' ');
+    if (columns.size() < 3)
+        return false;
+
+    if (g_options.pid == -1) {
+        bool ok = false;
+        int pid = columns.at(1).toInt(&ok);
+        if (ok)
+            g_options.pid = pid;
+    }
 
     return true;
 }
 
 static bool isRunning() {
     QByteArray output;
-    if (!execCommand(QStringLiteral("%1 shell \"ps | grep ' %2'\"").arg(g_options.adbCommand,
-                                                                        shellQuote(g_options.package)), &output)) {
-
+    const auto psCmd = "%1 shell \"ps | grep ' %2'\""_L1.arg(g_options.adbCommand,
+                                                            shellQuote(g_options.package));
+    if (!execCommand(psCmd, &output))
         return false;
-    }
+
     return output.indexOf(QLatin1StringView(" " + g_options.package.toUtf8())) > -1;
 }
 
-static bool waitToFinish()
-{
-    using clock = std::chrono::system_clock;
-    auto start = clock::now();
-    // wait to start
-    while (!isRunning()) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        if ((clock::now() - start) > std::chrono::seconds{10})
-            return false;
-    }
+std::atomic<bool> isPackageInstalled { false };
+std::atomic<bool> isTestRunnerInterrupted { false };
 
-    if (g_options.sdkVersion > 23) { // pidof is broken in SDK 23, non-existent before
-        QByteArray output;
-        const QString command(QStringLiteral("%1 shell pidof -s %2")
-                                      .arg(g_options.adbCommand, shellQuote(g_options.package)));
-        execCommand(command, &output, g_options.verbose);
-        bool ok = false;
-        int pid = output.toInt(&ok); // If we got more than one pid, fail.
-        if (ok) {
-            g_options.pid = pid;
-        } else {
-            fprintf(stderr,
-                    "Unable to obtain the PID of the running unit test. Command \"%s\" "
-                    "returned \"%s\"\n",
-                    command.toUtf8().constData(), output.constData());
-            fflush(stderr);
-        }
-    }
+static void waitForStartedAndFinished()
+{
+    // wait to start and set PID
+    QDeadlineTimer startDeadline(10000);
+    do {
+        if (obtainPid())
+            break;
+        QThread::msleep(100);
+    } while (!startDeadline.hasExpired() && !isTestRunnerInterrupted.load());
 
     // Wait to finish
-    while (isRunning()) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(250));
-        if (g_options.timeout >= std::chrono::seconds::zero()
-                && (clock::now() - start) > g_options.timeout)
-            return false;
-    }
-    return true;
+    // In 6.5, only value of -1 cause the deadline to never expire.
+    const int timeout = g_options.timeoutSecs == -1 ? -1 : g_options.timeoutSecs * 1000;
+    QDeadlineTimer finishedDeadline(timeout);
+    do {
+        if (!isRunning())
+            break;
+        QThread::msleep(250);
+    } while (!finishedDeadline.hasExpired() && !isTestRunnerInterrupted.load());
+
+    if (finishedDeadline.hasExpired())
+        qWarning() << "Timed out while waiting for the test to finish";
 }
 
-static void obtainSDKVersion()
+static void obtainSdkVersion()
 {
     // SDK version is necessary, as in SDK 23 pidof is broken, so we cannot obtain the pid.
     // Also, Logcat cannot filter by pid in SDK 23, so we don't offer the --show-logcat option.
@@ -428,34 +483,40 @@ static void obtainSDKVersion()
 static bool pullFiles()
 {
     bool ret = true;
+    QByteArray userId;
+    // adb get-current-user command is available starting from API level 26.
+    if (g_options.sdkVersion >= 26) {
+        const QString userIdCmd = "%1 shell cmd activity get-current-user"_L1.arg(g_options.adbCommand);
+        if (!execCommand(userIdCmd, &userId)) {
+            qCritical() << "Error: failed to retrieve the user ID";
+            return false;
+        }
+    } else {
+        userId = "0";
+    }
+
     for (auto it = g_options.outFiles.constBegin(); it != g_options.outFiles.end(); ++it) {
         // Get only stdout from cat and get rid of stderr and fail later if the output is empty
-        const QString catCmd = QStringLiteral("cat files/output.%1 2> /dev/null").arg(it.key());
+        const QString outSuffix = it.key();
+        const QString catCmd = "cat files/output.%1 2> /dev/null"_L1.arg(outSuffix);
+        const QString fullCatCmd = "%1 shell 'run-as %2 --user %3 %4'"_L1.arg(
+                g_options.adbCommand, g_options.package, QString::fromUtf8(userId.simplified()),
+                catCmd);
 
         QByteArray output;
-        if (!execCommand(QStringLiteral("%1 shell 'run-as %2 %3'")
-                         .arg(g_options.adbCommand, g_options.package, catCmd), &output)) {
-            // Cannot find output file. Check in path related to current user
-            QByteArray userId;
-            execCommand(QStringLiteral("%1 shell cmd activity get-current-user")
-                        .arg(g_options.adbCommand), &userId);
-            const QString userIdSimplified(QString::fromUtf8(userId).simplified());
-            if (!execCommand(QStringLiteral("%1 shell 'run-as %2 --user %3 %4'")
-                        .arg(g_options.adbCommand, g_options.package, userIdSimplified, catCmd),
-                         &output)) {
-                return false;
-            }
-        }
-
-        if (output.isEmpty()) {
-            fprintf(stderr, "Failed to get the test output from the target. Either the output "
-                            "is empty or androidtestrunner failed to retrieve it.\n");
+        if (!execCommand(fullCatCmd, &output)) {
+            qCritical() << "Error: failed to retrieve the test's output.%1 file."_L1.arg(outSuffix);
             return false;
         }
 
-        auto checkerIt = g_options.checkFiles.find(it.key());
-        ret = ret && checkerIt != g_options.checkFiles.end() && checkerIt.value()(output);
-        if (it.value() == QStringLiteral("-")){
+        if (output.isEmpty()) {
+            qCritical() << "Error: the test's output.%1 is empty."_L1.arg(outSuffix);
+            return false;
+        }
+
+        auto checkerIt = g_options.checkFiles.find(outSuffix);
+        ret &= (checkerIt != g_options.checkFiles.end() && checkerIt.value()(output));
+        if (it.value() == "-"_L1) {
             fprintf(stdout, "%s", output.constData());
             fflush(stdout);
         } else {
@@ -468,21 +529,144 @@ static bool pullFiles()
     return ret;
 }
 
-struct RunnerLocker
+void printLogcat(const QString &formattedTime)
 {
-    RunnerLocker()
-    {
-        runner.acquire();
+    QString logcatCmd = "%1 logcat "_L1.arg(g_options.adbCommand);
+    if (g_options.sdkVersion <= 23 || g_options.pid == -1)
+        logcatCmd += "-t '%1'"_L1.arg(formattedTime);
+    else
+        logcatCmd += "-d --pid=%1"_L1.arg(QString::number(g_options.pid));
+
+    QByteArray logcat;
+    if (!execCommand(logcatCmd, &logcat)) {
+        qCritical() << "Error: failed to fetch logcat of the test";
+        return;
     }
-    ~RunnerLocker()
-    {
-        runner.release();
+
+    if (logcat.isEmpty()) {
+        qWarning() << "The retrieved logcat is empty";
+        return;
     }
-    QSystemSemaphore runner{QStringLiteral("androidtestrunner"), 1, QSystemSemaphore::Open};
+
+    qDebug() << "****** Begin logcat output ******";
+    qDebug().noquote() << logcat;
+    qDebug() << "****** End logcat output ******";
+}
+
+static QString getDeviceABI()
+{
+    const QString abiCmd = "%1 shell getprop ro.product.cpu.abi"_L1.arg(g_options.adbCommand);
+    QByteArray abi;
+    if (!execCommand(abiCmd, &abi)) {
+        qWarning() << "Warning: failed to get the device abi, fallback to first libs dir";
+        return {};
+    }
+
+    return QString::fromUtf8(abi.simplified());
+}
+
+void printLogcatCrashBuffer(const QString &formattedTime)
+{
+    QString crashCmd = "%1 logcat -b crash -t '%2'"_L1.arg(g_options.adbCommand, formattedTime);
+
+    if (!g_options.ndkStackPath.isEmpty()) {
+        auto libsPath = "%1/libs/"_L1.arg(g_options.buildPath);
+        QString abi = getDeviceABI();
+        if (abi.isEmpty()) {
+            QStringList subDirs = QDir(libsPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+            if (!subDirs.isEmpty())
+                abi = subDirs.first();
+        }
+
+        if (!abi.isEmpty()) {
+            libsPath += abi;
+            crashCmd += " | %1 -sym %2"_L1.arg(g_options.ndkStackPath, libsPath);
+        } else {
+            qWarning() << "Warning: failed to get the libs abi, ndk-stack cannot be used.";
+        }
+    } else {
+        qWarning() << "Warning: ndk-stack path not provided and couldn't be deduced "
+                      "using the ANDROID_NDK_ROOT environment variable.";
+    }
+
+    QByteArray crashLogcat;
+    if (!execCommand(crashCmd, &crashLogcat)) {
+        qCritical() << "Error: failed to fetch logcat crash buffer";
+        return;
+    }
+
+    if (crashLogcat.isEmpty()) {
+        qDebug() << "The retrieved logcat crash buffer is empty";
+        return;
+    }
+
+    qDebug() << "****** Begin logcat crash buffer output ******";
+    qDebug().noquote() << crashLogcat;
+    qDebug() << "****** End logcat crash buffer output ******";
+}
+
+static QString getCurrentTimeString()
+{
+    const QString timeFormat = (g_options.sdkVersion <= 23) ?
+            "%m-%d\\ %H:%M:%S.000"_L1 : "%Y-%m-%d\\ %H:%M:%S.%3N"_L1;
+
+    QString dateCmd = "%1 shell date +'%2'"_L1.arg(g_options.adbCommand, timeFormat);
+    QByteArray output;
+    if (!execCommand(dateCmd, &output)) {
+        qWarning() << "Date/time adb command failed";
+        return {};
+    }
+
+    return QString::fromUtf8(output.simplified());
+}
+
+static bool uninstallTestPackage()
+{
+    return execCommand(QStringLiteral("%1 uninstall %2").arg(g_options.adbCommand,
+                       g_options.package), nullptr, g_options.verbose);
+}
+
+struct TestRunnerSystemSemaphore
+{
+    TestRunnerSystemSemaphore() { }
+    ~TestRunnerSystemSemaphore() { release(); }
+
+    void acquire() { isAcquired.store(semaphore.acquire()); }
+
+    void release()
+    {
+        bool expected = true;
+        // NOTE: There's still could be tiny time gap between the compare_exchange_strong() call
+        // and release() call where the thread could be interrupted, if that's ever an issue,
+        // this code could be checked and improved further.
+        if (isAcquired.compare_exchange_strong(expected, false))
+            isAcquired.store(!semaphore.release());
+    }
+
+    std::atomic<bool> isAcquired { false };
+    QSystemSemaphore semaphore { QStringLiteral("androidtestrunner"), 1, QSystemSemaphore::Open };
 };
+
+TestRunnerSystemSemaphore testRunnerLock;
+
+void sigHandler(int signal)
+{
+    std::signal(signal, SIG_DFL);
+    testRunnerLock.release();
+    // Ideally we shouldn't be doing such calls from a signal handler,
+    // and we can't use QSocketNotifier because this tool doesn't spin
+    // a main event loop. Since, there's no other alternative to do this,
+    // let's do the cleanup anyway.
+    if (!isPackageInstalled.load())
+        _exit(-1);
+    isTestRunnerInterrupted.store(true);
+}
 
 int main(int argc, char *argv[])
 {
+    std::signal(SIGINT,  sigHandler);
+    std::signal(SIGTERM, sigHandler);
+
     QCoreApplication a(argc, argv);
     if (!parseOptions()) {
         printHelp();
@@ -518,13 +702,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    obtainSDKVersion();
-
-    RunnerLocker lock; // do not install or run packages while another test is running
-    if (!execCommand(QStringLiteral("%1 install -r -g %2")
-                        .arg(g_options.adbCommand, g_options.apkPath), nullptr, g_options.verbose)) {
-        return 1;
-    }
+    obtainSdkVersion();
 
     QString manifest = g_options.buildPath + QStringLiteral("/AndroidManifest.xml");
     g_options.package = packageNameFromAndroidManifest(manifest);
@@ -535,30 +713,44 @@ int main(int argc, char *argv[])
     if (!parseTestArgs())
         return 1;
 
-    // start the tests
-    bool res = execCommand(QStringLiteral("%1 %2").arg(g_options.adbCommand, g_options.testArgs),
-                           nullptr, g_options.verbose)
-            && waitToFinish();
+    // do not install or run packages while another test is running
+    testRunnerLock.acquire();
 
-    // get logcat output
-    if (res && g_options.showLogcatOutput) {
-        if (g_options.sdkVersion <= 23) {
-            fprintf(stderr, "Cannot show logcat output on Android 23 and below.\n");
-            fflush(stderr);
-        } else if (g_options.pid > 0) {
-            fprintf(stdout, "Logcat output:\n");
-            res &= execCommand(QStringLiteral("%1 logcat -d --pid=%2")
-                                       .arg(g_options.adbCommand)
-                                       .arg(g_options.pid),
-                               nullptr, true);
-            fprintf(stdout, "End Logcat output.\n");
-        }
+    isPackageInstalled.store(execCommand(QStringLiteral("%1 install -r -g %2")
+                    .arg(g_options.adbCommand, g_options.apkPath), nullptr, g_options.verbose));
+    if (!isPackageInstalled)
+        return 1;
+
+    const QString formattedTime = getCurrentTimeString();
+
+    // start the tests
+    const auto startCmd = "%1 %2"_L1.arg(g_options.adbCommand, g_options.testArgs);
+    bool success = execCommand(startCmd, nullptr, g_options.verbose);
+
+    waitForStartedAndFinished();
+
+    if (success) {
+        success &= pullFiles();
+        if (g_options.showLogcatOutput)
+            printLogcat(formattedTime);
     }
 
-    if (res)
-        res &= pullFiles();
-    res &= execCommand(QStringLiteral("%1 uninstall %2").arg(g_options.adbCommand, g_options.package),
-                       nullptr, g_options.verbose);
+    // If we have a failure, attempt to print both logcat and the crash buffer which
+    // includes the crash stacktrace that is not included in the default logcat.
+    if (!success) {
+        printLogcat(formattedTime);
+        printLogcatCrashBuffer(formattedTime);
+    }
+
+    success &= uninstallTestPackage();
     fflush(stdout);
-    return res ? 0 : 1;
+
+    testRunnerLock.release();
+
+    if (isTestRunnerInterrupted.load()) {
+        qCritical() << "The androidtestrunner was interrupted and the was test cleaned up.";
+        return 1;
+    }
+
+    return success ? 0 : 1;
 }

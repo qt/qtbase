@@ -432,6 +432,8 @@ private slots:
     void showFullscreenAndroid();
 #endif
 
+    void setVisibleDuringDestruction();
+
 private:
     const QString m_platform;
     QSize m_testWidgetSize;
@@ -4854,7 +4856,7 @@ private:
 
 /*
     Test that widget resizes and moves can be done with minimal repaints when WA_StaticContents
-    and WA_OpaquePaintEvent is set. Test is mac-only for now.
+    and WA_OpaquePaintEvent is set.
 */
 void tst_QWidget::optimizedResizeMove()
 {
@@ -13364,6 +13366,32 @@ void tst_QWidget::showFullscreenAndroid()
     QCOMPARE(img, expectedImg);
 }
 #endif // Q_OS_ANDROID
+
+void tst_QWidget::setVisibleDuringDestruction()
+{
+    CreateDestroyWidget widget;
+    widget.create();
+    QVERIFY(widget.windowHandle());
+
+    QSignalSpy signalSpy(widget.windowHandle(), &QWindow::visibleChanged);
+    EventSpy<QWindow> showEventSpy(widget.windowHandle(), QEvent::Show);
+    widget.show();
+    QTRY_COMPARE(showEventSpy.count(), 1);
+    QTRY_COMPARE(signalSpy.count(), 1);
+
+    EventSpy<QWindow> hideEventSpy(widget.windowHandle(), QEvent::Hide);
+    widget.hide();
+    QTRY_COMPARE(hideEventSpy.count(), 1);
+    QTRY_COMPARE(signalSpy.count(), 2);
+
+    widget.show();
+    QTRY_COMPARE(showEventSpy.count(), 2);
+    QTRY_COMPARE(signalSpy.count(), 3);
+
+    widget.destroy();
+    QTRY_COMPARE(hideEventSpy.count(), 2);
+    QTRY_COMPARE(signalSpy.count(), 4);
+}
 
 QTEST_MAIN(tst_QWidget)
 #include "tst_qwidget.moc"

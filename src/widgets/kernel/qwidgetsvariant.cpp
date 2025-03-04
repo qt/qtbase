@@ -12,7 +12,8 @@ QT_BEGIN_NAMESPACE
 
 namespace {
 
-static const struct : QMetaTypeModuleHelper
+// NOLINTNEXTLINE(cppcoreguidelines-virtual-class-destructor): this is not a base class
+static constexpr struct : QMetaTypeModuleHelper
 {
     const QtPrivate::QMetaTypeInterface *interfaceForType(int type) const override {
         switch (type) {

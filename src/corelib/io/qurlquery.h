@@ -22,10 +22,10 @@ public:
     QUrlQuery();
     explicit QUrlQuery(const QUrl &url);
     explicit QUrlQuery(const QString &queryString);
-    QUrlQuery(std::initializer_list<QPair<QString, QString>> list)
+    QUrlQuery(std::initializer_list<std::pair<QString, QString>> list)
         : QUrlQuery()
     {
-        for (const QPair<QString, QString> &item : list)
+        for (const std::pair<QString, QString> &item : list)
             addQueryItem(item.first, item.second);
     }
 
@@ -54,8 +54,8 @@ public:
     QChar queryValueDelimiter() const;
     QChar queryPairDelimiter() const;
 
-    void setQueryItems(const QList<QPair<QString, QString> > &query);
-    QList<QPair<QString, QString> > queryItems(QUrl::ComponentFormattingOptions encoding = QUrl::PrettyDecoded) const;
+    void setQueryItems(const QList<std::pair<QString, QString> > &query);
+    QList<std::pair<QString, QString> > queryItems(QUrl::ComponentFormattingOptions encoding = QUrl::PrettyDecoded) const;
 
     bool hasQueryItem(const QString &key) const;
     void addQueryItem(const QString &key, const QString &value);

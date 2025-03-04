@@ -142,7 +142,7 @@ void QThreadPipe::wakeUp()
             // eventfd
             eventfd_t value = 1;
             int ret;
-            EINTR_LOOP(ret, eventfd_write(fds[0], value));
+            QT_EINTR_LOOP(ret, eventfd_write(fds[0], value));
             return;
         }
 #endif

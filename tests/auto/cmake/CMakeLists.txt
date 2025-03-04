@@ -337,6 +337,12 @@ if(is_qt_build_platform)
     set_tests_properties(test_import_plugins PROPERTIES FIXTURES_REQUIRED build_mockplugins)
 endif()
 
+if(NOT NO_GUI)
+    _qt_internal_test_expect_pass(test_standalone_test
+                                  BINARY "${CMAKE_CTEST_COMMAND}"
+                                  BINARY_ARGS "-V")
+endif()
+
 _qt_internal_test_expect_pass(test_versionless_targets)
 
 if(NOT NO_GUI)
@@ -387,4 +393,8 @@ if(WIN32 OR (APPLE AND NOT IOS) OR is_desktop_linux)
     _qt_internal_test_expect_pass(${deploy_args})
 else()
     _qt_internal_test_expect_fail(${deploy_args})
+endif()
+
+if(NOT NO_GUI)
+    _qt_internal_test_expect_pass(test_collecting_plugins)
 endif()

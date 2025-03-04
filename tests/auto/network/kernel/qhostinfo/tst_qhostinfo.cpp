@@ -440,9 +440,8 @@ void tst_QHostInfo::reverseLookup()
     QFETCH(int, err);
     QFETCH(bool, ipv6);
 
-    if (ipv6 && !ipv6LookupsAvailable) {
+    if (ipv6 && !ipv6LookupsAvailable)
         QSKIP("IPv6 reverse lookups are not supported on this platform");
-    }
 
     QHostInfo info = QHostInfo::fromName(address);
 
@@ -450,7 +449,7 @@ void tst_QHostInfo::reverseLookup()
         if (!hostNames.contains(info.hostName()))
             qDebug() << "Failure: expecting" << hostNames << ",got " << info.hostName();
         QVERIFY(hostNames.contains(info.hostName()));
-        QCOMPARE(info.addresses().first(), QHostAddress(address));
+        QCOMPARE(info.addresses().constFirst(), QHostAddress(address));
     } else {
         QCOMPARE(info.hostName(), address);
         QCOMPARE(info.error(), QHostInfo::HostNotFound);

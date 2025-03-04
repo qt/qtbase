@@ -190,7 +190,8 @@ Q_GLOBAL_STATIC(QUrl, lastVisitedDir)
     dialog. By default symlinks are resolved.
 
     \value DontConfirmOverwrite Don't ask for confirmation if an
-    existing file is selected.  By default confirmation is requested.
+    existing file is selected.  By default, confirmation is requested.
+    (Valid only if \l acceptMode is \l {QFileDialog::}{AcceptSave}).
 
     Note: This option is not supported on macOS when using the
     native file dialog.
@@ -701,7 +702,7 @@ bool QFileDialogPrivate::usingWidgets() const
     Sets the given \a option to be enabled if \a on is true; otherwise,
     clears the given \a option.
 
-    Options (particularly the DontUseNativeDialogs option) should be set
+    Options (particularly the \l DontUseNativeDialog option) should be set
     before changing dialog properties or showing the dialog.
 
     Setting options while the dialog is visible is not guaranteed to have
@@ -741,7 +742,7 @@ bool QFileDialog::testOption(Option option) const
 
     By default, all options are disabled.
 
-    Options (particularly the DontUseNativeDialogs option) should be set
+    Options (particularly the \l DontUseNativeDialog option) should be set
     before changing dialog properties or showing the dialog.
 
     Setting options while the dialog is visible is not guaranteed to have

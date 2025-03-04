@@ -134,7 +134,7 @@ static inline bool foldAndCompare(const T a, const T b)
 */
 static inline qsizetype qFindChar(QStringView str, QChar ch, qsizetype from, Qt::CaseSensitivity cs) noexcept
 {
-    if (-from > str.size())
+    if (from < -str.size()) // from < 0 && abs(from) > str.size(), avoiding overflow
         return -1;
     if (from < 0)
         from = qMax(from + str.size(), qsizetype(0));
@@ -461,7 +461,7 @@ static bool simdTestMask(const char *&ptr, const char *end, quint32 maskval)
     if constexpr (UseSse4_1) {
 #  ifndef Q_OS_QNX              // compiler fails in the code below
         __m128i mask;
-        auto updatePtrSimd = [&](__m128i data) {
+        auto updatePtrSimd = [&](__m128i data) -> bool {
             __m128i masked = _mm_and_si128(mask, data);
             __m128i comparison = _mm_cmpeq_epi16(masked, _mm_setzero_si128());
             uint result = _mm_movemask_epi8(comparison);
@@ -8212,7 +8212,8 @@ static QString replaceArgEscapes(QStringView s, const ArgEscapeData &d, qsizetyp
                 rc = std::fill_n(rc, pad_chars, fillChar);
             }
 
-            memcpy(rc, use.data(), use.size() * sizeof(QChar));
+            if (use.size())
+                memcpy(rc, use.data(), use.size() * sizeof(QChar));
             rc += use.size();
 
             if (field_width < 0) { // right padded

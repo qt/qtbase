@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial
 
 #include "utils.h"
 #include "elfreader.h"
@@ -424,14 +424,18 @@ const char *qmakeInfixKey = "QT_INFIX";
 QMap<QString, QString> queryQtPaths(const QString &qtpathsBinary, QString *errorMessage)
 {
     const QString binary = !qtpathsBinary.isEmpty() ? qtpathsBinary : QStringLiteral("qtpaths");
+    const QString colonSpace = QStringLiteral(": ");
     QByteArray stdOut;
     QByteArray stdErr;
     unsigned long exitCode = 0;
-    if (!runProcess(binary, QStringList(QStringLiteral("-query")), QString(), &exitCode, &stdOut, &stdErr, errorMessage))
+    if (!runProcess(binary, QStringList(QStringLiteral("-query")), QString(), &exitCode, &stdOut,
+                    &stdErr, errorMessage)) {
+        *errorMessage = QStringLiteral("Error running binary ") + binary + colonSpace + *errorMessage;
         return QMap<QString, QString>();
+    }
     if (exitCode) {
         *errorMessage = binary + QStringLiteral(" returns ") + QString::number(exitCode)
-            + QStringLiteral(": ") + QString::fromLocal8Bit(stdErr);
+            + colonSpace + QString::fromLocal8Bit(stdErr);
         return QMap<QString, QString>();
     }
     const QString output = QString::fromLocal8Bit(stdOut).trimmed().remove(u'\r');
@@ -467,7 +471,7 @@ QMap<QString, QString> queryQtPaths(const QString &qtpathsBinary, QString *error
         }
     } else {
         std::wcerr << "Warning: Unable to read " << QDir::toNativeSeparators(qconfigPriFile.fileName())
-            << ": " << qconfigPriFile.errorString()<< '\n';
+            << colonSpace << qconfigPriFile.errorString()<< '\n';
     }
     return result;
 }

@@ -228,8 +228,8 @@ asm(
 // List of features present with -march=x86-64-v3 and not architecturally
 // implied by __AVX2__
 #    define ARCH_HASWELL_MACROS     \
-    (__AVX2__ && __BMI__ && __BMI2__ && __F16C__ && __FMA__ && __LZCNT__ && __POPCNT__)
-#    if ARCH_HASWELL_MACROS == 0
+    (__AVX2__ + __BMI__ + __BMI2__ + __F16C__ + __FMA__ + __LZCNT__ + __POPCNT__)
+#    if ARCH_HASWELL_MACROS != 7
 #      error "Please enable all x86-64-v3 extensions; you probably want to use -march=haswell or -march=x86-64-v3 instead of -mavx2"
 #    endif
 static_assert(ARCH_HASWELL_MACROS, "Undeclared identifiers indicate which features are missing.");

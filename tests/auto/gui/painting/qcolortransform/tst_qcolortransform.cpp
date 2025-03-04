@@ -182,21 +182,21 @@ void tst_QColorTransform::mapRGBAFP16x4()
     else
         QVERIFY(result != testColor);
 
-    testColor = QRgbaFloat16{0.0f, 0.0f, 0.0f, 1.0f};
+    testColor = QRgbaFloat16{qfloat16(0.0f), qfloat16(0.0f), qfloat16(0.0f), qfloat16(1.0f)};
     result = transform.map(testColor);
     QCOMPARE(result, testColor);
 
-    testColor = QRgbaFloat16{1.0f, 1.0f, 1.0f, 1.0f};
+    testColor = QRgbaFloat16{qfloat16(1.0f), qfloat16(1.0f), qfloat16(1.0f), qfloat16(1.0f)};
     result = transform.map(testColor);
     QCOMPARE(result, testColor);
 
-    testColor = QRgbaFloat16{1.0f, 1.0f, 0.0f, 1.0f};
+    testColor = QRgbaFloat16{qfloat16(1.0f), qfloat16(1.0f), qfloat16(1.0f), qfloat16(1.0f)};
     result = transform.map(testColor);
     QCOMPARE(result.alpha(), 1.0f);
     if (sharesRed)
         QCOMPARE(result.red(), 1.0f);
 
-    testColor = QRgbaFloat16{0.0f, 1.0f, 1.0f, 1.0f};
+    testColor = QRgbaFloat16{qfloat16(0.0f), qfloat16(1.0f), qfloat16(1.0f), qfloat16(1.0f)};
     result = transform.map(testColor);
     // QRgbaFloat16 might overflow blue if we convert to a smaller gamut:
     QCOMPARE(result.blue16(), 65535);

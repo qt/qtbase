@@ -472,8 +472,8 @@ if (__qt_qml_plugins_config_file_list AND NOT QT_SKIP_AUTO_QML_PLUGIN_INCLUSION)
 endif()")
         endif()
 
-        get_target_property(qt_plugins "${QT_MODULE}" QT_PLUGINS)
-        if(qt_plugins OR QT_MODULE_PLUGIN_INCLUDES)
+        get_target_property(module_plugin_types "${QT_MODULE}" MODULE_PLUGIN_TYPES)
+        if(module_plugin_types OR QT_MODULE_PLUGIN_INCLUDES)
             list(APPEND modules_with_plugins "${QT_MODULE}")
             configure_file(
                 "${QT_CMAKE_DIR}/QtPlugins.cmake.in"
@@ -551,9 +551,8 @@ function(qt_generate_build_internals_extra_cmake_code)
         if(CMAKE_BUILD_TYPE)
             string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
                 "
+# Used by qt_internal_set_cmake_build_type.
 set(__qt_internal_initial_qt_cmake_build_type \"${CMAKE_BUILD_TYPE}\")
-qt_internal_force_set_cmake_build_type_conditionally(
-    \"\${__qt_internal_initial_qt_cmake_build_type}\")
 ")
         endif()
         if(CMAKE_CONFIGURATION_TYPES)
@@ -574,17 +573,6 @@ qt_internal_force_set_cmake_build_type_conditionally(
         if(QT_MULTI_CONFIG_FIRST_CONFIG)
             string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
                 "\nset(QT_MULTI_CONFIG_FIRST_CONFIG \"${QT_MULTI_CONFIG_FIRST_CONFIG}\")\n")
-        endif()
-        # When building standalone tests against a multi-config Qt, we want to choose the first
-        # configuration, rather than use CMake's default value.
-        # In the case of Windows, we definitely don't it to default to Debug, because that causes
-        # issues in the CI.
-        if(multi_config_specific)
-            string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS "
-if(QT_BUILD_STANDALONE_TESTS)
-    qt_internal_force_set_cmake_build_type_conditionally(
-        \"\${QT_MULTI_CONFIG_FIRST_CONFIG}\")
-endif()\n")
         endif()
 
         if(CMAKE_CROSS_CONFIGS)
@@ -713,17 +701,6 @@ endif()\n")
 
         string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS "${install_prefix_content}")
 
-        # The top-level check needs to happen inside QtBuildInternals, because it's possible
-        # to configure a top-level build with a few repos and then configure another repo
-        # using qt-configure-module in a separate build dir, where QT_SUPERBUILD will not
-        # be set anymore.
-        string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
-            "
-if(DEFINED QT_REPO_MODULE_VERSION AND NOT DEFINED QT_REPO_DEPENDENCIES AND NOT QT_SUPERBUILD)
-    qt_internal_read_repo_dependencies(QT_REPO_DEPENDENCIES \"$\{PROJECT_SOURCE_DIR}\")
-endif()
-")
-
         if(DEFINED OpenGL_GL_PREFERENCE)
             string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
                 "
@@ -737,6 +714,19 @@ set(OpenGL_GL_PREFERENCE \"${OpenGL_GL_PREFERENCE}\" CACHE STRING \"\")
 set(QT_COPYRIGHT_YEAR \"${QT_COPYRIGHT_YEAR}\" CACHE STRING \"\")
 set(QT_COPYRIGHT \"${QT_COPYRIGHT}\" CACHE STRING \"\")
 ")
+
+        # Add the apple version requirements to the BuildInternals extra code, so the info is
+        # available when configuring a standalone test.
+        # Otherwise when QtSetup is included after a
+        #   find_package(Qt6BuildInternals REQUIRED COMPONENTS STANDALONE_TEST)
+        # call, Qt6ConfigExtras.cmake is not included yet, the requirements are not available and
+        # _qt_internal_check_apple_sdk_and_xcode_versions() would fail.
+        _qt_internal_export_apple_sdk_and_xcode_version_requirements(apple_requirements)
+        if(apple_requirements)
+            string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS "
+${apple_requirements}
+")
+        endif()
 
         qt_compute_relative_path_from_cmake_config_dir_to_prefix()
         configure_file(
@@ -848,8 +838,15 @@ function(qt_internal_generate_user_facing_tools_info)
         if(NOT filename)
             set(filename ${target})
         endif()
+        set(linkname ${filename})
+        if(APPLE)
+            get_target_property(is_macos_bundle ${target} MACOSX_BUNDLE )
+            if(is_macos_bundle)
+                set(filename "${filename}.app/Contents/MacOS/${filename}")
+            endif()
+        endif()
         qt_path_join(tool_target_path "${CMAKE_INSTALL_PREFIX}" "${INSTALL_BINDIR}" "${filename}")
-        qt_path_join(tool_link_path "${INSTALL_PUBLICBINDIR}" "${filename}${PROJECT_VERSION_MAJOR}")
+        qt_path_join(tool_link_path "${INSTALL_PUBLICBINDIR}" "${linkname}${PROJECT_VERSION_MAJOR}")
         list(APPEND lines "${tool_target_path} ${tool_link_path}")
     endforeach()
     string(REPLACE ";" "\n" content "${lines}")

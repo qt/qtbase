@@ -175,7 +175,7 @@ namespace QTest
 
         stateKey &= Qt::KeyboardModifierMask;
 
-        QEvent::Type meType;
+        QEvent::Type meType = QEvent::None;
         using namespace QTestPrivate;
         switch (action)
         {

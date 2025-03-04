@@ -11,6 +11,7 @@
 
 #include <QtCore/qpointer.h>
 #include <QtCore/qsharedpointer.h>
+#include <QtCore/qmutex.h>
 #include <QtCore/qt_windows.h>
 #include <QtGui/qaccessible.h>
 
@@ -62,6 +63,7 @@ public:
 private:
     QString automationIdForAccessible(const QAccessibleInterface *accessible);
     ULONG m_ref;
+    static QMutex m_mutex;
 };
 
 QT_END_NAMESPACE

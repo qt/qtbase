@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial
 
 #include "utils.h"
 #include "qmlutils.h"
@@ -167,6 +167,7 @@ struct Options {
     bool compilerRunTime = false;
     QStringList disabledPluginTypes;
     bool softwareRasterizer = true;
+    bool ffmpeg = true;
     Platform platform = WindowsDesktopMsvc;
     ModuleBitset additionalLibraries;
     ModuleBitset disabledLibraries;
@@ -436,6 +437,11 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
                                                         QStringLiteral("Do not deploy the software rasterizer library."));
     parser->addOption(suppressSoftwareRasterizerOption);
 
+    QCommandLineOption noFFmpegOption(QStringLiteral("no-ffmpeg"),
+                                      QStringLiteral("Do not deploy the ffmpeg libraries."));
+    parser->addOption(noFFmpegOption);
+
+
     QCommandLineOption listOption(QStringLiteral("list"),
                                                 "Print only the names of the files copied.\n"
                                                 "Available options:\n"
@@ -541,6 +547,9 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
 
     if (parser->isSet(suppressSoftwareRasterizerOption))
         options->softwareRasterizer = false;
+
+    if (parser->isSet(noFFmpegOption))
+        options->ffmpeg = false;
 
     if (parser->isSet(forceOption))
         options->updateFileFlags |= ForceUpdateFile;
@@ -900,7 +909,7 @@ static QString deployPlugin(const QString &plugin, const QDir &subDir,
         *usedQtModules |= missingModules;
         if (optVerboseLevel) {
             std::wcout << "Adding " << formatQtModules(missingModules).constData()
-                << " for " << plugin << '\n';
+                << " for " << plugin << " from plugin type: " << subDirName << '\n';
         }
     }
     return pluginPath;
@@ -932,7 +941,7 @@ QStringList findQtPlugins(ModuleBitset *usedQtModules, const ModuleBitset &disab
                 ? MatchDebugOrRelease // QTBUG-44331: Debug detection does not work for webengine, deploy all.
                 : debugMatchModeIn;
             QDir subDir(subDirFi.absoluteFilePath());
-
+            std::wcout << "Adding in plugin type " << subDirFi.baseName() << " for module: " << qtModuleEntries.moduleById(module).name << '\n';
             // Filter for platform or any.
             QString filter;
             const bool isPlatformPlugin = subDirName == "platforms"_L1;
@@ -1038,6 +1047,33 @@ static bool deployTranslations(const QString &sourcePath, const ModuleBitset &us
         }
     } // for prefixes.
     return true;
+}
+
+static QStringList findFFmpegLibs(const QString &qtBinDir, Platform platform)
+{
+    const std::vector<QLatin1StringView> ffmpegHints = { "avcodec"_L1, "avformat"_L1, "avutil"_L1,
+                                                         "swresample"_L1, "swscale"_L1 };
+    const QStringList bundledLibs =
+            findSharedLibraries(qtBinDir, platform, MatchDebugOrRelease, {});
+
+    QStringList ffmpegLibs;
+    for (const QLatin1StringView &libHint : ffmpegHints) {
+        const QStringList ffmpegLib = bundledLibs.filter(libHint, Qt::CaseInsensitive);
+
+        if (ffmpegLib.empty()) {
+            std::wcerr << "Warning: Cannot find FFmpeg libraries. Multimedia features will not work as expected.\n";
+            return {};
+        } else if (ffmpegLib.size() != 1u) {
+            std::wcerr << "Warning: Multiple versions of FFmpeg libraries found. Multimedia features will not work as expected.\n";
+            return {};
+        }
+
+        const QChar slash(u'/');
+        QFileInfo ffmpegLibPath{ qtBinDir + slash + ffmpegLib.front() };
+        ffmpegLibs.append(ffmpegLibPath.absoluteFilePath());
+    }
+
+    return ffmpegLibs;
 }
 
 struct DeployResult
@@ -1473,6 +1509,12 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
         }
     } // Windows
 
+    // Add ffmpeg if we deploy the ffmpeg backend
+    if (options.ffmpeg
+        && !plugins.filter(QStringLiteral("ffmpegmediaplugin"), Qt::CaseInsensitive).empty()) {
+        deployedQtLibraries.append(findFFmpegLibs(qtBinDir, options.platform));
+    }
+
     // Update libraries
     if (options.libraries) {
         const QString targetPath = options.libraryDirectory.isEmpty() ?
@@ -1672,15 +1714,15 @@ int main(int argc, char **argv)
     const QMap<QString, QString> qtpathsVariables =
             queryQtPaths(options.qtpathsBinary, &errorMessage);
     const QString xSpec = qtpathsVariables.value(QStringLiteral("QMAKE_XSPEC"));
-    options.platform = platformFromMkSpec(xSpec);
-    if (options.platform == UnknownPlatform) {
-        std::wcerr << "Unsupported platform " << xSpec << '\n';
-        return 1;
-    }
-
     if (qtpathsVariables.isEmpty() || xSpec.isEmpty()
         || !qtpathsVariables.contains(QStringLiteral("QT_INSTALL_BINS"))) {
         std::wcerr << "Unable to query qtpaths: " << errorMessage << '\n';
+        return 1;
+    }
+
+    options.platform = platformFromMkSpec(xSpec);
+    if (options.platform == UnknownPlatform) {
+        std::wcerr << "Unsupported platform " << xSpec << '\n';
         return 1;
     }
 

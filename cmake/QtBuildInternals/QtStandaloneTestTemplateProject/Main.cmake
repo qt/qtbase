@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 # Includes QtSetup and friends for private CMake API.
+set(QT_INTERNAL_IS_STANDALONE_TEST TRUE)
 qt_internal_project_setup()
 qt_build_internals_set_up_private_api()
 

@@ -13,6 +13,8 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
+#define LAYOUTITEMSIZE_MAX (1 << 24)
+
 template<typename T>
 static void insertOrRemoveItems(QList<T> &items, int index, int delta)
 {
@@ -194,7 +196,8 @@ void QGridLayoutRowData::calculateGeometries(int start, int end, qreal targetSiz
 
         sumAvailable = targetSize - totalBox.q_minimumSize;
         if (sumAvailable > 0.0) {
-            qreal sumDesired = totalBox.q_preferredSize - totalBox.q_minimumSize;
+            const qreal totalBox_preferredSize = qMin(totalBox.q_preferredSize, qreal(LAYOUTITEMSIZE_MAX));
+            qreal sumDesired = totalBox_preferredSize - totalBox.q_minimumSize;
 
             for (int i = 0; i < n; ++i) {
                 if (ignore.testBit(start + i)) {
@@ -203,7 +206,8 @@ void QGridLayoutRowData::calculateGeometries(int start, int end, qreal targetSiz
                 }
 
                 const QGridLayoutBox &box = boxes.at(start + i);
-                qreal desired = box.q_preferredSize - box.q_minimumSize;
+                const qreal box_preferredSize = qMin(box.q_preferredSize, qreal(LAYOUTITEMSIZE_MAX));
+                qreal desired = box_preferredSize - box.q_minimumSize;
                 factors[i] = growthFactorBelowPreferredSize(desired, sumAvailable, sumDesired);
                 sumFactors += factors[i];
             }

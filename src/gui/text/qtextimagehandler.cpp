@@ -23,12 +23,14 @@ static inline QString findAtNxFileOrResource(const QString &baseFileName,
 {
     // qt_findAtNxFile expects a file name that can be tested with QFile::exists.
     // so if the format.name() is a file:/ or qrc:/ URL, then we need to strip away the schema.
-    QString localFile = baseFileName;
-    if (localFile.startsWith("file:/"_L1))
-        localFile = localFile.sliced(6);
-    else if (localFile.startsWith("qrc:/"_L1))
-        localFile = localFile.sliced(3);
-
+    QString localFile;
+    const QUrl url(baseFileName);
+    if (url.isLocalFile())
+        localFile = url.toLocalFile();
+    else if (baseFileName.startsWith("qrc:/"_L1))
+        localFile = baseFileName.sliced(3);
+    else
+        localFile = baseFileName;
     extern QString qt_findAtNxFile(const QString &baseFileName, qreal targetDevicePixelRatio,
                                    qreal *sourceDevicePixelRatio);
     return qt_findAtNxFile(localFile, targetDevicePixelRatio, sourceDevicePixelRatio);

@@ -183,7 +183,7 @@ using namespace Qt::StringLiterals;
 //! [21]
 
 //! [22]
-   void appendMap(QCborStreamWriter &writer, const QList<QPair<int, QString>> &values)
+   void appendMap(QCborStreamWriter &writer, const QList<std::pair<int, QString>> &values)
    {
        writer.startMap();
        for (const auto pair : values) {
@@ -271,12 +271,12 @@ using namespace Qt::StringLiterals;
    {
        QString result;
        auto r = reader.readString();
-       while (r.code == QCborStreamReader::Ok) {
+       while (r.status == QCborStreamReader::Ok) {
            result += r.data;
            r = reader.readString();
        }
 
-       if (r.code == QCborStreamReader::Error) {
+       if (r.status == QCborStreamReader::Error) {
            // handle error condition
            result.clear();
        }
@@ -289,12 +289,12 @@ using namespace Qt::StringLiterals;
    {
        QBytearray result;
        auto r = reader.readBytearray();
-       while (r.code == QCborStreamReader::Ok) {
+       while (r.status == QCborStreamReader::Ok) {
            result += r.data;
            r = reader.readByteArray();
        }
 
-       if (r.code == QCborStreamReader::Error) {
+       if (r.status == QCborStreamReader::Error) {
            // handle error condition
            result.clear();
        }

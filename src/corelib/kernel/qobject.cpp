@@ -2303,6 +2303,9 @@ void QObjectPrivate::setParent_helper(QObject *o)
     If multiple event filters are installed on a single object, the
     filter that was installed last is activated first.
 
+    If \a filterObj has already been installed for this object,
+    this function moves it so it acts as if it was installed last.
+
     Here's a \c KeyPressEater class that eats the key presses of its
     monitored objects:
 
@@ -2405,6 +2408,21 @@ void QObject::removeEventFilter(QObject *obj)
     was called. This does not apply to objects deleted while a previous, nested
     event loop was still running: the Qt event loop will delete those objects
     as soon as the new nested event loop starts.
+
+    In situations where Qt is not driving the event dispatcher via e.g.
+    QCoreApplication::exec() or QEventLoop::exec(), deferred deletes
+    will not be processed automatically. To ensure deferred deletion in
+    this scenario, the following workaround can be used:
+
+    \code
+    const auto *eventDispatcher = QThread::currentThread()->eventDispatcher();
+    QObject::connect(eventDispatcher, &QAbstractEventDispatcher::aboutToBlock,
+        QThread::currentThread(), []{
+            if (QThread::currentThread()->loopLevel() == 0)
+                QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
+        }
+    );
+    \endcode
 
     \note It is safe to call this function more than once; when the
     first deferred deletion event is delivered, any pending events for the
@@ -4615,6 +4633,13 @@ QDebug operator<<(QDebug dbg, const QObject *o)
     Q_GADGET or Q_GADGET_EXPORT instead of Q_OBJECT to enable the meta object system's support
     for enums in a class that is not a QObject subclass.
 
+//! [qobject-macros-private-access-specifier]
+    \note This macro expansion ends with a \c private: access specifier, which makes member
+    declarations immediately after the macro private, too. If you want add public (or protected)
+    members immediately after the macro, you need to use a \c public: (or \c protected:)
+    access specifier.
+//! [qobject-macros-private-access-specifier]
+
     \sa {Meta-Object System}, {Signals and Slots}, {Qt's Property System}
 */
 
@@ -4633,6 +4658,8 @@ QDebug operator<<(QDebug dbg, const QObject *o)
     Q_GADGET makes a class member, \c{staticMetaObject}, available.
     \c{staticMetaObject} is of type QMetaObject and provides access to the
     enums declared with Q_ENUM.
+
+    \include qobject.cpp qobject-macros-private-access-specifier
 
     \sa Q_GADGET_EXPORT
 */
@@ -4658,6 +4685,8 @@ QDebug operator<<(QDebug dbg, const QObject *o)
         Q_PROPERTY(int y MEMBER y)
         ~~~
     \endcode
+
+    \include qobject.cpp qobject-macros-private-access-specifier
 
     \sa Q_GADGET, {Creating Shared Libraries}
 */

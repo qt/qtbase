@@ -4036,7 +4036,7 @@ void QTreeView::currentChanged(const QModelIndex &current, const QModelIndex &pr
             viewport()->update(d->visualRect(current, QTreeViewPrivate::FullRow));
     }
 #if QT_CONFIG(accessibility)
-    if (QAccessible::isActive() && current.isValid()) {
+    if (QAccessible::isActive() && current.isValid() && hasFocus()) {
         Q_D(QTreeView);
 
         QAccessibleEvent event(this, QAccessible::Focus);

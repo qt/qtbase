@@ -435,10 +435,12 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
             m_indentedCodeBlock = true;
         }
     }
-    if (blockFmt.headingLevel())
+    if (blockFmt.headingLevel()) {
         m_stream << QByteArray(blockFmt.headingLevel(), '#') << ' ';
-    else
+        wrap = false;
+    } else {
         m_stream << m_linePrefix;
+    }
 
     QString wrapIndentString = m_linePrefix + QString(m_wrappedLineIndent, qtmw_Space);
     // It would be convenient if QTextStream had a lineCharPos() accessor,
@@ -451,6 +453,7 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
     bool italic = false;
     bool underline = false;
     bool strikeOut = false;
+    bool endingMarkers = false;
     QString backticks(qtmw_Backtick);
     for (QTextBlock::Iterator frag = block.begin(); !frag.atEnd(); ++frag) {
         missedBlankCodeBlockLine = false;
@@ -518,19 +521,27 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
                     if (startsOrEndsWithBacktick)
                         markers += qtmw_Space;
                     mono = monoFrag;
+                    if (!mono)
+                        endingMarkers = true;
                 }
                 if (!blockFmt.headingLevel() && !mono) {
                     if (fontInfo.bold() != bold) {
                         markers += "**"_L1;
                         bold = fontInfo.bold();
+                        if (!bold)
+                            endingMarkers = true;
                     }
                     if (fontInfo.italic() != italic) {
                         markers += u'*';
                         italic = fontInfo.italic();
+                        if (!italic)
+                            endingMarkers = true;
                     }
                     if (fontInfo.strikeOut() != strikeOut) {
                         markers += "~~"_L1;
                         strikeOut = fontInfo.strikeOut();
+                        if (!strikeOut)
+                            endingMarkers = true;
                     }
                     if (fontInfo.underline() != underline) {
                         // Markdown doesn't support underline, but the parser will treat a single underline
@@ -538,6 +549,8 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
                         // That will have to do.
                         markers += u'_';
                         underline = fontInfo.underline();
+                        if (!underline)
+                            endingMarkers = true;
                     }
                 }
             }
@@ -547,7 +560,8 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
                 bool breakingLine = false;
                 while (i < fragLen) {
                     if (col >= ColumnLimit) {
-                        m_stream << qtmw_Newline << wrapIndentString;
+                        m_stream << markers << qtmw_Newline << wrapIndentString;
+                        markers.clear();
                         col = m_wrappedLineIndent;
                         while (i < fragLen && fragmentText[i].isSpace())
                             ++i;
@@ -557,6 +571,13 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
                         int wi = nearestWordWrapIndex(fragmentText, j);
                         if (wi < 0) {
                             j = fragLen;
+                            // can't break within the fragment: we need to break already _before_ it
+                            if (endingMarkers) {
+                                m_stream << markers;
+                                markers.clear();
+                            }
+                            m_stream << qtmw_Newline << wrapIndentString;
+                            col = m_wrappedLineIndent;
                         } else if (wi >= i) {
                             j = wi;
                             breakingLine = true;
@@ -580,7 +601,7 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
                         col += subfrag.size();
                     }
                     i = j + 1;
-                }
+                } // loop over fragment characters (we know we need to break somewhere)
             } else {
                 m_stream << markers << fragmentText;
                 col += markers.size() + fragmentText.size();

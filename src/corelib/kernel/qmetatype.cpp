@@ -954,7 +954,8 @@ static const struct { const char * typeName; int typeNameLength; int type; } typ
     {nullptr, 0, QMetaType::UnknownType}
 };
 
-static const struct : QMetaTypeModuleHelper
+// NOLINTNEXTLINE(cppcoreguidelines-virtual-class-destructor): this is not a base class
+static constexpr struct : QMetaTypeModuleHelper
 {
     template<typename T, typename LiteralWrapper =
              std::conditional_t<std::is_same_v<T, QString>, QLatin1StringView, const char *>>

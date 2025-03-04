@@ -198,6 +198,8 @@ private slots:
     void nextFormatAfterEnterPressed_data();
     void nextFormatAfterEnterPressed();
 
+    void dontCrashWithCss();
+
 private:
     void createSelection();
     int blockCount() const;
@@ -3063,6 +3065,15 @@ void tst_QTextEdit::nextFormatAfterEnterPressed()
     for (auto it = expectedPrevCharProps.constBegin(); it != expectedPrevCharProps.constEnd(); ++it)
         QCOMPARE(prevBlockCursor.charFormat().property(it.key()), it.value());
 }
+
+void tst_QTextEdit::dontCrashWithCss()
+{
+    qApp->setStyleSheet("QWidget { font: 10pt; }");
+    QTextEdit edit;
+    edit.show();
+    qApp->setStyleSheet(QString());
+}
+
 
 QTEST_MAIN(tst_QTextEdit)
 #include "tst_qtextedit.moc"

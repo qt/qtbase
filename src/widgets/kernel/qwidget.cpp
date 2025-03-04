@@ -1659,10 +1659,9 @@ void QWidgetPrivate::deleteExtra()
         if (QStyleSheetStyle *proxy = qt_styleSheet(extra->style))
             proxy->deref();
 #endif
-        if (extra->topextra) {
+        if (extra->topextra)
             deleteTLSysExtra();
-            // extra->topextra->backingStore destroyed in QWidgetPrivate::deleteTLSysExtra()
-        }
+
         // extra->xic destroyed in QWidget::destroy()
         extra.reset();
     }
@@ -1672,34 +1671,11 @@ void QWidgetPrivate::deleteSysExtra()
 {
 }
 
-static void deleteBackingStore(QWidgetPrivate *d)
-{
-    QTLWExtra *topData = d->topData();
-
-    delete topData->backingStore;
-    topData->backingStore = nullptr;
-}
-
 void QWidgetPrivate::deleteTLSysExtra()
 {
     if (extra && extra->topextra) {
-        //the qplatformbackingstore may hold a reference to the window, so the backingstore
-        //needs to be deleted first.
-
-        extra->topextra->repaintManager.reset(nullptr);
-        deleteBackingStore(this);
-        extra->topextra->widgetTextures.clear();
-
-        //the toplevel might have a context with a "qglcontext associated with it. We need to
-        //delete the qglcontext before we delete the qplatformopenglcontext.
-        //One unfortunate thing about this is that we potentially create a glContext just to
-        //delete it straight afterwards.
-        if (extra->topextra->window) {
-            extra->topextra->window->destroy();
-        }
         delete extra->topextra->window;
         extra->topextra->window = nullptr;
-
     }
 }
 
@@ -10830,10 +10806,11 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
                     recreate = true;
             }
             if (recreate) {
-                auto oldState = d->windowHandle(QWidgetPrivate::WindowHandleMode::Closest)->windowState();
+                const auto windowStateBeforeDestroy = newtlw->windowState();
                 newtlw->destroy();
                 newtlw->create();
-                d->windowHandle(QWidgetPrivate::WindowHandleMode::Closest)->setWindowState(oldState);
+                Q_ASSERT(newtlw->windowHandle());
+                newtlw->windowHandle()->setWindowStates(windowStateBeforeDestroy);
             }
         }
     }
@@ -12214,7 +12191,7 @@ void QWidget::setBackingStore(QBackingStore *store)
         return;
 
     QBackingStore *oldStore = topData->backingStore;
-    deleteBackingStore(d);
+    delete topData->backingStore;
     topData->backingStore = store;
 
     QWidgetRepaintManager *repaintManager = d->maybeRepaintManager();

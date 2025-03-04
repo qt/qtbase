@@ -372,10 +372,15 @@ language_map = {
     338: ("Ligurian",                    "lij"),
     339: ("Rohingya",                    "rhg"),
     340: ("Torwali",                     "trw"),
+    # added in CLDR v44
+    341: ("Anii",                        "blo"),
+    342: ("Kangri",                      "xnr"),
+    343: ("Venetian",                    "vec"),
 }
 # Don't add languages just because they exist; check CLDR does provide
 # substantial data for locales using it; and check, once added, they
-# don't show up in cldr2qlocalexmo.py's unused listing.
+# don't show up in cldr2qlocalexmo.py's unused listing. Do also check
+# the data's draft status; if it's (nearly) all unconfirmed, leave it.
 
 language_aliases = {
     # Renamings prior to Qt 6.0 (CLDR v37):

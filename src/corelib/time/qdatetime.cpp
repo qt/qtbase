@@ -1140,12 +1140,14 @@ QString QDate::toString(Qt::DateFormat format) const
 /*!
     \fn QString QDate::toString(const QString &format, QCalendar cal) const
     \fn QString QDate::toString(QStringView format, QCalendar cal) const
+    \since 5.14
 
     Returns the date as a string. The \a format parameter determines the format
     of the result string. If \a cal is supplied, it determines the calendar used
-    to represent the date; it defaults to Gregorian.
+    to represent the date; it defaults to Gregorian. Prior to Qt 5.14, there was
+    no \a cal parameter and the Gregorian calendar was always used.
 
-    These expressions may be used:
+    These expressions may be used in the \a format parameter:
 
     \table
     \header \li Expression \li Output
@@ -1196,7 +1198,6 @@ QString QDate::toString(Qt::DateFormat format) const
     in May will contribute \c{"MayMay05"} to the output.
 
     \sa fromString(), QDateTime::toString(), QTime::toString(), QLocale::toString()
-
 */
 QString QDate::toString(QStringView format, QCalendar cal) const
 {
@@ -4109,12 +4110,14 @@ QString QDateTime::toString(Qt::DateFormat format) const
 /*!
     \fn QString QDateTime::toString(const QString &format, QCalendar cal) const
     \fn QString QDateTime::toString(QStringView format, QCalendar cal) const
+    \since 5.14
 
     Returns the datetime as a string. The \a format parameter determines the
-    format of the result string. If \a cal is supplied, it determines the calendar
-    used to represent the date; it defaults to Gregorian. See QTime::toString()
-    and QDate::toString() for the supported specifiers for time and date,
-    respectively.
+    format of the result string. If \a cal is supplied, it determines the
+    calendar used to represent the date; it defaults to Gregorian. Prior to Qt
+    5.14, there was no \a cal parameter and the Gregorian calendar was always
+    used. See QTime::toString() and QDate::toString() for the supported
+    specifiers for time and date, respectively, in the \a format parameter.
 
     Any sequence of characters enclosed in single quotes will be included
     verbatim in the output string (stripped of the quotes), even if it contains
@@ -4914,7 +4917,7 @@ qint64 QDateTime::currentSecsSinceEpoch() noexcept
            daysAfterEpoch * SECS_PER_DAY;
 }
 
-#elif defined(Q_OS_UNIX)
+#elif defined(Q_OS_UNIX) // Assume POSIX-compliant
 QDate QDate::currentDate()
 {
     return QDateTime::currentDateTime().date();
@@ -4932,18 +4935,18 @@ QDateTime QDateTime::currentDateTime(const QTimeZone &zone)
 
 qint64 QDateTime::currentMSecsSinceEpoch() noexcept
 {
-    // posix compliant system
-    // we have milliseconds
-    struct timeval tv;
-    gettimeofday(&tv, nullptr);
-    return tv.tv_sec * MSECS_PER_SEC + tv.tv_usec / 1000;
+    struct timespec when;
+    if (clock_gettime(CLOCK_REALTIME, &when) == 0) // should always succeed
+        return when.tv_sec * MSECS_PER_SEC + (when.tv_nsec + 500'000) / 1'000'000;
+    Q_UNREACHABLE_RETURN(0);
 }
 
 qint64 QDateTime::currentSecsSinceEpoch() noexcept
 {
-    struct timeval tv;
-    gettimeofday(&tv, nullptr);
-    return tv.tv_sec;
+    struct timespec when;
+    if (clock_gettime(CLOCK_REALTIME, &when) == 0) // should always succeed
+        return when.tv_sec;
+    Q_UNREACHABLE_RETURN(0);
 }
 #else
 #error "What system is this?"

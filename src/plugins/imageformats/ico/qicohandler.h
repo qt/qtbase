@@ -30,7 +30,7 @@ public:
 private:
     int m_currentIconIndex;
     ICOReader *m_pICOReader;
-
+    mutable bool knownCanRead = false;
 };
 
 QT_END_NAMESPACE

@@ -502,6 +502,12 @@ QStringList findAllLibCrypto()
 
 #ifdef Q_OS_WIN
 
+#if (OPENSSL_VERSION_NUMBER >> 28) < 3
+#define QT_OPENSSL_VERSION "1_1"
+#elif OPENSSL_VERSION_MAJOR == 3 // Starting with 3.0 this define is available
+#define QT_OPENSSL_VERSION "3"
+#endif // > 3 intentionally left undefined
+
 struct LoadedOpenSsl {
     std::unique_ptr<QSystemLibrary> ssl, crypto;
 };
@@ -540,8 +546,9 @@ static LoadedOpenSsl loadOpenSsl()
 #define QT_SSL_SUFFIX
 #endif
 
-    tryToLoadOpenSslWin32Library(QLatin1String("libssl-1_1" QT_SSL_SUFFIX),
-                                 QLatin1String("libcrypto-1_1" QT_SSL_SUFFIX), result);
+    tryToLoadOpenSslWin32Library(QLatin1String("libssl-" QT_OPENSSL_VERSION QT_SSL_SUFFIX),
+                                 QLatin1String("libcrypto-" QT_OPENSSL_VERSION QT_SSL_SUFFIX),
+                                 result);
 
 #undef QT_SSL_SUFFIX
     return result;

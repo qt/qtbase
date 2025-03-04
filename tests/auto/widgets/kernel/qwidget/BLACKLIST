@@ -2,8 +2,6 @@
 opensuse-leap
 [renderInvisible]
 macos
-[optimizedResizeMove]
-osx
 [optimizedResize_topLevel]
 osx
 [render_windowOpacity]
