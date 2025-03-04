@@ -642,8 +642,8 @@ public:
         const qsizetype nInserts = 0;
         const size_t bytes;
 
-        void verifyPost(T *where)
-        { Q_ASSERT(where == displaceTo); }
+        void verifyPost()
+        { Q_ASSERT(displaceFrom == displaceTo); }
 
         explicit Inserter(QArrayDataPointer<T> *d, qsizetype pos, qsizetype n)
             : data{d},
@@ -668,35 +668,28 @@ public:
 
         void insertRange(const T *source, qsizetype n)
         {
-            T *where = displaceFrom;
-
             while (n--) {
-                new (where) T(*source);
-                ++where;
+                new (displaceFrom) T(*source);
                 ++source;
                 ++displaceFrom;
             }
-            verifyPost(where);
+            verifyPost();
         }
 
         void insertFill(const T &t, qsizetype n)
         {
-            T *where = displaceFrom;
-
             while (n--) {
-                new (where) T(t);
-                ++where;
+                new (displaceFrom) T(t);
                 ++displaceFrom;
             }
-            verifyPost(where);
+            verifyPost();
         }
 
         void insertOne(T &&t)
         {
-            T *where = displaceFrom;
-            new (where) T(std::move(t));
+            new (displaceFrom) T(std::move(t));
             ++displaceFrom;
-            verifyPost(++where);
+            verifyPost();
         }
 
     };
