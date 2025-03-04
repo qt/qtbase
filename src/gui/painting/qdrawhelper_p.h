@@ -30,6 +30,7 @@
 #include <private/qsimd_p.h>
 
 #include <memory>
+#include <variant> // std::monostate
 
 QT_BEGIN_NAMESPACE
 
@@ -210,6 +211,7 @@ struct Operator
     CompositionFunctionFP funcFP;
 
     union {
+        std::monostate noGradient;
         LinearGradientValues linear;
         RadialGradientValues radial;
     };
