@@ -258,14 +258,24 @@ qt_copy_or_install(DIRECTORY
 )
 
 # Install qt-internal-strip and qt-internal-ninja files.
-set(__qt_internal_strip_wrappers
+set(__qt_internal_strip_wrapper_programs
     libexec/qt-internal-strip.in
-    libexec/qt-internal-strip.bat.in
     libexec/qt-internal-ninja.in
+)
+set(__qt_internal_strip_wrapper_files
+    libexec/qt-internal-strip.bat.in
     libexec/qt-internal-ninja.bat.in
 )
+set(__qt_internal_strip_wrappers
+    ${__qt_internal_strip_wrapper_programs}
+    ${__qt_internal_strip_wrapper_files}
+)
 qt_copy_or_install(PROGRAMS
-    ${__qt_internal_strip_wrappers}
+    ${__qt_internal_strip_wrapper_programs}
+    DESTINATION "${__GlobalConfig_install_dir}/libexec"
+)
+qt_copy_or_install(FILES
+    ${__qt_internal_strip_wrapper_files}
     DESTINATION "${__GlobalConfig_install_dir}/libexec"
 )
 if(QT_WILL_INSTALL)
