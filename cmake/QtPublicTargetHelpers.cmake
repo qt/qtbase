@@ -514,3 +514,19 @@ function(_qt_internal_set_source_file_generated)
         PROPERTIES ${properties}
     )
 endfunction()
+
+# Get the real target checking for ALIASED_TARGET
+function(_qt_internal_get_real_target out_var target)
+    get_target_property(aliased_target "${target}" ALIASED_TARGET)
+    if(aliased_target)
+        set(${out_var} "${aliased_target}" PARENT_SCOPE)
+    else()
+        set(${out_var} "${target}" PARENT_SCOPE)
+    endif()
+endfunction()
+
+# Helpful shortcut to `_qt_internal_get_real_target` if we just need to dealias
+function(_qt_internal_dealias_target target_var)
+    _qt_internal_get_real_target(${target_var} ${${target_var}})
+    set(${target_var} "${${target_var}}" PARENT_SCOPE)
+endfunction()
