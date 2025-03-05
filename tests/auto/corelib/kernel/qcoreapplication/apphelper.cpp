@@ -10,6 +10,12 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#ifdef Q_OS_WIN
+#  include <io.h>
+#else
+#  include <sys/types.h>
+#  include <unistd.h>
+#endif
 
 #if defined(QT_WIDGETS_LIB)
 #include <QtWidgets/QApplication>
@@ -21,6 +27,10 @@ using TestApplication = QApplication;
 using TestApplication = QGuiApplication;
 #else
 using TestApplication = QCoreApplication;
+#endif
+
+#ifndef STDIN_FILENO
+#  define STDIN_FILENO      0
 #endif
 
 #include "maybeshow.h"
@@ -42,7 +52,15 @@ static int exitFromThread(int argc, char **argv)
             fprintf(stderr, "QThread::currentThread is null!\n");
         ::exit(EXIT_SUCCESS);
     });
-    QTimer::singleShot(200, thr, [&thr] { thr->start(); });
+    QTimer::singleShot(200, thr, [&thr] {
+        thr->start();
+
+        // block the GUI forever, otherwise the unloading of the QPA plugins
+        // could cause a crash if something is running.
+        char c;
+        int r = read(STDIN_FILENO, &c, 1);
+        Q_UNUSED(r);
+    });
     app.exec();
     Q_UNREACHABLE_RETURN(EXIT_FAILURE);
 }
