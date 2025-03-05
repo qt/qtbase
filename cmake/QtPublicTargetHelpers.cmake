@@ -62,10 +62,7 @@ function(__qt_internal_set_link_order_matters target link_order_matters)
         message(FATAL_ERROR "Unable to set _qt_link_order_matters flag. ${target} is not a target.")
     endif()
 
-    get_target_property(aliased_target ${target} ALIASED_TARGET)
-    if(aliased_target)
-        set(target "${aliased_target}")
-    endif()
+    _qt_internal_dealias_target(target)
 
     if(link_order_matters)
         set(link_order_matters TRUE)
@@ -101,10 +98,7 @@ endfunction()
 
 function(__qt_internal_check_cmp0099_available)
     set(platform_target ${QT_CMAKE_EXPORT_NAMESPACE}::Platform)
-    get_target_property(aliased_target ${platform_target} ALIASED_TARGET)
-    if(aliased_target)
-        set(platform_target "${aliased_target}")
-    endif()
+    _qt_internal_dealias_target(platform_target)
 
     __qt_internal_get_cmp0099_genex_check(cmp0099_check)
     set_target_properties(${platform_target} PROPERTIES
@@ -224,10 +218,7 @@ function(__qt_internal_collect_object_libraries_recursively out_var target initi
             set(lib "${CMAKE_MATCH_1}")
         endif()
         if(TARGET ${lib})
-            get_target_property(aliased_target ${lib} ALIASED_TARGET)
-            if(aliased_target)
-                set(lib ${aliased_target})
-            endif()
+            _qt_internal_dealias_target(lib)
 
             if(${lib} IN_LIST processed_object_libraries)
                 continue()

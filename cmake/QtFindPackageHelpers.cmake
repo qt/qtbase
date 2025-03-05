@@ -162,10 +162,7 @@ macro(qt_find_package)
         foreach(qt_find_package_target_name ${arg_PROVIDED_TARGETS})
             if(TARGET ${qt_find_package_target_name})
                 # Allow usage of aliased targets by setting properties on the actual target
-                get_target_property(aliased_target ${qt_find_package_target_name} ALIASED_TARGET)
-                if(aliased_target)
-                    set(qt_find_package_target_name ${aliased_target})
-                endif()
+                _qt_internal_dealias_target(qt_find_package_target_name)
 
                 if("${qt_find_package_target_name}" MATCHES "${QT_CMAKE_EXPORT_NAMESPACE}::"
                     AND QT_FEATURE_developer_build

@@ -1516,10 +1516,7 @@ function(_qt_internal_sbom_save_spdx_id_for_target target spdx_id)
     message(DEBUG "Saving spdx id for target ${target}: ${spdx_id}")
 
     set(target_unaliased "${target}")
-    get_target_property(aliased_target "${target}" ALIASED_TARGET)
-    if(aliased_target)
-        set(target_unaliased ${aliased_target})
-    endif()
+    _qt_internal_dealias_target(target_unaliased)
 
     set_target_properties(${target_unaliased} PROPERTIES
         _qt_sbom_spdx_id "${spdx_id}")
