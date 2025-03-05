@@ -797,3 +797,75 @@ function(_qt_internal_relative_path path_var)
     endif()
     set(${arg_OUTPUT_VARIABLE} "${${arg_OUTPUT_VARIABLE}}" PARENT_SCOPE)
 endfunction()
+
+# Configures the file using either the input template or the CONTENT.
+# Behaves as either file(CONFIGURE or configure_file( command, but do not depend
+# on CMake version.
+#
+# Synopsis
+#    _qt_internal_configure_file(<CONFIGURE|GENERATE>
+#        OUTPUT <path>
+#        <INPUT path|CONTENT data>
+#    )
+#
+# Arguments
+# `CONFIGURE` Run in pure CONFIGURE mode.
+#
+# `GENERATE` Configure CONTENT and generate file with the generator expression
+#   support.
+#
+# `OUTPUT` The output file name to generate.
+#
+# `INPUT` The input template file name.
+#
+# `CONTENT` The template content. If both INPUT and CONTENT are specified, INPUT
+#   argument is ignored.
+function(_qt_internal_configure_file mode)
+    cmake_parse_arguments(PARSE_ARGV 1 arg "" "OUTPUT;INPUT;CONTENT" "")
+
+    if(NOT arg_OUTPUT)
+        message(FATAL_ERROR "No OUTPUT file provided to _qt_internal_configure_file.")
+    endif()
+
+    # Substitute the '@' wrapped variables and generate the file with the
+    # the generator expressions evaluation inside the resulting CONTENT.
+    if(mode STREQUAL "GENERATE")
+        if(arg_INPUT)
+            # This is not a limitation of any kind, simply is not required at
+            # implementation time. Feel free to extend.
+            message(FATAL_ERROR "GENERATE mode doesn't support INPUT argument.")
+        endif()
+        string(CONFIGURE "${arg_CONTENT}" arg_CONTENT @ONLY)
+        file(GENERATE OUTPUT "${arg_OUTPUT}" CONTENT "${arg_CONTENT}")
+        return()
+    endif()
+
+    # We use this check for the cases when the specified CONTENT is empty. The value of arg_CONTENT
+    # is undefined, but we still want to create a file with empty content.
+    if("CONTENT" IN_LIST ARGV)
+        if(arg_INPUT)
+            message(WARNING "Both CONTENT and INPUT are specified. CONTENT will be used to generate"
+                " output")
+        endif()
+        if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.18)
+            file(CONFIGURE OUTPUT "${arg_OUTPUT}" CONTENT "${arg_CONTENT}" @ONLY)
+            return()
+        endif()
+        set(template_name "QtFileConfigure.txt.in")
+        # When building qtbase, use the source template file.
+        # Otherwise use the installed file (basically wherever Qt6 package is found).
+        # This should work for non-prefix and superbuilds as well.
+        if(QtBase_SOURCE_DIR)
+            set(input_file "${QtBase_SOURCE_DIR}/cmake/${template_name}")
+        else()
+            set(input_file "${_qt_6_config_cmake_dir}/${template_name}")
+        endif()
+        set(__qt_file_configure_content "${arg_CONTENT}")
+    elseif(arg_INPUT)
+        set(input_file "${arg_INPUT}")
+    else()
+        message(FATAL_ERROR "No input value provided to _qt_internal_configure_file.")
+    endif()
+
+    configure_file("${input_file}" "${arg_OUTPUT}" @ONLY)
+endfunction()
