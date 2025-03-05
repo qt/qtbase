@@ -74,15 +74,10 @@ macro(qt_internal_top_level_setup_cmake_module_path)
     endif()
 endmacro()
 
+# Hook called from the top-level CMakeLists.txt before any submodule is configured.
+# Currently empty; kept as an extension point for future setup that needs to run
+# before submodules are added.
 macro(qt_internal_top_level_before_build_submodules)
-    qt_internal_top_level_setup_no_create_targets()
-endmacro()
-
-macro(qt_internal_top_level_setup_no_create_targets)
-    # Also make sure the CMake config files do not recreate the already-existing targets
-    if (NOT QT_INTERNAL_BUILD_STANDALONE_PARTS)
-        set(QT_NO_CREATE_TARGETS TRUE)
-    endif()
 endmacro()
 
 macro(qt_internal_top_level_end)

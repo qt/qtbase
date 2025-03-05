@@ -1044,7 +1044,6 @@ endfunction()
 #       OUT_VAR_SHOULD_SKIP <var>
 #       [PROJECT_NAME <str>]
 #       [TEST_PLUGIN]
-#       [CHECK_QT_NO_CREATE_TARGETS]
 #   )
 #
 # Arguments
@@ -1071,15 +1070,13 @@ endfunction()
 #   If the module is a TEST_PLUGIN, we do additional checks based on
 #   `QT_BUILD_STANDALONE_TESTS`
 #
-# `CHECK_QT_NO_CREATE_TARGETS`
-#   Whether to check `QT_NO_CREATE_TARGETS` as a compatibility step
-#
 # `SKIP_IF_PROJECT_NAME_NOT_IN_QT_REPO_DEPENDENCIES`
 #   If the target's project name is not in the current QT_REPO_DEPENDENCIES, skip including it.
 #   Mainly used for qt and qml plugins. Avoids issues when reconfiguring parent repos.
 function(_qt_internal_should_include_targets)
     set(option_args
         TEST_PLUGIN
+        # Deprecated
         CHECK_QT_NO_CREATE_TARGETS
         SKIP_IF_PROJECT_NAME_NOT_IN_QT_REPO_DEPENDENCIES
     )
@@ -1121,7 +1118,7 @@ function(_qt_internal_should_include_targets)
 
     # Check for deprecated inputs, i.e. the Config.cmake were already created
     # with a version of qtbase that removed the specific compatibilities
-    foreach(check_arg IN ITEMS )
+    foreach(check_arg IN ITEMS CHECK_QT_NO_CREATE_TARGETS)
         if(arg_${check_arg})
             get_property(skip_warning GLOBAL
                 PROPERTY _qt_skip_warning__qt_internal_should_include_targets
@@ -1196,13 +1193,6 @@ function(_qt_internal_should_include_targets)
             set(${arg_OUT_VAR_SHOULD_SKIP} ON PARENT_SCOPE)
             return()
         endif()
-    endif()
-
-    # Compatibility using the old global `QT_NO_CREATE_TARGETS`
-    # TODO: Remove these once developers have reconfigured their project.
-    if(arg_CHECK_QT_NO_CREATE_TARGETS AND QT_NO_CREATE_TARGETS)
-        set(${arg_OUT_VAR_SHOULD_SKIP} ON PARENT_SCOPE)
-        return()
     endif()
 
     # We might still be generating the Targets.cmake file, so we do the same

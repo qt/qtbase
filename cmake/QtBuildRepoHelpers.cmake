@@ -984,11 +984,6 @@ endfunction()
 # CMake applications).
 macro(qt_internal_set_up_build_dir_package_paths)
     list(PREPEND CMAKE_PREFIX_PATH "${QT_BUILD_DIR}/${INSTALL_CMAKEDIR}")
-
-    # Make sure the CMake config files do not recreate the already-existing targets.
-    if(NOT QT_BUILD_STANDALONE_EXAMPLES)
-        set(QT_NO_CREATE_TARGETS TRUE)
-    endif()
 endmacro()
 
 function(qt_internal_static_link_order_test)
