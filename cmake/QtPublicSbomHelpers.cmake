@@ -214,6 +214,12 @@ function(_qt_internal_sbom_begin_project)
         endif()
     endif()
 
+    if(project_comment)
+        # Escape any potential semicolons.
+        string(REPLACE ";" "\\;" project_comment "${project_comment}")
+        set(project_comment PROJECT_COMMENT "${project_comment}")
+    endif()
+
     _qt_internal_sbom_begin_project_generate(
         OUTPUT "${repo_spdx_install_path}"
         OUTPUT_RELATIVE_PATH "${repo_spdx_relative_install_path}"
@@ -223,7 +229,7 @@ function(_qt_internal_sbom_begin_project)
         SUPPLIER_URL "${repo_supplier_url}"
         DOWNLOAD_LOCATION "${download_location}"
         PROJECT "${repo_project_name_lowercase}"
-        PROJECT_COMMENT "${project_comment}"
+        ${project_comment}
         PROJECT_FOR_SPDX_ID "${repo_project_name_for_spdx_id}"
         NAMESPACE "${repo_spdx_namespace}"
         CPE "${qt_cpe}"
