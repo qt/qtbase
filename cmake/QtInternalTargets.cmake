@@ -81,6 +81,14 @@ function(qt_internal_set_warnings_are_errors_flags target target_scope)
                     # This in turn triggers a fallthrough warning in cborparser.c, so we disable
                     # this warning.
                     -no-integrated-cpp -Wno-implicit-fallthrough
+                CONDITIONS VERSION_LESS 15.1
+                    AND $<BOOL:${QT_FEATURE_sanitize_thread}>
+                    AND $<BOOL:${BUILD_WITH_PCH}>
+                    OPTIONS
+                    # GCC < 15 raises a TSAN warning from Qt's own PCHs, despite the warning
+                    # being suppressed (QTBUG-134415)
+                    # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=64117
+                    -Wno-error=tsan
             COMMON_CONDITIONS
                 ${common_conditions}
             ${language_args}

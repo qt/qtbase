@@ -43,6 +43,7 @@ template <typename QGS> union Holder
         // TSAN does not support atomic_thread_fence and GCC complains:
         // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=97868
         // https://github.com/google/sanitizers/issues/1352
+        // QTBUG-134415
 QT_WARNING_PUSH
 #if defined(Q_CC_GNU_ONLY) && Q_CC_GNU >= 1100
 QT_WARNING_DISABLE_GCC("-Wtsan")
