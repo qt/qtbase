@@ -208,10 +208,7 @@ function(qt_internal_add_plugin target)
         set(plugin_install_package_suffix "${qt_module}")
 
 
-        get_target_property(aliased_target ${qt_module_target} ALIASED_TARGET)
-        if(aliased_target)
-            set(qt_module_target ${aliased_target})
-        endif()
+        _qt_internal_dealias_target(qt_module_target)
         get_target_property(is_imported_qt_module ${qt_module_target} IMPORTED)
 
         if(NOT is_imported_qt_module)

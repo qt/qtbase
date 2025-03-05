@@ -540,10 +540,7 @@ macro(__qt_internal_include_plugin_packages target)
 
     # Properties can't be set on aliased targets, so make sure to unalias the target. This is needed
     # when Qt examples are built as part of the Qt build itself.
-    get_target_property(_aliased_target ${__qt_${target}_plugin_module_target} ALIASED_TARGET)
-    if(_aliased_target)
-        set(__qt_${target}_plugin_module_target ${_aliased_target})
-    endif()
+    _qt_internal_dealias_target(__qt_${target}_plugin_module_target)
 
     # Ensure that QT_PLUGIN_TARGETS is a known transitive compile property. Works with CMake
     # versions >= 3.30.

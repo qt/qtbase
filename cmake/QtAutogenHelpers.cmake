@@ -123,10 +123,7 @@ function(qt_manual_moc result)
                     set(dep "${QT_CMAKE_EXPORT_NAMESPACE}::${dep}")
                 endif()
 
-                get_target_property(alias_dep ${dep} ALIASED_TARGET)
-                if(alias_dep)
-                    set(dep ${alias_dep})
-                endif()
+                _qt_internal_dealias_target(dep)
 
                 get_target_property(loc ${dep} IMPORTED_LOCATION)
                 string(REGEX REPLACE "(.*)/Qt[^/]+\\.framework.*" "\\1" loc "${loc}")
@@ -236,10 +233,7 @@ function(qt_internal_work_around_autogen_discarded_dependencies target)
         endif()
 
         # Resolve alias targets, because AUTOGEN_TARGET_DEPENDS doesn't seem to handle them.
-        get_target_property(aliased_target "${lib}" ALIASED_TARGET)
-        if(aliased_target)
-            set(lib "${aliased_target}")
-        endif()
+        _qt_internal_dealias_target(lib)
 
         # Skip imported targets, they don't have sync_headers targets.
         get_target_property(imported "${lib}" IMPORTED)

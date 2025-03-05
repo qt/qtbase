@@ -251,10 +251,7 @@ function(__qt_internal_walk_libs
                 endif()
                 if(operation STREQUAL "promote_3rd_party_global")
                     set(lib_target_unaliased "${lib_target}")
-                    get_target_property(aliased_target ${lib_target} ALIASED_TARGET)
-                    if(aliased_target)
-                        set(lib_target_unaliased ${aliased_target})
-                    endif()
+                    _qt_internal_dealias_target(lib_target_unaliased)
 
                     get_property(is_imported TARGET ${lib_target_unaliased} PROPERTY IMPORTED)
 
