@@ -1,57 +1,24 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# The common implementation of qt_configure_file functionality.
-macro(qt_configure_file_impl)
-    if(NOT arg_OUTPUT)
-        message(FATAL_ERROR "No output file provided to qt_configure_file.")
-    endif()
-
-    # We use this check for the cases when the specified CONTENT is empty. The value of arg_CONTENT
-    # is undefined, but we still want to create a file with empty content.
-    if(NOT "CONTENT" IN_LIST arg_KEYWORDS_MISSING_VALUES)
-        if(arg_INPUT)
-            message(WARNING "Both CONTENT and INPUT are specified. CONTENT will be used to generate"
-                " output")
-        endif()
-        if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.18)
-            file(CONFIGURE OUTPUT "${arg_OUTPUT}" CONTENT "${arg_CONTENT}" @ONLY)
-            return()
-        endif()
-
-        set(template_name "QtFileConfigure.txt.in")
-        # When building qtbase, use the source template file.
-        # Otherwise use the installed file (basically wherever Qt6 package is found).
-        # This should work for non-prefix and superbuilds as well.
-        if(QtBase_SOURCE_DIR)
-            set(input_file "${QtBase_SOURCE_DIR}/cmake/${template_name}")
-        else()
-            set(input_file "${_qt_6_config_cmake_dir}/${template_name}")
-        endif()
-        set(__qt_file_configure_content "${arg_CONTENT}")
-    elseif(arg_INPUT)
-        set(input_file "${arg_INPUT}")
-    else()
-        message(FATAL_ERROR "No input value provided to qt_configure_file.")
-    endif()
-
-    configure_file("${input_file}" "${arg_OUTPUT}" @ONLY)
-endmacro()
-
 # qt_configure_file(OUTPUT output-file <INPUT input-file | CONTENT content>)
 # input-file is relative to ${CMAKE_CURRENT_SOURCE_DIR}
 # output-file is relative to ${CMAKE_CURRENT_BINARY_DIR}
 #
-# This function is similar to file(GENERATE OUTPUT) except it writes the content
-# to the file at configure time, rather than at generate time.
-#
-# TODO: Once we require 3.18+, this can use file(CONFIGURE) in its implementation,
-# or maybe its usage can be replaced by file(CONFIGURE). Until then, it  uses
-# configure_file() with a generic input file as source, when used with the CONTENT
-# signature.
+# This function is the universal replacement for file(CONFIGURE CMake command.
 function(qt_configure_file)
     cmake_parse_arguments(PARSE_ARGV 0 arg "" "OUTPUT;INPUT;CONTENT" "")
-    qt_configure_file_impl()
+    if("CONTENT" IN_LIST ARGV)
+        if(arg_INPUT)
+            message(WARNING "Both CONTENT and INPUT are specified. CONTENT will be used to generate"
+                " output")
+        endif()
+        _qt_internal_configure_file(CONFIGURE OUTPUT "${arg_OUTPUT}" CONTENT "${arg_CONTENT}")
+    elseif(arg_INPUT)
+        _qt_internal_configure_file(CONFIGURE OUTPUT "${arg_OUTPUT}" INPUT "${arg_INPUT}")
+    else()
+        message(FATAL_ERROR "No input value provided to _qt_internal_configure_file.")
+    endif()
 endfunction()
 
 # A version of cmake_parse_arguments that makes sure all arguments are processed and errors out
