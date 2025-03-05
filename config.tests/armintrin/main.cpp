@@ -1,4 +1,4 @@
-// Copyright (C) 2024
+// Copyright (C) 2024 The Qt Company GmbH.
 // SPDX-License-Identifier: BSD-3-Clause
 
 #if defined QT_COMPILER_SUPPORTS_CRYPTO
