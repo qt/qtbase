@@ -14,6 +14,11 @@ macro(qt_configure_file_impl)
             message(WARNING "Both CONTENT and INPUT are specified. CONTENT will be used to generate"
                 " output")
         endif()
+        if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.18)
+            file(CONFIGURE OUTPUT "${arg_OUTPUT}" CONTENT "${arg_CONTENT}" @ONLY)
+            return()
+        endif()
+
         set(template_name "QtFileConfigure.txt.in")
         # When building qtbase, use the source template file.
         # Otherwise use the installed file (basically wherever Qt6 package is found).
