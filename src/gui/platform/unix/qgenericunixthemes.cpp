@@ -181,14 +181,6 @@ private:
         ChangeSignal() {}
     };
 
-    // Json keys
-    static constexpr QLatin1StringView s_dbusLocation = QLatin1StringView("DBusLocation");
-    static constexpr QLatin1StringView s_dbusKey = QLatin1StringView("DBusKey");
-    static constexpr QLatin1StringView s_provider = QLatin1StringView("Provider");
-    static constexpr QLatin1StringView s_setting = QLatin1StringView("Setting");
-    static constexpr QLatin1StringView s_signals = QLatin1StringView("DbusSignals");
-    static constexpr QLatin1StringView s_root = QLatin1StringView("Qt.qpa.DBusSignals");
-
     QFlatMap <DBusKey, ChangeSignal> m_signalMap;
 
     void init(const QString &service, const QString &path,
@@ -200,6 +192,17 @@ private:
     void saveJson(const QString &fileName) const;
 };
 
+namespace {
+namespace JsonKeys {
+constexpr auto dbusLocation() { return "DBusLocation"_L1; }
+constexpr auto dbusKey() { return "DBusKey"_L1; }
+constexpr auto provider() { return "Provider"_L1; }
+constexpr auto setting() { return "Setting"_L1; }
+constexpr auto dbusSignals() { return "DbusSignals"_L1; }
+constexpr auto root() { return "Qt.qpa.DBusSignals"_L1; }
+} // namespace JsonKeys
+}
+
 QGenericUnixThemeDBusListener::QGenericUnixThemeDBusListener(const QString &service,
                                const QString &path, const QString &interface, const QString &signal)
 {
@@ -208,10 +211,10 @@ QGenericUnixThemeDBusListener::QGenericUnixThemeDBusListener(const QString &serv
 
 QGenericUnixThemeDBusListener::QGenericUnixThemeDBusListener()
 {
-    static constexpr QLatin1StringView service("");
-    static constexpr QLatin1StringView path("/org/freedesktop/portal/desktop");
-    static constexpr QLatin1StringView interface("org.freedesktop.portal.Settings");
-    static constexpr QLatin1StringView signal("SettingChanged");
+    const auto service = u""_s;
+    const auto path = u"/org/freedesktop/portal/desktop"_s;
+    const auto interface = u"org.freedesktop.portal.Settings"_s;
+    const auto signal = u"SettingChanged"_s;
 
     init (service, path, interface, signal);
 }
@@ -273,26 +276,26 @@ void QGenericUnixThemeDBusListener::loadJson(const QString &fileName)
     QJsonParseError error;
     QJsonDocument doc = QJsonDocument::fromJson(file.readAll(), &error);
     CHECK((error.error == QJsonParseError::NoError), error.errorString());
-    CHECK(doc.isObject(), "Parse Error: Expected root object" << s_root);
+    CHECK(doc.isObject(), "Parse Error: Expected root object" << JsonKeys::root());
 
     const QJsonObject &root = doc.object();
-    CHECK(root.contains(s_root), "Parse Error: Expected root object" << s_root);
-    CHECK(root[s_root][s_signals].isArray(), "Parse Error: Expected array" << s_signals);
+    CHECK(root.contains(JsonKeys::root()), "Parse Error: Expected root object" << JsonKeys::root());
+    CHECK(root[JsonKeys::root()][JsonKeys::dbusSignals()].isArray(), "Parse Error: Expected array" << JsonKeys::dbusSignals());
 
-    const QJsonArray &sigs = root[s_root][s_signals].toArray();
-    CHECK((sigs.count() > 0), "Parse Error: Found empty array" << s_signals);
+    const QJsonArray &sigs = root[JsonKeys::root()][JsonKeys::dbusSignals()].toArray();
+    CHECK((sigs.count() > 0), "Parse Error: Found empty array" << JsonKeys::dbusSignals());
 
     for (auto sig = sigs.constBegin(); sig != sigs.constEnd(); ++sig) {
-        CHECK(sig->isObject(), "Parse Error: Expected object array" << s_signals);
+        CHECK(sig->isObject(), "Parse Error: Expected object array" << JsonKeys::dbusSignals());
         const QJsonObject &obj = sig->toObject();
-        CHECK(obj.contains(s_dbusLocation), "Parse Error: Expected key" << s_dbusLocation);
-        CHECK(obj.contains(s_dbusKey), "Parse Error: Expected key" << s_dbusKey);
-        CHECK(obj.contains(s_provider), "Parse Error: Expected key" << s_provider);
-        CHECK(obj.contains(s_setting), "Parse Error: Expected key" << s_setting);
-        const QString &location = obj[s_dbusLocation].toString();
-        const QString &key = obj[s_dbusKey].toString();
-        const QString &providerString = obj[s_provider].toString();
-        const QString &settingString = obj[s_setting].toString();
+        CHECK(obj.contains(JsonKeys::dbusLocation()), "Parse Error: Expected key" << JsonKeys::dbusLocation());
+        CHECK(obj.contains(JsonKeys::dbusKey()), "Parse Error: Expected key" << JsonKeys::dbusKey());
+        CHECK(obj.contains(JsonKeys::provider()), "Parse Error: Expected key" << JsonKeys::provider());
+        CHECK(obj.contains(JsonKeys::setting()), "Parse Error: Expected key" << JsonKeys::setting());
+        const QString &location = obj[JsonKeys::dbusLocation()].toString();
+        const QString &key = obj[JsonKeys::dbusKey()].toString();
+        const QString &providerString = obj[JsonKeys::provider()].toString();
+        const QString &settingString = obj[JsonKeys::setting()].toString();
         PARSE(provider, Provider, providerString);
         PARSE(setting, Setting, settingString);
         const DBusKey dkey(location, key);
@@ -336,18 +339,18 @@ void QGenericUnixThemeDBusListener::saveJson(const QString &fileName) const
         const DBusKey &dkey = sig.key();
         const ChangeSignal &csig = sig.value();
         QJsonObject obj;
-        obj[s_dbusLocation] = dkey.location;
-        obj[s_dbusKey] = dkey.key;
-        obj[s_provider] = QLatin1StringView(QMetaEnum::fromType<Provider>()
+        obj[JsonKeys::dbusLocation()] = dkey.location;
+        obj[JsonKeys::dbusKey()] = dkey.key;
+        obj[JsonKeys::provider()] = QLatin1StringView(QMetaEnum::fromType<Provider>()
                                             .valueToKey(static_cast<int>(csig.provider)));
-        obj[s_setting] = QLatin1StringView(QMetaEnum::fromType<Setting>()
+        obj[JsonKeys::setting()] = QLatin1StringView(QMetaEnum::fromType<Setting>()
                                            .valueToKey(static_cast<int>(csig.setting)));
         sigs.append(obj);
     }
     QJsonObject obj;
-    obj[s_signals] = sigs;
+    obj[JsonKeys::dbusSignals()] = sigs;
     QJsonObject root;
-    root[s_root] = obj;
+    root[JsonKeys::root()] = obj;
     QJsonDocument doc(root);
     file.write(doc.toJson());
     file.close();
