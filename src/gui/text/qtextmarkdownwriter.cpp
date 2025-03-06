@@ -298,7 +298,7 @@ static int adjacentBackticksCount(const QString &s)
 static void maybeEscapeFirstChar(QString &s)
 {
     static const QRegularExpression numericListRe(uR"(\d+([\.)])\s)"_s);
-    static const QLatin1StringView specialFirstCharacters("#*+-");
+    constexpr auto specialFirstCharacters = "#*+-"_L1;
 
     QString sTrimmed = s.trimmed();
     if (sTrimmed.isEmpty())
