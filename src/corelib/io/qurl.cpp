@@ -3390,7 +3390,7 @@ QUrl QUrl::fromLocalFile(const QString &localFile)
     // not directly using setPath here, as we do a few more transforms
     parseDecodedComponent(deslashified);
     if (!qt_urlRecode(url.d->path, deslashified, {}, localPathFromUser))
-        url.d->path = deslashified;
+        url.d->path = std::move(deslashified);
 
     return url;
 }
