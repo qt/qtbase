@@ -26,8 +26,8 @@ void QHttpHeaderParser::clear()
 
 static bool fieldNameCheck(QByteArrayView name)
 {
-    static constexpr QByteArrayView otherCharacters("!#$%&'*+-.^_`|~");
-    static const auto fieldNameChar = [](char c) {
+    const auto fieldNameChar = [](char c) {
+        constexpr QByteArrayView otherCharacters("!#$%&'*+-.^_`|~");
         return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || ('0' <= c && c <= '9')
                 || otherCharacters.contains(c);
     };
