@@ -949,8 +949,8 @@ glyph_t QFontEngine::findGlyph(QLatin1StringView name) const
 #endif
 
     if (!result) {
-        static constexpr auto gid = "gid"_L1;
-        static constexpr auto uni = "uni"_L1;
+        constexpr auto gid = "gid"_L1;
+        constexpr auto uni = "uni"_L1;
         if (name.startsWith(gid)) {
             bool ok;
             result = name.slice(gid.size()).toUInt(&ok);
