@@ -3874,7 +3874,7 @@ void tst_QDateTime::printNegativeYear() const
 #if QT_CONFIG(datetimeparser)
 void tst_QDateTime::roundtripTextDate() const
 {
-    /* This code path should not result in warnings. */
+    QTest::failOnWarning(); // This code path should not result in warnings.
     const QDateTime now(QDateTime::currentDateTime());
     // TextDate drops millis:
     const QDateTime theDateTime(now.addMSecs(-now.time().msec()));
