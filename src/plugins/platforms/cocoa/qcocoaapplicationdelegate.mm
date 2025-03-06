@@ -343,8 +343,8 @@ QT_USE_NAMESPACE
             return;
         QCocoaIntegration *cocoaIntegration = QCocoaIntegration::instance();
         Q_ASSERT(cocoaIntegration);
-        cocoaIntegration->services()->handleUrl(QUrl(qurlString));
-        return;
+        if (cocoaIntegration->services()->handleUrl(QUrl(qurlString)))
+            return;
     }
 
     // The string we get from the requesting application might not necessarily meet
