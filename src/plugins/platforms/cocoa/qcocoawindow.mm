@@ -649,9 +649,13 @@ NSUInteger QCocoaWindow::windowStyleMask(Qt::WindowFlags flags)
     if (flags & Qt::ExpandedClientAreaHint)
         styleMask |= NSWindowStyleMaskFullSizeContentView;
 
-    // Don't wipe existing states
-    if (m_view.window.styleMask & NSWindowStyleMaskFullScreen)
-        styleMask |= NSWindowStyleMaskFullScreen;
+    // Don't wipe existing states for style flags we don't control here
+    styleMask |= (m_view.window.styleMask & (
+          NSWindowStyleMaskFullScreen
+        | NSWindowStyleMaskUnifiedTitleAndToolbar
+        | NSWindowStyleMaskDocModalWindow
+        | NSWindowStyleMaskNonactivatingPanel
+        | NSWindowStyleMaskHUDWindow));
 
     return styleMask;
 }
