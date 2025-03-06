@@ -1544,8 +1544,8 @@ void QHttp2Connection::handleSETTINGS()
     }
 
     qCDebug(qHttp2ConnectionLog, "[%p] Sending SETTINGS ACK", this);
-    emit settingsFrameReceived();
     sendSETTINGS_ACK();
+    emit settingsFrameReceived();
 }
 
 void QHttp2Connection::handlePUSH_PROMISE()
