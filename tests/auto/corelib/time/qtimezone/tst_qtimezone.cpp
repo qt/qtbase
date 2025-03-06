@@ -1326,6 +1326,7 @@ void tst_QTimeZone::utcTest()
     QCOMPARE(tzp.daylightTimeOffset(0), 0);
     QCOMPARE(tzp.hasDaylightTime(), false);
     QCOMPARE(tzp.hasTransitions(), false);
+#endif // QT_BUILD_INTERNAL
 
     // Test UTC accessor
     const QDateTime now = QDateTime::currentDateTime();
@@ -1386,7 +1387,6 @@ void tst_QTimeZone::utcTest()
     QCOMPARE(tz.offsetFromUtc(now), 123456);
     QCOMPARE(tz.standardTimeOffset(now), 123456);
     QCOMPARE(tz.daylightTimeOffset(now), 0);
-#endif // QT_BUILD_INTERNAL
 }
 
 // Relies on local variable names: zone tzp and locale enUS.
