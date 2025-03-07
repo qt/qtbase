@@ -1663,8 +1663,10 @@ QImage QWindowsFontEngineDirectWrite::imageForGlyph(glyph_t t,
             // -1 due to Qt's off-by-one definition of a QRect
             image = QImage(boundingRect.width() - 1,
                            boundingRect.height() - 1,
-                           QImage::Format_RGB32);
-            image.fill(0xffffffff);
+                           glyphFormat == QFontEngine::Format_ARGB
+                               ? QImage::Format_ARGB32_Premultiplied
+                               : QImage::Format_RGB32);
+            image.fill(image.format() == QImage::Format_ARGB32_Premultiplied ? 0x0 : 0xffffffff);
 
             float r, g, b, a;
             if (glyphFormat == QFontEngine::Format_ARGB) {
