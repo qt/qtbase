@@ -1141,7 +1141,6 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                                   QPainter *painter, const QWidget *widget) const
 {
     Q_D(const QWindows11Style);
-    QRect rect(option->rect);
     State flags = option->state;
 
     painter->save();
@@ -2229,7 +2228,7 @@ void QWindows11Style::polish(QWidget* widget)
         pal.setColor(scrollarea->viewport()->backgroundRole(), Qt::transparent);
         scrollarea->viewport()->setPalette(pal);
         scrollarea->viewport()->setProperty("_q_original_background_palette", originalPalette);
-        if (const auto tableView = qobject_cast<QTableView *>(widget))
+        if (qobject_cast<QTableView *>(widget))
             widget->setAttribute(Qt::WA_Hover, true);
     }
 }
