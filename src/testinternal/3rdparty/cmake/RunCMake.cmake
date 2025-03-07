@@ -2,6 +2,8 @@
 # file Copyright.txt or https://cmake.org/licensing for details.
 #
 # Original file location was Tests/RunCMake/RunCMake.cmake
+#
+# reverted https://gitlab.kitware.com/cmake/cmake/-/commit/67f97f54789413f47a0f03a36c3bb32518a2e922
 
 foreach(
   arg
@@ -139,16 +141,12 @@ function(run_cmake test)
   else()
     set(RunCMake_TEST_OPTIONS "")
   endif()
-  if(NOT DEFINED RunCMake_TEST_RAW_ARGS)
-    set(RunCMake_TEST_RAW_ARGS "")
-  endif()
   if(NOT RunCMake_TEST_COMMAND_WORKING_DIRECTORY)
     set(RunCMake_TEST_COMMAND_WORKING_DIRECTORY "${RunCMake_TEST_BINARY_DIR}")
   endif()
-  string(CONCAT _code [[execute_process(
+  execute_process(
     COMMAND ${RunCMake_TEST_COMMAND}
             ${RunCMake_TEST_OPTIONS}
-            ]] "${RunCMake_TEST_RAW_ARGS}\n" [[
     WORKING_DIRECTORY "${RunCMake_TEST_COMMAND_WORKING_DIRECTORY}"
     OUTPUT_VARIABLE actual_stdout
     ERROR_VARIABLE ${actual_stderr_var}
@@ -156,7 +154,7 @@ function(run_cmake test)
     ENCODING UTF8
     ${maybe_timeout}
     ${maybe_input_file}
-    )]])
+    )
   if(DEFINED ENV{PWD})
     set(old_pwd "$ENV{PWD}")
   else()
@@ -164,7 +162,6 @@ function(run_cmake test)
   endif()
   # Emulate a shell using this directory.
   set(ENV{PWD} "${RunCMake_TEST_COMMAND_WORKING_DIRECTORY}")
-  cmake_language(EVAL CODE "${_code}")
   if(DEFINED old_pwd)
     set(ENV{PWD} "${old_pwd}")
   else()
@@ -266,9 +263,6 @@ function(run_cmake test)
       string(REPLACE ";" "\" \"" options "\"${RunCMake_TEST_OPTIONS}\"")
       string(APPEND command " ${options}")
     endif()
-    if(RunCMake_TEST_RAW_ARGS)
-      string(APPEND command " ${RunCMake_TEST_RAW_ARGS}")
-    endif()
     string(APPEND msg "Command was:\n command> ${command}\n")
   endif()
   if(msg)
@@ -303,11 +297,6 @@ endfunction()
 
 function(run_cmake_with_options test)
   set(RunCMake_TEST_OPTIONS "${ARGN}")
-  run_cmake(${test})
-endfunction()
-
-function(run_cmake_with_raw_args test args)
-  set(RunCMake_TEST_RAW_ARGS "${args}")
   run_cmake(${test})
 endfunction()
 
