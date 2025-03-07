@@ -493,7 +493,7 @@ qt_internal_extend_target(Core
     SOURCES ${core_version_tagging_files}
 )
 
-if(GCC OR CLANG)
+if((GCC OR CLANG) AND NOT MSVC)
     # qglobal.cpp has #include moc_qnamespace.cpp, so increase the template
     # depth for it due to the size of the Qt namespace
     set_source_files_properties(global/qglobal.cpp PROPERTIES
