@@ -7346,6 +7346,12 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
             q->setAttribute(Qt::WA_PendingResizeEvent, true);
     }
 
+#if QT_CONFIG(accessibility)
+    if (QAccessible::isActive() && q->isVisible()) {
+        QAccessibleEvent event(q, QAccessible::LocationChanged);
+        QAccessible::updateAccessibility(&event);
+    }
+#endif
 }
 
 /*!
