@@ -2575,45 +2575,26 @@ static CharAttributeFunction charAttributeFunction(QChar::Script script)
 {
     switch (script) {
     case QChar::Script_Unknown:
-        return nullptr;
     case QChar::Script_Inherited:
-        return nullptr;
     case QChar::Script_Common:
-        return nullptr;
     case QChar::Script_Latin:
-        return nullptr;
     case QChar::Script_Greek:
-        return nullptr;
     case QChar::Script_Cyrillic:
-        return nullptr;
     case QChar::Script_Armenian:
-        return nullptr;
     case QChar::Script_Hebrew:
-        return nullptr;
     case QChar::Script_Arabic:
-        return nullptr;
     case QChar::Script_Syriac:
-        return nullptr;
     case QChar::Script_Thaana:
         return nullptr;
     case QChar::Script_Devanagari:
-        return &indicAttributes;
     case QChar::Script_Bengali:
-        return &indicAttributes;
     case QChar::Script_Gurmukhi:
-        return &indicAttributes;
     case QChar::Script_Gujarati:
-        return &indicAttributes;
     case QChar::Script_Oriya:
-        return &indicAttributes;
     case QChar::Script_Tamil:
-        return &indicAttributes;
     case QChar::Script_Telugu:
-        return &indicAttributes;
     case QChar::Script_Kannada:
-        return &indicAttributes;
     case QChar::Script_Malayalam:
-        return &indicAttributes;
     case QChar::Script_Sinhala:
         return &indicAttributes;
     case QChar::Script_Thai:
@@ -2625,17 +2606,11 @@ static CharAttributeFunction charAttributeFunction(QChar::Script script)
     case QChar::Script_Myanmar:
         return &myanmarAttributes;
     case QChar::Script_Georgian:
-        return nullptr;
     case QChar::Script_Hangul:
-        return nullptr;
     case QChar::Script_Ethiopic:
-        return nullptr;
     case QChar::Script_Cherokee:
-        return nullptr;
     case QChar::Script_CanadianAboriginal:
-        return nullptr;
     case QChar::Script_Ogham:
-        return nullptr;
     case QChar::Script_Runic:
         return nullptr;
     case QChar::Script_Khmer:
