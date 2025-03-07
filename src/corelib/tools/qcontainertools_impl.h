@@ -372,7 +372,7 @@ template <typename Container, typename T>
 auto sequential_erase(Container &c, const T &t)
 {
     // use the equivalence relation from http://eel.is/c++draft/list.erasure#1
-    auto cmp = [&](auto &e) { return e == t; };
+    auto cmp = [&](const auto &e) -> bool { return e == t; };
     return sequential_erase_if(c, cmp); // can't pass rvalues!
 }
 
