@@ -324,7 +324,7 @@ macro(_qt_internal_setup_qt_host_path
 endmacro()
 
 function(_qt_internal_show_private_module_warning module)
-    if(DEFINED QT_REPO_MODULE_VERSION OR QT_NO_PRIVATE_MODULE_WARNING)
+    if(DEFINED QT_REPO_MODULE_VERSION OR QT_NO_PRIVATE_MODULE_WARNING OR QT_FIND_PRIVATE_MODULES)
         return()
     endif()
 
