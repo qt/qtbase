@@ -4,6 +4,7 @@
 #include "qrhi_p.h"
 #include <qmath.h>
 #include <QLoggingCategory>
+#include "private/qloggingregistry_p.h"
 
 #include "qrhinull_p.h"
 #ifndef QT_NO_OPENGL
@@ -24,8 +25,12 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
-Q_STATIC_LOGGING_CATEGORY(QRHI_LOG_RUB, "qt.rhi.rub")
+// Play nice with QSG_INFO since that is still the most commonly used
+// way to get graphics info printed from Qt Quick apps, and the Quick
+// scenegraph is our primary user.
+Q_LOGGING_CATEGORY_WITH_ENV_OVERRIDE(QRHI_LOG_INFO, "QSG_INFO", "qt.rhi.general")
+
+Q_LOGGING_CATEGORY(QRHI_LOG_RUB, "qt.rhi.rub")
 
 /*!
     \class QRhi
@@ -8779,21 +8784,11 @@ QRhi::~QRhi()
     delete d;
 }
 
-bool QRhiImplementation::rubLogEnabled = false;
-
 void QRhiImplementation::prepareForCreate(QRhi *rhi, QRhi::Implementation impl, QRhi::Flags flags)
 {
     q = rhi;
 
-    // Play nice with QSG_INFO since that is still the most commonly used
-    // way to get graphics info printed from Qt Quick apps, and the Quick
-    // scenegraph is our primary user.
-    if (qEnvironmentVariableIsSet("QSG_INFO"))
-        const_cast<QLoggingCategory &>(QRHI_LOG_INFO()).setEnabled(QtDebugMsg, true);
-
     debugMarkers = flags.testFlag(QRhi::EnableDebugMarkers);
-
-    rubLogEnabled = QRHI_LOG_RUB().isDebugEnabled();
 
     implType = impl;
     implThread = QThread::currentThread();
@@ -9667,7 +9662,7 @@ void QRhiResourceUpdateBatchPrivate::free()
         bufferLargeAllocTotal += op.data.largeAlloc(); // alloc when > 1 KB
     }
 
-    if (rhi->rubLogEnabled) {
+    if (QRHI_LOG_RUB().isDebugEnabled()) {
         qDebug() << "[rub] release to pool upd.batch #" << poolIndex
                 << "/ bufferOps active" << activeBufferOpCount
                 << "of" << bufferOps.count()
@@ -11185,8 +11180,7 @@ QRhi::FrameOpResult QRhi::beginFrame(QRhiSwapChain *swapChain, BeginFrameFlags f
     if (d->inFrame)
         qWarning("Attempted to call beginFrame() within a still active frame; ignored");
 
-    if (d->rubLogEnabled)
-        qDebug("[rub] new frame");
+    qCDebug(QRHI_LOG_RUB) << "[rub] new frame";
 
     QRhi::FrameOpResult r = !d->inFrame ? d->beginFrame(swapChain, flags) : FrameOpSuccess;
     if (r == FrameOpSuccess)
@@ -11336,8 +11330,7 @@ QRhi::FrameOpResult QRhi::beginOffscreenFrame(QRhiCommandBuffer **cb, BeginFrame
     if (d->inFrame)
         qWarning("Attempted to call beginOffscreenFrame() within a still active frame; ignored");
 
-    if (d->rubLogEnabled)
-        qDebug("[rub] new offscreen frame");
+    qCDebug(QRHI_LOG_RUB) << "[rub] new offscreen frame";
 
     QRhi::FrameOpResult r = !d->inFrame ? d->beginOffscreenFrame(cb, flags) : FrameOpSuccess;
     if (r == FrameOpSuccess)
