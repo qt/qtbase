@@ -192,34 +192,48 @@ bool QOpenGLProgramBinaryCache::setProgramBinary(uint programId, uint blobFormat
 #ifdef Q_OS_UNIX
 class FdWrapper
 {
+    Q_DISABLE_COPY_MOVE(FdWrapper)
 public:
     FdWrapper(const QString &fn)
-        : ptr(MAP_FAILED)
     {
         fd = qt_safe_open(QFile::encodeName(fn).constData(), O_RDONLY);
     }
     ~FdWrapper()
     {
-        if (ptr != MAP_FAILED)
-            munmap(ptr, mapSize);
         if (fd != -1)
             qt_safe_close(fd);
     }
-    bool map()
+    auto map()
     {
+        struct R {
+            size_t mapSize;
+            void *ptr;
+
+            Q_DISABLE_COPY_MOVE(R)
+            explicit R(size_t sz, void *p)
+                : mapSize{sz}, ptr{p} {}
+            ~R()
+            {
+                if (ptr != MAP_FAILED)
+                    munmap(ptr, mapSize);
+            }
+
+            explicit operator bool() const noexcept { return ptr != MAP_FAILED; }
+        };
+
         off_t offs = lseek(fd, 0, SEEK_END);
         if (offs == (off_t) -1) {
             qErrnoWarning(errno, "lseek failed for program binary");
-            return false;
+            return R{0, MAP_FAILED};
         }
-        mapSize = static_cast<size_t>(offs);
-        ptr = mmap(nullptr, mapSize, PROT_READ, MAP_SHARED, fd, 0);
-        return ptr != MAP_FAILED;
+        auto mapSize = static_cast<size_t>(offs);
+        return R{
+            mapSize,
+            mmap(nullptr, mapSize, PROT_READ, MAP_SHARED, fd, 0),
+        };
     }
 
     int fd;
-    void *ptr;
-    size_t mapSize;
 };
 #endif
 
@@ -276,11 +290,12 @@ bool QOpenGLProgramBinaryCache::load(const QByteArray &cacheKey, uint programId)
 
     const uchar *p;
 #ifdef Q_OS_UNIX
-    if (!fdw.map()) {
+    const auto map = fdw.map();
+    if (!map) {
         undertaker.setActive();
         return false;
     }
-    p = static_cast<const uchar *>(fdw.ptr) + BASE_HEADER_SIZE;
+    p = static_cast<const uchar *>(map.ptr) + BASE_HEADER_SIZE;
 #else
     buf = f.readAll();
     p = reinterpret_cast<const uchar *>(buf.constData());
