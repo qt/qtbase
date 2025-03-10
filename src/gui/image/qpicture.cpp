@@ -69,6 +69,10 @@ void qt_format_text(const QFont &fnt, const QRectF &_r,
     picture is available, for example, size(), isNull() and
     boundingRect().
 
+    \note QPicture uses QDataStream for serialization. The
+    \l {QDataStream#Corruption and Security}{same reservations} against
+    reading untrusted data apply.
+
     \sa QMovie
 */
 
