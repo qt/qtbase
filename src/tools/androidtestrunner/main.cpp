@@ -861,6 +861,10 @@ int main(int argc, char *argv[])
     g_testInfo.userId = userId();
 
     QString manifest = g_options.buildPath + "/AndroidManifest.xml"_L1;
+    if (!QFile::exists(manifest)) {
+        qCritical("Unable to find '%s'.", qPrintable(manifest));
+        return EXIT_ERROR;
+    }
     g_options.package = packageNameFromAndroidManifest(manifest);
     if (g_options.activity.isEmpty())
         g_options.activity = activityFromAndroidManifest(manifest);
