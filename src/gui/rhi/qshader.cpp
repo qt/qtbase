@@ -533,6 +533,11 @@ static void readShaderKey(QDataStream *ds, QShaderKey *k)
     If \a data cannot be deserialized successfully, the result is a default
     constructed QShader for which isValid() returns \c false.
 
+    \warning Shader packages, including \c{.qsb} files in the filesystem, are
+    assumed to be trusted content. Application developers are advised to
+    carefully consider the potential implications before allowing the loading of
+    user-provided content that is not part of the application.
+
     \sa serialized()
   */
 QShader QShader::fromSerialized(const QByteArray &data)
