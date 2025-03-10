@@ -1520,7 +1520,9 @@ void tst_QByteArray::replaceWithEmptyNeedleInsertsBeforeEachChar_data()
     const QByteArray a = "a";
     const QByteArray aa = "aa";
     const QByteArray b = "b";
+    const QByteArray bb = "bb";
     const QByteArray bab = "bab";
+    const QByteArray babab = "babab";
 
     auto row = [](const QByteArray &haystack, const QByteArray &needle,
                   const QByteArray &replacement, const QByteArray &result)
@@ -1532,12 +1534,23 @@ void tst_QByteArray::replaceWithEmptyNeedleInsertsBeforeEachChar_data()
     row(null,  null,  a, a);
     row(null,  empty, a, a);
     row(null,  a,     a, null);
+    row(null,  a,     b, null);
+    row(null,  aa,    b, null);
+
     row(empty, null,  a, a);
     row(empty, empty, a, a);
     row(empty, a,     a, empty);
+    row(empty, aa,    b, empty);
+
     row(a,     null,  b, bab);
     row(a,     empty, b, bab);
     row(a,     a,     b, b);
+    row(a,     aa,    b, a);
+
+    row(aa,    null,  b, babab);
+    row(aa,    empty, b, babab);
+    row(aa,    a,     b, bb);
+    row(aa,    aa,    b, b);
 }
 
 void tst_QByteArray::replaceWithEmptyNeedleInsertsBeforeEachChar()
