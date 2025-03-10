@@ -20,6 +20,8 @@
 #include <QtWidgets/QSplitter>
 #include <QtWidgets/QStyle>
 #include <QtWidgets/QStyleFactory>
+#include <QtWidgets/QTabBar>
+#include <QtWidgets/QTabWidget>
 #include <QtWidgets/QTableWidget>
 #include <QtWidgets/QToolButton>
 #include <QtWidgets/QToolTip>
@@ -115,6 +117,7 @@ private slots:
     void appStyle();
     void QTBUG11658_cachecrash();
     void styleSheetTargetAttribute();
+    void tabWidgetDocumentModeCrash();
     void unpolish();
 
     void highdpiImages_data();
@@ -2329,6 +2332,16 @@ void tst_QStyleSheetStyle::styleSheetTargetAttribute()
     QCOMPARE(gb.testAttribute(Qt::WA_StyleSheetTarget), false);
     QCOMPARE(lb.testAttribute(Qt::WA_StyleSheetTarget), false);
     QCOMPARE(pb.testAttribute(Qt::WA_StyleSheetTarget), false);
+}
+
+void tst_QStyleSheetStyle::tabWidgetDocumentModeCrash()
+{
+    // Don't crash when matching accessing documentMode of QTabWidget while styling QTabBar.
+    qApp->setStyleSheet("QTabWidget[documentMode=true] QTabBar { font-size: 40pt; }");
+
+    QTabWidget tabWidget;
+    tabWidget.setDocumentMode(true);
+    QCOMPARE(FONTSIZE(*tabWidget.tabBar()), 40);
 }
 
 void tst_QStyleSheetStyle::unpolish()
