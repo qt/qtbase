@@ -26,7 +26,7 @@ path = ["bin/*", "coin/**","libexec/*","**_clang-format", "**.cmake", "**.conf",
         "**.pro", "**.pri", "**.yaml", "cmake/**.in", "cmake/ios/LaunchScreen.storyboard",
         "cmake/**md", "**.yml", "**.dynlist", "cmake/**.plist",
         "src/corelib/global/qconfig.cpp.in", "src/corelib/Qt6CoreConfigureFileTemplate.in",
-        "**.cfg", "**/Makefile", "**/CMakeLists.txt", "**.qrc"]
+        "**.cfg", "**/Makefile", "**/CMakeLists.txt", "**.qrc", ".tag"]
 precedence = "closest"
 comment = "build system"
 SPDX-FileCopyrightText = "Copyright (C) 2024 The Qt Company Ltd."
@@ -39,10 +39,10 @@ SPDX-FileCopyrightText = "Copyright (C) 2024 The Qt Company Ltd."
 SPDX-License-Identifier = "CC0-1.0"
 
 [[annotations]]
-path = [".tag", "**/.gitattributes", "**.gitignore"]
+path = ["**/.gitattributes", "**.gitignore", "**.gitreview"]
 precedence = "closest"
 SPDX-FileCopyrightText = "Copyright (C) 2024 The Qt Company Ltd."
-SPDX-License-Identifier = "BSD-3-Clause"
+SPDX-License-Identifier = "LicenseRef-Qt-Commercial OR BSD-3-Clause"
 
 [[annotations]]
 path = ["**/snippets/**", "examples/**", "src/tools/qlalr/examples/**"]
@@ -103,7 +103,7 @@ SPDX-License-Identifier = "LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-on
 path = ["**.toml", "licenseRule.json"]
 precedence = "override"
 SPDX-FileCopyrightText = "Copyright (C) 2024 The Qt Company Ltd."
-SPDX-License-Identifier = "LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only"
+SPDX-License-Identifier = "LicenseRef-Qt-Commercial OR BSD-3-Clause"
 
 [[annotations]]
 path = ["**LICENSE*", "cmake/3rdparty/**/COPYING-CMAKE-SCRIPTS"]

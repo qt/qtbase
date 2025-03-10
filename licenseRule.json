@@ -1,6 +1,6 @@
 [
     {
-        "comment" : ["file_pattern_ending: strings matched against the end of a file name.",
+        "comment": ["file_pattern_ending: strings matched against the end of a file name.",
                      "location keys: regular expression matched against the beginning of",
                      "the file path (relative to the git submodule root).",
                      "spdx: list of SPDX-License-Expression's allowed in the matching files.",
@@ -9,545 +9,557 @@
                      "unless they are examples",
                      "Files with other endings can also be build system files"
                      ],
-        "file_pattern_ending" : ["CMakeLists.txt", ".cmake", ".pro", ".pri", ".prf",
+        "file_pattern_ending": ["CMakeLists.txt", ".cmake", ".pro", ".pri", ".prf",
                      "configure", "configure.bat", "cmake.in", "plist.in", "CMakeLists.txt.in",
-                     ".gitignore", ".gitattributes", "Makefile", ".conf", ".yml", ".cfg", ".yaml",
+                     "Makefile", ".conf", ".yml", ".cfg", ".yaml",
                      ".tag", ".dynlist", ".qrc"],
-        "location" : {
-            "" : {
-                "comment" : "Default",
-                "file type" : "build system",
-                "spdx"      : ["BSD-3-Clause"]
+        "location": {
+            "": {
+                "comment": "Default",
+                "file type": "build system",
+                "spdx": ["BSD-3-Clause"]
             },
-            "(.*)(examples/|snippets/)" : {
-                "comment" : "Example takes precedence",
-                "file type" : "examples and snippets",
-                "spdx" : ["LicenseRef-Qt-Commercial OR BSD-3-Clause"]
+            "(.*)(examples/|snippets/)": {
+                "comment": "Example takes precedence",
+                "file type": "examples and snippets",
+                "spdx": ["LicenseRef-Qt-Commercial OR BSD-3-Clause"]
             },
-            "cmake/QtPublicGitHelpers.cmake" : {
-                "comment" : "MIT licensed copied parts",
-                "file type" : "build system",
-                "spdx" : ["BSD-3-Clause AND MIT"]
+            "cmake/QtPublicGitHelpers.cmake": {
+                "comment": "MIT licensed copied parts",
+                "file type": "build system",
+                "spdx": ["BSD-3-Clause AND MIT"]
             },
-            "cmake/QtPublicSbomGenerationHelpers.cmake" : {
-                "comment" : "MIT licensed copied parts",
-                "file type" : "build system",
-                "spdx" : ["MIT AND BSD-3-Clause"]
+            "cmake/QtPublicSbomGenerationHelpers.cmake": {
+                "comment": "MIT licensed copied parts",
+                "file type": "build system",
+                "spdx": ["MIT AND BSD-3-Clause"]
             },
-            "cmake/QtPublicSbomOpsHelpers.cmake" : {
-                "comment" : "MIT licensed copied parts",
-                "file type" : "build system",
-                "spdx" : ["MIT AND BSD-3-Clause"]
+            "cmake/QtPublicSbomOpsHelpers.cmake": {
+                "comment": "MIT licensed copied parts",
+                "file type": "build system",
+                "spdx": ["MIT AND BSD-3-Clause"]
             },
-            "tests/auto/cmake/test_plugin_shared_static_flavor\\.cmake" : {
-                "comment" : "Exception. This is a test file.",
-                "file type" : "test",
-                "spdx"      : ["LicenseRef-Qt-Commercial OR GPL-3.0-only"]
+            "tests/auto/cmake/test_plugin_shared_static_flavor\\.cmake": {
+                "comment": "Exception. This is a test file.",
+                "file type": "test",
+                "spdx": ["LicenseRef-Qt-Commercial OR GPL-3.0-only"]
             },
-            "coin/instructions/qmake_examples/.*\\.yaml" : {
-                "comment" : "Default",
-                "file type" : "build system",
-                "spdx"      : ["BSD-3-Clause"]
+            "coin/instructions/qmake_examples/.*\\.yaml": {
+                "comment": "Default",
+                "file type": "build system",
+                "spdx": ["BSD-3-Clause"]
             },
-            "tests/auto/tools/rcc/data/legal/legal.qrc" : {
-                "comment" : ["In file licensing not related. Relicensed with reuse.",
+            "tests/auto/tools/rcc/data/legal/legal.qrc": {
+                "comment": ["In-file licensing not related. Relicensed with reuse.",
                              "License test can't see the relicensing",
-                             "need first spdx entry to keep in-file license test from failing"],
-                "file type" : "build system",
-                "spdx"      : ["LicenseRef-Qt-Commercial OR GPL-3.0-only","BSD-3-Clause"]
+                             "Need first spdx entry to keep in-file license test from failing."],
+                "file type": "build system",
+                "spdx": ["LicenseRef-Qt-Commercial OR GPL-3.0-only","BSD-3-Clause"]
             }
         }
     },
     {
-        "comments" : ["Files with the following endings are Tool licensed,",
+        "comments": ["Files with the following endings are infrastructure licensed"],
+        "file_pattern_ending": [".gitattributes", ".gitignore", ".gitmodules", ".gitreview",
+                                "_clang-format", "licenseRule.json", "REUSE.toml"],
+        "location":{
+            "": {
+                "comment": "Default",
+                "file type": "infrastructure",
+                "spdx": ["LicenseRef-Qt-Commercial OR BSD-3-Clause"]
+            }
+        }
+    },
+    {
+        "comments": ["Files with the following endings are Tool licensed,",
                       "unless they are examples.",
                       "Files with other endings can also be tool files."],
-        "file_pattern_ending" : [".sh", ".py", ".pl", ".bat", ".ps1"],
-        "location" :{
-            "" : {
-                "comment" : "Default",
-                "file type" : "tools and utils",
-                "spdx"      : ["LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0"]
+        "file_pattern_ending": [".sh", ".py", ".pl", ".bat", ".ps1"],
+        "location":{
+            "": {
+                "comment": "Default",
+                "file type": "tools and utils",
+                "spdx": ["LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0"]
             },
-            "(.*)(examples/|snippets/)" : {
-                "comment" : "Example takes precedence",
-                "file type" : "examples and snippets",
-                "spdx" : ["LicenseRef-Qt-Commercial OR BSD-3-Clause"]
+            "(.*)(examples/|snippets/)": {
+                "comment": "Example takes precedence",
+                "file type": "examples and snippets",
+                "spdx": ["LicenseRef-Qt-Commercial OR BSD-3-Clause"]
             },
-            "tests/auto/tools/uic/baseline/config\\.ui\\.py" : {
-                "comment" : "This is a test file",
-                "file type" : "test",
-                "spdx" : ["LicenseRef-Qt-Commercial OR GPL-3.0-only"]
+            "tests/auto/tools/uic/baseline/config\\.ui\\.py": {
+                "comment": "This is a test file",
+                "file type": "test",
+                "spdx": ["LicenseRef-Qt-Commercial OR GPL-3.0-only"]
             },
-            "tests/manual/rhi/computeimage/buildshaders.bat" : {
-                "comment" : "This is a test file",
-                "file type" : "test",
-                "spdx" : ["LicenseRef-Qt-Commercial OR GPL-3.0-only"]
+            "tests/manual/rhi/computeimage/buildshaders.bat": {
+                "comment": "This is a test file",
+                "file type": "test",
+                "spdx": ["LicenseRef-Qt-Commercial OR GPL-3.0-only"]
             },
-            "space.bat" : {
-                "comment" : "Double check",
-                "file type" : "???",
-                "spdx" : ["LicenseRef-Qt-Commercial OR GPL-3.0-only"]
+            "space.bat": {
+                "comment": "Double check",
+                "file type": "???",
+                "spdx": ["LicenseRef-Qt-Commercial OR GPL-3.0-only"]
             }
         }
     },
     {
-        "comment" : "Files with the following endings are Documentation licensed.",
-        "file_pattern_ending" : [".qdoc", ".qdocinc" , ".qdocconf", "README", "qt_attribution.json",
-                                 "REUSE.toml", "README.md", "README.txt", "config_help.txt",
-                                 "licenseRule.json", "READ-THIS-BEFORE-MANUALLY-ADDING-FILES-TO-PACKAGE.txt"],
-        "location" :{
-            "" : {
-                "comment" : "",
-                "file type" : "documentation",
-                "spdx"      : ["LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only"]
+        "comment": "Files with the following endings are Documentation licensed.",
+        "file_pattern_ending": [".qdoc", ".qdocinc" , ".qdocconf", "README", "qt_attribution.json",
+                                 "README.md", "README.txt", "config_help.txt",
+                                 "READ-THIS-BEFORE-MANUALLY-ADDING-FILES-TO-PACKAGE.txt"],
+        "location":{
+            "": {
+                "comment": "",
+                "file type": "documentation",
+                "spdx": ["LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only"]
             },
-            "tests/auto/corelib/mimetypes/qmimedatabase/test\\.txt" : {
-                "comment" : "Exception. This is a test file",
-                "file type" : "test",
-                "spdx" : ["LicenseRef-Qt-Commercial OR GPL-3.0-only"]
+            "tests/auto/corelib/mimetypes/qmimedatabase/test\\.txt": {
+                "comment": "Exception. This is a test file",
+                "file type": "test",
+                "spdx": ["LicenseRef-Qt-Commercial OR GPL-3.0-only"]
             },
-            "ests/auto/testlib/selftests/" : {
-            "comment" : "Exception. Those are test files",
-            "file type" : "test",
-            "spdx" : ["LicenseRef-Qt-Commercial OR GPL-3.0-only"]
+            "ests/auto/testlib/selftests/": {
+            "comment": "Exception. Those are test files",
+            "file type": "test",
+            "spdx": ["LicenseRef-Qt-Commercial OR GPL-3.0-only"]
             },
-            "util/unicode/data/(?!REUSE.toml)" : {
-            "comment" : "Exception. REUSE.toml is always documentation",
-            "file type" : "3rd party",
-            "spdx" : ["Unicode-3.0"]
+            "util/unicode/data/(?!REUSE.toml)": {
+            "comment": "Exception. REUSE.toml is always documentation",
+            "file type": "3rd party",
+            "spdx": ["Unicode-3.0"]
             }
         }
     },
     {
-        "comment" : ["All other files",
+        "comment": ["All other files",
                      "The licensing is defined only by the file location in the Qt module repository.",
                      "NO <file_pattern_ending> key for this case!",
                      "This needs to be the last entry of the file."],
-        "location" : {
-            "" : {
-                "comment" : "Default",
-                "file type" : "module and plugin",
-                "spdx"      : ["LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only"]
-            },
-            "dist/" : {
-                "comment" : "Default",
-                "file type" : "documentation",
-                "spdx"      : ["LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only"]
-            },
-            "doc/" : {
-                "comment" : "Default",
-                "file type" : "documentation",
-                "spdx"      : ["LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only"]
-            },
-            "doc/global/template/scripts/.*\\.js" : {
-                "comment" : "This is a tool",
-                "file type" : "tools and utils",
-                "spdx"      : ["LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0"]
-            },
-            "coin/" : {
-                "comment" : "Default",
-                "file type" : "build system",
-                "spdx"      : ["BSD-3-Clause"]
-            },
-            "src/plugins/networkinformation/android/jar/build.gradle" : {
-                "comment" : "Default",
-                "file type" : "build system",
-                "spdx"      : ["BSD-3-Clause"]
-            },
-            "src/plugins/networkinformation/android/jar/settings.gradle" : {
-                "comment" : "Default",
-                "file type" : "build system",
-                "spdx"      : ["BSD-3-Clause"]
-            },
-            "libexec/" : {
-                "comment" : "Default",
-                "file type" : "build system",
-                "spdx"      : ["BSD-3-Clause"]
-            },
-            "cmake/" : {
-                "comment" : "Default",
-                "file type" : "build system",
-                "spdx"      : ["BSD-3-Clause"]
-            },
-            "cmake/modulecppexports.h.in" : {
-                "comment" : "Default Double check",
-                "file type" : "module and plugin",
-                "spdx"      : ["LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only"]
-            },
-            ".*PrivacyInfo.xcprivacy" : {
-                "comment" : "Exception. Unconditionally redistributable without any clauses",
-                "file type" : "build system",
-                "spdx"      : ["CC0-1.0"]
-            },
-            "cmake/qbatchedtestrunner\\.in\\.cpp" : {
-                "comment" : "Compiled into internal tests if QT_BUILD_TESTS_BATCHED is enabled.",
-                "file type" : "test",
-                "spdx" : ["LicenseRef-Qt-Commercial OR GPL-3.0-only"]
-            },
-            "bin/" : {
-                "comment" : "Default",
-                "file type" : "build system",
-                "spdx"      : ["BSD-3-Clause"]
-            },
-            "src/printsupport/platform/.*\\.json" : {
-                "comment" : "Default",
-                "file type" : "build system",
-                "spdx"      : ["BSD-3-Clause"]
-            },
-            "mkspecs/(.*\\.plist.*)" : {
-                "comment" : "Default",
-                "file type" : "build system",
-                "spdx"      : ["BSD-3-Clause"]
-            },
-            "mkspecs/features/data/(configure.json|testserver/Dockerfile|dummy.cpp|macros.cpp)" : {
-                "comment" : "Default",
-                "file type" : "build system",
-                "spdx"      : ["BSD-3-Clause"]
-            },
-            "mkspecs/features/(mac/sdk.mk|uikit/xcodebuild.mk)" : {
-                "comment" : "Default",
-                "file type" : "build system",
-                "spdx"      : ["BSD-3-Clause"]
-            },
-            "mkspecs/(macx-ios-clang/LaunchScreen.storyboard|macx-xcode/(WorkspaceSettings.xcsettings|default.xcscheme))" : {
-                "comment" : "Default",
-                "file type" : "build system",
-                "spdx"      : ["BSD-3-Clause"]
-            },
-            "src/" : {
-                "comment" : "Default",
-                "file type" : "module and plugin",
-                "spdx"      : ["LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only"]
-            },
-            "src/widgets/doc/macOS/AppKit/AppKit.h" : {
-                "comment" : "",
-                "file type" : "documentation",
-                "spdx"      : ["LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only"]
-            },
-            "plugins/" : {
-                "comment" : "Default",
-                "file type" : "module and plugin",
-                "spdx"      : ["LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only"]
-            },
-            "src/plugins/platforms/wasm/" : {
-                "comment" : "Exception for wasm",
-                "file type" : "module and plugin",
-                "spdx" : ["LicenseRef-Qt-Commercial OR GPL-3.0-only"]
-            },
-            "src/dbus/dbus_minimal_p\\.h" : {
-                "comment" : "Exception",
-                "file type" : "module and plugin",
-                "spdx" : ["AFL-2.1 OR GPL-2.0-or-later"]
-            },
-            "src/entrypoint/qtentrypoint_win\\.cpp" : {
-                "comment" : "Exception: https://doc.qt.io/qt-6/qtentrypoint.html",
-                "file type" : "module and plugin",
-                "spdx" : ["LicenseRef-Qt-Commercial OR BSD-3-Clause"]
-            },
-            "src/android/java/src/org/qtproject/qt/android/bindings/" : {
-                "comment" : "Exception: compiled alongside with user code",
-                "file type" : "module and plugin",
-                "spdx"      : ["LicenseRef-Qt-Commercial OR BSD-3-Clause"]
-            },
-            "src/corelib/(time|text)/q.*_data_p\\.h" : {
-                "comment" : "generated from Unicode CLDR data",
-                "file type" : "module and plugin",
-                "spdx"      : ["Unicode-3.0"]
-            },
-            "src/corelib/text/qunicodetables.*" : {
-                "comment" : "Contains data extracted from UCD, under Unicode-3.0",
-                "file type" : "module and plugin",
-                "spdx"      : ["Unicode-3.0"]
-            },
-            "src/tools/" : {
-                "comment" : "Default",
-                "file type" : "tools and utils",
-                "spdx" : ["LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0"]
-            },
-            "tests/" : {
-                "comment" : "Default",
-                "file type" : "test",
-                "spdx" : ["LicenseRef-Qt-Commercial OR GPL-3.0-only"]
-            },
-            "tests/auto/testlib/selftests/catch_p_p\\.h" : {
-                "comment" : "Exception",
-                "file type" : "test",
-                "spdx" : ["BSL-1.0"]
-            },
-            "tests/manual/rhi/shared/cube\\.h" : {
-                "comment" : "Exception",
-                "file type" : "3rd party",
-                "spdx" : ["Apache-2.0"]
-            },
-            "tests/testserver/apache2/testdata/www/htdocs/protected/rfc3252\\.txt" : {
-                "comment" : "The Internet Society",
-                "file type" : "3rd party",
-                "spdx" : ["CC0-1.0"]
-            },
-            "tests/auto/gui/image/qimagereader/images/(?!REUSE.toml)" : {
-                "comment" : "Unknown",
-                "file type" : "tests",
-                "spdx" : ["CC0-1.0"]
-            },
-            "tests/(auto|benchmarks)/gui/image/qimagereader/images/black.xpm" : {
-                "comment" : "TU Braunschweig",
-                "file type" : "3rd party",
-                "spdx" : ["GPL-3.0-only"]
-            },
-            "tests/auto/corelib/serialization/qxmlstream/XML-Test-Suite/xmlconf/(japanese/japanese.xml|sun/sun)" : {
-                "comment" : "",
-                "file type" : "3rd party",
-                "spdx" : ["SPL-1.0"]
-            },
-            "tests/auto/corelib/serialization/qxmlstream/XML-Test-Suite/xmlconf/japanese/weekly" : {
-                "comment" : "Exception",
-                "file type" : "3rd party",
-                "spdx" : ["Xerox"]
-            },
-            "tests/auto/corelib/serialization/qxmlstream/XML-Test-Suite/xmlconf/sun/valid/out/pe00.xml" : {
-                "comment" : "Exception",
-                "file type" : "3rd party",
-                "spdx" : ["CC0-1.0"]
-            },
-            "tests/auto/corelib/serialization/qxmlstream/XML-Test-Suite/xmlconf/japanese/weekly-" : {
-                "comment" : "Exception",
-                "file type" : "3rd party",
-                "spdx" : ["Xerox"]
-            },
-            "tests/auto/corelib/serialization/qxmlstream/XML-Test-Suite/xmlconf/ibm/ibm_oasis" : {
-                "comment" : "Exception",
-                "file type" : "3rd party",
-                "spdx" : ["IPL-1.0"]
-            },
-            "tests/auto/corelib/serialization/qxmlstream/XML-Test-Suite/xmlconf/ibm/xml-1.1/ibm_" : {
-                "comment" : "Exception",
-                "file type" : "3rd party",
-                "spdx" : ["IPL-1.0"]
-            },
-            "tests/auto/corelib/serialization/qxmlstream/XML-Test-Suite/xmlconf/finalCatalog.xml" : {
-                "comment" : "Exception",
-                "file type" : "3rd party",
-                "spdx" : ["IPL-1.0"]
-            },
-            "tests/auto/corelib/serialization/qxmlstream/XML-Test-Suite/xmlconf/eduni/.*conf\\.xml" : {
-                "comment" : "Exception",
-                "file type" : "3rd party",
-                "spdx" : ["BSD-3-Clause"]
-            },
-            "(.*)(examples/|snippets/)" : {
-                "comment" : "Default",
-                "file type" : "examples and snippets",
-                "spdx" : ["LicenseRef-Qt-Commercial OR BSD-3-Clause"]
-            },
-            "config\\.tests/" : {
-                "comment" : "Default",
-                "file type" : "build system",
-                "spdx" : ["BSD-3-Clause"]
-            },
-            "config\\.tests/no_direct_extern_access/" : {
-                "comment" : "Exception",
-                "file type" : "build system",
-                "spdx" : ["MIT"]
-            },
-            "src/corelib/Qt6CoreResourceInit\\.in\\.cpp" : {
-                "comment" : "Helper file statically compiled into user executables",
-                "file type" : "module and plugin",
-                "spdx" : ["LicenseRef-Qt-Commercial OR BSD-3-Clause"]
-            },
-            "qmake/" : {
-                "comment" : "Default",
-                "file type" : "tools and utils",
-                "spdx" : ["LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0"]
-            },
-            "util/" : {
-                "comment" : "Default",
-                "file type" : "util",
-                "spdx" : ["LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0"]
-            },
-            "util/unicode/data/.*\\.txt" : {
-            "comment" : "Exception.",
-            "file type" : "3rd party",
-            "spdx" : ["Unicode-3.0"]
-            },
-            "util/aglfn/data/aglfn\\.txt" : {
-            "comment" : "Exception.",
-            "file type" : "3rd party",
-            "spdx" : ["BSD-3-Clause"]
-            },
-            "util/locale_database/testlocales/localemodel\\.cpp" : {
-                "comment" : "Exception: this contains CLDR-generated code",
-                "file type" : "util",
-                "spdx" : ["Unicode-3.0"]
-            },
-            "util/wasm/batchedtestrunner/" : {
-                "comment" : "Exception: this is a helper tool",
-                "file type" : "util",
-                "spdx" : ["LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0"]
-            },
-            "util/wasm/batchedtestrunner/" : {
-                "comment" : "Exception: this is a helper tool",
-                "file type" : "util",
-                "spdx" : ["LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0"]
-            },
-            "util/lexgen/tests/testdata/" : {
-                "comment" : "Exception",
-                "file type" : "test",
-                "spdx" : ["LicenseRef-Qt-Commercial OR GPL-3.0-only"]
-            },
-            "util/lexgen/test.lexgen" : {
-                "comment" : "Exception",
-                "file type" : "test",
-                "spdx" : ["LicenseRef-Qt-Commercial OR GPL-3.0-only"]
-            },
-            "util/x86simdgen/header" : {
-                "comment" : "Exception for file generation",
-                "file type" : "util",
-                "spdx"      : ["LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only"]
-            },
-            "util/glgen/qopenglextensions\\.(h|cpp)\\.header" : {
-                "comment" : "Exception, for file generation",
-                "file type" : "util",
-                "spdx"      : ["LicenseRef-Qt-Commercial OR BSD-3-Clause"]
-            },
-            "util/gradientgen/webgradients\\.css" : {
-                "comment" : "Exception",
-                "file type" : "3rd party",
-                "spdx"      : ["MIT"]
-            },
-            "src/gui/painting/qimagescale\\.cpp" : {
-                "comment" : "Info from qt_attribution.json",
-                "file type" : "module and plugin",
-                "spdx" : ["BSD-2-Clause AND Imlib2"]
-            },
-            "src/gui/painting/qgrayraster\\.c" : {
-                "comment" : "Info from qt_attribution.json",
-                "file type" : "module and plugin",
-                "spdx" : ["FTL OR GPL-2.0-only"]
-            },
-            "src/corelib/kernel/qeventdispatcher_cf_p\\.h" : {
-                "comment" : "Info from qt_attribution.json",
-                "file type" : "module and plugin",
-                "spdx" : ["BSD-3-Clause"]
-            },
-            "src/plugins/platforms/cocoa/qcocoa(application|eventdispatcher|introspection|systemtrayicon\\.mm)" : {
-                "comment" : "Info from qt_attribution.json",
-                "file type" : "module and plugin",
-                "spdx" : ["BSD-3-Clause"]
-            },
-            "(src|qmake|examples|tests).*/doc/images/" : {
-                "comment" : "Default",
-                "file type" : "documentation",
-                "spdx" : ["LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only"]
-            },
-            ".*/doc/(snippets|.*).*/images/" : {
-                "comment" : "Default",
-                "file type" : "documentation",
-                "spdx" : ["LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only"]
-            },
-            "tests/testserver/apache2/testdata/www/htdocs/rfcs/rfc2616\\.html" : {
-                "comment" : "The Internet Society",
-                "file type" : "3rd party",
-                "spdx" : ["CC0-1.0"]
-            },
-            "tests/manual/network_stresstest/qtest/bigfile" : {
-                "comment" : "The Internet Society",
-                "file type" : "3rd party",
-                "spdx" : ["CC0-1.0"]
-            },
-            "tests/auto/network/access/qnetworkreply/(bigfile|resource|rfc3252.txt)" : {
-                "comment" : "",
-                "file type" : "3rd party",
-                "spdx" : ["CC0-1.0"]
-            },
-            "tests/auto/corelib/serialization/qtextstream/rfc3261.txt" : {
-                "comment" : "",
-                "file type" : "3rd party",
-                "spdx" : ["CC0-1.0"]
-            },
-            "tests/auto/corelib/text/qbytearray_large/rfc3252.txt" : {
-                "comment" : "",
-                "file type" : "3rd party",
-                "spdx" : ["CC0-1.0"]
-            },
-            "tests/auto/other/qcomplextext/data/(?!REUSE.toml)" : {
-                "comment" : "Unicode",
-                "file type" : "3rd party",
-                "spdx" : ["Unicode-3.0"]
-            },
-            "tests/auto/corelib/text/qtextboundaryfinder/data/.*\\.txt" : {
-                "comment" : "Unicode",
-                "file type" : "3rd party",
-                "spdx" : ["Unicode-3.0"]
-            },
-            "tests/auto/corelib/text/qchar/data/NormalizationTest.txt" : {
-                "comment" : "Unicode",
-                "file type" : "3rd party",
-                "spdx" : ["Unicode-3.0"]
-            },
-            "tests/auto/corelib/io/qurluts46/testdata/IdnaTestV2.txt" : {
-                "comment" : "Unicode",
-                "file type" : "3rd party",
-                "spdx" : ["Unicode-3.0"]
-            },
-            "tests/auto/corelib/ipc/ipctestcommon.h" : {
-                "comment" : "Intel",
-                "file type" : "3rd party",
-                "spdx" : ["MIT"]
-            },
-            "src/plugins/platforminputcontexts/ibus/interfaces/" : {
-                "comment" : "KDE",
-                "file type" : "3rd party",
-                "spdx" : ["BSD-3-Clause"]
-            },
-            "src/gui/vulkan/vk.xml" : {
-                "comment" : "",
-                "file type" : "3rd party",
-                "spdx" : ["Apache-2.0 OR MIT"]
-            },
-            "src/gui/text/qfontsubset_agl.cpp" : {
-                "comment" : "Abode",
-                "file type" : "3rd party",
-                "spdx" : ["BSD-3-Clause"]
-            },
-            "src/gui/rhi/mipmap.hlsl" : {
-                "comment" : "Microsoft",
-                "file type" : "3rd party",
-                "spdx" : ["MIT"]
-            },
-            "src/gui/painting/qregion.cpp" : {
-                "comment" : ["X Consortium",
+        "location": {
+            "": {
+                "comment": "Default",
+                "file type": "module and plugin",
+                "spdx": ["LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only"]
+            },
+            "dist/": {
+                "comment": "Default",
+                "file type": "documentation",
+                "spdx": ["LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only"]
+            },
+            "doc/": {
+                "comment": "Default",
+                "file type": "documentation",
+                "spdx": ["LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only"]
+            },
+            "doc/global/template/scripts/.*\\.js": {
+                "comment": "This is a tool",
+                "file type": "tools and utils",
+                "spdx": ["LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0"]
+            },
+            "coin/": {
+                "comment": "Default",
+                "file type": "build system",
+                "spdx": ["BSD-3-Clause"]
+            },
+            "src/plugins/networkinformation/android/jar/build.gradle": {
+                "comment": "Default",
+                "file type": "build system",
+                "spdx": ["BSD-3-Clause"]
+            },
+            "src/plugins/networkinformation/android/jar/settings.gradle": {
+                "comment": "Default",
+                "file type": "build system",
+                "spdx": ["BSD-3-Clause"]
+            },
+            "libexec/": {
+                "comment": "Default",
+                "file type": "build system",
+                "spdx": ["BSD-3-Clause"]
+            },
+            "cmake/": {
+                "comment": "Default",
+                "file type": "build system",
+                "spdx": ["BSD-3-Clause"]
+            },
+            "cmake/modulecppexports.h.in": {
+                "comment": "Default Double check",
+                "file type": "module and plugin",
+                "spdx": ["LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only"]
+            },
+            ".*PrivacyInfo.xcprivacy": {
+                "comment": "Exception. Unconditionally redistributable without any clauses",
+                "file type": "build system",
+                "spdx": ["CC0-1.0"]
+            },
+            "cmake/qbatchedtestrunner\\.in\\.cpp": {
+                "comment": "Compiled into internal tests if QT_BUILD_TESTS_BATCHED is enabled.",
+                "file type": "test",
+                "spdx": ["LicenseRef-Qt-Commercial OR GPL-3.0-only"]
+            },
+            "bin/": {
+                "comment": "Default",
+                "file type": "build system",
+                "spdx": ["BSD-3-Clause"]
+            },
+            "src/printsupport/platform/.*\\.json": {
+                "comment": "Default",
+                "file type": "build system",
+                "spdx": ["BSD-3-Clause"]
+            },
+            "mkspecs/(.*\\.plist.*)": {
+                "comment": "Default",
+                "file type": "build system",
+                "spdx": ["BSD-3-Clause"]
+            },
+            "mkspecs/features/data/(configure.json|testserver/Dockerfile|dummy.cpp|macros.cpp)": {
+                "comment": "Default",
+                "file type": "build system",
+                "spdx": ["BSD-3-Clause"]
+            },
+            "mkspecs/features/(mac/sdk.mk|uikit/xcodebuild.mk)": {
+                "comment": "Default",
+                "file type": "build system",
+                "spdx": ["BSD-3-Clause"]
+            },
+            "mkspecs/(macx-ios-clang/LaunchScreen.storyboard|macx-xcode/(WorkspaceSettings.xcsettings|default.xcscheme))": {
+                "comment": "Default",
+                "file type": "build system",
+                "spdx": ["BSD-3-Clause"]
+            },
+            "src/": {
+                "comment": "Default",
+                "file type": "module and plugin",
+                "spdx": ["LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only"]
+            },
+            "src/widgets/doc/macOS/AppKit/AppKit.h": {
+                "comment": "",
+                "file type": "documentation",
+                "spdx": ["LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only"]
+            },
+            "plugins/": {
+                "comment": "Default",
+                "file type": "module and plugin",
+                "spdx": ["LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only"]
+            },
+            "src/plugins/platforms/wasm/": {
+                "comment": "Exception for wasm",
+                "file type": "module and plugin",
+                "spdx": ["LicenseRef-Qt-Commercial OR GPL-3.0-only"]
+            },
+            "src/dbus/dbus_minimal_p\\.h": {
+                "comment": "Exception",
+                "file type": "module and plugin",
+                "spdx": ["AFL-2.1 OR GPL-2.0-or-later"]
+            },
+            "src/entrypoint/qtentrypoint_win\\.cpp": {
+                "comment": "Exception: https://doc.qt.io/qt-6/qtentrypoint.html",
+                "file type": "module and plugin",
+                "spdx": ["LicenseRef-Qt-Commercial OR BSD-3-Clause"]
+            },
+            "src/android/java/src/org/qtproject/qt/android/bindings/": {
+                "comment": "Exception: compiled alongside with user code",
+                "file type": "module and plugin",
+                "spdx": ["LicenseRef-Qt-Commercial OR BSD-3-Clause"]
+            },
+            "src/corelib/(time|text)/q.*_data_p\\.h": {
+                "comment": "generated from Unicode CLDR data",
+                "file type": "module and plugin",
+                "spdx": ["Unicode-3.0"]
+            },
+            "src/corelib/text/qunicodetables.*": {
+                "comment": "Contains data extracted from UCD, under Unicode-3.0",
+                "file type": "module and plugin",
+                "spdx": ["Unicode-3.0"]
+            },
+            "src/tools/": {
+                "comment": "Default",
+                "file type": "tools and utils",
+                "spdx": ["LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0"]
+            },
+            "tests/": {
+                "comment": "Default",
+                "file type": "test",
+                "spdx": ["LicenseRef-Qt-Commercial OR GPL-3.0-only"]
+            },
+            "tests/auto/testlib/selftests/catch_p_p\\.h": {
+                "comment": "Exception",
+                "file type": "test",
+                "spdx": ["BSL-1.0"]
+            },
+            "tests/manual/rhi/shared/cube\\.h": {
+                "comment": "Exception",
+                "file type": "3rd party",
+                "spdx": ["Apache-2.0"]
+            },
+            "tests/testserver/apache2/testdata/www/htdocs/protected/rfc3252\\.txt": {
+                "comment": "The Internet Society",
+                "file type": "3rd party",
+                "spdx": ["CC0-1.0"]
+            },
+            "tests/auto/gui/image/qimagereader/images/(?!REUSE.toml)": {
+                "comment": "Unknown",
+                "file type": "tests",
+                "spdx": ["CC0-1.0"]
+            },
+            "tests/(auto|benchmarks)/gui/image/qimagereader/images/black.xpm": {
+                "comment": "TU Braunschweig",
+                "file type": "3rd party",
+                "spdx": ["GPL-3.0-only"]
+            },
+            "tests/auto/corelib/serialization/qxmlstream/XML-Test-Suite/xmlconf/(japanese/japanese.xml|sun/sun)": {
+                "comment": "",
+                "file type": "3rd party",
+                "spdx": ["SPL-1.0"]
+            },
+            "tests/auto/corelib/serialization/qxmlstream/XML-Test-Suite/xmlconf/japanese/weekly": {
+                "comment": "Exception",
+                "file type": "3rd party",
+                "spdx": ["Xerox"]
+            },
+            "tests/auto/corelib/serialization/qxmlstream/XML-Test-Suite/xmlconf/sun/valid/out/pe00.xml": {
+                "comment": "Exception",
+                "file type": "3rd party",
+                "spdx": ["CC0-1.0"]
+            },
+            "tests/auto/corelib/serialization/qxmlstream/XML-Test-Suite/xmlconf/japanese/weekly-": {
+                "comment": "Exception",
+                "file type": "3rd party",
+                "spdx": ["Xerox"]
+            },
+            "tests/auto/corelib/serialization/qxmlstream/XML-Test-Suite/xmlconf/ibm/ibm_oasis": {
+                "comment": "Exception",
+                "file type": "3rd party",
+                "spdx": ["IPL-1.0"]
+            },
+            "tests/auto/corelib/serialization/qxmlstream/XML-Test-Suite/xmlconf/ibm/xml-1.1/ibm_": {
+                "comment": "Exception",
+                "file type": "3rd party",
+                "spdx": ["IPL-1.0"]
+            },
+            "tests/auto/corelib/serialization/qxmlstream/XML-Test-Suite/xmlconf/finalCatalog.xml": {
+                "comment": "Exception",
+                "file type": "3rd party",
+                "spdx": ["IPL-1.0"]
+            },
+            "tests/auto/corelib/serialization/qxmlstream/XML-Test-Suite/xmlconf/eduni/.*conf\\.xml": {
+                "comment": "Exception",
+                "file type": "3rd party",
+                "spdx": ["BSD-3-Clause"]
+            },
+            "(.*)(examples/|snippets/)": {
+                "comment": "Default",
+                "file type": "examples and snippets",
+                "spdx": ["LicenseRef-Qt-Commercial OR BSD-3-Clause"]
+            },
+            "config\\.tests/": {
+                "comment": "Default",
+                "file type": "build system",
+                "spdx": ["BSD-3-Clause"]
+            },
+            "config\\.tests/no_direct_extern_access/": {
+                "comment": "Exception",
+                "file type": "build system",
+                "spdx": ["MIT"]
+            },
+            "src/corelib/Qt6CoreResourceInit\\.in\\.cpp": {
+                "comment": "Helper file statically compiled into user executables",
+                "file type": "module and plugin",
+                "spdx": ["LicenseRef-Qt-Commercial OR BSD-3-Clause"]
+            },
+            "qmake/": {
+                "comment": "Default",
+                "file type": "tools and utils",
+                "spdx": ["LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0"]
+            },
+            "util/": {
+                "comment": "Default",
+                "file type": "util",
+                "spdx": ["LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0"]
+            },
+            "util/unicode/data/.*\\.txt": {
+            "comment": "Exception.",
+            "file type": "3rd party",
+            "spdx": ["Unicode-3.0"]
+            },
+            "util/aglfn/data/aglfn\\.txt": {
+            "comment": "Exception.",
+            "file type": "3rd party",
+            "spdx": ["BSD-3-Clause"]
+            },
+            "util/locale_database/testlocales/localemodel\\.cpp": {
+                "comment": "Exception: this contains CLDR-generated code",
+                "file type": "util",
+                "spdx": ["Unicode-3.0"]
+            },
+            "util/wasm/batchedtestrunner/": {
+                "comment": "Exception: this is a helper tool",
+                "file type": "util",
+                "spdx": ["LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0"]
+            },
+            "util/wasm/batchedtestrunner/": {
+                "comment": "Exception: this is a helper tool",
+                "file type": "util",
+                "spdx": ["LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0"]
+            },
+            "util/lexgen/tests/testdata/": {
+                "comment": "Exception",
+                "file type": "test",
+                "spdx": ["LicenseRef-Qt-Commercial OR GPL-3.0-only"]
+            },
+            "util/lexgen/test.lexgen": {
+                "comment": "Exception",
+                "file type": "test",
+                "spdx": ["LicenseRef-Qt-Commercial OR GPL-3.0-only"]
+            },
+            "util/x86simdgen/header": {
+                "comment": "Exception for file generation",
+                "file type": "util",
+                "spdx": ["LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only"]
+            },
+            "util/glgen/qopenglextensions\\.(h|cpp)\\.header": {
+                "comment": "Exception, for file generation",
+                "file type": "util",
+                "spdx": ["LicenseRef-Qt-Commercial OR BSD-3-Clause"]
+            },
+            "util/gradientgen/webgradients\\.css": {
+                "comment": "Exception",
+                "file type": "3rd party",
+                "spdx": ["MIT"]
+            },
+            "src/gui/painting/qimagescale\\.cpp": {
+                "comment": "Info from qt_attribution.json",
+                "file type": "module and plugin",
+                "spdx": ["BSD-2-Clause AND Imlib2"]
+            },
+            "src/gui/painting/qgrayraster\\.c": {
+                "comment": "Info from qt_attribution.json",
+                "file type": "module and plugin",
+                "spdx": ["FTL OR GPL-2.0-only"]
+            },
+            "src/corelib/kernel/qeventdispatcher_cf_p\\.h": {
+                "comment": "Info from qt_attribution.json",
+                "file type": "module and plugin",
+                "spdx": ["BSD-3-Clause"]
+            },
+            "src/plugins/platforms/cocoa/qcocoa(application|eventdispatcher|introspection|systemtrayicon\\.mm)": {
+                "comment": "Info from qt_attribution.json",
+                "file type": "module and plugin",
+                "spdx": ["BSD-3-Clause"]
+            },
+            "(src|qmake|examples|tests).*/doc/images/": {
+                "comment": "Default",
+                "file type": "documentation",
+                "spdx": ["LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only"]
+            },
+            ".*/doc/(snippets|.*).*/images/": {
+                "comment": "Default",
+                "file type": "documentation",
+                "spdx": ["LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only"]
+            },
+            "tests/testserver/apache2/testdata/www/htdocs/rfcs/rfc2616\\.html": {
+                "comment": "The Internet Society",
+                "file type": "3rd party",
+                "spdx": ["CC0-1.0"]
+            },
+            "tests/manual/network_stresstest/qtest/bigfile": {
+                "comment": "The Internet Society",
+                "file type": "3rd party",
+                "spdx": ["CC0-1.0"]
+            },
+            "tests/auto/network/access/qnetworkreply/(bigfile|resource|rfc3252.txt)": {
+                "comment": "",
+                "file type": "3rd party",
+                "spdx": ["CC0-1.0"]
+            },
+            "tests/auto/corelib/serialization/qtextstream/rfc3261.txt": {
+                "comment": "",
+                "file type": "3rd party",
+                "spdx": ["CC0-1.0"]
+            },
+            "tests/auto/corelib/text/qbytearray_large/rfc3252.txt": {
+                "comment": "",
+                "file type": "3rd party",
+                "spdx": ["CC0-1.0"]
+            },
+            "tests/auto/other/qcomplextext/data/(?!REUSE.toml)": {
+                "comment": "Unicode",
+                "file type": "3rd party",
+                "spdx": ["Unicode-3.0"]
+            },
+            "tests/auto/corelib/text/qtextboundaryfinder/data/.*\\.txt": {
+                "comment": "Unicode",
+                "file type": "3rd party",
+                "spdx": ["Unicode-3.0"]
+            },
+            "tests/auto/corelib/text/qchar/data/NormalizationTest.txt": {
+                "comment": "Unicode",
+                "file type": "3rd party",
+                "spdx": ["Unicode-3.0"]
+            },
+            "tests/auto/corelib/io/qurluts46/testdata/IdnaTestV2.txt": {
+                "comment": "Unicode",
+                "file type": "3rd party",
+                "spdx": ["Unicode-3.0"]
+            },
+            "tests/auto/corelib/ipc/ipctestcommon.h": {
+                "comment": "Intel",
+                "file type": "3rd party",
+                "spdx": ["MIT"]
+            },
+            "src/plugins/platforminputcontexts/ibus/interfaces/": {
+                "comment": "KDE",
+                "file type": "3rd party",
+                "spdx": ["BSD-3-Clause"]
+            },
+            "src/gui/vulkan/vk.xml": {
+                "comment": "",
+                "file type": "3rd party",
+                "spdx": ["Apache-2.0 OR MIT"]
+            },
+            "src/gui/text/qfontsubset_agl.cpp": {
+                "comment": "Abode",
+                "file type": "3rd party",
+                "spdx": ["BSD-3-Clause"]
+            },
+            "src/gui/rhi/mipmap.hlsl": {
+                "comment": "Microsoft",
+                "file type": "3rd party",
+                "spdx": ["MIT"]
+            },
+            "src/gui/painting/qregion.cpp": {
+                "comment": ["X Consortium",
                              "Need both spdx entries",
                              "First one for testing source SBOM which aggregates in-file and REUSE.toml info",
                              "Second one for license test when only the in-file info is read"],
-                "file type" : "module and plugin and 3rd party",
-                "spdx" : ["LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only AND X11 AND HPND",
+                "file type": "module and plugin and 3rd party",
+                "spdx": ["LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only AND X11 AND HPND",
                           "LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only"]
             },
-            "src/gui/opengl/qopengles2ext.h" : {
-                "comment" : "The Khronos Group Inc.",
-                "file type" : "3rd party",
-                "spdx" : ["MIT-Khronos-old"]
+            "src/gui/opengl/qopengles2ext.h": {
+                "comment": "The Khronos Group Inc.",
+                "file type": "3rd party",
+                "spdx": ["MIT-Khronos-old"]
             },
-            "src/gui/opengl/qopenglext.h" : {
-                "comment" : "The Khronos Group Inc.",
-                "file type" : "3rd party",
-                "spdx" : ["MIT-Khronos-old"]
+            "src/gui/opengl/qopenglext.h": {
+                "comment": "The Khronos Group Inc.",
+                "file type": "3rd party",
+                "spdx": ["MIT-Khronos-old"]
             },
-            "src/corelib/tools/qhash_sip.cpp" : {
-                "comment" : "In file licensed",
-                "file type" : "3rd party",
-                "spdx" : ["CC0-1.0"]
+            "src/corelib/tools/qhash_sip.cpp": {
+                "comment": "In file licensed",
+                "file type": "3rd party",
+                "spdx": ["CC0-1.0"]
             },
-            "src/corelib/global/qconfig.cpp.in" : {
-                "comment" : "See REUSE.toml file",
-                "file type" : "build system",
-                "spdx" : ["BSD-3-Clause"]
+            "src/corelib/global/qconfig.cpp.in": {
+                "comment": "See REUSE.toml file",
+                "file type": "build system",
+                "spdx": ["BSD-3-Clause"]
             },
-            "src/corelib/Qt6CoreConfigureFileTemplate.in" : {
-                "comment" : "See REUSE.toml file",
-                "file type" : "build system",
-                "spdx" : ["BSD-3-Clause"]
+            "src/corelib/Qt6CoreConfigureFileTemplate.in": {
+                "comment": "See REUSE.toml file",
+                "file type": "build system",
+                "spdx": ["BSD-3-Clause"]
             }
         }
     }
