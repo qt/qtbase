@@ -149,6 +149,17 @@ Q_STATIC_LOGGING_CATEGORY(QRHI_LOG_RUB, "qt.rhi.rub")
     Tools module offers build system integration for CMake, the
     \c qt_add_shaders() CMake function, that can achieve the same at build time.
 
+    \section1 Security Considerations
+
+    All data consumed by QRhi and related classes such as QShader are considered
+    trusted content.
+
+    \warning Application developers are advised to carefully consider the
+    potential implications before allowing the feeding of user-provided content
+    that is not part of the application and is not under the developers'
+    control. (this includes all vertex/index data, shaders, pipeline and draw
+    call parameters, etc.)
+
     \section1 Design Fundamentals
 
     A QRhi cannot be instantiated directly. Instead, use the create()
@@ -10730,6 +10741,11 @@ QByteArray QRhi::pipelineCacheData()
     not always a cheap operation, and therefore this function should only be
     called at a low frequency, ideally only once e.g. when starting the
     application.
+
+    \warning Serialized pipeline cache data is assumed to be trusted content. Qt
+    performs robust parsing of the header and metadata included in \a data,
+    application developers are however advised to never pass in data from
+    untrusted sources.
 
     \sa pipelineCacheData(), isFeatureSupported()
  */
