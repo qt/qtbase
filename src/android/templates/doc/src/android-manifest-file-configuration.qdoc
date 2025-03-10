@@ -93,7 +93,7 @@ Qt sets the following manifest configuration by default:
     \li Whether or not to use Auto Backup on devices where it is available.
         The default value is \c false.
 \row
-    \li {1, 6} \l {Android: App Manifest <activity>}{<activity>}
+    \li {1, 7} \l {Android: App Manifest <activity>}{<activity>}
     \li android:name
     \li The activity class name. The default value is \c {org.qtproject.qt.android.bindings.QtActivity}.
 \row
@@ -119,6 +119,13 @@ Qt sets the following manifest configuration by default:
     \li android:exported
     \li Sets whether the activity can be launched by components of other applications.
         The default value is \c true.
+\row
+    \li android:theme
+    \li Sets the theme name used for this activity. The default value is \c {@style/NormalTheme}.
+        \note Qt 6.8 doesn't have the public Safe Area Margins API which help manage
+        Edge-to-edge mode properly, thus this theme disables that mode by setting
+        the flag \c {android:windowOptOutEdgeToEdgeEnforcement}. Remove this flag
+        or theme if you want to avoid that behavior.
 \endtable
 
 \section1 Qt Specific Meta-data
