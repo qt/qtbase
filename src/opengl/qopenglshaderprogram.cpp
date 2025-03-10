@@ -110,6 +110,17 @@ using namespace Qt::StringLiterals;
     they advertise the extension or offer OpenGL ES 3.0. In this case program
     binary support will be disabled.
 
+    \section1 Security Considerations
+
+    All data consumed by QOpenGLShaderProgram is expected to be trusted content.
+    Shader source code is passed, possibly after minimal modifications, on to
+    the underlying OpenGL implementation's compiler, which is a black box from
+    Qt's perspective.
+
+    \warning Application developers are advised to carefully consider the
+    potential implications before passing in user-provided content to functions
+    such as addShaderFromSourceFile().
+
     \sa QOpenGLShader
 */
 
@@ -125,6 +136,15 @@ using namespace Qt::StringLiterals;
 
     QOpenGLShader and QOpenGLShaderProgram shelter the programmer from the details of
     compiling and linking vertex and fragment shaders.
+
+    All data consumed by QOpenGLShader is expected to be trusted content. Shader
+    source code is passed, possibly after minimal modifications, on to the
+    underlying OpenGL implementation's compiler, which is a black box from Qt's
+    perspective.
+
+    \warning Application developers are advised to carefully consider the
+    potential implications before passing in user-provided content to functions
+    such as compileSourceFile().
 
     \sa QOpenGLShaderProgram
 */
