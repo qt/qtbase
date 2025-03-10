@@ -260,7 +260,7 @@ static inline quint64 detectProcessorFeatures()
     X86_BASELINE "," QT_FUNCTION_TARGET_STRING_RDRND
 #endif
 
-static bool checkRdrndWorks() noexcept;
+static bool checkRdrndWorks(quint64) noexcept;
 
 QT_FUNCTION_TARGET_BASELINE
 static int maxBasicCpuidSupported()
@@ -466,7 +466,7 @@ static quint64 detectProcessorFeatures()
             features &= ~req.cpu_features;
     }
 
-    if (features & CpuFeatureRDRND && !checkRdrndWorks())
+    if (features & CpuFeatureRDRND && !checkRdrndWorks(features))
         features &= ~(CpuFeatureRDRND | CpuFeatureRDSEED);
 
     return features;
@@ -778,7 +778,7 @@ out:
 }
 
 QT_FUNCTION_TARGET(BASELINE_RDRND) Q_DECL_COLD_FUNCTION
-static bool checkRdrndWorks() noexcept
+static bool checkRdrndWorks(quint64 features) noexcept
 {
     /*
      * Some AMD CPUs (e.g. AMD A4-6250J and AMD Ryzen 3000-series) have a
@@ -800,7 +800,12 @@ static bool checkRdrndWorks() noexcept
     if (_compilerCpuFeatures & CpuFeatureRDRND)
         return true;
 
-    unsigned *end = qt_random_rdrnd(testBuffer, testBuffer + TestBufferSize);
+    unsigned *end;
+    if (features & CpuFeatureRDSEED)
+        end = qt_random_rdseed(testBuffer, testBuffer + TestBufferSize);
+    else
+        end = qt_random_rdrnd(testBuffer, testBuffer + TestBufferSize);
+
     if (end < testBuffer + 3) {
         // Random generation didn't produce enough data for us to make a
         // determination whether it's working or not. Assume it isn't, but
@@ -838,7 +843,7 @@ QT_FUNCTION_TARGET(RDRND) qsizetype qRandomCpu(void *buffer, qsizetype count) no
     return ptr - reinterpret_cast<unsigned *>(buffer);
 }
 #elif defined(Q_PROCESSOR_X86) && !defined(Q_PROCESSOR_ARM)
-static bool checkRdrndWorks() noexcept { return false; }
+static bool checkRdrndWorks(quint64) noexcept { return false; }
 #endif // Q_PROCESSOR_X86 && RDRND
 
 #if QT_SUPPORTS_INIT_PRIORITY
