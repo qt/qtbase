@@ -492,7 +492,7 @@ void tst_QOpenGL::fboTextureOwnership()
     QOpenGLFramebufferObjectFormat fboFormat;
     fboFormat.setAttachment(QOpenGLFramebufferObject::NoAttachment);
 
-    QOpenGLFramebufferObject *fbo = new QOpenGLFramebufferObject(200, 100, fboFormat);
+    const auto fbo = std::make_unique<QOpenGLFramebufferObject>(200, 100, fboFormat);
     QVERIFY(fbo->texture() != 0);
     fbo->bind();
 
@@ -516,7 +516,6 @@ void tst_QOpenGL::fboTextureOwnership()
     QFUZZY_COMPARE_IMAGES(fb, reference);
 
     ctx.functions()->glDeleteTextures(1, &texture);
-    delete fbo;
 }
 
 void tst_QOpenGL::fboRendering_data()
