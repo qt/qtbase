@@ -1361,7 +1361,8 @@ void QTabWidget::setUsesScrollButtons(bool useButtons)
 bool QTabWidget::documentMode() const
 {
     Q_D(const QTabWidget);
-    return d->tabs->documentMode();
+    // QStyleSheetStyle could query documentMode during creation of our QTabBar.
+    return d->tabs ? d->tabs->documentMode() : false;
 }
 
 void QTabWidget::setDocumentMode(bool enabled)
