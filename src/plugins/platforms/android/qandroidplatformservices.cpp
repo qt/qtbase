@@ -75,10 +75,15 @@ QString QAndroidPlatformServices::getMimeOfUrl(const QUrl &url) const
 
 bool QAndroidPlatformServices::openURL(const QUrl &url) const
 {
+    return  openURL(url.toString());
+}
+
+bool QAndroidPlatformServices::openURL(const QString &url) const
+{
     return  QJniObject::callStaticMethod<jboolean>(
             QtAndroid::applicationClass(), "openURL",
             QNativeInterface::QAndroidApplication::context(),
-            url.toString(),
+            url,
             getMimeOfUrl(url));
 }
 
@@ -117,7 +122,7 @@ bool QAndroidPlatformServices::openUrlWithAuthority(const QUrl &url, const QStri
             QNativeInterface::QAndroidApplication::context(), authority,
             urlFile.object<File>());
     if (fileProviderUri.isValid())
-        return openURL(url);
+        return openURL(fileProviderUri.toString());
     return false;
 }
 
