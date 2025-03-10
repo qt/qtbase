@@ -12,7 +12,18 @@
 
     We try to maintain binary and source compatibility for all the public
     APIs in each release. But some changes were inevitable in an effort to
-    make Qt a better framework.
+    make Qt a better framework and align with modern standards.
+
+    Qt 6 enforces XML 1.0 rules more strictly than Qt 5. In Qt 5,the XML
+    parser was more lenient, allowing certain constructs that were not
+    compliant with the XML 1.0 specification.
+    Qt 6 corrects this behavior, ensuring that XML handling follows
+    the standard properly. If your application relies on behavior
+    that was incorrectly permitted in Qt 5, you may need to adjust your
+    XML documents or processing logic accordingly.
+
+    For more details on XML 1.0 rules, see the official W3C XML specification:
+    \l {https://www.w3.org/TR/xml/} {Extensible Markup Language (XML) 1.0 (Fifth Edition)}
 
     In this topic we summarize those changes in Qt XML, and provide
     guidance to handle them.
@@ -70,10 +81,34 @@
         \li Undeclared namespace prefixes are no longer allowed.
     \endlist
 
-    If you use QDomDocument and rely on any of these, you must update
-    your code and XML documents accordingly.
+    For more details see:
+    \l {https://www.w3.org/TR/xml/#AVNormalize} {Attribute-Value Normalization in XML 1.0}
 
-    \section3 Spacing-only text nodes
+    \section2 Control characters
+
+    In Qt 6, control characters such as U+0000—U+001F, U+007F, and U+0080—U+009F
+    are now correctly rejected per XML 1.0 rules.
+    They were incorrectly allowed in Qt 5.
+    Before using XML with Qt6 ensure that your XML documents contain only valid
+    XML 1.0-compliant characters. If control characters are necessary, encode
+    them using text-safe format.
+
+    For more details see:
+    \l {https://www.w3.org/TR/xml/#charsets} {Characters in XML 1.0}
+
+    \section2 HTML Entities in XML
+
+    In Qt 6, HTML entities are no longer valid unless explicitly declared in a
+    Document Type Definition (DTD). In Qt 5, certain HTML-specific entities
+    (e.g., \c{&nbsp;}) were allowed, even without declaration. To ensure
+    compatibility in Qt 6 use numeric character references, define required
+    entities in a DTD or if your content relies on HTML entities, process
+    the XML as HTML instead.
+
+    For more details see:
+    \l {https://www.w3.org/TR/xml/#charencoding} {Character Encoding in Entities in XML 1.0}
+
+    \section2 Spacing-only text nodes
 
     By default, text nodes containing only spacing characters are stripped
     and won't appear in the QDomDocument. The Qt 5 way of changing this behavior
@@ -82,7 +117,10 @@
     you can pass QDomDocument::ParseOption::PreserveSpacingOnlyNodes as a parse
     option, to specify that spacing-only text nodes must be preserved.
 
-    \section2 Qt Core5 compatibility library
+    If you use QDomDocument and rely on any of these, you must update
+    your code and XML documents accordingly.
+
+    \section1 Qt Core5 compatibility library
 
     If your application or library cannot be ported right now, the \l
     QXmlSimpleReader and related classes still exist in Qt5Compat to keep
