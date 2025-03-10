@@ -27,6 +27,7 @@ public:
 
 private:
     bool openURL(const QUrl &url) const;
+    bool openURL(const QString &url) const;
     bool openUrlWithFileProvider(const QUrl &url);
     bool openUrlWithAuthority(const QUrl &url, const QString &authority);
 
