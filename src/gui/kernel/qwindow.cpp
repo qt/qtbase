@@ -1391,12 +1391,15 @@ Qt::ScreenOrientation QWindow::contentOrientation() const
     for the window. This value is dependent on the screen the window is on,
     and may change when the window is moved.
 
+    The QWindow instance receives an event of type
+    QEvent::DevicePixelRatioChange when the device pixel ratio changes.
+
     Common values are 1.0 on normal displays and 2.0 on Apple "retina" displays.
 
     \note For windows not backed by a platform window, meaning that create() was not
     called, the function will fall back to the associated QScreen's device pixel ratio.
 
-    \sa QScreen::devicePixelRatio()
+    \sa QScreen::devicePixelRatio(), QEvent::DevicePixelRatioChange
 */
 qreal QWindow::devicePixelRatio() const
 {
