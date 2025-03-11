@@ -33,11 +33,10 @@ function(qt6_add_win_app_sdk target)
 
     set(generated_headers_path "${CMAKE_CURRENT_BINARY_DIR}/winrt_includes")
 
-    find_path(WINAPPSDK_GENERATED_INCLUDE_DIR
-        NAMES winrt/Microsoft.UI.h
-        HINTS "${generated_headers_path}")
+    set(winappsdk_generated_include_dir "${generated_headers_path}/winrt")
     # If headers are not already generated
-    if(NOT WINAPPSDK_GENERATED_INCLUDE_DIR)
+    if(NOT EXISTS "${winappsdk_generated_include_dir}")
+
         if(CPP_WIN_RT_PATH)
             set(cpp_win_rt_path "${CPP_WIN_RT_PATH}")
         elseif(DEFINED ENV{CPP_WIN_RT_PATH})
@@ -53,23 +52,26 @@ function(qt6_add_win_app_sdk target)
             message(FATAL_ERROR "cppwinrt.exe could not be found")
         endif()
 
-        find_path(WINAPPSDK_INCLUDE_DIR
+        find_path(winappsdk_include_dir
             NAMES MddBootstrap.h
-            HINTS ${win_app_sdk_root}/include)
+            HINTS ${win_app_sdk_root}/include
+            NO_CACHE)
 
-        find_library(WINAPPSDK_LIBRARY
+        find_library(winappsdk_library
             NAMES Microsoft.WindowsAppRuntime
             HINTS ${WINAPPSDK_LIBRARY_DIR} "${win_app_sdk_root}"
                                            "${win_app_sdk_root}/lib"
-                                           "${win_app_sdk_root}/lib/win10-${win_app_sdk_arch}")
+                                           "${win_app_sdk_root}/lib/win10-${win_app_sdk_arch}"
+            NO_CACHE)
 
-        find_library(WINAPPSDK_BOOTSTRAP_LIBRARY
+        find_library(winappsdk_bootstrap_library
             NAMES Microsoft.WindowsAppRuntime.Bootstrap
             HINTS ${WINAPPSDK_LIBRARY_DIR} "${win_app_sdk_root}"
                                            "${win_app_sdk_root}/lib"
-                                           "${win_app_sdk_root}/lib/win10-${win_app_sdk_arch}")
+                                           "${win_app_sdk_root}/lib/win10-${win_app_sdk_arch}"
+            NO_CACHE)
 
-        if(WINAPPSDK_INCLUDE_DIR AND WINAPPSDK_LIBRARY AND WINAPPSDK_BOOTSTRAP_LIBRARY)
+        if(winappsdk_include_dir AND winappsdk_library AND winappsdk_bootstrap_library)
             execute_process(COMMAND
                 ${cpp_win_rt_path} -out "${generated_headers_path}" -ref sdk
                 -in "${win_app_sdk_root}/lib/uap10.0"
@@ -77,12 +79,8 @@ function(qt6_add_win_app_sdk target)
                 -in "${win_app_sdk_root}/lib/uap10.0.18362"
                 -in "${web_view_root}/lib")
 
-            find_path(WINAPPSDK_GENERATED_INCLUDE_DIR
-                NAMES winrt/Microsoft.UI.h
-                HINTS "${generated_headers_path}")
-
-            if(NOT WINAPPSDK_GENERATED_INCLUDE_DIR)
-                message(FATAL_ERROR "Windows App SDK  library headers generation failed")
+            if(NOT EXISTS "${winappsdk_generated_include_dir}")
+                message(FATAL_ERROR "Windows App SDK  library headers generation failed.")
             endif()
         else()
             message(FATAL_ERROR "Windows App SDK  library not found")
