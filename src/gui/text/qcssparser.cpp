@@ -15,7 +15,7 @@
 #include <qimagereader.h>
 #include <qtextformat.h>
 
-#include <algorithm>
+#include <QtCore/q20algorithm.h>
 
 #ifndef QT_NO_CSSPARSER
 
@@ -35,10 +35,30 @@ struct QCssKnownValue
 {
     const char name[28];
     quint64 id;
+
+    struct ByName;
 };
 
+struct QCssKnownValue::ByName
+{
+    constexpr bool operator()(const QCssKnownValue &lhs, const QCssKnownValue &rhs) const noexcept
+    { return std::string_view{lhs.name} < std::string_view{rhs.name}; }
+};
+#if !defined(Q_CC_GNU_ONLY) || Q_CC_GNU >= 1000
+#  define NOT_OLD_GCCs(...) __VA_ARGS__
+#else
+#  define NOT_OLD_GCCs(...) /* nothing */
+#endif
+#define CHECK_ARRAY_IS_SORTED(array, Num) \
+    static_assert(std::size(array) == Num); \
+    NOT_OLD_GCCs( \
+    static_assert(q20::is_sorted(std::begin(array), std::end(array), \
+                                 QCssKnownValue::ByName{})); \
+    ) /* NOT_OLD_GCCs */ \
+    /* end */
+
 // This array is sorted alphabetically.
-static const QCssKnownValue properties[NumProperties - 1] = {
+static constexpr QCssKnownValue properties[] = {
     { "-qt-background-role", QtBackgroundRole },
     { "-qt-block-indent", QtBlockIndent },
     { "-qt-fg-texture-cachekey", QtForegroundTextureCacheKey },
@@ -160,8 +180,9 @@ static const QCssKnownValue properties[NumProperties - 1] = {
     { "width", Width },
     { "word-spacing", WordSpacing }
 };
+CHECK_ARRAY_IS_SORTED(properties, size_t(NumProperties) - 1)
 
-static const QCssKnownValue values[NumKnownValues - 1] = {
+static constexpr QCssKnownValue values[] = {
     { "accent", Value_Accent },
     { "active", Value_Active },
     { "alternate-base", Value_AlternateBase },
@@ -248,6 +269,7 @@ static const QCssKnownValue values[NumKnownValues - 1] = {
     { "x-large", Value_XLarge },
     { "xx-large", Value_XXLarge }
 };
+CHECK_ARRAY_IS_SORTED(values, size_t(NumKnownValues) - 1)
 
 //Map id to strings as they appears in the 'values' array above
 static constexpr uchar indexOfId[] = {
@@ -267,7 +289,7 @@ QString Value::toString() const
     }
 }
 
-static const QCssKnownValue pseudos[NumPseudos - 1] = {
+static constexpr QCssKnownValue pseudos[] = {
     { "active", PseudoClass_Active },
     { "adjoins-item", PseudoClass_Item },
     { "alternate", PseudoClass_Alternate },
@@ -313,44 +335,51 @@ static const QCssKnownValue pseudos[NumPseudos - 1] = {
     { "vertical", PseudoClass_Vertical },
     { "window", PseudoClass_Window }
 };
+CHECK_ARRAY_IS_SORTED(pseudos, size_t(NumPseudos) - 1)
 
-static const QCssKnownValue origins[NumKnownOrigins - 1] = {
+static constexpr QCssKnownValue origins[] = {
     { "border", Origin_Border },
     { "content", Origin_Content },
     { "margin", Origin_Margin }, // not in css
     { "padding", Origin_Padding }
 };
+CHECK_ARRAY_IS_SORTED(origins, size_t(NumKnownOrigins) - 1)
 
-static const QCssKnownValue repeats[NumKnownRepeats - 1] = {
+static constexpr QCssKnownValue repeats[] = {
     { "no-repeat", Repeat_None },
     { "repeat-x", Repeat_X },
     { "repeat-xy", Repeat_XY },
     { "repeat-y", Repeat_Y }
 };
+CHECK_ARRAY_IS_SORTED(repeats, size_t(NumKnownRepeats) - 1)
 
-static const QCssKnownValue tileModes[NumKnownTileModes - 1] = {
+static constexpr QCssKnownValue tileModes[] = {
     { "repeat", TileMode_Repeat },
     { "round", TileMode_Round },
     { "stretch", TileMode_Stretch },
 };
+CHECK_ARRAY_IS_SORTED(tileModes, size_t(NumKnownTileModes) - 1)
 
-static const QCssKnownValue positions[NumKnownPositionModes - 1] = {
+static constexpr QCssKnownValue positions[] = {
     { "absolute", PositionMode_Absolute },
     { "fixed", PositionMode_Fixed },
     { "relative", PositionMode_Relative },
     { "static", PositionMode_Static }
 };
+CHECK_ARRAY_IS_SORTED(positions, size_t(NumKnownPositionModes) - 1)
 
-static const QCssKnownValue attachments[NumKnownAttachments - 1] = {
+static constexpr QCssKnownValue attachments[] = {
     { "fixed", Attachment_Fixed },
     { "scroll", Attachment_Scroll }
 };
+CHECK_ARRAY_IS_SORTED(attachments, size_t(NumKnownAttachments) - 1)
 
-static const QCssKnownValue styleFeatures[NumKnownStyleFeatures - 1] = {
+static constexpr QCssKnownValue styleFeatures[] = {
     { "background-color", StyleFeature_BackgroundColor },
     { "background-gradient", StyleFeature_BackgroundGradient },
     { "none", StyleFeature_None }
 };
+CHECK_ARRAY_IS_SORTED(styleFeatures, size_t(NumKnownStyleFeatures) - 1)
 
 static bool operator<(const QString &name, const QCssKnownValue &prop)
 {
@@ -361,6 +390,9 @@ static bool operator<(const QCssKnownValue &prop, const QString &name)
 {
     return QString::compare(QLatin1StringView(prop.name), name, Qt::CaseInsensitive) < 0;
 }
+
+#undef CHECK_ARRAY_IS_SORTED
+#undef NOT_OLD_GCCs
 
 static quint64 findKnownValue(const QString &name, const QCssKnownValue *start, int numValues)
 {
