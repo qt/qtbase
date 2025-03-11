@@ -1857,13 +1857,13 @@ void QDockWidget::setTitleBarWidget(QWidget *widget)
 
 /*!
     \since 6.9
-    \brief QDockWidget::setDockLocation(): Assign dock widget to \a area.
-    If docked at another dock location, it will move to \a area.
-    If floating or part of floating tabs, the next call of setFloating(false)
-    will dock it at \a area.
 
-    \note
-    setDockLocation(Qt::NoDockLocation) is equivalent to setFloating(true).
+    Assigns this dock widget to \a area. If docked at another dock location, it
+    will move to \a area. If floating or part of floating tabs, the next call
+    of setFloating(false) will dock it at \a area.
+
+    \note setDockLocation(Qt::NoDockLocation) is equivalent to setFloating(true).
+
     \sa dockLocation(), dockLocationChanged()
  */
 void QDockWidget::setDockLocation(Qt::DockWidgetArea area)
@@ -1879,11 +1879,11 @@ void QDockWidget::setDockLocation(Qt::DockWidgetArea area)
 }
 
 /*!
+    \property QDockWidget::dockLocation
     \since 6.9
-    \brief QDockWidget::dockLocation()
-    \return the current dock location, or Qt::NoDockLocation if it's floating
-    and/or has no mainwindow parent.
-    \sa setDockLocation(), dockLocationChanged()
+
+    \brief the current dock location, or Qt::NoDockLocation if this dock widget
+    is floating or has no mainwindow parent.
  */
 Qt::DockWidgetArea QDockWidget::dockLocation() const
 {
