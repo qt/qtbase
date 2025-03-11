@@ -791,7 +791,7 @@ public:
     // we can define common methods which 'detach()' the private itself.
     using Self = QExplicitlySharedDataPointer<QHttpHeadersPrivate>;
     static void removeAll(Self &d, const HeaderName &name);
-    static void replaceOrAppend(Self &d, const HeaderName &name, const QByteArray &value);
+    static void replaceOrAppend(Self &d, const HeaderName &name, QByteArray value);
 
     void combinedValue(const HeaderName &name, QByteArray &result) const;
     void values(const HeaderName &name, QList<QByteArray> &result) const;
@@ -855,20 +855,20 @@ QByteArrayView QHttpHeadersPrivate::value(const HeaderName &name, QByteArrayView
     return defaultValue;
 }
 
-void QHttpHeadersPrivate::replaceOrAppend(Self &d, const HeaderName &name, const QByteArray &value)
+void QHttpHeadersPrivate::replaceOrAppend(Self &d, const HeaderName &name, QByteArray value)
 {
     d.detach();
     auto it = std::find_if(d->headers.begin(), d->headers.end(), headerNameMatches(name));
     if (it != d->headers.end()) {
         // Found something to replace => replace, and then rearrange any remaining
         // matches to the end and erase them
-        it->value = value;
+        it->value = std::move(value);
         d->headers.erase(
                 std::remove_if(it + 1, d->headers.end(), headerNameMatches(name)),
                 d->headers.end());
     } else {
         // Found nothing to replace => append
-        d->headers.append(Header{name, value});
+        d->headers.append(Header{name, std::move(value)});
     }
 }
 
