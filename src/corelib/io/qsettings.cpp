@@ -2019,10 +2019,13 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
 
     \section1 Section and Key Syntax
 
-    Setting keys can contain any Unicode characters. The Windows
-    registry and INI files use case-insensitive keys, whereas the
-    CFPreferences API on \macos and iOS uses case-sensitive keys. To
-    avoid portability problems, follow these simple rules:
+    Setting keys can contain any Unicode characters. The file format and
+    operating system will determine if they are sensitive to case or not. On
+    Windows, the registry and INI files will use case-insensitive keys, while
+    user-specified formats registered with registerFormat() may be either. On
+    Unix systems, keys are always case-sensitive.
+
+    To avoid portability problems, follow these simple rules:
 
     \list 1
     \li Always refer to the same key using the same case. For example,
@@ -3184,10 +3187,11 @@ bool QSettings::isWritable() const
   Sets the value of setting \a key to \a value. If the \a key already
   exists, the previous value is overwritten.
 
-  Note that the Windows registry and INI files use case-insensitive
-  keys, whereas the CFPreferences API on \macos and iOS uses
-  case-sensitive keys. To avoid portability problems, see the
+//! [key-case-sensitivity]
+  Key lookup will either be sensitive or insensitive to case depending on
+  file format and operating system. To avoid portability problems, see the
   \l{Section and Key Syntax} rules.
+//! [key-case-sensitivity]
 
   Example:
 
@@ -3225,10 +3229,7 @@ void QSettings::setValue(QAnyStringView key, const QVariant &value)
 
     \snippet code/src_corelib_io_qsettings.cpp 25
 
-    Note that the Windows registry and INI files use case-insensitive
-    keys, whereas the CFPreferences API on \macos and iOS uses
-    case-sensitive keys. To avoid portability problems, see the
-    \l{Section and Key Syntax} rules.
+    \include qsettings.cpp key-case-sensitivity
 
     \note In Qt versions prior to 6.4, this function took QString, not
     QAnyStringView.
@@ -3263,10 +3264,7 @@ void QSettings::remove(QAnyStringView key)
     If a group is set using beginGroup(), \a key is taken to be
     relative to that group.
 
-    Note that the Windows registry and INI files use case-insensitive
-    keys, whereas the CFPreferences API on \macos and iOS uses
-    case-sensitive keys. To avoid portability problems, see the
-    \l{Section and Key Syntax} rules.
+    \include qsettings.cpp key-case-sensitivity
 
     \note In Qt versions prior to 6.4, this function took QString, not
     QAnyStringView.
@@ -3330,10 +3328,7 @@ bool QSettings::event(QEvent *event)
     If no default value is specified, a default QVariant is
     returned.
 
-    Note that the Windows registry and INI files use case-insensitive
-    keys, whereas the CFPreferences API on \macos and iOS uses
-    case-sensitive keys. To avoid portability problems, see the
-    \l{Section and Key Syntax} rules.
+    \include qsettings.cpp key-case-sensitivity
 
     Example:
 
@@ -3493,9 +3488,10 @@ void QSettings::setPath(Format format, Scope scope, const QString &path)
     QIODevice parameter to the read and write functions is always
     opened in binary mode (i.e., without the \l QIODeviceBase::Text flag).
 
-    The \a caseSensitivity parameter specifies whether keys are case
-    sensitive or not. This makes a difference when looking up values
-    using QSettings. The default is case sensitive.
+    The \a caseSensitivity parameter specifies whether keys are case-sensitive
+    or not. This makes a difference when looking up values using QSettings. The
+    default is case-sensitive. The parameter must be \c{Qt::CaseSensitive} on
+    Unix systems.
 
     By default, if you use one of the constructors that work in terms
     of an organization name and an application name, the file system
