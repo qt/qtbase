@@ -3487,7 +3487,7 @@ void QWindowsWindow::updateCustomTitlebar()
     const QBrush closeButtonBrush(QColor(0xC4, 0x2B, 0x1C, 255));
     const QBrush minMaxButtonBrush = QBrush(isDarkmode ? QColor(0xFF, 0xFF, 0xFF, 0x40) : QColor(0x00, 0x00, 0x00, 0x20));
     const QBrush titleBarBackgroundColor = QBrush(isDarkmode ? QColor(0x1F, 0x1F, 0x1F, 0xFF) : QColor(0xF3, 0xF3, 0xF3, 0xFF));
-    const QPen textPen = QPen(isDarkmode ? QColor(255, 255, 255, 255) : QColor(0, 0, 0, 255));
+    const QPen textPen = QPen(isDarkmode ? QColor(0xFF, 0xFF, 0xFD, 0xFF) : QColor(0x00, 0x00, 0x00, 0xFF));
 
     QImage image(windowWidth, titleBarHeight, QImage::Format_ARGB32);
     QPainter p(&image);
@@ -3543,7 +3543,8 @@ void QWindowsWindow::updateCustomTitlebar()
         titleFont.setWeight(QFont::Thin);
         titleFont.setHintingPreference(QFont::PreferFullHinting);
         p.setFont(titleFont);
-        p.drawText(titleRect, wnd->title(), QTextOption(Qt::AlignVCenter));
+        const QString title = wnd->title().isEmpty() ? qApp->applicationName() : wnd->title();
+        p.drawText(titleRect, title, QTextOption(Qt::AlignVCenter));
     }
 
     int buttons = 1;
