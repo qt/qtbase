@@ -19,7 +19,7 @@ foreach(dir global config)
             # dependencies should be set up in that case (coarsness, use install vs build dirs,
             # etc).
             file(GLOB_RECURSE files LIST_DIRECTORIES FALSE "${dir}/*")
-            set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${files})
+            _qt_internal_append_cmake_configure_depends(${files})
         endif()
     endif()
 endforeach()

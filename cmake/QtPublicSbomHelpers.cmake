@@ -432,8 +432,7 @@ function(_qt_internal_sbom_end_project)
 
     # Add configure-time dependency on project attribution files.
     get_property(attribution_files GLOBAL PROPERTY _qt_internal_project_attribution_files)
-    list(REMOVE_DUPLICATES attribution_files)
-    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${attribution_files}")
+    _qt_internal_append_cmake_configure_depends(${attribution_files})
 endfunction()
 
 # Automatically begins sbom generation for a qt git repo unless QT_SKIP_SBOM_AUTO_PROJECT is TRUE.

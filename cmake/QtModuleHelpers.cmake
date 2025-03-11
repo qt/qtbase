@@ -807,7 +807,7 @@ set(QT_ALLOW_MISSING_TOOLS_PACKAGES TRUE)")
         )
 
         # Make sure touched extra cmake files cause a reconfigure, so they get re-copied.
-        set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${cmake_file}")
+        _qt_internal_append_cmake_configure_depends("${cmake_file}")
     endforeach()
     list(APPEND extra_cmake_includes ${arg_EXTRA_CMAKE_INCLUDES})
 
