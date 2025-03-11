@@ -249,10 +249,13 @@ static const QCssKnownValue values[NumKnownValues - 1] = {
 };
 
 //Map id to strings as they appears in the 'values' array above
-static const short indexOfId[NumKnownValues] = { 0, 46, 54, 47, 55, 56, 63, 38, 29, 83, 84, 28, 48, 7, 76, 52,
+static constexpr uchar indexOfId[] = {
+    0, 46, 54, 47, 55, 56, 63, 38, 29, 83, 84, 28, 48, 7, 76, 52,
     32, 68, 69, 30, 58, 74, 8, 12, 43, 65, 21, 15, 19, 20, 22, 24, 57, 27, 51, 80, 40, 4, 3, 45, 75, 18, 13,
     66, 16, 35, 77, 36, 78, 64, 79, 37, 67, 23, 59, 42, 6, 60, 70, 82, 10, 31, 41, 14, 39, 71, 9, 11, 5, 81,
     62, 25, 26, 33, 34, 2, 44, 72, 73, 53, 0, 17, 1, 61, 50, 49 };
+
+static_assert(std::size(indexOfId) == size_t(NumKnownValues));
 
 QString Value::toString() const
 {
