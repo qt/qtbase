@@ -1191,6 +1191,11 @@ QMargins QWindowsGeometryHint::frame(const QWindow *w, const QRect &geometry,
 
 bool QWindowsGeometryHint::handleCalculateSize(const QWindow *window, const QMargins &customMargins, const MSG &msg, LRESULT *result)
 {
+    // Prevent adding any border for frameless window
+    if (msg.wParam && window->flags() & Qt::FramelessWindowHint) {
+        *result = 0;
+        return true;
+    }
     // Return 0 to remove the window's border
     const bool clientAreaExpanded = window->flags() & Qt::ExpandedClientAreaHint;
     if (msg.wParam && clientAreaExpanded) {
