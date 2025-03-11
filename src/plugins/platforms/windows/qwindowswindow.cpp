@@ -3484,7 +3484,7 @@ void QWindowsWindow::updateCustomTitlebar()
             qApp->styleHints()->colorScheme() == Qt::ColorScheme::Dark;
     const bool isWindows11orAbove = QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows11;
 
-    const QBrush closeButtonBrush(QColor(0xC4, 0x2B, 0x1C, 255));
+    const QBrush closeButtonBrush(QColor(0xC4, 0x2C, 0x1E, 255));
     const QBrush minMaxButtonBrush = QBrush(isDarkmode ? QColor(0xFF, 0xFF, 0xFF, 0x40) : QColor(0x00, 0x00, 0x00, 0x20));
     const QBrush titleBarBackgroundColor = QBrush(isDarkmode ? QColor(0x1F, 0x1F, 0x1F, 0xFF) : QColor(0xF3, 0xF3, 0xF3, 0xFF));
     const QPen textPen = QPen(isDarkmode ? QColor(0xFF, 0xFF, 0xFD, 0xFF) : QColor(0x00, 0x00, 0x00, 0xFF));
@@ -3573,9 +3573,12 @@ void QWindowsWindow::updateCustomTitlebar()
                 _q_drawCustomTitleBarButton(p, rect);
             else
                 p.drawRect(rect);
+            const QPen closeButtonHoveredPen = QPen(QColor(0xFF, 0xFF, 0xFD, 0xFF));
+            p.setPen(closeButtonHoveredPen);
+        } else {
+            p.setPen(textPen);
         }
-        p.setPen(textPen);
-        p.drawText(rect,QStringLiteral("\uE8BB"), QTextOption(Qt::AlignVCenter | Qt::AlignHCenter));
+        p.drawText(rect, QStringLiteral("\uE8BB"), QTextOption(Qt::AlignVCenter | Qt::AlignHCenter));
         buttons++;
     }
 
