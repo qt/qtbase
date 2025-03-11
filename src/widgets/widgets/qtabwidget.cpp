@@ -1255,20 +1255,22 @@ void QTabWidget::paintEvent(QPaintEvent *)
 {
     Q_D(QTabWidget);
     if (documentMode()) {
-        QStylePainter p(this, tabBar());
-        if (QWidget *w = cornerWidget(Qt::TopLeftCorner); w && w->isVisible()) {
-            QStyleOptionTabBarBase opt;
-            QTabBarPrivate::initStyleBaseOption(&opt, tabBar(), w->size());
-            opt.rect.moveLeft(w->x() + opt.rect.x());
-            opt.rect.moveTop(w->y() + opt.rect.y());
-            p.drawPrimitive(QStyle::PE_FrameTabBarBase, opt);
-        }
-        if (QWidget *w = cornerWidget(Qt::TopRightCorner); w && w->isVisible()) {
-            QStyleOptionTabBarBase opt;
-            QTabBarPrivate::initStyleBaseOption(&opt, tabBar(), w->size());
-            opt.rect.moveLeft(w->x() + opt.rect.x());
-            opt.rect.moveTop(w->y() + opt.rect.y());
-            p.drawPrimitive(QStyle::PE_FrameTabBarBase, opt);
+        if (d->tabs->drawBase()) {
+            QStylePainter p(this, tabBar());
+            if (QWidget *w = cornerWidget(Qt::TopLeftCorner); w && w->isVisible()) {
+                QStyleOptionTabBarBase opt;
+                QTabBarPrivate::initStyleBaseOption(&opt, tabBar(), w->size());
+                opt.rect.moveLeft(w->x() + opt.rect.x());
+                opt.rect.moveTop(w->y() + opt.rect.y());
+                p.drawPrimitive(QStyle::PE_FrameTabBarBase, opt);
+            }
+            if (QWidget *w = cornerWidget(Qt::TopRightCorner); w && w->isVisible()) {
+                QStyleOptionTabBarBase opt;
+                QTabBarPrivate::initStyleBaseOption(&opt, tabBar(), w->size());
+                opt.rect.moveLeft(w->x() + opt.rect.x());
+                opt.rect.moveTop(w->y() + opt.rect.y());
+                p.drawPrimitive(QStyle::PE_FrameTabBarBase, opt);
+            }
         }
         return;
     }
