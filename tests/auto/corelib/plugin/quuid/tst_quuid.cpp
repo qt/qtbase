@@ -295,6 +295,10 @@ void tst_QUuid::id128()
 void tst_QUuid::uint128()
 {
 #ifdef QT_SUPPORTS_INT128
+    if (QSysInfo::ByteOrder == QSysInfo::BigEndian)
+        QSKIP("Not implemented for big endian. Feel free to submit fixes.");
+
+    // {fc69b59e-cc34-4436-a43c-ee95d128b8c5}
     constexpr quint128 u = Q_UINT128_C(0xfc69b59e'cc344436'a43cee95'd128b8c5); // This is LE
     constexpr quint128 be = qToBigEndian(u);
     constexpr QUuid uuid = QUuid::fromUInt128(be);
