@@ -1108,7 +1108,7 @@ QKeyCombination QKeySequencePrivate::decodeString(QString accel, QKeySequence::S
     qsizetype lastI = 0;
     while ((i = sl.indexOf(u'+', i + 1)) != -1) {
         QStringView sub = QStringView{ sl }.mid(lastI, i - lastI + 1);
-        while (sub.size() > 1 && sub.at(0) == QLatin1Char(' ')) {
+        while (sub.size() > 1 && sub.at(0) == u' ') {
             sub = sub.mid(1);
             ++lastI;
         }
@@ -1144,7 +1144,7 @@ QKeyCombination QKeySequencePrivate::decodeString(QString accel, QKeySequence::S
 
             if (!validModifier) {
                 // Try harder with slower code that trims spaces
-                const QString cleanedSub = sub.toString().remove(QLatin1Char(' '));
+                const QString cleanedSub = sub.toString().remove(u' ');
                 validModifier = identifyModifier(cleanedSub);
             }
             if (!validModifier)
@@ -1158,9 +1158,9 @@ QKeyCombination QKeySequencePrivate::decodeString(QString accel, QKeySequence::S
     if (p > 0)
         accelRef = accelRef.mid(p + 1);
 
-    while (accelRef.size() > 1 && accelRef.at(0) == QLatin1Char(' '))
+    while (accelRef.size() > 1 && accelRef.at(0) == u' ')
         accelRef = accelRef.mid(1);
-    while (accelRef.size() > 1 && accelRef.endsWith(QLatin1Char(' ')))
+    while (accelRef.size() > 1 && accelRef.endsWith(u' '))
         accelRef.chop(1);
 
     int fnum = 0;
