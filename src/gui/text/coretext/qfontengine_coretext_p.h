@@ -56,7 +56,7 @@ public:
     bool canRender(const QChar *string, int len) const override;
 
     int synthesized() const override { return synthesisFlags; }
-    bool supportsHorizontalSubPixelPositions() const override { return !isColorFont(); }
+    bool supportsHorizontalSubPixelPositions() const override { return true; }
     bool supportsVerticalSubPixelPositions() const override { return false; }
 
     QFixed lineThickness() const override;

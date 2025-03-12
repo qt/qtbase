@@ -779,9 +779,7 @@ QImage QWindowsFontEngineDirectWrite::alphaMapForGlyph(glyph_t glyph,
 bool QWindowsFontEngineDirectWrite::supportsHorizontalSubPixelPositions() const
 {
     QFont::HintingPreference hinting = determineHinting(fontDef);
-    return  (!isColorFont()
-            && hinting != QFont::PreferFullHinting
-            && !(fontDef.styleStrategy & QFont::NoAntialias));
+    return (hinting != QFont::PreferFullHinting && !(fontDef.styleStrategy & QFont::NoAntialias));
 }
 
 QFontEngine::Properties QWindowsFontEngineDirectWrite::properties() const
