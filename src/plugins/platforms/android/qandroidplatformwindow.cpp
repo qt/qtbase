@@ -291,7 +291,7 @@ void QAndroidPlatformWindow::applicationStateChanged(Qt::ApplicationState)
 void QAndroidPlatformWindow::createSurface()
 {
     const bool windowStaysOnTop = bool(window()->flags() & Qt::WindowStaysOnTopHint);
-    const bool isOpaque = !format().hasAlpha() && qFuzzyCompare(window()->opacity(), 1.0);
+    const bool isOpaque = !format().hasAlpha() && qFuzzyCompare(window()->opacity(), qreal(1.0));
 
     m_nativeQtWindow.callMethod<void>("createSurface", windowStaysOnTop, 32, isOpaque,
                                       m_surfaceContainerType);
