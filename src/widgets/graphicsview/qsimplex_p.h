@@ -65,8 +65,7 @@ struct QSimplexConstraint
     bool isSatisfied() {
         qreal leftHandSide(0);
 
-        QHash<QSimplexVariable *, qreal>::const_iterator iter;
-        for (iter = variables.constBegin(); iter != variables.constEnd(); ++iter) {
+        for (auto iter = variables.cbegin(); iter != variables.cend(); ++iter) {
             leftHandSide += iter.value() * iter.key()->result;
         }
 
@@ -90,8 +89,7 @@ struct QSimplexConstraint
         QString result;
         result += QString::fromLatin1("-- QSimplexConstraint %1 --").arg(quintptr(this), 0, 16);
 
-        QHash<QSimplexVariable *, qreal>::const_iterator iter;
-        for (iter = variables.constBegin(); iter != variables.constEnd(); ++iter) {
+        for (auto iter = variables.cbegin(); iter != variables.cend(); ++iter) {
             result += QString::fromLatin1("  %1 x %2").arg(iter.value()).arg(quintptr(iter.key()), 0, 16);
         }
 

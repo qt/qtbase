@@ -230,12 +230,8 @@ bool QSimplex::setConstraints(const QList<QSimplexConstraint *> &newConstraints)
             setValueAt(i, c->helper.first->index, 1.0);
         }
 
-        QHash<QSimplexVariable *, qreal>::const_iterator iter;
-        for (iter = c->variables.constBegin();
-             iter != c->variables.constEnd();
-             ++iter) {
+        for (auto iter = c->variables.cbegin(); iter != c->variables.cend(); ++iter)
             setValueAt(i, iter.key()->index, iter.value());
-        }
 
         setValueAt(i, columns - 1, c->constant);
     }
@@ -490,10 +486,7 @@ qreal QSimplex::solver(SolverFactor factor)
 
     // Set new objective in the first row of the simplex matrix
     qreal resultOffset = 0;
-    QHash<QSimplexVariable *, qreal>::const_iterator iter;
-    for (iter = objective->variables.constBegin();
-         iter != objective->variables.constEnd();
-         ++iter) {
+    for (auto iter = objective->variables.cbegin(); iter != objective->variables.cend(); ++iter) {
 
         // Check if the variable was removed in the simplification process.
         // If so, we save its offset to the objective function and skip adding
@@ -594,8 +587,7 @@ bool QSimplex::simplifyConstraints(QList<QSimplexConstraint *> *constraints)
             }
 
             // Replace known values among their variables
-            QHash<QSimplexVariable *, qreal>::const_iterator r;
-            for (r = results.constBegin(); r != results.constEnd(); ++r) {
+            for (auto r = results.cbegin(); r != results.cend(); ++r) {
                 if (c->variables.contains(r.key())) {
                     c->constant -= r.value() * c->variables.take(r.key());
                     modified = true;
@@ -630,10 +622,8 @@ void QSimplexConstraint::invert()
     constant = -constant;
     ratio = Ratio(2 - ratio);
 
-    QHash<QSimplexVariable *, qreal>::iterator iter;
-    for (iter = variables.begin(); iter != variables.end(); ++iter) {
+    for (auto iter = variables.begin(); iter != variables.end(); ++iter)
         iter.value() = -iter.value();
-    }
 }
 
 QT_END_NAMESPACE
