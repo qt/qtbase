@@ -29,8 +29,14 @@ struct QSimplexVariable
 
     qreal result;
     int index;
+protected:
+    QT_DECLARE_RO5_SMF_AS_DEFAULTED(QSimplexVariable)
 };
 
+// "pure" QSimplexVariable without the protected destructor
+struct QConcreteSimplexVariable final : QSimplexVariable
+{
+};
 
 /*!
   \internal
@@ -57,8 +63,8 @@ struct QSimplexConstraint
     qreal constant;
     Ratio ratio;
 
-    std::pair<QSimplexVariable *, qreal> helper;
-    QSimplexVariable * artificial;
+    std::pair<QConcreteSimplexVariable *, qreal> helper;
+    QConcreteSimplexVariable *artificial;
 
     void invert();
 

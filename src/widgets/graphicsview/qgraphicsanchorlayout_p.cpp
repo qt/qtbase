@@ -2764,11 +2764,11 @@ enum slackType { Grower = -1, Shrinker = 1 };
 static auto createSlack(QSimplexConstraint *sizeConstraint, qreal interval, slackType type)
 {
     struct R {
-        QSimplexVariable *slack;
+        QConcreteSimplexVariable *slack;
         QSimplexConstraint *limit;
     };
 
-    QSimplexVariable *slack = new QSimplexVariable;
+    auto slack = new QConcreteSimplexVariable;
     sizeConstraint->variables.insert(slack, type);
 
     QSimplexConstraint *limit = new QSimplexConstraint;
@@ -2783,7 +2783,7 @@ bool QGraphicsAnchorLayoutPrivate::solvePreferred(const QList<QSimplexConstraint
                                                   const QList<AnchorData *> &variables)
 {
     QList<QSimplexConstraint *> preferredConstraints;
-    QList<QSimplexVariable *> preferredVariables;
+    QList<QConcreteSimplexVariable *> preferredVariables;
     QSimplexConstraint objective;
 
     // Fill the objective coefficients for this variable. In the

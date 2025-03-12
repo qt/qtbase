@@ -156,28 +156,28 @@ bool QSimplex::setConstraints(const QList<QSimplexConstraint *> &newConstraints)
     QList <QSimplexVariable *> artificialList;
 
     for (int i = 0; i < constraints.size(); ++i) {
-        QSimplexVariable *slack;
-        QSimplexVariable *surplus;
-        QSimplexVariable *artificial;
+        QConcreteSimplexVariable *slack;
+        QConcreteSimplexVariable *surplus;
+        QConcreteSimplexVariable *artificial;
 
         Q_ASSERT(constraints[i]->helper.first == 0);
         Q_ASSERT(constraints[i]->artificial == nullptr);
 
         switch(constraints[i]->ratio) {
         case QSimplexConstraint::LessOrEqual:
-            slack = new QSimplexVariable;
+            slack = new QConcreteSimplexVariable;
             slack->index = ++variableIndex;
             constraints[i]->helper.first = slack;
             constraints[i]->helper.second = 1.0;
             break;
         case QSimplexConstraint::MoreOrEqual:
-            surplus = new QSimplexVariable;
+            surplus = new QConcreteSimplexVariable;
             surplus->index = ++variableIndex;
             constraints[i]->helper.first = surplus;
             constraints[i]->helper.second = -1.0;
             Q_FALLTHROUGH();
         case QSimplexConstraint::Equal:
-            artificial = new QSimplexVariable;
+            artificial = new QConcreteSimplexVariable;
             constraints[i]->artificial = artificial;
             artificialList += constraints[i]->artificial;
             break;
