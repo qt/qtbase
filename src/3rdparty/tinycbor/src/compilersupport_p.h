@@ -198,29 +198,35 @@
 
 #ifdef __cplusplus
 #  define CONST_CAST(t, v)  const_cast<t>(v)
-#  define CBOR_NULLPTR nullptr
 #else
 /* C-style const_cast without triggering a warning with -Wcast-qual */
 #  define CONST_CAST(t, v)  (t)(uintptr_t)(v)
+#endif
+
+#if defined(__cplusplus) || __STDC_VERSION__ >= 202311
+#  define CBOR_NULLPTR nullptr
+#else
 #  define CBOR_NULLPTR NULL
 #endif
 
-#ifdef __GNUC__
-#ifndef likely
+#ifdef likely
+/* something has already defined likely(), accept it */
+#elif defined(__GNUC__)
 #  define likely(x)     __builtin_expect(!!(x), 1)
-#endif
-#ifndef unlikely
 #  define unlikely(x)   __builtin_expect(!!(x), 0)
-#endif
-#  define unreachable() __builtin_unreachable()
-#elif defined(_MSC_VER)
-#  define likely(x)     (x)
-#  define unlikely(x)   (x)
-#  define unreachable() __assume(0)
 #else
 #  define likely(x)     (x)
 #  define unlikely(x)   (x)
-#  define unreachable() do {} while (0)
+#endif
+
+#ifdef unreachable
+/* C23 has unreachable() */
+#elif defined(__GNUC__)
+#  define unreachable() __builtin_unreachable()
+#elif defined(_MSC_VER)
+#  define unreachable() __assume(0)
+#else
+#  define unreachable()
 #endif
 
 static inline bool add_check_overflow(size_t v1, size_t v2, size_t *r)

@@ -27,6 +27,7 @@
 #include <cbor.h>
 
 Q_DECLARE_METATYPE(CborError)
+Q_DECLARE_METATYPE(CborType)
 
 namespace {
 
@@ -85,6 +86,46 @@ void addIntegers()
                                  << (std::numeric_limits<quint64>::max() - 1) << qint64(-123456) << true << false;
     QTest::newRow("-UINT64_MAX+1") << raw("\x3b" "\xff\xff\xff\xff" "\xff\xff\xff\xff")
                                    << std::numeric_limits<quint64>::max() << qint64(-123456) << true << false;
+}
+
+[[maybe_unused]] void addFloatingPoint()
+{
+    QTest::addColumn<QByteArray>("data");
+    QTest::addColumn<double>("expectedValue");
+    QTest::addColumn<CborType>("expectedType");
+
+    QTest::newRow("0.f16") << raw("\xf9\0\0") << 0. << CborHalfFloatType;
+    QTest::newRow("0.f") << raw("\xfa\0\0\0\0") << 0. << CborFloatType;
+    QTest::newRow("0.")  << raw("\xfb\0\0\0\0\0\0\0\0") << 0. << CborDoubleType;
+    QTest::newRow("-1.f16") << raw("\xf9\xbc\x00") << -1. << CborHalfFloatType;
+    QTest::newRow("-1.f") << raw("\xfa\xbf\x80\0\0") << -1. << CborFloatType;
+    QTest::newRow("-1.") << raw("\xfb\xbf\xf0\0\0\0\0\0\0") << -1. << CborDoubleType;
+    QTest::newRow("65504.f16") << raw("\xf9\x7b\xff") << 65504. << CborHalfFloatType;
+    QTest::newRow("16777215.f") << raw("\xfa\x4b\x7f\xff\xff") << 16777215. << CborFloatType;
+    QTest::newRow("16777215.") << raw("\xfb\x41\x6f\xff\xff\xe0\0\0\0") << 16777215. << CborDoubleType;
+    QTest::newRow("-16777215.f") << raw("\xfa\xcb\x7f\xff\xff") << -16777215. << CborFloatType;
+    QTest::newRow("-16777215.") << raw("\xfb\xc1\x6f\xff\xff\xe0\0\0\0") << -16777215. << CborDoubleType;
+
+    QTest::newRow("0.5f16") << raw("\xf9\x38\0") << 0.5 << CborHalfFloatType;
+    QTest::newRow("0.5f") << raw("\xfa\x3f\0\0\0") << 0.5 << CborFloatType;
+    QTest::newRow("0.5") << raw("\xfb\x3f\xe0\0\0\0\0\0\0") << 0.5 << CborDoubleType;
+    QTest::newRow("2.f16^11-1") << raw("\xf9\x67\xff") << 2047. << CborHalfFloatType;
+    QTest::newRow("2.f^24-1") << raw("\xfa\x4b\x7f\xff\xff") << 16777215. << CborFloatType;
+    QTest::newRow("2.^53-1") << raw("\xfb\x43\x3f\xff\xff""\xff\xff\xff\xff") << double(Q_INT64_C(1) << 53) - 1 << CborDoubleType;
+    QTest::newRow("2.f^64-epsilon") << raw("\xfa\x5f\x7f\xff\xff") << 0x1.fffffep+63 << CborFloatType;
+    QTest::newRow("2.^64-epsilon") << raw("\xfb\x43\xef\xff\xff""\xff\xff\xff\xff") << 0x1.fffffffffffffp+63 << CborDoubleType;
+    QTest::newRow("2.f^64") << raw("\xfa\x5f\x80\0\0") << 0x1p64 << CborFloatType;
+    QTest::newRow("2.^64") << raw("\xfb\x43\xf0\0\0\0\0\0\0") << 0x1p64 << CborDoubleType;
+
+    QTest::newRow("nan_f16") << raw("\xf9\x7e\x00") << qQNaN() << CborHalfFloatType;
+    QTest::newRow("nan_f") << raw("\xfa\x7f\xc0\0\0") << qQNaN() << CborFloatType;
+    QTest::newRow("nan") << raw("\xfb\x7f\xf8\0\0\0\0\0\0") << qQNaN() << CborDoubleType;
+    QTest::newRow("-inf_f16") << raw("\xf9\xfc\x00") << -qInf() << CborHalfFloatType;
+    QTest::newRow("-inf_f") << raw("\xfa\xff\x80\0\0") << -qInf() << CborFloatType;
+    QTest::newRow("-inf") << raw("\xfb\xff\xf0\0\0\0\0\0\0") << -qInf() << CborDoubleType;
+    QTest::newRow("+inf_f16") << raw("\xf9\x7c\x00") << qInf() << CborHalfFloatType;
+    QTest::newRow("+inf_f") << raw("\xfa\x7f\x80\0\0") << qInf() << CborFloatType;
+    QTest::newRow("+inf") << raw("\xfb\x7f\xf0\0\0\0\0\0\0") << qInf() << CborDoubleType;
 }
 
 void addColumns()
