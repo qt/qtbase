@@ -25,20 +25,10 @@ QT_WARNING_PUSH
 QT_WARNING_DISABLE_MSVC(4334) // '<<': result of 32-bit shift implicitly converted to 64 bits (was 64-bit shift intended?)
 
 #include <cborencoder.c>
+#include <cborencoder_close_container_checked.c>
+#include <cborencoder_float.c>
 
 QT_WARNING_POP
-
-// silence compilers that complain about this being a static function declared
-// but never defined
-[[maybe_unused]] static CborError cbor_encoder_close_container_checked(CborEncoder*, const CborEncoder*)
-{
-    Q_UNREACHABLE_RETURN(CborErrorInternalError);
-}
-
-[[maybe_unused]] static CborError cbor_encode_float_as_half_float(CborEncoder *, float)
-{
-    Q_UNREACHABLE_RETURN(CborErrorInternalError);
-}
 
 Q_DECLARE_TYPEINFO(CborEncoder, Q_PRIMITIVE_TYPE);
 
