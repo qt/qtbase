@@ -44,8 +44,10 @@ struct QSimplexVariable
 
     Where (ci, Xi) are the pairs in "variables" and K the real "constant".
 */
-struct QSimplexConstraint
+struct QSimplexConstraint final
 {
+    Q_DISABLE_COPY_MOVE(QSimplexConstraint)
+
     QSimplexConstraint() : constant(0), ratio(Equal), artificial(nullptr) {}
 
     enum Ratio {
@@ -110,7 +112,7 @@ struct QSimplexConstraint
 #endif
 };
 
-class QSimplex
+class QSimplex final
 {
     Q_DISABLE_COPY_MOVE(QSimplex)
 public:
