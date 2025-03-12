@@ -38,6 +38,14 @@
 #  include <windows.h>
 #endif
 
+#ifndef CBOR_PARSER_MAX_RECURSIONS
+#  define CBOR_PARSER_MAX_RECURSIONS 1024
+#endif
+
+#ifndef QCOMPARE_EQ
+// added for Qt 6.4
+#  define QCOMPARE_EQ QCOMPARE
+#endif
 
 namespace QTest {
 template<> char *toString<CborError>(const CborError &err)
@@ -57,6 +65,8 @@ private slots:
     void integers();
     void halfFloat_data();
     void halfFloat();
+    void floatingPoint_data();
+    void floatingPoint();
     void fixed_data();
     void fixed();
     void strings_data();
@@ -449,6 +459,44 @@ void tst_Parser::halfFloat()
     } else {
         QVERIFY(qAbs(value - (float)expectedValue) < epsilon);
     }
+}
+
+void tst_Parser::floatingPoint_data()
+{
+    addFloatingPoint();
+}
+
+void tst_Parser::floatingPoint()
+{
+    QFETCH(QByteArray, data);
+    QFETCH(CborType, expectedType);
+    QFETCH(double, expectedValue);
+    bool isNaN = std::isnan(expectedValue);
+
+    ParserWrapper w;
+    CborError err = w.init(data);
+    QVERIFY2(!err, QByteArray("Got error \"") + cbor_error_string(err) + "\"");
+    QCOMPARE(cbor_value_get_type(&w.first), expectedType);
+
+    float f;
+    double d;
+    if (expectedType == CborHalfFloatType) {
+        QVERIFY(cbor_value_is_half_float(&w.first));
+        QCOMPARE(cbor_value_get_half_float_as_float(&w.first, &f), CborNoError);
+    }
+    if (expectedType == CborFloatType) {
+        QVERIFY(cbor_value_is_float(&w.first));
+        QCOMPARE(cbor_value_get_float(&w.first, &f), CborNoError);
+    }
+    if (expectedType == CborDoubleType) {
+        QVERIFY(cbor_value_is_double(&w.first));
+        QCOMPARE(cbor_value_get_double(&w.first, &d), CborNoError);
+    } else {
+        d = f;
+    }
+    QCOMPARE(std::isnan(d), isNaN);
+    if (!isNaN)
+        QCOMPARE_EQ(d, expectedValue);
 }
 
 void tst_Parser::fixed_data()

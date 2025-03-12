@@ -38,6 +38,7 @@
 #include "cbor_cfg.h"
 #endif
 
+#include "tinycbor-export.h"
 #include "tinycbor-version.h"
 
 #define TINYCBOR_VERSION            ((TINYCBOR_VERSION_MAJOR << 16) | (TINYCBOR_VERSION_MINOR << 8) | TINYCBOR_VERSION_PATCH)
@@ -59,11 +60,8 @@ extern "C" {
 #  define SIZE_MAX ((size_t)-1)
 #endif
 
-#ifndef CBOR_API
-#  define CBOR_API
-#endif
 #ifndef CBOR_PRIVATE_API
-#  define CBOR_PRIVATE_API
+#  define CBOR_PRIVATE_API  CBOR_API
 #endif
 #ifndef CBOR_INLINE_API
 #  if defined(__cplusplus)
@@ -212,7 +210,8 @@ CBOR_API const char *cbor_error_string(CborError error);
 typedef enum CborEncoderAppendType
 {
     CborEncoderAppendCborData = 0,
-    CborEncoderAppendStringData = 1
+    CborEncoderAppendStringData = 1,
+    CborEncoderAppendRawData = 2
 } CborEncoderAppendType;
 
 typedef CborError (*CborEncoderWriteFunction)(void *, const void *, size_t, CborEncoderAppendType);
@@ -251,6 +250,7 @@ CBOR_INLINE_API CborError cbor_encode_text_stringz(CborEncoder *encoder, const c
 { return cbor_encode_text_string(encoder, string, strlen(string)); }
 CBOR_API CborError cbor_encode_byte_string(CborEncoder *encoder, const uint8_t *string, size_t length);
 CBOR_API CborError cbor_encode_floating_point(CborEncoder *encoder, CborType fpType, const void *value);
+CBOR_API CborError cbor_encode_raw(CborEncoder *encoder, const uint8_t *raw, size_t length);
 
 CBOR_INLINE_API CborError cbor_encode_boolean(CborEncoder *encoder, bool value)
 { return cbor_encode_simple_value(encoder, (int)value - 1 + (CborBooleanType & 0x1f)); }
@@ -725,4 +725,3 @@ CBOR_INLINE_API CborError cbor_value_to_pretty(FILE *out, const CborValue *value
 #endif
 
 #endif /* CBOR_H */
-

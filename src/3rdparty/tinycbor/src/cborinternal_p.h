@@ -48,8 +48,12 @@
 /* Check for FLT16_MANT_DIG using integer comparison. Clang headers incorrectly
  * define this macro unconditionally when __STDC_WANT_IEC_60559_TYPES_EXT__
  * is defined (regardless of actual support for _Float16).
+ *
+ * GCC defines these macros but doesn't support arithmetic including
+ * conversions on x86 without SSE2.
  */
-#  if FLT16_MANT_DIG > 0 || __FLT16_MANT_DIG__ > 0
+#  if (FLT16_MANT_DIG > 0 || __FLT16_MANT_DIG__ > 0) && \
+      !(defined(__i386__) && !defined(__SSE2__))
 static inline unsigned short encode_half(float x)
 {
     unsigned short h;
