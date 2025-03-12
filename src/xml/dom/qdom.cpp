@@ -4123,14 +4123,18 @@ QDomAttrPrivate* QDomElementPrivate::attributeNodeNS(const QString& nsURI, const
 
 QDomAttrPrivate* QDomElementPrivate::setAttributeNode(QDomAttrPrivate* newAttr)
 {
-    QDomNodePrivate* n = m_attr->namedItem(newAttr->nodeName());
+    if (!newAttr)
+        return nullptr;
+
+    QDomNodePrivate* foundAttr = m_attr->namedItem(newAttr->nodeName());
+    if (foundAttr)
+        m_attr->removeNamedItem(newAttr->nodeName());
 
     // Referencing is done by the maps
     m_attr->setNamedItem(newAttr);
-
     newAttr->setParent(this);
 
-    return static_cast<QDomAttrPrivate *>(n);
+    return static_cast<QDomAttrPrivate *>(foundAttr);
 }
 
 QDomAttrPrivate* QDomElementPrivate::setAttributeNodeNS(QDomAttrPrivate* newAttr)

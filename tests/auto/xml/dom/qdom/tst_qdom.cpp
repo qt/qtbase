@@ -89,6 +89,7 @@ private slots:
     void normalizeAttributes() const;
     void serializeWeirdEOL() const;
     void reparentAttribute() const;
+    void replaceAttribute() const;
     void serializeNamespaces() const;
     void flagInvalidNamespaces() const;
     void flagUndeclaredNamespace() const;
@@ -1997,6 +1998,33 @@ void tst_QDom::reparentAttribute() const
 
     QVERIFY(attr.ownerElement() == ele);
     QVERIFY(attr.parentNode() == ele);
+}
+
+void tst_QDom::replaceAttribute() const
+{
+    QDomImplementation impl;
+    QDomDocument doc(impl.createDocument("", "docName", QDomDocumentType()));
+
+    QDomElement root = doc.createElement("root");
+    doc.appendChild(root);
+
+    QDomAttr attr1 = doc.createAttribute("firstAttribute");
+    attr1.setValue("true");
+    auto nullAttr = root.setAttributeNode(attr1);
+    QVERIFY(nullAttr.isNull());
+    QVERIFY(root.hasAttribute("firstAttribute"));
+    QCOMPARE(root.attributeNode("firstAttribute").value(), "true");
+
+    QDomAttr attr2 = doc.createAttribute("firstAttribute");
+    attr2.setValue("false");
+    root.setAttributeNode(attr2);
+    QCOMPARE(root.attributeNode("firstAttribute").value(), "false");
+
+    QDomAttr attr3 = doc.createAttribute("secondAttribute");
+    attr3.setValue("123");
+    root.setAttributeNode(attr3);
+    QVERIFY(root.hasAttribute("secondAttribute"));
+    QCOMPARE(root.attributeNode("secondAttribute").value(), "123");
 }
 
 void tst_QDom::serializeNamespaces() const
