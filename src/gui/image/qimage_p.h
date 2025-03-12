@@ -49,7 +49,7 @@ struct Q_GUI_EXPORT QImageData {        // internal image data
     qreal devicePixelRatio;
     QList<QRgb> colortable;
     uchar *data;
-    QImage::Format format;
+    QImage::Format format; // invariants: > Format_Invalid, < NImageFormats
     qsizetype bytes_per_line;
     int ser_no;               // serial number
     int detach_no;

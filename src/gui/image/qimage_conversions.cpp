@@ -345,6 +345,7 @@ bool convert_generic_inplace(QImageData *data, QImage::Format dst_format, Qt::Im
 {
     // Cannot be used with indexed formats or between formats with different pixel depths.
     Q_ASSERT(dst_format > QImage::Format_Indexed8);
+    Q_ASSERT(dst_format < QImage::NImageFormats);
     Q_ASSERT(data->format > QImage::Format_Indexed8);
     const int destDepth = qt_depthForFormat(dst_format);
     if (data->depth < destDepth)
@@ -478,6 +479,7 @@ bool convert_generic_inplace_over_rgb64(QImageData *data, QImage::Format dst_for
 {
     Q_ASSERT(data->format > QImage::Format_Indexed8);
     Q_ASSERT(dst_format > QImage::Format_Indexed8);
+    Q_ASSERT(dst_format < QImage::NImageFormats);
     const int destDepth = qt_depthForFormat(dst_format);
     if (data->depth < destDepth)
         return false;
@@ -572,6 +574,7 @@ bool convert_generic_inplace_over_rgba32f(QImageData *data, QImage::Format dst_f
 {
     Q_ASSERT(data->format >= QImage::Format_RGBX16FPx4);
     Q_ASSERT(dst_format >= QImage::Format_RGBX16FPx4);
+    Q_ASSERT(dst_format < QImage::NImageFormats);
     const int destDepth = qt_depthForFormat(dst_format);
     if (data->depth < destDepth)
         return false;
@@ -682,6 +685,8 @@ static void convert_passthrough(QImageData *dest, const QImageData *src, Qt::Ima
 template<QImage::Format Format>
 static bool convert_passthrough_inplace(QImageData *data, Qt::ImageConversionFlags)
 {
+    static_assert(Format > QImage::Format_Invalid);
+    static_assert(Format < QImage::NImageFormats);
     data->format = Format;
     return true;
 }
@@ -839,6 +844,8 @@ static void convert_ARGB_to_RGBA(QImageData *dest, const QImageData *src, Qt::Im
 template<QImage::Format DestFormat>
 static bool convert_ARGB_to_RGBA_inplace(QImageData *data, Qt::ImageConversionFlags)
 {
+    static_assert(DestFormat > QImage::Format_Invalid);
+    static_assert(DestFormat < QImage::NImageFormats);
     Q_ASSERT(data->format == QImage::Format_ARGB32 || data->format == QImage::Format_ARGB32_Premultiplied);
 
     const int pad = (data->bytes_per_line >> 2) - data->width;
@@ -885,6 +892,8 @@ static void convert_RGBA_to_ARGB(QImageData *dest, const QImageData *src, Qt::Im
 template<QImage::Format DestFormat>
 static bool convert_RGBA_to_ARGB_inplace(QImageData *data, Qt::ImageConversionFlags)
 {
+    static_assert(DestFormat > QImage::Format_Invalid);
+    static_assert(DestFormat < QImage::NImageFormats);
     Q_ASSERT(data->format == QImage::Format_RGBX8888 || data->format == QImage::Format_RGBA8888 || data->format == QImage::Format_RGBA8888_Premultiplied);
 
     const int pad = (data->bytes_per_line >> 2) - data->width;
@@ -1233,6 +1242,8 @@ static void mask_alpha_converter(QImageData *dest, const QImageData *src, Qt::Im
 template<QImage::Format DestFormat>
 static bool mask_alpha_converter_inplace(QImageData *data, Qt::ImageConversionFlags)
 {
+    static_assert(DestFormat > QImage::Format_Invalid);
+    static_assert(DestFormat < QImage::NImageFormats);
     Q_ASSERT(data->format == QImage::Format_RGB32
             || DestFormat == QImage::Format_RGB32
             || DestFormat == QImage::Format_RGBX8888);
