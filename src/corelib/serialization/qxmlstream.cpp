@@ -3241,11 +3241,17 @@ void QXmlStreamWriterPrivate::writeEscaped(QAnyStringView s, bool escapeWhitespa
     struct NextUtf8 {
         NextResult operator()(const char *&it, const char *end) const
         {
-            uchar uc = *it++;
-            char32_t utf32 = 0;
-            char32_t *output = &utf32;
-            qsizetype n = QUtf8Functions::fromUtf8<QUtf8BaseTraits>(uc, output, it, end);
-            return n < 0 ? NextResult{0, true} : NextResult{utf32, false};
+            // We can have '\0' in the text, and it should be reported as
+            // Error::InvalidCharacter, not as Error::Encoding
+            constexpr char32_t invalidValue = 0xFFFFFFFF;
+            static_assert(invalidValue > QChar::LastValidCodePoint);
+            auto i = reinterpret_cast<const qchar8_t *>(it);
+            const auto old_i = i;
+            const auto e = reinterpret_cast<const qchar8_t *>(end);
+            const char32_t result = QUtf8Functions::nextUcs4FromUtf8(i, e, invalidValue);
+            it += i - old_i;
+            return result == invalidValue ? NextResult{U'\0', true}
+                                          : NextResult{result, false};
         }
     };
     struct NextUtf16 {
