@@ -289,6 +289,20 @@ namespace QUtf8Functions
         Traits::advanceByte(src, charsNeeded - 1);
         return charsNeeded;
     }
+
+    /// wrapper around fromUtf8<Traits> to provide a simpler interface for a common case
+    template <typename Traits = QUtf8BaseTraits>
+    char32_t nextUcs4FromUtf8(const qchar8_t *&src, const qchar8_t *end,
+                              char32_t errorChar = QChar::ReplacementCharacter)
+    {
+        auto ch = *src++;
+        char32_t buffer[1];
+        auto *output = buffer;
+        if (QUtf8Functions::fromUtf8<Traits>(ch, output, src, end) < 0)
+            return errorChar; // decoding error
+        Q_ASSERT(output == buffer + 1);
+        return buffer[0];
+    }
 }
 
 enum DataEndianness

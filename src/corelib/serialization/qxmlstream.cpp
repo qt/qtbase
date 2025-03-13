@@ -3003,11 +3003,14 @@ void QXmlStreamWriterPrivate::writeEscaped(QAnyStringView s, bool escapeWhitespa
     struct NextUtf8 {
         char32_t operator()(const char *&it, const char *end) const
         {
-            uchar uc = *it++;
-            char32_t utf32 = 0;
-            char32_t *output = &utf32;
-            qsizetype n = QUtf8Functions::fromUtf8<QUtf8BaseTraits>(uc, output, it, end);
-            return n < 0 ? 0 : utf32;
+            constexpr char32_t invalidValue = 0xFFFFFFFF;
+            static_assert(invalidValue > QChar::LastValidCodePoint);
+            auto i = reinterpret_cast<const qchar8_t *>(it);
+            const auto old_i = i;
+            const auto e = reinterpret_cast<const qchar8_t *>(end);
+            const char32_t result = QUtf8Functions::nextUcs4FromUtf8(i, e, invalidValue);
+            it += i - old_i;
+            return result == invalidValue ? U'\0' : result;
         }
     };
     struct NextUtf16 {

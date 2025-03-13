@@ -1239,23 +1239,12 @@ Q_NEVER_INLINE static int ucstricmp(qsizetype alen, const char16_t *a, qsizetype
 // Case-insensitive comparison between a Unicode string and a UTF-8 string
 Q_NEVER_INLINE static int ucstricmp8(const char *utf8, const char *utf8end, const QChar *utf16, const QChar *utf16end)
 {
-    auto src1 = reinterpret_cast<const uchar *>(utf8);
-    auto end1 = reinterpret_cast<const uchar *>(utf8end);
+    auto src1 = reinterpret_cast<const qchar8_t *>(utf8);
+    auto end1 = reinterpret_cast<const qchar8_t *>(utf8end);
     QStringIterator src2(utf16, utf16end);
 
     while (src1 < end1 && src2.hasNext()) {
-        char32_t decoded[1];
-        char32_t *output = decoded;
-        char32_t &uc1 = decoded[0];
-        uchar b = *src1++;
-        const qsizetype res = QUtf8Functions::fromUtf8<QUtf8BaseTraits>(b, output, src1, end1);
-        if (res < 0) {
-            // decoding error
-            uc1 = QChar::ReplacementCharacter;
-        } else {
-            uc1 = QChar::toCaseFolded(uc1);
-        }
-
+        char32_t uc1 = QChar::toCaseFolded(QUtf8Functions::nextUcs4FromUtf8(src1, end1));
         char32_t uc2 = QChar::toCaseFolded(src2.next());
         int diff = uc1 - uc2;   // can't underflow
         if (diff)
