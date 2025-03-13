@@ -212,9 +212,23 @@ void QWindowsUiaMainProvider::raiseNotification(QAccessibleAnnouncementEvent *ev
                     ? NotificationProcessing_ImportantAll
                     : NotificationProcessing_All;
             QBStr activityId{ QString::fromLatin1("") };
+#if !defined(Q_CC_MSVC) || !defined(QT_WIN_SERVER_2016_COMPAT)
             UiaRaiseNotificationEvent(provider.Get(), NotificationKind_Other, processing, message.bstr(),
                                       activityId.bstr());
+#else
+            HMODULE uiautomationcore = GetModuleHandleW(L"UIAutomationCore.dll");
+            if (uiautomationcore != NULL) {
+                typedef HRESULT (WINAPI *EVENTFUNC)(IRawElementProviderSimple *, NotificationKind,
+                                                    NotificationProcessing, BSTR, BSTR);
 
+                EVENTFUNC uiaRaiseNotificationEvent =
+                    (EVENTFUNC)GetProcAddress(uiautomationcore, "UiaRaiseNotificationEvent");
+                if (uiaRaiseNotificationEvent != NULL) {
+                    uiaRaiseNotificationEvent(provider.Get(), NotificationKind_Other, processing,
+                                              message.bstr(), activityId.bstr());
+                }
+            }
+#endif
         }
     }
 }
