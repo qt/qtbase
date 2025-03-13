@@ -48,6 +48,11 @@ void DropArea::dropEvent(QDropEvent *event)
 //! [dropEvent() function part2]
     if (mimeData->hasImage()) {
         setPixmap(qvariant_cast<QPixmap>(mimeData->imageData()));
+    } else if (mimeData->hasColor()) {
+        const auto color = mimeData->colorData().value<QColor>();
+        setText(tr("Color: %1").arg(color.name()));
+        setPalette(QPalette(color));
+        setBackgroundRole(QPalette::Button);
     } else if (mimeData->hasFormat(u"text/markdown"_s)) {
         setText(QString::fromUtf8(mimeData->data(u"text/markdown"_s)));
         setTextFormat(Qt::MarkdownText);
@@ -69,7 +74,10 @@ void DropArea::dropEvent(QDropEvent *event)
 //! [dropEvent() function part2]
 
 //! [dropEvent() function part3]
-    setBackgroundRole(QPalette::Dark);
+    if (!mimeData->hasColor()) {
+        setPalette({});
+        setBackgroundRole(QPalette::Dark);
+    }
     event->acceptProposedAction();
 }
 //! [dropEvent() function part3]
