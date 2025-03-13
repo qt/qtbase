@@ -450,6 +450,8 @@ static QString xcodeFiletypeForFilename(const QString &filename)
         return QStringLiteral("sourcecode.c.objc");
     if (filename.endsWith(QLatin1String(".framework")))
         return QStringLiteral("wrapper.framework");
+    if (filename.endsWith(QLatin1String(".xcframework")))
+        return QStringLiteral("wrapper.xcframework");
     if (filename.endsWith(QLatin1String(".a")))
         return QStringLiteral("archive.ar");
     if (filename.endsWith(QLatin1String(".pro")) || filename.endsWith(QLatin1String(".qrc")))
@@ -964,15 +966,18 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                     library = fileFixify(library, FileFixifyFromOutdir | FileFixifyAbsolute);
                     QString key = keyFor(library);
                     if (!project->values("QMAKE_PBX_LIBRARIES").contains(key)) {
-                        bool is_frmwrk = (library.endsWith(".framework"));
+                        const QString fileType = xcodeFiletypeForFilename(library);
+                        bool is_frmwrk = fileType.endsWith("framework");
                         t << "\t\t" << key << " = {\n"
                           << "\t\t\t" << writeSettings("isa", "PBXFileReference", SettingsNoQuote) << ";\n"
                           << "\t\t\t" << writeSettings("name", name) << ";\n"
                           << "\t\t\t" << writeSettings("path", library) << ";\n"
                           << "\t\t\t" << writeSettings("refType", QString::number(reftypeForFile(library)), SettingsNoQuote) << ";\n"
                           << "\t\t\t" << writeSettings("sourceTree", "<absolute>") << ";\n";
-                        if (is_frmwrk)
-                            t << "\t\t\t" << writeSettings("lastKnownFileType", "wrapper.framework") << ";\n";
+                        if (is_frmwrk) {
+                            t << "\t\t\t" << writeSettings("lastKnownFileType", fileType)
+                              << ";\n";
+                        }
                         t << "\t\t};\n";
                         project->values("QMAKE_PBX_LIBRARIES").append(key);
                         QString build_key = keyFor(library + ".BUILDABLE");
