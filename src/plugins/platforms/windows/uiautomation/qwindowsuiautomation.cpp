@@ -6,7 +6,7 @@
 
 #include "qwindowsuiautomation.h"
 
-#if defined(__MINGW32__) || defined(__MINGW64__)
+#ifndef Q_CC_MSVC
 
 template<typename T, typename... TArg>
 struct winapi_func
@@ -78,6 +78,6 @@ HRESULT WINAPI UiaRaiseNotificationEvent(
     return func.invoke(pProvider, notificationKind, notificationProcessing, displayString, activityId);
 }
 
-#endif // defined(__MINGW32__) || defined(__MINGW64__)
+#endif // !Q_CC_MSVC
 
 #endif // QT_CONFIG(accessibility)
