@@ -559,6 +559,10 @@ private slots:
     void writerAutoFormattingWithProcessingInstructions() const;
     void writerAutoEmptyTags() const;
     void writeAttributesWithSpace() const;
+    void writerAutoFormattingProcessingInstructionFirst() const;
+    void writerAutoFormattingStartElementFirst() const;
+    void writerAutoFormattingCommentFirst() const;
+    void writerAutoFormattingNamespaceFirst() const;
     void addExtraNamespaceDeclarations();
     void setEntityResolver();
     void readFromQBuffer() const;
@@ -1073,6 +1077,74 @@ void tst_QXmlStream::writeAttributesWithSpace() const
     QString s = QLatin1String("<?xml version=\"1.0\" encoding=\"UTF-8\"?><A attribute=\"value")
         + QChar(QChar::Nbsp) + QLatin1String("\"/>\n");
     QCOMPARE(buffer.buffer().data(), s.toUtf8().data());
+}
+
+void tst_QXmlStream::writerAutoFormattingProcessingInstructionFirst() const
+{
+    QBuffer buffer;
+    buffer.open(QIODevice::WriteOnly);
+    QXmlStreamWriter writer(&buffer);
+    writer.setAutoFormatting(true);
+    writer.writeProcessingInstruction("B");
+    writer.writeComment("This is a comment");
+    writer.writeStartElement("A");
+    writer.writeNamespace("http://website.com", "website");
+    writer.writeDefaultNamespace("http://websiteNo2.com");
+    writer.writeEndElement();
+    writer.writeEndDocument();
+    const char *str =
+            "<?B?>\n<!--This is a comment-->\n<A xmlns:website=\"http://website.com\" xmlns=\"http://websiteNo2.com\"/>\n";
+    QCOMPARE(buffer.buffer().data(), str);
+}
+void tst_QXmlStream::writerAutoFormattingStartElementFirst() const
+{
+    QBuffer buffer;
+    buffer.open(QIODevice::WriteOnly);
+    QXmlStreamWriter writer(&buffer);
+    writer.setAutoFormatting(true);
+    writer.writeStartElement("A");
+    writer.writeNamespace("http://website.com", "website");
+    writer.writeComment("This is a comment");
+    writer.writeProcessingInstruction("B");
+    writer.writeDefaultNamespace("http://websiteNo2.com");
+    writer.writeEndElement();
+    writer.writeEndDocument();
+    const char *str = "<A xmlns:website=\"http://website.com\">\n    <!--This is a comment-->\n    <?B?>\n</A>\n";
+    QCOMPARE(buffer.buffer().data(), str);
+}
+
+void tst_QXmlStream::writerAutoFormattingCommentFirst() const
+{
+    QBuffer buffer;
+    buffer.open(QIODevice::WriteOnly);
+    QXmlStreamWriter writer(&buffer);
+    writer.setAutoFormatting(true);
+    writer.writeComment("This is a comment");
+    writer.writeStartElement("A");
+    writer.writeNamespace("http://website.com", "website");
+    writer.writeEndElement();
+    writer.writeDefaultNamespace("http://websiteNo2.com");
+    writer.writeProcessingInstruction("B");
+    writer.writeEndDocument();
+    const char *str = "<!--This is a comment--><A xmlns:website=\"http://website.com\"/>\n<?B?>\n";
+    QCOMPARE(buffer.buffer().data(), str);
+}
+
+void tst_QXmlStream::writerAutoFormattingNamespaceFirst() const
+{
+    QBuffer buffer;
+    buffer.open(QIODevice::WriteOnly);
+    QXmlStreamWriter writer(&buffer);
+    writer.setAutoFormatting(true);
+    writer.writeNamespace("http://website.com", "website");
+    writer.writeStartElement("A");
+    writer.writeDefaultNamespace("http://websiteNo2.com");
+    writer.writeProcessingInstruction("B");
+    writer.writeEndElement();
+    writer.writeComment("This is a comment");
+    writer.writeEndDocument();
+    const char *str = "<A xmlns:website=\"http://website.com\" xmlns=\"http://websiteNo2.com\">\n    <?B?></A>\n<!--This is a comment-->\n";
+    QCOMPARE(buffer.buffer().data(), str);
 }
 
 void tst_QXmlStream::writerAutoEmptyTags() const
