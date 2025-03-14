@@ -538,7 +538,7 @@ void QTimeLine::setCurrentTime(int msec)
     Q_D(QTimeLine);
     d->startTime = 0;
     d->currentLoopCount = 0;
-    d->timer.restart();
+    d->timer.start();
     d->setCurrentTime(msec);
 }
 
