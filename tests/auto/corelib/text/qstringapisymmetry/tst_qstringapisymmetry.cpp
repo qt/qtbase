@@ -1377,7 +1377,7 @@ template <typename T> constexpr bool is_null(const T &str)
     else
         return str.isNull();
 }
-template <> constexpr bool is_null(const char &str) { return false; }
+template <> constexpr bool is_null(const char &) { return false; }
 
 } // namespace help
 
