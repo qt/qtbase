@@ -985,7 +985,7 @@ void tst_QTextStream::performance()
     };
     int elapsed[N] = {0, 0, 0};
 
-        stopWatch.restart();
+        stopWatch.start();
         int nlines1 = 0;
         QFile file(m_rfc3261FilePath);
         QVERIFY(file.open(QFile::ReadOnly));
@@ -995,8 +995,7 @@ void tst_QTextStream::performance()
             file.readLine();
         }
 
-        elapsed[0] = stopWatch.elapsed();
-        stopWatch.restart();
+        elapsed[0] = stopWatch.restart();
 
         int nlines2 = 0;
         QFile file2(m_rfc3261FilePath);
@@ -1008,8 +1007,7 @@ void tst_QTextStream::performance()
             stream.readLine();
         }
 
-        elapsed[1] = stopWatch.elapsed();
-        stopWatch.restart();
+        elapsed[1] = stopWatch.restart();
 
         int nlines3 = 0;
         QFile file3(m_rfc3261FilePath);
@@ -1020,7 +1018,7 @@ void tst_QTextStream::performance()
         while (stream2.readLineInto(&line))
             ++nlines3;
 
-        elapsed[2] = stopWatch.elapsed();
+        elapsed[2] = stopWatch.restart();
 
         QCOMPARE(nlines1, nlines2);
         QCOMPARE(nlines2, nlines3);
