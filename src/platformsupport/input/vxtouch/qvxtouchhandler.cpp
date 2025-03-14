@@ -172,10 +172,37 @@ QVxTouchScreenHandler::QVxTouchScreenHandler(const QString &device, const QStrin
 {
     setObjectName("Vx Touch Handler"_L1);
 
+    // range is described as a pair of two unsigned numbers separated by comma, for example:
+    // rangex=123,543
+    // If any number is incorrect, range description is ignored.
+    auto updateRange = [](const QString& argString, int& rangeMin, int& rangeMax) {
+        QString rangeDefinition = argString.section(u'=', 1, 1);
+        auto rangeMinMax = rangeDefinition.split(u',');
+
+        if (rangeMinMax.size() != 2)
+            return false;
+
+        bool minOk = false;
+        bool maxOk = false;
+        int min = rangeMinMax[0].toUInt(&minOk);
+        int max = rangeMinMax[1].toUInt(&maxOk);
+        if (!minOk || !maxOk)
+            return false;
+
+        rangeMin = min;
+        rangeMax = max;
+        return true;
+    };
+
     const QStringList args = spec.split(u':');
+
+    d = new QVxTouchScreenData(this, args);
+
     int rotationAngle = 0;
     bool invertx = false;
     bool inverty = false;
+    bool rangeXOverride = false;
+    bool rangeYOverride = false;
     for (int i = 0; i < args.size(); ++i) {
         if (args.at(i).startsWith("rotate"_L1)) {
             QString rotateArg = args.at(i).section(u'=', 1, 1);
@@ -196,6 +223,10 @@ QVxTouchScreenHandler::QVxTouchScreenHandler(const QString &device, const QStrin
             invertx = true;
         } else if (args.at(i) == "inverty"_L1) {
             inverty = true;
+        } else if (args.at(i).startsWith("rangex"_L1)) {
+            rangeXOverride = updateRange(args.at(i), d->hw_range_x_min, d->hw_range_x_max);
+        } else if (args.at(i).startsWith("rangey"_L1)) {
+            rangeYOverride = updateRange(args.at(i), d->hw_range_y_min, d->hw_range_y_max);
         }
     }
 
@@ -210,8 +241,6 @@ QVxTouchScreenHandler::QVxTouchScreenHandler(const QString &device, const QStrin
         qErrnoWarning("vxtouch: Cannot open input device %ls", qUtf16Printable(device));
         return;
     }
-
-    d = new QVxTouchScreenData(this, args);
 
     UINT32  devCap = 0;
 
@@ -239,7 +268,7 @@ QVxTouchScreenHandler::QVxTouchScreenHandler(const QString &device, const QStrin
     axisVal[0].axisIndex = 0;
     axisVal[1].axisIndex = 1;
 
-    if (ioctl(m_fd, EV_DEV_IO_GET_AXIS_VAL, (char *)&axisVal[0]) != ERROR) {
+    if (!rangeXOverride && ioctl(m_fd, EV_DEV_IO_GET_AXIS_VAL, (char *)&axisVal[0]) != ERROR) {
         qCDebug(qLcVxTouch, "vxtouch: %s: min X: %d max X: %d", qPrintable(device),
                 axisVal[0].minVal, axisVal[0].maxVal);
         d->hw_range_x_min = axisVal[0].minVal;
@@ -247,7 +276,7 @@ QVxTouchScreenHandler::QVxTouchScreenHandler(const QString &device, const QStrin
         has_x_range = true;
     }
 
-    if (ioctl(m_fd, EV_DEV_IO_GET_AXIS_VAL, (char *)&axisVal[1]) != ERROR) {
+    if (!rangeXOverride && ioctl(m_fd, EV_DEV_IO_GET_AXIS_VAL, (char *)&axisVal[1]) != ERROR) {
         qCDebug(qLcVxTouch, "vxtouch: %s: min Y: %d max Y: %d", qPrintable(device),
                 axisVal[1].minVal, axisVal[1].maxVal);
         d->hw_range_y_min = axisVal[1].minVal;
@@ -260,11 +289,11 @@ QVxTouchScreenHandler::QVxTouchScreenHandler(const QString &device, const QStrin
 
     // Fix up the coordinate ranges for am335x in case the kernel driver does not have them fixed.
     if (d->hw_name == "ti-tsc"_L1) {
-        if (d->hw_range_x_min == 0 && d->hw_range_x_max == 4095) {
+        if (!rangeXOverride && d->hw_range_x_min == 0 && d->hw_range_x_max == 4095) {
             d->hw_range_x_min = 165;
             d->hw_range_x_max = 4016;
         }
-        if (d->hw_range_y_min == 0 && d->hw_range_y_max == 4095) {
+        if (!rangeYOverride && d->hw_range_y_min == 0 && d->hw_range_y_max == 4095) {
             d->hw_range_y_min = 220;
             d->hw_range_y_max = 3907;
         }
