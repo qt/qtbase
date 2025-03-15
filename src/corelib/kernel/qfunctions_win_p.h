@@ -42,6 +42,8 @@ private:
     DWORD m_threadId{ GetCurrentThreadId() };
 };
 
+Q_CORE_EXPORT void qt_win_ensureComInitializedOnThisThread();
+
 Q_CORE_EXPORT bool qt_win_hasPackageIdentity();
 
 QT_END_NAMESPACE
