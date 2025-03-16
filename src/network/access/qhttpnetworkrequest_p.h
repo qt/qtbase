@@ -117,6 +117,8 @@ public:
     QString peerVerifyName() const;
     void setPeerVerifyName(const QString &peerName);
 
+    bool methodIsIdempotent() const;
+
 private:
     QSharedDataPointer<QHttpNetworkRequestPrivate> d;
     friend class QHttpNetworkRequestPrivate;

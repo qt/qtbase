@@ -529,6 +529,9 @@ private Q_SLOTS:
     void qtbug68821proxyError_data();
     void qtbug68821proxyError();
 
+    void resendRequest_data();
+    void resendRequest();
+
     // NOTE: This test must be last!
     void parentingRepliesToTheApp();
 private:
@@ -607,6 +610,7 @@ public:
     QByteArray receivedData;
     QSemaphore ready;
     bool doClose;
+    bool earlyClose = false; // close connection after request has been received
     bool doSsl;
     bool ipv6;
     bool multiple;
@@ -727,6 +731,9 @@ private slots:
         qDebug() << "slotError" << err << currentClient->errorString();
     }
 
+signals:
+    void requestReceived() const;
+
 public slots:
 
     void readyReadSlot()
@@ -750,10 +757,16 @@ public slots:
             if (hasContent && contentRead < contentLength)
                 return;
 
+            emit requestReceived();
+
             // multiple requests incoming. remove the bytes of the current one
             if (multiple)
                 receivedData.remove(0, endOfHeader);
 
+            if (earlyClose) {
+                client->disconnectFromHost();
+                return;
+            }
             reply();
         }
     }
@@ -10135,6 +10148,56 @@ void tst_QNetworkReply::qtbug68821proxyError()
     QFETCH(QNetworkReply::NetworkError, error);
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.at(0).at(0), error);
+}
+
+void tst_QNetworkReply::resendRequest_data(){
+    QTest::addColumn<QString>("method");
+    QTest::addColumn<bool>("shouldResend");
+
+    for (auto &method : { "get", "head", "put" })
+        QTest::addRow("%s", method) << method << true;
+    QTest::addRow("post") << "post" << false;
+    QTest::addRow("mycustom") << "mycustom" << false;
+
+}
+
+void tst_QNetworkReply::resendRequest()
+{
+    QFETCH(const QString, method);
+    QFETCH(const bool, shouldResend);
+
+    MiniHttpServer server("");
+    server.earlyClose = true;
+
+    QSignalSpy requestReceived(&server, &MiniHttpServer::requestReceived);
+
+    QUrl url("http://127.0.0.1");
+    url.setPort(server.serverPort());
+    const QByteArray data(4096, 'a');
+    QNetworkReplyPtr reply([&]() {
+        QNetworkRequest req(url);
+        if (method == "get")
+            return manager.get(req);
+        else if (method == "head")
+            return manager.head(req);
+        else if (method == "put")
+            return manager.put(req, data);
+        else
+            return manager.sendCustomRequest(req, method.toUtf8(), data);
+    }());
+
+    // We send one request and will get no response from the server:
+    QVERIFY(requestReceived.wait());
+    requestReceived.clear();
+    // Then, for idempotent requests, we send the request again. For
+    // non-idempotent requests we error out and don't try to resend.
+    QCOMPARE(requestReceived.wait(2000), shouldResend);
+    if (!shouldResend) {
+        QCOMPARE(reply->error(), QNetworkReply::RemoteHostClosedError);
+    } else {
+        // No error yet, still can resend another
+        QCOMPARE(reply->error(), QNetworkReply::NoError);
+    }
 }
 
 // NOTE: This test must be last testcase in tst_qnetworkreply!
