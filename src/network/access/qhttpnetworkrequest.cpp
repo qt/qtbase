@@ -394,5 +394,13 @@ void QHttpNetworkRequest::setFullLocalServerName(const QString &fullServerName)
     d->fullLocalServerName = fullServerName;
 }
 
+bool QHttpNetworkRequest::methodIsIdempotent() const
+{
+    using Op = Operation;
+    constexpr auto knownSafe = std::array{ Op::Get, Op::Head, Op::Put, Op::Trace, Op::Options };
+    return std::any_of(knownSafe.begin(), knownSafe.end(),
+                       [currentOp = d->operation](auto op) { return op == currentOp; });
+}
+
 QT_END_NAMESPACE
 
