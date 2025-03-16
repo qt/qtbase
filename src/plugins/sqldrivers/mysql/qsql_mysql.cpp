@@ -1313,6 +1313,8 @@ bool QMYSQLDriver::open(const QString &db,
         {"MYSQL_OPT_LOCAL_INFILE"_L1,    MYSQL_OPT_LOCAL_INFILE,    setOptionInt},
         {"MYSQL_OPT_PROTOCOL"_L1,        MYSQL_OPT_PROTOCOL,        setOptionProtocol},
         {"MYSQL_SHARED_MEMORY_BASE_NAME"_L1, MYSQL_SHARED_MEMORY_BASE_NAME, setOptionString},
+        {"MYSQL_OPT_SSL_ENFORCE"_L1,     MYSQL_OPT_SSL_ENFORCE,     setOptionBool},
+        {"MYSQL_OPT_SSL_VERIFY_SERVER_CERT"_L1, MYSQL_OPT_SSL_VERIFY_SERVER_CERT, setOptionBool},
     };
     auto trySetOption = [&](const QStringView &key, const QStringView &value) -> bool {
       for (const mysqloptions &opt : options) {
