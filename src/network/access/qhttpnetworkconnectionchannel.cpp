@@ -271,7 +271,7 @@ void QHttpNetworkConnectionChannel::_q_readyRead()
 void QHttpNetworkConnectionChannel::handleUnexpectedEOF()
 {
     Q_ASSERT(reply);
-    if (reconnectAttempts <= 0) {
+    if (reconnectAttempts <= 0 || !request.methodIsIdempotent()) {
         // too many errors reading/receiving/parsing the status, close the socket and emit error
         requeueCurrentlyPipelinedRequests();
         close();

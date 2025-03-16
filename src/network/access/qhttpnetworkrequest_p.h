@@ -120,6 +120,8 @@ public:
     QString fullLocalServerName() const;
     void setFullLocalServerName(const QString &fullServerName);
 
+    bool methodIsIdempotent() const;
+
 private:
     QSharedDataPointer<QHttpNetworkRequestPrivate> d;
     friend class QHttpNetworkRequestPrivate;
