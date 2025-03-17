@@ -3155,7 +3155,7 @@ void tst_QLocale::debugOutput()
         const auto params = [](const QLocale &loc) {
             return (QLocale::languageToString(loc.language())
                     + u", " + QLocale::scriptToString(loc.script())
-                    + u", " + QLocale::territoryToString(loc.territory())).toLatin1();
+                    + u", " + QLocale::territoryToString(loc.territory())).toUtf8();
         };
         const QLocale sys = QLocale::system();
         QTest::ignoreMessage(QtMsgType::QtWarningMsg,
