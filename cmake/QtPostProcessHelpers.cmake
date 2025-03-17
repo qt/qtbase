@@ -566,7 +566,15 @@ function(qt_create_hostinfo_package)
         INSTALL_DESTINATION "${install_destination}"
         NO_SET_AND_CHECK_MACRO
         NO_CHECK_REQUIRED_COMPONENTS_MACRO)
-    qt_install(FILES "${config_file_path}" DESTINATION "${install_destination}")
+
+    set(version_file "${QT_CONFIG_BUILD_DIR}/${package}/${package}ConfigVersion.cmake")
+    write_basic_package_version_file(
+        "${version_file}"
+        VERSION ${PROJECT_VERSION}
+        COMPATIBILITY AnyNewerVersion
+        ARCH_INDEPENDENT
+    )
+    qt_install(FILES "${config_file_path}" "${version_file}" DESTINATION "${install_destination}")
 endfunction()
 
 function(qt_generate_build_internals_extra_cmake_code)
