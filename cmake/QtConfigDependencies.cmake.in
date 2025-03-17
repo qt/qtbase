@@ -17,7 +17,8 @@ _qt_internal_setup_qt_host_path(
     "${__qt_platform_requires_host_info_package}"
     "${__qt_platform_initial_qt_host_path}"
     "${__qt_platform_initial_qt_host_path_cmake_dir}")
-_qt_internal_find_host_info_package(${__qt_platform_requires_host_info_package})
+_qt_internal_find_host_info_package(${__qt_platform_requires_host_info_package}
+    @INSTALL_CMAKE_NAMESPACE@)
 
 # note: _third_party_deps example: "ICU\\;FALSE\\;1.0\\;i18n uc data;ZLIB\\;FALSE\\;\\;"
 set(__qt_third_party_deps "@third_party_deps@")
