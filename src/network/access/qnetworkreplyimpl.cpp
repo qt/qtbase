@@ -391,10 +391,8 @@ void QNetworkReplyImplPrivate::emitUploadProgress(qint64 bytesSent, qint64 bytes
             if (bytesSent != bytesTotal && uploadProgressSignalChoke.elapsed() < progressSignalInterval) {
                 return;
             }
-            uploadProgressSignalChoke.restart();
-        } else {
-            uploadProgressSignalChoke.start();
         }
+        uploadProgressSignalChoke.start();
     }
 
     pauseNotificationHandling();
