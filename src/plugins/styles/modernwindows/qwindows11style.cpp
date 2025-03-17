@@ -1360,6 +1360,7 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                 int indicatorSize = proxy()->pixelMetric(PM_MenuButtonIndicator, btn, widget);
                 QLineF menuSplitter;
                 QRectF indicatorRect;
+                painter->save();
                 painter->setFont(assetFont);
 
                 if (btn->direction == Qt::LeftToRight) {
@@ -1376,6 +1377,7 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                 painter->drawText(indicatorRect, QStringLiteral(u"\uE70D"), Qt::AlignVCenter | Qt::AlignHCenter);
                 painter->setPen(QPen(WINUI3Colors[colorSchemeIndex][controlStrokePrimary]));
                 painter->drawLine(menuSplitter);
+                painter->restore();
             }
             if (!btn->icon.isNull()) {
                 //Center both icon and text
