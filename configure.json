@@ -367,7 +367,7 @@
             }
         },
         "cxx2a": {
-            "label": "C++2a support",
+            "label": "C++20 support",
             "type": "compile",
             "test": {
                 "head": [
