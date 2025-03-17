@@ -320,7 +320,7 @@ namespace QTest {
 
 void QTestLog::enterTestFunction(const char* function)
 {
-    elapsedFunctionTime.restart();
+    elapsedFunctionTime.start();
     if (printAvailableTags)
         return;
 
