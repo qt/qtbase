@@ -1269,13 +1269,15 @@ Qt::DropActions QFileSystemModel::supportedDropActions() const
 */
 QHash<int, QByteArray> QFileSystemModel::roleNames() const
 {
-    auto ret = QAbstractItemModel::roleNames();
-    ret.insert(QFileSystemModel::FileIconRole,
-               QByteArrayLiteral("fileIcon")); // == Qt::decoration
-    ret.insert(QFileSystemModel::FilePathRole, QByteArrayLiteral("filePath"));
-    ret.insert(QFileSystemModel::FileNameRole, QByteArrayLiteral("fileName"));
-    ret.insert(QFileSystemModel::FilePermissions, QByteArrayLiteral("filePermissions"));
-    ret.insert(QFileSystemModel::FileInfoRole, QByteArrayLiteral("fileInfo"));
+    static auto ret = [] {
+        auto ret = QAbstractItemModelPrivate::defaultRoleNames();
+        ret.insert(QFileSystemModel::FileIconRole, "fileIcon"_ba); // == Qt::decoration
+        ret.insert(QFileSystemModel::FilePathRole, "filePath"_ba);
+        ret.insert(QFileSystemModel::FileNameRole, "fileName"_ba);
+        ret.insert(QFileSystemModel::FilePermissions, "filePermissions"_ba);
+        ret.insert(QFileSystemModel::FileInfoRole, "fileInfo"_ba);
+        return ret;
+    }();
     return ret;
 }
 

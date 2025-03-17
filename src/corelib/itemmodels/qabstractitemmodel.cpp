@@ -2655,6 +2655,8 @@ QSize QAbstractItemModel::span(const QModelIndex &) const
 */
 QHash<int,QByteArray> QAbstractItemModel::roleNames() const
 {
+    // if the return value ever becomes dependent on *this, also change the following overrides:
+    // - QFileSystemModel
     return QAbstractItemModelPrivate::defaultRoleNames();
 }
 
