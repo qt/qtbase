@@ -501,21 +501,21 @@ void tst_QDoubleValidator::fixup_data()
 
     QTest::newRow("en scientific no digit grouping")
             << "en" << QDoubleValidator::ScientificNotation << -1 << "-0.98765e2"
-            << "-9.8765E+01";
+            << "-9.8765e+01";
     QTest::newRow("en scientific with digit grouping")
             << "en" << QDoubleValidator::ScientificNotation << -1 << "1,234.98765E-4"
             << "1.23498765E-01";
     QTest::newRow("en scientific with invalid digit grouping")
             << "en" << QDoubleValidator::ScientificNotation << -1 << "-12,34.98765e2"
-            << "-1.23498765E+05";
+            << "-1.23498765e+05";
     QTest::newRow("en scientific with invalid group size")
-            << "en" << QDoubleValidator::ScientificNotation << 2 << "12,34.98765e2"
+            << "en" << QDoubleValidator::ScientificNotation << 2 << "12,34.98765E2"
             << "1.23E+05";
     QTest::newRow("en scientific no fractional part")
             << "en" << QDoubleValidator::ScientificNotation << -1 << "12,34e2"
-            << "1.234E+05";
+            << "1.234e+05";
     QTest::newRow("en scientific negative no fractional part")
-            << "en" << QDoubleValidator::ScientificNotation << -1 << "-12,34e2"
+            << "en" << QDoubleValidator::ScientificNotation << -1 << "-12,34E2"
             << "-1.234E+05";
     QTest::newRow("en scientific no fractional and exponent")
             << "en" << QDoubleValidator::ScientificNotation << -1 << "1,234"
@@ -543,21 +543,21 @@ void tst_QDoubleValidator::fixup_data()
 
     QTest::newRow("de scientific no digit grouping")
             << "de" << QDoubleValidator::ScientificNotation << -1 << "0,98765e2"
-            << "9,8765E+01";
+            << "9,8765e+01";
     QTest::newRow("de scientific with digit grouping")
             << "de" << QDoubleValidator::ScientificNotation << -1 << "-1.234,98765E-4"
             << "-1,23498765E-01";
     QTest::newRow("de scientific with invalid digit grouping")
             << "de" << QDoubleValidator::ScientificNotation << -1 << "12.34,98765e2"
-            << "1,23498765E+05";
+            << "1,23498765e+05";
     QTest::newRow("de scientific with invalid group size")
-            << "de" << QDoubleValidator::ScientificNotation << 2 << "-12.34,98765e2"
+            << "de" << QDoubleValidator::ScientificNotation << 2 << "-12.34,98765E2"
             << "-1,23E+05";
     QTest::newRow("de scientific no fractional part")
             << "de" << QDoubleValidator::ScientificNotation << -1 << "1.234e2"
-            << "1,234E+05";
+            << "1,234e+05";
     QTest::newRow("de scientific negative no fractional part")
-            << "de" << QDoubleValidator::ScientificNotation << -1 << "-1.234e2"
+            << "de" << QDoubleValidator::ScientificNotation << -1 << "-1.234E2"
             << "-1,234E+05";
     QTest::newRow("de scientific no fractional and exponent")
             << "de" << QDoubleValidator::ScientificNotation << -1 << "12.34"
@@ -600,19 +600,19 @@ void tst_QDoubleValidator::fixup_data()
 
     QTest::newRow("hi scientific no digit grouping")
             << "hi" << QDoubleValidator::ScientificNotation << -1 << "-0.123e-2"
-            << "-1.23E-03";
+            << "-1.23e-03";
     QTest::newRow("hi scientific with digit grouping")
-            << "hi" << QDoubleValidator::ScientificNotation << -1 << "12,345.678e-2"
+            << "hi" << QDoubleValidator::ScientificNotation << -1 << "12,345.678E-2"
             << "1.2345678E+02";
     QTest::newRow("hi scientific with invalid digit grouping")
             << "hi" << QDoubleValidator::ScientificNotation << -1 << "-1,23,45.678e-2"
-            << "-1.2345678E+02";
+            << "-1.2345678e+02";
     QTest::newRow("hi scientific no fractional part")
-            << "hi" << QDoubleValidator::ScientificNotation << -1 << "1,23,456e2"
+            << "hi" << QDoubleValidator::ScientificNotation << -1 << "1,23,456E2"
             << "1.23456E+07";
     QTest::newRow("hi scientific negative no fractional part")
             << "hi" << QDoubleValidator::ScientificNotation << -1 << "-1,23,456e2"
-            << "-1.23456E+07";
+            << "-1.23456e+07";
     QTest::newRow("hi scientific no fractional and exponent")
             << "hi" << QDoubleValidator::ScientificNotation << -1 << "1,234,56"
             << "1.23456E+05";
