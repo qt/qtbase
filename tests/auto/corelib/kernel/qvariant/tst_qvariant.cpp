@@ -260,6 +260,9 @@ private slots:
     void toFloat_data();
     void toFloat();
 
+    void toFloat16_data();
+    void toFloat16();
+
     void toPointF_data();
     void toPointF();
 
@@ -893,6 +896,7 @@ template <typename To> static void addNumberConversions()
     addNumber(0x8000'0000UL);
     addNumber(-0x1'0000'0000LL);
     addNumber(0x1'0000'000'0000ULL);
+    addNumber(qfloat16(-3.1415927f));
     addNumber(-3.1415927f);
     addNumber(-3.1415927);
 
@@ -1145,8 +1149,10 @@ void tst_QVariant::toBool_data()
     QTest::newRow( "uint1" ) << QVariant( 123u ) << true;
     QTest::newRow( "double0" ) << QVariant( 0.0 ) << false;
     QTest::newRow( "float0" ) << QVariant( 0.0f ) << false;
+    QTest::newRow( "float16_0" ) << QVariant::fromValue( qfloat16() ) << false;
     QTest::newRow( "double1" ) << QVariant( 3.1415927 ) << true;
     QTest::newRow( "float1" ) << QVariant( 3.1415927f ) << true;
+    QTest::newRow( "float16_1" ) << QVariant::fromValue( qfloat16(3.1415927f) ) << true;
     QTest::newRow( "string0" ) << QVariant( QString("3") ) << true;
     QTest::newRow( "string1" ) << QVariant( QString("true") ) << true;
     QTest::newRow( "string2" ) << QVariant( QString("0") ) << false;
@@ -1236,6 +1242,16 @@ void tst_QVariant::toFloat_data()
 void tst_QVariant::toFloat()
 {
     checkNumberConversions(&QVariant::toFloat);
+}
+
+void tst_QVariant::toFloat16_data()
+{
+    addNumberConversions<qfloat16>();
+}
+
+void tst_QVariant::toFloat16()
+{
+    checkNumberConversions<qfloat16>(nullptr);
 }
 
 void tst_QVariant::toSChar_data()
@@ -3020,6 +3036,7 @@ void tst_QVariant::compareNumerics_data() const
     addCompareToInvalid(ulong(0));
     addCompareToInvalid(qint64(0));
     addCompareToInvalid(quint64(0));
+    addCompareToInvalid(qfloat16(0.f));
     addCompareToInvalid(0.f);
     addCompareToInvalid(0.0);
     addCompareToInvalid(QCborSimpleType{});
@@ -3060,7 +3077,7 @@ QT_WARNING_POP
         T one = T(zero + 1);
         T min = std::numeric_limits<T>::min();
         T max = std::numeric_limits<T>::max();
-        T mid = max / 2 + 1;
+        T mid = T(max / 2 + 1);
         if (min != zero)
             addList(std::array{zero, one, min, mid, max});
         else
@@ -3079,6 +3096,7 @@ QT_WARNING_POP
     addSingleType(quint32(0));
     addSingleType(qint64(0));
     addSingleType(quint64(0));
+    addSingleType(qfloat16(0.f));
     addSingleType(0.f);
     addSingleType(0.0);
     addList(std::array{ EnumTest_Enum0{}, EnumTest_Enum0_value, EnumTest_Enum0_negValue });
@@ -3138,6 +3156,22 @@ QT_WARNING_POP
     // addComparePair(LLONG_MIN, LLONG_MAX); // already added by addSingleType()
 
     // floating point
+    addComparePair(qfloat16(0.f), 0);
+    addComparePair(qfloat16(0.f), 0U);
+    addComparePair(qfloat16(0.f), Q_INT64_C(0));
+    addComparePair(qfloat16(0.f), Q_UINT64_C(0));
+    addComparePair(qfloat16(0.f), 0.f);
+    addComparePair(qfloat16(0.f), 1.f);
+    addComparePair(qfloat16(0.f), 0.);
+    addComparePair(qfloat16(0.f), 1.);
+    addComparePair(qfloat16(1 << 11), 1 << 11);
+    addComparePair(qfloat16(1 << 11) - 1, (1 << 11) - 1);
+    addComparePair(-qfloat16(1 << 11), 1 << 11);
+    addComparePair(-qfloat16(1 << 11) + 1, -(1 << 11) + 1);
+    addComparePair(std::numeric_limits<qfloat16>::infinity(), qInf());
+    addComparePair(std::numeric_limits<qfloat16>::infinity(), -qInf());
+    addComparePair(std::numeric_limits<qfloat16>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN());
+
     addComparePair(0.f, 0);
     addComparePair(0.f, 0U);
     addComparePair(0.f, Q_INT64_C(0));
@@ -3150,7 +3184,7 @@ QT_WARNING_POP
     addComparePair(-float(1 << 24) + 1, -(1 << 24) + 1);
     addComparePair(HUGE_VALF, qInf());
     addComparePair(HUGE_VALF, -qInf());
-    addComparePair(qQNaN(), std::numeric_limits<float>::quiet_NaN());
+    addComparePair(std::numeric_limits<float>::quiet_NaN(), qQNaN());
     if (sizeof(qreal) == sizeof(double)) {
         addComparePair(std::numeric_limits<float>::min(), std::numeric_limits<double>::min());
         addComparePair(std::numeric_limits<float>::min(), std::numeric_limits<double>::max());
