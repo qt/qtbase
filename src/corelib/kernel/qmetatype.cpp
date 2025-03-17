@@ -1007,6 +1007,7 @@ static constexpr struct : QMetaTypeModuleHelper
         using LongLong = qlonglong;
         using ULong = unsigned long;
         using ULongLong = qulonglong;
+        using Float16 = qfloat16;
         using Float = float;
         using Double = double;
         using Bool = bool;
@@ -1031,7 +1032,7 @@ static constexpr struct : QMetaTypeModuleHelper
             if constexpr(std::is_integral_v<To>) \
                 result = source.toInteger(); \
             else \
-                result = source.toDouble(); \
+                result = To(source.toDouble()); \
         } \
         return true; \
     ); \
@@ -1046,7 +1047,7 @@ static constexpr struct : QMetaTypeModuleHelper
             if constexpr(std::is_integral_v<To>) \
                 result = source.toInteger(); \
             else \
-                result = source.toDouble(); \
+                result = To(source.toDouble()); \
         } \
         return true; \
     )
@@ -1067,6 +1068,7 @@ static constexpr struct : QMetaTypeModuleHelper
     QMETATYPE_CONVERTER_ASSIGN(To, ULong); \
     QMETATYPE_CONVERTER_ASSIGN(To, LongLong); \
     QMETATYPE_CONVERTER_ASSIGN(To, ULongLong); \
+    QMETATYPE_CONVERTER(To, Float16, result = qRound64(source); return true;); \
     QMETATYPE_CONVERTER(To, Float, result = qRound64(source); return true;); \
     QMETATYPE_CONVERTER(To, Double, result = qRound64(source); return true;); \
     QMETATYPE_CONVERTER(To, QChar, result = source.unicode(); return true;); \
@@ -1105,16 +1107,17 @@ static constexpr struct : QMetaTypeModuleHelper
     QMETATYPE_CONVERTER_ASSIGN(To, ULong); \
     QMETATYPE_CONVERTER_ASSIGN(To, LongLong); \
     QMETATYPE_CONVERTER_ASSIGN(To, ULongLong); \
+    QMETATYPE_CONVERTER_ASSIGN(To, Float16); \
     QMETATYPE_CONVERTER_ASSIGN(To, Float); \
     QMETATYPE_CONVERTER_ASSIGN(To, Double); \
     QMETATYPE_CONVERTER(To, QString, \
         bool ok = false; \
-        result = source.toDouble(&ok); \
+        result = To(source.toDouble(&ok)); \
         return ok; \
     ); \
     QMETATYPE_CONVERTER(To, QByteArray, \
         bool ok = false; \
-        result = source.toDouble(&ok); \
+        result = To(source.toDouble(&ok)); \
         return ok; \
     ); \
     CONVERT_CBOR_AND_JSON(To)
@@ -1134,6 +1137,7 @@ static constexpr struct : QMetaTypeModuleHelper
         INTEGRAL_CONVERTER(ULong);
         INTEGRAL_CONVERTER(LongLong);
         INTEGRAL_CONVERTER(ULongLong);
+        FLOAT_CONVERTER(Float16);
         FLOAT_CONVERTER(Float);
         FLOAT_CONVERTER(Double);
 
@@ -1185,6 +1189,10 @@ static constexpr struct : QMetaTypeModuleHelper
         QMETATYPE_CONVERTER_ASSIGN_NUMBER(QString, ULong);
         QMETATYPE_CONVERTER_ASSIGN_NUMBER(QString, UInt);
         QMETATYPE_CONVERTER_ASSIGN_NUMBER(QString, ULongLong);
+        QMETATYPE_CONVERTER(QString, Float16,
+            result = QString::number(source, 'g', QLocale::FloatingPointShortest);
+            return true;
+        );
         QMETATYPE_CONVERTER(QString, Float,
             result = QString::number(source, 'g', QLocale::FloatingPointShortest);
             return true;
@@ -1253,6 +1261,10 @@ static constexpr struct : QMetaTypeModuleHelper
         QMETATYPE_CONVERTER_ASSIGN_NUMBER(QByteArray, ULong);
         QMETATYPE_CONVERTER_ASSIGN_NUMBER(QByteArray, UInt);
         QMETATYPE_CONVERTER_ASSIGN_NUMBER(QByteArray, ULongLong);
+        QMETATYPE_CONVERTER(QByteArray, Float16,
+            result = QByteArray::number(source, 'g', QLocale::FloatingPointShortest);
+            return true;
+        );
         QMETATYPE_CONVERTER(QByteArray, Float,
             result = QByteArray::number(source, 'g', QLocale::FloatingPointShortest);
             return true;
@@ -1396,6 +1408,7 @@ static constexpr struct : QMetaTypeModuleHelper
         QMETATYPE_CONVERTER_ASSIGN(QCborValue, Short);
         QMETATYPE_CONVERTER_ASSIGN_DOUBLE(QCborValue, Double);
         QMETATYPE_CONVERTER_ASSIGN_DOUBLE(QCborValue, Float);
+        QMETATYPE_CONVERTER_ASSIGN_DOUBLE(QCborValue, Float16);
         QMETATYPE_CONVERTER(QCborValue, QStringList,
             result = QCborArray::fromStringList(source);
             return true;
@@ -1582,6 +1595,7 @@ static constexpr struct : QMetaTypeModuleHelper
         QMETATYPE_CONVERTER_ASSIGN_DOUBLE(QJsonValue, UInt);
         QMETATYPE_CONVERTER_ASSIGN_DOUBLE(QJsonValue, Double);
         QMETATYPE_CONVERTER_ASSIGN_DOUBLE(QJsonValue, Float);
+        QMETATYPE_CONVERTER_ASSIGN_DOUBLE(QJsonValue, Float16);
         QMETATYPE_CONVERTER_ASSIGN_DOUBLE(QJsonValue, ULong);
         QMETATYPE_CONVERTER_ASSIGN_DOUBLE(QJsonValue, Long);
         QMETATYPE_CONVERTER_ASSIGN_DOUBLE(QJsonValue, LongLong);

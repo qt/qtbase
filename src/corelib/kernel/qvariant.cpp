@@ -2211,6 +2211,7 @@ static bool qIsNumericType(uint tp)
             Q_UINT64_C(1) << QMetaType::QString |
             Q_UINT64_C(1) << QMetaType::Bool |
             Q_UINT64_C(1) << QMetaType::Double |
+            Q_UINT64_C(1) << QMetaType::Float16 |
             Q_UINT64_C(1) << QMetaType::Float |
             Q_UINT64_C(1) << QMetaType::Char |
             Q_UINT64_C(1) << QMetaType::Char16 |
