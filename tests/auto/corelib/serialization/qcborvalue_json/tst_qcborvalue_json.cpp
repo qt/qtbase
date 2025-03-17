@@ -24,7 +24,7 @@ private slots:
     void taggedByteArrayToJson_data();
     void taggedByteArrayToJson();
 
-    void fromVariant_data() { toVariant_data(); }
+    void fromVariant_data();
     void fromVariant();
     void fromJson_data();
     void fromJson();
@@ -180,6 +180,31 @@ void tst_QCborValue_Json::taggedByteArrayToJson()
 
     QCOMPARE(v.toJsonValue(), json);
     QCOMPARE(QCborArray({v}).toJsonArray(), QJsonArray({json}));
+}
+
+void tst_QCborValue_Json::fromVariant_data()
+{
+    toVariant_data();
+
+    auto addIntegral = [](auto number) {
+        QCborValue cv = qint64(number);
+        QJsonValue jv = qint64(number);
+        QVariant vv = QVariant::fromValue(number);
+        QTest::addRow("%s:%lld", vv.typeName(), qlonglong(number)) << cv << vv << jv;
+    };
+
+    // exercise different QVariant numeric types
+    addIntegral(short(-1));
+    addIntegral(ushort(1));
+    // int already tested
+    addIntegral(65536U);
+    addIntegral(-0x7fff'ffffL);
+    addIntegral(0xffff'ffffUL);
+    addIntegral(-0x1'0000'0000LL);
+    addIntegral(0x1000'0000'0000ULL);
+
+    QTest::addRow("float:1.875") << QCborValue(1.875) << QVariant::fromValue(1.875f) << QJsonValue(1.875);
+    QTest::addRow("qfloat16:-0.5") << QCborValue(-0.5) << QVariant::fromValue(qfloat16(-0.5f)) << QJsonValue(-0.5);
 }
 
 void tst_QCborValue_Json::fromVariant()
