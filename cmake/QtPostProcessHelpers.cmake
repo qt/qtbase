@@ -432,7 +432,7 @@ endif()")
         # to the target CMAKE_INSTALL_DIR, if at all possible to do so in a reliable way.
         get_filename_component(qt_host_path_absolute "${QT_HOST_PATH}" ABSOLUTE)
         get_filename_component(qt_host_path_cmake_dir_absolute
-            "${Qt${PROJECT_VERSION_MAJOR}HostInfo_DIR}/.." ABSOLUTE)
+            "${${INSTALL_CMAKE_NAMESPACE}HostInfo_DIR}/.." ABSOLUTE)
     endif()
 
     if(third_party_deps OR platform_requires_host_info_package)
