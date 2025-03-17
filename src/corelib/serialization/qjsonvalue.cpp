@@ -484,12 +484,15 @@ QJsonValue QJsonValue::fromVariant(const QVariant &variant)
     case QMetaType::UShort:
     case QMetaType::Int:
     case QMetaType::UInt:
+    case QMetaType::Long:
     case QMetaType::LongLong:
         return QJsonValue(variant.toLongLong());
+    case QMetaType::ULong:
     case QMetaType::ULongLong:
         if (variant.toULongLong() <= static_cast<uint64_t>(std::numeric_limits<qint64>::max()))
             return QJsonValue(variant.toLongLong());
         Q_FALLTHROUGH();
+    case QMetaType::Float16:
     case QMetaType::Float:
     case QMetaType::Double: {
         double v = variant.toDouble();

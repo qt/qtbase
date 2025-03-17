@@ -718,12 +718,15 @@ QCborValue QCborValue::fromVariant(const QVariant &variant)
     case QMetaType::UShort:
     case QMetaType::Int:
     case QMetaType::LongLong:
+    case QMetaType::Long:
     case QMetaType::UInt:
         return variant.toLongLong();
+    case QMetaType::ULong:
     case QMetaType::ULongLong:
         if (variant.toULongLong() <= static_cast<uint64_t>(std::numeric_limits<qint64>::max()))
             return variant.toLongLong();
         Q_FALLTHROUGH();
+    case QMetaType::Float16:
     case QMetaType::Float:
     case QMetaType::Double:
         return variant.toDouble();
