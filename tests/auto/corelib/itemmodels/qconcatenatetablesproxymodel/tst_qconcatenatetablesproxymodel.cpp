@@ -980,6 +980,13 @@ void tst_QConcatenateTablesProxyModel::shouldMergeRoleNames()
     QCOMPARE(roleNames[Qt::DisplayRole], "display");
     QCOMPARE(roleNames[Qt::UserRole], "user");
     QCOMPARE(roleNames[Qt::UserRole + 1], "user+1");
+
+    // When removing a source model
+    pm.removeSourceModel(&mod2);
+
+    // Then the role names should be updated
+    const auto roleNamesAfterMod2Removal = pm.roleNames();
+    QVERIFY(!roleNamesAfterMod2Removal.contains(Qt::UserRole + 1));
 }
 
 QTEST_GUILESS_MAIN(tst_QConcatenateTablesProxyModel)
