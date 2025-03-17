@@ -1651,7 +1651,15 @@ QString QFileSystemEngine::tempPath()
 {
     QString ret;
     wchar_t tempPath[MAX_PATH];
-    const DWORD len = GetTempPath(MAX_PATH, tempPath);
+    using GetTempPathPrototype = DWORD (WINAPI *)(DWORD, LPWSTR);
+    // We try to resolve GetTempPath2 and use that, otherwise fall back to GetTempPath:
+    static GetTempPathPrototype getTempPathW = []() {
+        const HMODULE kernel32 = GetModuleHandleW(L"kernel32.dll");
+        if (auto *func = QFunctionPointer(GetProcAddress(kernel32, "GetTempPath2W")))
+            return GetTempPathPrototype(func);
+        return GetTempPath;
+    }();
+    const DWORD len = getTempPathW(MAX_PATH, tempPath);
     if (len) { // GetTempPath() can return short names, expand.
         wchar_t longTempPath[MAX_PATH];
         const DWORD longLen = GetLongPathName(tempPath, longTempPath, MAX_PATH);
