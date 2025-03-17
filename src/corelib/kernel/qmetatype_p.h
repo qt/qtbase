@@ -22,6 +22,8 @@ QT_BEGIN_NAMESPACE
 
 #define QMETATYPE_CONVERTER(To, From, assign_and_return) \
     case makePair(QMetaType::To, QMetaType::From): \
+        if constexpr (QMetaType::To == QMetaType::From) \
+            Q_UNREACHABLE();  /* can never get here */ \
         if (onlyCheck) \
             return true; \
         { \
