@@ -1146,7 +1146,7 @@ void QNetworkReplyHttpImplPrivate::replyDownloadData(QByteArray d)
     if (downloadProgressSignalChoke.isValid() &&
         downloadProgressSignalChoke.elapsed() >= progressSignalInterval
         && (!decompressHelper.isValid() || decompressHelper.isCountingBytes())) {
-        downloadProgressSignalChoke.restart();
+        downloadProgressSignalChoke.start();
         emit q->downloadProgress(bytesDownloaded,
                              totalSize.isNull() ? Q_INT64_C(-1) : totalSize.toLongLong());
     }
@@ -1481,7 +1481,7 @@ void QNetworkReplyHttpImplPrivate::replyDownloadProgressSlot(qint64 bytesReceive
         emit q->readyRead();
     if (downloadProgressSignalChoke.isValid() &&
         downloadProgressSignalChoke.elapsed() >= progressSignalInterval) {
-        downloadProgressSignalChoke.restart();
+        downloadProgressSignalChoke.start();
         emit q->downloadProgress(bytesDownloaded, bytesTotal);
     }
 }
@@ -1902,7 +1902,7 @@ void QNetworkReplyHttpImplPrivate::_q_cacheLoadReadyRead()
 
         if (downloadProgressSignalChoke.isValid() &&
             downloadProgressSignalChoke.elapsed() >= progressSignalInterval) {
-            downloadProgressSignalChoke.restart();
+            downloadProgressSignalChoke.start();
             emit q->downloadProgress(bytesDownloaded,
                                      totalSize.isNull() ? Q_INT64_C(-1) : totalSize.toLongLong());
         }
@@ -2049,10 +2049,8 @@ void QNetworkReplyHttpImplPrivate::emitReplyUploadProgress(qint64 bytesSent, qin
             if (bytesSent != bytesTotal && uploadProgressSignalChoke.elapsed() < progressSignalInterval) {
                 return;
             }
-            uploadProgressSignalChoke.restart();
-        } else {
-            uploadProgressSignalChoke.start();
         }
+        uploadProgressSignalChoke.start();
     }
     emit q->uploadProgress(bytesSent, bytesTotal);
 }
