@@ -660,7 +660,7 @@ function(qt_internal_add_module target)
     # thus we can't use qt_internal_extend_target()'s PUBLIC_DEFINES option.
     target_compile_definitions(${target} INTERFACE QT_${module_define_infix}_LIB)
 
-    if(NOT DEFINED arg_EXCEPTIONS)
+    if(NOT arg_EXCEPTIONS)
         qt_internal_set_exceptions_flags("${target}" "DEFAULT")
     else()
         qt_internal_set_exceptions_flags("${target}" "${arg_EXCEPTIONS}")
