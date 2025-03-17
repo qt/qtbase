@@ -193,9 +193,10 @@ bool QSqlQueryModel::canFetchMore(const QModelIndex &parent) const
 */
 QHash<int, QByteArray> QSqlQueryModel::roleNames() const
 {
-    return QHash<int, QByteArray> {
+    static const QHash<int, QByteArray> names = {
         { Qt::DisplayRole, QByteArrayLiteral("display") }
     };
+    return names;
 }
 
 /*! \internal
