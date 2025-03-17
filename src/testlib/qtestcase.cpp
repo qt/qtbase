@@ -2187,6 +2187,8 @@ void QTest::qWarn(const char *message, const char *file, int line)
 
     The example above tests that QDir::mkdir() outputs the right warning when invoked
     with an invalid file name.
+
+    \note \a message will be interpreted as UTF-8.
 */
 void QTest::ignoreMessage(QtMsgType type, const char *message)
 {
