@@ -9,6 +9,7 @@
 #include <qstringlist.h>
 #include <qhash.h>
 
+#include <qelapsedtimer.h>
 #include <qobject.h>
 #include <qregularexpression.h>
 #include <qthread.h>
