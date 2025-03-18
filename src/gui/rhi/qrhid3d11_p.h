@@ -865,7 +865,7 @@ inline bool operator!=(const QRhiD3D11::BytecodeCacheKey &a, const QRhiD3D11::By
 
 inline size_t qHash(const QRhiD3D11::BytecodeCacheKey &k, size_t seed = 0) noexcept
 {
-    return qHash(k.sourceHash, seed) ^ qHash(k.target) ^ qHash(k.entryPoint) ^ k.compileFlags;
+    return qHashMulti(seed, k.sourceHash, k.target, k.entryPoint, k.compileFlags);
 }
 
 QT_END_NAMESPACE
