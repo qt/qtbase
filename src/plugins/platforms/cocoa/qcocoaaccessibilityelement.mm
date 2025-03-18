@@ -159,8 +159,6 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
                                 qCWarning(lcAccessibilityTable)
                                         << "Table representation column count is out of sync:"
                                         << rowElement->columns.count << "!=" << tableInterface->columnCount();
-                            }
-                            if (rowElement->columns) {
                                 [rowElement->columns autorelease];
                                 rowElement->columns = nil;
                             }
