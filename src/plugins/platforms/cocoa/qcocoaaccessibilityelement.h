@@ -16,6 +16,7 @@ QT_DECLARE_NAMESPACED_OBJC_INTERFACE(QMacAccessibilityElement, NSObject <NSAcces
 - (instancetype)initWithId:(QAccessible::Id)anId role:(NSAccessibilityRole)role;
 + (instancetype)elementWithId:(QAccessible::Id)anId;
 + (instancetype)elementWithInterface:(QAccessibleInterface *)iface;
++ (void)removeElementsFromCache:(NSArray *)array;
 - (void)updateTableModel;
 - (QAccessibleInterface *)qtInterface;
 )

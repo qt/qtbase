@@ -781,18 +781,20 @@ void tst_QAccessibilityMac::treeViewTest()
     QVERIFY(window.valid);
 
     // children of window
-    AXUIElementRef treeView = [window findDirectChildByRole:kAXOutlineRole];
-    QVERIFY(treeView != nil);
 
-    TestAXObject *tv = [[TestAXObject alloc] initWithAXUIElementRef:treeView];
+    auto accessibleTreeView = [window]() -> TestAXObject * {
+        AXUIElementRef treeView = [window findDirectChildByRole:kAXOutlineRole];
+        Q_ASSERT(treeView != nil);
+        TestAXObject *tv = [[TestAXObject alloc] initWithAXUIElementRef:treeView];
+        return tv;
+    };
+
+    TestAXObject *tv = accessibleTreeView();
     QVERIFY(tv.valid);
-
-    [appObject release];
-    [window release];
 
     // here start actual treeview tests. NSAccessibilityOutline is a specialization
     // of NSAccessibilityTable, and we represent trees as tables.
-    const auto cellText = [tv](int rowIndex, int columnIndex) -> QString {
+    const auto cellText = [&tv](int rowIndex, int columnIndex) -> QString {
         NSArray *rowArray = [tv tableRows];
         Q_ASSERT(rowArray.count > uint(rowIndex));
         TestAXObject *row = [[TestAXObject alloc] initWithAXUIElementRef:(AXUIElementRef)rowArray[rowIndex]];
@@ -846,9 +848,17 @@ void tst_QAccessibilityMac::treeViewTest()
     // this should not trigger any assert
     tw->setCurrentItem(lastChild);
 
+    // cache will have been cleared, reinitialize
+    [tv release];
+    tv = accessibleTreeView();
+    QVERIFY(tv.valid);
+
     QCOMPARE(cellText(0, 0), root->text(0));
     QCOMPARE(cellText(1, 0), users->text(0));
     QCOMPARE(cellText(1, 1), users->text(1));
+
+    [appObject release];
+    [window release];
 }
 
 QTEST_MAIN(tst_QAccessibilityMac)

@@ -47,7 +47,8 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QMacAccessibilityElement);
         if (window && window->handle()) {
             auto *platformWindow = static_cast<QIOSWindow*>(window->handle());
             element = [[self alloc] initWithId:anId withAccessibilityContainer:platformWindow->view()];
-            cache->insertElement(anId, element);
+            if (cache->insertElement(anId, element))
+                [element release];
         } else {
             qWarning() << "Could not create a11y element for" << iface
                 << "with window" << window
