@@ -1077,6 +1077,19 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
     return nil;
 }
 
+// tabs
+
+- (NSArray *) accessibilityTabs {
+    QAccessibleInterface *iface = self.qtInterface;
+    if (iface && iface->role() == QAccessible::PageTabList) {
+        return QCocoaAccessible::unignoredChildren(iface, [](QAccessibleInterface *child){
+            return QCocoaAccessible::defaultUnignored(child)
+                && child->role() == QAccessible::PageTab;
+        });
+    }
+    return nil;
+}
+
 @end
 
 #endif // QT_CONFIG(accessibility)

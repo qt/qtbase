@@ -122,6 +122,7 @@ static void populateRoleMap()
     roleMap[QAccessible::Separator] = NSAccessibilitySplitterRole;
     roleMap[QAccessible::ToolBar] = NSAccessibilityToolbarRole;
     roleMap[QAccessible::PageTab] = NSAccessibilityRadioButtonRole;
+    roleMap[QAccessible::PageTabList] = NSAccessibilityTabGroupRole;
     roleMap[QAccessible::ButtonMenu] = NSAccessibilityMenuButtonRole;
     roleMap[QAccessible::ButtonDropDown] = NSAccessibilityPopUpButtonRole;
     roleMap[QAccessible::SpinBox] = NSAccessibilityIncrementorRole;
@@ -200,6 +201,8 @@ NSString *macSubrole(QAccessibleInterface *interface)
         return NSAccessibilitySearchFieldSubrole;
     if (s.passwordEdit)
         return NSAccessibilitySecureTextFieldSubrole;
+    if (interface->role() == QAccessible::PageTab)
+        return NSAccessibilityTabButtonSubrole;
     return nil;
 }
 
@@ -249,14 +252,25 @@ bool shouldBeIgnored(QAccessibleInterface *interface)
     return false;
 }
 
-NSArray<QMacAccessibilityElement *> *unignoredChildren(QAccessibleInterface *interface)
+bool defaultUnignored(QAccessibleInterface *child)
+{
+    if (child && child->isValid()) {
+        const auto state = child->state();
+        return !state.invalid && !state.invisible;
+    }
+    return false;
+}
+
+NSArray<QMacAccessibilityElement *> *unignoredChildren(QAccessibleInterface *interface,
+                                    const std::function<bool(QAccessibleInterface *child)> &pred)
 {
     int numKids = interface->childCount();
 
     NSMutableArray<QMacAccessibilityElement *> *kids = [NSMutableArray<QMacAccessibilityElement *> arrayWithCapacity:numKids];
     for (int i = 0; i < numKids; ++i) {
         QAccessibleInterface *child = interface->child(i);
-        if (!child || !child->isValid() || child->state().invalid || child->state().invisible)
+
+        if (!pred(child))
             continue;
 
         QAccessible::Id childId = QAccessible::uniqueId(child);
@@ -269,6 +283,7 @@ NSArray<QMacAccessibilityElement *> *unignoredChildren(QAccessibleInterface *int
     }
     return NSAccessibilityUnignoredChildren(kids);
 }
+
 /*
     Translates a predefined QAccessibleActionInterface action to a Mac action constant.
     Returns 0 if the Qt Action has no mac equivalent. Ownership of the NSString is

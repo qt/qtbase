@@ -66,6 +66,7 @@ QDebug operator<<(QDebug dbg, AXErrorTag err)
     bool axError;
 }
     @property (readonly) NSString *role;
+    @property (readonly) NSString *roleDescription;
     @property (readonly) NSString *title;
     @property (readonly) NSString *description;
     @property (readonly) NSString *value;
@@ -148,6 +149,21 @@ QDebug operator<<(QDebug dbg, AXErrorTag err)
                                                                     (CFArrayRef *) &arr))) {
         axError = true;
         qDebug() << "AXUIElementCopyAttributeValue(kAXColumnsAttribute) returned error = "
+                 << AXErrorTag(err) << "with reference" << reference;
+    }
+    return arr;
+}
+
+- (NSArray *)tabs
+{
+    NSArray *arr;
+    AXError err;
+
+    if (kAXErrorSuccess != (err = AXUIElementCopyAttributeValues(reference, kAXTabsAttribute,
+                                                                    0, 100, /*min, max*/
+                                                                    (CFArrayRef *) &arr))) {
+        axError = true;
+        qDebug() << "AXUIElementCopyAttributeValue(kAXTabsAttribute) returned error = "
                  << AXErrorTag(err) << "with reference" << reference;
     }
     return arr;
@@ -353,6 +369,7 @@ QDebug operator<<(QDebug dbg, AXErrorTag err)
 
 - (bool)                valid { return reference != nil; }
 - (NSString*)           role { return [self _stringAttributeValue:kAXRoleAttribute]; }
+- (NSString*)           roleDescription { return [self _stringAttributeValue:kAXRoleDescriptionAttribute]; }
 - (NSString*)           title { return [self _stringAttributeValue:kAXTitleAttribute]; }
 - (NSString*)           description { return [self _stringAttributeValue:kAXDescriptionAttribute]; }
 - (NSString*)           value { return [self _stringAttributeValue:kAXValueAttribute]; }
@@ -431,6 +448,7 @@ private Q_SLOTS:
     void checkBoxTest();
     void tableViewTest();
     void treeViewTest();
+    void tabBarTest();
 
 private:
     AccessibleTestWindow *m_window;
@@ -861,6 +879,58 @@ void tst_QAccessibilityMac::treeViewTest()
 
     [appObject release];
     [window release];
+}
+
+void tst_QAccessibilityMac::tabBarTest()
+{
+    QTabBar *tbar = new QTabBar;
+    static const unsigned int nTabs = 20;
+    for (unsigned int i = 0; i < nTabs; ++i)
+        tbar->addTab(QString::number(i));
+    tbar->setUsesScrollButtons(true);
+
+    m_window->addWidget(tbar);
+    QVERIFY(QTest::qWaitForWindowExposed(m_window));
+    QCoreApplication::processEvents();
+
+    TestAXObject *appObject = [TestAXObject getApplicationAXObject];
+    QVERIFY(appObject);
+
+    NSArray *windowList = [appObject windowList];
+    // one window
+    QVERIFY([windowList count] == 1);
+    AXUIElementRef windowRef = (AXUIElementRef)[windowList objectAtIndex:0];
+    QVERIFY(windowRef != nil);
+    TestAXObject *window = [[TestAXObject alloc] initWithAXUIElementRef:windowRef];
+    QVERIFY(window.valid);
+
+    // children of window
+    AXUIElementRef axTarBar = [window findDirectChildByRole:kAXTabGroupRole];
+    QVERIFY(axTarBar != nil);
+
+    TestAXObject *tb = [[TestAXObject alloc] initWithAXUIElementRef:axTarBar];
+    QVERIFY(tb.valid);
+
+    [appObject release];
+    [window release];
+
+    NSArray *tbChildList = [tb childList];
+    // +2 because of the scroll buttons
+    QCOMPARE([tbChildList count], nTabs + 2);
+
+    NSArray *tbTabsList = [tb tabs];
+    QCOMPARE([tbTabsList count], nTabs);
+
+    for (unsigned int i = 0; i < nTabs; ++i) {
+        AXUIElementRef axTab = (AXUIElementRef)[tbTabsList objectAtIndex:i];
+        QVERIFY(axTab != nil);
+
+        TestAXObject *tab = [[TestAXObject alloc] initWithAXUIElementRef:axTab];
+        QVERIFY(tab.valid);
+        QCOMPARE(QString::fromNSString(tab.role), QString::fromCFString(kAXRadioButtonRole));
+        QCOMPARE(QString::fromNSString(tab.title), QString::number(i));
+        QCOMPARE(QString::fromNSString(tab.roleDescription), "tab");
+    }
 }
 
 QTEST_MAIN(tst_QAccessibilityMac)
