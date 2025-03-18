@@ -31,6 +31,10 @@
 
 #undef SYSTEM_FORKFD_CAN_VFORK
 
+#ifndef HAVE_WAITID
+#  error Need waitid() API
+#endif
+
 // in forkfd.c
 static int convertForkfdWaitFlagsToWaitFlags(int ffdoptions);
 static void convertStatusToForkfdInfo(int status, struct forkfd_info *info);

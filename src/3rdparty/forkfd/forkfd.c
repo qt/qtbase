@@ -35,7 +35,7 @@
 //#define FORKFD_DISABLE_FORK_FALLBACK 1    /* disable falling back to fork() from system_forkfd() */
 
 #include <sys/types.h>
-#if defined(__OpenBSD__) || defined(__NetBSD__)
+#if defined(__OpenBSD__) || defined(__NetBSD__) || defined(__FreeBSD__)
 #  include <sys/param.h>
 #endif
 #include <sys/time.h>
@@ -75,6 +75,7 @@
 #if (defined(__FreeBSD__) && defined(__FreeBSD_version) && __FreeBSD_version >= 1300000)
 #  include <sys/eventfd.h>
 #  define HAVE_EVENTFD 1
+#  define HAVE_WAITID   1
 #endif
 #if (defined(__FreeBSD__) && defined(__FreeBSD_version) && __FreeBSD_version >= 1000032) || \
     (defined(__OpenBSD__) && OpenBSD >= 201505) || \
