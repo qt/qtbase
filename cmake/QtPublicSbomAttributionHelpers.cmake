@@ -524,6 +524,9 @@ endfunction()
 macro(_qt_internal_sbom_get_attribution_key json_key out_var out_prefix)
     cmake_parse_arguments(arg "IS_MULTI_VALUE" "" "" ${ARGN})
 
+    # Reset any leftover value that might have been set in a previous iteration.
+    set(${out_prefix}_${out_var} "" PARENT_SCOPE)
+
     string(JSON "${out_var}" ERROR_VARIABLE get_error GET "${contents}" ${indices} "${json_key}")
     if(NOT "${${out_var}}" STREQUAL "" AND NOT get_error)
         set(extracted_value "${${out_var}}")
