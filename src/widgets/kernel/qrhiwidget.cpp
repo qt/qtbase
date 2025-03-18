@@ -16,11 +16,6 @@ QT_BEGIN_NAMESPACE
     \brief The QRhiWidget class is a widget for rendering 3D graphics via an
     accelerated grapics API, such as Vulkan, Metal, or Direct 3D.
 
-    \preliminary
-
-    \note QRhiWidget is in tech preview in Qt 6.7. \b {The API is under
-    development and subject to change.}
-
     QRhiWidget provides functionality for displaying 3D content rendered
     through the \l QRhi APIs within a QWidget-based application. In many ways
     it is the portable equivalent of \l QOpenGLWidget that is not tied to a
