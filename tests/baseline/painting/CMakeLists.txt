@@ -8,7 +8,8 @@
 # Collect test data
 file(GLOB_RECURSE test_data_glob
     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    scripts/*)
+    scripts/*
+    fonts/* )
 list(APPEND test_data ${test_data_glob})
 
 if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)

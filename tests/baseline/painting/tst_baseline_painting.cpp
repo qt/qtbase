@@ -19,6 +19,8 @@
 #include <QOpenGLPaintDevice>
 #endif
 
+#include <QFontDatabase>
+
 #include <algorithm>
 
 #ifndef GL_RGB10
@@ -128,6 +130,16 @@ void tst_Lancelot::initTestCase()
         scripts.insert(fileName, QString::fromUtf8(cont).split(QLatin1Char('\n'), Qt::SkipEmptyParts));
         scriptChecksums.insert(fileName, qChecksum(cont));
     }
+
+    QString underlineTestFont1 = QFINDTESTDATA("fonts/QtUnderlineTest-Regular.ttf");
+    QVERIFY(!underlineTestFont1.isEmpty());
+    int id = QFontDatabase::addApplicationFont(underlineTestFont1);
+    QVERIFY(id >= 0);
+
+    QString underlineTestFont2 = QFINDTESTDATA("fonts/QtUnderlineTest2-Regular.ttf");
+    QVERIFY(!underlineTestFont2.isEmpty());
+    id = QFontDatabase::addApplicationFont(underlineTestFont2);
+    QVERIFY(id >= 0);
 
 #ifndef QT_NO_OPENGL
     initOpenGL();

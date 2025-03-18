@@ -196,4 +196,30 @@ save
     drawText 0 20 "All the effects text drawing"
 restore
 
+translate 0 35
+save
+    setPen black
+    setFont "QtUnderlineTest" 20 normal normal default underline
+    drawText 0 20 "1234"
+restore
 
+translate 0 35.5
+save
+    setPen black
+    setFont "QtUnderlineTest2" 18 normal normal default underline
+    drawText 0 20 "1234"
+restore
+
+translate 0 35.5
+save
+    setPen black
+    setFont "QtUnderlineTest2" 12 normal normal default underline
+    drawText 0 20 "1234"
+restore
+
+translate 0 35.5
+save
+    setPen black
+    setFont "QtUnderlineTest2" 12 normal normal default underline
+    drawText 0 20 "1234"
+restore

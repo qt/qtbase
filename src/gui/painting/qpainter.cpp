@@ -6039,11 +6039,16 @@ static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const 
         painter->fillRect(pos.x(), 0, qCeil(width), qMin(wave.height(), descent), wave);
         painter->restore();
     } else if (underlineStyle != QTextCharFormat::NoUnderline) {
+        const bool isAntialiasing = painter->renderHints().testFlag(QPainter::Antialiasing);
+        if (!isAntialiasing)
+            pen.setWidthF(qMax(fe->lineThickness().round(), QFixed(1)).toReal());
+        const qreal lineThicknessOffset = pen.widthF() / 2.0;
+
         // Deliberately ceil the offset to avoid the underline coming too close to
         // the text above it, but limit it to stay within descent.
-        qreal adjustedUnderlineOffset = std::ceil(underlineOffset) + 0.5;
+        qreal adjustedUnderlineOffset = std::ceil(underlineOffset) + lineThicknessOffset;
         if (underlineOffset <= fe->descent().toReal())
-            adjustedUnderlineOffset = qMin(adjustedUnderlineOffset, fe->descent().toReal() - qreal(0.5));
+            adjustedUnderlineOffset = qMin(adjustedUnderlineOffset, fe->descent().toReal() - lineThicknessOffset);
         const qreal underlinePos = pos.y() + adjustedUnderlineOffset;
         QColor uc = charFormat.underlineColor();
         if (uc.isValid())
@@ -6056,6 +6061,9 @@ static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const 
             textEngine->addUnderline(painter, underline);
         else
             painter->drawLine(underline);
+
+        if (!isAntialiasing)
+            pen.setWidthF(fe->lineThickness().toReal());
     }
 
     pen.setStyle(Qt::SolidLine);
