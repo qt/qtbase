@@ -12,6 +12,8 @@
 
 #include "qcocoaaccessibilityelement.h"
 
+#include <functional>
+
 QT_BEGIN_NAMESPACE
 
 class QCocoaAccessibility : public QPlatformAccessibility
@@ -49,7 +51,9 @@ namespace QCocoaAccessible {
 NSString *macRole(QAccessibleInterface *interface);
 NSString *macSubrole(QAccessibleInterface *interface);
 bool shouldBeIgnored(QAccessibleInterface *interface);
-NSArray<QMacAccessibilityElement *> *unignoredChildren(QAccessibleInterface *interface);
+bool defaultUnignored(QAccessibleInterface *interface);
+NSArray<QMacAccessibilityElement *> *unignoredChildren(QAccessibleInterface *interface,
+                        const std::function<bool(QAccessibleInterface *)> &p = defaultUnignored);
 NSString *getTranslatedAction(const QString &qtAction);
 QString translateAction(NSString *nsAction, QAccessibleInterface *interface);
 bool hasValueAttribute(QAccessibleInterface *interface);
