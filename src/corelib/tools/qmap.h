@@ -332,12 +332,18 @@ public:
         // elements (the one to be removed can be skipped).
         detach();
 
+#ifdef __cpp_lib_node_extract
+        if (const auto node = d->m.extract(key))
+            return std::move(node.mapped());
+#else
         auto i = d->m.find(key);
         if (i != d->m.end()) {
+            // ### breaks RVO on most compilers (but only on old-fashioned ones, so who cares?)
             T result(std::move(i->second));
             d->m.erase(i);
             return result;
         }
+#endif
         return T();
     }
 
@@ -1038,12 +1044,18 @@ public:
         // elements (the one to be removed can be skipped).
         detach();
 
+#ifdef __cpp_lib_node_extract
+        if (const auto node = d->m.extract(key))
+            return std::move(node.mapped());
+#else
         auto i = d->m.find(key);
         if (i != d->m.end()) {
+            // ### breaks RVO on most compilers (but only on old-fashioned ones, so who cares?)
             T result(std::move(i->second));
             d->m.erase(i);
             return result;
         }
+#endif
         return T();
     }
 
