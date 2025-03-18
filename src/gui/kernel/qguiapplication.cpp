@@ -1349,10 +1349,10 @@ static void init_platform(const QString &pluginNamesWithArguments, const QString
 
     // Create the platform theme:
 
-    // 1) Fetch the platform name from the environment if present.
+    // 1) Try the platform name from the environment if present
     QStringList themeNames;
     if (!platformThemeName.isEmpty()) {
-        qCDebug(lcQpaTheme) << "Adding" << platformThemeName << "from environment to list of theme names";
+        qCDebug(lcQpaTheme) << "Adding" << platformThemeName << "from environment";
         themeNames.append(platformThemeName);
     }
 
@@ -1365,32 +1365,25 @@ static void init_platform(const QString &pluginNamesWithArguments, const QString
     // 3) Ask the platform integration for a list of theme names
     const auto platformIntegrationThemeNames = QGuiApplicationPrivate::platform_integration->themeNames();
     qCDebug(lcQpaTheme) << "Adding platform integration's theme names to list of theme names:" << platformIntegrationThemeNames;
-    themeNames += platformIntegrationThemeNames;
+    themeNames.append(platformIntegrationThemeNames);
+
     // 4) Look for a theme plugin.
     for (const QString &themeName : std::as_const(themeNames)) {
         qCDebug(lcQpaTheme) << "Attempting to create platform theme" << themeName << "via QPlatformThemeFactory::create";
         QGuiApplicationPrivate::platform_theme = QPlatformThemeFactory::create(themeName, platformPluginPath);
         if (QGuiApplicationPrivate::platform_theme) {
-            qCDebug(lcQpaTheme) << "Successfully created platform theme" << themeName;
+            qCDebug(lcQpaTheme) << "Successfully created platform theme" << themeName << "via QPlatformThemeFactory::create";
+            break;
+        }
+        qCDebug(lcQpaTheme) << "Attempting to create platform theme" << themeName << "via createPlatformTheme";
+        QGuiApplicationPrivate::platform_theme = QGuiApplicationPrivate::platform_integration->createPlatformTheme(themeName);
+        if (QGuiApplicationPrivate::platform_theme) {
+            qCDebug(lcQpaTheme) << "Successfully created platform theme" << themeName << "via createPlatformTheme";
             break;
         }
     }
 
-    // 5) If no theme plugin was found ask the platform integration to
-    // create a theme
-    if (!QGuiApplicationPrivate::platform_theme) {
-        for (const QString &themeName : std::as_const(themeNames)) {
-            qCDebug(lcQpaTheme) << "Attempting to create platform theme" << themeName << "via createPlatformTheme";
-            QGuiApplicationPrivate::platform_theme = QGuiApplicationPrivate::platform_integration->createPlatformTheme(themeName);
-            if (QGuiApplicationPrivate::platform_theme) {
-                qCDebug(lcQpaTheme) << "Successfully created platform theme" << themeName;
-                break;
-            }
-        }
-        // No error message; not having a theme plugin is allowed.
-    }
-
-    // 6) Fall back on the built-in "null" platform theme.
+    // 5) Fall back on the built-in "null" platform theme.
     if (!QGuiApplicationPrivate::platform_theme) {
         qCDebug(lcQpaTheme) << "Failed to create platform theme; using \"null\" platform theme";
         QGuiApplicationPrivate::platform_theme = new QPlatformTheme;
