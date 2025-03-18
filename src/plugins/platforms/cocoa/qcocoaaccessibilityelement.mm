@@ -182,6 +182,15 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
     return self;
 }
 
+/*!
+    \internal
+
+    Constructs a new element with the ID \a anId and inserts it into the cache.
+
+    Elements representing table rows, columns, and cells are created directly
+    via initWithId (in populateTableArray and populateTableRow), as they don't
+    get added to the cache until later.
+*/
 + (instancetype)elementWithId:(QAccessible::Id)anId
 {
     Q_ASSERT(anId);
@@ -194,7 +203,8 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
     if (!element) {
         Q_ASSERT(QAccessible::accessibleInterface(anId));
         element = [[self alloc] initWithId:anId];
-        cache->insertElement(anId, element);
+        if (cache->insertElement(anId, element))
+            [element release];
     }
     return element;
 }
@@ -209,28 +219,54 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
     return [self elementWithId:anId];
 }
 
-// called by QAccessibleCache::removeAccessibleElement
++ (void)removeElementsFromCache:(NSArray *)array {
+    for (uint i = 0; i < array.count; ++i) {
+        QMacAccessibilityElement *cell = [array objectAtIndex:i];
+        if (cell->axid) { // it's a proper cell, remove from cache
+            QAccessibleCache::instance()->deleteInterface(cell->axid);
+        }
+    }
+}
+
+// called by QAccessibleCache::removeAccessibleElement, which also releases
 - (void)invalidate {
     axid = 0;
     if (rows) {
+        [QMacAccessibilityElement removeElementsFromCache:rows];
         [rows autorelease];
         rows = nil;
     }
     if (columns) {
+        [QMacAccessibilityElement removeElementsFromCache:columns];
         [columns autorelease];
         columns = nil;
     }
     synthesizedRole = nil;
 
     NSAccessibilityPostNotification(self, NSAccessibilityUIElementDestroyedNotification);
-    [self release];
 }
 
+/*!
+    \internal
+
+    If this element represents a table, then the rows and columns array are both
+    populated with elements representing the rows and columns. If this elements
+    represents a row, then the columns array is populated with elements
+    representing the cells. Not all of those synthesized elements might be in
+    the cache, but those that are need to be removed so that we don't end up
+    with stale representations of children when the higher-level element
+    expires.
+*/
 - (void)dealloc {
-    if (rows)
+    if (rows) {
+        [QMacAccessibilityElement removeElementsFromCache:rows];
         [rows release]; // will also release all entries first
-    if (columns)
+    }
+    if (columns) {
+        [QMacAccessibilityElement removeElementsFromCache:columns];
         [columns release]; // will also release all entries first
+    }
+    QAccessibleCache::instance()->deleteInterface(axid);
     [super dealloc];
 }
 
