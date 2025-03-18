@@ -8,6 +8,7 @@
 #endif
 #include <QTest>
 #include <QAbstractEventDispatcher>
+#include <QElapsedTimer>
 #include <QTimer>
 #include <QThreadPool>
 
