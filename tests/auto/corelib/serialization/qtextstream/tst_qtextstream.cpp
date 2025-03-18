@@ -2446,7 +2446,7 @@ void tst_QTextStream::generateRealNumbersDataWrite()
         buffer.open(QBuffer::WriteOnly); \
         QTextStream stream(&buffer); \
         stream.setLocale(QLocale::c()); \
-        float f = (float)number; \
+        type f = type(number); \
         stream << f; \
         stream.flush(); \
         QCOMPARE(buffer.data().constData(), data.constData()); \
@@ -2458,7 +2458,7 @@ void tst_QTextStream::generateRealNumbersDataWrite()
         QCOMPARE(buffer.data(), dataWithSeparators); \
     }
 IMPLEMENT_STREAM_LEFT_REAL_OPERATOR_TEST(float, float)
-IMPLEMENT_STREAM_LEFT_REAL_OPERATOR_TEST(double, float)
+IMPLEMENT_STREAM_LEFT_REAL_OPERATOR_TEST(double, double)
     ;
 
 // ------------------------------------------------------------------------------
