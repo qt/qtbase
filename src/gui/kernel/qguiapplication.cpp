@@ -1231,7 +1231,7 @@ static void init_platform(const QString &pluginNamesWithArguments, const QString
     QStringList plugins = pluginNamesWithArguments.split(u';', Qt::SkipEmptyParts);
     QStringList platformArguments;
     QStringList availablePlugins = QPlatformIntegrationFactory::keys(platformPluginPath);
-    for (const auto &pluginArgument : plugins) {
+    for (const auto &pluginArgument : std::as_const(plugins)) {
         // Split into platform name and arguments
         QStringList arguments = pluginArgument.split(u':', Qt::SkipEmptyParts);
         if (arguments.isEmpty())
@@ -1344,7 +1344,7 @@ static void init_platform(const QString &pluginNamesWithArguments, const QString
         }
     }
 
-    const auto platformIntegration = QGuiApplicationPrivate::platformIntegration();
+    const auto *platformIntegration = QGuiApplicationPrivate::platformIntegration();
     fontSmoothingGamma = platformIntegration->styleHint(QPlatformIntegration::FontSmoothingGamma).toReal();
     QCoreApplication::setAttribute(Qt::AA_DontShowShortcutsInContextMenus,
         !platformIntegration->styleHint(QPlatformIntegration::ShowShortcutsInContextMenus).toBool());
