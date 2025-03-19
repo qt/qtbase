@@ -3449,6 +3449,8 @@ void QComboBox::wheelEvent(QWheelEvent *e)
             d->emitActivated(d->currentIndex);
         }
         e->accept();
+    } else {
+        e->ignore();
     }
 }
 #endif

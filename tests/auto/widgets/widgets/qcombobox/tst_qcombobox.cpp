@@ -105,6 +105,8 @@ private slots:
     void mouseWheel_data();
     void mouseWheel();
     void popupWheelHandling();
+    void ignoreWheelEvents_data();
+    void ignoreWheelEvents();
 #endif // QT_CONFIG(wheelevent)
     void sendKeyEventToPopup();
     void layoutDirection();
@@ -2192,6 +2194,63 @@ void tst_QComboBox::popupWheelHandling()
     QVERIFY(comboBox->view()->isVisible());
     QCOMPARE(comboBox->view()->pos(), popupPos);
 }
+
+void tst_QComboBox::ignoreWheelEvents_data()
+{
+    QTest::addColumn<bool>("allowWheelScrolling");
+    QTest::newRow("Check that QComboBox ignores wheel scrolling and propagates") << false;
+    QTest::newRow("Check that QComboBox allows wheel scrolling and doesn't propagate") << true;
+}
+
+void tst_QComboBox::ignoreWheelEvents()
+{
+    class AllowWheelScrollStyle : public QProxyStyle
+    {
+    public:
+        explicit AllowWheelScrollStyle(bool allowWheelScroll) : allow(allowWheelScroll) { }
+
+        int styleHint(const QStyle::StyleHint hint, const QStyleOption *opt, const QWidget *widget,
+                      QStyleHintReturn *returnData) const override
+        {
+            if (hint == QStyle::SH_ComboBox_AllowWheelScrolling)
+                return allow;
+
+            return QProxyStyle::styleHint(hint, opt, widget, returnData);
+        }
+
+        bool allow;
+    };
+    class WheelEventTestWidget : public QWidget
+    {
+    public:
+        bool eventReceived = false;
+        void wheelEvent(QWheelEvent *e) override
+        {
+            eventReceived = true;
+            e->accept();
+        }
+    };
+
+    QFETCH(bool, allowWheelScrolling);
+
+    WheelEventTestWidget widget;
+    QComboBox *comboBox = new QComboBox(&widget);
+    comboBox->addItems({ "0", "1" });
+    comboBox->setStyle(new AllowWheelScrollStyle(allowWheelScrolling));
+    widget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+
+    const QPoint wheelPoint = comboBox->rect().center();
+    QWheelEvent event(wheelPoint, comboBox->mapToGlobal(wheelPoint), {}, { 0, -WHEEL_DELTA },
+                      Qt::NoButton, Qt::NoModifier, Qt::NoScrollPhase, false);
+    QSpontaneKeyEvent::setSpontaneous(&event);
+    QVERIFY(QCoreApplication::instance()->notify(comboBox, &event));
+
+    const int expectedComboBoxIndex = allowWheelScrolling ? 1 : 0;
+    QCOMPARE(comboBox->currentIndex(), expectedComboBoxIndex);
+    QCOMPARE(widget.eventReceived, !allowWheelScrolling);
+}
+
 #endif // QT_CONFIG(wheelevent)
 
 void tst_QComboBox::sendKeyEventToPopup()
