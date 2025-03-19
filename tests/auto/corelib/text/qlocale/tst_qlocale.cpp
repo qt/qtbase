@@ -4382,8 +4382,10 @@ void tst_QLocale::systemGrouping_data()
     // that return invalid group sizes to test that we fallbakc to CLDR data.
     QTest::newRow("en-ES") // {2,3,3}
             << u"en-ES"_s << u","_s << u"0"_s << 1234 << u"1234"_s;
-    QTest::newRow("en-ES-grouped") // {2,3,3}
+    QTest::newRow("en-ES-grouped")
             << u"en-ES"_s << u","_s << u"0"_s << 12345 << u"12,345"_s;
+    QTest::newRow("en-ES-long")
+            << u"en-ES"_s << u","_s << u"0"_s << 1234567 << u"1,234,567"_s;
     QTest::newRow("en-BD") // {1,2,3}
             << u"en-BD"_s << u","_s << u"0"_s << 123456789 << u"12,34,56,789"_s;
     QTest::newRow("en-BT") // {1,2,3}
@@ -4400,6 +4402,7 @@ void tst_QLocale::systemGrouping_data()
         QChar::highSurrogate(zeroVal + 3), QChar::lowSurrogate(zeroVal + 3),
         QChar::highSurrogate(zeroVal + 4), QChar::lowSurrogate(zeroVal + 4),
         QChar::highSurrogate(zeroVal + 5), QChar::lowSurrogate(zeroVal + 5),
+        QChar::highSurrogate(zeroVal + 6), QChar::lowSurrogate(zeroVal + 6),
     };
     const QChar separator(QLatin1Char(',')); // Separator for the Chakma locale
     const QString
@@ -4409,16 +4412,22 @@ void tst_QLocale::systemGrouping_data()
         two = QString::fromRawData(data + 4, 2),
         three = QString::fromRawData(data + 6, 2),
         four = QString::fromRawData(data + 8, 2),
-        five = QString::fromRawData(data + 10, 2);
+        five = QString::fromRawData(data + 10, 2),
+        six = QString::fromRawData(data + 12, 2);
     QString fourDigit = one + two + three + four;
     QString fiveDigit = one + two  + separator + three + four + five;
+    // Leading group can have single digit as long as there's a later separator:
+    QString sixDigit =  one + separator  + two + three + separator + four + five + six;
 
     QTest::newRow("Chakma-short") // {2,2,3}
             << u"ccp"_s << QString(separator)
             << zero << 1234 << fourDigit;
-    QTest::newRow("Chakma") // {2,2,3}
+    QTest::newRow("Chakma")
             << u"ccp"_s << QString(separator)
             << zero << 12345 << fiveDigit;
+    QTest::newRow("Chakma-long")
+            << u"ccp"_s << QString(separator) << zero
+            << 123456 << sixDigit;
 }
 
 void tst_QLocale::systemGrouping()
@@ -4434,7 +4443,12 @@ void tst_QLocale::systemGrouping()
         QLocale sys = QLocale::system();
         QCOMPARE(sys.groupSeparator(), separator);
         QCOMPARE(sys.zeroDigit(), zeroDigit);
+
         QCOMPARE(sys.toString(number), formattedString);
+        bool ok;
+        int count = sys.toInt(formattedString, &ok);
+        QVERIFY2(ok, "Integer didn't round-trip");
+        QCOMPARE(count, number);
     }
 }
 
@@ -4665,6 +4679,11 @@ void tst_QLocale::numberGrouping()
             QCOMPARE(u"%L1"_s.arg(double(number), 0, 'f', 0), string);
         }
     }
+    // Check round-trip via toInt():
+    bool ok;
+    int actual = locale.toInt(string, &ok);
+    QVERIFY(ok);
+    QCOMPARE(actual, number);
 }
 
 void tst_QLocale::numberGroupingIndia()
@@ -4710,6 +4729,13 @@ void tst_QLocale::numberGroupingIndia()
     const uint uInteger32 = 2030405010u;
     QCOMPARE(indian.toString(uInteger32), strResult32);
     QCOMPARE(indian.toUInt(strResult32), uInteger32);
+
+    bool ok = false;
+    QCOMPARE(indian.toInt(u"1,23,45,678"_s, &ok), 12345678);
+    QVERIFY(ok);
+    // Malformed (bad grouping):
+    QCOMPARE(indian.toInt(u"123,45,678"_s, &ok), 0);
+    QVERIFY(!ok);
 
     // 63-bit:
     const QString strResult64("60,05,00,40,03,00,20,01,000");
@@ -4782,6 +4808,29 @@ void tst_QLocale::numberFormatChakma()
     const int integer32 = 2030405010;
     QCOMPARE(chakma.toString(integer32), strResult32);
     QCOMPARE(chakma.toInt(strResult32), integer32);
+
+    bool ok = false; // Lakh is the Hindi name for 1,00,000
+    const QString goodLakh = one + separator + two + three + separator + four + five + six;
+    QCOMPARE(chakma.toInt(goodLakh, &ok), 123456);
+    QVERIFY(ok);
+    const QString longThousand = one + two + three + separator + four + five + six;
+    QCOMPARE(chakma.toInt(longThousand, &ok), 0);
+    QVERIFY(!ok);
+    const QString goodCrore // Crore is Hindi for 1,00,00,000
+        = one + separator + two + three + separator + zero + zero + separator + four + five + six;
+    QCOMPARE(chakma.toInt(goodCrore, &ok), 12300456);
+    QVERIFY(ok);
+    // Officially should be grouped, but we tolerate a complete lack of grouping
+    // for backwards-compatibility reasons.
+    const QString badLakh
+        = one + two + three + four + five + six;
+    QCOMPARE(chakma.toInt(badLakh, &ok), 123456);
+    QVERIFY(ok);
+    // However, even one group separator requires all to be correctly placed:
+    const QString longLakh
+        = one + two + three + separator + zero + zero + separator + four + five + six;
+    QCOMPARE(chakma.toInt(longLakh, &ok), 0);
+    QVERIFY(!ok);
 
     const uint uInteger32 = 2030405010u;
     QCOMPARE(chakma.toString(uInteger32), strResult32);
