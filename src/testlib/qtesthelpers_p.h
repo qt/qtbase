@@ -24,6 +24,7 @@
 #ifdef QT_GUI_LIB
 #include <QtGui/QGuiApplication>
 #include <QtGui/QScreen>
+#include <QtGui/QWindow>
 #endif
 
 #ifdef QT_WIDGETS_LIB
@@ -90,6 +91,24 @@ static inline void androidCompatibleShow(QWidget *widget)
 #endif
 }
 #endif // QT_WIDGETS_LIB
+
+#ifdef QT_GUI_LIB
+bool ensurePositionTopLeft(QWindow *window)
+{
+    const QPoint availableTopLeft = QGuiApplication::primaryScreen()->availableGeometry().topLeft();
+    window->setFramePosition(availableTopLeft);
+    bool positionCorrect = true;
+
+    if (!window->flags().testFlag(Qt::FramelessWindowHint))
+        positionCorrect = QTest::qWaitFor([&]{ return window->framePosition() != window->position() ;});
+
+    const bool positionUpdated = QTest::qWaitFor([&]{ return window->framePosition() == availableTopLeft ;});
+    if (!positionUpdated)
+        positionCorrect = false;
+
+    return positionCorrect;
+}
+#endif
 
 #ifdef QT_NETWORK_LIB
 inline bool isSecureTransportBlockingTest()
