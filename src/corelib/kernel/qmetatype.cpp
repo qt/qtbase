@@ -1391,8 +1391,8 @@ static constexpr struct : QMetaTypeModuleHelper
         QMETATYPE_CONVERTER_ASSIGN(QCborValue, Char);
         QMETATYPE_CONVERTER_ASSIGN(QCborValue, SChar);
         QMETATYPE_CONVERTER_ASSIGN(QCborValue, Short);
-        QMETATYPE_CONVERTER_ASSIGN(QCborValue, Double);
-        QMETATYPE_CONVERTER_ASSIGN(QCborValue, Float);
+        QMETATYPE_CONVERTER_ASSIGN_DOUBLE(QCborValue, Double);
+        QMETATYPE_CONVERTER_ASSIGN_DOUBLE(QCborValue, Float);
         QMETATYPE_CONVERTER(QCborValue, QStringList,
             result = QCborArray::fromStringList(source);
             return true;
