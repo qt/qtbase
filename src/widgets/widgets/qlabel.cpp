@@ -6,6 +6,7 @@
 #include "qstyle.h"
 #include "qstyleoption.h"
 #include "qlabel_p.h"
+#include "private/qhexstring_p.h"
 #include "private/qstylesheetstyle_p.h"
 #include <qmath.h>
 
@@ -1054,9 +1055,21 @@ void QLabel::paintEvent(QPaintEvent *)
         const auto mode = isEnabled() ? QIcon::Normal : QIcon::Disabled;
         QPixmap pix = d->icon->pixmap(size, dpr, mode);
         if (d->scaledcontents && pix.size() != size * dpr) {
-            pix = pix.scaled(size * dpr, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-            pix.setDevicePixelRatio(dpr);
-            d->icon->addPixmap(pix, mode);
+            const QString key = "qt_label_"_L1 % HexString<quint64>(pix.cacheKey())
+                                               % HexString<quint8>(mode)
+                                               % HexString<uint>(size.width())
+                                               % HexString<uint>(size.height())
+                                               % HexString<quint16>(qRound(dpr * 1000));
+            if (!QPixmapCache::find(key, &pix)) {
+                pix = pix.scaled(size * dpr, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+                pix.setDevicePixelRatio(dpr);
+                // using QIcon to cache the newly create pixmap is not possible
+                // because QIcon does not clear this cache (so we grow indefinitely)
+                // and also uses the newly added pixmap as starting point for new
+                // scaled pixmap which makes it very blurry.
+                // Therefore use QPixmapCache here.
+                QPixmapCache::insert(key, pix);
+            }
         }
         QStyleOption opt;
         opt.initFrom(this);
