@@ -12,6 +12,7 @@ qt_internal_add_test(tst_qwindow
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate
+        Qt::TestPrivate
 )
 
 if(APPLE OR WIN32)
