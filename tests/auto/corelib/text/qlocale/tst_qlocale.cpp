@@ -4548,6 +4548,11 @@ void tst_QLocale::numberGrouping()
             QCOMPARE(u"%L1"_s.arg(double(number), 0, 'f', 0), string);
         }
     }
+    // Check round-trip via toInt():
+    bool ok;
+    int actual = locale.toInt(string, &ok);
+    QVERIFY(ok);
+    QCOMPARE(actual, number);
 }
 
 void tst_QLocale::numberGroupingIndia()
@@ -4593,6 +4598,13 @@ void tst_QLocale::numberGroupingIndia()
     const uint uInteger32 = 2030405010u;
     QCOMPARE(indian.toString(uInteger32), strResult32);
     QCOMPARE(indian.toUInt(strResult32), uInteger32);
+
+    bool ok = false;
+    QCOMPARE(indian.toInt(u"1,23,45,678"_s, &ok), 12345678);
+    QVERIFY(ok);
+    // Malformed (bad grouping):
+    QCOMPARE(indian.toInt(u"123,45,678"_s, &ok), 0);
+    QVERIFY(!ok);
 
     // 63-bit:
     const QString strResult64("60,05,00,40,03,00,20,01,000");
@@ -4665,6 +4677,29 @@ void tst_QLocale::numberFormatChakma()
     const int integer32 = 2030405010;
     QCOMPARE(chakma.toString(integer32), strResult32);
     QCOMPARE(chakma.toInt(strResult32), integer32);
+
+    bool ok = false; // Lakh is the Hindi name for 1,00,000
+    const QString goodLakh = one + separator + two + three + separator + four + five + six;
+    QCOMPARE(chakma.toInt(goodLakh, &ok), 123456);
+    QVERIFY(ok);
+    const QString longThousand = one + two + three + separator + four + five + six;
+    QCOMPARE(chakma.toInt(longThousand, &ok), 0);
+    QVERIFY(!ok);
+    const QString goodCrore // Crore is Hindi for 1,00,00,000
+        = one + separator + two + three + separator + zero + zero + separator + four + five + six;
+    QCOMPARE(chakma.toInt(goodCrore, &ok), 12300456);
+    QVERIFY(ok);
+    // Officially should be grouped, but we tolerate a complete lack of grouping
+    // for backwards-compatibility reasons.
+    const QString badLakh
+        = one + two + three + four + five + six;
+    QCOMPARE(chakma.toInt(badLakh, &ok), 123456);
+    QVERIFY(ok);
+    // However, even one group separator requires all to be correctly placed:
+    const QString longLakh
+        = one + two + three + separator + zero + zero + separator + four + five + six;
+    QCOMPARE(chakma.toInt(longLakh, &ok), 0);
+    QVERIFY(!ok);
 
     const uint uInteger32 = 2030405010u;
     QCOMPARE(chakma.toString(uInteger32), strResult32);

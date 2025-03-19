@@ -4373,6 +4373,7 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
     bool wantDigits = true;
 
     // Digit-grouping details (all modes):
+    bool needHigherGroup = false; // Set when first group is too short to be the only one
     qsizetype digitsInGroup = 0;
     const auto badLeastGroup = [&, least=m_grouping_least]() {
         // In principle we could object to a complete absence of grouping, when
@@ -4382,6 +4383,9 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
         // so objecting now would break existing code.
         if (stage == Grouped) {
             Q_ASSERT(!number_options.testFlag(QLocale::RejectGroupSeparator));
+            // First group was invalid if it was short and we've not seen a separator since:
+            if (needHigherGroup)
+                return true;
             // Were there enough digits since the last group separator?
             if (digitsInGroup != least)
                 return true;
@@ -4427,16 +4431,21 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
             switch (stage) {
             case Whole:
                 // Check size of most significant group
-                if (m_grouping_top > digitsInGroup
-                    || digitsInGroup >= m_grouping_least + m_grouping_top) {
+                if (digitsInGroup == 0 || digitsInGroup > qMax(m_grouping_top, m_grouping_higher))
                     return false;
-                }
+                Q_ASSERT(!needHigherGroup);
+                // First group is only allowed fewer than m_grouping_top digits
+                // if it's followed by an m_grouping_higher group, i.e. there's
+                // a later group separator:
+                if (m_grouping_top > digitsInGroup)
+                    needHigherGroup = true;
                 stage = Grouped;
                 break;
             case Grouped:
                 // Check size of group between two separators:
                 if (digitsInGroup != m_grouping_higher)
                     return false;
+                needHigherGroup = false; // We just found it, if needed.
                 break;
             // Only allow group chars within the whole-number part:
             case Fraction:
