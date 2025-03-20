@@ -3676,7 +3676,7 @@ bool QUrl::operator ==(const QUrl &url) const
     Returns \c true if this URL and the given \a url are equal after
     applying \a options to both; otherwise returns \c false.
 
-    This is equivalent to calling adjusted(options) on both URLs
+    This is equivalent to calling \l{adjusted()}{adjusted}(options) on both URLs
     and comparing the resulting urls, but faster.
 
 */
