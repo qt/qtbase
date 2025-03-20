@@ -626,6 +626,7 @@ struct QD3D11SwapChain : public QRhiSwapChain
     QD3D11SwapChainTimestamps timestamps;
     int currentTimestampPairIndex = 0;
     HANDLE frameLatencyWaitableObject = nullptr;
+    int lastFrameLatencyWaitSlot = -1;
 };
 
 class QRhiD3D11 : public QRhiImplementation
