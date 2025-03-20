@@ -1396,8 +1396,13 @@ QRhi::FrameOpResult QRhiD3D11::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginF
     const int currentFrameSlot = swapChainD->currentFrameSlot;
 
     // if we have a waitable object, now is the time to wait on it
-    if (swapChainD->frameLatencyWaitableObject)
-        WaitForSingleObjectEx(swapChainD->frameLatencyWaitableObject, 1000, true);
+    if (swapChainD->frameLatencyWaitableObject) {
+        // only wait when endFrame() called Present(), otherwise this would become a 1 sec timeout
+        if (swapChainD->lastFrameLatencyWaitSlot != currentFrameSlot) {
+            WaitForSingleObjectEx(swapChainD->frameLatencyWaitableObject, 1000, true);
+            swapChainD->lastFrameLatencyWaitSlot = currentFrameSlot;
+        }
+    }
 
     swapChainD->cb.resetState();
 
@@ -5442,6 +5447,7 @@ bool QD3D11SwapChain::createOrResize()
     }
 
     currentFrameSlot = 0;
+    lastFrameLatencyWaitSlot = -1; // wait already in the first frame, as instructed in the dxgi docs
     frameCount = 0;
     ds = m_depthStencil ? QRHI_RES(QD3D11RenderBuffer, m_depthStencil) : nullptr;
 
