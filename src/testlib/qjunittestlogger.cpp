@@ -9,6 +9,7 @@
 #include <QtTest/private/qbenchmark_p.h>
 #include <QtTest/private/qtestlog_p.h>
 
+#include <QtCore/qelapsedtimer.h>
 #include <QtCore/qlibraryinfo.h>
 
 #include <cstdio>
