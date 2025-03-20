@@ -377,7 +377,7 @@ QAccessible::State QAccessibleComboBox::state() const
 
     if (QComboBox *cBox = comboBox()) {
         s.expandable = true;
-        s.expanded = isValid() && cBox->view()->isVisible();
+        s.expanded = isValid() && cBox->view() && cBox->view()->isVisible();
     }
     return s;
 }
