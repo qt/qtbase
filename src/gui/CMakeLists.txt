@@ -980,6 +980,7 @@ add_custom_command(
     WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
     VERBATIM
 )
+set_source_files_properties(${vulkan_fun_outputs} PROPERTIES _qt_syncqt_exclude_from_docs TRUE)
 
 qt_internal_extend_target(Gui CONDITION WASM
     SOURCES
