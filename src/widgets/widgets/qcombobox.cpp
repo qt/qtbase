@@ -1472,8 +1472,14 @@ QComboBox::~QComboBox()
         ; // objects can't throw in destructor
     }
 
-    // Dispose of container before QComboBox goes away
-    delete d->container;
+    // Dispose of container before QComboBox goes away. Close explicitly so that
+    // update cycles back into the combobox (e.g. from accessibility when the
+    // active window changes) are completed first.
+    if (d->container) {
+        d->container->close();
+        delete d->container;
+        d->container = nullptr;
+    }
 }
 
 /*!
