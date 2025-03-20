@@ -79,4 +79,9 @@ function(qt_create_qdbusxml2cpp_command target infile)
         "${header_file_full}"
         "${source_file_full}"
     )
+    set_source_files_properties(
+        "${header_file_full}"
+        "${source_file_full}"
+        PROPERTIES
+            _qt_syncqt_exclude_from_docs TRUE)
 endfunction()

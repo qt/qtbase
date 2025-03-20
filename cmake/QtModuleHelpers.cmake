@@ -1134,8 +1134,11 @@ function(qt_finalize_module target)
     # property which supposed to be updated inside every qt_internal_install_module_headers
     # call.
     qt_internal_add_headersclean_target(${target} "${module_headers_public}")
-    qt_internal_target_sync_headers(${target} "${module_headers_all}"
-        "${module_headers_generated}")
+    qt_internal_target_sync_headers(${target}
+        "${module_headers_all}"
+        "${module_headers_generated}"
+        "${module_headers_exclude_from_docs}"
+    )
     get_target_property(module_depends_header ${target} _qt_module_depends_header)
     qt_internal_install_module_headers(${target}
         PUBLIC ${module_headers_public} "${module_depends_header}"
@@ -1565,6 +1568,7 @@ endfunction()
 function(qt_internal_collect_module_headers out_var target)
     set(${out_var}_public "")
     set(${out_var}_private "")
+    set(${out_var}_exclude_from_docs "")
     set(${out_var}_qpa "")
     set(${out_var}_rhi "")
     set(${out_var}_ssg "")
@@ -1639,6 +1643,12 @@ function(qt_internal_collect_module_headers out_var target)
             set(is_3rdparty_header FALSE)
         endif()
         list(APPEND ${out_var}_all "${file_path}")
+
+        get_source_file_property(exclude_from_docs "${file_path}" _qt_syncqt_exclude_from_docs)
+        if(exclude_from_docs)
+            list(APPEND ${out_var}_exclude_from_docs "${file_path}")
+        endif()
+
         if(qpa_filter AND file_name MATCHES "${qpa_filter}")
             list(APPEND ${out_var}_qpa "${file_path}")
         elseif(rhi_filter AND file_name MATCHES "${rhi_filter}")
@@ -1681,6 +1691,7 @@ function(qt_internal_collect_module_headers out_var target)
     endforeach()
     set(${out_var}_all "${${out_var}_all}" PARENT_SCOPE)
     set(${out_var}_generated "${${out_var}_generated}" PARENT_SCOPE)
+    set(${out_var}_exclude_from_docs "${${out_var}_exclude_from_docs}" PARENT_SCOPE)
 
     if(has_header_types_properties)
         set_target_properties(${target} PROPERTIES ${has_header_types_properties})
