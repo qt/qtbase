@@ -185,3 +185,22 @@ QList<QImage> collage = QtConcurrent::mappedReduced(images,
         }
    ).results();
 //! [17]
+
+//! [18]
+auto process = [](int val) {
+    return val * 2;
+};
+
+QList<int> inputs { 1, 2, 3 };
+auto badFuture = QtConcurrent::mapped(inputs, process)
+                         .then([](int val) {
+                             qDebug() << val;
+                         });
+
+auto goodFuture = QtConcurrent::mapped(inputs, process)
+                          .then([](QFuture<int> f) {
+                              for (auto r : f.results()) {
+                                  qDebug() << r;
+                              }
+                          });
+//! [18]
