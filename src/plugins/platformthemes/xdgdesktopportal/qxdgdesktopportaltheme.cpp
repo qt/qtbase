@@ -88,6 +88,8 @@ QXdgDesktopPortalTheme::QXdgDesktopPortalTheme()
     themeNames += QGuiApplicationPrivate::platform_integration->themeNames();
     // 1) Look for a theme plugin.
     for (const QString &themeName : std::as_const(themeNames)) {
+        if (QXdgDesktopPortalTheme::isXdgPlugin(themeName))
+            continue;
         d->baseTheme = QPlatformThemeFactory::create(themeName, nullptr);
         if (d->baseTheme)
             break;
@@ -97,6 +99,8 @@ QXdgDesktopPortalTheme::QXdgDesktopPortalTheme()
     // create a theme
     if (!d->baseTheme) {
         for (const QString &themeName : std::as_const(themeNames)) {
+            if (QXdgDesktopPortalTheme::isXdgPlugin(themeName))
+                continue;
             d->baseTheme = QGuiApplicationPrivate::platform_integration->createPlatformTheme(themeName);
             if (d->baseTheme)
                 break;
@@ -261,6 +265,13 @@ QString QXdgDesktopPortalTheme::standardButtonText(int button) const
 {
     Q_D(const QXdgDesktopPortalTheme);
     return d->baseTheme->standardButtonText(button);
+}
+
+bool QXdgDesktopPortalTheme::isXdgPlugin(const QString &key)
+{
+    return key.compare("xdgdesktopportal"_L1, Qt::CaseInsensitive) == 0 ||
+           key.compare("flatpak"_L1, Qt::CaseInsensitive) == 0 ||
+           key.compare("snap"_L1, Qt::CaseInsensitive) == 0;
 }
 
 QT_END_NAMESPACE

@@ -48,6 +48,8 @@ public:
 
     QString standardButtonText(int button) const override;
 
+    static bool isXdgPlugin(const QString &key);
+
 private:
     QScopedPointer<QXdgDesktopPortalThemePrivate> d_ptr;
     Q_DISABLE_COPY_MOVE(QXdgDesktopPortalTheme)
