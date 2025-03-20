@@ -69,6 +69,13 @@
 #endif
 #endif
 
+#if defined(Q_OS_VXWORKS)
+# include <sys/statfs.h>
+# if __has_include(<dosFsLib.h>)
+#  include <dosFsLib.h>
+# endif
+#endif
+
 #if defined(Q_OS_ANDROID)
 // statx() is disabled on Android because quite a few systems
 // come with sandboxes that kill applications that make system calls outside a
@@ -331,8 +338,15 @@ flagsFromStMode(mode_t mode, [[maybe_unused]] quint64 attributes)
 #ifdef UF_HIDDEN
     if (attributes & UF_HIDDEN)
         entryFlags |= QFileSystemMetaData::HiddenAttribute;
+#elif defined(Q_OS_VXWORKS) && __has_include(<dosFsLib.h>)
+    if (attributes & DOS_ATTR_RDONLY) {
+        // on a DOS FS, stat() always returns 0777 bits set in st_mode
+        // when DOS FS is read only the write permissions are removed
+        entryFlags &= ~QFileSystemMetaData::OwnerWritePermission;
+        entryFlags &= ~QFileSystemMetaData::GroupWritePermission;
+        entryFlags &= ~QFileSystemMetaData::OtherWritePermission;
+    }
 #endif
-
     return entryFlags;
 }
 
@@ -476,8 +490,9 @@ void QFileSystemMetaData::fillFromStatBuf(const QT_STATBUF &statBuffer)
     quint64 attributes = 0;
 #if defined(UF_SETTABLE)        // BSDs (incl. Darwin)
     attributes = statBuffer.st_flags;
+#elif defined(Q_OS_VXWORKS) && __has_include(<dosFsLib.h>)
+    attributes = statBuffer.st_attrib;
 #endif
-
     // Permissions
     MetaDataFlags flags = flagsFromStMode(statBuffer.st_mode, attributes);
     entryFlags |= flags;
@@ -990,6 +1005,30 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
 
     // third, we try access(2)
     if (what & (QFileSystemMetaData::UserPermissions | QFileSystemMetaData::ExistsAttribute)) {
+#if defined(Q_OS_VXWORKS)
+        // on VxWorks if the filesystem is not POSIX, access() always returns false, despite the
+        // file is readable
+        struct statfs statBuf;
+        if (statfs(nativeFilePath, &statBuf) != 0) {
+            what &= ~QFileSystemMetaData::LinkType; // don't clear link: could be broken symlink
+            data.clearFlags(what);
+            return false;
+        }
+        if (statBuf.f_type != NFSV2_MAGIC && statBuf.f_type != NFSV3_MAGIC &&
+            statBuf.f_type != HRFS_MAGIC) {
+#if __has_include(<dosFsLib.h>)
+            if (data.entryFlags & QFileSystemMetaData::OwnerWritePermission) {
+                data.entryFlags |= QFileSystemMetaData::UserWritePermission;
+            }
+            if (data.entryFlags & QFileSystemMetaData::OwnerExecutePermission) {
+                data.entryFlags |= QFileSystemMetaData::UserExecutePermission;
+            }
+#endif
+            data.entryFlags |= QFileSystemMetaData::UserReadPermission |
+                    QFileSystemMetaData::ExistsAttribute;
+            return true;
+        }
+#endif
         // calculate user permissions
         auto checkAccess = [&](QFileSystemMetaData::MetaDataFlag flag, int mode) {
             if (entryErrno != 0 || (what & flag) == 0)
@@ -1001,7 +1040,6 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
                 entryErrno = errno;
             }
         };
-
         checkAccess(QFileSystemMetaData::UserReadPermission, R_OK);
         checkAccess(QFileSystemMetaData::UserWritePermission, W_OK);
         checkAccess(QFileSystemMetaData::UserExecutePermission, X_OK);
