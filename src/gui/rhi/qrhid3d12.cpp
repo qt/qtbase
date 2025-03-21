@@ -1647,8 +1647,13 @@ QRhi::FrameOpResult QRhiD3D12::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginF
     for (QD3D12SwapChain *sc : std::as_const(swapchains))
         sc->waitCommandCompletionForFrameSlot(currentFrameSlot); // note: swapChainD->currentFrameSlot, not sc's
 
-    if (swapChainD->frameLatencyWaitableObject)
-        WaitForSingleObjectEx(swapChainD->frameLatencyWaitableObject, 1000, true);
+    if (swapChainD->frameLatencyWaitableObject) {
+        // only wait when endFrame() called Present(), otherwise this would become a 1 sec timeout
+        if (swapChainD->lastFrameLatencyWaitSlot != currentFrameSlot) {
+            WaitForSingleObjectEx(swapChainD->frameLatencyWaitableObject, 1000, true);
+            swapChainD->lastFrameLatencyWaitSlot = currentFrameSlot;
+        }
+    }
 
     HRESULT hr = cmdAllocators[currentFrameSlot]->Reset();
     if (FAILED(hr)) {
@@ -6759,6 +6764,7 @@ bool QD3D12SwapChain::createOrResize()
 
     currentBackBufferIndex = swapChain->GetCurrentBackBufferIndex();
     currentFrameSlot = 0;
+    lastFrameLatencyWaitSlot = -1; // wait already in the first frame, as instructed in the dxgi docs
 
     rtWrapper.setRenderPassDescriptor(m_renderPassDesc); // for the public getter in QRhiRenderTarget
     QD3D12SwapChainRenderTarget *rtD = QRHI_RES(QD3D12SwapChainRenderTarget, &rtWrapper);

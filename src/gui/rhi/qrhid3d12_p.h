@@ -1079,6 +1079,7 @@ struct QD3D12SwapChain : public QRhiSwapChain
     } frameRes[QD3D12_FRAMES_IN_FLIGHT];
 
     int currentFrameSlot = 0; // index in frameRes
+    int lastFrameLatencyWaitSlot = -1;
 };
 
 template<typename T, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE Type>
