@@ -284,7 +284,12 @@ namespace QtAndroidInput
             return;
         }
 
-        QPointF mappedTouchPoint = window->mapToGlobal(QPointF(x, y));
+        QPointF mappedTouchPoint;
+        if (window->handle())
+            mappedTouchPoint = window->handle()->mapToGlobalF(QPointF(x, y));
+        else
+            mappedTouchPoint = window->mapToGlobal(QPointF(x, y));
+
         QWindowSystemInterface::TouchPoint touchPoint;
         // Start numbering touch points from 1
         touchPoint.id = id + 1;
