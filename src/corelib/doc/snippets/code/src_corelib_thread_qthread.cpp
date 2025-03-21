@@ -2,12 +2,21 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
 #include <QtCore/QThread>
-class MyObject;
+class MyObject : public QObject
+{
+    Q_OBJECT
+    void startWorkInAThread();
+private slots:
+    void handleResults(){};
+};
 
 //! [reimpl-run]
 class WorkerThread : public QThread
 {
     Q_OBJECT
+public:
+    explicit WorkerThread(QObject *parent = nullptr) : QThread(parent) { }
+protected:
     void run() override {
         QString result;
         /* ... here is the expensive or blocking operation ... */
@@ -66,3 +75,7 @@ signals:
     void operate(const QString &);
 };
 //! [worker]
+
+void Controller::handleResults(const QString &) { }
+
+#include "src_corelib_thread_qthread.moc"
