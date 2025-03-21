@@ -4240,12 +4240,6 @@ QRect QWindowsVistaStyle::subElementRect(SubElement element, const QStyleOption 
         rect = QCommonStyle::subElementRect(SE_ProgressBarGroove, option, widget);
         break;
 
-    case SE_ItemViewItemDecoration:
-        rect = QWindowsStyle::subElementRect(element, option, widget);
-        if (qstyleoption_cast<const QStyleOptionViewItem *>(option))
-            rect.adjust(-2, 0, 2, 0);
-        break;
-
     case SE_ItemViewItemFocusRect:
         rect = QWindowsStyle::subElementRect(element, option, widget);
         if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(option)) {
