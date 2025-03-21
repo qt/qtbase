@@ -572,6 +572,7 @@ void QXmlStreamReader::addData(QAnyStringView data)
         } else if constexpr (std::is_same_v<decltype(data), QLatin1StringView>) {
             // Conversion to a QString is required, to avoid breaking
             // pre-existing (before porting to QAnyStringView) behavior.
+            d->lockEncoding = true;
             if (!d->decoder.isValid())
                 d->decoder = QStringDecoder(QStringDecoder::Utf8);
             addDataImpl(QString::fromLatin1(data).toUtf8());

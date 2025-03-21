@@ -568,6 +568,7 @@ private slots:
     void readFromQBuffer() const;
     void readFromQBufferInvalid() const;
     void readFromLatin1String() const;
+    void readLatin1Document() const;
     void readNextStartElement() const;
     void readElementText() const;
     void readElementText_data() const;
@@ -1220,6 +1221,25 @@ void tst_QXmlStream::readFromLatin1String() const
         QCOMPARE(text, "M\xE5rten"_L1);
     }
     // Same as above, but with addData()
+    {
+        QXmlStreamReader reader;
+        reader.addData(in);
+        QVERIFY(reader.readNextStartElement());
+        QString text = reader.readElementText();
+        QCOMPARE(text, "M\xE5rten"_L1);
+    }
+}
+
+void tst_QXmlStream::readLatin1Document() const
+{
+    const auto in = "<?xml version=\"1.0\" encoding=\"iso-8859-1\"?><a>M\xE5rten</a>"_L1;
+    {
+        QXmlStreamReader reader(in);
+        QVERIFY(reader.readNextStartElement());
+        QString text = reader.readElementText();
+        QCOMPARE(text, "M\xE5rten"_L1);
+    }
+    // Same as above, but with addData(), QTBUG-135033
     {
         QXmlStreamReader reader;
         reader.addData(in);
