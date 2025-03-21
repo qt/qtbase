@@ -4406,7 +4406,7 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
                 return false;
             stage = Fraction;
         } else if (out == 'e') {
-            if (stage == Name)
+            if (wantDigits || stage == Name || stage > Fraction)
                 return false;
 
             if (stage < Fraction) {

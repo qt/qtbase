@@ -903,6 +903,9 @@ void tst_QLocale::toReal_data()
     QTest::newRow("C 1.")              << QString("C") << QString("1.")              << true  << 1.0;
     QTest::newRow("C 1.E10")           << QString("C") << QString("1.E10")           << true  << 1.0e10;
     QTest::newRow("C 1e+10")           << QString("C") << QString("1e+10")           << true  << 1.0e+10;
+    QTest::newRow("C e+10")            << QString("C") << QString("e+10")            << false << 0.0;
+    QTest::newRow("C .e+10")           << QString("C") << QString(".e+10")           << false << 0.0;
+    QTest::newRow("C 1e+2e+10")        << QString("C") << QString("1e+2e+10")        << false << 0.0;
 
     QTest::newRow("de_DE 1.")          << QString("de_DE") << QString("1.")          << false << 0.0;
     QTest::newRow("de_DE 1.2")         << QString("de_DE") << QString("1.2")         << false << 0.0;
