@@ -91,7 +91,6 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
         if (m_editText != null && m_inputConnectionListener != null)
             m_inputConnectionListener.onEditTextChanged(m_editText);
 
-        event.setLocation(event.getX() + getX(), event.getY() + getY());
         QtInputDelegate.sendTouchEvent(event, getId());
         m_gestureDetector.onTouchEvent(event);
         return true;
