@@ -274,11 +274,11 @@ public:
 
     enum NumberMode { IntegerMode, DoubleStandardMode, DoubleScientificMode };
 
-    struct GroupSizes
+    struct GroupSizes // Numbers of digits in various groups:
     {
-        int first = 0;
-        int higher = 0;
-        int least = 0;
+        int first = 0; // Min needed before the separator, when there's only one.
+        int higher = 0; // Each group between separators.
+        int least = 0; // Least significant, when any separators appear.
         bool isValid() const { return least > 0 && higher > first && first > 0; }
     };
 
