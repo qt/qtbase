@@ -74,14 +74,14 @@ The \c{EXECUTABLE} option must be provided.
 The \c{executable} argument should be the path to the executable file in the
 build directory. For example, \c{${CMAKE_CURRENT_BINARY_DIR}/MyApp.exe}, or more
 dynamically \c{$<TARGET_FILE:MyApp>}. Specifying raw target names not wrapped in
-a generator expression like \c{<TARGET_FILE:>} is not supported.
+a generator expression like \c{$<TARGET_FILE:>} is not supported.
 
 For macOS app bundles, the \c{executable} argument should be a path to the
 bundle directory, relative to the base install location.
 For example \c{MyApp.app}, or more dynamically
 \c{$<TARGET_FILE_NAME:MyApp>.app}.
-Specifying raw target names not wrapped in a generator epxression like
-\c{<TARGET_FILE_NAME:>} is not supported.
+Specifying raw target names not wrapped in a generator expression like
+\c{$<TARGET_FILE_NAME:>} is not supported.
 
 It may also be desirable to install dependencies for other binaries related to
 the \c{executable}. For example, plugins provided by the project might have
@@ -95,8 +95,8 @@ follows CMake's conventions, so Qt plugins would be specified using
 \c{ADDITIONAL_MODULES}.
 Each value should be a path relative to the base install location. The values
 can use generator expressions, same as with the \c{EXECUTABLE} option.
-Specifying raw target names not wrapped in a generator epxression like
-\c{<TARGET_FILE_NAME:>} is not supported.
+Specifying raw target names not wrapped in a generator expression like
+\c{$<TARGET_FILE_NAME:>} is not supported.
 
 When installing a Windows application, it is common to need a
 \l{Using qt.conf}{qt.conf} file when following CMake's default install
