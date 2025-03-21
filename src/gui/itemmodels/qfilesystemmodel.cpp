@@ -232,7 +232,7 @@ QModelIndex QFileSystemModel::index(int row, int column, const QModelIndex &pare
     const QFileSystemModelPrivate::QFileSystemNode *indexNode = parentNode->children.value(childName);
     Q_ASSERT(indexNode);
 
-    return createIndex(row, column, const_cast<QFileSystemModelPrivate::QFileSystemNode*>(indexNode));
+    return createIndex(row, column, indexNode);
 }
 
 /*!
