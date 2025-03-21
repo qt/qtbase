@@ -5,6 +5,7 @@
 #include <QtWidgets>
 #include <QTest>
 #include <QtCore/qcoreapplication.h>
+#include <QtCore/qregularexpression.h>
 
 // some versions of CALayer.h use 'slots' as an identifier
 #define QT_NO_KEYWORDS
@@ -480,6 +481,7 @@ void tst_QAccessibilityMac::singleWidgetTest()
     delete le;
     QCoreApplication::processEvents();
     TestAXObject *lineEditInvalid = [[TestAXObject alloc] initWithAXUIElementRef: lineEditRef];
+    QTest::ignoreMessage(QtDebugMsg, QRegularExpression("kAXErrorInvalidUIElement"));
     QVERIFY([[lineEditInvalid value] length] == 0);
 }
 
