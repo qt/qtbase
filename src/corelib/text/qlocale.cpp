@@ -4368,6 +4368,20 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
     qsizetype digitsInGroup = 0;
     qsizetype last_separator_idx = -1;
     qsizetype start_of_digits_idx = -1;
+    const auto badLeastGroup = [&, least=m_grouping_least]() {
+        // In principle we could object to a complete absence of grouping, when
+        // digitsInGroup >= qMax(m_grouping_top, m_grouping_least), unless the
+        // locale itself would omit them. However, when merely not rejecting
+        // grouping separators, we have historically accepted ungrouped digits,
+        // so objecting now would break existing code.
+        if (last_separator_idx != -1) {
+            Q_ASSERT(!number_options.testFlag(QLocale::RejectGroupSeparator));
+            // Were there enough digits since the last group separator?
+            if (digitsInGroup != least)
+                return true;
+        }
+        return false;
+    };
 
     // Floating-point details (non-integer modes):
     qsizetype decpt_idx = -1;
@@ -4381,75 +4395,74 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
             return false;
         Q_ASSERT(tokens.index() > idx); // it always *should* advance (except on zero return)
 
+        // Note that out can only be '.', 'e' or an inf/NaN character if the
+        // mode allows it (else nextToken() would return 0 instead), so we don't
+        // need to check mode.
         if (out == '.') {
             // Fail if more than one decimal point or point after e
             if (decpt_idx != -1 || exponent_idx != -1)
                 return false;
             decpt_idx = idx;
+            // That's the end of the integral part - check size of last group:
+            if (badLeastGroup())
+                return false;
+            last_separator_idx = -1; // Process no separators after this
         } else if (out == 'e') {
             exponent_idx = idx;
-        }
-
-        if (number_options.testFlag(QLocale::RejectLeadingZeroInExponent)
-                && exponent_idx != -1 && out == '0') {
-            // After the exponent there can only be '+', '-' or digits.
-            // If we find a '0' directly after some non-digit, then that is a
-            // leading zero, acceptable only if it is the whole exponent.
-            if (!tokens.done() && !isAsciiDigit(last))
-                return false;
-        }
-
-        if (number_options.testFlag(QLocale::RejectTrailingZeroesAfterDot) && decpt_idx >= 0) {
-            // In a fractional part, a 0 just before the exponent is trailing:
-            if (idx == exponent_idx && last == '0')
-                return false;
-        }
-
-        if (!number_options.testFlag(QLocale::RejectGroupSeparator)) {
-            if (isAsciiDigit(out)) {
-                if (start_of_digits_idx == -1)
-                    start_of_digits_idx = idx;
-                ++digitsInGroup;
-            } else if (out == ',') {
-                // Don't allow group chars after the decimal point or exponent
-                if (decpt_idx != -1 || exponent_idx != -1)
+            if (decpt_idx == -1) {
+                // The 'e' ends the whole-number part, so check its last group:
+                if (badLeastGroup())
                     return false;
-
-                if (last_separator_idx == -1) {
-                    // Check distance from the beginning of the digits:
-                    if (start_of_digits_idx == -1 || m_grouping_top > digitsInGroup
-                        || digitsInGroup >= m_grouping_least + m_grouping_top) {
-                        return false;
-                    }
-                } else {
-                    // Check distance from the last separator:
-                    if (digitsInGroup != m_grouping_higher)
-                        return false;
-                }
-
-                last_separator_idx = idx;
-                digitsInGroup = 0;
-            } else if (mode != IntegerMode && (out == '.' || idx == exponent_idx)
-                       && last_separator_idx != -1) {
-                // Were there enough digits since the last group separator?
-                if (digitsInGroup != m_grouping_least)
+                last_separator_idx = -1; // Process no separators after this
+            } else if (number_options.testFlag(QLocale::RejectTrailingZeroesAfterDot)) {
+                // In a fractional part, a 0 just before the exponent is trailing:
+                if (last == '0')
                     return false;
-
-                // stop processing separators
-                last_separator_idx = -1;
             }
         } else if (out == ',') {
-            return false;
+            if (number_options.testFlag(QLocale::RejectGroupSeparator))
+                return false;
+
+            // Don't allow group chars after the decimal point or exponent
+            if (decpt_idx != -1 || exponent_idx != -1)
+                return false;
+
+            if (last_separator_idx == -1) {
+                // Check size of most significant group
+                if (start_of_digits_idx == -1 || m_grouping_top > digitsInGroup
+                    || digitsInGroup >= m_grouping_least + m_grouping_top) {
+                    return false;
+                }
+            } else {
+                // Check size of group between two separators:
+                if (digitsInGroup != m_grouping_higher)
+                    return false;
+            }
+
+            last_separator_idx = idx;
+            digitsInGroup = 0;
+        } else if (isAsciiDigit(out)) {
+            if (out == '0' && number_options.testFlag(QLocale::RejectLeadingZeroInExponent)
+                && exponent_idx != -1 && !tokens.done() && !isAsciiDigit(last)) {
+                // After the exponent there can only be '+', '-' or digits.  If
+                // we find a '0' directly after some non-digit, then that is a
+                // leading zero, acceptable only if it is the whole exponent.
+                return false;
+            }
+            if (start_of_digits_idx == -1)
+                start_of_digits_idx = idx;
+            ++digitsInGroup;
         }
+        // else: nothing special to do.
 
         last = out;
         if (out != ',') // Leave group separators out of the result.
             result->append(out);
     }
 
-    if (!number_options.testFlag(QLocale::RejectGroupSeparator) && last_separator_idx != -1) {
-        // Were there enough digits since the last group separator?
-        if (digitsInGroup != m_grouping_least)
+    if (!number_options.testFlag(QLocale::RejectGroupSeparator)) {
+        // If this is the end of the whole-part, check least significant group:
+        if (decpt_idx == -1 && exponent_idx == -1 && badLeastGroup())
             return false;
     }
 
