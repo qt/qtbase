@@ -3,6 +3,7 @@
 
 #include <QTest>
 
+#include <QtCore/QElapsedTimer>
 #include <QtCore/QLatin1StringMatcher>
 #include <QtCore/QStaticLatin1StringMatcher>
 
