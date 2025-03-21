@@ -168,23 +168,23 @@ namespace QtAndroidInput
         if (m_ignoreMouseEvents)
             return;
 
-        const QPoint globalPos(x,y);
+        const QPoint localPos(x,y);
         QWindow *window = windowFromId(winId);
         m_mouseGrabber = window;
-        const QPoint localPos = window && window->handle() ?
-                window->handle()->mapFromGlobal(globalPos) : globalPos;
+        const QPoint globalPos = window && window->handle() ?
+                window->handle()->mapToGlobal(localPos) : localPos;
         sendMouseButtonEvents(window, localPos, globalPos, mouseButtonState, QEvent::MouseButtonPress);
     }
 
     static void mouseUp(JNIEnv */*env*/, jobject /*thiz*/, jint winId, jint x, jint y, jint mouseButtonState)
     {
-        const QPoint globalPos(x,y);
+        const QPoint localPos(x,y);
         QWindow *window = m_mouseGrabber.data();
         if (!window)
             window = windowFromId(winId);
 
-        const QPoint localPos = window && window->handle() ?
-                                    window->handle()->mapFromGlobal(globalPos) : globalPos;
+        const QPoint globalPos = window && window->handle() ?
+                                    window->handle()->mapToGlobal(localPos) : localPos;
 
         sendMouseButtonEvents(window, localPos, globalPos, mouseButtonState, QEvent::MouseButtonRelease);
         m_ignoreMouseEvents = false;
@@ -196,12 +196,12 @@ namespace QtAndroidInput
         if (m_ignoreMouseEvents)
             return;
 
-        const QPoint globalPos(x,y);
+        const QPoint localPos(x,y);
         QWindow *window = m_mouseGrabber.data();
         if (!window)
             window = windowFromId(winId);
-        const QPoint localPos = window && window->handle() ?
-                                    window->handle()->mapFromGlobal(globalPos) : globalPos;
+        const QPoint globalPos = window && window->handle() ?
+                                    window->handle()->mapToGlobal(localPos) : localPos;
         sendMouseButtonEvents(window, localPos, globalPos, mouseButtonState, QEvent::MouseMove);
     }
 
@@ -210,12 +210,12 @@ namespace QtAndroidInput
         if (m_ignoreMouseEvents)
             return;
 
-        const QPoint globalPos(x,y);
+        const QPoint localPos(x,y);
         QWindow *window = m_mouseGrabber.data();
         if (!window)
             window = windowFromId(winId);
-        const QPoint localPos = window && window->handle() ?
-                                    window->handle()->mapFromGlobal(globalPos) : globalPos;
+        const QPoint globalPos = window && window->handle() ?
+                                    window->handle()->mapToGlobal(localPos) : localPos;
         const QPoint angleDelta(hdelta * 120, vdelta * 120);
 
         QWindowSystemInterface::handleWheelEvent(window,
@@ -228,18 +228,21 @@ namespace QtAndroidInput
     static void longPress(JNIEnv */*env*/, jobject /*thiz*/, jint winId, jint x, jint y)
     {
         QAndroidInputContext *inputContext = QAndroidInputContext::androidInputContext();
+
+        const QPoint globalPos(x,y);
+        QWindow *window = windowFromId(winId);
+        const QPoint localPos = window && window->handle() ?
+                window->handle()->mapFromGlobal(globalPos) : globalPos;
+
         if (inputContext && qGuiApp)
-            QMetaObject::invokeMethod(inputContext, "longPress", Q_ARG(int, x), Q_ARG(int, y));
+            QMetaObject::invokeMethod(inputContext, "longPress", Q_ARG(int, globalPos.x()), Q_ARG(int, globalPos.y()));
 
         //### TODO: add proper API for Qt 5.2
         static bool rightMouseFromLongPress = qEnvironmentVariableIntValue("QT_ANDROID_ENABLE_RIGHT_MOUSE_FROM_LONG_PRESS");
         if (!rightMouseFromLongPress)
             return;
         m_ignoreMouseEvents = true;
-        const QPoint globalPos(x,y);
-        QWindow *window = windowFromId(winId);
-        const QPoint localPos = window && window->handle() ?
-                                    window->handle()->mapFromGlobal(globalPos) : globalPos;
+
 
         // Click right button if no other button is already pressed.
         if (!m_mouseGrabber) {
@@ -307,7 +310,7 @@ namespace QtAndroidInput
         if (state == QEventPoint::State::Pressed) {
             QAndroidInputContext *inputContext = QAndroidInputContext::androidInputContext();
             if (inputContext && qGuiApp)
-                QMetaObject::invokeMethod(inputContext, "touchDown", Q_ARG(int, x), Q_ARG(int, y));
+                QMetaObject::invokeMethod(inputContext, "touchDown", Q_ARG(int, mappedTouchPoint.x()), Q_ARG(int, mappedTouchPoint.y()));
         }
     }
 
@@ -379,10 +382,10 @@ namespace QtAndroidInput
         jint pointerType, jint buttonState, jfloat x, jfloat y, jfloat pressure)
     {
 #if QT_CONFIG(tabletevent)
-        const QPointF globalPosF(x, y);
+        const QPointF localPos(x, y);
         QWindow *window = windowFromId(winId);
-        const QPointF localPos = window && window->handle() ?
-                                    window->handle()->mapFromGlobalF(globalPosF) : globalPosF;
+        const QPointF globalPosF = window && window->handle() ?
+                                    window->handle()->mapFromGlobalF(localPos) : localPos;
 
         // Galaxy Note with plain Android:
         // 0 1 0    stylus press
