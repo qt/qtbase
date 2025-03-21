@@ -1373,9 +1373,12 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
         break;
     case QStyle::CE_ProgressBarLabel:
         if (const QStyleOptionProgressBar* progbaropt = qstyleoption_cast<const QStyleOptionProgressBar*>(option)) {
-            QRect rect = subElementRect(SE_ProgressBarLabel, progbaropt, widget);
-            painter->setPen(progbaropt->palette.text().color());
-            painter->drawText(rect, progbaropt->text,progbaropt->textAlignment);
+            const bool vertical = !(progbaropt->state & QStyle::State_Horizontal);
+            if (!vertical) {
+                QRect rect = subElementRect(SE_ProgressBarLabel, progbaropt, widget);
+                painter->setPen(progbaropt->palette.text().color());
+                painter->drawText(rect, progbaropt->text, progbaropt->textAlignment);
+            }
         }
         break;
     case CE_PushButtonLabel:
