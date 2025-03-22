@@ -828,7 +828,8 @@ void tst_QWidget_window::tst_dnd_events()
 
     // Some dnd implementation rely on running internal event loops, so we have to use
     // the following queued signal hack to simulate mouse clicks in the widget.
-    QObject::connect(&dndWidget, &DnDEventRecorder::dragMoveReceived, this, [=]() {
+    auto connection = QObject::connect(&dndWidget, &DnDEventRecorder::dragMoveReceived, this,
+                                        [=]() {
         QTest::mouseRelease(window, Qt::LeftButton);
     }, Qt::QueuedConnection);
 
@@ -839,7 +840,7 @@ void tst_QWidget_window::tst_dnd_events()
     QCOMPARE(dndWidget._dndEvents, expectedDndEvents);
 
     dndWidget._dndEvents.clear();
-    dndWidget.disconnect();
+    dndWidget.disconnect(connection);
     int step = 0;
     QObject::connect(&dndWidget, &DnDEventRecorder::dragMoveReceived, this, [window, &step]() {
         switch (step++) {

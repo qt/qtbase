@@ -386,6 +386,15 @@ void tst_QObject::disconnect()
     QVERIFY(!r2.called(2));
     QVERIFY(!r1.called(2));
     QVERIFY(!r2.called(2));
+
+    // breaking a connection to QObject::destroyed can be dangerous if Qt
+    // or other parts of the application depend on that signal to clean up
+    // data structures. We want to warn if this happens as a side effect of
+    // a wildcard disconnect call.
+    QObject::connect(&s, &QObject::destroyed, &r1, &ReceiverObject::slot1);
+    QTest::ignoreMessage(QtWarningMsg, QRegularExpression("wildcard call disconnects from destroyed"
+                                        " signal of SenderObject::"));
+    QVERIFY(s.disconnect());
 }
 
 class AutoConnectSender : public QObject
