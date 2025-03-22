@@ -757,7 +757,7 @@ void QItemDelegate::drawCheck(QPainter *painter,
 }
 
 /*!
-s    Renders the item background for the given \a index,
+    Renders the item background for the given \a index,
     using the given \a painter and style \a option.
 */
 
