@@ -2150,7 +2150,10 @@ void QColorDialog::setVisible(bool visible)
 */
 void QColorDialogPrivate::setVisible(bool visible)
 {
-    Q_Q(QColorDialog);
+    // Don't use Q_Q here! This function is called from ~QDialog,
+    // so Q_Q calling q_func() invokes undefined behavior (invalid cast in q_func()).
+    const auto q = static_cast<QDialog *>(q_ptr);
+
     if (visible){
         if (q->testAttribute(Qt::WA_WState_ExplicitShowHide) && !q->testAttribute(Qt::WA_WState_Hidden))
             return;
@@ -2165,7 +2168,7 @@ void QColorDialogPrivate::setVisible(bool visible)
             // Set WA_DontShowOnScreen so that QDialog::setVisible(visible) below
             // updates the state correctly, but skips showing the non-native version:
             q->setAttribute(Qt::WA_DontShowOnScreen);
-        } else {
+        } else if (visible) {
             initWidgets();
         }
     } else {
