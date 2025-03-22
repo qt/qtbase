@@ -965,7 +965,10 @@ void QFontDialog::setVisible(bool visible)
 */
 void QFontDialogPrivate::setVisible(bool visible)
 {
-    Q_Q(QFontDialog);
+    // Don't use Q_Q here! This function is called from ~QDialog,
+    // so Q_Q calling q_func() invokes undefined behavior (invalid cast in q_func()).
+    const auto q = static_cast<QDialog *>(q_ptr);
+
     if (q->testAttribute(Qt::WA_WState_ExplicitShowHide) && q->testAttribute(Qt::WA_WState_Hidden) != visible)
         return;
     if (canBeNativeDialog())
