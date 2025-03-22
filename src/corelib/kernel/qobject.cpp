@@ -3756,6 +3756,14 @@ bool QMetaObjectPrivate::disconnect(const QObject *sender,
         QObjectPrivate::ConnectionDataPointer connections(scd);
 
         if (signal_index < 0) {
+            // wildcard disconnect - warn if this disconnects destroyed()
+            if (!receiver && method_index < 0 && sender->d_func()->isSignalConnected(0)) {
+                qWarning("QObject::disconnect: wildcard call disconnects from destroyed signal of"
+                         " %s::%s", sender->metaObject()->className(),
+                                    sender->objectName().isEmpty()
+                                        ? "unnamed"
+                                        : sender->objectName().toLocal8Bit().data());
+            }
             // remove from all connection lists
             for (int sig_index = -1; sig_index < scd->signalVectorCount(); ++sig_index) {
                 if (disconnectHelper(connections.data(), sig_index, receiver, method_index, slot, senderMutex, disconnectType))
