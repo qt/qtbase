@@ -857,7 +857,9 @@ void QFileDialog::setVisible(bool visible)
 */
 void QFileDialogPrivate::setVisible(bool visible)
 {
-    Q_Q(QFileDialog);
+    // Don't use Q_Q here! This function is called from ~QDialog,
+    // so Q_Q calling q_func() invokes undefined behavior (invalid cast in q_func()).
+    const auto q = static_cast<QDialog *>(q_ptr);
 
     if (canBeNativeDialog()){
         if (setNativeDialogVisible(visible)){
@@ -869,7 +871,7 @@ void QFileDialogPrivate::setVisible(bool visible)
             if (!nativeDialogInUse)
                 completer->setModel(nullptr);
 #endif
-        } else {
+        } else if (visible) {
             createWidgets();
             q->setAttribute(Qt::WA_DontShowOnScreen, false);
 #if QT_CONFIG(fscompleter)
