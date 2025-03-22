@@ -14,8 +14,10 @@
 #endif
 #include <private/qdbusplatformmenu_p.h>
 #include <private/qdbusmenubar_p.h>
+
 #include <QSettings>
 #include <QStandardPaths>
+#include <QtCore/private/qenumindexedarray_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -85,7 +87,7 @@ public:
     QVariant readKdeSetting(KdeSetting s) const;
     void clearKdeSettings() const;
     static void readKdeSystemPalette(const QStringList &kdeDirs, int kdeVersion, QHash<QString, QSettings*> &kdeSettings, QPalette *pal);
-    static QFont *kdeFont(const QVariant &fontValue);
+    static std::unique_ptr<QFont> kdeFont(const QVariant &fontValue);
     static QStringList kdeIconThemeSearchPaths(const QStringList &kdeDirs);
 
     const QStringList kdeDirs;
@@ -106,7 +108,7 @@ public:
     Qt::ColorScheme m_colorScheme = Qt::ColorScheme::Unknown;
     Qt::ColorScheme m_requestedColorScheme = Qt::ColorScheme::Unknown;
     std::unique_ptr<QPalette> systemPalette;
-    QFont *fonts[QPlatformTheme::NFonts];
+    QEnumIndexedArrayFor<std::unique_ptr<QFont>, QPlatformTheme::NFonts> fonts;
     void updateColorScheme(const QString &themeName);
     bool hasRequestedColorScheme() const { return m_requestedColorScheme != Qt::ColorScheme::Unknown
                                            && m_requestedColorScheme != m_colorScheme; }
@@ -157,8 +159,8 @@ void QKdeThemePrivate::settingChangedHandler(QDBusListener::Provider provider,
 
 void QKdeThemePrivate::clearResources()
 {
-    qDeleteAll(fonts, fonts + QPlatformTheme::NFonts);
-    std::fill(fonts, fonts + QPlatformTheme::NFonts, static_cast<QFont *>(nullptr));
+    for (auto &e : fonts)
+        e.reset();
     systemPalette.reset();
 }
 
@@ -181,7 +183,6 @@ bool QKdeThemePrivate::initDbus()
 QKdeThemePrivate::QKdeThemePrivate(const QStringList &kdeDirs, int kdeVersion)
     : kdeDirs(kdeDirs), kdeVersion(kdeVersion)
 {
-    std::fill(fonts, fonts + QPlatformTheme::NFonts, static_cast<QFont *>(nullptr));
 #if QT_CONFIG(dbus)
     initDbus();
 #endif // QT_CONFIG(dbus)
@@ -415,33 +416,35 @@ void QKdeThemePrivate::refresh()
     }
 
     // Read system font, ignore 'smallestReadableFont'
-    if (QFont *systemFont = kdeFont(readKdeSetting(KdeSetting::Font)))
-        fonts[QPlatformTheme::SystemFont] = systemFont;
-    else
-        fonts[QPlatformTheme::SystemFont] = new QFont(QLatin1StringView(QGenericUnixTheme::defaultSystemFontNameC),
-                                                      QGenericUnixTheme::defaultSystemFontSize);
-
-    if (QFont *fixedFont = kdeFont(readKdeSetting(KdeSetting::Fixed))) {
-        fonts[QPlatformTheme::FixedFont] = fixedFont;
+    if (auto systemFont = kdeFont(readKdeSetting(KdeSetting::Font))) {
+        fonts[QPlatformTheme::SystemFont] = std::move(systemFont);
     } else {
-        fixedFont = new QFont(QLatin1StringView(QGenericUnixTheme::defaultFixedFontNameC),
-                              QGenericUnixTheme::defaultSystemFontSize);
-        fixedFont->setStyleHint(QFont::TypeWriter);
-        fonts[QPlatformTheme::FixedFont] = fixedFont;
+        fonts[QPlatformTheme::SystemFont]
+                = std::make_unique<QFont>(QLatin1StringView(QGenericUnixTheme::defaultSystemFontNameC),
+                                          QGenericUnixTheme::defaultSystemFontSize);
     }
 
-    if (QFont *menuFont = kdeFont(readKdeSetting(KdeSetting::MenuFont))) {
-        fonts[QPlatformTheme::MenuFont] = menuFont;
-        fonts[QPlatformTheme::MenuBarFont] = new QFont(*menuFont);
+    if (auto fixedFont = kdeFont(readKdeSetting(KdeSetting::Fixed))) {
+        fonts[QPlatformTheme::FixedFont] = std::move(fixedFont);
+    } else {
+        auto f = std::make_unique<QFont>(QLatin1StringView(QGenericUnixTheme::defaultFixedFontNameC),
+                                         QGenericUnixTheme::defaultSystemFontSize);
+        f->setStyleHint(QFont::TypeWriter);
+        fonts[QPlatformTheme::FixedFont] = std::move(f);
     }
 
-    if (QFont *toolBarFont = kdeFont(readKdeSetting(KdeSetting::ToolBarFont)))
-        fonts[QPlatformTheme::ToolButtonFont] = toolBarFont;
+    if (auto menuFont = kdeFont(readKdeSetting(KdeSetting::MenuFont))) {
+        fonts[QPlatformTheme::MenuBarFont] = std::make_unique<QFont>(*menuFont);
+        fonts[QPlatformTheme::MenuFont] = std::move(menuFont);
+    }
+
+    if (auto toolBarFont = kdeFont(readKdeSetting(KdeSetting::ToolBarFont)))
+        fonts[QPlatformTheme::ToolButtonFont] = std::move(toolBarFont);
 
     QWindowSystemInterface::handleThemeChange();
 
-    qCDebug(lcQpaFonts) << "default fonts: system" << fonts[QPlatformTheme::SystemFont]
-                        << "fixed" << fonts[QPlatformTheme::FixedFont];
+    qCDebug(lcQpaFonts) << "default fonts: system" << fonts[QPlatformTheme::SystemFont].get()
+                        << "fixed" << fonts[QPlatformTheme::FixedFont].get();
     qDeleteAll(kdeSettings);
 }
 
@@ -563,7 +566,7 @@ QKdeTheme::QKdeTheme(const QStringList& kdeDirs, int kdeVersion)
 QKdeTheme::~QKdeTheme()
     = default;
 
-QFont *QKdeThemePrivate::kdeFont(const QVariant &fontValue)
+std::unique_ptr<QFont> QKdeThemePrivate::kdeFont(const QVariant &fontValue)
 {
     if (fontValue.isValid()) {
         // Read font value: Might be a QStringList as KDE stores fonts without quotes.
@@ -584,7 +587,7 @@ QFont *QKdeThemePrivate::kdeFont(const QVariant &fontValue)
         if (!fontDescription.isEmpty()) {
             QFont font(fontFamily);
             if (font.fromString(fontDescription))
-                return new QFont(std::move(font));
+                return std::make_unique<QFont>(std::move(font));
         }
     }
     return nullptr;
@@ -768,7 +771,7 @@ const QPalette *QKdeTheme::palette(Palette type) const
 const QFont *QKdeTheme::font(Font type) const
 {
     Q_D(const QKdeTheme);
-    return d->fonts[type];
+    return d->fonts[type].get();
 }
 
 QPlatformTheme *QKdeTheme::createKdeTheme()
