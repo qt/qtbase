@@ -482,6 +482,15 @@ private:
     const int m_fuzz;
     QPalette simplePalette();
 
+    mutable std::unique_ptr<QStyle> m_style;
+    QStyle *deterministicStyle() const
+    {
+        if (!m_style)
+            m_style.reset(QStyleFactory::create(u"Windows"_s));
+        [&] { QVERIFY(m_style); }();
+        return m_style.get();
+    }
+
 private:
     enum class ScreenPosition {
         OffAbove,
@@ -499,11 +508,11 @@ void tst_QWidget::getSetCheck()
     QWidget child1(&obj1);
     // QStyle * QWidget::style()
     // void QWidget::setStyle(QStyle *)
-    QScopedPointer<QStyle> var1(QStyleFactory::create(QLatin1String("Windows")));
-    obj1.setStyle(var1.data());
-    QCOMPARE(static_cast<QStyle *>(var1.data()), obj1.style());
+    auto *style = deterministicStyle();
+    obj1.setStyle(style);
+    QCOMPARE(style, obj1.style());
     obj1.setStyle(nullptr);
-    QVERIFY(var1.data() != obj1.style());
+    QCOMPARE_NE(style, obj1.style());
     QVERIFY(obj1.style() != nullptr); // style can never be 0 for a widget
 
     const QRegularExpression negativeNotPossible(u"^.*Negative sizes \\(.*\\) are not possible$"_s);
@@ -644,7 +653,6 @@ void tst_QWidget::getSetCheck()
     obj1.setAutoFillBackground(true);
     QCOMPARE(true, obj1.autoFillBackground());
 
-    var1.reset();
 #if defined (Q_OS_WIN)
     obj1.setWindowFlags(Qt::FramelessWindowHint | Qt::WindowSystemMenuHint);
     const HWND handle = reinterpret_cast<HWND>(obj1.winId());   // explicitly create window handle
@@ -6605,8 +6613,7 @@ void tst_QWidget::moveChild()
 
     ColorWidget parent(nullptr, Qt::Window | Qt::WindowStaysOnTopHint);
     // prevent custom styles
-    const QScopedPointer<QStyle> style(QStyleFactory::create(QLatin1String("Windows")));
-    parent.setStyle(style.data());
+    parent.setStyle(deterministicStyle());
     ColorWidget child(&parent, Qt::Widget, Qt::blue);
 
     parent.setGeometry(QRect(m_availableTopLeft + QPoint(50, 50), QSize(200, 200)));
@@ -6662,8 +6669,7 @@ void tst_QWidget::showAndMoveChild()
     QWidget parent(nullptr, Qt::Window | Qt::WindowStaysOnTopHint);
     parent.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     // prevent custom styles
-    const QScopedPointer<QStyle> style(QStyleFactory::create(QLatin1String("Windows")));
-    parent.setStyle(style.data());
+    parent.setStyle(deterministicStyle());
 
     QRect desktopDimensions = parent.screen()->availableGeometry();
     desktopDimensions = desktopDimensions.adjusted(64, 64, -64, -64);
@@ -7950,7 +7956,7 @@ void tst_QWidget::renderChildFillsBackground()
     window.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     window.resize(100, 100);
     // prevent custom styles
-    window.setStyle(QStyleFactory::create(QLatin1String("Windows")));
+    window.setStyle(deterministicStyle());
     window.show();
     QVERIFY(QTest::qWaitForWindowExposed(&window));
     QWidget child(&window);
@@ -7977,7 +7983,7 @@ void tst_QWidget::renderTargetOffset()
     widget.setAutoFillBackground(true);
     widget.setPalette(Qt::red);
     // prevent custom styles
-    widget.setStyle(QStyleFactory::create(QLatin1String("Windows")));
+    widget.setStyle(deterministicStyle());
     widget.show();
     QVERIFY(QTest::qWaitForWindowExposed(&widget));
     QImage image(widget.size(), QImage::Format_RGB32);
@@ -8227,9 +8233,7 @@ void tst_QWidget::renderWithPainter()
 {
     QWidget widget(nullptr, Qt::Tool);
     // prevent custom styles
-
-    const QScopedPointer<QStyle> style(QStyleFactory::create(QLatin1String("Windows")));
-    widget.setStyle(style.data());
+    widget.setStyle(deterministicStyle());
     widget.show();
     widget.resize(70, 50);
     widget.setAutoFillBackground(true);
@@ -8331,12 +8335,11 @@ void tst_QWidget::renderRTL()
 {
     QFont f;
     f.setStyleStrategy(QFont::NoAntialias);
-    const QScopedPointer<QStyle> style(QStyleFactory::create(QLatin1String("Windows")));
 
     QMenu menu;
     menu.setMinimumWidth(200);
     menu.setFont(f);
-    menu.setStyle(style.data());
+    menu.setStyle(deterministicStyle());
     menu.addAction("I");
     menu.show();
     menu.setLayoutDirection(Qt::LeftToRight);
