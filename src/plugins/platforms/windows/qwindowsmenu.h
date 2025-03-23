@@ -76,7 +76,9 @@ private:
     bool m_checkable = false;
     bool m_checked = false;
     bool m_enabled = true;
+#if QT_CONFIG(shortcut)
     QKeySequence m_shortcut;
+#endif
 };
 
 class QWindowsMenu : public QPlatformMenu
