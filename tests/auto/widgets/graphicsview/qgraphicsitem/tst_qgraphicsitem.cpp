@@ -469,7 +469,7 @@ private slots:
 
 private:
     GraphicsItems paintedItems;
-    QPointingDevice *m_touchDevice = QTest::createTouchDevice();
+    std::unique_ptr<QPointingDevice> m_touchDevice{QTest::createTouchDevice()};
 };
 
 void tst_QGraphicsItem::cleanup()
@@ -11077,13 +11077,14 @@ void tst_QGraphicsItem::touchEventPropagation()
     view.setSceneRect(touchEventReceiver->boundingRect());
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
-    QInputDevicePrivate::get(m_touchDevice)->setAvailableVirtualGeometry(view.screen()->geometry());
+    QInputDevicePrivate::get(m_touchDevice.get())
+            ->setAvailableVirtualGeometry(view.screen()->geometry());
 
     QCOMPARE(touchEventReceiver->touchBeginEventCount(), 0);
 
     const QPointF scenePos = view.sceneRect().center();
     sendMousePress(&scene, scenePos);
-    QMutableTouchEvent touchBegin(QEvent::TouchBegin, m_touchDevice, Qt::NoModifier,
+    QMutableTouchEvent touchBegin(QEvent::TouchBegin, m_touchDevice.get(), Qt::NoModifier,
                                   createTouchPoints(view, scenePos, QSizeF(10, 10)));
     touchBegin.setTarget(view.viewport());
 
@@ -11137,11 +11138,12 @@ void tst_QGraphicsItem::touchEventTransformation()
     view.setTransform(viewTransform);
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
-    QInputDevicePrivate::get(m_touchDevice)->setAvailableVirtualGeometry(view.screen()->geometry());
+    QInputDevicePrivate::get(m_touchDevice.get())
+            ->setAvailableVirtualGeometry(view.screen()->geometry());
 
     QCOMPARE(touchEventReceiver->touchBeginEventCount(), 0);
 
-    QMutableTouchEvent touchBegin(QEvent::TouchBegin, m_touchDevice, Qt::NoModifier,
+    QMutableTouchEvent touchBegin(QEvent::TouchBegin, m_touchDevice.get(), Qt::NoModifier,
                                   createTouchPoints(view, touchScenePos, ellipseDiameters));
     touchBegin.setTarget(view.viewport());
     QCoreApplication::sendEvent(&scene, &touchBegin);
@@ -11155,7 +11157,7 @@ void tst_QGraphicsItem::touchEventTransformation()
     COMPARE_POINTF(touchBeginPoint.position(), expectedItemPos);
     COMPARE_SIZEF(touchBeginPoint.ellipseDiameters(), ellipseDiameters); // Must remain untransformed
 
-    QMutableTouchEvent touchUpdate(QEvent::TouchUpdate, m_touchDevice, Qt::NoModifier,
+    QMutableTouchEvent touchUpdate(QEvent::TouchUpdate, m_touchDevice.get(), Qt::NoModifier,
                                    createTouchPoints(view, touchScenePos, ellipseDiameters, QEventPoint::State::Updated));
     touchUpdate.setTarget(view.viewport());
 
