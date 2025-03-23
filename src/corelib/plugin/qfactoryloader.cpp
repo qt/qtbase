@@ -491,6 +491,7 @@ QFactoryLoader::MetaDataList QFactoryLoader::metaData() const
     QMutexLocker locker(&d->mutex);
     for (const auto &library : d->libraries)
         metaData.append(library->metaData);
+    locker.unlock();
 #endif
 
     QLatin1StringView iid(d->iid.constData(), d->iid.size());
@@ -517,6 +518,7 @@ QList<QCborArray> QFactoryLoader::metaDataKeys() const
         const QCborValue md = library->metaData.value(QtPluginMetaDataKeys::MetaData);
         metaData.append(md["Keys"_L1].toArray());
     }
+    locker.unlock();
 #endif
 
     QLatin1StringView iid(d->iid.constData(), d->iid.size());
