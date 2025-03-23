@@ -121,7 +121,7 @@ private slots:
     void mouseEventTimestamp();
 
 private:
-    QPointingDevice *m_touchScreen = QTest::createTouchDevice();
+    const std::unique_ptr<QPointingDevice> m_touchScreen{QTest::createTouchDevice()};
 };
 
 /*! \internal
@@ -146,7 +146,7 @@ void tst_QScroller::kineticScroll(tst_QScrollerWidget *sw, QPointF from, QPoint 
     QMutableEventPoint::setGlobalPosition(touchPoint, touchStart);
 
     QTouchEvent touchEvent1(QEvent::TouchBegin,
-                            m_touchScreen,
+                            m_touchScreen.get(),
                             Qt::NoModifier,
                             (QList<QTouchEvent::TouchPoint>() << touchPoint));
 
@@ -161,7 +161,7 @@ void tst_QScroller::kineticScroll(tst_QScrollerWidget *sw, QPointF from, QPoint 
     QMutableEventPoint::setGlobalPosition(touchPoint, touchUpdate);
     QMutableEventPoint::setState(touchPoint, QEventPoint::State::Updated);
     QTouchEvent touchEvent2(QEvent::TouchUpdate,
-                            m_touchScreen,
+                            m_touchScreen.get(),
                             Qt::NoModifier,
                             (QList<QEventPoint>() << touchPoint));
     QApplication::sendEvent(sw, &touchEvent2);
@@ -185,7 +185,7 @@ void tst_QScroller::kineticScroll(tst_QScrollerWidget *sw, QPointF from, QPoint 
     QMutableEventPoint::setGlobalPosition(touchPoint, touchEnd);
     QMutableEventPoint::setState(touchPoint, QEventPoint::State::Released);
     QTouchEvent touchEvent5(QEvent::TouchEnd,
-                            m_touchScreen,
+                            m_touchScreen.get(),
                             Qt::NoModifier,
                             (QList<QEventPoint>() << touchPoint));
     QApplication::sendEvent(sw, &touchEvent5);
@@ -213,7 +213,7 @@ void tst_QScroller::kineticScrollNoTest(tst_QScrollerWidget *sw, QPointF from, Q
     QMutableEventPoint::setScenePosition(touchPoint, touchStart);
     QMutableEventPoint::setGlobalPosition(touchPoint, touchStart);
     QTouchEvent touchEvent1(QEvent::TouchBegin,
-                            m_touchScreen,
+                            m_touchScreen.get(),
                             Qt::NoModifier,
                             (QList<QEventPoint>() << touchPoint));
     QApplication::sendEvent(sw, &touchEvent1);
@@ -225,7 +225,7 @@ void tst_QScroller::kineticScrollNoTest(tst_QScrollerWidget *sw, QPointF from, Q
     QMutableEventPoint::setScenePosition(touchPoint, touchUpdate);
     QMutableEventPoint::setGlobalPosition(touchPoint, touchUpdate);
     QTouchEvent touchEvent2(QEvent::TouchUpdate,
-                            m_touchScreen,
+                            m_touchScreen.get(),
                             Qt::NoModifier,
                             (QList<QEventPoint>() << touchPoint));
     QApplication::sendEvent(sw, &touchEvent2);
@@ -238,7 +238,7 @@ void tst_QScroller::kineticScrollNoTest(tst_QScrollerWidget *sw, QPointF from, Q
     QMutableEventPoint::setScenePosition(touchPoint, touchEnd);
     QMutableEventPoint::setGlobalPosition(touchPoint, touchEnd);
     QTouchEvent touchEvent5(QEvent::TouchEnd,
-                            m_touchScreen,
+                            m_touchScreen.get(),
                             Qt::NoModifier,
                             (QList<QEventPoint>() << touchPoint));
     QApplication::sendEvent(sw, &touchEvent5);
