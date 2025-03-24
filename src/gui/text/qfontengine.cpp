@@ -400,15 +400,14 @@ bool QFontEngine::processHheaTable() const
         if (ascent == 0 && descent == 0)
             return false;
 
-        QFixed unitsPerEm = emSquareSize();
+        const qreal unitsPerEm = emSquareSize().toReal();
         // Bail out if values are too large for QFixed
         const auto limitForQFixed = std::numeric_limits<int>::max() / (fontDef.pixelSize * 64);
         if (ascent > limitForQFixed || descent > limitForQFixed || leading > limitForQFixed)
             return false;
-        m_ascent = QFixed::fromReal(ascent * fontDef.pixelSize) / unitsPerEm;
-        m_descent = -QFixed::fromReal(descent * fontDef.pixelSize) / unitsPerEm;
-
-        m_leading = QFixed::fromReal(leading * fontDef.pixelSize) / unitsPerEm;
+        m_ascent = QFixed::fromReal(ascent * fontDef.pixelSize / unitsPerEm);
+        m_descent = -QFixed::fromReal(descent * fontDef.pixelSize / unitsPerEm);
+        m_leading = QFixed::fromReal(leading * fontDef.pixelSize / unitsPerEm);
 
         return true;
     }
@@ -430,9 +429,10 @@ void QFontEngine::initializeHeightMetrics() const
         processOS2Table();
 
         if (!supportsSubPixelPositions()) {
+            const QFixed actualHeight = m_ascent + m_descent + m_leading;
             m_ascent = m_ascent.round();
             m_descent = m_descent.round();
-            m_leading = m_leading.round();
+            m_leading = actualHeight.round() - m_ascent - m_descent;
         }
     }
 
@@ -457,7 +457,7 @@ bool QFontEngine::processOS2Table() const
         quint16 winDescent = qFromBigEndian<quint16>(ptr + 76);
 
         enum { USE_TYPO_METRICS = 0x80 };
-        QFixed unitsPerEm = emSquareSize();
+        const qreal unitsPerEm = emSquareSize().toReal();
         if (preferTypoLineMetrics() || fsSelection & USE_TYPO_METRICS) {
             // Some fonts may have invalid OS/2 data. We detect this and bail out.
             if (typoAscent == 0 && typoDescent == 0)
@@ -467,9 +467,9 @@ bool QFontEngine::processOS2Table() const
             if (typoAscent > limitForQFixed || typoDescent > limitForQFixed
                     || typoLineGap > limitForQFixed)
                 return false;
-            m_ascent = QFixed::fromReal(typoAscent * fontDef.pixelSize) / unitsPerEm;
-            m_descent = -QFixed::fromReal(typoDescent * fontDef.pixelSize) / unitsPerEm;
-            m_leading = QFixed::fromReal(typoLineGap * fontDef.pixelSize) / unitsPerEm;
+            m_ascent = QFixed::fromReal(typoAscent * fontDef.pixelSize / unitsPerEm);
+            m_descent = -QFixed::fromReal(typoDescent * fontDef.pixelSize / unitsPerEm);
+            m_leading = QFixed::fromReal(typoLineGap * fontDef.pixelSize / unitsPerEm);
         } else {
             // Some fonts may have invalid OS/2 data. We detect this and bail out.
             if (winAscent == 0 && winDescent == 0)
@@ -477,8 +477,8 @@ bool QFontEngine::processOS2Table() const
             const auto limitForQFixed = std::numeric_limits<int>::max() / (fontDef.pixelSize * 64);
             if (winAscent > limitForQFixed || winDescent > limitForQFixed)
                 return false;
-            m_ascent = QFixed::fromReal(winAscent * fontDef.pixelSize) / unitsPerEm;
-            m_descent = QFixed::fromReal(winDescent * fontDef.pixelSize) / unitsPerEm;
+            m_ascent = QFixed::fromReal(winAscent * fontDef.pixelSize / unitsPerEm);
+            m_descent = QFixed::fromReal(winDescent * fontDef.pixelSize / unitsPerEm);
             m_leading = QFixed{};
         }
 
