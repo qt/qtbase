@@ -11631,6 +11631,8 @@ void tst_QGraphicsItem::itemDiesDuringDraggingOperation()
     QCoreApplication::sendEvent(&scene, &dragEnter);
     QGraphicsSceneDragDropEvent event(QEvent::GraphicsSceneDragMove);
     event.setScenePos(item->boundingRect().center());
+    event.setProposedAction(Qt::DropAction::CopyAction); // prevent uninit'ed copy in...
+    event.setDropAction(Qt::DropAction::CopyAction);     // ...QGraphicsScenePrivate::cloneDragDropEvent()
     QCoreApplication::sendEvent(&scene, &event);
     QCOMPARE(QGraphicsScenePrivate::get(&scene)->dragDropItem, item);
     delete item;
