@@ -4,6 +4,7 @@
 #include <QTest>
 
 #include <qcoreapplication.h>
+#include <qelapsedtimer.h>
 #include <qthread.h>
 #include <qsemaphore.h>
 

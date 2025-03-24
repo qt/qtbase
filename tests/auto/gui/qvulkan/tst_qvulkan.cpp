@@ -5,10 +5,12 @@
 #include <QtGui/QVulkanFunctions>
 #include <QtGui/QVulkanWindow>
 #include <QtCore/qvarlengtharray.h>
+#include <QtCore/qelapsedtimer.h>
 
 #include <QTest>
 
 #include <QSignalSpy>
+
 
 class tst_QVulkan : public QObject
 {

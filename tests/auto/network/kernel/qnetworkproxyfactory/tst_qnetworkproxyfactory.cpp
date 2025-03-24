@@ -5,6 +5,7 @@
 #include <QtTest/QTestEventLoop>
 
 #include <qcoreapplication.h>
+#include <qelapsedtimer.h>
 #include <qdebug.h>
 #include <qnetworkproxy.h>
 

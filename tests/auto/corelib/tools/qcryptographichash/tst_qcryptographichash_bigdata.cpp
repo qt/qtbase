@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QtCore/QCoreApplication>
+#include <QElapsedTimer>
 #include <QTest>
 #include <QScopeGuard>
 #include <QCryptographicHash>

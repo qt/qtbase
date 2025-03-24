@@ -3,6 +3,7 @@
 
 
 #include <QTest>
+#include <QElapsedTimer>
 #include <QScrollBar>
 #include <QStyleOptionSlider>
 #include <QScrollArea>

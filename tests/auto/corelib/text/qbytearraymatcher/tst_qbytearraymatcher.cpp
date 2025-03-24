@@ -5,6 +5,7 @@
 #include <QTest>
 
 #include <qbytearraymatcher.h>
+#include <qelapsedtimer.h>
 
 #include <numeric>
 #include <string>

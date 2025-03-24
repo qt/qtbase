@@ -8,6 +8,7 @@
 
 #include <QtNetwork/QDnsLookup>
 
+#include <QtCore/QElapsedTimer>
 #include <QtCore/QRandomGenerator>
 #include <QtNetwork/QHostAddress>
 #include <QtNetwork/QNetworkDatagram>
