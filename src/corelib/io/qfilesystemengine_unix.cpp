@@ -284,6 +284,58 @@ mtime(const T &statBuffer, int)
 } // namespace GetFileTimes
 } // unnamed namespace
 
+// converts QT_STATBUF::st_mode to QFSMD
+// the \a attributes parameter is OS-specific
+static QFileSystemMetaData::MetaDataFlags
+flagsFromStMode(mode_t mode, [[maybe_unused]] quint64 attributes)
+{
+    // inode exists
+    QFileSystemMetaData::MetaDataFlags entryFlags = QFileSystemMetaData::ExistsAttribute;
+
+    if (mode & S_IRUSR)
+        entryFlags |= QFileSystemMetaData::OwnerReadPermission;
+    if (mode & S_IWUSR)
+        entryFlags |= QFileSystemMetaData::OwnerWritePermission;
+    if (mode & S_IXUSR)
+        entryFlags |= QFileSystemMetaData::OwnerExecutePermission;
+
+    if (mode & S_IRGRP)
+        entryFlags |= QFileSystemMetaData::GroupReadPermission;
+    if (mode & S_IWGRP)
+        entryFlags |= QFileSystemMetaData::GroupWritePermission;
+    if (mode & S_IXGRP)
+        entryFlags |= QFileSystemMetaData::GroupExecutePermission;
+
+    if (mode & S_IROTH)
+        entryFlags |= QFileSystemMetaData::OtherReadPermission;
+    if (mode & S_IWOTH)
+        entryFlags |= QFileSystemMetaData::OtherWritePermission;
+    if (mode & S_IXOTH)
+        entryFlags |= QFileSystemMetaData::OtherExecutePermission;
+
+    // Type
+    Q_ASSERT(!S_ISLNK(mode));   // can only happen with lstat()
+    if ((mode & S_IFMT) == S_IFREG)
+        entryFlags |= QFileSystemMetaData::FileType;
+    else if ((mode & S_IFMT) == S_IFDIR)
+        entryFlags |= QFileSystemMetaData::DirectoryType;
+    else if ((mode & S_IFMT) != S_IFBLK)    // char devices, sockets, FIFOs
+        entryFlags |= QFileSystemMetaData::SequentialType;
+
+    // OS-specific flags
+    // Potential flags for the future:
+    // UF_APPEND and STATX_ATTR_APPEND
+    // UF_COMPRESSED and STATX_ATTR_COMPRESSED
+    // UF_IMMUTABLE and STATX_ATTR_IMMUTABLE
+    // UF_NODUMP and STATX_ATTR_NODUMP
+#ifdef UF_HIDDEN
+    if (attributes & UF_HIDDEN)
+        entryFlags |= QFileSystemMetaData::HiddenAttribute;
+#endif
+
+    return entryFlags;
+}
+
 #ifdef STATX_BASIC_STATS
 static int qt_real_statx(int fd, const char *pathname, int flags, struct statx *statxBuffer)
 {
@@ -310,39 +362,11 @@ static int qt_fstatx(int fd, struct statx *statxBuffer)
 inline void QFileSystemMetaData::fillFromStatxBuf(const struct statx &statxBuffer)
 {
     // Permissions
-    if (statxBuffer.stx_mode & S_IRUSR)
-        entryFlags |= QFileSystemMetaData::OwnerReadPermission;
-    if (statxBuffer.stx_mode & S_IWUSR)
-        entryFlags |= QFileSystemMetaData::OwnerWritePermission;
-    if (statxBuffer.stx_mode & S_IXUSR)
-        entryFlags |= QFileSystemMetaData::OwnerExecutePermission;
-
-    if (statxBuffer.stx_mode & S_IRGRP)
-        entryFlags |= QFileSystemMetaData::GroupReadPermission;
-    if (statxBuffer.stx_mode & S_IWGRP)
-        entryFlags |= QFileSystemMetaData::GroupWritePermission;
-    if (statxBuffer.stx_mode & S_IXGRP)
-        entryFlags |= QFileSystemMetaData::GroupExecutePermission;
-
-    if (statxBuffer.stx_mode & S_IROTH)
-        entryFlags |= QFileSystemMetaData::OtherReadPermission;
-    if (statxBuffer.stx_mode & S_IWOTH)
-        entryFlags |= QFileSystemMetaData::OtherWritePermission;
-    if (statxBuffer.stx_mode & S_IXOTH)
-        entryFlags |= QFileSystemMetaData::OtherExecutePermission;
-
-    // Type
-    if (S_ISLNK(statxBuffer.stx_mode))
-        entryFlags |= QFileSystemMetaData::LinkType;
-    if ((statxBuffer.stx_mode & S_IFMT) == S_IFREG)
-        entryFlags |= QFileSystemMetaData::FileType;
-    else if ((statxBuffer.stx_mode & S_IFMT) == S_IFDIR)
-        entryFlags |= QFileSystemMetaData::DirectoryType;
-    else if ((statxBuffer.stx_mode & S_IFMT) != S_IFBLK)
-        entryFlags |= QFileSystemMetaData::SequentialType;
+    MetaDataFlags flags = flagsFromStMode(statxBuffer.stx_mode, statxBuffer.stx_attributes);
+    entryFlags |= flags;
+    knownFlagsMask |= flags | PosixStatFlags;
 
     // Attributes
-    entryFlags |= QFileSystemMetaData::ExistsAttribute; // inode exists
     if (statxBuffer.stx_nlink == 0)
         entryFlags |= QFileSystemMetaData::WasDeletedAttribute;
     size_ = qint64(statxBuffer.stx_size);
@@ -449,47 +473,20 @@ static void fillStat64fromStat32(struct stat64 *statBuf64, const struct stat &st
 
 void QFileSystemMetaData::fillFromStatBuf(const QT_STATBUF &statBuffer)
 {
+    quint64 attributes = 0;
+#if defined(UF_SETTABLE)        // BSDs (incl. Darwin)
+    attributes = statBuffer.st_flags;
+#endif
+
     // Permissions
-    if (statBuffer.st_mode & S_IRUSR)
-        entryFlags |= QFileSystemMetaData::OwnerReadPermission;
-    if (statBuffer.st_mode & S_IWUSR)
-        entryFlags |= QFileSystemMetaData::OwnerWritePermission;
-    if (statBuffer.st_mode & S_IXUSR)
-        entryFlags |= QFileSystemMetaData::OwnerExecutePermission;
-
-    if (statBuffer.st_mode & S_IRGRP)
-        entryFlags |= QFileSystemMetaData::GroupReadPermission;
-    if (statBuffer.st_mode & S_IWGRP)
-        entryFlags |= QFileSystemMetaData::GroupWritePermission;
-    if (statBuffer.st_mode & S_IXGRP)
-        entryFlags |= QFileSystemMetaData::GroupExecutePermission;
-
-    if (statBuffer.st_mode & S_IROTH)
-        entryFlags |= QFileSystemMetaData::OtherReadPermission;
-    if (statBuffer.st_mode & S_IWOTH)
-        entryFlags |= QFileSystemMetaData::OtherWritePermission;
-    if (statBuffer.st_mode & S_IXOTH)
-        entryFlags |= QFileSystemMetaData::OtherExecutePermission;
-
-    // Type
-    if ((statBuffer.st_mode & S_IFMT) == S_IFREG)
-        entryFlags |= QFileSystemMetaData::FileType;
-    else if ((statBuffer.st_mode & S_IFMT) == S_IFDIR)
-        entryFlags |= QFileSystemMetaData::DirectoryType;
-    else if ((statBuffer.st_mode & S_IFMT) != S_IFBLK)
-        entryFlags |= QFileSystemMetaData::SequentialType;
+    MetaDataFlags flags = flagsFromStMode(statBuffer.st_mode, attributes);
+    entryFlags |= flags;
+    knownFlagsMask |= flags | PosixStatFlags;
 
     // Attributes
-    entryFlags |= QFileSystemMetaData::ExistsAttribute; // inode exists
     if (statBuffer.st_nlink == 0)
         entryFlags |= QFileSystemMetaData::WasDeletedAttribute;
     size_ = statBuffer.st_size;
-#ifdef UF_HIDDEN
-    if (statBuffer.st_flags & UF_HIDDEN) {
-        entryFlags |= QFileSystemMetaData::HiddenAttribute;
-        knownFlagsMask |= QFileSystemMetaData::HiddenAttribute;
-    }
-#endif
 
     // Times
     accessTime_ = GetFileTimes::atime(statBuffer, 0);
