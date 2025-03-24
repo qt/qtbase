@@ -244,7 +244,7 @@ static void set_thread_data(QThreadData *data) noexcept
         // As noted above: one global static for the thread that called
         // ::exit() (which may not be a Qt thread) and the pthread_key_t for
         // all others.
-        QThreadDataDestroyer::EarlyMainThread currentThreadCleanup;
+        static QThreadDataDestroyer::EarlyMainThread currentThreadCleanup;
         pthread_setspecific(threadDataDestroyer.key, data);
     }
     currentThreadData = data;
