@@ -23,6 +23,7 @@
 
 #include <QtCore/QDebug>
 #include <QtCore/QLoggingCategory>
+#include <QtCore/qscopeguard.h>
 
 #include <private/qgraphicsscene_p.h>
 #include <private/qgraphicssceneindex_p.h>
@@ -986,6 +987,7 @@ void tst_QGraphicsScene::selectionChanged()
     QCOMPARE(spy.size(), 3); // the grandchild was added, so the selection changed once
 
     scene.removeItem(parentItem);
+    const auto reaper = qScopeGuard([=] { delete parentItem; });
     QCOMPARE(spy.size(), 4); // the grandchild was removed, so the selection changed
 
     rect->setSelected(true);
@@ -1279,6 +1281,7 @@ void tst_QGraphicsScene::removeItem()
     item2->setSelected(true);
     QVERIFY(scene.selectedItems().contains(item2));
     scene.removeItem(item2);
+    const auto reaper = qScopeGuard([=] { delete item2; });
     QVERIFY(scene.selectedItems().isEmpty());
 
     // Check that we are in a state that can receive paint events
