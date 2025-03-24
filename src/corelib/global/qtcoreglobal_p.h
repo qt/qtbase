@@ -17,6 +17,8 @@
 // We mean it.
 //
 
+#include <QtCore/qtcoreglobal.h>
+
 #include <QtCore/private/qconfig_p.h>
 #include <QtCore/private/qtcore-config_p.h>
 
