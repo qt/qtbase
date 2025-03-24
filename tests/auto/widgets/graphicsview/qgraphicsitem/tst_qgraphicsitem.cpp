@@ -5002,12 +5002,12 @@ void tst_QGraphicsItem::sceneEventFilter()
     //Let check if the items are correctly removed from the sceneEventFilters array
     //to avoid stale pointers.
     QGraphicsView gv;
-    QGraphicsScene *anotherScene = new QGraphicsScene;
-    QGraphicsTextItem *ti = anotherScene->addText("This is a test #1");
+    QGraphicsScene anotherScene;
+    QGraphicsTextItem *ti = anotherScene.addText("This is a test #1");
     ti->moveBy(50, 50);
-    QGraphicsTextItem *ti2 = anotherScene->addText("This is a test #2");
-    QGraphicsTextItem *ti3 = anotherScene->addText("This is a test #3");
-    gv.setScene(anotherScene);
+    QGraphicsTextItem *ti2 = anotherScene.addText("This is a test #2");
+    QGraphicsTextItem *ti3 = anotherScene.addText("This is a test #3");
+    gv.setScene(&anotherScene);
     gv.show();
     QVERIFY(QTest::qWaitForWindowExposed(&gv));
     ti->installSceneEventFilter(ti2);
