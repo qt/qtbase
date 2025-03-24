@@ -1020,6 +1020,18 @@ void tst_QLocale::stringToDouble_data()
     if (std::numeric_limits<double>::has_quiet_NaN)
         QTest::newRow("C qnan") << QString("C") << QString("NaN") << true << std::numeric_limits<double>::quiet_NaN();
 
+    // Malformed
+    QTest::newRow("infe10") << QString("C") << QString("infe10") << false << 0.;
+    QTest::newRow("inf.10") << QString("C") << QString("inf.10") << false << 0.;
+    QTest::newRow("i1n0f") << QString("C") << QString("i1n0f") << false << 0.;
+    QTest::newRow("inf,000") << QString("en_US") << QString("inf,000") << false << 0.;
+    QTest::newRow("1,inf") << QString("en_US") << QString("1,inf") << false << 0.;
+    QTest::newRow("NaNe10") << QString("C") << QString("NaNe10") << false << 0.;
+    QTest::newRow("NaN.10") << QString("C") << QString("NaN.10") << false << 0.;
+    QTest::newRow("N1a0N") << QString("C") << QString("N1a0N") << false << 0.;
+    QTest::newRow("NaN,000") << QString("en_US") << QString("NaN,000") << false << 0.;
+    QTest::newRow("1,NaN") << QString("en_US") << QString("1,NaN") << false << 0.;
+
     // In range (but outside float's range):
     QTest::newRow("C big") << QString("C") << QString("3.5e38") << true << 3.5e38;
     QTest::newRow("C -big") << QString("C") << QString("-3.5e38") << true << -3.5e38;
