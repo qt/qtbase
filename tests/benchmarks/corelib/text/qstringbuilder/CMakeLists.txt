@@ -10,6 +10,4 @@ qt_internal_add_benchmark(tst_bench_qstringbuilder
         tst_bench_qstringbuilder.cpp
     LIBRARIES
         Qt::Test
-    COMPILE_OPTIONS
-        -g
 )
