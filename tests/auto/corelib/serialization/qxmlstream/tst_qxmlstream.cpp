@@ -571,6 +571,8 @@ private slots:
     void readFromQBufferInvalid() const;
     void readFromLatin1String() const;
     void readLatin1Document() const;
+    void appendToRawDocumentWithNonUtf8Encoding_data();
+    void appendToRawDocumentWithNonUtf8Encoding();
     void readNextStartElement() const;
     void readElementText() const;
     void readElementText_data() const;
@@ -1249,6 +1251,79 @@ void tst_QXmlStream::readLatin1Document() const
         QString text = reader.readElementText();
         QCOMPARE(text, "M\xE5rten"_L1);
     }
+}
+
+void tst_QXmlStream::appendToRawDocumentWithNonUtf8Encoding_data()
+{
+    QTest::addColumn<QByteArray>("rawDocumentStart");
+    QTest::addColumn<QString>("expectedFirstElementText");
+    QTest::addColumn<QString>("nextData");
+    QTest::addColumn<QStringConverter::Encoding>("nextEncoding");
+    QTest::addColumn<QString>("expectedNextElementText");
+
+    auto row = [](const char *name, const QByteArray &encoding,
+                  const QByteArray &firstData, const QString &expectedFirstString,
+                  QStringConverter::Encoding nextEncoding, const QString &nextString) {
+        const QByteArray docStart = "<?xml version=\"1.0\" encoding=\"" + encoding
+                + "\"?><foo><a>" + firstData + "</a>";
+        const QString nextElement = u"<a>"_s + nextString + u"</a>"_s;
+        QTest::newRow(name) << docStart << expectedFirstString << nextElement
+                            << nextEncoding << nextString;
+    };
+
+    row("l1+utf16", "iso-8859-1"_ba, "M\xE5rten"_ba, QString::fromLatin1("M\xE5rten"),
+        QStringConverter::Utf16, u"M\u00E5rten"_s);
+    row("l1+utf8", "iso-8859-1"_ba, "M\xE5rten"_ba, QString::fromLatin1("M\xE5rten"),
+        QStringConverter::Utf8, QString::fromUtf8("M\xC3\xA5rten"));
+    // Even this fails, because we internally convert the second L1 to UTF-8!
+    row("l1+l1", "iso-8859-1"_ba, "M\xE5rten"_ba, QString::fromLatin1("M\xE5rten"),
+        QStringConverter::Latin1, QString::fromLatin1("M\xE5rten"));
+
+    const QString utf16Str = u"<?xml version=\"1.0\" encoding=\"utf-16\"?>"
+                             "<foo><a>M\u00E5rten</a>"_s;
+    const QByteArray utf16Data{reinterpret_cast<const char *>(utf16Str.utf16()),
+                               utf16Str.size() * 2};
+
+    QTest::newRow("utf16+utf16") << utf16Data << u"M\u00E5rten"_s
+                                 << u"<a>M\u00E5rten</a>"_s
+                                 << QStringConverter::Utf16
+                                 << u"M\u00E5rten"_s;
+}
+
+void tst_QXmlStream::appendToRawDocumentWithNonUtf8Encoding()
+{
+    QFETCH(const QByteArray, rawDocumentStart);
+    QFETCH(const QString, expectedFirstElementText);
+    QFETCH(const QString, nextData);
+    QFETCH(const QStringConverter::Encoding, nextEncoding);
+    QFETCH(const QString, expectedNextElementText);
+
+    QXmlStreamReader reader(rawDocumentStart);
+    QVERIFY(reader.readNextStartElement()); // foo
+    QVERIFY(reader.readNextStartElement()); // a
+    QString text = reader.readElementText();
+    QCOMPARE(text, expectedFirstElementText);
+
+    switch (nextEncoding) {
+    case QStringConverter::Utf16:
+        reader.addData(nextData);
+        break;
+    case QStringConverter::Utf8:
+        reader.addData(QUtf8StringView{nextData.toUtf8()});
+        break;
+    case QStringConverter::Latin1:
+        reader.addData(QLatin1StringView{nextData.toLatin1()});
+        break;
+    default:
+        Q_UNREACHABLE();
+    }
+    QEXPECT_FAIL("utf16+utf16", "QTBUG-135129: Parser expected UTF-16, but got UTF-8", Abort);
+    QVERIFY(reader.readNextStartElement()); // a
+    text = reader.readElementText();
+
+    QEXPECT_FAIL("", "Parser expects the data in the initial encoding, but we convert to UTF-8",
+                 Continue);
+    QCOMPARE(text, expectedNextElementText);
 }
 
 void tst_QXmlStream::readNextStartElement() const
