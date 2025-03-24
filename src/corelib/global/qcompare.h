@@ -143,11 +143,10 @@ public:
 
 #ifdef __cpp_lib_three_way_comparison
     constexpr Q_IMPLICIT partial_ordering(std::partial_ordering stdorder) noexcept
+        : m_order{} // == equivalent
     {
         if (stdorder == std::partial_ordering::less)
             m_order = static_cast<QtPrivate::CompareUnderlyingType>(QtPrivate::Ordering::Less);
-        else if (stdorder == std::partial_ordering::equivalent)
-            m_order = static_cast<QtPrivate::CompareUnderlyingType>(QtPrivate::Ordering::Equivalent);
         else if (stdorder == std::partial_ordering::greater)
             m_order = static_cast<QtPrivate::CompareUnderlyingType>(QtPrivate::Ordering::Greater);
         else if (stdorder == std::partial_ordering::unordered)
@@ -337,11 +336,10 @@ public:
 
 #ifdef __cpp_lib_three_way_comparison
     constexpr Q_IMPLICIT weak_ordering(std::weak_ordering stdorder) noexcept
+        : m_order{} // == equivalent
     {
         if (stdorder == std::weak_ordering::less)
             m_order = static_cast<QtPrivate::CompareUnderlyingType>(QtPrivate::Ordering::Less);
-        else if (stdorder == std::weak_ordering::equivalent)
-            m_order = static_cast<QtPrivate::CompareUnderlyingType>(QtPrivate::Ordering::Equivalent);
         else if (stdorder == std::weak_ordering::greater)
             m_order = static_cast<QtPrivate::CompareUnderlyingType>(QtPrivate::Ordering::Greater);
     }
@@ -533,13 +531,10 @@ public:
 
 #ifdef __cpp_lib_three_way_comparison
     constexpr Q_IMPLICIT strong_ordering(std::strong_ordering stdorder) noexcept
+        : m_order{} // == equivalent
     {
         if (stdorder == std::strong_ordering::less)
             m_order = static_cast<QtPrivate::CompareUnderlyingType>(QtPrivate::Ordering::Less);
-        else if (stdorder == std::strong_ordering::equivalent)
-            m_order = static_cast<QtPrivate::CompareUnderlyingType>(QtPrivate::Ordering::Equivalent);
-        else if (stdorder == std::strong_ordering::equal)
-            m_order = static_cast<QtPrivate::CompareUnderlyingType>(QtPrivate::Ordering::Equal);
         else if (stdorder == std::strong_ordering::greater)
             m_order = static_cast<QtPrivate::CompareUnderlyingType>(QtPrivate::Ordering::Greater);
     }
@@ -802,11 +797,10 @@ public:
 
 #ifdef __cpp_lib_three_way_comparison
     constexpr Q_IMPLICIT QPartialOrdering(std::partial_ordering stdorder) noexcept
+        : m_order{} // == equivalent
     {
         if (stdorder == std::partial_ordering::less)
             m_order = static_cast<QtPrivate::CompareUnderlyingType>(QtPrivate::Ordering::Less);
-        else if (stdorder == std::partial_ordering::equivalent)
-            m_order = static_cast<QtPrivate::CompareUnderlyingType>(QtPrivate::Ordering::Equivalent);
         else if (stdorder == std::partial_ordering::greater)
             m_order = static_cast<QtPrivate::CompareUnderlyingType>(QtPrivate::Ordering::Greater);
         else if (stdorder == std::partial_ordering::unordered)
