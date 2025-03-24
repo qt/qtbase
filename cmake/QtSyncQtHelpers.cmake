@@ -153,7 +153,9 @@ function(qt_internal_target_sync_headers target
     # Filter out all headers that should be excluded from documentation generation.
     # Documentation generation shouldn't depend on headers like the dbus-generated ones.
     set(module_headers_for_docs "${module_headers}")
-    list(REMOVE_ITEM module_headers_for_docs ${module_headers_exclude_from_docs})
+    if(module_headers_exclude_from_docs)
+        list(REMOVE_ITEM module_headers_for_docs ${module_headers_exclude_from_docs})
+    endif()
 
     set(syncqt_staging_dir "${module_build_interface_include_dir}/.syncqt_staging")
 
