@@ -572,7 +572,9 @@ QModelIndex QSortFilterProxyModelPrivate::source_to_proxy(const QModelIndex &sou
         return QModelIndex();
     }
     QModelIndex source_parent = source_index.parent();
-    IndexMap::const_iterator it = create_mapping(source_parent);
+    IndexMap::const_iterator it = create_mapping_recursive(source_parent);
+    if (it == source_index_mapping.constEnd())
+        return QModelIndex();
     Mapping *m = it.value();
     if ((source_index.row() >= m->proxy_rows.size()) || (source_index.column() >= m->proxy_columns.size()))
         return QModelIndex();
