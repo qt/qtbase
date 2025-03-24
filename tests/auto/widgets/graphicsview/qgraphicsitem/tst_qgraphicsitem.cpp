@@ -3047,13 +3047,14 @@ void tst_QGraphicsItem::mapRectFromToParent()
     QFETCH(QRectF, inputRect);
     QFETCH(QRectF, outputRect);
 
-    QGraphicsRectItem *rect = new QGraphicsRectItem;
+    std::unique_ptr<QGraphicsRectItem> rectParent; // keep this first
+    const auto rect = std::make_unique<QGraphicsRectItem>();
     rect->setPos(pos);
     rect->setTransform(transform);
 
     if (parent) {
-        QGraphicsRectItem *rectParent = new QGraphicsRectItem;
-        rect->setParentItem(rectParent);
+        rectParent = std::make_unique<QGraphicsRectItem>();
+        rect->setParentItem(rectParent.get());
         rectParent->setPos(parentPos);
         rectParent->setTransform(parentTransform);
     }
