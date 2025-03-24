@@ -4401,17 +4401,17 @@ void tst_QGraphicsScene::taskQTBUG_5904_crashWithDeviceCoordinateCache()
 void tst_QGraphicsScene::taskQT657_paintIntoCacheWithTransparentParts()
 {
     // Test using DeviceCoordinateCache and opaque item
-    QScopedPointer<QWidget> w(new QWidget);
+    auto w = std::make_unique<QWidget>();
     w->setPalette(QColor(0, 0, 255));
     w->setGeometry(0, 0, 50, 50);
 
-    QGraphicsScene *scene = new QGraphicsScene();
+    QGraphicsScene scene;
     CustomView view;
     view.resize(m_testSize);
     view.setWindowTitle(QTest::currentTestFunction());
-    view.setScene(scene);
+    view.setScene(&scene);
 
-    QGraphicsProxyWidget *proxy = scene->addWidget(w.data());
+    QGraphicsProxyWidget *proxy = scene.addWidget(w.release());
     proxy->setCacheMode(QGraphicsItem::DeviceCoordinateCache);
     proxy->setTransform(QTransform().rotate(15), true);
 
