@@ -374,10 +374,10 @@ void tst_QGraphicsEffectSource::pixmapPadding()
     QPixmap pm(10, 10);
     pm.fill(Qt::red);
 
-    QGraphicsScene *scene = new QGraphicsScene();
-    PaddingEffect *effect = new PaddingEffect(scene);
+    QGraphicsScene scene;
+    PaddingEffect *effect = new PaddingEffect(&scene);
     QGraphicsPixmapItem *pmItem = new QGraphicsPixmapItem(pm);
-    scene->addItem(pmItem);
+    scene.addItem(pmItem);
     pmItem->setGraphicsEffect(effect);
 
     QFETCH(int, coordinateMode);
@@ -389,14 +389,11 @@ void tst_QGraphicsEffectSource::pixmapPadding()
     effect->padMode = (QGraphicsEffect::PixmapPadMode) padMode;
     effect->coordinateMode = (Qt::CoordinateSystem) coordinateMode;
 
-    scene->render(&dummyPainter, scene->itemsBoundingRect(), scene->itemsBoundingRect());
+    scene.render(&dummyPainter, scene.itemsBoundingRect(), scene.itemsBoundingRect());
 
     QCOMPARE(effect->pix.size(), size);
     QCOMPARE(effect->offset, offset);
     QCOMPARE(effect->pix.toImage().pixel(0, 0), ulPixel);
-
-    // ### Fix corruption in scene destruction, then enable...
-    // delete scene;
 }
 
 QTEST_MAIN(tst_QGraphicsEffectSource)
