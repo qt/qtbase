@@ -5,6 +5,7 @@
 #include <QTest>
 #include <QSignalSpy>
 #include <qstatusbar.h>
+#include <QElapsedTimer>
 #include <QLabel>
 #include <QMainWindow>
 #include <QSizeGrip>

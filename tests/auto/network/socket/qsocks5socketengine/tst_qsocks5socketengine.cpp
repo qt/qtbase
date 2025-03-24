@@ -5,6 +5,7 @@
 #include <QtTest/QTest>
 #include <QtTest/QTestEventLoop>
 
+#include <QtCore/QElapsedTimer>
 #include <QtCore/QQueue>
 #include <QtCore/QString>
 #include <QtCore/QCoreApplication>

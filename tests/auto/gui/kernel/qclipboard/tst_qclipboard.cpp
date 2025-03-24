@@ -9,6 +9,7 @@
 #include <QProcess>
 #endif
 #include <QtCore/QDebug>
+#include <QtCore/QElapsedTimer>
 #include <QtCore/QFileInfo>
 #include <QtCore/QDir>
 #include <QtCore/QVariant>

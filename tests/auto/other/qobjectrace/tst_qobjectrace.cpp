@@ -3,6 +3,7 @@
 
 #include <QtTest/qtest.h>
 
+#include <QtCore/qelapsedtimer.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qpointer.h>
 #include <QtCore/qsemaphore.h>

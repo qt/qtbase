@@ -8,6 +8,7 @@
 #include <QtTest/private/qpropertytesthelper_p.h>
 
 #include <QIODevice>
+#include <QElapsedTimer>
 #ifndef QT_NO_WIDGETS
 #include <QLabel>
 #endif
