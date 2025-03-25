@@ -239,7 +239,7 @@ void Connection::processData()
         writer.endMap();
         break;
     case Pong:
-        pongTime.restart();
+        pongTime.start();
         break;
     default:
         break;
