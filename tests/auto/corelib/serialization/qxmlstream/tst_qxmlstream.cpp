@@ -10,6 +10,7 @@
 #include <QTest>
 #include <QtTest/private/qcomparisontesthelper_p.h>
 #include <QUrl>
+#include <QVarLengthArray>
 #include <QXmlStreamReader>
 #include <QBuffer>
 #include <QStack>
@@ -573,6 +574,8 @@ private slots:
     void readLatin1Document() const;
     void appendToRawDocumentWithNonUtf8Encoding_data();
     void appendToRawDocumentWithNonUtf8Encoding();
+    void appendDifferentEncodingsWithoutXmlProlog_data();
+    void appendDifferentEncodingsWithoutXmlProlog();
     void readNextStartElement() const;
     void readElementText() const;
     void readElementText_data() const;
@@ -1326,6 +1329,191 @@ void tst_QXmlStream::appendToRawDocumentWithNonUtf8Encoding()
                  "Parser expects the data in the initial encoding, but we convert to UTF-8",
                  Continue);
     QCOMPARE(text, expectedNextElementText);
+}
+
+struct DataAndEncoding
+{
+    enum Encoding : quint8 {
+        Raw = 0,
+        Latin1,
+        Utf8,
+        Utf16
+    };
+
+    QByteArray data;
+    Encoding encoding;
+
+    DataAndEncoding(const QByteArray &d, Encoding e)
+        : data(d), encoding(e)
+    {}
+    DataAndEncoding(const QString &str)
+        : data(asUtf16ByteArray(str)), encoding(Encoding::Utf16)
+    {}
+
+    static QByteArray asUtf16ByteArray(const QString &input)
+    {
+        return QByteArray{reinterpret_cast<const char *>(input.utf16()), input.size() * 2};
+    }
+
+    QAnyStringView toAnyStringView() const
+    {
+        switch (encoding) {
+        case Latin1:
+            return QLatin1StringView{data};
+        case Utf8:
+            return QUtf8StringView{data};
+        case Utf16:
+            Q_ASSERT(data.size() % 2 == 0);
+            return QStringView{reinterpret_cast<const char16_t *>(data.data()), data.size() / 2};
+        case Raw:
+            // Impossible to convert to QASV in general case
+            Q_UNREACHABLE_RETURN({});
+        }
+    }
+
+    // for next_permutation
+    friend bool operator<(const DataAndEncoding &lhs, const DataAndEncoding &rhs)
+    {
+        return lhs.encoding < rhs.encoding;
+    }
+};
+
+void tst_QXmlStream::appendDifferentEncodingsWithoutXmlProlog_data()
+{
+    QTest::addColumn<QList<DataAndEncoding>>("inputs");
+    QTest::addColumn<QString>("expectedResult");
+
+    const QByteArray u8Str = "ΔΩΘ";
+    const QByteArray l1Str = "\xC4\xD6\xDC"; // ÄÖÜ
+    const QByteArray rawDataUtf8 = "\xf0\x9f\x98\x82"; // FACE WITH TEARS OF JOY (U+1F602)
+    const QString u16Str = u"\U0001F60E"_s; // SMILING FACE WITH SUNGLASSES (U+1F60E)
+
+    using Enc = DataAndEncoding::Encoding;
+
+    QVarLengthArray<DataAndEncoding> inputs{ DataAndEncoding{u8Str, Enc::Utf8},
+                                             DataAndEncoding{l1Str, Enc::Latin1},
+                                             DataAndEncoding{rawDataUtf8, Enc::Raw},
+                                             DataAndEncoding{u16Str} };
+
+    // Helper function to populate test data
+    auto encToName = [](Enc e) -> QByteArray {
+        switch (e) {
+        case Enc::Raw:
+            return "bytes"_ba;
+        case Enc::Latin1:
+            return "l1"_ba;
+        case Enc::Utf8:
+            return "u8"_ba;
+        case Enc::Utf16:
+            return "u16"_ba;
+        }
+        Q_UNREACHABLE_RETURN("");
+    };
+    auto adjustFirst = [](const DataAndEncoding &input) -> DataAndEncoding {
+        QByteArray newData = input.data;
+        if (input.encoding == Enc::Utf16)
+            newData.prepend(DataAndEncoding::asUtf16ByteArray(u"<a>"_s));
+        else
+            newData.prepend("<a>"_ba);
+        return {newData, input.encoding};
+    };
+    auto adjustLast = [](const DataAndEncoding &input) -> DataAndEncoding {
+        QByteArray newData = input.data;
+        if (input.encoding == Enc::Utf16)
+            newData.append(DataAndEncoding::asUtf16ByteArray(u"</a>"_s));
+        else
+            newData.append("</a>"_ba);
+        return {newData, input.encoding};
+    };
+    auto dataToString = [](const DataAndEncoding &input) -> QString {
+        if (input.encoding == Enc::Raw) {
+            // This function treats raw data as UTF-8
+            return QString::fromUtf8(input.data);
+        }
+        return input.toAnyStringView().toString();
+    };
+    // Iterate over all permutations of the list.
+    // Sort the list first, to cover all cases
+    std::sort(inputs.begin(), inputs.end());
+    do {
+        const auto lastIdx = inputs.size() - 1;
+        QByteArray testName;
+        QList<DataAndEncoding> inputData;
+        QString expectedResult;
+        for (qsizetype i = 0; i <= lastIdx; ++i) {
+            const auto &item = inputs[i];
+            testName += encToName(item.encoding);
+            if (i != lastIdx)
+                testName.append('+');
+            if (i == 0)
+                inputData.append(adjustFirst(item));
+            else if (i == lastIdx)
+                inputData.append(adjustLast(item));
+            else
+                inputData.append(item);
+            expectedResult.append(dataToString(item));
+        }
+        QTest::newRow(testName.constData()) << inputData << expectedResult;
+    } while (std::next_permutation(inputs.begin(), inputs.end()));
+
+    // plus add some corner cases
+
+    QTest::newRow("u8+bytes_FACE_WITH_TEARS_OF_JOY")
+            << QList{ DataAndEncoding{"<a>\xf0\x9f"_ba, Enc::Utf8},
+                      DataAndEncoding{"\x98\x82</a>"_ba, Enc::Raw} }
+            << u"\U0001F602"_s;
+
+    // The test tries to read FACE IN CLOUDS emoji.
+    // Its full representation is:
+    // - FACE WITHOUT MOUTH: U+1F636 or \xf0\x9f\x98\xb6;
+    // - ZERO WIDTH JOINER: U+200D or \xe2\x80\x8d;
+    // - FOG: U+1F32B or \xf0\x9f\x8c\xab;
+    // - VARIATION SELECTOR-16: U+FE0F or \xef\xb8\x8f.
+    // This test tries to encode a part of it as UTF-8, and the rest as UTF-16.
+    // Important is that we need to break at the borders of the characters
+    QTest::newRow("u8+u16_FACE_IN_CLOUDS")
+            << QList{ DataAndEncoding{"<a>\xf0\x9f\x98\xb6\xe2\x80\x8d"_ba, Enc::Utf8},
+                      DataAndEncoding{u"\U0001F32B\uFE0F</a>"_s} }
+            << u"\U0001F636\u200D\U0001F32B\uFE0F"_s;
+}
+
+void tst_QXmlStream::appendDifferentEncodingsWithoutXmlProlog()
+{
+    QFETCH(const QList<DataAndEncoding>, inputs);
+    QFETCH(const QString, expectedResult);
+
+    {
+        QXmlStreamReader reader;
+        for (const auto &data : inputs) {
+            if (data.encoding == DataAndEncoding::Raw)
+                reader.addData(data.data);
+            else
+                reader.addData(data.toAnyStringView());
+        }
+        QVERIFY(reader.readNextStartElement());
+        const QString text = reader.readElementText();
+        QCOMPARE(text, expectedResult);
+    }
+    // same with c-tor
+    {
+        std::unique_ptr<QXmlStreamReader> reader = nullptr;
+        for (const auto &data : inputs) {
+            if (!reader) {
+                if (data.encoding == DataAndEncoding::Raw)
+                    reader = std::make_unique<QXmlStreamReader>(data.data);
+                else
+                    reader = std::make_unique<QXmlStreamReader>(data.toAnyStringView());
+            } else {
+                if (data.encoding == DataAndEncoding::Raw)
+                    reader->addData(data.data);
+                else
+                    reader->addData(data.toAnyStringView());
+            }
+        }
+        QVERIFY(reader->readNextStartElement());
+        const QString text = reader->readElementText();
+        QCOMPARE(text, expectedResult);
+    }
 }
 
 void tst_QXmlStream::readNextStartElement() const
