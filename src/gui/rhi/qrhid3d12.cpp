@@ -249,6 +249,8 @@ bool QRhiD3D12::create(QRhi::Flags flags)
         }
     }
 
+    activeAdapter = nullptr;
+
     if (!importedDevice) {
         IDXGIAdapter1 *adapter;
         int requestedAdapterIndex = -1;
@@ -282,7 +284,6 @@ bool QRhiD3D12::create(QRhi::Flags flags)
             }
         }
 
-        activeAdapter = nullptr;
         for (int adapterIndex = 0; dxgiFactory->EnumAdapters1(UINT(adapterIndex), &adapter) != DXGI_ERROR_NOT_FOUND; ++adapterIndex) {
             DXGI_ADAPTER_DESC1 desc;
             adapter->GetDesc1(&desc);
