@@ -4,6 +4,7 @@
 
 #include <QTest>
 #include <QSignalSpy>
+
 #include <qapplication.h>
 #include <qmainwindow.h>
 #include <qmenubar.h>
@@ -19,6 +20,7 @@
 #include <qscreen.h>
 
 #include <qobject.h>
+#include <QtCore/qscopeguard.h>
 
 #include <QtWidgets/private/qapplication_p.h>
 
@@ -850,6 +852,7 @@ void tst_QMenuBar::allowActiveAndDisabled()
     menuBar.addMenu(&activeMenu);
     centerOnScreen(&menuBar);
     menuBar.show();
+    const auto closer = qScopeGuard([&] { menuBar.close(); }); // QTBUG-135151
     QVERIFY(QTest::qWaitForWindowExposed(&menuBar));
 
     // Here we verify that AllowActiveAndDisabled correctly skips
