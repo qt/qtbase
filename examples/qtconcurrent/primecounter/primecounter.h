@@ -6,6 +6,7 @@
 
 #include <QtWidgets/qdialog.h>
 #include <QtCore/qfuturewatcher.h>
+#include <QtCore/qelapsedtimer.h>
 #include <QtConcurrent/qtconcurrentfilter.h>
 #include <QtConcurrent/qtconcurrentreducekernel.h>
 
