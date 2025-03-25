@@ -1468,6 +1468,11 @@ void tst_QTimeZone::tzTest()
     QVERIFY(tzposix.isValid());
     QVERIFY(tzposix.hasDaylightTime());
 
+    // Cope with stray space at start of value (QTBUG-135109):
+    QTimeZone syd(" AEST-10AEDT,M10.1.0,M4.1.0/3");
+    QVERIFY(syd.isValid());
+    QVERIFY(syd.hasDaylightTime());
+
     // RHEL has been seen with this as Africa/Casablanca's POSIX rule:
     QTzTimeZonePrivate permaDst("<+00>0<+01>,0/0,J365/25");
     const QTimeZone utcP1("UTC+01:00"); // Should always have same offset as permaDst
