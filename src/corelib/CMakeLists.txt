@@ -738,7 +738,7 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_thread
         thread/qreadwritelock.cpp thread/qreadwritelock_p.h
         thread/qsemaphore.cpp thread/qsemaphore.h
         thread/qthreadpool.cpp thread/qthreadpool.h thread/qthreadpool_p.h
-        thread/qthreadstorage.cpp
+        thread/qthreadstorage.cpp thread/qthreadstorage_p.h
 )
 
 qt_internal_extend_target(Core CONDITION QT_FEATURE_thread AND UNIX

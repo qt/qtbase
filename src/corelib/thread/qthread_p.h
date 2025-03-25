@@ -17,18 +17,19 @@
 //
 //
 
-#include "qplatformdefs.h"
 #include "QtCore/qthread.h"
-#include "QtCore/qmutex.h"
-#include "QtCore/qstack.h"
-#if QT_CONFIG(thread)
-#include "QtCore/qwaitcondition.h"
-#endif
-#include "QtCore/qmap.h"
+
 #include "QtCore/qcoreapplication.h"
 #include "private/qobject_p.h"
+#include "QtCore/qmap.h"
+#include "QtCore/qmutex.h"
+#include "QtCore/qstack.h"
 
-#include <algorithm>
+#if QT_CONFIG(thread)
+#include "private/qthreadstorage_p.h"
+#include "QtCore/qwaitcondition.h"
+#endif
+
 #include <atomic>
 
 QT_BEGIN_NAMESPACE

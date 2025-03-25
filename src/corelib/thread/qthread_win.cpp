@@ -82,6 +82,7 @@ static void set_thread_data(QThreadData *data) noexcept
 {
     if (data) {
         struct Cleanup {
+            Cleanup() { QThreadStoragePrivate::init(); }
             ~Cleanup() { destroy_current_thread_data(currentThreadData); }
         };
         static thread_local Cleanup currentThreadCleanup;
