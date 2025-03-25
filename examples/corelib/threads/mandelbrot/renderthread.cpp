@@ -81,7 +81,7 @@ void RenderThread::run()
             constexpr int Limit = 4;
             bool allBlack = true;
 
-            timer.restart();
+            timer.start();
 
             for (int y = -halfHeight; y < halfHeight; ++y) {
                 if (restart)
