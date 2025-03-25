@@ -104,7 +104,7 @@ int main(int argc, char **argv)
     btnLayout->addWidget(btn);
 
     QCheckBox *cbMsaa = new QCheckBox(QObject::tr("Use 4x MSAA"));
-    QObject::connect(cbMsaa, &QCheckBox::stateChanged, cbMsaa, [cbMsaa, rhiWidget] {
+    QObject::connect(cbMsaa, &QCheckBox::checkStateChanged, cbMsaa, [cbMsaa, rhiWidget] {
         if (cbMsaa->isChecked())
             rhiWidget->setSampleCount(4);
         else
@@ -113,7 +113,7 @@ int main(int argc, char **argv)
     btnLayout->addWidget(cbMsaa);
 
     QCheckBox *cbOvberlay = new QCheckBox(QObject::tr("Show overlay widget"));
-    QObject::connect(cbOvberlay, &QCheckBox::stateChanged, cbOvberlay, [cbOvberlay, overlayLabel] {
+    QObject::connect(cbOvberlay, &QCheckBox::checkStateChanged, cbOvberlay, [cbOvberlay, overlayLabel] {
         if (cbOvberlay->isChecked())
             overlayLabel->setVisible(true);
         else
@@ -122,7 +122,7 @@ int main(int argc, char **argv)
     btnLayout->addWidget(cbOvberlay);
 
     QCheckBox *cbFlip = new QCheckBox(QObject::tr("Flip"));
-    QObject::connect(cbFlip, &QCheckBox::stateChanged, cbOvberlay, [cbFlip, rhiWidget] {
+    QObject::connect(cbFlip, &QCheckBox::checkStateChanged, cbOvberlay, [cbFlip, rhiWidget] {
         rhiWidget->setMirrorVertically(cbFlip->isChecked());
     });
     btnLayout->addWidget(cbFlip);
@@ -134,7 +134,7 @@ int main(int argc, char **argv)
     fixedSizeSlider->setMaximum(512);
     btnLayout->addWidget(fixedSizeSlider);
 
-    QObject::connect(cbFixedSize, &QCheckBox::stateChanged, cbFixedSize, [cbFixedSize, fixedSizeSlider, rhiWidget] {
+    QObject::connect(cbFixedSize, &QCheckBox::checkStateChanged, cbFixedSize, [cbFixedSize, fixedSizeSlider, rhiWidget] {
         if (cbFixedSize->isChecked())
             rhiWidget->setFixedColorBufferSize(QSize(fixedSizeSlider->value(), fixedSizeSlider->value()));
         else
