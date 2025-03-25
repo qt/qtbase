@@ -1692,7 +1692,7 @@ function(_qt_internal_android_create_runner_wrapper target)
     if(is_test AND NOT is_manual_test)
         qt_internal_android_test_runner_arguments("${target}" tool_path arguments)
     else()
-        qt_internal_android_app_runner_arguments("${target}" tool_path arguments)
+        _qt_internal_android_app_runner_arguments("${target}" tool_path arguments)
     endif()
 
     set(args_splitter "")
@@ -1736,7 +1736,7 @@ function(_qt_internal_android_create_runner_wrapper target)
 endfunction()
 
 # Get the android runner script path and its arguments for a target
-function(qt_internal_android_app_runner_arguments target out_runner_path out_arguments)
+function(_qt_internal_android_app_runner_arguments target out_runner_path out_arguments)
     set(runner_dir "${QT_HOST_PATH}/${QT6_HOST_INFO_LIBEXECDIR}")
     set(${out_runner_path} "${runner_dir}/qt-android-runner.py" PARENT_SCOPE)
 
