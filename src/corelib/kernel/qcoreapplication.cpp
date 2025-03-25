@@ -942,10 +942,7 @@ QCoreApplication::~QCoreApplication()
 #endif
 
 #ifndef QT_NO_QOBJECT
-    d_func()->threadData.loadRelaxed()->eventDispatcher = nullptr;
-    if (QCoreApplicationPrivate::eventDispatcher)
-        QCoreApplicationPrivate::eventDispatcher->closingDown();
-    QCoreApplicationPrivate::eventDispatcher = nullptr;
+    QCoreApplicationPrivate::destroyEventDispatcher();
 #endif
 
 #if QT_CONFIG(library)
@@ -3284,6 +3281,22 @@ void QCoreApplication::setEventDispatcher(QAbstractEventDispatcher *eventDispatc
     mainThread->setEventDispatcher(eventDispatcher);
 }
 
+void QCoreApplicationPrivate::destroyEventDispatcher()
+{
+    // This function is called by either ~QCoreApplication or ~QGuiApplication
+    QThreadData *data = QThreadData::current();
+    Q_ASSERT(data->eventDispatcher.loadAcquire() == eventDispatcher);
+
+    // same sequence as QThread::finish() or cleanup(): first we set the
+    // global(s) to nullptr, then we emit the signal, then we delete.
+    QAbstractEventDispatcher *dispatcher = eventDispatcher;
+    eventDispatcher = nullptr;
+    data->eventDispatcher.storeRelaxed(nullptr);
+    if (dispatcher) {
+        dispatcher->closingDown();
+        delete dispatcher;
+    }
+}
 #endif // QT_NO_QOBJECT
 
 /*!

@@ -159,6 +159,7 @@ public:
     bool aboutToQuitEmitted = false;
     bool threadData_clean = false;
 
+    static void destroyEventDispatcher();
     static QAbstractEventDispatcher *eventDispatcher;
     static bool is_app_running;
     static bool is_app_closing;

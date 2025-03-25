@@ -683,8 +683,7 @@ QGuiApplication::~QGuiApplication()
 
     qt_call_post_routines();
 
-    d->eventDispatcher->closingDown();
-    d->eventDispatcher = nullptr;
+    QGuiApplicationPrivate::destroyEventDispatcher();
 
 #ifndef QT_NO_CLIPBOARD
     delete QGuiApplicationPrivate::qt_clipboard;
