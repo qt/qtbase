@@ -3191,46 +3191,78 @@ void tst_QGraphicsItem::graphicsitem_cast()
     QGraphicsTextItem textItem;
     const QGraphicsTextItem *pTextItem = &textItem;
 
-    QVERIFY(qgraphicsitem_cast<QGraphicsPathItem *>(&pathItem));
-    //QVERIFY(qgraphicsitem_cast<QAbstractGraphicsPathItem *>(&pathItem));
-    QVERIFY(qgraphicsitem_cast<QGraphicsItem *>(&pathItem));
-    QVERIFY(qgraphicsitem_cast<const QGraphicsItem *>(pPathItem));
-    QVERIFY(qgraphicsitem_cast<const QGraphicsPathItem *>(pPathItem));
+    QCOMPARE_EQ(qgraphicsitem_cast<QGraphicsPathItem *>(&pathItem),
+                dynamic_cast<QGraphicsPathItem *>(&pathItem));
+    //QCOMPARE_EQ(qgraphicsitem_cast<QAbstractGraphicsPathItem *>(&pathItem),
+    //            dynamic_cast<QAbstractGraphicsPathItem *>(&pathItem));
+    QCOMPARE_EQ(qgraphicsitem_cast<QGraphicsItem *>(&pathItem),
+                dynamic_cast<QGraphicsItem *>(&pathItem));
+    QCOMPARE_EQ(qgraphicsitem_cast<const QGraphicsItem *>(pPathItem),
+                dynamic_cast<const QGraphicsItem *>(pPathItem));
+    QCOMPARE_EQ(qgraphicsitem_cast<const QGraphicsPathItem *>(pPathItem),
+                dynamic_cast<const QGraphicsPathItem *>(pPathItem));
 
-    QVERIFY(qgraphicsitem_cast<QGraphicsRectItem *>(&rectItem));
-    QVERIFY(qgraphicsitem_cast<QGraphicsItem *>(&rectItem));
-    QVERIFY(qgraphicsitem_cast<const QGraphicsItem *>(pRectItem));
-    QVERIFY(qgraphicsitem_cast<const QGraphicsRectItem *>(pRectItem));
+    QCOMPARE_EQ(qgraphicsitem_cast<QGraphicsRectItem *>(&rectItem),
+                dynamic_cast<QGraphicsRectItem *>(&rectItem));
+    QCOMPARE_EQ(qgraphicsitem_cast<QGraphicsItem *>(&rectItem),
+                dynamic_cast<QGraphicsItem *>(&rectItem));
+    QCOMPARE_EQ(qgraphicsitem_cast<const QGraphicsItem *>(pRectItem),
+                dynamic_cast<const QGraphicsItem *>(pRectItem));
+    QCOMPARE_EQ(qgraphicsitem_cast<const QGraphicsRectItem *>(pRectItem),
+                dynamic_cast<const QGraphicsRectItem *>(pRectItem));
 
-    QVERIFY(qgraphicsitem_cast<QGraphicsEllipseItem *>(&ellipseItem));
-    QVERIFY(qgraphicsitem_cast<QGraphicsItem *>(&ellipseItem));
-    QVERIFY(qgraphicsitem_cast<const QGraphicsItem *>(pEllipseItem));
-    QVERIFY(qgraphicsitem_cast<const QGraphicsEllipseItem *>(pEllipseItem));
+    QCOMPARE_EQ(qgraphicsitem_cast<QGraphicsEllipseItem *>(&ellipseItem),
+                dynamic_cast<QGraphicsEllipseItem *>(&ellipseItem));
+    QCOMPARE_EQ(qgraphicsitem_cast<QGraphicsItem *>(&ellipseItem),
+                dynamic_cast<QGraphicsItem *>(&ellipseItem));
+    QCOMPARE_EQ(qgraphicsitem_cast<const QGraphicsItem *>(pEllipseItem),
+                dynamic_cast<const QGraphicsItem *>(pEllipseItem));
+    QCOMPARE_EQ(qgraphicsitem_cast<const QGraphicsEllipseItem *>(pEllipseItem),
+                dynamic_cast<const QGraphicsEllipseItem *>(pEllipseItem));
 
-    QVERIFY(qgraphicsitem_cast<QGraphicsPolygonItem *>(&polygonItem));
-    //QVERIFY(qgraphicsitem_cast<QAbstractGraphicsPathItem *>(&polygonItem));
-    QVERIFY(qgraphicsitem_cast<QGraphicsItem *>(&polygonItem));
-    QVERIFY(qgraphicsitem_cast<const QGraphicsItem *>(pPolygonItem));
-    QVERIFY(qgraphicsitem_cast<const QGraphicsPolygonItem *>(pPolygonItem));
+    QCOMPARE_EQ(qgraphicsitem_cast<QGraphicsPolygonItem *>(&polygonItem),
+                dynamic_cast<QGraphicsPolygonItem *>(&polygonItem));
+    //QCOMPARE_EQ(qgraphicsitem_cast<QAbstractGraphicsPathItem *>(&polygonItem),
+    //            dynamic_cast<QAbstractGraphicsPathItem *>(&polygonItem));
+    QCOMPARE_EQ(qgraphicsitem_cast<QGraphicsItem *>(&polygonItem),
+                dynamic_cast<QGraphicsItem *>(&polygonItem));
+    QCOMPARE_EQ(qgraphicsitem_cast<const QGraphicsItem *>(pPolygonItem),
+                dynamic_cast<const QGraphicsItem *>(pPolygonItem));
+    QCOMPARE_EQ(qgraphicsitem_cast<const QGraphicsPolygonItem *>(pPolygonItem),
+                dynamic_cast<const QGraphicsPolygonItem *>(pPolygonItem));
 
-    QVERIFY(qgraphicsitem_cast<QGraphicsLineItem *>(&lineItem));
-    QVERIFY(qgraphicsitem_cast<QGraphicsItem *>(&lineItem));
-    QVERIFY(qgraphicsitem_cast<const QGraphicsItem *>(pLineItem));
-    QVERIFY(qgraphicsitem_cast<const QGraphicsLineItem *>(pLineItem));
+    QCOMPARE_EQ(qgraphicsitem_cast<QGraphicsLineItem *>(&lineItem),
+                dynamic_cast<QGraphicsLineItem *>(&lineItem));
+    QCOMPARE_EQ(qgraphicsitem_cast<QGraphicsItem *>(&lineItem),
+                dynamic_cast<QGraphicsItem *>(&lineItem));
+    QCOMPARE_EQ(qgraphicsitem_cast<const QGraphicsItem *>(pLineItem),
+                dynamic_cast<const QGraphicsItem *>(pLineItem));
+    QCOMPARE_EQ(qgraphicsitem_cast<const QGraphicsLineItem *>(pLineItem),
+                dynamic_cast<const QGraphicsLineItem *>(pLineItem));
 
-    QVERIFY(qgraphicsitem_cast<QGraphicsPixmapItem *>(&pixmapItem));
-    QVERIFY(qgraphicsitem_cast<QGraphicsItem *>(&pixmapItem));
-    QVERIFY(qgraphicsitem_cast<const QGraphicsItem *>(pPixmapItem));
-    QVERIFY(qgraphicsitem_cast<const QGraphicsPixmapItem *>(pPixmapItem));
+    QCOMPARE_EQ(qgraphicsitem_cast<QGraphicsPixmapItem *>(&pixmapItem),
+                dynamic_cast<QGraphicsPixmapItem *>(&pixmapItem));
+    QCOMPARE_EQ(qgraphicsitem_cast<QGraphicsItem *>(&pixmapItem),
+                dynamic_cast<QGraphicsItem *>(&pixmapItem));
+    QCOMPARE_EQ(qgraphicsitem_cast<const QGraphicsItem *>(pPixmapItem),
+                dynamic_cast<const QGraphicsItem *>(pPixmapItem));
+    QCOMPARE_EQ(qgraphicsitem_cast<const QGraphicsPixmapItem *>(pPixmapItem),
+                dynamic_cast<const QGraphicsPixmapItem *>(pPixmapItem));
 
-    QVERIFY(qgraphicsitem_cast<QGraphicsTextItem *>(&textItem));
-    QVERIFY(qgraphicsitem_cast<QGraphicsItem *>(&textItem));
-    QVERIFY(qgraphicsitem_cast<const QGraphicsItem *>(pTextItem));
-    QVERIFY(qgraphicsitem_cast<const QGraphicsTextItem *>(pTextItem));
+    QCOMPARE_EQ(qgraphicsitem_cast<QGraphicsTextItem *>(&textItem),
+                dynamic_cast<QGraphicsTextItem *>(&textItem));
+    QCOMPARE_EQ(qgraphicsitem_cast<QGraphicsItem *>(&textItem),
+                dynamic_cast<QGraphicsItem *>(&textItem));
+    QCOMPARE_EQ(qgraphicsitem_cast<const QGraphicsItem *>(pTextItem),
+                dynamic_cast<const QGraphicsItem *>(pTextItem));
+    QCOMPARE_EQ(qgraphicsitem_cast<const QGraphicsTextItem *>(pTextItem),
+                dynamic_cast<const QGraphicsTextItem *>(pTextItem));
 
     // and some casts that _should_ fail:
-    QVERIFY(!qgraphicsitem_cast<QGraphicsEllipseItem *>(&pathItem));
-    QVERIFY(!qgraphicsitem_cast<const QGraphicsTextItem *>(pPolygonItem));
+    QCOMPARE_EQ(qgraphicsitem_cast<QGraphicsEllipseItem *>(&pathItem),
+                dynamic_cast<QGraphicsEllipseItem *>(&pathItem));
+    QCOMPARE_EQ(qgraphicsitem_cast<const QGraphicsTextItem *>(pPolygonItem),
+                dynamic_cast<const QGraphicsTextItem *>(pPolygonItem));
 
     // and this shouldn't crash
     QGraphicsItem *ptr = nullptr;
