@@ -1209,7 +1209,7 @@ void tst_QCompleter::hideWidget()
     w.setLayout(new QVBoxLayout);
 
     QLineEdit edit;
-    edit.setCompleter(new QCompleter({ "foo", "bar" }));
+    edit.setCompleter(new QCompleter({ "foo", "bar" }, &edit));
 
     w.layout()->addWidget(&edit);
 
