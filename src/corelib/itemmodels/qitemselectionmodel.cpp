@@ -1268,6 +1268,13 @@ void QItemSelectionModel::select(const QModelIndex &index, QItemSelectionModel::
     \a selected and \a deselected empty, if only the indices of selected items
     change.
 
+    \note It is not permitted to modify the model (e.g., by calling setData()) from
+    within a slot connected directly to this signal. This signal may be emitted while
+    the model is in the process of being modified, for example during row or column
+    removal, or a model reset. Attempting to perform additional changes at such times
+    can lead to undefined behavior. In particular, nested modifications can corrupt
+    internal state, such as the mapping structures maintained by QSortFilterProxyModel.
+
     \sa select(), currentChanged()
 */
 
