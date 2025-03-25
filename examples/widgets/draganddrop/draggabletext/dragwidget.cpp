@@ -20,7 +20,12 @@ DragWidget::DragWidget(QWidget *parent)
     : QWidget(parent)
 {
     QFile dictionaryFile(QStringLiteral(":/dictionary/words.txt"));
-    dictionaryFile.open(QIODevice::ReadOnly);
+    if (!dictionaryFile.open(QIODevice::ReadOnly)) {
+        // This would be a build problem, as the dictionary is in the
+        // resource system.
+        qFatal("Could not open the dictionary file: %s",
+               qPrintable(dictionaryFile.errorString()));
+    }
     QTextStream inputStream(&dictionaryFile);
 
     int x = 5;

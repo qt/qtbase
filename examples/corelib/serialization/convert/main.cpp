@@ -23,12 +23,14 @@ static const Converter *prepareConverter(QString format, Converter::Direction di
         : QIODevice::ReadOnly;
     const char *dirn = out ? "output" : "input";
 
-    if (stream->fileName().isEmpty())
-        stream->open(out ? stdout : stdin, mode);
-    else
-        stream->open(mode);
+    bool isOpen;
 
-    if (!stream->isOpen()) {
+    if (stream->fileName().isEmpty())
+        isOpen = stream->open(out ? stdout : stdin, mode);
+    else
+        isOpen = stream->open(mode);
+
+    if (!isOpen) {
         qFatal("Could not open \"%s\" for %s: %s",
                qPrintable(stream->fileName()), dirn, qPrintable(stream->errorString()));
     } else if (format == "auto"_L1) {
