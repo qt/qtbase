@@ -866,6 +866,9 @@ class QTypeInfo<Qt::totally_ordered_wrapper<P>> : public QTypeInfo<P> {};
 
 namespace QtOrderingPrivate {
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED // don't warn _here_ in case we hit the deprecated ptr/ptr overloads
+
 namespace CompareThreeWayTester {
 
 using Qt::compareThreeWay;
@@ -901,6 +904,8 @@ constexpr bool compareThreeWayNoexcept() noexcept
 { return noexcept(compareThreeWay(std::declval<RT>(), std::declval<LT>())); }
 
 } // namespace CompareThreeWayTester
+
+QT_WARNING_POP // QT_WARNING_DISABLE_DEPRECATED
 
 } // namespace QtOrderingPrivate
 
