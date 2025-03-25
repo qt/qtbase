@@ -240,6 +240,8 @@ bool QRhiD3D11::create(QRhi::Flags flags)
     if (maxFrameLatency == 0)
         qCDebug(QRHI_LOG_INFO, "Disabling FRAME_LATENCY_WAITABLE_OBJECT usage");
 
+    activeAdapter = nullptr;
+
     if (!importedDeviceAndContext) {
         IDXGIAdapter1 *adapter;
         int requestedAdapterIndex = -1;
@@ -273,7 +275,6 @@ bool QRhiD3D11::create(QRhi::Flags flags)
             }
         }
 
-        activeAdapter = nullptr;
         for (int adapterIndex = 0; dxgiFactory->EnumAdapters1(UINT(adapterIndex), &adapter) != DXGI_ERROR_NOT_FOUND; ++adapterIndex) {
             DXGI_ADAPTER_DESC1 desc;
             adapter->GetDesc1(&desc);
@@ -385,11 +386,15 @@ bool QRhiD3D11::create(QRhi::Flags flags)
                     adapter1->GetDesc1(&desc);
                     adapterLuid = desc.AdapterLuid;
                     QRhiD3D::fillDriverInfo(&driverInfoStruct, desc);
-                    adapter1->Release();
+                    activeAdapter = adapter1;
                 }
                 adapter->Release();
             }
             dxgiDev->Release();
+        }
+        if (!activeAdapter) {
+            qWarning("Failed to query adapter from imported device");
+            return false;
         }
         qCDebug(QRHI_LOG_INFO, "Using imported device %p", dev);
     }
