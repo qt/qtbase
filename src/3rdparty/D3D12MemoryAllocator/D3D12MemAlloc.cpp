@@ -141,8 +141,16 @@ especially to test compatibility with D3D12_RESOURCE_HEAP_TIER_1 on modern GPUs.
 #pragma GCC diagnostic ignored "-Wswitch"
 #pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
 #pragma GCC diagnostic ignored "-Wunused-function"
+#endif
+
+#if defined(__clang__)
+#pragma GCC diagnostic ignored "-Wtautological-undefined-compare"
+#endif
+
+#if defined(__GNUC__) && !defined(_M_ARM64)
 #pragma GCC diagnostic ignored "-Wnonnull-compare"
 #endif
+
 
 namespace D3D12MA
 {
