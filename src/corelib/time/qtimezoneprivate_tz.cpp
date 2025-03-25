@@ -512,7 +512,7 @@ static inline bool asciiIsLetter(char ch)
 
 namespace {
 
-struct PosixZone
+struct PosixZone // TODO: QTBUG-112006 - make this cross-platform.
 {
     enum {
         InvalidOffset = INT_MIN,
@@ -590,7 +590,7 @@ static auto validatePosixRule(const QByteArray &posixRule, bool requireOffset = 
     // See also calculatePosixTransition()'s reference.
     const auto parts = posixRule.split(',');
     const struct { bool isValid, hasDst; } fail{false, false}, good{true, parts.size() > 1};
-    const QByteArray &zoneinfo = parts.at(0);
+    const QByteArray &zoneinfo = parts.at(0).trimmed();
     if (zoneinfo.isEmpty())
         return fail;
 
@@ -646,7 +646,7 @@ static QList<QTimeZonePrivate::Data> calculatePosixTransitions(const QByteArray 
 
     PosixZone stdZone, dstZone = PosixZone::invalid();
     {
-        const QByteArray &zoneinfo = parts.at(0);
+        const QByteArray &zoneinfo = parts.at(0).trimmed();
         const char *begin = zoneinfo.constBegin();
 
         stdZone = PosixZone::parse(begin, zoneinfo.constEnd());
