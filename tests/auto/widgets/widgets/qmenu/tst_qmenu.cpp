@@ -1597,12 +1597,12 @@ void tst_QMenu::transientParent()
     window.menuBar()->setNativeMenuBar(false);
     centerOnScreen(&window);
 
-    QMenu *fileMenu = new QMenu("&File");
-    QAction *exitAct = new QAction("Exit");
+    QMenu *fileMenu = new QMenu("&File", &window);
+    QAction *exitAct = new QAction("Exit", &window);
     fileMenu->addAction(exitAct);
 
-    QMenu *editMenu = new QMenu("&Edit");
-    QAction *undoAct = new QAction("Undo");
+    QMenu *editMenu = new QMenu("&Edit", &window);
+    QAction *undoAct = new QAction("Undo", &window);
     editMenu->addAction(undoAct);
 
     QMenuBar *menuBar = new QMenuBar;
