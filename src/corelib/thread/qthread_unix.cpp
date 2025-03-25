@@ -145,12 +145,12 @@ int pthread_timedjoin_np(...) { return ENOSYS; }    // pretend
 // Finally, for the thread that called ::exit() (which in most cases happens by
 // returning from the main() function), finish() and cleanup() happen at
 // function-local static destructor time, and the deref & delete happens later,
-// at global static destruction time. This is important so QLibraryStore can
-// unload plugins between those two steps: it is also destroyed by a global
-// static destructor, but with a lower priority than ours. The order needs to
-// be this way so we delete the event dispatcher before plugins unload, as
-// often the dispatcher for the main thread is provided by a QPA plugin, but
-// the QThreadData object must still be alive when the plugins do unload.
+// at global static destruction time. That way, we delete the event dispatcher
+// before QLibraryStore's clean up runs and unloads remaining plugins. This
+// strategy was chosen because of crashes observed while running the event
+// dispatcher's destructor, and though the cause of the crash was something
+// else (QFactoryLoader always loads with PreventUnloadHint set), other plugins
+// may still attempt to access QThreadData in their global destructors.
 
 Q_CONSTINIT static thread_local QThreadData *currentThreadData = nullptr;
 

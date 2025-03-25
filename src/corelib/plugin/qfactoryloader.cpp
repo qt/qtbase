@@ -265,6 +265,7 @@ public:
     QString suffix;
     QString extraSearchPath;
     Qt::CaseSensitivity cs;
+    QLibrary::LoadHints loadHints;
 
     void updateSinglePath(const QString &pluginDir);
 #endif
@@ -391,6 +392,12 @@ inline void QFactoryLoaderPrivate::updateSinglePath(const QString &path)
             libraries.push_back(std::move(library));
         }
     };
+}
+
+void QFactoryLoader::setLoadHints(QLibrary::LoadHints loadHints)
+{
+    Q_D(QFactoryLoader);
+    d->loadHints = loadHints;
 }
 
 void QFactoryLoader::update()
@@ -566,6 +573,7 @@ QObject *QFactoryLoader::instance(int index) const
     QMutexLocker lock(&d->mutex);
     if (size_t(index) < d->libraries.size()) {
         QLibraryPrivate *library = d->libraries[index].get();
+        library->setLoadHints(d->loadHints);
         if (QObject *obj = library->pluginInstance()) {
             if (!obj->parent())
                 obj->moveToThread(QCoreApplicationPrivate::mainThread());
