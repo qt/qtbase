@@ -1091,6 +1091,12 @@ Q_LOGGING_CATEGORY(QRHI_LOG_RUB, "qt.rhi.rub")
     blending modes. In practice this can be expected to be supported everywhere
     except OpenGL ES, where it is only available with GLES 3.2 implementations.
     This enum value has been introduced in Qt 6.9.
+
+    \value SampleVariables Indicates that gl_SampleID, gl_SamplePosition,
+    gl_SampleMaskIn and gl_SampleMask variables are available in fragment shaders.
+    In practice this can be expected to be supported everywhere except OpenGL ES,
+    where it is only available with GLES 3.2 implementations.
+    This enum value has been introduced in Qt 6.9.
  */
 
 /*!

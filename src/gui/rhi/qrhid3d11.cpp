@@ -657,6 +657,7 @@ bool QRhiD3D11::isFeatureSupported(QRhi::Feature feature) const
     case QRhi::VariableRateShadingMapWithTexture:
         return false;
     case QRhi::PerRenderTargetBlending:
+    case QRhi::SampleVariables:
         return true;
     default:
         Q_UNREACHABLE();

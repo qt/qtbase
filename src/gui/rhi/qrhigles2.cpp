@@ -1141,6 +1141,16 @@ bool QRhiGles2::create(QRhi::Flags flags)
     else
         caps.perRenderTargetBlending = caps.ctxMajor >= 4;
 
+    if (caps.gles) {
+        if (caps.ctxMajor == 3 && caps.ctxMinor < 2) {
+            caps.sampleVariables = ctx->hasExtension("GL_OES_sample_variables");
+        } else {
+            caps.sampleVariables = caps.ctxMajor > 3 || (caps.ctxMajor == 3 && caps.ctxMinor >= 2);
+        }
+    } else {
+        caps.sampleVariables = caps.ctxMajor >= 4;
+    }
+
     nativeHandlesStruct.context = ctx;
 
     contextLost = false;
@@ -1555,6 +1565,8 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
         return false;
     case QRhi::PerRenderTargetBlending:
         return caps.perRenderTargetBlending;
+    case QRhi::SampleVariables:
+        return caps.sampleVariables;
     default:
         Q_UNREACHABLE_RETURN(false);
     }

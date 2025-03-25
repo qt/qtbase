@@ -5252,6 +5252,7 @@ bool QRhiVulkan::isFeatureSupported(QRhi::Feature feature) const
     case QRhi::VariableRateShadingMapWithTexture:
         return caps.renderPass2KHR && caps.imageBasedShadingRate;
     case QRhi::PerRenderTargetBlending:
+    case QRhi::SampleVariables:
         return true;
     default:
         Q_UNREACHABLE_RETURN(false);
