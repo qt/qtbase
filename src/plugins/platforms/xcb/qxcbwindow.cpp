@@ -39,6 +39,7 @@
 
 #include <qpa/qplatformbackingstore.h>
 #include <qpa/qwindowsysteminterface.h>
+#include <qplatformdefs.h>
 
 #include <stdio.h>
 

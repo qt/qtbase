@@ -199,6 +199,7 @@ struct QThreadDataDestroyer
     }
 
     struct EarlyMainThread {
+        EarlyMainThread() { QThreadStoragePrivate::init(); }
         ~EarlyMainThread()
         {
             // running function-local destructors upon ::exit()
