@@ -16,11 +16,14 @@
 //
 
 #include <qpa/qplatformservices.h>
+
+#include <QtCore/qpointer.h>
 #include <QtCore/QString>
 #include <QtCore/private/qglobal_p.h>
 
 QT_BEGIN_NAMESPACE
 
+class QDBusPendingCallWatcher;
 class QWindow;
 
 class Q_GUI_EXPORT QDesktopUnixServices : public QPlatformServices
@@ -46,7 +49,7 @@ private:
     QString m_webBrowser;
     QString m_documentLauncher;
 #if QT_CONFIG(dbus)
-    QMetaObject::Connection m_watcherConnection;
+    QPointer<QDBusPendingCallWatcher> m_watcher = nullptr;
 #endif
     bool m_hasScreenshotPortalWithColorPicking = false;
 };
