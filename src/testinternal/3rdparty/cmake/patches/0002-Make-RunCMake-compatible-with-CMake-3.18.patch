@@ -1,0 +1,90 @@
+From 3617409325fb3757d9126e72d4b852fa571f42f7 Mon Sep 17 00:00:00 2001
+From: Cristian Le <cristian.le@qt.io>
+Date: Fri, 7 Mar 2025 18:20:08 +0100
+Subject: [PATCH] Make RunCMake compatible with CMake<3.18
+
+Avoid using `cmake_language`.
+
+Reverting commit:
+https://gitlab.kitware.com/cmake/cmake/-/commit/67f97f54789413f47a0f03a36c3bb32518a2e922
+
+Pick-to: 6.9 6.8
+Change-Id: I8311508c904cbc66aa663a0b62f861b7b056b526
+Reviewed-by: Alexey Edelev <alexey.edelev@qt.io>
+---
+ .../3rdparty/cmake/RunCMake.cmake             | 19 ++++---------------
+ 1 file changed, 4 insertions(+), 15 deletions(-)
+
+diff --git a/src/testinternal/3rdparty/cmake/RunCMake.cmake b/src/testinternal/3rdparty/cmake/RunCMake.cmake
+index 65a320dacad..4b53e839951 100644
+--- a/src/testinternal/3rdparty/cmake/RunCMake.cmake
++++ b/src/testinternal/3rdparty/cmake/RunCMake.cmake
+@@ -2,6 +2,8 @@
+ # file Copyright.txt or https://cmake.org/licensing for details.
+ #
+ # Original file location was Tests/RunCMake/RunCMake.cmake
++#
++# reverted https://gitlab.kitware.com/cmake/cmake/-/commit/67f97f54789413f47a0f03a36c3bb32518a2e922
+ 
+ foreach(
+   arg
+@@ -139,16 +141,12 @@ function(run_cmake test)
+   else()
+     set(RunCMake_TEST_OPTIONS "")
+   endif()
+-  if(NOT DEFINED RunCMake_TEST_RAW_ARGS)
+-    set(RunCMake_TEST_RAW_ARGS "")
+-  endif()
+   if(NOT RunCMake_TEST_COMMAND_WORKING_DIRECTORY)
+     set(RunCMake_TEST_COMMAND_WORKING_DIRECTORY "${RunCMake_TEST_BINARY_DIR}")
+   endif()
+-  string(CONCAT _code [[execute_process(
++  execute_process(
+     COMMAND ${RunCMake_TEST_COMMAND}
+             ${RunCMake_TEST_OPTIONS}
+-            ]] "${RunCMake_TEST_RAW_ARGS}\n" [[
+     WORKING_DIRECTORY "${RunCMake_TEST_COMMAND_WORKING_DIRECTORY}"
+     OUTPUT_VARIABLE actual_stdout
+     ERROR_VARIABLE ${actual_stderr_var}
+@@ -156,7 +154,7 @@ function(run_cmake test)
+     ENCODING UTF8
+     ${maybe_timeout}
+     ${maybe_input_file}
+-    )]])
++    )
+   if(DEFINED ENV{PWD})
+     set(old_pwd "$ENV{PWD}")
+   else()
+@@ -164,7 +162,6 @@ function(run_cmake test)
+   endif()
+   # Emulate a shell using this directory.
+   set(ENV{PWD} "${RunCMake_TEST_COMMAND_WORKING_DIRECTORY}")
+-  cmake_language(EVAL CODE "${_code}")
+   if(DEFINED old_pwd)
+     set(ENV{PWD} "${old_pwd}")
+   else()
+@@ -266,9 +263,6 @@ function(run_cmake test)
+       string(REPLACE ";" "\" \"" options "\"${RunCMake_TEST_OPTIONS}\"")
+       string(APPEND command " ${options}")
+     endif()
+-    if(RunCMake_TEST_RAW_ARGS)
+-      string(APPEND command " ${RunCMake_TEST_RAW_ARGS}")
+-    endif()
+     string(APPEND msg "Command was:\n command> ${command}\n")
+   endif()
+   if(msg)
+@@ -306,11 +300,6 @@ function(run_cmake_with_options test)
+   run_cmake(${test})
+ endfunction()
+ 
+-function(run_cmake_with_raw_args test args)
+-  set(RunCMake_TEST_RAW_ARGS "${args}")
+-  run_cmake(${test})
+-endfunction()
+-
+ function(ensure_files_match expected_file actual_file)
+   if(NOT EXISTS "${expected_file}")
+     message(FATAL_ERROR "Expected file does not exist:\n  ${expected_file}")
+-- 
+2.47.0
+

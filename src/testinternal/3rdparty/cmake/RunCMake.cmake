@@ -144,6 +144,16 @@ function(run_cmake test)
   if(NOT RunCMake_TEST_COMMAND_WORKING_DIRECTORY)
     set(RunCMake_TEST_COMMAND_WORKING_DIRECTORY "${RunCMake_TEST_BINARY_DIR}")
   endif()
+  if(RunCMake_TEST_ECHO_OUTPUT_VARIABLE AND CMAKE_VERSION VERSION_GREATER_EQUAL "3.18")
+    set(maybe_echo_output "ECHO_OUTPUT_VARIABLE")
+  else()
+    set(maybe_echo_output "")
+  endif()
+  if(RunCMake_TEST_ECHO_ERROR_VARIABLE AND CMAKE_VERSION VERSION_GREATER_EQUAL "3.18")
+    set(maybe_echo_error "ECHO_ERROR_VARIABLE")
+  else()
+    set(maybe_echo_error "")
+  endif()
   execute_process(
     COMMAND ${RunCMake_TEST_COMMAND}
             ${RunCMake_TEST_OPTIONS}
@@ -154,6 +164,8 @@ function(run_cmake test)
     ENCODING UTF8
     ${maybe_timeout}
     ${maybe_input_file}
+    ${maybe_echo_output}
+    ${maybe_echo_error}
     )
   if(DEFINED ENV{PWD})
     set(old_pwd "$ENV{PWD}")
