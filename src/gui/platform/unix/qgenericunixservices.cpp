@@ -397,7 +397,7 @@ QGenericUnixServices::QGenericUnixServices()
 
     QDBusPendingCall pendingCall = QDBusConnection::sessionBus().asyncCall(message);
     auto watcher = new QDBusPendingCallWatcher(pendingCall);
-    m_watcherConnection =
+    m_watcher = watcher;
             QObject::connect(watcher, &QDBusPendingCallWatcher::finished, watcher,
                      [this](QDBusPendingCallWatcher *watcher) {
                          watcher->deleteLater();
@@ -412,7 +412,7 @@ QGenericUnixServices::QGenericUnixServices()
 QGenericUnixServices::~QGenericUnixServices()
 {
 #if QT_CONFIG(dbus)
-    QObject::disconnect(m_watcherConnection);
+    delete m_watcher;
 #endif
 }
 
