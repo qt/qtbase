@@ -22,6 +22,8 @@
 
 #include <QtTest/private/qtesthelpers_p.h>
 
+#include <QtCore/qscopeguard.h>
+
 using namespace QTestPrivate;
 
 class tst_QLayout : public QObject
@@ -392,6 +394,7 @@ void tst_QLayout::removeWidget()
     QCOMPARE(layout.count(), 1);
 
     layout.removeItem(childLayout);
+    const auto reaper = qScopeGuard([&] { delete childLayout; });
     QCOMPARE(layout.count(), 0);
 
     QVERIFY(!childLayout.isNull());
