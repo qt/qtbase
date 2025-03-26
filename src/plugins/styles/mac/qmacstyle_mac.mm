@@ -3027,7 +3027,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         }
         d->drawNSViewInRect(box, adjustedRect, p, ^(CGContextRef ctx, const CGRect &rect) {
 #if QT_CONFIG(tabwidget)
-            if (QTabWidget *tabWidget = qobject_cast<QTabWidget *>(opt->styleObject))
+            if (qobject_cast<QTabWidget *>(opt->styleObject))
                 clipTabBarFrame(opt, this, ctx);
 #endif
             CGContextTranslateCTM(ctx, 0, rect.origin.y + rect.size.height);
