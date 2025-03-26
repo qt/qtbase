@@ -389,13 +389,13 @@ void tst_QDialogButtonBox::hideAndShowButton()
     if (QGuiApplication::styleHints()->tabFocusBehavior() != Qt::TabFocusAllControls)
         QSKIP("Test requires Qt::TabFocusAllControls tab focus behavior");
 
+    QWidget widget;
     QDialogButtonBox buttonBox;
     QDialogButtonBoxPrivate *d = static_cast<QDialogButtonBoxPrivate *>(QObjectPrivate::get(&buttonBox));
     auto *apply = buttonBox.addButton( "Apply", QDialogButtonBox::ApplyRole );
     auto *accept = buttonBox.addButton( "Accept", QDialogButtonBox::AcceptRole );
     buttonBox.addButton( "Reject", QDialogButtonBox::RejectRole );
-    auto *widget = new QWidget();
-    auto *layout = new QHBoxLayout(widget);
+    auto *layout = new QHBoxLayout(&widget);
     layout->addWidget(&buttonBox);
 
     // apply button shows first on macOS. accept button on all other OSes.
@@ -409,8 +409,8 @@ void tst_QDialogButtonBox::hideAndShowButton()
 #endif
 
     hideButton->hide();
-    widget->show();
-    QVERIFY(QTest::qWaitForWindowExposed(widget));
+    widget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
     QTRY_VERIFY(buttonBox.focusWidget()); // QTBUG-114377: Without fixing, focusWidget() == nullptr
     QCOMPARE(d->visibleButtons().count(), 2);
     QCOMPARE(d->hiddenButtons.count(), 1);
