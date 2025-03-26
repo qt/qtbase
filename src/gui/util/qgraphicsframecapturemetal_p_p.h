@@ -17,7 +17,7 @@
 
 #include "qgraphicsframecapture_p_p.h"
 #include <QtCore/qmutex.h>
-#ifdef Q_OS_MACOS
+#if defined(Q_OS_MACOS) && QT_CONFIG(process)
 #include <QtCore/qprocess.h>
 #endif
 

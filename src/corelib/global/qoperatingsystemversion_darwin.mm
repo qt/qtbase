@@ -8,7 +8,7 @@
 #include <QtCore/qfile.h>
 #include <QtCore/qversionnumber.h>
 
-#if !defined(QT_BOOTSTRAPPED)
+#if !defined(QT_BOOTSTRAPPED) && QT_CONFIG(process)
 #include <QtCore/qprocess.h>
 #endif
 
