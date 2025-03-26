@@ -27,6 +27,7 @@
 #include <private/qabstractitemmodel_p.h>
 #include <private/qabstractitemdelegate_p.h>
 
+#include <QtCore/private/qnumeric_p.h>
 #ifndef QT_NO_DATASTREAM
 #include <qdatastream.h>
 #endif
@@ -415,7 +416,8 @@ void QHeaderView::setOffset(int newOffset)
     Q_D(QHeaderView);
     if (d->headerOffset == newOffset)
         return;
-    int ndelta = d->headerOffset - newOffset;
+    // don't overflow; this function is checked with both INT_MIN and INT_MAX...
+    const int ndelta = qt_saturate<int>(d->headerOffset - qint64{newOffset});
     d->headerOffset = newOffset;
     if (d->orientation == Qt::Horizontal)
         d->viewport->scroll(isRightToLeft() ? -ndelta : ndelta, 0);
