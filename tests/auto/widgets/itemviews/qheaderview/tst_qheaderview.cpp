@@ -3335,32 +3335,30 @@ void tst_QHeaderView::testStylePosition()
     topLevel->show();
     QVERIFY(QTest::qWaitForWindowExposed(topLevel));
 
-    protected_QHeaderView *header = static_cast<protected_QHeaderView *>(view);
-
     TestStyle proxy;
-    header->setStyle(&proxy);
+    view->setStyle(&proxy);
 
     QImage image(1, 1, QImage::Format_ARGB32);
     QPainter p(&image);
 
     // 0, 1, 2, 3
-    header->paintSection(&p, view->rect(), 0);
+    view->paintSection(&p, view->rect(), 0);
     QCOMPARE(proxy.lastPosition, QStyleOptionHeader::Beginning);
-    header->paintSection(&p, view->rect(), 1);
+    view->paintSection(&p, view->rect(), 1);
     QCOMPARE(proxy.lastPosition, QStyleOptionHeader::Middle);
-    header->paintSection(&p, view->rect(), 2);
+    view->paintSection(&p, view->rect(), 2);
     QCOMPARE(proxy.lastPosition, QStyleOptionHeader::Middle);
-    header->paintSection(&p, view->rect(), 3);
+    view->paintSection(&p, view->rect(), 3);
     QCOMPARE(proxy.lastPosition, QStyleOptionHeader::End);
 
     // (0),2,1,3
     view->setSectionHidden(0, true);
     view->swapSections(1, 2);
-    header->paintSection(&p, view->rect(), 1);
+    view->paintSection(&p, view->rect(), 1);
     QCOMPARE(proxy.lastPosition, QStyleOptionHeader::Middle);
-    header->paintSection(&p, view->rect(), 2);
+    view->paintSection(&p, view->rect(), 2);
     QCOMPARE(proxy.lastPosition, QStyleOptionHeader::Beginning);
-    header->paintSection(&p, view->rect(), 3);
+    view->paintSection(&p, view->rect(), 3);
     QCOMPARE(proxy.lastPosition, QStyleOptionHeader::End);
 
     // (1),2,0,(3)
@@ -3368,14 +3366,14 @@ void tst_QHeaderView::testStylePosition()
     view->setSectionHidden(0, false);
     view->setSectionHidden(1, true);
     view->swapSections(0, 1);
-    header->paintSection(&p, view->rect(), 0);
+    view->paintSection(&p, view->rect(), 0);
     QCOMPARE(proxy.lastPosition, QStyleOptionHeader::End);
-    header->paintSection(&p, view->rect(), 2);
+    view->paintSection(&p, view->rect(), 2);
     QCOMPARE(proxy.lastPosition, QStyleOptionHeader::Beginning);
 
     // (1),2,(0),(3)
     view->setSectionHidden(0, true);
-    header->paintSection(&p, view->rect(), 2);
+    view->paintSection(&p, view->rect(), 2);
     QCOMPARE(proxy.lastPosition, QStyleOptionHeader::OnlyOneSection);
 }
 
