@@ -32,6 +32,9 @@
 #include <private/qabstractitemview_p.h>
 #include <QtWidgets/private/qapplication_p.h>
 
+#include <vector>
+#include <memory>
+
 Q_DECLARE_METATYPE(Qt::ItemFlags);
 
 using namespace QTestPrivate;
@@ -1629,6 +1632,7 @@ void tst_QAbstractItemView::testDelegateDestroyEditor()
 
 void tst_QAbstractItemView::testDelegateDestroyEditorChild()
 {
+    std::vector<std::unique_ptr<QTreeWidgetItem>> reaper;
     QTreeWidget tree;
     MyAbstractItemDelegate delegate;
     tree.setItemDelegate(&delegate);
@@ -1644,8 +1648,10 @@ void tst_QAbstractItemView::testDelegateDestroyEditorChild()
     tree.openPersistentEditor(levelTwo2);
     QCOMPARE(delegate.virtualCtorCallCount, 4);
     levelOne1->removeChild(levelTwo1);
+    reaper.emplace_back(levelTwo1);
     QCOMPARE(delegate.virtualDtorCallCount, 1);
     topLevel->removeChild(levelOne2);
+    reaper.emplace_back(levelOne2);
     QCOMPARE(delegate.virtualDtorCallCount, 3);
 }
 
