@@ -5260,7 +5260,7 @@ void tst_QTreeView::expandAfterTake()
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
     view.expandAll();
-    model.takeItem(0);
+    const std::unique_ptr<QStandardItem> reaper{model.takeItem(0)};
     populateModel(&model); // populate model again, having corrupted items inside QTreeViewPrivate::expandedIndexes
     view.expandAll(); // adding new items to QTreeViewPrivate::expandedIndexes with corrupted persistent indices, causing crash sometimes
 }
