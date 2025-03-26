@@ -4421,7 +4421,7 @@ bool QAbstractItemViewPrivate::shouldAutoScroll(const QPoint &pos) const
 {
     if (!autoScroll)
         return false;
-    QRect area = static_cast<QAbstractItemView*>(viewport)->d_func()->clipRect(); // access QWidget private by bending C++ rules
+    const QRect area = QWidgetPrivate::get(viewport)->clipRect();
     return (pos.y() - area.top() < autoScrollMargin)
         || (area.bottom() - pos.y() < autoScrollMargin)
         || (pos.x() - area.left() < autoScrollMargin)
