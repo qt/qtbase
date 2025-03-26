@@ -1,0 +1,47 @@
+From 171377424a728b0cd5a635f07ade8930ee10b9d7 Mon Sep 17 00:00:00 2001
+From: Alexandru Croitor <alexandru.croitor@qt.io>
+Date: Wed, 26 Mar 2025 19:47:37 +0100
+Subject: [PATCH] CMake: Allow echoing RunCMake test command output via an
+ opt-in
+
+This will be used in a new manual test in qt5.git, to show progress of
+long-running commands.
+
+Change-Id: Ib73908e20fac7fe0bd620400d483625238fa37d1
+---
+ src/testinternal/3rdparty/cmake/RunCMake.cmake | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/src/testinternal/3rdparty/cmake/RunCMake.cmake b/src/testinternal/3rdparty/cmake/RunCMake.cmake
+index 4b53e839951..5d32e1c0eb8 100644
+--- a/src/testinternal/3rdparty/cmake/RunCMake.cmake
++++ b/src/testinternal/3rdparty/cmake/RunCMake.cmake
+@@ -144,6 +144,16 @@ function(run_cmake test)
+   if(NOT RunCMake_TEST_COMMAND_WORKING_DIRECTORY)
+     set(RunCMake_TEST_COMMAND_WORKING_DIRECTORY "${RunCMake_TEST_BINARY_DIR}")
+   endif()
++  if(RunCMake_TEST_ECHO_OUTPUT_VARIABLE AND CMAKE_VERSION VERSION_GREATER_EQUAL "3.18")
++    set(maybe_echo_output "ECHO_OUTPUT_VARIABLE")
++  else()
++    set(maybe_echo_output "")
++  endif()
++  if(RunCMake_TEST_ECHO_ERROR_VARIABLE AND CMAKE_VERSION VERSION_GREATER_EQUAL "3.18")
++    set(maybe_echo_error "ECHO_ERROR_VARIABLE")
++  else()
++    set(maybe_echo_error "")
++  endif()
+   execute_process(
+     COMMAND ${RunCMake_TEST_COMMAND}
+             ${RunCMake_TEST_OPTIONS}
+@@ -154,6 +164,8 @@ function(run_cmake test)
+     ENCODING UTF8
+     ${maybe_timeout}
+     ${maybe_input_file}
++    ${maybe_echo_output}
++    ${maybe_echo_error}
+     )
+   if(DEFINED ENV{PWD})
+     set(old_pwd "$ENV{PWD}")
+-- 
+2.47.0
+
