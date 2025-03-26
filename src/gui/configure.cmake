@@ -1101,7 +1101,6 @@ qt_feature("im" PUBLIC
     SECTION "Kernel"
     LABEL "QInputContext"
     PURPOSE "Provides complex input methods."
-    CONDITION QT_FEATURE_library
 )
 qt_feature_definition("im" "QT_NO_IM" NEGATE VALUE "1")
 qt_feature("highdpiscaling" PUBLIC
