@@ -798,8 +798,8 @@ bool QIconLoaderEngine::hasIcon() const
 void QIconLoaderEngine::paint(QPainter *painter, const QRect &rect,
                              QIcon::Mode mode, QIcon::State state)
 {
-    QSize pixmapSize = rect.size() * painter->device()->devicePixelRatio();
-    painter->drawPixmap(rect, pixmap(pixmapSize, mode, state));
+    const auto dpr = painter->device()->devicePixelRatio();
+    painter->drawPixmap(rect, scaledPixmap(rect.size(), mode, state, dpr));
 }
 
 /*
