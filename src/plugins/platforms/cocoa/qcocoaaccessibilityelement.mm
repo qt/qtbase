@@ -253,7 +253,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
 
 - (NSMutableArray *)populateTableArray:(NSAccessibilityRole)role count:(int)count
 {
-    if (QAccessibleInterface *iface = self.qtInterface) {
+    if (self.qtInterface) {
         auto *array = [NSMutableArray<QMacAccessibilityElement *> arrayWithCapacity:count];
         Q_ASSERT(array);
         for (int n = 0; n < count; ++n) {
@@ -408,7 +408,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
 }
 
 - (NSString *) accessibilityRoleDescription {
-    if (QAccessibleInterface *iface = self.qtInterface)
+    if (self.qtInterface)
         return NSAccessibilityRoleDescription(self.accessibilityRole, self.accessibilitySubRole);
     return NSAccessibilityUnknownRole;
 }
@@ -998,7 +998,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
         if (self.isManagedByParent) {
             // axid matches the parent table axid so that we can easily find the parent table
             // children of row are cell/any items
-            if (QAccessibleTableInterface *table = iface->tableInterface()) {
+            if (iface->tableInterface()) {
                 if (m_rowIndex >= 0)
                     index = NSInteger(m_rowIndex);
                 else if (m_columnIndex >= 0)
