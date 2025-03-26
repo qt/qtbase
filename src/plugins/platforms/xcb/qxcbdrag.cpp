@@ -1050,9 +1050,8 @@ void QXcbDrag::handleFinished(const xcb_client_message_event_t *event)
     if (event->window != connection()->qtSelectionOwner())
         return;
 
-    const unsigned long *l = (const unsigned long *)event->data.data32;
-    if (l[0]) {
-        int at = findTransactionByWindow(l[0]);
+    if (xcb_window_t w = event->data.data32[0]) {
+        int at = findTransactionByWindow(w);
         if (at != -1) {
 
             Transaction t = transactions.takeAt(at);
