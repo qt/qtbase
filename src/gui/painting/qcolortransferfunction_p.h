@@ -56,7 +56,8 @@ public:
         if (x < m_d)
             return m_c * x + m_f;
         float t = std::pow(m_a * x + m_b, m_g);
-        if (std::isfinite(t))
+        // Avoid NaN math, and leave room to multiply with 65280 and store in an int.
+        if (std::isfinite(t) && t > std::numeric_limits<short>::min() && t < std::numeric_limits<short>::max())
             return t + m_e;
         if (t > 0.f)
             return 1.f;
