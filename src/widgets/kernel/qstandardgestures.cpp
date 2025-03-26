@@ -399,12 +399,11 @@ QGestureRecognizer::Result QTapGestureRecognizer::recognize(QGesture *state,
     QTapGesture *q = static_cast<QTapGesture *>(state);
     QTapGesturePrivate *d = q->d_func();
 
-    const QTouchEvent *ev = static_cast<const QTouchEvent *>(event);
-
     QGestureRecognizer::Result result = QGestureRecognizer::CancelGesture;
 
     switch (event->type()) {
     case QEvent::TouchBegin: {
+        const auto ev = static_cast<const QTouchEvent *>(event);
         d->position = ev->points().at(0).position();
         q->setHotSpot(ev->points().at(0).globalPosition());
         result = QGestureRecognizer::TriggerGesture;
@@ -412,6 +411,7 @@ QGestureRecognizer::Result QTapGestureRecognizer::recognize(QGesture *state,
     }
     case QEvent::TouchUpdate:
     case QEvent::TouchEnd: {
+        const auto ev = static_cast<const QTouchEvent *>(event);
         if (q->state() != Qt::NoGesture && ev->points().size() == 1) {
             const QEventPoint &p = ev->points().at(0);
             QPoint delta = p.position().toPoint() - p.pressPosition().toPoint();
