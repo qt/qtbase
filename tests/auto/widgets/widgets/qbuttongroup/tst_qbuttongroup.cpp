@@ -197,7 +197,7 @@ void tst_QButtonGroup::keyNavigationPushButtons()
     layout->addWidget(pb3);
     layout->addWidget(le2);
 
-    QButtonGroup *buttonGroup = new QButtonGroup;
+    QButtonGroup *buttonGroup = new QButtonGroup(&dlg);
     buttonGroup->addButton(pb1);
     buttonGroup->addButton(pb2);
     buttonGroup->addButton(pb3);
