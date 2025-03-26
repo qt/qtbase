@@ -3880,6 +3880,7 @@ void QXmlStreamWriterPrivate::writeStartElement(QAnyStringView namespaceUri, QAn
     didWriteAnyToken = true;
 }
 
+#if QT_CONFIG(xmlstreamreader)
 /*!  Writes the current state of the \a reader. All possible valid
   states are supported.
 
@@ -3943,8 +3944,9 @@ void QXmlStreamWriter::writeCurrentToken(const QXmlStreamReader &reader)
         break;
     }
 }
-
+#endif // feature xmlstreamreader
 #endif // feature xmlstreamwriter
+
 #if QT_CONFIG(xmlstreamreader)
 static constexpr bool isTokenAllowedInContext(QXmlStreamReader::TokenType type,
                                                QXmlStreamReaderPrivate::XmlContext ctxt)

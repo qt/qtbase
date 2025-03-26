@@ -225,7 +225,7 @@ public:
     }
 };
 
-
+#if QT_CONFIG(xmlstreamreader)
 class QXmlStreamEntityResolver;
 class QXmlStreamReaderPrivate : public QXmlStreamGrammar, public QXmlStreamPrivateTagStack
 {
@@ -535,6 +535,7 @@ private:
             type = t;
     }
 };
+#endif // feature xmlstreamreader
 
 QT_END_NAMESPACE
 
