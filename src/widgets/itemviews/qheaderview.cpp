@@ -27,10 +27,11 @@
 #include <private/qabstractitemmodel_p.h>
 #include <private/qabstractitemdelegate_p.h>
 
-#include <QtCore/private/qnumeric_p.h>
 #ifndef QT_NO_DATASTREAM
 #include <qdatastream.h>
 #endif
+
+#include <QtCore/q26numeric.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -417,7 +418,7 @@ void QHeaderView::setOffset(int newOffset)
     if (d->headerOffset == newOffset)
         return;
     // don't overflow; this function is checked with both INT_MIN and INT_MAX...
-    const int ndelta = qt_saturate<int>(d->headerOffset - qint64{newOffset});
+    const int ndelta = q26::saturate_cast<int>(d->headerOffset - qint64{newOffset});
     d->headerOffset = newOffset;
     if (d->orientation == Qt::Horizontal)
         d->viewport->scroll(isRightToLeft() ? -ndelta : ndelta, 0);
