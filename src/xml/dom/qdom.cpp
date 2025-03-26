@@ -5703,9 +5703,17 @@ void QDomProcessingInstructionPrivate::save(QTextStream& s, int, int) const
     not a processing instruction; among other differences, it cannot be
     inserted into a document anywhere but on the first line.
 
-    Do not use this function to create an xml declaration, since although it
-    has the same syntax as a processing instruction, it isn't, and might not
-    be treated by QDom as such.
+    \note Do not use this function to create an XML declaration. Although the
+    XML declaration shares the same syntax as a processing instruction, it
+    is not one. According to the
+    \l{https://www.w3.org/TR/xml/#sec-prolog-dtd}{XML 1.0 Specification} and the
+    \l{https://www.w3.org/TR/REC-DOM-Level-1/level-one-core.html#ID-1590626202}{W3C DOM Structure Model},
+    the XML declaration is part of the document prolog and not part of the
+    DOM tree - meaning it should not be represented as a DOM node and cannot be
+    created or inserted via the DOM API.
+    If you need to generate a well-formed XML document that includes an XML
+    declaration, use QXmlStreamWriter, which provides proper support for
+    writing the declaration through \l {QXmlStreamWriter::}{writeStartDocument}.
 
     The content of the processing instruction is retrieved with data()
     and set with setData(). The processing instruction's target is
