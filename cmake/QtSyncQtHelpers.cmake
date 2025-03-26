@@ -84,6 +84,13 @@ function(qt_internal_target_sync_headers target
     # std::filesystem API
     get_filename_component(source_dir_real "${sync_source_directory}" REALPATH)
     get_filename_component(binary_dir_real "${CMAKE_CURRENT_BINARY_DIR}" REALPATH)
+    if(QT6_INSTALL_PREFIX)
+        get_filename_component(install_dir_real "${QT6_INSTALL_PREFIX}" REALPATH)
+        set(install_include_dir_argument
+            -installIncludeDir "${install_dir_real}/${QT6_INSTALL_HEADERS}")
+    else()
+        set(install_include_dir_argument "")
+    endif()
 
     if(QT_REPO_PUBLIC_NAMESPACE_REGEX)
         set(public_namespaces_filter -publicNamespaceFilter "${QT_REPO_PUBLIC_NAMESPACE_REGEX}")
@@ -113,6 +120,7 @@ function(qt_internal_target_sync_headers target
         -binaryDir "${binary_dir_real}"
         -privateHeadersFilter "${private_filter_regex}"
         -includeDir "${module_build_interface_include_dir}"
+        ${install_include_dir_argument}
         -privateIncludeDir "${module_build_interface_private_include_dir}"
         -qpaIncludeDir "${module_build_interface_qpa_include_dir}"
         -rhiIncludeDir "${module_build_interface_rhi_include_dir}"

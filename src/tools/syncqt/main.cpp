@@ -205,6 +205,8 @@ public:
 
     const std::string &includeDir() const { return m_includeDir; }
 
+    const std::string &installIncludeDir() const { return m_installIncludeDir; }
+
     const std::string &privateIncludeDir() const { return m_privateIncludeDir; }
 
     const std::string &qpaIncludeDir() const { return m_qpaIncludeDir; }
@@ -339,6 +341,7 @@ private:
             { "-module", { &m_moduleName } },
             { "-sourceDir", { &m_sourceDir } },
             { "-binaryDir", { &m_binaryDir } },
+            { "-installIncludeDir", { &m_installIncludeDir, true } },
             { "-privateHeadersFilter", { &privateHeadersFilter, true } },
             { "-qpaHeadersFilter", { &qpaHeadersFilter, true } },
             { "-rhiHeadersFilter", { &rhiHeadersFilter, true } },
@@ -499,10 +502,10 @@ private:
     // Convert all paths from command line to a generic one.
     void normilizePaths()
     {
-        static std::array<std::string *, 8> paths = {
-            &m_sourceDir,     &m_binaryDir,  &m_includeDir,        &m_privateIncludeDir,
-            &m_qpaIncludeDir, &m_rhiIncludeDir, &m_stagingDir,
-            &m_versionScriptFile,
+        const std::array<std::string *, 9> paths = {
+            &m_sourceDir,         &m_binaryDir,         &m_includeDir,
+            &m_installIncludeDir, &m_privateIncludeDir, &m_qpaIncludeDir,
+            &m_rhiIncludeDir,     &m_stagingDir,        &m_versionScriptFile,
         };
         for (auto path : paths) {
             if (!path->empty())
@@ -514,6 +517,7 @@ private:
     std::string m_sourceDir;
     std::string m_binaryDir;
     std::string m_includeDir;
+    std::string m_installIncludeDir;
     std::string m_privateIncludeDir;
     std::string m_qpaIncludeDir;
     std::string m_rhiIncludeDir;
@@ -1328,8 +1332,11 @@ public:
                         }
                         for (const auto &module : m_commandLineArgs->knownModules()) {
                             std::string suggestedHeader = "Qt" + module + '/' + includedHeader;
-                            if (std::filesystem::exists(m_commandLineArgs->includeDir() + "/../"
-                                                        + suggestedHeader)) {
+                            const std::string suggestedHeaderReversePath = "/../" + suggestedHeader;
+                            if (std::filesystem::exists(m_commandLineArgs->includeDir()
+                                                        + suggestedHeaderReversePath)
+                                || std::filesystem::exists(m_commandLineArgs->installIncludeDir()
+                                                           + '/' + suggestedHeader)) {
                                 faults |= IncludeChecks;
                                 std::cerr << m_warningMessagePreamble << m_currentFileString
                                           << ":" << m_currentFileLineNumber
