@@ -4147,7 +4147,7 @@ QTime QDateTime::time() const
     details of that time zone). Equivalent to
     \c{timeRepresentation().timeSpec()}.
 
-    \sa setTimeSpec(), timeRepresentation(), date(), time()
+    \sa setTimeZone(), timeRepresentation(), date(), time()
 */
 
 Qt::TimeSpec QDateTime::timeSpec() const
@@ -5330,7 +5330,7 @@ Qt::weak_ordering compareThreeWay(const QDateTime &lhs, const QDateTime &rhs)
     Returns the system clock's current datetime, using the time representation
     described by \a zone. If \a zone is omitted, local time is used.
 
-    \sa currentDateTimeUtc(), QDate::currentDate(), QTime::currentTime(), toTimeSpec()
+    \sa currentDateTimeUtc(), QDate::currentDate(), QTime::currentTime(), toTimeZone()
 */
 
 /*!
@@ -5349,7 +5349,7 @@ QDateTime QDateTime::currentDateTime()
 
     Equivalent to \c{currentDateTime(QTimeZone::UTC)}.
 
-    \sa currentDateTime(), QDate::currentDate(), QTime::currentTime(), toTimeSpec()
+    \sa currentDateTime(), QDate::currentDate(), QTime::currentTime(), toTimeZone()
 */
 
 QDateTime QDateTime::currentDateTimeUtc()
@@ -5366,7 +5366,7 @@ QDateTime QDateTime::currentDateTimeUtc()
     This number is like the POSIX time_t variable, but expressed in milliseconds
     instead of seconds.
 
-    \sa currentDateTime(), currentDateTimeUtc(), toTimeSpec()
+    \sa currentDateTime(), currentDateTimeUtc(), toTimeZone()
 */
 
 /*!

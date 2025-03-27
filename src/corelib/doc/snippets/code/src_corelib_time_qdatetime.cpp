@@ -172,7 +172,7 @@ QDate lastMonday = 2020y / January / Monday[last];
 
 //! [23]
 QDateTime local(QDateTime::currentDateTime());
-QDateTime UTC(local.toTimeSpec(QTimeZone::UTC));
+QDateTime UTC(local.toTimeZone(QTimeZone::UTC));
 qDebug() << "Local time is:" << local;
 qDebug() << "UTC time is:" << UTC;
 qDebug() << "No difference between times represented:" << local.secsTo(UTC);
