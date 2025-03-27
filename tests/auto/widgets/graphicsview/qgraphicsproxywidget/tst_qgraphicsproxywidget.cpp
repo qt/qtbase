@@ -3816,17 +3816,17 @@ void tst_QGraphicsProxyWidget::forwardTouchEvent()
 
     EventSpy eventSpy(widget);
 
-    QPointingDevice *device = QTest::createTouchDevice();
+    const std::unique_ptr<QPointingDevice> device{QTest::createTouchDevice()};
 
     QVERIFY(device);
     QCOMPARE(eventSpy.counts[QEvent::TouchBegin], 0);
     QCOMPARE(eventSpy.counts[QEvent::TouchUpdate], 0);
     QCOMPARE(eventSpy.counts[QEvent::TouchEnd], 0);
 
-    QTest::touchEvent(&view, device).press(0, QPoint(10, 10), &view);
-    QTest::touchEvent(&view, device).move(0, QPoint(15, 15), &view);
-    QTest::touchEvent(&view, device).move(0, QPoint(16, 16), &view);
-    QTest::touchEvent(&view, device).release(0, QPoint(15, 15), &view);
+    QTest::touchEvent(&view, device.get()).press(0, QPoint(10, 10), &view);
+    QTest::touchEvent(&view, device.get()).move(0, QPoint(15, 15), &view);
+    QTest::touchEvent(&view, device.get()).move(0, QPoint(16, 16), &view);
+    QTest::touchEvent(&view, device.get()).release(0, QPoint(15, 15), &view);
 
     QApplication::processEvents();
 
