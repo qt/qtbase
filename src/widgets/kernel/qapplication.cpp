@@ -3226,8 +3226,8 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         typedef void (*RegisterTouchWindowFn)(QWindow *,  bool);
         case QEvent::Enter:
             if (w->testAttribute(Qt::WA_AcceptTouchEvents)) {
-                RegisterTouchWindowFn registerTouchWindow = reinterpret_cast<RegisterTouchWindowFn>
-                        (platformNativeInterface()->nativeResourceFunctionForIntegration("registertouchwindow"));
+                RegisterTouchWindowFn registerTouchWindow = reinterpret_cast<RegisterTouchWindowFn>(
+                    QFunctionPointer(platformNativeInterface()->nativeResourceFunctionForIntegration("registertouchwindow")));
                 if (registerTouchWindow)
                     registerTouchWindow(w->window()->windowHandle(), true);
             }
@@ -3235,8 +3235,8 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             break;
         case QEvent::Leave:
             if (w->testAttribute(Qt::WA_AcceptTouchEvents)) {
-                RegisterTouchWindowFn registerTouchWindow = reinterpret_cast<RegisterTouchWindowFn>
-                        (platformNativeInterface()->nativeResourceFunctionForIntegration("registertouchwindow"));
+                RegisterTouchWindowFn registerTouchWindow = reinterpret_cast<RegisterTouchWindowFn>(
+                        QFunctionPointer(platformNativeInterface()->nativeResourceFunctionForIntegration("registertouchwindow")));
                 if (registerTouchWindow)
                     registerTouchWindow(w->window()->windowHandle(), false);
             }

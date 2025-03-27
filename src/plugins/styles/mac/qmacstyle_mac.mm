@@ -437,7 +437,7 @@ static bool isInMacUnifiedToolbarArea(QWindow *window, int windowY)
         return false; // Not Cocoa platform plugin.
 
     typedef bool (*TestContentBorderPositionFunction)(QWindow *, int);
-    return (reinterpret_cast<TestContentBorderPositionFunction>(function))(window, windowY);
+    return (reinterpret_cast<TestContentBorderPositionFunction>(QFunctionPointer(function)))(window, windowY);
 }
 
 

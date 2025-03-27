@@ -336,9 +336,11 @@ void QToolBarLayout::updateMacBorderMetrics()
 
     typedef void (*RegisterContentBorderAreaFunction)(QWindow *window, void *identifier, int upper, int lower);
     if (mainWindow->toolBarArea(tb) == Qt::TopToolBarArea) {
-        (reinterpret_cast<RegisterContentBorderAreaFunction>(function))(tb->window()->windowHandle(), tb, upper.y(), lower.y());
+        (reinterpret_cast<RegisterContentBorderAreaFunction>(QFunctionPointer(function)))(
+            tb->window()->windowHandle(), tb, upper.y(), lower.y());
     } else {
-        (reinterpret_cast<RegisterContentBorderAreaFunction>(function))(tb->window()->windowHandle(), tb, 0, 0);
+        (reinterpret_cast<RegisterContentBorderAreaFunction>(QFunctionPointer(function)))(
+            tb->window()->windowHandle(), tb, 0, 0);
     }
 #endif
 }
