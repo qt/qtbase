@@ -1614,7 +1614,7 @@ QString QMYSQLDriver::formatValue(const QSqlField &field, bool trimStrings) cons
             }
             Q_FALLTHROUGH();
         case QMetaType::QDateTime:
-            if (QDateTime dt = field.value().toDateTime(); dt.isValid()) {
+            if (QDateTime dt = field.value().toDateTime().toUTC(); dt.isValid()) {
                 // MySQL format doesn't like the "Z" at the end, but does allow
                 // "+00:00" starting in version 8.0.19. However, if we got here,
                 // it's because the MySQL server is too old for prepared queries

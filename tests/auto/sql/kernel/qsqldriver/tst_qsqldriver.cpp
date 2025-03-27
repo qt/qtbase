@@ -28,6 +28,9 @@ private slots:
     void record();
     void primaryIndex();
     void formatValue();
+#if QT_CONFIG(timezone)
+    void formatDateTimeValue();
+#endif
 };
 
 static bool driverSupportsDefaultValues(QSqlDriver::DbmsType dbType)
@@ -83,7 +86,7 @@ void tst_QSqlDriver::dropTables()
 {
     for (const QString &dbName : std::as_const(dbs.dbNames)) {
         QSqlDatabase db = QSqlDatabase::database(dbName);
-        QStringList tables = {qTableName("relTEST1", __FILE__, db)};
+        QStringList tables = {qTableName("relTEST1", __FILE__, db), qTableName("formatDateTimeValue", __FILE__, db)};
         const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
         if (dbType == QSqlDriver::Oracle)
             tables.push_back(qTableName("clobTable", __FILE__, db));
@@ -255,6 +258,45 @@ void tst_QSqlDriver::formatValue()
     QCOMPARE(db.driver()->formatValue(rec.field("name")), QString("'harry'"));
     QCOMPARE(db.driver()->formatValue(rec.field("more_data")), QString("1.234567"));
 }
+
+#if QT_CONFIG(timezone)
+void tst_QSqlDriver::formatDateTimeValue()
+{
+    QFETCH_GLOBAL(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    QSqlDriver *drv = db.driver();
+    CHECK_DATABASE(db);
+    QString tablename(qTableName("formatDateTimeValue", __FILE__, db));
+    QSqlQuery qry(db);
+    QString query = "CREATE TABLE " + tablename + " (id int, dt " + tst_Databases::dateTimeTypeName(db) + ")";
+    QVERIFY_SQL(qry, exec(query));
+    // some databases don't store milliseconds, so use a hard-coded date without milliseconds
+    const QDateTime dtUtc(QDate(2025, 03, 29), QTime(00, 33, 00), QTimeZone::utc());
+    const QDateTime dt1(dtUtc.toTimeZone(QTimeZone(3600)));
+    QCOMPARE(dtUtc.toMSecsSinceEpoch(), dt1.toMSecsSinceEpoch());
+
+    QSqlField fieldDt1("datetime", QMetaType(QMetaType::QDateTime), QString());
+    fieldDt1.setValue(dt1);
+    QSqlField fieldUtc("datetime", QMetaType(QMetaType::QDateTime), QString());
+    fieldUtc.setValue(dtUtc);
+
+    QVERIFY_SQL(qry, prepare("INSERT INTO " + tablename + " (id, dt) VALUES (:id, :dt)"));
+    qry.bindValue(":id", 1);
+    qry.bindValue(":dt", dtUtc);
+    QVERIFY_SQL(qry, exec());
+    qry.bindValue(":id", 2);
+    qry.bindValue(":dt", dt1);
+    QVERIFY_SQL(qry, exec());
+    QVERIFY_SQL(qry, exec("INSERT INTO " + tablename + " (id, dt) VALUES (3, " + drv->formatValue(fieldUtc) + ")"));
+    QVERIFY_SQL(qry, exec("INSERT INTO " + tablename + " (id, dt) VALUES (4, " + drv->formatValue(fieldDt1) + ")"));
+    QVERIFY_SQL(qry, exec("SELECT dt FROM " + tablename + " ORDER BY id ASC"));
+    for (int i = 1; i <= 4; ++i) {
+        QVERIFY(qry.next());
+        const auto dt = qry.value(0).toDateTime();
+        QCOMPARE(dt.toSecsSinceEpoch(), dtUtc.toSecsSinceEpoch());
+    }
+}
+#endif
 
 QTEST_MAIN(tst_QSqlDriver)
 #include "tst_qsqldriver.moc"
