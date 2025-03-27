@@ -12,6 +12,8 @@
 #include <QtWidgets/qstyle.h>
 #include <QtWidgets/qproxystyle.h>
 
+#include <QtCore/qvarlengtharray.h>
+
 class tst_QGraphicsLinearLayout : public QObject {
 Q_OBJECT
 
@@ -358,8 +360,10 @@ void tst_QGraphicsLinearLayout::count()
     SubQGraphicsLinearLayout layout;
     QCOMPARE(layout.count(), 0);
 
-    for (int i = 0; i < itemCount; ++i)
-        layout.addItem(new QGraphicsWidget);
+    QVarLengthArray<QGraphicsWidget, 5> widgets(itemCount);
+
+    for (auto &w : widgets)
+        layout.addItem(&w);
     QCOMPARE(layout.count(), itemCount);
 
     for (int i = 0; i < layoutCount; ++i)
@@ -483,8 +487,11 @@ void tst_QGraphicsLinearLayout::insertItem()
         return;
 
     SubQGraphicsLinearLayout layout;
-    for (int i = 0; i < itemCount; ++i)
-        layout.addItem(new QGraphicsWidget);
+
+    QVarLengthArray<QGraphicsWidget> widgets(itemCount);
+
+    for (auto &w : widgets)
+        layout.addItem(&w);
     for (int i = 0; i < layoutCount; ++i)
         layout.addItem(new SubQGraphicsLinearLayout);
 
