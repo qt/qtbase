@@ -28,7 +28,8 @@ Q_STATIC_LOGGING_CATEGORY(lcMD, "qt.text.markdown")
 static const QChar qtmi_Newline = u'\n';
 static const QChar qtmi_Space = u' ';
 
-static constexpr auto markerString() noexcept { return "---"_L1; }
+static constexpr auto lfMarkerString() noexcept { return "---\n"_L1; }
+static constexpr auto crlfMarkerString() noexcept { return "---r\n"_L1; }
 
 // TODO maybe eliminate the margins after all views recognize BlockQuoteLevel, CSS can format it, etc.
 static const int qtmi_BlockQuoteIndent =
@@ -120,6 +121,47 @@ QTextMarkdownImporter::QTextMarkdownImporter(QTextDocument *doc, QTextDocument::
 {
 }
 
+/*! \internal
+    Split any Front Matter from the Markdown document \a md.
+    Returns a pair of QStringViews: if \a md begins with qualifying Front Matter
+    (according to the specification at https://jekyllrb.com/docs/front-matter/ ),
+    put it into the \c frontMatter view, omitting both markers; and put the remaining
+    Markdown into \c rest. If no Front Matter is found, return all of \a md in \c rest.
+*/
+static auto splitFrontMatter(QStringView md)
+{
+    struct R {
+        QStringView frontMatter, rest;
+        explicit operator bool() const noexcept { return !frontMatter.isEmpty(); }
+    };
+
+    const auto NotFound = R{{}, md};
+
+    /*  Front Matter must start with '---\n' or '---\r\n' on the very first line,
+        and Front Matter must end with another such line.
+        If that is not the case, we return NotFound: then the whole document is
+        to be passed on to the Markdown parser, in which '---\n' is interpreted
+        as a "thematic break" (like <hr/> in HTML). */
+    QLatin1StringView marker;
+    if (md.startsWith(lfMarkerString()))
+        marker = lfMarkerString();
+    else if (md.startsWith(crlfMarkerString()))
+        marker = crlfMarkerString();
+    else
+        return NotFound;
+
+    const auto frontMatterStart = marker.size();
+    const auto endMarkerPos = md.indexOf(marker, frontMatterStart);
+
+    if (endMarkerPos < 0 || md[endMarkerPos - 1] != QChar::LineFeed)
+        return NotFound;
+
+    Q_ASSERT(frontMatterStart < md.size());
+    Q_ASSERT(endMarkerPos < md.size());
+    const auto frontMatter = md.sliced(frontMatterStart, endMarkerPos - frontMatterStart);
+    return R{frontMatter, md.sliced(endMarkerPos + marker.size())};
+}
+
 void QTextMarkdownImporter::import(const QString &markdown)
 {
     MD_PARSER callbacks = {
@@ -144,21 +186,14 @@ void QTextMarkdownImporter::import(const QString &markdown)
     qCDebug(lcMD) << "default font" << defaultFont << "mono font" << m_monoFont;
     QStringView md = markdown;
 
-    if (m_features.testFlag(QTextMarkdownImporter::FeatureFrontMatter) && md.startsWith(markerString())) {
-        qsizetype endMarkerPos = md.indexOf(markerString(), markerString().size() + 1);
-        if (endMarkerPos > 4) {
-            qsizetype firstLinePos = 4; // first line of yaml
-            while (md.at(firstLinePos) == '\n'_L1 || md.at(firstLinePos) == '\r'_L1)
-                ++firstLinePos;
-            auto frontMatter = md.sliced(firstLinePos, endMarkerPos - firstLinePos);
-            firstLinePos = endMarkerPos + 4; // first line of markdown after yaml
-            while (md.size() > firstLinePos && (md.at(firstLinePos) == '\n'_L1 || md.at(firstLinePos) == '\r'_L1))
-                ++firstLinePos;
-            md = md.sliced(firstLinePos);
-            doc->setMetaInformation(QTextDocument::FrontMatter, frontMatter.toString());
-            qCDebug(lcMD) << "extracted FrontMatter: size" << frontMatter.size();
+    if (m_features.testFlag(QTextMarkdownImporter::FeatureFrontMatter)) {
+        if (const auto split = splitFrontMatter(md)) {
+            doc->setMetaInformation(QTextDocument::FrontMatter, split.frontMatter.toString());
+            qCDebug(lcMD) << "extracted FrontMatter: size" << split.frontMatter.size();
+            md = split.rest;
         }
     }
+
     const auto mdUtf8 = md.toUtf8();
     m_cursor.beginEditBlock();
     md_parse(mdUtf8.constData(), MD_SIZE(mdUtf8.size()), &callbacks, this);

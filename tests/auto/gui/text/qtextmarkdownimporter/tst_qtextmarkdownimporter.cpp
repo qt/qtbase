@@ -548,6 +548,7 @@ void tst_QTextMarkdownImporter::pathological_data()
     QTest::addColumn<QString>("warning");
     QTest::newRow("fuzz20450") << "attempted to insert into a list that no longer exists";
     QTest::newRow("fuzz20580") << "";
+    QTest::newRow("oss-fuzz-42533775") << ""; // caused a heap-buffer-overflow
 }
 
 void tst_QTextMarkdownImporter::pathological() // avoid crashing on crazy input
@@ -644,15 +645,21 @@ void tst_QTextMarkdownImporter::fencedCodeBlocks()
 void tst_QTextMarkdownImporter::frontMatter_data()
 {
     QTest::addColumn<QString>("inputFile");
+    QTest::addColumn<int>("expectedFrontMatterSize");
     QTest::addColumn<int>("expectedBlockCount");
 
-    QTest::newRow("yaml + markdown") << QFINDTESTDATA("data/yaml.md") << 1;
-    QTest::newRow("yaml only") << QFINDTESTDATA("data/yaml-only.md") << 0;
+    QTest::newRow("yaml + markdown") << QFINDTESTDATA("data/yaml.md") << 140 << 1;
+    QTest::newRow("yaml + markdown with CRLFs") << QFINDTESTDATA("data/yaml-crlf.md") << 140 << 1;
+    QTest::newRow("yaml only") << QFINDTESTDATA("data/yaml-only.md") << 59 << 0;
+    QTest::newRow("malformed 1") << QFINDTESTDATA("data/front-marker-malformed1.md") << 0 << 1;
+    QTest::newRow("malformed 2") << QFINDTESTDATA("data/front-marker-malformed2.md") << 0 << 2;
+    QTest::newRow("malformed 3") << QFINDTESTDATA("data/front-marker-malformed3.md") << 0 << 1;
 }
 
 void tst_QTextMarkdownImporter::frontMatter()
 {
     QFETCH(QString, inputFile);
+    QFETCH(int, expectedFrontMatterSize);
     QFETCH(int, expectedBlockCount);
 
     QFile f(inputFile);
@@ -672,7 +679,9 @@ void tst_QTextMarkdownImporter::frontMatter()
             ++blockCount;
     }
     QCOMPARE(blockCount, expectedBlockCount); // yaml is not part of the markdown text
-    QCOMPARE(doc.metaInformation(QTextDocument::FrontMatter), yaml); // without fences
+    if (expectedFrontMatterSize)
+        QCOMPARE(doc.metaInformation(QTextDocument::FrontMatter), yaml); // without fences
+    QCOMPARE(doc.metaInformation(QTextDocument::FrontMatter).size(), expectedFrontMatterSize);
 }
 
 void tst_QTextMarkdownImporter::toRawText_data()
