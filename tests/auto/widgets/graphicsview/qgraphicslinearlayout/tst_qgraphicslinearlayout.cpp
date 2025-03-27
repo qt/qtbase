@@ -26,8 +26,6 @@ private slots:
     void alignment();
     void count_data();
     void count();
-    void dump_data();
-    void dump();
     void geometry_data();
     void geometry();
     void insertItem_data();
@@ -371,31 +369,6 @@ void tst_QGraphicsLinearLayout::count()
     QCOMPARE(layout.count(), itemCount + layoutCount);
 
     // see also removeAt()
-}
-
-void tst_QGraphicsLinearLayout::dump_data()
-{
-    QTest::addColumn<int>("itemCount");
-    QTest::addColumn<int>("layoutCount");
-    for (int i = -1; i < 3; ++i) {
-        const QByteArray iB = QByteArray::number(i);
-        QTest::newRow((iB + ", 0, 0").constData()) << 0 << 0;
-        QTest::newRow((iB + ", 0, 5").constData()) << 5 << 5;
-        QTest::newRow((iB + ", 5, 0").constData()) << 5 << 5;
-        QTest::newRow((iB + ", 5, 5").constData()) << 5 << 5;
-    }
-}
-
-// void dump(int indent = 0) const public
-void tst_QGraphicsLinearLayout::dump()
-{
-    QFETCH(int, itemCount);
-    QFETCH(int, layoutCount);
-    SubQGraphicsLinearLayout layout;
-    for (int i = 0; i < itemCount; ++i)
-        layout.addItem(new QGraphicsWidget);
-    for (int i = 0; i < layoutCount; ++i)
-        layout.addItem(new SubQGraphicsLinearLayout);
 }
 
 void tst_QGraphicsLinearLayout::geometry_data()
