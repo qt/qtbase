@@ -37,6 +37,7 @@
 #include <QtWidgets/qstyle.h>
 #include <QtWidgets/qproxystyle.h>
 
+#include <QtCore/private/qmemory_p.h>
 #include <QtCore/qvarlengtharray.h>
 
 class tst_QGraphicsLinearLayout : public QObject {
@@ -891,15 +892,15 @@ void tst_QGraphicsLinearLayout::defaultSpacing()
 {
     QGraphicsScene scene;
     QGraphicsView view(&scene);
-    LayoutStyle *style = new LayoutStyle(QLatin1String("windows"));
+    const auto style = qt_make_unique<LayoutStyle>(QLatin1String("windows"));
     style->horizontalSpacing = 5;
     style->verticalSpacing = 3;
-    LayoutStyle *style2 = new LayoutStyle(QLatin1String("windows"));
+    const auto style2 = qt_make_unique<LayoutStyle>(QLatin1String("windows"));
     style2->horizontalSpacing = 25;
     style2->verticalSpacing = 23;
 
     QGraphicsWidget *widget = new QGraphicsWidget(0, Qt::Window);
-    widget->setStyle(style);
+    widget->setStyle(style.get());
 
     // Horizontal layout
     SubQGraphicsLinearLayout *layout = new SubQGraphicsLinearLayout(Qt::Horizontal);
@@ -926,13 +927,13 @@ void tst_QGraphicsLinearLayout::defaultSpacing()
     QCOMPARE(styleSpacing, qreal(15));
     QCOMPARE(styleSpacing, layout->spacing());
     QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize).width(), qreal(115));
-    widget->setStyle(style2);
+    widget->setStyle(style2.get());
     // If the style itself changes, the layout will pick that up
     QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize).width(), qreal(125));
     QCOMPARE(layout->spacing(), qreal(25));
 
     // Vertical layout
-    widget->setStyle(style);
+    widget->setStyle(style.get());
     layout->setOrientation(Qt::Vertical);
     styleSpacing = (qreal)style->pixelMetric(QStyle::PM_LayoutVerticalSpacing);
     QCOMPARE(styleSpacing, qreal(3));
@@ -945,7 +946,7 @@ void tst_QGraphicsLinearLayout::defaultSpacing()
     QCOMPARE(styleSpacing, qreal(13));
     QCOMPARE(styleSpacing, layout->spacing());
     QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize).height(), qreal(113));
-    widget->setStyle(style2);
+    widget->setStyle(style2.get());
     // If the style itself changes, the layout will pick that up
     QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize).height(), qreal(123));
     QCOMPARE(layout->spacing(), qreal(23));
