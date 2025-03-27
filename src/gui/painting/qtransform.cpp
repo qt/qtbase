@@ -1526,7 +1526,7 @@ QPainterPath QTransform::map(const QPainterPath &path) const
     if (t == TxTranslate) {
         copy.translate(m_matrix[2][0], m_matrix[2][1]);
     } else {
-        copy.detach();
+        copy.setDirty(true);
         // Full xform
         for (int i=0; i<path.elementCount(); ++i) {
             QPainterPath::Element &e = copy.d_ptr->elements[i];

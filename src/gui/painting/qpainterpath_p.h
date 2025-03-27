@@ -19,7 +19,6 @@
 #include "QtGui/qpainterpath.h"
 #include "QtGui/qregion.h"
 #include "QtCore/qlist.h"
-#include "QtCore/qshareddata.h"
 #include "QtCore/qvarlengtharray.h"
 
 #include <private/qvectorpath_p.h>
@@ -92,7 +91,7 @@ private:
     Q_DISABLE_COPY_MOVE(QVectorPathConverter)
 };
 
-class QPainterPathPrivate : public QSharedData
+class QPainterPathPrivate
 {
 public:
     friend class QPainterPath;
@@ -106,8 +105,7 @@ public:
 #endif
 
     QPainterPathPrivate() noexcept
-        : QSharedData(),
-          require_moveTo(false),
+        : require_moveTo(false),
           dirtyBounds(false),
           dirtyControlBounds(false),
           convex(false),
@@ -117,8 +115,7 @@ public:
     }
 
     QPainterPathPrivate(QPointF startPoint)
-        : QSharedData(),
-          elements{ { startPoint.x(), startPoint.y(), QPainterPath::MoveToElement } },
+        : elements{ { startPoint.x(), startPoint.y(), QPainterPath::MoveToElement } },
           bounds(startPoint, QSizeF(0, 0)),
           controlBounds(startPoint, QSizeF(0, 0)),
           require_moveTo(false),
@@ -131,8 +128,7 @@ public:
     }
 
     QPainterPathPrivate(const QPainterPathPrivate &other) noexcept
-        : QSharedData(other),
-          elements(other.elements),
+        : elements(other.elements),
           m_runLengths(other.m_runLengths),
           bounds(other.bounds),
           controlBounds(other.controlBounds),
@@ -259,7 +255,6 @@ inline bool QPainterPathPrivate::isClosed() const
 
 inline void QPainterPathPrivate::close()
 {
-    Q_ASSERT(ref.loadRelaxed() == 1);
     require_moveTo = true;
     const QPainterPath::Element &first = elements.at(cStart);
     QPainterPath::Element &last = elements.last();
@@ -286,8 +281,6 @@ inline void QPainterPathPrivate::maybeMoveTo()
 
 inline void QPainterPathPrivate::clear()
 {
-    Q_ASSERT(ref.loadRelaxed() == 1);
-
     elements.clear();
     m_runLengths.clear();
 

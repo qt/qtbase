@@ -36,8 +36,6 @@
 
 QT_BEGIN_NAMESPACE
 
-QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QPainterPathPrivate)
-
 static inline bool isValidCoord(qreal c)
 {
     if (sizeof(qreal) >= sizeof(double))
@@ -137,8 +135,9 @@ static void qt_debug_path(const QPainterPath &path)
 /*!
     \class QPainterPath
     \ingroup painting
-    \ingroup shared
     \inmodule QtGui
+
+    \reentrant
 
     \brief The QPainterPath class provides a container for painting operations,
     enabling graphical shapes to be constructed and reused.
@@ -482,7 +481,7 @@ void QPainterPath::setElementPositionAt(int i, qreal x, qreal y)
 {
     Q_ASSERT(d_ptr);
     Q_ASSERT(i >= 0 && i < elementCount());
-    detach();
+    setDirty(true);
     QPainterPath::Element &e = d_ptr->elements[i];
     e.x = x;
     e.y = y;
@@ -511,7 +510,10 @@ QPainterPath::QPainterPath() noexcept
 
     \sa operator=()
 */
-QPainterPath::QPainterPath(const QPainterPath &other) = default;
+QPainterPath::QPainterPath(const QPainterPath &other)
+    : d_ptr(other.d_ptr ? new QPainterPathPrivate(*other.d_ptr) : nullptr)
+{
+}
 
 /*!
     \fn QPainterPath::QPainterPath(QPainterPath &&other)
@@ -532,22 +534,17 @@ QPainterPath::QPainterPath(const QPointF &startPoint)
 {
 }
 
-void QPainterPath::detach()
-{
-    d_ptr.detach();
-    setDirty(true);
-}
-
 /*!
     \internal
 */
 void QPainterPath::ensureData_helper()
 {
+    Q_ASSERT(d_ptr == nullptr);
     QPainterPathPrivate *data = new QPainterPathPrivate;
     data->elements.reserve(16);
     QPainterPath::Element e = { 0, 0, QPainterPath::MoveToElement };
     data->elements << e;
-    d_ptr.reset(data);
+    d_ptr = data;
     Q_ASSERT(d_ptr != nullptr);
 }
 
@@ -584,6 +581,7 @@ QPainterPath &QPainterPath::operator=(const QPainterPath &other)
 */
 QPainterPath::~QPainterPath()
 {
+    delete d_ptr;
 }
 
 /*!
@@ -599,7 +597,7 @@ void QPainterPath::clear()
     if (!d_ptr)
         return;
 
-    detach();
+    setDirty(true);
     d_func()->clear();
     d_func()->elements.append( {0, 0, MoveToElement} );
 }
@@ -617,7 +615,7 @@ void QPainterPath::reserve(int size)
     Q_D(QPainterPath);
     if ((!d && size > 0) || (d && d->elements.capacity() < size)) {
         ensureData();
-        detach();
+        setDirty(true);
         d_func()->elements.reserve(size);
     }
 }
@@ -655,7 +653,7 @@ void QPainterPath::closeSubpath()
 #endif
     if (isEmpty())
         return;
-    detach();
+    setDirty(true);
 
     d_func()->close();
 }
@@ -692,7 +690,7 @@ void QPainterPath::moveTo(const QPointF &p)
     }
 
     ensureData();
-    detach();
+    setDirty(true);
 
     QPainterPathPrivate *d = d_func();
     Q_ASSERT(!d->elements.isEmpty());
@@ -742,7 +740,7 @@ void QPainterPath::lineTo(const QPointF &p)
     }
 
     ensureData();
-    detach();
+    setDirty(true);
 
     QPainterPathPrivate *d = d_func();
     Q_ASSERT(!d->elements.isEmpty());
@@ -801,7 +799,7 @@ void QPainterPath::cubicTo(const QPointF &c1, const QPointF &c2, const QPointF &
     }
 
     ensureData();
-    detach();
+    setDirty(true);
 
     QPainterPathPrivate *d = d_func();
     Q_ASSERT(!d->elements.isEmpty());
@@ -857,7 +855,7 @@ void QPainterPath::quadTo(const QPointF &c, const QPointF &e)
     }
 
     ensureData();
-    detach();
+    setDirty(true);
 
     Q_D(QPainterPath);
     Q_ASSERT(!d->elements.isEmpty());
@@ -931,7 +929,7 @@ void QPainterPath::arcTo(const QRectF &rect, qreal startAngle, qreal sweepLength
         return;
 
     ensureData();
-    detach();
+    setDirty(true);
 
     int point_count;
     QPointF pts[15];
@@ -1036,7 +1034,7 @@ void QPainterPath::addRect(const QRectF &r)
         return;
 
     ensureData();
-    detach();
+    setDirty(true);
 
     bool first = d_func()->elements.size() < 2;
 
@@ -1075,7 +1073,7 @@ void QPainterPath::addPolygon(const QPolygonF &polygon)
         return;
 
     ensureData();
-    detach();
+    setDirty(true);
 
     moveTo(polygon.constFirst());
     for (int i=1; i<polygon.size(); ++i) {
@@ -1116,7 +1114,7 @@ void QPainterPath::addEllipse(const QRectF &boundingRect)
         return;
 
     ensureData();
-    detach();
+    setDirty(true);
 
     bool first = d_func()->elements.size() < 2;
 
@@ -1161,7 +1159,7 @@ void QPainterPath::addText(const QPointF &point, const QFont &f, const QString &
         return;
 
     ensureData();
-    detach();
+    setDirty(true);
 
     QTextLayout layout(text, f);
     layout.setCacheEnabled(true);
@@ -1235,7 +1233,7 @@ void QPainterPath::addPath(const QPainterPath &other)
         return;
 
     ensureData();
-    detach();
+    setDirty(true);
 
     QPainterPathPrivate *d = d_func();
     // Remove last moveto so we don't get multiple moveto's
@@ -1266,7 +1264,7 @@ void QPainterPath::connectPath(const QPainterPath &other)
         return;
 
     ensureData();
-    detach();
+    setDirty(true);
 
     QPainterPathPrivate *d = d_func();
     // Remove last moveto so we don't get multiple moveto's
@@ -1301,7 +1299,7 @@ void QPainterPath::connectPath(const QPainterPath &other)
 void QPainterPath::addRegion(const QRegion &region)
 {
     ensureData();
-    detach();
+    setDirty(true);
 
     for (const QRect &rect : region)
         addRect(rect);
@@ -1341,7 +1339,7 @@ void QPainterPath::setFillRule(Qt::FillRule fillRule)
     const bool isWindingRequested = (fillRule == Qt::WindingFill);
     if (d_func()->hasWindingFill == isWindingRequested)
         return;
-    detach();
+    setDirty(true);
 
     d_func()->hasWindingFill = isWindingRequested;
 }
@@ -2126,7 +2124,7 @@ void QPainterPath::translate(qreal dx, qreal dy)
     if (elementsLeft <= 0)
         return;
 
-    detach();
+    setDirty(true);
     QPainterPath::Element *element = d_func()->elements.data();
     Q_ASSERT(element);
     while (elementsLeft--) {
@@ -2458,7 +2456,7 @@ QDataStream &operator>>(QDataStream &s, QPainterPath &p)
     }
 
     p.ensureData(); // in case if p.d_func() == 0
-    p.detach();
+    p.setDirty(true);
     p.d_func()->elements.clear();
     for (int i=0; i<size; ++i) {
         int type;
@@ -2863,7 +2861,7 @@ void QPainterPath::setCachingEnabled(bool enabled)
     ensureData();
     if (d_func()->cacheEnabled == enabled)
         return;
-    detach();
+    setDirty(true);
     QPainterPathPrivate *d = d_func();
     d->cacheEnabled = enabled;
     if (!enabled) {
@@ -3425,7 +3423,7 @@ void QPainterPath::addRoundedRect(const QRectF &rect, qreal xRadius, qreal yRadi
     qreal ryy2 = h*yRadius/100;
 
     ensureData();
-    detach();
+    setDirty(true);
 
     bool first = d_func()->elements.size() < 2;
 
