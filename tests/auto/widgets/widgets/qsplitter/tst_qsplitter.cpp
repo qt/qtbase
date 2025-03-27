@@ -75,7 +75,7 @@ private slots:
 private:
     void removeThirdWidget();
     void addThirdWidget();
-    QSplitter *splitter;
+    QSplitter *splitter = nullptr;
     QWidget *w1;
     QWidget *w2;
     QWidget *w3;
@@ -144,6 +144,7 @@ void tst_QSplitter::addThirdWidget()
 
 void tst_QSplitter::cleanupTestCase()
 {
+    delete splitter;
 }
 
 
