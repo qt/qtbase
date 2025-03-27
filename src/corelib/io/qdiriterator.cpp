@@ -106,8 +106,10 @@ public:
         // Match the behavior of advance() from before porting to QDirListing,
         // that is, even if hasNext() returns false, calling next() returns an
         // empty string without crashing. QTBUG-130142
-        if (it == lister.end())
+        if (it == lister.end()) {
+            currentFileInfo = {};
             return;
+        }
         currentFileInfo = nextFileInfo;
         if (++it != lister.end()) {
             nextFileInfo = it->fileInfo();

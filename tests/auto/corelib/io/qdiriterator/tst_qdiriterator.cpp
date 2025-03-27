@@ -646,10 +646,18 @@ void tst_QDirIterator::hiddenDirs_hiddenFiles()
 
 void tst_QDirIterator::hasNextFalseNoCrash()
 {
-    QDirIterator iter(u"empty"_s, QDir::NoDotAndDotDot);
-    // QTBUG-130142
-    // No crash if you call next() after hasNext() returned false
+    QVERIFY(QFileInfo(u"empty"_s).exists());
+    QDirIterator iter(u"empty"_s);
+    int count = 0;
+    while (iter.hasNext()) {
+        iter.next();
+        ++count;
+    }
+    QVERIFY(count > 0);
     QVERIFY(!iter.hasNext());
+    // QTBUG-130142
+    // When the iteration reaches the end, calling next() returns an empty string
+    // and no crash happens
     QVERIFY(iter.next().isEmpty());
 }
 
