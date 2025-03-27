@@ -1000,7 +1000,8 @@ static void enableMacToolBar(QToolBar *toolbar, bool enable)
         return; // Not Cocoa platform plugin.
 
     typedef void (*SetContentBorderAreaEnabledFunction)(QWindow *window, void *identifier, bool enabled);
-    (reinterpret_cast<SetContentBorderAreaEnabledFunction>(function))(toolbar->window()->windowHandle(), toolbar, enable);
+    (reinterpret_cast<SetContentBorderAreaEnabledFunction>(QFunctionPointer(function)))(
+        toolbar->window()->windowHandle(), toolbar, enable);
 }
 #endif
 

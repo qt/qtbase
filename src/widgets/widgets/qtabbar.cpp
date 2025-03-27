@@ -106,14 +106,16 @@ void QTabBarPrivate::updateMacBorderMetrics()
     if (!function)
         return; // Not Cocoa platform plugin.
     typedef void (*RegisterContentBorderAreaFunction)(QWindow *window, quintptr identifier, int upper, int lower);
-    (reinterpret_cast<RegisterContentBorderAreaFunction>(function))(q->window()->windowHandle(), identifier, upper, lower);
+    (reinterpret_cast<RegisterContentBorderAreaFunction>(QFunctionPointer(function)))(
+        q->window()->windowHandle(), identifier, upper, lower);
 
     // Set visibility state
     function = nativeInterface->nativeResourceFunctionForIntegration("setContentBorderAreaEnabled");
     if (!function)
         return;
     typedef void (*SetContentBorderAreaEnabledFunction)(QWindow *window, quintptr identifier, bool enable);
-    (reinterpret_cast<SetContentBorderAreaEnabledFunction>(function))(q->window()->windowHandle(), identifier, q->isVisible());
+    (reinterpret_cast<SetContentBorderAreaEnabledFunction>(QFunctionPointer(function)))(
+        q->window()->windowHandle(), identifier, q->isVisible());
 #endif
 }
 
