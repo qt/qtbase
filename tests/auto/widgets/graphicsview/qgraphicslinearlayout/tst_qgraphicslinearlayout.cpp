@@ -735,10 +735,15 @@ void tst_QGraphicsLinearLayout::removeAt()
         return;
 
     SubQGraphicsLinearLayout layout(orientation);
-    for (int i = 0; i < itemCount; ++i)
-        layout.addItem(new QGraphicsWidget);
-    for (int i = 0; i < layoutCount; ++i)
-        layout.addItem(new SubQGraphicsLinearLayout);
+
+    QVarLengthArray<QGraphicsWidget> widgets(itemCount);
+    for (auto &w : widgets)
+        layout.addItem(&w);
+
+    QVarLengthArray<SubQGraphicsLinearLayout> layouts(layoutCount);
+    for (auto &l : layouts)
+        layout.addItem(&l);
+
     QSizeF oldSizeHint = layout.sizeHint(Qt::PreferredSize, QSizeF());
 
     QGraphicsLayoutItem *w = nullptr;
@@ -750,7 +755,6 @@ void tst_QGraphicsLinearLayout::removeAt()
         layout.removeAt(removeItemAt);
         wParent = w->parentLayoutItem();
         QCOMPARE(wParent, nullptr);
-        delete w;
     }
     QCOMPARE(layout.count(), itemCount + layoutCount - (w ? 1 : 0));
 
@@ -786,19 +790,22 @@ void tst_QGraphicsLinearLayout::removeItem()
         return;
 
     SubQGraphicsLinearLayout layout;
-    for (int i = 0; i < itemCount; ++i)
-        layout.addItem(new QGraphicsWidget);
-    for (int i = 0; i < layoutCount; ++i)
-        layout.addItem(new SubQGraphicsLinearLayout);
+
+    QVarLengthArray<QGraphicsWidget> widgets(itemCount);
+    for (auto &w : widgets)
+        layout.addItem(&w);
+
+    QVarLengthArray<SubQGraphicsLinearLayout> layouts(layoutCount);
+    for (auto &l : layouts)
+        layout.addItem(&l);
 
     QGraphicsLayoutItem *w = nullptr;
     if (removeItemAt >= 0 && removeItemAt < layout.count())
         w = layout.itemAt(removeItemAt);
     QSizeF oldSizeHint = layout.sizeHint(Qt::PreferredSize, QSizeF());
-    if (w) {
+    if (w)
         layout.removeItem(w);
-        delete w;
-    }
+
     QCOMPARE(layout.count(), itemCount + layoutCount - (w ? 1 : 0));
 
     layout.activate();
