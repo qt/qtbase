@@ -1165,8 +1165,7 @@ void tst_QGraphicsLinearLayout::setStretchFactor()
 void tst_QGraphicsLinearLayout::testStretch()
 {
     QGraphicsScene scene;
-    QGraphicsView *view = new QGraphicsView(&scene);
-    Q_UNUSED(view);
+    QGraphicsView view(&scene);
     QGraphicsWidget *form = new QGraphicsWidget(0, Qt::Window);
 
     scene.addItem(form);
