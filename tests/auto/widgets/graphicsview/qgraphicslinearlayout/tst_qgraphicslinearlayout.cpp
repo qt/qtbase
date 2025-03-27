@@ -34,7 +34,6 @@ private slots:
     void insertStretch();
     void invalidate_data();
     void invalidate();
-    void itemAt_data();
     void itemAt();
     void itemAt_visualOrder();
     void orientation_data();
@@ -633,24 +632,19 @@ void tst_QGraphicsLinearLayout::invalidate()
     delete widget;
 }
 
-void tst_QGraphicsLinearLayout::itemAt_data()
-{
-    QTest::addColumn<int>("index");
-    QTest::newRow("0") << 0;
-    QTest::newRow("1") << 1;
-    QTest::newRow("2") << 2;
-}
-
 // QGraphicsLayoutItem* itemAt(int index) const public
 void tst_QGraphicsLinearLayout::itemAt()
 {
     // see also the insertItem() etc tests
-    QFETCH(int, index);
     SubQGraphicsLinearLayout layout;
-    for (int i = 0; i < 3; ++i)
-        layout.addItem(new QGraphicsWidget);
 
-    QVERIFY(layout.itemAt(index) != 0);
+    QGraphicsWidget widgets[3];
+    for (auto &w : widgets)
+        layout.addItem(&w);
+
+    int i = 0;
+    for (const auto &w : widgets)
+        QCOMPARE(layout.itemAt(i++), &w);
 }
 
 void tst_QGraphicsLinearLayout::itemAt_visualOrder()
