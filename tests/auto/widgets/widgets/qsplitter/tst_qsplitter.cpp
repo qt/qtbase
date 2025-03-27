@@ -748,11 +748,15 @@ void tst_QSplitter::replaceWidget()
     EventCounterSpy ef(&sp);
     ef.installEventFilter();
     const QWidget *res = sp.replaceWidget(index, newWidget);
+    std::unique_ptr<const QWidget> reaper{res};
     QTest::qWait(100); // Give visibility and resizing some time
 
     // Check
     if (index < 0 || index >= count) {
-        QVERIFY(!res);
+        // check before reset() may delete *res: C++/Coverity are picky with zapped pointers
+        const bool resWasNull = !res;
+        reaper.reset(newWidget); // newWidget wasn't added, so we need to delete
+        QVERIFY(resWasNull);
         QVERIFY(!newWidget->parentWidget());
         QCOMPARE(ef.resizeCount, 0);
         QCOMPARE(ef.paintCount, 0);
@@ -769,7 +773,6 @@ void tst_QSplitter::replaceWidget()
         if (visible && !collapsed)
             QCOMPARE(newWidget->geometry(), oldGeom);
         QCOMPARE(newWidget->size().isEmpty(), !visible || collapsed);
-        delete res;
     }
     QCOMPARE(sp.count(), count);
     QCOMPARE(sp.sizes(), sizes);
