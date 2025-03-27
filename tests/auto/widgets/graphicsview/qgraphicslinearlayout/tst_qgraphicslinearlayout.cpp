@@ -468,18 +468,18 @@ void tst_QGraphicsLinearLayout::insertItem()
     for (int i = 0; i < layoutCount; ++i)
         layout.addItem(new SubQGraphicsLinearLayout);
 
-    QGraphicsLayoutItem *item = nullptr;
+    std::unique_ptr<QGraphicsLayoutItem> item = nullptr;
     if (isWidget)
-        item = new QGraphicsWidget;
+        item = std::make_unique<QGraphicsWidget>();
     else
-        item = new SubQGraphicsLinearLayout;
+        item = std::make_unique<SubQGraphicsLinearLayout>();
 
     QSizeF oldSizeHint = layout.sizeHint(Qt::PreferredSize, QSizeF());
-    layout.insertItem(insertItemAt, item);
+    layout.insertItem(insertItemAt, item.get());
     QCOMPARE(layout.count(), itemCount + layoutCount + 1);
 
     if (insertItemAt >= 0 && (itemCount + layoutCount >= 0)) {
-        QCOMPARE(layout.itemAt(insertItemAt), item);
+        QCOMPARE(layout.itemAt(insertItemAt), item.get());
     }
 
     layout.activate();
