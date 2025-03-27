@@ -655,24 +655,24 @@ void tst_QGraphicsLinearLayout::itemAt()
 
 void tst_QGraphicsLinearLayout::itemAt_visualOrder()
 {
-    QGraphicsLinearLayout *l = new QGraphicsLinearLayout;
+    QGraphicsLinearLayout l;
 
-    QGraphicsWidget *w1 = new QGraphicsWidget;
-    l->addItem(w1);
+    QGraphicsWidget w1;
+    l.addItem(&w1);
 
-    QGraphicsWidget *w3 = new QGraphicsWidget;
-    l->addItem(w3);
+    QGraphicsWidget w3;
+    l.addItem(&w3);
 
-    QGraphicsWidget *w0 = new QGraphicsWidget;
-    l->insertItem(0, w0);
+    QGraphicsWidget w0;
+    l.insertItem(0, &w0);
 
-    QGraphicsWidget *w2 = new QGraphicsWidget;
-    l->insertItem(2, w2);
+    QGraphicsWidget w2;
+    l.insertItem(2, &w2);
 
-    QCOMPARE(l->itemAt(0), static_cast<QGraphicsLayoutItem*>(w0));
-    QCOMPARE(l->itemAt(1), static_cast<QGraphicsLayoutItem*>(w1));
-    QCOMPARE(l->itemAt(2), static_cast<QGraphicsLayoutItem*>(w2));
-    QCOMPARE(l->itemAt(3), static_cast<QGraphicsLayoutItem*>(w3));
+    QCOMPARE(l.itemAt(0), static_cast<QGraphicsLayoutItem*>(&w0));
+    QCOMPARE(l.itemAt(1), static_cast<QGraphicsLayoutItem*>(&w1));
+    QCOMPARE(l.itemAt(2), static_cast<QGraphicsLayoutItem*>(&w2));
+    QCOMPARE(l.itemAt(3), static_cast<QGraphicsLayoutItem*>(&w3));
 }
 
 void tst_QGraphicsLinearLayout::orientation_data()
