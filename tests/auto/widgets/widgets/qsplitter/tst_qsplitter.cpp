@@ -861,7 +861,7 @@ void tst_QSplitter::replaceWidgetWhileHidden()
         newWidget->hide();
 
     const bool wasExplicitHide = !widgetVisible && newWidget->testAttribute(Qt::WA_WState_ExplicitShowHide);
-    splitter.replaceWidget(1, newWidget);
+    const std::unique_ptr<QWidget> reaper{splitter.replaceWidget(1, newWidget)};
 
     QCOMPARE(!widgetVisible && newWidget->testAttribute(Qt::WA_WState_ExplicitShowHide), wasExplicitHide);
 
