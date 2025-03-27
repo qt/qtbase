@@ -217,14 +217,6 @@ static inline bool is_space(char s)
 }
 #endif
 
-/*
-    This function is shared with moc.cpp. The implementation lives in qmetaobject_moc_p.h, which
-    should be included where needed. The declaration here is not used to avoid warnings from
-    the compiler about unused functions.
-
-static QByteArray normalizeTypeInternal(const char *t, const char *e, bool fixScope = false, bool adjustConst = true);
-*/
-
 QT_END_NAMESPACE
 
 #endif
