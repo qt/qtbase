@@ -1367,10 +1367,10 @@ void tst_QGraphicsWidget::setStyle()
         QStyle *fstyle = QStyleFactory::create(style);
         reaper.reset(fstyle);
         widget.setStyle(fstyle);
-        QCOMPARE(widget.style(), static_cast<QStyle*>(fstyle));
+        QCOMPARE(widget.style(), fstyle);
     } else {
         widget.setStyle(0);
-        QVERIFY(widget.style() != (QStyle *)0);
+        QVERIFY(widget.style() != nullptr);
     }
     QCOMPARE(widget.eventCount, oldEventCounts + 1);
     QCOMPARE(widget.testAttribute(Qt::WA_SetStyle), !style.isEmpty());
