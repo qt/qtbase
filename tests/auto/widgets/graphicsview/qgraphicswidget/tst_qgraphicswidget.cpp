@@ -2290,6 +2290,7 @@ void tst_QGraphicsWidget::implicitMouseGrabber()
     QCOMPARE(widget2UngrabEventSpy.count(), 0);
 
     scene.removeItem(widget);
+    const auto reaper = qScopeGuard([=] { delete widget; });
     QCOMPARE(widgetUngrabEventSpy.count(), 4);
     QCOMPARE(scene.mouseGrabberItem(), nullptr);
 }
