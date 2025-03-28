@@ -465,9 +465,7 @@ static void populateFromPattern(FcPattern *pattern,
         writingSystems.setSupported(QFontDatabase::Other);
     }
 
-    FontFile *fontFile = new FontFile;
-    fontFile->fileName = QString::fromLocal8Bit((const char *)file_value);
-    fontFile->indexValue = indexValue;
+    QString fileName = QString::fromLocal8Bit((const char *)file_value);
 
     QFont::Style style = (slant_value == FC_SLANT_ITALIC)
                      ? QFont::StyleItalic
@@ -503,7 +501,24 @@ static void populateFromPattern(FcPattern *pattern,
         applicationFont->properties.append(properties);
     }
 
-    QPlatformFontDatabase::registerFont(familyName,styleName,QLatin1StringView((const char *)foundry_value),weight,style,stretch,antialias,scalable,pixel_size,fixedPitch,colorFont,writingSystems,fontFile);
+    {
+        FontFile *fontFile = new FontFile;
+        fontFile->fileName = fileName;
+        fontFile->indexValue = indexValue;
+        QPlatformFontDatabase::registerFont(familyName,
+                                            styleName,
+                                            QLatin1StringView((const char *)foundry_value),
+                                            weight,
+                                            style,
+                                            stretch,
+                                            antialias,
+                                            scalable,
+                                            pixel_size,
+                                            fixedPitch,
+                                            colorFont,
+                                            writingSystems,
+                                            fontFile);
+    }
     if (applicationFont != nullptr && face != nullptr && db != nullptr) {
         db->addNamedInstancesForFace(face,
                                      indexValue,
@@ -549,8 +564,25 @@ static void populateFromPattern(FcPattern *pattern,
 
                 applicationFont->properties.append(properties);
             }
-            FontFile *altFontFile = new FontFile(*fontFile);
-            QPlatformFontDatabase::registerFont(altFamilyName, altStyleName, QLatin1StringView((const char *)foundry_value),weight,style,stretch,antialias,scalable,pixel_size,fixedPitch,colorFont,writingSystems,altFontFile);
+
+            {
+                FontFile *altFontFile = new FontFile;
+                altFontFile->fileName = fileName;
+                altFontFile->indexValue = indexValue;
+                QPlatformFontDatabase::registerFont(altFamilyName,
+                                                    altStyleName,
+                                                    QLatin1StringView((const char *)foundry_value),
+                                                    weight,
+                                                    style,
+                                                    stretch,
+                                                    antialias,
+                                                    scalable,
+                                                    pixel_size,
+                                                    fixedPitch,
+                                                    colorFont,
+                                                    writingSystems,
+                                                    altFontFile);
+            }
         } else {
             QPlatformFontDatabase::registerAliasToFontFamily(familyName, altFamilyName);
         }
