@@ -1480,3 +1480,8 @@ qt_configure_add_report_entry(
     MESSAGE "XCB plugin requires xkbcommon and xkbcommon-x11, but -no-xkbcommon was provided."
     CONDITION ( NOT INPUT_xcb STREQUAL '' ) AND ( NOT INPUT_xcb STREQUAL 'no' ) AND INPUT_xkbcommon STREQUAL 'no'
 )
+qt_configure_add_report_entry(
+    TYPE ERROR
+    MESSAGE "The desktopservices feature is required on macOS, iOS, and Android and cannot be disabled."
+    CONDITION (APPLE OR ANDROID) AND NOT QT_FEATURE_desktopservices
+)
