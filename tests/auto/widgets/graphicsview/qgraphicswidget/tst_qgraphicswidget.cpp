@@ -42,6 +42,8 @@
 #include <qstylefactory.h>
 #include <qscreen.h>
 
+#include <QtCore/private/qmemory_p.h>
+
 typedef QList<QGraphicsItem *> QGraphicsItemList;
 
 class EventSpy : public QObject
@@ -2568,16 +2570,16 @@ void tst_QGraphicsWidget::windowFlags()
 
 void tst_QGraphicsWidget::shortcutsDeletion()
 {
-    QGraphicsWidget *widget = new QGraphicsWidget;
-    QGraphicsWidget *widget2 = new QGraphicsWidget;
+    auto widget = qt_make_unique<QGraphicsWidget>();
+    const auto widget2 = qt_make_unique<QGraphicsWidget>();
     widget->setMinimumSize(40, 40);
-    QWidgetAction *del = new QWidgetAction(widget);
+    QWidgetAction *del = new QWidgetAction(widget.get());
     del->setIcon(QIcon("edit-delete"));
     del->setShortcut(Qt::Key_Delete);
     del->setShortcutContext(Qt::WidgetShortcut);
     widget2->addAction(del);
     widget2->addAction(del);
-    delete widget;
+    widget.reset();
 }
 
 class MessUpPainterWidget : public QGraphicsWidget
