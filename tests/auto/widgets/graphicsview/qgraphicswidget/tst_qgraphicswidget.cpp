@@ -1356,9 +1356,12 @@ void tst_QGraphicsWidget::setStyle()
 
     int oldEventCounts = widget.eventCount;
 
+    std::unique_ptr<QStyle> reaper;
+
     QFETCH(QString, style);
     if (!style.isEmpty()) {
         QStyle *fstyle = QStyleFactory::create(style);
+        reaper.reset(fstyle);
         widget.setStyle(fstyle);
         QCOMPARE(widget.style(), fstyle);
     } else {
