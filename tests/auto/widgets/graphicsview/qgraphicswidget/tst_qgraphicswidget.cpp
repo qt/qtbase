@@ -289,7 +289,6 @@ void tst_QGraphicsWidget::qgraphicswidget()
     QCOMPARE(widget.call_propertyChange(QString(), QVariant()), QVariant());
     widget.call_sizeHint(Qt::PreferredSize, QSizeF());
 
-    QGraphicsScene scene;
     QGraphicsWidget *parent = new QGraphicsWidget;
     SizeHinter *child = new SizeHinter(parent);
 
