@@ -13,6 +13,7 @@ class tst_QSqlDriver : public QObject
 
 public:
     void recreateTestTables(QSqlDatabase);
+    void dropTables();
 
     tst_Databases dbs;
 
@@ -54,8 +55,6 @@ void tst_QSqlDriver::recreateTestTables(QSqlDatabase db)
 {
     QSqlQuery q(db);
     const QString tableName(qTableName("relTEST1", __FILE__, db));
-    tst_Databases::safeDropTables(db, {tableName});
-
     QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
     if (dbType == QSqlDriver::PostgreSQL)
         QVERIFY_SQL( q, exec("set client_min_messages='warning'"));
@@ -80,13 +79,7 @@ void tst_QSqlDriver::recreateTestTables(QSqlDatabase db)
     QVERIFY_SQL( q, exec("insert into " + tableName + " values(4, 'boris', 2, 2, 2.345678)"));
 }
 
-void tst_QSqlDriver::initTestCase()
-{
-    for (const QString &dbname : std::as_const(dbs.dbNames))
-        recreateTestTables(QSqlDatabase::database(dbname));
-}
-
-void tst_QSqlDriver::cleanupTestCase()
+void tst_QSqlDriver::dropTables()
 {
     for (const QString &dbName : std::as_const(dbs.dbNames)) {
         QSqlDatabase db = QSqlDatabase::database(dbName);
@@ -96,6 +89,18 @@ void tst_QSqlDriver::cleanupTestCase()
             tables.push_back(qTableName("clobTable", __FILE__, db));
         tst_Databases::safeDropTables(db, tables);
     }
+}
+
+void tst_QSqlDriver::initTestCase()
+{
+    dropTables();
+    for (const QString &dbname : std::as_const(dbs.dbNames))
+        recreateTestTables(QSqlDatabase::database(dbname));
+}
+
+void tst_QSqlDriver::cleanupTestCase()
+{
+    dropTables();
     dbs.close();
 }
 
