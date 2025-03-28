@@ -23,32 +23,7 @@ if (NOT IS_DIRECTORY "${ANDROID_SDK_ROOT}")
     message(FATAL_ERROR "Could not find ANDROID_SDK_ROOT or path is not a directory: ${ANDROID_SDK_ROOT}")
 endif()
 
-# This variable specifies the API level used for building Java code, it can be the same as Qt for
-# Android's maximum supported Android version or higher.
-if(NOT QT_ANDROID_API_USED_FOR_JAVA)
-    set(QT_ANDROID_API_USED_FOR_JAVA "android-35")
-endif()
-
-set(jar_location "${ANDROID_SDK_ROOT}/platforms/${QT_ANDROID_API_USED_FOR_JAVA}/android.jar")
-if(NOT EXISTS "${jar_location}")
-    _qt_internal_detect_latest_android_platform(android_platform_latest)
-    if(android_platform_latest)
-        message(NOTICE "The default platform SDK ${QT_ANDROID_API_USED_FOR_JAVA} not found, "
-                        "using the latest installed ${android_platform_latest} instead.")
-        set(QT_ANDROID_API_USED_FOR_JAVA ${android_platform_latest})
-    endif()
-endif()
-
-set(QT_ANDROID_JAR "${ANDROID_SDK_ROOT}/platforms/${QT_ANDROID_API_USED_FOR_JAVA}/android.jar")
-if(NOT EXISTS "${QT_ANDROID_JAR}")
-    message(FATAL_ERROR
-        "No suitable Android SDK platform found in '${ANDROID_SDK_ROOT}/platforms'."
-        " The minimum version required for building Java code is ${QT_ANDROID_API_USED_FOR_JAVA}"
-    )
-endif()
-
-message(STATUS "Using Android SDK API ${QT_ANDROID_API_USED_FOR_JAVA} from "
-               "${ANDROID_SDK_ROOT}/platforms")
+_qt_internal_locate_android_jar()
 
 # Locate Java
 include(UseJava)

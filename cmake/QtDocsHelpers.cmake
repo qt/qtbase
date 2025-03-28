@@ -79,6 +79,7 @@ function(qt_internal_add_docs)
 
     set(opt_args
         SHOW_INTERNAL
+        SKIP_JAVADOC
     )
     set(single_args "")
     set(multi_args
@@ -352,9 +353,9 @@ function(qt_internal_add_docs)
 
     if (QT_WILL_INSTALL)
         install(DIRECTORY "${qdoc_output_dir}/"
-                DESTINATION "${INSTALL_DOCDIR}/${doc_target}"
-                COMPONENT _install_html_docs_${target}
-                EXCLUDE_FROM_ALL
+            DESTINATION "${INSTALL_DOCDIR}/${doc_target}"
+            COMPONENT _install_html_docs_${target}
+            EXCLUDE_FROM_ALL
         )
 
         add_custom_target(install_html_docs_${target}
@@ -365,9 +366,9 @@ function(qt_internal_add_docs)
         )
 
         install(FILES "${qch_file_path}"
-                DESTINATION "${INSTALL_DOCDIR}"
-                COMPONENT _install_qch_docs_${target}
-                EXCLUDE_FROM_ALL
+            DESTINATION "${INSTALL_DOCDIR}"
+            COMPONENT _install_qch_docs_${target}
+            EXCLUDE_FROM_ALL
         )
 
         add_custom_target(install_qch_docs_${target}
@@ -403,4 +404,73 @@ function(qt_internal_add_docs)
         qt_internal_add_doc_tool_dependency(prepare_docs_${target} qdoc)
         qt_internal_add_doc_tool_dependency(qch_docs_${target} qhelpgenerator)
     endif()
+
+    _qt_internal_forward_function_args(
+        FORWARD_PREFIX arg
+        FORWARD_OUT_VAR add_java_documentation_args
+        FORWARD_OPTIONS
+            SKIP_JAVADOC
+    )
+    qt_internal_add_java_documentation(${target} ${add_java_documentation_args}
+        OUTPUT_DIR "${qdoc_output_dir}"
+    )
+endfunction()
+
+function(qt_internal_add_java_documentation target)
+    if(NOT ANDROID AND NOT QT_BUILD_HOST_JAVA_DOCS)
+        return()
+    endif()
+
+    set(no_value_options
+        SKIP_JAVADOC
+    )
+    set(single_value_options
+        OUTPUT_DIR
+    )
+    set(multi_value_options "")
+    cmake_parse_arguments(PARSE_ARGV 1 arg
+        "${no_value_options}" "${single_value_options}" "${multi_value_options}"
+    )
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    # Use a default output directory based on the project name.
+    if(NOT DEFINED arg_OUTPUT_DIR)
+        if (QT_WILL_INSTALL)
+            set(arg_OUTPUT_DIR "${CMAKE_BINARY_DIR}/${INSTALL_DOCDIR}")
+        else()
+            set(arg_OUTPUT_DIR "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/${INSTALL_DOCDIR}")
+        endif()
+        string(APPEND arg_OUTPUT_DIR "/${PROJECT_NAME}")
+    endif()
+
+    qt_internal_collect_jar_sources(sources)
+
+    # Bail out if we haven't found relevant sources.
+    if(sources STREQUAL "")
+        return()
+    endif()
+
+    if(NOT TARGET docs_android)
+        add_custom_target(docs_android)
+        add_custom_target(install_docs_android)
+        add_dependencies(install_docs_android docs_android)
+
+        add_custom_target(android_source_jars)
+        add_custom_target(install_android_source_jars)
+        add_dependencies(install_android_source_jars android_source_jars)
+    endif()
+
+    if(NOT ANDROID)
+        qt_internal_set_up_build_host_java_docs()
+    endif()
+
+    if(NOT arg_SKIP_JAVADOC)
+        qt_internal_add_javadoc_target(
+            MODULE ${target}
+            SOURCES ${sources}
+            OUTPUT_DIR "${arg_OUTPUT_DIR}"
+        )
+    endif()
+
+    qt_internal_create_source_jar(SOURCES ${sources} MODULE ${target})
 endfunction()

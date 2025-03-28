@@ -385,6 +385,7 @@ qt_internal_extend_target(Network CONDITION QT_FEATURE_ocsp AND QT_FEATURE_opens
 
 qt_internal_add_docs(Network
     doc/qtnetwork.qdocconf
+    SKIP_JAVADOC
 )
 
 # See mkspecs/common/msvc-desktop.conf

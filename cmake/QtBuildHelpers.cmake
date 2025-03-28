@@ -449,6 +449,7 @@ macro(qt_internal_setup_build_and_global_variables)
     qt_internal_setup_find_host_info_package()
 
     qt_internal_setup_build_docs()
+    qt_internal_setup_build_java_docs_on_host()
 
     qt_internal_include_qt_platform_android()
 

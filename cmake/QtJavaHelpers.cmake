@@ -28,6 +28,7 @@ function(qt_internal_add_jar target)
         get_filename_component(absolute_path "${path}" ABSOLUTE)
         list(APPEND absolute_sources "${absolute_path}")
     endforeach()
+    set_property(DIRECTORY APPEND PROPERTY _qt_jar_sources "${absolute_sources}")
 
     add_jar(${target} SOURCES ${absolute_sources} ${ARGV})
 

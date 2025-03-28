@@ -65,6 +65,11 @@ function(qt_auto_detect_wasm)
 endfunction()
 
 function(qt_auto_detect_android)
+    # Don't assume an Android build if we're requesting to build Java documentation on the host.
+    if(QT_BUILD_HOST_JAVA_DOCS)
+        return()
+    endif()
+
     # We assume an Android build if any of the ANDROID_* cache variables are set.
     if(DEFINED ANDROID_SDK_ROOT
             OR DEFINED ANDROID_NDK_ROOT
