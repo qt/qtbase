@@ -69,6 +69,7 @@ static void saveCoverageTool(const char * appname, bool testfailed, bool install
 #endif
 }
 
+Q_CONSTINIT static QBasicMutex elapsedTimersMutex; // due to the WatchDog thread
 Q_CONSTINIT static QElapsedTimer elapsedFunctionTime;
 Q_CONSTINIT static QElapsedTimer elapsedTotalTime;
 
@@ -320,7 +321,10 @@ namespace QTest {
 
 void QTestLog::enterTestFunction(const char* function)
 {
-    elapsedFunctionTime.start();
+    {
+        QMutexLocker locker(&elapsedTimersMutex);
+        elapsedFunctionTime.start();
+    }
     if (printAvailableTags)
         return;
 
@@ -548,8 +552,11 @@ void QTestLog::addBenchmarkResults(const QList<QBenchmarkResult> &results)
 
 void QTestLog::startLogging()
 {
-    elapsedTotalTime.start();
-    elapsedFunctionTime.start();
+    {
+        QMutexLocker locker(&elapsedTimersMutex);
+        elapsedTotalTime.start();
+        elapsedFunctionTime.start();
+    }
     for (auto &logger : QTest::loggers->allLoggers())
         logger->startLogging();
     QTest::oldMessageHandler = qInstallMessageHandler(QTest::messageHandler);
@@ -767,11 +774,13 @@ bool QTestLog::installedTestCoverage()
 
 qint64 QTestLog::nsecsTotalTime()
 {
+    QMutexLocker locker(&elapsedTimersMutex);
     return elapsedTotalTime.nsecsElapsed();
 }
 
 qint64 QTestLog::nsecsFunctionTime()
 {
+    QMutexLocker locker(&elapsedTimersMutex);
     return elapsedFunctionTime.nsecsElapsed();
 }
 
