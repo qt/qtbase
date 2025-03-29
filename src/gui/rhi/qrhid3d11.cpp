@@ -717,6 +717,10 @@ bool QRhiD3D11::isFeatureSupported(QRhi::Feature feature) const
         return false;
     case QRhi::DepthClamp:
         return true;
+    case QRhi::DrawIndirect:
+        return featureLevel >= D3D_FEATURE_LEVEL_11_0;
+    case QRhi::DrawIndirectMulti:
+        return false;
     default:
         Q_UNREACHABLE();
         return false;
@@ -1371,6 +1375,36 @@ void QRhiD3D11::drawIndexed(QRhiCommandBuffer *cb, quint32 indexCount,
     cmd.args.drawIndexed.firstIndex = firstIndex;
     cmd.args.drawIndexed.vertexOffset = vertexOffset;
     cmd.args.drawIndexed.firstInstance = firstInstance;
+}
+
+void QRhiD3D11::drawIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuffer,
+                             quint32 indirectBufferOffset, quint32 drawCount, quint32 stride)
+{
+    QD3D11CommandBuffer *cbD = QRHI_RES(QD3D11CommandBuffer, cb);
+    Q_ASSERT(cbD->recordingPass == QD3D11CommandBuffer::RenderPass);
+
+    QD3D11CommandBuffer::Command &cmd(cbD->commands.get());
+    cmd.cmd = QD3D11CommandBuffer::Command::DrawIndirect;
+    cmd.args.drawIndirect.ps = QRHI_RES(QD3D11GraphicsPipeline, cbD->currentGraphicsPipeline);
+    cmd.args.drawIndirect.indirectBuffer = QRHI_RES(QD3D11Buffer, indirectBuffer);
+    cmd.args.drawIndirect.indirectBufferOffset = indirectBufferOffset;
+    cmd.args.drawIndirect.drawCount = drawCount;
+    cmd.args.drawIndirect.stride = stride;
+}
+
+void QRhiD3D11::drawIndexedIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuffer,
+                                    quint32 indirectBufferOffset, quint32 drawCount, quint32 stride)
+{
+    QD3D11CommandBuffer *cbD = QRHI_RES(QD3D11CommandBuffer, cb);
+    Q_ASSERT(cbD->recordingPass == QD3D11CommandBuffer::RenderPass);
+
+    QD3D11CommandBuffer::Command &cmd(cbD->commands.get());
+    cmd.cmd = QD3D11CommandBuffer::Command::DrawIndexedIndirect;
+    cmd.args.drawIndexedIndirect.ps = QRHI_RES(QD3D11GraphicsPipeline, cbD->currentGraphicsPipeline);
+    cmd.args.drawIndexedIndirect.indirectBuffer = QRHI_RES(QD3D11Buffer, indirectBuffer);
+    cmd.args.drawIndexedIndirect.indirectBufferOffset = indirectBufferOffset;
+    cmd.args.drawIndexedIndirect.drawCount = drawCount;
+    cmd.args.drawIndexedIndirect.stride = stride;
 }
 
 void QRhiD3D11::debugMarkBegin(QRhiCommandBuffer *cb, const QByteArray &name)
@@ -3073,6 +3107,32 @@ void QRhiD3D11::executeCommandBuffer(QD3D11CommandBuffer *cbD)
                 qWarning("No graphics pipeline active for drawIndexed; ignored");
             }
             break;
+        case QD3D11CommandBuffer::Command::DrawIndirect:
+            if (cmd.args.drawIndirect.ps) {
+                ID3D11Buffer *pBufferForArgs = cmd.args.drawIndirect.indirectBuffer->buffer;
+                UINT alignedByteOffsetForArgs = cmd.args.drawIndirect.indirectBufferOffset;
+                const UINT stride = cmd.args.drawIndirect.stride;
+                for (quint32 i = 0; i < cmd.args.drawIndirect.drawCount; ++i) {
+                    context->DrawInstancedIndirect(pBufferForArgs, alignedByteOffsetForArgs);
+                    alignedByteOffsetForArgs += stride;
+                }
+            } else {
+                qWarning("No graphics pipeline active for drawIndirect; ignored");
+            }
+            break;
+        case QD3D11CommandBuffer::Command::DrawIndexedIndirect:
+            if (cmd.args.drawIndexedIndirect.ps) {
+                ID3D11Buffer *pBufferForArgs = cmd.args.drawIndexedIndirect.indirectBuffer->buffer;
+                UINT alignedByteOffsetForArgs = cmd.args.drawIndexedIndirect.indirectBufferOffset;
+                const UINT stride = cmd.args.drawIndexedIndirect.stride;
+                for (quint32 i = 0; i < cmd.args.drawIndexedIndirect.drawCount; ++i) {
+                    context->DrawIndexedInstancedIndirect(pBufferForArgs, alignedByteOffsetForArgs);
+                    alignedByteOffsetForArgs += stride;
+                }
+            } else {
+                qWarning("No graphics pipeline active for drawIndexedIndirect; ignored");
+            }
+            break;
         case QD3D11CommandBuffer::Command::UpdateSubRes:
             context->UpdateSubresource(cmd.args.updateSubRes.dst, cmd.args.updateSubRes.dstSubRes,
                                        cmd.args.updateSubRes.hasDstBox ? &cmd.args.updateSubRes.dstBox : nullptr,
@@ -3172,6 +3232,11 @@ bool QD3D11Buffer::create()
         return false;
     }
 
+    if (m_usage.testFlag(QRhiBuffer::IndirectBuffer) && m_type == Dynamic) {
+        qWarning("IndirectBuffer cannot be combined with Dynamic on D3D11");
+        return false;
+    }
+
     const quint32 nonZeroSize = m_size <= 0 ? 256 : m_size;
     const quint32 roundedSize = aligned(nonZeroSize, m_usage.testFlag(QRhiBuffer::UniformBuffer) ? 256u : 4u);
 
@@ -3181,6 +3246,8 @@ bool QD3D11Buffer::create()
     desc.BindFlags = toD3DBufferUsage(m_usage);
     desc.CPUAccessFlags = m_type == Dynamic ? D3D11_CPU_ACCESS_WRITE : 0;
     desc.MiscFlags = m_usage.testFlag(QRhiBuffer::StorageBuffer) ? D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS : 0;
+    if (m_usage.testFlag(QRhiBuffer::IndirectBuffer))
+        desc.MiscFlags |= D3D11_RESOURCE_MISC_DRAWINDIRECT_ARGS;
 
     QRHI_RES_RHI(QRhiD3D11);
     HRESULT hr = rhiD->dev->CreateBuffer(&desc, nullptr, &buffer);

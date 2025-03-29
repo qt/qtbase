@@ -407,6 +407,8 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
             BlendConstants,
             Draw,
             DrawIndexed,
+            DrawIndirect,
+            DrawIndexedIndirect,
             UpdateSubRes,
             CopySubRes,
             ResolveSubRes,
@@ -493,6 +495,20 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
                 qint32 vertexOffset;
                 quint32 firstInstance;
             } drawIndexed;
+            struct {
+                QD3D11GraphicsPipeline *ps;
+                QD3D11Buffer *indirectBuffer;
+                quint32 indirectBufferOffset;
+                quint32 drawCount;
+                quint32 stride;
+            } drawIndirect;
+            struct {
+                QD3D11GraphicsPipeline *ps;
+                QD3D11Buffer *indirectBuffer;
+                quint32 indirectBufferOffset;
+                quint32 drawCount;
+                quint32 stride;
+            } drawIndexedIndirect;
             struct {
                 ID3D11Resource *dst;
                 UINT dstSubRes;
@@ -763,6 +779,12 @@ public:
     void drawIndexed(QRhiCommandBuffer *cb, quint32 indexCount,
                      quint32 instanceCount, quint32 firstIndex,
                      qint32 vertexOffset, quint32 firstInstance) override;
+
+    void drawIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuffer,
+                      quint32 indirectBufferOffset, quint32 drawCount, quint32 stride) override;
+
+    void drawIndexedIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuffer,
+                             quint32 indirectBufferOffset, quint32 drawCount, quint32 stride) override;
 
     void debugMarkBegin(QRhiCommandBuffer *cb, const QByteArray &name) override;
     void debugMarkEnd(QRhiCommandBuffer *cb) override;

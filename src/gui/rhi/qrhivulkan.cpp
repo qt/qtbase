@@ -703,13 +703,21 @@ bool QRhiVulkan::create(QRhi::Flags flags)
 #ifdef VK_VERSION_1_3
             physDevFeatures13 = {};
             physDevFeatures13.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
-#endif
+#ifdef VK_VERSION_1_4
+            physDevFeatures14 = {};
+            physDevFeatures14.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_4_FEATURES;
+#endif // VK_VERSION_1_4
+#endif // VK_VERSION_1_3
             addToChain(&physDevFeaturesChainable, &physDevFeatures11IfApi12OrNewer);
             physDevFeatures11IfApi12OrNewer.pNext = &physDevFeatures12;
 #ifdef VK_VERSION_1_3
             if (caps.apiVersion >= QVersionNumber(1, 3))
                 physDevFeatures12.pNext = &physDevFeatures13;
-#endif
+#ifdef VK_VERSION_1_4
+            if (caps.apiVersion >= QVersionNumber(1, 4))
+                physDevFeatures13.pNext = &physDevFeatures14;
+#endif // VK_VERSION_1_4
+#endif // VK_VERSION_1_3
             f->vkGetPhysicalDeviceFeatures2(physDev, &physDevFeaturesChainable);
             memcpy(&physDevFeatures, &physDevFeaturesChainable.features, sizeof(VkPhysicalDeviceFeatures));
             featuresQueried = true;
@@ -900,7 +908,7 @@ bool QRhiVulkan::create(QRhi::Flags flags)
 #ifdef VK_VERSION_1_1
         if (caps.apiVersion >= QVersionNumber(1, 1)) {
             // For a >=1.2 implementation at run time, this will enable all
-            // (1.0-1.3) features reported as supported, except the ones we turn
+            // (1.0-1.4) features reported as supported, except the ones we turn
             // off explicitly above. (+extensions) For a 1.1 implementation at
             // run time, this only enables the 1.0 and multiview features (+any
             // extensions) reported as supported. We will not be bothering with
@@ -976,6 +984,8 @@ bool QRhiVulkan::create(QRhi::Flags flags)
     caps.geometryShader = physDevFeatures.geometryShader;
 
     caps.nonFillPolygonMode = physDevFeatures.fillModeNonSolid;
+
+    caps.drawIndirectMulti = physDevFeatures.multiDrawIndirect;
 
 #ifdef VK_VERSION_1_2
     if (caps.apiVersion >= QVersionNumber(1, 2))
@@ -5057,6 +5067,18 @@ void QRhiVulkan::recordPrimaryCommandBuffer(QVkCommandBuffer *cbD)
                                  cmd.args.drawIndexed.firstIndex, cmd.args.drawIndexed.vertexOffset,
                                  cmd.args.drawIndexed.firstInstance);
             break;
+        case QVkCommandBuffer::Command::DrawIndirect:
+            df->vkCmdDrawIndirect(cbD->cb, cmd.args.drawIndirect.indirectBuffer,
+                                  cmd.args.drawIndirect.indirectBufferOffset,
+                                  cmd.args.drawIndirect.drawCount,
+                                  cmd.args.drawIndirect.stride);
+            break;
+        case QVkCommandBuffer::Command::DrawIndexedIndirect:
+            df->vkCmdDrawIndexedIndirect(cbD->cb, cmd.args.drawIndexedIndirect.indirectBuffer,
+                                         cmd.args.drawIndexedIndirect.indirectBufferOffset,
+                                         cmd.args.drawIndexedIndirect.drawCount,
+                                         cmd.args.drawIndexedIndirect.stride);
+            break;
         case QVkCommandBuffer::Command::DebugMarkerBegin:
 #ifdef VK_EXT_debug_utils
             cmd.args.debugMarkerBegin.label.pLabelName =
@@ -5106,6 +5128,8 @@ void QRhiVulkan::recordPrimaryCommandBuffer(QVkCommandBuffer *cbD)
 static inline VkAccessFlags toVkAccess(QRhiPassResourceTracker::BufferAccess access)
 {
     switch (access) {
+    case QRhiPassResourceTracker::BufIndirectDraw:
+        return VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
     case QRhiPassResourceTracker::BufVertexInput:
         return VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
     case QRhiPassResourceTracker::BufIndexRead:
@@ -5128,6 +5152,8 @@ static inline VkAccessFlags toVkAccess(QRhiPassResourceTracker::BufferAccess acc
 static inline VkPipelineStageFlags toVkPipelineStage(QRhiPassResourceTracker::BufferStage stage)
 {
     switch (stage) {
+    case QRhiPassResourceTracker::BufIndirectDrawStage:
+        return VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT;
     case QRhiPassResourceTracker::BufVertexInputStage:
         return VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
     case QRhiPassResourceTracker::BufVertexStage:
@@ -5522,6 +5548,10 @@ bool QRhiVulkan::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::DepthClamp:
         return true;
+    case QRhi::DrawIndirect:
+        return true; // available in Vulkan 1.0
+    case QRhi::DrawIndirectMulti:
+        return caps.drawIndirectMulti;
     default:
         Q_UNREACHABLE_RETURN(false);
     }
@@ -6365,6 +6395,114 @@ void QRhiVulkan::drawIndexed(QRhiCommandBuffer *cb, quint32 indexCount,
     }
 }
 
+void QRhiVulkan::drawIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuffer,
+                              quint32 indirectBufferOffset, quint32 drawCount, quint32 stride)
+{
+    QVkCommandBuffer *cbD = QRHI_RES(QVkCommandBuffer, cb);
+    Q_ASSERT(cbD->recordingPass == QVkCommandBuffer::RenderPass);
+    QRhiPassResourceTracker &passResTracker(cbD->passResTrackers[cbD->currentPassResTrackerIndex]);
+
+    QVkBuffer *indirectBufD = QRHI_RES(QVkBuffer, indirectBuffer);
+    indirectBufD->lastActiveFrameSlot = currentFrameSlot;
+    if (indirectBufD->m_type == QRhiBuffer::Dynamic)
+        executeBufferHostWritesForSlot(indirectBufD, currentFrameSlot);
+    const int indirectBufSlot = indirectBufD->m_type == QRhiBuffer::Dynamic ? currentFrameSlot : 0;
+    trackedRegisterBuffer(&passResTracker, indirectBufD, indirectBufSlot,
+                          QRhiPassResourceTracker::BufIndirectDraw,
+                          QRhiPassResourceTracker::BufIndirectDrawStage);
+    VkBuffer indirectBufVk = indirectBufD->buffers[indirectBufSlot];
+
+    if (cbD->passUsesSecondaryCb) {
+        if (caps.drawIndirectMulti) {
+            df->vkCmdDrawIndirect(cbD->activeSecondaryCbStack.last(),
+                                  indirectBufVk, indirectBufferOffset,
+                                  drawCount, stride);
+        } else {
+            VkDeviceSize offset = indirectBufferOffset;
+            for (quint32 i = 0; i < drawCount; ++i) {
+                df->vkCmdDrawIndirect(cbD->activeSecondaryCbStack.last(),
+                                      indirectBufVk, offset,
+                                      1, stride);
+                offset += stride;
+            }
+        }
+    } else {
+        if (caps.drawIndirectMulti) {
+            QVkCommandBuffer::Command &cmd(cbD->commands.get());
+            cmd.cmd = QVkCommandBuffer::Command::DrawIndirect;
+            cmd.args.drawIndirect.indirectBuffer = indirectBufVk;
+            cmd.args.drawIndirect.indirectBufferOffset = indirectBufferOffset;
+            cmd.args.drawIndirect.drawCount = drawCount;
+            cmd.args.drawIndirect.stride = stride;
+        } else {
+            VkDeviceSize offset = indirectBufferOffset;
+            for (quint32 i = 0; i < drawCount; ++i) {
+                QVkCommandBuffer::Command &cmd(cbD->commands.get());
+                cmd.cmd = QVkCommandBuffer::Command::DrawIndirect;
+                cmd.args.drawIndirect.indirectBuffer = indirectBufVk;
+                cmd.args.drawIndirect.indirectBufferOffset = offset;
+                cmd.args.drawIndirect.drawCount = 1;
+                cmd.args.drawIndirect.stride = stride;
+                offset += stride;
+            }
+        }
+    }
+}
+
+void QRhiVulkan::drawIndexedIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuffer,
+                                     quint32 indirectBufferOffset, quint32 drawCount, quint32 stride)
+{
+    QVkCommandBuffer *cbD = QRHI_RES(QVkCommandBuffer, cb);
+    Q_ASSERT(cbD->recordingPass == QVkCommandBuffer::RenderPass);
+    QRhiPassResourceTracker &passResTracker(cbD->passResTrackers[cbD->currentPassResTrackerIndex]);
+
+    QVkBuffer *indirectBufD = QRHI_RES(QVkBuffer, indirectBuffer);
+    indirectBufD->lastActiveFrameSlot = currentFrameSlot;
+    if (indirectBufD->m_type == QRhiBuffer::Dynamic)
+        executeBufferHostWritesForSlot(indirectBufD, currentFrameSlot);
+    const int indirectBufSlot = indirectBufD->m_type == QRhiBuffer::Dynamic ? currentFrameSlot : 0;
+    trackedRegisterBuffer(&passResTracker, indirectBufD, indirectBufSlot,
+                          QRhiPassResourceTracker::BufIndirectDraw,
+                          QRhiPassResourceTracker::BufIndirectDrawStage);
+    VkBuffer indirectBufVk = indirectBufD->buffers[indirectBufSlot];
+
+    if (cbD->passUsesSecondaryCb) {
+        if (caps.drawIndirectMulti) {
+            df->vkCmdDrawIndexedIndirect(cbD->activeSecondaryCbStack.last(),
+                                         indirectBufVk, indirectBufferOffset,
+                                         drawCount, stride);
+        } else {
+            VkDeviceSize offset = indirectBufferOffset;
+            for (quint32 i = 0; i < drawCount; ++i) {
+                df->vkCmdDrawIndexedIndirect(cbD->activeSecondaryCbStack.last(),
+                                             indirectBufVk, offset,
+                                             1, stride);
+                offset += stride;
+            }
+        }
+    } else {
+        if (caps.drawIndirectMulti) {
+            QVkCommandBuffer::Command &cmd(cbD->commands.get());
+            cmd.cmd = QVkCommandBuffer::Command::DrawIndexedIndirect;
+            cmd.args.drawIndexedIndirect.indirectBuffer = indirectBufVk;
+            cmd.args.drawIndexedIndirect.indirectBufferOffset = indirectBufferOffset;
+            cmd.args.drawIndexedIndirect.drawCount = drawCount;
+            cmd.args.drawIndexedIndirect.stride = stride;
+        } else {
+            VkDeviceSize offset = indirectBufferOffset;
+            for (quint32 i = 0; i < drawCount; ++i) {
+                QVkCommandBuffer::Command &cmd(cbD->commands.get());
+                cmd.cmd = QVkCommandBuffer::Command::DrawIndexedIndirect;
+                cmd.args.drawIndexedIndirect.indirectBuffer = indirectBufVk;
+                cmd.args.drawIndexedIndirect.indirectBufferOffset = offset;
+                cmd.args.drawIndexedIndirect.drawCount = 1;
+                cmd.args.drawIndexedIndirect.stride = stride;
+                offset += stride;
+            }
+        }
+    }
+}
+
 void QRhiVulkan::debugMarkBegin(QRhiCommandBuffer *cb, const QByteArray &name)
 {
 #ifdef VK_EXT_debug_utils
@@ -6568,6 +6706,8 @@ static inline VkBufferUsageFlagBits toVkBufferUsage(QRhiBuffer::UsageFlags usage
         u |= VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
     if (usage.testFlag(QRhiBuffer::StorageBuffer))
         u |= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+    if (usage.testFlag(QRhiBuffer::IndirectBuffer))
+        u |= VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
     return VkBufferUsageFlagBits(u);
 }
 

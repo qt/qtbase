@@ -420,6 +420,8 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
             SetStencilRef,
             Draw,
             DrawIndexed,
+            DrawIndirect,
+            DrawIndexedIndirect,
             DebugMarkerBegin,
             DebugMarkerEnd,
             DebugMarkerInsert,
@@ -538,6 +540,18 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
                 int32_t vertexOffset;
                 uint32_t firstInstance;
             } drawIndexed;
+            struct {
+                VkBuffer indirectBuffer;
+                VkDeviceSize indirectBufferOffset;
+                uint32_t drawCount;
+                uint32_t stride;
+            } drawIndirect;
+            struct {
+                VkBuffer indirectBuffer;
+                VkDeviceSize indirectBufferOffset;
+                uint32_t drawCount;
+                uint32_t stride;
+            } drawIndexedIndirect;
             struct {
 #ifdef VK_EXT_debug_utils
                 VkDebugUtilsLabelEXT label;
@@ -770,6 +784,12 @@ public:
                      quint32 instanceCount, quint32 firstIndex,
                      qint32 vertexOffset, quint32 firstInstance) override;
 
+    void drawIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuffer,
+                      quint32 indirectBufferOffset, quint32 drawCount, quint32 stride) override;
+
+    void drawIndexedIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuffer,
+                             quint32 indirectBufferOffset, quint32 drawCount, quint32 stride) override;
+
     void debugMarkBegin(QRhiCommandBuffer *cb, const QByteArray &name) override;
     void debugMarkEnd(QRhiCommandBuffer *cb) override;
     void debugMarkMsg(QRhiCommandBuffer *cb, const QByteArray &msg) override;
@@ -914,6 +934,9 @@ public:
 #ifdef VK_VERSION_1_3
     VkPhysicalDeviceVulkan13Features physDevFeatures13;
 #endif
+#ifdef VK_VERSION_1_4
+    VkPhysicalDeviceVulkan14Features physDevFeatures14;
+#endif
     VkPhysicalDeviceProperties physDevProperties;
     VkDeviceSize ubufAlign;
     VkDeviceSize texbufAlign;
@@ -968,6 +991,7 @@ public:
         bool imageBasedShadingRate = false;
         QVersionNumber apiVersion;
         int imageBasedShadingRateTileSize = 0;
+        bool drawIndirectMulti = false;
     } caps;
 
     VkPipelineCache pipelineCache = VK_NULL_HANDLE;

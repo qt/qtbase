@@ -1,6 +1,8 @@
 :: Copyright (C) 2019 The Qt Company Ltd.
 :: SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
+qsb --glsl "150,120,100 es" --hlsl 50 -c --msl 12 -o colored.vert.qsb colored.vert
+qsb --glsl "150,120,100 es" --hlsl 50 -c --msl 12 -o colored.frag.qsb colored.frag
 qsb --glsl "150,120,100 es" --hlsl 50 -c --msl 12 -o simple.vert.qsb simple.vert
 qsb --glsl "150,120,100 es" --hlsl 50 -c --msl 12 -o simple.frag.qsb simple.frag
 qsb --glsl "150,120,100 es" --hlsl 50 -c --msl 12 -o simpletextured.vert.qsb simpletextured.vert
@@ -33,3 +35,4 @@ qsb --glsl "300 es,330" --hlsl 61 -c --msl 12 multiview.frag -o multiview.frag.q
 qsb --glsl "150,120,100 es" --hlsl 50 --msl 12 -o samesrb_1.vert.qsb samesrb_1.vert
 qsb --glsl "150,120,100 es" --hlsl 50 --msl 12 -o samesrb_2.vert.qsb samesrb_2.vert
 qsb --glsl "150,120,100 es" --hlsl 50 --msl 12 -o samesrb.frag.qsb samesrb.frag
+qsb --glsl 430 --hlsl 50 --msl 12 -o indirect_draw_args.comp.qsb indirect_draw_args.comp

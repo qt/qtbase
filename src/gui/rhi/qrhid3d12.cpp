@@ -528,6 +528,38 @@ bool QRhiD3D12::create(QRhi::Flags flags)
     caps.vrsAdditionalRates = false;
 #endif
 
+    {
+        D3D12_INDIRECT_ARGUMENT_DESC arg = {};
+        arg.Type = D3D12_INDIRECT_ARGUMENT_TYPE_DRAW;
+
+        D3D12_COMMAND_SIGNATURE_DESC sigDesc = {};
+        sigDesc.ByteStride = sizeof(D3D12_DRAW_ARGUMENTS);
+        sigDesc.NumArgumentDescs = 1;
+        sigDesc.pArgumentDescs = &arg;
+
+        hr = dev->CreateCommandSignature(&sigDesc, nullptr, IID_PPV_ARGS(&drawCommandSignature));
+        if (FAILED(hr)) {
+            qWarning("Failed to create draw command signature: %s", qPrintable(QSystemError::windowsComString(hr)));
+            return false;
+        }
+    }
+
+    {
+        D3D12_INDIRECT_ARGUMENT_DESC arg = {};
+        arg.Type = D3D12_INDIRECT_ARGUMENT_TYPE_DRAW_INDEXED;
+
+        D3D12_COMMAND_SIGNATURE_DESC sigDesc = {};
+        sigDesc.ByteStride = sizeof(D3D12_DRAW_INDEXED_ARGUMENTS);
+        sigDesc.NumArgumentDescs = 1;
+        sigDesc.pArgumentDescs = &arg;
+
+        hr = dev->CreateCommandSignature(&sigDesc, nullptr, IID_PPV_ARGS(&drawIndexedCommandSignature));
+        if (FAILED(hr)) {
+            qWarning("Failed to create draw indexed command signature: %s", qPrintable(QSystemError::windowsComString(hr)));
+            return false;
+        }
+    }
+
     deviceLost = false;
     offscreenActive = false;
 
@@ -627,6 +659,16 @@ void QRhiD3D12::destroy()
     importedCommandQueue = false;
 
     QDxgiVSyncService::instance()->derefAdapter(adapterLuid);
+
+    if (drawCommandSignature) {
+        drawCommandSignature->Release();
+        drawCommandSignature = nullptr;
+    }
+
+    if (drawIndexedCommandSignature) {
+        drawIndexedCommandSignature->Release();
+        drawIndexedCommandSignature = nullptr;
+    }
 }
 
 QRhi::AdapterList QRhiD3D12::enumerateAdaptersBeforeCreate(QRhiNativeHandles *nativeHandles) const
@@ -872,6 +914,10 @@ bool QRhiD3D12::isFeatureSupported(QRhi::Feature feature) const
         return false;
     case QRhi::DepthClamp:
         return true;
+    case QRhi::DrawIndirect:
+        return drawCommandSignature != nullptr && drawIndexedCommandSignature != nullptr;
+    case QRhi::DrawIndirectMulti:
+        return drawCommandSignature != nullptr && drawIndexedCommandSignature != nullptr;
     }
     return false;
 }
@@ -1605,6 +1651,80 @@ void QRhiD3D12::drawIndexed(QRhiCommandBuffer *cb, quint32 indexCount,
     cbD->cmdList->DrawIndexedInstanced(indexCount, instanceCount,
                                        firstIndex, vertexOffset,
                                        firstInstance);
+}
+
+void QRhiD3D12::drawIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuffer,
+                             quint32 indirectBufferOffset, quint32 drawCount, quint32 stride)
+{
+    QD3D12CommandBuffer *cbD = QRHI_RES(QD3D12CommandBuffer, cb);
+    Q_ASSERT(cbD->recordingPass == QD3D12CommandBuffer::RenderPass);
+
+    QD3D12Buffer *indirectBufferD = QRHI_RES(QD3D12Buffer, indirectBuffer);
+    const bool isDynamic = indirectBufferD->m_type == QRhiBuffer::Dynamic;
+    const QD3D12ObjectHandle indirectBufferHandle = indirectBufferD->handles[isDynamic ? currentFrameSlot : 0];
+    if (isDynamic) {
+        indirectBufferD->executeHostWritesForFrameSlot(currentFrameSlot);
+    } else {
+        barrierGen.addTransitionBarrier(indirectBufferHandle, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
+        barrierGen.enqueueBufferedTransitionBarriers(cbD);
+    }
+    QD3D12Resource *indirectRes = resourcePool.lookupRef(indirectBufferHandle);
+    if (!indirectRes)
+        return;
+    ID3D12Resource *indirectBufferRes = indirectRes->resource;
+
+    const bool canUseMulti = (stride == sizeof(QRhiIndirectDrawCommand) && drawCommandSignature);
+
+    if (canUseMulti && drawCount > 1) {
+        cbD->cmdList->ExecuteIndirect(drawCommandSignature, drawCount,
+                                      indirectBufferRes, indirectBufferOffset,
+                                      nullptr, 0);
+    } else {
+        UINT offset = indirectBufferOffset;
+        for (quint32 i = 0; i < drawCount; ++i) {
+            cbD->cmdList->ExecuteIndirect(drawCommandSignature, 1,
+                                          indirectBufferRes, offset,
+                                          nullptr, 0);
+            offset += stride;
+        }
+    }
+}
+
+void QRhiD3D12::drawIndexedIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuffer,
+                                    quint32 indirectBufferOffset, quint32 drawCount, quint32 stride)
+{
+    QD3D12CommandBuffer *cbD = QRHI_RES(QD3D12CommandBuffer, cb);
+    Q_ASSERT(cbD->recordingPass == QD3D12CommandBuffer::RenderPass);
+
+    QD3D12Buffer *indirectBufferD = QRHI_RES(QD3D12Buffer, indirectBuffer);
+    const bool isDynamic = indirectBufferD->m_type == QRhiBuffer::Dynamic;
+    const QD3D12ObjectHandle indirectBufferHandle = indirectBufferD->handles[isDynamic ? currentFrameSlot : 0];
+    if (isDynamic) {
+        indirectBufferD->executeHostWritesForFrameSlot(currentFrameSlot);
+    } else {
+        barrierGen.addTransitionBarrier(indirectBufferHandle, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
+        barrierGen.enqueueBufferedTransitionBarriers(cbD);
+    }
+    QD3D12Resource *indirectRes = resourcePool.lookupRef(indirectBufferHandle);
+    if (!indirectRes)
+        return;
+    ID3D12Resource *indirectBufferRes = indirectRes->resource;
+
+    const bool canUseMulti = (stride == sizeof(QRhiIndexedIndirectDrawCommand) && drawIndexedCommandSignature);
+
+    if (canUseMulti && drawCount > 1) {
+        cbD->cmdList->ExecuteIndirect(drawIndexedCommandSignature, drawCount,
+                                      indirectBufferRes, indirectBufferOffset,
+                                      nullptr, 0);
+    } else {
+        UINT offset = indirectBufferOffset;
+        for (quint32 i = 0; i < drawCount; ++i) {
+            cbD->cmdList->ExecuteIndirect(drawIndexedCommandSignature, 1,
+                                          indirectBufferRes, offset,
+                                          nullptr, 0);
+            offset += stride;
+        }
+    }
 }
 
 void QRhiD3D12::debugMarkBegin(QRhiCommandBuffer *cb, const QByteArray &name)

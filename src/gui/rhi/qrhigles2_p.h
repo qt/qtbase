@@ -326,6 +326,8 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
             BindIndexBuffer,
             Draw,
             DrawIndexed,
+            DrawIndirect,
+            DrawIndexedIndirect,
             BindGraphicsPipeline,
             BindShaderResources,
             BindFramebuffer,
@@ -397,6 +399,20 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
                 quint32 baseInstance;
                 qint32 baseVertex;
             } drawIndexed;
+            struct {
+                QRhiGraphicsPipeline *ps;
+                GLuint buffer;
+                quint32 offset;
+                quint32 drawCount;
+                quint32 stride;
+            } drawIndirect;
+            struct {
+                QRhiGraphicsPipeline *ps;
+                GLuint buffer;
+                quint32 offset;
+                quint32 drawCount;
+                quint32 stride;
+            } drawIndexedIndirect;
             struct {
                 QRhiGraphicsPipeline *ps;
             } bindGraphicsPipeline;
@@ -846,6 +862,12 @@ public:
                      quint32 instanceCount, quint32 firstIndex,
                      qint32 vertexOffset, quint32 firstInstance) override;
 
+    void drawIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuffer,
+                      quint32 indirectBufferOffset, quint32 drawCount, quint32 stride) override;
+
+    void drawIndexedIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuffer,
+                             quint32 indirectBufferOffset, quint32 drawCount, quint32 stride) override;
+
     void debugMarkBegin(QRhiCommandBuffer *cb, const QByteArray &name) override;
     void debugMarkEnd(QRhiCommandBuffer *cb) override;
     void debugMarkMsg(QRhiCommandBuffer *cb, const QByteArray &msg) override;
@@ -974,6 +996,8 @@ public:
     void (QOPENGLF_APIENTRYP glFramebufferTexture2DMultisampleEXT)(GLenum, GLenum, GLenum, GLuint, GLint, GLsizei) = nullptr;
     void (QOPENGLF_APIENTRYP glFramebufferTextureMultisampleMultiviewOVR)(GLenum, GLenum, GLuint, GLint, GLsizei, GLint, GLsizei) = nullptr;
     void (QOPENGLF_APIENTRYP glRenderbufferStorageMultisampleEXT)(GLenum, GLsizei, GLenum, GLsizei, GLsizei) = nullptr;
+    void (QOPENGLF_APIENTRYP glMultiDrawArraysIndirect)(GLenum, const void *, GLsizei, GLsizei) = nullptr;
+    void (QOPENGLF_APIENTRYP glMultiDrawElementsIndirect)(GLenum, GLenum, const void *, GLsizei, GLsizei) = nullptr;
     uint vao = 0;
     struct Caps {
         Caps()
@@ -1099,6 +1123,8 @@ public:
         uint unpackRowLength : 1;
         uint perRenderTargetBlending : 1;
         uint sampleVariables : 1;
+        uint drawIndirect : 1;
+        uint drawIndirectMulti : 1;
     } caps;
     QGles2SwapChain *currentSwapChain = nullptr;
     QSet<GLint> supportedCompressedFormats;

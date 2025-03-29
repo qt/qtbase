@@ -884,6 +884,10 @@ bool QRhiMetal::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::DepthClamp:
         return caps.depthClamp;
+    case QRhi::DrawIndirect:
+        return true;
+    case QRhi::DrawIndirectMulti:
+        return false;
     default:
         Q_UNREACHABLE();
         return false;
@@ -2345,6 +2349,55 @@ void QRhiMetal::drawIndexed(QRhiCommandBuffer *cb, quint32 indexCount,
           indexBuffer: mtlibuf
           indexBufferOffset: indexOffset
           instanceCount: instanceCount];
+    }
+}
+
+void QRhiMetal::drawIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuffer,
+                             quint32 indirectBufferOffset, quint32 drawCount, quint32 stride)
+{
+    QMetalCommandBuffer *cbD = QRHI_RES(QMetalCommandBuffer, cb);
+    Q_ASSERT(cbD->recordingPass == QMetalCommandBuffer::RenderPass);
+
+    QMetalBuffer *indirectBufD = QRHI_RES(QMetalBuffer, indirectBuffer);
+    executeBufferHostWritesForCurrentFrame(indirectBufD);
+    indirectBufD->lastActiveFrameSlot = currentFrameSlot;
+    id<MTLBuffer> indirectBufMtl = indirectBufD->d->buf[indirectBufD->d->slotted ? currentFrameSlot : 0];
+
+    NSUInteger offset = indirectBufferOffset;
+    for (quint32 i = 0; i < drawCount; ++i) {
+        [cbD->d->currentRenderPassEncoder drawPrimitives: cbD->currentGraphicsPipeline->d->primitiveType
+          indirectBuffer: indirectBufMtl
+          indirectBufferOffset: offset];
+        offset += stride;
+    }
+}
+
+void QRhiMetal::drawIndexedIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuffer,
+                                    quint32 indirectBufferOffset, quint32 drawCount, quint32 stride)
+{
+    QMetalCommandBuffer *cbD = QRHI_RES(QMetalCommandBuffer, cb);
+    Q_ASSERT(cbD->recordingPass == QMetalCommandBuffer::RenderPass);
+
+    if (!cbD->currentIndexBuffer)
+        return;
+
+    QMetalBuffer *indexBufD = cbD->currentIndexBuffer;
+    id<MTLBuffer> indexBufMtl = indexBufD->d->buf[indexBufD->d->slotted ? currentFrameSlot : 0];
+
+    QMetalBuffer *indirectBufD = QRHI_RES(QMetalBuffer, indirectBuffer);
+    executeBufferHostWritesForCurrentFrame(indirectBufD);
+    indirectBufD->lastActiveFrameSlot = currentFrameSlot;
+    id<MTLBuffer> indirectBufMtl = indirectBufD->d->buf[indirectBufD->d->slotted ? currentFrameSlot : 0];
+
+    NSUInteger offset = indirectBufferOffset;
+    for (quint32 i = 0; i < drawCount; ++i) {
+        [cbD->d->currentRenderPassEncoder drawIndexedPrimitives: cbD->currentGraphicsPipeline->d->primitiveType
+          indexType: cbD->currentIndexFormat == QRhiCommandBuffer::IndexUInt16 ? MTLIndexTypeUInt16 : MTLIndexTypeUInt32
+          indexBuffer: indexBufMtl
+          indexBufferOffset: cbD->currentIndexOffset
+          indirectBuffer: indirectBufMtl
+          indirectBufferOffset: offset];
+        offset += stride;
     }
 }
 

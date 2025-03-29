@@ -330,6 +330,26 @@ void QRhiNull::drawIndexed(QRhiCommandBuffer *cb, quint32 indexCount,
     Q_UNUSED(firstInstance);
 }
 
+void QRhiNull::drawIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuffer,
+                            quint32 indirectBufferOffset, quint32 drawCount, quint32 stride)
+{
+    Q_UNUSED(cb);
+    Q_UNUSED(indirectBuffer);
+    Q_UNUSED(indirectBufferOffset);
+    Q_UNUSED(drawCount);
+    Q_UNUSED(stride);
+}
+
+void QRhiNull::drawIndexedIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuffer,
+                                   quint32 indirectBufferOffset, quint32 drawCount, quint32 stride)
+{
+    Q_UNUSED(cb);
+    Q_UNUSED(indirectBuffer);
+    Q_UNUSED(indirectBufferOffset);
+    Q_UNUSED(drawCount);
+    Q_UNUSED(stride);
+}
+
 void QRhiNull::debugMarkBegin(QRhiCommandBuffer *cb, const QByteArray &name)
 {
     Q_UNUSED(cb);

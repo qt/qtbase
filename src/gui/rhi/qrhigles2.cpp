@@ -592,6 +592,10 @@ QT_BEGIN_NAMESPACE
 #define GL_DEPTH_CLAMP                    0x864F
 #endif
 
+#ifndef GL_DRAW_INDIRECT_BUFFER
+#define GL_DRAW_INDIRECT_BUFFER           0x8F3F
+#endif
+
 /*!
     Constructs a new QRhiGles2InitParams.
 
@@ -1203,6 +1207,44 @@ bool QRhiGles2::create(QRhi::Flags flags)
         caps.sampleVariables = caps.ctxMajor >= 4;
     }
 
+    if (caps.gles)
+        caps.drawIndirect = caps.ctxMajor > 3 || (caps.ctxMajor == 3 && caps.ctxMinor >= 1);
+    else
+        caps.drawIndirect = caps.ctxMajor >= 4;
+    if (ctx->hasExtension(QByteArrayLiteral("GL_ARB_draw_indirect")))
+        caps.drawIndirect = true;
+
+    if (caps.gles)
+        caps.drawIndirectMulti = false;
+    else
+        caps.drawIndirectMulti = caps.ctxMajor > 4 || (caps.ctxMajor == 4 && caps.ctxMinor >= 3);
+    if (ctx->hasExtension(QByteArrayLiteral("GL_ARB_multi_draw_indirect")) ||
+        ctx->hasExtension(QByteArrayLiteral("GL_EXT_multi_draw_indirect")))
+        caps.drawIndirectMulti = true;
+
+    if (caps.drawIndirectMulti) {
+        glMultiDrawArraysIndirect = reinterpret_cast<decltype(glMultiDrawArraysIndirect)>(
+                    ctx->getProcAddress(QByteArrayLiteral("glMultiDrawArraysIndirect")));
+        if (!glMultiDrawArraysIndirect)
+            glMultiDrawArraysIndirect = reinterpret_cast<decltype(glMultiDrawArraysIndirect)>(
+                        ctx->getProcAddress(QByteArrayLiteral("glMultiDrawArraysIndirectARB")));
+        if (!glMultiDrawArraysIndirect)
+            glMultiDrawArraysIndirect = reinterpret_cast<decltype(glMultiDrawArraysIndirect)>(
+                        ctx->getProcAddress(QByteArrayLiteral("glMultiDrawArraysIndirectEXT")));
+        glMultiDrawElementsIndirect = reinterpret_cast<decltype(glMultiDrawElementsIndirect)>(
+                    ctx->getProcAddress(QByteArrayLiteral("glMultiDrawElementsIndirect")));
+        if (!glMultiDrawElementsIndirect)
+            glMultiDrawElementsIndirect = reinterpret_cast<decltype(glMultiDrawElementsIndirect)>(
+                        ctx->getProcAddress(QByteArrayLiteral("glMultiDrawElementsIndirectARB")));
+        if (!glMultiDrawElementsIndirect)
+            glMultiDrawElementsIndirect = reinterpret_cast<decltype(glMultiDrawElementsIndirect)>(
+                        ctx->getProcAddress(QByteArrayLiteral("glMultiDrawElementsIndirectEXT")));
+        if (!glMultiDrawArraysIndirect || !glMultiDrawElementsIndirect) {
+            qWarning("Failed to resolve glMultiDrawArraysIndirect or glMultiDrawElementsIndirect.");
+            caps.drawIndirectMulti = false;
+        }
+    }
+
     nativeHandlesStruct.context = ctx;
 
     contextLost = false;
@@ -1656,6 +1698,10 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
         return false; // because BaseInstance is always false
     case QRhi::DepthClamp:
         return caps.depthClamp;
+    case QRhi::DrawIndirect:
+        return caps.drawIndirect;
+    case QRhi::DrawIndirectMulti:
+        return caps.drawIndirectMulti;
     default:
         Q_UNREACHABLE_RETURN(false);
     }
@@ -2219,6 +2265,46 @@ void QRhiGles2::drawIndexed(QRhiCommandBuffer *cb, quint32 indexCount,
     cmd.args.drawIndexed.instanceCount = instanceCount;
     cmd.args.drawIndexed.baseInstance = firstInstance;
     cmd.args.drawIndexed.baseVertex = vertexOffset;
+}
+
+void QRhiGles2::drawIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuffer,
+                             quint32 indirectBufferOffset, quint32 drawCount, quint32 stride)
+{
+    if (!caps.drawIndirect)
+        return;
+
+    QGles2CommandBuffer *cbD = QRHI_RES(QGles2CommandBuffer, cb);
+    Q_ASSERT(cbD->recordingPass == QGles2CommandBuffer::RenderPass);
+
+    QGles2Buffer *indirectBufD = QRHI_RES(QGles2Buffer, indirectBuffer);
+
+    QGles2CommandBuffer::Command &cmd(cbD->commands.get());
+    cmd.cmd = QGles2CommandBuffer::Command::DrawIndirect;
+    cmd.args.drawIndirect.ps = cbD->currentGraphicsPipeline;
+    cmd.args.drawIndirect.buffer = indirectBufD->buffer;
+    cmd.args.drawIndirect.offset = indirectBufferOffset;
+    cmd.args.drawIndirect.drawCount = drawCount;
+    cmd.args.drawIndirect.stride = stride;
+}
+
+void QRhiGles2::drawIndexedIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuffer,
+                                    quint32 indirectBufferOffset, quint32 drawCount, quint32 stride)
+{
+    if (!caps.drawIndirect)
+        return;
+
+    QGles2CommandBuffer *cbD = QRHI_RES(QGles2CommandBuffer, cb);
+    Q_ASSERT(cbD->recordingPass == QGles2CommandBuffer::RenderPass);
+
+    QGles2Buffer *indirectBufD = QRHI_RES(QGles2Buffer, indirectBuffer);
+
+    QGles2CommandBuffer::Command &cmd(cbD->commands.get());
+    cmd.cmd = QGles2CommandBuffer::Command::DrawIndexedIndirect;
+    cmd.args.drawIndexedIndirect.ps = cbD->currentGraphicsPipeline;
+    cmd.args.drawIndexedIndirect.buffer = indirectBufD->buffer;
+    cmd.args.drawIndexedIndirect.offset = indirectBufferOffset;
+    cmd.args.drawIndexedIndirect.drawCount = drawCount;
+    cmd.args.drawIndexedIndirect.stride = stride;
 }
 
 void QRhiGles2::debugMarkBegin(QRhiCommandBuffer *cb, const QByteArray &name)
@@ -3534,6 +3620,62 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                 }
             } else {
                 qWarning("No graphics pipeline active for drawIndexed; ignored");
+            }
+        }
+            break;
+        case QGles2CommandBuffer::Command::DrawIndirect:
+        {
+            QGles2GraphicsPipeline *psD = QRHI_RES(QGles2GraphicsPipeline, cmd.args.drawIndirect.ps);
+            if (psD) {
+                f->glBindBuffer(GL_DRAW_INDIRECT_BUFFER, cmd.args.drawIndirect.buffer);
+                if (glMultiDrawArraysIndirect) {
+                    const GLvoid *ofs = reinterpret_cast<const GLvoid *>(
+                                quintptr(cmd.args.drawIndirect.offset));
+                    glMultiDrawArraysIndirect(psD->drawMode,
+                                              ofs,
+                                              cmd.args.drawIndirect.drawCount,
+                                              cmd.args.drawIndirect.stride);
+                } else { // Fallback to issuing multiple single indirect draws
+                    for (quint32 i = 0; i < cmd.args.drawIndirect.drawCount; ++i) {
+                        const quintptr indirectOffset = quintptr(cmd.args.drawIndirect.offset)
+                                + quintptr(i) * cmd.args.drawIndirect.stride;
+                        const GLvoid *ofs = reinterpret_cast<const GLvoid *>(indirectOffset);
+                        f->glDrawArraysIndirect(psD->drawMode,
+                                                ofs);
+                    }
+                }
+                f->glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
+            } else {
+                qWarning("No graphics pipeline active for drawIndirect; ignored");
+            }
+        }
+            break;
+        case QGles2CommandBuffer::Command::DrawIndexedIndirect:
+        {
+            QGles2GraphicsPipeline *psD = QRHI_RES(QGles2GraphicsPipeline, cmd.args.drawIndexedIndirect.ps);
+            if (psD) {
+                f->glBindBuffer(GL_DRAW_INDIRECT_BUFFER, cmd.args.drawIndexedIndirect.buffer);
+                if (glMultiDrawElementsIndirect) {
+                    const GLvoid *ofs = reinterpret_cast<const GLvoid *>(
+                                quintptr(cmd.args.drawIndexedIndirect.offset));
+                    glMultiDrawElementsIndirect(psD->drawMode,
+                                                state.indexType,
+                                                ofs,
+                                                cmd.args.drawIndexedIndirect.drawCount,
+                                                cmd.args.drawIndexedIndirect.stride);
+                } else { // Fallback to issuing multiple single indirect draws
+                    for (quint32 i = 0; i < cmd.args.drawIndexedIndirect.drawCount; ++i) {
+                        const quintptr indirectOffset = quintptr(cmd.args.drawIndexedIndirect.offset)
+                                + quintptr(i) * cmd.args.drawIndexedIndirect.stride;
+                        const GLvoid *ofs = reinterpret_cast<const GLvoid *>(indirectOffset);
+                        f->glDrawElementsIndirect(psD->drawMode,
+                                                  state.indexType,
+                                                  ofs);
+                    }
+                }
+                f->glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
+            } else {
+                qWarning("No graphics pipeline active for drawIndexedIndirect; ignored");
             }
         }
             break;
@@ -5562,6 +5704,8 @@ bool QGles2Buffer::create()
         targetForDataOps = GL_ELEMENT_ARRAY_BUFFER;
     else if (m_usage.testFlag(QRhiBuffer::StorageBuffer))
         targetForDataOps = GL_SHADER_STORAGE_BUFFER;
+    else if (m_usage.testFlag(QRhiBuffer::IndirectBuffer))
+        targetForDataOps = GL_DRAW_INDIRECT_BUFFER;
 
     rhiD->f->glGenBuffers(1, &buffer);
     rhiD->f->glBindBuffer(targetForDataOps, buffer);

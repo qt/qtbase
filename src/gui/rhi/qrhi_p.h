@@ -112,6 +112,10 @@ public:
     virtual void drawIndexed(QRhiCommandBuffer *cb, quint32 indexCount,
                              quint32 instanceCount, quint32 firstIndex,
                              qint32 vertexOffset, quint32 firstInstance) = 0;
+    virtual void drawIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuffer,
+                              quint32 offset, quint32 drawCount, quint32 stride) = 0;
+    virtual void drawIndexedIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuffer,
+                                     quint32 offset, quint32 drawCount, quint32 stride) = 0;
 
     virtual void debugMarkBegin(QRhiCommandBuffer *cb, const QByteArray &name) = 0;
     virtual void debugMarkEnd(QRhiCommandBuffer *cb) = 0;
@@ -679,6 +683,7 @@ public:
     };
 
     enum BufferStage {
+        BufIndirectDrawStage,
         BufVertexInputStage,
         BufVertexStage,
         BufTCStage,
@@ -689,6 +694,7 @@ public:
     };
 
     enum BufferAccess {
+        BufIndirectDraw,
         BufVertexInput,
         BufIndexRead,
         BufUniformRead,
