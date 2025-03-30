@@ -324,6 +324,7 @@ bool QMimeTypeParserBase::parse(QIODevice *dev, const QString &fileName, QString
                 ruleMatcher.addRules(rules);
                 processMagicMatcher(ruleMatcher);
                 rules.clear();
+                ps = ParseOtherMimeTypeSubTag; // in case of an empty glob tag
             }
             break;
         }

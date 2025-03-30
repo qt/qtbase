@@ -63,6 +63,7 @@ SOURCES += \
     $$PWD/src/hb-subset-cff1.cc \
     $$PWD/src/hb-subset-cff2.cc \
     $$PWD/src/hb-subset-input.cc \
+    $$PWD/src/hb-subset-instancer-iup.cc \
     $$PWD/src/hb-subset-instancer-solver.cc \
     $$PWD/src/hb-subset-plan.cc \
     $$PWD/src/hb-subset-repacker.cc \
@@ -92,6 +93,7 @@ HEADERS += \
     $$PWD/src/hb-shaper-impl.hh \
     $$PWD/src/hb-shaper-list.hh \
     $$PWD/src/hb-string-array.hh \
+    $$PWD/src/hb-subset-instancer-iup.hh \
     $$PWD/src/hb-subset-plan-member-list.hh \
     $$PWD/src/hb-subset-repacker.h \
     $$PWD/src/hb-unicode.hh
@@ -200,7 +202,9 @@ contains(SHAPERS, opentype) {
         $$PWD/src/hb-ot-var-fvar-table.hh \
         $$PWD/src/hb-ot-var-gvar-table.hh \
         $$PWD/src/hb-ot-var-hvar-table.hh \
-        $$PWD/src/hb-ot-var-mvar-table.hh
+        $$PWD/src/hb-ot-var-mvar-table.hh \
+        $$PWD/src/hb-ot-var-varc-table.hh \
+        $$PWD/src/OT/Var/VARC/VARC.cc
 
     HEADERS += \
         $$PWD/src/hb-ot.h \
@@ -217,7 +221,9 @@ contains(SHAPERS, opentype) {
         $$PWD/src/OT/Color/sbix/sbix.hh \
         $$PWD/src/OT/Color/svg/svg.hh \
         $$PWD/src/OT/Layout/GDEF/GDEF.hh \
-        $$PWD/src/OT/name/name.hh
+        $$PWD/src/OT/name/name.hh \
+        $$PWD/src/OT/Var/VARC/coord-setter.hh \
+        $$PWD/src/OT/Var/VARC/VARC.hh
 
 }
 

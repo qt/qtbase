@@ -90,6 +90,7 @@ Q_LOGGING_CATEGORY(lcQpaXDnd, "qt.qpa.xdnd")
 
 QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGrabServer, xcb_visualid_t defaultVisualId, const char *displayName)
     : QXcbBasicConnection(displayName)
+    , m_duringSystemMoveResize(false)
     , m_canGrabServer(canGrabServer)
     , m_defaultVisualId(defaultVisualId)
     , m_nativeInterface(nativeInterface)
@@ -98,8 +99,6 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
         return;
 
     m_eventQueue = new QXcbEventQueue(this);
-
-    m_xdgCurrentDesktop = qgetenv("XDG_CURRENT_DESKTOP").toLower();
 
     if (hasXRandr())
         xrandrSelectEvents();
@@ -604,6 +603,8 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
     }
     case XCB_BUTTON_RELEASE: {
         auto ev = reinterpret_cast<xcb_button_release_event_t *>(event);
+        if (m_duringSystemMoveResize && ev->root != XCB_NONE)
+            abortSystemMoveResize(ev->root);
         m_keyboard->updateXKBStateFromCore(ev->state);
         m_buttonState = (m_buttonState & ~0x7) | translateMouseButtons(ev->state);
         setButtonState(translateMouseButton(ev->detail), false);
@@ -796,6 +797,15 @@ void QXcbConnection::ungrabServer()
 {
     if (m_canGrabServer)
         xcb_ungrab_server(xcb_connection());
+}
+
+QString QXcbConnection::windowManagerName() const
+{
+    QXcbVirtualDesktop *pvd = primaryVirtualDesktop();
+    if (pvd)
+        return pvd->windowManagerName().toLower();
+
+    return QString();
 }
 
 xcb_timestamp_t QXcbConnection::getTimestamp()

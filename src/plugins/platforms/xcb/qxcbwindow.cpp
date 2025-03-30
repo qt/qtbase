@@ -1334,6 +1334,7 @@ void QXcbWindow::setParent(const QPlatformWindow *parent)
         m_embedded = false;
     }
     xcb_reparent_window(xcb_connection(), xcb_window(), xcb_parent_id, topLeft.x(), topLeft.y());
+    connection()->sync();
 }
 
 void QXcbWindow::setWindowTitle(const QString &title)
@@ -2452,16 +2453,15 @@ bool QXcbWindow::startSystemMoveResize(const QPoint &pos, int edges)
     // ### FIXME QTBUG-53389
     bool startedByTouch = connection()->startSystemMoveResizeForTouch(m_window, edges);
     if (startedByTouch) {
-        if (connection()->isUnity()) {
-            // Unity fails to move/resize via _NET_WM_MOVERESIZE (WM bug?).
-            connection()->abortSystemMoveResizeForTouch();
+        const QString wmname = connection()->windowManagerName();
+        if (wmname != QLatin1String("kwin") && wmname != QLatin1String("openbox")) {
+            qCDebug(lcQpaXInputDevices) << "only KDE and OpenBox support startSystemMove/Resize which is triggered from touch events: XDG_CURRENT_DESKTOP="
+                                        << qgetenv("XDG_CURRENT_DESKTOP");
+            connection()->abortSystemMoveResize(m_window);
             return false;
         }
         // KWin, Openbox, AwesomeWM and Gnome have been tested to work with _NET_WM_MOVERESIZE.
     } else { // Started by mouse press.
-        if (connection()->isUnity())
-            return false; // _NET_WM_MOVERESIZE on this WM is bouncy (WM bug?).
-
         doStartSystemMoveResize(mapToGlobal(pos), edges);
     }
 
@@ -2493,6 +2493,7 @@ static uint qtEdgesToXcbMoveResizeDirection(Qt::Edges edges)
 
 void QXcbWindow::doStartSystemMoveResize(const QPoint &globalPos, int edges)
 {
+    qCDebug(lcQpaXInputDevices) << "triggered system move or resize via sending _NET_WM_MOVERESIZE client message";
     const xcb_atom_t moveResize = connection()->atom(QXcbAtom::_NET_WM_MOVERESIZE);
     xcb_client_message_event_t xev;
     xev.response_type = XCB_CLIENT_MESSAGE;
@@ -2512,6 +2513,8 @@ void QXcbWindow::doStartSystemMoveResize(const QPoint &globalPos, int edges)
     xcb_send_event(connection()->xcb_connection(), false, xcbScreen()->root(),
                    XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT | XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY,
                    (const char *)&xev);
+
+    connection()->setDuringSystemMoveResize(true);
 }
 
 // Sends an XEmbed message.

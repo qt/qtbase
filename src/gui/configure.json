@@ -1114,7 +1114,6 @@
                     "  printf(\"        msc ver: %d       \", _MSC_VER);",
                     "#endif",
                     "#if defined(__QNX__) \\",
-                    "  || (defined(MAC_OS_X_VERSION_10_6) && !defined(MAC_OS_X_VERSION_10_15)) \\",
                     "  || (defined(_MSC_VER) && _MSC_VER <= 1900) \\",
                     "  || (defined(__INTEGRITY) && __INTEGRITY_MAJOR_VERSION <= 11) \\",
                     "  || (defined(__ICC) && __ICC <= 1910) \\",
@@ -1250,7 +1249,7 @@
         },
         "harfbuzz": {
             "label": "HarfBuzz",
-            "condition": "tests.harfbuzz-ng || (!config.darwin && !config.win32 && libs.harfbuzz) || (input.harfbuzz == 'system')",
+            "condition": "input.harfbuzz == 'qt' || tests.harfbuzz-ng || (!config.darwin && !config.win32 && libs.harfbuzz) || (input.harfbuzz == 'system')",
             "output": [ "privateFeature", "feature" ]
         },
         "system-harfbuzz": {

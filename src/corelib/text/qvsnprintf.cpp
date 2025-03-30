@@ -51,6 +51,10 @@ QT_BEGIN_NAMESPACE
 /*!
     \relates QByteArray
 
+    \obsolete
+
+    Use C++11's \c{std::vsnprintf()} from \c{<cstdio>} instead.
+
     A portable \c vsnprintf() function. Will call \c ::vsnprintf(), \c
     ::_vsnprintf(), or \c ::vsnprintf_s depending on the system, or
     fall back to an internal version.
@@ -102,6 +106,10 @@ int qvsnprintf(char *str, size_t n, const char *fmt, va_list ap)
 /*!
     \target bytearray-qsnprintf
     \relates QByteArray
+
+    \obsolete
+
+    Use C++11's \c{std::snprintf()} from \c{<cstdio>} instead.
 
     A portable snprintf() function, calls qvsnprintf.
 

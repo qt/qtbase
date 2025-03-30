@@ -1,3 +1,4 @@
+#include "OT/Var/VARC/VARC.cc"
 #include "graph/gsubgpos-context.cc"
 #include "hb-aat-layout.cc"
 #include "hb-aat-map.cc"
@@ -54,6 +55,7 @@
 #include "hb-subset-cff1.cc"
 #include "hb-subset-cff2.cc"
 #include "hb-subset-input.cc"
+#include "hb-subset-instancer-iup.cc"
 #include "hb-subset-instancer-solver.cc"
 #include "hb-subset-plan.cc"
 #include "hb-subset-repacker.cc"

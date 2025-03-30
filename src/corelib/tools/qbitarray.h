@@ -77,17 +77,17 @@ public:
     inline bool isDetached() const { return d.isDetached(); }
     inline void clear() { d.clear(); }
 
-    bool testBit(int i) const;
-    void setBit(int i);
-    void setBit(int i, bool val);
-    void clearBit(int i);
-    bool toggleBit(int i);
+    inline bool testBit(int i) const;
+    inline void setBit(int i);
+    inline void setBit(int i, bool val);
+    inline void clearBit(int i);
+    inline bool toggleBit(int i);
 
-    bool at(int i) const;
-    QBitRef operator[](int i);
-    bool operator[](int i) const;
-    QBitRef operator[](uint i);
-    bool operator[](uint i) const;
+    inline bool at(int i) const;
+    inline QBitRef operator[](int i);
+    inline bool operator[](int i) const;
+    inline QBitRef operator[](uint i);
+    inline bool operator[](uint i) const;
 
     QBitArray& operator&=(const QBitArray &);
     QBitArray& operator|=(const QBitArray &);
@@ -110,36 +110,36 @@ public:
     inline DataPtr &data_ptr() { return d.data_ptr(); }
 };
 
-inline bool QBitArray::fill(bool aval, int asize)
+bool QBitArray::fill(bool aval, int asize)
 { *this = QBitArray((asize < 0 ? this->size() : asize), aval); return true; }
 
 Q_CORE_EXPORT QBitArray operator&(const QBitArray &, const QBitArray &);
 Q_CORE_EXPORT QBitArray operator|(const QBitArray &, const QBitArray &);
 Q_CORE_EXPORT QBitArray operator^(const QBitArray &, const QBitArray &);
 
-inline bool QBitArray::testBit(int i) const
+bool QBitArray::testBit(int i) const
 { Q_ASSERT(uint(i) < uint(size()));
  return (*(reinterpret_cast<const uchar*>(d.constData())+1+(i>>3)) & (1 << (i & 7))) != 0; }
 
-inline void QBitArray::setBit(int i)
+void QBitArray::setBit(int i)
 { Q_ASSERT(uint(i) < uint(size()));
  *(reinterpret_cast<uchar*>(d.data())+1+(i>>3)) |= uchar(1 << (i & 7)); }
 
-inline void QBitArray::clearBit(int i)
+void QBitArray::clearBit(int i)
 { Q_ASSERT(uint(i) < uint(size()));
  *(reinterpret_cast<uchar*>(d.data())+1+(i>>3)) &= ~uchar(1 << (i & 7)); }
 
-inline void QBitArray::setBit(int i, bool val)
+void QBitArray::setBit(int i, bool val)
 { if (val) setBit(i); else clearBit(i); }
 
-inline bool QBitArray::toggleBit(int i)
+bool QBitArray::toggleBit(int i)
 { Q_ASSERT(uint(i) < uint(size()));
  uchar b = uchar(1<<(i&7)); uchar* p = reinterpret_cast<uchar*>(d.data())+1+(i>>3);
  uchar c = uchar(*p&b); *p^=b; return c!=0; }
 
-inline bool QBitArray::operator[](int i) const { return testBit(i); }
-inline bool QBitArray::operator[](uint i) const { return testBit(i); }
-inline bool QBitArray::at(int i) const { return testBit(i); }
+bool QBitArray::operator[](int i) const { return testBit(i); }
+bool QBitArray::operator[](uint i) const { return testBit(i); }
+bool QBitArray::at(int i) const { return testBit(i); }
 
 class Q_CORE_EXPORT QBitRef
 {
@@ -156,9 +156,9 @@ public:
     QBitRef& operator=(bool val) { a.setBit(i, val); return *this; }
 };
 
-inline QBitRef QBitArray::operator[](int i)
+QBitRef QBitArray::operator[](int i)
 { Q_ASSERT(i >= 0); return QBitRef(*this, i); }
-inline QBitRef QBitArray::operator[](uint i)
+QBitRef QBitArray::operator[](uint i)
 { return QBitRef(*this, i); }
 
 

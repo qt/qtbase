@@ -41,6 +41,8 @@ android {
     // Extract native libraries from the APK
     packagingOptions.jniLibs.useLegacyPackaging true
 
+    buildFeatures.aidl true
+
     sourceSets {
         main {
             manifest.srcFile 'AndroidManifest.xml'

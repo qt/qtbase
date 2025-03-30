@@ -1910,7 +1910,7 @@ QImage QFontEngineFT::alphaMapForGlyph(glyph_t g, QFixed subPixelPosition)
 
 QImage QFontEngineFT::alphaMapForGlyph(glyph_t g, QFixed subPixelPosition, const QTransform &t)
 {
-    const GlyphFormat neededFormat = antialias ? Format_A8 : Format_Mono;
+    const GlyphFormat neededFormat = antialias || glyphFormat == Format_ARGB ? Format_A8 : Format_Mono;
 
     Glyph *glyph = loadGlyphFor(g, subPixelPosition, neededFormat, t, false, true);
 

@@ -47,6 +47,10 @@
 #include <QtTest/qtestcase.h>
 #include <QtTest/qtestassert.h>
 
+#include <algorithm>
+#include <climits>
+#include <cwchar>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -267,6 +271,32 @@ bool QTestResult::verify(bool statement, const char *statementStr,
     return checkStatement(statement, msg, file, line);
 }
 
+static int approx_wide_len(const char *s)
+{
+    std::mbstate_t state = {};
+    // QNX might stop at max when dst == nullptr, so pass INT_MAX,
+    // being the largest value this function will return:
+    constexpr size_t max = INT_MAX;
+    auto r = std::mbsrtowcs(nullptr, &s, max, &state);
+    if (r == size_t(-1)) // encoding error, fall back to strlen()
+        r = strlen(s); // `s` was not advanced since `dst == nullptr`
+    return int(qBound(size_t(0), r, max));
+}
+
+// Overload to format failures for "const char *" - no need to strdup().
+void formatFailMessage(char *msg, size_t maxMsgLen,
+                       const char *failureMsg,
+                       const char *val1S, const char *val2S,
+                       const char *actual, const char *expected)
+{
+    const auto len1 = approx_wide_len(actual);
+    const auto len2 = approx_wide_len(expected);
+    qsnprintf(msg, maxMsgLen, "%s\n   Actual   (%s)%*s %s\n   Expected (%s)%*s %s",
+              failureMsg,
+              actual, qMax(len1, len2) - len1 + 1, ":", val1S ? val1S : "<null>",
+              expected, qMax(len1, len2) - len2 + 1, ":", val2S ? val2S : "<null>");
+}
+
 // Format failures using the toString() template
 template <class Actual, class Expected>
 void formatFailMessage(char *msg, size_t maxMsgLen,
@@ -274,32 +304,13 @@ void formatFailMessage(char *msg, size_t maxMsgLen,
                        const Actual &val1, const Expected &val2,
                        const char *actual, const char *expected)
 {
-    auto val1S = QTest::toString(val1);
-    auto val2S = QTest::toString(val2);
+    const char *val1S = QTest::toString(val1);
+    const char *val2S = QTest::toString(val2);
 
-    size_t len1 = mbstowcs(nullptr, actual, maxMsgLen);    // Last parameter is not ignored on QNX
-    size_t len2 = mbstowcs(nullptr, expected, maxMsgLen);  // (result is never larger than this).
-    qsnprintf(msg, maxMsgLen, "%s\n   Actual   (%s)%*s %s\n   Expected (%s)%*s %s",
-              failureMsg,
-              actual, qMax(len1, len2) - len1 + 1, ":", val1S ? val1S : "<null>",
-              expected, qMax(len1, len2) - len2 + 1, ":", val2S ? val2S : "<null>");
+    formatFailMessage(msg, maxMsgLen, failureMsg, val1S, val2S, actual, expected);
 
     delete [] val1S;
     delete [] val2S;
-}
-
-// Overload to format failures for "const char *" - no need to strdup().
-void formatFailMessage(char *msg, size_t maxMsgLen,
-                       const char *failureMsg,
-                       const char *val1, const char *val2,
-                       const char *actual, const char *expected)
-{
-    size_t len1 = mbstowcs(nullptr, actual, maxMsgLen);    // Last parameter is not ignored on QNX
-    size_t len2 = mbstowcs(nullptr, expected, maxMsgLen);  // (result is never larger than this).
-    qsnprintf(msg, maxMsgLen, "%s\n   Actual   (%s)%*s %s\n   Expected (%s)%*s %s",
-              failureMsg,
-              actual, qMax(len1, len2) - len1 + 1, ":", val1 ? val1 : "<null>",
-              expected, qMax(len1, len2) - len2 + 1, ":", val2 ? val2 : "<null>");
 }
 
 template <class Actual, class Expected>

@@ -170,15 +170,15 @@ int main(int argc, char **argv)
             const int utf8CharsCount = entry.count(QLatin1String("\\x"));
             const int quoteCount = entry.count('"');
             const int stringUtf8Size = entry.count() - (zeroCount + quoteCount + utf8CharsCount * 3);
-            chunkSize += stringUtf8Size;
             // MSVC 2015 chokes if sizeof(a single string) > 0xffff
-            if (chunkSize >= 0xffff) {
+            if (chunkSize + stringUtf8Size >= 0xffff) {
                 static int chunkCount = 0;
-                qWarning() << "chunk" << ++chunkCount << "has length" << chunkSize - stringUtf8Size;
+                qWarning() << "chunk" << ++chunkCount << "has length" << chunkSize;
                 outDataBuffer.write(",\n");
                 chunks.append(QString::number(totalUtf8Size));
                 chunkSize = 0;
             }
+            chunkSize += stringUtf8Size;
             totalUtf8Size += stringUtf8Size;
 
             outDataBuffer.write("\n\"");

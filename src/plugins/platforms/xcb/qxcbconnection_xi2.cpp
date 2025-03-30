@@ -88,7 +88,7 @@ void QXcbConnection::xi2SelectDeviceEvents(xcb_window_t window)
     }
 
     qt_xcb_input_event_mask_t mask;
-    mask.header.deviceid = XCB_INPUT_DEVICE_ALL_MASTER;
+    mask.header.deviceid = XCB_INPUT_DEVICE_ALL;
     mask.header.mask_len = 1;
     mask.mask = bitMask;
     xcb_void_cookie_t cookie =
@@ -303,8 +303,10 @@ void QXcbConnection::xi2SetupDevices()
             continue;
         }
         // only slave pointer devices are relevant here
-        if (deviceInfo->type == XCB_INPUT_DEVICE_TYPE_SLAVE_POINTER)
+        if (deviceInfo->type == XCB_INPUT_DEVICE_TYPE_SLAVE_POINTER) {
+            m_xiSlavePointerIds.append(deviceInfo->deviceid);
             xi2SetupDevice(deviceInfo, false);
+        }
     }
 
     if (m_xiMasterPointerIds.size() > 1)
@@ -519,9 +521,99 @@ static inline qreal fixed1616ToReal(xcb_input_fp1616_t val)
     return qreal(val) / 0x10000;
 }
 
+//implementation is ported from https://codereview.qt-project.org/c/qt/qtbase/+/231552/12/src/plugins/platforms/xcb/qxcbconnection_xi2.cpp#558
+namespace {
+
+/*! \internal
+
+ Qt listens for XIAllDevices to avoid losing mouse events. This function
+ ensures that we don't process the same event twice: from a slave device and
+ then again from a master device.
+
+ In a normal use case (e.g. mouse press and release inside a window), we will
+ drop events from master devices as duplicates. Other advantage of processing
+ events from slave devices is that they don't share button state. All buttons
+ on a master device share the state.
+
+ Examples of special cases:
+
+\list
+
+\li During system move/resize, window manager (_NET_WM_MOVERESIZE) grabs the
+   master pointer, in this case we process the matching release from the slave
+   device. A master device event is not sent by the server, hence no duplicate
+   event to drop. If we listened for XIAllMasterDevices instead, we would never
+   see a release event in this case.
+
+\li If we dismiss a context menu by clicking somewhere outside a Qt application,
+   we will process the mouse press from the master pointer as that is the
+   device we are grabbing. We are not grabbing slave devices (grabbing on the
+   slave device is buggy according to 19d289ab1b5bde3e136765e5432b5c7d004df3a4).
+   And since the event occurs outside our window, the slave device event is
+   not sent to us by the server, hence no duplicate event to drop.
+
+\endlist
+*/
+bool isDuplicateEvent(xcb_ge_event_t *event)
+{
+    Q_ASSERT(event);
+
+    struct qXIEvent {
+        bool isValid = false;
+        uint16_t sourceid;
+        uint8_t evtype;
+        uint32_t detail;
+        int32_t root_x;
+        int32_t root_y;
+    };
+    static qXIEvent lastSeenEvent;
+
+    bool isDuplicate = false;
+    auto *xiDeviceEvent = reinterpret_cast<qt_xcb_input_device_event_t *>(event);
+    if (lastSeenEvent.isValid) {
+        isDuplicate = lastSeenEvent.sourceid == xiDeviceEvent->sourceid &&
+                lastSeenEvent.evtype == xiDeviceEvent->event_type &&
+                lastSeenEvent.detail == xiDeviceEvent->detail &&
+                lastSeenEvent.root_x == xiDeviceEvent->root_x &&
+                lastSeenEvent.root_y == xiDeviceEvent->root_y;
+    } else {
+        lastSeenEvent.isValid = true;
+    }
+    lastSeenEvent.sourceid = xiDeviceEvent->sourceid;
+    lastSeenEvent.evtype = xiDeviceEvent->event_type;
+    lastSeenEvent.detail = xiDeviceEvent->detail;
+    lastSeenEvent.root_x = xiDeviceEvent->root_x;
+    lastSeenEvent.root_y = xiDeviceEvent->root_y;
+
+    if (isDuplicate) {
+        qCDebug(lcQpaXInputEvents, "Duplicate XI2 event %d", event->event_type);
+        // This sanity check ensures that special cases like QTBUG-59277 keep working.
+        lastSeenEvent.isValid = false; // An event can be a duplicate only once.
+    }
+
+    return isDuplicate;
+}
+
+} // namespace
+
 void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
 {
     auto *xiEvent = reinterpret_cast<qt_xcb_input_device_event_t *>(event);
+    if (m_xiSlavePointerIds.contains(xiEvent->deviceid)) {
+        if (!(xiEvent->event_type == XCB_INPUT_BUTTON_PRESS
+              || xiEvent->event_type == XCB_INPUT_BUTTON_RELEASE
+              || xiEvent->event_type == XCB_INPUT_MOTION)) {
+            if (!m_duringSystemMoveResize)
+                return;
+            if (xiEvent->event == XCB_NONE)
+                return;
+
+            if (xiEvent->event_type == XCB_INPUT_TOUCH_END)
+                abortSystemMoveResize(xiEvent->event);
+
+            return;
+        }
+    }
     int sourceDeviceId = xiEvent->deviceid; // may be the master id
     qt_xcb_input_device_event_t *xiDeviceEvent = nullptr;
     xcb_input_enter_event_t *xiEnterEvent = nullptr;
@@ -530,11 +622,27 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
     switch (xiEvent->event_type) {
     case XCB_INPUT_BUTTON_PRESS:
     case XCB_INPUT_BUTTON_RELEASE:
-    case XCB_INPUT_MOTION:
+    case XCB_INPUT_MOTION: {
+        if (isDuplicateEvent(event))
+            return;
+        if (m_xiSlavePointerIds.contains(xiEvent->deviceid)) {
+            if (m_duringSystemMoveResize) {
+                if (xiEvent->event_type == XCB_INPUT_BUTTON_RELEASE
+                    && xiEvent->detail == XCB_BUTTON_INDEX_1 ) {
+                    abortSystemMoveResize(xiEvent->event);
+                } else {
+                    return;
+                }
+            }
+        }
+        xiDeviceEvent = xiEvent;
+        eventListener = windowEventListenerFromId(xiDeviceEvent->event);
+        sourceDeviceId = xiDeviceEvent->sourceid; // use the actual device id instead of the master
+        break;
+    }
     case XCB_INPUT_TOUCH_BEGIN:
     case XCB_INPUT_TOUCH_UPDATE:
-    case XCB_INPUT_TOUCH_END:
-    {
+    case XCB_INPUT_TOUCH_END: {
         xiDeviceEvent = xiEvent;
         eventListener = windowEventListenerFromId(xiDeviceEvent->event);
         sourceDeviceId = xiDeviceEvent->sourceid; // use the actual device id instead of the master
@@ -627,7 +735,16 @@ void QXcbConnection::xi2ProcessTouch(void *xiDevEvent, QXcbWindow *platformWindo
 {
     auto *xiDeviceEvent = reinterpret_cast<xcb_input_touch_begin_event_t *>(xiDevEvent);
     TouchDeviceData *dev = touchDeviceForId(xiDeviceEvent->sourceid);
-    Q_ASSERT(dev);
+    if (!dev) {
+        qCDebug(lcQpaXInputEvents) << "didn't find the dev for given sourceid - " << xiDeviceEvent->sourceid
+            << ", try to repopulate xi2 devices";
+        xi2SetupDevices();
+        dev = touchDeviceForId(xiDeviceEvent->sourceid);
+        if (!dev) {
+            qCDebug(lcQpaXInputEvents) << "still can't find the dev for it, give up.";
+            return;
+        }
+    }
     const bool firstTouch = dev->touchPoints.isEmpty();
     if (xiDeviceEvent->event_type == XCB_INPUT_TOUCH_BEGIN) {
         QWindowSystemInterface::TouchPoint tp;
@@ -803,6 +920,8 @@ bool QXcbConnection::startSystemMoveResizeForTouch(xcb_window_t window, int edge
                     m_startSystemMoveResizeInfo.deviceid = devIt.key();
                     m_startSystemMoveResizeInfo.pointid = pointIt.key();
                     m_startSystemMoveResizeInfo.edges = edges;
+                    setDuringSystemMoveResize(true);
+                    qCDebug(lcQpaXInputDevices) << "triggered system move or resize from touch";
                     return true;
                 }
             }
@@ -811,9 +930,38 @@ bool QXcbConnection::startSystemMoveResizeForTouch(xcb_window_t window, int edge
     return false;
 }
 
-void QXcbConnection::abortSystemMoveResizeForTouch()
+void QXcbConnection::abortSystemMoveResize(xcb_window_t window)
 {
+    qCDebug(lcQpaXInputDevices) << "sending client message NET_WM_MOVERESIZE_CANCEL to window: " << window;
     m_startSystemMoveResizeInfo.window = XCB_NONE;
+
+    const xcb_atom_t moveResize = connection()->atom(QXcbAtom::_NET_WM_MOVERESIZE);
+    xcb_client_message_event_t xev;
+    xev.response_type = XCB_CLIENT_MESSAGE;
+    xev.type = moveResize;
+    xev.sequence = 0;
+    xev.window = window;
+    xev.format = 32;
+    xev.data.data32[0] = 0;
+    xev.data.data32[1] = 0;
+    xev.data.data32[2] = 11; // _NET_WM_MOVERESIZE_CANCEL
+    xev.data.data32[3] = 0;
+    xev.data.data32[4] = 0;
+    xcb_send_event(xcb_connection(), false, primaryScreen()->root(),
+                   XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT | XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY,
+                   (const char *)&xev);
+
+    m_duringSystemMoveResize = false;
+}
+
+bool QXcbConnection::isDuringSystemMoveResize() const
+{
+    return m_duringSystemMoveResize;
+}
+
+void QXcbConnection::setDuringSystemMoveResize(bool during)
+{
+    m_duringSystemMoveResize = during;
 }
 
 bool QXcbConnection::xi2SetMouseGrabEnabled(xcb_window_t w, bool grab)

@@ -118,6 +118,8 @@ private slots:
     void redirect_data();
     void redirect();
 
+    void abortOnEncrypted();
+
 protected slots:
     // Slots to listen to our in-process server:
     void serverStarted(quint16 port);
@@ -1022,6 +1024,61 @@ void tst_Http2::redirect()
         QCOMPARE(reply->error(), QNetworkReply::TooManyRedirectsError);
     }
     QTRY_VERIFY(serverGotSettingsACK);
+}
+
+void tst_Http2::abortOnEncrypted()
+{
+#if !QT_CONFIG(ssl)
+    QSKIP("TLS support is needed for this test");
+#else
+
+#if QT_CONFIG(securetransport)
+    // Normally on macOS we use plain text only for SecureTransport
+    // does not support ALPN on the server side. With 'direct encrytped'
+    // we have to use TLS sockets (== private key) and thus suppress a
+    // keychain UI asking for permission to use a private key.
+    // Our CI has this, but somebody testing locally - will have a problem.
+    qputenv("QT_SSL_USE_TEMPORARY_KEYCHAIN", QByteArray("1"));
+    auto envRollback = qScopeGuard([](){
+        qunsetenv("QT_SSL_USE_TEMPORARY_KEYCHAIN");
+    });
+#endif
+
+    clearHTTP2State();
+    serverPort = 0;
+
+    ServerPtr targetServer(newServer(defaultServerSettings, H2Type::h2Direct));
+
+    QMetaObject::invokeMethod(targetServer.data(), "startServer", Qt::QueuedConnection);
+    runEventLoop();
+
+    nRequests = 1;
+    nSentRequests = 0;
+
+    const auto url = requestUrl(H2Type::h2Direct);
+    QNetworkRequest request(url);
+    request.setAttribute(QNetworkRequest::Http2DirectAttribute, true);
+
+    std::unique_ptr<QNetworkReply> reply{manager->get(request)};
+    reply->ignoreSslErrors();
+    connect(reply.get(), &QNetworkReply::encrypted, reply.get(), [reply = reply.get()](){
+        reply->abort();
+    });
+    connect(reply.get(), &QNetworkReply::errorOccurred, this, &tst_Http2::replyFinishedWithError);
+
+    runEventLoop();
+    STOP_ON_FAILURE
+
+    QCOMPARE(nRequests, 0);
+    QCOMPARE(reply->error(), QNetworkReply::OperationCanceledError);
+
+    const bool res = QTest::qWaitFor(
+            [this, server = targetServer.get()]() {
+                return serverGotSettingsACK || prefaceOK || nSentRequests > 0;
+            },
+            500);
+    QVERIFY(!res);
+#endif // QT_CONFIG(ssl)
 }
 
 void tst_Http2::serverStarted(quint16 port)

@@ -114,8 +114,10 @@ void QWindowsUiaMainProvider::notifyFocusChange(QAccessibleEvent *event)
         if (accessible->tableInterface())
             if (QAccessibleInterface *child = accessible->focusChild())
                 accessible = child;
-        if (QWindowsUiaMainProvider *provider = providerForAccessible(accessible))
+        if (QWindowsUiaMainProvider *provider = providerForAccessible(accessible)) {
             QWindowsUiaWrapper::instance()->raiseAutomationEvent(provider, UIA_AutomationFocusChangedEventId);
+            provider->Release();
+        }
     }
 }
 
@@ -133,6 +135,7 @@ void QWindowsUiaMainProvider::notifyStateChange(QAccessibleStateChangeEvent *eve
                         toggleState = accessible->state().checkStateMixed ? ToggleState_Indeterminate : ToggleState_On;
                     setVariantI4(toggleState, &newVal);
                     QWindowsUiaWrapper::instance()->raiseAutomationPropertyChangedEvent(provider, UIA_ToggleToggleStatePropertyId, oldVal, newVal);
+                    provider->Release();
                 }
             }
         }
@@ -145,6 +148,7 @@ void QWindowsUiaMainProvider::notifyStateChange(QAccessibleStateChangeEvent *eve
                     } else {
                         QWindowsUiaWrapper::instance()->raiseAutomationEvent(provider, UIA_Window_WindowClosedEventId);
                     }
+                    provider->Release();
                 }
             }
         }
@@ -177,6 +181,11 @@ void QWindowsUiaMainProvider::notifyValueChange(QAccessibleValueChangeEvent *eve
                 clearVariant(&oldVal);
                 setVariantString(event->value().toString(), &newVal);
                 QWindowsUiaWrapper::instance()->raiseAutomationPropertyChangedEvent(provider, UIA_ValueValuePropertyId, oldVal, newVal);
+                provider->Release();
+
+                HRESULT hr = VariantClear(&newVal); // Free string allocated by setVariantString
+                Q_ASSERT(hr == S_OK);
+                Q_UNUSED(hr)
             }
         } else if (QAccessibleValueInterface *valueInterface = accessible->valueInterface()) {
             if (QWindowsUiaMainProvider *provider = providerForAccessible(accessible)) {
@@ -185,6 +194,7 @@ void QWindowsUiaMainProvider::notifyValueChange(QAccessibleValueChangeEvent *eve
                 clearVariant(&oldVal);
                 setVariantDouble(valueInterface->currentValue().toDouble(), &newVal);
                 QWindowsUiaWrapper::instance()->raiseAutomationPropertyChangedEvent(provider, UIA_RangeValueValuePropertyId, oldVal, newVal);
+                provider->Release();
             }
         }
     }
@@ -202,6 +212,7 @@ void QWindowsUiaMainProvider::notifyNameChange(QAccessibleEvent *event)
                 setVariantString(accessible->text(QAccessible::Name), &newVal);
                 QWindowsUiaWrapper::instance()->raiseAutomationPropertyChangedEvent(provider, UIA_NamePropertyId, oldVal, newVal);
                 ::SysFreeString(newVal.bstrVal);
+                provider->Release();
             }
         }
     }
@@ -212,6 +223,7 @@ void QWindowsUiaMainProvider::notifySelectionChange(QAccessibleEvent *event)
     if (QAccessibleInterface *accessible = event->accessibleInterface()) {
         if (QWindowsUiaMainProvider *provider = providerForAccessible(accessible)) {
             QWindowsUiaWrapper::instance()->raiseAutomationEvent(provider, UIA_SelectionItem_ElementSelectedEventId);
+            provider->Release();
         }
     }
 }
@@ -231,6 +243,7 @@ void QWindowsUiaMainProvider::notifyTextChange(QAccessibleEvent *event)
                 } else {
                     QWindowsUiaWrapper::instance()->raiseAutomationEvent(provider, UIA_Text_TextChangedEventId);
                 }
+                provider->Release();
             }
         }
     }
@@ -601,7 +614,7 @@ HRESULT QWindowsUiaMainProvider::Navigate(NavigateDirection direction, IRawEleme
     }
 
     if (targetacc)
-        *pRetVal = providerForAccessible(targetacc);
+        *pRetVal = providerForAccessible(targetacc); // Detach
     return S_OK;
 }
 
@@ -690,7 +703,7 @@ HRESULT QWindowsUiaMainProvider::get_FragmentRoot(IRawElementProviderFragmentRoo
     if (QAccessibleInterface *accessible = accessibleInterface()) {
         if (QWindow *window = windowForAccessible(accessible)) {
             if (QAccessibleInterface *rootacc = window->accessibleRoot()) {
-                *pRetVal = providerForAccessible(rootacc);
+                *pRetVal = providerForAccessible(rootacc); // Detach
             }
         }
     }
@@ -736,7 +749,7 @@ HRESULT QWindowsUiaMainProvider::ElementProviderFromPoint(double x, double y, IR
                     break;
                 }
             }
-            *pRetVal = providerForAccessible(targetacc);
+            *pRetVal = providerForAccessible(targetacc); // Detach
         } else {
             qCDebug(lcQpaUiAutomation) << "Non-unique childAt() for" << accessible;
         }
@@ -755,7 +768,7 @@ HRESULT QWindowsUiaMainProvider::GetFocus(IRawElementProviderFragment **pRetVal)
 
     if (QAccessibleInterface *accessible = accessibleInterface()) {
         if (QAccessibleInterface *focusacc = accessible->focusChild()) {
-            *pRetVal = providerForAccessible(focusacc);
+            *pRetVal = providerForAccessible(focusacc); // Detach
         }
     }
     return S_OK;

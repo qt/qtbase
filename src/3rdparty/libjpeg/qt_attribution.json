@@ -6,13 +6,14 @@
 
     "Description": "The Independent JPEG Group's JPEG software",
     "Homepage": "http://libjpeg-turbo.virtualgl.org/",
-    "Version": "3.0.2",
-    "DownloadLocation": "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/3.0.2/libjpeg-turbo-3.0.2.tar.gz",
-    "License": "Independent JPEG Group License and BSD 3-Clause \"New\" or \"Revised\" License and zlib License",
-    "LicenseId": "IJG AND BSD-3-Clause AND Zlib",
-    "LicenseFiles": [ "LICENSE", "ijg-license.txt", "zlib-license.txt"],
-    "Copyright": "Copyright (C) 2009-2023 D. R. Commander
-Copyright (C) 2015, 2022 Google, Inc.
+    "Version": "3.0.4",
+    "DownloadLocation": "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/3.0.4/libjpeg-turbo-3.0.4.tar.gz",
+
+    "License": "Independent JPEG Group License and BSD 3-Clause \"New\" or \"Revised\" License",
+    "LicenseId": "IJG AND BSD-3-Clause",
+    "LicenseFiles": [ "LICENSE", "ijg-license.txt" ],
+    "Copyright": "Copyright (C) 2009-2024 D. R. Commander
+Copyright (C) 2015, 2020 Google, Inc.
 Copyright (C) 2019-2020 Arm Limited
 Copyright (C) 2015-2016, 2018 Matthieu Darbois
 Copyright (C) 2011-2016 Siarhei Siamashka

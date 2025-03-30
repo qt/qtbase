@@ -1374,24 +1374,27 @@ QVariant QXcbDropData::xdndObtainData(const QByteArray &format, QMetaType::Type 
         QMimeData *data = drag->currentDrag()->mimeData();
         if (data->hasFormat(QLatin1String(format)))
             result = data->data(QLatin1String(format));
-        return result;
+        return result.isNull() ? QVariant() : result;
     }
 
     QVector<xcb_atom_t> atoms = drag->xdnd_types;
     QByteArray encoding;
     xcb_atom_t a = mimeAtomForFormat(c, QLatin1String(format), requestedType, atoms, &encoding);
     if (a == XCB_NONE)
-        return result;
+        return QVariant();
 
 #ifndef QT_NO_CLIPBOARD
     if (c->clipboard()->getSelectionOwner(drag->atom(QXcbAtom::XdndSelection)) == XCB_NONE)
-        return result; // should never happen?
+        return QVariant(); // should never happen?
 
     xcb_atom_t xdnd_selection = c->atom(QXcbAtom::XdndSelection);
     result = c->clipboard()->getSelection(xdnd_selection, a, xdnd_selection, drag->targetTime());
-#endif
-
+    if (result.isNull())
+        return QVariant();
     return mimeConvertToFormat(c, a, result, QLatin1String(format), requestedType, encoding);
+#else
+    return QVariant();
+#endif
 }
 
 bool QXcbDropData::hasFormat_sys(const QString &format) const

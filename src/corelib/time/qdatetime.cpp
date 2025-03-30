@@ -4841,13 +4841,22 @@ QDateTime QDateTime::toTimeZone(const QTimeZone &timeZone) const
 #endif // timezone
 
 /*!
-    Returns \c true if this datetime is equal to the \a other datetime;
-    otherwise returns \c false.
+    Returns \c true if this datetime represents the same moment in time as the
+    \a other datetime; otherwise returns \c false.
 
-    Since 5.14, all invalid datetimes are equal to one another and differ from
-    all other datetimes.
+//! [datetime-order-details]
+    Two datetimes using different time specs or timezones can have different
+    offsets from UTC. In this case, they may compare equivalent even if their \l
+    date() and \l time() differ, if that difference matches the difference in
+    UTC offset. If their \c date() and \c time() coincide, the one with higher
+    offset from UTC is less (earlier) than the one with lower offset. As a
+    result, datetimes are only weakly ordered.
 
-    \sa operator!=()
+    Since 5.14, all invalid datetimes are equivalent and less than all valid
+    datetimes.
+//! [datetime-order-details]
+
+    \sa operator!=(), operator<(), operator<=(), operator>(), operator>=()
 */
 
 bool QDateTime::operator==(const QDateTime &other) const
@@ -4870,9 +4879,7 @@ bool QDateTime::operator==(const QDateTime &other) const
     Returns \c true if this datetime is different from the \a other
     datetime; otherwise returns \c false.
 
-    Two datetimes are different if either the date, the time, or the time zone
-    components are different. Since 5.14, any invalid datetime is less than all
-    valid datetimes.
+    \include qdatetime.cpp datetime-order-details
 
     \sa operator==()
 */
@@ -4880,6 +4887,10 @@ bool QDateTime::operator==(const QDateTime &other) const
 /*!
     Returns \c true if this datetime is earlier than the \a other
     datetime; otherwise returns \c false.
+
+    \include qdatetime.cpp datetime-order-details
+
+    \sa operator==()
 */
 
 bool QDateTime::operator<(const QDateTime &other) const
@@ -4901,6 +4912,10 @@ bool QDateTime::operator<(const QDateTime &other) const
 
     Returns \c true if this datetime is earlier than or equal to the
     \a other datetime; otherwise returns \c false.
+
+    \include qdatetime.cpp datetime-order-details
+
+    \sa operator==()
 */
 
 /*!
@@ -4908,6 +4923,10 @@ bool QDateTime::operator<(const QDateTime &other) const
 
     Returns \c true if this datetime is later than the \a other datetime;
     otherwise returns \c false.
+
+    \include qdatetime.cpp datetime-order-details
+
+    \sa operator==()
 */
 
 /*!
@@ -4915,6 +4934,10 @@ bool QDateTime::operator<(const QDateTime &other) const
 
     Returns \c true if this datetime is later than or equal to the
     \a other datetime; otherwise returns \c false.
+
+    \include qdatetime.cpp datetime-order-details
+
+    \sa operator==()
 */
 
 /*!

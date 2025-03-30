@@ -21,7 +21,7 @@ qtConfig(mimetype) {
         mimetypes/qmimeglobpattern.cpp \
         mimetypes/qmimeprovider.cpp
 
-    MIME_DATABASE = mimetypes/mime/packages/freedesktop.org.xml
+    MIME_DATABASE = mimetypes/3rdparty/tika-mimetypes.xml
     OTHER_FILES += $$MIME_DATABASE
 
     qtConfig(mimetype-database) {

@@ -54,6 +54,8 @@
 
 #include "emulationdetector.h"
 
+using namespace std::chrono_literals;
+
 class tst_QThread : public QObject
 {
     Q_OBJECT
@@ -108,6 +110,8 @@ private slots:
 
     void create();
     void threadIdReuse();
+
+    void terminateSelfStressTest();
 };
 
 enum { one_minute = 60 * 1000, five_minutes = 5 * one_minute };
@@ -1698,6 +1702,54 @@ void tst_QThread::threadIdReuse()
     if (!threadIdReused) {
         QSKIP("Thread ID was not reused");
     }
+}
+
+void tst_QThread::terminateSelfStressTest()
+{
+    // This simply tests that QThread::terminate() doesn't crash or causes
+    // sanitizer reports when a thread cancels itself.
+#ifdef Q_OS_ANDROID
+    QSKIP("Android cannot cancel threads");
+#endif
+
+#ifdef Q_OS_WIN
+    QSKIP("QTBUG-127050");
+#endif
+
+    struct Thread : QThread {
+        void run() override {
+            terminate();
+            while (true) usleep(1); // QTBUG-127008
+        }
+    };
+
+    {
+        // first, try with one:
+        Thread t;
+        t.start();
+        QVERIFY(t.wait(10000));
+    }
+
+    constexpr QThread::Priority priorities[] = {
+        QThread::IdlePriority,
+        QThread::LowestPriority,
+        QThread::LowPriority,
+        QThread::NormalPriority,
+        QThread::HighPriority,
+        QThread::HighestPriority,
+        QThread::TimeCriticalPriority,
+        QThread::InheritPriority,
+    };
+    constexpr size_t NumPriorities = sizeof priorities / sizeof *priorities;
+
+    QVarLengthArray<Thread, 1024> threads(3 * QThread::idealThreadCount());
+
+    size_t i = 0;
+    for (Thread &t : threads)
+        t.start(priorities[i++ % NumPriorities]);
+
+    for (Thread &t : threads)
+        QVERIFY2(t.wait(60000), QByteArray::number(qulonglong(&t - threads.data())).constData());
 }
 
 QTEST_MAIN(tst_QThread)
