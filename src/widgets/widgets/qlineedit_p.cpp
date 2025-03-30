@@ -652,10 +652,16 @@ void QLineEditPrivate::removeAction(QAction *action)
     SideWidgetEntryList &list = location.position == QLineEdit::TrailingPosition ? trailingSideWidgets : leadingSideWidgets;
     SideWidgetEntry entry = list[location.index];
     list.erase(list.begin() + location.index);
-     if (entry.flags & SideWidgetCreatedByWidgetAction)
-         static_cast<QWidgetAction *>(entry.action)->releaseWidget(entry.widget);
-     else
+    if (entry.flags & SideWidgetCreatedByWidgetAction) {
+        // If the cast fails, the QAction is in the process of being deleted
+        // and has already ceased to be a QWidgetAction; in the process, it
+        // will release its widget itself, and calling releaseWidget() here
+        // would be UB, so don't:
+        if (const auto a = qobject_cast<QWidgetAction*>(entry.action))
+            a->releaseWidget(entry.widget);
+    } else {
          delete entry.widget;
+    }
      positionSideWidgets();
      if (!hasSideWidgets()) // Last widget, remove connection
          QObjectPrivate::connect(q, &QLineEdit::textChanged,
