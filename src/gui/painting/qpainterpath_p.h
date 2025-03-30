@@ -119,6 +119,21 @@ public:
     {
     }
 
+    QPainterPathPrivate(QPointF startPoint)
+        : QSharedData(),
+          elements{ { startPoint.x(), startPoint.y(), QPainterPath::MoveToElement } },
+          cStart(0),
+          fillRule(Qt::OddEvenFill),
+          bounds(startPoint, QSizeF(0, 0)),
+          controlBounds(startPoint, QSizeF(0, 0)),
+          require_moveTo(false),
+          dirtyBounds(false),
+          dirtyControlBounds(false),
+          convex(false),
+          pathConverter(nullptr)
+    {
+    }
+
     QPainterPathPrivate(const QPainterPathPrivate &other) noexcept
         : QSharedData(other),
           elements(other.elements),

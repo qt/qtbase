@@ -7,6 +7,7 @@
 #include <variant>
 #include <optional>
 #include <tuple>
+#include <type_traits>
 
 #ifndef QTYPEINFO_H
 #define QTYPEINFO_H

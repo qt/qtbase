@@ -129,6 +129,11 @@ QList<const QPicture *> QPrinterPrivate::previewPages() const
     return QList<const QPicture *>();
 }
 
+bool QPrinterPrivate::previewMode() const
+{
+    return (previewEngine != nullptr) && (previewEngine == printEngine);
+}
+
 void QPrinterPrivate::setPreviewMode(bool enable)
 {
     Q_Q(QPrinter);

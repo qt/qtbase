@@ -471,6 +471,11 @@ public:
 
     mutable quint8 ncols = 0; // "255cols ought to be enough for anybody."
 
+    // Contains the screen of the popup point during popup(QPoint).
+    // This is to make sure the screen is remembered,
+    // when the menu contains many items on multiple screens
+    QPointer<QScreen> popupScreen;
+
     mutable bool itemsDirty : 1;
     mutable bool hasCheckableItems : 1;
     bool lastContextMenu : 1;

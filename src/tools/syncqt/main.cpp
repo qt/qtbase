@@ -135,15 +135,21 @@ void printInternalError()
               << std::endl;
 }
 
-std::filesystem::path normilizedPath(const std::string &path)
-{
-    return std::filesystem::path(std::filesystem::weakly_canonical(path).generic_string());
-}
-
 void printFilesystemError(const std::filesystem::filesystem_error &fserr, std::string_view errorMsg)
 {
     std::cerr << errorMsg << ": " << fserr.path1() << ".\n"
               << fserr.what() << "(" << fserr.code().value() << ")" << std::endl;
+}
+
+std::filesystem::path normilizedPath(const std::string &path)
+{
+    try {
+        auto result = std::filesystem::path(std::filesystem::weakly_canonical(path).generic_string());
+        return result;
+    } catch (const std::filesystem::filesystem_error &fserr) {
+        printFilesystemError(fserr, "Unable to normalize path");
+        throw;
+    }
 }
 
 bool createDirectories(const std::string &path, std::string_view errorMsg, bool *exists = nullptr)
@@ -1130,6 +1136,11 @@ public:
         std::size_t linesProcessed = 0;
         int faults = NoChecks;
 
+        const auto error = [&] () -> decltype(auto) {
+            return std::cerr << ErrorMessagePreamble << m_currentFileString
+                             << ":" << m_currentFileLineNumber << " ";
+        };
+
         // Read file line by line
         while (std::getline(input, tmpLine)) {
             ++m_currentFileLineNumber;
@@ -1253,9 +1264,7 @@ public:
                                                        .filename()
                                                        .generic_string())) {
                             faults |= PrivateHeaderChecks;
-                            std::cerr << ErrorMessagePreamble << m_currentFileString
-                                      << ":" << m_currentFileLineNumber
-                                      << " includes private header " << includedHeader << std::endl;
+                            error() << "includes private header " << includedHeader << std::endl;
                         }
                         for (const auto &module : m_commandLineArgs->knownModules()) {
                             std::string suggestedHeader = "Qt" + module + '/' + includedHeader;

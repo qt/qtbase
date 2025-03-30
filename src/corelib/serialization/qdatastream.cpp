@@ -1056,13 +1056,15 @@ QDataStream &QDataStream::readBytes(char *&s, uint &l)
     if (len == 0)
         return *this;
 
-    const quint32 Step = 1024 * 1024;
+    quint32 step = 1024 * 1024;
     quint32 allocated = 0;
     char *prevBuf = nullptr;
     char *curBuf = nullptr;
 
+    constexpr quint32 MaxBlockSize = std::numeric_limits<int>::max();
     do {
-        int blockSize = qMin(Step, len - allocated);
+        const quint32 sz = qMin(step, len - allocated);
+        int blockSize = qMin(sz, MaxBlockSize);
         prevBuf = curBuf;
         curBuf = new char[allocated + blockSize + 1];
         if (prevBuf) {
@@ -1074,6 +1076,7 @@ QDataStream &QDataStream::readBytes(char *&s, uint &l)
             return *this;
         }
         allocated += blockSize;
+        step *= 2;
     } while (allocated < len);
 
     s = curBuf;

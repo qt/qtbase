@@ -65,6 +65,7 @@ class QUnifiedToolbarSurface;
 
 // implemented in qshortcut.cpp
 bool qWidgetShortcutContextMatcher(QObject *object, Qt::ShortcutContext context);
+void qSendWindowChangeToTextureChildrenRecursively(QWidget *widget, QEvent::Type eventType);
 
 class QUpdateLaterEvent : public QEvent
 {
@@ -220,6 +221,8 @@ public:
     void setSharedPainter(QPainter *painter);
     QWidgetRepaintManager *maybeRepaintManager() const;
 
+    QRhi *rhi() const;
+
     enum class WindowHandleMode {
         Direct,
         Closest,
@@ -367,6 +370,8 @@ public:
     void showChildren(bool spontaneous);
     void hideChildren(bool spontaneous);
     void setParent_sys(QWidget *parent, Qt::WindowFlags);
+    void reparentWidgetWindows(QWidget *parentWithWindow, Qt::WindowFlags windowFlags = {});
+    void reparentWidgetWindowChildren(QWidget *parentWithWindow);
     void scroll_sys(int dx, int dy);
     void scroll_sys(int dx, int dy, const QRect &r);
     void deactivateWidgetCleanup();
@@ -633,6 +638,8 @@ public:
 
     std::string flagsForDumping() const override;
 
+    QWidget *closestParentWidgetWithWindowHandle() const;
+
     // Variables.
     // Regular pointers (keep them together to avoid gaps on 64 bit architectures).
     std::unique_ptr<QWExtra> extra;
@@ -735,6 +742,7 @@ public:
 
     bool stealKeyboardGrab(bool grab);
     bool stealMouseGrab(bool grab);
+    bool hasChildWithFocusPolicy(Qt::FocusPolicy policy, const QWidget *excludeChildrenOf = nullptr) const;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWidgetPrivate::DrawWidgetFlags)

@@ -12,7 +12,6 @@
 
 #include <private/qfilesystementry_p.h>
 
-#include <QtCore/QMap>
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
 #include <QtCore/QStandardPaths>

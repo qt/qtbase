@@ -39,8 +39,7 @@ QAndroidPlatformOpenGLWindow::~QAndroidPlatformOpenGLWindow()
 void QAndroidPlatformOpenGLWindow::repaint(const QRegion &region)
 {
     // This is only for real raster top-level windows. Stop in all other cases.
-    if ((window()->surfaceType() == QSurface::RasterGLSurface && qt_window_private(window())->compositing)
-        || window()->surfaceType() == QSurface::OpenGLSurface
+    if (window()->surfaceType() != QSurface::RasterSurface
         || QAndroidPlatformWindow::parent())
         return;
 

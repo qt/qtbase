@@ -429,11 +429,7 @@ static inline bool windowIsAccelerated(const QWindow *w)
 {
     switch (w->surfaceType()) {
     case QSurface::OpenGLSurface:
-        return true;
-    case QSurface::RasterGLSurface:
-        return qt_window_private(const_cast<QWindow *>(w))->compositing;
     case QSurface::VulkanSurface:
-        return true;
     case QSurface::Direct3DSurface:
         return true;
     default:
@@ -2784,11 +2780,6 @@ void QWindowsWindow::calculateFullFrameMargins()
 {
     if (shouldOmitFrameAdjustment(m_data.flags, m_data.hwnd))
         return;
-    // Normally obtained from WM_NCCALCSIZE. This calculation only works
-    // when no native menu is present.
-    const auto systemMargins = testFlag(DisableNonClientScaling)
-        ? QWindowsGeometryHint::frameOnPrimaryScreen(window(), m_data.hwnd)
-        : frameMargins_sys();
 
     // QTBUG-113736: systemMargins depends on AdjustWindowRectExForDpi. This doesn't take into
     // account possible external modifications to the titlebar, as with ExtendsContentIntoTitleBar()
@@ -2802,6 +2793,20 @@ void QWindowsWindow::calculateFullFrameMargins()
     RECT clientRect{};
     GetWindowRect(handle(), &windowRect);
     GetClientRect(handle(), &clientRect);
+
+    // QTBUG-117704 It is also possible that the user has manually removed the frame (for example
+    // by handling WM_NCCALCSIZE). If that is the case, i.e., the client area and the window area
+    // have identical sizes, we don't want to override the user-defined margins.
+
+    if (qrectFromRECT(windowRect).size() == qrectFromRECT(clientRect).size())
+        return;
+
+    // Normally obtained from WM_NCCALCSIZE. This calculation only works
+    // when no native menu is present.
+    const auto systemMargins = testFlag(DisableNonClientScaling)
+        ? QWindowsGeometryHint::frameOnPrimaryScreen(window(), m_data.hwnd)
+        : frameMargins_sys();
+
     const int yDiff = (windowRect.bottom - windowRect.top) - (clientRect.bottom - clientRect.top);
     const bool typicalFrame = (systemMargins.left() == systemMargins.right())
             && (systemMargins.right() == systemMargins.bottom());
@@ -3394,24 +3399,6 @@ void QWindowsWindow::registerTouchWindow()
         setFlag(TouchRegistered);
     else
         qErrnoWarning("RegisterTouchWindow() failed for window '%s'.", qPrintable(window()->objectName()));
-}
-
-void QWindowsWindow::aboutToMakeCurrent()
-{
-#ifndef QT_NO_OPENGL
-    // For RasterGLSurface windows, that become OpenGL windows dynamically, it might be
-    // time to set up some GL specifics.  This is particularly important for layered
-    // windows (WS_EX_LAYERED due to alpha > 0).
-    const bool isCompositing = qt_window_private(window())->compositing;
-    if (isCompositing != testFlag(Compositing)) {
-        if (isCompositing)
-            setFlag(Compositing);
-        else
-            clearFlag(Compositing);
-
-        updateGLWindowSettings(window(), m_data.hwnd, m_data.flags, m_opacity);
-    }
-#endif
 }
 
 void QWindowsWindow::setHasBorderInFullScreenStatic(QWindow *window, bool border)

@@ -438,7 +438,7 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
     parser->addOption(suppressSoftwareRasterizerOption);
 
     QCommandLineOption noFFmpegOption(QStringLiteral("no-ffmpeg"),
-                                      QStringLiteral("Do not deploy the ffmpeg libraries."));
+                                      QStringLiteral("Do not deploy the FFmpeg libraries."));
     parser->addOption(noFFmpegOption);
 
 
@@ -1509,7 +1509,7 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
         }
     } // Windows
 
-    // Add ffmpeg if we deploy the ffmpeg backend
+    // Add FFmpeg if we deploy the FFmpeg backend
     if (options.ffmpeg
         && !plugins.filter(QStringLiteral("ffmpegmediaplugin"), Qt::CaseInsensitive).empty()) {
         deployedQtLibraries.append(findFFmpegLibs(qtBinDir, options.platform));
@@ -1629,11 +1629,13 @@ static bool deployWebProcess(const QMap<QString, QString> &qtpathsVariables, con
 static bool deployWebEngineCore(const QMap<QString, QString> &qtpathsVariables,
                                 const Options &options, bool isDebug, QString *errorMessage)
 {
-    static const char *installDataFiles[] = {"icudtl.dat",
-                                             "qtwebengine_devtools_resources.pak",
-                                             "qtwebengine_resources.pak",
-                                             "qtwebengine_resources_100p.pak",
-                                             "qtwebengine_resources_200p.pak"};
+    static const char *installDataFiles[] = { "icudtl.dat",
+                                              "qtwebengine_devtools_resources.pak",
+                                              "qtwebengine_resources.pak",
+                                              "qtwebengine_resources_100p.pak",
+                                              "qtwebengine_resources_200p.pak",
+                                              isDebug ? "v8_context_snapshot.debug.bin"
+                                                      : "v8_context_snapshot.bin" };
     QByteArray webEngineProcessName(webEngineProcessC);
     if (isDebug && platformHasDebugSuffix(options.platform))
         webEngineProcessName.append('d');

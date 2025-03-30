@@ -361,6 +361,9 @@ void QPrintPreviewWidgetPrivate::generatePreview()
     //### emit paintRequested() until the user changes some parameter
 
     Q_Q(QPrintPreviewWidget);
+    // Avoid previewing a preview
+    if (printer->d_func()->previewMode())
+        return;
     printer->d_func()->setPreviewMode(true);
     emit q->paintRequested(printer);
     printer->d_func()->setPreviewMode(false);

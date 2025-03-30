@@ -340,9 +340,9 @@ void QWidgetRepaintManager::sendUpdateRequest(QWidget *widget, UpdateTime update
     // compositing and waiting for vsync each and every time. Change to
     // UpdateLater, except for approx. once per frame to prevent starvation in
     // case the control does not get back to the event loop.
-    QWidget *w = widget->window();
-    if (updateTime == UpdateNow && w && w->windowHandle() && QWindowPrivate::get(w->windowHandle())->compositing) {
+    if (updateTime == UpdateNow && QWidgetPrivate::get(widget)->textureChildSeen) {
         int refresh = 60;
+        QWidget *w = widget->window();
         QScreen *ws = w->windowHandle()->screen();
         if (ws)
             refresh = ws->refreshRate();
@@ -351,12 +351,16 @@ void QWidgetRepaintManager::sendUpdateRequest(QWidget *widget, UpdateTime update
             const qint64 elapsed = wd->lastComposeTime.elapsed();
             if (elapsed <= qint64(1000.0f / refresh))
                 updateTime = UpdateLater;
-       }
+        }
     }
 
     switch (updateTime) {
     case UpdateLater:
-        updateRequestSent = true;
+        // Prevent redundant update request events, unless it's a
+        // paint on screen widget, as these don't go through the
+        // normal backingstore sync machinery.
+        if (!widget->d_func()->shouldPaintOnScreen())
+            updateRequestSent = true;
         QCoreApplication::postEvent(widget, new QEvent(QEvent::UpdateRequest), Qt::LowEventPriority);
         break;
     case UpdateNow: {
@@ -800,7 +804,6 @@ void QWidgetRepaintManager::paintAndFlush()
     QTLWExtra *tlwExtra = tlw->d_func()->topData();
     tlwExtra->widgetTextures.clear();
     findAllTextureWidgetsRecursively(tlw, tlw);
-    qt_window_private(tlw->windowHandle())->compositing = false; // will get updated in flush()
 
     if (toClean.isEmpty()) {
         // Nothing to repaint. However renderToTexture widgets are handled
@@ -1070,7 +1073,6 @@ void QWidgetRepaintManager::flush(QWidget *widget, const QRegion &region, QPlatf
         if (!widgetTextures)
             widgetTextures = qt_dummy_platformTextureList;
 
-        qt_window_private(tlw->windowHandle())->compositing = true;
         QWidgetPrivate *widgetWindowPrivate = widget->window()->d_func();
         widgetWindowPrivate->sendComposeStatus(widget->window(), false);
         // A window may have alpha even when the app did not request
@@ -1087,7 +1089,11 @@ void QWidgetRepaintManager::flush(QWidget *widget, const QRegion &region, QPlatf
                                                 translucentBackground);
         widgetWindowPrivate->sendComposeStatus(widget->window(), true);
         if (flushResult == QPlatformBackingStore::FlushFailedDueToLostDevice) {
+            qSendWindowChangeToTextureChildrenRecursively(widget->window(),
+                                                          QEvent::WindowAboutToChangeInternal);
             store->handle()->graphicsDeviceReportedLost();
+            qSendWindowChangeToTextureChildrenRecursively(widget->window(),
+                                                          QEvent::WindowChangeInternal);
             widget->update();
         }
     } else {

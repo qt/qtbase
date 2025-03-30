@@ -1494,6 +1494,8 @@ void QConfFileSettingsPrivate::syncConfFile(QConfFile *confFile)
     }
 }
 
+namespace SettingsImpl {
+
 enum { Space = 0x1, Special = 0x2 };
 
 static const char charTraits[256] =
@@ -1520,10 +1522,15 @@ static const char charTraits[256] =
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
+} // namespace SettingsImpl
+
+using SettingsImpl::charTraits;
+
 bool QConfFileSettingsPrivate::readIniLine(QByteArrayView data, qsizetype &dataPos,
                                            qsizetype &lineStart, qsizetype &lineLen,
                                            qsizetype &equalsPos)
 {
+    using namespace SettingsImpl;
     qsizetype dataLen = data.size();
     bool inQuotes = false;
 

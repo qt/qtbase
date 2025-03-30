@@ -10,6 +10,7 @@
 #include <QtCore/qmetaobject.h>
 #include <QtTest/qtesteventloop.h>
 #include <QtCore/qvariant.h>
+#include <QtCore/qmutex.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -20,7 +21,6 @@ class QSignalSpy: public QObject, public QList<QList<QVariant> >
 {
 public:
     explicit QSignalSpy(const QObject *obj, const char *aSignal)
-        : m_waiting(false)
     {
         if (!isObjectValid(obj))
             return;
@@ -43,11 +43,11 @@ public:
             return;
         }
 
+        initArgs(mo->method(sigIndex), obj);
         if (!connectToSignal(obj, sigIndex))
             return;
 
         sig = ba;
-        initArgs(mo->method(sigIndex), obj);
     }
 
 #ifdef Q_QDOC
@@ -56,13 +56,12 @@ public:
 #else
     template <typename Func>
     QSignalSpy(const typename QtPrivate::FunctionPointer<Func>::Object *obj, Func signal0)
-        : m_waiting(false)
     {
         if (!isObjectValid(obj))
             return;
 
         if (!signal0) {
-            qWarning("QSignalSpy: Null signal name is not valid");
+            qWarning("QSignalSpy: Null signal pointer is not valid");
             return;
         }
 
@@ -73,21 +72,22 @@ public:
         if (!isSignalMetaMethodValid(signalMetaMethod))
             return;
 
+        initArgs(mo->method(sigIndex), obj);
         if (!connectToSignal(obj, sigIndex))
             return;
 
         sig = signalMetaMethod.methodSignature();
-        initArgs(mo->method(sigIndex), obj);
     }
 #endif // Q_QDOC
 
     QSignalSpy(const QObject *obj, const QMetaMethod &signal)
-        : m_waiting(false)
     {
-        if (isObjectValid(obj) && isSignalMetaMethodValid(signal) &&
-            connectToSignal(obj, signal.methodIndex())) {
-            sig = signal.methodSignature();
+        if (isObjectValid(obj) && isSignalMetaMethodValid(signal)) {
             initArgs(signal, obj);
+            if (!connectToSignal(obj, signal.methodIndex()))
+                return;
+
+            sig = signal.methodSignature();
         }
     }
 
@@ -96,10 +96,15 @@ public:
 
     bool wait(int timeout = 5000)
     {
+        QMutexLocker locker(&m_mutex);
         Q_ASSERT(!m_waiting);
         const qsizetype origCount = size();
         m_waiting = true;
+        locker.unlock();
+
         m_loop.enterLoopMSecs(timeout);
+
+        locker.relock();
         m_waiting = false;
         return size() > origCount;
     }
@@ -154,14 +159,17 @@ private:
 
     void initArgs(const QMetaMethod &member, const QObject *obj)
     {
+        QMutexLocker locker(&m_mutex);
         args.reserve(member.parameterCount());
         for (int i = 0; i < member.parameterCount(); ++i) {
             QMetaType tp = member.parameterMetaType(i);
             if (!tp.isValid() && obj) {
+                locker.unlock();
                 void *argv[] = { &tp, &i };
                 QMetaObject::metacall(const_cast<QObject*>(obj),
                                       QMetaObject::RegisterMethodArgumentMetaType,
                                       member.methodIndex(), argv);
+                locker.relock();
             }
             if (!tp.isValid()) {
                 qWarning("QSignalSpy: Unable to handle parameter '%s' of type '%s' of method '%s',"
@@ -176,9 +184,10 @@ private:
 
     void appendArgs(void **a)
     {
+        QMutexLocker locker(&m_mutex);
         QList<QVariant> list;
         list.reserve(args.size());
-        for (int i = 0; i < args.size(); ++i) {
+        for (qsizetype i = 0; i < args.size(); ++i) {
             const QMetaType::Type type = static_cast<QMetaType::Type>(args.at(i));
             if (type == QMetaType::QVariant)
                 list << *reinterpret_cast<QVariant *>(a[i + 1]);
@@ -187,8 +196,10 @@ private:
         }
         append(list);
 
-        if (m_waiting)
+        if (m_waiting) {
+            locker.unlock();
             m_loop.exitLoop();
+        }
     }
 
     // the full, normalized signal name
@@ -197,7 +208,8 @@ private:
     QList<int> args;
 
     QTestEventLoop m_loop;
-    bool m_waiting;
+    bool m_waiting = false;
+    static inline QMutex m_mutex; // protects m_waiting, args and the QList base class, between appendArgs() and wait()
 };
 
 QT_END_NAMESPACE

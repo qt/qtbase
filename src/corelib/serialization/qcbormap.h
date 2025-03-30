@@ -40,6 +40,7 @@ public:
 
         constexpr Iterator() = default;
         constexpr Iterator(const Iterator &) = default;
+        ~Iterator() = default;
         Iterator &operator=(const Iterator &other)
         {
             // rebind the reference
@@ -100,6 +101,7 @@ public:
 
         constexpr ConstIterator() = default;
         constexpr ConstIterator(const ConstIterator &) = default;
+        ~ConstIterator() = default;
         ConstIterator &operator=(const ConstIterator &other)
         {
             // rebind the reference

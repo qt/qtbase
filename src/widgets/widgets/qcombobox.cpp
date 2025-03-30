@@ -1450,6 +1450,9 @@ QComboBox::~QComboBox()
     } QT_CATCH(...) {
         ; // objects can't throw in destructor
     }
+
+    // Dispose of container before QComboBox goes away
+    delete d->container;
 }
 
 /*!

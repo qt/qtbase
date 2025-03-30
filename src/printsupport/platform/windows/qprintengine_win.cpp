@@ -1131,8 +1131,8 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
         QPageLayout::Orientation orientation = QPageLayout::Orientation(value.toInt());
         d->devMode->dmOrientation = orientation == QPageLayout::Landscape ? DMORIENT_LANDSCAPE : DMORIENT_PORTRAIT;
         d->m_pageLayout.setOrientation(orientation);
-        d->updateMetrics();
         d->doReinit();
+        d->updateMetrics();
 #ifdef QT_DEBUG_METRICS
         qDebug() << "QWin32PrintEngine::setProperty(PPK_Orientation," << orientation << ')';
         d->debugMetrics();

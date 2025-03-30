@@ -8,6 +8,7 @@ The following table describes the mapping of configure options to CMake argument
 | -extprefix /opt/qt6                   | -DCMAKE_STAGING_PREFIX=/opt/qt6                   |                                                                 |
 | -bindir <dir>                         | -DINSTALL_BINDIR=<dir>                            | similar for -headerdir -libdir and so on                        |
 | -hostdatadir <dir>                    | -DINSTALL_MKSPECSDIR=<dir>                        |                                                                 |
+| -qt-host-path <dir>                   | -DQT_HOST_PATH=<dir>                              |                                                                 |
 | -help                                 | n/a                                               | Handled by configure[.bat].                                     |
 | -verbose                              | --log-level=STATUS                                | Sets the CMake log level to STATUS. The default one is NOTICE.  |
 | -continue                             |                                                   |                                                                 |
@@ -168,8 +169,8 @@ The following table describes the mapping of configure options to CMake argument
 | -xkbcommon                            | -DFEATURE_xkbcommon=ON                            |                                                                 |
 | -gif                                  | -DFEATURE_gif=ON                                  |                                                                 |
 | -ico                                  | -DFEATURE_ico=ON                                  |                                                                 |
-| -libpng                               | -DFEATURE_png=ON                               |                                                                 |
-| -libjpeg                              | -DFEATURE_jpeg=ON                              |                                                                 |
+| -libpng                               | -DFEATURE_png=ON                                  |                                                                 |
+| -libjpeg                              | -DFEATURE_jpeg=ON                                 |                                                                 |
 | -sql-<driver>                         | -DFEATURE_sql_<driver>=ON                         |                                                                 |
 | -sqlite [qt/system]                   | -DFEATURE_system_sqlite=OFF/ON                    |                                                                 |
 | -disable-deprecated-up-to <hex_version> | -DQT_DISABLE_DEPRECATED_UP_TO=<hex_version>     |                                                                 |

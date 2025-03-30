@@ -517,10 +517,8 @@ QPainterPath::QPainterPath(const QPainterPath &other) = default;
 */
 
 QPainterPath::QPainterPath(const QPointF &startPoint)
-    : d_ptr(new QPainterPathPrivate)
+    : d_ptr(new QPainterPathPrivate(startPoint))
 {
-    Element e = { startPoint.x(), startPoint.y(), MoveToElement };
-    d_func()->elements << e;
 }
 
 void QPainterPath::detach()
