@@ -2142,6 +2142,11 @@ QSize QWindows11Style::sizeFromContents(ContentsType type, const QStyleOption *o
                 contentSize += QSize(8, 0); // arrow margins
         }
         break;
+    case CT_HeaderSection:
+        // windows vista does not honor the indicator (as it was drawn above the text, not on the
+        // side) so call QWindowsStyle::styleHint directly to get the correct size hint
+        contentSize = QWindowsStyle::sizeFromContents(type, option, size, widget);
+        break;
     default:
         contentSize = QWindowsVistaStyle::sizeFromContents(type, option, size, widget);
         break;
