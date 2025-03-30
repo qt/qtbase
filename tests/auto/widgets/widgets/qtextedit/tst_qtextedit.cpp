@@ -2256,13 +2256,6 @@ void tst_QTextEdit::setDocumentPreservesPalette()
 }
 #endif
 
-class PublicTextEdit : public QTextEdit
-{
-public:
-    void publicInsertFromMimeData(const QMimeData *source)
-    { insertFromMimeData(source); }
-};
-
 void tst_QTextEdit::pasteFromQt3RichText()
 {
     QByteArray richtext("<!--StartFragment--><p>  QTextEdit is an  ");
@@ -2270,7 +2263,7 @@ void tst_QTextEdit::pasteFromQt3RichText()
     QMimeData mimeData;
     mimeData.setData("application/x-qrichtext", richtext);
 
-    static_cast<PublicTextEdit *>(ed)->publicInsertFromMimeData(&mimeData);
+    ed->insertFromMimeData(&mimeData);
 
     QCOMPARE(ed->toPlainText(), QString::fromLatin1("  QTextEdit is an  "));
     ed->clear();
@@ -2278,7 +2271,7 @@ void tst_QTextEdit::pasteFromQt3RichText()
     richtext = "<!--StartFragment-->  QTextEdit is an  ";
     mimeData.setData("application/x-qrichtext", richtext);
 
-    static_cast<PublicTextEdit *>(ed)->publicInsertFromMimeData(&mimeData);
+    ed->insertFromMimeData(&mimeData);
 
     QCOMPARE(ed->toPlainText(), QString::fromLatin1("  QTextEdit is an  "));
 }
@@ -2290,7 +2283,7 @@ void tst_QTextEdit::pasteFromMarkdown()
     QMimeData mimeData;
     mimeData.setData("text/markdown", richtext);
 
-    static_cast<PublicTextEdit *>(ed)->publicInsertFromMimeData(&mimeData);
+    ed->insertFromMimeData(&mimeData);
 
     QCOMPARE(ed->toPlainText(), "This text is rich");
 #if QT_CONFIG(textmarkdownwriter)

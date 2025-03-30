@@ -13,6 +13,8 @@
 
 QT_REQUIRE_CONFIG(textedit);
 
+class tst_QTextEdit;
+
 QT_BEGIN_NAMESPACE
 
 class QStyleSheet;
@@ -283,6 +285,7 @@ private:
     friend class QTextEditControl;
     friend class QTextDocument;
     friend class QWidgetTextControl;
+    friend class ::tst_QTextEdit;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QTextEdit::AutoFormatting)
