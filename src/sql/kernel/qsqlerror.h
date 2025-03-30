@@ -26,7 +26,7 @@ public:
     QSqlError(const QString &driverText = QString(),
               const QString &databaseText = QString(),
               ErrorType type = NoError,
-              const QString &errorCode = QString());
+              const QString &nativeErrorCode = QString());
     QSqlError(const QSqlError &other);
     QSqlError(QSqlError &&other) noexcept = default;
     QSqlError& operator=(const QSqlError &other);
