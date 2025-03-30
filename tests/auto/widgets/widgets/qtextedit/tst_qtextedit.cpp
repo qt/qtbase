@@ -56,6 +56,8 @@
 #include "../../../shared/platforminputcontext.h"
 #include <private/qinputmethod_p.h>
 
+#include <QtCore/private/qmemory_p.h>
+
 //Used in copyAvailable
 typedef QPair<Qt::Key, Qt::KeyboardModifier> keyPairType;
 typedef QList<keyPairType> pairListType;
@@ -2749,14 +2751,14 @@ namespace {
     class MyPaintDevice : public QPaintDevice
     {
     public:
-        MyPaintDevice() : m_paintEngine(new MyPaintEngine)
+        MyPaintDevice() : m_paintEngine(qt_make_unique<MyPaintEngine>())
         {
         }
 
 
         QPaintEngine *paintEngine () const
         {
-            return m_paintEngine;
+            return m_paintEngine.get();
         }
 
         int metric (QPaintDevice::PaintDeviceMetric metric) const {
@@ -2781,7 +2783,7 @@ namespace {
             return 0;
         }
 
-        MyPaintEngine *m_paintEngine;
+        std::unique_ptr<MyPaintEngine> m_paintEngine;
     };
 }
 
