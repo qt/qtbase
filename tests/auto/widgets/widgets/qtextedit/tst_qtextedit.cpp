@@ -2782,14 +2782,14 @@ namespace {
     class MyPaintDevice : public QPaintDevice
     {
     public:
-        MyPaintDevice() : m_paintEngine(new MyPaintEngine)
+        MyPaintDevice() : m_paintEngine(std::make_unique<MyPaintEngine>())
         {
         }
 
 
         QPaintEngine *paintEngine () const override
         {
-            return m_paintEngine;
+            return m_paintEngine.get();
         }
 
         int metric (QPaintDevice::PaintDeviceMetric metric) const override {
@@ -2816,7 +2816,7 @@ namespace {
             return 0;
         }
 
-        MyPaintEngine *m_paintEngine;
+        std::unique_ptr<MyPaintEngine> m_paintEngine;
     };
 }
 
