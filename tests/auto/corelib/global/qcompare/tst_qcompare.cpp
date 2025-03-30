@@ -45,6 +45,7 @@ class tst_QCompare: public QObject
     Q_OBJECT
 private slots:
     void partialOrdering();
+    void unorderedNeqLiteralZero();
 };
 
 void tst_QCompare::partialOrdering()
@@ -71,14 +72,14 @@ void tst_QCompare::partialOrdering()
 
 
     static_assert(!(QPartialOrdering::Unordered == 0));
-    static_assert(!(QPartialOrdering::Unordered != 0));
+    static_assert( (QPartialOrdering::Unordered != 0));
     static_assert(!(QPartialOrdering::Unordered <  0));
     static_assert(!(QPartialOrdering::Unordered <= 0));
     static_assert(!(QPartialOrdering::Unordered >  0));
     static_assert(!(QPartialOrdering::Unordered >= 0));
 
     static_assert(!(0 == QPartialOrdering::Unordered));
-    static_assert(!(0 != QPartialOrdering::Unordered));
+    static_assert( (0 != QPartialOrdering::Unordered));
     static_assert(!(0 <  QPartialOrdering::Unordered));
     static_assert(!(0 <= QPartialOrdering::Unordered));
     static_assert(!(0 >  QPartialOrdering::Unordered));
@@ -128,6 +129,25 @@ void tst_QCompare::partialOrdering()
     static_assert( (0 <= QPartialOrdering::Greater));
     static_assert(!(0 >  QPartialOrdering::Greater));
     static_assert(!(0 >= QPartialOrdering::Greater));
+}
+
+void tst_QCompare::unorderedNeqLiteralZero()
+{
+    // This test is checking QTBUG-127759
+    constexpr auto qtLegacyUnordered = QPartialOrdering::Unordered;
+#ifdef __cpp_lib_three_way_comparison
+    constexpr auto stdUnordered = std::partial_ordering::unordered;
+
+    QVERIFY(stdUnordered != 0);
+    QVERIFY(0 != stdUnordered);
+    QVERIFY(is_neq(stdUnordered));
+
+    QCOMPARE_EQ(qtLegacyUnordered != 0, stdUnordered != 0);
+    QCOMPARE_EQ(0 != qtLegacyUnordered, 0 != stdUnordered);
+#endif
+
+    QVERIFY(qtLegacyUnordered != 0);
+    QVERIFY(0 != qtLegacyUnordered);
 }
 
 QTEST_MAIN(tst_QCompare)

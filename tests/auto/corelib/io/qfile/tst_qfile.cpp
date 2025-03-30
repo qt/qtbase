@@ -38,11 +38,12 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
-#include <QTemporaryDir>
-#include <QTemporaryFile>
 #include <QOperatingSystemVersion>
 #include <QStorageInfo>
 #include <QScopeGuard>
+#include <QStandardPaths>
+#include <QTemporaryDir>
+#include <QTemporaryFile>
 
 #include <private/qabstractfileengine_p.h>
 #include <private/qfsfileengine_p.h>
@@ -438,6 +439,8 @@ void tst_QFile::cleanup()
 
 tst_QFile::tst_QFile() : m_oldDir(QDir::currentPath())
 {
+    QStandardPaths::setTestModeEnabled(true);
+    QDir().mkpath(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation));
 }
 
 static QByteArray msgOpenFailed(QIODevice::OpenMode om, const QFile &file)
@@ -2657,9 +2660,8 @@ void tst_QFile::socketPair()
 
 void tst_QFile::textFile()
 {
-    const char *openMode = QOperatingSystemVersion::current().type() != QOperatingSystemVersion::Windows
-        ? "w" : "wt";
-    StdioFileGuard fs(fopen("writeabletextfile", openMode));
+    // The "t" is ignored everywhere except on Windows
+    StdioFileGuard fs(fopen("writeabletextfile", "wt"));
     QVERIFY(fs);
     QFile f;
     QByteArray part1("This\nis\na\nfile\nwith\nnewlines\n");

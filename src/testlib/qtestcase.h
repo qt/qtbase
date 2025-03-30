@@ -237,6 +237,12 @@ namespace QTest
 {
     namespace Internal {
 
+    Q_TESTLIB_EXPORT
+    const char *formatPropertyTestHelperFailure(char *msg, size_t maxMsgLen,
+                                                const char *actual, const char *expected,
+                                                const char *actualExpr,
+                                                const char *expectedExpr);
+
     template<typename T> // Output registered enums
     inline typename std::enable_if<QtPrivate::IsQEnumHelper<T>::Value, char*>::type toString(T e)
     {

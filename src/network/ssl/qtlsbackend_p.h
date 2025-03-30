@@ -96,6 +96,9 @@ namespace QTlsPrivate {
 
 class Q_NETWORK_PRIVATE_EXPORT TlsKey {
 public:
+    TlsKey() = default;
+    Q_DISABLE_COPY_MOVE(TlsKey)
+
     virtual ~TlsKey();
 
     using KeyType = QSsl::KeyType;

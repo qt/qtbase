@@ -280,6 +280,30 @@ private Q_SLOTS:
         fromLiteral(u8"Hello, World!"); // char[] in <= C++17, char8_t[] in >= C++20
     }
 
+    void fromChar() const { fromCharacter('\xE4', 1); }
+    void fromUChar() const { fromCharacter(static_cast<unsigned char>('\xE4'), 1); }
+    void fromSChar() const { fromCharacter(static_cast<signed char>('\xE4'), 1); }
+    void fromChar16T() const { fromCharacter(u'ä', 1); }
+    void fromUShort() const { fromCharacter(ushort(0xE4), 1); }
+    void fromChar32T() const {
+        fromCharacter(U'ä', 1);
+        if (QTest::currentTestFailed())
+            return;
+        fromCharacter(U'\x1F0A0', 2); // U+1F0A0: PLAYING CARD BACK
+    }
+    void fromWCharT() const {
+        ONLY_WIN(fromCharacter(L'ä', 1)); // should work on Unix, too (char32_t does)
+    }
+    void fromQChar() const { fromCharacter(QChar(u'ä'), 1); }
+    void fromQLatin1Char() const { fromCharacter(QLatin1Char('\xE4'), 1); }
+    void fromQCharSpecialCharacter() const {
+        fromCharacter(QChar::ReplacementCharacter, 1);
+        if (QTest::currentTestFailed())
+            return;
+        fromCharacter(QChar::LastValidCodePoint, 1);
+    }
+    void fromCharacterSpecial() const;
+
     void fromChar16TStar() const { fromLiteral(u"Hello, World!"); }
     void fromWCharTStar() const { ONLY_WIN(fromLiteral(L"Hello, World!")); }
 
@@ -332,6 +356,8 @@ private:
     void conversion_tests(String arg) const;
     template <typename Char>
     void fromLiteral(const Char *arg) const;
+    template <typename Char>
+    void fromCharacter(Char arg, qsizetype expectedSize) const;
     template <typename Char>
     void fromRange(const Char *first, const Char *last) const;
     template <typename Char, typename Container>
@@ -439,6 +465,14 @@ void tst_QAnyStringView::basics() const
     QVERIFY(!(sv2 != sv1));
 }
 
+void tst_QAnyStringView::fromCharacterSpecial() const
+{
+    QEXPECT_FAIL("", "QTBUG-125730", Continue);
+    // Treating 'ä' as a UTF-8 sequence doesn't make sense, as it would be
+    // invalid. And this is not how legacy Qt APIs handled it, either:
+    QVERIFY(QAnyStringView('\xE4').tag() != QAnyStringView::Tag::Utf8);
+}
+
 template <typename StringBuilder>
 void tst_QAnyStringView::fromQStringBuilder(StringBuilder &&sb, QStringView expected) const
 {
@@ -498,6 +532,40 @@ void tst_QAnyStringView::fromLiteral(const Char *arg) const
     QVERIFY(!QAnyStringView(empty).isNull());
 
     conversion_tests(arg);
+}
+
+template<typename Char>
+void tst_QAnyStringView::fromCharacter(Char arg, qsizetype expectedSize) const
+{
+    // Need to re-create a new QASV(arg) each time, QASV(Char).data() dangles
+    // after the end of the Full Expression:
+
+    QCOMPARE(QAnyStringView(arg).size(), expectedSize);
+
+    // QCOMPARE(QAnyStringView(arg), arg); // not all pairs compile, so do it manually:
+
+    const QChar chars[] = {
+        QAnyStringView(arg).front(),
+        QAnyStringView(arg).back(),
+    };
+
+    switch (expectedSize) {
+    case 1:
+        if constexpr (std::is_same_v<Char, signed char>) // QChar doesn't have a ctor for this
+            QCOMPARE(chars[0], QChar(uchar(arg)));
+        else
+            QCOMPARE(chars[0], QChar(arg));
+        break;
+    case 2:
+        QCOMPARE(QAnyStringView(arg), QStringView::fromArray(chars));
+        if constexpr (std::is_convertible_v<Char, char32_t>)
+            QCOMPARE(QAnyStringView(arg), QStringView(QChar::fromUcs4(arg)));
+        break;
+    default:
+        QFAIL("Don't know how to compare this type to QAnyStringView");
+    }
+
+    // conversion_tests() would produce dangling references
 }
 
 template <typename Char>

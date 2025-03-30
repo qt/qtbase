@@ -188,7 +188,7 @@ struct hb_subset_layout_context_t :
   unsigned lookup_index_count;
 };
 
-struct VariationStore;
+struct ItemVariationStore;
 struct hb_collect_variation_indices_context_t :
        hb_dispatch_context_t<hb_collect_variation_indices_context_t>
 {
@@ -2641,7 +2641,7 @@ struct VarRegionList
       float max_val = axis_region->endCoord.to_float ();
 
       if (def_val != 0.f)
-        axis_tuples.set (*axis_tag, Triple (min_val, def_val, max_val));
+        axis_tuples.set (*axis_tag, Triple ((double) min_val, (double) def_val, (double) max_val));
       axis_region++;
     }
     return !axis_tuples.in_error ();
@@ -3036,7 +3036,7 @@ struct VarData
   DEFINE_SIZE_ARRAY (6, regionIndices);
 };
 
-struct VariationStore
+struct ItemVariationStore
 {
   friend struct item_variations_t;
   using cache_t = VarRegionList::cache_t;
@@ -3141,7 +3141,7 @@ struct VariationStore
   }
 
   bool serialize (hb_serialize_context_t *c,
-		  const VariationStore *src,
+		  const ItemVariationStore *src,
 		  const hb_array_t <const hb_inc_bimap_t> &inner_maps)
   {
     TRACE_SERIALIZE (this);
@@ -3197,7 +3197,7 @@ struct VariationStore
     return_trace (true);
   }
 
-  VariationStore *copy (hb_serialize_context_t *c) const
+  ItemVariationStore *copy (hb_serialize_context_t *c) const
   {
     TRACE_SERIALIZE (this);
     auto *out = c->start_embed (this);
@@ -3208,6 +3208,8 @@ struct VariationStore
     for (unsigned i = 0; i < count; i++)
     {
       hb_inc_bimap_t *map = inner_maps.push ();
+      if (!c->propagate_error(inner_maps))
+        return_trace(nullptr);
       auto &data = this+dataSets[i];
 
       unsigned itemCount = data.get_item_count ();
@@ -3227,7 +3229,7 @@ struct VariationStore
     return_trace (false);
 #endif
 
-    VariationStore *varstore_prime = c->serializer->start_embed<VariationStore> ();
+    ItemVariationStore *varstore_prime = c->serializer->start_embed<ItemVariationStore> ();
     if (unlikely (!varstore_prime)) return_trace (false);
 
     varstore_prime->serialize (c->serializer, this, inner_maps);
@@ -3326,19 +3328,19 @@ struct ConditionFormat1
       return_trace (false);
 
     const hb_hashmap_t<hb_tag_t, Triple>& normalized_axes_location = c->plan->axes_location;
-    Triple axis_limit{-1.f, 0.f, 1.f};
+    Triple axis_limit{-1.0, 0.0, 1.0};
     Triple *normalized_limit;
     if (normalized_axes_location.has (*axis_tag, &normalized_limit))
       axis_limit = *normalized_limit;
 
     const hb_hashmap_t<hb_tag_t, TripleDistances>& axes_triple_distances = c->plan->axes_triple_distances;
-    TripleDistances axis_triple_distances{1.f, 1.f};
+    TripleDistances axis_triple_distances{1.0, 1.0};
     TripleDistances *triple_dists;
     if (axes_triple_distances.has (*axis_tag, &triple_dists))
       axis_triple_distances = *triple_dists;
 
-    float normalized_min = renormalizeValue (filterRangeMinValue.to_float (), axis_limit, axis_triple_distances, false);
-    float normalized_max = renormalizeValue (filterRangeMaxValue.to_float (), axis_limit, axis_triple_distances, false);
+    float normalized_min = renormalizeValue ((double) filterRangeMinValue.to_float (), axis_limit, axis_triple_distances, false);
+    float normalized_max = renormalizeValue ((double) filterRangeMaxValue.to_float (), axis_limit, axis_triple_distances, false);
     out->filterRangeMinValue.set_float (normalized_min);
     out->filterRangeMaxValue.set_float (normalized_max);
 
@@ -3356,7 +3358,7 @@ struct ConditionFormat1
 
     hb_tag_t axis_tag = c->axes_index_tag_map->get (axisIndex);
 
-    Triple axis_range (-1.f, 0.f, 1.f);
+    Triple axis_range (-1.0, 0.0, 1.0);
     Triple *axis_limit;
     bool axis_set_by_user = false;
     if (c->axes_location->has (axis_tag, &axis_limit))
@@ -4030,13 +4032,13 @@ struct VariationDevice
   private:
 
   hb_position_t get_x_delta (hb_font_t *font,
-			     const VariationStore &store,
-			     VariationStore::cache_t *store_cache = nullptr) const
+			     const ItemVariationStore &store,
+			     ItemVariationStore::cache_t *store_cache = nullptr) const
   { return font->em_scalef_x (get_delta (font, store, store_cache)); }
 
   hb_position_t get_y_delta (hb_font_t *font,
-			     const VariationStore &store,
-			     VariationStore::cache_t *store_cache = nullptr) const
+			     const ItemVariationStore &store,
+			     ItemVariationStore::cache_t *store_cache = nullptr) const
   { return font->em_scalef_y (get_delta (font, store, store_cache)); }
 
   VariationDevice* copy (hb_serialize_context_t *c,
@@ -4070,10 +4072,10 @@ struct VariationDevice
   private:
 
   float get_delta (hb_font_t *font,
-		   const VariationStore &store,
-		   VariationStore::cache_t *store_cache = nullptr) const
+		   const ItemVariationStore &store,
+		   ItemVariationStore::cache_t *store_cache = nullptr) const
   {
-    return store.get_delta (varIdx, font->coords, font->num_coords, (VariationStore::cache_t *) store_cache);
+    return store.get_delta (varIdx, font->coords, font->num_coords, (ItemVariationStore::cache_t *) store_cache);
   }
 
   protected:
@@ -4097,8 +4099,8 @@ struct DeviceHeader
 struct Device
 {
   hb_position_t get_x_delta (hb_font_t *font,
-			     const VariationStore &store=Null (VariationStore),
-			     VariationStore::cache_t *store_cache = nullptr) const
+			     const ItemVariationStore &store=Null (ItemVariationStore),
+			     ItemVariationStore::cache_t *store_cache = nullptr) const
   {
     switch (u.b.format)
     {
@@ -4115,8 +4117,8 @@ struct Device
     }
   }
   hb_position_t get_y_delta (hb_font_t *font,
-			     const VariationStore &store=Null (VariationStore),
-			     VariationStore::cache_t *store_cache = nullptr) const
+			     const ItemVariationStore &store=Null (ItemVariationStore),
+			     ItemVariationStore::cache_t *store_cache = nullptr) const
   {
     switch (u.b.format)
     {

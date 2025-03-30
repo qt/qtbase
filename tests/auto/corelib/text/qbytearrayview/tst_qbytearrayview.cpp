@@ -268,10 +268,9 @@ void tst_QByteArrayView::constExpr() const
         static_assert(!bv2.empty());
         static_assert(bv2.size() == 5);
     }
-#if !defined(Q_CC_GNU) || defined(Q_CC_CLANG) || defined(Q_CC_INTEL)
+#if !defined(Q_CC_GNU_ONLY) || !defined(QT_SANITIZE_UNDEFINED)
     // Below checks are disabled because of a compilation issue with GCC and
     // -fsanitize=undefined. See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=71962.
-    // Note: Q_CC_GNU is also defined for Clang and ICC, so we need to check those too.
     {
         static constexpr char hello[] = "Hello";
         constexpr QByteArrayView bv(hello);
@@ -305,6 +304,9 @@ void tst_QByteArrayView::constExpr() const
         static_assert(bv.at(4)   == 'o');
         static_assert(bv.back()  == 'o');
         static_assert(bv.last()  == 'o');
+
+        constexpr auto bv2 = QByteArrayView::fromArray(hello);
+        QCOMPARE(bv, bv2);
     }
 #endif
     {
@@ -372,7 +374,7 @@ void tst_QByteArrayView::fromArray() const
 {
     static constexpr char hello[] = "Hello\0abc\0\0.";
 
-    constexpr QByteArrayView bv = QByteArrayView::fromArray(hello);
+    const QByteArrayView bv = QByteArrayView::fromArray(hello);
     QCOMPARE(bv.size(), 13);
     QVERIFY(!bv.empty());
     QVERIFY(!bv.isEmpty());

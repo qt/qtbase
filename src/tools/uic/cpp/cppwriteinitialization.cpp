@@ -100,7 +100,7 @@ namespace {
         bool isVspacer = false;
         if (const DomProperty *o = properties.value(QLatin1String("orientation"))) {
             const QString orientation = o->elementEnum();
-            if (orientation == QLatin1String("Qt::Vertical") || orientation == QLatin1String("Vertical"))
+            if (orientation.endsWith(QLatin1String("Vertical")))
                 isVspacer = true;
         }
         const QString horizType = isVspacer ? QLatin1String("QSizePolicy::Minimum") : sizeType;
@@ -1283,7 +1283,7 @@ void WriteInitialization::writeProperties(const QString &varName,
                     && m_uic->customWidgetsInfo()->extends(className, "Line")) {
             // Line support
             QString shape = QLatin1String("QFrame::HLine");
-            if (p->elementEnum() == QLatin1String("Qt::Vertical"))
+            if (p->elementEnum().endsWith(QLatin1String("Vertical")))
                 shape = QLatin1String("QFrame::VLine");
 
             m_output << m_indent << varName << language::derefPointer << "setFrameShape("

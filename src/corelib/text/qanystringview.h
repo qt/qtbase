@@ -47,6 +47,8 @@
 #endif
 #include <limits>
 
+class tst_QAnyStringView;
+
 QT_BEGIN_NAMESPACE
 
 template <typename, typename> class QStringBuilder;
@@ -54,6 +56,7 @@ template <typename> struct QConcatenable;
 
 class QAnyStringView
 {
+    friend class ::tst_QAnyStringView;
 public:
     typedef qptrdiff difference_type;
     typedef qsizetype size_type;

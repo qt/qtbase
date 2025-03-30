@@ -90,6 +90,7 @@ Q_LOGGING_CATEGORY(lcQpaXDnd, "qt.qpa.xdnd")
 
 QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGrabServer, xcb_visualid_t defaultVisualId, const char *displayName)
     : QXcbBasicConnection(displayName)
+    , m_duringSystemMoveResize(false)
     , m_canGrabServer(canGrabServer)
     , m_defaultVisualId(defaultVisualId)
     , m_nativeInterface(nativeInterface)
@@ -98,8 +99,6 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
         return;
 
     m_eventQueue = new QXcbEventQueue(this);
-
-    m_xdgCurrentDesktop = qgetenv("XDG_CURRENT_DESKTOP").toLower();
 
     if (hasXRandr())
         xrandrSelectEvents();
@@ -598,6 +597,8 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
     case XCB_BUTTON_RELEASE: {
         auto ev = reinterpret_cast<xcb_button_release_event_t *>(event);
         setTime(ev->time);
+        if (m_duringSystemMoveResize && ev->root != XCB_NONE)
+            abortSystemMoveResize(ev->root);
         m_keyboard->updateXKBStateFromCore(ev->state);
         m_buttonState = (m_buttonState & ~0x7) | translateMouseButtons(ev->state);
         setButtonState(translateMouseButton(ev->detail), false);
@@ -629,12 +630,12 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
         if (clientMessage->format != 32)
             return;
 #if QT_CONFIG(draganddrop)
-        if (clientMessage->type == atom(QXcbAtom::XdndStatus))
+        if (clientMessage->type == atom(QXcbAtom::AtomXdndStatus))
             drag()->handleStatus(clientMessage);
-        else if (clientMessage->type == atom(QXcbAtom::XdndFinished))
+        else if (clientMessage->type == atom(QXcbAtom::AtomXdndFinished))
             drag()->handleFinished(clientMessage);
 #endif
-        if (m_systemTrayTracker && clientMessage->type == atom(QXcbAtom::MANAGER))
+        if (m_systemTrayTracker && clientMessage->type == atom(QXcbAtom::AtomMANAGER))
             m_systemTrayTracker->notifyManagerClientMessageEvent(clientMessage);
         HANDLE_PLATFORM_WINDOW_EVENT(xcb_client_message_event_t, window, handleClientMessageEvent);
     }
@@ -685,7 +686,7 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
         setTime(selectionRequest->time);
 #endif
 #if QT_CONFIG(draganddrop)
-        if (selectionRequest->selection == atom(QXcbAtom::XdndSelection))
+        if (selectionRequest->selection == atom(QXcbAtom::AtomXdndSelection))
             m_drag->handleSelectionRequest(selectionRequest);
         else
 #endif
@@ -713,11 +714,11 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
         if (m_clipboard->handlePropertyNotify(event))
             break;
 #endif
-        if (propertyNotify->atom == atom(QXcbAtom::_NET_WORKAREA)) {
+        if (propertyNotify->atom == atom(QXcbAtom::Atom_NET_WORKAREA)) {
             QXcbVirtualDesktop *virtualDesktop = virtualDesktopForRootWindow(propertyNotify->window);
             if (virtualDesktop)
                 virtualDesktop->updateWorkArea();
-        } else if (propertyNotify->atom == atom(QXcbAtom::_NET_SUPPORTED)) {
+        } else if (propertyNotify->atom == atom(QXcbAtom::Atom_NET_SUPPORTED)) {
             m_wmSupport->updateNetWMAtoms();
         } else {
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_property_notify_event_t, window, handlePropertyNotifyEvent);
@@ -811,13 +812,13 @@ void QXcbConnection::setStartupId(const QByteArray &nextId)
             xcb_change_property(xcb_connection(),
                                 XCB_PROP_MODE_REPLACE,
                                 clientLeader(),
-                                atom(QXcbAtom::_NET_STARTUP_ID),
-                                atom(QXcbAtom::UTF8_STRING),
+                                atom(QXcbAtom::Atom_NET_STARTUP_ID),
+                                atom(QXcbAtom::AtomUTF8_STRING),
                                 8,
                                 nextId.length(),
                                 nextId.constData());
         else
-            xcb_delete_property(xcb_connection(), clientLeader(), atom(QXcbAtom::_NET_STARTUP_ID));
+            xcb_delete_property(xcb_connection(), clientLeader(), atom(QXcbAtom::Atom_NET_STARTUP_ID));
     }
 }
 
@@ -833,11 +834,20 @@ void QXcbConnection::ungrabServer()
         xcb_ungrab_server(xcb_connection());
 }
 
+QString QXcbConnection::windowManagerName() const
+{
+    QXcbVirtualDesktop *pvd = primaryVirtualDesktop();
+    if (pvd)
+        return pvd->windowManagerName().toLower();
+
+    return QString();
+}
+
 xcb_timestamp_t QXcbConnection::getTimestamp()
 {
     // send a dummy event to myself to get the timestamp from X server.
     xcb_window_t window = rootWindow();
-    xcb_atom_t dummyAtom = atom(QXcbAtom::_QT_GET_TIMESTAMP);
+    xcb_atom_t dummyAtom = atom(QXcbAtom::Atom_QT_GET_TIMESTAMP);
     xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, window, dummyAtom,
                         XCB_ATOM_INTEGER, 32, 0, nullptr);
 
@@ -936,7 +946,7 @@ xcb_window_t QXcbConnection::clientLeader()
         xcb_change_property(xcb_connection(),
                             XCB_PROP_MODE_REPLACE,
                             m_clientLeader,
-                            atom(QXcbAtom::WM_CLIENT_LEADER),
+                            atom(QXcbAtom::AtomWM_CLIENT_LEADER),
                             XCB_ATOM_WINDOW,
                             32,
                             1,
@@ -949,7 +959,7 @@ xcb_window_t QXcbConnection::clientLeader()
             xcb_change_property(xcb_connection(),
                                 XCB_PROP_MODE_REPLACE,
                                 m_clientLeader,
-                                atom(QXcbAtom::SM_CLIENT_ID),
+                                atom(QXcbAtom::AtomSM_CLIENT_ID),
                                 XCB_ATOM_STRING,
                                 8,
                                 session.length(),
@@ -1070,8 +1080,8 @@ bool QXcbConnection::isUserInputEvent(xcb_generic_event_t *event) const
 
     if (eventType == XCB_CLIENT_MESSAGE) {
         auto clientMessage = reinterpret_cast<const xcb_client_message_event_t *>(event);
-        if (clientMessage->format == 32 && clientMessage->type == atom(QXcbAtom::WM_PROTOCOLS))
-            if (clientMessage->data.data32[0] == atom(QXcbAtom::WM_DELETE_WINDOW))
+        if (clientMessage->format == 32 && clientMessage->type == atom(QXcbAtom::AtomWM_PROTOCOLS))
+            if (clientMessage->data.data32[0] == atom(QXcbAtom::AtomWM_DELETE_WINDOW))
                 isInputEvent = true;
     }
 

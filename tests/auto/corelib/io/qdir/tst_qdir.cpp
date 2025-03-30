@@ -438,7 +438,7 @@ void tst_QDir::mkdirOnSymlink()
 
     // create our structure:
     dir.mkpath("two/three");
-    ::symlink("two/three", "symlink");
+    QCOMPARE(::symlink("two/three", "symlink"), 0);
 
     // try it:
     QString path = "symlink/../four/five";

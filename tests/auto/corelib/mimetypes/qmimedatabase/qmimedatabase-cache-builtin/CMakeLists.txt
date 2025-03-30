@@ -1,28 +1,29 @@
-# Generated from qmimedatabase-xml.pro.
+if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
+    cmake_minimum_required(VERSION 3.16)
+    project(tst_qmimedatabase LANGUAGES CXX)
+    find_package(Qt6BuildInternals REQUIRED COMPONENTS STANDALONE_TEST)
+endif()
 
 if(NOT QT_FEATURE_private_tests)
     return()
 endif()
 
 #####################################################################
-## tst_qmimedatabase-xml Test:
+## tst_qmimedatabase-cache-builtin Test:
 #####################################################################
 
-qt_internal_add_test(tst_qmimedatabase-xml
+qt_internal_add_test(tst_qmimedatabase-cache-builtin
+    RUN_SERIAL
     SOURCES
         ../tst_qmimedatabase.h
-        tst_qmimedatabase-xml.cpp
-    PUBLIC_LIBRARIES
+        tst_qmimedatabase-cache-builtin.cpp
+    LIBRARIES
+        Qt::CorePrivate
         Qt::Concurrent
 )
 
 # Resources:
-# special case begin
-# the freedesktop resources are handled manually below via mimetypes_resources.cmake
-#set(mimetypes_resource_files
-    #"mime/packages/freedesktop.org.xml"
-#)
-# special case end
+# the builtin mimetype xml is handled manually below via mimetypes_resources.cmake
 set(testdata_resource_files
     "../invalid-magic1.xml"
     "../invalid-magic2.xml"
@@ -36,28 +37,30 @@ set(testdata_resource_files
     "../yast2-metapackage-handler-mimetypes.xml"
 )
 
-qt_internal_add_resource(tst_qmimedatabase-xml "testdata"
+qt_internal_add_resource(tst_qmimedatabase-cache-builtin "testdata"
     PREFIX
-        "/qt-project.org/qmime"
+        "/tst_qmimedatabase/qmime"
     BASE
         ".."
     FILES
         ${testdata_resource_files}
 )
 
-# special case begin
+qt_internal_add_resource(tst_qmimedatabase-cache-builtin "testfiles"
+    PREFIX
+        "/files"
+    FILES
+        "../test.qml"
+)
+
 set(corelib_source_dir ../../../../../../src/corelib)
 include(${corelib_source_dir}/mimetypes/mimetypes_resources.cmake)
-corelib_add_mimetypes_resources(tst_qmimedatabase-xml)
-# special case end
-
-#### Keys ignored in scope 1:.:.:qmimedatabase-xml.pro:<TRUE>:
-# _REQUIREMENTS = "qtConfig(private_tests)"
+corelib_add_mimetypes_resources(tst_qmimedatabase-cache-builtin)
 
 ## Scopes:
 #####################################################################
 
-qt_internal_extend_target(tst_qmimedatabase-xml CONDITION GCC
+qt_internal_extend_target(tst_qmimedatabase-cache-builtin CONDITION GCC
     COMPILE_OPTIONS
         -W
         -Wall
@@ -67,7 +70,7 @@ qt_internal_extend_target(tst_qmimedatabase-xml CONDITION GCC
         -Wshadow
 )
 
-qt_internal_extend_target(tst_qmimedatabase-xml CONDITION UNIX AND NOT APPLE AND NOT QNX
+qt_internal_extend_target(tst_qmimedatabase-cache-builtin CONDITION UNIX AND NOT APPLE AND NOT QNX
     DEFINES
         USE_XDG_DATA_DIRS
 )

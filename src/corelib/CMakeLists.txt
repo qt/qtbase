@@ -1,7 +1,6 @@
 # Generated from corelib.pro.
 
 # special case begin
-qt_find_package(Threads PROVIDED_TARGETS Threads::Threads)
 qt_find_package(WrapPCRE2 PROVIDED_TARGETS WrapPCRE2::WrapPCRE2)
 
 

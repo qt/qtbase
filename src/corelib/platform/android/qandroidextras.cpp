@@ -916,8 +916,9 @@ QJniObject QAndroidIntent::handle() const
   Starts the activity given by \a intent and provides the result asynchronously through the
   \a resultReceiver if this is non-null.
 
-  If \a resultReceiver is null, then the \c startActivity() method in the \c androidActivity()
-  will be called. Otherwise \c startActivityForResult() will be called.
+  If \a resultReceiver is null, then the \c startActivity() method of
+  QNativeInterface::QAndroidApplication::context() will be called. Otherwise
+  \c startActivityForResult() will be called.
 
   The \a receiverRequestCode is a request code unique to the \a resultReceiver, and will be
   returned along with the result, making it possible to use the same receiver for more than
@@ -949,8 +950,9 @@ void QtAndroidPrivate::startActivity(const QJniObject &intent,
   Starts the activity given by \a intent and provides the result asynchronously through the
   \a resultReceiver if this is non-null.
 
-  If \a resultReceiver is null, then the \c startActivity() method in the \c androidActivity()
-  will be called. Otherwise \c startActivityForResult() will be called.
+  If \a resultReceiver is null, then the \c startActivity() method of
+  QNativeInterface::QAndroidApplication::context() will be called. Otherwise
+  \c startActivityForResult() will be called.
 
   The \a receiverRequestCode is a request code unique to the \a resultReceiver, and will be
   returned along with the result, making it possible to use the same receiver for more than
@@ -986,8 +988,9 @@ void QtAndroidPrivate::startActivity(const QJniObject &intent,
   Starts the activity given by \a intentSender and provides the result asynchronously through the
   \a resultReceiver if this is non-null.
 
-  If \a resultReceiver is null, then the \c startIntentSender() method in the \c androidActivity()
-  will be called. Otherwise \c startIntentSenderForResult() will be called.
+  If \a resultReceiver is null, then the \c startIntentSender() method of
+  QNativeInterface::QAndroidApplication::context() will be called. Otherwise
+  \c startIntentSenderForResult() will be called.
 
   The \a receiverRequestCode is a request code unique to the \a resultReceiver, and will be
   returned along with the result, making it possible to use the same receiver for more than

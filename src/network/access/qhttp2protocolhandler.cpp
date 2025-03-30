@@ -375,11 +375,11 @@ bool QHttp2ProtocolHandler::sendRequest()
         }
     }
 
-    if (!prefaceSent && !sendClientPreface())
-        return false;
-
     if (!requests.size())
         return true;
+
+    if (!prefaceSent && !sendClientPreface())
+        return false;
 
     m_channel->state = QHttpNetworkConnectionChannel::WritingState;
     // Check what was promised/pushed, maybe we do not have to send a request
@@ -1184,7 +1184,8 @@ void QHttp2ProtocolHandler::updateStream(Stream &stream, const HPack::HttpHeader
             httpReply->setRedirectUrl(result.redirectUrl);
     }
 
-    if (httpReplyPrivate->isCompressed() && httpRequest.d->autoDecompress) {
+    if (httpReplyPrivate->isCompressed() && httpRequest.d->autoDecompress
+        && !httpReplyPrivate->decompressHelper.isValid()) {
         httpReplyPrivate->removeAutoDecompressHeader();
         httpReplyPrivate->decompressHelper.setEncoding(
                 httpReplyPrivate->headerField("content-encoding"));

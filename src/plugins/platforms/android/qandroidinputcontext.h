@@ -134,6 +134,8 @@ public:
     jboolean copy();
     jboolean copyURL();
     jboolean paste();
+    void reportFullscreenMode(jboolean enabled);
+    jboolean fullscreenMode();
 
 public slots:
     void safeCall(const std::function<void()> &func, Qt::ConnectionType conType = Qt::BlockingQueuedConnection);
@@ -165,6 +167,7 @@ private:
     int m_batchEditNestingLevel;
     QPointer<QObject> m_focusObject;
     QTimer m_hideCursorHandleTimer;
+    bool m_fullScreenMode;
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QAndroidInputContext::HandleModes)
 QT_END_NAMESPACE
