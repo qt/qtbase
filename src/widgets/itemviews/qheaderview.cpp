@@ -35,6 +35,14 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_DECL_COLD_FUNCTION
+static void warn_overflow(const char *caller, const char *callee, int value)
+{
+    qWarning("Integer argument %d causes overflow in %s when calling %s, "
+             "results may not be as you expect",
+             value, caller, callee);
+}
+
 #ifndef QT_NO_DATASTREAM
 QDataStream &operator<<(QDataStream &out, const QHeaderViewPrivate::SectionItem &section)
 {
@@ -420,10 +428,18 @@ void QHeaderView::setOffset(int newOffset)
     // don't overflow; this function is checked with both INT_MIN and INT_MAX...
     const int ndelta = q26::saturate_cast<int>(d->headerOffset - qint64{newOffset});
     d->headerOffset = newOffset;
-    if (d->orientation == Qt::Horizontal)
-        d->viewport->scroll(isRightToLeft() ? -ndelta : ndelta, 0);
-    else
+    if (d->orientation == Qt::Horizontal) {
+        if (isLeftToRight()) {
+            if (int r; !qMulOverflow<-1>(ndelta, &r))
+                d->viewport->scroll(r, 0);
+            else
+                warn_overflow("QHeaderView::setOffset", "QWidget::scroll", newOffset);
+        } else {
+            d->viewport->scroll(ndelta, 0);
+        }
+    } else {
         d->viewport->scroll(0, ndelta);
+    }
     if (d->state == QHeaderViewPrivate::ResizeSection && !d->preventCursorChangeInSetOffset) {
         QPoint cursorPos = QCursor::pos();
         if (d->orientation == Qt::Horizontal)

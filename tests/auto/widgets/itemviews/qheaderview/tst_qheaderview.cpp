@@ -391,6 +391,22 @@ public:
     bool m_bMultiLine = false;
 };
 
+static Qt::LayoutDirection otherLayoutDirection(Qt::LayoutDirection current)
+{
+    switch (current) {
+    case Qt::LayoutDirection::LeftToRight: return Qt::LayoutDirection::RightToLeft;
+    case Qt::LayoutDirection::RightToLeft: return Qt::LayoutDirection::LeftToRight;
+    case Qt::LayoutDirection::LayoutDirectionAuto:
+        ;
+    }
+    Q_UNREACHABLE_RETURN(Qt::LayoutDirection::LayoutDirectionAuto);
+}
+
+static void swapLayoutDirection(QWidget &w)
+{
+    w.setLayoutDirection(otherLayoutDirection(w.layoutDirection()));
+}
+
 // Testing get/set functions
 void tst_QHeaderView::getSetCheck()
 {
@@ -436,9 +452,20 @@ void tst_QHeaderView::getSetCheck()
     QCOMPARE(0, obj1.offset());
     obj1.setOffset(std::numeric_limits<int>::min());
     QCOMPARE(std::numeric_limits<int>::min(), obj1.offset());
+    QTest::ignoreMessage(QtWarningMsg, // one of the INT_MAX will hit this; not necessarily the first one
+                         "Integer argument 2147483647 causes overflow in QHeaderView::setOffset "
+                         "when calling QWidget::scroll, results may not be as you expect");
     obj1.setOffset(std::numeric_limits<int>::max());
     QCOMPARE(std::numeric_limits<int>::max(), obj1.offset());
 
+    // and again with RTL (or LTR, if it was RTL before):
+    swapLayoutDirection(obj1);
+    obj1.setOffset(0);
+    QCOMPARE(0, obj1.offset());
+    obj1.setOffset(std::numeric_limits<int>::min());
+    QCOMPARE(std::numeric_limits<int>::min(), obj1.offset());
+    obj1.setOffset(std::numeric_limits<int>::max());
+    QCOMPARE(std::numeric_limits<int>::max(), obj1.offset());
 }
 
 tst_QHeaderView::tst_QHeaderView()
