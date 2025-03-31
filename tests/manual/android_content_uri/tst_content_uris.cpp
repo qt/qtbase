@@ -239,12 +239,16 @@ void tst_ContentUris::fileOperations()
 
         QVERIFY(file.rename(destDir  + u'/' + fileName));
 
-        // NOTE: The uri doesn't seem to stay usable after a rename and it needs to get
-        // permission again via the SAF picker.
+        // NOTE: The uri doesn't seem to stay usable after a rename, but the file should
+        // be already moved to the new path. To check and remove file need to use new url
+        file.close();
         showInstructionsDialog("Choose the file that was moved");
-        QFileDialog::getOpenFileName(nullptr, tr("Open File"));
+        const auto url = QFileDialog::getOpenFileName(nullptr, tr("Open File"));
 
+        file.setFileName(url);
+        QVERIFY(file.exists());
         QVERIFY(file.remove());
+        QVERIFY(!file.exists());
     }
 }
 
