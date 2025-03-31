@@ -213,41 +213,36 @@ bool shouldBeIgnored(QAccessibleInterface *interface)
     // Cocoa accessibility does not have an attribute that corresponds to the Invisible/Offscreen
     // state. Ignore interfaces with those flags set.
     const QAccessible::State state = interface->state();
-    if (state.invisible ||
-        state.offscreen ||
-        state.invalid)
+    if (state.invisible || state.offscreen || state.invalid)
         return true;
 
     // Some roles are not interesting. In particular, container roles should be
     // ignored in order to flatten the accessibility tree as seen by the user.
-    const QAccessible::Role role = interface->role();
-    if (role == QAccessible::Border ||      // QFrame
-        role == QAccessible::Application || // We use the system-provided application element.
-        role == QAccessible::ToolBar ||     // Access the tool buttons directly.
-        role == QAccessible::Pane ||        // Scroll areas.
-        role == QAccessible::Client ||      // The default for QWidget.
-        role == QAccessible::PopupMenu)     // Access the menu items directly
+    switch (interface->role()) {
+    case QAccessible::Border:      // QFrame
+    case QAccessible::Application: // We use the system-provided application element.
+    case QAccessible::ToolBar:     // Access the tool buttons directly.
+    case QAccessible::Pane:        // Scroll areas.
+    case QAccessible::Client:      // The default for QWidget.
+    case QAccessible::PopupMenu:   // Access the menu items directly
         return true;
+    default:
+        break;
+    }
 
     NSString *mac_role = macRole(interface);
     if (mac_role == NSAccessibilityWindowRole || // We use the system-provided window elements.
-        mac_role == NSAccessibilityUnknownRole)
+        mac_role == NSAccessibilityUnknownRole) {
         return true;
+    }
 
-    // Client is a generic role returned by plain QWidgets or other
-    // widgets that does not have separate QAccessible interface, such
-    // as the TabWidget. Return false unless macRole gives the interface
-    // a special role.
-    if (role == QAccessible::Client && mac_role == NSAccessibilityUnknownRole)
-        return true;
-
-    if (QObject * const object = interface->object()) {
-        const QString className = QLatin1StringView(object->metaObject()->className());
+    if (const QObject *object = interface->object()) {
+        const QByteArrayView className = object->metaObject()->className();
 
         // VoiceOver focusing on tool tips can be confusing. The contents of the
         // tool tip is available through the description attribute anyway, so
         // we disable accessibility for tool tips.
-        if (className == "QTipLabel"_L1)
+        if (className == "QTipLabel"_ba)
             return true;
     }
 
