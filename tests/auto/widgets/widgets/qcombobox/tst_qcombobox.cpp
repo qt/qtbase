@@ -2638,7 +2638,7 @@ void tst_QComboBox::noScrollbar()
 void tst_QComboBox::setItemDelegate()
 {
     QComboBox comboBox;
-    QStyledItemDelegate *itemDelegate = new QStyledItemDelegate;
+    QStyledItemDelegate *itemDelegate = new QStyledItemDelegate(&comboBox);
     comboBox.setItemDelegate(itemDelegate);
     // the cast is a workaround for the XLC and Metrowerks compilers
     QCOMPARE(static_cast<QStyledItemDelegate *>(comboBox.itemDelegate()), itemDelegate);
@@ -2647,7 +2647,7 @@ void tst_QComboBox::setItemDelegate()
 void tst_QComboBox::task253944_itemDelegateIsReset()
 {
     QComboBox comboBox;
-    QStyledItemDelegate *itemDelegate = new QStyledItemDelegate;
+    QStyledItemDelegate *itemDelegate = new QStyledItemDelegate(&comboBox);
     comboBox.setItemDelegate(itemDelegate);
 
     // the casts are workarounds for the XLC and Metrowerks compilers
