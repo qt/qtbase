@@ -2471,7 +2471,7 @@ void tst_QComboBox::task190205_setModelAdjustToContents()
     //wait needed in order to get the combo initial size
     QTRY_VERIFY(box.isVisible());
 
-    box.setModel(new QStringListModel(finalContent));
+    box.setModel(new QStringListModel(finalContent, &box));
 
     QComboBox correctBox;
     setFrameless(&correctBox);
