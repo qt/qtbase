@@ -553,6 +553,15 @@ QIODevice *QXmlStreamReader::device() const
     \sa readNext(), clear()
 */
 
+static bool isDecoderForEncoding(const QStringDecoder &dec, QStringDecoder::Encoding enc)
+{
+    if (!dec.isValid())
+        return false;
+
+    const QAnyStringView nameView{dec.name()};
+    return !nameView.empty() && nameView == QStringDecoder::nameForEncoding(enc);
+}
+
 /*!
     Adds more \a data for the reader to read. This function does
     nothing if the reader has a device().
@@ -567,11 +576,25 @@ void QXmlStreamReader::addData(QAnyStringView data)
     Q_D(QXmlStreamReader);
     data.visit([this, d](auto data) {
         if constexpr (std::is_same_v<decltype(data), QStringView>) {
+            if (d->lockEncoding && isDecoderForEncoding(d->decoder, QStringDecoder::Utf16)) {
+                // We already expect the data in the proper encoding, no need
+                // to recode the data.
+                addDataImpl(QByteArray{reinterpret_cast<const char *>(data.utf16()),
+                                       data.size() * 2});
+                return;
+            }
+            // keep the pre-existing behavior
             d->lockEncoding = true;
             if (!d->decoder.isValid())
                 d->decoder = QStringDecoder(QStringDecoder::Utf8);
             addDataImpl(data.toUtf8());
         } else if constexpr (std::is_same_v<decltype(data), QLatin1StringView>) {
+            if (d->lockEncoding && isDecoderForEncoding(d->decoder, QStringDecoder::Latin1)) {
+                // We already expect the data in the proper encoding, no need
+                // to recode the data.
+                addDataImpl(QByteArray{data.data(), data.size()});
+                return;
+            }
             // Conversion to a QString is required, to avoid breaking
             // pre-existing (before porting to QAnyStringView) behavior.
             d->lockEncoding = true;

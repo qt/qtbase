@@ -1275,7 +1275,6 @@ void tst_QXmlStream::appendToRawDocumentWithNonUtf8Encoding_data()
         QStringConverter::Utf16, u"M\u00E5rten"_s);
     row("l1+utf8", "iso-8859-1"_ba, "M\xE5rten"_ba, QString::fromLatin1("M\xE5rten"),
         QStringConverter::Utf8, QString::fromUtf8("M\xC3\xA5rten"));
-    // Even this fails, because we internally convert the second L1 to UTF-8!
     row("l1+l1", "iso-8859-1"_ba, "M\xE5rten"_ba, QString::fromLatin1("M\xE5rten"),
         QStringConverter::Latin1, QString::fromLatin1("M\xE5rten"));
 
@@ -1317,11 +1316,14 @@ void tst_QXmlStream::appendToRawDocumentWithNonUtf8Encoding()
     default:
         Q_UNREACHABLE();
     }
-    QEXPECT_FAIL("utf16+utf16", "QTBUG-135129: Parser expected UTF-16, but got UTF-8", Abort);
     QVERIFY(reader.readNextStartElement()); // a
     text = reader.readElementText();
 
-    QEXPECT_FAIL("", "Parser expects the data in the initial encoding, but we convert to UTF-8",
+    QEXPECT_FAIL("l1+utf16",
+                 "Parser expects the data in the initial encoding, but we convert to UTF-8",
+                 Continue);
+    QEXPECT_FAIL("l1+utf8",
+                 "Parser expects the data in the initial encoding, but we convert to UTF-8",
                  Continue);
     QCOMPARE(text, expectedNextElementText);
 }
