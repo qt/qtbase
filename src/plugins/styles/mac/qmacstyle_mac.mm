@@ -233,13 +233,6 @@ static const QColor titlebarSeparatorLineActive(111, 111, 111);
 static const QColor titlebarSeparatorLineInactive(131, 131, 131);
 static const QColor darkModeSeparatorLine(88, 88, 88);
 
-// Gradient colors used for the dock widget title bar and
-// non-unifed tool bar background.
-static const QColor lightMainWindowGradientBegin(240, 240, 240);
-static const QColor lightMainWindowGradientEnd(200, 200, 200);
-static const QColor darkMainWindowGradientBegin(47, 47, 47);
-static const QColor darkMainWindowGradientEnd(47, 47, 47);
-
 static const int DisclosureOffset = 4;
 
 static const qreal titleBarIconTitleSpacing = 5;
@@ -4868,6 +4861,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
     case CE_ToolBar: {
         const QStyleOptionToolBar *toolBar = qstyleoption_cast<const QStyleOptionToolBar *>(opt);
         const bool darkMode = isDarkMode();
+        const QColor separatorColor = darkMode ? darkModeSeparatorLine : opt->palette.dark().color();
 
         // Unified title and toolbar drawing. In this mode the cocoa platform plugin will
         // fill the top toolbar area part with a background gradient that "unifies" with
@@ -4892,7 +4886,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     if (isEndOfUnifiedArea) {
                         const int margin = qt_mac_aqua_get_metric(SeparatorSize);
                         const auto separatorRect = QRect(opt->rect.left(), opt->rect.bottom(), opt->rect.width(), margin);
-                        p->fillRect(separatorRect, darkMode ? darkModeSeparatorLine : opt->palette.dark().color());
+                        p->fillRect(separatorRect, separatorColor);
                     }
                     break;
                 }
@@ -4900,31 +4894,16 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
 #endif
         }
 
-        // draw background gradient
-        QLinearGradient linearGrad;
-        if (opt->state & State_Horizontal)
-            linearGrad = QLinearGradient(0, opt->rect.top(), 0, opt->rect.bottom());
-        else
-            linearGrad = QLinearGradient(opt->rect.left(), 0,  opt->rect.right(), 0);
-
-        QColor mainWindowGradientBegin = darkMode ? darkMainWindowGradientBegin : lightMainWindowGradientBegin;
-        QColor mainWindowGradientEnd = darkMode ? darkMainWindowGradientEnd : lightMainWindowGradientEnd;
-
-        linearGrad.setColorAt(0, mainWindowGradientBegin);
-        linearGrad.setColorAt(1, mainWindowGradientEnd);
-        p->fillRect(opt->rect, linearGrad);
+        p->fillRect(opt->rect, opt->palette.window());
 
         p->save();
+        p->setPen(separatorColor);
         QRect toolbarRect = darkMode ? opt->rect.adjusted(0, 0, 0, 1) : opt->rect;
         if (opt->state & State_Horizontal) {
-            p->setPen(darkMode ? darkModeSeparatorLine : mainWindowGradientBegin.lighter(114));
             p->drawLine(toolbarRect.topLeft(), toolbarRect.topRight());
-            p->setPen(darkMode ? darkModeSeparatorLine :mainWindowGradientEnd.darker(114));
             p->drawLine(toolbarRect.bottomLeft(), toolbarRect.bottomRight());
         } else {
-            p->setPen(darkMode ? darkModeSeparatorLine : mainWindowGradientBegin.lighter(114));
             p->drawLine(toolbarRect.topLeft(), toolbarRect.bottomLeft());
-            p->setPen(darkMode ? darkModeSeparatorLine : mainWindowGradientEnd.darker(114));
             p->drawLine(toolbarRect.topRight(), toolbarRect.bottomRight());
         }
         p->restore();
