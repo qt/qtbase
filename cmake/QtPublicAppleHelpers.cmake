@@ -822,7 +822,7 @@ function(_qt_internal_get_apple_sdk_version out_var)
             set(sdk_name "macosx")
         endif()
         set(xcrun_version_arg "--show-sdk-version")
-        execute_process(COMMAND /usr/bin/xcrun --sdk ${sdk_name} ${xcrun_version_arg}
+        execute_process(COMMAND xcrun --sdk ${sdk_name} ${xcrun_version_arg}
                         OUTPUT_VARIABLE sdk_version
                         ERROR_VARIABLE xcrun_error)
         if(NOT sdk_version)
@@ -836,7 +836,7 @@ endfunction()
 
 function(_qt_internal_get_xcode_version_raw out_var)
     if(APPLE)
-        execute_process(COMMAND /usr/bin/xcrun xcodebuild -version
+        execute_process(COMMAND xcrun xcodebuild -version
                         OUTPUT_VARIABLE xcode_version
                         ERROR_VARIABLE xcrun_error)
         string(REPLACE "\n" " " xcode_version "${xcode_version}")
