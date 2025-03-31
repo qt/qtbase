@@ -32,6 +32,9 @@ public:
     inline QStylePrivate()
         : layoutSpacingIndex(-1), proxyStyle(nullptr) {}
 
+    static QStylePrivate *get(QStyle *s) { return s ? s->d_func() : nullptr; }
+    static const QStylePrivate *get(const QStyle *s) { return s ? s->d_func() : nullptr; }
+
     static bool useFullScreenForPopup();
 
     mutable int layoutSpacingIndex;
