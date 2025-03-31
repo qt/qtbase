@@ -6,8 +6,10 @@
 #include <QSortFilterProxyModel>
 
 #include "qcombobox.h"
+
 #include <private/qcombobox_p.h>
 #include <private/qguiapplication_p.h>
+#include <QtWidgets/private/qstyle_p.h>
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformtheme.h>
 
@@ -3401,11 +3403,25 @@ public:
 
 class QTBUG_56693_ProxyStyle : public QProxyStyle
 {
+    QStyle *oldProxyStyle;
 public:
     QTBUG_56693_ProxyStyle(QStyle *style)
-        : QProxyStyle(style), italicItemsNo(0)
-    {
+        : QTBUG_56693_ProxyStyle(style, style->parent(),
+                                 QStylePrivate::get(style)->proxyStyle) {}
 
+private:
+    QTBUG_56693_ProxyStyle(QStyle *style, QObject *styleParent, QStyle *proxy)
+        : QProxyStyle(style), oldProxyStyle(proxy), italicItemsNo(0)
+    {
+        // Undo the reparenting of QProxyStyle ctor again:
+        // We should not take ownership of the qApp->style()!
+        style->setParent(styleParent);
+    }
+public:
+    ~QTBUG_56693_ProxyStyle()
+    {
+        // private in QStyle: baseStyle()->setProxy(nullptr);
+        QStylePrivate::get(baseStyle())->proxyStyle = oldProxyStyle;
     }
 
     void drawControl(ControlElement element, const QStyleOption *opt, QPainter *p, const QWidget *w = nullptr) const override
@@ -3418,6 +3434,7 @@ public:
         baseStyle()->drawControl(element, opt, p, w);
     }
 
+public:
     mutable int italicItemsNo;
 };
 
@@ -3430,8 +3447,8 @@ void tst_QComboBox::task_QTBUG_56693_itemFontFromModel()
     QTBUG_56693_Model model;
     box.setModel(&model);
 
-    QTBUG_56693_ProxyStyle *proxyStyle = new QTBUG_56693_ProxyStyle(box.style());
-    box.setStyle(proxyStyle);
+    QTBUG_56693_ProxyStyle proxyStyle{box.style()}; // does _not_ take ownership of box.style()!
+    box.setStyle(&proxyStyle);
     box.setFont(QApplication::font());
 
     for (int i = 0; i < 10; i++)
@@ -3444,7 +3461,7 @@ void tst_QComboBox::task_QTBUG_56693_itemFontFromModel()
     QVERIFY(container);
     QVERIFY(QTest::qWaitForWindowExposed(container));
 
-    QCOMPARE(proxyStyle->italicItemsNo, 5);
+    QCOMPARE(proxyStyle.italicItemsNo, 5);
 
     box.hidePopup();
 }

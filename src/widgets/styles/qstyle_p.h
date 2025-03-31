@@ -28,6 +28,9 @@ class QStylePrivate: public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QStyle)
 public:
+    static QStylePrivate *get(QStyle *s) { return s ? s->d_func() : nullptr; }
+    static const QStylePrivate *get(const QStyle *s) { return s ? s->d_func() : nullptr; }
+
     static bool useFullScreenForPopup();
 
     QStyle *proxyStyle;
