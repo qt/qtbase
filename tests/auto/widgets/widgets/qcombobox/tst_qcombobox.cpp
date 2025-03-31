@@ -69,6 +69,8 @@
 
 #include <QtTest/private/qtesthelpers_p.h>
 
+#include <QtCore/private/qmemory_p.h>
+
 using namespace QTestPrivate;
 
 class tst_QComboBox : public QObject
@@ -344,13 +346,13 @@ void tst_QComboBox::getSetCheck()
 
     // QAbstractItemDelegate * QComboBox::itemDelegate()
     // void QComboBox::setItemDelegate(QAbstractItemDelegate *)
-    MyAbstractItemDelegate *var10 = new MyAbstractItemDelegate;
-    obj1.setItemDelegate(var10);
-    QCOMPARE(obj1.itemDelegate(), var10);
+    auto var10 = qt_make_unique<MyAbstractItemDelegate>();
+    obj1.setItemDelegate(var10.get());
+    QCOMPARE(obj1.itemDelegate(), var10.get());
     QTest::ignoreMessage(QtWarningMsg, "QComboBox::setItemDelegate: cannot set a 0 delegate");
     obj1.setItemDelegate((QAbstractItemDelegate *)0);
-    QCOMPARE(obj1.itemDelegate(), var10);
-    // delete var10; // No delete, since QComboBox takes ownership
+    QCOMPARE(obj1.itemDelegate(), var10.get());
+    var10.reset();
 
     // QAbstractItemModel * QComboBox::model()
     // void QComboBox::setModel(QAbstractItemModel *)
