@@ -3582,7 +3582,7 @@ void tst_QComboBox::task_QTBUG_52027_mapCompleterIndex()
     cbox.setInsertPolicy(QComboBox::NoInsert);
     cbox.addItems(words);
 
-    QCompleter *completer = new QCompleter(altWords);
+    QCompleter *completer = new QCompleter(altWords, &cbox);
     completer->setCaseSensitivity(Qt::CaseInsensitive);
     cbox.setCompleter(completer);
 
@@ -3605,7 +3605,7 @@ void tst_QComboBox::task_QTBUG_52027_mapCompleterIndex()
     cbox.lineEdit()->selectAll();
     cbox.lineEdit()->del();
 
-    QSortFilterProxyModel* model = new QSortFilterProxyModel();
+    QSortFilterProxyModel* model = new QSortFilterProxyModel(&cbox);
     model->setSourceModel(cbox.model());
     model->setFilterFixedString("foobar1");
     completer->setModel(model);
