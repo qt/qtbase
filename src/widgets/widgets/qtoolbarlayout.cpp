@@ -324,25 +324,16 @@ void QToolBarLayout::updateMacBorderMetrics()
     if (!mainWindow || !mainWindow->isWindow() || !mainWindow->unifiedTitleAndToolBarOnMac())
         return;
 
-    QPlatformNativeInterface *nativeInterface = QApplication::platformNativeInterface();
-    if (!nativeInterface)
-        return; // Not Cocoa platform plugin.
-    QPlatformNativeInterface::NativeResourceForIntegrationFunction function =
-        nativeInterface->nativeResourceFunctionForIntegration("registerContentBorderArea");
-    if (!function)
-        return; // Not Cocoa platform plugin.
+    extern QMainWindowLayout *qt_mainwindow_layout(const QMainWindow *window);
+    auto *mainWindowLayout = qt_mainwindow_layout(mainWindow);
 
     QPoint upper = tb->mapToParent(rect.topLeft());
     QPoint lower = tb->mapToParent(rect.bottomLeft() + QPoint(0, 1));
 
-    typedef void (*RegisterContentBorderAreaFunction)(QWindow *window, void *identifier, int upper, int lower);
-    if (mainWindow->toolBarArea(tb) == Qt::TopToolBarArea) {
-        (reinterpret_cast<RegisterContentBorderAreaFunction>(QFunctionPointer(function)))(
-            tb->window()->windowHandle(), tb, upper.y(), lower.y());
-    } else {
-        (reinterpret_cast<RegisterContentBorderAreaFunction>(QFunctionPointer(function)))(
-            tb->window()->windowHandle(), tb, 0, 0);
-    }
+    if (mainWindow->toolBarArea(tb) == Qt::TopToolBarArea)
+        mainWindowLayout->registerUnifiedToolBarArea(tb, upper.y(), lower.y());
+    else
+        mainWindowLayout->registerUnifiedToolBarArea(tb, 0, 0);
 #endif
 }
 

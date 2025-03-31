@@ -168,12 +168,6 @@ public:
 
     void registerTouch(bool enable);
 
-    void registerContentBorderArea(quintptr identifier, int upper, int lower);
-    void setContentBorderAreaEnabled(quintptr identifier, bool enable);
-    void setContentBorderEnabled(bool enable) override;
-    bool testContentBorderAreaPosition(int position) const;
-    void applyContentBorderThickness(NSWindow *window = nullptr);
-
     qreal devicePixelRatio() const override;
     QWindow *childWindowAt(QPoint windowPoint);
     bool shouldRefuseKeyWindowAndFirstResponder();
@@ -264,20 +258,6 @@ public: // for QNSView
 
     static const int NoAlertRequest;
     NSInteger m_alertRequest = NoAlertRequest;
-
-    bool m_drawContentBorderGradient = false;
-
-    struct BorderRange {
-        BorderRange(quintptr i, int u, int l) : identifier(i), upper(u), lower(l) { }
-        quintptr identifier;
-        int upper;
-        int lower;
-        bool operator<(BorderRange const& right) const {
-              return upper < right.upper;
-        }
-    };
-    QHash<quintptr, BorderRange> m_contentBorderAreas; // identifier -> uppper/lower
-    QHash<quintptr, bool> m_enabledContentBorderAreas; // identifier -> enabled state (true/false)
 
     bool m_deliveringUpdateRequest = false;
 

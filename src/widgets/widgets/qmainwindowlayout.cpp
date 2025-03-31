@@ -49,9 +49,15 @@
 #include <private/qlayoutengine_p.h>
 #include <private/qwidgetresizehandler_p.h>
 
+#include <qpa/qplatformwindow_p.h>
+
 #include <QScopedValueRollback>
 
 QT_BEGIN_NAMESPACE
+
+#if defined(Q_OS_MACOS)
+Q_STATIC_LOGGING_CATEGORY(lcUnifiedToolBar, "qt.mainwindow.unifiedtoolbar");
+#endif
 
 using namespace Qt::StringLiterals;
 using StateMarkers = QMainWindowLayoutState::StateMarkers;
@@ -2499,6 +2505,10 @@ void QMainWindowLayout::setGeometry(const QRect &_r)
 
     layoutState.fitLayout();
     applyState(layoutState, false);
+
+#if defined(Q_OS_MACOS)
+    updateUnifiedToolBarArea();
+#endif
 }
 
 void QMainWindowLayout::timerEvent(QTimerEvent *e)
@@ -3427,6 +3437,114 @@ Qt::DropAction QMainWindowLayout::performPlatformWidgetDrag(QLayoutItem *widgetI
     return result;
 }
 #endif
+
+#if defined(Q_OS_MACOS)
+void QMainWindowLayout::registerUnifiedToolBarArea(QWidget *widget, int upper, int lower)
+{
+    qCDebug(lcUnifiedToolBar) << "Registering unified toolbar area" << upper << lower << "for" << widget;
+    m_unifiedToolBarAreas.insert(widget, UnifiedToolBarRange(widget, upper, lower));
+    updateUnifiedToolBarArea();
+}
+
+void QMainWindowLayout::setUnifiedToolBarAreaEnabled(QWidget *widget, bool enable)
+{
+    qCDebug(lcUnifiedToolBar) << (enable ? "Enabling" : "Disabling") << "unified toolbar area for" << widget;
+    m_enabledUnifiedToolBarAreas.insert(widget, enable);
+    updateUnifiedToolBarArea();
+}
+
+/*! \internal
+
+    Calculates a new unified toolbar size based on individual unified areas
+    registered by QToolBar and QTabBar.
+
+    The resulting size is used for determining the unified toolbar area
+    during QMacStyle drawing, as well as propagated to the platform as
+    a NSVisualEffectView with a NSVisualEffectMaterialTitlebar material.
+
+    \sa testUnifiedToolBarAreaPosition
+ */
+void QMainWindowLayout::updateUnifiedToolBarArea()
+{
+    qCDebug(lcUnifiedToolBar) << "Updating unified toolbar area";
+
+    QWindow *window = parentWidget()->windowHandle();
+    if (!window) {
+        qCDebug(lcUnifiedToolBar) << "No window yet, skipping";
+        return;
+    }
+
+    // Find consecutive registered border areas, starting from the top.
+    std::vector<UnifiedToolBarRange> ranges(m_unifiedToolBarAreas.cbegin(), m_unifiedToolBarAreas.cend());
+    std::sort(ranges.begin(), ranges.end());
+
+    // We account for the height of the titlebar and any native NSToolBars
+    // by taking the safe area top margin into account.
+    const auto safeAreaMargins = QWidgetPrivate::get(parentWidget())->safeAreaMargins();
+    int height = safeAreaMargins.top();
+
+    for (UnifiedToolBarRange range : ranges) {
+        bool enabled = m_enabledUnifiedToolBarAreas.value(range.widget, false);
+        qCDebug(lcUnifiedToolBar) << "Considering" << (enabled ? "enabled" : "disabled")
+            << "toolbar area" << range.upper << range.lower << "for" << range.widget;
+
+        // Skip disabled ranges (typically hidden tool bars)
+        // FIXME: This effectively adds a border below each toolbar
+        // in a stack if one of them is hidden. Why do we do this?
+        if (!enabled)
+            continue;
+
+        // Is this sub-range adjacent to or overlapping the
+        // existing total border area range? If so merge
+        // it into the total range,
+        if (range.upper <= (height + 1))
+            height = qMax(height, range.lower);
+        else
+            break;
+    }
+
+    QSize unifiedToolBarAreaSize(window->width(), height);
+    if (unifiedToolBarAreaSize == m_unifiedToolBarAreaSize)
+        return;
+
+    qCDebug(lcUnifiedToolBar) << "New unified toolbar area size is" << unifiedToolBarAreaSize;
+    m_unifiedToolBarAreaSize = unifiedToolBarAreaSize;
+
+    // macOS Tahoe and above uses a fully transparent titlebar with no material,
+    // while for earlier versions we need to manage a visual effects view ourselves.
+    if (QOperatingSystemVersion::current() < QOperatingSystemVersion::MacOSTahoe) {
+        if (auto *cocoaWindow = window->nativeInterface<QNativeInterface::Private::QCocoaWindow>()) {
+            cocoaWindow->manageVisualEffectArea(quintptr(this), QRect(QPoint(), m_unifiedToolBarAreaSize),
+                NSVisualEffectMaterial(3) /* NSVisualEffectMaterialTitlebar */,
+                NSVisualEffectBlendingMode(1) /* NSVisualEffectBlendingModeWithinWindow */,
+                NSVisualEffectState(0) /* NSVisualEffectStateFollowsWindowActiveState */);
+        }
+    }
+}
+
+/*! \internal
+
+    Used by QMacStyle to determine if it should fill toolbars and tab bars
+    with a transparent background, to let the underlying titlebar effect
+    view shine through.
+
+    Also used by QMacStyle to determine if it should draw a border below
+    a toolbar, which should only be done for toolbar at the bottom of the
+    unified toolbar area.
+ */
+bool QMainWindowLayout::testUnifiedToolBarAreaPosition(int position) const
+{
+    auto *mainWindow = static_cast<QMainWindow *>(parentWidget());
+    if (!mainWindow->unifiedTitleAndToolBarOnMac())
+        return false;
+
+    qCDebug(lcUnifiedToolBar) << "Testing whether" << position << "is part of"
+        << "unified toolbar area" << m_unifiedToolBarAreaSize;
+
+    return 0 <= position && position < m_unifiedToolBarAreaSize.height();
+}
+
+#endif // defined(Q_OS_MACOS)
 
 QT_END_NAMESPACE
 

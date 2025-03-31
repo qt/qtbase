@@ -700,10 +700,6 @@ NSUInteger QCocoaWindow::windowStyleMask(Qt::WindowFlags flags) const
     if (type == Qt::Tool)
         styleMask |= NSWindowStyleMaskUtilityWindow;
 
-    // FIXME (QTBUG-138829)
-    if (m_drawContentBorderGradient)
-        styleMask |= QT_IGNORE_DEPRECATIONS(NSWindowStyleMaskTexturedBackground);
-
     if (flags & Qt::ExpandedClientAreaHint)
         styleMask |= NSWindowStyleMaskFullSizeContentView;
 
@@ -834,9 +830,7 @@ void QCocoaWindow::setWindowFlags(Qt::WindowFlags flags)
     if (m_view.window.ignoresMouseEvents != ignoreMouse)
         m_view.window.ignoresMouseEvents = ignoreMouse;
 
-    // FIXME (QTBUG-138829)
-    m_view.window.titlebarAppearsTransparent = (flags & Qt::NoTitleBarBackgroundHint)
-        || (m_view.window.styleMask & QT_IGNORE_DEPRECATIONS(NSWindowStyleMaskTexturedBackground));
+    m_view.window.titlebarAppearsTransparent = flags & Qt::NoTitleBarBackgroundHint;
 }
 
 // ----------------------- Window state -----------------------
@@ -2049,8 +2043,6 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow()
         }
     }
 
-    applyContentBorderThickness(nsWindow);
-
     // We propagate the view's color space granulary to both the IOSurfaces
     // used for QSurface::RasterSurface, as well as the CAMetalLayer used for
     // QSurface::MetalSurface, but for QSurface::OpenGLSurface we don't have
@@ -2138,98 +2130,6 @@ void QCocoaWindow::registerTouch(bool enable)
         m_view.allowedTouchTypes |= NSTouchTypeMaskIndirect;
     else if (m_registerTouchCount == 0)
         m_view.allowedTouchTypes &= ~NSTouchTypeMaskIndirect;
-}
-
-void QCocoaWindow::registerContentBorderArea(quintptr identifier, int upper, int lower)
-{
-    m_contentBorderAreas.insert(identifier, BorderRange(identifier, upper, lower));
-    applyContentBorderThickness();
-}
-
-void QCocoaWindow::setContentBorderAreaEnabled(quintptr identifier, bool enable)
-{
-    m_enabledContentBorderAreas.insert(identifier, enable);
-    applyContentBorderThickness();
-}
-
-void QCocoaWindow::setContentBorderEnabled(bool enable)
-{
-    m_drawContentBorderGradient = enable;
-    applyContentBorderThickness();
-}
-
-void QCocoaWindow::applyContentBorderThickness(NSWindow *window)
-{
-    QMacAutoReleasePool pool;
-
-    if (!window && isContentView())
-        window = m_view.window;
-
-    if (!window)
-        return;
-
-    if (!m_drawContentBorderGradient) {
-        // FIXME (QTBUG-138829)
-        window.styleMask = window.styleMask & QT_IGNORE_DEPRECATIONS(~NSWindowStyleMaskTexturedBackground);
-        setWindowFlags(QPlatformWindow::window()->flags());
-        [window.contentView.superview setNeedsDisplay:YES];
-        return;
-    }
-
-    // Find consecutive registered border areas, starting from the top.
-    std::vector<BorderRange> ranges(m_contentBorderAreas.cbegin(), m_contentBorderAreas.cend());
-    std::sort(ranges.begin(), ranges.end());
-    int effectiveTopContentBorderThickness = 0;
-    for (BorderRange range : ranges) {
-        // Skip disiabled ranges (typically hidden tool bars)
-        if (!m_enabledContentBorderAreas.value(range.identifier, false))
-            continue;
-
-        // Is this sub-range adjacent to or overlapping the
-        // existing total border area range? If so merge
-        // it into the total range,
-        if (range.upper <= (effectiveTopContentBorderThickness + 1))
-            effectiveTopContentBorderThickness = qMax(effectiveTopContentBorderThickness, range.lower);
-        else
-            break;
-    }
-
-    int effectiveBottomContentBorderThickness = 0;
-
-    // FIXME (QTBUG-138829)
-    [window setStyleMask:[window styleMask] | QT_IGNORE_DEPRECATIONS(NSWindowStyleMaskTexturedBackground)];
-    setWindowFlags(QPlatformWindow::window()->flags());
-
-    // Setting titlebarAppearsTransparent to YES means that the border thickness has to account
-    // for the title bar height as well, otherwise sheets will not be presented at the correct
-    // position, which should be (title bar height + top content border size).
-    const NSRect frameRect = window.frame;
-    const NSRect contentRect = [window contentRectForFrameRect:frameRect];
-    const CGFloat titlebarHeight = frameRect.size.height - contentRect.size.height;
-    effectiveTopContentBorderThickness += titlebarHeight;
-
-    [window setContentBorderThickness:effectiveTopContentBorderThickness forEdge:NSMaxYEdge];
-    [window setAutorecalculatesContentBorderThickness:NO forEdge:NSMaxYEdge];
-
-    [window setContentBorderThickness:effectiveBottomContentBorderThickness forEdge:NSMinYEdge];
-    [window setAutorecalculatesContentBorderThickness:NO forEdge:NSMinYEdge];
-
-    [[[window contentView] superview] setNeedsDisplay:YES];
-}
-
-bool QCocoaWindow::testContentBorderAreaPosition(int position) const
-{
-    if (!m_drawContentBorderGradient || !isContentView())
-        return false;
-
-    // Determine if the given y position (relative to the content area) is inside the
-    // unified toolbar area. Note that the value returned by contentBorderThicknessForEdge
-    // includes the title bar height; subtract it.
-    const int contentBorderThickness = [m_view.window contentBorderThicknessForEdge:NSMaxYEdge];
-    const NSRect frameRect = m_view.window.frame;
-    const NSRect contentRect = [m_view.window contentRectForFrameRect:frameRect];
-    const CGFloat titlebarHeight = frameRect.size.height - contentRect.size.height;
-    return 0 <= position && position < (contentBorderThickness - titlebarHeight);
 }
 
 qreal QCocoaWindow::devicePixelRatio() const

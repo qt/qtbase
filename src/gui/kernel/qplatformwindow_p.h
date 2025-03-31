@@ -64,8 +64,7 @@ struct Q_GUI_EXPORT QWasmWindow
 #if defined(Q_OS_MACOS) || defined(Q_QDOC)
 struct Q_GUI_EXPORT QCocoaWindow
 {
-    QT_DECLARE_NATIVE_INTERFACE(QCocoaWindow, 2, QWindow)
-    virtual void setContentBorderEnabled(bool enable) = 0;
+    QT_DECLARE_NATIVE_INTERFACE(QCocoaWindow, 3, QWindow)
     virtual QPoint bottomLeftClippedByNSWindowOffset() const = 0;
     virtual CALayer *contentLayer() const = 0;
     virtual void manageVisualEffectArea(quintptr identifier, const QRect &rect,

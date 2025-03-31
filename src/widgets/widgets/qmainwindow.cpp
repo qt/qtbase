@@ -1302,10 +1302,16 @@ void QMainWindow::setUnifiedTitleAndToolBarOnMac(bool enabled)
     setAttribute(Qt::WA_NativeWindow);
     setAttribute(Qt::WA_TranslucentBackground, enabled);
 
-    d->create(); // Create first, before querying the platform window
-    using namespace QNativeInterface::Private;
-    if (auto *platformWindow = dynamic_cast<QCocoaWindow*>(window()->windowHandle()->handle()))
-        platformWindow->setContentBorderEnabled(enabled);
+    d->create(); // Create first, so we can update the window flag without hiding the window
+
+    auto *windowHandle = window()->windowHandle();
+    windowHandle->setFlag(Qt::NoTitleBarBackgroundHint, enabled);
+    // Expand client area if we need to manage a titlebar visual effects view ourselves
+    if (QOperatingSystemVersion::current() < QOperatingSystemVersion::MacOSTahoe)
+        windowHandle->setFlag(Qt::ExpandedClientAreaHint, enabled);
+    overrideWindowFlags(windowHandle->flags());
+
+    d->layout->updateUnifiedToolBarArea();
 
     update();
 #else

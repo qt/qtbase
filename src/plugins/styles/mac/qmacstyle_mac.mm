@@ -30,6 +30,7 @@
 #include <QtGui/qpa/qplatformtheme.h>
 
 #include <QtWidgets/private/qstyleanimation_p.h>
+#include <QtWidgets/private/qmainwindowlayout_p.h>
 
 #if QT_CONFIG(mdiarea)
 #include <QtWidgets/qmdisubwindow.h>
@@ -425,18 +426,15 @@ static bool setupSlider(NSSlider *slider, const QStyleOptionSlider *sl)
     return true;
 }
 
-static bool isInMacUnifiedToolbarArea(QWindow *window, int windowY)
+static bool isInMacUnifiedToolbarArea(QWidget *widget, int windowY)
 {
-    QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
-    QPlatformNativeInterface::NativeResourceForIntegrationFunction function =
-        nativeInterface->nativeResourceFunctionForIntegration("testContentBorderPosition");
-    if (!function)
-        return false; // Not Cocoa platform plugin.
+    auto *mainWindow = qobject_cast<QMainWindow *>(widget);
+    if (!mainWindow || !mainWindow->unifiedTitleAndToolBarOnMac())
+        return false;
 
-    typedef bool (*TestContentBorderPositionFunction)(QWindow *, int);
-    return (reinterpret_cast<TestContentBorderPositionFunction>(QFunctionPointer(function)))(window, windowY);
+    QMainWindowLayout *layout = static_cast<QMainWindowLayout*>(mainWindow->layout());
+    return layout->testUnifiedToolBarAreaPosition(windowY);
 }
-
 
 #if QT_CONFIG(tabbar)
 static void drawTabCloseButton(QPainter *p, bool hover, bool selected, bool pressed, bool documentMode)
@@ -4063,7 +4061,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 if (w) {
                     QRect tabRect = tabOpt->rect;
                     QPoint windowTabStart = w->mapTo(w->window(), tabRect.topLeft());
-                    isUnified = isInMacUnifiedToolbarArea(w->window()->windowHandle(), windowTabStart.y());
+                    isUnified = isInMacUnifiedToolbarArea(w->window(), windowTabStart.y());
                 }
 
                 const int tabOverlap = proxy()->pixelMetric(PM_TabBarTabOverlap, opt, w);
@@ -4875,7 +4873,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     // mode below. Determine this by making a unified toolbar area test for the row below
                     // this toolbar.
                     const QPoint windowToolbarEnd = w->mapTo(w->window(), opt->rect.bottomLeft());
-                    const bool isEndOfUnifiedArea = !isInMacUnifiedToolbarArea(w->window()->windowHandle(), windowToolbarEnd.y() + 1);
+                    const bool isEndOfUnifiedArea = !isInMacUnifiedToolbarArea(w->window(), windowToolbarEnd.y() + 1);
                     if (isEndOfUnifiedArea) {
                         const int margin = qt_mac_aqua_get_metric(SeparatorSize);
                         const auto separatorRect = QRect(opt->rect.left(), opt->rect.bottom(), opt->rect.width(), margin);

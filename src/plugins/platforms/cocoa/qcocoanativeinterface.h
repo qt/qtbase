@@ -44,18 +44,6 @@ private:
     // touch events, which then will be delivered until the widget
     // deregisters.
     static void registerTouchWindow(QWindow *window,  bool enable);
-
-    // Set the size for a unified toolbar content border area.
-    // Multiple callers can register areas and the platform plugin
-    // will extend the "unified" area to cover them.
-    static void registerContentBorderArea(QWindow *window, quintptr identifer, int upper, int lower);
-
-    // Enables or disiables a content border area.
-    static void setContentBorderAreaEnabled(QWindow *window, quintptr identifier, bool enable);
-
-    // Returns true if the given coordinate is inside the current
-    // content border.
-    static bool testContentBorderPosition(QWindow *window, int position);
 };
 
 QT_END_NAMESPACE

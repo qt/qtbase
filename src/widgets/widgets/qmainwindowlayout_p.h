@@ -645,6 +645,28 @@ public:
     QLayoutItem *draggingWidget = nullptr;
 #endif
 
+#if defined(Q_OS_MACOS)
+    void registerUnifiedToolBarArea(QWidget *widget, int upper, int lower);
+    void setUnifiedToolBarAreaEnabled(QWidget *widget, bool enable);
+    Q_WIDGETS_EXPORT bool testUnifiedToolBarAreaPosition(int position) const;
+private:
+    void updateUnifiedToolBarArea();
+    struct UnifiedToolBarRange {
+        UnifiedToolBarRange(QWidget *w, int u, int l) : widget(w), upper(u), lower(l) { }
+        QWidget *widget;
+        int upper;
+        int lower;
+        bool operator<(UnifiedToolBarRange const& right) const {
+              return upper < right.upper;
+        }
+    };
+    QHash<QWidget *, UnifiedToolBarRange> m_unifiedToolBarAreas; // widget -> upper/lower
+    QHash<QWidget *, bool> m_enabledUnifiedToolBarAreas; // widget -> enabled state (true/false)
+    QSize m_unifiedToolBarAreaSize; // Cached total size of area based on areas above
+    friend class QMainWindow;
+public:
+#endif
+
 protected:
     void timerEvent(QTimerEvent *e) override;
 

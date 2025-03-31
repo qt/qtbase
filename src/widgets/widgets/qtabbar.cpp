@@ -28,6 +28,8 @@
 #ifdef Q_OS_MACOS
 #include <qpa/qplatformnativeinterface.h>
 #endif
+#include "qmainwindow.h"
+#include "private/qmainwindowlayout_p.h"
 
 #include "qdebug.h"
 #include "private/qapplication_p.h"
@@ -85,10 +87,15 @@ void QTabBarPrivate::updateMacBorderMetrics()
 {
 #if defined(Q_OS_MACOS)
     Q_Q(QTabBar);
+
+    auto *mainWindow = qobject_cast<const QMainWindow*>(q->window());
+    if (!mainWindow)
+        return;
+
     // Extend the unified title and toolbar area to cover the tab bar iff
     // 1) the tab bar is in document mode
     // 2) the tab bar is directly below an "unified" area.
-    // The extending itself is done in the Cocoa platform plugin and Mac style,
+    // The extending itself is done in the Mac style,
     // this function registers geometry and visibility state for the tab bar.
 
     // Calculate geometry
@@ -104,27 +111,10 @@ void QTabBarPrivate::updateMacBorderMetrics()
         lower = 0;
     }
 
-    QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
-    if (!nativeInterface)
-        return;
-    quintptr identifier = reinterpret_cast<quintptr>(q);
-
-    // Set geometry
-    QPlatformNativeInterface::NativeResourceForIntegrationFunction function =
-        nativeInterface->nativeResourceFunctionForIntegration("registerContentBorderArea");
-    if (!function)
-        return; // Not Cocoa platform plugin.
-    typedef void (*RegisterContentBorderAreaFunction)(QWindow *window, quintptr identifier, int upper, int lower);
-    (reinterpret_cast<RegisterContentBorderAreaFunction>(QFunctionPointer(function)))(
-        q->window()->windowHandle(), identifier, upper, lower);
-
-    // Set visibility state
-    function = nativeInterface->nativeResourceFunctionForIntegration("setContentBorderAreaEnabled");
-    if (!function)
-        return;
-    typedef void (*SetContentBorderAreaEnabledFunction)(QWindow *window, quintptr identifier, bool enable);
-    (reinterpret_cast<SetContentBorderAreaEnabledFunction>(QFunctionPointer(function)))(
-        q->window()->windowHandle(), identifier, q->isVisible());
+    extern QMainWindowLayout *qt_mainwindow_layout(const QMainWindow *window);
+    auto *mainWindowLayout = qt_mainwindow_layout(mainWindow);
+    mainWindowLayout->registerUnifiedToolBarArea(q, upper, lower);
+    mainWindowLayout->setUnifiedToolBarAreaEnabled(q, q->isVisible());
 #endif
 }
 
