@@ -15,6 +15,7 @@ qt_internal_add_3rdparty_library(BundledHarfbuzz
         src/hb-aat-map.cc
         src/hb-algs.hh
         src/hb-atomic.hh
+        src/hb-bit-vector.hh
         src/hb-blob.cc src/hb-blob.h
         src/hb-buffer.cc src/hb-buffer.h src/hb-buffer.hh
         src/hb-buffer-deserialize-json.hh
