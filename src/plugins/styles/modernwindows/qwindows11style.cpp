@@ -2211,13 +2211,17 @@ void QWindows11Style::polish(QWidget* widget)
         auto pal = widget->palette();
         pal.setColor(widget->backgroundRole(), Qt::transparent);
         widget->setPalette(pal);
-        if (!isScrollBar
-            && widget->graphicsProxyWidget() == nullptr) { // for menus and combobox containers...
-            QGraphicsDropShadowEffect* dropshadow = new QGraphicsDropShadowEffect(widget);
-            dropshadow->setBlurRadius(3);
-            dropshadow->setXOffset(3);
-            dropshadow->setYOffset(3);
-            widget->setGraphicsEffect(dropshadow);
+        if (!isScrollBar) {
+            bool inGraphicsView = widget->graphicsProxyWidget() != nullptr;
+            if (!inGraphicsView && comboBoxContainer && comboBoxContainer->parentWidget())
+                inGraphicsView = comboBoxContainer->parentWidget()->graphicsProxyWidget() != nullptr;
+            if (!inGraphicsView) { // for menus and combobox containers...
+                QGraphicsDropShadowEffect *dropshadow = new QGraphicsDropShadowEffect(widget);
+                dropshadow->setBlurRadius(3);
+                dropshadow->setXOffset(3);
+                dropshadow->setYOffset(3);
+                widget->setGraphicsEffect(dropshadow);
+            }
         }
     } else if (QComboBox* cb = qobject_cast<QComboBox*>(widget)) {
         if (cb->isEditable()) {
