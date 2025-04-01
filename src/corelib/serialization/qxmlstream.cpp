@@ -1292,7 +1292,7 @@ inline qsizetype QXmlStreamReaderPrivate::fastScanContentCharList()
                 textBuffer += QChar(ushort(c));
                 ++n;
             }
-            if (c == 0) {
+            if (c == StreamEOF) {
                 putString(textBuffer, pos);
                 textBuffer.resize(pos);
             } else if (c == '>' && textBuffer.at(textBuffer.size() - 2) == u']') {

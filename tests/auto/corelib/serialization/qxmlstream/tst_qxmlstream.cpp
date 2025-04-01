@@ -479,14 +479,16 @@ public:
         ParseSinglePass
     };
 
-    static bool isWellformed(QIODevice *const inputFile, const ParseMode mode)
+    static bool isWellformed(QFile *const inputFile, const ParseMode mode)
     {
         if (!inputFile)
-            qFatal("%s: inputFile must be a valid QIODevice pointer", Q_FUNC_INFO);
+            qFatal("%s: inputFile must be a valid QFile pointer", Q_FUNC_INFO);
         if (!inputFile->isOpen())
             qFatal("%s: inputFile must be opened by the caller", Q_FUNC_INFO);
         if (mode != ParseIncrementally && mode != ParseSinglePass)
             qFatal("%s: mode must be either ParseIncrementally or ParseSinglePass", Q_FUNC_INFO);
+        if (!inputFile->seek(0))
+            qFatal("%s: could not seek to the beginning of the file", Q_FUNC_INFO);
 
         if(mode == ParseIncrementally)
         {
@@ -503,8 +505,8 @@ public:
 
                 if(bufferPos < buffer.size())
                 {
-                    ++bufferPos;
                     reader.addData(QByteArray(buffer.data() + bufferPos, 1));
+                    ++bufferPos;
                 }
                 else
                     break;
