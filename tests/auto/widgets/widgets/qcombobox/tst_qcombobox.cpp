@@ -250,9 +250,11 @@ void tst_QComboBox::getSetCheck()
 
     // QCompleter *QComboBox::completer()
     // void QComboBox::setCompleter(QCompleter *)
+    QTest::ignoreMessage(QtWarningMsg, "Setting a QCompleter on non-editable QComboBox is not allowed.");
     obj1.setCompleter(nullptr);
     QCOMPARE(nullptr, obj1.completer());
     QCompleter completer;
+    QTest::ignoreMessage(QtWarningMsg, "Setting a QCompleter on non-editable QComboBox is not allowed.");
     obj1.setCompleter(&completer);
     QVERIFY(obj1.completer() == nullptr); // no QLineEdit is set
 
