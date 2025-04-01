@@ -861,7 +861,7 @@ void QAbstractItemView::setItemDelegate(QAbstractItemDelegate *delegate)
 
     if (d->itemDelegate) {
         if (d->delegateRefCount(d->itemDelegate) == 1)
-            d->disconnectDelegate(delegate);
+            d->disconnectDelegate(d->itemDelegate);
     }
 
     if (delegate) {
