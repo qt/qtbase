@@ -3406,6 +3406,10 @@ void tst_QDateTime::fromStringStringFormat_data()
     QTest::newRow("UTC:min")
             << u"0100 Jan 1 00:00:00 +00:00"_s << u"yyyy MMM d HH:mm:ss t"_s << 100
             << QDate(100, 1, 1).startOfDay(QTimeZone::UTC);
+    // Reproducer for QTBUG-135382:
+    QTest::newRow("year-zero")
+            << u"0000-01-01T00:00:00.000"_s << u"yyyy-MM-ddThh:mm:ss.zzz"_s << 1900
+            << QDateTime();
 
     // fuzzer test
     QTest::newRow("integer overflow found by fuzzer")

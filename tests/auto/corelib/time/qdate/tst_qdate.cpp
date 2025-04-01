@@ -1246,6 +1246,7 @@ void tst_QDate::fromStringDateFormat_data()
     QTest::newRow("iso8") << QString("2000-01-01blah")  << Qt::ISODate << QDate(2000, 1, 1);
     QTest::newRow("iso9") << QString("-001-01-01")      << Qt::ISODate << QDate();
     QTest::newRow("iso10") << QString("99999-01-01")    << Qt::ISODate << QDate();
+    QTest::newRow("iso-yr-0") << QString("0000-01-01")  << Qt::ISODate << QDate();
 
     // Test Qt::RFC2822Date format (RFC 2822).
     QTest::newRow("RFC 2822") << QString::fromLatin1("13 Feb 1987 13:24:51 +0100")
@@ -1451,6 +1452,13 @@ void tst_QDate::fromStringFormat_data()
             << u"05--2006-21"_s << u"MM-yyyy-dd"_s << 1900 << QDate(-2006, 5, 21);
     QTest::newRow("-ve year: back, dash")
             << u"05-21--2006"_s << u"MM-dd-yyyy"_s << 1900 << QDate(-2006, 5, 21);
+    // zero year number is invalid
+    QTest::newRow("year-zero-front")
+            << u"0000-05-21"_s << u"yyyy-MM-dd"_s << 1900 << QDate();
+    QTest::newRow("year-zero-mid")
+            << u"05-0000-21"_s << u"MM-yyyy-dd"_s << 1900 << QDate();
+    QTest::newRow("year-zero-back")
+            << u"05-21-0000"_s << u"MM-dd-yyyy"_s << 1900 << QDate();
     // negative three digit year numbers should be rejected:
     QTest::newRow("-ve 3digit year: front")
             << u"-206-05-21"_s << u"yyyy-MM-dd"_s << 1900 << QDate();
