@@ -10,5 +10,5 @@
     \brief The Table Model example shows how to use a specialized SQL table model with table
     views to edit information in a database.
 
-    \borderedimage tablemodel-example.png
+    \image tablemodel-example.png {The user is able to edit fields in Table Model View 1, and these changes are propagated to Table Model View 2}
 */

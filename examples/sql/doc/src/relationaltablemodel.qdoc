@@ -10,5 +10,5 @@
     \brief The Relational Table Model example shows how to use table views with a relational
     model to visualize the relations between items in a database.
 
-    \borderedimage relationaltablemodel-example.png
+    \image relationaltablemodel-example.png {The main window displays the relationship between a user's name, the city that that they are from, as well as the corresponding country}
 */

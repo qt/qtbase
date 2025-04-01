@@ -347,7 +347,7 @@ void QSqlRelationalTableModelPrivate::clearCache()
     QSqlRelationalDelegate to provide tables with foreign key
     support.
 
-    \image relationaltable.png
+    \image relationaltable.png {The user is able to edit a foreign key in a relational table}
 
     Notes:
 

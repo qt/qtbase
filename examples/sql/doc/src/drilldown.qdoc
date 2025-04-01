@@ -11,7 +11,7 @@
     well as submit changes, using the QSqlRelationalTableModel and
     QDataWidgetMapper classes.
 
-    \borderedimage drilldown-example.png Screenshot of the Drill Down Example
+    \image drilldown-example.png {The main window displays user-selectable images of the Qt, Qt Quick, Qt Creator and Qt Project products}
 
     When running the example application, a user can retrieve
     information about each item by clicking the corresponding image.

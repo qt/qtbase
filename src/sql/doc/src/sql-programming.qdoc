@@ -565,7 +565,7 @@
     using QDataWidgetMapper with an SQL model is as simple as using it with
     any other table model.
 
-    \image qdatawidgetmapper-simple.png
+    \image qdatawidgetmapper-simple.png {The table depicts the relationship between the different fields}
 
     The \l{books}{Books} example shows how information can
     be presented for easy access by using QDataWidgetMapper and a set of

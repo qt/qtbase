@@ -13,9 +13,9 @@
     database, while each album's tracks are stored in an XML
     file.
 
-    The example also shows how to add as well as remove data from both
+    The example also shows how to add, as well as remove data from both
     the database and the associated XML file using the API provided by
     the Qt SQL and Qt XML modules, respectively.
 
-    \borderedimage masterdetail-example.png
+    \image masterdetail-example.png {The main window displays artist and album information from the database, together with the album tracks stored in an XML file}
 */
