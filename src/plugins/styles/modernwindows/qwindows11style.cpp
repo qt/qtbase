@@ -7,6 +7,7 @@
 #include <private/qstyle_p.h>
 #include <private/qstylehelper_p.h>
 #include <private/qapplication_p.h>
+#include <private/qcombobox_p.h>
 #include <qstyleoption.h>
 #include <qpainter.h>
 #include <QGraphicsDropShadowEffect>
@@ -978,7 +979,7 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
             if (frame->frameShape == QFrame::NoFrame)
                 break;
             QRectF rect = option->rect.adjusted(1,1,-1,-1);
-            if (widget && widget->inherits("QComboBoxPrivateContainer")) {
+            if (qobject_cast<const QComboBoxPrivateContainer *>(widget)) {
                 painter->setPen(Qt::NoPen);
                 painter->setBrush(WINUI3Colors[colorSchemeIndex][menuPanelFill]);
                 painter->drawRoundedRect(rect, secondLevelRoundingRadius, secondLevelRoundingRadius);
@@ -1853,8 +1854,7 @@ QRect QWindows11Style::subElementRect(QStyle::SubElement element, const QStyleOp
         if (const auto *item = qstyleoption_cast<const QStyleOptionViewItem *>(option)) {
             const int decorationOffset = item->features.testFlag(QStyleOptionViewItem::HasDecoration) ? item->decorationSize.width() : 0;
             const int checkboxOffset = item->features.testFlag(QStyleOptionViewItem::HasCheckIndicator) ? 16 : 0;
-            if (widget && widget->parentWidget()
-             && widget->parentWidget()->inherits("QComboBoxPrivateContainer")) {
+            if (widget && qobject_cast<QComboBoxPrivateContainer *>(widget->parentWidget())) {
                 if (option->direction == Qt::LeftToRight)
                     ret = option->rect.adjusted(decorationOffset + checkboxOffset + 5, 0, -5, 0);
                 else
@@ -2197,7 +2197,8 @@ void QWindows11Style::polish(QWidget* widget)
     if (!qobject_cast<QCommandLinkButton *>(widget))
         QWindowsVistaStyle::polish(widget);
     const bool isScrollBar = qobject_cast<QScrollBar *>(widget);
-    if (isScrollBar || qobject_cast<QMenu *>(widget) || widget->inherits("QComboBoxPrivateContainer")) {
+    const auto comboBoxContainer = qobject_cast<const QComboBoxPrivateContainer *>(widget);
+    if (isScrollBar || qobject_cast<QMenu *>(widget) || comboBoxContainer) {
         bool wasCreated = widget->testAttribute(Qt::WA_WState_Created);
         bool layoutDirection = widget->testAttribute(Qt::WA_RightToLeft);
         widget->setAttribute(Qt::WA_OpaquePaintEvent,false);
