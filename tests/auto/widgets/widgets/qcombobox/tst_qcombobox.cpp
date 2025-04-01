@@ -3490,6 +3490,7 @@ void tst_QComboBox::popupPositionAfterStyleChange()
         QSKIP("Flaky on QEMU, QTBUG-114760");
 
     box.addItems({"first", "middle", "last"});
+    centerOnScreen(&box);
     box.show();
     QVERIFY(QTest::qWaitForWindowExposed(&box));
     box.showPopup();
