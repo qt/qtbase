@@ -384,8 +384,19 @@ QSize QComboBoxPrivate::recomputeSizeHint(QSize &sh) const
             for (int i = 0; i < count && !hasIcon; ++i)
                 hasIcon = !q->itemIcon(i).isNull();
         }
-        if (minimumContentsLength > 0)
-            sh.setWidth(qMax(sh.width(), minimumContentsLength * fm.horizontalAdvance(u'X') + (hasIcon ? iconSize.width() + 4 : 0)));
+        if (minimumContentsLength > 0) {
+            auto r = qint64{minimumContentsLength} * fm.horizontalAdvance(u'X');
+            if (hasIcon)
+                r += iconSize.width() + 4;
+            if (r <= QWIDGETSIZE_MAX) {
+                sh.setWidth(qMax(sh.width(), int(r)));
+            } else {
+                qWarning("QComboBox: cannot take minimumContentsLength %d into account for sizeHint(), "
+                         "since it causes the widget to be wider than QWIDGETSIZE_MAX. "
+                         "Consider setting it to a less extreme value.",
+                         minimumContentsLength);
+            }
+        }
         if (!placeholderText.isEmpty())
             sh.setWidth(qMax(sh.width(), fm.boundingRect(placeholderText).width()));
 

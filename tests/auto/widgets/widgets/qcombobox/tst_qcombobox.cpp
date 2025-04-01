@@ -297,6 +297,10 @@ void tst_QComboBox::getSetCheck()
     QCOMPARE(100, obj1.minimumContentsLength());
     obj1.setMinimumContentsLength(INT_MIN);
     QCOMPARE(100, obj1.minimumContentsLength()); // Cannot be set to something negative => old value
+    QTest::ignoreMessage(QtWarningMsg, // not necessarily here, but upon first sizeHint() call
+                         "QComboBox: cannot take minimumContentsLength 2147483647 into account for sizeHint(), "
+                         "since it causes the widget to be wider than QWIDGETSIZE_MAX. "
+                         "Consider setting it to a less extreme value.");
     obj1.setMinimumContentsLength(INT_MAX);
     QCOMPARE(INT_MAX, obj1.minimumContentsLength());
 
