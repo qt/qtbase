@@ -71,6 +71,7 @@ SOURCES += \
     $$PWD/src/hb-buffer-verify.cc
 
 HEADERS += \
+    $$PWD/src/hb-bit-vector.hh \
     $$PWD/src/hb-buffer-deserialize-json.hh \
     $$PWD/src/hb-buffer-deserialize-text-glyphs.hh \
     $$PWD/src/hb-buffer-deserialize-text-unicode.hh \
@@ -234,6 +235,7 @@ contains(SHAPERS, coretext) {
     DEFINES += HAVE_CORETEXT
 
     SOURCES += \
+        $$PWD/src/hb-coretext.cc \
         $$PWD/src/hb-coretext-font.cc \
         $$PWD/src/hb-coretext-shape.cc
 
