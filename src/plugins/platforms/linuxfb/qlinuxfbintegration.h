@@ -56,7 +56,9 @@ private:
     mutable QScopedPointer<QPlatformServices> m_services;
     QScopedPointer<QFbVtHandler> m_vtHandler;
 
-    QEvdevKeyboardManager *m_kbdMgr;
+#if QT_CONFIG(evdev)
+    QEvdevKeyboardManager *m_kbdMgr = nullptr;
+#endif
 };
 
 QT_END_NAMESPACE

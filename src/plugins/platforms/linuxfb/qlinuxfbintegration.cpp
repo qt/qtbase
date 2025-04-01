@@ -40,8 +40,7 @@ using namespace Qt::StringLiterals;
 
 QLinuxFbIntegration::QLinuxFbIntegration(const QStringList &paramList)
     : m_primaryScreen(nullptr),
-      m_fontDb(new QGenericUnixFontDatabase),
-      m_kbdMgr(nullptr)
+      m_fontDb(new QGenericUnixFontDatabase)
 {
 #if QT_CONFIG(kms)
     if (qEnvironmentVariableIntValue("QT_QPA_FB_DRM") != 0)
