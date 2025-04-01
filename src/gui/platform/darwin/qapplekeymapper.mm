@@ -535,9 +535,14 @@ QList<QKeyCombination> QAppleKeyMapper::possibleKeyCombinations(const QKeyEvent 
         // modifier layer in all/most keyboard layouts contains a Latin
         // layer. We then combine that with the modifiers of the event
         // to produce the resulting "Latin" key combination.
-        static constexpr int kCommandLayer = 2;
-        ret << QKeyCombination::fromCombined(
-            int(eventModifiers) + int(keyMap[kCommandLayer]));
+
+        // Depending on whether Qt::AA_MacDontSwapCtrlAndMeta is set or not
+        // the index of the Command layer in modifierCombinations will differ.
+        const int commandLayer = qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta) ? 8 : 2;
+        // FIXME: We don't clear the key map when Qt::AA_MacDontSwapCtrlAndMeta
+        // is set, so changing Qt::AA_MacDontSwapCtrlAndMeta at runtime will
+        // fail once we've built the key map.
+        ret << QKeyCombination::fromCombined(int(eventModifiers) + int(keyMap[commandLayer]));
 
         // If the unmodified key is outside of Latin1, we also treat
         // that as a valid key combination, even if AppKit natively
