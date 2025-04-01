@@ -1359,7 +1359,13 @@ QDockWidget::QDockWidget(const QString &title, QWidget *parent, Qt::WindowFlags 
     Destroys the dock widget.
 */
 QDockWidget::~QDockWidget()
-{ }
+{
+    // Do all the unregistering while we're still a QDockWidget. Otherwise, it
+    // would be ~QObject() which does that and then QDockAreaLayout::takeAt(),
+    // acting on QEvent::ChildRemoved, will try to access our QWidget-ness when
+    // replacing us with a QPlaceHolderItem, causing UB:
+    setParent(nullptr);
+}
 
 /*!
     Returns the widget for the dock widget. This function returns zero
