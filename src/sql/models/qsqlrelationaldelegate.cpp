@@ -23,7 +23,7 @@ QT_BEGIN_NAMESPACE
     conjunction with QSqlRelationalTableModel to provide tables with
     foreign key support.
 
-    \image relationaltable.png
+    \image relationaltable.png {The user is able to edit a foreign key in a relational table}
 
     \sa QSqlRelationalTableModel, {Model/View Programming}
 */

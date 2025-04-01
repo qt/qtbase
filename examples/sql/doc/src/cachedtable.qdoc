@@ -11,7 +11,7 @@
     caching any changes to the data until the user explicitly submits them using a
     push button.
 
-    \borderedimage cachedtable-example.png
+    \image cachedtable-example.png {The user updates a cell in the table, and selects the submit button to apply the change in the database}
 
     The example consists of a single class, \c TableEditor, which is a
     custom dialog widget that allows the user to modify data stored in

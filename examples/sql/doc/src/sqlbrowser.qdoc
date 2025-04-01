@@ -10,5 +10,5 @@
     \brief The SQL Browser example shows how a data browser can be used to visualize
     the results of SQL statements on a live database.
 
-    \borderedimage sqlbrowser-demo.png
+    \image sqlbrowser-demo.png {The main window depicts the connected database together with the items in the database. The user is able to generate an SQL query and submit it.}
 */

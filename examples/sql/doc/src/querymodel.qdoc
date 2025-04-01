@@ -11,5 +11,5 @@
     data obtained from a SQL query, using a model that encapsulates
     the query and table views to display the results.
 
-    \borderedimage querymodel-example.png
+    \image querymodel-example.png {The user can create different query models, from a Plain Query Model, to models that can be edited and customized further}
 */
