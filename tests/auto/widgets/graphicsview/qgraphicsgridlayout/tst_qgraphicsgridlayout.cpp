@@ -441,6 +441,7 @@ void tst_QGraphicsGridLayout::addItem()
     }
     layout->addItem(wid, row, column, rowSpan, columnSpan, alignment);
 
+    delete wid;
     delete layout;
 }
 
