@@ -1211,6 +1211,7 @@ void tst_QGraphicsGridLayout::rowCount()
     // with spans and holes...
     widget->setLayout(0);
     layout = new QGraphicsGridLayout();
+    widget->setLayout(layout);
     populateLayoutWithSpansAndHoles(layout, hasHeightForWidth);
     QCOMPARE(layout->rowCount(), 2);
     QCOMPARE(layout->columnCount(), 3);
