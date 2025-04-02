@@ -606,6 +606,7 @@ void tst_QGraphicsGridLayout::columnCount()
     // ### Talk with Jasmin. Not sure if removeAt() should adjust columnCount().
     widget->setLayout(0);
     layout = new QGraphicsGridLayout();
+    widget->setLayout(layout);
     populateLayout(layout, 3, 2, hasHeightForWidth);
     QCOMPARE(layout->columnCount(), 3);
     layout->removeAt(5);
