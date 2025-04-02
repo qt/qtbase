@@ -11,6 +11,7 @@
 #include <QtCore/qtextstream.h>
 #include <QtCore/qdir.h>
 #include <QtCore/qcoreapplication.h>
+#include <QtCore/qscopedvaluerollback.h>
 
 #if QT_CONFIG(settings)
 #include <QtCore/qsettings.h>
@@ -422,6 +423,10 @@ QLoggingRegistry::installFilter(QLoggingCategory::CategoryFilter filter)
 
 QLoggingRegistry *QLoggingRegistry::instance()
 {
+    Q_CONSTINIT thread_local bool recursionGuard = false;
+    if (recursionGuard)
+        return nullptr;
+    QScopedValueRollback<bool> rollback(recursionGuard, true);
     return qtLoggingRegistry();
 }
 
