@@ -1259,8 +1259,6 @@ void tst_QGraphicsGridLayout::rowMaximumHeight()
     QCOMPARE(layout->itemAt(1,1)->geometry().height(), 25.0);
     QCOMPARE(layout->itemAt(2,0)->geometry().height(), 25.0);
     QCOMPARE(layout->itemAt(2,1)->geometry().height(), 25.0);
-
-    delete widget;
 }
 
 void tst_QGraphicsGridLayout::rowMinimumHeight_data()
