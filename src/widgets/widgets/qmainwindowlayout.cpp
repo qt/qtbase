@@ -2033,7 +2033,9 @@ void QMainWindowTabBar::mouseMoveEvent(QMouseEvent *e)
 
 QMainWindowTabBar::~QMainWindowTabBar()
 {
-    if (!mainWindow || mainWindow == parentWidget())
+    // Use qobject_cast to verify that we are not already in the (QWidget)
+    // destructor of mainWindow
+    if (!qobject_cast<QMainWindow *>(mainWindow) || mainWindow == parentWidget())
         return;
 
     // tab bar is not parented to the main window
