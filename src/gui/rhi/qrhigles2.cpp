@@ -6612,18 +6612,11 @@ bool QGles2GraphicsPipeline::create()
             // force replacing existing cache entry (if there is one, then
             // something is wrong with it, as there was no hit)
             rhiD->trySaveToPipelineCache(program, cacheKey, true);
+        } else {
+            // legacy QOpenGLShaderProgram style behavior: the "pipeline cache"
+            // was not enabled, so instead store to the Qt 5 disk cache
+            rhiD->trySaveToDiskCache(program, cacheKey);
         }
-        // legacy QOpenGLShaderProgram style behavior: do this always, even
-        // though it is superfluous with the "pipeline cache" enabled. Continue
-        // storing to the Qt 5 style individual-file disk cache, because there
-        // is no guarantee one retrieves the "pipeline cache" blob and writes it
-        // out. Classic example: if Qt Quick only retrieves and stores the
-        // combined cache contents when exiting, applications that never exit
-        // cleanly (because they are killed, Ctrl+C'd, etc.) never store any
-        // program binaries! Therefore, to maintain Qt 5 behavioral
-        // compatibility, continue writing out the individual files no matter
-        // what.
-        rhiD->trySaveToDiskCache(program, cacheKey);
     } else {
         Q_ASSERT(cacheResult == QRhiGles2::ProgramCacheHit);
         if (rhiD->rhiFlags.testFlag(QRhi::EnablePipelineCacheDataSave)) {
@@ -6739,9 +6732,11 @@ bool QGles2ComputePipeline::create()
             // force replacing existing cache entry (if there is one, then
             // something is wrong with it, as there was no hit)
             rhiD->trySaveToPipelineCache(program, cacheKey, true);
+        } else {
+            // legacy QOpenGLShaderProgram style behavior: the "pipeline cache"
+            // was not enabled, so instead store to the Qt 5 disk cache
+            rhiD->trySaveToDiskCache(program, cacheKey);
         }
-        // legacy QOpenGLShaderProgram style behavior
-        rhiD->trySaveToDiskCache(program, cacheKey);
     } else {
         Q_ASSERT(cacheResult == QRhiGles2::ProgramCacheHit);
         if (rhiD->rhiFlags.testFlag(QRhi::EnablePipelineCacheDataSave)) {
