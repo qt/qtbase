@@ -864,6 +864,8 @@ void tst_QGraphicsGridLayout::columnSpacing()
         // don't include items and spacings that was previously part of the layout
         // (horizontal)
         QGraphicsGridLayout *layout = new QGraphicsGridLayout;
+        QGraphicsWidget parent;
+        parent.setLayout(layout);
         populateLayout(layout, 3, 1);
         layout->setContentsMargins(0, 0, 0, 0);
         layout->setSpacing(0);
@@ -876,12 +878,13 @@ void tst_QGraphicsGridLayout::columnSpacing()
         QCOMPARE(layout->preferredSize(), QSizeF(60, 25));
         layout->removeAt(1);
         QCOMPARE(layout->preferredSize(), QSizeF(25, 25));
-        delete layout;
     }
     {
         // don't include items and spacings that was previously part of the layout
         // (vertical)
         QGraphicsGridLayout *layout = new QGraphicsGridLayout;
+        QGraphicsWidget parent;
+        parent.setLayout(layout);
         populateLayout(layout, 2, 2);
         layout->setContentsMargins(0, 0, 0, 0);
         layout->setSpacing(0);
@@ -896,7 +899,6 @@ void tst_QGraphicsGridLayout::columnSpacing()
         QCOMPARE(layout->preferredSize(), QSizeF(60, 25));
         layout->removeAt(1);
         QCOMPARE(layout->preferredSize(), QSizeF(25, 25));
-        delete layout;
     }
 
 }
