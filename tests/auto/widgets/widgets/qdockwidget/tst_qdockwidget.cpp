@@ -42,6 +42,7 @@ private slots:
     void widget();
     void features();
     void setFloating();
+    void setFloatingReparenting();
     void allowedAreas();
     void toggleViewAction();
     void visibilityChanged();
@@ -463,8 +464,14 @@ void tst_QDockWidget::setFloating()
     dw.setFloating(dw.isFloating());
     QCOMPARE(spy.size(), 0);
     spy.clear();
+}
 
-#if defined(QT_BUILD_INTERNAL) && !defined(Q_OS_WIN)
+void tst_QDockWidget::setFloatingReparenting()
+{
+#ifdef Q_OS_WIN
+    QSKIP("Test skipped on Windows platforms");
+#endif // Q_OS_WIN
+#ifdef QT_BUILD_INTERNAL
     // Check that setFloating() reparents the dock widget to the main window,
     // in case it has a QDockWidgetGroupWindow parent
     QPointer<QDockWidget> d1;
@@ -479,7 +486,9 @@ void tst_QDockWidget::setFloating()
     d1->setFloating(true);
     QTRY_COMPARE(mainWindow, d1->parentWidget());
     QTRY_COMPARE(mainWindow, d2->parentWidget());
-#endif // defined(QT_BUILD_INTERNAL) && !defined(Q_OS_WIN)
+#else
+    QSKIP("test requires -developer-build option");
+#endif // defined(QT_BUILD_INTERNAL)
 }
 
 void tst_QDockWidget::allowedAreas()
