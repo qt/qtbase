@@ -2726,6 +2726,11 @@ QMainWindowLayout::~QMainWindowLayout()
     layoutState.deleteCentralWidgetItem();
 
     delete statusbar;
+
+    // unusedTabBars contains unparented tab bars, which need to be removed manually.
+    // ~QMainWindowTabBar() removes the bar from unusedTabBars => call qDeleteAll() on a copy.
+    const auto bars = unusedTabBars;
+    qDeleteAll(bars);
 }
 
 void QMainWindowLayout::setDockOptions(QMainWindow::DockOptions opts)
