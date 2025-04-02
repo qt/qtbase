@@ -440,6 +440,9 @@
 #ifndef __has_attribute
 #  define __has_attribute(x)           0
 #endif
+#ifndef __has_c_attribute
+#  define __has_c_attribute(x)         0
+#endif
 #ifndef __has_cpp_attribute
 #  define __has_cpp_attribute(x)       0
 #endif
@@ -957,18 +960,19 @@
 # endif
 #endif
 
-#if __has_cpp_attribute(nodiscard) && (!defined(Q_CC_CLANG) || __cplusplus > 201402L) // P0188R1
-// Can't use [[nodiscard]] with Clang and C++11/14, see https://bugs.llvm.org/show_bug.cgi?id=33518
+#if (defined(__cplusplus) && __has_cpp_attribute(nodiscard) /* P0188R1 */) || \
+    (!defined(__cplusplus) && __has_c_attribute(nodiscard) /* N2267 */)
 #  undef Q_REQUIRED_RESULT
 #  define Q_REQUIRED_RESULT [[nodiscard]]
 #endif
 
-#if __has_cpp_attribute(nodiscard) >= 201907L /* used for both P1771 and P1301... */
+#if (defined(__cplusplus) && __has_cpp_attribute(nodiscard) >= 201907L /* used for both P1771 and P1301... */) \
+    || (!defined(__cplusplus) && __has_c_attribute(nodiscard) /* N2448 */)
 // [[nodiscard]] constructor (P1771)
 #  ifndef Q_NODISCARD_CTOR
 #    define Q_NODISCARD_CTOR [[nodiscard]]
 #  endif
-// [[nodiscard("reason")]] (P1301)
+// [[nodiscard("reason")]] (P1301, N2448 for C)
 #  ifndef Q_NODISCARD_X
 #    define Q_NODISCARD_X(message) [[nodiscard(message)]]
 #  endif
@@ -977,17 +981,20 @@
 #  endif
 #endif
 
-#if __has_cpp_attribute(maybe_unused)
+#if (defined(__cplusplus) && __has_cpp_attribute(maybe_unused)) || \
+    (!defined(__cplusplus) && __has_c_attribute(maybe_unused))
 #  undef Q_DECL_UNUSED
 #  define Q_DECL_UNUSED [[maybe_unused]]
 #endif
 
-#if __has_cpp_attribute(noreturn)
+#if (defined(__cplusplus) && __has_cpp_attribute(noreturn)) || \
+    (!defined(__cplusplus) && __has_c_attribute(noreturn))
 #  undef Q_NORETURN
 #  define Q_NORETURN [[noreturn]]
 #endif
 
-#if __has_cpp_attribute(deprecated)
+#if (defined(__cplusplus) && __has_cpp_attribute(deprecated)) || \
+    (!defined(__cplusplus) && __has_c_attribute(deprecated))
 #  ifdef Q_DECL_DEPRECATED
 #    undef Q_DECL_DEPRECATED
 #  endif
@@ -1257,7 +1264,11 @@
 #elif __has_cpp_attribute(fallthrough)
 #  define Q_FALLTHROUGH() [[fallthrough]]
 #endif
-#endif
+#else // !defined(__cplusplus)
+#  if __has_c_attribute(fallthrough)
+#    define Q_FALLTHROUGH() [[fallthrough]]
+#  endif
+#endif // !defined(__cplusplus)
 #ifndef Q_FALLTHROUGH
 #  ifdef Q_CC_GNU
 #    define Q_FALLTHROUGH() __attribute__((fallthrough))
