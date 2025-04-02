@@ -118,15 +118,18 @@ void QDBusMenuBar::registerMenuBar()
     if (!connection.registerObject(m_objectPath, m_menu))
         return;
 
-    QDBusMenuRegistrarInterface registrar(REGISTRAR_SERVICE, REGISTRAR_PATH, connection, this);
-    QDBusPendingReply<> r = registrar.RegisterWindow(m_window->winId(), QDBusObjectPath(m_objectPath));
-    r.waitForFinished();
-    if (r.isError()) {
-        qWarning("Failed to register window menu, reason: %s (\"%s\")",
-                 qUtf8Printable(r.error().name()), qUtf8Printable(r.error().message()));
-        connection.unregisterObject(m_objectPath);
-        return;
+    if (QGuiApplication::platformName() == "xcb"_L1) {
+        QDBusMenuRegistrarInterface registrar(REGISTRAR_SERVICE, REGISTRAR_PATH, connection, this);
+        QDBusPendingReply<> r = registrar.RegisterWindow(m_window->winId(), QDBusObjectPath(m_objectPath));
+        r.waitForFinished();
+        if (r.isError()) {
+            qWarning("Failed to register window menu, reason: %s (\"%s\")",
+                     qUtf8Printable(r.error().name()), qUtf8Printable(r.error().message()));
+            connection.unregisterObject(m_objectPath);
+            return;
+        }
     }
+
     const auto unixServices = dynamic_cast<QDesktopUnixServices *>(
             QGuiApplicationPrivate::platformIntegration()->services());
     unixServices->registerDBusMenuForWindow(m_window, connection.baseService(), m_objectPath);
@@ -137,12 +140,14 @@ void QDBusMenuBar::unregisterMenuBar()
     QDBusConnection connection = QDBusConnection::sessionBus();
 
     if (m_window) {
-        QDBusMenuRegistrarInterface registrar(REGISTRAR_SERVICE, REGISTRAR_PATH, connection, this);
-        QDBusPendingReply<> r = registrar.UnregisterWindow(m_window->winId());
-        r.waitForFinished();
-        if (r.isError())
-            qWarning("Failed to unregister window menu, reason: %s (\"%s\")",
-                     qUtf8Printable(r.error().name()), qUtf8Printable(r.error().message()));
+        if (QGuiApplication::platformName() == "xcb"_L1) {
+            QDBusMenuRegistrarInterface registrar(REGISTRAR_SERVICE, REGISTRAR_PATH, connection, this);
+            QDBusPendingReply<> r = registrar.UnregisterWindow(m_window->winId());
+            r.waitForFinished();
+            if (r.isError())
+                qWarning("Failed to unregister window menu, reason: %s (\"%s\")",
+                         qUtf8Printable(r.error().name()), qUtf8Printable(r.error().message()));
+        }
 
         const auto unixServices = dynamic_cast<QDesktopUnixServices *>(
             QGuiApplicationPrivate::platformIntegration()->services());
