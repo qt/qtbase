@@ -3175,8 +3175,9 @@ void tst_QGraphicsGridLayout::spanningItem2x2()
     QFETCH(QSizePolicy::Policy, sizePolicy);
     QFETCH(int, itemHeight);
     QFETCH(int, expectedHeight);
-    QGraphicsWidget *form = new QGraphicsWidget(0, Qt::Window);
-    QGraphicsGridLayout *layout = new QGraphicsGridLayout(form);
+
+    QGraphicsWidget form(0, Qt::Window);
+    QGraphicsGridLayout *layout = new QGraphicsGridLayout(&form);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
 
