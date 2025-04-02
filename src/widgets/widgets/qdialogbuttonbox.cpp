@@ -493,6 +493,8 @@ QDialogButtonBox::~QDialogButtonBox()
     // otherwise the connection may kick in on child destruction and reach
     // the parent's destroyed private object
     d->disconnectAll();
+    // ditto event filter:
+    d->filter.reset();
 }
 
 /*!
