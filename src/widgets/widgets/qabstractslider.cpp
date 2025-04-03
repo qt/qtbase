@@ -272,6 +272,7 @@ void QAbstractSlider::setOrientation(Qt::Orientation orientation)
         setSizePolicy(sizePolicy().transposed());
         setAttribute(Qt::WA_WState_OwnSizePolicy, false);
     }
+    sliderChange(SliderOrientationChange);
     update();
     updateGeometry();
 }
