@@ -748,32 +748,6 @@ static const ushort * const pathInIsolation = userNameInIsolation + 5;
 static const ushort * const queryInIsolation = userNameInIsolation + 6;
 static const ushort * const fragmentInIsolation = userNameInIsolation + 7;
 
-static const ushort localPathFromUser[] = {
-    // we force-decode some of the gen-delims, because
-    //    pchar         = unreserved / pct-encoded / sub-delims / ":" / "@"
-    // the gen-delim lines are leave() in qt_urlRecode, so we don't need to
-    // repeat them if we want to keep them decoded
-    // decode(':'), // allowed
-    // decode('@'), // allowed
-    encode(']'),
-    encode('['),
-    // decode('/'), // special and allowed
-    // decode('?'), // handled by path() and others
-    // decode('#'), // ditto
-
-    // the rest is like pathInIsolation above
-    decode('"'),
-    decode('<'),
-    decode('>'),
-    decode('^'),
-    decode('\\'),
-    decode('|'),
-    decode('{'),
-    decode('}'),
-
-    0
-};
-
 static const ushort userNameInUserInfo[] =  {
     encode(':'), // 0
     decode('@'), // 1
@@ -833,9 +807,11 @@ static const ushort * const pathInUrl = userNameInUrl + 5;
 static const ushort * const queryInUrl = userNameInUrl + 6;
 static const ushort * const fragmentInUrl = userNameInUrl + 6;
 
-static inline void parseDecodedComponent(QString &data)
+static inline void parseDecodedComponent(QString &data, QUrlPrivate::Section section)
 {
     data.replace(u'%', "%25"_L1);
+    if (section != QUrlPrivate::Host)
+        data.replace(u'[', "%5B"_L1).replace(u']', "%5D"_L1);
 }
 
 static inline QString
@@ -2135,7 +2111,7 @@ void QUrl::setUserName(const QString &userName, ParsingMode mode)
 
     QString data = userName;
     if (mode == DecodedMode) {
-        parseDecodedComponent(data);
+        parseDecodedComponent(data, QUrlPrivate::UserName);
         mode = TolerantMode;
     }
 
@@ -2198,7 +2174,7 @@ void QUrl::setPassword(const QString &password, ParsingMode mode)
 
     QString data = password;
     if (mode == DecodedMode) {
-        parseDecodedComponent(data);
+        parseDecodedComponent(data, QUrlPrivate::Password);
         mode = TolerantMode;
     }
 
@@ -2260,7 +2236,7 @@ void QUrl::setHost(const QString &host, ParsingMode mode)
 
     QString data = host;
     if (mode == DecodedMode) {
-        parseDecodedComponent(data);
+        parseDecodedComponent(data, QUrlPrivate::Host);
         mode = TolerantMode;
     }
 
@@ -2385,7 +2361,7 @@ void QUrl::setPath(const QString &path, ParsingMode mode)
 
     QString data = path;
     if (mode == DecodedMode) {
-        parseDecodedComponent(data);
+        parseDecodedComponent(data, QUrlPrivate::Path);
         mode = TolerantMode;
     }
 
@@ -2521,7 +2497,7 @@ void QUrl::setQuery(const QString &query, ParsingMode mode)
 
     QString data = query;
     if (mode == DecodedMode) {
-        parseDecodedComponent(data);
+        parseDecodedComponent(data, QUrlPrivate::Query);
         mode = TolerantMode;
     }
 
@@ -2619,7 +2595,7 @@ void QUrl::setFragment(const QString &fragment, ParsingMode mode)
 
     QString data = fragment;
     if (mode == DecodedMode) {
-        parseDecodedComponent(data);
+        parseDecodedComponent(data, QUrlPrivate::Fragment);
         mode = TolerantMode;
     }
 
@@ -3386,11 +3362,7 @@ QUrl QUrl::fromLocalFile(const QString &localFile)
     }
 
     url.setScheme(scheme);
-
-    // not directly using setPath here, as we do a few more transforms
-    parseDecodedComponent(deslashified);
-    if (!qt_urlRecode(url.d->path, deslashified, {}, localPathFromUser))
-        url.d->path = std::move(deslashified);
+    url.setPath(deslashified, DecodedMode);
 
     return url;
 }
