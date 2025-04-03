@@ -337,7 +337,7 @@ private:
         std::string ssgHeadersFilter;
         std::string privateHeadersFilter;
         std::string publicNamespaceFilter;
-        static std::unordered_map<std::string, CommandLineOption<std::string>> stringArgumentMap = {
+        const std::unordered_map<std::string, CommandLineOption<std::string>> stringArgumentMap = {
             { "-module", { &m_moduleName } },
             { "-sourceDir", { &m_sourceDir } },
             { "-binaryDir", { &m_binaryDir } },
@@ -356,14 +356,14 @@ private:
             { "-publicNamespaceFilter", { &publicNamespaceFilter, true } },
         };
 
-        static const std::unordered_map<std::string, CommandLineOption<std::set<std::string>>>
+        const std::unordered_map<std::string, CommandLineOption<std::set<std::string>>>
                 listArgumentMap = {
                     { "-headers", { &m_headers, true } },
                     { "-generatedHeaders", { &m_generatedHeaders, true } },
                     { "-knownModules", { &m_knownModules, true } },
                 };
 
-        static const std::unordered_map<std::string, CommandLineOption<bool>> boolArgumentMap = {
+        const std::unordered_map<std::string, CommandLineOption<bool>> boolArgumentMap = {
             { "-nonQt", { &m_isNonQtModule, true } }, { "-debug", { &m_debug, true } },
             { "-help", { &m_printHelpOnly, true } },
             { "-internal", { &m_isInternal, true } }, { "-all", { &m_scanAllMode, true } },
@@ -375,7 +375,7 @@ private:
         std::string *currentValue = nullptr;
         std::set<std::string> *currentListValue = nullptr;
 
-        auto parseArgument = [&currentValue, &currentListValue](const std::string &arg) -> bool {
+        auto parseArgument = [&](const std::string &arg) -> bool {
             if (arg[0] == '-') {
                 currentValue = nullptr;
                 currentListValue = nullptr;
@@ -502,7 +502,7 @@ private:
     // Convert all paths from command line to a generic one.
     void normilizePaths()
     {
-        const std::array<std::string *, 9> paths = {
+        const std::array paths = {
             &m_sourceDir,         &m_binaryDir,         &m_includeDir,
             &m_installIncludeDir, &m_privateIncludeDir, &m_qpaIncludeDir,
             &m_rhiIncludeDir,     &m_stagingDir,        &m_versionScriptFile,
@@ -1565,7 +1565,7 @@ public:
     [[nodiscard]] bool generateDeprecatedHeaders()
     {
         static std::regex cIdentifierSymbolsRegex("[^a-zA-Z0-9_]");
-        static std::string guard_base = "DEPRECATED_HEADER_" + m_commandLineArgs->moduleName();
+        const std::string guard_base = "DEPRECATED_HEADER_" + m_commandLineArgs->moduleName();
         bool result = true;
         for (auto it = m_deprecatedHeaders.begin(); it != m_deprecatedHeaders.end(); ++it) {
             const std::string &descriptor = it->first;
