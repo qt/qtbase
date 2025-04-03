@@ -11,7 +11,8 @@
     The Remote Controlled Car example shows how to use \l{Qt D-Bus} to control
     one application from another.
 
-    \image remotecontrolledcar-car-example.webp
+    \image remotecontrolledcar-car-example.webp {The two example applications,
+                                                 `car` and `controller`, running at the same time.}
 
     \include examples-run.qdocinc
 */

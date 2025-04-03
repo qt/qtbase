@@ -115,7 +115,7 @@
     If we continue our analogy with Web services, object paths
     equate to the path part of a URL:
 
-    \image qurl-ftppath.png
+    \image qurl-ftppath.png {Path in a URL.}
 
     Like them, object paths in D-Bus are formed resembling path
     names on the filesystem: they are slash-separated labels, each
