@@ -681,7 +681,7 @@ bool QDockWidgetGroupWindow::eventFilter(QObject *obj, QEvent *event)
     case QEvent::Close:
         // We don't want closed dock widgets in a floating tab
         // => dock it to the main dock, before closing;
-        reparent(dockWidget);
+        reparentToMainWindow(dockWidget);
         dockWidget->setFloating(false);
         break;
 
@@ -726,7 +726,7 @@ void QDockWidgetGroupWindow::destroyIfSingleItemLeft()
     QDockAreaLayoutInfo &parentInfo = mwLayout->layoutState.dockAreaLayout.docks[layoutInfo()->dockPos];
 
     // Re-parent last dock widget
-    reparent(lastDockWidget);
+    reparentToMainWindow(lastDockWidget);
 
     // the group window could still have placeholder items => clear everything
     layoutInfo()->item_list.clear();
@@ -736,7 +736,7 @@ void QDockWidgetGroupWindow::destroyIfSingleItemLeft()
     destroyOrHideIfEmpty();
 }
 
-void QDockWidgetGroupWindow::reparent(QDockWidget *dockWidget)
+void QDockWidgetGroupWindow::reparentToMainWindow(QDockWidget *dockWidget)
 {
     // reparent a dockWidget to the main window
     // - remove it from the floating dock's layout info
