@@ -12,7 +12,8 @@
     among instances of an application. Users connect and send messages to
     each other.
 
-    \image dbus-chat-example.webp
+    \image dbus-chat-example.webp {Two instances of the D-Bus Chat example
+                                   running at the same time.}
 
     \include examples-run.qdocinc
 */
