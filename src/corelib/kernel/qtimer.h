@@ -160,6 +160,13 @@ private:
     static constexpr Qt::TimerType defaultTypeFor(int msecs) noexcept
     { return defaultTypeFor(std::chrono::milliseconds{msecs}); }
 
+#if QT_CORE_REMOVED_SINCE(6, 8)
+    static constexpr Qt::TimerType defaultTypeFor(std::chrono::milliseconds interval) noexcept
+    {
+        return defaultTypeFor(std::chrono::nanoseconds{interval});
+    }
+#endif
+
     static constexpr Qt::TimerType defaultTypeFor(std::chrono::nanoseconds interval) noexcept
     {
         // coarse timers are worst in their first firing
