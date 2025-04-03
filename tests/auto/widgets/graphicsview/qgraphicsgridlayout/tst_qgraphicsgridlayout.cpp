@@ -3311,8 +3311,8 @@ void tst_QGraphicsGridLayout::spanningItem()
 
 void tst_QGraphicsGridLayout::spanAcrossEmptyRow()
 {
-    QGraphicsWidget *form = new QGraphicsWidget(0, Qt::Window);
-    QGraphicsGridLayout *layout = new QGraphicsGridLayout(form);
+    const auto form = std::make_unique<QGraphicsWidget>(nullptr, Qt::Window);
+    QGraphicsGridLayout *layout = new QGraphicsGridLayout(form.get());
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
     RectWidget *w1 = new RectWidget;
