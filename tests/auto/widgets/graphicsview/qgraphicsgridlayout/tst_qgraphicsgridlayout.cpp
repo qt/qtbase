@@ -1111,7 +1111,7 @@ void tst_QGraphicsGridLayout::removeItem()
     QCOMPARE(l->count(), 4);
 
     QTest::ignoreMessage(QtWarningMsg, QString::fromLatin1("QGraphicsGridLayout::removeAt: invalid index -1").toLatin1().constData());
-    l->removeItem(new QGraphicsWidget);
+    l->removeItem(new QGraphicsWidget(widget));
     QCOMPARE(l->count(), 4);
 }
 
