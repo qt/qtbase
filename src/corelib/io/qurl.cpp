@@ -2895,11 +2895,10 @@ QUrl QUrl::adjusted(QUrl::FormattingOptions options) const
         that.setFragment(QString());
     if (options & RemovePath) {
         that.setPath(QString());
-    } else if (options & (StripTrailingSlash | RemoveFilename | NormalizePathSegments)) {
+    } else if (auto pathOpts = options & (StripTrailingSlash | RemoveFilename | NormalizePathSegments)) {
         that.detach();
-        QString path;
-        d->appendPath(path, options | FullyEncoded, QUrlPrivate::Path);
-        that.d->setPath(path, 0, path.size());
+        that.d->path.resize(0);
+        d->appendPath(that.d->path, pathOpts, QUrlPrivate::Path);
     }
     if (that.d->isLocalFile() && that.d->path.startsWith(u'/')) {
         // ensure absolute file URLs have an empty authority to comply with the
