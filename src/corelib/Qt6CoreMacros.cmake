@@ -893,7 +893,7 @@ function(_qt_internal_finalize_source_groups target)
 
         # Include qml files in "Source Files". Can not be done via regex,
         # due to https://gitlab.kitware.com/cmake/cmake/-/issues/25597
-        if(${source_file_path} MATCHES "\\.qml$")
+        if(${source_file_path} MATCHES "(\\.qml$)|(\\.js$)")
             source_group("Source Files" FILES ${source_file_path})
         endif()
 
