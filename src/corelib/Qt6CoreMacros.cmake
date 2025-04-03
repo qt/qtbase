@@ -861,11 +861,6 @@ function(_qt_internal_finalize_target_defer target)
 endfunction()
 
 function(_qt_internal_finalize_source_groups target)
-    if(NOT ("${CMAKE_GENERATOR}" STREQUAL "Xcode"
-         OR "${CMAKE_GENERATOR}" MATCHES "^Visual Studio"))
-        return()
-    endif()
-
     get_target_property(sources ${target} SOURCES)
     if(NOT sources)
         return()
