@@ -1422,6 +1422,11 @@ void tst_QUrl::toLocalFile()
     url.setPath(url.path(QUrl::PrettyDecoded), QUrl::TolerantMode);
     QCOMPARE(url.toLocalFile(), theFile);
     QCOMPARE(url.isLocalFile(), !theFile.isEmpty());
+
+    // local file paths can be fully decoded without loss
+    url.setPath(url.path());
+    QCOMPARE(url.toLocalFile(), theFile);
+    QCOMPARE(url.isLocalFile(), !theFile.isEmpty());
 }
 
 void tst_QUrl::fromLocalFile_data()
@@ -1506,6 +1511,11 @@ void tst_QUrl::fromLocalFile()
 
     // QUrl::PrettyDecoded is still URL-encoded and lossless
     url.setPath(url.path(QUrl::PrettyDecoded), QUrl::TolerantMode);
+    QCOMPARE(url.toString(QUrl::DecodeReserved), theUrl);
+    QCOMPARE(url.path(), thePath);
+
+    // local file paths can be fully decoded without loss
+    url.setPath(url.path());
     QCOMPARE(url.toString(QUrl::DecodeReserved), theUrl);
     QCOMPARE(url.path(), thePath);
 }
@@ -4150,24 +4160,25 @@ void tst_QUrl::setComponents_data()
                                            << int(Scheme) << "http%61" << Decoded << false
                                            << PrettyDecoded << "" << "";
     QTest::newRow("username-encode") << QUrl("http://example.com")
-                                     << int(UserName) << "h%61llo:world" << Decoded << true
-                                     << PrettyDecoded << "h%2561llo:world" << "http://h%2561llo%3Aworld@example.com";
+                                     << int(UserName) << "h%61llo[:]world" << Decoded << true
+                                     << PrettyDecoded << "h%2561llo[:]world" << "http://h%2561llo%5B%3A%5Dworld@example.com";
     QTest::newRow("password-encode") << QUrl("http://example.com")
-                                     << int(Password) << "h%61llo:world@" << Decoded << true
-                                     << PrettyDecoded << "h%2561llo:world@" << "http://:h%2561llo:world%40@example.com";
+                                     << int(Password) << "h%61llo[:]world@" << Decoded << true
+                                     << PrettyDecoded << "h%2561llo[:]world@" << "http://:h%2561llo%5B:%5Dworld%40@example.com";
     // '%' characters are not permitted in the hostname, these test that it fails to set anything
     QTest::newRow("invalid-host-encode") << QUrl("http://example.com")
                                          << int(Host) << "ex%61mple.com" << Decoded << false
                                          << PrettyDecoded << QString() << QString();
+    // square brackets are force-encoded from decoded forms in the path, query, and fragment
     QTest::newRow("path-encode") << QUrl("http://example.com/foo")
-                                 << int(Path) << "/bar%23" << Decoded << true
-                                 << PrettyDecoded << "/bar%2523" << "http://example.com/bar%2523";
+                                 << int(Path) << "/ba[r]%23" << Decoded << true
+                                 << PrettyDecoded << "/ba%5Br%5D%2523" << "http://example.com/ba%5Br%5D%2523";
     QTest::newRow("query-encode") << QUrl("http://example.com/foo?q")
-                                  << int(Query) << "bar%23" << Decoded << true
-                                  << PrettyDecoded << "bar%2523" << "http://example.com/foo?bar%2523";
+                                  << int(Query) << "ba[r]%23" << Decoded << true
+                                  << PrettyDecoded << "ba%5Br%5D%2523" << "http://example.com/foo?ba%5Br%5D%2523";
     QTest::newRow("fragment-encode") << QUrl("http://example.com/foo#z")
-                                     << int(Fragment) << "bar%23" << Decoded << true
-                                     << PrettyDecoded << "bar%2523" << "http://example.com/foo#bar%2523";
+                                     << int(Fragment) << "ba[r]%23" << Decoded << true
+                                     << PrettyDecoded << "ba%5Br%5D%2523" << "http://example.com/foo#ba%5Br%5D%2523";
     // force decoding
     QTest::newRow("username-decode") << QUrl("http://example.com")
                                      << int(UserName) << "hello%3Aworld%25" << Tolerant << true
@@ -4176,8 +4187,8 @@ void tst_QUrl::setComponents_data()
                                      << int(Password) << "}}>b9o%25kR(" << Tolerant << true
                                      << FullyDecoded << "}}>b9o%kR(" << "http://:%7D%7D%3Eb9o%25kR(@example.com";
     QTest::newRow("path-decode") << QUrl("http://example.com/")
-                                 << int(Path) << "/bar%25foo" << Tolerant << true
-                                 << FullyDecoded << "/bar%foo" << "http://example.com/bar%25foo";
+                                 << int(Path) << "/bar%25[foo]" << Tolerant << true
+                                 << FullyDecoded << "/bar%[foo]" << "http://example.com/bar%25[foo]";
     QTest::newRow("query-decode") << QUrl("http://example.com/foo?qq")
                                   << int(Query) << "bar%25foo" << Tolerant << true
                                   << FullyDecoded << "bar%foo" << "http://example.com/foo?bar%25foo";
