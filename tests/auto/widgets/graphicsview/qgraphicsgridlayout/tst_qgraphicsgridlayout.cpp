@@ -33,6 +33,8 @@
 #include <qgraphicsscene.h>
 #include <qgraphicsview.h>
 
+#include <QtCore/private/qmemory_p.h>
+
 class tst_QGraphicsGridLayout : public QObject
 {
     Q_OBJECT
@@ -3345,8 +3347,8 @@ void tst_QGraphicsGridLayout::spanningItem()
 
 void tst_QGraphicsGridLayout::spanAcrossEmptyRow()
 {
-    QGraphicsWidget *form = new QGraphicsWidget(0, Qt::Window);
-    QGraphicsGridLayout *layout = new QGraphicsGridLayout(form);
+    const auto form = qt_make_unique<QGraphicsWidget>(nullptr, Qt::Window);
+    QGraphicsGridLayout *layout = new QGraphicsGridLayout(form.get());
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
     RectWidget *w1 = new RectWidget;
