@@ -854,7 +854,7 @@ void QDockWidgetPrivate::endDrag(EndDragMode mode)
                     // Reparent, if the drag was out of a dock widget group window
                     if (mode == EndDragMode::LocationChange) {
                         if (auto *groupWindow = qobject_cast<QDockWidgetGroupWindow *>(q->parentWidget()))
-                            groupWindow->reparent(q);
+                            groupWindow->reparentToMainWindow(q);
                     }
                 }
                 q->activateWindow();

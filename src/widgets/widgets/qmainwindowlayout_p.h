@@ -363,7 +363,7 @@ public:
     void restore();
     void apply();
     void childEvent(QChildEvent *event) override;
-    void reparent(QDockWidget *dockWidget);
+    void reparentToMainWindow(QDockWidget *dockWidget);
     void destroyIfSingleItemLeft();
     QList<QDockWidget *> dockWidgets() const { return findChildren<QDockWidget *>(); }
 
