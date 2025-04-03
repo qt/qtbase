@@ -536,8 +536,14 @@ endfunction()
 
 # Takes a list of path components and joins them into one path separated by forward slashes "/",
 # and saves the path in out_var.
+# Filters out any path parts that are bare "."s.
 function(_qt_internal_path_join out_var)
-    string(JOIN "/" path ${ARGN})
+    set(args ${ARGN})
+
+    # Remove any bare ".", to avoid any CMP0177 warnings for paths passed to install().
+    list(REMOVE_ITEM args ".")
+
+    string(JOIN "/" path ${args})
     set(${out_var} ${path} PARENT_SCOPE)
 endfunction()
 
