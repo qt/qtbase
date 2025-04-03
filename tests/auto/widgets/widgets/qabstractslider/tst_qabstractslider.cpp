@@ -2139,12 +2139,8 @@ void tst_QAbstractSlider::sliderChange_impl()
 
     sl.setOrientation(sl.orientation() == Qt::Horizontal ? Qt::Vertical
                       /* else */                         : Qt::Horizontal);
-    QEXPECT_FAIL("", "QTBUG-135597", Continue);
     QCOMPARE(sl.changes.size(), 1U);
-    if (!sl.changes.empty()) {
-    QEXPECT_FAIL("", "QTBUG-135597", Continue);
     QCOMPARE(sl.changes.back(), SliderChange::SliderOrientationChange);
-    }
     sl.changes.clear();
 
     sl.setPageStep(1025); // unlikely to be the default ;)
