@@ -2068,6 +2068,10 @@ QVariantList QVariant::toList() const
     type, \a type. Such casting is done automatically when calling the
     toInt(), toBool(), ... methods.
 
+    Note this function operates only on the variant's type, not the contents.
+    It indicates whether there is a conversion path from this variant to \a
+    type, not that the conversion will succeed when attempted.
+
     \sa QMetaType::canConvert()
 */
 
