@@ -13,11 +13,6 @@
     the \l{OpenSSL Toolkit}, or any appropriate TLS plugin to perform encryption
     and protocol handling.
 
-    From Qt version 5.15 onward, the officially supported version for OpenSSL
-    is 1.1.1 or later.
-
-    Qt version 5.15.1 onward is also compatible with OpenSSL 3.
-
     \annotatedlist ssl
 
     For Android applications see \l{Adding OpenSSL Support for Android}.
@@ -34,6 +29,10 @@
     On all platforms, the configuration system checks for the presence of the
     \c{openssl/opensslv.h} header provided by source or developer packages
     of OpenSSL. If found, it will enable and build the OpenSSL backend for Qt.
+
+    \note While Qt can still support the older OpenSSL 1.1.1 version when built
+    from sources, the builds of Qt in the \l{Qt Online Installer} require
+    OpenSSL 3 at runtime.
 
     By default, an OpenSSL-enabled Qt library dynamically loads any installed
     OpenSSL library at run-time. However, it is possible to link against the
