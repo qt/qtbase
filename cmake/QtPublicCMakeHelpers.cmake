@@ -735,6 +735,7 @@ function(_qt_internal_add_transitive_property target type property)
         message(FATAL_ERROR "Attempt to assign unknown TRANSITIVE_${type}_PROPERTIES property")
     endif()
 
+    _qt_internal_dealias_target(target)
     get_target_property(transitive_properties ${target}
         TRANSITIVE_${type}_PROPERTIES)
     if(NOT "${property}" IN_LIST transitive_properties)
