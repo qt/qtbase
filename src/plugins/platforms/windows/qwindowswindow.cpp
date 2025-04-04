@@ -3308,16 +3308,23 @@ bool QWindowsWindow::handleNonClientHitTest(const QPoint &globalPos, LRESULT *re
             const int titleBarHeight = getTitleBarHeight_sys(savedDpi());
             const int titleButtonWidth = titleBarHeight * 1.5;
             int buttons = 1;
+            const bool mouseButtonsSwapped = GetSystemMetrics(SM_SWAPBUTTON);
+            auto mouseButtons = Qt::NoButton;
+            if (mouseButtonsSwapped)
+                mouseButtons = GetAsyncKeyState(VK_LBUTTON) != 0 ? Qt::RightButton : (GetAsyncKeyState(VK_RBUTTON) ? Qt::LeftButton : Qt::NoButton);
+            else
+                mouseButtons = GetAsyncKeyState(VK_LBUTTON) != 0 ? Qt::LeftButton : (GetAsyncKeyState(VK_RBUTTON) ? Qt::RightButton : Qt::NoButton);
+
             if (globalPos.y() < geom.top() + titleBarHeight) {
                 if (m_data.flags.testFlags(Qt::WindowCloseButtonHint) || isDefaultTitleBar) {
                     if ((globalPos.x() > geom.right() - titleButtonWidth * buttons) && (globalPos.x() <= geom.right())) {
-                        if (GetAsyncKeyState(VK_LBUTTON))
+                        if (mouseButtons == Qt::LeftButton)
                             *result = HTCLOSE;
                     }
                     buttons++;
                 } if (m_data.flags.testFlags(Qt::WindowMaximizeButtonHint) || isDefaultTitleBar) {
                     if ((globalPos.x() > geom.right() - titleButtonWidth * buttons) && (globalPos.x() <= geom.right() - titleButtonWidth * (buttons-1))){
-                        if (GetAsyncKeyState(VK_LBUTTON)) {
+                        if (mouseButtons == Qt::LeftButton) {
                             if (IsZoomed(m_data.hwnd))
                                 *result = HTSIZE;
                             else
@@ -3327,18 +3334,17 @@ bool QWindowsWindow::handleNonClientHitTest(const QPoint &globalPos, LRESULT *re
                     buttons++;
                 } if (m_data.flags.testFlags(Qt::WindowMinimizeButtonHint) || isDefaultTitleBar) {
                     if ((globalPos.x() > geom.right() - titleButtonWidth * buttons) && (globalPos.x() <= geom.right() - titleButtonWidth * (buttons-1))){
-                        if (GetAsyncKeyState(VK_LBUTTON))
+                        if (mouseButtons == Qt::LeftButton)
                             *result = HTMINBUTTON;
                     }
                     buttons++;
                 } if ((isCustomized || isDefaultTitleBar) &&
                       *result == HTCLIENT){
                     QWindow* wnd = window();
-                    auto buttons = GetAsyncKeyState(VK_LBUTTON) != 0 ? Qt::LeftButton : Qt::NoButton;
-                    if (buttons != Qt::NoButton) {
-                        QMouseEvent event(QEvent::MouseButtonPress, localPos, globalPos, buttons, buttons, Qt::NoModifier);
+                    if (mouseButtons != Qt::NoButton) {
+                        QMouseEvent event(QEvent::MouseButtonPress, localPos, globalPos, mouseButtons, mouseButtons, Qt::NoModifier);
                         QGuiApplication::sendEvent(wnd, &event);
-                        if (!event.isAccepted() && GetAsyncKeyState(VK_RBUTTON))
+                        if (!event.isAccepted() && mouseButtons == Qt::RightButton)
                             *result = HTSYSMENU;
                         else if (!event.isAccepted())
                             *result = HTCAPTION;
