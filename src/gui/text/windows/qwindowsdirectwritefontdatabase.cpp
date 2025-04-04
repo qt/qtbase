@@ -371,7 +371,7 @@ QStringList QWindowsDirectWriteFontDatabase::addApplicationFont(const QByteArray
         loadedData = file.readAll();
     }
 
-    QList<IDWriteFontFace *> faces = createDirectWriteFaces(loadedData);
+    QList<IDWriteFontFace *> faces = createDirectWriteFaces(loadedData, fileName);
     if (faces.isEmpty()) {
         qCWarning(lcQpaFonts) << "Failed to create DirectWrite face from font data. Font may be unsupported.";
         return QStringList();
