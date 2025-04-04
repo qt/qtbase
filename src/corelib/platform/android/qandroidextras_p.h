@@ -226,7 +226,8 @@ namespace QtAndroidPrivate
                                    const QAndroidServiceConnection &serviceConnection,
                                    BindFlags flags = BindFlag::None);
 
-#if QT_CONFIG(future)
+#if QT_CONFIG(permissions)
+    QT_REQUIRE_CONFIG(future);
     enum PermissionResult {
         Undetermined,
         Authorized,

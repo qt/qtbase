@@ -349,8 +349,10 @@ jint QtAndroidPrivate::initJNI(JavaVM *vm, JNIEnv *env)
         return JNI_ERR;
     }
 
+#if QT_CONFIG(permissions)
     if (!registerPermissionNatives(qJniEnv))
         return JNI_ERR;
+#endif
 
     if (!registerNativeInterfaceNatives(qJniEnv))
         return JNI_ERR;
