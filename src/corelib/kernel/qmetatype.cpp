@@ -2525,7 +2525,14 @@ bool QMetaType::canView(QMetaType fromType, QMetaType toType)
 
 /*!
     Returns \c true if QMetaType::convert can convert from \a fromType to
-    \a toType.
+    \a toType. Note this is mostly about the ability to execute the conversion,
+    while the actual conversion may fail when attempted (for example,
+    converting a floating point value to an integer outside of its range).
+
+    The registerConverter() function can be used to register additional
+    conversions, either between a built-in type and a non-built-in one, or
+    between two non-built-in types. This function will return \c true if the
+    conversion path is registered.
 
     The following conversions are supported by Qt:
 
@@ -2579,11 +2586,18 @@ bool QMetaType::canView(QMetaType fromType, QMetaType toType)
     \row \li \l QMetaType::QUuid \li \l QMetaType::QByteArray, \l QMetaType::QString
     \endtable
 
-    Casting between primitive type (int, float, bool etc.) is supported.
+    Other supported conversions include between all primitive types (\c int, \c
+    float, \c bool, etc., including all enums) and between any pointer type and
+    \c{std::nullptr_t}. Enumerations can also be converted to QString and
+    QByteArray.
 
-    Converting between pointers of types derived from QObject will also return true for this
-    function if a qobject_cast from the type described by \a fromType to the type described
-    by \a toType would succeed.
+    If both \a fromType and \a toType are types deriving from QObject (or
+    pointers to them), this function will also return \c true if one of the
+    types is derived from the other. That is, it returns true if
+    \c{static_cast<>} from the type described by \a fromType to the type
+    described by \a toType would compile. The convert() function operates like
+    qobject_cast() and verifies the dynamic type of the object pointed to by
+    the QVariant.
 
     A cast from a sequential container will also return true for this
     function if the \a toType is QVariantList.
