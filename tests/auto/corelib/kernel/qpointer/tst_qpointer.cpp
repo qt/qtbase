@@ -367,6 +367,7 @@ class DerivedChild : public QObject
 {
     Q_OBJECT
 
+protected:
     DerivedParent *parentPointer;
     QPointer<DerivedParent> guardedParentPointer;
 
@@ -394,6 +395,83 @@ DerivedChild::~DerivedChild()
     QCOMPARE(qobject_cast<DerivedParent *>(guardedParentPointer), parentPointer);
 }
 
+//
+// The FurtherDerived... hierarchiy mimicks QWidget subclasses:
+// Like ~QWidget(), ~DerivedParent() deletes its children before ~QObject() would do it,
+// which would have first set QPointers to nullptr. In this situation, therefore,
+// guardedParentPointers are _not_ nullptr, yet, and the object they point to is already
+// demoted from FurtherDerivedParent to DerivedParent, potentially making some operations
+// UB (invalid downcasts).
+//
+
+class FurtherDerivedParent;
+class FurtherDerivedChild : public DerivedChild
+{
+    Q_OBJECT
+
+    FurtherDerivedParent *parentPointer;
+    QPointer<FurtherDerivedParent> guardedParentPointer;
+public:
+    FurtherDerivedChild(FurtherDerivedParent *);
+    ~FurtherDerivedChild() override;
+};
+
+class FurtherDerivedParent : public DerivedParent
+{
+    Q_OBJECT
+public:
+    FurtherDerivedParent() : DerivedParent()
+    {
+        new FurtherDerivedChild(this);
+    }
+};
+
+FurtherDerivedChild::FurtherDerivedChild(FurtherDerivedParent *parent)
+    : DerivedChild(parent),
+      parentPointer(parent),
+      guardedParentPointer(parent)
+{
+}
+
+FurtherDerivedChild::~FurtherDerivedChild()
+{
+    // isNull()
+    QVERIFY(!guardedParentPointer.isNull());
+
+    // operator bool()
+    QVERIFY(guardedParentPointer);
+    QVERIFY(!!guardedParentPointer);
+
+    // Don't use QCOMPARE in these, it may call .data(), which could be UB at this point:
+    #define CHECK_NE(lhs, rhs) do { \
+        QVERIFY(!(lhs == rhs)); \
+        QVERIFY(!(rhs == lhs)); \
+        QVERIFY(lhs != rhs); \
+        QVERIFY(rhs != lhs); \
+    } while (false)
+
+    #define CHECK_EQ(lhs, rhs) do { \
+        QVERIFY(!(lhs != rhs)); \
+        QVERIFY(!(rhs != lhs)); \
+        QVERIFY(lhs == rhs); \
+        QVERIFY(rhs == lhs); \
+    } while (false)
+
+    // operator==/!= against nullptr
+    CHECK_NE(guardedParentPointer, nullptr);
+
+    // operator==/!= against QObject*/DerivedParent*/FutherDerivedParent*
+    CHECK_EQ(parentPointer, parentPointer); // verify it's not UB for raw pointers
+    // UB after this point!
+    return;
+    const QObject *parentPointerAsQObject = parentPointer;
+    CHECK_EQ(guardedParentPointer, parentPointerAsQObject);
+    const DerivedParent *parentPointerAsDerived = parentPointer;
+    CHECK_EQ(guardedParentPointer, parentPointerAsDerived);
+    CHECK_EQ(guardedParentPointer, DerivedChild::guardedParentPointer);
+    CHECK_EQ(guardedParentPointer, parentPointer);
+}
+
 void tst_QPointer::castDuringDestruction()
 {
     {
@@ -412,6 +490,11 @@ void tst_QPointer::castDuringDestruction()
 
     {
         delete new DerivedParent();
+    }
+
+    {
+        [[maybe_unused]]
+        FurtherDerivedParent obj;
     }
 }
 
