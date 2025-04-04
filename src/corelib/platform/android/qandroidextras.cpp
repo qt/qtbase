@@ -11,7 +11,7 @@
 #include <QtCore/qtimer.h>
 #include <QtCore/qset.h>
 
-#if QT_CONFIG(future)
+#if QT_CONFIG(permissions)
 #include <QtCore/qpromise.h>
 #endif
 
@@ -1053,6 +1053,7 @@ void QAndroidActivityCallbackResultReceiver::registerCallback(
     callbackMap.insert(receiverRequestCode, callbackFunc);
 }
 
+#if QT_CONFIG(permissions)
 // Permissions API
 
 static const char qtNativeClassName[] = "org/qtproject/qt/android/QtNative";
@@ -1220,6 +1221,8 @@ bool QtAndroidPrivate::registerPermissionNatives(QJniEnvironment &env)
 
     return env.registerNativeMethods(qtNativeClassName, methods, 1);
 }
+
+#endif // QT_CONFIG(permissions)
 
 QT_END_NAMESPACE
 
