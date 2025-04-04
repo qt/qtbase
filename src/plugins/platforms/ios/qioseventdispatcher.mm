@@ -188,17 +188,16 @@ extern "C" int qt_main_wrapper(int argc, char *argv[])
     s_isQtApplication = true;
 
     @autoreleasepool {
-        size_t defaultStackSize = 512 * kBytesPerKiloByte; // Same as secondary threads
+        constexpr size_t defaultStackSize = 512 * kBytesPerKiloByte; // Same as secondary threads
 
         uint requestedStackSize = qMax(0, infoPlistValue(@"QtRunLoopIntegrationStackSize", defaultStackSize));
 
         if (infoPlistValue(@"QtRunLoopIntegrationDisableSeparateStack", false))
             requestedStackSize = 0;
 
-        char reservedStack[Stack::computeSize(requestedStackSize)];
-
-        if (sizeof(reservedStack) > 0) {
-            userMainStack.adopt(reservedStack, sizeof(reservedStack));
+        QVarLengthArray<uchar, defaultStackSize> reservedStack(Stack::computeSize(requestedStackSize));
+        if (reservedStack.size() > 0) {
+            userMainStack.adopt(reservedStack.data(), reservedStack.size());
 
             if (infoPlistValue(@"QtRunLoopIntegrationDebugStackUsage", false)) {
                 debugStackUsage = true;
