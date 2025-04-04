@@ -453,6 +453,7 @@ class FurtherDerivedChild : public DerivedChild
 
     FurtherDerivedParent *parentPointer;
     QPointer<FurtherDerivedParent> guardedParentPointer;
+    QPointer<const FurtherDerivedParent> guardedConstParentPointer;
 public:
     FurtherDerivedChild(FurtherDerivedParent *);
     ~FurtherDerivedChild() override;
@@ -471,7 +472,8 @@ public:
 FurtherDerivedChild::FurtherDerivedChild(FurtherDerivedParent *parent)
     : DerivedChild(parent),
       parentPointer(parent),
-      guardedParentPointer(parent)
+      guardedParentPointer(parent),
+      guardedConstParentPointer(parent)
 {
 }
 
@@ -503,15 +505,24 @@ FurtherDerivedChild::~FurtherDerivedChild()
     CHECK_NE(guardedParentPointer, nullptr);
 
     // operator==/!= against QObject*/DerivedParent*/FutherDerivedParent*
-    CHECK_EQ(parentPointer, parentPointer); // verify it's not UB for raw pointers
-    // UB after this point!
-    return;
     const QObject *parentPointerAsQObject = parentPointer;
     CHECK_EQ(guardedParentPointer, parentPointerAsQObject);
     const DerivedParent *parentPointerAsDerived = parentPointer;
     CHECK_EQ(guardedParentPointer, parentPointerAsDerived);
     CHECK_EQ(guardedParentPointer, DerivedChild::guardedParentPointer);
+    CHECK_EQ(parentPointer, parentPointer);
     CHECK_EQ(guardedParentPointer, parentPointer);
+
+    // same, with QPointer<const T> (exercises the const QObject* paths):
+    CHECK_NE(guardedConstParentPointer, nullptr);
+    CHECK_EQ(guardedConstParentPointer, parentPointerAsQObject);
+    CHECK_EQ(guardedConstParentPointer, parentPointerAsDerived);
+    CHECK_EQ(guardedConstParentPointer, DerivedChild::guardedParentPointer);
+    CHECK_EQ(guardedConstParentPointer, guardedParentPointer);
+    CHECK_EQ(guardedConstParentPointer, parentPointer);
+
+#undef CHECK_EQ
+#undef CHECK_NE
 }
 
 void tst_QPointer::castDuringDestruction()

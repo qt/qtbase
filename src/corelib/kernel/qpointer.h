@@ -11,6 +11,8 @@
 
 #ifndef QT_NO_QOBJECT
 
+#include <QtCore/qxptype_traits.h>
+
 QT_BEGIN_NAMESPACE
 
 class QVariant;
@@ -24,6 +26,12 @@ class QPointer
     using if_convertible = std::enable_if_t<std::is_convertible_v<X*, T*>, bool>;
     template <typename X>
     friend class QPointer;
+
+    template <typename X>
+    using compilation_test = decltype(std::declval<T*>() == std::declval<X*>());
+
+    template <typename X>
+    using is_comparable = qxp::is_detected<QPointer::compilation_test, X>;
 
     using QObjectType =
         typename std::conditional<std::is_const<T>::value, const QObject, QObject>::type;
@@ -94,15 +102,34 @@ public:
     { lhs.swap(rhs); }
 
 private:
+    QObjectType *internalData() const noexcept { return wp.internalData(); }
+
     template <typename X>
     friend bool comparesEqual(const QPointer &lhs, const QPointer<X> &rhs) noexcept
-    { return lhs.data() == rhs.data(); }
+    {
+        // ensure dropping to QObject* (see below) doesn't accept something we shouldn't:
+        static_assert(QPointer::is_comparable<X>::value, "cannot compare T* and X*"); // ### constrain?
+        // X is-a QObject(!):
+        //  compare as QObject* to avoid potentially invalid QObject* → T* casts:
+        return comparesEqual(rhs, lhs.internalData()); // we're not friends with QPointer<X>...
+    }
     QT_DECLARE_EQUALITY_OPERATORS_HELPER(QPointer, QPointer<X>, /* non-constexpr */,
                                          noexcept(true), template <typename X>)
 
     template <typename X>
     friend bool comparesEqual(const QPointer &lhs, X *rhs) noexcept
-    { return lhs.data() == rhs; }
+    {
+        if constexpr (std::is_base_of_v<QObject, X>) {
+            // ensure dropping to QObject* (see below) doesn't accept something we shouldn't:
+            static_assert(QPointer::is_comparable<X>::value, "cannot compare T* and X*");
+            // X is-a QObject:
+            //  compare as QObject* to avoid potentially invalid QObject* → T* casts:
+            return lhs.internalData() == rhs;
+        } else {
+            // X is not-a QObject (e.g. a Q_INTERFACE): have to compare as T*
+            return lhs.data() == rhs;
+        }
+    }
     Q_DECLARE_EQUALITY_COMPARABLE(QPointer, X*, template <typename X>)
 
     friend bool comparesEqual(const QPointer &lhs, std::nullptr_t) noexcept
