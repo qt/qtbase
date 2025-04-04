@@ -2241,6 +2241,7 @@ QMdiSubWindow::~QMdiSubWindow()
     d->removeButtonsFromMenuBar();
 #endif
     d->setActive(false);
+    delete d->controlContainer;
 }
 
 /*!
