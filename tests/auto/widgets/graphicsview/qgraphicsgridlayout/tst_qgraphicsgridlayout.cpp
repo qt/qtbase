@@ -1498,7 +1498,7 @@ void tst_QGraphicsGridLayout::setGeometry()
 {
     QFETCH(QRectF, rect);
 
-    QGraphicsWidget *window = new QGraphicsWidget;
+    const auto window = std::make_unique<QGraphicsWidget>();
     QGraphicsGridLayout *layout = new QGraphicsGridLayout();
     window->setLayout(layout);
     QGraphicsGridLayout *layout2 = new QGraphicsGridLayout();
