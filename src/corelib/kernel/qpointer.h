@@ -50,6 +50,7 @@ public:
 
     inline bool isNull() const
     { return wp.isNull(); }
+    explicit operator bool() const noexcept { return !isNull(); }
 
     inline void clear()
     { wp.clear(); }
@@ -71,8 +72,8 @@ public:
     DECLARE_TEMPLATE_COMPARE_SET(const QPointer &p1, p1.data(), const QPointer<X> &p2, p2.data())
     DECLARE_TEMPLATE_COMPARE_SET(const QPointer &p1, p1.data(), X *ptr, ptr)
     DECLARE_TEMPLATE_COMPARE_SET(X *ptr, ptr, const QPointer &p2, p2.data())
-    DECLARE_COMPARE_SET(const QPointer &p1, p1.data(), std::nullptr_t, nullptr)
-    DECLARE_COMPARE_SET(std::nullptr_t, nullptr, const QPointer &p2, p2.data())
+    DECLARE_COMPARE_SET(const QPointer &p1, p1.isNull(), std::nullptr_t, true)
+    DECLARE_COMPARE_SET(std::nullptr_t, true, const QPointer &p2, p2.isNull())
 #undef DECLARE_COMPARE_SET
 #undef DECLARE_TEMPLATE_COMPARE_SET
 };
