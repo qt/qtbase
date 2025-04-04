@@ -2990,7 +2990,7 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const char *sign
     ++signal; // skip code
     QArgumentTypeArray signalTypes;
     Q_ASSERT(QMetaObjectPrivate::get(smeta)->revision >= 7);
-    QByteArray signalName = QMetaObjectPrivate::decodeMethodSignature(signal, signalTypes);
+    QByteArrayView signalName = QMetaObjectPrivate::decodeMethodSignature(signal, signalTypes);
     int signal_index = QMetaObjectPrivate::indexOfSignalRelative(
             &smeta, signalName, signalTypes.size(), signalTypes.constData());
     if (signal_index < 0) {
@@ -3021,7 +3021,7 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const char *sign
     ++method; // skip code
 
     QArgumentTypeArray methodTypes;
-    QByteArray methodName = QMetaObjectPrivate::decodeMethodSignature(method, methodTypes);
+    QByteArrayView methodName = QMetaObjectPrivate::decodeMethodSignature(method, methodTypes);
     const QMetaObject *rmeta = receiver->metaObject();
     int method_index_relative = -1;
     Q_ASSERT(QMetaObjectPrivate::get(rmeta)->revision >= 7);
@@ -3302,12 +3302,12 @@ bool QObject::disconnect(const QObject *sender, const char *signal,
     */
     bool res = false;
     const QMetaObject *smeta = sender->metaObject();
-    QByteArray signalName;
+    QByteArrayView signalName;
     QArgumentTypeArray signalTypes;
     Q_ASSERT(QMetaObjectPrivate::get(smeta)->revision >= 7);
     if (signal)
         signalName = QMetaObjectPrivate::decodeMethodSignature(signal, signalTypes);
-    QByteArray methodName;
+    QByteArrayView methodName;
     QArgumentTypeArray methodTypes;
     Q_ASSERT(!receiver || QMetaObjectPrivate::get(receiver->metaObject())->revision >= 7);
     if (method)
@@ -4247,7 +4247,7 @@ int QObjectPrivate::signalIndex(const char *signalName,
     const QMetaObject *base = q->metaObject();
     Q_ASSERT(QMetaObjectPrivate::get(base)->revision >= 7);
     QArgumentTypeArray types;
-    QByteArray name = QMetaObjectPrivate::decodeMethodSignature(signalName, types);
+    QByteArrayView name = QMetaObjectPrivate::decodeMethodSignature(signalName, types);
     int relative_index = QMetaObjectPrivate::indexOfSignalRelative(
             &base, name, types.size(), types.constData());
     if (relative_index < 0)

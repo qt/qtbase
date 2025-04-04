@@ -644,7 +644,7 @@ int QMetaObject::classInfoCount() const
 // matches the given name, argument count and argument types, otherwise
 // returns \c false.
 bool QMetaObjectPrivate::methodMatch(const QMetaObject *m, const QMetaMethod &method,
-                        const QByteArray &name, int argc,
+                        QByteArrayView name, int argc,
                         const QArgumentType *types)
 {
     const QMetaMethod::Data &data = method.data;
@@ -702,7 +702,7 @@ QMetaMethod QMetaObjectPrivate::firstMethod(const QMetaObject *baseObject, QByte
 */
 template<int MethodType>
 inline int QMetaObjectPrivate::indexOfMethodRelative(const QMetaObject **baseObject,
-                                        const QByteArray &name, int argc,
+                                        QByteArrayView name, int argc,
                                         const QArgumentType *types)
 {
     for (const QMetaObject *m = *baseObject; m; m = m->d.superdata) {
@@ -738,7 +738,7 @@ int QMetaObject::indexOfConstructor(const char *constructor) const
 {
     Q_ASSERT(priv(d.data)->revision >= 7);
     QArgumentTypeArray types;
-    QByteArray name = QMetaObjectPrivate::decodeMethodSignature(constructor, types);
+    QByteArrayView name = QMetaObjectPrivate::decodeMethodSignature(constructor, types);
     return QMetaObjectPrivate::indexOfConstructor(this, name, types.size(), types.constData());
 }
 
@@ -756,7 +756,7 @@ int QMetaObject::indexOfMethod(const char *method) const
     int i;
     Q_ASSERT(priv(m->d.data)->revision >= 7);
     QArgumentTypeArray types;
-    QByteArray name = QMetaObjectPrivate::decodeMethodSignature(method, types);
+    QByteArrayView name = QMetaObjectPrivate::decodeMethodSignature(method, types);
     i = QMetaObjectPrivate::indexOfMethodRelative<0>(&m, name, types.size(), types.constData());
     if (i >= 0)
         i += m->methodOffset();
@@ -789,19 +789,19 @@ static void argumentTypesFromString(const char *str, const char *end,
 
 // Given a method \a signature (e.g. "foo(int,double)"), this function
 // populates the argument \a types array and returns the method name.
-QByteArray QMetaObjectPrivate::decodeMethodSignature(
+QByteArrayView QMetaObjectPrivate::decodeMethodSignature(
         const char *signature, QArgumentTypeArray &types)
 {
     Q_ASSERT(signature != nullptr);
     const char *lparens = strchr(signature, '(');
     if (!lparens)
-        return QByteArray();
+        return QByteArrayView();
     const char *rparens = strrchr(lparens + 1, ')');
     if (!rparens || *(rparens+1))
-        return QByteArray();
+        return QByteArrayView();
     int nameLength = lparens - signature;
     argumentTypesFromString(lparens + 1, rparens, types);
-    return QByteArray::fromRawData(signature, nameLength);
+    return QByteArrayView(signature, nameLength);
 }
 
 /*!
@@ -821,7 +821,7 @@ int QMetaObject::indexOfSignal(const char *signal) const
     int i;
     Q_ASSERT(priv(m->d.data)->revision >= 7);
     QArgumentTypeArray types;
-    QByteArray name = QMetaObjectPrivate::decodeMethodSignature(signal, types);
+    QByteArrayView name = QMetaObjectPrivate::decodeMethodSignature(signal, types);
     i = QMetaObjectPrivate::indexOfSignalRelative(&m, name, types.size(), types.constData());
     if (i >= 0)
         i += m->methodOffset();
@@ -835,7 +835,7 @@ int QMetaObject::indexOfSignal(const char *signal) const
     \a baseObject will be adjusted to the enclosing QMetaObject, or \nullptr if the signal is not found
 */
 int QMetaObjectPrivate::indexOfSignalRelative(const QMetaObject **baseObject,
-                                              const QByteArray &name, int argc,
+                                              QByteArrayView name, int argc,
                                               const QArgumentType *types)
 {
     int i = indexOfMethodRelative<MethodSignal>(baseObject, name, argc, types);
@@ -868,7 +868,7 @@ int QMetaObject::indexOfSlot(const char *slot) const
     int i;
     Q_ASSERT(priv(m->d.data)->revision >= 7);
     QArgumentTypeArray types;
-    QByteArray name = QMetaObjectPrivate::decodeMethodSignature(slot, types);
+    QByteArrayView name = QMetaObjectPrivate::decodeMethodSignature(slot, types);
     i = QMetaObjectPrivate::indexOfSlotRelative(&m, name, types.size(), types.constData());
     if (i >= 0)
         i += m->methodOffset();
@@ -877,13 +877,13 @@ int QMetaObject::indexOfSlot(const char *slot) const
 
 // same as indexOfSignalRelative but for slots.
 int QMetaObjectPrivate::indexOfSlotRelative(const QMetaObject **m,
-                                            const QByteArray &name, int argc,
+                                            QByteArrayView name, int argc,
                                             const QArgumentType *types)
 {
     return indexOfMethodRelative<MethodSlot>(m, name, argc, types);
 }
 
-int QMetaObjectPrivate::indexOfSignal(const QMetaObject *m, const QByteArray &name,
+int QMetaObjectPrivate::indexOfSignal(const QMetaObject *m, QByteArrayView name,
                                       int argc, const QArgumentType *types)
 {
     int i = indexOfSignalRelative(&m, name, argc, types);
@@ -892,7 +892,7 @@ int QMetaObjectPrivate::indexOfSignal(const QMetaObject *m, const QByteArray &na
     return i;
 }
 
-int QMetaObjectPrivate::indexOfSlot(const QMetaObject *m, const QByteArray &name,
+int QMetaObjectPrivate::indexOfSlot(const QMetaObject *m, QByteArrayView name,
                                     int argc, const QArgumentType *types)
 {
     int i = indexOfSlotRelative(&m, name, argc, types);
@@ -901,7 +901,7 @@ int QMetaObjectPrivate::indexOfSlot(const QMetaObject *m, const QByteArray &name
     return i;
 }
 
-int QMetaObjectPrivate::indexOfMethod(const QMetaObject *m, const QByteArray &name,
+int QMetaObjectPrivate::indexOfMethod(const QMetaObject *m, QByteArrayView name,
                                       int argc, const QArgumentType *types)
 {
     int i = indexOfMethodRelative<0>(&m, name, argc, types);
@@ -910,7 +910,7 @@ int QMetaObjectPrivate::indexOfMethod(const QMetaObject *m, const QByteArray &na
     return i;
 }
 
-int QMetaObjectPrivate::indexOfConstructor(const QMetaObject *m, const QByteArray &name,
+int QMetaObjectPrivate::indexOfConstructor(const QMetaObject *m, QByteArrayView name,
                                            int argc, const QArgumentType *types)
 {
     for (int i = priv(m->d.data)->constructorCount-1; i >= 0; --i) {

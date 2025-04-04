@@ -130,21 +130,21 @@ struct QMetaObjectPrivate
 
     static int originalClone(const QMetaObject *obj, int local_method_index);
 
-    static QByteArray decodeMethodSignature(const char *signature,
-                                            QArgumentTypeArray &types);
+    static QByteArrayView decodeMethodSignature(const char *signature,
+                                                QArgumentTypeArray &types);
     static int indexOfSignalRelative(const QMetaObject **baseObject,
-                                     const QByteArray &name, int argc,
+                                     QByteArrayView name, int argc,
                                      const QArgumentType *types);
     static int indexOfSlotRelative(const QMetaObject **m,
-                                   const QByteArray &name, int argc,
+                                   QByteArrayView name, int argc,
                                    const QArgumentType *types);
-    static int indexOfSignal(const QMetaObject *m, const QByteArray &name,
+    static int indexOfSignal(const QMetaObject *m, QByteArrayView name,
                              int argc, const QArgumentType *types);
-    static int indexOfSlot(const QMetaObject *m, const QByteArray &name,
+    static int indexOfSlot(const QMetaObject *m, QByteArrayView name,
                            int argc, const QArgumentType *types);
-    static int indexOfMethod(const QMetaObject *m, const QByteArray &name,
+    static int indexOfMethod(const QMetaObject *m, QByteArrayView name,
                              int argc, const QArgumentType *types);
-    static int indexOfConstructor(const QMetaObject *m, const QByteArray &name,
+    static int indexOfConstructor(const QMetaObject *m, QByteArrayView name,
                                   int argc, const QArgumentType *types);
 
     enum class Which { Name, Alias };
@@ -190,11 +190,11 @@ struct QMetaObjectPrivate
 
     template<int MethodType>
     static inline int indexOfMethodRelative(const QMetaObject **baseObject,
-                                            const QByteArray &name, int argc,
+                                            QByteArrayView name, int argc,
                                             const QArgumentType *types);
 
     static bool methodMatch(const QMetaObject *m, const QMetaMethod &method,
-                            const QByteArray &name, int argc,
+                            QByteArrayView name, int argc,
                             const QArgumentType *types);
     Q_CORE_EXPORT static QMetaMethod firstMethod(const QMetaObject *baseObject, QByteArrayView name);
 
