@@ -524,6 +524,28 @@ int main(void)
 }
 ")
 
+# std::format support
+qt_config_compile_test(cxx20_format
+    LABEL "C++20 std::format support"
+    CODE
+"#include <format>
+#include <string>
+
+#if !defined(__cpp_lib_format) || (__cpp_lib_format < 202106L)
+#error
+#endif
+
+int main(void)
+{
+    /* BEGIN TEST: */
+const auto s = std::format(\"{}\", 1);
+    /* END TEST: */
+    return 0;
+}
+"
+    CXX_STANDARD 20
+)
+
 # <stacktrace>
 qt_config_compile_test(cxx23_stacktrace
     LABEL "C++23 <stacktrace> support"
@@ -809,6 +831,11 @@ qt_feature_definition("regularexpression" "QT_NO_REGULAREXPRESSION" NEGATE VALUE
 qt_feature("backtrace" PRIVATE
     LABEL "backtrace"
     CONDITION UNIX AND QT_FEATURE_regularexpression AND WrapBacktrace_FOUND
+)
+qt_feature("cxx20_format" PRIVATE
+    LABEL "C++20 std::format support"
+    CONDITION TEST_cxx20_format # intentionally not checking QT_FEATURE_cxx20!
+    AUTODETECT TRUE
 )
 qt_feature("cxx23_stacktrace" PRIVATE
     LABEL "C++23 <stacktrace>"
