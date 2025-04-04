@@ -3231,7 +3231,12 @@ void tst_QGraphicsGridLayout::spanningItem2x3()
     QFETCH(bool, w3_fixed);
     QFETCH(bool, w4_fixed);
     QFETCH(bool, w5_fixed);
+
     QGraphicsGridLayout *layout = new QGraphicsGridLayout;
+
+    QGraphicsWidget parent;
+    parent.setLayout(layout);
+
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
 
