@@ -98,6 +98,7 @@ protected:
 
 #if QT_CONFIG(directwrite)
     QList<IDWriteFontFace *> createDirectWriteFaces(const QByteArray &fontData,
+                                                    const QString &filename,
                                                     bool queryVariations = true) const;
     IDWriteFontFace *createDirectWriteFace(const QByteArray &fontData);
 #endif
