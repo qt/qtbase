@@ -14,6 +14,7 @@ qt_internal_add_test(tst_qpointer
         tst_qpointer.cpp
     LIBRARIES
         Qt::Gui
+        Qt::CorePrivate
 )
 
 ## Scopes:

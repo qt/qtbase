@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 #include <QTest>
+
+#include <QtCore/private/qobject_p.h>
 #include <QRunnable>
 #include <QThreadPool>
 
@@ -323,7 +325,7 @@ DerivedParent::DerivedParent()
 
 DerivedParent::~DerivedParent()
 {
-    delete derivedChild;
+    QObjectPrivate::get(this)->deleteChildren(); // like ~QWidget() does
 }
 
 DerivedChild::~DerivedChild()
