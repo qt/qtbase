@@ -3,6 +3,8 @@
 
 #include <QTest>
 #include <QtTest/private/qcomparisontesthelper_p.h>
+
+#include <QtCore/private/qobject_p.h>
 #include <QRunnable>
 #include <QThreadPool>
 
@@ -383,7 +385,7 @@ DerivedParent::DerivedParent()
 
 DerivedParent::~DerivedParent()
 {
-    delete derivedChild;
+    QObjectPrivate::get(this)->deleteChildren(); // like ~QWidget() does
 }
 
 DerivedChild::~DerivedChild()
