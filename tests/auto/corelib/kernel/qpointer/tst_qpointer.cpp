@@ -28,6 +28,7 @@
 
 #include <QtTest/QtTest>
 
+#include <QtCore/private/qobject_p.h>
 #include <QPointer>
 #ifndef QT_NO_WIDGETS
 #include <QWidget>
@@ -296,7 +297,7 @@ DerivedParent::DerivedParent()
 
 DerivedParent::~DerivedParent()
 {
-    delete derivedChild;
+    QObjectPrivate::get(this)->deleteChildren(); // like ~QWidget() does
 }
 
 DerivedChild::~DerivedChild()
