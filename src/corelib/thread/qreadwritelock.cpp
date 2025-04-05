@@ -225,7 +225,10 @@ Q_NEVER_INLINE static bool contendedTryLockForRead(QAtomicPointer<QReadWriteLock
             d = val;
         }
         Q_ASSERT(!isUncontendedLocked(d));
-        // d is an actual pointer;
+        // d is an actual pointer; acquire its contents
+        d = d_ptr.loadAcquire();
+        if (!d || isUncontendedLocked(d))
+            continue;
 
         if (d->recursive)
             return d->recursiveLockForRead(timeout);
@@ -333,7 +336,10 @@ Q_NEVER_INLINE static bool contendedTryLockForWrite(QAtomicPointer<QReadWriteLoc
             d = val;
         }
         Q_ASSERT(!isUncontendedLocked(d));
-        // d is an actual pointer;
+        // d is an actual pointer; acquire its contents
+        d = d_ptr.loadAcquire();
+        if (!d || isUncontendedLocked(d))
+            continue;
 
         if (d->recursive)
             return d->recursiveLockForWrite(timeout);
