@@ -88,6 +88,7 @@ QGtk3Theme::QGtk3Theme()
     };
 
     GtkSettings *settings = gtk_settings_get_default();
+    SETTING_CONNECT("gtk-cursor-blink");
     SETTING_CONNECT("gtk-cursor-blink-time");
     SETTING_CONNECT("gtk-double-click-distance");
     SETTING_CONNECT("gtk-double-click-time");
@@ -119,7 +120,10 @@ QVariant QGtk3Theme::themeHint(QPlatformTheme::ThemeHint hint) const
 {
     switch (hint) {
     case QPlatformTheme::CursorFlashTime:
-        return QVariant(gtkSetting<gint>("gtk-cursor-blink-time"));
+        if (gtkSetting<gboolean>("gtk-cursor-blink"))
+            return QVariant(gtkSetting<gint>("gtk-cursor-blink-time"));
+        else
+            return 0;
     case QPlatformTheme::MouseDoubleClickDistance:
         return QVariant(gtkSetting<gint>("gtk-double-click-distance"));
     case QPlatformTheme::MouseDoubleClickInterval:
