@@ -7,6 +7,7 @@
 #include "qcoreapplication.h"
 #include "qmetaobject_p.h"
 #include "private/qnumeric_p.h"
+#include "qthread.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -41,39 +42,47 @@ void QSingleShotTimer::startTimerForReceiver(Duration interval, Qt::TimerType ti
                                              const QObject *receiver)
 {
     if (receiver && receiver->thread() != thread()) {
-        // Avoid leaking the QSingleShotTimer instance in case the application exits before the
-        // timer fires
-        connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit, this,
-                &QObject::deleteLater);
+        QObjectPrivate *d_ptr = QObjectPrivate::get(this);
+        d_ptr->sendChildEvents = false;
+
         setParent(nullptr);
         moveToThread(receiver->thread());
 
-        QDeadlineTimer deadline(interval, timerType);
-        auto invokable = [this, deadline, timerType] {
-            if (deadline.hasExpired()) {
-                Q_EMIT timeout();
-            } else {
-                timer.start(deadline.remainingTimeAsDuration(), timerType, this);
-            }
-        };
-        QMetaObject::invokeMethod(this, invokable, Qt::QueuedConnection);
+        QCoreApplication::postEvent(this,
+                                    new StartTimerEvent(this, QDeadlineTimer(interval, timerType)));
+        // the event owns "this" and is handled concurrently, so unsafe to
+        // access "this" beyond this point
     } else {
         timer.start(interval, timerType, this);
     }
 }
 
-void QSingleShotTimer::timerEvent(QTimerEvent *)
+void QSingleShotTimer::timerFinished()
 {
-    // need to kill the timer _before_ we emit timeout() in case the
-    // slot connected to timeout calls processEvents()
-    timer.stop();
-
     Q_EMIT timeout();
-
-    // we would like to use delete later here, but it feels like a
-    // waste to post a new event to handle this event, so we just unset the flag
-    // and explicitly delete...
     delete this;
+}
+
+void QSingleShotTimer::timerEvent(QTimerEvent *event)
+{
+    if (event->id() == Qt::TimerId::Invalid) {
+        StartTimerEvent *startTimerEvent = static_cast<StartTimerEvent *>(event);
+        startTimerEvent->timer.release();
+        const QDeadlineTimer &deadline = startTimerEvent->deadline;
+        if (deadline.hasExpired()) {
+            timerFinished();
+        } else {
+            timer.start(deadline.remainingTimeAsDuration(), deadline.timerType(), this);
+            // we are now definitely in a thread that has an event dispatcher
+            setParent(QThread::currentThread()->eventDispatcher());
+        }
+    } else {
+        // need to kill the timer _before_ we emit timeout() in case the
+        // slot connected to timeout calls processEvents()
+        timer.stop();
+
+        timerFinished();
+    }
 }
 
 QT_END_NAMESPACE

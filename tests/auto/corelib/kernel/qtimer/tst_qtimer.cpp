@@ -23,6 +23,7 @@
 #include <QSignalSpy>
 #include <QtTest/private/qpropertytesthelper_p.h>
 
+#include <QtCore/private/qsingleshottimer_p.h>
 #include <qtimer.h>
 #include <qthread.h>
 #include <qelapsedtimer.h>
@@ -84,6 +85,10 @@ private slots:
     void singleShot_static();
     void crossThreadSingleShotToFunctor_data();
     void crossThreadSingleShotToFunctor();
+#ifdef QT_BUILD_INTERNAL
+    void crossThreadSingleShotDestruction_data();
+    void crossThreadSingleShotDestruction();
+#endif
     void timerOrder();
     void timerOrder_data();
     void timerOrderBackgroundThread();
@@ -1235,6 +1240,94 @@ void tst_QTimer::crossThreadSingleShotToFunctor()
 
     QCOMPARE(DummyFunctor::callThread, &t);
 }
+
+#ifdef QT_BUILD_INTERNAL
+class SingleShotReceiver : public QObject
+{
+    Q_OBJECT
+public:
+    SingleShotReceiver() = default;
+
+    bool timeout = false;
+
+public slots:
+    void timerFired() {
+        timeout = true;
+        thread()->quit();
+    }
+};
+
+void tst_QTimer::crossThreadSingleShotDestruction_data()
+{
+    QTest::addColumn<std::chrono::milliseconds>("timeout");
+    QTest::addColumn<std::chrono::milliseconds>("threadWaitTime");
+
+    // No point in testing zero timeouts, we don't create a QSingleShotTimer
+    // for those anyway.
+    QTest::addRow("1ms") << 1ms << 10ms;
+    QTest::addRow("1s") << 1000ms << 10ms;
+}
+
+void tst_QTimer::crossThreadSingleShotDestruction()
+{
+    QFETCH(std::chrono::milliseconds, timeout);
+    QFETCH(std::chrono::milliseconds, threadWaitTime);
+
+    static bool deadTimerDestroyed;
+    class SingleShotTimer : public QSingleShotTimer
+    {
+    public:
+        using QSingleShotTimer::QSingleShotTimer;
+        ~SingleShotTimer() override { deadTimerDestroyed = true; }
+    };
+
+    {
+        QThread t;
+        std::unique_ptr<SingleShotReceiver> receiver(new SingleShotReceiver());
+        receiver->moveToThread(&t);
+
+        // create the timer before the thread is running. Otherwise, the
+        // assignment to QPointer might happen after the timer already fired and
+        // destroyed itself, leaving QPointer dangling.
+        QPointer<QSingleShotTimer> timer = new QSingleShotTimer(timeout, Qt::CoarseTimer,
+                                                                receiver.get(), SLOT(timerFired()));
+        t.start();
+
+        const bool threadQuit = t.wait(threadWaitTime);
+
+        // If we waited long enough, then the timer should have fired, quit
+        // the thread, and self-destructed; otherwise the wait will have timed
+        // out and the timer is still alive.
+        QCOMPARE(threadQuit, receiver->timeout);
+        QCOMPARE(threadQuit, !timer);
+        deadTimerDestroyed = threadQuit;
+
+        if (!threadQuit) {
+            t.quit();
+
+            // now that the thread is definitely dead, start a new timer that is
+            // never even going to get started. It should still be destroyed, as
+            // it will be (temporarily) owned by the event that we post to start
+            // the timer in the target thread.
+            // Note: we can't use QPointer here, as the thread is already
+            // running.
+            (void)new SingleShotTimer(timeout, Qt::CoarseTimer, receiver.get(), SLOT(timerFired()));
+            QVERIFY(t.wait());
+            // the timer should never have fired
+            QVERIFY(!receiver->timeout);
+        }
+
+        // the timer objects should be destroyed by now in all cases
+        QVERIFY(!timer);
+    }
+
+# if defined(Q_OS_DARWIN) || defined(Q_OS_WIN) || defined(Q_OS_QNX) || defined(DISABLE_GLIB)|| defined(QT_NO_GLIB) || defined(QT_GUI_LIB)
+    QEXPECT_FAIL("1s", "Events posted to a thread after event loop exit are leaking.",
+                 Continue);
+# endif
+    QVERIFY(deadTimerDestroyed);
+}
+#endif
 
 void tst_QTimer::callOnTimeout()
 {

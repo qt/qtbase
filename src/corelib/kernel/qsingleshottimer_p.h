@@ -19,6 +19,8 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qabstracteventdispatcher.h>
 #include <QtCore/qbasictimer.h>
+#include <QtCore/qcoreevent.h>
+#include <QtCore/qdeadlinetimer.h>
 #include <QtCore/qnamespace.h>
 
 QT_BEGIN_NAMESPACE
@@ -27,7 +29,7 @@ namespace QtPrivate {
 class QSlotObjectBase;
 }
 
-class QSingleShotTimer : public QObject
+class Q_AUTOTEST_EXPORT QSingleShotTimer : public QObject
 {
     Q_OBJECT
 
@@ -49,6 +51,18 @@ Q_SIGNALS:
     void timeout();
 
 private:
+    class StartTimerEvent : public QTimerEvent
+    {
+    public:
+        StartTimerEvent(QSingleShotTimer *timer, const QDeadlineTimer &deadline)
+            : QTimerEvent(Qt::TimerId::Invalid), timer(timer), deadline(deadline)
+        {}
+
+        std::unique_ptr<QSingleShotTimer> timer;
+        QDeadlineTimer deadline;
+    };
+
+    void timerFinished();
     void timerEvent(QTimerEvent *) override;
 };
 
