@@ -2733,8 +2733,9 @@ QMainWindowLayout::~QMainWindowLayout()
 
 #if QT_CONFIG(dockwidget) && QT_CONFIG(tabwidget)
     // unusedTabBars contains unparented tab bars, which need to be removed manually.
-    // ~QMainWindowTabBar() removes the bar from unusedTabBars => call qDeleteAll() on a copy.
-    const auto bars = unusedTabBars;
+    // ~QMainWindowTabBar() attempts to remove the bar from unusedTabBars
+    // => move it out of the way first.
+    const auto bars = std::move(unusedTabBars);
     qDeleteAll(bars);
 #endif // QT_CONFIG(dockwidget) && QT_CONFIG(tabwidget)
 }
