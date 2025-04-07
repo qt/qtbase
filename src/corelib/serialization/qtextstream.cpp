@@ -920,7 +920,7 @@ QTextStream::QTextStream(QString *string, OpenMode openMode)
 {
 #if defined (QTEXTSTREAM_DEBUG)
     qDebug("QTextStream::QTextStream(QString *string == *%p, openMode = %d)",
-           string, int(openMode));
+           string, int(openMode.toInt()));
 #endif
     Q_D(QTextStream);
     d->string = string;
@@ -938,7 +938,7 @@ QTextStream::QTextStream(QByteArray *array, OpenMode openMode)
 {
 #if defined (QTEXTSTREAM_DEBUG)
     qDebug("QTextStream::QTextStream(QByteArray *array == *%p, openMode = %d)",
-           array, int(openMode));
+           array, int(openMode.toInt()));
 #endif
     Q_D(QTextStream);
     d->device = new QBuffer(array);
@@ -965,7 +965,7 @@ QTextStream::QTextStream(const QByteArray &array, OpenMode openMode)
 {
 #if defined (QTEXTSTREAM_DEBUG)
     qDebug("QTextStream::QTextStream(const QByteArray &array == *(%p), openMode = %d)",
-           &array, int(openMode));
+           &array, int(openMode.toInt()));
 #endif
     QBuffer *buffer = new QBuffer;
     buffer->setData(array);
@@ -996,7 +996,7 @@ QTextStream::QTextStream(FILE *fileHandle, OpenMode openMode)
 {
 #if defined (QTEXTSTREAM_DEBUG)
     qDebug("QTextStream::QTextStream(FILE *fileHandle = %p, openMode = %d)",
-           fileHandle, int(openMode));
+           fileHandle, int(openMode.toInt()));
 #endif
     QFile *file = new QFile;
     file->open(fileHandle, openMode);
