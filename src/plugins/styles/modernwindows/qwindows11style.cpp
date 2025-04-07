@@ -2147,6 +2147,14 @@ QSize QWindows11Style::sizeFromContents(ContentsType type, const QStyleOption *o
         // side) so call QWindowsStyle::styleHint directly to get the correct size hint
         contentSize = QWindowsStyle::sizeFromContents(type, option, size, widget);
         break;
+    case CT_RadioButton:
+    case CT_CheckBox:
+        // the indicator needs 2px more in width when there is no text, not needed when
+        // the style draws the text
+        contentSize = QWindowsVistaStyle::sizeFromContents(type, option, size, widget);
+        if (size.width() == 0)
+            contentSize.rwidth() += 2;
+        break;
     default:
         contentSize = QWindowsVistaStyle::sizeFromContents(type, option, size, widget);
         break;
