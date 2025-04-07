@@ -2687,11 +2687,19 @@ QStringDecoder QStringDecoder::decoderForHtml(QByteArrayView data)
 #endif // !QT_BOOTSTRAPPED
 
 /*!
-    Returns the canonical name for encoding \a e.
+    Returns the canonical name for encoding \a e or \nullptr if \a e is an
+    invalid value.
+
+    \note In Qt versions prior to 6.10, 6.9.1, 6.8.4 or 6.5.9, calling this
+    function with an invalid argument resulted in undefined behavior. Since the
+    above-mentioned Qt versions, it returns nullptr instead.
 */
-const char *QStringConverter::nameForEncoding(QStringConverter::Encoding e)
+const char *QStringConverter::nameForEncoding(QStringConverter::Encoding e) noexcept
 {
-    return encodingInterfaces[int(e)].name;
+    auto i = size_t(e);
+    if (Q_UNLIKELY(i >= std::size(encodingInterfaces)))
+        return nullptr;
+    return encodingInterfaces[i].name;
 }
 
 /*!

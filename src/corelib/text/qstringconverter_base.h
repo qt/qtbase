@@ -162,7 +162,7 @@ public:
     Q_CORE_EXPORT static std::optional<Encoding> encodingForName(const char *name) noexcept;
 #endif
     Q_CORE_EXPORT static std::optional<Encoding> encodingForName(QAnyStringView name) noexcept;
-    Q_CORE_EXPORT static const char *nameForEncoding(Encoding e);
+    Q_DECL_PURE_FUNCTION Q_CORE_EXPORT static const char *nameForEncoding(Encoding e) noexcept;
     Q_CORE_EXPORT static std::optional<Encoding>
     encodingForData(QByteArrayView data, char16_t expectedFirstCharacter = 0) noexcept;
     Q_CORE_EXPORT static std::optional<Encoding> encodingForHtml(QByteArrayView data);
