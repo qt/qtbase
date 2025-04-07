@@ -1482,6 +1482,6 @@ qt_configure_add_report_entry(
 )
 qt_configure_add_report_entry(
     TYPE ERROR
-    MESSAGE "The desktopservices feature is required on macOS, iOS, and Android and cannot be disabled."
-    CONDITION (APPLE OR ANDROID) AND NOT QT_FEATURE_desktopservices
+    MESSAGE "The desktopservices feature is required on macOS and iOS, and cannot be disabled."
+    CONDITION APPLE AND NOT QT_FEATURE_desktopservices
 )
