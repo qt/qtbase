@@ -13,7 +13,6 @@ qt_internal_add_plugin(QAndroidIntegrationPlugin
     SOURCES
         androidcontentfileengine.cpp androidcontentfileengine.h
         androiddeadlockprotector.h
-        androidjniaccessibility.cpp androidjniaccessibility.h
         androidjniinput.cpp androidjniinput.h
         androidjnimain.cpp androidjnimain.h
         androidjnimenu.cpp androidjnimenu.h
@@ -21,7 +20,6 @@ qt_internal_add_plugin(QAndroidIntegrationPlugin
         qandroidassetsfileenginehandler.cpp qandroidassetsfileenginehandler.h
         qandroideventdispatcher.cpp qandroideventdispatcher.h
         qandroidinputcontext.cpp qandroidinputcontext.h
-        qandroidplatformaccessibility.cpp qandroidplatformaccessibility.h
         qandroidplatformclipboard.cpp qandroidplatformclipboard.h
         qandroidplatformdialoghelpers.cpp qandroidplatformdialoghelpers.h
         qandroidplatformfiledialoghelper.cpp qandroidplatformfiledialoghelper.h
@@ -49,7 +47,6 @@ qt_internal_add_plugin(QAndroidIntegrationPlugin
         #       seems to be doing most of the work already.
         androidjnimenu.cpp
         qandroidinputcontext.cpp
-        androidjniaccessibility.cpp
         qandroidplatformdialoghelpers.cpp
         # Conflicting JNI classes, and types
         androidcontentfileengine.cpp
@@ -79,6 +76,14 @@ qt_internal_extend_target(QAndroidIntegrationPlugin CONDITION QT_FEATURE_android
 qt_internal_extend_target(QAndroidIntegrationPlugin CONDITION NOT QT_FEATURE_android_style_assets
     SOURCES
         extract-dummy.cpp
+)
+
+qt_internal_extend_target(QAndroidIntegrationPlugin CONDITION QT_FEATURE_accessibility
+    SOURCES
+        androidjniaccessibility.cpp androidjniaccessibility.h
+        qandroidplatformaccessibility.cpp qandroidplatformaccessibility.h
+    NO_UNITY_BUILD_SOURCES
+        androidjniaccessibility.cpp
 )
 
 qt_internal_extend_target(QAndroidIntegrationPlugin CONDITION QT_FEATURE_vulkan

@@ -4,11 +4,15 @@
 
 #include "qandroidplatformintegration.h"
 
+#if QT_CONFIG(accessibility)
 #include "androidjniaccessibility.h"
+#endif
 #include "androidjnimain.h"
 #include "qabstracteventdispatcher.h"
 #include "qandroideventdispatcher.h"
+#if QT_CONFIG(accessibility)
 #include "qandroidplatformaccessibility.h"
+#endif
 #include "qandroidplatformclipboard.h"
 #include "qandroidplatformfontdatabase.h"
 #include "qandroidplatformforeignwindow.h"
