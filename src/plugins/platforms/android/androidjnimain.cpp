@@ -18,7 +18,9 @@
 #include "qandroideventdispatcher.h"
 #include "qandroidplatformdialoghelpers.h"
 #include "qandroidplatformintegration.h"
+#if QT_CONFIG(clipboard)
 #include "qandroidplatformclipboard.h"
+#endif
 #if QT_CONFIG(accessibility)
 #include "androidjniaccessibility.h"
 #endif
@@ -820,7 +822,9 @@ static bool registerNatives(QJniEnvironment &env)
         && QtAndroidAccessibility::registerNatives(env)
 #endif
         && QtAndroidDialogHelpers::registerNatives(env)
+#if QT_CONFIG(clipboard)
         && QAndroidPlatformClipboard::registerNatives(env)
+#endif
         && QAndroidPlatformWindow::registerNatives(env)
         && QtAndroidWindowEmbedding::registerNatives(env)
         && AndroidBackendRegister::registerNatives()

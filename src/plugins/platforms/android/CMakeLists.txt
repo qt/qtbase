@@ -21,7 +21,6 @@ qt_internal_add_plugin(QAndroidIntegrationPlugin
         qandroidassetsfileenginehandler.cpp qandroidassetsfileenginehandler.h
         qandroideventdispatcher.cpp qandroideventdispatcher.h
         qandroidinputcontext.cpp qandroidinputcontext.h
-        qandroidplatformclipboard.cpp qandroidplatformclipboard.h
         qandroidplatformdialoghelpers.cpp qandroidplatformdialoghelpers.h
         qandroidplatformfiledialoghelper.cpp qandroidplatformfiledialoghelper.h
         qandroidplatformfontdatabase.cpp qandroidplatformfontdatabase.h
@@ -77,6 +76,11 @@ qt_internal_extend_target(QAndroidIntegrationPlugin CONDITION QT_FEATURE_android
 qt_internal_extend_target(QAndroidIntegrationPlugin CONDITION NOT QT_FEATURE_android_style_assets
     SOURCES
         extract-dummy.cpp
+)
+
+qt_internal_extend_target(QAndroidIntegrationPlugin CONDITION QT_FEATURE_clipboard
+    SOURCES
+        qandroidplatformclipboard.cpp qandroidplatformclipboard.h
 )
 
 qt_internal_extend_target(QAndroidIntegrationPlugin CONDITION QT_FEATURE_accessibility
