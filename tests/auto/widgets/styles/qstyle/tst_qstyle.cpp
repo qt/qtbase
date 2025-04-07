@@ -36,6 +36,8 @@
 
 #include <algorithm>
 
+#include <QtGui/private/qcolorspace_p.h>
+#include <QtGui/private/qcolortrclut_p.h>
 #include <QtTest/private/qtesthelpers_p.h>
 
 using namespace QTestPrivate;
@@ -50,6 +52,7 @@ private slots:
     void cleanup();
 #ifndef QT_NO_STYLE_FUSION
     void testFusionStyle();
+    void testContrastFusionPalette();
 #endif
     void testWindowsStyle();
 #if defined(Q_OS_WIN) && !defined(QT_NO_STYLE_WINDOWSVISTA)
@@ -286,6 +289,52 @@ void tst_QStyle::testFusionStyle()
     QVERIFY(!fstyle.isNull());
     QVERIFY(testAllFunctions(fstyle.data()));
     lineUpLayoutTest(fstyle.data());
+}
+
+void tst_QStyle::testContrastFusionPalette()
+{
+    QScopedPointer<QStyle> fstyle(QStyleFactory::create("Fusion"));
+    QVERIFY(!fstyle.isNull());
+    const QPalette p = fstyle->standardPalette();
+
+    // WCAG 2.1 contrast ratio success criterion for text:
+    // https://www.w3.org/TR/WCAG21/#contrast-enhanced  (SC 1.4.6, Level AAA)
+    const float WCAG21EnhancedContrastRatio = 7.0f;
+
+    // Returns the WCAG 2.1 contrast ratio between two rgb values.
+    const auto contrastRatio = [](QRgb lhs, QRgb rhs) {
+        static const std::shared_ptr<QColorTrcLut> sRGB_gamma_correction_lut = QColorTrcLut::fromTrc(
+                QColorSpacePrivate::get(QColorSpace(QColorSpace::SRgb))->trc[0]);
+        const auto sRGB_relative_luminance = [](QRgb c) {
+            return 0.2126f * sRGB_gamma_correction_lut->u8ToLinearF32(qRed(c))
+                 + 0.7152f * sRGB_gamma_correction_lut->u8ToLinearF32(qGreen(c))
+                 + 0.0722f * sRGB_gamma_correction_lut->u8ToLinearF32(qBlue(c));
+        };
+        const float l1 = sRGB_relative_luminance(lhs);
+        const float l2 = sRGB_relative_luminance(rhs);
+        return l1 > l2 ? (l1 + 0.05f) / (l2 + 0.05f)
+                       : (l2 + 0.05f) / (l1 + 0.05f);
+    };
+
+    // Key foreground/background pairs that must meet WCAG 2.1 enhanced contrast (7:1).
+    static constexpr std::pair<QPalette::ColorRole, QPalette::ColorRole> pairs[] = {
+        { QPalette::WindowText, QPalette::Window },
+        { QPalette::Text,       QPalette::Base   },
+        { QPalette::ButtonText, QPalette::Button },
+    };
+    const QMetaEnum roleEnum = QMetaEnum::fromType<QPalette::ColorRole>();
+    for (const auto &[fg, bg] : pairs) {
+        const QColor fgColor = p.color(fg);
+        const QColor bgColor = p.color(bg);
+        const float ratio = contrastRatio(fgColor.rgba(), bgColor.rgba());
+        QVERIFY2(ratio >= WCAG21EnhancedContrastRatio,
+                 qPrintable(QString("Contrast ratio between %1 (%2) and %3 (%4) is %5:1, "
+                                    "expected %6:1 or more")
+                            .arg(roleEnum.valueToKey(fg), fgColor.name(),
+                                 roleEnum.valueToKey(bg), bgColor.name())
+                            .arg(ratio, 0, 'f', 2)
+                            .arg(WCAG21EnhancedContrastRatio, 0, 'f', 1)));
+    }
 }
 #endif
 
