@@ -733,6 +733,7 @@ void QDockWidgetGroupWindow::destroyIfSingleItemLeft()
     reparentToMainWindow(lastDockWidget);
 
     // the group window could still have placeholder items => clear everything
+    layoutInfo()->deleteAllLayoutItems();
     layoutInfo()->item_list.clear();
 
     destroyOrHideIfEmpty();
