@@ -15,7 +15,7 @@ qt_internal_add_test(tst_qstyle
     SOURCES
         tst_qstyle.cpp
     LIBRARIES
-        Qt::Gui
+        Qt::GuiPrivate
         Qt::TestPrivate
         Qt::Widgets
 )
