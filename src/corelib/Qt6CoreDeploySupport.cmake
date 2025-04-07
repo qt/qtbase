@@ -286,15 +286,22 @@ function(_qt_internal_generic_deployqt)
             "${file_path}"
         )
         get_filename_component(destination "${destination}" DIRECTORY)
-        string(PREPEND destination "${CMAKE_INSTALL_PREFIX}/${arg_PLUGINS_DIR}/")
-        file(INSTALL ${file_path} DESTINATION ${destination})
+        string(PREPEND destination "${arg_PLUGINS_DIR}/")
+
+        # CMAKE_INSTALL_PREFIX does not contain $ENV{DESTDIR}, whereas QT_DEPLOY_PREFIX does.
+        # The install_ variant should be used in file(INSTALL) to avoid double DESTDIR in paths.
+        # Other code should reference the dest_ variant instead.
+        set(install_path "${CMAKE_INSTALL_PREFIX}/${destination}")
+        set(destdir_path "${QT_DEPLOY_PREFIX}/${destination}")
+
+        file(INSTALL ${file_path} DESTINATION "${install_path}")
 
         if(__QT_DEPLOY_MUST_ADJUST_PLUGINS_RPATH)
             get_filename_component(file_name ${file_path} NAME)
-            file(RELATIVE_PATH rel_lib_dir "${destination}"
+            file(RELATIVE_PATH rel_lib_dir "${destdir_path}"
                 "${QT_DEPLOY_PREFIX}/${QT_DEPLOY_LIB_DIR}")
             _qt_internal_set_rpath(
-                FILE "${destination}/${file_name}"
+                FILE "${destdir_path}/${file_name}"
                 NEW_RPATH "${rpath_origin}/${rel_lib_dir}"
             )
         endif()
