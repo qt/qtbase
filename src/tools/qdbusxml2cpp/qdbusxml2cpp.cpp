@@ -1065,9 +1065,10 @@ void QDBusXmlToCpp::writeAdaptor(const QString &filename,
 
             if (usingInvokeMethod) {
                 // we are using QMetaObject::invokeMethod
-                if (!returnType.isEmpty())
+                if (!returnType.isEmpty()) {
                     cs << "    " << returnType << " " << argNames.at(method.inputArgs.size())
-                       << ";\n";
+                       << "{};\n";
+                }
 
                 static const char invoke[] = "    QMetaObject::invokeMethod(parent(), \"";
                 cs << invoke << name << "\"";
