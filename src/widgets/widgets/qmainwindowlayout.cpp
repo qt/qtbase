@@ -470,6 +470,12 @@ void QDockWidgetGroupWindow::destroyOrHideIfEmpty()
         if (!wasHidden)
             dw->show();
     }
+    Q_ASSERT(qobject_cast<QMainWindow *>(parentWidget()));
+    auto *mainWindow = static_cast<QMainWindow *>(parentWidget());
+    QMainWindowLayout *mwLayout = qt_mainwindow_layout(mainWindow);
+    QDockAreaLayoutInfo &parentInfo = mwLayout->layoutState.dockAreaLayout.docks[layoutInfo()->dockPos];
+    std::unique_ptr<QLayoutItem> cleanup = parentInfo.takeWidgetItem(this);
+    parentInfo.remove(this);
     deleteLater();
 }
 
@@ -713,16 +719,14 @@ void QDockWidgetGroupWindow::destroyIfSingleItemLeft()
     if (layoutInfo()->indexOf(lastDockWidget).isEmpty())
         return;
 
-    auto *mainWindow = qobject_cast<QMainWindow *>(parentWidget());
+    Q_ASSERT(qobject_cast<QMainWindow *>(parentWidget()));
+    auto *mainWindow = static_cast<QMainWindow *>(parentWidget());
     QMainWindowLayout *mwLayout = qt_mainwindow_layout(mainWindow);
 
     // Unplug the last remaining dock widget and hide the group window, to avoid flickering
     mwLayout->unplug(lastDockWidget, QDockWidgetPrivate::DragScope::Widget);
     lastDockWidget->setGeometry(geometry());
     hide();
-
-    // Get the layout info for the main window dock, where dock widgets need to go
-    QDockAreaLayoutInfo &parentInfo = mwLayout->layoutState.dockAreaLayout.docks[layoutInfo()->dockPos];
 
     // Re-parent last dock widget
     reparentToMainWindow(lastDockWidget);
@@ -731,8 +735,6 @@ void QDockWidgetGroupWindow::destroyIfSingleItemLeft()
     layoutInfo()->deleteAllLayoutItems();
     layoutInfo()->item_list.clear();
 
-    // remove the group window and the dock's item_list pointing to it.
-    parentInfo.remove(this);
     destroyOrHideIfEmpty();
 }
 
@@ -742,13 +744,14 @@ void QDockWidgetGroupWindow::reparentToMainWindow(QDockWidget *dockWidget)
     // - remove it from the floating dock's layout info
     // - insert it to the main dock's layout info
     // Finally, set draggingDock to nullptr, since the drag is finished.
-    auto *mainWindow = qobject_cast<QMainWindow *>(parentWidget());
-    Q_ASSERT(mainWindow);
+    Q_ASSERT(qobject_cast<QMainWindow *>(parentWidget()));
+    auto *mainWindow = static_cast<QMainWindow *>(parentWidget());
     QMainWindowLayout *mwLayout = qt_mainwindow_layout(mainWindow);
     Q_ASSERT(mwLayout);
     QDockAreaLayoutInfo &parentInfo = mwLayout->layoutState.dockAreaLayout.docks[layoutInfo()->dockPos];
     dockWidget->removeEventFilter(this);
     parentInfo.add(dockWidget);
+    std::unique_ptr<QLayoutItem> cleanup = layoutInfo()->takeWidgetItem(dockWidget);
     layoutInfo()->remove(dockWidget);
     const bool wasFloating = dockWidget->isFloating();
     const bool wasVisible = dockWidget->isVisible();
