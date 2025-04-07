@@ -4,6 +4,7 @@
 
 #include "qandroidplatformservices.h"
 
+#if QT_CONFIG(desktopservices)
 #include <QDebug>
 #include <QDesktopServices>
 #include <QFile>
@@ -11,17 +12,21 @@
 #include <QtCore/QJniObject>
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qscopedvaluerollback.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
 using namespace QtJniTypes;
 using namespace Qt::StringLiterals;
 
+#if QT_CONFIG(desktopservices)
 static constexpr auto s_defaultScheme = "file"_L1;
 static constexpr auto s_defaultProvider = "qtprovider"_L1;
+#endif
 
 QAndroidPlatformServices::QAndroidPlatformServices()
 {
+#if QT_CONFIG(desktopservices)
     m_actionView = QJniObject::getStaticObjectField("android/content/Intent", "ACTION_VIEW",
                                                     "Ljava/lang/String;")
                            .toString();
@@ -40,6 +45,12 @@ QAndroidPlatformServices::QAndroidPlatformServices()
                 },
                 Qt::QueuedConnection);
     }
+#endif // QT_CONFIG(desktopservices)
+}
+
+QByteArray QAndroidPlatformServices::desktopEnvironment() const
+{
+    return QByteArray("Android");
 }
 
 Q_DECLARE_JNI_CLASS(FileProvider, "androidx/core/content/FileProvider");
@@ -47,6 +58,7 @@ Q_DECLARE_JNI_CLASS(PackageManager, "android/content/pm/PackageManager");
 Q_DECLARE_JNI_CLASS(PackageInfo, "android/content/pm/PackageInfo");
 Q_DECLARE_JNI_CLASS(ProviderInfo, "android/content/pm/ProviderInfo");
 
+#if QT_CONFIG(desktopservices)
 bool QAndroidPlatformServices::openUrl(const QUrl &theUrl)
 {
     QUrl url(theUrl);
@@ -159,11 +171,6 @@ bool QAndroidPlatformServices::openDocument(const QUrl &url)
     return openUrl(url);
 }
 
-QByteArray QAndroidPlatformServices::desktopEnvironment() const
-{
-    return QByteArray("Android");
-}
-
 bool QAndroidPlatformServices::handleNewIntent(JNIEnv *env, jobject intent)
 {
     Q_UNUSED(env);
@@ -178,5 +185,6 @@ bool QAndroidPlatformServices::handleNewIntent(JNIEnv *env, jobject intent)
     QScopedValueRollback<QUrl> rollback(m_handlingUrl, url);
     return QDesktopServices::openUrl(url);
 }
+#endif // QT_CONFIG(desktopservices)
 
 QT_END_NAMESPACE
