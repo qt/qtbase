@@ -1,8 +1,24 @@
 // Copyright (C) 2025 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
-// Up-to-date with Qt Creator 14.0.0
+// Up-to-date with Qt Creator 16.0.0
 
+/*!
+    \externalpage https://doc.qt.io/qtcreator/creator-qtaiassistant.html
+    \title \QC: Use Qt AI Assistant
+*/
+/*!
+    \externalpage https://doc.qt.io/qtcreator/creator-how-to-create-vxworks-kits.html
+    \title \QC: Create kits for VxWorks devices
+*/
+/*!
+    \externalpage https://doc.qt.io/qtcreator/creator-how-to-create-lua-scripts.html
+    \title \QC: Create Lua scripts
+*/
+/*!
+    \externalpage https://doc.qt.io/qtcreator/creator-how-to-manage-winappsdk.html
+    \title \QC: Manage Windows App SDK packages
+*/
 /*!
     \externalpage https://doc.qt.io/qtcreator/creator-deployment-qnx.html
     \title \QC: QNX Neutrino Deploy Configuration
@@ -69,8 +85,12 @@
     \title \QC: Developing for MCUs
 */
 /*!
-    \externalpage https://doc.qt.io/qtcreator/creator-how-to-create-mcu-kits.html
-    \title \QC: Connect MCU devices
+    \externalpage https://doc.qt.io/qtcreator/creator-how-to-add-mcu-devices.html
+    \title \QC: Add MCU devices
+*/
+/*!
+    \externalpage https://doc.qt.io/qtcreator/creator-how-to-add-mcu-kits.html
+    \title \QC: Add MCU SDKs
 */
 /*!
     \externalpage https://doc.qt.io/qtcreator/creator-how-to-manage-mcu-kits.html
@@ -364,6 +384,110 @@
 /*!
     \externalpage https://doc.qt.io/qtcreator/creator-vcs-git.html
     \title \QC: Git
+*/
+/*!
+    \externalpage https://doc.qt.io/qtcreator/creator-how-to-git-first-commit.html
+    \title \QC: Commit your first change
+*/
+/*!
+    \externalpage https://doc.qt.io/qtcreator/creator-how-to-git-tools.html
+    \title \QC: Git Tools
+*/
+/*!
+    \externalpage https://doc.qt.io/qtcreator/creator-how-to-initialize-git-repo.html
+    \title \QC: Initialize Git repositories
+*/
+/*!
+    \externalpage https://doc.qt.io/qtcreator/creator-how-to-use-git-on-windows.html
+    \title \QC: Use Git for Windows
+*/
+/*!
+    \externalpage https://doc.qt.io/qtcreator/creator-how-to-git-with-subversion.html
+    \title \QC: Use Git with Subversion
+*/
+/*!
+    \externalpage https://doc.qt.io/qtcreator/creator-how-to-git-instant-blame.html
+    \title \QC: Show instant blame
+*/
+/*!
+    \externalpage https://doc.qt.io/qtcreator/creator-how-to-git-stage-changes.html
+    \title \QC: Stage changes
+*/
+/*!
+    \externalpage https://doc.qt.io/qtcreator/creator-how-to-git-blame.html
+    \title \QC: git blame
+*/
+/*!
+    \externalpage https://doc.qt.io/qtcreator/creator-how-to-git-clean.html
+    \title \QC: git clean
+*/
+/*!
+    \externalpage https://doc.qt.io/qtcreator/creator-how-to-git-diff.html
+    \title \QC: git diff
+*/
+/*!
+    \externalpage https://doc.qt.io/qtcreator/creator-how-to-git-log.html
+    \title \QC: git log
+*/
+/*!
+    \externalpage https://doc.qt.io/qtcreator/creator-how-to-git-reset.html
+    \title \QC: git reset
+*/
+/*!
+    \externalpage https://doc.qt.io/qtcreator/creator-how-to-git-apply-patch.html
+    \title \QC: Apply patches
+*/
+/*!
+    \externalpage https://doc.qt.io/qtcreator/creator-how-to-git-interactive-rebase.html
+    \title \QC: Interactive rebase
+*/
+/*!
+    \externalpage https://doc.qt.io/qtcreator/creator-how-to-git-am.html
+    \title \QC: git am
+*/
+/*!
+    \externalpage https://doc.qt.io/qtcreator/creator-how-to-git-branch.html
+    \title \QC: git branch
+*/
+/*!
+    \externalpage https://doc.qt.io/qtcreator/creator-how-to-git-commit.html
+    \title \QC: git commit
+*/
+/*!
+    \externalpage https://doc.qt.io/qtcreator/creator-how-to-git-merge.html
+    \title \QC: git merge
+*/
+/*!
+    \externalpage https://doc.qt.io/qtcreator/creator-how-to-git-reflog.html
+    \title \QC: git reflog
+*/
+/*!
+    \externalpage https://doc.qt.io/qtcreator/creator-how-to-git-stash.html
+    \title \QC: git stash
+*/
+/*!
+    \externalpage https://doc.qt.io/qtcreator/creator-how-to-git-status.html
+    \title \QC: git status
+*/
+/*!
+    \externalpage https://doc.qt.io/qtcreator/creator-how-to-git-commits.html
+    \title \QC: Apply actions to commits
+*/
+/*!
+    \externalpage https://doc.qt.io/qtcreator/creator-how-to-gerrit.html
+    \title \QC: Review code with Gerrit
+*/
+/*!
+    \externalpage https://doc.qt.io/qtcreator/creator-how-to-git-fetch.html
+    \title \QC: git fetch
+*/
+/*!
+    \externalpage https://doc.qt.io/qtcreator/creator-how-to-git-pull.html
+    \title \QC: git pull
+*/
+/*!
+    \externalpage https://doc.qt.io/qtcreator/creator-how-to-git-push.html
+    \title \QC: git push
 */
 /*!
     \externalpage https://doc.qt.io/qtcreator/creator-vcs-gitlab.html
@@ -1336,19 +1460,19 @@
 */
 /*!
     \externalpage https://doc.qt.io/qtcreator/creator-axivion.html
-    \title \QC: Prevent code erosion
+    \title \QC: View Axivion static code analysis results
 */
 /*!
     \externalpage https://doc.qt.io/qtcreator/creator-preferences-axivion.html
     \title \QC: Axivion
 */
 /*!
-    \externalpage https://doc.qt.io/qtcreator/creator-link-axivion-dashboards.html
-    \title \QC: Link projects to Axivion dashboards
+    \externalpage https://doc.qt.io/qtcreator/creator-coco.html
+    \title \QC: Set up code coverage from Coco
 */
 /*!
-    \externalpage https://doc.qt.io/qtcreator/creator-coco.html
-    \title \QC: Check code coverage
+    \externalpage https://doc.qt.io/qtcreator/creator-how-to-view-code-coverage-with-coco.html
+    \title \QC: View code coverage reports from Coco
 */
 /*!
     \externalpage https://doc.qt.io/qtcreator/creator-how-to-run-in-app-manager.html
@@ -1419,8 +1543,16 @@
     \title \QC: Reset \QC settings
 */
 /*!
+    \externalpage https://doc.qt.io/qtcreator/creator-how-to-install-extensions.html
+    \title \QC: Install extensions
+*/
+/*!
     \externalpage https://doc.qt.io/qtcreator/creator-how-to-load-extensions.html
     \title \QC: Load extensions
+*/
+/*!
+    \externalpage https://doc.qt.io/qtcreator/creator-how-to-manage-extensions.html
+    \title \QC: Manage extensions
 */
 /*!
     \externalpage https://doc.qt.io/qtcreator/creator-how-to-install-plugins.html
