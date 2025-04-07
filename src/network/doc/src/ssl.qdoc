@@ -78,12 +78,13 @@
 
     \section1 Import and Export Restrictions
 
-    Qt binary installers include the OpenSSL libraries used by QtNetwork. However,
-    those are not automatically deployed with applications that are built with Qt.
     Import and export restrictions apply for some types of software, and for
-    some parts of the world. Developers wishing to use SSL communication in their
-    deployed applications should either ensure that their users have the appropriate
-    libraries installed, or they should consult a suitably qualified legal
-    professional to ensure that applications using code from the OpenSSL project
-    are correctly certified for import and export in relevant regions of the world.
+    some parts of the world. Developers wishing to use SSL communication in
+    their deployed applications should either ensure that their users have the
+    appropriate libraries installed, or they should consult a suitably
+    qualified legal professional to ensure that applications using code from
+    the OpenSSL project are correctly certified for import and export in
+    relevant regions of the world.
+
+    Refer to \l{Export Control of Qt Framework and Tools} for more information.
 */
