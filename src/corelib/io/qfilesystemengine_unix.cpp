@@ -1236,9 +1236,7 @@ bool QFileSystemEngine::createLink(const QFileSystemEntry &source, const QFileSy
     return false;
 }
 
-#ifdef Q_OS_DARWIN
-// see qfilesystemengine_mac.mm
-#elif defined(QT_BOOTSTRAPPED) || !defined(AT_FDCWD) || defined(Q_OS_ANDROID) || !QT_CONFIG(datestring) || defined(Q_OS_VXWORKS)
+#if defined(QT_BOOTSTRAPPED) || !defined(AT_FDCWD) || defined(Q_OS_ANDROID) || !QT_CONFIG(datestring) || defined(Q_OS_VXWORKS)
 // bootstrapped tools don't need this, and we don't want QStorageInfo
 //static
 bool QFileSystemEngine::supportsMoveFileToTrash()
@@ -1253,6 +1251,8 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &, QFileSystemEnt
     error = QSystemError(ENOSYS, QSystemError::StandardLibraryError);
     return false;
 }
+#elif defined(Q_OS_DARWIN)
+// see qfilesystemengine_mac.mm
 #else
 /*
     Implementing as per https://specifications.freedesktop.org/trash-spec/1.0/
