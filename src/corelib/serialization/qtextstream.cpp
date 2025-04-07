@@ -1672,10 +1672,10 @@ QTextStreamPrivate::NumberParsingStatus QTextStreamPrivate::getNumber(qulonglong
         // Parse digits
         int ndigits = 0;
         while (getChar(&dig)) {
-            int n = dig.toLower().unicode();
-            if (n == '0' || n == '1') {
+            char16_t n = dig.toLower().unicode();
+            if (n == u'0' || n == u'1') {
                 val <<= 1;
-                val += n - '0';
+                val += n - u'0';
             } else {
                 ungetChar(dig);
                 break;
@@ -1692,16 +1692,16 @@ QTextStreamPrivate::NumberParsingStatus QTextStreamPrivate::getNumber(qulonglong
     }
     case 8: {
         QChar pf, dig;
-        // Parse prefix '0'
+        // Parse prefix u'0'
         if (!getChar(&pf) || pf != u'0')
             return npsInvalidPrefix;
         // Parse digits
         int ndigits = 0;
         while (getChar(&dig)) {
-            int n = dig.toLower().unicode();
+            char16_t n = dig.toLower().unicode();
             if (isOctalDigit(n)) {
                 val *= 8;
-                val += n - '0';
+                val += n - u'0';
             } else {
                 ungetChar(dig);
                 break;
@@ -1856,23 +1856,23 @@ bool QTextStreamPrivate::getReal(double *f)
     QChar c;
     while (getChar(&c)) {
         switch (c.unicode()) {
-        case '0': case '1': case '2': case '3': case '4':
-        case '5': case '6': case '7': case '8': case '9':
+        case u'0': case u'1': case u'2': case u'3': case u'4':
+        case u'5': case u'6': case u'7': case u'8': case u'9':
             input = InputDigit;
             break;
-        case 'i': case 'I':
+        case u'i': case u'I':
             input = InputI;
             break;
-        case 'n': case 'N':
+        case u'n': case u'N':
             input = InputN;
             break;
-        case 'f': case 'F':
+        case u'f': case u'F':
             input = InputF;
             break;
-        case 'a': case 'A':
+        case u'a': case u'A':
             input = InputA;
             break;
-        case 't': case 'T':
+        case u't': case u'T':
             input = InputT;
             break;
         default: {
