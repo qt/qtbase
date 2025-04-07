@@ -345,6 +345,7 @@ bool QAndroidPlatformIntegration::hasCapability(Capability cap) const
         // FIXME QTBUG-118849 - we do not implement grabWindow() anymore, calling it will return
         // a null QPixmap also for raster windows - for OpenGL windows this was always true
         case ScreenWindowGrabbing: return false;
+        case OffscreenSurface: return QtAndroidPrivate::activity().isValid();
         default:
             return QPlatformIntegration::hasCapability(cap);
     }

@@ -244,6 +244,7 @@ bool QCocoaIntegration::hasCapability(QPlatformIntegration::Capability cap) cons
     case ApplicationState:
     case ApplicationIcon:
     case BackingStoreStaticContents:
+    case OffscreenSurface:
         return true;
     default:
         return QPlatformIntegration::hasCapability(cap);

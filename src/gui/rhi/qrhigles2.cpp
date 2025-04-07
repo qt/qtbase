@@ -5,9 +5,11 @@
 #include <QOffscreenSurface>
 #include <QOpenGLContext>
 #include <QtCore/qmap.h>
+#include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qopenglextensions_p.h>
 #include <QtGui/private/qopenglprogrambinarycache_p.h>
 #include <QtGui/private/qwindow_p.h>
+#include <kernel/qplatformintegration.h>
 #include <qpa/qplatformopenglcontext.h>
 #include <qmath.h>
 
@@ -606,7 +608,8 @@ QRhiGles2InitParams::QRhiGles2InitParams()
     \a format is adjusted as appropriate in order to avoid having problems
     afterwards due to an incompatible context and surface.
 
-    \note This function must only be called on the gui/main thread.
+    \note This function must only be called on the gui/main thread or if
+    the platform integration supports offscreen surfaces.
 
     \note It is the application's responsibility to destroy the returned
     QOffscreenSurface on the gui/main thread once the associated QRhi has been
@@ -614,6 +617,10 @@ QRhiGles2InitParams::QRhiGles2InitParams()
  */
 QOffscreenSurface *QRhiGles2InitParams::newFallbackSurface(const QSurfaceFormat &format)
 {
+    Q_ASSERT(QThread::isMainThread()
+             || QGuiApplicationPrivate::platformIntegration()->hasCapability(
+                     QPlatformIntegration::OffscreenSurface));
+
     QSurfaceFormat fmt = format;
 
     // To resolve all fields in the format as much as possible, create a context.

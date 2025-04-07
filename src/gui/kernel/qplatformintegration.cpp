@@ -496,6 +496,8 @@ class QPlatformTheme *QPlatformIntegration::createPlatformTheme(const QString &n
    Factory function for QOffscreenSurface. An offscreen surface will typically be implemented with a
    pixel buffer (pbuffer). If the platform doesn't support offscreen surfaces, an invisible window
    will be used by QOffscreenSurface instead.
+
+   If the platform has the OffscreenSurface capability, this should always return a valid pointer.
 */
 QPlatformOffscreenSurface *QPlatformIntegration::createPlatformOffscreenSurface(QOffscreenSurface *surface) const
 {

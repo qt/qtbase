@@ -232,6 +232,7 @@ bool QEglFSIntegration::hasCapability(QPlatformIntegration::Capability cap) cons
 #endif
     case WindowManagement: return false;
     case OpenGLOnRasterSurface: return true;
+    case OffscreenSurface: return true;
     default: return QPlatformIntegration::hasCapability(cap);
     }
 }

@@ -29,6 +29,7 @@ public:
 
     virtual QXcbWindow *createWindow(QWindow *window) const = 0;
 #ifndef QT_NO_OPENGL
+    virtual bool canCreatePlatformOffscreenSurface() const { return false; }
     virtual QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const = 0;
 #endif
     virtual QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const = 0;

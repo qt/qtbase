@@ -321,6 +321,8 @@ bool QXcbIntegration::hasCapability(QPlatformIntegration::Capability cap) const
     case SyncState:
     case RasterGLSurface:
         return true;
+    case OffscreenSurface:
+        return m_connection->glIntegration() && m_connection->glIntegration()->canCreatePlatformOffscreenSurface();
 
     case SwitchableWidgetComposition:
     {

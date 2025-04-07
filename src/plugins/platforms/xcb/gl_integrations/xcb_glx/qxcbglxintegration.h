@@ -23,6 +23,7 @@ public:
     QXcbWindow *createWindow(QWindow *window) const override;
     QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const override;
     QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const override;
+    bool canCreatePlatformOffscreenSurface() const override;
     QOpenGLContext *createOpenGLContext(GLXContext context, void *visualInfo, QOpenGLContext *shareContext) const override;
 
     bool supportsThreadedOpenGL() const override;

@@ -144,6 +144,11 @@ QPlatformOffscreenSurface *QXcbEglIntegration::createPlatformOffscreenSurface(QO
     return new QEGLPbuffer(eglDisplay(), screen->surfaceFormatFor(surface->requestedFormat()), surface);
 }
 
+bool QXcbEglIntegration::canCreatePlatformOffscreenSurface() const
+{
+    return true;
+}
+
 xcb_visualid_t QXcbEglIntegration::getCompatibleVisualId(xcb_screen_t *screen, EGLConfig config) const
 {
     xcb_visualid_t visualId = 0;

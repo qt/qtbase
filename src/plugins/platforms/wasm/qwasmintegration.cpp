@@ -192,6 +192,7 @@ bool QWasmIntegration::hasCapability(QPlatformIntegration::Capability cap) const
     case WindowManagement: return true;
     case ForeignWindows: return true;
     case OpenGLOnRasterSurface: return true;
+    case OffscreenSurface: return true;
     default: return QPlatformIntegration::hasCapability(cap);
     }
 }
