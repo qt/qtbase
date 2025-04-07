@@ -1501,6 +1501,14 @@ QList<int> QDockAreaLayoutInfo::indexOf(const QWidget *widget) const
     return QList<int>();
 }
 
+std::unique_ptr<QLayoutItem> QDockAreaLayoutInfo::takeWidgetItem(QWidget *widget)
+{
+    std::unique_ptr<QLayoutItem> widgetItem;
+    if (const auto path = indexOf(widget); !path.isEmpty())
+        widgetItem.reset(item(path).widgetItem);
+    return widgetItem;
+}
+
 QMainWindowLayout *QDockAreaLayoutInfo::mainWindowLayout() const
 {
     QMainWindowLayout *result = qt_mainwindow_layout(mainWindow);

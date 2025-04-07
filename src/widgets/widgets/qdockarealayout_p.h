@@ -145,6 +145,7 @@ public:
 
     QList<int> indexOf(const QWidget *widget) const;
     QList<int> indexOfPlaceHolder(const QString &objectName) const;
+    std::unique_ptr<QLayoutItem> takeWidgetItem(QWidget *widget);
 
     QDockWidget *apply(bool animate);
 
