@@ -165,7 +165,7 @@ static inline int typeFromTypeInfo(const QMetaObject *mo, uint typeInfo)
 {
     if (!(typeInfo & IsUnresolvedType))
         return typeInfo;
-    return QMetaType::fromName(rawStringData(mo, typeInfo & TypeNameIndexMask)).id();
+    return QMetaType::fromName(stringDataView(mo, typeInfo & TypeNameIndexMask)).id();
 }
 
 static auto parse_scope(QByteArrayView qualifiedKey) noexcept
