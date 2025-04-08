@@ -274,6 +274,9 @@ function(qt_auto_detect_apple)
         endif()
     endif()
 
+    _qt_internal_get_apple_sdk_path(apple_sdk_path)
+    set(QT_APPLE_SDK_PATH "${apple_sdk_path}" CACHE STRING "Darwin SDK path.")
+
     _qt_internal_get_apple_sdk_version(apple_sdk_version)
     set(QT_MAC_SDK_VERSION "${apple_sdk_version}" CACHE STRING "Darwin SDK version.")
 

@@ -859,6 +859,25 @@ function(_qt_internal_execute_xcrun out_var)
     set(${out_var} "${output}" PARENT_SCOPE)
 endfunction()
 
+function(_qt_internal_get_apple_sdk_path out_var)
+    set(sdk_path "")
+    if(APPLE)
+        _qt_internal_get_apple_sdk_name(sdk_name)
+        _qt_internal_execute_xcrun(sdk_path
+            XCRUN_ARGS --sdk ${sdk_name} --show-sdk-path
+            OUT_ERROR_VAR xcrun_error
+        )
+
+        if(NOT sdk_path)
+            message(FATAL_ERROR
+                    "Can't determine darwin ${sdk_name} SDK path. Error: ${xcrun_error}")
+        endif()
+
+        string(STRIP "${sdk_path}" sdk_path)
+    endif()
+    set(${out_var} "${sdk_path}" PARENT_SCOPE)
+endfunction()
+
 function(_qt_internal_get_apple_sdk_version out_var)
     set(sdk_version "")
     if(APPLE)
