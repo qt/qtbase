@@ -652,13 +652,21 @@ qt_internal_extend_target(Core CONDITION APPLE
                             #   - Provide DT_* macros to qfilesystemengine_unix.cpp
                             #   - Enables SOCK_MAXADDRLEN in case its missing during the unity build
     NO_UNITY_BUILD_SOURCES
+        kernel/qcore_mac.mm # See below
         kernel/qsystemerror.cpp
         # This makes sure that the tst_qmakelib passes. For some reason,
         # QtCore ends up returning a corrupted error message in
         # write_file(): fail
+    NO_PCH_SOURCES
+        kernel/qcore_mac.mm # See below
     ATTRIBUTION_FILE_DIR_PATHS
         kernel
 )
+
+if(APPLE)
+    # For QObjCWeakPointer
+    set_source_files_properties(kernel/qcore_mac.mm PROPERTIES COMPILE_FLAGS -fobjc-weak)
+endif()
 
 qt_internal_extend_target(Core CONDITION MACOS
     LIBRARIES

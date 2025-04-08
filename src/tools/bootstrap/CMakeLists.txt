@@ -143,9 +143,18 @@ qt_internal_extend_target(Bootstrap CONDITION APPLE
         ../../corelib/kernel/qcore_mac.mm
         ../../corelib/kernel/qcoreapplication_mac.cpp
         ../../corelib/tools/qversionnumber.cpp
+    NO_UNITY_BUILD_SOURCES
+        kernel/qcore_mac.mm # See below
+    NO_PCH_SOURCES
+        kernel/qcore_mac.mm # See below
     PUBLIC_LIBRARIES
         ${FWFoundation}
 )
+
+if(APPLE)
+    # For QObjCWeakPointer
+    set_source_files_properties(../../corelib/kernel/qcore_mac.mm PROPERTIES COMPILE_FLAGS -fobjc-weak)
+endif()
 
 qt_internal_extend_target(Bootstrap CONDITION MACOS
     SOURCES

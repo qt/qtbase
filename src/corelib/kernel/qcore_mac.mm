@@ -774,17 +774,39 @@ QMacVersion::VersionTuple QMacVersion::libraryVersion()
 
 // -------------------------------------------------------------------------
 
-#if !(__has_feature(objc_arc_weak) && __has_feature(objc_arc_fields))
-QT_END_NAMESPACE
-@implementation QT_MANGLE_NAMESPACE(WeakPointerLifetimeTracker)
-- (void)dealloc
+QObjCWeakPointerBase::QObjCWeakPointerBase(NSObject *object)
+    : m_weakReference(object)
 {
-    *self.pointer = {};
-    [super dealloc];
 }
-@end
-QT_BEGIN_NAMESPACE
-#endif
+
+QObjCWeakPointerBase::QObjCWeakPointerBase(const QObjCWeakPointerBase &other)
+{
+    QMacAutoReleasePool pool;
+    m_weakReference = other.m_weakReference;
+}
+
+QObjCWeakPointerBase &QObjCWeakPointerBase::operator=(const QObjCWeakPointerBase &other)
+{
+    QMacAutoReleasePool pool;
+    m_weakReference = other.m_weakReference;
+    return *this;
+}
+
+QObjCWeakPointerBase::~QObjCWeakPointerBase()
+{
+    QMacAutoReleasePool pool;
+    m_weakReference = nil;
+}
+
+NSObject *QObjCWeakPointerBase::get() const
+{
+    // Loading from a __weak variable will retain and auto-release (in non-ARC).
+    // Unlike cases above, we want the object to stay alive until the outer
+    // auto-release pool is drained, so that consumers of QObjCWeakPointer
+    // can trust that the variable they get back will be alive, similar to
+    // the semantics of loading from __weak.
+    return m_weakReference;
+}
 
 // -------------------------------------------------------------------------
 
