@@ -149,6 +149,8 @@ void QFileInfoGatherer::fetchExtendedInformation(const QString &path, const QStr
     while ((loc = this->path.lastIndexOf(path, loc - 1)) != -1) {
         if (this->files.at(loc) == files)
             return;
+        if (loc == 0)
+            break;
     }
 
 #if QT_CONFIG(thread)
