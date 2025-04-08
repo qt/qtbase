@@ -12,7 +12,10 @@
 #include <qpa/qplatformscreen.h>
 #include <qpa/qplatformnativeinterface.h>
 #include <QtCore/qdiriterator.h>
+#include <private/qglobal_p.h>  // for widgets feature test
+#if QT_CONFIG(widgets)
 #include <QWidget>
+#endif
 #include <QSignalSpy>
 
 using namespace Qt::StringLiterals;
@@ -37,9 +40,11 @@ private slots:
     void testAndroidSdkVersion();
     void testAndroidActivity();
     void testRunOnAndroidMainThread();
+#if QT_CONFIG(widgets)
     void testFullScreenDimensions();
     void orientationChange_data();
     void orientationChange();
+#endif
 };
 
 void tst_Android::assetsRead()
@@ -213,6 +218,7 @@ void tst_Android::testRunOnAndroidMainThread()
     }
 }
 
+#if QT_CONFIG(widgets)
 // QTBUG-107604
 void tst_Android::testFullScreenDimensions()
 {
@@ -400,6 +406,7 @@ void tst_Android::orientationChange()
     QCOMPARE(screen->size(), screenSize);
     QCOMPARE(widget.size(), screen->availableSize());
 }
+#endif // QT_CONFIG(widgets)
 
 QTEST_MAIN(tst_Android)
 #include "tst_android.moc"

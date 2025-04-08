@@ -18,7 +18,6 @@ qt_internal_add_test(tst_android
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate
-        Qt::Widgets
 )
 
 if(ANDROID)
@@ -26,3 +25,8 @@ if(ANDROID)
         ${CMAKE_CURRENT_SOURCE_DIR}/testdata
     )
 endif()
+
+qt_internal_extend_target(tst_android CONDITION TARGET Qt::Widgets
+    LIBRARIES
+        Qt::Widgets
+)
