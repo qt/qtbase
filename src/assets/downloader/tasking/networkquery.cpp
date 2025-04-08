@@ -36,6 +36,11 @@ void NetworkQuery::start()
         m_reply.reset(m_manager->deleteResource(m_request));
         break;
     }
+
+    connect(m_reply.get(), &QNetworkReply::downloadProgress, this, &NetworkQuery::downloadProgress);
+#if QT_CONFIG(ssl)
+    connect(m_reply.get(), &QNetworkReply::sslErrors, this, &NetworkQuery::sslErrors);
+#endif
     connect(m_reply.get(), &QNetworkReply::finished, this, [this] {
         disconnect(m_reply.get(), &QNetworkReply::finished, this, nullptr);
         emit done(toDoneResult(m_reply->error() == QNetworkReply::NoError));
@@ -48,7 +53,7 @@ void NetworkQuery::start()
 NetworkQuery::~NetworkQuery()
 {
     if (m_reply) {
-        disconnect(m_reply.get(), &QNetworkReply::finished, this, nullptr);
+        disconnect(m_reply.get(), nullptr, this, nullptr);
         m_reply->abort();
     }
 }

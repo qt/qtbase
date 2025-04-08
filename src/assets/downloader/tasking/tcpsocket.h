@@ -56,14 +56,7 @@ private:
     QAbstractSocket::SocketError m_error = QAbstractSocket::UnknownSocketError;
 };
 
-class TASKING_EXPORT TcpSocketTaskAdapter final : public TaskAdapter<TcpSocket>
-{
-public:
-    TcpSocketTaskAdapter();
-    void start() final;
-};
-
-using TcpSocketTask = CustomTask<TcpSocketTaskAdapter>;
+using TcpSocketTask = SimpleCustomTask<TcpSocket>;
 
 } // namespace Tasking
 
