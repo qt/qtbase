@@ -12,5 +12,5 @@
     This example demonstrates how to send messages to the clients of a
     multicast group.
 
-    \image multicastsender-example.webp
+    \image multicastsender-example.webp {The application sends multicast messages via UDP communication}
 */

@@ -13,5 +13,5 @@
     encrypted connection, deal with authenticity problems, and display security
     and certificate information.
 
-    \image securesocketclient-example.webp
+    \image securesocketclient-example.webp {The user enters the host name and port that they want to connect to, and are then able to view the security certificate}
 */

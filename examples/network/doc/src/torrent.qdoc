@@ -11,5 +11,5 @@
     This example demonstrates some of the complex TCP/IP operations
     supported by the Qt Network APIs.
 
-    \image torrent-example.png
+    \image torrent-example.png {This application implements the BitTorrent protocol to facilitate peer-to-peer file-sharing}
 */

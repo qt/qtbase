@@ -24,7 +24,7 @@
     the parsed content may start in one chunk of data but not be completed until
     a later chunk, requiring the parser to retain state between calls.
 
-    \image rsslisting.png
+    \image rsslisting.png {The application fetches information from the specified URL, in this case, Qt Blog, and then parses the available XML data}
 
     The main program is fairly minimal. It simply instantiates a \l QApplication
     and the \c RSSListing widget, shows the latter and hands over control to the
