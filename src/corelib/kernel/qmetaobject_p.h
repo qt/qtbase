@@ -36,7 +36,7 @@ using namespace QtMocConstants;
 Q_DECLARE_FLAGS(MetaObjectFlags, MetaObjectFlag)
 Q_DECLARE_OPERATORS_FOR_FLAGS(MetaObjectFlags)
 
-Q_CORE_EXPORT int qMetaTypeTypeInternal(const char *);
+Q_CORE_EXPORT int qMetaTypeTypeInternal(QByteArrayView name);
 
 class QArgumentType
 {
@@ -46,7 +46,7 @@ public:
         : _metaType(metaType)
     {}
     QArgumentType(const QByteArray &name)
-        : _metaType(QMetaType(qMetaTypeTypeInternal(name.constData()))), _name(name)
+        : _metaType(QMetaType{qMetaTypeTypeInternal(qToByteArrayViewIgnoringNull(name))}), _name(name)
     {}
     QMetaType metaType() const noexcept
     { return _metaType; }

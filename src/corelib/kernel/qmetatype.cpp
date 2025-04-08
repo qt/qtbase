@@ -2897,9 +2897,9 @@ static inline int qMetaTypeTypeImpl(const char *typeName, int length)
     doesn't attempt to normalize the type name (i.e., the lookup will fail
     for type names in non-normalized form).
 */
-Q_CORE_EXPORT int qMetaTypeTypeInternal(const char *typeName)
+Q_CORE_EXPORT int qMetaTypeTypeInternal(QByteArrayView name)
 {
-    return qMetaTypeTypeImpl<DontNormalizeType>(typeName, int(qstrlen(typeName)));
+    return qMetaTypeTypeImpl<DontNormalizeType>(name.data(), name.size());
 }
 
 /*!
