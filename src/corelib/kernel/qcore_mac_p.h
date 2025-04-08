@@ -408,7 +408,6 @@ public:
     QMacKeyValueObserver() = default;
 
 #if defined( __OBJC__)
-    // Note: QMacKeyValueObserver must not outlive the object observed!
     QMacKeyValueObserver(NSObject *object, NSString *keyPath, Callback callback,
         NSKeyValueObservingOptions options = NSKeyValueObservingOptionNew)
         : object(object), keyPath(keyPath), callback(new Callback(callback))
@@ -436,7 +435,7 @@ public:
 
     void swap(QMacKeyValueObserver &other) noexcept
     {
-        qt_ptr_swap(object, other.object);
+        std::swap(object, other.object);
         qt_ptr_swap(keyPath, other.keyPath);
         callback.swap(other.callback);
     }
@@ -446,7 +445,7 @@ private:
     void addObserver(NSKeyValueObservingOptions options);
 #endif
 
-    NSObject *object = nullptr;
+    QObjCWeakPointer<NSObject> object;
     NSString *keyPath = nullptr;
     std::unique_ptr<Callback> callback;
 
