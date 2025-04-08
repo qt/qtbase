@@ -811,7 +811,8 @@ endif()")
     set(${out_var} "${assignments}" PARENT_SCOPE)
 endfunction()
 
-function(_qt_internal_get_apple_sdk_version out_var)
+function(_qt_internal_get_apple_sdk_name out_var)
+    set(sdk_name "")
     if(APPLE)
         if(CMAKE_SYSTEM_NAME STREQUAL iOS)
             set(sdk_name "iphoneos")
@@ -821,28 +822,74 @@ function(_qt_internal_get_apple_sdk_version out_var)
             # Default to macOS
             set(sdk_name "macosx")
         endif()
-        set(xcrun_version_arg "--show-sdk-version")
-        execute_process(COMMAND xcrun --sdk ${sdk_name} ${xcrun_version_arg}
-                        OUTPUT_VARIABLE sdk_version
-                        ERROR_VARIABLE xcrun_error)
+    endif()
+    set(${out_var} "${sdk_name}" PARENT_SCOPE)
+endfunction()
+
+function(_qt_internal_execute_xcrun out_var)
+    set(opt_args "")
+    set(single_args "")
+    set(multi_args
+        XCRUN_ARGS
+        OUT_ERROR_VAR
+    )
+    cmake_parse_arguments(PARSE_ARGV 1 arg "${opt_args}" "${single_args}" "${multi_args}")
+
+    set(output "")
+    set(xcrun_error "")
+
+    if(NOT APPLE)
+        message(FATAL_ERROR
+            "Executing xcrun should only happen happen when targeting Apple plaforms")
+    endif()
+
+    find_program(QT_XCRUN xcrun)
+    if(NOT QT_XCRUN)
+        message(FATAL_ERROR "Can't find xcrun in PATH")
+    endif()
+
+    execute_process(COMMAND "${QT_XCRUN}" ${arg_XCRUN_ARGS}
+                    OUTPUT_VARIABLE output
+                    ERROR_VARIABLE xcrun_error)
+
+    if(arg_OUT_ERROR_VAR)
+        set(${arg_OUT_ERROR_VAR} "${xcrun_error}" PARENT_SCOPE)
+    endif()
+
+    set(${out_var} "${output}" PARENT_SCOPE)
+endfunction()
+
+function(_qt_internal_get_apple_sdk_version out_var)
+    set(sdk_version "")
+    if(APPLE)
+        _qt_internal_get_apple_sdk_name(sdk_name)
+        _qt_internal_execute_xcrun(sdk_version
+            XCRUN_ARGS --sdk ${sdk_name} --show-sdk-version
+            OUT_ERROR_VAR xcrun_error
+        )
+
         if(NOT sdk_version)
             message(FATAL_ERROR
                     "Can't determine darwin ${sdk_name} SDK version. Error: ${xcrun_error}")
         endif()
+
         string(STRIP "${sdk_version}" sdk_version)
-        set(${out_var} "${sdk_version}" PARENT_SCOPE)
     endif()
+    set(${out_var} "${sdk_version}" PARENT_SCOPE)
 endfunction()
 
 function(_qt_internal_get_xcode_version_raw out_var)
+    set(xcode_version "")
     if(APPLE)
-        execute_process(COMMAND xcrun xcodebuild -version
-                        OUTPUT_VARIABLE xcode_version
-                        ERROR_VARIABLE xcrun_error)
+        _qt_internal_execute_xcrun(xcode_version
+            XCRUN_ARGS xcodebuild -version
+            OUT_ERROR_VAR xcrun_error
+        )
+
         string(REPLACE "\n" " " xcode_version "${xcode_version}")
         string(STRIP "${xcode_version}" xcode_version)
-        set(${out_var} "${xcode_version}" PARENT_SCOPE)
     endif()
+    set(${out_var} "${xcode_version}" PARENT_SCOPE)
 endfunction()
 
 function(_qt_internal_get_xcode_version out_var)
