@@ -191,6 +191,7 @@ public:
     { return static_cast<const QMetaMethodPrivate *>(q); }
 
     inline QByteArray signature() const;
+    inline QByteArrayView qualifiedName() const noexcept;
     inline QByteArrayView name() const noexcept;
     inline int typesDataIndex() const;
     inline const char *rawReturnTypeName() const;
@@ -652,7 +653,11 @@ bool QMetaObjectPrivate::methodMatch(const QMetaObject *m, const QMetaMethod &me
     if (priv->parameterCount() != argc)
         return false;
 
-    if (QMetaMethodPrivate::get(&method)->name() != name)
+    // QMetaMethodPrivate::name() is looking for a colon and slicing the prefix
+    // away; that's too slow: we already know where the colon, if any, has to be:
+    if (const auto qname = priv->qualifiedName(); !qname.endsWith(name))
+        return false;
+    else if (const auto n = qname.chopped(name.size()); !n.isEmpty() && !n.endsWith(':'))
         return false;
 
     const QtPrivate::QMetaTypeInterface * const *ifaces = priv->parameterMetaTypeInterfaces();
@@ -1921,11 +1926,16 @@ QByteArray QMetaMethodPrivate::signature() const
 
 QByteArrayView QMetaMethodPrivate::name() const noexcept
 {
-    Q_ASSERT(priv(mobj->d.data)->revision >= 7);
-    QByteArrayView name = stringDataView(mobj, data.name());
+    QByteArrayView name = qualifiedName();
     if (qsizetype colon = name.lastIndexOf(':'); colon > 0)
         return name.sliced(colon + 1);
     return name;
+}
+
+QByteArrayView QMetaMethodPrivate::qualifiedName() const noexcept
+{
+    Q_ASSERT(priv(mobj->d.data)->revision >= 7);
+    return stringDataView(mobj, data.name());
 }
 
 int QMetaMethodPrivate::typesDataIndex() const
