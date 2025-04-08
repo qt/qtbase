@@ -12,5 +12,5 @@
     This example uses broadcasting with QUdpSocket and QNetworkInterface to
     discover its peers.
 
-    \image network-chat-example.webp
+    \image network-chat-example.webp {This application sets up a peer-to-peer network to allow multiple participants to chat with one another}
 */

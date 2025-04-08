@@ -13,7 +13,7 @@
     This example demonstrates how a simple HTTP client can fetch files
     from remote hosts.
 
-    \image http-example.webp
+    \image http-example.webp {The user enters the URL, file name, and download location in the main window. The QNetworkAccessManager class uses this information to download the file}
 
     The main work of this example is done in the HttpWindow class.
     Thus we will focus on that.

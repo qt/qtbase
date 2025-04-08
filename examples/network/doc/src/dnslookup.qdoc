@@ -13,5 +13,5 @@
     name and print the results on the command line. As well as how you can
     use QCommandLineParser to parse command line arguments.
 
-    \image dnslookup-example.webp
+    \image dnslookup-example.webp {To perform a lookup, specify a host name and a type, then invoke the Q Dns Lookup lookup slot.}
 */

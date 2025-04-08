@@ -12,5 +12,5 @@
     This example demonstrates how to use SCTP, with multiple channels,
     on the server side, receiving multiple connections and sending
     messages to connected clients.
-    \image multi-stream-server-example.webp
+    \image multi-stream-server-example.webp {The application allows the user to write data to multiple clients via SCTP communication}
 */

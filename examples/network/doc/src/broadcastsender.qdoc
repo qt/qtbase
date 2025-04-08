@@ -12,5 +12,5 @@
     This example uses Qt Network APIs to demonstrate how to broadcast messages
     to multiple clients over a local network.
 
-    \image broadcastsender-example.png
+    \image broadcastsender-example.png {The broadcast sender sends datagrams using UDP communication}
 */

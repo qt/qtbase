@@ -12,5 +12,5 @@
     This example uses the Qt Network APIs to demonstrate how to receive
     messages broadcasted over a local network.
 
-    \image broadcastreceiver-example.png
+    \image broadcastreceiver-example.png {The broadcast receiver listens for incoming messages using UDP communication}
 */

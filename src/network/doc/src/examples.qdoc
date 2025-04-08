@@ -7,7 +7,7 @@
     \title Network Examples
     \brief How to do network programming in Qt.
 
-    \image network-examples.webp
+    \image network-examples.webp {There are many examples that demonstrate the capabilities of Qt Network}
 
     Qt is provided with an extensive set of network classes to support both
     client-based and server side network programming.

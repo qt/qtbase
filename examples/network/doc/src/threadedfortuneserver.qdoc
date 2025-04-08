@@ -12,7 +12,7 @@
     simple network service that uses threads to handle requests from different
     clients. It is intended to be run alongside the Fortune Client example.
 
-    \image threadedfortuneserver-example.png
+    \image threadedfortuneserver-example.png {This application creates a server that can a separate thread for each client}
 
     The implementation of this example is similar to that of the
     \l{fortuneserver}{Fortune Server} example, but here we will
