@@ -537,8 +537,7 @@ void AssetDownloader::start()
             onGroupSetup(onSkipIfAllAssetsPresent),
             NetworkQueryTask(onZipDownloadSetup, onZipDownloadDone),
             ConcurrentCallTask<void>(onUnzipSetup, onUnzipDone),
-            For {
-                downloadIterator,
+            For (downloadIterator) >> Do {
                 parallelIdealThreadCountLimit,
                 onGroupSetup(onAssetsDownloadGroupSetup),
                 Group {
@@ -547,8 +546,7 @@ void AssetDownloader::start()
                     ConcurrentCallTask<void>(onAssetWriteSetup, onAssetWriteDone)
                 }
             },
-            For {
-                copyIterator,
+            For (copyIterator) >> Do {
                 parallelIdealThreadCountLimit,
                 onGroupSetup(onAssetsCopyGroupSetup),
                 ConcurrentCallTask<void>(onAssetCopySetup, onAssetCopyDone, CallDoneIf::Success),

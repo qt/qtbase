@@ -8,36 +8,19 @@ QT_BEGIN_NAMESPACE
 
 namespace Tasking {
 
-static Group conditionRecipe(const Storage<bool> &bodyExecutedStorage,
-                             const ConditionData &condition)
+static Group conditionRecipe(const Storage<bool> &bodyExecutedStorage, const ConditionData &condition)
 {
-    Storage<bool> skipContinuationStorage;
-
     const auto onSetup = [bodyExecutedStorage] {
         return *bodyExecutedStorage ? SetupResult::StopWithSuccess : SetupResult::Continue;
     };
 
-    const auto onConditionDone = [skipContinuationStorage](DoneWith result) {
-        *skipContinuationStorage = result != DoneWith::Success;
-        return DoneResult::Success;
-    };
+    const auto onBodyDone = [bodyExecutedStorage] { *bodyExecutedStorage = true; };
 
-    const auto onContinuationSetup = [skipContinuationStorage, bodyExecutedStorage] {
-        *bodyExecutedStorage = !*skipContinuationStorage;
-        return *skipContinuationStorage ? SetupResult::StopWithSuccess : SetupResult::Continue;
-    };
+    const Group bodyTask { condition.m_body, onGroupDone(onBodyDone) };
 
     return {
-        skipContinuationStorage,
         onGroupSetup(onSetup),
-        condition.m_condition ? Group {
-            *condition.m_condition,
-            onGroupDone(onConditionDone)
-        } : nullItem,
-        Group {
-            onGroupSetup(onContinuationSetup),
-            condition.m_body
-        }
+        condition.m_condition ? Group{ !*condition.m_condition || bodyTask } : bodyTask
     };
 }
 
@@ -45,7 +28,7 @@ static ExecutableItem conditionsRecipe(const QList<ConditionData> &conditions)
 {
     Storage<bool> bodyExecutedStorage;
 
-    QList<GroupItem> recipes;
+    GroupItems recipes;
     for (const ConditionData &condition : conditions)
         recipes << conditionRecipe(bodyExecutedStorage, condition);
 

@@ -29,7 +29,13 @@ class QFuture;
 
 namespace Tasking {
 
-Q_NAMESPACE
+class Do;
+class For;
+class Group;
+class GroupItem;
+using GroupItems = QList<GroupItem>;
+
+Q_NAMESPACE_EXPORT(TASKING_EXPORT)
 
 // WorkflowPolicy:
 // 1. When all children finished with success -> report success, otherwise:
@@ -192,6 +198,17 @@ class Storage final : public StorageBase
 {
 public:
     Storage() : StorageBase(Storage::ctor(), Storage::dtor()) {}
+#if __cplusplus >= 201803L // C++20: Allow pack expansion in lambda init-capture.
+    template <typename ...Args>
+    Storage(const Args &...args)
+        : StorageBase([...args = args] { return new StorageStruct(args...); }, Storage::dtor()) {}
+#else // C++17
+    template <typename ...Args>
+    Storage(const Args &...args)
+        : StorageBase([argsTuple = std::tuple(args...)] {
+            return std::apply([](const Args &...arguments) { return new StorageStruct(arguments...); }, argsTuple);
+        }, Storage::dtor()) {}
+#endif
     StorageStruct &operator*() const noexcept { return *activeStorage(); }
     StorageStruct *operator->() const noexcept { return activeStorage(); }
     StorageStruct *activeStorage() const {
@@ -219,7 +236,7 @@ public:
         , m_storageList{storage} {}
 
     // TODO: Add tests.
-    GroupItem(const QList<GroupItem> &children) : m_type(Type::List) { addChildren(children); }
+    GroupItem(const GroupItems &children) : m_type(Type::List) { addChildren(children); }
     GroupItem(std::initializer_list<GroupItem> children) : m_type(Type::List) { addChildren(children); }
 
 protected:
@@ -267,7 +284,7 @@ protected:
     GroupItem(const TaskHandler &handler)
         : m_type(Type::TaskHandler)
         , m_taskHandler(handler) {}
-    void addChildren(const QList<GroupItem> &children);
+    void addChildren(const GroupItems &children);
 
     static GroupItem groupHandler(const GroupHandler &handler) { return GroupItem({handler}); }
 
@@ -283,14 +300,14 @@ protected:
     }
 
 private:
+    TASKING_EXPORT friend Group operator>>(const For &forItem, const Do &doItem);
     friend class ContainerNode;
-    friend class For;
     friend class TaskNode;
     friend class TaskTreePrivate;
     friend class ParallelLimitFunctor;
     friend class WorkflowPolicyFunctor;
     Type m_type = Type::Group;
-    QList<GroupItem> m_children;
+    GroupItems m_children;
     GroupData m_groupData;
     QList<StorageBase> m_storageList;
     TaskHandler m_taskHandler;
@@ -299,42 +316,38 @@ private:
 class TASKING_EXPORT ExecutableItem : public GroupItem
 {
 public:
-    ExecutableItem withTimeout(std::chrono::milliseconds timeout,
-                               const std::function<void()> &handler = {}) const;
-    ExecutableItem withLog(const QString &logName) const;
+    Group withTimeout(std::chrono::milliseconds timeout,
+                      const std::function<void()> &handler = {}) const;
+    Group withLog(const QString &logName) const;
     template <typename SenderSignalPairGetter>
-    ExecutableItem withCancel(SenderSignalPairGetter &&getter) const
-    {
-        const auto connectWrapper = [getter](QObject *guard, const std::function<void()> &trigger) {
-            const auto senderSignalPair = getter();
-            QObject::connect(senderSignalPair.first, senderSignalPair.second, guard, [trigger] {
-                trigger();
-            }, static_cast<Qt::ConnectionType>(Qt::QueuedConnection | Qt::SingleShotConnection));
-        };
-        return withCancelImpl(connectWrapper);
-    }
+    Group withCancel(SenderSignalPairGetter &&getter, std::initializer_list<GroupItem> postCancelRecipe = {}) const;
+    template <typename SenderSignalPairGetter>
+    Group withAccept(SenderSignalPairGetter &&getter) const;
 
 protected:
     ExecutableItem() = default;
     ExecutableItem(const TaskHandler &handler) : GroupItem(handler) {}
 
 private:
-    TASKING_EXPORT friend ExecutableItem operator!(const ExecutableItem &item);
-    TASKING_EXPORT friend ExecutableItem operator&&(const ExecutableItem &first,
+    TASKING_EXPORT friend Group operator!(const ExecutableItem &item);
+    TASKING_EXPORT friend Group operator&&(const ExecutableItem &first,
                                                     const ExecutableItem &second);
-    TASKING_EXPORT friend ExecutableItem operator||(const ExecutableItem &first,
+    TASKING_EXPORT friend Group operator||(const ExecutableItem &first,
                                                     const ExecutableItem &second);
-    TASKING_EXPORT friend ExecutableItem operator&&(const ExecutableItem &item, DoneResult result);
-    TASKING_EXPORT friend ExecutableItem operator||(const ExecutableItem &item, DoneResult result);
+    TASKING_EXPORT friend Group operator&&(const ExecutableItem &item, DoneResult result);
+    TASKING_EXPORT friend Group operator||(const ExecutableItem &item, DoneResult result);
 
-    ExecutableItem withCancelImpl(
+    Group withCancelImpl(
+        const std::function<void(QObject *, const std::function<void()> &)> &connectWrapper,
+        const GroupItems &postCancelRecipe) const;
+    Group withAcceptImpl(
         const std::function<void(QObject *, const std::function<void()> &)> &connectWrapper) const;
 };
 
 class TASKING_EXPORT Group : public ExecutableItem
 {
 public:
-    Group(const QList<GroupItem> &children) { addChildren(children); }
+    Group(const GroupItems &children) { addChildren(children); }
     Group(std::initializer_list<GroupItem> children) { addChildren(children); }
 
     // GroupData related:
@@ -367,7 +380,7 @@ private:
     template <typename Handler>
     static GroupDoneHandler wrapGroupDone(Handler &&handler)
     {
-        static constexpr bool isDoneResultType = std::is_same_v<Handler, DoneResult>;
+        static constexpr bool isDoneResultType = std::is_same_v<std::decay_t<Handler>, DoneResult>;
         // R, B, V, D stands for: Done[R]esult, [B]ool, [V]oid, [D]oneWith
         static constexpr bool isRD = isInvocable<DoneResult, Handler, DoneWith>();
         static constexpr bool isR = isInvocable<DoneResult, Handler>();
@@ -399,6 +412,31 @@ private:
     }
 };
 
+template <typename SenderSignalPairGetter>
+Group ExecutableItem::withCancel(SenderSignalPairGetter &&getter,
+                                 std::initializer_list<GroupItem> postCancelRecipe) const
+{
+    const auto connectWrapper = [getter](QObject *guard, const std::function<void()> &trigger) {
+        const auto senderSignalPair = getter();
+        QObject::connect(senderSignalPair.first, senderSignalPair.second, guard, [trigger] {
+            trigger();
+        }, static_cast<Qt::ConnectionType>(Qt::QueuedConnection | Qt::SingleShotConnection));
+    };
+    return withCancelImpl(connectWrapper, postCancelRecipe);
+}
+
+template <typename SenderSignalPairGetter>
+Group ExecutableItem::withAccept(SenderSignalPairGetter &&getter) const
+{
+    const auto connectWrapper = [getter](QObject *guard, const std::function<void()> &trigger) {
+        const auto senderSignalPair = getter();
+        QObject::connect(senderSignalPair.first, senderSignalPair.second, guard, [trigger] {
+            trigger();
+        }, static_cast<Qt::ConnectionType>(Qt::QueuedConnection | Qt::SingleShotConnection));
+    };
+    return withAcceptImpl(connectWrapper);
+}
+
 template <typename Handler>
 static GroupItem onGroupSetup(Handler &&handler)
 {
@@ -411,22 +449,11 @@ static GroupItem onGroupDone(Handler &&handler, CallDoneIf callDoneIf = CallDone
     return Group::onGroupDone(std::forward<Handler>(handler), callDoneIf);
 }
 
-class TASKING_EXPORT ParallelLimitFunctor
-{
-public:
-    // Default: 1 (sequential). 0 means unlimited (parallel).
-    GroupItem operator()(int limit) const;
-};
+// Default: 1 (sequential). 0 means unlimited (parallel).
+TASKING_EXPORT GroupItem parallelLimit(int limit);
 
-class TASKING_EXPORT WorkflowPolicyFunctor
-{
-public:
-    // Default: WorkflowPolicy::StopOnError.
-    GroupItem operator()(WorkflowPolicy policy) const;
-};
-
-TASKING_EXPORT extern const ParallelLimitFunctor parallelLimit;
-TASKING_EXPORT extern const WorkflowPolicyFunctor workflowPolicy;
+// Default: WorkflowPolicy::StopOnError.
+TASKING_EXPORT GroupItem workflowPolicy(WorkflowPolicy policy);
 
 TASKING_EXPORT extern const GroupItem sequential;
 TASKING_EXPORT extern const GroupItem parallel;
@@ -444,42 +471,39 @@ TASKING_EXPORT extern const GroupItem nullItem;
 TASKING_EXPORT extern const ExecutableItem successItem;
 TASKING_EXPORT extern const ExecutableItem errorItem;
 
-class TASKING_EXPORT For : public Group
+class TASKING_EXPORT For final
 {
 public:
-    template <typename ...Args>
-    For(const Loop &loop, const Args &...args)
-        : Group(withLoop(loop, args...)) { }
-
-protected:
-    For(const Loop &loop, const QList<GroupItem> &children) : Group({loop, children}) {}
-    For(const Loop &loop, std::initializer_list<GroupItem> children) : Group({loop, children}) {}
+    explicit For(const Loop &loop) : m_loop(loop) {}
 
 private:
-    template <typename ...Args>
-    QList<GroupItem> withLoop(const Loop &loop, const Args &...args) {
-        QList<GroupItem> children{GroupItem(loop)};
-        appendChildren(std::make_tuple(args...), &children);
-        return children;
-    }
+    TASKING_EXPORT friend Group operator>>(const For &forItem, const Do &doItem);
 
-    template <typename Tuple, std::size_t N = 0>
-    void appendChildren(const Tuple &tuple, QList<GroupItem> *children) {
-        constexpr auto TupleSize = std::tuple_size_v<Tuple>;
-        if constexpr (TupleSize > 0) {
-            // static_assert(workflowPolicyCount<Tuple>() <= 1, "Too many workflow policies in one group.");
-            children->append(std::get<N>(tuple));
-            if constexpr (N + 1 < TupleSize)
-                appendChildren<Tuple, N + 1>(tuple, children);
-        }
-    }
+    Loop m_loop;
 };
 
-class TASKING_EXPORT Forever final : public For
+class When;
+
+class TASKING_EXPORT Do final
 {
 public:
-    Forever(const QList<GroupItem> &children) : For(LoopForever(), children) {}
-    Forever(std::initializer_list<GroupItem> children) : For(LoopForever(), children) {}
+    explicit Do(const GroupItems &children) : m_children(children) {}
+    explicit Do(std::initializer_list<GroupItem> children) : m_children(children) {}
+
+private:
+    TASKING_EXPORT friend Group operator>>(const For &forItem, const Do &doItem);
+    TASKING_EXPORT friend Group operator>>(const When &whenItem, const Do &doItem);
+
+    GroupItem m_children;
+};
+
+class TASKING_EXPORT Forever final : public ExecutableItem
+{
+public:
+    explicit Forever(const GroupItems &children)
+        { addChildren({ For (LoopForever()) >> Do { children } } ); }
+    explicit Forever(std::initializer_list<GroupItem> children)
+        { addChildren({ For (LoopForever()) >> Do { children } } ); }
 };
 
 // Synchronous invocation. Similarly to Group - isn't counted as a task inside taskCount()
@@ -565,7 +589,7 @@ private:
     static InterfaceDoneHandler wrapDone(Handler &&handler) {
         if constexpr (std::is_same_v<Handler, TaskDoneHandler>)
             return {}; // User passed {} for the done handler.
-        static constexpr bool isDoneResultType = std::is_same_v<Handler, DoneResult>;
+        static constexpr bool isDoneResultType = std::is_same_v<std::decay_t<Handler>, DoneResult>;
         // R, B, V, T, D stands for: Done[R]esult, [B]ool, [V]oid, [T]ask, [D]oneWith
         static constexpr bool isRTD = isInvocable<DoneResult, Handler, const Task &, DoneWith>();
         static constexpr bool isRT = isInvocable<DoneResult, Handler, const Task &>();
@@ -619,6 +643,21 @@ private:
     }
 };
 
+template <typename Task>
+class SimpleTaskAdapter final : public TaskAdapter<Task>
+{
+public:
+    SimpleTaskAdapter() { this->connect(this->task(), &Task::done, this, &TaskInterface::done); }
+    void start() final { this->task()->start(); }
+};
+
+// A convenient helper, when:
+// 1. Task is derived from QObject.
+// 2. Task::start() method starts the task.
+// 3. Task::done(DoneResult) signal is emitted when the task is finished.
+template <typename Task>
+using SimpleCustomTask = CustomTask<SimpleTaskAdapter<Task>>;
+
 class TASKING_EXPORT TaskTree final : public QObject
 {
     Q_OBJECT
@@ -639,10 +678,8 @@ public:
     // Don't use it in main thread. To be used in non-main threads or in auto tests.
     DoneWith runBlocking();
     DoneWith runBlocking(const QFuture<void> &future);
-    static DoneWith runBlocking(const Group &recipe,
-        std::chrono::milliseconds timeout = std::chrono::milliseconds::max());
-    static DoneWith runBlocking(const Group &recipe, const QFuture<void> &future,
-        std::chrono::milliseconds timeout = std::chrono::milliseconds::max());
+    static DoneWith runBlocking(const Group &recipe);
+    static DoneWith runBlocking(const Group &recipe, const QFuture<void> &future);
 
     int asyncCount() const;
     int taskCount() const;
@@ -709,6 +746,9 @@ private:
 
 using TaskTreeTask = CustomTask<TaskTreeTaskAdapter>;
 using TimeoutTask = CustomTask<TimeoutTaskAdapter>;
+
+TASKING_EXPORT ExecutableItem timeoutTask(const std::chrono::milliseconds &timeout,
+                                          DoneResult result = DoneResult::Error);
 
 } // namespace Tasking
 

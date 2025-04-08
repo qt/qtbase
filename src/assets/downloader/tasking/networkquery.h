@@ -51,6 +51,10 @@ public:
 
 Q_SIGNALS:
     void started();
+    void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
+#if QT_CONFIG(ssl)
+    void sslErrors(const QList<QSslError> &errors);
+#endif
     void done(DoneResult result);
 
 private:
@@ -61,14 +65,7 @@ private:
     std::unique_ptr<QNetworkReply> m_reply;
 };
 
-class TASKING_EXPORT NetworkQueryTaskAdapter : public TaskAdapter<NetworkQuery>
-{
-public:
-    NetworkQueryTaskAdapter() { connect(task(), &NetworkQuery::done, this, &TaskInterface::done); }
-    void start() final { task()->start(); }
-};
-
-using NetworkQueryTask = CustomTask<NetworkQueryTaskAdapter>;
+using NetworkQueryTask = SimpleCustomTask<NetworkQuery>;
 
 } // namespace Tasking
 
