@@ -806,8 +806,9 @@ static inline bool isQtModule(const QString &libName)
 }
 
 // Helper for recursively finding all dependent Qt libraries.
-static bool findDependentQtLibraries(const QString &qtBinDir, const QString &binary, Platform platform,
-                                     QString *errorMessage, QStringList *result,
+static bool findDependentQtLibraries(const QString &qtBinDir, const QString &binary,
+                                     Platform platform, QString *errorMessage,
+                                     QStringList *qtDependencies, QStringList *nonQtDependencies,
                                      unsigned *wordSize = nullptr, bool *isDebug = nullptr,
                                      unsigned short *machineArch = nullptr,
                                      int *directDependencyCount = nullptr, int recursionDepth = 0)
@@ -823,20 +824,23 @@ static bool findDependentQtLibraries(const QString &qtBinDir, const QString &bin
     }
     // Filter out the Qt libraries. Note that depends.exe finds libs from optDirectory if we
     // are run the 2nd time (updating). We want to check against the Qt bin dir libraries
-    const int start = result->size();
+    const int start = qtDependencies->size();
     for (const QString &lib : std::as_const(dependentLibs)) {
         if (isQtModule(lib)) {
             const QString path = normalizeFileName(qtBinDir + u'/' + QFileInfo(lib).fileName());
-            if (!result->contains(path))
-                result->append(path);
+            if (!qtDependencies->contains(path))
+                qtDependencies->append(path);
+        } else if (nonQtDependencies && !nonQtDependencies->contains(lib)) {
+            nonQtDependencies->append(lib);
         }
     }
-    const int end = result->size();
+    const int end = qtDependencies->size();
     if (directDependencyCount)
         *directDependencyCount = end - start;
     // Recurse
     for (int i = start; i < end; ++i)
-        if (!findDependentQtLibraries(qtBinDir, result->at(i), platform, errorMessage, result,
+        if (!findDependentQtLibraries(qtBinDir, qtDependencies->at(i), platform, errorMessage,
+                                      qtDependencies, nonQtDependencies,
                                       nullptr, nullptr, nullptr, nullptr, recursionDepth + 1))
             return false;
     return true;
@@ -1030,7 +1034,7 @@ static QString deployPlugin(const QString &plugin, const QDir &subDir, const boo
     QStringList dependentQtLibs;
     QString errorMessage;
     if (findDependentQtLibraries(libraryLocation, pluginPath, platform,
-                                 &errorMessage, &dependentQtLibs)) {
+                                 &errorMessage, &dependentQtLibs, nullptr)) {
         for (int d = 0; d < dependentQtLibs.size(); ++d) {
             const qint64 module = qtModule(dependentQtLibs.at(d), infix);
             if (module >= 0)
@@ -1474,17 +1478,37 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
         std::wcout << "Qt binaries in " << QDir::toNativeSeparators(qtBinDir) << '\n';
 
     QStringList dependentQtLibs;
+    QStringList dependentNonQtLibs;
     bool detectedDebug;
     unsigned wordSize;
     unsigned short machineArch;
     int directDependencyCount = 0;
-    if (!findDependentQtLibraries(libraryLocation, options.binaries.first(), options.platform, errorMessage, &dependentQtLibs, &wordSize,
+    if (!findDependentQtLibraries(libraryLocation, options.binaries.first(), options.platform,
+                                  errorMessage, &dependentQtLibs, &dependentNonQtLibs, &wordSize,
                                   &detectedDebug, &machineArch, &directDependencyCount)) {
         return result;
     }
     for (int b = 1; b < options.binaries.size(); ++b) {
-        if (!findDependentQtLibraries(libraryLocation, options.binaries.at(b), options.platform, errorMessage, &dependentQtLibs,
-                                      nullptr, nullptr, nullptr)) {
+        if (!findDependentQtLibraries(libraryLocation, options.binaries.at(b), options.platform,
+                                      errorMessage, &dependentQtLibs, &dependentNonQtLibs,
+                                      nullptr, nullptr, nullptr, nullptr)) {
+            return result;
+        }
+    }
+
+    // Also check Qt dependencies of "local non Qt dependencies" (dlls located in the same folder)
+    for (const QString &nonQtLib : dependentNonQtLibs) {
+        const QFileInfo fi(options.binaries.first());
+        const QString path = fi.canonicalPath() + u'/' + nonQtLib;
+        if (!QFileInfo::exists(path))
+            continue;
+
+        if (optVerboseLevel)
+            std::wcout << "Adding local dependency" << path << '\n';
+
+        if (!findDependentQtLibraries(libraryLocation, path, options.platform,
+                                      errorMessage, &dependentQtLibs, &dependentNonQtLibs,
+                                      nullptr, nullptr, nullptr, nullptr)) {
             return result;
         }
     }
@@ -1603,7 +1627,7 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
             qmlScanResult.append(scanResult);
             // Additional dependencies of QML plugins.
             for (const QString &plugin : std::as_const(qmlScanResult.plugins)) {
-                if (!findDependentQtLibraries(libraryLocation, plugin, options.platform, errorMessage, &dependentQtLibs, &wordSize, &detectedDebug, &machineArch))
+                if (!findDependentQtLibraries(libraryLocation, plugin, options.platform, errorMessage, &dependentQtLibs, nullptr, &wordSize, &detectedDebug, &machineArch))
                     return result;
             }
             if (optVerboseLevel >= 1) {
