@@ -33,6 +33,8 @@ namespace QtTimeZoneLocale {
 QString ucalTimeZoneDisplayName(UCalendar *ucal, QTimeZone::TimeType timeType,
                                 QTimeZone::NameType nameType,
                                 const QByteArray &localeCode);
+
+bool ucalKnownTimeZoneId(const QString &id);
 #else
 // Define data types for QTZL_data_p.h
 
