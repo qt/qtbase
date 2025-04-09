@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <private/qcoreapplication_p.h>
+#include <qplatformdefs.h>
 #include <qthread.h>
 #include <qtimer.h>
 
@@ -62,7 +63,7 @@ static int exitFromThread(int argc, char **argv)
         // block the GUI forever, otherwise the unloading of the QPA plugins
         // could cause a crash if something is running.
         char c;
-        int r = read(STDIN_FILENO, &c, 1);
+        int r = QT_READ(STDIN_FILENO, &c, 1);
         Q_UNUSED(r);
     });
     app.exec();
