@@ -240,13 +240,11 @@ contains(SHAPERS, coretext) {
     HEADERS += \
         $$PWD/src/hb-coretext.h
 
-    uikit: \
-        # On iOS/tvOS/watchOS CoreText and CoreGraphics are stand-alone frameworks
-        LIBS_PRIVATE += -framework CoreText -framework CoreGraphics
-    else: \
-        # On Mac OS they are part of the ApplicationServices umbrella framework,
-        # even in 10.8 where they were also made available stand-alone.
-        LIBS_PRIVATE += -framework ApplicationServices
+    # On iOS/tvOS/watchOS CoreText and CoreGraphics are stand-alone frameworks
+    # On Mac OS they are part of the ApplicationServices umbrella framework,
+    # even in 10.8 where they were also made available stand-alone.
+    uikit: LIBS_PRIVATE += -framework CoreText -framework CoreGraphics
+    else: LIBS_PRIVATE += -framework ApplicationServices
 
     CONFIG += watchos_coretext
 }

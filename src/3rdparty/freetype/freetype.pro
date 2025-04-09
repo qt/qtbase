@@ -67,7 +67,6 @@ win32 {
                $$PWD/builds/windows/ftdebug.c
 } else {
     SOURCES += $$PWD/builds/unix/ftsystem.c
-               $$PWD/src/base/ftdebug.c
     INCLUDEPATH += $$PWD/builds/unix
 }
 
