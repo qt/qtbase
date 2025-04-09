@@ -198,7 +198,7 @@ template <int... Idx, typename... T> struct UintDataStorage<std::integer_sequenc
 
     template <typename F> constexpr void forEach(F &&f) const
     {
-        [[maybe_unused]] auto invoke = [&f](const auto &entry) { f(entry.entry); return 0; };
+        [[maybe_unused]] auto invoke = [&f](const auto &entry_) { f(entry_.entry); return 0; };
         int dummy[] = {
             0,
             invoke(static_cast<const UintDataEntry<Idx, T> &>(*this))...
