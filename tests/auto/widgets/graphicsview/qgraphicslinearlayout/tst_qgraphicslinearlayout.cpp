@@ -714,12 +714,12 @@ void tst_QGraphicsLinearLayout::removeAt_data()
     QTest::addColumn<Qt::Orientation>("orientation");
     for (int i = -1; i < 4; ++i) {
         const QByteArray iB = QByteArray::number(i);
-        for (int k = 0; k < 2; ++k) {
-            Qt::Orientation orientation = (k == 0) ? Qt::Vertical : Qt::Horizontal;
-            QTest::newRow(("0, 0, " + iB).constData()) << 0 << 0 << i << orientation;
-            QTest::newRow(("1, 0, " + iB).constData()) << 1 << 0 << i << orientation;
-            QTest::newRow(("0, 1, " + iB).constData()) << 0 << 1 << i << orientation;
-            QTest::newRow(("2, 2, " + iB).constData()) << 2 << 2 << i << orientation;
+        for (Qt::Orientation orientation : {Qt::Vertical, Qt::Horizontal}) {
+            const QByteArrayView orientStr = orientation == Qt::Vertical ? ", vertical" : ", horizontal";
+            QTest::newRow(("0, 0, " + iB + orientStr).constData()) << 0 << 0 << i << orientation;
+            QTest::newRow(("1, 0, " + iB + orientStr).constData()) << 1 << 0 << i << orientation;
+            QTest::newRow(("0, 1, " + iB + orientStr).constData()) << 0 << 1 << i << orientation;
+            QTest::newRow(("2, 2, " + iB + orientStr).constData()) << 2 << 2 << i << orientation;
         }
     }
 }
