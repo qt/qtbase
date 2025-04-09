@@ -22,6 +22,7 @@ import android.view.WindowInsets.Type;
 import android.view.WindowInsetsAnimationController;
 import android.view.WindowInsetsAnimationControlListener;
 import android.view.WindowManager;
+import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.inputmethod.InputMethodManager;
 
@@ -90,6 +91,18 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
         m_imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
         if (m_imm == null)
             Log.w(TAG, "getSystemService() returned a null InputMethodManager instance");
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            View rootView = activity.getWindow().getDecorView();
+            rootView.setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
+                @Override
+                public WindowInsets onApplyWindowInsets(View v, WindowInsets insets) {
+                    if (m_keyboardIsVisible != insets.isVisible(WindowInsets.Type.ime()))
+                        setKeyboardVisibility_internal(!m_keyboardIsVisible, System.nanoTime());
+                    return insets;
+                }
+            });
+        }
     }
 
     private final ViewTreeObserver.OnGlobalLayoutListener keyboardListener =
@@ -146,7 +159,6 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
                         @Override
                         public void onFinished(WindowInsetsAnimationController controller) {
                             QtNativeInputConnection.updateCursorPosition();
-                            setKeyboardVisibility(true, System.nanoTime());
                             if (m_softInputMode == 0)
                                 probeForKeyboardHeight(activity, x, y, width, height,
                                                        inputHints, enterKeyType);
@@ -265,19 +277,6 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
                     Log.w(TAG, "hideSoftwareKeyboard: The activity reference is null");
                     return;
                 }
-                activity.getWindow().getInsetsController().controlWindowInsetsAnimation(
-                    WindowInsets.Type.ime(), -1, null, null,
-                        new WindowInsetsAnimationControlListener() {
-                            @Override
-                            public void onCancelled(WindowInsetsAnimationController controller) { }
-                            @Override
-                            public void onReady(WindowInsetsAnimationController controller, int types) { }
-                            @Override
-                            public void onFinished(WindowInsetsAnimationController controller) {
-                                setKeyboardVisibility(false, System.nanoTime());
-                            }
-
-                        });
                 activity.getWindow().getInsetsController().hide(Type.ime());
             } else {
                 m_imm.hideSoftInputFromWindow(m_currentEditText.getWindowToken(), 0,
@@ -384,6 +383,14 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
     }
 
     void setKeyboardVisibility(boolean visibility, long timeStamp)
+    {
+        // Since API 30 keyboard visibility changes are tracked by OnApplyWindowInsetsListener.
+        // There are no manual changes anymore
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R)
+            setKeyboardVisibility_internal(visibility, timeStamp);
+    }
+
+    private void setKeyboardVisibility_internal(boolean visibility, long timeStamp)
     {
         if (m_showHideTimeStamp > timeStamp)
             return;
