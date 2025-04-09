@@ -119,7 +119,7 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
         if (m_keyboardTransitionInProgress == state || m_currentEditText == null)
             return;
 
-        m_keyboardTransitionInProgress= state;
+        m_keyboardTransitionInProgress = state;
         ViewTreeObserver observer = m_currentEditText.getViewTreeObserver();
         if (state)
             observer.addOnGlobalLayoutListener(keyboardListener);
@@ -321,8 +321,6 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
             return true;
         }
 
-        boolean isKeyboardHidden = true;
-
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
             Rect r = new Rect();
             activity.getWindow().getDecorView().getWindowVisibleDisplayFrame(r);
@@ -330,13 +328,10 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
             QtDisplayManager.getDisplay(activity).getMetrics(metrics);
             int screenHeight = metrics.heightPixels;
             final int kbHeight = screenHeight - r.bottom;
-            isKeyboardHidden = kbHeight < screenHeight * KEYBOARD_TO_SCREEN_RATIO;
-        } else {
-            WindowInsets w = activity.getWindow().getDecorView().getRootWindowInsets();
-            isKeyboardHidden = !w.isVisible(Type.ime());
+            return kbHeight < screenHeight * KEYBOARD_TO_SCREEN_RATIO;
         }
 
-        return isKeyboardHidden;
+        return !m_keyboardIsVisible;
     }
 
     @Override
