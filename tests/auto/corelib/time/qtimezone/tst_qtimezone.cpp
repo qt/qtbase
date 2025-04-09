@@ -487,26 +487,27 @@ void tst_QTimeZone::dataStreamTest()
 {
 #ifndef QT_NO_DATASTREAM
     // Test the OffsetFromUtc backend serialization. First with a custom timezone:
-    QTimeZone tz1("QST", 123456, "Qt Standard Time", "QST", QLocale::Norway, "Qt Testing");
+    QTimeZone tz1("QST"_ba, 23456,
+                  u"Qt Standard Time"_s, u"QST"_s, QLocale::Norway, u"Qt Testing"_s);
     QByteArray tmp;
     {
         QDataStream ds(&tmp, QIODevice::WriteOnly);
         ds << tz1;
     }
-    QTimeZone tz2("UTC");
+    QTimeZone tz2("UTC-12:00"); // Shall be over-written.
     {
         QDataStream ds(&tmp, QIODevice::ReadOnly);
         ds >> tz2;
     }
-    QCOMPARE(tz2.id(), QByteArray("QST"));
-    QCOMPARE(tz2.comment(), QString("Qt Testing"));
+    QCOMPARE(tz2.id(), "QST"_ba);
+    QCOMPARE(tz2.comment(), u"Qt Testing"_s);
     QCOMPARE(tz2.territory(), QLocale::Norway);
-    QCOMPARE(tz2.abbreviation(QDateTime::currentDateTime()), QString("QST"));
+    QCOMPARE(tz2.abbreviation(QDateTime::currentDateTime()), u"QST"_s);
     QCOMPARE(tz2.displayName(QTimeZone::StandardTime, QTimeZone::LongName, QLocale()),
-             QString("Qt Standard Time"));
+             u"Qt Standard Time"_s);
     QCOMPARE(tz2.displayName(QTimeZone::DaylightTime, QTimeZone::LongName, QLocale()),
-             QString("Qt Standard Time"));
-    QCOMPARE(tz2.offsetFromUtc(QDateTime::currentDateTime()), 123456);
+             u"Qt Standard Time"_s);
+    QCOMPARE(tz2.offsetFromUtc(QDateTime::currentDateTime()), 23456);
 
     // And then with a standard IANA timezone (QTBUG-60595):
     tz1 = QTimeZone("UTC");
@@ -1376,16 +1377,17 @@ void tst_QTimeZone::utcTest()
     QCOMPARE(tz.daylightTimeOffset(now), 0);
 
     // Test create custom zone
-    tz = QTimeZone("QST", 123456, "Qt Standard Time", "QST", QLocale::Norway, "Qt Testing");
+    tz = QTimeZone("QST"_ba, 23456,
+                   u"Qt Standard Time"_s, u"QST"_s, QLocale::Norway, u"Qt Testing"_s);
     QCOMPARE(tz.isValid(),   true);
-    QCOMPARE(tz.id(), QByteArray("QST"));
-    QCOMPARE(tz.comment(), QString("Qt Testing"));
+    QCOMPARE(tz.id(), "QST"_ba);
+    QCOMPARE(tz.comment(), u"Qt Testing"_s);
     QCOMPARE(tz.territory(), QLocale::Norway);
-    QCOMPARE(tz.abbreviation(now), QString("QST"));
+    QCOMPARE(tz.abbreviation(now), u"QST"_s);
     QCOMPARE(tz.displayName(QTimeZone::StandardTime, QTimeZone::LongName, QLocale()),
-             QString("Qt Standard Time"));
-    QCOMPARE(tz.offsetFromUtc(now), 123456);
-    QCOMPARE(tz.standardTimeOffset(now), 123456);
+             u"Qt Standard Time"_s);
+    QCOMPARE(tz.offsetFromUtc(now), 23456);
+    QCOMPARE(tz.standardTimeOffset(now), 23456);
     QCOMPARE(tz.daylightTimeOffset(now), 0);
 }
 
