@@ -1092,15 +1092,15 @@ QSize QDateTimeEdit::sizeHint() const
         w += 2; // cursor blinking space
 
         QSize hint(w, h);
+        QStyleOptionSpinBox opt;
+        initStyleOption(&opt);
+        d->cachedSizeHint = style()->sizeFromContents(QStyle::CT_SpinBox, &opt, hint, this);
         if (d->calendarPopupEnabled()) {
-            QStyleOptionComboBox opt;
-            opt.initFrom(this);
-            opt.frame = d->frame;
-            d->cachedSizeHint = style()->sizeFromContents(QStyle::CT_ComboBox, &opt, hint, this);
-        } else {
-            QStyleOptionSpinBox opt;
-            initStyleOption(&opt);
-            d->cachedSizeHint = style()->sizeFromContents(QStyle::CT_SpinBox, &opt, hint, this);
+            QStyleOptionComboBox optCbx;
+            optCbx.initFrom(this);
+            optCbx.frame = d->frame;
+            d->cachedSizeHint.rwidth() =
+                    style()->sizeFromContents(QStyle::CT_ComboBox, &optCbx, hint, this).width();
         }
 
         d->cachedMinimumSizeHint = d->cachedSizeHint;
