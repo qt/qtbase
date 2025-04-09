@@ -106,10 +106,12 @@ class QtInputConnection extends BaseInputConnection
 
     private void setClosing(boolean closing)
     {
-        if (closing)
-            m_view.postDelayed(new HideKeyboardRunnable(), KEYBOARD_CHECK_DELAY_MS);
-        else if (m_qtInputConnectionListener != null)
-            m_qtInputConnectionListener.onSetClosing(false);
+        if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            if (closing)
+                m_view.postDelayed(new HideKeyboardRunnable(), KEYBOARD_CHECK_DELAY_MS);
+            else if (m_qtInputConnectionListener != null)
+                m_qtInputConnectionListener.onSetClosing(false);
+        }
     }
 
     QtInputConnection(QtEditText targetView, QtInputConnectionListener listener)
