@@ -129,10 +129,10 @@ static QString deviceModelIdentifier()
     size_t size;
     sysctlbyname(key, NULL, &size, NULL, 0);
 
-    char value[size];
-    sysctlbyname(key, &value, &size, NULL, 0);
+    QVarLengthArray<char> value(size);
+    sysctlbyname(key, value.data(), &size, NULL, 0);
 
-    return QString::fromLatin1(QByteArrayView(value, qsizetype(size)));
+    return QString::fromLatin1(QByteArrayView(value.constData(), qsizetype(size)));
 #endif
 }
 #endif // !defined(Q_OS_VISIONOS)
