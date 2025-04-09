@@ -94,6 +94,24 @@ QString ucalTimeZoneDisplayName(UCalendar *ucal,
     return result;
 }
 
+bool ucalKnownTimeZoneId(const QString &ianaStr)
+{
+    const UChar *const name = reinterpret_cast<const UChar *>(ianaStr.constData());
+    // We are not interested in the value, but we have to pass something.
+    // No known IANA zone name is (up to 2023) longer than 30 characters.
+    constexpr size_t size = 64;
+    UChar buffer[size];
+
+    // TODO: convert to ucal_getIanaTimeZoneID(), new draft in ICU 74, once we
+    // can rely on its availability, assuming it works the same once not draft.
+    UErrorCode status = U_ZERO_ERROR;
+    UBool isSys = false;
+    // Returns the length of the IANA zone name (but we don't care):
+    ucal_getCanonicalTimeZoneID(name, ianaStr.size(), buffer, size, &isSys, &status);
+    // We're only interested if the result is a "system" (i.e. IANA) ID:
+    return isSys;
+}
+
 } // QtTimeZoneLocale
 
 // Used by TZ backends when ICU is available:
@@ -110,6 +128,11 @@ QString QTimeZonePrivate::localeName(qint64 atMSecsSinceEpoch, int offsetFromUtc
         return isoOffsetFormat(offsetFromUtc);
 
     const QString id = QString::fromUtf8(m_id);
+    // Need to check id is known to ICU, since ucal_open() will return a
+    // misleading "valid" GMT ucal when it doesn't recognise id.
+    if (!QtTimeZoneLocale::ucalKnownTimeZoneId(id))
+        return QString();
+
     const QByteArray loc = locale.name().toUtf8();
     UErrorCode status = U_ZERO_ERROR;
     // TODO: QTBUG-124271 can we cache any of this ?
