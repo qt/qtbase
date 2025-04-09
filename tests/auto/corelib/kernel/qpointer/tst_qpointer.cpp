@@ -6,6 +6,7 @@
 
 #include <QtCore/private/qobject_p.h>
 #include <QRunnable>
+#include <QSemaphore>
 #include <QThreadPool>
 
 #include <QPointer>
@@ -34,6 +35,7 @@ private slots:
     void disconnect();
     void castDuringDestruction();
     void threadSafety();
+    void raceCondition();
 
     void qvariantCast();
     void constPointer();
@@ -527,6 +529,41 @@ void tst_QPointer::threadSafety()
 
     owner.quit();
     owner.wait();
+}
+
+void tst_QPointer::raceCondition()
+{
+    const int NUM_THREADS = 20;
+    const int ITERATIONS_PER_THREAD = 10;
+
+    QSemaphore startSemaphore;
+
+    QObject targetObject;
+
+    std::vector<std::unique_ptr<QThread>> threads;
+    threads.reserve(NUM_THREADS);
+
+    for (int i = 0; i < NUM_THREADS; ++i) {
+        QThread *thread =
+                QThread::create([&startSemaphore, &targetObject, ITERATIONS_PER_THREAD]() {
+                    startSemaphore.acquire();
+
+                    for (int j = 0; j < ITERATIONS_PER_THREAD; ++j) {
+                        QPointer<QObject> pointer(&targetObject);
+                        Q_UNUSED(pointer);
+                    }
+                });
+
+        threads.emplace_back(thread);
+        thread->start();
+    }
+
+    QTest::qWait(100);
+    startSemaphore.release(NUM_THREADS);
+
+    for (const auto &thread : threads) {
+        QVERIFY(thread->wait(30000));
+    }
 }
 
 void tst_QPointer::qvariantCast()
