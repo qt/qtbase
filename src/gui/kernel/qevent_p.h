@@ -35,7 +35,7 @@ class QPointingDevice;
 
     It is similar to std::optional, but with a more targeted API.
 
-    Note that by storing an event in QEventStorage, it is always sliced.
+    Note that by storing an event in QEventStorage, it may be sliced.
 */
 template <typename Event>
 class QEventStorage
