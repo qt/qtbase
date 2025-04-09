@@ -791,6 +791,12 @@ void tst_QMetaObject::invokeMetaMember()
                                       Q_ARG(QList<QString>, argument)));
     QCOMPARE(returnValue, argument);
     QCOMPARE(obj.slotResult, QString("sl13"));
+    // same, testing the QList/QVector aliasing:
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sl13",
+                                      Q_RETURN_ARG(QVector<QString>, returnValue),
+                                      Q_ARG(QVector<QString>, argument)));
+    QCOMPARE(returnValue, argument);
+    QCOMPARE(obj.slotResult, QString("sl13"));
 
     // return qint64
     qint64 return64;
@@ -1578,6 +1584,12 @@ void tst_QMetaObject::invokeBlockingQueuedMetaMember()
                                       Q_ARG(QList<QString>, argument)));
     QCOMPARE(returnValue, argument);
     QCOMPARE(obj.slotResult, QString("sl13"));
+    // same, testing QVector/QList aliasing:
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sl13", Qt::BlockingQueuedConnection,
+                                      Q_RETURN_ARG(QVector<QString>, returnValue),
+                                      Q_ARG(QVector<QString>, argument)));
+    QCOMPARE(returnValue, argument);
+    QCOMPARE(obj.slotResult, QString("sl13"));
 
     // return qint64
     qint64 return64;
@@ -2117,7 +2129,7 @@ void tst_QMetaObject::invokeQueuedAutoRegister()
         &obj, "slotWithRegistrableArgument", Qt::QueuedConnection,
         Q_ARG(QtTestObject *, shared.data()), Q_ARG(QPointer<QtTestObject>, shared.data()),
         Q_ARG(QSharedPointer<QtTestObject>, shared), Q_ARG(QWeakPointer<QtTestObject>, shared),
-        Q_ARG(QList<QtTestObject *>, QList<QtTestObject *>()),
+        Q_ARG(QVector<QtTestObject *>, QVector<QtTestObject *>()), // check QVector/QList aliasing
         Q_ARG(QList<QtTestObject *>, QList<QtTestObject *>())));
     QVERIFY(obj.slotResult.isEmpty());
     qApp->processEvents(QEventLoop::AllEvents);
@@ -2340,6 +2352,7 @@ void tst_QMetaObject::customPropertyType()
     prop = metaObject()->property(metaObject()->indexOfProperty("value4"));
     QCOMPARE(prop.metaType().id(), QMetaType::QVariantList);
     QCOMPARE(prop.metaType(), QMetaType::fromType<QList<QVariant>>());
+    QCOMPARE(prop.metaType(), QMetaType::fromType<QVector<QVariant>>());
 
     prop = metaObject()->property(metaObject()->indexOfProperty("value5"));
     QCOMPARE(prop.metaType().id(), QMetaType::QVariantList);
@@ -2630,10 +2643,10 @@ void tst_QMetaObject::metaMethod()
     argument << QString("one") << QString("two") << QString("three");
     //wrong object
     //QVERIFY(!sl13.invoke(this, Q_RETURN_ARG(QList<QString>, returnValue), Q_ARG(QList<QString>, argument)));
-    QVERIFY(!sl13.invoke(0,  Q_RETURN_ARG(QList<QString>, returnValue), Q_ARG(QList<QString>, argument)));
+    QVERIFY(!sl13.invoke(0,  Q_RETURN_ARG(QVector<QString>, returnValue), Q_ARG(QList<QString>, argument)));
     QVERIFY(returnValue.isEmpty());
 
-    QVERIFY(sl13.invoke(&obj, Q_RETURN_ARG(QList<QString>, returnValue), Q_ARG(QList<QString>, argument)));
+    QVERIFY(sl13.invoke(&obj, Q_RETURN_ARG(QList<QString>, returnValue), Q_ARG(QVector<QString>, argument)));
     QCOMPARE(returnValue, argument);
     QCOMPARE(obj.slotResult, QString("sl13"));
 }
