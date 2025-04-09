@@ -1531,7 +1531,7 @@ QtSharedPointer::ExternalRefCountData *QtSharedPointer::ExternalRefCountData::ge
     QObjectPrivate *d = QObjectPrivate::get(const_cast<QObject *>(obj));
     Q_ASSERT_X(!d->wasDeleted, "QWeakPointer", "Detected QWeakPointer creation in a QObject being deleted");
 
-    ExternalRefCountData *that = d->sharedRefcount.loadRelaxed();
+    ExternalRefCountData *that = d->sharedRefcount.loadAcquire();
     if (that) {
         that->weakref.ref();
         return that;
