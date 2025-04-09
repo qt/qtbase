@@ -69,6 +69,12 @@ private:
     friend class QWindowsFontEngineDirectWrite;
     static QString localeString(IDWriteLocalizedStrings *names, wchar_t localeName[]);
 
+    template<typename T>
+    static void collectAdditionalNames(T *fontFace,
+                                       wchar_t *defaultLocale,
+                                       wchar_t *englishLocale,
+                                       std::function<void(const std::pair<QString, QString> &)> registerFamily);
+
     QSupportedWritingSystems supportedWritingSystems(IDWriteFontFace *face) const;
 
     QHash<QString, IDWriteFontFamily *> m_populatedFonts;
