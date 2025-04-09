@@ -660,9 +660,9 @@ void QSqlDatabasePrivate::init(const QString &type)
         driver = qLoadPlugin<QSqlDriver, QSqlDriverPlugin>(loader(), type);
 
     if (!driver) {
-        qCWarning(lcSqlDb, "QSqlDatabase: %ls driver not loaded", qUtf16Printable(type));
-        qCWarning(lcSqlDb, "QSqlDatabase: available drivers: %ls",
-                  qUtf16Printable(QSqlDatabase::drivers().join(u' ')));
+        qCWarning(lcSqlDb,
+                  "QSqlDatabase: can not load requested driver '%ls', available drivers: %ls",
+                  qUtf16Printable(type), qUtf16Printable(QSqlDatabase::drivers().join(u' ')));
         if (QCoreApplication::instance() == nullptr)
             qCWarning(lcSqlDb, "QSqlDatabase: an instance of QCoreApplication is required for loading driver plugins");
         driver = shared_null()->driver;

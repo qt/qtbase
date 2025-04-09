@@ -2915,10 +2915,10 @@ void tst_QSqlQuery::queryOnInvalidDatabase()
             QSqlDatabase::removeDatabase("invalidConnection");
         });
         // Note: destruction of db needs to happen before we call removeDatabase.
-        QTest::ignoreMessage(QtWarningMsg, "QSqlDatabase: INVALID driver not loaded");
 #if QT_CONFIG(regularexpression)
         QTest::ignoreMessage(QtWarningMsg,
-                             QRegularExpression("QSqlDatabase: available drivers: "));
+                             QRegularExpression("QSqlDatabase: can not load requested driver "
+                                                "'INVALID', available drivers: "));
 #endif
         QSqlDatabase db = QSqlDatabase::addDatabase("INVALID", "invalidConnection");
         QVERIFY(db.lastError().isValid());

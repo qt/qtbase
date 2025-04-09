@@ -383,8 +383,9 @@ void tst_QSqlDatabase::generic_data(const QString& engine)
 
 void tst_QSqlDatabase::addDatabase()
 {
-    QTest::ignoreMessage(QtWarningMsg, "QSqlDatabase: BLAH_FOO_NONEXISTENT_DRIVER driver not loaded");
-    QTest::ignoreMessage(QtWarningMsg, qPrintable("QSqlDatabase: available drivers: " + QSqlDatabase::drivers().join(QLatin1Char(' '))));
+    QTest::ignoreMessage(QtWarningMsg,
+                         "QSqlDatabase: can not load requested driver 'BLAH_FOO_NONEXISTENT_DRIVER', available drivers: "
+                         + QSqlDatabase::drivers().join(QLatin1Char(' ')).toLatin1());
     {
         QSqlDatabase db = QSqlDatabase::addDatabase("BLAH_FOO_NONEXISTENT_DRIVER",
                                                     "INVALID_CONNECTION");
