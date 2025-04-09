@@ -41,6 +41,7 @@
 #include <qpa/qwindowsysteminterface.h>
 
 #include <stdio.h>
+#include <unistd.h>
 
 #if QT_CONFIG(xcb_xlib)
 #define register        /* C++17 deprecated register */
