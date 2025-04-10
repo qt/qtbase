@@ -6,7 +6,7 @@
 #include <QString>
 #include <QtCore/QJniEnvironment>
 #include <QtCore/QJniObject>
-#include <QtTest>
+#include <QTest>
 
 using namespace Qt::StringLiterals;
 

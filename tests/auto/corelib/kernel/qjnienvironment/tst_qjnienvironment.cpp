@@ -5,7 +5,7 @@
 
 #include <QtCore/QJniEnvironment>
 #include <QtCore/QJniObject>
-#include <QtTest/QtTest>
+#include <QtTest/QTest>
 
 static const char javaTestClass[] =
         "org/qtproject/qt/android/testdatapackage/QtJniEnvironmentTestClass";

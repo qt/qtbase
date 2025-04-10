@@ -7,7 +7,7 @@
 #include <qpa/qwindowsysteminterface.h>
 #include <QProcess>
 
-#include <QtTest/QtTest>
+#include <QtTest/QTest>
 
 class tst_QScreen_Xrandr: public QObject
 {

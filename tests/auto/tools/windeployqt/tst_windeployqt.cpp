@@ -10,7 +10,7 @@
 #include <QtCore/QProcessEnvironment>
 #include <QtCore/QStandardPaths>
 #include <QtCore/QTextStream>
-#include <QtTest/QtTest>
+#include <QtTest/QTest>
 
 static const QString msgProcessError(const QProcess &process, const QString &what,
                                      const QByteArray &stdOut = QByteArray(),

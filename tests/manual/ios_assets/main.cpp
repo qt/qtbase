@@ -3,7 +3,7 @@
 
 #include <QtCore/QStandardPaths>
 #include <QtCore/QDir>
-#include <QtTest/QtTest>
+#include <QtTest/QTest>
 
 #ifdef DEBUG_APP_DATA_LOCATION
     #include <QtCore/QDebug>
