@@ -4,7 +4,7 @@
 #include "intermediate_lib.h"
 
 #include <QtCore/qfile.h>
-#include <QtTest/QtTest>
+#include <QtTest/QTest>
 
 class TestAddResourcesBigResources : public QObject
 {
