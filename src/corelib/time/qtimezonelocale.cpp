@@ -526,7 +526,7 @@ QString QTimeZonePrivate::localeName(qint64 atMSecsSinceEpoch, int offsetFromUtc
     // First try for an actual name:
     for (const qsizetype locInd : indices) {
         const LocaleZoneData &locData = localeZoneData[locInd];
-        // After the row for the last actual locale, there's  a terminal row:
+        // After the row for the last actual locale, there's a terminal row:
         Q_ASSERT(std::size_t(locInd) < std::size(localeZoneData) - 1);
         const LocaleZoneData &nextData = localeZoneData[locInd + 1];
 

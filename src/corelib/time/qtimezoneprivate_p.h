@@ -152,10 +152,10 @@ public:
     static QByteArray ianaIdToWindowsId(const QByteArray &ianaId);
     static QByteArray windowsIdToDefaultIanaId(const QByteArray &windowsId);
     static QByteArray windowsIdToDefaultIanaId(const QByteArray &windowsId,
-                                                QLocale::Territory territory);
+                                               QLocale::Territory territory);
     static QList<QByteArray> windowsIdToIanaIds(const QByteArray &windowsId);
     static QList<QByteArray> windowsIdToIanaIds(const QByteArray &windowsId,
-                                                 QLocale::Territory territory);
+                                                QLocale::Territory territory);
 
     // returns "UTC" QString and QByteArray
     [[nodiscard]] static inline QString utcQString()
