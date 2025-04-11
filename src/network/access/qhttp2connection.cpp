@@ -663,8 +663,10 @@ void QHttp2Stream::handleDATA(const Frame &inboundFrame)
 {
     QHttp2Connection *connection = getConnection();
 
-    qCDebug(qHttp2ConnectionLog, "[%p] stream %u, received DATA frame with payload of %u bytes",
-            connection, m_streamID, inboundFrame.payloadSize());
+    qCDebug(qHttp2ConnectionLog,
+            "[%p] stream %u, received DATA frame with payload of %u bytes, closing stream? %s",
+            connection, m_streamID, inboundFrame.payloadSize(),
+            inboundFrame.flags().testFlag(Http2::FrameFlag::END_STREAM) ? "yes" : "no");
 
     // RFC 9113, 6.1: If a DATA frame is received whose stream is not in the "open" or "half-closed
     // (local)" state, the recipient MUST respond with a stream error (Section 5.4.2) of type
@@ -1426,7 +1428,8 @@ void QHttp2Connection::handleHEADERS()
     Q_ASSERT(inboundFrame.type() == FrameType::HEADERS);
 
     const auto streamID = inboundFrame.streamID();
-    qCDebug(qHttp2ConnectionLog, "[%p] Received HEADERS frame on stream %d", this, streamID);
+    qCDebug(qHttp2ConnectionLog, "[%p] Received HEADERS frame on stream %d, end stream? %s", this,
+            streamID, inboundFrame.flags().testFlag(Http2::FrameFlag::END_STREAM) ? "yes" : "no");
 
     // RFC 9113, 6.2: If a HEADERS frame is received whose Stream Identifier field is 0x00, the
     // recipient MUST respond with a connection error.
@@ -1849,6 +1852,10 @@ void QHttp2Connection::handleWINDOW_UPDATE()
 void QHttp2Connection::handleCONTINUATION()
 {
     Q_ASSERT(inboundFrame.type() == FrameType::CONTINUATION);
+    auto streamID = inboundFrame.streamID();
+    qCDebug(qHttp2ConnectionLog,
+            "[%p] Received CONTINUATION frame on stream %d, end stream? %s", this, streamID,
+            inboundFrame.flags().testFlag(Http2::FrameFlag::END_STREAM) ? "yes" : "no");
     if (continuedFrames.empty())
         return connectionError(PROTOCOL_ERROR,
                                "CONTINUATION without a preceding HEADERS or PUSH_PROMISE");
