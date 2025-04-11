@@ -344,6 +344,7 @@ public:
     static inline QPointF mapPositionToGlobal(const QPointF &pos, const QPoint &, const QWindow *) { return pos; }
     static inline QPointF mapPositionFromGlobal(const QPointF &pos, const QPoint &, const QWindow *) { return pos; }
     static inline QDpi logicalDpi(const QScreen *) { return QDpi(-1,-1); }
+    static inline qreal roundScaleFactor(qreal) { return 1.0; }
 };
 
 namespace QHighDpi {
