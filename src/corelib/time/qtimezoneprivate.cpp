@@ -182,7 +182,7 @@ QString QTimeZonePrivate::displayName(qint64 atMSecsSinceEpoch,
 {
     const Data tran = data(atMSecsSinceEpoch);
     if (tran.atMSecsSinceEpoch != invalidMSecs()) {
-        if (nameType == QTimeZone::OffsetName && locale.language() == QLocale::C)
+        if (nameType == QTimeZone::OffsetName && isAnglicLocale(locale))
             return isoOffsetFormat(tran.offsetFromUtc);
         if (nameType == QTimeZone::ShortName && isDataLocale(locale))
             return tran.abbreviation;
@@ -204,7 +204,7 @@ QString QTimeZonePrivate::displayName(QTimeZone::TimeType timeType,
 {
     const Data tran = data(timeType);
     if (tran.atMSecsSinceEpoch != invalidMSecs()) {
-        if (nameType == QTimeZone::OffsetName && isDataLocale(locale))
+        if (nameType == QTimeZone::OffsetName && isAnglicLocale(locale))
             return isoOffsetFormat(tran.offsetFromUtc);
 
 #if QT_CONFIG(timezone_locale)
@@ -1042,8 +1042,8 @@ QTimeZonePrivate::Data QUtcTimeZonePrivate::data(QTimeZone::TimeType timeType) c
 
 bool QUtcTimeZonePrivate::isDataLocale(const QLocale &locale) const
 {
-    // Officially only supports C locale names; these are surely also viable for English.
-    return locale.language() == QLocale::C || locale.language() == QLocale::English;
+    // Officially only supports C locale names; these are surely also viable for en-Latn-*.
+    return isAnglicLocale(locale);
 }
 
 void QUtcTimeZonePrivate::init(const QByteArray &zoneId, int offsetSeconds, const QString &name,
