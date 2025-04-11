@@ -109,6 +109,13 @@ public:
     virtual Data data(qint64 forMSecsSinceEpoch) const;
     virtual Data data(QTimeZone::TimeType timeType) const;
     virtual bool isDataLocale(const QLocale &locale) const;
+    static bool isAnglicLocale(const QLocale &locale)
+    {
+        // Sufficiently like the C locale for displayName()-related purposes:
+        const QLocale::Language lang = locale.language();
+        return lang == QLocale::C
+            || (lang == QLocale::English && locale.script() == QLocale::LatinScript);
+    }
     QDateTimePrivate::ZoneState stateAtZoneTime(qint64 forLocalMSecs,
                                                 QDateTimePrivate::TransitionOptions resolve) const;
 

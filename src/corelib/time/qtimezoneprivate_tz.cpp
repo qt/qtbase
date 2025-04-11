@@ -1030,7 +1030,7 @@ QString QTzTimeZonePrivate::displayName(QTimeZone::TimeType timeType,
             if (nameType == QTimeZone::ShortName)
                 return tran.abbreviation;
             // Save base class repeating the data(timeType) query:
-            if (locale.language() == QLocale::C)
+            if (isAnglicLocale(locale))
                 return isoOffsetFormat(tran.offsetFromUtc);
         }
     }
@@ -1176,8 +1176,8 @@ QTimeZonePrivate::Data QTzTimeZonePrivate::data(QTimeZone::TimeType timeType) co
 
 bool QTzTimeZonePrivate::isDataLocale(const QLocale &locale) const
 {
-    // TZ data uses English / C locale names:
-    return locale.language() == QLocale::C || locale.language() == QLocale::English;
+    // TZ data uses en-Latn-* / C locale names:
+    return isAnglicLocale(locale);
 }
 
 bool QTzTimeZonePrivate::hasTransitions() const
