@@ -1016,7 +1016,7 @@ void tst_QTimeZone::availableTimeZoneIds()
 
 void tst_QTimeZone::stressTest()
 {
-    const auto UTC = QTimeZone::UTC;
+    constexpr auto UTC = QTimeZone::UTC;
     const QList<QByteArray> idList = QTimeZone::availableTimeZoneIds();
     for (const QByteArray &id : idList) {
         QTimeZone testZone = QTimeZone(id);
@@ -1027,8 +1027,9 @@ void tst_QTimeZone::stressTest()
         testZone.territory();
         testZone.comment();
         testZone.displayName(testDate);
-        testZone.displayName(QTimeZone::DaylightTime);
-        testZone.displayName(QTimeZone::StandardTime);
+        (void)testZone.displayName(QTimeZone::GenericTime);
+        (void)testZone.displayName(QTimeZone::StandardTime);
+        (void)testZone.displayName(QTimeZone::DaylightTime);
         testZone.abbreviation(testDate);
         testZone.offsetFromUtc(testDate);
         testZone.standardTimeOffset(testDate);
@@ -1775,22 +1776,20 @@ void tst_QTimeZone::localeSpecificDisplayName_data()
     // Pick a non-system locale; German or French
     if (QLocale::system().language() != QLocale::German) {
         locale = QLocale(QLocale::German);
-        names << QString("Mitteleurop\u00e4ische Normalzeit")
-              << QString("Mitteleurop\u00e4ische Sommerzeit");
+        names << u"Mitteleurop\u00e4ische Normalzeit"_s
+              << u"Mitteleurop\u00e4ische Sommerzeit"_s;
     } else {
         locale = QLocale(QLocale::French);
-        names << QString("heure normale d\u2019Europe centrale")
-              << QString("heure d\u2019\u00E9t\u00E9 d\u2019Europe centrale");
+        names << u"heure normale d\u2019Europe centrale"_s
+              << u"heure d\u2019\u00E9t\u00E9 d\u2019Europe centrale"_s;
     }
 
     qsizetype index = 0;
     QTest::newRow("Berlin, standard time")
-            << QByteArray("Europe/Berlin") << locale << QTimeZone::StandardTime
-            << names.at(index++);
+            << "Europe/Berlin"_ba << locale << QTimeZone::StandardTime << names.at(index++);
 
     QTest::newRow("Berlin, summer time")
-            << QByteArray("Europe/Berlin") << locale << QTimeZone::DaylightTime
-            << names.at(index++);
+            << "Europe/Berlin"_ba << locale << QTimeZone::DaylightTime << names.at(index++);
 }
 
 void tst_QTimeZone::localeSpecificDisplayName()
@@ -1802,7 +1801,7 @@ void tst_QTimeZone::localeSpecificDisplayName()
     QFETCH(QTimeZone::TimeType, timeType);
     QFETCH(QString, expectedName);
 
-    QTimeZone zone(zoneName);
+    const QTimeZone zone(zoneName);
     QVERIFY(zone.isValid());
 
     const QString localeName = zone.displayName(timeType, QTimeZone::LongName, locale);
