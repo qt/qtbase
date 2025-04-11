@@ -1084,7 +1084,7 @@ QString QUtcTimeZonePrivate::displayName(QTimeZone::TimeType timeType,
     Q_UNUSED(locale);
     if (nameType == QTimeZone::ShortName)
         return m_abbreviation;
-    else if (nameType == QTimeZone::OffsetName)
+    if (nameType == QTimeZone::OffsetName)
         return isoOffsetFormat(m_offsetFromUtc);
     return m_name;
 }
@@ -1112,6 +1112,7 @@ QByteArray QUtcTimeZonePrivate::systemTimeZoneId() const
     return utcQByteArray();
 }
 
+// TODO: port to QByteArrayView
 bool QUtcTimeZonePrivate::isTimeZoneIdAvailable(const QByteArray &ianaId) const
 {
     // Only the zone IDs supplied by CLDR and recognized by constructor.

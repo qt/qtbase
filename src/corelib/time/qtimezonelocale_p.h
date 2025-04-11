@@ -154,7 +154,7 @@ struct LocaleZoneNames
 struct LocaleMetaZoneLongNames
 {
     quint16 localeIndex; // Index in locale data tables
-    quint16 metaIdIndex; // metaZoneTable[metaZoneKey - 1].metaIdIndex
+    quint16 metaIdIndex; // As for MetaZoneData metaZoneTable[].
     timeTypeRange(long)
 #define forEachField(X) forEachNameType(X, long)
     // Long localized names (length zero for unspecified) for the
