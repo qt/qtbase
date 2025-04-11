@@ -4579,15 +4579,22 @@ int QMetaObjectPrivate::originalClone(const QMetaObject *mobj, int local_method_
 
     Returns the parameter type names extracted from the given \a signature.
 */
-QList<QByteArray> QMetaObjectPrivate::parameterTypeNamesFromSignature(const char *signature)
+QList<QByteArray> QMetaObjectPrivate::parameterTypeNamesFromSignature(QByteArrayView sig)
 {
     QList<QByteArray> list;
-    while (*signature && *signature != '(')
-        ++signature;
-    while (*signature && *signature != ')' && *++signature != ')') {
+    const char *signature = static_cast<const char *>(memchr(sig.begin(), '(', sig.size()));
+    if (!signature)
+        return {};
+    ++signature; // skip '('
+    if (!sig.endsWith(')'))
+        return {};
+    const char *end = sig.end() - 1; // exclude ')'
+    while (signature != end) {
+        if (*signature == ',')
+            ++signature;
         const char *begin = signature;
         int level = 0;
-        while (*signature && (level > 0 || *signature != ',') && *signature != ')') {
+        while (signature != end && (level > 0 || *signature != ',')) {
             if (*signature == '<')
                 ++level;
             else if (*signature == '>')
