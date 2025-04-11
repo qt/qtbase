@@ -2938,8 +2938,8 @@ public:
     bool finishStartElement(bool contents = true);
     void writeStartElement(QAnyStringView namespaceUri, QAnyStringView name,
                            StartElementOption option = StartElementOption::KeepEverything);
-    QIODevice *device;
-    QString *stringDevice;
+    QIODevice *device = nullptr;
+    QString *stringDevice = nullptr;
     uint deleteDevice :1;
     uint inStartElement :1;
     uint inEmptyElement :1;
@@ -2950,15 +2950,15 @@ public:
     uint autoFormatting :1;
     uint didWriteStartDocument :1;
     uint didWriteAnyToken :1;
-    std::string autoFormattingIndent;
+    std::string autoFormattingIndent = std::string(4, ' ');
     NamespaceDeclaration emptyNamespace;
-    qsizetype lastNamespaceDeclaration;
+    qsizetype lastNamespaceDeclaration = 1;
 
     NamespaceDeclaration &addExtraNamespace(QAnyStringView namespaceUri, QAnyStringView prefix);
     NamespaceDeclaration &findNamespace(QAnyStringView namespaceUri, bool writeDeclaration = false, bool noDefault = false);
     void writeNamespaceDeclaration(const NamespaceDeclaration &namespaceDeclaration);
 
-    int namespacePrefixCount;
+    int namespacePrefixCount = 0;
 
     void indent(int level);
 private:
@@ -2969,22 +2969,12 @@ private:
 
 
 QXmlStreamWriterPrivate::QXmlStreamWriterPrivate(QXmlStreamWriter *q)
-    : autoFormattingIndent(4, ' ')
+    : q_ptr(q), deleteDevice(false), inStartElement(false),
+      inEmptyElement(false), lastWasStartElement(false),
+      wroteSomething(false), hasIoError(false),
+      hasEncodingError(false), autoFormatting(false),
+      didWriteStartDocument(false), didWriteAnyToken(false)
 {
-    q_ptr = q;
-    device = nullptr;
-    stringDevice = nullptr;
-    deleteDevice = false;
-    inStartElement = inEmptyElement = false;
-    wroteSomething = false;
-    hasIoError = false;
-    hasEncodingError = false;
-    lastWasStartElement = false;
-    lastNamespaceDeclaration = 1;
-    autoFormatting = false;
-    namespacePrefixCount = 0;
-    didWriteStartDocument = false;
-    didWriteAnyToken = false;
 }
 
 void QXmlStreamWriterPrivate::write(QAnyStringView s)
