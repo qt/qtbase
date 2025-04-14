@@ -67,7 +67,7 @@ void QSingleShotTimer::timerEvent(QTimerEvent *event)
 {
     if (event->id() == Qt::TimerId::Invalid) {
         StartTimerEvent *startTimerEvent = static_cast<StartTimerEvent *>(event);
-        startTimerEvent->timer.release();
+        Q_UNUSED(startTimerEvent->timer.release()); // it's the same as "this"
         const QDeadlineTimer &deadline = startTimerEvent->deadline;
         if (deadline.hasExpired()) {
             timerFinished();
