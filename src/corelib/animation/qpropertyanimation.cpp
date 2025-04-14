@@ -230,7 +230,7 @@ bool QPropertyAnimation::event(QEvent *event)
 /*!
     This virtual function is called by QVariantAnimation whenever the current value
     changes. \a value is the new, updated value. It updates the current value
-    of the property on the target object.
+    of the property on the target object, unless the animation is stopped.
 
     \sa currentValue, currentTime
  */
