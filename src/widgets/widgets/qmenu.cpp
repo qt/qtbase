@@ -2450,9 +2450,11 @@ void QMenuPrivate::popup(const QPoint &p, QAction *atAction, PositionFunction po
         }
     }
 
-    // do nothing if we don't have a valid size, e.g. when all actions are invisible
+    // Do nothing if we don't have a valid size, e.g. when all actions are invisible
+    // and there are no child widgets.
     const auto rectIsNull = [](const QRect &rect) { return rect.isNull(); };
-    if (std::all_of(actionRects.cbegin(), actionRects.cend(), rectIsNull)) {
+    if (q->childrenRect().isEmpty()
+     && std::all_of(actionRects.cbegin(), actionRects.cend(), rectIsNull)) {
         eventLoop = nullptr;
         syncAction = nullptr;
         return;
