@@ -2179,6 +2179,13 @@ void tst_QMenu::invisibleActions()
     contextMenu.popup(globalPos);
     QVERIFY(!contextMenu.isVisible());
     QVERIFY(!contextMenu.exec());
+
+    // a QMenu might not have any (visible) actions, but still have contents
+    QPushButton *buttonInMenu = new QPushButton(&contextMenu);
+    buttonInMenu->show();
+
+    contextMenu.popup(globalPos);
+    QVERIFY(contextMenu.isVisible());
 }
 
 #if QT_CONFIG(shortcut) && !defined(Q_OS_DARWIN)
