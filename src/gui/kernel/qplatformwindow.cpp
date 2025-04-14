@@ -469,8 +469,13 @@ bool QPlatformWindow::windowEvent(QEvent *event)
 
     if (event->type() == QEvent::Timer) {
         if (static_cast<QTimerEvent *>(event)->timerId() == d->updateTimer.timerId()) {
-            d->updateTimer.stop();
             deliverUpdateRequest();
+            // Delivery of the update request may be circumvented temporarily by the
+            // platform window, or the user may request another update during the
+            // delivery, so wait to stop the timer until we know we don't need it
+            // anymore.
+            if (!hasPendingUpdateRequest())
+                d->updateTimer.stop();
             return true;
         }
     }
@@ -770,7 +775,8 @@ void QPlatformWindow::requestUpdate()
         }
     }
 
-    Q_ASSERT(!d->updateTimer.isActive());
+    // Start or restart the timer (in case we're called during update
+    // request delivery).
     d->updateTimer.start(updateInterval, Qt::PreciseTimer, window());
 }
 
