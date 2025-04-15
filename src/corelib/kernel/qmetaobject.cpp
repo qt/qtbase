@@ -831,8 +831,7 @@ static void argumentTypesFromString(const char *str, const char *end,
                 --level;
             ++str;
         }
-        QByteArray argType(begin, str - begin);
-        types += QArgumentType(std::move(argType));
+        types.emplace_back(QByteArrayView{begin, str - begin});
     }
 }
 

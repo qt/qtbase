@@ -45,8 +45,8 @@ public:
     QArgumentType(QMetaType metaType)
         : _metaType(metaType)
     {}
-    QArgumentType(const QByteArray &name)
-        : _metaType(QMetaType{qMetaTypeTypeInternal(qToByteArrayViewIgnoringNull(name))}), _name(name)
+    explicit QArgumentType(QByteArrayView name)
+        : _metaType(QMetaType{qMetaTypeTypeInternal(name)}), _name(name)
     {}
     QMetaType metaType() const noexcept
     { return _metaType; }
@@ -69,7 +69,7 @@ private:
     Q_DECLARE_EQUALITY_COMPARABLE_NON_NOEXCEPT(QArgumentType)
 
     QMetaType _metaType;
-    QByteArray _name;
+    QByteArrayView _name;
 };
 Q_DECLARE_TYPEINFO(QArgumentType, Q_RELOCATABLE_TYPE);
 
