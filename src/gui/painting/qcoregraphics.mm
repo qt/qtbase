@@ -123,6 +123,14 @@ QT_END_NAMESPACE
 
 + (instancetype)imageFromQIcon:(const QIcon &)icon withSize:(int)size
 {
+    return [NSImage imageFromQIcon:icon withSize:0 withMode:QIcon::Normal withState:QIcon::Off];
+}
+
+
++ (instancetype)imageFromQIcon:(const QIcon &)icon withSize:(int)size withMode:(QIcon::Mode)mode
+                                                                     withState:(QIcon::State)state
+
+{
     if (icon.isNull())
         return nil;
 
@@ -133,7 +141,7 @@ QT_END_NAMESPACE
     auto nsImage = [[[NSImage alloc] initWithSize:NSZeroSize] autorelease];
 
     for (QSize size : std::as_const(availableSizes)) {
-        QImage image = icon.pixmap(size).toImage();
+        const QImage image = icon.pixmap(size, mode, state).toImage();
         if (image.isNull())
             continue;
 

@@ -18,8 +18,9 @@
 #include <QtCore/private/qcore_mac_p.h>
 
 #include <QtGui/private/qtguiglobal_p.h>
-#include <QtGui/qregion.h>
+#include <QtGui/qicon.h>
 #include <QtGui/qpalette.h>
+#include <QtGui/qregion.h>
 
 #include <CoreGraphics/CoreGraphics.h>
 
@@ -52,6 +53,10 @@ QT_END_NAMESPACE
 + (instancetype)imageFromQImage:(const QT_PREPEND_NAMESPACE(QImage) &)image;
 + (instancetype)imageFromQIcon:(const QT_PREPEND_NAMESPACE(QIcon) &)icon;
 + (instancetype)imageFromQIcon:(const QT_PREPEND_NAMESPACE(QIcon) &)icon withSize:(int)size;
++ (instancetype)imageFromQIcon:(const QT_PREPEND_NAMESPACE(QIcon) &)icon
+                                            withSize:(int)size
+                                            withMode:(QT_PREPEND_NAMESPACE(QIcon)::Mode)mode
+                                           withState:(QT_PREPEND_NAMESPACE(QIcon)::State)state;
 @end
 QT_BEGIN_NAMESPACE
 

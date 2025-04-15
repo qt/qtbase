@@ -372,7 +372,11 @@ NSMenuItem *QCocoaMenuItem::sync()
         m_native.keyEquivalentModifierMask = NSEventModifierFlagCommand;
     }
 
-    m_native.image = [NSImage imageFromQIcon:m_icon withSize:m_iconSize];
+    const QIcon::Mode mode = m_enabled ? QIcon::Normal : QIcon::Disabled;
+    const QIcon::State state = m_checked ? QIcon::On : QIcon::Off;
+    m_native.image = [NSImage imageFromQIcon:m_icon withSize:m_iconSize
+                                                    withMode:mode
+                                                   withState:state];
 
     m_native.state = m_checked ?  NSControlStateValueOn : NSControlStateValueOff;
     return m_native;
