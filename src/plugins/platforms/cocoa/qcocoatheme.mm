@@ -490,8 +490,11 @@ void QCocoaTheme::requestColorScheme(Qt::ColorScheme scheme)
     case Qt::ColorScheme::Unknown:
         break;
     }
-    if (appearance != NSApp.effectiveAppearance)
-        NSApplication.sharedApplication.appearance = appearance;
+
+    // Always override the appearance, even if it's the same
+    // as the current effective appearance, as otherwise the
+    // requested appearance won't stick on system theme changes.
+    NSApp.appearance = appearance;
 }
 
 /*
