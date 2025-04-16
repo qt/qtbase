@@ -81,6 +81,7 @@ public:
 
     void setGeometry(const QRect &rect) override;
     QRect geometry() const override;
+    QRect actualGeometry() const;
     QRect normalGeometry() const override;
     void setGeometry(const QRect &rect, QWindowPrivate::PositionPolicy positionPolicy);
 

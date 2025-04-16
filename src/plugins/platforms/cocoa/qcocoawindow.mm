@@ -271,6 +271,19 @@ QRect QCocoaWindow::geometry() const
     return QPlatformWindow::geometry();
 }
 
+QRect QCocoaWindow::actualGeometry() const
+{
+    if (isContentView() && !isEmbedded()) {
+        // Content views are positioned at (0, 0) in the window, so we resolve via the window
+        CGRect contentRect = [m_view.window contentRectForFrameRect:m_view.window.frame];
+
+        // The result above is in native screen coordinates, so remap to the Qt coordinate system
+        return QCocoaScreen::mapFromNative(contentRect).toRect();
+    } else {
+        return QCocoaWindow::mapFromNative(m_view.frame, m_view.superview).toRect();
+    }
+}
+
 /*!
     \brief the geometry of the window as it will appear when shown as
     a normal (not maximized or full screen) top-level window.
@@ -328,6 +341,8 @@ void QCocoaWindow::setGeometry(const QRect &rectIn, QWindowPrivate::PositionPoli
 
     QPlatformWindow::setGeometry(rect);
 
+    const QRect originalGeometry = actualGeometry();
+
     if (isContentView()) {
         if (isEmbedded()) {
             // Sizing or moving the content view doesn't make sense when
@@ -339,6 +354,17 @@ void QCocoaWindow::setGeometry(const QRect &rectIn, QWindowPrivate::PositionPoli
         }
     } else {
         m_view.frame = QCocoaWindow::mapToNative(rect, m_view.superview);
+    }
+
+    if (actualGeometry() == originalGeometry) {
+        // The requested geometry change was rejected by the OS. This can
+        // happen when trying to move a window past the top of the screen,
+        // which is not allowed. Normally, when the OS adjusts the geometry
+        // we requested, it will be updated via windowDidMove/Resize, but
+        // if the rejected change ends up the same as the old geometry these
+        // callbacks won't be called, so we have to update manually here.
+        qCDebug(lcQpaWindow) << "Native geometry didn't change. Reporting geometry change manually.";
+        handleGeometryChange();
     }
 }
 
@@ -1648,16 +1674,7 @@ bool QCocoaWindow::windowShouldClose()
 
 void QCocoaWindow::handleGeometryChange()
 {
-    QRect newGeometry;
-    if (isContentView() && !isEmbedded()) {
-        // Content views are positioned at (0, 0) in the window, so we resolve via the window
-        CGRect contentRect = [m_view.window contentRectForFrameRect:m_view.window.frame];
-
-        // The result above is in native screen coordinates, so remap to the Qt coordinate system
-        newGeometry = QCocoaScreen::mapFromNative(contentRect).toRect();
-    } else {
-        newGeometry = QCocoaWindow::mapFromNative(m_view.frame, m_view.superview).toRect();
-    }
+    const QRect newGeometry = actualGeometry();
 
     qCDebug(lcQpaWindow) << "QCocoaWindow::handleGeometryChange" << window()
                                << "current" << geometry() << "new" << newGeometry;
