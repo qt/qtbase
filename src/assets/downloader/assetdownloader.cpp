@@ -48,6 +48,8 @@ public:
             QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
     QUrl m_offlineAssetsFilePath;
     QUrl m_downloadBase;
+    QStringList m_networkErrors;
+    QStringList m_sslErrors;
 
     void setLocalDownloadDir(const QDir &dir)
     {
@@ -80,6 +82,16 @@ public:
                              query, [this](qint64 bytesReceived, qint64 totalBytes) {
                 updateProgress((totalBytes > 0) ? 100.0 * bytesReceived / totalBytes : 0, 100);
             });
+            QObject::connect(reply, &QNetworkReply::errorOccurred, query, [this, reply] {
+                m_networkErrors << reply->errorString();
+            });
+#if QT_CONFIG(ssl)
+            QObject::connect(reply, &QNetworkReply::sslErrors,
+                             query, [this](const QList<QSslError> &sslErrors) {
+                for (const QSslError &sslError : sslErrors)
+                    m_sslErrors << sslError.errorString();
+            });
+#endif
         });
     }
 };
@@ -262,6 +274,16 @@ QUrl AssetDownloader::localDownloadDir() const
     return QUrl::fromLocalFile(d->m_localDownloadDir.absolutePath());
 }
 
+QStringList AssetDownloader::networkErrors() const
+{
+    return d->m_networkErrors;
+}
+
+QStringList AssetDownloader::sslErrors() const
+{
+    return d->m_sslErrors;
+}
+
 static void precheckLocalFile(const QUrl &url)
 {
     if (url.isEmpty())
@@ -385,6 +407,8 @@ void AssetDownloader::start()
         }
         storage->tempDir = d->m_temporaryDir->path();
         d->setLocalDownloadDir(baseLocalDir(d->m_preferredLocalDownloadDir));
+        d->m_networkErrors.clear();
+        d->m_sslErrors.clear();
         precheckLocalFile(resolvedUrl(d->m_offlineAssetsFilePath));
         return SetupResult::Continue;
     };

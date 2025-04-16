@@ -86,6 +86,9 @@ public:
 
     QUrl localDownloadDir() const;
 
+    Q_INVOKABLE QStringList networkErrors() const;
+    Q_INVOKABLE QStringList sslErrors() const;
+
 public Q_SLOTS:
     void start();
 
