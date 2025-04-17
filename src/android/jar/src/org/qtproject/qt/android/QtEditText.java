@@ -12,6 +12,8 @@ import android.graphics.Canvas;
 import android.text.InputType;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.ExtractedText;
+import android.view.inputmethod.ExtractedTextRequest;
 import android.view.inputmethod.InputConnection;
 import android.view.KeyEvent;
 
@@ -107,6 +109,13 @@ class QtEditText extends View
         outAttrs.imeOptions = m_imeOptions;
         outAttrs.initialCapsMode = m_initialCapsMode;
         m_inputConnection = new QtInputConnection(this,m_qtInputConnectionListener);
+
+        ExtractedText extracted = m_inputConnection.getExtractedText(new ExtractedTextRequest(), 0);
+        if (extracted != null) {
+            outAttrs.initialSelStart = extracted.selectionStart;
+            outAttrs.initialSelEnd = extracted.selectionEnd;
+        }
+
         return m_inputConnection;
     }
 
