@@ -35,7 +35,9 @@
 
 QT_BEGIN_NAMESPACE
 
+#if QT_CONFIG(raster_64bit) || QT_CONFIG(raster_fp)
 Q_STATIC_LOGGING_CATEGORY(lcQtGuiDrawHelper, "qt.gui.drawhelper")
+#endif
 
 #define MASK(src, a) src = BYTE_MUL(src, a)
 
