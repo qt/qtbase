@@ -371,6 +371,6 @@ QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkPro
     return result;
 }
 
-#endif
-
 QT_END_NAMESPACE
+
+#endif // QT_NO_NETWORKPROXY
