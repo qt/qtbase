@@ -2275,7 +2275,8 @@ bool QTextHtmlParser::nodeIsChildOf(int i, QTextHTMLElements id) const
     return false;
 }
 
-QT_END_NAMESPACE
 #endif // QT_NO_CSSPARSER
+
+QT_END_NAMESPACE
 
 #endif // QT_NO_TEXTHTMLPARSER
