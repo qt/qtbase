@@ -41,16 +41,13 @@ QT_BEGIN_NAMESPACE
     \value AllPrimaryMembers Add everything except the class name, super class, and static metacall function.
 */
 
-// copied from moc's generator.cpp
-namespace QtPrivate {
-Q_CORE_EXPORT bool isBuiltinType(const QByteArray &type)
+static bool isBuiltinType(QByteArrayView type)
 {
     int id = QMetaType::fromName(type).id();
     if (!id && !type.isEmpty() && type != "void")
         return false;
     return (id < QMetaType::User);
 }
-} // namespace QtPrivate
 
 // copied from qmetaobject.cpp
 [[maybe_unused]] static inline const QMetaObjectPrivate *qmobPriv(const uint* data)
@@ -1294,7 +1291,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
             for (int i = -1; i < paramCount; ++i) {
                 const QByteArray &typeName = (i < 0) ? method.returnType : paramTypeNames.at(i);
                 [[maybe_unused]] int typeInfo;
-                if (QtPrivate::isBuiltinType(typeName))
+                if (isBuiltinType(typeName))
                     typeInfo = QMetaType::fromName(typeName).id();
                 else
                     typeInfo = IsUnresolvedType | strings.enter(typeName);
@@ -1329,7 +1326,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
 
         [[maybe_unused]] int flags = prop.flags;
 
-        if (!QtPrivate::isBuiltinType(prop.type))
+        if (isBuiltinType(prop.type))
             flags |= EnumOrFlag;
 
         if constexpr (mode == Construct) {
