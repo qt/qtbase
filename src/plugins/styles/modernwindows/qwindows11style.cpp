@@ -1580,12 +1580,11 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                 QIcon::Mode mode = dis ? QIcon::Disabled : QIcon::Normal;
                 if (act && !dis)
                     mode = QIcon::Active;
-                QPixmap pixmap = menuitem->icon.pixmap(proxy()->pixelMetric(PM_SmallIconSize, option, widget),
-                                                       mode, checked ? QIcon::On : QIcon::Off);
-                QRect pmr(QPoint(0, 0), pixmap.deviceIndependentSize().toSize());
+                const auto size = proxy()->pixelMetric(PM_SmallIconSize, option, widget);
+                QRect pmr(QPoint(0, 0), QSize(size, size));
                 pmr.moveCenter(vCheckRect.center());
-                painter->setPen(menuitem->palette.text().color());
-                painter->drawPixmap(pmr.topLeft(), pixmap);
+                menuitem->icon.paint(painter, pmr, Qt::AlignCenter, mode,
+                                     checked ? QIcon::On : QIcon::Off);
             } else if (checked) {
                 painter->save();
                 if (dis)

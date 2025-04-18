@@ -2935,13 +2935,10 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                 if (act && !dis)
                     mode = QIcon::Active;
                 const auto size = proxy()->pixelMetric(PM_SmallIconSize, option, widget);
-                const auto dpr = painter->device()->devicePixelRatio();
-                const auto pixmap = menuitem->icon.pixmap({size, size}, dpr, mode,
-                                                          checked ? QIcon::On : QIcon::Off);
-                QRect pmr(QPoint(0, 0), pixmap.deviceIndependentSize().toSize());
+                QRect pmr(QPoint(0, 0), QSize(size, size));
                 pmr.moveCenter(vCheckRect.center());
-                painter->setPen(menuitem->palette.text().color());
-                painter->drawPixmap(pmr.topLeft(), pixmap);
+                menuitem->icon.paint(painter, vCheckRect, Qt::AlignCenter, mode,
+                                     checked ? QIcon::On : QIcon::Off);
             }
 
             painter->setPen(menuitem->palette.buttonText().color());
