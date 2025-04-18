@@ -220,6 +220,7 @@ QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &para
     m_mainThread = QThread::currentThread();
 
     m_androidFDB = new QAndroidPlatformFontDatabase();
+    m_androidPlatformServices.reset(new QAndroidPlatformServices);
 
 #ifndef QT_NO_CLIPBOARD
     m_androidPlatformClipboard = new QAndroidPlatformClipboard();
@@ -456,9 +457,6 @@ QPlatformNativeInterface *QAndroidPlatformIntegration::nativeInterface() const
 
 QPlatformServices *QAndroidPlatformIntegration::services() const
 {
-    if (m_androidPlatformServices.isNull())
-        m_androidPlatformServices.reset(new QAndroidPlatformServices);
-
     return m_androidPlatformServices.data();
 }
 

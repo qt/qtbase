@@ -136,7 +136,7 @@ private:
 
     QPlatformFontDatabase *m_androidFDB;
     QAndroidPlatformNativeInterface *m_androidPlatformNativeInterface;
-    mutable QScopedPointer<QAndroidPlatformServices> m_androidPlatformServices;
+    QScopedPointer<QAndroidPlatformServices> m_androidPlatformServices;
 
     // Handling the multiple screens connected. Every display is identified
     // with an unique (autoincremented) displayID. The values of this ID will
