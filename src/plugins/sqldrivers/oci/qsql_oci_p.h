@@ -70,8 +70,6 @@ protected:
 
 class Q_EXPORT_SQLDRIVER_OCI QOCIResult : public QSqlCachedResult
 {
-    friend class QOCIDriver;
-    friend class QOCIResultPrivate;
     friend class QOCICols;
 public:
     explicit QOCIResult(const QOCIDriver * db);
