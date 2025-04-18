@@ -95,7 +95,6 @@ protected:
     bool internal_prepare();
 
 private:
-    QOCIResultPrivate *d_ptr;
     Q_DECLARE_PRIVATE(QOCIResult)
 };
 

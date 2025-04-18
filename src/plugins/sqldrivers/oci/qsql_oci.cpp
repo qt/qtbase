@@ -414,11 +414,12 @@ int QOCIResultPrivate::bindValue(OCIStmt *sql, OCIBind **hbnd, OCIError *err, in
                                   SQLT_RDD, indPtr, 0, 0, 0, 0, OCI_DEFAULT);
             } else if (val.canConvert<QOCIResult *>() && isOutValue(pos)) {
                 QOCIResult *res = qvariant_cast<QOCIResult *>(val);
+                QOCIResultPrivate *resPrivate = static_cast<QOCIResultPrivate *>(res->d_ptr);
 
                 if (res->internal_prepare()) {
                     r = OCIBindByPos2(sql, hbnd, err,
                                       pos + 1,
-                                      const_cast<OCIStmt **>(&res->d_ptr->sql),
+                                      &resPrivate->sql,
                                       (sb4)0,
                                       SQLT_RSET, indPtr, 0, 0, 0, 0, OCI_DEFAULT);
 
