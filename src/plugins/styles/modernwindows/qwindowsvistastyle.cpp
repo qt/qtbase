@@ -1276,7 +1276,7 @@ static inline bool supportsStateTransition(QStyle::PrimitiveElement element,
 /*!
   Constructs a QWindowsVistaStyle object.
 */
-QWindowsVistaStyle::QWindowsVistaStyle() : QWindowsStyle(*new QWindowsVistaStylePrivate)
+QWindowsVistaStyle::QWindowsVistaStyle() : QWindowsVistaStyle(*new QWindowsVistaStylePrivate)
 {
 }
 
