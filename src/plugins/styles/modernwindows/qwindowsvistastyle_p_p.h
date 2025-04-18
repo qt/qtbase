@@ -148,10 +148,14 @@ public:
     QRgb groupBoxTextColorDisabled = 0;
     QRgb sliderTickColor = 0;
     bool hasInitColors = false;
-    QIcon dockFloat, dockClose;
 
     QTime animationTime() const;
     bool transitionsEnabled() const;
+
+protected:
+    QIcon m_titleBarMaxIcon;
+    QIcon m_titleBarCloseIcon;
+    QIcon m_titleBarNormalIcon;
 
 private:
     static bool initVistaTreeViewTheming(const QScreen *screen);

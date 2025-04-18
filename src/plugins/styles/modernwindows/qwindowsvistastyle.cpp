@@ -4901,7 +4901,7 @@ QIcon QWindowsVistaStyle::standardIcon(StandardPixmap standardIcon,
     switch (standardIcon) {
     case SP_TitleBarMaxButton:
         if (qstyleoption_cast<const QStyleOptionDockWidget *>(option)) {
-            if (d->dockFloat.isNull()) {
+            if (d->m_titleBarMaxIcon.isNull()) {
                 QWindowsThemeData themeSize(nullptr, nullptr, QWindowsVistaStylePrivate::WindowTheme,
                                     WP_SMALLCLOSEBUTTON, CBS_NORMAL);
                 QWindowsThemeData theme(nullptr, nullptr, QWindowsVistaStylePrivate::WindowTheme,
@@ -4914,29 +4914,29 @@ QIcon QWindowsVistaStyle::standardIcon(StandardPixmap standardIcon,
                     theme.painter = &p;
                     theme.rect = QRect(QPoint(0, 0), size);
                     d->drawBackground(theme);
-                    d->dockFloat.addPixmap(pm, QIcon::Normal, QIcon::Off);    // Normal
+                    d->m_titleBarMaxIcon.addPixmap(pm, QIcon::Normal, QIcon::Off);    // Normal
                     pm.fill(Qt::transparent);
                     theme.stateId = MAXBS_PUSHED;
                     d->drawBackground(theme);
-                    d->dockFloat.addPixmap(pm, QIcon::Normal, QIcon::On);     // Pressed
+                    d->m_titleBarMaxIcon.addPixmap(pm, QIcon::Normal, QIcon::On);     // Pressed
                     pm.fill(Qt::transparent);
                     theme.stateId = MAXBS_HOT;
                     d->drawBackground(theme);
-                    d->dockFloat.addPixmap(pm, QIcon::Active, QIcon::Off);    // Hover
+                    d->m_titleBarMaxIcon.addPixmap(pm, QIcon::Active, QIcon::Off);    // Hover
                     pm.fill(Qt::transparent);
                     theme.stateId = MAXBS_INACTIVE;
                     d->drawBackground(theme);
-                    d->dockFloat.addPixmap(pm, QIcon::Disabled, QIcon::Off);  // Disabled
+                    d->m_titleBarMaxIcon.addPixmap(pm, QIcon::Disabled, QIcon::Off);  // Disabled
                 }
             }
             if (widget && widget->isWindow())
-                return d->dockFloat;
+                return d->m_titleBarMaxIcon;
         }
         break;
 
     case SP_TitleBarCloseButton:
         if (qstyleoption_cast<const QStyleOptionDockWidget *>(option)) {
-            if (d->dockClose.isNull()) {
+            if (d->m_titleBarCloseIcon.isNull()) {
                 QWindowsThemeData theme(nullptr, nullptr, QWindowsVistaStylePrivate::WindowTheme,
                                 WP_SMALLCLOSEBUTTON, CBS_NORMAL);
                 if (theme.isValid()) {
@@ -4948,29 +4948,29 @@ QIcon QWindowsVistaStyle::standardIcon(StandardPixmap standardIcon,
                     theme.partId = WP_CLOSEBUTTON; // ####
                     theme.rect = QRect(QPoint(0, 0), size);
                     d->drawBackground(theme);
-                    d->dockClose.addPixmap(pm, QIcon::Normal, QIcon::Off);    // Normal
+                    d->m_titleBarCloseIcon.addPixmap(pm, QIcon::Normal, QIcon::Off);    // Normal
                     pm.fill(Qt::transparent);
                     theme.stateId = CBS_PUSHED;
                     d->drawBackground(theme);
-                    d->dockClose.addPixmap(pm, QIcon::Normal, QIcon::On);     // Pressed
+                    d->m_titleBarCloseIcon.addPixmap(pm, QIcon::Normal, QIcon::On);     // Pressed
                     pm.fill(Qt::transparent);
                     theme.stateId = CBS_HOT;
                     d->drawBackground(theme);
-                    d->dockClose.addPixmap(pm, QIcon::Active, QIcon::Off);    // Hover
+                    d->m_titleBarCloseIcon.addPixmap(pm, QIcon::Active, QIcon::Off);    // Hover
                     pm.fill(Qt::transparent);
                     theme.stateId = CBS_INACTIVE;
                     d->drawBackground(theme);
-                    d->dockClose.addPixmap(pm, QIcon::Disabled, QIcon::Off);  // Disabled
+                    d->m_titleBarCloseIcon.addPixmap(pm, QIcon::Disabled, QIcon::Off);  // Disabled
                 }
             }
             if (widget && widget->isWindow())
-                return d->dockClose;
+                return d->m_titleBarCloseIcon;
         }
         break;
 
     case SP_TitleBarNormalButton:
         if (qstyleoption_cast<const QStyleOptionDockWidget *>(option)) {
-            if (d->dockFloat.isNull()) {
+            if (d->m_titleBarNormalIcon.isNull()) {
                 QWindowsThemeData themeSize(nullptr, nullptr, QWindowsVistaStylePrivate::WindowTheme,
                                     WP_SMALLCLOSEBUTTON, CBS_NORMAL);
                 QWindowsThemeData theme(nullptr, nullptr, QWindowsVistaStylePrivate::WindowTheme,
@@ -4983,23 +4983,23 @@ QIcon QWindowsVistaStyle::standardIcon(StandardPixmap standardIcon,
                     theme.painter = &p;
                     theme.rect = QRect(QPoint(0, 0), size);
                     d->drawBackground(theme);
-                    d->dockFloat.addPixmap(pm, QIcon::Normal, QIcon::Off);    // Normal
+                    d->m_titleBarNormalIcon.addPixmap(pm, QIcon::Normal, QIcon::Off);    // Normal
                     pm.fill(Qt::transparent);
                     theme.stateId = RBS_PUSHED;
                     d->drawBackground(theme);
-                    d->dockFloat.addPixmap(pm, QIcon::Normal, QIcon::On);     // Pressed
+                    d->m_titleBarNormalIcon.addPixmap(pm, QIcon::Normal, QIcon::On);     // Pressed
                     pm.fill(Qt::transparent);
                     theme.stateId = RBS_HOT;
                     d->drawBackground(theme);
-                    d->dockFloat.addPixmap(pm, QIcon::Active, QIcon::Off);    // Hover
+                    d->m_titleBarNormalIcon.addPixmap(pm, QIcon::Active, QIcon::Off);    // Hover
                     pm.fill(Qt::transparent);
                     theme.stateId = RBS_INACTIVE;
                     d->drawBackground(theme);
-                    d->dockFloat.addPixmap(pm, QIcon::Disabled, QIcon::Off);  // Disabled
+                    d->m_titleBarNormalIcon.addPixmap(pm, QIcon::Disabled, QIcon::Off);  // Disabled
                 }
             }
             if (widget && widget->isWindow())
-                return d->dockFloat;
+                return d->m_titleBarNormalIcon;
         }
         break;
 
