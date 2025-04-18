@@ -1622,7 +1622,7 @@ QString QMYSQLDriver::formatValue(const QSqlField &field, bool trimStrings) cons
                 r = u'\'' +
                         dt.date().toString(Qt::ISODate) +
                         u'T' +
-                        dt.time().toString(Qt::ISODate) +
+                        dt.time().toString(Qt::ISODateWithMs) +
                         u'\'';
             }
             break;
