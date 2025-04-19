@@ -3,6 +3,7 @@
 
 #include "qpainter.h"
 #include "qevent.h"
+#include "qpixmapcache.h"
 #include "qstyle.h"
 #include "qstyleoption.h"
 #include "qlabel_p.h"
