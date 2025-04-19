@@ -2786,7 +2786,9 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                 break;
 
             QPalette::ColorRole textRole = disabled ? QPalette::Text : QPalette::ButtonText;
-            QPixmap pix = mbi->icon.pixmap(proxy()->pixelMetric(PM_SmallIconSize, option, widget), QIcon::Normal);
+            const auto dpr = QStyleHelper::getDpr(widget);
+            const auto extent = proxy()->pixelMetric(PM_SmallIconSize, option, widget);
+            const auto pix = mbi->icon.pixmap(QSize(extent, extent), dpr, QIcon::Normal);
 
             int alignment = Qt::AlignCenter | Qt::TextShowMnemonic | Qt::TextDontClip | Qt::TextSingleLine;
             if (!proxy()->styleHint(SH_UnderlineShortcut, mbi, widget))
@@ -3084,7 +3086,6 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                 else
                     stateId = CS_INACTIVE;
 
-                int titleHeight = rect.height() - 2;
                 rect = rect.adjusted(-fw, -fw, fw, 0);
 
                 QWindowsThemeData theme(widget, painter, themeNumber, 0, stateId);
@@ -3101,7 +3102,9 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                 QIcon ico = widget->windowIcon();
                 bool hasIcon = (ico.cacheKey() != QApplication::windowIcon().cacheKey());
                 if (hasIcon) {
-                    QPixmap pxIco = ico.pixmap(titleHeight);
+                    const auto titleHeight = rect.height() - 2;
+                    const auto dpr = QStyleHelper::getDpr(widget);
+                    const auto pxIco = ico.pixmap(QSize(titleHeight, titleHeight), dpr);
                     if (!verticalTitleBar && dwOpt->direction == Qt::RightToLeft)
                         painter->drawPixmap(rect.width() - titleHeight - pxIco.width(), rect.bottom() - titleHeight - 2, pxIco);
                     else
@@ -3681,11 +3684,11 @@ void QWindowsVistaStyle::drawComplexControl(ComplexControl control, const QStyle
                     theme.partId = partId;
                     theme.stateId = stateId;
                     if (theme.size().isEmpty()) {
-                        int iconSize = proxy()->pixelMetric(PM_SmallIconSize, tb, widget);
-                        QPixmap pm = proxy()->standardIcon(SP_TitleBarMenuButton, tb, widget).pixmap(iconSize, iconSize);
-                        painter->save();
+                        const auto extent = proxy()->pixelMetric(PM_SmallIconSize, tb, widget);
+                        const auto dpr = QStyleHelper::getDpr(widget);
+                        const auto icon = proxy()->standardIcon(SP_TitleBarMenuButton, tb, widget);
+                        const auto pm = icon.pixmap(QSize(extent, extent), dpr);
                         drawItemPixmap(painter, theme.rect, Qt::AlignCenter, pm);
-                        painter->restore();
                     } else {
                         d->drawBackground(theme);
                     }

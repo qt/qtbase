@@ -665,11 +665,11 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                         titlebar->icon.paint(painter, iconRect);
                     } else {
                         QStyleOption tool = *titlebar;
-                        QPixmap pm = proxy()->standardIcon(SP_TitleBarMenuButton, &tool, widget).pixmap(16, 16);
-                        tool.rect = iconRect;
-                        painter->save();
+                        const auto extent = proxy()->pixelMetric(PM_SmallIconSize, &tool, widget);
+                        const auto dpr = QStyleHelper::getDpr(widget);
+                        const auto icon = proxy()->standardIcon(SP_TitleBarMenuButton, &tool, widget);
+                        const auto pm = icon.pixmap(QSize(extent, extent), dpr);
                         proxy()->drawItemPixmap(painter, iconRect, Qt::AlignCenter, pm);
-                        painter->restore();
                     }
                 }
             }
