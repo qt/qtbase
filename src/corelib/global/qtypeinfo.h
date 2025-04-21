@@ -22,6 +22,18 @@ class QDebug;
 
 namespace QtPrivate {
 
+// Helper for QTypeInfo<T>::isComplex, which used to be simply
+// !std::is_trivial_v but P3247 deprecated it for C++26. It used to be defined
+// (since C++11) by [class]/7 as: "A trivial class is a class that is trivially
+// copyable and has one or more default constructors, all of which are either
+// trivial or deleted and at least one of which is not deleted. [ Note: In
+// particular, a trivially copyable or trivial class does not have virtual
+// functions or virtual base classes. — end note ]".
+
+template <typename T>
+inline constexpr bool qIsComplex =
+        !std::is_trivially_default_constructible_v<T> || !std::is_trivially_copyable_v<T>;
+
 template <typename T>
 inline constexpr bool qIsRelocatable =  std::is_trivially_copyable_v<T> && std::is_trivially_destructible_v<T>;
 
@@ -48,7 +60,7 @@ public:
     enum {
         isPointer = std::is_pointer_v<T>,
         isIntegral = std::is_integral_v<T>,
-        isComplex = !std::is_trivial_v<T>,
+        isComplex = QtPrivate::qIsComplex<T>,
         isRelocatable = QtPrivate::qIsRelocatable<T>,
         isValueInitializationBitwiseZero = QtPrivate::qIsValueInitializationBitwiseZero<T>,
     };
@@ -152,7 +164,7 @@ class QTypeInfo<TYPE > \
 { \
 public: \
     enum { \
-        isComplex = (((FLAGS) & Q_PRIMITIVE_TYPE) == 0) && !std::is_trivial_v<TYPE>, \
+        isComplex = (((FLAGS) & Q_PRIMITIVE_TYPE) == 0) && QtPrivate::qIsComplex<TYPE>, \
         isRelocatable = !isComplex || ((FLAGS) & Q_RELOCATABLE_TYPE) || QtPrivate::qIsRelocatable<TYPE>, \
         isPointer = std::is_pointer_v< TYPE >, \
         isIntegral = std::is_integral< TYPE >::value, \
