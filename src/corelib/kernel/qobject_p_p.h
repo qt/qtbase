@@ -64,7 +64,7 @@ struct QObjectPrivate::ConnectionOrSignalVector
         Connection *next;
     };
 };
-static_assert(std::is_trivial_v<QObjectPrivate::ConnectionOrSignalVector>);
+static_assert(std::is_trivially_copyable_v<QObjectPrivate::ConnectionOrSignalVector>);
 
 struct QObjectPrivate::Connection : public ConnectionOrSignalVector
 {
@@ -130,8 +130,8 @@ struct QObjectPrivate::SignalVector : public ConnectionOrSignalVector
     }
     int count() const { return static_cast<int>(allocated); }
 };
-static_assert(
-        std::is_trivial_v<QObjectPrivate::SignalVector>); // it doesn't need to be, but it helps
+// it doesn't need to be, but it helps
+static_assert(std::is_trivially_copyable_v<QObjectPrivate::SignalVector>);
 
 struct QObjectPrivate::ConnectionData
 {

@@ -89,7 +89,8 @@ struct ByteData
     QStringView asStringView() const{ return QStringView(utf16(), len / 2); }
     QString asQStringRaw() const    { return QString::fromRawData(utf16(), len / 2); }
 };
-static_assert(std::is_trivial<ByteData>::value);
+static_assert(std::is_trivially_default_constructible<ByteData>::value);
+static_assert(std::is_trivially_copyable<ByteData>::value);
 static_assert(std::is_standard_layout<ByteData>::value);
 } // namespace QtCbor
 

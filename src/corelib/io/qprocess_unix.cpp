@@ -180,7 +180,7 @@ struct ChildError
     int code;
     char function[_POSIX_PIPE_BUF - sizeof(code)];
 };
-static_assert(std::is_trivial_v<ChildError>);
+static_assert(std::is_trivially_copy_constructible_v<ChildError>);
 #ifdef PIPE_BUF
 static_assert(PIPE_BUF >= sizeof(ChildError)); // PIPE_BUF may be bigger
 #endif
