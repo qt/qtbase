@@ -8,6 +8,6 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
 endif()
 
 add_subdirectory(test)
-if(QT_FEATURE_jalalicalendar)
+if(QT_FEATURE_process)
     add_subdirectory(syslocaleapp)
 endif()
