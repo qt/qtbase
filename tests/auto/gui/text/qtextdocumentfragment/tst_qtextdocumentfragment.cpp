@@ -4,7 +4,7 @@
 
 #include <QTest>
 
-
+#include <qpalette.h>
 #include <qtextdocument.h>
 #include <qtextdocumentfragment.h>
 #include <qtexttable.h>
