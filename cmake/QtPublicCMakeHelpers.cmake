@@ -831,12 +831,12 @@ function(_qt_internal_configure_file mode)
     # the generator expressions evaluation inside the resulting CONTENT.
     if(mode STREQUAL "GENERATE")
         if(arg_INPUT)
-            # This is not a limitation of any kind, simply is not required at
-            # implementation time. Feel free to extend.
-            message(FATAL_ERROR "GENERATE mode doesn't support INPUT argument.")
+            configure_file("${arg_INPUT}" "${arg_OUTPUT}.tmp" @ONLY)
+            file(GENERATE OUTPUT "${arg_OUTPUT}" INPUT "${arg_OUTPUT}.tmp")
+        else()
+            string(CONFIGURE "${arg_CONTENT}" arg_CONTENT @ONLY)
+            file(GENERATE OUTPUT "${arg_OUTPUT}" CONTENT "${arg_CONTENT}")
         endif()
-        string(CONFIGURE "${arg_CONTENT}" arg_CONTENT @ONLY)
-        file(GENERATE OUTPUT "${arg_OUTPUT}" CONTENT "${arg_CONTENT}")
         return()
     endif()
 
