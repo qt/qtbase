@@ -650,7 +650,13 @@ void tst_QLocale::systemLocale_data()
 
     QTest::addColumn<QString>("expected");
 
-#define ADD_CTOR_TEST(give, expect) QTest::newRow(give) << QStringLiteral(expect);
+#if QT_CONFIG(jalalicalendar)
+#define ADD_CTOR_TEST(input, localePart, monthName) \
+       QTest::newRow(input) << QStringLiteral(localePart) + " "_L1 + QStringLiteral(monthName);
+#else
+#define ADD_CTOR_TEST(input, localePart, monthName) \
+       QTest::newRow(input) << QStringLiteral(localePart);
+#endif
 
     // For format and meaning, see:
     // http://pubs.opengroup.org/onlinepubs/7908799/xbd/envvar.html
@@ -662,44 +668,44 @@ void tst_QLocale::systemLocale_data()
     // setDefault(Persian) has interfered with the system locale setup.
 
     // Vanilla:
-    ADD_CTOR_TEST("C", "C Ordibehesht");
+    ADD_CTOR_TEST("C", "C", "Ordibehesht");
 
     // Standard forms:
-    ADD_CTOR_TEST("en", "en_US Ordibehesht");
-    ADD_CTOR_TEST("en_GB", "en_GB Ordibehesht");
-    ADD_CTOR_TEST("de", "de_DE Ordibehescht");
+    ADD_CTOR_TEST("en", "en_US", "Ordibehesht");
+    ADD_CTOR_TEST("en_GB", "en_GB", "Ordibehesht");
+    ADD_CTOR_TEST("de", "de_DE", "Ordibehescht");
     // Norsk has some quirks:
-    ADD_CTOR_TEST("no", "nb_NO ordibehesht");
-    ADD_CTOR_TEST("nb", "nb_NO ordibehesht");
-    ADD_CTOR_TEST("nn", "nn_NO ordibehesht");
-    ADD_CTOR_TEST("no_NO", "nb_NO ordibehesht");
-    ADD_CTOR_TEST("nb_NO", "nb_NO ordibehesht");
-    ADD_CTOR_TEST("nn_NO", "nn_NO ordibehesht");
+    ADD_CTOR_TEST("no", "nb_NO", "ordibehesht");
+    ADD_CTOR_TEST("nb", "nb_NO", "ordibehesht");
+    ADD_CTOR_TEST("nn", "nn_NO", "ordibehesht");
+    ADD_CTOR_TEST("no_NO", "nb_NO",  "ordibehesht");
+    ADD_CTOR_TEST("nb_NO", "nb_NO", "ordibehesht");
+    ADD_CTOR_TEST("nn_NO", "nn_NO", "ordibehesht");
 
     // Not too fussy about case:
-    ADD_CTOR_TEST("DE", "de_DE Ordibehescht");
-    ADD_CTOR_TEST("EN", "en_US Ordibehesht");
+    ADD_CTOR_TEST("DE", "de_DE", "Ordibehescht");
+    ADD_CTOR_TEST("EN", "en_US", "Ordibehesht");
 
     // Invalid fields
-    ADD_CTOR_TEST("bla", "C Ordibehesht");
-    ADD_CTOR_TEST("zz", "C Ordibehesht");
-    ADD_CTOR_TEST("zz_zz", "C Ordibehesht");
-    ADD_CTOR_TEST("zz...", "C Ordibehesht");
-    ADD_CTOR_TEST("en.bla", "en_US Ordibehesht");
-    ADD_CTOR_TEST("en@bla", "en_US Ordibehesht");
-    ADD_CTOR_TEST("en_blaaa", "en_US Ordibehesht");
-    ADD_CTOR_TEST("en_zz", "en_US Ordibehesht");
-    ADD_CTOR_TEST("en_GB.bla", "en_GB Ordibehesht");
-    ADD_CTOR_TEST("en_GB@.bla", "en_GB Ordibehesht");
-    ADD_CTOR_TEST("en_GB@bla", "en_GB Ordibehesht");
+    ADD_CTOR_TEST("bla", "C", "Ordibehesht");
+    ADD_CTOR_TEST("zz", "C", "Ordibehesht");
+    ADD_CTOR_TEST("zz_zz", "C", "Ordibehesht");
+    ADD_CTOR_TEST("zz...", "C", "Ordibehesht");
+    ADD_CTOR_TEST("en.bla", "en_US", "Ordibehesht");
+    ADD_CTOR_TEST("en@bla", "en_US", "Ordibehesht");
+    ADD_CTOR_TEST("en_blaaa", "en_US", "Ordibehesht");
+    ADD_CTOR_TEST("en_zz", "en_US", "Ordibehesht");
+    ADD_CTOR_TEST("en_GB.bla", "en_GB", "Ordibehesht");
+    ADD_CTOR_TEST("en_GB@.bla", "en_GB", "Ordibehesht");
+    ADD_CTOR_TEST("en_GB@bla", "en_GB", "Ordibehesht");
 
     // Empty optional fields, but with punctuators supplied
-    ADD_CTOR_TEST("en.", "en_US Ordibehesht");
-    ADD_CTOR_TEST("en@", "en_US Ordibehesht");
-    ADD_CTOR_TEST("en.@", "en_US Ordibehesht");
-    ADD_CTOR_TEST("en_", "en_US Ordibehesht");
-    ADD_CTOR_TEST("en_.", "en_US Ordibehesht");
-    ADD_CTOR_TEST("en_.@", "en_US Ordibehesht");
+    ADD_CTOR_TEST("en.", "en_US", "Ordibehesht");
+    ADD_CTOR_TEST("en@", "en_US", "Ordibehesht");
+    ADD_CTOR_TEST("en.@", "en_US", "Ordibehesht");
+    ADD_CTOR_TEST("en_", "en_US", "Ordibehesht");
+    ADD_CTOR_TEST("en_.", "en_US", "Ordibehesht");
+    ADD_CTOR_TEST("en_.@", "en_US", "Ordibehesht");
 #undef ADD_CTOR_TEST
 
 #if QT_CONFIG(process) // for runSysApp
@@ -708,7 +714,11 @@ void tst_QLocale::systemLocale_data()
     QString errorMessage;
     if (runSysApp(m_sysapp, QStringList(), cleanEnv, &defaultLoc, &errorMessage)) {
 #if defined(Q_OS_MACOS)
+#if QT_CONFIG(jalalicalendar)
         QString localeForInvalidLocale = "C Ordibehesht";
+#else
+        QString localeForInvalidLocale = "C";
+#endif // QT_CONFIG(jalalicalendar)
 #else
         QString localeForInvalidLocale = defaultLoc;
 #endif
