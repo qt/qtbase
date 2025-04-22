@@ -593,9 +593,10 @@ private Q_SLOTS:
 #if QT_CONFIG(http)
     void qhttpPartDebug_data();
     void qhttpPartDebug();
-
+#if QT_CONFIG(networkproxy)
     void qtbug68821proxyError_data();
     void qtbug68821proxyError();
+#endif
 #endif
 
     void abortAndError();
@@ -10670,6 +10671,7 @@ void tst_QNetworkReply::qhttpPartDebug()
         QVERIFY2(msg.contains(value), "Missing header value: " + value);
 }
 
+#if QT_CONFIG(networkproxy)
 void tst_QNetworkReply::qtbug68821proxyError_data()
 {
     QTest::addColumn<QString>("proxyHost");
@@ -10718,7 +10720,8 @@ void tst_QNetworkReply::qtbug68821proxyError()
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.at(0).at(0), error);
 }
-#endif
+#endif // QT_CONFIG(networkproxy)
+#endif // QT_CONFIG(http)
 
 void tst_QNetworkReply::abortAndError()
 {
