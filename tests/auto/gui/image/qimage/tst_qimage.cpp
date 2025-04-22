@@ -147,7 +147,9 @@ private slots:
     void rgbSwapped();
 
     void mirrored_data();
+#if QT_DEPRECATED_SINCE(6, 13)
     void mirrored();
+#endif
     void flipped_data();
     void flipped();
 
