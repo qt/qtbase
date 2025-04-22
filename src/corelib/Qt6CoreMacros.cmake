@@ -674,12 +674,14 @@ function(_qt_internal_create_executable target)
         # visibility=hidden. Not having this flag set will cause the
         # executable to have main() hidden and can then no longer be loaded
         # through dlopen()
-        set_property(TARGET "${target}" PROPERTY C_VISIBILITY_PRESET default)
-        set_property(TARGET "${target}" PROPERTY CXX_VISIBILITY_PRESET default)
-        set_property(TARGET "${target}" PROPERTY OBJC_VISIBILITY_PRESET default)
-        set_property(TARGET "${target}" PROPERTY OBJCXX_VISIBILITY_PRESET default)
-        set_property(TARGET "${target}"
-                     PROPERTY _qt_android_apply_arch_suffix_called_from_qt_impl TRUE)
+        set_target_properties("${target}" PROPERTIES
+            C_VISIBILITY_PRESET default
+            CXX_VISIBILITY_PRESET default
+            OBJC_VISIBILITY_PRESET default
+            OBJCXX_VISIBILITY_PRESET default
+            _qt_android_apply_arch_suffix_called_from_qt_impl TRUE
+        )
+
         qt6_android_apply_arch_suffix("${target}")
         set_property(TARGET "${target}" PROPERTY _qt_is_android_executable TRUE)
     else()
