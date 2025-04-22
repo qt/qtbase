@@ -1506,14 +1506,18 @@ void tst_QTextCursor::insertHtml()
     qCDebug(lcTests) << "sel text after insertion" << cursor.selectedText();
     qCDebug(lcTests) << "text after insertion" << cursor.document()->toPlainText();
     qCDebug(lcTests) << "html after insertion" << cursor.document()->toHtml();
+#if QT_CONFIG(textmarkdownwriter)
     qCDebug(lcTests) << "markdown after insertion" << cursor.document()->toMarkdown();
+#endif
     QCOMPARE(cursor.selectedText(), expectedSelText);
     QCOMPARE(cursor.document()->toPlainText(), expectedText);
     if (auto defaultFont = QFontDatabase::systemFont(QFontDatabase::GeneralFont); QFontInfo(defaultFont).fixedPitch()) {
         qWarning() << defaultFont << "is QFontDatabase::GeneralFont, and is fixedPitch";
         QSKIP("cannot reliably distinguish normal and monospace markdown spans on this system (QTBUG-103484)");
     }
+#if QT_CONFIG(textmarkdownwriter)
     QCOMPARE(cursor.document()->toMarkdown(), expectedMarkdown);
+#endif
 }
 
 #endif // QT_NO_TEXTHTMLPARSER
