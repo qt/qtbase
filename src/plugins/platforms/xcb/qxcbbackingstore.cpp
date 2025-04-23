@@ -226,7 +226,6 @@ void QXcbBackingStoreImage::resize(const QSize &size)
     m_xcb_image->data = m_shm_info.shmaddr ? m_shm_info.shmaddr : (uint8_t *)malloc(segmentSize);
     m_qimage = QImage(static_cast<uchar *>(m_xcb_image->data), m_xcb_image->width,
                       m_xcb_image->height, m_xcb_image->stride, m_qimage_format);
-    m_qimage.setDevicePixelRatio(m_backingStore->window()->devicePixelRatio());
     m_graphics_buffer = new QXcbGraphicsBuffer(&m_qimage);
 
     m_xcb_pixmap = xcb_generate_id(xcb_connection());
@@ -821,9 +820,7 @@ QImage QXcbBackingStore::toImage() const
     // Return an image that does not share QImageData with the original image,
     // even if they both point to the same data of the m_xcb_image, otherwise
     // painting to m_qimage would detach it from the m_xcb_image data.
-    QImage imageWrapper = QImage(image.constBits(), image.width(), image.height(), image.format());
-    imageWrapper.setDevicePixelRatio(image.devicePixelRatio());
-    return imageWrapper;
+    return QImage(image.constBits(), image.width(), image.height(), image.format());
 }
 
 QPlatformGraphicsBuffer *QXcbBackingStore::graphicsBuffer() const
