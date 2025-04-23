@@ -268,6 +268,7 @@ class StreamStateSaver
 {
     Q_DISABLE_COPY_MOVE(StreamStateSaver)
 public:
+    Q_NODISCARD_CTOR
     explicit StreamStateSaver(QDataStream *s) : stream(s), oldStatus(s->status())
     {
         if (!stream->isDeviceTransactionStarted())
