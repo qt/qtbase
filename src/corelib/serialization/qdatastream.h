@@ -27,7 +27,6 @@ class QIODevice;
 class QString;
 
 #if !defined(QT_NO_DATASTREAM)
-class QDataStreamPrivate;
 namespace QtPrivate {
 class StreamStateSaver;
 template <typename Container>
@@ -215,7 +214,9 @@ public:
 private:
     Q_DISABLE_COPY(QDataStream)
 
-    QScopedPointer<QDataStreamPrivate> d;
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+    void* const d = nullptr;
+#endif
 
     QIODevice *dev = nullptr;
     bool owndev = false;
