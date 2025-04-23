@@ -201,7 +201,7 @@ qt_internal_add_module(Core
         serialization/qcbormap.h
         serialization/qcborstream.h
         serialization/qcborvalue.cpp serialization/qcborvalue.h serialization/qcborvalue_p.h
-        serialization/qdatastream.cpp serialization/qdatastream.h serialization/qdatastream_p.h
+        serialization/qdatastream.cpp serialization/qdatastream.h
         serialization/qjson_p.h
         serialization/qjsonarray.cpp serialization/qjsonarray.h
         serialization/qjsoncbor.cpp
