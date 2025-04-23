@@ -89,6 +89,7 @@
 #pragma GCC diagnostic error   "-Wstring-conversion"
 #pragma GCC diagnostic error   "-Wswitch-enum"
 #pragma GCC diagnostic error   "-Wtautological-overlap-compare"
+#pragma GCC diagnostic error   "-Wuninitialized"
 #pragma GCC diagnostic error   "-Wunneeded-internal-declaration"
 #pragma GCC diagnostic error   "-Wunused"
 #pragma GCC diagnostic error   "-Wunused-local-typedefs"
@@ -464,7 +465,7 @@ static int HB_UNUSED _hb_errno = 0;
 #    define hb_atexit atexit
 #  else
      template <void (*function) (void)> struct hb_atexit_t { ~hb_atexit_t () { function (); } };
-#    define hb_atexit(f) static hb_atexit_t<f> _hb_atexit_##__LINE__;
+#    define hb_atexit(f) static hb_atexit_t<f> _hb_atexit_##__LINE__
 #  endif
 #endif
 #endif
