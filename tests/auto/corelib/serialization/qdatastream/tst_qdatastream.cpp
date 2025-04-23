@@ -3029,7 +3029,7 @@ void tst_QDataStream::status_QBitArray_data()
     QTest::newRow("new badsize 9") << QDataStream::Qt_6_0 << QByteArray("\x00\x00\x00\x00\x00\x00\x00\x09\xff", 9) << (int) QDataStream::ReadPastEnd << QBitArray();
     QTest::newRow("new badsize 0x10000") << QDataStream::Qt_6_0 << QByteArray("\x00\x00\x00\x01\x00\x00\x00\x00\x00", 9) << (int) QDataStream::ReadPastEnd << QBitArray();
 
-    // corrupt data
+    // corrupt data: bits in positions outsize [0, size()[
     QTest::newRow("junk 1a") << QDataStream::Qt_5_15 << QByteArray("\x00\x00\x00\x01\x02", 5) << (int) QDataStream::ReadCorruptData << QBitArray();
     QTest::newRow("junk 1b") << QDataStream::Qt_5_15 << QByteArray("\x00\x00\x00\x01\x04", 5) << (int) QDataStream::ReadCorruptData << QBitArray();
     QTest::newRow("junk 1c") << QDataStream::Qt_5_15 << QByteArray("\x00\x00\x00\x01\x08", 5) << (int) QDataStream::ReadCorruptData << QBitArray();
