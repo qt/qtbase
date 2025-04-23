@@ -66,6 +66,8 @@ SOURCES += \
     $$PWD/src/hb-subset-instancer-iup.cc \
     $$PWD/src/hb-subset-instancer-solver.cc \
     $$PWD/src/hb-subset-plan.cc \
+    $$PWD/src/hb-subset-plan-layout.cc \
+    $$PWD/src/hb-subset-plan-var.cc \
     $$PWD/src/hb-subset-serialize.cc \
     $$PWD/src/hb-unicode.cc \
     $$PWD/src/hb-buffer-verify.cc
@@ -88,6 +90,7 @@ HEADERS += \
     $$PWD/src/hb-ot-name-table.hh \
     $$PWD/src/hb-ot-os2-table.hh \
     $$PWD/src/hb-ot-post-table.hh \
+    $$PWD/src/hb-script-list.hh \
     $$PWD/src/hb-set.hh \
     $$PWD/src/hb-set-digest.hh \
     $$PWD/src/hb-shape-plan.hh \
