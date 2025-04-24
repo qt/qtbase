@@ -659,13 +659,14 @@ static QString find_translation(const QLocale & locale,
     for (const auto &l : std::as_const(languages))
         (void)duplicates.hasSeen(l);
 
+    QStringList ultimate;
     for (qsizetype i = languages.size() - 1; i >= 0; --i) {
         QString language = languages.at(i);
 
         // Add candidates for each entry where we progressively truncate sections
         // from the end, until a matching language tag is found. For compatibility
         // reasons (see QTBUG-124898) we add a special case: if we find a
-        // language_Script_Territory entry (i.e. an entry with two sections), try
+        // language_Script_Territory entry (i.e. an entry with two separators), try
         // language_Territory as well as language_Script. Use QDuplicateTracker
         // so that we don't add any entries as fallbacks that are already in the
         // list anyway.
@@ -677,24 +678,32 @@ static QString find_translation(const QLocale & locale,
                 fallbacks.append(fallback);
         };
 
+        QLocale::Script script = QLocale(language).script();
         while (true) {
             const qsizetype last = language.lastIndexOf(u'_');
             if (last < 0) // no more sections
                 break;
 
             const qsizetype first = language.indexOf(u'_');
-             // two sections, add fallback without script
-            if (first != last && language.count(u'_') == 2) {
-                QString fallback = language.left(first) + language.mid(last);
+            // Two separators: add lang_Land fallback before lang_Script:
+            if (first < last && language.count(u'_') == 2) {
+                QString fallback = language.first(first) + language.sliced(last);
                 addIfNew(fallback);
             }
-            QString fallback = language.left(last);
-            addIfNew(fallback);
-
             language.truncate(last);
+            // When all we have left is a language it might imply an
+            // incompatible script; if so, leave it for the very end.
+            if (first < last || QLocale(language).script() == script)
+                addIfNew(language);
+            else
+                ultimate.append(language);
         }
         for (qsizetype j = fallbacks.size() - 1; j >= 0; --j)
             languages.insert(i + 1, fallbacks.at(j));
+    }
+    for (const QString &lang : std::as_const(ultimate)) {
+        if (!duplicates.hasSeen(lang))
+            languages.append(lang);
     }
 
     qCDebug(lcTranslator) << "Augmented UI languages" << languages;

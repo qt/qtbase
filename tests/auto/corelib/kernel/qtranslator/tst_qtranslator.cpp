@@ -186,6 +186,12 @@ void tst_QTranslator::loadLocale_data()
                             << QLocale::system()
                             << QStringList{"en-AU", "en-NZ", "de-DE", "en-GB"};
     QTest::addRow("System, Taiwan") << QLocale::system() << QStringList{"zh-TW", "zh"};
+
+    // This tests that, when "just the language" gets a different script than
+    // the entry it's derived from, we try later entries before it.
+    QTest::addRow("System, multi-script language")
+                            << QLocale::system()
+                            << QStringList{"pa-Arab-GB", "pa-PK", "en-GB"};
 }
 
 void tst_QTranslator::loadLocale()
@@ -228,6 +234,15 @@ void tst_QTranslator::loadLocale()
         files.append(filename);
         QVERIFY2(file.copy(files.last()), qPrintable(file.errorString()));
     }
+    if (wantedLocale.language() == QLocale::Punjabi) { // multi-script
+        // uiLanguages() has left out "pa" (until 6.9). We want to verify it
+        // doesn't get picked up when any better candidate is available.
+        const QString filename = path + "/foo-pa";
+        files.append(filename + ".qm");
+        QVERIFY2(file.copy(files.last()), qPrintable(file.errorString()));
+        files.append(filename);
+        QVERIFY2(file.copy(files.last()), qPrintable(file.errorString()));
+    }
 
     files.append(path + "/foo.qm");
     QVERIFY2(file.copy(files.last()), qPrintable(file.errorString()));
@@ -243,7 +258,7 @@ void tst_QTranslator::loadLocale()
     for (const auto &filePath : files)
         QVERIFY(QFile::exists(filePath));
 
-    const QRegularExpression localeExpr("foo-(.*)(\\.qm|$)");
+    const QRegularExpression localeExpr("foo-(.*)(\\.qm|)$");
     QTranslator tor;
     // Load the translation for the wanted locale
     QVERIFY(tor.load(wantedLocale, "foo", "-", path, ".qm"));

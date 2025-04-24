@@ -4190,6 +4190,8 @@ public:
                 return QVariant(QStringList{u"en-CA"_s, u"fr-CA"_s, u"de-AT"_s,
                                             u"en-GB"_s, u"fr-FR"_s});
             }
+            if (m_name == u"pa-Arab-GB") // Pakistani Punjabi in Britain
+                return QVariant(QStringList{u"pa-PK"_s, u"en-GB"_s});
             if (m_name == u"no") // QTBUG-131127
                 return QVariant(QStringList{u"no"_s, u"en-US"_s, u"nb"_s});
             if (m_name == u"no-US") // Empty query result:
@@ -4305,6 +4307,13 @@ void tst_QLocale::mySystemLocale_data()
         << QStringList{QStringLiteral("C-CN"), QStringLiteral("C")};
     QTest::addRow("C-Hans-CN")
         << u"C-Hans-CN"_s << QLocale::C << QStringList{u"C-Hans-CN"_s, u"C"_s};
+
+    QTest::addRow("pa-Arab-GB")
+        << u"pa-Arab-GB"_s << QLocale::Punjabi
+        // As pa-PK is its own min, pa-Arab ends up before it. If later changes
+        // swap pa-Arab and pa-PK, that's fine. This is all done better in 6.9.
+        << QStringList{u"pa-Arab-GB"_s, u"pa-Arab-PK"_s, u"pa-Arab"_s, u"pa-PK"_s,
+            u"en-Latn-GB"_s, u"en-GB"_s};
 
     QTest::newRow("en-Dsrt-GB")
         << u"en-Dsrt-GB"_s << QLocale::English
