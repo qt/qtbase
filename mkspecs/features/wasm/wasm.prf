@@ -24,6 +24,7 @@ exists($$QMAKE_QT_CONFIG) {
 
     EMCC_LFLAGS += -s EXPORT_NAME=$$EXPORT_NAME
 
+
     qtConfig(thread) {
 
         EMCC_LFLAGS += -pthread
@@ -54,6 +55,9 @@ exists($$QMAKE_QT_CONFIG) {
         MAXIMUM_MEMORY = $$QT_WASM_MAXIMUM_MEMORY
     }
     EMCC_LFLAGS += -s MAXIMUM_MEMORY=$$MAXIMUM_MEMORY
+
+    target_filename_base = $$replace(TARGET, \.js$, )
+    QMAKE_DISTCLEAN += qtloader.js qtlogo.svg $${target_filename_base}.wasm $${target_filename_base}.js $${target_filename_base}.html
 
     qtConfig(sse2) {
         QMAKE_CFLAGS += -O2 -msimd128 -msse -msse2
