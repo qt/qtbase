@@ -645,20 +645,22 @@ void tst_QTextMarkdownImporter::fencedCodeBlocks()
 void tst_QTextMarkdownImporter::frontMatter_data()
 {
     QTest::addColumn<QString>("inputFile");
+    QTest::addColumn<bool>("convertToCrLf");
     QTest::addColumn<int>("expectedFrontMatterSize");
     QTest::addColumn<int>("expectedBlockCount");
 
-    QTest::newRow("yaml + markdown") << QFINDTESTDATA("data/yaml.md") << 140 << 1;
-    QTest::newRow("yaml + markdown with CRLFs") << QFINDTESTDATA("data/yaml-crlf.md") << 140 << 1;
-    QTest::newRow("yaml only") << QFINDTESTDATA("data/yaml-only.md") << 59 << 0;
-    QTest::newRow("malformed 1") << QFINDTESTDATA("data/front-marker-malformed1.md") << 0 << 1;
-    QTest::newRow("malformed 2") << QFINDTESTDATA("data/front-marker-malformed2.md") << 0 << 2;
-    QTest::newRow("malformed 3") << QFINDTESTDATA("data/front-marker-malformed3.md") << 0 << 1;
+    QTest::newRow("yaml + markdown") << QFINDTESTDATA("data/yaml.md") << false << 140 << 1;
+    QTest::newRow("yaml + markdown with CRLFs") << QFINDTESTDATA("data/yaml.md") << true << 147 << 1;
+    QTest::newRow("yaml only") << QFINDTESTDATA("data/yaml-only.md") << false << 59 << 0;
+    QTest::newRow("malformed 1") << QFINDTESTDATA("data/front-marker-malformed1.md") << false << 0 << 1;
+    QTest::newRow("malformed 2") << QFINDTESTDATA("data/front-marker-malformed2.md") << false << 0 << 2;
+    QTest::newRow("malformed 3") << QFINDTESTDATA("data/front-marker-malformed3.md") << false << 0 << 1;
 }
 
 void tst_QTextMarkdownImporter::frontMatter()
 {
     QFETCH(QString, inputFile);
+    QFETCH(bool, convertToCrLf);
     QFETCH(int, expectedFrontMatterSize);
     QFETCH(int, expectedBlockCount);
 
@@ -666,6 +668,10 @@ void tst_QTextMarkdownImporter::frontMatter()
     QVERIFY(f.open(QFile::ReadOnly | QIODevice::Text));
     QString md = QString::fromUtf8(f.readAll());
     f.close();
+    if (convertToCrLf)
+        md.replace("\n", "\r\n");
+    qCDebug(lcTests) << inputFile << "begins with" << md.first(16).toLatin1().toHex(' ');
+
     const int yamlBegin = md.indexOf("name:");
     const int yamlEnd = md.indexOf("---", yamlBegin);
     const QString yaml = md.sliced(yamlBegin, yamlEnd - yamlBegin);
