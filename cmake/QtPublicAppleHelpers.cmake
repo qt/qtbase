@@ -907,6 +907,12 @@ function(_qt_internal_get_xcode_version_raw out_var)
 
         string(REPLACE "\n" " " xcode_version "${xcode_version}")
         string(STRIP "${xcode_version}" xcode_version)
+
+        if(NOT xcode_version)
+            message(FATAL_ERROR
+                    "Can't determine Xcode version. Is Xcode installed?"
+                    " Error details:\n${xcrun_error}")
+        endif()
     endif()
     set(${out_var} "${xcode_version}" PARENT_SCOPE)
 endfunction()
