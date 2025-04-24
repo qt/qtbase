@@ -276,7 +276,7 @@ private:
     QString m_previousCurrent;
 };
 
-static int NColorRoles[] = {
+static constexpr int NColorRoles[] = {
     QPalette::NoRole,              // No Version
     QPalette::NoRole,              // Qt_1_0
     QPalette::HighlightedText + 1, // Qt_2_0
@@ -300,8 +300,10 @@ static int NColorRoles[] = {
     QPalette::PlaceholderText + 1, // Qt_6_0
     QPalette::Accent + 1,     // Qt_6_6
     QPalette::Accent + 1,     // Qt_6_7
-    0                              // add the correct value for Qt_5_14 here later
 };
+
+// +1, because we start from "No Version"
+static_assert(std::size(NColorRoles) == QDataStream::Qt_DefaultCompiledVersion + 1);
 
 // Testing get/set functions
 void tst_QDataStream::getSetCheck()
