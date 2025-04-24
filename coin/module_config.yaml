@@ -1,4 +1,5 @@
 version: 2
+alias: qtbase
 tags: [git]
 accept_configuration:
   condition: property
