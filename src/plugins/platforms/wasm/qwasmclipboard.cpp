@@ -46,7 +46,7 @@ static void commonCopyEvent(val event)
     event.call<void>("preventDefault");
 }
 
-static void qClipboardCutTo(val event)
+void QWasmClipboard::cut(val event)
 {
     QWasmInputContext *wasmInput = QWasmIntegration::get()->wasmInputContext();
     if (wasmInput && wasmInput->usingTextInput())
@@ -61,7 +61,7 @@ static void qClipboardCutTo(val event)
     commonCopyEvent(event);
 }
 
-static void qClipboardCopyTo(val event)
+void QWasmClipboard::copy(val event)
 {
     QWasmInputContext *wasmInput = QWasmIntegration::get()->wasmInputContext();
     if (wasmInput && wasmInput->usingTextInput())
@@ -75,7 +75,7 @@ static void qClipboardCopyTo(val event)
     commonCopyEvent(event);
 }
 
-static void qClipboardPasteTo(val event)
+void QWasmClipboard::paste(val event)
 {
     QWasmInputContext *wasmInput = QWasmIntegration::get()->wasmInputContext();
     if (wasmInput && wasmInput->usingTextInput())
@@ -86,10 +86,26 @@ static void qClipboardPasteTo(val event)
     QWasmIntegration::get()->getWasmClipboard()->sendClipboardData(event);
 }
 
+void QWasmClipboard::beforeInput(emscripten::val event)
+{
+    event.call<void>("preventDefault");
+    event.call<void>("stopPropagation");
+}
+
+void QWasmClipboard::input(emscripten::val event)
+{
+    event.call<void>("preventDefault");
+    event.call<void>("stopPropagation");
+    event["target"].set("innerHTML", std::string());
+    event["target"].set("value", std::string());
+}
+
 EMSCRIPTEN_BINDINGS(qtClipboardModule) {
-    function("qtClipboardCutTo", &qClipboardCutTo);
-    function("qtClipboardCopyTo", &qClipboardCopyTo);
-    function("qtClipboardPasteTo", &qClipboardPasteTo);
+    function("qtClipboardCutTo", &QWasmClipboard::cut);
+    function("qtClipboardCopyTo", &QWasmClipboard::copy);
+    function("qtClipboardPasteTo", &QWasmClipboard::paste);
+    function("qtClipboardBeforeInput", &QWasmClipboard::beforeInput);
+    function("qtClipboardInput", &QWasmClipboard::input);
 }
 
 QWasmClipboard::QWasmClipboard()
@@ -167,7 +183,7 @@ void QWasmClipboard::initClipboardPermissions()
                            })());
 }
 
-void QWasmClipboard::installEventHandlers(const emscripten::val &target)
+void QWasmClipboard::installEventHandlers(emscripten::val &target)
 {
     emscripten::val cContext = val::undefined();
     emscripten::val isChromium = val::global("window")["chrome"];
@@ -175,7 +191,17 @@ void QWasmClipboard::installEventHandlers(const emscripten::val &target)
         cContext = val::global("document");
     } else {
         cContext = target;
+        // Set contentEditable so that the window gets clipboard events,
+        // then hide the resulting focus frame.
+        cContext.set("contentEditable", std::string("true"));
+        cContext["style"].set("outline", std::string("none"));
+
+        cContext.call<void>("addEventListener", val("beforeinput"),
+                            val::module_property("qtClipboardBeforeInput"), true);
+        cContext.call<void>("addEventListener", val("input"),
+                            val::module_property("qtClipboardInput"), true);
     }
+
     // Fallback path for browsers which do not support direct clipboard access
     cContext.call<void>("addEventListener", val("cut"),
                         val::module_property("qtClipboardCutTo"), true);

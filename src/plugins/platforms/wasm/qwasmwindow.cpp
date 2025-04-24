@@ -56,6 +56,7 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmDeadKeySupport *deadKeySupport,
       m_document(dom::document()),
       m_decoratedWindow(m_document.call<emscripten::val>("createElement", emscripten::val("div"))),
       m_window(m_document.call<emscripten::val>("createElement", emscripten::val("div"))),
+      m_windowInput(m_document.call<emscripten::val>("createElement", emscripten::val("div"))),
       m_a11yContainer(m_document.call<emscripten::val>("createElement", emscripten::val("div"))),
       m_canvas(m_document.call<emscripten::val>("createElement", emscripten::val("canvas")))
 {
@@ -70,18 +71,17 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmDeadKeySupport *deadKeySupport,
     m_window.set("className", "qt-window");
     m_decoratedWindow.call<void>("appendChild", m_window);
 
+    m_window.call<void>("appendChild", m_windowInput);
     m_canvas["classList"].call<void>("add", emscripten::val("qt-window-canvas"));
 
-    // Set contentEditable so that the window gets clipboard events,
-    // then hide the resulting focus frame.
-    m_window.set("contentEditable", std::string("true"));
-    m_window["style"].set("outline", std::string("none"));
-
-    QWasmClipboard::installEventHandlers(m_window);
+#if QT_CONFIG(clipboard)
+    QWasmClipboard::installEventHandlers(m_windowInput);
+#endif
 
     // Set inputMode to none to stop the mobile keyboard from opening
     // when the user clicks on the window.
     m_window.set("inputMode", std::string("none"));
+    m_windowInput.set("inputMode", std::string("none"));
 
     // Hide the canvas from screen readers.
     m_canvas.call<void>("setAttribute", std::string("aria-hidden"), std::string("true"));
@@ -713,7 +713,7 @@ void QWasmWindow::requestActivateWindow()
 
 void QWasmWindow::focus()
 {
-    m_canvas.call<void>("focus");
+    m_windowInput.call<void>("focus");
 }
 
 bool QWasmWindow::setMouseGrabEnabled(bool grab)

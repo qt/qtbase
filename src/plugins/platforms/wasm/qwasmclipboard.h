@@ -36,9 +36,15 @@ public:
     bool ownsMode(QClipboard::Mode mode) const override;
 
     ProcessKeyboardResult processKeyboard(const KeyEvent &event);
-    static void installEventHandlers(const emscripten::val &target);
+    static void installEventHandlers(emscripten::val &target);
     bool hasClipboardApi();
     void sendClipboardData(emscripten::val event);
+
+    static void cut(emscripten::val event);
+    static void copy(emscripten::val event);
+    static void paste(emscripten::val event);
+    static void beforeInput(emscripten::val event);
+    static void input(emscripten::val event);
 
 private:
     void initClipboardPermissions();
