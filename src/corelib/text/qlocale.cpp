@@ -5209,23 +5209,24 @@ QStringList QLocale::uiLanguages(TagSeparator separator) const
         qsizetype stopAt = uiLanguages.size();
         QString prefix = entry;
         qsizetype at = 0;
-        /* By default we append but if no later entry has this as a prefix and
-           the locale it implies would use the same script as entry, put it
-           after the block of consecutive equivalents of which entry is a part
-           instead. Thus [en-NL, nl-NL, en-GB] will append en but [en-NL, en-GB,
-           nl-NL] will put it before nl-NL, for example. We require a script
-           match so we don't pick translations that the user cannot read,
-           despite knowing the language. (Ideally that would be a constraint the
-           caller can opt into / out of. See QTBUG-112765.)
-        */
-        bool justAfter
-            = QLocaleId::fromName(prefix).withLikelySubtagsAdded().script_id == max.script_id;
         while ((at = prefix.lastIndexOf(cut)) > 0) {
             prefix = prefix.first(at);
             // Don't test with hasSeen() as we might defer adding to later, when
             // we'll need known to see the later entry's offering of this prefix
             // as a new entry.
             bool found = known.contains(prefix);
+            /* By default we append but if no later entry has this as a prefix
+               and the locale it implies would use the same script as entry, put
+               it after the block of consecutive equivalents of which entry is a
+               part instead. Thus [en-NL, nl-NL, en-GB] will append en but
+               [en-NL, en-GB, nl-NL] will put it before nl-NL, for example. We
+               require a script match so we don't pick translations that the
+               user cannot read, despite knowing the language. (Ideally that
+               would be a constraint the caller can opt into / out of. See
+               QTBUG-112765.)
+            */
+            bool justAfter
+                = (QLocaleId::fromName(prefix).withLikelySubtagsAdded().script_id == max.script_id);
             for (qsizetype j = afterTruncs; !found && j < stopAt; ++j) {
                 QString later = uiLanguages.at(j);
                 if (!later.startsWith(prefix)) {
