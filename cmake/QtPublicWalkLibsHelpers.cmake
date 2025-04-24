@@ -186,8 +186,18 @@ function(__qt_internal_walk_libs
             # Unwrap targets like $<LINK_ONLY:$<BUILD_INTERFACE:Qt6::CorePrivate>>
             while(lib_target
                     MATCHES "^\\$<(LINK_ONLY|BUILD_INTERFACE|BUILD_LOCAL_INTERFACE):(.*)>$")
-                set(lib_target ${CMAKE_MATCH_2})
+                set(lib_target "${CMAKE_MATCH_2}")
             endwhile()
+
+            # If one of the values is "$<LINK_ONLY:$<BUILD_LOCAL_INTERFACE:Foo>>", this will be
+            # exported by cmake as "$<LINK_ONLY:>", which will become an empty value after the
+            # unwrapping above.
+            # In that case, skip the processing. Otherwise in some weird unknown conditions,
+            # CMake might consider the empty name to be a valid target, and cause errors further
+            # down.
+            if("${lib_target}" STREQUAL "")
+                continue()
+            endif()
 
             # Skip CMAKE_DIRECTORY_ID_SEP. If a target_link_libraries is applied to a target
             # that was defined in a different scope, CMake appends and prepends a special directory
