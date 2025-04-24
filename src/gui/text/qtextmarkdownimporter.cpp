@@ -29,7 +29,7 @@ static const QChar qtmi_Newline = u'\n';
 static const QChar qtmi_Space = u' ';
 
 static constexpr auto lfMarkerString() noexcept { return "---\n"_L1; }
-static constexpr auto crlfMarkerString() noexcept { return "---r\n"_L1; }
+static constexpr auto crlfMarkerString() noexcept { return "---\r\n"_L1; }
 
 // TODO maybe eliminate the margins after all views recognize BlockQuoteLevel, CSS can format it, etc.
 static const int qtmi_BlockQuoteIndent =
