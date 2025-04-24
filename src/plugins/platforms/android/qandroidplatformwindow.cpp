@@ -163,6 +163,16 @@ void QAndroidPlatformWindow::setVisible(bool visible)
         return;
 
     if (window()->isTopLevel()) {
+        // Do not hide last Qt for Android window.
+        // We don't want the splash screen to be shown during the app's
+        // exit because it would be the foremost visible screen.
+        if (QtAndroid::isQtApplication() && !visible) {
+            bool lastVisibleWindow =
+                    m_nativeQtWindow.callMethod<bool>("isLastVisibleTopLevelWindow");
+            m_nativeQtWindow.callMethod<void>("setToDestroy", !lastVisibleWindow);
+            if (lastVisibleWindow)
+                return;
+        }
         if (!visible && window() == qGuiApp->focusWindow()) {
             platformScreen()->topVisibleWindowChanged();
         } else {
