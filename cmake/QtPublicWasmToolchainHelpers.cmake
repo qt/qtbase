@@ -53,7 +53,7 @@ endfunction()
 
 function(__qt_internal_get_emcc_recommended_version out_var)
     # This version of Qt needs this version of emscripten.
-    set(QT_EMCC_RECOMMENDED_VERSION "3.1.70")
+    set(QT_EMCC_RECOMMENDED_VERSION "4.0.7")
     set(${out_var} "${QT_EMCC_RECOMMENDED_VERSION}" PARENT_SCOPE)
 endfunction()
 
