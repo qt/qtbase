@@ -55,6 +55,8 @@ void tst_QDataUrl::decode_data()
         QLatin1String("text/plain;charset=US-ASCII"));
     row("alreadyPercentageEncoded", "data:text/plain,%E2%88%9A", true,
         QLatin1String("text/plain"), QByteArray::fromPercentEncoding("%E2%88%9A"));
+    row("prematureCharsetEnd", "data:charset,", true,
+        "charset", ""); // nonsense result, but don't crash
 }
 
 void tst_QDataUrl::decode()
