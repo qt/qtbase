@@ -1154,6 +1154,18 @@ function(_qt_internal_assign_to_internal_targets_folder target)
     endif()
 endfunction()
 
+# Returns the metatypes build dir where the Qt build system places module metatypes json files and
+# other supporting metatypes files like ${target}_json_file_list.txt.
+# The path is usually the target's BINARY_DIR + "/meta_types"
+function(_qt_internal_get_metatypes_build_dir out_var target)
+    get_target_property(target_binary_dir "${target}" BINARY_DIR)
+    set(out_dir "${target_binary_dir}/meta_types")
+    set(${out_var} "${out_dir}" PARENT_SCOPE)
+endfunction()
+
+# The AUTOGEN build dir is the location where all the generated .cpp files are placed, as well
+# as the moc_predefs.h, timestamp file and deps files.
+# E.g. ${CMAKE_CURRENT_BINARY_DIR}/${target}_autogen/moc_predefs.h
 function(_qt_internal_get_target_autogen_build_dir target out_var)
     get_property(target_autogen_build_dir TARGET ${target} PROPERTY AUTOGEN_BUILD_DIR)
     if(target_autogen_build_dir)
@@ -1162,6 +1174,14 @@ function(_qt_internal_get_target_autogen_build_dir target out_var)
         get_property(target_binary_dir TARGET ${target} PROPERTY BINARY_DIR)
         set(${out_var} "${target_binary_dir}/${target}_autogen" PARENT_SCOPE)
     endif()
+endfunction()
+
+# The AUTOGEN info dir is the location where AutogenInfo.json and ParseCache.txt files are placed.
+# E.g. ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/${target}_autogen.dir/ParseCache.txt
+function(_qt_internal_get_target_autogen_info_dir target out_var)
+    get_target_property(target_binary_dir ${target} BINARY_DIR)
+    set(autogen_info_dir "${target_binary_dir}/CMakeFiles/${target}_autogen.dir")
+    set(${out_var} "${autogen_info_dir}" PARENT_SCOPE)
 endfunction()
 
 function(_qt_internal_should_install_metatypes target)
@@ -1351,12 +1371,14 @@ function(qt6_extract_metatypes target)
         return()
     endif()
 
-    get_target_property(target_binary_dir ${target} BINARY_DIR)
-    set(type_list_file "${target_binary_dir}/meta_types/${target}_json_file_list.txt")
-    set(type_list_file_manual "${target_binary_dir}/meta_types/${target}_json_file_list_manual.txt")
+    _qt_internal_get_metatypes_build_dir(metatypes_dir "${target}")
+
+    set(type_list_file "${metatypes_dir}/${target}_json_file_list.txt")
+    set(type_list_file_manual "${metatypes_dir}/${target}_json_file_list_manual.txt")
 
     set(target_autogen_build_dir "")
     _qt_internal_get_target_autogen_build_dir(${target} target_autogen_build_dir)
+    _qt_internal_get_target_autogen_info_dir(${target} target_autogen_info_dir)
 
     get_target_property(uses_automoc ${target} AUTOMOC)
     set(automoc_args)
@@ -1370,21 +1392,18 @@ function(qt6_extract_metatypes target)
 
         get_property(is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
         if(NOT is_multi_config)
-            set(cmake_autogen_cache_file
-                "${target_binary_dir}/CMakeFiles/${target}_autogen.dir/ParseCache.txt")
+            set(cmake_autogen_cache_file "${target_autogen_info_dir}/ParseCache.txt")
             set(multi_config_args
                 --cmake-autogen-include-dir-path "${target_autogen_build_dir}/include"
             )
         else()
-            set(cmake_autogen_cache_file
-                "${target_binary_dir}/CMakeFiles/${target}_autogen.dir/ParseCache_$<CONFIG>.txt")
+            set(cmake_autogen_cache_file "${target_autogen_info_dir}/ParseCache_$<CONFIG>.txt")
             set(multi_config_args
                 --cmake-autogen-include-dir-path "${target_autogen_build_dir}/include_$<CONFIG>"
                 "--cmake-multi-config")
         endif()
 
-        set(cmake_autogen_info_file
-            "${target_binary_dir}/CMakeFiles/${target}_autogen.dir/AutogenInfo.json")
+        set(cmake_autogen_info_file "${target_autogen_info_dir}/AutogenInfo.json")
 
         set (use_dep_files FALSE)
         if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.17") # Requires automoc changes present only in 3.17
@@ -1499,11 +1518,11 @@ function(qt6_extract_metatypes target)
 
     string(TOLOWER ${target} target_lowercase)
     set(metatypes_file_name "qt6${target_lowercase}_metatypes.json")
-    set(metatypes_file "${target_binary_dir}/meta_types/${metatypes_file_name}")
-    set(metatypes_file_gen "${target_binary_dir}/meta_types/${metatypes_file_name}.gen")
+    set(metatypes_file "${metatypes_dir}/${metatypes_file_name}")
+    set(metatypes_file_gen "${metatypes_dir}/${metatypes_file_name}.gen")
 
     set(metatypes_dep_file_name "qt6${target_lowercase}_metatypes_dep.txt")
-    set(metatypes_dep_file "${target_binary_dir}/meta_types/${metatypes_dep_file_name}")
+    set(metatypes_dep_file "${metatypes_dir}/${metatypes_dep_file_name}")
 
     # Due to generated source file dependency rules being tied to the directory
     # scope in which they are created it is not possible for other targets which
@@ -1514,7 +1533,7 @@ function(qt6_extract_metatypes target)
     # file is then replaced with the contents of the generated file during
     # build.
     if (NOT EXISTS ${metatypes_file})
-        file(MAKE_DIRECTORY "${target_binary_dir}/meta_types")
+        file(MAKE_DIRECTORY "${metatypes_dir}")
         file(TOUCH ${metatypes_file})
     endif()
 
