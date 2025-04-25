@@ -10,6 +10,7 @@
 #include <private/qcombobox_p.h>
 #include <qstyleoption.h>
 #include <qpainter.h>
+#include <qpainterstateguard.h>
 #include <QGraphicsDropShadowEffect>
 #include <QLatin1StringView>
 #include <QtWidgets/qcombobox.h>
@@ -1011,6 +1012,15 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
         }
         break;
     }
+    case PE_PanelItemViewItem:
+        if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(option)) {
+            if (vopt->backgroundBrush.style() != Qt::NoBrush) {
+                QPainterStateGuard psg(painter);
+                painter->setBrushOrigin(vopt->rect.topLeft());
+                painter->fillRect(vopt->rect, vopt->backgroundBrush);
+            }
+        }
+        break;
     case PE_PanelItemViewRow:
         if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(option)) {
             // this is only called from a QTreeView to paint
@@ -1723,6 +1733,9 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                 QRect checkRect = proxy()->subElementRect(SE_ItemViewItemCheckIndicator, vopt, widget);
                 QRect iconRect = proxy()->subElementRect(SE_ItemViewItemDecoration, vopt, widget);
                 QRect textRect = proxy()->subElementRect(SE_ItemViewItemText, vopt, widget);
+
+                // draw the background
+                proxy()->drawPrimitive(PE_PanelItemViewItem, option, painter, widget);
 
                 const QRect &rect = vopt->rect;
                 const bool isRtl = option->direction == Qt::RightToLeft;
