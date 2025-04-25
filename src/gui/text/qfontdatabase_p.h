@@ -139,7 +139,17 @@ struct Q_GUI_EXPORT QtFontFoundry
     QString name;
     int count;
     QtFontStyle **styles;
-    QtFontStyle *style(const QtFontStyle::Key &, const QString & = QString(), bool = false);
+
+    enum StyleRetrievalFlags : quint8 {
+        NoRetrievalFlags = 0,
+        AddWhenMissing = 1,
+        MatchAllProperties = 2,
+        AllRetrievalFlags = 3,
+    };
+
+    QtFontStyle *style(const QtFontStyle::Key &,
+                       const QString & = QString(),
+                       StyleRetrievalFlags flags = NoRetrievalFlags);
 };
 
 struct Q_GUI_EXPORT QtFontFamily
