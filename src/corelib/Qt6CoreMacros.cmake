@@ -3541,7 +3541,7 @@ macro(qt6_standard_project_setup)
             if(QT_OSX_ARCHITECTURES)
                 list(LENGTH QT_OSX_ARCHITECTURES qt_osx_arch_count)
             endif()
-            if(NOT qt_osx_arch_count GREATER 1 AND ${CMAKE_OSX_SYSROOT} MATCHES "^[a-z]+simulator$")
+            if(NOT qt_osx_arch_count GREATER 1 AND "${CMAKE_OSX_SYSROOT}" MATCHES "^[a-z]+simulator$")
                 # Xcode expects the base SDK to be the device SDK
                 set(simulator_sysroot "${CMAKE_OSX_SYSROOT}")
                 string(REGEX REPLACE "simulator" "os" CMAKE_OSX_SYSROOT "${CMAKE_OSX_SYSROOT}")
