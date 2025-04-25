@@ -41,6 +41,8 @@ void tst_QDataUrl::decode_data()
         "text/plain"_L1, QByteArray::fromPercentEncoding("%E2%88%9A"));
     row("everythingIsCaseInsensitive", "Data:texT/PlaiN;charSet=iSo-8859-1;Base64,SGVsbG8=", true,
         "texT/PlaiN;charSet=iSo-8859-1"_L1, QByteArrayLiteral("Hello"));
+    row("spacesAroundCharset", "data:%20charset%20%20=%20UTF-8,Hello", true,
+        "text/plain;charset  = UTF-8"_L1, QByteArrayLiteral("Hello"));
     row("prematureCharsetEnd", "data:charset,", true,
         "charset", ""); // nonsense result, but don't crash
 }
