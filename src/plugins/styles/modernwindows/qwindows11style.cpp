@@ -2158,6 +2158,11 @@ QSize QWindows11Style::sizeFromContents(ContentsType type, const QStyleOption *o
         if (size.width() == 0)
             contentSize.rwidth() += 2;
         break;
+    case CT_PushButton:
+        contentSize = QWindowsVistaStyle::sizeFromContents(type, option, size, widget);
+        contentSize.rwidth() += 2 * 2; // the CE_PushButtonBevel draws a rounded rect with
+                                       // QMargins(2, 2, 2, 2) removed
+        break;
     default:
         contentSize = QWindowsVistaStyle::sizeFromContents(type, option, size, widget);
         break;
