@@ -73,9 +73,9 @@ public:
 #ifndef QT_NO_UDPSOCKET
 #ifndef QT_NO_NETWORKINTERFACE
     bool joinMulticastGroup(const QHostAddress &groupAddress,
-                            const QNetworkInterface &interface) override;
+                            const QNetworkInterface &iface) override;
     bool leaveMulticastGroup(const QHostAddress &groupAddress,
-                             const QNetworkInterface &interface) override;
+                             const QNetworkInterface &iface) override;
     QNetworkInterface multicastInterface() const override;
     bool setMulticastInterface(const QNetworkInterface &iface) override;
 #endif // QT_NO_NETWORKINTERFACE
