@@ -42,6 +42,8 @@ public:
     bool usingTextInput() const { return m_inputMethodAccepted; }
     void setFocusObject(QObject *object) override;
 
+    void updateGeometry();
+
 private:
     void updateInputElement();
 

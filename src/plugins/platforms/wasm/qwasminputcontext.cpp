@@ -259,6 +259,8 @@ QWasmInputContext::QWasmInputContext()
     m_inputElement["style"].set("opacity", 0);
     m_inputElement["style"].set("display", "");
     m_inputElement["style"].set("z-index", -2);
+    m_inputElement["style"].set("width", "1px");
+    m_inputElement["style"].set("height", "1px");
 
     m_inputElement.set("data-qinputcontext",
                        emscripten::val(quintptr(reinterpret_cast<void *>(this))));
@@ -312,18 +314,48 @@ void QWasmInputContext::showInputPanel()
     updateInputElement();
 }
 
+void QWasmInputContext::updateGeometry()
+{
+    const QWindow *focusWindow = QGuiApplication::focusWindow();
+    if (!m_focusObject || !focusWindow ||  !m_visibleInputPanel || !m_inputMethodAccepted) {
+        m_inputElement["style"].set("left", "0px");
+        m_inputElement["style"].set("top", "0px");
+    }
+    else {
+        Q_ASSERT(focusWindow);
+        Q_ASSERT(m_focusObject);
+        Q_ASSERT(m_visibleInputPanel);
+        Q_ASSERT(m_inputMethodAccepted);
+
+        // Set the geometry
+        QPoint globalPos;
+        const QRect cursorRectangle = QPlatformInputContext::cursorRectangle().toRect();
+        if (cursorRectangle.isValid()) {
+            qCDebug(qLcQpaWasmInputContext)
+                    << Q_FUNC_INFO << "cursorRectangle: " << cursorRectangle;
+            globalPos = focusWindow->mapToGlobal(cursorRectangle.topLeft());
+            if (globalPos.x() > 0)
+                globalPos.setX(globalPos.x() - 1);
+            if (globalPos.y() > 0)
+                globalPos.setY(globalPos.y() - 1);
+        }
+
+        const auto styleLeft = std::to_string(globalPos.x()) + "px";
+        const auto styleTop = std::to_string(globalPos.y()) + "px";
+        m_inputElement["style"].set("left", styleLeft);
+        m_inputElement["style"].set("top", styleTop);
+    }
+}
+
 void QWasmInputContext::updateInputElement()
 {
     // Mobile devices can dismiss keyboard/IME and focus is still on input.
     // Successive clicks on the same input should open the keyboard/IME.
+    updateGeometry();
 
     // If there is no focus object, or no visible input panel, remove focus
     const QWindow *focusWindow = QGuiApplication::focusWindow();
-    if (!m_focusObject || !focusWindow ||  !m_visibleInputPanel || !m_inputMethodAccepted) {
-        m_inputElement["style"].set("left",   "0px");
-        m_inputElement["style"].set("top",    "0px");
-        m_inputElement["style"].set("width",  "1px");
-        m_inputElement["style"].set("height", "1px");
+    if (!m_focusObject || !focusWindow || !m_visibleInputPanel || !m_inputMethodAccepted) {
         m_inputElement.set("value", "");
 
         m_inputElement.call<void>("blur");
@@ -337,23 +369,6 @@ void QWasmInputContext::updateInputElement()
     Q_ASSERT(m_focusObject);
     Q_ASSERT(m_visibleInputPanel);
     Q_ASSERT(m_inputMethodAccepted);
-
-    // Set the geometry
-    QPoint globalPos;
-    const QRect cursorRectangle = QPlatformInputContext::cursorRectangle().toRect();
-    if (cursorRectangle.isValid()) {
-        qCDebug(qLcQpaWasmInputContext) << Q_FUNC_INFO << "cursorRectangle: " << cursorRectangle;
-        globalPos = focusWindow->mapToGlobal(cursorRectangle.topLeft());
-        if (globalPos.x() > 0) globalPos.setX(globalPos.x() - 1);
-        if (globalPos.y() > 0) globalPos.setY(globalPos.y() - 1);
-    }
-
-    const auto styleLeft = std::to_string(globalPos.x()) + "px";
-    const auto styleTop = std::to_string(globalPos.y()) + "px";
-    m_inputElement["style"].set("left", styleLeft);
-    m_inputElement["style"].set("top", styleTop);
-    m_inputElement["style"].set("width",  "1px");
-    m_inputElement["style"].set("height", "1px");
 
     qCDebug(qLcQpaWasmInputContext) << Q_FUNC_INFO << QRectF::fromDOMRect(m_inputElement.call<emscripten::val>("getBoundingClientRect"));
 
