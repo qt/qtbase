@@ -298,6 +298,11 @@ void QWasmWindow::setGeometry(const QRect &rect)
         shouldInvalidate = m_normalGeometry.size() != clientAreaRect.size();
         m_normalGeometry = clientAreaRect;
     }
+
+    QWasmInputContext *wasmInput = QWasmIntegration::get()->wasmInputContext();
+    if (wasmInput && (QGuiApplication::focusWindow() == window()))
+        wasmInput->updateGeometry();
+
     QWindowSystemInterface::handleGeometryChange(window(), clientAreaRect);
     if (shouldInvalidate)
         invalidate();
