@@ -1864,13 +1864,20 @@ static bool deployWebEngineCore(const QMap<QString, QString> &qtpathsVariables,
                                 const PluginInformation &pluginInfo, const Options &options,
                                 bool isDebug, QString *errorMessage)
 {
-    static const char *installDataFiles[] = { "icudtl.dat",
-                                              "qtwebengine_devtools_resources.pak",
-                                              "qtwebengine_resources.pak",
-                                              "qtwebengine_resources_100p.pak",
-                                              "qtwebengine_resources_200p.pak",
-                                              isDebug ? "v8_context_snapshot.debug.bin"
-                                                      : "v8_context_snapshot.bin" };
+    static const char *installDataFilesRelease[] = { "icudtl.dat",
+                                                     "qtwebengine_devtools_resources.pak",
+                                                     "qtwebengine_resources.pak",
+                                                     "qtwebengine_resources_100p.pak",
+                                                     "qtwebengine_resources_200p.pak",
+                                                     "v8_context_snapshot.bin" };
+    static const char *installDataFilesDebug[] = { "icudtl.dat",
+                                                   "qtwebengine_devtools_resources.debug.pak",
+                                                   "qtwebengine_resources.debug.pak",
+                                                   "qtwebengine_resources_100p.debug.pak",
+                                                   "qtwebengine_resources_200p.debug.pak",
+                                                   "v8_context_snapshot.debug.bin" };
+    static const auto &installDataFiles = isDebug ? installDataFilesDebug : installDataFilesRelease;
+
     QByteArray webEngineProcessName(webEngineProcessC);
     if (isDebug && platformHasDebugSuffix(options.platform))
         webEngineProcessName.append('d');
