@@ -20,5 +20,4 @@ qt_internal_add_test(tst_qwasmwindowtreenode
         Qt::Core
         Qt::Gui
         Qt::GuiPrivate
-        Qt::Widgets
 )

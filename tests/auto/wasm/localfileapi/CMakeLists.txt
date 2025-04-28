@@ -20,5 +20,4 @@ qt_internal_add_test(tst_localfileapi
         Qt::GuiPrivate
         Qt::Core
         Qt::Gui
-        Qt::Widgets
 )
