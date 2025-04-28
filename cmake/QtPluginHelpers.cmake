@@ -376,8 +376,8 @@ function(qt_internal_add_plugin target)
         # when building standalone tests.
         if(QT_INTERNAL_CONFIGURING_TESTS OR arg_TEST_PLUGIN)
             if(NOT arg_TEST_PLUGIN)
-                message(WARNING "The installable test plugin ${target} is built as part of test"
-                    " suite, but is not marked as TEST_PLUGIN using the repsective argument."
+                message(WARNING "The installable test plugin ${target} is built as part of a test"
+                    " suite, but is not marked as TEST_PLUGIN using the respective argument."
                     "\nThis warning will soon become an error."
                 )
             endif()
