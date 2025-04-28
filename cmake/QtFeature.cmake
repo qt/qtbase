@@ -243,6 +243,135 @@ function(qt_feature_alias alias_feature)
     endif()
 endfunction()
 
+# Create a deprecated feature
+#
+# Synopsis
+#
+#   qt_feature_deprecated(<feature>
+#       REMOVE_BY <version>
+#       [MESSAGE <string>] [VALUE <val>]
+#       [PRIVATE | PUBLIC]
+#       [LABEL <string>] [PURPOSE <string>] [SECTION <string>]
+#   )
+#
+# Arguments
+#
+# `<feature>`
+#   The feature to be created.
+#
+# `REMOVE_BY`
+#   Qt version when this feature is going to be removed
+#
+# `MESSAGE`
+#   Additional deprecation message to be printed.
+#
+# `VALUE`
+#   Value of the `QT_FEATURE_<feature>` that this is forced to. If undefined,
+#   `QT_FEATURE_<feature>` is not populated
+#
+# `LABEL`, `PURPOSE`, `SECTION`, `PRIVATE`, `PUBLIC`
+#   Same as in `qt_feature`
+function(qt_feature_deprecated feature)
+    set(option_args
+        PRIVATE
+        PUBLIC
+    )
+    set(single_args
+        REMOVE_BY
+        MESSAGE
+        VALUE
+        LABEL
+        PURPOSE
+        SECTION
+    )
+    set(multi_args "")
+
+    cmake_parse_arguments(PARSE_ARGV 1 arg "${option_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    if(NOT arg_REMOVE_BY)
+        message(FATAL_ERROR "qt_feature_deprecated requires REMOVE_BY keyword")
+    elseif(PROJECT_VERSION VERSION_GREATER_EQUAL arg_REMOVE_BY)
+        message(FATAL_ERROR
+            "Deprecated feature ${feature} must be removed before Qt version ${arg_REMOVE_BY}"
+        )
+    endif()
+
+    set(original_name "${feature}")
+    qt_feature_normalize_name("${feature}" feature)
+
+    # Check if the values were manually passed
+    if(DEFINED FEATURE_${feature})
+        set(deprecation_msg "FEATURE_${feature} is deprecated. ")
+        if(arg_VALUE)
+            string(APPEND deprecation_msg "The value is always: ${arg_VALUE}")
+        else()
+            string(APPEND deprecation_msg "The value is not used.")
+        endif()
+        if(arg_MESSAGE)
+            string(APPEND deprecation_msg "\n${arg_MESSAGE}")
+        endif()
+        qt_configure_add_report_entry(RECORD_ON_FEATURE_EVALUATION TYPE WARNING
+            MESSAGE "${deprecation_msg}")
+        unset(FEATURE_${feature} CACHE)
+    endif()
+
+    # Make sure the `QT_FEATURE_*` value is set/unset accordingly
+    unset(err_msg)
+    if(arg_VALUE)
+        if(DEFINED QT_FEATURE_${feature} AND NOT QT_FEATURE_${feature} STREQUAL arg_VALUE)
+            string(CONCAT err_msg
+                "QT_FEATURE_${feature} was manually set to ${QT_FEATURE_${feature}}, but"
+                "the only supported value is: ${arg_VALUE}\n"
+                "Overwriting QT_FEATURE_${feature} cache to ${arg_VALUE}"
+            )
+        endif()
+        set(QT_FEATURE_${feature} "${arg_VALUE}" CACHE INTERNAL
+            "Deprecated: Always ${arg_VALUE}. ${arg_MESSAGE}"
+        )
+    else()
+        if(DEFINED QT_FEATURE_${feature})
+            string(CONCAT msg
+                "QT_FEATURE_${feature} was manually set to ${QT_FEATURE_${feature}}, but"
+                "the value must **NOT** be set.\n"
+                "Unsetting QT_FEATURE_${feature} cache"
+            )
+            unset(QT_FEATURE_${feature} CACHE)
+        endif()
+    endif()
+
+    # Emit the error message if we have an unexpected `QT_FEATURE_*`
+    if(err_msg)
+        if(arg_MESSAGE)
+            string(APPEND err_msg "\n${arg_MESSAGE}")
+        endif()
+        qt_configure_add_report_error("${err_msg}")
+    endif()
+
+    # Register the feature as a normal feature
+    set(forward_args "")
+    foreach(arg IN ITEMS LABEL PURPOSE SECTION)
+        if(arg_${arg})
+            list(APPEND forward_args ${arg} "${arg_${arg}}")
+        endif()
+    endforeach()
+    set(_QT_FEATURE_DEFINITION_${feature} ${forward_args} PARENT_SCOPE)
+
+    # Do the feature register
+    if (arg_PUBLIC)
+        list(APPEND __QtFeature_public_features "${feature}")
+        set(__QtFeature_public_features ${__QtFeature_public_features} PARENT_SCOPE)
+    endif()
+    if (arg_PRIVATE)
+        list(APPEND __QtFeature_private_features "${feature}")
+        set(__QtFeature_private_features ${__QtFeature_private_features} PARENT_SCOPE)
+    endif()
+    if (NOT arg_PUBLIC AND NOT arg_PRIVATE)
+        list(APPEND __QtFeature_internal_features "${feature}")
+        set(__QtFeature_internal_features ${__QtFeature_internal_features} PARENT_SCOPE)
+    endif()
+endfunction()
+
 function(qt_evaluate_to_boolean expressionVar)
     if(${${expressionVar}})
         set(${expressionVar} ON PARENT_SCOPE)
