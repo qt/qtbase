@@ -16,7 +16,9 @@
 #include <qdebug.h>
 #include <qpa/qplatformscreen.h>
 #include <qpa/qplatformcursor.h>
+#if QT_CONFIG(style_stylesheet)
 #include <private/qstylesheetstyle_p.h>
+#endif
 
 #include <qlabel.h>
 #include <QtWidgets/private/qlabel_p.h>

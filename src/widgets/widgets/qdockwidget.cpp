@@ -17,7 +17,6 @@
 #include <qdebug.h>
 
 #include <private/qwidgetresizehandler_p.h>
-#include <private/qstylesheetstyle_p.h>
 #include <qpa/qplatformtheme.h>
 
 #include <private/qhighdpiscaling_p.h>

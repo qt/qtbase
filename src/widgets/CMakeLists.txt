@@ -43,8 +43,6 @@ qt_internal_add_module(Widgets
         styles/qstyleoption.cpp styles/qstyleoption.h
         styles/qstylepainter.cpp styles/qstylepainter.h
         styles/qstyleplugin.cpp styles/qstyleplugin.h
-        styles/qstylesheetstyle.cpp styles/qstylesheetstyle_p.h
-        styles/qstylesheetstyle_default.cpp
         util/qcolormap.cpp util/qcolormap.h
         util/qsystemtrayicon.cpp util/qsystemtrayicon.h util/qsystemtrayicon_p.h
         widgets/qabstractscrollarea.cpp widgets/qabstractscrollarea.h widgets/qabstractscrollarea_p.h
@@ -423,6 +421,12 @@ qt_internal_extend_target(Widgets CONDITION QT_FEATURE_whatsthis
 qt_internal_extend_target(Widgets CONDITION QT_FEATURE_animation
     SOURCES
         styles/qstyleanimation.cpp styles/qstyleanimation_p.h
+)
+
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_style_stylesheet
+    SOURCES
+        styles/qstylesheetstyle.cpp styles/qstylesheetstyle_p.h
+        styles/qstylesheetstyle_default.cpp
 )
 
 qt_internal_extend_target(Widgets CONDITION QT_FEATURE_style_windows

@@ -36,7 +36,9 @@
 #include "qwhatsthis.h"
 #endif
 #include "qdebug.h"
+#if QT_CONFIG(style_stylesheet)
 #include "private/qstylesheetstyle_p.h"
+#endif
 #include "private/qstyle_p.h"
 #include "qfileinfo.h"
 #include "qscopeguard.h"

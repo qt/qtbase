@@ -8,9 +8,11 @@
 #include "qstyleoption.h"
 #include "qlabel_p.h"
 #include "private/qhexstring_p.h"
-#include "private/qstylesheetstyle_p.h"
 #include <qmath.h>
 
+#if QT_CONFIG(style_stylesheet)
+#include "private/qstylesheetstyle_p.h"
+#endif
 #if QT_CONFIG(abstractbutton)
 #include "qabstractbutton.h"
 #endif

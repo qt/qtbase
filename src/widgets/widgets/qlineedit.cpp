@@ -41,8 +41,9 @@
 #if QT_CONFIG(itemviews)
 #include "qabstractitemview.h"
 #endif
+#if QT_CONFIG(style_stylesheet)
 #include "private/qstylesheetstyle_p.h"
-
+#endif
 #if QT_CONFIG(shortcut)
 #include "private/qapplication_p.h"
 #include "private/qshortcutmap_p.h"

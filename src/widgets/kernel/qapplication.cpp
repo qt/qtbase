@@ -33,7 +33,9 @@
 #include "private/qguiapplication_p.h"
 #include "qcolormap.h"
 #include "qdebug.h"
+#if QT_CONFIG(style_stylesheet)
 #include "private/qstylesheetstyle_p.h"
+#endif
 #include "private/qstyle_p.h"
 #if QT_CONFIG(messagebox)
 #include "qmessagebox.h"
