@@ -131,7 +131,7 @@ Q_SIGNALS:
     void promisedStreamReceived(quint32 newStreamID);
     void uploadBlocked();
     void dataReceived(const QByteArray &data, bool endStream);
-    void rstFrameRecived(quint32 errorCode);
+    void rstFrameReceived(quint32 errorCode);
 
     void bytesWritten(qint64 bytesWritten);
     void uploadDeviceError(const QString &errorString);
@@ -261,7 +261,7 @@ Q_SIGNALS:
     void errorReceived(/*@future: add as needed?*/); // Connection errors only, no stream-specific errors
     void connectionClosed();
     void settingsFrameReceived();
-    void pingFrameRecived(QHttp2Connection::PingState state);
+    void pingFrameReceived(QHttp2Connection::PingState state);
     void errorOccurred(Http2::Http2Error errorCode, const QString &errorString);
     void receivedGOAWAY(Http2::Http2Error errorCode, quint32 lastStreamID);
     void receivedEND_STREAM(quint32 streamID);

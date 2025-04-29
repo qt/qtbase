@@ -382,8 +382,8 @@ void tst_QHttp2Connection::testPING()
     QVERIFY(clientStream);
     QVERIFY(waitForSettingsExchange(connection, serverConnection));
 
-    QSignalSpy serverPingSpy{ serverConnection, &QHttp2Connection::pingFrameRecived };
-    QSignalSpy clientPingSpy{ connection, &QHttp2Connection::pingFrameRecived };
+    QSignalSpy serverPingSpy{ serverConnection, &QHttp2Connection::pingFrameReceived };
+    QSignalSpy clientPingSpy{ connection, &QHttp2Connection::pingFrameReceived };
 
     QByteArray data{"pingpong"};
     connection->sendPing(data);
@@ -424,8 +424,8 @@ void tst_QHttp2Connection::testRSTServerSide()
     auto *serverStream = newIncomingStreamSpy.front().front().value<QHttp2Stream *>();
     QCOMPARE(clientStream->streamID(), serverStream->streamID());
 
-    QSignalSpy rstClientSpy{ clientStream, &QHttp2Stream::rstFrameRecived };
-    QSignalSpy rstServerSpy{ serverStream, &QHttp2Stream::rstFrameRecived };
+    QSignalSpy rstClientSpy{ clientStream, &QHttp2Stream::rstFrameReceived };
+    QSignalSpy rstServerSpy{ serverStream, &QHttp2Stream::rstFrameReceived };
 
     QCOMPARE(clientStream->state(), QHttp2Stream::State::Open);
     QCOMPARE(serverStream->state(), QHttp2Stream::State::Open);
@@ -457,8 +457,8 @@ void tst_QHttp2Connection::testRSTClientSide()
     auto *serverStream = newIncomingStreamSpy.front().front().value<QHttp2Stream *>();
     QCOMPARE(clientStream->streamID(), serverStream->streamID());
 
-    QSignalSpy rstClientSpy{ clientStream, &QHttp2Stream::rstFrameRecived };
-    QSignalSpy rstServerSpy{ serverStream, &QHttp2Stream::rstFrameRecived };
+    QSignalSpy rstClientSpy{ clientStream, &QHttp2Stream::rstFrameReceived };
+    QSignalSpy rstServerSpy{ serverStream, &QHttp2Stream::rstFrameReceived };
 
     QCOMPARE(clientStream->state(), QHttp2Stream::State::Open);
     QCOMPARE(serverStream->state(), QHttp2Stream::State::Open);
@@ -490,8 +490,8 @@ void tst_QHttp2Connection::testRSTReplyOnDATAEND()
     auto *serverStream = newIncomingStreamSpy.front().front().value<QHttp2Stream *>();
     QCOMPARE(clientStream->streamID(), serverStream->streamID());
 
-    QSignalSpy rstClientSpy{ clientStream, &QHttp2Stream::rstFrameRecived };
-    QSignalSpy rstServerSpy{ serverStream, &QHttp2Stream::rstFrameRecived };
+    QSignalSpy rstClientSpy{ clientStream, &QHttp2Stream::rstFrameReceived };
+    QSignalSpy rstServerSpy{ serverStream, &QHttp2Stream::rstFrameReceived };
     QSignalSpy endServerSpy{ serverConnection, &QHttp2Connection::receivedEND_STREAM };
     QSignalSpy errrorServerSpy{ serverStream, &QHttp2Stream::errorOccurred };
 
@@ -602,8 +602,8 @@ void tst_QHttp2Connection::testBadFrameSize()
     auto *serverStream = newIncomingStreamSpy.front().front().value<QHttp2Stream *>();
     QCOMPARE(clientStream->streamID(), serverStream->streamID());
 
-    QSignalSpy rstClientSpy{ clientStream, &QHttp2Stream::rstFrameRecived };
-    QSignalSpy rstServerSpy{ serverStream, &QHttp2Stream::rstFrameRecived };
+    QSignalSpy rstClientSpy{ clientStream, &QHttp2Stream::rstFrameReceived };
+    QSignalSpy rstServerSpy{ serverStream, &QHttp2Stream::rstFrameReceived };
     QSignalSpy goawayClientSpy{ connection, &QHttp2Connection::receivedGOAWAY };
     QSignalSpy goawayServerSpy{ serverConnection, &QHttp2Connection::receivedGOAWAY };
 
@@ -663,7 +663,7 @@ void tst_QHttp2Connection::testDataFrameAfterRSTIncoming()
     auto *serverStream = newIncomingStreamSpy.front().front().value<QHttp2Stream *>();
     QCOMPARE(clientStream->streamID(), serverStream->streamID());
 
-    QSignalSpy rstServerSpy{ serverStream, &QHttp2Stream::rstFrameRecived };
+    QSignalSpy rstServerSpy{ serverStream, &QHttp2Stream::rstFrameReceived };
 
     QCOMPARE(clientStream->state(), QHttp2Stream::State::Open);
     QCOMPARE(serverStream->state(), QHttp2Stream::State::Open);
@@ -705,7 +705,7 @@ void tst_QHttp2Connection::testDataFrameAfterRSTOutgoing()
     auto *serverStream = newIncomingStreamSpy.front().front().value<QHttp2Stream *>();
     QCOMPARE(clientStream->streamID(), serverStream->streamID());
 
-    QSignalSpy rstServerSpy{ serverStream, &QHttp2Stream::rstFrameRecived };
+    QSignalSpy rstServerSpy{ serverStream, &QHttp2Stream::rstFrameReceived };
 
     QCOMPARE(clientStream->state(), QHttp2Stream::State::Open);
     QCOMPARE(serverStream->state(), QHttp2Stream::State::Open);

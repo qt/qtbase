@@ -1539,7 +1539,7 @@ void QHttp2Connection::handleRST_STREAM()
 
     const auto error = qFromBigEndian<quint32>(inboundFrame.dataBegin());
     if (QPointer<QHttp2Stream> stream = m_streams[streamID])
-        emit stream->rstFrameRecived(error);
+        emit stream->rstFrameReceived(error);
 
     // Verify that whatever stream is being RST'd is not in the idle state:
     const quint32 lastRelevantStreamID = [this, streamID]() {
@@ -1717,18 +1717,18 @@ void QHttp2Connection::handlePING()
     if (inboundFrame.flags() & FrameFlag::ACK) {
         QByteArrayView pingSignature(reinterpret_cast<const char *>(inboundFrame.dataBegin()), 8);
         if (!m_lastPingSignature.has_value()) {
-            emit pingFrameRecived(PingState::PongNoPingSent);
+            emit pingFrameReceived(PingState::PongNoPingSent);
             qCWarning(qHttp2ConnectionLog, "[%p] PING with ACK received but no PING was sent.", this);
         } else if (pingSignature != m_lastPingSignature) {
-            emit pingFrameRecived(PingState::PongSignatureChanged);
+            emit pingFrameReceived(PingState::PongSignatureChanged);
             qCWarning(qHttp2ConnectionLog, "[%p] PING signature does not match the last PING.", this);
         } else {
-            emit pingFrameRecived(PingState::PongSignatureIdentical);
+            emit pingFrameReceived(PingState::PongSignatureIdentical);
         }
         m_lastPingSignature.reset();
         return;
     } else {
-        emit pingFrameRecived(PingState::Ping);
+        emit pingFrameReceived(PingState::Ping);
 
     }
 
