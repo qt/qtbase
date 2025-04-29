@@ -231,8 +231,22 @@ function(qt_feature feature)
 endfunction()
 
 function(qt_feature_alias feature)
+    cmake_parse_arguments(arg "NEGATE" "PURPOSE;SECTION;MESSAGE;ALIAS_OF_FEATURE;ALIAS_OF_CACHE" ""
+        ${ARGN})
     set_property(GLOBAL APPEND PROPERTY COMMANDLINE_KNOWN_FEATURES "${feature}")
-    # TODO: Alias features are not listed, but neither are features without PURPOSE.
+    # Mark the feature as aliased
+    set(alias_note "alias of ")
+    if(arg_NEGATE)
+        string(APPEND alias_note "NOT ")
+    endif()
+    if(arg_ALIAS_OF_FEATURE)
+        string(APPEND alias_note "${arg_ALIAS_OF_FEATURE} Feature")
+    else()
+        string(APPEND alias_note "${arg_ALIAS_OF_CACHE} Cache")
+    endif()
+    set(arg_PURPOSE "(${alias_note}) ${arg_PURPOSE}")
+    set_property(GLOBAL PROPERTY COMMANDLINE_FEATURE_PURPOSE_${feature} "${arg_PURPOSE}")
+    set_property(GLOBAL PROPERTY COMMANDLINE_FEATURE_SECTION_${feature} "${arg_SECTION}")
 endfunction()
 
 function(find_package)
