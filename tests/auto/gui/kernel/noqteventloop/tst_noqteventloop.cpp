@@ -11,8 +11,10 @@
 #include <QtGui/qrasterwindow.h>
 #include <QtNetwork/qtcpserver.h>
 #include <QtNetwork/qtcpsocket.h>
+#if QT_CONFIG(localserver)
 #include <QtNetwork/qlocalserver.h>
 #include <QtNetwork/qlocalsocket.h>
+#endif
 #include <QtCore/qelapsedtimer.h>
 #include <QtCore/qtimer.h>
 #include <QtCore/qwineventnotifier.h>
@@ -300,6 +302,9 @@ void tst_NoQtEventLoop::consumeSocketEvents()
 
 void tst_NoQtEventLoop::consumeLocalSocketEvents()
 {
+#if !QT_CONFIG(localserver)
+    QSKIP("Localserver support disabled");
+#else
     int argc = 1;
     char *argv[] = { const_cast<char *>("test"), 0 };
     QGuiApplication app(argc, argv);
@@ -334,6 +339,7 @@ void tst_NoQtEventLoop::consumeLocalSocketEvents()
     QVERIFY(!timeExpired);
     QCOMPARE(bytesWrittenSpy.count(), 1);
     QCOMPARE(readyReadSpy.count(), 1);
+#endif // QT_CONFIG(localserver)
 }
 
 void tst_NoQtEventLoop::consumeWinEvents_data()
