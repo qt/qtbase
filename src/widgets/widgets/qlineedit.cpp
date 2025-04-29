@@ -2071,7 +2071,7 @@ void QLineEdit::paintEvent(QPaintEvent *)
     QPoint topLeft = lineRect.topLeft() - QPoint(d->hscroll, d->control->ascent() - fm.ascent());
 
     // draw text, selections and cursors
-#ifndef QT_NO_STYLE_STYLESHEET
+#if QT_CONFIG(style_stylesheet)
     if (QStyleSheetStyle* cssStyle = qt_styleSheet(style())) {
         cssStyle->styleSheetPalette(this, &panel, &pal);
     }

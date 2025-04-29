@@ -985,7 +985,7 @@ void QLabel::paintEvent(QPaintEvent *)
         QRectF lr = d->layoutRect().toAlignedRect();
         QStyleOption opt;
         opt.initFrom(this);
-#ifndef QT_NO_STYLE_STYLESHEET
+#if QT_CONFIG(style_stylesheet)
         if (QStyleSheetStyle* cssStyle = qt_styleSheet(style))
             cssStyle->styleSheetPalette(this, &opt, &opt.palette);
 #endif

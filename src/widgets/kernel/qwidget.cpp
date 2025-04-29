@@ -1694,7 +1694,7 @@ void QWidgetPrivate::deleteExtra()
 {
     if (extra) {                                // if exists
         deleteSysExtra();
-#ifndef QT_NO_STYLE_STYLESHEET
+#if QT_CONFIG(style_stylesheet)
         // dereference the stylesheet style
         if (QStyleSheetStyle *proxy = qt_styleSheet(extra->style))
             proxy->deref();
@@ -2554,7 +2554,7 @@ void QWidget::setScreen(QScreen *screen)
     d->setScreen(screen);
 }
 
-#ifndef QT_NO_STYLE_STYLESHEET
+#if QT_CONFIG(style_stylesheet)
 
 /*!
     \property QWidget::styleSheet
@@ -2659,7 +2659,7 @@ void QWidget::setStyle(QStyle *style)
     Q_D(QWidget);
     setAttribute(Qt::WA_SetStyle, style != nullptr);
     d->createExtra();
-#ifndef QT_NO_STYLE_STYLESHEET
+#if QT_CONFIG(style_stylesheet)
     if (QStyleSheetStyle *styleSheetStyle = qt_styleSheet(style)) {
         //if for some reason someone try to set a QStyleSheetStyle, ref it
         //(this may happen for example in QButtonDialogBox which propagates its style)
@@ -2680,7 +2680,7 @@ void QWidgetPrivate::setStyle_helper(QStyle *newStyle, bool propagate)
 
     createExtra();
 
-#ifndef QT_NO_STYLE_STYLESHEET
+#if QT_CONFIG(style_stylesheet)
     QPointer<QStyle> origStyle = extra->style;
 #endif
     extra->style = newStyle;
@@ -2701,7 +2701,7 @@ void QWidgetPrivate::setStyle_helper(QStyle *newStyle, bool propagate)
         }
     }
 
-#ifndef QT_NO_STYLE_STYLESHEET
+#if QT_CONFIG(style_stylesheet)
     if (!qt_styleSheet(newStyle)) {
         if (const QStyleSheetStyle* cssStyle = qt_styleSheet(origStyle)) {
             cssStyle->clearWidgetFont(q);
@@ -2712,7 +2712,7 @@ void QWidgetPrivate::setStyle_helper(QStyle *newStyle, bool propagate)
     QEvent e(QEvent::StyleChange);
     QCoreApplication::sendEvent(q, &e);
 
-#ifndef QT_NO_STYLE_STYLESHEET
+#if QT_CONFIG(style_stylesheet)
     // dereference the old stylesheet style
     if (QStyleSheetStyle *proxy = qt_styleSheet(origStyle))
         proxy->deref();
@@ -2722,7 +2722,7 @@ void QWidgetPrivate::setStyle_helper(QStyle *newStyle, bool propagate)
 // Inherits style from the current parent and propagates it as necessary
 void QWidgetPrivate::inheritStyle()
 {
-#ifndef QT_NO_STYLE_STYLESHEET
+#if QT_CONFIG(style_stylesheet)
     Q_Q(QWidget);
 
     QStyle *extraStyle = extra ? (QStyle*)extra->style : nullptr;
@@ -4700,7 +4700,7 @@ void QWidget::setFont(const QFont &font)
 {
     Q_D(QWidget);
 
-#ifndef QT_NO_STYLE_STYLESHEET
+#if QT_CONFIG(style_stylesheet)
     const QStyleSheetStyle* style;
     if (d->extra && (style = qt_styleSheet(d->extra->style)))
         style->saveWidgetFont(this, font);
@@ -4809,7 +4809,7 @@ void QWidgetPrivate::resolveFont()
 void QWidgetPrivate::updateFont(const QFont &font)
 {
     Q_Q(QWidget);
-#ifndef QT_NO_STYLE_STYLESHEET
+#if QT_CONFIG(style_stylesheet)
     const QStyleSheetStyle* cssStyle;
     cssStyle = extra ? qt_styleSheet(extra->style) : nullptr;
     const bool useStyleSheetPropagationInWidgetStyles =
@@ -4839,7 +4839,7 @@ void QWidgetPrivate::updateFont(const QFont &font)
         QWidget *w = qobject_cast<QWidget*>(children.at(i));
         if (w) {
             if (0) {
-#ifndef QT_NO_STYLE_STYLESHEET
+#if QT_CONFIG(style_stylesheet)
             } else if (!useStyleSheetPropagationInWidgetStyles && w->testAttribute(Qt::WA_StyleSheet)) {
                 // Style sheets follow a different font propagation scheme.
                 if (cssStyle)
@@ -4854,7 +4854,7 @@ void QWidgetPrivate::updateFont(const QFont &font)
         }
     }
 
-#ifndef QT_NO_STYLE_STYLESHEET
+#if QT_CONFIG(style_stylesheet)
     if (!useStyleSheetPropagationInWidgetStyles && cssStyle) {
         cssStyle->updateStyleSheetFont(q);
     }
