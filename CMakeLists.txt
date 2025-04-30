@@ -24,8 +24,12 @@ project(QtBase
     VERSION "${QT_REPO_MODULE_VERSION}"
     DESCRIPTION "Qt Base Libraries"
     HOMEPAGE_URL "https://qt.io/"
-    LANGUAGES CXX C ASM
+    LANGUAGES CXX C
 )
+
+if(UNIX AND NOT ANDROID)
+  enable_language(ASM)
+endif()
 
 set(QT_BUILD_EXTRA_IDE_FILE_PATTERNS bin/* libexec/*)
 
