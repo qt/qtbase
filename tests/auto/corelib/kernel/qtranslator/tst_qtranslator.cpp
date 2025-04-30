@@ -186,6 +186,13 @@ void tst_QTranslator::loadLocale_data()
                             << QLocale::system()
                             << QStringList{"en-AU", "en-NZ", "de-DE", "en-GB"};
     QTest::addRow("System, Taiwan") << QLocale::system() << QStringList{"zh-TW", "zh"};
+
+    // This tests that, when "just the language" is not a faithful
+    // representation of the entry it's derived from, we try later entries
+    // before it.
+    QTest::addRow("System, multi-script language")
+                            << QLocale::system()
+                            << QStringList{"pa-Arab-GB", "pa-PK", "en-GB"};
 }
 
 void tst_QTranslator::loadLocale()
