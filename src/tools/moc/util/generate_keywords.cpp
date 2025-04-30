@@ -1,4 +1,4 @@
-// Copyright (C) 2016 The Qt Company Ltd.
+// Copyright (C) 2016 TheQt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 #include <stdio.h>
 #include <string.h>
@@ -27,6 +27,7 @@ static const Keyword pp_keywords[] = {
     { "#else", "PP_ELSE"},
     { "#endif", "PP_ENDIF"},
     { "#include", "PP_INCLUDE"},
+    { "__has_include", "PP_HAS_INCLUDE"},
     { "defined", "PP_DEFINED"},
     { "+", "PP_PLUS" },
     { "-", "PP_MINUS" },
