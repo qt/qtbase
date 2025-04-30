@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.16)
-project(qt_single_test VERSION 6.0.0 LANGUAGES C CXX ASM)
+project(qt_single_test VERSION 6.0.0 LANGUAGES C CXX)
 
 find_package(Qt6 REQUIRED COMPONENTS BuildInternals Core)
 
