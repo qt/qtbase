@@ -706,17 +706,57 @@ void Preprocessor::substituteUntilNewline(Symbols &substituted)
             macroExpand(&substituted, this, symbols, index, symbol().lineNum, true);
         } else if (token == PP_DEFINED) {
             bool braces = test(PP_LPAREN);
-            next(PP_IDENTIFIER);
-            Symbol definedOrNotDefined = symbol();
-            definedOrNotDefined.token = macros.contains(definedOrNotDefined)? PP_MOC_TRUE : PP_MOC_FALSE;
-            substituted += definedOrNotDefined;
+            if (test(PP_HAS_INCLUDE)) {
+                // __has_include is always supported
+                Symbol definedOrNotDefined = symbol();
+                definedOrNotDefined.token = PP_MOC_TRUE;
+                substituted += definedOrNotDefined;
+            } else {
+                next(PP_IDENTIFIER);
+                Symbol definedOrNotDefined = symbol();
+                definedOrNotDefined.token = macros.contains(definedOrNotDefined)? PP_MOC_TRUE : PP_MOC_FALSE;
+                substituted += definedOrNotDefined;
+            }
             if (braces)
                 test(PP_RPAREN);
             continue;
         } else if (token == PP_NEWLINE) {
             substituted += symbol();
             break;
-        } else {
+        } else if (token == PP_HAS_INCLUDE) {
+            next(LPAREN);
+            Token tok = next(); // quote or LANGLE
+            bool usesAngleInclude = false;
+            QByteArray includeAsString;
+            Symbols innerSymbols;
+            if (tok == PP_LANGLE) {
+                usesAngleInclude = true;
+                next();
+                do {
+                    Symbol currentSymbol  = symbol();
+                    includeAsString += currentSymbol.lexem();
+                    if (currentSymbol.token == PP_IDENTIFIER)
+                        macroExpand(&innerSymbols, this, symbols, index, symbol().lineNum, true);
+                    else
+                        innerSymbols.append(currentSymbol);
+                } while (next() != PP_RANGLE);
+            } else {
+                includeAsString = unquotedLexem();
+            }
+            next(RPAREN);
+            const QByteArray &relative  = usesAngleInclude ? QByteArray() : currentFilenames.top();
+            bool result = !resolveInclude(includeAsString, relative).isNull();
+            if (usesAngleInclude && !result) {
+                // try with expansion
+                includeAsString = {};
+                for (const auto &innerSymbol: innerSymbols)
+                    includeAsString.append(innerSymbol.lexem());
+                result = !resolveInclude(includeAsString, relative).isNull();
+            }
+            Symbol definedOrNotDefined = symbol();
+            definedOrNotDefined.token = result ? PP_MOC_TRUE : PP_MOC_FALSE;
+            substituted += definedOrNotDefined;
+        } else  {
             substituted += symbol();
         }
     }

@@ -186,6 +186,7 @@ QT_BEGIN_NAMESPACE
     F(PP_ELSE) \
     F(PP_ENDIF) \
     F(PP_INCLUDE) \
+    F(PP_HAS_INCLUDE) \
     F(PP_HASHHASH) \
     F(PP_HASH) \
     F(PP_DEFINED) \

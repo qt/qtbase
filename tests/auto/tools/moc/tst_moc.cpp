@@ -785,6 +785,7 @@ private slots:
     void initTestCase();
 
     void dontStripNamespaces();
+    void hasIncludeSupport();
     void oldStyleCasts();
     void faultyQmlRegistration_data();
     void faultyQmlRegistration();
@@ -943,6 +944,18 @@ private:
     } while (false)
 
 
+#ifdef __has_include
+class HasIncludeTest {
+    Q_GADGET
+#  if __has_include(<vector>)
+    Q_INVOKABLE void couldFindVector() {}
+#  endif
+#  if __has_include("using-namespaces.h")
+    Q_INVOKABLE void couldFindLocal() {}
+#  endif
+};
+#endif
+
 void tst_Moc::initTestCase()
 {
     QString binpath = QLibraryInfo::path(QLibraryInfo::BinariesPath);
@@ -974,6 +987,14 @@ void tst_Moc::initTestCase()
     QVERIFY(QmlMacro::staticMetaObject.className());
     QVERIFY(SignalWithDefaultArg::staticMetaObject.className());
     QVERIFY(TestPointeeCanBeIncomplete::staticMetaObject.className());
+}
+
+void tst_Moc::hasIncludeSupport()
+{
+    auto hasIncludeTestMo = &HasIncludeTest::staticMetaObject;
+    QVERIFY(hasIncludeTestMo->className());
+    QVERIFY(hasIncludeTestMo->indexOfMethod("couldFindVector()") != -1);
+    QVERIFY(hasIncludeTestMo->indexOfMethod("couldFindLocal()") != -1);
 }
 
 void tst_Moc::dontStripNamespaces()
