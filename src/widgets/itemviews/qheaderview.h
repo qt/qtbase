@@ -6,6 +6,7 @@
 
 #include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qabstractitemview.h>
+#include <QtCore/qlist.h>
 
 QT_REQUIRE_CONFIG(itemviews);
 
