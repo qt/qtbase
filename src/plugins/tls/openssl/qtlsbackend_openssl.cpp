@@ -391,13 +391,22 @@ QList<QSslCertificate> systemCaCertificates()
             QStringLiteral("/etc/pki/tls/certs/ca-bundle.crt"), // Fedora, Mandriva
             QStringLiteral("/usr/local/share/certs/ca-root-nss.crt") // FreeBSD's ca_root_nss
         };
-        static const QStringList nameFilters = {u"*.pem"_s, u"*.crt"_s};
+
+        static const size_t extLen = strlen(".pem"); // or strlen(".crt")
+        auto hasMatchingExtension = [](const QString &fileName) {
+            if (size_t(fileName.size()) < extLen + 1)
+                return false;
+            auto ext = QStringView{fileName}.last(extLen);
+            return ext == ".pem"_L1 || ext == ".crt"_L1;
+        };
+
         using F = QDirListing::IteratorFlag;
         constexpr auto flags = F::FilesOnly | F::ResolveSymlinks; // Files and symlinks to files
         for (const QByteArray &directory : directories) {
-            for (const auto &dirEntry : QDirListing(QFile::decodeName(directory), nameFilters, flags)) {
+            for (const auto &dirEntry : QDirListing(QFile::decodeName(directory), flags)) {
                 // use canonical path here to not load the same certificate twice if symlinked
-                certFiles.insert(dirEntry.canonicalFilePath());
+                if (hasMatchingExtension(dirEntry.fileName()))
+                    certFiles.insert(dirEntry.canonicalFilePath());
             }
         }
         for (const QString& file : std::as_const(certFiles))
