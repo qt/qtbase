@@ -12,6 +12,7 @@
     Programming} overview.
 
     \image shortcuteditor-example.png
+           {List of actions and their assigned keyboard shortcuts}
 
     Qt's model/view architecture provides a standard way for views to
     manipulate information in a data source, using an abstract model
@@ -31,6 +32,7 @@
 
     \table
     \row \li \inlineimage treemodel-structure.svg
+                          {Structure of the shortcut model in rows}
     \li \b{Shortcut Editor Structure}
 
     The data is stored internally in the model using ShortcutEditorModelItem

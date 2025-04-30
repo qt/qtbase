@@ -29,7 +29,7 @@ using namespace Qt::StringLiterals;
     \ingroup basicwidgets
     \inmodule QtWidgets
 
-    \image fusion-tabwidget.png
+    \image fusion-tabwidget.png {Tab widget with two tabs}
 
     A tab widget provides a tab bar (see QTabBar) and a "page area"
     that is used to display pages related to each tab. By default, the

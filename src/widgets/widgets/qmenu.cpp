@@ -1652,7 +1652,7 @@ void QMenu::initStyleOption(QStyleOptionMenuItem *option, const QAction *action)
     \ingroup basicwidgets
     \inmodule QtWidgets
 
-    \image fusion-menu.png
+    \image fusion-menu.png {Menu containing several action items}
 
     A menu widget is a selection menu. It can be either a pull-down
     menu in a menu bar or a standalone context menu. Pull-down menus

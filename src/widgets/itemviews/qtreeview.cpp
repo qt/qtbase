@@ -40,6 +40,7 @@ QT_BEGIN_NAMESPACE
     \inmodule QtWidgets
 
     \image fusion-treeview.png
+           {Directory widget showing the contents using a tree view}
 
     A QTreeView implements a tree representation of items from a
     model. This class is used to provide standard hierarchical lists that

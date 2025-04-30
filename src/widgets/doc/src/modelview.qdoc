@@ -25,7 +25,7 @@
     not only easy to grasp, but the many benefits of model/view programming also
     become clearer.
 
-    \image treeview.png
+    \image treeview.png {Directory and its contents in a tree view}
 
     In the process, we will learn about some basic technologies provided by Qt,
     such as:
@@ -66,9 +66,11 @@
         \row
             \li  Standard widgets use data that is part of the widget.
             \li  \image standardwidget.png
+                 {Structure where the "view" is separate from the "data"}
         \row
             \li  View classes operate on external data (the model)
             \li  \image modelview.png
+                 {Structure that uses a "view" and a "model" for the data }
     \endtable
 
     \section2 1.1 Standard Widgets
@@ -113,22 +115,27 @@
                 (for use with external data)
         \row
             \li  \inlineimage listview.png
+                 {Directory displaying its contents as a list}
             \li  \l QListWidget
             \li  \l QListView
         \row
             \li  \inlineimage tableview.png
+                 {Directory displaying its contents as a table}
             \li  \l QTableWidget
             \li  \l QTableView
         \row
             \li  \inlineimage treeview.png
+                 {Directory displaying its contents as a tree}
             \li  \l QTreeWidget
             \li  \l QTreeView
         \row
             \li  \inlineimage columnview.png
+                 {Directory displaying its contents as columns}
             \li
             \li  \l QColumnView shows a tree as a hierarchy of lists
         \row
             \li  \inlineimage modelview-combobox.png
+                 {Combobox showing an entry in the model}
             \li {2, 1} \l QComboBox can work as both a view class and also
                       as a traditional widget
     \endtable
@@ -146,13 +153,13 @@
     \l QDataWidgetMapper is a great solution because it maps form widgets to a
     table row and makes it very easy to build forms for database tables.
 
-    \image widgetmapper.png
+    \image widgetmapper.png {Form with personal and other information}
 
     Another example of an adapter is \l QCompleter. Qt has \l QCompleter for
     providing auto-completions in Qt widgets such as \l QComboBox and, as shown
     below, \l QLineEdit. \l QCompleter uses a model as its data source.
 
-    \image qcompleter.png
+    \image qcompleter.png {Completer with suggestions for the characters "Em"}
 
 
     \section1 2. A Simple Model/View Application
@@ -226,7 +233,9 @@
 
     In addition to controlling what text the view displays, the model also
     controls the text's appearance. When we slightly change the model, we get
-    the following result: \image readonlytable_role.png
+    the following result:
+
+    \image readonlytable_role.png {Table with custom formatting applied to its cells}
 
     In fact, nothing except for the \l{QAbstractItemModel::}{data()} method
     needs to be changed to set fonts, background colour, alignment and a
@@ -291,7 +300,7 @@
 
     \section2 2.3 A Clock inside a Table Cell
 
-    \image clock.png
+    \image clock.png {Table that displays the time in a cell}
 
     We still have a read only table, but this time the content changes every
     second because we are showing the current time.
@@ -320,7 +329,7 @@
     \section2 2.4 Setting up Headers for Columns and Rows
 
     Headers can be hidden via a view method: \c{tableView->verticalHeader()->hide();}
-    \image modelview-header.png
+    \image modelview-header.png {Table showing the column headers}
 
     The header content, however, is set via the model, so we reimplement the
     \l{QAbstractItemModel::headerData()}{headerData()} method:
@@ -387,17 +396,18 @@
     tree. No changes have to be made to the model. The tree won't have any
     hierarchies because there aren't any hierarchies in the model itself.
 
-    \image dummy_tree.png
+    \image dummy_tree.png {Tree view displaying table data with no hierarchy}
 
     QListView, QTableView and QTreeView all use a model abstraction, which is a
     merged list, table and tree. This makes it possible to use several different
     types of view classes from the same model.
 
     \image list_table_tree.png
+    {Diagram comparing list model, table model, and tree model}
 
     This is how our example model looks so far:
 
-    \image example_model.png
+    \image example_model.png {Diagram of current model structure}
 
     We want to present a real tree. We have wrapped our data in the examples
     above in order to make a model. This time we use QStandardItemModel, which
@@ -406,7 +416,7 @@
     with \l{QStandardItem}s, which are able to hold all the standard properties
     of items like text, fonts, checkboxes or brushes.
 
-    \image tree_2_with_algorithm.png
+    \image tree_2_with_algorithm.png {Diagram of the model and the view}
 
     (file source: examples/widgets/tutorials/modelview/6_treeview/mainwindow.cpp)
     \snippet tutorials/modelview/6_treeview/mainwindow.cpp Quoting ModelView Tutorial
@@ -422,7 +432,7 @@
     We want to access a selected item's content in order to output it into the
     window title together with the hierarchy level.
 
-    \image selection2.png
+    \image selection2.png {View of a model with the selected content in blue}
 
     So let's create a couple of items:
 
@@ -498,7 +508,7 @@
     Let's take a look at an example called \l{Star Delegate Example}{Star
     Delegate}, in which stars are used to show a rating:
 
-    \image stardelegate.png
+    \image stardelegate.png {Table showing songs and their star ratings}
 
     The view has a \l{QAbstractItemView::}{setItemDelegate()} method that
     replaces the default delegate and installs a custom delegate.

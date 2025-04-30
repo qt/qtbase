@@ -12,6 +12,7 @@
     to access Child, GrandChild and GrandGrandChild level objects.
 
     \image treemodelcompleter-example.png
+    {Visualization of a tree model and various options for the completer}
 
     Similar to the \l{Completer Example}, we provide QComboBox objects to
     enable selection for completion mode and case sensitivity, as well as

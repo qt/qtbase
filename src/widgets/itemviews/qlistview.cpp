@@ -42,7 +42,7 @@ extern bool qt_sendSpontaneousEvent(QObject *receiver, QEvent *event);
     \ingroup advanced
     \inmodule QtWidgets
 
-    \image fusion-listview.png
+    \image fusion-listview.png {List of weather icons}
 
     A QListView presents items stored in a model, either as a simple
     non-hierarchical list, or as a collection of icons. This class is used

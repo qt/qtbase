@@ -10,6 +10,7 @@
     in the same application, and between different applications.
 
     \image draggableicons-example.png
+           {Application with icons that respond to drag and drop events}
 
     In many situations where drag and drop is used, the user starts dragging from
     a particular widget and drops the payload onto another widget. In this example,

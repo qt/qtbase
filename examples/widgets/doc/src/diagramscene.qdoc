@@ -9,6 +9,7 @@
     \brief Demonstrate how to use the Graphics View framework.
 
     \image diagramscene.png
+           {Application with various flowchart graphics and icons}
 
     The Diagram Scene example is an application in which you can
     create a flowchart diagram. It is possible to add flowchart shapes

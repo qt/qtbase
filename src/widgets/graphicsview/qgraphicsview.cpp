@@ -96,7 +96,7 @@ static const int QGRAPHICSVIEW_PREALLOC_STYLE_OPTIONS = 503; // largest prime < 
     each frame. Call QOpenGLWidget::currentTargetBuffer() to query which buffer
     is currently being drawn to.
 
-    \image graphicsview-view.png
+    \image graphicsview-view.png {Grid of computer chips}
 
     \note Using an OpenGL viewport limits the ability to use QGraphicsProxyWidget.
     Not all combinations of widgets and styles can be supported with such a setup.

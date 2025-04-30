@@ -13,6 +13,7 @@
     used in Qt.
 
     \image pathstroke-demo.png
+           {Application showing an adjustable curve and curve style options}
 
     Qt defines cap styles for how the end points are treated and join
     styles for how path segments are joined together. A standard set of

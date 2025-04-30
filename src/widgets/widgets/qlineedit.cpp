@@ -99,7 +99,7 @@ void QLineEdit::initStyleOption(QStyleOptionFrame *option) const
     \ingroup basicwidgets
     \inmodule QtWidgets
 
-    \image fusion-lineedit.png
+    \image fusion-lineedit.png {Line edit showing a text greeting}
 
     A line edit allows users to enter and edit a single line of
     plain text with useful editing functions, including undo and redo, cut and

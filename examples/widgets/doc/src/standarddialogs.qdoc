@@ -9,5 +9,5 @@
 
     \brief The Standard Dialogs example shows the standard dialogs that are provided by Qt.
 
-    \image standarddialogs-example.png
+    \image standarddialogs-example.png {Dialog requesting for integer input}
 */

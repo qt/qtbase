@@ -18,6 +18,7 @@
     special keyboard key or by right-clicking.
 
     \image menus-example.png
+           {Application with the Edit menu open}
 
     A menu consists of a list of \e action items. In applications,
     many common commands can be invoked via menus, toolbar buttons as

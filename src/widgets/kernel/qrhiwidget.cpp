@@ -91,7 +91,7 @@ QT_BEGIN_NAMESPACE
 
     The result is a widget that shows the following:
 
-    \image qrhiwidget-intro.jpg
+    \image qrhiwidget-intro.jpg {Multicolored triangle on a green background}
 
     For a complete, minimal, introductory example check out the \l{Simple RHI
     Widget Example}.

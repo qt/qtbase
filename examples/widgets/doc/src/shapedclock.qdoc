@@ -9,7 +9,8 @@
     \brief The example shows how to make a round window with a translucent
     background.
 
-    \borderedimage shapedclock-example.png
+    \image shapedclock-example.png
+           {Translucent clock overlaid on text}
 
     Widgets that set their background to be translucent will be transparent for all
     unpainted pixels, and the background will shine through pixels painted with an
@@ -68,6 +69,7 @@
     on the event, we accept it by calling its \l{QEvent::accept()}{accept()} function.
 
     \image shapedclock-dragging.png
+           {The drag position relative to the clock face}
 
     The \c mouseMoveEvent() handler is called if the mouse is moved over the widget.
 

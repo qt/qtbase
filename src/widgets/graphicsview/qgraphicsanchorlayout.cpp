@@ -21,7 +21,9 @@
     are removed, all their anchors will be automatically removed.
 
     \div {class="float-left"}
-    \inlineimage simpleanchorlayout-example.png Using an anchor layout to align simple colored widgets.
+    \inlineimage simpleanchorlayout-example.png
+        {Three widgets using anchor layout to align to the widget edges}
+    \caption Using an anchor layout to align simple colored widgets.
     \enddiv
 
     Anchors are always set up between edges of an item, where the "center" is also considered to

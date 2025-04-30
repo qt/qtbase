@@ -21,7 +21,8 @@
     synchronize the behavior of two or more widgets, and how to override
     \l{QWidget::}{resizeEvent()} to implement a responsive layout.
 
-    \borderedimage sliders-example.png
+    \image sliders-example.png
+           {Gallery of different sliders, scroll bars, and dials}
     \caption Screenshot of the Sliders example
 
     The Sliders example consists of two classes:

@@ -537,6 +537,7 @@
     and select \uicontrol{Change styleSheet...} to set the style sheet.
 
     \image designer-stylesheet-options.png
+           {Editing a form in Qt Widgets Designer}
 
     In Qt 4.2 and later, \QD also includes a
     style sheet syntax highlighter and validator. The validator indicates
@@ -544,11 +545,13 @@
     Style Sheet} dialog.
 
     \image designer-validator-highlighter.png
+           {Editing and validating a stylesheet}
 
     When you click \uicontrol{OK} or \uicontrol{Apply}, \QD will automatically display
     the widget with its new stylesheet.
 
     \image designer-stylesheet-usage.png
+           {Preview of a form with the new stylesheet}
     */
 
 /*!
@@ -568,6 +571,7 @@
     The four concentric rectangles appear conceptually as below:
 
     \image stylesheet-boxmodel.png
+           {Diagram of the CSS box model for layout design}
 
     \list
     \li The margin falls outside the border.
@@ -3966,7 +3970,7 @@
 
     However, the result is a boring, flat button with no borders:
 
-    \image stylesheet-redbutton1.png A flat red button
+    \image stylesheet-redbutton1.png {Flat red button}
 
     What happened is this:
 
@@ -3985,7 +3989,7 @@
 
     \snippet code/doc_src_stylesheet.qdoc 97
 
-    \image stylesheet-redbutton2.png A red button with a beige border
+    \image stylesheet-redbutton2.png {Red button with a beige border}
 
     Things look already a lot better. But the button looks a bit
     cramped. Let's specify some spacing between the border and the
@@ -3995,7 +3999,8 @@
 
     \snippet code/doc_src_stylesheet.qdoc 98
 
-    \image stylesheet-redbutton3.png A red button with a round beige border and big, bold text
+    \image stylesheet-redbutton3.png
+           {Red button with a round beige border and big, bold text}
 
     The only issue remaining is that the button doesn't react when we
     press it. We can fix this by specifying a slightly different
@@ -4183,7 +4188,7 @@
     style sheets. However, if one property or sub-control is customized,
     all the other properties or sub-controls must be customized as well.
 
-    \image progressBar-stylesheet.png
+    \image progressBar-stylesheet.png {Progress bar showing 30%}
 
     For example, we change the \l{stylesheet-reference.html#border-prop}
     {border} to grey and the \l{stylesheet-reference.html#chunk-sub}{chunk}
@@ -4200,7 +4205,7 @@
     A \l{stylesheet-reference.html#margin-prop}{margin} can be included to
     obtain more visible chunks.
 
-    \image progressBar2-stylesheet.png
+    \image progressBar2-stylesheet.png {Notched progress bar}
 
     In the screenshot above, we use a
     \l{stylesheet-reference.html#margin-prop}{margin} of 0.5 pixels.
@@ -4235,7 +4240,7 @@
     if one property or sub-control is customized, all the other properties or
     sub-controls must be customized as well.
 
-    \image stylesheet-scrollbar1.png
+    \image stylesheet-scrollbar1.png {Green stylized scroll bar}
 
     The scroll bar above has been styled in aquamarine with a solid grey
     border.
@@ -4259,7 +4264,7 @@
     \snippet code/doc_src_stylesheet.qdoc 136
 
     The scroll bar using the above stylesheet looks like this:
-        \image stylesheet-scrollbar2.png
+        \image stylesheet-scrollbar2.png {Colorized scroll bar}
 
 
     To customize a vertical scroll bar use a style sheet similar to the following:
@@ -4308,14 +4313,14 @@
 
     \section2 Customizing QTabWidget and QTabBar
 
-    \image tabWidget-stylesheet1.png
+    \image tabWidget-stylesheet1.png {Image of several tabs}
 
     For the screenshot above, we need a stylesheet as follows:
 
     \snippet code/doc_src_stylesheet.qdoc 145
 
     Often we require the tabs to overlap to look like below:
-    \image tabWidget-stylesheet2.png
+    \image tabWidget-stylesheet2.png {Image of overlapped tabs}
 
     For a tab widget that looks like above, we make use of
     \l{https://doc.qt.io/qt-5/stylesheet-customizing.html#the-box-model}
@@ -4326,7 +4331,7 @@
     \snippet code/doc_src_stylesheet.qdoc 146
 
     To move the tab bar to the center (as below), we require the following stylesheet:
-    \image tabWidget-stylesheet3.png
+    \image tabWidget-stylesheet3.png {Several tabs centered in the widget}
 
     \snippet code/doc_src_stylesheet.qdoc 147
 
@@ -4341,7 +4346,7 @@
     Suppose we'd like our selected item in QTableView to have bubblegum pink
     fade to white as its background.
 
-    \image tableWidget-stylesheet.png
+    \image tableWidget-stylesheet.png {Table view with custom style}
 
     This is possible with the
     \l{stylesheet-reference.html#selection-background-color-prop}
@@ -4423,11 +4428,11 @@
 
     \table
     \row
-    \li \inlineimage stylesheet-vline.png
-    \li \inlineimage stylesheet-branch-more.png
-    \li \inlineimage stylesheet-branch-end.png
-    \li \inlineimage stylesheet-branch-closed.png
-    \li \inlineimage stylesheet-branch-open.png
+    \li \inlineimage stylesheet-vline.png {Vertical line}
+    \li \inlineimage stylesheet-branch-more.png {Junction line for lists}
+    \li \inlineimage stylesheet-branch-end.png {Line for terminating the list}
+    \li \inlineimage stylesheet-branch-closed.png {Arrow pointing right}
+    \li \inlineimage stylesheet-branch-open.png {Arrow pointing down}
     \row
     \li vline.png
     \li branch-more.png
@@ -4440,7 +4445,7 @@
 
     The resulting tree view looks like this:
 
-    \image stylesheet-treeview.png
+    \image stylesheet-treeview.png {Tree view with styled branches}
 
     \sa {Supported HTML Subset}, QStyle
 
@@ -4474,7 +4479,7 @@
 
     This will produce a button looking like this:
 
-    \image stylesheet-border-image-normal.png
+    \image stylesheet-border-image-normal.png {Button with a background}
 
     The numbers after the url gives the top, right, bottom and left number of
     pixels, respectively. These numbers correspond to the border and should not
@@ -4484,18 +4489,12 @@
     will not. This makes the borders of the button look more natural, like
     this:
 
-    \table
-    \row
-    \li \inlineimage stylesheet-border-image-stretched.png
-    \row
-    \li With borders
-    \endtable
+    \image stylesheet-border-image-stretched.png
+           {Button with specified border sizes}
+    \caption With borders
 
-    \table
-    \row
-    \li \inlineimage stylesheet-border-image-wrong.png
-    \row
-    \li Without borders
-    \endtable
+    \image stylesheet-border-image-wrong.png
+           {Button without specified border sizes}
+    \caption Without borders
 
     */

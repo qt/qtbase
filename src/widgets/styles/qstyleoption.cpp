@@ -1070,6 +1070,7 @@ QStyleOptionToolBar::QStyleOptionToolBar(int version)
     \enum QStyleOptionToolBar::ToolBarPosition
 
     \image qstyleoptiontoolbar-position.png
+    {Diagram of thee toolbar line and the positions relative to the line}
 
     This enum is used to describe the position of a toolbar line, as
     well as the toolbar's position within the line.

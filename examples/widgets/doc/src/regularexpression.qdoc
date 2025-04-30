@@ -18,5 +18,6 @@
     and partial/incremental matching.
 
     \image regularexpression-example.png
+           {Application with various fields for testing regular expressions}
 */
 

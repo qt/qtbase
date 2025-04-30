@@ -113,7 +113,7 @@ void QGroupBoxPrivate::click()
     \ingroup geomanagement
     \inmodule QtWidgets
 
-    \image fusion-groupbox.png
+    \image fusion-groupbox.png {Group box displaying several radio button items}
 
     A group box provides a frame, a title on top, a keyboard shortcut, and
     displays various other widgets inside itself. The keyboard shortcut moves

@@ -14,7 +14,7 @@
     file, save it, print it,
     or reopen and edit it again. You can also set the font to be used.
 
-    \image notepad1.png "Notepad application"
+    \image notepad1.png {Notepad application}
 
     \include examples-run.qdocinc
 
@@ -28,7 +28,7 @@
     \note The UI text in \QC and the contents of the generated files
     depend on the \QC version that you use.
 
-    \image notepad2.png "Qt Creator New Project dialog"
+    \image notepad2.png {Qt Creator New Project dialog}
 
     To create the Notepad project, select \uicontrol File >
     \uicontrol {New Project} > \uicontrol {Application (Qt)} >
@@ -37,7 +37,7 @@
     type \e Notepad as the class name and select \uicontrol QMainWindow
     as the base class.
 
-    \image notepad3.png "Class Information Dialog"
+    \image notepad3.png {Class Information dialog}
 
     The \uicontrol {Qt Widgets Application} wizard creates a project that contains
     a main source file and a set of files that specify a user interface
@@ -172,7 +172,7 @@
 
     The UI now looks as follows in \QD:
 
-    \image notepad4.png
+    \image notepad4.png {Widget Editing Mode to create the layout}
 
     You can view the generated XML file in the code editor:
 

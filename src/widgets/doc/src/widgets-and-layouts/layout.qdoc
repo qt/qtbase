@@ -65,18 +65,22 @@
         \li  A QHBoxLayout lays out widgets in a horizontal row, from left to
             right (or right to left for right-to-left languages).
             \image qhboxlayout-with-5-children.png
+                   {Five buttons in horizontal layout}
 
         \li  A QVBoxLayout lays out widgets in a vertical column, from top to
             bottom.
             \image qvboxlayout-with-5-children.png
+                   {Five buttons in vertical layout}
 
         \li  A QGridLayout lays out widgets in a two-dimensional grid. Widgets
             can occupy multiple cells.
             \image qgridlayout-with-5-children.png
+                   {Five buttons in grid layout}
 
         \li  A QFormLayout lays out widgets in a 2-column descriptive label-
             field style.
             \image qformlayout-with-6-children.png
+                    {Three buttons with text fields in form layout}
     \endlist
 
 
@@ -181,12 +185,12 @@
     If we have three widgets laid out using a QHBoxLayout with no stretch
     factors set we will get a layout like this:
 
-    \image layout1.png Three widgets in a row
+    \image layout1.png {Three evenly spaced widgets in a row}
 
     If we apply stretch factors to each widget, they will be laid out in
     proportion (but never less than their minimum size hint), e.g.
 
-    \image layout2.png Three widgets with different stretch factors in a row
+    \image layout2.png {Three stretched widgets in a row}
 
 
     \section1 Custom Widgets in Layouts

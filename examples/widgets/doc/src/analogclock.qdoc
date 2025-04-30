@@ -11,7 +11,8 @@
     \brief The Analog Clock example shows how to draw the contents of a
     custom widget.
 
-    \borderedimage analogclock-example.png
+    \image analogclock-example.png
+           {Analog clock with hour, minute, and seconds hands}
     \caption Screenshot of the Analog Clock example
 
     This example also demonstrates how the transformation and scaling
@@ -93,6 +94,7 @@
     manual calculations just to draw the contents of a custom widget.
 
     \image analogclock-viewport.png
+           {Shows widget coordinate system and origin on clock face}
 
     We set the pen to be Qt::NoPen because we don't want any outline,
     and we use a solid brush with the color appropriate for

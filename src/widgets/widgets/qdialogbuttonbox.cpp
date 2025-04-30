@@ -67,13 +67,21 @@ QT_BEGIN_NAMESPACE
 
     Currently the buttons are laid out in the following way if the button box is horizontal:
     \table
-    \row \li \inlineimage buttonbox-gnomelayout-horizontal.png GnomeLayout Horizontal
+    \row \li \inlineimage buttonbox-gnomelayout-horizontal.png
+             {Several buttons using the GnomeLayout horizontal layout}
+             GnomeLayout Horizontal
          \li Button box laid out in horizontal GnomeLayout
-    \row \li \inlineimage buttonbox-kdelayout-horizontal.png KdeLayout Horizontal
+    \row \li \inlineimage buttonbox-kdelayout-horizontal.png
+             {Several buttons using the KdeLayout horizontal layout}
+             KdeLayout Horizontal
          \li Button box laid out in horizontal KdeLayout
-    \row \li \inlineimage buttonbox-maclayout-horizontal.png MacLayout Horizontal
+    \row \li \inlineimage buttonbox-maclayout-horizontal.png
+             {Several buttons using the MacLayout horizontal layout}
+             MacLayout Horizontal
          \li Button box laid out in horizontal MacLayout
-    \row \li \inlineimage buttonbox-winlayout-horizontal.png  WinLayout Horizontal
+    \row \li \inlineimage buttonbox-winlayout-horizontal.png
+             {Several buttons using the WinLayout horizontal layout}
+             WinLayout Horizontal
          \li Button box laid out in horizontal WinLayout
     \endtable
 
@@ -84,10 +92,18 @@ QT_BEGIN_NAMESPACE
          \li KdeLayout
          \li MacLayout
          \li WinLayout
-    \row \li \inlineimage buttonbox-gnomelayout-vertical.png GnomeLayout Vertical
-         \li \inlineimage buttonbox-kdelayout-vertical.png KdeLayout Vertical
-         \li \inlineimage buttonbox-maclayout-vertical.png MacLayout Vertical
-         \li \inlineimage buttonbox-winlayout-vertical.png WinLayout Vertical
+    \row \li \inlineimage buttonbox-gnomelayout-vertical.png
+             {Several buttons using the GnomeLayout vertical layout}
+             GnomeLayout Vertical
+         \li \inlineimage buttonbox-kdelayout-vertical.png
+             {Several buttons using the KdeLayout vertical layout}
+             KdeLayout Vertical
+         \li \inlineimage buttonbox-maclayout-vertical.png
+             {Several buttons using the MacLayout vertical layout}
+             MacLayout Vertical
+         \li \inlineimage buttonbox-winlayout-vertical.png
+             {Several buttons using the WinLayout vertical layout}
+             WinLayout Vertical
     \endtable
 
     Additionally, button boxes that contain only buttons with ActionRole or
@@ -95,9 +111,13 @@ QT_BEGIN_NAMESPACE
 
     \table
     \row \li modeless horizontal MacLayout
-         \li \inlineimage buttonbox-mac-modeless-horizontal.png Screenshot of modeless horizontal MacLayout
+         \li \inlineimage buttonbox-mac-modeless-horizontal.png
+             {Several buttons using the horizontal modeless style on macOS}
+             Screenshot of modeless horizontal MacLayout
     \row \li modeless vertical MacLayout
-         \li \inlineimage buttonbox-mac-modeless-vertical.png Screenshot of modeless vertical MacLayout
+         \li \inlineimage buttonbox-mac-modeless-vertical.png
+             {Several buttons using the horizontal modeless style on macOS}
+             Screenshot of modeless vertical MacLayout
     \endtable
 
     When a button is clicked in the button box, the clicked() signal is emitted

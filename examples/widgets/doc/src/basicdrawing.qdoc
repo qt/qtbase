@@ -20,6 +20,7 @@
     but it can in addition do view and world transformation.
 
     \image basicdrawing-example.png
+           {Window with various options for changing the drawing}
 
     The example provides a render area, displaying the currently
     active shape, and lets the user manipulate the rendered shape and

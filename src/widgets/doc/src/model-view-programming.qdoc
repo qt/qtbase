@@ -48,6 +48,7 @@
 
     \table
     \row \li \inlineimage modelview-overview.png
+             {Model, view, and delegate interaction diagram}
     \li \b{The model/view architecture}
 
     The model communicates with a source of data, providing an \e interface
@@ -220,6 +221,7 @@
     items are highlighted in both views.
 
     \image shareddirmodel.png
+    {Tree view and list view to display the same file system model}
 
     We set up a QFileSystemModel so that it is ready for use, and create some
     views to display the contents of a directory. This shows the simplest
@@ -274,7 +276,7 @@
     of data in the model, but they are not restricted in the way that they
     present this information to the user.
 
-    \image modelview-models.png
+    \image modelview-models.png {List model, table model, and tree model}
 
     Models also notify any attached views about changes to data through the
     signals and slots mechanism.
@@ -332,6 +334,7 @@
 
     \table 70%
     \row \li \inlineimage modelview-tablemodel.png
+              {Structure of the table model using rows and columns}
     \li \b{Rows and columns}
 
     The diagram shows a representation of a basic table model in which each
@@ -364,6 +367,7 @@
 
     \table 70%
     \row \li \inlineimage modelview-treemodel.png
+             {Structure of the tree model with parent, row, and column items}
     \li \b{Parents, rows, and columns}
 
     The diagram shows a representation of a tree model in which each item is
@@ -394,7 +398,7 @@
     \snippet code/doc_src_model-view-programming.cpp 6
 
     \table 70%
-    \row \li \inlineimage modelview-roles.png
+    \row \li \inlineimage modelview-roles.png {Different roles in a model}
     \li \b{Item roles}
 
     The role indicates to the model which type of data is being referred to.
@@ -556,7 +560,7 @@
     in the form of a table, much like the layout of a spreadsheet
     application.
 
-    \image standard-views.png
+    \image standard-views.png {List view, tree view, and table view}
 
     The default behavior of the standard views shown above should be
     sufficient for most applications. They provide basic editing
@@ -592,7 +596,7 @@
     interface. When the user tries to edit an item, the view uses a default
     delegate to provide an editor widget.
 
-    \image stringlistmodel.png
+    \image stringlistmodel.png {List of text using a string list model}
 
     The above image shows how a QListView represents the data in the string
     list model. Since the model is editable, the view automatically allows
@@ -615,6 +619,7 @@
     view being used.
 
     \image sharedmodel-tableviews.png
+           {Two table views share a model, but not share the selection model}
 
     The above image shows two different views onto the same model, each
     containing a number of selected items. Although the data from the model
@@ -657,6 +662,7 @@
     the data and the selected items synchronized.
 
     \image sharedselection-tableviews.png
+           {Two table views with the same selection model}
 
     In the example shown above, two views of the same type were used to
     display the same model's data. However, if two different types of view
@@ -718,6 +724,7 @@
     the model, and this will use the custom delegate for editing.
 
     \image spinboxdelegate-example.webp
+           {Custom spin box delegate for editing}
 
     We subclass the delegate from \l QStyledItemDelegate because we do not want
     to write custom display functions. However, we must still provide
@@ -970,6 +977,7 @@
     of their previous state. The resulting selection is shown by the view.
 
     \image selected-items1.png
+           {Selection model of a table model is highlighted blue}
 
     The selection of items can be modified using various operations that
     are defined by the selection flags. The selection that results from
@@ -1056,7 +1064,7 @@
     The results of this operation are displayed in the table view,
     providing a convenient way of visualizing what we have achieved:
 
-    \image selected-items2.png
+    \image selected-items2.png {Updated selection model has inverted colors}
 
     By default, the selection commands only operate on the individual
     items specified by the model indexes. However, the flag used to
@@ -1081,6 +1089,7 @@
     the result of these two selections:
 
     \image selected-items3.png
+           {Updating whole columns or rows in the selection model}
 
     The commands performed on the example model have all involved
     accumulating a selection of items in the model. It is also possible
@@ -1543,21 +1552,21 @@
 
     \table 70%
     \row
-    \li \image selection-single.png
+    \li \image selection-single.png {Selecting a single item}
     \li \b{Single item selections:}
     Where the user needs to choose a single item from a widget, the
     default \c SingleSelection mode is most suitable. In this mode, the
     current item and the selected item are the same.
 
     \row
-    \li \image selection-multi.png
+    \li \image selection-multi.png {Selecting multiple items}
     \li \b{Multi-item selections:}
     In this mode, the user can toggle the selection state of any item in the
     widget without changing the existing selection, much like the way
     non-exclusive checkboxes can be toggled independently.
 
     \row
-    \li \image selection-extended.png
+    \li \image selection-extended.png {Selecting extended and adjacent items}
     \li \b{Extended selections:}
     Widgets that often require many adjacent items to be selected, such
     as those found in spreadsheets, require the \c ExtendedSelection mode.

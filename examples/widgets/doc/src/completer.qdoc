@@ -11,6 +11,7 @@
     for an input widget based on data provided by a model.
 
     \image completer-example.png
+           {Application showing various options and settings}
 
     This example uses a custom item model, \c FileSystemModel, and a QCompleter object.
     QCompleter is a class that provides completions based on an item model. The
@@ -184,6 +185,7 @@
     The screenshot below shows the Completer with the country list model.
 
     \image completer-example-country.png
+           {Application showing the country list model contents}
 
     If \c case is 3, we attempt to complete words. This is done using a
     QStringListModel that contains data extracted from \e{words.txt}. The
@@ -193,6 +195,7 @@
     The screenshot below shows the Completer with the word list model.
 
     \image completer-example-word.png
+           {Application showing the word list model contents}
 
     Once the model type is selected, we call the \c changeMode() function and
     the \c changeCase() function and set the wrap option accordingly. The

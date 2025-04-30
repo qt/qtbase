@@ -14,6 +14,7 @@
     it shows how the order of transformations affect the result.
 
     \image transformations-example.png
+           {Application displaying different customizable text transformations}
 
     The application allows the user to manipulate the rendering of a
     shape by changing the translation, rotation and scale of

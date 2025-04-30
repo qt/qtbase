@@ -11,4 +11,5 @@
     in the same application, and between different applications.
 
     \image draggabletext-example.png
+           {Application with moveable text using drag and drop events}
 */

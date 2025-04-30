@@ -8,7 +8,7 @@
     \ingroup examples-widgets
     \brief This example shows how to use a Wacom tablet in Qt applications.
 
-    \image tabletexample.png
+    \image tabletexample.png {Application displaying a drawing area}
 
     When you use a tablet with Qt applications, \l{QTabletEvent}s are
     generated. You need to reimplement the \l{QWidget::}{tabletEvent()} event

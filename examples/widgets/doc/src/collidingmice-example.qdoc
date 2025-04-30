@@ -13,6 +13,7 @@
     items.
 
     \image collidingmice-example.png
+           {Application running with mice and cheese graphics}
 
     Graphics View provides the QGraphicsScene class for managing and
     interacting with a large number of custom-made 2D graphical items

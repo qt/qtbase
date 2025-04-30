@@ -15,6 +15,7 @@
     as you zoom in, the graphics remain crisp.
 
     \image elasticnodes-example.png
+           {Application with a graph of interactive nodes and edges}
 
     Graphics View provides the QGraphicsScene class for managing and
     interacting with a large number of custom-made 2D graphical items derived

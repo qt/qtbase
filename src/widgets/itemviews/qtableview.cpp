@@ -1161,7 +1161,7 @@ int QTableViewPrivate::heightHintForIndex(const QModelIndex &index, int hint, QS
     \ingroup advanced
     \inmodule QtWidgets
 
-    \image fusion-tableview.png
+    \image fusion-tableview.png {Table of months and amounts}
 
     A QTableView implements a table view that displays items from a
     model. This class is used to provide standard tables that were
@@ -1207,6 +1207,7 @@ int QTableViewPrivate::heightHintForIndex(const QModelIndex &index, int hint, QS
 
     \table
     \row \li \inlineimage qtableview-resized.png
+             {Table of names, addresses, and quantity}
     \li By default, the cells in a table do not expand to fill the available space.
 
     You can make the cells fill the available space by stretching the last

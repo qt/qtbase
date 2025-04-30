@@ -121,6 +121,7 @@
     go through the individual widgets.
 
     \image javastyle/conceptualpushbuttontree.png
+           {Push button style tree and elements}
 
     Widgets are not necessarily drawn by asking the style to draw
     only one element. Widgets can make several calls to the style to
@@ -548,7 +549,7 @@
     We give an image of a checkbox and the style option to match
     it.
 
-    \image javastyle/checkboxexample.png A Java style checkbox
+    \image javastyle/checkboxexample.png {Checkbox using the Java style}
 
     The above checkbox will have the following state flags in its
     style option:
@@ -819,7 +820,8 @@
     top-down traversal of the tree, you get the sequence in which the
     elements should be drawn.
 
-    \image javastyle/pushbutton.png The style structure for push buttons
+    \image javastyle/pushbutton.png
+           {Push button style tree and elements}
 
     The layout of the buttons, with regard to element bounds, varies from
     style to style. This makes it difficult to show conceptual images
@@ -837,7 +839,7 @@
     any other purpose. This is also true for similar images for the
     other widgets.
 
-    \image javastyle/button.png
+    \image javastyle/button.png {Button labeled with its elements}
 
     The Java style, as well as all other styles implemented in Qt,
     does not use \c PE_FrameButtonBevel. It is usual that a button
@@ -892,6 +894,7 @@
     metric names:
 
     \image javastyle/checkbox.png
+           {Check and radio box style tree and elements}
 
     QStyleOptionButton is used as the style option for both check
     and radio buttons. We first give a table of the states that
@@ -943,6 +946,7 @@
     Here is the style structure for QTabWidget and QTabBar:
 
     \image javastyle/tab.png
+           {Tab widget and tab bar style tree and elements}
 
     The dotted lines indicate that the QTabWidget contains a tab bar,
     but does not draw the tab bar itself. QTabBar only draws its base line
@@ -954,7 +958,7 @@
 
     Here is a tab widget in the Java style:
 
-    \image javastyle/tabwidget.png
+    \image javastyle/tabwidget.png {Tab widget labeled with its elements}
 
     In the Java style, the tab bar shape and label have the same bounding
     rectangle as \c CE_TabBarTab. Notice that the tabs overlap with the
@@ -976,6 +980,7 @@
     the other tabs (if it is to be bigger).
 
     \image javastyle/windowstabimage.png
+           {Tab bar labeled with its elements}
 
     A table of the states a tab bar can set on its tabs follows:
 
@@ -1068,6 +1073,7 @@
     Here is the style structure for scrollbars:
 
     \image javastyle/scrollbar.png
+           {Scrollbar style tree and elements}
 
     QScrollBar simply creates its style option and then draws
     \c CC_ScrollBar. Some styles draw the background of add page and sub
@@ -1081,6 +1087,7 @@
     Here is an image of a scrollbar in the Java style:
 
     \image javastyle/scrollbarimage.png
+           {Scrollbar labeled with its elements}
 
     You may notice that the scrollbar is slightly different from
     Java's, as it has two line up indicators. We have done this to show
@@ -1158,13 +1165,13 @@
     draws itself, it creates the style option and calls \c
     drawComplexControl() with \c CC_Slider:
 
-    \image javastyle/slider.png
+    \image javastyle/slider.png {Slider style tree and elements}
 
     We also show a picture of a slider in the Java style. We show
     the bounding rectangles of the sub elements, as all drawing is done
     in \c CC_Slider.
 
-    \image javastyle/sliderimage.png
+    \image javastyle/sliderimage.png {Slider labeled with its elements}
 
     QSlider uses QStyleOptionSlider as all \l{QAbstractSlider}s do. We
     present a table with the members that affect QSlider:
@@ -1225,9 +1232,9 @@
     the indicator backgrounds. You can see an image below the tree
     showing the sub elements in QSpinBox in the Java style.
 
-    \image javastyle/spinbox.png
+    \image javastyle/spinbox.png {Spin box style tree and elements}
 
-    \image javastyle/spinboximage.png
+    \image javastyle/spinboximage.png {Spin box labeled with its elements}
 
     The QStyleOptionSpinBox, which is the style option for spin
     boxes. It can set the following states on the spin box:
@@ -1276,6 +1283,7 @@
     provide.
 
     \image javastyle/titlebar.png
+           {Title bar style tree and elements}
 
     In an image over a title bar in the Java style, we show the
     bounding rectangles of the sub elements supported by the Java style
@@ -1284,6 +1292,7 @@
     mandatory.
 
     \image javastyle/titlebarimage.png
+           {Title bar labeled with its elements}
 
     The style option for title bars is QStyleOptionTitleBar. Its
     members are:
@@ -1322,11 +1331,13 @@
     field itself is a QLineEdit that is a child of the combo box.
 
     \image javastyle/combobox.png
+           {Combo box style tree and elements}
 
     We show an image over a Java style combo box in which we have
     outlined its sub elements and sub element rectangles:
 
     \image javastyle/comboboximage.png
+           {Combo box labeled with its elements}
 
     Java combo boxes do not use the focus rect; it changes its
     background color when it has focus. The \c SC_ComboBoxEdit field is
@@ -1387,6 +1398,7 @@
     the following style element tree:
 
     \image javastyle/groupbox.png
+           {Group box style tree and elements}
 
     Qt does not impose restrictions on how the check box is drawn; the
     Java style draws it with \c CE_IndicatorCheckBox. See \l{Check and
@@ -1396,6 +1408,7 @@
     sub control rectangles drawn:
 
     \image javastyle/groupboximage.png
+           {Group box labeled with its elements}
 
     The style option for group boxes is QStyleOptionGroupBox. The
     following states can be set on it:
@@ -1468,11 +1481,13 @@
     only element used by this widget. We start with the style structure:
 
     \image javastyle/progressbar.png
+           {Progress bar style tree and elements}
 
     Here is a progress bar in the common style (the Java style
     bounding rectangles are equal):
 
     \image javastyle/progressbarimage.png
+           {Progress bar labeled with its elements}
 
     The style option for QProgressBar is QStyleOptionProgressBar.
     The bar does not set any state flags, but the other members of the
@@ -1522,6 +1537,7 @@
     Below is a tree of the widget's style structure:
 
     \image javastyle/toolbutton.png
+           {Tool button style tree and elements}
 
     Note that \c PE_FrameButtonTool and \c PE_IndicatorArrowDown are
     included in the tree as the Java style draws them, but they can
@@ -1534,6 +1550,7 @@
     the sub element bounding rectangles and sub controls.
 
     \image javastyle/toolbuttonimage.png
+           {Tool button labeled with its elements}
 
     Here is the states table for tool buttons:
 
@@ -1616,6 +1633,7 @@
     Here is the element tree for QToolBar:
 
     \image javastyle/toolbar.png
+           {Tool bar style tree and elements}
 
     The dotted lines indicate that the QToolBar keeps an instance of
     QToolBarLayout and that QToolBarSeparators are kept by
@@ -1626,6 +1644,7 @@
     Here is an image of a toolbar in the Java style:
 
     \image javastyle/toolbarimage.png
+           {Tool bar labeled with its elements}
 
     QToolBarSaparator uses QStyleOption for its style option. It
     sets the \c State_Horizontal flag if the toolbar it lives in is
@@ -1679,7 +1698,7 @@
     calculated for the menu's size hint and when the menu is displayed
     or resized.
 
-    \image javastyle/menu.png
+    \image javastyle/menu.png {Menu style tree and elements}
 
     The \c CE_MenuScroller and \c CE_MenuTearOff elements are handled by
     QCommonStyle and are not shown unless the menu is too large to fit
@@ -1694,6 +1713,7 @@
     as this is optional and varies from style to style.
 
     \image javastyle/menuimage.png
+           {Menu labeled with its elements}
 
     The style option for menu items is QStyleOptionMenuItem. The
     following tables describe its state flags and other members.
@@ -1770,6 +1790,7 @@
     bar follows:
 
     \image javastyle/menubar.png
+           {Menu bar style tree and elements}
 
     The panel and empty area are drawn after the menu items. The
     QPainter that the QMenuBar sends to the style has the bounding
@@ -1779,6 +1800,7 @@
     menu bar items are calculated.
 
     \image javastyle/menubarimage.png
+           {Menu bar labeled with its elements}
 
     QStyleOptionMenuItem is used for menu bar items. The members that
     are used by QMenuBar are described in the following table:
@@ -1816,11 +1838,13 @@
     \c PE_FrameFocusRect and \c PE_IndicatorItemViewItemCheck.
 
     \image javastyle/header.png
+           {Header style tree and elements}
 
     Here is a QTableWidget showing the bounding rects of a Java
     header:
 
     \image javastyle/headerimage.png
+           {Header labeled with its elements}
 
     The QHeaderView uses \c CT_HeaderSection, \c PM_HeaderMargin and
     \c PM_HeaderGripMargin for size and hit test calculations. The
@@ -1916,6 +1940,7 @@
     states you must be aware of are represented in the image.
 
     \image javastyle/branchindicatorimage.png
+           {Branch indicator style structure and drawing states}
 
     \section3 Tool Boxes
 
@@ -1928,10 +1953,12 @@
     boxes looks like this:
 
     \image javastyle/toolbox.png
+           {Tool box style tree and elements}
 
     We show an image of a tool box in the Plastique style:
 
     \image javastyle/toolboximage.png
+           {Tool box labeled with its elements}
 
     All elements have the same bounding rectangles in the
     Plastique style as well as the other built-in Qt styles.
@@ -1960,9 +1987,9 @@
     metric \c PM_SizeGripSize is currently unused by Qt. The element tree
     for an image in the Plastique style of QSizeGrip follows:
 
-    \image javastyle/sizegrip.png
+    \image javastyle/sizegrip.png {Size grip style tree and elements}
 
-    \image javastyle/sizegripimage.png
+    \image javastyle/sizegripimage.png {Size grip labeled with its elements}
 
     We show the size grip in \l{QMainWindow}'s bottom right
     corner.
@@ -1984,12 +2011,13 @@
 
     The \l{QRubberBand}'s style tree consists of two nodes.
 
-    \image javastyle/rubberband.png
+    \image javastyle/rubberband.png {Rubber band style tree and its elements}
 
     We present an image of a Java style window being moved in a
     QMdiArea with a rubber band:
 
     \image javastyle/rubberbandimage.png
+           {Rubber band labeled with its elements}
 
     The style option for rubber bands is QStyleOptionRubberBand.
     Its members are:
@@ -2018,7 +2046,7 @@
     rectangles of the float and close buttons with
     \c SE_DockWidgetCloseButton and \c SE_DockWidgetFloatButton.
 
-    \image javastyle/dockwidget.png
+    \image javastyle/dockwidget.png {Dock widget style tree and elements}
 
     The dotted lines indicate that the sender keeps instances of the
     recipient of the arrow (i.e., it is not a style element to draw).
@@ -2028,7 +2056,7 @@
     dock widget in both docked and floating state in the plastique
     style:
 
-    \image javastyle/dockwidgetimage.png
+    \image javastyle/dockwidgetimage.png {Dock widget labeled with its elements}
 
     The style option is QStyleOptionDockWidget:
 

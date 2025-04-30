@@ -11,7 +11,7 @@
     \brief In this example we show Qt's ability to perform affine transformations
     on painting operations.
 
-    \image affine-demo.png
+    \image affine-demo.png {Demonstration of affine transformations on an image}
 
     Transformations can be performed on any kind of graphics drawn using QPainter.
     The transformations used to display the vector graphics, images, and text can be adjusted

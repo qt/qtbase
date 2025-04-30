@@ -18,7 +18,7 @@
     A widget's flags are stored in a Qt::WindowFlags type which stores
     an OR combination of the flags.
 
-    \borderedimage windowflags-example.png
+    \image windowflags-example.png {Controller window and preview window}
     \caption Screenshot of the Window Flags example
 
     The example consists of two classes:
@@ -57,7 +57,8 @@
     an associated \c PreviewWindow to show the effect of the currently
     chosen window flags.
 
-    \image windowflags_controllerwindow.png Screenshot of the Controller Window
+    \image windowflags_controllerwindow.png
+           {Controller window with the different flag types and hints}
 
     \section1 ControllerWindow Class Implementation
 
@@ -163,7 +164,7 @@
     the text editor, and the QWidget::setWindowFlags() function to
     display the names of the window flags.
 
-    \image windowflags_previewwindow.png Screenshot of the Preview Window
+    \image windowflags_previewwindow.png {Preview window showing window flags}
 
     \section1 PreviewWindow Class Implementation
 

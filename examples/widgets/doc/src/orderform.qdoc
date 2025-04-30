@@ -17,6 +17,7 @@
     to a QTabWidget for easy access.
 
     \image orderform-example.png
+           {Application showing a completed order form for a customer}
 
     \section1 DetailsDialog Definition
 
@@ -42,6 +43,7 @@
     The screenshot below shows the \c DetailsDialog we intend to create.
 
     \image orderform-example-detailsdialog.png
+           {Dialog for entering customer order information}
 
     \section1 DetailsDialog Implementation
 

@@ -389,7 +389,9 @@ void QWidget::setAutoFillBackground(bool enabled)
     example, it is possible to display a button as a top-level window, but most
     people prefer to put their buttons inside other widgets, such as QDialog.
 
-    \image parent-child-widgets.png A parent widget containing various child widgets.
+    \image parent-child-widgets.png
+           {Appointment widget with labeled child widgets}
+    \caption A parent widget containing various child widgets.
 
     The diagram above shows a QGroupBox widget being used to hold various child
     widgets in a layout provided by QGridLayout. The QLabel child widgets have
@@ -689,6 +691,8 @@ void QWidget::setAutoFillBackground(bool enabled)
     can be fine-tuned to achieve different effects.
 
     \image propagation-custom.png
+           {Three pixmaps of a house with different background properties:
+           transparent, filled with white, and uninitialized}
 
     In the above diagram, a semi-transparent rectangular child widget with an
     area removed is constructed and added to a parent widget (a QLabel showing
@@ -732,6 +736,8 @@ void QWidget::setAutoFillBackground(bool enabled)
     in a non-standard way, as shown in the diagram below.
 
     \image propagation-standard.png
+           {One widget has a transparent background
+           and the other widget has a filled background}
 
     The scope for customizing the painting behavior of standard Qt widgets,
     without resorting to subclassing, is slightly less than that possible for

@@ -177,7 +177,7 @@ QStyle::SubControl QSliderPrivate::newHoverControl(const QPoint &pos)
     \ingroup basicwidgets
     \inmodule QtWidgets
 
-    \image fusion-slider.png
+    \image fusion-slider.png {Horizontal slider with tick marks}
 
     The slider is the classic widget for controlling a bounded value.
     It lets the user move a slider handle along a horizontal or vertical

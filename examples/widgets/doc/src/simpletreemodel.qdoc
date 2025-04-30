@@ -16,6 +16,7 @@
     \l{Model/View Programming} overview.
 
     \image simpletreemodel-example.png
+           {Documentation structure with chapter titles and brief descriptions}
 
     Qt's model/view architecture provides a standard way for views to
     manipulate information in a data source, using an abstract model
@@ -41,6 +42,7 @@
     \target SimpleTreeModelStructure
     \table
     \row \li \inlineimage treemodel-structure.svg
+                          {Tree structure with root and tree items}
     \li \b{Simple Tree Model Structure}
 
     The data is stored internally in the model using \c TreeItem objects that

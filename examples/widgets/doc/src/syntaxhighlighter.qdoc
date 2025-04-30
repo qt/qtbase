@@ -13,6 +13,7 @@
     highlighting by subclassing the QSyntaxHighlighter class.
 
     \image syntaxhighlighter-example.png
+           {Text editor with syntax highlighting}
 
     The Syntax Highlighter application displays C++ files with custom
     syntax highlighting.

@@ -12,6 +12,7 @@
     be used in Qt.
 
     \image gradients-demo.png
+           {Application with different settings for applying gradients}
 
     There are three types of gradients:
 

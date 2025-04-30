@@ -16,6 +16,7 @@
     that an application resizes smoothly and without data loss.
 
     \image screenshot-example.png
+           {Application with options for taking desktop screenshots}
 
     With the application the users can take a screenshot of their
     desktop. They are provided with a couple of options:

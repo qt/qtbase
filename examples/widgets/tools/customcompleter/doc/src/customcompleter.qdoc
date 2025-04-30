@@ -15,7 +15,7 @@
     characters input by the user and the user's choice of word is inserted
     into the \c TextEdit using QTextCursor.
 
-    \image customcompleter-example.png
+    \image customcompleter-example.png {Text editor with the autocomplete feature}
 
     \section1 Setting Up The Resource File
 
@@ -84,6 +84,7 @@
     The figure below illustrates this process:
 
     \image customcompleter-insertcompletion.png
+           {Suggested completion string "ACTUAL" when user types "ACT"}
 
     \c{completion.length()} = 6
 

@@ -66,7 +66,7 @@ Q_GLOBAL_STATIC(QUrl, lastVisitedDir)
   The QFileDialog class enables a user to traverse the file system
   to select one or many files or a directory.
 
-  \image qtquickdialogs-filedialog-gtk.png
+  \image qtquickdialogs-filedialog-gtk.png {Open file dialog}
 
   The easiest way to create a QFileDialog is to use the static functions,
   such as \l getOpenFileName().
@@ -395,7 +395,7 @@ QFileDialog::~QFileDialog()
 
     Then the file dialog looks like this:
 
-    \image filedialogurls.png
+    \image filedialogurls.png {Open file dialog with set URLs in sidebar}
 
     \sa sidebarUrls()
 */

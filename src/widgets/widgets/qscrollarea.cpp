@@ -39,8 +39,12 @@ QT_BEGIN_NAMESPACE
     \table
     \row
     \li \inlineimage qscrollarea-noscrollbars.png
+                     {Image without the scroll bar}
     \li \inlineimage qscrollarea-onescrollbar.png
+                     {Image with a horizontal scroll bar}
     \li \inlineimage qscrollarea-twoscrollbars.png
+                     {Image with a horizontal and a vertical scroll bar}
+
     \endtable
 
     The scroll bars appearance depends on the currently set \l

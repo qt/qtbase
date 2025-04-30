@@ -38,7 +38,7 @@ public:
     \ingroup basicwidgets
     \inmodule QtWidgets
 
-    \image fusion-lcdnumber.png
+    \image fusion-lcdnumber.png {"1234" with LCD-like digital appearance}
 
     It can display a number in just about any size. It can display
     decimal, hexadecimal, octal or binary numbers. It is easy to

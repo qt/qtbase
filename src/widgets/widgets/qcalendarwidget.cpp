@@ -2015,6 +2015,7 @@ void QCalendarWidgetPrivate::_q_editingFinished()
     \inmodule QtWidgets
 
     \image fusion-calendarwidget.png
+           {Calendar widget showing the month, year, and a selected day}
 
     The widget is initialized with the current month and year, but
     QCalendarWidget provides several public slots to change the year
@@ -2053,6 +2054,7 @@ void QCalendarWidgetPrivate::_q_editingFinished()
     \table
     \row \li
         \image qcalendarwidget-grid.png
+               {Calendar widget with a visible grid}
     \row \li
         \snippet code/src_gui_widgets_qcalendarwidget.cpp 0
     \endtable
@@ -2483,6 +2485,7 @@ void QCalendarWidget::showToday()
     \table
     \row
     \li \image qcalendarwidget-minimum.png
+               {Calendar widget with the disabled dates before the minimum date}
     \row
     \li
     \snippet code/src_gui_widgets_qcalendarwidget.cpp 1
@@ -2539,6 +2542,7 @@ void QCalendarWidget::clearMinimumDate()
     \table
     \row
     \li \image qcalendarwidget-maximum.png
+               {Calendar widget with the disabled dates after the maximum date}
     \row
     \li
     \snippet code/src_gui_widgets_qcalendarwidget.cpp 2
@@ -2713,6 +2717,7 @@ void QCalendarWidget::setVerticalHeaderFormat(QCalendarWidget::VerticalHeaderFor
     \table
     \row
         \li \inlineimage qcalendarwidget-grid.png
+                         {Calendar widget set to be visible}
     \row
         \li
         \snippet code/src_gui_widgets_qcalendarwidget.cpp 5

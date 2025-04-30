@@ -8,7 +8,8 @@
     \ingroup examples-itemviews
     \brief This example demonstrates how to freeze a column within a QTableView.
 
-    \image frozencolumn-example.png "Screenshot of the example"
+    \image frozencolumn-example.png
+           {Application showing a frozen column in a table}
 
     We use Qt's model/view framework to implement a table with its first
     column frozen. This technique can be applied to several columns or rows,
@@ -22,7 +23,7 @@
     the coming sections.
 
     \image frozencolumn-tableview.png
-
+           {The layout of the table view, headers, and scrollbars}
 
     \section1 FreezeTableWidget Class Definition
 

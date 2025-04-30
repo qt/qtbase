@@ -143,7 +143,7 @@ int QDialPrivate::valueFromPoint(const QPoint &p) const
     \ingroup basicwidgets
     \inmodule QtWidgets
 
-    \image fusion-dial.png
+    \image fusion-dial.png {Round dial with notches}
 
     QDial is used when the user needs to control a value within a
     program-definable range, and the range either wraps around

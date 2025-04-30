@@ -9,6 +9,7 @@
     \brief Shows how to render a triangle using QRhi, Qt's 3D API and shading language abstraction layer.
 
     \image simplerhiwidget-example.jpg
+           {Colored triangle on a green background}
     \caption Screenshot of the Simple RHI Widget example
 
     This example is, in many ways, the counterpart of the \l{RHI Window

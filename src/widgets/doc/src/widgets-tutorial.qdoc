@@ -116,6 +116,7 @@
     \row
     \li \snippet tutorials/widgets/toplevel/main.cpp main program
     \li \inlineimage widgets-tutorial-toplevel.png
+                     {Top-level widget application window}
     \endtable
     \enddiv
 
@@ -140,6 +141,7 @@
     \li \snippet tutorials/widgets/childwidget/main.cpp main program
     \row
     \li \inlineimage widgets-tutorial-childwidget.png
+                     {Window with a button as its child}
     \endtable
     \enddiv
 
@@ -164,6 +166,7 @@
     \li \snippet tutorials/widgets/windowlayout/main.cpp main program
     \row
     \li \inlineimage widgets-tutorial-windowlayout.png
+        {Label next to a line edit in a horizontal layout}
     \endtable
     \enddiv
 
@@ -204,6 +207,7 @@
     \li \snippet tutorials/widgets/nestedlayouts/main.cpp first part
        \snippet tutorials/widgets/nestedlayouts/main.cpp last part
     \li \inlineimage widgets-tutorial-nestedlayouts.png
+        {Widgets for querying and displaying a model using a nested layout}
     \endtable
     \enddiv
 

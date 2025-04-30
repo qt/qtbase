@@ -196,7 +196,7 @@ QGesture::GestureCancelPolicy QGesture::gestureCancelPolicy() const
     \ingroup gestures
     \inmodule QtWidgets
 
-    \image pangesture.png
+    \image pangesture.png {Demonstration of moving an image with pan gesture}
 
     For an overview of gesture handling in Qt and information on using gestures
     in your applications, see the \l{Gestures in Widgets and Graphics View} document.
@@ -327,7 +327,7 @@ void QPanGesture::setAcceleration(qreal value)
     For an overview of gesture handling in Qt and information on using gestures
     in your applications, see the \l{Gestures in Widgets and Graphics View} document.
 
-    \image pinchgesture.png
+    \image pinchgesture.png {Demonstration of pinch gesture with two fingers}
 
     Instead of repeatedly applying the same pinching gesture, the user may
     continue to touch the input device in one place, and apply a second touch
@@ -591,7 +591,7 @@ void QPinchGesture::setRotationAngle(qreal value)
     \ingroup gestures
     \inmodule QtWidgets
 
-    \image swipegesture.png
+    \image swipegesture.png {Demonstration of swipe gesture}
 
     For an overview of gesture handling in Qt and information on using gestures
     in your applications, see the \l{Gestures in Widgets and Graphics View} document.

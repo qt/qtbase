@@ -47,7 +47,7 @@ void QRadioButtonPrivate::init()
     \ingroup basicwidgets
     \inmodule QtWidgets
 
-    \image fusion-radiobutton.png
+    \image fusion-radiobutton.png {Two radio buttons representing two options}
 
     A QRadioButton is an option button that can be switched on (checked) or
     off (unchecked). Radio buttons typically present the user with a "one

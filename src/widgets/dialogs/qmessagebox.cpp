@@ -582,7 +582,7 @@ void QMessageBoxPrivate::helperClicked(QPlatformDialogHelper::StandardButton hel
     box. The rest of the GUI is blocked until the message box is
     dismissed.
 
-    \image msgbox1.png
+    \image msgbox1.png {Message box with a simple message and an OK button}
 
     A better approach than just alerting the user to an event is to
     also ask the user what to do about it.
@@ -602,6 +602,7 @@ void QMessageBoxPrivate::helperClicked(QPlatformDialogHelper::StandardButton hel
     \snippet code/src_gui_dialogs_qmessagebox.cpp 6
 
     \image msgbox2.png
+           {Message box with a "Save", "Don't Save", and "Cancel" buttons}
 
     The exec() slot returns the StandardButtons value of the button
     that was clicked.
@@ -613,11 +614,12 @@ void QMessageBoxPrivate::helperClicked(QPlatformDialogHelper::StandardButton hel
     Depending on the platform the \l{QMessageBox::detailedText} {detailed text},
     may require the user to click a \uicontrol{Show Details...} button to be shown.
 
-    \image msgbox3.png
+    \image msgbox3.png {Save message box with a "Show Details..." button}
 
     Clicking the \uicontrol{Show Details...} button displays the detailed text.
 
     \image msgbox4.png
+           {Save message box showing the detailed text}
 
     \section2 Rich Text and the Text Format Property
 
@@ -649,19 +651,19 @@ void QMessageBoxPrivate::helperClicked(QPlatformDialogHelper::StandardButton hel
 
     \table
     \row
-    \li \image qmessagebox-quest.png
+    \li \image qmessagebox-quest.png {Question mark icon}
     \li \l Question
     \li For asking a question during normal operations.
     \row
-    \li \image qmessagebox-info.png
+    \li \image qmessagebox-info.png {Information icon}
     \li \l Information
     \li For reporting information about normal operations.
     \row
-    \li \image qmessagebox-warn.png
+    \li \image qmessagebox-warn.png {Warning icon}
     \li \l Warning
     \li For reporting non-critical errors.
     \row
-    \li \image qmessagebox-crit.png
+    \li \image qmessagebox-crit.png {Critical problem icon}
     \li \l Critical
     \li For reporting critical errors.
     \endtable

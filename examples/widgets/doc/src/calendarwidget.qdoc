@@ -9,7 +9,8 @@
     \ingroup examples-layout
     \brief The Calendar Widget example shows use of QCalendarWidget.
 
-    \borderedimage calendarwidgetexample.png
+    \image calendarwidgetexample.png
+           {Calendar widget showing various calendar settings}
 
     QCalendarWidget displays one calendar month
     at a time and lets the user select a date.

@@ -11,7 +11,8 @@
     on the input and output supplied by the user.
 
 
-    \borderedimage lineedits-example.png
+    \image lineedits-example.png
+           {Application with various types and uses of line edits}
 
     The example consists of a single \c Window class, containing a selection of
     line edits with different input constraints and display properties that can be

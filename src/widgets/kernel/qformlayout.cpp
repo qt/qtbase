@@ -1074,9 +1074,13 @@ QLayoutItem* QFormLayoutPrivate::replaceAt(int index, QLayoutItem *newitem)
         \li Qt Extended styles
     \row
         \li \inlineimage qformlayout-win.png
+            {Form layout in traditional desktop style}
         \li \inlineimage qformlayout-mac.png
+            {Form layout in macOS Aqua style}
         \li \inlineimage qformlayout-kde.png
+            {Form layout in KDE Plastique style}
         \li \inlineimage qformlayout-qpe.png
+            {Form layout in Qt Extended style}
     \row
         \li Traditional style used for Windows, GNOME, and earlier
            versions of KDE. Labels are left aligned, and expanding

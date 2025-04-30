@@ -230,7 +230,7 @@ QIcon QUndoModel::cleanIcon() const
     be set with setGroup(). The view will then update itself automatically whenever the
     active stack of the group changes.
 
-    \image qundoview.png
+    \image qundoview.png {Undo stack showing list of commands}
 */
 
 class QUndoViewPrivate : public QListViewPrivate

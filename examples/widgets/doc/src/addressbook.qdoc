@@ -9,7 +9,7 @@
     \brief The address book example shows how to use proxy models to display
     different views onto data from a single model.
 
-    \image addressbook-example.png Screenshot of the Address Book example
+    \image addressbook-example.png {Address book showing contacts and addresses}
 
     This example provides an address book that allows contacts to be
     grouped alphabetically into 9 groups: ABC, DEF, GHI, ... , VW,
@@ -25,7 +25,7 @@
     \c AddDialog. The \c MainWindow class uses \c AddressWidget as
     its central widget and provides \uicontrol File and \uicontrol Tools menus.
 
-    \image addressbook-classes.png Diagram for Address Book example
+    \image addressbook-classes.png {Address book main classes and elements}
 
     The \c AddressWidget class is a QTabWidget subclass that is used
     to manipulate the 10 tabs displayed in the example: the 9
@@ -205,7 +205,7 @@
     QTabWidget with the relevant label, obtained from the QStringList
     of groups.
 
-    \image addressbook-signals.png Signals and Slots Connections
+    \image addressbook-signals.png {Address book signals and slots connections}
 
     We provide two \c addEntry() functions: One which is intended to be
     used to accept user input, and the other which performs the actual
@@ -253,7 +253,7 @@
 
     \snippet itemviews/addressbook/addresswidget.cpp 4b
 
-    \image addressbook-editdialog.png Screenshot of Dialog to Edit a Contact
+    \image addressbook-editdialog.png {Dialog for editing name and address}
 
     Entries are removed using the \c removeEntry() function.
     The selected row is removed by accessing it through the
@@ -287,7 +287,7 @@
     disappears according to the contents of the address book, as
     mentioned in \c{AddressWidget}'s implementation.
 
-    \image addressbook-newaddresstab.png Screenshot of NewAddressTab
+    \image addressbook-newaddresstab.png {Tab for adding new contacts}
 
     The \c NewAddressTab class extends QWidget and contains a QLabel
     and QPushButton.
@@ -311,7 +311,7 @@
 
     \snippet itemviews/addressbook/newaddresstab.cpp 1
 
-    \image signals-n-slots-aw-nat.png
+    \image signals-n-slots-aw-nat.png {Function calls for adding a new contact}
 
 
     \section1 AddDialog Class Definition
@@ -322,7 +322,7 @@
 
     \snippet itemviews/addressbook/adddialog.h 0
 
-    \image addressbook-adddialog.png
+    \image addressbook-adddialog.png {Dialog for adding a new name and address}
 
 
     \section1 AddDialog Class Implementation
@@ -346,7 +346,9 @@
 
     \table
     \row \li \inlineimage addressbook-filemenu.png
+             {Open, Save, and Exit items in File menu}
          \li \inlineimage addressbook-toolsmenu.png
+             {Add Entry, Edit Entry, and Remove Entry in Tools menu}
     \endtable
 
     \snippet itemviews/addressbook/mainwindow.h 0

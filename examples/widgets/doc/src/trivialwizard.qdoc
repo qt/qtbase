@@ -12,10 +12,11 @@
     of QWizard.
 
     \image trivialwizard-example-flow.png
+    {Flow from introduction, to registration, and to the conclusion page}
 
     \section1 Introduction Page
 
-    \image trivialwizard-example-introduction.png
+    \image trivialwizard-example-introduction.png {Introduction wizard page}
 
     The introduction page is created with the \c createIntroPage()
     function where a QWizardPage is created and its title is set to
@@ -27,7 +28,7 @@
 
     \section1 Registration Page
 
-    \image trivialwizard-example-registration.png
+    \image trivialwizard-example-registration.png {Registration wizard page}
 
     The registration page is created with the \c createRegistrationPage()
     function. QLineEdit objects are used to allow the user to input a name
@@ -38,7 +39,7 @@
 
     \section1 Conclusion Page
 
-    \image trivialwizard-example-conclusion.png
+    \image trivialwizard-example-conclusion.png {Conclusion wizard page}
 
     The conclusion page is created in the \c createConclusionPage()
     function. This function's content is similar to \c createIntroPage(). A

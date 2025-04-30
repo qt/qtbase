@@ -40,7 +40,7 @@ public:
     \ingroup basicwidgets
     \inmodule QtWidgets
 
-    \image fusion-checkbox.png
+    \image fusion-checkbox.png {Check box for the save option}
 
     A QCheckBox is an option button that can be switched on (checked) or off
     (unchecked). Checkboxes are typically used to represent features in an
@@ -55,7 +55,9 @@ public:
 
     \table
     \row \li \inlineimage checkboxes-exclusive.png
+             {Check box group that allows only one option checked}
          \li \inlineimage checkboxes-non-exclusive.png
+             {Check box group that allows multiple options checked}
     \endtable
 
     Whenever a checkbox is checked or cleared, it emits the signal

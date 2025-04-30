@@ -143,11 +143,9 @@ Qt::Corner QSizeGripPrivate::corner() const
     guideline, and won't show unless used in a QMdiSubWindow. Set another
     style on size grips that you want to be visible in main windows.
 
-    \table 50%
-    \row \li \inlineimage fusion-statusbar-sizegrip.png Screenshot of a Fusion style size grip
-    \li A size grip widget at the bottom-right corner of a main window, shown in the
+    \image fusion-statusbar-sizegrip.png {Size grip at the bottom-right corner}
+    \caption  A size grip widget at the bottom-right corner of a main window, shown in the
     \l{Qt Widget Gallery}{Fusion widget style}.
-    \endtable
 
     The QSizeGrip class inherits QWidget and reimplements the \l
     {QWidget::mousePressEvent()}{mousePressEvent()} and \l

@@ -14,6 +14,7 @@
     in detail in \l{QPainter#Composition Modes}{Composition Modes}.
 
     \image imagecomposition-example.png
+           {Application that combines two images using composition modes}
 
     \section1 Setting Up The Resource File
 

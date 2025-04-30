@@ -13,6 +13,7 @@
     \l{Animation Framework}.
 
     \image dragdroprobot-example.png
+           {Application of a robot that responds to drag and drop events}
 
     Graphics View provides the QGraphicsScene class for managing and
     interacting with a large number of custom-made 2D graphical items derived

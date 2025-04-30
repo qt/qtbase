@@ -10,7 +10,7 @@
     spin boxes available in Qt, from a simple QSpinBox widget to more complex
     editors like the QDateTimeEdit widget.
 
-    \borderedimage spinboxes-example.png
+    \image spinboxes-example.png {Gallery of different types of spin boxes}
 
     The example consists of a single \c Window class that is used to display the
     different spin box-based widgets available with Qt.

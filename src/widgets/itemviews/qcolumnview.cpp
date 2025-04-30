@@ -35,7 +35,7 @@ QT_BEGIN_NAMESPACE
     QAbstractItemView class to allow it to display data provided by
     models derived from the QAbstractItemModel class.
 
-    \image qcolumnview.png
+    \image qcolumnview.png {Address information in a column view}
 
     \sa {Model/View Programming}
 */

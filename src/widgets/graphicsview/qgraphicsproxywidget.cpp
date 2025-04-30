@@ -74,6 +74,7 @@ QT_BEGIN_NAMESPACE
     contents rect labeled.
 
     \image qgraphicsproxywidget-embed.png
+           {Proxy widget and its embedded widget with their positions}
 
     Alternatively, you can start by creating a new QGraphicsProxyWidget item,
     and then call setWidget() to embed a QWidget later. The widget() function

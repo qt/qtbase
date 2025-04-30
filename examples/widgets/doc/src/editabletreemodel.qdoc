@@ -10,6 +10,7 @@
     be used with other classes in the model/view framework.
 
     \image itemviews-editabletreemodel.png
+         {Application that show editing of a tree model}
 
     The model supports editable items, custom headers, and the ability to
     insert and remove rows and columns. With these features, it is also
@@ -56,6 +57,7 @@
     \target Relations-between-internal-items
     \table
     \row \li \inlineimage itemviews-editabletreemodel-items.png
+             {Diagram of the relationship among root, parent, and child items}
     \li \b{Relations between internal items}
 
     When designing a data structure for use with a custom model, it is useful
@@ -100,6 +102,7 @@
 
     \table
     \row \li \inlineimage itemviews-editabletreemodel-model.png
+             {Diagram of the tree model with row and column indexes}
     \li \b{Accessing data via the model}
 
     In the case shown in the diagram, the piece of information represented
@@ -157,6 +160,7 @@
     exposed by each column in a given row in the model.
 
     \li \inlineimage itemviews-editabletreemodel-values.png
+         {Diagram of a possible data structure using QVariant}
     \endtable
 
     Since the \c TreeModel implementation has been designed for use with
@@ -180,6 +184,7 @@
     \table
     \row
     \li \inlineimage itemviews-editabletreemodel-indexes.png
+        {Diagram of accessing the tree model using model indexes}
     \li \b{Relating items using model indexes}
 
     As with the \l{itemviews/simpletreemodel}{Simple Tree Model} example,

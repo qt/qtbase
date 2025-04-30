@@ -10,6 +10,7 @@
     model on demand.
 
     \image fetchmore-example.png
+           {Application that fetches and adds more items into the view model}
 
     When you have large - or perhaps even infinite - data sets, you
     will need to add items to the model in batches, and preferably only

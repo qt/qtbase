@@ -10,7 +10,7 @@
     \brief The License Wizard example shows how to implement complex wizards in
     Qt.
 
-    \image licensewizard-example.png Screenshot of the License Wizard example
+    \image licensewizard-example.png {First wizard page of license wizard}
 
     Most wizards have a linear structure, with page 1 followed by
     page 2 and so on until the last page. The
@@ -23,7 +23,7 @@
     wizard pages; depending on which options are selected, the user
     can reach different pages.
 
-    \image licensewizard-flow.png The License Wizard pages
+    \image licensewizard-flow.png {Complex wizard page flow chart}
 
     The example consists of the following classes:
 

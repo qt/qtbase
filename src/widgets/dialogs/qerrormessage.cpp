@@ -147,7 +147,7 @@ QSize QErrorMessageTextView::sizeHint() const
     The \l{dialogs/standarddialogs}{Standard Dialogs} example shows
     how to use QErrorMessage as well as other built-in Qt dialogs.
 
-    \image qerrormessage.png
+    \image qerrormessage.png {Dialog with a network-related error message}
 
     \sa QMessageBox, QStatusBar::showMessage(), {Standard Dialogs Example}
 */

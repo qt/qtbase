@@ -10,6 +10,7 @@
     to build complex shapes for rendering.
 
     \image painterpaths-example.png
+           {Application showing various shapes and graphical options}
 
     The QPainterPath class provides a container for painting
     operations, enabling graphical shapes to be constructed and

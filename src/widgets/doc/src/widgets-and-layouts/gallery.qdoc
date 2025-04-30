@@ -16,16 +16,20 @@
   depending on the active theme.
 
     \image windows-style.png Windows Style
+           {Widget gallery using the "Windows" style}
     \caption The Windows style ("windows") is provided by QWindowsStyle.
 
     \image windows-vista-style.png Windows Vista Style
+           {Widget gallery using Windows' "Vista" style)
     \caption The Windows Vista style ("windowsvista") is provided by
         QWindowsVistaStyle.
 
     \image macos-style.png \macos Style
+           {Widget gallery using "macOS" style)
     \caption The macOS style ("macOS") is provided by QMacStyle.
 
     \image fusion-style.png Fusion Style
+           {Widget gallery using the "Fusion" style)
     \caption The Fusion style ("fusion") is provided by QFusionStyle.
 
     The Styles example displays the following widgets:
@@ -49,9 +53,11 @@
     Windows 10 and \macos:
 
     \image windows-style2.png
+           {Widget gallery running on Windows 10}
     \caption Calendar Widget example on Windows 10
 
     \image macos-style2.png
+           {Widget gallery running on macOS}
     \caption Calendar Widget example on \macos
 
     \list

@@ -155,7 +155,7 @@ bool QProgressBarPrivate::repaintRequired() const
     \ingroup basicwidgets
     \inmodule QtWidgets
 
-    \image fusion-progressbar.png
+    \image fusion-progressbar.png {Progress bar showing 42%}
 
     A progress bar is used to give the user an indication of the
     progress of an operation and to reassure them that the application

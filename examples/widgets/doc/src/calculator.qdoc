@@ -11,7 +11,7 @@
     functionality of a calculator widget, and how to use QGridLayout
     to place child widgets in a grid.
 
-    \borderedimage calculator-example.png
+    \image calculator-example.png {Basic calculator application}
     \caption Screenshot of the Calculator example
 
     The example consists of two classes:
@@ -352,7 +352,7 @@
     QSizePolicy::Expanding in the constructor and if we didn't
     reimplement QWidget::sizeHint().
 
-    \borderedimage calculator-ugly.png
+    \image calculator-ugly.png {Calculator with misaligned buttons}
     \caption The Calculator example with default size policies and size hints
 
 */

@@ -106,7 +106,7 @@
         scene coordinates: QGraphicsView::mapToScene() and
         QGraphicsView::mapFromScene().
 
-        \image graphicsview-view.png
+        \image graphicsview-view.png {Grid of computer chips}
 
       \section2 The Item
 
@@ -149,7 +149,7 @@
         to provide your own collision detection, however, you can reimplement
         QGraphicsItem::collidesWith().
 
-        \image graphicsview-items.png
+        \image graphicsview-items.png {Various shapes and graphics on a grid}
 
     \section1 Classes in the Graphics View Framework
 
@@ -180,6 +180,7 @@
       logical coordinates and device coordinates.
 
       \image graphicsview-parentchild.png
+             {Several coordinate system transformation}
 
       \section2 Item Coordinates
 

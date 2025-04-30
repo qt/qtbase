@@ -10,6 +10,7 @@
     map information from a model to specific widgets on a form.
 
     \image combowidgetmapper-example.png
+           {Application with various fields such as Name, Address, and Type}
 
     We create a \c Window class with an almost identical user interface,
     except that, instead of providing a spin box so that each person's age
@@ -78,6 +79,7 @@
     delegate is used.
 
     \image widgetmapper-combo-mapping.png
+    {Mapping of the model to the view using a delegate}
 
     We show the implementation of the \c{updateButtons()} slot for
     completeness:

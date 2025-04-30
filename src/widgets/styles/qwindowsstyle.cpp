@@ -163,7 +163,7 @@ bool QWindowsStyle::eventFilter(QObject *o, QEvent *e)
 
     This style is Qt's default GUI style on Windows.
 
-    \image qwindowsstyle.png
+    \image qwindowsstyle.png {Gallery of widgets using the default GUI style}
     \sa QWindowsVistaStyle, QMacStyle, QFusionStyle
 */
 

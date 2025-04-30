@@ -1178,7 +1178,7 @@ void QListWidgetPrivate::dataChanged(const QModelIndex &topLeft,
     \ingroup model-view
     \inmodule QtWidgets
 
-    \image fusion-listview.png
+    \image fusion-listview.png {List of weather icons}
 
     QListWidget is a convenience class that provides a list view similar to the
     one supplied by QListView, but with a classic item-based interface for

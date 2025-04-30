@@ -12,6 +12,8 @@
     QGraphicsAnchorLayout class.
 
     \image graphicssimpleanchorlayout-example.png
+           {Application using anchor layouts to place widgets}
+
 
     The example starts by creating a QGraphicsScene (\c scene), 3 widgets
     (\c a, \c b, and \c c), and a QGraphicsAnchorlayout (\c layout).

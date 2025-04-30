@@ -52,7 +52,9 @@
 
     \table
     \row \li \inlineimage mdi-cascade.png
+             {MDI windows in cascading order}
          \li \inlineimage mdi-tile.png
+             {MDI windows in a tiling pattern}
     \endtable
 
     \note The default scroll bar property for QMdiArea is Qt::ScrollBarAlwaysOff.

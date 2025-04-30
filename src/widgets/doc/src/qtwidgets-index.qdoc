@@ -19,7 +19,8 @@ interfaces
     should be grouped together. A widget that is not embedded in a
     parent widget is called a \l{Window and Dialog Widgets} {window}.
 
-    \image parent-child-widgets.png A parent widget containing various child widgets.
+    \image parent-child-widgets.png
+           {Parent widget containing various child widgets}
 
     The QWidget class provides the basic capability to render to the
     screen and to handle user input events. All UI elements that Qt
@@ -43,9 +44,9 @@ interfaces
 
     \table
     \row
-    \li \image windowsvista-tabwidget.png
-    \li \image fusion-tabwidget.png
-    \li \image macos-tabwidget.png
+    \li \image windowsvista-tabwidget.png {Windows style tab widgets}
+    \li \image fusion-tabwidget.png {Fusion desktop style tab widgets}
+    \li \image macos-tabwidget.png {macOS style tab widgets}
     \endtable
 
     \l{Qt Style Sheets} are a powerful mechanism that lets you customize
@@ -63,8 +64,8 @@ interfaces
 
     \table
     \row
-    \li \image qgridlayout-with-5-children.png
-    \li \image qformlayout-with-6-children.png
+    \li \image qgridlayout-with-5-children.png {5-children layout}
+    \li \image qformlayout-with-6-children.png {6-children layout}
     \endtable
 
     \l {Qt Widgets Designer} is a powerful tool for interactively creating and
@@ -79,7 +80,7 @@ interfaces
     which use lists and tables are structured to separate the data and view
     using models, views, and delegates.
 
-    \image fusion-treeview.png
+    \image fusion-treeview.png {File directory using a tree view}
 
     \section1 Graphics View
 
@@ -87,7 +88,7 @@ interfaces
     number of custom-made 2D graphical items, and a view widget for visualizing
     the items, with support for zooming and rotation.
 
-    \image graphicsview-items.png
+    \image graphicsview-items.png {Various shapes and graphics on a grid}
 
     \section1 Using the Module
 

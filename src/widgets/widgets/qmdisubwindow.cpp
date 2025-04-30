@@ -16,6 +16,7 @@
     title bar and a center area for the internal widget.
 
     \image qmdisubwindowlayout.png
+           {MDI window with a title bar and an internal widget}
 
     The most common way to construct a QMdiSubWindow is to call
     QMdiArea::addSubWindow() with the internal widget as the argument.

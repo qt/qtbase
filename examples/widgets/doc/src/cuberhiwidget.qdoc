@@ -9,6 +9,7 @@
     \brief Shows how to render a textured cube and integrate with QPainter and widgets, using QRhi Qt's 3D API and shading language abstraction layer.
 
     \image cuberhiwidget-example.jpg
+           {Application showing complex rendering overlays}
     \caption Screenshot of the Cube RHI Widget example
 
     This example builds on the \l{Simple RHI Widget Example}. While the simple

@@ -130,6 +130,7 @@ void QMainWindowPrivate::init()
     layout below.
 
     \image mainwindowlayout.png
+           {Diagram of main window and the position of its components}
 
     \section1 Creating Main Window Components
 

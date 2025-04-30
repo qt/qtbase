@@ -19,13 +19,13 @@
 
     \table
     \row
-    \li \image fusion-label.png
-    \li \image windowsvista-pushbutton.png
-    \li \image macos-progressbar.png
+    \li \image fusion-label.png {Label}
+    \li \image windowsvista-pushbutton.png {Cancel button}
+    \li \image macos-progressbar.png {Progress bar}
     \row
-    \li \image fusion-combobox.png
-    \li \image windowsvista-radiobutton.png
-    \li \image macos-lineedit.png
+    \li \image fusion-combobox.png {Combo box}
+    \li \image windowsvista-radiobutton.png {Radio box}
+    \li \image macos-lineedit.png {Line edit}
     \endtable
 
     \annotatedlist basicwidgets
@@ -39,8 +39,11 @@
       \table
       \row
       \li \image fusion-treeview.png
+                 {Directory widget showing the contents using a tree view}
       \li \image fusion-calendarwidget.png
+                 {Calendar widget showing the month, year, and a selected day}
       \li \image qundoview.png
+                 {Undo stack showing list of commands}
       \endtable
 
       \annotatedlist advanced

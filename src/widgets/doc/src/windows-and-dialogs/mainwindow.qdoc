@@ -86,7 +86,8 @@
     widget's client geometry.
 
     This diagram shows most of the functions in use:
-    \image geometry.png Geometry diagram
+    \image geometry.png
+           {Window geometry with size dimensions and positions labeled}
 
     \section2 X11 Peculiarities
 
@@ -234,6 +235,7 @@
     corners of the main window in this layout.
 
     \image mainwindow-docks-example.png
+           {Placement of dock windows relative to a central widget}
 
     Once all the main window components have been set up, the central widget
     is created and installed by using code similar to the following:

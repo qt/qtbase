@@ -12,6 +12,7 @@
     using a \c QPainterPath.
 
     \image deform-demo.png
+           {Application showing various vector deformation settings}
 
     We define a vector deformation field in the shape of a lens and apply
     this to all points in a path. This means that what is rendered on

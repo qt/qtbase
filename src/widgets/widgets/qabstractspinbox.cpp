@@ -156,7 +156,9 @@ QAbstractSpinBox::~QAbstractSpinBox()
     in a spin box.
 
     \inlineimage qspinbox-updown.png
+                 {Spinbox with the up and down arrow symbols}
     \inlineimage qspinbox-plusminus.png
+                 {Spinbox with the plus and minus symbols}
 
     \value UpDownArrows Little arrows in the classic style.
     \value PlusMinus \b{+} and \b{-} symbols.

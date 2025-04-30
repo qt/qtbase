@@ -16,7 +16,7 @@
     dialog, information can be split into different categories, while
     remaining accessible.
 
-    \image tabdialog-example.png
+    \image tabdialog-example.png {File information on different tabs}
 
     The Tab Dialog example consists of a single \c TabDialog class that
     provides three tabs, each containing information about a particular

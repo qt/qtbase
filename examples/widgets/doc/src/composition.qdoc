@@ -11,6 +11,7 @@
     \brief This demo shows some of the more advanced composition modes supported by Qt.
 
     \image composition-demo.png
+           {Application that applies composition modes to image layers}
 
     The two most common forms of composition are \b{Source} and \b{SourceOver}.
     \b{Source} is used to draw opaque objects onto a paint device. In this mode,

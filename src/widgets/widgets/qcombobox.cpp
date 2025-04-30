@@ -974,9 +974,11 @@ QComboBox::QComboBox(QComboBoxPrivate &dd, QWidget *parent)
     \table
        \row
           \li \image collapsed_combobox.png
+              {Combo box with collapsed options list}
               \caption Collapsed QCombobox
           \li
               \image expanded_combobox.png
+              {Combo box with expanded options list}
               \caption Expanded QCombobox
     \endtable
 
