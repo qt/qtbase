@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qheaderview.h"
-#include "qtableview.h"
 
 #include <qabstractitemdelegate.h>
 #include <qapplication.h>
@@ -10,7 +9,6 @@
 #include <qbrush.h>
 #include <qdebug.h>
 #include <qevent.h>
-#include <qlist.h>
 #include <qpainter.h>
 #include <qscrollbar.h>
 #include <qstyle.h>
