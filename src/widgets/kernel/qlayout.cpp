@@ -504,10 +504,8 @@ void QLayoutPrivate::doResize()
     const int mbTop = rect.top();
     rect.setTop(mbTop + mbh);
     q->setGeometry(rect);
-#if QT_CONFIG(menubar)
     if (menubar)
         menubar->setGeometry(rect.left(), mbTop, rect.width(), mbh);
-#endif
 }
 
 
@@ -537,10 +535,8 @@ void QLayout::widgetEvent(QEvent *e)
             QObject *child = c->child();
             QObjectPrivate *op = QObjectPrivate::get(child);
             if (op->wasWidget) {
-#if QT_CONFIG(menubar)
                 if (child == d->menubar)
                     d->menubar = nullptr;
-#endif
                 removeWidgetRecursively(this, child);
             }
         }
@@ -585,10 +581,8 @@ int QLayout::totalMinimumHeightForWidth(int w) const
         side += wd->leftmargin + wd->rightmargin;
         top += wd->topmargin + wd->bottommargin;
     }
-    int h = minimumHeightForWidth(w - side) + top;
-#if QT_CONFIG(menubar)
-    h += menuBarHeightForWidth(d->menubar, w);
-#endif
+    int h = minimumHeightForWidth(w - side) + top +
+            menuBarHeightForWidth(d->menubar, w);
     return h;
 }
 
@@ -607,10 +601,8 @@ int QLayout::totalHeightForWidth(int w) const
         side += wd->leftmargin + wd->rightmargin;
         top += wd->topmargin + wd->bottommargin;
     }
-    int h = heightForWidth(w - side) + top;
-#if QT_CONFIG(menubar)
-    h += menuBarHeightForWidth(d->menubar, w);
-#endif
+    int h = heightForWidth(w - side) + top +
+            menuBarHeightForWidth(d->menubar, w);
     return h;
 }
 
@@ -631,9 +623,7 @@ QSize QLayout::totalMinimumSize() const
     }
 
     QSize s = minimumSize();
-#if QT_CONFIG(menubar)
     top += menuBarHeightForWidth(d->menubar, s.width() + side);
-#endif
     return s + QSize(side, top);
 }
 
@@ -656,9 +646,7 @@ QSize QLayout::totalSizeHint() const
     QSize s = sizeHint();
     if (hasHeightForWidth())
         s.setHeight(heightForWidth(s.width() + side));
-#if QT_CONFIG(menubar)
     top += menuBarHeightForWidth(d->menubar, s.width());
-#endif
     return s + QSize(side, top);
 }
 
@@ -679,9 +667,7 @@ QSize QLayout::totalMaximumSize() const
     }
 
     QSize s = maximumSize();
-#if QT_CONFIG(menubar)
     top += menuBarHeightForWidth(d->menubar, s.width());
-#endif
 
     if (d->topLevel)
         s = QSize(qMin(s.width() + side, QLAYOUTSIZE_MAX),
@@ -757,11 +743,9 @@ void QLayoutPrivate::reparentChildWidgets(QWidget *mw)
     Q_Q(QLayout);
     int n =  q->count();
 
-#if QT_CONFIG(menubar)
-    if (menubar && menubar->parentWidget() != mw) {
+    if (menubar && menubar->parentWidget() != mw)
         menubar->setParent(mw);
-    }
-#endif
+
     bool mwVisible = mw && mw->isVisible();
     for (int i = 0; i < n; ++i) {
         QLayoutItem *item = q->itemAt(i);
