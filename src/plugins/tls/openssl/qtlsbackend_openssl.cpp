@@ -394,8 +394,8 @@ QList<QSslCertificate> systemCaCertificates()
         static const QStringList nameFilters = {u"*.pem"_s, u"*.crt"_s};
         using F = QDirListing::IteratorFlag;
         constexpr auto flags = F::FilesOnly | F::ResolveSymlinks; // Files and symlinks to files
-        for (const auto &directory : directories) {
-            for (const auto &dirEntry : QDirListing(directory, nameFilters, flags)) {
+        for (const QByteArray &directory : directories) {
+            for (const auto &dirEntry : QDirListing(QFile::decodeName(directory), nameFilters, flags)) {
                 // use canonical path here to not load the same certificate twice if symlinked
                 certFiles.insert(dirEntry.canonicalFilePath());
             }
