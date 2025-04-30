@@ -742,8 +742,23 @@ function(qt_internal_add_test name)
         endif()
     else()
         if(arg_QMLTEST AND NOT arg_SOURCES)
+            if(TARGET ${QT_CMAKE_EXPORT_NAMESPACE}::qmltestrunner)
+                # TODO: fallback to support qtr as 'tool', remove when changes in qtdeclarative are in
+                set(qmltestrunner_executable ${QT_CMAKE_EXPORT_NAMESPACE}::qmltestrunner)
+            elseif(TARGET qmltestrunner)
+                set(qmltestrunner_executable qmltestrunner)
+            else()
+                find_program(qmltestrunner_executable
+                    NAMES qmltestrunner qmltestrunner.exe
+                    PATHS "${QT6_INSTALL_PREFIX}/${QT6_INSTALL_LIBEXECS}"
+                    NO_DEFAULT_PATH
+                )
+                if(NOT qmltestrunner_executable)
+                    message(FATAL_ERROR "qmltestrunner not found.")
+                endif()
+            endif()
             set(test_working_dir "${CMAKE_CURRENT_SOURCE_DIR}")
-            set(test_executable ${QT_CMAKE_EXPORT_NAMESPACE}::qmltestrunner)
+            set(test_executable "${qmltestrunner_executable}")
         else()
             if (arg_WORKING_DIRECTORY)
                 set(test_working_dir "${arg_WORKING_DIRECTORY}")
