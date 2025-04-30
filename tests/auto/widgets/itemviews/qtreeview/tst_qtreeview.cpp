@@ -873,7 +873,7 @@ void tst_QTreeView::horizontalScrollMode()
 
     QCOMPARE(view.horizontalScrollMode(), QAbstractItemView::ScrollPerPixel);
     QCOMPARE(view.horizontalScrollBar()->minimum(), 0);
-    QVERIFY(view.horizontalScrollBar()->maximum() > 2);
+    QCOMPARE_GT(view.horizontalScrollBar()->maximum(), 2);
 
     view.setHorizontalScrollMode(QAbstractItemView::ScrollPerItem);
     QCOMPARE(view.horizontalScrollMode(), QAbstractItemView::ScrollPerItem);
@@ -883,7 +883,7 @@ void tst_QTreeView::horizontalScrollMode()
     view.setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
     QCOMPARE(view.horizontalScrollMode(), QAbstractItemView::ScrollPerPixel);
     QCOMPARE(view.horizontalScrollBar()->minimum(), 0);
-    QVERIFY(view.horizontalScrollBar()->maximum() > 2);
+    QCOMPARE_GT(view.horizontalScrollBar()->maximum(), 2);
 }
 
 class RepaintTreeView : public QTreeView
@@ -936,7 +936,7 @@ void tst_QTreeView::indexAt()
     QTreeView view;
     QCOMPARE(view.indexAt(QPoint()), QModelIndex());
     view.setModel(&model);
-    QVERIFY(view.indexAt(QPoint()) != QModelIndex());
+    QCOMPARE_NE(view.indexAt(QPoint()), QModelIndex());
 
     QSize itemSize = view.visualRect(model.index(0, 0)).size();
     for (int i = 0; i < model.rowCount(); ++i) {
@@ -2368,7 +2368,7 @@ void tst_QTreeView::resizeColumnToContents()
     int oldColumnSize = view.header()->sectionSize(0);
     view.setRootIndex(model.index(0, 0));
     view.resizeColumnToContents(0);        //Earlier, this gave an assert
-    QVERIFY(view.header()->sectionSize(0) > oldColumnSize);
+    QCOMPARE_GT(view.header()->sectionSize(0), oldColumnSize);
 }
 
 void tst_QTreeView::insertAfterSelect()
@@ -3407,14 +3407,14 @@ void tst_QTreeView::styleOptionViewItem()
     delegate.allCollapsed = true;
     view.showMaximized();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
-    QTRY_VERIFY(delegate.count >= 13);
+    QTRY_COMPARE_GE(delegate.count, 13);
     delegate.count = 0;
     delegate.allCollapsed = false;
     view.expandAll();
-    QTRY_VERIFY(delegate.count >= 13);
+    QTRY_COMPARE_GE(delegate.count, 13);
     delegate.count = 0;
     view.collapse(par2->index());
-    QTRY_VERIFY(delegate.count >= 4);
+    QTRY_COMPARE_GE(delegate.count, 4);
 
     // test that the rendering of drag pixmap sets the correct options too (QTBUG-15834)
 #ifdef QT_BUILD_INTERNAL
@@ -3435,53 +3435,53 @@ void tst_QTreeView::styleOptionViewItem()
         QStandardItem *item0 = new QStandardItem("OnlyOne Last");
         model2.appendRow(item0);
         view.setModel(&model2);
-        QTRY_VERIFY(delegate.count >= 1);
+        QTRY_COMPARE_GE(delegate.count, 1);
 
         QStandardItem *item00 = new QStandardItem("OnlyOne Last");
         item0->appendRow(item00);
         item0->setText("OnlyOne Last HasChildren");
         delegate.count = 0;
         view.expandAll();
-        QTRY_VERIFY(delegate.count >= 2);
+        QTRY_COMPARE_GE(delegate.count, 2);
 
         QStandardItem *item1 = new QStandardItem("OnlyOne Last");
         delegate.count = 0;
         item0->setText("OnlyOne HasChildren");
         model2.appendRow(item1);
-        QTRY_VERIFY(delegate.count >= 3);
+        QTRY_COMPARE_GE(delegate.count, 3);
 
         QStandardItem *item01 = new QStandardItem("OnlyOne Last");
         delegate.count = 0;
         item00->setText("OnlyOne");
         item0->appendRow(item01);
-        QTRY_VERIFY(delegate.count >= 4);
+        QTRY_COMPARE_GE(delegate.count, 4);
 
         QStandardItem *item000 = new QStandardItem("OnlyOne Last");
         delegate.count = 0;
         item00->setText("OnlyOne HasChildren");
         item00->appendRow(item000);
-        QTRY_VERIFY(delegate.count >= 5);
+        QTRY_COMPARE_GE(delegate.count, 5);
 
         delegate.count = 0;
         item0->removeRow(0);
-        QTRY_VERIFY(delegate.count >= 3);
+        QTRY_COMPARE_GE(delegate.count, 3);
 
         item00 = new QStandardItem("OnlyOne");
         item0->insertRow(0, item00);
 
         delegate.count = 0;
         view.expandAll();
-        QTRY_VERIFY(delegate.count >= 4);
+        QTRY_COMPARE_GE(delegate.count, 4);
 
         delegate.count = 0;
         item0->removeRow(1);
         item00->setText("OnlyOne Last");
-        QTRY_VERIFY(delegate.count >= 3);
+        QTRY_COMPARE_GE(delegate.count, 3);
 
         delegate.count = 0;
         item0->removeRow(0);
         item0->setText("OnlyOne");
-        QTRY_VERIFY(delegate.count >= 2);
+        QTRY_COMPARE_GE(delegate.count, 2);
 
         //with hidden items
         item0->setText("OnlyOne HasChildren");
@@ -3494,24 +3494,24 @@ void tst_QTreeView::styleOptionViewItem()
         QStandardItem *item02 = new QStandardItem("OnlyOne Last");
         item0->appendRow(item02);
         delegate.count = 0;
-        QTRY_VERIFY(delegate.count >= 4);
+        QTRY_COMPARE_GE(delegate.count, 4);
 
         item0->removeRow(2);
         item00->setText("OnlyOne Last");
         delegate.count = 0;
-        QTRY_VERIFY(delegate.count >= 3);
+        QTRY_COMPARE_GE(delegate.count, 3);
 
         item00->setText("OnlyOne");
         item0->insertRow(2, new QStandardItem("OnlyOne Last"));
         view.collapse(item0->index());
         item0->removeRow(0);
         delegate.count = 0;
-        QTRY_VERIFY(delegate.count >= 2);
+        QTRY_COMPARE_GE(delegate.count, 2);
 
         item0->removeRow(1);
         item0->setText("OnlyOne");
         delegate.count = 0;
-        QTRY_VERIFY(delegate.count >= 2);
+        QTRY_COMPARE_GE(delegate.count, 2);
     }
 }
 
@@ -3941,10 +3941,10 @@ void tst_QTreeView::task246536_scrollbarsNotWorking()
         items << new QStandardItem(QLatin1String("item ") + QString::number(i));
     o.count = 0;
     model.invisibleRootItem()->appendColumn(items);
-    QTRY_VERIFY(o.count > 0);
+    QTRY_COMPARE_GT(o.count, 0);
     o.count = 0;
     tree.verticalScrollBar()->setValue(50);
-    QTRY_VERIFY(o.count > 0);
+    QTRY_COMPARE_GT(o.count, 0);
 }
 
 void tst_QTreeView::task250683_wrongSectionSize()
@@ -4160,13 +4160,13 @@ void tst_QTreeView::taskQTBUG_9216_setSizeAndUniformRowHeightsWrongRepaint()
     view.doCompare = false;
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
-    QTRY_VERIFY(view.painted > 0);
+    QTRY_COMPARE_GT(view.painted, 0);
 
     QTest::qWait(100);  // This one is needed to make the test fail before the patch.
     view.painted = 0;
     view.doCompare = true;
     model.setData(model.index(0, 0), QVariant(QSize(50, 50)), Qt::SizeHintRole);
-    QTRY_VERIFY(view.painted > 0);
+    QTRY_COMPARE_GT(view.painted, 0);
 }
 
 void tst_QTreeView::keyboardNavigationWithDisabled()
@@ -4692,7 +4692,7 @@ void tst_QTreeView::taskQTBUG_45697_crash()
     testWidget.setWindowTitle(QTest::currentTestFunction());
     testWidget.resize(400, 400);
     testWidget.move(QGuiApplication::primaryScreen()->availableGeometry().topLeft() + QPoint(100, 100));
-    QTRY_VERIFY(testWidget.timerTick() >= 2);
+    QTRY_COMPARE_GE(testWidget.timerTick(), 2);
 }
 
 void tst_QTreeView::taskQTBUG_7232_AllowUserToControlSingleStep()
@@ -4719,8 +4719,8 @@ void tst_QTreeView::taskQTBUG_7232_AllowUserToControlSingleStep()
     t.setGeometry(200, 200, 200, 200);
     int vStep1 = t.verticalScrollBar()->singleStep();
     int hStep1 = t.horizontalScrollBar()->singleStep();
-    QVERIFY(vStep1 > 1);
-    QVERIFY(hStep1 > 1);
+    QCOMPARE_GT(vStep1, 1);
+    QCOMPARE_GT(hStep1, 1);
 
     t.verticalScrollBar()->setSingleStep(1);
     t.setGeometry(300, 300, 300, 300);
@@ -4973,7 +4973,7 @@ void tst_QTreeView::taskQTBUG_8376()
     QModelIndex idxLvl1 = model.index(0, 1, idxLvl0);
     const int rowHeightLvl0 = tv.rowHeight(idxLvl0);
     const int rowHeightLvl1Visible = tv.rowHeight(idxLvl1);
-    QVERIFY(rowHeightLvl0 < rowHeightLvl1Visible);
+    QCOMPARE_LT(rowHeightLvl0, rowHeightLvl1Visible);
 
     tv.hideColumn(1);
     const int rowHeightLvl1Hidden = tv.rowHeight(idxLvl1);
