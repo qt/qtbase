@@ -28,7 +28,7 @@ endif()
 # Get the project name base on test directory name
 get_filename_component(project_name "${absolute_project_path}" NAME)
 
-project(${project_name} VERSION 6.0.0 LANGUAGES C CXX ASM)
+project(${project_name} VERSION 6.0.0 LANGUAGES C CXX)
 
 find_package(Qt6 REQUIRED COMPONENTS BuildInternals Core)
 
