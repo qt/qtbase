@@ -630,6 +630,9 @@ QList<QSslCertificate> QSslCertificate::fromPath(const QString &path,
                                                  QSsl::EncodingFormat format,
                                                  PatternSyntax syntax)
 {
+    if (path.isEmpty())
+        return {};
+
     // $, (,), *, +, ., ?, [, ,], ^, {, | and }.
 
     // make sure to use the same path separators on Windows and Unix like systems.
