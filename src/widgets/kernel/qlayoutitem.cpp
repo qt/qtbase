@@ -5,12 +5,6 @@
 
 #include "qapplication.h"
 #include "qlayoutengine_p.h"
-#if QT_CONFIG(menubar)
-#include "qmenubar.h"
-#endif
-#if QT_CONFIG(toolbar)
-#include "qtoolbar.h"
-#endif
 #include "qevent.h"
 #include "qstyle.h"
 #include "qvariant.h"

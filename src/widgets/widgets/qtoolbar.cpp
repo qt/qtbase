@@ -4,9 +4,6 @@
 #include "qtoolbar.h"
 
 #include <qapplication.h>
-#if QT_CONFIG(combobox)
-#include <qcombobox.h>
-#endif
 #if QT_CONFIG(draganddrop)
 #include <qdrag.h>
 #endif
@@ -14,13 +11,7 @@
 #include <qlayout.h>
 #include <qmainwindow.h>
 #include <qmenu.h>
-#if QT_CONFIG(menubar)
-#include <qmenubar.h>
-#endif
 #include <qmimedata.h>
-#if QT_CONFIG(rubberband)
-#include <qrubberband.h>
-#endif
 #include <qstylepainter.h>
 #include <qstyleoption.h>
 #include <qtoolbutton.h>

@@ -30,9 +30,6 @@
 #include "qmenubar_p.h"
 #endif
 #include "qwidgetaction.h"
-#if QT_CONFIG(toolbutton)
-#include "qtoolbutton.h"
-#endif
 #include "qpushbutton.h"
 #if QT_CONFIG(tooltip)
 #include "qtooltip.h"

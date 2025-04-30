@@ -3,20 +3,10 @@
 
 #include "qlayout.h"
 
-#include "qapplication.h"
 #include "qlayoutengine_p.h"
-#if QT_CONFIG(menubar)
-#include "qmenubar.h"
-#endif
-#if QT_CONFIG(toolbar)
-#include "qtoolbar.h"
-#endif
-#if QT_CONFIG(sizegrip)
-#include "qsizegrip.h"
-#endif
+#include "qguiapplication.h"
 #include "qevent.h"
 #include "qstyle.h"
-#include "qvariant.h"
 #include "qwidget_p.h"
 #include "qlayout_p.h"
 
