@@ -11,8 +11,10 @@
 #include <QtCore/QElapsedTimer>
 #include <QtCore/QRandomGenerator>
 #include <QtNetwork/QHostAddress>
+#if QT_CONFIG(udpsocket)
 #include <QtNetwork/QNetworkDatagram>
 #include <QtNetwork/QUdpSocket>
+#endif
 
 #if QT_CONFIG(networkproxy)
 #  include <QtNetwork/QNetworkProxyFactory>
@@ -157,6 +159,7 @@ static QList<QHostAddress> globalPublicNameservers(QDnsLookup::Protocol proto)
     };
 
     auto udpSendAndReceive = [](const QHostAddress &addr, QByteArray &data) {
+#if QT_CONFIG(udpsocket)
         QUdpSocket socket;
         socket.connectToHost(addr, 53);
         if (socket.waitForConnected(1))
@@ -171,6 +174,9 @@ static QList<QHostAddress> globalPublicNameservers(QDnsLookup::Protocol proto)
 
         data = dgram.data();
         return QString();
+#else
+        return u"UDP socket support not compiled in"_s;
+#endif // QT_CONFIG(udpsocket)
     };
 
     auto tlsSendAndReceive = [](const QHostAddress &addr, QByteArray &data) {
@@ -701,6 +707,9 @@ void tst_QDnsLookup::lookupAbortRetry()
 
 void tst_QDnsLookup::setNameserverLoopback()
 {
+#if !QT_CONFIG(udpsocket)
+    QSKIP("UDP socket not enabled");
+#else
 #ifdef Q_OS_WIN
     // Windows doesn't like sending DNS requests to ports other than 53, so
     // let's try it first.
@@ -754,6 +763,7 @@ void tst_QDnsLookup::setNameserverLoopback()
     QVERIFY(!QTestEventLoop::instance().timeout());
     QCOMPARE(spy.size(), 1);
     QCOMPARE(lookup.error(), QDnsLookup::NotFoundError);
+#endif // QT_CONFIG(udpsocket)
 }
 
 template <QDnsLookup::Protocol Protocol>
