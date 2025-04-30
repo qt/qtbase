@@ -3290,6 +3290,7 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
         break;
 
     case CC_ToolButton:
+#if QT_CONFIG(toolbutton)
         if (const QStyleOptionToolButton *tool = qstyleoption_cast<const QStyleOptionToolButton *>(opt)) {
             QStyleOptionToolButton toolOpt(*tool);
             rule.configurePalette(&toolOpt.palette, QPalette::ButtonText, QPalette::Button);
@@ -3440,6 +3441,7 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
             }
             return;
         }
+#endif  // QT_CONFIG(toolbutton)
         break;
 
 #if QT_CONFIG(scrollbar)
@@ -3671,6 +3673,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
 
     switch (ce) {
     case CE_ToolButtonLabel:
+#if QT_CONFIG(toolbutton)
         if (const QStyleOptionToolButton *btn = qstyleoption_cast<const QStyleOptionToolButton *>(opt)) {
             if (rule.hasBox() || btn->features & QStyleOptionToolButton::Arrow) {
                 QWindowsStyle::drawControl(ce, opt, p, w);
@@ -3681,6 +3684,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
             }
             return;
         }
+#endif  // QT_CONFIG(toolbutton)
         break;
 
     case CE_FocusFrame:
@@ -5979,6 +5983,7 @@ QRect QStyleSheetStyle::subControlRect(ComplexControl cc, const QStyleOptionComp
         break;
 
     case CC_ToolButton:
+#if QT_CONFIG(toolbutton)
         if (const QStyleOptionToolButton *tb = qstyleoption_cast<const QStyleOptionToolButton *>(opt)) {
             if (rule.hasBox() || !rule.hasNativeBorder()) {
                 switch (sc) {
@@ -5996,8 +6001,9 @@ QRect QStyleSheetStyle::subControlRect(ComplexControl cc, const QStyleOptionComp
             tool.rect = rule.borderRect(opt->rect);
             return rule.baseStyleCanDraw() ? baseStyle()->subControlRect(cc, &tool, sc, w)
                                            : QWindowsStyle::subControlRect(cc, &tool, sc, w);
-            }
-            break;
+        }
+#endif  // QT_CONFIG(toolbutton)
+        break;
 
 #if QT_CONFIG(scrollbar)
     case CC_ScrollBar:

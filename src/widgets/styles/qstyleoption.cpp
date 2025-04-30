@@ -2285,6 +2285,7 @@ QStyleOptionDockWidget::QStyleOptionDockWidget(int version)
     The default value is true.
 */
 
+#if QT_CONFIG(toolbutton)
 /*!
     \class QStyleOptionToolButton
     \brief The QStyleOptionToolButton class is used to describe the
@@ -2445,6 +2446,7 @@ QStyleOptionToolButton::QStyleOptionToolButton(int version)
     Qt::ToolButtonTextOnly. By default, the application's default font
     is used.
 */
+#endif  // QT_CONFIG(toolbutton)
 
 /*!
     \class QStyleOptionComboBox

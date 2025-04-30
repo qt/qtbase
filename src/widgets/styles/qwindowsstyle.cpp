@@ -2260,8 +2260,10 @@ QSize QWindowsStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
         break;
 #endif
     case CT_ToolButton:
+#if QT_CONFIG(toolbutton)
         if (qstyleoption_cast<const QStyleOptionToolButton *>(opt))
             return sz += QSize(7, 6);
+#endif  // QT_CONFIG(toolbutton)
         Q_FALLTHROUGH();
 
     default:

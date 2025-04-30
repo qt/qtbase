@@ -542,6 +542,7 @@ protected:
 };
 #endif // QT_CONFIG(spinbox)
 
+#if QT_CONFIG(toolbutton)
 class Q_WIDGETS_EXPORT QStyleOptionToolButton : public QStyleOptionComplex
 {
 public:
@@ -570,6 +571,7 @@ protected:
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QStyleOptionToolButton::ToolButtonFeatures)
+#endif  // QT_CONFIG(toolbutton)
 
 class Q_WIDGETS_EXPORT QStyleOptionComboBox : public QStyleOptionComplex
 {
