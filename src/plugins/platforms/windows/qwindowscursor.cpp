@@ -708,6 +708,7 @@ QPixmap QWindowsCursor::dragDefaultCursor(Qt::DropAction action) const
         break;
     }
 
+#if QT_CONFIG(imageformat_xpm)
     static const char * const ignoreDragCursorXpmC[] = {
     "24 30 3 1",
     ".        c None",
@@ -743,6 +744,7 @@ QPixmap QWindowsCursor::dragDefaultCursor(Qt::DropAction action) const
     "............XaaaaaaaaX..",
     ".............XXaaaaXX...",
     "...............XXXX....."};
+#endif
 
     if (m_ignoreDragCursor.isNull()) {
         HCURSOR cursor = LoadCursor(nullptr, IDC_NO);
@@ -761,8 +763,10 @@ QPixmap QWindowsCursor::dragDefaultCursor(Qt::DropAction action) const
 
             m_ignoreDragCursor = QPixmap::fromImage(colorImage);
             delete [] colorBits;
+#if QT_CONFIG(imageformat_xpm)
         } else {
             m_ignoreDragCursor = QPixmap(ignoreDragCursorXpmC);
+#endif
         }
 
         DeleteObject(iconInfo.hbmMask);
