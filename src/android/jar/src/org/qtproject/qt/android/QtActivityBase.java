@@ -277,6 +277,11 @@ public class QtActivityBase extends Activity
     protected void onRestoreInstanceState(Bundle savedInstanceState)
     {
         super.onRestoreInstanceState(savedInstanceState);
+
+        // only restore when this Activity is being recreated for a config change
+        if (getLastNonConfigurationInstance() == null)
+            return;
+
         QtNative.setStarted(savedInstanceState.getBoolean("Started"));
         boolean isFullScreen = savedInstanceState.getBoolean("isFullScreen");
         boolean expandedToCutout = savedInstanceState.getBoolean("expandedToCutout");
