@@ -8,7 +8,9 @@
 
 #include <qcoreapplication.h>
 #include <qnetworkinterface.h>
+#if QT_CONFIG(udpsocket)
 #include <qudpsocket.h>
+#endif
 #include "../../../network-settings.h"
 
 #include <private/qtnetwork-config_p.h>
@@ -223,6 +225,9 @@ void tst_QNetworkInterface::localAddress_data()
 
 void tst_QNetworkInterface::localAddress()
 {
+#if !QT_CONFIG(udpsocket)
+    QSKIP("UDP socket support not built in");
+#else
     QFETCH(QHostAddress, target);
     QUdpSocket socket;
     socket.connectToHost(target, 80);
@@ -253,6 +258,7 @@ void tst_QNetworkInterface::localAddress()
 
     // check that the Path MTU is less than or equal the interface's MTU
     QVERIFY(pmtu <= outgoingIface->maximumTransmissionUnit());
+#endif // QT_CONFIG(udpsocket)
 }
 
 void tst_QNetworkInterface::interfaceFromXXX_data()
