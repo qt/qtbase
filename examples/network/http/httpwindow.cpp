@@ -91,13 +91,27 @@ HttpWindow::HttpWindow(QWidget *parent)
 }
 HttpWindow::~HttpWindow() = default;
 
+// BEGIN BUGREPORT CHANGES 1 of 3
+void sleepAndScheduleItself() {
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    QTimer::singleShot(0, &sleepAndScheduleItself);
+}
+// END BUGREPORT CHANGES 1 of 3
+
 void HttpWindow::startRequest(const QUrl &requestedUrl)
 {
     url = requestedUrl;
     httpRequestAborted = false;
 
     //! [qnam-download]
-    reply.reset(qnam.get(QNetworkRequest(url)));
+    // BEGIN BUGREPORT CHANGES 2 of 3
+    // The following endpoint accepts POST and returns 401.
+    url = QUrl("https://lddpro.service.dpt.lego.com/v2/application/blacklist");
+    QNetworkRequest networkRequest(url);
+    networkRequest.setRawHeader("Accept-Encoding", "identity");
+    networkRequest.setRawHeader("Content-Type", "application/json");
+    reply.reset(qnam.post(networkRequest, QByteArray("{\n    \"version\": \"0000000000000000000000000000000000000000\"\n}\n")));
+    // END BUGREPORT CHANGES 2 of 3
     //! [qnam-download]
     //! [connecting-reply-to-slots]
     connect(reply.get(), &QNetworkReply::finished, this, &HttpWindow::httpFinished);
@@ -120,6 +134,10 @@ void HttpWindow::startRequest(const QUrl &requestedUrl)
     progressDialog->show();
 
     statusLabel->setText(tr("Downloading %1...").arg(url.toString()));
+
+    // BEGIN BUGREPORT CHANGES 3 of 3
+    sleepAndScheduleItself();
+    // END BUGREPORT CHANGES 3 of 3
 }
 
 void HttpWindow::downloadFile()
