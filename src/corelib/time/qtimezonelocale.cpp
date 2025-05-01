@@ -833,7 +833,7 @@ QTimeZonePrivate::findLongNamePrefix(QStringView text, const QLocale &locale,
                 if (range.size > best.nameLength) {
                     QStringView name = range.viewData(longMetaZoneNameTable);
                     if (text.startsWith(name)) {
-                        best = { range.size, type, invalidIanaId, row.metaIdIndex };
+                        best = { static_cast<qsizetype>(range.size), type, invalidIanaId, row.metaIdIndex };
                         if (best.nameLength >= text.size())
                             break;
                     }
@@ -853,7 +853,7 @@ QTimeZonePrivate::findLongNamePrefix(QStringView text, const QLocale &locale,
                     bool gotZone = row.ianaIdIndex == best.ianaIdIndex
                         || QTimeZone::isTimeZoneIdAvailable(row.ianaId().toByteArray());
                     if (text.startsWith(name) && gotZone)
-                        best = { range.size, type, row.ianaIdIndex };
+                        best = { static_cast<qsizetype>(range.size), type, row.ianaIdIndex };
                 }
             }
         }
