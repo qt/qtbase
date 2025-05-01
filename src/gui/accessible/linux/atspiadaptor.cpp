@@ -1384,10 +1384,10 @@ void AtSpiAdaptor::sendFocusChanged(QAccessibleInterface *interface) const
 void AtSpiAdaptor::childrenChanged(QAccessibleInterface *interface) const
 {
     QString parentPath = pathForInterface(interface);
-    int childCount = interface->childCount();
-    for (int i = 0; i < interface->childCount(); ++i) {
+    const int childCount = interface->childCount();
+    for (int i = 0; i < childCount; ++i) {
         QString childPath = pathForInterface(interface->child(i));
-        QVariantList args = packDBusSignalArguments("add"_L1, childCount, 0, childPath);
+        QVariantList args = packDBusSignalArguments("add"_L1, i, 0, childPath);
         sendDBusSignal(parentPath, ATSPI_DBUS_INTERFACE_EVENT_OBJECT ""_L1, "ChildrenChanged"_L1, args);
     }
 }
@@ -1401,9 +1401,9 @@ void AtSpiAdaptor::notifyAboutCreation(QAccessibleInterface *interface) const
         return;
     }
     QString path = pathForInterface(interface);
-    int childCount = parent->childCount();
+    const int childIndex = parent->indexOfChild(interface);
     QString parentPath = pathForInterface(parent);
-    QVariantList args = packDBusSignalArguments("add"_L1, childCount, 0, variantForPath(path));
+    QVariantList args = packDBusSignalArguments("add"_L1, childIndex, 0, variantForPath(path));
     sendDBusSignal(parentPath, ATSPI_DBUS_INTERFACE_EVENT_OBJECT ""_L1, "ChildrenChanged"_L1, args);
 }
 
