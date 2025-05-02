@@ -196,8 +196,9 @@ extern "C" int qt_main_wrapper(int argc, char *argv[])
             requestedStackSize = 0;
 
         QT_WARNING_PUSH
-        QT_WARNING_DISABLE_CLANG("-Wunknown-warning-option")
+#if Q_CC_CLANG >= 1800
         QT_WARNING_DISABLE_CLANG("-Wvla-cxx-extension")
+#endif
         // The user-main stack _must_ live on the stack, so that the stack pointer
         // during user-main is within pthread_get_stackaddr_np/pthread_get_stacksize_np.
         char reservedStack[Stack::computeSize(requestedStackSize)];
