@@ -1037,8 +1037,6 @@ searchDependencies:
 
 /*
     Empties this translator of all contents.
-
-    This function works with stripped translator files.
 */
 
 void QTranslatorPrivate::clear()
@@ -1104,7 +1102,6 @@ QString QTranslator::translate(const char *context, const char *sourceText, cons
 
 /*!
     Returns \c true if this translator is empty, otherwise returns \c false.
-    This function works with stripped and unstripped translation files.
 */
 bool QTranslator::isEmpty() const
 {
