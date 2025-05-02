@@ -247,7 +247,7 @@ struct PseudoElementInfo {
     const char name[19];
 };
 
-static const PseudoElementInfo knownPseudoElements[NumPseudoElements] = {
+static constexpr PseudoElementInfo knownPseudoElements[NumPseudoElements] = {
     { QStyle::SC_None, "" },
     { QStyle::SC_None, "down-arrow" },
     { QStyle::SC_None, "up-arrow" },
@@ -300,7 +300,7 @@ static const PseudoElementInfo knownPseudoElements[NumPseudoElements] = {
     { QStyle::SC_SliderGroove, "groove" },
     { QStyle::SC_SliderHandle, "handle" },
     { QStyle::SC_None, "add-page" },
-    { QStyle::SC_None, "sub-page"},
+    { QStyle::SC_None, "sub-page" },
     { QStyle::SC_SliderTickmarks, "tick-mark" },
     { QStyle::SC_None, "pane" },
     { QStyle::SC_None, "tab-bar" },
@@ -1749,7 +1749,7 @@ QList<QCss::StyleRule> QStyleSheetStyle::styleRules(const QObject *obj) const
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Rendering rules
-static QList<Declaration> declarations(const QList<StyleRule> &styleRules, const QString &part,
+static QList<Declaration> declarations(const QList<StyleRule> &styleRules, QLatin1StringView part,
                                        quint64 pseudoClass = PseudoClass_Unspecified)
 {
     QList<Declaration> decls;
@@ -1898,7 +1898,7 @@ QRenderRule QStyleSheetStyle::renderRule(const QObject *obj, int element, quint6
     }
 
 
-    const QString part = QLatin1StringView(knownPseudoElements[element].name);
+    const auto part = QLatin1StringView(knownPseudoElements[element].name);
     QList<Declaration> decls = declarations(rules, part, state);
     QRenderRule newRule(decls, obj);
     cache[state] = newRule;
@@ -2204,7 +2204,7 @@ bool QStyleSheetStyle::hasStyleRule(const QObject *obj, int part) const
         return result;
     }
 
-    auto pseudoElement = QLatin1StringView(knownPseudoElements[part].name);
+    const auto pseudoElement = QLatin1StringView(knownPseudoElements[part].name);
     for (int i = 0; i < rules.size(); i++) {
         const Selector& selector = rules.at(i).selectors.at(0);
         if (pseudoElement.compare(selector.pseudoElement(), Qt::CaseInsensitive) == 0) {
@@ -2671,7 +2671,7 @@ void QStyleSheetStyle::setProperties(QWidget *w)
     // Set value for each property in the order of property final occurrence
     // since properties interact.
 
-    const QList<Declaration> decls = declarations(styleRules(w), QString());
+    const QList<Declaration> decls = declarations(styleRules(w), {});
     QList<int> finals; // indices in reverse order of each property's final occurrence
 
     {
