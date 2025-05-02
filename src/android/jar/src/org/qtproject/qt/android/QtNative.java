@@ -804,6 +804,18 @@ public class QtNative
         });
     }
 
+    private static void notifyObjectShow(final int parentId)
+    {
+        runAction(new Runnable() {
+            @Override
+            public void run() {
+                if (m_activityDelegate != null) {
+                    m_activityDelegate.notifyObjectShow(parentId);
+                }
+            }
+        });
+    }
+
     private static void notifyObjectFocus(final int viewId)
     {
         runAction(new Runnable() {
