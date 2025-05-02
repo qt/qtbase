@@ -333,16 +333,10 @@ static const PseudoElementInfo knownPseudoElements[NumPseudoElements] = {
 
 struct QStyleSheetBorderImageData : public QSharedData
 {
-    QStyleSheetBorderImageData()
-        : horizStretch(QCss::TileMode_Unknown), vertStretch(QCss::TileMode_Unknown)
-    {
-        for (int i = 0; i < 4; i++)
-            cuts[i] = -1;
-    }
-    int cuts[4];
+    std::array<int, 4> cuts = {-1, -1, -1, -1};
+    QCss::TileMode horizStretch = QCss::TileMode_Unknown;
+    QCss::TileMode vertStretch = QCss::TileMode_Unknown;
     QPixmap pixmap;
-    QImage image;
-    QCss::TileMode horizStretch, vertStretch;
 };
 
 struct QStyleSheetBackgroundData : public QSharedData
@@ -1015,9 +1009,9 @@ QRenderRule::QRenderRule(const QList<Declaration> &declarations, const QObject *
         if (decl.d->propertyId == BorderImage) {
             QString uri;
             QCss::TileMode horizStretch, vertStretch;
-            int cuts[4];
+            std::array<int, 4> cuts;
 
-            decl.borderImageValue(&uri, cuts, &horizStretch, &vertStretch);
+            decl.borderImageValue(&uri, cuts.data(), &horizStretch, &vertStretch);
             if (uri.isEmpty() || uri == "none"_L1) {
                 if (bd && bd->bi)
                     bd->bi->pixmap = QPixmap();
@@ -1029,8 +1023,7 @@ QRenderRule::QRenderRule(const QList<Declaration> &declarations, const QObject *
 
                 QStyleSheetBorderImageData *bi = bd->bi;
                 bi->pixmap = QStyleSheetStyle::loadPixmap(uri, object);
-                for (int i = 0; i < 4; i++)
-                    bi->cuts[i] = cuts[i];
+                bi->cuts = cuts;
                 bi->horizStretch = horizStretch;
                 bi->vertStretch = vertStretch;
             }
@@ -1229,7 +1222,7 @@ void QRenderRule::drawBorderImage(QPainter *p, const QRect& rect)
 
     const QStyleSheetBorderImageData *borderImageData = border()->borderImage();
     const int *targetBorders = border()->borders;
-    const int *sourceBorders = borderImageData->cuts;
+    const auto sourceBorders = borderImageData->cuts;
     QMargins sourceMargins(sourceBorders[LeftEdge], sourceBorders[TopEdge],
                            sourceBorders[RightEdge], sourceBorders[BottomEdge]);
     QMargins targetMargins(targetBorders[LeftEdge], targetBorders[TopEdge],
