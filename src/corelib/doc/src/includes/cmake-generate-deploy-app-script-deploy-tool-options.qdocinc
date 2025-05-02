@@ -1,7 +1,10 @@
 \badcode
 set(deploy_tool_options_arg "")
 if(APPLE)
-    set(deploy_tool_options_arg --hardened-runtime)
+    set(deploy_tool_options_arg
+        -hardened-runtime
+        "\"-codesign=Developer ID Application: Joe Developer (1234567890)\""
+    )
 elseif(WIN32)
     set(deploy_tool_options_arg --no-compiler-runtime)
 endif()
