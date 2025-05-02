@@ -1004,8 +1004,7 @@ QRenderRule::QRenderRule(const QList<Declaration> &declarations, const QObject *
         palette = QToolTip::palette();
 #endif
 
-    for (int i = 0; i < declarations.size(); i++) {
-        const Declaration& decl = declarations.at(i);
+    for (const Declaration &decl : declarations) {
         if (decl.d->propertyId == BorderImage) {
             QString uri;
             QCss::TileMode horizStretch, vertStretch;
@@ -1753,8 +1752,8 @@ static QList<Declaration> declarations(const QList<StyleRule> &styleRules, QLati
                                        quint64 pseudoClass = PseudoClass_Unspecified)
 {
     QList<Declaration> decls;
-    for (int i = 0; i < styleRules.size(); i++) {
-        const Selector& selector = styleRules.at(i).selectors.at(0);
+    for (const auto &rule : styleRules) {
+        const Selector &selector = rule.selectors.at(0);
         // Rules with pseudo elements don't cascade. This is an intentional
         // diversion for CSS
         if (part.compare(selector.pseudoElement(), Qt::CaseInsensitive) != 0)
@@ -1763,7 +1762,7 @@ static QList<Declaration> declarations(const QList<StyleRule> &styleRules, QLati
         quint64 cssClass = selector.pseudoClass(&negated);
         if ((pseudoClass == PseudoClass_Any) || (cssClass == PseudoClass_Unspecified)
             || ((((cssClass & pseudoClass) == cssClass)) && ((negated & pseudoClass) == 0)))
-            decls += styleRules.at(i).declarations;
+            decls += rule.declarations;
     }
     return decls;
 }
@@ -1883,8 +1882,8 @@ QRenderRule QStyleSheetStyle::renderRule(const QObject *obj, int element, quint6
 
     quint64 stateMask = 0;
     const QList<StyleRule> rules = styleRules(obj);
-    for (int i = 0; i < rules.size(); i++) {
-        const Selector& selector = rules.at(i).selectors.at(0);
+    for (const auto &rule : rules) {
+        const Selector &selector = rule.selectors.at(0);
         quint64 negated = 0;
         stateMask |= selector.pseudoClass(&negated);
         stateMask |= negated;
@@ -2205,8 +2204,8 @@ bool QStyleSheetStyle::hasStyleRule(const QObject *obj, int part) const
     }
 
     const auto pseudoElement = QLatin1StringView(knownPseudoElements[part].name);
-    for (int i = 0; i < rules.size(); i++) {
-        const Selector& selector = rules.at(i).selectors.at(0);
+    for (const auto &rule : rules) {
+        const Selector &selector = rule.selectors.at(0);
         if (pseudoElement.compare(selector.pseudoElement(), Qt::CaseInsensitive) == 0) {
             cache[part] = true;
             return true;
@@ -2939,9 +2938,9 @@ void QStyleSheetStyle::polish(QWidget *w)
     setPalette(w);
 
     //set the WA_Hover attribute if one of the selector depends of the hover state
-    QList<StyleRule> rules = styleRules(w);
-    for (int i = 0; i < rules.size(); i++) {
-        const Selector& selector = rules.at(i).selectors.at(0);
+    const QList<StyleRule> rules = styleRules(w);
+    for (const auto &rule : rules) {
+        const Selector &selector = rule.selectors.at(0);
         quint64 negated = 0;
         quint64 cssClass = selector.pseudoClass(&negated);
         if ( cssClass & PseudoClass_Hover || negated & PseudoClass_Hover) {
