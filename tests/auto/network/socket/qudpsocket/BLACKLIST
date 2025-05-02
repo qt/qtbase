@@ -1,7 +1,5 @@
 [writeDatagramToNonExistingPeer]
 windows
-[readyReadForEmptyDatagram]
-opensuse-leap
 [multicast]
 centos
 macos arm
