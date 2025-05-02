@@ -73,7 +73,7 @@ static inline int qt_safe_accept(int s, struct sockaddr *addr, QT_SOCKLEN_T *add
     Q_ASSERT((flags & ~O_NONBLOCK) == 0);
 
     int fd;
-#ifdef QT_THREADSAFE_CLOEXEC
+#if QT_CONFIG(accept4)
     // use accept4
     int sockflags = SOCK_CLOEXEC;
     if (flags & O_NONBLOCK)

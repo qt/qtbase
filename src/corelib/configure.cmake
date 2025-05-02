@@ -131,6 +131,59 @@ int pipes[2];
 }
 ")
 
+# dup3
+qt_config_compile_test(dup3
+    LABEL "dup3"
+    CODE
+"#define _GNU_SOURCE 1
+#include <fcntl.h>
+#include <unistd.h>
+
+int main(void)
+{
+    /* BEGIN TEST: */
+(void) dup3(0, 3, O_CLOEXEC);
+    /* END TEST: */
+    return 0;
+}
+")
+
+# acccept4
+qt_config_compile_test(accept4
+    LABEL "accept4"
+    CODE
+"#define _GNU_SOURCE 1
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <fcntl.h>
+#include <unistd.h>
+
+int main(void)
+{
+    /* BEGIN TEST: */
+#if defined(__NetBSD__)
+(void) paccept(0, 0, 0, NULL, SOCK_CLOEXEC | SOCK_NONBLOCK);
+#else
+(void) accept4(0, 0, 0, SOCK_CLOEXEC | SOCK_NONBLOCK);
+#endif
+    /* END TEST: */
+    return 0;
+}
+")
+
+# copy_file_range
+qt_config_compile_test(copy_file_range
+    LABEL "copy_file_range()"
+    CODE
+"#include <unistd.h>
+
+int main()
+{
+    off_t off_in = 0, off_out = 1024;
+    return copy_file_range(0, &off_in, 1, &off_out, 2147483647, 0) != 0;
+}
+")
+
 # Check if __cxa_thread_atexit{,_impl} are present in the C library (hence why
 # PROJECT_PATH instead of CODE for C++). Either one suffices to disable
 # FEATURE_broken_threadlocal_dtors. See details in qthread_unix.cpp.
@@ -821,6 +874,19 @@ qt_feature("threadsafe-cloexec"
 )
 qt_feature_definition("threadsafe-cloexec" "QT_THREADSAFE_CLOEXEC" VALUE "1")
 qt_feature_config("threadsafe-cloexec" QMAKE_PUBLIC_QT_CONFIG)
+qt_feature("dup3" PRIVATE
+    LABEL "dup3 support"
+    CONDITION TEST_dup3
+)
+qt_feature("accept4" PRIVATE
+    LABEL "accept4 support"
+    CONDITION TEST_accept4
+)
+qt_feature("vxpipedrv" PRIVATE
+    LABEL "Use pipedrv pipes on VxWorks"
+    AUTODETECT OFF
+    CONDITION VXWORKS
+)
 qt_feature("regularexpression" PUBLIC
     SECTION "Kernel"
     LABEL "QRegularExpression"

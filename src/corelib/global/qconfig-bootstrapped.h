@@ -40,6 +40,7 @@
 #define QT_NO_DATASTREAM
 #define QT_FEATURE_datestring 1
 #define QT_FEATURE_datetimeparser -1
+#define QT_FEATURE_dup3 -1
 #define QT_FEATURE_easingcurve -1
 #define QT_FEATURE_etw -1
 #if defined(__linux__) || defined(__GLIBC__)

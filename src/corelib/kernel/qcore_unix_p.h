@@ -270,7 +270,6 @@ static inline int qt_safe_open(const char *pathname, int flags, mode_t mode = 07
 #undef QT_OPEN
 #define QT_OPEN         qt_safe_open
 
-#ifndef Q_OS_VXWORKS // no POSIX pipes in VxWorks
 // don't call ::pipe
 // call qt_safe_pipe
 static inline int qt_safe_pipe(int pipefd[2], int flags = 0)
@@ -299,8 +298,6 @@ static inline int qt_safe_pipe(int pipefd[2], int flags = 0)
 #endif
 }
 
-#endif // Q_OS_VXWORKS
-
 // don't call dup or fcntl(F_DUPFD)
 static inline int qt_safe_dup(int oldfd, int atleast = 0, int flags = FD_CLOEXEC)
 {
@@ -328,7 +325,7 @@ static inline int qt_safe_dup2(int oldfd, int newfd, int flags = FD_CLOEXEC)
     Q_ASSERT(flags == FD_CLOEXEC || flags == 0);
 
     int ret;
-#ifdef QT_THREADSAFE_CLOEXEC
+#if QT_CONFIG(dup3)
     // use dup3
     QT_EINTR_LOOP(ret, ::dup3(oldfd, newfd, flags ? O_CLOEXEC : 0));
     return ret;
