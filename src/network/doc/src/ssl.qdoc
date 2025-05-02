@@ -17,6 +17,25 @@
 
     For Android applications see \l{Adding OpenSSL Support for Android}.
 
+    \section1 Using Encryption in Networked Applications
+
+    Use encryption when transporting data on any network whenever possible.
+    \e Plaintext, which is unencrypted data that is easily readable, exposes
+    sensitive data such as user information and information about network
+    systems.
+
+    Use QSslSocket::connectToHostEncrypted() to connect using encryption and
+    check for SSL issues using QSslSocket::sslHandshakeErrors(). Use
+    QSslSocket::ignoreSslErrors() with caution as it will create security risks
+    in your application.
+
+    Use QSslConfiguration to enforce strong security settings. The supported
+    protocols depend on the SSL backend and the risk level of a protocol could
+    change in the future. You can use a newer and more secure protocol using
+    QSslConfiguration::setProtocol(). For more information, refer to
+    QSsl::SslProtocol for the available protocols.
+
+
     \section1 Enabling and Disabling SSL Support when Building Qt from Source
 
     When building Qt from source, Qt builds plugins for native TLS libraries

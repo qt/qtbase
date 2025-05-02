@@ -20,6 +20,11 @@
     and high level classes such as QNetworkRequest, QNetworkReply and
     QNetworkAccessManager to perform network operations using common protocols.
 
+    Qt Network also provides an API for Transport Layer Security (TLS) and
+    security functions using a native TLS backend, the \l{OpenSSL Toolkit}, or
+    any appropriate TLS plugin. Refer to the
+    \l{Secure Sockets Layer (SSL) Classes} for more information.
+
     \section1 Qt's Classes for Network Programming
 
     The \l{Qt Network C++ Classes} page contains a list of the C++ classes
