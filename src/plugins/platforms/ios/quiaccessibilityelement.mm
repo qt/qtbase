@@ -60,7 +60,6 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QMacAccessibilityElement);
 
 - (void)invalidate
 {
-    [self release];
 }
 
 - (BOOL)isAccessibilityElement
