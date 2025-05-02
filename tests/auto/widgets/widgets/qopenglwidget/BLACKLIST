@@ -1,7 +1,6 @@
 # Temporary solution COIN-966
 ubuntu
 rhel
-opensuse-leap
 
 # QTBUG-87436
 [clearAndGrab]
