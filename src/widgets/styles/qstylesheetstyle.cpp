@@ -361,38 +361,22 @@ struct QStyleSheetBackgroundData : public QSharedData
 
 struct QStyleSheetBorderData : public QSharedData
 {
-    QStyleSheetBorderData() : bi(nullptr)
-    {
-        for (int i = 0; i < 4; i++) {
-            borders[i] = 0;
-            styles[i] = QCss::BorderStyle_None;
-        }
-    }
+    QStyleSheetBorderData() = default;
 
-    QStyleSheetBorderData(int *b, QBrush *c, QCss::BorderStyle *s, QSize *r) : bi(nullptr)
-    {
-        for (int i = 0; i < 4; i++) {
-            borders[i] = b[i];
-            styles[i] = s[i];
-            colors[i] = c[i];
-            radii[i] = r[i];
-        }
-    }
-
-    int borders[4];
-    QBrush colors[4];
-    QCss::BorderStyle styles[4];
-    QSize radii[4]; // topleft, topright, bottomleft, bottomright
-
-    const QStyleSheetBorderImageData *borderImage() const
-    { return bi; }
-    bool hasBorderImage() const { return bi!=nullptr; }
-
+    std::array<int, 4> borders = {0, 0, 0, 0};
+    std::array<QBrush, 4> colors;
+    std::array<QCss::BorderStyle, 4> styles = {QCss::BorderStyle_None,
+                                               QCss::BorderStyle_None,
+                                               QCss::BorderStyle_None,
+                                               QCss::BorderStyle_None};
+    std::array<QSize, 4> radii; // topleft, topright, bottomleft, bottomright
     QSharedDataPointer<QStyleSheetBorderImageData> bi;
 
+    const QStyleSheetBorderImageData *borderImage() const { return bi; }
+    bool hasBorderImage() const { return bi!=nullptr; }
     bool isOpaque() const
     {
-        for (int i = 0; i < 4; i++) {
+        for (size_t i = 0; i < 4; i++) {
             if (styles[i] == QCss::BorderStyle_Native || styles[i] == QCss::BorderStyle_None)
                 continue;
             if (styles[i] >= QCss::BorderStyle_Dotted && styles[i] <= QCss::BorderStyle_DotDotDash
@@ -412,38 +396,16 @@ struct QStyleSheetBorderData : public QSharedData
 
 struct QStyleSheetOutlineData : public QStyleSheetBorderData
 {
-    QStyleSheetOutlineData()
-    {
-        for (int i = 0; i < 4; i++) {
-            offsets[i] = 0;
-        }
-    }
+    QStyleSheetOutlineData() = default;
 
-    QStyleSheetOutlineData(int *b, QBrush *c, QCss::BorderStyle *s, QSize *r, int *o)
-            : QStyleSheetBorderData(b, c, s, r)
-    {
-        for (int i = 0; i < 4; i++) {
-            offsets[i] = o[i];
-        }
-    }
-
-    int offsets[4];
+    std::array<int, 4> offsets = {0, 0, 0, 0};
 };
 
 struct QStyleSheetBoxData : public QSharedData
 {
-    QStyleSheetBoxData(int *m, int *p, int s) : spacing(s)
-    {
-        for (int i = 0; i < 4; i++) {
-            margins[i] = m[i];
-            paddings[i] = p[i];
-        }
-    }
-
-    int margins[4];
-    int paddings[4];
-
-    int spacing;
+    std::array<int, 4> margins = {0, 0, 0, 0};
+    std::array<int, 4> paddings = {0, 0, 0, 0};
+    int spacing = -1;
 };
 
 struct QStyleSheetPaletteData : public QSharedData
@@ -934,30 +896,17 @@ QRenderRule::QRenderRule(const QList<Declaration> &declarations, const QObject *
     if (v.extractPosition(&left, &top, &right, &bottom, &origin, &position, &mode, &textAlignment))
         p = new QStyleSheetPositionData(left, top, right, bottom, origin, position, mode, textAlignment);
 
-    int margins[4], paddings[4], spacing = -1;
-    for (int i = 0; i < 4; i++)
-        margins[i] = paddings[i] = 0;
-    if (v.extractBox(margins, paddings, &spacing))
-        b = new QStyleSheetBoxData(margins, paddings, spacing);
+    b = new QStyleSheetBoxData;
+    if (!v.extractBox(b->margins.data(), b->paddings.data(), &b->spacing))
+        b = nullptr;
 
-    int borders[4];
-    QBrush colors[4];
-    QCss::BorderStyle styles[4];
-    QSize radii[4];
-    for (int i = 0; i < 4; i++) {
-        borders[i] = 0;
-        styles[i] = BorderStyle_None;
-    }
-    if (v.extractBorder(borders, colors, styles, radii))
-        bd = new QStyleSheetBorderData(borders, colors, styles, radii);
+    bd = new QStyleSheetBorderData;
+    if (!v.extractBorder(bd->borders.data(), bd->colors.data(), bd->styles.data(), bd->radii.data()))
+        bd = nullptr;
 
-    int offsets[4];
-    for (int i = 0; i < 4; i++) {
-        borders[i] = offsets[i] = 0;
-        styles[i] = BorderStyle_None;
-    }
-    if (v.extractOutline(borders, colors, styles, radii, offsets))
-        ou = new QStyleSheetOutlineData(borders, colors, styles, radii, offsets);
+    ou = new QStyleSheetOutlineData;
+    if (!v.extractOutline(ou->borders.data(), ou->colors.data(), ou->styles.data(), ou->radii.data(), ou->offsets.data()))
+        ou = nullptr;
 
     QBrush brush;
     QString uri;
@@ -1111,7 +1060,7 @@ QRect QRenderRule::borderRect(const QRect& r) const
 {
     if (!hasBox())
         return r;
-    const int* m = box()->margins;
+    const auto &m = box()->margins;
     return r.adjusted(m[LeftEdge], m[TopEdge], -m[RightEdge], -m[BottomEdge]);
 }
 
@@ -1120,7 +1069,7 @@ QRect QRenderRule::outlineRect(const QRect& r) const
     QRect br = borderRect(r);
     if (!hasOutline())
         return br;
-    const int *b = outline()->borders;
+    const auto &b = outline()->borders;
     return r.adjusted(b[LeftEdge], b[TopEdge], -b[RightEdge], -b[BottomEdge]);
 }
 
@@ -1129,7 +1078,7 @@ QRect QRenderRule::paddingRect(const QRect& r) const
     QRect br = borderRect(r);
     if (!hasBorder())
         return br;
-    const int *b = border()->borders;
+    const auto &b = border()->borders;
     return br.adjusted(b[LeftEdge], b[TopEdge], -b[RightEdge], -b[BottomEdge]);
 }
 
@@ -1138,7 +1087,7 @@ QRect QRenderRule::contentsRect(const QRect& r) const
     QRect pr = paddingRect(r);
     if (!hasBox())
         return pr;
-    const int *p = box()->paddings;
+    const auto &p = box()->paddings;
     return pr.adjusted(p[LeftEdge], p[TopEdge], -p[RightEdge], -p[BottomEdge]);
 }
 
@@ -1147,16 +1096,16 @@ QRect QRenderRule::boxRect(const QRect& cr, int flags) const
     QRect r = cr;
     if (hasBox()) {
         if (flags & Margin) {
-            const int *m = box()->margins;
+            const auto &m = box()->margins;
             r.adjust(-m[LeftEdge], -m[TopEdge], m[RightEdge], m[BottomEdge]);
         }
         if (flags & Padding) {
-            const int *p = box()->paddings;
+            const auto &p = box()->paddings;
             r.adjust(-p[LeftEdge], -p[TopEdge], p[RightEdge], p[BottomEdge]);
         }
     }
     if (hasBorder() && (flags & Border)) {
-        const int *b = border()->borders;
+        const auto &b = border()->borders;
         r.adjust(-b[LeftEdge], -b[TopEdge], b[RightEdge], b[BottomEdge]);
     }
     return r;
@@ -1220,7 +1169,7 @@ void QRenderRule::drawBorderImage(QPainter *p, const QRect& rect)
         Qt::StretchTile, Qt::RoundTile, Qt::StretchTile, Qt::RepeatTile, Qt::StretchTile };
 
     const QStyleSheetBorderImageData *borderImageData = border()->borderImage();
-    const int *targetBorders = border()->borders;
+    const auto &targetBorders = border()->borders;
     const auto sourceBorders = borderImageData->cuts;
     QMargins sourceMargins(sourceBorders[LeftEdge], sourceBorders[TopEdge],
                            sourceBorders[RightEdge], sourceBorders[BottomEdge]);
@@ -1314,7 +1263,7 @@ void QRenderRule::drawOutline(QPainter *p, const QRect &rect)
 
     bool wasAntialiased = p->renderHints() & QPainter::Antialiasing;
     p->setRenderHint(QPainter::Antialiasing);
-    qDrawBorder(p, rect, ou->styles, ou->borders, ou->colors, ou->radii);
+    qDrawBorder(p, rect, ou->styles.data(), ou->borders.data(), ou->colors.data(), ou->radii.data());
     p->setRenderHint(QPainter::Antialiasing, wasAntialiased);
 }
 
@@ -1330,7 +1279,7 @@ void QRenderRule::drawBorder(QPainter *p, const QRect& rect)
 
     bool wasAntialiased = p->renderHints() & QPainter::Antialiasing;
     p->setRenderHint(QPainter::Antialiasing);
-    qDrawBorder(p, rect, bd->styles, bd->borders, bd->colors, bd->radii);
+    qDrawBorder(p, rect, bd->styles.data(), bd->borders.data(), bd->colors.data(), bd->radii.data());
     p->setRenderHint(QPainter::Antialiasing, wasAntialiased);
 }
 
@@ -1340,12 +1289,12 @@ QPainterPath QRenderRule::borderClip(QRect r)
         return QPainterPath();
 
     QSize tlr, trr, blr, brr;
-    qNormalizeRadii(r, bd->radii, &tlr, &trr, &blr, &brr);
+    qNormalizeRadii(r, bd->radii.data(), &tlr, &trr, &blr, &brr);
     if (tlr.isNull() && trr.isNull() && blr.isNull() && brr.isNull())
         return QPainterPath();
 
     const QRectF rect(r);
-    const int *borders = border()->borders;
+    const auto &borders = border()->borders;
     QPainterPath path;
     qreal curY = rect.y() + borders[TopEdge]/2.0;
     path.moveTo(rect.x() + tlr.width(), curY);
