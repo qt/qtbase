@@ -429,7 +429,7 @@ void QHeaderView::setOffset(int newOffset)
     const int ndelta = q26::saturate_cast<int>(d->headerOffset - qint64{newOffset});
     d->headerOffset = newOffset;
     if (d->orientation == Qt::Horizontal) {
-        if (isLeftToRight()) {
+        if (isRightToLeft()) {
             if (int r; !qMulOverflow<-1>(ndelta, &r))
                 d->viewport->scroll(r, 0);
             else
