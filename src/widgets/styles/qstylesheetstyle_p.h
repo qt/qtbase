@@ -108,8 +108,8 @@ private:
 
     friend class QRenderRule;
     int nativeFrameWidth(const QWidget *);
-    QRenderRule renderRule(const QObject *, int, quint64 = 0) const;
-    QRenderRule renderRule(const QObject *, const QStyleOption *, int = 0) const;
+    QRenderRule renderRule(const QWidget *, int, quint64 = 0) const;
+    QRenderRule renderRule(const QWidget *, const QStyleOption *, int = 0) const;
     QSize defaultSize(const QWidget *, QSize, const QRect&, int) const;
     QRect positionRect(const QWidget *, const QRenderRule&, const QRenderRule&, int,
                        const QRect&, Qt::LayoutDirection) const;
@@ -123,8 +123,8 @@ private:
     void setProperties(QWidget *);
     void setGeometry(QWidget *);
     void unsetStyleSheetFont(QWidget *) const;
-    QList<QCss::StyleRule> styleRules(const QObject *obj) const;
-    bool hasStyleRule(const QObject *obj, int part) const;
+    QList<QCss::StyleRule> styleRules(const QWidget *w) const;
+    bool hasStyleRule(const QWidget *w, int part) const;
 
     QHash<QStyle::SubControl, QRect> titleBarLayout(const QWidget *w, const QStyleOptionTitleBar *tb) const;
 
@@ -133,7 +133,7 @@ private:
     static Qt::Alignment resolveAlignment(Qt::LayoutDirection, Qt::Alignment);
     static bool isNaturalChild(const QObject *obj);
     static QPixmap loadPixmap(const QString &fileName, const QObject *context);
-    bool initObject(const QObject *obj) const;
+    bool initWidget(const QWidget *w) const;
     void renderMenuItemIcon(const QStyleOptionMenuItem *mi, QPainter *p, const QWidget *w,
                             const QRect &rect, QRenderRule &subRule) const;
 public:

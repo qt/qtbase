@@ -1618,16 +1618,15 @@ private:
     mutable QHash<const QObject *, QHash<QString, QString> > m_attributeCache;
 };
 
-QList<QCss::StyleRule> QStyleSheetStyle::styleRules(const QObject *obj) const
+QList<QCss::StyleRule> QStyleSheetStyle::styleRules(const QWidget *w) const
 {
     QHash<const QObject *, QList<StyleRule>>::const_iterator cacheIt =
-            styleSheetCaches->styleRulesCache.constFind(obj);
+            styleSheetCaches->styleRulesCache.constFind(w);
     if (cacheIt != styleSheetCaches->styleRulesCache.constEnd())
         return cacheIt.value();
 
-    if (!initObject(obj)) {
-        return QList<StyleRule>();
-    }
+    if (!initWidget(w))
+        return {};
 
     QStyleSheetStyleSelector styleSelector;
 
@@ -1664,7 +1663,7 @@ QList<QCss::StyleRule> QStyleSheetStyle::styleRules(const QObject *obj) const
     }
 
     QList<QCss::StyleSheet> objectSs;
-    for (const QObject *o = obj; o; o = parentObject(o)) {
+    for (const QObject *o = w; o; o = parentObject(o)) {
         QString styleSheet = o->property("styleSheet").toString();
         if (styleSheet.isEmpty())
             continue;
@@ -1691,9 +1690,9 @@ QList<QCss::StyleRule> QStyleSheetStyle::styleRules(const QObject *obj) const
     styleSelector.styleSheets += objectSs;
 
     StyleSelector::NodePtr n;
-    n.ptr = const_cast<QObject *>(obj);
+    n.ptr = const_cast<QWidget *>(w);
     QList<QCss::StyleRule> rules = styleSelector.styleRulesForNode(n);
-    styleSheetCaches->styleRulesCache.insert(obj, rules);
+    styleSheetCaches->styleRulesCache.insert(w, rules);
     return rules;
 }
 
@@ -1803,36 +1802,35 @@ static quint64 pseudoClass(QStyle::State state)
     return pc;
 }
 
-static void qt_check_if_internal_object(const QObject **obj, int *element)
+static void qt_check_if_internal_widget(const QWidget **w, int *element)
 {
 #if !QT_CONFIG(dockwidget)
-    Q_UNUSED(obj);
+    Q_UNUSED(w);
     Q_UNUSED(element);
 #else
-    if (*obj && qstrcmp((*obj)->metaObject()->className(), "QDockWidgetTitleButton") == 0) {
-        if ((*obj)->objectName() == "qt_dockwidget_closebutton"_L1) {
+    if (*w && qstrcmp((*w)->metaObject()->className(), "QDockWidgetTitleButton") == 0) {
+        if ((*w)->objectName() == "qt_dockwidget_closebutton"_L1)
             *element = PseudoElement_DockWidgetCloseButton;
-        } else if ((*obj)->objectName() == "qt_dockwidget_floatbutton"_L1) {
+        else if ((*w)->objectName() == "qt_dockwidget_floatbutton"_L1)
             *element = PseudoElement_DockWidgetFloatButton;
-        }
-        *obj = (*obj)->parent();
+        *w = (*w)->parentWidget();
     }
 #endif
 }
 
-QRenderRule QStyleSheetStyle::renderRule(const QObject *obj, int element, quint64 state) const
+QRenderRule QStyleSheetStyle::renderRule(const QWidget *w, int element, quint64 state) const
 {
-    qt_check_if_internal_object(&obj, &element);
-    QHash<quint64, QRenderRule> &cache = styleSheetCaches->renderRulesCache[obj][element];
+    qt_check_if_internal_widget(&w, &element);
+    QHash<quint64, QRenderRule> &cache = styleSheetCaches->renderRulesCache[w][element];
     QHash<quint64, QRenderRule>::const_iterator cacheIt = cache.constFind(state);
     if (cacheIt != cache.constEnd())
         return cacheIt.value();
 
-    if (!initObject(obj))
+    if (!initWidget(w))
         return QRenderRule();
 
     quint64 stateMask = 0;
-    const QList<StyleRule> rules = styleRules(obj);
+    const QList<StyleRule> rules = styleRules(w);
     for (const auto &rule : rules) {
         const Selector &selector = rule.selectors.at(0);
         quint64 negated = 0;
@@ -1850,14 +1848,14 @@ QRenderRule QStyleSheetStyle::renderRule(const QObject *obj, int element, quint6
 
     const auto part = QLatin1StringView(knownPseudoElements[element].name);
     QList<Declaration> decls = declarations(rules, part, state);
-    QRenderRule newRule(decls, obj);
+    QRenderRule newRule(decls, w);
     cache[state] = newRule;
     if ((state & stateMask) != state)
         cache[state&stateMask] = newRule;
     return newRule;
 }
 
-QRenderRule QStyleSheetStyle::renderRule(const QObject *obj, const QStyleOption *opt, int pseudoElement) const
+QRenderRule QStyleSheetStyle::renderRule(const QWidget *w, const QStyleOption *opt, int pseudoElement) const
 {
     quint64 extraClass = 0;
     QStyle::State state = opt ? opt->state : QStyle::State(QStyle::State_None);
@@ -2110,16 +2108,14 @@ QRenderRule QStyleSheetStyle::renderRule(const QObject *obj, const QStyleOption 
         }
 #endif
 #if QT_CONFIG(textedit)
-        else if (const QPlainTextEdit *edit = qobject_cast<const QPlainTextEdit *>(obj)) {
+        else if (const QPlainTextEdit *edit = qobject_cast<const QPlainTextEdit *>(w))
             extraClass |= (edit->isReadOnly() ? PseudoClass_ReadOnly : PseudoClass_Editable);
-        }
-        else if (const QTextEdit *edit = qobject_cast<const QTextEdit *>(obj)) {
+        else if (const QTextEdit *edit = qobject_cast<const QTextEdit *>(w))
             extraClass |= (edit->isReadOnly() ? PseudoClass_ReadOnly : PseudoClass_Editable);
-        }
 #endif
 #if QT_CONFIG(lineedit)
         // LineEdit sets Sunken flag to indicate Sunken frame (argh)
-        if (const QLineEdit *lineEdit = qobject_cast<const QLineEdit *>(obj)) {
+        if (const QLineEdit *lineEdit = qobject_cast<const QLineEdit *>(w)) {
             state &= ~QStyle::State_Sunken;
             if (lineEdit->hasFrame()) {
                 extraClass &= ~PseudoClass_Frameless;
@@ -2128,28 +2124,28 @@ QRenderRule QStyleSheetStyle::renderRule(const QObject *obj, const QStyleOption 
             }
         } else
 #endif
-        if (const QFrame *frm = qobject_cast<const QFrame *>(obj)) {
+        if (const QFrame *frm = qobject_cast<const QFrame *>(w)) {
             if (frm->lineWidth() == 0)
                 extraClass |= PseudoClass_Frameless;
         }
     }
 
-    return renderRule(obj, pseudoElement, pseudoClass(state) | extraClass);
+    return renderRule(w, pseudoElement, pseudoClass(state) | extraClass);
 }
 
-bool QStyleSheetStyle::hasStyleRule(const QObject *obj, int part) const
+bool QStyleSheetStyle::hasStyleRule(const QWidget *w, int part) const
 {
-    QHash<int, bool> &cache = styleSheetCaches->hasStyleRuleCache[obj];
+    QHash<int, bool> &cache = styleSheetCaches->hasStyleRuleCache[w];
     QHash<int, bool>::const_iterator cacheIt = cache.constFind(part);
     if (cacheIt != cache.constEnd())
         return cacheIt.value();
 
-    if (!initObject(obj))
+    if (!initWidget(w))
         return false;
 
-    const QList<StyleRule> &rules = styleRules(obj);
+    const QList<StyleRule> &rules = styleRules(w);
     if (part == PseudoElement_None) {
-        bool result = obj && !rules.isEmpty();
+        bool result = w && !rules.isEmpty();
         cache[part] = result;
         return result;
     }
@@ -2846,19 +2842,17 @@ void QStyleSheetStyleCaches::styleDestroyed(QObject *o)
  *  Make sure that the cache will be clean by connecting destroyed if needed.
  *  return false if the widget is not stylable;
  */
-bool QStyleSheetStyle::initObject(const QObject *obj) const
+bool QStyleSheetStyle::initWidget(const QWidget *w) const
 {
-    if (!obj)
+    if (!w)
         return false;
-    if (const QWidget *w = qobject_cast<const QWidget*>(obj)) {
-        if (w->testAttribute(Qt::WA_StyleSheet))
-            return true;
-        if (unstylable(w))
-            return false;
-        const_cast<QWidget *>(w)->setAttribute(Qt::WA_StyleSheet, true);
-    }
+    if (w->testAttribute(Qt::WA_StyleSheet))
+        return true;
+    if (unstylable(w))
+        return false;
+    const_cast<QWidget *>(w)->setAttribute(Qt::WA_StyleSheet, true);
 
-    connect(obj, &QObject::destroyed,
+    connect(w, &QObject::destroyed,
             styleSheetCaches, &QStyleSheetStyleCaches::objectDestroyed,
             Qt::UniqueConnection);
     return true;
@@ -2869,7 +2863,7 @@ void QStyleSheetStyle::polish(QWidget *w)
     baseStyle()->polish(w);
     RECURSION_GUARD(return)
 
-    if (!initObject(w))
+    if (!initWidget(w))
         return;
 
     if (styleSheetCaches->styleRulesCache.contains(w)) {
