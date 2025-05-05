@@ -117,9 +117,10 @@ function(qt_internal_android_test_runner_arguments target out_test_runner out_te
     set(deployment_tool "${host_bin_dir}/androiddeployqt")
 
     _qt_internal_android_get_target_android_build_dir(android_build_dir ${target})
+    _qt_internal_android_get_platform_tools_path(platform_tools)
     set(${out_test_arguments}
         "--path" "${android_build_dir}"
-        "--adb" "${ANDROID_SDK_ROOT}/platform-tools/adb"
+        "--adb" "${platform_tools}/adb"
         "--skip-install-root"
         "--make" "\"${CMAKE_COMMAND}\" --build ${CMAKE_BINARY_DIR} --target ${target}_make_apk"
         "--apk" "${android_build_dir}/${target}.apk"
