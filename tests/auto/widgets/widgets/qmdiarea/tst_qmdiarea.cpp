@@ -1002,6 +1002,7 @@ void tst_QMdiArea::currentSubWindow()
     QLineEdit dummyTopLevel;
     dummyTopLevel.show();
     QVERIFY(QTest::qWaitForWindowExposed(&dummyTopLevel));
+    QVERIFY(QTest::qWaitForWindowActive(&dummyTopLevel));
 
     // Move focus to another top-level and check that we still
     // have an active window.
