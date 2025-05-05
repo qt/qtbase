@@ -104,21 +104,78 @@ function(__qt_internal_require_suitable_cmake_version_for_using_qt)
     endif()
 endfunction()
 
+# Handle force-assignment of CMP0156 policy when using CMake 3.29+.
+#
+# For Apple-platforms we set it to NEW, to avoid duplicate linker issues when using -ObjC flag.
+#
+# For non-Apple platforms we set it to OLD, because we haven't done the necessary testing to
+# see which platforms / linkers can handle the new deduplication behavior, without breaking the
+# various linking techniques that Qt uses for object library propagation.
 function(__qt_internal_set_cmp0156)
-    if(POLICY CMP0156)
-        if(QT_FORCE_CMP0156_TO_NEW)
-            cmake_policy(SET CMP0156 "NEW")
-        else()
-            cmake_policy(GET CMP0156 policy_value)
-            if(NOT "${policy_value}" STREQUAL "OLD")
-                if("${policy_value}" STREQUAL "NEW" AND NOT QT_BUILDING_QT)
-                    message(WARNING "CMP0156 is set to '${policy_value}'. Qt forces the 'OLD'"
-                        " behavior of this policy by default. Set QT_FORCE_CMP0156_TO_NEW=ON to"
-                        " force the 'NEW' behavior for the Qt commands that create either"
-                        " library or executable targets.")
-                endif()
-                cmake_policy(SET CMP0156 "OLD")
-            endif()
-        endif()
+    # Exit early if not using CMake 3.29+
+    if(NOT POLICY CMP0156)
+        return()
+    endif()
+
+    # Honor this variable if it's set and TRUE. It was previously introduced to allow working around
+    # the forced OLD value.
+    if(QT_FORCE_CMP0156_TO_NEW)
+        cmake_policy(SET CMP0156 "NEW")
+        message(DEBUG "Force setting the CMP0156 policy to user provided value: NEW")
+        return()
+    endif()
+
+    # Allow forcing to OLD / NEW or empty behavior due the default being NEW for Apple platforms.
+    if(QT_FORCE_CMP0156_TO_VALUE)
+        cmake_policy(SET CMP0156 "${QT_FORCE_CMP0156_TO_VALUE}")
+        message(DEBUG "Force setting the CMP0156 policy to user provided value: "
+            "${QT_FORCE_CMP0156_TO_VALUE}")
+        return()
+    endif()
+
+    # Get the current value of the policy, as saved by the Qt6 package as soon as it is found.
+    # We can't just do cmake_policy(GET CMP0156 policy_value) here, because our Qt6Config.cmake and
+    # Qt6FooConfig.cmake files use cmake_minimum_required, which reset the policy value that
+    # might have been set by the project developer or the user.
+    # And a function uses the policy values that were set when the function was defined, not when
+    # it is called.
+    __qt_internal_get_directory_scope_policy_cmp0156(policy_value)
+
+    # Apple linkers (legacy Apple ld64, as well as the new ld-prime) don't care about the
+    # link line order when linking static libraries, compared to Linux GNU ld.
+    # But they care about duplicate static frameworks (not libraries) when used in conjunction with
+    # the -ObjC flag, which force loads all static libraries / frameworks that contain Objective-C
+    # categories or classes. This can cause duplicate symbol errors.
+    # To avoid the issue, we want to enable the policy, so we de-duplicate the libraries.
+    if(APPLE)
+        set(default_policy_value NEW)
+        set(unsupported_policy_value OLD)
+        set(platform_string "Apple")
+    else()
+        # For non-Apple linkers, we keep the previous behavior of not deduplicating libraries,
+        # because we haven't done the necessary testing to identify on which platforms
+        # it is safe to deduplicate.
+        set(default_policy_value OLD)
+        set(unsupported_policy_value NEW)
+        set(platform_string "non-Apple")
+    endif()
+
+    # Force set the default policy value for the given platform, even if the policy value is
+    # the same or empty. That's because in the calling function scope, the value can be empty
+    # due to the cmake_minimum_required call in Qt6Config.cmake resetting the policy value.
+    message(DEBUG "Force setting the CMP0156 policy to '${default_policy_value}' "
+        "for ${platform_string} platforms.")
+    cmake_policy(SET CMP0156 "${default_policy_value}")
+
+    # If the policy is explicitly set to a value other than the default, issue a warning.
+    # Don't show the warning if the policy is unset, which would be the default for most
+    # projects, because it's too much noise. Also don't show it for Qt builds.
+    if("${policy_value}" STREQUAL "${unsupported_policy_value}" AND NOT QT_BUILDING_QT)
+        message(WARNING
+            "CMP0156 is set to '${policy_value}'. Qt forces the '${default_policy_value}'"
+            " behavior of this policy for ${platform_string} platforms by default."
+            " Set QT_FORCE_CMP0156_TO_VALUE=${unsupported_policy_value} to force"
+            " the '${unsupported_policy_value}' behavior for Qt commands that create"
+            " library or executable targets.")
     endif()
 endfunction()
