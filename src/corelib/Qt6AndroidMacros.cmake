@@ -1789,8 +1789,9 @@ function(_qt_internal_android_app_runner_arguments target out_runner_path out_ar
     set(${out_runner_path} "${runner_dir}/qt-android-runner.py" PARENT_SCOPE)
 
     _qt_internal_android_get_target_android_build_dir(android_build_dir ${target})
+    _qt_internal_android_get_platform_tools_path(platform_tools)
     set(${out_arguments}
-        "--adb" "${ANDROID_SDK_ROOT}/platform-tools/adb"
+        "--adb" "${platform_tools}/adb"
         "--build-path" "${android_build_dir}"
         "--apk" "${android_build_dir}/${target}.apk"
         PARENT_SCOPE
@@ -1930,6 +1931,11 @@ function(_qt_internal_android_find_asan_wrap_sh out_wrap_sh_path)
         message(WARNING "Address Sanitizer: the wrap script not found at ${ndk_wrap_sh_path}.")
         set(${out_wrap_sh_path} "" PARENT_SCOPE)
     endif()
+endfunction()
+
+# Returns the path to the Android platform-tools(adb is located there).
+function(_qt_internal_android_get_platform_tools_path out_var)
+    set(${out_var} "${ANDROID_SDK_ROOT}/platform-tools" PARENT_SCOPE)
 endfunction()
 
 set(QT_INTERNAL_ANDROID_TARGET_BUILD_DIR_SUPPORT ON CACHE INTERNAL
