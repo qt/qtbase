@@ -5,6 +5,8 @@
 #include <QtTest/QTest>
 #include <QtCore/QString>
 
+#include <private/qcomparisontesthelper_p.h>
+
 #ifdef __cpp_char8_t
 #  define ONLY_IF_CHAR_8_T(expr) expr
 #else
@@ -43,9 +45,16 @@ class tst_QUtf8StringView : public QObject
 private Q_SLOTS:
     void fromArraysOfUnknownSize();
     void constExpr();
+    void basics();
+    void literalsChar8();
+    void literalsChar();
     void construction();
     void at();
     void arg() const;
+    void fromQString();
+    void comparison();
+    void std_stringview_conversion();
+    void overloadResolution();
     void midLeftRight();
     void nullString();
     void emptyString();
@@ -124,6 +133,115 @@ void tst_QUtf8StringView::constExpr()
         static_assert(!utf8s2.empty());
         static_assert(utf8s2.size() == 5);
     }
+}
+
+void tst_QUtf8StringView::basics()
+{
+    QUtf8StringView sv1;
+
+    // a default-constructed QStringView is null:
+    QVERIFY(sv1.isNull());
+    // which implies it's empty();
+    QVERIFY(sv1.isEmpty());
+
+    QUtf8StringView sv2;
+    QT_TEST_ALL_COMPARISON_OPS(sv2, sv1, Qt::strong_ordering::equal);
+}
+
+template <typename Char, size_t HSize, size_t LHSize, size_t WNSize>
+static void testLiteralsWithType(const Char (&hello)[HSize], const Char (&longhello)[LHSize], const Char (&withnull)[WNSize])
+{
+    QCOMPARE(QUtf8StringView(hello).size(), 5);
+    QCOMPARE(QUtf8StringView(hello + 0).size(), 5); // forces decay to pointer
+    QUtf8StringView sv = hello;
+    QCOMPARE(sv.size(), 5);
+    QVERIFY(!sv.empty());
+    QVERIFY(!sv.isEmpty());
+    QVERIFY(!sv.isNull());
+
+#ifdef __cpp_char8_t
+    QCOMPARE(*sv.utf8(), u8'H');
+#endif
+    QCOMPARE(sv[0],       u8'H');
+    QCOMPARE(sv.at(0),    u8'H');
+    QCOMPARE(sv.front(),  u8'H');
+    QCOMPARE(sv.first(1), u8'H');
+    QCOMPARE(sv[4],       u8'o');
+    QCOMPARE(sv.at(4),    u8'o');
+    QCOMPARE(sv.back(),   u8'o');
+    QCOMPARE(sv.last(1),  u8'o');
+
+    QCOMPARE(*sv.data(),  'H');
+    QCOMPARE(sv[0],       'H');
+    QCOMPARE(sv.at(0),    'H');
+    QCOMPARE(sv.front(),  'H');
+    QCOMPARE(sv.first(1), 'H');
+    QCOMPARE(sv[4],       'o');
+    QCOMPARE(sv.at(4),    'o');
+    QCOMPARE(sv.back(),   'o');
+    QCOMPARE(sv.last(1),  'o');
+
+#ifdef __cpp_char8_t
+    {
+        QUtf8StringView sv2(sv.utf8(), sv.utf8() + sv.size());
+        QVERIFY(!sv2.isNull());
+        QVERIFY(!sv2.empty());
+        QCOMPARE(sv2.size(), 5);
+        QCOMPARE(sv, sv2);
+        QCOMPARE(sv.data(), sv2.data());
+    }
+#endif
+
+    QUtf8StringView sv2(sv.data(), sv.data() + sv.size());
+    QVERIFY(!sv2.isNull());
+    QVERIFY(!sv2.empty());
+    QCOMPARE(sv2.size(), 5);
+    QCOMPARE(sv, sv2);
+    QCOMPARE(sv.data(), sv2.data());
+
+    QUtf8StringView sv3(longhello);
+    QCOMPARE(size_t(sv3.size()), sizeof(longhello)/sizeof(longhello[0]) - 1);
+    QCOMPARE(sv3.last(1), u'.');
+    sv3 = longhello;
+    QCOMPARE(size_t(sv3.size()), sizeof(longhello)/sizeof(longhello[0]) - 1);
+
+    for (int i = 0; i < sv3.size(); ++i) {
+        QUtf8StringView sv4(longhello + i);
+        QCOMPARE(size_t(sv4.size()), sizeof(longhello)/sizeof(longhello[0]) - 1 - i);
+        QCOMPARE(sv4.last(1), u'.');
+        sv4 = longhello + i;
+        QCOMPARE(size_t(sv4.size()), sizeof(longhello)/sizeof(longhello[0]) - 1 - i);
+    }
+
+    // these are different results
+    QCOMPARE(size_t(QUtf8StringView(withnull).size()), size_t(1));
+    QCOMPARE(size_t(QUtf8StringView::fromArray(withnull).size()), sizeof(withnull)/sizeof(withnull[0]));
+    QCOMPARE(QUtf8StringView(withnull + 0).size(), qsizetype(1));
+};
+
+
+void tst_QUtf8StringView::literalsChar8()
+{
+#ifdef __cpp_char8_t
+    const char8_t hello[] = u8"Hello";
+    const char8_t longhello[] =
+            u8"Hello World. This is a much longer message, to exercise qustrlen.";
+    const char8_t withnull[] = u8"a\0zzz";
+    static_assert(sizeof(longhello) >= 16);
+
+    testLiteralsWithType(hello, longhello, withnull);
+#endif
+}
+
+void tst_QUtf8StringView::literalsChar()
+{
+    const char hello[] = "Hello";
+    const char longhello[] =
+            "Hello World. This is a much longer message, to exercise qustrlen.";
+    const char withnull[] = "a\0zzz";
+    static_assert(sizeof(longhello) >= 16);
+
+    testLiteralsWithType(hello, longhello, withnull);
 }
 
 void tst_QUtf8StringView::construction()
@@ -206,6 +324,11 @@ void tst_QUtf8StringView::at()
 
 void tst_QUtf8StringView::arg() const
 {
+    // nullness checks
+    QCOMPARE(QUtf8StringView().arg(QUtf8StringView()), "");
+    QCOMPARE(QUtf8StringView("%1").arg(nullptr), "");
+    QCOMPARE(QUtf8StringView(u8"%1").arg(nullptr), "");
+
 #define CHECK1(pattern, arg1, expected) \
     do { \
         auto p = QUtf8StringView(pattern); \
@@ -248,6 +371,119 @@ void tst_QUtf8StringView::arg() const
     QCOMPARE(QUtf8StringView(" %2 %2 %1 %3 ").arg('c', QChar::CarriageReturn, u'C'),
              " \r \r c C ");
 }
+
+void tst_QUtf8StringView::fromQString()
+{
+    QString null;
+    QString empty = "";
+    QString normal = "hello";
+
+    QVERIFY( QUtf8StringView(null.toUtf8()).isNull());
+    QVERIFY( QUtf8StringView(null.toUtf8()).isEmpty());
+    QVERIFY( QUtf8StringView(empty.toUtf8()).isEmpty());
+    QVERIFY(!QUtf8StringView(empty.toUtf8()).isNull());
+    QVERIFY(!QUtf8StringView(normal.toUtf8()).isEmpty());
+    QVERIFY(!QUtf8StringView(normal.toUtf8()).isNull());
+    QCOMPARE(QUtf8StringView(normal.toUtf8()), u"hello");
+}
+
+void tst_QUtf8StringView::comparison()
+{
+    const QUtf8StringView aa = u8"aa";
+    const QUtf8StringView upperAa = u8"AA";
+    const QUtf8StringView bb = u8"bb";
+
+    QVERIFY(aa == aa);
+    QVERIFY(aa != bb);
+    QVERIFY(aa < bb);
+    QVERIFY(bb > aa);
+
+    QT_TEST_ALL_COMPARISON_OPS(aa, aa, Qt::strong_ordering::equal);
+    QT_TEST_ALL_COMPARISON_OPS(aa, bb, Qt::strong_ordering::less);
+
+    QCOMPARE(aa.compare(aa), 0);
+    QVERIFY(aa.compare(upperAa) != 0);
+    QCOMPARE(aa.compare(upperAa, Qt::CaseInsensitive), 0);
+    QVERIFY(aa.compare(bb) < 0);
+    QVERIFY(bb.compare(aa) > 0);
+}
+
+void tst_QUtf8StringView::std_stringview_conversion()
+{
+    {
+        QUtf8StringView s;
+        std::basic_string_view<QUtf8StringView::storage_type> sv(s);
+        QCOMPARE(sv, std::basic_string_view<QUtf8StringView::storage_type>());
+
+        s = u8"";
+        sv = s;
+        QCOMPARE(s.size(), 0);
+        QCOMPARE(sv.size(), size_t(0));
+        QCOMPARE(sv, std::basic_string_view<QUtf8StringView::storage_type>());
+
+        s = u8"Hello";
+        sv = s;
+        QCOMPARE(sv, std::basic_string_view<QUtf8StringView::storage_type>("Hello"));
+
+        s = QUtf8StringView::fromArray(u8"Hello\0world");
+        sv = s;
+        QCOMPARE(s.size(), 12);
+        QCOMPARE(sv.size(), size_t(12));
+        QCOMPARE(sv, std::basic_string_view<QUtf8StringView::storage_type>("Hello\0world\0", 12));
+    }
+}
+
+namespace QUtf8StringViewOverloadResolution {
+// QString and QUtf8StringView overloads are ambiguous
+// static void test(QString) { }
+// but QStringView and QUtf8StringView work
+static void test(QStringView) = delete;
+static void test(QUtf8StringView) { }
+}
+#ifdef __cpp_char8_t
+extern const char8_t char8ArrayOfUnknownSize[];
+#endif
+extern const char charArrayOfUnknownSize[];
+
+void tst_QUtf8StringView::overloadResolution()
+{
+#ifdef __cpp_char8_t
+    {
+        char8_t char8Array[] = u8"test";
+        QUtf8StringViewOverloadResolution::test(char8Array);
+        char8_t *char8Pointer = char8Array;
+        QUtf8StringViewOverloadResolution::test(char8Pointer);
+        QUtf8StringViewOverloadResolution::test(char8ArrayOfUnknownSize);
+    }
+
+    {
+        std::u8string string;
+        QUtf8StringViewOverloadResolution::test(string);
+        QUtf8StringViewOverloadResolution::test(std::as_const(string));
+        QUtf8StringViewOverloadResolution::test(std::move(string));
+    }
+#endif
+
+    {
+        char charArray[] = "test";
+        QUtf8StringViewOverloadResolution::test(charArray);
+        char *charPointer = charArray;
+        QUtf8StringViewOverloadResolution::test(charPointer);
+        QUtf8StringViewOverloadResolution::test(charArrayOfUnknownSize);
+    }
+
+    {
+        std::string string;
+        QUtf8StringViewOverloadResolution::test(string);
+        QUtf8StringViewOverloadResolution::test(std::as_const(string));
+        QUtf8StringViewOverloadResolution::test(std::move(string));
+    }
+}
+
+#ifdef __cpp_char8_t
+const char8_t char8ArrayOfUnknownSize[] = u8"abc\0def";
+#endif
+const char charArrayOfUnknownSize[] = "abc\0def";
 
 void tst_QUtf8StringView::midLeftRight()
 {
