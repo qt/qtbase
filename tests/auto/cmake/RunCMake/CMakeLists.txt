@@ -16,3 +16,7 @@ if(TARGET Qt::OpenGL)
     list(APPEND extra_run_cmake_args "-DHAS_OPENGL=TRUE")
 endif()
 add_RunCMake_test(Qt6DirConfiguration ${extra_run_cmake_args})
+
+if(APPLE AND TARGET Qt::Gui)
+    add_RunCMake_test(AppleFrameworkDeduplication "-DQt6_DIR=${Qt6_DIR}")
+endif()

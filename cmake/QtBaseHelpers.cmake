@@ -97,6 +97,8 @@ macro(qt_internal_qtbase_pre_project_setup)
         include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/QtPublicCMakeVersionHelpers.cmake")
         qt_internal_check_and_warn_about_unsuitable_cmake_version()
 
+        include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/QtPublicCMakeEarlyPolicyHelpers.cmake")
+
         ## Add some paths to check for cmake modules:
         list(PREPEND CMAKE_MODULE_PATH
             "${CMAKE_CURRENT_SOURCE_DIR}/cmake"
