@@ -3305,6 +3305,14 @@ void tst_QLocale::dayName_data()
     QTest::newRow("el_GR/Sat")
         << QString("el_GR") << QString::fromUtf8("\316\243\316\254\316\262")
         << 6 << QLocale::ShortFormat;
+
+    // Main concern is that short != narrow, for the benefit of QTBUG-10506, QTBUG-84877.
+    QTest::newRow("zh long")
+        << QString("zh") << QString::fromUtf8("\u661F\u671F\u56DB") << 4 << QLocale::LongFormat;
+    QTest::newRow("zh short")
+        << QString("zh") << QString::fromUtf8("\u5468\u56DB") << 4 << QLocale::ShortFormat;
+    QTest::newRow("zh narrow")
+        << QString("zh") << QString::fromUtf8("\u56DB") << 4 << QLocale::NarrowFormat;
 }
 
 void tst_QLocale::dayName()
@@ -3348,6 +3356,14 @@ void tst_QLocale::standaloneDayName_data()
         << QString("ru_RU") << QString::fromUtf8("\320\262\321\201") << 7 << QLocale::ShortFormat;
     QTest::newRow("ru_RU narrow")
         << QString("ru_RU") << QString::fromUtf8("\320\222") << 7 << QLocale::NarrowFormat;
+
+    // Main concern is that short != narrow, for the benefit of QTBUG-10506, QTBUG-84877.
+    QTest::newRow("zh long")
+        << QString("zh") << QString::fromUtf8("\u661F\u671F\u56DB") << 4 << QLocale::LongFormat;
+    QTest::newRow("zh short")
+        << QString("zh") << QString::fromUtf8("\u5468\u56DB") << 4 << QLocale::ShortFormat;
+    QTest::newRow("zh narrow")
+        << QString("zh") << QString::fromUtf8("\u56DB") << 4 << QLocale::NarrowFormat;
 }
 
 void tst_QLocale::standaloneDayName()
@@ -3581,6 +3597,14 @@ void tst_QLocale::monthName()
     const QLocale cz("cs_CZ");
     QCOMPARE(cz.monthName(1, QLocale::ShortFormat), QLatin1String("led"));
     QCOMPARE(cz.monthName(12, QLocale::ShortFormat), QLatin1String("pro"));
+
+    // For the benefit of QTBUG-10506, QTBUG-84877.
+    const QLocale cn(QLocale::Chinese);
+    QCOMPARE_NE(cn.monthName(3, QLocale::NarrowFormat), cn.monthName(3, QLocale::ShortFormat));
+    if (sys.language() == QLocale::Chinese) {
+        QCOMPARE_NE(sys.monthName(3, QLocale::NarrowFormat),
+                    sys.monthName(3, QLocale::ShortFormat));
+    }
 }
 
 void tst_QLocale::standaloneMonthName()
@@ -3611,6 +3635,16 @@ void tst_QLocale::standaloneMonthName()
     QCOMPARE(ru.standaloneMonthName(1, QLocale::ShortFormat),
              QString::fromUtf8("\xd1\x8f\xd0\xbd\xd0\xb2."));
     QCOMPARE(ru.standaloneMonthName(1, QLocale::NarrowFormat), QString::fromUtf8("\xd0\xaf"));
+
+    // For the benefit of QTBUG-10506, QTBUG-84877.
+    const QLocale cn(QLocale::Chinese);
+    QCOMPARE_NE(cn.standaloneMonthName(3, QLocale::NarrowFormat),
+                cn.standaloneMonthName(3, QLocale::ShortFormat));
+    const auto sys = QLocale::system();
+    if (sys.language() == QLocale::Chinese) {
+        QCOMPARE_NE(sys.standaloneMonthName(3, QLocale::NarrowFormat),
+                    sys.standaloneMonthName(3, QLocale::ShortFormat));
+    }
 }
 
 void tst_QLocale::languageToString_data()
