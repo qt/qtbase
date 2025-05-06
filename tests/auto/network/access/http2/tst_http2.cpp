@@ -11,6 +11,8 @@
 
 #include "http2srv.h"
 
+#include <QtNetwork/private/qhttpnetworkconnection_p.h>
+#include <QtNetwork/private/qhttpnetworkreply_p.h>
 #include <QtNetwork/private/http2protocol_p.h>
 #include <QtNetwork/qnetworkaccessmanager.h>
 #include <QtNetwork/qhttp2configuration.h>
@@ -21,6 +23,8 @@
 #include <QtNetwork/qsslsocket.h>
 #endif
 
+#include <QtCore/private/qnoncontiguousbytedevice_p.h>
+#include <QtCore/qsemaphore.h>
 #include <QtCore/qglobal.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qthread.h>
@@ -83,6 +87,7 @@ private slots:
     void goaway_data();
     void goaway();
     void earlyResponse();
+    void earlyError();
     void connectToHost_data();
     void connectToHost();
     void maxFrameSize();
@@ -685,6 +690,88 @@ void tst_Http2::earlyResponse()
     QCOMPARE(nRequests, 0);
     QVERIFY(prefaceOK);
     QVERIFY(serverGotSettingsACK);
+}
+
+/*
+   Have the server return an error before we are done writing out POST data,
+   of course we should not crash if this happens. It's not guaranteed to
+   reproduce, so we run the request a few times to try to make it happen.
+
+   This is a race-condition, so the test is written using QHttpNetworkConnection
+   to have more influence over the timing.
+*/
+void tst_Http2::earlyError()
+{
+    clearHTTP2State();
+
+    serverPort = 0;
+
+    const auto serverConnectionType = defaultConnectionType() == H2Type::h2c ? H2Type::h2Direct
+                                                                             : H2Type::h2Alpn;
+    ServerPtr server(newServer(defaultServerSettings, serverConnectionType));
+    server->enableSendEarlyError(true);
+    QMetaObject::invokeMethod(server.data(), "startServer", Qt::QueuedConnection);
+    runEventLoop();
+    QCOMPARE_NE(serverPort, 0);
+
+    // SETUP create QHttpNetworkConnection primed for http2 usage
+    const auto connectionType = serverConnectionType == H2Type::h2Direct
+            ? QHttpNetworkConnection::ConnectionTypeHTTP2Direct
+            : QHttpNetworkConnection::ConnectionTypeHTTP2;
+    QHttpNetworkConnection connection(1, "127.0.0.1", serverPort, true, false, nullptr,
+                                      connectionType);
+    QSslConfiguration config = QSslConfiguration::defaultConfiguration();
+    config.setAllowedNextProtocols({"h2"});
+    connection.setSslConfiguration(config);
+    connection.ignoreSslErrors();
+
+    // SETUP manually setup the QHttpNetworkRequest
+    QHttpNetworkRequest req;
+    req.setSsl(true);
+    req.setHTTP2Allowed(true);
+    if (defaultConnectionType() == H2Type::h2c)
+        req.setH2cAllowed(true);
+    req.setOperation(QHttpNetworkRequest::Post);
+    req.setUrl(requestUrl(defaultConnectionType()));
+
+    // ^ All the above is set-up, the real code starts below v
+
+    // We need a sufficiently large payload so it can't be instantly transmitted
+    const QByteArray payload(1 * 1024 * 1024, 'a');
+    auto byteDevice = std::unique_ptr<QNonContiguousByteDevice>(
+            QNonContiguousByteDeviceFactory::create(payload));
+    req.setUploadByteDevice(byteDevice.get());
+
+    // Start sending the request. It needs to establish encryption so nothing
+    // happens right away (at time of writing...)
+    std::unique_ptr<QHttpNetworkReply> reply{connection.sendRequest(req)};
+    QVERIFY(reply);
+    QSemaphore sem;
+    int statusCode = 0;
+    QObject::connect(reply.get(), &QHttpNetworkReply::finished, reply.get(), [&](){
+        statusCode = reply->statusCode();
+        // Here we forcibly replicate what happens when we get into the bad
+        // state:
+        // 1. The reply is aborted & deleted, but was not removed from internal
+        // container.
+        reply.reset();
+        // 2. The byte-device is deleted afterwards, which would lead to
+        // use-after-free when we try to signal an error on the reply object.
+        byteDevice.reset();
+        // Let the main thread continue
+        sem.release();
+    });
+
+    using namespace std::chrono_literals;
+    QDeadlineTimer timer(5s);
+    while (!sem.tryAcquire() && !timer.hasExpired())
+        QCoreApplication::processEvents();
+    QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
+    QVERIFY(!reply);
+    QCOMPARE(statusCode, 403);
+
+    QVERIFY(prefaceOK);
+    QTRY_VERIFY(serverGotSettingsACK);
 }
 
 void tst_Http2::connectToHost_data()

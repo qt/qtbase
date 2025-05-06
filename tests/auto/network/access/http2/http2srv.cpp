@@ -101,6 +101,11 @@ void Http2Server::setResponseBody(const QByteArray &body)
     responseBody = body;
 }
 
+void Http2Server::enableSendEarlyError(bool enable)
+{
+    sendEarlyError = enable;
+}
+
 void Http2Server::setContentEncoding(const QByteArray &encoding)
 {
     contentEncoding = encoding;
@@ -724,8 +729,12 @@ void Http2Server::handleDATA()
 
     const auto streamID = inboundFrame.streamID();
 
+    // We need to allow this in the `sendEarlyError` case because it mirrors how
+    // we are required to allow some incoming frames in a grace-period after
+    // sending the peer a RST frame. We don't care about the grace period
+    // though.
     if (!is_valid_client_stream(streamID) ||
-        closedStreams.find(streamID) != closedStreams.end()) {
+        (closedStreams.find(streamID) != closedStreams.end() && !sendEarlyError)) {
         emit invalidFrame();
         connectionError = true;
         sendGOAWAY(connectionStreamID, PROTOCOL_ERROR, connectionStreamID);
@@ -766,6 +775,14 @@ void Http2Server::handleDATA()
 
         sendWINDOW_UPDATE(connectionStreamID, sessionRecvWindowSize / 2);
         sessionCurrRecvWindow += sessionRecvWindowSize / 2;
+    }
+
+    if (sendEarlyError) {
+        if (activeRequests.find(streamID) != activeRequests.end()) {
+            responseBody = "not allowed";
+            sendResponse(streamID, false);
+        }
+        return;
     }
 
     if (inboundFrame.flags().testFlag(FrameFlag::END_STREAM)) {
@@ -904,6 +921,8 @@ void Http2Server::sendResponse(quint32 streamID, bool emptyBody)
         header.push_back(HPack::HeaderField("www-authenticate", authenticationHeader));
     } else if (authenticationRequired) {
         header.push_back({ ":status", "401" });
+    } else if (sendEarlyError) {
+        header.push_back({ ":status", "403" });
     } else {
         header.push_back({":status", "200"});
     }

@@ -63,6 +63,7 @@ public:
     // To be called before server started:
     void enablePushPromise(bool enabled, const QByteArray &path = QByteArray());
     void setResponseBody(const QByteArray &body);
+    void enableSendEarlyError(bool enable);
     // No content encoding is actually performed, call setResponseBody with already encoded data
     void setContentEncoding(const QByteArray &contentEncoding);
     // No authentication data is generated for the method, the full header value must be set
@@ -147,6 +148,7 @@ private:
     RawSettings expectedClientSettings;
 
     bool connectionError = false;
+    bool sendEarlyError = false;
 
     Http2::FrameReader reader;
     Http2::Frame inboundFrame;

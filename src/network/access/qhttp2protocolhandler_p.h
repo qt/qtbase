@@ -61,7 +61,6 @@ public:
     Q_INVOKABLE void handleConnectionClosure();
 
 private slots:
-    void _q_replyDestroyed(QObject *reply);
     void _q_uploadDataDestroyed(QObject *uploadData);
 
 private:
@@ -70,6 +69,7 @@ private:
     void _q_readyRead() override;
     Q_INVOKABLE void _q_receiveReply() override;
     Q_INVOKABLE bool sendRequest() override;
+    bool tryRemoveReply(QHttpNetworkReply *reply) override;
 
     bool sendSETTINGS_ACK();
     bool sendHEADERS(QHttp2Stream *stream, QHttpNetworkRequest &request);
