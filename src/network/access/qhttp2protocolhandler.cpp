@@ -151,15 +151,6 @@ void QHttp2ProtocolHandler::handleConnectionClosure()
     h2Connection->handleConnectionClosure();
 }
 
-void QHttp2ProtocolHandler::_q_replyDestroyed(QObject *reply)
-{
-    QPointer<QHttp2Stream> stream = streamIDs.take(reply);
-    requestReplyPairs.remove(stream);
-    QObject::disconnect(stream, nullptr, this, nullptr);
-    if (stream && stream->isActive())
-        stream->sendRST_STREAM(CANCEL);
-}
-
 void QHttp2ProtocolHandler::_q_uploadDataDestroyed(QObject *uploadData)
 {
     QPointer<QHttp2Stream> stream = streamIDs.take(uploadData);
@@ -260,6 +251,25 @@ bool QHttp2ProtocolHandler::sendRequest()
     m_channel->state = QHttpNetworkConnectionChannel::IdleState;
 
     return true;
+}
+
+/*!
+    \internal
+    This gets called during destruction of \a reply, so do not call any functions
+    on \a reply. We check if there is a stream associated with the reply and,
+    if there is, we remove the request-reply pair associated with this stream,
+    delete the stream and return \c{true}. Otherwise nothing happens and we
+    return \c{false}.
+*/
+bool QHttp2ProtocolHandler::tryRemoveReply(QHttpNetworkReply *reply)
+{
+    QHttp2Stream *stream = streamIDs.take(reply);
+    if (stream) {
+        requestReplyPairs.remove(stream);
+        stream->deleteLater();
+        return true;
+    }
+    return false;
 }
 
 bool QHttp2ProtocolHandler::sendHEADERS(QHttp2Stream *stream, QHttpNetworkRequest &request)
@@ -623,8 +633,6 @@ void QHttp2ProtocolHandler::connectStream(const HttpMessagePair &message, QHttp2
     auto *replyPrivate = reply->d_func();
     replyPrivate->connection = m_connection;
     replyPrivate->connectionChannel = m_channel;
-    connect(reply, &QObject::destroyed, this, &QHttp2ProtocolHandler::_q_replyDestroyed,
-            Qt::UniqueConnection);
 
     reply->setHttp2WasUsed(true);
     QPointer<QHttp2Stream> &oldStream = streamIDs[reply];

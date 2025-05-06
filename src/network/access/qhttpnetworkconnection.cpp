@@ -1002,6 +1002,13 @@ void QHttpNetworkConnectionPrivate::removeReply(QHttpNetworkReply *reply)
             QMetaObject::invokeMethod(q, "_q_startNextRequest", Qt::QueuedConnection);
             return;
         }
+        // Check if the h2 protocol handler already started processing it
+        if ((connectionType == QHttpNetworkConnection::ConnectionTypeHTTP2Direct
+             || channels[i].switchedToHttp2)
+            && channels[i].protocolHandler) {
+            if (channels[i].protocolHandler->tryRemoveReply(reply))
+                return;
+        }
     }
     // remove from the high priority queue
     if (!highPriorityQueue.isEmpty()) {
