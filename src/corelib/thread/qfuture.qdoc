@@ -493,9 +493,15 @@
     \since 6.0
 
     Returns \c true if a result or results can be accessed or taken from this
-    QFuture object. Returns false after the result was taken from the future.
+    QFuture object. Returns \c false after the result was taken from the future.
 
-    \sa takeResult(), result(), results(), resultAt()
+    \note The return value of this function only implies whether the future
+    result can be consumed, not if it is ready. This function will return
+    \c true when the related QPromise is started, but the result is not yet
+    ready. To test readiness, call \l isResultReadyAt() or \l isFinished().
+
+    \sa takeResult(), result(), results(), resultAt(), isFinished(),
+        isResultReadyAt()
 */
 
 /*! \fn template<typename T> template<class U = T, typename = QtPrivate::EnableForNonVoid<U>> QFuture<T>::const_iterator QFuture<T>::begin() const
