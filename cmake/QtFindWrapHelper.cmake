@@ -66,7 +66,26 @@ macro(qt_find_package_system_or_bundled _unique_prefix)
     endif()
 
     if(NOT TARGET "${${_unique_prefix}_qt_package_target_to_use}")
-        find_package("${${_unique_prefix}_qt_package_name_to_use}")
+        if(QT_USE_BUNDLED_${_qfwrap_${_unique_prefix}_BUNDLED_PACKAGE_TARGET})
+            set(${_unique_prefix}_qt_use_no_default_path_for_qt_packages "NO_DEFAULT_PATH")
+            if(QT_DISABLE_NO_DEFAULT_PATH_IN_QT_PACKAGES)
+                set(${_unique_prefix}_qt_use_no_default_path_for_qt_packages "")
+            endif()
+
+            # For bundled targets, we want to limit search paths to the relevant Qt search paths.
+            find_package("${${_unique_prefix}_qt_package_name_to_use}"
+                PATHS
+                    ${QT_BUILD_CMAKE_PREFIX_PATH}
+                    "${CMAKE_CURRENT_LIST_DIR}/.."
+                    ${_qt_cmake_dir}
+                    ${_qt_additional_packages_prefix_paths}
+                ${${_unique_prefix}_qt_use_no_default_path_for_qt_packages}
+            )
+        else()
+            # For the non-bundled case we will look for FindWrapSystemFoo.cmake module files,
+            # which means we should not specify any PATHS.
+            find_package("${${_unique_prefix}_qt_package_name_to_use}")
+        endif()
     endif()
 
     if(TARGET "${${_unique_prefix}_qt_package_target_to_use}")
