@@ -232,6 +232,9 @@ namespace {
                 qWarning("%s", qPrintable(msg));
                 return false;
             }
+            // Qt 7 separate layout size constraints (QTBUG-17730)
+            if (name == "verticalSizeConstraint"_L1 && className.contains("Layout"_L1))
+                return false;
             break;
         case DomProperty::IconSet:
             if (const DomResourceIcon *dri = p->elementIconSet()) {
@@ -1331,6 +1334,9 @@ void WriteInitialization::writeProperties(const QString &varName,
         if (!checkProperty(m_uic->customWidgetsInfo(), m_option.inputFile, className, p))
             continue;
         QString propertyName = p->attributeName();
+        // Qt 7 separate layout size constraints (QTBUG-17730)
+        if (propertyName == "horizontalSizeConstraint"_L1 && className.contains("Layout"_L1))
+            propertyName = "sizeConstraint"_L1;
         QString propertyValue;
         bool delayProperty = false;
 
