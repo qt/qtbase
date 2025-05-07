@@ -310,8 +310,6 @@ void tst_QFocusEvent::checkReason_ActiveWindow()
     QDialog* d = new QDialog( testFocusWidget );
     d->show();
     QVERIFY(QTest::qWaitForWindowExposed(d));
-
-    d->activateWindow(); // ### CDE
     QVERIFY(QTest::qWaitForWindowActive(d));
 
     QTRY_VERIFY(childFocusWidgetOne->focusOutEventRecieved);
