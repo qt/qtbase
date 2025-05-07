@@ -117,6 +117,10 @@ private slots:
     void pathWithTrailingSpace_data();
     void pathWithTrailingSpace();
 
+#ifdef Q_OS_WIN
+    void correctFileInfoForDriveRootPath();
+#endif
+
 protected:
     bool createFiles(QFileSystemModel *model, const QString &test_path,
                      const QStringList &initial_files, int existingFileCount = 0,
@@ -1373,6 +1377,37 @@ void tst_QFileSystemModel::pathWithTrailingSpace()
     }
 }
 
+#ifdef Q_OS_WIN
+void tst_QFileSystemModel::correctFileInfoForDriveRootPath()
+{
+    const QString current = QDir::currentPath();
+    const qsizetype firstSlash = current.indexOf(u'/');
+    const QString drive = current.left(firstSlash);
+    QCOMPARE(drive.length(), 2);
+
+    // Obtaining the drive root path's file info must not result in the current directory's file
+    // info (QTBUG-133746)
+    const QString slashDrive = drive + u'/';
+    const QString backslashDrive = drive + u'\\';
+    QFileSystemModel model;
+    QFileInfo info = model.fileInfo(model.index(slashDrive, 0));
+    QCOMPARE(info.absoluteFilePath(), slashDrive);
+    QCOMPARE(info.absolutePath(), slashDrive);
+    info = model.fileInfo(model.index(backslashDrive, 0));
+    QCOMPARE(info.absoluteFilePath(), slashDrive);
+    QCOMPARE(info.absolutePath(), slashDrive);
+
+    const qsizetype secondSlash = current.indexOf(u'/', firstSlash + 1);
+    if (secondSlash == -1)
+        return;
+
+    const QString rootChild = current.left(secondSlash);
+    QModelIndex childIndex = model.index(rootChild, 0);
+    info = model.fileInfo(childIndex.parent());
+    QCOMPARE(info.absoluteFilePath(), slashDrive);
+    QCOMPARE(info.absolutePath(), slashDrive);
+}
+#endif
 
 QTEST_MAIN(tst_QFileSystemModel)
 #include "tst_qfilesystemmodel.moc"
