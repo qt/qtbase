@@ -1306,6 +1306,9 @@ bool QMYSQLDriver::open(const QString &db,
 #if defined(MYSQL_VERSION_ID) && MYSQL_VERSION_ID >= 50711 && !defined(MARIADB_VERSION_ID)
         {"MYSQL_OPT_SSL_MODE"_L1,        MYSQL_OPT_SSL_MODE,        setOptionSslMode},
 #endif
+#if defined(MYSQL_VERSION_ID) && MYSQL_VERSION_ID >= 50711 && MYSQL_VERSION_ID < 80000 || defined(MARIADB_VERSION_ID)
+        {"MYSQL_OPT_SSL_VERIFY_SERVER_CERT"_L1, MYSQL_OPT_SSL_VERIFY_SERVER_CERT, setOptionBool},
+#endif
         {"MYSQL_OPT_CONNECT_TIMEOUT"_L1, MYSQL_OPT_CONNECT_TIMEOUT, setOptionInt},
         {"MYSQL_OPT_READ_TIMEOUT"_L1,    MYSQL_OPT_READ_TIMEOUT,    setOptionInt},
         {"MYSQL_OPT_WRITE_TIMEOUT"_L1,   MYSQL_OPT_WRITE_TIMEOUT,   setOptionInt},
