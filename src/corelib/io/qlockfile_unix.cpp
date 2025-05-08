@@ -104,9 +104,9 @@ static qint64 qt_write_loop(int fd, const char *data, qint64 len)
  * We therefore use only flock(2), except on Android.
  *
  * Android Compatibility:
- * Some versions of Android have known issues where flock does not function correctly. 
+ * Some versions of Android have known issues where flock does not function correctly.
  * As a result, on Android, we use POSIX fcntl(F_SETLK) to handle file locking.
- * fcntl is better integrated with Android’s underlying system, avoiding 
+ * fcntl is better integrated with Android’s underlying system, avoiding
  * the limitations of flock.
  */
 
