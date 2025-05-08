@@ -220,12 +220,14 @@
       \li MYSQL_OPT_SSL_MODE
       \li The security state to use for the connection to the server: SSL_MODE_DISABLED,
           SSL_MODE_PREFERRED, SSL_MODE_REQUIRED, SSL_MODE_VERIFY_CA, SSL_MODE_VERIFY_IDENTITY.
+          Only available when linked against MySQL 5.7.10 or higher.
     \row
       \li MYSQL_OPT_TLS_VERSION
       \li A list of protocols the client permits for encrypted connections. The value can be
           a combination of 'TLSv1' ,' TLSv1.1', 'TLSv1.2' or 'TLSv1.3' depending on the used \l
           {https://dev.mysql.com/doc/refman/8.0/en/encrypted-connection-protocols-ciphers.html#encrypted-connection-protocol-configuration}
           {MySQL server} version.
+          Only available when linked against MySQL 5.7.11 or higher. Not available for MariaDB.
     \row
       \li MYSQL_OPT_SSL_KEY / SSL_KEY (deprecated)
       \li The path name of the client private key file
@@ -247,6 +249,11 @@
     \row
       \li MYSQL_OPT_SSL_CRLPATH
       \li The path name of the directory that contains files containing certificate revocation lists
+    \row
+      \li MYSQL_OPT_SSL_VERIFY_SERVER_CERT
+      \li TRUE or 1: Enable verification of the server's Common Name identity (default)\br
+          FALSE or 0: Enable verification of the server's Common Name identity\br
+          Only available when linked against MySQL 5.7.11 or MariaDB, removed with MySQL 8.0.
     \endtable
     For more detailed information about the connect options please refer
     to the \l {https://dev.mysql.com/doc/c-api/8.0/en/mysql-options.html}
