@@ -509,17 +509,6 @@ static void setWindowOpacity(HWND hwnd, Qt::WindowFlags flags, bool hasAlpha, bo
     }
 }
 
-static inline void updateGLWindowSettings(const QWindow *w, HWND hwnd, Qt::WindowFlags flags, qreal opacity)
-{
-    const bool isAccelerated = windowIsAccelerated(w);
-    const bool hasAlpha = w->format().hasAlpha();
-
-    if (isAccelerated && hasAlpha)
-        applyBlurBehindWindow(hwnd);
-
-    setWindowOpacity(hwnd, flags, hasAlpha, isAccelerated, opacity);
-}
-
 [[nodiscard]] static inline int getResizeBorderThickness(const UINT dpi)
 {
     // The width of the padded border will always be 0 if DWM composition is
@@ -996,10 +985,13 @@ void WindowCreationData::initialize(const QWindow *w, HWND hwnd, bool frameChang
             else
                 EnableMenuItem(systemMenu, SC_CLOSE, MF_BYCOMMAND|MF_GRAYED);
         }
-        updateGLWindowSettings(w, hwnd, flags, opacityLevel);
     } else { // child.
         SetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0, swpFlags);
     }
+
+    const bool isAccelerated = windowIsAccelerated(w);
+    const bool hasAlpha = w->format().hasAlpha();
+    setWindowOpacity(hwnd, flags, hasAlpha, isAccelerated, opacityLevel);
 }
 
 
