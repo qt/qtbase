@@ -3777,25 +3777,84 @@ int generateJavaQmlComponents(const Options &options)
         if (methodData["methodType"_L1] != 0)
             return;
         const QJsonArray parameters = methodData["parameters"_L1].toArray();
-        if (parameters.size() > 1)
-            return;
 
         const QString methodName = methodData["name"_L1].toString();
         if (methodName.isEmpty())
             return;
-        const QString upperMethodName = firstCharToUpper(methodName);
-        const QString typeName = !parameters.isEmpty()
-                ? parameters[0].toObject()["typeName"_L1].toString()
-                : "void"_L1;
 
-        const QString javaTypeName = qmlToJavaType.value(typeName, "Object"_L1);
-        stream << indent
-               << "public int connect%1Listener(QtSignalListener<%2> signalListener) {\n"_L1.arg(
-                          upperMethodName, javaTypeName)
-               << indent
-               << "    return connectSignalListener(\"%1\", %2.class, signalListener);\n"_L1.arg(
-                          methodName, javaTypeName)
-               << indent << "}\n";
+        const QString upperMethodName = firstCharToUpper(methodName);
+        if (parameters.size() <= 1) { // Generate a QtSignalListener<T> API for this property/signal
+            const QString typeName = !parameters.isEmpty()
+                    ? parameters[0].toObject()["typeName"_L1].toString()
+                    : "void"_L1;
+            const QString javaTypeName = qmlToJavaType.value(typeName, "Object"_L1);
+            stream << indent
+                   << "public int connect%1Listener(QtSignalListener<%2> signalListener) {\n"_L1
+                              .arg(upperMethodName, javaTypeName)
+                   << indent
+                   << "    return connectSignalListener(\"%1\", %2.class, signalListener);\n"_L1
+                              .arg(methodName, javaTypeName)
+                   << indent << "}\n";
+        } else { // Multi-arg signal; Generate a custom listener interface for this signal
+            // Returns a comma-separated parameter list of java types deduced from the QML DOM array
+            const auto getJavaArgsString = [&parameters]() -> QString {
+                QList<QString> javaArgsList;
+                for (const auto param : parameters) {
+                    const auto typeName = param["typeName"_L1].toString();
+                    const auto javaTypeName = qmlToJavaType.value(typeName, "Object"_L1);
+                    const auto qmlParamName = param["name"_L1].toString();
+
+                    javaArgsList.emplace_back(
+                            QStringLiteral("%1%2").arg(javaTypeName, " %1"_L1.arg(qmlParamName)));
+                }
+                return javaArgsList.join(", "_L1);
+            };
+            // Returns a comma-separated parameter list of java classes deduced from QML DOM array
+            const auto getJavaClassesString = [&parameters]() -> QString {
+                QList<QString> javaArgsList;
+                for (const auto param : parameters) {
+                    const auto typeName = param["typeName"_L1].toString();
+                    const auto javaTypeName = qmlToJavaType.value(typeName, "Object"_L1);
+
+                    javaArgsList.emplace_back(
+                            QStringLiteral("%1%2").arg(javaTypeName, ".class"_L1));
+                }
+                return javaArgsList.join(", "_L1);
+            };
+
+            const auto javaParamsString = getJavaArgsString();
+            const auto javaParamsClassesString = getJavaClassesString();
+
+            // e.g. "{(String) args[0], (Integer) args[1], (Boolean) args[2]}"
+            QList<QString> objectToTypeConversion;
+            for (auto i = 0; i < parameters.size(); ++i) {
+                const auto typeName = parameters.at(i).toObject().value("typeName"_L1).toString();
+                objectToTypeConversion.emplace_back("(%1) args[%2]"_L1.arg(
+                        qmlToJavaType.value(typeName, "Object"_L1), QString::number(i)));
+            }
+
+            // Generate new interface type for this signal
+            const auto signalInterfaceName = "%1Listener"_L1.arg(methodName);
+            const auto objectToTypeConversionString = objectToTypeConversion.join(", "_L1);
+            stream << indent << "@FunctionalInterface\n"
+                   << indent << "public interface %1 {\n"_L1.arg(signalInterfaceName) << indent
+                   << "    default void onSignalEmitted(Object[] args) {\n"
+                   << indent
+                   << "        on%1(%2);\n"_L1.arg(upperMethodName, objectToTypeConversionString)
+                   << indent << "    }\n"
+                   << indent
+                   << "    void on%1(%2);\n"_L1.arg(upperMethodName, javaParamsString);
+            stream << indent << "}\n"_L1;
+
+            // Generate the connection function with this new interface type
+            stream << indent
+                   << "public int connect%1(%2 signalListener) {\n"_L1.arg(
+                              firstCharToUpper(signalInterfaceName), signalInterfaceName)
+                   << indent
+                   << "    return connectSignalListener(\"%1\", new Class[]{ %2 }, signalListener);\n"_L1
+                              .arg(methodName, javaParamsClassesString)
+                   << indent << "}\n\n";
+        }
     };
 
     constexpr static auto markerFileName = "qml_java_contents"_L1;
