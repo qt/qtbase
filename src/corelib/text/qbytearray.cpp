@@ -2581,101 +2581,29 @@ QByteArray &QByteArray::replace(QByteArrayView before, QByteArrayView after)
     if (bsize == 1 && asize == 1)
         return replace(*b, *a); // use the fast char-char algorithm
 
-    // protect against before or after being part of this
-    std::string pinnedNeedle, pinnedReplacement;
+    // protect against `after` being part of this
+    std::string pinnedReplacement;
     if (QtPrivate::q_points_into_range(a, d)) {
         pinnedReplacement.assign(a, a + asize);
-        a = pinnedReplacement.data();
-    }
-    if (QtPrivate::q_points_into_range(b, d)) {
-        pinnedNeedle.assign(b, b + bsize);
-        b = pinnedNeedle.data();
+        after = pinnedReplacement;
     }
 
     QByteArrayMatcher matcher(b, bsize);
+    // - create a table of replacement positions
+    // - figure out the needed size; modify in place; or allocate a new byte array
+    //   and copy characters to it as needed
+    // - do the replacements
+    QVarLengthArray<qsizetype> indices;
     qsizetype index = 0;
-    qsizetype len = size();
-    char *d = data(); // detaches
-
-    if (bsize == asize) {
-        if (bsize) {
-            while ((index = matcher.indexIn(*this, index)) != -1) {
-                memcpy(d + index, a, asize);
-                index += bsize;
-            }
-        }
-    } else if (asize < bsize) {
-        size_t to = 0;
-        size_t movestart = 0;
-        size_t num = 0;
-        while ((index = matcher.indexIn(*this, index)) != -1) {
-            if (num) {
-                qsizetype msize = index - movestart;
-                if (msize > 0) {
-                    memmove(d + to, d + movestart, msize);
-                    to += msize;
-                }
-            } else {
-                to = index;
-            }
-            if (asize > 0) {
-                memcpy(d + to, a, asize);
-                to += asize;
-            }
-            index += bsize;
-            movestart = index;
-            num++;
-        }
-        if (num) {
-            qsizetype msize = len - movestart;
-            if (msize > 0)
-                memmove(d + to, d + movestart, msize);
-            resize(len - num*(bsize-asize));
-        }
-    } else {
-        // the most complex case. We don't want to lose performance by doing repeated
-        // copies and reallocs of the data.
-        while (index != -1) {
-            size_t indices[4096];
-            size_t pos = 0;
-            while(pos < 4095) {
-                index = matcher.indexIn(*this, index);
-                if (index == -1)
-                    break;
-                indices[pos++] = index;
-                index += bsize;
-                // avoid infinite loop
-                if (!bsize)
-                    index++;
-            }
-            if (!pos)
-                break;
-
-            // we have a table of replacement positions, use them for fast replacing
-            qsizetype adjust = pos*(asize-bsize);
-            // index has to be adjusted in case we get back into the loop above.
-            if (index != -1)
-                index += adjust;
-            qsizetype newlen = len + adjust;
-            qsizetype moveend = len;
-            if (newlen > len) {
-                resize(newlen);
-                len = newlen;
-            }
-            d = this->d.data(); // data(), without the detach() check
-
-            while(pos) {
-                pos--;
-                qsizetype movestart = indices[pos] + bsize;
-                qsizetype insertstart = indices[pos] + pos*(asize-bsize);
-                qsizetype moveto = insertstart + asize;
-                memmove(d + moveto, d + movestart, (moveend - movestart));
-                if (asize)
-                    memcpy(d + insertstart, a, asize);
-                moveend = movestart - bsize;
-            }
-        }
+    while ((index = matcher.indexIn(*this, index)) != -1) {
+        indices.push_back(index);
+        if (bsize > 0)
+            index += bsize; // Step over before
+        else
+            ++index; // avoid infinite loop
     }
+
+    QStringAlgorithms<QByteArray>::replace_helper(*this, bsize, after, indices);
     return *this;
 }
 

@@ -15,6 +15,7 @@
 // We mean it.
 //
 
+#include "qspan.h"
 #include "qstring.h"
 #include "qlocale_p.h"      // for ascii_isspace
 
@@ -25,6 +26,9 @@ template <typename StringType> struct QStringAlgorithms
     typedef typename StringType::value_type Char;
     typedef typename StringType::size_type size_type;
     typedef typename std::remove_cv<StringType>::type NakedStringType;
+    using ViewType =
+        std::conditional_t<std::is_same_v<StringType, QString>, QStringView, QByteArrayView>;
+    using ViewChar = typename ViewType::storage_type;
     static const bool isConst = std::is_const<StringType>::value;
 
     static inline bool isSpace(char ch) { return ascii_isspace(ch); }
@@ -116,6 +120,134 @@ template <typename StringType> struct QStringAlgorithms
         }
         result.resize(newlen);
         return result;
+    }
+
+    static inline bool needsReallocate(const StringType &str, qsizetype newSize) noexcept
+    {
+        const auto capacityAtEnd = str.capacity() - str.data_ptr().freeSpaceAtBegin();
+        return newSize > capacityAtEnd;
+    }
+
+    static inline const ViewChar *asUnicodeChar(ViewType v)
+    {
+        if constexpr (sizeof(ViewChar) == sizeof(QChar))
+            return v.utf16();
+        else
+            return v.data();
+    }
+
+    static inline qsizetype newSize(StringType &src, qsizetype bsize,
+                                    ViewType after, QSpan<const qsizetype> indices)
+    {
+        if (bsize == after.size())
+            return src.size();
+        else if (bsize > after.size()) // shrink
+            return src.size() - indices.size() * (bsize - after.size());
+
+        // bsize < after.size()
+        const qsizetype adjust = indices.size() * (after.size() - bsize);
+        return src.size() + adjust;
+    }
+
+    static inline void replace_detaching(StringType &src, qsizetype bsize,
+                                         ViewType after, QSpan<const qsizetype> indices,
+                                         qsizetype newlen)
+    {
+        StringType tmp{newlen, Qt::Uninitialized};
+        auto *to = tmp.data_ptr().data();
+        const auto *a = asUnicodeChar(after);
+        auto *const begin = src.data_ptr().data();
+        auto *first = begin;
+
+        for (auto i : indices) {
+            to = std::copy(first, begin + i, to);
+            to = std::copy(a, a + after.size(), to);
+            first = begin + i + bsize;
+        }
+        std::copy(first, src.data_ptr().end(), to); // remainder
+        src.swap(tmp);
+    }
+
+    static inline void replace_equal_len(StringType &src, [[maybe_unused]] qsizetype bsize,
+                                         ViewType after, QSpan<const qsizetype> indices)
+    {
+        Q_ASSERT(bsize == after.size());
+        Q_ASSERT(!src.data_ptr().needsDetach());
+
+        const auto *a = asUnicodeChar(after);
+        auto *const begin = src.data_ptr().data();
+        // before and after have the same length, so no reallocation
+        for (auto i : indices)
+            std::copy(a, a + after.size(), begin + i);
+    }
+
+    static inline void replace_shrink(StringType &src, qsizetype bsize, ViewType after,
+                                      QSpan<const qsizetype> indices)
+    {
+        Q_ASSERT(bsize > after.size());
+        Q_ASSERT(!src.data_ptr().needsDetach());
+
+        const auto *a = asUnicodeChar(after);
+        auto *const begin = src.data_ptr().data(); // data(), without the detach() check
+        auto *const end = begin + src.size();
+        Q_ASSERT(!indices.isEmpty());
+        auto *to = std::copy(a, a + after.size(),  begin + indices.front());
+        auto *first = begin + indices.front() + bsize;
+        for (qsizetype i = 1; i < indices.size(); ++i) {
+            auto *last = begin + indices[i];
+            to = std::copy(first, last, to);
+            qsizetype adjust = i * (bsize - after.size());
+            to = std::copy(a, a + after.size(), last - adjust);
+            first = begin + indices[i] + bsize;
+        }
+        to = std::copy(first, end, to);
+        src.resize(to - begin);
+    }
+
+    static inline void replace_grow(StringType &src, qsizetype bsize, ViewType after,
+                                    QSpan<const qsizetype> indices, qsizetype newlen)
+    {
+        Q_ASSERT(after.size() > bsize);
+        Q_ASSERT(!src.data_ptr().needsDetach());
+
+        // replace in-place, after is longer than before, so replace from the back
+        const qsizetype oldlen = src.size();
+        const auto *a = asUnicodeChar(after);
+        src.resize(newlen);
+        auto *const begin = src.data_ptr().data(); // data(), without the detach() check
+        auto *last = begin + oldlen;
+        auto *to = src.data_ptr().end();
+        for (auto i = indices.size() - 1; i >= 0; --i) {
+            auto *first = begin + indices[i] + bsize;
+            to = std::copy_backward(first, last, to);
+            to = std::copy_backward(a, a + after.size(), to);
+            last = begin + indices[i];
+        }
+    }
+
+    static inline void replace_helper(StringType &src, qsizetype bsize, ViewType after,
+                                      QSpan<const qsizetype> indices)
+    {
+        if (indices.isEmpty())
+            return;
+
+        const qsizetype newlen = newSize(src, bsize, after, indices);
+        if (src.data_ptr().needsDetach()
+            || (bsize < after.size() && needsReallocate(src, newlen))) {
+            // Instead of detaching (which would copy the whole data array) then
+            // performing the replacement, allocate a new string and copy the data
+            // over from `src` and `after` as needed.
+            replace_detaching(src, bsize, after, indices, newlen);
+            return;
+        }
+
+        // No detaching or reallocation -> change in-place
+        if (bsize == after.size())
+            replace_equal_len(src, bsize, after, indices);
+        else if (bsize > after.size())
+            replace_shrink(src, bsize, after, indices);
+        else // bsize < after.size()
+            replace_grow(src, bsize, after, indices, newlen);
     }
 };
 
