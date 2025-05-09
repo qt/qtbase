@@ -2510,24 +2510,58 @@ QByteArray &QByteArray::replace(qsizetype pos, qsizetype len, QByteArrayView aft
         return *this;
     if (len > this->size() - pos)
         len = this->size() - pos;
-
-    if (QtPrivate::q_points_into_range(after.data(), d)) {
-        QVarLengthArray copy(after.data(), after.data() + after.size());
-        return replace(pos, len, QByteArrayView{copy});
-    }
-
-    if (len == after.size()) {
-        // same size: in-place replacement possible
-        if (len > 0) {
-            detach();
-            memcpy(d.data() + pos, after.data(), len*sizeof(char));
-        }
-        return *this;
-    } else {
-        // ### optimize me
-        remove(pos, len);
+    // Historic behavior, negative len was the equivalent of:
+    // remove(pos, len); // does nothing
+    // insert(pos, after);
+    if (len <= 0)
         return insert(pos, after);
+
+    if (after.isEmpty())
+        return remove(pos, len);
+
+    using A = QStringAlgorithms<QByteArray>;
+    const qsizetype newlen = A::newSize(*this, len, after, {pos});
+    if (data_ptr().needsDetach() || A::needsReallocate(*this, newlen)) {
+        A::replace_into_copy(*this, len, after, {pos}, newlen);
+        return *this;
     }
+
+    // No detaching or reallocation -> change in-place
+    char *const begin = data_ptr().data(); // data(), without the detach() check
+    char *const before = begin + pos;
+    const char *beforeEnd = before + len;
+    if (len >= after.size()) {
+        memmove(before , after.cbegin(), after.size()); // sizeof(char) == 1
+
+        if (len > after.size()) {
+            memmove(before + after.size(), beforeEnd, d.size - (beforeEnd - begin));
+            A::setSize(*this, newlen);
+        }
+    } else { // len < after.size()
+        char *oldEnd = begin + d.size;
+        const qsizetype adjust = newlen - d.size;
+        A::setSize(*this, newlen);
+
+        QByteArrayView tail{beforeEnd, oldEnd};
+        QByteArrayView prefix = after;
+        QByteArrayView suffix;
+        if (QtPrivate::q_points_into_range(after.cend() - 1, tail)) {
+            if (QtPrivate::q_points_into_range(after.cbegin(), tail)) {
+                // `after` fully contained inside `tail`
+                prefix = {};
+                suffix = QByteArrayView{after.cbegin(), after.cend()};
+            } else { // after.cbegin() is in [begin, beforeEnd)
+                prefix = QByteArrayView{after.cbegin(), beforeEnd};
+                suffix = QByteArrayView{beforeEnd, after.cend()};
+            }
+        }
+        memmove(before + after.size(), tail.cbegin(), tail.size());
+        if (!prefix.isEmpty())
+            memmove(before, prefix.cbegin(), prefix.size()); // `prefix` may overlap `before`
+        if (!suffix.isEmpty()) // adjust suffix after calling memcpy() above
+            memcpy(before + prefix.size(), suffix.cbegin() + adjust, suffix.size()); // no overlap
+    }
+    return *this;
 }
 
 /*! \fn QByteArray &QByteArray::replace(qsizetype pos, qsizetype len, const char *after, qsizetype alen)

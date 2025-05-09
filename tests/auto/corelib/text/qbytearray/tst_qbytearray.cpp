@@ -77,10 +77,12 @@ private slots:
 
     void replace_pos_len_data();
     void replace_pos_len();
+    void replace_pos_len_after_points_into_this_data();
+    void replace_pos_len_after_points_into_this();
     void replace_before_after_data();
     void replace_before_after();
-    void replace_after_points_into_this_data();
-    void replace_after_points_into_this();
+    void replace_view_view_after_points_into_this_data();
+    void replace_view_view_after_points_into_this();
     void replace_view_view_data();
     void replace_view_view();
     void replaceWithSpecifiedLength();
@@ -1485,6 +1487,8 @@ void tst_QByteArray::replace_pos_len_data()
     QTest::newRow("5") << QByteArray() << 3 << 0 << QByteArray("hi")
                        << QByteArray();
 
+    // Due to historic/backwards compatibility reasons, negative length is
+    // treated as if it's an `insert(pos, after)`
     QTest::newRow("negative-before-len-1") << QByteArray("yyyy") << 3 << -1
                                            << QByteArray("ZZZZ") << QByteArray("yyyZZZZy");
     QTest::newRow("negative-before-len-2") << QByteArray("yyyy") << 3 << -2
@@ -1511,10 +1515,187 @@ void tst_QByteArray::replace_pos_len()
     QFETCH(QByteArray, after);
     QFETCH(QByteArray, expected);
 
+    // When it's shared
     QByteArray copy = src;
     QCOMPARE(copy.replace(pos, len, after), expected);
     copy = src;
     QCOMPARE(copy.replace(pos, len, after.data(), after.size()), expected);
+
+    { // When it's detached
+        QByteArray copy = src;
+        copy.detach();
+        QCOMPARE(copy.replace(pos, len, after), expected);
+    }
+    { // When it's detached and there is enough space so it won't reallocate
+        QByteArray copy = src;
+        copy.detach();
+        if (after.size() > len)
+            copy.reserve(copy.size() + after.size() - len);
+        QCOMPARE(copy.replace(pos, len, after), expected);
+    }
+}
+
+void tst_QByteArray::replace_pos_len_after_points_into_this_data()
+{
+    QTest::addColumn<QByteArray>("ba");
+    QTest::addColumn<int>("before_index");
+    QTest::addColumn<int>("before_len");
+    QTest::addColumn<int>("after_index");
+    QTest::addColumn<int>("after_len");
+    QTest::addColumn<QByteArray>("expected");
+
+   // before.size() == after.size()
+    QTest::newRow("equal-front-overlap-2")
+        << "abcdefghij"_ba
+        << 3 << 4
+        << 1 << 4
+        << "abcbcdehij"_ba;
+
+    QTest::newRow("equal-back-overlap")
+        << "abcdefghijklmnopqr"_ba
+        << 3 << 6
+        << 7 << 6
+        << "abchijklmjklmnopqr"_ba;
+
+    QTest::newRow("equal-after-is-before")
+        << "abcdefghijk"_ba
+        << 3 << 6
+        << 3 << 6
+        << "abcdefghijk"_ba;
+
+    QTest::newRow("equal-after-empty")
+        << "abcdefghijk"_ba
+        << 3 << 6
+        << 0 << 0
+        << "abcjk"_ba;
+
+    // before.size() > after.size()
+    QTest::newRow("longer-front-overlap")
+        << "abcdefghijk"_ba
+        << 5 << 6
+        << 4 << 3
+        << "abcdeefg"_ba;
+
+    QTest::newRow("longer-back-overlap")
+        << "abcdefghijk"_ba
+        << 3 << 6
+        << 4 << 5
+        << "abcefghijk"_ba;
+
+    QTest::newRow("longer-after-contained-in-before")
+        << "abcdefghijklmnopqr"_ba
+        << 3 << 6
+        << 5 << 2
+        << "abcfgjklmnopqr"_ba;
+
+    QTest::newRow("longer-after-starts-with-before")
+        << "abcdefghijklmnopqr"_ba
+        << 3 << 6
+        << 3 << 2
+        << "abcdejklmnopqr"_ba;
+
+    QTest::newRow("longer-after-ends-with-before")
+        << "abcdefghijklmnopqr"_ba
+        << 3 << 6
+        << 7 << 2
+        << "abchijklmnopqr"_ba;
+
+    // before.size() < after.size()
+    QTest::newRow("shorter-front") // `after` is before `before`
+        << "abcdefghij"_ba
+        << 7 << 2
+        << 0 << 5
+        << "abcdefgabcdej"_ba;
+
+    QTest::newRow("shorter-front-overlap")
+        << "abcdefghij"_ba
+        << 5 << 4
+        << 2 << 6
+        << "abcdecdefghj"_ba;
+
+    QTest::newRow("shorter-back-overlap")
+        << "abcdefghijk"_ba
+        << 3 << 4
+        << 4 << 6
+        << "abcefghijhijk"_ba;
+
+    QTest::newRow("shorter-back") // `after` is after `before`
+        << "abcdefghij"_ba
+        << 1 << 3
+        << 5 << 4
+        << "afghiefghij"_ba;
+
+    QTest::newRow("shorter-overlap-both") // `before` is in the middle of `after`
+        << "abcdefghij"_ba
+        << 2 << 3
+        << 0 << 7
+        << "ababcdefgfghij"_ba;
+
+    QTest::newRow("shorter-after-ends-with-before")
+        << "abcdefghij"_ba
+        << 3 << 3
+        << 2 << 4
+        << "abccdefghij"_ba;
+
+    QTest::newRow("shorter-after-ends-with-end")
+        << "abcdefghijklmnopqr"_ba
+        << 3 << 6
+        << 2 << 16
+        << "abccdefghijklmnopqrjklmnopqr"_ba;
+
+    QTest::newRow("after-is-this")
+        << "abcdefghijk"_ba
+        << 3 << 6
+        << 0 << int(strlen("abcdefghijk"))
+        << "abcabcdefghijkjk"_ba;
+}
+
+void tst_QByteArray::replace_pos_len_after_points_into_this()
+{
+    QFETCH(QByteArray, ba);
+    QFETCH(int, before_index);
+    QFETCH(int, before_len);
+    QFETCH(int, after_index);
+    QFETCH(int, after_len);
+    QFETCH(QByteArray, expected);
+
+    { // When it's shared
+        QByteArray src = ba;
+        auto after = QByteArrayView{src}.sliced(after_index, after_len);
+        src.replace(before_index, before_len, after);
+        QCOMPARE(src, expected);
+    }
+    { // When it's detached
+        QByteArray src = ba;
+        src.detach();
+        auto after = QByteArrayView{src}.sliced(after_index, after_len);
+        src.replace(before_index, before_len, after);
+        QCOMPARE(src, expected);
+    }
+    { // When it's detached, but after doesn't point into this
+        QByteArray src = ba;
+        src.detach();
+        QByteArray after = QByteArrayView{src}.sliced(after_index, after_len).toByteArray();
+        src.replace(before_index, before_len, after);
+        QCOMPARE(src, expected);
+    }
+    { // When it's detached and won't need to reallocate
+        QByteArray src = ba;
+        if (after_len > before_len)
+            src.reserve(src.size() + after_len - before_len);
+        auto after = QByteArrayView{src}.sliced(after_index, after_len);
+        src.replace(before_index, before_len, after);
+        QCOMPARE(src, expected);
+    }
+    { // When it's detached and won't need to reallocate, but after doesn't point
+      // into this
+        QByteArray src = ba;
+        if (after_len > before_len)
+            src.reserve(src.size() + after_len - before_len);
+        QByteArray after = QByteArrayView{src}.sliced(after_index, after_len).toByteArray();
+        src.replace(before_index, before_len, after);
+        QCOMPARE(src, expected);
+    }
 }
 
 void tst_QByteArray::replace_before_after_data()
@@ -1556,7 +1737,7 @@ void tst_QByteArray::replace_before_after()
     QCOMPARE(copy.replace(before.constData(), before.size(), after.constData(), after.size()), expected);
 }
 
-void tst_QByteArray::replace_after_points_into_this_data()
+void tst_QByteArray::replace_view_view_after_points_into_this_data()
 {
     QTest::addColumn<QByteArray>("ba");
     QTest::addColumn<int>("before_index");
@@ -1587,7 +1768,7 @@ void tst_QByteArray::replace_after_points_into_this_data()
 
 }
 
-void tst_QByteArray::replace_after_points_into_this()
+void tst_QByteArray::replace_view_view_after_points_into_this()
 {
     QFETCH(QByteArray, ba);
     QFETCH(int, before_index);
