@@ -1875,7 +1875,7 @@ void QHttp2Connection::handleContinuedHEADERS()
 
     const auto streamIt = m_streams.constFind(streamID);
     if (firstFrameType == FrameType::HEADERS) {
-        if (streamIt != m_streams.cend() && !streamIt.value()->wasReset()) {
+        if (streamIt != m_streams.cend() && !streamWasResetLocally(streamID)) {
             QHttp2Stream *stream = streamIt.value();
             if (stream->state() != QHttp2Stream::State::HalfClosedLocal
                 && stream->state() != QHttp2Stream::State::ReservedRemote
