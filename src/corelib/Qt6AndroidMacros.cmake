@@ -260,6 +260,8 @@ function(qt6_android_generate_deployment_settings target)
     list(JOIN architecture_record_list "," architecture_records)
     # Architecture
     string(APPEND file_contents
+        "   \"abi\": \"${CMAKE_ANDROID_ARCH_ABI}\",\n")
+    string(APPEND file_contents
         "   \"architectures\": { ${architecture_records} },\n")
 
     # deployment dependencies

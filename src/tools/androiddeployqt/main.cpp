@@ -143,6 +143,7 @@ struct Options
     QString jdkPath;
 
     // Build paths
+    QString abi;
     QString qtInstallDirectory;
     QHash<QString, QString> qtDirectories;
     QString qtDataDirectory;
@@ -1182,6 +1183,11 @@ bool readInputFile(Options *options)
         const QJsonValue ver = jsonObject.value("android-target-sdk-version"_L1);
         if (!ver.isUndefined())
             options->targetSdkVersion = ver.toString().toUtf8();
+    }
+
+    {
+        if (const auto abi = jsonObject.value("abi"_L1); !abi.isUndefined())
+            options->abi = jsonObject.value("abi"_L1).toString();
     }
 
     {
