@@ -2775,6 +2775,9 @@ bool goodToCopy(const Options *options, const QString &file, QStringList *unmetD
     if (!file.endsWith(".so"_L1))
         return true;
 
+    if (!options->abi.isEmpty() && options->abi != options->currentArchitecture)
+        return true;
+
     if (!checkArchitecture(*options, file))
         return false;
 
