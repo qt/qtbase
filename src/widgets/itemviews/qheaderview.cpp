@@ -1234,6 +1234,14 @@ void QHeaderView::setSectionResizeMode(ResizeMode mode)
     initializeSections();
     d->stretchSections = (mode == Stretch ? count() : 0);
     d->contentsSections =  (mode == ResizeToContents ? count() : 0);
+
+    if (d->noSectionMemoryUsage() && (mode == Stretch || mode == ResizeToContents)) {
+        // Stretch can/could *_maybe_* in the future be used to switch back to low memory mode
+        // (if no sections are moved or swapped), but for now we simply instantly switch
+        // to normal memory usage on auto resize.
+        d->switchToFlexibleModeWithSectionMemoryUsage();
+    }
+
     d->setGlobalHeaderResizeMode(mode);
     if (d->hasAutoResizeSections())
         d->doDelayedResizeSections(); // section sizes may change as a result of the new mode

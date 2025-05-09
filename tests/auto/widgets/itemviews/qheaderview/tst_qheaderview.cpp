@@ -11,6 +11,7 @@
 #include <QTableView>
 #include <QTest>
 #include <QTreeWidget>
+#include <QStyledItemDelegate>
 #include <QtWidgets/private/qheaderview_p.h>
 #include <QtWidgets/private/qapplication_p.h>
 
@@ -237,6 +238,7 @@ private slots:
     void normalMemoryUsageOnHide();
     void storeRestoreLowMemoryMode();
     void setSectionResizeModeWithSectionWillTakeMemory();
+    void setModelWithAutoSizeWillSwitchToMemoryMode();
 
     void setDefaultSectionSizeRespectsColumnWidth();
 
@@ -3852,6 +3854,110 @@ void tst_QHeaderView::setSectionResizeModeWithSectionWillTakeMemory()
     TableViewWithBasicModel tv2;
     tv2.header->setSectionResizeMode(500, QHeaderView::Interactive);
     QVERIFY(!tv2.hasLowMemoryUsage());
+}
+
+class SpecialResizeModeTestDelegate : public QStyledItemDelegate
+{
+    Q_OBJECT
+
+public:
+    SpecialResizeModeTestDelegate(QObject *parent = nullptr) : QStyledItemDelegate(parent)
+    {}
+    QSize sizeHint(const QStyleOptionViewItem &/*option*/, const QModelIndex &/*index*/) const override
+    {
+        return QSize(m_cellWidth, m_cellWidth);
+    }
+    int cellWidth() const { return m_cellWidth; }
+    void setCellWidth(int width) { m_cellWidth = width; }
+
+private:
+    int m_cellWidth{100};
+};
+
+class SpecialResizeModeTestModel : public QAbstractTableModel
+{
+public:
+    SpecialResizeModeTestModel(QObject *parent = nullptr) : QAbstractTableModel(parent) {}
+    int rowCount(const QModelIndex & =  {}) const override { return 105; }
+    int columnCount(const QModelIndex & = {}) const override { return 15; }
+
+    QVariant data(const QModelIndex &i, int role) const override
+    {
+        return (role == Qt::DisplayRole) ? QString("R: %1, C: %2").arg(i.row()).arg(i.column()) : QVariant();
+    }
+
+    QVariant headerData(int /*section*/, Qt::Orientation /*orientation*/, int role = Qt::DisplayRole) const override
+    {
+        return (role == Qt::SizeHintRole) ? QSize(1, 1) : QVariant();
+    }
+};
+
+// Custom table view that sets the cell sizes based on a property
+class SpecialResizeModeTableView : public QTableView
+{
+    Q_OBJECT
+public:
+    SpecialResizeModeTableView(QWidget *parent = nullptr) : QTableView(parent)
+    {
+        QHeaderView *hHeader = horizontalHeader();
+        QHeaderView *vHeader = verticalHeader();
+        // Hide the headers, otherwise it appears their size will be used
+        hHeader->hide();
+        vHeader->hide();
+        hHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
+        vHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
+        hHeader->setMinimumSectionSize(1);
+        vHeader->setMinimumSectionSize(1);
+
+        setItemDelegate(&delegate_);
+    }
+
+    int cellWidth() const { return delegate_.cellWidth(); }
+    void setCellWidth(int width)
+    {
+        delegate_.setCellWidth(width);
+        scheduleDelayedItemsLayout();
+    }
+
+    // The following are overridden for optimization purposes but not relevant to the example
+    int sizeHintForRow(int) const override { return cellWidth(); }
+    int sizeHintForColumn(int) const override { return cellWidth(); }
+
+    QSize sizeHint() const override
+    {
+        return QSize(720, 480); // Fixed size for the example
+    }
+
+private:
+    SpecialResizeModeTestDelegate delegate_;
+};
+
+void tst_QHeaderView::setModelWithAutoSizeWillSwitchToMemoryMode()
+{
+    SpecialResizeModeTableView v;
+    const int defaultWidth = 20;
+
+    QByteArray emptyState = v.horizontalHeader()->saveState();
+    v.horizontalHeader()->setDefaultSectionSize(defaultWidth);
+    v.horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+
+    v.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&v));
+
+    auto *model = new SpecialResizeModeTestModel(&v);
+    v.setModel(model);
+    const int headerLength = v.horizontalHeader()->length();
+    const int unexpectedLength = defaultWidth * model->columnCount();
+    // The length of the header is not the default section size times sections.
+    // If it fails we like to see this.
+    QVERIFY(headerLength != unexpectedLength);
+    // A secondary test is that obviously the header length is the bigger one.
+    QCOMPARE_GT(headerLength, unexpectedLength);
+    // and finally we should have switched memory model.
+    QByteArray nonEmptyState = v.horizontalHeader()->saveState();
+    const int delta = model->columnCount() * 8;
+    // even with delta help the nonEmptyState should now be bigger.
+    QCOMPARE_GT(nonEmptyState.size(), emptyState.size() + delta);
 }
 
 void tst_QHeaderView::setDefaultSectionSizeRespectsColumnWidth()
