@@ -224,7 +224,7 @@ function(qt_internal_get_example_install_prefix out_var)
     # Allow customizing the installation path of the examples. Will be used in CI.
     if(QT_INTERNAL_EXAMPLES_INSTALL_PREFIX)
         set(qt_example_install_prefix "${QT_INTERNAL_EXAMPLES_INSTALL_PREFIX}")
-    elseif(QT_BUILD_STANDALONE_EXAMPLES)
+    elseif(QT_BUILD_STANDALONE_EXAMPLES AND NOT QT_NO_FAKE_STANDALONE_EXAMPLE_INSTALL_PREFIX)
         # TODO: We might need to reset and pipe through an empty CMAKE_STAGING_PREFIX if we ever
         # try to run standalone examples in the CI when cross-compiling, similar how it's done in
         # qt_internal_set_up_fake_standalone_parts_install_prefix.
