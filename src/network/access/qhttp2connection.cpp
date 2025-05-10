@@ -1029,7 +1029,7 @@ QHttp2Connection::QHttp2Connection(QIODevice *socket) : QObject(socket)
     // socket connections.
 }
 
-QHttp2Connection::~QHttp2Connection() noexcept
+QHttp2Connection::~QHttp2Connection()
 {
     // delete streams now so that any calls it might make back to this
     // Connection will operate on a valid object.
