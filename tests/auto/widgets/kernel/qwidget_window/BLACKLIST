@@ -13,6 +13,5 @@ android
 android
 [mouseMoveWithPopup]
 android
-xcb ubuntu-24.04 # QTBUG-129568
 [setWindowState:maximized]
 xcb ubuntu-24.04 # QTBUG-129026
