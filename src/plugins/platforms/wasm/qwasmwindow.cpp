@@ -56,7 +56,6 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmDeadKeySupport *deadKeySupport,
       m_document(dom::document()),
       m_decoratedWindow(m_document.call<emscripten::val>("createElement", emscripten::val("div"))),
       m_window(m_document.call<emscripten::val>("createElement", emscripten::val("div"))),
-      m_windowInput(m_document.call<emscripten::val>("createElement", emscripten::val("div"))),
       m_a11yContainer(m_document.call<emscripten::val>("createElement", emscripten::val("div"))),
       m_canvas(m_document.call<emscripten::val>("createElement", emscripten::val("canvas")))
 {
@@ -71,17 +70,26 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmDeadKeySupport *deadKeySupport,
     m_window.set("className", "qt-window");
     m_decoratedWindow.call<void>("appendChild", m_window);
 
-    m_window.call<void>("appendChild", m_windowInput);
     m_canvas["classList"].call<void>("add", emscripten::val("qt-window-canvas"));
 
+    // Set contentEditable for two reasons;
+    //   1) so that the window gets clipboard events,
+    //   2) For applications who will handle keyboard events, but without having inputMethodAccepted()
+    //
+    // Set inputMode to none to avoid keyboard popping up on push buttons
+    // This is a tradeoff, we are not able to separate between a push button and
+    // a widget that reads keyboard events.
+    m_canvas.call<void>("setAttribute", std::string("inputmode"), std::string("none"));
+    m_canvas.call<void>("setAttribute", std::string("contenteditable"), std::string("true"));
+    m_canvas["style"].set("outline", std::string("none"));
+
 #if QT_CONFIG(clipboard)
-    QWasmClipboard::installEventHandlers(m_windowInput);
+    QWasmClipboard::installEventHandlers(m_canvas);
 #endif
 
     // Set inputMode to none to stop the mobile keyboard from opening
     // when the user clicks on the window.
     m_window.set("inputMode", std::string("none"));
-    m_windowInput.set("inputMode", std::string("none"));
 
     // Hide the canvas from screen readers.
     m_canvas.call<void>("setAttribute", std::string("aria-hidden"), std::string("true"));
@@ -119,9 +127,9 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmDeadKeySupport *deadKeySupport,
             [this](emscripten::val event) { this->handleKeyForInputContextEvent(event); });
     }
 
-    m_keyDownCallback = std::make_unique<qstdweb::EventCallback>(m_window, "keydown",
+    m_keyDownCallback = std::make_unique<qstdweb::EventCallback>(m_canvas, "keydown",
         [this](emscripten::val event) { this->handleKeyEvent(event); });
-    m_keyUpCallback =std::make_unique<qstdweb::EventCallback>(m_window, "keyup",
+    m_keyUpCallback =std::make_unique<qstdweb::EventCallback>(m_canvas, "keyup",
         [this](emscripten::val event) { this->handleKeyEvent(event); });
 
     setParent(parent());
@@ -718,7 +726,7 @@ void QWasmWindow::requestActivateWindow()
 
 void QWasmWindow::focus()
 {
-    m_windowInput.call<void>("focus");
+    m_canvas.call<void>("focus");
 }
 
 bool QWasmWindow::setMouseGrabEnabled(bool grab)

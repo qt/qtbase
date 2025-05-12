@@ -43,8 +43,6 @@ public:
     static void cut(emscripten::val event);
     static void copy(emscripten::val event);
     static void paste(emscripten::val event);
-    static void beforeInput(emscripten::val event);
-    static void input(emscripten::val event);
 
 private:
     void initClipboardPermissions();
