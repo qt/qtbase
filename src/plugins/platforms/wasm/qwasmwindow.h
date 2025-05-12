@@ -140,7 +140,6 @@ private:
     emscripten::val m_document;
     emscripten::val m_decoratedWindow;
     emscripten::val m_window;
-    emscripten::val m_windowInput;
     emscripten::val m_a11yContainer;
     emscripten::val m_canvas;
     emscripten::val m_context2d = emscripten::val::undefined();
