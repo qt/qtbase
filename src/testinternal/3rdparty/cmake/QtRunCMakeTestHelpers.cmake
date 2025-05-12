@@ -20,6 +20,10 @@ macro(add_RunCMake_test test)
   if(CMAKE_C_COMPILER_ID STREQUAL "LCC")
     list(APPEND TEST_ARGS -DRunCMake_TEST_LCC=1)
   endif()
+  # Qt specific options
+  list(APPEND TEST_ARGS
+    -D_Qt6CTestMacros=${_Qt6CTestMacros}
+  )
   add_test(NAME RunCMake.${test} COMMAND ${CMAKE_COMMAND}
     -DCMAKE_MODULE_PATH=${RunCMakeDir}
     -DRunCMake_GENERATOR_IS_MULTI_CONFIG=${_isMultiConfig}

@@ -1,0 +1,19 @@
+Index: src/testinternal/3rdparty/cmake/QtRunCMakeTestHelpers.cmake
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/testinternal/3rdparty/cmake/QtRunCMakeTestHelpers.cmake b/src/testinternal/3rdparty/cmake/QtRunCMakeTestHelpers.cmake
+--- a/src/testinternal/3rdparty/cmake/QtRunCMakeTestHelpers.cmake	(revision b23da37d71bde4673fab3510596514e4ac451053)
++++ b/src/testinternal/3rdparty/cmake/QtRunCMakeTestHelpers.cmake	(revision e71805860401b494ab3b6e1c12eaa1c84fd89994)
+@@ -20,6 +20,10 @@
+   if(CMAKE_C_COMPILER_ID STREQUAL "LCC")
+     list(APPEND TEST_ARGS -DRunCMake_TEST_LCC=1)
+   endif()
++  # Qt specific options
++  list(APPEND TEST_ARGS
++    -D_Qt6CTestMacros=${_Qt6CTestMacros}
++  )
+   add_test(NAME RunCMake.${test} COMMAND ${CMAKE_COMMAND}
+     -DCMAKE_MODULE_PATH=${RunCMakeDir}
+     -DRunCMake_GENERATOR_IS_MULTI_CONFIG=${_isMultiConfig}
