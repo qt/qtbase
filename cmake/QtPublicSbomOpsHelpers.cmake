@@ -612,7 +612,7 @@ function(_qt_internal_sbom_verify_ntia_compliant)
             RESULT_VARIABLE res
         )
         if(NOT res EQUAL 0)
-            message(FATAL_ERROR \"SBOM NTIA verification failed: \{res}\")
+            message(FATAL_ERROR \"SBOM NTIA verification failed: \${res}\")
         endif()
 ")
 
