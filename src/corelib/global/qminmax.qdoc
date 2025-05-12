@@ -28,8 +28,7 @@
 /*! \fn template <typename T> const T &qBound(const T &min, const T &val, const T &max)
     \relates <QtMinMax>
 
-    Returns \a val bounded by \a min and \a max. This is equivalent
-    to qMax(\a min, qMin(\a val, \a max)).
+    Returns \a val bounded by \a min and \a max.
 
     Example:
 
