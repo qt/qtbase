@@ -26,6 +26,7 @@ public:
     void requestActivateWindow() override;
 
     WId winId() const override;
+    QSurfaceFormat format() const override;
 
     static QOffscreenWindow *windowForWinId(WId id);
 
