@@ -373,9 +373,11 @@
 
     \list
     \li \c -callgrind \br
-    Uses Callgrind to time benchmarks (Linux only).
+    Uses Callgrind to time benchmarks (Linux and \macos).
+    \li \c -perf \br
+    Uses Linux perf events to time benchmarks
     \li \c -tickcounter \br
-    Uses CPU tick counters to time benchmarks.
+    Uses CPU tick counters to time benchmarks. Requires hardware support.
     \li \c -eventcounter \br
     Counts events received during benchmarks.
     \li \c -minimumvalue \e n \br
@@ -452,7 +454,7 @@
     The code inside the QBENCHMARK macro will be measured, and possibly also repeated
     several times in order to get an accurate measurement. This depends on the selected
     measurement back-end. Several back-ends are available. They can be selected on the
-    command line:
+    command line (see \l{Benchmarking Options}):
 
     \target testlib-benchmarking-measurement
 
