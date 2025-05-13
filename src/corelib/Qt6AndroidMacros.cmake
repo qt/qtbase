@@ -1808,7 +1808,7 @@ function(_qt_internal_android_get_target_android_build_dir out_build_dir target)
 endfunction()
 
 function(_qt_internal_expose_android_package_source_dir_to_ide target)
-    get_target_property(android_package_source_dir ${target} QT_ANDROID_PACKAGE_SOURCE_DIR)
+    _qt_internal_android_get_package_source_dir(android_package_source_dir ${target})
     if(android_package_source_dir)
         get_target_property(target_source_dir ${target} SOURCE_DIR)
         if(NOT IS_ABSOLUTE "${android_package_source_dir}")
@@ -1931,6 +1931,17 @@ function(_qt_internal_android_find_asan_wrap_sh out_wrap_sh_path)
         message(WARNING "Address Sanitizer: the wrap script not found at ${ndk_wrap_sh_path}.")
         set(${out_wrap_sh_path} "" PARENT_SCOPE)
     endif()
+endfunction()
+
+# Return the path to the target template directory if it's set for the target.
+# Then this path is stored in the target QT_ANDROID_PACKAGE_SOURCE_DIR property
+# and can only be effectively read in android finalizers.
+function(_qt_internal_android_get_package_source_dir out_var target)
+    get_target_property(package_src_dir ${target} QT_ANDROID_PACKAGE_SOURCE_DIR)
+    if(NOT package_src_dir)
+        set(package_src_dir "")
+    endif()
+    set(${out_var} "${package_src_dir}" PARENT_SCOPE)
 endfunction()
 
 # Returns the path to the Android platform-tools(adb is located there).
