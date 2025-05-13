@@ -3068,10 +3068,10 @@ function(_qt_internal_setup_deploy_support)
 
     # Check whether we will have to adjust the RPATH of plugins.
     if("${QT_DEPLOY_FORCE_ADJUST_RPATHS}" STREQUAL "")
-        set(must_adjust_plugins_rpath "")
-        if(NOT CMAKE_SYSTEM_NAME STREQUAL "Windows"
-                AND NOT CMAKE_INSTALL_LIBDIR STREQUAL QT6_INSTALL_LIBS)
+        if(UNIX AND NOT APPLE)
             set(must_adjust_plugins_rpath ON)
+        else()
+            set(must_adjust_plugins_rpath OFF)
         endif()
     else()
         set(must_adjust_plugins_rpath "${QT_DEPLOY_FORCE_ADJUST_RPATHS}")
