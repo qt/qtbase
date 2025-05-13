@@ -3363,7 +3363,7 @@ int QDockAreaLayout::separatorMove(const QList<int> &separator, const QPoint &or
     else
         setGrid(&list, nullptr);
 
-    apply(false);
+    apply(/* animate = */ false);
 
     return delta;
 }
@@ -3377,7 +3377,7 @@ int QDockAreaLayoutInfo::separatorMove(const QList<int> &separator, const QPoint
     delta = pick(info->o, dest - origin);
     if (delta != 0)
         delta = info->separatorMove(index, delta);
-    info->apply(false);
+    info->apply(/* animate = */ false);
     return delta;
 }
 
