@@ -1,9 +1,10 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
-using namespace Qt::StringLiterals;
-
 //! [1]
+// Required for using the '_L1' string literal.
+using namespace Qt::StringLiterals;
+// ...
 QString url = "https://www.unicode.org/"_L1;
 //! [1]
 
@@ -35,6 +36,9 @@ str.append("Hello ").append("World");
 //! [4bis]
 
 //! [5]
+// Required for using the '_L1' string literal.
+using namespace Qt::StringLiterals;
+// ...
 if (str == "auto"_L1
         || str == "extern"_L1
         || str == "static"_L1
