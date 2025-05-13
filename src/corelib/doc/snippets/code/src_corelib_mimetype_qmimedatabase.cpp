@@ -12,6 +12,8 @@ if (mime.inherits("text/plain")) {
 //! [0]
 
 //! [1]
+using namespace Qt::StringLiterals;
+// ...
 QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, "mime/packages"_L1,
                           QStandardPaths::LocateDirectory);
 //! [1]

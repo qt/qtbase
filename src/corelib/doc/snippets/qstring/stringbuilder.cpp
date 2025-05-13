@@ -3,9 +3,11 @@
 
 #include <QString>
 
-using namespace Qt::StringLiterals;
-
 //! [0]
+// Required for using the '_L1' string literal.
+using namespace Qt::StringLiterals;
+// ...
+
     QString foo;
     QString type = "long";
 

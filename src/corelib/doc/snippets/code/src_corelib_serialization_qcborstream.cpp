@@ -8,6 +8,8 @@ using namespace Qt::StringLiterals;
 //! [0]
 
 //! [1]
+using namespace Qt::StringLiterals;
+// ...
    writer.startMap(4);    // 4 elements in the map
 
    writer.append("label"_L1);
@@ -73,6 +75,8 @@ using namespace Qt::StringLiterals;
 //! [7]
 
 //! [8]
+using namespace Qt::StringLiterals;
+// ...
    writer.append("Hello, World"_L1);
 //! [8]
 
