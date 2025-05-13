@@ -44,6 +44,7 @@ qt_internal_add_3rdparty_library(BundledHarfbuzz
         src/hb-open-type.hh
         src/hb-outline.cc src/hb-outline.hh
         src/hb-paint.cc src/hb-paint.h src/hb-paint.hh
+        src/hb-paint-bounded.cc src/hb-paint-bounded.hh
         src/hb-paint-extents.cc src/hb-paint-extents.hh
         src/hb-priority-queue.hh
         src/hb-repacker.hh
