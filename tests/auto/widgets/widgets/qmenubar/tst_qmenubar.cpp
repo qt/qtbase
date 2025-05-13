@@ -1233,12 +1233,41 @@ void tst_QMenuBar::taskQTBUG4965_escapeEaten()
 }
 #endif
 
+#ifdef Q_OS_LINUX
+class ResizeCounter : public QObject
+{
+public:
+    explicit ResizeCounter(QMenuBar *bar)
+    {
+        Q_ASSERT(bar);
+        bar->installEventFilter(this);
+    }
+
+    int resizeCount() const { return m_resizeCount; }
+
+protected:
+    bool eventFilter(QObject *o, QEvent *event) override
+    {
+        Q_UNUSED(o);
+        if (event->type() == QEvent::Resize)
+            ++m_resizeCount;
+        return false;
+    }
+
+private:
+    int m_resizeCount = 0;
+};
+#endif
+
 void tst_QMenuBar::taskQTBUG11823_crashwithInvisibleActions()
 {
     if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: This fails. Figure out why.");
 
     QMenuBar menubar;
+#ifdef Q_OS_LINUX
+    ResizeCounter counter(&menubar);
+#endif
     menubar.setNativeMenuBar(false); //we can't check the geometry of native menubars
 
     QAction * m = menubar.addAction( "&m" );
@@ -1247,6 +1276,12 @@ void tst_QMenuBar::taskQTBUG11823_crashwithInvisibleActions()
     centerOnScreen(&menubar);
     menubar.show();
     QVERIFY(QTest::qWaitForWindowActive(&menubar));
+
+#ifdef Q_OS_LINUX
+    if (QSysInfo::productType().contains("opensuse"))
+        QVERIFY(QTest::qWaitFor([&]{ return counter.resizeCount() == 2;}));
+#endif
+
     menubar.setActiveAction(m);
     QCOMPARE(menubar.activeAction(), m);
     QTest::keyClick(static_cast<QWidget *>(0), Qt::Key_Right);
