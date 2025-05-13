@@ -130,6 +130,11 @@ WId QOffscreenWindow::winId() const
     return m_winId;
 }
 
+QSurfaceFormat QOffscreenWindow::format() const
+{
+    return window()->requestedFormat();
+}
+
 QMargins QOffscreenWindow::frameMargins() const
 {
     return m_margins;
