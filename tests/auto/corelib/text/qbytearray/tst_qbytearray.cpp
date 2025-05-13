@@ -73,8 +73,11 @@ private slots:
     void removeIf();
     void erase();
     void erase_single_arg();
-    void replace_data();
-    void replace();
+
+    void replace_pos_len_data();
+    void replace_pos_len();
+    void replace_before_after_data();
+    void replace_before_after();
     void replaceWithSpecifiedLength();
     void replaceWithEmptyNeedleInsertsBeforeEachChar_data();
     void replaceWithEmptyNeedleInsertsBeforeEachChar();
@@ -1421,79 +1424,88 @@ void tst_QByteArray::erase_single_arg()
     QCOMPARE(it, ba.begin() + 2);
 }
 
-void tst_QByteArray::replace_data()
+void tst_QByteArray::replace_pos_len_data()
 {
-    // Try to cover both the index and specific char cases.
-    // If "before" is empty, use "pos" as an index
     QTest::addColumn<QByteArray>("src");
     QTest::addColumn<int>("pos");
     QTest::addColumn<int>("len");
-    QTest::addColumn<QByteArray>("before");
     QTest::addColumn<QByteArray>("after");
     QTest::addColumn<QByteArray>("expected");
 
-    // Using pos
-
-    QTest::newRow("1") << QByteArray("Say yes!") << 4 << 3 << QByteArray() << QByteArray("no")
+    QTest::newRow("1") << QByteArray("Say yes!") << 4 << 3 << QByteArray("no")
                        << QByteArray("Say no!");
-    QTest::newRow("2") << QByteArray("rock and roll") << 5 << 3 << QByteArray() << QByteArray("&")
+    QTest::newRow("2") << QByteArray("rock and roll") << 5 << 3 << QByteArray("&")
                        << QByteArray("rock & roll");
-    QTest::newRow("3") << QByteArray("foo") << 3 << 0 << QByteArray() << QByteArray("bar")
+    QTest::newRow("3") << QByteArray("foo") << 3 << 0 << QByteArray("bar")
                        << QByteArray("foobar");
-    QTest::newRow("4") << QByteArray() << 0 << 0 << QByteArray() << QByteArray() << QByteArray();
+    QTest::newRow("4") << QByteArray() << 0 << 0 << QByteArray() << QByteArray();
     // index out of range
-    QTest::newRow("5") << QByteArray() << 3 << 0 << QByteArray() << QByteArray("hi")
+    QTest::newRow("5") << QByteArray() << 3 << 0 << QByteArray("hi")
                        << QByteArray("   hi");
     // Optimized path
-    QTest::newRow("6") << QByteArray("abcdef") << 3 << 12 << QByteArray()
+    QTest::newRow("6") << QByteArray("abcdef") << 3 << 12
                        << QByteArray("abcdefghijkl") << QByteArray("abcabcdefghijkl");
-    QTest::newRow("7") << QByteArray("abcdef") << 3 << 4 << QByteArray()
+    QTest::newRow("7") << QByteArray("abcdef") << 3 << 4
                        << QByteArray("abcdefghijkl") << QByteArray("abcabcdefghijkl");
-    QTest::newRow("8") << QByteArray("abcdef") << 3 << 3 << QByteArray()
+    QTest::newRow("8") << QByteArray("abcdef") << 3 << 3
                        << QByteArray("abcdefghijkl") << QByteArray("abcabcdefghijkl");
-    QTest::newRow("9") << QByteArray("abcdef") << 3 << 2 << QByteArray()
+    QTest::newRow("9") << QByteArray("abcdef") << 3 << 2
                        << QByteArray("abcdefghijkl") << QByteArray("abcabcdefghijklf");
-    QTest::newRow("10") << QByteArray("abcdef") << 2 << 2 << QByteArray() << QByteArray("xx")
+    QTest::newRow("10") << QByteArray("abcdef") << 2 << 2 << QByteArray("xx")
                         << QByteArray("abxxef");
-
-    // Using before
-
-    QTest::newRow("null") << QByteArray() << 0 << 0 << QByteArray("abc") << QByteArray()
-                          << QByteArray();
-    QTest::newRow("text to text") << QByteArray("abcdefghbcd") << 0 << 0 << QByteArray("bcd")
-                                  << QByteArray("1234") << QByteArray("a1234efgh1234");
-    QTest::newRow("char to text") << QByteArray("abcdefgch") << 0 << 0 << QByteArray("c")
-                                  << QByteArray("1234") << QByteArray("ab1234defg1234h");
-    QTest::newRow("char to char") << QByteArray("abcdefgch") << 0 << 0 << QByteArray("c")
-                                  << QByteArray("1") << QByteArray("ab1defg1h");
 }
 
-void tst_QByteArray::replace()
+void tst_QByteArray::replace_pos_len()
 {
     QFETCH(QByteArray, src);
     QFETCH(int, pos);
     QFETCH(int, len);
+    QFETCH(QByteArray, after);
+    QFETCH(QByteArray, expected);
+
+    QByteArray copy = src;
+    QCOMPARE(copy.replace(pos, len, after), expected);
+    copy = src;
+    QCOMPARE(copy.replace(pos, len, after.data(), after.size()), expected);
+}
+
+void tst_QByteArray::replace_before_after_data()
+{
+    QTest::addColumn<QByteArray>("src");
+    QTest::addColumn<QByteArray>("before");
+    QTest::addColumn<QByteArray>("after");
+    QTest::addColumn<QByteArray>("expected");
+
+    QTest::newRow("null") << QByteArray() << QByteArray("abc") << QByteArray()
+                          << QByteArray();
+
+    QTest::newRow("text to text") << QByteArray("abcdefghbcd") << QByteArray("bcd")
+                                  << QByteArray("1234") << QByteArray("a1234efgh1234");
+
+    QTest::newRow("char to text") << QByteArray("abcdefgch") << QByteArray("c")
+                                  << QByteArray("1234") << QByteArray("ab1234defg1234h");
+
+    QTest::newRow("char to char") << QByteArray("abcdefgch") << QByteArray("c")
+                                  << QByteArray("1") << QByteArray("ab1defg1h");
+}
+
+void tst_QByteArray::replace_before_after()
+{
+    QFETCH(QByteArray, src);
     QFETCH(QByteArray, before);
     QFETCH(QByteArray, after);
     QFETCH(QByteArray, expected);
 
-    if (before.isEmpty()) {
-        QByteArray copy = src;
-        QCOMPARE(copy.replace(pos, len, after), expected);
-        copy = src;
-        QCOMPARE(copy.replace(pos, len, after.data(), after.size()), expected);
-    } else {
-        QByteArray copy = src;
-        if (before.size() == 1) {
-            if (after.size() == 1)
-                QCOMPARE(copy.replace(before.front(), after.front()), expected);
-            QCOMPARE(copy.replace(before.front(), after), expected);
-        }
-        copy = src;
-        QCOMPARE(copy.replace(before, after), expected);
-        copy = src;
-        QCOMPARE(copy.replace(before.constData(), before.size(), after.constData(), after.size()), expected);
+    QByteArray copy = src;
+    if (before.size() == 1) {
+        if (after.size() == 1)
+            QCOMPARE(copy.replace(before.front(), after.front()), expected);
+        QCOMPARE(copy.replace(before.front(), after), expected);
     }
+    copy = src;
+    QCOMPARE(copy.replace(before, after), expected);
+    copy = src;
+    QCOMPARE(copy.replace(before.constData(), before.size(), after.constData(), after.size()), expected);
 }
 
 void tst_QByteArray::replaceWithSpecifiedLength()
