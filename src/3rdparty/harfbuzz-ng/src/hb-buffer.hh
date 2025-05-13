@@ -410,6 +410,9 @@ struct hb_buffer_t
 			 bool interior = false,
 			 bool from_out_buffer = false)
   {
+    if (unlikely (end != (unsigned) -1 && end - start > 255))
+      return;
+
     end = hb_min (end, len);
 
     if (interior && !from_out_buffer && end - start < 2)
