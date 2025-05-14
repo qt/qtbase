@@ -391,8 +391,8 @@ private slots:
     void replace_qchar_qchar();
     void replace_qchar_qstring_data();
     void replace_qchar_qstring();
-    void replace_uint_uint_data();
-    void replace_uint_uint();
+    void replace_pos_len_data();
+    void replace_pos_len();
     void replace_uint_uint_extra();
     void replace_extra();
     void replace_string_data();
@@ -790,7 +790,7 @@ tst_QString::tst_QString()
 
 void tst_QString::remove_uint_uint_data()
 {
-    replace_uint_uint_data();
+    replace_pos_len_data();
 }
 
 void tst_QString::remove_string_data()
@@ -896,49 +896,132 @@ void tst_QString::replace_qchar_qstring()
     QCOMPARE(s.replace(before, after, cs), expected);
 }
 
-void tst_QString::replace_uint_uint_data()
+void tst_QString::replace_pos_len_data()
 {
     QTest::addColumn<QString>("string" );
-    QTest::addColumn<int>("index" );
-    QTest::addColumn<int>("len" );
+    QTest::addColumn<qsizetype>("index" );
+    QTest::addColumn<qsizetype>("len" );
     QTest::addColumn<QString>("after" );
     QTest::addColumn<QString>("result" );
 
-    QTest::newRow("empty_rem00") << QString() << 0 << 0 << u""_s << QString();
-    QTest::newRow("empty_rem01") << QString() << 0 << 3 << u""_s << QString();
-    QTest::newRow("empty_rem02") << QString() << 5 << 3 << u""_s << QString();
+    QTest::newRow("empty_rem00") << QString()
+                                 << qsizetype(0) << qsizetype(0) << u""_s
+                                 << QString();
 
-    QTest::newRow( "rem00" ) << u"-<>ABCABCABCABC>"_s << 0 << 3 << u""_s << u"ABCABCABCABC>"_s;
-    QTest::newRow( "rem01" ) << u"ABCABCABCABC>"_s << 1 << 4 << u""_s << u"ACABCABC>"_s;
-    QTest::newRow( "rem04" ) << u"ACABCABC>"_s << 8 << 4 << u""_s << u"ACABCABC"_s;
-    QTest::newRow( "rem05" ) << u"ACABCABC"_s << 7 << 1 << u""_s << u"ACABCAB"_s;
-    QTest::newRow( "rem06" ) << u"ACABCAB"_s << 4 << 0 << u""_s << u"ACABCAB"_s;
+    QTest::newRow("empty_rem01") << QString()
+                                 << qsizetype(0) << qsizetype(3) << u""_s
+                                 << QString();
 
-    QTest::newRow("empty_rep00") << QString() << 0 << 0 << u"X"_s << u"X"_s;
-    QTest::newRow("empty_rep01") << QString() << 0 << 3 << u"X"_s << u"X"_s;
-    QTest::newRow("empty_rep02") << QString() << 5 << 3 << u"X"_s << QString();
+    QTest::newRow("empty_rem02") << QString()
+                                 << qsizetype(5) << qsizetype(3) << u""_s
+                                 << QString();
 
-    QTest::newRow( "rep00" ) << u"ACABCAB"_s << 4 << 0 << u"X"_s << u"ACABXCAB"_s;
-    QTest::newRow( "rep01" ) << u"ACABXCAB"_s << 4 << 1 << u"Y"_s << u"ACABYCAB"_s;
-    QTest::newRow( "rep02" ) << u"ACABYCAB"_s << 4 << 1 << u""_s << u"ACABCAB"_s;
-    QTest::newRow( "rep03" ) << u"ACABCAB"_s << 0 << 9999 << u"XX"_s << u"XX"_s;
-    QTest::newRow( "rep04" ) << u"XX"_s << 0 << 9999 << u""_s << u""_s;
-    QTest::newRow( "rep05" ) << u"ACABCAB"_s << 0 << 2 << u"XX"_s << u"XXABCAB"_s;
-    QTest::newRow( "rep06" ) << u"ACABCAB"_s << 1 << 2 << u"XX"_s << u"AXXBCAB"_s;
-    QTest::newRow( "rep07" ) << u"ACABCAB"_s << 2 << 2 << u"XX"_s << u"ACXXCAB"_s;
-    QTest::newRow( "rep08" ) << u"ACABCAB"_s << 3 << 2 << u"XX"_s << u"ACAXXAB"_s;
-    QTest::newRow( "rep09" ) << u"ACABCAB"_s << 4 << 2 << u"XX"_s << u"ACABXXB"_s;
-    QTest::newRow( "rep10" ) << u"ACABCAB"_s << 5 << 2 << u"XX"_s << u"ACABCXX"_s;
-    QTest::newRow( "rep11" ) << u"ACABCAB"_s << 6 << 2 << u"XX"_s << u"ACABCAXX"_s;
-    QTest::newRow( "rep12" ) << QString() << 0 << 10 << u"X"_s << u"X"_s;
-    QTest::newRow( "rep13" ) << u"short"_s << 0 << 10 << u"X"_s << u"X"_s;
-    QTest::newRow( "rep14" ) << QString() << 0 << 10 << u"XX"_s << u"XX"_s;
-    QTest::newRow( "rep15" ) << u"short"_s << 0 << 10 << u"XX"_s << u"XX"_s;
+    QTest::newRow("rem00") << u"-<>ABCABCABCABC>"_s
+                           << qsizetype(0) << qsizetype(3) << u""_s
+                           << u"ABCABCABCABC>"_s;
+
+    QTest::newRow("rem01") << u"ABCABCABCABC>"_s
+                           << qsizetype(1) << qsizetype(4) << u""_s
+                           << u"ACABCABC>"_s;
+
+    QTest::newRow("rem04") << u"ACABCABC>"_s << qsizetype(8) << qsizetype(4)
+                           << u""_s
+                           << u"ACABCABC"_s;
+
+    QTest::newRow("rem05") << u"ACABCABC"_s << qsizetype(7) << qsizetype(1)
+                           << u""_s
+                           << u"ACABCAB"_s;
+
+    QTest::newRow("rem06") << u"ACABCAB"_s
+                           << qsizetype(4) << qsizetype(0) << u""_s
+                           << u"ACABCAB"_s;
+
+    QTest::newRow("empty_rep00") << QString()
+                                 << qsizetype(0) << qsizetype(0) << u"X"_s
+                                 << u"X"_s;
+
+    QTest::newRow("empty_rep01") << QString()
+                                 << qsizetype(0) << qsizetype(3) << u"X"_s
+                                 << u"X"_s;
+
+    QTest::newRow("empty_rep02") << QString()
+                                 << qsizetype(5) << qsizetype(3) << u"X"_s
+                                 << QString();
+
+    QTest::newRow("rep00") << u"ACABCAB"_s
+                           << qsizetype(4) << qsizetype(0) << u"X"_s
+                           << u"ACABXCAB"_s;
+
+    QTest::newRow("rep01") << u"ACABXCAB"_s
+                           << qsizetype(4) << qsizetype(1) << u"Y"_s
+                           << u"ACABYCAB"_s;
+
+    QTest::newRow("rep02") << u"ACABYCAB"_s
+                           << qsizetype(4) << qsizetype(1) << u""_s
+                           << u"ACABCAB"_s;
+
+    QTest::newRow("rep03") << u"ACABCAB"_s
+                           << qsizetype(0) << qsizetype(9999) << u"XX"_s
+                           << u"XX"_s;
+
+    QTest::newRow("rep04") << u"XX"_s
+                           << qsizetype(0) << qsizetype(9999) << u""_s
+                           << u""_s;
+
+    QTest::newRow("rep05") << u"ACABCAB"_s
+                           << qsizetype(0) << qsizetype(2) << u"XX"_s
+                           << u"XXABCAB"_s;
+
+    QTest::newRow("rep06") << u"ACABCAB"_s
+                           << qsizetype(1) << qsizetype(2) << u"XX"_s
+                           << u"AXXBCAB"_s;
+
+    QTest::newRow("rep07") << u"ACABCAB"_s
+                           << qsizetype(2) << qsizetype(2) << u"XX"_s
+                           << u"ACXXCAB"_s;
+
+    QTest::newRow("rep08") << u"ACABCAB"_s
+                           << qsizetype(3) << qsizetype(2) << u"XX"_s
+                           << u"ACAXXAB"_s;
+
+    QTest::newRow("rep09") << u"ACABCAB"_s
+                           << qsizetype(4) << qsizetype(2) << u"XX"_s
+                           << u"ACABXXB"_s;
+
+    QTest::newRow("rep10") << u"ACABCAB"_s
+                           << qsizetype(5) << qsizetype(2) << u"XX"_s
+                           << u"ACABCXX"_s;
+
+    QTest::newRow("rep11") << u"ACABCAB"_s
+                           << qsizetype(6) << qsizetype(2) << u"XX"_s
+                           << u"ACABCAXX"_s;
+
+    QTest::newRow("rep12") << QString()
+                           << qsizetype(0) << qsizetype(10) << u"X"_s
+                           << u"X"_s;
+
+    QTest::newRow("rep13") << u"short"_s
+                           << qsizetype(0) << qsizetype(10) << u"X"_s
+                           << u"X"_s;
+
+    QTest::newRow("rep14") << QString()
+                           << qsizetype(0) << qsizetype(10) << u"XX"_s
+                           << u"XX"_s;
+
+    QTest::newRow("rep15") << u"short"_s
+                           << qsizetype(0) << qsizetype(10) << u"XX"_s
+                           << u"XX"_s;
 
     // This is a regression test for an old bug where QString would add index and len parameters,
     // potentially causing integer overflow.
-    QTest::newRow( "no overflow" ) << u"ACABCAB"_s << 1 << INT_MAX - 1 << u""_s << u"A"_s;
-    QTest::newRow( "overflow" ) << u"ACABCAB"_s << 1 << INT_MAX << u""_s << u"A"_s;
+    constexpr qsizetype maxSize = std::numeric_limits<qsizetype>::max();
+    QTest::newRow("no overflow") << u"ACABCAB"_s
+                                 << qsizetype(1) << maxSize - 1 << u""_s
+                                 << u"A"_s;
+
+    QTest::newRow("overflow") << u"ACABCAB"_s
+                              << qsizetype(1) << maxSize << u""_s
+                              << u"A"_s;
 }
 
 void tst_QString::replace_string_data()
@@ -4214,42 +4297,42 @@ void tst_QString::prependEventuallyProducesFreeSpaceAtBegin()
     QCOMPARE_GT(s.data_ptr().freeSpaceAtBegin(), 1);
 }
 
-void tst_QString::replace_uint_uint()
+void tst_QString::replace_pos_len()
 {
     QFETCH( QString, string );
-    QFETCH( int, index );
-    QFETCH( int, len );
+    QFETCH( qsizetype, index );
+    QFETCH( qsizetype, len );
     QFETCH( QString, after );
 
     // Test when the string is shared
     QString s1 = string;
-    s1.replace( (uint) index, (int) len, after );
+    s1.replace(index, len, after );
     QTEST( s1, "result" );
     // Test when it's not shared
     s1 = string;
     s1.detach();
-    s1.replace((uint)index, (int)len, after);
+    s1.replace(index, len, after);
     QTEST(s1, "result");
 
     // Test when the string is shared
     QString s2 = string;
-    s2.replace((uint)index, (uint)len, after.unicode(), after.size());
+    s2.replace(index, len, after.unicode(), after.size());
     QTEST(s2, "result");
     // Test when it's not shared
     s2 = string;
     s2.detach();
-    s2.replace((uint)index, (uint)len, after.unicode(), after.size());
+    s2.replace(index, len, after.unicode(), after.size());
     QTEST(s2, "result");
 
     if (after.size() == 1) {
         // Test when the string is shared
         QString s3 = string;
-        s3.replace((uint)index, (uint)len, QChar(after[0]));
+        s3.replace(index, len, QChar(after[0]));
         QTEST(s3, "result");
         // Test when it's not shared
         s3 = string;
         s3.detach();
-        s3.replace((uint)index, (uint)len, QChar(after[0]));
+        s3.replace(index, len, QChar(after[0]));
         QTEST(s3, "result");
 
 #if !defined(QT_NO_CAST_FROM_ASCII)
@@ -4257,12 +4340,12 @@ void tst_QString::replace_uint_uint()
 
         // Test when the string is shared
         QString s4 = string;
-        s4.replace((uint)index, (uint)len, QChar(after[0]).toLatin1());
+        s4.replace(index, len, QChar(after[0]).toLatin1());
         QTEST(s4, "result");
         // Test when it's not shared
         s4 = string;
         s4.detach();
-        s4.replace((uint)index, (uint)len, QChar(after[0]).toLatin1());
+        s4.replace(index, len, QChar(after[0]).toLatin1());
         QTEST(s4, "result");
 #endif
     }
@@ -4493,8 +4576,8 @@ void tst_QString::replace_regexp_extra()
 void tst_QString::remove_uint_uint()
 {
     QFETCH( QString, string );
-    QFETCH( int, index );
-    QFETCH( int, len );
+    QFETCH( qsizetype, index );
+    QFETCH( qsizetype, len );
     QFETCH( QString, after );
     QFETCH(QString, result);
 
@@ -4505,13 +4588,13 @@ void tst_QString::remove_uint_uint()
 
     // Test when isShared() is true
     QString s1 = string;
-    s1.remove((qsizetype)index, (qsizetype)len);
+    s1.remove(index, len);
     QCOMPARE(s1, result);
 
     QString s2 = string;
     // Test when isShared() is false
     s2.detach();
-    s2.remove((qsizetype)index, (qsizetype)len);
+    s2.remove(index, len);
     QCOMPARE(s2, result);
 }
 
