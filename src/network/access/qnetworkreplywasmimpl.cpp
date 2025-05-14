@@ -426,20 +426,22 @@ void QNetworkReplyWasmImplPrivate::headersReceived(const QByteArray &buffer)
     if (!buffer.isEmpty()) {
         QList<QByteArray> headers = buffer.split('\n');
 
-        for (int i = 0; i < headers.size(); i++) {
-            if (headers.at(i).contains(':')) { // headers include final \x00, so skip
-                QByteArray headerName = headers.at(i).split(':').at(0).trimmed();
-                QByteArray headersValue = headers.at(i).split(':').at(1).trimmed();
+        for (auto &&header : headers) {
+            if (auto splitPos = header.indexOf(':');
+                splitPos != -1) { // headers include final \x00, so skip
+                auto headerName = header.first(splitPos).trimmed();
+                auto headerValue = header.sliced(splitPos + 1).trimmed();
 
-                if (headerName.isEmpty() || headersValue.isEmpty())
+                if (headerName.isEmpty() || headerValue.isEmpty())
                     continue;
 
                 int headerIndex = parseHeaderName(headerName);
 
                 if (headerIndex == -1)
-                    q->setRawHeader(headerName, headersValue);
+                    q->setRawHeader(headerName, headerValue);
                 else
-                    q->setHeader(static_cast<QNetworkRequest::KnownHeaders>(headerIndex), (QVariant)headersValue);
+                    q->setHeader(static_cast<QNetworkRequest::KnownHeaders>(headerIndex),
+                                 (QVariant)headerValue);
             }
         }
     }
