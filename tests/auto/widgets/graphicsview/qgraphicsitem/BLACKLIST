@@ -4,6 +4,3 @@ osx
 # QTBUG-115293
 [itemUsesExtendedStyleOption]
 wayland
-# QTBUG-127920
-[cursor]
-wayland ubuntu-24.04
