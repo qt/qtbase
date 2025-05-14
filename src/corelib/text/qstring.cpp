@@ -3801,9 +3801,13 @@ QString &QString::replace(qsizetype pos, qsizetype len, const QString &after)
   Replaces \a n characters beginning at index \a position with the
   first \a alen characters of the QChar array \a after and returns a
   reference to this string.
+
+  \a n must not be negative.
 */
 QString &QString::replace(qsizetype pos, qsizetype len, const QChar *after, qsizetype alen)
 {
+    Q_PRE(len >= 0);
+
     if (size_t(pos) > size_t(this->size()))
         return *this;
     if (len > this->size() - pos)

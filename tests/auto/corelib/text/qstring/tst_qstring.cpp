@@ -1015,14 +1015,6 @@ void tst_QString::replace_pos_len_data()
                            << qsizetype(0) << qsizetype(10) << u"XX"_s
                            << u"XX"_s;
 
-    // TODO: Fix, broken unexpected behavior
-    QTest::newRow("negative-before-len-1") << u"yyyy"_s
-                                           << qsizetype(3) << qsizetype(-1) << u"ZZZZ"_s
-                                           << u"yyyZZZZyy"_s;
-    QTest::newRow("negative-before-len-2") << u"yyyy"_s
-                                           << qsizetype(3) << qsizetype(-2) << u"ZZZZ"_s
-                                           << u"yyyZZZZyyy"_s;
-
     // This is a regression test for an old bug where QString would add index and len parameters,
     // potentially causing integer overflow.
     constexpr qsizetype maxSize = std::numeric_limits<qsizetype>::max();
