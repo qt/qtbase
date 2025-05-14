@@ -360,6 +360,7 @@ void generateStackTrace()
             break;
         case Gdb:
             execlp("gdb", "gdb", "--nx", "--batch", "-ex", "thread apply all bt",
+                   "-ex", "info proc mappings",
                    "--pid", pidbuffer.array.data(), nullptr);
             break;
         case Lldb:
