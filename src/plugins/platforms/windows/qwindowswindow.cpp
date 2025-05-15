@@ -485,6 +485,22 @@ static inline bool windowIsAccelerated(const QWindow *w)
     }
 }
 
+static bool applyBlurBehindWindow(HWND hwnd)
+{
+    DWM_BLURBEHIND blurBehind = {0, 0, nullptr, 0};
+
+    blurBehind.dwFlags = DWM_BB_ENABLE | DWM_BB_BLURREGION;
+    blurBehind.fEnable = TRUE;
+    blurBehind.hRgnBlur = CreateRectRgn(0, 0, -1, -1);
+
+    const bool result = DwmEnableBlurBehindWindow(hwnd, &blurBehind) == S_OK;
+
+    if (blurBehind.hRgnBlur)
+        DeleteObject(blurBehind.hRgnBlur);
+
+    return result;
+}
+
 // from qwidget_win.cpp, pass flags separately in case they have been "autofixed".
 static bool shouldShowMaximizeButton(const QWindow *w, Qt::WindowFlags flags)
 {
@@ -1047,6 +1063,8 @@ void WindowCreationData::initialize(const QWindow *w, HWND hwnd, bool frameChang
 
     const bool isAccelerated = windowIsAccelerated(w);
     const bool hasAlpha = w->format().hasAlpha();
+    if (isAccelerated && hasAlpha)
+        applyBlurBehindWindow(hwnd);
     setWindowOpacity(hwnd, flags, hasAlpha, isAccelerated, opacityLevel);
 }
 
@@ -2079,6 +2097,13 @@ void QWindowsWindow::setParent_sys(const QPlatformWindow *parent)
 void QWindowsWindow::handleHidden()
 {
     fireExpose(QRegion());
+}
+
+void QWindowsWindow::handleCompositionSettingsChanged()
+{
+    const QWindow *w = window();
+    if (windowIsAccelerated(w) && w->format().hasAlpha())
+        applyBlurBehindWindow(handle());
 }
 
 qreal QWindowsWindow::dpiRelativeScale(const UINT dpi) const
