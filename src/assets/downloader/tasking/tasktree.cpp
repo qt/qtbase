@@ -1287,7 +1287,7 @@ const GroupItem finishAllAndSuccess = workflowPolicy(WorkflowPolicy::FinishAllAn
 const GroupItem finishAllAndError = workflowPolicy(WorkflowPolicy::FinishAllAndError);
 
 // Keep below the above in order to avoid static initialization fiasco.
-const GroupItem nullItem = GroupItem({});
+const GroupItem nullItem = Group {};
 const ExecutableItem successItem = Group { finishAllAndSuccess };
 const ExecutableItem errorItem = Group { finishAllAndError };
 
