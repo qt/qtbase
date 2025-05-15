@@ -711,8 +711,8 @@ Q_SIGNALS:
 
 private:
     void setupStorageHandler(const StorageBase &storage,
-                             StorageBase::StorageHandler setupHandler,
-                             StorageBase::StorageHandler doneHandler);
+                             const StorageBase::StorageHandler &setupHandler,
+                             const StorageBase::StorageHandler &doneHandler);
     template <typename StorageStruct, typename Handler>
     StorageBase::StorageHandler wrapHandler(Handler &&handler) {
         return [handler](void *voidStruct) {
