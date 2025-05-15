@@ -1513,6 +1513,10 @@ void tst_QFuture::iterators()
 }
 void tst_QFuture::iteratorsThread()
 {
+#if !QT_CONFIG(thread)
+    QSKIP("This test requires threads");
+#endif
+
     const int expectedResultCount = 10;
     QFutureInterface<int> futureInterface;
 
@@ -1985,6 +1989,10 @@ void tst_QFuture::nestedExceptions()
 
 void tst_QFuture::nonGlobalThreadPool()
 {
+#if !QT_CONFIG(thread)
+    QSKIP("This test requires threads");
+#endif
+
     static constexpr int Answer = 42;
 
     struct UselessTask : QRunnable, QFutureInterface<int>
@@ -2032,6 +2040,10 @@ void tst_QFuture::nonGlobalThreadPool()
 
 void tst_QFuture::then()
 {
+#if !QT_CONFIG(thread)
+    QSKIP("This test requires threads");
+#endif
+
     {
         struct Add
         {
@@ -2558,6 +2570,10 @@ QFuture<void> createExceptionContinuation(QtFuture::Launch policy = QtFuture::La
 
 void tst_QFuture::thenThrows()
 {
+#if !QT_CONFIG(thread)
+    QSKIP("This test requires threads");
+#endif
+
     // Continuation throws a QException
     {
         auto future = createExceptionContinuation<QException>();
@@ -3062,6 +3078,10 @@ void tst_QFuture::onCanceled()
 
 void tst_QFuture::cancelContinuations()
 {
+#if !QT_CONFIG(thread)
+    QSKIP("This test requires threads");
+#endif
+
     // The chain is cancelled in the middle of execution of continuations
     {
         QPromise<int> promise;
@@ -3254,6 +3274,10 @@ void tst_QFuture::continuationsWithContext_data()
 
 void tst_QFuture::continuationsWithContext()
 {
+#if !QT_CONFIG(thread)
+    QSKIP("This test requires threads");
+#endif
+
     QFETCH(bool, inOtherThread);
 
     auto tstThread = QThread::currentThread();
@@ -3386,6 +3410,10 @@ void tst_QFuture::continuationsWithContext()
 
 void tst_QFuture::continuationsWithMoveOnlyLambda()
 {
+#if !QT_CONFIG(thread)
+    QSKIP("This test requires threads");
+#endif
+
     // .then()
     {
         std::unique_ptr<int> uniquePtr(new int(42));
@@ -3948,6 +3976,10 @@ void tst_QFuture::signalConnect()
 
 void tst_QFuture::waitForFinished()
 {
+#if !QT_CONFIG(thread)
+    QSKIP("This test requires threads");
+#endif
+
     QFutureInterface<void> fi;
     auto future = fi.future();
 
@@ -5132,6 +5164,10 @@ void tst_QFuture::cancelAfterFinishWithContinuations()
 
 void tst_QFuture::unwrap()
 {
+#if !QT_CONFIG(thread)
+    QSKIP("This test requires threads");
+#endif
+
     // The nested future succeeds
     {
         QPromise<int> p;
@@ -5502,6 +5538,10 @@ void tst_QFuture::cancelChainWithContext_data()
 
 void tst_QFuture::cancelChainWithContext()
 {
+#if !QT_CONFIG(thread)
+    QSKIP("This test requires threads");
+#endif
+
     QFETCH(const bool, inOtherThread);
 
     auto tstThread = QThread::currentThread();

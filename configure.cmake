@@ -1048,7 +1048,6 @@ qt_feature("future" PUBLIC
     SECTION "Kernel"
     LABEL "QFuture"
     PURPOSE "Provides QFuture and related classes."
-    CONDITION QT_FEATURE_thread
 )
 qt_feature("concurrent" PUBLIC
     SECTION "Kernel"

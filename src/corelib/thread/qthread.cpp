@@ -1046,6 +1046,11 @@ QThread::~QThread()
 
 }
 
+QThread *QThread::createThreadImpl(std::future<void>&&)
+{
+    return nullptr;
+}
+
 void QThread::run()
 {
 
@@ -1146,6 +1151,10 @@ bool QThread::isInterruptionRequested() const
 }
 
 void QThread::setTerminationEnabled(bool)
+{
+}
+
+void QThread::setServiceLevel(QualityOfService)
 {
 }
 

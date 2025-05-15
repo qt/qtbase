@@ -24,8 +24,6 @@
 #include "QtCore/qqueue.h"
 #include "private/qobject_p.h"
 
-QT_REQUIRE_CONFIG(thread);
-
 QT_BEGIN_NAMESPACE
 
 class QDeadlineTimer;

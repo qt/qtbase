@@ -261,6 +261,8 @@ qt_internal_add_module(Core
         thread/qrunnable.cpp thread/qrunnable.h
         thread/qthread.cpp thread/qthread.h thread/qthread_p.h
         thread/qthreadstorage.h
+        thread/qthreadpool.cpp thread/qthreadpool_p.h thread/qthreadpool.h
+        thread/qsemaphore.cpp thread/qsemaphore.h
         thread/qtsan_impl.h
         thread/qwaitcondition.h thread/qwaitcondition_p.h
         thread/qyieldcpu.h
@@ -757,8 +759,6 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_thread
         thread/qfutex_p.h
         thread/qmutex.cpp thread/qmutex_p.h
         thread/qreadwritelock.cpp thread/qreadwritelock_p.h
-        thread/qsemaphore.cpp thread/qsemaphore.h
-        thread/qthreadpool.cpp thread/qthreadpool.h thread/qthreadpool_p.h
         thread/qthreadstorage.cpp thread/qthreadstorage_p.h
 )
 
