@@ -1359,6 +1359,8 @@ QDockWidget::QDockWidget(const QString &title, QWidget *parent, Qt::WindowFlags 
 */
 QDockWidget::~QDockWidget()
 {
+    Q_D(QDockWidget);
+    d->inDestructor = true;
     // Do all the unregistering while we're still a QDockWidget. Otherwise, it
     // would be ~QObject() which does that and then QDockAreaLayout::takeAt(),
     // acting on QEvent::ChildRemoved, will try to access our QWidget-ness when
@@ -1645,8 +1647,12 @@ bool QDockWidget::event(QEvent *event)
     case QEvent::Hide:
         if (layout != nullptr)
             layout->keepSize(this);
-        d->toggleViewAction->setChecked(false);
-        emit visibilityChanged(false);
+        // If we are in the destructor, don't emit any signals, as those might
+        // be handled by a slot that requires this dock widget to still be alive.
+        if (!d->inDestructor) {
+            d->toggleViewAction->setChecked(false);
+            emit visibilityChanged(false);
+        }
         break;
     case QEvent::Show: {
         d->toggleViewAction->setChecked(true);
