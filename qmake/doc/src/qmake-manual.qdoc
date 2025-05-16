@@ -2639,7 +2639,7 @@
 
     Specifies the hard minimum version of \macos that the application supports.
 
-    For more information, see \l{Qt for \macos#Supported Versions}{\macos Supported Versions}.
+    For more information, see \l{Qt for \macos#Supported Configurations}{\macos Supported Configurations}.
 
     \section1 QMAKE_MAKEFILE
 
