@@ -831,6 +831,107 @@ QJsonObject::const_iterator QJsonObject::constFindImpl(T key) const
     returning \c false.
 */
 
+/*! \typedef QJsonObject::const_key_value_iterator
+    \inmodule QtCore
+    \since 6.10
+    \brief The QJsonObject::const_key_value_iterator typedef provides an STL-style iterator for
+   QJsonObject.
+
+    QJsonObject::const_key_value_iterator is essentially the same as QJsonObject::const_iterator
+    with the difference that operator*() returns a key/value pair instead of a
+    value.
+
+    \sa QKeyValueIterator
+*/
+
+/*! \typedef QJsonObject::key_value_iterator
+    \inmodule QtCore
+    \since 6.10
+    \brief The QJsonObject::key_value_iterator typedef provides an STL-style iterator for
+   QJsonObject.
+
+    QJsonObject::key_value_iterator is essentially the same as QJsonObject::iterator
+    with the difference that operator*() returns a key/value pair instead of a
+    value.
+
+    \sa QKeyValueIterator
+*/
+
+/*! \fn QJsonObject::key_value_iterator QJsonObject::keyValueBegin()
+    \since 6.10
+
+    Returns an \l{STL-style iterators}{STL-style iterator} pointing to the first entry
+    in the object.
+
+    \sa keyValueEnd()
+*/
+
+/*! \fn QJsonObject::key_value_iterator QJsonObject::keyValueEnd()
+    \since 6.10
+
+    Returns an \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
+    entry after the last entry in the object.
+
+    \sa keyValueBegin()
+*/
+
+/*! \fn QJsonObject::const_key_value_iterator QJsonObject::keyValueBegin() const
+    \since 6.10
+
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first entry
+    in the object.
+
+    \sa keyValueEnd()
+*/
+
+/*! \fn QJsonObject::const_key_value_iterator QJsonObject::constKeyValueBegin() const
+    \since 6.10
+
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first entry
+    in the object.
+
+    \sa keyValueBegin()
+*/
+
+/*! \fn QJsonObject::const_key_value_iterator QJsonObject::keyValueEnd() const
+    \since 6.10
+
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
+    entry after the last entry in the object.
+
+    \sa keyValueBegin()
+*/
+
+/*! \fn QJsonObject::const_key_value_iterator QJsonObject::constKeyValueEnd() const
+    \since 6.10
+
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
+    entry after the last entry in the ibject.
+
+    \sa constKeyValueBegin()
+*/
+
+/*! \fn auto QJsonObject::asKeyValueRange() &
+    \fn auto QJsonObject::asKeyValueRange() const &
+    \fn auto QJsonObject::asKeyValueRange() &&
+    \fn auto QJsonObject::asKeyValueRange() const &&
+    \since 6.10
+
+    Returns a range object that allows iteration over this object as
+    key/value pairs. For instance, this range object can be used in a
+    range-based for loop, in combination with a structured binding declaration:
+
+    \snippet code/src_corelib_serialization_qjsonobject.cpp 1
+
+    Note that the value obtained this way is a reference into the one in the
+    object. Specifically, mutating the value will modify the object itself.
+
+    When calling this method on rvalues (e.g. on a temporary created in the
+    inializer of a ranged for-loop), the object will be captured in this range.
+
+    \sa QKeyValueIterator
+*/
+
 /*! \class QJsonObject::iterator
     \inmodule QtCore
     \ingroup json

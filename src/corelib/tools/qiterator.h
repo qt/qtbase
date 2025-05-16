@@ -241,7 +241,21 @@ public: \
 #define Q_DECLARE_MUTABLE_ASSOCIATIVE_FORWARD_ITERATOR(C)
 #endif // QT_NO_JAVA_STYLE_ITERATORS
 
-template<typename Key, typename T, class Iterator>
+namespace QtPrivate {
+
+template <typename Key, typename T, typename Iterator>
+struct QDefaultKeyValues
+{
+    static Key key(const Iterator &it) { return it.key(); }
+    static Key key(Iterator &it) { return it.key(); }
+    static T value(const Iterator &it) { return it.value(); }
+    static T value(Iterator &it) { return it.value(); }
+};
+
+} // namespace QtPrivate
+
+template <typename Key, typename T, class Iterator,
+          class Traits = QtPrivate::QDefaultKeyValues<Key, T, Iterator>>
 class QKeyValueIterator
 {
 public:
@@ -255,13 +269,13 @@ public:
         : i(std::move(o)) {}
 
     std::pair<Key, T> operator*() const {
-        return std::pair<Key, T>(i.key(), i.value());
+        return std::pair<Key, T>(Traits::key(i), Traits::value(i));
     }
 
     using pointer = QtPrivate::ArrowProxy<value_type>;
 
     pointer operator->() const {
-        return pointer{std::pair<Key, T>(i.key(), i.value())};
+        return pointer{ std::pair<Key, T>(Traits::key(i), Traits::value(i)) };
     }
 
     friend bool operator==(QKeyValueIterator lhs, QKeyValueIterator rhs) noexcept { return lhs.i == rhs.i; }

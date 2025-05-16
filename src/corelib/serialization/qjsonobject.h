@@ -16,6 +16,19 @@ class QDebug;
 
 class QCborContainerPrivate;
 
+namespace QtPrivate {
+
+template <typename T, typename Iterator>
+struct QJsonObjectKeyValues
+{
+    static QAnyStringView key(const Iterator &it) { return it.keyView(); }
+    static QAnyStringView key(Iterator &it) { return it.keyView(); }
+    static T value(const Iterator &it) { return it.value(); }
+    static T value(Iterator &it) { return it.value(); }
+};
+
+} // namespace QtPrivate
+
 class Q_CORE_EXPORT QJsonObject
 {
 public:
@@ -281,6 +294,13 @@ public:
     };
     friend class const_iterator;
 
+    typedef QKeyValueIterator<QAnyStringView, QJsonValueConstRef, const_iterator,
+                              QtPrivate::QJsonObjectKeyValues<QJsonValueConstRef, const_iterator>>
+            const_key_value_iterator;
+    typedef QKeyValueIterator<QAnyStringView, QJsonValueRef, iterator,
+                              QtPrivate::QJsonObjectKeyValues<QJsonValueRef, iterator>>
+            key_value_iterator;
+
     // STL style
     inline iterator begin() { detach(); return iterator(this, 0); }
     inline const_iterator begin() const { return const_iterator(this, 0); }
@@ -288,7 +308,24 @@ public:
     inline iterator end() { detach(); return iterator(this, size()); }
     inline const_iterator end() const { return const_iterator(this, size()); }
     inline const_iterator constEnd() const { return const_iterator(this, size()); }
+    key_value_iterator keyValueBegin() { return key_value_iterator(begin()); }
+    key_value_iterator keyValueEnd() { return key_value_iterator(end()); }
+    const_key_value_iterator keyValueBegin() const { return const_key_value_iterator(begin()); }
+    const_key_value_iterator constKeyValueBegin() const
+    {
+        return const_key_value_iterator(begin());
+    }
+    const_key_value_iterator keyValueEnd() const { return const_key_value_iterator(end()); }
+    const_key_value_iterator constKeyValueEnd() const { return const_key_value_iterator(end()); }
     iterator erase(iterator it);
+
+    auto asKeyValueRange() & { return QtPrivate::QKeyValueRange<QJsonObject &>(*this); }
+    auto asKeyValueRange() const & { return QtPrivate::QKeyValueRange<const QJsonObject &>(*this); }
+    auto asKeyValueRange() && { return QtPrivate::QKeyValueRange<QJsonObject>(std::move(*this)); }
+    auto asKeyValueRange() const &&
+    {
+        return QtPrivate::QKeyValueRange<QJsonObject>(std::move(*this));
+    }
 
     // more Qt
     typedef iterator Iterator;

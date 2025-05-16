@@ -165,6 +165,98 @@ using namespace QtCbor;
     \sa begin(), constBegin(), find(), constFind()
  */
 
+/*! \typedef QCborMap::const_key_value_iterator
+    \inmodule QtCore
+    \since 6.10
+    \brief The QCborMap::const_key_value_iterator typedef provides an STL-style iterator for
+   QCborMap.
+
+    QCborMap::const_key_value_iterator is essentially the same as QCborMap::const_iterator
+    but provided for symmetry with other containers like QJsonObject.
+
+    \sa QKeyValueIterator
+ */
+
+/*! \typedef QCborMap::key_value_iterator
+    \inmodule QtCore
+    \since 6.10
+    \brief The QCborMap::key_value_iterator typedef provides an STL-style iterator for QCborMap.
+
+    QCborMap::key_value_iterator is essentially the same as QCborMap::iterator
+    but provided for symmetry with other containers like QJsonObject.
+
+    \sa QKeyValueIterator
+ */
+
+/*! \fn QCborMap::key_value_iterator QCborMap::keyValueBegin()
+    \since 6.10
+
+    Returns an \l{STL-style iterators}{STL-style iterator} pointing to the first entry
+    in the map.
+
+    \sa keyValueEnd()
+ */
+
+/*! \fn QCborMap::key_value_iterator QCborMap::keyValueEnd()
+    \since 6.10
+
+    Returns an \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
+    entry after the last entry in the map.
+
+    \sa keyValueBegin()
+*/
+
+/*! \fn QCborMap::const_key_value_iterator QCborMap::keyValueBegin() const
+    \since 6.10
+
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first entry
+    in the map.
+
+    \sa keyValueEnd()
+ */
+
+/*! \fn QCborMap::const_key_value_iterator QCborMap::constKeyValueBegin() const
+    \since 6.10
+
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first entry
+    in the map.
+
+    \sa keyValueBegin()
+ */
+
+/*! \fn QCborMap::const_key_value_iterator QCborMap::keyValueEnd() const
+    \since 6.10
+
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
+    entry after the last entry in the map.
+
+    \sa keyValueBegin()
+ */
+
+/*! \fn QCborMap::const_key_value_iterator QCborMap::constKeyValueEnd() const
+    \since 6.10
+
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
+    entry after the last entry in the map.
+
+    \sa constKeyValueBegin()
+ */
+
+/*! \fn auto QCborMap::asKeyValueRange() &
+    \fn auto QCborMap::asKeyValueRange() const &
+    \fn auto QCborMap::asKeyValueRange() &&
+    \fn auto QCborMap::asKeyValueRange() const &&
+    \since 6.10
+
+    Returns a range object that allows iteration over this map as
+    key/value pairs.
+
+    Note that the values obtained this way are references into the one in the
+    map. Specifically, mutating the value will modify the map itself.
+
+    \sa QKeyValueIterator
+ */
+
 /*!
     Constructs an empty CBOR Map object.
 

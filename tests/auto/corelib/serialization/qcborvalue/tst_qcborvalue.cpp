@@ -86,6 +86,7 @@ private slots:
     void mapComplexKeys_data() { basics_data(); }
     void mapComplexKeys();
     void mapNested();
+    void mapItemsRange();
 
     void sorting_data();
     void sorting();
@@ -1922,6 +1923,112 @@ void tst_QCborValue::mapNested()
         QCOMPARE(first, QCborMap());
         QCOMPARE(first.toMap(wrongMap), QCborMap());
     }
+}
+
+template <typename T>
+using ItemsRangeType = decltype(std::declval<T>().asKeyValueRange());
+
+void tst_QCborValue::mapItemsRange()
+{
+    auto makeMap = [] {
+        return QCborMap{
+            { "a", 1 },
+            { "b", true },
+            { "c", QCborValue::Null },
+            { "d", QCborValue::Undefined },
+            { "e", "ee" },
+            { QLatin1String("f"), QLatin1String("g") },
+            { "h", QCborMap{ { "h1", false } } },
+            { "i", QCborArray{ 1, 2, false } },
+            { true, 1 },
+            { QCborMap{ { 1, 1 }, { 2, 4 } }, true },
+        };
+    };
+    QCborMap obj = makeMap();
+
+    for (auto &&[key, value] : obj.asKeyValueRange()) {
+        static_assert(std::is_same_v<std::remove_reference_t<decltype(value)>, QCborValueRef>);
+
+        if (key.isString()) {
+            QVERIFY(key.toStringView().length() == 1);
+        } else if (key.isMap()) {
+            QVERIFY(key.toMap().size() == 2);
+        } else {
+            QVERIFY(key.isBool());
+        }
+    }
+    for (auto &&[key, value] : std::as_const(obj).asKeyValueRange()) {
+        static_assert(std::is_same_v<std::remove_reference_t<decltype(value)>, QCborValueConstRef>);
+        QVERIFY(obj.contains(key));
+    }
+    for (auto &&[key, value] : makeMap().asKeyValueRange()) {
+        static_assert(std::is_same_v<std::remove_reference_t<decltype(value)>, QCborValueRef>);
+        QVERIFY(obj.contains(key));
+    }
+
+    for (auto &&[key, value] :
+         QCborMap{ { "a", "a" }, { "b", "b" }, { "c", "c" } }.asKeyValueRange()) {
+        QVERIFY(key.toStringView() == value.toStringView());
+    }
+
+    QCborMap modify = makeMap();
+    for (auto &&[key, value] : modify.asKeyValueRange()) {
+        if (key == "a") {
+            value = "modified";
+        }
+    }
+    QVERIFY(modify[QLatin1String("a")] == "modified");
+
+#if defined(__cpp_lib_ranges) && __cpp_lib_ranges > 202110L // P2415R2
+    static_assert(std::ranges::viewable_range<ItemsRangeType<QCborMap>>);
+    static_assert(std::ranges::viewable_range<ItemsRangeType<QCborMap &>>);
+    static_assert(std::ranges::viewable_range<ItemsRangeType<const QCborMap>>);
+    static_assert(std::ranges::viewable_range<ItemsRangeType<const QCborMap &>>);
+
+    static_assert(!std::ranges::view<ItemsRangeType<QCborMap>>);
+    static_assert(std::ranges::view<ItemsRangeType<QCborMap &>>);
+    static_assert(!std::ranges::view<ItemsRangeType<const QCborMap>>);
+    static_assert(std::ranges::view<ItemsRangeType<const QCborMap &>>);
+
+    const auto keyValueTest = [](auto &&pair) {
+        return pair.first.toStringView("default key") == pair.second.toStringView();
+    };
+    {
+        auto range = obj.asKeyValueRange();
+        static_assert(std::ranges::view<decltype(range)>);
+        QCOMPARE(std::ranges::distance(range), obj.size());
+        const bool ok =
+                std::ranges::none_of(range | std::views::transform(keyValueTest), std::identity{});
+        QVERIFY(ok);
+    }
+
+    {
+        auto range = std::as_const(obj).asKeyValueRange();
+        static_assert(std::ranges::view<decltype(range)>);
+        QCOMPARE(std::ranges::distance(range), obj.size());
+        const bool ok =
+                std::ranges::none_of(range | std::views::transform(keyValueTest), std::identity{});
+        QVERIFY(ok);
+    }
+
+    {
+        auto range = makeMap().asKeyValueRange();
+        static_assert(!std::ranges::view<decltype(range)>);
+        QCOMPARE(std::ranges::distance(range), obj.size());
+        const bool ok =
+                std::ranges::none_of(range | std::views::transform(keyValueTest), std::identity{});
+        QVERIFY(ok);
+    }
+
+    {
+        auto range = const_cast<const QCborMap &&>(makeMap()).asKeyValueRange();
+        static_assert(!std::ranges::view<decltype(range)>);
+        QCOMPARE(std::ranges::distance(range), obj.size());
+        const bool ok =
+                std::ranges::none_of(range | std::views::transform(keyValueTest), std::identity{});
+        QVERIFY(ok);
+    }
+#endif
 }
 
 void tst_QCborValue::sorting_data()

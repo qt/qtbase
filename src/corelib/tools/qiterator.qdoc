@@ -41,22 +41,22 @@
     \internal
 */
 
-/*! \fn template<typename Key, typename T, class Iterator> QKeyValueIterator<Key, T, Iterator>::QKeyValueIterator()
+/*! \fn template<typename Key, typename T, class Iterator, class Traits> QKeyValueIterator<Key, T, Iterator, Traits>::QKeyValueIterator()
 
     Constructs a default QKeyValueIterator.
 */
 
-/*! \fn template<typename Key, typename T, class Iterator> QKeyValueIterator<Key, T, Iterator>::QKeyValueIterator(Iterator o)
+/*! \fn template<typename Key, typename T, class Iterator, class Traits> QKeyValueIterator<Key, T, Iterator, Traits>::QKeyValueIterator(Iterator o)
 
     Constructs a QKeyValueIterator on top of \a o.
 */
 
-/*! \fn template<typename Key, typename T, class Iterator> std::pair<Key, T> QKeyValueIterator<Key, T, Iterator>::operator*() const
+/*! \fn template<typename Key, typename T, class Iterator, class Traits> std::pair<Key, T> QKeyValueIterator<Key, T, Iterator, Traits>::operator*() const
 
     Returns the current entry as a pair.
 */
 
-/*! \fn template<typename Key, typename T, class Iterator> pointer QKeyValueIterator<Key, T, Iterator>::operator->() const
+/*! \fn template<typename Key, typename T, class Iterator, class Traits> pointer QKeyValueIterator<Key, T, Iterator,Traits>::operator->() const
 
     Returns the current entry as a pointer-like object to the pair.
 
@@ -65,7 +65,7 @@
     \sa operator*()
 */
 
-/*! \fn template<typename Key, typename T, class Iterator> bool QKeyValueIterator<Key, T, Iterator>::operator==(QKeyValueIterator<Key, T, Iterator> lhs, QKeyValueIterator<Key, T, Iterator> rhs)
+/*! \fn template<typename Key, typename T, class Iterator, class Traits> bool QKeyValueIterator<Key, T, Iterator, Traits>::operator==(QKeyValueIterator<Key, T, Iterator, Traits> lhs, QKeyValueIterator<Key, T, Iterator, Traits> rhs)
 
     Returns \c true if \a rhs points to the same item as \a lhs otherwise returns
     \c false.
@@ -73,7 +73,7 @@
     \sa operator!=()
 */
 
-/*! \fn template<typename Key, typename T, class Iterator> bool QKeyValueIterator<Key, T, Iterator>::operator!=(QKeyValueIterator<Key, T, Iterator> lhs, QKeyValueIterator<Key, T, Iterator> rhs)
+/*! \fn template<typename Key, typename T, class Iterator, class Traits> bool QKeyValueIterator<Key, T, Iterator, Traits>::operator!=(QKeyValueIterator<Key, T, Iterator, Traits> lhs, QKeyValueIterator<Key, T, Iterator, Traits> rhs)
 
     Returns \c true if \a rhs points to a different item than \a lhs otherwise
     returns \c false.
@@ -82,7 +82,7 @@
 */
 
 /*!
-    \fn template<typename Key, typename T, class Iterator> QKeyValueIterator &QKeyValueIterator<Key, T, Iterator>::operator++()
+    \fn template<typename Key, typename T, class Iterator, class Traits> QKeyValueIterator &QKeyValueIterator<Key, T, Iterator, Traits>::operator++()
 
     The prefix \c{++} operator (\c{++i}) advances the iterator to the
     next item in the container and returns the iterator.
@@ -93,7 +93,7 @@
     \sa operator--()
 */
 
-/*! \fn template<typename Key, typename T, class Iterator> QKeyValueIterator QKeyValueIterator<Key, T, Iterator>::operator++(int)
+/*! \fn template<typename Key, typename T, class Iterator, class Traits> QKeyValueIterator QKeyValueIterator<Key, T, Iterator, Traits>::operator++(int)
 
     \overload
 
@@ -104,7 +104,7 @@
     undefined behavior.
 */
 
-/*! \fn template<typename Key, typename T, class Iterator> QKeyValueIterator &QKeyValueIterator<Key, T, Iterator>::operator--()
+/*! \fn template<typename Key, typename T, class Iterator, class Traits> QKeyValueIterator &QKeyValueIterator<Key, T, Iterator, Traits>::operator--()
 
     The prefix c{--} operator (\c{--i}) backs the iterator up to the previous item
     in the container and returns the iterator.
@@ -115,7 +115,7 @@
     \sa operator++()
 */
 
-/*! \fn template<typename Key, typename T, class Iterator> QKeyValueIterator QKeyValueIterator<Key, T, Iterator>::operator--(int)
+/*! \fn template<typename Key, typename T, class Iterator, class Traits> QKeyValueIterator QKeyValueIterator<Key, T, Iterator, Traits>::operator--(int)
 
     \overload
 
@@ -126,7 +126,7 @@
     undefined behavior.
 */
 
-/*! \fn template<typename Key, typename T, class Iterator> Iterator QKeyValueIterator<Key, T, Iterator>::base() const
+/*! \fn template<typename Key, typename T, class Iterator, class Traits> Iterator QKeyValueIterator<Key, T, Iterator, Traits>::base() const
     Returns the underlying iterator this QKeyValueIterator is based on.
 */
 
