@@ -6,7 +6,6 @@
 
 #include "qnetworkdiskcache.h"
 #include "qnetworkdiskcache_p.h"
-#include "QtCore/qscopedpointer.h"
 
 #include <qfile.h>
 #include <qdir.h>
@@ -359,12 +358,12 @@ QIODevice *QNetworkDiskCache::data(const QUrl &url)
         buffer.reset(new QBuffer);
         buffer->setData(d->lastItem.data.data());
     } else {
-        QScopedPointer<QFile> file(new QFile(d->cacheFileName(url)));
-        if (!file->open(QFile::ReadOnly | QIODevice::Unbuffered))
+        QFile file(d->cacheFileName(url));
+        if (!file.open(QFile::ReadOnly | QIODevice::Unbuffered))
             return nullptr;
 
-        if (!d->lastItem.read(file.data(), true)) {
-            file->close();
+        if (!d->lastItem.read(&file, true)) {
+            file.close(); // On Windows the file can't be removed if it's open
             remove(url);
             return nullptr;
         }
@@ -374,7 +373,7 @@ QIODevice *QNetworkDiskCache::data(const QUrl &url)
             buffer->setData(d->lastItem.data.data());
         } else {
             buffer.reset(new QBuffer);
-            buffer->setData(file->readAll());
+            buffer->setData(file.readAll());
         }
     }
     buffer->open(QBuffer::ReadOnly);
