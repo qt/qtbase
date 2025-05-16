@@ -748,9 +748,17 @@ function(qt_internal_add_test name)
             elseif(TARGET qmltestrunner)
                 set(qmltestrunner_executable qmltestrunner)
             else()
+                set(qt_additional_libexec_paths "")
+                if(DEFINED QT_ADDITIONAL_PACKAGES_PREFIX_PATH)
+                    foreach(additional_prefix IN LISTS QT_ADDITIONAL_PACKAGES_PREFIX_PATH)
+                        set(additional_libexec "${additional_prefix}/${QT6_INSTALL_LIBEXECS}")
+                        list(PREPEND qt_additional_libexec_paths "${additional_libexec}")
+                    endforeach()
+                endif()
                 find_program(qmltestrunner_executable
                     NAMES qmltestrunner qmltestrunner.exe
                     PATHS "${QT6_INSTALL_PREFIX}/${QT6_INSTALL_LIBEXECS}"
+                        ${qt_additional_libexec_paths}
                     NO_DEFAULT_PATH
                 )
                 if(NOT qmltestrunner_executable)
