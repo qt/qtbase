@@ -112,7 +112,7 @@
     \c{renderTarget()->pixelSize()} or \c{colorTexture()->pixelSize()}
     always gives the latest, up-to-date size in pixels. What this example is
     not prepared for is changing
-    \l{QRhiWidget::textureFormat}{texture formats} and
+    \l{QRhiWidget::colorBufferFormat}{color buffer formats} and
     \l{QRhiWidget::sampleCount}{multisample settings}
     since it only ever uses the defaults (RGBA8 and no multisample antialiasing).
 

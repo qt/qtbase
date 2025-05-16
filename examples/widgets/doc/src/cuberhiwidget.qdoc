@@ -35,7 +35,7 @@
     at run time. The QRhiWidget subclass is prepared to handle the changing
     sample count correctly.
 
-    \li Forcing an \l{QRhiWidget::explicitSize}{explicitly specified backing
+    \li Forcing an \l{QRhiWidget::fixedColorBufferSize}{explicitly specified backing
     texture size} can be toggled dynamically and controlled with a slider
     between 16x16 up to 512x512 pixels.
 
