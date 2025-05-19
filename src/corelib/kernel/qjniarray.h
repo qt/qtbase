@@ -772,7 +772,7 @@ public:
 
         if constexpr (QtJniTypes::isObjectType<T>()) {
             QtJniTypes::Detail::LocalFrame<T> frame(env);
-            jobject element = frame.template convertToJni(val);
+            jobject element = frame.convertToJni(val);
             env->SetObjectArrayElement(object<jobjectArray>(), i, element);
         } else { // primitive types
             if constexpr (QtJniTypes::sameTypeForJni<T, jbyte>)
