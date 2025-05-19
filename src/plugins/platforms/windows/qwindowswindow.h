@@ -342,7 +342,7 @@ public:
     void stopAlertWindow();
 
     enum ScreenChangeMode { FromGeometryChange, FromDpiChange, FromScreenAdded };
-    void checkForScreenChanged(ScreenChangeMode mode = FromGeometryChange);
+    void checkForScreenChanged(ScreenChangeMode mode = FromGeometryChange, const RECT *suggestedRect = nullptr);
 
     void registerTouchWindow();
     static void setHasBorderInFullScreenStatic(QWindow *window, bool border);

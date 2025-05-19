@@ -2118,7 +2118,8 @@ void QWindowsWindow::handleDpiChanged(HWND hwnd, WPARAM wParam, LPARAM lParam)
     QWindowsThemeCache::clearThemeCache(hwnd);
 
     // Send screen change first, so that the new screen is set during any following resize
-    checkForScreenChanged(QWindowsWindow::FromDpiChange);
+    const auto prcNewWindow = reinterpret_cast<const RECT *>(lParam);
+    checkForScreenChanged(QWindowsWindow::FromDpiChange, !m_inSetgeometry ? prcNewWindow : nullptr);
 
     if (!IsZoomed(hwnd))
         m_data.restoreGeometry.setSize(m_data.restoreGeometry.size() * scale);
@@ -2141,7 +2142,6 @@ void QWindowsWindow::handleDpiChanged(HWND hwnd, WPARAM wParam, LPARAM lParam)
     // making the SetWindowPos() call.
     if (!m_inSetgeometry) {
         updateFullFrameMargins();
-        const auto prcNewWindow = reinterpret_cast<RECT *>(lParam);
         SetWindowPos(hwnd, nullptr, prcNewWindow->left, prcNewWindow->top,
                      prcNewWindow->right - prcNewWindow->left,
                      prcNewWindow->bottom - prcNewWindow->top, SWP_NOZORDER | SWP_NOACTIVATE);
@@ -2356,14 +2356,15 @@ static inline bool equalDpi(const QDpi &d1, const QDpi &d2)
     return qFuzzyCompare(d1.first, d2.first) && qFuzzyCompare(d1.second, d2.second);
 }
 
-void QWindowsWindow::checkForScreenChanged(ScreenChangeMode mode)
+void QWindowsWindow::checkForScreenChanged(ScreenChangeMode mode, const RECT *suggestedRect)
 {
     if ((parent() && !parent()->isForeignWindow()) || QWindowsScreenManager::isSingleScreen())
         return;
 
     QPlatformScreen *currentScreen = screen();
     auto topLevel = isTopLevel_sys() ? m_data.hwnd : GetAncestor(m_data.hwnd, GA_ROOT);
-    const QWindowsScreen *newScreen =
+    const QWindowsScreen *newScreen = suggestedRect ?
+        QWindowsContext::instance()->screenManager().screenForRect(suggestedRect) :
         QWindowsContext::instance()->screenManager().screenForHwnd(topLevel);
 
     if (newScreen == nullptr || newScreen == currentScreen)

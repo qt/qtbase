@@ -869,9 +869,8 @@ const QWindowsScreen *QWindowsScreenManager::screenAtDp(const QPoint &p) const
     return nullptr;
 }
 
-const QWindowsScreen *QWindowsScreenManager::screenForHwnd(HWND hwnd) const
+const QWindowsScreen *QWindowsScreenManager::screenForMonitor(HMONITOR hMonitor) const
 {
-    HMONITOR hMonitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONULL);
     if (hMonitor == nullptr)
         return nullptr;
     const auto it =
@@ -882,6 +881,20 @@ const QWindowsScreen *QWindowsScreenManager::screenForHwnd(HWND hwnd) const
                              && (s->data().flags & QWindowsScreenData::VirtualDesktop) != 0;
                      });
     return it != m_screens.cend() ? *it : nullptr;
+}
+
+const QWindowsScreen *QWindowsScreenManager::screenForHwnd(HWND hwnd) const
+{
+    HMONITOR hMonitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONULL);
+    return screenForMonitor(hMonitor);
+}
+
+const QWindowsScreen *QWindowsScreenManager::screenForRect(const RECT *rect) const
+{
+    if (rect == nullptr)
+        return nullptr;
+    HMONITOR hMonitor = MonitorFromRect(rect, MONITOR_DEFAULTTONULL);
+    return screenForMonitor(hMonitor);
 }
 
 QT_END_NAMESPACE
