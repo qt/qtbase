@@ -1,6 +1,7 @@
 // Copyright (C) 2012 Jeremy Lainé <jeremy.laine@m4x.org>
 // Copyright (C) 2023 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// Qt-Security score:critical reason:data-parser
 
 #include "qdnslookup_p.h"
 
