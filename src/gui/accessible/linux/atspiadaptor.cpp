@@ -1462,9 +1462,12 @@ bool AtSpiAdaptor::handleMessage(const QDBusMessage &message, const QDBusConnect
 
     // handle properties like regular functions
     if (interface == "org.freedesktop.DBus.Properties"_L1) {
-        interface = message.arguments().at(0).toString();
-        // Get/Set + Name
-        function = message.member() + message.arguments().at(1).toString();
+        const auto arguments = message.arguments();
+        if (arguments.size() > 0) {
+            interface = arguments.at(0).toString();
+            if (arguments.size() > 1) // e.g. Get/Set + Name
+                function = function + arguments.at(1).toString();
+        }
     }
 
     // switch interface to call
