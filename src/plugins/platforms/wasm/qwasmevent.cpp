@@ -111,6 +111,14 @@ KeyEvent::KeyEvent(EventType type, emscripten::val event) : Event(type, event)
     key = webKeyToQtKey(code, webKey, deadKey, modifiers);
 
     text = QString::fromUtf8(webKey);
+
+    // Alt + keypad number -> insert utf-8 character
+    // The individual numbers shall not be inserted but
+    // on some platforms they are if numlock is
+    // activated
+    if ((modifiers & Qt::AltModifier) && (modifiers & Qt::KeypadModifier))
+        text.clear();
+
     if (text.size() > 1)
         text.clear();
 
