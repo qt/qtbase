@@ -7549,8 +7549,10 @@ void tst_QString::double_conversion_data()
 
     // The bad...
 
+    QTest::newRow("C null")          << QString()       << false << 0.0;
     QTest::newRow("C empty")         << u""_s           << false << 0.0;
-    QTest::newRow("C null")          << QString()             << false << 0.0;
+    QTest::newRow("C space")         << u" "_s          << false << 0.0;
+    QTest::newRow("C spaces")        << u"  "_s         << false << 0.0;
     QTest::newRow("C .")             << u"."_s          << false << 0.0;
     QTest::newRow("C 1e")            << u"1e"_s         << false << 0.0;
     QTest::newRow("C 1,")            << u"1,"_s         << false << 0.0;
