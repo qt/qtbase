@@ -742,29 +742,38 @@ function(qt_internal_add_test name)
         endif()
     else()
         if(arg_QMLTEST AND NOT arg_SOURCES)
-            if(TARGET ${QT_CMAKE_EXPORT_NAMESPACE}::qmltestrunner)
-                # TODO: fallback to support qtr as 'tool', remove when changes in qtdeclarative are in
-                set(qmltestrunner_executable ${QT_CMAKE_EXPORT_NAMESPACE}::qmltestrunner)
-            elseif(TARGET qmltestrunner)
-                set(qmltestrunner_executable qmltestrunner)
-            else()
-                set(qt_additional_libexec_paths "")
-                if(DEFINED QT_ADDITIONAL_PACKAGES_PREFIX_PATH)
-                    foreach(additional_prefix IN LISTS QT_ADDITIONAL_PACKAGES_PREFIX_PATH)
-                        set(additional_libexec "${additional_prefix}/${QT6_INSTALL_LIBEXECS}")
-                        list(PREPEND qt_additional_libexec_paths "${additional_libexec}")
-                    endforeach()
-                endif()
-                find_program(qmltestrunner_executable
-                    NAMES qmltestrunner qmltestrunner.exe
-                    PATHS "${QT6_INSTALL_PREFIX}/${QT6_INSTALL_LIBEXECS}"
-                        ${qt_additional_libexec_paths}
-                    NO_DEFAULT_PATH
-                )
-                if(NOT qmltestrunner_executable)
-                    message(FATAL_ERROR "qmltestrunner not found.")
-                endif()
+            set(qt_additional_libexec_paths "")
+
+            if(DEFINED QT_ADDITIONAL_PACKAGES_PREFIX_PATH)
+                foreach(additional_prefix IN LISTS QT_ADDITIONAL_PACKAGES_PREFIX_PATH)
+                    set(additional_libexec "${additional_prefix}/${QT6_INSTALL_LIBEXECS}")
+                    list(PREPEND qt_additional_libexec_paths "${additional_libexec}")
+                endforeach()
             endif()
+
+            # First look for the scanner in the target qt libexec dir. We prefer this one
+            # over the tool target which might be for the host platform.
+            find_program(qmltestrunner_executable
+                NAMES qmltestrunner qmltestrunner.exe
+                PATHS "${QT6_INSTALL_PREFIX}/${QT6_INSTALL_LIBEXECS}"
+                    ${qt_additional_libexec_paths}
+                NO_DEFAULT_PATH
+            )
+
+            # If we don't find it in the paths, fallback to using target names.
+            if(NOT qmltestrunner_executable
+                    AND TARGET "${QT_CMAKE_EXPORT_NAMESPACE}::qmltestrunner")
+                set(qmltestrunner_executable ${QT_CMAKE_EXPORT_NAMESPACE}::qmltestrunner)
+            endif()
+
+            if(NOT qmltestrunner_executable AND TARGET qmltestrunner)
+                set(qmltestrunner_executable qmltestrunner)
+            endif()
+
+            if(NOT qmltestrunner_executable)
+                message(FATAL_ERROR "qmltestrunner not found.")
+            endif()
+
             set(test_working_dir "${CMAKE_CURRENT_SOURCE_DIR}")
             set(test_executable "${qmltestrunner_executable}")
         else()
