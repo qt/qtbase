@@ -36,10 +36,10 @@ android {
      * Changing them manually might break the compilation!
      *******************************************************/
 
-    namespace androidPackageName
+    namespace = androidPackageName
     compileSdkVersion androidCompileSdkVersion
     buildToolsVersion androidBuildToolsVersion
-    ndkVersion androidNdkVersion
+    ndkVersion = androidNdkVersion
 
     // Extract native libraries from the APK
     packagingOptions.jniLibs.useLegacyPackaging true
@@ -67,7 +67,7 @@ android {
     }
 
     lintOptions {
-        abortOnError false
+        abortOnError = false
     }
 
     // Do not compress Qt binary resources file

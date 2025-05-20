@@ -24,7 +24,7 @@ repositories {
 
 android {
     compileSdk 35
-    namespace "org.qtproject.qt.android"
+    namespace = "org.qtproject.qt.android"
 
     defaultConfig {
         minSdkVersion 28
@@ -55,7 +55,7 @@ android {
 
     android {
         lintOptions {
-            abortOnError true
+            abortOnError = true
         }
     }
 }
