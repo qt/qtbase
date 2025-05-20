@@ -247,8 +247,11 @@ bool QPainterPrivate::attachPainterPrivate(QPainter *q, QPaintDevice *pdev)
     // the current d_ptr to the shared painter's d_ptr.
     sp->save();
     ++sp->d_ptr->refcount;
-    sp->d_ptr->d_ptrs.push_back(q->d_ptr.get());
-    Q_UNUSED(q->d_ptr.release());
+    {
+        // ensure realloc happens before the unique_ptr::release():
+        auto &p = sp->d_ptr->d_ptrs.emplace_back();
+        p = q->d_ptr.release();
+    }
     q->d_ptr.reset(sp->d_ptr.get());
 
     Q_ASSERT(q->d_ptr->state);
