@@ -301,9 +301,6 @@ QSimpleParsedNumber<double> qt_asciiToDouble(const char *num, qsizetype numLen,
     int conv_flags = double_conversion::StringToDoubleConverter::NO_FLAGS;
     if (strayCharMode == TrailingJunkAllowed) {
         conv_flags = double_conversion::StringToDoubleConverter::ALLOW_TRAILING_JUNK;
-    } else if (strayCharMode == WhitespacesAllowed) {
-        conv_flags = double_conversion::StringToDoubleConverter::ALLOW_LEADING_SPACES
-                | double_conversion::StringToDoubleConverter::ALLOW_TRAILING_SPACES;
     }
     double_conversion::StringToDoubleConverter conv(conv_flags, 0.0, qt_qnan(), nullptr, nullptr);
     if (int(numLen) != numLen) {

@@ -36,7 +36,6 @@ using qinternaluint128 = std::_Unsigned128;
 enum StrayCharacterMode {
     TrailingJunkProhibited,
     TrailingJunkAllowed,
-    WhitespacesAllowed
 };
 
 // API note: this function can't process a number with more than 2.1 billion digits
