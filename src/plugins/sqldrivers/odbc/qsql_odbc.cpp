@@ -1963,7 +1963,7 @@ bool QODBCDriver::open(const QString & db,
         connQStr = "DSN="_L1 + db;
 
     const auto escapeUserPassword = [](QString arg) -> QString {
-        return u'{' + arg.replace(u'}', u'{') + u'}';
+        return u'{' + arg.replace(u'}', "}}"_L1) + u'}';
     };
     if (!user.isEmpty())
         connQStr += ";UID="_L1 + escapeUserPassword(user);
