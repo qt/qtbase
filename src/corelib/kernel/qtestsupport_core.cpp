@@ -107,7 +107,22 @@ Q_CORE_EXPORT void QTest::qWait(int msecs)
     The code above will wait until the network server is responding for a
     maximum of about 12.5 seconds.
 
-    \sa QTest::qSleep(), QSignalSpy::wait()
+    The \l{QTRY_COMPARE()}{QTRY_*} macros are usually a better choice than
+    qWait(). qWait() always pauses for the full timeout, which can leave the
+    test idle and slow down execution.
+
+    The \c {QTRY_*} macros poll the condition until it succeeds or the timeout
+    expires. Your test therefore continues as soon as possible and stays more
+    reliable. If the condition still fails, the macros double the timeout once
+    and report the new value so that you can adjust it.
+
+    For example, rewrite the code above as:
+
+    \code
+        QTRY_VERIFY_WITH_TIMEOUT(!myNetworkServerNotResponding(), 12.5s);
+    \endcode
+
+    \sa QTest::qSleep(), QSignalSpy::wait(), QTRY_VERIFY_WITH_TIMEOUT()
 */
 Q_CORE_EXPORT void QTest::qWait(std::chrono::milliseconds msecs)
 {
