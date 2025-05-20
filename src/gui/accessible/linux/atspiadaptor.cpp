@@ -1513,6 +1513,12 @@ bool AtSpiAdaptor::applicationInterface(QAccessibleInterface *interface, const Q
         QDBusMessage reply = message.createReply(QVariant::fromValue(QDBusVariant(m_applicationId)));
         return connection.send(reply);
     }
+    if (function == "GetAtspiVersion"_L1) {
+        Q_ASSERT(message.signature() == "ss"_L1);
+        // return "2.1" as described in the Application interface spec
+        QDBusMessage reply = message.createReply(QVariant::fromValue(QDBusVariant("2.1"_L1)));
+        return connection.send(reply);
+    }
     if (function == "GetToolkitName"_L1) {
         Q_ASSERT(message.signature() == "ss"_L1);
         QDBusMessage reply = message.createReply(QVariant::fromValue(QDBusVariant("Qt"_L1)));
