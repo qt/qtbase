@@ -58,6 +58,7 @@ android {
 
     tasks.withType(JavaCompile) {
         options.incremental = true
+        options.compilerArgs += ['-Xlint:all']
     }
 
     compileOptions {
