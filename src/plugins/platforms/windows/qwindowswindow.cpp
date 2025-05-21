@@ -2457,14 +2457,16 @@ void QWindowsWindow::handleGeometryChange()
         clearFlag(SynchronousGeometryChangeEvent);
     qCDebug(lcQpaEvents) << __FUNCTION__ << this << window() << m_data.geometry;
 
-    bool arranged = QWindowsWindow::isWindowArranged(m_data.hwnd);
-    if (arranged || (m_windowWasArranged && !arranged)) {
-        transitionAnimatedCustomTitleBar();
-    }
+    if (m_data.hwndTitlebar) {
+        bool arranged = QWindowsWindow::isWindowArranged(m_data.hwnd);
+        if (arranged || (m_windowWasArranged && !arranged))
+            transitionAnimatedCustomTitleBar();
 
-    const int titleBarHeight = getTitleBarHeight_sys(savedDpi());
-    MoveWindow(m_data.hwndTitlebar, m_data.geometry.x(), m_data.geometry.y(), m_data.geometry.width(), titleBarHeight, true);
-    m_windowWasArranged = arranged;
+        const int titleBarHeight = getTitleBarHeight_sys(savedDpi());
+        MoveWindow(m_data.hwndTitlebar, m_data.geometry.x(), m_data.geometry.y(),
+                   m_data.geometry.width(), titleBarHeight, true);
+        m_windowWasArranged = arranged;
+    }
 }
 
 void QWindowsBaseWindow::setGeometry_sys(const QRect &rect) const
@@ -2743,6 +2745,8 @@ void QWindowsWindow::correctWindowPlacement(WINDOWPLACEMENT &windowPlacement)
 
 void QWindowsWindow::transitionAnimatedCustomTitleBar()
 {
+    if (!m_data.hwndTitlebar)
+        return;
     const QWinRegistryKey registry(HKEY_CURRENT_USER, LR"(Control Panel\Desktop\WindowMetrics)");
     if (registry.isValid() && registry.value(LR"(MinAnimate)") == 1) {
         ShowWindow(m_data.hwndTitlebar, SW_HIDE);
