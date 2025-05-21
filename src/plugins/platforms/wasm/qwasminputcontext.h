@@ -47,10 +47,10 @@ public:
     bool usingTextInput() const { return m_inputMethodAccepted; }
     void setFocusObject(QObject *object) override;
 
-    static void inputCallback(emscripten::val event);
-    static void compositionEndCallback(emscripten::val event);
-    static void compositionStartCallback(emscripten::val event);
-    static void compositionUpdateCallback(emscripten::val event);
+    void inputCallback(emscripten::val event);
+    void compositionEndCallback(emscripten::val event);
+    void compositionStartCallback(emscripten::val event);
+    void compositionUpdateCallback(emscripten::val event);
 
     void updateGeometry();
 

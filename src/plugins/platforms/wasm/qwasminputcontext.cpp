@@ -25,16 +25,12 @@ void QWasmInputContext::inputCallback(emscripten::val event)
 {
     qCDebug(qLcQpaWasmInputContext) << Q_FUNC_INFO << "isComposing : " << event["isComposing"].as<bool>();
 
-    QString inputStr = (event["data"] != emscripten::val::null()
-                        && event["data"] != emscripten::val::undefined()) ?
-        QString::fromStdString(event["data"].as<std::string>()) : QString();
-
-    QWasmInputContext *wasmInput =
-        reinterpret_cast<QWasmInputContext *>(event["target"]["data-qinputcontext"].as<quintptr>());
+    emscripten::val inputData = event["data"];
+    QString inputStr = (!inputData.isNull() && !inputData.isUndefined())
+        ? QString::fromEcmaString(inputData) : QString();
 
     emscripten::val inputType = event["inputType"];
-    if (inputType != emscripten::val::null()
-            && inputType != emscripten::val::undefined()) {
+    if (!inputType.isNull() && !inputType.isUndefined()) {
         const auto inputTypeString = inputType.as<std::string>();
         // There are many inputTypes for InputEvent
         // https://www.w3.org/TR/input-events-1/
@@ -64,7 +60,7 @@ void QWasmInputContext::inputCallback(emscripten::val event)
             return;
         } else if (!inputTypeString.compare("insertCompositionText")) {
             qCDebug(qLcQpaWasmInputContext) << "inputString : " << inputStr;
-            wasmInput->insertPreedit();
+            insertPreedit();
             event.call<void>("stopImmediatePropagation");
             return;
         } else if (!inputTypeString.compare("insertReplacementText")) {
@@ -75,26 +71,26 @@ void QWasmInputContext::inputCallback(emscripten::val event)
             // insertReplacementText should have targetRanges but
             // Safari cannot have it and just it seems to be supposed
             // to replace previous input.
-            wasmInput->insertText(inputStr, true);
+            insertText(inputStr, true);
 
             event.call<void>("stopImmediatePropagation");
             return;
         } else if (!inputTypeString.compare("deleteCompositionText")) {
-            wasmInput->setPreeditString("", 0);
-            wasmInput->insertPreedit();
+            setPreeditString("", 0);
+            insertPreedit();
             event.call<void>("stopImmediatePropagation");
             return;
         } else if (!inputTypeString.compare("insertFromComposition")) {
-            wasmInput->setPreeditString(inputStr, 0);
-            wasmInput->insertPreedit();
+            setPreeditString(inputStr, 0);
+            insertPreedit();
             event.call<void>("stopImmediatePropagation");
             return;
         } else if (!inputTypeString.compare("insertText")) {
-            wasmInput->insertText(inputStr);
+            insertText(inputStr);
             event.call<void>("stopImmediatePropagation");
 #if QT_CONFIG(clipboard)
         } else if (!inputTypeString.compare("insertFromPaste")) {
-            wasmInput->insertText(QGuiApplication::clipboard()->text());
+            insertText(QGuiApplication::clipboard()->text());
             event.call<void>("stopImmediatePropagation");
         // These can be supported here,
         // But now, keyCallback in QWasmWindow
@@ -109,21 +105,18 @@ void QWasmInputContext::inputCallback(emscripten::val event)
 
 void QWasmInputContext::compositionEndCallback(emscripten::val event)
 {
-    const auto inputStr = QString::fromStdString(event["data"].as<std::string>());
+    const auto inputStr = QString::fromEcmaString(event["data"]);
     qCDebug(qLcQpaWasmInputContext) << Q_FUNC_INFO << inputStr;
 
-    QWasmInputContext *wasmInput =
-        reinterpret_cast<QWasmInputContext *>(event["target"]["data-qinputcontext"].as<quintptr>());
-
-    if (wasmInput->preeditString().isEmpty())
+    if (preeditString().isEmpty())
         return;
 
-    if (inputStr != wasmInput->preeditString()) {
+    if (inputStr != preeditString()) {
         qCWarning(qLcQpaWasmInputContext) << Q_FUNC_INFO
                     << "Composition string" << inputStr
-                    << "is differ from" << wasmInput->preeditString();
+                    << "is differ from" << preeditString();
     }
-    wasmInput->commitPreeditAndClear();
+    commitPreeditAndClear();
 }
 
 void QWasmInputContext::compositionStartCallback(emscripten::val event)
@@ -151,19 +144,15 @@ static void beforeInputCallback(emscripten::val event)
 
 void QWasmInputContext::compositionUpdateCallback(emscripten::val event)
 {
-    const auto compositionStr = QString::fromStdString(event["data"].as<std::string>());
+    const auto compositionStr = QString::fromEcmaString(event["data"]);
     qCDebug(qLcQpaWasmInputContext) << Q_FUNC_INFO << compositionStr;
-
-    QWasmInputContext *wasmInput =
-        reinterpret_cast<QWasmInputContext *>(event["target"]["data-qinputcontext"].as<quintptr>());
 
     // WA for IOS.
     // Not sure now because I cannot test it anymore.
 //    int replaceSize = 0;
 //    emscripten::val win = emscripten::val::global("window");
 //    emscripten::val sel = win.call<emscripten::val>("getSelection");
-//    if (sel != emscripten::val::null()
-//            && sel != emscripten::val::undefined()
+//    if (!sel.isNull() && !sel.isUndefined()
 //            && sel["rangeCount"].as<int>() > 0) {
 //        QInputMethodQueryEvent queryEvent(Qt::ImQueryAll);
 //        QCoreApplication::sendEvent(QGuiApplication::focusObject(), &queryEvent);
@@ -172,8 +161,8 @@ void QWasmInputContext::compositionUpdateCallback(emscripten::val event)
 //        qCDebug(qLcQpaWasmInputContext) << "Qt text before cursor: " << queryEvent.value(Qt::ImTextBeforeCursor).toString();
 //        qCDebug(qLcQpaWasmInputContext) << "Qt text after cursor: " << queryEvent.value(Qt::ImTextAfterCursor).toString();
 //
-//        const QString &selectedStr = QString::fromUtf8(sel.call<emscripten::val>("toString").as<std::string>());
-//        const auto &preeditStr = wasmInput->preeditString();
+//        const QString &selectedStr = QString::fromEcmaString(sel.call<emscripten::val>("toString"));
+//        const auto &preeditStr = preeditString();
 //        qCDebug(qLcQpaWasmInputContext) << "Selection.type : " << sel["type"].as<std::string>();
 //        qCDebug(qLcQpaWasmInputContext) << Q_FUNC_INFO << "Selected: " << selectedStr;
 //        qCDebug(qLcQpaWasmInputContext) << Q_FUNC_INFO << "PreeditString: " << preeditStr;
@@ -189,8 +178,8 @@ void QWasmInputContext::compositionUpdateCallback(emscripten::val event)
 //        qCDebug(qLcQpaWasmInputContext) << "Range.endOffset : " << range["endOffset"].as<int>();
 //    }
 //
-//    wasmInput->setPreeditString(compositionStr, replaceSize);
-    wasmInput->setPreeditString(compositionStr, 0);
+//    setPreeditString(compositionStr, replaceSize);
+    setPreeditString(compositionStr, 0);
 }
 
 #if QT_CONFIG(clipboard)
@@ -227,7 +216,7 @@ static void pasteCallback(emscripten::val event)
     qCDebug(qLcQpaWasmInputContext) << Q_FUNC_INFO;
 
     emscripten::val clipboardData = event["clipboardData"].call<emscripten::val>("getData", emscripten::val("text/plain"));
-    QString clipboardStr = QString::fromStdString(clipboardData.as<std::string>());
+    QString clipboardStr = QString::fromEcmaString(clipboardData);
     qCDebug(qLcQpaWasmInputContext) << "wasm clipboard : " << clipboardStr;
     QClipboard *clipboard = QGuiApplication::clipboard();
     if (clipboard->text() != clipboardStr)
@@ -257,15 +246,17 @@ QWasmInputContext::QWasmInputContext()
     m_inputElement["style"].set("width", "1px");
     m_inputElement["style"].set("height", "1px");
 
-    m_inputElement.set("data-qinputcontext",
-                       emscripten::val(quintptr(reinterpret_cast<void *>(this))));
     emscripten::val body = document["body"];
     body.call<void>("appendChild", m_inputElement);
 
-    m_inputCallback = QWasmEventHandler(m_inputElement, "input", QWasmInputContext::inputCallback);
-    m_compositionEndCallback = QWasmEventHandler(m_inputElement, "compositionend", QWasmInputContext::compositionEndCallback);
-    m_compositionStartCallback = QWasmEventHandler(m_inputElement, "compositionstart", QWasmInputContext::compositionStartCallback);
-    m_compositionUpdateCallback = QWasmEventHandler(m_inputElement, "compositionupdate", QWasmInputContext::compositionUpdateCallback);
+    m_inputCallback = QWasmEventHandler(m_inputElement, "input",
+        [this](emscripten::val event){ QWasmInputContext::inputCallback(event); });
+    m_compositionEndCallback = QWasmEventHandler(m_inputElement, "compositionend",
+        [this](emscripten::val event){ QWasmInputContext::compositionEndCallback(event); });
+    m_compositionStartCallback = QWasmEventHandler(m_inputElement, "compositionstart",
+        [this](emscripten::val event){ QWasmInputContext::compositionStartCallback(event); });
+    m_compositionUpdateCallback = QWasmEventHandler(m_inputElement, "compositionupdate",
+        [this](emscripten::val event){ QWasmInputContext::compositionUpdateCallback(event); });
 
 #if QT_CONFIG(clipboard)
     // Clipboard for InputContext
