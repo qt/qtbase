@@ -127,7 +127,7 @@ endmacro()
 # contain preformed dependencies. See foreach block for reference.
 # The same applies for find_dependency_path_list.
 macro(_qt_internal_find_qt_dependencies target target_dep_list find_dependency_path_list)
-    set(__qt_${target}_find_qt_dependencies_save_QT_NO_PRIVATE_MODULE_WARNING
+    list(APPEND __qt_${target}_find_qt_dependencies_save_QT_NO_PRIVATE_MODULE_WARNING
         ${QT_NO_PRIVATE_MODULE_WARNING}
     )
     set(QT_NO_PRIVATE_MODULE_WARNING ON)
@@ -152,10 +152,9 @@ macro(_qt_internal_find_qt_dependencies target target_dep_list find_dependency_p
         endif()
     endforeach()
 
-    set(QT_NO_PRIVATE_MODULE_WARNING
-        ${__qt_${target}_find_qt_dependencies_save_QT_NO_PRIVATE_MODULE_WARNING}
+    list(POP_BACK __qt_${target}_find_qt_dependencies_save_QT_NO_PRIVATE_MODULE_WARNING
+        QT_NO_PRIVATE_MODULE_WARNING
     )
-    unset(__qt_${target}_find_qt_dependencies_save_QT_NO_PRIVATE_MODULE_WARNING)
 endmacro()
 
 # If a dependency package was not found, provide some hints in the error message on how to debug
