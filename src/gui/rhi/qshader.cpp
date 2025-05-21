@@ -812,7 +812,7 @@ bool operator==(const QShader &lhs, const QShader &rhs) noexcept
 size_t qHash(const QShader &s, size_t seed) noexcept
 {
     if (s.d) {
-        QtPrivate::QHashCombine hash(seed);
+        QtPrivate::QHashCombineWithSeed hash(seed);
         seed = hash(seed, s.stage());
         if (!s.d->shaders.isEmpty()) {
             seed = hash(seed, s.d->shaders.firstKey());

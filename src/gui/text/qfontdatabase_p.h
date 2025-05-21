@@ -51,7 +51,7 @@ inline bool operator!=(const QtFontFallbacksCacheKey &lhs, const QtFontFallbacks
 
 inline size_t qHash(const QtFontFallbacksCacheKey &key, size_t seed = 0) noexcept
 {
-    QtPrivate::QHashCombine hash(seed);
+    QtPrivate::QHashCombineWithSeed hash(seed);
     seed = hash(seed, key.family);
     seed = hash(seed, int(key.style));
     seed = hash(seed, int(key.styleHint));

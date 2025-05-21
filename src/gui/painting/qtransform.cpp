@@ -784,7 +784,7 @@ bool QTransform::operator==(const QTransform &o) const
 */
 size_t qHash(const QTransform &key, size_t seed) noexcept
 {
-    QtPrivate::QHashCombine hash(seed);
+    QtPrivate::QHashCombineWithSeed hash(seed);
     seed = hash(seed, key.m11());
     seed = hash(seed, key.m12());
     seed = hash(seed, key.m21());

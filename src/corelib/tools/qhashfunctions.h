@@ -298,19 +298,11 @@ bool qHashEquals(const T1 &a, const T2 &b)
 }
 
 namespace QtPrivate {
-template <typename Mixer> struct QHashCombiner : private Mixer
+template <typename Mixer> struct QHashCombinerWithSeed : private Mixer
 {
-    using result_type = typename Mixer::result_type ;
-
-#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) || defined(QT_BOOTSTRAPPED)
-    // Qt 6.x didn't use to pass the seed; bootstrap has no seed
-    static constexpr size_t seed = 0;
-    constexpr QHashCombiner(result_type) noexcept {}
-    Q_DECL_DEPRECATED_X("pass the seed argument") constexpr QHashCombiner() noexcept {}
-#else
+    using result_type = typename Mixer::result_type;
     size_t seed;
-    constexpr QHashCombiner(result_type s) : seed(s) noexcept {}
-#endif
+    constexpr QHashCombinerWithSeed(result_type s) noexcept : seed(s) {}
 
     template <typename T>
     constexpr result_type operator()(result_type result, const T &t) const
@@ -319,6 +311,30 @@ template <typename Mixer> struct QHashCombiner : private Mixer
         return Mixer::operator()(result, qHash(t, seed));
     }
 };
+
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) || defined(QT_BOOTSTRAPPED)
+// Earlier Qt 6.x versions of qHashMulti() failed to pass the seed as the seed
+// argument of qHash(), so this class exists for compatibility with user and
+// inline code that relies on the old behavior. For Qt 7, we'll replace with
+// the above version, except for the bootstrapped tools (which have no seed).
+template <typename Mixer> struct QHashCombiner : private Mixer
+{
+    using result_type = typename Mixer::result_type;
+
+    static constexpr size_t seed = 0;
+    constexpr QHashCombiner(result_type) noexcept {}
+    Q_DECL_DEPRECATED_X("pass the seed argument") constexpr QHashCombiner() noexcept {}
+
+    template <typename T>
+    constexpr result_type operator()(result_type result, const T &t) const
+        noexcept(noexcept(qHash(t, seed)))
+    {
+        return Mixer::operator()(result, qHash(t, seed));
+    }
+};
+#else
+template <typename Mixer> using QHashCombiner = QHashCombinerWithSeed<Mixer>;
+#endif
 
 struct QHashCombineMixer
 {
@@ -330,6 +346,7 @@ struct QHashCombineMixer
     }
 };
 using QHashCombine = QHashCombiner<QHashCombineMixer>;
+using QHashCombineWithSeed = QHashCombinerWithSeed<QHashCombineMixer>;
 
 struct QHashCombineCommutativeMixer : std::plus<size_t>
 {
@@ -341,6 +358,7 @@ struct QHashCombineCommutativeMixer : std::plus<size_t>
     typedef size_t result_type;
 };
 using QHashCombineCommutative = QHashCombiner<QHashCombineCommutativeMixer>;
+using QHashCombineCommutativeWithSeed = QHashCombinerWithSeed<QHashCombineCommutativeMixer>;
 
 template <typename... T>
 using QHashMultiReturnType = decltype(
