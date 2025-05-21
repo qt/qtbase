@@ -25,81 +25,71 @@ void QWasmInputContext::inputCallback(emscripten::val event)
 {
     qCDebug(qLcQpaWasmInputContext) << Q_FUNC_INFO << "isComposing : " << event["isComposing"].as<bool>();
 
+    emscripten::val inputType = event["inputType"];
+    if (inputType.isNull() || inputType.isUndefined())
+        return;
+    const auto inputTypeString = inputType.as<std::string>();
+
     emscripten::val inputData = event["data"];
     QString inputStr = (!inputData.isNull() && !inputData.isUndefined())
         ? QString::fromEcmaString(inputData) : QString();
 
-    emscripten::val inputType = event["inputType"];
-    if (!inputType.isNull() && !inputType.isUndefined()) {
-        const auto inputTypeString = inputType.as<std::string>();
-        // There are many inputTypes for InputEvent
-        // https://www.w3.org/TR/input-events-1/
-        // Some of them should be implemented here later.
-        qCDebug(qLcQpaWasmInputContext) << Q_FUNC_INFO << "inputType : " << inputTypeString;
-        if (!inputTypeString.compare("deleteContentBackward")) {
-            QWindowSystemInterface::handleKeyEvent(0,
-                                                   QEvent::KeyPress,
-                                                   Qt::Key_Backspace,
-                                                   Qt::NoModifier);
-            QWindowSystemInterface::handleKeyEvent(0,
-                                                   QEvent::KeyRelease,
-                                                   Qt::Key_Backspace,
-                                                   Qt::NoModifier);
-            event.call<void>("stopImmediatePropagation");
-            return;
-        } else if (!inputTypeString.compare("deleteContentForward")) {
-            QWindowSystemInterface::handleKeyEvent(0,
-                                                   QEvent::KeyPress,
-                                                   Qt::Key_Delete,
-                                                   Qt::NoModifier);
-            QWindowSystemInterface::handleKeyEvent(0,
-                                                   QEvent::KeyRelease,
-                                                   Qt::Key_Delete,
-                                                   Qt::NoModifier);
-            event.call<void>("stopImmediatePropagation");
-            return;
-        } else if (!inputTypeString.compare("insertCompositionText")) {
-            qCDebug(qLcQpaWasmInputContext) << "inputString : " << inputStr;
-            insertPreedit();
-            event.call<void>("stopImmediatePropagation");
-            return;
-        } else if (!inputTypeString.compare("insertReplacementText")) {
-            qCDebug(qLcQpaWasmInputContext) << "inputString : " << inputStr;
-            //auto ranges = event.call<emscripten::val>("getTargetRanges");
-            //qCDebug(qLcQpaWasmInputContext) << ranges["length"].as<int>();
-            // WA For Korean IME
-            // insertReplacementText should have targetRanges but
-            // Safari cannot have it and just it seems to be supposed
-            // to replace previous input.
-            insertText(inputStr, true);
+    // There are many inputTypes for InputEvent
+    // https://www.w3.org/TR/input-events-1/
+    // Some of them should be implemented here later.
+    qCDebug(qLcQpaWasmInputContext) << Q_FUNC_INFO << "inputType : " << inputTypeString;
+    if (!inputTypeString.compare("deleteContentBackward")) {
+        QWindowSystemInterface::handleKeyEvent(0, QEvent::KeyPress, Qt::Key_Backspace, Qt::NoModifier);
+        QWindowSystemInterface::handleKeyEvent(0, QEvent::KeyRelease, Qt::Key_Backspace, Qt::NoModifier);
+        event.call<void>("stopImmediatePropagation");
+        return;
+    } else if (!inputTypeString.compare("deleteContentForward")) {
+        QWindowSystemInterface::handleKeyEvent(0, QEvent::KeyPress, Qt::Key_Delete, Qt::NoModifier);
+        QWindowSystemInterface::handleKeyEvent(0, QEvent::KeyRelease, Qt::Key_Delete, Qt::NoModifier);
+        event.call<void>("stopImmediatePropagation");
+        return;
+    } else if (!inputTypeString.compare("insertCompositionText")) {
+        qCDebug(qLcQpaWasmInputContext) << "inputString : " << inputStr;
+        insertPreedit();
+        event.call<void>("stopImmediatePropagation");
+        return;
+    } else if (!inputTypeString.compare("insertReplacementText")) {
+        qCDebug(qLcQpaWasmInputContext) << "inputString : " << inputStr;
+        //auto ranges = event.call<emscripten::val>("getTargetRanges");
+        //qCDebug(qLcQpaWasmInputContext) << ranges["length"].as<int>();
+        // WA For Korean IME
+        // insertReplacementText should have targetRanges but
+        // Safari cannot have it and just it seems to be supposed
+        // to replace previous input.
+        insertText(inputStr, true);
 
-            event.call<void>("stopImmediatePropagation");
-            return;
-        } else if (!inputTypeString.compare("deleteCompositionText")) {
-            setPreeditString("", 0);
-            insertPreedit();
-            event.call<void>("stopImmediatePropagation");
-            return;
-        } else if (!inputTypeString.compare("insertFromComposition")) {
-            setPreeditString(inputStr, 0);
-            insertPreedit();
-            event.call<void>("stopImmediatePropagation");
-            return;
-        } else if (!inputTypeString.compare("insertText")) {
-            insertText(inputStr);
-            event.call<void>("stopImmediatePropagation");
+        event.call<void>("stopImmediatePropagation");
+        return;
+    } else if (!inputTypeString.compare("deleteCompositionText")) {
+        setPreeditString("", 0);
+        insertPreedit();
+        event.call<void>("stopImmediatePropagation");
+        return;
+    } else if (!inputTypeString.compare("insertFromComposition")) {
+        setPreeditString(inputStr, 0);
+        insertPreedit();
+        event.call<void>("stopImmediatePropagation");
+        return;
+    } else if (!inputTypeString.compare("insertText")) {
+        insertText(inputStr);
+        event.call<void>("stopImmediatePropagation");
 #if QT_CONFIG(clipboard)
-        } else if (!inputTypeString.compare("insertFromPaste")) {
-            insertText(QGuiApplication::clipboard()->text());
-            event.call<void>("stopImmediatePropagation");
-        // These can be supported here,
-        // But now, keyCallback in QWasmWindow
-        // will take them as exceptions.
-        //} else if (!inputTypeString.compare("deleteByCut")) {
+    } else if (!inputTypeString.compare("insertFromPaste")) {
+        insertText(QGuiApplication::clipboard()->text());
+        event.call<void>("stopImmediatePropagation");
+    // These can be supported here,
+    // But now, keyCallback in QWasmWindow
+    // will take them as exceptions.
+    //} else if (!inputTypeString.compare("deleteByCut")) {
 #endif
-        } else {
-            qCWarning(qLcQpaWasmInputContext) << Q_FUNC_INFO << "inputType \"" << inputType.as<std::string>() << "\" is not supported in Qt yet";
-        }
+    } else {
+        qCWarning(qLcQpaWasmInputContext) << Q_FUNC_INFO << "inputType \"" <<
+            inputType.as<std::string>() << "\" is not supported in Qt yet";
     }
 }
 
