@@ -496,7 +496,8 @@ void QTextEditPrivate::ensureVisible(const QRectF &_rect)
 
     QTextDocument provides an \l {QTextDocument::isModified()}{isModified()}
     function which will return true if the text has been modified since it was
-    either loaded or since the last call to setModified with false as argument.
+    either loaded or since the last call to \l {QTextDocument::}{setModified()}
+    with false as argument.
     In addition it provides methods for undo and redo.
 
     \section2 Drag and Drop
