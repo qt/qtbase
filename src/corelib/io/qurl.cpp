@@ -537,6 +537,19 @@ public:
     template <typename String> void setQuery(String &&value, QUrl::ParsingMode mode);
     template <typename String> void setFragment(String &&value, QUrl::ParsingMode mode);
 
+    uint presentSections() const noexcept
+    {
+        uint s = sectionIsPresent;
+
+        // We have to ignore the host-is-present flag for local files (the
+        // "file" protocol), due to the requirements of the XDG file URI
+        // specification.
+        if (isLocalFile())
+            s &= ~Host;
+
+        return s;
+    }
+
     inline bool hasScheme() const { return sectionIsPresent & Scheme; }
     inline bool hasAuthority() const { return sectionIsPresent & Authority; }
     inline bool hasUserInfo() const { return sectionIsPresent & UserInfo; }
@@ -3090,14 +3103,7 @@ bool comparesEqual(const QUrl &lhs, const QUrl &rhs)
     if (!rhs.d)
         return lhs.d->isEmpty();
 
-    // First, compare which sections are present, since it speeds up the
-    // processing considerably. We just have to ignore the host-is-present flag
-    // for local files (the "file" protocol), due to the requirements of the
-    // XDG file URI specification.
-    int mask = QUrlPrivate::FullUrl;
-    if (lhs.isLocalFile())
-        mask &= ~QUrlPrivate::Host;
-    return (lhs.d->sectionIsPresent & mask) == (rhs.d->sectionIsPresent & mask) &&
+    return (lhs.d->presentSections() == rhs.d->presentSections()) &&
             lhs.d->scheme == rhs.d->scheme &&
             lhs.d->userName == rhs.d->userName &&
             lhs.d->password == rhs.d->password &&
@@ -3127,13 +3133,7 @@ bool QUrl::matches(const QUrl &url, FormattingOptions options) const
     if (!url.d)
         return d->isEmpty();
 
-    // First, compare which sections are present, since it speeds up the
-    // processing considerably. We just have to ignore the host-is-present flag
-    // for local files (the "file" protocol), due to the requirements of the
-    // XDG file URI specification.
-    int mask = QUrlPrivate::FullUrl;
-    if (isLocalFile())
-        mask &= ~QUrlPrivate::Host;
+    uint mask = d->presentSections();
 
     if (options.testFlag(QUrl::RemoveScheme))
         mask &= ~QUrlPrivate::Scheme;
