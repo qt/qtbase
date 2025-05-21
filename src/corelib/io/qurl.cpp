@@ -547,6 +547,10 @@ public:
         if (isLocalFile())
             s &= ~Host;
 
+        // If the password was set, we must have a username too
+        if (s & Password)
+            s |= UserName;
+
         return s;
     }
 
@@ -928,6 +932,8 @@ inline void QUrlPrivate::appendUserName(QString &appendTo, QUrl::FormattingOptio
     // only called from QUrl::userName()
     appendToUser(appendTo, userName, options,
                  options & QUrl::EncodeDelimiters ? userNameInUrl : userNameInIsolation);
+    if (appendTo.isNull() && hasPassword())
+        appendTo.detach();      // the presence of password implies presence of username
 }
 
 inline void QUrlPrivate::appendPassword(QString &appendTo, QUrl::FormattingOptions options) const
