@@ -276,6 +276,8 @@ private:
     compareThreeWay(const QUrl &lhs, const QUrl &rhs);
     Q_DECLARE_WEAKLY_ORDERED_NON_NOEXCEPT(QUrl)
 
+    void detachToClear();
+
     QUrlPrivate *d;
     friend class QUrlQuery;
 
