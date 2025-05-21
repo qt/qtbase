@@ -668,40 +668,42 @@ void QWasmWindow::handleKeyForInputContextEvent(EventType eventType, const emscr
     // complex (i.e Chinese et al) input handling
     // Multiline text edit backspace at start of line
     //
-    const QWasmInputContext *wasmInput = QWasmIntegration::get()->wasmInputContext();
-    if (wasmInput) {
+    bool useInputContext = [event]() -> bool {
+        const QWasmInputContext *wasmInput = QWasmIntegration::get()->wasmInputContext();
+        if (!wasmInput)
+            return false;
+
         const auto keyString = QString::fromStdString(event["key"].as<std::string>());
         qCDebug(qLcQpaWasmInputContext) << "Key callback" << keyString << keyString.size();
-        if (keyString == "Unidentified") {
-            // Android makes a bunch of KeyEvents as "Unidentified"
-            // They will be processed just in InputContext.
-            return;
-        } else if (event["isComposing"].as<bool>()) {
-            // Handled by the input context
-            return;
-        } else if (event["ctrlKey"].as<bool>()
-                || event["altKey"].as<bool>()
-                || event["metaKey"].as<bool>()) {
-            // Not all platforms use 'isComposing' for '~' + 'a', in this
-            // case send the key with state ('ctrl', 'alt', or 'meta') to
-            // processKeyForInputContext
 
-            ; // fallthrough
-        } else if (keyString.size() != 1) {
-            // This is like; 'Shift','ArrowRight','AltGraph', ...
-            // send all of these to processKeyForInputContext
+        // Events with isComposing set are handled by the input context
+        bool composing = event["isComposing"].as<bool>();
 
-            ; // fallthrough
-        } else if (wasmInput->inputMethodAccepted()) {
-            // processed in inputContext with skipping processKey
-            return;
-        }
+        // Android makes a bunch of KeyEvents as "Unidentified",
+        // make inputContext handle those.
+        bool androidUnidentified = (keyString == "Unidentified");
+
+        // Not all platforms use 'isComposing' for '~' + 'a', in this
+        // case send the key with state ('ctrl', 'alt', or 'meta') to
+        // processKeyForInputContext
+        bool hasModifiers = event["ctrlKey"].as<bool>()
+                                 || event["altKey"].as<bool>()
+                                 || event["metaKey"].as<bool>();
+
+        // This is like; 'Shift','ArrowRight','AltGraph', ...
+        // send all of these to processKeyForInputContext
+        bool hasNoncharacterKeyString = keyString.size() != 1;
+
+        bool overrideCompose = !hasModifiers && !hasNoncharacterKeyString && wasmInput->inputMethodAccepted();
+        return composing || androidUnidentified || overrideCompose;
+    }();
+
+    if (!useInputContext) {
+        qCDebug(qLcQpaWasmInputContext) << "processKey as KeyEvent";
+        if (processKeyForInputContext(KeyEvent(eventType, event, m_deadKeySupport)))
+            event.call<void>("preventDefault");
+        event.call<void>("stopImmediatePropagation");
     }
-
-    qCDebug(qLcQpaWasmInputContext) << "processKey as KeyEvent";
-    if (processKeyForInputContext(KeyEvent(eventType, event, m_deadKeySupport)))
-        event.call<void>("preventDefault");
-    event.call<void>("stopImmediatePropagation");
 }
 
 bool QWasmWindow::processKeyForInputContext(const KeyEvent &event)
