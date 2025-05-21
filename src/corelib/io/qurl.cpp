@@ -3660,17 +3660,29 @@ QList<QUrl> QUrl::fromStringList(const QStringList &urls, ParsingMode mode)
 */
 size_t qHash(const QUrl &url, size_t seed) noexcept
 {
-    if (!url.d)
-        return qHash(-1, seed); // the hash of an unset port (-1)
+    QtPrivate::QHashCombineWithSeed hasher(seed);
 
-    return qHash(url.d->scheme) ^
-            qHash(url.d->userName) ^
-            qHash(url.d->password) ^
-            qHash(url.d->host) ^
-            qHash(url.d->port, seed) ^
-            qHash(url.d->path) ^
-            qHash(url.d->query) ^
-            qHash(url.d->fragment);
+    // non-commutative, we must hash the port first
+    if (!url.d)
+        return hasher(0, -1);
+    size_t state = hasher(0, url.d->port);
+
+    if (url.d->hasScheme())
+        state = hasher(state, url.d->scheme);
+    if (url.d->hasUserInfo()) {
+        // see presentSections(), appendUserName(), etc.
+        state = hasher(state, url.d->userName);
+        state = hasher(state, url.d->password);
+    }
+    if (url.d->hasHost() || url.d->isLocalFile())   // for XDG compatibility
+        state = hasher(state, url.d->host);
+    if (url.d->hasPath())
+        state = hasher(state, url.d->path);
+    if (url.d->hasQuery())
+        state = hasher(state, url.d->query);
+    if (url.d->hasFragment())
+        state = hasher(state, url.d->fragment);
+    return state;
 }
 
 static QUrl adjustFtpPath(QUrl url)

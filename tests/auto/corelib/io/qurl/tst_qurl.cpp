@@ -513,6 +513,7 @@ void tst_QUrl::comparison2()
         QCOMPARE(url1.toString(), url2.toString());
         QCOMPARE(url1, url2);
         QCOMPARE(qHash(url1), qHash(url2));
+        QCOMPARE(qHash(url1, 1), qHash(url2, 1));
     } else if (ordering < 0) {
         QCOMPARE_LT(url1.toString(), url2.toString());
         QCOMPARE_NE(url1, url2);
@@ -1387,12 +1388,14 @@ void tst_QUrl::toString_constructed()
         QUrl parsed(asString);
         QCOMPARE(url, parsed);
         QCOMPARE(qHash(url), qHash(parsed));
+        QCOMPARE(qHash(url, 1), qHash(parsed, 1));
     }
 
     // clear it and ensure no memory of the previous state remains
     url.setUrl(QString());
     QCOMPARE(url, QUrl());
     QCOMPARE(qHash(url), qHash(QUrl()));
+    QCOMPARE(qHash(url, 1), qHash(QUrl(), 1));
 }
 
 void tst_QUrl::toDisplayString_PreferLocalFile_data()
@@ -4265,6 +4268,7 @@ void tst_QUrl::setComponents()
         QUrl recreated(toString);
         QCOMPARE(copy, recreated);
         QCOMPARE(qHash(copy), qHash(recreated));
+        QCOMPARE(qHash(copy, 1), qHash(recreated, 1));
     } else {
         QVERIFY(copy.toString().isEmpty());
     }
