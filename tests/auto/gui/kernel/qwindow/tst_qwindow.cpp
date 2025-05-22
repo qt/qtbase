@@ -1230,7 +1230,7 @@ void tst_QWindow::testInputEvents()
     InputTestWindow window;
     window.setGeometry(QRect(m_availableTopLeft + QPoint(80, 80), m_testWindowSize));
     window.showNormal();
-    QVERIFY(QTest::qWaitForWindowExposed(&window));
+    QTRY_VERIFY(window.isActive());
 
     QTest::keyClick(&window, Qt::Key_A, Qt::NoModifier);
     QCoreApplication::processEvents();
