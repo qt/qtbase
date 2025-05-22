@@ -100,6 +100,25 @@ inline bool qt_assume_is_deprecated(bool cond) noexcept { return cond; }
         Q_ASSUME_IMPL(valueOfExpression);\
     }(qt_assume_is_deprecated(Expr))
 
+
+#if __has_builtin(__builtin_assume)
+// Clang has this intrinsic and won't warn about its use in C++20 mode
+#  define Q_PRESUME_IMPL(assumption) __builtin_assume(assumption)
+#elif __has_cpp_attribute(assume)
+// GCC has implemented this attribute and allows its use in C++20 mode
+#  define Q_PRESUME_IMPL(assumption) [[assume(assumption)]]
+#elif defined(Q_CC_MSVC)
+#  define Q_PRESUME_IMPL(assumption) __assume(assumption)
+#else
+#  define Q_PRESUME_IMPL(assumption) (void)0
+#endif
+
+#define Q_PRESUME(assumption)       \
+    [&] {                            \
+        Q_ASSERT(assumption);       \
+        Q_PRESUME_IMPL(assumption); \
+    }()
+
 // Don't use these in C++ mode, use static_assert directly.
 // These are here only to keep old code compiling.
 #  define Q_STATIC_ASSERT(Condition) static_assert(bool(Condition), #Condition)

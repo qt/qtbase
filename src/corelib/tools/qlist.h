@@ -446,10 +446,8 @@ public:
     static constexpr qsizetype maxSize() { return Data::maxSize(); }
     constexpr qsizetype size() const noexcept
     {
-#if __has_cpp_attribute(assume)
         constexpr size_t MaxSize = maxSize();
-        [[assume(size_t(d.size) <= MaxSize)]];
-#endif
+        Q_PRESUME(size_t(d.size) <= MaxSize);
         return d.size;
     }
     constexpr qsizetype count() const noexcept { return size(); }
