@@ -70,7 +70,8 @@ public class QtNative
         synchronized (m_mainActivityMutex) {
             m_activity = new WeakReference<>(qtMainActivity);
             try {
-                updateNativeActivity();
+                if (m_stateDetails.isStarted)
+                    updateNativeActivity();
             } catch (UnsatisfiedLinkError ignored) {
                 // No-op - this happens in certain e.g. QtQuick for Android cases when we set the
                 // Activity for the first time, before Qt native libraries have been loaded. The
