@@ -929,6 +929,27 @@ void tst_QAccessibility::actionTest()
     QCOMPARE(click_count, 1);
     }
     QTestAccessibility::clearEvents();
+
+    {
+    QCOMPARE(QAccessibleActionInterface::showMenuAction(), QString(QStringLiteral("ShowMenu")));
+
+    auto widgetHolder = std::make_unique<QWidget>();
+    auto widget = widgetHolder.get();
+    widget->addAction(new QAction("Foo"));
+    widget->addAction(new QAction("Bar"));
+    widget->show();
+
+    QAccessibleInterface *interface = QAccessible::queryAccessibleInterface(widget);
+    QVERIFY(interface);
+    QVERIFY(interface->isValid());
+    QAccessibleActionInterface *actions = interface->actionInterface();
+    QVERIFY(actions);
+
+    QCOMPARE(actions->actionNames(), QStringList());
+    widget->setContextMenuPolicy(Qt::ActionsContextMenu);
+    QCOMPARE(actions->actionNames(), QStringList(QAccessibleActionInterface::showMenuAction()));
+    }
+    QTestAccessibility::clearEvents();
 }
 
 void tst_QAccessibility::applicationTest()
