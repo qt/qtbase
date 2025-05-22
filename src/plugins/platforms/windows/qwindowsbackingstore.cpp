@@ -50,7 +50,10 @@ void QWindowsBackingStore::flush(QWindow *window, const QRegion &region,
     QWindowsWindow *rw = QWindowsWindow::windowsWindowOf(window);
     Q_ASSERT(rw);
 
-    if (rw->isLayered()) {
+    const bool hasAlpha = rw->format().hasAlpha();
+    const Qt::WindowFlags flags = window->flags();
+    // Note: This condition must be in sync with setWindowOpacity. FIXME: Improve this :)
+    if (rw->isLayered() && hasAlpha && QWindowsWindow::hasNoNativeFrame(rw->handle(), flags)) {
         // Windows with alpha: Use blend function to update.
         QRect r = QHighDpi::toNativePixels(window->frameGeometry(), window);
         QMargins frameMargins = rw->frameMargins();
