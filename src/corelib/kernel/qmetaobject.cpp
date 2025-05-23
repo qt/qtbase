@@ -713,6 +713,7 @@ inline int QMetaObjectPrivate::indexOfMethodRelative(const QMetaObject **baseObj
 
 
 /*!
+    \fn int QMetaObject::indexOfConstructor(const char *constructor) const
     \since 4.5
 
     Finds \a constructor and returns its index; otherwise returns -1.
@@ -722,15 +723,24 @@ inline int QMetaObjectPrivate::indexOfMethodRelative(const QMetaObject **baseObj
 
     \sa constructor(), constructorCount(), normalizedSignature()
 */
+
+static int indexOfConstructor_helper(const QMetaObject *mo, const char *constructor)
+{
+    QArgumentTypeArray types;
+    QByteArray name = QMetaObjectPrivate::decodeMethodSignature(constructor, types);
+    return QMetaObjectPrivate::indexOfConstructor(mo, name, types.size(), types.constData());
+}
+
 int QMetaObject::indexOfConstructor(const char *constructor) const
 {
     Q_ASSERT(priv(d.data)->revision >= 7);
-    QArgumentTypeArray types;
-    QByteArray name = QMetaObjectPrivate::decodeMethodSignature(constructor, types);
-    return QMetaObjectPrivate::indexOfConstructor(this, name, types.size(), types.constData());
+    int i = indexOfConstructor_helper(this, constructor);
+    return i;
 }
 
 /*!
+    \fn int QMetaObject::indexOfMethod(const char *method) const
+
     Finds \a method and returns its index; otherwise returns -1.
 
     Note that the \a method has to be in normalized form, as returned
@@ -738,9 +748,9 @@ int QMetaObject::indexOfConstructor(const char *constructor) const
 
     \sa method(), methodCount(), methodOffset(), normalizedSignature()
 */
-int QMetaObject::indexOfMethod(const char *method) const
+
+static int indexOfMethod_helper(const QMetaObject *m, const char *method)
 {
-    const QMetaObject *m = this;
     int i;
     Q_ASSERT(priv(m->d.data)->revision >= 7);
     QArgumentTypeArray types;
@@ -748,6 +758,13 @@ int QMetaObject::indexOfMethod(const char *method) const
     i = QMetaObjectPrivate::indexOfMethodRelative<0>(&m, name, types.size(), types.constData());
     if (i >= 0)
         i += m->methodOffset();
+    return i;
+}
+
+int QMetaObject::indexOfMethod(const char *method) const
+{
+    const QMetaObject *m = this;
+    int i = indexOfMethod_helper(m, method);
     return i;
 }
 
@@ -793,6 +810,8 @@ QByteArray QMetaObjectPrivate::decodeMethodSignature(
 }
 
 /*!
+    \fn int QMetaObject::indexOfSignal(const char *signal) const
+
     Finds \a signal and returns its index; otherwise returns -1.
 
     This is the same as indexOfMethod(), except that it will return
@@ -803,9 +822,9 @@ QByteArray QMetaObjectPrivate::decodeMethodSignature(
 
     \sa indexOfMethod(), normalizedSignature(), method(), methodCount(), methodOffset()
 */
-int QMetaObject::indexOfSignal(const char *signal) const
+
+static int indexOfSignal_helper(const QMetaObject *m, const char *signal)
 {
-    const QMetaObject *m = this;
     int i;
     Q_ASSERT(priv(m->d.data)->revision >= 7);
     QArgumentTypeArray types;
@@ -813,6 +832,13 @@ int QMetaObject::indexOfSignal(const char *signal) const
     i = QMetaObjectPrivate::indexOfSignalRelative(&m, name, types.size(), types.constData());
     if (i >= 0)
         i += m->methodOffset();
+    return i;
+}
+
+int QMetaObject::indexOfSignal(const char *signal) const
+{
+    const QMetaObject *m = this;
+    int i = indexOfSignal_helper(m, signal);
     return i;
 }
 
@@ -843,6 +869,8 @@ int QMetaObjectPrivate::indexOfSignalRelative(const QMetaObject **baseObject,
 }
 
 /*!
+    \fn int QMetaObject::indexOfSlot(const char *slot) const
+
     Finds \a slot and returns its index; otherwise returns -1.
 
     This is the same as indexOfMethod(), except that it will return
@@ -850,9 +878,9 @@ int QMetaObjectPrivate::indexOfSignalRelative(const QMetaObject **baseObject,
 
     \sa indexOfMethod(), method(), methodCount(), methodOffset()
 */
-int QMetaObject::indexOfSlot(const char *slot) const
+
+static int indexOfSlot_helper(const QMetaObject *m, const char *slot)
 {
-    const QMetaObject *m = this;
     int i;
     Q_ASSERT(priv(m->d.data)->revision >= 7);
     QArgumentTypeArray types;
@@ -860,6 +888,13 @@ int QMetaObject::indexOfSlot(const char *slot) const
     i = QMetaObjectPrivate::indexOfSlotRelative(&m, name, types.size(), types.constData());
     if (i >= 0)
         i += m->methodOffset();
+    return i;
+}
+
+int QMetaObject::indexOfSlot(const char *slot) const
+{
+    const QMetaObject *m = this;
+    int i = indexOfSlot_helper(m, slot);
     return i;
 }
 
