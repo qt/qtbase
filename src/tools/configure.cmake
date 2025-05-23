@@ -31,7 +31,7 @@ qt_feature("qmake" PRIVATE
         QT_FEATURE_datestring AND QT_FEATURE_regularexpression AND QT_FEATURE_temporaryfile)
 
 qt_feature("qtwaylandscanner" PRIVATE
-    CONDITION TARGET Wayland::Scanner AND TARGET Wayland::Client
+    CONDITION TARGET Wayland::Scanner
 )
 
 qt_configure_add_summary_section(NAME "Core tools")
