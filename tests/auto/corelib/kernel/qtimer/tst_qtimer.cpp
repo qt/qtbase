@@ -83,6 +83,7 @@ private slots:
     void singleShotToFunctors();
     void singleShot_chrono();
     void singleShot_static();
+    void singleShotDestructionBeforeEventDispatcher();
     void crossThreadSingleShotToFunctor_data();
     void crossThreadSingleShotToFunctor();
 #ifdef QT_BUILD_INTERNAL
@@ -1191,6 +1192,22 @@ void tst_QTimer::postedEventsShouldNotStarveTimers()
     QTRY_VERIFY_WITH_TIMEOUT(timeoutSpy.size() > 5, 100);
 }
 
+void tst_QTimer::singleShotDestructionBeforeEventDispatcher()
+{
+    // This makes sure the QSingleShotTimer doesn't cause a crash when the
+    // event dispatcher is deleted. As of the time of this test's writing, the
+    // QSST was parented to the dispatcher, so if it hadn't yet expired, it
+    // would be deleted by the QObject destructor, which is too late to
+    // unregister the timer.
+
+    auto thr = QThread::create([] {
+        QObject o;
+        QTimer::singleShot(300s, &o, [] {});
+    });
+    thr->start();
+    thr->wait();
+}
+
 struct DummyFunctor {
     static QThread *callThread;
     void operator()() {
@@ -1632,6 +1649,10 @@ void tst_QTimer::initMain()
 void tst_QTimer::cleanupTestCase()
 {
     delete s_staticSingleShotUser;
+
+    // Same as singleShotDestructionBeforeEventDispatcher() above, but for the
+    // main thread.
+    QTimer::singleShot(300s, this, [] {});
 }
 
 void tst_QTimer::singleShot_static()
