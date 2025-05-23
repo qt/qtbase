@@ -26,6 +26,8 @@
 #include <ctype.h>
 #include <memory>
 
+#include <cstring>
+
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
@@ -741,6 +743,31 @@ inline int QMetaObjectPrivate::indexOfMethodRelative(const QMetaObject **baseObj
     \sa constructor(), constructorCount(), normalizedSignature()
 */
 
+#if QT_DEPRECATED_SINCE(6, 10)
+Q_DECL_COLD_FUNCTION
+static int compat_indexOf(const char *what, const char *sig, const QMetaObject *mo,
+                          int (*indexOf)(const QMetaObject *, const char *))
+{
+    const QByteArray normalized = QByteArray(sig).replace("QVector<", "QList<");
+    const int i = indexOf(mo, normalized.data());
+    if (i >= 0) {
+        qWarning(R"(QMetaObject::indexOf%s: argument "%s" is not normalized, because it contains "QVector<". )"
+                 R"(Earlier versions of Qt 6 incorrectly normalized QVector< to QList<, silently. )"
+                 R"(This behavior is deprecated as of 6.10, and will be removed in a future version of Qt.)",
+                 what, sig);
+    }
+    return i;
+}
+
+#define INDEXOF_COMPAT(what, arg) \
+    do { \
+        if (i < 0 && Q_UNLIKELY(std::strstr(arg, "QVector<"))) \
+            i = compat_indexOf(#what, arg, this, &indexOf ## what ## _helper); \
+    } while (false)
+#else
+#define INDEXOF_COMPAT(what, arg)
+#endif // QT_DEPRECATED_SINCE(6, 10)
+
 static int indexOfConstructor_helper(const QMetaObject *mo, const char *constructor)
 {
     QArgumentTypeArray types;
@@ -752,6 +779,7 @@ int QMetaObject::indexOfConstructor(const char *constructor) const
 {
     Q_ASSERT(priv(d.data)->revision >= 7);
     int i = indexOfConstructor_helper(this, constructor);
+    INDEXOF_COMPAT(Constructor, constructor);
     return i;
 }
 
@@ -782,6 +810,7 @@ int QMetaObject::indexOfMethod(const char *method) const
 {
     const QMetaObject *m = this;
     int i = indexOfMethod_helper(m, method);
+    INDEXOF_COMPAT(Method, method);
     return i;
 }
 
@@ -804,7 +833,6 @@ static void argumentTypesFromString(const char *str, const char *end,
             ++str;
         }
         QByteArray argType(begin, str - begin);
-        argType.replace("QVector<", "QList<");
         types += QArgumentType(std::move(argType));
     }
 }
@@ -856,6 +884,7 @@ int QMetaObject::indexOfSignal(const char *signal) const
 {
     const QMetaObject *m = this;
     int i = indexOfSignal_helper(m, signal);
+    INDEXOF_COMPAT(Signal, signal);
     return i;
 }
 
@@ -912,8 +941,11 @@ int QMetaObject::indexOfSlot(const char *slot) const
 {
     const QMetaObject *m = this;
     int i = indexOfSlot_helper(m, slot);
+    INDEXOF_COMPAT(Slot, slot);
     return i;
 }
+
+#undef INDEXOF_COMPAT
 
 // same as indexOfSignalRelative but for slots.
 int QMetaObjectPrivate::indexOfSlotRelative(const QMetaObject **m,

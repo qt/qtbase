@@ -40,6 +40,17 @@ Q_DECLARE_METATYPE(const QMetaObject *)
 
 using namespace Qt::StringLiterals;
 
+#if QT_DEPRECATED_SINCE(6, 10)
+static void eatIndexOfNonNormalizedWarning()
+{
+    static const QRegularExpression rx(R"(QMetaObject::indexOf(Constructor|Method|Signal|Slot): )"
+                                       R"(argument ".+" is not normalized, )"
+                                       R"(because it contains "QVector<"\.)"_L1);
+    QTest::ignoreMessage(QtWarningMsg, rx);
+}
+#define NORMALIZES_QVECTOR_QLIST
+#endif
+
 struct MyStruct
 {
     int i;
@@ -2470,12 +2481,8 @@ void tst_QMetaObject::customQVectorSuffix()
     QVERIFY(connect(this, SIGNAL(myQListChanged(MyQList<int>)),
                     &ctx, SLOT(deleteLater()))); // just some compatible slot...
 
-    // QMetaObject internally does s/QVector</QList</ indiscriminently, so the
-    // existing signal is not found:
-    QEXPECT_FAIL("", "Qt 6 QVector -> QList kludge getting in the way", Continue);
-    QTest::ignoreMessage(QtWarningMsg,
-                         QRegularExpression(R"(.*QObject::connect: No such signal )"
-                                            R"(tst_QMetaObject.*::myQVectorChanged\(MyQVector<double>\).*)"_L1));
+    // QMetaObject used to internally s/QVector</QList</ indiscriminently, so the
+    // existing signal was not found:
     QVERIFY(connect(this, SIGNAL(myQVectorChanged(MyQVector<double>)),
                     &ctx, SLOT(deleteLater()))); // just some compatible slot...
 }
@@ -2759,12 +2766,18 @@ void tst_QMetaObject::metaMethod()
     QCOMPARE(obj.slotResult, QString("sl5:12345"));
 
     // check Qt 6 QVector/QList alias:
+#ifdef NORMALIZES_QVECTOR_QLIST
+    eatIndexOfNonNormalizedWarning();
     index = QtTestObject::staticMetaObject.indexOfMethod("sl13v(QVector<QString>)");
     QVERIFY(index > 0);
+#endif
     index = QtTestObject::staticMetaObject.indexOfMethod("sl13v(QList<QString>)");
     QVERIFY(index > 0);
+#ifdef NORMALIZES_QVECTOR_QLIST
+    eatIndexOfNonNormalizedWarning();
     index = QtTestObject::staticMetaObject.indexOfMethod("sl13(QVector<QString>)");
     QVERIFY(index > 0);
+#endif
     index = QtTestObject::staticMetaObject.indexOfMethod("sl13(QList<QString>)");
     QVERIFY(index > 0);
     QMetaMethod sl13 = QtTestObject::staticMetaObject.method(index);
@@ -2781,14 +2794,20 @@ void tst_QMetaObject::metaMethod()
 
     index = QtTestObject::staticMetaObject.indexOfConstructor("QtTestObject(QObject*,QList<int>)");
     QVERIFY(index > 0);
+#ifdef NORMALIZES_QVECTOR_QLIST
+    eatIndexOfNonNormalizedWarning();
     index = QtTestObject::staticMetaObject.indexOfConstructor("QtTestObject(QObject*,QVector<int>)");
     QVERIFY(index > 0);
+#endif
     QCOMPARE(QtTestObject::staticMetaObject.constructor(index).methodSignature(),
              "QtTestObject(QObject*,QList<int>)");
     index = QtTestObject::staticMetaObject.indexOfConstructor("QtTestObject(QList<int>,QObject*)");
     QVERIFY(index > 0);
+#ifdef NORMALIZES_QVECTOR_QLIST
+    eatIndexOfNonNormalizedWarning();
     index = QtTestObject::staticMetaObject.indexOfConstructor("QtTestObject(QVector<int>,QObject*)");
     QVERIFY(index > 0);
+#endif
     QCOMPARE(QtTestObject::staticMetaObject.constructor(index).methodSignature(),
              "QtTestObject(QList<int>,QObject*)");
 }
@@ -2832,8 +2851,11 @@ void tst_QMetaObject::metaMethodNoMacro()
     QCOMPARE(obj.slotResult, QString("sl5:12345"));
 
     // check Qt 6 QVector/QList alias:
+#ifdef NORMALIZES_QVECTOR_QLIST
+    eatIndexOfNonNormalizedWarning();
     index = QtTestObject::staticMetaObject.indexOfMethod("sl13(QVector<QString>)");
     QVERIFY(index > 0);
+#endif
     index = QtTestObject::staticMetaObject.indexOfMethod("sl13(QList<QString>)");
     QVERIFY(index > 0);
     QMetaMethod sl13 = QtTestObject::staticMetaObject.method(index);
@@ -2878,8 +2900,11 @@ void tst_QMetaObject::indexOfMethod()
     QFETCH(QByteArray, name);
     QFETCH(bool, isSignal);
     QFETCH(const bool, found);
+#ifdef NORMALIZES_QVECTOR_QLIST
     QEXPECT_FAIL("myQListChanged(MyQVector<int>)", "Qt 6 QVector -> QList kludge getting in the way", Abort);
-    QEXPECT_FAIL("myQVectorChanged(MyQVector<double>)", "Qt 6 QVector -> QList kludge getting in the way", Abort);
+    if (qstrcmp(QTest::currentDataTag(), "myQListChanged(MyQVector<int>)") == 0)
+        eatIndexOfNonNormalizedWarning();
+#endif
     int idx = object->metaObject()->indexOfMethod(name);
     if (found)
         QVERIFY(idx >= 0);
@@ -3332,6 +3357,10 @@ void tst_QMetaObject::connectByMetaMethodToFreeFunction()
     QVERIFY(connection);
     QCOMPARE(emit o.sig1(u"foo"_s), u"foofoo"_s);
 }
+
+#ifdef NORMALIZES_QVECTOR_QLIST
+# undef NORMALIZES_QVECTOR_QLIST
+#endif
 
 QTEST_MAIN(tst_QMetaObject)
 #include "tst_qmetaobject.moc"
