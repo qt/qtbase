@@ -1,6 +1,6 @@
 // Copyright (C) 2021 The Qt Company Ltd.
 // Copyright (C) 2022 Intel Corporation.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial
 
 // we need ICC to define the prototype for _rdseed64_step
 #define __INTEL_COMPILER_USE_INTRINSIC_PROTOTYPES

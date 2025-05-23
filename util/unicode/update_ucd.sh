@@ -1,6 +1,6 @@
 #! /bin/sh
 # Copyright (C) 2021 The Qt Company Ltd.
-# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial
 
 # This script downloads UCD files for an Unicode release and updates the
 # copies used by Qt. It expects the new Unicode version as argument:

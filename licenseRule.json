@@ -79,6 +79,11 @@
             "": {
                 "comment": "Default",
                 "file type": "tools and utils",
+                "spdx": ["LicenseRef-Qt-Commercial"]
+            },
+            "(.*|)tests/*": {
+                "comment": "Default",
+                "file type": "tools and utils",
                 "spdx": ["LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0"]
             },
             "(.*)(examples/|snippets/)": {
@@ -140,7 +145,7 @@
             "": {
                 "comment": "Default",
                 "file type": "module and plugin",
-                "spdx": ["LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only"]
+                "spdx": ["LicenseRef-Qt-Commercial"]
             },
             "dist/": {
                 "comment": "Default",
@@ -230,7 +235,7 @@
             "src/": {
                 "comment": "Default",
                 "file type": "module and plugin",
-                "spdx": ["LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only"]
+                "spdx": ["LicenseRef-Qt-Commercial"]
             },
             "src/widgets/doc/macOS/AppKit/AppKit.h": {
                 "comment": "",
@@ -245,7 +250,7 @@
             "src/plugins/platforms/wasm/": {
                 "comment": "Exception for wasm",
                 "file type": "module and plugin",
-                "spdx": ["LicenseRef-Qt-Commercial OR GPL-3.0-only"]
+                "spdx": ["LicenseRef-Qt-Commercial"]
             },
             "src/dbus/dbus_minimal_p\\.h": {
                 "comment": "Exception",
@@ -255,12 +260,12 @@
             "src/entrypoint/qtentrypoint_win\\.cpp": {
                 "comment": "Exception: https://doc.qt.io/qt-6/qtentrypoint.html",
                 "file type": "module and plugin",
-                "spdx": ["LicenseRef-Qt-Commercial OR BSD-3-Clause"]
+                "spdx": ["LicenseRef-Qt-Commercial"]
             },
             "src/android/java/src/org/qtproject/qt/android/bindings/": {
                 "comment": "Exception: compiled alongside with user code",
                 "file type": "module and plugin",
-                "spdx": ["LicenseRef-Qt-Commercial OR BSD-3-Clause"]
+                "spdx": ["LicenseRef-Qt-Commercial"]
             },
             "src/corelib/(time|text)/q.*_data_p\\.h": {
                 "comment": "generated from Unicode CLDR data",
@@ -275,7 +280,7 @@
             "src/tools/": {
                 "comment": "Default",
                 "file type": "tools and utils",
-                "spdx": ["LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0"]
+                "spdx": ["LicenseRef-Qt-Commercial"]
             },
             "tests/": {
                 "comment": "Default",
@@ -365,17 +370,17 @@
             "src/corelib/Qt6CoreResourceInit\\.in\\.cpp": {
                 "comment": "Helper file statically compiled into user executables",
                 "file type": "module and plugin",
-                "spdx": ["LicenseRef-Qt-Commercial OR BSD-3-Clause"]
+                "spdx": ["LicenseRef-Qt-Commercial"]
             },
             "qmake/": {
                 "comment": "Default",
                 "file type": "tools and utils",
-                "spdx": ["LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0"]
+                "spdx": ["LicenseRef-Qt-Commercial"]
             },
             "util/": {
                 "comment": "Default",
                 "file type": "util",
-                "spdx": ["LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0"]
+                "spdx": ["LicenseRef-Qt-Commercial"]
             },
             "util/unicode/data/.*\\.txt": {
             "comment": "Exception.",
@@ -400,6 +405,11 @@
             "util/wasm/batchedtestrunner/": {
                 "comment": "Exception: this is a helper tool",
                 "file type": "util",
+                "spdx": ["LicenseRef-Qt-Commercial"]
+            },
+            "util/lexgen/tests/tst_lexgen.cpp": {
+                "comment": "Default",
+                "file type": "util",
                 "spdx": ["LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0"]
             },
             "util/lexgen/tests/testdata/": {
@@ -415,12 +425,12 @@
             "util/x86simdgen/header": {
                 "comment": "Exception for file generation",
                 "file type": "util",
-                "spdx": ["LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only"]
+                "spdx": ["LicenseRef-Qt-Commercial"]
             },
             "util/glgen/qopenglextensions\\.(h|cpp)\\.header": {
                 "comment": "Exception, for file generation",
                 "file type": "util",
-                "spdx": ["LicenseRef-Qt-Commercial OR BSD-3-Clause"]
+                "spdx": ["LicenseRef-Qt-Commercial"]
             },
             "util/gradientgen/webgradients\\.css": {
                 "comment": "Exception",

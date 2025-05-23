@@ -1,5 +1,5 @@
 // Copyright (C) 2017 Pier Luigi Fiorini <pierluigi.fiorini@gmail.com>
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial
 
 /*
  * This lookup table was generated from https://github.com/vcrhonek/hwdata/raw/master/pnp.ids

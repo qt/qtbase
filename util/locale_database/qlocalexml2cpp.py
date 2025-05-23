@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Copyright (C) 2021 The Qt Company Ltd.
-# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial
 """Script to generate C++ code from CLDR data in QLocaleXML form
 
 See ``cldr2qlocalexml.py`` for how to generate the QLocaleXML data itself.

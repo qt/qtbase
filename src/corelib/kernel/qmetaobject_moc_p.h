@@ -1,5 +1,5 @@
 // Copyright (C) 2019 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial
 
 #if !defined(QMETAOBJECT_P_H) && !defined(UTILS_H)
 # error "Include qmetaobject_p.h (or moc's utils.h) before including this file."

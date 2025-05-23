@@ -1,5 +1,5 @@
 -- Copyright (C) 2016 The Qt Company Ltd.
--- SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+-- SPDX-License-Identifier: LicenseRef-Qt-Commercial
 
 
 %parser grammar
@@ -37,7 +37,7 @@
 
 
 /:// Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial
 
 #include "$header"
 
@@ -113,7 +113,7 @@ protected:
 :/
 
 /.// Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial
 
 #include "recognizer.h"
 

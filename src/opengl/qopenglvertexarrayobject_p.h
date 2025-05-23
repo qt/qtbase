@@ -1,5 +1,5 @@
 // Copyright (C) 2020 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Sean Harmer <sean.harmer@kdab.com>
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial
 
 #ifndef QOPENGLVERTEXARRAYOBJECT_P_H
 #define QOPENGLVERTEXARRAYOBJECT_P_H
