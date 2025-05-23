@@ -1168,7 +1168,7 @@ void QThread::setEventDispatcher(QAbstractEventDispatcher *eventDispatcher)
     } else {
         eventDispatcher->moveToThread(this);
         if (eventDispatcher->thread() == this) // was the move successful?
-            d->data->eventDispatcher = eventDispatcher;
+            d->data->eventDispatcher.storeRelaxed(eventDispatcher);
         else
             qWarning("QThread::setEventDispatcher: Could not move event dispatcher to target thread");
     }

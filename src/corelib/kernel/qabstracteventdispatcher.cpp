@@ -175,7 +175,11 @@ QAbstractEventDispatcher::QAbstractEventDispatcher(QAbstractEventDispatcherPriva
     Destroys the event dispatcher.
 */
 QAbstractEventDispatcher::~QAbstractEventDispatcher()
-{ }
+{
+    QThreadData *data = QThreadData::current();
+    if (data->eventDispatcher.loadRelaxed() == this)
+        data->eventDispatcher.storeRelaxed(nullptr);
+}
 
 /*!
     Returns a pointer to the event dispatcher object for the specified
