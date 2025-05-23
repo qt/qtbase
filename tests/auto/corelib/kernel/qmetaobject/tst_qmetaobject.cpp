@@ -497,6 +497,8 @@ public:
     Q_INVOKABLE QtTestObject(QObject *parent);
     Q_INVOKABLE QtTestObject(QObject *parent, int, int);
     Q_INVOKABLE QtTestObject(QObject *parent, int);
+    Q_INVOKABLE QtTestObject(QList<int>, QObject *parent) : QtTestObject(parent) {}
+    Q_INVOKABLE QtTestObject(QObject *parent, QVector<int>) : QtTestObject(parent) {}
 
 public slots:
     void sl0();
@@ -516,6 +518,8 @@ public slots:
     QObject *sl11();
     const char *sl12();
     QList<QString> sl13(QList<QString> l1);
+    // check Qt 6 QVector/QList alias:
+    QVector<QString> sl13v(QVector<QString> v1);
     qint64 sl14();
     qlonglong *sl15(qlonglong *);
     MyForwardDeclaredType *sl16(MyForwardDeclaredType *);
@@ -623,6 +627,8 @@ const char *QtTestObject::sl12()
 { slotResult = "sl12"; return "foo"; }
 QList<QString> QtTestObject::sl13(QList<QString> l1)
 { slotResult = "sl13"; return l1; }
+QVector<QString> QtTestObject::sl13v(QVector<QString> v1)
+{ slotResult = "sl13v"; return v1; }
 qint64 QtTestObject::sl14()
 { slotResult = "sl14"; return Q_INT64_C(123456789)*123456789; }
 qlonglong *QtTestObject::sl15(qlonglong *ptr)
@@ -792,11 +798,50 @@ void tst_QMetaObject::invokeMetaMember()
     QCOMPARE(returnValue, argument);
     QCOMPARE(obj.slotResult, QString("sl13"));
     // same, testing the QList/QVector aliasing:
+    returnValue.clear();
     QVERIFY(QMetaObject::invokeMethod(&obj, "sl13",
                                       Q_RETURN_ARG(QVector<QString>, returnValue),
                                       Q_ARG(QVector<QString>, argument)));
     QCOMPARE(returnValue, argument);
     QCOMPARE(obj.slotResult, QString("sl13"));
+    returnValue.clear();
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sl13",
+                                      Q_RETURN_ARG(QList<QString>, returnValue),
+                                      Q_ARG(QVector<QString>, argument)));
+    QCOMPARE(returnValue, argument);
+    QCOMPARE(obj.slotResult, "sl13"_L1);
+    returnValue.clear();
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sl13",
+                                      Q_RETURN_ARG(QVector<QString>, returnValue),
+                                      Q_ARG(QList<QString>, argument)));
+    QCOMPARE(returnValue, argument);
+    QCOMPARE(obj.slotResult, "sl13"_L1);
+    returnValue.clear();
+
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sl13v",
+                                      Q_RETURN_ARG(QList<QString>, returnValue),
+                                      Q_ARG(QList<QString>, argument)));
+    QCOMPARE(returnValue, argument);
+    QCOMPARE(obj.slotResult, "sl13v"_L1);
+    returnValue.clear();
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sl13v",
+                                      Q_RETURN_ARG(QVector<QString>, returnValue),
+                                      Q_ARG(QVector<QString>, argument)));
+    QCOMPARE(returnValue, argument);
+    QCOMPARE(obj.slotResult, "sl13v"_L1);
+    returnValue.clear();
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sl13v",
+                                      Q_RETURN_ARG(QList<QString>, returnValue),
+                                      Q_ARG(QVector<QString>, argument)));
+    QCOMPARE(returnValue, argument);
+    QCOMPARE(obj.slotResult, "sl13v"_L1);
+    returnValue.clear();
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sl13v",
+                                      Q_RETURN_ARG(QVector<QString>, returnValue),
+                                      Q_ARG(QList<QString>, argument)));
+    QCOMPARE(returnValue, argument);
+    QCOMPARE(obj.slotResult, "sl13v"_L1);
+    returnValue.clear();
 
     // return qint64
     qint64 return64;
@@ -965,6 +1010,12 @@ void tst_QMetaObject::invokeMetaMemberNoMacros()
                                       argument));
     QCOMPARE(returnValue, argument);
     QCOMPARE(obj.slotResult, QString("sl13"));
+    returnValue.clear();
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sl13v",
+                                      qReturnArg(returnValue),
+                                      argument));
+    QCOMPARE(returnValue, argument);
+    QCOMPARE(obj.slotResult, "sl13v"_L1);
 
     // return qint64
     qint64 return64;
@@ -1584,12 +1635,25 @@ void tst_QMetaObject::invokeBlockingQueuedMetaMember()
                                       Q_ARG(QList<QString>, argument)));
     QCOMPARE(returnValue, argument);
     QCOMPARE(obj.slotResult, QString("sl13"));
+    returnValue.clear();
     // same, testing QVector/QList aliasing:
     QVERIFY(QMetaObject::invokeMethod(&obj, "sl13", Qt::BlockingQueuedConnection,
                                       Q_RETURN_ARG(QVector<QString>, returnValue),
                                       Q_ARG(QVector<QString>, argument)));
     QCOMPARE(returnValue, argument);
     QCOMPARE(obj.slotResult, QString("sl13"));
+    returnValue.clear();
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sl13v", Qt::BlockingQueuedConnection,
+                                      Q_RETURN_ARG(QList<QString>, returnValue),
+                                      Q_ARG(QList<QString>, argument)));
+    QCOMPARE(returnValue, argument);
+    QCOMPARE(obj.slotResult, "sl13v"_L1);
+    returnValue.clear();
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sl13v", Qt::BlockingQueuedConnection,
+                                      Q_RETURN_ARG(QVector<QString>, returnValue),
+                                      Q_ARG(QVector<QString>, argument)));
+    QCOMPARE(returnValue, argument);
+    QCOMPARE(obj.slotResult, "sl13v"_L1);
 
     // return qint64
     qint64 return64;
@@ -1763,6 +1827,12 @@ void tst_QMetaObject::invokeBlockingQueuedMetaMemberNoMacros()
                                       argument));
     QCOMPARE(returnValue, argument);
     QCOMPARE(obj.slotResult, QString("sl13"));
+    returnValue.clear();
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sl13v", Qt::BlockingQueuedConnection,
+                                      qReturnArg(returnValue),
+                                      argument));
+    QCOMPARE(returnValue, argument);
+    QCOMPARE(obj.slotResult, "sl13v"_L1);
 
     // return qint64
     qint64 return64;
@@ -2636,6 +2706,13 @@ void tst_QMetaObject::metaMethod()
     QVERIFY(method.invoke(&obj, Q_ARG(QString, "1"), Q_ARG(QString, "2"), Q_ARG(QString, "3"), Q_ARG(QString, "4"), Q_ARG(QString, "5")));
     QCOMPARE(obj.slotResult, QString("sl5:12345"));
 
+    // check Qt 6 QVector/QList alias:
+    index = QtTestObject::staticMetaObject.indexOfMethod("sl13v(QVector<QString>)");
+    QVERIFY(index > 0);
+    index = QtTestObject::staticMetaObject.indexOfMethod("sl13v(QList<QString>)");
+    QVERIFY(index > 0);
+    index = QtTestObject::staticMetaObject.indexOfMethod("sl13(QVector<QString>)");
+    QVERIFY(index > 0);
     index = QtTestObject::staticMetaObject.indexOfMethod("sl13(QList<QString>)");
     QVERIFY(index > 0);
     QMetaMethod sl13 = QtTestObject::staticMetaObject.method(index);
@@ -2649,6 +2726,19 @@ void tst_QMetaObject::metaMethod()
     QVERIFY(sl13.invoke(&obj, Q_RETURN_ARG(QList<QString>, returnValue), Q_ARG(QVector<QString>, argument)));
     QCOMPARE(returnValue, argument);
     QCOMPARE(obj.slotResult, QString("sl13"));
+
+    index = QtTestObject::staticMetaObject.indexOfConstructor("QtTestObject(QObject*,QList<int>)");
+    QVERIFY(index > 0);
+    index = QtTestObject::staticMetaObject.indexOfConstructor("QtTestObject(QObject*,QVector<int>)");
+    QVERIFY(index > 0);
+    QCOMPARE(QtTestObject::staticMetaObject.constructor(index).methodSignature(),
+             "QtTestObject(QObject*,QList<int>)"_L1);
+    index = QtTestObject::staticMetaObject.indexOfConstructor("QtTestObject(QList<int>,QObject*)");
+    QVERIFY(index > 0);
+    index = QtTestObject::staticMetaObject.indexOfConstructor("QtTestObject(QVector<int>,QObject*)");
+    QVERIFY(index > 0);
+    QCOMPARE(QtTestObject::staticMetaObject.constructor(index).methodSignature(),
+             "QtTestObject(QList<int>,QObject*)"_L1);
 }
 
 // this is a copy-paste-adapt of the above
@@ -2689,6 +2779,9 @@ void tst_QMetaObject::metaMethodNoMacro()
     QVERIFY(method.invoke(&obj, QStringLiteral("1"), QStringLiteral("2"), QStringLiteral("3"), QStringLiteral("4"), QStringLiteral("5")));
     QCOMPARE(obj.slotResult, QString("sl5:12345"));
 
+    // check Qt 6 QVector/QList alias:
+    index = QtTestObject::staticMetaObject.indexOfMethod("sl13(QVector<QString>)");
+    QVERIFY(index > 0);
     index = QtTestObject::staticMetaObject.indexOfMethod("sl13(QList<QString>)");
     QVERIFY(index > 0);
     QMetaMethod sl13 = QtTestObject::staticMetaObject.method(index);
