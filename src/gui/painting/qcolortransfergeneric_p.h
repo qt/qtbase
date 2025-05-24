@@ -65,6 +65,7 @@ private:
     // HLG from linear [0-12] -> [0-1]
     static float hlgFromLinear(float x)
     {
+        x = std::clamp(x, 0.f, 12.f);
         if (x > 1.f)
             return m_hlg_a * std::log(x - m_hlg_b) + m_hlg_c;
         return std::sqrt(x * 0.25f);
@@ -73,6 +74,7 @@ private:
     // HLG to linear [0-1] -> [0-12]
     static float hlgToLinear(float x)
     {
+        x = std::clamp(x, 0.f, 1.f);
         if (x < 0.5f)
             return (x * x) * 4.f;
         return std::exp((x - m_hlg_c) / m_hlg_a) + m_hlg_b;
@@ -86,6 +88,7 @@ private:
     // PQ to linear [0-1] -> [0-64]
     static float pqToLinear(float e)
     {
+        e = std::clamp(e, 0.f, 1.f);
         // m2-th root of E'
         const float eRoot = std::pow(e, 1.f / m_pq_m2);
         // rational transform
@@ -99,6 +102,7 @@ private:
     // PQ from linear [0-64] -> [0-1]
     static float pqFromLinear(float fd)
     {
+        fd = std::clamp(fd, 0.f, 64.f);
         // scale Fd to Y
         const float y = fd * (1.f / m_pq_f);
         // yRoot = Y^m1 -- "root" because m1 is <1
