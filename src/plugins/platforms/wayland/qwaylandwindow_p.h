@@ -234,6 +234,7 @@ public:
     void timerEvent(QTimerEvent *event) override;
     void requestUpdate() override;
     void handleUpdate();
+    void requestForcedUpdate();
     void deliverUpdateRequest() override;
 
     void setXdgActivationToken(const QString &token);
@@ -321,6 +322,7 @@ protected:
     std::atomic_bool mFrameCallbackTimedOut = false; // Whether the frame callback has timed out
     int mFrameCallbackCheckIntervalTimerId = -1;
     QAtomicInt mWaitingForUpdateDelivery = false;
+    bool mPendingForcedUpdate = false; // The window should force a redraw at the next fame callback
 
     QElapsedTimer mFrameCallbackElapsedTimer; // Protected by mFrameSyncMutex
     struct ::wl_callback *mFrameCallback = nullptr; // Protected by mFrameSyncMutex

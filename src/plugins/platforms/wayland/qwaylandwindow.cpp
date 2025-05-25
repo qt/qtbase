@@ -481,10 +481,8 @@ void QWaylandWindow::setGeometry_helper(const QRect &rect)
         mSubSurfaceWindow->set_position(rect.x() + m.left(), rect.y() + m.top());
 
         QWaylandWindow *parentWindow = mSubSurfaceWindow->parent();
-        if (parentWindow && parentWindow->isExposed()) {
-            QRect parentExposeGeometry(QPoint(), parentWindow->geometry().size());
-            parentWindow->sendExposeEvent(parentExposeGeometry);
-        }
+        if (parentWindow)
+            parentWindow->requestForcedUpdate();
     }
 }
 
@@ -1193,7 +1191,7 @@ bool QWaylandWindow::createDecoration()
         // size and are not redrawn, leaving the new buffer empty. As a simple
         // work-around, we trigger a full extra update whenever the client-side
         // window decorations are toggled while the window is showing.
-        window()->requestUpdate();
+        requestForcedUpdate();
     }
 
     return mWindowDecoration.get();
@@ -1821,10 +1819,23 @@ void QWaylandWindow::handleUpdate()
     }
 }
 
+void QWaylandWindow::requestForcedUpdate()
+{
+    mPendingForcedUpdate = true;
+    window()->requestUpdate();
+}
+
 void QWaylandWindow::deliverUpdateRequest()
 {
     qCDebug(lcWaylandBackingstore) << "deliverUpdateRequest";
     QPlatformWindow::deliverUpdateRequest();
+
+    // an update request doesn't always force a commit if the window isn't damaged, so also force it
+    if (mPendingForcedUpdate) {
+        mPendingForcedUpdate = false;
+        QRect exposeGeometry(QPoint(), geometry().size());
+        QWindowSystemInterface::handleExposeEvent<QWindowSystemInterface::SynchronousDelivery>(window(), exposeGeometry);
+    }
 }
 
 void QWaylandWindow::addAttachOffset(const QPoint point)
