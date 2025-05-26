@@ -2816,7 +2816,8 @@ static QByteArray createPropertyInfo()
         out.chop(1);
     out += "\n};\n\n";
 
-    out += "Q_DECL_CONST_FUNCTION static inline const Properties *qGetProp(char32_t ucs4) noexcept\n"
+    out += "Q_DECL_CONST_FUNCTION static Q_ALWAYS_INLINE\n"
+           "const Properties *qGetProp(char32_t ucs4) noexcept\n"
            "{\n"
            "    Q_ASSERT(ucs4 <= QChar::LastValidCodePoint);\n"
            "    if (ucs4 < 0x" + QByteArray::number(BMP_END, 16) + ")\n"
@@ -2832,21 +2833,9 @@ static QByteArray createPropertyInfo()
            + QByteArray::number(SMP_BLOCKSIZE - 1, 16) + ")];\n"
            "}\n"
            "\n"
-           "Q_DECL_CONST_FUNCTION static inline const Properties *qGetProp(char16_t ucs2) noexcept\n"
-           "{\n"
-           "    return uc_properties + uc_property_trie[uc_property_trie[ucs2 >> "
-           + QByteArray::number(BMP_SHIFT) + "] + (ucs2 & 0x"
-           + QByteArray::number(BMP_BLOCKSIZE - 1, 16) + ")];\n"
-           "}\n"
-           "\n"
            "const Properties * QT_FASTCALL properties(char32_t ucs4) noexcept\n"
            "{\n"
            "    return qGetProp(ucs4);\n"
-           "}\n"
-           "\n"
-           "const Properties * QT_FASTCALL properties(char16_t ucs2) noexcept\n"
-           "{\n"
-           "    return qGetProp(ucs2);\n"
            "}\n\n";
 
     out += "Q_CORE_EXPORT GraphemeBreakClass QT_FASTCALL graphemeBreakClass(char32_t ucs4) noexcept\n"
