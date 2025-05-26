@@ -17,6 +17,7 @@ qt_internal_add_test(tst_qstringview
         arrays_of_unknown_bounds.cpp arrays_of_unknown_bounds.h
     LIBRARIES
         Qt::CorePrivate
+        Qt::TestPrivate
 )
 
 if(QT_FEATURE_sanitize_undefined)
