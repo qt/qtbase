@@ -9,6 +9,7 @@
 #include <QChar>
 #include <QVarLengthArray>
 #include <QList>
+#include <private/qcomparisontesthelper_p.h>
 #if QT_CONFIG(cpp_winrt)
 #  include <private/qt_winrtbase_p.h>
 #endif
@@ -423,9 +424,7 @@ void tst_QStringView::basics() const
     QVERIFY(sv1.isEmpty());
 
     QStringView sv2;
-
-    QVERIFY(sv2 == sv1);
-    QVERIFY(!(sv2 != sv1));
+    QT_TEST_ALL_COMPARISON_OPS(sv2, sv1, Qt::strong_ordering::equal);
 }
 
 void tst_QStringView::literals() const
@@ -884,6 +883,9 @@ void tst_QStringView::comparison()
     QVERIFY(aa != bb);
     QVERIFY(aa < bb);
     QVERIFY(bb > aa);
+
+    QT_TEST_ALL_COMPARISON_OPS(aa, aa, Qt::strong_ordering::equal);
+    QT_TEST_ALL_COMPARISON_OPS(aa, bb, Qt::strong_ordering::less);
 
     QCOMPARE(aa.compare(aa), 0);
     QVERIFY(aa.compare(upperAa) != 0);
