@@ -93,8 +93,8 @@ function(_qt_internal_sbom_handle_target_binary_files target)
         return()
     endif()
 
-    get_target_property(excluded ${target} _qt_internal_excluded_from_default_target)
-    if(excluded)
+    get_target_property(excluded_via_property ${target} _qt_internal_excluded_from_default_target)
+    if(excluded_via_property OR QT_INTERNAL_TEST_TARGETS_EXCLUDE_FROM_ALL)
         message(DEBUG "Target ${target} has no binary files to reference in the SBOM "
             "because it was excluded from the default 'all' target.")
         return()
