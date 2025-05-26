@@ -161,6 +161,8 @@ macro(qt_internal_setup_configure_install_paths)
     qt_configure_process_path(INSTALL_LIBDIR "lib" "Libraries [PREFIX/lib]")
     qt_configure_process_path(INSTALL_MKSPECSDIR "mkspecs" "Mkspecs files [PREFIX/mkspecs]")
     qt_configure_process_path(INSTALL_SHAREDIR "share" "Share files [PREFIX/share]")
+    qt_configure_process_path(INSTALL_QT_SHAREDIR "${INSTALL_SHAREDIR}/qt6"
+        "Qt namespaced sharedir [SHAREDIR/qt6]")
     qt_configure_process_path(INSTALL_ARCHDATADIR "." "Arch-dependent data [PREFIX]")
     qt_configure_process_path(INSTALL_PLUGINSDIR
                               "${INSTALL_ARCHDATADIR}/plugins"

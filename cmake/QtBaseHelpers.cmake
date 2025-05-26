@@ -151,10 +151,10 @@ endmacro()
 function(qt_internal_qtbase_install_wayland_files)
     qt_path_join(wlprotocols_build_dir
                  ${QT_BUILD_DIR}
-                 ${INSTALL_SHAREDIR}/qt6/wayland/protocols)
+                 ${INSTALL_QT_SHAREDIR}/wayland/protocols)
     qt_path_join(wlprotocols_install_dir
                  ${QT_INSTALL_DIR}
-                 ${INSTALL_SHAREDIR}/qt6/wayland/protocols)
+                 ${INSTALL_QT_SHAREDIR}/wayland/protocols)
 
     file(GLOB wlprotocols_subdirs
         LIST_DIRECTORIES TRUE
@@ -178,10 +178,10 @@ function(qt_internal_qtbase_install_wayland_files)
 
     qt_path_join(wlextensions_build_dir
                  ${QT_BUILD_DIR}
-                 ${INSTALL_SHAREDIR}/qt6/wayland/extensions)
+                 ${INSTALL_QT_SHAREDIR}/wayland/extensions)
     qt_path_join(wlextensions_install_dir
                  ${QT_INSTALL_DIR}
-                 ${INSTALL_SHAREDIR}/qt6/wayland/extensions)
+                 ${INSTALL_QT_SHAREDIR}/wayland/extensions)
 
     file(GLOB wlextensions_subdirs
         LIST_DIRECTORIES TRUE
