@@ -735,6 +735,13 @@ macro(qt_internal_find_standalone_parts_config_files)
 endmacro()
 
 macro(qt_build_tests)
+    # Set this as a directory scoped variable, so we can easily check the variable in child
+    # directories, to prevent certain code from running, like sbom file checks for all targets
+    # created in tests subdir.
+    if(NOT QT_BUILD_TESTS_BY_DEFAULT)
+        set(QT_INTERNAL_TEST_TARGETS_EXCLUDE_FROM_ALL TRUE)
+    endif()
+
     # Tests are not unity-ready.
     set(CMAKE_UNITY_BUILD OFF)
 
