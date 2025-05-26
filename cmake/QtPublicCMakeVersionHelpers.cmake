@@ -120,8 +120,13 @@ function(__qt_internal_set_cmp0156)
     # Honor this variable if it's set and TRUE. It was previously introduced to allow working around
     # the forced OLD value.
     if(QT_FORCE_CMP0156_TO_NEW)
+        get_cmake_property(debug_message_shown _qt_internal_cmp0156_debug_message_shown)
+        if(NOT debug_message_shown)
+            message(DEBUG "Force setting the CMP0156 policy to user provided value: NEW")
+            set_property(GLOBAL PROPERTY _qt_internal_cmp0156_debug_message_shown TRUE)
+        endif()
+
         cmake_policy(SET CMP0156 "NEW")
-        message(DEBUG "Force setting the CMP0156 policy to user provided value: NEW")
         return()
     endif()
 
@@ -163,8 +168,13 @@ function(__qt_internal_set_cmp0156)
     # Force set the default policy value for the given platform, even if the policy value is
     # the same or empty. That's because in the calling function scope, the value can be empty
     # due to the cmake_minimum_required call in Qt6Config.cmake resetting the policy value.
-    message(DEBUG "Force setting the CMP0156 policy to '${default_policy_value}' "
-        "for ${platform_string} platforms.")
+    get_cmake_property(debug_message_shown _qt_internal_cmp0156_debug_message_shown)
+    if(NOT debug_message_shown)
+        message(DEBUG "Force setting the CMP0156 policy to '${default_policy_value}' "
+            "for ${platform_string} platforms.")
+        set_property(GLOBAL PROPERTY _qt_internal_cmp0156_debug_message_shown TRUE)
+    endif()
+
     cmake_policy(SET CMP0156 "${default_policy_value}")
 
     # If the policy is explicitly set to a value other than the default, issue a warning.
