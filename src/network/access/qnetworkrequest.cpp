@@ -424,7 +424,7 @@ QT_IMPL_METATYPE_EXTERN_TAGGED(QNetworkRequest::RedirectPolicy, QNetworkRequest_
     timeouts with a preset value.
 
     \value DefaultTransferTimeoutConstant     The transfer timeout in milliseconds.
-                                              Used if setTimeout() is called
+                                              Used if setTransferTimeout() is called
                                               without an argument.
 
     \sa QNetworkRequest::DefaultTransferTimeout
