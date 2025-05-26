@@ -127,13 +127,13 @@ void QNetworkReplyWasmImpl::close()
 {
     Q_D(QNetworkReplyWasmImpl);
 
+    emscripten_fetch_close(d->m_fetch);
     if (d->state != QNetworkReplyPrivate::Aborted &&
         d->state != QNetworkReplyPrivate::Finished &&
         d->state != QNetworkReplyPrivate::Idle) {
             d->state = QNetworkReplyPrivate::Finished;
             d->setCanceled();
     }
-    emscripten_fetch_close(d->m_fetch);
     QNetworkReply::close();
 }
 
