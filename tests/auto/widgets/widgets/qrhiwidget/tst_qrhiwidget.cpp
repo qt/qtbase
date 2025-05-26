@@ -64,7 +64,7 @@ void tst_QRhiWidget::testData()
     QTest::newRow("Null") << QRhiWidget::Api::Null;
 #endif
 
-#if QT_CONFIG(opengl)
+#if QT_CONFIG(opengl) && QT_CONFIG(run_opengl_tests)
     if (QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL))
         QTest::newRow("OpenGL") << QRhiWidget::Api::OpenGL;
 #endif

@@ -657,6 +657,9 @@ void tst_QGraphicsView::viewport()
 #if QT_CONFIG(opengl)
 void tst_QGraphicsView::openGLViewport()
 {
+#if !QT_CONFIG(run_opengl_tests)
+    QSKIP("Skip test as run-opengl-tests feature is off.");
+#endif
     if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL))
         QSKIP("QOpenGL is not supported on this platform.");
     if (isPlatformEGLFS())

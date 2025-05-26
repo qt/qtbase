@@ -652,6 +652,8 @@ void tst_QWidgetRepaintManager::evaluateRhi()
     }
 
 #if QT_CONFIG(opengl)
+
+#if QT_CONFIG(run_opengl_tests)
     {
         // Non-native child RHI widget enables RHI for top level regular widget
         QWidget topLevel;
@@ -765,6 +767,7 @@ void tst_QWidgetRepaintManager::evaluateRhi()
         QVERIFY(!QWidgetPrivate::get(&rhiChild)->usesRhiFlush);
         QVERIFY(QWidgetPrivate::get(&rhiChild)->rhi());
     }
+#endif // QT_CONFIG(run_opengl_tests)
 
 #if QT_CONFIG(metal)
     QRhiMetalInitParams metalParams;

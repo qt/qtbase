@@ -1344,6 +1344,11 @@ qt_feature("wayland" PUBLIC
     LABEL "Wayland"
     CONDITION TARGET Wayland::Client
 )
+qt_feature("run-opengl-tests" PRIVATE
+    LABEL "Run opengl tests"
+    PURPOSE "Provides the ability to skip tests which require opengl to run"
+    CONDITION QT_FEATURE_opengl
+)
 
 qt_configure_add_summary_section(NAME "Qt Gui")
 qt_configure_add_summary_entry(ARGS "accessibility")

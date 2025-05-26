@@ -185,6 +185,9 @@ static QSurface *createSurface(int surfaceClass)
 
 void tst_QOpenGL::initTestCase()
 {
+#if !QT_CONFIG(run_opengl_tests)
+    QSKIP("Skip test as run-opengl-tests feature is off.");
+#endif
     if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL))
         QSKIP("OpenGL is not supported on this platform.");
 }
