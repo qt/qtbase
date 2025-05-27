@@ -90,9 +90,13 @@ if((X11_SUPPORTED) OR QT_FIND_ALL_PACKAGES_ALWAYS)
 endif()
 qt_add_qmake_lib_dependency(xcb_icccm xcb)
 if((X11_SUPPORTED) OR QT_FIND_ALL_PACKAGES_ALWAYS)
+    qt_find_package(XCB 0.3.8 COMPONENTS UTIL PROVIDED_TARGETS XCB::UTIL MODULE_NAME gui QMAKE_LIB xcb_util)
+endif()
+qt_add_qmake_lib_dependency(xcb_util xcb)
+if((X11_SUPPORTED) OR QT_FIND_ALL_PACKAGES_ALWAYS)
     qt_find_package(XCB 0.3.9 COMPONENTS IMAGE PROVIDED_TARGETS XCB::IMAGE MODULE_NAME gui QMAKE_LIB xcb_image)
 endif()
-qt_add_qmake_lib_dependency(xcb_image xcb_shm xcb)
+qt_add_qmake_lib_dependency(xcb_image xcb_shm xcb_util xcb)
 if((X11_SUPPORTED) OR QT_FIND_ALL_PACKAGES_ALWAYS)
     qt_find_package(XCB 0.3.9 COMPONENTS KEYSYMS PROVIDED_TARGETS XCB::KEYSYMS MODULE_NAME gui QMAKE_LIB xcb_keysyms)
 endif()
@@ -525,6 +529,7 @@ qt_config_compile_test(xcb_syslibs
     LIBRARIES
         XCB::CURSOR
         XCB::ICCCM
+        XCB::UTIL
         XCB::IMAGE
         XCB::KEYSYMS
         XCB::RANDR
@@ -540,6 +545,7 @@ qt_config_compile_test(xcb_syslibs
 "// xkb.h is using a variable called 'explicit', which is a reserved keyword in C++
 #define explicit dont_use_cxx_explicit
 #include <xcb/xcb.h>
+#include <xcb/xcb_util.h>
 #include <xcb/xcb_image.h>
 #include <xcb/xcb_keysyms.h>
 #include <xcb/xcb_cursor.h>
