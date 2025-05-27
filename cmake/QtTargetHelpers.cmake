@@ -195,9 +195,11 @@ function(qt_internal_extend_target target)
                             ${private_visibility_option} ${arg_LINK_OPTIONS})
 
         if(NOT is_interface_lib)
+            _qt_internal_get_moc_compiler_flavor_flags(flavor_flags)
             set_property(TARGET "${target}" APPEND PROPERTY
-                AUTOMOC_MOC_OPTIONS "${arg_MOC_OPTIONS}"
+                AUTOMOC_MOC_OPTIONS "${arg_MOC_OPTIONS}" ${flavor_flags}
             )
+
             # Plugin types associated to a module
             if(NOT "x${arg_PLUGIN_TYPES}" STREQUAL "x")
                 qt_internal_add_plugin_types("${target}" "${arg_PLUGIN_TYPES}")

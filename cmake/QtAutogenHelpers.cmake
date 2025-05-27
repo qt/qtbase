@@ -166,6 +166,9 @@ function(qt_manual_moc result)
             set(metatypes_byproducts "${outfile}.json")
         endif()
 
+        _qt_internal_get_moc_compiler_flavor_flags(flavor_flags)
+        list(APPEND moc_parameters ${flavor_flags})
+
         if (TARGET Qt::Platform)
            get_target_property(_abi_tag Qt::Platform qt_libcpp_abi_tag)
            if (_abi_tag)

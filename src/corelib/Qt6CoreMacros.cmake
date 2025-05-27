@@ -67,12 +67,8 @@ macro(_qt_internal_get_moc_flags _moc_flags)
         set(${_moc_flags} ${${_moc_flags}} "-D${_current}")
     endforeach()
 
-    if(WIN32)
-        set(${_moc_flags} ${${_moc_flags}} -DWIN32)
-    endif()
-    if (MSVC)
-        set(${_moc_flags} ${${_moc_flags}} --compiler-flavor=msvc)
-    endif()
+    _qt_internal_get_moc_compiler_flavor_flags(flavor_flags)
+    set(${_moc_flags} ${${_moc_flags}} ${flavor_flags})
 endmacro()
 
 # helper macro to set up a moc rule
@@ -95,6 +91,9 @@ function(_qt_internal_create_moc_command infile outfile moc_flags moc_options
         set(extra_output_files "${outfile}.json")
         set(${out_json_file} "${extra_output_files}" PARENT_SCOPE)
     endif()
+
+    _qt_internal_get_moc_compiler_flavor_flags(flavor_flags)
+    list(APPEND _moc_parameters ${flavor_flags})
 
     if(moc_target)
         set(_moc_parameters_file ${_moc_parameters_file}$<$<BOOL:$<CONFIG>>:_$<CONFIG>>)
@@ -832,12 +831,16 @@ function(qt6_finalize_target target)
         endif()
     endif()
 
+    get_target_property(is_immediately_finalized "${target}" _qt_is_immediately_finalized)
+    get_target_property(uses_automoc ${target} AUTOMOC)
+    if(uses_automoc)
+        _qt_internal_get_moc_compiler_flavor_flags(flavor_flags)
+        set_property(TARGET "${target}" APPEND PROPERTY AUTOMOC_MOC_OPTIONS ${flavor_flags})
+    endif()
     if(target_type STREQUAL "SHARED_LIBRARY" OR
         target_type STREQUAL "STATIC_LIBRARY" OR
         target_type STREQUAL "MODULE_LIBRARY" OR
         target_type STREQUAL "OBJECT_LIBRARY")
-        get_target_property(is_immediately_finalized "${target}" _qt_is_immediately_finalized)
-        get_target_property(uses_automoc ${target} AUTOMOC)
         if(uses_automoc AND NOT is_immediately_finalized)
             qt6_extract_metatypes(${target})
         endif()
