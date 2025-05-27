@@ -18,7 +18,7 @@
 int qMain(int, char **);
 #define main qMain
 #else
-extern "C" int main(int, char **);
+int main(int, char **);
 #endif
 
 /*
