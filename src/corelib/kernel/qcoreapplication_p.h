@@ -30,9 +30,11 @@
 #include "private/qcore_mac_p.h"
 #endif
 
-QT_BEGIN_NAMESPACE
+#ifndef QT_NO_TRANSLATION
+#include <mutex>
+#endif
 
-typedef QList<QTranslator*> QTranslatorList;
+QT_BEGIN_NAMESPACE
 
 class QAbstractEventDispatcher;
 
@@ -147,9 +149,9 @@ public:
     static bool is_app_closing;
 #endif
 #ifndef QT_NO_TRANSLATION
-    QTranslatorList translators;
-    QReadWriteLock translateMutex;
-    static bool isTranslatorInstalled(QTranslator *translator);
+    QList<QTranslator*> translators;
+    QMutex translateMutex;
+    static std::unique_lock<QMutex> mutexLockerForTranslator(QTranslator *translator);
 #endif
 
     static bool setuidAllowed;

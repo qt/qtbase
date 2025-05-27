@@ -463,6 +463,12 @@ bool QTranslator::load(const QString & filename, const QString & directory,
                        const QString & suffix)
 {
     Q_D(QTranslator);
+
+    std::unique_lock locker = QCoreApplicationPrivate::mutexLockerForTranslator(this);
+    if (locker.owns_lock())
+        QCoreApplication::postEvent(QCoreApplication::instance(),
+                                    new QEvent(QEvent::LanguageChange));
+
     d->clear();
 
     QString prefix;
@@ -738,6 +744,12 @@ bool QTranslator::load(const QLocale & locale,
                        const QString & suffix)
 {
     Q_D(QTranslator);
+
+    std::unique_lock locker = QCoreApplicationPrivate::mutexLockerForTranslator(this);
+    if (locker.owns_lock())
+        QCoreApplication::postEvent(QCoreApplication::instance(),
+                                    new QEvent(QEvent::LanguageChange));
+
     d->clear();
     return d->load_translation(locale, filename, prefix, directory, suffix);
 }
@@ -757,6 +769,12 @@ bool QTranslator::load(const QLocale & locale,
 bool QTranslator::load(const uchar *data, int len, const QString &directory)
 {
     Q_D(QTranslator);
+
+    std::unique_lock locker = QCoreApplicationPrivate::mutexLockerForTranslator(this);
+    if (locker.owns_lock())
+        QCoreApplication::postEvent(QCoreApplication::instance(),
+                                    new QEvent(QEvent::LanguageChange));
+
     d->clear();
 
     if (!data || len < MagicLength || memcmp(data, magic, MagicLength))
@@ -1030,7 +1048,6 @@ searchDependencies:
 
 void QTranslatorPrivate::clear()
 {
-    Q_Q(QTranslator);
     if (unmapPointer && unmapLength) {
 #if defined(QT_USE_MMAP)
         if (used_mmap) {
@@ -1058,10 +1075,6 @@ void QTranslatorPrivate::clear()
 
     language.clear();
     filePath.clear();
-
-    if (QCoreApplicationPrivate::isTranslatorInstalled(q))
-        QCoreApplication::postEvent(QCoreApplication::instance(),
-                                    new QEvent(QEvent::LanguageChange));
 }
 
 /*!
