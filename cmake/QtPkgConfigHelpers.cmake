@@ -125,9 +125,6 @@ function(qt_internal_generate_pkg_config_file module)
     qt_path_join(pc_step1_path "${build_dir}" ${step_prefix}_step1.pc)
     qt_path_join(pc_step2_path "${build_dir}" ${step_prefix}_$<CONFIG>_step2.pc)
 
-    file(RELATIVE_PATH relative_install_prefix "/${path_suffix}" "/foo")
-    get_filename_component(relative_install_prefix "${relative_install_prefix}" DIRECTORY)
-
     configure_file("${template_pc}" "${pc_step1_path}" @ONLY)
 
     file(GENERATE OUTPUT "${pc_step2_path}" INPUT "${pc_step1_path}")
