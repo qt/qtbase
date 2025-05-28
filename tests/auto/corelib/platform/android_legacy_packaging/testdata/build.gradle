@@ -70,8 +70,8 @@ android {
         abortOnError = false
     }
 
-    // Do not compress Qt binary resources file
     aaptOptions {
+        // Do not compress Qt binary resources file
         noCompress 'rcc'
     }
 
