@@ -99,7 +99,7 @@ void QGtk3PortalInterface::queryColorScheme() {
     QDBusConnection::sessionBus().connect(
             "org.freedesktop.portal.Desktop"_L1, "/org/freedesktop/portal/desktop"_L1,
             "org.freedesktop.portal.Settings"_L1, "SettingChanged"_L1, this,
-            SLOT(settingChanged(QString, QString, QDBusVariant)));
+            SLOT(settingChanged(QString,QString,QDBusVariant)));
 }
 
 void QGtk3PortalInterface::settingChanged(const QString &group, const QString &key,
