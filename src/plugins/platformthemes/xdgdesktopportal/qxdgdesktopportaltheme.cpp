@@ -137,7 +137,7 @@ QXdgDesktopPortalTheme::QXdgDesktopPortalTheme()
     QDBusConnection::sessionBus().connect(
             "org.freedesktop.portal.Desktop"_L1, "/org/freedesktop/portal/desktop"_L1,
             "org.freedesktop.portal.Settings"_L1, "SettingChanged"_L1, d_ptr.get(),
-            SLOT(settingChanged(QString, QString, QDBusVariant)));
+            SLOT(settingChanged(QString,QString,QDBusVariant)));
 }
 
 QPlatformMenuItem* QXdgDesktopPortalTheme::createPlatformMenuItem() const
