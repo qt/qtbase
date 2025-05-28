@@ -1,4 +1,4 @@
-prefix=${pcfiledir}/@relative_install_prefix@
+prefix=@CMAKE_INSTALL_PREFIX@
 exec_prefix=${prefix}
 bindir=${prefix}/@INSTALL_BINDIR@
 libexecdir=${prefix}/@INSTALL_LIBEXECDIR@
