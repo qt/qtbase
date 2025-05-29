@@ -838,7 +838,7 @@ findUtcOffsetPrefix(QStringView text, const QLocale &locale)
     QStringIterator iter(offset);
     qsizetype hourEnd = 0, hmMid = 0, minEnd = 0;
     int digits = 0;
-    char32_t ch;
+    char32_t ch = 0;
     while (iter.hasNext()) {
         ch = iter.next();
         if (!QChar::isDigit(ch))
