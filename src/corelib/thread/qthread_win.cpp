@@ -311,7 +311,7 @@ void QThread::msleep(unsigned long msecs)
 
 void QThread::usleep(unsigned long usecs)
 {
-    ::Sleep((usecs / 1000) + 1);
+    ::Sleep((usecs + 999) / 1000);
 }
 
 #if QT_CONFIG(thread)
