@@ -7,8 +7,8 @@
 # sqlite.c and sqlite.h and updates qt_attribution.json
 
 version_maj=3
-version_min=49
-version_patch=2
+version_min=50
+version_patch=0
 year=2025
 
 version=${version_maj}.${version_min}.${version_patch}
@@ -40,3 +40,6 @@ sed -i qt_attribution.json -e "s#\"DownloadLocation\": \".*\"#\"DownloadLocation
 #cleanup
 rm -rf ${fn}
 rm -rf ${fn}.zip
+
+#stage
+git add qt_attribution.json sqlite3.c sqlite3.h update_sqlite.sh
