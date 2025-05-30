@@ -231,7 +231,7 @@ void QCoreTextFontEngine::init()
 
     avgCharWidth = 0;
     QByteArray os2Table = getSfntTable(MAKE_TAG('O', 'S', '/', '2'));
-    unsigned emSize = CTFontGetUnitsPerEm(ctfont);
+    unsigned emSize = emSquareSize().toInt();
     if (os2Table.size() >= 10) {
         fsType = qFromBigEndian<quint16>(os2Table.constData() + 8);
         // qAbs is a workaround for weird fonts like Lucida Grande
@@ -885,7 +885,7 @@ void QCoreTextFontEngine::getUnscaledGlyph(glyph_t glyph, QPainterPath *path, gl
 {
     CGAffineTransform cgMatrix = CGAffineTransformIdentity;
 
-    qreal emSquare = CTFontGetUnitsPerEm(ctfont);
+    qreal emSquare = emSquareSize().toReal();
     qreal scale = emSquare / CTFontGetSize(ctfont);
     cgMatrix = CGAffineTransformScale(cgMatrix, scale, -scale);
 
@@ -905,7 +905,17 @@ void QCoreTextFontEngine::getUnscaledGlyph(glyph_t glyph, QPainterPath *path, gl
 
 QFixed QCoreTextFontEngine::emSquareSize() const
 {
-    return QFixed(int(CTFontGetUnitsPerEm(ctfont)));
+    int unitsPerEm = int(CTFontGetUnitsPerEm(ctfont));
+
+    // Something is wrong with this font. Set the em square size to the minimum value in
+    // the spec.
+    if (unitsPerEm == 0) {
+        qCWarning(lcQpaFonts) << "Font" << fontDef.families << "reports an em square size of 0."
+                              << "Clamping to minimum value.";
+        unitsPerEm = 16;
+    }
+
+    return QFixed(unitsPerEm);
 }
 
 QFontEngine *QCoreTextFontEngine::cloneWithSize(qreal pixelSize) const
@@ -953,7 +963,7 @@ QFontEngine::Properties QCoreTextFontEngine::properties() const
     result.postscriptName = QString::fromCFString(psName).toUtf8();
     result.copyright = QString::fromCFString(copyright).toUtf8();
 
-    qreal emSquare = CTFontGetUnitsPerEm(ctfont);
+    qreal emSquare = emSquareSize().toReal();
     qreal scale = emSquare / CTFontGetSize(ctfont);
 
     CGRect cgRect = CTFontGetBoundingBox(ctfont);
@@ -977,7 +987,7 @@ void QCoreTextFontEngine::doKerning(QGlyphLayout *g, ShaperFlags flags) const
 {
     if (!kerningPairsLoaded) {
         kerningPairsLoaded = true;
-        qreal emSquare = CTFontGetUnitsPerEm(ctfont);
+        qreal emSquare = emSquareSize().toReal();
         qreal scale = emSquare / CTFontGetSize(ctfont);
 
         const_cast<QCoreTextFontEngine *>(this)->loadKerningPairs(QFixed::fromReal(scale));
