@@ -67,7 +67,10 @@ public:
     QColor outline(const QPalette &pal) const {
         if (pal.window().style() == Qt::TexturePattern)
             return QColor(0, 0, 0, 160);
-        return pal.window().color().darker(140);
+        if (colorScheme() == Qt::ColorScheme::Dark)
+            return pal.window().color().lighter(140);
+        else
+            return pal.window().color().darker(140);
     }
 
     QColor highlightedOutline(const QPalette &pal) const {
@@ -97,6 +100,12 @@ public:
         menuRightBorder      = 15, // right border on menus
         menuCheckMarkWidth   = 12  // checkmarks width on menus
     };
+
+private:
+    Qt::ColorScheme colorScheme() const
+    {
+        return QGuiApplicationPrivate::platformTheme()->colorScheme();
+    }
 };
 
 QT_END_NAMESPACE

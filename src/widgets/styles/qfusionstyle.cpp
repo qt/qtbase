@@ -591,7 +591,8 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
             if (option->state & State_HasFocus && option->state & State_KeyboardFocusChange)
                 painter->setPen(highlightedOutline);
             else
-                painter->setPen(outline.lighter(110));
+                painter->setPen(colorScheme() == Qt::ColorScheme::Dark ? outline.lighter(150)
+                                                                       : outline.lighter(110));
             painter->drawRect(rect);
 
             QColor checkMarkColor = option->palette.text().color().darker(120);
@@ -3551,6 +3552,11 @@ QPixmap QFusionStyle::standardPixmap(StandardPixmap standardPixmap, const QStyle
     if (!icon.availableSizes().isEmpty())
         return icon.pixmap(QSize(16, 16), QStyleHelper::getDpr(widget));
     return QCommonStyle::standardPixmap(standardPixmap, opt, widget);
+}
+
+Qt::ColorScheme QFusionStyle::colorScheme() const
+{
+    return QGuiApplicationPrivate::platformTheme()->colorScheme();
 }
 
 QT_END_NAMESPACE

@@ -73,6 +73,8 @@ public:
 protected:
     QFusionStyle(QFusionStylePrivate &dd);
 
+private:
+    Qt::ColorScheme colorScheme() const;
 };
 
 #endif // style_fusion
