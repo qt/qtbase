@@ -1376,33 +1376,27 @@ bool QMetaObject::checkConnectArgs(const QMetaMethod &signal,
             QMetaMethodPrivate::get(&method));
 }
 
-static void qRemoveWhitespace(QByteArrayView str, char *d)
+static const char *trimSpacesFromLeft(QByteArrayView in)
 {
-    char last = 0;
-    const char *s = str.begin();
-    const char *end = str.end();
-    while (s != end && is_space(*s))
-        s++;
-    while (s != end) {
-        while (s != end && !is_space(*s))
-            last = *d++ = *s++;
-        while (s != end && is_space(*s))
-            s++;
-        if (s != end && ((is_ident_char(*s) && is_ident_char(last))
-                   || ((*s == ':') && (last == '<')))) {
-            last = *d++ = ' ';
-        }
-    }
-    *d = '\0';
+    return std::find_if_not(in.begin(), in.end(), is_space);
 }
 
-static char *qNormalizeType(char *d, int &templdepth, QByteArray &result)
+static QByteArrayView trimSpacesFromRight(QByteArrayView in)
 {
+    auto rit = std::find_if_not(in.rbegin(), in.rend(), is_space);
+    in = in.first(rit.base() - in.begin());
+    return in;
+}
+
+static const char *qNormalizeType(QByteArrayView in, int &templdepth, QByteArray &result)
+{
+    const char *d = in.begin();
     const char *t = d;
+    const char *end = in.end();
 
     // e.g. "QMap<a, QList<int const>>, QList<b>)"
     // `t` is at the beginning; `d` is advanced to the `,` after the closing >>
-    while (*d && (templdepth
+    while (d != end && (templdepth
                    || (*d != ',' && *d != ')'))) {
         if (*d == '<')
             ++templdepth;
@@ -1412,8 +1406,15 @@ static char *qNormalizeType(char *d, int &templdepth, QByteArray &result)
     }
     // "void" should only be removed if this is part of a signature that has
     // an explicit void argument; e.g., "void foo(void)" --> "void foo()"
-    if (strncmp("void)", t, d - t + 1) != 0)
-        result += normalizeTypeInternal(t, d);
+    auto type = QByteArrayView{t, d - t};
+    type = trimSpacesFromRight(type);
+    if (type == "void") {
+        const char *next = trimSpacesFromLeft(QByteArrayView{d, end});
+        if (next != end && *next == ')')
+            return next;
+    }
+
+    result += normalizeTypeInternal(t, d);
 
     return d;
 }
@@ -1439,6 +1440,8 @@ QByteArray QMetaObject::normalizedType(const char *type)
 }
 
 /*!
+    \fn QByteArray QMetaObject::normalizedSignature(const char *method)
+
     Normalizes the signature of the given \a method.
 
     Qt uses normalized signatures to decide whether two given signals
@@ -1449,24 +1452,39 @@ QByteArray QMetaObject::normalizedType(const char *type)
 
     \sa checkConnectArgs(), normalizedType()
  */
-QByteArray QMetaObject::normalizedSignature(const char *method)
+QByteArray QMetaObject::normalizedSignature(const char *_method)
 {
-    QByteArray result;
-    if (!method || !*method)
-        return result;
-    int len = int(strlen(method));
-    QVarLengthArray<char> stackbuf(len + 1);
-    char *d = stackbuf.data();
-    qRemoveWhitespace(QByteArrayView{method, len}, d);
+    QByteArrayView method = trimSpacesFromRight(_method);
+    if (method.isEmpty())
+        return {};
 
-    result.reserve(len);
+    const char *d = method.begin();
+    const char *end = method.end();
+    d = trimSpacesFromLeft({d, end});
+
+    QByteArray result;
+    result.reserve(method.size());
 
     int argdepth = 0;
     int templdepth = 0;
-    while (*d) {
+    while (d != end) {
+        if (is_space(*d)) {
+            Q_ASSERT(!result.isEmpty());
+            ++d;
+            d = trimSpacesFromLeft({d, end});
+            // keep spaces only between two identifiers: int bar ( int )
+            //                                                  x x   x
+            if (d != end && is_ident_char(*d) && is_ident_char(result.back())) {
+                result += ' ';
+                result += *d++;
+                continue;
+            }
+            if (d == end)
+                break;
+        }
         if (argdepth == 1) {
-            d = qNormalizeType(d, templdepth, result);
-            if (!*d) //most likely an invalid signature.
+            d = qNormalizeType(QByteArrayView{d, end}, templdepth, result);
+            if (d == end) //most likely an invalid signature.
                 break;
         }
         if (*d == '(')

@@ -2314,7 +2314,7 @@ void tst_QMetaObject::normalizedSignature_data()
     QTest::newRow("empty") << "" << "";
     QTest::newRow("null") << QString{} << QString{};
     QTest::newRow("function") << "void foo()" << "void foo()";
-    QTest::newRow("spaces") << " void  foo( ) " << "void foo()";
+    QTest::newRow("spaces") << "   void  foo( )   " << "void foo()";
     QTest::newRow("void") << "void foo(void)" << "void foo()";
     QTest::newRow("void spaces") << "void foo( void )" << "void foo()";
     QTest::newRow("void*") << "void foo(void*)" << "void foo(void*)";
