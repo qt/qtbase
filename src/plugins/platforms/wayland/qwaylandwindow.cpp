@@ -726,8 +726,11 @@ void QWaylandWindow::applyConfigure()
         mShellSurface->applyConfigure();
 
     mWaitingToApplyConfigure = false;
-    QRect exposeGeometry(QPoint(), geometry().size());
-    sendExposeEvent(exposeGeometry);
+    if (mExposed)
+        sendExposeEvent(QRect(QPoint(), geometry().size()));
+    else
+        // we still need to commit the configured ack for a hidden surface
+        commit();
 }
 
 void QWaylandWindow::attach(QWaylandBuffer *buffer, int x, int y)

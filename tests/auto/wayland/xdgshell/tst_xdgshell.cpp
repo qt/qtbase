@@ -845,15 +845,18 @@ void tst_xdgshell::suspended()
     QVERIFY(!window.isExposed()); // not exposed until we're configured
     QCOMPOSITOR_TRY_VERIFY(xdgToplevel());
 
-    exec([&] { xdgToplevel()->sendCompleteConfigure(); });
-    QCOMPOSITOR_TRY_VERIFY(xdgToplevel()->m_xdgSurface->m_committedConfigureSerial);
+    uint serial = 0;
+    exec([&] { serial = xdgToplevel()->sendCompleteConfigure(); });
     QTRY_VERIFY(window.isExposed());
+    QCOMPOSITOR_TRY_COMPARE(xdgToplevel()->m_xdgSurface->m_committedConfigureSerial, serial);
 
-    exec([&] { xdgToplevel()->sendCompleteConfigure(QSize(), {XdgToplevel::state_suspended}); });
+    exec([&] { serial = xdgToplevel()->sendCompleteConfigure(QSize(), {XdgToplevel::state_suspended}); });
     QTRY_VERIFY(!window.isExposed());
+    QCOMPOSITOR_TRY_COMPARE(xdgToplevel()->m_xdgSurface->m_committedConfigureSerial, serial);
 
-    exec([&] { xdgToplevel()->sendCompleteConfigure(QSize(), {}); });
+    exec([&] { serial = xdgToplevel()->sendCompleteConfigure(QSize(), {}); });
     QTRY_VERIFY(window.isExposed());
+    QCOMPOSITOR_TRY_COMPARE(xdgToplevel()->m_xdgSurface->m_committedConfigureSerial, serial);
 }
 
 void tst_xdgshell::initiallySuspended()
