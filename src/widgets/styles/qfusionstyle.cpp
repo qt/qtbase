@@ -591,7 +591,8 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
             if (option->state & State_HasFocus && option->state & State_KeyboardFocusChange)
                 painter->setPen(highlightedOutline);
             else
-                painter->setPen(outline.lighter(110));
+                painter->setPen(colorScheme() == Qt::ColorScheme::Dark ? outline.lighter(150)
+                                                                       : outline.lighter(110));
             painter->drawRect(rect);
 
             QColor checkMarkColor = option->palette.text().color().darker(120);
@@ -3556,6 +3557,11 @@ bool QFusionStyle::isHighContrast() const
 {
     return QGuiApplicationPrivate::platformTheme()->contrastPreference()
             == Qt::ContrastPreference::HighContrast;
+}
+
+Qt::ColorScheme QFusionStyle::colorScheme() const
+{
+    return QGuiApplicationPrivate::platformTheme()->colorScheme();
 }
 
 QT_END_NAMESPACE

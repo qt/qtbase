@@ -75,6 +75,7 @@ protected:
 
 private:
     bool isHighContrast() const;
+    Qt::ColorScheme colorScheme() const;
 };
 
 #endif // style_fusion
