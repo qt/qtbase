@@ -496,6 +496,13 @@ QFixed QFontEngine::leading() const
     return m_leading;
 }
 
+
+QFixed QFontEngine::emSquareSize() const
+{
+    qCWarning(lcQpaFonts) << "Font engine does not reimplement emSquareSize(). Returning minimum value.";
+    return 16;
+}
+
 QFixed QFontEngine::ascent() const
 {
     if (!m_heightMetricsQueried)
@@ -2353,6 +2360,9 @@ glyph_metrics_t QFontEngineMulti::boundingBox(glyph_t glyph)
     const int which = highByte(glyph);
     return engine(which)->boundingBox(stripped(glyph));
 }
+
+QFixed QFontEngineMulti::emSquareSize() const
+{ return engine(0)->emSquareSize(); }
 
 QFixed QFontEngineMulti::ascent() const
 { return engine(0)->ascent(); }

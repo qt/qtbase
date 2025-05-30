@@ -369,6 +369,14 @@ void QWindowsFontEngineDirectWrite::collectMetrics()
     m_directWriteFontFace->GetMetrics(&metrics);
     m_unitsPerEm = metrics.designUnitsPerEm;
 
+    // Something is wrong with this font. Set the em square size to the minimum value in
+    // the spec.
+    if (m_unitsPerEm == 0) {
+        qCWarning(lcQpaFonts) << "Font" << fontDef.families << "reports an em square size of 0."
+                              << "Clamping to minimum value.";
+        m_unitsPerEm = 16;
+    }
+
     m_lineThickness = DESIGN_TO_LOGICAL(metrics.underlineThickness);
     m_capHeight = DESIGN_TO_LOGICAL(metrics.capHeight);
     m_xHeight = DESIGN_TO_LOGICAL(metrics.xHeight);
@@ -497,10 +505,7 @@ bool QWindowsFontEngineDirectWrite::getSfntTableData(uint tag, uchar *buffer, ui
 
 QFixed QWindowsFontEngineDirectWrite::emSquareSize() const
 {
-    if (m_unitsPerEm > 0)
-        return m_unitsPerEm;
-    else
-        return QFontEngine::emSquareSize();
+    return m_unitsPerEm;
 }
 
 glyph_t QWindowsFontEngineDirectWrite::glyphIndex(uint ucs4) const

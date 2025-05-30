@@ -71,10 +71,13 @@ private slots:
     void qtbug65923_partal_clone_data();
     void qtbug65923_partal_clone();
 
+    void zeroEmSquare();
+
 private:
     QString testFont;
     QString testFontBoldItalic;
     QString testFontOs2V1;
+    QString testFontNoEmSquare;
 #endif // QT_NO_RAWFONT
 };
 
@@ -93,7 +96,9 @@ void tst_QRawFont::initTestCase()
     testFont = QFINDTESTDATA("testfont.ttf");
     testFontBoldItalic = QFINDTESTDATA("testfont_bold_italic.ttf");
     testFontOs2V1 = QFINDTESTDATA("testfont_os2_v1.ttf");
-    if (testFont.isEmpty() || testFontBoldItalic.isEmpty())
+    testFontNoEmSquare = QFINDTESTDATA("testfont_zeroem.ttf");
+
+    if (testFont.isEmpty() || testFontBoldItalic.isEmpty() || testFontNoEmSquare.isEmpty())
         QFAIL("qrawfont unittest font files not found!");
 
     if (QFontDatabase::families().size() == 0)
@@ -1077,6 +1082,12 @@ void tst_QRawFont::qtbug65923_partal_clone()
     fontData.fill('\0');
 
     QVERIFY(!outerFont.boundingRect(42).isEmpty());
+}
+
+void tst_QRawFont::zeroEmSquare()
+{
+    QRawFont rawFont(testFontNoEmSquare, 12);
+    QVERIFY(!rawFont.isValid() || rawFont.unitsPerEm() > 0);
 }
 
 #endif // QT_NO_RAWFONT

@@ -17,6 +17,7 @@ set_source_files_properties("../../../shared/resources/testfont.ttf"
 )
 set(testdata_resource_files
     "../../../shared/resources/testfont.ttf"
+    "testfont_zeroem.ttf"
     "testfont_bold_italic.ttf"
     "testfont_os2_v1.ttf"
 )
