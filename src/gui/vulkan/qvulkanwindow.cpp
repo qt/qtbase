@@ -1552,6 +1552,7 @@ bool QVulkanWindow::event(QEvent *e)
     Q_D(QVulkanWindow);
 
     switch (e->type()) {
+    case QEvent::Paint:
     case QEvent::UpdateRequest:
         d->beginFrame();
         break;
