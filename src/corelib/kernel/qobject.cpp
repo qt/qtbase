@@ -3001,8 +3001,8 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const char *sign
             &smeta, signalName, signalTypes.size(), signalTypes.constData());
     if (signal_index < 0) {
         // check for normalized signatures
-        pinnedSignal = QMetaObject::normalizedSignature(signal - 1);
-        signal = pinnedSignal.constData() + 1;
+        pinnedSignal = QMetaObject::normalizedSignature(signal);
+        signal = pinnedSignal.constData();
 
         signalTypes.clear();
         signalName = QMetaObjectPrivate::decodeMethodSignature(signal, signalTypes);
@@ -3267,19 +3267,22 @@ bool QObject::disconnect(const QObject *sender, const char *signal,
         return false;
     }
 
+    const char *signal_arg = signal;
     if (signal) {
         if (!check_signal_macro(sender, signal, "disconnect", "unbind"))
             return false;
+        ++signal; // skip code
     }
 
+    const char *method_arg = method;
     int membcode = -1;
     if (method) {
         membcode = extract_code(method);
         if (!check_method_code(membcode, receiver, method, "disconnect"))
             return false;
+        ++method; // skip code
     }
 
-    const char *signal_arg = signal;
     QByteArray pinnedSignal;
     bool signal_found = false;
     if (signal) {
@@ -3288,15 +3291,12 @@ bool QObject::disconnect(const QObject *sender, const char *signal,
             signal = pinnedSignal.constData();
         } QT_CATCH (const std::bad_alloc &) {
             // if the signal is already normalized, we can continue.
-            if (sender->metaObject()->indexOfSignal(signal + 1) == -1)
+            if (sender->metaObject()->indexOfSignal(signal) == -1)
                 QT_RETHROW;
         }
-
-        signal++; // skip code
     }
 
     QByteArray pinnedMethod;
-    const char *method_arg = method;
     bool method_found = false;
     if (method) {
         QT_TRY {
@@ -3304,11 +3304,9 @@ bool QObject::disconnect(const QObject *sender, const char *signal,
             method = pinnedMethod.constData();
         } QT_CATCH(const std::bad_alloc &) {
             // if the method is already normalized, we can continue.
-            if (receiver->metaObject()->indexOfMethod(method + 1) == -1)
+            if (receiver->metaObject()->indexOfMethod(method) == -1)
                 QT_RETHROW;
         }
-
-        method++; // skip code
     }
 
     /* We now iterate through all the sender's and receiver's meta
