@@ -142,7 +142,7 @@
     static const bool containerLayerOptOut = qEnvironmentVariableIsSet("QT_MAC_NO_CONTAINER_LAYER");
     if (m_platformWindow->window()->surfaceType() != QSurface::OpenGLSurface && !containerLayerOptOut) {
         qCDebug(lcQpaDrawing) << "Wrapping content layer" << layer << "in container layer";
-        auto *containerLayer = [[QContainerLayer alloc] initWithContentLayer:layer];
+        auto *containerLayer = [[[QContainerLayer alloc] initWithContentLayer:layer] autorelease];
         containerLayer.name = @"Qt container layer";
         containerLayer.delegate = self;
         layer = containerLayer;
