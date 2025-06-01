@@ -168,6 +168,8 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSViewMenuHelper);
 {
     qCDebug(lcQpaWindow) << "Deallocating" << self;
 
+    self.menuHelper = nil;
+
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [m_mouseMoveHelper release];
 
