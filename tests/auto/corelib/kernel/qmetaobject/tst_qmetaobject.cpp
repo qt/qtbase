@@ -2311,6 +2311,8 @@ void tst_QMetaObject::normalizedSignature_data()
     QTest::addColumn<QString>("signature");
     QTest::addColumn<QString>("result");
 
+    QTest::newRow("empty") << "" << "";
+    QTest::newRow("null") << QString{} << QString{};
     QTest::newRow("function") << "void foo()" << "void foo()";
     QTest::newRow("spaces") << " void  foo( ) " << "void foo()";
     QTest::newRow("void") << "void foo(void)" << "void foo()";
@@ -2327,6 +2329,22 @@ void tst_QMetaObject::normalizedSignature_data()
                                    << "void foo(Foo<void>,Bar<void>)";
     QTest::newRow("void* template args") << " void  foo( Foo<void*>, Bar<void *> ) "
                                    << "void foo(Foo<void*>,Bar<void*>)";
+
+    QTest::newRow("template-args-void-function-ptr") << " void  foo( QList<void * (*)(void)>) "
+                                                     << "void foo(QList<void*(*)(void)>)";
+
+    QTest::newRow("template-args-nested-1")
+        << " void  foo( QMap<a, QList<std::unique_ptr< a  >>>,  QList<b  >) "
+        << "void foo(QMap<a,QList<std::unique_ptr<a>>>,QList<b>)";
+
+    QTest::newRow("template-args-nested-2")
+        << " void  foo( QMap<a, QList<int const>>, QList<b>) "
+        << "void foo(QMap<a,QList<const int>>,QList<b>)";
+
+    QTest::newRow("template-args-nested-3")
+        << " void  foo( QMap<std::vector<char const *>, QList<int const>>, QList<b>) "
+        << "void foo(QMap<std::vector<const char*>,QList<const int>>,QList<b>)";
+
     QTest::newRow("rettype") << "QList<int, int> foo()" << "QList<int,int>foo()";
     QTest::newRow("rettype void template") << "Foo<void> foo()" << "Foo<void>foo()";
     QTest::newRow("const rettype") << "const QString *foo()" << "const QString*foo()";
@@ -2356,6 +2374,10 @@ void tst_QMetaObject::normalizedSignature_data()
 
     QTest::newRow("refref") << "const char* foo(const X &&,X const &&, const X* &&) && "
                             << "const char*foo(const X&&,const X&&,const X*&&)&&";
+
+    QTest::newRow("char-star-star") << "char * const * foo(const X)"
+                                    << "char*const*foo(X)";
+
 
     QTest::newRow("invalid1") << "a( b" << "a(b";
 }

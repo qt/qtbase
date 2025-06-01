@@ -1402,6 +1402,9 @@ static void qRemoveWhitespace(QByteArrayView str, char *d)
 static char *qNormalizeType(char *d, int &templdepth, QByteArray &result)
 {
     const char *t = d;
+
+    // e.g. "QMap<a, QList<int const>>, QList<b>)"
+    // `t` is at the beginning; `d` is advanced to the `,` after the closing >>
     while (*d && (templdepth
                    || (*d != ',' && *d != ')'))) {
         if (*d == '<')
