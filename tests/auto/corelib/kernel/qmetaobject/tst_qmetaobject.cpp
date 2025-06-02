@@ -10,6 +10,9 @@
 #include <qabstractproxymodel.h>
 #include <private/qmetaobject_p.h>
 
+#include <deque>
+#include <vector>
+
 Q_DECLARE_METATYPE(const QMetaObject *)
 
 #include "forwarddeclared.h"
@@ -43,6 +46,28 @@ class MyGadget
     Q_GADGET
 public:
     Q_INVOKABLE MyGadget() {}
+};
+
+template <typename T>
+class MyQList
+{
+    std::vector<T> m_data;
+public:
+    MyQList(std::initializer_list<T> il) : m_data{il} {}
+
+    const std::vector<T> &data() const { return m_data; }
+    std::vector<T> &data() { return m_data; }
+};
+
+template <typename T>
+class MyQVector
+{
+    std::deque<T> m_data;
+public:
+    MyQVector(std::initializer_list<T> il) : m_data{il} {}
+
+    const std::deque<T> &data() const { return m_data; }
+    std::deque<T> &data() { return m_data; }
 };
 
 namespace MyNamespace {
@@ -312,6 +337,7 @@ private slots:
     void customPropertyType();
     void checkScope_data();
     void checkScope();
+    void customQVectorSuffix();
     void propertyNotify();
     void propertyConstant();
     void propertyFinal();
@@ -351,6 +377,8 @@ private slots:
 signals:
     void value6Changed();
     void value7Changed(const QString &);
+    void myQListChanged(const MyQList<int> &);
+    void myQVectorChanged(const MyQVector<double> &); // needs different template arg from MyQList!
 };
 
 void tst_QMetaObject::stdSet()
@@ -2123,8 +2151,11 @@ void tst_QMetaObject::normalizedSignature_data()
     QTest::newRow("const13") << "void foo(const Foo<Bar>&)" << "void foo(Foo<Bar>)";
     QTest::newRow("const14") << "void foo(Foo<Bar>const&)" << "void foo(Foo<Bar>)";
     QTest::newRow("QVector") << "void foo(QVector<int>)" << "void foo(QList<int>)";
-    QTest::newRow("QVector1") << "void foo(const Template<QVector, MyQList const>)"
-                            << "void foo(Template<QList,const MyQList>)";
+    QTest::newRow("QVector1") << "void foo(const Template<QVector, MyQList<int> const>)"
+                            << "void foo(Template<QList,const MyQList<int>>)";
+    QTest::newRow("MyQVector") << "void foo(MyQVector<int>)" << "void foo(MyQVector<int>)";
+    QTest::newRow("MyQVector1") << "void foo(const Template<QVector, MyQVector<int> const>)"
+                                << "void foo(Template<QList,const MyQVector<int>>)";
 
     QTest::newRow("refref") << "const char* foo(const X &&,X const &&, const X* &&) && "
                             << "const char*foo(const X&&,const X&&,const X*&&)&&";
@@ -2327,6 +2358,22 @@ void tst_QMetaObject::checkScope()
     QCOMPARE(mf.keysToValue("MyNamespace::" + name + "::MyFlag2|MyNamespace::" + name + "::MyFlag2", &ok), 2);
     QCOMPARE(ok, true);
     QCOMPARE(QLatin1String(mf.valueToKeys(3)), QLatin1String("MyFlag1|MyFlag2"));
+}
+
+void tst_QMetaObject::customQVectorSuffix()
+{
+    QObject ctx;
+    QVERIFY(connect(this, SIGNAL(myQListChanged(MyQList<int>)),
+                    &ctx, SLOT(deleteLater()))); // just some compatible slot...
+
+    // QMetaObject internally does s/QVector</QList</ indiscriminently, so the
+    // existing signal is not found:
+    QEXPECT_FAIL("", "Qt 6 QVector -> QList kludge getting in the way", Continue);
+    QTest::ignoreMessage(QtWarningMsg,
+                         QRegularExpression(R"(.*QObject::connect: No such signal )"
+                                            R"(tst_QMetaObject.*::myQVectorChanged\(MyQVector<double>\).*)"_L1));
+    QVERIFY(connect(this, SIGNAL(myQVectorChanged(MyQVector<double>)),
+                    &ctx, SLOT(deleteLater()))); // just some compatible slot...
 }
 
 void tst_QMetaObject::propertyNotify()
@@ -2547,10 +2594,11 @@ void tst_QMetaObject::indexOfMethod_data()
     QTest::addColumn<QObject *>("object");
     QTest::addColumn<QByteArray>("name");
     QTest::addColumn<bool>("isSignal");
+    QTest::addColumn<bool>("found");
 
-    auto row = [this] (const char *fun, bool sig) {
+    auto row = [this] (const char *fun, bool sig, bool found = true) {
         QObject *o = this;
-        QTest::addRow("%s", fun) << o << QByteArray(fun) << sig;
+        QTest::addRow("%s", fun) << o << QByteArray(fun) << sig << found;
     };
 
     row("indexOfMethod_data()", false);
@@ -2559,6 +2607,9 @@ void tst_QMetaObject::indexOfMethod_data()
     row("value7Changed(QString)",  true);
     row("destroyed()",  true);
     row("destroyed(QObject*)",  true);
+    row("myQListChanged(MyQList<int>)", true);
+    row("myQListChanged(MyQVector<int>)", true, false);
+    row("myQVectorChanged(MyQVector<double>)", true);
 }
 
 void tst_QMetaObject::indexOfMethod()
@@ -2566,9 +2617,16 @@ void tst_QMetaObject::indexOfMethod()
     QFETCH(QObject *, object);
     QFETCH(QByteArray, name);
     QFETCH(bool, isSignal);
+    QFETCH(const bool, found);
+    QEXPECT_FAIL("myQListChanged(MyQVector<int>)", "Qt 6 QVector -> QList kludge getting in the way", Abort);
+    QEXPECT_FAIL("myQVectorChanged(MyQVector<double>)", "Qt 6 QVector -> QList kludge getting in the way", Abort);
     int idx = object->metaObject()->indexOfMethod(name);
-    QVERIFY(idx >= 0);
-    QCOMPARE(object->metaObject()->method(idx).methodSignature(), name);
+    if (found)
+        QVERIFY(idx >= 0);
+    else
+        QVERIFY(idx < 0);
+    if (found)
+        QCOMPARE(object->metaObject()->method(idx).methodSignature(), name);
     QCOMPARE(object->metaObject()->indexOfSlot(name), isSignal ? -1 : idx);
     QCOMPARE(object->metaObject()->indexOfSignal(name), !isSignal ? -1 : idx);
 }
