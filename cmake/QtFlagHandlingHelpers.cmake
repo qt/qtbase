@@ -166,13 +166,15 @@ function(qt_internal_add_link_flags_no_undefined target)
         set(previous_CMAKE_REQUIRED_LINK_OPTIONS ${CMAKE_REQUIRED_LINK_OPTIONS})
 
         set(CMAKE_REQUIRED_LINK_OPTIONS "-Wl,-undefined,error")
-        check_cxx_source_compiles("int main() {}" HAVE_DASH_UNDEFINED_SYMBOLS)
+        _qt_internal_get_check_cxx_source_compiles_out_var(test_output_undefined_error extra_args)
+        check_cxx_source_compiles("int main() {}" HAVE_DASH_UNDEFINED_SYMBOLS ${extra_args})
         if(HAVE_DASH_UNDEFINED_SYMBOLS)
             set(no_undefined_flag "-Wl,-undefined,error")
         endif()
 
         set(CMAKE_REQUIRED_LINK_OPTIONS "-Wl,--no-undefined")
-        check_cxx_source_compiles("int main() {}" HAVE_DASH_DASH_NO_UNDEFINED)
+        _qt_internal_get_check_cxx_source_compiles_out_var(test_output_no_undefined extra_args)
+        check_cxx_source_compiles("int main() {}" HAVE_DASH_DASH_NO_UNDEFINED ${extra_args})
         if(HAVE_DASH_DASH_NO_UNDEFINED)
             set(no_undefined_flag "-Wl,--no-undefined")
         endif()
@@ -180,7 +182,10 @@ function(qt_internal_add_link_flags_no_undefined target)
         set(CMAKE_REQUIRED_LINK_OPTIONS ${previous_CMAKE_REQUIRED_LINK_OPTIONS})
 
         if (NOT HAVE_DASH_UNDEFINED_SYMBOLS AND NOT HAVE_DASH_DASH_NO_UNDEFINED)
-            message(FATAL_ERROR "Platform linker doesn't support erroring upon encountering undefined symbols. Target:\"${target}\".")
+            message(FATAL_ERROR
+                "Platform linker doesn't support erroring upon encountering undefined symbols. "
+                "Target:\"${target}\". "
+                "Test errors: \n ${test_output_undefined_error} \n ${test_output_no_undefined}")
         endif()
         target_link_options("${target}" PRIVATE "${no_undefined_flag}")
     endif()
