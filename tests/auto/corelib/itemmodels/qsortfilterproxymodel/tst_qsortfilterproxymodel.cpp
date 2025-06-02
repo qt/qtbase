@@ -3663,6 +3663,18 @@ void tst_QSortFilterProxyModel::resetInvalidate()
     QCOMPARE(ok, works);
 }
 
+void tst_QSortFilterProxyModel::sourceModelInReset()
+{
+    QTest::failOnWarning();
+    QStandardItemModel m1;
+    QSortFilterProxyModel sfpm;
+    connect(&m1, &QAbstractItemModel::modelAboutToBeReset, &sfpm, [&]() {
+        sfpm.setSourceModel(&m1);
+    });
+    m1.clear();
+    QCOMPARE_EQ(sfpm.sourceModel(), &m1);
+}
+
 /**
  * A proxy which changes the background color for items ending in 'y' or 'r'
  */

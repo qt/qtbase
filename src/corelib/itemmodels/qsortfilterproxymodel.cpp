@@ -2110,6 +2110,13 @@ void QSortFilterProxyModel::setSourceModel(QAbstractItemModel *sourceModel)
         QObjectPrivate::connect(d->model, &QAbstractItemModel::modelReset, d,
                                 &QSortFilterProxyModelPrivate::_q_sourceReset)
     };
+    /* check whether we are connecting to a model that is undergoing a reset currently.
+       If it is, _q_sourceReset will take care of calling endResetModel, and of
+       calling sort if necessary.
+    */
+    auto modelPrivate = d->model ? QAbstractItemModelPrivate::get(d->model) : nullptr;
+    if (modelPrivate && modelPrivate->resetting)
+        return;
     endResetModel();
     if (d->update_source_sort_column() && d->dynamic_sortfilter)
         d->sort();

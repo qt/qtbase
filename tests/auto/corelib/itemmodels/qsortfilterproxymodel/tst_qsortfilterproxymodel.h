@@ -104,6 +104,7 @@ private slots:
     void unnecessaryMapCreation();
     void resetInvalidate_data();
     void resetInvalidate();
+    void sourceModelInReset();
 
     void testMultipleProxiesWithSelection();
     void mapSelectionFromSource();
