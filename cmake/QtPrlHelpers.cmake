@@ -65,9 +65,17 @@ function(qt_generate_prl_file target install_dir)
         set(prefix_for_final_prl_name "$<TARGET_FILE_PREFIX:${target}>")
     endif()
 
-    # For frameworks, the prl file should be placed under the Resources subdir.
+    # For macOS frameworks, the prl file should be placed under the Resources subdir.
+    # For iOS, visionOS, watchOS, tvOS, there is no Resources subdir, and the contents needs to
+    # be placed directly in the framework root, as described at
+    # https://developer.apple.com/documentation/bundleresources/placing-content-in-a-bundle?language=objc
     get_target_property(is_framework ${target} FRAMEWORK)
-    if(is_framework)
+    if(APPLE AND (NOT CMAKE_SYSTEM_NAME OR CMAKE_SYSTEM_NAME STREQUAL "Darwin"))
+        set(is_macos TRUE)
+    else()
+        set(is_macos FALSE)
+    endif()
+    if(is_framework AND is_macos)
         get_target_property(fw_version ${target} FRAMEWORK_VERSION)
         string(APPEND prefix_for_final_prl_name "Versions/${fw_version}/Resources/")
     endif()
