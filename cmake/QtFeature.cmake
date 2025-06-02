@@ -1624,7 +1624,14 @@ function(qt_run_config_compile_test name)
         endif()
     endif()
 
+    # Note this is assigned to the parent scope, and is not a CACHE var, which means the value is
+    # only available on first configuration.
     set(TEST_${name}_OUTPUT "${try_compile_output}" PARENT_SCOPE)
+
+    # Story the compile output for a test in a global property. It will only be available on first
+    # configuration, because we don't cache it across cmake invocations.
+    set_property(GLOBAL PROPERTY _qt_run_config_compile_test_output_${name} "${try_compile_output}")
+
     set(TEST_${name} "${HAVE_${name}}" CACHE INTERNAL "${arg_LABEL}")
 endfunction()
 

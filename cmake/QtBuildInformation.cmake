@@ -555,11 +555,54 @@ function(qt_configure_add_report_error error)
     qt_configure_add_report_entry(TYPE ERROR MESSAGE "${error}" CONDITION TRUE ${ARGN})
 endfunction()
 
+# Goes through each token in given in `CONDITION` or `COMPILE_TESTS_TO_SHOW_ON_ERROR`, checks if
+# the token starts with TEST_ which means it represents a Qt compile test, queries its
+# compile output if available, and appends it to `out_var`.
+# The compile output for a test is only available on first configuration, because we don't cache it
+# across cmake invocations.
+function(qt_internal_get_try_compile_output_from_tests_in_condition out_var)
+    set(opt_args "")
+    set(single_args "")
+    set(multi_args
+        CONDITION
+        COMPILE_TESTS_TO_SHOW_ON_ERROR
+    )
+    cmake_parse_arguments(PARSE_ARGV 1 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    set(content "")
+
+    foreach(token IN LISTS arg_CONDITION arg_COMPILE_TESTS_TO_SHOW_ON_ERROR)
+        if(token MATCHES "TEST_(.+)")
+            set(name "${CMAKE_MATCH_1}")
+            get_cmake_property(try_compile_output _qt_run_config_compile_test_output_${name})
+
+            if(try_compile_output)
+                string(APPEND content "\n   TEST_${name} output: \n\n${try_compile_output}")
+            endif()
+        else()
+            continue()
+        endif()
+    endforeach()
+
+    if(content)
+        string(PREPEND content "\n Compile test outputs:\n")
+    endif()
+
+    set(${out_var} "${content}" PARENT_SCOPE)
+endfunction()
+
 function(qt_configure_process_add_report_entry)
-    cmake_parse_arguments(PARSE_ARGV 0 arg
-        ""
-        "TYPE;MESSAGE"
-        "CONDITION")
+    set(opt_args "")
+    set(single_args
+        TYPE
+        MESSAGE
+    )
+    set(multi_args
+        CONDITION
+        COMPILE_TESTS_TO_SHOW_ON_ERROR
+    )
+    cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
     _qt_internal_validate_all_args_are_parsed(arg)
 
     set(possible_types NOTE WARNING ERROR FATAL_ERROR)
@@ -591,6 +634,23 @@ function(qt_configure_process_add_report_entry)
 
     if("${arg_CONDITION}" STREQUAL "" OR condition_result)
         set(new_report "${prefix}${arg_MESSAGE}")
+
+        set(compile_test_args "")
+        if(arg_CONDITION)
+            list(APPEND compile_test_args CONDITION ${arg_CONDITION})
+        endif()
+        if(arg_COMPILE_TESTS_TO_SHOW_ON_ERROR)
+            list(APPEND compile_test_args
+                COMPILE_TESTS_TO_SHOW_ON_ERROR ${arg_COMPILE_TESTS_TO_SHOW_ON_ERROR})
+        endif()
+
+        qt_internal_get_try_compile_output_from_tests_in_condition(extra_output
+            ${compile_test_args}
+        )
+        if(extra_output)
+            string(APPEND new_report "\n${extra_output}")
+        endif()
+
         string(APPEND "${contents_var}" "\n${new_report}")
 
         if(arg_TYPE STREQUAL "ERROR" OR arg_TYPE STREQUAL "FATAL_ERROR")
