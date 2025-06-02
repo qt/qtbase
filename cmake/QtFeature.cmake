@@ -1601,17 +1601,9 @@ function(qt_run_config_compile_test name)
             set(_save_CMAKE_REQUIRED_LIBRARIES "${CMAKE_REQUIRED_LIBRARIES}")
             set(CMAKE_REQUIRED_LIBRARIES "${arg_LIBRARIES}")
 
-            # OUTPUT_VARIABLE is an internal undocumented variable of check_cxx_source_compiles
-            # since 3.23. Allow an opt out in case this breaks in the future.
-            set(try_compile_output "")
-            set(output_var "")
-            if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.23"
-                    AND NOT QT_INTERNAL_NO_TRY_COMPILE_OUTPUT_VARIABLE)
-                set(output_var OUTPUT_VARIABLE try_compile_output)
-            endif()
-
+            _qt_internal_get_check_cxx_source_compiles_out_var(try_compile_output extra_args)
             check_cxx_source_compiles(
-                "${arg_UNPARSED_ARGUMENTS} ${arg_CODE}" HAVE_${name} ${output_var}
+                "${arg_UNPARSED_ARGUMENTS} ${arg_CODE}" HAVE_${name} ${extra_args}
             )
             set(CMAKE_REQUIRED_LIBRARIES "${_save_CMAKE_REQUIRED_LIBRARIES}")
 

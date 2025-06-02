@@ -174,6 +174,21 @@ function(__qt_internal_prefix_paths_to_roots out_var prefix_paths)
     set("${out_var}" "${result}" PARENT_SCOPE)
 endfunction()
 
+function(_qt_internal_get_check_cxx_source_compiles_out_var out_output_var out_func_args)
+    # This just resets the output var in the parent scope to an empty string.
+    set(${out_output_var} "" PARENT_SCOPE)
+
+    # OUTPUT_VARIABLE is an internal undocumented variable of check_cxx_source_compiles
+    # since 3.23. Allow an opt out in case this breaks in the future.
+    set(extra_func_args "")
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.23"
+            AND NOT QT_INTERNAL_NO_TRY_COMPILE_OUTPUT_VARIABLE)
+        set(extra_func_args OUTPUT_VARIABLE ${out_output_var})
+    endif()
+
+    set(${out_func_args} "${extra_func_args}" PARENT_SCOPE)
+endfunction()
+
 # This function gets all targets below this directory
 #
 # Multi-value Arguments:
