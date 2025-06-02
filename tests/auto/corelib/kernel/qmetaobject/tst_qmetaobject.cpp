@@ -2807,12 +2807,18 @@ void tst_QMetaObject::indexOfMethod_data()
     QTest::addColumn<QObject *>("object");
     QTest::addColumn<QByteArray>("name");
     QTest::addColumn<bool>("isSignal");
-    QTest::newRow("indexOfMethod_data") << (QObject*)this << QByteArray("indexOfMethod_data()") << false;
-    QTest::newRow("deleteLater") << (QObject*)this << QByteArray("deleteLater()") << false;
-    QTest::newRow("value6changed") << (QObject*)this << QByteArray("value6Changed()") << true;
-    QTest::newRow("value7changed") << (QObject*)this << QByteArray("value7Changed(QString)") << true;
-    QTest::newRow("destroyed") << (QObject*)this << QByteArray("destroyed()") << true;
-    QTest::newRow("destroyed2") << (QObject*)this << QByteArray("destroyed(QObject*)") << true;
+
+    auto row = [this] (const char *fun, bool sig) {
+        QObject *o = this;
+        QTest::addRow("%s", fun) << o << QByteArray(fun) << sig;
+    };
+
+    row("indexOfMethod_data()", false);
+    row("deleteLater()", false);
+    row("value6Changed()",  true);
+    row("value7Changed(QString)",  true);
+    row("destroyed()",  true);
+    row("destroyed(QObject*)",  true);
 }
 
 void tst_QMetaObject::indexOfMethod()
