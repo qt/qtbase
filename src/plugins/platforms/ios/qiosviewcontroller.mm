@@ -367,10 +367,12 @@
     // If the statusbar changes orientation due to auto-rotation we don't care,
     // there will be re-layout anyways. Only if the statusbar changes due to
     // reportContentOrientation, we need to update the window layout.
-    if (self.changingOrientation)
-        return;
+    if (!self.changingOrientation)
+        [self.view setNeedsLayout];
 
-    [self.view setNeedsLayout];
+    // But we always need to update the screen's orientation
+    if (self.platformScreen)
+        self.platformScreen->updateProperties();
 }
 #endif
 
@@ -379,6 +381,9 @@
     if (!QCoreApplication::instance())
         return;
 
+    // Make sure the screen properties are up to date before layout.
+    // We need this here, even if we also react to status bar orientation
+    // changes, as only the main screen on iOS has a statusbar.
     if (self.platformScreen)
         self.platformScreen->updateProperties();
 }
