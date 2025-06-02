@@ -1441,17 +1441,16 @@ https://github.com/llvm/llvm-project/issues/53520
 ]=]
         )
     else()
-        string(CONCAT error_message
+        string(CONCAT x86_intrin_error_message
             "x86 intrinsics support missing. Check your compiler settings.\n"
-            "If this is an error, report at https://bugreports.qt.io with your compiler ID and "
-            "version, and this output:\n"
-            "\n"
-            "${TEST_x86intrin_OUTPUT}"
+            "If this is a problem for you, report at https://bugreports.qt.io with your compiler ID and "
+            "version, and the TEST_x86intrin compile test output.\n"
         )
         qt_configure_add_report_entry(
             TYPE ERROR
             CONDITION (NOT QT_FEATURE_x86intrin)
-            MESSAGE "${error_message}"
+            COMPILE_TESTS_TO_SHOW_ON_ERROR TEST_x86intrin
+            MESSAGE "${x86_intrin_error_message}"
         )
     endif()
 endif()
