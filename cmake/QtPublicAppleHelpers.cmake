@@ -811,19 +811,50 @@ endif()")
     set(${out_var} "${assignments}" PARENT_SCOPE)
 endfunction()
 
+# Returns the active apple sdk name that was either explicitly set by the user via QT_APPLE_SDK or
+# or CMAKE_OSX_SYSROOT, or return the default approximated value, based on what CMake does
+# internally.
+#
+# TODO: Handle case when CMAKE_OSX_SYSROOT is set to an sdk path, from which we need to retrieve the
+# sdk name.
 function(_qt_internal_get_apple_sdk_name out_var)
-    set(sdk_name "")
-    if(APPLE)
-        if(CMAKE_SYSTEM_NAME STREQUAL iOS)
-            set(sdk_name "iphoneos")
-        elseif(CMAKE_SYSTEM_NAME STREQUAL visionOS)
-            set(sdk_name "xros")
-        else()
-            # Default to macOS
-            set(sdk_name "macosx")
-        endif()
+    if(NOT APPLE)
+        set(${out_var} "" PARENT_SCOPE)
+        return()
     endif()
-    set(${out_var} "${sdk_name}" PARENT_SCOPE)
+
+    # If CMake or the user has set an explicit sdk name, consider it.
+    if(QT_APPLE_SDK)
+        set(explicit_sdk_name "${QT_APPLE_SDK}")
+    elseif(CMAKE_OSX_SYSROOT)
+        set(explicit_sdk_name "${CMAKE_OSX_SYSROOT}")
+    else()
+        set(explicit_sdk_name "")
+    endif()
+
+    set(output_sdk_name "")
+
+    # Detect (or check if already set) that the sdk name is one that Qt knows about.
+    if(CMAKE_SYSTEM_NAME STREQUAL iOS)
+        if(explicit_sdk_name STREQUAL "iphoneos" OR explicit_sdk_name STREQUAL "iphonesimulator")
+            set(output_sdk_name "${explicit_sdk_name}")
+        else()
+            # Default case.
+            set(output_sdk_name "iphoneos")
+        endif()
+    elseif(CMAKE_SYSTEM_NAME STREQUAL visionOS)
+        if(explicit_sdk_name STREQUAL "xros" OR explicit_sdk_name STREQUAL "xrsimulator")
+            set(output_sdk_name "${explicit_sdk_name}")
+        else()
+            # Default case.
+            set(output_sdk_name "xros")
+        endif()
+    else()
+        # Default case.
+        set(output_sdk_name "macosx")
+    endif()
+
+    set(${out_var} "${output_sdk_name}" PARENT_SCOPE)
 endfunction()
 
 function(_qt_internal_execute_xcrun out_var)
