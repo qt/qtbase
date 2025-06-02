@@ -609,6 +609,9 @@ QFactoryLoader *qt_iconEngineFactoryLoader()
   QImageWriter::supportedImageFormats() functions to retrieve a
   complete list of the supported file formats.
 
+  \note If using an SVG image file, make sure to add it before any non-SVG files,
+  so that the correct \l{Icon Engines}{icon engine} gets selected.
+
   \section1 Creating an icon from a theme or icon library
 
   The most convenient way to construct an icon is by using the
