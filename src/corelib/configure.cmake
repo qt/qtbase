@@ -1229,7 +1229,7 @@ qt_configure_add_report_entry(
 )
 qt_configure_add_report_entry(
     TYPE ERROR
-    MESSAGE "detected a std::atomic implementation that fails for function pointers.  Please apply the patch corresponding to your Standard Library vendor, found in qtbase/config.tests/atomicfptr"
+    MESSAGE "detected a std::atomic implementation that fails for function pointers."
     CONDITION NOT TEST_atomicfptr
 )
 qt_configure_add_report_entry(
