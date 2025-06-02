@@ -175,9 +175,14 @@ QJsonValue::QJsonValue(int v)
 /*!
     \overload
     Creates a value of type Double, with value \a v.
-    NOTE: the integer limits for IEEE 754 double precision data is 2^53 (-9007199254740992 to +9007199254740992).
-    If you pass in values outside this range expect a loss of precision to occur.
- */
+
+    This is stored internally as a 64-bit integer, so retains its full
+    precision, as long as it is retrieved with \l toInteger(). However,
+    retrieving its value with \l toDouble() will lose precision unless the value
+    lies between ±2^53.
+
+    \sa toInteger(), toDouble()
+*/
 QJsonValue::QJsonValue(qint64 v)
     : value(v)
 {
