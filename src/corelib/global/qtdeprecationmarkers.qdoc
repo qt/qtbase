@@ -44,7 +44,22 @@
     set to the same version as in the user code. That is because in static
     build the Qt libraries also become a part of the binary.
 
-    \sa QT_DEPRECATED_WARNINGS, QT_DISABLE_DEPRECATED_UP_TO
+    \sa QT_DEPRECATED_WARNINGS, QT_WARN_DEPRECATED_UP_TO
+*/
+
+/*!
+    \macro QT_WARN_DEPRECATED_UP_TO
+    \relates <QtDeprecationMarkers>
+
+    This macro can be defined in the project file to disable deprecation
+    warnings introduced in Qt versions higher than the specified version.
+
+    For instance, when preparing to upgrade to Qt 6.10, if you are not
+    ready to deal with every single deprecation warnings, you can set
+    \c{QT_WARN_DEPRECATED_UP_TO=0x060900} to limit the deprecation
+    warnings to those in 6.9 and earlier.
+
+    \sa QT_DISABLE_DEPRECATED_UP_TO, QT_NO_DEPRECATED_WARNINGS
 */
 
 /*!
@@ -55,7 +70,7 @@
     is defined, the compiler will generate warnings if any API declared as
     deprecated by Qt is used.
 
-    \sa QT_DISABLE_DEPRECATED_UP_TO, QT_NO_DEPRECATED_WARNINGS
+    \sa QT_DISABLE_DEPRECATED_UP_TO, QT_NO_DEPRECATED_WARNINGS, QT_WARN_DEPRECATED_UP_TO
 */
 
 /*!
@@ -66,5 +81,5 @@
     This macro can be used to suppress deprecation warnings that would otherwise
     be generated when using deprecated APIs.
 
-    \sa QT_DISABLE_DEPRECATED_UP_TO
+    \sa QT_DISABLE_DEPRECATED_UP_TO, QT_WARN_DEPRECATED_UP_TO
 */
