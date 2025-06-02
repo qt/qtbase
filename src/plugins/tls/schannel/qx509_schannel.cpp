@@ -16,11 +16,7 @@ namespace QTlsPrivate {
 
 X509CertificateSchannel::X509CertificateSchannel() = default;
 
-X509CertificateSchannel::~X509CertificateSchannel()
-{
-    if (certificateContext)
-        CertFreeCertificateContext(certificateContext);
-}
+X509CertificateSchannel::~X509CertificateSchannel() = default;
 
 TlsKey *X509CertificateSchannel::publicKey() const
 {
@@ -33,7 +29,7 @@ TlsKey *X509CertificateSchannel::publicKey() const
 
 Qt::HANDLE X509CertificateSchannel::handle() const
 {
-    return Qt::HANDLE(certificateContext);
+    return Qt::HANDLE(certificateContext.get());
 }
 
 QSslCertificate X509CertificateSchannel::QSslCertificate_from_CERT_CONTEXT(const CERT_CONTEXT *certificateContext)
@@ -44,7 +40,7 @@ QSslCertificate X509CertificateSchannel::QSslCertificate_from_CERT_CONTEXT(const
     if (!certificate.isNull()) {
         auto *certBackend = QTlsBackend::backend<X509CertificateSchannel>(certificate);
         Q_ASSERT(certBackend);
-        certBackend->certificateContext = CertDuplicateCertificateContext(certificateContext);
+        certBackend->certificateContext.reset(CertDuplicateCertificateContext(certificateContext));
     }
     return certificate;
 }
