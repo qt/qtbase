@@ -408,8 +408,32 @@ Qt::ScreenOrientation QIOSScreen::orientation() const
     // even if the orientation of the UI was locked to a subset
     // of the possible orientations via the app's Info.plist or
     // via [UIViewController supportedInterfaceOrientations].
-    return m_geometry.width() >= m_geometry.height() ?
-        Qt::LandscapeOrientation : Qt::PortraitOrientation;
+    auto *windowScene = rootViewForScreen(this).window.windowScene;
+    auto interfaceOrientation = windowScene ?
+        windowScene.interfaceOrientation : UIInterfaceOrientationUnknown;
+
+    // FIXME: On visionOS the interface orientation is reported
+    // as portrait, which seems strange, but at least it matches
+    // what we report as the native orientation.
+
+    switch (interfaceOrientation) {
+    case UIInterfaceOrientationPortrait:
+        return Qt::PortraitOrientation;
+    case UIInterfaceOrientationPortraitUpsideDown:
+        return Qt::InvertedPortraitOrientation;
+    case UIInterfaceOrientationLandscapeLeft:
+        return Qt::LandscapeOrientation;
+    case UIInterfaceOrientationLandscapeRight:
+        return Qt::InvertedLandscapeOrientation;
+    case UIInterfaceOrientationUnknown:
+    default:
+        // Fall back to the primary orientation, but with a concrete
+        // orientation instead of Qt::PrimaryOrientation, as when we
+        // report orientation changes the primary orientation has not
+        // been updated yet, so user's can't query it in response.
+        return m_geometry.width() >= m_geometry.height() ?
+            Qt::LandscapeOrientation : Qt::PortraitOrientation;
+    }
 }
 
 QPixmap QIOSScreen::grabWindow(WId window, int x, int y, int width, int height) const
