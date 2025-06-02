@@ -3514,6 +3514,7 @@ int generateJavaQmlComponents(const Options &options)
             }
         }
         appImports << qmldirDirectories.values();
+        appImports.removeDuplicates();
 
         return appImports.count() + externalImports.count();
     };
