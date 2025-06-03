@@ -18,7 +18,7 @@ public:
     tst_cursor();
     CursorShapeDevice* cursorShape();
 private slots:
-    void init();
+    void initTestCase();
     void cleanup() { QTRY_VERIFY2(isClean(), qPrintable(dirtyMessage())); }
     void setCursor();
     void overrideCursor();
@@ -40,7 +40,7 @@ CursorShapeDevice* tst_cursor::cursorShape()
     return manager->m_cursorDevices[0];
 }
 
-void tst_cursor::init()
+void tst_cursor::initTestCase()
 {
     setenv("QT_WAYLAND_DISABLE_WINDOWDECORATION", "1", 1);
 }

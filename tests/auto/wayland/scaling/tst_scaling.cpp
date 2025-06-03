@@ -13,7 +13,7 @@ class tst_scaling : public QObject, private DefaultCompositor
 {
     Q_OBJECT
 private slots:
-    void init();
+    void initTestCase();
     void cleanup() { QTRY_VERIFY2(isClean(), qPrintable(dirtyMessage())); }
     void scaledWindow();
     void roundingPolicy_data();
@@ -21,7 +21,7 @@ private slots:
 
 };
 
-void tst_scaling::init()
+void tst_scaling::initTestCase()
 {
     setenv("QT_WAYLAND_DISABLE_WINDOWDECORATION", "1", 1);
 }

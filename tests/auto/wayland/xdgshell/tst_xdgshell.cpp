@@ -14,7 +14,7 @@ class tst_xdgshell : public QObject, private DefaultCompositor
 {
     Q_OBJECT
 private slots:
-    void init();
+    void initTestCase();
     void cleanup() { QTRY_VERIFY2(isClean(), qPrintable(dirtyMessage())); }
     void showMinimized();
     void basicConfigure();
@@ -40,7 +40,7 @@ private slots:
     void modalityWithoutTransientParent();
 };
 
-void tst_xdgshell::init()
+void tst_xdgshell::initTestCase()
 {
     setenv("QT_WAYLAND_DISABLE_WINDOWDECORATION", "1", 1);
 }
