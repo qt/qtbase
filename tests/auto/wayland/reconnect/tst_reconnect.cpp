@@ -247,9 +247,9 @@ int main(int argc, char **argv)
     // test rather than fail. Making sure it finishes is important!
 
     QTemporaryDir tmpRuntimeDir;
-    setenv("QT_QPA_PLATFORM", "wayland", 1); // force QGuiApplication to use wayland plugin
-    setenv("QT_WAYLAND_RECONNECT", "1", 1);
-    setenv("XDG_CURRENT_DESKTOP", "qtwaylandtests", 1);
+    qputenv("QT_QPA_PLATFORM", "wayland"); // force QGuiApplication to use wayland plugin
+    qputenv("QT_WAYLAND_RECONNECT", "1");
+    qputenv("XDG_CURRENT_DESKTOP", "qtwaylandtests");
 
     tst_WaylandReconnect tc;
     QGuiApplication app(argc, argv);

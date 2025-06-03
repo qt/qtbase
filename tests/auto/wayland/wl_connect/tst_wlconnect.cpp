@@ -15,8 +15,8 @@ private slots:
         // unable to connect to a compositor
 
         // Make sure the connection actually fails
-        setenv("XDG_RUNTIME_DIR", "/dev/null", 1); // a place where there are no Wayland sockets
-        setenv("WAYLAND_DISPLAY", "qt_invalid_socket", 1); // just to be sure
+        qputenv("XDG_RUNTIME_DIR", "/dev/null"); // a place where there are no Wayland sockets
+        qputenv("WAYLAND_DISPLAY", "qt_invalid_socket"); // just to be sure
 
         QStringList arguments;
         QString platformPluginPath;

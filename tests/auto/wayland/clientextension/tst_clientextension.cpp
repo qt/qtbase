@@ -121,9 +121,9 @@ void tst_clientextension::globalRemoved()
 int main(int argc, char **argv)
 {
     QTemporaryDir tmpRuntimeDir;
-    setenv("XDG_RUNTIME_DIR", tmpRuntimeDir.path().toLocal8Bit(), 1);
-    setenv("QT_QPA_PLATFORM", "wayland", 1);
-    setenv("QT_WAYLAND_DONT_CHECK_SHELL_INTEGRATION", "1", 1);
+    qputenv("XDG_RUNTIME_DIR", tmpRuntimeDir.path().toLocal8Bit());
+    qputenv("QT_QPA_PLATFORM", "wayland");
+    qputenv("QT_WAYLAND_DONT_CHECK_SHELL_INTEGRATION", "1");
 
     tst_clientextension tc;
     QGuiApplication app(argc, argv);

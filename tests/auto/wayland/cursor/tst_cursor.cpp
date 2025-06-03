@@ -42,7 +42,7 @@ CursorShapeDevice* tst_cursor::cursorShape()
 
 void tst_cursor::initTestCase()
 {
-    setenv("QT_WAYLAND_DISABLE_WINDOWDECORATION", "1", 1);
+    qputenv("QT_WAYLAND_DISABLE_WINDOWDECORATION", "1");
 }
 
 void tst_cursor::setCursor()

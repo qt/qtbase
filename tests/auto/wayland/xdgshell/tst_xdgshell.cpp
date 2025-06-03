@@ -42,7 +42,7 @@ private slots:
 
 void tst_xdgshell::initTestCase()
 {
-    setenv("QT_WAYLAND_DISABLE_WINDOWDECORATION", "1", 1);
+    qputenv("QT_WAYLAND_DISABLE_WINDOWDECORATION", "1");
 }
 
 void tst_xdgshell::showMinimized()

@@ -23,7 +23,7 @@ private slots:
 
 void tst_scaling::initTestCase()
 {
-    setenv("QT_WAYLAND_DISABLE_WINDOWDECORATION", "1", 1);
+    qputenv("QT_WAYLAND_DISABLE_WINDOWDECORATION", "1");
 }
 
 void tst_scaling::scaledWindow()

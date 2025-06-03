@@ -596,11 +596,11 @@ void tst_WaylandClient::longWindowTitleWithUtf16Characters()
 int main(int argc, char **argv)
 {
     QTemporaryDir tmpRuntimeDir;
-    setenv("XDG_RUNTIME_DIR", tmpRuntimeDir.path().toLocal8Bit(), 1);
-    setenv("QT_QPA_PLATFORM", "wayland", 1); // force QGuiApplication to use wayland plugin
+    qputenv("XDG_RUNTIME_DIR", tmpRuntimeDir.path().toLocal8Bit());
+    qputenv("QT_QPA_PLATFORM", "wayland"); // force QGuiApplication to use wayland plugin
     QString shell = QString::fromLocal8Bit(qgetenv("QT_WAYLAND_SHELL_INTEGRATION"));
     if (shell.isEmpty())
-        setenv("QT_WAYLAND_SHELL_INTEGRATION", "wl-shell", 1);
+        qputenv("QT_WAYLAND_SHELL_INTEGRATION", "wl-shell");
 
     tst_WaylandClient tc;
     QGuiApplication app(argc, argv);

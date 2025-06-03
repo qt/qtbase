@@ -35,10 +35,10 @@ void tst_WaylandClientFullScreenShellV1::createDestroyWindow()
 int main(int argc, char **argv)
 {
     QTemporaryDir tmpRuntimeDir;
-    setenv("XDG_RUNTIME_DIR", tmpRuntimeDir.path().toLocal8Bit(), 1);
-    setenv("QT_QPA_PLATFORM", "wayland", 1); // force QGuiApplication to use wayland plugin
-    setenv("QT_WAYLAND_SHELL_INTEGRATION", "fullscreen-shell-v1", 1);
-    setenv("QT_WAYLAND_DISABLE_WINDOWDECORATION", "1", 1); // window decorations don't make much sense here
+    qputenv("XDG_RUNTIME_DIR", tmpRuntimeDir.path().toLocal8Bit());
+    qputenv("QT_QPA_PLATFORM", "wayland"); // force QGuiApplication to use wayland plugin
+    qputenv("QT_WAYLAND_SHELL_INTEGRATION", "fullscreen-shell-v1");
+    qputenv("QT_WAYLAND_DISABLE_WINDOWDECORATION", "1"); // window decorations don't make much sense here
 
     tst_WaylandClientFullScreenShellV1 tc;
     QGuiApplication app(argc, argv);
