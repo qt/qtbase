@@ -4922,6 +4922,7 @@ void tst_QTableView::resetDefaultSectionSize()
     view.verticalHeader()->resetDefaultSectionSize();
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
+    QEXPECT_FAIL("", "Reverted fix for QTBUG-116013 due to QTBUG-122109", Continue);
     QCOMPARE(view.verticalHeader()->logicalIndexAt(9, 45), 1);
 }
 

@@ -1365,10 +1365,10 @@ QString QLocal8Bit::convertToUnicode_sys(QByteArrayView in, quint32 codePage,
     // encounter an error
     int nextIn = qt_saturate<int>(mblen);
     while (mblen > 0) {
-        const int nextOut = qt_saturate<int>(outlen);
         std::tie(out, outlen) = growOut(1); // Need space for at least one character
         if (!out)
             return {};
+        const int nextOut = qt_saturate<int>(outlen);
         len = MultiByteToWideChar(codePage, MB_ERR_INVALID_CHARS, mb, nextIn, out, nextOut);
         if (len) {
             mb += nextIn;
@@ -1576,9 +1576,11 @@ QByteArray QLocal8Bit::convertFromUnicode_sys(QStringView in, quint32 codePage,
                     // incomplete sequence, probably a Windows bug. We try to avoid that from
                     // happening by reducing the window size in that case. But let's keep this
                     // branch just in case of other bugs.
+#ifndef QT_NO_DEBUG
                     r = GetLastError();
                     fprintf(stderr,
                             "WideCharToMultiByte: Cannot convert multibyte text (error %d)\n", r);
+#endif // !QT_NO_DEBUG
                     break;
                 }
                 std::tie(out, outlen) = growOut(neededLength);
@@ -1964,7 +1966,7 @@ struct QStringConverterICU : QStringConverter
         const void *context;
         ucnv_getToUCallBack(icu_conv, &action, &context);
         if (context != state)
-             ucnv_setToUCallBack(icu_conv, action, &state, nullptr, nullptr, &err);
+             ucnv_setToUCallBack(icu_conv, action, state, nullptr, nullptr, &err);
 
         ucnv_toUnicode(icu_conv, &target, targetLimit, &source, sourceLimit, nullptr, flush, &err);
         // We did reserve enough space:
@@ -1997,7 +1999,7 @@ struct QStringConverterICU : QStringConverter
         const void *context;
         ucnv_getFromUCallBack(icu_conv, &action, &context);
         if (context != state)
-             ucnv_setFromUCallBack(icu_conv, action, &state, nullptr, nullptr, &err);
+             ucnv_setFromUCallBack(icu_conv, action, state, nullptr, nullptr, &err);
 
         ucnv_fromUnicode(icu_conv, &target, targetLimit, &source, sourceLimit, nullptr, flush, &err);
         // We did reserve enough space:

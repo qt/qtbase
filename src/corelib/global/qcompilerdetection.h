@@ -1370,6 +1370,11 @@ QT_WARNING_DISABLE_MSVC(4530) /* C++ exception handler used, but unwind semantic
 #  endif
 #endif
 
+// libstdc++ shipped with gcc < 11 does not have a fix for defect LWG 3346
+#if __cplusplus >= 202002L && (!defined(_GLIBCXX_RELEASE) || _GLIBCXX_RELEASE >= 11)
+#  define QT_COMPILER_HAS_LWG3346
+#endif
+
 #endif // __cplusplus
 
 #endif // QCOMPILERDETECTION_H

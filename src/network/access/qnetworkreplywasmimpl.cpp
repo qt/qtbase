@@ -9,7 +9,6 @@
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qfileinfo.h>
 #include <QtCore/qthread.h>
-#include <QtCore/private/qeventdispatcher_wasm_p.h>
 #include <QtCore/private/qoffsetstringarray_p.h>
 #include <QtCore/private/qtools_p.h>
 
@@ -296,10 +295,7 @@ void QNetworkReplyWasmImplPrivate::doSendRequest()
     QByteArray destinationPath = dPath.toUtf8();
     attr.destinationPath = destinationPath.constData();
 
-    auto url = request.url().toString().toUtf8();
-    QEventDispatcherWasm::runOnMainThreadAsync([attr, url]() mutable {
-        emscripten_fetch(&attr, url);
-    });
+    m_fetch = emscripten_fetch(&attr, request.url().toString().toUtf8());
     state = Working;
 }
 

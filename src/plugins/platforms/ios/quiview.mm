@@ -829,11 +829,6 @@ inline ulong getTimeStamp(UIEvent *event)
     return nil;
 }
 
-- (UIEdgeInsets)qt_safeAreaInsets
-{
-    return self.safeAreaInsets;
-}
-
 @end
 
 #ifdef Q_OS_IOS

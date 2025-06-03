@@ -755,7 +755,10 @@ void QListView::mouseMoveEvent(QMouseEvent *e)
         && d->selectionMode != NoSelection) {
         QRect rect(d->pressedPosition, e->position().toPoint() + QPoint(horizontalOffset(), verticalOffset()));
         rect = rect.normalized();
-        d->viewport->update(d->mapToViewport(rect.united(d->elasticBand)));
+        const int margin = 2 * style()->pixelMetric(QStyle::PM_DefaultFrameWidth);
+        const QRect viewPortRect = rect.united(d->elasticBand)
+                                       .adjusted(-margin, -margin, margin, margin);
+        d->viewport->update(d->mapToViewport(viewPortRect));
         d->elasticBand = rect;
     }
 }
@@ -769,7 +772,9 @@ void QListView::mouseReleaseEvent(QMouseEvent *e)
     QAbstractItemView::mouseReleaseEvent(e);
     // #### move this implementation into a dynamic class
     if (d->showElasticBand && d->elasticBand.isValid()) {
-        d->viewport->update(d->mapToViewport(d->elasticBand));
+        const int margin = 2 * style()->pixelMetric(QStyle::PM_DefaultFrameWidth);
+        const QRect viewPortRect = d->elasticBand.adjusted(-margin, -margin, margin, margin);
+        d->viewport->update(d->mapToViewport(viewPortRect));
         d->elasticBand = QRect();
     }
 }

@@ -236,6 +236,10 @@ function(qt6_android_generate_deployment_settings target)
     _qt_internal_add_android_deployment_property(file_contents "android-no-deploy-qt-libs"
         ${target} "QT_ANDROID_NO_DEPLOY_QT_LIBS")
 
+    __qt_internal_collect_plugin_targets_from_dependencies("${target}" plugin_targets)
+    __qt_internal_collect_plugin_library_files("${target}" "${plugin_targets}" plugin_targets)
+    string(APPEND file_contents "   \"android-deploy-plugins\":\"${plugin_targets}\",\n")
+
     # App binary
     string(APPEND file_contents
         "   \"application-binary\": \"${target_output_name}\",\n")
@@ -303,7 +307,7 @@ function(qt6_android_generate_deployment_settings target)
     # content end
     string(APPEND file_contents "}\n")
 
-    file(GENERATE OUTPUT ${deploy_file} CONTENT ${file_contents})
+    file(GENERATE OUTPUT ${deploy_file} CONTENT "${file_contents}")
 
     set_target_properties(${target}
         PROPERTIES
@@ -554,7 +558,7 @@ function(qt6_android_add_apk_target target)
             "$<TARGET_FILE:${target}>"
             "${androiddeployqt_output_path}/${target_file_copy_relative_path}"
         )
-        if(has_depfile_support)
+        if(has_depfile_support AND FALSE) # TODO: It breaks multi-abi builds. See QTBUG-122838
             set(deploy_android_deps_dir "${apk_final_dir}/${target}_deploy_android")
             set(timestamp_file "${deploy_android_deps_dir}/timestamp")
             set(dep_file "${deploy_android_deps_dir}/${target}.d")
@@ -1007,7 +1011,8 @@ function(_qt_internal_get_android_abi_cmake_dir_path out_path abi)
             NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_INTERNAL_IS_STANDALONE_TEST)
             set(cmake_dir "${QT_CONFIG_BUILD_DIR}")
         else()
-            set(cmake_dir "${prefix_path}/${QT6_INSTALL_LIBS}/cmake")
+            string(TOUPPER "${QT_CMAKE_EXPORT_NAMESPACE}" export_namespace_upper)
+            set(cmake_dir "${prefix_path}/${${export_namespace_upper}_INSTALL_LIBS}/cmake")
         endif()
     endif()
 

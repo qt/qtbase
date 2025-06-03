@@ -25,10 +25,13 @@ endfunction()
 # The function checks if add_custom_command has the support of the DEPFILE argument.
 function(_qt_internal_check_depfile_support out_var)
     if(CMAKE_GENERATOR MATCHES "Ninja" OR
-        CMAKE_VERSION VERSION_GREATER_EQUAL 3.20 AND CMAKE_GENERATOR MATCHES "Makefiles"
-        OR CMAKE_VERSION VERSION_GREATER_EQUAL 3.21
+        (CMAKE_VERSION VERSION_GREATER_EQUAL 3.20 AND CMAKE_GENERATOR MATCHES "Makefiles")
+        OR (CMAKE_VERSION VERSION_GREATER_EQUAL 3.21
         AND (CMAKE_GENERATOR MATCHES "Xcode"
-            OR CMAKE_GENERATOR MATCHES "Visual Studio ([0-9]+)" AND CMAKE_MATCH_1 GREATER_EQUAL 12))
+            OR (CMAKE_GENERATOR MATCHES "Visual Studio ([0-9]+)" AND CMAKE_MATCH_1 GREATER_EQUAL 12)
+            )
+        )
+    )
         set(${out_var} TRUE)
     else()
         set(${out_var} FALSE)
@@ -76,6 +79,22 @@ function(__qt_internal_collect_additional_prefix_paths out_var prefixes_var)
     endforeach()
 
     set("${out_var}" "${additional_packages_prefix_paths}" PARENT_SCOPE)
+endfunction()
+
+# Collects CMAKE_MODULE_PATH from QT_ADDITIONAL_PACKAGES_PREFIX_PATH
+function(__qt_internal_collect_additional_module_paths)
+    if(__qt_additional_module_paths_set)
+        return()
+    endif()
+    foreach(prefix_path IN LISTS QT_ADDITIONAL_PACKAGES_PREFIX_PATH)
+        list(APPEND CMAKE_MODULE_PATH "${prefix_path}/${QT_CMAKE_EXPORT_NAMESPACE}")
+        # TODO: Need to consider the INSTALL_LIBDIR value when collecting CMAKE_MODULE_PATH.
+        # See QTBUG-123039.
+        list(APPEND CMAKE_MODULE_PATH "${prefix_path}/lib/cmake/${QT_CMAKE_EXPORT_NAMESPACE}")
+    endforeach()
+    list(REMOVE_DUPLICATES CMAKE_MODULE_PATH)
+    set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" PARENT_SCOPE)
+    set(__qt_additional_module_paths_set TRUE PARENT_SCOPE)
 endfunction()
 
 # Take a list of prefix paths ending with "/lib/cmake", and return a list of absolute paths with

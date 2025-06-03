@@ -7,6 +7,7 @@
 
 #include <QtGui/QtGui>
 #include "qioswindow.h"
+#include "quiaccessibilityelement.h"
 
 QIOSPlatformAccessibility::QIOSPlatformAccessibility()
 {}
@@ -40,6 +41,16 @@ void QIOSPlatformAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *even
     if (!isActive() || !accessibleInterface)
         return;
     switch (event->type()) {
+    case QAccessible::Focus: {
+        auto *element = [QMacAccessibilityElement elementWithId:event->uniqueId()];
+        Q_ASSERT(element);
+        // There's no NSAccessibilityFocusedUIElementChangedNotification, like we have on
+        // macOS. Instead, the documentation for UIAccessibilityLayoutChangedNotification
+        // specifies that the optional argument to UIAccessibilityPostNotification is the
+        // accessibility element for VoiceOver to move to after processing the notification.
+        UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification, element);
+        break;
+    }
     case QAccessible::ObjectCreated:
     case QAccessible::ObjectShow:
     case QAccessible::ObjectHide:

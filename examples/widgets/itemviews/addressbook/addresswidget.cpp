@@ -34,7 +34,10 @@ void AddressWidget::showAddEntryDialog()
 //! [3]
 void AddressWidget::addEntry(const QString &name, const QString &address)
 {
-    if (!table->getContacts().contains({ name, address })) {
+    if (!name.front().isLetter()) {
+        QMessageBox::information(this, tr("Invalid name"),
+            tr("The name must start with a letter."));
+    } else if (!table->getContacts().contains({ name, address })) {
         table->insertRows(0, 1, QModelIndex());
 
         QModelIndex index = table->index(0, 0, QModelIndex());

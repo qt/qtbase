@@ -5,6 +5,7 @@
 
 #include <QtCore/qnamespace.h>
 #include <QtCore/qcontainerfwd.h>
+#include <iterator>
 
 QT_BEGIN_NAMESPACE
 

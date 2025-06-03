@@ -206,6 +206,21 @@ static const char oneLetterTypes[] = "vsogybnqiuxtdh";
 static const char basicTypes[] =      "sogybnqiuxtdh";
 static const char fixedTypes[] =         "ybnqiuxtdh";
 
+/*
+    D-Bus signature grammar (in ABNF), as of 0.42 (2023-08-21):
+    https://dbus.freedesktop.org/doc/dbus-specification.html#type-system
+
+    <signature>            = *<single-complete-type>
+    <single-complete-type> = <basic-type> / <variant> / <struct> / <array>
+    <fixed-type>           = "y" / "b" / "n" / "q" / "i" / "u" / "x" / "t" / "d" / "h"
+    <variable-length-type> = "s" / "o" / "g"
+    <basic-type>           = <variable-length-type> / <fixed-type>
+    <variant>              = "v"
+    <struct>               = "(" 1*<single-complete-type> ")"
+    <array>                = "a" ( <single-complete-type> / <dict-entry> )
+    <dict-entry>           = "{" <basic-type> <single-complete-type> "}"
+*/
+
 static bool isBasicType(int c)
 {
     return c != DBUS_TYPE_INVALID && strchr(basicTypes, c) != nullptr;
@@ -310,13 +325,6 @@ namespace QDBusUtil
     }
 
     /*!
-        \internal
-        \fn bool isValidPartOfObjectPath(const QString &part)
-
-        \overload
-    */
-
-    /*!
         \fn bool isValidInterfaceName(const QString &ifaceName)
         Returns \c true if this is \a ifaceName is a valid interface name.
 
@@ -376,12 +384,6 @@ namespace QDBusUtil
     }
 
     /*!
-        \fn bool isValidUniqueConnectionName(const QString &connName)
-
-        \overload
-    */
-
-    /*!
         \fn bool isValidBusName(const QString &busName)
         Returns \c true if \a busName is a valid bus name.
 
@@ -405,9 +407,6 @@ namespace QDBusUtil
             return isValidUniqueConnectionName(busName);
 
         const auto parts = QStringView{busName}.split(u'.');
-        if (parts.size() < 1)
-            return false;
-
         for (QStringView part : parts) {
             if (part.isEmpty())
                 return false;
@@ -444,12 +443,6 @@ namespace QDBusUtil
     }
 
     /*!
-        \fn bool isValidMemberName(const QString &memberName)
-
-        \overload
-    */
-
-    /*!
         \fn bool isValidErrorName(const QString &errorName)
         Returns \c true if \a errorName is a valid error name. Valid error names are valid interface
         names and vice-versa, so this function is actually an alias for isValidInterfaceName.
@@ -467,9 +460,8 @@ namespace QDBusUtil
         \list
           \li start with the slash character ("/")
           \li do not end in a slash, unless the path is just the initial slash
-          \li do not contain any two slashes in sequence
-          \li contain slash-separated parts, each of which is composed of ASCII letters, digits and
-             underscores ("_")
+          \li contain slash-separated parts, each of which is not empty, and composed
+              only of ASCII letters, digits and underscores ("_").
         \endlist
     */
     bool isValidObjectPath(const QString &path)

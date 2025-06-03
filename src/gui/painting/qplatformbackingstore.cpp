@@ -379,6 +379,7 @@ void QPlatformBackingStore::graphicsDeviceReportedLost()
         return;
 
     qWarning("Rhi backingstore: graphics device lost, attempting to reinitialize");
+    d_ptr->compositor.reset();
     d_ptr->rhiSupport.reset();
     d_ptr->rhiSupport.create();
     if (!d_ptr->rhiSupport.rhi())

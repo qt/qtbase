@@ -200,7 +200,7 @@ void QObject::setObjectName(const QString &name)
 
 void QSettings::beginGroup(const QString &prefix)
 {
-    return beginGroup(qToAnyStringViewIgnoringNull(prefix));
+    beginGroup(qToAnyStringViewIgnoringNull(prefix));
 }
 
 int QSettings::beginReadArray(const QString &prefix)

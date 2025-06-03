@@ -253,7 +253,8 @@ function(qt_internal_android_dependencies target)
     # Module plugins
     if(module_plugin_types)
         foreach(plugin IN LISTS module_plugin_types)
-            string(APPEND file_contents "<bundled file=\"${INSTALL_PLUGINSDIR}/${plugin}\" />\n")
+            string(APPEND file_contents
+                "<bundled file=\"${INSTALL_PLUGINSDIR}/${plugin}\" type=\"plugin_dir\"/>\n")
         endforeach()
     endif()
 

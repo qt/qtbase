@@ -316,7 +316,6 @@ qt_internal_add_module(Core
         text/qstringconverter.cpp # enum Data
         tools/qcryptographichash.cpp # KeccakNISTInterface/Final
         io/qdebug.cpp # undef qDebug
-        io/qsettings.cpp # Space (also in qjsonparser.cpp)
     NO_PCH_SOURCES
         compat/removed_api.cpp
         global/qsimd.cpp
@@ -1409,4 +1408,10 @@ foreach(minor_version RANGE ${PROJECT_VERSION_MINOR})
 endforeach()
 qt_internal_extend_target(Core
     EXTRA_LINKER_SCRIPT_CONTENT "${linker_script_contents}"
+
+    # Workaround for QTBUG-117514:
+    # Function called by inline methods taking a pointer to a private class as a parameter
+    EXTRA_LINKER_SCRIPT_EXPORTS
+        # QFutureInterfaceBase::setContinuation(std::function<void (QFutureInterfaceBase const&)>, QFutureInterfaceBasePrivate*)
+        "_ZN20QFutureInterfaceBase15setContinuationE*P27QFutureInterfaceBasePrivate"
 )

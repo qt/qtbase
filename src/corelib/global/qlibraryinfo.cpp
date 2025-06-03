@@ -87,10 +87,19 @@ void QLibrarySettings::load()
     }
 }
 
+namespace {
+const QString *qtconfManualPath = nullptr;
+}
+
+void QLibraryInfoPrivate::setQtconfManualPath(const QString *path)
+{
+    qtconfManualPath = path;
+}
+
 static QSettings *findConfiguration()
 {
-    if (QLibraryInfoPrivate::qtconfManualPath)
-        return new QSettings(*QLibraryInfoPrivate::qtconfManualPath, QSettings::IniFormat);
+    if (qtconfManualPath)
+        return new QSettings(*qtconfManualPath, QSettings::IniFormat);
 
     QString qtconfig = QStringLiteral(":/qt/etc/qt.conf");
     if (QFile::exists(qtconfig))
@@ -121,8 +130,6 @@ static QSettings *findConfiguration()
     }
     return nullptr;     //no luck
 }
-
-const QString *QLibraryInfoPrivate::qtconfManualPath = nullptr;
 
 QSettings *QLibraryInfoPrivate::configuration()
 {

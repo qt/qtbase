@@ -63,7 +63,7 @@ enum class ColorSpaceType : quint32 {
 };
 
 enum class ProfileClass : quint32 {
-    Input       = IccTag('s', 'c', 'r', 'n'),
+    Input       = IccTag('s', 'c', 'n', 'r'),
     Display     = IccTag('m', 'n', 't', 'r'),
     // Not supported:
     Output      = IccTag('p', 'r', 't', 'r'),

@@ -528,6 +528,8 @@ void QXcbWindow::destroy()
         doFocusOut();
     if (connection()->mouseGrabber() == this)
         connection()->setMouseGrabber(nullptr);
+    if (connection()->mousePressWindow() == this)
+        connection()->setMousePressWindow(nullptr);
 
     if (m_syncCounter && connection()->hasXSync())
         xcb_sync_destroy_counter(xcb_connection(), m_syncCounter);
@@ -1460,6 +1462,11 @@ void QXcbWindow::requestActivateWindow()
 
     updateNetWmUserTime(connection()->time());
     QWindow *focusWindow = QGuiApplication::focusWindow();
+    xcb_window_t current = XCB_NONE;
+    if (focusWindow) {
+        if (QPlatformWindow *pw = focusWindow->handle())
+            current = pw->winId();
+    }
 
     if (window()->isTopLevel()
         && !(window()->flags() & Qt::X11BypassWindowManagerHint)
@@ -1474,7 +1481,7 @@ void QXcbWindow::requestActivateWindow()
         event.type = atom(QXcbAtom::Atom_NET_ACTIVE_WINDOW);
         event.data.data32[0] = 1;
         event.data.data32[1] = connection()->time();
-        event.data.data32[2] = focusWindow ? focusWindow->winId() : XCB_NONE;
+        event.data.data32[2] = current;
         event.data.data32[3] = 0;
         event.data.data32[4] = 0;
 

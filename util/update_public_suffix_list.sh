@@ -77,3 +77,5 @@ SHA $GITSHA1.
 
 Pick-to: $PICK_TO_BRANCHES
 " --edit
+
+msg "Please use topic=publicsuffix-list-$GITSHA1 when pushing."

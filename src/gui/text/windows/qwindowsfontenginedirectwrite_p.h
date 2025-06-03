@@ -22,6 +22,7 @@ QT_REQUIRE_CONFIG(directwrite);
 
 #include <QtGui/private/qfontengine_p.h>
 #include <QtCore/QSharedPointer>
+#include <dwrite.h>
 
 struct IDWriteFont;
 struct IDWriteFontFace;
@@ -108,8 +109,16 @@ private:
                          const QTransform &xform,
                          const QColor &color = QColor());
     void collectMetrics();
-    void renderGlyphRun(QImage *destination, float r, float g, float b, float a, IDWriteGlyphRunAnalysis *glyphAnalysis, const QRect &boundingRect);
+    void renderGlyphRun(QImage *destination,
+                        float r,
+                        float g,
+                        float b,
+                        float a,
+                        IDWriteGlyphRunAnalysis *glyphAnalysis,
+                        const QRect &boundingRect,
+                        DWRITE_RENDERING_MODE renderMode);
     static QString filenameFromFontFile(IDWriteFontFile *fontFile);
+    DWRITE_RENDERING_MODE hintingPreferenceToRenderingMode(const QFontDef &fontDef) const;
 
     const QSharedPointer<QWindowsFontEngineData> m_fontEngineData;
 

@@ -877,8 +877,10 @@ QPlatformBackingStore::FlushResult QXcbBackingStore::rhiFlush(QWindow *window,
 
     m_image->flushScrolledRegion(true);
 
-    QPlatformBackingStore::rhiFlush(window, sourceDevicePixelRatio, region, offset, textures, translucentBackground);
-
+    auto result = QPlatformBackingStore::rhiFlush(window, sourceDevicePixelRatio, region, offset,
+                                                  textures, translucentBackground);
+    if (result != FlushSuccess)
+        return result;
     QXcbWindow *platformWindow = static_cast<QXcbWindow *>(window->handle());
     if (platformWindow->needsSync()) {
         platformWindow->updateSyncRequestCounter();

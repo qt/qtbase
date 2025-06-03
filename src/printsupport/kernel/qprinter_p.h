@@ -70,6 +70,7 @@ public:
 #if QT_CONFIG(printpreviewwidget)
     QList<const QPicture *> previewPages() const;
     void setPreviewMode(bool);
+    bool previewMode() const;
 #endif
 
     void setProperty(QPrintEngine::PrintEnginePropertyKey key, const QVariant &value);
