@@ -646,6 +646,9 @@ void tst_QMimeDatabase::mimeTypeForData_data()
     else
         QTest::newRow("diff_space") << QByteArray("diff ") << "text/x-diff";
     QTest::newRow("unknown") << QByteArray("\001abc?}") << "application/octet-stream";
+    QTest::newRow("ambigous svg/xml") << QByteArray(R"(<?xml version="1.0"?>
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+</svg>)") << "image/svg+xml";
 }
 
 void tst_QMimeDatabase::mimeTypeForData()
