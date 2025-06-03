@@ -360,6 +360,17 @@ class QProperty : public QPropertyData<T>
         return false;
     }
 
+    template <typename U, typename = void>
+    struct has_operator_equal_to : std::false_type{};
+
+    template <typename U>
+    struct has_operator_equal_to<U, std::void_t<decltype(bool(std::declval<const T&>() == std::declval<const U&>()))>>
+        : std::true_type{};
+
+    template <typename U>
+    static constexpr bool has_operator_equal_to_v =
+            !std::is_same_v<U, T> && has_operator_equal_to<U>::value;
+
 public:
     using value_type = typename QPropertyData<T>::value_type;
     using parameter_type = typename QPropertyData<T>::parameter_type;
@@ -387,6 +398,23 @@ public:
     QT_DECLARE_EQUALITY_OPERATORS_HELPER(QProperty, QProperty, /* non-constexpr */, noexcept(false), template <typename Ty = T, std::enable_if_t<QTypeTraits::has_operator_equal_v<Ty>>* = nullptr>)
     QT_DECLARE_EQUALITY_OPERATORS_HELPER(QProperty, T, /* non-constexpr */, noexcept(false), template <typename Ty = T, std::enable_if_t<QTypeTraits::has_operator_equal_v<Ty>>* = nullptr>)
     QT_DECLARE_EQUALITY_OPERATORS_REVERSED_HELPER(QProperty, T, /* non-constexpr */, noexcept(false), template <typename Ty = T, std::enable_if_t<QTypeTraits::has_operator_equal_v<Ty>>* = nullptr>)
+
+    QT_DECLARE_EQUALITY_OPERATORS_HELPER(QProperty, U, /* non-constexpr */, noexcept(false), template <typename U, std::enable_if_t<has_operator_equal_to_v<U>>* = nullptr>)
+    QT_DECLARE_EQUALITY_OPERATORS_REVERSED_HELPER(QProperty, U, /* non-constexpr */, noexcept(false), template <typename U, std::enable_if_t<has_operator_equal_to_v<U>>* = nullptr>)
+
+    // Explicitly delete op==(QProperty<T>, QProperty<U>) for different T & U.
+    // We do not want implicit conversions here!
+    // However, GCC complains about using a default template argument in a
+    // friend declaration, while Clang and MSVC are fine. So, skip GCC here.
+#if !defined(Q_CC_GNU) || defined(Q_CC_CLANG)
+#define QPROPERTY_DECL_DELETED_EQ_OP \
+    Q_DECL_EQ_DELETE_X("Call .value() on one of the properties explicitly.")
+    template <typename U, std::enable_if_t<!std::is_same_v<T, U>>* = nullptr>
+    friend void operator==(const QProperty &, const QProperty<U> &) QPROPERTY_DECL_DELETED_EQ_OP;
+    template <typename U, std::enable_if_t<!std::is_same_v<T, U>>* = nullptr>
+    friend void operator!=(const QProperty &, const QProperty<U> &) QPROPERTY_DECL_DELETED_EQ_OP;
+#undef QPROPERTY_DECL_DELETED_EQ_OP
+#endif // !defined(Q_CC_GNU) || defined(Q_CC_CLANG)
 
     parameter_type value() const
     {
@@ -516,6 +544,12 @@ private:
 
     template <typename Ty = T, std::enable_if_t<QTypeTraits::has_operator_equal_v<Ty>>* = nullptr>
     friend bool comparesEqual(const QProperty &lhs, const T &rhs)
+    {
+        return lhs.value() == rhs;
+    }
+
+    template <typename U, std::enable_if_t<has_operator_equal_to_v<U>>* = nullptr>
+    friend bool comparesEqual(const QProperty &lhs, const U &rhs)
     {
         return lhs.value() == rhs;
     }

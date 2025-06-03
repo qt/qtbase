@@ -84,6 +84,7 @@ private slots:
     void compatPropertySignals();
 
     void compareAgainstValueType();
+    void compareAgainstDifferentType();
 
     void noFakeDependencies();
 #if QT_CONFIG(thread)
@@ -1769,6 +1770,18 @@ void tst_QProperty::compareAgainstValueType()
     vl.pop_back();
     QCOMPARE_NE(vl, vlProp);
     QCOMPARE_NE(vl, o.varList);
+}
+
+void tst_QProperty::compareAgainstDifferentType()
+{
+    QTestPrivate::testEqualityOperatorsCompile<QProperty<qsizetype>, int>();
+    QTestPrivate::testEqualityOperatorsCompile<QProperty<qsizetype>, double>();
+
+    QProperty<qsizetype> p1{1};
+    QCOMPARE_EQ(p1, 1);
+    QCOMPARE_EQ(1, p1);
+    QCOMPARE_NE(p1, 2.0);
+    QCOMPARE_NE(2.0, p1);
 }
 
 class FakeDependencyCreator : public QObject
