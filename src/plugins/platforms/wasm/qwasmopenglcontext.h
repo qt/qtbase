@@ -4,6 +4,8 @@
 #ifndef QWASMOPENGLCONTEXT_H
 #define QWASMOPENGLCONTEXT_H
 
+#include <QtCore/qhash.h>
+
 #include <qpa/qplatformopenglcontext.h>
 
 #include <emscripten.h>
@@ -29,24 +31,17 @@ public:
     bool isValid() const override;
     QFunctionPointer getProcAddress(const char *procName) override;
 
+    static void destroyWebGLContext(QPlatformSurface *surface);
+
 private:
-    struct QOpenGLContextData
-    {
-        QPlatformSurface *surface = nullptr;
-        EMSCRIPTEN_WEBGL_CONTEXT_HANDLE handle = 0;
-    };
-
     static bool isOpenGLVersionSupported(QSurfaceFormat format);
-    EMSCRIPTEN_WEBGL_CONTEXT_HANDLE obtainEmscriptenContext(QPlatformSurface *surface);
-    static EMSCRIPTEN_WEBGL_CONTEXT_HANDLE
-    createEmscriptenContext(const std::string &canvasSelector, QSurfaceFormat format);
-
+    EMSCRIPTEN_WEBGL_CONTEXT_HANDLE createEmscriptenContext(const std::string &canvasSelector, QSurfaceFormat format);
     static void destroyWebGLContext(EMSCRIPTEN_WEBGL_CONTEXT_HANDLE contextHandle);
 
     QSurfaceFormat m_actualFormat;
-    QOpenGLContext *m_qGlContext;
-    QOpenGLContextData m_ownedWebGLContext;
-    EMSCRIPTEN_WEBGL_CONTEXT_HANDLE m_usedWebGLContextHandle = 0;
+    QPlatformSurface *m_madeCurrentSurface = nullptr;
+    QPlatformSurface *m_contextOwningSurface = nullptr;
+    static QHash<QPlatformSurface *, EMSCRIPTEN_WEBGL_CONTEXT_HANDLE> s_contexts;
 };
 
 QT_END_NAMESPACE
