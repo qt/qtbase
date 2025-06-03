@@ -66,6 +66,8 @@ public Q_SLOTS:
     QDBusReply<uint> servicePid(const QString &serviceName) const;
     QDBusReply<uint> serviceUid(const QString &serviceName) const;
 
+    QDBusReply<QVariantMap> serviceCredentials(const QString &serviceName) const;
+
     QDBusReply<void> startService(const QString &name);
 
 Q_SIGNALS:

@@ -207,6 +207,21 @@ QDBusReply<uint> QDBusConnectionInterface::serviceUid(const QString &serviceName
 }
 
 /*!
+    \since 6.10
+
+    Returns the connection credentials for the process currently holding
+    the bus service \a serviceName.
+
+    See <https://dbus.freedesktop.org/doc/dbus-specification.html>
+    section: 'Method: org.freedesktop.DBus.GetConnectionCredentials' for more information.
+*/
+QDBusReply<QVariantMap> QDBusConnectionInterface::serviceCredentials(const QString &serviceName) const
+{
+    return internalConstCall(QDBus::AutoDetect, "GetConnectionCredentials"_L1,
+                             QList<QVariant>() << serviceName);
+}
+
+/*!
     Requests that the bus start the service given by the name \a name.
 */
 QDBusReply<void> QDBusConnectionInterface::startService(const QString &name)
