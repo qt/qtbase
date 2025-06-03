@@ -26,11 +26,7 @@
 #  include <QtGui/private/qgenericunixfontdatabase_p.h>
 #endif
 #include <QtGui/private/qgenericunixeventdispatcher_p.h>
-#if __has_include(<QtGui/private/qgenericunixtheme_p.h>)
 #include <QtGui/private/qgenericunixtheme_p.h>
-#else
-#include <QtGui/private/qgenericunixthemes_p.h>
-#endif
 
 #include <QtGui/private/qguiapplication_p.h>
 
