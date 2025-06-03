@@ -148,7 +148,7 @@ qt_internal_extend_target(Test CONDITION MACOS
         ${FWIOKit}
 )
 
-qt_internal_extend_target(Test CONDITION UNIX AND (NOT WASM OR QT_FEATURE_thread)
+qt_internal_extend_target(Test CONDITION UNIX
     SOURCES
         qtestcrashhandler_unix.cpp
 )
