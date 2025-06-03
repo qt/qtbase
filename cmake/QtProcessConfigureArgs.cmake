@@ -249,6 +249,15 @@ function(qt_feature_alias feature)
     set_property(GLOBAL PROPERTY COMMANDLINE_FEATURE_SECTION_${feature} "${arg_SECTION}")
 endfunction()
 
+function(qt_feature_deprecated feature)
+    cmake_parse_arguments(arg "" "PURPOSE;SECTION;MESSAGE" "" ${ARGN})
+    set_property(GLOBAL APPEND PROPERTY COMMANDLINE_KNOWN_FEATURES "${feature}")
+    # Mark the feature as deprecated
+    set(arg_PURPOSE "(DEPRECATED) ${arg_PURPOSE} ${arg_MESSAGE}")
+    set_property(GLOBAL PROPERTY COMMANDLINE_FEATURE_PURPOSE_${feature} "${arg_PURPOSE}")
+    set_property(GLOBAL PROPERTY COMMANDLINE_FEATURE_SECTION_${feature} "${arg_SECTION}")
+endfunction()
+
 function(find_package)
     message(FATAL_ERROR "find_package must not be used directly in configure.cmake. "
         "Use qt_find_package or guard the call with an if(NOT QT_CONFIGURE_RUNNING) block.")
