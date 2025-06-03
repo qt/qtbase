@@ -57,7 +57,7 @@ protected:
 
 private:
     QWaylandDisplay *m_display = nullptr;
-    EGLContext m_decorationsContext;
+    EGLContext m_decorationsContext = EGL_NO_CONTEXT;
     DecorationsBlitter *m_blitter = nullptr;
     bool m_supportNonBlockingSwap = true;
     EGLenum m_api;

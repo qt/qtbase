@@ -191,13 +191,16 @@ public:
     int m_textureWrap;
 };
 
-QWaylandGLContext::QWaylandGLContext() = default;
+QWaylandGLContext::QWaylandGLContext()
+    : QEGLPlatformContext(),
+      m_api(EGL_OPENGL_ES_API)
+{
+}
 
 QWaylandGLContext::QWaylandGLContext(EGLDisplay eglDisplay, QWaylandDisplay *display,
                                      const QSurfaceFormat &fmt, QPlatformOpenGLContext *share)
     : QEGLPlatformContext(fmt, share, eglDisplay)
     , m_display(display)
-    , m_decorationsContext(EGL_NO_CONTEXT)
 {
     m_reconnectionWatcher = QObject::connect(m_display, &QWaylandDisplay::connected,
                                              m_display, [this] { invalidateContext(); });
