@@ -66,6 +66,7 @@ class QtInputConnection extends BaseInputConnection
 
     private static final String QtTAG = "QtInputConnection";
 
+    private boolean m_duringBatchEdit = false;
     private final QtInputConnectionListener m_qtInputConnectionListener;
 
     class HideKeyboardRunnable implements Runnable {
@@ -122,7 +123,7 @@ class QtInputConnection extends BaseInputConnection
 
     void restartImmInput()
     {
-        if (QtNativeInputConnection.fullscreenMode()) {
+        if (QtNativeInputConnection.fullscreenMode() && !m_duringBatchEdit) {
             if (m_imm != null)
                 m_imm.restartInput(m_view);
         }
@@ -133,6 +134,7 @@ class QtInputConnection extends BaseInputConnection
     public boolean beginBatchEdit()
     {
         setClosing(false);
+        m_duringBatchEdit = true;
         return QtNativeInputConnection.beginBatchEdit();
     }
 
@@ -149,7 +151,12 @@ class QtInputConnection extends BaseInputConnection
     public boolean endBatchEdit()
     {
         setClosing(false);
-        return QtNativeInputConnection.endBatchEdit();
+        boolean ret = QtNativeInputConnection.endBatchEdit();
+        if (m_duringBatchEdit) {
+            m_duringBatchEdit = false;
+            restartImmInput();
+        }
+        return ret;
     }
 
     @Override
