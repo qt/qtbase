@@ -1543,13 +1543,12 @@ bool AtSpiAdaptor::applicationInterface(QAccessibleInterface *interface, const Q
   */
 void AtSpiAdaptor::registerApplication()
 {
-    OrgA11yAtspiSocketInterface *registry;
-    registry = new OrgA11yAtspiSocketInterface(ATSPI_DBUS_NAME_REGISTRY ""_L1,
-                                               ATSPI_DBUS_PATH_ROOT ""_L1, m_dbus->connection());
+    OrgA11yAtspiSocketInterface registry(ATSPI_DBUS_NAME_REGISTRY ""_L1, ATSPI_DBUS_PATH_ROOT ""_L1,
+                                         m_dbus->connection());
 
     QDBusPendingReply<QSpiObjectReference> reply;
     QSpiObjectReference ref = QSpiObjectReference(m_dbus->connection(), QDBusObjectPath(ATSPI_DBUS_PATH_ROOT));
-    reply = registry->Embed(ref);
+    reply = registry.Embed(ref);
     reply.waitForFinished(); // TODO: make this async
     if (reply.isValid ()) {
         const QSpiObjectReference &socket = reply.value();
@@ -1559,7 +1558,6 @@ void AtSpiAdaptor::registerApplication()
                    << reply.error().name()
                    << reply.error().message();
     }
-    delete registry;
 }
 
 // Accessible
