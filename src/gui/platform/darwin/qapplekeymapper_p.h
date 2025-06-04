@@ -46,6 +46,7 @@ public:
                             NSString *charactersIgnoringModifiers, QString &text);
 
     static Qt::Key fromUIKitKey(NSString *keyCode);
+    static Qt::Key fromUIKitKey(UIKeyboardHIDUsage usage);
     static Qt::KeyboardModifiers fromUIKitModifiers(ulong uikitModifiers);
     static ulong toUIKitModifiers(Qt::KeyboardModifiers);
 #endif
