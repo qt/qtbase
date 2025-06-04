@@ -609,12 +609,17 @@ inline ulong getTimeStamp(UIEvent *event)
     case UIPressTypePlayPause: return Qt::Key_MediaTogglePlayPause;
     }
     if (@available(ios 13.4, *)) {
-        NSString *charactersIgnoringModifiers = press.key.charactersIgnoringModifiers;
-        Qt::Key key = QAppleKeyMapper::fromUIKitKey(charactersIgnoringModifiers);
+        Qt::Key key = QAppleKeyMapper::fromUIKitKey(press.key.keyCode);
         if (key != Qt::Key_unknown)
             return key;
-        return QAppleKeyMapper::fromNSString(qtModifiers, press.key.characters,
-                                             charactersIgnoringModifiers, text);
+        NSString *charactersIgnoringModifiers = press.key.charactersIgnoringModifiers;
+        key = QAppleKeyMapper::fromUIKitKey(charactersIgnoringModifiers);
+        if (key != Qt::Key_unknown)
+            return key;
+        key = QAppleKeyMapper::fromNSString(qtModifiers, press.key.characters,
+                                           charactersIgnoringModifiers, text);
+        if (key != Qt::Key_unknown)
+            return key;
     }
     return Qt::Key_unknown;
 }
