@@ -1894,7 +1894,7 @@ void QTextDocumentLayoutPrivate::drawTableCell(const QRectF &cellRect, QPainter 
     }
 
     // paint over the background - otherwise we would have to adjust the background paint cellRect for the border values
-    if (cellBorderConfigured)
+    if (cellBorderConfigured || (td->borderCollapse && td->border != 0))
         drawTableCellBorder(cellRect, painter, table, td, cell);
 
     const QFixed verticalOffset = td->cellVerticalOffsets.at(c + r * table->columns());
