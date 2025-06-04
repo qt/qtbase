@@ -239,6 +239,16 @@ public:
         enableAction->setCheckable(true);
         enableAction->setChecked(true);
 
+#if defined(Q_OS_APPLE)
+        QMenu *optionsMenu = menuBar()->addMenu("Options");
+        auto *dontSwapAction = optionsMenu->addAction("Don't swap Ctrl and Meta", this, [this]{
+            auto *action = static_cast<QAction*>(sender());
+            qGuiApp->setAttribute(Qt::AA_MacDontSwapCtrlAndMeta, action->isChecked());
+        });
+        dontSwapAction->setCheckable(true);
+        dontSwapAction->setChecked(false);
+#endif
+
         auto *toolBar = addToolBar("Tools");
         toolBar->setMovable(false);
         toolBar->addWidget(new QLabel("Key sequence editor:"));

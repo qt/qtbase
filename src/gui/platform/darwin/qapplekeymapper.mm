@@ -38,6 +38,19 @@ static Qt::KeyboardModifiers swapModifiersIfNeeded(const Qt::KeyboardModifiers m
     return swappedModifiers;
 }
 
+[[maybe_unused]] static Qt::Key swapModifierIfNeeded(const Qt::Key key)
+{
+    if (QCoreApplication::testAttribute(Qt::AA_MacDontSwapCtrlAndMeta))
+        return key;
+
+    if (key == Qt::Key_Meta)
+        return Qt::Key_Control;
+    else if (key == Qt::Key_Control)
+        return Qt::Key_Meta;
+
+    return key;
+}
+
 #ifdef Q_OS_MACOS
 static constexpr std::tuple<NSEventModifierFlags, Qt::KeyboardModifier> cocoaModifierMap[] = {
     { NSEventModifierFlagShift, Qt::ShiftModifier },
@@ -665,6 +678,26 @@ API_AVAILABLE(ios(13.4)) Qt::Key QAppleKeyMapper::fromUIKitKey(NSString *keyCode
 
     if (auto key = uiKitKeys.value(keyCode))
         return key;
+
+    return Qt::Key_unknown;
+}
+
+Qt::Key QAppleKeyMapper::fromUIKitKey(UIKeyboardHIDUsage usage)
+{
+    static QHash<UIKeyboardHIDUsage, Qt::Key> modifierKeys = {
+        { UIKeyboardHIDUsageKeyboardCapsLock, Qt::Key_CapsLock },
+        { UIKeyboardHIDUsageKeyboardLeftAlt, Qt::Key_Alt },
+        { UIKeyboardHIDUsageKeyboardRightAlt, Qt::Key_Alt },
+        { UIKeyboardHIDUsageKeyboardLeftControl, Qt::Key_Control },
+        { UIKeyboardHIDUsageKeyboardRightControl, Qt::Key_Control },
+        { UIKeyboardHIDUsageKeyboardLeftShift, Qt::Key_Shift },
+        { UIKeyboardHIDUsageKeyboardRightShift, Qt::Key_Shift },
+        { UIKeyboardHIDUsageKeyboardLeftGUI, Qt::Key_Meta },
+        { UIKeyboardHIDUsageKeyboardRightGUI, Qt::Key_Meta },
+    };
+
+    if (auto key = modifierKeys.value(usage))
+        return swapModifierIfNeeded(key);
 
     return Qt::Key_unknown;
 }
