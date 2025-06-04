@@ -500,6 +500,12 @@ public:
         return false;
     }
 
+    void applicationStateChanged(Qt::ApplicationState state)
+    {
+        if (state != Qt::ApplicationActive)
+            m_dp->releaseColorPicking();
+    }
+
 private:
     QColorDialogPrivate *m_dp;
 };
@@ -1625,6 +1631,8 @@ void QColorDialogPrivate::pickScreenColor()
     if (!colorPickingEventFilter)
         colorPickingEventFilter = new QColorPickingEventFilter(this, q);
     q->installEventFilter(colorPickingEventFilter);
+    QObject::connect(qApp, &QGuiApplication::applicationStateChanged,
+                     colorPickingEventFilter, &QColorPickingEventFilter::applicationStateChanged);
     // If user pushes Escape, the last color before picking will be restored.
     beforeScreenColorPicking = cs->currentColor();
 #ifndef QT_NO_CURSOR
@@ -1671,6 +1679,8 @@ void QColorDialogPrivate::releaseColorPicking()
     Q_Q(QColorDialog);
     cp->setCrossVisible(true);
     q->removeEventFilter(colorPickingEventFilter);
+    QObject::disconnect(qApp, &QGuiApplication::applicationStateChanged,
+                        colorPickingEventFilter, &QColorPickingEventFilter::applicationStateChanged);
     q->releaseMouse();
 #ifdef Q_OS_WIN32
     updateTimer->stop();
