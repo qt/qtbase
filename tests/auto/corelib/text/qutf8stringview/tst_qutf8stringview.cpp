@@ -431,6 +431,30 @@ void tst_QUtf8StringView::std_stringview_conversion()
         QCOMPARE(sv.size(), size_t(12));
         QCOMPARE(sv, std::basic_string_view<QUtf8StringView::storage_type>("Hello\0world\0", 12));
     }
+
+#ifdef __cpp_lib_char8_t
+    {
+        QUtf8StringView s;
+        std::u8string_view sv(s);
+        QCOMPARE(sv, std::u8string_view());
+
+        s = u8"";
+        sv = s;
+        QCOMPARE(s.size(), 0);
+        QCOMPARE(sv.size(), size_t(0));
+        QCOMPARE(sv, std::u8string_view());
+
+        s = u8"Hello";
+        sv = s;
+        QCOMPARE(sv, std::u8string_view(u8"Hello"));
+
+        s = QUtf8StringView::fromArray(u8"Hello\0world");
+        sv = s;
+        QCOMPARE(s.size(), 12);
+        QCOMPARE(sv.size(), size_t(12));
+        QCOMPARE(sv, std::u8string_view(u8"Hello\0world\0", 12));
+    }
+#endif
 }
 
 namespace QUtf8StringViewOverloadResolution {

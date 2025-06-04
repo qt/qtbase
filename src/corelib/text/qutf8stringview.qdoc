@@ -735,13 +735,24 @@
 */
 
 
-/*! \fn QUtf8StringView::operator std::basic_string_view<storage_type>() const
+/*!
+    \fn QUtf8StringView::operator std::string_view() const
     \since 6.7
 
     Converts this QUtf8StringView object to a
-    \c{std::basic_string_view} object. The returned view will have the
-    same data pointer and length of this view. The character type of
-    the returned view will be \c{storage_type}.
+    \c{std::string_view} object. The returned view will have the
+    same data pointer and length as this view.
+*/
+
+/*!
+    \fn QUtf8StringView::operator std::u8string_view() const
+    \since 6.10
+
+    Converts this QUtf8StringView object to a \c{std::u8string_view}
+    object. The returned view will have the same data pointer and length
+    as this view.
+
+    This function is only available when compiling in C++20 mode.
 */
 
 /*!
