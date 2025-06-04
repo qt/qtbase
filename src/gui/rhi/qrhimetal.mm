@@ -6566,7 +6566,13 @@ bool QMetalSwapChain::createOrResize()
         desc.storageMode = MTLStorageModePrivate;
         desc.usage = MTLTextureUsageRenderTarget;
         for (int i = 0; i < QMTL_FRAMES_IN_FLIGHT; ++i) {
-            [d->msaaTex[i] release];
+            if (d->msaaTex[i]) {
+                QRhiMetalData::DeferredReleaseEntry e;
+                e.type = QRhiMetalData::DeferredReleaseEntry::RenderBuffer;
+                e.lastActiveFrameSlot = 1; // because currentFrameSlot is reset to 0
+                e.renderbuffer.texture = d->msaaTex[i];
+                rhiD->d->releaseQueue.append(e);
+            }
             d->msaaTex[i] = [rhiD->d->dev newTextureWithDescriptor: desc];
         }
         [desc release];
