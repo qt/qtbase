@@ -1534,7 +1534,8 @@ bool AtSpiAdaptor::applicationInterface(QAccessibleInterface *interface, const Q
         QDBusMessage reply = message.createReply(QVariant::fromValue(QLocale().name()));
         return connection.send(reply);
     }
-    qCDebug(lcAccessibilityAtspi) << "AtSpiAdaptor::applicationInterface " << message.path() << interface << function;
+    qCWarning(lcAccessibilityAtspi) << "AtSpiAdaptor::applicationInterface does not implement"
+                                    << function << message.path();
     return false;
 }
 
