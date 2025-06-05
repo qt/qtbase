@@ -21,7 +21,6 @@
 
 QT_BEGIN_NAMESPACE
 
-class QTestResultPrivate;
 class QTestData;
 
 class Q_TESTLIB_EXPORT QTestResult
