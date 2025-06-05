@@ -29,8 +29,11 @@ import android.graphics.Color;
 import android.util.TypedValue;
 import android.content.res.Resources.Theme;
 
-class QtDisplayManager {
+import android.util.Log;
 
+class QtDisplayManager
+{
+    private static String QtTAG = "QtDisplayManager";
     // screen methods
     static native void setDisplayMetrics(int screenWidthPixels, int screenHeightPixels,
                                                 int availableLeftPixels, int availableTopPixels,
@@ -246,19 +249,28 @@ class QtDisplayManager {
     @UsedFromNativeCode
     static Size getDisplaySize(Context displayContext, Display display)
     {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
-            DisplayMetrics realMetrics = new DisplayMetrics();
-            display.getRealMetrics(realMetrics);
-            return new Size(realMetrics.widthPixels, realMetrics.heightPixels);
-        }
+        if (display == null || displayContext == null)
+            return new Size(0, 0);
 
-        Context windowsContext = displayContext.createWindowContext(
-                WindowManager.LayoutParams.TYPE_APPLICATION, null);
-        WindowManager windowManager =
-                (WindowManager) windowsContext.getSystemService(Context.WINDOW_SERVICE);
-        WindowMetrics windowsMetrics = windowManager.getCurrentWindowMetrics();
-        Rect bounds = windowsMetrics.getBounds();
-        return new Size(bounds.width(), bounds.height());
+        if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            final DisplayMetrics metrics = new DisplayMetrics();
+            display.getRealMetrics(metrics);
+            return new Size(metrics.widthPixels, metrics.heightPixels);
+        } else {
+            try {
+                WindowManager windowManager = displayContext.getSystemService(WindowManager.class);
+                if (windowManager != null) {
+                    WindowMetrics metrics = windowManager.getCurrentWindowMetrics();
+                    Rect areaBounds = metrics.getBounds();
+                    return new Size(areaBounds.width(), areaBounds.height());
+                } else {
+                    Log.e(QtTAG, "getDisplaySize(): WindowManager null, display ID" + display.getDisplayId());
+                }
+            } catch (Exception e) {
+                Log.e(QtTAG, "Failed to retrieve display metrics with " + e);
+            }
+            return new Size(0, 0);
+        }
     }
 
     static void setApplicationDisplayMetrics(Activity activity, int width, int height)
