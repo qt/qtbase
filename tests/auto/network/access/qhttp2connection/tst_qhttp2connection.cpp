@@ -766,7 +766,7 @@ void tst_QHttp2Connection::headerFrameAfterRSTOutgoing()
     // Create a new stream then send and handle a new request!
     QHttp2Stream *clientStream2 = connection->createStream().unwrap();
     QSignalSpy client2HeaderReceivedSpy{ clientStream2, &QHttp2Stream::headersReceived };
-    QSignalSpy client2ErrorOccurredSpy{ clientStream, &QHttp2Stream::errorOccurred };
+    QSignalSpy client2ErrorOccurredSpy{ clientStream2, &QHttp2Stream::errorOccurred };
     clientStream2->sendHEADERS(headers, true);
     QVERIFY(newIncomingStreamSpy.wait());
     QHttp2Stream *serverStream2 = newIncomingStreamSpy.front().front().value<QHttp2Stream *>();
