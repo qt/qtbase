@@ -79,6 +79,8 @@ private slots:
     void replace_pos_len();
     void replace_before_after_data();
     void replace_before_after();
+    void replace_after_points_into_this_data();
+    void replace_after_points_into_this();
     void replaceWithSpecifiedLength();
     void replaceWithEmptyNeedleInsertsBeforeEachChar_data();
     void replaceWithEmptyNeedleInsertsBeforeEachChar();
@@ -1550,6 +1552,52 @@ void tst_QByteArray::replace_before_after()
     QCOMPARE(copy.replace(before, after), expected);
     copy = src;
     QCOMPARE(copy.replace(before.constData(), before.size(), after.constData(), after.size()), expected);
+}
+
+void tst_QByteArray::replace_after_points_into_this_data()
+{
+    QTest::addColumn<QByteArray>("src");
+    QTest::addColumn<int>("before_index");
+    QTest::addColumn<int>("before_len");
+    QTest::addColumn<int>("after_index");
+    QTest::addColumn<int>("after_len");
+    QTest::addColumn<QByteArray>("expected");
+
+    QTest::newRow("both-point-into-this") << "abcdefghibcdefghij"_ba
+                                          << 1 << 6
+                                          << 9 << 3
+                                          << "abcdhibcdhij"_ba;
+
+    QTest::newRow("before-points-into-after-too") << "abcdefghibcdefghij"_ba
+                                           << 1 << 6
+                                           << 1 << 5
+                                           << "abcdefhibcdefhij"_ba;
+
+    QTest::newRow("nothing-with-nothing") << "abcdefghibcdefghij"_ba
+                                          << 0 << 0
+                                          << 0 << 0
+                                          << "abcdefghibcdefghij"_ba;
+
+    QTest::newRow("all-null") << QByteArray{}
+                              << 0 << 0
+                              << 0 << 0
+                              << QByteArray{};
+
+}
+
+void tst_QByteArray::replace_after_points_into_this()
+{
+    QFETCH(QByteArray, src);
+    QFETCH(int, before_index);
+    QFETCH(int, before_len);
+    QFETCH(int, after_index);
+    QFETCH(int, after_len);
+    QFETCH(QByteArray, expected);
+
+    auto before = QByteArrayView{src}.sliced(before_index, before_len);
+    auto after = QByteArrayView{src}.sliced(after_index, after_len);
+    src.replace(before, after);
+    QCOMPARE(src, expected);
 }
 
 void tst_QByteArray::replaceWithSpecifiedLength()
