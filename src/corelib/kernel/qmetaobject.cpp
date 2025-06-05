@@ -736,8 +736,7 @@ static int indexOfMethod_helper(const QMetaObject *m, const char *method)
 
 int QMetaObject::indexOfMethod(const char *method) const
 {
-    const QMetaObject *m = this;
-    int i = indexOfMethod_helper(m, method);
+    int i = indexOfMethod_helper(this, method);
     return i;
 }
 
@@ -810,8 +809,7 @@ static int indexOfSignal_helper(const QMetaObject *m, const char *signal)
 
 int QMetaObject::indexOfSignal(const char *signal) const
 {
-    const QMetaObject *m = this;
-    int i = indexOfSignal_helper(m, signal);
+    int i = indexOfSignal_helper(this, signal);
     return i;
 }
 
@@ -866,8 +864,7 @@ static int indexOfSlot_helper(const QMetaObject *m, const char *slot)
 
 int QMetaObject::indexOfSlot(const char *slot) const
 {
-    const QMetaObject *m = this;
-    int i = indexOfSlot_helper(m, slot);
+    int i = indexOfSlot_helper(this, slot);
     return i;
 }
 
