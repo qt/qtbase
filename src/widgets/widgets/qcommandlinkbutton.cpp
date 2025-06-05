@@ -11,6 +11,7 @@
 #include <qmath.h>
 
 #include "private/qpushbutton_p.h"
+#include "private/qstylesheetstyle_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -277,9 +278,18 @@ QCommandLinkButton::~QCommandLinkButton()
 bool QCommandLinkButton::event(QEvent *e)
 {
     if (e->type() == QEvent::StyleChange) {
-        QStyleOptionButton opt;
-        initStyleOption(&opt);
-        setIcon(style()->standardIcon(QStyle::SP_CommandLink, &opt, this));
+        // If the new style is a QStyleSheetStyle, don't reset the icon, because:
+        // - either it has been explicitly set, in which case we want to keep it.
+        // - or it has been initialised by the previous style, which is now the base style,
+        //   in which case we want to keep it as well.
+        // - or it has been set in the style sheet, in which case we don't want to override it here.
+        // When a style sheet with an icon is replaced by one without an icon, the old icon
+        // will be reset, when baseStyle()->repolish() is called.
+        if (!qobject_cast<QStyleSheetStyle *>(style())) {
+            QStyleOptionButton opt;
+            initStyleOption(&opt);
+            setIcon(style()->standardIcon(QStyle::SP_CommandLink, &opt, this));
+        }
     }
 
     return QPushButton::event(e);
