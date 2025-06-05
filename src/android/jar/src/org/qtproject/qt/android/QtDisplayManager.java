@@ -18,6 +18,7 @@ import android.view.View;
 import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
+import android.view.WindowMetrics;
 import android.view.WindowInsetsController;
 import android.view.Window;
 
@@ -284,16 +285,18 @@ class QtDisplayManager
         } else {
             try {
                 Context displayContext = context.createDisplayContext(display);
-                Context windowsContext = displayContext.createWindowContext(
-                        WindowManager.LayoutParams.TYPE_APPLICATION, null);
-                WindowManager windowManager = (WindowManager) windowsContext.getSystemService(
-                        Context.WINDOW_SERVICE);
-                Rect bounds = windowManager.getMaximumWindowMetrics().getBounds();
-                return new Size(bounds.width(), bounds.height());
-            } catch (SecurityException e) {
+                WindowManager windowManager = displayContext.getSystemService(WindowManager.class);
+                if (windowManager != null) {
+                    WindowMetrics metrics = windowManager.getCurrentWindowMetrics();
+                    Rect areaBounds = metrics.getBounds();
+                    return new Size(areaBounds.width(), areaBounds.height());
+                } else {
+                    Log.e(QtTAG, "getDisplaySize(): WindowManager null, display ID" + display.getDisplayId());
+                }
+            } catch (Exception e) {
                 Log.e(QtTAG, "Failed to retrieve display metrics with " + e);
-                return new Size(0, 0);
             }
+            return new Size(0, 0);
         }
     }
 
