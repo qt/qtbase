@@ -2223,7 +2223,7 @@ void QTest::ignoreMessage(QtMsgType type, const QRegularExpression &messagePatte
 
     Appends a test failure to the test log if any warning is output.
 
-    \sa failOnWarning()
+    \sa failOnWarning(const char *)
 */
 void QTest::failOnWarning()
 {
