@@ -455,7 +455,7 @@
    \note This macro can only be used in a test function that is invoked
    by the test framework.
 
-   \sa QTRY_VERIFY2_WITH_TIMEOUT(), QTRY_VERIFY2(), QVERIFY(), QCOMPARE(), QTRY_COMPARE(),
+   \sa QTRY_VERIFY2_WITH_TIMEOUT(), QTRY_VERIFY(), QVERIFY(), QCOMPARE(), QTRY_COMPARE(),
    QEXPECT_FAIL()
 */
 
