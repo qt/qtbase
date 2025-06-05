@@ -34,6 +34,23 @@ endmacro()
 
 macro(qt_internal_top_level_setup_after_project)
     qt_internal_top_level_setup_testing()
+    qt_internal_top_level_setup_cmake_and_export_namespace()
+endmacro()
+
+# Setting QT_CMAKE_EXPORT_NAMESPACE in the top-level scope is needed for any deferred call that is
+# run on the top-level scope (CMAKE_BINARY_DIR).
+macro(qt_internal_top_level_setup_cmake_and_export_namespace)
+    # Include the file that defines qt_internal_setup_cmake_and_export_namespace.
+    # We don't try to call find_package(QtBuildInternals) because that has a lot more side
+    # effects.
+    set(__qt6_build_internals_helpers_path
+        "${__qt6_qtbase_src_path}/cmake/QtBuildInternals/QtBuildInternalsHelpers.cmake")
+    if(NOT EXISTS "${__qt6_build_internals_helpers_path}")
+        message(FATAL_ERROR "Required file does not exist: '${__qt6_build_internals_helpers_path}'")
+    endif()
+    include("${__qt6_build_internals_helpers_path}")
+
+    qt_internal_setup_cmake_and_export_namespace()
 endmacro()
 
 macro(qt_internal_top_level_setup_testing)

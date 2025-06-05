@@ -11,18 +11,7 @@ if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/QtBuildInternalsExtra.cmake")
     include(${CMAKE_CURRENT_LIST_DIR}/QtBuildInternalsExtra.cmake)
 endif()
 
-macro(qt_internal_setup_cmake_and_export_namespace)
-    # The variables might have already been set in QtBuildInternalsExtra.cmake if the file is
-    # included while building a new module and not QtBase. In that case, stop overriding the value.
-    if(NOT INSTALL_CMAKE_NAMESPACE)
-        set(INSTALL_CMAKE_NAMESPACE "Qt${PROJECT_VERSION_MAJOR}"
-            CACHE STRING "CMake namespace [Qt${PROJECT_VERSION_MAJOR}]")
-    endif()
-    if(NOT QT_CMAKE_EXPORT_NAMESPACE)
-        set(QT_CMAKE_EXPORT_NAMESPACE "Qt${PROJECT_VERSION_MAJOR}"
-            CACHE STRING "CMake namespace used when exporting targets [Qt${PROJECT_VERSION_MAJOR}]")
-    endif()
-endmacro()
+include(${CMAKE_CURRENT_LIST_DIR}/QtBuildInternalsHelpers.cmake)
 
 macro(qt_set_up_build_internals_paths)
     # Set up the paths for the cmake modules located in the prefix dir. Prepend, so the paths are

@@ -70,8 +70,25 @@ if(QT_WILL_INSTALL)
         DESTINATION "${__build_internals_install_dir}")
 endif()
 
+set(__build_internals_extra_files
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/QtBuildInternals/QtBuildInternalsHelpers.cmake"
+)
+
+qt_copy_or_install(
+    FILES ${__build_internals_extra_files}
+    DESTINATION "${__build_internals_install_dir}")
+
+# In prefix builds we also need to copy the files into the build dir.
+if(QT_WILL_INSTALL)
+    foreach(__build_internals_file ${__build_internals_extra_files})
+        file(COPY "${__build_internals_file}" DESTINATION "${__build_internals_install_dir}")
+    endforeach()
+endif()
+
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/QtBuildInternals/${__build_internals_standalone_test_template_dir}/CMakeLists.txt")
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/QtBuildInternals/${__build_internals_standalone_test_template_dir}/CMakeLists.txt"
+    ${__build_internals_extra_files}
+)
 
 qt_internal_create_toolchain_file()
 
