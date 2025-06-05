@@ -311,7 +311,8 @@ void QHttp2ProtocolHandler::handleHeadersReceived(const HPack::HttpHeader &heade
     auto &requestPair = requestReplyPairs[stream];
     auto *httpReply = requestPair.second;
     auto &httpRequest = requestPair.first;
-    Q_ASSERT(httpReply || stream->state() == QHttp2Stream::State::ReservedRemote);
+    if (!httpReply && (!stream || stream->state() != QHttp2Stream::State::ReservedRemote))
+        return;
 
     auto *httpReplyPrivate = httpReply->d_func();
 
@@ -394,6 +395,8 @@ void QHttp2ProtocolHandler::handleDataReceived(const QByteArray &data, bool endS
     QHttp2Stream *stream = qobject_cast<QHttp2Stream *>(sender());
     auto &httpPair = requestReplyPairs[stream];
     auto *httpReply = httpPair.second;
+    if (!httpReply)
+        return;
     Q_ASSERT(!stream->isPromisedStream());
 
     if (!data.isEmpty() && !httpPair.first.d->needResendWithCredentials) {

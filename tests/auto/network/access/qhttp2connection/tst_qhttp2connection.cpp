@@ -30,6 +30,7 @@ private slots:
     void testBadFrameSize();
     void testDataFrameAfterRSTIncoming();
     void testDataFrameAfterRSTOutgoing();
+    void headerFrameAfterRSTOutgoing_data();
     void headerFrameAfterRSTOutgoing();
     void connectToServer();
     void WINDOW_UPDATE();
@@ -728,8 +729,16 @@ void tst_QHttp2Connection::testDataFrameAfterRSTOutgoing()
     QVERIFY(closedServerSpy.wait());
 }
 
+void tst_QHttp2Connection::headerFrameAfterRSTOutgoing_data()
+{
+    QTest::addColumn<bool>("deleteStream");
+    QTest::addRow("retain-stream") << false;
+    QTest::addRow("delete-stream") << true;
+}
+
 void tst_QHttp2Connection::headerFrameAfterRSTOutgoing()
 {
+    QFETCH(const bool, deleteStream);
     auto [client, server] = makeFakeConnectedSockets();
     auto *connection = makeHttp2Connection(client.get(), {}, Client);
     auto *serverConnection = makeHttp2Connection(server.get(), {}, Server);
@@ -753,6 +762,8 @@ void tst_QHttp2Connection::headerFrameAfterRSTOutgoing()
 
     // Send an RST frame from the client, but we don't process it yet
     clientStream->sendRST_STREAM(Http2::CANCEL);
+    if (deleteStream)
+        delete std::exchange(clientStream, nullptr);
 
     // The server sends a reply, not knowing about the inbound RST frame
     const HPack::HttpHeader StandardReply{ { ":status", "200" }, { "x-whatever", "some info" } };
