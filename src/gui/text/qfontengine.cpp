@@ -421,7 +421,14 @@ void QFontEngine::initializeHeightMetrics() const
             !getSfntTable(QFont::Tag("EBLC").value()).isEmpty()
             || !getSfntTable(QFont::Tag("CBLC").value()).isEmpty()
             || !getSfntTable(QFont::Tag("bdat").value()).isEmpty();
-    if (!hasEmbeddedBitmaps) {
+
+    // When porting applications from Qt 5 to Qt 6, users have noticed differences in line
+    // metrics due to the effort to consolidate these across platforms instead of using the
+    // system values directly. This environment variable gives a "last resort" for those users
+    // to tell Qt to prefer the metrics we get from the system, despite the fact these being
+    // inconsistent across platforms.
+    static bool useSystemLineMetrics = qEnvironmentVariableIntValue("QT_USE_SYSTEM_LINE_METRICS") > 0;
+    if (!hasEmbeddedBitmaps && !useSystemLineMetrics) {
         // Get HHEA table values if available
         processHheaTable();
 
