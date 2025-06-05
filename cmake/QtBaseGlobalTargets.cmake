@@ -55,10 +55,20 @@ qt_install(FILES
     DESTINATION "${__build_internals_install_dir}"
     COMPONENT Devel
 )
+
+qt_path_join(__build_internals_standalone_test_template_path
+    "${CMAKE_CURRENT_SOURCE_DIR}"
+    "cmake/QtBuildInternals/${__build_internals_standalone_test_template_dir}")
+
 qt_copy_or_install(
-    DIRECTORY
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/QtBuildInternals/${__build_internals_standalone_test_template_dir}"
+    DIRECTORY "${__build_internals_standalone_test_template_path}"
     DESTINATION "${__build_internals_install_dir}")
+
+# In prefix builds we also need to copy the files into the build dir.
+if(QT_WILL_INSTALL)
+    file(COPY "${__build_internals_standalone_test_template_path}"
+        DESTINATION "${__build_internals_install_dir}")
+endif()
 
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/QtBuildInternals/${__build_internals_standalone_test_template_dir}/CMakeLists.txt")
