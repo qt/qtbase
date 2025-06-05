@@ -137,13 +137,18 @@ macro(qt_internal_qtbase_install_mkspecs)
         LIST_DIRECTORIES TRUE
         "${PROJECT_SOURCE_DIR}/mkspecs/*")
     foreach(entry IN LISTS mkspecs_subdirs)
-        if (IS_DIRECTORY ${entry})
+        if(IS_DIRECTORY ${entry})
             qt_copy_or_install(DIRECTORY "${entry}"
                                DESTINATION ${mkspecs_install_dir}
                                USE_SOURCE_PERMISSIONS)
         else()
             qt_copy_or_install(FILES "${entry}"
                                DESTINATION ${mkspecs_install_dir})
+        endif()
+
+        # In prefix builds we also need to copy the files into the build dir.
+        if(QT_WILL_INSTALL)
+            file(COPY "${entry}" DESTINATION "${mkspecs_install_dir}")
         endif()
     endforeach()
 endmacro()
