@@ -265,6 +265,7 @@ bool QHttp2ProtocolHandler::tryRemoveReply(QHttpNetworkReply *reply)
 {
     QHttp2Stream *stream = streamIDs.take(reply);
     if (stream) {
+        stream->sendRST_STREAM(stream->isUploadingDATA() ? Http2::CANCEL : Http2::HTTP2_NO_ERROR);
         requestReplyPairs.remove(stream);
         stream->deleteLater();
         return true;

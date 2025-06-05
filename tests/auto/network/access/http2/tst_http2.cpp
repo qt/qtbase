@@ -88,6 +88,7 @@ private slots:
     void goaway();
     void earlyResponse();
     void earlyError();
+    void abortReply();
     void connectToHost_data();
     void connectToHost();
     void maxFrameSize();
@@ -773,6 +774,69 @@ void tst_Http2::earlyError()
     QVERIFY(prefaceOK);
     QTRY_VERIFY(serverGotSettingsACK);
 }
+
+/*
+    As above this test relies a bit on timing so we are
+    using QHttpNetworkRequest directly.
+*/
+void tst_Http2::abortReply()
+{
+    clearHTTP2State();
+    serverPort = 0;
+
+    const auto serverConnectionType = defaultConnectionType() == H2Type::h2c ? H2Type::h2Direct
+                                                                             : H2Type::h2Alpn;
+    ServerPtr targetServer(newServer(defaultServerSettings, serverConnectionType));
+
+    QMetaObject::invokeMethod(targetServer.data(), "startServer", Qt::QueuedConnection);
+    runEventLoop();
+
+    QVERIFY(serverPort != 0);
+
+    nRequests = 1;
+
+    // SETUP create QHttpNetworkConnection primed for http2 usage
+    const auto connectionType = serverConnectionType == H2Type::h2Direct
+            ? QHttpNetworkConnection::ConnectionTypeHTTP2Direct
+            : QHttpNetworkConnection::ConnectionTypeHTTP2;
+    QHttpNetworkConnection connection(1, "127.0.0.1", serverPort, true, false, nullptr,
+                                      connectionType);
+    QSslConfiguration config = QSslConfiguration::defaultConfiguration();
+    config.setAllowedNextProtocols({"h2"});
+    connection.setSslConfiguration(config);
+    connection.ignoreSslErrors();
+
+    // SETUP manually setup the QHttpNetworkRequest
+    QHttpNetworkRequest req;
+    req.setSsl(true);
+    req.setHTTP2Allowed(true);
+    if (defaultConnectionType() == H2Type::h2c)
+        req.setH2cAllowed(true);
+    req.setOperation(QHttpNetworkRequest::Post);
+    req.setUrl(requestUrl(defaultConnectionType()));
+    // ^ All the above is set-up, the real code starts below v
+
+    std::unique_ptr<QHttpNetworkReply> reply{connection.sendRequest(req)};
+    QVERIFY(reply);
+    QSemaphore sem;
+    QObject::connect(reply.get(), &QHttpNetworkReply::requestSent, reply.get(), [&](){
+        reply.reset();
+        sem.release();
+    });
+
+    // failOnWarning doesn't work for qCritical, so we set this env-var:
+    const char envvar[] = "QT_FATAL_CRITICALS";
+    auto restore = qScopeGuard([envvar, prev = qgetenv(envvar)]() {
+        qputenv(envvar, prev);
+    });
+    qputenv(envvar, "1");
+    QTest::failOnWarning(QRegularExpression("HEADERS on invalid stream"));
+    QVERIFY(QTest::qWaitFor([&sem]() { return sem.tryAcquire(); }));
+    using namespace std::chrono_literals;
+    // Process some extra events in case they trigger an error:
+    QTest::qWait(100ms);
+}
+
 
 void tst_Http2::connectToHost_data()
 {
