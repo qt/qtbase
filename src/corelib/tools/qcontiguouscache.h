@@ -152,7 +152,6 @@ template <typename T>
 void QContiguousCache<T>::detach_helper()
 {
     Data *x = allocateData(d->alloc);
-    x->ref.storeRelaxed(1);
     x->count = d->count;
     x->start = d->start;
     x->offset = d->offset;
@@ -184,7 +183,6 @@ void QContiguousCache<T>::setCapacity(qsizetype asize)
         return;
     detach();
     Data *x = allocateData(asize);
-    x->ref.storeRelaxed(1);
     x->alloc = asize;
     x->count = qMin(d->count, asize);
     x->offset = d->offset + d->count - x->count;
@@ -231,7 +229,6 @@ void QContiguousCache<T>::clear()
         d->count = d->start = d->offset = 0;
     } else {
         Data *x = allocateData(d->alloc);
-        x->ref.storeRelaxed(1);
         x->alloc = d->alloc;
         x->count = x->start = x->offset = 0;
         if (!d->ref.deref())
@@ -251,7 +248,6 @@ QContiguousCache<T>::QContiguousCache(qsizetype cap)
 {
     Q_ASSERT(cap >= 0);
     d = allocateData(cap);
-    d->ref.storeRelaxed(1);
     d->alloc = cap;
     d->count = d->start = d->offset = 0;
 }

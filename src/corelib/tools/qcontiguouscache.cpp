@@ -22,7 +22,8 @@ void QContiguousCacheData::dump() const
 
 QContiguousCacheData *QContiguousCacheData::allocateData(qsizetype size, qsizetype alignment)
 {
-    return static_cast<QContiguousCacheData *>(qMallocAligned(size_t(size), size_t(alignment)));
+    void *mem = qMallocAligned(size_t(size), size_t(alignment));
+    return new (mem) QContiguousCacheData{/*ref=*/1, 0, 0, 0, 0};
 }
 
 void QContiguousCacheData::freeData(QContiguousCacheData *data)
