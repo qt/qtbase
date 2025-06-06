@@ -241,6 +241,18 @@ namespace QTest {
         return false;
     }
 
+    static void handleFatal()
+    {
+            /* Right now, we're inside the custom message handler and we're
+               being qt_message_output in qglobal.cpp. After we return from this
+               function, it will proceed with calling exit() and abort() and
+               hence crash. Therefore, we call these logging functions such that
+               we wrap up nicely, and in particular produce well-formed XML.
+            */
+            QTestLog::leaveTestFunction();
+            QTestLog::stopLogging();
+    }
+
     static bool handleFailOnWarning(const QMessageLogContext &context, const QString &message)
     {
         // failOnWarning can be called multiple times per test function, so let
@@ -267,6 +279,26 @@ namespace QTest {
         return false;
     }
 
+    static constexpr bool isWarnOrWorse(QtMsgType type)
+    {
+        // ## TODO Inline this once we get to Qt 7 !
+#if QT_VERSION_MAJOR == 7 || defined(QT_BOOTSTRAPPED) // To match QtMsgType decl
+        return type >= QtWarningMsg;
+#else
+        // Until Qt 6, Info was > Fatal :-(
+        switch (type) {
+        case QtWarningMsg:
+        case QtCriticalMsg:
+        case QtFatalMsg:
+            return true;
+        case QtDebugMsg:
+        case QtInfoMsg:
+            return false;
+        }
+        Q_UNREACHABLE_RETURN(false);
+#endif
+    }
+
     static void messageHandler(QtMsgType type, const QMessageLogContext & context, const QString &message)
     {
         static QBasicAtomicInt counter = Q_BASIC_ATOMIC_INITIALIZER(QTest::maxWarnings);
@@ -286,8 +318,11 @@ namespace QTest {
             return;
         }
 
-        if (type == QtWarningMsg && handleFailOnWarning(context, message))
+        if (isWarnOrWorse(type) && handleFailOnWarning(context, message)) {
+            if (type == QtFatalMsg)
+                handleFatal();
             return;
+        }
 
         if (type != QtFatalMsg) {
             if (counter.loadRelaxed() <= 0)
@@ -307,14 +342,8 @@ namespace QTest {
             logger->addMessage(type, context, message);
 
         if (type == QtFatalMsg) {
-            /* Right now, we're inside the custom message handler and we're
-             * being qt_message_output in qglobal.cpp. After we return from
-             * this function, it will proceed with calling exit() and abort()
-             * and hence crash. Therefore, we call these logging functions such
-             * that we wrap up nicely, and in particular produce well-formed XML. */
             QTestResult::addFailure("Received a fatal error.", context.file, context.line);
-            QTestLog::leaveTestFunction();
-            QTestLog::stopLogging();
+            handleFatal();
         }
     }
 }
