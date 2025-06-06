@@ -718,7 +718,7 @@ bool QDtls::setCookieGeneratorParameters(const GeneratorParameters &params)
     secret is obtained from the backend-specific cryptographically strong
     pseudorandom number generator.
 
-    \sa QDtlsClientVerifier, cookieGeneratorParameters()
+    \sa QDtlsClientVerifier, setCookieGeneratorParameters()
 */
 QDtls::GeneratorParameters QDtls::cookieGeneratorParameters() const
 {

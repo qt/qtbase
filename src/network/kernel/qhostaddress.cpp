@@ -1191,7 +1191,7 @@ bool QHostAddress::isSiteLocal() const
     4193 says that, in practice, "applications may treat these addresses like
     global scoped addresses." Only routers need care about the distinction.
 
-    \sa isLoopback(), isGlobal(), isMulticast(), isLinkLocal(), isUniqueLocalUnicast(), isPrivateUse()
+    \sa isLoopback(), isGlobal(), isMulticast(), isLinkLocal(), isPrivateUse()
 */
 bool QHostAddress::isUniqueLocalUnicast() const
 {
