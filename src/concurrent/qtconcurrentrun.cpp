@@ -97,10 +97,11 @@
 
     \section3 Using Member Functions
 
-    QtConcurrent::run() also accepts pointers to member functions. The first
-    argument must be either a const reference or a pointer to an instance of
-    the class. Passing by const reference is useful when calling const member
-    functions; passing by pointer is useful for calling non-const member
+    QtConcurrent::run() also accepts pointers to member functions.
+    In Qt 6, the first argument must be the pointer to the member function,
+    followed by either a const reference or a pointer to an instance of the
+    class. Passing a const reference is useful when calling const member
+    functions; passing a pointer is useful for calling non-const member
     functions that modify the instance.
 
     For example, calling QByteArray::split() (a const member function) in a
