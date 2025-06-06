@@ -3316,7 +3316,7 @@ size_t qHash(long double key, size_t seed) noexcept
     Returns \c true if the hash contains an item with the \a key and
     \a value; otherwise returns \c false.
 
-    \sa contains()
+    \sa count()
 */
 
 /*!
@@ -3326,7 +3326,7 @@ size_t qHash(long double key, size_t seed) noexcept
     Removes all the items that have the \a key from the hash.
     Returns the number of items removed.
 
-    \sa remove()
+    \sa remove(const Key &key, const T &value)
 */
 
 /*!
@@ -3429,7 +3429,7 @@ size_t qHash(long double key, size_t seed) noexcept
 
     Returns the number of items with the \a key and \a value.
 
-    \sa count()
+    \sa contains()
 */
 
 /*!

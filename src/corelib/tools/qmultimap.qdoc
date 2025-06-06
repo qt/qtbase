@@ -732,7 +732,7 @@
     If the multi map contains no item with key \a key, the function
     returns constEnd().
 
-    \sa find(), QMultiMap::constFind()
+    \sa find(), QMultiMap::constFind(const Key &key, const T &value)
 */
 
 /*!

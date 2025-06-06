@@ -582,7 +582,7 @@
     \c{Offset + Count} \e{and} size() >= \c{Offset + Count}), otherwise the
     behavior is undefined.
 
-    \sa subspan(QSpan<T,E>::size_type, QSpan<T,E>::size_type), subspan(), first(), last()
+    \sa subspan(QSpan<T,E>::size_type, QSpan<T,E>::size_type), first(), last()
     \sa {Variable-Size and Fixed-Size Spans}
 */
 
