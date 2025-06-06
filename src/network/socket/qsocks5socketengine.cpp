@@ -966,7 +966,7 @@ QSocks5SocketEngine::~QSocks5SocketEngine()
 
 static int nextDescriptor()
 {
-    static QBasicAtomicInt counter;
+    Q_CONSTINIT static QBasicAtomicInt counter = Q_BASIC_ATOMIC_INITIALIZER(0);
     return 1 + counter.fetchAndAddRelaxed(1);
 }
 
