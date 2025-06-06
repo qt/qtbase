@@ -467,7 +467,7 @@ void *QMetaContainer::begin(void *container) const
 
     Returns \c nullptr if the container doesn't offer any non-const iterators.
 
-    \sa hasIterator(), end(), constBegin(), constEnd(), destroyIterator()
+    \sa hasIterator(), begin(), constBegin(), constEnd(), destroyIterator()
  */
 void *QMetaContainer::end(void *container) const
 {
