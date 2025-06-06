@@ -18,12 +18,17 @@
   #endif
 #endif
 #include <qmutex.h>
+#include <QtCore/qscopeguard.h>
 #include <qthread.h>
 #include <qtimer.h>
 #include <qwaitcondition.h>
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QSignalSpy>
+
+#include <atomic>
+#include <optional>
+#include <thread>
 
 using namespace std::chrono_literals;
 
@@ -154,6 +159,7 @@ private slots:
 #endif
     void processEventsExcludeTimers();
     void deliverInDefinedOrder();
+    void canUseQThreadQuitToExitEventLoopInStdThread();
 
     // keep this test last:
     void nestedLoops();
@@ -589,6 +595,46 @@ void tst_QEventLoop::deliverInDefinedOrder()
         threads[t].wait();
     }
 
+}
+
+void tst_QEventLoop::canUseQThreadQuitToExitEventLoopInStdThread()
+{
+#ifdef Q_CC_MINGW
+    QSKIP("Disabled for MINGW, due to a runtime bug (QTBUG-131892).");
+#endif
+    std::atomic<QThread*> adopted = nullptr;
+    std::atomic<bool> called = false;
+    std::atomic<bool> timedOut = false;
+
+    auto t = std::thread([&] {
+            adopted.store(QThread::currentThread());
+#ifdef __cpp_lib_atomic_wait
+            adopted.notify_one();
+#endif
+            QEventLoop loop;
+            // fallback in case the invokeMethod() below fails
+            QTimer::singleShot(1s, &loop, [&] { timedOut.store(true); loop.quit(); });
+            loop.exec();
+        });
+
+    QObject obj;
+    std::optional joiner = qScopeGuard([&] { t.join(); }); // CTAD
+#ifdef __cpp_lib_atomic_wait
+    adopted.wait(nullptr); // no timed version exists :(
+    QVERIFY(adopted.load());
+#else
+    QVERIFY(QTest::qWaitFor([&] { return adopted.load(); }));
+#endif
+    QVERIFY(obj.moveToThread(adopted.load()));
+    QCOMPARE(obj.thread(), adopted.load());
+    // The lambda will only be executed when `adopted` has an event loop running:
+    QVERIFY(QMetaObject::invokeMethod(&obj, [&] {
+                                                called.store(true);
+                                                QThread::currentThread()->quit();
+                                            }, Qt::QueuedConnection));
+    joiner.reset(); // joins
+    QVERIFY(!timedOut.load());
+    QVERIFY(called.load());
 }
 
 class JobObject : public QObject
