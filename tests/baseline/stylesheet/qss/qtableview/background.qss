@@ -1,0 +1,9 @@
+QAbstractItemView::item:first{
+    background-color: green;
+}
+QAbstractItemView::item:middle {
+    background-color: yellow;
+}
+QAbstractItemView::item:last {
+    background-color: red;
+}

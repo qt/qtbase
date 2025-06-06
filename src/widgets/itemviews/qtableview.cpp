@@ -1022,6 +1022,25 @@ void QTableViewPrivate::sortIndicatorChanged(int column, Qt::SortOrder order)
     model->sort(column, order);
 }
 
+QStyleOptionViewItem::ViewItemPosition QTableViewPrivate::viewItemPosition(
+        const QModelIndex &index) const
+{
+    int visualColumn = horizontalHeader->visualIndex(index.column());
+    int count = horizontalHeader->count();
+
+    if (count <= 0 || visualColumn < 0 || visualColumn >= count)
+        return QStyleOptionViewItem::Invalid;
+
+    if (count == 1 && visualColumn == 0)
+        return QStyleOptionViewItem::OnlyOne;
+    else if (visualColumn == 0)
+        return QStyleOptionViewItem::Beginning;
+    else if (visualColumn == count - 1)
+        return QStyleOptionViewItem::End;
+    else
+        return QStyleOptionViewItem::Middle;
+}
+
 /*!
   \internal
   Draws a table cell.
@@ -1045,6 +1064,7 @@ void QTableViewPrivate::drawCell(QPainter *painter, const QStyleOptionViewItem &
         }
         opt.palette.setCurrentColorGroup(cg);
     }
+    opt.viewItemPosition = viewItemPosition(index);
 
     if (index == q->currentIndex()) {
         const bool focus = (q->hasFocus() || viewport->hasFocus()) && q->currentIndex().isValid();
