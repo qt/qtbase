@@ -12,6 +12,7 @@
 
 #include <QtCore/qlist.h>
 
+#include <QtCore/q20memory.h>
 #include <QtCore/q26numeric.h>
 
 #include <glib.h>
@@ -294,7 +295,8 @@ QEventDispatcherGlibPrivate::QEventDispatcherGlibPrivate(GMainContext *context)
     g_source_set_name(source, "[Qt] GPostEventSource");
     postEventSource = reinterpret_cast<GPostEventSource *>(source);
 
-    postEventSource->serialNumber.storeRelaxed(1);
+    // atomic ints (Q or std) can't be initialized from raw memory w/o C++20's atomic_ref
+    q20::construct_at(&postEventSource->serialNumber, 1);
     postEventSource->d = this;
     g_source_set_can_recurse(&postEventSource->source, true);
     g_source_attach(&postEventSource->source, mainContext);
