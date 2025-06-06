@@ -21,25 +21,31 @@
 # ``DB2::DB2``
 #     The db2 client library
 
+if(NOT DEFINED DB2_ROOT)
+    if(DEFINED ENV{DB2_ROOT})
+        set(DB2_ROOT "$ENV{DB2_ROOT}")
+    endif()
+endif()
+
 if (NOT DEFINED DB2_INCLUDE_DIR)
   find_path(DB2_INCLUDE_DIR
     NAMES sqlcli1.h
-    HINTS ENV DB2_HOME
+    HINTS "${DB2_ROOT}" ENV DB2_HOME
     PATH_SUFFIXES include)
 else()
   find_path(DB2_INCLUDE_DIR
     NAMES sqlcli1.h
-    HINTS ${DB2_INCLUDE_DIR})
+    HINTS "${DB2_INCLUDE_DIR}")
 endif()
 
 if (NOT DEFINED DB2_LIBRARY_DIR)
   find_library(DB2_LIBRARY
-    NAMES db2
-    HINTS ENV DB2LIB)
+    NAMES db2 db2cli64
+    HINTS "${DB2_ROOT}" ENV DB2LIB)
 else()
   find_library(DB2_LIBRARY
     NAMES db2
-    HINTS ${DB2_LIBRARY_DIR})
+    HINTS "${DB2_LIBRARY_DIR}")
 endif()
 
 include(FindPackageHandleStandardArgs)

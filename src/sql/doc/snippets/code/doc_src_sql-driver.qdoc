@@ -105,7 +105,7 @@ cmake --install .
 //! [18]
 mkdir build-sqldrivers
 cd build-sqldrivers
-qt-cmake -G Ninja <qt_source_directory>/qtbase/src/plugins/sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>/<platform> -DDB2_INCLUDE_DIR="/usr/local/db2/include" -DDB2_LIBRARY="/usr/local/db2/lib/libdb2.<so|dylib>"
+qt-cmake -G Ninja <qt_source_directory>/qtbase/src/plugins/sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>/<platform> -DDB2_ROOT="/usr/local/db2"
 cmake --build .
 cmake --install .
 //! [18]
@@ -114,7 +114,7 @@ cmake --install .
 //! [20]
 mkdir build-sqldrivers
 cd build-sqldrivers
-qt-cmake -G Ninja <qt_installation_path>\Src\qtbase\src\plugins\sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>\<platform> -DDB2_INCLUDE_DIR="C:\db2\include" -DDB2_LIBRARY="C:\db2\lib\db2.lib"
+qt-cmake -G Ninja <qt_installation_path>\Src\qtbase\src\plugins\sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>\<platform> -DDB2_ROOT="C:\db2"
 cmake --build .
 cmake --install .
 //! [20]
