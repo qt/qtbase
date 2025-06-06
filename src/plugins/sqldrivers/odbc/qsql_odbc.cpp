@@ -329,16 +329,10 @@ static void qSqlWarning(const QString &message, T &&val)
         qCWarning(lcOdbc) << message << "\tError:" << addMsg;
 }
 
+template <typename T>
 static QSqlError qMakeError(const QString &err,
                             QSqlError::ErrorType type,
-                            const QODBCResultPrivate *p)
-{
-    return errorFromDiagRecords(err, type, qODBCWarn(p));
-}
-
-static QSqlError qMakeError(const QString &err,
-                            QSqlError::ErrorType type,
-                            const QODBCDriverPrivate *p)
+                            const T *p)
 {
     return errorFromDiagRecords(err, type, qODBCWarn(p));
 }
