@@ -4933,7 +4933,7 @@ QByteArray QByteArray::fromEcmaUint8Array(emscripten::val uint8array)
     \since 6.5
     \ingroup platform-type-conversions
 
-    \sa toEcmaUint8Array()
+    \sa fromEcmaUint8Array()
 */
 emscripten::val QByteArray::toEcmaUint8Array()
 {
