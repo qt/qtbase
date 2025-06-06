@@ -139,7 +139,7 @@
 
     To achieve locking of the shared memory segment, applications will need to
     deploy their own mechanisms. One way may be to use \l QLockFile. Another
-    and less costly solution is to use QBasicAtomicInteger or \c{std::atomic} in
+    and less costly solution is to use QAtomicInteger or \c{std::atomic} in
     a pre-determined offset in the segment itself. Higher-level locking
     primitives may be available on some operating systems; for example, on
     Linux, applications can set the "pshared" flag in the mutex attribute
