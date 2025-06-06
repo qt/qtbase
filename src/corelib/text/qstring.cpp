@@ -7105,9 +7105,8 @@ QString &QString::nullTerminate()
     \since 6.10
 
     Returns a copy of this string that is always null-terminated.
-    See nullTerminate().
 
-    \sa nullTerminated(), fromRawData(), setRawData()
+    \sa nullTerminate(), fromRawData(), setRawData()
 */
 QString QString::nullTerminated() const &
 {
