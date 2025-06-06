@@ -1240,8 +1240,7 @@ void tst_QDir::current()
 #if defined(Q_OS_WIN)
     QCOMPARE(newCurrent.absolutePath().toLower(), currentDir.toLower());
 #else
-        // getcwd(2) on Unix returns the canonical path
-        QCOMPARE(newCurrent.absolutePath(), QDir(currentDir).canonicalPath());
+    QCOMPARE(newCurrent.absolutePath(), currentDir);
 #endif
     }
 
@@ -1255,25 +1254,21 @@ void tst_QDir::cd_data()
     QTest::addColumn<bool>("successExpected");
     QTest::addColumn<QString>("newDir");
 
-    // use the canonical path for m_dataPath here, because if TMPDIR points to
-    // a symlink like what happens on Apple systems (/tmp -> /private/tmp),
-    // then /tmp/.. will not be the same as / (it's /private).
-    QString canonicalPath = QDir(m_dataPath).canonicalPath();
-    int index = canonicalPath.lastIndexOf(QLatin1Char('/'));
-    QTest::newRow("cdUp") << canonicalPath << ".." << true << canonicalPath.left(index==0?1:index);
+    int index = m_dataPath.lastIndexOf(QLatin1Char('/'));
+    QTest::newRow("cdUp") << m_dataPath << ".." << true << m_dataPath.left(index==0?1:index);
     QTest::newRow("cdUp non existent (relative dir)") << "anonexistingDir" << ".."
-                                                      << true << canonicalPath;
-    QTest::newRow("cdUp non existent (absolute dir)") << canonicalPath + "/anonexistingDir" << ".."
-                                                      << true << canonicalPath;
-    QTest::newRow("noChange") << canonicalPath << "." << true << canonicalPath;
+                                                      << true << m_dataPath;
+    QTest::newRow("cdUp non existent (absolute dir)") << m_dataPath + "/anonexistingDir" << ".."
+                                                      << true << m_dataPath;
+    QTest::newRow("noChange") << m_dataPath << "." << true << m_dataPath;
 #if defined(Q_OS_WIN)  // on windows QDir::root() is usually c:/ but cd "/" will not force it to be root
-    QTest::newRow("absolute") << canonicalPath << "/" << true << "/";
+    QTest::newRow("absolute") << m_dataPath << "/" << true << "/";
 #else
-    QTest::newRow("absolute") << canonicalPath << "/" << true << QDir::root().absolutePath();
+    QTest::newRow("absolute") << m_dataPath << "/" << true << QDir::root().absolutePath();
 #endif
-    QTest::newRow("non existant") << "." << "../anonexistingdir" << false << canonicalPath;
-    QTest::newRow("self") << "." << (QString("../") + QFileInfo(canonicalPath).fileName()) << true << canonicalPath;
-    QTest::newRow("file") << "." << "qdir.pro" << false << canonicalPath;
+    QTest::newRow("non existant") << "." << "../anonexistingdir" << false << m_dataPath;
+    QTest::newRow("self") << "." << (QString("../") + QFileInfo(m_dataPath).fileName()) << true << m_dataPath;
+    QTest::newRow("file") << "." << "qdir.pro" << false << m_dataPath;
 }
 
 void tst_QDir::cd()
