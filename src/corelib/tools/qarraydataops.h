@@ -82,7 +82,7 @@ public:
     void destroyAll() noexcept // Call from destructors, ONLY!
     {
         Q_ASSERT(this->d);
-        Q_ASSERT(this->d->ref_.loadRelaxed() == 0);
+        Q_ASSERT(this->d->m_ref.loadRelaxed() == 0);
 
         // As this is to be called only from destructor, it doesn't need to be
         // exception safe; size not updated.
@@ -345,7 +345,7 @@ public:
         // As this is to be called only from destructor, it doesn't need to be
         // exception safe; size not updated.
 
-        Q_ASSERT(this->d->ref_.loadRelaxed() == 0);
+        Q_ASSERT(this->d->m_ref.loadRelaxed() == 0);
 
         std::destroy(this->begin(), this->end());
     }

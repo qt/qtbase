@@ -136,13 +136,10 @@ calculateBlockSize(qsizetype capacity, qsizetype objectSize, qsizetype headerSiz
 
 static QArrayData *allocateData(qsizetype allocSize)
 {
-    QArrayData *header = static_cast<QArrayData *>(::malloc(size_t(allocSize)));
-    if (header) {
-        header->ref_.storeRelaxed(1);
-        header->flags = {};
-        header->alloc = 0;
-    }
-    return header;
+    void *mem = ::malloc(size_t(allocSize));
+    if (Q_LIKELY(mem))
+        return new (mem) QArrayData{1, {}, 0};
+    return nullptr;
 }
 
 namespace {
@@ -241,8 +238,12 @@ QArrayData::reallocateUnaligned(QArrayData *data, void *dataPointer,
     Q_ASSERT(offset > 0);
     Q_ASSERT(offset <= allocSize); // equals when all free space is at the beginning
 
-    QArrayData *header = static_cast<QArrayData *>(::realloc(data, size_t(allocSize)));
-    if (header) {
+    const bool hadData = data;
+    void *mem = ::realloc(data, size_t(allocSize));
+    QArrayData *header = static_cast<QArrayData *>(mem);
+    if (mem) {
+        if (!hadData)
+            header = new (mem) QArrayData{0, {}, {}};
         header->alloc = capacity;
         dataPointer = reinterpret_cast<char *>(header) + offset;
     } else {
