@@ -628,11 +628,11 @@ void Generator::addFunctions(const QList<FunctionDef> &list, const char *functyp
         if (f.isConstructor)
             fprintf(out, "Constructor(");
         else
-            fprintf(out, "%s(", f.type.name.constData());   // return type
+            fprintf(out, "%s(", disambiguatedTypeName(f.type.name).constData());   // return type
 
         const char *comma = "";
         for (const auto &argument : f.arguments) {
-            fprintf(out, "%s%s", comma, argument.type.name.constData());
+            fprintf(out, "%s%s", comma, disambiguatedTypeName(argument.type.name).constData());
             comma = ", ";
         }
 
@@ -725,7 +725,7 @@ void Generator::addProperties()
     for (const PropertyDef &p : std::as_const(cdef->propertyList)) {
         fprintf(out, "        // property '%s'\n"
                      "        QtMocHelpers::PropertyData<%s%s>(%d, ",
-                p.name.constData(), cxxTypeTag(p.typeTag), p.type.constData(), stridx(p.name));
+                p.name.constData(), cxxTypeTag(p.typeTag), disambiguatedTypeName(p.type).constData(), stridx(p.name));
         generateTypeInfo(p.type);
         fputc(',', out);
 
@@ -810,7 +810,7 @@ void Generator::addEnums()
         fprintf(out, "        // %s '%s'\n"
                      "        QtMocHelpers::EnumData<%s>(%d, %d,",
                 e.flags & EnumIsFlag ? "flag" : "enum", e.name.constData(),
-                e.name.constData(), stridx(e.name), stridx(typeName));
+                disambiguatedTypeName(e.name).constData(), stridx(e.name), stridx(typeName));
 
         if (e.flags) {
             const char *separator = "";
@@ -959,7 +959,7 @@ void Generator::generateStaticMetacall()
             if (it != begin)
                 fprintf(out, ",");
             fprintf(out, "(*reinterpret_cast<%s>(_a[%d]))",
-                    a.typeNameForCast.constData(), offset++);
+                    disambiguatedTypeNameForCast(a.normalizedType).constData(), offset++);
         }
     };
 
@@ -1006,7 +1006,7 @@ void Generator::generateStaticMetacall()
             Q_ASSERT(!f.normalizedType.isEmpty());
             fprintf(out, "        case %d: ", methodindex);
             if (f.normalizedType != "void")
-                fprintf(out, "{ %s _r = ", noRef(f.normalizedType).constData());
+                fprintf(out, "{ %s _r = ", disambiguatedTypeName(noRef(f.normalizedType)).constData());
             fprintf(out, "_t->");
             if (f.inPrivateClass.size())
                 fprintf(out, "%s->", f.inPrivateClass.constData());
@@ -1023,7 +1023,7 @@ void Generator::generateStaticMetacall()
                     const ArgumentDef &a = *it;
                     if (it != begin)
                         fprintf(out, ",");
-                    fprintf(out, "(*reinterpret_cast< %s>(_a[%d]))",a.typeNameForCast.constData(), offset++);
+                    fprintf(out, "(*reinterpret_cast< %s>(_a[%d]))", disambiguatedTypeNameForCast(a.normalizedType).constData(), offset++);
                     usedArgs |= UsedA;
                 }
                 if (f.isPrivateSignal) {
@@ -1035,7 +1035,7 @@ void Generator::generateStaticMetacall()
             fprintf(out, ");");
             if (f.normalizedType != "void") {
                 fprintf(out, "\n            if (_a[0]) *reinterpret_cast< %s*>(_a[0]) = std::move(_r); } ",
-                        noRef(f.normalizedType).constData());
+                        disambiguatedTypeName(noRef(f.normalizedType)).constData());
                 usedArgs |= UsedA;
             }
             fprintf(out, " break;\n");
@@ -1169,19 +1169,19 @@ void Generator::generateStaticMetacall()
 #if QT_VERSION <= QT_VERSION_CHECK(7, 0, 0)
                 else if (auto eflags = cdef->enumDeclarations.value(p.type); eflags & EnumIsFlag)
                     fprintf(out, "        case %d: QtMocHelpers::assignFlags<%s>(_v, %s%s()); break;\n",
-                            propindex, p.type.constData(), prefix.constData(), p.read.constData());
+                            propindex, disambiguatedTypeName(p.type).constData(), prefix.constData(), p.read.constData());
 #endif
                 else if (p.read == "default")
                     fprintf(out, "        case %d: *reinterpret_cast<%s%s*>(_v) = %s%s().value(); break;\n",
-                            propindex, cxxTypeTag(p.typeTag), p.type.constData(),
+                            propindex, cxxTypeTag(p.typeTag), disambiguatedTypeName(p.type).constData(),
                             prefix.constData(), p.bind.constData());
                 else if (!p.read.isEmpty())
                     fprintf(out, "        case %d: *reinterpret_cast<%s%s*>(_v) = %s%s(); break;\n",
-                            propindex, cxxTypeTag(p.typeTag), p.type.constData(),
+                            propindex, cxxTypeTag(p.typeTag), disambiguatedTypeName(p.type).constData(),
                             prefix.constData(), p.read.constData());
                 else
                     fprintf(out, "        case %d: *reinterpret_cast<%s%s*>(_v) = %s%s; break;\n",
-                            propindex, cxxTypeTag(p.typeTag), p.type.constData(),
+                            propindex, cxxTypeTag(p.typeTag), disambiguatedTypeName(p.type).constData(),
                             prefix.constData(), p.member.constData());
             }
             fprintf(out, "        default: break;\n");
@@ -1206,21 +1206,21 @@ void Generator::generateStaticMetacall()
                 if (p.write == "default") {
                     fprintf(out, "        case %d: {\n", propindex);
                     fprintf(out, "            %s%s().setValue(*reinterpret_cast<%s%s*>(_v));\n",
-                            prefix.constData(), p.bind.constData(), cxxTypeTag(p.typeTag), p.type.constData());
+                            prefix.constData(), p.bind.constData(), cxxTypeTag(p.typeTag), disambiguatedTypeName(p.type).constData());
                     fprintf(out, "            break;\n");
                     fprintf(out, "        }\n");
                 } else if (!p.write.isEmpty()) {
                     fprintf(out, "        case %d: %s%s(*reinterpret_cast<%s%s*>(_v)); break;\n",
                             propindex, prefix.constData(), p.write.constData(),
-                            cxxTypeTag(p.typeTag), p.type.constData());
+                            cxxTypeTag(p.typeTag), disambiguatedTypeName(p.type).constData());
                 } else {
                     fprintf(out, "        case %d:", propindex);
                     if (p.notify.isEmpty()) {
                         fprintf(out, " QtMocHelpers::setProperty(%s%s, *reinterpret_cast<%s%s*>(_v)); break;\n",
-                                prefix.constData(), p.member.constData(), cxxTypeTag(p.typeTag), p.type.constData());
+                                prefix.constData(), p.member.constData(), cxxTypeTag(p.typeTag), disambiguatedTypeName(p.type).constData());
                     } else {
                         fprintf(out, "\n            if (QtMocHelpers::setProperty(%s%s, *reinterpret_cast<%s%s*>(_v)))\n",
-                                prefix.constData(), p.member.constData(), cxxTypeTag(p.typeTag), p.type.constData());
+                                prefix.constData(), p.member.constData(), cxxTypeTag(p.typeTag), disambiguatedTypeName(p.type).constData());
                         fprintf(out, "                Q_EMIT _t->%s(", p.notify.constData());
                         if (p.notifyId > -1) {
                             const FunctionDef &f = cdef->signalList.at(p.notifyId);
@@ -1481,6 +1481,18 @@ void Generator::generatePluginMetaData()
             cdef->qualified.constData(), cdef->classname.constData());
 
     fputs("\n", out);
+}
+
+QByteArray Generator::disambiguatedTypeName(const QByteArray &name)
+{
+    if (cdef->allEnumNames.contains(name))
+        return "enum " + name;
+    return name;
+}
+
+QByteArray Generator::disambiguatedTypeNameForCast(const QByteArray &name)
+{
+    return QByteArray("std::add_pointer_t<"+ disambiguatedTypeName(name) +">");
 }
 
 QT_WARNING_DISABLE_GCC("-Wunused-function")

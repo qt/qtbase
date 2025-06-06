@@ -243,7 +243,7 @@ enum class IncludeState {
     NoInclude,
 };
 
-bool Moc::parseEnum(EnumDef *def)
+bool Moc::parseEnum(EnumDef *def, ClassDef *containingClass)
 {
     bool isTypdefEnum = false; // typedef enum { ... } Foo;
 
@@ -252,6 +252,8 @@ bool Moc::parseEnum(EnumDef *def)
 
     if (test(IDENTIFIER)) {
         def->name = lexem();
+        if (containingClass)
+            containingClass->allEnumNames.insert(def->name);
     } else {
         if (lookup(-1) != TYPEDEF)
             return false; // anonymous enum
@@ -294,6 +296,8 @@ bool Moc::parseEnum(EnumDef *def)
         if (!test(IDENTIFIER))
             return false;
         def->name = lexem();
+        // used as the name for our enum, but we don't track it,
+        // because we only care about types that might conflict with members
     }
     return true;
 }
@@ -316,7 +320,6 @@ void Moc::parseFunctionArguments(FunctionDef *def)
             arg.rightType += lexem();
         }
         arg.normalizedType = normalizeType(QByteArray(arg.type.name + ' ' + arg.rightType));
-        arg.typeNameForCast = QByteArray("std::add_pointer_t<"+arg.normalizedType+">");
         if (test(EQ))
             arg.isDefault = true;
         def->arguments += arg;
@@ -772,7 +775,7 @@ void Moc::parse()
                                 break;
                             case ENUM: {
                                 EnumDef enumDef;
-                                if (parseEnum(&enumDef))
+                                if (parseEnum(&enumDef, nullptr))
                                     def.enumList += enumDef;
                             } break;
                             case CLASS:
@@ -979,7 +982,7 @@ void Moc::parse()
                     break;
                 case ENUM: {
                     EnumDef enumDef;
-                    if (parseEnum(&enumDef))
+                    if (parseEnum(&enumDef, &def))
                         def.enumList += enumDef;
                 } break;
                 case SEMIC:
