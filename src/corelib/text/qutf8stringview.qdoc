@@ -108,7 +108,7 @@
     QBasicUtf8StringView. Please do not use the template class's name in your
     source code.
 
-    \sa QAnyStringView, QUtf8StringView, QString
+    \sa QAnyStringView, QStringView, QLatin1StringView, QString
 */
 
 /*!
