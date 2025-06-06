@@ -34,8 +34,8 @@ public:
 
     QAtomicInt quitLockRef;
 
-    QBasicAtomicInt exit; // bool
-    QBasicAtomicInt returnCode;
+    QAtomicInt exit; // bool
+    QAtomicInt returnCode;
     bool inExec;
 
     void ref()
