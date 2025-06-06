@@ -67,6 +67,8 @@
 
 #include "tech-preview.h"
 
+#include "name_collision.h"
+
 using namespace Qt::StringLiterals;
 
 #ifdef Q_MOC_RUN
@@ -986,6 +988,7 @@ void tst_Moc::initTestCase()
     QVERIFY(QmlMacro::staticMetaObject.className());
     QVERIFY(SignalWithDefaultArg::staticMetaObject.className());
     QVERIFY(TestPointeeCanBeIncomplete::staticMetaObject.className());
+    QVERIFY(myns::NameCollision::staticMetaObject.className());
 }
 
 void tst_Moc::hasIncludeSupport()

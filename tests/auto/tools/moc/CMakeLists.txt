@@ -28,6 +28,7 @@ set(JSON_HEADERS
         gadgetwithnoenums.h
         grand-parent-gadget-class.h
         moc_include.h
+        name_collision.h
         namespace.h
         namespaced-flags.h
         namespaced-base-class.h
