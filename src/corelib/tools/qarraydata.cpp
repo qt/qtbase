@@ -181,13 +181,12 @@ allocateHelper(qsizetype objectSize, qsizetype alignment, qsizetype capacity,
         return {};
 
     void *data = nullptr;
-    QArrayData *header = static_cast<QArrayData *>(::malloc(size_t(allocSize)));
-    if (Q_LIKELY(header)) {
-        header->ref_.storeRelaxed(1);
-        header->flags = {};
+    void *mem = ::malloc(size_t(allocSize));
+    QArrayData *header = nullptr;
+    if (Q_LIKELY(mem)) {
+        header = new (mem) QArrayData{1, {}, capacity};
         // find where offset should point to so that data() is aligned to alignment bytes
         data = QTypedArrayData<void>::dataStart(header, alignment);
-        header->alloc = capacity;
     }
 
     return { data, header };
@@ -245,8 +244,12 @@ QArrayData::reallocateUnaligned(QArrayData *data, void *dataPointer,
     Q_ASSERT(offset > 0);
     Q_ASSERT(offset <= allocSize); // equals when all free space is at the beginning
 
-    QArrayData *header = static_cast<QArrayData *>(::realloc(data, size_t(allocSize)));
-    if (header) {
+    const bool hadData = data;
+    void *mem = ::realloc(data, size_t(allocSize));
+    QArrayData *header = static_cast<QArrayData *>(mem);
+    if (mem) {
+        if (!hadData)
+            header = new (mem) QArrayData{0, {}, {}};
         header->alloc = capacity;
         dataPointer = reinterpret_cast<char *>(header) + offset;
     } else {
