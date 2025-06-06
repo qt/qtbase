@@ -1541,6 +1541,7 @@ QtSharedPointer::ExternalRefCountData *QtSharedPointer::ExternalRefCountData::ge
     ExternalRefCountData *x = ::new ExternalRefCountData(Qt::Uninitialized);
     x->strongref.storeRelaxed(-1);
     x->weakref.storeRelaxed(2);  // the QWeakPointer that called us plus the QObject itself
+    x->destroyer = nullptr;
 
     ExternalRefCountData *ret;
     if (d->sharedRefcount.testAndSetOrdered(nullptr, x, ret)) {     // ought to be release+acquire; this is acq_rel+acquire
