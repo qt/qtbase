@@ -121,7 +121,7 @@ Q_GUI_EXPORT
     void exec(const QByteArray &ba, int ver = 0, QDataStream::ByteOrder byteOrder = QDataStream::BigEndian);
 #endif
     struct QRegionData {
-        QtPrivate::RefCount ref;
+        QtPrivate::RefCount ref = Q_REFCOUNT_INITIALIZE_OWNED;
         QRegionPrivate *qt_rgn;
     };
     struct QRegionData *d;
