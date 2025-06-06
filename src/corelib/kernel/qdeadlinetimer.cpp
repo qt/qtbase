@@ -124,7 +124,7 @@ static qint64 add_saturate(qint64 t1, Duration1 dur, Durations... extra)
 
     \snippet code/src_corelib_kernel_qdeadlinetimer.cpp 2
 
-    \sa QTime, QChronoTimer, QDeadlineTimer, Qt::TimerType
+    \sa QTime, QChronoTimer, QElapsedTimer, Qt::TimerType
 */
 
 /*!
@@ -500,7 +500,7 @@ qint64 QDeadlineTimer::deadline() const noexcept
     \note Timers that were created as expired have an indetermine time point in
     the past as their deadline, so the above calculation may not work.
 
-    \sa remainingTime(), deadlineNSecs()
+    \sa remainingTime(), deadline(), setDeadline()
 */
 qint64 QDeadlineTimer::deadlineNSecs() const noexcept
 {

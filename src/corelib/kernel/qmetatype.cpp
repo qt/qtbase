@@ -580,7 +580,7 @@ int QMetaType::registerHelper(const QtPrivate::QMetaTypeInterface *iface)
     This function is typically used together with construct()
     to perform low-level management of the memory used by a type.
 
-    \sa QMetaType::construct(), QMetaType::sizeOf(), QMetaType::alignOf()
+    \sa QMetaType::construct(), QMetaType::alignOf()
 */
 
 /*!
@@ -606,7 +606,7 @@ int QMetaType::registerHelper(const QtPrivate::QMetaTypeInterface *iface)
     constructed. To inspect specific type traits, prefer using one of the "is-"
     functions rather than the flags directly.
 
-    \sa QMetaType::TypeFlags, QMetaType::flags(), isDefaultConstructible(),
+    \sa QMetaType::TypeFlags, isDefaultConstructible(),
         isCopyConstructible(), isMoveConstructible(), isDestructible(),
         isEqualityComparable(), isOrdered()
 */
