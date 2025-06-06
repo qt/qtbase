@@ -893,6 +893,12 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
 {
     Q_CHECK_FILE_NAME(entry, false);
 
+    // Detection of WasDeletedAttribute is imperfect: in general, if we can
+    // successfully stat() or access() a file, it hasn't been deleted (though
+    // there are exceptions, like /proc/XXX/fd/ entries on Linux). So we have
+    // to restore this flag in case we fail to stat() anything.
+    auto hadBeenDeleted = data.entryFlags & QFileSystemMetaData::WasDeletedAttribute;
+
 #if defined(Q_OS_DARWIN)
     if (what & (QFileSystemMetaData::BundleType | QFileSystemMetaData::CaseSensitive)) {
         if (!data.hasFlags(QFileSystemMetaData::DirectoryType))
@@ -1103,6 +1109,11 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
     if (entryErrno != 0) {
         what &= ~QFileSystemMetaData::LinkType; // don't clear link: could be broken symlink
         data.clearFlags(what);
+
+        // see comment at the top
+        data.entryFlags |= hadBeenDeleted;
+        data.knownFlagsMask |= hadBeenDeleted;
+
         return false;
     }
     return true;
