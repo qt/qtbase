@@ -181,8 +181,8 @@ static bool isFatalCountDown(const char *varname, QBasicAtomicInt &n)
     return v == ImmediatelyFatal;
 }
 
-Q_CONSTINIT static QBasicAtomicInt fatalCriticalsCount = {};
-Q_CONSTINIT static QBasicAtomicInt fatalWarningsCount = {};
+Q_CONSTINIT static QBasicAtomicInt fatalCriticalsCount = Q_BASIC_ATOMIC_INITIALIZER(0);
+Q_CONSTINIT static QBasicAtomicInt fatalWarningsCount = Q_BASIC_ATOMIC_INITIALIZER(0);
 static bool isFatal(QtMsgType msgType)
 {
     switch (msgType){
