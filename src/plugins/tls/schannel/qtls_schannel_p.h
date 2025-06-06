@@ -114,8 +114,6 @@ private:
     QHCertStorePointer peerCertificateStore = nullptr;
     QHCertStorePointer caCertificateStore = nullptr;
 
-    const CERT_CONTEXT *localCertContext = nullptr;
-
     ULONG contextAttributes = 0;
     qint64 missingData = 0;
 
