@@ -3812,7 +3812,6 @@ QRegion::QRegion(const QRect &r, RegionType t)
         d = const_cast<QRegionData*>(&shared_empty);
     } else {
         d = new QRegionData;
-        d->ref.initializeOwned();
         if (t == Rectangle) {
             d->qt_rgn = new QRegionPrivate(r);
         } else if (t == Ellipse) {
@@ -3831,7 +3830,6 @@ QRegion::QRegion(const QPolygon &a, Qt::FillRule fillRule)
                                                fillRule == Qt::WindingFill ? WindingRule : EvenOddRule);
         if (qt_rgn) {
             d =  new QRegionData;
-            d->ref.initializeOwned();
             d->qt_rgn = qt_rgn;
         } else {
             d = const_cast<QRegionData*>(&shared_empty);
@@ -3854,7 +3852,6 @@ QRegion::QRegion(const QBitmap &bm)
         d = const_cast<QRegionData*>(&shared_empty);
     } else {
         d = new QRegionData;
-        d->ref.initializeOwned();
         d->qt_rgn = qt_bitmapToRegion(bm);
     }
 }
