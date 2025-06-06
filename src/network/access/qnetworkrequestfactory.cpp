@@ -361,7 +361,7 @@ void QNetworkRequestFactory::clearUserName()
 /*!
     Returns the password set to this factory.
 
-    \sa password(), clearPassword(), userName()
+    \sa setPassword(), clearPassword(), userName()
 */
 QString QNetworkRequestFactory::password() const
 {

@@ -370,7 +370,7 @@ uint QNetworkDatagram::interfaceIndex() const
     index are different and neither is zero, it is undefined which interface
     the operating system will send the datagram on.
 
-    \sa setInterfaceIndex()
+    \sa interfaceIndex()
  */
 void QNetworkDatagram::setInterfaceIndex(uint index)
 {
