@@ -1656,14 +1656,26 @@ void tst_QFileInfo::isHidden_data()
 #if defined(Q_OS_WIN)
     QVERIFY(QDir("./hidden-directory").exists() || QDir().mkdir("./hidden-directory"));
     QVERIFY(SetFileAttributesW(reinterpret_cast<LPCWSTR>(QString("./hidden-directory").utf16()),FILE_ATTRIBUTE_HIDDEN));
+    QTest::newRow("hidden-directory") << QString::fromLatin1("hidden-directory") << true;
     QTest::newRow("C:/path/to/hidden-directory") << QDir::currentPath() + QString::fromLatin1("/hidden-directory") << true;
     QTest::newRow("C:/path/to/hidden-directory/.") << QDir::currentPath() + QString::fromLatin1("/hidden-directory/.") << true;
 #endif
 #if defined(Q_OS_UNIX)
     QVERIFY(QDir("./.hidden-directory").exists() || QDir().mkdir("./.hidden-directory"));
+    QTest::newRow(".hidden-directory") << QString(".hidden-directory") << true;
+    QTest::newRow(".hidden-directory/") << QString(".hidden-directory/") << true;
+    QTest::newRow(".hidden-directory//") << QString(".hidden-directory//") << true;
+    QTest::newRow(".hidden-directory/.") << QString(".hidden-directory/.") << true;
+    QTest::newRow(".hidden-directory//.") << QString(".hidden-directory//.") << true;
+    QTest::newRow(".hidden-directory/..") << QString(".hidden-directory/..") << true;
+    QTest::newRow(".hidden-directory//..") << QString(".hidden-directory//..") << true;
     QTest::newRow("/path/to/.hidden-directory") << QDir::currentPath() + QString("/.hidden-directory") << true;
+    QTest::newRow("/path/to/.hidden-directory/") << QDir::currentPath() + QString("/.hidden-directory/") << true;
+    QTest::newRow("/path/to/.hidden-directory//") << QDir::currentPath() + QString("/.hidden-directory//") << true;
     QTest::newRow("/path/to/.hidden-directory/.") << QDir::currentPath() + QString("/.hidden-directory/.") << true;
+    QTest::newRow("/path/to/.hidden-directory//.") << QDir::currentPath() + QString("/.hidden-directory//.") << true;
     QTest::newRow("/path/to/.hidden-directory/..") << QDir::currentPath() + QString("/.hidden-directory/..") << true;
+    QTest::newRow("/path/to/.hidden-directory//..") << QDir::currentPath() + QString("/.hidden-directory//..") << true;
 #endif
 
 #if defined(Q_OS_DARWIN)

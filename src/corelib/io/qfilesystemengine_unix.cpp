@@ -1080,9 +1080,18 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
 #endif
 
     if (what & QFileSystemMetaData::HiddenAttribute
-            && !data.isHidden()) {
-        QString fileName = entry.fileName();
-        if (fileName.startsWith(u'.')
+            && !data.isHidden()) {        
+        // reusing nativeFilePath from above instead of entry.fileName(), to
+        // avoid memory allocation for the QString result.
+        qsizetype lastSlash = nativeFilePath.size();
+
+        while (lastSlash && nativeFilePath.at(lastSlash - 1) == '/')
+            --lastSlash;        // skip ending slashes
+        while (lastSlash && nativeFilePath.at(lastSlash - 1) != '/')
+            --lastSlash;        // skip non-slashes
+        --lastSlash;            // point to the slash or -1 if no slash
+
+        if (nativeFilePath.at(lastSlash + 1) == '.'
 #if defined(Q_OS_DARWIN)
                 || (entryErrno == 0 && hasResourcePropertyFlag(data, entry, kCFURLIsHiddenKey))
 #endif
