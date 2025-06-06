@@ -118,10 +118,8 @@ namespace QtSharedPointer {
         DestroyerFn destroyer;
 
         inline ExternalRefCountData(DestroyerFn d)
-            : destroyer(d)
+            : weakref{1}, strongref{1}, destroyer{d}
         {
-            strongref.storeRelaxed(1);
-            weakref.storeRelaxed(1);
         }
         inline ExternalRefCountData(Qt::Initialization) { }
         ~ExternalRefCountData() { Q_ASSERT(!weakref.loadRelaxed()); Q_ASSERT(strongref.loadRelaxed() <= 0); }
