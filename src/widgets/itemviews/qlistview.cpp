@@ -980,6 +980,7 @@ void QListView::initViewItemOption(QStyleOptionViewItem *option) const
     if (d->gridSize().isValid()) {
         option->rect.setSize(d->gridSize());
     }
+    option->viewItemPosition = QStyleOptionViewItem::OnlyOne;
 }
 
 

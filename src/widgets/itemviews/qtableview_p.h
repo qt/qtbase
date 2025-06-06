@@ -138,6 +138,8 @@ public:
         return horizontalHeader->logicalIndex(visualCol);
     }
 
+    QStyleOptionViewItem::ViewItemPosition viewItemPosition(const QModelIndex &index) const;
+
     inline int accessibleTable2Index(const QModelIndex &index) const {
         const int vHeader = verticalHeader ? 1 : 0;
         return (index.row() + (horizontalHeader ? 1 : 0)) * (index.model()->columnCount() + vHeader)

@@ -30,6 +30,12 @@ private slots:
     void tst_QHeaderView_data();
     void tst_QHeaderView();
 
+    void tst_QTableView_data();
+    void tst_QTableView();
+
+    void tst_QListView_data();
+    void tst_QListView();
+
 private:
     QDir styleSheetDir;
 };
@@ -222,6 +228,38 @@ void tst_Stylesheet::tst_QHeaderView()
     QTableWidget *tw = new QTableWidget(10, 10);
     tw->setCurrentCell(1, 1);
     layout->addWidget(tw);
+    testWindow()->setLayout(layout);
+    makeVisible();
+    QBASELINE_TEST(takeSnapshot());
+}
+
+void tst_Stylesheet::tst_QTableView_data()
+{
+    loadTestFiles();
+}
+
+void tst_Stylesheet::tst_QTableView()
+{
+    QHBoxLayout *layout = new QHBoxLayout;
+    QTableWidget *tw = new QTableWidget(2, 3);
+    layout->addWidget(tw);
+    testWindow()->setLayout(layout);
+    makeVisible();
+    QBASELINE_TEST(takeSnapshot());
+}
+
+void tst_Stylesheet::tst_QListView_data()
+{
+    loadTestFiles();
+}
+
+void tst_Stylesheet::tst_QListView()
+{
+    QStringListModel m({ "Berlin", "Paris", "London" });
+    QListView *v = new QListView;
+    v->setModel(&m);
+    QHBoxLayout *layout = new QHBoxLayout;
+    layout->addWidget(v);
     testWindow()->setLayout(layout);
     makeVisible();
     QBASELINE_TEST(takeSnapshot());
