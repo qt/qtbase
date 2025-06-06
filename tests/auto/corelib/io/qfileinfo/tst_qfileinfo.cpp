@@ -138,6 +138,7 @@ private slots:
 
     void exists_data();
     void exists();
+    void deletedFileLinuxProcExists();
 
     void absolutePath_data();
     void absolutePath();
@@ -501,6 +502,34 @@ void tst_QFileInfo::exists()
         QVERIFY2(exists, msgDoesNotExist(path).constData());
     else
         QVERIFY(!exists);
+}
+
+void tst_QFileInfo::deletedFileLinuxProcExists()
+{
+#ifdef Q_OS_LINUX
+    static const char msg[] = "Hello, World\n";
+    QFileInfo fi("/proc/self/fd/");
+    if (!fi.isDir())
+        QSKIP("/proc appears not to be mounted");
+
+    QFile f("removed_file.txt");
+    QVERIFY(f.open(QIODevice::ReadWrite | QIODevice::Unbuffered));
+    f.write(msg, strlen(msg));
+
+    fi.setFile(fi.filePath() + QString::number(f.handle()));
+    QVERIFY(fi.exists());
+    QCOMPARE(fi.size(), strlen(msg));
+
+    QFile::remove("removed_file.txt");
+    fi.refresh();
+    QVERIFY(fi.exists());
+
+    fi.refresh();
+    QCOMPARE(fi.size(), strlen(msg));   // this stats, so may change flags
+    QVERIFY(fi.exists());
+#else
+    QSKIP("Linux-only test");
+#endif
 }
 
 void tst_QFileInfo::absolutePath_data()

@@ -228,6 +228,7 @@ private slots:
     void getCharFF();
     void remove_and_exists();
     void removeOpenFile();
+    void removedFileDoesntExist();
     void fullDisk();
     void writeLargeDataBlock_data();
     void writeLargeDataBlock();
@@ -2509,6 +2510,37 @@ void tst_QFile::removeOpenFile()
         QVERIFY(!f.exists());
         QCOMPARE(f.error(), QFile::NoError);
     }
+}
+
+void tst_QFile::removedFileDoesntExist()
+{
+#ifdef Q_OS_WIN
+    QSKIP("Not relevant for Windows - can't remove still-open files");
+#endif
+    QFile::remove("remove_unclosed.txt");
+    QFile f("remove_unclosed.txt");
+    QVERIFY(!f.exists());
+    bool opened = f.open(QIODevice::ReadWrite | QIODevice::Unbuffered);
+    QVERIFY(opened);
+    f.write("blah blah blah");
+
+    QVERIFY(f.exists());
+
+    // delete by path, not using f.remove() (that's tested above)
+    QVERIFY(QFile::remove(f.fileName()));
+    QVERIFY(!QFile::exists(f.fileName()));
+    QVERIFY(!f.exists());
+
+#ifdef Q_OS_LINUX
+    QString procPath = u"/proc/self/fd/"_s;
+    if (QFile::exists(procPath)) {
+        // reopen the deleted file
+        procPath += QString::number(f.handle());
+        QFile f2(procPath);
+        QVERIFY(f2.open(QIODevice::ReadOnly));
+        QVERIFY(!f2.exists());
+    }
+#endif
 }
 
 void tst_QFile::fullDisk()
