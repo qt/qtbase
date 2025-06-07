@@ -1610,31 +1610,64 @@ void tst_QMenu::transientParent()
     menuBar->addMenu(editMenu);
     window.setMenuBar(menuBar);
 
-    // On Mac, we need to create native key events to test menu
-    // action activation, so skip this part of the test.
-#if QT_CONFIG(shortcut) && !defined(Q_OS_DARWIN)
+    QMenu *bookmarksMenu = new QMenu(&window);
+    bookmarksMenu->addAction("This is KDE!");
+
+    QMenu *contextMenu = new QMenu(&window);
+    QAction *bookmarksAction = contextMenu->addAction("&Bookmarks");
+    bookmarksAction->setMenu(bookmarksMenu);
+
     window.show();
     QVERIFY(QTest::qWaitForWindowActive(&window));
     QWindow *topLevel = window.windowHandle();
     QVERIFY(topLevel);
 
+    // Show the standalone bookmarks menu. It should be a child of the main window.
+    bookmarksMenu->popup(window.geometry().center());
+    QTRY_VERIFY(QTest::qWaitForWindowExposed(bookmarksMenu));
+    QVERIFY(bookmarksMenu->windowHandle());
+    QCOMPARE(bookmarksMenu->windowHandle()->transientParent(), topLevel);
+    bookmarksMenu->close();
+
+    // Show the bookmarks menu attached to the context menu. Even though the bookmarks menu is
+    // a child of the main window, its transient parent will be the context menu.
+    contextMenu->popup(window.geometry().center());
+    QTRY_VERIFY(QTest::qWaitForWindowExposed(contextMenu));
+    QVERIFY(contextMenu->windowHandle());
+    QCOMPARE(contextMenu->windowHandle()->transientParent(), topLevel);
+
+    contextMenu->setActiveAction(bookmarksAction);
+    QTRY_VERIFY(QTest::qWaitForWindowExposed(bookmarksMenu));
+    QVERIFY(bookmarksMenu->windowHandle());
+    QCOMPARE(bookmarksMenu->windowHandle()->transientParent(), contextMenu->windowHandle());
+    contextMenu->close();
+
+    // Show the standalone bookmarks menu. Its transient parent will be the main window again.
+    bookmarksMenu->popup(window.geometry().center());
+    QTRY_VERIFY(QTest::qWaitForWindowExposed(bookmarksMenu));
+    QVERIFY(bookmarksMenu->windowHandle());
+    QCOMPARE(bookmarksMenu->windowHandle()->transientParent(), topLevel);
+    bookmarksMenu->close();
+
+    // On Mac, we need to create native key events to test menu
+    // action activation, so skip this part of the test.
+#if QT_CONFIG(shortcut) && !defined(Q_OS_DARWIN)
     window.setFocus();
     QVERIFY(QTest::qWaitForWindowFocused(&window));
     QVERIFY(window.hasFocus());
 
     QTest::keyPress(&window, Qt::Key_F, Qt::AltModifier);
     QTRY_VERIFY(QTest::qWaitForWindowExposed(fileMenu));
-    if (fileMenu->isWindow() && fileMenu->window() && fileMenu->window()->windowHandle())
-        QVERIFY(fileMenu->window()->windowHandle()->transientParent());
+    QVERIFY(fileMenu->windowHandle());
+    QCOMPARE(fileMenu->windowHandle()->transientParent(), topLevel);
     QTest::keyRelease(fileMenu, Qt::Key_F, Qt::AltModifier);
 
     QTest::keyPress(fileMenu, Qt::Key_E, Qt::AltModifier);
     QTRY_VERIFY(QTest::qWaitForWindowExposed(editMenu));
-    if (editMenu->isWindow() && editMenu->window() && editMenu->window()->windowHandle())
-        QVERIFY(editMenu->window()->windowHandle()->transientParent());
+    QVERIFY(editMenu->windowHandle());
+    QCOMPARE(editMenu->windowHandle()->transientParent(), topLevel);
     QTest::keyRelease(editMenu, Qt::Key_E, Qt::AltModifier);
 #endif // QT_CONFIG(shortcut) && !Q_OS_DARWIN
-
 }
 
 class MyMenu : public QMenu
