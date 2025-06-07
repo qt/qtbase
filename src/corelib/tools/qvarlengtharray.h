@@ -360,8 +360,7 @@ public:
     inline QVarLengthArray(InputIterator first, InputIterator last)
         : QVarLengthArray()
     {
-        QtPrivate::reserveIfForwardIterator(this, first, last);
-        std::copy(first, last, std::back_inserter(*this));
+        assign(first, last);
     }
 
     inline ~QVarLengthArray()
