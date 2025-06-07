@@ -261,6 +261,12 @@ protected:
 
     void assign_impl(qsizetype prealloc, void *array, qsizetype n, const T &t);
     template <typename Iterator>
+    void assign_impl(qsizetype prealloc, void *array, Iterator first, Iterator last,
+                     std::forward_iterator_tag);
+    template <typename Iterator>
+    void assign_impl(qsizetype prealloc, void *array, Iterator first, Iterator last,
+                     std::input_iterator_tag);
+    template <typename Iterator>
     void assign_impl(qsizetype prealloc, void *array, Iterator first, Iterator last);
 
     bool isValidIterator(const const_iterator &i) const
@@ -824,18 +830,47 @@ Q_OUTOFLINE_TEMPLATE void QVLABase<T>::assign_impl(qsizetype prealloc, void *arr
 
 template <class T>
 template <typename Iterator>
-Q_OUTOFLINE_TEMPLATE void QVLABase<T>::assign_impl(qsizetype prealloc, void *array, Iterator first, Iterator last)
+Q_OUTOFLINE_TEMPLATE
+void QVLABase<T>::assign_impl(qsizetype prealloc, void *array, Iterator first, Iterator last,
+                              std::forward_iterator_tag)
 {
     // This function only provides the basic exception guarantee.
-    constexpr bool IsFwdIt =
-            std::is_convertible_v<typename std::iterator_traits<Iterator>::iterator_category,
-                                  std::forward_iterator_tag>;
-    if constexpr (IsFwdIt) {
-        const qsizetype n = std::distance(first, last);
-        if (n > capacity())
-            reallocate_impl(prealloc, array, 0, n); // clear & reserve n
-    }
+    const qsizetype n = std::distance(first, last);
+    if (n > capacity())
+        reallocate_impl(prealloc, array, 0, n); // clear & reserve n
 
+    auto dst = begin();
+
+    if constexpr (!QTypeInfo<T>::isComplex) {
+        // For non-complex types, we prefer a single std::copy() -> memcpy()
+        // call. We can do that because either the default constructor is
+        // trivial (so the lifetime has started) or the copy constructor is
+        // (and won't care what the stored value is). Note that in some cases
+        // dst > end() after this.
+        dst = std::copy(first, last, dst);
+    } else if (n > this->s) {
+        // overwrite existing elements and create new
+        for (qsizetype i = 0; i < this->s; ++i) {
+            *dst = *first;
+            ++first;
+            ++dst;
+        }
+        std::uninitialized_copy_n(first, n - this->s, dst);
+    } else {
+        // overwrite existing elements and destroy tail
+        dst = std::copy(first, last, dst);
+        std::destroy(dst, end());
+    }
+    this->s = n;
+}
+
+template <class T>
+template <typename Iterator>
+Q_OUTOFLINE_TEMPLATE
+void QVLABase<T>::assign_impl(qsizetype prealloc, void *array, Iterator first, Iterator last,
+                              std::input_iterator_tag)
+{
+    // This function only provides the basic exception guarantee.
     auto dst = begin();
     const auto dend = end();
     while (true) {
@@ -844,21 +879,25 @@ Q_OUTOFLINE_TEMPLATE void QVLABase<T>::assign_impl(qsizetype prealloc, void *arr
             break;
         }
         if (dst == dend) {            // ran out of existing elements to overwrite
-            if constexpr (IsFwdIt) {
-                dst = std::uninitialized_copy(first, last, dst);
-                break;
-            } else {
                 do {
                     emplace_back_impl(prealloc, array, *first);
                 } while (++first != last);
                 return; // size() is already correct (and dst invalidated)!
-            }
         }
         *dst = *first;                // overwrite existing element
         ++dst;
         ++first;
     }
     this->s = dst - begin();
+}
+
+template <class T>
+template <typename Iterator>
+Q_OUTOFLINE_TEMPLATE
+void QVLABase<T>::assign_impl(qsizetype prealloc, void *array, Iterator first, Iterator last)
+{
+    using Cat = typename std::iterator_traits<Iterator>::iterator_category;
+    assign_impl(prealloc, array, first, last, Cat{});
 }
 
 template <class T>
