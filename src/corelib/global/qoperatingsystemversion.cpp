@@ -577,6 +577,12 @@ const QOperatingSystemVersionBase QOperatingSystemVersion::MacOSVentura;
 */
 
 /*!
+    \variable QOperatingSystemVersion::MacOSTahoe
+    \brief a version corresponding to macOS Tahoe (version 26).
+    \since 6.10
+*/
+
+/*!
     \variable QOperatingSystemVersion::AndroidJellyBean
     \brief a version corresponding to Android Jelly Bean (version 4.1, API level 16).
     \since 5.9
