@@ -111,6 +111,7 @@ static const char *osVer_helper(QOperatingSystemVersion version = QOperatingSyst
     case 13: return "Ventura";
     case 14: return "Sonoma";
     case 15: return "Sequoia";
+    case 26: return "Tahoe";
     default:
         // Unknown, future version
         break;
