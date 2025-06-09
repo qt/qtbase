@@ -28,6 +28,7 @@ using namespace Qt::StringLiterals;
 
 namespace QtAndroidAccessibility
 {
+    static jmethodID m_setClassNameMethodID = 0;
     static jmethodID m_addActionMethodID = 0;
     static jmethodID m_setCheckableMethodID = 0;
     static jmethodID m_setCheckedMethodID = 0;
@@ -421,6 +422,130 @@ namespace QtAndroidAccessibility
         return jstr;
     }
 
+    static QString classNameForRole(QAccessible::Role role, QAccessible::State state) {
+        switch (role) {
+        case QAccessible::Role::Button:
+        case QAccessible::Role::Link:
+        {
+            if (state.checkable)
+                // There is also a android.widget.Switch for which we have no match.
+                return QStringLiteral("android.widget.ToggleButton");
+            return QStringLiteral("android.widget.Button");
+        }
+        case QAccessible::Role::CheckBox:
+            // As of android/accessibility/utils/Role.java::getRole a CheckBox
+            // is NOT android.widget.CheckBox
+            return QStringLiteral("android.widget.CompoundButton");
+        case QAccessible::Role::Clock:
+            return QStringLiteral("android.widget.TextClock");
+        case QAccessible::Role::ComboBox:
+            return QStringLiteral("android.widget.Spinner");
+        case QAccessible::Role::Graphic:
+            // QQuickImage does not provide this role it inherits Client from QQuickItem
+            return QStringLiteral("android.widget.ImageView");
+        case QAccessible::Role::Grouping:
+            return QStringLiteral("android.view.ViewGroup");
+        case QAccessible::Role::List:
+            // As of android/accessibility/utils/Role.java::getRole a List
+            // is NOT android.widget.ListView
+            return QStringLiteral("android.widget.AbsListView");
+        case QAccessible::Role::MenuItem:
+            return QStringLiteral("android.view.MenuItem");
+        case QAccessible::Role::PopupMenu:
+            return QStringLiteral("android.widget.PopupMenu");
+        case QAccessible::Role::Separator:
+            return QStringLiteral("android.widget.Space");
+        case QAccessible::Role::ToolBar:
+            return QStringLiteral("android.view.Toolbar");
+        case QAccessible::Role::Heading: [[fallthrough]];
+        case QAccessible::Role::StaticText:
+            // Heading vs. regular Text is finally determined by AccessibilityNodeInfo.isHeading()
+            return QStringLiteral("android.widget.TextView");
+        case QAccessible::Role::EditableText:
+            return QStringLiteral("android.widget.EditText");
+        case QAccessible::Role::RadioButton:
+            return QStringLiteral("android.widget.RadioButton");
+        case QAccessible::Role::ProgressBar:
+            return QStringLiteral("android.widget.ProgressBar");
+            // Range information need to be filled to announce percentages
+        case QAccessible::Role::SpinBox:
+            return QStringLiteral("android.widget.NumberPicker");
+        case QAccessible::Role::WebDocument:
+            return QStringLiteral("android.webkit.WebView");
+        case QAccessible::Role::Dialog:
+            return QStringLiteral("android.app.AlertDialog");
+        case QAccessible::Role::PageTab:
+            return QStringLiteral("android.app.ActionBar.Tab");
+        case QAccessible::Role::PageTabList:
+            return QStringLiteral("android.widget.TabWidget");
+        case QAccessible::Role::ScrollBar: [[fallthrough]];
+        case QAccessible::Role::Slider:
+            return QStringLiteral("android.widget.SeekBar");
+        case QAccessible::Role::Table:
+            // #TODO Evaluate the usage of AccessibleNodeInfo.setCollectionItemInfo() to provide
+            // infos about colums, rows und items.
+            return QStringLiteral("android.widget.GridView");
+        case QAccessible::Role::Pane:
+            // #TODO QQuickScrollView, QQuickListView (see QTBUG-137806)
+            return QStringLiteral("android.view.ViewGroup");
+        case QAccessible::Role::AlertMessage:
+        case QAccessible::Role::Animation:
+        case QAccessible::Role::Application:
+        case QAccessible::Role::Assistant:
+        case QAccessible::Role::BlockQuote:
+        case QAccessible::Role::Border:
+        case QAccessible::Role::ButtonDropGrid:
+        case QAccessible::Role::ButtonDropDown:
+        case QAccessible::Role::ButtonMenu:
+        case QAccessible::Role::Canvas:
+        case QAccessible::Role::Caret:
+        case QAccessible::Role::Cell:
+        case QAccessible::Role::Chart:
+        case QAccessible::Role::Client:
+        case QAccessible::Role::ColorChooser:
+        case QAccessible::Role::Column:
+        case QAccessible::Role::ColumnHeader:
+        case QAccessible::Role::ComplementaryContent:
+        case QAccessible::Role::Cursor:
+        case QAccessible::Role::Desktop:
+        case QAccessible::Role::Dial:
+        case QAccessible::Role::Document:
+        case QAccessible::Role::Equation:
+        case QAccessible::Role::Footer:
+        case QAccessible::Role::Form:
+        case QAccessible::Role::Grip:
+        case QAccessible::Role::HelpBalloon:
+        case QAccessible::Role::HotkeyField:
+        case QAccessible::Role::Indicator:
+        case QAccessible::Role::LayeredPane:
+        case QAccessible::Role::ListItem:
+        case QAccessible::Role::MenuBar:
+        case QAccessible::Role::NoRole:
+        case QAccessible::Role::Note:
+        case QAccessible::Role::Notification:
+        case QAccessible::Role::Paragraph:
+        case QAccessible::Role::PropertyPage:
+        case QAccessible::Role::Row:
+        case QAccessible::Role::RowHeader:
+        case QAccessible::Role::Section:
+        case QAccessible::Role::Sound:
+        case QAccessible::Role::Splitter:
+        case QAccessible::Role::StatusBar:
+        case QAccessible::Role::Terminal:
+        case QAccessible::Role::TitleBar:
+        case QAccessible::Role::ToolTip:
+        case QAccessible::Role::Tree:
+        case QAccessible::Role::TreeItem:
+        case QAccessible::Role::UserRole:
+        case QAccessible::Role::Whitespace:
+        case QAccessible::Role::Window:
+            // If unsure, every visible or interactive element in Android
+            // inherits android.view.View and by many extends also TextView.
+            // Android itself does a similar thing e.g. in its Settings-App.
+            return QStringLiteral("android.view.TextView");
+        }
+    }
+
     static QString descriptionForInterface(QAccessibleInterface *iface)
     {
         QString desc;
@@ -513,6 +638,10 @@ namespace QtAndroidAccessibility
             return false;
         }
 
+        const QString role = classNameForRole(info.role, info.state);
+        jstring jrole = env->NewString((jchar*)role.constData(), (jsize)role.size());
+        env->CallVoidMethod(node, m_setClassNameMethodID, jrole);
+
         const bool hasClickableAction =
                 info.actions.contains(QAccessibleActionInterface::pressAction()) ||
                 info.actions.contains(QAccessibleActionInterface::toggleAction());
@@ -590,6 +719,7 @@ namespace QtAndroidAccessibility
         }
 
         jclass nodeInfoClass = env->FindClass("android/view/accessibility/AccessibilityNodeInfo");
+        GET_AND_CHECK_STATIC_METHOD(m_setClassNameMethodID, nodeInfoClass, "setClassName", "(Ljava/lang/CharSequence;)V");
         GET_AND_CHECK_STATIC_METHOD(m_addActionMethodID, nodeInfoClass, "addAction", "(I)V");
         GET_AND_CHECK_STATIC_METHOD(m_setCheckableMethodID, nodeInfoClass, "setCheckable", "(Z)V");
         GET_AND_CHECK_STATIC_METHOD(m_setCheckedMethodID, nodeInfoClass, "setChecked", "(Z)V");
