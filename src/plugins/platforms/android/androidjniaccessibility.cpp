@@ -427,8 +427,12 @@ namespace QtAndroidAccessibility
         if (iface && iface->isValid()) {
             bool hasValue = false;
             desc = iface->text(QAccessible::Name);
-            if (desc.isEmpty())
-                desc = iface->text(QAccessible::Description);
+            const QString descStr = iface->text(QAccessible::Description);
+            if (!descStr.isEmpty()) {
+                if (!desc.isEmpty())
+                    desc.append(QStringLiteral(", "));
+                desc.append(descStr);
+            }
             if (desc.isEmpty()) {
                 desc = iface->text(QAccessible::Value);
                 hasValue = !desc.isEmpty();
