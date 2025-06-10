@@ -45,6 +45,6 @@
 
     \snippet code/src_corelib_global_qglobal.cpp 54
 
-    \sa qOverload, qNonConstOverload, {Differences between String-Based
+    \sa qOverload, qConstOverload, {Differences between String-Based
     and Functor-Based Connections}
 */
