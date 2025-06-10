@@ -29,5 +29,11 @@ qt_internal_add_plugin(QWaylandEglClientBufferPlugin
     QT_LICENSE_ID QT_COMMERCIAL_OR_LGPL3
 )
 
+qt_internal_extend_target(QWaylandEglClientBufferPlugin CONDITION QT_FEATURE_egl AND NOT QT_FEATURE_egl_x11
+    DEFINES
+        QT_EGL_NO_X11
+)
+
+
 #### Keys ignored in scope 1:.:.:wayland-egl.pro:<TRUE>:
 # OTHER_FILES = "wayland-egl.json"
