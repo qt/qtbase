@@ -74,6 +74,10 @@ table td {
   padding: 6px 10px 6px 10px;
 }
 
+table.qmlname {
+  width: 75%;
+}
+
 table.qmlname td {
   padding: 0px;
   margin-left: 6px;
