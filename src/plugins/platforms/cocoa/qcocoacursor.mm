@@ -13,6 +13,8 @@
 
 #if !defined(QT_APPLE_NO_PRIVATE_APIS)
 @interface NSCursor()
++ (id)busyButClickableCursor;
++ (id)_helpCursor;
 + (id)_windowResizeNorthWestSouthEastCursor;
 + (id)_windowResizeNorthEastSouthWestCursor;
 + (id)_windowResizeNorthSouthCursor;
@@ -109,7 +111,15 @@ NSCursor *QCocoaCursor::convertCursor(QCursor *cursor)
     case Qt::IBeamCursor:
         cocoaCursor = [NSCursor IBeamCursor];
         break;
-    case Qt::WhatsThisCursor: //for now just use the pointing hand
+    case Qt::WhatsThisCursor:
+#if !defined(QT_APPLE_NO_PRIVATE_APIS)
+        if ([NSCursor respondsToSelector:@selector(_helpCursor)]) {
+            cocoaCursor = [NSCursor performSelector:@selector(_helpCursor)];
+            break;
+        }
+#endif
+         // For now use the pointing hand as a fallback
+        Q_FALLTHROUGH();
     case Qt::PointingHandCursor:
         cocoaCursor = [NSCursor pointingHandCursor];
         break;
@@ -133,6 +143,12 @@ NSCursor *QCocoaCursor::convertCursor(QCursor *cursor)
         break;
     case Qt::DragLinkCursor:
         cocoaCursor = [NSCursor dragLinkCursor];
+        break;
+    case Qt::BusyCursor:
+#if !defined(QT_APPLE_NO_PRIVATE_APIS)
+        if ([NSCursor respondsToSelector:@selector(busyButClickableCursor)])
+            cocoaCursor = [NSCursor performSelector:@selector(busyButClickableCursor)];
+#endif
         break;
     case Qt::SizeVerCursor:
     case Qt::SizeHorCursor:
