@@ -407,7 +407,7 @@ void QJsonArray::insert(qsizetype i, const QJsonValue &value)
     Inserts \a value before the position pointed to by \a before, and returns an iterator
     pointing to the newly inserted item.
 
-    \sa erase(), insert()
+    \sa erase(), insert(qsizetype, const QJsonValue &)
 */
 
 /*!

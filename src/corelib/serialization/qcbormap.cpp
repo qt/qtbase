@@ -1234,8 +1234,7 @@ QCborValue QCborMap::extract(iterator it)
 
     For more information on CBOR equality in Qt, see, QCborValue::compare().
 
-    \sa compare(), QCborValue::operator==(), QCborMap::operator==(),
-        operator!=(), operator<()
+    \sa compare(), QCborValue::operator==(), operator!=(), operator<()
  */
 
 /*!
@@ -1253,8 +1252,7 @@ QCborValue QCborMap::extract(iterator it)
 
     For more information on CBOR equality in Qt, see, QCborValue::compare().
 
-    \sa compare(), QCborValue::operator==(), QCborMap::operator==(),
-        operator==(), operator<()
+    \sa compare(), QCborValue::operator==(), operator==(), operator<()
  */
 
 /*!

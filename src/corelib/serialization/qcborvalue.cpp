@@ -1350,8 +1350,7 @@ inline int QCborContainerPrivate::compareElement_helper(const QCborContainerPriv
 
     For more information on CBOR equality in Qt, see, compare().
 
-    \sa compare(), QCborValue::operator==(), QCborMap::operator==(),
-        operator!=(), operator<()
+    \sa compare(), QCborMap::operator==(), operator!=(), operator<()
  */
 
 /*!
@@ -1363,8 +1362,7 @@ inline int QCborContainerPrivate::compareElement_helper(const QCborContainerPriv
 
     For more information on CBOR equality in Qt, see, QCborValue::compare().
 
-    \sa compare(), QCborValue::operator==(), QCborMap::operator==(),
-        operator==(), operator<()
+    \sa compare(), QCborMap::operator==(), operator==(), operator<()
  */
 bool comparesEqual(const QCborValue &lhs,
                    const QCborValue &rhs) noexcept
