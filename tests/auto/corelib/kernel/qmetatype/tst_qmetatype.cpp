@@ -1734,6 +1734,48 @@ void tst_QMetaType::typedefs()
     QCOMPARE(QMetaType::fromName("WhityDouble").id(), ::qMetaTypeId<WhityDouble>());
 }
 
+void tst_QMetaType::isSameType_data()
+{
+    QTest::addColumn<QMetaType>("mt");
+    auto addRow = [](QMetaType mt) { QTest::newRow(mt.name()) << mt; };
+
+#define ADD_METATYPE_TEST_ROW(MetaTypeName, MetaTypeId, RealType)           \
+    addRow(QMetaType::fromType<RealType>());
+FOR_EACH_CORE_METATYPE(ADD_METATYPE_TEST_ROW)
+#undef ADD_METATYPE_TEST_ROW
+
+    addRow(QMetaType::fromType<Foo>());
+    addRow(QMetaType::fromType<CustomQObject>());
+    addRow(QMetaType::fromType<CustomGadget>());
+}
+
+template <typename T> void test_isSameType(QMetaType mt)
+{
+#if defined(QT_SUPPORTS_IS_CONSTANT_EVALUATED) && (!defined(Q_CC_GNU_ONLY) || Q_CC_GNU_ONLY >= 1200)
+    // test constexprness of isSameType()
+    static_assert(!QMetaType().isSameType<T>());
+    static_assert(QMetaType::fromType<T>().template isSameType<T>());
+#endif
+
+    QMetaType otherMt = QMetaType::fromType<T>();
+    QCOMPARE(mt.isSameType<T>(), mt == otherMt);
+}
+
+void tst_QMetaType::isSameType()
+{
+    QFETCH(QMetaType, mt);
+
+    // test it against every type too
+#define TEST_isSameType_DYNAMIC(MetaTypeName, MetaTypeId, RealType)         \
+    test_isSameType<RealType>(mt);
+FOR_EACH_CORE_METATYPE(TEST_isSameType_DYNAMIC)
+#undef TEST_isSameType_DYNAMIC
+
+    test_isSameType<Foo>(mt);
+    test_isSameType<CustomQObject>(mt);
+    test_isSameType<CustomGadget>(mt);
+}
+
 struct RegisterTypeType {};
 
 void tst_QMetaType::registerType()

@@ -873,10 +873,10 @@ private:
 
         using NonConstT = std::remove_const_t<std::remove_pointer_t<T>>;
         if constexpr (std::is_pointer_v<T> && !std::is_same_v<T, NonConstT *>) {
-            if (v->d.type() == QMetaType::fromType<NonConstT *>())
+            if (v->d.type().template isSameType<NonConstT *>())
                 return true;
         }
-        return v->d.type() == QMetaType::fromType<T>();
+        return v->d.type().template isSameType<T>();
     }
 
     template <typename T> T *typedData()
@@ -1081,7 +1081,7 @@ template<typename T> inline T qvariant_cast(QVariant &&v)
 #  ifndef QT_NO_VARIANT
 template<> inline QVariant qvariant_cast<QVariant>(const QVariant &v)
 {
-    if (v.metaType().id() == QMetaType::QVariant)
+    if (v.d.type().isSameType<QVariant>())
         return *reinterpret_cast<const QVariant *>(v.constData());
     return v;
 }

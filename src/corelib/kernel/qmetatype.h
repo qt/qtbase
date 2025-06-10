@@ -529,6 +529,20 @@ public:
         return d_ptr ? d_ptr->typeId.loadRelaxed() : 0;
     }
 
+    template <typename Type> constexpr bool isSameType() const
+    {
+        using T = typename QtPrivate::MetatypeDecay<Type>::type;
+        QMetaType other = fromType<T>();
+        if (q20::is_constant_evaluated()) {
+            // There's no registration at constant evaluation time, so equality
+            // only happens if the pointers are equal.
+            return d_ptr == other.iface();
+        } else {
+            using IsBuiltIn = std::bool_constant<QMetaTypeId2<T>::IsBuiltIn>;
+            return isSameTypeHelper<T>(other.iface(), IsBuiltIn{});
+        }
+    }
+
     constexpr qsizetype sizeOf() const;
     constexpr qsizetype alignOf() const;
     constexpr TypeFlags flags() const;
@@ -828,6 +842,10 @@ private:
     Q_DECL_PURE_FUNCTION static bool isMoveConstructible(const QtPrivate::QMetaTypeInterface *) noexcept;
     Q_DECL_PURE_FUNCTION static bool isDestructible(const QtPrivate::QMetaTypeInterface *) noexcept;
 
+    template <typename T> bool
+    isSameTypeHelper(const QtPrivate::QMetaTypeInterface *iface, std::true_type) const noexcept;
+    template <typename T> bool
+    isSameTypeHelper(const QtPrivate::QMetaTypeInterface *iface, std::false_type) const;
 #if QT_CORE_REMOVED_SINCE(6, 5)
     int idHelper() const;
 #endif
@@ -2651,6 +2669,45 @@ constexpr QMetaType QMetaType::fromType()
 {
     QtPrivate::checkTypeIsSuitableForMetaType<T>();
     return QMetaType(QtPrivate::qMetaTypeInterfaceForType<T>());
+}
+
+template <typename T> bool
+QMetaType::isSameTypeHelper(const QtPrivate::QMetaTypeInterface *iface, std::true_type) const noexcept
+{
+    // built-in types have statically-known IDs and never need to be registered
+    constexpr int Id = int(QMetaTypeId2<T>::MetaType); // qMetaTypeId<T>()
+
+#ifdef QT_NO_DATA_RELOCATION
+    Q_UNUSED(iface);
+#else
+    if constexpr (!std::is_void_v<T> && QT_VERSION >= QT_VERSION_CHECK(7, 0, 0)) {
+        // pointer addresses are unique for QtCore built-in types only after
+        // v6.4.0 and only for those made built-in on the release they were
+        // first introduced
+        if constexpr (Id <= int(LastCoreType))
+            return d_ptr == iface;
+    }
+#endif
+
+    // For types from the other libraries, the pointer addresses aren't
+    // guaranteed to be unique. Therefore, we need to compare IDs if the
+    // pointers aren't equal, meaning the code will be emitted anyway. We may
+    // as well go straight to comparing IDs.
+
+    if (!d_ptr)
+        return false;       // UnknownType
+
+    return d_ptr->typeId.loadRelaxed() == Id;
+}
+
+template <typename T> bool
+QMetaType::isSameTypeHelper(const QtPrivate::QMetaTypeInterface *iface, std::false_type) const
+{
+    if (!d_ptr)
+        return false;       // UnknownType
+
+    // This registers if needed.
+    return *this == QMetaType(iface);
 }
 
 constexpr bool QMetaType::isValid(QT6_IMPL_NEW_OVERLOAD) const noexcept

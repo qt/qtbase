@@ -590,6 +590,18 @@ const char *QtMetaTypePrivate::typedefNameForType(const QtPrivate::QMetaTypeInte
 */
 
 /*!
+    \fn template <typename T> constexpr bool QMetaType::isSameType() const
+    \since 6.12
+
+    Returns \c true if this QMetaType describes type \c{T}.
+
+    This function is slightly faster than comparing id() to
+    \c{qMetaTypeId<T>()}.
+
+    \sa id(), qMetaTypeId(), fromType()
+*/
+
+/*!
     \fn void QMetaType::registerType() const
     \since 6.5
 

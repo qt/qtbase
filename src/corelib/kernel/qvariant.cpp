@@ -2224,7 +2224,7 @@ bool QVariant::convert(QMetaType targetType)
         return false;
 
     // Fail if the value is not initialized or was forced null by a previous failed convert.
-    if (oldValue.d.is_null && oldValue.d.type().id() != QMetaType::Nullptr)
+    if (oldValue.d.is_null && !oldValue.d.type().isSameType<std::nullptr_t>())
         return false;
 
     bool ok = QMetaType::convert(oldValue.d.type(), oldValue.constData(), targetType, data());

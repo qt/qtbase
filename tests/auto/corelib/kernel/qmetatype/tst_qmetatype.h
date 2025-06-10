@@ -76,6 +76,8 @@ private slots:
     void selfCompare_data();
     void selfCompare();
     void typedefs();
+    void isSameType_data();
+    void isSameType();
     void registerType();
     void isRegistered_data();
     void isRegistered();

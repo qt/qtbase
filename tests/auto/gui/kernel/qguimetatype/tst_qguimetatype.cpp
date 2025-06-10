@@ -26,6 +26,8 @@ private slots:
     void construct();
     void constructCopy_data();
     void constructCopy();
+    void isSameType_data();
+    void isSameType();
     void saveAndLoadBuiltin_data();
     void saveAndLoadBuiltin();
 };
@@ -461,6 +463,47 @@ FOR_EACH_GUI_METATYPE(RETURN_CONSTRUCT_COPY_FUNCTION)
 
     QFETCH(QMetaType::Type, type);
     TypeTestFunctionGetter::get(type)();
+}
+
+void tst_QGuiMetaType::isSameType_data()
+{
+    QTest::addColumn<QMetaType>("mt");
+    auto addRow = [](QMetaType mt) { QTest::newRow(mt.name()) << mt; };
+
+    addRow(QMetaType::fromType<void>());
+    addRow(QMetaType::fromType<int>());
+    addRow(QMetaType::fromType<QString>());
+
+#define ADD_METATYPE_TEST_ROW(Type, MetaTypeId)                     \
+    addRow(QMetaType::fromType<Type>());
+FOR_EACH_GUI_METATYPE(ADD_METATYPE_TEST_ROW)
+#undef ADD_METATYPE_TEST_ROW
+}
+
+template <typename T> void test_isSameType(QMetaType mt)
+{
+#if defined(QT_SUPPORTS_IS_CONSTANT_EVALUATED) && (!defined(Q_CC_GNU_ONLY) || Q_CC_GNU_ONLY >= 1200)
+    // test constexprness of isSameType()
+    static_assert(!QMetaType().isSameType<T>());
+    static_assert(QMetaType::fromType<T>().template isSameType<T>());
+#endif
+
+    QMetaType otherMt = QMetaType::fromType<T>();
+    QCOMPARE(mt.isSameType<T>(), mt == otherMt);
+}
+
+void tst_QGuiMetaType::isSameType()
+{
+    QFETCH(QMetaType, mt);
+
+    // test it against every type too
+    test_isSameType<void>(mt);
+    test_isSameType<int>(mt);
+    test_isSameType<QString>(mt);
+#define TEST_isSameType_DYNAMIC(Type, MetaTypeId)                   \
+    test_isSameType<Type>(mt);
+FOR_EACH_GUI_METATYPE(TEST_isSameType_DYNAMIC)
+#undef TEST_isSameType_DYNAMIC
 }
 
 template <typename T>
