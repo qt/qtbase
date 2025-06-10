@@ -159,7 +159,7 @@ void QDxgiVSyncService::beginFrame(LUID)
     // else, then start from scratch.
 
     if (dxgiFactory && !dxgiFactory->IsCurrent()) {
-        qWarning("QDxgiVSyncService: DXGI Factory is no longer Current");
+        qCDebug(lcQpaScreenUpdates, "QDxgiVSyncService: DXGI Factory is no longer Current");
         QVarLengthArray<LUID, 8> luids;
         for (auto it = adapters.begin(), end = adapters.end(); it != end; ++it)
             luids.append(it->luid);
