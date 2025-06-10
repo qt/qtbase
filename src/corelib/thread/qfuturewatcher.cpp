@@ -651,7 +651,7 @@ QT_WARNING_POP
     no more running computations. After receiving this signal no more result
     ready or progress reporting signals are expected.
 
-    \sa setSuspended(), suspend(), suspended()
+    \sa setSuspended(), suspend()
 */
 
 /*! \fn template <typename T> void QFutureWatcher<T>::resumed()
