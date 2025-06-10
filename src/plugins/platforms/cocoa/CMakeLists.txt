@@ -48,6 +48,7 @@ qt_internal_add_plugin(QCocoaIntegrationPlugin
     DEFINES
         QT_NO_FOREACH
     LIBRARIES
+        ${FWFoundation}
         ${FWAppKit}
         ${FWCarbon}
         ${FWCoreServices}
