@@ -806,7 +806,7 @@ QT_WARNING_POP
     \internal
     Used by verifyCertContext to check if a client cert is used by a server or vice versa.
 */
-bool netscapeWrongCertType(const QList<QSslCertificateExtension> &extensions, bool isClient)
+bool netscapeWrongCertType(const QList<QSslCertificateExtension> &extensions, bool isClient, bool isLeaf)
 {
     const auto netscapeIt = std::find_if(
             extensions.cbegin(), extensions.cend(),
@@ -820,8 +820,13 @@ bool netscapeWrongCertType(const QList<QSslCertificateExtension> &extensions, bo
         dataStream >> netscapeCertType;
         if (dataStream.status() != QDataStream::Status::Ok)
             return true;
-        const int expectedPeerCertType = isClient ? NETSCAPE_SSL_SERVER_AUTH_CERT_TYPE
-                                                  : NETSCAPE_SSL_CLIENT_AUTH_CERT_TYPE;
+        const int expectedPeerCertType = [&]() {
+            if (isLeaf) {
+                return isClient ? NETSCAPE_SSL_SERVER_AUTH_CERT_TYPE
+                                : NETSCAPE_SSL_CLIENT_AUTH_CERT_TYPE;
+            }
+            return NETSCAPE_SSL_CA_CERT_TYPE;
+        }();
         if ((netscapeCertType & expectedPeerCertType) == 0)
             return true;
     }
@@ -2549,7 +2554,7 @@ bool TlsCryptographSchannel::verifyCertContext(CERT_CONTEXT *certContext)
         // While netscape shouldn't be relevant now it defined an extension which is
         // still in use. Schannel does not check this automatically, so we do it here.
         // It is used to differentiate between client and server certificates.
-        if (netscapeWrongCertType(extensions, isClient))
+        if (netscapeWrongCertType(extensions, isClient, i == 0))
             element->TrustStatus.dwErrorStatus |= CERT_TRUST_IS_NOT_VALID_FOR_USAGE;
 
         if (element->TrustStatus.dwErrorStatus & CERT_TRUST_IS_NOT_VALID_FOR_USAGE) {
