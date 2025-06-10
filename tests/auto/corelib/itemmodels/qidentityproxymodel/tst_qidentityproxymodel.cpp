@@ -357,10 +357,19 @@ void tst_QIdentityProxyModel::reset()
         resetCommand.doCommand();
     }
 
-    QVERIFY(modelBeforeSpy.size() == 1 && 1 == proxyBeforeSpy.size());
-    QVERIFY(modelAfterSpy.size() == 1 && 1 == proxyAfterSpy.size());
+    QCOMPARE(modelBeforeSpy.size(), 1);
+    QCOMPARE(modelAfterSpy.size(), 1);
+    QCOMPARE(proxyBeforeSpy.size(), 1);
+    QCOMPARE(proxyAfterSpy.size(), 1);
 
     verifyIdentity(&model);
+
+    // setSourceModel again shouldn't emit reset
+    m_proxy->setSourceModel(&model);
+
+    QCOMPARE(proxyBeforeSpy.size(), 1);
+    QCOMPARE(proxyAfterSpy.size(), 1);
+
     m_proxy->setSourceModel(0);
 }
 

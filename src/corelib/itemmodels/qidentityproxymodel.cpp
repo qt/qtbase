@@ -291,9 +291,12 @@ QVariant QIdentityProxyModel::headerData(int section, Qt::Orientation orientatio
  */
 void QIdentityProxyModel::setSourceModel(QAbstractItemModel* newSourceModel)
 {
-    beginResetModel();
-
     Q_D(QIdentityProxyModel);
+
+    if (newSourceModel == d->model)
+        return;
+
+    beginResetModel();
 
     // Call QObject::disconnect() unconditionally, if there is an existing source
     // model, it's disconnected, and if there isn't, then calling disconnect() on
