@@ -5512,13 +5512,14 @@ QDateTime QDateTime::currentDateTime(const QTimeZone &zone)
     // convert, which is most efficiently done from UTC.
     const Qt::TimeSpec spec = zone.timeSpec();
     SYSTEMTIME st = {};
-    // GetSystemTime()'s page links to its partner page for GetLocalTime().
     // https://docs.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-getsystemtime
-    (spec == Qt::LocalTime ? GetLocalTime : GetSystemTime)(&st);
+    // We previously used GetLocalTime for spec == LocalTime but it didn't provide enough
+    // information to differentiate between repeated hours of a tradition and would report the same
+    // timezone (eg always CEST, never CET) for both. But toTimeZone handles it correctly, given
+    // the UTC time.
+    GetSystemTime(&st);
     QDate d(st.wYear, st.wMonth, st.wDay);
     QTime t(msecsFromDecomposed(st.wHour, st.wMinute, st.wSecond, st.wMilliseconds));
-    if (spec == Qt::LocalTime)
-        return QDateTime(d, t);
     QDateTime utc(d, t, QTimeZone::UTC);
     return spec == Qt::UTC ? utc : utc.toTimeZone(zone);
 }
