@@ -2581,7 +2581,7 @@ void QFont::clearVariableAxes()
     kerning property is set to false. Similarly, if it is set to 0, then it will always be disabled.
     To reset a font feature to its default behavior, you can unset it using unsetFeature().
 
-    \sa QFont::Tag, clearFeatures(), setFeature(), unsetFeature(), featureTags()
+    \sa QFont::Tag, clearFeatures(), unsetFeature(), featureTags()
 */
 void QFont::setFeature(Tag tag, quint32 value)
 {
