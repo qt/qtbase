@@ -1017,7 +1017,7 @@ SUB_OVERFLOW_UNSIGNED_TYPE_TEST(ulong, ULONG_MAX)
 
 #if defined(QT_HAS_128_BIT_MULTIPLICATION)
 // Compiling this causes an ICE in MSVC, so skipping it
-#if !defined(Q_CC_MSVC) || Q_CC_MSVC > 1943
+#if !defined(Q_CC_MSVC) || Q_CC_MSVC > 1944
 SIGNED_TYPE_TEST(qlonglong, LLONG_MIN, LLONG_MAX)
 UNSIGNED_TYPE_TEST(qulonglong, ULLONG_MAX)
 #endif
