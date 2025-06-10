@@ -1080,7 +1080,7 @@ QString QPropertyBindingError::description() const
   long as the returned \c QPropertyChangeHandler and the property are kept alive.
   On each value change, the handler is either called immediately, or deferred, depending on the context.
 
-  \sa onValueChanged(), subscribe()
+  \sa QProperty::onValueChanged(), subscribe()
 */
 
 /*!
