@@ -382,6 +382,7 @@ QDebug operator<<(QDebug dbg, AXErrorTag err)
     return rect;
 }
 - (AXUIElementRef)      parent { return (AXUIElementRef)[self _attributeValue:kAXParentAttribute]; }
+- (AXUIElementRef)      window { return (AXUIElementRef)[self _attributeValue:kAXWindowAttribute]; }
 - (BOOL)                focused { return [self _boolAttributeValue:kAXFocusedAttribute]; }
 - (NSInteger)           numberOfCharacters { return [self _numberAttributeValue:kAXNumberOfCharactersAttribute]; }
 - (NSString*)           selectedText { return [self _stringAttributeValue:kAXSelectedTextAttribute]; }
@@ -449,6 +450,7 @@ private Q_SLOTS:
     void tableViewTest();
     void treeViewTest();
     void tabBarTest();
+    void windowTest();
 
 private:
     AccessibleTestWindow *m_window;
@@ -931,6 +933,36 @@ void tst_QAccessibilityMac::tabBarTest()
         QCOMPARE(QString::fromNSString(tab.title), QString::number(i));
         QCOMPARE(QString::fromNSString(tab.roleDescription), "tab");
     }
+}
+
+void tst_QAccessibilityMac::windowTest()
+{
+    QTextEdit *textEdit = new QTextEdit;
+    m_window->addWidget(textEdit);
+    QVERIFY(QTest::qWaitForWindowExposed(m_window));
+    QCoreApplication::processEvents();
+
+    TestAXObject *appObject = [TestAXObject getApplicationAXObject];
+    QVERIFY(appObject);
+
+    NSArray *windowList = [appObject windowList];
+    // one window
+    QVERIFY([windowList count] == 1);
+    AXUIElementRef windowRef = (AXUIElementRef)[windowList objectAtIndex:0];
+    QVERIFY(windowRef != nil);
+    TestAXObject *window = [[TestAXObject alloc] initWithAXUIElementRef:windowRef];
+    QVERIFY(window.valid);
+
+    AXUIElementRef axTextEdit = [window findDirectChildByRole:kAXTextAreaRole];
+    QVERIFY(axTextEdit != nil);
+
+    [appObject release];
+    [window release];
+
+    TestAXObject *edit = [[TestAXObject alloc] initWithAXUIElementRef:axTextEdit];
+    QVERIFY(edit.valid);
+    AXUIElementRef axWindow = edit.window;
+    QVERIFY(axWindow);
 }
 
 QTEST_MAIN(tst_QAccessibilityMac)
