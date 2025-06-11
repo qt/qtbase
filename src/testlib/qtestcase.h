@@ -193,7 +193,7 @@ inline void useVerifyThrowsException() {}
 
 #define QTRY_IMPL(expr, timeoutAsGiven)\
     const auto qt_test_timeoutAsMs = [&] { \
-            /* make 5 seconds (by default) work without user action: */ \
+            /* make 5s work w/o user action: */ \
             using namespace std::chrono_literals; \
             return std::chrono::milliseconds{timeoutAsGiven}; \
         }(); \
