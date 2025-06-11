@@ -58,12 +58,16 @@ struct QArrayData
 
     qsizetype allocatedCapacity() noexcept
     {
-        return alloc;
+        qsizetype a = alloc;
+        Q_PRESUME(a > 0);
+        return a;
     }
 
     qsizetype constAllocatedCapacity() const noexcept
     {
-        return alloc;
+        qsizetype a = alloc;
+        Q_PRESUME(a > 0);
+        return a;
     }
 
     /// Returns true if sharing took place
