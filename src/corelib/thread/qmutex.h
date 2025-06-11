@@ -19,7 +19,7 @@ class QMutex;
 class QRecursiveMutex;
 class QMutexPrivate;
 
-class Q_CORE_EXPORT QBasicMutex
+class QT6_ONLY(Q_CORE_EXPORT) QBasicMutex
 {
     Q_DISABLE_COPY_MOVE(QBasicMutex)
 protected:
@@ -94,17 +94,22 @@ private:
     }
 #endif
 
+    QT7_ONLY(Q_CORE_EXPORT)
     void lockInternal() noexcept(FutexAlwaysAvailable);
+    QT7_ONLY(Q_CORE_EXPORT)
     bool lockInternal(QDeadlineTimer timeout) noexcept(FutexAlwaysAvailable);
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
     bool lockInternal(int timeout) noexcept(FutexAlwaysAvailable);
     void unlockInternal() noexcept;
 #endif
+    QT7_ONLY(Q_CORE_EXPORT)
     void unlockInternalFutex(void *d) noexcept;
+    QT7_ONLY(Q_CORE_EXPORT)
     void unlockInternal(void *d) noexcept;
 #if QT_CORE_REMOVED_SINCE(6, 9)
     void destroyInternal(QMutexPrivate *d);
 #endif
+    QT7_ONLY(Q_CORE_EXPORT)
     void destroyInternal(void *d);
 
     QBasicAtomicPointer<QMutexPrivate> d_ptr;
@@ -116,7 +121,7 @@ private:
     friend class QMutexPrivate;
 };
 
-class Q_CORE_EXPORT QMutex : public QBasicMutex
+class QT6_ONLY(Q_CORE_EXPORT) QMutex : public QBasicMutex
 {
 public:
     constexpr QMutex() = default;
@@ -179,7 +184,7 @@ public:
     }
 };
 
-class Q_CORE_EXPORT QRecursiveMutex
+class QT6_ONLY(Q_CORE_EXPORT) QRecursiveMutex
 {
     Q_DISABLE_COPY_MOVE(QRecursiveMutex)
     // written to by the thread that first owns 'mutex';
@@ -192,6 +197,7 @@ class Q_CORE_EXPORT QRecursiveMutex
 
 public:
     constexpr QRecursiveMutex() = default;
+    QT7_ONLY(Q_CORE_EXPORT)
     ~QRecursiveMutex();
 
 
@@ -200,8 +206,10 @@ public:
     { tryLock(QDeadlineTimer(QDeadlineTimer::Forever)); }
     QT_CORE_INLINE_SINCE(6, 6)
     bool tryLock(int timeout) noexcept(LockIsNoexcept);
+    QT7_ONLY(Q_CORE_EXPORT)
     bool tryLock(QDeadlineTimer timer = {}) noexcept(LockIsNoexcept);
     // BasicLockable concept
+    QT7_ONLY(Q_CORE_EXPORT)
     void unlock() noexcept;
 
     // Lockable concept
