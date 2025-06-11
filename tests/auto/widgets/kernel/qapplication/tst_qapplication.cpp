@@ -48,6 +48,7 @@
 #include <private/qhighdpiscaling_p.h>
 
 #include "../../../corelib/kernel/qcoreapplication/apphelper.h"
+#include "../../../../../shared/androidutils.h"
 
 #include <algorithm>
 
@@ -132,7 +133,7 @@ private slots:
     void wheelEventPropagation_data();
     void wheelEventPropagation();
 
-    void qtbug_12673();
+    void modalDialog();
     void qtbug_103611();
     void noQuitOnHide();
 
@@ -2434,12 +2435,24 @@ void tst_QApplication::wheelEventPropagation()
     }
 }
 
-void tst_QApplication::qtbug_12673()
+QString modalHelperPath()
+{
+#ifdef Q_OS_ANDROID
+    int argc = 1;
+    QApplication app(argc, &argv0);
+    return app.applicationDirPath() + QString("/libmodal_helper_%1.so").arg(androidAbi());
+#else
+    return "./modal_helper";
+#endif
+}
+
+// QTBUG-133037, QTBUG-12673
+void tst_QApplication::modalDialog()
 {
 #if QT_CONFIG(process)
     QProcess testProcess;
     QStringList arguments;
-    testProcess.start("./modal_helper", arguments);
+    testProcess.start(modalHelperPath(), arguments);
     QVERIFY2(testProcess.waitForStarted(),
              qPrintable(QString::fromLatin1("Cannot start 'modal_helper': %1").arg(testProcess.errorString())));
     QVERIFY(testProcess.waitForFinished(20000));
