@@ -1995,7 +1995,7 @@ void tst_QFileInfo::brokenShortcut()
     QString linkName("borkenlink.lnk");
     QFile::remove(linkName);
     QFile file(linkName);
-    file.open(QFile::WriteOnly);
+    QVERIFY(file.open(QFile::WriteOnly));
     file.write("b0rk");
     file.close();
 
