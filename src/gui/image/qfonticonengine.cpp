@@ -76,7 +76,7 @@ QSize QFontIconEngine::actualSize(const QSize &size, QIcon::Mode mode, QIcon::St
     QSizeF result;
     if (const QString text = string(); !text.isEmpty()) {
         const QFontMetricsF fm(renderFont);
-        result = fm.boundingRect(text).size();
+        result = {fm.horizontalAdvance(text), fm.tightBoundingRect(text).height()};
     } else if (glyph_t glyphIndex = glyph()) {
         QFontEngine *engine = QFontPrivate::get(renderFont)->engineForScript(QChar::Script_Common);
 
