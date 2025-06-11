@@ -966,6 +966,9 @@ void tst_QWindow::isActive()
     QTRY_COMPARE(QGuiApplication::focusWindow(), &window);
     QVERIFY(window.isActive());
 
+    if (isPlatformWayland())
+        QSKIP("A nested window or a subsurface in wayland terms can't get focus.");
+
     Window child;
     child.setParent(&window);
     child.setGeometry(10, 10, 20, 20);
