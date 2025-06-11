@@ -343,7 +343,9 @@ public:
         return id;
     }
 
+    QT_CORE_INLINE_SINCE(6, 10)
     const char *typeName() const;
+    QT_CORE_INLINE_SINCE(6, 10)
     QMetaType metaType() const;
 
     bool canConvert(QMetaType targetType) const
@@ -738,6 +740,18 @@ inline QDataStream &operator<<(QDataStream &s, const QVariant::Type p)
 QT_WARNING_POP
 #endif
 
+#endif
+
+#if QT_CORE_INLINE_IMPL_SINCE(6, 10)
+QMetaType QVariant::metaType() const
+{
+    return d.type();
+}
+
+const char *QVariant::typeName() const
+{
+    return d.type().name();
+}
 #endif
 
 inline bool QVariant::isDetached() const

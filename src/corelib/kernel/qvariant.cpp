@@ -1030,14 +1030,11 @@ QVariant::QVariant(const QPersistentModelIndex &modelIndex) : d(std::piecewise_c
 */
 
 /*!
+    \fn QMetaType QVariant::metaType() const
     \since 6.0
 
     Returns the QMetaType of the value stored in the variant.
 */
-QMetaType QVariant::metaType() const
-{
-    return d.type();
-}
 
 /*!
     Assigns the value of the variant \a variant to this variant.
@@ -1085,15 +1082,13 @@ void QVariant::detach()
 */
 
 /*!
+    \fn const char *QVariant::typeName() const
+
     Returns the name of the type stored in the variant. The returned
     strings describe the C++ datatype used to store the data: for
     example, "QFont", "QString", or "QVariantList". An Invalid
     variant returns 0.
 */
-const char *QVariant::typeName() const
-{
-    return d.type().name();
-}
 
 /*!
     Convert this variant to type QMetaType::UnknownType and free up any resources

@@ -1474,6 +1474,8 @@ bool QObject::doSetProperty(const char *name, const QVariant *lvalue, QVariant *
 
 #include "qstring.h" // inlined API
 
+#include "qvariant.h"   // inlined API
+
 // #include "qotherheader.h"
 // // implement removed functions from qotherheader.h
 // order sections alphabetically to reduce chances of merge conflicts
