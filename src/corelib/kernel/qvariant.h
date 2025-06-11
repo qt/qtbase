@@ -332,7 +332,16 @@ public:
     inline void swap(QVariant &other) noexcept { std::swap(d, other.d); }
 
     int userType() const { return typeId(); }
-    int typeId() const { return metaType().id(); }
+    int typeId() const
+    {
+        // QVariant types are always registered (see fromMetaType())
+        const QtPrivate::QMetaTypeInterface *mt = metaType().iface();
+        if (!mt)
+            return 0;
+        int id = mt->typeId.loadRelaxed();
+        // Q_ASSUME(id > 0);
+        return id;
+    }
 
     const char *typeName() const;
     QMetaType metaType() const;
