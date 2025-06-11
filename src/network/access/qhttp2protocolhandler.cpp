@@ -308,10 +308,11 @@ bool QHttp2ProtocolHandler::sendDATA(QHttp2Stream *stream, QHttpNetworkReply *re
 void QHttp2ProtocolHandler::handleHeadersReceived(const HPack::HttpHeader &headers, bool endStream)
 {
     QHttp2Stream *stream = qobject_cast<QHttp2Stream *>(sender());
+    Q_ASSERT(stream);
     auto &requestPair = requestReplyPairs[stream];
     auto *httpReply = requestPair.second;
     auto &httpRequest = requestPair.first;
-    if (!httpReply && (!stream || stream->state() != QHttp2Stream::State::ReservedRemote))
+    if (!httpReply)
         return;
 
     auto *httpReplyPrivate = httpReply->d_func();

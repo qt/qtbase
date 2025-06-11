@@ -1930,8 +1930,8 @@ void QHttp2Connection::handleContinuedHEADERS()
             return connectionError(FRAME_SIZE_ERROR, "HEADERS frame too large");
     }
 
-    if (streamIt == m_streams.cend()) // No more processing without a stream from here on.
-        return;
+    if (streamWasResetLocally(streamID) || streamIt == m_streams.cend())
+        return; // No more processing without a stream from here on.
 
     switch (firstFrameType) {
     case FrameType::HEADERS:

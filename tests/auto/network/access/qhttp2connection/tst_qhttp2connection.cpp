@@ -745,6 +745,7 @@ void tst_QHttp2Connection::headerFrameAfterRSTOutgoing()
 
     QHttp2Stream *clientStream = connection->createStream().unwrap();
     QVERIFY(clientStream);
+    QSignalSpy client1HeadersSpy{ clientStream, &QHttp2Stream::headersReceived};
     QVERIFY(waitForSettingsExchange(connection, serverConnection));
 
     QSignalSpy newIncomingStreamSpy{ serverConnection, &QHttp2Connection::newIncomingStream };
@@ -773,6 +774,9 @@ void tst_QHttp2Connection::headerFrameAfterRSTOutgoing()
     // This caused the HPACK lookup tables to be out of sync between server and client, eventually
     // causing an error on Qt's side.
     QVERIFY(serverRSTReceivedSpy.wait());
+
+    // We don't emit any headers for a reset stream
+    QVERIFY(!client1HeadersSpy.count());
 
     // Create a new stream then send and handle a new request!
     QHttp2Stream *clientStream2 = connection->createStream().unwrap();
