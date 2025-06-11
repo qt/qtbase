@@ -88,6 +88,11 @@ private:
             return false;
         return d_ptr.testAndSetAcquire(nullptr, dummyLocked());
     }
+#if QT_CORE_REMOVED_SINCE(6, 10)
+    inline bool fastTryUnlock() noexcept {
+        return d_ptr.testAndSetRelease(dummyLocked(), nullptr);
+    }
+#endif
 
     void lockInternal() noexcept(FutexAlwaysAvailable);
     bool lockInternal(QDeadlineTimer timeout) noexcept(FutexAlwaysAvailable);

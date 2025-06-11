@@ -1461,6 +1461,8 @@ QNoDebug QMessageLogger::noDebug() const noexcept
     return QNoDebug();
 }
 
+#include "qmutex.h" // removed, previously-inline API
+
 #include "qstring.h" // inlined API
 
 // #include "qotherheader.h"
