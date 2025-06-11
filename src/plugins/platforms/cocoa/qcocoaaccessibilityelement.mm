@@ -549,8 +549,11 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
 }
 
 - (id) accessibilityWindow {
-    // We're in the same window as our parent.
-    return [self.accessibilityParent accessibilityWindow];
+    // Go up until we find a parent that is a window
+    NSAccessibilityElement *parent = self.accessibilityParent;
+    if (parent && parent.accessibilityRole == NSAccessibilityWindowRole)
+        return parent;
+    return [parent accessibilityWindow];
 }
 
 - (id) accessibilityTopLevelUIElementAttribute {
@@ -621,11 +624,6 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
         return NSAccessibilityUnignoredAncestor([QMacAccessibilityElement elementWithId:axid]);
     }
 
-    // macOS expects that the hierarchy is:
-    // App -> Window -> Children
-    // We don't actually have the window reflected properly in QAccessibility.
-    // Check if the parent is the application and then instead return the native window.
-
     if (QAccessibleInterface *parent = iface->parent()) {
         if (parent->tableInterface()) {
             QMacAccessibilityElement *tableElement =
@@ -643,7 +641,12 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
             QMacAccessibilityElement *rowElement = tableElement->rows[rowIndex];
             return NSAccessibilityUnignoredAncestor(rowElement);
         }
-        if (parent->role() != QAccessible::Application)
+        // macOS expects that the hierarchy is:
+        // App -> Window -> Children
+        // We don't actually have the window reflected properly in QAccessibility;
+        // the native framework does that for us. Check if the parent is the
+        // Application or a window, and if so return the native NSView instead.
+        if (parent->role() != QAccessible::Application && parent->role() != QAccessible::Window)
             return NSAccessibilityUnignoredAncestor([QMacAccessibilityElement elementWithInterface: parent]);
     }
 
