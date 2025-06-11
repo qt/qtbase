@@ -695,6 +695,9 @@ void tst_QWindow::framePositioningStableAfterDestroy()
 
 void tst_QWindow::geometryAfterWmUpdateAndDestroyCreate()
 {
+    if (isPlatformWayland())
+        QSKIP("A window can't be moved programmatically on Wayland");
+
     QWindow window;
     window.setFlag(Qt::FramelessWindowHint);
     window.show();
