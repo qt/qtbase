@@ -2784,13 +2784,13 @@ void tst_QMetaObject::metaMethod()
     index = QtTestObject::staticMetaObject.indexOfConstructor("QtTestObject(QObject*,QVector<int>)");
     QVERIFY(index > 0);
     QCOMPARE(QtTestObject::staticMetaObject.constructor(index).methodSignature(),
-             "QtTestObject(QObject*,QList<int>)"_L1);
+             "QtTestObject(QObject*,QList<int>)");
     index = QtTestObject::staticMetaObject.indexOfConstructor("QtTestObject(QList<int>,QObject*)");
     QVERIFY(index > 0);
     index = QtTestObject::staticMetaObject.indexOfConstructor("QtTestObject(QVector<int>,QObject*)");
     QVERIFY(index > 0);
     QCOMPARE(QtTestObject::staticMetaObject.constructor(index).methodSignature(),
-             "QtTestObject(QList<int>,QObject*)"_L1);
+             "QtTestObject(QList<int>,QObject*)");
 }
 
 // this is a copy-paste-adapt of the above
