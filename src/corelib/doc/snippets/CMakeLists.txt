@@ -9,11 +9,10 @@ target_link_libraries(corelib_snippets PRIVATE
     Qt::Core
 )
 
-if (TARGET Qt::Widgets)
-    target_link_libraries(corelib_snippets PRIVATE
+qt_internal_extend_target(corelib_snippets CONDITION QT_FEATURE_widgets
+    LIBRARIES
         Qt::Widgets
-    )
-endif()
+)
 
 if ("${CMAKE_CXX_COMPILE_FEATURES}" MATCHES "cxx_std_23")
     set_property(TARGET corelib_snippets PROPERTY CXX_STANDARD 23)
