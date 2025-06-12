@@ -81,9 +81,9 @@ const char *string_hash_hash = STRING_HASH_HASH("baz");
    and also to increase coverage, given how few C++20 configurations exist in the CI at the time
    of writing this comment.
 */
-namespace A::inline B {}
-namespace A {
-   namespace B::inline C {}
+namespace Qt_::A::inline B {}
+namespace Qt_ {
+    namespace A::inline B::inline C {}
 }
 #endif
 
