@@ -787,7 +787,8 @@ void QWindowsScreenManager::addScreen(const QWindowsScreenData &screenData)
 void QWindowsScreenManager::removeScreen(int index)
 {
     qCDebug(lcQpaScreen) << "Removing Monitor:" << m_screens.at(index)->data();
-    QScreen *screen = m_screens.at(index)->screen();
+    QPlatformScreen *platformScreen = m_screens.takeAt(index);
+    QScreen *screen = platformScreen->screen();
     QScreen *primaryScreen = QGuiApplication::primaryScreen();
     // QTBUG-38650: When a screen is disconnected, Windows will automatically
     // move the Window to another screen. This will trigger a geometry change
@@ -813,7 +814,7 @@ void QWindowsScreenManager::removeScreen(int index)
         if (movedWindowCount)
             QWindowSystemInterface::flushWindowSystemEvents();
     }
-    QWindowSystemInterface::handleScreenRemoved(m_screens.takeAt(index));
+    QWindowSystemInterface::handleScreenRemoved(platformScreen);
 }
 
 /*!
