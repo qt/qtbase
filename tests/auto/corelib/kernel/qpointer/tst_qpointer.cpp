@@ -542,11 +542,10 @@ void tst_QPointer::raceCondition()
 
     QObject targetObject;
 
-    std::vector<std::unique_ptr<QThread>> threads;
-    threads.reserve(NUM_THREADS);
+    std::array<std::unique_ptr<QThread>, NUM_THREADS> threads;
 
-    for (int i = 0; i < NUM_THREADS; ++i) {
-        QThread *thread =
+    for (auto &thread : threads) {
+        thread.reset(
                 QThread::create([&] {
                     startSemaphore.acquire();
 
@@ -554,14 +553,13 @@ void tst_QPointer::raceCondition()
                         QPointer<QObject> pointer(&targetObject);
                         Q_UNUSED(pointer);
                     }
-                });
+                }));
 
-        threads.emplace_back(thread);
         thread->start();
     }
 
     QTest::qWait(100ms);
-    startSemaphore.release(NUM_THREADS);
+    startSemaphore.release(threads.size());
 
     bool allJoined = true;
     for (const auto &thread : threads) {
