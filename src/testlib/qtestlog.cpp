@@ -187,14 +187,13 @@ namespace QTest {
 
         inline bool matches(QtMsgType tp, const QString &message) const
         {
-            return tp == type
-                   && (pattern.userType() == QMetaType::QString ?
-                       stringsMatch(pattern.toString(), message) :
+            if (tp != type)
+                return false;
 #if QT_CONFIG(regularexpression)
-                       pattern.toRegularExpression().match(message).hasMatch());
-#else
-                       false);
+            if (pattern.userType() == QMetaType::QRegularExpression)
+                return pattern.toRegularExpression().match(message).hasMatch();
 #endif
+            return stringsMatch(pattern.toString(), message);
         }
 
         QtMsgType type;
@@ -261,13 +260,12 @@ namespace QTest {
             if (pattern.metaType() == QMetaType::fromType<QString>()) {
                 if (message != pattern.toString())
                     continue;
-            }
 #if QT_CONFIG(regularexpression)
-            else if (pattern.metaType() == QMetaType::fromType<QRegularExpression>()) {
+            } else if (pattern.metaType() == QMetaType::fromType<QRegularExpression>()) {
                 if (!message.contains(pattern.toRegularExpression()))
                     continue;
-            }
 #endif
+            }
 
             const size_t maxMsgLen = 1024;
             char msg[maxMsgLen] = {'\0'};
@@ -400,8 +398,8 @@ void QTestLog::printUnhandledIgnoreMessages()
     while (list) {
         if (list->pattern.userType() == QMetaType::QString) {
             message = "Did not receive message: \"%1\""_L1.arg(list->pattern.toString());
-        } else {
 #if QT_CONFIG(regularexpression)
+        } else {
             message = "Did not receive any message matching: \"%1\""_L1.arg(
                     list->pattern.toRegularExpression().pattern());
 #endif
