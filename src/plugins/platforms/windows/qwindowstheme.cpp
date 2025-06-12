@@ -49,6 +49,7 @@
 #   include <QtCore/private/qt_winrtbase_p.h>
 
 #   include <winrt/Windows.UI.ViewManagement.h>
+#   include <winrt/Windows.System.Profile.h>
 #endif // QT_CONFIG(cpp_winrt)
 
 QT_BEGIN_NAMESPACE
@@ -288,12 +289,27 @@ static QColor placeHolderColor(QColor textColor)
     return textColor;
 }
 
+static inline bool isWindows11() {
+    bool retVal = false;
+#if QT_CONFIG(cpp_winrt)
+    auto versionStr = winrt::Windows::System::Profile::AnalyticsInfo::VersionInfo().DeviceFamilyVersion();
+    uint64_t version = std::stoull(std::wstring(versionStr));
+    uint32_t major = (version >> 48) & 0xFFFF;
+    uint32_t minor = (version >> 32) & 0xFFFF;
+    uint32_t build = (version >> 16) & 0xFFFF;
+    retVal = (major >= 10 && minor >= 0 and build >= 22000);
+#endif
+    return retVal;
+}
+
 /*
     This is used when the theme is light mode, and when the theme is dark but the
     application doesn't support dark mode. In the latter case, we need to check.
 */
 void QWindowsTheme::populateLightSystemBasePalette(QPalette &result)
 {
+    const bool highContrastEnabled = queryHighContrast();
+
     const QColor background = getSysColor(COLOR_BTNFACE);
     const QColor textColor = getSysColor(COLOR_WINDOWTEXT);
 
@@ -302,7 +318,8 @@ void QWindowsTheme::populateLightSystemBasePalette(QPalette &result)
     const QColor accentDarker = qt_accentColor(AccentColorDarker);
     const QColor accentDarkest = qt_accentColor(AccentColorDarkest);
 
-    const QColor linkColor = accentDarker;
+    const QColor linkColor = highContrastEnabled ? getSysColor(COLOR_HOTLIGHT) : accentDarker;
+    const QColor linkColorVisited = highContrastEnabled ? linkColor.darker(120) : accentDarkest;
     const QColor btnFace = background;
     const QColor btnHighlight = getSysColor(COLOR_BTNHIGHLIGHT);
 
@@ -316,7 +333,7 @@ void QWindowsTheme::populateLightSystemBasePalette(QPalette &result)
     result.setColor(QPalette::PlaceholderText, placeHolderColor(textColor));
     result.setColor(QPalette::BrightText, btnHighlight);
     result.setColor(QPalette::Base, getSysColor(COLOR_WINDOW));
-    result.setColor(QPalette::Window, btnFace);
+    result.setColor(QPalette::Window, highContrastEnabled ? getSysColor(COLOR_WINDOW) : btnFace);
     result.setColor(QPalette::ButtonText, getSysColor(COLOR_BTNTEXT));
     result.setColor(QPalette::Midlight, getSysColor(COLOR_3DLIGHT));
     result.setColor(QPalette::Shadow, getSysColor(COLOR_3DDKSHADOW));
@@ -324,11 +341,14 @@ void QWindowsTheme::populateLightSystemBasePalette(QPalette &result)
     result.setColor(QPalette::Accent, accentDark); // default accent color for controls on Light mode is AccentDark1
 
     result.setColor(QPalette::Link, linkColor);
-    result.setColor(QPalette::LinkVisited, accentDarkest);
+    result.setColor(QPalette::LinkVisited, linkColorVisited);
     result.setColor(QPalette::Inactive, QPalette::Button, result.button().color());
     result.setColor(QPalette::Inactive, QPalette::Window, result.window().color());
     result.setColor(QPalette::Inactive, QPalette::Light, result.light().color());
     result.setColor(QPalette::Inactive, QPalette::Dark, result.dark().color());
+
+    if (highContrastEnabled)
+        result.setColor(QPalette::Inactive, QPalette::WindowText, getSysColor(COLOR_GRAYTEXT));
 
     if (result.midlight() == result.button())
         result.setColor(QPalette::Midlight, result.button().color().lighter(110));
@@ -405,13 +425,13 @@ void QWindowsTheme::populateDarkSystemBasePalette(QPalette &result)
     result.setColor(QPalette::All, QPalette::Accent, accentLighter);
 }
 
-static inline QPalette toolTipPalette(const QPalette &systemPalette, bool light)
+static inline QPalette toolTipPalette(const QPalette &systemPalette, bool light, bool highContrastEnabled)
 {
     QPalette result(systemPalette);
-    const QColor tipBgColor = light ? getSysColor(COLOR_INFOBK)
-                                    : systemPalette.button().color();
-    const QColor tipTextColor = light ? getSysColor(COLOR_INFOTEXT)
-                                      : systemPalette.buttonText().color().darker(120);
+    const QColor tipBgColor = highContrastEnabled ? (isWindows11() ? getSysColor(COLOR_WINDOW) : getSysColor(COLOR_BTNFACE)) :
+                                    (light ? getSysColor(COLOR_INFOBK) : systemPalette.button().color());
+    const QColor tipTextColor = highContrastEnabled ? (isWindows11() ? getSysColor(COLOR_WINDOWTEXT) : getSysColor(COLOR_BTNTEXT)) :
+                                    (light ? getSysColor(COLOR_INFOTEXT) : systemPalette.buttonText().color().darker(120));
 
     result.setColor(QPalette::All, QPalette::Button, tipBgColor);
     result.setColor(QPalette::All, QPalette::Window, tipBgColor);
@@ -702,7 +722,7 @@ void QWindowsTheme::refreshPalettes()
         || !QWindowsIntegration::instance()->darkModeHandling().testFlag(QWindowsApplication::DarkModeStyle);
     clearPalettes();
     m_palettes[SystemPalette] = new QPalette(QWindowsTheme::systemPalette(s_colorScheme));
-    m_palettes[ToolTipPalette] = new QPalette(toolTipPalette(*m_palettes[SystemPalette], light));
+    m_palettes[ToolTipPalette] = new QPalette(toolTipPalette(*m_palettes[SystemPalette], light, queryHighContrast()));
     m_palettes[MenuPalette] = new QPalette(menuPalette(*m_palettes[SystemPalette], light));
     m_palettes[MenuBarPalette] = menuBarPalette(*m_palettes[MenuPalette], light);
     if (!light) {
@@ -745,9 +765,15 @@ QPalette QWindowsTheme::systemPalette(Qt::ColorScheme colorScheme)
                          result.light(), result.dark(), result.mid(),
                          result.text(), result.brightText(), result.base(),
                          result.window());
-    result.setColor(QPalette::Disabled, QPalette::WindowText, disabled);
-    result.setColor(QPalette::Disabled, QPalette::Text, disabled);
-    result.setColor(QPalette::Disabled, QPalette::ButtonText, disabled);
+
+    const bool highContrastEnabled = queryHighContrast();
+    const QColor disabledTextColor = highContrastEnabled ? getSysColor(COLOR_GRAYTEXT) : disabled;
+    result.setColor(QPalette::Disabled, QPalette::WindowText, disabledTextColor);
+    result.setColor(QPalette::Disabled, QPalette::Text, disabledTextColor);
+    result.setColor(QPalette::Disabled, QPalette::ButtonText, disabledTextColor);
+    if (highContrastEnabled)
+        result.setColor(QPalette::Disabled, QPalette::Button, result.button().color().darker(150));
+
     result.setColor(QPalette::Disabled, QPalette::Highlight, result.color(QPalette::Highlight));
     result.setColor(QPalette::Disabled, QPalette::HighlightedText, result.color(QPalette::HighlightedText));
     result.setColor(QPalette::Disabled, QPalette::Accent, disabled);
