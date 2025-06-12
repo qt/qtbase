@@ -483,6 +483,17 @@ void *QAccessibleWidget::interface_cast(QAccessible::InterfaceType t)
 
 // QAccessibleWidgetV2 implementation
 
+QAccessibleWidgetV2::QAccessibleWidgetV2(QWidget *object, QAccessible::Role role,
+                                         const QString &name)
+    : QAccessibleWidget(object, role, name)
+{
+}
+
+QAccessibleWidgetV2::QAccessibleWidgetV2(QWidget *object, QAccessible::Role role)
+    : QAccessibleWidgetV2(object, role, QString())
+{
+}
+
 QAccessibleWidgetV2::~QAccessibleWidgetV2() = default;
 
 /*! \reimp */

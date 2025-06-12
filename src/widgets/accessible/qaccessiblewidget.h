@@ -67,10 +67,8 @@ class Q_WIDGETS_EXPORT QAccessibleWidgetV2 : public QAccessibleWidget,
     struct error2045 : QList<QAccessible::Attribute> {};
 #endif
 public:
-    explicit QAccessibleWidgetV2(QWidget *object, QAccessible::Role role = QAccessible::Client,
-                                 const QString& name = QString())
-        : QAccessibleWidget(object, role, name)
-    {}
+    explicit QAccessibleWidgetV2(QWidget *object, QAccessible::Role role = QAccessible::Client);
+    explicit QAccessibleWidgetV2(QWidget *object, QAccessible::Role role, const QString &name);
     ~QAccessibleWidgetV2() override;
 
     void *interface_cast(QAccessible::InterfaceType t) override;
