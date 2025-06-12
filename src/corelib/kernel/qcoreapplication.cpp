@@ -1951,7 +1951,7 @@ void QCoreApplication::removePostedEvents(QObject *receiver, int eventType)
 
 #ifdef QT_DEBUG
     if (receiver && eventType == 0) {
-        Q_ASSERT(!receiver->d_func()->postedEvents);
+        Q_ASSERT(!receiver->d_func()->postedEvents.loadRelaxed());
     }
 #endif
 
