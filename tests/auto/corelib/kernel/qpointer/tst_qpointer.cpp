@@ -533,8 +533,8 @@ void tst_QPointer::threadSafety()
 
 void tst_QPointer::raceCondition()
 {
-    const int NUM_THREADS = 20;
-    const int ITERATIONS_PER_THREAD = 10;
+    constexpr int NUM_THREADS = 20;
+    constexpr int ITERATIONS_PER_THREAD = 10;
 
     QSemaphore startSemaphore;
 
@@ -545,7 +545,7 @@ void tst_QPointer::raceCondition()
 
     for (int i = 0; i < NUM_THREADS; ++i) {
         QThread *thread =
-                QThread::create([&startSemaphore, &targetObject, ITERATIONS_PER_THREAD]() {
+                QThread::create([&startSemaphore, &targetObject] {
                     startSemaphore.acquire();
 
                     for (int j = 0; j < ITERATIONS_PER_THREAD; ++j) {
