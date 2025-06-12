@@ -1891,8 +1891,9 @@ void QCoreApplicationPrivate::sendPostedEvents(QObject *receiver, int event_type
         QEvent *e = pe.event;
         QObject * r = pe.receiver;
 
-        --r->d_func()->postedEvents;
-        Q_ASSERT(r->d_func()->postedEvents >= 0);
+        [[maybe_unused]]
+        const auto current = --r->d_func()->postedEvents;
+        Q_ASSERT(current >= 0);
 
         // next, update the data structure so that we're ready
         // for the next event.
