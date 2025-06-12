@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 if(LINUX OR QT_FIND_ALL_PACKAGES_ALWAYS)
-    qt_find_package(WaylandScanner PROVIDED_TARGETS Wayland::Scanner)
+    qt_find_package(WaylandScanner MODULE PROVIDED_TARGETS Wayland::Scanner)
 endif()
 
 qt_feature("androiddeployqt" PRIVATE

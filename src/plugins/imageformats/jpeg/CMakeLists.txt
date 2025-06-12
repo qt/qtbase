@@ -1,7 +1,7 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-qt_find_package(WrapJpeg PROVIDED_TARGETS WrapJpeg::WrapJpeg)
+qt_find_package(WrapJpeg MODULE PROVIDED_TARGETS WrapJpeg::WrapJpeg)
 
 #####################################################################
 ## QJpegPlugin Plugin:

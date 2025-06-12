@@ -5,7 +5,7 @@
 ## QMinimalIntegrationPlugin Plugin:
 #####################################################################
 
-qt_find_package(WrapFreetype PROVIDED_TARGETS WrapFreetype::WrapFreetype)
+qt_find_package(WrapFreetype MODULE PROVIDED_TARGETS WrapFreetype::WrapFreetype)
 
 qt_internal_add_plugin(QMinimalIntegrationPlugin
     OUTPUT_NAME qminimal
