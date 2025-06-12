@@ -87,6 +87,11 @@ instructions:
     directory: "{{.InstallRoot}}/{{.AgentWorkingDir}}"
     maxTimeInSeconds: 1200
     maxTimeBetweenOutput: 1200
+  # Signal that qtbase should always build the doc tools (if all other requirements are met).
+  - type: EnvironmentVariable
+    variableName: QT_CI_BUILD_DOC_TOOLS
+    variableValue: "1"
+  - !include "{{qt/qtbase}}/coin_build_doc_tools_checked.yaml"
   - type: UploadArtifact
     archiveDirectory: "{{.InstallRoot}}/{{.AgentWorkingDir}}"
     transferType: UploadModuleBuildArtifact
