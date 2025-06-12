@@ -56,6 +56,8 @@ struct Movable
         ++instanceCount;
     }
 
+    Movable &operator=(const Movable &m) = default;
+
     ~Movable()
     {
         --instanceCount;
