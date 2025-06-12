@@ -288,8 +288,10 @@ public:
 
     void setSelectionModel(QItemSelectionModel *selectionModel) override;
 
+#if QT_CONFIG(draganddrop)
     Qt::DropActions supportedDragActions() const;
     void setSupportedDragActions(Qt::DropActions actions);
+#endif
 
 public Q_SLOTS:
     void scrollToItem(const QTreeWidgetItem *item,
