@@ -984,14 +984,14 @@ void tst_ContainerApiSymmetry::assign_impl() const
     {
         // range version for non input iterator
         auto c = make<Container>(4);
-        auto iter = make<Container>(1);
+        auto src = make<Container>(1);
 
-        iter.assign(8, tData);
-        RET_CHECK(c.assign(iter.begin(), iter.end())); // may reallocate
+        src.assign(8, tData);
+        RET_CHECK(c.assign(src.begin(), src.end())); // may reallocate
         CHECK(c, tData, c.size(), S(8));
 
         const S oldCapacity = c.capacity();
-        c.assign(iter.begin(), iter.begin());
+        c.assign(src.begin(), src.begin());
         CHECK(c, tData, c.size(), S(0));
         QCOMPARE_EQ(c.capacity(), oldCapacity);
     }
