@@ -193,6 +193,7 @@ namespace QTest {
             if (const auto *regex = get_if<QRegularExpression>(&pattern))
                 return regex->match(message).hasMatch();
 #endif
+            Q_ASSERT(pattern.metaType() == QMetaType::fromType<QString>());
             return stringsMatch(pattern.toString(), message);
         }
 
@@ -265,6 +266,9 @@ namespace QTest {
                 if (!message.contains(*regex))
                     continue;
 #endif
+            } else {
+                // The no-arg clearFailOnWarnings()'s null pattern matches all messages.
+                Q_ASSERT(pattern.isNull());
             }
 
             const size_t maxMsgLen = 1024;
@@ -402,6 +406,10 @@ void QTestLog::printUnhandledIgnoreMessages()
         } else if (const auto *regex = get_if<QRegularExpression>(&list->pattern)) {
             message = "Did not receive any message matching: \"%1\""_L1.arg(regex->pattern());
 #endif
+        } else {
+            Q_UNREACHABLE();
+            message = "Missing message of unrecognized pattern type: \"%1\""_L1.arg(
+                list->pattern.metaType().name());
         }
         for (auto &logger : QTest::loggers->allLoggers())
             logger->addMessage(QAbstractTestLogger::Info, message);
