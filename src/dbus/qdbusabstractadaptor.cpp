@@ -184,7 +184,7 @@ void QDBusAdaptorConnector::addAdaptor(QDBusAbstractAdaptor *adaptor)
             // find out if this interface exists first
             const char *interface = mci.value();
             AdaptorMap::Iterator it = std::lower_bound(adaptors.begin(), adaptors.end(),
-                                                       QByteArray(interface));
+                                                       QByteArrayView(interface));
             if (it != adaptors.end() && qstrcmp(interface, it->interface) == 0) {
                 // exists. Replace it (though it's probably the same)
                 if (it->adaptor != adaptor) {
