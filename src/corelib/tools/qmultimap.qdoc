@@ -870,6 +870,10 @@
     different from replace(), which overwrites the value of an
     existing item.)
 
+    QMultiMap allows duplicate keys and stores items in ascending
+    key order. For duplicate keys, the values are stored in reverse
+    insertion order (the most recently inserted value comes first).
+
     Returns an iterator pointing to the new element.
 
     \sa replace()

@@ -2327,6 +2327,9 @@ size_t qHash(long double key, size_t seed) noexcept
     If there is already an item with the \a key, that item's value
     is replaced with \a value.
 
+    Inserting a key/value pair with an existing key replaces
+    the existing value.
+
     Returns an iterator pointing to the new/updated element.
 
     \include qhash.cpp qhash-iterator-invalidation-func-desc
@@ -3173,6 +3176,10 @@ size_t qHash(long double key, size_t seed) noexcept
     function will simply create a new one. (This behavior is
     different from replace(), which overwrites the value of an
     existing item.)
+
+    QMultiHash allows duplicate keys. Inserting a key that
+    already exists adds another entry instead of overwriting
+    it. The order of items in QMultHash is not guaranteed.
 
     Returns an iterator pointing to the new element.
 
