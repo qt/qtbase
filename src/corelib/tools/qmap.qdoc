@@ -729,6 +729,9 @@
     If there is already an item with the key \a key, that item's value
     is replaced with \a value.
 
+    Inserting a key/value pair with an existing key replaces the existing
+    value.
+
     Returns an iterator pointing to the new/updated element.
 */
 
