@@ -8,6 +8,8 @@
 #include <QtWaylandClient/private/qwaylandwindow_p.h>
 #include <QtWaylandClient/private/qwaylanddisplay_p.h>
 
+#include <qpa/qwindowsysteminterface.h>
+
 QT_BEGIN_NAMESPACE
 
 namespace QtWaylandClient {
@@ -43,6 +45,22 @@ void QWaylandXdgShellIntegration::xdg_wm_base_ping(uint32_t serial)
 
 QWaylandShellSurface *QWaylandXdgShellIntegration::createShellSurface(QWaylandWindow *window)
 {
+    QWaylandDisplay *display = window->display();
+    Qt::WindowType type =  static_cast<Qt::WindowType>(int(window->windowFlags() & Qt::WindowType_Mask));
+    auto *transientParent = window->transientParent();
+
+    if (type == Qt::ToolTip && !transientParent) {
+        qCWarning(lcQpaWayland) << "Failed to create popup. Ensure popup " << window->window() << "has a transientParent set.";
+        QWindowSystemInterface::handleCloseEvent<QWindowSystemInterface::AsynchronousDelivery>(window->window());
+        return new QWaylandShellSurface(window);
+    }
+
+    if (type == Qt::Popup && (!transientParent || !display->lastInputDevice())) {
+        qCWarning(lcQpaWayland) << "Failed to create grabbing popup. Ensure popup " << window->window() << "has a transientParent set and that parent window has received input.";
+        QWindowSystemInterface::handleCloseEvent<QWindowSystemInterface::AsynchronousDelivery>(window->window());
+        return new QWaylandShellSurface(window);
+    }
+
     return new QWaylandXdgSurface(mXdgShell.get(), get_xdg_surface(window->wlSurface()), window);
 }
 

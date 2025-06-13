@@ -314,23 +314,13 @@ QWaylandXdgSurface::QWaylandXdgSurface(QWaylandXdgShell *shell, ::xdg_surface *s
     Qt::WindowType type =  static_cast<Qt::WindowType>(int(window->windowFlags() & Qt::WindowType_Mask));
     auto *transientParent = window->transientParent();
 
-    if (type == Qt::ToolTip) {
-        if (transientParent) {
-            setPopup(transientParent);
-        } else {
-            qCWarning(lcQpaWayland) << "Failed to create popup. Ensure popup " << window->window() << "has a transientParent set.";
-            QWindowSystemInterface::handleCloseEvent<QWindowSystemInterface::AsynchronousDelivery>(m_window->window());
-        }
-    } else if (type == Qt::Popup ) {
-        if (transientParent && display->lastInputDevice()) {
-            setGrabPopup(transientParent, display->lastInputDevice(), display->lastInputSerial());
-        } else {
-            qCWarning(lcQpaWayland) << "Failed to create grabbing popup. Ensure popup " << window->window() << "has a transientParent set and that parent window has received input.";
-            QWindowSystemInterface::handleCloseEvent<QWindowSystemInterface::AsynchronousDelivery>(m_window->window());
-        }
-    } else {
+    if (type == Qt::ToolTip)
+        setPopup(transientParent);
+    else if (type == Qt::Popup )
+        setGrabPopup(transientParent, display->lastInputDevice(), display->lastInputSerial());
+    else
         setToplevel();
-    }
+
     setSizeHints();
 }
 
