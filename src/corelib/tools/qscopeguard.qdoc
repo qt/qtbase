@@ -31,7 +31,7 @@ QT_BEGIN_NAMESPACE
     \fn template <typename F> QScopeGuard<F>::QScopeGuard(F &&f)
     \fn template <typename F> QScopeGuard<F>::QScopeGuard(const F &f)
 
-    Create a scope guard that will execute \a f at the end of the scope.
+    Creates a scope guard that will execute \a f at the end of the scope.
 
     If \e F is a lambda, its type cannot be written. In that case you need to
     either rely on class template argument deduction (C++17 feature) and leave
