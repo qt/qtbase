@@ -76,7 +76,7 @@
         links to directories will be excluded too.
 
     \omitvalue ExcludeSpecial
-    \value ExcludeOther
+    \value ExcludeOther [since 6.10]
         Don't list file system entries that are \e not directories, regular files,
         or symbolic links.
         \list
