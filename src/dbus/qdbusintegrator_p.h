@@ -52,15 +52,15 @@ struct QDBusSlotCache
 
         void swap(Data &other) noexcept
         {
-            qSwap(flags,     other.flags);
-            qSwap(slotIdx,   other.slotIdx);
-            qSwap(metaTypes, other.metaTypes);
+            std::swap(flags, other.flags);
+            std::swap(slotIdx, other.slotIdx);
+            metaTypes.swap(other.metaTypes);
         }
     };
     typedef QMultiHash<QString, Data> Hash;
     Hash hash;
 
-    void swap(QDBusSlotCache &other) noexcept { qSwap(hash, other.hash); }
+    void swap(QDBusSlotCache &other) noexcept { hash.swap(other.hash); }
 };
 Q_DECLARE_SHARED(QDBusSlotCache::Data)
 Q_DECLARE_SHARED(QDBusSlotCache)
