@@ -830,7 +830,7 @@ static bool directoryMatchesSizeAndScale(const QIconDirInfo &dir, int iconsize, 
  * This algorithm is a modification of the algorithm defined by the freedesktop spec:
  * http://standards.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.html
  */
-static std::optional<int> directorySizeDelta(const QIconDirInfo &dir, int iconsize, int iconscale)
+static int directorySizeDelta(const QIconDirInfo &dir, int iconsize, int iconscale)
 {
     const auto scaledIconSize = iconsize * iconscale;
 
@@ -844,16 +844,16 @@ static std::optional<int> directorySizeDelta(const QIconDirInfo &dir, int iconsi
         const auto maxScaled = dir.maxSize * dir.scale;
         if (scaledIconSize > maxScaled)
             return scaledIconSize - maxScaled;
-        return {};
+        return 0;
     }
     case QIconDirInfo::Threshold:
         if (scaledIconSize < (dir.size - dir.threshold) * dir.scale)
             return dir.minSize * dir.scale - scaledIconSize;
         if (scaledIconSize > (dir.size + dir.threshold) * dir.scale)
             return scaledIconSize - dir.maxSize * dir.scale;
-        return {};
+        return 0;
     case QIconDirInfo::Fallback:
-        return {};
+        return INT_MAX;
     }
 
     Q_ASSERT(1); // Not a valid value
@@ -880,22 +880,19 @@ QIconLoaderEngineEntry *QIconLoaderEngine::entryForSize(const QThemeIconInfo &in
             return entry.get();
 
         // Find the minimum distance icon
-        const auto delta = directorySizeDelta(entry->dir, iconsize, scale);
-        if (delta.has_value()) {
-            const auto deltaValue = delta.value();
-            // always prefer downscaled icons over upscaled icons
-            if (deltaValue > minimalDelta && minimalDelta <= 0) {
-                minimalDelta = deltaValue;
-                closestMatch = entry.get();
-            } else if (deltaValue > 0 && deltaValue < qAbs(minimalDelta)) {
-                minimalDelta = deltaValue;
-                closestMatch = entry.get();
-            } else if (deltaValue == 0) {
-                // exact match but different dpr:
-                // --> size * scale == entry.size * entry.scale
-                minimalDelta = deltaValue;
-                closestMatch = entry.get();
-            }
+        const auto deltaValue = directorySizeDelta(entry->dir, iconsize, scale);
+        // always prefer downscaled icons over upscaled icons
+        if (deltaValue > minimalDelta && minimalDelta <= 0) {
+            minimalDelta = deltaValue;
+            closestMatch = entry.get();
+        } else if (deltaValue > 0 && deltaValue < qAbs(minimalDelta)) {
+            minimalDelta = deltaValue;
+            closestMatch = entry.get();
+        } else if (deltaValue == 0) {
+            // exact match but different dpr:
+            // --> size * scale == entry.size * entry.scale
+            minimalDelta = deltaValue;
+            closestMatch = entry.get();
         }
     }
     return closestMatch ? closestMatch : info.entries.at(0).get();
