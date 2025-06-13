@@ -2043,7 +2043,7 @@ void tst_QXmlStream::writeBadCharactersUtf8() const
     QXmlStreamWriter writer(&target);
     writer.writeTextElement("a", QUtf8StringView(input));
     QVERIFY(writer.hasError());
-    QCOMPARE(writer.error(), QXmlStreamWriter::Error::EncodingError);
+    QCOMPARE(writer.error(), QXmlStreamWriter::Error::Encoding);
 }
 
 void tst_QXmlStream::writeBadCharactersUtf16_data() const
@@ -2062,7 +2062,7 @@ void tst_QXmlStream::writeBadCharactersUtf16() const
     QXmlStreamWriter writer(&target);
     writer.writeTextElement("a", input);
     QVERIFY(writer.hasError());
-    QCOMPARE(writer.error(), QXmlStreamWriter::Error::EncodingError);
+    QCOMPARE(writer.error(), QXmlStreamWriter::Error::Encoding);
 
 }
 
@@ -2268,7 +2268,7 @@ void tst_QXmlStream::writerErrors() const
         writer.writeStartDocument();
         writer.writeEndDocument();
         QVERIFY(!writer.hasError());
-        QCOMPARE(writer.error(), QXmlStreamWriter::Error::NoError);
+        QCOMPARE(writer.error(), QXmlStreamWriter::Error::None);
         QVERIFY(writer.errorString().isEmpty());
         QCOMPARE(fb.data(), QByteArray("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"));
     }
@@ -2282,7 +2282,7 @@ void tst_QXmlStream::writerErrors() const
         QXmlStreamWriter writer(&fb);
         writer.writeStartDocument();
         QVERIFY(writer.hasError());
-        QCOMPARE(writer.error(), QXmlStreamWriter::Error::IOError);
+        QCOMPARE(writer.error(), QXmlStreamWriter::Error::IO);
         QVERIFY(!writer.errorString().isEmpty());
         QCOMPARE(fb.data(), expected);
     }
@@ -2296,7 +2296,7 @@ void tst_QXmlStream::writerErrors() const
         QXmlStreamWriter writer(&fb);
         writer.writeStartDocument();
         QVERIFY(writer.hasError());
-        QCOMPARE(writer.error(), QXmlStreamWriter::Error::IOError);
+        QCOMPARE(writer.error(), QXmlStreamWriter::Error::IO);
         QVERIFY(!writer.errorString().isEmpty());
         QCOMPARE(fb.data(), expected);
     }
@@ -2313,7 +2313,7 @@ void tst_QXmlStream::writerErrors() const
         writer.writeStartElement("test");
         writer.writeNamespace("http://foo.bar", "foo");
         QVERIFY(writer.hasError());
-        QCOMPARE(writer.error(), QXmlStreamWriter::Error::IOError);
+        QCOMPARE(writer.error(), QXmlStreamWriter::Error::IO);
         QVERIFY(!writer.errorString().isEmpty());
         QCOMPARE(fb.data(), expected);
     }
@@ -2326,13 +2326,13 @@ void tst_QXmlStream::writerErrors() const
         QXmlStreamWriter writer(&fb);
         writer.writeStartDocument();
         QVERIFY(writer.hasError());
-        QCOMPARE(writer.error(), QXmlStreamWriter::Error::IOError);
+        QCOMPARE(writer.error(), QXmlStreamWriter::Error::IO);
         QCOMPARE(fb.data(), QByteArray("<?xml vers"));
         fb.setCapacity(1000);
         writer.writeStartElement("test"); // literal & qstring
         writer.writeNamespace("http://foo.bar", "foo"); // literal & qstringref
         QVERIFY(writer.hasError());
-        QCOMPARE(writer.error(), QXmlStreamWriter::Error::IOError);
+        QCOMPARE(writer.error(), QXmlStreamWriter::Error::IO);
         QVERIFY(!writer.errorString().isEmpty());
         QCOMPARE(fb.data(), QByteArray("<?xml vers"));
     }
@@ -2347,7 +2347,7 @@ void tst_QXmlStream::writerErrors() const
         writer.writeEndElement();
         writer.writeEndDocument();
         QVERIFY(writer.hasError());
-        QCOMPARE(writer.error(), QXmlStreamWriter::Error::EncodingError);
+        QCOMPARE(writer.error(), QXmlStreamWriter::Error::Encoding);
         QVERIFY(!writer.errorString().isEmpty());
     }
 
@@ -2402,7 +2402,7 @@ void tst_QXmlStream::writerErrors() const
         writer.raiseError("Custom error");
         writer.writeEndDocument();
         QVERIFY(writer.hasError());
-        QCOMPARE(writer.error(), QXmlStreamWriter::Error::CustomError);
+        QCOMPARE(writer.error(), QXmlStreamWriter::Error::Custom);
         QCOMPARE(writer.errorString(), "Custom error"_L1);
     }
 }
@@ -2431,7 +2431,7 @@ void tst_QXmlStream::stopWritingOnError() const
         writer.writeEndElement();
         writer.writeTextElement(u"text", u"element");
         QVERIFY(writer.hasError());
-        QCOMPARE(writer.error(), QXmlStreamWriter::Error::CustomError);
+        QCOMPARE(writer.error(), QXmlStreamWriter::Error::Custom);
         QVERIFY(!writer.errorString().isEmpty());
         QCOMPARE(buffer, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
                          "<root>Invalid  character<text>element</text>"
@@ -2445,7 +2445,7 @@ void tst_QXmlStream::stopWritingOnError() const
         writer.writeEndElement();
         writer.writeEndDocument();
         QVERIFY(writer.hasError());
-        QCOMPARE(writer.error(), QXmlStreamWriter::Error::EncodingError);
+        QCOMPARE(writer.error(), QXmlStreamWriter::Error::Encoding);
         QVERIFY(!writer.errorString().isEmpty());
         QCOMPARE(buffer, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
                          "<root>Invalid  character<text>element</text>"
@@ -2466,7 +2466,7 @@ void tst_QXmlStream::stopWritingOnError() const
         writer.writeStartElement(u"root");
         writer.writeCharacters(u"Some characters");
         QVERIFY(writer.hasError());
-        QCOMPARE(writer.error(), QXmlStreamWriter::Error::IOError);
+        QCOMPARE(writer.error(), QXmlStreamWriter::Error::IO);
         QVERIFY(!writer.errorString().isEmpty());
         QVERIFY(buffer.isEmpty());
     }
@@ -2484,7 +2484,7 @@ void tst_QXmlStream::stopWritingOnError() const
         writer.writeEmptyElement(u"emptyElement");
         writer.writeEndDocument();
         QVERIFY(!writer.hasError());
-        QCOMPARE(writer.error(), QXmlStreamWriter::Error::NoError);
+        QCOMPARE(writer.error(), QXmlStreamWriter::Error::None);
         QVERIFY(writer.errorString().isEmpty());
         QCOMPARE(buffer, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
                          "<root>Valid &amp; possible to &lt;escape&gt; &quot;characters&quot;"
@@ -2556,7 +2556,7 @@ void tst_QXmlStream::stopWritingOnError() const
         writer.writeStartElement(u"root");
         writer.writeCharacters(QChar(0xDC00));  // Stop writing from here
         QVERIFY(writer.hasError());
-        QCOMPARE(writer.error(), QXmlStreamWriter::Error::EncodingError);
+        QCOMPARE(writer.error(), QXmlStreamWriter::Error::Encoding);
         QVERIFY(!writer.errorString().isEmpty());
         QCOMPARE(buffer, "<?xml version=\"1.0\" encoding=\"UTF-8\"?><root>"_ba);
 
@@ -2568,7 +2568,7 @@ void tst_QXmlStream::stopWritingOnError() const
         writer.writeEndDocument();
         // Changing the flag doesn't clear the error; it just allows writing again.
         QVERIFY(writer.hasError());
-        QCOMPARE(writer.error(), QXmlStreamWriter::Error::EncodingError);
+        QCOMPARE(writer.error(), QXmlStreamWriter::Error::Encoding);
         QVERIFY(!writer.errorString().isEmpty());
         QCOMPARE(buffer, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
                          "<root>Resume writing!</root>\n"_ba);
@@ -2576,7 +2576,7 @@ void tst_QXmlStream::stopWritingOnError() const
         writer.setStopWritingOnError(true);
         writer.writeCharacters(u"Valid characters rules!");
         QVERIFY(writer.hasError());
-        QCOMPARE(writer.error(), QXmlStreamWriter::Error::EncodingError);
+        QCOMPARE(writer.error(), QXmlStreamWriter::Error::Encoding);
         QVERIFY(!writer.errorString().isEmpty());
         // Re-enabling stopWritingOnError does not clear the error state.
         // Since the writer is still in error, further writes are ignored even if valid.
@@ -2596,7 +2596,7 @@ void tst_QXmlStream::stopWritingOnError() const
         writer.writeEndElement();
         writer.writeEndDocument();
         QVERIFY(writer.hasError());
-        QCOMPARE(writer.error(), QXmlStreamWriter::Error::CustomError);
+        QCOMPARE(writer.error(), QXmlStreamWriter::Error::Custom);
         QVERIFY(!writer.errorString().isEmpty());
         QCOMPARE(buffer, "<?xml version=\"1.0\" encoding=\"UTF-8\"?><root>Some characters"_ba);
     }

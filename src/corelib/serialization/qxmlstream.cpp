@@ -3079,8 +3079,8 @@ QStringView QXmlStreamReader::documentEncoding() const
   If an error occurs while writing, \l hasError() will return true.
   However, by default, data that was already buffered at the time the error
   occurred, or data written from within the same operation, may still be
-  written to the underlying device. This applies to \l Error::EncodingError,
-  \l Error::InvalidCharacter, and user-raised \l Error::CustomError.
+  written to the underlying device. This applies to \l Error::Encoding,
+  \l Error::InvalidCharacter, and user-raised \l Error::Custom.
   To avoid this and ensure no data is written after an error, use the
   \l stopWritingOnError property. When this property is enabled,
   the first error stops output immediately and the writer ignores all
@@ -3100,18 +3100,18 @@ QStringView QXmlStreamReader::documentEncoding() const
     This enum specifies the different error cases that can occur
     when writing XML with QXmlStreamWriter.
 
-    \value NoError No error has occurred.
+    \value None No error has occurred.
 
-    \value IOError An I/O error occurred while writing to the
+    \value IO An I/O error occurred while writing to the
            device.
 
-    \value EncodingError An encoding error occurred while converting
+    \value Encoding An encoding error occurred while converting
            characters to the output format.
 
     \value InvalidCharacter A character not permitted in XML 1.0
            was encountered while writing.
 
-    \value CustomError A custom error has been raised with
+    \value Custom A custom error has been raised with
            \l raiseError().
 
     \since 6.10
@@ -3156,7 +3156,7 @@ public:
     std::string autoFormattingIndent = std::string(4, ' ');
     NamespaceDeclaration emptyNamespace;
     qsizetype lastNamespaceDeclaration = 1;
-    QXmlStreamWriter::Error error = QXmlStreamWriter::Error::NoError;
+    QXmlStreamWriter::Error error = QXmlStreamWriter::Error::None;
     QString errorString;
 
     NamespaceDeclaration &addExtraNamespace(QAnyStringView namespaceUri, QAnyStringView prefix);
@@ -3186,19 +3186,19 @@ void QXmlStreamWriterPrivate::raiseError(QXmlStreamWriter::Error errorCode)
 {
     error = errorCode;
     switch (error) {
-    case QXmlStreamWriter::Error::IOError:
+    case QXmlStreamWriter::Error::IO:
         errorString = QXmlStream::tr("An I/O error occurred while writing");
         break;
-    case QXmlStreamWriter::Error::EncodingError:
+    case QXmlStreamWriter::Error::Encoding:
         errorString = QXmlStream::tr("An encoding error occurred while writing");
         break;
     case QXmlStreamWriter::Error::InvalidCharacter:
         errorString = QXmlStream::tr("Encountered an invalid XML 1.0 character while writing");
         break;
-    case QXmlStreamWriter::Error::CustomError:
+    case QXmlStreamWriter::Error::Custom:
         errorString = QXmlStream::tr("An error occurred while writing");
         break;
-    case QXmlStreamWriter::Error::NoError:
+    case QXmlStreamWriter::Error::None:
         break;
     }
 }
@@ -3211,10 +3211,10 @@ void QXmlStreamWriterPrivate::raiseError(QXmlStreamWriter::Error errorCode, cons
 
 void QXmlStreamWriterPrivate::write(QAnyStringView s)
 {
-    if (stopWritingOnError && (error != QXmlStreamWriter::Error::NoError))
+    if (stopWritingOnError && (error != QXmlStreamWriter::Error::None))
         return;
     if (device) {
-        if (error == QXmlStreamWriter::Error::IOError)
+        if (error == QXmlStreamWriter::Error::IO)
             return;
 
         s.visit([&] (auto s) { doWriteToDevice(s); });
@@ -3250,7 +3250,7 @@ void QXmlStreamWriterPrivate::writeEscaped(QAnyStringView s, bool escapeWhitespa
         {
             QStringIterator decoder(it, end);
             // We can have '\0' in the text, and it should be reported as
-            // InvalidCharacter, not as EncodingError
+            // Error::InvalidCharacter, not as Error::Encoding
             constexpr char32_t invalidValue = 0xFFFFFFFF;
             Q_ASSERT(invalidValue > QChar::LastValidCodePoint);
             char32_t result = decoder.next(invalidValue);
@@ -3319,7 +3319,7 @@ void QXmlStreamWriterPrivate::writeEscaped(QAnyStringView s, bool escapeWhitespa
                 case 0xFFFE:
                 case 0xFFFF:
                     raiseError(encodingError
-                                       ? QXmlStreamWriter::Error::EncodingError
+                                       ? QXmlStreamWriter::Error::Encoding
                                        : QXmlStreamWriter::Error::InvalidCharacter);
                     if (stopWritingOnError)
                         return;
@@ -3458,14 +3458,14 @@ void QXmlStreamWriterPrivate::doWriteToDevice(QStringView s)
         s = s.sliced(chunkSize);
     }
     if (state.remainingChars > 0)
-        raiseError(QXmlStreamWriter::Error::EncodingError);
+        raiseError(QXmlStreamWriter::Error::Encoding);
 }
 
 void QXmlStreamWriterPrivate::doWriteToDevice(QUtf8StringView s)
 {
     QByteArrayView bytes = s;
     if (device->write(bytes.data(), bytes.size()) != bytes.size())
-        raiseError(QXmlStreamWriter::Error::IOError);
+        raiseError(QXmlStreamWriter::Error::IO);
 }
 
 void QXmlStreamWriterPrivate::doWriteToDevice(QLatin1StringView s)
@@ -3642,8 +3642,8 @@ int QXmlStreamWriter::autoFormattingIndent() const
     When this property is set to \c false, the writer may continue writing
     after an error, skipping the invalid write but allowing further output.
 
-    Note that this includes \l Error::InvalidCharacter, \l Error::EncodingError,
-    and \l Error::CustomError. \l Error::IOError is always considered terminal
+    Note that this includes \l Error::InvalidCharacter, \l Error::Encoding,
+    and \l Error::Custom. \l Error::IO is always considered terminal
     and stops writing regardless of this setting.
 
     The default value is \c false.
@@ -3663,7 +3663,7 @@ void QXmlStreamWriter::setStopWritingOnError(bool stop)
 /*!
     Returns \c true if an error occurred while trying to write data.
 
-    If the error is \l Error::IOError, subsequent writes to the underlying
+    If the error is \l Error::IO, subsequent writes to the underlying
     QIODevice will fail. In other cases malformed data might be written to
     the document.
 
@@ -3674,14 +3674,14 @@ void QXmlStreamWriter::setStopWritingOnError(bool stop)
  */
 bool QXmlStreamWriter::hasError() const
 {
-    return error() != QXmlStreamWriter::Error::NoError;
+    return error() != QXmlStreamWriter::Error::None;
 }
 
 /*!
     Returns the current error state of the writer.
 
     If no error has occurred, this function returns
-    QXmlStreamWriter::Error::NoError.
+    QXmlStreamWriter::Error::None.
 
     \since 6.10
     \sa errorString(), raiseError(const QString &message), hasError()
@@ -3720,7 +3720,7 @@ QString QXmlStreamWriter::errorString() const
 void QXmlStreamWriter::raiseError(const QString &message)
 {
     Q_D(QXmlStreamWriter);
-    d->raiseError(QXmlStreamWriter::Error::CustomError, message);
+    d->raiseError(QXmlStreamWriter::Error::Custom, message);
 }
 
 /*!

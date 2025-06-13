@@ -465,11 +465,11 @@ public:
 #endif
 
     enum class Error {
-        NoError,
-        IOError,
-        EncodingError,
+        None,
+        IO,
+        Encoding,
         InvalidCharacter,
-        CustomError,
+        Custom,
     };
 
     void raiseError(const QString &message);
