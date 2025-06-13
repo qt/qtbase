@@ -1412,6 +1412,13 @@ QDataStream &operator<<(QDataStream &out, QChar chr)
 }
 
 /*!
+    \fn QDataStream::operator bool() const
+    \since 6.10
+
+    Returns whether this stream has no errors (status() == \l{OK}).
+*/
+
+/*!
     Writes the length specifier \a len and the buffer \a s to the
     stream and returns a reference to the stream.
 
