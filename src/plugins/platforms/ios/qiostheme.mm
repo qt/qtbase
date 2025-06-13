@@ -140,6 +140,8 @@ QVariant QIOSTheme::themeHint(ThemeHint hint) const
         return QStringList(QStringLiteral("Fusion"));
     case KeyboardScheme:
         return QVariant(int(MacKeyboardScheme));
+    case PreferFileIconFromTheme:
+        return true;
     default:
         return QPlatformTheme::themeHint(hint);
     }

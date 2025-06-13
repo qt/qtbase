@@ -543,6 +543,8 @@ QVariant QAndroidPlatformTheme::themeHint(ThemeHint hint) const
 
             Q_FALLTHROUGH();
     }
+    case PreferFileIconFromTheme:
+        return true;
     default:
         return QPlatformTheme::themeHint(hint);
     }
