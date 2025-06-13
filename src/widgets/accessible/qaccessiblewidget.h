@@ -69,8 +69,11 @@ class Q_WIDGETS_EXPORT QAccessibleWidgetV2 : public QAccessibleWidget,
 public:
     explicit QAccessibleWidgetV2(QWidget *object, QAccessible::Role role = QAccessible::Client);
     explicit QAccessibleWidgetV2(QWidget *object, QAccessible::Role role, const QString &name);
+
+protected:
     ~QAccessibleWidgetV2() override;
 
+public:
     void *interface_cast(QAccessible::InterfaceType t) override;
 
     // QAccessibleAttributesInterface
