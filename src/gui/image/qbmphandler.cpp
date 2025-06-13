@@ -175,8 +175,7 @@ static inline uint apply_scale(uint value, uint scale)
 static bool read_dib_fileheader(QDataStream &s, BMP_FILEHDR &bf)
 {
     // read BMP file header
-    s >> bf;
-    if (s.status() != QDataStream::Ok)
+    if (!(s >> bf))
         return false;
 
     // check header
@@ -188,8 +187,7 @@ static bool read_dib_fileheader(QDataStream &s, BMP_FILEHDR &bf)
 
 static bool read_dib_infoheader(QDataStream &s, BMP_INFOHDR &bi)
 {
-    s >> bi;                                        // read BMP info header
-    if (s.status() != QDataStream::Ok)
+    if (!(s >> bi))                                       // read BMP info header
         return false;
 
     int nbits = bi.biBitCount;
@@ -602,8 +600,7 @@ bool qt_write_dib(QDataStream &s, const QImage &image, int bpl, int bpl_bmp, int
     bi.biYPelsPerMeter = image.dotsPerMeterY() ? image.dotsPerMeterY() : 2834;
     bi.biClrUsed       = image.colorCount();
     bi.biClrImportant  = image.colorCount();
-    s << bi;                                        // write info header
-    if (s.status() != QDataStream::Ok)
+    if (!(s << bi))                                        // write info header
         return false;
 
     if (image.depth() != 32) {                // write color table

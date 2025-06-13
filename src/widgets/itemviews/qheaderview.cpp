@@ -4356,13 +4356,11 @@ bool QHeaderViewPrivate::read(QDataStream &in)
     recalcSectionStartPos();
 
     int tmpint;
-    in >> tmpint;
-    if (in.status() == QDataStream::Ok)  // we haven't read past end
+    if (in >> tmpint)  // we haven't read past end
         resizeContentsPrecision = tmpint;
 
     bool tmpbool;
-    in >> tmpbool;
-    if (in.status() == QDataStream::Ok) {  // we haven't read past end
+    if (in >> tmpbool) {  // we haven't read past end
         customDefaultSectionSize = tmpbool;
         if (!customDefaultSectionSize)
             updateDefaultSectionSizeFromStyle();
@@ -4370,8 +4368,7 @@ bool QHeaderViewPrivate::read(QDataStream &in)
 
     lastSectionSize = -1;
     int inLastSectionSize;
-    in >> inLastSectionSize;
-    if (in.status() == QDataStream::Ok)
+    if (in >> inLastSectionSize)
         lastSectionSize = inLastSectionSize;
 
     lastSectionLogicalIdx = -1;
@@ -4381,16 +4378,14 @@ bool QHeaderViewPrivate::read(QDataStream &in)
     }
 
     int inSortIndicatorClearable;
-    in >> inSortIndicatorClearable;
-    if (in.status() == QDataStream::Ok)  // we haven't read past end
+    if (in >> inSortIndicatorClearable)  // we haven't read past end
         sortIndicatorClearable = inSortIndicatorClearable;
 
     in >> countInNoSectionItemsMode;
     int iHeaderMode;
 
-    in >> iHeaderMode;
+    if (!(in >> iHeaderMode)) {
     // On any failure (especially reading past end) we consider mode to be normal by default.
-    if (in.status() != QDataStream::Ok) {
         iHeaderMode = static_cast<int>(HeaderMode::FlexibleWithSectionMemoryUsage);
     }
 

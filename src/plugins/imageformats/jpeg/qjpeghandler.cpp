@@ -910,8 +910,7 @@ static int getExifOrientation(QByteArray &exifData)
         }
 
         // read offset to next IFD
-        stream >> offset;
-        if (stream.status() != QDataStream::Ok)
+        if (!(stream >> offset))
             return -1;
         if (offset == 0) // this is the last IFD
             return 0;   // No Exif orientation was found

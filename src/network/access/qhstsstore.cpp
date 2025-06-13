@@ -128,12 +128,10 @@ bool QHstsStore::deserializePolicy(const QString &key, QHstsPolicy &policy)
     const QByteArray serializedData(data.toByteArray());
     QDataStream streamer(serializedData);
     qint64 expiryInMS = 0;
-    streamer >> expiryInMS;
-    if (streamer.status() != QDataStream::Ok)
+    if (!(streamer >> expiryInMS))
         return false;
     bool includesSubDomains = false;
-    streamer >> includesSubDomains;
-    if (streamer.status() != QDataStream::Ok)
+    if (!(streamer >> includesSubDomains))
         return false;
 
     policy.setExpiry(QDateTime::fromMSecsSinceEpoch(expiryInMS));
