@@ -19,7 +19,8 @@ class Q_WIDGETS_EXPORT QAccessibleWidget : public QAccessibleObject,
                                            public QAccessibleActionInterface
 {
 public:
-    explicit QAccessibleWidget(QWidget *o, QAccessible::Role r = QAccessible::Client, const QString& name = QString());
+    explicit QAccessibleWidget(QWidget *o, QAccessible::Role r = QAccessible::Client);
+    explicit QAccessibleWidget(QWidget *o, QAccessible::Role r, const QString& name);
     bool isValid() const override;
 
     QWindow *window() const override;

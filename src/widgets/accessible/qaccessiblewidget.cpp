@@ -153,15 +153,24 @@ public:
 
 /*!
     Creates a QAccessibleWidget object for widget \a w.
-    \a role and \a name are optional parameters that set the object's
-    role and name properties.
+    \a role is an optional parameter that sets the object's role property.
 */
-QAccessibleWidget::QAccessibleWidget(QWidget *w, QAccessible::Role role, const QString &name)
+QAccessibleWidget::QAccessibleWidget(QWidget *w, QAccessible::Role role)
 : QAccessibleObject(w)
 {
     Q_ASSERT(widget());
     d = new QAccessibleWidgetPrivate();
     d->role = role;
+}
+
+/*!
+    Creates a QAccessibleWidget object for widget \a w.
+    \a role and \a name are optional parameters that set the object's
+    role and name properties.
+*/
+QAccessibleWidget::QAccessibleWidget(QWidget *w, QAccessible::Role role, const QString &name)
+    : QAccessibleWidget(w, role)
+{
     d->name = name;
 }
 
@@ -490,7 +499,7 @@ QAccessibleWidgetV2::QAccessibleWidgetV2(QWidget *object, QAccessible::Role role
 }
 
 QAccessibleWidgetV2::QAccessibleWidgetV2(QWidget *object, QAccessible::Role role)
-    : QAccessibleWidgetV2(object, role, QString())
+    : QAccessibleWidget(object, role)
 {
 }
 
