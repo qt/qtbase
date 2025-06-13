@@ -5,7 +5,9 @@
 #ifndef QSCOPEGUARD_H
 #define QSCOPEGUARD_H
 
-#include <QtCore/qglobal.h>
+#include <QtCore/qtclasshelpermacros.h>
+#include <QtCore/qcompilerdetection.h>
+#include <QtCore/qtconfigmacros.h>
 
 #include <type_traits>
 #include <utility>
