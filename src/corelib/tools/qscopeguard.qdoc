@@ -18,6 +18,9 @@ QT_BEGIN_NAMESPACE
     your cleanup code is executed, whether the function is exited normally,
     exited early by a return statement, or exited by an exception.
 
+    A scope guard can be disabled using dismiss(), in which case the function
+    is not run at all.
+
     \note Exceptions are not supported. The callable shouldn't throw when
           executed, copied or moved.
 
