@@ -8,4 +8,5 @@ macos
 android
 
 [overshoot]
-macos
+macos #QTBUG-134105
+windows #QTBUG-134105
