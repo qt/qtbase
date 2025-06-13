@@ -596,6 +596,11 @@ bool QGroupBox::isChecked() const
 
     By default, checkable group boxes are also checked.
 
+    \note The group box itself will not be disabled when the box is unchecked,
+    and you can explicitly enable individual children in a group box that is
+    unchecked. This is however not recommended, as it could create a surprising
+    experience for the end user.
+
     \sa checkable
 */
 void QGroupBox::setChecked(bool b)
