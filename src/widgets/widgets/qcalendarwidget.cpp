@@ -2892,7 +2892,7 @@ QMap<QDate, QTextCharFormat> QCalendarWidget::dateTextFormat() const
 
 /*!
     Returns a QTextCharFormat for \a date. The char format can be
-    empty if the date is not renderd specially.
+    empty if the date is not rendered specially.
 */
 QTextCharFormat QCalendarWidget::dateTextFormat(QDate date) const
 {
