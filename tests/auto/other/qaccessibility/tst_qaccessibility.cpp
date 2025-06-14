@@ -2138,6 +2138,8 @@ void tst_QAccessibility::lineEditTest()
     auto le = std::make_unique<QLineEdit>();
     QAccessibleInterface *iface(QAccessible::queryAccessibleInterface(le.get()));
     QVERIFY(iface);
+    QAccessibleTextInterface *textIface = iface->textInterface();
+    QVERIFY(textIface);
     le->show();
 
     QApplication::processEvents();
@@ -2169,13 +2171,23 @@ void tst_QAccessibility::lineEditTest()
     QCOMPARE(iface->text(QAccessible::Value), QString());
     le->setEchoMode(QLineEdit::Password);
     QVERIFY(iface->state().passwordEdit);
-    QCOMPARE(iface->text(QAccessible::Value), QString(secret.size(), QLatin1Char('*')));
+    QVERIFY(iface->text(QAccessible::Value) != le->text());
+    QCOMPARE(iface->text(QAccessible::Value), le->displayText());
+    QCOMPARE(textIface->characterCount(), secret.size());
+    QVERIFY(textIface->text(0, textIface->characterCount()) != le->text());
+    QCOMPARE(textIface->text(0, textIface->characterCount()), le->displayText());
     le->setEchoMode(QLineEdit::PasswordEchoOnEdit);
     QVERIFY(iface->state().passwordEdit);
-    QCOMPARE(iface->text(QAccessible::Value), QString(secret.size(), QLatin1Char('*')));
+    QVERIFY(iface->text(QAccessible::Value) != le->text());
+    QCOMPARE(iface->text(QAccessible::Value), le->displayText());
+    QCOMPARE(textIface->characterCount(), secret.size());
+    QVERIFY(textIface->text(0, textIface->characterCount()) != le->text());
+    QCOMPARE(textIface->text(0, textIface->characterCount()), le->displayText());
     le->setEchoMode(QLineEdit::Normal);
     QVERIFY(!(iface->state().passwordEdit));
     QCOMPARE(iface->text(QAccessible::Value), secret);
+    QCOMPARE(textIface->characterCount(), secret.size());
+    QCOMPARE(textIface->text(0, textIface->characterCount()), secret);
 
     le->setParent(toplevel);
     toplevel->show();
