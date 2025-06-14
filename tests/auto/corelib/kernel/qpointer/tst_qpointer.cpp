@@ -545,7 +545,7 @@ void tst_QPointer::raceCondition()
 
     for (int i = 0; i < NUM_THREADS; ++i) {
         QThread *thread =
-                QThread::create([&startSemaphore, &targetObject] {
+                QThread::create([&] {
                     startSemaphore.acquire();
 
                     for (int j = 0; j < ITERATIONS_PER_THREAD; ++j) {
