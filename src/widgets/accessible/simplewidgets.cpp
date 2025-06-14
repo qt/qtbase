@@ -669,10 +669,7 @@ QString QAccessibleLineEdit::text(QAccessible::Text t) const
     QString str;
     switch (t) {
     case QAccessible::Value:
-        if (lineEdit()->echoMode() == QLineEdit::Normal)
-            str = lineEdit()->text();
-        else if (lineEdit()->echoMode() != QLineEdit::NoEcho)
-            str = QString(lineEdit()->text().size(), QChar::fromLatin1('*'));
+        str = lineEdit()->displayText();
         break;
     default:
         break;
@@ -786,19 +783,12 @@ QString QAccessibleLineEdit::text(int startOffset, int endOffset) const
     if (startOffset > endOffset)
         return QString();
 
-    if (lineEdit()->echoMode() != QLineEdit::Normal)
-        return QString();
-
-    return lineEdit()->text().mid(startOffset, endOffset - startOffset);
+    return lineEdit()->displayText().mid(startOffset, endOffset - startOffset);
 }
 
 QString QAccessibleLineEdit::textBeforeOffset(int offset, QAccessible::TextBoundaryType boundaryType,
         int *startOffset, int *endOffset) const
 {
-    if (lineEdit()->echoMode() != QLineEdit::Normal) {
-        *startOffset = *endOffset = -1;
-        return QString();
-    }
     if (offset == -2)
         offset = cursorPosition();
     return QAccessibleTextInterface::textBeforeOffset(offset, boundaryType, startOffset, endOffset);
@@ -807,10 +797,6 @@ QString QAccessibleLineEdit::textBeforeOffset(int offset, QAccessible::TextBound
 QString QAccessibleLineEdit::textAfterOffset(int offset, QAccessible::TextBoundaryType boundaryType,
         int *startOffset, int *endOffset) const
 {
-    if (lineEdit()->echoMode() != QLineEdit::Normal) {
-        *startOffset = *endOffset = -1;
-        return QString();
-    }
     if (offset == -2)
         offset = cursorPosition();
     return QAccessibleTextInterface::textAfterOffset(offset, boundaryType, startOffset, endOffset);
@@ -819,10 +805,6 @@ QString QAccessibleLineEdit::textAfterOffset(int offset, QAccessible::TextBounda
 QString QAccessibleLineEdit::textAtOffset(int offset, QAccessible::TextBoundaryType boundaryType,
         int *startOffset, int *endOffset) const
 {
-    if (lineEdit()->echoMode() != QLineEdit::Normal) {
-        *startOffset = *endOffset = -1;
-        return QString();
-    }
     if (offset == -2)
         offset = cursorPosition();
     return QAccessibleTextInterface::textAtOffset(offset, boundaryType, startOffset, endOffset);
@@ -851,7 +833,7 @@ void QAccessibleLineEdit::setSelection(int selectionIndex, int startOffset, int 
 
 int QAccessibleLineEdit::characterCount() const
 {
-    return lineEdit()->text().size();
+    return lineEdit()->displayText().size();
 }
 
 void QAccessibleLineEdit::scrollToSubstring(int startIndex, int endIndex)
