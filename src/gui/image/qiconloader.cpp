@@ -352,8 +352,8 @@ QIconTheme::QIconTheme(const QString &themeName)
     QFile themeIndex;
 
     const QStringList iconDirs = QIcon::themeSearchPaths();
-    for ( int i = 0 ; i < iconDirs.size() ; ++i) {
-        QDir iconDir(iconDirs[i]);
+    for (const auto &dirName : iconDirs) {
+        QDir iconDir(dirName);
         QString themeDir = iconDir.path() + u'/' + themeName;
         QFileInfo themeDirInfo(themeDir);
 
@@ -479,7 +479,7 @@ QThemeIconInfo QIconLoader::findIconHelper(const QString &themeName,
         const QString pngIconName = iconNameFallback + ".png"_L1;
 
         // Add all relevant files
-        for (int i = 0; i < contentDirs.size(); ++i) {
+        for (qsizetype i = 0; i < contentDirs.size(); ++i) {
             QList<QIconDirInfo> subDirs = theme.keyList();
 
             // Try to reduce the amount of subDirs by looking in the GTK+ cache in order to save
@@ -504,8 +504,7 @@ QThemeIconInfo QIconLoader::findIconHelper(const QString &themeName,
             }
 
             QString contentDir = contentDirs.at(i) + u'/';
-            for (int j = 0; j < subDirs.size() ; ++j) {
-                const QIconDirInfo &dirInfo = subDirs.at(j);
+            for (const auto &dirInfo : std::as_const(subDirs)) {
                 if (searchingGenericFallback &&
                         (dirInfo.context == QIconDirInfo::Applications ||
                          dirInfo.context == QIconDirInfo::MimeTypes))
@@ -544,9 +543,9 @@ QThemeIconInfo QIconLoader::findIconHelper(const QString &themeName,
             << "skipping visited" << visited;
 
         // Search recursively through inherited themes
-        for (int i = 0 ; i < parents.size() ; ++i) {
+        for (const auto &parent : parents) {
 
-            const QString parentTheme = parents.at(i).trimmed();
+            const QString parentTheme = parent.trimmed();
 
             if (!visited.contains(parentTheme)) // guard against recursion
                 info = findIconHelper(parentTheme, iconName, visited, QIconLoader::NoFallBack);
