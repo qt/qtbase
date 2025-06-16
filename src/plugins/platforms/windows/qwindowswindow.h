@@ -338,7 +338,7 @@ public:
     void alertWindow(int durationMs = 0);
     void stopAlertWindow();
 
-    enum ScreenChangeMode { FromGeometryChange, FromDpiChange };
+    enum ScreenChangeMode { FromGeometryChange, FromDpiChange, FromScreenAdded };
     void checkForScreenChanged(ScreenChangeMode mode = FromGeometryChange);
 
     void registerTouchWindow();

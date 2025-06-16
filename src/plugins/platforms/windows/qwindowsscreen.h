@@ -119,6 +119,7 @@ public:
     static bool isSingleScreen();
 
 private:
+    void addScreen(const QWindowsScreenData &screenData);
     void removeScreen(int index);
 
     HWND m_displayChangeObserver = nullptr;
