@@ -206,7 +206,7 @@ public:
     friend QSet operator-(const QSet &lhs, const QSet &rhs) { return QSet(lhs) -= rhs; }
     friend QSet operator-(QSet &&lhs, const QSet &rhs) { lhs -= rhs; return std::move(lhs); }
 
-    QList<T> values() const;
+    inline QList<T> values() const;
 
 private:
     static inline QSet intersected_helper(const QSet &lhs, const QSet &rhs);
@@ -332,7 +332,7 @@ Q_INLINE_TEMPLATE bool QSet<T>::contains(const QSet<T> &other) const
 }
 
 template <typename T>
-Q_OUTOFLINE_TEMPLATE QList<T> QSet<T>::values() const
+QList<T> QSet<T>::values() const
 {
     QList<T> result;
     result.reserve(size());
