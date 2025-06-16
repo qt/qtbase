@@ -3199,6 +3199,7 @@ void QXmlStreamWriterPrivate::raiseError(QXmlStreamWriter::Error errorCode)
         errorString = QXmlStream::tr("An error occurred while writing");
         break;
     case QXmlStreamWriter::Error::None:
+        errorString.clear();
         break;
     }
 }
