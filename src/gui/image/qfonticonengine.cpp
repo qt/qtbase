@@ -74,10 +74,7 @@ QSize QFontIconEngine::actualSize(const QSize &size, QIcon::Mode mode, QIcon::St
     QFont renderFont(m_iconFont);
     renderFont.setPixelSize(size.height());
     QSizeF result;
-    if (const QString text = string(); !text.isEmpty()) {
-        const QFontMetricsF fm(renderFont);
-        result = {fm.horizontalAdvance(text), fm.tightBoundingRect(text).height()};
-    } else if (glyph_t glyphIndex = glyph()) {
+    if (const glyph_t glyphIndex = glyph()) {
         QFontEngine *engine = QFontPrivate::get(renderFont)->engineForScript(QChar::Script_Common);
 
         const glyph_metrics_t gm = engine->boundingBox(glyphIndex);
@@ -88,6 +85,9 @@ QSize QFontIconEngine::actualSize(const QSize &size, QIcon::Mode mode, QIcon::St
 
         if (glyph_width > .0 && glyph_height > .0)
             result = {glyph_width, glyph_height};
+    } else if (const QString text = string(); !text.isEmpty()) {
+        const QFontMetricsF fm(renderFont);
+        result = {fm.horizontalAdvance(text), fm.tightBoundingRect(text).height()};
     }
     if (!result.isValid())
         return QIconEngine::actualSize(size, mode, state);
@@ -146,12 +146,7 @@ void QFontIconEngine::paint(QPainter *painter, const QRect &rect, QIcon::Mode mo
         break;
     }
 
-    const QString text = string();
-    if (!text.isEmpty()) {
-        painter->setFont(renderFont);
-        painter->setPen(color);
-        painter->drawText(rect, Qt::AlignCenter, text);
-    } else if (glyph_t glyphIndex = glyph()) {
+    if (glyph_t glyphIndex = glyph()) {
         QFontEngine *engine = QFontPrivate::get(renderFont)->engineForScript(QChar::Script_Common);
 
         const glyph_metrics_t gm = engine->boundingBox(glyphIndex);
@@ -178,6 +173,10 @@ void QFontIconEngine::paint(QPainter *painter, const QRect &rect, QIcon::Mode mo
             painter->setBrush(color);
             painter->drawPath(path);
         }
+    } else if (const QString text = string(); !text.isEmpty()) {
+        painter->setFont(renderFont);
+        painter->setPen(color);
+        painter->drawText(rect, Qt::AlignCenter, text);
     }
     painter->restore();
 }
