@@ -631,4 +631,10 @@
         PUBLIC_LIBRARIES
             Qt::Core5Compat
     \endcode
+
+    \section2 QTextStream
+
+    Removed QTextStream::setCodec().
+    Use QTextStream::setEncoding() with the new Encoding enum instead.
+
 */

@@ -2932,6 +2932,7 @@ QTextStream &bom(QTextStream &stream)
 
 
 /*!
+    \since 6.0
     Sets the encoding for this stream to \a encoding. The encoding is used for
     decoding any data that is read from the assigned device, and for
     encoding any data that is written. By default,
