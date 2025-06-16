@@ -2014,7 +2014,6 @@ void QByteArray::expand(qsizetype i)
 }
 
 /*!
-    \fn QByteArray &QByteArray::nullTerminate()
     \since 6.10
 
     If this byte array's data isn't null-terminated, this method will make
@@ -2027,9 +2026,17 @@ void QByteArray::expand(qsizetype i)
 
     \sa nullTerminated(), fromRawData(), setRawData()
 */
+QByteArray &QByteArray::nullTerminate()
+{
+    // Ensure \0-termination for fromRawData() byte arrays
+    if (!d.isMutable())
+        *this = QByteArray{constData(), size()};
+    return *this;
+}
 
 /*!
     \fn QByteArray QByteArray::nullTerminated() const &
+    \fn QByteArray QByteArray::nullTerminated() &&
     \since 6.10
 
     Returns a copy of this byte array that is always null-terminated.
@@ -2037,6 +2044,19 @@ void QByteArray::expand(qsizetype i)
 
     \sa nullTerminate(), fromRawData(), setRawData()
 */
+QByteArray QByteArray::nullTerminated() const &
+{
+    // Ensure \0-termination for fromRawData() byte arrays
+    if (!d.isMutable())
+        return QByteArray{constData(), size()};
+    return *this;
+}
+
+QByteArray QByteArray::nullTerminated() &&
+{
+    nullTerminate();
+    return std::move(*this);
+}
 
 /*!
     \fn QByteArray &QByteArray::prepend(QByteArrayView ba)

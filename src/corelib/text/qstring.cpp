@@ -7077,9 +7077,17 @@ const ushort *QString::utf16() const
 
     \sa nullTerminated(), fromRawData(), setRawData()
 */
+QString &QString::nullTerminate()
+{
+    // ensure '\0'-termination for ::fromRawData strings
+    if (!d->isMutable())
+        *this = QString{constData(), size()};
+    return *this;
+}
 
 /*!
     \fn QString QString::nullTerminated() const &
+    \fn QString QString::nullTerminated() &&
     \since 6.10
 
     Returns a copy of this string that is always null-terminated.
@@ -7087,6 +7095,19 @@ const ushort *QString::utf16() const
 
     \sa nullTerminated(), fromRawData(), setRawData()
 */
+QString QString::nullTerminated() const &
+{
+    // ensure '\0'-termination for ::fromRawData strings
+    if (!d->isMutable())
+        return QString{constData(), size()};
+    return *this;
+}
+
+QString QString::nullTerminated() &&
+{
+    nullTerminate();
+    return std::move(*this);
+}
 
 /*!
     Returns a string of size \a width that contains this string

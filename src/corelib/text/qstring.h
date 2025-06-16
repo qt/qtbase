@@ -707,29 +707,9 @@ public:
     [[nodiscard]] QString repeated(qsizetype times) const;
 
     const ushort *utf16() const; // ### Qt 7 char16_t
-    [[nodiscard]] QString nullTerminated() const &
-    {
-        // ensure '\0'-termination for ::fromRawData strings
-        if (!d->isMutable())
-            return QString{constData(), size()};
-        return *this;
-    }
-
-    [[nodiscard]] QString nullTerminated() &&
-    {
-        // ensure '\0'-termination for ::fromRawData strings
-        if (!d->isMutable())
-            return QString{constData(), size()};
-        return std::move(*this);
-    }
-
-    QString &nullTerminate()
-    {
-        // ensure '\0'-termination for ::fromRawData strings
-        if (!d->isMutable())
-            *this = QString{constData(), size()};
-        return *this;
-    }
+    [[nodiscard]] QString nullTerminated() const &;
+    [[nodiscard]] QString nullTerminated() &&;
+    QString &nullTerminate();
 
 #if !defined(Q_QDOC)
     [[nodiscard]] QByteArray toLatin1() const &

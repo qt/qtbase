@@ -531,29 +531,9 @@ public:
 #endif
     explicit inline QByteArray(DataPointer &&dd) : d(std::move(dd)) {}
 
-    [[nodiscard]] QByteArray nullTerminated() const &
-    {
-        // Ensure \0-termination for fromRawData() byte arrays
-        if (!d.isMutable())
-            return QByteArray{constData(), size()};
-        return *this;
-    }
-
-    [[nodiscard]] QByteArray nullTerminated() &&
-    {
-        // Ensure \0-termination for fromRawData() byte arrays
-        if (!d.isMutable())
-            return QByteArray{constData(), size()};
-        return std::move(*this);
-    }
-
-    QByteArray &nullTerminate()
-    {
-        // Ensure \0-termination for fromRawData() byte arrays
-        if (!d.isMutable())
-            *this = QByteArray{constData(), size()};
-        return *this;
-    }
+    [[nodiscard]] QByteArray nullTerminated() const &;
+    [[nodiscard]] QByteArray nullTerminated() &&;
+    QByteArray &nullTerminate();
 
 private:
     friend bool comparesEqual(const QByteArray &lhs, const QByteArrayView &rhs) noexcept
