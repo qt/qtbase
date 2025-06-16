@@ -1445,8 +1445,9 @@ function(qt_describe_module target)
             endif()
             if(ANDROID)
                 string(APPEND targets_information
-                    "${indent5}\"api_version\": \"${QT_ANDROID_API_USED_FOR_JAVA}\",
-${indent5}\"ndk_version\": \"${ANDROID_NDK_REVISION}\",\n")
+                    "${indent5}\"api_version\": \"${QT_ANDROID_API_USED_FOR_JAVA}\",\n"
+                    "${indent5}\"ndk_version\": \"${ANDROID_NDK_REVISION}\",\n"
+                    "${indent5}\"android_platform\": \"${ANDROID_PLATFORM}\",\n")
             endif()
             string(APPEND targets_information "${indent5}\"architecture\": \"${architecture}\",\n")
             string(APPEND targets_information "${indent5}\"abi\": \"${TEST_arch_${architecture}_abi}\"\n")
