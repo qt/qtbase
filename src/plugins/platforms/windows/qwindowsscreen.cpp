@@ -762,6 +762,28 @@ static void moveToVirtualScreen(QWindow *w, const QScreen *newScreen)
     w->setGeometry(geometry);
 }
 
+void QWindowsScreenManager::addScreen(const QWindowsScreenData &screenData)
+{
+    auto *newScreen = new QWindowsScreen(screenData);
+    m_screens.push_back(newScreen);
+    QWindowSystemInterface::handleScreenAdded(newScreen,
+                                              screenData.flags & QWindowsScreenData::PrimaryScreen);
+    qCDebug(lcQpaScreen) << "New Monitor: " << screenData;
+
+    // When a new screen is attached Window might move windows to the new screen
+    // automatically, in which case they will get a WM_DPICHANGED event. But at
+    // that point we have not received WM_DISPLAYCHANGE yet, so we fail to reflect
+    // the new screen's DPI. To account for this we explicitly check for screen
+    // change here, now that we are processing the WM_DISPLAYCHANGE.
+    const auto allWindows = QGuiApplication::allWindows();
+    for (QWindow *w : allWindows) {
+        if (w->isVisible() && w->handle() && w->type() != Qt::Desktop) {
+            if (QWindowsWindow *window = QWindowsWindow::windowsWindowOf(w))
+                window->checkForScreenChanged(QWindowsWindow::ScreenChangeMode::FromScreenAdded);
+        }
+    }
+}
+
 void QWindowsScreenManager::removeScreen(int index)
 {
     qCDebug(lcQpaScreen) << "Removing Monitor:" << m_screens.at(index)->data();
@@ -784,7 +806,7 @@ void QWindowsScreenManager::removeScreen(int index)
                     && (QWindowsWindow::baseWindowOf(w)->exStyle() & WS_EX_TOOLWINDOW)) {
                     moveToVirtualScreen(w, primaryScreen);
                 } else {
-                    QWindowSystemInterface::handleWindowScreenChanged(w, primaryScreen);
+                    QWindowSystemInterface::handleWindowScreenChanged<QWindowSystemInterface::SynchronousDelivery>(w, primaryScreen);
                 }
                 ++movedWindowCount;
             }
@@ -813,11 +835,7 @@ bool QWindowsScreenManager::handleScreenChanges()
             if (existingIndex == 0)
                 primaryScreenChanged = true;
         } else {
-            auto *newScreen = new QWindowsScreen(newData);
-            m_screens.push_back(newScreen);
-            QWindowSystemInterface::handleScreenAdded(newScreen,
-                                                             newData.flags & QWindowsScreenData::PrimaryScreen);
-            qCDebug(lcQpaScreen) << "New Monitor: " << newData;
+            addScreen(newData);
         }    // exists
     }        // for new screens.
     // Remove deleted ones but keep main monitors if we get only the
