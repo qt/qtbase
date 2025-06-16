@@ -294,9 +294,9 @@ struct Q_CORE_EXPORT QMetaObject
 
 #ifdef Q_QDOC
     template<typename PointerToMemberFunction>
-    static QMetaObject::Connection connect(const QObject *sender, PointerToMemberFunction signal, const QObject *receiver, PointerToMemberFunction method, Qt::ConnectionType type = Qt::AutoConnection);
-    template<typename PointerToMemberFunction, typename Functor>
-    static QMetaObject::Connection connect(const QObject *sender, PointerToMemberFunction signal, const QObject *context, Functor functor, Qt::ConnectionType type = Qt::AutoConnection);
+    static QMetaObject::Connection connect(const QObject *sender, const QMetaMethod &signal, const QObject *receiver, PointerToMemberFunction method, Qt::ConnectionType type = Qt::AutoConnection);
+    template<typename Functor>
+    static QMetaObject::Connection connect(const QObject *sender, const QMetaMethod &signal, const QObject *context, Functor functor, Qt::ConnectionType type = Qt::AutoConnection);
 #else
     template <typename Func>
     static inline Connection

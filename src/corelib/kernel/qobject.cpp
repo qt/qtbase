@@ -3912,7 +3912,7 @@ void QMetaObject::connectSlotsByName(QObject *o)
 
 /*!
     \fn template<typename PointerToMemberFunction> QMetaObject::Connection QMetaObject::connect(
-        const QObject *sender, PointerToMemberFunction signal, const QObject *receiver, PointerToMemberFunction method, Qt::ConnectionType type)
+        const QObject *sender, const QMetaMethod &signal, const QObject *receiver, PointerToMemberFunction method, Qt::ConnectionType type)
 
     \threadsafe
     \overload connect()
@@ -3937,13 +3937,15 @@ void QMetaObject::connectSlotsByName(QObject *o)
     conversions and type checking are not handled by this function.
     Overloaded slots need to be explicitly be resolved with
     help of \l qOverload.
+    \a signal needs to be the meta-method of a signal, otherwise an
+    invalid connection will be returned.
 
     \sa QObject::connect(), QObject::disconnect()
  */
 
 /*!
-    \fn template<typename PointerToMemberFunction, typename Functor> QMetaObject::Connection QMetaObject::connect(
-        const QObject *sender, PointerToMemberFunction signal, const QObject *context, Functor functor, Qt::ConnectionType type)
+    \fn template<typename Functor> QMetaObject::Connection QMetaObject::connect(
+        const QObject *sender, const QMetaMethod &signal, const QObject *context, Functor functor, Qt::ConnectionType type)
 
     \threadsafe
     \overload connect()
@@ -3967,6 +3969,8 @@ void QMetaObject::connectSlotsByName(QObject *o)
     conversions and type checking are not handled by this function.
     Overloaded functors need to be explicitly be resolved with
     help of \l qOverload.
+    \a signal needs to be the meta-method of a signal, otherwise an
+    invalid connection will be returned.
 
     The connection will automatically disconnect if the sender or
     the context is destroyed.
