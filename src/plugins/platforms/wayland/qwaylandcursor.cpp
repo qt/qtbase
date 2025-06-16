@@ -7,6 +7,7 @@
 #include "qwaylanddisplay_p.h"
 #include "qwaylandinputdevice_p.h"
 #include "qwaylandshmbackingstore_p.h"
+#include "qwayland-pointer-warp-v1.h"
 
 #include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatformtheme.h>
@@ -346,8 +347,22 @@ QPoint QWaylandCursor::pos() const
 
 void QWaylandCursor::setPos(const QPoint &pos)
 {
-    Q_UNUSED(pos);
-    qCWarning(lcQpaWayland) << "Setting cursor position is not possible on wayland";
+    if (mDisplay->pointerWarp()) {
+        const auto seats = mDisplay->inputDevices();
+        for (auto *seat : seats) {
+            if (!seat->pointer() || !seat->pointer()->focusWindow()) {
+                continue;
+            }
+            const auto focus = seat->pointer()->focusWindow();
+            if (!focus->windowFrameGeometry().contains(pos)) {
+                continue;
+            }
+            mDisplay->pointerWarp()->warp_pointer(focus->surface(), seat->pointer()->object(), wl_fixed_from_double(pos.x() - focus->windowFrameGeometry().x()), wl_fixed_from_double(pos.y() - focus->windowFrameGeometry().y()), seat->pointer()->mEnterSerial);
+            return;
+        }
+    } else {
+        qCWarning(lcQpaWayland) << "Setting cursor position requires pointer warp v1 protocol support";
+    }
 }
 
 void QWaylandCursor::setPosFromEnterEvent(const QPoint &pos)

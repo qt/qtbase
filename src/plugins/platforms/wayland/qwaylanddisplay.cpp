@@ -56,6 +56,7 @@
 #include <QtWaylandClient/private/qwayland-xdg-system-bell-v1.h>
 #include <QtWaylandClient/private/qwayland-xdg-toplevel-drag-v1.h>
 #include <QtWaylandClient/private/qwayland-wlr-data-control-unstable-v1.h>
+#include <QtWaylandClient/private/qwayland-pointer-warp-v1.h>
 
 #include <QtCore/private/qcore_unix_p.h>
 
@@ -798,7 +799,11 @@ void QWaylandDisplay::registry_global(uint32_t id, const QString &interface, uin
         mGlobals.colorManager = std::make_unique<ColorManager>(registry, id, 1);
         // we need a roundtrip to receive the features the compositor supports
         forceRoundTrip();
+    } else if (interface == QLatin1String(QtWayland::wp_pointer_warp_v1::interface()->name)) {
+        mGlobals.pointerWarp.reset(new WithDestructor<QtWayland::wp_pointer_warp_v1, wp_pointer_warp_v1_destroy>(
+                registry, id, 1));
     }
+
 
     mRegistryGlobals.append(RegistryGlobal(id, interface, version, registry));
     emit globalAdded(mRegistryGlobals.back());
