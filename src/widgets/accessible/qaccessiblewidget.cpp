@@ -28,6 +28,7 @@
 #if QT_CONFIG(menu)
 #include <QMenu>
 #endif
+#include <QtGui/private/qaccessiblehelper_p.h>
 #include <QtWidgets/private/qwidget_p.h>
 
 #include <qpa/qplatformwindow.h>
@@ -92,16 +93,6 @@ static qsizetype qt_accAmpIndex(const QString &text)
     Q_UNUSED(text);
     return -1;
 #endif
-}
-
-QString qt_accStripAmp(const QString &text)
-{
-    QString newText(text);
-    qsizetype ampIndex = qt_accAmpIndex(newText);
-    if (ampIndex != -1)
-        newText.remove(ampIndex, 1);
-
-    return newText.replace("&&"_L1, "&"_L1);
 }
 
 QString qt_accHotKey(const QString &text)
