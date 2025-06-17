@@ -351,6 +351,7 @@ public:
     Qt::KeyboardModifiers pressedModifiers;
     QPoint pressedPosition;
     QPoint draggedPosition;
+    QPoint draggedPositionOffset;
     bool pressedAlreadySelected;
     bool releaseFromDoubleClick;
 
