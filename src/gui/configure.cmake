@@ -1563,7 +1563,7 @@ qt_feature("wayland-dmabuf-server-buffer" PRIVATE
 )
 qt_feature("wayland-shm-emulation-server-buffer" PRIVATE
     LABEL "Shm emulation server buffer"
-    CONDITION (QT_FEATURE_wayland_client OR QT_FEATURE_wayland_server) AND QT_FEATURE_opengl
+    CONDITION (QT_FEATURE_wayland_client OR QT_FEATURE_wayland_server) AND QT_FEATURE_opengl AND QT_FEATURE_sharedmemory
 )
 qt_feature("wayland-vulkan-server-buffer" PRIVATE
     LABEL "Vulkan-based server buffer"
