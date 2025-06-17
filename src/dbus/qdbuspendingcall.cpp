@@ -260,6 +260,18 @@ QDBusPendingCall::~QDBusPendingCall()
 
 
 /*!
+    \fn QDBusPendingCall &QDBusPendingCall::operator=(QDBusPendingCall &&other)
+
+    Move-assigns \a other into this QDBusPendingCall.
+
+//! [partially-formed]
+    \note The moved-from object \a other is placed in a partially-formed state,
+    in which the only valid operations are destruction and assignment of a new
+    value.
+//! [partially-formed]
+*/
+
+/*!
     Creates a copy of the \a other pending asynchronous call and drops
     the reference to the previously-referenced call. Note that both
     objects will refer to the same pending call after this function.
