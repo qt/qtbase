@@ -453,6 +453,7 @@ qt_internal_extend_target(Gui CONDITION QT_FEATURE_accessibility
         accessible/qaccessiblebridge.cpp accessible/qaccessiblebridge.h
         accessible/qaccessiblebridgeutils.cpp accessible/qaccessiblebridgeutils_p.h
         accessible/qaccessiblecache.cpp accessible/qaccessiblecache_p.h
+        accessible/qaccessiblehelper.cpp accessible/qaccessiblehelper_p.h
         accessible/qaccessibleobject.cpp accessible/qaccessibleobject.h
         accessible/qaccessibleplugin.cpp accessible/qaccessibleplugin.h
         accessible/qplatformaccessibility.cpp
