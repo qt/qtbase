@@ -15,6 +15,7 @@
 #include "qmap.h"
 #include "private/qnumeric_p.h"
 #include "qobjectdefs.h"
+#include "private/qoffsetstringarray_p.h"
 #include "qreadwritelock.h"
 #include "qstring.h"
 #include "qstringlist.h"
@@ -968,20 +969,45 @@ bool QMetaTypeModuleHelper::convert(const void *, int, void *, int) const
     return false;
 }
 
+static constexpr auto createStaticTypeToIdMap()
+{
 #define QT_ADD_STATIC_METATYPE(MetaTypeName, MetaTypeId, RealName) \
-    { #RealName, sizeof(#RealName) - 1, MetaTypeId },
-
+    #RealName,
 #define QT_ADD_STATIC_METATYPE_ALIASES_ITER(MetaTypeName, MetaTypeId, AliasingName, RealNameStr) \
-    { RealNameStr, sizeof(RealNameStr) - 1, QMetaType::MetaTypeName },
+    RealNameStr,
+    constexpr auto staticTypeNames = qOffsetStringArray(
+                QT_FOR_EACH_STATIC_TYPE(QT_ADD_STATIC_METATYPE)
+                QT_FOR_EACH_STATIC_ALIAS_TYPE(QT_ADD_STATIC_METATYPE_ALIASES_ITER)
+                "qreal"
+                );
+    constexpr int Count = staticTypeNames.count();
+#undef QT_ADD_STATIC_METATYPE
+#undef QT_ADD_STATIC_METATYPE_ALIASES_ITER
 
+#define QT_ADD_STATIC_METATYPE(MetaTypeName, MetaTypeId, RealName) \
+    MetaTypeId,
+#define QT_ADD_STATIC_METATYPE_ALIASES_ITER(MetaTypeName, MetaTypeId, AliasingName, RealNameStr) \
+    QMetaType::MetaTypeName,
+    std::array<int, Count> typeIds = {
+        QT_FOR_EACH_STATIC_TYPE(QT_ADD_STATIC_METATYPE)
+        QT_FOR_EACH_STATIC_ALIAS_TYPE(QT_ADD_STATIC_METATYPE_ALIASES_ITER)
+        QMetaTypeId2<qreal>::MetaType,
+    };
+#undef QT_ADD_STATIC_METATYPE
+#undef QT_ADD_STATIC_METATYPE_ALIASES_ITER
 
+    using Base = std::remove_cv_t<decltype(staticTypeNames)>;
+    using Array = std::remove_cv_t<decltype(typeIds)>;
+    struct Map : Base {
+        constexpr Map(const Base &base, const Array &typeIdMap)
+            : Base(base), typeIdMap(typeIdMap)
+        {}
+        std::array<int, Count> typeIdMap;
+    };
 
-static const struct { const char * typeName; int typeNameLength; int type; } types[] = {
-    QT_FOR_EACH_STATIC_TYPE(QT_ADD_STATIC_METATYPE)
-    QT_FOR_EACH_STATIC_ALIAS_TYPE(QT_ADD_STATIC_METATYPE_ALIASES_ITER)
-    QT_ADD_STATIC_METATYPE(_, QMetaTypeId2<qreal>::MetaType, qreal)
-    {nullptr, 0, QMetaType::UnknownType}
-};
+    return Map(staticTypeNames, typeIds);
+}
+static constexpr auto types = createStaticTypeToIdMap();
 
 template <typename From, typename To>
 static bool qIntegerConversionFromFPHelper(From from, To *to)
@@ -2799,12 +2825,12 @@ bool QtPrivate::hasRegisteredMutableViewFunctionToIterableMetaAssociation(QMetaT
 */
 static inline int qMetaTypeStaticType(const char *typeName, int length)
 {
-    int i = 0;
-    while (types[i].typeName && ((length != types[i].typeNameLength)
-                                 || memcmp(typeName, types[i].typeName, length))) {
-        ++i;
+    QByteArrayView name(typeName, length);
+    for (int i = 0; i < types.count(); ++i) {
+        if (types.viewAt(i) == name)
+            return types.typeIdMap[i];
     }
-    return types[i].type;
+    return QMetaType::UnknownType;
 }
 
 #ifndef QT_BOOTSTRAPPED
