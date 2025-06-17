@@ -1894,7 +1894,7 @@ void QMainWindowLayout::keepSize(QDockWidget *w)
 class QMainWindowTabBar : public QTabBar
 {
     Q_OBJECT
-    QMainWindow *mainWindow;
+    QPointer<QMainWindow> mainWindow;
     QPointer<QDockWidget> draggingDock; // Currently dragging (detached) dock widget
 public:
     QMainWindowTabBar(QMainWindow *parent);
