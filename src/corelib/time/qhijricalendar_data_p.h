@@ -23,8 +23,8 @@ namespace QtPrivate::Hijri {
 // GENERATED PART STARTS HERE
 
 /*
-    This part of the file was generated on 2024-12-05 from the
-    Common Locale Data Repository v46
+    This part of the file was generated on 2025-06-17 from the
+    Common Locale Data Repository v47
 
     http://www.unicode.org/cldr/
 
@@ -110,6 +110,7 @@ static inline constexpr QCalendarLocale locale_data[] = {
       {    47,   137,   107, 1772, 1772, 1772, 1772,  184,  184, 71, 71, 71, 71, 26, 26 },// Cantonese/Traditional Han/Hong Kong
       {    47,   118,    50, 1843, 1843, 1843, 1843,  184,  184, 71, 71, 71, 71, 26, 26 },// Cantonese/Simplified Han/China
       {    47,   137,    50, 1772, 1772, 1772, 1772,  184,  184, 71, 71, 71, 71, 26, 26 },// Cantonese/Traditional Han/China
+      {    47,   137,   139, 1772, 1772, 1772, 1772,  184,  184, 71, 71, 71, 71, 26, 26 },// Cantonese/Traditional Han/Macao
       {    48,    66,   220,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// Catalan/Latin/Spain
       {    48,    66,     6,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// Catalan/Latin/Andorra
       {    48,    66,    84,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// Catalan/Latin/France
@@ -137,6 +138,7 @@ static inline constexpr QCalendarLocale locale_data[] = {
       {    59,    27,   193,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// Church/Cyrillic/Russia
       {    60,    27,   193, 2251, 2251, 2382, 2382,  184,  184,131,131, 79, 79, 26, 26 },// Chuvash/Cyrillic/Russia
       {    61,    66,    91,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// Colognian/Latin/Germany
+      {    62,    24,    71,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// Coptic/Coptic/Egypt
       {    63,    66,   246,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// Cornish/Latin/United Kingdom
       {    64,    66,    84,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// Corsican/Latin/France
       {    66,    66,    60,    0,    0,  106,  106, 2461, 2461,106,106, 78, 78, 38, 38 },// Croatian/Latin/Croatia
@@ -179,6 +181,7 @@ static inline constexpr QCalendarLocale locale_data[] = {
       {    75,    66,    53,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Cocos Islands
       {    75,    66,    58,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Cook Islands
       {    75,    66,    63,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Cyprus
+      {    75,    66,    64,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Czechia
       {    75,    66,    65,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Denmark
       {    75,    66,    66,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Diego Garcia
       {    75,    66,    68,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Dominica
@@ -188,6 +191,7 @@ static inline constexpr QCalendarLocale locale_data[] = {
       {    75,    66,    80,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Falkland Islands
       {    75,    66,    82,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Fiji
       {    75,    66,    83,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Finland
+      {    75,    66,    84,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/France
       {    75,    66,    89,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Gambia
       {    75,    66,    91,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Germany
       {    75,    66,    92,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Ghana
@@ -197,11 +201,13 @@ static inline constexpr QCalendarLocale locale_data[] = {
       {    75,    66,   100,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Guernsey
       {    75,    66,   103,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Guyana
       {    75,    66,   107,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Hong Kong
+      {    75,    66,   108,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Hungary
       {    75,    66,   110,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/India
       {    75,    66,   111,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Indonesia
       {    75,    66,   114,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Ireland
       {    75,    66,   115,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Isle of Man
       {    75,    66,   116,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Israel
+      {    75,    66,   117,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Italy
       {    75,    66,   119,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Jamaica
       {    75,    66,   121,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Jersey
       {    75,    66,   124,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Kenya
@@ -226,12 +232,16 @@ static inline constexpr QCalendarLocale locale_data[] = {
       {    75,    66,   171,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Niue
       {    75,    66,   172,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Norfolk Island
       {    75,    66,   173,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Northern Mariana Islands
+      {    75,    66,   175,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Norway
       {    75,    66,   178,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Pakistan
       {    75,    66,   179,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Palau
       {    75,    66,   182,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Papua New Guinea
       {    75,    66,   185,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Philippines
       {    75,    66,   186,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Pitcairn
+      {    75,    66,   187,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Poland
+      {    75,    66,   188,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Portugal
       {    75,    66,   189,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Puerto Rico
+      {    75,    66,   192,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Romania
       {    75,    66,   194,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Rwanda
       {    75,    66,   196,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Saint Helena
       {    75,    66,   197,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Saint Kitts and Nevis
@@ -242,10 +252,13 @@ static inline constexpr QCalendarLocale locale_data[] = {
       {    75,    66,   209,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Sierra Leone
       {    75,    66,   210,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Singapore
       {    75,    66,   211,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Sint Maarten
+      {    75,    66,   212,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Slovakia
       {    75,    66,   213,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Slovenia
       {    75,    66,   214,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Solomon Islands
       {    75,    66,   216,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/South Africa
+      {    75,    66,   217,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/South Georgia and South Sandwich Islands
       {    75,    66,   219,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/South Sudan
+      {    75,    66,   220,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Spain
       {    75,    66,   222,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Sudan
       {    75,    66,   225,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Sweden
       {    75,    66,   226,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// English/Latin/Switzerland
@@ -365,6 +378,7 @@ static inline constexpr QCalendarLocale locale_data[] = {
       {    97,    66,   183,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// Guarani/Latin/Paraguay
       {    98,    40,   110, 4310, 4310, 4408, 4408,  184,  184, 98, 98, 74, 74, 26, 26 },// Gujarati/Gujarati/India
       {    99,    66,   124,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// Gusii/Latin/Kenya
+      {   100,    66,   104, 3289, 3289, 3428, 3518,  184,  184,139,139, 90, 90, 26, 26 },// Haitian/Latin/Haiti
       {   101,    66,   169, 4482, 4482,  106,  106,  184,  184,107,107, 78, 78, 26, 26 },// Hausa/Latin/Nigeria
       {   101,     4,   169,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// Hausa/Arabic/Nigeria
       {   101,     4,   222,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// Hausa/Arabic/Sudan
