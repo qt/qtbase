@@ -75,27 +75,57 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
                 });
             m_gestureDetector.setIsLongpressEnabled(true);
         });
+    }
 
-        if (getContext() instanceof QtActivityBase) {
-            setOnApplyWindowInsetsListener((view, insets) -> {
-                Insets safeInsets;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    int types = WindowInsets.Type.displayCutout() | WindowInsets.Type.systemBars();
-                    safeInsets = insets.getInsets(types);
-                } else {
-                    safeInsets = getSafeInsetsPreAndroidR(view, insets);
-                }
-                QtNative.runAction(() -> safeAreaMarginsChanged(safeInsets, getId()));
-                return insets;
+    @UsedFromNativeCode
+    void registerSafeAreaMarginsListner(boolean isTopLevel, boolean isSameWindowAndScreenSize)
+    {
+        if (!(getContext() instanceof QtActivityBase))
+            return;
+
+        setOnApplyWindowInsetsListener((view, insets) -> {
+            Insets safeInsets = getSafeInsets(view, insets);
+            safeAreaMarginsChanged(safeInsets, getId());
+            return getConsumedInsets(insets);
+        });
+
+        // NOTE: if the window size fits the screen geometry (i.e. edge-to-edge case),
+        // assume this window is the main window and initialize its safe margins with
+        // the insets of the decor view.
+        if (isTopLevel && isSameWindowAndScreenSize) {
+            QtNative.runAction(() -> {
+                // NOTE: The callback onApplyWindowInsetsListener() is not being triggered during
+                // startup, so this is a Workaround to get the safe area margins at startup.
+                // Initially, set the root view insets to the current window, then if the insets
+                // change later, we can rely on setOnApplyWindowInsetsListener() being called.
+                View decorView = ((Activity) getContext()).getWindow().getDecorView();
+                WindowInsets rootInsets = decorView.getRootWindowInsets();
+                Insets rootSafeInsets = getSafeInsets(decorView, rootInsets);
+                safeAreaMarginsChanged(rootSafeInsets, getId());
             });
-
-            QtNative.runAction(() -> requestApplyInsets());
         }
+
+        QtNative.runAction(() -> requestApplyInsets());
     }
 
     @SuppressWarnings("deprecation")
-    Insets getSafeInsetsPreAndroidR(View view, WindowInsets insets)
+    WindowInsets getConsumedInsets(WindowInsets insets)
     {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
+            return WindowInsets.CONSUMED;
+        else
+            return insets.consumeSystemWindowInsets();
+    }
+
+    @SuppressWarnings("deprecation")
+    Insets getSafeInsets(View view, WindowInsets insets)
+    {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            int types = WindowInsets.Type.displayCutout() | WindowInsets.Type.systemBars();
+            return insets.getInsets(types);
+        }
+
+        // Android R and older
         int left = 0;
         int top = 0;
         int right = 0;
