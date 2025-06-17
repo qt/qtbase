@@ -128,6 +128,18 @@ while (i != objectHash.end() && i.key() == obj) {
     }
 }
 //! [15]
+//! [15multihash]
+QMultiHash<QObject *, int> objectHash;
+...
+QMultiHash<QObject *, int>::iterator i = objectHash.find(obj);
+while (i != objectHash.end() && i.key() == obj) {
+    if (i.value() == 0) {
+        i = objectHash.erase(i);
+    } else {
+        ++i;
+    }
+}
+//! [15multihash]
 
 
 //! [16]
