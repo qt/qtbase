@@ -3173,6 +3173,24 @@ size_t qHash(long double key, size_t seed) noexcept
     \sa replace, emplace
 */
 
+/*! \fn template <class Key, class T> QMultiHash<Key, T>::iterator QMultiHash<Key, T>::erase(const_iterator pos)
+    \since 5.7
+
+    Removes the (key, value) pair associated with the iterator \a pos
+    from the hash, and returns an iterator to the next item in the
+    hash.
+
+    This function never causes QMultiHash to
+    rehash its internal data structure. This means that it can safely
+    be called while iterating, and won't affect the order of items in
+    the hash. For example:
+
+    \snippet code/src_corelib_tools_qhash.cpp 15multihash
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
+
+    \sa remove(), take(), find()
+*/
 
 /*! \fn template <class Key, class T> QMultiHash &QMultiHash<Key, T>::unite(const QMultiHash &other)
     \since 5.13
