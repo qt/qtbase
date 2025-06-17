@@ -428,7 +428,7 @@ void tst_QLocale::defaulted_ctor()
 
     TEST_CTOR(English, AnyTerritory, QLocale::English, QLocale::UnitedStates);
     TEST_CTOR(English, UnitedStates, QLocale::English, QLocale::UnitedStates);
-    TEST_CTOR(English, France, QLocale::English, QLocale::UnitedStates);
+    TEST_CTOR(English, France, QLocale::English, QLocale::France);
     TEST_CTOR(English, UnitedKingdom, QLocale::English, QLocale::UnitedKingdom);
 
     TEST_CTOR(French, France, QLocale::French, QLocale::France);
@@ -437,7 +437,7 @@ void tst_QLocale::defaulted_ctor()
               QLocale::LatinAmerica);
 
     QLocale::setDefault(QLocale(QLocale::English, QLocale::France));
-    CHECK_DEFAULT(QLocale::English, QLocale::UnitedStates);
+    CHECK_DEFAULT(QLocale::English, QLocale::France);
 
     TEST_CTOR(French, France, QLocale::French, QLocale::France);
     TEST_CTOR(English, UnitedKingdom, QLocale::English, QLocale::UnitedKingdom);
@@ -445,7 +445,7 @@ void tst_QLocale::defaulted_ctor()
     TEST_CTOR(French, France, QLocale::French, QLocale::France);
     TEST_CTOR(C, AnyTerritory, QLocale::C, QLocale::AnyTerritory);
     TEST_CTOR(C, France, QLocale::C, QLocale::AnyTerritory);
-    TEST_CTOR(Aymara, AnyTerritory, QLocale::English, QLocale::UnitedStates);
+    TEST_CTOR(Aymara, AnyTerritory, QLocale::English, QLocale::France);
 
     QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedKingdom));
     CHECK_DEFAULT(QLocale::English, QLocale::UnitedKingdom);
@@ -464,7 +464,7 @@ void tst_QLocale::defaulted_ctor()
 
     TEST_CTOR(English, AnyTerritory, QLocale::English, QLocale::UnitedStates);
     TEST_CTOR(English, UnitedStates, QLocale::English, QLocale::UnitedStates);
-    TEST_CTOR(English, France, QLocale::English, QLocale::UnitedStates);
+    TEST_CTOR(English, France, QLocale::English, QLocale::France);
     TEST_CTOR(English, UnitedKingdom, QLocale::English, QLocale::UnitedKingdom);
 
     TEST_CTOR(French, France, QLocale::French, QLocale::France);
@@ -479,7 +479,7 @@ void tst_QLocale::defaulted_ctor()
 
     TEST_CTOR(English, AnyTerritory, QLocale::English, QLocale::UnitedStates);
     TEST_CTOR(English, UnitedStates, QLocale::English, QLocale::UnitedStates);
-    TEST_CTOR(English, France, QLocale::English, QLocale::UnitedStates);
+    TEST_CTOR(English, France, QLocale::English, QLocale::France);
     TEST_CTOR(English, UnitedKingdom, QLocale::English, QLocale::UnitedKingdom);
 
     TEST_CTOR(French, France, QLocale::French, QLocale::France);

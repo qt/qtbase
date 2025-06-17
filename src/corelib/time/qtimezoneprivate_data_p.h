@@ -93,8 +93,8 @@ struct UtcData
 // GENERATED PART STARTS HERE
 
 /*
-    This part of the file was generated on 2025-01-13 from the
-    Common Locale Data Repository v46
+    This part of the file was generated on 2025-06-17 from the
+    Common Locale Data Repository v47
 
     http://www.unicode.org/cldr/
 

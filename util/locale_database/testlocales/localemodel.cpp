@@ -19,8 +19,8 @@ struct LocaleListItem
 // GENERATED PART STARTS HERE
 
 /*
-    This part of the file was generated on 2024-12-05 from the
-    Common Locale Data Repository v46
+    This part of the file was generated on 2025-06-17 from the
+    Common Locale Data Repository v47
 
     http://www.unicode.org/cldr/
 
@@ -101,6 +101,7 @@ const LocaleListItem g_locale_list[] = {
     {     46,   161 }, // Burmese/Myanmar
     {     47,   107 }, // Cantonese/Hong Kong
     {     47,    50 }, // Cantonese/China
+    {     47,   139 }, // Cantonese/Macao
     {     48,   220 }, // Catalan/Spain
     {     48,     6 }, // Catalan/Andorra
     {     48,    84 }, // Catalan/France
@@ -124,6 +125,7 @@ const LocaleListItem g_locale_list[] = {
     {     59,   193 }, // Church/Russia
     {     60,   193 }, // Chuvash/Russia
     {     61,    91 }, // Colognian/Germany
+    {     62,    71 }, // Coptic/Egypt
     {     63,   246 }, // Cornish/United Kingdom
     {     64,    84 }, // Corsican/France
     {     66,    60 }, // Croatian/Croatia
@@ -165,6 +167,7 @@ const LocaleListItem g_locale_list[] = {
     {     75,    53 }, // English/Cocos Islands
     {     75,    58 }, // English/Cook Islands
     {     75,    63 }, // English/Cyprus
+    {     75,    64 }, // English/Czechia
     {     75,    65 }, // English/Denmark
     {     75,    66 }, // English/Diego Garcia
     {     75,    68 }, // English/Dominica
@@ -174,6 +177,7 @@ const LocaleListItem g_locale_list[] = {
     {     75,    80 }, // English/Falkland Islands
     {     75,    82 }, // English/Fiji
     {     75,    83 }, // English/Finland
+    {     75,    84 }, // English/France
     {     75,    89 }, // English/Gambia
     {     75,    91 }, // English/Germany
     {     75,    92 }, // English/Ghana
@@ -183,11 +187,13 @@ const LocaleListItem g_locale_list[] = {
     {     75,   100 }, // English/Guernsey
     {     75,   103 }, // English/Guyana
     {     75,   107 }, // English/Hong Kong
+    {     75,   108 }, // English/Hungary
     {     75,   110 }, // English/India
     {     75,   111 }, // English/Indonesia
     {     75,   114 }, // English/Ireland
     {     75,   115 }, // English/Isle of Man
     {     75,   116 }, // English/Israel
+    {     75,   117 }, // English/Italy
     {     75,   119 }, // English/Jamaica
     {     75,   121 }, // English/Jersey
     {     75,   124 }, // English/Kenya
@@ -212,12 +218,16 @@ const LocaleListItem g_locale_list[] = {
     {     75,   171 }, // English/Niue
     {     75,   172 }, // English/Norfolk Island
     {     75,   173 }, // English/Northern Mariana Islands
+    {     75,   175 }, // English/Norway
     {     75,   178 }, // English/Pakistan
     {     75,   179 }, // English/Palau
     {     75,   182 }, // English/Papua New Guinea
     {     75,   185 }, // English/Philippines
     {     75,   186 }, // English/Pitcairn
+    {     75,   187 }, // English/Poland
+    {     75,   188 }, // English/Portugal
     {     75,   189 }, // English/Puerto Rico
+    {     75,   192 }, // English/Romania
     {     75,   194 }, // English/Rwanda
     {     75,   196 }, // English/Saint Helena
     {     75,   197 }, // English/Saint Kitts and Nevis
@@ -228,10 +238,13 @@ const LocaleListItem g_locale_list[] = {
     {     75,   209 }, // English/Sierra Leone
     {     75,   210 }, // English/Singapore
     {     75,   211 }, // English/Sint Maarten
+    {     75,   212 }, // English/Slovakia
     {     75,   213 }, // English/Slovenia
     {     75,   214 }, // English/Solomon Islands
     {     75,   216 }, // English/South Africa
+    {     75,   217 }, // English/South Georgia and South Sandwich Islands
     {     75,   219 }, // English/South Sudan
+    {     75,   220 }, // English/Spain
     {     75,   222 }, // English/Sudan
     {     75,   225 }, // English/Sweden
     {     75,   226 }, // English/Switzerland
@@ -338,6 +351,7 @@ const LocaleListItem g_locale_list[] = {
     {     97,   183 }, // Guarani/Paraguay
     {     98,   110 }, // Gujarati/India
     {     99,   124 }, // Gusii/Kenya
+    {    100,   104 }, // Haitian/Haiti
     {    101,   169 }, // Hausa/Nigeria
     {    101,   222 }, // Hausa/Sudan
     {    101,    92 }, // Hausa/Ghana
