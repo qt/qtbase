@@ -281,13 +281,18 @@ bool QStringListModel::moveRows(const QModelIndex &sourceParent, int sourceRow, 
     if (!beginMoveRows(QModelIndex(), sourceRow, sourceRow + count - 1, QModelIndex(), destinationChild))
         return false;
 
-    int fromRow = sourceRow;
-    if (destinationChild < sourceRow)
-        fromRow += count - 1;
-    else
-        destinationChild--;
-    while (count--)
-        lst.move(fromRow, destinationChild);
+    // move [sourceRow, count) into destinationChild:
+    if (sourceRow < destinationChild) {
+        auto beg = lst.begin() + sourceRow;
+        auto end = beg + count;
+        auto to = lst.begin() + destinationChild;
+        std::rotate(beg, end, to);
+    } else {
+        auto to = lst.begin() + destinationChild;
+        auto beg = lst.begin() + sourceRow;
+        auto end = beg + count;
+        std::rotate(to, beg, end);
+    }
     endMoveRows();
     return true;
 }
