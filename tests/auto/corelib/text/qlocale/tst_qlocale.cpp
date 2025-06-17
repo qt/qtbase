@@ -439,7 +439,7 @@ void tst_QLocale::defaulted_ctor()
 
     TEST_CTOR(English, AnyTerritory, QLocale::English, QLocale::UnitedStates);
     TEST_CTOR(English, UnitedStates, QLocale::English, QLocale::UnitedStates);
-    TEST_CTOR(English, France, QLocale::English, QLocale::UnitedStates);
+    TEST_CTOR(English, France, QLocale::English, QLocale::France);
     TEST_CTOR(English, UnitedKingdom, QLocale::English, QLocale::UnitedKingdom);
 
     TEST_CTOR(French, France, QLocale::French, QLocale::France);
@@ -448,7 +448,7 @@ void tst_QLocale::defaulted_ctor()
               QLocale::LatinAmerica);
 
     QLocale::setDefault(QLocale(QLocale::English, QLocale::France));
-    CHECK_DEFAULT(QLocale::English, QLocale::UnitedStates);
+    CHECK_DEFAULT(QLocale::English, QLocale::France);
 
     TEST_CTOR(French, France, QLocale::French, QLocale::France);
     TEST_CTOR(English, UnitedKingdom, QLocale::English, QLocale::UnitedKingdom);
@@ -456,7 +456,7 @@ void tst_QLocale::defaulted_ctor()
     TEST_CTOR(French, France, QLocale::French, QLocale::France);
     TEST_CTOR(C, AnyTerritory, QLocale::C, QLocale::AnyTerritory);
     TEST_CTOR(C, France, QLocale::C, QLocale::AnyTerritory);
-    TEST_CTOR(Aymara, AnyTerritory, QLocale::English, QLocale::UnitedStates);
+    TEST_CTOR(Aymara, AnyTerritory, QLocale::English, QLocale::France);
 
     QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedKingdom));
     CHECK_DEFAULT(QLocale::English, QLocale::UnitedKingdom);
@@ -475,7 +475,7 @@ void tst_QLocale::defaulted_ctor()
 
     TEST_CTOR(English, AnyTerritory, QLocale::English, QLocale::UnitedStates);
     TEST_CTOR(English, UnitedStates, QLocale::English, QLocale::UnitedStates);
-    TEST_CTOR(English, France, QLocale::English, QLocale::UnitedStates);
+    TEST_CTOR(English, France, QLocale::English, QLocale::France);
     TEST_CTOR(English, UnitedKingdom, QLocale::English, QLocale::UnitedKingdom);
 
     TEST_CTOR(French, France, QLocale::French, QLocale::France);
@@ -490,7 +490,7 @@ void tst_QLocale::defaulted_ctor()
 
     TEST_CTOR(English, AnyTerritory, QLocale::English, QLocale::UnitedStates);
     TEST_CTOR(English, UnitedStates, QLocale::English, QLocale::UnitedStates);
-    TEST_CTOR(English, France, QLocale::English, QLocale::UnitedStates);
+    TEST_CTOR(English, France, QLocale::English, QLocale::France);
     TEST_CTOR(English, UnitedKingdom, QLocale::English, QLocale::UnitedKingdom);
 
     TEST_CTOR(French, France, QLocale::French, QLocale::France);
@@ -4513,11 +4513,11 @@ void tst_QLocale::systemGrouping_data()
     // Testing locales with non {1, 3, 3} groupe sizes, plus some locales
     // that return invalid group sizes to test that we fallbakc to CLDR data.
     QTest::newRow("en-ES") // {2,3,3}
-            << u"en-ES"_s << u","_s << u"0"_s << 1234 << u"1234"_s;
+            << u"en-ES"_s << u"."_s << u"0"_s << 1234 << u"1234"_s;
     QTest::newRow("en-ES-grouped")
-            << u"en-ES"_s << u","_s << u"0"_s << 12345 << u"12,345"_s;
+            << u"en-ES"_s << u"."_s << u"0"_s << 12345 << u"12.345"_s;
     QTest::newRow("en-ES-long")
-            << u"en-ES"_s << u","_s << u"0"_s << 1234567 << u"1,234,567"_s;
+            << u"en-ES"_s << u"."_s << u"0"_s << 1234567 << u"1.234.567"_s;
     QTest::newRow("en-BD") // {1,2,3}
             << u"en-BD"_s << u","_s << u"0"_s << 123456789 << u"12,34,56,789"_s;
     QTest::newRow("en-BT") // {1,2,3}

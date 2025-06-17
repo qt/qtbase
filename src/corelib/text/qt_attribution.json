@@ -41,9 +41,9 @@
  world's languages, with the largest and most extensive standard repository of locale data
  available.",
     "Homepage": "https://cldr.unicode.org/",
-    "Version": "v46.1",
+    "Version": "v47",
     "License": "Unicode License v3",
     "LicenseId": "Unicode-3.0",
-    "Copyright": "Copyright (C) 2004-2023 Unicode, Inc."
+    "Copyright": "Copyright (C) 2004-2025 Unicode, Inc."
 }
 ]
