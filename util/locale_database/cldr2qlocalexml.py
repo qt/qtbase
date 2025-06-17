@@ -83,7 +83,7 @@ def main(argv: list[str], out: TextIO, err: TextIO) -> int:
         parser.error(f'Please use a .xml extension on your output file name, not {xml}')
     else:
         try:
-            emit = open(xml, 'w')
+            emit = open(xml, 'w', encoding="utf-8")
         except IOError as e:
             parser.error(f'Failed to open "{xml}" to write output to it')
 

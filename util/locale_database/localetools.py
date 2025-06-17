@@ -110,7 +110,7 @@ def AtomicRenameTemporaryFile(originalLocation: Path, *, prefix: str, dir: Path)
     On success closes the temporary file and moves its content to the original
     location. On error, removes temporary file, without disturbing the original.
     """
-    tempFile = NamedTemporaryFile('w', prefix=prefix, dir=dir, delete=False)
+    tempFile = NamedTemporaryFile('w', prefix=prefix, dir=dir, delete=False, encoding='utf-8')
     try:
         yield tempFile
         tempFile.close()
@@ -174,7 +174,7 @@ class Transcriber:
             self.writer = resources.enter_context(
                 AtomicRenameTemporaryFile(self.path, prefix=self.path.name, dir=self.tempDir))
             # Open the old file
-            self.reader = resources.enter_context(open(self.path))
+            self.reader = resources.enter_context(open(self.path, encoding='utf-8'))
 
             self.onEnter()
 
