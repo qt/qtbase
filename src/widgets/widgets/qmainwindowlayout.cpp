@@ -1970,7 +1970,7 @@ QDockWidget *QMainWindowTabBar::dockAt(int index) const
 {
     QMainWindowTabBar *that = const_cast<QMainWindowTabBar *>(this);
     QMainWindowLayout* mlayout = qt_mainwindow_layout(mainWindow);
-    QDockAreaLayoutInfo *info = mlayout->dockInfo(that);
+    QDockAreaLayoutInfo *info = mlayout ? mlayout->dockInfo(that) : nullptr;
     if (!info)
         return nullptr;
 
