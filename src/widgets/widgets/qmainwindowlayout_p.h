@@ -556,7 +556,6 @@ public:
 
     QWidget *getSeparatorWidget();
     QSet<QWidget*> usedSeparatorWidgets;
-    QList<QWidget*> unusedSeparatorWidgets;
     int sep; // separator extent
 
 #if QT_CONFIG(tabwidget)

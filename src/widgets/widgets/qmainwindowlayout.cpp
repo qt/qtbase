@@ -2059,7 +2059,6 @@ QMainWindowTabBar::~QMainWindowTabBar()
 
     // tab bar is not parented to the main window
     // => can only be a dock widget group window
-    // => remove itself from used and unused tab bar containers
     auto *mwLayout = qt_mainwindow_layout(mainWindow);
     if (!mwLayout)
         return;
@@ -2147,20 +2146,14 @@ QTabBar *QMainWindowLayout::getTabBar()
     return bar;
 }
 
-// Allocates a new separator widget if needed
 QWidget *QMainWindowLayout::getSeparatorWidget()
 {
-    QWidget *result = nullptr;
-    if (!unusedSeparatorWidgets.isEmpty()) {
-        result = unusedSeparatorWidgets.takeLast();
-    } else {
-        result = new QWidget(parentWidget());
-        result->setAttribute(Qt::WA_MouseNoMask, true);
-        result->setAutoFillBackground(false);
-        result->setObjectName("qt_qmainwindow_extended_splitter"_L1);
-    }
-    usedSeparatorWidgets.insert(result);
-    return result;
+    auto *separator = new QWidget(parentWidget());
+    separator->setAttribute(Qt::WA_MouseNoMask, true);
+    separator->setAutoFillBackground(false);
+    separator->setObjectName("qt_qmainwindow_extended_splitter"_L1);
+    usedSeparatorWidgets.insert(separator);
+    return separator;
 }
 
 /*! \internal
@@ -3226,10 +3219,8 @@ void QMainWindowLayout::applyState(QMainWindowLayoutState &newState, bool animat
         const QSet<QWidget*> usedSeps = newState.dockAreaLayout.usedSeparatorWidgets();
         const QSet<QWidget*> retiredSeps = usedSeparatorWidgets - usedSeps;
         usedSeparatorWidgets = usedSeps;
-        for (QWidget *sepWidget : retiredSeps) {
-            unusedSeparatorWidgets.append(sepWidget);
-            sepWidget->hide();
-        }
+        for (QWidget *sepWidget : retiredSeps)
+            delete sepWidget;
     }
 
     for (int i = 0; i < QInternal::DockCount; ++i)
