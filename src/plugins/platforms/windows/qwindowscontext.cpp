@@ -1153,13 +1153,9 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     case QtWindows::MoveEvent:
         platformWindow->handleMoved();
         return true;
-    case QtWindows::ResizeEvent: {
-        QWindow *window = platformWindow->window();
+    case QtWindows::ResizeEvent:
         platformWindow->handleResized(static_cast<int>(wParam), lParam);
-        if (window->flags().testFlags(Qt::ExpandedClientAreaHint))
-            platformWindow->updateCustomTitlebar();
         return true;
-    }
     case QtWindows::QuerySizeHints:
         platformWindow->getSizeHints(reinterpret_cast<MINMAXINFO *>(lParam));
         return true;// maybe available on some SDKs revisit WM_NCCALCSIZE
@@ -1175,12 +1171,8 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         return platformWindow->handleNonClientActivate(result);
     case QtWindows::GeometryChangingEvent:
         return platformWindow->handleGeometryChanging(&msg);
-    case QtWindows::ExposeEvent: {
-        QWindow *window = platformWindow->window();
-        if (window->flags().testFlags(Qt::ExpandedClientAreaHint))
-            platformWindow->updateCustomTitlebar();
+    case QtWindows::ExposeEvent:
         return platformWindow->handleWmPaint(hwnd, message, wParam, lParam, result);
-    }
     case QtWindows::NonClientMouseEvent:
         if (!platformWindow->frameStrutEventsEnabled())
             break;
