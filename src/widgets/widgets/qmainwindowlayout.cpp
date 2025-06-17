@@ -1909,6 +1909,22 @@ protected:
 
 };
 
+QDebug operator<<(QDebug debug, const QMainWindowTabBar *bar)
+{
+    if (!bar)
+        return debug << "QMainWindowTabBar(0x0)";
+    QDebugStateSaver saver(debug);
+    debug.nospace().noquote() << "QMainWindowTabBar(" << static_cast<const void *>(bar) << ", ";
+    debug.nospace().noquote() << "ParentWidget=(" << bar->parentWidget() << "), ";
+    const auto dockWidgets = bar->dockWidgets();
+    if (dockWidgets.isEmpty())
+        debug.nospace().noquote() << "No QDockWidgets";
+    else
+        debug.nospace().noquote() << "DockWidgets(" << dockWidgets << ")";
+    debug.nospace().noquote() << ")";
+    return debug;
+}
+
 QMainWindowTabBar *QMainWindowLayout::findTabBar(const QDockWidget *dockWidget) const
 {
      for (auto *bar : usedTabBars) {
