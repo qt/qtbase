@@ -5,18 +5,20 @@
 
 #include "qmetatype.h"
 #include "qmetatype_p.h"
-#include "qobjectdefs.h"
-#include "qdatetime.h"
+
 #include "qbytearray.h"
-#include "qreadwritelock.h"
+#include "qdatetime.h"
+#include "qdebug.h"
 #include "qhash.h"
-#include "qmap.h"
-#include "qstring.h"
-#include "qstringlist.h"
 #include "qlist.h"
 #include "qlocale.h"
-#include "qdebug.h"
+#include "qmap.h"
 #include "private/qnumeric_p.h"
+#include "qobjectdefs.h"
+#include "qreadwritelock.h"
+#include "qstring.h"
+#include "qstringlist.h"
+
 #if QT_CONFIG(easingcurve)
 #include "qeasingcurve.h"
 #endif
