@@ -1490,10 +1490,13 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
         }
     }
 
+    const QFileInfo fi(options.binaries.first());
+    const QString canonicalBinPath = fi.canonicalPath();
     // Also check Qt dependencies of "local non Qt dependencies" (dlls located in the same folder)
-    for (const QString &nonQtLib : dependentNonQtLibs) {
-        const QFileInfo fi(options.binaries.first());
-        const QString path = fi.canonicalPath() + u'/' + nonQtLib;
+    // Index based loop as container might be changed which invalidates iterators
+    for (qsizetype i = 0; i < dependentNonQtLibs.size(); ++i) {
+        const QString nonQtLib = dependentNonQtLibs.at(i);
+        const QString path = canonicalBinPath + u'/' + nonQtLib;
         if (!QFileInfo::exists(path))
             continue;
 
