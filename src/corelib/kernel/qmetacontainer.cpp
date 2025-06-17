@@ -44,6 +44,16 @@ QT_BEGIN_NAMESPACE
     \brief The QMetaContainer class provides common functionality for sequential
         and associative containers.
 
+    QMetaContainer is part of Qt's meta-type system that allows type-erased access
+    to container-like types at runtime.
+
+    It serves as a common base for accessing properties of containers in a generic
+    way, such as size, iteration, and clearing operations, without knowing the actual
+    container type.
+
+    Derived classes, such as QMetaSequence, provide specialized interfaces for
+    sequential containers.
+
     \ingroup objectmodel
 
     \compares equality
