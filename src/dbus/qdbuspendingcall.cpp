@@ -227,6 +227,15 @@ void QDBusPendingCallPrivate::waitForFinishedWithGui()
 }
 
 /*!
+    \fn QDBusPendingCall::QDBusPendingCall(QDBusPendingCall &&other)
+    \since 6.11
+
+    Moves \a other into this object.
+
+    \include qdbuspendingcall.cpp partially-formed
+*/
+
+/*!
     Creates a copy of the \a other pending asynchronous call. Note
     that both objects will refer to the same pending call.
 */
@@ -258,6 +267,7 @@ QDBusPendingCall::~QDBusPendingCall()
     // d deleted by QExplicitlySharedDataPointer
 }
 
+QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QDBusPendingCallPrivate)
 
 /*!
     \fn QDBusPendingCall &QDBusPendingCall::operator=(QDBusPendingCall &&other)
