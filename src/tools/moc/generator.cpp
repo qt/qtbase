@@ -26,13 +26,30 @@ QT_BEGIN_NAMESPACE
 
 using namespace QtMiscUtils;
 
-uint nameToBuiltinType(const QByteArray &name)
+static int nameToBuiltinType(const QByteArray &name)
 {
     if (name.isEmpty())
         return 0;
 
-    uint tp = qMetaTypeTypeInternal(name.constData());
-    return tp < uint(QMetaType::User) ? tp : uint(QMetaType::UnknownType);
+    uint tp = QMetaType::UnknownType;
+    if (const QtPrivate::QMetaTypeInterface *iface = QMetaType::fromName(name).iface())
+        tp = iface->typeId.loadRelaxed(); // always registered
+
+#ifndef QT_BOOTSTRAPPED
+    if (tp >= uint(QMetaType::User))
+        tp = QMetaType::UnknownType;
+#endif
+
+    return int(tp);
+}
+
+/*
+  Returns \c true if the type is a built-in type.
+*/
+static bool isBuiltinType(const QByteArray &type)
+{
+    int id = nameToBuiltinType(type);
+    return id != QMetaType::UnknownType;
 }
 
 constexpr const char *cxxTypeTag(TypeTags t)
@@ -47,17 +64,6 @@ constexpr const char *cxxTypeTag(TypeTags t)
     if (t & TypeTag::HasClass) return "class ";
     if (t & TypeTag::HasStruct) return "struct ";
     return "";
-}
-
-/*
-  Returns \c true if the type is a built-in type.
-*/
-bool isBuiltinType(const QByteArray &type)
- {
-    int id = qMetaTypeTypeInternal(type.constData());
-    if (id == QMetaType::UnknownType)
-        return false;
-    return (id < QMetaType::User);
 }
 
 static const char *metaTypeEnumValueString(int type)
