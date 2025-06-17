@@ -2061,7 +2061,7 @@ QMainWindowTabBar::~QMainWindowTabBar()
     auto *mwLayout = qt_mainwindow_layout(mainWindow);
     if (!mwLayout)
         return;
-    mwLayout->unusedTabBars.removeOne(this);
+    mwLayout->purgeTabBar(this);
     mwLayout->usedTabBars.remove(this);
 }
 
@@ -2115,6 +2115,23 @@ bool QMainWindowLayout::isDockWidgetTabbed(const QDockWidget *dockWidget) const
     // => only consider tab bars with two or more tabs.
     const auto *bar = findTabBar(dockWidget);
     return bar && bar->count() > 1;
+}
+
+void QMainWindowLayout::purgeTabBar(QTabBar *bar)
+{
+    Q_ASSERT(qobject_cast<QMainWindowTabBar *>(bar));
+    bar->hide();
+    while (bar->count() > 0)
+        bar->removeTab(0);
+    unusedTabBars.removeOne(bar);
+}
+
+void QMainWindowLayout::unuseTabBar(QTabBar *bar)
+{
+    Q_ASSERT(qobject_cast<QMainWindowTabBar *>(bar));
+    Q_ASSERT(!unusedTabBars.contains(bar));
+    unusedTabBars.append(bar);
+    usedTabBars.remove(bar);
 }
 
 QTabBar *QMainWindowLayout::getTabBar()
@@ -3223,10 +3240,7 @@ void QMainWindowLayout::applyState(QMainWindowLayoutState &newState, bool animat
     const QSet<QTabBar*> retired = usedTabBars - used;
     usedTabBars = used;
     for (QTabBar *tab_bar : retired) {
-        tab_bar->hide();
-        while (tab_bar->count() > 0)
-            tab_bar->removeTab(0);
-        unusedTabBars.append(tab_bar);
+        unuseTabBar(tab_bar);
     }
 
     if (sep == 1) {
