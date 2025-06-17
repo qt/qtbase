@@ -14,11 +14,12 @@
 
 #if QT_CONFIG(accessibility)
 
+#include <QtGui/private/qaccessiblehelper_p.h>
+
 QT_BEGIN_NAMESPACE
 
 #if QT_CONFIG(menu)
 
-QString qt_accStripAmp(const QString &text);
 QString qt_accHotKey(const QString &text);
 
 QAccessibleInterface *getOrCreateMenu(QWidget *menu, QAction *action)

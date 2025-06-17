@@ -52,6 +52,9 @@
 #include <qwindow.h>
 #include <private/qwindowcontainer_p.h>
 #include <QtCore/qvarlengtharray.h>
+#if QT_CONFIG(accessibility)
+#include <QtGui/private/qaccessiblehelper_p.h>
+#endif
 #include <QtGui/qvalidator.h>
 
 #ifdef Q_OS_MAC
@@ -66,7 +69,6 @@ using namespace Qt::StringLiterals;
 
 QWidgetList _q_ac_childWidgets(const QWidget *widget);
 
-QString qt_accStripAmp(const QString &text);
 QString qt_accHotKey(const QString &text);
 
 #if QT_CONFIG(abstractbutton)
