@@ -548,9 +548,7 @@ public:
 
     QTabBar *getTabBar();
     void unuseTabBar(QTabBar *bar);
-    void purgeTabBar(QTabBar *bar);
     QSet<QTabBar*> usedTabBars;
-    QList<QTabBar*> unusedTabBars;
     bool verticalTabsEnabled;
 
     QWidget *getSeparatorWidget();
