@@ -41,6 +41,7 @@ private:
     void generateSignal(const FunctionDef *def, int index);
     void generatePluginMetaData();
     QByteArray disambiguatedTypeName(const QByteArray &name);
+    QByteArray disambiguatedTypeName(const QByteArray &name, TypeTags tag);
     QByteArray disambiguatedTypeNameForCast(const QByteArray &name);
     QMultiMap<QByteArray, int> automaticPropertyMetaTypesHelper();
     QMap<int, QMultiMap<QByteArray, int>>
