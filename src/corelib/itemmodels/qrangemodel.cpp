@@ -434,9 +434,9 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn template <typename Range, QRangeModelDetails::if_is_table_range<Range>> QRangeModel::QRangeModel(Range &&range, QObject *parent)
-    \fn template <typename Range, QRangeModelDetails::if_is_tree_range<Range>> QRangeModel::QRangeModel(Range &&range, QObject *parent)
-    \fn template <typename Range, typename Protocol, QRangeModelDetails::if_is_tree_range<Range, Protocol>> QRangeModel::QRangeModel(Range &&range, Protocol &&protocol, QObject *parent)
+    \fn template <typename Range, QRangeModelDetails::if_table_range<Range>> QRangeModel::QRangeModel(Range &&range, QObject *parent)
+    \fn template <typename Range, QRangeModelDetails::if_tree_range<Range>> QRangeModel::QRangeModel(Range &&range, QObject *parent)
+    \fn template <typename Range, typename Protocol, QRangeModelDetails::if_tree_range<Range, Protocol>> QRangeModel::QRangeModel(Range &&range, Protocol &&protocol, QObject *parent)
 
     Constructs a generic item model instance that operates on the data in \a
     range. The \a range has to be a sequential range for which \c{std::cbegin}

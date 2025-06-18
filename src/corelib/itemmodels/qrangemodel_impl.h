@@ -467,14 +467,14 @@ namespace QRangeModelDetails
             > : std::true_type {};
 
     template <typename Range>
-    using if_is_table_range = std::enable_if_t<is_range_v<wrapped_t<Range>>
-                                            && !is_tree_range<wrapped_t<Range>>(),
-                                               bool>;
+    using if_table_range = std::enable_if_t<is_range_v<wrapped_t<Range>>
+                                         && !is_tree_range<wrapped_t<Range>>(),
+                                            bool>;
 
     template <typename Range, typename Protocol = DefaultTreeProtocol<Range>>
-    using if_is_tree_range = std::enable_if_t<is_range_v<wrapped_t<Range>>
-                                           && is_tree_range<wrapped_t<Range>, wrapped_t<Protocol>>(),
-                                              bool>;
+    using if_tree_range = std::enable_if_t<is_range_v<wrapped_t<Range>>
+                                        && is_tree_range<wrapped_t<Range>, wrapped_t<Protocol>>(),
+                                           bool>;
 
     template <typename Range, typename Protocol>
     struct protocol_traits

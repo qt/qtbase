@@ -23,9 +23,10 @@ public:
         template <typename X>
         using if_get_matches = std::enable_if_t<std::is_same_v<q20::remove_cvref_t<X>,
                                                                MultiColumn<T>>, bool>;
+        template <typename X>
+        using if_validatable = std::enable_if_t<QRangeModelDetails::is_validatable<X>::value, bool>;
 
-        template <typename V = T,
-                  std::enable_if_t<QRangeModelDetails::is_validatable<V>::value, bool> = true>
+        template <typename V = T, if_validatable<V> = true>
         constexpr explicit operator bool() const noexcept { return bool(data); }
 
         // unconstrained on size_t I, gcc internal error #3280
@@ -38,15 +39,15 @@ public:
     };
 
     template <typename Range,
-              QRangeModelDetails::if_is_table_range<Range> = true>
+              QRangeModelDetails::if_table_range<Range> = true>
     explicit QRangeModel(Range &&range, QObject *parent = nullptr);
 
     template <typename Range,
-              QRangeModelDetails::if_is_tree_range<Range> = true>
+              QRangeModelDetails::if_tree_range<Range> = true>
     explicit QRangeModel(Range &&range, QObject *parent = nullptr);
 
     template <typename Range, typename Protocol,
-              QRangeModelDetails::if_is_tree_range<Range, Protocol> = true>
+              QRangeModelDetails::if_tree_range<Range, Protocol> = true>
     explicit QRangeModel(Range &&range, Protocol &&protocol, QObject *parent = nullptr);
 
     ~QRangeModel() override;
@@ -189,22 +190,19 @@ const QAbstractItemModel &QRangeModelImplBase::itemModel() const
     return *m_rangeModel;
 }
 
-template <typename Range,
-          QRangeModelDetails::if_is_table_range<Range>>
+template <typename Range, QRangeModelDetails::if_table_range<Range>>
 QRangeModel::QRangeModel(Range &&range, QObject *parent)
     : QAbstractItemModel(parent)
     , impl(new QGenericTableItemModelImpl<Range>(std::forward<Range>(range), this))
 {}
 
-template <typename Range,
-         QRangeModelDetails::if_is_tree_range<Range>>
+template <typename Range, QRangeModelDetails::if_tree_range<Range>>
 QRangeModel::QRangeModel(Range &&range, QObject *parent)
     : QRangeModel(std::forward<Range>(range),
                         QRangeModelDetails::DefaultTreeProtocol<Range>{}, parent)
 {}
 
-template <typename Range, typename Protocol,
-          QRangeModelDetails::if_is_tree_range<Range, Protocol>>
+template <typename Range, typename Protocol, QRangeModelDetails::if_tree_range<Range, Protocol>>
 QRangeModel::QRangeModel(Range &&range, Protocol &&protocol, QObject *parent)
     : QAbstractItemModel(parent)
    , impl(new QGenericTreeItemModelImpl<Range, Protocol>(std::forward<Range>(range),
