@@ -187,6 +187,7 @@ auto *loadImage(const QString &iconName)
         {"multimedia-player"_L1, @"play.rectangle"},
         {"network-wired"_L1, @"app.connected.to.app.below.fill"},
         {"network-wireless"_L1, @"wifi"},
+        {"network-workgroup"_L1, @"network"},
         //{"pda"_L1, @""},
         {"phone"_L1, @"iphone"},
         {"printer"_L1, @"printer"},
@@ -205,13 +206,13 @@ auto *loadImage(const QString &iconName)
         {"emblem-synchronized"_L1, @"arrow.triangle.2.circlepath.circle"},
         {"emblem-system"_L1, @"gear"},
         //{"emblem-unreadable"_L1, @""},
+        {"text-x-generic"_L1, @"doc"}, // until iOS 18/macOS 15; @"document" after that
         {"folder"_L1, @"folder"},
         //{"folder-remote"_L1, @""},
         {"network-server"_L1, @"server.rack"},
-        //{"network-workgroup"_L1, @""},
         //{"start-here"_L1, @""},
         {"user-bookmarks"_L1, @"bookmark.circle"},
-        {"user-desktop"_L1, @"desktopcomputer"}, //"computer" also using this one
+        {"user-desktop"_L1, @"menubar.dock.rectangle"}, // used by finder
         {"user-home"_L1, @"house"}, //"go-home" also using this one
         {"user-trash"_L1, @"trash"},
         {"appointment-missed"_L1, @"calendar.badge.exclamationmark"},
