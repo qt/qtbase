@@ -1397,7 +1397,21 @@
                         "type": "Status",
                         "user": false,
                         "write": "setStatus"
-                    }
+                    },
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "index": 1,
+                        "member": "m_decorationMode",
+                        "name": "decorationMode",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "DecorationMode",
+                        "user": false
+                     }
+
                 ],
                 "qualifiedClassName": "myns::NameCollision",
                 "slots": [

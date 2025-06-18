@@ -15,12 +15,19 @@ class NameCollision : public QObject
     // intentionally not fully qualified
     Q_PROPERTY(Status Status READ Status WRITE setStatus)
 
+    Q_PROPERTY(enum DecorationMode decorationMode MEMBER m_decorationMode)
+
     int m_status = 0;
 
 public:
     enum Status {};
+    enum DecorationMode {
+        ClientSideDecoration = 1,
+        ServerSideDecoration = 2,
+    };
 
     void statusChanged(Status status);
+    enum DecorationMode m_decorationMode;
 
 public Q_SLOTS:
     void setStatus(Status ) {}
