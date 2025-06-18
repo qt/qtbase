@@ -2116,13 +2116,13 @@ protected:
 
     decltype(auto) rowDataImpl(const QModelIndex &index) const
     {
-        Q_ASSERT(index.row() < int(Base::size(*this->m_data.model())));
+        Q_ASSERT(q20::cmp_less(index.row(), Base::size(*this->m_data.model())));
         return *QRangeModelDetails::cpos(*this->m_data.model(), index.row());
     }
 
     decltype(auto) rowDataImpl(const QModelIndex &index)
     {
-        Q_ASSERT(index.row() < int(Base::size(*this->m_data.model())));
+        Q_ASSERT(q20::cmp_less(index.row(), Base::size(*this->m_data.model())));
         return *QRangeModelDetails::pos(*this->m_data.model(), index.row());
     }
 
