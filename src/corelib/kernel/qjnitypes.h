@@ -4,6 +4,8 @@
 #ifndef QJNITYPES_H
 #define QJNITYPES_H
 
+#include <QtCore/qglobal.h>
+
 #if defined(Q_QDOC) || defined(Q_OS_ANDROID)
 
 #include <QtCore/qjnitypes_impl.h>
