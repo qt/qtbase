@@ -19,6 +19,7 @@
 #include <MoltenVK/mvk_vulkan.h>
 #endif
 
+#include <QtCore/qhash.h>
 #include <QtCore/private/qflatmap_p.h>
 
 Q_FORWARD_DECLARE_OBJC_CLASS(NSWindow);
