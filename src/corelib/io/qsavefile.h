@@ -1,5 +1,6 @@
 // Copyright (C) 2012 David Faure <faure@kde.org>
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// Qt-Security score:significant reason:header-decls-only
 
 #ifndef QSAVEFILE_H
 #define QSAVEFILE_H
