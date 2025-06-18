@@ -1739,7 +1739,7 @@ protected:
     QModelIndex parent(const QModelIndex &child) const
     {
         if (!child.isValid())
-            return child;
+            return {};
 
         // no pointer to parent row - no parent
         const_row_ptr parentRow = static_cast<const_row_ptr>(child.constInternalPointer());
