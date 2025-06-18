@@ -2126,12 +2126,12 @@ protected:
         return *QRangeModelDetails::pos(*this->m_data.model(), index.row());
     }
 
-    auto childRangeImpl(const QModelIndex &) const
+    const range_type *childRangeImpl(const QModelIndex &) const
     {
         return nullptr;
     }
 
-    auto childRangeImpl(const QModelIndex &)
+    range_type *childRangeImpl(const QModelIndex &)
     {
         return nullptr;
     }
