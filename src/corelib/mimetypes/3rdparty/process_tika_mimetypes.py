@@ -12,6 +12,7 @@
 # This script fixes all that.
 
 # Usage: download tika-mimetypes.xml as tika-mimetypes.xml.orig and run this script to produce Qt's version of tika-mimetypes.xml
+# This is automated by update_tika_from_upstream.sh
 
 import sys, re
 

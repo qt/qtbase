@@ -416,7 +416,7 @@
   </mime-type>
 
   <mime-type type="application/json">
-    <sub-class-of type="application/javascript"/>
+    <sub-class-of type="text/javascript"/>
     <glob pattern="*.json"/>
   </mime-type>
 
@@ -430,24 +430,108 @@
     <comment>Java Class File</comment>
     <alias type="application/x-java-vm"/>
     <alias type="application/x-java"/>
-    <magic priority="40">
-      <match value="\xca\xfe\xba\xbe" type="string" offset="0" />
+    <magic priority="50">
+      <match value="\xca\xfe\xba\xbe" type="string" offset="0"/>
     </magic>
     <glob pattern="*.class"/>
   </mime-type>
 
-  <mime-type type="application/x-java-jnilib">
-    <comment>Java Native Library for OSX</comment>
-    <magic priority="50">
-      <match value="\xca\xfe\xba\xbe" type="string" offset="0">
-        <match value="\xfe\xed\xfa\xce" type="string" offset="4096"/>
-        <match value="\xfe\xed\xfa\xcf" type="string" offset="4096"/>
-        <match value="\xce\xfa\xed\xfe" type="string" offset="4096"/>
-        <match value="\xcf\xfa\xed\xfe" type="string" offset="4096"/>
+  <mime-type type="application/x-mach-o-universal">
+    <comment>Mach-O Universal</comment>
+    <magic priority="60">
+      <match value="\xCA\xFE\xBA\xBE" type="string" offset="0">
+        <match value="0x1" type="big32" offset="4"/>
+        <match value="0x2" type="big32" offset="4"/>
+        <match value="0x3" type="big32" offset="4"/>
+        <match value="0x4" type="big32" offset="4"/>
+        <match value="0x5" type="big32" offset="4"/>
+        <match value="0x6" type="big32" offset="4"/>
+        <match value="0x7" type="big32" offset="4"/>
+        <match value="0x8" type="big32" offset="4"/>
+        <match value="0x9" type="big32" offset="4"/>
+        <match value="0xA" type="big32" offset="4"/>
+        <match value="0xB" type="big32" offset="4"/>
+        <match value="0xC" type="big32" offset="4"/>
+        <match value="0xD" type="big32" offset="4"/>
+        <match value="0xE" type="big32" offset="4"/>
+        <match value="0xF" type="big32" offset="4"/>
+        <match value="0x10" type="big32" offset="4"/>
+        <match value="0x11" type="big32" offset="4"/>
+        <match value="0x12" type="big32" offset="4"/>
+        <match value="0x13" type="big32" offset="4"/>
+      </match>
+      <match value="\xBE\xBA\xFE\xCA" type="string" offset="0">
+        <match value="0x1" type="little32" offset="4"/>
+        <match value="0x2" type="little32" offset="4"/>
+        <match value="0x3" type="little32" offset="4"/>
+        <match value="0x4" type="little32" offset="4"/>
+        <match value="0x5" type="little32" offset="4"/>
+        <match value="0x6" type="little32" offset="4"/>
+        <match value="0x7" type="little32" offset="4"/>
+        <match value="0x8" type="little32" offset="4"/>
+        <match value="0x9" type="little32" offset="4"/>
+        <match value="0xA" type="little32" offset="4"/>
+        <match value="0xB" type="little32" offset="4"/>
+        <match value="0xC" type="little32" offset="4"/>
+        <match value="0xD" type="little32" offset="4"/>
+        <match value="0xE" type="little32" offset="4"/>
+        <match value="0xF" type="little32" offset="4"/>
+        <match value="0x10" type="little32" offset="4"/>
+        <match value="0x11" type="little32" offset="4"/>
+        <match value="0x12" type="little32" offset="4"/>
+        <match value="0x13" type="little32" offset="4"/>
+      </match>
+      <match value="\xCA\xFE\xBA\xBF" type="string" offset="0">
+        <match value="0x1" type="big32" offset="4"/>
+        <match value="0x2" type="big32" offset="4"/>
+        <match value="0x3" type="big32" offset="4"/>
+        <match value="0x4" type="big32" offset="4"/>
+        <match value="0x5" type="big32" offset="4"/>
+        <match value="0x6" type="big32" offset="4"/>
+        <match value="0x7" type="big32" offset="4"/>
+        <match value="0x8" type="big32" offset="4"/>
+        <match value="0x9" type="big32" offset="4"/>
+        <match value="0xA" type="big32" offset="4"/>
+        <match value="0xB" type="big32" offset="4"/>
+        <match value="0xC" type="big32" offset="4"/>
+        <match value="0xD" type="big32" offset="4"/>
+        <match value="0xE" type="big32" offset="4"/>
+        <match value="0xF" type="big32" offset="4"/>
+        <match value="0x10" type="big32" offset="4"/>
+        <match value="0x11" type="big32" offset="4"/>
+        <match value="0x12" type="big32" offset="4"/>
+        <match value="0x13" type="big32" offset="4"/>
+      </match>
+      <match value="\xBF\xBA\xFE\xCA" type="string" offset="0">
+        <match value="0x1" type="little32" offset="4"/>
+        <match value="0x2" type="little32" offset="4"/>
+        <match value="0x3" type="little32" offset="4"/>
+        <match value="0x4" type="little32" offset="4"/>
+        <match value="0x5" type="little32" offset="4"/>
+        <match value="0x6" type="little32" offset="4"/>
+        <match value="0x7" type="little32" offset="4"/>
+        <match value="0x8" type="little32" offset="4"/>
+        <match value="0x9" type="little32" offset="4"/>
+        <match value="0xA" type="little32" offset="4"/>
+        <match value="0xB" type="little32" offset="4"/>
+        <match value="0xC" type="little32" offset="4"/>
+        <match value="0xD" type="little32" offset="4"/>
+        <match value="0xE" type="little32" offset="4"/>
+        <match value="0xF" type="little32" offset="4"/>
+        <match value="0x10" type="little32" offset="4"/>
+        <match value="0x11" type="little32" offset="4"/>
+        <match value="0x12" type="little32" offset="4"/>
+        <match value="0x13" type="little32" offset="4"/>
       </match>
     </magic>
-    <glob pattern="*.jnilib"/>
   </mime-type>
+
+  <mime-type type="application/x-java-jnilib">
+    <comment>Java Native Library for OSX</comment>
+    <glob pattern="*.jnilib"/>
+    <sub-class-of type="application/x-mach-o-universal"/>
+  </mime-type>
+
   <mime-type type="application/vnd.java.hprof ">
     <comment>Java hprof text file</comment>
     <magic priority="50">
@@ -4118,10 +4202,200 @@
   </mime-type>
   <mime-type type="application/x-mach-o">
     <comment>Mach-O</comment>
+    <tika:link>https://www.nationalarchives.gov.uk/PRONOM/fmt/692</tika:link>
     <tika:link>https://www.nationalarchives.gov.uk/PRONOM/fmt/693</tika:link>
     <magic priority="50">
-      <match type="string" value="\xFE\xED\xFA\xCF" offset="0"/> <!-- type added by Qt -->
-      <match type="string" value="\xCF\xFA\xED\xFE" offset="0"/> <!-- type added by Qt -->
+      <match value="\xFE\xED\xFA\xCE" type="string" offset="0"/>
+      <match value="\xCE\xFA\xED\xFE" type="string" offset="0"/>
+      <match value="\xFE\xED\xFA\xCF" type="string" offset="0"/>
+      <match value="\xCF\xFA\xED\xFE" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+  <mime-type type="application/x-mach-o-object">
+    <comment>Mach-O relocatable object file</comment>
+    <magic priority="55">
+      <match value="\xFE\xED\xFA\xCE" type="string" offset="0">
+        <match value="0x00000001" type="big32" offset="12"/>
+      </match>
+      <match value="\xCE\xFA\xED\xFE" type="string" offset="0">
+        <match value="0x00000001" type="little32" offset="12"/>
+      </match>
+      <match value="\xFE\xED\xFA\xCF" type="string" offset="0">
+        <match value="0x00000001" type="big32" offset="12"/>
+      </match>
+      <match type="string" value="\xCF\xFA\xED\xFE" offset="0"> <!-- type added by Qt -->
+        <match value="0x00000001" type="little32" offset="12"/>
+      </match>
+    </magic>
+  </mime-type>
+  <mime-type type="application/x-mach-o-executable">
+    <comment>Mach-O executable</comment>
+    <magic priority="55">
+      <match value="\xFE\xED\xFA\xCE" type="string" offset="0">
+        <match value="0x00000002" type="big32" offset="12"/>
+      </match>
+      <match value="\xCE\xFA\xED\xFE" type="string" offset="0">
+        <match value="0x00000002" type="little32" offset="12"/>
+      </match>
+      <match value="\xFE\xED\xFA\xCF" type="string" offset="0">
+        <match value="0x00000002" type="big32" offset="12"/>
+      </match>
+      <match value="\xCF\xFA\xED\xFE" type="string" offset="0">
+        <match value="0x00000002" type="little32" offset="12"/>
+      </match>
+    </magic>
+  </mime-type>
+  <mime-type type="application/x-mach-o-fvmlib">
+    <comment>Mach-O fixed VM shared library</comment>
+    <magic priority="55">
+      <match value="\xFE\xED\xFA\xCE" type="string" offset="0">
+        <match value="0x00000003" type="big32" offset="12"/>
+      </match>
+      <match value="\xCE\xFA\xED\xFE" type="string" offset="0">
+        <match value="0x00000003" type="little32" offset="12"/>
+      </match>
+      <match value="\xFE\xED\xFA\xCF" type="string" offset="0">
+        <match value="0x00000003" type="big32" offset="12"/>
+      </match>
+      <match value="\xCF\xFA\xED\xFE" type="string" offset="0">
+        <match value="0x00000003" type="little32" offset="12"/>
+      </match>
+    </magic>
+  </mime-type>
+  <mime-type type="application/x-mach-o-core">
+    <comment>Mach-O core file</comment>
+    <magic priority="55">
+      <match value="\xFE\xED\xFA\xCE" type="string" offset="0">
+        <match value="0x00000004" type="big32" offset="12"/>
+      </match>
+      <match value="\xCE\xFA\xED\xFE" type="string" offset="0">
+        <match value="0x00000004" type="little32" offset="12"/>
+      </match>
+      <match value="\xFE\xED\xFA\xCF" type="string" offset="0">
+        <match value="0x00000004" type="big32" offset="12"/>
+      </match>
+      <match value="\xCF\xFA\xED\xFE" type="string" offset="0">
+        <match value="0x00000004" type="little32" offset="12"/>
+      </match>
+    </magic>
+  </mime-type>
+  <mime-type type="application/x-mach-o-preload">
+    <comment>Mach-O preloaded executable</comment>
+    <magic priority="55">
+      <match value="\xFE\xED\xFA\xCE" type="string" offset="0">
+        <match value="0x00000005" type="big32" offset="12"/>
+      </match>
+      <match value="\xCE\xFA\xED\xFE" type="string" offset="0">
+        <match value="0x00000005" type="little32" offset="12"/>
+      </match>
+      <match value="\xFE\xED\xFA\xCF" type="string" offset="0">
+        <match value="0x00000005" type="big32" offset="12"/>
+      </match>
+      <match value="\xCF\xFA\xED\xFE" type="string" offset="0">
+        <match value="0x00000005" type="little32" offset="12"/>
+      </match>
+    </magic>
+  </mime-type>
+  <mime-type type="application/x-mach-o-dylib">
+    <comment>Mach-O dynamic shared library</comment>
+    <magic priority="55">
+      <match value="\xFE\xED\xFA\xCE" type="string" offset="0">
+        <match value="0x00000006" type="big32" offset="12"/>
+      </match>
+      <match value="\xCE\xFA\xED\xFE" type="string" offset="0">
+        <match value="0x00000006" type="little32" offset="12"/>
+      </match>
+      <match value="\xFE\xED\xFA\xCF" type="string" offset="0">
+        <match value="0x00000006" type="big32" offset="12"/>
+      </match>
+      <match value="\xCF\xFA\xED\xFE" type="string" offset="0">
+        <match value="0x00000006" type="little32" offset="12"/>
+      </match>
+    </magic>
+  </mime-type>
+  <mime-type type="application/x-mach-o-dylinker">
+    <comment>Mach-O dynamic link editor</comment>
+    <magic priority="55">
+      <match value="\xFE\xED\xFA\xCE" type="string" offset="0">
+        <match value="0x00000007" type="big32" offset="12"/>
+      </match>
+      <match value="\xCE\xFA\xED\xFE" type="string" offset="0">
+        <match value="0x00000007" type="little32" offset="12"/>
+      </match>
+      <match value="\xFE\xED\xFA\xCF" type="string" offset="0">
+        <match value="0x00000007" type="big32" offset="12"/>
+      </match>
+      <match value="\xCF\xFA\xED\xFE" type="string" offset="0">
+        <match value="0x00000007" type="little32" offset="12"/>
+      </match>
+    </magic>
+  </mime-type>
+  <mime-type type="application/x-mach-o-bundle">
+    <comment>Mach-O dynamic bundle</comment>
+    <magic priority="55">
+      <match value="\xFE\xED\xFA\xCE" type="string" offset="0">
+        <match value="0x00000008" type="big32" offset="12"/>
+      </match>
+      <match value="\xCE\xFA\xED\xFE" type="string" offset="0">
+        <match value="0x00000008" type="little32" offset="12"/>
+      </match>
+      <match value="\xFE\xED\xFA\xCF" type="string" offset="0">
+        <match value="0x00000008" type="big32" offset="12"/>
+      </match>
+      <match value="\xCF\xFA\xED\xFE" type="string" offset="0">
+        <match value="0x00000008" type="little32" offset="12"/>
+      </match>
+    </magic>
+  </mime-type>
+  <mime-type type="application/x-mach-o-dylib-stub">
+    <comment>Mach-O shared library for static linking</comment>
+    <magic priority="55">
+      <match value="\xFE\xED\xFA\xCE" type="string" offset="0">
+        <match value="0x00000009" type="big32" offset="12"/>
+      </match>
+      <match value="\xCE\xFA\xED\xFE" type="string" offset="0">
+        <match value="0x00000009" type="little32" offset="12"/>
+      </match>
+      <match value="\xFE\xED\xFA\xCF" type="string" offset="0">
+        <match value="0x00000009" type="big32" offset="12"/>
+      </match>
+      <match value="\xCF\xFA\xED\xFE" type="string" offset="0">
+        <match value="0x00000009" type="little32" offset="12"/>
+      </match>
+    </magic>
+  </mime-type>
+  <mime-type type="application/x-mach-o-dsym">
+    <comment>Mach-O debug symbols file</comment>
+    <magic priority="55">
+      <match value="\xFE\xED\xFA\xCE" type="string" offset="0">
+        <match value="0x0000000A" type="big32" offset="12"/>
+      </match>
+      <match value="\xCE\xFA\xED\xFE" type="string" offset="0">
+        <match value="0x0000000A" type="little32" offset="12"/>
+      </match>
+      <match value="\xFE\xED\xFA\xCF" type="string" offset="0">
+        <match value="0x0000000A" type="big32" offset="12"/>
+      </match>
+      <match value="\xCF\xFA\xED\xFE" type="string" offset="0">
+        <match value="0x0000000A" type="little32" offset="12"/>
+      </match>
+    </magic>
+  </mime-type>
+  <mime-type type="application/x-mach-o-kext-bundle">
+    <comment>Mach-O kext bundle</comment>
+    <magic priority="55">
+      <match value="\xFE\xED\xFA\xCE" type="string" offset="0">
+        <match value="0x0000000B" type="big32" offset="12"/>
+      </match>
+      <match value="\xCE\xFA\xED\xFE" type="string" offset="0">
+        <match value="0x0000000B" type="little32" offset="12"/>
+      </match>
+      <match value="\xFE\xED\xFA\xCF" type="string" offset="0">
+        <match value="0x0000000B" type="big32" offset="12"/>
+      </match>
+      <match value="\xCF\xFA\xED\xFE" type="string" offset="0">
+        <match value="0x0000000B" type="little32" offset="12"/>
+      </match>
     </magic>
   </mime-type>
   <mime-type type="application/x-memgraph">
@@ -4179,6 +4453,7 @@
     <glob pattern="*.xbap"/>
   </mime-type>
   <mime-type type="application/x-msaccess">
+    <glob pattern="*.accdb"/>
     <glob pattern="*.mdb"/>
     <magic priority="60">
       <match value="\x00\x01\x00\x00\x53\x74\x61\x6e" type="string" offset="0"/>
@@ -5118,6 +5393,7 @@
       <match value="PK\x07\x08" type="string" offset="0"/>
     </magic>
     <glob pattern="*.zip"/>
+    <glob pattern="*.zipx"/>
   </mime-type>
 
   <mime-type type="application/zlib">
@@ -5304,7 +5580,7 @@
     <glob pattern="*.mp4a"/>
     <glob pattern="*.m4a"/>
     <glob pattern="*.m4b"/>
-    <sub-class-of type="application/quicktime" />
+    <sub-class-of type="video/mp4" />
   </mime-type>
   <mime-type type="audio/mp4a-latm"/>
   <mime-type type="audio/mpa"/>
@@ -7050,6 +7326,8 @@
     <root-XML localName="SCRIPT"/>
     <root-XML localName="frameset"/>
     <root-XML localName="FRAMESET"/>
+    <root-XML localName="iframe"/>
+    <root-XML localName="IFRAME"/>
     <magic priority="60">
 <!-- DISABLED FOR QT:       <match value="(?i)&lt;(html|head|body|title|div)[ >]" type="regex" offset="0"/>-->
 <!-- DISABLED FOR QT:       <match value="(?i)&lt;h[123][ >]" type="regex" offset="0"/>-->

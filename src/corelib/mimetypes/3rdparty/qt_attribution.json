@@ -16,13 +16,13 @@
                 "The Apache Tika MimeTypes list many known MIME types and how to match files (using globs and/or 'magic' rules for the file contents)",
         "Homepage":
                 "https://github.com/apache/tika/tree/main/tika-core/src/main/resources/org/apache/tika/mime",
-        "Version": "5101bc7fb090ed7deffe56837d7633c9485a1e5d",
+        "Version": "dbcbb368e0a913e1a74cca61347fd6ce24bc6d7e",
         "DownloadLocation":
-                "https://github.com/apache/tika/blob/5101bc7fb090ed7deffe56837d7633c9485a1e5d/tika-core/src/main/resources/org/apache/tika/mime/tika-mimetypes.xml",
+                "https://github.com/apache/tika/blob/dbcbb368e0a913e1a74cca61347fd6ce24bc6d7e/tika-core/src/main/resources/org/apache/tika/mime/tika-mimetypes.xml",
         "PURL": "pkg:github/apache/tika@$<VERSION>#tika-core/src/main/resources/org/apache/tika/mime/tika-mimetypes.xml",
         "CPE": "cpe:2.3:a:apache:tika:*:*:*:*:*:*:*:*",
         "License": "Apache License 2.0",
         "LicenseId": "Apache-2.0",
-        "Copyright": "Copyright 2024 The Apache Software Foundation"
+        "Copyright": "Copyright 2025 The Apache Software Foundation"
     }
 ]
