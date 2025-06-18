@@ -3,11 +3,10 @@
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 PICK_TO_BRANCHES="6.8 6.7 6.5 6.2 5.15"
-#UPSTREAM=github.com:publicsuffix/list.git          # use this if you have a github account
-UPSTREAM=https://github.com/publicsuffix/list.git  # and this if you don't
+UPSTREAM=https://publicsuffix.org/list/public_suffix_list.dat
 
 THIS="util/update_public_suffix_list.sh"
-PUBLIC_SUFFIX_LIST_DAT_DIR="$1"
+PUBLIC_SUFFIX_LIST_DAT_DIR="$(mktemp -d)"
 MAKE_DAFSA=src/3rdparty/libpsl/src/psl-make-dafsa
 PSL_DATA_CPP=src/3rdparty/libpsl/psl_data.cpp
 PUBLIC_SUFFIX_LIST_DAFSA=tests/auto/network/access/qnetworkcookiejar/testdata/publicsuffix/public_suffix_list.dafsa
@@ -26,7 +25,7 @@ function check_or_die() {
     TYPE=$1
     OP=$2
     FILE="$3"
-    test $OP "$FILE" || die "$TYPE \"$FILE\" not found (test $OP \"$FILE\" failed). Please run $THIS from \$SRCDIR/qtbase and pass the directory containing a checkout of $UPSTEAM on the command line."
+    test $OP "$FILE" || die "$TYPE \"$FILE\" not found (test $OP \"$FILE\" failed). Please run $THIS from \$SRCDIR/qtbase."
 }
 
 function run_or_die() {
@@ -35,36 +34,33 @@ function run_or_die() {
     msg "Done"
 }
 
-INPUT="$PUBLIC_SUFFIX_LIST_DAT_DIR/public_suffix_list.dat"
+DAT_FILE="$PUBLIC_SUFFIX_LIST_DAT_DIR/public_suffix_list.dat"
 
 check_or_die tool -x "$MAKE_DAFSA"
-if [ ! -d "$PUBLIC_SUFFIX_LIST_DAT_DIR" ]; then
-    msg -n "$PUBLIC_SUFFIX_LIST_DAT_DIR does not exist; Clone $UPSTREAM there? [y/N]"
-    read -N1 -t60
-    msg
-    if [ "x$REPLY" = "xy" -o "x$REPLY" = "xY" ]; then
-        run_or_die git clone "$UPSTREAM" "$PUBLIC_SUFFIX_LIST_DAT_DIR"
-    else
-        check_or_die publicsuffix/list.git -d "$PUBLIC_SUFFIX_LIST_DAT_DIR" # reuse error message
-    fi
-fi
-check_or_die publicsuffix/list.git -d "$PUBLIC_SUFFIX_LIST_DAT_DIR"
-check_or_die input -r "$INPUT"
+check_or_die directory -d "$PUBLIC_SUFFIX_LIST_DAT_DIR"
+run_or_die wget $UPSTREAM -O "$DAT_FILE"
+
+check_or_die input -r "$DAT_FILE"
 check_or_die output -w "$PSL_DATA_CPP"
 check_or_die binary-output -w "$PUBLIC_SUFFIX_LIST_DAFSA"
 
-GITSHA1=$(cd "$PUBLIC_SUFFIX_LIST_DAT_DIR" && git log -1 --format=format:%H)
-GITDATE=$(cd "$PUBLIC_SUFFIX_LIST_DAT_DIR" && git log -1 --format=format:%cs)
-msg "Using $INPUT @ $GITSHA1, fetched on $GITDATE"
+VERSION=$(run_or_die sed -nE 's,^// VERSION: (.*)$,\1,p' "$DAT_FILE")
+if [[ -z "$VERSION" ]]; then
+   die "Something is wrong! Recheck the VERSION line in $DAT_FILE and update the script."
+fi
+GITSHA=$(run_or_die sed -nE 's,^// COMMIT: (.*)$,\1,p' "$DAT_FILE")
+msg "Using $DAT_FILE @ ${VERSION} (commit ${GITSHA})"
 
-run_or_die "$MAKE_DAFSA" "$INPUT" "$PSL_DATA_CPP"
-run_or_die "$MAKE_DAFSA" --output-format=binary "$INPUT" "$PUBLIC_SUFFIX_LIST_DAFSA"
+run_or_die "$MAKE_DAFSA" "$DAT_FILE" "$PSL_DATA_CPP"
+run_or_die "$MAKE_DAFSA" --output-format=binary "$DAT_FILE" "$PUBLIC_SUFFIX_LIST_DAFSA"
+rm "$DAT_FILE"
 
 # update the first Version line in qt_attribution.json with the new SHA1 and date:
-run_or_die sed -i -e "1,/\"Version\":/{ /\"Version\":/ {  s/[0-9a-fA-F]\{40\}/$GITSHA1/;   s/[0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}/$GITDATE/ } }" "$ATTRIBUTION_JSON"
+run_or_die sed -i -E -e "1,/\"Version\":/{ /\"Version\":/ { s/(Version\": )\".*?\"/\\1\"${VERSION}\"/ } }" "$ATTRIBUTION_JSON"
 
 # update the first "PURL" line with the new SHA1:
-run_or_die sed -i -e "1,/\"PURL\":/{ /\"PURL\":/ { s/[0-9a-fA-F]\{40\}/$GITSHA1/; } }" "$ATTRIBUTION_JSON"
+run_or_die sed -i -E -e "1,/\"PURL\":/{ /\"PURL\":/ { s/@.*?\\?/@${GITSHA}\\?/ } }" "$ATTRIBUTION_JSON"
+
 
 run_or_die git add "$PSL_DATA_CPP"
 run_or_die git add "$PUBLIC_SUFFIX_LIST_DAFSA"
@@ -72,13 +68,12 @@ run_or_die git add "$ATTRIBUTION_JSON"
 
 run_or_die git commit -m "Update public suffix list
 
-Version $GITSHA1, fetched on
-$GITDATE.
+Version ${VERSION}.
 
 [ChangeLog][Third-Party Code] Updated the public suffix list to upstream
-SHA $GITSHA1.
+version ${VERSION}.
 
 Pick-to: $PICK_TO_BRANCHES
 " --edit
 
-msg "Please use topic=publicsuffix-list-$GITSHA1 when pushing."
+msg "Please use topic=publicsuffix-list-${VERSION} when pushing."
