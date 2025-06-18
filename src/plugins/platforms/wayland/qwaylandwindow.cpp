@@ -53,6 +53,7 @@ QWaylandWindow::QWaylandWindow(QWindow *window, QWaylandDisplay *display)
     , mDisplay(display)
     , mSurfaceLock(QReadWriteLock::Recursive)
     , mShellIntegration(display->shellIntegration())
+    , mSurfaceFormat(window->requestedFormat())
 {
     {
         bool ok;
