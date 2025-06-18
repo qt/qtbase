@@ -123,14 +123,14 @@ namespace QRangeModelDetails
     }
 
     template <typename It>
-    auto key(It&& it) -> decltype(it.key()) { return it.key(); }
+    auto key(It&& it) -> decltype(it.key()) { return std::forward<It>(it).key(); }
     template <typename It>
-    auto key(It&& it) -> decltype((it->first)) { return it->first; }
+    auto key(It&& it) -> decltype((it->first)) { return std::forward<It>(it)->first; }
 
     template <typename It>
-    auto value(It&& it) -> decltype(it.value()) { return it.value(); }
+    auto value(It&& it) -> decltype(it.value()) { return std::forward<It>(it).value(); }
     template <typename It>
-    auto value(It&& it) -> decltype((it->second)) { return it->second; }
+    auto value(It&& it) -> decltype((it->second)) { return std::forward<It>(it)->second; }
 
     // use our own version of begin/end so that we can overload for pointers
     template <typename C>
@@ -1747,13 +1747,13 @@ protected:
             return {};
 
         // get the siblings of the parent via the grand parent
-        decltype(auto) grandParent = this->protocol().parentRow(QRangeModelDetails::refTo(parentRow));
+        auto &&grandParent = this->protocol().parentRow(QRangeModelDetails::refTo(parentRow));
         const range_type &parentSiblings = childrenOf(QRangeModelDetails::pointerTo(grandParent));
         // find the index of parentRow
         const auto begin = QRangeModelDetails::cbegin(parentSiblings);
         const auto end = QRangeModelDetails::cend(parentSiblings);
         const auto it = std::find_if(begin, end, [parentRow](auto &&s){
-            return QRangeModelDetails::pointerTo(s) == parentRow;
+            return QRangeModelDetails::pointerTo(std::forward<decltype(s)>(s)) == parentRow;
         });
         if (it != end)
             return this->createIndex(std::distance(begin, it), 0,
