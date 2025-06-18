@@ -7,6 +7,7 @@
 #include <qapplication.h>
 #include <qbrush.h>
 #include <qpainter.h>
+#include <qpainterstateguard.h>
 #include <qpalette.h>
 #include <qpoint.h>
 #include <qrect.h>
@@ -775,10 +776,9 @@ void QItemDelegate::drawBackground(QPainter *painter,
     } else {
         QVariant value = index.data(Qt::BackgroundRole);
         if (value.canConvert<QBrush>()) {
-            QPointF oldBO = painter->brushOrigin();
+            QPainterStateGuard psg(painter);
             painter->setBrushOrigin(option.rect.topLeft());
             painter->fillRect(option.rect, qvariant_cast<QBrush>(value));
-            painter->setBrushOrigin(oldBO);
         }
     }
 }

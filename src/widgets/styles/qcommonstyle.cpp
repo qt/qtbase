@@ -698,10 +698,9 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
                 p->fillRect(vopt->rect, vopt->palette.brush(cg, QPalette::Highlight));
             } else {
                 if (vopt->backgroundBrush.style() != Qt::NoBrush) {
-                    QPointF oldBO = p->brushOrigin();
+                    QPainterStateGuard psg(p);
                     p->setBrushOrigin(vopt->rect.topLeft());
                     p->fillRect(vopt->rect, vopt->backgroundBrush);
-                    p->setBrushOrigin(oldBO);
                 }
 
                 if (vopt->state & QStyle::State_Selected) {

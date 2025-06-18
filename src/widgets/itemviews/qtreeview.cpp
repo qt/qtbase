@@ -7,6 +7,7 @@
 #include <qapplication.h>
 #include <qscrollbar.h>
 #include <qpainter.h>
+#include <qpainterstateguard.h>
 #include <qstack.h>
 #include <qstyle.h>
 #include <qstyleoption.h>
@@ -1897,9 +1898,11 @@ void QTreeView::drawBranches(QPainter *painter, const QRect &rect,
         extraFlags |= QStyle::State_Enabled;
     if (hasFocus())
         extraFlags |= QStyle::State_Active;
-    QPoint oldBO = painter->brushOrigin();
-    if (verticalScrollMode() == QAbstractItemView::ScrollPerPixel)
+    QPainterStateGuard psg(painter, QPainterStateGuard::InitialState::NoSave);
+    if (verticalScrollMode() == QAbstractItemView::ScrollPerPixel) {
+        psg.save();
         painter->setBrushOrigin(QPoint(0, verticalOffset()));
+    }
 
     if (d->alternatingColors) {
         opt.features.setFlag(QStyleOptionViewItem::Alternate, d->current & 1);
@@ -1960,7 +1963,6 @@ void QTreeView::drawBranches(QPainter *painter, const QRect &rect,
         current = ancestor;
         ancestor = current.parent();
     }
-    painter->setBrushOrigin(oldBO);
 }
 
 /*!

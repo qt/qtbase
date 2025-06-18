@@ -5,6 +5,7 @@
 #include "qwindowsvistastyle_p_p.h"
 #include "qwindowsvistaanimation_p.h"
 #include <qoperatingsystemversion.h>
+#include <qpainterstateguard.h>
 #include <qscreen.h>
 #include <qstylehints.h>
 #include <qwindow.h>
@@ -2111,10 +2112,9 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
             QPixmap pixmap;
 
             if (vopt->backgroundBrush.style() != Qt::NoBrush) {
-                const QPointF oldBrushOrigin = painter->brushOrigin();
+                QPainterStateGuard psg(painter);
                 painter->setBrushOrigin(vopt->rect.topLeft());
                 painter->fillRect(vopt->rect, vopt->backgroundBrush);
-                painter->setBrushOrigin(oldBrushOrigin);
             }
 
             if (hover || selected) {

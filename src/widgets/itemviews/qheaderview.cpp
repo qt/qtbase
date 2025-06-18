@@ -10,6 +10,7 @@
 #include <qdebug.h>
 #include <qevent.h>
 #include <qpainter.h>
+#include <qpainterstateguard.h>
 #include <qscrollbar.h>
 #include <qstyle.h>
 #include <qstyleoption.h>
@@ -3091,8 +3092,6 @@ void QHeaderView::paintSection(QPainter *painter, const QRect &rect, int logical
         return;
 
     QStyleOptionHeaderV2 opt;
-    QPointF oldBO = painter->brushOrigin();
-
     initStyleOption(&opt);
 
     QBrush oBrushButton = opt.palette.brush(QPalette::Button);
@@ -3106,13 +3105,14 @@ void QHeaderView::paintSection(QPainter *painter, const QRect &rect, int logical
     QBrush nBrushWindow = opt.palette.brush(QPalette::Window);
 
     // If relevant brushes are not the same as from the regular widgets we set the brush origin
+    QPainterStateGuard psg(painter, QPainterStateGuard::InitialState::NoSave);
     if (oBrushButton != nBrushButton || oBrushWindow != nBrushWindow) {
+        psg.save();
         painter->setBrushOrigin(opt.rect.topLeft());
     }
 
     // draw the section.
     style()->drawControl(QStyle::CE_Header, &opt, painter, this);
-    painter->setBrushOrigin(oldBO);
 }
 
 /*!
