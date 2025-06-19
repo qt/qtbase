@@ -251,24 +251,20 @@ int main(int argc, char **argv)
         results << typesList.join('\n');
     }
 
-    QT_WARNING_PUSH
-#if defined(Q_CC_GNU_ONLY) && Q_CC_GNU >= 1300 && Q_CC_GNU < 1600
-    QT_WARNING_DISABLE_GCC("-Wdangling-reference")
-#endif
     if (parser.isSet(display)) {
-        const StringEnum &location = parseLocationOrError(parser.value(display));
+        const StringEnum location = parseLocationOrError(parser.value(display));
         QString text = QStandardPaths::displayName(location.enumvalue);
         results << location.mapName(text);
     }
 
     if (parser.isSet(paths)) {
-        const StringEnum &location = parseLocationOrError(parser.value(paths));
+        const StringEnum location = parseLocationOrError(parser.value(paths));
         QStringList paths = QStandardPaths::standardLocations(location.enumvalue);
         results << location.mapName(paths.join(pathsep));
     }
 
     if (parser.isSet(writablePath)) {
-        const StringEnum &location = parseLocationOrError(parser.value(writablePath));
+        const StringEnum location = parseLocationOrError(parser.value(writablePath));
         QString path = QStandardPaths::writableLocation(location.enumvalue);
         results << location.mapName(path);
     }
@@ -280,33 +276,32 @@ int main(int argc, char **argv)
     }
 
     if (parser.isSet(locateDir)) {
-        const StringEnum &location = parseLocationOrError(parser.value(locateDir));
+        const StringEnum location = parseLocationOrError(parser.value(locateDir));
         QString searchitem = searchStringOrError(&parser);
         QString path = QStandardPaths::locate(location.enumvalue, searchitem, QStandardPaths::LocateDirectory);
         results << location.mapName(path);
     }
 
     if (parser.isSet(locateFile)) {
-        const StringEnum &location = parseLocationOrError(parser.value(locateFile));
+        const StringEnum location = parseLocationOrError(parser.value(locateFile));
         QString searchitem = searchStringOrError(&parser);
         QString path = QStandardPaths::locate(location.enumvalue, searchitem, QStandardPaths::LocateFile);
         results << location.mapName(path);
     }
 
     if (parser.isSet(locateDirs)) {
-        const StringEnum &location = parseLocationOrError(parser.value(locateDirs));
+        const StringEnum location = parseLocationOrError(parser.value(locateDirs));
         QString searchitem = searchStringOrError(&parser);
         QStringList paths = QStandardPaths::locateAll(location.enumvalue, searchitem, QStandardPaths::LocateDirectory);
         results << location.mapName(paths.join(pathsep));
     }
 
     if (parser.isSet(locateFiles)) {
-        const StringEnum &location = parseLocationOrError(parser.value(locateFiles));
+        const StringEnum location = parseLocationOrError(parser.value(locateFiles));
         QString searchitem = searchStringOrError(&parser);
         QStringList paths = QStandardPaths::locateAll(location.enumvalue, searchitem, QStandardPaths::LocateFile);
         results << location.mapName(paths.join(pathsep));
     }
-    QT_WARNING_POP
 
 #if !QT_CONFIG(settings)
     if (parser.isSet(query) || parser.isSet(qtconf) || parser.isSet(queryformat)) {
