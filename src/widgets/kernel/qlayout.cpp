@@ -1308,11 +1308,11 @@ void QLayout::setSizeConstraint(SizeConstraint constraint)
 }
 
 /*!
- *    \brief the resize mode of the layout.
- *    \since 6.10
- *    Sets both the \a horizontal and \a vertical size constraint.
- *    Provided for convenience.
- *    \sa sizeConstraint(), horizontalSizeConstraint(), verticalSizeConstraint()
+    \since 6.10
+
+    Sets both the \a horizontal and \a vertical size constraints.
+
+    \sa sizeConstraint(), horizontalSizeConstraint(), verticalSizeConstraint()
  */
 void QLayout::setSizeConstraints(SizeConstraint horizontal, SizeConstraint vertical)
 {
