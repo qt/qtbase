@@ -5680,6 +5680,20 @@ void QRhiImplementation::updateLayoutDesc(QRhiShaderResourceBindings *srb)
 }
 
 /*!
+    \fn virtual bool QRhiShaderResourceBindings::create() = 0
+
+    Creates the corresponding resource binding set. Depending on the underlying
+    graphics API, this may involve creating native graphics resources, and
+    therefore it should not be assumed that this is a cheap operation.
+
+    If create() has been called before with no corresponding destroy(), then
+    destroy() is called implicitly first.
+
+    \return \c true when successful, \c false when failed.
+    Regardless of the return value, calling destroy() is always safe.
+ */
+
+/*!
     \fn void QRhiShaderResourceBindings::setBindings(std::initializer_list<QRhiShaderResourceBinding> list)
     Sets the \a list of bindings.
  */
