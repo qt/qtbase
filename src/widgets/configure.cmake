@@ -9,8 +9,7 @@
 
 #### Libraries
 
-qt_find_package(GTK3 3.6 MODULE
-    PROVIDED_TARGETS PkgConfig::GTK3 MODULE_NAME widgets QMAKE_LIB gtk3)
+qt_find_package(GTK3 3.6 PROVIDED_TARGETS PkgConfig::GTK3 MODULE_NAME widgets QMAKE_LIB gtk3)
 
 
 #### Tests

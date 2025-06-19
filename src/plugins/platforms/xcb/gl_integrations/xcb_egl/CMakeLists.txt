@@ -5,7 +5,7 @@
 ## QXcbEglIntegrationPlugin Plugin:
 #####################################################################
 
-qt_find_package(EGL MODULE)
+qt_find_package(EGL)
 
 qt_internal_add_plugin(QXcbEglIntegrationPlugin
     OUTPUT_NAME qxcb-egl-integration

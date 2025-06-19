@@ -20,13 +20,12 @@ set_property(CACHE INPUT_libb2 PROPERTY STRINGS undefined no qt system)
 if((UNIX AND NOT QNX) OR QT_FIND_ALL_PACKAGES_ALWAYS)
     # QNX's libbacktrace has an API wholly different from all the other Unix
     # offerings
-    qt_find_package(WrapBacktrace MODULE
-        PROVIDED_TARGETS WrapBacktrace::WrapBacktrace MODULE_NAME core QMAKE_LIB backtrace)
+    qt_find_package(WrapBacktrace PROVIDED_TARGETS WrapBacktrace::WrapBacktrace MODULE_NAME core QMAKE_LIB backtrace)
 endif()
-qt_find_package(WrapSystemDoubleConversion MODULE
+qt_find_package(WrapSystemDoubleConversion
                 PROVIDED_TARGETS WrapSystemDoubleConversion::WrapSystemDoubleConversion
                 MODULE_NAME core QMAKE_LIB doubleconversion)
-qt_find_package(GLIB2 MODULE PROVIDED_TARGETS GLIB2::GLIB2 MODULE_NAME core QMAKE_LIB glib)
+qt_find_package(GLIB2 PROVIDED_TARGETS GLIB2::GLIB2 MODULE_NAME core QMAKE_LIB glib)
 qt_find_package_extend_sbom(TARGETS GLIB2::GLIB2
     LICENSE_EXPRESSION "LGPL-2.1-or-later"
 )
@@ -36,25 +35,20 @@ qt_find_package(ICU 50.1 COMPONENTS i18n uc data PROVIDED_TARGETS ICU::i18n ICU:
 if(QT_FEATURE_dlopen)
     qt_add_qmake_lib_dependency(icu libdl)
 endif()
-qt_find_package(JeMalloc MODULE
-    PROVIDED_TARGETS PkgConfig::JeMalloc MODULE_NAME core QMAKE_LIB jemalloc)
-qt_find_package(Libsystemd MODULE
-    PROVIDED_TARGETS PkgConfig::Libsystemd MODULE_NAME core QMAKE_LIB journald)
-qt_find_package(WrapAtomic MODULE
-    PROVIDED_TARGETS WrapAtomic::WrapAtomic MODULE_NAME core QMAKE_LIB libatomic)
-qt_find_package(Libb2 MODULE PROVIDED_TARGETS Libb2::Libb2 MODULE_NAME core QMAKE_LIB libb2)
+qt_find_package(JeMalloc PROVIDED_TARGETS PkgConfig::JeMalloc MODULE_NAME core QMAKE_LIB jemalloc)
+qt_find_package(Libsystemd PROVIDED_TARGETS PkgConfig::Libsystemd MODULE_NAME core QMAKE_LIB journald)
+qt_find_package(WrapAtomic PROVIDED_TARGETS WrapAtomic::WrapAtomic MODULE_NAME core QMAKE_LIB libatomic)
+qt_find_package(Libb2 PROVIDED_TARGETS Libb2::Libb2 MODULE_NAME core QMAKE_LIB libb2)
 qt_find_package_extend_sbom(TARGETS Libb2::Libb2
     LICENSE_EXPRESSION "CC0-1.0"
 )
-qt_find_package(WrapRt MODULE
-    PROVIDED_TARGETS WrapRt::WrapRt MODULE_NAME core QMAKE_LIB librt)
-qt_find_package(WrapSystemPCRE2 10.20 MODULE
-    PROVIDED_TARGETS WrapSystemPCRE2::WrapSystemPCRE2 MODULE_NAME core QMAKE_LIB pcre2)
+qt_find_package(WrapRt PROVIDED_TARGETS WrapRt::WrapRt MODULE_NAME core QMAKE_LIB librt)
+qt_find_package(WrapSystemPCRE2 10.20 PROVIDED_TARGETS WrapSystemPCRE2::WrapSystemPCRE2 MODULE_NAME core QMAKE_LIB pcre2)
 set_package_properties(WrapPCRE2 PROPERTIES TYPE REQUIRED)
 if((QNX) OR QT_FIND_ALL_PACKAGES_ALWAYS)
-    qt_find_package(PPS MODULE PROVIDED_TARGETS PPS::PPS MODULE_NAME core QMAKE_LIB pps)
+    qt_find_package(PPS PROVIDED_TARGETS PPS::PPS MODULE_NAME core QMAKE_LIB pps)
 endif()
-qt_find_package(Slog2 MODULE PROVIDED_TARGETS Slog2::Slog2 MODULE_NAME core QMAKE_LIB slog2)
+qt_find_package(Slog2 PROVIDED_TARGETS Slog2::Slog2 MODULE_NAME core QMAKE_LIB slog2)
 
 
 #### Tests

@@ -1,10 +1,10 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-qt_find_package(Libinput MODULE)
-qt_find_package(XKB MODULE)
-qt_find_package(Tslib MODULE)
-qt_find_package(Mtdev MODULE)
+qt_find_package(Libinput)
+qt_find_package(XKB)
+qt_find_package(Tslib)
+qt_find_package(Mtdev)
 
 #####################################################################
 ## InputSupportPrivate Module:
