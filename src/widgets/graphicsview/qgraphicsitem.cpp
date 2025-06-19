@@ -10528,7 +10528,7 @@ void QGraphicsSimpleTextItemPrivate::updateBoundingRect()
 
 /*!
     \class QGraphicsSimpleTextItem
-    \brief The QGraphicsSimpleTextItem class provides a simple text path item
+    \brief The QGraphicsSimpleTextItem class provides a simple text item
     that you can add to a QGraphicsScene.
     \since 4.2
     \ingroup graphicsview-api
