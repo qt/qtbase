@@ -1095,6 +1095,7 @@ void QXcbWindow::setNetWmState(Qt::WindowFlags flags)
 
 void QXcbWindow::setNetWmStateOnUnmappedWindow()
 {
+    QMutexLocker locker(&m_mappedMutex);
     if (Q_UNLIKELY(m_mapped))
         qCDebug(lcQpaXcb()) << "internal info: " << Q_FUNC_INFO << "called on mapped window";
 
