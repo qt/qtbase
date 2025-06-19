@@ -806,7 +806,10 @@ void QXcbWindow::hide()
         }
     }
 
+    // Avoid race with requestActivate()
+    QMutexLocker locker(&m_mappedMutex);
     m_mapped = false;
+    m_deferredActivation = false;
 
     // Hiding a modal window doesn't send an enter event to its transient parent when the
     // mouse is already over the parent window, so the enter event must be emulated.
