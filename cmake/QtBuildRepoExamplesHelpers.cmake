@@ -83,6 +83,12 @@ macro(qt_examples_build_begin)
         if(NOT QT_BUILD_EXAMPLES_BY_DEFAULT)
             set_directory_properties(PROPERTIES EXCLUDE_FROM_ALL TRUE)
         endif()
+
+        # Add active linker flags to all targets created below this subdirectory.
+        qt_internal_get_active_linker_flags(active_linker_flags)
+        if(active_linker_flags)
+            add_link_options(${active_linker_flags})
+        endif()
     endif()
 
     # TODO: Change this to TRUE when all examples in all repos are ported to use
@@ -498,6 +504,15 @@ function(qt_internal_add_example_external_project subdir)
     if(QT_INTERNAL_VERBOSE_EXAMPLES)
         list(APPEND var_defs -DCMAKE_MESSAGE_LOG_LEVEL:STRING=DEBUG)
         list(APPEND var_defs -DCMAKE_AUTOGEN_VERBOSE:BOOL=TRUE)
+    endif()
+
+    # Pass active linker flags.
+    qt_internal_get_active_linker_flags(active_linker_flags)
+    if(active_linker_flags)
+        foreach(item_type EXE MODULE SHARED)
+            list(APPEND var_defs
+                "-DCMAKE_${item_type}_LINKER_FLAGS_INIT:STRING=${active_linker_flags}")
+        endforeach()
     endif()
 
     set(deps "")
