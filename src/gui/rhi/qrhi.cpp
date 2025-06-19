@@ -6142,12 +6142,7 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::sampler(int binding, StageF
    layout compatible QRhiShaderResourceBindings with resources present passed
    to QRhiCommandBuffer::setShaderResources().
 
-   \note Image load/store is only guaranteed to be available within a compute
-   pipeline. While some backends may support using these resources in a
-   graphics pipeline as well, this is not universally supported, and even when
-   it is, unexpected problems may arise when it comes to barriers and
-   synchronization. Therefore, avoid using such resources with shaders other
-   than compute.
+   \note Image load/store is only available within the compute and fragment stages.
  */
 QRhiShaderResourceBinding QRhiShaderResourceBinding::imageLoad(
         int binding, StageFlags stage, QRhiTexture *tex, int level)
@@ -6177,12 +6172,7 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::imageLoad(
    layout compatible QRhiShaderResourceBindings with resources present passed
    to QRhiCommandBuffer::setShaderResources().
 
-   \note Image load/store is only guaranteed to be available within a compute
-   pipeline. While some backends may support using these resources in a
-   graphics pipeline as well, this is not universally supported, and even when
-   it is, unexpected problems may arise when it comes to barriers and
-   synchronization. Therefore, avoid using such resources with shaders other
-   than compute.
+   \note Image load/store is only available within the compute and fragment stages.
  */
 QRhiShaderResourceBinding QRhiShaderResourceBinding::imageStore(
         int binding, StageFlags stage, QRhiTexture *tex, int level)
@@ -6212,12 +6202,7 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::imageStore(
    layout compatible QRhiShaderResourceBindings with resources present passed
    to QRhiCommandBuffer::setShaderResources().
 
-   \note Image load/store is only guaranteed to be available within a compute
-   pipeline. While some backends may support using these resources in a
-   graphics pipeline as well, this is not universally supported, and even when
-   it is, unexpected problems may arise when it comes to barriers and
-   synchronization. Therefore, avoid using such resources with shaders other
-   than compute.
+   \note Image load/store is only available within the compute and fragment stages.
  */
 QRhiShaderResourceBinding QRhiShaderResourceBinding::imageLoadStore(
         int binding, StageFlags stage, QRhiTexture *tex, int level)
