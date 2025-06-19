@@ -2465,6 +2465,9 @@ void tst_QWindow::modalDialogClosingOneOfTwoModal()
 
 void tst_QWindow::modalWithChildWindow()
 {
+    if (isPlatformWayland())
+        QSKIP("A nested window or a subsurface in wayland terms can't get focus.");
+
     if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
         QSKIP("QWindow::requestActivate() is not supported.");
 
