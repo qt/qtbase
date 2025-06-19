@@ -825,6 +825,13 @@ QT_PATCH_VERSION = ${PROJECT_VERSION_PATCH}
                  "QT_MAC_SDK_VERSION_MIN = ${QT_SUPPORTED_MIN_IOS_SDK_VERSION}")
             list(APPEND extra_statements
                  "QT_MAC_SDK_VERSION_MAX = ${QT_SUPPORTED_MAX_IOS_SDK_VERSION}")
+         elseif(CMAKE_SYSTEM_NAME STREQUAL visionOS)
+            list(APPEND extra_statements
+                "QMAKE_VISIONOS_DEPLOYMENT_TARGET = ${CMAKE_OSX_DEPLOYMENT_TARGET}")
+            list(APPEND extra_statements
+                 "QT_MAC_SDK_VERSION_MIN = ${QT_SUPPORTED_MIN_VISIONOS_SDK_VERSION}")
+            list(APPEND extra_statements
+                 "QT_MAC_SDK_VERSION_MAX = ${QT_SUPPORTED_MAX_VISIONOS_SDK_VERSION}")
         endif()
 
         if (CMAKE_OSX_ARCHITECTURES)
