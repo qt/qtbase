@@ -170,6 +170,7 @@ macx-xcode {
     ios: deployment_target = $$QMAKE_IOS_DEPLOYMENT_TARGET
     tvos: deployment_target = $$QMAKE_TVOS_DEPLOYMENT_TARGET
     watchos: deployment_target = $$QMAKE_WATCHOS_DEPLOYMENT_TARGET
+    visionos: deployment_target = $$QMAKE_VISIONOS_DEPLOYMENT_TARGET
 
     # If we're doing a simulator and device build, device and simulator
     # architectures use different paths and flags for the sysroot and
