@@ -3655,16 +3655,16 @@ QDateTime::Data QDateTimePrivate::create(QDate toDate, QTime toTime, const QTime
 
     \section1 Remarks
 
-    \note QDateTime does not account for leap seconds.
+    QDateTime does not account for leap seconds.
 
-    \note All conversion to and from string formats is done using the C locale.
+    All conversions  to and from string formats are done using the C locale.
     For localized conversions, see QLocale.
 
-    \note There is no year 0 in the Gregorian calendar. Dates in that year are
+    There is no year 0 in the Gregorian calendar. Dates in that year are
     considered invalid. The year -1 is the year "1 before Christ" or "1 before
     common era." The day before 1 January 1 CE is 31 December 1 BCE.
 
-    \note Using local time (the default) or a specified time zone implies a need
+    Using local time (the default) or a specified time zone implies a need
     to resolve any issues around \l {Timezone transitions}{transitions}. As a
     result, operations on such QDateTime instances (notably including
     constructing them) may be more expensive than the equivalent when using UTC
