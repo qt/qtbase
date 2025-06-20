@@ -172,88 +172,9 @@ void QWasmInputContext::compositionUpdateCallback(emscripten::val event)
     setPreeditString(compositionStr, 0);
 }
 
-#if QT_CONFIG(clipboard)
-static void copyCallback(emscripten::val event)
-{
-    qCDebug(qLcQpaWasmInputContext) << Q_FUNC_INFO;
-
-    QClipboard *clipboard = QGuiApplication::clipboard();
-    QString inputStr = clipboard->text();
-    qCDebug(qLcQpaWasmInputContext) << "QClipboard : " << inputStr;
-    event["clipboardData"].call<void>("setData",
-                                      emscripten::val("text/plain"),
-                                      inputStr.toStdString());
-    event.call<void>("preventDefault");
-    event.call<void>("stopImmediatePropagation");
-}
-
-static void cutCallback(emscripten::val event)
-{
-    qCDebug(qLcQpaWasmInputContext) << Q_FUNC_INFO;
-
-    QClipboard *clipboard = QGuiApplication::clipboard();
-    QString inputStr = clipboard->text();
-    qCDebug(qLcQpaWasmInputContext) << "QClipboard : " << inputStr;
-    event["clipboardData"].call<void>("setData",
-                                      emscripten::val("text/plain"),
-                                      inputStr.toStdString());
-    event.call<void>("preventDefault");
-    event.call<void>("stopImmediatePropagation");
-}
-
-static void pasteCallback(emscripten::val event)
-{
-    qCDebug(qLcQpaWasmInputContext) << Q_FUNC_INFO;
-
-    emscripten::val clipboardData = event["clipboardData"].call<emscripten::val>("getData", emscripten::val("text/plain"));
-    QString clipboardStr = QString::fromEcmaString(clipboardData);
-    qCDebug(qLcQpaWasmInputContext) << "wasm clipboard : " << clipboardStr;
-    QClipboard *clipboard = QGuiApplication::clipboard();
-    if (clipboard->text() != clipboardStr)
-        clipboard->setText(clipboardStr);
-
-    // propagate to input event (insertFromPaste)
-}
-#endif // QT_CONFIG(clipboard)
-
 QWasmInputContext::QWasmInputContext()
 {
     qCDebug(qLcQpaWasmInputContext) << Q_FUNC_INFO;
-    emscripten::val document = emscripten::val::global("document");
-    // This 'input' can be an issue to handle multiple lines,
-    // 'textarea' can be used instead.
-    m_inputElement = document.call<emscripten::val>("createElement", std::string("input"));
-    m_inputElement.set("type", "text");
-    m_inputElement.set("contenteditable","true");
-    m_inputElement.call<void>("setAttribute", std::string("aria-hidden"), std::string("true"));
-
-    m_inputElement["style"].set("position", "absolute");
-    m_inputElement["style"].set("left", 0);
-    m_inputElement["style"].set("top", 0);
-    m_inputElement["style"].set("opacity", 0);
-    m_inputElement["style"].set("display", "");
-    m_inputElement["style"].set("z-index", -2);
-    m_inputElement["style"].set("width", "1px");
-    m_inputElement["style"].set("height", "1px");
-
-    emscripten::val body = document["body"];
-    body.call<void>("appendChild", m_inputElement);
-
-    m_inputCallback = QWasmEventHandler(m_inputElement, "input",
-        [this](emscripten::val event){ QWasmInputContext::inputCallback(event); });
-    m_compositionEndCallback = QWasmEventHandler(m_inputElement, "compositionend",
-        [this](emscripten::val event){ QWasmInputContext::compositionEndCallback(event); });
-    m_compositionStartCallback = QWasmEventHandler(m_inputElement, "compositionstart",
-        [this](emscripten::val event){ QWasmInputContext::compositionStartCallback(event); });
-    m_compositionUpdateCallback = QWasmEventHandler(m_inputElement, "compositionupdate",
-        [this](emscripten::val event){ QWasmInputContext::compositionUpdateCallback(event); });
-
-#if QT_CONFIG(clipboard)
-    // Clipboard for InputContext
-    m_clipboardCut = QWasmEventHandler(m_inputElement, "cut", cutCallback);
-    m_clipboardCopy = QWasmEventHandler(m_inputElement, "copy", copyCallback);
-    m_clipboardPaste = QWasmEventHandler(m_inputElement, "paste", pasteCallback);
-#endif
 }
 
 QWasmInputContext::~QWasmInputContext()
@@ -284,6 +205,9 @@ void QWasmInputContext::showInputPanel()
 
 void QWasmInputContext::updateGeometry()
 {
+    if (m_inputElement.isNull())
+        return;
+
     const QWindow *focusWindow = QGuiApplication::focusWindow();
     if (!m_focusObject || !focusWindow || !m_inputMethodAccepted) {
         m_inputElement["style"].set("left", "0px");
@@ -293,23 +217,12 @@ void QWasmInputContext::updateGeometry()
         Q_ASSERT(m_focusObject);
         Q_ASSERT(m_inputMethodAccepted);
 
-        // Set the geometry
-        QPoint globalPos;
-        const QRect cursorRectangle = QPlatformInputContext::cursorRectangle().toRect();
-        if (cursorRectangle.isValid()) {
-            qCDebug(qLcQpaWasmInputContext)
-                    << Q_FUNC_INFO << "cursorRectangle: " << cursorRectangle;
-            globalPos = focusWindow->mapToGlobal(cursorRectangle.topLeft());
-            if (globalPos.x() > 0)
-                globalPos.setX(globalPos.x() - 1);
-            if (globalPos.y() > 0)
-                globalPos.setY(globalPos.y() - 1);
-        }
-
-        const auto styleLeft = std::to_string(globalPos.x()) + "px";
-        const auto styleTop = std::to_string(globalPos.y()) + "px";
-        m_inputElement["style"].set("left", styleLeft);
-        m_inputElement["style"].set("top", styleTop);
+        const QRect inputItemRectangle = QPlatformInputContext::inputItemRectangle().toRect();
+        qCDebug(qLcQpaWasmInputContext) << Q_FUNC_INFO << "propagating inputItemRectangle:" << inputItemRectangle;
+        m_inputElement["style"].set("left", std::to_string(inputItemRectangle.x()) + "px");
+        m_inputElement["style"].set("top", std::to_string(inputItemRectangle.y()) + "px");
+        m_inputElement["style"].set("width", std::to_string(inputItemRectangle.width()) + "px");
+        m_inputElement["style"].set("height", std::to_string(inputItemRectangle.height()) + "px");
     }
 }
 
@@ -322,22 +235,29 @@ void QWasmInputContext::updateInputElement()
     updateGeometry();
 
     // If there is no focus object, or no visible input panel, remove focus
-    const QWindow *focusWindow = QGuiApplication::focusWindow();
+    QWasmWindow *focusWindow = QWasmWindow::fromWindow(QGuiApplication::focusWindow());
     if (!m_focusObject || !focusWindow || !m_inputMethodAccepted) {
-        m_inputElement.set("value", "");
+        if (!m_inputElement.isNull()) {
+            m_inputElement.set("value", "");
+            m_inputElement.set("inputMode", std::string("none"));
+        }
 
-        if (QWasmWindow *wasmwindow = QWasmWindow::fromWindow(focusWindow))
-            wasmwindow->focus();
-        else
-            m_inputElement.call<void>("blur");
+        if (focusWindow) {
+            focusWindow->focus();
+        } else {
+            if (!m_inputElement.isNull())
+                m_inputElement.call<void>("blur");
+        }
 
-        m_inputElement.set("inputMode", std::string("none"));
+        m_inputElement = emscripten::val::null();
         return;
     }
 
     Q_ASSERT(focusWindow);
     Q_ASSERT(m_focusObject);
     Q_ASSERT(m_inputMethodAccepted);
+
+    m_inputElement = focusWindow->inputElement();
 
     qCDebug(qLcQpaWasmInputContext) << Q_FUNC_INFO << QRectF::fromDOMRect(m_inputElement.call<emscripten::val>("getBoundingClientRect"));
 

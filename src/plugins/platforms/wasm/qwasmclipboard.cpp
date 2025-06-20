@@ -48,10 +48,6 @@ static void commonCopyEvent(val event)
 
 void QWasmClipboard::cut(val event)
 {
-    QWasmInputContext *wasmInput = QWasmIntegration::get()->wasmInputContext();
-    if (wasmInput && wasmInput->usingTextInput())
-        return;
-
     if (!QWasmIntegration::get()->getWasmClipboard()->hasClipboardApi()) {
         // Send synthetic Ctrl+X to make the app cut data to Qt's clipboard
          QWindowSystemInterface::handleKeyEvent(
@@ -63,10 +59,6 @@ void QWasmClipboard::cut(val event)
 
 void QWasmClipboard::copy(val event)
 {
-    QWasmInputContext *wasmInput = QWasmIntegration::get()->wasmInputContext();
-    if (wasmInput && wasmInput->usingTextInput())
-        return;
-
     if (!QWasmIntegration::get()->getWasmClipboard()->hasClipboardApi()) {
         // Send synthetic Ctrl+C to make the app copy data to Qt's clipboard
             QWindowSystemInterface::handleKeyEvent(
@@ -77,10 +69,6 @@ void QWasmClipboard::copy(val event)
 
 void QWasmClipboard::paste(val event)
 {
-    QWasmInputContext *wasmInput = QWasmIntegration::get()->wasmInputContext();
-    if (wasmInput && wasmInput->usingTextInput())
-        return;
-
     event.call<void>("preventDefault"); // prevent browser from handling drop event
 
     QWasmIntegration::get()->getWasmClipboard()->sendClipboardData(event);

@@ -51,7 +51,10 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmDeadKeySupport *deadKeySupport,
       m_decoratedWindow(m_document.call<emscripten::val>("createElement", emscripten::val("div"))),
       m_window(m_document.call<emscripten::val>("createElement", emscripten::val("div"))),
       m_a11yContainer(m_document.call<emscripten::val>("createElement", emscripten::val("div"))),
-      m_canvas(m_document.call<emscripten::val>("createElement", emscripten::val("canvas")))
+      m_canvas(m_document.call<emscripten::val>("createElement", emscripten::val("canvas"))),
+      m_focusHelper(m_document.call<emscripten::val>("createElement", emscripten::val("div"))),
+      m_inputElement(m_document.call<emscripten::val>("createElement", emscripten::val("input")))
+
 {
     m_decoratedWindow.set("className", "qt-decorated-window");
     m_decoratedWindow["style"].set("display", std::string("none"));
@@ -80,17 +83,6 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmDeadKeySupport *deadKeySupport,
 
     m_canvas["classList"].call<void>("add", emscripten::val("qt-window-canvas"));
 
-    // Set contentEditable for two reasons;
-    //   1) so that the window gets clipboard events,
-    //   2) For applications who will handle keyboard events, but without having inputMethodAccepted()
-    //
-    // Set inputMode to none to avoid keyboard popping up on push buttons
-    // This is a tradeoff, we are not able to separate between a push button and
-    // a widget that reads keyboard events.
-    m_canvas.call<void>("setAttribute", std::string("inputmode"), std::string("none"));
-    m_canvas.call<void>("setAttribute", std::string("contenteditable"), std::string("true"));
-    m_canvas["style"].set("outline", std::string("none"));
-
 #if QT_CONFIG(clipboard)
     if (QWasmClipboard::shouldInstallWindowEventHandlers()) {
         m_cutCallback = QWasmEventHandler(m_canvas, "cut", QWasmClipboard::cut);
@@ -99,9 +91,37 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmDeadKeySupport *deadKeySupport,
     }
 #endif
 
-    // Set inputMode to none to stop the mobile keyboard from opening
-    // when the user clicks on the window.
-    m_window.set("inputMode", std::string("none"));
+    // Set up m_focusHelper, which is an invisible child element of the window which takes
+    // focus on behalf of the window any time the window has focus in general, but none
+    // of the special child elements such as the inputElment or a11y elements have focus.
+    // Set inputMode=none set to prevent the virtual keyboard from popping up.
+    m_focusHelper["classList"].call<void>("add", emscripten::val("qt-window-focus-helper"));
+    m_focusHelper.set("inputMode", std::string("none"));
+    m_focusHelper.call<void>("setAttribute", std::string("aria-hidden"), std::string("true"));
+    m_focusHelper.call<void>("setAttribute", std::string("contenteditable"), std::string("true"));
+    m_focusHelper["style"].set("position", "absolute");
+    m_focusHelper["style"].set("left", 0);
+    m_focusHelper["style"].set("top", 0);
+    m_focusHelper["style"].set("width", "1px");
+    m_focusHelper["style"].set("height", "1px");
+    m_focusHelper["style"].set("z-index", -2);
+    m_focusHelper["style"].set("opacity", 0);
+    m_window.call<void>("appendChild", m_focusHelper);
+
+    // Set up m_inputElement, which takes focus whenever a Qt text input UI element has
+    // foucus.
+    m_inputElement["classList"].call<void>("add", emscripten::val("qt-window-input-element"));
+    m_inputElement.set("type", "text");
+    m_inputElement.call<void>("setAttribute", std::string("aria-hidden"), std::string("true"));
+    m_inputElement["style"].set("position", "absolute");
+    m_inputElement["style"].set("left", 0);
+    m_inputElement["style"].set("top", 0);
+    m_inputElement["style"].set("width", "1px");
+    m_inputElement["style"].set("height", "1px");
+    m_inputElement["style"].set("z-index", -2);
+    m_inputElement["style"].set("opacity", 0);
+    m_inputElement["style"].set("display", "");
+    m_window.call<void>("appendChild", m_inputElement);
 
     // Hide the canvas from screen readers.
     m_canvas.call<void>("setAttribute", std::string("aria-hidden"), std::string("true"));
@@ -193,21 +213,20 @@ void QWasmWindow::registerEventHandlers()
     m_wheelEventCallback = QWasmEventHandler(m_window, "wheel",
         [this](emscripten::val event) { this->handleWheelEvent(event); });
 
-    QWasmInputContext *wasmInput = QWasmIntegration::get()->wasmInputContext();
-    if (wasmInput) {
-        m_keyDownCallbackForInputContext =
-            QWasmEventHandler(wasmInput->m_inputElement, "keydown",
-            [this](emscripten::val event) { this->handleKeyForInputContextEvent(EventType::KeyDown, event); });
-        m_keyUpCallbackForInputContext =
-            QWasmEventHandler(wasmInput->m_inputElement, "keyup",
-            [this](emscripten::val event) { this->handleKeyForInputContextEvent(EventType::KeyUp, event); });
-    }
-
-    m_keyDownCallback = QWasmEventHandler(m_canvas, "keydown",
+    m_keyDownCallback = QWasmEventHandler(m_window, "keydown",
         [this](emscripten::val event) { this->handleKeyEvent(KeyEvent(EventType::KeyDown, event, m_deadKeySupport)); });
-    m_keyUpCallback =QWasmEventHandler(m_canvas, "keyup",
+    m_keyUpCallback =QWasmEventHandler(m_window, "keyup",
         [this](emscripten::val event) {this->handleKeyEvent(KeyEvent(EventType::KeyUp, event, m_deadKeySupport)); });
-}
+
+    m_inputCallback = QWasmEventHandler(m_window, "input",
+        [this](emscripten::val event){ handleInputEvent(event); });
+    m_compositionUpdateCallback = QWasmEventHandler(m_window, "compositionupdate",
+        [this](emscripten::val event){ handleCompositionUpdateEvent(event); });
+    m_compositionStartCallback = QWasmEventHandler(m_window, "compositionstart",
+        [this](emscripten::val event){ handleCompositionStartEvent(event); });
+    m_compositionEndCallback = QWasmEventHandler(m_window, "compositionend",
+        [this](emscripten::val event){ handleCompositionEndEvent(event); });
+    }
 
 QWasmWindow::~QWasmWindow()
 {
@@ -624,10 +643,15 @@ void QWasmWindow::commitParent(QWasmWindowTreeNode *parent)
 
 void QWasmWindow::handleKeyEvent(const KeyEvent &event)
 {
-    qCDebug(qLcQpaWasmInputContext) << "processKey as KeyEvent";
-    if (processKey(event)) {
-        event.webEvent.call<void>("preventDefault");
-        event.webEvent.call<void>("stopPropagation");
+    qCDebug(qLcQpaWasmInputContext) << "handleKeyEvent";
+
+    if (QWasmInputContext *inputContext = QWasmIntegration::get()->wasmInputContext(); inputContext->isActive()) {
+        handleKeyForInputContextEvent(event);
+    } else {
+        if (processKey(event)) {
+            event.webEvent.call<void>("preventDefault");
+            event.webEvent.call<void>("stopPropagation");
+        }
     }
 }
 
@@ -658,7 +682,7 @@ bool QWasmWindow::processKey(const KeyEvent &event)
 #endif
 }
 
-void QWasmWindow::handleKeyForInputContextEvent(EventType eventType, const emscripten::val &event)
+void QWasmWindow::handleKeyForInputContextEvent(const KeyEvent &keyEvent)
 {
     //
     // Things to consider:
@@ -668,6 +692,7 @@ void QWasmWindow::handleKeyForInputContextEvent(EventType eventType, const emscr
     // complex (i.e Chinese et al) input handling
     // Multiline text edit backspace at start of line
     //
+    emscripten::val event = keyEvent.webEvent;
     bool useInputContext = [event]() -> bool {
         const QWasmInputContext *wasmInput = QWasmIntegration::get()->wasmInputContext();
         if (!wasmInput)
@@ -700,7 +725,7 @@ void QWasmWindow::handleKeyForInputContextEvent(EventType eventType, const emscr
 
     if (!useInputContext) {
         qCDebug(qLcQpaWasmInputContext) << "processKey as KeyEvent";
-        if (processKeyForInputContext(KeyEvent(eventType, event, m_deadKeySupport)))
+        if (processKeyForInputContext(keyEvent))
             event.call<void>("preventDefault");
         event.call<void>("stopImmediatePropagation");
     }
@@ -729,6 +754,30 @@ bool QWasmWindow::processKeyForInputContext(const KeyEvent &event)
 #endif
 
     return result;
+}
+
+void QWasmWindow::handleInputEvent(emscripten::val event)
+{
+    if (QWasmInputContext *inputContext = QWasmIntegration::get()->wasmInputContext(); inputContext->isActive())
+        inputContext->inputCallback(event);
+}
+
+void QWasmWindow::handleCompositionStartEvent(emscripten::val event)
+{
+    if (QWasmInputContext *inputContext = QWasmIntegration::get()->wasmInputContext(); inputContext->isActive())
+        inputContext->compositionStartCallback(event);
+}
+
+void QWasmWindow::handleCompositionUpdateEvent(emscripten::val event)
+{
+    if (QWasmInputContext *inputContext = QWasmIntegration::get()->wasmInputContext(); inputContext->isActive())
+        inputContext->compositionUpdateCallback(event);
+}
+
+void QWasmWindow::handleCompositionEndEvent(emscripten::val event)
+{
+    if (QWasmInputContext *inputContext = QWasmIntegration::get()->wasmInputContext(); inputContext->isActive())
+        inputContext->compositionEndCallback(event);
 }
 
 void QWasmWindow::handlePointerEnterLeaveEvent(const PointerEvent &event)
@@ -1042,7 +1091,7 @@ void QWasmWindow::requestActivateWindow()
 
 void QWasmWindow::focus()
 {
-    m_canvas.call<void>("focus");
+    m_focusHelper.call<void>("focus");
 }
 
 bool QWasmWindow::setMouseGrabEnabled(bool grab)

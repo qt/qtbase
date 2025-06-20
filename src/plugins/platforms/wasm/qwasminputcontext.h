@@ -35,14 +35,8 @@ public:
     void setPreeditString(QString preeditStr, int replaceSize);
     void insertPreedit();
     void commitPreeditAndClear();
-    emscripten::val m_inputElement = emscripten::val::null();
 
     void insertText(QString inputStr, bool replace = false);
-
-    QWasmEventHandler m_inputCallback;
-    QWasmEventHandler m_compositionEndCallback;
-    QWasmEventHandler m_compositionStartCallback;
-    QWasmEventHandler m_compositionUpdateCallback;
 
     bool usingTextInput() const { return m_inputMethodAccepted; }
     void setFocusObject(QObject *object) override;
@@ -54,19 +48,20 @@ public:
 
     void updateGeometry();
 
+    bool isActive() const {
+        return m_focusObject && m_inputMethodAccepted;
+    }
+
 private:
     void updateInputElement();
 
 private:
-    QWasmEventHandler m_clipboardCut;
-    QWasmEventHandler m_clipboardCopy;
-    QWasmEventHandler m_clipboardPaste;
-
     QString m_preeditString;
     int m_replaceSize = 0;
 
     bool m_inputMethodAccepted = false;
     QObject *m_focusObject = nullptr;
+    emscripten::val m_inputElement = emscripten::val::null();
 };
 
 QT_END_NAMESPACE

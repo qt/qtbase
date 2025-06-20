@@ -100,6 +100,7 @@ public:
     emscripten::val context2d() const { return m_context2d; }
     emscripten::val a11yContainer() const { return m_a11yContainer; }
     emscripten::val inputHandlerElement() const { return m_window; }
+    emscripten::val inputElement() const { return m_inputElement; }
 
     // QNativeInterface::Private::QWasmWindow
     emscripten::val document() const override { return m_document; }
@@ -137,8 +138,13 @@ private:
 
     void handleKeyEvent(const KeyEvent &event);
     bool processKey(const KeyEvent &event);
-    void handleKeyForInputContextEvent(EventType eventType, const emscripten::val &event);
+    void handleKeyForInputContextEvent(const KeyEvent &event);
     bool processKeyForInputContext(const KeyEvent &event);
+    void handleInputEvent(emscripten::val event);
+    void handleCompositionStartEvent(emscripten::val event);
+    void handleCompositionUpdateEvent(emscripten::val event);
+    void handleCompositionEndEvent(emscripten::val event);
+
     void handlePointerEnterLeaveEvent(const PointerEvent &event);
     bool processPointerEnterLeave(const PointerEvent &event);
     void processPointer(const PointerEvent &event);
@@ -154,11 +160,14 @@ private:
     QWasmDeadKeySupport *m_deadKeySupport;
     QRect m_normalGeometry {0, 0, 0 ,0};
 
-    emscripten::val m_document = emscripten::val::undefined();
-    emscripten::val m_decoratedWindow = emscripten::val::undefined();
-    emscripten::val m_window = emscripten::val::undefined();
-    emscripten::val m_a11yContainer = emscripten::val::undefined();
-    emscripten::val m_canvas = emscripten::val::undefined();
+    emscripten::val m_document;
+    emscripten::val m_decoratedWindow;
+    emscripten::val m_window;
+    emscripten::val m_a11yContainer;
+    emscripten::val m_canvas;
+    emscripten::val m_focusHelper;
+    emscripten::val m_inputElement;
+
     emscripten::val m_context2d = emscripten::val::undefined();
 
     std::unique_ptr<NonClientArea> m_nonClientArea;
@@ -169,6 +178,10 @@ private:
     QWasmEventHandler m_keyUpCallback;
     QWasmEventHandler m_keyDownCallbackForInputContext;
     QWasmEventHandler m_keyUpCallbackForInputContext;
+    QWasmEventHandler m_inputCallback;
+    QWasmEventHandler m_compositionStartCallback;
+    QWasmEventHandler m_compositionUpdateCallback;
+    QWasmEventHandler m_compositionEndCallback;
 
     QWasmEventHandler m_pointerDownCallback;
     QWasmEventHandler m_pointerMoveCallback;
