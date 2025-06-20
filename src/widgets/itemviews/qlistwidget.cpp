@@ -1811,7 +1811,7 @@ QMimeData *QListWidget::mimeData(const QList<QListWidgetItem *> &items) const
     with the given \a action in the given \a index. Returns \c true if \a data and
     \a action can be handled by the model; otherwise returns \c false.
 
-    \sa supportedDropActions(), supportedDragActions()
+    \sa supportedDropActions(), supportedDragActions
 */
 bool QListWidget::dropMimeData(int index, const QMimeData *data, Qt::DropAction action)
 {
@@ -1836,7 +1836,7 @@ void QListWidget::dropEvent(QDropEvent *event)
 /*!
     Returns the drop actions supported by this view.
 
-    \sa Qt::DropActions, supportedDragActions(), dropMimeData()
+    \sa Qt::DropActions, supportedDragActions, dropMimeData()
 */
 Qt::DropActions QListWidget::supportedDropActions() const
 {
@@ -1845,23 +1845,17 @@ Qt::DropActions QListWidget::supportedDropActions() const
 }
 
 /*!
-    Returns the drag actions supported by this view.
+    \property QListWidget::supportedDragActions
+    \brief the drag actions supported by this view
 
     \since 6.10
-    \sa Qt::DropActions, setSupportedDragActions(), supportedDropActions()
+    \sa Qt::DropActions, supportedDropActions()
 */
 Qt::DropActions QListWidget::supportedDragActions() const
 {
     Q_D(const QListWidget);
     return d->supportedDragActions.value_or(supportedDropActions());
 }
-
-/*!
-    Sets the drag \a actions supported by this view.
-
-    \since 6.10
-    \sa Qt::DropActions, supportedDragActions()
-*/
 
 void QListWidget::setSupportedDragActions(Qt::DropActions actions)
 {

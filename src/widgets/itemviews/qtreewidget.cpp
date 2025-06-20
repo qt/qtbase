@@ -3198,7 +3198,7 @@ QMimeData *QTreeWidget::mimeData(const QList<QTreeWidgetItem *> &items) const
     successfully handled by decoding the mime data and inserting it
     into the model; otherwise it returns \c false.
 
-    \sa supportedDropActions(), supportedDragActions()
+    \sa supportedDropActions(), supportedDragActions
 */
 bool QTreeWidget::dropMimeData(QTreeWidgetItem *parent, int index,
                                const QMimeData *data, Qt::DropAction action)
@@ -3211,7 +3211,7 @@ bool QTreeWidget::dropMimeData(QTreeWidgetItem *parent, int index,
 /*!
   Returns the drop actions supported by this view.
 
-  \sa Qt::DropActions, supportedDragActions(), dropMimeData()
+  \sa Qt::DropActions, supportedDragActions, dropMimeData()
 */
 Qt::DropActions QTreeWidget::supportedDropActions() const
 {
@@ -3219,23 +3219,17 @@ Qt::DropActions QTreeWidget::supportedDropActions() const
 }
 
 /*!
-    Returns the drag actions supported by this view.
+    \property QTreeWidget::supportedDragActions
+    \brief the drag actions supported by this view
 
     \since 6.10
-    \sa Qt::DropActions, setSupportedDragActions(), supportedDropActions()
+    \sa Qt::DropActions, supportedDropActions()
 */
 Qt::DropActions QTreeWidget::supportedDragActions() const
 {
     Q_D(const QTreeWidget);
     return d->supportedDragActions.value_or(supportedDropActions());
 }
-
-/*!
-    Sets the drag \a actions supported by this view.
-
-    \since 6.10
-    \sa Qt::DropActions, supportedDragActions()
-*/
 
 void QTreeWidget::setSupportedDragActions(Qt::DropActions actions)
 {
