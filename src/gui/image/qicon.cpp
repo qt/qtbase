@@ -144,7 +144,7 @@ void QIconPrivate::clearIconCache()
 /*! \internal
     Computes the displayDevicePixelRatio for a pixmap.
 
-    If displayDevicePixelRatio is 1.0 the reurned value is 1.0, always.
+    If displayDevicePixelRatio is 1.0 the returned value is 1.0, always.
 
     For a displayDevicePixelRatio of 2.0 the returned value will be between
     1.0 and 2.0, depending on requestedSize and actualsize:
@@ -161,8 +161,9 @@ qreal QIconPrivate::pixmapDevicePixelRatio(qreal displayDevicePixelRatio, const 
         return displayDevicePixelRatio;
     }
     qreal scale = 0.5 * (qreal(actualSize.width()) / qreal(targetSize.width()) +
-                         qreal(actualSize.height() / qreal(targetSize.height())));
-    return qMax(qreal(1.0), displayDevicePixelRatio *scale);
+                         qreal(actualSize.height()) / qreal(targetSize.height()));
+    qreal dpr = qMax(qreal(1.0), displayDevicePixelRatio * scale);
+    return qRound(dpr * 100) / 100.0;
 }
 
 QPixmapIconEngine::QPixmapIconEngine()
