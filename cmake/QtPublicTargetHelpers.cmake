@@ -477,6 +477,26 @@ function(_qt_internal_set_up_static_runtime_library target)
                 target_link_options(${target} ${link_option} "-static")
             endif()
         endif()
+    elseif(QT_FEATURE_static_compiler_runtime)
+        get_target_property(target_type ${target} TYPE)
+        if(NOT target_type STREQUAL "INTERFACE_LIBRARY")
+            if(MSVC)
+                # This is the "Hybrid CRT" method of linking, see: https://aka.ms/hybridcrt
+                # This is the rules from HybridCRT.props ported to CMake. It's supported by
+                # Microsoft, and the default linking method in the Windows App SDK.
+                # With this enabled the binaries will not depend on the VC++ redistributable.
+                set_property(TARGET ${target} PROPERTY
+                    MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+                target_link_options(${target} PRIVATE
+                    "LINKER:/DEFAULTLIB:ucrt$<$<CONFIG:Debug>:d>.lib" # include the dynamic UCRT
+                    "LINKER:/NODEFAULTLIB:libucrt$<$<CONFIG:Debug>:d>.lib" # ignore the static UCRT
+                )
+            else()
+                message(FATAL_ERROR
+                    "FEATURE_static_compiler_runtime is not supported on this compiler/platform."
+                )
+            endif()
+        endif()
     endif()
 endfunction()
 

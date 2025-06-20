@@ -1223,6 +1223,11 @@ qt_feature("static_runtime"
 )
 qt_feature_config("static_runtime" QMAKE_PUBLIC_CONFIG)
 qt_feature_config("static_runtime" QMAKE_PUBLIC_QT_CONFIG)
+qt_feature("static_compiler_runtime" PUBLIC
+    LABEL "Statically link the C++ library and compiler runtime, but not the UCRT"
+    AUTODETECT OFF
+    CONDITION NOT QT_FEATURE_static_runtime AND WIN32 AND MSVC
+)
 qt_feature("dlopen" PRIVATE
     LABEL "dlopen()"
     CONDITION UNIX AND NOT INTEGRITY
