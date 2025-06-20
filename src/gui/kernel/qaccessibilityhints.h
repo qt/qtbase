@@ -20,10 +20,14 @@ class Q_GUI_EXPORT QAccessibilityHints : public QObject
 public:
     explicit QAccessibilityHints(QObject *parent = nullptr);
     ~QAccessibilityHints() override;
+
     Qt::ContrastPreference contrastPreference() const;
 
 Q_SIGNALS:
     void contrastPreferenceChanged(Qt::ContrastPreference contrastPreference);
+
+protected:
+    bool event(QEvent *event) override;
 };
 
 QT_END_NAMESPACE

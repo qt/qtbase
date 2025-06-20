@@ -58,6 +58,14 @@ Qt::ContrastPreference QAccessibilityHints::contrastPreference() const
     return d->m_contrastPreference;
 }
 
+/*!
+    \reimp
+*/
+bool QAccessibilityHints::event(QEvent *event)
+{
+    return QObject::event(event);
+}
+
 QT_END_NAMESPACE
 
 #include "moc_qaccessibilityhints.cpp"
