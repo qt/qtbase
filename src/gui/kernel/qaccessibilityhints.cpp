@@ -38,6 +38,8 @@ QAccessibilityHints::QAccessibilityHints(QObject *parent)
     : QObject(*(new QAccessibilityHintsPrivate), parent)
 {}
 
+QAccessibilityHints::~QAccessibilityHints() = default;
+
 /*!
     \property QAccessibilityHints::contrastPreference
     \brief The contrast mode set by the system.

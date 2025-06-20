@@ -19,6 +19,7 @@ class Q_GUI_EXPORT QAccessibilityHints : public QObject
 
 public:
     explicit QAccessibilityHints(QObject *parent = nullptr);
+    ~QAccessibilityHints() override;
     Qt::ContrastPreference contrastPreference() const;
 
 Q_SIGNALS:
