@@ -307,6 +307,8 @@ public:
     template <typename InputIterator, if_input_iterator<InputIterator> = true>
     QByteArray &assign(InputIterator first, InputIterator last)
     {
+        if constexpr (std::is_same_v<InputIterator, iterator> || std::is_same_v<InputIterator, const_iterator>)
+            return assign(QByteArrayView(first, last));
         d.assign(first, last);
         if (d.data())
             d.data()[d.size] = '\0';
