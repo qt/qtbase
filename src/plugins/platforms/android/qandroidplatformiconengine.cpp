@@ -447,6 +447,7 @@ static QString getGlyphs(QStringView iconName)
         {"emblem-system"_L1, u"\ue8b8"},
         //{"emblem-unreadable"_L1, u"\u"},
         {"folder"_L1, u"\ue2c7"},
+        {"text-x-generic"_L1, u"\ue66d"},
         //{"folder-remote"_L1, u"\u"},
         {"network-server"_L1, u"\ue875"},
         {"network-workgroup"_L1, u"\ue1a0"},
