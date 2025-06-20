@@ -1057,7 +1057,12 @@ void QLabel::paintEvent(QPaintEvent *)
         const QSize size = d->scaledcontents ? cr.size() : d->pixmapSize;
         const auto mode = isEnabled() ? QIcon::Normal : QIcon::Disabled;
         QPixmap pix = d->icon->pixmap(size, dpr, mode);
-        if (d->scaledcontents && pix.size() != size * dpr) {
+        // the size of the returned pixmap might not match when
+        //  - scaledContents is enabled
+        //  - the dpr does not match the one from the pixmap in QIcon
+        // since QStyle::drawItemPixmap() stretches without Qt::SmoothTransformation
+        // we do it here
+        if (pix.size() != size * dpr) {
             const QString key = "qt_label_"_L1 % HexString<quint64>(pix.cacheKey())
                                                % HexString<quint8>(mode)
                                                % HexString<uint>(size.width())
