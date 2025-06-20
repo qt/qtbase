@@ -97,6 +97,9 @@ bool ensurePositionTopLeft(QWindow *window)
 {
     const QPoint availableTopLeft = QGuiApplication::primaryScreen()->availableGeometry().topLeft();
     window->setFramePosition(availableTopLeft);
+#ifdef Q_OS_ANDROID
+    return true; // Android QPA handles the position change synchronously
+#endif
     bool positionCorrect = true;
 
     if (!window->flags().testFlag(Qt::FramelessWindowHint))
