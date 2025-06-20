@@ -716,6 +716,17 @@ QUntypedPropertyBinding makeBinding(const QUntypedPropertyData *d,
 
 template<class T>
 inline constexpr QBindableInterface iface = {
+#ifdef QT_NO_DATA_RELOCATION
+    // On windows the address of a dllimported function can't be relocated here.
+    // MSVC automatically generates a trampoline, but clang won't, so do it explicitly.
+    [](const QUntypedPropertyData *d, void *value) { getter(d, value); },
+    [](QUntypedPropertyData *d, const void *value) { setter(d, value); },
+    [](const QUntypedPropertyData *d) -> QUntypedPropertyBinding { return getBinding(d); },
+    &setBinding<T>,
+    &makeBinding<T>,
+    [](const QUntypedPropertyData *d, QPropertyObserver *observer) { setObserver(d, observer); },
+    &QMetaType::fromType<T>,
+#else
     &getter,
     &setter,
     &getBinding,
@@ -723,6 +734,7 @@ inline constexpr QBindableInterface iface = {
     &makeBinding<T>,
     &setObserver,
     &QMetaType::fromType<T>,
+#endif
 };
 }
 }
