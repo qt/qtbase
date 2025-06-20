@@ -17,104 +17,104 @@ void array()
 {
     QListView listView;
 
-//! [array]
-std::array<int, 5> numbers = {1, 2, 3, 4, 5};
-QRangeModel model(numbers);
-listView.setModel(&model);
-//! [array]
+    //! [array]
+    std::array<int, 5> numbers = {1, 2, 3, 4, 5};
+    QRangeModel model(numbers);
+    listView.setModel(&model);
+    //! [array]
 }
 
 void construct_by()
 {
     std::vector<int> numbers = {1, 2, 3, 4, 5};
 
-{
-//! [value]
-    QRangeModel model(numbers);
-//! [value]
-}
+    {
+        //! [value]
+        QRangeModel model(numbers);
+        //! [value]
+    }
 
-{
-//! [pointer]
-    QRangeModel model(&numbers);
-//! [pointer]
-}
+    {
+        //! [pointer]
+        QRangeModel model(&numbers);
+        //! [pointer]
+    }
 
-{
-//! [reference_wrapper]
-    QRangeModel model(std::ref(numbers));
-//! [reference_wrapper]
-}
+    {
+        //! [reference_wrapper]
+        QRangeModel model(std::ref(numbers));
+        //! [reference_wrapper]
+    }
 
-{
-//! [smart_pointer]
-    auto shared_numbers = std::make_shared<std::vector<int>>(numbers);
-    QRangeModel model(shared_numbers);
-//! [smart_pointer]
-}
+    {
+        //! [smart_pointer]
+        auto shared_numbers = std::make_shared<std::vector<int>>(numbers);
+        QRangeModel model(shared_numbers);
+        //! [smart_pointer]
+    }
 }
 
 void const_array()
 {
-//! [const_array]
-const std::array<int, 5> numbers = {1, 2, 3, 4, 5};
-//! [const_array]
-QRangeModel model(numbers);
+    //! [const_array]
+    const std::array<int, 5> numbers = {1, 2, 3, 4, 5};
+    //! [const_array]
+    QRangeModel model(numbers);
 }
 
 void const_values()
 {
-//! [const_values]
-std::array<const int, 5> numbers = {1, 2, 3, 4, 5};
-//! [const_values]
-QRangeModel model(numbers);
+    //! [const_values]
+    std::array<const int, 5> numbers = {1, 2, 3, 4, 5};
+    //! [const_values]
+    QRangeModel model(numbers);
 }
 
 void const_ref()
 {
     std::vector<int> numbers = {1, 2, 3, 4, 5};
-//! [const_ref]
+    //! [const_ref]
     QRangeModel model(std::cref(numbers));
-//! [const_ref]
+    //! [const_ref]
 }
 
 void list_of_int()
 {
-//! [list_of_int]
-QList<int> numbers = {1, 2, 3, 4, 5};
-QRangeModel model(numbers); // columnCount() == 1
-QListView listView;
-listView.setModel(&model);
-//! [list_of_int]
+    //! [list_of_int]
+    QList<int> numbers = {1, 2, 3, 4, 5};
+    QRangeModel model(numbers); // columnCount() == 1
+    QListView listView;
+    listView.setModel(&model);
+    //! [list_of_int]
 }
 
 void grid_of_numbers()
 {
-//! [grid_of_numbers]
-std::vector<std::vector<int>> gridOfNumbers = {
-    {1, 2, 3, 4, 5},
-    {6, 7, 8, 9, 10},
-    {11, 12, 13, 14, 15},
-};
-QRangeModel model(&gridOfNumbers); // columnCount() == 5
-QTableView tableView;
-tableView.setModel(&model);
-//! [grid_of_numbers]
+    //! [grid_of_numbers]
+    std::vector<std::vector<int>> gridOfNumbers = {
+        {1, 2, 3, 4, 5},
+        {6, 7, 8, 9, 10},
+        {11, 12, 13, 14, 15},
+    };
+    QRangeModel model(&gridOfNumbers); // columnCount() == 5
+    QTableView tableView;
+    tableView.setModel(&model);
+    //! [grid_of_numbers]
 }
 
 void pair_int_QString()
 {
-//! [pair_int_QString]
-using TableRow = std::tuple<int, QString>;
-QList<TableRow> numberNames = {
-    {1, "one"},
-    {2, "two"},
-    {3, "three"}
-};
-QRangeModel model(&numberNames); // columnCount() == 2
-QTableView tableView;
-tableView.setModel(&model);
-//! [pair_int_QString]
+    //! [pair_int_QString]
+    using TableRow = std::tuple<int, QString>;
+    QList<TableRow> numberNames = {
+        {1, "one"},
+        {2, "two"},
+        {3, "three"}
+    };
+    QRangeModel model(&numberNames); // columnCount() == 2
+    QTableView tableView;
+    tableView.setModel(&model);
+    //! [pair_int_QString]
 }
 
 #if defined(__cpp_concepts) && defined(__cpp_lib_forward_like)
@@ -235,35 +235,33 @@ public:
 
 void tree_protocol()
 {
-//! [tree_protocol_5]
-Tree tree = {
-    {"..."},
-    {"..."},
-    {"..."},
-};
+    //! [tree_protocol_5]
+    Tree tree = {
+        {"..."},
+        {"..."},
+        {"..."},
+    };
 
-// each toplevel row has three children
-tree[0].addChild("...");
-tree[0].addChild("...");
-tree[0].addChild("...");
+    // each toplevel row has three children
+    tree[0].addChild("...");
+    tree[0].addChild("...");
+    tree[0].addChild("...");
 
-tree[1].addChild("...");
-tree[1].addChild("...");
-tree[1].addChild("...");
+    tree[1].addChild("...");
+    tree[1].addChild("...");
+    tree[1].addChild("...");
 
-tree[2].addChild("...");
-tree[2].addChild("...");
-tree[2].addChild("...");
-//! [tree_protocol_5]
+    tree[2].addChild("...");
+    tree[2].addChild("...");
+    tree[2].addChild("...");
+    //! [tree_protocol_5]
 
-{
-//! [tree_protocol_6]
-// instantiate the model with a pointer to the tree, not a copy!
-QRangeModel model(&tree);
-QTreeView view;
-view.setModel(&model);
-//! [tree_protocol_6]
-}
+    //! [tree_protocol_6]
+    // instantiate the model with a pointer to the tree, not a copy!
+    QRangeModel model(&tree);
+    QTreeView view;
+    view.setModel(&model);
+    //! [tree_protocol_6]
 }
 
 //! [explicit_tree_protocol_0]
@@ -278,10 +276,10 @@ struct TreeTraversal
 //! [explicit_tree_protocol_0]
 void explicit_tree_protocol()
 {
-Tree tree;
-//! [explicit_tree_protocol_1]
-QRangeModel model(&tree, TreeTraversal{});
-//! [explicit_tree_protocol_1]
+    Tree tree;
+    //! [explicit_tree_protocol_1]
+    QRangeModel model(&tree, TreeTraversal{});
+    //! [explicit_tree_protocol_1]
 }
 } // namespace tree_protocol
 
@@ -331,19 +329,19 @@ private:
 
 Tree make_tree_of_pointers()
 {
-//! [tree_of_pointers_2]
-Tree tree = {
-    new TreeRow("1"),
-    new TreeRow("2"),
-    new TreeRow("3"),
-    new TreeRow("4"),
-};
-tree[0]->addChild("1.1");
-tree[1]->addChild("2.1");
-tree[2]->addChild("3.1")->addChild("3.1.1");
-tree[3]->addChild("4.1");
-//! [tree_of_pointers_2]
-return tree;
+    //! [tree_of_pointers_2]
+    Tree tree = {
+        new TreeRow("1"),
+        new TreeRow("2"),
+        new TreeRow("3"),
+        new TreeRow("4"),
+    };
+    tree[0]->addChild("1.1");
+    tree[1]->addChild("2.1");
+    tree[2]->addChild("3.1")->addChild("3.1.1");
+    tree[3]->addChild("4.1");
+    //! [tree_of_pointers_2]
+    return tree;
 }
 
 //! [tree_of_pointers_3]
@@ -379,22 +377,22 @@ int main(int argc, char **argv)
 
 void color_map()
 {
-//! [color_map]
-using ColorEntry = QMap<Qt::ItemDataRole, QVariant>;
+    //! [color_map]
+    using ColorEntry = QMap<Qt::ItemDataRole, QVariant>;
 
-const QStringList colorNames = QColor::colorNames();
-QList<ColorEntry> colors;
-colors.reserve(colorNames.size());
-for (const QString &name : colorNames) {
-    const QColor color = QColor::fromString(name);
-    colors << ColorEntry{{Qt::DisplayRole, name},
-                         {Qt::DecorationRole, color},
-                         {Qt::ToolTipRole, color.name()}};
-}
-QRangeModel colorModel(colors);
-QListView list;
-list.setModel(&colorModel);
-//! [color_map]
+    const QStringList colorNames = QColor::colorNames();
+    QList<ColorEntry> colors;
+    colors.reserve(colorNames.size());
+    for (const QString &name : colorNames) {
+        const QColor color = QColor::fromString(name);
+        colors << ColorEntry{{Qt::DisplayRole, name},
+                            {Qt::DecorationRole, color},
+                            {Qt::ToolTipRole, color.name()}};
+    }
+    QRangeModel colorModel(colors);
+    QListView list;
+    list.setModel(&colorModel);
+    //! [color_map]
 }
 
 namespace multirole_gadget {
@@ -425,17 +423,17 @@ private:
 //! [color_gadget_0]
 
 void color_list() {
-//! [color_gadget_1]
-const QStringList colorNames = QColor::colorNames();
-QList<QRangeModel::SingleColumn<ColorEntry>> colors;
-colors.reserve(colorNames.size());
-for (const QString &name : colorNames)
-    colors << ColorEntry{name};
+    //! [color_gadget_1]
+    const QStringList colorNames = QColor::colorNames();
+    QList<QRangeModel::SingleColumn<ColorEntry>> colors;
+    colors.reserve(colorNames.size());
+    for (const QString &name : colorNames)
+        colors << ColorEntry{name};
 
-QRangeModel colorModel(colors);
-QListView list;
-list.setModel(&colorModel);
-//! [color_gadget_1]
+    QRangeModel colorModel(colors);
+    QListView list;
+    list.setModel(&colorModel);
+    //! [color_gadget_1]
 }
 } // namespace multirole_gadget
 
