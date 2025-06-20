@@ -25,13 +25,13 @@ QT_BEGIN_NAMESPACE
 
     \snippet qrangemodel/main.cpp array
 
+    \section1 Constructing the model
+
     The range can be any C++ type for which the standard methods
     \c{std::cbegin} and \c{std::cend} are implemented, and for which the
     returned iterator type satisfies \c{std::forward_iterator}. Certain model
     operations will perform better if \c{std::size} is available, and if the
     iterator satisfies \c{std::random_access_iterator}.
-
-    \section1 Constructing the model
 
     The range must be provided when constructing the model; there is no API to
     set the range later, and there is no API to retrieve the range from the
@@ -50,15 +50,13 @@ QT_BEGIN_NAMESPACE
     Changes to the data can be monitored using the signals emitted by the
     model, such as \l{QAbstractItemModel}{dataChanged()}.
 
-    However, if the range holds pointers to data, then the copy of the range
-    that the model operates on will typically point to the same data, so calls
-    to setData() will modify the original data, while calls to insertRows()
-    will not.
-
     To make modifications of the model affect the original range, provide the
-    range either by reference wrapper or by pointer.
+    range either by pointer:
 
     \snippet qrangemodel/main.cpp pointer
+
+    or through a reference wrapper:
+
     \snippet qrangemodel/main.cpp reference_wrapper
 
     In this case, QAbstractItemModel APIs that modify the model also modify the
@@ -67,10 +65,10 @@ QT_BEGIN_NAMESPACE
     \c{insert()}, \c{erase()}, in addition to dereferencing a mutating iterator
     to set or clear the data.
 
-    \note Once the model has been constructed, the range the model operates on
-    must no longer be modified directly. Views on the model wouldn't be
-    informed about the changes, and structural changes are likely to corrupt
-    instances of QPersistentModelIndex that the model maintains.
+    \note Once the model has been constructed, the range that the model
+    operates on must no longer be modified directly. Views on the model
+    wouldn't be informed about the changes, and structural changes are likely
+    to corrupt instances of QPersistentModelIndex that the model maintains.
 
     The caller must make sure that the range's lifetime exceeds the lifetime of
     the model.
@@ -196,6 +194,37 @@ QT_BEGIN_NAMESPACE
 
     \snippet qrangemodel/main.cpp color_gadget_1
 
+    \section2 Rows as values or pointers
+
+    In the examples so far, we have always used QRangeModel with ranges that
+    hold values. QRangeModel can also operate on ranges that hold pointers,
+    including smart pointers. This allows QRangeModel to operate on ranges of
+    polymorph types, such as QObject subclasses.
+
+    \snippet qrangemodel/main.cpp object_0
+    \dots
+    \snippet qrangemodel/main.cpp object_1
+
+    \snippet qrangemodel/main.cpp vector_of_objects_0
+    \dots
+    \snippet qrangemodel/main.cpp vector_of_objects_1
+    \snippet qrangemodel/main.cpp vector_of_objects_2
+
+    As with values, the type of the row defines whether the range is represented
+    as a list, table, or tree. Rows that are QObjects will be represented as
+    multi-column rows, but can be wrapped into a QRangeModel::SingleColumn to map
+    the properties to the named roles:
+
+    \snippet qrangemodel/main.cpp vector_of_multirole_objects_0
+    \dots
+    \snippet qrangemodel/main.cpp vector_of_multirole_objects_1
+
+    \note If the range holds pointers, then we have to construct QRangeModel
+    from a pointer or reference wrapper of the range. Otherwise the ownership
+    of the data becomes ambiguous, and a copy of the range would still be
+    operating on the same actual row data, resulting in unexpected side
+    effects.
+
     \section1 Trees of data
 
     QRangeModel can represent a data structure as a tree model. Such a
@@ -211,9 +240,9 @@ QT_BEGIN_NAMESPACE
 
     \snippet qrangemodel/main.cpp tree_protocol_0
 
-    The tree itself is a vector of \c{TreeRow} values. See \l{Rows as pointers
-    or values} for the considerations on whether to use values or pointers of
-    items for the rows.
+    The tree itself is a vector of \c{TreeRow} values. See \l{Tree Rows as
+    pointers or values} for the considerations on whether to use values or
+    pointers of items for the rows.
 
     \snippet qrangemodel/main.cpp tree_protocol_1
 
@@ -279,7 +308,7 @@ QT_BEGIN_NAMESPACE
 
     \snippet qrangemodel/main.cpp explicit_tree_protocol_1
 
-    \section2 Rows as pointers or values
+    \section2 Tree Rows as pointers or values
 
     The row type of the data range can be either a value, or a pointer. In
     the code above we have been using the tree rows as values in a vector,

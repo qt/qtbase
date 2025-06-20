@@ -184,6 +184,77 @@ private:
 //! [gadget]
 } // namespace gadget
 
+namespace Object
+{
+//! [object_0]
+class Entry : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QString display READ display WRITE setDisplay NOTIFY displayChanged)
+    Q_PROPERTY(QIcon decoration READ decoration WRITE setDecoration NOTIFY decorationChanged)
+    Q_PROPERTY(QString toolTip READ toolTip WRITE setToolTip NOTIFY toolTipChanged)
+
+public:
+    Entry() = default;
+
+    QString display() const
+    {
+        return m_display;
+    }
+
+    void setDisplay(const QString &display)
+    {
+        if (m_display == display)
+            return;
+        m_display = display;
+        emit displayChanged(m_display);
+    }
+
+signals:
+    void displayChanged(const QString &);
+//! [object_0]
+
+private:
+    QString m_display;
+
+//! [object_1]
+};
+//! [object_1]
+
+void vector_of_objects()
+{
+    {
+        //! [vector_of_objects_0]
+        std::vector<std::shared_ptr<Entry>> entries = {
+        //! [vector_of_objects_0]
+            std::make_shared<Entry>(),
+        //! [vector_of_objects_1]
+        };
+        //! [vector_of_objects_1]
+
+        //! [vector_of_objects_2]
+        QRangeModel model(std::ref(entries));
+        QListView listView;
+        listView.setModel(&model);
+        //! [vector_of_objects_2]
+    }
+
+    {
+        //! [vector_of_multirole_objects_0]
+        std::vector<QRangeModel::SingleColumn<std::shared_ptr<Entry>>> entries = {
+        //! [vector_of_multirole_objects_0]
+            {std::make_shared<Entry>()},
+        //! [vector_of_multirole_objects_1]
+        };
+        //! [vector_of_multirole_objects_1]
+
+        //! [vector_of_multirole_objects_2]
+        QRangeModel model(std::ref(entries));
+        //! [vector_of_multirole_objects_2]
+    }
+}
+} // namespace object
+
 namespace tree_protocol
 {
 //! [tree_protocol_0]
