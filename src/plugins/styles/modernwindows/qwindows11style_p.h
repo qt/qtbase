@@ -21,7 +21,27 @@
 QT_BEGIN_NAMESPACE
 
 class QWindows11StylePrivate;
-class QWindows11Style;
+
+enum WINUI3Color {
+    subtleHighlightColor,             //Subtle highlight based on alpha used for hovered elements
+    subtlePressedColor,               //Subtle highlight based on alpha used for pressed elements
+    frameColorLight,                  //Color of frame around flyouts and controls except for Checkbox and Radiobutton
+    frameColorStrong,                 //Color of frame around Checkbox and Radiobuttons
+    controlStrongFill,                //Color of controls with strong filling such as the right side of a slider
+    controlStrokeSecondary,
+    controlStrokePrimary,
+    controlFillTertiary,              //Color of filled sunken controls
+    controlFillSecondary,             //Color of filled hovered controls
+    menuPanelFill,                    //Color of menu panel
+    textOnAccentPrimary,              //Color of text on controls filled in accent color
+    textOnAccentSecondary,            //Color of text of sunken controls in accent color
+    controlTextSecondary,             //Color of text of sunken controls
+    controlStrokeOnAccentSecondary,   //Color of frame around Buttons in accent color
+    controlFillSolid,                 //Color for solid fill
+    surfaceStroke,                    //Color of MDI window frames
+    controlAccentDisabled,
+    textAccentDisabled
+};
 
 class QWindows11Style : public QWindowsVistaStyle
 {
@@ -55,7 +75,8 @@ protected:
 private:
     static inline QBrush buttonFillBrush(const QStyleOption *option);
     static inline QColor buttonLabelColor(const QStyleOption *option, int colorSchemeIndex);
-    static inline QColor editSublineColor(const QStyleOption *option, int colorSchemeIndex);
+    void drawLineEditFrame(QPainter *p, const QStyleOption *o) const;
+    inline QColor winUI3Color(enum WINUI3Color col) const;
 
 private:
     Q_DISABLE_COPY_MOVE(QWindows11Style)
