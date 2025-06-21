@@ -1054,7 +1054,7 @@ qt_internal_extend_target(Gui CONDITION UNIX AND QT_FEATURE_settings AND QT_FEAT
         platform/unix/qkdetheme_p.h platform/unix/qkdetheme.cpp
 )
 
-qt_internal_extend_target(Gui CONDITION UNIX AND (QT_FEATURE_xcb OR NOT MACOS) AND (QT_FEATURE_xcb OR NOT UIKIT)
+qt_internal_extend_target(Gui CONDITION UNIX AND (((QT_FEATURE_xcb OR NOT MACOS) AND (QT_FEATURE_xcb OR NOT UIKIT)) OR QT_FEATURE_wayland)
     SOURCES
         platform/unix/qgenericunixtheme.cpp platform/unix/qgenericunixtheme_p.h
         platform/unix/qgnometheme_p.h platform/unix/qgnometheme.cpp
