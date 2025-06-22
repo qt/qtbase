@@ -1396,9 +1396,9 @@ static void init_platform(const QString &pluginNamesWithArguments, const QString
                 const qsizetype equalsPos = argument.indexOf(u'=');
                 const QByteArray name =
                     equalsPos != -1 ? argument.left(equalsPos).toUtf8() : argument.toUtf8();
-                const QVariant value =
+                QVariant value =
                     equalsPos != -1 ? QVariant(argument.mid(equalsPos + 1)) : QVariant(true);
-                nativeInterface->setProperty(name.constData(), value);
+                nativeInterface->setProperty(name.constData(), std::move(value));
             }
         }
     }
