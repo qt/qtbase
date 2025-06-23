@@ -28,7 +28,6 @@ set(JSON_HEADERS
         gadgetwithnoenums.h
         grand-parent-gadget-class.h
         moc_include.h
-        name_collision.h
         namespace.h
         namespaced-flags.h
         namespaced-base-class.h
@@ -75,6 +74,7 @@ qt_internal_add_test(tst_moc
     SOURCES
         cxx-attributes.h
         single_function_keyword.h
+        name_collision.h
         tst_moc.cpp
         ${comparison_relevant_moc_list}
     INCLUDE_DIRECTORIES

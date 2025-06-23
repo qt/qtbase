@@ -3,6 +3,14 @@
 // Copyright (C) 2024 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
+/* upstream MSVC bug
+   https://developercommunity.visualstudio.com/t/Regression:-c-compilation-failure-in-c/10926790
+*/
+#include <QtCore/qcompilerdetection.h>
+#if defined(Q_CC_MSVC_ONLY) && (_MSC_FULL_VER >= 194435209) && (_MSC_FULL_VER < 194500000)
+#  define MSVC_ENUM_BUG
+#endif
+
 #include <QTest>
 #include <QSignalSpy>
 #include <stdio.h>
@@ -67,7 +75,9 @@
 
 #include "tech-preview.h"
 
-#include "name_collision.h"
+#ifndef MSVC_ENUM_BUG
+#  include "name_collision.h"
+#endif
 
 using namespace Qt::StringLiterals;
 
@@ -989,7 +999,9 @@ void tst_Moc::initTestCase()
     QVERIFY(QmlMacro::staticMetaObject.className());
     QVERIFY(SignalWithDefaultArg::staticMetaObject.className());
     QVERIFY(TestPointeeCanBeIncomplete::staticMetaObject.className());
+#ifndef MSVC_ENUM_BUG
     QVERIFY(myns::NameCollision::staticMetaObject.className());
+#endif
 }
 
 void tst_Moc::hasIncludeSupport()
@@ -4922,6 +4934,11 @@ QTEST_MAIN(tst_Moc)
 #undef signals
 #undef slots
 #undef emit
+
+// needs to be included conditionally
+#ifndef MSVC_ENUM_BUG
+#include "moc_name_collision.cpp"
+#endif
 
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_GCC("-Wvolatile") // should moc itself add this in generated code?
