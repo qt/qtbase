@@ -195,10 +195,11 @@ void QWaylandShmBackingStore::beginPaint(const QRegion &region)
 {
     mPainting = true;
     waylandWindow()->setBackingStore(this);
-    const bool bufferWasRecreated = recreateBackBufferIfNeeded();
 
     const QMargins margins = windowDecorationMargins();
-    updateDirtyStates(region.translated(margins.left(), margins.top()));
+    const QRegion regionTranslated = region.translated(margins.left(), margins.top());
+    const bool bufferWasRecreated = recreateBackBufferIfNeeded(regionTranslated);
+    updateDirtyStates(regionTranslated);
 
     // Although undocumented, QBackingStore::beginPaint expects the painted region
     // to be cleared before use if the window has a surface format with an alpha.
@@ -337,7 +338,7 @@ QWaylandShmBuffer *QWaylandShmBackingStore::getBuffer(const QSize &size, bool &b
     return nullptr;
 }
 
-bool QWaylandShmBackingStore::recreateBackBufferIfNeeded()
+bool QWaylandShmBackingStore::recreateBackBufferIfNeeded(const QRegion &nonDirtyRegion)
 {
     wl_display_dispatch_queue_pending(mDisplay->wl_display(), mEventQueue);
 
@@ -373,16 +374,26 @@ bool QWaylandShmBackingStore::recreateBackBufferIfNeeded()
 
     // mBackBuffer may have been deleted here but if so it means its size was different so we wouldn't copy it anyway
     if (mBackBuffer != buffer && oldSizeInBytes == newSizeInBytes) {
-        Q_ASSERT(mBackBuffer);
-        const QImage *sourceImage = mBackBuffer->image();
-        QImage *targetImage = buffer->image();
+        const QRegion clipRegion = buffer->dirtyRegion() - nonDirtyRegion;
+        const auto clipRects = clipRegion.rects();
+        if (!clipRects.empty()) {
+            Q_ASSERT(mBackBuffer);
+            const QImage *sourceImage = mBackBuffer->image();
+            QImage *targetImage = buffer->image();
 
-        QPainter painter(targetImage);
-        painter.setCompositionMode(QPainter::CompositionMode_Source);
-        painter.setClipRegion(buffer->dirtyRegion());
-        const qreal targetDevicePixelRatio = painter.device()->devicePixelRatio();
-        painter.scale(qreal(1) / targetDevicePixelRatio, qreal(1) / targetDevicePixelRatio);
-        painter.drawImage(QRectF(QPointF(), targetImage->size()), *sourceImage, sourceImage->rect());
+            QPainter painter(targetImage);
+            painter.setCompositionMode(QPainter::CompositionMode_Source);
+            const qreal targetDevicePixelRatio = painter.device()->devicePixelRatio();
+            for (const QRect &clipRect : clipRects) { // Iterate clip rects, because complicated clip region causes higher CPU usage
+                if (clipRects.size() > 1)
+                    painter.save();
+                painter.setClipRect(clipRect);
+                painter.scale(qreal(1) / targetDevicePixelRatio, qreal(1) / targetDevicePixelRatio);
+                painter.drawImage(QRectF(QPointF(), targetImage->size()), *sourceImage, sourceImage->rect());
+                if (clipRects.size() > 1)
+                    painter.restore();
+            }
+        }
     }
 
     mBackBuffer = buffer;

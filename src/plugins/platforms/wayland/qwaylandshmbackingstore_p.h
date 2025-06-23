@@ -73,7 +73,7 @@ public:
     QMargins windowDecorationMargins() const;
     QImage *entireSurface() const;
     QImage *contentSurface() const;
-    bool recreateBackBufferIfNeeded();
+    bool recreateBackBufferIfNeeded(const QRegion &nonDirtyRegion = QRegion());
 
     QWaylandWindow *waylandWindow() const;
     void iterateBuffer();
