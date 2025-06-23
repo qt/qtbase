@@ -2582,7 +2582,7 @@ void tst_QWindow::modalWindowEnterEventOnHide_QTBUG35109()
     if (isPlatformOffscreenOrMinimal())
         QSKIP("Can't test window focusing on offscreen/minimal");
 
-    if (isPlatformEglFS())
+    if (isPlatformEglFS() || isPlatformWayland())
         QSKIP("QCursor::setPos() is not supported on this platform");
 
     const QPoint center = QGuiApplication::primaryScreen()->availableGeometry().center();
