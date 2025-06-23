@@ -856,7 +856,7 @@
     \row    \li \c body
             \li Document body
             \li Supports the \c bgcolor attribute, which
-               can be a Qt \l{QColor::setNamedColor()}{color name}
+               can be a Qt \l{QColor::fromString()}{color name}
                or a \c #RRGGBB color specification.
     \row    \li \c br
             \li Line break
@@ -892,7 +892,7 @@
             \li Font size, family, and/or color
             \li Supports the following attributes:
                \c size, \c face, and \c color (Qt
-               \l{QColor::setNamedColor()}{color names} or
+               \l{QColor::fromString()}{color names} or
                \c #RRGGBB).
     \row    \li \c h1
             \li Level 1 heading
@@ -985,7 +985,7 @@
     \row    \li \c table
             \li Table
             \li Supports the following attributes: \c border,
-               \c bgcolor (Qt \l{QColor::setNamedColor()}{color names}
+               \c bgcolor (Qt \l{QColor::fromString()}{color names}
                or \c #RRGGBB), \c cellspacing, \c cellpadding,
                \c width (absolute or relative), and \c height.
     \row    \li \c tbody
@@ -1012,7 +1012,7 @@
     \row    \li \c tr
             \li Table row
             \li Supports the \c bgcolor attribute, which
-               can be a Qt \l{QColor::setNamedColor()}{color name}
+               can be a Qt \l{QColor::fromString()}{color name}
                or a \c #RRGGBB color specification.
     \row    \li \c tt
             \li Typewrite font
@@ -1053,7 +1053,7 @@
 
     \list
     \li \c width (absolute, relative, or no-value)
-    \li \c bgcolor (Qt \l{QColor::setNamedColor()}{color names} or \c #RRGGBB)
+    \li \c bgcolor (Qt \l{QColor::fromString()}{color names} or \c #RRGGBB)
     \li \c colspan
     \li \c rowspan
     \li \c align (\c left, \c right, \c center, \c justify)

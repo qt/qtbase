@@ -786,33 +786,33 @@ QColor::QColor(Spec spec) noexcept
 /*!
     \fn QColor::QColor(const QString &name)
 
-    Constructs a named color in the same way as setNamedColor() using
+    Constructs a named color in the same way as fromString() using
     the given \a name.
 
     The color is left invalid if the \a name cannot be parsed.
 
-    \sa setNamedColor(), name(), isValid()
+    \sa fromString(), name(), isValid()
 */
 
 /*!
     \fn QColor::QColor(const char *name)
 
-    Constructs a named color in the same way as setNamedColor() using
+    Constructs a named color in the same way as fromString() using
     the given \a name.
 
     \overload
-    \sa setNamedColor(), name(), isValid()
+    \sa fromString(), name(), isValid()
 */
 
 /*!
     \fn QColor::QColor(QLatin1StringView name)
 
-    Constructs a named color in the same way as setNamedColor() using
+    Constructs a named color in the same way as fromString() using
     the given \a name.
 
     \overload
     \since 5.8
-    \sa setNamedColor(), name(), isValid()
+    \sa fromString(), name(), isValid()
 */
 
 /*!
@@ -904,9 +904,9 @@ void QColor::setNamedColor(QLatin1StringView name)
    be used to construct a valid QColor object, otherwise returns
    false.
 
-   It uses the same algorithm used in setNamedColor().
+   It uses the same algorithm used in fromString().
 
-   \sa setNamedColor()
+   \sa fromString()
 */
 bool QColor::isValidColor(const QString &name)
 {
