@@ -924,31 +924,21 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
         break;
     case PE_Frame: {
         if (const auto *frame = qstyleoption_cast<const QStyleOptionFrame *>(option)) {
+            const auto rect = option->rect.marginsRemoved(QMargins(1, 1, 1, 1));
+            if (qobject_cast<const QComboBoxPrivateContainer *>(widget)) {
+                QPen pen;
+                if (highContrastTheme)
+                    pen = QPen(option->palette.windowText().color(), 2);
+                else
+                    pen = Qt::NoPen;
+                drawRoundedRect(painter, rect, pen, WINUI3Colors[colorSchemeIndex][menuPanelFill]);
+            } else
+                drawRoundedRect(painter, rect, Qt::NoPen, option->palette.brush(QPalette::Base));
+
             if (frame->frameShape == QFrame::NoFrame)
                 break;
-            QRectF rect = option->rect.adjusted(1,1,-1,-1);
-            if (qobject_cast<const QComboBoxPrivateContainer *>(widget)) {
-                if (highContrastTheme)
-                    painter->setPen(QPen(option->palette.windowText().color(), 2));
-                else
-                    painter->setPen(Qt::NoPen);
-                painter->setBrush(WINUI3Colors[colorSchemeIndex][menuPanelFill]);
-                painter->drawRoundedRect(rect, secondLevelRoundingRadius, secondLevelRoundingRadius);
-            }
-            painter->setBrush(option->palette.base());
-            painter->setPen(Qt::NoPen);
-            painter->drawRoundedRect(rect, secondLevelRoundingRadius, secondLevelRoundingRadius);
 
-            painter->setBrush(Qt::NoBrush);
-            painter->setPen(WINUI3Colors[colorSchemeIndex][frameColorLight]);
-            painter->drawRoundedRect(rect.marginsRemoved(QMarginsF(0.5,0.5,0.5,0.5)), secondLevelRoundingRadius, secondLevelRoundingRadius);
-
-            if (qobject_cast<const QTextEdit *>(widget)) {
-                QRegion clipRegion = option->rect;
-                QColor lineColor = state & State_HasFocus ? option->palette.accent().color() : option->palette.base().color();
-                painter->setPen(lineColor);
-                painter->drawLine(option->rect.bottomLeft() + QPoint(1,-1), option->rect.bottomRight() + QPoint(-1,-1));
-            }
+            drawLineEditFrame(painter, option, qobject_cast<const QTextEdit *>(widget) != nullptr);
         }
         break;
     }
@@ -2382,7 +2372,7 @@ QColor QWindows11Style::buttonLabelColor(const QStyleOption *option, int colorSc
                 : option->palette.buttonText().color();
 }
 
-void QWindows11Style::drawLineEditFrame(QPainter *p, const QStyleOption *o) const
+void QWindows11Style::drawLineEditFrame(QPainter *p, const QStyleOption *o, bool isEditable) const
 {
     const auto rect = QRectF(o->rect).marginsRemoved(QMarginsF(1.5, 1.5, 1.5, 1.5));
     const bool isHovered = o->state & State_MouseOver;
@@ -2391,6 +2381,9 @@ void QWindows11Style::drawLineEditFrame(QPainter *p, const QStyleOption *o) cons
                                          : QPalette::ButtonText)
             : winUI3Color(frameColorLight);
     drawRoundedRect(p, rect, frameCol, Qt::NoBrush);
+
+    if (!isEditable)
+        return;
 
     QPainterStateGuard psg(p);
     p->setClipRect(rect.marginsRemoved(QMarginsF(0, rect.height() - 0.5, 0, -1)));

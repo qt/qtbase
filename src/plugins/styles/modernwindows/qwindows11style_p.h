@@ -75,7 +75,7 @@ protected:
 private:
     static inline QBrush buttonFillBrush(const QStyleOption *option);
     static inline QColor buttonLabelColor(const QStyleOption *option, int colorSchemeIndex);
-    void drawLineEditFrame(QPainter *p, const QStyleOption *o) const;
+    void drawLineEditFrame(QPainter *p, const QStyleOption *o, bool isEditable = true) const;
     inline QColor winUI3Color(enum WINUI3Color col) const;
 
 private:
