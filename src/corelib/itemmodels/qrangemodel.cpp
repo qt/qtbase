@@ -233,10 +233,13 @@ QT_BEGIN_NAMESPACE
     itself. In addition, the row type needs be of a static size: either a gadget
     or QObject type, or a type that implements the {C++ tuple protocol}.
 
-    To represent such data as a tree, the row type has to implement a traversal
-    protocol that allows QRangeModel to navigate up and down the tree.
-    For any given row, the model needs to be able to retrieve the parent row,
-    and the span of children for any given row.
+    To represent such data as a tree, QRangeModel has to be able to traverse the
+    data structure: for any given row, the model needs to be able to retrieve
+    the parent row, and the optional span of children. These traversal functions
+    can be provided implicitly through the row type, or through an explicit
+    protocol type.
+
+    \section2 Implicit tree traversal protocol
 
     \snippet qrangemodel/main.cpp tree_protocol_0
 
@@ -251,8 +254,8 @@ QT_BEGIN_NAMESPACE
     use a gadget.
 
     Each row item needs to maintain a pointer to the parent row, as well as an
-    optional range of child rows that is identical to the structure used for the
-    tree.
+    optional range of child rows. That range has to be identical to the range
+    structure used for the tree itself.
 
     Making the row type default constructible is optional, and allows the model
     to construct new row data elements, for instance in the insertRow() or
@@ -297,7 +300,7 @@ QT_BEGIN_NAMESPACE
 
     \snippet qrangemodel/main.cpp tree_protocol_6
 
-    \section3 Tree traversal protocol in a separate class
+    \section2 Tree traversal protocol in a separate class
 
     The tree traversal protocol can also be implemented in a separate class.
 
@@ -352,16 +355,11 @@ QT_BEGIN_NAMESPACE
     constructed by moving tree-data with row-pointers into it, will take
     ownership of the data, and delete the row pointers in it's destructor.
 
-    \note This is not the case for tables and lists that use pointers as their
-    row type. QRangeModel will never allocate new rows in lists and tables
-    using operator new, and will never free any rows.
-
-    Using pointers at rows comes with some memory allocation and management
-    overhead. However, when using rows through pointers the references to the
-    row items remain stable, even when they are moved around in the range, or
-    when the range reallocates. This can significantly reduce the cost of
-    making modifications to the model's structure when using insertRows(),
-    removeRows(), or moveRows().
+    Using pointers as rows comes with some memory allocation and management
+    overhead. However, the references to the row items remain stable, even when
+    they are moved around in the range, or when the range reallocates. This can
+    significantly reduce the cost of making modifications to the model's
+    structure when using insertRows(), removeRows(), or moveRows().
 
     Each choice has different performance and memory overhead trade-offs. The
     best option depends on the exact use case and data structure used.
