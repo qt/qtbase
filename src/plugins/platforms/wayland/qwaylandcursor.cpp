@@ -329,6 +329,8 @@ void QWaylandCursor::changeCursor(QCursor *cursor, QWindow *window)
             if (device->pointer() && device->pointer()->focusWindow() == waylandWindow)
                 device->setCursor(cursor, bitmapBuffer, qCeil(waylandWindow->devicePixelRatio()));
         }
+
+        mDisplay->flushRequests();
     }
 }
 
