@@ -1626,7 +1626,7 @@ void tst_QWindow::touchInterruptedByPopup()
 
     // Launch a popup window
     InputTestWindow popup;
-    window.setObjectName("popup");
+    popup.setObjectName("popup");
     popup.setFlags(Qt::Popup);
     popup.setModality(Qt::WindowModal);
     popup.resize(m_testWindowSize /  2);
