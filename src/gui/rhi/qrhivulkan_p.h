@@ -642,6 +642,7 @@ struct QVkSwapChain : public QRhiSwapChain
         VkFramebuffer fb = VK_NULL_HANDLE;
         VkImage msaaImage = VK_NULL_HANDLE;
         VkImageView msaaImageView = VK_NULL_HANDLE;
+        VkSemaphore drawSem = VK_NULL_HANDLE;
         enum LastUse {
             ScImageUseNone,
             ScImageUseRender,
@@ -653,7 +654,6 @@ struct QVkSwapChain : public QRhiSwapChain
 
     struct FrameResources {
         VkSemaphore imageSem = VK_NULL_HANDLE;
-        VkSemaphore drawSem = VK_NULL_HANDLE;
         bool imageAcquired = false;
         bool imageSemWaitable = false;
         VkFence cmdFence = VK_NULL_HANDLE;
