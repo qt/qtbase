@@ -276,7 +276,9 @@ namespace QRangeModelDetails
     template <> struct range_traits<QLatin1StringView> : iterable_value<Mutable::No> {};
 
     template <typename C>
-    [[maybe_unused]] static constexpr bool is_range_v = range_traits<C>();
+    using is_range = range_traits<C>;
+    template <typename C>
+    [[maybe_unused]] static constexpr bool is_range_v = is_range<C>();
 
     // Find out how many fixed elements can be retrieved from a row element.
     // main template for simple values and ranges. Specializing for ranges
@@ -467,13 +469,13 @@ namespace QRangeModelDetails
             > : std::true_type {};
 
     template <typename Range>
-    using if_table_range = std::enable_if_t<is_range_v<wrapped_t<Range>>
-                                         && !is_tree_range<wrapped_t<Range>>(),
+    using if_table_range = std::enable_if_t<std::conjunction_v<is_range<wrapped_t<Range>>,
+                                                    std::negation<is_tree_range<wrapped_t<Range>>>>,
                                             bool>;
 
     template <typename Range, typename Protocol = DefaultTreeProtocol<Range>>
-    using if_tree_range = std::enable_if_t<is_range_v<wrapped_t<Range>>
-                                        && is_tree_range<wrapped_t<Range>, wrapped_t<Protocol>>(),
+    using if_tree_range = std::enable_if_t<std::conjunction_v<is_range<wrapped_t<Range>>,
+                                              is_tree_range<wrapped_t<Range>, wrapped_t<Protocol>>>,
                                            bool>;
 
     template <typename Range, typename Protocol>
