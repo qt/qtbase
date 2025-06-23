@@ -615,7 +615,7 @@ void QWaylandWindow::sendExposeEvent(const QRect &rect)
         auto buffer = new QWaylandShmBuffer(mDisplay, rect.size(), QImage::Format_ARGB32);
         buffer->image()->fill(Qt::transparent);
         buffer->setDeleteOnRelease(true);
-        attach(buffer, 0, 0);
+        commit(buffer, QRegion());
     }
 }
 

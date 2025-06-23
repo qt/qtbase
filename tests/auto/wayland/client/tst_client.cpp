@@ -84,6 +84,24 @@ public:
         ++touchEventCount;
     }
 
+    void exposeEvent(QExposeEvent *event) override {
+        Q_UNUSED(event);
+        const QRect rect(QPoint(), size());
+
+        if (!backingStore)
+            backingStore.reset(new QBackingStore(this));
+        backingStore->resize(rect.size());
+        backingStore->beginPaint(rect);
+
+        const QColor color = Qt::magenta;
+        QPainter p(backingStore->paintDevice());
+        p.fillRect(rect, color);
+        p.end();
+
+        backingStore->endPaint();
+        backingStore->flush(rect);
+    }
+
     QPoint frameOffset() const { return QPoint(frameMargins().left(), frameMargins().top()); }
 
     int focusInEventCount = 0;
@@ -96,6 +114,7 @@ public:
 
     uint keyCode = 0;
     QPoint mousePressPos;
+    QScopedPointer<QBackingStore> backingStore;
 };
 
 #if QT_CONFIG(opengl)
@@ -284,24 +303,7 @@ void tst_WaylandClient::backingStore()
         sendShellSurfaceConfigure(s);
     });
 
-    QRect rect(QPoint(), window.size());
-
-    QBackingStore backingStore(&window);
-    backingStore.resize(rect.size());
-
-    backingStore.beginPaint(rect);
-
-    QColor color = Qt::magenta;
-
-    QPainter p(backingStore.paintDevice());
-    p.fillRect(rect, color);
-    p.end();
-
-    backingStore.endPaint();
-
-    QVERIFY(s->m_image.isNull());
-
-    backingStore.flush(rect);
+    const QColor color = Qt::magenta; // see expose event in TestWindow
 
     QTRY_COMPARE(s->m_image.size(), window.frameGeometry().size());
     QTRY_COMPARE(s->m_image.pixel(window.frameMargins().left(), window.frameMargins().top()), color.rgba());
@@ -468,23 +470,19 @@ void tst_WaylandClient::dontCrashOnMultipleCommits()
     auto window = new TestWindow();
     window->show();
 
-    QRect rect(QPoint(), window->size());
+    Surface *s = nullptr;
+    QCOMPOSITOR_TRY_VERIFY(s = surface());
+    exec([&] {
+        sendShellSurfaceConfigure(s);
+    });
 
-    {
-        QBackingStore backingStore(window);
-        backingStore.resize(rect.size());
-        backingStore.beginPaint(rect);
-        QPainter p(backingStore.paintDevice());
-        p.fillRect(rect, Qt::magenta);
-        p.end();
-        backingStore.endPaint();
+    const QRect rect(QPoint(), window->size());
 
-        backingStore.flush(rect);
-        backingStore.flush(rect);
-        backingStore.flush(rect);
+    window->backingStore->flush(rect);
+    window->backingStore->flush(rect);
+    window->backingStore->flush(rect);
 
-        QCOMPOSITOR_TRY_VERIFY(surface());
-    }
+    QCOMPOSITOR_TRY_VERIFY(surface());
 
     delete window;
     QCOMPOSITOR_TRY_VERIFY(!surface());
