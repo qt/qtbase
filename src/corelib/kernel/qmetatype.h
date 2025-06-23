@@ -2097,6 +2097,9 @@ public:
         while (begin != end && is_space(*(end - 1)))
             end--;
 
+        if (begin == end)
+            return len;
+
         // Convert 'char const *' into 'const char *'. Start at index 1,
         // not 0, because 'const char *' is already OK.
         const char *cst = begin + 1;
