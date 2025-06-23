@@ -2395,6 +2395,9 @@ void tst_QMetaObject::normalizedType_data()
     QTest::addColumn<QString>("type");
     QTest::addColumn<QString>("result");
 
+    QTest::newRow("null") << QString() << QString();
+    QTest::newRow("empty") << "" << "";
+    QTest::newRow("all_whitespaces") << "   " << "";
     QTest::newRow("simple") << "int" << "int";
     QTest::newRow("white") << "  int  " << "int";
     QTest::newRow("const1") << "int const *" << "const int*";
@@ -2465,7 +2468,15 @@ void tst_QMetaObject::normalizedType()
     QFETCH(QString, type);
     QFETCH(QString, result);
 
-    QCOMPARE(QMetaObject::normalizedType(type.toLatin1()), result.toLatin1());
+    QByteArray latin1Type = type.toLatin1();
+
+    const char *typePtr;
+    if (type.isNull())
+        typePtr = nullptr;
+    else
+        typePtr = latin1Type.constData();
+
+    QCOMPARE(QMetaObject::normalizedType(typePtr), result.toLatin1());
     QCOMPARE(QMetaObject::normalizedType(result.toLatin1()), result.toLatin1());
 }
 
