@@ -1601,6 +1601,9 @@ void tst_QWindow::touchCancelWithTouchToMouse()
 
 void tst_QWindow::touchInterruptedByPopup()
 {
+    if (isPlatformWayland())
+        QSKIP("Wayland: need real user action like a button press, key press, or touch down event.");
+
     InputTestWindow window;
     window.setObjectName("main");
     window.setTitle(QLatin1String(QTest::currentTestFunction()));
@@ -3036,6 +3039,9 @@ void tst_QWindow::qobject_castOnDestruction()
 
 void tst_QWindow::touchToMouseTranslationByPopup()
 {
+    if (isPlatformWayland())
+        QSKIP("Wayland: need real user action like a button press, key press, or touch down event.");
+
     InputTestWindow window;
     window.setTitle(QLatin1String(QTest::currentTestFunction()));
     window.ignoreTouch = true;
