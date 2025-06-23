@@ -133,6 +133,8 @@ QString QLockFile::fileName() const
 }
 
 /*!
+    \fn void QLockFile::setStaleLockTime(int staleLockTime)
+
     Sets \a staleLockTime to be the time in milliseconds after which
     a lock file is considered stale.
     The default value is 30000, i.e. 30 seconds.
@@ -153,10 +155,6 @@ QString QLockFile::fileName() const
 
     \sa staleLockTime()
 */
-void QLockFile::setStaleLockTime(int staleLockTime)
-{
-    setStaleLockTime(std::chrono::milliseconds{staleLockTime});
-}
 
 /*!
     \since 6.2
@@ -183,15 +181,13 @@ void QLockFile::setStaleLockTime(std::chrono::milliseconds staleLockTime)
 }
 
 /*!
+    \fn int QLockFile::staleLockTime() const
+
     Returns the time in milliseconds after which
     a lock file is considered stale.
 
     \sa setStaleLockTime()
 */
-int QLockFile::staleLockTime() const
-{
-    return int(staleLockTimeAsDuration().count());
-}
 
 /*! \fn std::chrono::milliseconds QLockFile::staleLockTimeAsDuration() const
     \overload
@@ -241,6 +237,8 @@ bool QLockFile::lock()
 }
 
 /*!
+    \fn bool QLockFile::tryLock(int timeout)
+
     Attempts to create the lock file. This function returns \c true if the
     lock was obtained; otherwise it returns \c false. If another process (or
     another thread) has created the lock file already, this function will
@@ -260,10 +258,6 @@ bool QLockFile::lock()
 
     \sa lock(), unlock()
 */
-bool QLockFile::tryLock(int timeout)
-{
-    return tryLock(std::chrono::milliseconds{ timeout });
-}
 
 /*!
     \overload

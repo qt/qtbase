@@ -22,10 +22,13 @@ public:
     QString fileName() const;
 
     bool lock();
+    QT_CORE_INLINE_SINCE(6, 10)
     bool tryLock(int timeout);
     void unlock();
 
+    QT_CORE_INLINE_SINCE(6, 10)
     void setStaleLockTime(int);
+    QT_CORE_INLINE_SINCE(6, 10)
     int staleLockTime() const;
 
     bool tryLock(std::chrono::milliseconds timeout = std::chrono::milliseconds::zero());
@@ -52,6 +55,23 @@ private:
     Q_DECLARE_PRIVATE(QLockFile)
     Q_DISABLE_COPY(QLockFile)
 };
+
+#if QT_CORE_INLINE_IMPL_SINCE(6, 10)
+bool QLockFile::tryLock(int timeout)
+{
+    return tryLock(std::chrono::milliseconds{timeout});
+}
+
+void QLockFile::setStaleLockTime(int staleLockTime)
+{
+    setStaleLockTime(std::chrono::milliseconds{staleLockTime});
+}
+
+int QLockFile::staleLockTime() const
+{
+    return int(staleLockTimeAsDuration().count());
+}
+#endif // QT_CORE_INLINE_IMPL_SINCE(6, 10)
 
 QT_END_NAMESPACE
 

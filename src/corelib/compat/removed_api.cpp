@@ -1454,6 +1454,8 @@ void QFutureInterfaceBase::setContinuation(std::function<void(const QFutureInter
 }
 #endif // QT_CONFIG(future)
 
+#include "qlockfile.h" // inlined API
+
 #include "qlogging.h"
 
 QNoDebug QMessageLogger::noDebug() const noexcept
