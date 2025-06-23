@@ -1629,6 +1629,8 @@ QThread *QObject::thread() const
     however: objects with no thread affinity can be "pulled" to the
     current thread.
 
+    In Qt versions prior to 6.7, this function had no return value (\c void).
+
     \sa thread()
  */
 bool QObject::moveToThread(QThread *targetThread QT6_IMPL_NEW_OVERLOAD_TAIL)
