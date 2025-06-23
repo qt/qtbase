@@ -4,7 +4,7 @@
 #####################################################################
 ## QAndroidIntegrationPlugin Plugin:
 #####################################################################
-qt_find_package(EGL)
+qt_find_package(EGL MODULE)
 
 qt_internal_add_plugin(QAndroidIntegrationPlugin
     OUTPUT_NAME qtforandroid

@@ -11,7 +11,7 @@ endif()
 set(WrapOpenSSL_FOUND OFF)
 
 # Reuse logic from the headers find script.
-find_package(WrapOpenSSLHeaders ${WrapOpenSSL_FIND_VERSION})
+find_package(WrapOpenSSLHeaders ${WrapOpenSSL_FIND_VERSION} MODULE)
 
 if(TARGET OpenSSL::SSL)
     if(WIN32)

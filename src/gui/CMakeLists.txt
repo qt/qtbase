@@ -1,10 +1,10 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-qt_find_package(X11_XCB)
-qt_find_package(WrapHarfbuzz PROVIDED_TARGETS WrapHarfbuzz::WrapHarfbuzz)
-qt_find_package(WrapPNG PROVIDED_TARGETS WrapPNG::WrapPNG)
-qt_find_package(WrapFreetype PROVIDED_TARGETS WrapFreetype::WrapFreetype)
+qt_find_package(X11_XCB MODULE)
+qt_find_package(WrapHarfbuzz MODULE PROVIDED_TARGETS WrapHarfbuzz::WrapHarfbuzz)
+qt_find_package(WrapPNG MODULE PROVIDED_TARGETS WrapPNG::WrapPNG)
+qt_find_package(WrapFreetype MODULE PROVIDED_TARGETS WrapFreetype::WrapFreetype)
 
 if (QT_FEATURE_gui)
     if(QT_QPA_PLATFORMS)
@@ -517,7 +517,7 @@ if(QT_FEATURE_graphicsframecapture)
 endif()
 
 if(QT_FEATURE_egl)
-    qt_find_package(EGL)
+    qt_find_package(EGL MODULE)
 endif()
 
 qt_internal_extend_target(Gui CONDITION QT_FEATURE_egl

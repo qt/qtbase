@@ -6,7 +6,7 @@
 #####################################################################
 ## QWaylandEglClientBufferPlugin Plugin:
 #####################################################################
-qt_find_package(EGL) # special case
+qt_find_package(EGL MODULE)
 
 qt_internal_add_plugin(QWaylandEglClientBufferPlugin
     OUTPUT_NAME qt-plugin-wayland-egl

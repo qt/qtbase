@@ -30,23 +30,26 @@ set_property(CACHE INPUT_libpng PROPERTY STRINGS undefined no qt system)
 #### Libraries
 qt_set01(X11_SUPPORTED LINUX OR HPUX OR FREEBSD OR NETBSD OR OPENBSD OR SOLARIS OR
     HURD)
-qt_find_package(ATSPI2 PROVIDED_TARGETS PkgConfig::ATSPI2 MODULE_NAME gui QMAKE_LIB atspi)
+qt_find_package(ATSPI2 MODULE PROVIDED_TARGETS PkgConfig::ATSPI2 MODULE_NAME gui QMAKE_LIB atspi)
 qt_find_package(DirectFB PROVIDED_TARGETS PkgConfig::DirectFB MODULE_NAME gui QMAKE_LIB directfb)
-qt_find_package(Libdrm PROVIDED_TARGETS Libdrm::Libdrm MODULE_NAME gui QMAKE_LIB drm)
+qt_find_package(Libdrm MODULE PROVIDED_TARGETS Libdrm::Libdrm MODULE_NAME gui QMAKE_LIB drm)
 qt_find_package(PlatformGraphics
         PROVIDED_TARGETS PlatformGraphics::PlatformGraphics
         MODULE_NAME gui QMAKE_LIB platform_graphics)
-qt_find_package(EGL PROVIDED_TARGETS EGL::EGL MODULE_NAME gui QMAKE_LIB egl)
+qt_find_package(EGL MODULE PROVIDED_TARGETS EGL::EGL MODULE_NAME gui QMAKE_LIB egl)
 
-qt_find_package(WrapSystemFreetype 2.2.0 PROVIDED_TARGETS WrapSystemFreetype::WrapSystemFreetype MODULE_NAME gui QMAKE_LIB freetype)
+qt_find_package(WrapSystemFreetype 2.2.0 MODULE
+    PROVIDED_TARGETS WrapSystemFreetype::WrapSystemFreetype MODULE_NAME gui QMAKE_LIB freetype)
 if(QT_FEATURE_system_zlib)
     qt_add_qmake_lib_dependency(freetype zlib)
 endif()
 qt_find_package(Fontconfig PROVIDED_TARGETS Fontconfig::Fontconfig MODULE_NAME gui QMAKE_LIB fontconfig)
 qt_add_qmake_lib_dependency(fontconfig freetype)
-qt_find_package(gbm PROVIDED_TARGETS gbm::gbm MODULE_NAME gui QMAKE_LIB gbm)
-qt_find_package(WrapSystemHarfbuzz 2.6.0 PROVIDED_TARGETS WrapSystemHarfbuzz::WrapSystemHarfbuzz MODULE_NAME gui QMAKE_LIB harfbuzz)
-qt_find_package(Libinput PROVIDED_TARGETS Libinput::Libinput MODULE_NAME gui QMAKE_LIB libinput)
+qt_find_package(gbm MODULE PROVIDED_TARGETS gbm::gbm MODULE_NAME gui QMAKE_LIB gbm)
+qt_find_package(WrapSystemHarfbuzz 2.6.0 MODULE
+    PROVIDED_TARGETS WrapSystemHarfbuzz::WrapSystemHarfbuzz MODULE_NAME gui QMAKE_LIB harfbuzz)
+qt_find_package(Libinput MODULE
+    PROVIDED_TARGETS Libinput::Libinput MODULE_NAME gui QMAKE_LIB libinput)
 qt_find_package_extend_sbom(TARGETS Libinput::Libinput
     COPYRIGHTS
         "Copyright © 2006-2009 Simon Thum"
@@ -57,113 +60,134 @@ qt_find_package_extend_sbom(TARGETS Libinput::Libinput
         "Copyright © 2013-2014 Jonas Ådahl"
         "Copyright © 2013-2015 Red Hat, Inc."
 )
-qt_find_package(WrapSystemJpeg PROVIDED_TARGETS WrapSystemJpeg::WrapSystemJpeg MODULE_NAME gui QMAKE_LIB libjpeg)
-qt_find_package(WrapSystemMd4c PROVIDED_TARGETS WrapSystemMd4c::WrapSystemMd4c MODULE_NAME gui QMAKE_LIB libmd4c)
-qt_find_package(WrapSystemPNG PROVIDED_TARGETS WrapSystemPNG::WrapSystemPNG MODULE_NAME gui QMAKE_LIB libpng)
+qt_find_package(WrapSystemJpeg MODULE
+    PROVIDED_TARGETS WrapSystemJpeg::WrapSystemJpeg MODULE_NAME gui QMAKE_LIB libjpeg)
+qt_find_package(WrapSystemMd4c MODULE
+    PROVIDED_TARGETS WrapSystemMd4c::WrapSystemMd4c MODULE_NAME gui QMAKE_LIB libmd4c)
+qt_find_package(WrapSystemPNG MODULE
+    PROVIDED_TARGETS WrapSystemPNG::WrapSystemPNG MODULE_NAME gui QMAKE_LIB libpng)
 if(QT_FEATURE_system_zlib)
     qt_add_qmake_lib_dependency(libpng zlib)
 endif()
-qt_find_package(Mtdev PROVIDED_TARGETS PkgConfig::Mtdev MODULE_NAME gui QMAKE_LIB mtdev)
-qt_find_package(WrapOpenGL PROVIDED_TARGETS WrapOpenGL::WrapOpenGL MODULE_NAME gui QMAKE_LIB opengl)
-qt_find_package(GLESv2 PROVIDED_TARGETS GLESv2::GLESv2 MODULE_NAME gui QMAKE_LIB opengl_es2)
-qt_find_package(Tslib PROVIDED_TARGETS PkgConfig::Tslib MODULE_NAME gui QMAKE_LIB tslib)
-qt_find_package(WrapVulkanHeaders PROVIDED_TARGETS WrapVulkanHeaders::WrapVulkanHeaders
+qt_find_package(Mtdev MODULE PROVIDED_TARGETS PkgConfig::Mtdev MODULE_NAME gui QMAKE_LIB mtdev)
+qt_find_package(WrapOpenGL MODULE PROVIDED_TARGETS WrapOpenGL::WrapOpenGL MODULE_NAME gui QMAKE_LIB opengl)
+qt_find_package(GLESv2 MODULE
+    PROVIDED_TARGETS GLESv2::GLESv2 MODULE_NAME gui QMAKE_LIB opengl_es2)
+qt_find_package(Tslib MODULE PROVIDED_TARGETS PkgConfig::Tslib MODULE_NAME gui QMAKE_LIB tslib)
+qt_find_package(WrapVulkanHeaders MODULE PROVIDED_TARGETS WrapVulkanHeaders::WrapVulkanHeaders
     MODULE_NAME gui QMAKE_LIB vulkan MARK_OPTIONAL)
 if(LINUX OR FREEBSD OR QT_FIND_ALL_PACKAGES_ALWAYS)
-    qt_find_package(Wayland PROVIDED_TARGETS Wayland::Server
+    qt_find_package(Wayland MODULE PROVIDED_TARGETS Wayland::Server
                     MODULE_NAME gui QMAKE_LIB wayland_server)
-    qt_find_package(Wayland PROVIDED_TARGETS Wayland::Client
+    qt_find_package(Wayland MODULE PROVIDED_TARGETS Wayland::Client
                     MODULE_NAME gui QMAKE_LIB wayland_client)
     # Gui doesn't use these, but the wayland qpa plugin does, and we
     # need to list the rest of the provided targets here, so they are
     # promoted to global, and can be accessed by the SBOM at the root
     # project level. That's not possible to do in the wayland qpa subdir,
     # due to different cmake directory scopes.
-    qt_find_package(Wayland PROVIDED_TARGETS Wayland::Cursor
+    qt_find_package(Wayland MODULE PROVIDED_TARGETS Wayland::Cursor
                     MODULE_NAME gui QMAKE_LIB wayland_cursor)
-    qt_find_package(Wayland PROVIDED_TARGETS Wayland::Egl
+    qt_find_package(Wayland MODULE PROVIDED_TARGETS Wayland::Egl
                     MODULE_NAME gui QMAKE_LIB wayland_egl)
 endif()
 if((X11_SUPPORTED) OR QT_FIND_ALL_PACKAGES_ALWAYS)
-    qt_find_package(X11 PROVIDED_TARGETS X11::X11 MODULE_NAME gui QMAKE_LIB xlib)
+    qt_find_package(X11 MODULE PROVIDED_TARGETS X11::X11 MODULE_NAME gui QMAKE_LIB xlib)
 endif()
 if((X11_SUPPORTED) OR QT_FIND_ALL_PACKAGES_ALWAYS)
-    qt_find_package(X11 PROVIDED_TARGETS X11::SM X11::ICE MODULE_NAME gui QMAKE_LIB x11sm)
+    qt_find_package(X11 MODULE PROVIDED_TARGETS X11::SM X11::ICE MODULE_NAME gui QMAKE_LIB x11sm)
 endif()
 if((X11_SUPPORTED) OR QT_FIND_ALL_PACKAGES_ALWAYS)
-    qt_find_package(XCB 1.11 PROVIDED_TARGETS XCB::XCB MODULE_NAME gui QMAKE_LIB xcb)
+    qt_find_package(XCB 1.11 MODULE PROVIDED_TARGETS XCB::XCB MODULE_NAME gui QMAKE_LIB xcb)
 endif()
 if((X11_SUPPORTED) OR QT_FIND_ALL_PACKAGES_ALWAYS)
-    qt_find_package(XCB 0.1.1 COMPONENTS CURSOR PROVIDED_TARGETS XCB::CURSOR MODULE_NAME gui QMAKE_LIB xcb_cursor)
+    qt_find_package(XCB 0.1.1 MODULE
+        COMPONENTS CURSOR PROVIDED_TARGETS XCB::CURSOR MODULE_NAME gui QMAKE_LIB xcb_cursor)
 endif()
 if((X11_SUPPORTED) OR QT_FIND_ALL_PACKAGES_ALWAYS)
-    qt_find_package(XCB 0.3.9 COMPONENTS ICCCM PROVIDED_TARGETS XCB::ICCCM MODULE_NAME gui QMAKE_LIB xcb_icccm)
+    qt_find_package(XCB 0.3.9 MODULE
+        COMPONENTS ICCCM PROVIDED_TARGETS XCB::ICCCM MODULE_NAME gui QMAKE_LIB xcb_icccm)
 endif()
 qt_add_qmake_lib_dependency(xcb_icccm xcb)
 if((X11_SUPPORTED) OR QT_FIND_ALL_PACKAGES_ALWAYS)
-    qt_find_package(XCB 0.3.8 COMPONENTS UTIL PROVIDED_TARGETS XCB::UTIL MODULE_NAME gui QMAKE_LIB xcb_util)
+    qt_find_package(XCB 0.3.8 MODULE
+        COMPONENTS UTIL PROVIDED_TARGETS XCB::UTIL MODULE_NAME gui QMAKE_LIB xcb_util)
 endif()
 qt_add_qmake_lib_dependency(xcb_util xcb)
 if((X11_SUPPORTED) OR QT_FIND_ALL_PACKAGES_ALWAYS)
-    qt_find_package(XCB 0.3.9 COMPONENTS IMAGE PROVIDED_TARGETS XCB::IMAGE MODULE_NAME gui QMAKE_LIB xcb_image)
+    qt_find_package(XCB 0.3.9 MODULE
+        COMPONENTS IMAGE PROVIDED_TARGETS XCB::IMAGE MODULE_NAME gui QMAKE_LIB xcb_image)
 endif()
 qt_add_qmake_lib_dependency(xcb_image xcb_shm xcb_util xcb)
 if((X11_SUPPORTED) OR QT_FIND_ALL_PACKAGES_ALWAYS)
-    qt_find_package(XCB 0.3.9 COMPONENTS KEYSYMS PROVIDED_TARGETS XCB::KEYSYMS MODULE_NAME gui QMAKE_LIB xcb_keysyms)
+    qt_find_package(XCB 0.3.9 MODULE
+        COMPONENTS KEYSYMS PROVIDED_TARGETS XCB::KEYSYMS MODULE_NAME gui QMAKE_LIB xcb_keysyms)
 endif()
 qt_add_qmake_lib_dependency(xcb_keysyms xcb)
 if((X11_SUPPORTED) OR QT_FIND_ALL_PACKAGES_ALWAYS)
-    qt_find_package(XCB 0.3.9 COMPONENTS RENDERUTIL PROVIDED_TARGETS XCB::RENDERUTIL MODULE_NAME gui QMAKE_LIB xcb_renderutil)
+    qt_find_package(XCB 0.3.9 MODULE
+        COMPONENTS RENDERUTIL PROVIDED_TARGETS XCB::RENDERUTIL MODULE_NAME gui QMAKE_LIB xcb_renderutil)
 endif()
 qt_add_qmake_lib_dependency(xcb_renderutil xcb xcb_render)
 if((X11_SUPPORTED) OR QT_FIND_ALL_PACKAGES_ALWAYS)
-    qt_find_package(XCB COMPONENTS RANDR PROVIDED_TARGETS XCB::RANDR MODULE_NAME gui QMAKE_LIB xcb_randr)
+    qt_find_package(XCB MODULE
+        COMPONENTS RANDR PROVIDED_TARGETS XCB::RANDR MODULE_NAME gui QMAKE_LIB xcb_randr)
 endif()
 qt_add_qmake_lib_dependency(xcb_randr xcb)
 if((X11_SUPPORTED) OR QT_FIND_ALL_PACKAGES_ALWAYS)
-    qt_find_package(XCB COMPONENTS SHAPE PROVIDED_TARGETS XCB::SHAPE MODULE_NAME gui QMAKE_LIB xcb_shape)
+    qt_find_package(XCB MODULE
+        COMPONENTS SHAPE PROVIDED_TARGETS XCB::SHAPE MODULE_NAME gui QMAKE_LIB xcb_shape)
 endif()
 qt_add_qmake_lib_dependency(xcb_shape xcb)
 if((X11_SUPPORTED) OR QT_FIND_ALL_PACKAGES_ALWAYS)
-    qt_find_package(XCB COMPONENTS SHM PROVIDED_TARGETS XCB::SHM MODULE_NAME gui QMAKE_LIB xcb_shm)
+    qt_find_package(XCB MODULE
+        COMPONENTS SHM PROVIDED_TARGETS XCB::SHM MODULE_NAME gui QMAKE_LIB xcb_shm)
 endif()
 qt_add_qmake_lib_dependency(xcb_shm xcb)
 if((X11_SUPPORTED) OR QT_FIND_ALL_PACKAGES_ALWAYS)
-    qt_find_package(XCB COMPONENTS SYNC PROVIDED_TARGETS XCB::SYNC MODULE_NAME gui QMAKE_LIB xcb_sync)
+    qt_find_package(XCB MODULE
+        COMPONENTS SYNC PROVIDED_TARGETS XCB::SYNC MODULE_NAME gui QMAKE_LIB xcb_sync)
 endif()
 qt_add_qmake_lib_dependency(xcb_sync xcb)
 if((X11_SUPPORTED) OR QT_FIND_ALL_PACKAGES_ALWAYS)
-    qt_find_package(XCB COMPONENTS XFIXES PROVIDED_TARGETS XCB::XFIXES MODULE_NAME gui QMAKE_LIB xcb_xfixes)
+    qt_find_package(XCB MODULE
+        COMPONENTS XFIXES PROVIDED_TARGETS XCB::XFIXES MODULE_NAME gui QMAKE_LIB xcb_xfixes)
 endif()
 qt_add_qmake_lib_dependency(xcb_xfixes xcb)
 if((X11_SUPPORTED) OR QT_FIND_ALL_PACKAGES_ALWAYS)
-    qt_find_package(X11_XCB PROVIDED_TARGETS X11::XCB MODULE_NAME gui QMAKE_LIB xcb_xlib)
+    qt_find_package(X11_XCB MODULE PROVIDED_TARGETS X11::XCB MODULE_NAME gui QMAKE_LIB xcb_xlib)
 endif()
 qt_add_qmake_lib_dependency(xcb_xlib xcb xlib)
 if((X11_SUPPORTED) OR QT_FIND_ALL_PACKAGES_ALWAYS)
-    qt_find_package(XCB COMPONENTS XKB PROVIDED_TARGETS XCB::XKB MODULE_NAME gui QMAKE_LIB xcb_xkb)
+    qt_find_package(XCB MODULE
+        COMPONENTS XKB PROVIDED_TARGETS XCB::XKB MODULE_NAME gui QMAKE_LIB xcb_xkb)
 endif()
 qt_add_qmake_lib_dependency(xcb_xkb xcb)
 if((X11_SUPPORTED) OR QT_FIND_ALL_PACKAGES_ALWAYS)
-    qt_find_package(XCB COMPONENTS RENDER PROVIDED_TARGETS XCB::RENDER MODULE_NAME gui QMAKE_LIB xcb_render)
+    qt_find_package(XCB MODULE
+        COMPONENTS RENDER PROVIDED_TARGETS XCB::RENDER MODULE_NAME gui QMAKE_LIB xcb_render)
 endif()
 qt_add_qmake_lib_dependency(xcb_render xcb)
 if((X11_SUPPORTED) OR QT_FIND_ALL_PACKAGES_ALWAYS)
-    qt_find_package(XCB COMPONENTS GLX PROVIDED_TARGETS XCB::GLX MODULE_NAME gui QMAKE_LIB xcb_glx)
+    qt_find_package(XCB MODULE
+        COMPONENTS GLX PROVIDED_TARGETS XCB::GLX MODULE_NAME gui QMAKE_LIB xcb_glx)
 endif()
 qt_add_qmake_lib_dependency(xcb_glx xcb)
 if((X11_SUPPORTED) OR QT_FIND_ALL_PACKAGES_ALWAYS)
-    qt_find_package(XCB 1.12 COMPONENTS XINPUT PROVIDED_TARGETS XCB::XINPUT MODULE_NAME gui QMAKE_LIB xcb_xinput)
+    qt_find_package(XCB 1.12 MODULE
+        COMPONENTS XINPUT PROVIDED_TARGETS XCB::XINPUT MODULE_NAME gui QMAKE_LIB xcb_xinput)
 endif()
 qt_add_qmake_lib_dependency(xcb_xinput xcb)
 if((X11_SUPPORTED) OR QT_FIND_ALL_PACKAGES_ALWAYS)
-    qt_find_package(XKB 0.5.0 PROVIDED_TARGETS XKB::XKB MODULE_NAME gui QMAKE_LIB xkbcommon)
+    qt_find_package(XKB 0.5.0 MODULE PROVIDED_TARGETS XKB::XKB MODULE_NAME gui QMAKE_LIB xkbcommon)
 endif()
 if((X11_SUPPORTED) OR QT_FIND_ALL_PACKAGES_ALWAYS)
-    qt_find_package(XKB_COMMON_X11 0.5.0 PROVIDED_TARGETS PkgConfig::XKB_COMMON_X11 MODULE_NAME gui QMAKE_LIB xkbcommon_x11)
+    qt_find_package(XKB_COMMON_X11 0.5.0 MODULE
+        PROVIDED_TARGETS PkgConfig::XKB_COMMON_X11 MODULE_NAME gui QMAKE_LIB xkbcommon_x11)
 endif()
 if((X11_SUPPORTED) OR QT_FIND_ALL_PACKAGES_ALWAYS)
-    qt_find_package(XRender 0.6 PROVIDED_TARGETS PkgConfig::XRender MODULE_NAME gui QMAKE_LIB xrender)
+    qt_find_package(XRender 0.6 MODULE
+        PROVIDED_TARGETS PkgConfig::XRender MODULE_NAME gui QMAKE_LIB xrender)
 endif()
 qt_add_qmake_lib_dependency(xrender xlib)
 
@@ -171,11 +195,12 @@ qt_add_qmake_lib_dependency(xrender xlib)
 if(LINUX OR FREEBSD OR QT_FIND_ALL_PACKAGES_ALWAYS)
     # EGL
     if(NOT TARGET EGL::EGL)
-        qt_find_package(EGL PROVIDED_TARGETS EGL::EGL MODULE_NAME gui QMAKE_LIB egl MARK_OPTIONAL)
+        qt_find_package(EGL MODULE
+            PROVIDED_TARGETS EGL::EGL MODULE_NAME gui QMAKE_LIB egl MARK_OPTIONAL)
     endif()
     # and Libdrm
     if(NOT TARGET Libdrm::Libdrm)
-        qt_find_package(Libdrm
+        qt_find_package(Libdrm MODULE
             PROVIDED_TARGETS Libdrm::Libdrm
             MODULE_NAME gui
             QMAKE_LIB drm
@@ -183,10 +208,10 @@ if(LINUX OR FREEBSD OR QT_FIND_ALL_PACKAGES_ALWAYS)
     endif()
 endif()
 
-qt_find_package(Wayland 1.15)
-qt_find_package(WaylandScanner PROVIDED_TARGETS Wayland::Scanner)
+qt_find_package(Wayland 1.15 MODULE)
+qt_find_package(WaylandScanner MODULE PROVIDED_TARGETS Wayland::Scanner)
 
-qt_find_package(RenderDoc PROVIDED_TARGETS RenderDoc::RenderDoc)
+qt_find_package(RenderDoc MODULE PROVIDED_TARGETS RenderDoc::RenderDoc)
 
 #### Tests
 

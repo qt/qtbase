@@ -1,13 +1,13 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-qt_find_package(WrapPCRE2 PROVIDED_TARGETS WrapPCRE2::WrapPCRE2)
+qt_find_package(WrapPCRE2 MODULE PROVIDED_TARGETS WrapPCRE2::WrapPCRE2)
 qt_internal_extend_sbom(WrapPCRE2::WrapPCRE2
     CPE_VENDOR "pcre"
     CPE_PRODUCT "pcre2"
     DOWNLOAD_LOCATION "https://github.com/PCRE2Project/pcre2"
 )
-qt_find_package(WrapZLIB PROVIDED_TARGETS WrapZLIB::WrapZLIB)
+qt_find_package(WrapZLIB MODULE PROVIDED_TARGETS WrapZLIB::WrapZLIB)
 qt_internal_extend_sbom(WrapZLIB::WrapZLIB
     CPE_VENDOR "zlib"
     CPE_PRODUCT "zlib"

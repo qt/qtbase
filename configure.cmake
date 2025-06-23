@@ -7,7 +7,8 @@
 
 #### Libraries
 
-qt_find_package(WrapSystemZLIB 1.0.8 PROVIDED_TARGETS WrapSystemZLIB::WrapSystemZLIB MODULE_NAME global QMAKE_LIB zlib)
+qt_find_package(WrapSystemZLIB 1.0.8 MODULE
+    PROVIDED_TARGETS WrapSystemZLIB::WrapSystemZLIB MODULE_NAME global QMAKE_LIB zlib)
 # Work around global target promotion failure when WrapZLIB is used on APPLE platforms.
 # What ends up happening is that the ZLIB::ZLIB target is not promoted to global by qt_find_package,
 # then qt_find_package(WrapSystemPNG) tries to find its dependency ZLIB::ZLIB, sees it's not global
@@ -21,8 +22,9 @@ endif()
 # Look for Threads in the same scope as OpenSSL package, because OpenSSL sometimes depends on
 # Threads (for static OpenSSL builds) and we want to promote the target to global in the same
 # directory scope.
-qt_find_package(Threads PROVIDED_TARGETS Threads::Threads)
-qt_find_package(WrapOpenSSLHeaders PROVIDED_TARGETS WrapOpenSSLHeaders::WrapOpenSSLHeaders MODULE_NAME core)
+qt_find_package(Threads MODULE PROVIDED_TARGETS Threads::Threads)
+qt_find_package(WrapOpenSSLHeaders MODULE
+    PROVIDED_TARGETS WrapOpenSSLHeaders::WrapOpenSSLHeaders MODULE_NAME core)
 # openssl_headers
 # OPENSSL_VERSION_MAJOR is not defined for OpenSSL 1.1.1
 qt_config_compile_test(opensslv11_headers
@@ -47,7 +49,8 @@ int main(void)
 }
 ")
 
-qt_find_package(WrapOpenSSL PROVIDED_TARGETS WrapOpenSSL::WrapOpenSSL MODULE_NAME core QMAKE_LIB openssl)
+qt_find_package(WrapOpenSSL MODULE
+    PROVIDED_TARGETS WrapOpenSSL::WrapOpenSSL MODULE_NAME core QMAKE_LIB openssl)
 # openssl
 # OPENSSL_VERSION_MAJOR is not defined for OpenSSL 1.1.1
 qt_config_compile_test(opensslv11
@@ -113,7 +116,7 @@ SSL_free(SSL_new(0));
 }
 ")
 
-qt_find_package(WrapZSTD 1.3
+qt_find_package(WrapZSTD 1.3 MODULE
     PROVIDED_TARGETS
         WrapZSTD::WrapZSTD
         zstd::libzstd
@@ -122,9 +125,10 @@ qt_find_package(WrapZSTD 1.3
     MODULE_NAME global
     QMAKE_LIB zstd
 )
-qt_find_package(WrapDBus1 1.2 PROVIDED_TARGETS dbus-1 MODULE_NAME global QMAKE_LIB dbus)
-qt_find_package(Libudev PROVIDED_TARGETS PkgConfig::Libudev MODULE_NAME global QMAKE_LIB libudev)
-qt_find_package(LTTngUST PROVIDED_TARGETS LTTng::UST MODULE_NAME core QMAKE_LIB lttng-ust)
+qt_find_package(WrapDBus1 1.2 MODULE PROVIDED_TARGETS dbus-1 MODULE_NAME global QMAKE_LIB dbus)
+qt_find_package(Libudev MODULE
+    PROVIDED_TARGETS PkgConfig::Libudev MODULE_NAME global QMAKE_LIB libudev)
+qt_find_package(LTTngUST MODULE PROVIDED_TARGETS LTTng::UST MODULE_NAME core QMAKE_LIB lttng-ust)
 qt_add_qmake_lib_dependency(lttng-ust libdl)
 
 

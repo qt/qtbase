@@ -1,10 +1,10 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-qt_find_package(GTK3)
+qt_find_package(GTK3 MODULE)
 
 if(QT_FEATURE_xlib)
-    qt_find_package(X11)
+    qt_find_package(X11 MODULE)
 endif()
 
 #####################################################################

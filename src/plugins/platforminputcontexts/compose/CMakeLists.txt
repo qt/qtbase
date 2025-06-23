@@ -5,7 +5,7 @@
 ## QComposePlatformInputContextPlugin Plugin:
 #####################################################################
 
-qt_find_package(XKB)
+qt_find_package(XKB MODULE)
 pkg_get_variable(PKG_X11_PREFIX x11 prefix)
 
 qt_internal_add_plugin(QComposePlatformInputContextPlugin
