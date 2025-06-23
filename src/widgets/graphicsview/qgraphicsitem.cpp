@@ -4636,10 +4636,14 @@ inline void QGraphicsItemPrivate::sendScenePosChange()
 /*!
     \since 4.6
 
-    Stacks this item before \a sibling, which must be a sibling item (i.e., the
-    two items must share the same parent item, or must both be toplevel items).
-    The \a sibling must have the same Z value as this item, otherwise calling
-    this function will have no effect.
+    Stacks this item before \a sibling, which means this item will be drawn
+    behind the sibling item. In other words, the sibling item will visually
+    appear on top of this item.
+
+    The two items must be siblings (i.e., they must share the same parent
+    item, or must both be toplevel items).The \a sibling must have the
+    same Z value as this item, otherwise calling this function will have
+    no effect.
 
     By default, all sibling items are stacked by insertion order (i.e., the
     first item you add is drawn before the next item you add). If two items' Z
