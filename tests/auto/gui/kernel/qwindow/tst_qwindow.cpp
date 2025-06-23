@@ -2503,6 +2503,8 @@ void tst_QWindow::modalWithChildWindow()
 
 void tst_QWindow::modalWindowModallity()
 {
+    if (isPlatformWayland() && qgetenv("XDG_CURRENT_DESKTOP").toLower().contains("ubuntu:gnome"))
+        QSKIP("Wayland: This will trigger a 'X is ready' system notification in GNOME.");
     if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
         QSKIP("QWindow::requestActivate() is not supported.");
 
