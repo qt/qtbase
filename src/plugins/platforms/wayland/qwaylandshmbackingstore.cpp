@@ -380,7 +380,9 @@ bool QWaylandShmBackingStore::recreateBackBufferIfNeeded()
         QPainter painter(targetImage);
         painter.setCompositionMode(QPainter::CompositionMode_Source);
         painter.setClipRegion(buffer->dirtyRegion());
-        painter.drawImage(QRectF(QPointF(), targetImage->deviceIndependentSize()), *sourceImage, sourceImage->rect());
+        const qreal targetDevicePixelRatio = painter.device()->devicePixelRatio();
+        painter.scale(qreal(1) / targetDevicePixelRatio, qreal(1) / targetDevicePixelRatio);
+        painter.drawImage(QRectF(QPointF(), targetImage->size()), *sourceImage, sourceImage->rect());
     }
 
     mBackBuffer = buffer;
