@@ -16,6 +16,23 @@
 
 using namespace std::chrono_literals;
 
+class Interface
+{
+public:
+    virtual ~Interface() = default;
+    virtual void meep() const = 0;
+};
+
+class ObjectImplementingInterface : public QObject, public Interface
+{
+    Q_OBJECT
+public:
+    using QObject::QObject;
+
+public Q_SLOTS:
+    void meep() const override {}
+};
+
 class tst_QPointer : public QObject
 {
     Q_OBJECT
@@ -31,6 +48,7 @@ private slots:
     void assignment_operators();
     void compareCompiles();
     void equality_operators();
+    void equality_operators_interface();
     void swap();
     void isNull();
     void dereference_operators();
@@ -218,6 +236,7 @@ void tst_QPointer::compareCompiles()
     QTestPrivate::testEqualityOperatorsCompile<QPointer<QObject>, QWidget*>();
     QTestPrivate::testEqualityOperatorsCompile<QPointer<QObject>, QPointer<QWidget>>();
     QTestPrivate::testEqualityOperatorsCompile<QPointer<QObject>, std::nullptr_t>();
+    QTestPrivate::testEqualityOperatorsCompile<QPointer<ObjectImplementingInterface>, Interface*>();
 }
 
 void tst_QPointer::equality_operators()
@@ -257,6 +276,25 @@ void tst_QPointer::equality_operators()
     QT_TEST_EQUALITY_OPS(p1, widget, true);
     QT_TEST_EQUALITY_OPS(p2, widget, false);
 #endif
+}
+
+void tst_QPointer::equality_operators_interface()
+{
+    QObject reaper;
+    QPointer<ObjectImplementingInterface> p(new ObjectImplementingInterface(&reaper));
+    Interface *i = p.get();
+
+    ObjectImplementingInterface otherP;
+    Interface *otherI = &otherP;
+
+    // things that are equal
+    QT_TEST_EQUALITY_OPS(p, p, true);
+    QT_TEST_EQUALITY_OPS(p, i, true);
+
+    // things that are not equal
+    QT_TEST_EQUALITY_OPS(p, nullptr, false);
+    QT_TEST_EQUALITY_OPS(p, &otherP, false);
+    QT_TEST_EQUALITY_OPS(p, otherI, false);
 }
 
 void tst_QPointer::swap()
