@@ -270,10 +270,10 @@ int main(void)
 )
 
 qt_config_compile_test(cxx2b
-    LABEL "C++2b support"
+    LABEL "C++23 support"
     CODE
 "#if __cplusplus > 202002L
-// Compiler claims to support C++2B, trust it
+// Compiler claims to support C++23, trust it
 #else
 #  error __cplusplus must be > 202002L (the value for C++20)
 #endif
@@ -727,7 +727,7 @@ qt_feature("c++2a" PUBLIC
 )
 qt_feature_config("c++2a" QMAKE_PUBLIC_QT_CONFIG)
 qt_feature("c++2b" PUBLIC
-    LABEL "C++2b"
+    LABEL "C++23"
     AUTODETECT OFF
     CONDITION QT_FEATURE_cxx20 AND (CMAKE_VERSION VERSION_GREATER_EQUAL "3.20") AND TEST_cxx2b
 )
