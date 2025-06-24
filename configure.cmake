@@ -288,6 +288,25 @@ int main(void)
     CXX_STANDARD 23
 )
 
+qt_config_compile_test(cxx2c
+    LABEL "C++2c support"
+    CODE
+"#if __cplusplus > 202302L
+// Compiler claims to support C++2c, trust it
+#else
+#  error __cplusplus must be > 202302L (the value for C++23)
+#endif
+
+int main(void)
+{
+    /* BEGIN TEST: */
+    /* END TEST: */
+    return 0;
+}
+"
+    CXX_STANDARD 26
+)
+
 # precompile_header
 qt_config_compile_test(precompile_header
     LABEL "precompiled header support"
@@ -732,6 +751,12 @@ qt_feature("c++2b" PUBLIC
     CONDITION QT_FEATURE_cxx20 AND (CMAKE_VERSION VERSION_GREATER_EQUAL "3.20") AND TEST_cxx2b
 )
 qt_feature_config("c++2b" QMAKE_PUBLIC_QT_CONFIG)
+qt_feature("c++2c" PUBLIC
+    LABEL "C++2c"
+    AUTODETECT OFF
+    CONDITION QT_FEATURE_cxx2b AND (CMAKE_VERSION VERSION_GREATER_EQUAL "3.25") AND TEST_cxx2c
+)
+qt_feature_config("c++2c" QMAKE_PUBLIC_QT_CONFIG)
 qt_feature("precompile_header"
     LABEL "Using precompiled headers"
     CONDITION BUILD_WITH_PCH AND TEST_precompile_header
