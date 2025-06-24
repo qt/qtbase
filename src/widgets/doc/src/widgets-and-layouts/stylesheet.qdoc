@@ -1341,6 +1341,19 @@
            for an example.
 
     \row
+        \li QToolBox \target qtoolbox-widget
+        \li Supports the \l{box model}.
+     \br
+     \br
+       The individual tabs can by styled using the
+       \l{#tab-sub}{::tab} subcontrol. The tabs support the
+       \l{#only-one-ps}{:only-one}, \l{#first-ps}{:first},
+       \l{#last-ps}{:last}, \l{#middle-ps}{:middle},
+      \l{#previous-selected-ps}{:previous-selected},
+       \l{#next-selected-ps}{:next-selected},
+       \l{#selected-ps}{:selected} pseudo states.
+
+    \row
         \li QToolButton \target qtoolbutton-widget
         \li Supports the \l{box model}.
         \br
@@ -1372,19 +1385,6 @@
 
            See \l{Qt Style Sheets Examples#Customizing QToolButton}{Customizing QToolButton}
            for an example.
-
-    \row
-        \li QToolBox \target qtoolbox-widget
-        \li Supports the \l{box model}.
-        \br
-        \br
-          The individual tabs can by styled using the
-          \l{#tab-sub}{::tab} subcontrol. The tabs support the
-          \l{#only-one-ps}{:only-one}, \l{#first-ps}{:first},
-          \l{#last-ps}{:last}, \l{#middle-ps}{:middle},
-         \l{#previous-selected-ps}{:previous-selected},
-          \l{#next-selected-ps}{:next-selected},
-          \l{#selected-ps}{:selected} pseudo states.
 
     \row
         \li QToolTip \target qtooltip-widget
