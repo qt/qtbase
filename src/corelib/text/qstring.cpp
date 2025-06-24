@@ -2376,6 +2376,18 @@ void qtWarnAboutInvalidRegularExpression(const QString &pattern, const char *whe
     \sa fromLatin1(), fromLocal8Bit(), fromUtf8()
 */
 
+/*!
+    \fn QString::QString(QStringView sv)
+
+    Constructs a string initialized with the string view's data.
+
+    The QString will be null if and only if \a sv is null.
+
+    \since 6.8
+
+    \sa fromUtf16()
+*/
+
 /*
 //! [from-std-string]
 Returns a copy of the \a str string. The given string is assumed to be
