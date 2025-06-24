@@ -259,6 +259,7 @@ bool Moc::parseEnum(EnumDef *def, ClassDef *containingClass)
             return false; // anonymous enum
         isTypdefEnum = true;
     }
+    def->lineNumber = symbol().lineNum;
     if (test(COLON)) { // C++11 strongly typed enum
         // enum Foo : unsigned long { ... };
         def->type = normalizeType(parseType().name);
@@ -464,6 +465,8 @@ bool Moc::parseFunction(FunctionDef *def, bool inMacro)
     }
     next(LPAREN, "Not a signal or slot declaration");
     def->name = tempType.name;
+    def->lineNumber = symbol().lineNum;
+
     scopedFunctionName = tempType.isScoped;
 
     if (!test(RPAREN)) {
@@ -1366,6 +1369,7 @@ void Moc::createPropertyDef(PropertyDef &propDef, int propertyIndex, Moc::Proper
 {
     propDef.location = index;
     propDef.relativeIndex = propertyIndex;
+    propDef.lineNumber = symbol().lineNum;
 
     Type t = parseType();
     QByteArray type = t.name;
@@ -2156,6 +2160,7 @@ QJsonObject FunctionDef::toJson(int index) const
 
     if (revision > 0)
         fdef["revision"_L1] = revision;
+    fdef["lineNumber"_L1] = lineNumber;
 
     if (wasCloned)
         fdef["isCloned"_L1] = true;
@@ -2220,6 +2225,7 @@ QJsonObject PropertyDef::toJson() const
     prop["final"_L1] = final;
     prop["required"_L1] = required;
     prop["index"_L1] = relativeIndex;
+    prop["lineNumber"_L1] = lineNumber;
     if (revision > 0)
         prop["revision"_L1] = revision;
 
@@ -2231,6 +2237,7 @@ QJsonObject EnumDef::toJson(const ClassDef &cdef) const
     QJsonObject def;
     uint flags = this->flags | cdef.enumDeclarations.value(name);
     def["name"_L1] = QString::fromUtf8(name);
+    def["lineNumber"_L1] = lineNumber;
     if (!enumName.isEmpty())
         def["alias"_L1] = QString::fromUtf8(enumName);
     if (!type.isEmpty())

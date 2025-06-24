@@ -11,6 +11,7 @@
                         "designable": true,
                         "final": false,
                         "index": 0,
+                        "lineNumber": 11,
                         "name": "test",
                         "read": "test",
                         "required": false,

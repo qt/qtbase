@@ -58,6 +58,7 @@ struct EnumDef
     QFlags<QtMocConstants::EnumFlags> flags = {};
     QJsonObject toJson(const ClassDef &cdef) const;
     QByteArray qualifiedType(const ClassDef *cdef) const;
+    int lineNumber = 0;
 };
 Q_DECLARE_TYPEINFO(EnumDef, Q_RELOCATABLE_TYPE);
 
@@ -84,6 +85,7 @@ struct FunctionDef
     enum Access { Private, Protected, Public };
     Access access = Private;
     int revision = 0;
+    int lineNumber = 0;
 
     bool isConst = false;
     bool isVirtual = false;
@@ -130,6 +132,7 @@ struct PropertyDef
     bool final = false;
     bool required = false;
     int relativeIndex = -1; // property index in current metaobject
+    int lineNumber = 0;
 
     qsizetype location = -1; // token index, used for error reporting
 

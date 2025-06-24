@@ -10,6 +10,7 @@
                     {
                         "access": "public",
                         "index": 0,
+                        "lineNumber": 21,
                         "name": "works",
                         "returnType": "void"
                     }
@@ -51,6 +52,7 @@
                     {
                         "isClass": false,
                         "isFlag": false,
+                        "lineNumber": 12,
                         "name": "Baz",
                         "values": [
                             "Foo",
@@ -60,6 +62,7 @@
                     {
                         "isClass": false,
                         "isFlag": false,
+                        "lineNumber": 13,
                         "name": "Baz2",
                         "values": [
                             "Foo2",
@@ -83,6 +86,7 @@
                     {
                         "isClass": true,
                         "isFlag": false,
+                        "lineNumber": 12,
                         "name": "EnumClass",
                         "values": [
                             "A0",
@@ -94,6 +98,7 @@
                     {
                         "isClass": false,
                         "isFlag": false,
+                        "lineNumber": 13,
                         "name": "TypedEnum",
                         "type": "char",
                         "values": [
@@ -106,6 +111,7 @@
                     {
                         "isClass": true,
                         "isFlag": false,
+                        "lineNumber": 14,
                         "name": "TypedEnumClass",
                         "type": "char",
                         "values": [
@@ -118,6 +124,7 @@
                     {
                         "isClass": false,
                         "isFlag": false,
+                        "lineNumber": 15,
                         "name": "NormalEnum",
                         "values": [
                             "D2",
@@ -130,6 +137,7 @@
                         "alias": "ClassFlag",
                         "isClass": true,
                         "isFlag": true,
+                        "lineNumber": 16,
                         "name": "ClassFlags",
                         "values": [
                             "F0",
@@ -141,6 +149,7 @@
                     {
                         "isClass": true,
                         "isFlag": false,
+                        "lineNumber": 18,
                         "name": "EnumStruct",
                         "values": [
                             "G0",
@@ -152,6 +161,7 @@
                     {
                         "isClass": true,
                         "isFlag": false,
+                        "lineNumber": 19,
                         "name": "TypedEnumStruct",
                         "type": "char",
                         "values": [
@@ -165,6 +175,7 @@
                         "alias": "StructFlag",
                         "isClass": true,
                         "isFlag": true,
+                        "lineNumber": 20,
                         "name": "StructFlags",
                         "values": [
                             "I0",
@@ -184,6 +195,7 @@
                     {
                         "isClass": true,
                         "isFlag": false,
+                        "lineNumber": 40,
                         "name": "EnumClass",
                         "values": [
                             "A0",
@@ -195,6 +207,7 @@
                     {
                         "isClass": false,
                         "isFlag": false,
+                        "lineNumber": 41,
                         "name": "TypedEnum",
                         "type": "char",
                         "values": [
@@ -207,6 +220,7 @@
                     {
                         "isClass": true,
                         "isFlag": false,
+                        "lineNumber": 42,
                         "name": "TypedEnumClass",
                         "type": "char",
                         "values": [
@@ -219,6 +233,7 @@
                     {
                         "isClass": false,
                         "isFlag": false,
+                        "lineNumber": 43,
                         "name": "NormalEnum",
                         "values": [
                             "D2",
@@ -231,6 +246,7 @@
                         "alias": "ClassFlag",
                         "isClass": true,
                         "isFlag": true,
+                        "lineNumber": 44,
                         "name": "ClassFlags",
                         "values": [
                             "F0",
@@ -250,6 +266,7 @@
                     {
                         "isClass": true,
                         "isFlag": false,
+                        "lineNumber": 54,
                         "name": "EnumClass",
                         "values": [
                             "A0",
@@ -261,6 +278,7 @@
                     {
                         "isClass": false,
                         "isFlag": false,
+                        "lineNumber": 55,
                         "name": "TypedEnum",
                         "type": "char",
                         "values": [
@@ -273,6 +291,7 @@
                     {
                         "isClass": true,
                         "isFlag": false,
+                        "lineNumber": 56,
                         "name": "TypedEnumClass",
                         "type": "char",
                         "values": [
@@ -285,6 +304,7 @@
                     {
                         "isClass": false,
                         "isFlag": false,
+                        "lineNumber": 57,
                         "name": "NormalEnum",
                         "values": [
                             "D2",
@@ -319,12 +339,14 @@
                     {
                         "access": "private",
                         "index": 0,
+                        "lineNumber": 25,
                         "name": "pureSlot0",
                         "returnType": "void"
                     },
                     {
                         "access": "private",
                         "index": 1,
+                        "lineNumber": 26,
                         "name": "pureSlot1",
                         "returnType": "void"
                     },
@@ -332,6 +354,7 @@
                         "access": "private",
                         "index": 2,
                         "isConst": true,
+                        "lineNumber": 27,
                         "name": "pureSlot2",
                         "returnType": "void"
                     },
@@ -339,6 +362,7 @@
                         "access": "private",
                         "index": 3,
                         "isConst": true,
+                        "lineNumber": 28,
                         "name": "pureSlot3",
                         "returnType": "void"
                     }
@@ -359,12 +383,14 @@
                     {
                         "access": "private",
                         "index": 0,
+                        "lineNumber": 47,
                         "name": "pureSlot0",
                         "returnType": "void"
                     },
                     {
                         "access": "private",
                         "index": 1,
+                        "lineNumber": 48,
                         "name": "pureSlot1",
                         "returnType": "void"
                     },
@@ -372,6 +398,7 @@
                         "access": "private",
                         "index": 2,
                         "isConst": true,
+                        "lineNumber": 49,
                         "name": "pureSlot2",
                         "returnType": "void"
                     },
@@ -379,6 +406,7 @@
                         "access": "private",
                         "index": 3,
                         "isConst": true,
+                        "lineNumber": 50,
                         "name": "pureSlot3",
                         "returnType": "void"
                     }
@@ -399,12 +427,14 @@
                     {
                         "access": "private",
                         "index": 0,
+                        "lineNumber": 69,
                         "name": "pureSlot0",
                         "returnType": "void"
                     },
                     {
                         "access": "private",
                         "index": 1,
+                        "lineNumber": 70,
                         "name": "pureSlot1",
                         "returnType": "void"
                     },
@@ -412,6 +442,7 @@
                         "access": "private",
                         "index": 2,
                         "isConst": true,
+                        "lineNumber": 71,
                         "name": "pureSlot2",
                         "returnType": "void"
                     },
@@ -419,6 +450,7 @@
                         "access": "private",
                         "index": 3,
                         "isConst": true,
+                        "lineNumber": 72,
                         "name": "pureSlot3",
                         "returnType": "void"
                     }
@@ -439,12 +471,14 @@
                     {
                         "access": "private",
                         "index": 0,
+                        "lineNumber": 91,
                         "name": "pureSlot0",
                         "returnType": "void"
                     },
                     {
                         "access": "private",
                         "index": 1,
+                        "lineNumber": 92,
                         "name": "pureSlot1",
                         "returnType": "void"
                     },
@@ -452,6 +486,7 @@
                         "access": "private",
                         "index": 2,
                         "isConst": true,
+                        "lineNumber": 93,
                         "name": "pureSlot2",
                         "returnType": "void"
                     },
@@ -459,6 +494,7 @@
                         "access": "private",
                         "index": 3,
                         "isConst": true,
+                        "lineNumber": 94,
                         "name": "pureSlot3",
                         "returnType": "void"
                     }
@@ -479,12 +515,14 @@
                     {
                         "access": "private",
                         "index": 0,
+                        "lineNumber": 113,
                         "name": "pureSlot0",
                         "returnType": "void"
                     },
                     {
                         "access": "private",
                         "index": 1,
+                        "lineNumber": 114,
                         "name": "pureSlot1",
                         "returnType": "void"
                     },
@@ -492,6 +530,7 @@
                         "access": "private",
                         "index": 2,
                         "isConst": true,
+                        "lineNumber": 115,
                         "name": "pureSlot2",
                         "returnType": "void"
                     },
@@ -499,6 +538,7 @@
                         "access": "private",
                         "index": 3,
                         "isConst": true,
+                        "lineNumber": 116,
                         "name": "pureSlot3",
                         "returnType": "void"
                     }
@@ -519,12 +559,14 @@
                     {
                         "access": "private",
                         "index": 0,
+                        "lineNumber": 135,
                         "name": "pureSlot0",
                         "returnType": "void"
                     },
                     {
                         "access": "private",
                         "index": 1,
+                        "lineNumber": 136,
                         "name": "pureSlot1",
                         "returnType": "void"
                     },
@@ -532,6 +574,7 @@
                         "access": "private",
                         "index": 2,
                         "isConst": true,
+                        "lineNumber": 137,
                         "name": "pureSlot2",
                         "returnType": "void"
                     },
@@ -539,6 +582,7 @@
                         "access": "private",
                         "index": 3,
                         "isConst": true,
+                        "lineNumber": 138,
                         "name": "pureSlot3",
                         "returnType": "void"
                     }
@@ -559,12 +603,14 @@
                     {
                         "access": "private",
                         "index": 0,
+                        "lineNumber": 157,
                         "name": "pureSlot0",
                         "returnType": "void"
                     },
                     {
                         "access": "private",
                         "index": 1,
+                        "lineNumber": 158,
                         "name": "pureSlot1",
                         "returnType": "void"
                     },
@@ -572,6 +618,7 @@
                         "access": "private",
                         "index": 2,
                         "isConst": true,
+                        "lineNumber": 159,
                         "name": "pureSlot2",
                         "returnType": "void"
                     },
@@ -579,6 +626,7 @@
                         "access": "private",
                         "index": 3,
                         "isConst": true,
+                        "lineNumber": 160,
                         "name": "pureSlot3",
                         "returnType": "void"
                     }
@@ -599,12 +647,14 @@
                     {
                         "access": "private",
                         "index": 0,
+                        "lineNumber": 179,
                         "name": "pureSlot0",
                         "returnType": "void"
                     },
                     {
                         "access": "private",
                         "index": 1,
+                        "lineNumber": 180,
                         "name": "pureSlot1",
                         "returnType": "void"
                     },
@@ -612,6 +662,7 @@
                         "access": "private",
                         "index": 2,
                         "isConst": true,
+                        "lineNumber": 181,
                         "name": "pureSlot2",
                         "returnType": "void"
                     },
@@ -619,6 +670,7 @@
                         "access": "private",
                         "index": 3,
                         "isConst": true,
+                        "lineNumber": 182,
                         "name": "pureSlot3",
                         "returnType": "void"
                     }
@@ -639,12 +691,14 @@
                     {
                         "access": "private",
                         "index": 0,
+                        "lineNumber": 201,
                         "name": "pureSlot0",
                         "returnType": "void"
                     },
                     {
                         "access": "private",
                         "index": 1,
+                        "lineNumber": 202,
                         "name": "pureSlot1",
                         "returnType": "void"
                     },
@@ -652,6 +706,7 @@
                         "access": "private",
                         "index": 2,
                         "isConst": true,
+                        "lineNumber": 203,
                         "name": "pureSlot2",
                         "returnType": "void"
                     },
@@ -659,6 +714,7 @@
                         "access": "private",
                         "index": 3,
                         "isConst": true,
+                        "lineNumber": 204,
                         "name": "pureSlot3",
                         "returnType": "void"
                     }
@@ -805,6 +861,7 @@
                             }
                         ],
                         "index": 0,
+                        "lineNumber": 30,
                         "name": "trailingSignalReturn",
                         "returnType": "void"
                     }
@@ -813,6 +870,7 @@
                     {
                         "access": "public",
                         "index": 1,
+                        "lineNumber": 12,
                         "name": "fun",
                         "returnType": "void"
                     },
@@ -829,6 +887,7 @@
                             }
                         ],
                         "index": 2,
+                        "lineNumber": 13,
                         "name": "arguments",
                         "returnType": "int"
                     },
@@ -841,12 +900,14 @@
                             }
                         ],
                         "index": 3,
+                        "lineNumber": 14,
                         "name": "inlineFunc",
                         "returnType": "int"
                     },
                     {
                         "access": "public",
                         "index": 4,
+                        "lineNumber": 19,
                         "name": "constRefReturn",
                         "returnType": "void"
                     },
@@ -854,6 +915,7 @@
                         "access": "public",
                         "index": 5,
                         "isConst": true,
+                        "lineNumber": 24,
                         "name": "constConstRefReturn",
                         "returnType": "void"
                     }
@@ -877,6 +939,7 @@
                     {
                         "isClass": false,
                         "isFlag": false,
+                        "lineNumber": 23,
                         "name": "GadEn",
                         "values": [
                             "Value"
@@ -893,6 +956,7 @@
                     {
                         "isClass": false,
                         "isFlag": false,
+                        "lineNumber": 27,
                         "name": "NamEn",
                         "values": [
                             "Value"
@@ -1003,6 +1067,7 @@
                             }
                         ],
                         "index": 0,
+                        "lineNumber": 35,
                         "name": "signalNaked",
                         "returnType": "void"
                     },
@@ -1014,6 +1079,7 @@
                             }
                         ],
                         "index": 1,
+                        "lineNumber": 36,
                         "name": "signalFDC",
                         "returnType": "void"
                     },
@@ -1025,6 +1091,7 @@
                             }
                         ],
                         "index": 2,
+                        "lineNumber": 37,
                         "name": "signalFDC",
                         "returnType": "void"
                     },
@@ -1036,6 +1103,7 @@
                             }
                         ],
                         "index": 3,
+                        "lineNumber": 38,
                         "name": "signalFDC",
                         "returnType": "void"
                     },
@@ -1047,6 +1115,7 @@
                             }
                         ],
                         "index": 4,
+                        "lineNumber": 39,
                         "name": "signalFDC",
                         "returnType": "void"
                     },
@@ -1058,6 +1127,7 @@
                             }
                         ],
                         "index": 5,
+                        "lineNumber": 40,
                         "name": "signalQSet",
                         "returnType": "void"
                     },
@@ -1069,6 +1139,7 @@
                             }
                         ],
                         "index": 6,
+                        "lineNumber": 41,
                         "name": "signalQSet",
                         "returnType": "void"
                     },
@@ -1080,6 +1151,7 @@
                             }
                         ],
                         "index": 7,
+                        "lineNumber": 42,
                         "name": "signalQSet",
                         "returnType": "void"
                     },
@@ -1091,6 +1163,7 @@
                             }
                         ],
                         "index": 8,
+                        "lineNumber": 43,
                         "name": "signalQSet",
                         "returnType": "void"
                     }
@@ -1104,6 +1177,7 @@
                             }
                         ],
                         "index": 9,
+                        "lineNumber": 24,
                         "name": "slotNaked",
                         "returnType": "void"
                     },
@@ -1115,6 +1189,7 @@
                             }
                         ],
                         "index": 10,
+                        "lineNumber": 25,
                         "name": "slotFDC",
                         "returnType": "void"
                     },
@@ -1126,6 +1201,7 @@
                             }
                         ],
                         "index": 11,
+                        "lineNumber": 26,
                         "name": "slotFDC",
                         "returnType": "void"
                     },
@@ -1137,6 +1213,7 @@
                             }
                         ],
                         "index": 12,
+                        "lineNumber": 27,
                         "name": "slotFDC",
                         "returnType": "void"
                     },
@@ -1148,6 +1225,7 @@
                             }
                         ],
                         "index": 13,
+                        "lineNumber": 28,
                         "name": "slotFDC",
                         "returnType": "void"
                     },
@@ -1159,6 +1237,7 @@
                             }
                         ],
                         "index": 14,
+                        "lineNumber": 29,
                         "name": "slotQSet",
                         "returnType": "void"
                     },
@@ -1170,6 +1249,7 @@
                             }
                         ],
                         "index": 15,
+                        "lineNumber": 30,
                         "name": "slotQSet",
                         "returnType": "void"
                     },
@@ -1181,6 +1261,7 @@
                             }
                         ],
                         "index": 16,
+                        "lineNumber": 31,
                         "name": "slotQSet",
                         "returnType": "void"
                     },
@@ -1192,6 +1273,7 @@
                             }
                         ],
                         "index": 17,
+                        "lineNumber": 32,
                         "name": "slotQSet",
                         "returnType": "void"
                     }
@@ -1218,12 +1300,14 @@
                     {
                         "access": "public",
                         "index": 0,
+                        "lineNumber": 26,
                         "name": "test1",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
                         "index": 1,
+                        "lineNumber": 27,
                         "name": "test2",
                         "returnType": "void"
                     }
@@ -1253,6 +1337,7 @@
                     {
                         "isClass": false,
                         "isFlag": false,
+                        "lineNumber": 22,
                         "name": "FooEnum",
                         "values": [
                             "FooValue"
@@ -1321,6 +1406,7 @@
                         "designable": true,
                         "final": false,
                         "index": 0,
+                        "lineNumber": 23,
                         "name": "prop1",
                         "read": "getProp1",
                         "required": false,
@@ -1335,6 +1421,7 @@
                         "designable": true,
                         "final": false,
                         "index": 1,
+                        "lineNumber": 24,
                         "name": "prop2",
                         "read": "getProp2",
                         "required": false,
@@ -1349,6 +1436,7 @@
                         "designable": true,
                         "final": false,
                         "index": 2,
+                        "lineNumber": 25,
                         "name": "prop3",
                         "read": "getProp3",
                         "required": false,
@@ -1385,6 +1473,7 @@
                     {
                         "isClass": true,
                         "isFlag": false,
+                        "lineNumber": 14,
                         "name": "Enum1",
                         "values": [
                             "Key1",
@@ -1402,6 +1491,7 @@
                     {
                         "isClass": true,
                         "isFlag": false,
+                        "lineNumber": 22,
                         "name": "Enum2",
                         "values": [
                             "Key3",
@@ -1411,6 +1501,7 @@
                     {
                         "isClass": true,
                         "isFlag": false,
+                        "lineNumber": 35,
                         "name": "Enum3",
                         "values": [
                             "Key5",
@@ -1428,6 +1519,7 @@
                     {
                         "isClass": true,
                         "isFlag": false,
+                        "lineNumber": 43,
                         "name": "Enum4",
                         "values": [
                             "Key7",
@@ -1483,6 +1575,7 @@
                         "alias": "Flag",
                         "isClass": false,
                         "isFlag": true,
+                        "lineNumber": 15,
                         "name": "Flags",
                         "values": [
                             "Read",
@@ -1498,6 +1591,7 @@
                         "designable": true,
                         "final": false,
                         "index": 0,
+                        "lineNumber": 11,
                         "name": "flags",
                         "read": "flags",
                         "required": false,
@@ -1526,6 +1620,7 @@
                         "designable": true,
                         "final": false,
                         "index": 0,
+                        "lineNumber": 30,
                         "name": "flags",
                         "read": "flags",
                         "required": false,
@@ -1540,6 +1635,7 @@
                         "designable": true,
                         "final": false,
                         "index": 1,
+                        "lineNumber": 31,
                         "name": "flagsList",
                         "read": "flagsList",
                         "required": false,
@@ -1573,6 +1669,7 @@
                     {
                         "access": "public",
                         "index": 0,
+                        "lineNumber": 41,
                         "name": "mySignal",
                         "returnType": "void"
                     }
@@ -1581,6 +1678,7 @@
                     {
                         "access": "public",
                         "index": 1,
+                        "lineNumber": 44,
                         "name": "mySlot",
                         "returnType": "void"
                     }
@@ -1625,6 +1723,7 @@
                     {
                         "access": "public",
                         "index": 0,
+                        "lineNumber": 17,
                         "name": "foo",
                         "returnType": "void"
                     },
@@ -1648,6 +1747,7 @@
                             }
                         ],
                         "index": 1,
+                        "lineNumber": 18,
                         "name": "bar",
                         "returnType": "int"
                     },
@@ -1662,6 +1762,7 @@
                             }
                         ],
                         "index": 2,
+                        "lineNumber": 19,
                         "name": "slot",
                         "returnType": "void"
                     }
@@ -1708,12 +1809,14 @@
                             }
                         ],
                         "index": 0,
+                        "lineNumber": 105,
                         "name": "cmdlineSignal",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
                         "index": 1,
+                        "lineNumber": 109,
                         "name": "signalQTBUG55853",
                         "returnType": "void"
                     }
@@ -1722,30 +1825,35 @@
                     {
                         "access": "public",
                         "index": 2,
+                        "lineNumber": 64,
                         "name": "voidFunction",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
                         "index": 3,
+                        "lineNumber": 66,
                         "name": "stringMethod",
                         "returnType": "QString"
                     },
                     {
                         "access": "public",
                         "index": 4,
+                        "lineNumber": 68,
                         "name": "combined1",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
                         "index": 5,
+                        "lineNumber": 69,
                         "name": "combined2",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
                         "index": 6,
+                        "lineNumber": 70,
                         "name": "combined3",
                         "returnType": "void"
                     },
@@ -1760,24 +1868,28 @@
                             }
                         ],
                         "index": 7,
+                        "lineNumber": 71,
                         "name": "combined4",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
                         "index": 8,
+                        "lineNumber": 73,
                         "name": "combined5",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
                         "index": 9,
+                        "lineNumber": 75,
                         "name": "combined6",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
                         "index": 10,
+                        "lineNumber": 77,
                         "name": "vararg1",
                         "returnType": "void"
                     },
@@ -1789,6 +1901,7 @@
                             }
                         ],
                         "index": 11,
+                        "lineNumber": 78,
                         "name": "vararg2",
                         "returnType": "void"
                     },
@@ -1803,12 +1916,14 @@
                             }
                         ],
                         "index": 12,
+                        "lineNumber": 79,
                         "name": "vararg3",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
                         "index": 13,
+                        "lineNumber": 81,
                         "name": "vararg4",
                         "returnType": "void"
                     },
@@ -1820,6 +1935,7 @@
                             }
                         ],
                         "index": 14,
+                        "lineNumber": 82,
                         "name": "vararg5",
                         "returnType": "void"
                     },
@@ -1834,6 +1950,7 @@
                             }
                         ],
                         "index": 15,
+                        "lineNumber": 83,
                         "name": "vararg6",
                         "returnType": "void"
                     },
@@ -1845,6 +1962,7 @@
                             }
                         ],
                         "index": 16,
+                        "lineNumber": 89,
                         "name": "INNERFUNCTION",
                         "returnType": "void"
                     },
@@ -1856,6 +1974,7 @@
                             }
                         ],
                         "index": 17,
+                        "lineNumber": 90,
                         "name": "inner_expanded",
                         "returnType": "void"
                     },
@@ -1867,12 +1986,14 @@
                             }
                         ],
                         "index": 18,
+                        "lineNumber": 91,
                         "name": "expanded_method",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
                         "index": 19,
+                        "lineNumber": 99,
                         "name": "conditionSlot",
                         "returnType": "void"
                     },
@@ -1884,6 +2005,7 @@
                             }
                         ],
                         "index": 20,
+                        "lineNumber": 102,
                         "name": "PD_DEFINE_ITSELF_SUFFIX",
                         "returnType": "void"
                     }
@@ -1933,6 +2055,7 @@
                             }
                         ],
                         "index": 0,
+                        "lineNumber": 18,
                         "name": "setProp1",
                         "returnType": "void"
                     },
@@ -1944,6 +2067,7 @@
                             }
                         ],
                         "index": 1,
+                        "lineNumber": 19,
                         "name": "setProp2",
                         "returnType": "void"
                     },
@@ -1955,6 +2079,7 @@
                             }
                         ],
                         "index": 2,
+                        "lineNumber": 20,
                         "name": "setProp3",
                         "returnType": "void"
                     },
@@ -1966,6 +2091,7 @@
                             }
                         ],
                         "index": 3,
+                        "lineNumber": 21,
                         "name": "setProp4",
                         "returnType": "void"
                     },
@@ -1977,6 +2103,7 @@
                             }
                         ],
                         "index": 4,
+                        "lineNumber": 22,
                         "name": "setProp5",
                         "returnType": "void"
                     },
@@ -1988,6 +2115,7 @@
                             }
                         ],
                         "index": 5,
+                        "lineNumber": 23,
                         "name": "setProp6",
                         "returnType": "void"
                     },
@@ -1999,6 +2127,7 @@
                             }
                         ],
                         "index": 6,
+                        "lineNumber": 24,
                         "name": "setProp7",
                         "returnType": "void"
                     }
@@ -2025,12 +2154,14 @@
                     {
                         "access": "public",
                         "index": 0,
+                        "lineNumber": 13,
                         "name": "mySignal",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
                         "index": 1,
+                        "lineNumber": 14,
                         "name": "myOtherSignal",
                         "returnType": "void"
                     },
@@ -2043,6 +2174,7 @@
                             }
                         ],
                         "index": 2,
+                        "lineNumber": 15,
                         "name": "mySignal2",
                         "returnType": "void"
                     }
@@ -2063,6 +2195,7 @@
                     {
                         "access": "public",
                         "index": 0,
+                        "lineNumber": 23,
                         "name": "mySignal",
                         "returnType": "void"
                     },
@@ -2075,6 +2208,7 @@
                             }
                         ],
                         "index": 1,
+                        "lineNumber": 24,
                         "name": "mySignal2",
                         "returnType": "void"
                     }
@@ -2098,6 +2232,7 @@
                     {
                         "isClass": false,
                         "isFlag": false,
+                        "lineNumber": 12,
                         "name": "LargeEnum",
                         "type": "qint64",
                         "values": [
@@ -2124,6 +2259,7 @@
                         "alias": "LargeFlag",
                         "isClass": false,
                         "isFlag": true,
+                        "lineNumber": 24,
                         "name": "LargeFlags",
                         "type": "qint64",
                         "values": [
@@ -2136,6 +2272,7 @@
                         "alias": "ScopedLargeFlag",
                         "isClass": true,
                         "isFlag": true,
+                        "lineNumber": 32,
                         "name": "ScopedLargeFlags",
                         "type": "quint64",
                         "values": [
@@ -2169,6 +2306,7 @@
                         "access": "public",
                         "index": 0,
                         "isConst": true,
+                        "lineNumber": 0,
                         "name": "foo",
                         "returnType": "const char*"
                     }
@@ -2189,12 +2327,14 @@
                     {
                         "access": "public",
                         "index": 0,
+                        "lineNumber": 0,
                         "name": "foo",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
                         "index": 1,
+                        "lineNumber": 0,
                         "name": "bar",
                         "returnType": "void"
                     }
@@ -2235,6 +2375,7 @@
                             }
                         ],
                         "index": 0,
+                        "lineNumber": 17,
                         "name": "f",
                         "returnType": "void"
                     }
@@ -2259,6 +2400,7 @@
                     {
                         "access": "private",
                         "index": 1,
+                        "lineNumber": 0,
                         "name": "method1",
                         "returnType": "void"
                     }
@@ -2269,6 +2411,7 @@
                     {
                         "access": "private",
                         "index": 0,
+                        "lineNumber": 21,
                         "name": "_q_privateslot",
                         "returnType": "void"
                     }
@@ -2292,6 +2435,7 @@
                     {
                         "isClass": false,
                         "isFlag": false,
+                        "lineNumber": 14,
                         "name": "SomeEnum",
                         "values": [
                             "SomeEnumValue"
@@ -2318,6 +2462,7 @@
                         "designable": true,
                         "final": false,
                         "index": 0,
+                        "lineNumber": 14,
                         "name": "blah",
                         "read": "blah",
                         "required": false,
@@ -2347,6 +2492,7 @@
                     {
                         "isClass": false,
                         "isFlag": false,
+                        "lineNumber": 14,
                         "name": "SomeEnum",
                         "values": [
                             "SomeEnumValue"
@@ -2373,6 +2519,7 @@
                         "designable": true,
                         "final": false,
                         "index": 0,
+                        "lineNumber": 20,
                         "name": "blah",
                         "read": "blah",
                         "required": false,
@@ -2402,6 +2549,7 @@
                     {
                         "isClass": false,
                         "isFlag": false,
+                        "lineNumber": 48,
                         "name": "SomeEnum",
                         "values": [
                             "SomeEnumValue"
@@ -2418,6 +2566,7 @@
                     {
                         "isClass": false,
                         "isFlag": false,
+                        "lineNumber": 48,
                         "name": "SomeEnum",
                         "values": [
                             "SomeEnumValue"
@@ -2440,6 +2589,7 @@
                     {
                         "isClass": false,
                         "isFlag": false,
+                        "lineNumber": 53,
                         "name": "SomeEnum",
                         "values": [
                             "SomeEnumValue"
@@ -2456,6 +2606,7 @@
                     {
                         "isClass": false,
                         "isFlag": false,
+                        "lineNumber": 53,
                         "name": "SomeEnum",
                         "values": [
                             "SomeEnumValue"
@@ -2478,6 +2629,7 @@
                     {
                         "isClass": false,
                         "isFlag": false,
+                        "lineNumber": 57,
                         "name": "SomeEnum",
                         "values": [
                             "SomeEnumValue"
@@ -2494,6 +2646,7 @@
                     {
                         "isClass": false,
                         "isFlag": false,
+                        "lineNumber": 57,
                         "name": "SomeEnum",
                         "values": [
                             "SomeEnumValue"
@@ -2516,6 +2669,7 @@
                     {
                         "isClass": false,
                         "isFlag": false,
+                        "lineNumber": 60,
                         "name": "SomeEnum",
                         "values": [
                             "SomeEnumValue"
@@ -2532,6 +2686,7 @@
                     {
                         "isClass": false,
                         "isFlag": false,
+                        "lineNumber": 60,
                         "name": "SomeEnum",
                         "values": [
                             "SomeEnumValue"
@@ -2558,6 +2713,7 @@
                         "designable": true,
                         "final": false,
                         "index": 0,
+                        "lineNumber": 61,
                         "name": "gadgetPoperty",
                         "read": "gadgetPoperty",
                         "required": false,
@@ -2571,6 +2727,7 @@
                         "designable": true,
                         "final": false,
                         "index": 1,
+                        "lineNumber": 61,
                         "name": "objectPoperty",
                         "read": "objectPoperty",
                         "required": false,
@@ -2598,6 +2755,7 @@
                         "designable": true,
                         "final": false,
                         "index": 0,
+                        "lineNumber": 61,
                         "name": "nestedGadgetPoperty",
                         "read": "nestedGadgetPoperty",
                         "required": false,
@@ -2625,6 +2783,7 @@
                         "designable": true,
                         "final": false,
                         "index": 0,
+                        "lineNumber": 61,
                         "name": "nestedObjectPoperty",
                         "read": "nestedObjectPoperty",
                         "required": false,
@@ -2648,6 +2807,7 @@
                     {
                         "isClass": false,
                         "isFlag": false,
+                        "lineNumber": 67,
                         "name": "SomeEnum",
                         "values": [
                             "SomeEnumValue"
@@ -2664,6 +2824,7 @@
                     {
                         "isClass": false,
                         "isFlag": false,
+                        "lineNumber": 67,
                         "name": "SomeEnum",
                         "values": [
                             "SomeEnumValue"
@@ -2686,6 +2847,7 @@
                     {
                         "isClass": false,
                         "isFlag": false,
+                        "lineNumber": 71,
                         "name": "SomeEnum",
                         "values": [
                             "SomeEnumValue"
@@ -2702,6 +2864,7 @@
                     {
                         "isClass": false,
                         "isFlag": false,
+                        "lineNumber": 71,
                         "name": "SomeEnum",
                         "values": [
                             "SomeEnumValue"
@@ -2724,6 +2887,7 @@
                     {
                         "isClass": false,
                         "isFlag": false,
+                        "lineNumber": 74,
                         "name": "SomeEnum",
                         "values": [
                             "SomeEnumValue"
@@ -2740,6 +2904,7 @@
                     {
                         "isClass": false,
                         "isFlag": false,
+                        "lineNumber": 74,
                         "name": "SomeEnum",
                         "values": [
                             "SomeEnumValue"
@@ -2766,6 +2931,7 @@
                         "designable": true,
                         "final": false,
                         "index": 0,
+                        "lineNumber": 75,
                         "name": "gadgetPoperty",
                         "read": "gadgetPoperty",
                         "required": false,
@@ -2779,6 +2945,7 @@
                         "designable": true,
                         "final": false,
                         "index": 1,
+                        "lineNumber": 75,
                         "name": "objectPoperty",
                         "read": "objectPoperty",
                         "required": false,
@@ -2806,6 +2973,7 @@
                         "designable": true,
                         "final": false,
                         "index": 0,
+                        "lineNumber": 75,
                         "name": "nestedGadgetPoperty",
                         "read": "nestedGadgetPoperty",
                         "required": false,
@@ -2833,6 +3001,7 @@
                         "designable": true,
                         "final": false,
                         "index": 0,
+                        "lineNumber": 75,
                         "name": "nestedObjectPoperty",
                         "read": "nestedObjectPoperty",
                         "required": false,
@@ -2871,6 +3040,7 @@
                             }
                         ],
                         "index": 0,
+                        "lineNumber": 13,
                         "name": "signalWithDefaultArg",
                         "returnType": "void"
                     },
@@ -2878,6 +3048,7 @@
                         "access": "public",
                         "index": 1,
                         "isCloned": true,
+                        "lineNumber": 13,
                         "name": "signalWithDefaultArg",
                         "returnType": "void"
                     }
@@ -2901,6 +3072,7 @@
                     {
                         "isClass": false,
                         "isFlag": false,
+                        "lineNumber": 16,
                         "name": "Salaries",
                         "values": [
                             "Steve"
@@ -2937,18 +3109,21 @@
                             }
                         ],
                         "index": 0,
+                        "lineNumber": 23,
                         "name": "mySignal",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
                         "index": 1,
+                        "lineNumber": 24,
                         "name": "myVoidSignal",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
                         "index": 2,
+                        "lineNumber": 25,
                         "name": "myVoidSignal2",
                         "returnType": "void"
                     }
@@ -2957,12 +3132,14 @@
                     {
                         "access": "public",
                         "index": 3,
+                        "lineNumber": 18,
                         "name": "dummySlot",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
                         "index": 4,
+                        "lineNumber": 19,
                         "name": "dummySlot2",
                         "returnType": "void"
                     },
@@ -2974,12 +3151,14 @@
                             }
                         ],
                         "index": 5,
+                        "lineNumber": 20,
                         "name": "anotherSlot",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
                         "index": 6,
+                        "lineNumber": 21,
                         "name": "mySlot",
                         "returnType": "TestTemplate<void>"
                     }
@@ -3059,6 +3238,7 @@
                             }
                         ],
                         "index": 0,
+                        "lineNumber": 19,
                         "name": "a",
                         "returnType": "void"
                     },
@@ -3071,6 +3251,7 @@
                             }
                         ],
                         "index": 1,
+                        "lineNumber": 20,
                         "name": "b",
                         "returnType": "void"
                     },
@@ -3082,6 +3263,7 @@
                             }
                         ],
                         "index": 2,
+                        "lineNumber": 21,
                         "name": "c",
                         "returnType": "void"
                     },
@@ -3094,6 +3276,7 @@
                             }
                         ],
                         "index": 3,
+                        "lineNumber": 22,
                         "name": "d",
                         "returnType": "void"
                     },
@@ -3105,6 +3288,7 @@
                             }
                         ],
                         "index": 4,
+                        "lineNumber": 23,
                         "name": "e",
                         "returnType": "void"
                     },
@@ -3117,6 +3301,7 @@
                             }
                         ],
                         "index": 5,
+                        "lineNumber": 24,
                         "name": "f",
                         "returnType": "void"
                     },
@@ -3128,6 +3313,7 @@
                             }
                         ],
                         "index": 6,
+                        "lineNumber": 25,
                         "name": "g",
                         "returnType": "void"
                     },
@@ -3140,6 +3326,7 @@
                             }
                         ],
                         "index": 7,
+                        "lineNumber": 26,
                         "name": "h",
                         "returnType": "void"
                     },
@@ -3154,6 +3341,7 @@
                             }
                         ],
                         "index": 8,
+                        "lineNumber": 27,
                         "name": "i",
                         "returnType": "void"
                     },
@@ -3168,6 +3356,7 @@
                             }
                         ],
                         "index": 9,
+                        "lineNumber": 28,
                         "name": "j",
                         "returnType": "void"
                     },
@@ -3179,6 +3368,7 @@
                             }
                         ],
                         "index": 10,
+                        "lineNumber": 29,
                         "name": "k",
                         "returnType": "void"
                     },
@@ -3191,6 +3381,7 @@
                             }
                         ],
                         "index": 11,
+                        "lineNumber": 30,
                         "name": "l",
                         "returnType": "void"
                     }
@@ -3233,6 +3424,7 @@
                     {
                         "access": "public",
                         "index": 4,
+                        "lineNumber": 0,
                         "name": "myTPInvokable1",
                         "returnType": "void",
                         "tag": "QT_TECH_PREVIEW_API"
@@ -3240,6 +3432,7 @@
                     {
                         "access": "public",
                         "index": 5,
+                        "lineNumber": 0,
                         "name": "myTPInvokable2",
                         "returnType": "void",
                         "tag": "QT_TECH_PREVIEW_API"
@@ -3252,6 +3445,7 @@
                         "designable": true,
                         "final": false,
                         "index": 0,
+                        "lineNumber": 19,
                         "member": "m_status",
                         "name": "status",
                         "required": false,
@@ -3266,12 +3460,14 @@
                     {
                         "access": "public",
                         "index": 0,
+                        "lineNumber": 38,
                         "name": "mySignal",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
                         "index": 1,
+                        "lineNumber": 39,
                         "name": "myTPSignal",
                         "returnType": "void",
                         "tag": "QT_TECH_PREVIEW_API"
@@ -3281,12 +3477,14 @@
                     {
                         "access": "public",
                         "index": 2,
+                        "lineNumber": 42,
                         "name": "mySlot",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
                         "index": 3,
+                        "lineNumber": 43,
                         "name": "myTPSlot",
                         "returnType": "void",
                         "tag": "QT_TECH_PREVIEW_API"
@@ -3319,6 +3517,7 @@
                             }
                         ],
                         "index": 0,
+                        "lineNumber": 19,
                         "name": "foo",
                         "returnType": "void"
                     },
@@ -3330,6 +3529,7 @@
                             }
                         ],
                         "index": 1,
+                        "lineNumber": 20,
                         "name": "foo2",
                         "returnType": "void"
                     },
@@ -3341,6 +3541,7 @@
                             }
                         ],
                         "index": 2,
+                        "lineNumber": 23,
                         "name": "bar",
                         "returnType": "void"
                     },
@@ -3352,6 +3553,7 @@
                             }
                         ],
                         "index": 3,
+                        "lineNumber": 24,
                         "name": "bar2",
                         "returnType": "void"
                     },
@@ -3363,6 +3565,7 @@
                             }
                         ],
                         "index": 4,
+                        "lineNumber": 25,
                         "name": "bar3",
                         "returnType": "void"
                     }
