@@ -67,7 +67,12 @@ namespace QRangeModelDetails
     // TODO: shouldn't we check is_smart_ptr && !is_copy_constructible && !is_copy_assignable
     //       to support users-specific ptrs?
     template <typename T>
-    using is_any_unique_ptr = is_any_of<T, std::unique_ptr, QScopedPointer>;
+    using is_any_unique_ptr = is_any_of<T,
+#ifndef QT_NO_SCOPED_POINTER
+            QScopedPointer,
+#endif
+            std::unique_ptr
+        >;
 
     template <typename T>
     using is_any_shared_ptr = is_any_of<T, std::shared_ptr, QSharedPointer,
