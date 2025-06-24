@@ -8,6 +8,7 @@
 #include "qobject_p_p.h"
 #include "qmetaobject_p.h"
 
+#include <QtCore/private/qtclasshelper_p.h>
 #include "qabstracteventdispatcher.h"
 #include "qabstracteventdispatcher_p.h"
 #include "qcoreapplication.h"
@@ -4392,18 +4393,12 @@ bool QObject::doSetProperty(const char *name, const QVariant *lvalue, QVariant *
         } else {
             if (idx == -1) {
                 d->extraData->propertyNames.append(name);
-                if (rvalue)
-                    d->extraData->propertyValues.append(std::move(*rvalue));
-                else
-                    d->extraData->propertyValues.append(*lvalue);
+                q_choose_append(d->extraData->propertyValues, value, rvalue);
             } else {
                 if (value.userType() == d->extraData->propertyValues.at(idx).userType()
                         && value == d->extraData->propertyValues.at(idx))
                     return false;
-                if (rvalue)
-                    d->extraData->propertyValues[idx] = std::move(*rvalue);
-                else
-                    d->extraData->propertyValues[idx] = *lvalue;
+                q_choose_assign(d->extraData->propertyValues[idx], value, rvalue);
             }
         }
 
