@@ -123,6 +123,7 @@ breakpad {
 
 c++17: CONFIG += c++1z
 c++20: CONFIG += c++2a
+c++23: CONFIG += c++2b
 c++latest: CONFIG *= c++2b c++2a c++1z c++14 c++11
 
 !c++1z:!c++2a:!c++2b {
