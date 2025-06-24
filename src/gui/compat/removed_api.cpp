@@ -37,6 +37,10 @@ bool Qt::mightBeRichText(const QString& text)
     return Qt::mightBeRichText(qToStringViewIgnoringNull(text));
 }
 
+// #include "qotherheader.h"
+// // implement removed functions from qotherheader.h
+// order sections alphabetically
+
 #endif // QT_GUI_REMOVED_SINCE(6, 7)
 
 #if QT_GUI_REMOVED_SINCE(6, 8)
