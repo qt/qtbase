@@ -15,6 +15,23 @@
 
 using namespace std::chrono_literals;
 
+class Interface
+{
+public:
+    virtual ~Interface() = default;
+    virtual void meep() const = 0;
+};
+
+class ObjectImplementingInterface : public QObject, public Interface
+{
+    Q_OBJECT
+public:
+    using QObject::QObject;
+
+public Q_SLOTS:
+    void meep() const override {}
+};
+
 class tst_QPointer : public QObject
 {
     Q_OBJECT
@@ -28,6 +45,7 @@ private slots:
     void destructor();
     void assignment_operators();
     void equality_operators();
+    void equality_operators_interface();
     void swap();
     void isNull();
     void dereference_operators();
@@ -198,6 +216,41 @@ void tst_QPointer::equality_operators()
     QVERIFY(widget != p2);
 #endif
 }
+
+#ifdef QT_TEST_EQUALITY_OPS
+#  error Did _not_ expect this macro in this branch...
+#endif
+
+#define QT_TEST_EQUALITY_OPS(l, r, res) do { \
+        if (res) { \
+            QCOMPARE_EQ(l, r); \
+            QCOMPARE_EQ(r, l); \
+        } else { \
+            QCOMPARE_NE(l, r); \
+            QCOMPARE_NE(r, l); \
+        } \
+    } while (false)
+
+void tst_QPointer::equality_operators_interface()
+{
+    QObject reaper;
+    QPointer<ObjectImplementingInterface> p(new ObjectImplementingInterface(&reaper));
+    Interface *i = p.get();
+
+    ObjectImplementingInterface otherP;
+    Interface *otherI = &otherP;
+
+    // things that are equal
+    QT_TEST_EQUALITY_OPS(p, p, true);
+    QT_TEST_EQUALITY_OPS(p, i, true);
+
+    // things that are not equal
+    QT_TEST_EQUALITY_OPS(p, nullptr, false);
+    QT_TEST_EQUALITY_OPS(p, &otherP, false);
+    QT_TEST_EQUALITY_OPS(p, otherI, false);
+}
+
+#undef QT_TEST_EQUALITY_OPS
 
 void tst_QPointer::swap()
 {
