@@ -12,6 +12,13 @@
 #include <QtCore/qdatetime.h>
 #include <QtCore/qfileinfo.h>
 
+#include <qplatformdefs.h>
+
+#ifdef Q_OS_WIN
+#include <io.h>
+#include <qt_windows.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
@@ -374,6 +381,19 @@ bool QLockFile::getLockInfo(qint64 *pid, QString *hostname, QString *appname) co
     return true;
 }
 
+QLockFilePrivate::QLockFilePrivate(const QString &fn)
+    : fileName(fn),
+#ifdef Q_OS_WIN
+      fileHandle(INVALID_HANDLE_VALUE)
+#else
+      fileHandle(-1)
+#endif
+{
+}
+
+QLockFilePrivate::~QLockFilePrivate()
+    = default;
+
 QByteArray QLockFilePrivate::lockFileContents() const
 {
     // Use operator% from the fast builder to avoid multiple memory allocations.
@@ -441,6 +461,19 @@ bool QLockFilePrivate::isApparentlyStale() const
     using namespace std::chrono;
     const milliseconds age{lastMod.msecsTo(QDateTime::currentDateTimeUtc())};
     return staleLockTime > 0ms && abs(age) > staleLockTime;
+}
+
+int QLockFilePrivate::getLockFileHandle(QLockFile *f)
+{
+    int fd;
+#ifdef Q_OS_WIN
+    // Use of this function on Windows WILL leak a file descriptor.
+    fd = _open_osfhandle(intptr_t(f->d_func()->fileHandle), 0);
+#else
+    fd = f->d_func()->fileHandle;
+#endif
+    QT_LSEEK(fd, 0, SEEK_SET);
+    return fd;
 }
 
 /*!
