@@ -311,21 +311,21 @@ inline QVector3D operator*(const QQuaternion &quaternion, const QVector3D &vec)
     return quaternion.rotatedVector(vec);
 }
 
-inline void QQuaternion::getAxisAndAngle(QVector3D *axis, float *angle) const
+void QQuaternion::getAxisAndAngle(QVector3D *axis, float *angle) const
 {
     float aX, aY, aZ;
     getAxisAndAngle(&aX, &aY, &aZ, angle);
     *axis = QVector3D(aX, aY, aZ);
 }
 
-inline QVector3D QQuaternion::toEulerAngles() const
+QVector3D QQuaternion::toEulerAngles() const
 {
     float pitch, yaw, roll;
     getEulerAngles(&pitch, &yaw, &roll);
     return QVector3D(pitch, yaw, roll);
 }
 
-inline QQuaternion QQuaternion::fromEulerAngles(const QVector3D &eulerAngles)
+QQuaternion QQuaternion::fromEulerAngles(const QVector3D &eulerAngles)
 {
     return QQuaternion::fromEulerAngles(eulerAngles.x(), eulerAngles.y(), eulerAngles.z());
 }
