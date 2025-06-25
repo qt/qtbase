@@ -1465,6 +1465,13 @@ QNoDebug QMessageLogger::noDebug() const noexcept
 
 #include "qmutex.h" // removed, previously-inline API
 
+#include "qobject.h"
+
+bool QObject::doSetProperty(const char *name, const QVariant *lvalue, QVariant *rvalue)
+{
+    return doSetProperty(name, *lvalue, rvalue);
+}
+
 #include "qstring.h" // inlined API
 
 // #include "qotherheader.h"

@@ -387,7 +387,10 @@ protected:
 
 private:
     void doSetObjectName(const QString &name);
+#if QT_CORE_REMOVED_SINCE(6, 10)
     bool doSetProperty(const char *name, const QVariant *lvalue, QVariant *rvalue);
+#endif
+    bool doSetProperty(const char *name, const QVariant &value, QVariant *rvalue);
 
     Q_DISABLE_COPY(QObject)
 
@@ -409,12 +412,12 @@ inline QMetaObject::Connection QObject::connect(const QObject *asender, const ch
 #if QT_CORE_INLINE_IMPL_SINCE(6, 6)
 bool QObject::setProperty(const char *name, const QVariant &value)
 {
-    return doSetProperty(name, &value, nullptr);
+    return doSetProperty(name, value, nullptr);
 }
 #endif // inline since 6.6
 bool QObject::setProperty(const char *name, QVariant &&value)
 {
-    return doSetProperty(name, &value, &value);
+    return doSetProperty(name, value, &value);
 }
 
 template <class T>

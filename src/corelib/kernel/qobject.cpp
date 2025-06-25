@@ -4371,10 +4371,9 @@ int QObjectPrivate::signalIndex(const char *signalName,
   \overload setProperty
 */
 
-bool QObject::doSetProperty(const char *name, const QVariant *lvalue, QVariant *rvalue)
+bool QObject::doSetProperty(const char *name, const QVariant &value, QVariant *rvalue)
 {
     Q_D(QObject);
-    const auto &value =*lvalue;
     const QMetaObject *meta = metaObject();
     if (!name || !meta)
         return false;
@@ -4413,7 +4412,7 @@ bool QObject::doSetProperty(const char *name, const QVariant *lvalue, QVariant *
         qWarning("%s::setProperty: Property \"%s\" invalid,"
                  " read-only or does not exist", metaObject()->className(), name);
 #endif
-    return rvalue ? p.write(this, std::move(*rvalue)) : p.write(this, *lvalue);
+    return rvalue ? p.write(this, std::move(*rvalue)) : p.write(this, value);
 }
 
 /*!
