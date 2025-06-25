@@ -144,7 +144,6 @@
 #include "qrect.h"
 #include "qelapsedtimer.h"
 #include "qtimer.h"
-#include "qmap.h"
 #include "qlist.h"
 #include "qbuffer.h"
 #include "qdir.h"
@@ -153,6 +152,7 @@
 #include "private/qobject_p.h"
 #include "private/qproperty_p.h"
 
+#include <map>
 #include <memory>
 
 #define QMOVIE_INVALID_DELAY -1
@@ -236,7 +236,7 @@ public:
                                          QMovie::CacheNone)
     bool haveReadAll = false;
     bool isFirstIteration = true;
-    QMap<int, QFrameInfo> frameMap;
+    std::map<int, QFrameInfo> frameMap;
     QString absoluteFilePath;
 
     QTimer nextImageTimer;
@@ -403,9 +403,9 @@ QFrameInfo QMoviePrivate::infoForFrame(int frameNumber)
                 greatestFrameNumber = i;
                 QFrameInfo info(QPixmap::fromImage(std::move(anImage)), nextFrameDelay());
                 // Cache it!
-                frameMap.insert(i, info);
+                auto &e = frameMap[i] = std::move(info);
                 if (i == frameNumber) {
-                    return info;
+                    return e;
                 }
             } else {
                 // We've read all frames now. Return an end marker
@@ -415,7 +415,8 @@ QFrameInfo QMoviePrivate::infoForFrame(int frameNumber)
         }
     }
     // Return info for requested (cached) frame
-    return frameMap.value(frameNumber);
+    const auto it = frameMap.find(frameNumber);
+    return it == frameMap.cend() ? QFrameInfo() : it->second;
 }
 
 /*!
