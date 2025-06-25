@@ -16,7 +16,7 @@ class QLockFilePrivate;
 class Q_CORE_EXPORT QLockFile
 {
 public:
-    QLockFile(const QString &fileName);
+    explicit QLockFile(const QString &fileName);
     ~QLockFile();
 
     QString fileName() const;
