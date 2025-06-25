@@ -1644,12 +1644,15 @@ void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
 
     QThreadData *data = locker.threadData;
 
+    QT_WARNING_PUSH
+    QT_WARNING_DISABLE_DEPRECATED // compressEvent()
     // if this is one of the compressible events, do compression
     if (receiver->d_func()->postedEvents.loadAcquire()
         && self && self->compressEvent(event, receiver, &data->postEventList)) {
         Q_TRACE(QCoreApplication_postEvent_event_compressed, receiver, event);
         return;
     }
+    QT_WARNING_POP
 
     // delete the event on exceptions to protect against memory leaks till the event is
     // properly owned in the postEventList

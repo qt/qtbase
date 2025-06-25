@@ -2106,7 +2106,9 @@ bool QGuiApplication::event(QEvent *e)
 */
 bool QGuiApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventList *postedEvents)
 {
+    QT_IGNORE_DEPRECATIONS(
     return QCoreApplication::compressEvent(event, receiver, postedEvents);
+    )
 }
 #endif
 
