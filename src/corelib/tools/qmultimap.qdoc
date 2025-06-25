@@ -38,7 +38,7 @@
 
     \snippet code/src_corelib_tools_qmultimap.cpp 2
 
-    This inserts the following three (key, value) pairs into the
+    This inserts the following four (key, value) pairs into the
     QMultiMap: ("a", 1), ("b", 3), ("c", 7), and ("c", -5); note
     that duplicate keys are allowed.
 
