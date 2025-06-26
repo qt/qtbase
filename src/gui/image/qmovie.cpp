@@ -153,6 +153,8 @@
 #include "private/qobject_p.h"
 #include "private/qproperty_p.h"
 
+#include <memory>
+
 #define QMOVIE_INVALID_DELAY -1
 
 QT_BEGIN_NAMESPACE
@@ -213,7 +215,7 @@ public:
     void _q_loadNextFrame();
     void _q_loadNextFrame(bool starting);
 
-    QImageReader *reader = nullptr;
+    std::unique_ptr<QImageReader> reader = nullptr;
 
     void setSpeed(int percentSpeed) { q_func()->setSpeed(percentSpeed); }
     Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS(QMoviePrivate, int, speed, &QMoviePrivate::setSpeed, 100)
@@ -334,11 +336,10 @@ QFrameInfo QMoviePrivate::infoForFrame(int frameNumber)
                     QIODevice *device = reader->device();
                     QColor bgColor = reader->backgroundColor();
                     QSize scaledSize = reader->scaledSize();
-                    delete reader;
                     if (fileName.isEmpty())
-                        reader = new QImageReader(device, format);
+                        reader = std::make_unique<QImageReader>(device, format);
                     else
-                        reader = new QImageReader(absoluteFilePath, format);
+                        reader = std::make_unique<QImageReader>(absoluteFilePath, format);
                     if (!reader->canRead()) // Provoke a device->open() call
                         emit q->error(reader->error());
                     reader->device()->seek(initialDevicePos);
@@ -574,7 +575,7 @@ QMovie::QMovie(QObject *parent)
     : QObject(*new QMoviePrivate(this), parent)
 {
     Q_D(QMovie);
-    d->reader = new QImageReader;
+    d->reader = std::make_unique<QImageReader>();
     connect(&d->nextImageTimer, SIGNAL(timeout()), this, SLOT(_q_loadNextFrame()));
 }
 
@@ -590,7 +591,7 @@ QMovie::QMovie(QIODevice *device, const QByteArray &format, QObject *parent)
     : QObject(*new QMoviePrivate(this), parent)
 {
     Q_D(QMovie);
-    d->reader = new QImageReader(device, format);
+    d->reader = std::make_unique<QImageReader>(device, format);
     d->initialDevicePos = device->pos();
     connect(&d->nextImageTimer, SIGNAL(timeout()), this, SLOT(_q_loadNextFrame()));
 }
@@ -608,7 +609,7 @@ QMovie::QMovie(const QString &fileName, const QByteArray &format, QObject *paren
 {
     Q_D(QMovie);
     d->absoluteFilePath = QDir(fileName).absolutePath();
-    d->reader = new QImageReader(fileName, format);
+    d->reader = std::make_unique<QImageReader>(fileName, format);
     if (d->reader->device())
         d->initialDevicePos = d->reader->device()->pos();
     connect(&d->nextImageTimer, SIGNAL(timeout()), this, SLOT(_q_loadNextFrame()));
@@ -620,7 +621,7 @@ QMovie::QMovie(const QString &fileName, const QByteArray &format, QObject *paren
 QMovie::~QMovie()
 {
     Q_D(QMovie);
-    delete d->reader;
+    d->reader.reset();
 }
 
 /*!
