@@ -505,6 +505,7 @@ QFactoryLoader::MetaDataList QFactoryLoader::metaData() const
     QList<QPluginParsedMetaData> metaData;
 #if QT_CONFIG(library)
     QMutexLocker locker(&d->mutex);
+    metaData.reserve(qsizetype(d->libraries.size()));
     for (const auto &library : d->libraries)
         metaData.append(library->metaData);
     locker.unlock();
@@ -531,6 +532,7 @@ QList<QCborArray> QFactoryLoader::metaDataKeys() const
     QList<QCborArray> metaData;
 #if QT_CONFIG(library)
     QMutexLocker locker(&d->mutex);
+    metaData.reserve(qsizetype(d->libraries.size()));
     for (const auto &library : d->libraries) {
         const QCborValue md = library->metaData.value(QtPluginMetaDataKeys::MetaData);
         metaData.append(md["Keys"_L1].toArray());
