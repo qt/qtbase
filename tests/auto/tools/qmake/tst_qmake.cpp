@@ -47,6 +47,7 @@ private slots:
     void rawString();
 #if defined(Q_OS_DARWIN)
     void bundle_spaces();
+    void invalid_info_plist();
 #elif defined(Q_OS_WIN)
     void windowsResources();
 #endif
@@ -532,6 +533,23 @@ void tst_qmake::bundle_spaces()
     QVERIFY( non_existing_file.remove() );
     QVERIFY( !non_existing_file.exists() );
     QVERIFY( test_compiler.removeMakefile(workDir) );
+}
+
+void tst_qmake::invalid_info_plist()
+{
+    QString workDir = base_path + "/testdata/invalid-info-plist";
+
+    // We set up alternate arguments here, to make sure we're testing Mac
+    // Bundles. We need to actually run make to check whether the failing
+    // plutil invocation breaks the build.
+
+    test_compiler.setArguments(QStringList(),
+                               QStringList() << "-spec" << "macx-clang");
+
+    QVERIFY( test_compiler.qmake(workDir, "invalid-info-plist") );
+
+    // Make fails: plutil fails to parse the Info.plist file
+    QVERIFY( test_compiler.make(workDir, QString(), true) );
 }
 
 #elif defined(Q_OS_WIN) // defined(Q_OS_DARWIN)
