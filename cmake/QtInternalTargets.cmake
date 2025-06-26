@@ -368,6 +368,13 @@ if (MSVC AND NOT CLANG)
     )
 endif()
 
+if (WIN32 AND (CLANG OR MINGW) AND (TEST_architecture_arch STREQUAL x86_64))
+    # windows 10 requires cmpxchg16b
+    target_compile_options(PlatformCommonInternal INTERFACE
+        -mcx16
+    )
+endif()
+
 set(_qt_internal_clang_msvc_frontend False)
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND
     CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
