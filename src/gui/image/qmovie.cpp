@@ -195,7 +195,10 @@ class QMoviePrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QMovie)
 
 public:
-    QMoviePrivate(QMovie *qq);
+    QMoviePrivate();
+
+    void init(QMovie *qq, std::unique_ptr<QImageReader> r);
+
     bool isDone();
     bool next();
     int speedAdjustedDelay(int delay) const;
@@ -241,10 +244,17 @@ public:
 
 /*! \internal
  */
-QMoviePrivate::QMoviePrivate(QMovie *qq)
+QMoviePrivate::QMoviePrivate()
+{
+    nextImageTimer.setSingleShot(true);
+}
+
+void QMoviePrivate::init(QMovie *qq, std::unique_ptr<QImageReader> r)
 {
     q_ptr = qq;
-    nextImageTimer.setSingleShot(true);
+    reader = std::move(r);
+    QObject::connect(&nextImageTimer, SIGNAL(timeout()),
+                     qq, SLOT(_q_loadNextFrame()));
 }
 
 /*! \internal
@@ -572,11 +582,10 @@ bool QMoviePrivate::jumpToNextFrame()
     \sa setFileName(), setDevice(), setFormat()
  */
 QMovie::QMovie(QObject *parent)
-    : QObject(*new QMoviePrivate(this), parent)
+    : QObject(*new QMoviePrivate, parent)
 {
     Q_D(QMovie);
-    d->reader = std::make_unique<QImageReader>();
-    connect(&d->nextImageTimer, SIGNAL(timeout()), this, SLOT(_q_loadNextFrame()));
+    d->init(this, std::make_unique<QImageReader>());
 }
 
 /*!
@@ -588,12 +597,11 @@ QMovie::QMovie(QObject *parent)
     The \a parent object is passed to QObject's constructor.
  */
 QMovie::QMovie(QIODevice *device, const QByteArray &format, QObject *parent)
-    : QObject(*new QMoviePrivate(this), parent)
+    : QObject(*new QMoviePrivate, parent)
 {
     Q_D(QMovie);
-    d->reader = std::make_unique<QImageReader>(device, format);
+    d->init(this, std::make_unique<QImageReader>(device, format));
     d->initialDevicePos = device->pos();
-    connect(&d->nextImageTimer, SIGNAL(timeout()), this, SLOT(_q_loadNextFrame()));
 }
 
 /*!
@@ -605,14 +613,13 @@ QMovie::QMovie(QIODevice *device, const QByteArray &format, QObject *parent)
     The \a parent object is passed to QObject's constructor.
  */
 QMovie::QMovie(const QString &fileName, const QByteArray &format, QObject *parent)
-    : QObject(*new QMoviePrivate(this), parent)
+    : QObject(*new QMoviePrivate, parent)
 {
     Q_D(QMovie);
+    d->init(this, std::make_unique<QImageReader>(fileName, format));
     d->absoluteFilePath = QDir(fileName).absolutePath();
-    d->reader = std::make_unique<QImageReader>(fileName, format);
     if (d->reader->device())
         d->initialDevicePos = d->reader->device()->pos();
-    connect(&d->nextImageTimer, SIGNAL(timeout()), this, SLOT(_q_loadNextFrame()));
 }
 
 /*!
