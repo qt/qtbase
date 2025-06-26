@@ -13,7 +13,14 @@
 #include <QLabel>
 #endif
 #include <QMovie>
+
 #include <QProperty>
+#include <QtCore/qthread.h>
+
+#include <chrono>
+#include <memory>
+
+using namespace std::chrono_literals;
 
 class tst_QMovie : public QObject
 {
@@ -35,6 +42,8 @@ private slots:
     void construction();
     void playMovie_data();
     void playMovie();
+    void playMovieCreatedInThread_data() { playMovie_data(); }
+    void playMovieCreatedInThread();
     void jumpToFrame_data();
     void jumpToFrame();
     void frameDelay();
@@ -51,6 +60,9 @@ private slots:
 
     void setScaledSize_data();
     void setScaledSize();
+
+private:
+    void playMovieImpl(QMovie &movie);
 };
 
 // Testing get/set functions
@@ -128,7 +140,27 @@ void tst_QMovie::playMovie()
     QFETCH(QString, fileName);
 
     QMovie movie(QFINDTESTDATA(fileName));
+    playMovieImpl(movie);
+}
 
+void tst_QMovie::playMovieCreatedInThread()
+{
+    QFETCH(const QString, fileName);
+
+    const auto app = QCoreApplication::instance()->thread();
+    std::unique_ptr<QMovie> movie;
+    const std::unique_ptr<QThread> t{QThread::create([&] {
+            movie = std::make_unique<QMovie>(QFINDTESTDATA(fileName));
+            movie->moveToThread(app);
+        })};
+    t->start();
+    QVERIFY(t->wait(30s));
+    QVERIFY(movie);
+    playMovieImpl(*movie);
+}
+
+void tst_QMovie::playMovieImpl(QMovie &movie)
+{
     QCOMPARE(movie.state(), QMovie::NotRunning);
     movie.setSpeed(1000);
     movie.start();

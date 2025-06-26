@@ -239,21 +239,22 @@ public:
     std::map<int, QFrameInfo> frameMap;
     QString absoluteFilePath;
 
-    QTimer nextImageTimer;
+    QTimer *nextImageTimer = nullptr;
 };
 
 /*! \internal
  */
 QMoviePrivate::QMoviePrivate()
 {
-    nextImageTimer.setSingleShot(true);
 }
 
 void QMoviePrivate::init(QMovie *qq, std::unique_ptr<QImageReader> r)
 {
     q_ptr = qq;
     reader = std::move(r);
-    QObject::connect(&nextImageTimer, SIGNAL(timeout()),
+    nextImageTimer = new QTimer(qq);
+    nextImageTimer->setSingleShot(true);
+    QObject::connect(nextImageTimer, SIGNAL(timeout()),
                      qq, SLOT(_q_loadNextFrame()));
 }
 
@@ -261,7 +262,7 @@ void QMoviePrivate::init(QMovie *qq, std::unique_ptr<QImageReader> r)
  */
 void QMoviePrivate::reset()
 {
-    nextImageTimer.stop();
+    nextImageTimer->stop();
     if (reader->device())
         initialDevicePos = reader->device()->pos();
     currentFrameNumber = -1;
@@ -500,7 +501,7 @@ void QMoviePrivate::_q_loadNextFrame(bool starting)
         emit q->frameChanged(currentFrameNumber);
 
         if (speed && movieState == QMovie::Running)
-            nextImageTimer.start(nextDelay);
+            nextImageTimer->start(nextDelay);
     } else {
         // Could not read another frame
         if (!isDone()) {
@@ -550,7 +551,7 @@ bool QMoviePrivate::jumpToFrame(int frameNumber)
         return true;
     nextFrameNumber = frameNumber;
     if (movieState == QMovie::Running)
-        nextImageTimer.stop();
+        nextImageTimer->stop();
     _q_loadNextFrame();
     return (nextFrameNumber == currentFrameNumber+1);
 }
@@ -896,12 +897,12 @@ void QMovie::setPaused(bool paused)
         if (d->movieState == NotRunning)
             return;
         d->enterState(Paused);
-        d->nextImageTimer.stop();
+        d->nextImageTimer->stop();
     } else {
         if (d->movieState == Running)
             return;
         d->enterState(Running);
-        d->nextImageTimer.start(nextFrameDelay());
+        d->nextImageTimer->start(nextFrameDelay());
     }
 }
 
@@ -919,7 +920,7 @@ void QMovie::setSpeed(int percentSpeed)
 {
     Q_D(QMovie);
     if (!d->speed && d->movieState == Running)
-        d->nextImageTimer.start(nextFrameDelay());
+        d->nextImageTimer->start(nextFrameDelay());
     if (percentSpeed != d->speed) {
         d->speed = percentSpeed;
         d->speed.notify();
@@ -976,7 +977,7 @@ void QMovie::stop()
     if (d->movieState == NotRunning)
         return;
     d->enterState(NotRunning);
-    d->nextImageTimer.stop();
+    d->nextImageTimer->stop();
     d->nextFrameNumber = 0;
 }
 
