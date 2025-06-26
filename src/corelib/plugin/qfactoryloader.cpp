@@ -395,7 +395,7 @@ QFactoryLoader::~QFactoryLoader()
 #if QT_CONFIG(library)
     for (qsizetype i = 0; i < d->loadedLibraries.size(); ++i) {
         if (d->loadedLibraries.at(i)) {
-            auto &plugin = d->libraries.at(i);
+            auto &plugin = d->libraries[i];
             delete plugin->inst.data();
             plugin->unload();
         }
@@ -469,7 +469,7 @@ void QFactoryLoader::setExtraSearchPath(const QString &path)
         // must re-scan everything
         for (qsizetype i = 0; i < d->loadedLibraries.size(); ++i) {
             if (d->loadedLibraries.at(i)) {
-                auto &plugin = d->libraries.at(i);
+                auto &plugin = d->libraries[i];
                 delete plugin->inst.data();
             }
         }
