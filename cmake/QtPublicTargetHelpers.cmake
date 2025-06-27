@@ -18,6 +18,53 @@ function(__qt_internal_strip_target_directory_scope_token target out_var)
     set("${out_var}" "${target}" PARENT_SCOPE)
 endfunction()
 
+# Work around AUTOGEN issue when a library is added as a dependency more than once, and the autogen
+# library dependency results in being discarded. To mitigate that, add all autogen dependencies
+# manually, based on the passed in dependencies.
+# CMake 4.0+ has a fix, so we don't need the extra logic.
+# See https://gitlab.kitware.com/cmake/cmake/-/issues/26700
+function(_qt_internal_work_around_autogen_discarded_dependencies target)
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL 4.0
+            OR QT_NO_AUTOGEN_DISCARDED_DEPENDENCIES_WORKAROUND)
+        return()
+    endif()
+
+    set(libraries ${ARGN})
+    set(final_libraries "")
+
+    foreach(lib IN LISTS libraries)
+        # Skip non-target dependencies.
+        if(NOT TARGET "${lib}")
+            continue()
+        endif()
+
+        # Resolve alias targets, because AUTOGEN_TARGET_DEPENDS doesn't seem to handle them.
+        _qt_internal_dealias_target(lib)
+
+        # Skip imported targets, they don't have sync_headers targets.
+        get_target_property(imported "${lib}" IMPORTED)
+        if(imported)
+            continue()
+        endif()
+
+        # Resolve Qt private modules to their public counterparts.
+        get_target_property(is_private_module "${lib}" _qt_is_private_module)
+        get_target_property(public_module_target "${lib}" _qt_public_module_target_name)
+
+        if(is_private_module AND public_module_target)
+            set(lib "${public_module_target}")
+        endif()
+
+        # Another TARGET check, just in case.
+        if(TARGET "${lib}")
+            list(APPEND final_libraries "${lib}")
+        endif()
+    endforeach()
+    if(final_libraries)
+        set_property(TARGET ${target} APPEND PROPERTY AUTOGEN_TARGET_DEPENDS "${final_libraries}")
+    endif()
+endfunction()
+
 # Tests if linker could resolve circular dependencies between object files and static libraries.
 function(__qt_internal_static_link_order_public_test result)
     # We could trust iOS linker
