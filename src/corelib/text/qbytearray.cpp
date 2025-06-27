@@ -1884,6 +1884,15 @@ QByteArray::QByteArray(qsizetype size, Qt::Initialization)
 }
 
 /*!
+    \fn QByteArray::QByteArray(QByteArrayView v)
+    \since 6.8
+
+    Constructs a byte array initialized with the byte array view's data.
+
+    The QByteArray will be null if and only if \a v is null.
+*/
+
+/*!
     Sets the size of the byte array to \a size bytes.
 
     If \a size is greater than the current size, the byte array is
