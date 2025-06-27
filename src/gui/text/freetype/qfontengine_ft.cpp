@@ -111,6 +111,7 @@ public:
 
     FT_Library library;
     QHash<QFontEngine::FaceId, QFreetypeFace *> faces;
+    QList<QFreetypeFace *> staleFaces;
     QHash<FaceStyle, int> faceIndices;
 };
 
@@ -122,6 +123,14 @@ QtFreetypeData::~QtFreetypeData()
             delete iter.value();
     }
     faces.clear();
+
+    for (auto iter = staleFaces.cbegin(); iter != staleFaces.cend(); ++iter) {
+        (*iter)->cleanup();
+        if (!(*iter)->ref.deref())
+            delete *iter;
+    }
+    staleFaces.clear();
+
     FT_Done_FreeType(library);
     library = nullptr;
 }
@@ -216,6 +225,17 @@ QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id,
         return nullptr;
 
     QtFreetypeData *freetypeData = qt_getFreetypeData();
+
+    // Purge any stale face that is now ready to be deleted
+    for (auto it = freetypeData->staleFaces.constBegin(); it != freetypeData->staleFaces.constEnd(); ) {
+        if ((*it)->ref.loadRelaxed() == 1) {
+            (*it)->cleanup();
+            delete *it;
+            it = freetypeData->staleFaces.erase(it);
+        } else {
+            ++it;
+        }
+    }
 
     QFreetypeFace *freetype = nullptr;
     auto it = freetypeData->faces.find(face_id);
@@ -442,20 +462,35 @@ void QFreetypeFace::release(const QFontEngine::FaceId &face_id)
     // from the cache.
     if (face && ref.loadRelaxed() == 1) {
         QtFreetypeData *freetypeData = qt_getFreetypeData();
-        for (auto it = freetypeData->faces.constBegin(); it != freetypeData->faces.constEnd(); ) {
+
+        for (auto it = freetypeData->staleFaces.constBegin(); it != freetypeData->staleFaces.constEnd(); ) {
+            if ((*it)->ref.loadRelaxed() == 1) {
+                (*it)->cleanup();
+                if ((*it) == this)
+                    deleteThis = true; // This face, delete at end of function for safety
+                else
+                    delete *it;
+                it = freetypeData->staleFaces.erase(it);
+            } else {
+                ++it;
+            }
+        }
+
+        for (auto it = freetypeData->faces.constBegin();
+             it != freetypeData->faces.constEnd();
+             it = freetypeData->faces.erase(it)) {
             if (it.value()->ref.loadRelaxed() == 1) {
                 it.value()->cleanup();
                 if (it.value() == this)
                     deleteThis = true; // This face, delete at end of function for safety
                 else
                     delete it.value();
-                it = freetypeData->faces.erase(it);
             } else {
-                ++it;
+                freetypeData->staleFaces.append(it.value());
             }
         }
 
-        if (freetypeData->faces.isEmpty()) {
+        if (freetypeData->faces.isEmpty() && freetypeData->staleFaces.isEmpty()) {
             FT_Done_FreeType(freetypeData->library);
             freetypeData->library = nullptr;
         }
