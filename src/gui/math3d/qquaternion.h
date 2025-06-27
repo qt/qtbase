@@ -109,7 +109,7 @@ QT_WARNING_POP
 
 #ifndef QT_NO_VECTOR3D
     inline QVector3D toEulerAngles() const;
-    QT7_ONLY(Q_GUI_EXPORT) static inline QQuaternion fromEulerAngles(const QVector3D &eulerAngles);
+    static inline QQuaternion fromEulerAngles(const QVector3D &eulerAngles);
 #endif
     QT7_ONLY(Q_GUI_EXPORT) void getEulerAngles(float *pitch, float *yaw, float *roll) const;
     QT7_ONLY(Q_GUI_EXPORT) static QQuaternion fromEulerAngles(float pitch, float yaw, float roll);
