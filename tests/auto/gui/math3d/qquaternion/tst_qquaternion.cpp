@@ -1022,8 +1022,9 @@ void tst_QQuaternion::fromDirection()
     QFETCH(QVector3D, direction);
     QFETCH(QVector3D, up);
 
-    QVector3D expextedZ(direction != QVector3D() ? direction.normalized() : QVector3D(0, 0, 1));
-    QVector3D expextedY(up.normalized());
+    const QVector3D expectedZ = direction != QVector3D() ? direction.normalized()
+                                /* else */               : QVector3D(0, 0, 1);
+    const QVector3D expectedY = up.normalized();
 
     QQuaternion result = QQuaternion::fromDirection(direction, up);
     QVERIFY(myFuzzyCompare(result, result.normalized()));
@@ -1031,13 +1032,13 @@ void tst_QQuaternion::fromDirection()
     QVector3D xAxis, yAxis, zAxis;
     result.getAxes(&xAxis, &yAxis, &zAxis);
 
-    QVERIFY(myFuzzyCompare(zAxis, expextedZ));
+    QVERIFY(myFuzzyCompare(zAxis, expectedZ));
 
-    if (!qFuzzyIsNull(QVector3D::crossProduct(expextedZ, expextedY).lengthSquared())) {
-        QVector3D expextedX(QVector3D::crossProduct(expextedY, expextedZ));
 
-        QVERIFY(myFuzzyCompare(yAxis, expextedY));
-        QVERIFY(myFuzzyCompare(xAxis, expextedX));
+    const QVector3D expectedX = QVector3D::crossProduct(expectedY, expectedZ);
+    if (!qFuzzyIsNull(expectedX.lengthSquared())) {
+        QVERIFY(myFuzzyCompare(xAxis, expectedX));
+        QVERIFY(myFuzzyCompare(yAxis, expectedY));
     }
 }
 
