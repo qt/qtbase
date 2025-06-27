@@ -67,6 +67,7 @@ private slots:
 
     void testSetHandleLayoutChanges();
     void testSetHandleDataChanges();
+    void matchCustomRole();
 
 protected:
     void verifyIdentity(QAbstractItemModel *model, const QModelIndex &parent = QModelIndex());
@@ -574,6 +575,39 @@ void tst_QIdentityProxyModel::testSetHandleDataChanges()
     proxy.setHandleSDC(false);
     proxy.setSourceModel(&model);
     QVERIFY(!model.isConnected(signal));
+}
+
+class CustomRoleProxyModel : public QIdentityProxyModel
+{
+public:
+    using QIdentityProxyModel::QIdentityProxyModel;
+
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override
+    {
+        Q_ASSERT(index.isValid());
+        if (role == Qt::UserRole)
+            return QStringLiteral("CustomUserData-%1").arg(index.row());
+        return QIdentityProxyModel::data(index, role);
+    }
+};
+
+void tst_QIdentityProxyModel::matchCustomRole()
+{
+    QStandardItemModel sourceModel;
+    for (int i = 0; i < 5; ++i)
+        sourceModel.appendRow(new QStandardItem(QString("Item %1").arg(i)));
+
+    CustomRoleProxyModel proxyModel;
+    proxyModel.setSourceModel(&sourceModel);
+
+    const QString targetValue = QStringLiteral("CustomUserData-3");
+
+    const QModelIndexList matches = proxyModel.match(proxyModel.index(0, 0), Qt::UserRole,
+                                                     targetValue, 1, Qt::MatchExactly);
+
+    QCOMPARE(matches.size(), 1);
+    QCOMPARE(matches.first().row(), 3);
+    QCOMPARE(proxyModel.data(matches.first(), Qt::UserRole).toString(), targetValue);
 }
 
 QTEST_MAIN(tst_QIdentityProxyModel)
