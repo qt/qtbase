@@ -426,6 +426,7 @@ void tst_qfile::open()
 
             QBENCHMARK {
                 QFile file;
+                [[maybe_unused]] const auto r =
                 file.open(cfile, QIODevice::ReadOnly);
                 file.close();
             }
