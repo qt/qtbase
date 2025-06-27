@@ -128,7 +128,7 @@ QT_WARNING_POP
 
     QT7_ONLY(Q_GUI_EXPORT) static QQuaternion rotationTo(const QVector3D &from,
                                                          const QVector3D &to);
-#endif
+#endif // QT_NO_VECTOR3D
 
     QT7_ONLY(Q_GUI_EXPORT) static QQuaternion slerp(const QQuaternion &q1, const QQuaternion &q2,
                                                     float t);
@@ -330,7 +330,7 @@ inline QQuaternion QQuaternion::fromEulerAngles(const QVector3D &eulerAngles)
     return QQuaternion::fromEulerAngles(eulerAngles.x(), eulerAngles.y(), eulerAngles.z());
 }
 
-#endif
+#endif // QT_NO_VECTOR3D
 
 constexpr void QQuaternion::setVector(float aX, float aY, float aZ) noexcept
 {
@@ -349,7 +349,7 @@ constexpr QVector4D QQuaternion::toVector4D() const noexcept
     return QVector4D(xp, yp, zp, wp);
 }
 
-#endif
+#endif // QT_NO_VECTOR4D
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug dbg, const QQuaternion &q);
@@ -360,8 +360,8 @@ Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QQuaternion &);
 Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QQuaternion &);
 #endif
 
-#endif
+#endif // QT_NO_QUATERNION
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QQUATERNION_H
