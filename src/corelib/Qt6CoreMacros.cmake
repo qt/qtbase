@@ -831,6 +831,8 @@ function(qt6_finalize_target target)
         endif()
     endif()
 
+    _qt_internal_work_around_autogen_discarded_dependencies_from_target_libs("${target}")
+
     get_target_property(is_immediately_finalized "${target}" _qt_is_immediately_finalized)
     get_target_property(uses_automoc ${target} AUTOMOC)
     if(uses_automoc)

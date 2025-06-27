@@ -61,8 +61,39 @@ function(_qt_internal_work_around_autogen_discarded_dependencies target)
         endif()
     endforeach()
     if(final_libraries)
-        set_property(TARGET ${target} APPEND PROPERTY AUTOGEN_TARGET_DEPENDS "${final_libraries}")
+        _qt_internal_append_to_target_property_without_duplicates("${target}"
+            AUTOGEN_TARGET_DEPENDS ${final_libraries})
     endif()
+endfunction()
+
+# This function is similar to _qt_internal_work_around_autogen_discarded_dependencies
+# but it instead queries the libs to process from the target's LINK_LIBRARIES and
+# INTERFACE_LINK_LIBRARIES.
+# It only applies the logic while building Qt itself.
+# It's meant to be used in public API like qt_finalize_target, so that the workaround is applied
+# to examples that are built as part of the qt build tree.
+function(_qt_internal_work_around_autogen_discarded_dependencies_from_target_libs target)
+    if(NOT QT_BUILDING_QT)
+        return()
+    endif()
+
+    set(libraries "")
+
+    get_target_property(link_libs "${target}" LINK_LIBRARIES)
+    if(link_libs)
+        list(APPEND libraries "${link_libs}")
+    endif()
+    get_target_property(interface_link_libs "${target}" INTERFACE_LINK_LIBRARIES)
+
+    if(interface_link_libs)
+        list(APPEND libraries "${interface_link_libs}")
+    endif()
+
+    if(NOT libraries)
+        return()
+    endif()
+
+    _qt_internal_work_around_autogen_discarded_dependencies("${target}" ${libraries})
 endfunction()
 
 # Tests if linker could resolve circular dependencies between object files and static libraries.
