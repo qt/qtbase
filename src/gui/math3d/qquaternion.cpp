@@ -427,13 +427,13 @@ QQuaternion QQuaternion::fromAxisAndAngle
 */
 
 /*!
-    \fn QQuaternion QQuaternion::fromEulerAngles(const QVector3D &eulerAngles)
+    \fn QQuaternion QQuaternion::fromEulerAngles(const QVector3D &angles)
     \since 5.5
     \overload
 
-    Creates a quaternion that corresponds to a rotation of \a eulerAngles:
-    eulerAngles.z() degrees around the z axis, eulerAngles.x() degrees around the x axis,
-    and eulerAngles.y() degrees around the y axis (in that order).
+    Creates a quaternion that corresponds to a rotation of \a angles:
+    angles.z() degrees around the z axis, angles.x() degrees around the x axis,
+    and angles.y() degrees around the y axis (in that order).
 
     \sa toEulerAngles()
 */
