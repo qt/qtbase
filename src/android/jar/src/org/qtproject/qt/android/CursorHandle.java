@@ -108,8 +108,11 @@ class CursorHandle implements ViewTreeObserver.OnPreDrawListener
         Context context = m_layout.getContext();
         int[] attrs = {m_attr};
         Drawable drawable;
-        try (TypedArray a = context.getTheme().obtainStyledAttributes(attrs)) {
+        TypedArray a = context.getTheme().obtainStyledAttributes(attrs);
+        try {
             drawable = a.getDrawable(0);
+        } finally {
+            a.recycle();
         }
 
         m_cursorView = new CursorView(context, this);
@@ -189,6 +192,9 @@ class CursorHandle implements ViewTreeObserver.OnPreDrawListener
 
     int width()
     {
+        if (m_cursorView == null)
+            return 0;
+
         return m_cursorView.getDrawable().getIntrinsicWidth();
     }
 
