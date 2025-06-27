@@ -4,6 +4,8 @@
 #include "qmatrix4x4.h"
 #include <QtCore/qmath.h>
 #include <QtCore/qvariant.h>
+
+#include <QtGui/qquaternion.h>
 #include <QtGui/qtransform.h>
 
 #include <cmath>

@@ -7,7 +7,6 @@
 #include <QtGui/qtguiglobal.h>
 #include <QtGui/qvector3d.h>
 #include <QtGui/qvector4d.h>
-#include <QtGui/qquaternion.h>
 #include <QtGui/qgenericmatrix.h>
 #include <QtCore/qrect.h>
 
@@ -15,6 +14,9 @@ class tst_QMatrixNxN;
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_QUATERNION
+class QQuaternion;
+#endif
 
 #ifndef QT_NO_MATRIX4X4
 
