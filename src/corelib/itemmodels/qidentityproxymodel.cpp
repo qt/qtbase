@@ -197,19 +197,7 @@ QModelIndex QIdentityProxyModel::mapToSource(const QModelIndex& proxyIndex) cons
  */
 QModelIndexList QIdentityProxyModel::match(const QModelIndex& start, int role, const QVariant& value, int hits, Qt::MatchFlags flags) const
 {
-    Q_D(const QIdentityProxyModel);
-    Q_ASSERT(start.isValid() ? start.model() == this : true);
-    if (!d->model)
-        return QModelIndexList();
-
-    const QModelIndexList sourceList = d->model->match(mapToSource(start), role, value, hits, flags);
-    QModelIndexList::const_iterator it = sourceList.constBegin();
-    const QModelIndexList::const_iterator end = sourceList.constEnd();
-    QModelIndexList proxyList;
-    proxyList.reserve(sourceList.size());
-    for ( ; it != end; ++it)
-        proxyList.append(mapFromSource(*it));
-    return proxyList;
+    return QAbstractProxyModel::match(start, role, value, hits, flags);
 }
 
 /*!
