@@ -16,14 +16,14 @@
 
 QT_BEGIN_NAMESPACE
 
-template <typename FunctorWindowGetter, typename FunctorPredicate, typename Timeout>
-static bool qWaitForWidgetWindow(FunctorWindowGetter windowGetter, FunctorPredicate predicate, Timeout timeout)
+template <typename Predicate>
+static bool qWaitForWidgetWindow(QWidget *w, Predicate predicate, QDeadlineTimer timeout)
 {
-    if (!windowGetter())
+    if (!w->window()->windowHandle())
         return false;
 
     return QTest::qWaitFor([&]() {
-        if (QWindow *window = windowGetter())
+        if (QWindow *window = w->window()->windowHandle())
             return predicate(window);
         return false;
     }, timeout);
@@ -55,9 +55,9 @@ Q_WIDGETS_EXPORT bool QTest::qWaitForWindowActive(QWidget *widget, int timeout)
                    << "Falling back to qWaitForWindowExposed.";
         return qWaitForWindowExposed(widget, timeout);
     }
-    return qWaitForWidgetWindow([&]() { return widget->window()->windowHandle(); },
+    return qWaitForWidgetWindow(widget,
                                 [&](QWindow *window) { return window->isActive(); },
-                                timeout);
+                                QDeadlineTimer{timeout, Qt::TimerType::PreciseTimer});
 }
 
 
@@ -79,11 +79,10 @@ Q_WIDGETS_EXPORT bool QTest::qWaitForWindowActive(QWidget *widget, int timeout)
 */
 Q_WIDGETS_EXPORT bool QTest::qWaitForWindowFocused(QWidget *widget, QDeadlineTimer timeout)
 {
-    return qWaitForWidgetWindow([&]() {
-        return widget->window()->windowHandle();
-    }, [&](QWindow *window) {
-        return qGuiApp->focusWindow() == window;
-    }, timeout);
+    return qWaitForWidgetWindow(widget,
+                                [&](QWindow *window) {
+                                    return qGuiApp->focusWindow() == window;
+                                }, timeout);
 }
 
 /*!
@@ -102,9 +101,9 @@ Q_WIDGETS_EXPORT bool QTest::qWaitForWindowFocused(QWidget *widget, QDeadlineTim
 */
 Q_WIDGETS_EXPORT bool QTest::qWaitForWindowExposed(QWidget *widget, int timeout)
 {
-    return qWaitForWidgetWindow([&]() { return widget->window()->windowHandle(); },
+    return qWaitForWidgetWindow(widget,
                                 [&](QWindow *window) { return window->isExposed(); },
-                                timeout);
+                                QDeadlineTimer{timeout, Qt::TimerType::PreciseTimer});
 }
 
 namespace QTest {
