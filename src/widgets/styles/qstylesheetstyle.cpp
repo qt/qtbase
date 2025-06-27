@@ -94,6 +94,7 @@
 #endif
 
 #include <QtGui/qpainterpath.h>
+#include <QtGui/qpainterstateguard.h>
 #include <QtGui/qscreen.h>
 
 #include <QtCore/private/qduplicatetracker_p.h>
@@ -4085,29 +4086,56 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
 
     case CE_HeaderLabel:
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(opt)) {
-          QStyleOptionHeaderV2 hdr;
-          QStyleOptionHeader &v1Copy = hdr;
-          if (auto v2 = qstyleoption_cast<const QStyleOptionHeaderV2 *>(opt))
-              hdr = *v2;
-          else
-              v1Copy = *header;
+            // Save painter state
+            QPainterStateGuard psGuard(p);
+
+            QStyleOptionHeaderV2 hdr;
+            QStyleOptionHeader &v1Copy = hdr;
+            if (auto v2 = qstyleoption_cast<const QStyleOptionHeaderV2 *>(header))
+                hdr = *v2;
+            else
+                v1Copy = *header;
+
             QRenderRule subRule = renderRule(w, opt, PseudoElement_HeaderViewSection);
             if (hasStyleRule(w, PseudoElement_HeaderViewUpArrow)
              || hasStyleRule(w, PseudoElement_HeaderViewDownArrow)) {
                 if (hdr.sortIndicator != QStyleOptionHeader::None) {
+                    QRegion newClipRegion = QRegion(hdr.rect);
                     const QRect arrowRect = subElementRect(SE_HeaderArrow, opt, w);
-                    if (hdr.orientation == Qt::Horizontal)
-                        hdr.rect.setWidth(hdr.rect.width() - arrowRect.width());
-                    else
-                        hdr.rect.setHeight(hdr.rect.height() - arrowRect.height());
+                    const QRenderRule hrRule = renderRule(w, opt, PseudoElement_HeaderViewUpArrow);
+                    // Clip the text to avoid overlapping with the sort arrow if
+                    // the sort arrow is aligned to the right or left if horizontal
+                    // or top or bottom if vertical.
+                    if (hrRule.hasPosition()) {
+                        const auto position = hrRule.position()->position;
+                        if (hdr.orientation == Qt::Horizontal) {
+                            if (position & Qt::AlignLeft) {
+                                newClipRegion -= QRegion(arrowRect.x(), hdr.rect.y(),
+                                                         arrowRect.width(), hdr.rect.height());
+                            } else if (position & Qt::AlignRight) {
+                                newClipRegion -= QRegion(arrowRect.x(), hdr.rect.y(),
+                                                         arrowRect.width(), hdr.rect.height());
+                            }
+                        } else if (hdr.orientation == Qt::Vertical) {
+                            if (position & Qt::AlignTop) {
+                                newClipRegion -= QRegion(arrowRect.x(), hdr.rect.y(),
+                                                         hdr.rect.width(), arrowRect.height());
+                            } else if (position & Qt::AlignBottom) {
+                                newClipRegion -= QRegion(arrowRect.x(), arrowRect.y(),
+                                                         hdr.rect.width(), arrowRect.height());
+                            }
+                        }
+                    }
+                    p->setClipping(true);
+                    p->setClipRegion(newClipRegion);
                 }
             }
+
             subRule.configurePalette(&hdr.palette, QPalette::ButtonText, QPalette::Button);
+
             if (subRule.hasFont) {
-                QFont oldFont = p->font();
                 p->setFont(subRule.font.resolve(p->font()));
                 ParentStyle::drawControl(ce, &hdr, p, w);
-                p->setFont(oldFont);
             } else {
                 baseStyle()->drawControl(ce, &hdr, p, w);
             }
@@ -5346,17 +5374,8 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
                     }
                     return subRule.size(sz);
                 }
-                sz = subRule.baseStyleCanDraw() ? baseStyle()->sizeFromContents(ct, opt, sz, w)
-                                                : QWindowsStyle::sizeFromContents(ct, opt, sz, w);
-                if (hasStyleRule(w, PseudoElement_HeaderViewDownArrow)
-                 || hasStyleRule(w, PseudoElement_HeaderViewUpArrow)) {
-                    const QRect arrowRect = subElementRect(SE_HeaderArrow, opt, w);
-                    if (hdr->orientation == Qt::Horizontal)
-                        sz.rwidth() += arrowRect.width();
-                    else
-                        sz.rheight() += arrowRect.height();
-                }
-                return sz;
+                return subRule.baseStyleCanDraw() ? baseStyle()->sizeFromContents(ct, opt, sz, w)
+                                                  : QWindowsStyle::sizeFromContents(ct, opt, sz, w);
             }
         }
         break;
@@ -6240,18 +6259,6 @@ QRect QStyleSheetStyle::subElementRect(SubElement se, const QStyleOption *opt, c
         QRenderRule subRule = renderRule(w, opt, PseudoElement_HeaderViewSection);
         if (subRule.hasBox() || !subRule.hasNativeBorder()) {
             auto r = subRule.contentsRect(opt->rect);
-            if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(opt)) {
-                // Subtract width needed for arrow, if there is one
-                if (header->sortIndicator != QStyleOptionHeader::None) {
-                    const auto arrowRect = subElementRect(SE_HeaderArrow, opt, w);
-                    if (arrowRect.isValid()) {
-                        if (opt->state & State_Horizontal)
-                            r.setWidth(r.width() - arrowRect.width());
-                        else
-                            r.setHeight(r.height() - arrowRect.height());
-                    }
-                }
-            }
             return r;
         }
                          }
