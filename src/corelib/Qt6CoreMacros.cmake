@@ -767,6 +767,8 @@ function(qt6_finalize_target target)
         endif()
     endif()
 
+    _qt_internal_work_around_autogen_discarded_dependencies_from_target_libs("${target}")
+
     set_target_properties(${target} PROPERTIES _qt_is_finalized TRUE)
 endfunction()
 
