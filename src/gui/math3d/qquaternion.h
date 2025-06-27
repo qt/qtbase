@@ -130,7 +130,7 @@ QT_WARNING_POP
 
 #ifndef QT_NO_VECTOR3D
     inline QVector3D toEulerAngles() const;
-    static inline QQuaternion fromEulerAngles(const QVector3D &eulerAngles);
+    static inline QQuaternion fromEulerAngles(const QVector3D &angles);
 #endif
     void getEulerAngles(float *pitch, float *yaw, float *roll) const;
     static QQuaternion fromEulerAngles(float pitch, float yaw, float roll);
@@ -341,9 +341,9 @@ QVector3D QQuaternion::toEulerAngles() const
     return QVector3D(pitch, yaw, roll);
 }
 
-QQuaternion QQuaternion::fromEulerAngles(const QVector3D &eulerAngles)
+QQuaternion QQuaternion::fromEulerAngles(const QVector3D &angles)
 {
-    return QQuaternion::fromEulerAngles(eulerAngles.x(), eulerAngles.y(), eulerAngles.z());
+    return QQuaternion::fromEulerAngles(angles.x(), angles.y(), angles.z());
 }
 
 #endif // QT_NO_VECTOR3D
