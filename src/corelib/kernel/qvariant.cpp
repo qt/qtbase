@@ -321,11 +321,6 @@ static QVariant::Private clonePrivate(const QVariant::Private &other)
 
     \compares equality
 
-    Because C++ forbids unions from including types that have
-    non-default constructors or destructors, most interesting Qt
-    classes cannot be used in unions. Without QVariant, this would be
-    a problem for QObject::property() and for database work, etc.
-
     A QVariant object holds a single value of a single typeId() at a
     time. (Some types are multi-valued, for example a string list.)
     You can find out what type, T, the variant holds, convert it to a
