@@ -665,7 +665,7 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
                     t->setStartValue(styleObject->property("_q_inner_radius").toFloat());
                     t->setEndValue(7.0f);
                     if (option->state & State_Sunken)
-                        t->setEndValue(2.0f);
+                        t->setEndValue(4.0f);
                     else if (option->state & State_MouseOver && !(option->state & State_On))
                         t->setEndValue(7.0f);
                     else if (option->state & State_MouseOver && (option->state & State_On))
@@ -752,40 +752,41 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
             }
         }
         break;
-    case PE_IndicatorCheckBox:
-        {
+    case PE_IndicatorCheckBox: {
             const bool isRtl = option->direction == Qt::RightToLeft;
-            QNumberStyleAnimation* animation = qobject_cast<QNumberStyleAnimation*>(d->animation(option->styleObject));
-            QFontMetrics fm(assetFont);
+            const bool isOn = option->state & State_On;
+            const bool isPartial = option->state & State_NoChange;
 
             QRectF rect = isRtl ? option->rect.adjusted(0, 0, -2, 0) : option->rect.adjusted(2, 0, 0, 0);
-            QPointF center = QPointF(rect.x() + rect.width() / 2, rect.y() + rect.height() / 2);
+            const QPointF center = rect.center();
             rect.setWidth(15);
             rect.setHeight(15);
             rect.moveCenter(center);
 
-            float clipWidth = animation != nullptr ? animation->currentValue() : 1.0f;
-            QRectF clipRect = fm.boundingRect(QStringLiteral(u"\uE73E"));
-            clipRect.moveCenter(center);
-            clipRect.setLeft(rect.x() + (rect.width() - clipRect.width()) / 2.0);
-            clipRect.setWidth(clipWidth * clipRect.width());
+            QPen borderPen(Qt::NoPen);
+            if (!isOn && !isPartial) {
+                borderPen = highContrastTheme ? option->palette.buttonText().color()
+                                              : winUI3Color(frameColorStrong);
+            }
+            drawRoundedRect(painter, rect, borderPen, buttonFillBrush(option));
 
-            painter->setPen(Qt::NoPen);
-            painter->setBrush(buttonFillBrush(option));
-            painter->drawRoundedRect(rect, secondLevelRoundingRadius, secondLevelRoundingRadius, Qt::AbsoluteSize);
-
-            painter->setPen(highContrastTheme == true ? option->palette.buttonText().color()
-                                                      : WINUI3Colors[colorSchemeIndex][frameColorStrong]);
-            painter->setBrush(Qt::NoBrush);
-            painter->drawRoundedRect(rect, secondLevelRoundingRadius + 0.5, secondLevelRoundingRadius + 0.5, Qt::AbsoluteSize);
-
-            painter->setFont(assetFont);
-            painter->setPen(option->palette.highlightedText().color());
-            painter->setBrush(option->palette.highlightedText());
-            if (option->state & State_On)
+            if (isOn) {
+                painter->setFont(assetFont);
+                painter->setPen(option->palette.color(QPalette::Window));
+                QNumberStyleAnimation *animation = qobject_cast<QNumberStyleAnimation *>(
+                        d->animation(option->styleObject));
+                QFontMetrics fm(assetFont);
+                float clipWidth = animation != nullptr ? animation->currentValue() : 1.0f;
+                QRectF clipRect = fm.boundingRect(QStringLiteral(u"\uE73E"));
+                clipRect.moveCenter(center);
+                clipRect.setLeft(rect.x() + (rect.width() - clipRect.width()) / 2.0);
+                clipRect.setWidth(clipWidth * clipRect.width());
                 painter->drawText(clipRect, Qt::AlignVCenter | Qt::AlignLeft, QStringLiteral(u"\uE73E"));
-            else if (option->state & State_NoChange)
-                painter->drawText(rect, Qt::AlignVCenter | Qt::AlignHCenter, QStringLiteral(u"\uE73C"));
+            } else if (isPartial) {
+                painter->setFont(assetFont);
+                painter->setPen(option->palette.color(QPalette::Window));
+                painter->drawText(rect, Qt::AlignCenter, QStringLiteral(u"\uE73C"));
+            }
         }
         break;
     case PE_IndicatorBranch: {
@@ -803,9 +804,9 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
             }
         }
         break;
-    case PE_IndicatorRadioButton:
-        {
+    case PE_IndicatorRadioButton: {
             const bool isRtl = option->direction == Qt::RightToLeft;
+            const bool isOn = option->state & State_On;
             qreal innerRadius = option->state & State_On ? 4.0f :7.0f;
             if (option->styleObject) {
                 if (option->styleObject->property("_q_end_radius").isNull())
@@ -815,34 +816,26 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
                 option->styleObject->setProperty("_q_inner_radius", innerRadius);
             }
 
-            QPainterPath path;
             QRectF rect = isRtl ? option->rect.adjusted(0, 0, -2, 0) : option->rect.adjusted(2, 0, 0, 0);
-            QPointF center = QPoint(rect.x() + rect.width() / 2, rect.y() + rect.height() / 2);
-            rect.setWidth(15);
-            rect.setHeight(15);
-            rect.moveCenter(center);
-            QRectF innerRect = rect;
-            innerRect.setWidth(8);
-            innerRect.setHeight(8);
-            innerRect.moveCenter(center);
+            const QPointF center = rect.center();
 
-            painter->setPen(Qt::NoPen);
-            painter->setBrush(option->palette.accent());
-            path.addEllipse(center,7,7);
-            path.addEllipse(center,innerRadius,innerRadius);
-            painter->drawPath(path);
-
-            painter->setPen(WINUI3Colors[colorSchemeIndex][frameColorStrong]);
-            painter->setBrush(Qt::NoBrush);
-            painter->drawEllipse(center, 7.5, 7.5);
-            painter->drawEllipse(center,innerRadius + 0.5, innerRadius + 0.5);
-
-            painter->setPen(Qt::NoPen);
-            if (option->state & State_MouseOver && option->state & State_Enabled)
-                painter->setBrush(option->palette.window().color().darker(107));
-            else
-                painter->setBrush(option->palette.window());
-            painter->drawEllipse(center,innerRadius, innerRadius);
+            if (isOn) {
+                painter->setPen(Qt::NoPen);
+                painter->setBrush(buttonFillBrush(option));
+                QPainterPath path;
+                path.addEllipse(center, 7.5, 7.5);
+                path.addEllipse(center, innerRadius, innerRadius);
+                painter->drawPath(path);
+                QColor fillColor = option->palette.window().color();
+                if (option->state & State_MouseOver && option->state & State_Enabled)
+                    fillColor = fillColor.darker(107);
+                painter->setBrush(fillColor);
+                painter->drawEllipse(center, innerRadius, innerRadius);
+            } else {
+                painter->setPen(winUI3Color(frameColorStrong));
+                painter->setBrush(buttonFillBrush(option));
+                painter->drawEllipse(center, 7.5, 7.5);
+            }
         }
         break;
     case PE_PanelButtonTool:
@@ -2342,7 +2335,7 @@ QBrush QWindows11Style::buttonFillBrush(const QStyleOption *option)
     if (!isOn && option->state & QStyle::State_AutoRaise)
         return Qt::NoBrush;
     if (option->state & QStyle::State_MouseOver)
-        brush.setColor(isOn ? brush.color().lighter(107) : brush.color().darker(107));
+        brush.setColor(isOn ? brush.color().lighter(115) : brush.color().darker(107));
     return brush;
 }
 
