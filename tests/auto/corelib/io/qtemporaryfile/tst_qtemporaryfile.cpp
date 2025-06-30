@@ -7,7 +7,6 @@
 #include <qfile.h>
 #include <qdatetime.h>
 #include <qdir.h>
-#include <qset.h>
 #include <qstandardpaths.h>
 #include <qstring.h>
 #include <qtemporarydir.h>
@@ -15,6 +14,7 @@
 
 #include <QtTest/private/qtesthelpers_p.h>
 
+#include <QtCore/private/qduplicatetracker_p.h>
 #include <QtCore/qscopeguard.h>
 
 #if defined(Q_OS_WIN)
@@ -551,9 +551,9 @@ void tst_QTemporaryFile::openOnRootDrives()
 
 void tst_QTemporaryFile::stressTest()
 {
-    const int iterations = 1000;
+    constexpr int iterations = 1000;
 
-    QSet<QString> names;
+    QDuplicateTracker<QString, iterations> names;
 
     const auto remover = qScopeGuard([&] {
             for (const QString &s : std::as_const(names))
@@ -564,8 +564,7 @@ void tst_QTemporaryFile::stressTest()
         QTemporaryFile file;
         file.setAutoRemove(false);
         QVERIFY2(file.open(), qPrintable(file.errorString()));
-        QVERIFY(!names.contains(file.fileName()));
-        names.insert(file.fileName());
+        QVERIFY(!names.hasSeen(file.fileName()));
     }
 }
 
