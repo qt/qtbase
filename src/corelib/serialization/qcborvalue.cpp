@@ -538,7 +538,7 @@ Q_DECL_UNUSED static constexpr quint64 MaximumPreallocatedElementCount =
     is updated to support them, it is possible to recreate the tag + tagged
     value pair by using taggedValue().
 
-    \sa type(), tag(), taggedValue(), taggedValue()
+    \sa type(), tag(), taggedValue()
  */
 
 /*!

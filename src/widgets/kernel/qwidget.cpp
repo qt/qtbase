@@ -3189,7 +3189,7 @@ void QWidget::insertActions(QAction *before, const QList<QAction*> &actions)
 
 /*!
     Removes the action \a action from this widget's list of actions.
-    \sa insertAction(), actions(), insertAction()
+    \sa insertAction(), actions()
 */
 void QWidget::removeAction(QAction *action)
 {

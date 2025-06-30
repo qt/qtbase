@@ -2028,7 +2028,7 @@ void QGraphicsWidget::insertActions(QAction *before, const QList<QAction *> &act
 
     Removes the action \a action from this widget's list of actions.
 
-    \sa insertAction(), actions(), insertAction(), QWidget::removeAction()
+    \sa insertAction(), actions(), QWidget::removeAction()
 */
 void QGraphicsWidget::removeAction(QAction *action)
 {

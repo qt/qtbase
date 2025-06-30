@@ -357,7 +357,7 @@ void QGlyphRun::setRightToLeft(bool rightToLeft)
   Returns the flags set for this QGlyphRun.
 
   \since 5.0
-  \sa setFlag(), setFlag()
+  \sa setFlag()
 */
 QGlyphRun::GlyphRunFlags QGlyphRun::flags() const
 {

@@ -834,7 +834,7 @@ QBitArray operator|(const QBitArray &a1, const QBitArray &a2)
     Example:
     \snippet code/src_corelib_tools_qbitarray.cpp 14
 
-    \sa {QBitArray}{operator^=()}, {QBitArray}{operator&()}, {QBitArray}{operator|()}
+    \sa operator^=(), operator&(), operator|()
 */
 
 QBitArray operator^(const QBitArray &a1, const QBitArray &a2)

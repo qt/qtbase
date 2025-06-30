@@ -1147,8 +1147,6 @@ QList<QSslCertificate> QSslSocket::peerCertificateChain() const
     handshake phase begins.
 
     \sa QSslConfiguration::ciphers(), QSslConfiguration::setCiphers(),
-        QSslConfiguration::setCiphers(),
-        QSslConfiguration::ciphers(),
         QSslConfiguration::supportedCiphers()
 */
 QSslCipher QSslSocket::sessionCipher() const

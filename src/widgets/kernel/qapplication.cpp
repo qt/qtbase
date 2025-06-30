@@ -1620,7 +1620,7 @@ retry:
     function.
 
     \sa quitOnLastWindowClosed, lastWindowClosed(), QWidget::close(),
-    QWidget::closeEvent(), lastWindowClosed(), QCoreApplication::quit(),
+    QWidget::closeEvent(), QCoreApplication::quit(),
     topLevelWidgets(), QWidget::isWindow()
 */
 void QApplication::closeAllWindows()
