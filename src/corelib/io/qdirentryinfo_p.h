@@ -148,7 +148,7 @@ private:
 
     QFileSystemEntry entry;
     QFileSystemMetaData metaData;
-    std::optional<QFileInfo> fileInfoOpt;
+    std::optional<QFileInfo> fileInfoOpt = std::nullopt;
 };
 
 QT_END_NAMESPACE
