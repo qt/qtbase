@@ -3,8 +3,11 @@
 
 #include "examplewidget.h"
 #include "../shared/cube.h"
+
 #include <QFile>
+
 #include <QPainter>
+#include <QtGui/qquaternion.h>
 
 static const QSize CUBE_TEX_SIZE(512, 512);
 
