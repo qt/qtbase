@@ -119,7 +119,7 @@
                 "file type": "test",
                 "spdx": ["LicenseRef-Qt-Commercial OR GPL-3.0-only"]
             },
-            "ests/auto/testlib/selftests/": {
+            "tests/auto/testlib/selftests/(?!README)": {
             "comment": "Exception. Those are test files",
             "file type": "test",
             "spdx": ["LicenseRef-Qt-Commercial OR GPL-3.0-only"]
