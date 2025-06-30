@@ -48,7 +48,7 @@ QT_BEGIN_NAMESPACE
 
     \reentrant
 
-    QStringList inherits from QList<QString>. Like QList, QStringList is
+    QStringList is actually just a QList<QString>. Like QList, QStringList is
     \l{implicitly shared}. It provides fast index-based access as well as fast
     insertions and removals. Passing string lists as value parameters is both
     fast and safe.
