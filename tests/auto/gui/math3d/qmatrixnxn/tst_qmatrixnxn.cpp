@@ -3,7 +3,9 @@
 
 #include <QTest>
 #include <QtCore/qmath.h>
+
 #include <QtGui/qmatrix4x4.h>
+#include <QtGui/qquaternion.h>
 
 class tst_QMatrixNxN : public QObject
 {
