@@ -1216,6 +1216,7 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     case QtWindows::FocusInEvent: // see QWindowsWindow::requestActivateWindow().
         if (platformWindow->window()->flags() & Qt::WindowDoesNotAcceptFocus)
             return false;
+        [[fallthrough]];
     case QtWindows::FocusOutEvent:
         handleFocusEvent(et, platformWindow);
         return true;
