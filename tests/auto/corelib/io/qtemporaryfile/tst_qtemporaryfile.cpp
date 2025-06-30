@@ -15,6 +15,8 @@
 
 #include <QtTest/private/qtesthelpers_p.h>
 
+#include <QtCore/qscopeguard.h>
+
 #if defined(Q_OS_WIN)
 # include <shlwapi.h>
 # include <qt_windows.h>
@@ -552,15 +554,18 @@ void tst_QTemporaryFile::stressTest()
     const int iterations = 1000;
 
     QSet<QString> names;
+
+    const auto remover = qScopeGuard([&] {
+            for (const QString &s : std::as_const(names))
+                QFile::remove(s);
+        });
+
     for (int i = 0; i < iterations; ++i) {
         QTemporaryFile file;
         file.setAutoRemove(false);
         QVERIFY2(file.open(), qPrintable(file.errorString()));
         QVERIFY(!names.contains(file.fileName()));
         names.insert(file.fileName());
-    }
-    for (QSet<QString>::const_iterator it = names.constBegin(); it != names.constEnd(); ++it) {
-        QFile::remove(*it);
     }
 }
 
