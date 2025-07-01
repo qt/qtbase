@@ -142,7 +142,7 @@ struct QObjectPrivate::ConnectionData
     QAtomicPointer<SignalVector> signalVector;
     Connection *senders = nullptr;
     Sender *currentSender = nullptr; // object currently activating the object
-    std::atomic<TaggedSignalVector> orphaned = {};
+    std::atomic<TaggedSignalVector> orphaned = {nullptr};
 
     ~ConnectionData()
     {
