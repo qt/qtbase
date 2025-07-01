@@ -149,7 +149,10 @@ template <typename StringType> struct QStringAlgorithms
         return src.size() + adjust;
     }
 
-    static inline void replace_detaching(StringType &src, qsizetype bsize,
+    // Instead of detaching, i.e. copying the whole data array then performing the
+    // replacement, create a new buffer, copy `src` and `after` to it and swap it
+    // with `src`.
+    static inline void replace_into_copy(StringType &src, qsizetype bsize,
                                          ViewType after, QSpan<const qsizetype> indices,
                                          qsizetype newlen)
     {
@@ -237,7 +240,7 @@ template <typename StringType> struct QStringAlgorithms
             // Instead of detaching (which would copy the whole data array) then
             // performing the replacement, allocate a new string and copy the data
             // over from `src` and `after` as needed.
-            replace_detaching(src, bsize, after, indices, newlen);
+            replace_into_copy(src, bsize, after, indices, newlen);
             return;
         }
 
