@@ -1176,10 +1176,10 @@ class WatchDog : public QThread
 
 public:
     WatchDog()
+        : expecting{ThreadStart}
     {
         setObjectName("QtTest Watchdog"_L1);
         auto locker = qt_unique_lock(mutex);
-        expecting.store(ThreadStart, std::memory_order_relaxed);
         start();
         waitFor(locker, ThreadStart);
     }
