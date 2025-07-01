@@ -147,7 +147,7 @@ QDebug operator<<(QDebug debug, const QDockAreaLayout &layout)
 QDebug operator<<(QDebug debug, const QMainWindowLayout *layout)
 {
     if (layout)
-        return debug << layout->layoutState.dockAreaLayout;
+        return std::move(debug) << layout->layoutState.dockAreaLayout;
     return debug << "QMainWindowLayout(0x0)";
 }
 
