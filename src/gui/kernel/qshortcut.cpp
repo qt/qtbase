@@ -577,4 +577,6 @@ bool QShortcut::event(QEvent *e)
 
 QT_END_NAMESPACE
 
+#undef QAPP_CHECK
+
 #include "moc_qshortcut.cpp"

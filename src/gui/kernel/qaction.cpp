@@ -1325,4 +1325,6 @@ Q_GUI_EXPORT QDebug operator<<(QDebug d, const QAction *action)
 
 QT_END_NAMESPACE
 
+#undef QAPP_CHECK
+
 #include "moc_qaction.cpp"
