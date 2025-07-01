@@ -94,6 +94,18 @@ function(qt_internal_set_warnings_are_errors_flags target target_scope)
             ${language_args}
         )
     endif()
+    if(APPLE)
+        qt_internal_add_compiler_dependent_flags("${target}" ${target_scope}
+            COMPILERS CLANG AppleClang
+                CONDITIONS $<BOOL:$<TARGET_PROPERTY:UNITY_BUILD>>
+                    OPTIONS
+                        -Wno-error=nullability-completeness
+            COMMON_CONDITIONS
+                ${common_conditions}
+            LANGUAGES
+                OBJCXX
+        )
+    endif()
     # Other options are gated at compile time that are not likely to change between different build
     # environments of other modules.
     if(ANDROID)
