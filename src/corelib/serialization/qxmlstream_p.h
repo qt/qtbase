@@ -140,8 +140,8 @@ public:
         if (tos + extraCapacity + 1 > cap) {
             cap = qMax(tos + extraCapacity + 1, cap << 1 );
             void *ptr = realloc(static_cast<void *>(data), cap * sizeof(T));
+            Q_CHECK_PTR(ptr);
             data = reinterpret_cast<T *>(ptr);
-            Q_CHECK_PTR(data);
         }
     }
 
