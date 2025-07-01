@@ -1385,6 +1385,7 @@ QString QPropertyBindingError::description() const
 /*!
   \fn template <typename T> template <typename Functor> QPropertyBinding<T> QProperty<T>::setBinding(Functor f)
   \overload
+  \since 6.0
 
   Associates the value of this property with the provided functor \a f and
   returns the previously associated binding. The property's value is set to the
@@ -1442,6 +1443,7 @@ QString QPropertyBindingError::description() const
 
 /*!
   \fn template <typename T> template <typename Functor> QPropertyChangeHandler<T, Functor> QProperty<T>::subscribe(Functor f)
+  \since 6.0
 
   Subscribes the given functor \a f as a callback that is called immediately and
   whenever the value of the property changes in the future. On each value
@@ -1459,6 +1461,7 @@ QString QPropertyBindingError::description() const
 
 /*!
   \fn template <typename T> template <typename Functor> QPropertyNotifier QProperty<T>::addNotifier(Functor f)
+  \since 6.2
 
   Subscribes the given functor \a f as a callback that is called whenever
   the value of the property changes.
@@ -1948,6 +1951,7 @@ QString QPropertyBindingError::description() const
   \brief The QPropertyNotifier class controls the lifecycle of change callback installed on a QProperty.
 
   \ingroup tools
+  \since 6.2
 
   QPropertyNotifier is created when registering a callback on a QProperty to
   listen to changes to the property's value, using QProperty::addNotifier. As
