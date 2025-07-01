@@ -585,9 +585,9 @@ QMatrix3x3 QQuaternion::toRotationMatrix() const
 /*!
     \since 5.5
 
-    Creates a quaternion that corresponds to a rotation matrix \a rot3x3.
+    Creates a quaternion that corresponds to the rotation matrix \a rot3x3.
 
-    \note If a given rotation matrix is not normalized,
+    \note If the given rotation matrix is not normalized,
     the resulting quaternion will contain scaling information.
 
     \sa toRotationMatrix(), fromAxes()
