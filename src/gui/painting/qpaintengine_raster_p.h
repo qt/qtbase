@@ -361,7 +361,7 @@ inline void QClipData::appendSpan(int x, int length, int y, int coverage)
 
     if (count == allocated) {
         allocated *= 2;
-        m_spans = (QT_FT_Span *)realloc(m_spans, allocated*sizeof(QT_FT_Span));
+        m_spans = static_cast<QT_FT_Span*>(q_check_ptr(realloc(m_spans, allocated * sizeof(QT_FT_Span))));
     }
     m_spans[count].x = x;
     m_spans[count].len = length;
@@ -378,7 +378,7 @@ inline void QClipData::appendSpans(const QT_FT_Span *s, int num)
         do {
             allocated *= 2;
         } while (count + num > allocated);
-        m_spans = (QT_FT_Span *)realloc(m_spans, allocated*sizeof(QT_FT_Span));
+        m_spans = static_cast<QT_FT_Span*>(q_check_ptr(realloc(m_spans, allocated * sizeof(QT_FT_Span))));
     }
     memcpy(m_spans+count, s, num*sizeof(QT_FT_Span));
     count += num;
