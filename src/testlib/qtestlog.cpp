@@ -120,7 +120,7 @@ private:
     {
         loggers.store(std::move(newLoggers), std::memory_order_release);
     }
-    std::atomic<SharedLoggersContainer> loggers;
+    std::atomic<SharedLoggersContainer> loggers = nullptr;
 #else
     SharedLoggersContainer load() const
     {
