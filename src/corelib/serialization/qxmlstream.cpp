@@ -2036,7 +2036,7 @@ void QXmlStreamReaderPrivate::startDocument()
                         // unspecified (i.e. System) encoding.
                         QString buf = decoder(QByteArrayView(rawReadBuffer).first(nbytesread));
                         if (!decoder.hasError())
-                            readBuffer = buf;
+                            readBuffer = std::move(buf);
                     }
                 }
             }
