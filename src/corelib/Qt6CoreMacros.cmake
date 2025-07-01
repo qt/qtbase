@@ -3169,7 +3169,7 @@ function(qt6_generate_deploy_app_script)
         qt6_generate_deploy_script(${generate_args}
             CONTENT "
 qt6_deploy_runtime_dependencies(
-    EXECUTABLE $<TARGET_FILE_NAME:${arg_TARGET}>.app
+    EXECUTABLE \"$<TARGET_FILE_NAME:${arg_TARGET}>.app\"
 ${common_deploy_args})
 ")
 
@@ -3177,7 +3177,7 @@ ${common_deploy_args})
         qt6_generate_deploy_script(${generate_args}
             CONTENT "
 qt6_deploy_runtime_dependencies(
-    EXECUTABLE $<TARGET_FILE:${arg_TARGET}>
+    EXECUTABLE \"$<TARGET_FILE:${arg_TARGET}>\"
     GENERATE_QT_CONF
 ${common_deploy_args})
 ")
@@ -3187,7 +3187,7 @@ ${common_deploy_args})
         qt6_generate_deploy_script(${generate_args}
             CONTENT "
 qt6_deploy_runtime_dependencies(
-    EXECUTABLE $<TARGET_FILE:${arg_TARGET}>
+    EXECUTABLE \"$<TARGET_FILE:${arg_TARGET}>\"
     GENERATE_QT_CONF
 ${common_deploy_args})
 ")
