@@ -2149,6 +2149,17 @@ void QTextCharFormat::setFont(const QFont &font, FontPropertiesInheritanceBehavi
 
 /*!
     Returns the font for this character format.
+
+    This function takes into account the format's font attributes (such as fontWeight()
+    and fontPointSize()) and resolves them on top of the default font, defined as follows.
+    If the format is part of a document, that is the document's default font.
+    Otherwise the properties are resolved on top of a default constructed QFont.
+
+    For example, if this format's font size hasn't been changed from the default font,
+    fontPointSize() returns 0, while \c {font().pointSize()} returns the actual
+    size used for drawing.
+
+    \sa QTextDocument::defaultFont()
 */
 QFont QTextCharFormat::font() const
 {
