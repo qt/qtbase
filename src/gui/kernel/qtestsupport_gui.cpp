@@ -24,8 +24,19 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \since 5.0
+    \overload
 
-    Returns \c true, if \a window is active within \a timeout milliseconds. Otherwise returns \c false.
+    The \a timeout is in milliseconds.
+*/
+bool QTest::qWaitForWindowActive(QWindow *window, int timeout)
+{
+    return qWaitForWindowActive(window, QDeadlineTimer{timeout, Qt::TimerType::PreciseTimer});
+}
+
+/*!
+    \since 6.10
+
+    Returns \c true, if \a window is active within \a timeout. Otherwise returns \c false.
 
     The method is useful in tests that call QWindow::show() and rely on the window actually being
     active (i.e. being visible and having focus) before proceeding.
@@ -38,7 +49,7 @@ QT_BEGIN_NAMESPACE
 
     \sa qWaitForWindowExposed(), qWaitForWindowFocused(), QWindow::isActive()
 */
-Q_GUI_EXPORT bool QTest::qWaitForWindowActive(QWindow *window, int timeout)
+bool QTest::qWaitForWindowActive(QWindow *window, QDeadlineTimer timeout)
 {
     if (Q_UNLIKELY(!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))) {
         qWarning() << "qWaitForWindowActive was called on a platform that doesn't support window"
@@ -49,6 +60,17 @@ Q_GUI_EXPORT bool QTest::qWaitForWindowActive(QWindow *window, int timeout)
         return qWaitForWindowExposed(window, timeout);
     }
     return QTest::qWaitFor([&]() { return window->isActive(); }, timeout);
+}
+
+/*!
+    \since 6.10
+    \overload
+
+    This function uses the default timeout of 5 seconds.
+*/
+bool QTest::qWaitForWindowActive(QWindow *window)
+{
+    return qWaitForWindowActive(window, Internal::defaultTryTimeout);
 }
 
 /*!
@@ -73,9 +95,31 @@ Q_GUI_EXPORT bool QTest::qWaitForWindowFocused(QWindow *window, QDeadlineTimer t
 }
 
 /*!
-    \since 5.0
+    \since 6.10
+    \overload
 
-    Returns \c true, if \a window is exposed within \a timeout milliseconds. Otherwise returns \c false.
+    This function uses the default timeout of 5 seconds.
+*/
+bool QTest::qWaitForWindowFocused(QWindow *window)
+{
+    return qWaitForWindowFocused(window, Internal::defaultTryTimeout);
+}
+
+/*!
+    \since 5.0
+    \overload
+
+    The \a timeout is in milliseconds.
+*/
+bool QTest::qWaitForWindowExposed(QWindow *window, int timeout)
+{
+    return qWaitForWindowExposed(window, std::chrono::milliseconds(timeout));
+}
+
+/*!
+    \since 6.10
+
+    Returns \c true, if \a window is exposed within \a timeout. Otherwise returns \c false.
 
     The method is useful in tests that call QWindow::show() and rely on the window actually being
     being visible before proceeding.
@@ -86,9 +130,20 @@ Q_GUI_EXPORT bool QTest::qWaitForWindowFocused(QWindow *window, QDeadlineTimer t
 
     \sa qWaitForWindowActive(), QWindow::isExposed()
 */
-Q_GUI_EXPORT bool QTest::qWaitForWindowExposed(QWindow *window, int timeout)
+bool QTest::qWaitForWindowExposed(QWindow *window, QDeadlineTimer timeout)
 {
     return QTest::qWaitFor([&]() { return window->isExposed(); }, timeout);
+}
+
+/*!
+    \since 6.10
+    \overload
+
+    This function uses the default timeout of 5 seconds.
+*/
+bool QTest::qWaitForWindowExposed(QWindow *window)
+{
+    return qWaitForWindowExposed(window, Internal::defaultTryTimeout);
 }
 
 namespace QTest {

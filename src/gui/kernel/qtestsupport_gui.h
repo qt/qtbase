@@ -23,12 +23,16 @@ Q_GUI_EXPORT bool qt_handleTouchEventv2(QWindow *w, const QPointingDevice *devic
 
 namespace QTest {
 
-[[nodiscard]] Q_GUI_EXPORT bool qWaitForWindowActive(QWindow *window,
-    int timeout = static_cast<int>(Internal::defaultTryTimeout.count()));
-[[nodiscard]] Q_GUI_EXPORT bool qWaitForWindowFocused(QWindow *window,
-    QDeadlineTimer timeout = Internal::defaultTryTimeout);
-[[nodiscard]] Q_GUI_EXPORT bool qWaitForWindowExposed(QWindow *window,
-    int timeout = static_cast<int>(Internal::defaultTryTimeout.count()));
+[[nodiscard]] Q_GUI_EXPORT bool qWaitForWindowActive(QWindow *window, int timeout);
+[[nodiscard]] Q_GUI_EXPORT bool qWaitForWindowActive(QWindow *window, QDeadlineTimer timeout);
+[[nodiscard]] Q_GUI_EXPORT bool qWaitForWindowActive(QWindow *window);
+
+[[nodiscard]] Q_GUI_EXPORT bool qWaitForWindowFocused(QWindow *window, QDeadlineTimer timeout);
+[[nodiscard]] Q_GUI_EXPORT bool qWaitForWindowFocused(QWindow *window);
+
+[[nodiscard]] Q_GUI_EXPORT bool qWaitForWindowExposed(QWindow *window, int timeout);
+[[nodiscard]] Q_GUI_EXPORT bool qWaitForWindowExposed(QWindow *window, QDeadlineTimer timeout);
+[[nodiscard]] Q_GUI_EXPORT bool qWaitForWindowExposed(QWindow *window);
 
 Q_GUI_EXPORT QPointingDevice * createTouchDevice(QInputDevice::DeviceType devType = QInputDevice::DeviceType::TouchScreen,
                                                  QInputDevice::Capabilities caps = QInputDevice::Capability::Position);
