@@ -86,8 +86,9 @@ public:
                 capacity = 1;
             while (capacity < size)
                 capacity *= 2;
-            buffer = (Type*) realloc(static_cast<void*>(buffer), capacity * sizeof(Type));
-            Q_CHECK_PTR(buffer);
+            auto ptr = realloc(static_cast<void*>(buffer), capacity * sizeof(Type));
+            Q_CHECK_PTR(ptr);
+            buffer = static_cast<Type*>(ptr);
         }
     }
 
@@ -95,8 +96,9 @@ public:
         Q_ASSERT(capacity >= size);
         capacity = size;
         if (size) {
-            buffer = (Type*) realloc(static_cast<void*>(buffer), capacity * sizeof(Type));
-            Q_CHECK_PTR(buffer);
+            const auto ptr = realloc(static_cast<void*>(buffer), capacity * sizeof(Type));
+            Q_CHECK_PTR(ptr);
+            buffer = static_cast<Type*>(ptr);
             siz = std::min(siz, size);
         } else {
             free(buffer);
