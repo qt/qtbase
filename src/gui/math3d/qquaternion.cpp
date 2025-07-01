@@ -432,8 +432,9 @@ QQuaternion QQuaternion::fromAxisAndAngle
     \overload
 
     Creates a quaternion that corresponds to a rotation of \a angles:
-    angles.z() degrees around the z axis, angles.x() degrees around the x axis,
-    and angles.y() degrees around the y axis (in that order).
+    angles.\l{QVector3D::}{z()} degrees around the z axis,
+    angles.\l{QVector3D::}{x()} degrees around the x axis, and
+    angles.\l{QVector3D::}{y()} degrees around the y axis (in that order).
 
     \sa toEulerAngles()
 */
