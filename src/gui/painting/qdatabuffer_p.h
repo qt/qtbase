@@ -87,8 +87,9 @@ public:
                 capacity = 1;
             while (capacity < size)
                 capacity *= 2;
-            buffer = (Type*) QtPrivate::fittedRealloc(static_cast<void*>(buffer), 0, &capacity, sizeof(Type));
-            Q_CHECK_PTR(buffer);
+            auto ptr = QtPrivate::fittedRealloc(static_cast<void*>(buffer), 0, &capacity, sizeof(Type));
+            Q_CHECK_PTR(ptr);
+            buffer = static_cast<Type*>(ptr);
         }
     }
 
@@ -96,8 +97,9 @@ public:
         Q_ASSERT(capacity >= size);
         if (size) {
             capacity = size;
-            buffer = (Type*) QtPrivate::fittedRealloc(static_cast<void*>(buffer), 0, &capacity, sizeof(Type));
-            Q_CHECK_PTR(buffer);
+            const auto ptr = QtPrivate::fittedRealloc(static_cast<void*>(buffer), 0, &capacity, sizeof(Type));
+            Q_CHECK_PTR(ptr);
+            buffer = static_cast<Type*>(ptr);
             siz = std::min(siz, size);
         } else {
             QtPrivate::sizedFree(buffer, capacity, sizeof(Type));
