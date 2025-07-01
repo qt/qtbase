@@ -7,6 +7,7 @@
 
 #include <QtCore/qobjectdefs.h>
 #include <QtCore/qmetatype.h>
+#include <QtCore/qshareddata.h>
 
 #if 0
 #pragma qt_class(QtCborCommon)
@@ -21,6 +22,9 @@
 QT_BEGIN_NAMESPACE
 
 class QDebug;
+
+class QCborContainerPrivate;
+QT_DECLARE_QESDP_SPECIALIZATION_DTOR(QCborContainerPrivate) // defined in qcborvalue.cpp
 
 enum class QCborSimpleType : quint8 {
     False = 20,

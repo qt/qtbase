@@ -28,6 +28,8 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QCborContainerPrivate)
+
 // Worst case memory allocation for a corrupt stream: 256 MB for 32-bit, 1 GB for 64-bit
 static constexpr quint64 MaxAcceptableMemoryUse = (sizeof(void*) == 4 ? 256 : 1024) * 1024 * 1024;
 

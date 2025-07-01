@@ -204,7 +204,9 @@ public:
 
     QCborArray() noexcept;
     QCborArray(const QCborArray &other) noexcept;
+    QCborArray(QCborArray &&other) noexcept = default;
     QCborArray &operator=(const QCborArray &other) noexcept;
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QCborArray)
     QCborArray(std::initializer_list<QCborValue> args)
         : QCborArray()
     {

@@ -239,7 +239,9 @@ public:
 
     QCborMap()  noexcept;
     QCborMap(const QCborMap &other) noexcept;
+    QCborMap(QCborMap &&other) noexcept = default;
     QCborMap &operator=(const QCborMap &other) noexcept;
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QCborMap)
     QCborMap(std::initializer_list<value_type> args)
         : QCborMap()
     {

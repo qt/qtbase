@@ -276,6 +276,17 @@ QCborMap::QCborMap(const QCborMap &other) noexcept
 }
 
 /*!
+    \fn QCborMap::QCborMap(QCborMap &&other)
+    \since 6.10
+
+    Move-constructor.
+
+    The moved-from object \a other is placed in the default-constructed state.
+
+    \sa QCborMap::QCborMap()
+*/
+
+/*!
     \fn QCborMap::QCborMap(std::initializer_list<value_type> args)
 
     Constructs a QCborMap with items from a brace-initialization list found in
@@ -307,6 +318,15 @@ QCborMap &QCborMap::operator=(const QCborMap &other) noexcept
     d = other.d;
     return *this;
 }
+
+/*!
+    \fn QCborMap &QCborMap::operator=(QCborMap &&other)
+    \since 6.10
+
+    Move-assignment operator.
+
+    The moved-from object \a other is placed in a valid, but unspecified state.
+*/
 
 /*!
     \fn void QCborMap::swap(QCborMap &other)
