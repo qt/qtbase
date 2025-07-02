@@ -11,6 +11,7 @@
 #include <QtCore/qtconfigmacros.h>
 
 #include <atomic>
+#include <type_traits>
 
 QT_BEGIN_NAMESPACE
 
@@ -120,6 +121,33 @@ QAtomicScopedValueRollback(QBasicAtomicPointer<T> &)
     -> QAtomicScopedValueRollback<T*>;
 template <typename T>
 QAtomicScopedValueRollback(QBasicAtomicPointer<T> &, std::memory_order)
+    -> QAtomicScopedValueRollback<T*>;
+
+template <typename T, typename V,
+          std::enable_if_t<std::is_convertible_v<V, T>, bool> = true>
+QAtomicScopedValueRollback(std::atomic<T>&, V)
+    -> QAtomicScopedValueRollback<T>;
+template <typename T, typename V,
+          std::enable_if_t<std::is_convertible_v<V, T>, bool> = true>
+QAtomicScopedValueRollback(std::atomic<T>&, V, std::memory_order)
+    -> QAtomicScopedValueRollback<T>;
+
+template <typename T, typename V,
+          std::enable_if_t<std::is_convertible_v<V, T>, bool> = true>
+QAtomicScopedValueRollback(QBasicAtomicInteger<T>&, V)
+    -> QAtomicScopedValueRollback<T>;
+template <typename T, typename V,
+          std::enable_if_t<std::is_convertible_v<V, T>, bool> = true>
+QAtomicScopedValueRollback(QBasicAtomicInteger<T>&, V, std::memory_order)
+    -> QAtomicScopedValueRollback<T>;
+
+template <typename T, typename V,
+          std::enable_if_t<std::is_convertible_v<V, T*>, bool> = true>
+QAtomicScopedValueRollback(QBasicAtomicPointer<T>&, V)
+    -> QAtomicScopedValueRollback<T*>;
+template <typename T, typename V,
+          std::enable_if_t<std::is_convertible_v<V, T*>, bool> = true>
+QAtomicScopedValueRollback(QBasicAtomicPointer<T>&, V, std::memory_order)
     -> QAtomicScopedValueRollback<T*>;
 
 QT_END_NAMESPACE
