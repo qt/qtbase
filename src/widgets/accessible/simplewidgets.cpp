@@ -315,8 +315,7 @@ int QAccessibleToolButton::childCount() const
 QAccessible::Role QAccessibleToolButton::role() const
 {
 #if QT_CONFIG(menu)
-    QAbstractButton *ab = button();
-    QToolButton *tb = qobject_cast<QToolButton*>(ab);
+    QToolButton *tb = toolButton();
     if (!tb->menu())
         return tb->isCheckable() ? QAccessible::CheckBox : QAccessible::PushButton;
     else if (tb->popupMode() == QToolButton::DelayedPopup)
