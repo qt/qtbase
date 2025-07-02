@@ -421,7 +421,7 @@ QQuaternion QQuaternion::fromAxisAndAngle
     \since 5.5
 
     Calculates roll, pitch, and yaw Euler angles (in degrees)
-    that corresponds to this quaternion.
+    that correspond to this quaternion.
 
     \sa fromEulerAngles()
 */
