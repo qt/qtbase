@@ -2209,8 +2209,9 @@ void QWindows11Style::polish(QWidget* widget)
         pal.setColor(scrollarea->viewport()->backgroundRole(), Qt::transparent);
         scrollarea->viewport()->setPalette(pal);
         scrollarea->viewport()->setProperty("_q_original_background_palette", originalPalette);
-        if (qobject_cast<QTableView *>(widget))
-            widget->setAttribute(Qt::WA_Hover, true);
+        // QTreeView & QListView are already set in the base windowsvista style
+        if (auto table = qobject_cast<QTableView *>(widget))
+            table->viewport()->setAttribute(Qt::WA_Hover, true);
     }
 }
 
