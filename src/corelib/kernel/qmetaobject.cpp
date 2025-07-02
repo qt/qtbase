@@ -2281,7 +2281,7 @@ QList<QByteArray> QMetaMethod::parameterNames() const
 /*!
     Returns the return type name of this method.
 
-    \sa returnType(), QMetaType::type()
+    \sa returnType(), QMetaType::name()
 */
 const char *QMetaMethod::typeName() const
 {
