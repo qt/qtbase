@@ -117,8 +117,9 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QMacAccessibilityElement);
     QAccessibleValueInterface *val = iface->valueInterface();
     if (val) {
         return val->currentValue().toString().toNSString();
-    } else if (QAccessibleTextInterface *text = iface->textInterface()) {
-        return text->text(0, text->characterCount()).toNSString();
+    } else if (iface->editableTextInterface()) {
+        if (QAccessibleTextInterface *text = iface->textInterface())
+            return text->text(0, text->characterCount()).toNSString();
     }
 
     return [super accessibilityHint];
