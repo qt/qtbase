@@ -1468,6 +1468,31 @@ void tst_QDBusConnection::parentClassSignal()
     QTRY_COMPARE(recv.signalsReceived, 2);
 }
 
+// see also tst_qdbusconnection_delayed
+void tst_QDBusConnection::delayedDeliveryReenabledAfterUsedInMainThread()
+{
+#if !QT_CONFIG(process)
+    QSKIP("Test requires QProcess");
+#elif defined(HAS_HOOKSETUPFUNCTION)
+    QSKIP("No difference to run by tst_QDBusConnection");
+#else
+#  if defined(Q_OS_WIN)
+#    define EXE ".exe"
+#  else
+#    define EXE ""
+#  endif
+    if (!QCoreApplication::instance())
+        QSKIP("Test requires a QCoreApplication");
+
+    QProcess process;
+    process.start(QFINDTESTDATA("qdbusdelayeddeliveryreenablehelper" EXE));
+    QVERIFY2(process.waitForFinished(25000), qPrintable(process.errorString()));
+    QCOMPARE(process.readAllStandardError(), QString());
+    QCOMPARE(process.exitCode(), 0);
+#  undef EXE
+#endif
+}
+
 QString MyObject::path;
 QString MyObjectWithoutInterface::path;
 QString MyObjectWithoutInterface::interface;
