@@ -382,7 +382,7 @@ QMenu *QScrollBar::createStandardContextMenu(QPoint position)
 {
 #if QT_CONFIG(menu)
     const bool horiz = HORIZONTAL;
-    QMenu *menu = new QMenu();
+    QMenu *menu = new QMenu(this);
     menu->setObjectName("qt_scrollbar_menu"_L1);
 
     if (window() && window()->windowHandle()) {
