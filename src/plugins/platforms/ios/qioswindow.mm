@@ -243,7 +243,7 @@ void QIOSWindow::setWindowState(Qt::WindowStates state)
     qt_window_private(window())->windowState = state;
 
     if (window()->isTopLevel() && window()->isVisible() && window()->isActive())
-        [m_view.qtViewController updateProperties];
+        [m_view.qtViewController updateStatusBarProperties];
 
     if (state & Qt::WindowMinimized) {
         applyGeometry(QRect());
