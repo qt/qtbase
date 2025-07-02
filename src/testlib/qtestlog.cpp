@@ -115,20 +115,20 @@ public:
 
 private:
 #ifdef __cpp_lib_atomic_shared_ptr
-    SharedLoggersContainer load() const { return loggers.load(std::memory_order_relaxed); }
+    SharedLoggersContainer load() const { return loggers.load(std::memory_order_acquire); }
     void store(SharedLoggersContainer newLoggers)
     {
-        loggers.store(std::move(newLoggers), std::memory_order_relaxed);
+        loggers.store(std::move(newLoggers), std::memory_order_release);
     }
     std::atomic<SharedLoggersContainer> loggers;
 #else
     SharedLoggersContainer load() const
     {
-        return std::atomic_load_explicit(&loggers, std::memory_order_relaxed);
+        return std::atomic_load_explicit(&loggers, std::memory_order_acquire);
     }
     void store(SharedLoggersContainer newLoggers)
     {
-        std::atomic_store_explicit(&loggers, std::move(newLoggers), std::memory_order_relaxed);
+        std::atomic_store_explicit(&loggers, std::move(newLoggers), std::memory_order_release);
     }
     SharedLoggersContainer loggers;
 #endif
