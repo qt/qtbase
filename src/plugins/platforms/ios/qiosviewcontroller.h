@@ -13,7 +13,7 @@ QT_END_NAMESPACE
 @interface QIOSViewController : UIViewController
 
 - (instancetype)initWithWindow:(UIWindow*)window andScreen:(QT_PREPEND_NAMESPACE(QIOSScreen) *)screen;
-- (void)updateProperties;
+- (void)updateStatusBarProperties;
 - (NSArray*)keyCommands;
 - (void)handleShortcut:(UIKeyCommand*)keyCommand;
 

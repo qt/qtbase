@@ -246,7 +246,7 @@
 #endif
 
         m_focusWindowChangeConnection = QObject::connect(qApp, &QGuiApplication::focusWindowChanged, [self]() {
-            [self updateProperties];
+            [self updateStatusBarProperties];
         });
 
         QIOSApplicationState *applicationState = &QIOSIntegration::instance()->applicationState;
@@ -390,7 +390,7 @@
 
 // -------------------------------------------------------------------------
 
-- (void)updateProperties
+- (void)updateStatusBarProperties
 {
     if (!isQtApplication())
         return;
