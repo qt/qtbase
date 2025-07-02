@@ -27,8 +27,8 @@ not ok 4 - compareInts(Qt::strong_ordering::greater)
 not ok 5 - compareFloats(Qt::partial_ordering::equivalent)
   ---
   # The result of operator<=>() is not what was expected
-   Left     (lhs): 1
-   Right    (rhs): 1
+   Left     (lhs): 1 (0x1p+0)
+   Right    (rhs): 1 (0x1p+0)
    Actual   (lhs <=> rhs)  : std::partial_ordering::equivalent
    Expected (expectedOrder): Qt::partial_ordering::less
   at: tst_ThreeWayCompare::compareFloats() (qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp:0)
@@ -39,8 +39,8 @@ ok 6 - compareFloats(Qt::partial_ordering::less)
 not ok 7 - compareFloats(Qt::partial_ordering::greater)
   ---
   # The result of operator<=>() is not what was expected
-   Left     (lhs): 1.1
-   Right    (rhs): 1
+   Left     (lhs): 1.1 (0x1.19999ap+0)
+   Right    (rhs): 1 (0x1p+0)
    Actual   (lhs <=> rhs)  : std::partial_ordering::greater
    Expected (expectedOrder): Qt::partial_ordering::less
   at: tst_ThreeWayCompare::compareFloats() (qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp:0)
@@ -50,8 +50,8 @@ not ok 7 - compareFloats(Qt::partial_ordering::greater)
 not ok 8 - compareDoubles(Qt::partial_ordering::equivalent)
   ---
   # The result of operator<=>() is not what was expected
-   Left     (lhs): 0
-   Right    (rhs): 0
+   Left     (lhs): 0 (0x0p+0)
+   Right    (rhs): 0 (0x0p+0)
    Actual   (lhs <=> rhs)  : std::partial_ordering::equivalent
    Expected (expectedOrder): Qt::partial_ordering::greater
   at: tst_ThreeWayCompare::compareDoubles() (qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp:0)
@@ -61,8 +61,8 @@ not ok 8 - compareDoubles(Qt::partial_ordering::equivalent)
 not ok 9 - compareDoubles(Qt::partial_ordering::less)
   ---
   # The result of operator<=>() is not what was expected
-   Left     (lhs): 0
-   Right    (rhs): 0.1
+   Left     (lhs): 0 (0x0p+0)
+   Right    (rhs): 0.1 (0x1.999999999999ap-4)
    Actual   (lhs <=> rhs)  : std::partial_ordering::less
    Expected (expectedOrder): Qt::partial_ordering::greater
   at: tst_ThreeWayCompare::compareDoubles() (qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp:0)
@@ -211,8 +211,8 @@ not ok 28 - stdCompareInts(std::strong_ordering::greater)
 not ok 29 - stdCompareFloats(std::partial_ordering::equivalent)
   ---
   # The result of operator<=>() is not what was expected
-   Left     (lhs): 2
-   Right    (rhs): 2
+   Left     (lhs): 2 (0x1p+1)
+   Right    (rhs): 2 (0x1p+1)
    Actual   (lhs <=> rhs)  : std::partial_ordering::equivalent
    Expected (expectedOrder): std::partial_ordering::less
   at: tst_ThreeWayCompare::stdCompareFloats() (qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp:0)
@@ -222,8 +222,8 @@ not ok 29 - stdCompareFloats(std::partial_ordering::equivalent)
 not ok 30 - stdCompareFloats(std::partial_ordering::less)
   ---
   # The result of operator<=>() is not what was expected
-   Left     (lhs): 2
-   Right    (rhs): 1.1
+   Left     (lhs): 2 (0x1p+1)
+   Right    (rhs): 1.1 (0x1.19999ap+0)
    Actual   (lhs <=> rhs)  : std::partial_ordering::greater
    Expected (expectedOrder): std::partial_ordering::less
   at: tst_ThreeWayCompare::stdCompareFloats() (qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp:0)
@@ -234,8 +234,8 @@ ok 31 - stdCompareFloats(std::partial_ordering::greater)
 not ok 32 - stdCompareDoubles(std::partial_ordering::equivalent)
   ---
   # The result of operator<=>() is not what was expected
-   Left     (lhs): 0.15
-   Right    (rhs): 0.15
+   Left     (lhs): 0.15 (0x1.3333333333333p-3)
+   Right    (rhs): 0.15 (0x1.3333333333333p-3)
    Actual   (lhs <=> rhs)  : std::partial_ordering::equivalent
    Expected (expectedOrder): std::partial_ordering::greater
   at: tst_ThreeWayCompare::stdCompareDoubles() (qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp:0)
@@ -245,8 +245,8 @@ not ok 32 - stdCompareDoubles(std::partial_ordering::equivalent)
 not ok 33 - stdCompareDoubles(std::partial_ordering::less)
   ---
   # The result of operator<=>() is not what was expected
-   Left     (lhs): 0.15
-   Right    (rhs): 0.25
+   Left     (lhs): 0.15 (0x1.3333333333333p-3)
+   Right    (rhs): 0.25 (0x1p-2)
    Actual   (lhs <=> rhs)  : std::partial_ordering::less
    Expected (expectedOrder): std::partial_ordering::greater
   at: tst_ThreeWayCompare::stdCompareDoubles() (qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp:0)
@@ -383,8 +383,8 @@ not ok 50 - checkComparisonForTemporaryObjects()
 not ok 51 - checkWeakComparison()
   ---
   # The result of operator<=>() is not what was expected
-   Left     (june)     : 2012/06/20 14:33:02.500[CEST]
-   Right    (juneLater): 2012/06/20 14:33:02.501[CEST]
+   Left     (june)     : 2012/06/20 14:33:02.500[UTC]
+   Right    (juneLater): 2012/06/20 14:33:02.501[UTC]
    Actual   (june <=> juneLater)        : std::weak_ordering::less
    Expected (Qt::weak_ordering::greater): Qt::weak_ordering::greater
   at: tst_ThreeWayCompare::checkWeakComparison() (qtbase/tests/auto/testlib/selftests/threewaycompare/tst_threewaycompare.cpp:0)

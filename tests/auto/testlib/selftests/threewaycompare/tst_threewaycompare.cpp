@@ -231,7 +231,7 @@ void tst_ThreeWayCompare::checkWeakComparison()
 
     QCOMPARE_3WAY(example_left, example_right, std::weak_ordering::less);
 
-    QDateTime june(QDate(2012, 6, 20), QTime(14, 33, 2, 500));
+    QDateTime june(QDate(2012, 6, 20), QTime(14, 33, 2, 500), QTimeZone::UTC);
     QDateTime juneLater = june.addMSecs(1);
     QCOMPARE_3WAY(june, juneLater, Qt::weak_ordering::greater);
 #endif
