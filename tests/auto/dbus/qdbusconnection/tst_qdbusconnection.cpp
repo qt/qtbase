@@ -13,11 +13,6 @@
 #include <QDBusInterface>
 #include <QDBusConnectionInterface>
 
-#ifdef Q_OS_UNIX
-#  include <sys/types.h>
-#  include <signal.h>
-#endif
-
 void MyObject::method(const QDBusMessage &msg)
 {
     path = msg.path();
