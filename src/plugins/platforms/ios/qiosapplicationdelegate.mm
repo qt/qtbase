@@ -16,6 +16,7 @@
 #include <QtCore/QtCore>
 
 @interface QIOSWindowSceneDelegate : NSObject<UIWindowSceneDelegate>
+@property (nullable, nonatomic, strong) UIWindow *window;
 @end
 
 @implementation QIOSApplicationDelegate
@@ -86,6 +87,14 @@
 
     window.rootViewController = [[[QIOSViewController alloc]
         initWithWindow:window andScreen:screen] autorelease];
+
+    self.window = [window autorelease];
+}
+
+- (void)sceneDidDisconnect:(UIScene *)scene
+{
+    qCDebug(lcQpaWindowScene) << "Disconnecting" << scene;
+    self.window = nil;
 }
 
 - (void)scene:(UIScene *)scene openURLContexts:(NSSet<UIOpenURLContext *> *)URLContexts
