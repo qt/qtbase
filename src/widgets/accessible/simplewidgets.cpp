@@ -289,11 +289,24 @@ QToolButton *QAccessibleToolButton::toolButton() const
 bool QAccessibleToolButton::isSplitButton() const
 {
 #if QT_CONFIG(menu)
-    return toolButton()->menu() && toolButton()->popupMode() == QToolButton::MenuButtonPopup;
+    return menu() && toolButton()->popupMode() == QToolButton::MenuButtonPopup;
 #else
     return false;
 #endif
 }
+
+#if QT_CONFIG(menu)
+QMenu *QAccessibleToolButton::menu() const
+{
+    if (QMenu *menu = toolButton()->menu())
+        return menu;
+
+    if (QAction *defaultAction = toolButton()->defaultAction())
+        return defaultAction->menu();
+
+    return nullptr;
+}
+#endif
 
 QAccessible::State QAccessibleToolButton::state() const
 {
@@ -301,7 +314,7 @@ QAccessible::State QAccessibleToolButton::state() const
     if (toolButton()->autoRaise())
         st.hotTracked = true;
 #if QT_CONFIG(menu)
-    if (toolButton()->menu())
+    if (menu())
         st.hasPopup = true;
 #endif
     return st;
@@ -316,7 +329,7 @@ QAccessible::Role QAccessibleToolButton::role() const
 {
 #if QT_CONFIG(menu)
     QToolButton *tb = toolButton();
-    if (!tb->menu())
+    if (!menu())
         return tb->isCheckable() ? QAccessible::CheckBox : QAccessible::PushButton;
     else if (tb->popupMode() == QToolButton::DelayedPopup)
         return QAccessible::ButtonDropDown;
@@ -328,10 +341,8 @@ QAccessible::Role QAccessibleToolButton::role() const
 QAccessibleInterface *QAccessibleToolButton::child(int index) const
 {
 #if QT_CONFIG(menu)
-    if (index == 0 && toolButton()->menu())
-    {
-        return QAccessible::queryAccessibleInterface(toolButton()->menu());
-    }
+    if (index == 0 && menu())
+        return QAccessible::queryAccessibleInterface(menu());
 #else
     Q_UNUSED(index);
 #endif

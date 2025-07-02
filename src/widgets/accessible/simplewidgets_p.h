@@ -27,6 +27,7 @@ class QAbstractButton;
 class QLineEdit;
 class QToolButton;
 class QGroupBox;
+class QMenu;
 class QMessageBox;
 class QProgressBar;
 
@@ -71,6 +72,9 @@ protected:
     QToolButton *toolButton() const;
 
     bool isSplitButton() const;
+#if QT_CONFIG(menu)
+    QMenu *menu() const;
+#endif
 };
 #endif // QT_CONFIG(toolbutton)
 
