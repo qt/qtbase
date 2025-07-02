@@ -180,8 +180,8 @@ struct QTypedArrayData
     {
         // Alignment is a power of two
         Q_ASSERT(alignment >= qsizetype(alignof(QArrayData)) && !(alignment & (alignment - 1)));
-        void *start =  reinterpret_cast<void *>(
-            (quintptr(data) + sizeof(QArrayData) + alignment - 1) & ~(alignment - 1));
+        void *start = reinterpret_cast<void *>((quintptr(data) + sizeof(QArrayData) + alignment - 1)
+                                               & ~quintptr(alignment - 1));
         return static_cast<T *>(start);
     }
 
