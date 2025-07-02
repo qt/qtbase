@@ -77,14 +77,14 @@ namespace {
 class LoggerRegistry
 {
     using LoggersContainer = std::vector<std::shared_ptr<QAbstractTestLogger>>;
-    using SharedLoggersContainer = std::shared_ptr<LoggersContainer>;
+    using SharedLoggersContainer = std::shared_ptr<const LoggersContainer>;
 
 public:
     void addLogger(std::unique_ptr<QAbstractTestLogger> logger)
     {
         // read/update/clone
         const SharedLoggersContainer currentLoggers = load();
-        SharedLoggersContainer newLoggers = currentLoggers
+        auto newLoggers = currentLoggers
                 ? std::make_shared<LoggersContainer>(*currentLoggers)
                 : std::make_shared<LoggersContainer>();
         newLoggers->emplace_back(std::move(logger));
