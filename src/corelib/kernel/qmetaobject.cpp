@@ -2363,7 +2363,7 @@ QList<QByteArray> QMetaMethod::parameterNames() const
 
     \note In Qt 7, this function will return a null pointer for constructors.
 
-    \sa returnType(), QMetaType::type()
+    \sa returnType(), QMetaType::name()
 */
 const char *QMetaMethod::typeName() const
 {
