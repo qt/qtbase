@@ -57,14 +57,19 @@ void QIOSTheme::initializeSystemPalette()
     Q_DECL_IMPORT QPalette qt_fusionPalette(void);
     s_systemPalette = qt_fusionPalette();
 
+    const auto disabledText = qt_mac_toQBrush(UIColor.tertiaryLabelColor.CGColor);
+
     s_systemPalette.setBrush(QPalette::Window, qt_mac_toQBrush(UIColor.systemGroupedBackgroundColor.CGColor));
     s_systemPalette.setBrush(QPalette::Active, QPalette::WindowText, qt_mac_toQBrush(UIColor.labelColor.CGColor));
+    s_systemPalette.setBrush(QPalette::Disabled, QPalette::WindowText, disabledText);
 
     s_systemPalette.setBrush(QPalette::Base, qt_mac_toQBrush(UIColor.secondarySystemGroupedBackgroundColor.CGColor));
     s_systemPalette.setBrush(QPalette::Active, QPalette::Text, qt_mac_toQBrush(UIColor.labelColor.CGColor));
+    s_systemPalette.setBrush(QPalette::Disabled, QPalette::Text, disabledText);
 
     s_systemPalette.setBrush(QPalette::Button, qt_mac_toQBrush(UIColor.secondarySystemBackgroundColor.CGColor));
     s_systemPalette.setBrush(QPalette::Active, QPalette::ButtonText, qt_mac_toQBrush(UIColor.labelColor.CGColor));
+    s_systemPalette.setBrush(QPalette::Disabled, QPalette::ButtonText, disabledText);
 
     s_systemPalette.setBrush(QPalette::Active, QPalette::BrightText, qt_mac_toQBrush(UIColor.lightTextColor.CGColor));
     s_systemPalette.setBrush(QPalette::Active, QPalette::PlaceholderText, qt_mac_toQBrush(UIColor.placeholderTextColor.CGColor));
@@ -74,6 +79,9 @@ void QIOSTheme::initializeSystemPalette()
 
     s_systemPalette.setBrush(QPalette::Highlight, QColor(11, 70, 150, 60));
     s_systemPalette.setBrush(QPalette::HighlightedText, qt_mac_toQBrush(UIColor.labelColor.CGColor));
+
+    s_systemPalette.setBrush(QPalette::ToolTipText, qt_mac_toQBrush(UIColor.labelColor.CGColor));
+    s_systemPalette.setBrush(QPalette::Disabled, QPalette::ToolTipText, disabledText);
 
     if (@available(ios 15.0, *))
         s_systemPalette.setBrush(QPalette::Accent, qt_mac_toQBrush(UIColor.tintColor.CGColor));
