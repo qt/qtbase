@@ -48,7 +48,27 @@
 {
     qCDebug(lcQpaWindowScene) << "Connecting" << scene << "to" << session;
 
-    Q_ASSERT([scene isKindOfClass:UIWindowScene.class]);
+    // Handle URL contexts, even if we return early
+    const auto handleUrlContexts = qScopeGuard([&]{
+        if (connectionOptions.URLContexts.count > 0)
+            [self scene:scene openURLContexts:connectionOptions.URLContexts];
+    });
+
+#if defined(Q_OS_VISIONOS)
+    // CPImmersiveScene is a UIWindowScene, most likely so it can handle its internal
+    // CPSceneLayerEventWindow and UITextEffectsWindow, but we don't want a QUIWindow
+    // for these scenes, so bail out early.
+    if ([scene.session.role isEqualToString:@"CPSceneSessionRoleImmersiveSpaceApplication"]) {
+        qCDebug(lcQpaWindowScene) << "Skipping UIWindow creation for immersive scene";
+        return;
+    }
+#endif
+
+    if (![scene isKindOfClass:UIWindowScene.class]) {
+        qCWarning(lcQpaWindowScene) << "Unexpectedly encountered non-window scene";
+        return;
+    }
+
     UIWindowScene *windowScene = static_cast<UIWindowScene*>(scene);
 
     QUIWindow *window = [[QUIWindow alloc] initWithWindowScene:windowScene];
@@ -66,9 +86,6 @@
 
     window.rootViewController = [[[QIOSViewController alloc]
         initWithWindow:window andScreen:screen] autorelease];
-
-    if (connectionOptions.URLContexts.count > 0)
-        [self scene:scene openURLContexts:connectionOptions.URLContexts];
 }
 
 - (void)scene:(UIScene *)scene openURLContexts:(NSSet<UIOpenURLContext *> *)URLContexts
