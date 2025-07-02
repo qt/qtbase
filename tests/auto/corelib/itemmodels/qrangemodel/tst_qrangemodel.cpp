@@ -286,6 +286,7 @@ private slots:
     void ranges();
     void json();
     void ownership();
+    void overrideRoleNames();
 
     void dimensions_data() { createTestData(); }
     void dimensions();
@@ -1006,6 +1007,45 @@ void tst_QRangeModel::ownership()
         QCOMPARE(table.front().use_count(), 1);
         QCOMPARE(table.front()->front().use_count(), 1);
     }
+}
+
+void tst_QRangeModel::overrideRoleNames()
+{
+    // verify that an overridden roleNames() gets called consistently
+    class RoleModel : public QRangeModel
+    {
+    public:
+        RoleModel() : QRangeModel(QList<SingleColumn<Object *>>{
+            new Object,
+            new Object,
+            new Object,
+        }) {
+        }
+
+        QHash<int, QByteArray> roleNames() const override
+        {
+            return {
+                {Qt::UserRole, "string"},
+                {Qt::UserRole + 1, "number"}
+            };
+        }
+    };
+
+    RoleModel model;
+    const QList<int> expectedKeys = {Qt::UserRole, Qt::UserRole + 1};
+    QCOMPARE(model.roleNames().size(), expectedKeys.size());
+
+    const QModelIndex index = model.index(0, 0);
+    QVERIFY(model.setData(index, "string value", Qt::UserRole));
+    QVERIFY(model.setData(index, 42, Qt::UserRole + 1));
+    QVERIFY(!model.setData(index, "display"));
+
+    const auto itemData = model.itemData(index);
+    QCOMPARE(itemData.keys(), expectedKeys);
+    QCOMPARE(itemData.value(Qt::UserRole), "string value");
+    QCOMPARE(itemData.value(Qt::UserRole + 1), 42);
+
+    QVERIFY(model.setItemData(model.index(1, 0), itemData));
 }
 
 void tst_QRangeModel::dimensions()

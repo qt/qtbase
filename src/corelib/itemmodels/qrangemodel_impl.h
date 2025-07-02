@@ -952,7 +952,7 @@ public:
                     if constexpr (multi_role::int_key)
                         return std::as_const(value).find(Qt::ItemDataRole(role));
                     else
-                        return std::as_const(value).find(roleNames().value(role));
+                        return std::as_const(value).find(itemModel().roleNames().value(role));
                 }();
                 if (it != value.cend()) {
                     result = QRangeModelDetails::value(it);
@@ -981,13 +981,20 @@ public:
                 if constexpr (std::is_convertible_v<value_type, decltype(result)>) {
                     result = value;
                 } else {
+                    const auto roleNames = [this]() -> QHash<int, QByteArray> {
+                        Q_UNUSED(this);
+                        if constexpr (!multi_role::int_key)
+                            return itemModel().roleNames();
+                        else
+                            return {};
+                    }();
                     for (auto it = std::cbegin(value); it != std::cend(value); ++it) {
-                        int role = [this, key = QRangeModelDetails::key(it)]() {
-                            Q_UNUSED(this);
+                        const int role = [&roleNames, key = QRangeModelDetails::key(it)]() {
+                            Q_UNUSED(roleNames);
                             if constexpr (multi_role::int_key)
                                 return int(key);
                             else
-                                return roleNames().key(key.toUtf8(), -1);
+                                return roleNames.key(key.toUtf8(), -1);
                         }();
 
                         if (role != -1)
@@ -999,7 +1006,7 @@ public:
                     tried = true;
                     using meta_type = QRangeModelDetails::wrapped_t<value_type>;
                     const QMetaObject &mo = meta_type::staticMetaObject;
-                    for (auto &&[role, roleName] : roleNames().asKeyValueRange()) {
+                    for (auto &&[role, roleName] : itemModel().roleNames().asKeyValueRange()) {
                         QVariant data;
                         if constexpr (std::is_base_of_v<QObject, meta_type>) {
                             if (value)
@@ -1064,19 +1071,26 @@ public:
                     Qt::ItemDataRole roleToSet = Qt::ItemDataRole(role);
                     // If there is an entry for EditRole, overwrite that; otherwise,
                     // set the entry for DisplayRole.
+                    const auto roleNames = [this]() -> QHash<int, QByteArray> {
+                        Q_UNUSED(this);
+                        if constexpr (!multi_role::int_key)
+                            return itemModel().roleNames();
+                        else
+                            return {};
+                    }();
                     if (role == Qt::EditRole) {
                         if constexpr (multi_role::int_key) {
                             if (target.find(roleToSet) == target.end())
                                 roleToSet = Qt::DisplayRole;
                         } else {
-                            if (target.find(roleNames().value(roleToSet)) == target.end())
+                            if (target.find(roleNames.value(roleToSet)) == target.end())
                                 roleToSet = Qt::DisplayRole;
                         }
                     }
                     if constexpr (multi_role::int_key)
                         return write(target[roleToSet], data);
                     else
-                        return write(target[roleNames().value(roleToSet)], data);
+                        return write(target[roleNames.value(roleToSet)], data);
                 } else if (role == Qt::DisplayRole || role == Qt::EditRole) {
                     return write(target, data);
                 }
@@ -1108,7 +1122,9 @@ public:
                 if constexpr (multi_role()) {
                     using key_type = typename value_type::key_type;
                     tried = true;
-                    const auto roleName = [map = roleNames()](int role) { return map.value(role); };
+                    const auto roleName = [map = itemModel().roleNames()](int role) {
+                        return map.value(role);
+                    };
 
                     // transactional: only update target if all values from data
                     // can be stored. Storing never fails with int-keys.
@@ -1148,8 +1164,9 @@ public:
                             else // can't copy - targetCopy is now a pointer
                                 return &origin;
                         }(target);
+                        const auto roleNames = itemModel().roleNames();
                         for (auto &&[role, value] : data.asKeyValueRange()) {
-                            const QByteArray roleName = roleNames().value(role);
+                            const QByteArray roleName = roleNames.value(role);
                             bool written = false;
                             if constexpr (std::is_base_of_v<QObject, meta_type>) {
                                 if (targetCopy)
@@ -1547,7 +1564,7 @@ protected:
     QMetaProperty roleProperty(int role) const
     {
         const QMetaObject *mo = &ItemType::staticMetaObject;
-        const QByteArray roleName = roleNames().value(role);
+        const QByteArray roleName = itemModel().roleNames().value(role);
         if (const int index = mo->indexOfProperty(roleName.data()); index >= 0)
             return mo->property(index);
         return {};
