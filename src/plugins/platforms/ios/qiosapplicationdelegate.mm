@@ -21,14 +21,22 @@
 @implementation QIOSApplicationDelegate
 
 - (UISceneConfiguration *)application:(UIApplication *)application
-                          configurationForConnectingSceneSession:(UISceneSession *)connectingSceneSession
+                          configurationForConnectingSceneSession:(UISceneSession *)session
                           options:(UISceneConnectionOptions *)options
 {
-    qCDebug(lcQpaWindowScene) << "Configuring scene for" << connectingSceneSession
-        << "with options" << options;
+    qCDebug(lcQpaWindowScene) << "Configuring scene for" << session << "with options" << options;
 
-    auto *sceneConfig = connectingSceneSession.configuration;
-    sceneConfig.delegateClass = QIOSWindowSceneDelegate.class;
+    auto *sceneConfig = session.configuration;
+
+    if ([sceneConfig.role hasPrefix:@"CPTemplateApplication"]) {
+        qCDebug(lcQpaWindowScene) << "Not touching CarPlay scene with role" << sceneConfig.role
+                                  << "and existing delegate class" << sceneConfig.delegateClass;
+        // FIXME: Consider ignoring any scene with an existing sceneClass, delegateClass, or
+        // storyboard. But for visionOS the default delegate is SwiftUI.AppSceneDelegate.
+    } else {
+        sceneConfig.delegateClass = QIOSWindowSceneDelegate.class;
+    }
+
     return sceneConfig;
 }
 
