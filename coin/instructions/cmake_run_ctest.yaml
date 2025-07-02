@@ -151,6 +151,8 @@ instructions:
         userMessageOnFailure: >
           Failed to copy LastTest.log to testresults directory.
         executeOn: always
+        maxTimeInSeconds: 20
+        maxTimeBetweenOutput: 20
   - type: Group
     enable_if:
       condition: runtime
