@@ -1076,6 +1076,8 @@ void QTranslatorPrivate::clear()
 }
 
 /*!
+    \threadsafe
+
     Returns the translation for the key (\a context, \a sourceText,
     \a disambiguation). If none is found, also tries (\a context, \a
     sourceText, ""). If that still fails, returns a null string.
