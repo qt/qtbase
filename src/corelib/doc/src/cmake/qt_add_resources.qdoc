@@ -111,5 +111,9 @@ resources linked into the final target.
 This especially affects static builds. There, the same resource name in
 different static libraries conflict in the consuming target.
 
+In contrast to \l{qmake}'s \c{RESOURCES}, \c qt_add_resources does not
+attempt to compile any QML or JavaScript files using \l{qmlcachegen}. Use
+\l{qt_add_qml_module} for this.
+
 \sa {qt6_add_big_resources}{qt_add_big_resources()}
 */
