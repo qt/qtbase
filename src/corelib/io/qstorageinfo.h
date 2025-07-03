@@ -17,6 +17,7 @@ QT_BEGIN_NAMESPACE
 class QDebug;
 
 class QStorageInfoPrivate;
+QT_DECLARE_QESDP_SPECIALIZATION_DTOR(QStorageInfoPrivate)
 class Q_CORE_EXPORT QStorageInfo
 {
 public:
@@ -24,6 +25,7 @@ public:
     explicit QStorageInfo(const QString &path);
     explicit QStorageInfo(const QDir &dir);
     QStorageInfo(const QStorageInfo &other);
+    QStorageInfo(QStorageInfo &&) noexcept = default;
     ~QStorageInfo();
 
     QStorageInfo &operator=(const QStorageInfo &other);

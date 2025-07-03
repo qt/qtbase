@@ -12,6 +12,7 @@ QT_BEGIN_NAMESPACE
 Q_LOGGING_CATEGORY(lcStorageInfo, "qt.core.qstorageinfo", QtWarningMsg)
 
 QT_IMPL_METATYPE_EXTERN(QStorageInfo)
+QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QStorageInfoPrivate)
 
 /*!
     \class QStorageInfo
@@ -94,6 +95,17 @@ QStorageInfo::QStorageInfo(const QDir &dir)
 */
 QStorageInfo::QStorageInfo(const QStorageInfo &other)
     = default;
+
+/*!
+    \since 6.10
+    \fn QStorageInfo::QStorageInfo(QStorageInfo &&other)
+
+    Move-constructs a new QStorageInfo from \a other.
+
+    The moved-from object \a other is placed in a partially-formed state, in
+    which the only valid operations are destruction and assignment of a new
+    value.
+*/
 
 /*!
     Destroys the QStorageInfo object and frees its resources.
