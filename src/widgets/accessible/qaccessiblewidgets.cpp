@@ -564,7 +564,7 @@ QWidget *QAccessibleCalendarWidget::navigationBar() const
 // If there is a custom title bar widget, that one becomes child 1, after the content 0
 // (in that case the buttons are ignored)
 QAccessibleDockWidget::QAccessibleDockWidget(QWidget *widget)
-    : QAccessibleWidgetV2(widget, QAccessible::Window)
+    : QAccessibleWidgetV2(widget)
 {
 }
 
@@ -636,6 +636,15 @@ QString QAccessibleDockWidget::text(QAccessible::Text t) const
     }
     return QString();
 }
+
+QAccessible::Role QAccessibleDockWidget::role() const
+{
+    if (dockWidget()->isFloating())
+        return QAccessible::Window;
+
+    return QAccessible::Pane;
+}
+
 #endif // QT_CONFIG(dockwidget)
 
 #ifndef QT_NO_CURSOR

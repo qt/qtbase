@@ -3701,7 +3701,7 @@ void tst_QAccessibility::dockWidgetTest()
     // 1 close button
     // 2 float button
     QVERIFY(accDock1);
-    QCOMPARE(accDock1->role(), QAccessible::Window);
+    QCOMPARE(accDock1->role(), QAccessible::Pane);
     QCOMPARE(accDock1->text(QAccessible::Name), dock1->windowTitle());
     QCOMPARE(accDock1->childCount(), 3);
 
@@ -3731,7 +3731,7 @@ void tst_QAccessibility::dockWidgetTest()
     QVERIFY(!dock1Float->state().invisible);
 
     QVERIFY(accDock2);
-    QCOMPARE(accDock2->role(), QAccessible::Window);
+    QCOMPARE(accDock2->role(), QAccessible::Pane);
     QCOMPARE(accDock2->text(QAccessible::Name), dock2->windowTitle());
     QCOMPARE(accDock2->childCount(), 3);
 
@@ -3779,7 +3779,7 @@ void tst_QAccessibility::dockWidgetTest()
 
     QAccessibleInterface *accDock3 = accMainWindow->child(4);
     QVERIFY(accDock3);
-    QCOMPARE(accDock3->role(), QAccessible::Window);
+    QCOMPARE(accDock3->role(), QAccessible::Pane);
     QCOMPARE(accDock3->text(QAccessible::Name), dock3->windowTitle());
     QCOMPARE(accDock3->childCount(), 2);
     QAccessibleInterface *titleWidget = accDock3->child(1);
@@ -3787,6 +3787,10 @@ void tst_QAccessibility::dockWidgetTest()
     QCOMPARE(titleWidget->text(QAccessible::Name), titleLabel->text());
     QAccessibleInterface *dock3Widget = accDock3->child(0);
     QCOMPARE(dock3Widget->text(QAccessible::Name), pb3->text());
+
+    // check role is QAccessible::Window when dock window is floating/undocked
+    dock3->setFloating(true);
+    QCOMPARE(accDock3->role(), QAccessible::Window);
 
     QTestAccessibility::clearEvents();
 #endif // QT_CONFIG(dockwidget)
