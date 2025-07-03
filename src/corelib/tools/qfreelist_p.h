@@ -232,7 +232,7 @@ inline void QFreeList<T, ConstantsType>::release(int id)
 {
     int at = id & ConstantsType::IndexMask;
     const int block = blockfor(at);
-    ElementType *v = _v[block].loadRelaxed();
+    ElementType *v = _v[block].loadAcquire();
 
     int x, newid;
     do {
