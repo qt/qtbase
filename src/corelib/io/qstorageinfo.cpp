@@ -110,7 +110,9 @@ QStorageInfo &QStorageInfo::operator=(const QStorageInfo &other)
 /*!
     \fn QStorageInfo &QStorageInfo::operator=(QStorageInfo &&other)
 
-    Assigns \a other to this QStorageInfo instance.
+    Move-assigns \a other to this QStorageInfo instance.
+
+    The moved-from object \a other is placed in a valid, but unspecified state.
 */
 
 /*!
