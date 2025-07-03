@@ -485,7 +485,6 @@ macro(qt_internal_setup_build_and_global_variables)
 
     qt_set_language_standards()
     qt_internal_set_use_ccache()
-    qt_internal_set_unity_build()
     qt_internal_set_allow_symlink_in_paths()
     qt_internal_set_skip_setup_deployment()
     qt_internal_set_qt_allow_download()

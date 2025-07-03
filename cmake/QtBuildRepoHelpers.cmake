@@ -353,6 +353,7 @@ macro(qt_build_repo_begin)
     endif()
 
     _qt_internal_sbom_auto_begin_qt_repo_project()
+    qt_internal_set_unity_build()
 endmacro()
 
 # Runs delayed actions on some of the Qt targets.

@@ -421,10 +421,19 @@ endmacro()
 macro(qt_internal_set_unity_build)
     option(QT_UNITY_BUILD "Enable unity (jumbo) build")
     set(QT_UNITY_BUILD_BATCH_SIZE "32" CACHE STRING "Unity build batch size")
-    if(QT_UNITY_BUILD)
-        set(CMAKE_UNITY_BUILD ON)
-        set(CMAKE_UNITY_BUILD_BATCH_SIZE "${QT_UNITY_BUILD_BATCH_SIZE}")
-    endif()
+
+    include(CMakeDependentOption)
+    string(TOLOWER "${PROJECT_NAME}" project_name_lower)
+    cmake_dependent_option(
+        "QT_UNITY_BUILD_PROJECT_${project_name_lower}"
+        "Enable unity builds for project ${PROJECT_NAME}"
+        TRUE
+        QT_UNITY_BUILD
+        FALSE
+    )
+
+    set(CMAKE_UNITY_BUILD "${QT_UNITY_BUILD_PROJECT_${project_name_lower}}")
+    set(CMAKE_UNITY_BUILD_BATCH_SIZE "${QT_UNITY_BUILD_BATCH_SIZE}")
 endmacro()
 
 macro(qt_internal_set_allow_symlink_in_paths)
