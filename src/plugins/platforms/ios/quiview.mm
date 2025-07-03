@@ -786,6 +786,9 @@ inline ulong getTimeStamp(UIEvent *event)
 #if QT_CONFIG(tabletevent)
 - (void)handleHover:(UIHoverGestureRecognizer *)recognizer
 {
+    if (!self.platformWindow)
+        return;
+
     ulong timeStamp = [[NSProcessInfo processInfo] systemUptime] * 1000;
 
     CGFloat zOffset = 0;
