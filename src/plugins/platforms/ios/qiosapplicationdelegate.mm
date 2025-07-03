@@ -73,22 +73,23 @@
     UIWindowScene *windowScene = static_cast<UIWindowScene*>(scene);
 
     QUIWindow *window = [[QUIWindow alloc] initWithWindowScene:windowScene];
-
-    QIOSScreen *screen = [&]{
-        for (auto *screen : qGuiApp->screens()) {
-            auto *platformScreen = static_cast<QIOSScreen*>(screen->handle());
-#if !defined(Q_OS_VISIONOS)
-            if (platformScreen->uiScreen() == windowScene.screen)
-#endif
-                return platformScreen;
-        }
-        Q_UNREACHABLE();
-    }();
-
-    window.rootViewController = [[[QIOSViewController alloc]
-        initWithWindow:window andScreen:screen] autorelease];
+    window.rootViewController = [[[QIOSViewController alloc] initWithWindow:window] autorelease];
 
     self.window = [window autorelease];
+}
+
+- (void)windowScene:(UIWindowScene *)windowScene
+        didUpdateCoordinateSpace:(id<UICoordinateSpace>)previousCoordinateSpace
+        interfaceOrientation:(UIInterfaceOrientation)previousInterfaceOrientation
+        traitCollection:(UITraitCollection *)previousTraitCollection
+{
+    qCDebug(lcQpaWindowScene) << "Scene" << windowScene << "did update properties";
+    if (!self.window)
+        return;
+
+    Q_ASSERT([self.window isKindOfClass:QUIWindow.class]);
+    auto *viewController = static_cast<QIOSViewController*>(self.window.rootViewController);
+    [viewController updatePlatformScreen];
 }
 
 - (void)sceneDidDisconnect:(UIScene *)scene

@@ -231,11 +231,12 @@
 @synthesize preferredStatusBarStyle;
 #endif
 
-- (instancetype)initWithWindow:(UIWindow*)window andScreen:(QT_PREPEND_NAMESPACE(QIOSScreen) *)screen
+- (instancetype)initWithWindow:(UIWindow*)window
 {
     if (self = [self init]) {
         self.window = window;
-        self.platformScreen = screen;
+        self.platformScreen = nil;
+        [self updatePlatformScreen];
 
         self.changingOrientation = NO;
 #ifndef Q_OS_TVOS
@@ -310,6 +311,39 @@
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self name:nil object:nil];
     [super viewDidUnload];
+}
+
+// -------------------------------------------------------------------------
+
+- (void)updatePlatformScreen
+{
+    QIOSScreen *newPlatformScreen = [&]{
+        for (auto *screen : qGuiApp->screens()) {
+            auto *platformScreen = static_cast<QIOSScreen*>(screen->handle());
+#if !defined(Q_OS_VISIONOS)
+            if (platformScreen->uiScreen() == self.window.windowScene.screen)
+#endif
+                return platformScreen;
+        }
+        Q_UNREACHABLE();
+    }();
+
+    if (newPlatformScreen != self.platformScreen) {
+        QIOSScreen *oldPlatformScreen = self.platformScreen;
+        self.platformScreen = newPlatformScreen;
+
+        qCDebug(lcQpaWindow) << "View controller" << self << "moved from"
+            << oldPlatformScreen << "to" << newPlatformScreen;
+
+        QScreen *newScreen = newPlatformScreen ? newPlatformScreen->screen() : nullptr;
+
+        for (auto *window : qGuiApp->topLevelWindows()) {
+            if (window->screen()->handle() != oldPlatformScreen)
+                continue;
+
+            QWindowSystemInterface::handleWindowScreenChanged(window, newScreen);
+        }
+    }
 }
 
 // -------------------------------------------------------------------------
