@@ -317,11 +317,13 @@
 
 - (void)updatePlatformScreen
 {
+    auto *windowScene = self.window.windowScene;
+
     QIOSScreen *newPlatformScreen = [&]{
         for (auto *screen : qGuiApp->screens()) {
             auto *platformScreen = static_cast<QIOSScreen*>(screen->handle());
 #if !defined(Q_OS_VISIONOS)
-            if (platformScreen->uiScreen() == self.window.windowScene.screen)
+            if (platformScreen->uiScreen() == windowScene.screen)
 #endif
                 return platformScreen;
         }
@@ -337,11 +339,24 @@
 
         QScreen *newScreen = newPlatformScreen ? newPlatformScreen->screen() : nullptr;
 
-        for (auto *window : qGuiApp->topLevelWindows()) {
-            if (window->screen()->handle() != oldPlatformScreen)
-                continue;
+        const bool isPrimaryScene = !qt_apple_sharedApplication().supportsMultipleScenes
+            && windowScene.session.role == UIWindowSceneSessionRoleApplication;
 
-            QWindowSystemInterface::handleWindowScreenChanged(window, newScreen);
+        if (isPrimaryScene) {
+            // When we only have a single application-role scene we treat the
+            // active screen as the primary one, so that windows shown on the
+            // primary screen end up in our view controller.
+            QWindowSystemInterface::handlePrimaryScreenChanged(newPlatformScreen);
+        }
+
+        for (auto *window : qGuiApp->topLevelWindows()) {
+            // Move window to new screen if it was on the old screen,
+            // or if we're setting up the primary scene, in which case
+            // we want to adopt all existing windows to this screen.
+            if ((window->screen()->handle() == oldPlatformScreen)
+                || (isPrimaryScene && !oldPlatformScreen)) {
+                QWindowSystemInterface::handleWindowScreenChanged(window, newScreen);
+            }
         }
     }
 }
