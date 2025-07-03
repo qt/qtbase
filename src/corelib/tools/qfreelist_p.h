@@ -209,11 +209,13 @@ inline int QFreeList<T, ConstantsType>::next()
         v = _v[block].loadAcquire();
 
         if (!v) {
-            v = allocate((id & ConstantsType::IndexMask) - at, ConstantsType::Sizes[block]);
-            if (!_v[block].testAndSetRelease(nullptr, v)) {
+            ElementType* const alloced = allocate((id & ConstantsType::IndexMask) - at,
+                                                  ConstantsType::Sizes[block]);
+            if (_v[block].testAndSetRelease(nullptr, alloced, v)) {
+                v = alloced;
+            } else {
                 // race with another thread lost
-                delete[] v;
-                v = _v[block].loadAcquire();
+                delete[] alloced;
                 Q_ASSERT(v != nullptr);
             }
         }
