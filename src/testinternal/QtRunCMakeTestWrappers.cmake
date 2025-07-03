@@ -8,8 +8,11 @@ function(qt_internal_add_RunCMake_test test)
     # Add the common Qt specific setups
     set(common_args
         "-DQt6_DIR=${Qt6_DIR}"
+        "-D_Qt6CTestMacros=${_Qt6CTestMacros}"
         "-DCMAKE_MODULE_PATH=${CMAKE_CURRENT_FUNCTION_LIST_DIR}"
     )
+    # Set some compatibility variables that the original add_RunCMake_test expects
+    set(CMAKE_CMAKE_COMMAND "${CMAKE_COMMAND}")
 
     # Get test dir, like add_RunCMake_test does.
     if("${ARGV1}" STREQUAL "TEST_DIR")
