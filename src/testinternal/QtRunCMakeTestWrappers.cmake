@@ -7,6 +7,7 @@ endif()
 function(qt_internal_add_RunCMake_test test)
     # Add the common Qt specific setups
     set(common_args
+        "-DQt6_DIR=${Qt6_DIR}"
         "-DCMAKE_MODULE_PATH=${CMAKE_CURRENT_FUNCTION_LIST_DIR}"
     )
     add_RunCMake_test(${test} ${common_args} ${ARGN})
