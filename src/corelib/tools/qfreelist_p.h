@@ -199,14 +199,13 @@ inline typename QFreeList<T, ConstantsType>::ReferenceType QFreeList<T, Constant
 template <typename T, typename ConstantsType>
 inline int QFreeList<T, ConstantsType>::next()
 {
-    int id, newid, at;
-    ElementType *v;
+    int id, newid;
     do {
         id = _next.loadAcquire();
 
-        at = id & ConstantsType::IndexMask;
+        int at = id & ConstantsType::IndexMask;
         const int block = blockfor(at);
-        v = _v[block].loadAcquire();
+        ElementType *v = _v[block].loadAcquire();
 
         if (!v) {
             v = allocate((id & ConstantsType::IndexMask) - at, ConstantsType::Sizes[block]);
