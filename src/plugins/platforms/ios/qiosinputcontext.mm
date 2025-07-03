@@ -371,7 +371,8 @@ void QIOSInputContext::updateKeyboardState(NSNotification *notification)
         // with input-accessory-views. The reason for using frameEnd here (the future state),
         // instead of the current state reflected in frameBegin, is that QInputMethod::isVisible()
         // is documented to reflect the future state in the case of animated transitions.
-        m_keyboardState.keyboardVisible = CGRectIntersectsRect(frameEnd, [UIScreen mainScreen].bounds);
+        m_keyboardState.keyboardVisible = !CGRectIsEmpty(UIScreen.mainScreen.bounds) &&
+            !CGRectIsEmpty(frameEnd) && CGRectIntersectsRect(frameEnd, UIScreen.mainScreen.bounds);
 
         // Used for auto-scroller, and will be used for animation-signal in the future
         m_keyboardState.keyboardEndRect = frameEnd;
