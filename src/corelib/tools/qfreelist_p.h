@@ -199,10 +199,9 @@ inline typename QFreeList<T, ConstantsType>::ReferenceType QFreeList<T, Constant
 template <typename T, typename ConstantsType>
 inline int QFreeList<T, ConstantsType>::next()
 {
-    int id, newid;
+    int newid;
+    int id = _next.loadAcquire();
     do {
-        id = _next.loadAcquire();
-
         int at = id & ConstantsType::IndexMask;
         const int block = blockfor(at);
         ElementType *v = _v[block].loadAcquire();
@@ -220,7 +219,7 @@ inline int QFreeList<T, ConstantsType>::next()
         }
 
         newid = v[at].next.loadRelaxed() | (id & ~ConstantsType::IndexMask);
-    } while (!_next.testAndSetRelease(id, newid));
+    } while (!_next.testAndSetOrdered(id, newid, id));
     // qDebug("QFreeList::next(): returning %d (_next now %d, serial %d)",
     //        id & ConstantsType::IndexMask,
     //        newid & ConstantsType::IndexMask,
