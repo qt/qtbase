@@ -591,7 +591,7 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
             if (option->state & State_HasFocus && option->state & State_KeyboardFocusChange)
                 painter->setPen(highlightedOutline);
             else
-                painter->setPen(colorScheme() == Qt::ColorScheme::Dark ? outline.lighter(150)
+                painter->setPen(colorScheme() == Qt::ColorScheme::Dark ? outline.lighter(240)
                                                                        : outline.lighter(110));
             painter->drawRect(rect);
 
