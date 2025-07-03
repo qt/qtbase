@@ -2673,8 +2673,10 @@ void QMainWindowLayout::animationFinished(QWidget *widget)
         parentWidget()->update(layoutState.dockAreaLayout.separatorRegion());
 #if QT_CONFIG(tabbar)
         const auto usedTabBarsCopy = usedTabBars; // list potentially modified by animations
-        for (QTabBar *tab_bar : usedTabBarsCopy)
-            tab_bar->show();
+        for (QTabBar *tab_bar : usedTabBarsCopy) {
+            if (usedTabBars.contains(tab_bar)) // Showing a tab bar can cause another to be deleted.
+               tab_bar->show();
+        }
 #endif // QT_CONFIG(tabbar)
 #endif // QT_CONFIG(dockwidget)
     }
