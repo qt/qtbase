@@ -1,8 +1,8 @@
 # Add RunCMake tests using `add_RunCMake_test()`
 
-qt_internal_add_RunCMake_test(QtFlagHandlingHelpers "-DQt6_DIR=${Qt6_DIR}")
+qt_internal_add_RunCMake_test(QtFlagHandlingHelpers)
 
-set(extra_run_cmake_args "-DQt6_DIR=${Qt6_DIR}")
+set(extra_run_cmake_args "")
 if(TARGET Qt::Gui)
     list(APPEND extra_run_cmake_args "-DHAS_GUI=TRUE")
 endif()
@@ -18,5 +18,5 @@ endif()
 qt_internal_add_RunCMake_test(Qt6DirConfiguration ${extra_run_cmake_args})
 
 if(APPLE AND TARGET Qt::Gui)
-    qt_internal_add_RunCMake_test(AppleFrameworkDeduplication "-DQt6_DIR=${Qt6_DIR}")
+    qt_internal_add_RunCMake_test(AppleFrameworkDeduplication)
 endif()
