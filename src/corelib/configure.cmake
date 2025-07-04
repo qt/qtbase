@@ -591,6 +591,7 @@ qt_config_compile_test(cpp_winrt
         runtimeobject
     CODE
 "// Including winrt/base.h causes an error in some configurations (Windows 10 SDK + c++20)
+#   include <guiddef.h> // required by clang-cl: https://github.com/microsoft/cppwinrt/issues/1179
 #   include <winrt/base.h>
 
 int main(void)

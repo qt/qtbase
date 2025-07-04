@@ -18,6 +18,7 @@
 #include <QtCore/qglobal.h>
 
 #if QT_CONFIG(cpp_winrt)
+#  include <guiddef.h> // required by clang-cl: https://github.com/microsoft/cppwinrt/issues/1179
 #  include <winrt/base.h>
 #  include <QtCore/private/qfactorycacheregistration_p.h>
 // Workaround for Windows SDK bug.
