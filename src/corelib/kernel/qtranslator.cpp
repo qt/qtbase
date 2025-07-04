@@ -39,6 +39,8 @@
 #include <vector>
 #include <memory>
 
+#include <QtCore/qmutex.h>
+
 QT_BEGIN_NAMESPACE
 
 Q_STATIC_LOGGING_CATEGORY(lcTranslator, "qt.core.qtranslator")
@@ -259,6 +261,8 @@ class QTranslatorPrivate : public QObjectPrivate
 public:
     enum { Contexts = 0x2f, Hashes = 0x42, Messages = 0x69, NumerusRules = 0x88, Dependencies = 0x96, Language = 0xa7 };
 
+    mutable QMutex lock;
+
     QTranslatorPrivate() :
 #if defined(QT_USE_MMAP)
           used_mmap(0),
@@ -463,6 +467,7 @@ bool QTranslator::load(const QString & filename, const QString & directory,
                        const QString & suffix)
 {
     Q_D(QTranslator);
+    QMutexLocker locker(&d->lock);
     d->clear();
 
     QString prefix;
@@ -738,6 +743,7 @@ bool QTranslator::load(const QLocale & locale,
                        const QString & suffix)
 {
     Q_D(QTranslator);
+    QMutexLocker locker(&d->lock);
     d->clear();
     return d->load_translation(locale, filename, prefix, directory, suffix);
 }
@@ -757,6 +763,7 @@ bool QTranslator::load(const QLocale & locale,
 bool QTranslator::load(const uchar *data, int len, const QString &directory)
 {
     Q_D(QTranslator);
+    QMutexLocker locker(&d->lock);
     d->clear();
 
     if (!data || len < MagicLength || memcmp(data, magic, MagicLength))
@@ -1088,7 +1095,14 @@ QString QTranslator::translate(const char *context, const char *sourceText, cons
                                int n) const
 {
     Q_D(const QTranslator);
-    return d->do_translate(context, sourceText, disambiguation, n);
+
+    // Return early to avoid a deadlock in case translate() is called
+    // from a code path triggered by QTranslator::load()
+    if (!d->lock.tryLock())
+        return QString();
+    QString result = d->do_translate(context, sourceText, disambiguation, n);
+    d->lock.unlock();
+    return result;
 }
 
 /*!
