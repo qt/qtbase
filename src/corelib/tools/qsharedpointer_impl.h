@@ -592,7 +592,10 @@ class QWeakPointer
 {
     typedef QtSharedPointer::ExternalRefCountData Data;
     template <typename X>
-    using IfCompatible = typename std::enable_if<std::is_convertible<X*, T*>::value, bool>::type;
+    using IfCompatible = std::enable_if_t<std::conjunction_v<
+            std::negation<std::is_same<T, X>>, // don't make accidental copy/move SMFs
+            std::is_convertible<X*, T*>
+        >, bool>;
 
     template <typename X>
     using IfVirtualBase = typename std::enable_if<qxp::is_virtual_base_of_v<T, X>, bool>::type;
@@ -768,6 +771,11 @@ private:
     { return *this = QWeakPointer<T>(ptr, true); }
 
 #ifndef QT_NO_QOBJECT
+    Q_NODISCARD_CTOR
+    QWeakPointer(T *ptr, bool)
+        : d{ptr ? Data::getAndRef(ptr) : nullptr}, value{ptr}
+    { }
+
     template <class X, IfCompatible<X> = true>
     Q_NODISCARD_CTOR
     inline QWeakPointer(X *ptr, bool) : d(ptr ? Data::getAndRef(ptr) : nullptr), value(ptr)
