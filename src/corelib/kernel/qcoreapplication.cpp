@@ -2189,7 +2189,7 @@ bool QCoreApplication::installTranslator(QTranslator *translationFile)
 
     QCoreApplicationPrivate *d = self->d_func();
     {
-        QMutexLocker locker(&d->translateMutex);
+        QWriteLocker locker(&d->translateMutex);
         d->translators.prepend(translationFile);
     }
 
@@ -2221,7 +2221,7 @@ bool QCoreApplication::removeTranslator(QTranslator *translationFile)
     if (!QCoreApplicationPrivate::checkInstance("removeTranslator"))
         return false;
     QCoreApplicationPrivate *d = self->d_func();
-    QMutexLocker locker(&d->translateMutex);
+    QWriteLocker locker(&d->translateMutex);
     if (d->translators.removeAll(translationFile)) {
 #ifndef QT_NO_QOBJECT
         locker.unlock();
@@ -2306,7 +2306,7 @@ QString QCoreApplication::translate(const char *context, const char *sourceText,
 
     if (self) {
         QCoreApplicationPrivate *d = self->d_func();
-        QMutexLocker locker(&d->translateMutex);
+        QReadLocker locker(&d->translateMutex);
         if (!d->translators.isEmpty()) {
             QList<QTranslator*>::ConstIterator it;
             QTranslator *translationFile;
@@ -2332,23 +2332,13 @@ QString qtTrId(const char *id, int n)
     return QCoreApplication::translate(nullptr, id, nullptr, n);
 }
 
-/*!
-    \internal
-    Returns a locked mutex handle if \a translator is registered in QCoreApplication,
-    and might be therefore queried for translations from other threads.
-    Returns an unlocked/dummy QMutexLocker otherwise.
- */
-std::unique_lock<QMutex> QCoreApplicationPrivate::mutexLockerForTranslator(QTranslator *translator)
+bool QCoreApplicationPrivate::isTranslatorInstalled(QTranslator *translator)
 {
     if (!QCoreApplication::self)
-        return std::unique_lock<QMutex>();
-
+        return false;
     QCoreApplicationPrivate *d = QCoreApplication::self->d_func();
-    std::unique_lock<QMutex> locker(d->translateMutex);
-    if (!d->translators.contains(translator))
-        locker.unlock();
-
-    return locker;
+    QReadLocker locker(&d->translateMutex);
+    return d->translators.contains(translator);
 }
 
 #else
