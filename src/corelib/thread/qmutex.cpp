@@ -120,8 +120,8 @@ void QBasicMutex::destroyInternal(void *ptr)
     Locks the mutex. If another thread has locked the mutex then this
     call will block until that thread has unlocked it.
 
-    Calling this function multiple times on the same mutex from the
-    same thread will cause a \e dead-lock.
+    If the mutex was already locked by the current thread, this call will
+    never return, causing a \e dead-lock.
 
     \sa unlock()
 */
@@ -140,9 +140,6 @@ void QBasicMutex::destroyInternal(void *ptr)
     If the lock was obtained, the mutex must be unlocked with unlock()
     before another thread can successfully lock it.
 
-    Calling this function multiple times on the same mutex from the
-    same thread will cause a \e dead-lock.
-
     \sa lock(), unlock()
 */
 
@@ -157,9 +154,6 @@ void QBasicMutex::destroyInternal(void *ptr)
     If the lock was obtained, the mutex must be unlocked with unlock()
     before another thread can successfully lock it.
 
-    Calling this function multiple times on the same mutex from the
-    same thread will cause a \e dead-lock.
-
     \sa lock(), unlock()
 */
 
@@ -171,9 +165,6 @@ void QBasicMutex::destroyInternal(void *ptr)
 
     If the lock was obtained, the mutex must be unlocked with unlock()
     before another thread can successfully lock it.
-
-    Calling this function multiple times on the same mutex from the
-    same thread will cause a \e dead-lock.
 
     \sa lock(), unlock()
 */
@@ -202,9 +193,6 @@ void QBasicMutex::destroyInternal(void *ptr)
     If the lock was obtained, the mutex must be unlocked with unlock()
     before another thread can successfully lock it.
 
-    Calling this function multiple times on the same mutex from the
-    same thread will cause a \e dead-lock.
-
     \sa lock(), unlock()
 */
 
@@ -221,9 +209,6 @@ void QBasicMutex::destroyInternal(void *ptr)
 
     If the lock was obtained, the mutex must be unlocked with unlock()
     before another thread can successfully lock it.
-
-    Calling this function multiple times on the same mutex from the
-    same thread will cause a \e dead-lock.
 
     \sa lock(), unlock()
 */
