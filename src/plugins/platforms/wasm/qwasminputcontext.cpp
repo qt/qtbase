@@ -276,23 +276,21 @@ void QWasmInputContext::updateInputElement()
     m_inputElement.set("selectionStart", queryEvent.value(Qt::ImAnchorPosition).toUInt());
     m_inputElement.set("selectionEnd", queryEvent.value(Qt::ImCursorPosition).toUInt());
 
+    QInputMethodQueryEvent query((Qt::InputMethodQueries(Qt::ImHints)));
+    QCoreApplication::sendEvent(m_focusObject, &query);
+    if (Qt::InputMethodHints(query.value(Qt::ImHints).toInt()).testFlag(Qt::ImhHiddenText))
+        m_inputElement.set("type", "password");
+    else
+        m_inputElement.set("type", "text");
+
     m_inputElement.set("inputMode", std::string("text"));
+
     m_inputElement.call<void>("focus");
 }
 
 void QWasmInputContext::setFocusObject(QObject *object)
 {
     qCDebug(qLcQpaWasmInputContext) << Q_FUNC_INFO << object << inputMethodAccepted();
-
-    QInputMethodQueryEvent query(Qt::InputMethodQueries(Qt::ImEnabled | Qt::ImHints));
-    QCoreApplication::sendEvent(object, &query);
-    if (query.value(Qt::ImEnabled).toBool()
-        && Qt::InputMethodHints(query.value(Qt::ImHints).toInt()).testFlag(Qt::ImhHiddenText)) {
-        m_inputElement.set("type", "password");
-    } else {
-        if (m_inputElement["type"].as<std::string>() != std::string("text"))
-            m_inputElement.set("type", "text");
-    }
 
     // Commit the previous composition before change m_focusObject
     if (m_focusObject && !m_preeditString.isEmpty())
