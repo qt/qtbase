@@ -882,6 +882,11 @@ void QTemporaryFile::setFileTemplate(const QString &name)
     be used for a similar purpose too, particularly if the destination file is
     not temporary.
 
+    \note Calling rename() does not disable autoRemove. If you want the renamed
+    file to persist, you must call setAutoRemove and set it to \c false after
+    calling rename(). Otherwise, the file will be deleted when the QTemporaryFile
+    object is destroyed.
+
     \sa QSaveFile, QSaveFile::commit(), QFile::rename()
 */
 bool QTemporaryFile::rename(const QString &newName)
