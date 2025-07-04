@@ -3290,6 +3290,7 @@ bool QWindowsWindow::handleNonClientHitTest(const QPoint &globalPos, LRESULT *re
     const QWindow *w = window();
     const QPoint localPos = w->mapFromGlobal(QHighDpi::fromNativePixels(globalPos, w));
     const QRect geom = geometry();
+    static auto oldMouseButtonState = Qt::NoButton;
 
     if (m_data.flags.testFlags(Qt::ExpandedClientAreaHint)) {
         bool isDefaultTitleBar = !w->flags().testFlag(Qt::CustomizeWindowHint);
@@ -3298,17 +3299,18 @@ bool QWindowsWindow::handleNonClientHitTest(const QPoint &globalPos, LRESULT *re
                                                                                                      Qt::WindowMaximizeButtonHint|
                                                                                                      Qt::WindowCloseButtonHint);
         const int border = (IsZoomed(m_data.hwnd) || isFullScreen_sys()) ? 0 : getResizeBorderThickness(savedDpi());
+        const int titleBarHeight = getTitleBarHeight_sys(savedDpi());
+        const int titleButtonWidth = titleBarHeight * 1.5;
+        const bool mouseButtonsSwapped = GetSystemMetrics(SM_SWAPBUTTON);
+        auto mouseButtons = Qt::NoButton;
+        if (mouseButtonsSwapped)
+            mouseButtons = GetAsyncKeyState(VK_LBUTTON) != 0 ? Qt::RightButton : (GetAsyncKeyState(VK_RBUTTON) ? Qt::LeftButton : Qt::NoButton);
+        else
+            mouseButtons = GetAsyncKeyState(VK_LBUTTON) != 0 ? Qt::LeftButton : (GetAsyncKeyState(VK_RBUTTON) ? Qt::RightButton : Qt::NoButton);
+
+        *result = HTCLIENT;
         if (isCustomized || isDefaultTitleBar) {
-            *result = HTCLIENT;
-            const int titleBarHeight = getTitleBarHeight_sys(savedDpi());
-            const int titleButtonWidth = titleBarHeight * 1.5;
             int buttons = 1;
-            const bool mouseButtonsSwapped = GetSystemMetrics(SM_SWAPBUTTON);
-            auto mouseButtons = Qt::NoButton;
-            if (mouseButtonsSwapped)
-                mouseButtons = GetAsyncKeyState(VK_LBUTTON) != 0 ? Qt::RightButton : (GetAsyncKeyState(VK_RBUTTON) ? Qt::LeftButton : Qt::NoButton);
-            else
-                mouseButtons = GetAsyncKeyState(VK_LBUTTON) != 0 ? Qt::LeftButton : (GetAsyncKeyState(VK_RBUTTON) ? Qt::RightButton : Qt::NoButton);
 
             if (globalPos.y() < geom.top() + titleBarHeight) {
                 if (m_data.flags.testFlags(Qt::WindowCloseButtonHint) || isDefaultTitleBar) {
@@ -3336,17 +3338,32 @@ bool QWindowsWindow::handleNonClientHitTest(const QPoint &globalPos, LRESULT *re
                 } if ((isCustomized || isDefaultTitleBar) &&
                       *result == HTCLIENT){
                     QWindow* wnd = window();
-                    if (mouseButtons != Qt::NoButton) {
-                        QMouseEvent event(QEvent::MouseButtonPress, localPos, globalPos, mouseButtons, mouseButtons, Qt::NoModifier);
-                        QGuiApplication::sendEvent(wnd, &event);
-                        if (!event.isAccepted() && mouseButtons == Qt::RightButton)
+                    if (mouseButtons != oldMouseButtonState) {
+                        auto mouseEventType = mouseButtons == Qt::NoButton ? QEvent::MouseButtonRelease : QEvent::MouseButtonPress;
+                        auto mouseEventButtons = mouseEventType == QEvent::MouseButtonPress ? mouseButtons : oldMouseButtonState;
+                        bool accepted = QWindowSystemInterface::handleMouseEvent<QWindowSystemInterface::SynchronousDelivery>(wnd, QHighDpi::toNativeLocalPosition(localPos, w), globalPos, mouseEventButtons, mouseEventButtons, mouseEventType);
+                        if (!accepted && mouseButtons == Qt::RightButton)
                             *result = HTSYSMENU;
-                        else if (!event.isAccepted())
+                        else if (!accepted && globalPos.y() < geom.top() + titleBarHeight)
                             *result = HTCAPTION;
                     }
                 }
             }
+        } else if (w->flags().testFlag(Qt::CustomizeWindowHint)) {
+
+            QWindow* wnd = window();
+            if (mouseButtons != oldMouseButtonState) {
+                auto mouseEventType = mouseButtons == Qt::NoButton ? QEvent::MouseButtonRelease : QEvent::MouseButtonPress;
+                auto mouseEventButtons = mouseEventType == QEvent::MouseButtonPress ? mouseButtons : oldMouseButtonState;
+                bool accepted = QWindowSystemInterface::handleMouseEvent<QWindowSystemInterface::SynchronousDelivery>(wnd, QHighDpi::toNativeLocalPosition(localPos, w), globalPos, mouseEventButtons, mouseEventButtons, mouseEventType);
+                if (!accepted && mouseButtons == Qt::RightButton)
+                    *result = HTSYSMENU;
+                else if (!accepted && globalPos.y() < geom.top() + titleBarHeight)
+                    *result = HTCAPTION;
+            }
         }
+        oldMouseButtonState = mouseButtons;
+
         if (border != 0) {
             const bool left   = (globalPos.x() >= geom.left()) && (globalPos.x() < geom.left() + border);
             const bool right  = (globalPos.x() >  geom.right() - border) && (globalPos.x() <= geom.right());
