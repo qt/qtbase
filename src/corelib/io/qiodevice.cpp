@@ -1304,8 +1304,11 @@ QByteArray QIODevice::readAll()
 
     The newline character ('\\n') is included in the buffer. If a
     newline is not encountered before maxSize - 1 bytes are read, a
-    newline will not be inserted into the buffer. On windows newline
-    characters are replaced with '\\n'.
+    newline will not be inserted into the buffer.
+
+    \note Newline translation(e.g., converting \r to \n) is performed
+    only when the device is opened for reading with QIODevice::Text
+    flag.
 
     Note that on sequential devices, data may not be immediately available,
     which may result in a partial line being returned. By calling the
