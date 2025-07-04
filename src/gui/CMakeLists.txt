@@ -335,8 +335,8 @@ if(QT_FEATURE_pdf)
     )
 endif()
 
-if(WIN32 OR (UNIX AND NOT APPLE))
-    set_target_properties(Gui PROPERTIES UNITY_BUILD OFF) # X11 define clashes/Windows oddities.
+if(UNIX AND NOT APPLE)
+    set_target_properties(Gui PROPERTIES UNITY_BUILD OFF) # X11 define clashes.
 endif()
 
 qt_internal_add_resource(Gui "gui_shaders"
@@ -490,6 +490,8 @@ qt_internal_extend_target(Gui CONDITION WIN32
         dxgi
         dxguid
         d3d12
+    NO_UNITY_BUILD_SOURCES
+        text/windows/qwindowsfontdatabasebase.cpp # duplicate struct OS2Table
     ATTRIBUTION_FILE_DIR_PATHS
         ../3rdparty/D3D12MemoryAllocator
 )

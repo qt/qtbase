@@ -1325,7 +1325,7 @@ QPolygon QTransform::map(const QPolygon &a) const
     \sa QTransform::map()
 */
 
-extern QPainterPath qt_regionToPath(const QRegion &region);
+Q_GUI_EXPORT extern QPainterPath qt_regionToPath(const QRegion &region);
 
 /*!
     \fn QRegion QTransform::map(const QRegion &region) const

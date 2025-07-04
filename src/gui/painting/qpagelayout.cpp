@@ -37,7 +37,7 @@ Q_GUI_EXPORT qreal qt_pointMultiplier(QPageLayout::Unit unit)
 }
 
 // Multiplier for converting pixels to points.
-extern qreal qt_pixelMultiplier(int resolution);
+Q_GUI_EXPORT extern qreal qt_pixelMultiplier(int resolution);
 
 Q_GUI_EXPORT QMarginsF qt_convertMargins(const QMarginsF &margins, QPageLayout::Unit fromUnits, QPageLayout::Unit toUnits)
 {

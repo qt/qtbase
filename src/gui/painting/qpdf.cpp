@@ -1215,8 +1215,6 @@ void QPdfEngine::setupGraphicsState(QPaintEngine::DirtyFlags flags)
         setPen();
 }
 
-extern QPainterPath qt_regionToPath(const QRegion &region);
-
 void QPdfEngine::updateClipPath(const QPainterPath &p, Qt::ClipOperation op)
 {
     Q_D(QPdfEngine);

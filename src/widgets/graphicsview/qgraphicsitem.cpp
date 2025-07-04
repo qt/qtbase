@@ -9313,7 +9313,7 @@ QVariant QGraphicsLineItem::extension(const QVariant &variant) const
     QPixmap::createHeuristicMask().  The performance and memory consumption
     is similar to MaskShape.
 */
-extern QPainterPath qt_regionToPath(const QRegion &region);
+Q_GUI_EXPORT extern QPainterPath qt_regionToPath(const QRegion &region);
 
 class QGraphicsPixmapItemPrivate : public QGraphicsItemPrivate
 {

@@ -39,7 +39,7 @@ using namespace Qt::StringLiterals;
         return retValue; \
     }
 
-extern qreal qt_pixelMultiplier(int resolution);
+Q_GUI_EXPORT extern qreal qt_pixelMultiplier(int resolution);
 extern QMarginsF qt_convertMargins(const QMarginsF &margins, QPageLayout::Unit fromUnits, QPageLayout::Unit toUnits);
 
 QPrinterInfo QPrinterPrivate::findValidPrinter(const QPrinterInfo &printer)
