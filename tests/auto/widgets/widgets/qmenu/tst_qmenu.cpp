@@ -8,10 +8,12 @@
 #include <QPushButton>
 #include <QMainWindow>
 #include <QMenuBar>
+#include <QPlainTextEdit>
 #include <QToolBar>
 #include <QToolButton>
 #include <QStatusBar>
 #include <QListWidget>
+#include <QVBoxLayout>
 #include <QWidgetAction>
 #include <QScreen>
 #include <QSpinBox>
@@ -96,6 +98,8 @@ private slots:
     void QTBUG_89082_actionTipsHide();
     void QTBUG8122_widgetActionCrashOnClose();
     void widgetActionTriggerClosesMenu();
+    void widgetActionContextMenu();
+
     void transientParent();
 
     void QTBUG_10735_crashWithDialog();
@@ -1588,6 +1592,36 @@ void tst_QMenu::widgetActionTriggerClosesMenu()
     QCOMPARE(menuTriggeredCount, 1);
     QCOMPARE(menuAboutToHideCount, 1);
     QCOMPARE(actionTriggered, &widgetAction);
+}
+
+void tst_QMenu::widgetActionContextMenu() // QTBUG-134757
+{
+    QPushButton openButton("open");
+    QMenu *menu = new QMenu(&openButton);
+    QVBoxLayout *layout = new QVBoxLayout;
+    QWidgetAction widgetAction(menu);
+    QWidget menuWidget(menu);
+    QPlainTextEdit edit;
+    openButton.setMenu(menu);
+    menuWidget.setLayout(layout);
+    widgetAction.setDefaultWidget(&menuWidget);
+    menu->addAction(&widgetAction);
+    layout->addWidget(&edit);
+
+    openButton.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&openButton));
+
+    // Click the QPushButton to open its menu
+    QTest::mouseClick(&openButton, Qt::LeftButton);
+    QVERIFY(QTest::qWaitForWindowExposed(&menuWidget));
+    QWindow *popupWindow = edit.window()->windowHandle();
+    QVERIFY(popupWindow);
+    QCOMPARE(QApplication::activePopupWidget(), menu);
+
+    // Right-click the QPlainTextEdit to open its context menu
+    QTest::mouseClick(popupWindow, Qt::RightButton);
+    QVERIFY(qobject_cast<QMenu *>(QApplication::activePopupWidget()));
+    QCOMPARE_NE(QApplication::activePopupWidget(), menu);
 }
 
 void tst_QMenu::transientParent()

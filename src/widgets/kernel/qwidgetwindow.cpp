@@ -622,7 +622,21 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
                 }
             }
             QApplicationPrivate::replayMousePress = false;
+#ifndef QT_NO_CONTEXTMENU
+        } else if (event->type() == QGuiApplicationPrivate::contextMenuEventType()
+                   && event->button() == Qt::RightButton) {
+            QWidget *receiver = activePopupWidget;
+            if (qt_button_down)
+                receiver = qt_button_down;
+            else if (popupChild)
+                receiver = popupChild;
+            const QPoint localPos = receiver->mapFromGlobal(event->globalPosition().toPoint());
+            QContextMenuEvent e(QContextMenuEvent::Mouse, localPos, event->globalPosition().toPoint(), event->modifiers());
+            QApplication::forwardEvent(receiver, &e, event);
         }
+#else
+        }
+#endif
 
         if (releaseAfter) {
             qt_button_down = nullptr;
