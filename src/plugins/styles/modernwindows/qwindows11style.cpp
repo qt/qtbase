@@ -716,17 +716,18 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
         break;
     case PE_FrameGroupBox:
         if (const QStyleOptionFrame *frame = qstyleoption_cast<const QStyleOptionFrame *>(option)) {
-            QRectF frameRect = frame->rect;
-            frameRect.adjust(0.5,0.5,-0.5,-0.5);
-            painter->setPen(highContrastTheme == true ? frame->palette.buttonText().color() : WINUI3Colors[colorSchemeIndex][frameColorStrong]);
-            painter->setBrush(Qt::NoBrush);
+            const auto pen = highContrastTheme ? frame->palette.buttonText().color()
+                                               : winUI3Color(frameColorStrong);
             if (frame->features & QStyleOptionFrame::Flat) {
-                QRect fr = frame->rect;
+                painter->setBrush(Qt::NoBrush);
+                painter->setPen(pen);
+                const QRect &fr = frame->rect;
                 QPoint p1(fr.x(), fr.y() + 1);
                 QPoint p2(fr.x() + fr.width(), p1.y());
-                painter->drawLine(p1,p2);
+                painter->drawLine(p1, p2);
             } else {
-                painter->drawRoundedRect(frameRect.marginsRemoved(QMargins(1,1,1,1)), secondLevelRoundingRadius, secondLevelRoundingRadius);
+                const auto frameRect = QRectF(frame->rect).marginsRemoved(QMarginsF(1.5, 1.5, 1.5, 1.5));
+                drawRoundedRect(painter, frameRect, pen, Qt::NoBrush);
             }
         }
         break;
@@ -871,15 +872,10 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
         break;
     case PE_PanelMenu: {
         const QRect rect = option->rect.marginsRemoved(QMargins(2, 2, 2, 2));
-        painter->save();
-        if (highContrastTheme)
-            painter->setPen(QPen(option->palette.windowText().color(), 2));
-        else
-            painter->setPen(WINUI3Colors[colorSchemeIndex][frameColorLight]);
-        painter->setBrush(WINUI3Colors[colorSchemeIndex][menuPanelFill]);
-        painter->setRenderHint(QPainter::Antialiasing);
+        painter->setPen(highContrastTheme ? QPen(option->palette.windowText().color(), 2)
+                                          : winUI3Color(frameColorLight));
+        painter->setBrush(winUI3Color(menuPanelFill));
         painter->drawRoundedRect(rect, topLevelRoundingRadius, topLevelRoundingRadius);
-        painter->restore();
         break;
     }
     case PE_PanelLineEdit:
