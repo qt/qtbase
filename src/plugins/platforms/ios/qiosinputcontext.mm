@@ -640,8 +640,10 @@ void QIOSInputContext::update(Qt::InputMethodQueries updatedProperties)
     // focus object. We try to detect code paths that fail this assertion and smooth
     // over the situation by doing a manual update of the focus object.
     if (qApp->focusObject() != m_imeState.focusObject && updatedProperties != Qt::ImQueryAll) {
-        qWarning() << "stale focus object" << static_cast<void *>(m_imeState.focusObject)
-                   << ", doing manual update";
+        qCWarning(lcQpaInputMethods).verbosity(0) << "Updating input context" << updatedProperties
+            << "with last reported focus object" << m_imeState.focusObject
+            << "but qGuiApp reports" << qApp->focusObject()
+            << "which means someone failed to call QPlatformInputContext::setFocusObject()";
         setFocusObject(qApp->focusObject());
         return;
     }
