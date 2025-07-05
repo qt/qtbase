@@ -706,27 +706,19 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
 
     switch (element) {
     case PE_PanelTipLabel: {
-        QRectF tipRect = option->rect.marginsRemoved(QMargins(1,1,1,1));
-        painter->setPen(Qt::NoPen);
-        painter->setBrush(option->palette.toolTipBase());
-        painter->drawRoundedRect(tipRect, secondLevelRoundingRadius, secondLevelRoundingRadius);
-
-        painter->setPen(highContrastTheme == true ? option->palette.buttonText().color() : WINUI3Colors[colorSchemeIndex][frameColorLight]);
-        painter->setBrush(Qt::NoBrush);
-        painter->drawRoundedRect(tipRect.marginsAdded(QMarginsF(0.5,0.5,0.5,0.5)), secondLevelRoundingRadius, secondLevelRoundingRadius);
+        const auto rect = QRectF(option->rect).marginsRemoved(QMarginsF(0.5, 0.5, 0.5, 0.5));
+        const auto pen = highContrastTheme ? option->palette.buttonText().color()
+                                           : winUI3Color(frameColorLight);
+        drawRoundedRect(painter, rect, pen, option->palette.toolTipBase());
         break;
     }
     case PE_FrameTabWidget:
 #if QT_CONFIG(tabwidget)
         if (const QStyleOptionTabWidgetFrame *frame = qstyleoption_cast<const QStyleOptionTabWidgetFrame *>(option)) {
-            QRectF frameRect = frame->rect.marginsRemoved(QMargins(0,0,0,0));
-            painter->setPen(Qt::NoPen);
-            painter->setBrush(frame->palette.base());
-            painter->drawRoundedRect(frameRect, secondLevelRoundingRadius, secondLevelRoundingRadius);
-
-            painter->setPen(highContrastTheme == true ? frame->palette.buttonText().color() : WINUI3Colors[colorSchemeIndex][frameColorLight]);
-            painter->setBrush(Qt::NoBrush);
-            painter->drawRoundedRect(frameRect.marginsRemoved(QMarginsF(0.5,0.5,0.5,0.5)), secondLevelRoundingRadius, secondLevelRoundingRadius);
+            const auto rect = QRectF(option->rect).marginsRemoved(QMarginsF(0.5, 0.5, 0.5, 0.5));
+            const auto pen = highContrastTheme ? frame->palette.buttonText().color()
+                                               : winUI3Color(frameColorLight);
+            drawRoundedRect(painter, rect, pen, frame->palette.base());
         }
 #endif  // QT_CONFIG(tabwidget)
         break;
