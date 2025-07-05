@@ -1618,6 +1618,17 @@ QCoreApplicationPrivate::QPostEventListLocker QCoreApplicationPrivate::lockThrea
     details. Events with equal \a priority will be processed in the
     order posted.
 
+    \note QObject::deleteLater() schedules the object for deferred
+    deletion, which is typically handled by the receiver's event
+    loop. If no event loop is running in the thread, the deletion
+    will be performed when the thread finishes. A common and safe
+    pattern is to connect the thread's finished() signal to the
+    object's deleteLater() slot:
+
+    \code
+    QObject::connect(thread, &QThread::finished, worker, &QObject::deleteLater);
+    \endcode
+
     \threadsafe
 
     \sa sendEvent(), notify(), sendPostedEvents(), Qt::EventPriority
