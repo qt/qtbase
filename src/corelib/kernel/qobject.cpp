@@ -2422,6 +2422,14 @@ void QObject::removeEventFilter(QObject *obj)
     thread with no running event loop, the object will be destroyed when the
     thread finishes.
 
+    A common pattern when using a worker \c QObject in a \c QThread
+    is to connect the thread's \c finished() signal to the worker's
+    \c deleteLater() slot to ensure it is safely deleted:
+
+    \code
+    connect(thread, &QThread::finished, worker, &QObject::deleteLater);
+    \endcode
+
     Note that entering and leaving a new event loop (e.g., by opening a modal
     dialog) will \e not perform the deferred deletion; for the object to be
     deleted, the control must return to the event loop from which deleteLater()
