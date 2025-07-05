@@ -1762,18 +1762,13 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
             }
             const bool highlightCurrent = vopt->state.testAnyFlags(State_Selected | State_MouseOver);
             if (highlightCurrent) {
-                const QAbstractItemView *view = qobject_cast<const QAbstractItemView *>(widget);
-                if (highContrastTheme)
+                if (highContrastTheme) {
                     painter->setBrush(vopt->palette.highlight());
-                else
-                    painter->setBrush(view->alternatingRowColors() ? vopt->palette.highlight() : WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
-                QWidget *editorWidget = view ? view->indexWidget(view->currentIndex()) : nullptr;
-                if (editorWidget) {
-                    QPalette pal = editorWidget->palette();
-                    QColor editorBgColor = vopt->backgroundBrush == Qt::NoBrush ? vopt->palette.color(widget->backgroundRole()) : vopt->backgroundBrush.color();
-                    editorBgColor.setAlpha(255);
-                    pal.setColor(editorWidget->backgroundRole(), editorBgColor);
-                    editorWidget->setPalette(pal);
+                } else {
+                    const QAbstractItemView *view = qobject_cast<const QAbstractItemView *>(widget);
+                    painter->setBrush(view && view->alternatingRowColors()
+                                              ? vopt->palette.highlight()
+                                              : WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
                 }
             } else {
                 painter->setBrush(vopt->backgroundBrush);
@@ -2323,10 +2318,11 @@ static void populateLightSystemBasePalette(QPalette &result)
     static QString oldStyleSheet;
     const bool styleSheetChanged = oldStyleSheet != qApp->styleSheet();
 
-    const QColor textColor = QColor(0x00,0x00,0x00,0xE4);
-    const QColor textDisabled = QColor(0x00,0x00,0x00,0x5C);
-    const QColor btnFace = QColor(0xFF,0xFF,0xFF,0xB3);
-    const QColor alternateBase = QColor(0x00,0x00,0x00,0x09);
+    constexpr QColor textColor = QColor(0x00,0x00,0x00,0xE4);
+    constexpr QColor textDisabled = QColor(0x00, 0x00, 0x00, 0x5C);
+    constexpr QColor btnFace = QColor(0xFF, 0xFF, 0xFF, 0xB3);
+    constexpr QColor base = QColor(0xFF, 0xFF, 0xFF, 0xFF);
+    constexpr QColor alternateBase = QColor(0x00, 0x00, 0x00, 0x09);
     const QColor btnHighlight = result.accent().color();
     const QColor btnColor = result.button().color();
 
@@ -2338,7 +2334,7 @@ static void populateLightSystemBasePalette(QPalette &result)
     SET_IF_UNRESOLVED(QPalette::Active, QPalette::Mid, btnColor.darker(150));
     SET_IF_UNRESOLVED(QPalette::Active, QPalette::Text, textColor);
     SET_IF_UNRESOLVED(QPalette::Active, QPalette::BrightText, btnHighlight);
-    SET_IF_UNRESOLVED(QPalette::Active, QPalette::Base, btnFace);
+    SET_IF_UNRESOLVED(QPalette::Active, QPalette::Base, base);
     SET_IF_UNRESOLVED(QPalette::Active, QPalette::Window, QColor(0xF3,0xF3,0xF3,0xFF));
     SET_IF_UNRESOLVED(QPalette::Active, QPalette::ButtonText, textColor);
     SET_IF_UNRESOLVED(QPalette::Active, QPalette::Midlight, btnColor.lighter(125));
@@ -2355,7 +2351,7 @@ static void populateLightSystemBasePalette(QPalette &result)
     SET_IF_UNRESOLVED(QPalette::Inactive, QPalette::Mid, btnColor.darker(150));
     SET_IF_UNRESOLVED(QPalette::Inactive, QPalette::Text, textColor);
     SET_IF_UNRESOLVED(QPalette::Inactive, QPalette::BrightText, btnHighlight);
-    SET_IF_UNRESOLVED(QPalette::Inactive, QPalette::Base, btnFace);
+    SET_IF_UNRESOLVED(QPalette::Inactive, QPalette::Base, base);
     SET_IF_UNRESOLVED(QPalette::Inactive, QPalette::Window, QColor(0xF3,0xF3,0xF3,0xFF));
     SET_IF_UNRESOLVED(QPalette::Inactive, QPalette::ButtonText, textColor);
     SET_IF_UNRESOLVED(QPalette::Inactive, QPalette::Midlight, btnColor.lighter(125));
@@ -2376,7 +2372,7 @@ static void populateDarkSystemBasePalette(QPalette &result)
     static QString oldStyleSheet;
     const bool styleSheetChanged = oldStyleSheet != qApp->styleSheet();
 
-    const QColor alternateBase = QColor(0xFF,0xFF,0xFF,0x0F);
+    constexpr QColor alternateBase = QColor(0xFF, 0xFF, 0xFF, 0x0F);
 
     SET_IF_UNRESOLVED(QPalette::Active, QPalette::AlternateBase, alternateBase);
 
