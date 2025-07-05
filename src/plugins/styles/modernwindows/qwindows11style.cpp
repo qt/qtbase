@@ -239,11 +239,11 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
             QCachedPainter cp(painter, QLatin1StringView("win11_spinbox") % HexString<uint8_t>(colorSchemeIndex),
                               sb, sb->rect.size());
             if (cp.needsPainting()) {
-                const auto frameRect = option->rect.marginsRemoved(QMargins(1, 1, 1, 1));
+                const auto frameRect = QRectF(option->rect).marginsRemoved(QMarginsF(1.5, 1.5, 1.5, 1.5));
                 drawRoundedRect(cp.painter(), frameRect, Qt::NoPen, option->palette.brush(QPalette::Base));
 
                 if (sb->frame && (sub & SC_SpinBoxFrame))
-                    drawLineEditFrame(cp.painter(), option);
+                    drawLineEditFrame(cp.painter(), frameRect, option);
 
                 const bool isMouseOver = state & State_MouseOver;
                 const bool hasFocus = state & State_HasFocus;
@@ -409,11 +409,11 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
 #if QT_CONFIG(combobox)
     case CC_ComboBox:
         if (const QStyleOptionComboBox *combobox = qstyleoption_cast<const QStyleOptionComboBox *>(option)) {
-            const auto frameRect = option->rect.marginsRemoved(QMargins(1, 1, 1, 1));
+            const auto frameRect = QRectF(option->rect).marginsRemoved(QMarginsF(1.5, 1.5, 1.5, 1.5));
             drawRoundedRect(painter, frameRect, Qt::NoPen, option->palette.brush(QPalette::Base));
 
             if (combobox->frame)
-                drawLineEditFrame(painter, option);
+                drawLineEditFrame(painter, frameRect, option);
 
             const bool isMouseOver = state & State_MouseOver;
             const bool hasFocus = state & State_HasFocus;
@@ -899,7 +899,7 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
     }
     case PE_PanelLineEdit:
         if (const auto *panel = qstyleoption_cast<const QStyleOptionFrame *>(option)) {
-            const auto frameRect = option->rect.marginsRemoved(QMargins(1, 1, 1, 1));
+            const auto frameRect = QRectF(option->rect).marginsRemoved(QMarginsF(1.5, 1.5, 1.5, 1.5));
             drawRoundedRect(painter, frameRect, Qt::NoPen, option->palette.brush(QPalette::Base));
 
             if (panel->lineWidth > 0)
@@ -911,12 +911,14 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
                 drawRoundedRect(painter, frameRect, Qt::NoPen, winUI3Color(subtleHighlightColor));
         }
         break;
-    case PE_FrameLineEdit:
-        drawLineEditFrame(painter, option);
+    case PE_FrameLineEdit: {
+        const auto frameRect = QRectF(option->rect).marginsRemoved(QMarginsF(1.5, 1.5, 1.5, 1.5));
+        drawLineEditFrame(painter, frameRect, option);
         break;
+    }
     case PE_Frame: {
         if (const auto *frame = qstyleoption_cast<const QStyleOptionFrame *>(option)) {
-            const auto rect = option->rect.marginsRemoved(QMargins(1, 1, 1, 1));
+            const auto rect = QRectF(option->rect).marginsRemoved(QMarginsF(1.5, 1.5, 1.5, 1.5));
             if (qobject_cast<const QComboBoxPrivateContainer *>(widget)) {
                 QPen pen;
                 if (highContrastTheme)
@@ -930,7 +932,7 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
             if (frame->frameShape == QFrame::NoFrame)
                 break;
 
-            drawLineEditFrame(painter, option, qobject_cast<const QTextEdit *>(widget) != nullptr);
+            drawLineEditFrame(painter, rect, option, qobject_cast<const QTextEdit *>(widget) != nullptr);
         }
         break;
     }
@@ -2360,9 +2362,8 @@ QColor QWindows11Style::buttonLabelColor(const QStyleOption *option, int colorSc
                 : option->palette.buttonText().color();
 }
 
-void QWindows11Style::drawLineEditFrame(QPainter *p, const QStyleOption *o, bool isEditable) const
+void QWindows11Style::drawLineEditFrame(QPainter *p, const QRectF &rect, const QStyleOption *o, bool isEditable) const
 {
-    const auto rect = QRectF(o->rect).marginsRemoved(QMarginsF(1.5, 1.5, 1.5, 1.5));
     const bool isHovered = o->state & State_MouseOver;
     const auto frameCol = highContrastTheme
             ? o->palette.color(isHovered ? QPalette::Accent
