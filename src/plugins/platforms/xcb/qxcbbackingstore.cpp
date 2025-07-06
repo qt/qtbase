@@ -870,7 +870,8 @@ QPlatformBackingStore::FlushResult QXcbBackingStore::rhiFlush(QWindow *window,
                                                               const QRegion &region,
                                                               const QPoint &offset,
                                                               QPlatformTextureList *textures,
-                                                              bool translucentBackground)
+                                                              bool translucentBackground,
+                                                              qreal sourceTransformFactor)
 {
     if (!m_image || m_image->size().isEmpty())
         return FlushFailed;
@@ -878,7 +879,7 @@ QPlatformBackingStore::FlushResult QXcbBackingStore::rhiFlush(QWindow *window,
     m_image->flushScrolledRegion(true);
 
     auto result = QPlatformBackingStore::rhiFlush(window, sourceDevicePixelRatio, region, offset,
-                                                  textures, translucentBackground);
+                                                  textures, translucentBackground, sourceTransformFactor);
     if (result != FlushSuccess)
         return result;
     QXcbWindow *platformWindow = static_cast<QXcbWindow *>(window->handle());

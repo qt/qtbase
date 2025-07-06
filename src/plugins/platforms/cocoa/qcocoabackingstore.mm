@@ -457,7 +457,8 @@ QPlatformBackingStore::FlushResult QCALayerBackingStore::rhiFlush(QWindow *windo
                                                                   const QRegion &region,
                                                                   const QPoint &offset,
                                                                   QPlatformTextureList *textures,
-                                                                  bool translucentBackground)
+                                                                  bool translucentBackground,
+                                                                  qreal sourceTransformFactor)
 {
     if (!m_buffers.back()) {
         qCWarning(lcQpaBackingStore) << "Flush requested with no back buffer. Ignoring.";
@@ -466,7 +467,8 @@ QPlatformBackingStore::FlushResult QCALayerBackingStore::rhiFlush(QWindow *windo
 
     finalizeBackBuffer();
 
-    return QPlatformBackingStore::rhiFlush(window, sourceDevicePixelRatio, region, offset, textures, translucentBackground);
+    return QPlatformBackingStore::rhiFlush(window, sourceDevicePixelRatio,
+        region, offset, textures, translucentBackground, sourceTransformFactor);
 }
 
 QImage QCALayerBackingStore::toImage() const

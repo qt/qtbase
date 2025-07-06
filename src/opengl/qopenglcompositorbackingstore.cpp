@@ -163,7 +163,8 @@ QPlatformBackingStore::FlushResult QOpenGLCompositorBackingStore::rhiFlush(QWind
                                                                            const QRegion &region,
                                                                            const QPoint &offset,
                                                                            QPlatformTextureList *textures,
-                                                                           bool translucentBackground)
+                                                                           bool translucentBackground,
+                                                                           qreal sourceTransformFactor)
 {
     // QOpenGLWidget/QQuickWidget content provided as textures. The raster content goes on top.
 
@@ -171,6 +172,7 @@ QPlatformBackingStore::FlushResult QOpenGLCompositorBackingStore::rhiFlush(QWind
     Q_UNUSED(offset);
     Q_UNUSED(translucentBackground);
     Q_UNUSED(sourceDevicePixelRatio);
+    Q_UNUSED(sourceTransformFactor);
 
     m_rhi = rhi(window);
     Q_ASSERT(m_rhi);

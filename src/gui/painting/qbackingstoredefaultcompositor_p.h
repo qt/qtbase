@@ -41,7 +41,8 @@ public:
                                              const QRegion &region,
                                              const QPoint &offset,
                                              QPlatformTextureList *textures,
-                                             bool translucentBackground);
+                                             bool translucentBackground,
+                                             qreal sourceTransformFactor);
 
 private:
     enum UpdateUniformOption {
