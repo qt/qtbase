@@ -3327,7 +3327,8 @@ int QDockAreaLayout::separatorMove(const QList<int> &separator, const QPoint &or
 {
     int delta = 0;
     const auto dockPosition = static_cast<QInternal::DockPosition>(separator.last());
-    const bool isHorizontal = dockPosition == QInternal::LeftDock || dockPosition == QInternal::TopDock;
+    const bool isHorizontal =
+            dockPosition == QInternal::LeftDock || dockPosition == QInternal::RightDock;
     const bool isLeftOrTop = dockPosition == QInternal::LeftDock || dockPosition == QInternal::TopDock;
     const bool separatorIsWithinDock = separator.size() > 1;
 
