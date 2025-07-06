@@ -192,30 +192,24 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                 QObject *styleObject = option->styleObject; // Can be widget or qquickitem
 
                 QRectF thumbRect = proxy()->subControlRect(CC_Slider, option, SC_SliderHandle, widget);
-                auto center = thumbRect.center();
                 const qreal outerRadius = qMin(8.0, (slider->orientation == Qt::Horizontal ? thumbRect.height() / 2.0 : thumbRect.width() / 2.0) - 1);
-
-                thumbRect.setWidth(outerRadius);
-                thumbRect.setHeight(outerRadius);
-                thumbRect.moveCenter(center);
-                QPointF cursorPos = widget ? widget->mapFromGlobal(QCursor::pos()) : QPointF();
-                bool isInsideHandle = thumbRect.contains(cursorPos);
+                bool isInsideHandle = option->activeSubControls == SC_SliderHandle;
 
                 bool oldIsInsideHandle = styleObject->property("_q_insidehandle").toBool();
-                int oldState = styleObject->property("_q_stylestate").toInt();
-                int oldActiveControls = styleObject->property("_q_stylecontrols").toInt();
+                State oldState = State(styleObject->property("_q_stylestate").toInt());
+                SubControls oldActiveControls = SubControls(styleObject->property("_q_stylecontrols").toInt());
 
                 QRectF oldRect = styleObject->property("_q_stylerect").toRect();
                 styleObject->setProperty("_q_insidehandle", isInsideHandle);
-                styleObject->setProperty("_q_stylestate", int(option->state));
+                styleObject->setProperty("_q_stylestate", int(state));
                 styleObject->setProperty("_q_stylecontrols", int(option->activeSubControls));
                 styleObject->setProperty("_q_stylerect", option->rect);
                 if (option->styleObject->property("_q_end_radius").isNull())
                     option->styleObject->setProperty("_q_end_radius", outerRadius * 0.43);
 
                 bool doTransition = (((state & State_Sunken) != (oldState & State_Sunken)
-                                     || ((oldIsInsideHandle) != (isInsideHandle))
-                                     || oldActiveControls != int(option->activeSubControls))
+                                     || (oldIsInsideHandle != isInsideHandle)
+                                     || (oldActiveControls != option->activeSubControls))
                                      && state & State_Enabled);
 
                 if (oldRect != option->rect) {
@@ -401,31 +395,29 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                 }
             }
             if (sub & SC_SliderHandle) {
-                if (const auto *slider = qstyleoption_cast<const QStyleOptionSlider *>(option)) {
-                    const QRectF rect = proxy()->subControlRect(CC_Slider, option, SC_SliderHandle, widget);
-                    const QPointF center = rect.center();
+                const QRectF rect = proxy()->subControlRect(CC_Slider, option, SC_SliderHandle, widget);
+                const QPointF center = rect.center();
 
-                    const QNumberStyleAnimation* animation = qobject_cast<QNumberStyleAnimation*>(d->animation(option->styleObject));
+                const QNumberStyleAnimation* animation = qobject_cast<QNumberStyleAnimation*>(d->animation(option->styleObject));
 
-                    if (animation != nullptr)
-                        option->styleObject->setProperty("_q_inner_radius", animation->currentValue());
-                    else
-                        option->styleObject->setProperty("_q_inner_radius", option->styleObject->property("_q_end_radius"));
+                float innerRadius = 0;
+                if (animation != nullptr)
+                    innerRadius = animation->currentValue();
+                else
+                    innerRadius = option->styleObject->property("_q_end_radius").toFloat();
+                option->styleObject->setProperty("_q_inner_radius", innerRadius);
+                const qreal outerRadius = qMin(8.0,(slider->orientation == Qt::Horizontal ? rect.height() / 2.0 : rect.width() / 2.0) - 1);
 
-                    const qreal outerRadius = qMin(8.0,(slider->orientation == Qt::Horizontal ? rect.height() / 2.0 : rect.width() / 2.0) - 1);
-                    const float innerRadius = option->styleObject->property("_q_inner_radius").toFloat();
-                    painter->setRenderHint(QPainter::Antialiasing, true);
-                    painter->setPen(Qt::NoPen);
-                    painter->setBrush(WINUI3Colors[colorSchemeIndex][controlFillSolid]);
-                    painter->drawEllipse(center, outerRadius, outerRadius);
-                    painter->setBrush(option->palette.accent());
-                    painter->drawEllipse(center, innerRadius, innerRadius);
+                painter->setPen(Qt::NoPen);
+                painter->setBrush(WINUI3Colors[colorSchemeIndex][controlFillSolid]);
+                painter->drawEllipse(center, outerRadius, outerRadius);
+                painter->setBrush(option->palette.accent());
+                painter->drawEllipse(center, innerRadius, innerRadius);
 
-                    painter->setPen(WINUI3Colors[colorSchemeIndex][controlStrokeSecondary]);
-                    painter->setBrush(Qt::NoBrush);
-                    painter->drawEllipse(center, outerRadius + 0.5, outerRadius + 0.5);
-                    painter->drawEllipse(center, innerRadius + 0.5, innerRadius + 0.5);
-                }
+                painter->setPen(WINUI3Colors[colorSchemeIndex][controlStrokeSecondary]);
+                painter->setBrush(Qt::NoBrush);
+                painter->drawEllipse(center, outerRadius + 0.5, outerRadius + 0.5);
+                painter->drawEllipse(center, innerRadius + 0.5, innerRadius + 0.5);
             }
             if (slider->state & State_HasFocus) {
                 QStyleOptionFocusRect fropt;
