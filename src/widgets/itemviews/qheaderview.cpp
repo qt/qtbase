@@ -3671,10 +3671,8 @@ void QHeaderViewPrivate::resizeSections(QHeaderView::ResizeMode globalMode, bool
 
     executePostedLayout();
 
-    if (noSectionMemoryUsage() &&
-       (hasAutoResizeSections() || (useGlobalMode && globalResizeMode != QHeaderView::Fixed))) {
+    if (noSectionMemoryUsage() && (hasAutoResizeSections() || globalMode != QHeaderView::Fixed))
         setHeaderMode(HeaderMode::FlexibleWithSectionMemoryUsage);
-    }
 
     if (sectionCount() == 0 )
         return;
