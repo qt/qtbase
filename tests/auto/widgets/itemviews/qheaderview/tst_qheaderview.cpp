@@ -239,6 +239,7 @@ private slots:
     void storeRestoreLowMemoryMode();
     void setSectionResizeModeWithSectionWillTakeMemory();
     void setModelWithAutoSizeWillSwitchToMemoryMode();
+    void tableViewResizeSectionsWillSwitchToMemoryMode();
 
     void setDefaultSectionSizeRespectsColumnWidth();
 
@@ -3749,10 +3750,15 @@ struct TableViewWithBasicModel : public QTableView
         emptyState = verticalHeader()->saveState();
         setModel(&m);
         header = verticalHeader();
+        horizontal_header = horizontalHeader();
     }
 
     bool hasLowMemoryUsage() const {
         return emptyState.size() == header->saveState().size();
+    }
+
+    bool horizontalLowMememorUsage() const {
+        return emptyState.size() == horizontal_header->saveState().size();
     }
 
     bool hasHigherMemoryUsage() const {
@@ -3762,6 +3768,7 @@ struct TableViewWithBasicModel : public QTableView
 
     BasicModel m;
     QHeaderView *header;
+    QHeaderView *horizontal_header;
     QByteArray emptyState;
 };
 
@@ -3958,6 +3965,15 @@ void tst_QHeaderView::setModelWithAutoSizeWillSwitchToMemoryMode()
     const int delta = model->columnCount() * 8;
     // even with delta help the nonEmptyState should now be bigger.
     QCOMPARE_GT(nonEmptyState.size(), emptyState.size() + delta);
+}
+
+void tst_QHeaderView::tableViewResizeSectionsWillSwitchToMemoryMode()
+{
+    TableViewWithBasicModel tv;
+    QVERIFY(tv.horizontalLowMememorUsage());
+    tv.horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    tv.resizeColumnsToContents();
+    QVERIFY(!tv.horizontalLowMememorUsage());
 }
 
 void tst_QHeaderView::setDefaultSectionSizeRespectsColumnWidth()
