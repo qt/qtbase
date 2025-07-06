@@ -460,10 +460,19 @@ QPlatformBackingStore::FlushResult QBackingStoreDefaultCompositor::flush(QPlatfo
                                                                          const QRegion &region,
                                                                          const QPoint &offset,
                                                                          QPlatformTextureList *textures,
-                                                                         bool translucentBackground)
+                                                                         bool translucentBackground,
+                                                                         qreal sourceTransformFactor)
 {
     if (!rhi)
         return QPlatformBackingStore::FlushFailed;
+
+    // Note, the sourceTransformFactor is different from the sourceDevicePixelRatio,
+    // as the former may reflect the fact that the region and offset is pre-transformed,
+    // in which case we don't need to do a full transform here based on the source DPR.
+    // In the default case where no explicit source transform has been passed, we fall
+    // back to the source device pixel ratio.
+    if (!sourceTransformFactor)
+        sourceTransformFactor = sourceDevicePixelRatio;
 
     Q_ASSERT(textures); // may be empty if there are no render-to-texture widgets at all, but null it cannot be
 
@@ -508,7 +517,7 @@ QPlatformBackingStore::FlushResult QBackingStoreDefaultCompositor::flush(QPlatfo
             const QImage::Format format = QImage::toImageFormat(graphicsBuffer->format());
             const QSize size = graphicsBuffer->size();
             QImage wrapperImage(graphicsBuffer->data(), size.width(), size.height(), graphicsBuffer->bytesPerLine(), format);
-            toTexture(wrapperImage, rhi, resourceUpdates, scaledRegion(region, sourceDevicePixelRatio, offset), &flags);
+            toTexture(wrapperImage, rhi, resourceUpdates, scaledRegion(region, sourceTransformFactor, offset), &flags);
             gotTextureFromGraphicsBuffer = true;
             graphicsBuffer->unlock();
             if (graphicsBuffer->origin() == QPlatformGraphicsBuffer::OriginBottomLeft)
@@ -516,7 +525,7 @@ QPlatformBackingStore::FlushResult QBackingStoreDefaultCompositor::flush(QPlatfo
         }
     }
     if (!gotTextureFromGraphicsBuffer)
-        toTexture(backingStore, rhi, resourceUpdates, scaledRegion(region, sourceDevicePixelRatio, offset), &flags);
+        toTexture(backingStore, rhi, resourceUpdates, scaledRegion(region, sourceTransformFactor, offset), &flags);
 
     ensureResources(resourceUpdates, swapchain->renderPassDescriptor());
 
@@ -549,7 +558,7 @@ QPlatformBackingStore::FlushResult QBackingStoreDefaultCompositor::flush(QPlatfo
         // The backingstore is for the entire tlw. In case of native children, offset tells the position
         // relative to the tlw. The window rect is scaled by the source device pixel ratio to get
         // the source rect.
-        const QPoint sourceWindowOffset = scaledOffset(offset, sourceDevicePixelRatio);
+        const QPoint sourceWindowOffset = scaledOffset(offset, sourceTransformFactor);
         const QRect srcRect = toBottomLeftRect(sourceWindowRect.translated(sourceWindowOffset), m_texture->pixelSize().height());
         const QMatrix3x3 source = sourceTransform(srcRect, m_texture->pixelSize(), origin);
         QMatrix4x4 target; // identity

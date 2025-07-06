@@ -44,7 +44,8 @@ public:
                          const QRegion &region,
                          const QPoint &offset,
                          QPlatformTextureList *textures,
-                         bool translucentBackground) override;
+                         bool translucentBackground,
+                         qreal sourceTransformFactor) override;
 
     QImage toImage() const override;
     QPlatformGraphicsBuffer *graphicsBuffer() const override;
