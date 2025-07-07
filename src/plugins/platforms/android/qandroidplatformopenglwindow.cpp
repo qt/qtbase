@@ -22,10 +22,7 @@ QT_BEGIN_NAMESPACE
 
 QAndroidPlatformOpenGLWindow::QAndroidPlatformOpenGLWindow(QWindow *window, EGLDisplay display)
     :QAndroidPlatformWindow(window), m_eglDisplay(display)
-{
-    if (window->surfaceType() == QSurface::RasterSurface)
-        window->setSurfaceType(QSurface::OpenGLSurface);
-}
+{ }
 
 QAndroidPlatformOpenGLWindow::~QAndroidPlatformOpenGLWindow()
 {
