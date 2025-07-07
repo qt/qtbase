@@ -35,9 +35,7 @@ BYTE_MUL_AVX2(__m256i &pixelVector, __m256i alphaChannel, __m256i colorMask, __m
     pixelVectorAG = _mm256_add_epi16(pixelVectorAG, half);
 
     pixelVectorRB = _mm256_srli_epi16(pixelVectorRB, 8);
-    pixelVectorAG = _mm256_andnot_si256(colorMask, pixelVectorAG);
-
-    pixelVector = _mm256_or_si256(pixelVectorAG, pixelVectorRB);
+    pixelVector = _mm256_blendv_epi8(pixelVectorAG, pixelVectorRB, colorMask);
 }
 
 inline static void Q_DECL_VECTORCALL
@@ -55,9 +53,7 @@ BYTE_MUL_RGB64_AVX2(__m256i &pixelVector, __m256i alphaChannel, __m256i colorMas
     pixelVectorAG = _mm256_add_epi32(pixelVectorAG, half);
 
     pixelVectorRB = _mm256_srli_epi32(pixelVectorRB, 16);
-    pixelVectorAG = _mm256_andnot_si256(colorMask, pixelVectorAG);
-
-    pixelVector = _mm256_or_si256(pixelVectorAG, pixelVectorRB);
+    pixelVector = _mm256_blendv_epi8(pixelVectorAG, pixelVectorRB, colorMask);
 }
 
 // See INTERPOLATE_PIXEL_255_SSE2 for details.
@@ -78,10 +74,9 @@ INTERPOLATE_PIXEL_255_AVX2(__m256i srcVector, __m256i &dstVector, __m256i alphaC
     finalRB = _mm256_add_epi16(finalRB, _mm256_srli_epi16(finalRB, 8));
     finalAG = _mm256_add_epi16(finalAG, half);
     finalRB = _mm256_add_epi16(finalRB, half);
-    finalAG = _mm256_andnot_si256(colorMask, finalAG);
     finalRB = _mm256_srli_epi16(finalRB, 8);
 
-    dstVector = _mm256_or_si256(finalAG, finalRB);
+    dstVector = _mm256_blendv_epi8(finalAG, finalRB, colorMask);
 }
 
 inline static void Q_DECL_VECTORCALL
@@ -101,10 +96,8 @@ INTERPOLATE_PIXEL_RGB64_AVX2(__m256i srcVector, __m256i &dstVector, __m256i alph
     finalRB = _mm256_add_epi32(finalRB, _mm256_srli_epi32(finalRB, 16));
     finalAG = _mm256_add_epi32(finalAG, half);
     finalRB = _mm256_add_epi32(finalRB, half);
-    finalAG = _mm256_andnot_si256(colorMask, finalAG);
     finalRB = _mm256_srli_epi32(finalRB, 16);
-
-    dstVector = _mm256_or_si256(finalAG, finalRB);
+    dstVector = _mm256_blendv_epi8(finalAG, finalRB, colorMask);
 }
 
 // See BLEND_SOURCE_OVER_ARGB32_SSE2 for details.
