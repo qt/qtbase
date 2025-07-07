@@ -34,6 +34,12 @@ QT_BEGIN_NAMESPACE
     \note Both physical and logical DPI are expressed in device-independent dots.
     Multiply by QScreen::devicePixelRatio() to get device-dependent density.
 
+    To obtain a QScreen object, use QGuiApplication::primaryScreen() for the
+    primary screen, or QGuiApplication::screens() to get a list of all screens.
+
+    \sa QGuiApplication::primaryScreen()
+    \sa QGuiApplication::screens()
+
     \inmodule QtGui
 */
 
