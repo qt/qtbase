@@ -1,0 +1,93 @@
+<svg
+  preserveAspectRatio="none"
+  width="192"
+  height="350"
+  viewBox="-25 -30 153.6 280"
+  version="1.1"
+  xmlns="http://www.w3.org/2000/svg">
+
+<!-- Root node -->
+<g transform="translate(0, 0)">
+<path fill="none" stroke="#333" stroke-dasharray="4" d="M -10 -10 l 20 0 l 0 20 l -20 0 z" />
+<text x="15" y="0" font-size="12" font-family="Arial" fill="#333" text-anchor="left" dominant-baseline="central" font-weight="bold">
+      Root item (empty)
+</text>
+</g>
+
+<!-- Root spine vertical line solid part -->
+<path fill="none" stroke="#333" d="M 0 10 l 0 190" />
+
+<!-- Root spine vertical line dotted continuation -->
+<path fill="none" stroke="#333" stroke-dasharray="4" d="M 0 200 l 0 30" />
+
+<!-- Horizontal lines from Root spine to children A, E, F -->
+<path fill="none" stroke="#333" d="M 0 40 l 20 0" />
+<path fill="none" stroke="#333" d="M 0 160 l 20 0" />
+<path fill="none" stroke="#333" d="M 0 185 l 20 0" />
+
+<!-- Node A with label [0] -->
+<g transform="translate(30, 40)">
+<path fill="none" stroke="#333" d="M -10 -10 l 20 0 l 0 20 l -20 0 z"/>
+<text x="0" y="0" font-size="12" font-family="Arial" fill="#333" text-anchor="middle" dominant-baseline="central">
+      A
+</text>
+<text x="15" y="0" font-size="12" font-family="Arial" fill="#333" text-anchor="start" dominant-baseline="central">
+      row = 0
+</text>
+</g>
+
+<!-- Vertical line from A to its children -->
+<path fill="none" stroke="#333" d="M 30 50 l 0 80" />
+
+<!-- Horizontal lines from A's spine to B, C, D -->
+<path fill="none" stroke="#333" d="M 30 70 l 20 0" />
+<path fill="none" stroke="#333" d="M 30 100 l 20 0" />
+<path fill="none" stroke="#333" d="M 30 130 l 20 0" />
+
+<!-- Node B -->
+<g transform="translate(60, 70)">
+<path fill="none" stroke="#333" d="M -10 -10 l 20 0 l 0 20 l -20 0 z"/>
+<text x="15" y="0" font-size="12" font-family="Arial" fill="#333" text-anchor="start" dominant-baseline="central">
+      row = 0
+</text>
+</g>
+
+<!-- Node C -->
+<g transform="translate(60, 100)">
+<path fill="none" stroke="#333" d="M -10 -10 l 20 0 l 0 20 l -20 0 z"/>
+<text x="0" y="0" font-size="12" font-family="Arial" fill="#333" text-anchor="middle" dominant-baseline="central">
+      B
+</text>
+<text x="15" y="0" font-size="12" font-family="Arial" fill="#333" text-anchor="start" dominant-baseline="central">
+      row = 1
+</text>
+</g>
+
+<!-- Node D -->
+<g transform="translate(60, 130)">
+<path fill="none" stroke="#333" d="M -10 -10 l 20 0 l 0 20 l -20 0 z"/>
+<text x="15" y="0" font-size="12" font-family="Arial" fill="#333" text-anchor="start" dominant-baseline="central">
+      row = 2
+</text>
+</g>
+
+<!-- Node E -->
+<g transform="translate(30, 160)">
+<path fill="none" stroke="#333" d="M -10 -10 l 20 0 l 0 20 l -20 0 z"/>
+<text x="0" y="0" font-size="12" font-family="Arial" fill="#333" text-anchor="middle" dominant-baseline="central">
+      C
+</text>
+<text x="15" y="0" font-size="12" font-family="Arial" fill="#333" text-anchor="start" dominant-baseline="central">
+      row = 1
+</text>
+</g>
+
+<!-- Node F -->
+<g transform="translate(30, 185)">
+<path fill="none" stroke="#333" d="M -10 -10 l 20 0 l 0 20 l -20 0 z"/>
+<text x="15" y="0" font-size="12" font-family="Arial" fill="#333" text-anchor="start" dominant-baseline="central">
+      row = 2
+</text>
+</g>
+
+</svg>

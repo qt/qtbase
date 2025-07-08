@@ -40,7 +40,7 @@
 
     \target SimpleTreeModelStructure
     \table
-    \row \li \inlineimage treemodel-structure.png
+    \row \li \inlineimage treemodel-structure.svg
     \li \b{Simple Tree Model Structure}
 
     The data is stored internally in the model using \c TreeItem objects that

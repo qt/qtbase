@@ -30,7 +30,7 @@
     two columns of data.
 
     \table
-    \row \li \inlineimage treemodel-structure.png
+    \row \li \inlineimage treemodel-structure.svg
     \li \b{Shortcut Editor Structure}
 
     The data is stored internally in the model using ShortcutEditorModelItem
