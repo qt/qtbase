@@ -471,3 +471,5 @@ endif()
 qt_copy_or_install(FILES
     "util/json_schema/modules.json"
     DESTINATION "${INSTALL_QT_SHAREDIR}/json_schema/")
+
+qt_internal_generate_pkg_config_file(GlobalConfig)
