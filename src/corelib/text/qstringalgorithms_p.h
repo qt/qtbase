@@ -149,6 +149,17 @@ template <typename StringType> struct QStringAlgorithms
         return src.size() + adjust;
     }
 
+    // {QString,QByteArray}::resize() but without the extra checks
+    static inline void setSize(StringType &src, qsizetype newSize)
+    {
+        Q_ASSERT(src.isDetached());
+        Q_ASSERT(newSize <= src.capacity());
+
+        auto &d = src.data_ptr();
+        d.size = newSize;
+        d.data()[newSize] = '\0';
+    }
+
     // Instead of detaching, i.e. copying the whole data array then performing the
     // replacement, create a new buffer, copy `src` and `after` to it and swap it
     // with `src`.
@@ -204,7 +215,7 @@ template <typename StringType> struct QStringAlgorithms
             first = begin + indices[i] + bsize;
         }
         to = std::copy(first, end, to);
-        src.resize(to - begin);
+        setSize(src,to - begin);
     }
 
     static inline void replace_grow(StringType &src, qsizetype bsize, ViewType after,
@@ -216,7 +227,7 @@ template <typename StringType> struct QStringAlgorithms
         // replace in-place, after is longer than before, so replace from the back
         const qsizetype oldlen = src.size();
         const auto *a = asUnicodeChar(after);
-        src.resize(newlen);
+        setSize(src, newlen);
         auto *const begin = src.data_ptr().data(); // data(), without the detach() check
         auto *last = begin + oldlen;
         auto *to = src.data_ptr().end();
