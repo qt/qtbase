@@ -510,16 +510,14 @@ bool QDirListingPrivate::matchesFilters(QDirEntryInfo &entryInfo) const
     if (!iteratorFlags.testAnyFlag(F::IncludeHidden) && entryInfo.isHidden())
         return false;
 
-    if (entryInfo.isSymLink()) {
-        // With ResolveSymlinks, we look at the type of the link's target,
-        // and exclude broken symlinks (where the target doesn't exist).
-        if (iteratorFlags.testAnyFlag(F::ResolveSymlinks)) {
-            if (!entryInfo.exists())
-                return false;
-        } else if (iteratorFlags.testAnyFlags(F::FilesOnly)
-                   || iteratorFlags.testAnyFlags(F::DirsOnly)) {
-            return false; // symlink is not a file or dir
-        }
+    // With ResolveSymlinks, we look at the type of the link's target,
+    // and exclude broken symlinks (where the target doesn't exist).
+    if (iteratorFlags.testAnyFlag(F::ResolveSymlinks)) {
+        if (entryInfo.isSymLink() && !entryInfo.exists())
+            return false;
+    } else if ((iteratorFlags.testAnyFlags(F::FilesOnly)
+               || iteratorFlags.testAnyFlags(F::DirsOnly)) && entryInfo.isSymLink()) {
+        return false; // symlink is not a file or dir
     }
 
     if (iteratorFlags.testAnyFlag(F::ExcludeOther)
