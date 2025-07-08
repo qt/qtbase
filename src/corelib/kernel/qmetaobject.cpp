@@ -3150,6 +3150,20 @@ bool QMetaMethod::invokeOnGadget(void *gadget,
     representation. The scope() function returns the class scope this
     enumerator was declared in.
 
+    To use QMetaEnum functionality, register the enumerator within the meta-object
+    system using the Q_ENUM macro.
+
+    \code
+    enum AppleType {
+        Big,
+        Small
+    };
+    Q_ENUM(AppleType)
+
+    QMetaEnum metaEnum = QMetaEnum::fromType<ModelApple::AppleType>();
+    qDebug() << metaEnum.valueToKey(ModelApple::Big);
+    \endcode
+
     \sa QMetaObject, QMetaMethod, QMetaProperty
 */
 
