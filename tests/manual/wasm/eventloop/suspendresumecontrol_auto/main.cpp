@@ -7,7 +7,7 @@
 
 using namespace emscripten;
 
-const int timerTimeout = 10;
+const std::chrono::milliseconds timerTimeout{10};
 
 // Test QWasmSuspendResumeControl suspend/resume and event processing,
 // via QWasmTimer native timer events.
