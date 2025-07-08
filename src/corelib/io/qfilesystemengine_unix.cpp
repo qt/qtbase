@@ -114,15 +114,17 @@ enum {
 #if defined(Q_OS_DARWIN)
 static inline bool hasResourcePropertyFlag(const QFileSystemMetaData &data,
                                            const QFileSystemEntry &entry,
-                                           CFStringRef key)
+                                           CFStringRef key, QCFType<CFURLRef> &url)
 {
-    QCFString path = CFStringCreateWithFileSystemRepresentation(0,
-        entry.nativeFilePath().constData());
-    if (!path)
-        return false;
+    if (!url) {
+        QCFString path = CFStringCreateWithFileSystemRepresentation(0,
+            entry.nativeFilePath().constData());
+        if (!path)
+           return false;
 
-    QCFType<CFURLRef> url = CFURLCreateWithFileSystemPath(0, path, kCFURLPOSIXPathStyle,
-        data.hasFlags(QFileSystemMetaData::DirectoryType));
+        url = CFURLCreateWithFileSystemPath(0, path, kCFURLPOSIXPathStyle,
+            data.hasFlags(QFileSystemMetaData::DirectoryType));
+    }
     if (!url)
         return false;
 
@@ -135,7 +137,8 @@ static inline bool hasResourcePropertyFlag(const QFileSystemMetaData &data,
     return false;
 }
 
-static bool isPackage(const QFileSystemMetaData &data, const QFileSystemEntry &entry)
+static bool isPackage(const QFileSystemMetaData &data, const QFileSystemEntry &entry,
+                      QCFType<CFURLRef> &cachedUrl)
 {
     if (!data.isDirectory())
         return false;
@@ -174,7 +177,7 @@ static bool isPackage(const QFileSystemMetaData &data, const QFileSystemEntry &e
     }
 
     // Third step: check if the directory has the package bit set
-    return hasResourcePropertyFlag(data, entry, kCFURLIsPackageKey);
+    return hasResourcePropertyFlag(data, entry, kCFURLIsPackageKey, cachedUrl);
 }
 #endif
 
@@ -1074,8 +1077,9 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
     }
 
 #if defined(Q_OS_DARWIN)
+    QCFType<CFURLRef> cachedUrl;
     if (what & QFileSystemMetaData::AliasType) {
-        if (entryErrno == 0 && hasResourcePropertyFlag(data, entry, kCFURLIsAliasFileKey)) {
+        if (entryErrno == 0 && hasResourcePropertyFlag(data, entry, kCFURLIsAliasFileKey, cachedUrl)) {
             // kCFURLIsAliasFileKey includes symbolic links, so filter those out
             if (!(data.entryFlags & QFileSystemMetaData::LinkType))
                 data.entryFlags |= QFileSystemMetaData::AliasType;
@@ -1084,15 +1088,15 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
     }
 
     if (what & QFileSystemMetaData::BundleType) {
-        if (entryErrno == 0 && isPackage(data, entry))
+        if (entryErrno == 0 && isPackage(data, entry, cachedUrl))
             data.entryFlags |= QFileSystemMetaData::BundleType;
 
         data.knownFlagsMask |= QFileSystemMetaData::BundleType;
     }
 
     if (what & QFileSystemMetaData::CaseSensitive) {
-        if (entryErrno == 0 && hasResourcePropertyFlag(
-            data, entry, kCFURLVolumeSupportsCaseSensitiveNamesKey))
+        if (entryErrno == 0 && hasResourcePropertyFlag(data, entry,
+            kCFURLVolumeSupportsCaseSensitiveNamesKey, cachedUrl))
             data.entryFlags |= QFileSystemMetaData::CaseSensitive;
         data.knownFlagsMask |= QFileSystemMetaData::CaseSensitive;
     }
