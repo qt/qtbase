@@ -1816,7 +1816,7 @@ static constexpr QLatin1StringView themeIconName(QIcon::ThemeIcon icon)
 
     \omitvalue NThemeIcons
 
-    \sa {QIcon#Creating an icon from a theme or icon library},
+    \sa {Creating an icon from a theme or icon library},
         fromTheme()
 */
 
