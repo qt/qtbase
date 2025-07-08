@@ -76,10 +76,15 @@ bool QFseventsFileSystemWatcherEngine::checkDir(DirsByName::iterator &it)
                 ++i;
             }
         }
+
+        // Ask QDirListing to include hidden entries so it doesn't spend time
+        // trying to figure out if entries are hidden (slow on Darwin due to
+        // kCFURLIsHiddenKey check).
+        QDirListing::IteratorFlags flags = QDirListing::IteratorFlag::IncludeHidden;
+
         // check for new entries:
-        QDirIterator dirIt(name);
-        while (dirIt.hasNext()) {
-            dirIt.next();
+        QDirListing listing(name, flags);
+        for (auto dirIt : listing) {
             QString entryName = dirIt.filePath();
             if (!entries.contains(entryName)) {
                 dirChanged = true;
