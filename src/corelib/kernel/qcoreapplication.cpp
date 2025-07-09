@@ -2552,8 +2552,9 @@ static QStringList winCmdArgs()
 
     Otherwise, the arguments() are constructed from the return value of
     \l{https://docs.microsoft.com/en-us/windows/win32/api/processenv/nf-processenv-getcommandlinea}{GetCommandLine()}.
-    As a result of this, the string given by arguments().at(0) might not be
-    the program name on Windows, depending on how the application was started.
+    As a result of this, the string given by arguments().at(0)
+    might not be the exact program used to start the application
+    on Windows.
 
     \sa applicationFilePath(), QCommandLineParser
 */
