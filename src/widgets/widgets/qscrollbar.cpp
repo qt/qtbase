@@ -126,8 +126,8 @@ using namespace Qt::StringLiterals;
     ScrollBar inherits a comprehensive set of signals from QAbstractSlider:
     \list
     \li \l{QAbstractSlider::valueChanged()}{valueChanged()} is emitted when the
-       scroll bar's value has changed. The tracking() determines whether this
-       signal is emitted during user interaction.
+       scroll bar's value has changed. The \l{QAbstractSlider::}{tracking} property
+       determines whether this signal is emitted during user interaction.
     \li \l{QAbstractSlider::rangeChanged()}{rangeChanged()} is emitted when the
        scroll bar's range of values has changed.
     \li \l{QAbstractSlider::sliderPressed()}{sliderPressed()} is emitted when
