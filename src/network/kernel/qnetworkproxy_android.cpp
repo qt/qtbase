@@ -3,6 +3,7 @@
 
 #include "qnetworkproxy.h"
 
+#include <QtCore/qapplicationstatic.h>
 #include <QtCore/qcoreapplication_platform.h>
 #include <QtCore/qjnienvironment.h>
 #include <QtCore/qjniobject.h>
@@ -21,7 +22,7 @@ public:
 using namespace QNativeInterface;
 using namespace QtJniTypes;
 
-Q_GLOBAL_STATIC(ProxyInfoObject, proxyInfoInstance)
+Q_APPLICATION_STATIC(ProxyInfoObject, proxyInfoInstance)
 
 Q_DECLARE_JNI_CLASS(QtNetwork, "org/qtproject/qt/android/network/QtNetwork")
 Q_DECLARE_JNI_CLASS(ProxyInfo, "android/net/ProxyInfo")
