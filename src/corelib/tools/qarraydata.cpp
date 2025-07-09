@@ -157,17 +157,11 @@ calculateBlockSize(qsizetype capacity, qsizetype objectSize, qsizetype headerSiz
     }
 }
 
-namespace {
-struct AllocationResult {
-    void *data;
-    QArrayData *header;
-};
-}
-
-static inline AllocationResult
-allocateHelper(qsizetype objectSize, qsizetype alignment, qsizetype capacity,
+static inline void *
+allocateHelper(QArrayData **dptr, qsizetype objectSize, qsizetype alignment, qsizetype capacity,
                QArrayData::AllocationOption option) noexcept
 {
+    *dptr = nullptr;
     if (capacity == 0)
         return {};
 
@@ -182,14 +176,13 @@ allocateHelper(qsizetype objectSize, qsizetype alignment, qsizetype capacity,
 
     void *data = nullptr;
     void *mem = ::malloc(size_t(allocSize));
-    QArrayData *header = nullptr;
     if (Q_LIKELY(mem)) {
-        header = new (mem) QArrayData{1, {}, capacity};
+        *dptr = new (mem) QArrayData{1, {}, capacity};
         // find where offset should point to so that data() is aligned to alignment bytes
-        data = QTypedArrayData<void>::dataStart(header, alignment);
+        data = QTypedArrayData<void>::dataStart(*dptr, alignment);
     }
 
-    return { data, header };
+    return data;
 }
 
 // Generic size and alignment allocation function
@@ -201,9 +194,7 @@ void *QArrayData::allocate(QArrayData **dptr, qsizetype objectSize, qsizetype al
     Q_ASSERT(alignment >= qsizetype(alignof(QArrayData))
             && !(alignment & (alignment - 1)));
 
-    auto r = allocateHelper(objectSize, alignment, capacity, option);
-    *dptr = r.header;
-    return r.data;
+    return allocateHelper(dptr, objectSize, alignment, capacity, option);
 }
 
 // Fixed size and alignment allocation functions
@@ -211,18 +202,14 @@ void *QArrayData::allocate1(QArrayData **dptr, qsizetype capacity, AllocationOpt
 {
     Q_ASSERT(dptr);
 
-    auto r = allocateHelper(1, alignof(AlignedQArrayData), capacity, option);
-    *dptr = r.header;
-    return r.data;
+    return allocateHelper(dptr, 1, alignof(AlignedQArrayData), capacity, option);
 }
 
 void *QArrayData::allocate2(QArrayData **dptr, qsizetype capacity, AllocationOption option) noexcept
 {
     Q_ASSERT(dptr);
 
-    auto r = allocateHelper(2, alignof(AlignedQArrayData), capacity, option);
-    *dptr = r.header;
-    return r.data;
+    return allocateHelper(dptr, 2, alignof(AlignedQArrayData), capacity, option);
 }
 
 std::pair<QArrayData *, void *>
