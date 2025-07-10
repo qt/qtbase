@@ -61,8 +61,10 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
 
     void initLayoutAccessibility(QtLayout layout)
     {
-        if (m_layout == null)
+        if (layout == null) {
             Log.w(TAG, "Unable to initialize the accessibility delegate with a null layout");
+            return;
+        }
 
         m_layout = layout;
 
