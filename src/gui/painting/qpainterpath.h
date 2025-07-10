@@ -141,7 +141,7 @@ public:
     QPointF pointAtPercent(qreal t) const;
     qreal   angleAtPercent(qreal t) const;
     qreal   slopeAtPercent(qreal t) const;
-    [[nodiscard]] QPainterPath trimmed(qreal f1, qreal f2, qreal offset = 0) const;
+    [[nodiscard]] QPainterPath trimmed(qreal fromFraction, qreal toFraction, qreal offset = 0) const;
 
     bool intersects(const QPainterPath &p) const;
     bool contains(const QPainterPath &p) const;

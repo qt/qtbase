@@ -3193,9 +3193,10 @@ qreal QPainterPath::slopeAtPercent(qreal t) const
 /*!
   \since 6.10
 
-  Returns the section of the path between the length fractions \a f1 and \a f2. The effective range
-  of the fractions are from 0, denoting the start point of the path, to 1, denoting its end point.
-  The fractions are linear with respect to path length, in contrast to the percentage \e t values.
+  Returns the section of the path between the length fractions \a fromFraction and \a toFraction.
+  The effective range of the fractions are from 0, denoting the start point of the path, to 1,
+  denoting its end point. The fractions are linear with respect to path length, in contrast to the
+  percentage \e t values.
 
   The value of \a offset will be added to the fraction values. If that causes an over- or underflow
   of the [0, 1] range, the values will be wrapped around, as will the resulting path. The effective
@@ -3206,13 +3207,13 @@ qreal QPainterPath::slopeAtPercent(qreal t) const
   \sa length(), percentAtLength(), setCachingEnabled()
 */
 
-QPainterPath QPainterPath::trimmed(qreal f1, qreal f2, qreal offset) const
+QPainterPath QPainterPath::trimmed(qreal fromFraction, qreal toFraction, qreal offset) const
 {
     if (isEmpty())
         return *this;
 
-    f1 = qBound(qreal(0), f1, qreal(1));
-    f2 = qBound(qreal(0), f2, qreal(1));
+    qreal f1 = qBound(qreal(0), fromFraction, qreal(1));
+    qreal f2 = qBound(qreal(0), toFraction, qreal(1));
     if (f1 > f2)
         qSwap(f1, f2);
     if (qFuzzyCompare(f2 - f1, qreal(1)))  // Shortcut for no trimming
