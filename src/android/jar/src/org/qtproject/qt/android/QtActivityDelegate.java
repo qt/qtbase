@@ -9,9 +9,11 @@ import android.app.Activity;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.content.res.TypedArray;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.Rect;
+import android.graphics.Color;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
@@ -39,7 +41,6 @@ class QtActivityDelegate extends QtActivityDelegateBase
     private boolean m_splashScreenSticky = false;
     private boolean m_backendsRegistered = false;
 
-    private View m_dummyView = null;
     private final HashMap<Integer, View> m_nativeViews = new HashMap<>();
 
     QtActivityDelegate(Activity activity)
@@ -197,6 +198,19 @@ class QtActivityDelegate extends QtActivityDelegateBase
                                                             ViewGroup.LayoutParams.MATCH_PARENT,
                                                             ViewGroup.LayoutParams.MATCH_PARENT));
                 m_layout.addView(m_splashScreen);
+
+                // Set DayNight theme as layout background so splash screen
+                // is not visible with opaque windows.
+                TypedArray typedArray = m_activity.getTheme().obtainStyledAttributes(
+                                        android.R.style.Theme_DeviceDefault_DayNight,
+                                        new int[]{ android.R.attr.colorBackground });
+                try {
+                    int backgroundColor = typedArray.getColor(0, Color.WHITE);
+                    Drawable background = new ColorDrawable(backgroundColor);
+                    m_layout.setBackground(background);
+                } finally {
+                    typedArray.recycle();
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -368,15 +382,9 @@ class QtActivityDelegate extends QtActivityDelegateBase
             if (m_layout == null)
                 return;
 
-            if (m_topLevelWindows.isEmpty()) {
-                if (m_dummyView != null) {
-                    m_layout.removeView(m_dummyView);
-                    m_dummyView = null;
-                }
-            }
-
             m_layout.addView(window, m_topLevelWindows.size());
             m_topLevelWindows.put(window.getId(), window);
+            window.setToDestroy(false);
             if (!m_splashScreenSticky)
                 hideSplashScreen();
         });
@@ -390,13 +398,13 @@ class QtActivityDelegate extends QtActivityDelegateBase
             if (m_topLevelWindows.containsKey(id)) {
                 QtWindow window = m_topLevelWindows.remove(id);
                 window.setOnApplyWindowInsetsListener(null); // Set in QtWindow for safe margins
-                if (m_topLevelWindows.isEmpty()) {
-                   // Keep last frame in stack until it is replaced to get correct
-                   // shutdown transition
-                   m_dummyView = window;
-               } else if (m_layout != null) {
-                   m_layout.removeView(window);
-               }
+                if (window.isFrontmostVisibleWindow()) {
+                    window.setToDestroy(true);
+                    // Keep current shown window open during shutdown transition
+                    m_layout.postDelayed(() -> { window.destroySurface(); }, 500);
+                } else if (m_layout != null) {
+                    m_layout.removeView(window);
+                }
             }
         });
     }
@@ -452,11 +460,6 @@ class QtActivityDelegate extends QtActivityDelegateBase
             return;
 
         QtNative.runAction(()-> {
-            if (m_dummyView != null) {
-                m_layout.removeView(m_dummyView);
-                m_dummyView = null;
-            }
-
             if (m_nativeViews.containsKey(id))
                 m_layout.removeView(m_nativeViews.remove(id));
 

@@ -20,6 +20,7 @@ import android.view.WindowInsets;
 import android.os.Build;
 
 import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @SuppressLint("ViewConstructor")
 class QtWindow extends QtLayout implements QtSurfaceInterface {
@@ -30,6 +31,7 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
     private GestureDetector m_gestureDetector;
     private final QtEditText m_editText;
     private final QtInputConnection.QtInputConnectionListener m_inputConnectionListener;
+    private final AtomicBoolean m_canBeDestroyed = new AtomicBoolean(true);
 
     private static native void setSurface(int windowId, Surface surface);
     private static native void safeAreaMarginsChanged(Insets insets, int id);
@@ -157,6 +159,60 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
         QtNative.runAction(() -> setVisibility(visible ? View.VISIBLE : View.INVISIBLE));
     }
 
+    // Use only for Qt for Android and not Qt Quick for Android
+    @UsedFromNativeCode
+    public void setToDestroy(boolean destroy)
+    {
+        m_canBeDestroyed.set(destroy);
+    }
+
+    // Use only for Qt for Android and not Qt Quick for Android
+    private QtLayout getParentContainer()
+    {
+        if (!(getParent() instanceof QtLayout))
+            return null;
+        return (QtLayout) getParent();
+    }
+
+    // Use only for Qt for Android and not Qt Quick for Android
+    public boolean isFrontmostVisibleWindow()
+    {
+        QtLayout parent = getParentContainer();
+        if (getVisibility() != View.VISIBLE || parent == null)
+            return false;
+
+        for (int index = parent.indexOfChild(this) + 1; index < parent.getChildCount(); index ++) {
+            View child = parent.getChildAt(index);
+            if (child instanceof QtWindow && child.isShown())
+                return false;
+        }
+
+        return true;
+    }
+
+    // Use only for Qt for Android and not Qt Quick for Android
+    @UsedFromNativeCode
+    public boolean isLastVisibleTopLevelWindow()
+    {
+        QtLayout parent = getParentContainer();
+        if (getVisibility() != View.VISIBLE || parent == null)
+            return false;
+
+        for (int index = parent.indexOfChild(this) - 1; index >= 0; index--) {
+            View child = parent.getChildAt(index);
+            if (child instanceof QtWindow) {
+                QtWindow childWindow = (QtWindow) child;
+                if (child.getVisibility() == View.VISIBLE && !childWindow.m_canBeDestroyed.get())
+                    return false;
+            }
+        }
+
+        if (parent.getChildCount() > 1 && !isFrontmostVisibleWindow())
+            return false;
+
+        return true;
+    }
+
     @Override
     public void onSurfaceChanged(Surface surface)
     {
@@ -223,7 +279,7 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
     void destroySurface()
     {
         QtNative.runAction(()-> {
-            if (m_surfaceContainer != null) {
+            if (m_surfaceContainer != null && m_canBeDestroyed.get()) {
                 removeView(m_surfaceContainer);
                 m_surfaceContainer = null;
                 }
