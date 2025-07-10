@@ -747,7 +747,7 @@ int QHostInfo::lookupHostImpl(const QString &name,
     Q_ASSERT(!member || receiver); // if member is set, also is receiver
     const bool isUsingStringBasedSlot = static_cast<bool>(member);
 
-    if (!QAbstractEventDispatcher::instance(QThread::currentThread())) {
+    if (!QAbstractEventDispatcher::instance()) {
         qWarning("QHostInfo::lookupHost() called with no event dispatcher");
         return -1;
     }
