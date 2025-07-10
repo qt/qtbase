@@ -7,7 +7,7 @@
    https://developercommunity.visualstudio.com/t/Regression:-c-compilation-failure-in-c/10926790
 */
 #include <QtCore/qcompilerdetection.h>
-#if defined(Q_CC_MSVC_ONLY) && (_MSC_FULL_VER >= 194435209) && (_MSC_FULL_VER < 194500000)
+#if defined(Q_CC_MSVC_ONLY) && (_MSC_FULL_VER >= 194435208) && (_MSC_FULL_VER < 194500000)
 #  define MSVC_ENUM_BUG
 #endif
 
