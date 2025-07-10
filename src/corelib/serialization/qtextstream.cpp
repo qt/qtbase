@@ -705,7 +705,7 @@ void QTextStreamPrivate::write(const QChar *data, qsizetype len)
 /*!
     \internal
 */
-inline void QTextStreamPrivate::write(QChar ch)
+void QTextStreamPrivate::write(QChar ch)
 {
     if (string) {
         // ### What about seek()??
@@ -839,7 +839,7 @@ void QTextStreamPrivate::putString(const QChar *data, qsizetype len, bool number
             const QChar sign = len > 0 ? data[0] : QChar();
             if (sign == locale.negativeSign() || sign == locale.positiveSign()) {
                 // write the sign before the padding, then skip it later
-                write(&sign, 1);
+                write(sign);
                 ++data;
                 --len;
             }
@@ -868,7 +868,7 @@ void QTextStreamPrivate::putString(QLatin1StringView data, bool number)
             const QChar sign = data.size() > 0 ? QLatin1Char(*data.data()) : QChar();
             if (sign == locale.negativeSign() || sign == locale.positiveSign()) {
                 // write the sign before the padding, then skip it later
-                write(&sign, 1);
+                write(sign);
                 data = QLatin1StringView(data.data() + 1, data.size() - 1);
             }
         }
