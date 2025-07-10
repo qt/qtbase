@@ -592,11 +592,46 @@ function(qt6_android_add_apk_target target)
         "$<TARGET_FILE:${target}>"
         "${apk_final_dir}/${target_file_copy_relative_path}"
     )
+
+    if(QT_FEATURE_sanitize_address)
+        _qt_internal_android_find_asan_runtime_lib(asan_lib_path)
+        _qt_internal_android_find_asan_wrap_sh(asan_wrap_sh_path)
+
+        if(asan_lib_path AND asan_wrap_sh_path)
+            get_filename_component(asan_lib_basename "${asan_lib_path}" NAME)
+            set(asan_lib_dest
+                "${apk_final_dir}/libs/${CMAKE_ANDROID_ARCH_ABI}/${asan_lib_basename}")
+            add_custom_command(
+                OUTPUT "${asan_lib_dest}"
+                COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+                    "${asan_lib_path}"
+                    "${asan_lib_dest}"
+                DEPENDS "${asan_lib_path}"
+                COMMENT "Copying Address Sanitizer library to apk folder"
+            )
+
+            # The wrap.sh has to go under resources/lib and not libs/
+            # See https://developer.android.com/ndk/guides/asan#building
+            set(asan_wrap_sh_dest
+                "${apk_final_dir}/resources/lib/${CMAKE_ANDROID_ARCH_ABI}/wrap.sh")
+            add_custom_command(
+                OUTPUT "${asan_wrap_sh_dest}"
+                COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+                    "${asan_wrap_sh_path}"
+                    "${asan_wrap_sh_dest}"
+                DEPENDS "${asan_wrap_sh_path}"
+                COMMENT "Copying Address Sanitizer wrap.sh to apk folder"
+            )
+        endif()
+    endif()
+
     add_custom_target(${target}_prepare_apk_dir ALL
         COMMAND ${copy_command}
         COMMENT "Copying ${target} binary to apk folder"
+        DEPENDS "${asan_lib_dest}" "${asan_wrap_sh_dest}"
         ${uses_terminal}
     )
+
     add_dependencies(${target}_prepare_apk_dir ${target} ${extra_deps})
 
     set(sign_apk "")
@@ -1825,6 +1860,64 @@ function(_qt_internal_android_get_deployment_type_option out_var release_flag de
         set(${out_var} "${${out_var}}" PARENT_SCOPE)
     else()
         set(${out_var} "${debug_flag}" PARENT_SCOPE)
+    endif()
+endfunction()
+
+function(_qt_internal_android_find_asan_runtime_lib out_asan_lib_path)
+    set(cached_asan_lib "_qt_android_asan_lib_${CMAKE_ANDROID_ARCH_ABI}")
+
+    if(DEFINED CACHE{${cached_asan_lib}})
+        if(EXISTS "${${cached_asan_lib}}")
+            set(${out_asan_lib_path} "${${cached_asan_lib}}" PARENT_SCOPE)
+            return()
+        endif()
+    endif()
+
+    set(asan_arch_suffix "")
+    if(CMAKE_ANDROID_ARCH_ABI STREQUAL "arm64-v8a")
+        set(asan_arch_suffix "aarch64")
+    elseif(CMAKE_ANDROID_ARCH_ABI STREQUAL "armeabi-v7a")
+        set(asan_arch_suffix "arm")
+    elseif(CMAKE_ANDROID_ARCH_ABI STREQUAL "x86")
+        set(asan_arch_suffix "i686")
+    elseif(CMAKE_ANDROID_ARCH_ABI STREQUAL "x86_64")
+        set(asan_arch_suffix "x86_64")
+    else()
+        message(WARNING
+            "Address Sanitizer: unsupported CMAKE_ANDROID_ARCH_ABI=${CMAKE_ANDROID_ARCH_ABI} value")
+        set(${out_asan_lib_path} "" PARENT_SCOPE)
+        return()
+    endif()
+
+    set(asan_lib_name "libclang_rt.asan-${asan_arch_suffix}-android.so")
+    set(search_dir "${CMAKE_ANDROID_NDK}/toolchains/llvm/prebuilt/${ANDROID_NDK_HOST_SYSTEM_NAME}")
+
+    if(NOT EXISTS "${search_dir}")
+        message(WARNING "Address Sanitizer: the NDK toolchain path not found at ${search_dir}")
+        set(${out_asan_lib_path} "" PARENT_SCOPE)
+        return()
+    endif()
+
+    file(GLOB_RECURSE found_asan_lib_paths "${search_dir}/${asan_lib_name}")
+
+    if(found_asan_lib_paths)
+        list(GET found_asan_lib_paths 0 first_path)
+        set(${cached_asan_lib} "${first_path}" CACHE INTERNAL
+            "Cached path Android ASan runtime library for ${CMAKE_ANDROID_ARCH_ABI}")
+        set(${out_asan_lib_path} "${first_path}" PARENT_SCOPE)
+    else()
+        message(WARNING "Address Sanitizer: could not find ${asan_lib_name} under ${search_dir}")
+        set(${out_asan_lib_path} "" PARENT_SCOPE)
+    endif()
+endfunction()
+
+function(_qt_internal_android_find_asan_wrap_sh out_wrap_sh_path)
+    set(ndk_wrap_sh_path "${CMAKE_ANDROID_NDK}/wrap.sh/asan.sh")
+    if(EXISTS "${ndk_wrap_sh_path}")
+        set(${out_wrap_sh_path} "${ndk_wrap_sh_path}" PARENT_SCOPE)
+    else()
+        message(WARNING "Address Sanitizer: the wrap script not found at ${ndk_wrap_sh_path}.")
+        set(${out_wrap_sh_path} "" PARENT_SCOPE)
     endif()
 endfunction()
 
