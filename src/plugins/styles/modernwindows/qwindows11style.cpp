@@ -2248,9 +2248,6 @@ void QWindows11Style::polish(QWidget* widget)
         widget->setWindowFlag(Qt::NoDropShadowWindowHint);
         widget->setAttribute(Qt::WA_RightToLeft, layoutDirection);
         widget->setAttribute(Qt::WA_WState_Created, wasCreated);
-        auto pal = widget->palette();
-        pal.setColor(widget->backgroundRole(), Qt::transparent);
-        widget->setPalette(pal);
         if (!isScrollBar) {
             bool inGraphicsView = widget->graphicsProxyWidget() != nullptr;
             if (!inGraphicsView && comboBoxContainer && comboBoxContainer->parentWidget())
