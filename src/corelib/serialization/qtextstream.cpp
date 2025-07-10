@@ -251,11 +251,6 @@ using namespace QtMiscUtils;
 
 static const qsizetype QTEXTSTREAM_BUFFERSIZE = 16384;
 
-#ifndef QT_NO_QOBJECT
-QDeviceClosedNotifier::~QDeviceClosedNotifier()
-    = default;
-#endif
-
 //-------------------------------------------------------------------
 
 /*!
@@ -274,6 +269,7 @@ QTextStreamPrivate::QTextStreamPrivate(QTextStream *q_ptr)
 */
 QTextStreamPrivate::~QTextStreamPrivate()
 {
+    disconnectFromDevice();
     if (deleteDevice) {
 #ifndef QT_NO_QOBJECT
         device->blockSignals(true);
@@ -316,6 +312,30 @@ void QTextStreamPrivate::reset()
     toUtf16 = QStringDecoder(encoding);
     fromUtf16 = QStringEncoder(encoding);
     autoDetectUnicode = true;
+}
+
+void QTextStreamPrivate::setupDevice(QIODevice *device)
+{
+    disconnectFromDevice();
+
+#ifndef QT_NO_QOBJECT
+    // Explicitly set a direct connection (though it would have been so
+    // anyway) so that QTextStream can be used from multiple threads when the
+    // application code is handling synchronization (see also QTBUG-12055).
+    aboutToCloseConnection =
+            QObject::connect(device, &QIODevice::aboutToClose, device,
+                             [this] { flushWriteBuffer(); }, Qt::DirectConnection);
+#else
+    Q_UNUSED(device);
+#endif
+}
+
+void QTextStreamPrivate::disconnectFromDevice()
+{
+#ifndef QT_NO_QOBJECT
+    QObject::disconnect(aboutToCloseConnection);
+    aboutToCloseConnection = {};
+#endif
 }
 
 /*!
@@ -923,9 +943,7 @@ QTextStream::QTextStream(QIODevice *device)
 #endif
     Q_D(QTextStream);
     d->device = device;
-#ifndef QT_NO_QOBJECT
-    d->deviceClosedNotifier.setupDevice(this, d->device);
-#endif
+    d->setupDevice(device);
     d->status = Ok;
 }
 
@@ -963,9 +981,7 @@ QTextStream::QTextStream(QByteArray *array, OpenMode openMode)
     d->device = new QBuffer(array);
     d->device->open(openMode);
     d->deleteDevice = true;
-#ifndef QT_NO_QOBJECT
-    d->deviceClosedNotifier.setupDevice(this, d->device);
-#endif
+    d->setupDevice(d->device);
     d->status = Ok;
 }
 
@@ -993,9 +1009,7 @@ QTextStream::QTextStream(const QByteArray &array, OpenMode openMode)
     Q_D(QTextStream);
     d->device = buffer;
     d->deleteDevice = true;
-#ifndef QT_NO_QOBJECT
-    d->deviceClosedNotifier.setupDevice(this, d->device);
-#endif
+    d->setupDevice(d->device);
     d->status = Ok;
 }
 #endif
@@ -1027,9 +1041,7 @@ QTextStream::QTextStream(FILE *fileHandle, OpenMode openMode)
     Q_D(QTextStream);
     d->device = file;
     d->deleteDevice = true;
-#ifndef QT_NO_QOBJECT
-    d->deviceClosedNotifier.setupDevice(this, d->device);
-#endif
+    d->setupDevice(d->device);
     d->status = Ok;
 }
 
@@ -1192,9 +1204,7 @@ void QTextStream::setDevice(QIODevice *device)
     Q_D(QTextStream);
     flush();
     if (d->deleteDevice) {
-#ifndef QT_NO_QOBJECT
-        d->deviceClosedNotifier.disconnect();
-#endif
+        d->disconnectFromDevice();
         delete d->device;
         d->deleteDevice = false;
     }
@@ -1203,9 +1213,7 @@ void QTextStream::setDevice(QIODevice *device)
     d->status = Ok;
     d->device = device;
     d->resetReadBuffer();
-#ifndef QT_NO_QOBJECT
-    d->deviceClosedNotifier.setupDevice(this, d->device);
-#endif
+    d->setupDevice(d->device);
 }
 
 /*!
@@ -1233,7 +1241,7 @@ void QTextStream::setString(QString *string, OpenMode openMode)
     flush();
     if (d->deleteDevice) {
 #ifndef QT_NO_QOBJECT
-        d->deviceClosedNotifier.disconnect();
+        d->setupDevice(d->device);
         d->device->blockSignals(true);
 #endif
         delete d->device;

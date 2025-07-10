@@ -25,36 +25,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_QOBJECT
-class QDeviceClosedNotifier : public QObject
-{
-    Q_OBJECT
-public:
-    inline QDeviceClosedNotifier()
-    { }
-    ~QDeviceClosedNotifier() override;
-
-    inline void setupDevice(QTextStream *stream, QIODevice *device)
-    {
-        disconnect();
-        if (device) {
-            // Force direct connection here so that QTextStream can be used
-            // from multiple threads when the application code is handling
-            // synchronization (see also QTBUG-12055).
-            connect(device, SIGNAL(aboutToClose()), this, SLOT(flushStream()),
-                    Qt::DirectConnection);
-        }
-        m_stream = stream;
-    }
-
-public Q_SLOTS:
-    void flushStream() { m_stream->flush(); }
-
-private:
-    QTextStream *m_stream;
-};
-#endif
-
 class QTextStreamPrivate
 {
     Q_DECLARE_PUBLIC(QTextStream)
@@ -81,10 +51,13 @@ public:
     ~QTextStreamPrivate();
     void reset();
 
+    inline void setupDevice(QIODevice *device);
+    inline void disconnectFromDevice();
+
     // device
     QIODevice *device;
 #ifndef QT_NO_QOBJECT
-    QDeviceClosedNotifier deviceClosedNotifier;
+    QMetaObject::Connection aboutToCloseConnection;
 #endif
 
     // string
