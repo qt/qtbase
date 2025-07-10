@@ -7,8 +7,15 @@
 #include "qcocoadrag.h"
 #include "qmacclipboard.h"
 #include "qcocoahelpers.h"
-#include <QtGui/private/qcoregraphics_p.h>
+
+#include <QtGui/qfont.h>
+#include <QtGui/qfontmetrics.h>
+#include <QtGui/qpainter.h>
 #include <QtGui/qutimimeconverter.h>
+#include <QtGui/private/qcoregraphics_p.h>
+#include <QtGui/private/qdnd_p.h>
+
+#include <QtCore/qeventloop.h>
 #include <QtCore/private/qcore_mac_p.h>
 
 #include <vector>

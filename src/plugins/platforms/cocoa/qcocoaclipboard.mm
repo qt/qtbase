@@ -3,6 +3,7 @@
 
 #include "qcocoaclipboard.h"
 
+#include <QtGui/qguiapplication.h>
 #include <QtGui/qutimimeconverter.h>
 
 #ifndef QT_NO_CLIPBOARD

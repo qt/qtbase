@@ -3,6 +3,8 @@
 
 // This file is included from qnsview.mm, and only used to organize the code
 
+#include <QtGui/qdrag.h>
+
 @implementation QNSView (Dragging)
 
 -(void)registerDragTypes

@@ -4,22 +4,22 @@
 #ifndef QCOCOADRAG_H
 #define QCOCOADRAG_H
 
-#include <QtGui>
 #include <qpa/qplatformdrag.h>
-#include <private/qsimpledrag_p.h>
+#include <QtGui/private/qsimpledrag_p.h>
+#include <QtGui/private/qinternalmimedata_p.h>
 
 #include <QtCore/private/qcore_mac_p.h>
 
-#include <QtGui/private/qdnd_p.h>
-#include <QtGui/private/qinternalmimedata_p.h>
-
-#include <QtCore/qeventloop.h>
 
 Q_FORWARD_DECLARE_OBJC_CLASS(NSView);
 Q_FORWARD_DECLARE_OBJC_CLASS(NSEvent);
 Q_FORWARD_DECLARE_OBJC_CLASS(NSPasteboard);
 
 QT_BEGIN_NAMESPACE
+
+class QDrag;
+class QEventLoop;
+class QMimeData;
 
 class QCocoaDrag : public QPlatformDrag
 {

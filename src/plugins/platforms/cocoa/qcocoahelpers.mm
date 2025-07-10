@@ -8,8 +8,6 @@
 #include "qcocoahelpers.h"
 #include "qnsview.h"
 
-#include <QtCore>
-#include <QtGui>
 #include <qpa/qplatformscreen.h>
 #include <private/qguiapplication_p.h>
 #include <private/qwindow_p.h>

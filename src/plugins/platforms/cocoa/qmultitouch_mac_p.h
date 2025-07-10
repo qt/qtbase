@@ -15,13 +15,12 @@
 #ifndef QMULTITOUCH_MAC_P_H
 #define QMULTITOUCH_MAC_P_H
 
-#include <QtCore/qglobal.h>
-#include <qpa/qwindowsysteminterface.h>
-#include <qhash.h>
-#include <QtCore>
+#include <QtCore/qhash.h>
+#include <QtCore/private/qcore_mac_p.h>
+
 #include <QtGui/qpointingdevice.h>
 
-#include <QtCore/private/qcore_mac_p.h>
+#include <qpa/qwindowsysteminterface.h>
 
 Q_FORWARD_DECLARE_OBJC_CLASS(NSTouch);
 QT_FORWARD_DECLARE_OBJC_ENUM(NSTouchPhase, unsigned long);

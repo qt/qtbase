@@ -4,8 +4,9 @@
 #ifndef QWINDOWSCURSOR_H
 #define QWINDOWSCURSOR_H
 
-#include <QtCore>
 #include <qpa/qplatformcursor.h>
+
+#include <QtCore/qhash.h>
 
 Q_FORWARD_DECLARE_OBJC_CLASS(NSCursor);
 

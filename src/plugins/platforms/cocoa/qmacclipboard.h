@@ -4,10 +4,10 @@
 #ifndef QMACCLIPBOARD_H
 #define QMACCLIPBOARD_H
 
-#include <QtGui>
 #include <QtGui/qutimimeconverter.h>
 
 #include <QtCore/qpointer.h>
+#include <QtCore/qvariant.h>
 
 #include <ApplicationServices/ApplicationServices.h>
 

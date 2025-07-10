@@ -11,6 +11,7 @@
 #include <QtGui/qbitmap.h>
 #include <QtCore/qdatetime.h>
 #include <QtCore/qmetatype.h>
+#include <QtCore/qmimedata.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/private/qcore_mac_p.h>
 #include <QtGui/qguiapplication.h>
