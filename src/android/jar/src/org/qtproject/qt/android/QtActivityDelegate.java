@@ -54,6 +54,7 @@ class QtActivityDelegate extends QtActivityDelegateBase
         super.initMembers();
         setActionBarVisibility(false);
         setActivityBackgroundDrawable();
+        m_accessibilityDelegate.initLayoutAccessibility(m_layout);
     }
 
     void registerBackends()
@@ -287,15 +288,6 @@ class QtActivityDelegate extends QtActivityDelegateBase
     public void notifyScrolledEvent(int viewId)
     {
         m_accessibilityDelegate.notifyScrolledEvent(viewId);
-    }
-
-    @Override
-    public void initializeAccessibility()
-    {
-        QtNative.runAction(() -> {
-            // FIXME make QtAccessibilityDelegate window based
-            m_accessibilityDelegate.initLayoutAccessibility(m_layout);
-        });
     }
 
     // QtMenuInterface implementation begin

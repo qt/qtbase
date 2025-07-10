@@ -81,11 +81,6 @@ namespace QtAndroidAccessibility
         }
     }
 
-    void initialize()
-    {
-        QtAndroid::initializeAccessibility();
-    }
-
     bool isActive()
     {
         return m_accessibilityActivated;

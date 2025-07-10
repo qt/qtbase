@@ -53,7 +53,6 @@ namespace QtAndroid
     jobject createBitmapDrawable(jobject bitmap, JNIEnv *env = nullptr);
 
 #if QT_CONFIG(accessibility)
-    void initializeAccessibility();
     void notifyAccessibilityLocationChange(uint accessibilityObjectId);
     void notifyObjectHide(uint accessibilityObjectId, uint parentObjectId);
     void notifyObjectShow(uint parentObjectId);

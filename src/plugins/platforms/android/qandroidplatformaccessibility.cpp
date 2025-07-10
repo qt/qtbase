@@ -7,12 +7,10 @@
 
 QT_BEGIN_NAMESPACE
 QAndroidPlatformAccessibility::QAndroidPlatformAccessibility()
-{
-    QtAndroidAccessibility::initialize();
-}
+{ }
 
 QAndroidPlatformAccessibility::~QAndroidPlatformAccessibility()
-{}
+{ }
 
 void QAndroidPlatformAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
 {

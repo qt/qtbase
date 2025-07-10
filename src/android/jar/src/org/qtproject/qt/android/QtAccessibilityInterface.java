@@ -4,7 +4,6 @@ package org.qtproject.qt.android;
 
 @UsedFromNativeCode
 interface QtAccessibilityInterface {
-    default void initializeAccessibility() { }
     default void notifyLocationChange(int viewId) { }
     default void notifyObjectHide(int viewId, int parentId) { }
     default void notifyObjectFocus(int viewId) { }

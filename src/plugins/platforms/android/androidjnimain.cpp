@@ -181,12 +181,6 @@ namespace QtAndroid
     }
 
 #if QT_CONFIG(accessibility)
-    void initializeAccessibility()
-    {
-        m_backendRegister->callInterface<QtJniTypes::QtAccessibilityInterface, void>(
-                "initializeAccessibility");
-    }
-
     void notifyAccessibilityLocationChange(uint accessibilityObjectId)
     {
         m_backendRegister->callInterface<QtJniTypes::QtAccessibilityInterface, void>(
