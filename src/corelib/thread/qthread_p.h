@@ -374,6 +374,7 @@ public:
     bool requiresCoreApplication = true;
 
 private:
+    friend class QBasicTimer;
     static Q_AUTOTEST_EXPORT QThreadData *currentThreadData() noexcept Q_DECL_PURE_FUNCTION;
     static Q_AUTOTEST_EXPORT QThreadData *createCurrentThreadData();
 };
