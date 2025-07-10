@@ -16,6 +16,14 @@ class Q_CORE_EXPORT QRangeModel : public QAbstractItemModel
     Q_OBJECT
 
 public:
+    enum class RowCategory {
+        Default,
+        MultiRoleItem,
+    };
+
+    template <typename T>
+    struct RowOptions {};
+
     template <typename T>
     using SingleColumn = std::tuple<T>;
 
@@ -189,6 +197,14 @@ QRangeModel::QRangeModel(Range &&range, Protocol &&protocol, QObject *parent)
                                                                  this),
                   parent)
 {}
+
+// Helper template that we can forward declare in the _impl header,
+// where QRangeModel is not yet defined.
+namespace QRangeModelDetails
+{
+template <typename T>
+struct QRangeModelRowOptions : QRangeModel::RowOptions<T> {};
+}
 
 QT_END_NAMESPACE
 

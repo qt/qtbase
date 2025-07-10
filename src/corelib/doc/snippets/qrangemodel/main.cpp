@@ -467,7 +467,7 @@ void color_map()
 }
 
 namespace multirole_gadget {
-//! [color_gadget_0]
+//! [color_gadget_decl]
 class ColorEntry
 {
     Q_GADGET
@@ -475,6 +475,8 @@ class ColorEntry
     Q_PROPERTY(QColor decoration READ decoration)
     Q_PROPERTY(QString toolTip READ toolTip)
 public:
+//! [color_gadget_decl]
+//! [color_gadget_impl]
     ColorEntry(const QString &color = {})
         : m_colorName(color)
     {}
@@ -490,13 +492,39 @@ public:
 
 private:
     QString m_colorName;
+//! [color_gadget_impl]
+//! [color_gadget_end]
 };
-//! [color_gadget_0]
+//! [color_gadget_end]
+}
 
-void color_list() {
-    //! [color_gadget_1]
+using ColorEntry = multirole_gadget::ColorEntry;
+//! [color_gadget_multi_role_gadget]
+
+template <>
+struct QRangeModel::RowOptions<ColorEntry>
+{
+    static constexpr auto rowCategory = QRangeModel::RowCategory::MultiRoleItem;
+};
+//! [color_gadget_multi_role_gadget]
+
+namespace multirole_gadget {
+void color_table() {
+    //! [color_gadget_table]
+    QList<QList<ColorEntry>> colorTable;
+
+    // ...
+
+    QRangeModel colorModel(colorTable);
+    QTableView table;
+    table.setModel(&colorModel);
+    //! [color_gadget_table]
+}
+
+void color_list_multi_role() {
+    //! [color_gadget_multi_role]
     const QStringList colorNames = QColor::colorNames();
-    QList<QRangeModel::SingleColumn<ColorEntry>> colors;
+    QList<ColorEntry> colors;
     colors.reserve(colorNames.size());
     for (const QString &name : colorNames)
         colors << name;
@@ -504,7 +532,31 @@ void color_list() {
     QRangeModel colorModel(colors);
     QListView list;
     list.setModel(&colorModel);
-    //! [color_gadget_1]
+    //! [color_gadget_multi_role]
+}
+
+void color_list_single_column() {
+    //! [color_gadget_single_column]
+    const QStringList colorNames = QColor::colorNames();
+    QList<QRangeModel::SingleColumn<ColorEntry>> colors;
+
+    // ...
+
+    QRangeModel colorModel(colors);
+    QListView list;
+    list.setModel(&colorModel);
+    //! [color_gadget_single_column]
+
+    {
+        //! [color_gadget_single_column_access_get]
+        ColorEntry firstEntry = std::get<0>(colors.at(0));
+        //! [color_gadget_single_column_access_get]
+    }
+    {
+        //! [color_gadget_single_column_access_sb]
+        auto [firstEntry] = colors.at(0);
+        //! [color_gadget_single_column_access_sb]
+    }
 }
 } // namespace multirole_gadget
 

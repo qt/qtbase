@@ -301,6 +301,25 @@ namespace QRangeModelDetails
     template <typename C>
     [[maybe_unused]] static constexpr bool is_range_v = is_range<C>();
 
+    // Detect which options are set to override default heuristics. Since
+    // QRangeModel is not yet defined we need to delay the evaluation.
+    template <typename T> struct QRangeModelRowOptions;
+
+    template <typename T, typename = void>
+    struct row_category : std::false_type
+    {
+        static constexpr bool isMultiRole = false;
+    };
+
+    template <typename T>
+    struct row_category<T, std::void_t<decltype(QRangeModelRowOptions<T>::rowCategory)>>
+        : std::true_type
+    {
+        static constexpr auto rowCategory = QRangeModelRowOptions<T>::rowCategory;
+        using RowCategory = decltype(rowCategory);
+        static constexpr bool isMultiRole = rowCategory == RowCategory::MultiRoleItem;
+    };
+
     // Find out how many fixed elements can be retrieved from a row element.
     // main template for simple values and ranges. Specializing for ranges
     // is ambiguous with arrays, as they are also ranges
@@ -344,13 +363,17 @@ namespace QRangeModelDetails
     {
         static constexpr int static_size = 0;
         static int fixed_size() {
-            // Interpret a gadget in a list as a multi-column row item. To make
-            // a list of multi-role items, wrap it into SingleColumn.
-            static const int columnCount = []{
-                const QMetaObject &mo = T::staticMetaObject;
-                return mo.propertyCount() - mo.propertyOffset();
-            }();
-            return columnCount;
+            if constexpr (row_category<T>::isMultiRole) {
+                return 1;
+            } else {
+                // Interpret a gadget in a list as a multi-column row item. To make
+                // a list of multi-role items, wrap it into SingleColumn.
+                static const int columnCount = []{
+                    const QMetaObject &mo = T::staticMetaObject;
+                    return mo.propertyCount() - mo.propertyOffset();
+                }();
+                return columnCount;
+            }
         }
         static constexpr bool hasMetaObject = true;
     };

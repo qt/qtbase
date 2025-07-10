@@ -221,19 +221,43 @@ QRangeModel::QRangeModel(QRangeModelImplBase *impl, QObject *parent)
     \c{int}. When using \c{int}, itemData() returns the container as is, and
     doesn't have to create a copy of the data.
 
-    Gadgets and QObject types are also represented at multi-role items if they
-    are the item type in a table. The names of the properties have to match the
-    names of the roles.
+    Gadgets and QObject types can also be represented at multi-role items.
+    The properties will be used for the role for which the
+    \l{QAbstractItemModel::roleNames()}{name of a role} matches.
 
-    \snippet qrangemodel/main.cpp color_gadget_0
+    \snippet qrangemodel/main.cpp color_gadget_decl
+    \snippet qrangemodel/main.cpp color_gadget_impl
+    \snippet qrangemodel/main.cpp color_gadget_end
 
-    When used in a list, these types are ambiguous: they can be represented as
-    multi-column rows, with each property represented as a separate column. Or
-    they can be single items with each property being a role. To disambiguate,
-    use the QRangeModel::SingleColumn and QRangeModel::MultiColumn
-    wrappers.
+    When used in a table, this is the default representation for gadgets:
 
-    \snippet qrangemodel/main.cpp color_gadget_1
+    \snippet qrangemodel/main.cpp color_gadget_table
+
+    When used in a list, these types are however by default represented as
+    multi-column rows, with each property represented as a separate column.
+    There are two ways to force a gadget to be represented as a multi-role item
+    in a list. You can either declare the gadget as a multi-role type by
+    specializing QRoleModel::RowOptions, and give it a
+    \c{static constexpr auto rowCategory} member variable set to MultiRoleItem.
+
+    \snippet qrangemodel/main.cpp color_gadget_decl
+    \dots
+    \snippet qrangemodel/main.cpp color_gadget_end
+    \snippet qrangemodel/main.cpp color_gadget_multi_role_gadget
+
+    Or, if you need to use the same type in different models, you can use the
+    SingleColumn wrapper:
+
+    \snippet qrangemodel/main.cpp color_gadget_single_column
+
+    In this case, note that direct access to the elements in the list data
+    needs to use \c{std::get}:
+
+    \snippet qrangemodel/main.cpp color_gadget_single_column_access_get
+
+    or alternatively a structured binding:
+
+    \snippet qrangemodel/main.cpp color_gadget_single_column_access_sb
 
     \section2 Rows as values or pointers
 
@@ -425,15 +449,55 @@ QRangeModel::QRangeModel(QRangeModelImplBase *impl, QObject *parent)
     return a mutable reference of the respective variable. The model makes
     those columns editable, both for the user and for programmatic access.
 
-    \note The implementation of \c{get} above requires C++23. A C++17 compliant
-    implementation can be found in the unit test code for QRangeModel.
-
-    For types that have both a meta objects, and implement the C++ tuple
-    protocol, QRangeModel will prioritise the tuple protocol and represent the
-    items as rows with multiple columns. Use the QRangeModel::SingleColumn
-    wrapper override this behavior.
+    \note The implementation of \c{get} above requires C++23.
 
     \sa {Model/View Programming}
+*/
+
+/*!
+    \class QRangeModel::RowOptions
+    \inmodule QtCore
+    \ingroup model-view
+    \brief The RowOptions template provides a customization point to control
+           how QRangeModel represents types used as rows.
+    \since 6.10
+
+    Specialize this template for the type used in your range, and add the
+    relevant members.
+
+    \table
+    \header
+        \li Member
+        \li Values
+    \row
+        \li static constexpr RowCategory rowCategory
+        \li RowCategory
+    \endtable
+
+    \snippet qrangemodel/main.cpp color_gadget_decl
+    \dots
+    \snippet qrangemodel/main.cpp color_gadget_end
+    \snippet qrangemodel/main.cpp color_gadget_multi_role_gadget
+
+*/
+
+/*!
+    \enum QRangeModel::RowCategory
+
+    This enum describes how QRangeModel should present the elements of the
+    range it was constructed with.
+
+    \value Default
+           QRangeModel decides how to present the rows.
+    \value MultiRoleItem
+           QRangeModel will present items with a meta object as multi-role
+           items, also when used in a one-dimensional range.
+
+    Specialize the RowOptions template for your type, and add a public member
+    variable \c{static constexpr auto rowCategory} with one of the values from
+    this enum.
+
+    \sa RowOptions, SingleColumn
 */
 
 /*!
@@ -447,7 +511,9 @@ QRangeModel::QRangeModel(QRangeModelImplBase *impl, QObject *parent)
     QRangeModel will by default represent types that provide a metaobject as
     multiple columns, resulting in a table model.
 
-    \snippet qrangemodel/main.cpp color_gadget_0
+    \snippet qrangemodel/main.cpp color_gadget_decl
+    \snippet qrangemodel/main.cpp color_gadget_impl
+    \snippet qrangemodel/main.cpp color_gadget_end
 
     Each property will be represented as a column of a table.
 
@@ -471,6 +537,8 @@ QRangeModel::QRangeModel(QRangeModelImplBase *impl, QObject *parent)
 
     This is particularly useful when using lists of gadgets or objects as a
     model with Qt Quick.
+
+    \sa RowCategory
 */
 
 /*!

@@ -57,6 +57,22 @@ private:
     QString m_toolTip;
 };
 
+class MultiRoleGadget
+{
+    Q_GADGET
+    Q_PROPERTY(QString display MEMBER m_display)
+    Q_PROPERTY(QColor decoration MEMBER m_decoration)
+public:
+    QString m_display;
+    QColor m_decoration;
+};
+
+template <>
+struct QRangeModel::RowOptions<MultiRoleGadget>
+{
+    static constexpr auto rowCategory = QRangeModel::RowCategory::MultiRoleItem;
+};
+
 class Object : public QObject
 {
     Q_OBJECT
@@ -465,6 +481,11 @@ private:
             {{"green", Qt::green, "0x00ff00"}},
             {{"blue", Qt::blue, "0x0000ff"}},
         };
+        std::vector<MultiRoleGadget> listOfMultiRoleGadgets = {
+            {"red", Qt::red},
+            {"green", Qt::green},
+            {"blue", Qt::blue},
+        };
         std::vector<Row> vectorOfStructs = {
             {{"red", Qt::red, "0xff0000"}, 1, "one"},
             {{"green", Qt::green, "0x00ff00"}, 2, "two"},
@@ -681,6 +702,7 @@ void tst_QRangeModel::createTestData()
     ADD_ALL(vectorOfGadgets, 3, ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData);
 
     ADD_ALL(listOfGadgets, 1, ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData);
+    ADD_ALL(listOfMultiRoleGadgets, 1, ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData);
 
     ADD_COPY(listOfObjects, 2, ChangeAction::ChangeRows | ChangeAction::SetData);
 
