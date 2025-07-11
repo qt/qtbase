@@ -1113,11 +1113,7 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
             --lastSlash;        // skip non-slashes
         --lastSlash;            // point to the slash or -1 if no slash
 
-        if (nativeFilePath.at(lastSlash + 1) == '.'
-#if defined(Q_OS_DARWIN)
-                || (entryErrno == 0 && hasResourcePropertyFlag(data, entry, kCFURLIsHiddenKey))
-#endif
-                )
+        if (nativeFilePath.at(lastSlash + 1) == '.')
             data.entryFlags |= QFileSystemMetaData::HiddenAttribute;
         data.knownFlagsMask |= QFileSystemMetaData::HiddenAttribute;
     }
